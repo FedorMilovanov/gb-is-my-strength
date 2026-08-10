@@ -4,6 +4,29 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/**'
+      - 'src/**'
+      - 'data/**'
+      - 'migration/**'
+      - '**/*.html'
+      - '**/*.js'
+      - '**/*.mjs'
+      - '**/*.cjs'
+      - '**/*.ts'
+      - '**/*.tsx'
+      - '**/*.jsx'
+      - '**/*.css'
+      - '**/*.json'
+      - '**/*.xml'
+      - '**/*.svg'
+      - '**/*.png'
+      - '**/*.jpg'
+      - '**/*.jpeg'
+      - '**/*.webp'
+      - '**/*.avif'
+      - 'robots.txt'
       - 'scripts/lib/legacy-source-authority.js'
       - 'scripts/lib/route-source-contract.js'
       - 'scripts/lib/accepted-semantic-manifest.js'
@@ -20,15 +43,41 @@ on:
       - 'src/content/articles/**'
       - 'src/pages/articles/dzhon-gill-*/**'
       - 'src/components/baptisty-rossii/**'
+      - 'src/components/article-pilots/**'
       - 'src/components/article-pilots/hermenevtika/**'
       - 'src/components/article-pilots/gill-part1/**'
       - 'src/components/article-pilots/gill-context/**'
       - 'src/components/article-pilots/gill-series/**'
       - 'src/components/article-pilots/gill-spravochnik/**'
+      - 'src/components/pastor-series/**'
+      - 'src/components/hard-texts/**'
       - '.github/workflows/source-authority-contract.yml'
   push:
     branches: [main]
     paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/**'
+      - 'src/**'
+      - 'data/**'
+      - 'migration/**'
+      - '**/*.html'
+      - '**/*.js'
+      - '**/*.mjs'
+      - '**/*.cjs'
+      - '**/*.ts'
+      - '**/*.tsx'
+      - '**/*.jsx'
+      - '**/*.css'
+      - '**/*.json'
+      - '**/*.xml'
+      - '**/*.svg'
+      - '**/*.png'
+      - '**/*.jpg'
+      - '**/*.jpeg'
+      - '**/*.webp'
+      - '**/*.avif'
+      - 'robots.txt'
       - 'scripts/lib/legacy-source-authority.js'
       - 'scripts/lib/route-source-contract.js'
       - 'scripts/lib/accepted-semantic-manifest.js'
@@ -45,11 +94,14 @@ on:
       - 'src/content/articles/**'
       - 'src/pages/articles/dzhon-gill-*/**'
       - 'src/components/baptisty-rossii/**'
+      - 'src/components/article-pilots/**'
       - 'src/components/article-pilots/hermenevtika/**'
       - 'src/components/article-pilots/gill-part1/**'
       - 'src/components/article-pilots/gill-context/**'
       - 'src/components/article-pilots/gill-series/**'
       - 'src/components/article-pilots/gill-spravochnik/**'
+      - 'src/components/pastor-series/**'
+      - 'src/components/hard-texts/**'
       - '.github/workflows/source-authority-contract.yml'
 
 permissions:
@@ -71,11 +123,31 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      - name: Verify exact changed diff hygiene
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test -n "$BASE_SHA"
+          test -n "$HEAD_SHA"
+          if [[ "$BASE_SHA" =~ ^0+$ ]]; then
+            BASE_SHA="$(git rev-parse "$HEAD_SHA^")"
+          fi
+          git diff --check "$BASE_SHA" "$HEAD_SHA"
+
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22.23.1'
           cache: npm
+
+      - name: Verify Source Authority composition trigger closure
+        run: node scripts/source-authority-trigger-closure-contract-test.js
+
+      - name: Verify Source Authority publication input universe
+        run: node scripts/source-authority-trigger-universe-contract-test.js
 
       - name: Install dependencies
         run: npm ci
