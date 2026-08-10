@@ -58,11 +58,6 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
     return ids;
   }, [detailLevel, persons, goldenPath]);
 
-  const handleViewportChange = useCallback(({ zoom }: { zoom: number }) => {
-    const nextLevel: DetailLevel = zoom < 0.3 ? 0 : zoom < 0.7 ? 1 : 2;
-    setDetailLevel(current => current === nextLevel ? current : nextLevel);
-  }, []);
-
   /*
    * Canonical Fit View contract
    * ---------------------------
@@ -306,7 +301,10 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
         onInit={(inst) => { rfInstance.current = inst; }}
-        onViewportChange={handleViewportChange}
+        onMoveEnd={(_event, { zoom }) => {
+          const nextLevel: DetailLevel = zoom < 0.3 ? 0 : zoom < 0.7 ? 1 : 2;
+          setDetailLevel(current => current === nextLevel ? current : nextLevel);
+        }}
         fitView
         fitViewOptions={canonicalFitOptions}
         minZoom={0.5}
