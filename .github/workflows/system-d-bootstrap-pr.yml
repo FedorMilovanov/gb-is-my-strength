@@ -25,9 +25,11 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/system-d-bootstrap.py
+          python scripts/system-d-cache-bust-calibration.py
           node --check scripts/writer-lease.mjs
           node --check scripts/writer-lease-contract-test.mjs
           node --check scripts/check-workflows.js
+          node --check scripts/lib/cache-bust-workflow-policy.js
           node scripts/writer-lease-contract-test.mjs
           node scripts/check-workflows.js
           node scripts/run-actionlint.mjs -no-color \
