@@ -7,6 +7,11 @@
  * and around every keep-with-next pair. Marker PDFs prove pagination through
  * pdftotext; separate clean PDFs are emitted for raster and visual inspection
  * so diagnostic markers can never create false trailing pages.
+ *
+ * Note-bearing publication routes are derived from the generated NoteRegistry.
+ * Their canonical endnotes are verified in the same physical PDFs, and one
+ * real-PDF mutation proves semantic completeness fails independently of the
+ * pagination/raster geometry gates.
  */
 import { createServer } from 'node:http';
 import { readFile, stat, mkdir, writeFile } from 'node:fs/promises';
@@ -20,14 +25,90 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
 const OUT = join(ROOT, process.env.GB_PRINT_PAGINATION_ARTIFACT_DIR || 'reports/print-pagination-contract');
 const MARKERS = join(OUT, 'markers');
+const MUTATION = join(OUT, 'mutation');
+const NOTE_REGISTRY_PATH = join(DIST, 'data', 'note-registry.json');
 const MIME = { '.html':'text/html', '.css':'text/css', '.js':'text/javascript', '.svg':'image/svg+xml', '.webp':'image/webp', '.png':'image/png', '.json':'application/json', '.woff2':'font/woff2' };
-const ROUTES = [
+const BASE_ROUTES = [
   ['gill-part1', '/articles/dzhon-gill-chast-1-chelovek/'],
   ['gill-part2', '/articles/dzhon-gill-chast-2-uchenyi/'],
   ['heart-book', '/articles/novoe-serdce/'],
   ['baptist-series', '/baptisty-rossii/podpolnaya-pechat/'],
   ['single-article', '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/']
 ];
+
+function routeId(route) {
+  const slug = String(route || '')
+    .replace(/^\/+|\/+$/g, '')
+    .replace(/[^a-z0-9]+/gi, '-')
+    .replace(/^-+|-+$/g, '') || 'route';
+  return `note-${slug}`.slice(0, 96);
+}
+
+function normalizePublicationText(value) {
+  return String(value || '')
+    .normalize('NFKC')
+    .toLocaleLowerCase('ru-RU')
+    .replace(/\u00ad/g, '')
+    .replace(/([\p{L}\p{N}])[-‐‑‒–—]\s+([\p{L}\p{N}])/gu, '$1$2')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function publicationWords(value) {
+  const normalized = normalizePublicationText(value);
+  return normalized ? normalized.split(' ') : [];
+}
+
+function containsOrderedWords(haystack, needle, maxGap = 24) {
+  if (!needle.length || haystack.length < needle.length) return false;
+  for (let start = 0; start < haystack.length; start += 1) {
+    if (haystack[start] !== needle[0]) continue;
+    let cursor = start;
+    let matched = true;
+    for (let index = 1; index < needle.length; index += 1) {
+      let next = -1;
+      const limit = Math.min(haystack.length, cursor + maxGap + 2);
+      for (let probe = cursor + 1; probe < limit; probe += 1) {
+        if (haystack[probe] === needle[index]) { next = probe; break; }
+      }
+      if (next < 0) { matched = false; break; }
+      cursor = next;
+    }
+    if (matched) return true;
+  }
+  return false;
+}
+
+function missingPublicationNotes(pdfText, notes) {
+  const haystack = publicationWords(pdfText);
+  return notes.filter((note) => !containsOrderedWords(haystack, publicationWords(note.text)));
+}
+
+function selectMutationNote(notes) {
+  const normalized = notes.map((note) => normalizePublicationText(note.text));
+  return notes.find((note, index) => normalized[index]
+    && normalized.filter((value) => value === normalized[index]).length === 1) || notes[0] || null;
+}
+
+if (!existsSync(NOTE_REGISTRY_PATH)) {
+  throw new Error('dist/data/note-registry.json is missing; production-like build must project NoteRegistry before Print Paper');
+}
+const noteRegistry = JSON.parse(await readFile(NOTE_REGISTRY_PATH, 'utf8'));
+if (!(noteRegistry.routeCount > 0 && noteRegistry.noteCount > 0 && noteRegistry.routes && typeof noteRegistry.routes === 'object')) {
+  throw new Error('NoteRegistry authority is empty or malformed');
+}
+const routeMap = new Map(BASE_ROUTES.map(([id, url]) => [
+  url,
+  [id, url, Array.isArray(noteRegistry.routes[url]?.notes) ? noteRegistry.routes[url].notes : []],
+]));
+for (const [url, entry] of Object.entries(noteRegistry.routes)) {
+  const notes = Array.isArray(entry?.notes) ? entry.notes : [];
+  if (!notes.length) throw new Error(`NoteRegistry route ${url} has no notes`);
+  if (routeMap.has(url)) routeMap.get(url)[2] = notes;
+  else routeMap.set(url, [routeId(url), url, notes]);
+}
+const ROUTES = [...routeMap.values()];
 
 async function serve() {
   const server = createServer(async (req, res) => {
@@ -55,17 +136,74 @@ function pageMap(text) {
 
 await mkdir(OUT, { recursive: true });
 await mkdir(MARKERS, { recursive: true });
+await mkdir(MUTATION, { recursive: true });
 const { server, base } = await serve();
 const pinned = process.env.GB_PLAYWRIGHT_CHROMIUM || '/opt/pw-browsers/chromium';
 const browser = await chromium.launch(existsSync(pinned) ? { executablePath: pinned } : {});
-const report = { routes: [], failures: [] };
+const report = {
+  noteRegistry: { routeCount: noteRegistry.routeCount, noteCount: noteRegistry.noteCount },
+  routes: [],
+  mutationWitness: null,
+  failures: [],
+};
+let mutationWitnessDone = false;
 try {
   for (let routeIndex = 0; routeIndex < ROUTES.length; routeIndex += 1) {
-    const [id, url] = ROUTES[routeIndex];
+    const [id, url, routeNotes = []] = ROUTES[routeIndex];
     const context = await browser.newContext({ viewport: { width: 1240, height: 900 } });
     const page = await context.newPage();
     await page.route(/gospod-bog\.ru|mc\.yandex/, (r) => r.abort());
     await page.goto(base + url, { waitUntil: 'networkidle' });
+    if (routeNotes.length) {
+      await page.waitForFunction(
+        () => document.documentElement.hasAttribute('data-gb-reader-projection-ready'),
+        null,
+        { timeout: 4000 },
+      ).catch(() => {});
+    }
+    const noteDom = routeNotes.length ? await page.evaluate((expected) => {
+      const failures = [];
+      const labels = [];
+      let ttsExcluded = 0;
+      for (const note of expected) {
+        const marker = document.getElementById(note.refId)
+          || document.querySelector(`.fn-marker[data-note-id="${note.id}"]`);
+        const tip = document.getElementById(note.tipId);
+        const endnote = document.getElementById(note.endnoteId);
+        const label = marker?.getAttribute('aria-label') || '';
+        labels.push(label);
+        if (!marker) failures.push(`${note.id}: marker missing`);
+        if (!tip) failures.push(`${note.id}: tooltip target missing`);
+        if (!endnote) failures.push(`${note.id}: publication endnote missing`);
+        if (marker && marker.getAttribute('aria-controls') !== note.tipId) failures.push(`${note.id}: aria-controls drift`);
+        if (marker && marker.getAttribute('aria-describedby') !== note.endnoteId) failures.push(`${note.id}: aria-describedby drift`);
+        if (!label || /^Показать сноску$/iu.test(label)) failures.push(`${note.id}: indistinguishable accessible name`);
+        if (marker?.hasAttribute('data-no-speech') && tip?.hasAttribute('data-no-speech')) ttsExcluded += 1;
+      }
+      const section = document.querySelector('[data-note-registry-endnotes]');
+      return {
+        markerCount: document.querySelectorAll('.fn-marker[data-note-id]:not(.map-trigger)').length,
+        endnoteCount: document.querySelectorAll('[data-note-registry-endnotes] li[data-note-id]').length,
+        uniqueLabelCount: new Set(labels).size,
+        printPolicy: section?.getAttribute('data-print-policy') || '',
+        ttsExcluded,
+        failures: failures.slice(0, 20),
+      };
+    }, routeNotes.map((note) => ({
+      id: note.id,
+      refId: note.refId,
+      tipId: note.tipId,
+      endnoteId: note.endnoteId,
+    }))) : null;
+    if (noteDom) {
+      if (noteDom.markerCount !== routeNotes.length) report.failures.push(`${id}: NoteRegistry marker count ${noteDom.markerCount} != ${routeNotes.length}`);
+      if (noteDom.endnoteCount !== routeNotes.length) report.failures.push(`${id}: NoteRegistry endnote count ${noteDom.endnoteCount} != ${routeNotes.length}`);
+      if (noteDom.uniqueLabelCount !== routeNotes.length) report.failures.push(`${id}: footnote accessible names are not unique (${noteDom.uniqueLabelCount}/${routeNotes.length})`);
+      if (noteDom.printPolicy !== 'include') report.failures.push(`${id}: publication endnotes lack data-print-policy=include`);
+      if (noteDom.ttsExcluded !== routeNotes.length) report.failures.push(`${id}: TTS exclusion drift (${noteDom.ttsExcluded}/${routeNotes.length})`);
+      if (noteDom.failures.length) report.failures.push(`${id}: NoteRegistry relation failures: ${JSON.stringify(noteDom.failures)}`);
+    }
+
     await page.evaluate(() => {
       const root = document.querySelector('[data-reader-range], [data-reader-root] article.article-body, [data-gill-v16] article.article-body, article.article-body, article[data-pagefind-body], main article, article');
       if (!root) return;
@@ -76,49 +214,49 @@ try {
     });
     await page.waitForTimeout(120);
     await page.evaluate(() => {
-    for (const image of document.images) {
-      image.loading = 'eager';
-      image.fetchPriority = 'high';
-    }
-  });
-  await page.emulateMedia({ media: 'print' });
-  const imageReadiness = await page.evaluate(async () => {
-    if (document.fonts?.ready) await document.fonts.ready;
-    const localImages = [...document.images].filter((image) => {
-      const source = image.currentSrc || image.src || '';
-      if (!source) return false;
-      try { return new URL(source, location.href).origin === location.origin || source.startsWith('data:'); }
-      catch { return true; }
+      for (const image of document.images) {
+        image.loading = 'eager';
+        image.fetchPriority = 'high';
+      }
     });
-    const timeout = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-    await Promise.all(localImages.map(async (image) => {
-      if (!image.complete) {
-        await Promise.race([
-          new Promise((resolve) => {
-            image.addEventListener('load', resolve, { once: true });
-            image.addEventListener('error', resolve, { once: true });
-          }),
-          timeout(8000),
-        ]);
-      }
-      if (typeof image.decode === 'function') {
-        await Promise.race([image.decode().catch(() => {}), timeout(4000)]);
-      }
-    }));
-    const failures = localImages.filter((image) =>
-      !image.complete || ((image.currentSrc || image.src) && image.naturalWidth === 0)
-    ).map((image) => ({
-      src: image.currentSrc || image.src,
-      complete: image.complete,
-      naturalWidth: image.naturalWidth,
-      naturalHeight: image.naturalHeight,
-    }));
-    return { total: localImages.length, failures };
-  });
-  if (imageReadiness.failures.length) {
-    throw new Error(`PRINT IMAGE READINESS failed: ${JSON.stringify(imageReadiness)}`);
-  }
-  await page.waitForTimeout(120);
+    await page.emulateMedia({ media: 'print' });
+    const imageReadiness = await page.evaluate(async () => {
+      if (document.fonts?.ready) await document.fonts.ready;
+      const localImages = [...document.images].filter((image) => {
+        const source = image.currentSrc || image.src || '';
+        if (!source) return false;
+        try { return new URL(source, location.href).origin === location.origin || source.startsWith('data:'); }
+        catch { return true; }
+      });
+      const timeout = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+      await Promise.all(localImages.map(async (image) => {
+        if (!image.complete) {
+          await Promise.race([
+            new Promise((resolve) => {
+              image.addEventListener('load', resolve, { once: true });
+              image.addEventListener('error', resolve, { once: true });
+            }),
+            timeout(8000),
+          ]);
+        }
+        if (typeof image.decode === 'function') {
+          await Promise.race([image.decode().catch(() => {}), timeout(4000)]);
+        }
+      }));
+      const failures = localImages.filter((image) =>
+        !image.complete || ((image.currentSrc || image.src) && image.naturalWidth === 0)
+      ).map((image) => ({
+        src: image.currentSrc || image.src,
+        complete: image.complete,
+        naturalWidth: image.naturalWidth,
+        naturalHeight: image.naturalHeight,
+      }));
+      return { total: localImages.length, failures };
+    });
+    if (imageReadiness.failures.length) {
+      throw new Error(`PRINT IMAGE READINESS failed: ${JSON.stringify(imageReadiness)}`);
+    }
+    await page.waitForTimeout(120);
 
     const setup = await page.evaluate((routeIndex) => {
       const api = window.GBPrintPagination;
@@ -338,6 +476,23 @@ try {
     });
     if (badCards.length) report.failures.push(`${id}: reversible-card print flow is not atomic/single-face: ${JSON.stringify(badCards.slice(0, 4))}`);
 
+    const printNoteState = routeNotes.length ? await page.evaluate((expectedIds) => {
+      const failures = [];
+      for (const id of expectedIds) {
+        const item = document.querySelector(`[data-note-registry-endnotes] li[data-note-id="${id}"]`);
+        const style = item ? getComputedStyle(item) : null;
+        const rect = item?.getBoundingClientRect();
+        if (!item) failures.push(`${id}: endnote missing in print DOM`);
+        else if (!style || style.display === 'none' || style.visibility === 'hidden' || !rect || rect.width <= 8 || rect.height <= 4) {
+          failures.push(`${id}: endnote hidden in print media (${style?.display || 'missing'}/${style?.visibility || 'missing'})`);
+        }
+      }
+      return { visible: expectedIds.length - failures.length, total: expectedIds.length, failures: failures.slice(0, 20) };
+    }, routeNotes.map((note) => note.id)) : null;
+    if (printNoteState?.failures.length) {
+      report.failures.push(`${id}: physical print DOM lost publication notes: ${JSON.stringify(printNoteState.failures)}`);
+    }
+
     const markerPdf = join(MARKERS, `${id}.pdf`);
     const markerTxt = join(MARKERS, `${id}.txt`);
     await page.pdf({ path: markerPdf, format: 'A4', printBackground: true, preferCSSPageSize: true });
@@ -371,7 +526,51 @@ try {
       document.getElementById('gb-print-pagination-audit-markers')?.remove();
     });
     const cleanPdf = join(OUT, `${id}.pdf`);
+    const cleanTxt = join(OUT, `${id}.txt`);
     await page.pdf({ path: cleanPdf, format: 'A4', printBackground: true, preferCSSPageSize: true });
+    execFileSync('pdftotext', ['-layout', cleanPdf, cleanTxt]);
+    const cleanPdfText = await readFile(cleanTxt, 'utf8');
+    const missingNotes = missingPublicationNotes(cleanPdfText, routeNotes);
+    if (missingNotes.length) {
+      report.failures.push(`${id}: physical PDF missing ${missingNotes.length}/${routeNotes.length} publication note bodies: ${JSON.stringify(missingNotes.slice(0, 8).map((note) => note.id))}`);
+    }
+
+    if (routeNotes.length && !mutationWitnessDone) {
+      const mutationNote = selectMutationNote(routeNotes);
+      const mutationApplied = mutationNote ? await page.evaluate((noteId) => {
+        const item = document.querySelector(`[data-note-registry-endnotes] li[data-note-id="${noteId}"]`);
+        if (!item) return false;
+        item.dataset.gbNotePrintMutation = 'hidden';
+        item.style.setProperty('display', 'none', 'important');
+        return true;
+      }, mutationNote.id) : false;
+      if (!mutationApplied || !mutationNote) {
+        report.failures.push(`${id}: could not install publication-note mutation witness`);
+      } else {
+        const mutationPdf = join(MUTATION, `${id}-missing-note.pdf`);
+        const mutationTxt = join(MUTATION, `${id}-missing-note.txt`);
+        await page.pdf({ path: mutationPdf, format: 'A4', printBackground: true, preferCSSPageSize: true });
+        execFileSync('pdftotext', ['-layout', mutationPdf, mutationTxt]);
+        const mutationText = await readFile(mutationTxt, 'utf8');
+        const mutationMissing = missingPublicationNotes(mutationText, routeNotes);
+        const rejected = mutationMissing.some((note) => note.id === mutationNote.id);
+        report.mutationWitness = {
+          route: url,
+          noteId: mutationNote.id,
+          rejected,
+          missingNoteIds: mutationMissing.map((note) => note.id),
+          pdf: `mutation/${id}-missing-note.pdf`,
+        };
+        if (!rejected) report.failures.push(`${id}: physical note-removal mutation was not rejected`);
+        await page.evaluate((noteId) => {
+          const item = document.querySelector(`[data-note-registry-endnotes] li[data-note-id="${noteId}"]`);
+          if (!item) return;
+          item.style.removeProperty('display');
+          delete item.dataset.gbNotePrintMutation;
+        }, mutationNote.id);
+        mutationWitnessDone = true;
+      }
+    }
 
     report.routes.push({
       id, url,
@@ -381,6 +580,10 @@ try {
       printBranding: setup.printBranding,
       progressChrome: setup.progressChrome,
       flipCards: setup.flipCards,
+      noteCount: routeNotes.length,
+      noteDom,
+      printNoteState,
+      missingPublicationNoteIds: missingNotes.map((note) => note.id),
       markerPdf: `markers/${id}.pdf`,
       cleanPdf: `${id}.pdf`,
       atomicMissing: atomicMissing.slice(0, 12),
@@ -395,6 +598,7 @@ try {
   await new Promise((resolve) => server.close(resolve));
 }
 
+if (!mutationWitnessDone) report.failures.push('NoteRegistry mutation witness did not run');
 await writeFile(join(OUT, 'report.json'), JSON.stringify(report, null, 2));
 console.log(JSON.stringify(report, null, 2));
 if (report.failures.length) process.exitCode = 1;
