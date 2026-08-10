@@ -104,6 +104,24 @@ async function assertClosedSurfaceState(page, compact) {
   return state;
 }
 
+async function resetThroughVisibleUi(page, compact, label) {
+  const reset = page.locator('#atlasReset');
+  if (!compact) {
+    await reset.waitFor({ state: 'visible' });
+    await reset.click();
+    return assertSafeFocus(page, `${label}/desktop-reset`, (state) => state.id === 'atlasReset');
+  }
+
+  const trigger = page.locator('#atlasFilterTrigger');
+  await trigger.click();
+  await page.waitForFunction(() => document.getElementById('atlasSidebar')?.classList.contains('is-open'));
+  await reset.waitFor({ state: 'visible' });
+  await reset.click();
+  await page.locator('#atlasFilterClose').click();
+  await page.waitForFunction(() => !document.getElementById('atlasSidebar')?.classList.contains('is-open'));
+  return assertSafeFocus(page, `${label}/compact-reset-close`, (state) => state.id === 'atlasFilterTrigger');
+}
+
 async function runCase(browserName, browserType, baseUrl, width) {
   const browser = await browserType.launch({ headless: true });
   const context = await browser.newContext({ viewport: { width, height: HEIGHT } });
@@ -144,7 +162,7 @@ async function runCase(browserName, browserType, baseUrl, width) {
       result.steps.drawerEscape = await assertSafeFocus(page, `${browserName}/${width}/drawer-escape`, (state) => state.id === 'atlasFilterTrigger');
     }
 
-    await page.locator('#atlasReset').click();
+    result.steps.resetSetup = await resetThroughVisibleUi(page, compact, `${browserName}/${width}/reset-setup`);
     await activateFirstNode(page);
     await page.locator('#atlasDetailClose').focus();
     await page.locator('#atlasDetailClose').click();
@@ -181,7 +199,7 @@ async function runCase(browserName, browserType, baseUrl, width) {
     result.steps.history = await assertSafeFocus(page, `${browserName}/${width}/history`);
 
     if (width === 680 || width === 681) {
-      await page.locator('#atlasReset').click();
+      result.steps.resizeResetSetup = await resetThroughVisibleUi(page, compact, `${browserName}/${width}/resize-reset-setup`);
       const resizeNode = page.locator('.atlas-node:not(.is-filtered-out)[tabindex="0"]').first();
       await resizeNode.focus();
       await page.setViewportSize({ width: width === 680 ? 681 : 680, height: HEIGHT });
