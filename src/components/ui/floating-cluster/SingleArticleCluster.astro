@@ -160,14 +160,22 @@ const {
 
   /* Highlights/"Мои цитаты" docks itself into Hermenevtika's bottom action
      row by adding .hmbar-btn. highlights-runtime.css intentionally strips the
-     standalone 44px FAB box with a stronger ID selector, but width:auto/height:auto
-     then defeats .hmbar-btn's canonical 36x36 geometry. Reassert only the host
-     bar's existing size here with higher specificity; no new visual language. */
+     standalone 44px FAB box with a stronger ID selector, but two standalone
+     coordinates survive that docked state as well: base right:14px and the
+     fallback bottom:20px become RELATIVE offsets after the runtime's docked
+     rule changes position to relative. That is why the 36px control was still
+     shifted ~14px left / 20px upward after its size was repaired. Neutralize
+     only those standalone coordinates and reassert the host bar's canonical
+     36x36 geometry; no new placement or visual language is introduced. */
   #gb-hl-fab.gb-hl-fab--docked.hmbar-btn {
     width: 36px;
     height: 36px;
     min-width: 36px;
     flex: 0 0 36px;
     padding: 0;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
   }
 </style>
