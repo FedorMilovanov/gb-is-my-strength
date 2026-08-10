@@ -260,6 +260,14 @@ async function auditRoute(page, engine, origin, route) {
   await page.keyboard.press('Escape');
   const escaped = await assertClosed(page, engine, supportedViewport, route, 'Escape restores native hidden closed-state');
   check(engine, supportedViewport, route, 'Escape restores focus to the menu trigger', escaped.activeElementId === 'hMobileMenuBtn', escaped);
+
+  if (opened.variant === 'rich') {
+    await trigger.click();
+    await page.waitForTimeout(160);
+    await page.locator('#hMobileBackdrop').click({ position: { x: 5, y: 5 } });
+    const backdropClosed = await assertClosed(page, engine, supportedViewport, route, 'backdrop click restores native hidden closed-state');
+    check(engine, supportedViewport, route, 'backdrop click restores focus to the menu trigger', backdropClosed.activeElementId === 'hMobileMenuBtn', backdropClosed);
+  }
 }
 
 const { server, origin } = await startServer();
@@ -296,7 +304,7 @@ fs.writeFileSync(path.join(REPORTS, 'site-sections-menu-visual-contract.md'), [
   `- Browsers: Chromium + WebKit`,
   `- Mobile closed-state: always checked before viewport fallback`,
   `- Native no-CSS fail-safe: panel + backdrop on rich menus`,
-  `- Close semantics: hidden/inert + aria-expanded/aria-hidden + focus restore`,
+  `- Close semantics: hidden/inert + aria-expanded/aria-hidden + Escape/backdrop focus restore`,
   `- Evidence server path containment: traversal-rejecting`,
   `- Checks: ${report.passed}/${checks.length} PASS`,
   `- Failures: ${report.failed}`,
