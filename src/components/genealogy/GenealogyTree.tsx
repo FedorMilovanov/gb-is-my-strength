@@ -27,12 +27,12 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
   const [showGolden, setShowGolden] = useState(true);
   const [selected, setSelected] = useState<Person | null>(null);
   const [showSplit, setShowSplit] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(1);
+  const [detailLevel, setDetailLevel] = useState<DetailLevel>(2);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [tourIndex, setTourIndex] = useState(-1);
 
   // ── Layout (source of truth) ──
-  const { nodes: laidNodes, edges: laidEdges, goldenPath } = useMemo(
+  const { nodes: laidNodes, edges: laidEdges, goldenPath, worldHeight } = useMemo(
     () => buildLayout(persons, { showGolden, showLineage }), [persons, showGolden, showLineage],
   );
 
@@ -45,7 +45,6 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
   }, [persons]);
 
   // ── Semantic zoom ──
-  const detailLevel: DetailLevel = zoomLevel < 0.3 ? 0 : zoomLevel < 0.7 ? 1 : 2;
   const visibleNodeIds = useMemo(() => {
     if (detailLevel === 2) return null;
     const ids = new Set<string>();
@@ -58,6 +57,36 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
     }
     return ids;
   }, [detailLevel, persons, goldenPath]);
+
+  /*
+   * Canonical Fit View contract
+   * ---------------------------
+   * Fit View must target people that remain semantically visible at the zoom it
+   * produces. Fitting the full 143-node envelope and then hiding non-key nodes
+   * at semantic zoom can center the camera over an empty region even though the
+   * graph itself is mounted. The canonical fit cohort therefore follows the
+   * currently laid-out golden lineage, with key/cosmic/disputed landmarks as a
+   * filter-safe fallback. This is still ReactFlow Fit View — no hardcoded center
+   * and no dataset reduction — and the same options drive initial and explicit
+   * Fit View.
+   */
+  const canonicalFitNodes = useMemo(() => {
+    const laidIds = new Set(laidNodes.map(n => n.id));
+    const golden = laidNodes.filter(n => goldenPath.has(n.id));
+    if (golden.length > 0) return golden.map(n => ({ id: n.id }));
+
+    const semantic = persons
+      .filter(p => laidIds.has(p.id) && ((p.role ? KEY_ROLES.has(p.role) : false) || COSMIC_ANCHORS.has(p.id) || Boolean(p.disputed)))
+      .map(p => ({ id: p.id }));
+    return semantic.length > 0 ? semantic : laidNodes.map(n => ({ id: n.id }));
+  }, [laidNodes, goldenPath, persons]);
+
+  const canonicalFitOptions = useMemo(() => ({
+    padding: 0.15,
+    minZoom: 0.55,
+    maxZoom: 1.5,
+    nodes: canonicalFitNodes,
+  }), [canonicalFitNodes]);
 
   // ── Focus lineage: when activeId is set, compute ancestor+descendant set ──
   const focusLineageIds = useMemo(() => {
@@ -90,15 +119,29 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
       const isHighlighted = n.id === searchMatch?.id;
       const isInFocus = focusLineageIds?.has(n.id) ?? false;
       const isDimmed = focusLineageIds ? !isInFocus : false;
+      const semanticHidden = visibleNodeIds ? !visibleNodeIds.has(n.id) : false;
       return {
         ...n,
-        hidden: visibleNodeIds ? !visibleNodeIds.has(n.id) : false,
+        // Keep every ReactFlow wrapper mounted and measured. Semantic zoom is
+        // presentation-only inside the stable node box, avoiding geometry
+        // churn during fit while preserving all 143 semantic DOM nodes.
+        hidden: false,
         data: {
           ...d,
           highlighted: isHighlighted,
           dimmed: isDimmed,
           focused: focusLineageIds ? isInFocus : false,
-          label: <PersonCardContent data={{ ...d, highlighted: isHighlighted, dimmed: isDimmed, focused: focusLineageIds ? isInFocus : false }} />,
+          label: (
+            <div
+              aria-hidden={semanticHidden || undefined}
+              style={{
+                visibility: semanticHidden ? 'hidden' : 'visible',
+                pointerEvents: semanticHidden ? 'none' : 'auto',
+              }}
+            >
+              <PersonCardContent data={{ ...d, highlighted: isHighlighted, dimmed: isDimmed, focused: focusLineageIds ? isInFocus : false }} />
+            </div>
+          ),
         },
       };
     });
@@ -203,7 +246,7 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
   const tourNext = useCallback(() => setTourIndex(i => { const n = Math.min(i + 1, goldenArray.length - 1); if (goldenArray[n]) focusPerson(goldenArray[n], 1.0); return n; }), [goldenArray, focusPerson]);
   const tourPrev = useCallback(() => setTourIndex(i => { const n = Math.max(i - 1, 0); if (goldenArray[n]) focusPerson(goldenArray[n], 1.0); return n; }), [goldenArray, focusPerson]);
 
-  const visibleCount = displayNodes.filter(n => !n.hidden).length;
+  const visibleCount = visibleNodeIds ? visibleNodeIds.size : displayNodes.length;
   const detailLabel = detailLevel === 0 ? 'Обзор' : detailLevel === 1 ? 'Ключевые' : 'Все детали';
   const detailHint = detailLevel === 0 ? 'приблизьте для деталей' : detailLevel === 1 ? 'ещё ближе — все имена' : `${visibleCount} из ${persons.length}`;
 
@@ -231,7 +274,7 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
       </div>
 
       {eras && (
-        <div style={{ position: 'absolute', bottom: '12px', left: '14px', zIndex: 11, background: 'rgba(13,10,6,0.82)', backdropFilter: 'blur(10px)', borderRadius: '10px', padding: '10px 12px', border: '1px solid rgba(212,168,87,0.12)', display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '180px' }}>
+        <div style={{ position: 'absolute', bottom: '12px', left: '14px', zIndex: 11, background: 'rgba(13,10,6,0.82)', backdropFilter: 'blur(10px)', borderRadius: '10px', padding: '10px 12px', border: '1px solid rgba(212,168,87,0.12)', display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '180px', pointerEvents: 'none' }}>
           <div style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(200,184,154,0.35)', marginBottom: '2px' }}>Эпохи</div>
           {eras.map(e => <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '8px', height: '8px', borderRadius: '2px', background: e.color, flexShrink: 0 }} /><span style={{ color: 'rgba(200,184,154,0.55)', fontSize: '10.5px' }}>{e.name}</span></div>)}
         </div>
@@ -250,7 +293,7 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
         </div>
       )}
 
-      {eras && amMax > amMin && <TimelineAxis eras={eras} amMin={amMin} amMax={amMax} height={4200} />}
+      {eras && amMax > amMin && <TimelineAxis eras={eras} amMin={amMin} amMax={amMax} height={worldHeight} />}
 
       <ReactFlow
         nodes={displayNodes}
@@ -258,9 +301,12 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
         onInit={(inst) => { rfInstance.current = inst; }}
-        onViewportChange={(vp: { zoom: number }) => setZoomLevel(vp.zoom)}
+        onMoveEnd={(_event, { zoom }) => {
+          const nextLevel: DetailLevel = zoom < 0.3 ? 0 : zoom < 0.7 ? 1 : 2;
+          setDetailLevel(current => current === nextLevel ? current : nextLevel);
+        }}
         fitView
-        fitViewOptions={{ padding: 0.15, minZoom: 0.55, maxZoom: 1.5 }}
+        fitViewOptions={canonicalFitOptions}
         minZoom={0.5}
         maxZoom={3}
         nodesDraggable={false}
@@ -270,7 +316,7 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
         style={{ background: 'transparent' }}
       >
         <Background color="rgba(212,168,87,0.05)" gap={36} size={1} />
-        <Controls style={{ background: 'rgba(13,10,6,0.85)', borderColor: 'rgba(212,168,87,0.2)', borderRadius: '8px' }} showInteractive={false} />
+        <Controls fitViewOptions={canonicalFitOptions} style={{ background: 'rgba(13,10,6,0.85)', borderColor: 'rgba(212,168,87,0.2)', borderRadius: '8px' }} showInteractive={false} />
         <MiniMap style={{ background: 'rgba(13,10,6,0.85)', border: '1px solid rgba(212,168,87,0.15)', borderRadius: '8px' }} nodeColor={(n: Node) => getLineStyle((n.data as Record<string, string>)?.lineage ?? 'neutral').fill} nodeStrokeWidth={3} maskColor="rgba(0,0,0,0.65)" pannable zoomable />
       </ReactFlow>
 

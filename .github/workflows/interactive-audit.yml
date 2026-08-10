@@ -10,11 +10,16 @@ on:
       - 'scripts/home-browser-contract.mjs'
       - 'scripts/home-responsive-evidence-contract.mjs'
       - 'scripts/home-browser-lifecycle-contract.mjs'
+      - 'scripts/genealogy-browser-contract.mjs'
       - 'scripts/a13-mobile-webkit-a11y-browser-test.mjs'
       - 'data/a13-mobile-webkit-a11y-scene-matrix.json'
+      - 'data/genealogy/**'
       - 'research/A13_MOBILE_WEBKIT_A11Y_2026-08-01.md'
       - 'src/pages/index.astro'
+      - 'src/pages/rodosloviye/**'
       - 'src/components/home/**'
+      - 'src/components/genealogy/**'
+      - 'src/components/rodosloviye/**'
       - 'src/components/article-pilots/**'
       - 'src/components/reader-platform/**'
       - 'src/layouts/**'
@@ -34,11 +39,16 @@ on:
       - 'scripts/home-browser-contract.mjs'
       - 'scripts/home-responsive-evidence-contract.mjs'
       - 'scripts/home-browser-lifecycle-contract.mjs'
+      - 'scripts/genealogy-browser-contract.mjs'
       - 'scripts/a13-mobile-webkit-a11y-browser-test.mjs'
       - 'data/a13-mobile-webkit-a11y-scene-matrix.json'
+      - 'data/genealogy/**'
       - 'research/A13_MOBILE_WEBKIT_A11Y_2026-08-01.md'
       - 'src/pages/index.astro'
+      - 'src/pages/rodosloviye/**'
       - 'src/components/home/**'
+      - 'src/components/genealogy/**'
+      - 'src/components/rodosloviye/**'
       - 'src/components/article-pilots/**'
       - 'src/components/reader-platform/**'
       - 'src/layouts/**'
@@ -93,6 +103,11 @@ jobs:
       - name: Run homepage interaction contract
         run: node scripts/home-browser-contract.mjs
 
+      - name: Run genealogy Chromium WebKit contract
+        env:
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/genealogy-browser-contract.mjs
+
       - name: Run real headed homepage lifecycle contract
         run: xvfb-run -a node scripts/home-browser-lifecycle-contract.mjs
 
@@ -101,7 +116,7 @@ jobs:
           SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/a13-mobile-webkit-a11y-browser-test.mjs
 
-      - name: Upload homepage and A13 browser evidence
+      - name: Upload homepage, genealogy and A13 browser evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -109,6 +124,7 @@ jobs:
           path: |
             reports/home-browser-contract
             reports/home-browser-lifecycle-contract
+            reports/genealogy-browser-contract
             reports/a13-mobile-webkit-a11y
           if-no-files-found: error
           retention-days: 14
@@ -139,7 +155,7 @@ jobs:
 
           run=false
           reason=unrelated-change
-          runtime_pattern='^(\.github/workflows/interactive-audit\.yml|scripts/interactive-audit\.js|scripts/interactive-audit-runner\.js|scripts/home-design-audit-pro\.mjs|scripts/home-browser-contract\.mjs|scripts/home-responsive-evidence-contract\.mjs|scripts/home-browser-lifecycle-contract\.mjs|scripts/a13-mobile-webkit-a11y-browser-test\.mjs|data/a13-mobile-webkit-a11y-scene-matrix\.json|research/A13_MOBILE_WEBKIT_A11Y_2026-08-01\.md|src/pages/index\.astro|src/components/home/|src/components/article-pilots/|src/components/reader-platform/|src/layouts/|src/runtime/|src/styles/|css/|js/|package\.json|package-lock\.json)'
+          runtime_pattern='^(\.github/workflows/interactive-audit\.yml|scripts/interactive-audit\.js|scripts/interactive-audit-runner\.js|scripts/home-design-audit-pro\.mjs|scripts/home-browser-contract\.mjs|scripts/home-responsive-evidence-contract\.mjs|scripts/home-browser-lifecycle-contract\.mjs|scripts/genealogy-browser-contract\.mjs|scripts/a13-mobile-webkit-a11y-browser-test\.mjs|data/a13-mobile-webkit-a11y-scene-matrix\.json|data/genealogy/|research/A13_MOBILE_WEBKIT_A11Y_2026-08-01\.md|src/pages/index\.astro|src/pages/rodosloviye/|src/components/home/|src/components/genealogy/|src/components/rodosloviye/|src/components/article-pilots/|src/components/reader-platform/|src/layouts/|src/runtime/|src/styles/|css/|js/|package\.json|package-lock\.json)'
 
           case "$EVENT_NAME" in
             schedule|workflow_dispatch)
