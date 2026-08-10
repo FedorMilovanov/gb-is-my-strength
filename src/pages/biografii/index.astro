@@ -11,6 +11,7 @@ import { mobileChromeFor } from '@/components/article-pilots/_shared/mobileChrom
 // Мобильная обвязка выбирается registry (движок «page»: Back·Home·Поиск сверху).
 const mobileChrome = mobileChromeFor('/biografii/');
 import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
+import SiteSectionsMenu from '@/components/article-pilots/_shared/SiteSectionsMenu.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru" class="">
@@ -60,15 +61,7 @@ import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreference
       <MobileChromePage backHref={mobileChrome.backHref ?? '/'} homeHref="../" />
     )}
 
-    <div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
-
-    <div class="h-mobile-nav" id="hMobileNav" aria-hidden="true">
-      <a href="../#publikacii" data-close-nav>Публикации</a>
-      <a href="../#razbor" data-close-nav>Разбор заблуждений</a>
-      <a href="./" data-close-nav aria-current="page">Биографии</a>
-      <a href="../articles/" data-close-nav>Все статьи</a>
-      <a href="../about/" data-close-nav>О проекте</a>
-    </div>
+    <SiteSectionsMenu variant="plain" current="biografii" />
 
     <div class="home-v20 biografii-landing">
       <div class="home-content">

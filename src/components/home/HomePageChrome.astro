@@ -1,4 +1,6 @@
 ---
+import SiteSectionsMenuRuntime from '@/components/article-pilots/_shared/SiteSectionsMenuRuntime.astro';
+
 /**
  * HomePageChrome.astro — native body chrome + runtime shell for /.
  */
@@ -74,7 +76,7 @@
   </div>
 </nav>
 
-<div class="h-mobile-nav" id="hMobileNav" role="dialog" aria-modal="true" aria-labelledby="hMobileNavTitle" aria-hidden="true">
+<div class="h-mobile-nav" id="hMobileNav" role="dialog" aria-modal="true" aria-labelledby="hMobileNavTitle" aria-hidden="true" inert data-gb-site-menu-runtime="canonical">
   <div class="h-mobile-nav__head">
     <p id="hMobileNavTitle">Библиотека</p>
     <div class="h-mobile-nav__head-actions">
@@ -107,6 +109,7 @@
 </div>
 
 <div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
+<SiteSectionsMenuRuntime />
 
 <div class="home-v20">
   <slot />
@@ -269,7 +272,7 @@ window.SITE_CONFIG = {
 </script>
 <script is:inline src="js/site-utils.js?v=661c6cc1" defer></script>
 <script is:inline src="js/scroll-perf.js?v=454d6f7b" defer></script>
-<script is:inline src="js/site.js?v=8009e039" defer></script>
+<script is:inline src="js/site.js?v=c6b5ccf7" defer></script>
 <script is:inline src="js/enhancements.js?v=1b5392b1" defer></script>
 
 <script type="text/javascript" is:inline>

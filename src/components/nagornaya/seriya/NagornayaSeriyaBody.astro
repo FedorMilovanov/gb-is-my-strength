@@ -6,6 +6,7 @@
  * wrapper and its closing tags in one component prevents Astro from auto-closing
  * the wrapper before <main>, which was the source of the visual height diff.
  */
+import SiteSectionsMenu from '@/components/article-pilots/_shared/SiteSectionsMenu.astro';
 ---
 <a href="#main-content" class="skip-link">Перейти к содержимому</a>
 
@@ -44,16 +45,7 @@
   </div>
 </nav>
 
-<!-- Mobile nav backdrop -->
-<div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
-
-<div class="h-mobile-nav" id="hMobileNav" aria-hidden="true">
-  <a href="../../#publikacii" data-close-nav>Публикации</a>
-  <a href="../../#razbor" data-close-nav>Разбор заблуждений</a>
-  <a href="../../biografii/" data-close-nav>Биографии</a>
-  <a href="../../articles/" data-close-nav>Все статьи</a>
-  <a href="../../about/" data-close-nav>О проекте</a>
-</div>
+<SiteSectionsMenu variant="plain" />
 
 <div class="home-v20">
   <div class="home-content">
@@ -316,8 +308,8 @@
 
 <script defer src="../../js/site-utils.js?v=661c6cc1" is:inline></script>
     <script defer src="../../js/scroll-perf.js?v=454d6f7b" is:inline></script>
-    <script src="../../js/site.js?v=8009e039" defer is:inline></script>
-<!-- home infrastructure handled by js/site.js?v=8009e039 module 35 -->
+    <script src="../../js/site.js?v=c6b5ccf7" defer is:inline></script>
+<!-- home infrastructure handled by js/site.js?v=c6b5ccf7 module 35 -->
 
 <script src="../../js/sw-register.js?v=3fbabcf1" defer is:inline></script>
 <script is:inline>!function(){if(window.__gbSearchLazyBound)return;window.__gbSearchLazyBound=1;var src="../../js/search.js?v=027c3f4f";function load(open){if(window.GBSearch&&window.GBSearch.open&&window.GBSearch.__ready){open&&window.GBSearch.open();return}if(open)window.__gbSearchOpenAfterLoad=true;if(window.__gbSearchLoading)return;window.__gbSearchLoading=true;window.__gbSearchBootRequested=true;var s=document.createElement("script");s.defer=true;s.src=src;s.onload=function(){window.__gbSearchLoading=false;if(open&&window.GBSearch&&window.GBSearch.open)window.GBSearch.open()};s.onerror=function(){window.__gbSearchLoading=false};document.head.appendChild(s)}function click(e){var sel="#gbSearchBtn,[data-gbs2-search],["+"data-fc-"+"action='search'],.gb-nav-search-icon,.gb-search-btn",t=e.target&&e.target.closest&&e.target.closest(sel);if(t){e.preventDefault();load(true)}}document.addEventListener("click",click,true);window.addEventListener("gb:openSearch",function(){load(true)})}();</script>

@@ -27,6 +27,7 @@
  * scripts/cache-bust.js so legacy and dist share identical ?v= values.
  */
 import { assetUrl } from '@/lib/asset-version';
+import SiteSectionsMenu from '@/components/article-pilots/_shared/SiteSectionsMenu.astro';
 ---
 <a href="#main-content" class="skip-link">Перейти к содержимому</a>
 
@@ -65,16 +66,7 @@ import { assetUrl } from '@/lib/asset-version';
   </div>
 </nav>
 
-{/* Mobile nav backdrop */}
-<div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
-
-<div class="h-mobile-nav" id="hMobileNav" aria-hidden="true">
-  <a href="../#publikacii" data-close-nav>Публикации</a>
-  <a href="../#razbor" data-close-nav>Разбор заблуждений</a>
-  <a href="../biografii/" data-close-nav>Биографии</a>
-  <a href="../articles/" data-close-nav>Все статьи</a>
-  <a href="../about/" data-close-nav>О проекте</a>
-</div>
+<SiteSectionsMenu variant="plain" />
 
 <div class="home-v20">
   <div class="home-content">

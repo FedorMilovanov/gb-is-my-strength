@@ -33,6 +33,46 @@ assert.ok(articleRoutes.length > 0, 'public authority must expose standalone rea
 assert.ok(flatSeries, 'public authority must expose a flat reading series representative');
 assert.ok(bookSeries, 'public authority must expose a book reading series representative');
 
+function distHtmlPath(route) {
+  if (route === '/') return path.join(DIST, 'index.html');
+  return path.join(DIST, route.replace(/^\/+|\/+$/g, ''), 'index.html');
+}
+
+const menuEntries = registry.entries.filter((entry) => {
+  if (entry.status !== 'production-dist') return false;
+  const file = distHtmlPath(entry.route);
+  if (!fs.existsSync(file)) return false;
+  const html = fs.readFileSync(file, 'utf8');
+  return html.includes('id="hMobileMenuBtn"') && html.includes('id="hMobileNav"');
+});
+const menuRoutes = menuEntries.map((entry) => entry.route);
+assert.ok(menuRoutes.length > 0, 'public authority must expose site-menu routes');
+for (const entry of menuEntries) {
+  const html = fs.readFileSync(distHtmlPath(entry.route), 'utf8');
+  const hasNoJsFallback = entry.route === '/'
+    ? html.includes('class="h-nojs-nav"')
+    : html.includes('data-gb-site-menu-nojs');
+  assert.ok(hasNoJsFallback, `${entry.route}: site menu has no truthful no-JS fallback`);
+}
+
+const longLockRoutes = new Set([
+  '/', '/articles/', '/biografii/', '/hard-texts/', '/pastor-series/',
+  articleRoutes[0], '/articles/dzhon-gill-chast-1-chelovek/', flatSeries.route, bookSeries.route,
+].filter(Boolean));
+const screenshotRoutes = new Map([
+  ['/', 'home'],
+  ['/articles/', 'articles-landing'],
+  ['/biografii/', 'biografii-landing'],
+  ['/hard-texts/', 'hard-texts-landing'],
+  ['/pastor-series/', 'pastor-series-landing'],
+  ['/nagornaya/seriya/', 'nagornaya-series-landing'],
+  ['/baptisty-rossii/', 'baptisty-landing'],
+  ['/articles/dzhon-gill-chast-1-chelovek/', 'gill-reader'],
+  [articleRoutes[0], 'standalone-reader'],
+  [flatSeries.route, 'flat-series-reader'],
+  [bookSeries.route, 'book-series-reader'],
+].filter(([route]) => Boolean(route)));
+
 function startServer() {
   return new Promise((resolve) => {
     const server = http.createServer((req, res) => {
@@ -73,6 +113,108 @@ async function relationAudit(page) {
     }
     return missing;
   });
+}
+
+async function menuSnapshot(page) {
+  return page.evaluate(() => {
+    const trigger = document.getElementById('hMobileMenuBtn');
+    const panel = document.getElementById('hMobileNav');
+    const html = document.documentElement;
+    const body = document.body;
+    const searchOpen = Boolean(
+      document.querySelector('.cp-backdrop.is-open, .cp-panel[aria-hidden="false"], #gbCommandPalette.is-open, #gbCommandPalette[aria-hidden="false"]')
+    );
+    return {
+      owner: trigger?.getAttribute('data-gb-site-menu-owner') || null,
+      controls: trigger?.getAttribute('aria-controls') || null,
+      expanded: trigger?.getAttribute('aria-expanded') || null,
+      label: trigger?.getAttribute('aria-label') || null,
+      panelHidden: panel?.getAttribute('aria-hidden') || null,
+      panelOpen: Boolean(panel?.classList.contains('open')),
+      panelInert: Boolean(panel?.hasAttribute('inert') || panel?.inert),
+      focusInside: Boolean(panel?.contains(document.activeElement)),
+      focusReturned: document.activeElement === trigger,
+      overlayTop: html.getAttribute('data-overlay-top'),
+      overlayCount: html.getAttribute('data-overlay-count'),
+      scrollLocked: html.getAttribute('data-scroll-locked') === '1'
+        && body.style.position === 'fixed'
+        && body.style.overflow === 'hidden',
+      searchOpen,
+    };
+  });
+}
+
+async function auditSiteMenuRoute(page, engine, origin, entry) {
+  const route = entry.route;
+  await page.setViewportSize(MOBILE);
+  await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
+  await waitForReader(page);
+
+  const trigger = page.locator('#hMobileMenuBtn');
+  let viewport = 'mobile';
+  if (!(await trigger.isVisible().catch(() => false))) {
+    await page.setViewportSize(DESKTOP);
+    await page.waitForTimeout(100);
+    viewport = 'desktop';
+  }
+  check(engine, viewport, route, 'site-menu trigger visible in a supported viewport', await trigger.isVisible().catch(() => false));
+
+  const closedBefore = await menuSnapshot(page);
+  check(engine, viewport, route, 'site-menu uses canonical shared runtime owner', closedBefore.owner === 'canonical-runtime', closedBefore);
+  check(engine, viewport, route, 'site-menu controls canonical panel', closedBefore.controls === 'hMobileNav', closedBefore);
+  check(engine, viewport, route, 'site-menu starts closed and Search stays separate', closedBefore.expanded === 'false' && closedBefore.panelHidden === 'true' && !closedBefore.panelOpen && !closedBefore.searchOpen, closedBefore);
+
+  await trigger.focus();
+  await trigger.click();
+  await page.waitForTimeout(150);
+  const opened = await menuSnapshot(page);
+  check(engine, viewport, route, 'site-menu opens exact sections panel', opened.expanded === 'true' && opened.panelHidden !== 'true' && opened.panelOpen && !opened.panelInert, opened);
+  check(engine, viewport, route, 'site-menu enters canonical overlay stack and locks scroll', opened.overlayTop === 'site-sections-menu' && opened.scrollLocked, opened);
+  check(engine, viewport, route, 'site-menu moves focus into panel', opened.focusInside, opened);
+  check(engine, viewport, route, 'hamburger never opens Search', !opened.searchOpen, opened);
+
+  if (engine === 'chromium' && screenshotRoutes.has(route)) {
+    const safe = screenshotRoutes.get(route);
+    await page.screenshot({
+      path: path.join(REPORTS, `reader-controls-a11y-menu-${safe}.png`),
+      fullPage: false,
+    });
+  }
+
+  if (longLockRoutes.has(route)) {
+    await page.waitForTimeout(3350);
+    const held = await menuSnapshot(page);
+    check(engine, viewport, route, 'site-menu keeps lock beyond emergency cycle', held.panelOpen && held.expanded === 'true' && held.overlayTop === 'site-sections-menu' && held.scrollLocked, held);
+  }
+
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(150);
+  const closed = await menuSnapshot(page);
+  check(engine, viewport, route, 'Escape closes menu, unlocks and restores opener focus', closed.expanded === 'false' && closed.panelHidden === 'true' && !closed.panelOpen && closed.panelInert && !closed.scrollLocked && closed.focusReturned, closed);
+}
+
+async function auditNoJsFallback(browser, engine, origin, routes) {
+  const context = await browser.newContext({ viewport: MOBILE, javaScriptEnabled: false, serviceWorkers: 'block' });
+  try {
+    const page = await context.newPage();
+    for (const route of routes) {
+      await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
+      const state = await page.evaluate(() => {
+        const fallback = document.querySelector('[data-gb-site-menu-nojs], .h-nojs-nav');
+        if (fallback instanceof HTMLDetailsElement) fallback.open = true;
+        const links = fallback ? Array.from(fallback.querySelectorAll('a[href]')) : [];
+        const visible = (node) => {
+          if (!node) return false;
+          const style = getComputedStyle(node); const rect = node.getBoundingClientRect();
+          return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+        };
+        return { exists: Boolean(fallback), visible: visible(fallback), links: links.length, visibleLinks: links.filter(visible).length };
+      });
+      check(engine, 'mobile-nojs', route, 'primary navigation survives without JavaScript', state.exists && state.visible && state.links >= 5 && state.visibleLinks >= 5, state);
+    }
+  } finally {
+    await context.close();
+  }
 }
 
 async function auditStandaloneDesktop(page, engine, origin, route) {
@@ -211,6 +353,16 @@ try {
   for (const [engine, launcher] of [['chromium', chromium], ['webkit', webkit]]) {
     const browser = await launcher.launch({ headless: true });
     try {
+      const menuContext = await browser.newContext({ viewport: MOBILE, serviceWorkers: 'block' });
+      const menuPage = await menuContext.newPage();
+      for (const entry of menuEntries) await auditSiteMenuRoute(menuPage, engine, origin, entry);
+      await menuContext.close();
+
+      await auditNoJsFallback(browser, engine, origin, [
+        '/', '/articles/', '/biografii/', '/hard-texts/', '/pastor-series/',
+        articleRoutes[0], '/articles/dzhon-gill-chast-1-chelovek/', flatSeries.route, bookSeries.route,
+      ].filter((route, index, all) => route && menuRoutes.includes(route) && all.indexOf(route) === index));
+
       const desktop = await browser.newContext({ viewport: DESKTOP, serviceWorkers: 'block' });
       const desktopPage = await desktop.newPage();
       for (const route of articleRoutes) await auditStandaloneDesktop(desktopPage, engine, origin, route);
@@ -238,6 +390,8 @@ const report = {
   articleRoutes,
   flatSeries: flatSeries.route,
   bookSeries: bookSeries.route,
+  menuRoutes,
+  menuRouteCount: menuRoutes.length,
   checks,
   passed: checks.filter((item) => item.pass).length,
   failed: checks.filter((item) => !item.pass).length,
@@ -250,6 +404,8 @@ fs.writeFileSync(path.join(REPORTS, 'reader-controls-residual-browser-contract.m
   `- Standalone reading routes: ${articleRoutes.length}`,
   `- Flat series representative: ${flatSeries.route}`,
   `- Book series representative: ${bookSeries.route}`,
+  `- Canonical site-menu routes: ${report.menuRouteCount}`,
+  `- Site-menu authority: SiteSectionsMenuRuntime -> OverlayRuntime`,
   `- Checks: ${report.passed}/${checks.length} PASS`,
   `- Failures: ${report.failed}`,
 ].join('\n') + '\n');

@@ -6,6 +6,7 @@
  * string-fragment transport. The semantic <main> is provided
  * by the slot (PastorSeriesMain).
  */
+import SiteSectionsMenu from '@/components/article-pilots/_shared/SiteSectionsMenu.astro';
 ---
 <a href="#main-content" class="skip-link">Перейти к содержимому</a>
 
@@ -44,16 +45,7 @@
   </div>
 </nav>
 
-<!-- Mobile nav backdrop -->
-<div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
-
-<div class="h-mobile-nav" id="hMobileNav" aria-hidden="true">
-  <a href="../#publikacii" data-close-nav>Публикации</a>
-  <a href="../#razbor" data-close-nav>Разбор заблуждений</a>
-  <a href="../biografii/" data-close-nav>Биографии</a>
-  <a href="../articles/" data-close-nav>Все статьи</a>
-  <a href="../about/" data-close-nav>О проекте</a>
-</div>
+<SiteSectionsMenu variant="plain" />
 
 <div class="home-v20">
   <div class="home-content">
@@ -164,8 +156,8 @@
 
 <script is:inline defer src="../js/site-utils.js?v=661c6cc1"></script>
     <script is:inline defer src="../js/scroll-perf.js?v=454d6f7b"></script>
-    <script is:inline src="../js/site.js?v=8009e039" defer></script>
-<!-- home infrastructure handled by js/site.js?v=8009e039 module 35 -->
+    <script is:inline src="../js/site.js?v=c6b5ccf7" defer></script>
+<!-- home infrastructure handled by js/site.js?v=c6b5ccf7 module 35 -->
 
 <script is:inline src="../js/highlights.js?v=25484760" defer></script>
 <script is:inline src="../js/enhancements.js?v=1b5392b1" defer></script>
