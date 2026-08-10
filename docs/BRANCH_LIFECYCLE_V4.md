@@ -93,6 +93,8 @@ The hygiene report emits **preliminary review queues**, not final disposition. F
 
 ## 7. Successor rule
 
+Machine writer-lease retirement is narrower than branch disposition: retiring a Writer Lease only ends mutation authority. It never proves a branch safe to close, rewrite or delete; the classifications below remain authoritative.
+
 A successor may replace an older lane only when the record identifies:
 
 ```md
@@ -105,7 +107,7 @@ Preserved as evidence:
 Final predecessor disposition:
 ```
 
-Do not close an actively used predecessor until the successor is real and the owner accepts the replacement boundary.
+Do not close an actively used predecessor until the successor is real and the owner accepts the replacement boundary. When the lane has an active Writer Lease v1, the same explicit handoff rotates the opaque owner token, increments generation by exactly one and binds the successor acquisition SHA to the exact handoff head; there is no timestamp-based takeover.
 
 ## 8. Decomposition signals
 

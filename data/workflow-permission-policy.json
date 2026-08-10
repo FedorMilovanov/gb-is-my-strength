@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "Fail-closed registry for every GitHub Actions job with an effective write permission. Unregistered writes and mutable action refs are forbidden.",
+  "description": "Fail-closed registry for every GitHub Actions write capability. Branch writers require an active machine-distinguishable writer lease and exact-head CAS; unregistered writes and mutable action refs are forbidden.",
   "workflows": {
     ".github/workflows/deploy.yml": {
       "jobs": {
@@ -124,14 +124,15 @@
       "jobs": {
         "placement-autofix": {
           "permissions": {
-            "contents": "write"
+            "contents": "write",
+            "pull-requests": "read"
           },
           "purpose": "Apply deterministic glossary, tooltip, and asset-revision normalization to an explicitly labelled same-repository pull request",
           "allowedEvents": [
             "pull_request"
           ],
           "repositoryBoundary": "same-repository pull request only",
-          "branchBoundary": "exact pull-request head branch carrying the autofix label",
+          "branchBoundary": "immutable queued PR head plus active owner-token/generation lease; final push is CAS-bound to the same expected head",
           "mutationTargets": [
             "pull-request source branch glossary and tooltip normalization"
           ],
@@ -139,7 +140,12 @@
           "requiredMarkers": [
             "contains(github.event.pull_request.labels.*.name, 'autofix')",
             "github.event.pull_request.head.repo.full_name == github.repository",
-            "ref: ${{ github.event.pull_request.head.ref }}"
+            "ref: ${{ github.event.pull_request.head.sha }}",
+            "node scripts/writer-lease.mjs snapshot",
+            "node scripts/writer-lease.mjs assert-live --phase=pre-mutation",
+            "node scripts/writer-lease.mjs assert-live --phase=pre-commit",
+            "node scripts/writer-lease.mjs assert-live --phase=pre-push",
+            "--force-with-lease=\"refs/heads/${HEAD_REF}:${EXPECTED_HEAD}\""
           ]
         }
       }
@@ -148,14 +154,15 @@
       "jobs": {
         "headline-autofix": {
           "permissions": {
-            "contents": "write"
+            "contents": "write",
+            "pull-requests": "read"
           },
           "purpose": "Normalize registered article document titles to their canonical social and structured-data headline on an explicitly labelled same-repository pull request",
           "allowedEvents": [
             "pull_request"
           ],
           "repositoryBoundary": "same-repository pull request only",
-          "branchBoundary": "exact pull-request head branch carrying the autofix label",
+          "branchBoundary": "immutable queued PR head plus active owner-token/generation lease; final push is CAS-bound to the same expected head",
           "mutationTargets": [
             "registered article PageHead title text on the pull-request source branch"
           ],
@@ -163,7 +170,12 @@
           "requiredMarkers": [
             "contains(github.event.pull_request.labels.*.name, 'autofix')",
             "github.event.pull_request.head.repo.full_name == github.repository",
-            "ref: ${{ github.event.pull_request.head.ref }}"
+            "ref: ${{ github.event.pull_request.head.sha }}",
+            "node scripts/writer-lease.mjs snapshot",
+            "node scripts/writer-lease.mjs assert-live --phase=pre-mutation",
+            "node scripts/writer-lease.mjs assert-live --phase=pre-commit",
+            "node scripts/writer-lease.mjs assert-live --phase=pre-push",
+            "--force-with-lease=\"refs/heads/${HEAD_REF}:${EXPECTED_HEAD}\""
           ]
         }
       }
@@ -172,14 +184,15 @@
       "jobs": {
         "search-manifest-autofix": {
           "permissions": {
-            "contents": "write"
+            "contents": "write",
+            "pull-requests": "read"
           },
           "purpose": "Apply deterministic search-manifest and RSS normalization to an explicitly labelled same-repository pull request",
           "allowedEvents": [
             "pull_request"
           ],
           "repositoryBoundary": "same-repository pull request only",
-          "branchBoundary": "exact pull-request head branch carrying the autofix label",
+          "branchBoundary": "immutable queued PR head plus active owner-token/generation lease; final push is CAS-bound to the same expected head",
           "mutationTargets": [
             "feed.xml and route/search policy manifests on the pull-request source branch"
           ],
@@ -187,7 +200,12 @@
           "requiredMarkers": [
             "contains(github.event.pull_request.labels.*.name, 'autofix')",
             "github.event.pull_request.head.repo.full_name == github.repository",
-            "ref: ${{ github.event.pull_request.head.ref }}"
+            "ref: ${{ github.event.pull_request.head.sha }}",
+            "node scripts/writer-lease.mjs snapshot",
+            "node scripts/writer-lease.mjs assert-live --phase=pre-mutation",
+            "node scripts/writer-lease.mjs assert-live --phase=pre-commit",
+            "node scripts/writer-lease.mjs assert-live --phase=pre-push",
+            "--force-with-lease=\"refs/heads/${HEAD_REF}:${EXPECTED_HEAD}\""
           ]
         }
       }
@@ -196,14 +214,15 @@
       "jobs": {
         "scripture-occurrence-autofix": {
           "permissions": {
-            "contents": "write"
+            "contents": "write",
+            "pull-requests": "read"
           },
           "purpose": "Regenerate the deterministic Scripture occurrence index for an explicitly labelled same-repository pull request using the canonical source-owned generator",
           "allowedEvents": [
             "pull_request"
           ],
           "repositoryBoundary": "same-repository pull request only",
-          "branchBoundary": "exact pull-request head branch carrying the autofix label",
+          "branchBoundary": "immutable queued PR head plus active owner-token/generation lease; final push is CAS-bound to the same expected head",
           "mutationTargets": [
             "data/scripture-search-index.json on the pull-request source branch"
           ],
@@ -211,7 +230,12 @@
           "requiredMarkers": [
             "contains(github.event.pull_request.labels.*.name, 'autofix')",
             "github.event.pull_request.head.repo.full_name == github.repository",
-            "ref: ${{ github.event.pull_request.head.ref }}"
+            "ref: ${{ github.event.pull_request.head.sha }}",
+            "node scripts/writer-lease.mjs snapshot",
+            "node scripts/writer-lease.mjs assert-live --phase=pre-mutation",
+            "node scripts/writer-lease.mjs assert-live --phase=pre-commit",
+            "node scripts/writer-lease.mjs assert-live --phase=pre-push",
+            "--force-with-lease=\"refs/heads/${HEAD_REF}:${EXPECTED_HEAD}\""
           ]
         }
       }

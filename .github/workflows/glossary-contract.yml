@@ -55,17 +55,26 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: read
     steps:
       - name: Checkout pull request branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Set up Node 22.23.1
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22.23.1'
+
+      - name: Snapshot machine writer lease
+        run: node scripts/writer-lease.mjs snapshot
+
+      - name: Reject stale or foreign writer before mutation
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/writer-lease.mjs assert-live --phase=pre-mutation
 
       - name: Check normalizer syntax
         run: |
@@ -100,6 +109,7 @@ jobs:
         shell: bash
         env:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           if git diff --quiet; then
@@ -107,11 +117,15 @@ jobs:
             exit 0
           fi
           git diff --check
+          node scripts/writer-lease.mjs assert-live --phase=pre-commit
+          EXPECTED_HEAD="$(node scripts/writer-lease.mjs field expectedHead)"
+          LEASE_TRAILER="$(node scripts/writer-lease.mjs trailer)"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -u
-          git commit -m "fix(content): normalize glossary and tooltip contracts"
-          git push origin "HEAD:${HEAD_REF}"
+          git commit -m "fix(content): normalize glossary and tooltip contracts" -m "${LEASE_TRAILER}"
+          node scripts/writer-lease.mjs assert-live --phase=pre-push
+          git push --force-with-lease="refs/heads/${HEAD_REF}:${EXPECTED_HEAD}" origin "HEAD:${HEAD_REF}"
 
   source-contract:
     name: Source contract

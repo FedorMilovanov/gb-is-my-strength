@@ -46,9 +46,10 @@ Use the minimum declaration from `WORK_MODES.md`. The PR description and actual 
 
 `Shared Files Guard` runs the read-only `scripts/lane-collision-guard.mjs` for pull requests. It supplements this policy; it does not replace the semantic pre-flight above.
 
-The machine boundary is intentionally narrow and stateless:
+The collision boundary is intentionally narrow and stateless:
 
-- open same-repository pull requests are the active machine-readable ownership records; no lock file, lease, TTL, heartbeat or branch mutation exists;
+- open same-repository pull requests are the active machine-readable collision/ownership records; the collision guard itself creates no lock file, TTL, heartbeat or branch mutation;
+- branch-writing capability is governed separately by **Writer Lease v1** below; a writer lease never changes file-collision precedence or authorizes a second semantic owner;
 - for deterministic simultaneous ownership, the earlier pull-request number has precedence;
 - a later PR fails when it overlaps an earlier active same-repository PR on the exact same exclusive file;
 - known deterministic projection files are warning-only because shared generated output does not prove that the source owners collide;
@@ -57,6 +58,35 @@ The machine boundary is intentionally narrow and stateless:
 - GitHub/API ambiguity fails closed rather than silently declaring a lane free.
 
 Exact-file automation cannot prove that two different files belong to the same logical route or shared surface. Agents must still inspect open work and declare the semantic collision boundary before mutation.
+
+### Machine writer lease — Writer Lease v1
+
+Any same-repository PR that grants a repo-writing applicator/autofix must carry exactly one machine block in its PR body:
+
+```md
+<!-- GB_WRITER_LEASE_V1
+{
+  "version": 1,
+  "laneId": "stable-lane-id",
+  "pr": 1234,
+  "branch": "lane/example",
+  "ownerToken": "opaque-agent-session-token",
+  "generation": 1,
+  "acquisitionSha": "40-hex-head-at-acquisition",
+  "status": "active",
+  "handoff": null,
+  "retirement": null
+}
+GB_WRITER_LEASE_V1 -->
+```
+
+The owner token is public, opaque concurrency identity — **not a credential or secret**, and never inferred from Git author/committer names. Generation starts at 1. The acquisition SHA must be an ancestor of the queued writer head.
+
+Permanent branch writers use `scripts/writer-lease.mjs`: checkout the immutable event head SHA, snapshot the event lease, compare the live PR lease and live head before mutation/commit/push, stamp `Writer-Lease: <owner>@<generation>` into the generated commit, then publish with `git push --force-with-lease=<branch>:<expected-head>`. A queued run fails closed when another actor moves the head or rotates the lease, even when both actors share one GitHub login.
+
+Handoff is explicit only: successor generation is exactly predecessor generation + 1, owner token changes, `acquisitionSha` becomes the exact handoff head, and `handoff` records predecessor/successor token + generation + head. A later timestamp never steals a lease.
+
+Retirement never uses TTL/age. The current owner changes `status` to `retired` without changing owner/generation/acquisition SHA and records exact `retirement.atHead`, a reason, and a final `BRANCH_LIFECYCLE_V4.md` disposition. Retirement ends write authority; it does not by itself authorize branch deletion, rewrite or closure. Read-only auditors do not need a writer lease.
 
 ## 4. Active-work protection
 

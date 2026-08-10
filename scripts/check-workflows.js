@@ -122,10 +122,17 @@ function checkAutofixCapability(file, text, jobName, requiredPatterns) {
   must(file, job, /contains\(github\.event\.pull_request\.labels\.\*\.name,\s*'autofix'\)/, `${jobName} must require the autofix label`);
   must(file, job, /github\.event\.pull_request\.head\.repo\.full_name == github\.repository/, `${jobName} must reject fork write capability`);
   must(file, job, /permissions:\s*\n\s*contents:\s*write/, `${jobName} must declare job-local contents: write`);
-  must(file, job, /ref:\s*\$\{\{\s*github\.event\.pull_request\.head\.ref\s*\}\}/, `${jobName} must checkout the exact PR branch`);
+  must(file, job, /pull-requests:\s*read/, `${jobName} must receive read-only PR metadata for live lease verification`);
+  must(file, job, /ref:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/, `${jobName} must checkout the immutable queued PR head`);
+  must(file, job, /node scripts\/writer-lease\.mjs snapshot/, `${jobName} must snapshot the queued machine writer lease`);
+  must(file, job, /writer-lease\.mjs assert-live --phase=pre-mutation/, `${jobName} must reject a stale lease before local mutation`);
+  must(file, job, /writer-lease\.mjs assert-live --phase=pre-commit/, `${jobName} must prove live lease + expected head before commit`);
+  must(file, job, /writer-lease\.mjs assert-live --phase=pre-push/, `${jobName} must re-prove live lease + expected head immediately before push`);
   must(file, job, /git diff --check/, `${jobName} must validate generated diff`);
   must(file, job, /\bgit commit\b/, `${jobName} must publish only an intentional commit`);
-  must(file, job, /\bgit push origin "HEAD:\$\{HEAD_REF\}"/, `${jobName} must push only to the checked PR branch`);
+  must(file, job, /--force-with-lease="refs\/heads\/\$\{HEAD_REF\}:\$\{EXPECTED_HEAD\}"/, `${jobName} must CAS-push against the queued expected head`);
+  must(file, job, /Writer-Lease:|writer-lease\.mjs trailer/, `${jobName} must stamp the machine lease identity into its commit`);
+  mustNot(file, job, /\bgit push origin "HEAD:\$\{HEAD_REF\}"/, `${jobName} must not blind-push a mutable branch ref`);
   must(file, job, /--write\b/, `${jobName} must invoke an explicit writer`);
   const writeAt = job.search(/--write\b/);
   const validateAt = job.search(/\n\s*- name:\s+Validate/i);
@@ -186,7 +193,7 @@ function workflowJobNames(workflow) {
 }
 
 function isWriteCapabilityJob(job) {
-  return /^\s*permissions:\s*\n\s*contents:\s*write\s*$/m.test(job)
+  return /^\s*contents:\s*write\s*$/m.test(job)
     || FORBIDDEN_VALIDATION_WRITES.some(([pattern]) => pattern.test(job));
 }
 
@@ -410,7 +417,7 @@ if (issues.length) {
 }
 console.log('✅ Workflow Policy v2 passed');
 console.log('✅ Validation is source-read-only and least-privilege');
-console.log('✅ Explicit autofix and transactional write capabilities are isolated and fail-closed');
+console.log('✅ Explicit autofix capabilities require machine writer lease + exact-head CAS; transactional observation remains isolated');
 console.log('✅ Production route coverage is registry-driven');
 console.log('✅ Candidate build, immutable promotion and live witnesses remain separated');
 console.log('✅ Actionlint and SYSTEM gate notification coverage remain blocking');
