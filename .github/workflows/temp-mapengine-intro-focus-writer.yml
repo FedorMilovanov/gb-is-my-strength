@@ -1,35 +1,36 @@
 name: TEMP MapEngine Intro Focus Writer
 
 on:
-  push:
-    branches:
-      - agent/mapengine-intro-focus-20260810
+  pull_request:
+    types: [opened, synchronize, reopened]
     paths:
       - '.github/workflows/temp-mapengine-intro-focus-writer.yml'
 
 permissions:
   contents: write
+  pull-requests: read
 
 concurrency:
-  group: temp-mapengine-intro-focus-writer
+  group: temp-mapengine-intro-focus-writer-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
   patch:
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout exact branch head
+      - name: Checkout exact PR head
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Assert writer lease and apply bounded patch
         shell: bash
         env:
-          EXPECTED_HEAD: ${{ github.sha }}
-          BRANCH: ${{ github.ref_name }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
         run: |
           set -euo pipefail
           REMOTE_HEAD="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
@@ -44,8 +45,8 @@ jobs:
       - name: Commit only final repair surface
         shell: bash
         env:
-          EXPECTED_HEAD: ${{ github.sha }}
-          BRANCH: ${{ github.ref_name }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
         run: |
           set -euo pipefail
           REMOTE_HEAD="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
