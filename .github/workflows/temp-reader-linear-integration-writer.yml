@@ -1,0 +1,60 @@
+name: TEMP Reader Linear Projection Writer
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/workflows/temp-reader-linear-integration-writer.yml'
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: temp-reader-linear-projection-writer-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  patch:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: Apply bounded semantic integration
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          REMOTE_HEAD="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
+          test "${REMOTE_HEAD}" = "${EXPECTED_HEAD}"
+          node scripts/temp-reader-linear-integration-patch.mjs
+          rm scripts/temp-reader-linear-integration-patch.mjs
+          rm .github/workflows/temp-reader-linear-integration-writer.yml
+          node --check scripts/astro-cache-bust-postbuild.js
+          node --check scripts/project-reader-linear-text-to-dist.mjs
+          node --check scripts/reader-linear-text-projection-browser-test.mjs
+          node --check js/glossary.js
+          git diff --check
+      - name: Commit only permanent semantic projection surface
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          REMOTE_HEAD="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
+          test "${REMOTE_HEAD}" = "${EXPECTED_HEAD}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/astro-cache-bust-postbuild.js scripts/project-reader-linear-text-to-dist.mjs js/glossary.js scripts/temp-reader-linear-integration-patch.mjs .github/workflows/temp-reader-linear-integration-writer.yml
+          git commit -m "fix(reader): separate auxiliary text from primary projection"
+          REMOTE_HEAD="$(git ls-remote origin "refs/heads/${BRANCH}" | awk '{print $1}')"
+          test "${REMOTE_HEAD}" = "${EXPECTED_HEAD}"
+          git push --force-with-lease="refs/heads/${BRANCH}:${EXPECTED_HEAD}" origin "HEAD:${BRANCH}"
