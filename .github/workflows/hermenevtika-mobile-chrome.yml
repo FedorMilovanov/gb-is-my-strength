@@ -62,14 +62,12 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium webkit
 
-      - name: Source boundary and workflow checks
+      - name: Source boundary
         run: |
           node --check scripts/hermenevtika-mobile-chrome-visual-contract.mjs
           grep -F '@media (max-width: 1199px)' src/components/ui/floating-cluster/SingleArticleCluster.astro
           grep -F '.gb-floater.gb-floater--hermeneutics { display: none; }' src/components/ui/floating-cluster/SingleArticleCluster.astro
           grep -F '#gb-hl-fab.gb-hl-fab--docked.hmbar-btn' src/components/ui/floating-cluster/SingleArticleCluster.astro
-          npm run workflows:check
-          npm run control-plane:audit
 
       - name: Build production-like dist
         run: |
@@ -84,6 +82,12 @@ jobs:
           set -o pipefail
           node scripts/hermenevtika-mobile-chrome-visual-contract.mjs 2>&1 | tee reports/hermenevtika-mobile-chrome-visual.log
 
+      - name: Workflow and control-plane gates
+        run: |
+          set -o pipefail
+          npm run workflows:check 2>&1 | tee reports/hermenevtika-mobile-chrome-workflows.log
+          npm run control-plane:audit 2>&1 | tee reports/hermenevtika-mobile-chrome-control-plane.log
+
       - name: Run shared publication barrier
         run: |
           set -o pipefail
@@ -97,6 +101,8 @@ jobs:
           path: |
             reports/hermenevtika-mobile-chrome-build.log
             reports/hermenevtika-mobile-chrome-visual.log
+            reports/hermenevtika-mobile-chrome-workflows.log
+            reports/hermenevtika-mobile-chrome-control-plane.log
             reports/hermenevtika-mobile-chrome-publication.log
             reports/hermenevtika-mobile-chrome-visual-contract.json
             reports/hermenevtika-mobile-chrome-visual-contract.md
