@@ -2,6 +2,10 @@
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 
+if (!process.argv.includes('--write')) {
+  throw new Error('apply-site-menu-system-patch.mjs is a writer; pass --write explicitly');
+}
+
 function read(path){ return fs.readFileSync(path,'utf8'); }
 function write(path, text){ fs.writeFileSync(path,text); }
 function replaceExact(path, oldText, newText, expectedCount = 1){
