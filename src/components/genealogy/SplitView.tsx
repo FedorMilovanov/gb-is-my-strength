@@ -9,7 +9,15 @@
  * Highlights differences, shared names, and the Jeconiah curse problem.
  */
 
-import { memo, useCallback, useEffect, useMemo, useRef, type SyntheticEvent } from 'react';
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type SyntheticEvent,
+} from 'react';
 import type { Person } from './types';
 import { getLineStyle, ROLE_LABELS } from './theme';
 
@@ -87,6 +95,48 @@ function SplitViewComponent({ persons, onClose }: SplitViewProps) {
     requestClose();
   }, [requestClose]);
 
+  const handleKeyDown = useCallback((event: ReactKeyboardEvent<HTMLDialogElement>) => {
+    if (event.key !== 'Tab') return;
+
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    // showModal() supplies truthful modal semantics and makes the covered page
+    // inert. Chromium can still hand focus to the document after the final
+    // tabbable element, so keep only that boundary transition inside the modal
+    // rather than implementing a synthetic per-key navigation model.
+    const focusable = Array.from(dialog.querySelectorAll<HTMLElement>([
+      'a[href]',
+      'button:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(','))).filter(element => {
+      const style = window.getComputedStyle(element);
+      return style.display !== 'none' && style.visibility !== 'hidden' && !element.hasAttribute('inert');
+    });
+
+    if (focusable.length === 0) {
+      event.preventDefault();
+      dialog.focus({ preventScroll: true });
+      return;
+    }
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = document.activeElement;
+    const focusEscaped = !(active instanceof Node) || !dialog.contains(active);
+
+    if (event.shiftKey && (active === first || focusEscaped)) {
+      event.preventDefault();
+      last.focus({ preventScroll: true });
+    } else if (!event.shiftKey && (active === last || focusEscaped)) {
+      event.preventDefault();
+      first.focus({ preventScroll: true });
+    }
+  }, []);
+
   const renderEntry = (p: Person) => {
     const ls = getLineStyle(p.lineage);
     const isShared = sharedNames.has(p.name.ru);
@@ -134,6 +184,8 @@ function SplitViewComponent({ persons, onClose }: SplitViewProps) {
       aria-labelledby="genealogy-split-title"
       aria-describedby="genealogy-split-description"
       onCancel={handleCancel}
+      onKeyDown={handleKeyDown}
+      tabIndex={-1}
       style={{
         position: 'fixed', inset: 0, zIndex: 60,
         width: '100vw', height: '100dvh', maxWidth: 'none', maxHeight: 'none',
