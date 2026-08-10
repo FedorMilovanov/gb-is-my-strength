@@ -45,7 +45,13 @@ function traceLine(persons: Person[], fromId: string, toId: string): Person[] {
 function SplitViewComponent({ persons, onClose }: SplitViewProps) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
-  const restoreFocusRef = useRef<HTMLElement | null>(null);
+  // Capture the focused opener during this conditional component's render,
+  // before the dialog commit/autofocus can move focus into the modal surface.
+  const restoreFocusRef = useRef<HTMLElement | null>(
+    typeof document !== 'undefined' && document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null,
+  );
 
   const { matthewLine, lukeLine, sharedNames } = useMemo(() => {
     // Matthew: Jesus → Joseph → Jacob → ... → Solomon → David → ... → Abraham
@@ -65,10 +71,6 @@ function SplitViewComponent({ persons, onClose }: SplitViewProps) {
   }, [persons]);
 
   useEffect(() => {
-    restoreFocusRef.current = document.activeElement instanceof HTMLElement
-      ? document.activeElement
-      : null;
-
     const dialog = dialogRef.current;
     if (!dialog) return;
     if (!dialog.open) dialog.showModal();
