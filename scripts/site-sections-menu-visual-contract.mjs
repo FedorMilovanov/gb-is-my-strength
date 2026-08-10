@@ -209,6 +209,38 @@ async function auditRoute(page, engine, origin, route) {
         && noCss.backdropRect?.width === 0 && noCss.backdropRect?.height === 0,
       noCss,
     );
+
+    const noCssLifecycle = await page.evaluate(() => {
+      const trigger = document.getElementById('hMobileMenuBtn');
+      const panel = document.getElementById('hMobileNav');
+      const backdrop = document.getElementById('hMobileBackdrop');
+      trigger?.click();
+      const opened = Boolean(panel?.classList.contains('open')) && panel?.hidden === false;
+      trigger?.click();
+      return {
+        opened,
+        closed: !panel?.classList.contains('open'),
+        hidden: Boolean(panel?.hidden),
+        inert: Boolean(panel?.hasAttribute('inert') || panel?.inert),
+        backdropHidden: backdrop ? Boolean(backdrop.hidden) : null,
+        expanded: trigger?.getAttribute('aria-expanded') || null,
+        ariaHidden: panel?.getAttribute('aria-hidden') || null,
+      };
+    });
+    check(
+      engine,
+      'mobile-no-css',
+      route,
+      'runtime close restores native safety immediately when no transition exists',
+      noCssLifecycle.opened
+        && noCssLifecycle.closed
+        && noCssLifecycle.hidden
+        && noCssLifecycle.inert
+        && noCssLifecycle.backdropHidden
+        && noCssLifecycle.expanded === 'false'
+        && noCssLifecycle.ariaHidden === 'true',
+      noCssLifecycle,
+    );
   }
 
   // Reload after the destructive no-CSS probe, then choose the first viewport in
@@ -303,7 +335,7 @@ fs.writeFileSync(path.join(REPORTS, 'site-sections-menu-visual-contract.md'), [
   `- Registry-derived menu routes: ${report.routeCount}`,
   `- Browsers: Chromium + WebKit`,
   `- Mobile closed-state: always checked before viewport fallback`,
-  `- Native no-CSS fail-safe: panel + backdrop on rich menus`,
+  `- Native no-CSS fail-safe: panel + backdrop on rich menus, including immediate runtime close`,
   `- Close semantics: hidden/inert + aria-expanded/aria-hidden + Escape/backdrop focus restore`,
   `- Evidence server path containment: traversal-rejecting`,
   `- Checks: ${report.passed}/${checks.length} PASS`,
