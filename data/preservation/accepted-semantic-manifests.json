@@ -11,6 +11,14 @@
       "distPath": "articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/index.html",
       "requiredUnits": [
         {
+          "id": "canonical-original-work-source-notice",
+          "anchor": "Abner Chou, “A Hermeneutical Evaluation of the Christocentric Hermeneutic,” The Master’s Seminary Journal 27, no. 2 (Fall 2016): 113–139."
+        },
+        {
+          "id": "canonical-original-work-author-card",
+          "anchor": "Оригинал: Abner Chou, «A Hermeneutical Evaluation of the Christocentric Hermeneutic», MSJ 27/2 (Fall 2016) 113–139."
+        },
+        {
           "id": "article-stated-purpose",
           "anchor": "Цель этой статьи — оценить претензии христоцентричной герменевтики в этом отношении"
         },
