@@ -73,11 +73,11 @@ function validateCacheBustWorkflowPolicy(input) {
     requireMatch(GLOSSARY_WORKFLOW, glossary, /^permissions:\s*$[\s\S]{0,80}?contents:\s*read\b/m, 'top-level workflow permissions must remain read-only');
     requireMatch(GLOSSARY_WORKFLOW, glossary, /placement-autofix:[\s\S]{0,520}?github\.event_name\s*==\s*['"]pull_request['"][\s\S]{0,240}?contains\(github\.event\.pull_request\.labels\.\*\.name,\s*['"]autofix['"]\)[\s\S]{0,240}?github\.event\.pull_request\.head\.repo\.full_name\s*==\s*github\.repository/, 'writer must require pull_request, explicit autofix label and same-repository head');
     requireMatch(GLOSSARY_WORKFLOW, glossary, /placement-autofix:[\s\S]{0,760}?permissions:\s*$[\s\S]{0,80}?contents:\s*write\b/m, 'write permission must stay scoped to the guarded autofix job');
-    requireMatch(GLOSSARY_WORKFLOW, glossary, /name:\s*Checkout pull request branch[\s\S]{0,180}?ref:\s*\$\{\{\s*github\.event\.pull_request\.head\.ref\s*\}\}/, 'writer must checkout the explicit pull-request head branch');
+    requireMatch(GLOSSARY_WORKFLOW, glossary, /name:\s*Checkout pull request branch[\s\S]{0,180}?ref:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/, 'writer must checkout the immutable queued pull-request head');
     requireBefore(GLOSSARY_WORKFLOW, glossary, /node scripts\/cache-bust\.js --write/, /node scripts\/cache-bust\.js\s*$/m, 'writer output must be followed by the default read-only validation');
     requireMatch(GLOSSARY_WORKFLOW, glossary, /git add -u\s*$/m, 'writer may stage only already tracked normalized files');
     forbidMatch(GLOSSARY_WORKFLOW, glossary, /git add -A\b|git add --all\b/, 'writer must not stage unrelated or newly created files');
-    requireMatch(GLOSSARY_WORKFLOW, glossary, /git push origin ["']HEAD:\$\{HEAD_REF\}["']/, 'writer must push only back to the requesting pull-request branch');
+    requireMatch(GLOSSARY_WORKFLOW, glossary, /git push --force-with-lease="refs\/heads\/\$\{HEAD_REF\}:\$\{EXPECTED_HEAD\}" origin "HEAD:\$\{HEAD_REF\}"/, 'writer must CAS-push only back to the requesting pull-request branch at the queued head');
   }
   return issues;
 }
@@ -113,7 +113,8 @@ function runCacheBustWorkflowPolicyMutationSuite(baseline) {
       ['glossary writer loses label', withWorkflow(baseline, GLOSSARY_WORKFLOW, glossary.replace("'autofix'", "'unreviewed'"))],
       ['glossary writer accepts fork', withWorkflow(baseline, GLOSSARY_WORKFLOW, glossary.replace('github.event.pull_request.head.repo.full_name == github.repository', 'true'))],
       ['glossary writer stages all files', withWorkflow(baseline, GLOSSARY_WORKFLOW, glossary.replace('git add -u', 'git add -A'))],
-      ['glossary writer pushes main', withWorkflow(baseline, GLOSSARY_WORKFLOW, glossary.replace('git push origin "HEAD:${HEAD_REF}"', 'git push origin HEAD:main'))],
+      ['glossary writer checks out mutable branch', withWorkflow(baseline, GLOSSARY_WORKFLOW, glossary.replace('github.event.pull_request.head.sha', 'github.event.pull_request.head.ref'))],
+      ['glossary writer pushes main', withWorkflow(baseline, GLOSSARY_WORKFLOW, glossary.replace('git push --force-with-lease="refs/heads/${HEAD_REF}:${EXPECTED_HEAD}" origin "HEAD:${HEAD_REF}"', 'git push origin HEAD:main'))],
     );
   }
   return mutations.filter(([, value]) => validateCacheBustWorkflowPolicy(value).length === 0).map(([name]) => `mutation escaped: ${name}`);

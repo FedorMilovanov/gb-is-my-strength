@@ -1,0 +1,79 @@
+name: Writer Lease Contract
+
+on:
+  pull_request:
+    paths:
+      - "scripts/writer-lease.mjs"
+      - "scripts/writer-lease-contract-test.mjs"
+      - "scripts/check-workflows.js"
+      - "data/workflow-permission-policy.json"
+      - "docs/LANE_LOCK_POLICY.md"
+      - "docs/BRANCH_LIFECYCLE_V4.md"
+      - ".github/workflows/glossary-contract.yml"
+      - ".github/workflows/indexnow.yml"
+      - ".github/workflows/search-manifest-policy.yml"
+      - ".github/workflows/scripture-occurrence-index-contract.yml"
+      - ".github/workflows/writer-lease-contract.yml"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/writer-lease.mjs"
+      - "scripts/writer-lease-contract-test.mjs"
+      - "scripts/check-workflows.js"
+      - "data/workflow-permission-policy.json"
+      - "docs/LANE_LOCK_POLICY.md"
+      - "docs/BRANCH_LIFECYCLE_V4.md"
+      - ".github/workflows/glossary-contract.yml"
+      - ".github/workflows/indexnow.yml"
+      - ".github/workflows/search-manifest-policy.yml"
+      - ".github/workflows/scripture-occurrence-index-contract.yml"
+      - ".github/workflows/writer-lease-contract.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: writer-lease-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    name: Machine writer lease and workflow CAS contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact tested head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+
+      - name: Check lease authority syntax
+        run: |
+          node --check scripts/writer-lease.mjs
+          node --check scripts/writer-lease-contract-test.mjs
+          node --check scripts/check-workflows.js
+
+      - name: Run lease mutation contract
+        run: node scripts/writer-lease-contract-test.mjs
+
+      - name: Enforce all registered write capabilities
+        run: node scripts/check-workflows.js
+
+      - name: Lint lease-governed workflows
+        run: >-
+          node scripts/run-actionlint.mjs -no-color
+          .github/workflows/writer-lease-contract.yml
+          .github/workflows/glossary-contract.yml
+          .github/workflows/indexnow.yml
+          .github/workflows/search-manifest-policy.yml
+          .github/workflows/scripture-occurrence-index-contract.yml
+
+      - name: Prove contract is read-only
+        run: git diff --exit-code
