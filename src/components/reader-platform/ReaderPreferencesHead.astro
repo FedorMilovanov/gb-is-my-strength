@@ -11,39 +11,18 @@ const bootstrapSrc = assetUrl('js/reader-preferences-head.js');
 const runtimeSrc = assetUrl('js/reader-preferences.js');
 const readerStateSrc = assetUrl('js/reader-state.js');
 const preferencesCss = assetUrl('css/reader-preferences.css');
-const searchSrc = assetUrl('js/search.js');
-const searchColdBootstrapRoutes = new Set(['/articles/', '/biografii/', '/pastor-series/']);
-const needsSearchColdBootstrap = searchColdBootstrapRoutes.has(Astro.url.pathname);
+const searchOpenerRoutes = new Set(['/articles/', '/biografii/', '/pastor-series/']);
+const needsSearchOpener = searchOpenerRoutes.has(Astro.url.pathname);
 ---
 <script is:inline src={bootstrapSrc}></script>
 <link rel="stylesheet" href={preferencesCss} />
 <script is:inline defer src={runtimeSrc}></script>
 <script is:inline defer src={readerStateSrc}></script>
-{needsSearchColdBootstrap && (
-  <script is:inline define:vars={{ searchSrc }}>
+{needsSearchOpener && (
+  <script is:inline>
     (() => {
       if (window.__gbSearchColdBootstrapBound) return;
       window.__gbSearchColdBootstrapBound = true;
-
-      function loadSearch(open) {
-        if (window.GBSearch?.open && window.GBSearch.__ready) {
-          if (open) window.GBSearch.open();
-          return;
-        }
-        if (open) window.__gbSearchOpenAfterLoad = true;
-        if (window.__gbSearchLoading) return;
-        window.__gbSearchLoading = true;
-        window.__gbSearchBootRequested = true;
-        const script = document.createElement('script');
-        script.defer = true;
-        script.src = searchSrc;
-        script.onload = () => {
-          window.__gbSearchLoading = false;
-          if (open && window.GBSearch?.open) window.GBSearch.open();
-        };
-        script.onerror = () => { window.__gbSearchLoading = false; };
-        document.head.appendChild(script);
-      }
 
       function searchIcon() {
         return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
@@ -65,7 +44,7 @@ const needsSearchColdBootstrap = searchColdBootstrapRoutes.has(Astro.url.pathnam
         button.innerHTML = searchIcon();
         button.addEventListener('click', (event) => {
           event.preventDefault();
-          loadSearch(true);
+          window.dispatchEvent(new CustomEvent('gb:openSearch', { detail: { source: 'opener' } }));
         });
 
         if (controls && theme && controls.contains(theme)) controls.insertBefore(button, theme);
@@ -76,13 +55,6 @@ const needsSearchColdBootstrap = searchColdBootstrapRoutes.has(Astro.url.pathnam
         }
       }
 
-      function onShortcut(event) {
-        if (event.repeat || event.altKey || event.key.toLowerCase() !== 'k' || !(event.ctrlKey || event.metaKey)) return;
-        event.preventDefault();
-        loadSearch(true);
-      }
-
-      document.addEventListener('keydown', onShortcut, true);
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensureTrigger, { once: true });
       else ensureTrigger();
     })();
