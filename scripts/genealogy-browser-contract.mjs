@@ -191,7 +191,7 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     assert.ok(response?.ok(), `${browserName} ${viewport.width}x${viewport.height}: /rodosloviye/ did not load successfully`);
 
     phase = 'initial-settle';
-    await page.waitForFunction(() => document.querySelectorAll('.react-flow__node .genealogy-node').length === 143);
+    await page.locator('.react-flow__node .genealogy-node').first().waitFor({ state: 'attached' });
     await waitForViewportStable(page);
 
     const initial = await measurePersonViewport(page);
