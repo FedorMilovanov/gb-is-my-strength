@@ -96,7 +96,7 @@ jobs:
           test "$(git rev-parse refs/remotes/origin/$HEAD_REF)" = "$EXPECTED_SHA"
           git checkout refs/remotes/origin/main -- .github/workflows/atlas-focus-state.yml
           git diff --check
-          test "$(git diff --name-only | sort | tr '\n' ' ')" = '.github/workflows/atlas-focus-state.yml scripts/atlas-focus-state-browser-test.mjs src/runtime/atlas-runtime.js '
+          test "$(git diff HEAD --name-only | sort | tr '\n' ' ')" = '.github/workflows/atlas-focus-state.yml scripts/atlas-focus-state-browser-test.mjs src/runtime/atlas-runtime.js '
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add .github/workflows/atlas-focus-state.yml scripts/atlas-focus-state-browser-test.mjs src/runtime/atlas-runtime.js
