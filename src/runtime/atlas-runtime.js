@@ -172,6 +172,7 @@
     var filterClose = document.getElementById('atlasFilterClose');
     var resetButton = document.getElementById('atlasReset');
     var compactMedia = window.matchMedia('(max-width: 680px)');
+    var drawerMedia = window.matchMedia('(max-width: 980px)');
     var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var ns = 'http://www.w3.org/2000/svg';
     var nodeById = new Map(data.nodes.map(function (node) { return [node.id, node]; }));
@@ -260,7 +261,7 @@
 
     function syncSidebarSurface(open, options) {
       options = options || {};
-      var compact = compactMedia.matches;
+      var compact = drawerMedia.matches;
       var activeWasInside = sidebar.contains(document.activeElement);
       var shouldOpen = compact && Boolean(open);
       sidebar.classList.toggle('is-open', shouldOpen);
@@ -826,6 +827,11 @@
       }
     }
 
+    function syncDrawerForViewport() {
+      var activeWasSidebar = sidebar.contains(document.activeElement);
+      syncSidebarSurface(false, { restoreFocus: activeWasSidebar });
+    }
+
     function relayoutForViewport() {
       var nextProfile = compactMedia.matches ? COMPACT_WORLD : DESKTOP_WORLD;
       if (nextProfile.id === profile.id) return;
@@ -1013,6 +1019,8 @@
     window.addEventListener('popstate', restoreUrlState);
     if (typeof compactMedia.addEventListener === 'function') compactMedia.addEventListener('change', relayoutForViewport);
     else if (typeof compactMedia.addListener === 'function') compactMedia.addListener(relayoutForViewport);
+    if (typeof drawerMedia.addEventListener === 'function') drawerMedia.addEventListener('change', syncDrawerForViewport);
+    else if (typeof drawerMedia.addListener === 'function') drawerMedia.addListener(syncDrawerForViewport);
   }
 
   function recover(error) {

@@ -10,7 +10,7 @@ const DIST = path.join(ROOT, 'dist');
 const REPORT_DIR = path.join(ROOT, 'reports', 'atlas-focus-state');
 const ROUTE = '/map/';
 const BROWSERS = { chromium, webkit };
-const WIDTHS = [390, 680, 681, 1440];
+const WIDTHS = [390, 680, 681, 980, 981, 1440];
 const HEIGHT = 900;
 
 function contentType(file) {
@@ -144,7 +144,7 @@ async function runCase(browserName, browserType, baseUrl, width) {
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', (error) => errors.push(String(error?.stack || error)));
-  const compact = width <= 680;
+  const compact = width <= 980;
   const result = { browser: browserName, width, compact, steps: {} };
 
   try {
@@ -214,11 +214,12 @@ async function runCase(browserName, browserType, baseUrl, width) {
     await page.waitForTimeout(120);
     result.steps.history = await assertSafeFocus(page, `${browserName}/${width}/history`);
 
-    if (width === 680 || width === 681) {
+    if (width === 680 || width === 681 || width === 980 || width === 981) {
       result.steps.resizeResetSetup = await resetThroughVisibleUi(page, compact, `${browserName}/${width}/resize-reset-setup`);
       const resizeNode = page.locator('.atlas-node:not(.is-filtered-out)[tabindex="0"]').first();
       await resizeNode.focus();
-      await page.setViewportSize({ width: width === 680 ? 681 : 680, height: HEIGHT });
+      const resizeTarget = width === 680 ? 681 : width === 681 ? 680 : width === 980 ? 981 : 980;
+      await page.setViewportSize({ width: resizeTarget, height: HEIGHT });
       await page.waitForTimeout(180);
       result.steps.resize = await assertSafeFocus(page, `${browserName}/${width}/resize`, (state) =>
         String(state.className).includes('atlas-node') || state.id === 'atlasFilterTrigger');
