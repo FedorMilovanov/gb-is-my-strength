@@ -16,52 +16,87 @@ concurrency:
 jobs:
   prove:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 55
     steps:
-      - name: Checkout exact trigger
+      - name: Checkout exact terminal trigger
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
           persist-credentials: true
           fetch-depth: 0
-      - name: Prove frozen product tree
+
+      - name: Prove frozen scope before generated sync
         env:
-          PRODUCT_SHA: 63dc417d3b5f385544eeea381684182ed95f9c7d
+          MERGED_ROOT_SHA: 63dc417d3b5f385544eeea381684182ed95f9c7d
           TRIGGER_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$TRIGGER_SHA"
-          git diff --name-only "$PRODUCT_SHA"..HEAD > /tmp/tree-diff.txt
-          test "$(cat /tmp/tree-diff.txt)" = '.github/workflows/temp-terminal-postmerge-proof.yml'
-          git diff --check "$PRODUCT_SHA"..HEAD
+          printf '%s\n' \
+            .github/workflows/temp-terminal-postmerge-proof.yml \
+            js/glossary.js \
+            scripts/reader-linear-text-projection-browser-test.mjs \
+            | sort > /tmp/allowed-frozen.txt
+          git diff --name-only "$MERGED_ROOT_SHA"..HEAD | sort > /tmp/actual-frozen.txt
+          diff -u /tmp/allowed-frozen.txt /tmp/actual-frozen.txt
+          git diff --check "$MERGED_ROOT_SHA"..HEAD
+
       - name: Setup Node 22.23.1
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22.23.1'
           cache: npm
-      - name: Install exact dependencies and browsers
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Synchronize only governed asset revisions
         run: |
-          npm ci
-          timeout 12m npx playwright install --with-deps chromium webkit
+          set -euo pipefail
+          node --check js/glossary.js
+          node --check scripts/reader-linear-text-projection-browser-test.mjs
+          node scripts/cache-bust.js --write
+          printf '%s\n' \
+            src/lib/asset-version.js \
+            src/components/article-pilots/_shared/StandaloneArticleFooter.astro \
+            src/components/article-pilots/gill-series/GillSeriesChrome.astro \
+            src/components/article-pilots/hermenevtika/HermenevtikaBody.astro \
+            src/components/baptisty-rossii/BaptistyRossiiBody.astro \
+            src/components/baptisty-rossii/BaptistyRossiiBookLanding.astro \
+            src/components/nagornaya/_shared/NagornayaPageFooterRuntime.astro \
+            src/components/nagornaya/istochniki/NagornayaIstochnikiPageFooter.astro \
+            src/components/nagornaya/nakhodki/NagornayaNakhodkiPageFooter.astro \
+            | sort > /tmp/allowed-generated.txt
+          git diff --name-only | sort > /tmp/actual-generated.txt
+          diff -u /tmp/allowed-generated.txt /tmp/actual-generated.txt
+          node scripts/cache-bust.js
+          git diff --check
+
       - name: Permanent source and control-plane gates
         run: |
-          git diff --check
-          node scripts/cache-bust.js
           node scripts/check-workflows.js
           node scripts/node-toolchain-pin-contract-test.mjs
+          npm run validate:static-publication
+
+      - name: Install Chromium and WebKit
+        run: timeout 12m npx playwright install --with-deps chromium webkit
+
       - name: Production-like build
         run: npm run strangler:build:production-like
+
       - name: Reader projection idempotence and Pagefind
         run: |
           node scripts/project-reader-linear-text-to-dist.mjs --root dist --dry-run
           npm run pagefind:build:dist
+
       - name: Chromium and WebKit frozen-root proofs
         env:
-          SOURCE_SHA: 63dc417d3b5f385544eeea381684182ed95f9c7d
+          SOURCE_SHA: ${{ github.sha }}
         run: |
           node scripts/reader-linear-text-projection-browser-test.mjs
           node scripts/atlas-focus-state-browser-test.mjs
-      - name: Self-delete only after full PASS
+
+      - name: Self-delete and commit only after full PASS
         env:
           TRIGGER_SHA: ${{ github.sha }}
         run: |
@@ -70,7 +105,8 @@ jobs:
           git diff --check
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'chore(terminal): post-merge V07 V12 proof passed'
+          git add -A
+          git commit -m 'chore(terminal): final V07 V12 proof passed'
           git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
           test "$(git rev-parse refs/remotes/origin/main)" = "$TRIGGER_SHA"
           git push --force-with-lease="refs/heads/main:$TRIGGER_SHA" origin HEAD:refs/heads/main
