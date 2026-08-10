@@ -35,6 +35,29 @@ function resolveRequest(value) {
   return fs.existsSync(index) && fs.statSync(index).isFile() ? index : null;
 }
 
+function rawProjectedMeta(route) {
+  const file = resolveRequest(route);
+  assert.ok(file, `raw projection route missing: ${route}`);
+  const html = fs.readFileSync(file, 'utf8');
+  const headOpen = html.search(/<head\b[^>]*>/i);
+  const headClose = html.search(/<\/head\s*>/i);
+  assert.ok(headOpen >= 0 && headClose > headOpen, `${route}: raw HTML has no valid head boundary`);
+  const tags = [];
+  const re = /<meta\b[^>]*data-reader-meta-projected=(?:"true"|'true'|true)[^>]*>/gi;
+  let match;
+  while ((match = re.exec(html))) {
+    const tag = match[0];
+    tags.push({
+      index: match.index,
+      inHead: match.index > headOpen && match.index < headClose,
+      spec: tag.match(/\bdata-pagefind-meta=(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i)?.slice(1).find(Boolean) || '',
+      content: tag.match(/\bcontent=(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i)?.slice(1).find(Boolean) || '',
+      tag,
+    });
+  }
+  return { file: path.relative(ROOT, file), headOpen, headClose, tags };
+}
+
 async function startServer() {
   for (const route of ROUTES) assert.ok(resolveRequest(route), `built route missing: ${route}`);
   assert.ok(fs.existsSync(path.join(DIST, 'pagefind', 'pagefind.js')), 'Pagefind output missing; run pagefind:build:dist first');
@@ -55,6 +78,12 @@ async function startServer() {
 }
 
 async function inspectNoJs(browserType, browserName, baseUrl, route) {
+  const raw = rawProjectedMeta(route);
+  assert.ok(raw.tags.length >= 3, `${browserName} ${route}: raw projected metadata missing before browser parse: ${JSON.stringify(raw)}`);
+  assert.ok(raw.tags.every((meta) => meta.inHead), `${browserName} ${route}: raw projected metadata is outside <head>: ${JSON.stringify(raw)}`);
+  assert.ok(raw.tags.every((meta) => /\[content\]$/.test(meta.spec) && meta.content.length > 0), `${browserName} ${route}: raw projected metadata has invalid Pagefind capture: ${JSON.stringify(raw.tags)}`);
+  if (route.includes('krajne-li-isporcheno')) assert.ok(raw.tags.length >= 5, `${browserName}: raw Krajne projection must preserve all five metadata fields: ${JSON.stringify(raw)}`);
+
   const browser = await browserType.launch({ headless: true });
   const context = await browser.newContext({ viewport: { width: 1366, height: 900 }, javaScriptEnabled: false });
   const page = await context.newPage();
@@ -83,7 +112,7 @@ async function inspectNoJs(browserType, browserName, baseUrl, route) {
       };
     });
     assert.equal(state.articleMetaCount, 0, `${browserName} ${route}: Pagefind metadata still pollutes article text tree`);
-    assert.ok(state.projectedMeta.length >= 3, `${browserName} ${route}: projected head metadata missing: ${JSON.stringify(state.projectedMeta)}`);
+    assert.ok(state.projectedMeta.length >= 3, `${browserName} ${route}: browser DOM lost raw projected head metadata; raw=${JSON.stringify(raw.tags)} dom=${JSON.stringify(state.projectedMeta)}`);
     assert.ok(state.projectedMeta.every((meta) => /\[content\]$/.test(meta.spec) && meta.content.length > 0), `${browserName} ${route}: projected metadata does not capture the content attribute: ${JSON.stringify(state.projectedMeta)}`);
     if (route.includes('krajne-li-isporcheno')) assert.ok(state.projectedMeta.length >= 5, `${browserName}: Krajne must preserve all five projected metadata fields: ${JSON.stringify(state.projectedMeta)}`);
     assert.ok(state.popupCount > 0, `${browserName} ${route}: representative popup family missing`);
@@ -92,7 +121,7 @@ async function inspectNoJs(browserType, browserName, baseUrl, route) {
     assert.ok(state.text.includes('⟦') && state.text.includes('⟧'), `${browserName} ${route}: auxiliary payloads remain lexically unbounded`);
     if (route.includes('krajne-li-isporcheno')) assert.ok(!state.text.includes('КархемишеБитва'), `${browserName}: Krajne glossary payload still glues to prose`);
     if (route.includes('dzhon-gill-chast-2')) assert.ok(!state.text.includes('вечный совет искупленияPactum'), `${browserName}: Gill glossary payload still glues to prose`);
-    return { browser: browserName, route, state };
+    return { browser: browserName, route, raw, state };
   } finally {
     await context.close();
     await browser.close();
