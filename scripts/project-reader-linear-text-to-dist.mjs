@@ -247,4 +247,5 @@ for (const file of files) {
 
 console.log(`Reader linear-text projection${DRY_RUN ? ' [DRY RUN]' : ''}: ${totals.changed} file(s), ${totals.articles} article(s), ${totals.metadata} metadata field(s), ${totals.popups} popup payload(s)`);
 if (!totals.articles) throw new Error('reader linear-text projector found no data-pagefind-body article surfaces');
-if (!totals.metadata && !totals.popups) throw new Error('reader linear-text projector made no semantic projection claims');
+if (!totals.metadata && !totals.popups && !DRY_RUN) throw new Error('reader linear-text projector made no semantic projection claims');
+if (DRY_RUN && totals.changed) throw new Error(`reader linear-text projector dry-run detected ${totals.changed} file(s) with semantic drift`);
