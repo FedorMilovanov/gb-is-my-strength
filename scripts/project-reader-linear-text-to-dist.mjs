@@ -182,6 +182,8 @@ function projectFile(file) {
   const nodes = scanElements(html);
   const head = nodes.find(node => node.name === 'head' && node.endTagStart != null);
   if (!head) return { changed: false, articles: 0, metadata: 0, popups: 0 };
+  const charset = nodes.find(node => node.name === 'meta' && inside(node, head) && hasAttr(node.startRaw, 'charset'));
+  const headMetaInsert = charset?.end ?? head.startTagEnd;
 
   const articles = nodes.filter(node => node.name === 'article' && hasAttr(node.startRaw, 'data-pagefind-body'));
   if (!articles.length) return { changed: false, articles: 0, metadata: 0, popups: 0 };
@@ -209,11 +211,7 @@ function projectFile(file) {
         'data-pagefind-ignore': '',
         'data-reader-linear-aux': descriptor.kind,
       });
-      operations.push({
-        start: node.start,
-        end: node.startTagEnd,
-        text: `${startTag}${marker('start', descriptor.label)}`,
-      });
+      operations.push({ start: node.start, end: node.startTagEnd, text: `${startTag}${marker('start', descriptor.label)}` });
       operations.push({ start: node.endTagStart, end: node.endTagStart, text: marker('end', descriptor.label) });
       popupCount += 1;
     }
@@ -221,8 +219,8 @@ function projectFile(file) {
 
   if (headMeta.length) {
     operations.push({
-      start: head.endTagStart,
-      end: head.endTagStart,
+      start: headMetaInsert,
+      end: headMetaInsert,
       text: `\n${headMeta.join('\n')}\n`,
     });
   }
