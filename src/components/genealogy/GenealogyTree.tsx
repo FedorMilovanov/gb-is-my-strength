@@ -27,7 +27,7 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
   const [showGolden, setShowGolden] = useState(true);
   const [selected, setSelected] = useState<Person | null>(null);
   const [showSplit, setShowSplit] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(1);
+  const [detailLevel, setDetailLevel] = useState<DetailLevel>(2);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [tourIndex, setTourIndex] = useState(-1);
 
@@ -45,7 +45,6 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
   }, [persons]);
 
   // ── Semantic zoom ──
-  const detailLevel: DetailLevel = zoomLevel < 0.3 ? 0 : zoomLevel < 0.7 ? 1 : 2;
   const visibleNodeIds = useMemo(() => {
     if (detailLevel === 2) return null;
     const ids = new Set<string>();
@@ -58,6 +57,11 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
     }
     return ids;
   }, [detailLevel, persons, goldenPath]);
+
+  const handleViewportChange = useCallback(({ zoom }: { zoom: number }) => {
+    const nextLevel: DetailLevel = zoom < 0.3 ? 0 : zoom < 0.7 ? 1 : 2;
+    setDetailLevel(current => current === nextLevel ? current : nextLevel);
+  }, []);
 
   /*
    * Canonical Fit View contract
@@ -120,9 +124,18 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
       const isHighlighted = n.id === searchMatch?.id;
       const isInFocus = focusLineageIds?.has(n.id) ?? false;
       const isDimmed = focusLineageIds ? !isInFocus : false;
+      const semanticHidden = visibleNodeIds ? !visibleNodeIds.has(n.id) : false;
       return {
         ...n,
-        hidden: visibleNodeIds ? !visibleNodeIds.has(n.id) : false,
+        // Keep every semantic node mounted with stable dimensions. Semantic
+        // zoom changes presentation only, so ReactFlow's ResizeObserver does
+        // not enter a geometry-feedback loop while the viewport is fitting.
+        hidden: false,
+        style: {
+          ...(n.style ?? {}),
+          visibility: semanticHidden ? 'hidden' : 'visible',
+          pointerEvents: semanticHidden ? 'none' : 'auto',
+        },
         data: {
           ...d,
           highlighted: isHighlighted,
@@ -233,7 +246,7 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
   const tourNext = useCallback(() => setTourIndex(i => { const n = Math.min(i + 1, goldenArray.length - 1); if (goldenArray[n]) focusPerson(goldenArray[n], 1.0); return n; }), [goldenArray, focusPerson]);
   const tourPrev = useCallback(() => setTourIndex(i => { const n = Math.max(i - 1, 0); if (goldenArray[n]) focusPerson(goldenArray[n], 1.0); return n; }), [goldenArray, focusPerson]);
 
-  const visibleCount = displayNodes.filter(n => !n.hidden).length;
+  const visibleCount = visibleNodeIds ? visibleNodeIds.size : displayNodes.length;
   const detailLabel = detailLevel === 0 ? 'Обзор' : detailLevel === 1 ? 'Ключевые' : 'Все детали';
   const detailHint = detailLevel === 0 ? 'приблизьте для деталей' : detailLevel === 1 ? 'ещё ближе — все имена' : `${visibleCount} из ${persons.length}`;
 
@@ -288,7 +301,7 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
         onInit={(inst) => { rfInstance.current = inst; }}
-        onViewportChange={(vp: { zoom: number }) => setZoomLevel(vp.zoom)}
+        onViewportChange={handleViewportChange}
         fitView
         fitViewOptions={canonicalFitOptions}
         minZoom={0.5}
