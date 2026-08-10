@@ -1,0 +1,76 @@
+name: TEMP Terminal Post-Merge Proof
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/temp-terminal-postmerge-proof.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-terminal-postmerge-proof
+  cancel-in-progress: false
+
+jobs:
+  prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact trigger
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: true
+          fetch-depth: 0
+      - name: Prove frozen product tree
+        env:
+          PRODUCT_SHA: 63dc417d3b5f385544eeea381684182ed95f9c7d
+          TRIGGER_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TRIGGER_SHA"
+          git diff --name-only "$PRODUCT_SHA"..HEAD > /tmp/tree-diff.txt
+          test "$(cat /tmp/tree-diff.txt)" = '.github/workflows/temp-terminal-postmerge-proof.yml'
+          git diff --check "$PRODUCT_SHA"..HEAD
+      - name: Setup Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+      - name: Install exact dependencies and browsers
+        run: |
+          npm ci
+          timeout 12m npx playwright install --with-deps chromium webkit
+      - name: Permanent source and control-plane gates
+        run: |
+          git diff --check
+          node scripts/cache-bust.js
+          node scripts/check-workflows.js
+          node scripts/node-toolchain-pin-contract-test.mjs
+      - name: Production-like build
+        run: npm run strangler:build:production-like
+      - name: Reader projection idempotence and Pagefind
+        run: |
+          node scripts/project-reader-linear-text-to-dist.mjs --root dist --dry-run
+          npm run pagefind:build:dist
+      - name: Chromium and WebKit frozen-root proofs
+        env:
+          SOURCE_SHA: 63dc417d3b5f385544eeea381684182ed95f9c7d
+        run: |
+          node scripts/reader-linear-text-projection-browser-test.mjs
+          node scripts/atlas-focus-state-browser-test.mjs
+      - name: Self-delete only after full PASS
+        env:
+          TRIGGER_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/temp-terminal-postmerge-proof.yml
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'chore(terminal): post-merge V07 V12 proof passed'
+          git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
+          test "$(git rev-parse refs/remotes/origin/main)" = "$TRIGGER_SHA"
+          git push --force-with-lease="refs/heads/main:$TRIGGER_SHA" origin HEAD:refs/heads/main
