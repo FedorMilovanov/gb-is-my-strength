@@ -160,13 +160,17 @@ const {
 
   /* Highlights/"Мои цитаты" docks itself into Hermenevtika's bottom action
      row by adding .hmbar-btn. highlights-runtime.css intentionally strips the
-     standalone 44px FAB box with a stronger ID selector, but two standalone
-     coordinates survive that docked state as well: base right:14px and the
-     fallback bottom:20px become RELATIVE offsets after the runtime's docked
-     rule changes position to relative. That is why the 36px control was still
-     shifted ~14px left / 20px upward after its size was repaired. Neutralize
-     only those standalone coordinates and reassert the host bar's canonical
-     36x36 geometry; no new placement or visual language is introduced. */
+     standalone 44px FAB box with a stronger ID selector, but standalone state
+     can still leak into the docked host in three independent ways:
+       - width:auto/height:auto defeats .hmbar-btn's canonical 36x36 box;
+       - right:14px / fallback bottom:20px become relative offsets once the
+         docked runtime switches position to relative;
+       - .is-bump runs the standalone FAB scale animation. CSS animations win
+         over ordinary transform declarations, so WebKit can observe a docked
+         control around 39.46px mid-bump instead of the fixed 36px host size.
+     Reassert only the host bar's existing geometry, neutral coordinates and
+     non-animated transform. The floating FAB keeps its bump everywhere it is
+     actually floating; no new placement or visual language is introduced. */
   #gb-hl-fab.gb-hl-fab--docked.hmbar-btn {
     width: 36px;
     height: 36px;
@@ -177,5 +181,7 @@ const {
     right: auto;
     bottom: auto;
     left: auto;
+    animation: none;
+    transform: none;
   }
 </style>
