@@ -41,15 +41,18 @@ const entries = registry.entries.filter((entry) => {
 assert.ok(entries.length > 0, 'no canonical site-menu routes found');
 
 // Static fail-safe authority. Rich shared-reader menus must be harmless before
-// any stylesheet or runtime has a chance to run: closed native hidden/inert and
-// bounded, non-filled SVG chevrons. This specifically prevents the historical
-// 300x150 black-triangle failure mode from becoming possible again.
+// any stylesheet or runtime has a chance to run: closed native hidden/inert,
+// natively hidden backdrop, and bounded, non-filled SVG chevrons. This blocks
+// both the historical 300x150 black-triangle failure and a full-screen orphan
+// backdrop if authored presentation is missing or broken.
 for (const entry of entries) {
   const html = fs.readFileSync(distHtmlPath(entry.route), 'utf8');
   if (!html.includes('data-gb-site-menu-variant="rich"')) continue;
   const nav = html.match(/<div\b[^>]*\bid="hMobileNav"[^>]*>/i)?.[0] || '';
+  const backdrop = html.match(/<div\b[^>]*\bid="hMobileBackdrop"[^>]*>/i)?.[0] || '';
   assert.match(nav, /\bhidden(?:\s|>|=)/i, `${entry.route}: rich menu must be natively hidden at SSR`);
   assert.match(nav, /\binert(?:\s|>|=)/i, `${entry.route}: rich menu must be inert at SSR`);
+  assert.match(backdrop, /\bhidden(?:\s|>|=)/i, `${entry.route}: rich menu backdrop must be natively hidden at SSR`);
   const chevrons = [...html.matchAll(/<svg\b[^>]*\bclass="[^"]*gbs-menu-chevron[^"]*"[^>]*>/gi)].map((match) => match[0]);
   assert.equal(chevrons.length, 5, `${entry.route}: expected five rich menu chevrons`);
   for (const svg of chevrons) {
@@ -89,7 +92,9 @@ async function snapshot(page) {
     const panel = document.getElementById('hMobileNav');
     const backdrop = document.getElementById('hMobileBackdrop');
     const rect = panel?.getBoundingClientRect();
+    const backdropRect = backdrop?.getBoundingClientRect();
     const style = panel ? getComputedStyle(panel) : null;
+    const backdropStyle = backdrop ? getComputedStyle(backdrop) : null;
     const links = panel ? [...panel.querySelectorAll('a[href]')] : [];
     const chevrons = panel ? [...panel.querySelectorAll('.gbs-menu-chevron')] : [];
     const svgs = panel ? [...panel.querySelectorAll('svg')] : [];
@@ -102,16 +107,21 @@ async function snapshot(page) {
       variant: panel?.getAttribute('data-gb-site-menu-variant') || null,
       open: Boolean(panel?.classList.contains('open')),
       expanded: trigger?.getAttribute('aria-expanded') || null,
+      panelAriaHidden: panel?.getAttribute('aria-hidden') || null,
       triggerVisible: visible(trigger),
       hidden: Boolean(panel?.hidden),
       inert: Boolean(panel?.hasAttribute('inert') || panel?.inert),
       backdropHidden: backdrop ? Boolean(backdrop.hidden) : null,
+      backdropDisplay: backdropStyle?.display || null,
+      backdropRect: backdropRect ? { width: backdropRect.width, height: backdropRect.height } : null,
       position: style?.position || null,
       display: style?.display || null,
       visibility: style?.visibility || null,
       opacity: style ? Number(style.opacity || 1) : null,
       rect: rect ? { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height } : null,
       visibleLinks: links.filter(visible).length,
+      focusInsidePanel: Boolean(panel?.contains(document.activeElement)),
+      activeElementId: document.activeElement?.id || null,
       chevrons: chevrons.map((node) => {
         const r = node.getBoundingClientRect();
         return {
@@ -133,11 +143,16 @@ async function snapshot(page) {
 
 function closedSafe(state) {
   if (state.open || state.visibleLinks !== 0) return false;
+  const semanticsClosed = state.expanded === 'false' && state.panelAriaHidden === 'true';
   if (state.variant === 'rich') {
-    return state.hidden && state.inert && state.display === 'none'
-      && state.rect?.width === 0 && state.rect?.height === 0;
+    return semanticsClosed
+      && state.hidden && state.inert && state.backdropHidden
+      && state.display === 'none'
+      && state.rect?.width === 0 && state.rect?.height === 0
+      && state.backdropDisplay === 'none'
+      && state.backdropRect?.width === 0 && state.backdropRect?.height === 0;
   }
-  return state.visibility === 'hidden' || state.display === 'none' || state.opacity === 0;
+  return semanticsClosed && (state.visibility === 'hidden' || state.display === 'none' || state.opacity === 0);
 }
 
 async function assertClosed(page, engine, viewport, route, id) {
@@ -153,22 +168,37 @@ async function auditRoute(page, engine, origin, route) {
   // how an orphan mobile menu could leak gigantic SVGs while the test stayed green.
   await page.setViewportSize(MOBILE);
   await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
-  const mobileClosed = await assertClosed(page, engine, 'mobile', route, 'closed menu cannot leak into mobile viewport');
+  const mobileClosed = await assertClosed(page, engine, 'mobile', route, 'closed menu and backdrop cannot leak into mobile viewport');
 
   // Native fallback remains safe even if authored stylesheets are unavailable.
   if (mobileClosed.variant === 'rich') {
     const noCss = await page.evaluate(() => {
       document.querySelectorAll('style,link[rel="stylesheet"]').forEach((node) => node.remove());
       const panel = document.getElementById('hMobileNav');
+      const backdrop = document.getElementById('hMobileBackdrop');
       const rect = panel?.getBoundingClientRect();
+      const backdropRect = backdrop?.getBoundingClientRect();
       return {
         hidden: Boolean(panel?.hidden),
         inert: Boolean(panel?.hasAttribute('inert') || panel?.inert),
         display: panel ? getComputedStyle(panel).display : null,
         rect: rect ? { width: rect.width, height: rect.height } : null,
+        backdropHidden: backdrop ? Boolean(backdrop.hidden) : null,
+        backdropDisplay: backdrop ? getComputedStyle(backdrop).display : null,
+        backdropRect: backdropRect ? { width: backdropRect.width, height: backdropRect.height } : null,
       };
     });
-    check(engine, 'mobile-no-css', route, 'native closed-state survives stylesheet loss', noCss.hidden && noCss.inert && noCss.display === 'none' && noCss.rect?.width === 0 && noCss.rect?.height === 0, noCss);
+    check(
+      engine,
+      'mobile-no-css',
+      route,
+      'native closed-state survives stylesheet loss for panel and backdrop',
+      noCss.hidden && noCss.inert && noCss.display === 'none'
+        && noCss.rect?.width === 0 && noCss.rect?.height === 0
+        && noCss.backdropHidden && noCss.backdropDisplay === 'none'
+        && noCss.backdropRect?.width === 0 && noCss.backdropRect?.height === 0,
+      noCss,
+    );
   }
 
   // Reload after the destructive no-CSS probe, then choose the first viewport in
@@ -193,7 +223,16 @@ async function auditRoute(page, engine, origin, route) {
   await trigger.click();
   await page.waitForTimeout(160);
   const opened = await snapshot(page);
-  check(engine, supportedViewport, route, 'open menu is fixed and five links are visible', opened.open && opened.expanded === 'true' && opened.position === 'fixed' && opened.visibleLinks >= 5 && !opened.hidden, opened);
+  check(
+    engine,
+    supportedViewport,
+    route,
+    'open menu exposes live focusable surface',
+    opened.open && opened.expanded === 'true' && opened.panelAriaHidden === null
+      && opened.position === 'fixed' && opened.visibleLinks >= 5
+      && !opened.hidden && !opened.inert && opened.focusInsidePanel,
+    opened,
+  );
   check(engine, supportedViewport, route, 'menu never creates horizontal document overflow', opened.scrollWidth <= opened.viewport.width + 1, opened);
   check(engine, supportedViewport, route, 'menu rectangle stays inside viewport', opened.rect && opened.rect.left >= -1 && opened.rect.right <= opened.viewport.width + 1 && opened.rect.top >= -1 && opened.rect.bottom <= opened.viewport.height + 1, opened);
 
@@ -209,7 +248,8 @@ async function auditRoute(page, engine, origin, route) {
   }
 
   await page.keyboard.press('Escape');
-  await assertClosed(page, engine, supportedViewport, route, 'Escape restores native hidden closed-state');
+  const escaped = await assertClosed(page, engine, supportedViewport, route, 'Escape restores native hidden closed-state');
+  check(engine, supportedViewport, route, 'Escape restores focus to the menu trigger', escaped.activeElementId === 'hMobileMenuBtn', escaped);
 }
 
 const { server, origin } = await startServer();
@@ -245,7 +285,8 @@ fs.writeFileSync(path.join(REPORTS, 'site-sections-menu-visual-contract.md'), [
   `- Registry-derived menu routes: ${report.routeCount}`,
   `- Browsers: Chromium + WebKit`,
   `- Mobile closed-state: always checked before viewport fallback`,
-  `- Native no-CSS fail-safe: rich menus`,
+  `- Native no-CSS fail-safe: panel + backdrop on rich menus`,
+  `- Close semantics: hidden/inert + aria-expanded/aria-hidden + focus restore`,
   `- Checks: ${report.passed}/${checks.length} PASS`,
   `- Failures: ${report.failed}`,
 ].join('\n') + '\n');
