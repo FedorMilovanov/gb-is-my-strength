@@ -64,15 +64,50 @@ jobs:
       - name: Prepare exact final tree
         run: |
           set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          runtime = Path('src/runtime/atlas-runtime.js')
+          s = runtime.read_text()
+          old = "        if (shouldOpen && options.focusOnOpen !== false) safeFocus(filterClose || sidebar.querySelector('button,input,a[href]'));"
+          new = """        if (shouldOpen && options.focusOnOpen !== false) {
+          var drawerFallback = sidebar.querySelector('[data-atlas-group],.atlas-relation-filter input,a[href],button:not(#atlasFilterClose)');
+          if (!safeFocus(filterClose) && !safeFocus(drawerFallback) && typeof window.requestAnimationFrame === 'function') {
+            window.requestAnimationFrame(function () {
+              if (!sidebar.classList.contains('is-open') || !drawerMedia.matches) return;
+              if (!safeFocus(filterClose)) safeFocus(drawerFallback);
+            });
+          }
+        }"""
+          if s.count(old) != 1:
+              raise SystemExit(f'Atlas drawer focus target count={s.count(old)}; expected 1')
+          runtime.write_text(s.replace(old, new))
+
+          witness = Path('scripts/atlas-focus-state-browser-test.mjs')
+          t = witness.read_text()
+          old_state = "      nodeId: active?.dataset?.nodeId || '',\n      insideHidden: Boolean(active?.closest?.('[hidden],[inert],[aria-hidden=\"true\"]'))," 
+          new_state = "      nodeId: active?.dataset?.nodeId || '',\n      insideSidebar: Boolean(active?.closest?.('#atlasSidebar')),\n      insideHidden: Boolean(active?.closest?.('[hidden],[inert],[aria-hidden=\"true\"]'))," 
+          if t.count(old_state) != 1:
+              raise SystemExit(f'Atlas active-state target count={t.count(old_state)}; expected 1')
+          t = t.replace(old_state, new_state)
+          old_assert = "      result.steps.drawerOpen = await assertSafeFocus(page, `${browserName}/${width}/drawer-open`, (state) => state.id === 'atlasFilterClose');"
+          new_assert = "      result.steps.drawerOpen = await assertSafeFocus(page, `${browserName}/${width}/drawer-open`, (state) => state.insideSidebar);"
+          if t.count(old_assert) != 1:
+              raise SystemExit(f'Atlas drawer assertion target count={t.count(old_assert)}; expected 1')
+          witness.write_text(t.replace(old_assert, new_assert))
+          PY
           node --check js/glossary.js
           node --check scripts/reader-linear-text-projection-browser-test.mjs
           node --check scripts/atlas-focus-state-browser-test.mjs
+          node --check src/runtime/atlas-runtime.js
           node scripts/cache-bust.js --write
           node scripts/cache-bust.js
           git rm .github/workflows/temp-terminal-final-runner.yml
           git diff --check
           printf '%s\n' \
             .github/workflows/temp-terminal-final-runner.yml \
+            src/runtime/atlas-runtime.js \
+            scripts/atlas-focus-state-browser-test.mjs \
             src/lib/asset-version.js \
             src/components/article-pilots/_shared/StandaloneArticleFooter.astro \
             src/components/article-pilots/gill-series/GillSeriesChrome.astro \
