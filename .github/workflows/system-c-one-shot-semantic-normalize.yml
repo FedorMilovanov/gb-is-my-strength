@@ -1,0 +1,41 @@
+name: SYSTEM C one-shot semantic normalization
+
+on:
+  push:
+    branches:
+      - fix/note-publication-truth-20260810
+
+permissions:
+  contents: write
+
+jobs:
+  calibrate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/note-publication-truth-20260810
+          fetch-depth: 0
+      - name: Normalize canonical print-note text semantically
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('scripts/print-pagination-contract.mjs')
+          s = p.read_text()
+          old = "const normalize = (value) => String(value || '').normalize('NFKC').replace(/\\s+/g, ' ').replace(/\\s+([,.;:!?…])/g, '$1').trim();"
+          new = "const normalize = (value) => String(value || '').normalize('NFKC').toLocaleLowerCase('ru-RU').replace(/\\u00ad/g, '').replace(/[^\\p{L}\\p{N}]+/gu, ' ').replace(/\\s+/g, ' ').trim();"
+          if s.count(old) != 1:
+              raise SystemExit(f'print-note normalize: expected exactly one match, got {s.count(old)}')
+          p.write_text(s.replace(old, new, 1))
+          PY
+          node --check scripts/print-pagination-contract.mjs
+          git diff --check
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/print-pagination-contract.mjs
+          git diff --cached --quiet && exit 0
+          git commit -m "test(print): compare canonical note text semantically"
+          git push origin HEAD:fix/note-publication-truth-20260810
