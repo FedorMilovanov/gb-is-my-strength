@@ -82,15 +82,20 @@ function SplitViewComponent({ persons, onClose }: SplitViewProps) {
   const requestClose = useCallback(() => {
     const dialog = dialogRef.current;
     if (dialog?.open) dialog.close();
+  }, []);
 
+  const handleDialogClose = useCallback(() => {
+    // The native close algorithm finishes before the close event. Restore the
+    // exact opener here, after UA modal focus handling, then let React remove
+    // the closed surface. This avoids racing native focus restoration.
     const opener = restoreFocusRef.current;
     if (opener?.isConnected) opener.focus({ preventScroll: true });
     onClose();
   }, [onClose]);
 
   const handleCancel = useCallback((event: SyntheticEvent<HTMLDialogElement>) => {
-    // Keep dismissal in the same lifecycle as the explicit close button so
-    // Escape and pointer activation both restore the exact opener.
+    // Keep Escape dismissal in the same native close lifecycle as the explicit
+    // close button so both paths restore the exact opener.
     event.preventDefault();
     requestClose();
   }, [requestClose]);
@@ -184,6 +189,7 @@ function SplitViewComponent({ persons, onClose }: SplitViewProps) {
       aria-labelledby="genealogy-split-title"
       aria-describedby="genealogy-split-description"
       onCancel={handleCancel}
+      onClose={handleDialogClose}
       onKeyDown={handleKeyDown}
       tabIndex={-1}
       style={{
