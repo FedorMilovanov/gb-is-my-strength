@@ -197,13 +197,26 @@ async function runCase(browserName, browserType, baseUrl, width) {
       result.steps.detailEscape = await assertSafeFocus(page, `${browserName}/${width}/detail-escape`, (state) => String(state.className).includes('atlas-node'));
     }
 
-    await page.locator('[data-atlas-view="list"]').click();
-    await page.waitForFunction(() => !document.getElementById('atlasListView')?.hidden);
-    const listFocus = page.locator('[data-list-focus]:visible').first();
-    await listFocus.focus();
-    await listFocus.click();
-    await page.waitForFunction(() => !document.getElementById('atlasGraphView')?.hidden);
-    result.steps.listToGraph = await assertSafeFocus(page, `${browserName}/${width}/list-to-graph`, (state) => String(state.className).includes('atlas-node'));
+    const listButton = page.locator('[data-atlas-view="list"]');
+    if (compact) {
+      assert.equal(await listButton.isVisible(), false, `${browserName}/${width}: drawer layout must hide desktop List switch`);
+      const graphState = await page.evaluate(() => ({
+        graphHidden: document.getElementById('atlasGraphView')?.hidden,
+        listHidden: document.getElementById('atlasListView')?.hidden,
+      }));
+      assert.equal(graphState.graphHidden, false, `${browserName}/${width}: drawer layout must retain Graph view`);
+      assert.equal(graphState.listHidden, true, `${browserName}/${width}: drawer layout must keep List view hidden`);
+      result.steps.listAvailability = { visible: false, graphState };
+    } else {
+      await listButton.waitFor({ state: 'visible' });
+      await listButton.click();
+      await page.waitForFunction(() => !document.getElementById('atlasListView')?.hidden);
+      const listFocus = page.locator('[data-list-focus]:visible').first();
+      await listFocus.focus();
+      await listFocus.click();
+      await page.waitForFunction(() => !document.getElementById('atlasGraphView')?.hidden);
+      result.steps.listToGraph = await assertSafeFocus(page, `${browserName}/${width}/list-to-graph`, (state) => String(state.className).includes('atlas-node'));
+    }
 
     const historyNode = page.locator('.atlas-node:not(.is-filtered-out)[tabindex="0"]').first();
     await historyNode.focus();
@@ -223,6 +236,7 @@ async function runCase(browserName, browserType, baseUrl, width) {
       await page.waitForTimeout(180);
       result.steps.resize = await assertSafeFocus(page, `${browserName}/${width}/resize`, (state) =>
         String(state.className).includes('atlas-node') || state.id === 'atlasFilterTrigger');
+      result.steps.resizeSurfaces = await assertClosedSurfaceState(page, resizeTarget <= 980);
     }
 
     assert.deepEqual(errors, [], `${browserName}/${width}: uncaught page errors`);
