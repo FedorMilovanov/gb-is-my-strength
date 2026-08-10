@@ -96,6 +96,14 @@ function check(engine, viewport, route, id, pass, evidence) {
   assert.ok(pass, `${engine}/${viewport} ${route}: ${id} :: ${JSON.stringify(evidence)}`);
 }
 
+async function waitForRuntime(page) {
+  await page.waitForFunction(
+    () => document.getElementById('hMobileMenuBtn')?.getAttribute('data-gb-site-menu-owner') === 'canonical-runtime',
+    null,
+    { timeout: 5000 },
+  );
+}
+
 async function snapshot(page) {
   return page.evaluate(() => {
     const trigger = document.getElementById('hMobileMenuBtn');
@@ -122,6 +130,7 @@ async function snapshot(page) {
       hidden: Boolean(panel?.hidden),
       inert: Boolean(panel?.hasAttribute('inert') || panel?.inert),
       backdropHidden: backdrop ? Boolean(backdrop.hidden) : null,
+      backdropVisible: visible(backdrop),
       backdropDisplay: backdropStyle?.display || null,
       backdropRect: backdropRect ? { width: backdropRect.width, height: backdropRect.height } : null,
       position: style?.position || null,
@@ -178,6 +187,7 @@ async function auditRoute(page, engine, origin, route) {
   // how an orphan mobile menu could leak gigantic SVGs while the test stayed green.
   await page.setViewportSize(MOBILE);
   await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
+  await waitForRuntime(page);
   const mobileClosed = await assertClosed(page, engine, 'mobile', route, 'closed menu and backdrop cannot leak into mobile viewport');
 
   // Native fallback remains safe even if authored stylesheets are unavailable.
@@ -247,6 +257,7 @@ async function auditRoute(page, engine, origin, route) {
   // which the real opener is supported. Closed-state assertions are repeated on
   // desktop before any interaction so both breakpoints are independently covered.
   await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
+  await waitForRuntime(page);
   await page.waitForTimeout(300);
   let supportedViewport = 'mobile';
   let state = await snapshot(page);
@@ -287,13 +298,16 @@ async function auditRoute(page, engine, origin, route) {
       && row.attrFill === 'none' && row.attrStroke === 'currentColor'
     );
     check(engine, supportedViewport, route, 'rich reader menu chevrons cannot escape native or CSS icon geometry', chevronsBounded && opened.maxSvgWidth <= 20 && opened.maxSvgHeight <= 20, opened);
+    if (supportedViewport === 'mobile') {
+      check(engine, supportedViewport, route, 'rich mobile menu exposes its backdrop while open', opened.backdropVisible, opened);
+    }
   }
 
   await page.keyboard.press('Escape');
   const escaped = await assertClosed(page, engine, supportedViewport, route, 'Escape restores native hidden closed-state');
   check(engine, supportedViewport, route, 'Escape restores focus to the menu trigger', escaped.activeElementId === 'hMobileMenuBtn', escaped);
 
-  if (opened.variant === 'rich') {
+  if (opened.variant === 'rich' && supportedViewport === 'mobile') {
     await trigger.click();
     await page.waitForTimeout(160);
     await page.locator('#hMobileBackdrop').click({ position: { x: 5, y: 5 } });
