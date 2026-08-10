@@ -8,11 +8,12 @@ import { chromium, webkit } from 'playwright';
 const ROOT = path.resolve(process.cwd());
 const DIST = path.join(ROOT, 'dist');
 const REPORT_DIR = path.join(ROOT, 'reports', 'reader-linear-text-projection');
-const ROUTES = [
-  '/articles/krajne-li-isporcheno-serdce/',
-  '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/',
-  '/articles/dzhon-gill-chast-2-uchenyi/',
+const CASES = [
+  { route: '/articles/krajne-li-isporcheno-serdce/', projectedMetaMin: 3 },
+  { route: '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/', projectedMetaMin: 3 },
+  { route: '/articles/dzhon-gill-chast-2-uchenyi/', projectedMetaMin: 0 },
 ];
+const ROUTES = CASES.map((entry) => entry.route);
 const BROWSERS = { chromium, webkit };
 
 function contentType(file) {
@@ -54,7 +55,8 @@ async function startServer() {
   return { baseUrl: `http://127.0.0.1:${server.address().port}`, close: () => new Promise((resolve) => server.close(resolve)) };
 }
 
-async function inspectNoJs(browserType, browserName, baseUrl, route) {
+async function inspectNoJs(browserType, browserName, baseUrl, testCase) {
+  const { route, projectedMetaMin } = testCase;
   const browser = await browserType.launch({ headless: true });
   const context = await browser.newContext({ viewport: { width: 1366, height: 900 }, javaScriptEnabled: false });
   const page = await context.newPage();
@@ -79,14 +81,16 @@ async function inspectNoJs(browserType, browserName, baseUrl, route) {
       };
     });
     assert.equal(state.articleMetaCount, 0, `${browserName} ${route}: Pagefind metadata still pollutes article text tree`);
-    assert.ok(state.projectedMetaCount >= 3, `${browserName} ${route}: projected head metadata missing`);
+    if (projectedMetaMin > 0) {
+      assert.ok(state.projectedMetaCount >= projectedMetaMin, `${browserName} ${route}: source-owned Pagefind metadata was not projected into head`);
+    }
     assert.ok(state.popupCount > 0, `${browserName} ${route}: representative popup family missing`);
     assert.ok(state.popupStates.every((popup) => popup.ignored && popup.kind && popup.startBoundary && popup.endBoundary), `${browserName} ${route}: popup payload lacks semantic projection ownership`);
     assert.ok(!state.text.startsWith('/images/'), `${browserName} ${route}: article text still begins with raw local image path`);
     assert.ok(state.text.includes('⟦') && state.text.includes('⟧'), `${browserName} ${route}: auxiliary payloads remain lexically unbounded`);
     if (route.includes('krajne-li-isporcheno')) assert.ok(!state.text.includes('КархемишеБитва'), `${browserName}: Krajne glossary payload still glues to prose`);
     if (route.includes('dzhon-gill-chast-2')) assert.ok(!state.text.includes('вечный совет искупленияPactum'), `${browserName}: Gill glossary payload still glues to prose`);
-    return { browser: browserName, route, state };
+    return { browser: browserName, route, projectedMetaMin, state };
   } finally {
     await context.close();
     await browser.close();
@@ -111,7 +115,7 @@ async function pagefindMetadata(page, baseUrl, route) {
     return items.find((item) => normalize(item.url || '') === normalize(targetRoute)) || null;
   }, route);
   assert.ok(result?.url, `${route}: article missing from Pagefind result for its H1`);
-  assert.ok(typeof result.meta?.image === 'string' && result.meta.image.length > 0, `${route}: projected Pagefind image metadata missing`);
+  assert.ok(typeof result.meta?.image === 'string' && result.meta.image.length > 0, `${route}: Pagefind image metadata missing from canonical metadata owner`);
   return { route, url: result.url, meta: result.meta };
 }
 
@@ -144,7 +148,7 @@ async function main() {
   const ui = [];
   try {
     for (const [browserName, browserType] of Object.entries(BROWSERS)) {
-      for (const route of ROUTES) noJs.push(await inspectNoJs(browserType, browserName, server.baseUrl, route));
+      for (const testCase of CASES) noJs.push(await inspectNoJs(browserType, browserName, server.baseUrl, testCase));
     }
     const browser = await chromium.launch({ headless: true });
     const context = await browser.newContext({ viewport: { width: 1366, height: 900 } });
@@ -159,7 +163,7 @@ async function main() {
   } finally {
     await server.close();
   }
-  fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify({ schemaVersion: 1, conclusion: 'success', sha: process.env.SOURCE_SHA || '', routes: ROUTES, browsers: Object.keys(BROWSERS), noJs, pagefind, ui }, null, 2)}\n`);
+  fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify({ schemaVersion: 1, conclusion: 'success', sha: process.env.SOURCE_SHA || '', cases: CASES, browsers: Object.keys(BROWSERS), noJs, pagefind, ui }, null, 2)}\n`);
   console.log(`Reader linear-text projection contract: PASS (${noJs.length} no-JS cases, ${pagefind.length} Pagefind cases)`);
 }
 

@@ -1,9 +1,17 @@
 # Permanent browser proof for V07-ATLAS-FOCUS-STATE.
-# Refreshed after rebasing onto current main with terminal Krajne + MapEngine repairs.
 name: Atlas Focus State Contract
 
 on:
   pull_request:
+    paths:
+      - 'src/runtime/atlas-runtime.js'
+      - 'src/components/map/**'
+      - 'scripts/atlas-focus-state-browser-test.mjs'
+      - '.github/workflows/atlas-focus-state.yml'
+      - 'package.json'
+      - 'package-lock.json'
+  push:
+    branches: [main]
     paths:
       - 'src/runtime/atlas-runtime.js'
       - 'src/components/map/**'
@@ -17,7 +25,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: atlas-focus-state-${{ github.event.pull_request.number || github.ref }}
+  group: atlas-focus-state-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -26,12 +34,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
-      - name: Checkout exact source
+      - name: Checkout exact tested commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
           fetch-depth: 0
+      - name: Prove commit identity
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:

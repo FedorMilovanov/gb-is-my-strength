@@ -106,20 +106,36 @@ async function assertClosedSurfaceState(page, compact) {
 
 async function resetThroughVisibleUi(page, compact, label) {
   const reset = page.locator('#atlasReset');
-  if (!compact) {
-    await reset.waitFor({ state: 'visible' });
+  if (await reset.isVisible()) {
     await reset.click();
-    return assertSafeFocus(page, `${label}/desktop-reset`, (state) => state.id === 'atlasReset');
+    return assertSafeFocus(page, `${label}/reset`, (state) => state.id === 'atlasReset');
   }
 
-  const trigger = page.locator('#atlasFilterTrigger');
-  await trigger.click();
-  await page.waitForFunction(() => document.getElementById('atlasSidebar')?.classList.contains('is-open'));
-  await reset.waitFor({ state: 'visible' });
-  await reset.click();
-  await page.locator('#atlasFilterClose').click();
-  await page.waitForFunction(() => !document.getElementById('atlasSidebar')?.classList.contains('is-open'));
-  return assertSafeFocus(page, `${label}/compact-reset-close`, (state) => state.id === 'atlasFilterTrigger');
+  const cleanInputs = await page.evaluate(() => ({
+    search: document.getElementById('atlasSearchInput')?.value || '',
+    relationsChecked: Array.from(document.querySelectorAll('.atlas-relation-filter input')).every((input) => input.checked),
+  }));
+  assert.equal(cleanInputs.search, '', `${label}: hidden reset fallback requires an empty search`);
+  assert.equal(cleanInputs.relationsChecked, true, `${label}: hidden reset fallback requires all relation filters enabled`);
+
+  const allGroup = page.locator('[data-atlas-group="all"]');
+  if (compact) {
+    const trigger = page.locator('#atlasFilterTrigger');
+    if (!(await page.locator('#atlasSidebar').evaluate((sidebar) => sidebar.classList.contains('is-open')))) {
+      await trigger.click();
+      await page.waitForFunction(() => document.getElementById('atlasSidebar')?.classList.contains('is-open'));
+    }
+    await allGroup.waitFor({ state: 'visible' });
+    await allGroup.focus();
+    await allGroup.click();
+    await page.waitForFunction(() => !document.getElementById('atlasSidebar')?.classList.contains('is-open'));
+    return assertSafeFocus(page, `${label}/compact-all`, (state) => state.id === 'atlasFilterTrigger');
+  }
+
+  await allGroup.waitFor({ state: 'visible' });
+  await allGroup.focus();
+  await allGroup.click();
+  return assertSafeFocus(page, `${label}/desktop-all`, (state) => String(state.className).includes('atlas-theme'));
 }
 
 async function runCase(browserName, browserType, baseUrl, width) {
