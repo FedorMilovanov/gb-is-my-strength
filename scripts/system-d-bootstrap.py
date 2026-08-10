@@ -28,7 +28,7 @@ def patch_job(path, job_name, mutation_anchor, commit_message):
     )
     once(
         "          ref: ${{ github.event.pull_request.head.ref }}\n",
-        "          ref: ${{ github.event.pul_request.head.sha }}\n",
+        "          ref: ${{ github.event.pull_request.head.sha }}\n",
         "immutable checkout",
     )
     lease_steps = (
@@ -87,23 +87,23 @@ def patch_job(path, job_name, mutation_anchor, commit_message):
 patch_job(
     '.github/workflows/glossary-contract.yml',
     'placement-autofix',
-    '      - name: Check normalizer syntax\n",
+    '      - name: Check normalizer syntax\n',
     'fix(content): normalize glossary and tooltip contracts',
 )
 patch_job(
     '.github/workflows/indexnow.yml',
     'headline-autofix',
-     '      - name: Normalize registered article headlines\n',
+    '      - name: Normalize registered article headlines\n',
     'fix(metadata): normalize canonical article headline',
 )
 patch_job(
     '.github/workflows/search-manifest-policy.yml',
     'search-manifest-autofix',
-    '      - name: Install dependencies\n",
+    '      - name: Install dependencies\n',
     'fix(search): align manifest, RSS and sitemap with route policy',
 )
 patch_job(
-     '.github/workflows/scripture-occurrence-index-contract.yml',
+    '.github/workflows/scripture-occurrence-index-contract.yml',
     'scripture-occurrence-autofix',
     '      - name: Generate canonical Scripture occurrence index\n',
     'fix(scripture): regenerate occurrence index',
@@ -121,7 +121,7 @@ replacements = [
     (
         "  must(file, job, /ref:\\s*\\$\\{\\{\\s*github\\.event\\.pull_request\\.head\\.ref\\s*\\}\\}/, `${jobName} must checkout the exact PR branch`);\n",
         "  must(file, job, /ref:\\s*\\$\\{\\{\\s*github\\.event\\.pull_request\\.head\\.sha\\s*\\}\\}/, `${jobName} must checkout the immutable queued PR head`);\n"
-        "  must(file, job, /node scripts\\/writer-lease\\.mjs snapshot/, `${jobName} must snapshot the queud machine writer lease`);\n"
+        "  must(file, job, /node scripts\\/writer-lease\\.mjs snapshot/, `${jobName} must snapshot the queued machine writer lease`);\n"
         "  must(file, job, /writer-lease\\.mjs assert-live --phase=pre-mutation/, `${jobName} must reject a stale lease before local mutation`);\n"
         "  must(file, job, /writer-lease\\.mjs assert-live --phase=pre-commit/, `${jobName} must prove live lease + expected head before commit`);\n"
         "  must(file, job, /writer-lease\\.mjs assert-live --phase=pre-push/, `${jobName} must re-prove live lease + expected head immediately before push`);\n",
@@ -159,7 +159,7 @@ targets = {
 }
 markers = [
     "contains(github.event.pull_request.labels.*.name, 'autofix')",
-    "github.event.pul_request.head.repo.full_name == github.repository",
+    "github.event.pull_request.head.repo.full_name == github.repository",
     "ref: ${{ github.event.pull_request.head.sha }}",
     "node scripts/writer-lease.mjs snapshot",
     "node scripts/writer-lease.mjs assert-live --phase=pre-mutation",
@@ -199,7 +199,8 @@ Any same-repository PR that grants a repo-writing applicator/autofix must carry 
 
 ```md
 <!-- GB_WRITER_LEASE_V1
-{  "version": 1,
+{
+  \"version\": 1,
   \"laneId\": \"stable-lane-id\",
   \"pr\": 1234,
   \"branch\": \"lane/example\",
@@ -220,7 +221,6 @@ Permanent branch writers use `scripts/writer-lease.mjs`: checkout the immutable 
 Handoff is explicit only: successor generation is exactly predecessor generation + 1, owner token changes, `acquisitionSha` becomes the exact handoff head, and `handoff` records predecessor/successor token + generation + head. A later timestamp never steals a lease.
 
 Retirement never uses TTL/age. The current owner changes `status` to `retired` without changing owner/generation/acquisition SHA and records exact `retirement.atHead`, a reason, and a final `BRANCH_LIFECYCLE_V4.md` disposition. Retirement ends write authority; it does not by itself authorize branch deletion, rewrite or closure. Read-only auditors do not need a writer lease.
-
 
 """
 if s.count(anchor) != 1:
