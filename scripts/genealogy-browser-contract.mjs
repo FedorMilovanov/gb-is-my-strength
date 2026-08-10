@@ -9,6 +9,7 @@ import { chromium, webkit } from 'playwright';
 const ROOT = path.resolve(process.cwd());
 const DIST = path.join(ROOT, 'dist');
 const REPORT_DIR = path.join(ROOT, 'reports', 'genealogy-browser-contract');
+const GENEALOGY_DATA_PATH = path.join(ROOT, 'data', 'genealogy', 'genealogy.json');
 const BROWSERS = { chromium, webkit };
 const browserNames = String(process.env.GENEALOGY_BROWSERS || 'chromium,webkit')
   .split(',')
@@ -18,6 +19,15 @@ const VIEWPORTS = [
   { width: 390, height: 844 },
   { width: 1440, height: 1000 },
 ];
+
+function readExpectedPersonNodes() {
+  const source = JSON.parse(fs.readFileSync(GENEALOGY_DATA_PATH, 'utf8'));
+  const count = Array.isArray(source?.persons) ? source.persons.length : 0;
+  assert.ok(count > 0, 'canonical data/genealogy/genealogy.json has no persons');
+  return count;
+}
+
+const EXPECTED_PERSON_NODES = readExpectedPersonNodes();
 
 function contentType(filePath) {
   const extension = path.extname(filePath).toLowerCase();
@@ -195,7 +205,7 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     await waitForViewportStable(page);
 
     const initial = await measurePersonViewport(page);
-    assert.equal(initial.mountedPersonNodes, 143, `${browserName} ${viewport.width}x${viewport.height}: genealogy dataset mount count changed`);
+    assert.equal(initial.mountedPersonNodes, EXPECTED_PERSON_NODES, `${browserName} ${viewport.width}x${viewport.height}: genealogy dataset mount count diverged from canonical data/genealogy/genealogy.json`);
     assert.ok(initial.visiblePersonCards > 0, `${browserName} ${viewport.width}x${viewport.height}: settled initial viewport contains no visible person cards`);
     assert.ok(initial.visibleArea > 0, `${browserName} ${viewport.width}x${viewport.height}: settled initial viewport has no useful person-card area`);
 
@@ -205,7 +215,7 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     await fitButton.click();
     await waitForViewportStable(page);
     const afterFit = await measurePersonViewport(page);
-    assert.equal(afterFit.mountedPersonNodes, 143, `${browserName} ${viewport.width}x${viewport.height}: Fit View changed mounted person count`);
+    assert.equal(afterFit.mountedPersonNodes, EXPECTED_PERSON_NODES, `${browserName} ${viewport.width}x${viewport.height}: Fit View changed mounted person count relative to canonical dataset`);
     assert.ok(afterFit.visiblePersonCards > 0, `${browserName} ${viewport.width}x${viewport.height}: canonical Fit View contains no visible person cards`);
     assert.ok(afterFit.visibleArea > 0, `${browserName} ${viewport.width}x${viewport.height}: canonical Fit View has no useful person-card area`);
 
@@ -240,7 +250,7 @@ async function main() {
       for (const viewport of VIEWPORTS) {
         const result = await runViewport(browserName, browserType, server.baseUrl, viewport);
         results.push(result);
-        console.log(`[genealogy] ${browserName} ${viewport.width}x${viewport.height}: initial=${result.initial.visiblePersonCards}, fit=${result.afterFit.visiblePersonCards}, search=${result.afterSearch.visiblePersonCards}`);
+        console.log(`[genealogy] ${browserName} ${viewport.width}x${viewport.height}: expected=${EXPECTED_PERSON_NODES}, initial=${result.initial.visiblePersonCards}, fit=${result.afterFit.visiblePersonCards}, search=${result.afterSearch.visiblePersonCards}`);
       }
     }
   } finally {
@@ -252,7 +262,8 @@ async function main() {
     conclusion: 'success',
     sha: process.env.SOURCE_SHA || '',
     route: '/rodosloviye/',
-    expectedPersonNodes: 143,
+    expectedPersonNodes: EXPECTED_PERSON_NODES,
+    expectedPersonNodesAuthority: 'data/genealogy/genealogy.json#persons.length',
     browsers: browserNames,
     viewports: VIEWPORTS,
     results,
@@ -268,6 +279,8 @@ main().catch((error) => {
     conclusion: 'failure',
     sha: process.env.SOURCE_SHA || '',
     route: '/rodosloviye/',
+    expectedPersonNodes: EXPECTED_PERSON_NODES,
+    expectedPersonNodesAuthority: 'data/genealogy/genealogy.json#persons.length',
     error: String(error?.stack || error),
   };
   fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify(report, null, 2)}\n`);
