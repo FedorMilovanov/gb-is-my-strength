@@ -34,6 +34,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
           git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
           printf '%s\n' \
+            .github/workflows/temp-terminal-final-runner.yml \
             .github/workflows/temp-terminal-postmerge-proof.yml \
             src/lib/asset-version.js \
             src/components/article-pilots/_shared/StandaloneArticleFooter.astro \
