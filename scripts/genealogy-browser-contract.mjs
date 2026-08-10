@@ -183,12 +183,14 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
   const context = await browser.newContext({ viewport });
   const page = await context.newPage();
   const pageErrors = [];
-  page.on('pageerror', (error) => pageErrors.push(String(error?.stack || error)));
+  let phase = 'navigation';
+  page.on('pageerror', (error) => pageErrors.push(`[${phase}] ${String(error?.stack || error)}`));
 
   try {
     const response = await page.goto(`${baseUrl}/rodosloviye/`, { waitUntil: 'networkidle' });
     assert.ok(response?.ok(), `${browserName} ${viewport.width}x${viewport.height}: /rodosloviye/ did not load successfully`);
 
+    phase = 'initial-settle';
     await page.waitForFunction(() => document.querySelectorAll('.react-flow__node .genealogy-node').length === 143);
     await waitForViewportStable(page);
 
@@ -197,6 +199,7 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     assert.ok(initial.visiblePersonCards > 0, `${browserName} ${viewport.width}x${viewport.height}: settled initial viewport contains no visible person cards`);
     assert.ok(initial.visibleArea > 0, `${browserName} ${viewport.width}x${viewport.height}: settled initial viewport has no useful person-card area`);
 
+    phase = 'fit-view';
     const fitButton = page.locator('.react-flow__controls-fitview');
     await fitButton.waitFor({ state: 'visible' });
     await fitButton.click();
@@ -206,6 +209,7 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     assert.ok(afterFit.visiblePersonCards > 0, `${browserName} ${viewport.width}x${viewport.height}: canonical Fit View contains no visible person cards`);
     assert.ok(afterFit.visibleArea > 0, `${browserName} ${viewport.width}x${viewport.height}: canonical Fit View has no useful person-card area`);
 
+    phase = 'search';
     const search = page.getByRole('textbox', { name: 'Поиск по имени' });
     await search.fill('Адам');
     await waitForViewportStable(page);
@@ -213,7 +217,9 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     assert.ok(afterSearch.visibleIds.includes('adam'), `${browserName} ${viewport.width}x${viewport.height}: search did not center Adam into the useful viewport`);
     await page.getByText('Все детали', { exact: true }).waitFor({ state: 'visible' });
 
+    phase = 'split-view';
     await assertSplitLifecycle(page);
+    phase = 'final';
     assert.deepEqual(pageErrors, [], `${browserName} ${viewport.width}x${viewport.height}: uncaught page errors`);
 
     return { browser: browserName, viewport, initial, afterFit, afterSearch, pageErrors };
