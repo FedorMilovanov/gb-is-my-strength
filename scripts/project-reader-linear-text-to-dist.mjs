@@ -197,7 +197,7 @@ function projectFile(file) {
       if (hasAttr(node.startRaw, 'data-pagefind-meta') && node.endTagStart != null) {
         const key = attrValue(node.startRaw, 'data-pagefind-meta');
         const value = decodeText(html.slice(node.startTagEnd, node.endTagStart));
-        if (key && value) headMeta.push(`<meta data-pagefind-meta="${escapeAttr(key)}" content="${escapeAttr(value)}" data-reader-meta-projected="true">`);
+        if (key && value) headMeta.push(`<meta data-pagefind-meta="${escapeAttr(key)}[content]" content="${escapeAttr(value)}" data-reader-meta-projected="true">`);
         operations.push({ start: node.start, end: node.end, text: '' });
         metadataCount += 1;
         continue;
