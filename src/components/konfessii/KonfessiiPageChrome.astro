@@ -31,10 +31,12 @@
 
 <script is:inline>
 // Глубокий 3D Tilt + золотое мерцание рамки (только существующие паттерны, RAF)
+const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 const cards = document.querySelectorAll('.card:not(.soon)');
 cards.forEach(card => {
   let raf = null;
   card.addEventListener('mousemove', (e) => {
+    if (motionPreference.matches) return;
     if (raf) cancelAnimationFrame(raf);
     raf = requestAnimationFrame(() => {
       const rect = card.getBoundingClientRect();
@@ -50,15 +52,22 @@ cards.forEach(card => {
   card.addEventListener('mouseleave', () => {
     if (raf) cancelAnimationFrame(raf);
     card.classList.remove('shimmering');
+    if (motionPreference.matches) {
+      card.style.transition = '';
+      card.style.transform = '';
+      return;
+    }
     card.style.transition = 'transform .82s cubic-bezier(0.22,1,0.36,1)';
     card.style.transform = '';
     setTimeout(() => { card.style.transition = ''; }, 820);
   });
   card.addEventListener('mousedown', () => {
+    if (motionPreference.matches) return;
     card.style.transition = 'transform .085s cubic-bezier(0.22,1,0.36,1)';
     card.style.transform = (card.style.transform || '') + ' scale(0.975)';
   });
   card.addEventListener('mouseup', () => {
+    if (motionPreference.matches) return;
     card.style.transition = 'transform .62s cubic-bezier(0.22,1,0.36,1)';
   });
   if (card.classList.contains('live')) {
@@ -67,23 +76,49 @@ cards.forEach(card => {
 });
 
 function startCardShimmer(card) {
-  setInterval(() => {
-    if (!card.matches(':hover')) {
-      card.style.transition = 'box-shadow .6s cubic-bezier(.22,1,.36,1)';
-      card.style.boxShadow = '0 12px 38px rgba(0,0,0,.42), inset 0 0 0 1px rgba(232,200,121,.06), 0 0 14px rgba(232,200,121,.28)';
-      setTimeout(() => {
-        if (!card.matches(':hover')) {
-          card.style.boxShadow = '0 12px 38px rgba(0,0,0,.42), inset 0 0 0 1px rgba(232,200,121,.035), 0 0 0 1px var(--gold)';
-          card.style.transition = '';
-        }
-      }, 420);
-    }
-  }, 4200);
+  let intervalId = null;
+  let resetId = null;
+
+  const reset = () => {
+    if (intervalId) clearInterval(intervalId);
+    if (resetId) clearTimeout(resetId);
+    intervalId = null;
+    resetId = null;
+    card.style.boxShadow = '';
+    card.style.transition = '';
+  };
+
+  const pulse = () => {
+    if (motionPreference.matches || card.matches(':hover')) return;
+    card.style.transition = 'box-shadow .6s cubic-bezier(.22,1,.36,1)';
+    card.style.boxShadow = '0 12px 38px rgba(0,0,0,.42), inset 0 0 0 1px rgba(232,200,121,.06), 0 0 14px rgba(232,200,121,.28)';
+    resetId = setTimeout(() => {
+      resetId = null;
+      if (!motionPreference.matches && !card.matches(':hover')) {
+        card.style.boxShadow = '0 12px 38px rgba(0,0,0,.42), inset 0 0 0 1px rgba(232,200,121,.035), 0 0 0 1px var(--gold)';
+        card.style.transition = '';
+      }
+    }, 420);
+  };
+
+  const sync = () => {
+    reset();
+    if (!motionPreference.matches) intervalId = setInterval(pulse, 4200);
+  };
+
+  motionPreference.addEventListener?.('change', sync);
+  sync();
 }
 
 const grid = document.querySelector('.grid');
 if (grid) {
   grid.querySelectorAll('.card').forEach((c, i) => {
+    if (motionPreference.matches) {
+      c.style.transitionDelay = '';
+      c.style.transition = 'none';
+      c.style.opacity = '1';
+      return;
+    }
     c.style.transitionDelay = (78 * i) + 'ms';
     setTimeout(() => {
       c.style.transition = 'opacity .72s cubic-bezier(.22,1,.36,1), transform .72s cubic-bezier(.22,1,.36,1)';

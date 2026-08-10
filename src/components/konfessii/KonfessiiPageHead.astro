@@ -6,7 +6,7 @@ import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreference
 <meta charset="utf-8">
 <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin>
 <link rel="preconnect" href="https://mc.yandex.ru" crossorigin>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://cdn.jsdelivr.net; img-src 'self' https://gospod-bog.ru https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com wss://mc.yandex.ru wss://*.yandex.ru wss://*.yandex.com wss://*.yandex.com https://huggingface.co https://*.aws.cdn.hf.co https://cdn.jsdelivr.net; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com; media-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://cdn.jsdelivr.net; img-src 'self' https://gospod-bog.ru https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com wss://mc.yandex.ru wss://*.yandex.ru wss://mc.yandex.com wss://*.yandex.com https://huggingface.co https://*.aws.cdn.hf.co https://cdn.jsdelivr.net; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com; media-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self';">
   <ReaderPreferencesHead />
 
 
@@ -105,6 +105,11 @@ footer.k{padding:30px 0 30px;text-align:center;font-size:11px;color:#5e6570;lett
 footer.k a{color:var(--muted);text-decoration:none}
 footer.k a:hover{color:var(--gold)}
 @media(max-width:560px){.hero{padding:44px 0 30px}.grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){
+  .card,.card:hover,.card .art svg,.card:hover .art svg,.card .cta::before,.card .cta::after,.back{transition:none!important}
+  .card,.card:hover,.card.live,.card .live i{animation:none!important}
+  .card:hover,.card:hover .art svg{transform:none!important}
+}
 </style>
   <link rel="alternate" type="application/rss+xml" title="Господь Бог — Сила Моя — RSS" href="https://gospod-bog.ru/feed.xml">
   <link rel="manifest" href="/manifest.json">
