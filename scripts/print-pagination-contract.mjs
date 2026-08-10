@@ -9,9 +9,9 @@
  * so diagnostic markers can never create false trailing pages.
  *
  * Note-bearing publication routes are derived from the generated NoteRegistry.
- * Their canonical endnotes are verified in the same physical PDFs, and one
- * real-PDF mutation proves semantic completeness fails independently of the
- * pagination/raster geometry gates.
+ * Their canonical endnotes are verified in physical PDFs, and one real-PDF
+ * mutation proves semantic completeness fails independently of the pagination/
+ * raster geometry gates. Legacy pagination markers remain owned by BASE_ROUTES.
  */
 import { createServer } from 'node:http';
 import { readFile, stat, mkdir, writeFile } from 'node:fs/promises';
@@ -25,6 +25,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
 const OUT = join(ROOT, process.env.GB_PRINT_PAGINATION_ARTIFACT_DIR || 'reports/print-pagination-contract');
 const MARKERS = join(OUT, 'markers');
+const NOTE_MARKERS = join(OUT, 'note-markers');
 const MUTATION = join(OUT, 'mutation');
 const NOTE_REGISTRY_PATH = join(DIST, 'data', 'note-registry.json');
 const MIME = { '.html':'text/html', '.css':'text/css', '.js':'text/javascript', '.svg':'image/svg+xml', '.webp':'image/webp', '.png':'image/png', '.json':'application/json', '.woff2':'font/woff2' };
@@ -35,6 +36,7 @@ const BASE_ROUTES = [
   ['baptist-series', '/baptisty-rossii/podpolnaya-pechat/'],
   ['single-article', '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/']
 ];
+const PAGINATION_ROUTE_URLS = new Set(BASE_ROUTES.map(([, url]) => url));
 
 function routeId(route) {
   const slug = String(route || '')
@@ -136,6 +138,7 @@ function pageMap(text) {
 
 await mkdir(OUT, { recursive: true });
 await mkdir(MARKERS, { recursive: true });
+await mkdir(NOTE_MARKERS, { recursive: true });
 await mkdir(MUTATION, { recursive: true });
 const { server, base } = await serve();
 const pinned = process.env.GB_PLAYWRIGHT_CHROMIUM || '/opt/pw-browsers/chromium';
@@ -150,6 +153,7 @@ let mutationWitnessDone = false;
 try {
   for (let routeIndex = 0; routeIndex < ROUTES.length; routeIndex += 1) {
     const [id, url, routeNotes = []] = ROUTES[routeIndex];
+    const enforcePaginationMarkers = PAGINATION_ROUTE_URLS.has(url);
     const context = await browser.newContext({ viewport: { width: 1240, height: 900 } });
     const page = await context.newPage();
     await page.route(/gospod-bog\.ru|mc\.yandex/, (r) => r.abort());
@@ -476,19 +480,27 @@ try {
     });
     if (badCards.length) report.failures.push(`${id}: reversible-card print flow is not atomic/single-face: ${JSON.stringify(badCards.slice(0, 4))}`);
 
-    const printNoteState = routeNotes.length ? await page.evaluate((expectedIds) => {
+    const printNoteState = routeNotes.length ? await page.evaluate((expected) => {
       const failures = [];
-      for (const id of expectedIds) {
-        const item = document.querySelector(`[data-note-registry-endnotes] li[data-note-id="${id}"]`);
+      const normalize = (value) => String(value || '').normalize('NFKC').replace(/\s+/g, ' ').replace(/\s+([,.;:!?…])/g, '$1').trim();
+      for (const note of expected) {
+        const item = document.querySelector(`[data-note-registry-endnotes] li[data-note-id="${note.id}"]`);
+        const content = item?.querySelector('.gb-note-endnotes__content');
         const style = item ? getComputedStyle(item) : null;
+        const contentStyle = content ? getComputedStyle(content) : null;
         const rect = item?.getBoundingClientRect();
-        if (!item) failures.push(`${id}: endnote missing in print DOM`);
+        const contentRect = content?.getBoundingClientRect();
+        if (!item) failures.push(`${note.id}: endnote missing in print DOM`);
         else if (!style || style.display === 'none' || style.visibility === 'hidden' || !rect || rect.width <= 8 || rect.height <= 4) {
-          failures.push(`${id}: endnote hidden in print media (${style?.display || 'missing'}/${style?.visibility || 'missing'})`);
+          failures.push(`${note.id}: endnote hidden in print media (${style?.display || 'missing'}/${style?.visibility || 'missing'})`);
+        } else if (!content || !contentStyle || contentStyle.display === 'none' || contentStyle.visibility === 'hidden' || !contentRect || contentRect.width <= 8 || contentRect.height <= 0) {
+          failures.push(`${note.id}: canonical note body hidden in print media`);
+        } else if (normalize(content.textContent) !== normalize(note.text)) {
+          failures.push(`${note.id}: canonical note body text drift`);
         }
       }
-      return { visible: expectedIds.length - failures.length, total: expectedIds.length, failures: failures.slice(0, 20) };
-    }, routeNotes.map((note) => note.id)) : null;
+      return { visible: expected.length - failures.length, total: expected.length, failures: failures.slice(0, 20) };
+    }, routeNotes.map((note) => ({ id: note.id, text: note.text }))) : null;
     if (printNoteState?.failures.length) {
       report.failures.push(`${id}: physical print DOM lost publication notes: ${JSON.stringify(printNoteState.failures)}`);
     }
@@ -514,10 +526,10 @@ try {
       if (!source || !target) pairMissing.push({ ...item, source: source || 0, target: target || 0 });
       else if (source !== target) pairSplits.push({ ...item, source, target });
     }
-    if (atomicMissing.length) report.failures.push(`${id}: ${atomicMissing.length} atomic PDF markers missing`);
-    if (atomicSplits.length) report.failures.push(`${id}: ${atomicSplits.length} atomic components split across pages`);
-    if (pairMissing.length) report.failures.push(`${id}: ${pairMissing.length} keep-pair PDF markers missing`);
-    if (pairSplits.length) report.failures.push(`${id}: ${pairSplits.length} keep-with-next pairs split across pages`);
+    if (enforcePaginationMarkers && atomicMissing.length) report.failures.push(`${id}: ${atomicMissing.length} atomic PDF markers missing`);
+    if (enforcePaginationMarkers && atomicSplits.length) report.failures.push(`${id}: ${atomicSplits.length} atomic components split across pages`);
+    if (enforcePaginationMarkers && pairMissing.length) report.failures.push(`${id}: ${pairMissing.length} keep-pair PDF markers missing`);
+    if (enforcePaginationMarkers && pairSplits.length) report.failures.push(`${id}: ${pairSplits.length} keep-with-next pairs split across pages`);
 
     await page.evaluate(() => {
       document.querySelectorAll('.gb-print-audit-marker').forEach((node) => node.remove());
@@ -530,13 +542,44 @@ try {
     await page.pdf({ path: cleanPdf, format: 'A4', printBackground: true, preferCSSPageSize: true });
     execFileSync('pdftotext', ['-layout', cleanPdf, cleanTxt]);
     const cleanPdfText = await readFile(cleanTxt, 'utf8');
-    const missingNotes = missingPublicationNotes(cleanPdfText, routeNotes);
-    if (missingNotes.length) {
-      report.failures.push(`${id}: physical PDF missing ${missingNotes.length}/${routeNotes.length} publication note bodies: ${JSON.stringify(missingNotes.slice(0, 8).map((note) => note.id))}`);
+    const textProbeMissingNotes = missingPublicationNotes(cleanPdfText, routeNotes);
+
+    const noteTokens = routeNotes.map((note, index) => ({
+      id: note.id,
+      token: `GBNOTE_R${routeIndex}_N${index}`,
+    }));
+    let missingNotes = [];
+    if (noteTokens.length) {
+      const tokenInstall = await page.evaluate((entries) => {
+        const missing = [];
+        for (const entry of entries) {
+          const content = document.querySelector(`[data-note-registry-endnotes] li[data-note-id="${entry.id}"] .gb-note-endnotes__content`);
+          if (!content) { missing.push(entry.id); continue; }
+          const token = document.createElement('span');
+          token.className = 'gb-note-print-audit-token';
+          token.setAttribute('aria-hidden', 'true');
+          token.style.cssText = 'font:4px/4px monospace!important;color:#fff!important;white-space:nowrap!important;';
+          token.textContent = ` ${entry.token} `;
+          content.append(token);
+        }
+        return missing;
+      }, noteTokens);
+      if (tokenInstall.length) report.failures.push(`${id}: could not install physical note-body witnesses: ${JSON.stringify(tokenInstall.slice(0, 8))}`);
+      const notePdf = join(NOTE_MARKERS, `${id}.pdf`);
+      const noteTxt = join(NOTE_MARKERS, `${id}.txt`);
+      await page.pdf({ path: notePdf, format: 'A4', printBackground: true, preferCSSPageSize: true });
+      execFileSync('pdftotext', ['-layout', notePdf, noteTxt]);
+      const notePdfText = await readFile(noteTxt, 'utf8');
+      missingNotes = routeNotes.filter((note, index) => !notePdfText.includes(noteTokens[index].token));
+      if (missingNotes.length) {
+        report.failures.push(`${id}: physical PDF missing ${missingNotes.length}/${routeNotes.length} canonical note-body witnesses: ${JSON.stringify(missingNotes.slice(0, 8).map((note) => note.id))}`);
+      }
     }
 
     if (routeNotes.length && !mutationWitnessDone) {
       const mutationNote = selectMutationNote(routeNotes);
+      const mutationIndex = mutationNote ? routeNotes.findIndex((note) => note.id === mutationNote.id) : -1;
+      const mutationToken = mutationIndex >= 0 ? noteTokens[mutationIndex]?.token : '';
       const mutationApplied = mutationNote ? await page.evaluate((noteId) => {
         const item = document.querySelector(`[data-note-registry-endnotes] li[data-note-id="${noteId}"]`);
         if (!item) return false;
@@ -544,7 +587,7 @@ try {
         item.style.setProperty('display', 'none', 'important');
         return true;
       }, mutationNote.id) : false;
-      if (!mutationApplied || !mutationNote) {
+      if (!mutationApplied || !mutationNote || !mutationToken) {
         report.failures.push(`${id}: could not install publication-note mutation witness`);
       } else {
         const mutationPdf = join(MUTATION, `${id}-missing-note.pdf`);
@@ -552,16 +595,17 @@ try {
         await page.pdf({ path: mutationPdf, format: 'A4', printBackground: true, preferCSSPageSize: true });
         execFileSync('pdftotext', ['-layout', mutationPdf, mutationTxt]);
         const mutationText = await readFile(mutationTxt, 'utf8');
-        const mutationMissing = missingPublicationNotes(mutationText, routeNotes);
-        const rejected = mutationMissing.some((note) => note.id === mutationNote.id);
+        const missingTokenIds = noteTokens.filter((entry) => !mutationText.includes(entry.token)).map((entry) => entry.id);
+        const rejected = !mutationText.includes(mutationToken)
+          && noteTokens.filter((entry) => entry.id !== mutationNote.id).every((entry) => mutationText.includes(entry.token));
         report.mutationWitness = {
           route: url,
           noteId: mutationNote.id,
           rejected,
-          missingNoteIds: mutationMissing.map((note) => note.id),
+          missingNoteIds: missingTokenIds,
           pdf: `mutation/${id}-missing-note.pdf`,
         };
-        if (!rejected) report.failures.push(`${id}: physical note-removal mutation was not rejected`);
+        if (!rejected) report.failures.push(`${id}: physical note-removal mutation was not rejected atomically`);
         await page.evaluate((noteId) => {
           const item = document.querySelector(`[data-note-registry-endnotes] li[data-note-id="${noteId}"]`);
           if (!item) return;
@@ -571,6 +615,7 @@ try {
         mutationWitnessDone = true;
       }
     }
+    await page.evaluate(() => document.querySelectorAll('.gb-note-print-audit-token').forEach((node) => node.remove()));
 
     report.routes.push({
       id, url,
@@ -584,6 +629,9 @@ try {
       noteDom,
       printNoteState,
       missingPublicationNoteIds: missingNotes.map((note) => note.id),
+      textProbeMissingPublicationNoteIds: textProbeMissingNotes.map((note) => note.id),
+      paginationAuthority: enforcePaginationMarkers,
+      noteMarkerPdf: routeNotes.length ? `note-markers/${id}.pdf` : null,
       markerPdf: `markers/${id}.pdf`,
       cleanPdf: `${id}.pdf`,
       atomicMissing: atomicMissing.slice(0, 12),
