@@ -6,7 +6,7 @@ on:
     paths:
       - '.github/workflows/temp-delete-accidental-ref.yml'
   pull_request:
-    types: [opened]
+    types: [opened, reopened, synchronize]
     branches: [main]
 
 permissions:
@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Delete accidental branch ref
+      - name: Delete accidental branch ref if present
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -26,4 +26,8 @@ jobs:
           git init cleanup
           cd cleanup
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git push origin --delete refs/heads/__do_not_use__
+          if git ls-remote --exit-code --heads origin refs/heads/__do_not_use__ >/dev/null 2>&1; then
+            git push origin --delete refs/heads/__do_not_use__
+          else
+            echo 'Accidental ref already absent'
+          fi
