@@ -1,0 +1,37 @@
+name: PR1551 Scripture Index Generator
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/pr1551-scripture-index-generator.yml'
+      - 'src/components/hard-texts/HardTextsSeriesMapSection.astro'
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+
+      - name: Generate canonical scripture occurrence index
+        run: node scripts/build-scripture-occurrence-index.mjs --write
+
+      - name: Upload generated index
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pr1551-scripture-index-${{ github.run_id }}
+          path: data/scripture-search-index.json
+          if-no-files-found: error
+          retention-days: 1
