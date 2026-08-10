@@ -1,0 +1,25 @@
+name: TEMP Delete Accidental Ref
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/temp-delete-accidental-ref.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  delete-ref:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Delete accidental branch ref
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git init cleanup
+          cd cleanup
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push origin --delete refs/heads/__do_not_use__
