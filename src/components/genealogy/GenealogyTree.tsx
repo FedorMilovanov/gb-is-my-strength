@@ -261,7 +261,7 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
       </div>
 
       {eras && (
-        <div style={{ position: 'absolute', bottom: '12px', left: '14px', zIndex: 11, background: 'rgba(13,10,6,0.82)', backdropFilter: 'blur(10px)', borderRadius: '10px', padding: '10px 12px', border: '1px solid rgba(212,168,87,0.12)', display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '180px' }}>
+        <div style={{ position: 'absolute', bottom: '12px', left: '14px', zIndex: 11, background: 'rgba(13,10,6,0.82)', backdropFilter: 'blur(10px)', borderRadius: '10px', padding: '10px 12px', border: '1px solid rgba(212,168,87,0.12)', display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '180px', pointerEvents: 'none' }}>
           <div style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(200,184,154,0.35)', marginBottom: '2px' }}>Эпохи</div>
           {eras.map(e => <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '8px', height: '8px', borderRadius: '2px', background: e.color, flexShrink: 0 }} /><span style={{ color: 'rgba(200,184,154,0.55)', fontSize: '10.5px' }}>{e.name}</span></div>)}
         </div>
