@@ -25,10 +25,15 @@ assert.deepEqual(projected.errors, []);
 assert.equal(projected.notes.length, 2);
 assert.equal(new Set(projected.notes.map((note) => note.id)).size, 2);
 assert.ok(projected.notes.every((note) => note.interactionOwner === 'SiteUtils.makeTooltipController'));
-assert.match(projected.html, /data-note-registry-endnotes data-speakable data-pagefind-body/);
+assert.match(projected.html, /data-note-registry-endnotes data-speakable data-pagefind-body data-print-policy="include"/);
 assert.match(projected.html, /data-pagefind-ignore="" data-note-registry-tooltip=""/);
 assert.match(projected.html, /aria-describedby="note-end-/);
 assert.match(projected.html, /aria-controls="note-tip-/);
+assert.deepEqual(
+  [...projected.html.matchAll(/aria-label="Показать сноску (\d+)"/g)].map((match) => match[1]),
+  ['1', '2'],
+  'generic footnote labels must become distinguishable canonical ordinals'
+);
 assert.match(projected.html, /data-note-registry-stylesheet/);
 assert.match(projected.html, /note-registry\.css\?v=1234abcd/);
 assert.doesNotMatch(projected.html, /<style\b/i, 'projection must not duplicate the stylesheet inline');
@@ -45,6 +50,12 @@ assert.deepEqual(inlineMarkup.errors, []);
 assert.equal(inlineMarkup.notes[0].text, 'См.: Rippon, A Brief Memoir.');
 assert.match(inlineMarkup.html, /gb-note-endnotes__content">См\.: <a href="#source">/);
 
+const authoredLabel = collectAndProjectHtml(`<!doctype html><html><head></head><body><main data-pagefind-body>
+<h2 id="source-label">Source label</h2><p><span class="fn-marker" aria-label="Источник: Rippon">1<span class="tooltip">Specific source note.</span></span></p>
+</main></body></html>`, route);
+assert.deepEqual(authoredLabel.errors, []);
+assert.match(authoredLabel.html, /aria-label="Источник: Rippon"/, 'specific authored accessible names must be preserved');
+
 const articleProjection = collectAndProjectHtml(`<!doctype html><html><head></head><body><main>
 <article data-pagefind-body><h2 id="section">Section</h2><p>Searchable <span class="fn-marker">1<span class="tooltip">Indexed note.</span></span></p></article>
 </main></body></html>`, route);
@@ -53,6 +64,11 @@ assert.match(
   articleProjection.html,
   /<article data-pagefind-body>[\s\S]*<\/article>\s*<!--[ ]?NOTE_REGISTRY:START/,
   'endnotes must follow the authored article instead of inheriting route-local clipping'
+);
+assert.match(
+  articleProjection.html,
+  /data-note-registry-endnotes[^>]*data-print-policy="include"/,
+  'publication endnotes must explicitly opt into physical print output'
 );
 assert.doesNotMatch(
   articleProjection.html,
@@ -137,5 +153,12 @@ assert.match(schema.properties.stylesheet.pattern, /note-registry/);
 const moduleSource = fs.readFileSync(path.join(ROOT, 'scripts', 'lib', 'note-registry.mjs'), 'utf8');
 assert.doesNotMatch(moduleSource, /addEventListener\s*\(/, 'NoteRegistry core must not create a second interaction runtime');
 assert.doesNotMatch(moduleSource, /data-note-registry-style>/, 'NoteRegistry core must not inline the complete stylesheet into every route');
+const stylesheetSource = fs.readFileSync(path.join(ROOT, 'src', 'runtime', 'note-registry.css'), 'utf8');
+assert.match(
+  stylesheetSource,
+  /html body \[data-print-policy="include"\]\[data-print-terminal-follower\]/,
+  'explicit publication print policy must outrank the generic terminal-follower mask'
+);
+assert.match(stylesheetSource, /display: revert !important;/, 'print-policy override must restore publication descendants');
 
-console.log('✅ A03 NoteRegistry core: stable IDs, direct ownership, external stylesheet and unified projections passed');
+console.log('✅ A03 NoteRegistry core: stable IDs, distinguishable accessibility, explicit print projection, external stylesheet and unified projections passed');
