@@ -50,6 +50,42 @@ jobs:
       - name: Install exact dependencies
         run: npm ci
 
+      - name: Calibrate Atlas witness to rendered responsive controls
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const file = 'scripts/atlas-focus-state-browser-test.mjs';
+          const source = fs.readFileSync(file, 'utf8');
+          const before = `    await page.locator('[data-atlas-view="list"]').click();
+              await page.waitForFunction(() => !document.getElementById('atlasListView')?.hidden);
+              const listFocus = page.locator('[data-list-focus]:visible').first();
+              await listFocus.focus();
+              await listFocus.click();
+              await page.waitForFunction(() => !document.getElementById('atlasGraphView')?.hidden);
+              result.steps.listToGraph = await assertSafeFocus(page, \`${'${browserName}'}/${'${width}'}/list-to-graph\`, (state) => String(state.className).includes('atlas-node'));
+          `;
+          const after = `    const listSwitch = page.locator('[data-atlas-view="list"]');
+              if (await listSwitch.isVisible()) {
+                await listSwitch.click();
+                await page.waitForFunction(() => !document.getElementById('atlasListView')?.hidden);
+                const listFocus = page.locator('[data-list-focus]:visible').first();
+                await listFocus.focus();
+                await listFocus.click();
+                await page.waitForFunction(() => !document.getElementById('atlasGraphView')?.hidden);
+                result.steps.listToGraph = await assertSafeFocus(page, \`${'${browserName}'}/${'${width}'}/list-to-graph\`, (state) => String(state.className).includes('atlas-node'));
+              } else {
+                const geometry = await listSwitch.evaluate((button) => button.getClientRects().length);
+                assert.equal(geometry, 0, \`${'${browserName}'}/${'${width}'}: hidden view switch unexpectedly has geometry\`);
+                result.steps.listToGraph = { skipped: true, reason: 'responsive view switch is not rendered at this width' };
+              }
+          `;
+          if (!source.includes(before)) throw new Error('Atlas List→Graph witness block not found exactly once');
+          const next = source.replace(before, after);
+          if (next === source || next.includes(before)) throw new Error('Atlas witness replacement failed');
+          fs.writeFileSync(file, next);
+          NODE
+          node --check scripts/atlas-focus-state-browser-test.mjs
+
       - name: Synchronize only governed asset revisions
         run: |
           set -euo pipefail
@@ -57,6 +93,7 @@ jobs:
           node --check scripts/reader-linear-text-projection-browser-test.mjs
           node scripts/cache-bust.js --write
           printf '%s\n' \
+            scripts/atlas-focus-state-browser-test.mjs \
             src/lib/asset-version.js \
             src/components/article-pilots/_shared/StandaloneArticleFooter.astro \
             src/components/article-pilots/gill-series/GillSeriesChrome.astro \
@@ -108,6 +145,7 @@ jobs:
           set -euo pipefail
           printf '%s\n' \
             .github/workflows/temp-terminal-postmerge-proof.yml \
+            scripts/atlas-focus-state-browser-test.mjs \
             src/lib/asset-version.js \
             src/components/article-pilots/_shared/StandaloneArticleFooter.astro \
             src/components/article-pilots/gill-series/GillSeriesChrome.astro \
