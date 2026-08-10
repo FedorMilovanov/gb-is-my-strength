@@ -829,7 +829,12 @@
 
     function syncDrawerForViewport() {
       var activeWasSidebar = sidebar.contains(document.activeElement);
+      var enteringDrawer = drawerMedia.matches;
       syncSidebarSurface(false, { restoreFocus: activeWasSidebar });
+      if (activeWasSidebar && !enteringDrawer) {
+        var desktopSidebarTarget = sidebar.querySelector('[data-atlas-group],.atlas-relation-filter input,a[href],button:not(#atlasFilterClose)');
+        if (!safeFocus(desktopSidebarTarget)) focusActiveView(activeFocus);
+      }
     }
 
     function relayoutForViewport() {

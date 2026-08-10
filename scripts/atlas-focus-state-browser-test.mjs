@@ -218,6 +218,23 @@ async function runCase(browserName, browserType, baseUrl, width) {
       result.steps.listToGraph = await assertSafeFocus(page, `${browserName}/${width}/list-to-graph`, (state) => String(state.className).includes('atlas-node'));
     }
 
+    if (width === 980) {
+      const trigger = page.locator('#atlasFilterTrigger');
+      await trigger.click();
+      await page.waitForFunction(() => document.getElementById('atlasSidebar')?.classList.contains('is-open'));
+      await page.locator('#atlasFilterClose').focus();
+      await page.setViewportSize({ width: 981, height: HEIGHT });
+      await page.waitForTimeout(180);
+      result.steps.openDrawerToDesktop = await assertSafeFocus(page, `${browserName}/${width}/open-drawer-to-desktop`, (state) =>
+        String(state.className).includes('atlas-theme'));
+      result.steps.openDrawerToDesktopSurfaces = await assertClosedSurfaceState(page, false);
+      await page.setViewportSize({ width: 980, height: HEIGHT });
+      await page.waitForTimeout(180);
+      result.steps.desktopSidebarToDrawer = await assertSafeFocus(page, `${browserName}/${width}/desktop-sidebar-to-drawer`, (state) =>
+        state.id === 'atlasFilterTrigger');
+      result.steps.desktopSidebarToDrawerSurfaces = await assertClosedSurfaceState(page, true);
+    }
+
     const historyNode = page.locator('.atlas-node:not(.is-filtered-out)[tabindex="0"]').first();
     await historyNode.focus();
     await page.keyboard.press('Enter');
