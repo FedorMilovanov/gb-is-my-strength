@@ -29,6 +29,16 @@ function distHtmlPath(route) {
     : path.join(DIST, route.replace(/^\/+|\/+$/g, ''), 'index.html');
 }
 
+function isInsideDist(target) {
+  const relative = path.relative(DIST, target);
+  return relative !== '..'
+    && !relative.startsWith(`..${path.sep}`)
+    && !path.isAbsolute(relative);
+}
+
+assert.equal(isInsideDist(path.join(DIST, 'index.html')), true, 'dist containment accepts owned file');
+assert.equal(isInsideDist(path.resolve(DIST, '..', 'outside.html')), false, 'dist containment rejects traversal');
+
 const registry = buildPublicSurfaceRegistry();
 assert.deepEqual(registry.errors, [], `public surface registry must be green: ${registry.errors.join('; ')}`);
 const entries = registry.entries.filter((entry) => {
@@ -70,7 +80,7 @@ function startServer() {
       let target = path.join(DIST, pathname.replace(/^\/+/, ''));
       if (pathname.endsWith('/')) target = path.join(target, 'index.html');
       if (!path.extname(target)) target = path.join(target, 'index.html');
-      if (!target.startsWith(DIST) || !fs.existsSync(target) || fs.statSync(target).isDirectory()) {
+      if (!isInsideDist(target) || !fs.existsSync(target) || fs.statSync(target).isDirectory()) {
         res.writeHead(404); res.end('not found'); return;
       }
       res.writeHead(200, { 'content-type': MIME[path.extname(target)] || 'application/octet-stream', 'cache-control': 'no-store' });
@@ -287,6 +297,7 @@ fs.writeFileSync(path.join(REPORTS, 'site-sections-menu-visual-contract.md'), [
   `- Mobile closed-state: always checked before viewport fallback`,
   `- Native no-CSS fail-safe: panel + backdrop on rich menus`,
   `- Close semantics: hidden/inert + aria-expanded/aria-hidden + focus restore`,
+  `- Evidence server path containment: traversal-rejecting`,
   `- Checks: ${report.passed}/${checks.length} PASS`,
   `- Failures: ${report.failed}`,
 ].join('\n') + '\n');
