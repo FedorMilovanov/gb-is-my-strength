@@ -1,0 +1,169 @@
+---
+/**
+ * SiteSectionsMenuRuntime.astro
+ *
+ * One runtime owner for #hMobileMenuBtn -> #hMobileNav across native readers,
+ * series readers and legacy-style landing shells. Visual markup stays route-
+ * appropriate; lifecycle is always delegated to the shared OverlayRuntime.
+ */
+---
+<script is:inline>
+  (() => {
+    'use strict';
+
+    const VERSION = 1;
+    const OWNER_ID = 'site-sections-menu';
+    const API_KEY = 'GBSiteSectionsMenu';
+    const CONTROLLER_KEY = '__gbSiteSectionsMenuController';
+
+    if (window[API_KEY]?.version === VERSION && typeof window[API_KEY].init === 'function') {
+      window[API_KEY].init();
+      return;
+    }
+
+    const firstAction = (panel) => panel.querySelector(
+      'a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])'
+    );
+
+    function init() {
+      const trigger = document.getElementById('hMobileMenuBtn');
+      const panel = document.getElementById('hMobileNav');
+      const backdrop = document.getElementById('hMobileBackdrop');
+      const previous = window[CONTROLLER_KEY];
+
+      if (!trigger || !panel) {
+        previous?.destroy?.();
+        return null;
+      }
+
+      if (
+        previous
+        && previous.trigger === trigger
+        && previous.panel === panel
+        && trigger.isConnected
+        && panel.isConnected
+      ) return previous;
+
+      previous?.destroy?.();
+
+      const overlayApi = window.OverlayRuntime;
+      if (!overlayApi || typeof overlayApi.register !== 'function') return null;
+
+      let controller;
+      const syncVisual = (open) => {
+        panel.classList.toggle('open', open);
+        panel.toggleAttribute('inert', !open);
+        if ('inert' in panel) panel.inert = !open;
+        if (open) panel.removeAttribute('aria-hidden');
+        else panel.setAttribute('aria-hidden', 'true');
+
+        trigger.classList.toggle('is-open', open);
+        trigger.setAttribute('aria-controls', panel.id || 'hMobileNav');
+        trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+        trigger.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню');
+        trigger.setAttribute('data-gb-site-menu-owner', 'canonical-runtime');
+        backdrop?.classList.toggle('open', open);
+      };
+
+      const layer = overlayApi.register(OWNER_ID, {
+        element: panel,
+        opener: trigger,
+        focusTarget: () => firstAction(panel),
+        closeOnEscape: true,
+        trapFocus: true,
+        restoreFocus: true,
+        lockScroll: true,
+        onRequestClose: () => {
+          syncVisual(false);
+          return true;
+        },
+      });
+
+      const open = (reason = 'trigger') => {
+        if (layer.isOpen()) return true;
+        syncVisual(true);
+        layer.open({
+          element: panel,
+          opener: trigger,
+          focusTarget: () => firstAction(panel),
+          reason,
+        });
+        // OverlayRuntime writes aria-hidden=false generically. The historical
+        // menu contract exposes an open surface by removing aria-hidden.
+        panel.removeAttribute('aria-hidden');
+        return true;
+      };
+
+      const close = (reason = 'close', options = {}) => {
+        if (!layer.isOpen()) {
+          syncVisual(false);
+          return false;
+        }
+        syncVisual(false);
+        return layer.close(reason, options);
+      };
+
+      const onTrigger = (event) => {
+        event.preventDefault();
+        if (layer.isOpen()) close('toggle');
+        else open('trigger');
+      };
+      const onBackdrop = () => close('backdrop');
+      const onPanelClick = (event) => {
+        const action = event.target?.closest?.('[data-close-nav]');
+        if (action) close('menu-action');
+      };
+      const onPageShow = (event) => {
+        if (event.persisted) close('pageshow', { restoreFocus: false });
+      };
+
+      const legacyClose = () => close('legacy-api');
+      trigger.addEventListener('click', onTrigger);
+      panel.addEventListener('click', onPanelClick);
+      backdrop?.addEventListener('click', onBackdrop);
+      window.addEventListener('pageshow', onPageShow);
+      window.closeMobileNav = legacyClose;
+      syncVisual(false);
+
+      controller = {
+        ownerId: OWNER_ID,
+        trigger,
+        panel,
+        backdrop,
+        open,
+        close,
+        toggle: () => layer.isOpen() ? close('api-toggle') : open('api-toggle'),
+        isOpen: () => layer.isOpen(),
+        destroy: () => {
+          trigger.removeEventListener('click', onTrigger);
+          panel.removeEventListener('click', onPanelClick);
+          backdrop?.removeEventListener('click', onBackdrop);
+          window.removeEventListener('pageshow', onPageShow);
+          close('destroy', { restoreFocus: false });
+          layer.destroy();
+          trigger.removeAttribute('data-gb-site-menu-owner');
+          if (window.closeMobileNav === legacyClose) {
+            try { delete window.closeMobileNav; } catch (_) { window.closeMobileNav = undefined; }
+          }
+          if (window[CONTROLLER_KEY] === controller) window[CONTROLLER_KEY] = null;
+        },
+      };
+
+      window[CONTROLLER_KEY] = controller;
+      return controller;
+    }
+
+    const scheduleInit = () => {
+      if (init()) return;
+      requestAnimationFrame(() => {
+        if (init()) return;
+        window.setTimeout(init, 50);
+      });
+    };
+
+    window[API_KEY] = Object.freeze({ version: VERSION, init, close: () => window[CONTROLLER_KEY]?.close?.('api') });
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scheduleInit, { once: true });
+    else scheduleInit();
+    document.addEventListener('astro:page-load', scheduleInit);
+  })();
+</script>

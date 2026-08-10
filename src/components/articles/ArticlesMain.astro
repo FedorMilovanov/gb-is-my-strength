@@ -10,18 +10,11 @@ import ArticlesHeroSection from './ArticlesHeroSection.astro';
 import ArticlesLibrarySection from './ArticlesLibrarySection.astro';
 import ArticlesRefutationsSection from './ArticlesRefutationsSection.astro';
 import ArticlesArticleEndBlock from './ArticlesArticleEndBlock.astro';
+import SiteSectionsMenu from '@/components/article-pilots/_shared/SiteSectionsMenu.astro';
 ---
 <main id="main-content">
 
-<!-- Mobile menu -->
-<div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
-<div class="h-mobile-nav" id="hMobileNav" aria-hidden="true">
-  <a href="../#publikacii" data-close-nav>Публикации</a>
-  <a href="../#razbor" data-close-nav>Разбор заблуждений</a>
-  <a href="../biografii/" data-close-nav>Биографии</a>
-  <a href="./" data-close-nav aria-current="page">Все статьи</a>
-  <a href="../about/" data-close-nav>О проекте</a>
-</div>
+<SiteSectionsMenu variant="plain" current="articles" />
 
 <!-- PAGE WRAPPER -->
 <div class="home-v20">

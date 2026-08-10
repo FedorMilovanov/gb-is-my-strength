@@ -1,0 +1,78 @@
+name: TEMP Site Menu Bootstrap
+
+on:
+  pull_request:
+    types: [edited]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: temp-site-menu-bootstrap-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    if: github.event.pull_request.head.ref == 'agent/system-site-menu-owner-20260810'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Configure writer identity
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: Acquire and verify writer lease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/writer-lease.mjs snapshot \
+            --pr '${{ github.event.pull_request.number }}' \
+            --workflow-id 'temp-site-menu-bootstrap' \
+            --branch '${{ github.event.pull_request.head.ref }}' \
+            --output /tmp/site-menu-writer-lease.json
+          node scripts/writer-lease.mjs assert-live \
+            --snapshot /tmp/site-menu-writer-lease.json \
+            --phase bootstrap
+
+      - name: Apply exact site-menu system patch
+        run: |
+          node scripts/apply-site-menu-system-patch.mjs
+          node scripts/cache-bust.js --write
+          node scripts/cache-bust.js
+          node --check js/site.js
+          node --check src/runtime/reader-controls-a11y.js
+          node --check scripts/reader-controls-residual-browser-contract.mjs
+          node scripts/check-workflows.js
+          git diff --check
+
+      - name: Remove bootstrap machinery and commit final source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rm .github/workflows/temp-site-menu-bootstrap.yml
+          rm scripts/apply-site-menu-system-patch.mjs
+          git add -A
+          test -n "$(git status --porcelain)"
+          node scripts/writer-lease.mjs assert-live \
+            --snapshot /tmp/site-menu-writer-lease.json \
+            --phase pre-commit
+          owner=$(node -e "const x=require('/tmp/site-menu-writer-lease.json');process.stdout.write(x.lease.ownerToken)")
+          lane=$(node -e "const x=require('/tmp/site-menu-writer-lease.json');process.stdout.write(x.lease.laneId)")
+          gen=$(node -e "const x=require('/tmp/site-menu-writer-lease.json');process.stdout.write(String(x.lease.generation))")
+          acquired=$(node -e "const x=require('/tmp/site-menu-writer-lease.json');process.stdout.write(x.lease.acquisitionSha)")
+          git commit -m 'fix(site-menu): establish canonical full-site menu owner' \
+            -m "Writer-Lease: owner=$owner; lane=$lane; gen=$gen; acquired=$acquired"
+          node scripts/writer-lease.mjs assert-live \
+            --snapshot /tmp/site-menu-writer-lease.json \
+            --phase pre-push
+          expected='${{ github.event.pull_request.head.sha }}'
+          git push --force-with-lease=refs/heads/${{ github.event.pull_request.head.ref }}:$expected \
+            origin HEAD:refs/heads/${{ github.event.pull_request.head.ref }}

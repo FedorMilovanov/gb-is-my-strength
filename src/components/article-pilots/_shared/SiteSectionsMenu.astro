@@ -1,11 +1,48 @@
-<!-- Shared static projection of the existing site-sections menu.
-     Open/close, Escape and scroll-lock remain owned by js/site.js. -->
+---
+import SiteSectionsMenuRuntime from './SiteSectionsMenuRuntime.astro';
+
+type CurrentSection = 'biografii' | 'articles';
+type Variant = 'plain' | 'rich';
+
+interface Props {
+  current?: CurrentSection;
+  variant?: Variant;
+}
+
+const { current, variant = 'rich' } = Astro.props;
+const links = [
+  { id: 'publications', href: '/#publikacii', label: 'Публикации' },
+  { id: 'refutations', href: '/#razbor', label: 'Разбор заблуждений' },
+  { id: 'biografii', href: '/biografii/', label: 'Биографии' },
+  { id: 'articles', href: '/articles/', label: 'Все статьи' },
+  { id: 'about', href: '/about/', label: 'О проекте' },
+] as const;
+---
+<!-- Canonical static projection of the site-sections menu. Runtime lifecycle is
+     owned by SiteSectionsMenuRuntime -> OverlayRuntime across every shell. -->
 <div id="hMobileBackdrop" class="h-mobile-backdrop" aria-hidden="true"></div>
-<div class="h-mobile-nav" id="hMobileNav" aria-hidden="true">
-  <span class="gbs-menu-label" aria-hidden="true">Разделы сайта</span>
-  <a href="../../#publikacii" data-close-nav><span>Публикации</span><svg class="gbs-menu-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg></a>
-  <a href="../../#razbor" data-close-nav><span>Разбор заблуждений</span><svg class="gbs-menu-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg></a>
-  <a href="../../biografii/" data-close-nav><span>Биографии</span><svg class="gbs-menu-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg></a>
-  <a href="../../articles/" data-close-nav><span>Все статьи</span><svg class="gbs-menu-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg></a>
-  <a href="../../about/" data-close-nav><span>О проекте</span><svg class="gbs-menu-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg></a>
+<div class="h-mobile-nav" id="hMobileNav" aria-hidden="true" inert data-gb-site-menu-runtime="canonical">
+  {variant === 'rich' && <span class="gbs-menu-label" aria-hidden="true">Разделы сайта</span>}
+  {links.map((link) => (
+    <a href={link.href} data-close-nav aria-current={current === link.id ? 'page' : undefined}>
+      {variant === 'rich' ? (
+        <>
+          <span>{link.label}</span>
+          <svg class="gbs-menu-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg>
+        </>
+      ) : link.label}
+    </a>
+  ))}
 </div>
+
+<noscript>
+  <nav data-gb-site-menu-nojs aria-label="Основная навигация без JavaScript">
+    <ul>
+      {links.map((link) => (
+        <li><a href={link.href} aria-current={current === link.id ? 'page' : undefined}>{link.label}</a></li>
+      ))}
+    </ul>
+  </nav>
+</noscript>
+
+<SiteSectionsMenuRuntime />
