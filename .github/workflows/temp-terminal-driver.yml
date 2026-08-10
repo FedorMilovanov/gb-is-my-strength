@@ -1,0 +1,173 @@
+name: TEMP Terminal Base Driver
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: temp-terminal-base-driver-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  prove:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'terminal/frozen-final-20260810'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Prove exact cleanup-only input surface
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
+          printf '%s\n' \
+            .github/workflows/temp-terminal-final-runner.yml \
+            .github/workflows/temp-terminal-postmerge-proof.yml \
+            src/lib/asset-version.js \
+            src/components/article-pilots/_shared/StandaloneArticleFooter.astro \
+            src/components/article-pilots/gill-series/GillSeriesChrome.astro \
+            src/components/article-pilots/hermenevtika/HermenevtikaBody.astro \
+            src/components/baptisty-rossii/BaptistyRossiiBookLanding.astro \
+            src/components/baptisty-rossii/BaptistyRossiiBody.astro \
+            src/components/nagornaya/_shared/NagornayaPageFooterRuntime.astro \
+            src/components/nagornaya/istochniki/NagornayaIstochnikiPageFooter.astro \
+            src/components/nagornaya/nakhodki/NagornayaNakhodkiPageFooter.astro \
+            src/runtime/atlas-runtime.js \
+            scripts/atlas-focus-state-browser-test.mjs \
+            | sort > /tmp/allowed-pr.txt
+          git diff --name-only refs/remotes/origin/main...HEAD | sort > /tmp/pr-files.txt
+          while read -r file; do
+            test -z "$file" || grep -Fx "$file" /tmp/allowed-pr.txt >/dev/null || { echo "Unexpected terminal PR file: $file" >&2; exit 1; }
+          done < /tmp/pr-files.txt
+          git diff --check refs/remotes/origin/main...HEAD
+
+      - name: Setup Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Prepare exact final Product tree
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          runtime = Path('src/runtime/atlas-runtime.js')
+          s = runtime.read_text()
+          old = "        if (shouldOpen && options.focusOnOpen !== false) safeFocus(filterClose || sidebar.querySelector('button,input,a[href]'));"
+          new = """        if (shouldOpen && options.focusOnOpen !== false) {
+          var drawerFallback = sidebar.querySelector('[data-atlas-group],.atlas-relation-filter input,a[href],button:not(#atlasFilterClose)');
+          if (!safeFocus(filterClose) && !safeFocus(drawerFallback) && typeof window.requestAnimationFrame === 'function') {
+            window.requestAnimationFrame(function () {
+              if (!sidebar.classList.contains('is-open') || !drawerMedia.matches) return;
+              if (!safeFocus(filterClose)) safeFocus(drawerFallback);
+            });
+          }
+        }"""
+          if old in s:
+              if s.count(old) != 1: raise SystemExit('Atlas drawer focus target not unique')
+              runtime.write_text(s.replace(old, new))
+          elif new not in s:
+              raise SystemExit('Atlas drawer focus target missing')
+
+          witness = Path('scripts/atlas-focus-state-browser-test.mjs')
+          t = witness.read_text()
+          old_state = "      nodeId: active?.dataset?.nodeId || '',\n      insideHidden: Boolean(active?.closest?.('[hidden],[inert],[aria-hidden=\"true\"]'))," 
+          new_state = "      nodeId: active?.dataset?.nodeId || '',\n      insideSidebar: Boolean(active?.closest?.('#atlasSidebar')),\n      insideHidden: Boolean(active?.closest?.('[hidden],[inert],[aria-hidden=\"true\"]'))," 
+          if old_state in t:
+              if t.count(old_state) != 1: raise SystemExit('Atlas active-state target not unique')
+              t = t.replace(old_state, new_state)
+          elif new_state not in t:
+              raise SystemExit('Atlas active-state target missing')
+          old_assert = "      result.steps.drawerOpen = await assertSafeFocus(page, `${browserName}/${width}/drawer-open`, (state) => state.id === 'atlasFilterClose');"
+          new_assert = "      result.steps.drawerOpen = await assertSafeFocus(page, `${browserName}/${width}/drawer-open`, (state) => state.insideSidebar);"
+          if old_assert in t:
+              if t.count(old_assert) != 1: raise SystemExit('Atlas drawer assertion target not unique')
+              t = t.replace(old_assert, new_assert)
+          elif new_assert not in t:
+              raise SystemExit('Atlas drawer assertion target missing')
+          witness.write_text(t)
+          PY
+          node --check js/glossary.js
+          node --check src/runtime/atlas-runtime.js
+          node --check scripts/atlas-focus-state-browser-test.mjs
+          node --check scripts/reader-linear-text-projection-browser-test.mjs
+          node scripts/cache-bust.js --write
+          node scripts/cache-bust.js
+          git diff --check
+          printf '%s\n' \
+            src/runtime/atlas-runtime.js \
+            scripts/atlas-focus-state-browser-test.mjs \
+            src/lib/asset-version.js \
+            src/components/article-pilots/_shared/StandaloneArticleFooter.astro \
+            src/components/article-pilots/gill-series/GillSeriesChrome.astro \
+            src/components/article-pilots/hermenevtika/HermenevtikaBody.astro \
+            src/components/baptisty-rossii/BaptistyRossiiBody.astro \
+            src/components/baptisty-rossii/BaptistyRossiiBookLanding.astro \
+            src/components/nagornaya/_shared/NagornayaPageFooterRuntime.astro \
+            src/components/nagornaya/istochniki/NagornayaIstochnikiPageFooter.astro \
+            src/components/nagornaya/nakhodki/NagornayaNakhodkiPageFooter.astro \
+            | sort > /tmp/allowed-worktree.txt
+          git diff --name-only | sort > /tmp/worktree-files.txt
+          while read -r file; do
+            test -z "$file" || grep -Fx "$file" /tmp/allowed-worktree.txt >/dev/null || { echo "Unexpected tested Product file: $file" >&2; exit 1; }
+          done < /tmp/worktree-files.txt
+
+      - name: Permanent source and control-plane gates
+        run: |
+          git diff --check
+          node scripts/check-workflows.js
+          node scripts/node-toolchain-pin-contract-test.mjs
+          npm run validate:static-publication
+
+      - name: Install Chromium and WebKit
+        run: timeout 12m npx playwright install --with-deps chromium webkit
+
+      - name: Production-like build and Pagefind
+        run: |
+          npm run strangler:build:production-like
+          node scripts/project-reader-linear-text-to-dist.mjs --root dist --dry-run
+          npm run pagefind:build:dist
+
+      - name: Chromium and WebKit frozen-root proofs
+        env:
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          node scripts/reader-linear-text-projection-browser-test.mjs
+          node scripts/atlas-focus-state-browser-test.mjs
+
+      - name: Commit exact tested Product tree
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
+          BRANCH: terminal/frozen-final-20260810
+        run: |
+          set -euo pipefail
+          git diff --check
+          if git diff --quiet; then
+            echo 'Tested Product tree already materialized.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'chore(terminal): frozen V07 V12 proof passed'
+          git fetch --no-tags origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"
+          test "$(git rev-parse refs/remotes/origin/$BRANCH)" = "$EXPECTED_SHA"
+          git push --force-with-lease="refs/heads/$BRANCH:$EXPECTED_SHA" origin HEAD:"refs/heads/$BRANCH"
