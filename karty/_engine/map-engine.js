@@ -398,6 +398,7 @@ const MapEngine = (function() {
     const overlayRuntime = window.OverlayRuntime || window.SiteUtils?.OverlayRuntime || null;
     const mapInstanceToken = ++mapOverlaySequence;
     const mapOwnerStem = `special:map:${String(route.meta?.id || 'map').replace(/[^a-zA-Z0-9_-]+/g, '-')}:${mapInstanceToken}`;
+    const introOverlayOwner = `${mapOwnerStem}:intro`;
     const panelOverlayOwner = `${mapOwnerStem}:panel`;
     const photoOverlayOwner = `${mapOwnerStem}:photo`;
     const fallbackOverlayOpeners = new Map();
@@ -3188,7 +3189,8 @@ container.appendChild(panel);
 
     // ── Intro screen ──
 
-    // Intro screen
+    // Intro screen: one shared special-overlay lifecycle owns underlay inerting,
+    // focus entry, Escape/background/button dismissal and post-dismissal focus.
     if (opts.showIntro !== false) {
       const intro = document.createElement('div');
       intro.className = 'me-intro';
@@ -3205,21 +3207,40 @@ container.appendChild(panel);
           <button class="me-intro__btn">Начать изучение</button>
         </div>`;
       container.appendChild(intro);
-      _on(intro.querySelector('.me-intro__btn'), 'click', () => {
+
+      let introDismissed = false;
+      const focusMapOwner = () => focusSpecialTarget(
+        container.querySelector('.me-story-chip--active') || container.querySelector('.me-search')
+      );
+      const dismissIntro = (reason = 'button') => {
+        if (introDismissed) return false;
+        introDismissed = true;
+        closeSpecialOverlay(introOverlayOwner, reason, {restoreFocus:false});
         intro.style.opacity = '0';
         intro.style.transform = 'scale(0.95)';
         intro.style.transition = 'opacity .4s ease, transform .4s cubic-bezier(.4,0,.2,1)';
         intro.style.pointerEvents = 'none';
-        _tm(() => intro.remove(), 450);
+        _tm(() => { intro.remove(); focusMapOwner(); }, 450);
+        return true;
+      };
+
+      _on(intro.querySelector('.me-intro__btn'), 'click', () => dismissIntro('button'));
+      _on(intro.querySelector('.me-intro__bg'), 'click', () => dismissIntro('backdrop'));
+      _on(intro, 'keydown', event => {
+        if (event.key !== 'Escape' && event.key !== 'Esc') return;
+        event.preventDefault();
+        dismissIntro('escape');
       });
-      // Also dismiss on clicking background
-      _on(intro.querySelector('.me-intro__bg'), 'click', () => {
-        intro.querySelector('.me-intro__btn').click();
+
+      openSpecialOverlay(introOverlayOwner, {
+        element: intro,
+        focusTarget: () => intro.querySelector('.me-intro__btn'),
+        inertTargets: specialInertTargets([intro]),
+        onRequestClose: reason => dismissIntro(reason || 'request'),
       });
     }
 
-    
-    // Loading progress
+        // Loading progress
     const progressBar = document.createElement('div');
     progressBar.className = 'me-progress';
     progressBar.innerHTML = '<div class="me-progress__fill"></div>';
@@ -3318,6 +3339,7 @@ container.appendChild(panel);
         panelBackdrop.classList.remove('me-panel__backdrop--active');
         destroySpecialOverlay(photoOverlayOwner);
         destroySpecialOverlay(panelOverlayOwner);
+        destroySpecialOverlay(introOverlayOwner);
         _cleanupAll();
         container.innerHTML='';container.className='';
       }
