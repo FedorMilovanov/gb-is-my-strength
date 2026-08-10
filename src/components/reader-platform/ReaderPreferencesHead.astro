@@ -11,8 +11,52 @@ const bootstrapSrc = assetUrl('js/reader-preferences-head.js');
 const runtimeSrc = assetUrl('js/reader-preferences.js');
 const readerStateSrc = assetUrl('js/reader-state.js');
 const preferencesCss = assetUrl('css/reader-preferences.css');
+const searchOpenerRoutes = new Set(['/articles/', '/biografii/', '/pastor-series/']);
+const needsSearchOpener = searchOpenerRoutes.has(Astro.url.pathname);
 ---
 <script is:inline src={bootstrapSrc}></script>
 <link rel="stylesheet" href={preferencesCss} />
 <script is:inline defer src={runtimeSrc}></script>
 <script is:inline defer src={readerStateSrc}></script>
+{needsSearchOpener && (
+  <script is:inline>
+    (() => {
+      if (window.__gbSearchColdBootstrapBound) return;
+      window.__gbSearchColdBootstrapBound = true;
+
+      function searchIcon() {
+        return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
+      }
+
+      function ensureTrigger() {
+        if (document.getElementById('gbSearchBtn')) return;
+        const controls = document.querySelector('.mobile-controls');
+        const theme = document.getElementById('themeToggle');
+        const navLinks = document.querySelector('.h-nav-links');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.id = 'gbSearchBtn';
+        button.className = 'gb-nav-search-icon';
+        button.setAttribute('data-search-shortcut', '');
+        button.setAttribute('data-search-shortcut-label', 'Поиск по всему сайту');
+        button.setAttribute('aria-label', 'Поиск по всему сайту');
+        button.setAttribute('title', 'Поиск по всему сайту');
+        button.innerHTML = searchIcon();
+        button.addEventListener('click', (event) => {
+          event.preventDefault();
+          window.dispatchEvent(new CustomEvent('gb:openSearch', { detail: { source: 'opener' } }));
+        });
+
+        if (controls && theme && controls.contains(theme)) controls.insertBefore(button, theme);
+        else if (navLinks) {
+          const item = document.createElement('li');
+          item.appendChild(button);
+          navLinks.appendChild(item);
+        }
+      }
+
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensureTrigger, { once: true });
+      else ensureTrigger();
+    })();
+  </script>
+)}
