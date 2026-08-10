@@ -20,6 +20,7 @@ on:
       - 'src/pages/biografii/index.astro'
       - 'src/runtime/reader-controls-a11y.js'
       - 'scripts/reader-controls-residual-browser-contract.mjs'
+      - 'scripts/site-sections-menu-visual-contract.mjs'
       - 'scripts/lib/public-surface-registry.js'
       - 'src/lib/asset-version.js'
       - '.github/workflows/site-sections-menu.yml'
@@ -43,6 +44,7 @@ on:
       - 'src/pages/biografii/index.astro'
       - 'src/runtime/reader-controls-a11y.js'
       - 'scripts/reader-controls-residual-browser-contract.mjs'
+      - 'scripts/site-sections-menu-visual-contract.mjs'
       - 'scripts/lib/public-surface-registry.js'
       - 'src/lib/asset-version.js'
       - '.github/workflows/site-sections-menu.yml'
@@ -89,6 +91,7 @@ jobs:
           node --check js/site.js
           node --check src/runtime/reader-controls-a11y.js
           node --check scripts/reader-controls-residual-browser-contract.mjs
+          node --check scripts/site-sections-menu-visual-contract.mjs
           node scripts/cache-bust.js
           node - <<'NODE'
           const fs = require('fs');
@@ -98,6 +101,7 @@ jobs:
           const a11y = fs.readFileSync('src/runtime/reader-controls-a11y.js', 'utf8');
           if (!menu.includes('data-gb-site-menu-runtime="canonical"')) throw new Error('canonical menu marker missing');
           if (!menu.includes('data-gb-site-menu-nojs')) throw new Error('shared no-JS navigation missing');
+          if (!menu.includes('gb-site-menu--rich')) throw new Error('shared rich-reader menu presentation missing');
           if (!runtime.includes("OWNER_ID = 'site-sections-menu'")) throw new Error('canonical menu runtime owner missing');
           if (!runtime.includes('window.OverlayRuntime')) throw new Error('menu runtime must delegate lifecycle to OverlayRuntime');
           if (!site.includes('data-gb-site-menu-runtime')) throw new Error('legacy site.js must skip canonical menu owner');
@@ -110,12 +114,19 @@ jobs:
           set -o pipefail
           npm run strangler:build:production-like 2>&1 | tee reports/site-sections-menu-build.log
 
-      - name: Run full-site menu browser contract
+      - name: Run full-site menu behavior contract
         env:
           GITHUB_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           set -o pipefail
           node scripts/reader-controls-residual-browser-contract.mjs 2>&1 | tee reports/site-sections-menu-browser.log
+
+      - name: Run full-site menu visual geometry contract
+        env:
+          GITHUB_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -o pipefail
+          node scripts/site-sections-menu-visual-contract.mjs 2>&1 | tee reports/site-sections-menu-visual.log
 
       - name: Upload exact-head proof and screenshots
         if: always()
@@ -125,8 +136,11 @@ jobs:
           path: |
             reports/site-sections-menu-build.log
             reports/site-sections-menu-browser.log
+            reports/site-sections-menu-visual.log
             reports/reader-controls-residual-browser-contract.json
             reports/reader-controls-residual-browser-contract.md
+            reports/site-sections-menu-visual-contract.json
+            reports/site-sections-menu-visual-contract.md
             reports/reader-controls-a11y-menu-*.png
           if-no-files-found: warn
           retention-days: 14
