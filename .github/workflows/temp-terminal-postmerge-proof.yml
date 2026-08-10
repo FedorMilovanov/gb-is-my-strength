@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: temp-terminal-final-proof-${{ github.event.pull_request.number }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   prove:
@@ -26,16 +26,15 @@ jobs:
           persist-credentials: true
           fetch-depth: 0
 
-      - name: Prove exact head and bounded PR surface
+      - name: Prove exact head and bounded final surface
         env:
           EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
-          git fetch --no-tags origin main
+          git fetch --no-tags origin '+refs/heads/main:refs/remotes/origin/main'
           printf '%s\n' \
             .github/workflows/temp-terminal-postmerge-proof.yml \
-            scripts/atlas-focus-state-browser-test.mjs \
             src/lib/asset-version.js \
             src/components/article-pilots/_shared/StandaloneArticleFooter.astro \
             src/components/article-pilots/gill-series/GillSeriesChrome.astro \
@@ -46,9 +45,11 @@ jobs:
             src/components/nagornaya/istochniki/NagornayaIstochnikiPageFooter.astro \
             src/components/nagornaya/nakhodki/NagornayaNakhodkiPageFooter.astro \
             | sort > /tmp/allowed-pr.txt
-          git diff --name-only origin/main...HEAD | sort > /tmp/pr-files.txt
-          while read -r file; do grep -Fx "$file" /tmp/allowed-pr.txt >/dev/null || { echo "Unexpected PR file: $file" >&2; exit 1; }; done < /tmp/pr-files.txt
-          git diff --check origin/main...HEAD
+          git diff --name-only refs/remotes/origin/main...HEAD | sort > /tmp/pr-files.txt
+          while read -r file; do
+            test -z "$file" || grep -Fx "$file" /tmp/allowed-pr.txt >/dev/null || { echo "Unexpected terminal PR file: $file" >&2; exit 1; }
+          done < /tmp/pr-files.txt
+          git diff --check refs/remotes/origin/main...HEAD
 
       - name: Setup Node 22.23.1
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -59,44 +60,29 @@ jobs:
       - name: Install exact dependencies
         run: npm ci
 
-      - name: Ensure responsive Atlas witness
-        run: |
-          node - <<'NODE'
-          const fs = require('fs');
-          const file = 'scripts/atlas-focus-state-browser-test.mjs';
-          const lines = fs.readFileSync(file, 'utf8').split('\n');
-          if (!lines.some((line) => line.includes("const listSwitch = page.locator('[data-atlas-view=\"list\"]')"))) {
-            const start = lines.findIndex((line) => line.includes("await page.locator('[data-atlas-view=\"list\"]')") && line.includes('.click()'));
-            const end = lines.findIndex((line, index) => index >= start && line.includes('result.steps.listToGraph = await assertSafeFocus'));
-            if (start < 0 || end < start) throw new Error('Atlas List→Graph block not found');
-            const indent = (lines[start].match(/^\s*/) || [''])[0];
-            const original = lines.slice(start, end + 1).map((line) => `${indent}  ${line.trimStart()}`);
-            const replacement = [
-              `${indent}const listSwitch = page.locator('[data-atlas-view="list"]');`,
-              `${indent}if (await listSwitch.isVisible()) {`,
-              ...original,
-              `${indent}} else {`,
-              `${indent}  const geometry = await listSwitch.evaluate((button) => button.getClientRects().length);`,
-              `${indent}  assert.equal(geometry, 0, browserName + '/' + width + ': hidden view switch unexpectedly has geometry');`,
-              `${indent}  result.steps.listToGraph = { skipped: true, reason: 'responsive view switch is not rendered at this width' };`,
-              `${indent}}`,
-            ];
-            lines.splice(start, end - start + 1, ...replacement);
-            fs.writeFileSync(file, lines.join('\n'));
-          }
-          NODE
-          node --check scripts/atlas-focus-state-browser-test.mjs
-
       - name: Synchronize governed asset revisions
         run: |
+          set -euo pipefail
           node --check js/glossary.js
           node --check scripts/reader-linear-text-projection-browser-test.mjs
+          node --check scripts/atlas-focus-state-browser-test.mjs
           node scripts/cache-bust.js --write
           node scripts/cache-bust.js
           git diff --check
-
-      - name: Remove verifier from final-tree validation
-        run: git rm --ignore-unmatch .github/workflows/temp-terminal-postmerge-proof.yml
+          printf '%s\n' \
+            src/lib/asset-version.js \
+            src/components/article-pilots/_shared/StandaloneArticleFooter.astro \
+            src/components/article-pilots/gill-series/GillSeriesChrome.astro \
+            src/components/article-pilots/hermenevtika/HermenevtikaBody.astro \
+            src/components/baptisty-rossii/BaptistyRossiiBookLanding.astro \
+            src/components/nagornaya/_shared/NagornayaPageFooterRuntime.astro \
+            src/components/nagornaya/istochniki/NagornayaIstochnikiPageFooter.astro \
+            src/components/nagornaya/nakhodki/NagornayaNakhodkiPageFooter.astro \
+            | sort > /tmp/allowed-generated.txt
+          git diff --name-only | sort > /tmp/generated-files.txt
+          while read -r file; do
+            test -z "$file" || grep -Fx "$file" /tmp/allowed-generated.txt >/dev/null || { echo "Unexpected generated file: $file" >&2; exit 1; }
+          done < /tmp/generated-files.txt
 
       - name: Permanent source and control-plane gates
         run: |
@@ -121,7 +107,7 @@ jobs:
           node scripts/reader-linear-text-projection-browser-test.mjs
           node scripts/atlas-focus-state-browser-test.mjs
 
-      - name: Commit generated final tree when needed
+      - name: Materialize deterministic generated refs after full PASS
         env:
           EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
           BRANCH: terminal/frozen-final-20260810
@@ -129,12 +115,10 @@ jobs:
           set -euo pipefail
           git diff --check
           if git diff --quiet; then
-            echo 'Final PR head already deterministic; no writer commit required.'
+            echo 'Final terminal head is deterministic; no writer commit required.'
             exit 0
           fi
           printf '%s\n' \
-            .github/workflows/temp-terminal-postmerge-proof.yml \
-            scripts/atlas-focus-state-browser-test.mjs \
             src/lib/asset-version.js \
             src/components/article-pilots/_shared/StandaloneArticleFooter.astro \
             src/components/article-pilots/gill-series/GillSeriesChrome.astro \
@@ -146,11 +130,13 @@ jobs:
             src/components/nagornaya/nakhodki/NagornayaNakhodkiPageFooter.astro \
             | sort > /tmp/allowed-final.txt
           git diff --name-only | sort > /tmp/final-files.txt
-          diff -u /tmp/allowed-final.txt /tmp/final-files.txt
+          while read -r file; do
+            test -z "$file" || grep -Fx "$file" /tmp/allowed-final.txt >/dev/null || { echo "Unexpected writer file: $file" >&2; exit 1; }
+          done < /tmp/final-files.txt
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
-          git commit -m 'chore(terminal): materialize final V07 V12 proof tree'
+          git commit -m 'chore(terminal): materialize final governed asset refs'
           git fetch --no-tags origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"
           test "$(git rev-parse refs/remotes/origin/$BRANCH)" = "$EXPECTED_SHA"
           git push --force-with-lease="refs/heads/$BRANCH:$EXPECTED_SHA" origin HEAD:"refs/heads/$BRANCH"
