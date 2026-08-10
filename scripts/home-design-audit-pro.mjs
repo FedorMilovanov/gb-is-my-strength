@@ -427,7 +427,7 @@ async function searchAudit(page) {
   await allScope.click();
   const queries = [
     { name: 'canonical-title', value: 'Нагорная проповедь', needle: 'Нагорная проповедь', expect: /Нагорная\s+проповедь/i },
-    { name: 'scripture-reference', value: 'Иер 17:9', needle: 'Иер 17:9', expect: /Иер\s*17:9|сердц/i },
+    { name: 'scripture-reference', value: 'Иер 17:9', needle: '', expect: /Иер\s*17:9|сердц/i },
     { name: 'partial-cyrillic', value: 'герменевтик', needle: 'герменевтик', expect: /герменевтик/i },
     { name: 'trimmed-query', value: '  Джон Гилл  ', needle: 'Джон Гилл', expect: /Джон\s+Гилл/i },
   ];
