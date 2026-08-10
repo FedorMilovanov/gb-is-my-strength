@@ -1,0 +1,57 @@
+name: SYSTEM D bounded PR bootstrap
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'fix/writer-lease-v1-20260810'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout immutable PR event head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Apply bounded SYSTEM D transaction
+        run: |
+          set -euo pipefail
+          python scripts/system-d-bootstrap.py
+          node --check scripts/writer-lease.mjs
+          node --check scripts/writer-lease-contract-test.mjs
+          node --check scripts/check-workflows.js
+          node scripts/writer-lease-contract-test.mjs
+          node scripts/check-workflows.js
+          node scripts/run-actionlint.mjs -no-color \
+            .github/workflows/writer-lease-contract.yml \
+            .github/workflows/glossary-contract.yml \
+            .github/workflows/indexnow.yml \
+            .github/workflows/search-manifest-policy.yml \
+            .github/workflows/scripture-occurrence-index-contract.yml
+          git diff --check
+
+      - name: Commit and exact-head CAS-push
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          REMOTE_HEAD="$(git ls-remote origin "refs/heads/${HEAD_REF}" | awk '{print $1}')"
+          if [[ "$REMOTE_HEAD" != "$EXPECTED_HEAD" ]]; then
+            echo "SYSTEM D bootstrap lost exact head: remote=$REMOTE_HEAD expected=$EXPECTED_HEAD" >&2
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --name-only
+          git commit -m "fix(governance): enforce machine writer leases"
+          git push --force-with-lease="refs/heads/${HEAD_REF}:${EXPECTED_HEAD}" origin "HEAD:${HEAD_REF}"
