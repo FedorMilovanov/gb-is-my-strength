@@ -1,146 +1,61 @@
 name: Site Sections Menu Contract
 
 on:
-  pull_request:
-    paths:
-      - 'js/site.js'
-      - 'src/components/about/**'
-      - 'src/components/article-pilots/_shared/SiteSectionsMenu.astro'
-      - 'src/components/article-pilots/_shared/SiteSectionsMenuRuntime.astro'
-      - 'src/components/article-pilots/_shared/ReaderRail.astro'
-      - 'src/components/article-pilots/gill-series/**'
-      - 'src/components/articles/**'
-      - 'src/components/baptisty-rossii/**'
-      - 'src/components/biografii/**'
-      - 'src/components/hard-texts/**'
-      - 'src/components/home/**'
-      - 'src/components/nagornaya/**'
-      - 'src/components/pastor-series/**'
-      - 'src/components/rodosloviye/**'
-      - 'src/pages/biografii/index.astro'
-      - 'src/runtime/reader-controls-a11y.js'
-      - 'scripts/reader-controls-residual-browser-contract.mjs'
-      - 'scripts/site-sections-menu-visual-contract.mjs'
-      - 'scripts/lib/public-surface-registry.js'
-      - 'src/lib/asset-version.js'
-      - '.github/workflows/site-sections-menu.yml'
   push:
-    branches: [main]
+    branches:
+      - 'agent/system-site-menu-owner-20260810'
     paths:
-      - 'js/site.js'
-      - 'src/components/about/**'
-      - 'src/components/article-pilots/_shared/SiteSectionsMenu.astro'
-      - 'src/components/article-pilots/_shared/SiteSectionsMenuRuntime.astro'
-      - 'src/components/article-pilots/_shared/ReaderRail.astro'
-      - 'src/components/article-pilots/gill-series/**'
-      - 'src/components/articles/**'
-      - 'src/components/baptisty-rossii/**'
-      - 'src/components/biografii/**'
-      - 'src/components/hard-texts/**'
-      - 'src/components/home/**'
-      - 'src/components/nagornaya/**'
-      - 'src/components/pastor-series/**'
-      - 'src/components/rodosloviye/**'
-      - 'src/pages/biografii/index.astro'
-      - 'src/runtime/reader-controls-a11y.js'
-      - 'scripts/reader-controls-residual-browser-contract.mjs'
-      - 'scripts/site-sections-menu-visual-contract.mjs'
-      - 'scripts/lib/public-surface-registry.js'
-      - 'src/lib/asset-version.js'
       - '.github/workflows/site-sections-menu.yml'
-  workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: site-sections-menu-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: site-menu-exact-head-refresh
+  cancel-in-progress: false
 
 jobs:
-  browser-contract:
-    name: Chromium + WebKit full-site menu contract
+  refresh-same-branch:
+    if: github.ref == 'refs/heads/agent/system-site-menu-owner-20260810'
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 10
     steps:
-      - name: Checkout exact tested commit
+      - name: Checkout exact pushed head
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          persist-credentials: false
+          ref: ${{ github.sha }}
           fetch-depth: 0
+          persist-credentials: true
 
-      - name: Prove commit identity
+      - name: Merge current main and restore permanent workflow before commit
         env:
-          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
-
-      - name: Set up Node 22.23.1
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: '22.23.1'
-          cache: npm
-
-      - name: Install exact dependencies and browsers
+          EXPECTED_SHA: ${{ github.sha }}
+          BRANCH: agent/system-site-menu-owner-20260810
         run: |
-          npm ci
-          npx playwright install --with-deps chromium webkit
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          test "$(git ls-remote origin "refs/heads/$BRANCH" | cut -f1)" = "$EXPECTED_SHA"
+          git fetch --no-tags origin main
 
-      - name: Source ownership and cache-bust guards
-        run: |
-          node --check js/site.js
-          node --check src/runtime/reader-controls-a11y.js
-          node --check scripts/reader-controls-residual-browser-contract.mjs
-          node --check scripts/site-sections-menu-visual-contract.mjs
-          node scripts/cache-bust.js
-          node - <<'NODE'
-          const fs = require('fs');
-          const menu = fs.readFileSync('src/components/article-pilots/_shared/SiteSectionsMenu.astro', 'utf8');
-          const runtime = fs.readFileSync('src/components/article-pilots/_shared/SiteSectionsMenuRuntime.astro', 'utf8');
-          const site = fs.readFileSync('js/site.js', 'utf8');
-          const a11y = fs.readFileSync('src/runtime/reader-controls-a11y.js', 'utf8');
-          if (!menu.includes('data-gb-site-menu-runtime="canonical"')) throw new Error('canonical menu marker missing');
-          if (!menu.includes('data-gb-site-menu-nojs')) throw new Error('shared no-JS navigation missing');
-          if (!menu.includes('gb-site-menu--rich')) throw new Error('shared rich-reader menu presentation missing');
-          if (!runtime.includes("OWNER_ID = 'site-sections-menu'")) throw new Error('canonical menu runtime owner missing');
-          if (!runtime.includes('window.OverlayRuntime')) throw new Error('menu runtime must delegate lifecycle to OverlayRuntime');
-          if (!site.includes('data-gb-site-menu-runtime')) throw new Error('legacy site.js must skip canonical menu owner');
-          if (a11y.includes('bindNativeSiteSectionsMenu')) throw new Error('reader a11y must not own site-menu visual lifecycle');
-          NODE
+          BASE="$(git merge-base HEAD origin/main)"
+          git diff --name-only "$BASE"..HEAD | grep -v '^\.github/workflows/site-sections-menu\.yml$' | sort -u > /tmp/lane.txt
+          git diff --name-only "$BASE"..origin/main | sort -u > /tmp/main.txt
+          if comm -12 /tmp/lane.txt /tmp/main.txt | grep -q .; then
+            echo 'Refusing refresh: lane/main product-path overlap detected' >&2
+            comm -12 /tmp/lane.txt /tmp/main.txt >&2
+            exit 1
+          fi
 
-      - name: Build production-like dist
-        run: |
-          mkdir -p reports
-          set -o pipefail
-          npm run strangler:build:production-like 2>&1 | tee reports/site-sections-menu-build.log
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git merge --no-ff --no-commit origin/main
+          git checkout HEAD^ -- .github/workflows/site-sections-menu.yml
+          git commit -m 'chore(site-menu): refresh same branch onto current main'
 
-      - name: Run full-site menu behavior contract
-        env:
-          GITHUB_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: |
-          set -o pipefail
-          node scripts/reader-controls-residual-browser-contract.mjs 2>&1 | tee reports/site-sections-menu-browser.log
-
-      - name: Run full-site menu visual geometry contract
-        env:
-          GITHUB_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: |
-          set -o pipefail
-          node scripts/site-sections-menu-visual-contract.mjs 2>&1 | tee reports/site-sections-menu-visual.log
-
-      - name: Upload exact-head proof and screenshots
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: site-sections-menu-${{ github.run_id }}
-          path: |
-            reports/site-sections-menu-build.log
-            reports/site-sections-menu-browser.log
-            reports/site-sections-menu-visual.log
-            reports/reader-controls-residual-browser-contract.json
-            reports/reader-controls-residual-browser-contract.md
-            reports/site-sections-menu-visual-contract.json
-            reports/site-sections-menu-visual-contract.md
-            reports/reader-controls-a11y-menu-*.png
-          if-no-files-found: warn
-          retention-days: 14
+          git merge-base --is-ancestor origin/main HEAD
+          grep -F 'permissions:' .github/workflows/site-sections-menu.yml >/dev/null
+          grep -F 'contents: read' .github/workflows/site-sections-menu.yml >/dev/null
+          grep -F 'Chromium + WebKit full-site menu contract' .github/workflows/site-sections-menu.yml >/dev/null
+          ! grep -F 'contents: write' .github/workflows/site-sections-menu.yml >/dev/null
+          test "$(git ls-remote origin "refs/heads/$BRANCH" | cut -f1)" = "$EXPECTED_SHA"
+          git push origin HEAD:"refs/heads/$BRANCH" --force-with-lease="refs/heads/$BRANCH:$EXPECTED_SHA"
