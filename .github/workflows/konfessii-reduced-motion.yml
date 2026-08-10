@@ -1,0 +1,74 @@
+name: Konfessii Reduced Motion Contract
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/konfessii-reduced-motion.yml'
+      - 'scripts/konfessii-reduced-motion-browser-test.mjs'
+      - 'scripts/konfessii-visual-parity-audit.js'
+      - 'src/pages/konfessii/**'
+      - 'src/components/konfessii/**'
+      - 'package.json'
+      - 'package-lock.json'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/konfessii-reduced-motion.yml'
+      - 'scripts/konfessii-reduced-motion-browser-test.mjs'
+      - 'scripts/konfessii-visual-parity-audit.js'
+      - 'src/pages/konfessii/**'
+      - 'src/components/konfessii/**'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: konfessii-reduced-motion-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser-contract:
+    name: Chromium WebKit reduced-motion contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium and WebKit
+        run: timeout 12m npx playwright install --with-deps chromium webkit
+
+      - name: Run strict-native Konfessii contract
+        run: node scripts/konfessii-visual-parity-audit.js
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Run reduced-motion Chromium WebKit contract
+        env:
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/konfessii-reduced-motion-browser-test.mjs
+
+      - name: Upload reduced-motion evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: konfessii-reduced-motion-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/konfessii-reduced-motion
+          if-no-files-found: error
+          retention-days: 14
