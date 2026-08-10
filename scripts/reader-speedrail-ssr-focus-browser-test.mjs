@@ -65,6 +65,14 @@ function routeFromFile(file) {
   return `/${relative}`;
 }
 
+function hasHiddenSpeedrail(html) {
+  const openingTags = String(html).match(/<[^>]+>/g) || [];
+  return openingTags.some((tag) =>
+    /class=(['"])[^'"<>]*\bmobile-speedrail\b[^'"<>]*\1/i.test(tag) &&
+    /aria-hidden=(['"])true\1/i.test(tag)
+  );
+}
+
 function affectedRoutes() {
   const files = [];
   function walk(directory) {
@@ -77,10 +85,7 @@ function affectedRoutes() {
   }
   walk(DIST);
   const routes = files
-    .filter((file) => {
-      const html = fs.readFileSync(file, 'utf8');
-      return html.includes('mobile-speedrail') && html.includes('aria-hidden="true"');
-    })
+    .filter((file) => hasHiddenSpeedrail(fs.readFileSync(file, 'utf8')))
     .map(routeFromFile)
     .sort();
   assert.ok(routes.length > 0, 'no hidden speedrail routes in built dist');
@@ -164,7 +169,7 @@ async function main() {
   }
 
   const evidence = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     conclusion: 'success',
     sha: process.env.SOURCE_SHA || '',
     browsers: Object.keys(browsers),
@@ -179,7 +184,7 @@ async function main() {
 
 main().catch((error) => {
   fs.mkdirSync(REPORT, { recursive: true });
-  fs.writeFileSync(path.join(REPORT, 'result.json'), `${JSON.stringify({ schemaVersion: 2, conclusion: 'failure', error: String(error?.stack || error) }, null, 2)}\n`);
+  fs.writeFileSync(path.join(REPORT, 'result.json'), `${JSON.stringify({ schemaVersion: 3, conclusion: 'failure', error: String(error?.stack || error) }, null, 2)}\n`);
   console.error(error);
   process.exitCode = 1;
 });
