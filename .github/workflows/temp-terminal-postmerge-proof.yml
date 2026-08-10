@@ -25,7 +25,7 @@ jobs:
           persist-credentials: true
           fetch-depth: 0
 
-      - name: Prove frozen scope before generated sync
+      - name: Prove frozen scope
         env:
           MERGED_ROOT_SHA: 63dc417d3b5f385544eeea381684182ed95f9c7d
           TRIGGER_SHA: ${{ github.sha }}
@@ -50,43 +50,33 @@ jobs:
       - name: Install exact dependencies
         run: npm ci
 
-      - name: Calibrate Atlas witness to rendered responsive controls
+      - name: Calibrate Atlas witness to responsive controls
         run: |
           node - <<'NODE'
           const fs = require('fs');
           const file = 'scripts/atlas-focus-state-browser-test.mjs';
-          const source = fs.readFileSync(file, 'utf8');
-          const before = `    await page.locator('[data-atlas-view="list"]').click();
-              await page.waitForFunction(() => !document.getElementById('atlasListView')?.hidden);
-              const listFocus = page.locator('[data-list-focus]:visible').first();
-              await listFocus.focus();
-              await listFocus.click();
-              await page.waitForFunction(() => !document.getElementById('atlasGraphView')?.hidden);
-              result.steps.listToGraph = await assertSafeFocus(page, \`${'${browserName}'}/${'${width}'}/list-to-graph\`, (state) => String(state.className).includes('atlas-node'));
-          `;
-          const after = `    const listSwitch = page.locator('[data-atlas-view="list"]');
-              if (await listSwitch.isVisible()) {
-                await listSwitch.click();
-                await page.waitForFunction(() => !document.getElementById('atlasListView')?.hidden);
-                const listFocus = page.locator('[data-list-focus]:visible').first();
-                await listFocus.focus();
-                await listFocus.click();
-                await page.waitForFunction(() => !document.getElementById('atlasGraphView')?.hidden);
-                result.steps.listToGraph = await assertSafeFocus(page, \`${'${browserName}'}/${'${width}'}/list-to-graph\`, (state) => String(state.className).includes('atlas-node'));
-              } else {
-                const geometry = await listSwitch.evaluate((button) => button.getClientRects().length);
-                assert.equal(geometry, 0, \`${'${browserName}'}/${'${width}'}: hidden view switch unexpectedly has geometry\`);
-                result.steps.listToGraph = { skipped: true, reason: 'responsive view switch is not rendered at this width' };
-              }
-          `;
-          if (!source.includes(before)) throw new Error('Atlas List→Graph witness block not found exactly once');
-          const next = source.replace(before, after);
-          if (next === source || next.includes(before)) throw new Error('Atlas witness replacement failed');
-          fs.writeFileSync(file, next);
+          const lines = fs.readFileSync(file, 'utf8').split('\n');
+          const start = lines.findIndex((line) => line.includes("await page.locator('[data-atlas-view=\"list\"]')") && line.includes('.click()'));
+          const end = lines.findIndex((line, index) => index >= start && line.includes('result.steps.listToGraph = await assertSafeFocus'));
+          if (start < 0 || end < start) throw new Error('Atlas List→Graph block not found');
+          const indent = (lines[start].match(/^\s*/) || [''])[0];
+          const original = lines.slice(start, end + 1).map((line) => `${indent}  ${line.trimStart()}`);
+          const replacement = [
+            `${indent}const listSwitch = page.locator('[data-atlas-view="list"]');`,
+            `${indent}if (await listSwitch.isVisible()) {`,
+            ...original,
+            `${indent}} else {`,
+            `${indent}  const geometry = await listSwitch.evaluate((button) => button.getClientRects().length);`,
+            `${indent}  assert.equal(geometry, 0, browserName + '/' + width + ': hidden view switch unexpectedly has geometry');`,
+            `${indent}  result.steps.listToGraph = { skipped: true, reason: 'responsive view switch is not rendered at this width' };`,
+            `${indent}}`,
+          ];
+          lines.splice(start, end - start + 1, ...replacement);
+          fs.writeFileSync(file, lines.join('\n'));
           NODE
           node --check scripts/atlas-focus-state-browser-test.mjs
 
-      - name: Synchronize only governed asset revisions
+      - name: Synchronize governed asset revisions
         run: |
           set -euo pipefail
           node --check js/glossary.js
@@ -109,13 +99,12 @@ jobs:
           node scripts/cache-bust.js
           git diff --check
 
-      - name: Remove verifier from final-tree validation surface
-        run: |
-          git rm .github/workflows/temp-terminal-postmerge-proof.yml
-          git diff --check
+      - name: Remove verifier from final-tree checks
+        run: git rm .github/workflows/temp-terminal-postmerge-proof.yml
 
       - name: Permanent source and control-plane gates
         run: |
+          git diff --check
           node scripts/check-workflows.js
           node scripts/node-toolchain-pin-contract-test.mjs
           npm run validate:static-publication
@@ -123,11 +112,9 @@ jobs:
       - name: Install Chromium and WebKit
         run: timeout 12m npx playwright install --with-deps chromium webkit
 
-      - name: Production-like build
-        run: npm run strangler:build:production-like
-
-      - name: Reader projection idempotence and Pagefind
+      - name: Production-like build and Pagefind
         run: |
+          npm run strangler:build:production-like
           node scripts/project-reader-linear-text-to-dist.mjs --root dist --dry-run
           npm run pagefind:build:dist
 
@@ -138,7 +125,7 @@ jobs:
           node scripts/reader-linear-text-projection-browser-test.mjs
           node scripts/atlas-focus-state-browser-test.mjs
 
-      - name: Commit final tree only after full PASS
+      - name: Commit exact final tree after full PASS
         env:
           TRIGGER_SHA: ${{ github.sha }}
         run: |
@@ -155,9 +142,9 @@ jobs:
             src/components/nagornaya/_shared/NagornayaPageFooterRuntime.astro \
             src/components/nagornaya/istochniki/NagornayaIstochnikiPageFooter.astro \
             src/components/nagornaya/nakhodki/NagornayaNakhodkiPageFooter.astro \
-            | sort > /tmp/allowed-final-worktree.txt
-          git diff --name-only | sort > /tmp/actual-final-worktree.txt
-          diff -u /tmp/allowed-final-worktree.txt /tmp/actual-final-worktree.txt
+            | sort > /tmp/allowed-final.txt
+          git diff --name-only | sort > /tmp/actual-final.txt
+          diff -u /tmp/allowed-final.txt /tmp/actual-final.txt
           git diff --check
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
