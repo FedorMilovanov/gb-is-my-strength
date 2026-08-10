@@ -1,4 +1,5 @@
 # Permanent browser proof for V08-MAPENGINE-INTRO-FOCUS.
+# Refreshed after rebasing onto current main with the terminal Krajne schema repair.
 name: MapEngine Intro Focus Contract
 
 on:
