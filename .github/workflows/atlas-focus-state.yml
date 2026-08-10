@@ -1,5 +1,5 @@
 # Permanent browser proof for V07-ATLAS-FOCUS-STATE.
-# Refreshed after rebasing onto current main with the terminal Krajne schema repair.
+# Refreshed after rebasing onto current main with terminal Krajne + MapEngine repairs.
 name: Atlas Focus State Contract
 
 on:
