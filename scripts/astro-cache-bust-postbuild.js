@@ -20,6 +20,7 @@ const DIST = path.join(ROOT, 'dist');
 const ASSETS_MODULE = path.join(ROOT, 'scripts', 'cache-bust-assets.js');
 const PROJECTOR = path.join(ROOT, 'scripts', 'project-relations-to-dist.mjs');
 const EDITORIAL_PROJECTOR = path.join(ROOT, 'scripts', 'editorial-metadata-registry.js');
+const READER_LINEAR_PROJECTOR = path.join(ROOT, 'scripts', 'project-reader-linear-text-to-dist.mjs');
 const DRY_RUN = process.argv.includes('--dry-run');
 
 function requirePath(file, message) {
@@ -29,6 +30,7 @@ requirePath(DIST, 'dist/ does not exist. Run the Astro build first.');
 requirePath(ASSETS_MODULE, 'scripts/cache-bust-assets.js not found.');
 requirePath(PROJECTOR, 'scripts/project-relations-to-dist.mjs not found.');
 requirePath(EDITORIAL_PROJECTOR, 'scripts/editorial-metadata-registry.js not found.');
+requirePath(READER_LINEAR_PROJECTOR, 'scripts/project-reader-linear-text-to-dist.mjs not found.');
 
 const ASSETS = require(ASSETS_MODULE).ASSETS;
 if (!Array.isArray(ASSETS) || !ASSETS.length) throw new Error('ASSETS registry is empty');
@@ -189,6 +191,14 @@ const editorialProjector = spawnSync(
 if (editorialProjector.error) throw editorialProjector.error;
 if (editorialProjector.status !== 0) throw new Error(`Editorial metadata projector failed with exit code ${editorialProjector.status}`);
 
+const readerLinearProjector = spawnSync(
+  process.execPath,
+  [READER_LINEAR_PROJECTOR, '--root', 'dist', ...(DRY_RUN ? ['--dry-run'] : [])],
+  { cwd: ROOT, stdio: 'inherit', encoding: 'utf8' }
+);
+if (readerLinearProjector.error) throw readerLinearProjector.error;
+if (readerLinearProjector.status !== 0) throw new Error(`Reader linear-text projector failed with exit code ${readerLinearProjector.status}`);
+
 const sitemapImages = projectSitemapImages({ root: DIST, htmlFiles, dryRun: DRY_RUN });
 
 console.log(`\n⚡ astro-cache-bust-postbuild.js${DRY_RUN ? ' [DRY RUN]' : ''}\n`);
@@ -199,4 +209,4 @@ console.log(`  Governed runtime assets:  ${RUNTIME_ASSETS.length}`);
 console.log(`  CSP files touched:        ${cspFilesTouched} (injected: ${cspInjected}, form-action fixed: ${cspFormFixed}, wasm fixed: ${cspWasmFixed})`);
 console.log(`  CSP WASM verified:        ${cspWasmVerified}`);
 console.log(`  Sitemap images:           ${sitemapImages.inserted} inserted, ${sitemapImages.replaced} synchronized, ${sitemapImages.unchanged} unchanged`);
-console.log(DRY_RUN ? '\n  (dry-run: nothing written)' : '\n✅ dist asset, CSP, Atlas, relation, editorial metadata and sitemap image drift → 0');
+console.log(DRY_RUN ? '\n  (dry-run: nothing written)' : '\n✅ dist asset, CSP, Atlas, relation, editorial metadata, reader semantic projection and sitemap image drift → 0');
