@@ -3,6 +3,7 @@ name: Dependency Security
 on:
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, labeled]
     paths:
       - '.github/workflows/dependency-security.yml'
       - 'package.json'
@@ -25,6 +26,71 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lock-autofix:
+    name: Lease-guarded lock remediation
+    if: >-
+      github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.labels.*.name, 'autofix') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Checkout exact pull request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Set up canonical Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Snapshot machine writer lease
+        run: node scripts/writer-lease.mjs snapshot
+
+      - name: Reject stale or foreign writer before mutation
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/writer-lease.mjs assert-live --phase=pre-mutation
+
+      - name: Install immutable dependencies
+        run: npm ci
+
+      - name: Reproduce reviewed zero-advisory lock candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm update fast-uri fast-xml-parser js-yaml nanoid @astrojs/language-server --package-lock-only --ignore-scripts
+          test "$(git hash-object package-lock.json)" = "43a85292e04c8374996058f8868467f30808a089"
+          CHANGED="$(git diff --name-only)"
+          test "$CHANGED" = "package-lock.json"
+          npm ci
+          npm audit --json > /tmp/npm-audit.json
+          node scripts/npm-security-contract.mjs /tmp/npm-audit.json
+          git diff --check
+
+      - name: Commit exact lock remediation
+        shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          node scripts/writer-lease.mjs assert-live --phase=pre-commit
+          EXPECTED_HEAD="$(node scripts/writer-lease.mjs field expectedHead)"
+          LEASE_TRAILER="$(node scripts/writer-lease.mjs trailer)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "security(deps): refresh patched transitive lock" -m "${LEASE_TRAILER}"
+          node scripts/writer-lease.mjs assert-live --phase=pre-push
+          git push --force-with-lease="refs/heads/${HEAD_REF}:${EXPECTED_HEAD}" origin "HEAD:${HEAD_REF}"
+
   npm-audit:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -45,7 +111,6 @@ jobs:
         run: npm ci
 
       - name: Capture exact npm advisory report
-        id: audit
         shell: bash
         run: |
           mkdir -p reports/npm-security
@@ -53,33 +118,18 @@ jobs:
           npm audit --json > reports/npm-security/npm-audit.json
           status=$?
           set -e
-          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          echo "npm audit exit: $status"
           test -s reports/npm-security/npm-audit.json
 
       - name: Enforce dependency security contract
         run: node scripts/npm-security-contract.mjs reports/npm-security/npm-audit.json
-
-      # Branch-only migration evidence. This step is intentionally removed before merge.
-      # It never writes to GitHub: it prepares a bounded package-lock candidate as an artifact.
-      - name: Prepare bounded lock remediation candidate
-        if: failure()
-        shell: bash
-        run: |
-          cp package-lock.json reports/npm-security/package-lock.before.json
-          npm update fast-uri fast-xml-parser js-yaml nanoid @astrojs/language-server --package-lock-only --ignore-scripts
-          cp package-lock.json reports/npm-security/package-lock.candidate.json
-          git diff -- package.json package-lock.json > reports/npm-security/package-lock.candidate.patch
-          set +e
-          npm audit --package-lock-only --json > reports/npm-security/npm-audit.candidate.json
-          set -e
-          git restore --source=HEAD -- package.json package-lock.json
 
       - name: Upload npm security evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: npm-security-${{ github.run_id }}
-          path: reports/npm-security/**
+          path: reports/npm-security/npm-audit.json
           if-no-files-found: error
           retention-days: 14
 
