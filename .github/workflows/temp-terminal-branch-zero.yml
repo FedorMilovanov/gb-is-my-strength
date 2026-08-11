@@ -1,0 +1,88 @@
+name: TEMP Terminal Branch Zero
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, labeled]
+    paths:
+      - '.github/workflows/temp-terminal-branch-zero.yml'
+      - 'scripts/terminal-branch-cleanup-writer.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  branch-zero-autofix:
+    name: Lease-guarded terminal branch cleanup
+    if: >-
+      github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.labels.*.name, 'autofix') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Checkout exact pull request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Set up canonical Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+
+      - name: Lint temporary cleanup control plane
+        run: |
+          node --check scripts/terminal-branch-cleanup-writer.mjs
+          node scripts/run-actionlint.mjs -no-color .github/workflows/temp-terminal-branch-zero.yml
+          node scripts/check-workflows.js
+
+      - name: Snapshot machine writer lease
+        run: node scripts/writer-lease.mjs snapshot
+
+      - name: Reject stale or foreign writer before mutation
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/writer-lease.mjs assert-live --phase=pre-mutation
+
+      - name: Write verified terminal branch deletions
+        run: node scripts/terminal-branch-cleanup-writer.mjs --write
+
+      - name: Validate terminal branch cleanup
+        run: |
+          node scripts/terminal-branch-cleanup-writer.mjs --check
+          git diff --check
+
+      - name: Commit cleanup evidence and CAS-push own branch
+        shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          node scripts/writer-lease.mjs assert-live --phase=pre-commit
+          EXPECTED_HEAD="$(node scripts/writer-lease.mjs field expectedHead)"
+          LEASE_TRAILER="$(node scripts/writer-lease.mjs trailer)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/terminal-branch-cleanup/result.json
+          git commit -m "audit(branches): record terminal ref cleanup" -m "${LEASE_TRAILER}"
+          node scripts/writer-lease.mjs assert-live --phase=pre-push
+          git push --force-with-lease="refs/heads/${HEAD_REF}:${EXPECTED_HEAD}" origin "HEAD:${HEAD_REF}"
+
+      - name: Retire temporary cleanup branch
+        shell: bash
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          SELF_HEAD="$(git rev-parse HEAD)"
+          REMOTE_HEAD="$(git ls-remote --heads origin "refs/heads/${HEAD_REF}" | awk '{print $1}')"
+          test "$REMOTE_HEAD" = "$SELF_HEAD"
+          git push --force-with-lease="refs/heads/${HEAD_REF}:${SELF_HEAD}" origin ":refs/heads/${HEAD_REF}"
+          test -z "$(git ls-remote --heads origin "refs/heads/${HEAD_REF}")"
