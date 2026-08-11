@@ -59,12 +59,27 @@ jobs:
       - name: Enforce dependency security contract
         run: node scripts/npm-security-contract.mjs reports/npm-security/npm-audit.json
 
+      # Branch-only migration evidence. This step is intentionally removed before merge.
+      # It never writes to GitHub: it prepares a bounded package-lock candidate as an artifact.
+      - name: Prepare bounded lock remediation candidate
+        if: failure()
+        shell: bash
+        run: |
+          cp package-lock.json reports/npm-security/package-lock.before.json
+          npm update fast-uri fast-xml-parser js-yaml nanoid @astrojs/language-server --package-lock-only --ignore-scripts
+          cp package-lock.json reports/npm-security/package-lock.candidate.json
+          git diff -- package.json package-lock.json > reports/npm-security/package-lock.candidate.patch
+          set +e
+          npm audit --package-lock-only --json > reports/npm-security/npm-audit.candidate.json
+          set -e
+          git restore --source=HEAD -- package.json package-lock.json
+
       - name: Upload npm security evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: npm-security-${{ github.run_id }}
-          path: reports/npm-security/npm-audit.json
+          path: reports/npm-security/**
           if-no-files-found: error
           retention-days: 14
 
