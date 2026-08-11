@@ -146,10 +146,11 @@ async function pagefindMetadata(page, baseUrl, testCase) {
 }
 
 async function glossaryUi(page, baseUrl, route) {
-  const response = await page.goto(`${baseUrl}${route}`, { waitUntil: 'networkidle' });
+  const response = await page.goto(`${baseUrl}${route}`, { waitUntil: 'domcontentloaded' });
   assert.ok(response?.ok(), `${route}: route failed before glossary UI check`);
   const term = page.locator('.gterm:has(.gtip[data-reader-linear-aux])').first();
-  if (!await term.count()) return { route, skipped: true };
+  const attached = await term.waitFor({ state: 'attached', timeout: 5000 }).then(() => true).catch(() => false);
+  if (!attached) return { route, skipped: true };
   await term.waitFor({ state: 'visible' });
   const tipHandle = await term.locator('.gtip[data-reader-linear-aux]').first().elementHandle();
   assert.ok(tipHandle, `${route}: projected glossary popup node missing before hydration`);
