@@ -125,14 +125,17 @@ async function glossaryUi(page, baseUrl, route) {
   const term = page.locator('.gterm:has(.gtip[data-reader-linear-aux])').first();
   if (!await term.count()) return { route, skipped: true };
   await term.waitFor({ state: 'visible' });
+  const tipHandle = await term.locator('.gtip[data-reader-linear-aux]').first().elementHandle();
+  assert.ok(tipHandle, `${route}: projected glossary popup node missing before hydration`);
   await term.click();
-  const tip = term.locator('.gtip[data-reader-linear-aux]').first();
-  await tip.waitFor({ state: 'visible' });
-  const state = await tip.evaluate((node) => ({
+  await tipHandle.waitForElementState('visible');
+  const state = await tipHandle.evaluate((node) => ({
     innerText: node.innerText,
     textContent: node.textContent,
     boundaryDisplays: [...node.querySelectorAll('[data-reader-linear-boundary]')].map((boundary) => getComputedStyle(boundary).display),
+    reparented: !node.closest('.gterm'),
   }));
+  assert.ok(state.reparented, `${route}: glossary popup did not enter the floating overlay owner`);
   assert.ok(String(state.textContent).includes('⟦') && String(state.textContent).includes('⟧'), `${route}: projected glossary lost semantic boundaries after hydration`);
   assert.ok(!String(state.innerText).includes('⟦') && !String(state.innerText).includes('⟧'), `${route}: semantic boundary leaked into visible tooltip copy`);
   assert.ok(state.boundaryDisplays.length >= 2 && state.boundaryDisplays.every((display) => display === 'none'), `${route}: semantic boundaries are visually rendered`);
