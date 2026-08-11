@@ -70,11 +70,15 @@ function transform(source) {
 }
 
 function selfTest() {
-  const fixture = `prefix:${LEGACY_MARKUP}:middle:${LEGACY_STATE}:${LEGACY_STATE}:tail:${CANONICAL_SUBHTML}`;
-  const result = transform(fixture);
-  if (!result.changed) throw new Error('self-test expected a normalization change');
-  const second = transform(result.source);
-  if (second.changed || second.source !== result.source) throw new Error('self-test idempotence failed');
+  const current = fs.readFileSync(SEARCH_PATH, 'utf8');
+  const normalized = transform(current).source;
+  const legacy = normalized
+    .replace(NORMALIZED_MARKUP, LEGACY_MARKUP)
+    .replaceAll(NORMALIZED_STATE, LEGACY_STATE);
+  const first = transform(legacy);
+  if (!first.changed || first.source !== normalized) throw new Error('self-test normalization failed');
+  const second = transform(first.source);
+  if (second.changed || second.source !== normalized) throw new Error('self-test idempotence failed');
   console.log('SEARCH SCOPE SEMANTICS NORMALIZER SELF-TEST: PASS');
 }
 
