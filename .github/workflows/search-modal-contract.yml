@@ -18,6 +18,8 @@ on:
       - 'scripts/lib/public-surface-registry.js'
       - 'scripts/lib/route-source-contract.js'
       - 'scripts/search-modal-browser-contract.mjs'
+      - 'scripts/search-scope-semantics-browser-contract.mjs'
+      - 'scripts/search-scope-semantics-normalizer.mjs'
       - 'scripts/app-search-surface-source-contract.mjs'
       - 'scripts/app-search-surface-browser-contract.mjs'
       - 'scripts/home-browser-contract.mjs'
@@ -40,6 +42,8 @@ on:
       - 'scripts/lib/public-surface-registry.js'
       - 'scripts/lib/route-source-contract.js'
       - 'scripts/search-modal-browser-contract.mjs'
+      - 'scripts/search-scope-semantics-browser-contract.mjs'
+      - 'scripts/search-scope-semantics-normalizer.mjs'
       - 'scripts/app-search-surface-source-contract.mjs'
       - 'scripts/app-search-surface-browser-contract.mjs'
       - 'scripts/home-browser-contract.mjs'
@@ -74,8 +78,12 @@ jobs:
         run: |
           node --check js/search.js
           node --check scripts/search-modal-browser-contract.mjs
+          node --check scripts/search-scope-semantics-browser-contract.mjs
+          node --check scripts/search-scope-semantics-normalizer.mjs
           node --check scripts/app-search-surface-source-contract.mjs
           node --check scripts/app-search-surface-browser-contract.mjs
+          node scripts/search-scope-semantics-normalizer.mjs --self-test
+          node scripts/search-scope-semantics-normalizer.mjs
           node scripts/audit-pro-source-corpus-test.js
           node scripts/app-search-surface-source-contract.mjs
           node scripts/audit-pro.js
@@ -92,6 +100,7 @@ jobs:
       - name: Validate Search modal runtime
         run: |
           node scripts/search-modal-browser-contract.mjs --dist=dist --report=reports/search-modal-contract/core
+          node scripts/search-scope-semantics-browser-contract.mjs
           node scripts/app-search-surface-browser-contract.mjs --dist=dist --report=reports/search-modal-contract/app-surfaces
 
       - name: Verify validation is read-only
