@@ -53,6 +53,7 @@ const supersededTargets = [
     expectedHead: 'aa99304f9e6ece163e344a7c818205ffd7759127',
     successor: 'd18ce559e166837380550c5cfd91db5687a3628f',
     evidence: 'closed invalid candidate #1645 -> terminal clean #1637',
+    disposition: 'DIAGNOSTIC_DISPOSABLE',
   },
   {
     branch: 'lane/system-site-menu-failsafe-2026-08-10',
@@ -66,16 +67,24 @@ const supersededTargets = [
     successor: '9aba01c60b4c680c2121f8ef78db816138caa004',
     evidence: 'closed predecessor #1608 -> terminal successor #1613',
   },
+  {
+    branch: 'terminal/branch-zero-20260811',
+    expectedHead: '6418d777104bef718c06d6cd7b3e923576d12a54',
+    successor: MAIN_SHA,
+    evidence: 'superseded cleanup PR #1658; writer never activated; canonical lane-prefix successor owns terminal cleanup',
+    disposition: 'DIAGNOSTIC_DISPOSABLE',
+  },
 ];
 
 const targets = [
   ...ancestryTargets.map((branch) => ({ branch, disposition: 'FULLY_REPRESENTED_BY_ANCESTRY' })),
-  ...supersededTargets.map((entry) => ({ ...entry, disposition: entry.branch.includes('semantics-final') ? 'DIAGNOSTIC_DISPOSABLE' : 'SUPERSEDED_VERIFIED' })),
+  ...supersededTargets.map((entry) => ({ ...entry, disposition: entry.disposition || 'SUPERSEDED_VERIFIED' })),
 ];
 
-assert.equal(targets.length, 13, 'terminal branch set must remain exactly 13 refs');
+assert.equal(targets.length, 14, 'terminal branch set must remain exactly 14 refs');
 assert.equal(new Set(targets.map((target) => target.branch)).size, targets.length, 'duplicate cleanup target');
 assert.ok(!targets.some((target) => target.branch === 'main'), 'main must never be a cleanup target');
+assert.ok(!targets.some((target) => target.branch === 'lane/system-terminal-branch-zero-20260811'), 'active cleanup branch must self-retire only after evidence commit');
 
 function git(args, options = {}) {
   return execFileSync('git', args, {
@@ -196,11 +205,11 @@ function checkCleanup() {
   assert.ok(fs.existsSync(REPORT), 'cleanup result report missing');
   const report = JSON.parse(fs.readFileSync(REPORT, 'utf8'));
   assert.equal(report.mainSha, MAIN_SHA, 'cleanup report main SHA mismatch');
-  assert.equal(report.targetCount, 13, 'cleanup report target count mismatch');
+  assert.equal(report.targetCount, 14, 'cleanup report target count mismatch');
   for (const target of targets) {
     assert.equal(remoteSha(target.branch), null, `${target.branch} reappeared after cleanup`);
   }
-  console.log('TERMINAL BRANCH CLEANUP CHECK: PASS (13 refs absent; main frozen)');
+  console.log('TERMINAL BRANCH CLEANUP CHECK: PASS (14 refs absent; main frozen)');
 }
 
 if (process.argv.includes('--write')) writeCleanup();
