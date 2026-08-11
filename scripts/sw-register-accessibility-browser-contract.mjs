@@ -8,6 +8,7 @@ import { chromium, webkit } from 'playwright';
 const ROOT = path.resolve(process.cwd());
 const REPORT_DIR = path.join(ROOT, 'reports', 'sw-register-accessibility');
 const BROWSERS = { chromium, webkit };
+const LEGACY_DISMISS_WINDOW_MS = 8200;
 
 function serveFile(response, relative, type) {
   const file = path.join(ROOT, relative);
@@ -106,6 +107,10 @@ async function runBrowser(browserName, browserType, server) {
     await reloadButton.focus();
     assert.equal(await reloadButton.evaluate((node) => document.activeElement === node), true, `${browserName}: reload action cannot receive focus`);
 
+    await page.waitForTimeout(LEGACY_DISMISS_WINDOW_MS);
+    assert.equal(await reloadButton.isVisible(), true, `${browserName}: actionable update disappeared after the legacy 8-second timeout window`);
+    assert.equal(await reloadButton.evaluate((node) => document.activeElement === node), true, `${browserName}: actionable update lost keyboard focus while remaining pending`);
+
     let before = server.fixtureRequests();
     await waitForReload(page, server, before, () => page.getByRole('button', { name: 'Обновить' }).press('Enter'));
 
@@ -115,7 +120,14 @@ async function runBrowser(browserName, browserType, server) {
     before = server.fixtureRequests();
     await waitForReload(page, server, before, () => page.getByRole('button', { name: 'Обновить' }).press('Space'));
 
-    return { browser: browserName, liveRegion: live, reloadAction: 'native-button', enterReload: true, spaceReload: true };
+    return {
+      browser: browserName,
+      liveRegion: live,
+      reloadAction: 'native-button',
+      persistedPastLegacyTimeout: true,
+      enterReload: true,
+      spaceReload: true,
+    };
   } finally {
     await context.close();
     await browser.close();
