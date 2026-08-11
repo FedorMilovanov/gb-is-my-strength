@@ -182,12 +182,12 @@ function projectFile(file) {
   const nodes = scanElements(html);
   const head = nodes.find(node => node.name === 'head' && node.endTagStart != null);
   if (!head) return { changed: false, articles: 0, metadata: 0, popups: 0 };
+  const charset = nodes.find(node => node.name === 'meta' && inside(node, head) && hasAttr(node.startRaw, 'charset'));
+  const headMetaInsert = charset?.end ?? head.startTagEnd;
 
   const articles = nodes.filter(node => node.name === 'article' && hasAttr(node.startRaw, 'data-pagefind-body'));
   if (!articles.length) return { changed: false, articles: 0, metadata: 0, popups: 0 };
 
-  const charset = nodes.find(node => node.name === 'meta' && hasAttr(node.startRaw, 'charset') && inside(node, head));
-  const headMetaInsertAt = charset?.end ?? head.startTagEnd;
   const operations = [];
   const headMeta = [];
   let metadataCount = 0;
@@ -199,7 +199,7 @@ function projectFile(file) {
       if (hasAttr(node.startRaw, 'data-pagefind-meta') && node.endTagStart != null) {
         const key = attrValue(node.startRaw, 'data-pagefind-meta');
         const value = decodeText(html.slice(node.startTagEnd, node.endTagStart));
-        if (key && value) headMeta.push(`<meta data-pagefind-meta="${escapeAttr(key)}" content="${escapeAttr(value)}" data-reader-meta-projected="true">`);
+        if (key && value) headMeta.push(`<meta data-pagefind-meta="${escapeAttr(key)}[content]" content="${escapeAttr(value)}" data-reader-meta-projected="true">`);
         operations.push({ start: node.start, end: node.end, text: '' });
         metadataCount += 1;
         continue;
@@ -211,11 +211,7 @@ function projectFile(file) {
         'data-pagefind-ignore': '',
         'data-reader-linear-aux': descriptor.kind,
       });
-      operations.push({
-        start: node.start,
-        end: node.startTagEnd,
-        text: `${startTag}${marker('start', descriptor.label)}`,
-      });
+      operations.push({ start: node.start, end: node.startTagEnd, text: `${startTag}${marker('start', descriptor.label)}` });
       operations.push({ start: node.endTagStart, end: node.endTagStart, text: marker('end', descriptor.label) });
       popupCount += 1;
     }
@@ -223,8 +219,8 @@ function projectFile(file) {
 
   if (headMeta.length) {
     operations.push({
-      start: headMetaInsertAt,
-      end: headMetaInsertAt,
+      start: headMetaInsert,
+      end: headMetaInsert,
       text: `\n${headMeta.join('\n')}\n`,
     });
   }
