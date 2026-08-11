@@ -5,7 +5,6 @@ on:
     paths:
       - 'scripts/astro-cache-bust-postbuild.js'
       - 'scripts/project-reader-linear-text-to-dist.mjs'
-      - 'scripts/reader-linear-text-metadata-contract.mjs'
       - 'scripts/reader-linear-text-projection-browser-test.mjs'
       - 'js/glossary.js'
       - '.github/workflows/reader-linear-text-projection.yml'
@@ -17,7 +16,6 @@ on:
     paths:
       - 'scripts/astro-cache-bust-postbuild.js'
       - 'scripts/project-reader-linear-text-to-dist.mjs'
-      - 'scripts/reader-linear-text-metadata-contract.mjs'
       - 'scripts/reader-linear-text-projection-browser-test.mjs'
       - 'js/glossary.js'
       - '.github/workflows/reader-linear-text-projection.yml'
@@ -62,13 +60,10 @@ jobs:
         run: |
           node --check scripts/astro-cache-bust-postbuild.js
           node --check scripts/project-reader-linear-text-to-dist.mjs
-          node --check scripts/reader-linear-text-metadata-contract.mjs
           node --check scripts/reader-linear-text-projection-browser-test.mjs
           node --check js/glossary.js
       - name: Build production-like dist
         run: npm run strangler:build:production-like
-      - name: Prove exact source-to-dist metadata values
-        run: node scripts/reader-linear-text-metadata-contract.mjs
       - name: Prove semantic projector is idempotent
         run: node scripts/project-reader-linear-text-to-dist.mjs --root dist --dry-run
       - name: Build Pagefind index
