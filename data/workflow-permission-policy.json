@@ -5,26 +5,14 @@
     ".github/workflows/deploy.yml": {
       "jobs": {
         "deploy": {
-          "permissions": {
-            "actions": "read",
-            "contents": "read",
-            "id-token": "write",
-            "pages": "write"
-          },
+          "permissions": {"actions": "read", "contents": "read", "id-token": "write", "pages": "write"},
           "purpose": "Promote the exact same-run candidate built by the read-only readiness job to GitHub Pages",
           "allowedEvents": ["push", "workflow_dispatch"],
           "repositoryBoundary": "same repository; candidate and witness artifacts must belong to this exact workflow run",
           "branchBoundary": "control-plane SHA equals current main; release SHA equals it automatically or is an explicit historical main ancestor",
           "mutationTargets": ["github-pages deployment", "OIDC deployment token"],
           "requiresConcurrency": true,
-          "requiredMarkers": [
-            "needs: readiness",
-            "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
-            "EXPECTED_RELEASE_SHA: ${{ needs.readiness.outputs.release_sha }}",
-            "EXPECTED_CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.control_plane_sha }}",
-            "environment:",
-            "name: github-pages"
-          ]
+          "requiredMarkers": ["needs: readiness", "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c", "EXPECTED_RELEASE_SHA: ${{ needs.readiness.outputs.release_sha }}", "EXPECTED_CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.control_plane_sha }}", "environment:", "name: github-pages"]
         }
       }
     },
@@ -38,12 +26,7 @@
           "branchBoundary": "main deployment control-plane SHA plus independently verified release SHA",
           "mutationTargets": ["machine-marked deployment witness issue or pull-request thread"],
           "requiresConcurrency": true,
-          "requiredMarkers": [
-            "workflowRun.head_repository && workflowRun.head_repository.full_name",
-            "workflowRun.head_branch, 'main'",
-            "deployment-witness-${{ needs.resolve.outputs.run_id }}",
-            "persist-credentials: false"
-          ]
+          "requiredMarkers": ["workflowRun.head_repository && workflowRun.head_repository.full_name", "workflowRun.head_branch, 'main'", "deployment-witness-${{ needs.resolve.outputs.run_id }}", "persist-credentials: false"]
         }
       }
     },
@@ -57,12 +40,7 @@
           "branchBoundary": "main deployment control-plane SHA; route evidence must remain bound to the generic report release SHA and candidate digest",
           "mutationTargets": ["exact release pull-request thread carrying the machine-marked Diotrophes capability witness"],
           "requiresConcurrency": true,
-          "requiredMarkers": [
-            "github.event.workflow_run.head_repository.full_name == github.repository",
-            "deployRun.head_branch, 'main'",
-            "diotrophes-live-release-${{ needs.resolve.outputs.deploy_run_id }}",
-            "persist-credentials: false"
-          ]
+          "requiredMarkers": ["github.event.workflow_run.head_repository.full_name == github.repository", "deployRun.head_branch, 'main'", "diotrophes-live-release-${{ needs.resolve.outputs.deploy_run_id }}", "persist-credentials: false"]
         }
       }
     },
@@ -76,12 +54,7 @@
           "branchBoundary": "notifier implementation fetched from the trusted default branch; retirement runs only after successful Shared Files Guard on the default branch",
           "mutationTargets": ["machine-marked CI failure lifecycle issues, including not_planned retirement receipts for proven inactive identities"],
           "requiresConcurrency": true,
-          "requiredMarkers": [
-            "context.payload.repository.default_branch",
-            "github.rest.repos.getContent",
-            "ref: defaultBranch",
-            "cancel-in-progress: false"
-          ]
+          "requiredMarkers": ["context.payload.repository.default_branch", "github.rest.repos.getContent", "ref: defaultBranch", "cancel-in-progress: false"]
         }
       }
     },
@@ -95,16 +68,7 @@
           "branchBoundary": "immutable queued PR head plus active owner-token/generation lease; final push is CAS-bound to the same expected head",
           "mutationTargets": ["pull-request source branch glossary and tooltip normalization"],
           "requiresConcurrency": true,
-          "requiredMarkers": [
-            "contains(github.event.pull_request.labels.*.name, 'autofix')",
-            "github.event.pull_request.head.repo.full_name == github.repository",
-            "ref: ${{ github.event.pull_request.head.sha }}",
-            "node scripts/writer-lease.mjs snapshot",
-            "node scripts/writer-lease.mjs assert-live --phase=pre-mutation",
-            "node scripts/writer-lease.mjs assert-live --phase=pre-commit",
-            "node scripts/writer-lease.mjs assert-live --phase=pre-push",
-            "--force-with-lease=\"refs/heads/${HEAD_REF}:${EXPECTED_HEAD}\""
-          ]
+          "requiredMarkers": ["contains(github.event.pull_request.labels.*.name, 'autofix')", "github.event.pull_request.head.repo.full_name == github.repository", "ref: ${{ github.event.pull_request.head.sha }}", "node scripts/writer-lease.mjs snapshot", "node scripts/writer-lease.mjs assert-live --phase=pre-mutation", "node scripts/writer-lease.mjs assert-live --phase=pre-commit", "node scripts/writer-lease.mjs assert-live --phase=pre-push", "--force-with-lease=\"refs/heads/${HEAD_REF}:${EXPECTED_HEAD}\""]
         }
       }
     },
@@ -118,16 +82,7 @@
           "branchBoundary": "immutable queued PR head plus active owner-token/generation lease; final push is CAS-bound to the same expected head",
           "mutationTargets": ["registered article PageHead title text on the pull-request source branch"],
           "requiresConcurrency": true,
-          "requiredMarkers": [
-            "contains(github.event.pull_request.labels.*.name, 'autofix')",
-            "github.event.pull_request.head.repo.full_name == github.repository",
-            "ref: ${{ github.event.pull_request.head.sha }}",
-            "node scripts/writer-lease.mjs snapshot",
-            "node scripts/writer-lease.mjs assert-live --phase=pre-mutation",
-            "node scripts/writer-lease.mjs assert-live --phase=pre-commit",
-            "node scripts/writer-lease.mjs assert-live --phase=pre-push",
-            "--force-with-lease=\"refs/heads/${HEAD_REF}:${EXPECTED_HEAD}\""
-          ]
+          "requiredMarkers": ["contains(github.event.pull_request.labels.*.name, 'autofix')", "github.event.pull_request.head.repo.full_name == github.repository", "ref: ${{ github.event.pull_request.head.sha }}", "node scripts/writer-lease.mjs snapshot", "node scripts/writer-lease.mjs assert-live --phase=pre-mutation", "node scripts/writer-lease.mjs assert-live --phase=pre-commit", "node scripts/writer-lease.mjs assert-live --phase=pre-push", "--force-with-lease=\"refs/heads/${HEAD_REF}:${EXPECTED_HEAD}\""]
         }
       }
     },
@@ -141,16 +96,7 @@
           "branchBoundary": "immutable queued PR head plus active owner-token/generation lease; final push is CAS-bound to the same expected head",
           "mutationTargets": ["feed.xml and route/search policy manifests on the pull-request source branch"],
           "requiresConcurrency": true,
-          "requiredMarkers": [
-            "contains(github.event.pull_request.labels.*.name, 'autofix')",
-            "github.event.pull_request.head.repo.full_name == github.repository",
-            "ref: ${{ github.event.pull_request.head.sha }}",
-            "node scripts/writer-lease.mjs snapshot",
-            "node scripts/writer-lease.mjs assert-live --phase=pre-mutation",
-            "node scripts/writer-lease.mjs assert-live --phase=pre-commit",
-            "node scripts/writer-lease.mjs assert-live --phase=pre-push",
-            "--force-with-lease=\"refs/heads/${HEAD_REF}:${EXPECTED_HEAD}\""
-          ]
+          "requiredMarkers": ["contains(github.event.pull_request.labels.*.name, 'autofix')", "github.event.pull_request.head.repo.full_name == github.repository", "ref: ${{ github.event.pull_request.head.sha }}", "node scripts/writer-lease.mjs snapshot", "node scripts/writer-lease.mjs assert-live --phase=pre-mutation", "node scripts/writer-lease.mjs assert-live --phase=pre-commit", "node scripts/writer-lease.mjs assert-live --phase=pre-push", "--force-with-lease=\"refs/heads/${HEAD_REF}:${EXPECTED_HEAD}\""]
         }
       }
     },
@@ -164,16 +110,7 @@
           "branchBoundary": "immutable queued PR head plus active owner-token/generation lease; final push is CAS-bound to the same expected head",
           "mutationTargets": ["data/scripture-search-index.json on the pull-request source branch"],
           "requiresConcurrency": true,
-          "requiredMarkers": [
-            "contains(github.event.pull_request.labels.*.name, 'autofix')",
-            "github.event.pull_request.head.repo.full_name == github.repository",
-            "ref: ${{ github.event.pull_request.head.sha }}",
-            "node scripts/writer-lease.mjs snapshot",
-            "node scripts/writer-lease.mjs assert-live --phase=pre-mutation",
-            "node scripts/writer-lease.mjs assert-live --phase=pre-commit",
-            "node scripts/writer-lease.mjs assert-live --phase=pre-push",
-            "--force-with-lease=\"refs/heads/${HEAD_REF}:${EXPECTED_HEAD}\""
-          ]
+          "requiredMarkers": ["contains(github.event.pull_request.labels.*.name, 'autofix')", "github.event.pull_request.head.repo.full_name == github.repository", "ref: ${{ github.event.pull_request.head.sha }}", "node scripts/writer-lease.mjs snapshot", "node scripts/writer-lease.mjs assert-live --phase=pre-mutation", "node scripts/writer-lease.mjs assert-live --phase=pre-commit", "node scripts/writer-lease.mjs assert-live --phase=pre-push", "--force-with-lease=\"refs/heads/${HEAD_REF}:${EXPECTED_HEAD}\""]
         }
       }
     },
@@ -184,19 +121,10 @@
           "purpose": "Delete only the explicitly enumerated, pre-audited terminal branch refs and retire the temporary cleanup branch",
           "allowedEvents": ["pull_request"],
           "repositoryBoundary": "same-repository pull request only",
-          "branchBoundary": "frozen main 998cd60759c535af0f542c31d5fc8e2948440c02 plus immutable queued cleanup head; target and self deletions are SHA-leased",
-          "mutationTargets": ["13 explicitly enumerated terminal branch refs", "temporary terminal/branch-zero-20260811 cleanup ref"],
+          "branchBoundary": "frozen main 998cd60759c535af0f542c31d5fc8e2948440c02 plus immutable queued cleanup head; all target and self deletions are exact-SHA leased",
+          "mutationTargets": ["14 explicitly enumerated terminal branch refs, including superseded cleanup #1658", "temporary lane/system-terminal-branch-zero-20260811 cleanup ref"],
           "requiresConcurrency": false,
-          "requiredMarkers": [
-            "contains(github.event.pull_request.labels.*.name, 'autofix')",
-            "github.event.pull_request.head.repo.full_name == github.repository",
-            "ref: ${{ github.event.pull_request.head.sha }}",
-            "node scripts/writer-lease.mjs snapshot",
-            "node scripts/writer-lease.mjs assert-live --phase=pre-mutation",
-            "node scripts/writer-lease.mjs assert-live --phase=pre-commit",
-            "node scripts/writer-lease.mjs assert-live --phase=pre-push",
-            "--force-with-lease=\"refs/heads/${HEAD_REF}:${EXPECTED_HEAD}\""
-          ]
+          "requiredMarkers": ["contains(github.event.pull_request.labels.*.name, 'autofix')", "github.event.pull_request.head.repo.full_name == github.repository", "ref: ${{ github.event.pull_request.head.sha }}", "node scripts/writer-lease.mjs snapshot", "node scripts/writer-lease.mjs assert-live --phase=pre-mutation", "node scripts/writer-lease.mjs assert-live --phase=pre-commit", "node scripts/writer-lease.mjs assert-live --phase=pre-push", "--force-with-lease=\"refs/heads/${HEAD_REF}:${EXPECTED_HEAD}\""]
         }
       }
     }
