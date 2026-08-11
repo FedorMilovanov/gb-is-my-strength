@@ -19,6 +19,7 @@ on:
       - 'scripts/lib/route-source-contract.js'
       - 'scripts/search-modal-browser-contract.mjs'
       - 'scripts/search-scope-semantics-browser-contract.mjs'
+      - 'scripts/search-scope-repair-generator.mjs'
       - 'scripts/app-search-surface-source-contract.mjs'
       - 'scripts/app-search-surface-browser-contract.mjs'
       - 'scripts/home-browser-contract.mjs'
@@ -42,6 +43,7 @@ on:
       - 'scripts/lib/route-source-contract.js'
       - 'scripts/search-modal-browser-contract.mjs'
       - 'scripts/search-scope-semantics-browser-contract.mjs'
+      - 'scripts/search-scope-repair-generator.mjs'
       - 'scripts/app-search-surface-source-contract.mjs'
       - 'scripts/app-search-surface-browser-contract.mjs'
       - 'scripts/home-browser-contract.mjs'
@@ -62,6 +64,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Set up Node 22.23.1
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -71,6 +74,21 @@ jobs:
 
       - name: Install immutable dependencies
         run: npm ci
+
+      - name: Generate byte-minimal scope repair from exact base
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          node scripts/search-scope-repair-generator.mjs
+          node --check reports/search-scope-repair/search.js
+
+      - name: Upload repair candidate
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: search-scope-repair-${{ github.run_id }}
+          path: reports/search-scope-repair/**
+          if-no-files-found: error
+          retention-days: 2
 
       - name: Validate source contracts
         run: |
