@@ -11,7 +11,7 @@
   (() => {
     'use strict';
 
-    const VERSION = 1;
+    const VERSION = 3;
     const OWNER_ID = 'site-sections-menu';
     const API_KEY = 'GBSiteSectionsMenu';
     const CONTROLLER_KEY = '__gbSiteSectionsMenuController';
@@ -36,8 +36,13 @@
         return null;
       }
 
+      // A controller may be reused only when its lifecycle generation matches
+      // this runtime. Without the version check, a v1 controller already bound
+      // to the same still-connected nodes could bypass the v3 native-hidden
+      // semantics even though the window-level API version had advanced.
       if (
         previous
+        && previous.version === VERSION
         && previous.trigger === trigger
         && previous.panel === panel
         && trigger.isConnected
@@ -50,7 +55,39 @@
       if (!overlayApi || typeof overlayApi.register !== 'function') return null;
 
       let controller;
+      let nativeHideTimer = 0;
+      const hasExitTransition = () => {
+        if (!panel.isConnected) return false;
+        if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return false;
+        const durations = window.getComputedStyle(panel).transitionDuration.split(',');
+        return durations.some((raw) => {
+          const value = raw.trim();
+          const amount = Number.parseFloat(value);
+          if (!Number.isFinite(amount) || amount <= 0) return false;
+          return value.endsWith('ms') ? amount > 0 : amount * 1000 > 0;
+        });
+      };
+      const hideNatively = () => {
+        if (panel.classList.contains('open')) return;
+        panel.hidden = true;
+        if (backdrop) backdrop.hidden = true;
+        nativeHideTimer = 0;
+      };
       const syncVisual = (open) => {
+        window.clearTimeout(nativeHideTimer);
+        nativeHideTimer = 0;
+
+        // Native hidden is the fail-safe owner. It makes the closed surface
+        // non-rendering even when stylesheet delivery/cascade fails. Remove it
+        // before opening; on close preserve the existing visual exit window
+        // only when a computed transition actually exists. With missing CSS or
+        // reduced motion there is no animation to preserve, so native hidden is
+        // restored immediately instead of leaving a transient raw surface.
+        if (open) {
+          panel.hidden = false;
+          if (backdrop) backdrop.hidden = false;
+        }
+
         panel.classList.toggle('open', open);
         panel.toggleAttribute('inert', !open);
         if ('inert' in panel) panel.inert = !open;
@@ -63,6 +100,11 @@
         trigger.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню');
         trigger.setAttribute('data-gb-site-menu-owner', 'canonical-runtime');
         backdrop?.classList.toggle('open', open);
+
+        if (!open) {
+          if (!hasExitTransition()) hideNatively();
+          else nativeHideTimer = window.setTimeout(hideNatively, 260);
+        }
       };
 
       const layer = overlayApi.register(OWNER_ID, {
@@ -126,6 +168,7 @@
       syncVisual(false);
 
       controller = {
+        version: VERSION,
         ownerId: OWNER_ID,
         trigger,
         panel,
@@ -135,6 +178,8 @@
         toggle: () => layer.isOpen() ? close('api-toggle') : open('api-toggle'),
         isOpen: () => layer.isOpen(),
         destroy: () => {
+          window.clearTimeout(nativeHideTimer);
+          nativeHideTimer = 0;
           trigger.removeEventListener('click', onTrigger);
           panel.removeEventListener('click', onPanelClick);
           backdrop?.removeEventListener('click', onBackdrop);
