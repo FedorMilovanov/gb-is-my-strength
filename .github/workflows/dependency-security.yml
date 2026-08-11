@@ -9,6 +9,7 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'scripts/npm-security-contract.mjs'
+      - 'scripts/npm-security-lock-writer.mjs'
   push:
     branches: [main]
     paths:
@@ -16,6 +17,7 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'scripts/npm-security-contract.mjs'
+      - 'scripts/npm-security-lock-writer.mjs'
   workflow_dispatch:
 
 permissions:
@@ -61,11 +63,13 @@ jobs:
       - name: Install immutable dependencies
         run: npm ci
 
-      - name: Reproduce reviewed zero-advisory lock candidate
+      - name: Write reviewed lock remediation
+        run: node scripts/npm-security-lock-writer.mjs --write
+
+      - name: Validate zero-advisory lock
         shell: bash
         run: |
           set -euo pipefail
-          npm update fast-uri fast-xml-parser js-yaml nanoid @astrojs/language-server --package-lock-only --ignore-scripts
           test "$(git hash-object package-lock.json)" = "43a85292e04c8374996058f8868467f30808a089"
           CHANGED="$(git diff --name-only)"
           test "$CHANGED" = "package-lock.json"
