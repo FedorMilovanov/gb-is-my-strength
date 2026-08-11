@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "mainSha": "998cd60759c535af0f542c31d5fc8e2948440c02",
+  "targetCount": 14,
+  "result": "ALL_TARGET_REFS_DELETED_RECOVERY_VERIFIED",
+  "deletionEvidence": {
+    "runId": 31515063091,
+    "jobId": 93858035085,
+    "writeStep": "PASS",
+    "validationStep": "PASS",
+    "tailFailure": "receipt path was ignored by .gitignore before git add -f recovery"
+  },
+  "targets": [
+    {
+      "branch": "agent/krajne-schema-image-dimensions-20260810",
+      "disposition": "FULLY_REPRESENTED_BY_ANCESTRY",
+      "expectedHead": null,
+      "currentRemoteSha": null,
+      "verification": "absent after prior exact-SHA/CAS deletion run"
+    },
+    {
+      "branch": "agent/krajne-schema-image-dimensions-v2-20260810",
+      "disposition": "FULLY_REPRESENTED_BY_ANCESTRY",
+      "expectedHead": null,
+      "currentRemoteSha": null,
+      "verification": "absent after prior exact-SHA/CAS deletion run"
+    },
+    {
+      "branch": "lane/system-search-scope-overlay-2026-08-11-final",
+      "disposition": "FULLY_REPRESENTED_BY_ANCESTRY",
+      "expectedHead": null,
+      "currentRemoteSha": null,
+      "verification": "absent after prior exact-SHA/CAS deletion run"
+    },
+    {
+      "branch": "lane/system-search-scope-semantics-2026-08-11-byteclean",
+      "disposition": "FULLY_REPRESENTED_BY_ANCESTRY",
+      "expectedHead": null,
+      "currentRemoteSha": null,
+      "verification": "absent after prior exact-SHA/CAS deletion run"
+    },
+    {
+      "branch": "lane/system-search-scope-semantics-clean-20260811",
+      "disposition": "FULLY_REPRESENTED_BY_ANCESTRY",
+      "expectedHead": null,
+      "currentRemoteSha": null,
+      "verification": "absent after prior exact-SHA/CAS deletion run"
+    },
+    {
+      "branch": "agent/reader-linear-meta-content-20260810",
+      "disposition": "SUPERSEDED_VERIFIED",
+      "expectedHead": "a796f135a88a9c1a6cbddf03bc5a2c15007c0c6c",
+      "currentRemoteSha": null,
+      "verification": "absent after prior exact-SHA/CAS deletion run"
+    },
+    {
+      "branch": "agent/search-scope-semantics-fresh-20260811",
+      "disposition": "SUPERSEDED_VERIFIED",
+      "expectedHead": null,
+      "currentRemoteSha": null,
+      "verification": "absent after prior exact-SHA/CAS deletion run"
+    },
+    {
+      "branch": "agent/sw-toast-a11y-20260811",
+      "disposition": "SUPERSEDED_VERIFIED",
+      "expectedHead": "bd87b06468a6367a7e2db303136cb4be58c0a2db",
+      "currentRemoteSha": null,
+      "verification": "absent after prior exact-SHA/CAS deletion run"
+    },
+    {
+      "branch": "chore/cache-bust-normalizer-frontend-assets-20260811",
+      "disposition": "SUPERSEDED_VERIFIED",
+      "expectedHead": "646ab4413d22d05af3bbc5c8974f65317d6bfce6",
+      "currentRemoteSha": null,
+      "verification": "absent after prior exact-SHA/CAS deletion run"
+    },
+    {
+      "branch": "lane/system-search-scope-semantics-2026-08-11",
+      "disposition": "SUPERSEDED_VERIFIED",
+      "expectedHead": "9c39e7e0d5f223323ab7fd79b1aad0939624a26f",
+      "currentRemoteSha": null,
+      "verification": "absent after prior exact-SHA/CAS deletion run"
+    },
+    {
+      "branch": "lane/system-search-scope-semantics-final-20260811",
+      "disposition": "DIAGNOSTIC_DISPOSABLE",
+      "expectedHead": "aa99304f9e6ece163e344a7c818205ffd7759127",
+      "currentRemoteSha": null,
+      "verification": "absent after prior exact-SHA/CAS deletion run"
+    },
+    {
+      "branch": "lane/system-site-menu-failsafe-2026-08-10",
+      "disposition": "SUPERSEDED_VERIFIED",
+      "expectedHead": "9a8d71a5cbd546b8880072132f1d869d0ae2cf55",
+      "currentRemoteSha": null,
+      "verification": "absent after prior exact-SHA/CAS deletion run"
+    },
+    {
+      "branch": "lane/system-site-menu-failsafe-2026-08-11",
+      "disposition": "SUPERSEDED_VERIFIED",
+      "expectedHead": "66108b271de576f83f5157355efae64b99653166",
+      "currentRemoteSha": null,
+      "verification": "absent after prior exact-SHA/CAS deletion run"
+    },
+    {
+      "branch": "terminal/branch-zero-20260811",
+      "disposition": "DIAGNOSTIC_DISPOSABLE",
+      "expectedHead": "6418d777104bef718c06d6cd7b3e923576d12a54",
+      "currentRemoteSha": null,
+      "verification": "absent after prior exact-SHA/CAS deletion run"
+    }
+  ]
+}
