@@ -8,8 +8,15 @@ import { chromium, webkit } from 'playwright';
 const ROOT = path.resolve(process.cwd());
 const DIST = path.join(ROOT, 'dist');
 const REPORT_DIR = path.join(ROOT, 'reports', 'reader-linear-text-projection');
+const KRAJNE_META = Object.freeze({
+  image: '/images/og-krajne-isporcheno.webp',
+  author: 'Автор-редактор: Фёдор Милованов',
+  readTime: '41',
+  category: 'Богословие',
+  scripture: 'Иер 17:9',
+});
 const CASES = [
-  { route: '/articles/krajne-li-isporcheno-serdce/', projectedMetaMin: 3 },
+  { route: '/articles/krajne-li-isporcheno-serdce/', projectedMetaMin: 5, expectedMeta: KRAJNE_META },
   { route: '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/', projectedMetaMin: 3 },
   { route: '/articles/dzhon-gill-chast-2-uchenyi/', projectedMetaMin: 0 },
 ];
@@ -56,7 +63,7 @@ async function startServer() {
 }
 
 async function inspectNoJs(browserType, browserName, baseUrl, testCase) {
-  const { route, projectedMetaMin } = testCase;
+  const { route, projectedMetaMin, expectedMeta } = testCase;
   const browser = await browserType.launch({ headless: true });
   const context = await browser.newContext({ viewport: { width: 1366, height: 900 }, javaScriptEnabled: false });
   const page = await context.newPage();
@@ -67,10 +74,20 @@ async function inspectNoJs(browserType, browserName, baseUrl, testCase) {
       const article = document.querySelector('article[data-pagefind-body]');
       if (!(article instanceof HTMLElement)) throw new Error('article[data-pagefind-body] missing');
       const popups = [...article.querySelectorAll('.gtip,.tooltip,.btip')];
+      const projectedMeta = {};
+      for (const node of document.head.querySelectorAll('meta[data-reader-meta-projected="true"][data-pagefind-meta]')) {
+        const spec = node.getAttribute('data-pagefind-meta') || '';
+        const match = spec.match(/^(.+)\[content\]$/);
+        if (!match) throw new Error(`projected metadata must capture [content]: ${spec}`);
+        const key = match[1];
+        if (Object.prototype.hasOwnProperty.call(projectedMeta, key)) throw new Error(`duplicate projected metadata key: ${key}`);
+        projectedMeta[key] = node.getAttribute('content') || '';
+      }
       return {
         text: String(article.textContent || '').replace(/\s+/g, ' ').trim(),
         articleMetaCount: article.querySelectorAll('[data-pagefind-meta]').length,
-        projectedMetaCount: document.head.querySelectorAll('meta[data-reader-meta-projected="true"][data-pagefind-meta]').length,
+        projectedMeta,
+        projectedMetaCount: Object.keys(projectedMeta).length,
         popupCount: popups.length,
         popupStates: popups.map((popup) => ({
           ignored: popup.hasAttribute('data-pagefind-ignore'),
@@ -83,6 +100,9 @@ async function inspectNoJs(browserType, browserName, baseUrl, testCase) {
     assert.equal(state.articleMetaCount, 0, `${browserName} ${route}: Pagefind metadata still pollutes article text tree`);
     if (projectedMetaMin > 0) {
       assert.ok(state.projectedMetaCount >= projectedMetaMin, `${browserName} ${route}: source-owned Pagefind metadata was not projected into head`);
+    }
+    if (expectedMeta) {
+      assert.deepEqual(state.projectedMeta, expectedMeta, `${browserName} ${route}: projected metadata differs from the canonical contract`);
     }
     assert.ok(state.popupCount > 0, `${browserName} ${route}: representative popup family missing`);
     assert.ok(state.popupStates.every((popup) => popup.ignored && popup.kind && popup.startBoundary && popup.endBoundary), `${browserName} ${route}: popup payload lacks semantic projection ownership`);
@@ -97,7 +117,8 @@ async function inspectNoJs(browserType, browserName, baseUrl, testCase) {
   }
 }
 
-async function pagefindMetadata(page, baseUrl, route) {
+async function pagefindMetadata(page, baseUrl, testCase) {
+  const { route, expectedMeta } = testCase;
   const response = await page.goto(`${baseUrl}${route}`, { waitUntil: 'networkidle' });
   assert.ok(response?.ok(), `${route}: route failed before Pagefind metadata check`);
   const result = await page.evaluate(async (targetRoute) => {
@@ -116,23 +137,32 @@ async function pagefindMetadata(page, baseUrl, route) {
   }, route);
   assert.ok(result?.url, `${route}: article missing from Pagefind result for its H1`);
   assert.ok(typeof result.meta?.image === 'string' && result.meta.image.length > 0, `${route}: Pagefind image metadata missing from canonical metadata owner`);
+  if (expectedMeta) {
+    for (const [key, value] of Object.entries(expectedMeta)) {
+      assert.equal(String(result.meta?.[key] ?? ''), value, `${route}: Pagefind ${key} metadata differs from projected canonical value`);
+    }
+  }
   return { route, url: result.url, meta: result.meta };
 }
 
 async function glossaryUi(page, baseUrl, route) {
-  const response = await page.goto(`${baseUrl}${route}`, { waitUntil: 'networkidle' });
+  const response = await page.goto(`${baseUrl}${route}`, { waitUntil: 'domcontentloaded' });
   assert.ok(response?.ok(), `${route}: route failed before glossary UI check`);
   const term = page.locator('.gterm:has(.gtip[data-reader-linear-aux])').first();
-  if (!await term.count()) return { route, skipped: true };
+  const attached = await term.waitFor({ state: 'attached', timeout: 5000 }).then(() => true).catch(() => false);
+  if (!attached) return { route, skipped: true };
   await term.waitFor({ state: 'visible' });
+  const tipHandle = await term.locator('.gtip[data-reader-linear-aux]').first().elementHandle();
+  assert.ok(tipHandle, `${route}: projected glossary popup node missing before hydration`);
   await term.click();
-  const tip = term.locator('.gtip[data-reader-linear-aux]').first();
-  await tip.waitFor({ state: 'visible' });
-  const state = await tip.evaluate((node) => ({
+  await tipHandle.waitForElementState('visible');
+  const state = await tipHandle.evaluate((node) => ({
     innerText: node.innerText,
     textContent: node.textContent,
     boundaryDisplays: [...node.querySelectorAll('[data-reader-linear-boundary]')].map((boundary) => getComputedStyle(boundary).display),
+    reparented: !node.closest('.gterm'),
   }));
+  assert.ok(state.reparented, `${route}: glossary popup did not enter the floating overlay owner`);
   assert.ok(String(state.textContent).includes('⟦') && String(state.textContent).includes('⟧'), `${route}: projected glossary lost semantic boundaries after hydration`);
   assert.ok(!String(state.innerText).includes('⟦') && !String(state.innerText).includes('⟧'), `${route}: semantic boundary leaked into visible tooltip copy`);
   assert.ok(state.boundaryDisplays.length >= 2 && state.boundaryDisplays.every((display) => display === 'none'), `${route}: semantic boundaries are visually rendered`);
@@ -154,7 +184,7 @@ async function main() {
     const context = await browser.newContext({ viewport: { width: 1366, height: 900 } });
     const page = await context.newPage();
     try {
-      for (const route of ROUTES) pagefind.push(await pagefindMetadata(page, server.baseUrl, route));
+      for (const testCase of CASES) pagefind.push(await pagefindMetadata(page, server.baseUrl, testCase));
       for (const route of [ROUTES[0], ROUTES[2]]) ui.push(await glossaryUi(page, server.baseUrl, route));
     } finally {
       await context.close();
