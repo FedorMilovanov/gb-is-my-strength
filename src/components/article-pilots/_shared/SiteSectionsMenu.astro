@@ -21,17 +21,24 @@ const links = [
 <!-- Canonical static projection of the site-sections menu. Runtime lifecycle is
      owned by SiteSectionsMenuRuntime -> OverlayRuntime across every shell.
      The rich reader treatment is owned here as well, so standalone and series
-     readers cannot silently depend on Gill-only CSS for a usable menu. -->
+     readers cannot silently depend on Gill-only CSS for a usable menu.
+
+     Closed-state safety is intentionally native as well as visual: hidden +
+     inert make the menu/backdrop non-rendering before CSS/runtime ownership is
+     established, and the chevron SVG carries bounded geometry/fill attributes
+     so a missing stylesheet can never turn it into a 300x150 black triangle. -->
 <div
   id="hMobileBackdrop"
   class:list={['h-mobile-backdrop', variant === 'rich' && 'gb-site-menu-backdrop--rich']}
   aria-hidden="true"
+  hidden
 ></div>
 <div
   class:list={['h-mobile-nav', variant === 'rich' && 'gb-site-menu--rich']}
   id="hMobileNav"
   aria-hidden="true"
   inert
+  hidden
   data-gb-site-menu-runtime="canonical"
   data-gb-site-menu-variant={variant}
 >
@@ -41,7 +48,19 @@ const links = [
       {variant === 'rich' ? (
         <>
           <span>{link.label}</span>
-          <svg class="gbs-menu-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg>
+          <svg
+            class="gbs-menu-chevron"
+            viewBox="0 0 24 24"
+            width="13"
+            height="13"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            focusable="false"
+          ><path d="M9 18l6-6-6-6" /></svg>
         </>
       ) : link.label}
     </a>
