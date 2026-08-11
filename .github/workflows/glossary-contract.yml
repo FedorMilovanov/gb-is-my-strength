@@ -5,9 +5,12 @@ on:
     types: [opened, synchronize, reopened, labeled]
     paths:
       - "data/glossary*.json"
-      - "css/site.css"
-      - "js/glossary.js"
-      - "js/site*.js"
+      - "css/**"
+      - "fonts/fonts.css"
+      - "nagornaya/tw.min.css"
+      - "js/**"
+      - "scripts/cache-bust.js"
+      - "scripts/cache-bust-assets.js"
       - "scripts/glossary-*.js"
       - "scripts/reference-system-inventory.js"
       - "scripts/tooltip-*.js"
@@ -23,9 +26,12 @@ on:
     branches: [main]
     paths:
       - "data/glossary*.json"
-      - "css/site.css"
-      - "js/glossary.js"
-      - "js/site*.js"
+      - "css/**"
+      - "fonts/fonts.css"
+      - "nagornaya/tw.min.css"
+      - "js/**"
+      - "scripts/cache-bust.js"
+      - "scripts/cache-bust-assets.js"
       - "scripts/glossary-*.js"
       - "scripts/reference-system-inventory.js"
       - "scripts/tooltip-*.js"
