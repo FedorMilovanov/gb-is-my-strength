@@ -165,6 +165,13 @@ async function overlaySnapshot(page) {
   }));
 }
 
+async function triggerState(trigger) {
+  return trigger.evaluate((element) => ({
+    inert: element.hasAttribute('inert'),
+    ariaHidden: element.getAttribute('aria-hidden'),
+  }));
+}
+
 async function runOverlayCase(name, browserType, viewport, baseUrl) {
   const browser = await browserType.launch({ headless: true });
   const context = await browser.newContext({ viewport });
@@ -183,6 +190,7 @@ async function runOverlayCase(name, browserType, viewport, baseUrl) {
 
     const trigger = page.locator('[data-app-search-trigger]');
     await trigger.waitFor({ state: 'attached', timeout: 10000 });
+    assert.deepEqual(await triggerState(trigger), { inert: false, ariaHidden: null }, `${name}: Search opener is unexpectedly inert before Search`);
     await trigger.focus();
     assert.equal(await page.evaluate(() => document.activeElement?.hasAttribute('data-app-search-trigger')), true, `${name}: Search trigger could not receive focus before open`);
     await page.evaluate(() => window.dispatchEvent(new CustomEvent('gb:openSearch', { detail: { source: 'keyboard' } })));
@@ -197,6 +205,7 @@ async function runOverlayCase(name, browserType, viewport, baseUrl) {
     assert.equal(searchOpen.size, 2, `${name}: Search did not stack over MapEngine intro`);
     assert.equal(searchOpen.htmlCount, '2', `${name}: stacked overlay diagnostic count drifted`);
     assert.equal(await page.locator('.cp-backdrop').getAttribute('data-overlay-owner'), SEARCH_OVERLAY_OWNER, `${name}: Search dialog is not bound to its shared overlay owner`);
+    assert.deepEqual(await triggerState(trigger), { inert: true, ariaHidden: 'true' }, `${name}: Search did not inert its opener while modal`);
 
     await page.keyboard.press('Escape');
     await dialog.waitFor({ state: 'hidden', timeout: 10000 });
@@ -208,6 +217,7 @@ async function runOverlayCase(name, browserType, viewport, baseUrl) {
     assert.equal(afterSearchEscape.htmlCount, '1', `${name}: overlay count after Search Escape drifted`);
     assert.equal(await page.locator('.me-intro').count(), 1, `${name}: MapEngine intro disappeared with Search`);
     assert.equal(await page.locator('.me-intro').getAttribute('data-overlay-open'), '1', `${name}: underlying intro is no longer live after Search Escape`);
+    assert.deepEqual(await triggerState(trigger), { inert: false, ariaHidden: null }, `${name}: Search opener inert state was not restored`);
     assert.equal(await page.evaluate(() => document.activeElement?.hasAttribute('data-app-search-trigger')), true, `${name}: Search focus was not restored to its opener`);
 
     await page.keyboard.press('Escape');
