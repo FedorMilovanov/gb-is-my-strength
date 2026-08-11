@@ -36,8 +36,13 @@
         return null;
       }
 
+      // A controller may be reused only when its lifecycle generation matches
+      // this runtime. Without the version check, a v1 controller already bound
+      // to the same still-connected nodes could bypass the v3 native-hidden
+      // semantics even though the window-level API version had advanced.
       if (
         previous
+        && previous.version === VERSION
         && previous.trigger === trigger
         && previous.panel === panel
         && trigger.isConnected
@@ -163,6 +168,7 @@
       syncVisual(false);
 
       controller = {
+        version: VERSION,
         ownerId: OWNER_ID,
         trigger,
         panel,
