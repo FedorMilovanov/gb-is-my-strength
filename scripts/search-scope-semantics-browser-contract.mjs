@@ -82,6 +82,7 @@ async function pressedState(page) {
     active: button.classList.contains('active'),
     tag: button.tagName,
     type: button.getAttribute('type'),
+    tabIndex: button.tabIndex,
     text: String(button.textContent || '').replace(/\s+/g, ' ').trim(),
   })));
 }
@@ -90,6 +91,7 @@ function assertSinglePressed(states, expectedScope, label) {
   assert.deepEqual(states.map((state) => state.scope), EXPECTED_SCOPES, `${label}: scope order drifted`);
   assert.deepEqual(states.map((state) => state.text), EXPECTED_LABELS, `${label}: scope labels drifted`);
   assert.ok(states.every((state) => state.tag === 'BUTTON' && state.type === 'button'), `${label}: scopes are not native type=button controls`);
+  assert.ok(states.every((state) => state.tabIndex === 0), `${label}: scope controls are not in the ordinary keyboard focus order`);
   assert.ok(states.every((state) => state.selected === null), `${label}: obsolete aria-selected remains on filter controls`);
   const pressed = states.filter((state) => state.pressed === 'true');
   const active = states.filter((state) => state.active);
@@ -139,8 +141,14 @@ async function runScopeCase(name, browserType, viewport, baseUrl) {
 
     const buttons = page.locator('.cp-scope-chip');
     await buttons.nth(0).focus();
-    await page.keyboard.press('Tab');
-    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-scope')), 'articles', `${name}: native Tab sequence does not enter the next scope button`);
+    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-scope')), 'all', `${name}: all scope cannot receive keyboard focus`);
+    if (!name.startsWith('webkit')) {
+      await page.keyboard.press('Tab');
+      assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-scope')), 'articles', `${name}: native Tab sequence does not enter the next scope button`);
+    } else {
+      await buttons.nth(1).focus();
+      assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-scope')), 'articles', `${name}: articles scope cannot receive keyboard focus`);
+    }
     await page.keyboard.press('Space');
     assertSinglePressed(await pressedState(page), 'articles', `${name} Space articles`);
     await assertSearchInputFocused(page, `${name} Space articles`);
