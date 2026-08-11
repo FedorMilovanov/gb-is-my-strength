@@ -100,6 +100,14 @@ function assertSinglePressed(states, expectedScope, label) {
   assert.equal(pressed[0].scope, active[0].scope, `${label}: semantic and visual selected scope disagree`);
 }
 
+async function assertSearchInputFocused(page, label) {
+  assert.equal(
+    await page.evaluate(() => document.activeElement?.getAttribute('role')),
+    'combobox',
+    `${label}: scope activation did not return focus to the Search combobox`,
+  );
+}
+
 async function openSearch(page, baseUrl, route = SCOPE_ROUTE) {
   const response = await page.goto(`${baseUrl}${route}`, { waitUntil: 'domcontentloaded' });
   assert.ok(response?.ok(), `${route}: route failed to load`);
@@ -135,19 +143,23 @@ async function runScopeCase(name, browserType, viewport, baseUrl) {
     assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-scope')), 'articles', `${name}: native Tab sequence does not enter the next scope button`);
     await page.keyboard.press('Space');
     assertSinglePressed(await pressedState(page), 'articles', `${name} Space articles`);
+    await assertSearchInputFocused(page, `${name} Space articles`);
 
-    await page.keyboard.press('Tab');
-    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-scope')), 'scripture', `${name}: native Tab sequence does not reach scripture scope`);
+    await buttons.nth(2).focus();
+    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-scope')), 'scripture', `${name}: scripture scope cannot receive keyboard focus`);
     await page.keyboard.press('Enter');
     assertSinglePressed(await pressedState(page), 'scripture', `${name} Enter scripture`);
+    await assertSearchInputFocused(page, `${name} Enter scripture`);
 
-    await page.keyboard.press('Tab');
-    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-scope')), 'authors', `${name}: native Tab sequence does not reach authors scope`);
+    await buttons.nth(3).focus();
+    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-scope')), 'authors', `${name}: authors scope cannot receive keyboard focus`);
     await page.keyboard.press('Space');
     assertSinglePressed(await pressedState(page), 'authors', `${name} Space authors`);
+    await assertSearchInputFocused(page, `${name} Space authors`);
 
     await buttons.nth(0).click();
     assertSinglePressed(await pressedState(page), 'all', `${name} click all`);
+    await assertSearchInputFocused(page, `${name} click all`);
 
     return { name, kind: 'scope', route: SCOPE_ROUTE, viewport, conclusion: 'success' };
   } finally {
