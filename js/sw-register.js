@@ -7,6 +7,7 @@
   var workerUrl = '/sw.js' + (siteVersion ? '?v=' + encodeURIComponent(siteVersion) : '');
   var toast;
   var hideTimer = 0;
+  var reloadButton = null;
   var reloadHandler = null;
   var hadController = Boolean(navigator.serviceWorker.controller);
 
@@ -20,6 +21,9 @@
     }
     toast = document.getElementById('gb-sw-toast') || document.createElement('div');
     toast.id = 'gb-sw-toast';
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
+    toast.setAttribute('aria-atomic', 'true');
     if (!toast.parentNode && document.body) document.body.appendChild(toast);
   }
 
@@ -29,7 +33,8 @@
   }
 
   function clearReloadHandler() {
-    if (toast && reloadHandler) toast.removeEventListener('click', reloadHandler);
+    if (reloadButton && reloadHandler) reloadButton.removeEventListener('click', reloadHandler);
+    reloadButton = null;
     reloadHandler = null;
   }
 
@@ -41,6 +46,7 @@
     if (!toast) mountToast();
     if (!toast) return;
     clearTimeout(hideTimer);
+    hideTimer = 0;
     clearReloadHandler();
     toast.className = '';
     if (className) toast.classList.add(className);
@@ -48,18 +54,23 @@
     while (toast.firstChild) toast.removeChild(toast.firstChild);
     var dot = document.createElement('span');
     dot.className = 'toast-dot';
+    dot.setAttribute('aria-hidden', 'true');
     var text = document.createElement('span');
+    text.className = 'toast-message';
     text.textContent = message;
     toast.appendChild(dot);
     toast.appendChild(text);
-    toast.classList.add('visible');
     if (reload) {
+      reloadButton = document.createElement('button');
+      reloadButton.type = 'button';
+      reloadButton.className = 'toast-reload-action';
+      reloadButton.textContent = 'Обновить';
       reloadHandler = function () { window.location.reload(); };
-      toast.addEventListener('click', reloadHandler);
-      hideTimer = setTimeout(function () { clearReloadHandler(); hideToast(); }, 8000);
-    } else {
-      hideTimer = setTimeout(hideToast, 3500);
+      reloadButton.addEventListener('click', reloadHandler);
+      toast.appendChild(reloadButton);
     }
+    toast.classList.add('visible');
+    if (!reload) hideTimer = setTimeout(hideToast, 3500);
   }
 
   async function currentPageCached() {
@@ -89,7 +100,7 @@
       if (!installing) return;
       installing.addEventListener('statechange', function () {
         if (installing.state === 'installed' && hadController) {
-          showToast('Доступно обновление сайта — обновите страницу', true);
+          showToast('Доступно обновление сайта', true);
         }
       });
     });
@@ -98,7 +109,7 @@
   });
 
   navigator.serviceWorker.addEventListener('controllerchange', function () {
-    if (hadController) showToast('Сайт обновлён — обновите страницу', true);
+    if (hadController) showToast('Сайт обновлён', true);
     hadController = true;
   });
 
