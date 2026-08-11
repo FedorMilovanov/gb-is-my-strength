@@ -1,0 +1,67 @@
+name: SW Register Accessibility Contract
+
+on:
+  pull_request:
+    paths:
+      - 'js/sw-register.js'
+      - 'css/sw-toast.css'
+      - 'scripts/sw-register-accessibility-browser-contract.mjs'
+      - '.github/workflows/sw-register-accessibility.yml'
+      - 'package.json'
+      - 'package-lock.json'
+  push:
+    branches: [main]
+    paths:
+      - 'js/sw-register.js'
+      - 'css/sw-toast.css'
+      - 'scripts/sw-register-accessibility-browser-contract.mjs'
+      - '.github/workflows/sw-register-accessibility.yml'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sw-register-accessibility-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser-contract:
+    name: Chromium WebKit status and reload action
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact tested commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Prove commit identity
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+      - name: Install exact dependencies and browsers
+        run: |
+          npm ci
+          timeout 12m npx playwright install --with-deps chromium webkit
+      - name: Syntax check SW accessibility owners
+        run: |
+          node --check js/sw-register.js
+          node --check scripts/sw-register-accessibility-browser-contract.mjs
+      - name: Run SW registration accessibility contract
+        run: node scripts/sw-register-accessibility-browser-contract.mjs
+      - name: Upload SW accessibility evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sw-register-accessibility-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/sw-register-accessibility
+          if-no-files-found: error
+          retention-days: 14
