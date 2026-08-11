@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// Permanent fail-closed normalizer for the checked-in Search scope semantics.
+// It accepts only the canonical legacy or normalized shape; mixed/unknown states are errors.
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
