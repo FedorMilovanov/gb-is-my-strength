@@ -258,7 +258,7 @@ async function runInteractiveBrowser(browserName, browserType, baseUrl) {
       lockCount: Number(window.SiteUtils?._scrollLockCount || 0),
       sources: Object.keys(window.SiteUtils?._scrollLockSources || {}).sort(),
     }));
-    assert.deepEqual(searchLockState.sources, ['command-palette'], 'canonical Search handoff retained a stale or duplicate scroll-lock owner');
+    assert.deepEqual(searchLockState.sources, ['overlay:search:command-palette'], 'canonical Search handoff did not retain exactly one shared OverlayRuntime scroll-lock owner');
     assert.equal(searchLockState.lockCount, 1, 'canonical Search handoff did not leave exactly one scroll-lock owner');
     assert.equal(searchLockState.bodyPosition, 'fixed', 'open Search did not keep body position locked');
     assert.equal(searchLockState.bodyOverflow, 'hidden', 'open Search did not keep body overflow locked');
