@@ -147,7 +147,7 @@ jobs:
             reports/a07-sw-static-audit.md
             reports/a07-offline-pwa-browser.json
             reports/a07-offline-pwa-browser.md
-            reports/gill-mobile-layout/summary.json
+            reports/gill-mobile-layout-audit-2026-06-29/summary.json
             reports/editorial-metadata-freeze.log
           if-no-files-found: error
           retention-days: 14
