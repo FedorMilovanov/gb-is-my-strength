@@ -84,6 +84,14 @@ jobs:
       - name: Build production-like dist once
         run: npm run strangler:build:production-like
 
+      - name: Verify frozen editorial projections
+        shell: bash
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/editorial-metadata-freeze-audit.js 2>&1 \
+            | tee reports/editorial-metadata-freeze.log
+
       - name: Verify page ownership in candidate dist
         run: npm run page-ownership:dist:production-like
 
@@ -146,5 +154,6 @@ jobs:
             reports/dist-publication-audit.json
             reports/url-contract-dist.json
             reports/url-contract-dist.md
+            reports/editorial-metadata-freeze.log
           if-no-files-found: error
           retention-days: 14
