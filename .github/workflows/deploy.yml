@@ -161,7 +161,17 @@ jobs:
         run: npm run gill:mobile-play:smoke
 
       - name: Gill mobile reference layout audit
+        id: gill_mobile_layout
         run: npm run gill:mobile-layout:audit
+
+      - name: Upload Gill mobile layout readiness evidence
+        if: ${{ always() && (steps.gill_mobile_layout.outcome == 'success' || steps.gill_mobile_layout.outcome == 'failure') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: gill-mobile-layout-readiness-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/gill-mobile-layout-audit-2026-06-29/summary.json
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Broad production-like dist runtime smoke
         run: node scripts/dist-smoke-audit.js --no-build --production-like
