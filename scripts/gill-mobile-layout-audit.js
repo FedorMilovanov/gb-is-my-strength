@@ -199,7 +199,12 @@ function classifyResourceUrl(rawUrl, base = BASE) {
   return { category: 'unknown-external', hardFail: true };
 }
 
-function isExactHdrcCertificateFailure(record) {
+const OPTIONAL_HDRC_FAILURE_ERROR_TEXTS = new Set([
+  'net::ERR_CERT_AUTHORITY_INVALID',
+  'net::ERR_ABORTED',
+]);
+
+function isExactHdrcKnownFailure(record) {
   let url;
   try {
     url = new URL(record.url);
@@ -211,12 +216,12 @@ function isExactHdrcCertificateFailure(record) {
     url.pathname === '/' &&
     record.method === 'GET' &&
     record.resourceType === 'xhr' &&
-    record.errorText === 'net::ERR_CERT_AUTHORITY_INVALID';
+    OPTIONAL_HDRC_FAILURE_ERROR_TEXTS.has(record.errorText);
 }
 
 function classifyRequestFailureEvidence(record, base = BASE) {
-  if (isExactHdrcCertificateFailure(record)) {
-    return { category: 'optional-hdrc-certificate-diagnostic', hardFail: false };
+  if (isExactHdrcKnownFailure(record)) {
+    return { category: 'optional-hdrc-transport-diagnostic', hardFail: false };
   }
   return classifyResourceUrl(record.url, base);
 }
@@ -247,12 +252,14 @@ function runAuthoritySelfTests() {
     errorText: 'net::ERR_CERT_AUTHORITY_INVALID',
   };
   const requestFixtures = [
-    ['exact HDRC certificate tuple', exactHdrcFailure, 'optional-hdrc-certificate-diagnostic', false],
+    ['exact HDRC certificate tuple', exactHdrcFailure, 'optional-hdrc-transport-diagnostic', false],
+    ['exact HDRC aborted tuple', { ...exactHdrcFailure, errorText: 'net::ERR_ABORTED' }, 'optional-hdrc-transport-diagnostic', false],
     ['another yandex.net host', { ...exactHdrcFailure, url: 'https://other.yandex.net/' }, 'unknown-external', true],
     ['another HDRC path', { ...exactHdrcFailure, url: 'https://hdrc.yandex.net/other' }, 'unknown-external', true],
     ['HDRC POST', { ...exactHdrcFailure, method: 'POST' }, 'unknown-external', true],
     ['HDRC non-XHR', { ...exactHdrcFailure, resourceType: 'script' }, 'unknown-external', true],
-    ['HDRC other error', { ...exactHdrcFailure, errorText: 'net::ERR_NAME_NOT_RESOLVED' }, 'unknown-external', true],
+    ['HDRC unobserved transport error', { ...exactHdrcFailure, errorText: 'net::ERR_FAILED' }, 'unknown-external', true],
+    ['HDRC name-resolution error', { ...exactHdrcFailure, errorText: 'net::ERR_NAME_NOT_RESOLVED' }, 'unknown-external', true],
     ['same-origin request failure', { ...exactHdrcFailure, url: `${base}/css/site.css` }, 'mandatory-same-origin', true],
     ['generic unknown external request failure', { ...exactHdrcFailure, url: 'https://example.invalid/app.js' }, 'unknown-external', true],
   ];
