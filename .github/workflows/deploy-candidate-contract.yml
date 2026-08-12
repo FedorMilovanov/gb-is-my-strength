@@ -21,19 +21,7 @@ on:
       - "package.json"
       - "package-lock.json"
       - "astro.config.mjs"
-      - "scripts/copy-legacy-to-dist.js"
-      - "scripts/astro-cache-bust-postbuild.js"
-      - "scripts/build-pagefind.js"
-      - "scripts/cache-bust-assets.js"
-      - "scripts/project-relations-to-dist.mjs"
-      - "scripts/dist-publication-audit.js"
-      - "scripts/human-reachability-audit.js"
-      - "scripts/series-reader-fragment-audit.js"
-      - "scripts/readable-audit.js"
-      - "scripts/extract-url-contract.js"
-      - "scripts/compare-url-contract.js"
-      - "scripts/sw-dist-readiness-audit.js"
-      - "scripts/sw-offline-browser-test.mjs"
+      - "scripts/**"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/deploy-candidate-contract.yml"
   workflow_dispatch:
@@ -45,11 +33,14 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  RELEASE_NPM_VERSION: '10.9.8'
+
 jobs:
   production-like-candidate:
     name: Build and audit production-like candidate
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 55
 
     steps:
       - name: Checkout exact head
@@ -57,7 +48,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up release Node
+      - name: Set up pinned Node toolchain
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22.23.1'
@@ -66,16 +57,32 @@ jobs:
       - name: Pin release npm
         run: npm install --global npm@10.9.8
 
-      - name: Install immutable dependencies
+      - name: Assert pinned npm toolchain
+        run: test "$(npm --version)" = "$RELEASE_NPM_VERSION"
+
+      - name: Install dependencies once
         run: npm ci
 
-      - name: Build production-like dist
-        run: npm run strangler:build:production-like
-
-      - name: Readable publication contract on candidate dist
+      - name: Verify deterministic local fonts
         run: |
-          node --check scripts/readable-audit.js
-          node scripts/readable-audit.js --root dist
+          node --check scripts/font-assets-lib.mjs
+          node --check scripts/verify-font-assets.mjs
+          node --check scripts/generate-font-assets.mjs
+          node --check scripts/font-assets-contract-test.mjs
+          node scripts/font-assets-contract-test.mjs
+          node scripts/verify-font-assets.mjs
+
+      - name: Validate registry structure
+        run: node scripts/editorial-metadata-registry.js --check
+
+      - name: Check source asset revisions without writing
+        run: node scripts/cache-bust.js
+
+      - name: Static publication source gates
+        run: npm run validate:static-publication
+
+      - name: Build production-like dist once
+        run: npm run strangler:build:production-like
 
       - name: Verify frozen editorial projections
         shell: bash
@@ -85,45 +92,54 @@ jobs:
           node scripts/editorial-metadata-freeze-audit.js 2>&1 \
             | tee reports/editorial-metadata-freeze.log
 
-      - name: Build Pagefind index into dist
+      - name: Verify page ownership in candidate dist
+        run: npm run page-ownership:dist:production-like
+
+      - name: Build Pagefind index in candidate dist
         run: npm run pagefind:build:dist
 
-      - name: Audit honest Offline/PWA static contract
-        run: node scripts/sw-dist-readiness-audit.js --require-pagefind
+      - name: Match production no-Jekyll candidate state
+        run: |
+          test -f dist/pagefind/pagefind.js
+          touch dist/.nojekyll
 
-      - name: Install Chromium for Offline/PWA witness
-        run: npx playwright install --with-deps chromium
-
-      - name: Run deterministic Offline/PWA browser witness
-        run: node scripts/sw-offline-browser-test.mjs
-
-      - name: Series reader fragment contract
-        run: node scripts/series-reader-fragment-audit.js
+      - name: Route-specific visual parity contract
+        run: npm run visual:parity:production
 
       - name: Production-like dist publication audit
-        shell: bash
-        run: |
-          mkdir -p reports
-          set -o pipefail
-          node scripts/dist-publication-audit.js --require-pagefind --forbid-dev 2>&1 \
-            | tee reports/dist-publication-audit.log
-
-      - name: Current Gold human reachability
-        run: node scripts/human-reachability-audit.js
+        run: node scripts/dist-publication-audit.js --require-pagefind --forbid-dev
 
       - name: Public URL contract compare on candidate dist
-        shell: bash
-        run: |
-          mkdir -p reports
-          set +e
-          set -o pipefail
-          npm run contract:extract:dist 2>&1 | tee reports/url-contract-compare.log
-          extract_status=${PIPESTATUS[0]}
-          npm run contract:compare:dist 2>&1 | tee -a reports/url-contract-compare.log
-          compare_status=${PIPESTATUS[0]}
-          if [ "$extract_status" -ne 0 ] || [ "$compare_status" -ne 0 ]; then
-            exit 1
-          fi
+        run: npm run contract:extract:dist && npm run contract:compare:dist
+
+      - name: Dist JSON-LD parse audit
+        run: npm run dist:jsonld:audit
+
+      - name: Semantic rich-results schema audit
+        run: npm run schema:rich-results:audit:dist
+
+      - name: PremiumControls rollout contract
+        run: npm run audit:premium-controls
+
+      - name: Gill v16 dist strict audits
+        run: node scripts/gill-context-visual-parity-audit.js --require-dist && node scripts/gill-spravochnik-visual-parity-audit.js --require-dist
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify Home Refutations computed box model
+        run: node scripts/visual-parity-home-refutations-box-model-browser-test.js
+
+      - name: Gill pre-v16 submenu regression audit
+        env:
+          GILL_SUBMENU_REQUIRE_LIVE: '1'
+        run: npm run gill:pre-v16-submenu:audit
+
+      - name: Gill mobile TOC and PlayEmber smoke
+        run: npm run gill:mobile-play:smoke
+
+      - name: Gill mobile reference layout audit
+        run: npm run gill:mobile-layout:audit
 
       - name: Upload deploy-candidate diagnostics
         if: always()
@@ -131,18 +147,13 @@ jobs:
         with:
           name: deploy-candidate-contract-${{ github.run_id }}
           path: |
-            reports/relation-projection.json
+            reports/gill-mobile-layout-audit-2026-06-29/summary.json
+            reports/gill-v16-mobile-play-smoke-2026-06-28/summary.json
+            reports/gill-pre-v16-submenu-audit/**
+            reports/visual-parity/home-refutations-box-model/report.json
             reports/dist-publication-audit.json
-            reports/dist-publication-audit.log
-            reports/current-gold/human-reachability.json
-            reports/series-reader-fragment-audit.json
             reports/url-contract-dist.json
             reports/url-contract-dist.md
-            reports/url-contract-compare.log
-            reports/a07-sw-static-audit.json
-            reports/a07-sw-static-audit.md
-            reports/a07-offline-pwa-browser.json
-            reports/a07-offline-pwa-browser.md
             reports/editorial-metadata-freeze.log
           if-no-files-found: error
           retention-days: 14
