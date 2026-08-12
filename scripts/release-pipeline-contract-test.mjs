@@ -20,6 +20,23 @@ function boundedJobs(workflow) {
   const deploy = workflow.match(/\n  deploy:\n([\s\S]*)$/);
   return { readiness: readiness?.[1] || '', deploy: deploy?.[1] || '' };
 }
+function boundedStep(job, name) {
+  const marker = `      - name: ${name}\n`;
+  const start = job.indexOf(marker);
+  if (start < 0) return '';
+  const next = job.indexOf('\n      - name: ', start + marker.length);
+  return job.slice(start, next < 0 ? job.length : next);
+}
+function mutateStep(workflow, name, from, to) {
+  const marker = `      - name: ${name}\n`;
+  const start = workflow.indexOf(marker);
+  assert.notEqual(start, -1, `${name}: step fixture missing`);
+  const next = workflow.indexOf('\n      - name: ', start + marker.length);
+  const end = next < 0 ? workflow.length : next;
+  const step = workflow.slice(start, end);
+  assert.ok(step.includes(from), `${name}: mutation source missing`);
+  return workflow.slice(0, start) + step.replace(from, to) + workflow.slice(end);
+}
 function before(text, first, second) {
   const left = text.indexOf(first);
   const right = text.indexOf(second);
@@ -29,6 +46,9 @@ function before(text, first, second) {
 export function validate({ workflow, diagnostics, toolchain, library, writer, verifier, live, tts, ttsWorkflow }) {
   const problems = [];
   const jobs = boundedJobs(workflow);
+  const candidateUpload = boundedStep(jobs.readiness, 'Upload immutable release candidate');
+  const gillAudit = boundedStep(jobs.readiness, 'Gill mobile reference layout audit');
+  const gillUpload = boundedStep(jobs.readiness, 'Upload Gill mobile layout readiness evidence');
   const checks = [
     ['release owns every main push', workflow, /push:\s*\n\s*branches:\s*\[main\][\s\S]{0,100}- '\*\*'/],
     ['manual release input exact', workflow, /workflow_dispatch:[\s\S]{0,220}release_sha:[\s\S]{0,160}required:\s*false[\s\S]{0,80}type:\s*string/],
@@ -52,15 +72,23 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
     ['readiness builds Pagefind', jobs.readiness, /npm run pagefind:build:dist/],
     ['readiness runs strict publication audit', jobs.readiness, /dist-publication-audit\.js --require-pagefind --forbid-dev/],
     ['readiness runs route browser and SW gates', jobs.readiness, /visual:parity:production[\s\S]*gill:mobile-layout:audit[\s\S]*dist-smoke-audit\.js --no-build --production-like[\s\S]*sw:dist:audit:deploy-switch/],
+    ['Gill audit has stable step id', gillAudit, /id:\s*gill_mobile_layout/],
+    ['Gill evidence immediately follows audit', jobs.readiness, /- name: Gill mobile reference layout audit\s*\n\s*id:\s*gill_mobile_layout\s*\n\s*run:\s*npm run gill:mobile-layout:audit\s*\n\s*\n\s*- name: Upload Gill mobile layout readiness evidence/],
+    ['Gill evidence uploader bound to terminal Gill outcome', gillUpload, /if:\s*\$\{\{ always\(\) && \(steps\.gill_mobile_layout\.outcome == 'success' \|\| steps\.gill_mobile_layout\.outcome == 'failure'\) \}\}/],
+    ['Gill evidence uploader pinned', gillUpload, /uses:\s*actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7\.0\.1/],
+    ['Gill evidence artifact run-attempt addressed', gillUpload, /name:\s*gill-mobile-layout-readiness-\$\{\{ github\.run_id \}\}-\$\{\{ github\.run_attempt \}\}/],
+    ['Gill evidence exact report path', gillUpload, /path:\s*reports\/gill-mobile-layout-audit-2026-06-29\/summary\.json\s*$/m],
+    ['Gill evidence fail closed', gillUpload, /if-no-files-found:\s*error/],
+    ['Gill evidence retention exact', gillUpload, /retention-days:\s*30/],
     ['release validation leaves tree clean', jobs.readiness, /Ensure release-source validation left tracked files clean[\s\S]{0,100}git diff --exit-code/],
     ['trusted tools staged from control plane', jobs.readiness, /Stage immutable verification tools from trusted control plane[\s\S]*git show "\$\{CONTROL_PLANE_SHA\}:scripts\/\$\{file\}"[\s\S]*release-tools\/write-deployment-provenance\.mjs/],
     ['readiness writes provenance with trusted tool', jobs.readiness, /Write generic immutable release provenance[\s\S]{0,180}release-tools\/write-deployment-provenance\.mjs/],
     ['readiness verifies candidate with two SHAs', jobs.readiness, /EXPECTED_RELEASE_SHA:\s*\$\{\{ env\.RELEASE_SHA \}\}[\s\S]*EXPECTED_CONTROL_PLANE_SHA:\s*\$\{\{ env\.CONTROL_PLANE_SHA \}\}[\s\S]*release-tools\/verify-release-candidate\.mjs/],
     ['readiness exposes two SHAs', jobs.readiness, /release_sha:\s*\$\{\{ steps\.provenance\.outputs\.release_sha \}\}[\s\S]*control_plane_sha:\s*\$\{\{ steps\.provenance\.outputs\.control_plane_sha \}\}/],
     ['readiness binds digest output', jobs.readiness, /EXPECTED_CANDIDATE_DIGEST:\s*\$\{\{ steps\.provenance\.outputs\.candidate_digest \}\}/],
-    ['candidate upload keeps hidden files', jobs.readiness, /include-hidden-files:\s*true/],
-    ['candidate upload is fail closed and uncompressed', jobs.readiness, /if-no-files-found:\s*error[\s\S]{0,120}compression-level:\s*0/],
-    ['candidate upload contains dist and tools', jobs.readiness, /path:\s*\|[\s\S]{0,120}\n\s*dist\s*\n\s*release-tools/],
+    ['candidate upload keeps hidden files', candidateUpload, /include-hidden-files:\s*true/],
+    ['candidate upload is fail closed and uncompressed', candidateUpload, /if-no-files-found:\s*error[\s\S]{0,120}compression-level:\s*0/],
+    ['candidate upload contains dist and tools', candidateUpload, /path:\s*\|[\s\S]{0,120}\n\s*dist\s*\n\s*release-tools/],
     ['deploy depends on readiness', jobs.deploy, /needs:\s*readiness/],
     ['deploy permissions exact', jobs.deploy, /permissions:\s*\n\s*actions:\s*read\s*\n\s*contents:\s*read\s*\n\s*pages:\s*write\s*\n\s*id-token:\s*write/],
     ['deploy downloads exact candidate', jobs.deploy, /actions\/download-artifact@[a-f0-9]{40}[\s\S]{0,180}name:\s*\$\{\{ env\.RELEASE_ARTIFACT_NAME \}\}/],
@@ -125,7 +153,7 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
   if (count(workflow, /npm run strangler:build:production-like/g) !== 1) problems.push('release production build count drift');
   if (count(workflow, /release-tools\/write-deployment-provenance\.mjs/g) !== 2) problems.push('trusted provenance tool reference count drift');
   if (count(workflow, /actions\/checkout@/g) !== 1) problems.push('release checkout count drift');
-  if (count(workflow, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/g) !== 3) problems.push('release upload-artifact pin/count drift');
+  if (count(workflow, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/g) !== 4) problems.push('release upload-artifact pin/count drift');
   if (count(workflow, /actions\/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c/g) !== 1) problems.push('release download-artifact pin/count drift');
   for (const pin of Object.values(PINS)) if (!workflow.includes(pin)) problems.push(`release action pin drift: ${pin.split('@')[0]}`);
   if (/uses:\s*actions\/(?:checkout|setup-node|upload-artifact|download-artifact|upload-pages-artifact|deploy-pages)@v\d+/i.test(workflow)) problems.push('release uses mutable action tag');
@@ -179,11 +207,15 @@ const mutations = [
   ['Pagefind removed', { ...sources, workflow: sources.workflow.replace('npm run pagefind:build:dist', 'echo Pagefind skipped') }],
   ['publication audit weakened', { ...sources, workflow: sources.workflow.replace('--require-pagefind --forbid-dev', '--warn-only') }],
   ['SW gate removed', { ...sources, workflow: sources.workflow.replace('npm run sw:dist:audit:deploy-switch', 'echo sw skipped') }],
+  ['Gill evidence loses always', { ...sources, workflow: mutateStep(sources.workflow, 'Upload Gill mobile layout readiness evidence', "if: ${{ always() && (steps.gill_mobile_layout.outcome == 'success' || steps.gill_mobile_layout.outcome == 'failure') }}", "if: ${{ steps.gill_mobile_layout.outcome == 'success' || steps.gill_mobile_layout.outcome == 'failure' }}") }],
+  ['Gill evidence report path changed', { ...sources, workflow: mutateStep(sources.workflow, 'Upload Gill mobile layout readiness evidence', 'path: reports/gill-mobile-layout-audit-2026-06-29/summary.json', 'path: reports/gill-mobile-layout-audit-2026-06-29/other.json') }],
+  ['Gill step id removed', { ...sources, workflow: mutateStep(sources.workflow, 'Gill mobile reference layout audit', '        id: gill_mobile_layout\n', '') }],
+  ['Gill missing evidence downgraded', { ...sources, workflow: mutateStep(sources.workflow, 'Upload Gill mobile layout readiness evidence', 'if-no-files-found: error', 'if-no-files-found: warn') }],
   ['clean tree removed', { ...sources, workflow: sources.workflow.replace('git diff --exit-code', 'git status --short') }],
   ['trusted tools use release SHA', { ...sources, workflow: sources.workflow.replace('${CONTROL_PLANE_SHA}:scripts/${file}', '${RELEASE_SHA}:scripts/${file}') }],
   ['trusted writer bypassed', { ...sources, workflow: sources.workflow.replaceAll('release-tools/write-deployment-provenance.mjs', 'scripts/write-deployment-provenance.mjs') }],
   ['release/control output aliased', { ...sources, workflow: sources.workflow.replace('control_plane_sha: ${{ steps.provenance.outputs.control_plane_sha }}', 'control_plane_sha: ${{ steps.provenance.outputs.release_sha }}') }],
-  ['candidate missing downgraded', { ...sources, workflow: sources.workflow.replace('if-no-files-found: error', 'if-no-files-found: warn') }],
+  ['candidate missing downgraded', { ...sources, workflow: mutateStep(sources.workflow, 'Upload immutable release candidate', 'if-no-files-found: error', 'if-no-files-found: warn') }],
   ['hidden files dropped', { ...sources, workflow: sources.workflow.replace('include-hidden-files: true', 'include-hidden-files: false') }],
   ['candidate recompressed', { ...sources, workflow: sources.workflow.replace('compression-level: 0', 'compression-level: 9') }],
   ['deploy loses readiness', { ...sources, workflow: sources.workflow.replace('needs: readiness', 'needs: []') }],
