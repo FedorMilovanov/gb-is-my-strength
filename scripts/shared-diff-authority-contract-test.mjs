@@ -118,6 +118,36 @@ try {
 
 const workflow = fs.readFileSync(path.join(ROOT, '.github/workflows/shared-files-guard.yml'), 'utf8');
 assert.match(workflow, /id: pr-authority/, 'Shared Files workflow must resolve one PR diff authority');
+assert.match(
+  workflow,
+  /types: \[opened, synchronize, reopened, edited\]/,
+  'Open-PR edited events must remain subscribed for body, lease, and collision changes',
+);
+assert.match(
+  workflow,
+  /jobs:\n  guard:\n    if: github\.event_name != 'pull_request' \|\| github\.event\.pull_request\.state != 'closed'/,
+  'Shared Files Guard must classify explicitly closed PR payloads as non-applicable before checkout/fetch',
+);
+const guardApplies = ({ eventName, prState }) =>
+  eventName !== 'pull_request' || prState !== 'closed';
+for (const action of ['opened', 'synchronize', 'reopened', 'edited']) {
+  assert.equal(
+    guardApplies({ eventName: 'pull_request', prState: 'open' }),
+    true,
+    `${action} on an open PR must remain strictly applicable`,
+  );
+}
+assert.equal(
+  guardApplies({ eventName: 'pull_request', prState: 'closed' }),
+  false,
+  'An edited merged/closed PR is lifecycle N/A and must not enter PR diff authority',
+);
+assert.equal(guardApplies({ eventName: 'push' }), true, 'Push behavior must remain applicable');
+assert.equal(
+  guardApplies({ eventName: 'pull_request', prState: undefined }),
+  true,
+  'Unknown PR lifecycle state must fail closed by running the guard rather than bypassing it',
+);
 assert.ok(
   (workflow.match(/steps\.pr-authority\.outputs\.effective_base/g) || []).length >= 2,
   'Collision accounting and protected diff must consume the same effective base output',
@@ -132,6 +162,13 @@ assert.equal(
   'Historical PR payload base SHA must not directly drive protected diff',
 );
 
+const authoritySource = fs.readFileSync(path.join(ROOT, 'scripts/shared-diff-authority.mjs'), 'utf8');
+assert.match(
+  authoritySource,
+  /\+refs\/pull\/\$\{number\}\/merge:\$\{mergeRef\}/,
+  'Applicable open PRs must still fetch the live merge ref and fail closed when it is absent',
+);
+
 const collisionSource = fs.readFileSync(path.join(ROOT, 'scripts/lane-collision-guard.mjs'), 'utf8');
 assert.match(collisionSource, /listRangeFiles\(effectiveBaseSha, effectiveHeadSha\)/);
 assert.equal(
@@ -140,4 +177,4 @@ assert.equal(
   'Current PR ownership must not come from an independently based PR-files payload',
 );
 
-console.log('Shared PR diff authority contract: PASS (base move, absorbed main, stale payload, merged protected-file retirement + fail-closed parent proof)');
+console.log('Shared PR diff authority contract: PASS (open/closed lifecycle applicability, base move, absorbed main, stale payload, merged protected-file retirement + fail-closed merge-parent proof)');
