@@ -34,6 +34,7 @@ on:
       - "scripts/compare-url-contract.js"
       - "scripts/sw-dist-readiness-audit.js"
       - "scripts/sw-offline-browser-test.mjs"
+      - "scripts/gill-mobile-layout-audit.js"
       - ".github/workflows/deploy.yml"
       - ".github/workflows/deploy-candidate-contract.yml"
   workflow_dispatch:
@@ -91,11 +92,14 @@ jobs:
       - name: Audit honest Offline/PWA static contract
         run: node scripts/sw-dist-readiness-audit.js --require-pagefind
 
-      - name: Install Chromium for Offline/PWA witness
+      - name: Install Chromium for Offline/PWA witness and Gill mobile audit
         run: npx playwright install --with-deps chromium
 
       - name: Run deterministic Offline/PWA browser witness
         run: node scripts/sw-offline-browser-test.mjs
+
+      - name: Gill mobile reference layout audit
+        run: npm run gill:mobile-layout:audit
 
       - name: Series reader fragment contract
         run: node scripts/series-reader-fragment-audit.js
@@ -143,6 +147,7 @@ jobs:
             reports/a07-sw-static-audit.md
             reports/a07-offline-pwa-browser.json
             reports/a07-offline-pwa-browser.md
+            reports/gill-mobile-layout/summary.json
             reports/editorial-metadata-freeze.log
           if-no-files-found: error
           retention-days: 14
