@@ -199,6 +199,28 @@ function classifyResourceUrl(rawUrl, base = BASE) {
   return { category: 'unknown-external', hardFail: true };
 }
 
+function isExactHdrcCertificateFailure(record) {
+  let url;
+  try {
+    url = new URL(record.url);
+  } catch (_) {
+    return false;
+  }
+  return url.protocol === 'https:' &&
+    url.hostname.toLowerCase() === 'hdrc.yandex.net' &&
+    url.pathname === '/' &&
+    record.method === 'GET' &&
+    record.resourceType === 'xhr' &&
+    record.errorText === 'net::ERR_CERT_AUTHORITY_INVALID';
+}
+
+function classifyRequestFailureEvidence(record, base = BASE) {
+  if (isExactHdrcCertificateFailure(record)) {
+    return { category: 'optional-hdrc-certificate-diagnostic', hardFail: false };
+  }
+  return classifyResourceUrl(record.url, base);
+}
+
 function runAuthoritySelfTests() {
   const base = 'http://127.0.0.1:4173';
   const fixtures = [
@@ -215,6 +237,31 @@ function runAuthoritySelfTests() {
       actual.category === category && actual.hardFail === hardFail,
       `Oracle classifier fixture: ${name}`,
       { url, expected: { category, hardFail }, actual },
+    );
+  }
+
+  const exactHdrcFailure = {
+    url: 'https://hdrc.yandex.net/',
+    method: 'GET',
+    resourceType: 'xhr',
+    errorText: 'net::ERR_CERT_AUTHORITY_INVALID',
+  };
+  const requestFixtures = [
+    ['exact HDRC certificate tuple', exactHdrcFailure, 'optional-hdrc-certificate-diagnostic', false],
+    ['another yandex.net host', { ...exactHdrcFailure, url: 'https://other.yandex.net/' }, 'unknown-external', true],
+    ['another HDRC path', { ...exactHdrcFailure, url: 'https://hdrc.yandex.net/other' }, 'unknown-external', true],
+    ['HDRC POST', { ...exactHdrcFailure, method: 'POST' }, 'unknown-external', true],
+    ['HDRC non-XHR', { ...exactHdrcFailure, resourceType: 'script' }, 'unknown-external', true],
+    ['HDRC other error', { ...exactHdrcFailure, errorText: 'net::ERR_NAME_NOT_RESOLVED' }, 'unknown-external', true],
+    ['same-origin request failure', { ...exactHdrcFailure, url: `${base}/css/site.css` }, 'mandatory-same-origin', true],
+    ['generic unknown external request failure', { ...exactHdrcFailure, url: 'https://example.invalid/app.js' }, 'unknown-external', true],
+  ];
+  for (const [name, record, category, hardFail] of requestFixtures) {
+    const actual = classifyRequestFailureEvidence(record, base);
+    assert(
+      actual.category === category && actual.hardFail === hardFail,
+      `Structured request classifier fixture: ${name}`,
+      { record, expected: { category, hardFail }, actual },
     );
   }
 }
@@ -266,7 +313,7 @@ function resourceFailureName(prefix, classification, identity) {
 
 function processResourceEvidence(identity, requestFailures, httpFailures) {
   for (const record of requestFailures) {
-    const classification = classifyResourceUrl(record.url);
+    const classification = classifyRequestFailureEvidence(record);
     const detail = { case: caseDetail(identity), classification: classification.category, ...record };
     if (classification.hardFail) {
       fail(resourceFailureName('Request failure:', classification, identity), detail);
@@ -599,11 +646,13 @@ async function runCase(browser, viewport, dark, route) {
 function writeProofAndExit() {
   fs.writeFileSync(path.join(OUT, 'summary.json'), JSON.stringify(proof, null, 2));
   if (failures.length) {
-    console.error(`\nGill mobile layout audit failed: ${failures.length} issue(s). See ${OUT}/summary.json`);
+    console.error(`\
+Gill mobile layout audit failed: ${failures.length} issue(s). See ${OUT}/summary.json`);
     process.exitCode = 1;
     return;
   }
-  console.log(`\nGill mobile layout audit passed. See ${OUT}/summary.json`);
+  console.log(`\
+Gill mobile layout audit passed. See ${OUT}/summary.json`);
 }
 
 if (SELF_TEST_ONLY) {
