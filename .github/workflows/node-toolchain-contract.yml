@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.gitattributes'
+      - '**/.gitattributes'
       - '.github/actionlint.yaml'
       - '.github/workflows/**'
       - 'data/release-toolchain.json'
@@ -20,6 +21,7 @@ on:
     branches: [main]
     paths:
       - '.gitattributes'
+      - '**/.gitattributes'
       - '.github/actionlint.yaml'
       - '.github/workflows/**'
       - 'data/release-toolchain.json'

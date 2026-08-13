@@ -97,28 +97,104 @@ function count(text, pattern) {
   return (text.match(pattern) || []).length;
 }
 
-function validateActionlintLicenseWhitespacePolicy(attributes) {
-  const expected = 'tools/actionlint/v1.7.7/LICENSE.txt whitespace=-blank-at-eof';
-  const effectiveExceptions = attributes
+function listGitAttributeFiles(root) {
+  const found = [];
+  function walk(directory) {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      if (entry.name === '.git' || entry.name === 'node_modules' || entry.name === '.cache') continue;
+      const absolute = path.join(directory, entry.name);
+      if (entry.isDirectory()) walk(absolute);
+      else if ((entry.isFile() || entry.isSymbolicLink()) && entry.name === '.gitattributes') {
+        found.push(path.relative(root, absolute).replace(/\\/g, '/'));
+      }
+    }
+  }
+  walk(root);
+  return found.sort();
+}
+
+function parseGitAttributeAuthority(rel, attributes) {
+  const active = attributes
     .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line && !line.startsWith('#') && line.includes('-blank-at-eof'));
-  if (effectiveExceptions.length !== 1 || effectiveExceptions[0] !== expected) {
-    return [`-blank-at-eof exceptions must equal exactly: ${expected}`];
+    .map((line, index) => ({ line: line.trim(), number: index + 1 }))
+    .filter(({ line }) => line && !line.startsWith('#'));
+  const macroDefinitions = new Map();
+  const findings = [];
+
+  for (const { line, number } of active) {
+    const tokens = line.split(/\s+/);
+    const macro = tokens[0].match(/^\[attr\]([^\s]+)$/);
+    if (macro) macroDefinitions.set(macro[1], { tokens: tokens.slice(1), rel, number, line });
+    if (tokens.slice(1).some((token) => /^(?:whitespace(?:=|$)|-whitespace$|!whitespace$)/.test(token))) {
+      findings.push({ rel, number, line, kind: 'whitespace-token' });
+    }
+  }
+
+  const whitespaceMacros = new Set();
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const [name, definition] of macroDefinitions) {
+      if (whitespaceMacros.has(name)) continue;
+      if (definition.tokens.some((token) =>
+        /^(?:whitespace(?:=|$)|-whitespace$|!whitespace$)/.test(token)
+        || whitespaceMacros.has(token)
+        || (token.startsWith('-') && whitespaceMacros.has(token.slice(1))))) {
+        whitespaceMacros.add(name);
+        changed = true;
+      }
+    }
+  }
+
+  for (const name of whitespaceMacros) {
+    const definition = macroDefinitions.get(name);
+    findings.push({ ...definition, kind: 'whitespace-macro-definition' });
+  }
+  for (const { line, number } of active) {
+    const tokens = line.split(/\s+/).slice(1);
+    if (tokens.some((token) => whitespaceMacros.has(token) || (token.startsWith('-') && whitespaceMacros.has(token.slice(1))))) {
+      findings.push({ rel, number, line, kind: 'whitespace-macro-application' });
+    }
+  }
+  return findings;
+}
+
+function validateActionlintLicenseWhitespacePolicy(attributeFiles) {
+  const expected = 'tools/actionlint/v1.7.7/LICENSE.txt whitespace=-blank-at-eof';
+  const findings = [];
+  for (const [rel, attributes] of Object.entries(attributeFiles)) {
+    findings.push(...parseGitAttributeAuthority(rel, attributes));
+  }
+  if (
+    findings.length !== 1
+    || findings[0].rel !== '.gitattributes'
+    || findings[0].kind !== 'whitespace-token'
+    || findings[0].line !== expected
+  ) {
+    return [`repository-wide whitespace authority must equal exactly root rule: ${expected}`];
   }
   return [];
 }
 
-function runActionlintLicenseWhitespaceMutationSuite(attributes) {
+function runActionlintLicenseWhitespaceMutationSuite(attributeFiles) {
+  const rootAttributes = attributeFiles['.gitattributes'];
   const mutations = [
-    `${attributes.trimEnd()}\n* whitespace=-blank-at-eof\n`,
-    attributes.replace(
-      'tools/actionlint/v1.7.7/LICENSE.txt whitespace=-blank-at-eof',
-      'tools/actionlint/** whitespace=-blank-at-eof',
-    ),
+    { ...attributeFiles, '.gitattributes': `${rootAttributes.trimEnd()}\n* whitespace=-blank-at-eof\n` },
+    { ...attributeFiles, '.gitattributes': `${rootAttributes.trimEnd()}\n* whitespace=-trailing-space\n` },
+    { ...attributeFiles, '.gitattributes': `${rootAttributes.trimEnd()}\n* -whitespace\n` },
+    { ...attributeFiles, '.gitattributes': `${rootAttributes.trimEnd()}\n[attr]noeof whitespace=-blank-at-eof\n* noeof\n` },
+    { ...attributeFiles, '.gitattributes': `${rootAttributes.trimEnd()}\n* whitespace=-blank-at-eof\n* !whitespace\n` },
+    { ...attributeFiles, 'nested/.gitattributes': '* whitespace=-blank-at-eof\n' },
+    {
+      ...attributeFiles,
+      '.gitattributes': rootAttributes.replace(
+        'tools/actionlint/v1.7.7/LICENSE.txt whitespace=-blank-at-eof',
+        'tools/actionlint/** whitespace=-blank-at-eof',
+      ),
+    },
   ];
   const undetected = mutations.filter((mutation) => validateActionlintLicenseWhitespacePolicy(mutation).length === 0);
-  return undetected.length ? [`${undetected.length} broad actionlint license whitespace mutation(s) escaped detection`] : [];
+  return undetected.length ? [`${undetected.length} repository-wide whitespace authority mutation(s) escaped detection`] : [];
 }
 
 function jobSection(workflow, name, nextName = null) {
@@ -399,6 +475,8 @@ function checkActionlintOfflineAuthority(workflowTexts) {
   const runner = read(runnerPath);
   const contractPath = 'scripts/run-actionlint-contract-test.mjs';
   const contract = read(contractPath);
+  const policyPath = 'scripts/check-workflows.js';
+  const policy = read(policyPath);
   const configPath = '.github/actionlint.yaml';
   const config = read(configPath);
   const toolRoot = `tools/actionlint/v${ACTIONLINT_OFFLINE_AUTHORITY.version}`;
@@ -408,6 +486,7 @@ function checkActionlintOfflineAuthority(workflowTexts) {
 
   for (const rel of [
     '.gitattributes',
+    '**/.gitattributes',
     '.github/actionlint.yaml',
     'audit/external-checks/README.md',
     'scripts/run-actionlint.mjs',
@@ -447,6 +526,14 @@ function checkActionlintOfflineAuthority(workflowTexts) {
     /zero-argument default must lint the repository workflows/,
     /actionlintArgs\(\['-no-color', 'one\.yml', '--shellcheck='\]\)/,
   ]) must(contractPath, contract, pattern, `offline regression fixture missing: ${pattern}`);
+  for (const pattern of [
+    /\* whitespace=-trailing-space/,
+    /\* -whitespace/,
+    /\[attr\]noeof whitespace=-blank-at-eof/,
+    /\* !whitespace/,
+    /nested\/\.gitattributes/,
+    /listGitAttributeFiles\(ROOT\)/,
+  ]) must(policyPath, policy, pattern, `repository-wide whitespace authority fixture missing: ${pattern}`);
 
   let manifest = null;
   try { manifest = JSON.parse(read(manifestPath)); }
@@ -488,9 +575,9 @@ function checkActionlintOfflineAuthority(workflowTexts) {
   must(provenancePath, provenance, /immutable[^\n]*false/i, 'must disclose that GitHub release metadata is not immutable');
   must(provenancePath, provenance, /unsigned/i, 'must disclose the unsigned lightweight tag limitation');
   const attributesPath = '.gitattributes';
-  const attributes = read(attributesPath);
-  for (const issue of validateActionlintLicenseWhitespacePolicy(attributes)) issues.push(`${attributesPath}: ${issue}`);
-  for (const issue of runActionlintLicenseWhitespaceMutationSuite(attributes)) issues.push(`${attributesPath}: mutation suite: ${issue}`);
+  const attributeFiles = Object.fromEntries(listGitAttributeFiles(ROOT).map((rel) => [rel, read(rel)]));
+  for (const issue of validateActionlintLicenseWhitespacePolicy(attributeFiles)) issues.push(`${attributesPath}: ${issue}`);
+  for (const issue of runActionlintLicenseWhitespaceMutationSuite(attributeFiles)) issues.push(`${attributesPath}: mutation suite: ${issue}`);
 }
 
 function checkSupportingWorkflows(workflowTexts) {
