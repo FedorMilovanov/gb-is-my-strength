@@ -32,20 +32,24 @@ const DIST = path.join(ROOT, 'dist');
 const OUT = path.join(ROOT, 'reports', 'gill-mobile-layout-audit-2026-06-29');
 fs.mkdirSync(OUT, { recursive: true });
 
-const ROUTES = [
+// Independent oracle authority: keep this as an immutable literal manifest.
+// Runtime ROUTES is deliberately only a mutable copy, so reducing the runtime
+// sweep cannot reduce the expected case count or redefine canonical Gill truth.
+const CANONICAL_ROUTE_MANIFEST = Object.freeze([
   '/articles/dzhon-gill-chast-1-chelovek/',
   '/articles/dzhon-gill-chast-2-uchenyi/',
   '/articles/dzhon-gill-chast-3-nasledie/',
   '/articles/dzhon-gill-chast-4-ekzeget/',
   '/articles/dzhon-gill-istoricheskiy-kontekst/',
   '/articles/dzhon-gill-spravochnik/',
-];
+]);
+const ROUTES = [...CANONICAL_ROUTE_MANIFEST];
 const VIEWPORTS = [
   { name: 'mobile', width: 360, height: 740 },
   { name: 'mobile-wide', width: 390, height: 844 },
 ];
 const THEMES = ['light', 'dark'];
-const EXPECTED_CASES = ROUTES.length * VIEWPORTS.length * THEMES.length;
+const EXPECTED_CASES = CANONICAL_ROUTE_MANIFEST.length * VIEWPORTS.length * THEMES.length;
 const SELF_TEST_ONLY = process.argv.includes('--authority-self-test');
 
 let BASE = (process.env.AUDIT_BASE || '').replace(/\/$/, '');
@@ -226,8 +230,72 @@ function classifyRequestFailureEvidence(record, base = BASE) {
   return classifyResourceUrl(record.url, base);
 }
 
+function validateCanonicalRouteCoverage(routes) {
+  const actualSet = new Set(routes);
+  const missing = CANONICAL_ROUTE_MANIFEST.filter(route => !actualSet.has(route));
+  const unexpected = routes.filter(route => !CANONICAL_ROUTE_MANIFEST.includes(route));
+  const duplicateCount = routes.length - actualSet.size;
+  return {
+    ok: routes.length === CANONICAL_ROUTE_MANIFEST.length &&
+      actualSet.size === CANONICAL_ROUTE_MANIFEST.length &&
+      missing.length === 0 &&
+      unexpected.length === 0,
+    expectedCount: CANONICAL_ROUTE_MANIFEST.length,
+    actualCount: routes.length,
+    uniqueActualCount: actualSet.size,
+    duplicateCount,
+    missing,
+    unexpected,
+  };
+}
+
+function isGenericResourceConsoleError(entry) {
+  return /Failed to load resource:/i.test(entry && entry.text || '');
+}
+
+function consumeGenericResourceCorrelation(entry, resourceRecords) {
+  if (!isGenericResourceConsoleError(entry)) return null;
+  return resourceRecords.shift() || null;
+}
+
 function runAuthoritySelfTests() {
   const base = 'http://127.0.0.1:4173';
+
+  const runtimeRouteCoverage = validateCanonicalRouteCoverage(ROUTES);
+  assert(
+    runtimeRouteCoverage.ok,
+    'Gill runtime routes exactly match immutable canonical route manifest',
+    runtimeRouteCoverage,
+  );
+
+  const missingRouteFixture = validateCanonicalRouteCoverage(CANONICAL_ROUTE_MANIFEST.slice(0, -1));
+  assert(
+    !missingRouteFixture.ok && missingRouteFixture.missing.length === 1,
+    'Oracle route-manifest regression fixture: omitting one canonical route is rejected',
+    missingRouteFixture,
+  );
+
+  const genericConsoleFixture = { text: 'Failed to load resource: net::ERR_FAILED' };
+  const correlationFixtureQueue = [{
+    url: `${base}/missing.css`,
+    method: 'GET',
+    resourceType: 'stylesheet',
+    status: 404,
+  }];
+  const firstCorrelation = consumeGenericResourceCorrelation(genericConsoleFixture, correlationFixtureQueue);
+  const secondCorrelation = consumeGenericResourceCorrelation(genericConsoleFixture, correlationFixtureQueue);
+  assert(
+    Boolean(firstCorrelation) && secondCorrelation === null && correlationFixtureQueue.length === 0,
+    'Oracle correlation regression fixture: 2 generic console errors + 1 structured failure leaves 1 unmatched',
+    {
+      genericConsoleErrors: 2,
+      structuredFailures: 1,
+      matched: Number(Boolean(firstCorrelation)) + Number(Boolean(secondCorrelation)),
+      unmatched: Number(!firstCorrelation) + Number(!secondCorrelation),
+      remainingStructuredFailures: correlationFixtureQueue.length,
+    },
+  );
+
   const fixtures = [
     ['same-origin Product CSS', `${base}/css/site.css`, 'mandatory-same-origin', true],
     ['production absolute icon', 'https://gospod-bog.ru/favicon.ico', 'optional-production-icon', false],
@@ -348,7 +416,7 @@ function isKnownProductionIconCsp(text) {
 }
 
 function processConsoleEvidence(identity, consoleErrors, requestFailures, httpFailures) {
-  const resourceRecords = [...requestFailures, ...httpFailures];
+  const remainingResourceRecords = [...requestFailures, ...httpFailures];
 
   for (const entry of consoleErrors) {
     const detail = { case: caseDetail(identity), ...entry };
@@ -358,18 +426,22 @@ function processConsoleEvidence(identity, consoleErrors, requestFailures, httpFa
       continue;
     }
 
-    const isGenericResourceConsole = /Failed to load resource:/i.test(entry.text || '');
-    if (isGenericResourceConsole && resourceRecords.length) {
-      diagnostic('Console resource error correlated to structured request evidence', {
-        ...detail,
-        correlatedResources: resourceRecords.map(record => ({
-          url: record.url,
-          method: record.method,
-          resourceType: record.resourceType,
-          errorText: record.errorText || null,
-          status: record.status || null,
-        })),
-      });
+    if (isGenericResourceConsoleError(entry)) {
+      const correlatedResource = consumeGenericResourceCorrelation(entry, remainingResourceRecords);
+      if (correlatedResource) {
+        diagnostic('Console resource error correlated one-to-one to structured request evidence', {
+          ...detail,
+          correlatedResource: {
+            url: correlatedResource.url,
+            method: correlatedResource.method,
+            resourceType: correlatedResource.resourceType,
+            errorText: correlatedResource.errorText || null,
+            status: correlatedResource.status || null,
+          },
+        });
+      } else {
+        fail(`Oracle unmatched generic resource console error ${caseLabel(identity)}`, detail);
+      }
       continue;
     }
 
