@@ -12,6 +12,11 @@
 *.yaml text eol=lf
 *.txt  text eol=lf
 
+# Preserve the exact upstream actionlint license bytes. Its release archive has
+# one intentional blank line after the MIT text; this narrow rule keeps the
+# repository-wide whitespace gate strict everywhere else.
+tools/actionlint/v1.7.7/LICENSE.txt whitespace=-blank-at-eof
+
 # Binary files — no line-ending conversion
 *.png  binary
 *.jpg  binary

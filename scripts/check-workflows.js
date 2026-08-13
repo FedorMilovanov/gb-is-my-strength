@@ -383,6 +383,7 @@ function checkActionlintOfflineAuthority(workflowTexts) {
   const provenancePath = `${toolRoot}/PROVENANCE.md`;
 
   for (const rel of [
+    '.gitattributes',
     '.github/actionlint.yaml',
     'audit/external-checks/README.md',
     'scripts/run-actionlint.mjs',
@@ -462,6 +463,9 @@ function checkActionlintOfflineAuthority(workflowTexts) {
   must(provenancePath, provenance, /31709241523/, 'must retain the exact acquisition run');
   must(provenancePath, provenance, /immutable[^\n]*false/i, 'must disclose that GitHub release metadata is not immutable');
   must(provenancePath, provenance, /unsigned/i, 'must disclose the unsigned lightweight tag limitation');
+  const attributesPath = '.gitattributes';
+  const attributes = read(attributesPath);
+  must(attributesPath, attributes, /^tools\/actionlint\/v1\.7\.7\/LICENSE\.txt whitespace=-blank-at-eof$/m, 'must preserve the exact upstream license bytes with only a path-specific blank-at-eof exception');
 }
 
 function checkSupportingWorkflows(workflowTexts) {

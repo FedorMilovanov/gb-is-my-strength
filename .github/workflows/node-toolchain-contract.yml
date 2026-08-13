@@ -4,6 +4,7 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - '.gitattributes'
       - '.github/actionlint.yaml'
       - '.github/workflows/**'
       - 'data/release-toolchain.json'
@@ -18,6 +19,7 @@ on:
   push:
     branches: [main]
     paths:
+      - '.gitattributes'
       - '.github/actionlint.yaml'
       - '.github/workflows/**'
       - 'data/release-toolchain.json'

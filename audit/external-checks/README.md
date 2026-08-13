@@ -1,6 +1,6 @@
 # External checks registry
 
-**Updated:** 2026-08-13  
+**Updated:** 2026-08-13
 **Purpose:** one governed entry point for optional third-party quality/security checks. External tools supplement repository contracts; they do not silently become blocking gates.
 
 ## 1. Current rules
