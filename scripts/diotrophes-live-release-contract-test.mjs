@@ -14,6 +14,22 @@ const CANDIDATE_DIGEST = `sha256:${'c'.repeat(64)}`;
 const CANDIDATE_ID = `${RELEASE_SHA}:${RUN_ID}-${RUN_ATTEMPT}`;
 const IMMUTABLE_PATH = `/deployments/${RELEASE_SHA}/${RUN_ID}-${RUN_ATTEMPT}.json`;
 const ROUTE = '/articles/diotrefy-nashego-vremeni/';
+const SHARED_READER_LINKS = [
+  'https://www.childabuseroyalcommission.gov.au/case-studies/case-study-18-australian-christian-churches',
+  'https://www.childabuseroyalcommission.gov.au/media-releases/findings-released-australian-christian-churches-and-affiliated-pentecostal-churches',
+  'https://www.churchofengland.org/media/press-releases/concerns-substantiated-mike-pilavachi-investigation',
+  'https://www.thejourney.org/about/our-story-new',
+].sort();
+const BASE_ONLY_READER_LINKS = Array.from(
+  { length: 36 },
+  (_, index) => `https://example.test/base-source-${index}`,
+);
+const SUPPLEMENT_ONLY_READER_LINKS = Array.from(
+  { length: 29 },
+  (_, index) => `https://example.test/supplement-source-${index}`,
+);
+const BASE_READER_LINKS = [...SHARED_READER_LINKS, ...BASE_ONLY_READER_LINKS];
+const SUPPLEMENT_READER_LINKS = [...SHARED_READER_LINKS, ...SUPPLEMENT_ONLY_READER_LINKS];
 
 function pointer(overrides = {}) {
   return {
@@ -76,11 +92,6 @@ function link(href) {
 }
 
 function validHtml(overrides = {}) {
-  const baseLinks = Array.from({ length: 40 }, (_, index) => link(`https://example.test/source-${index}`)).join('');
-  const supplementLinks = [
-    ...Array.from({ length: 3 }, (_, index) => link(`https://example.test/source-${index}`)),
-    ...Array.from({ length: 30 }, (_, index) => link(`https://example.test/source-${index + 40}`)),
-  ].join('');
   const values = {
     bodyMarker: 'true',
     authority: '148',
@@ -89,8 +100,12 @@ function validHtml(overrides = {}) {
     robots: 'index,follow',
     canonical: 'https://gospod-bog.ru/articles/diotrefy-nashego-vremeni/',
     draftText: '',
+    baseReaderLinks: BASE_READER_LINKS,
+    supplementReaderLinks: SUPPLEMENT_READER_LINKS,
     ...overrides,
   };
+  const baseLinks = values.baseReaderLinks.map(link).join('');
+  const supplementLinks = values.supplementReaderLinks.map(link).join('');
   return `<!doctype html>
 <html lang="ru">
 <head>
@@ -168,7 +183,54 @@ try {
     assert.equal(report.evidence.route.status, 200);
     assert.equal(report.evidence.route.publicationMarker, 'true');
     assert.equal(report.evidence.route.sourceAuthority, '148');
-    assert.deepEqual(report.evidence.route.sourceLinks, { base: 40, supplement: 33, total: 73, unique: 70 });
+    assert.deepEqual(report.evidence.route.sourceLinks, {
+      base: 40,
+      supplement: 33,
+      total: 73,
+      unique: 69,
+      shared: SHARED_READER_LINKS.map((href) => ({ href, base: 1, supplement: 1, total: 2 })),
+    });
+  }
+
+  {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'diotrophes-live-overlap-'));
+    roots.push(root);
+    const witnessDirectory = makeWitnessDirectory(root);
+    const changedOverlapLinks = [...SUPPLEMENT_READER_LINKS];
+    changedOverlapLinks[0] = BASE_ONLY_READER_LINKS[0];
+    await assert.rejects(
+      withServer({ html: validHtml({ supplementReaderLinks: changedOverlapLinks }) }, (liveBaseUrl) => verifyDiotrophesLiveRelease({
+        witnessDirectory,
+        liveBaseUrl,
+        reportPath: path.join(root, 'report.json'),
+        timeoutMs: 5000,
+      })),
+      /shared source overlap mismatch/,
+    );
+  }
+
+  {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'diotrophes-live-overlap-placement-'));
+    roots.push(root);
+    const witnessDirectory = makeWitnessDirectory(root);
+    const misplacedBaseLinks = [...BASE_READER_LINKS];
+    const misplacedSupplementLinks = [...SUPPLEMENT_READER_LINKS];
+    misplacedBaseLinks[0] = 'https://example.test/placement-extra';
+    misplacedSupplementLinks[SHARED_READER_LINKS.length] = SHARED_READER_LINKS[0];
+    await assert.rejects(
+      withServer({
+        html: validHtml({
+          baseReaderLinks: misplacedBaseLinks,
+          supplementReaderLinks: misplacedSupplementLinks,
+        }),
+      }, (liveBaseUrl) => verifyDiotrophesLiveRelease({
+        witnessDirectory,
+        liveBaseUrl,
+        reportPath: path.join(root, 'report.json'),
+        timeoutMs: 5000,
+      })),
+      /shared source placement mismatch/,
+    );
   }
 
   {
