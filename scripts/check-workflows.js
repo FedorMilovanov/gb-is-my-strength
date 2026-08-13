@@ -97,6 +97,30 @@ function count(text, pattern) {
   return (text.match(pattern) || []).length;
 }
 
+function validateActionlintLicenseWhitespacePolicy(attributes) {
+  const expected = 'tools/actionlint/v1.7.7/LICENSE.txt whitespace=-blank-at-eof';
+  const effectiveExceptions = attributes
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('#') && line.includes('-blank-at-eof'));
+  if (effectiveExceptions.length !== 1 || effectiveExceptions[0] !== expected) {
+    return [`-blank-at-eof exceptions must equal exactly: ${expected}`];
+  }
+  return [];
+}
+
+function runActionlintLicenseWhitespaceMutationSuite(attributes) {
+  const mutations = [
+    `${attributes.trimEnd()}\n* whitespace=-blank-at-eof\n`,
+    attributes.replace(
+      'tools/actionlint/v1.7.7/LICENSE.txt whitespace=-blank-at-eof',
+      'tools/actionlint/** whitespace=-blank-at-eof',
+    ),
+  ];
+  const undetected = mutations.filter((mutation) => validateActionlintLicenseWhitespacePolicy(mutation).length === 0);
+  return undetected.length ? [`${undetected.length} broad actionlint license whitespace mutation(s) escaped detection`] : [];
+}
+
 function jobSection(workflow, name, nextName = null) {
   const marker = `\n  ${name}:\n`;
   const start = workflow.indexOf(marker);
@@ -465,7 +489,8 @@ function checkActionlintOfflineAuthority(workflowTexts) {
   must(provenancePath, provenance, /unsigned/i, 'must disclose the unsigned lightweight tag limitation');
   const attributesPath = '.gitattributes';
   const attributes = read(attributesPath);
-  must(attributesPath, attributes, /^tools\/actionlint\/v1\.7\.7\/LICENSE\.txt whitespace=-blank-at-eof$/m, 'must preserve the exact upstream license bytes with only a path-specific blank-at-eof exception');
+  for (const issue of validateActionlintLicenseWhitespacePolicy(attributes)) issues.push(`${attributesPath}: ${issue}`);
+  for (const issue of runActionlintLicenseWhitespaceMutationSuite(attributes)) issues.push(`${attributesPath}: mutation suite: ${issue}`);
 }
 
 function checkSupportingWorkflows(workflowTexts) {
