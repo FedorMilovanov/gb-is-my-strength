@@ -28,6 +28,13 @@ function normalize(value) {
   return String(value ?? '').trim();
 }
 
+export function normalizeArtifactDigest(value) {
+  const digest = normalize(value).toLowerCase();
+  const payload = digest.startsWith('sha256:') ? digest.slice('sha256:'.length) : digest;
+  assert.match(payload, /^[a-f0-9]{64}$/, 'artifact digest is invalid');
+  return `sha256:${payload}`;
+}
+
 function findFiles(root, basename) {
   const matches = [];
   const visit = (directory) => {

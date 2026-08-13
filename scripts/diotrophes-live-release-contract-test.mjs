@@ -4,7 +4,10 @@ import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
-import { verifyDiotrophesLiveRelease } from './diotrophes-live-release-contract.mjs';
+import {
+  normalizeArtifactDigest,
+  verifyDiotrophesLiveRelease,
+} from './diotrophes-live-release-contract.mjs';
 
 const RELEASE_SHA = 'a'.repeat(40);
 const CONTROL_SHA = 'b'.repeat(40);
@@ -14,6 +17,7 @@ const CANDIDATE_DIGEST = `sha256:${'c'.repeat(64)}`;
 const CANDIDATE_ID = `${RELEASE_SHA}:${RUN_ID}-${RUN_ATTEMPT}`;
 const IMMUTABLE_PATH = `/deployments/${RELEASE_SHA}/${RUN_ID}-${RUN_ATTEMPT}.json`;
 const ROUTE = '/articles/diotrefy-nashego-vremeni/';
+const ARTIFACT_DIGEST_PAYLOAD = 'd'.repeat(64);
 const SHARED_READER_LINKS = [
   'https://www.childabuseroyalcommission.gov.au/case-studies/case-study-18-australian-christian-churches',
   'https://www.childabuseroyalcommission.gov.au/media-releases/findings-released-australian-christian-churches-and-affiliated-pentecostal-churches',
@@ -174,6 +178,13 @@ async function withServer({ html = validHtml(), pointerFactory = () => pointer()
 
 const roots = [];
 try {
+  assert.equal(normalizeArtifactDigest(ARTIFACT_DIGEST_PAYLOAD), `sha256:${ARTIFACT_DIGEST_PAYLOAD}`);
+  assert.equal(
+    normalizeArtifactDigest(`sha256:${ARTIFACT_DIGEST_PAYLOAD}`),
+    `sha256:${ARTIFACT_DIGEST_PAYLOAD}`,
+  );
+  assert.throws(() => normalizeArtifactDigest('sha256:not-a-digest'), /artifact digest is invalid/);
+
   {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'diotrophes-live-pass-'));
     roots.push(root);

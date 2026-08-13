@@ -175,12 +175,19 @@ jobs:
           script: |
             const assert = require('node:assert/strict');
             const fs = require('node:fs');
+            const path = require('node:path');
+            const { pathToFileURL } = require('node:url');
+            const { normalizeArtifactDigest } = await import(pathToFileURL(path.join(
+              process.env.GITHUB_WORKSPACE,
+              'scripts/diotrophes-live-release-contract.mjs',
+            )).href);
             const report = JSON.parse(fs.readFileSync(process.env.REPORT_PATH, 'utf8'));
             const deployRunId = Number(process.env.EXPECTED_DEPLOY_RUN_ID);
             const deployRunAttempt = Number(process.env.EXPECTED_DEPLOY_RUN_ATTEMPT);
             const controlPlaneSha = String(process.env.EXPECTED_CONTROL_PLANE_SHA || '').toLowerCase();
+            const recorderRunId = Number(process.env.GITHUB_RUN_ID);
             const artifactId = Number(process.env.EVIDENCE_ARTIFACT_ID);
-            const artifactDigest = String(process.env.EVIDENCE_ARTIFACT_DIGEST || '');
+            const artifactDigest = normalizeArtifactDigest(process.env.EVIDENCE_ARTIFACT_DIGEST);
             const artifactUrl = String(process.env.EVIDENCE_ARTIFACT_URL || '');
 
             assert.equal(report.schemaVersion, 1, 'Diotrophes witness schema drifted');
@@ -215,7 +222,19 @@ jobs:
               },
             }, 'live source-link contract mismatch');
             assert.ok(Number.isSafeInteger(artifactId) && artifactId > 0, 'evidence artifact ID is invalid');
+            assert.ok(Number.isSafeInteger(recorderRunId) && recorderRunId > 0, 'recorder run ID is invalid');
             assert.match(artifactDigest, /^sha256:[a-f0-9]{64}$/, 'evidence artifact digest is invalid');
+
+            const evidenceArtifact = (await github.rest.actions.getArtifact({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              artifact_id: artifactId,
+            })).data;
+            assert.equal(evidenceArtifact.name, `diotrophes-live-deployment-${deployRunId}`, 'evidence artifact name mismatch');
+            assert.equal(evidenceArtifact.expired, false, 'evidence artifact is expired');
+            assert.equal(Number(evidenceArtifact.workflow_run?.id), recorderRunId, 'evidence artifact run mismatch');
+            assert.equal(evidenceArtifact.workflow_run?.head_sha, controlPlaneSha, 'evidence artifact head SHA mismatch');
+            assert.equal(String(evidenceArtifact.digest || '').toLowerCase(), artifactDigest, 'evidence artifact digest mismatch');
 
             const deployRun = (await github.rest.actions.getWorkflowRun({
               owner: context.repo.owner,
