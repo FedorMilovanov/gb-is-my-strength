@@ -197,7 +197,23 @@ jobs:
             assert.equal(report.evidence?.route?.status, 200, 'live route was not HTTP 200');
             assert.equal(report.evidence?.route?.publicationMarker, 'true', 'live publication marker mismatch');
             assert.equal(report.evidence?.route?.sourceAuthority, '148', 'live source authority mismatch');
-            assert.deepEqual(report.evidence?.route?.sourceLinks, { base: 40, supplement: 33, total: 73, unique: 70 }, 'live source-link contract mismatch');
+            assert.deepEqual(report.evidence?.route?.sourceLinks, {
+              base: 40,
+              supplement: 33,
+              total: 73,
+              unique: 69,
+              shared: [
+                { href: 'https://www.childabuseroyalcommission.gov.au/case-studies/case-study-18-australian-christian-churches', base: 1, supplement: 1, total: 2 },
+                { href: 'https://www.childabuseroyalcommission.gov.au/media-releases/findings-released-australian-christian-churches-and-affiliated-pentecostal-churches', base: 1, supplement: 1, total: 2 },
+                { href: 'https://www.churchofengland.org/media/press-releases/concerns-substantiated-mike-pilavachi-investigation', base: 1, supplement: 1, total: 2 },
+                { href: 'https://www.thejourney.org/about/our-story-new', base: 1, supplement: 1, total: 2 },
+              ],
+              stale: [],
+              canonicalBase: {
+                'https://www.thejourney.org/about/our-story-new': 1,
+                'https://www.gov.uk/government/publications/independent-inquiry-into-child-sexual-abuse-child-protection-in-religious-organisations-and-settings': 1,
+              },
+            }, 'live source-link contract mismatch');
             assert.ok(Number.isSafeInteger(artifactId) && artifactId > 0, 'evidence artifact ID is invalid');
             assert.match(artifactDigest, /^sha256:[a-f0-9]{64}$/, 'evidence artifact digest is invalid');
 
