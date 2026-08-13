@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "tool": "actionlint",
+  "version": "1.7.7",
+  "upstream": {
+    "repository": "rhysd/actionlint",
+    "tag": "v1.7.7",
+    "tagCommit": "03d0035246f3e81f36aed592ffb4bebf33a03106",
+    "releaseId": 195510160,
+    "license": {
+      "spdx": "MIT",
+      "file": "LICENSE.txt",
+      "size": 1067,
+      "sha256": "03a26b06d224380a02bf100e05fff3b2dfc71b14d4e2fa685ec9963a87563c22"
+    },
+    "checksums": {
+      "file": "actionlint_1.7.7_checksums.txt",
+      "assetId": 221573261,
+      "size": 1119,
+      "sha256": "ac22e6577b8d133c7cd779682e65712ef722e719a297633699a4da05e9f351e0"
+    }
+  },
+  "targets": {
+    "darwin-x64": {
+      "platform": "darwin",
+      "arch": "x64",
+      "archive": "actionlint_1.7.7_darwin_amd64.tar.gz",
+      "format": "tar.gz",
+      "assetId": 221573249,
+      "archiveSize": 2092389,
+      "archiveSha256": "28e5de5a05fc558474f638323d736d822fff183d2d492f0aecb2b73cc44584f5",
+      "binary": "actionlint",
+      "binarySize": 5188832,
+      "binarySha256": "996affd492c57441c5ecfe00dedaef1fde056872d242c0cf7cc15de058d59d03"
+    },
+    "darwin-arm64": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "archive": "actionlint_1.7.7_darwin_arm64.tar.gz",
+      "format": "tar.gz",
+      "assetId": 221573250,
+      "archiveSize": 1962532,
+      "archiveSha256": "2693315b9093aeacb4ebd91a993fea54fc215057bf0da2659056b4bc033873db",
+      "binary": "actionlint",
+      "binarySize": 5085234,
+      "binarySha256": "00aba386d026da33be6e85dd5a46d7af4dd9e4d6cbdb02335f4b267162fd2d9e"
+    },
+    "linux-x64": {
+      "platform": "linux",
+      "arch": "x64",
+      "archive": "actionlint_1.7.7_linux_amd64.tar.gz",
+      "format": "tar.gz",
+      "assetId": 221573254,
+      "archiveSize": 2080472,
+      "archiveSha256": "023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757",
+      "binary": "actionlint",
+      "binarySize": 5132440,
+      "binarySha256": "9f7dedb4e23f89f2922073d1a6720405b7b520d4f5832ebb96f0d55a2958886c"
+    },
+    "linux-arm64": {
+      "platform": "linux",
+      "arch": "arm64",
+      "archive": "actionlint_1.7.7_linux_arm64.tar.gz",
+      "format": "tar.gz",
+      "assetId": 221573255,
+      "archiveSize": 1911516,
+      "archiveSha256": "401942f9c24ed71e4fe71b76c7d638f66d8633575c4016efd2977ce7c28317d0",
+      "binary": "actionlint",
+      "binarySize": 5111960,
+      "binarySha256": "446687e63fac45472b0a66bae28975c28678af062670af119c11a7087baf35cc"
+    },
+    "win32-x64": {
+      "platform": "win32",
+      "arch": "x64",
+      "archive": "actionlint_1.7.7_windows_amd64.zip",
+      "format": "zip",
+      "assetId": 221573260,
+      "archiveSize": 2229473,
+      "archiveSha256": "7f12f1801bca3d480d67aaf7774f4c2a6359a3ca8eebe382c95c10c9704aa731",
+      "binary": "actionlint.exe",
+      "binarySize": 5562368,
+      "binarySha256": "6d470a52039a433bccdf57bd65170885a5b23e511155d0de587c2c3ce0eb1c24"
+    },
+    "win32-arm64": {
+      "platform": "win32",
+      "arch": "arm64",
+      "archive": "actionlint_1.7.7_windows_arm64.zip",
+      "format": "zip",
+      "assetId": 221573259,
+      "archiveSize": 2020826,
+      "archiveSha256": "76e9514cfac18e5677aa04f3a89873c981f16a2f2353bb97372a86cd09b1f5a8",
+      "binary": "actionlint.exe",
+      "binarySize": 5352960,
+      "binarySha256": "5efa0d2c4eb2c0ab442004ca3bd44d8459bcc88778e6ec3660088a09cc802f94"
+    }
+  }
+}

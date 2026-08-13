@@ -1,6 +1,6 @@
 # External checks registry
 
-**Updated:** 2026-07-24  
+**Updated:** 2026-08-13
 **Purpose:** one governed entry point for optional third-party quality/security checks. External tools supplement repository contracts; they do not silently become blocking gates.
 
 ## 1. Current rules
@@ -31,7 +31,7 @@ Add current route/browser/visual contracts for the affected surface. Environment
 
 ## 3. Actionlint — canonical path
 
-Use only the repository-pinned, checksum-verified runner:
+Use only the repository-pinned, checksum-verified offline runner:
 
 ```bash
 node scripts/run-actionlint.mjs
@@ -39,7 +39,16 @@ node scripts/run-actionlint.mjs
 npm run workflows:lint
 ```
 
-Do not add another inline installer and do not use an unpinned `npx actionlint` path. The permanent repository control-plane audit detects duplicated inline installers and alias drift.
+The runtime path performs no download. It selects one of the six official
+v1.7.7 archives in `tools/actionlint/v1.7.7/`, verifies the archive's size and
+SHA-256 before trusting a digest-keyed extracted-binary cache, and verifies the
+cached binary on every invocation. Exact upstream asset IDs, checksums, license,
+tag commit and acquisition evidence are recorded in that directory.
+
+Do not add another inline installer, restore a GitHub Releases fetch, or use an
+unpinned `npx actionlint` path. The workflow policy and offline contract cover
+source-authority drift, cold-cache execution with Node networking forbidden,
+corruption failures and Linux/Windows/Intel macOS execution.
 
 ## 4. Local Windows runner
 
@@ -66,7 +75,7 @@ These are policy categories, not claims that a June result still reproduces.
 
 | Tool | Disposition | Current use |
 |---|---|---|
-| actionlint | `KEEP / PINNED` | GitHub Actions syntax/expression validation through `scripts/run-actionlint.mjs`. |
+| actionlint | `KEEP / PINNED / OFFLINE` | GitHub Actions syntax/expression validation through the checksum-bound `scripts/run-actionlint.mjs`. |
 | npm audit | `KEEP / TRIAGE` | Dependency advisory inventory; no automatic forced upgrades. |
 | OSV Scanner | `KEEP / PINNED-OR-LOCAL` | Independent lockfile advisory check when a verified binary is available. |
 | Retire.js | `KEEP / DIAGNOSTIC` | Repository/dist JavaScript advisory scan. |
