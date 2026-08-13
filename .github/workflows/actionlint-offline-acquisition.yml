@@ -1,0 +1,145 @@
+name: Actionlint v1.7.7 upstream acquisition
+
+on:
+  push:
+    branches: [fix/actionlint-offline-source-authority]
+    paths:
+      - '.github/workflows/actionlint-offline-acquisition.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: actionlint-v1-7-7-upstream-acquisition
+  cancel-in-progress: true
+
+jobs:
+  acquire:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Acquire and verify exact upstream v1.7.7 release
+        shell: bash
+        env:
+          EXPECTED_TAG_SHA: 03d0035246f3e81f36aed592ffb4bebf33a03106
+        run: |
+          set -euo pipefail
+          mkdir -p acquisition
+          cd acquisition
+
+          curl --fail --silent --show-error --location --retry 3 \
+            --proto '=https' --tlsv1.2 \
+            --output release.json \
+            https://api.github.com/repos/rhysd/actionlint/releases/tags/v1.7.7
+          curl --fail --silent --show-error --location --retry 3 \
+            --proto '=https' --tlsv1.2 \
+            --output tag-ref.json \
+            https://api.github.com/repos/rhysd/actionlint/git/ref/tags/v1.7.7
+
+          files=(
+            actionlint_1.7.7_checksums.txt
+            actionlint_1.7.7_darwin_amd64.tar.gz
+            actionlint_1.7.7_darwin_arm64.tar.gz
+            actionlint_1.7.7_linux_amd64.tar.gz
+            actionlint_1.7.7_linux_arm64.tar.gz
+            actionlint_1.7.7_windows_amd64.zip
+            actionlint_1.7.7_windows_arm64.zip
+          )
+          for file in "${files[@]}"; do
+            curl --fail --silent --show-error --location --retry 3 \
+              --proto '=https' --tlsv1.2 \
+              --output "$file" \
+              "https://github.com/rhysd/actionlint/releases/download/v1.7.7/$file"
+          done
+
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          expected_tag_sha = os.environ['EXPECTED_TAG_SHA']
+          release = json.loads(Path('release.json').read_text())
+          tag_ref = json.loads(Path('tag-ref.json').read_text())
+          assert release['id'] == 195510160
+          assert release['tag_name'] == 'v1.7.7'
+          assert release['author']['login'] == 'github-actions[bot]'
+          assert release['draft'] is False
+          assert release['prerelease'] is False
+          assert tag_ref['object']['type'] == 'commit'
+          assert tag_ref['object']['sha'] == expected_tag_sha
+
+          expected_assets = {
+              'actionlint_1.7.7_checksums.txt': (221573261, 1119),
+              'actionlint_1.7.7_darwin_amd64.tar.gz': (221573249, 2092389),
+              'actionlint_1.7.7_darwin_arm64.tar.gz': (221573250, 1962532),
+              'actionlint_1.7.7_linux_amd64.tar.gz': (221573254, 2080472),
+              'actionlint_1.7.7_linux_arm64.tar.gz': (221573255, 1911516),
+              'actionlint_1.7.7_windows_amd64.zip': (221573260, 2229473),
+              'actionlint_1.7.7_windows_arm64.zip': (221573259, 2020826),
+          }
+          metadata = {item['name']: item for item in release['assets']}
+          for name, (asset_id, size) in expected_assets.items():
+              item = metadata[name]
+              assert item['id'] == asset_id, (name, item['id'])
+              assert item['size'] == size, (name, item['size'])
+              assert Path(name).stat().st_size == size, (name, Path(name).stat().st_size)
+
+          published = {}
+          for line in Path('actionlint_1.7.7_checksums.txt').read_text().splitlines():
+              fields = line.split()
+              if len(fields) == 2:
+                  published[fields[1].lstrip('*')] = fields[0].lower()
+
+          assets = []
+          for name, (asset_id, size) in expected_assets.items():
+              if name.endswith('_checksums.txt'):
+                  continue
+              actual = hashlib.sha256(Path(name).read_bytes()).hexdigest()
+              assert published[name] == actual, (name, published.get(name), actual)
+              assets.append({
+                  'name': name,
+                  'assetId': asset_id,
+                  'size': size,
+                  'sha256': actual,
+                  'url': f'https://github.com/rhysd/actionlint/releases/download/v1.7.7/{name}',
+              })
+
+          witness = {
+              'schemaVersion': 1,
+              'version': '1.7.7',
+              'tag': 'v1.7.7',
+              'tagCommit': expected_tag_sha,
+              'releaseId': release['id'],
+              'releaseAuthor': release['author']['login'],
+              'releaseCreatedAt': release['created_at'],
+              'releasePublishedAt': release['published_at'],
+              'checksumsAsset': {
+                  'name': 'actionlint_1.7.7_checksums.txt',
+                  'assetId': 221573261,
+                  'size': 1119,
+                  'sha256': hashlib.sha256(Path('actionlint_1.7.7_checksums.txt').read_bytes()).hexdigest(),
+              },
+              'assets': assets,
+              'acquisition': {
+                  'repository': os.environ['GITHUB_REPOSITORY'],
+                  'workflowRunId': int(os.environ['GITHUB_RUN_ID']),
+                  'workflowRunAttempt': int(os.environ['GITHUB_RUN_ATTEMPT']),
+                  'workflowSha': os.environ['GITHUB_SHA'],
+              },
+          }
+          Path('acquisition-witness.json').write_text(json.dumps(witness, indent=2) + '\n')
+          PY
+
+          tar -xOf actionlint_1.7.7_linux_amd64.tar.gz LICENSE.txt > LICENSE.txt
+          test -s LICENSE.txt
+          sha256sum actionlint_1.7.7_* LICENSE.txt > locally-computed-sha256.txt
+
+      - name: Upload immutable acquisition evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: actionlint-v1.7.7-upstream-${{ github.run_id }}
+          path: acquisition/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
