@@ -20,10 +20,19 @@ const SHARED_READER_LINKS = [
   'https://www.churchofengland.org/media/press-releases/concerns-substantiated-mike-pilavachi-investigation',
   'https://www.thejourney.org/about/our-story-new',
 ].sort();
-const BASE_ONLY_READER_LINKS = Array.from(
-  { length: 36 },
-  (_, index) => `https://example.test/base-source-${index}`,
-);
+const STALE_READER_LINKS = [
+  'https://www.thejourney.org/our-story',
+  'https://www.iicsa.org.uk/reports-recommendations/publications/investigation/child-protection-religious-organisations-and-settings.html',
+];
+const CANONICAL_IICSA_READER_LINK = 'https://www.gov.uk/government/publications/independent-inquiry-into-child-sexual-abuse-child-protection-in-religious-organisations-and-settings';
+const CANONICAL_BASE_READER_LINKS = [
+  'https://www.thejourney.org/about/our-story-new',
+  CANONICAL_IICSA_READER_LINK,
+];
+const BASE_ONLY_READER_LINKS = [
+  CANONICAL_IICSA_READER_LINK,
+  ...Array.from({ length: 35 }, (_, index) => `https://example.test/base-source-${index}`),
+];
 const SUPPLEMENT_ONLY_READER_LINKS = Array.from(
   { length: 29 },
   (_, index) => `https://example.test/supplement-source-${index}`,
@@ -189,6 +198,8 @@ try {
       total: 73,
       unique: 69,
       shared: SHARED_READER_LINKS.map((href) => ({ href, base: 1, supplement: 1, total: 2 })),
+      stale: [],
+      canonicalBase: Object.fromEntries(CANONICAL_BASE_READER_LINKS.map((href) => [href, 1])),
     });
   }
 
@@ -230,6 +241,40 @@ try {
         timeoutMs: 5000,
       })),
       /shared source placement mismatch/,
+    );
+  }
+
+  for (const [index, staleLink] of STALE_READER_LINKS.entries()) {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), `diotrophes-live-stale-${index}-`));
+    roots.push(root);
+    const witnessDirectory = makeWitnessDirectory(root);
+    const staleBaseLinks = [...BASE_READER_LINKS];
+    staleBaseLinks[SHARED_READER_LINKS.length + 1] = staleLink;
+    await assert.rejects(
+      withServer({ html: validHtml({ baseReaderLinks: staleBaseLinks }) }, (liveBaseUrl) => verifyDiotrophesLiveRelease({
+        witnessDirectory,
+        liveBaseUrl,
+        reportPath: path.join(root, 'report.json'),
+        timeoutMs: 5000,
+      })),
+      /stale reader source URL is present/,
+    );
+  }
+
+  {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'diotrophes-live-canonical-migration-'));
+    roots.push(root);
+    const witnessDirectory = makeWitnessDirectory(root);
+    const missingCanonicalBaseLinks = [...BASE_READER_LINKS];
+    missingCanonicalBaseLinks[SHARED_READER_LINKS.length] = 'https://example.test/missing-canonical-successor';
+    await assert.rejects(
+      withServer({ html: validHtml({ baseReaderLinks: missingCanonicalBaseLinks }) }, (liveBaseUrl) => verifyDiotrophesLiveRelease({
+        witnessDirectory,
+        liveBaseUrl,
+        reportPath: path.join(root, 'report.json'),
+        timeoutMs: 5000,
+      })),
+      /canonical base source migration mismatch/,
     );
   }
 

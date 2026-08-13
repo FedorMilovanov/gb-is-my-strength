@@ -13,6 +13,14 @@ const EXPECTED_SHARED_READER_LINKS = [
   'https://www.churchofengland.org/media/press-releases/concerns-substantiated-mike-pilavachi-investigation',
   'https://www.thejourney.org/about/our-story-new',
 ].sort();
+const STALE_READER_LINKS = [
+  'https://www.thejourney.org/our-story',
+  'https://www.iicsa.org.uk/reports-recommendations/publications/investigation/child-protection-religious-organisations-and-settings.html',
+];
+const CANONICAL_BASE_READER_LINKS = [
+  'https://www.thejourney.org/about/our-story-new',
+  'https://www.gov.uk/government/publications/independent-inquiry-into-child-sexual-abuse-child-protection-in-religious-organisations-and-settings',
+];
 const FULL_SHA_RE = /^[a-f0-9]{40}$/;
 const DIGEST_RE = /^sha256:[a-f0-9]{64}$/;
 
@@ -228,6 +236,13 @@ function inspectHtml(html, route) {
     supplement: supplementLinks.filter((candidate) => candidate === href).length,
     total: linkCounts.get(href) || 0,
   }));
+  const staleLinks = STALE_READER_LINKS.filter((href) => allLinks.includes(href));
+  const canonicalBaseLinks = Object.fromEntries(
+    CANONICAL_BASE_READER_LINKS.map((href) => [
+      href,
+      baseLinks.filter((candidate) => candidate === href).length,
+    ]),
+  );
   const expectedSharedLinks = EXPECTED_SHARED_READER_LINKS.map((href) => ({
     href,
     base: 1,
@@ -240,6 +255,12 @@ function inspectHtml(html, route) {
   assert.equal(new Set(allLinks).size, 69, `unique source count mismatch: ${new Set(allLinks).size}`);
   assert.deepEqual(duplicateReaderLinks, EXPECTED_SHARED_READER_LINKS, 'shared source overlap mismatch');
   assert.deepEqual(sharedLinks, expectedSharedLinks, 'shared source placement mismatch');
+  assert.deepEqual(staleLinks, [], 'stale reader source URL is present');
+  assert.deepEqual(
+    canonicalBaseLinks,
+    Object.fromEntries(CANONICAL_BASE_READER_LINKS.map((href) => [href, 1])),
+    'canonical base source migration mismatch',
+  );
 
   return {
     title,
@@ -254,6 +275,8 @@ function inspectHtml(html, route) {
       total: allLinks.length,
       unique: new Set(allLinks).size,
       shared: sharedLinks,
+      stale: staleLinks,
+      canonicalBase: canonicalBaseLinks,
     },
     faithfulSections: true,
     draftLeak: false,
