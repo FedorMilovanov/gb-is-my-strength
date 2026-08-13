@@ -1,0 +1,7 @@
+# actionlint v1.7.7 predates this current GitHub-hosted Intel label. The
+# `self-hosted-runner` extension is actionlint's documented way to admit a
+# runner label that is externally validated by this repository's portability
+# matrix; it does not classify the GitHub-hosted runner as repository-owned.
+self-hosted-runner:
+  labels:
+    - macos-15-intel

@@ -4,21 +4,31 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - '.github/actionlint.yaml'
       - '.github/workflows/**'
       - 'data/release-toolchain.json'
       - 'docs/dependency-migrations/NODE_22_LTS_PATCH.md'
+      - 'audit/external-checks/README.md'
       - 'package.json'
       - 'scripts/check-workflows.js'
       - 'scripts/node-toolchain-pin-contract-test.mjs'
+      - 'scripts/run-actionlint.mjs'
+      - 'scripts/run-actionlint-contract-test.mjs'
+      - 'tools/actionlint/**'
   push:
     branches: [main]
     paths:
+      - '.github/actionlint.yaml'
       - '.github/workflows/**'
       - 'data/release-toolchain.json'
       - 'docs/dependency-migrations/NODE_22_LTS_PATCH.md'
+      - 'audit/external-checks/README.md'
       - 'package.json'
       - 'scripts/check-workflows.js'
       - 'scripts/node-toolchain-pin-contract-test.mjs'
+      - 'scripts/run-actionlint.mjs'
+      - 'scripts/run-actionlint-contract-test.mjs'
+      - 'tools/actionlint/**'
   workflow_dispatch:
 
 permissions:
@@ -48,9 +58,57 @@ jobs:
         run: |
           node scripts/check-workflows.js
           node scripts/node-toolchain-pin-contract-test.mjs
+          node scripts/run-actionlint-contract-test.mjs
 
       - name: Lint this workflow
         run: node scripts/run-actionlint.mjs -no-color .github/workflows/node-toolchain-contract.yml
+
+      - name: Ensure validation is read-only
+        run: git diff --exit-code
+
+  actionlint-portability:
+    name: actionlint offline / ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux-x64
+            runner: ubuntu-24.04
+            platform: linux
+            arch: x64
+          - target: win32-x64
+            runner: windows-2025
+            platform: win32
+            arch: x64
+          - target: darwin-x64
+            runner: macos-15-intel
+            platform: darwin
+            arch: x64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Set up canonical Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+
+      - name: Assert exact runner mapping
+        env:
+          EXPECTED_PLATFORM: ${{ matrix.platform }}
+          EXPECTED_ARCH: ${{ matrix.arch }}
+        run: >-
+          node -e "if (process.platform !== process.env.EXPECTED_PLATFORM || process.arch !== process.env.EXPECTED_ARCH) { throw new Error('runner mapping mismatch: ' + process.platform + '/' + process.arch); }"
+
+      - name: Prove offline archive contract and execute binary
+        run: |
+          node scripts/run-actionlint-contract-test.mjs
+          node scripts/run-actionlint.mjs -no-color .github/workflows/node-toolchain-contract.yml
 
       - name: Ensure validation is read-only
         run: git diff --exit-code

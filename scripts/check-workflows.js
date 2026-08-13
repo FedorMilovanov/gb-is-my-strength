@@ -8,6 +8,7 @@
  */
 'use strict';
 
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const {
@@ -28,6 +29,26 @@ const RELEASE_ACTION_PINS = Object.freeze({
   deployPages: 'actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0',
 });
 
+const ACTIONLINT_OFFLINE_AUTHORITY = Object.freeze({
+  version: '1.7.7',
+  tagCommit: '03d0035246f3e81f36aed592ffb4bebf33a03106',
+  releaseId: 195510160,
+  checksums: Object.freeze({
+    file: 'actionlint_1.7.7_checksums.txt',
+    assetId: 221573261,
+    size: 1119,
+    sha256: 'ac22e6577b8d133c7cd779682e65712ef722e719a297633699a4da05e9f351e0',
+  }),
+  targets: Object.freeze({
+    'darwin-x64': Object.freeze({ file: 'actionlint_1.7.7_darwin_amd64.tar.gz', assetId: 221573249, size: 2092389, sha256: '28e5de5a05fc558474f638323d736d822fff183d2d492f0aecb2b73cc44584f5' }),
+    'darwin-arm64': Object.freeze({ file: 'actionlint_1.7.7_darwin_arm64.tar.gz', assetId: 221573250, size: 1962532, sha256: '2693315b9093aeacb4ebd91a993fea54fc215057bf0da2659056b4bc033873db' }),
+    'linux-x64': Object.freeze({ file: 'actionlint_1.7.7_linux_amd64.tar.gz', assetId: 221573254, size: 2080472, sha256: '023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757' }),
+    'linux-arm64': Object.freeze({ file: 'actionlint_1.7.7_linux_arm64.tar.gz', assetId: 221573255, size: 1911516, sha256: '401942f9c24ed71e4fe71b76c7d638f66d8633575c4016efd2977ce7c28317d0' }),
+    'win32-x64': Object.freeze({ file: 'actionlint_1.7.7_windows_amd64.zip', assetId: 221573260, size: 2229473, sha256: '7f12f1801bca3d480d67aaf7774f4c2a6359a3ca8eebe382c95c10c9704aa731' }),
+    'win32-arm64': Object.freeze({ file: 'actionlint_1.7.7_windows_arm64.zip', assetId: 221573259, size: 2020826, sha256: '76e9514cfac18e5677aa04f3a89873c981f16a2f2353bb97372a86cd09b1f5a8' }),
+  }),
+});
+
 const FORBIDDEN_VALIDATION_WRITES = [
   [/(?:^|\s)(?:node\s+scripts\/)?cache-bust\.js\s+--write(?:\s|$)/m, 'asset revision writer'],
   [/(?:^|\s)(?:node\s+scripts\/)?update-meta\.js(?:\s|$)/m, 'metadata writer'],
@@ -43,6 +64,19 @@ function read(rel) {
     return '';
   }
   return fs.readFileSync(absolute, 'utf8');
+}
+
+function verifyPinnedFile(rel, expectedSize, expectedSha256) {
+  const absolute = path.join(ROOT, rel);
+  let value;
+  try { value = fs.readFileSync(absolute); }
+  catch (error) {
+    issues.push(`${rel}: missing or unreadable (${error.message})`);
+    return;
+  }
+  if (value.length !== expectedSize) issues.push(`${rel}: size drifted; expected ${expectedSize}, got ${value.length}`);
+  const actualSha256 = crypto.createHash('sha256').update(value).digest('hex');
+  if (actualSha256 !== expectedSha256) issues.push(`${rel}: SHA-256 drifted; expected ${expectedSha256}, got ${actualSha256}`);
 }
 
 function must(file, text, pattern, message) {
@@ -334,6 +368,102 @@ function checkDistDryRun(file, text) {
   mustNot(file, text, /\bpush:|\bschedule:|workflow_run:/, 'must remain workflow_dispatch-only');
 }
 
+function checkActionlintOfflineAuthority(workflowTexts) {
+  const workflowPath = '.github/workflows/node-toolchain-contract.yml';
+  const workflow = workflowTexts[workflowPath] || read(workflowPath);
+  const runnerPath = 'scripts/run-actionlint.mjs';
+  const runner = read(runnerPath);
+  const contractPath = 'scripts/run-actionlint-contract-test.mjs';
+  const contract = read(contractPath);
+  const configPath = '.github/actionlint.yaml';
+  const config = read(configPath);
+  const toolRoot = `tools/actionlint/v${ACTIONLINT_OFFLINE_AUTHORITY.version}`;
+  const manifestPath = `${toolRoot}/manifest.json`;
+  const witnessPath = `${toolRoot}/ACQUISITION_WITNESS.json`;
+  const provenancePath = `${toolRoot}/PROVENANCE.md`;
+
+  for (const rel of [
+    '.github/actionlint.yaml',
+    'audit/external-checks/README.md',
+    'scripts/run-actionlint.mjs',
+    'scripts/run-actionlint-contract-test.mjs',
+    'tools/actionlint/**',
+  ]) {
+    const occurrences = count(workflow, new RegExp(`- '${rel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'`, 'g'));
+    if (occurrences !== 2) issues.push(`${workflowPath}: ${rel} must trigger both pull_request and main-push validation`);
+  }
+
+  must(workflowPath, workflow, /node scripts\/run-actionlint-contract-test\.mjs/, 'exact-pins job must execute the offline actionlint contract');
+  must(workflowPath, workflow, /actionlint-portability:/, 'must retain permanent cross-platform actionlint evidence');
+  for (const [target, runnerLabel] of [
+    ['linux-x64', 'ubuntu-24.04'],
+    ['win32-x64', 'windows-2025'],
+    ['darwin-x64', 'macos-15-intel'],
+  ]) {
+    must(workflowPath, workflow, new RegExp(`target:\\s*${target}[\\s\\S]{0,100}runner:\\s*${runnerLabel}`), `portability matrix must execute ${target} on ${runnerLabel}`);
+  }
+  must(workflowPath, jobSection(workflow, 'actionlint-portability'), /github\.event\.pull_request\.head\.sha \|\| github\.sha/, 'portability job must checkout the exact event head');
+  must(workflowPath, jobSection(workflow, 'actionlint-portability'), /git diff --exit-code/, 'portability job must prove validation is read-only');
+
+  must(configPath, config, /self-hosted-runner:\s*\n\s*labels:\s*\n\s*- macos-15-intel/, 'pinned actionlint must admit the current GitHub-hosted Intel runner label');
+  must(runnerPath, runner, /TOOL_VERSION = '1\.7\.7'/, 'tool version authority drifted');
+  must(runnerPath, runner, new RegExp(ACTIONLINT_OFFLINE_AUTHORITY.tagCommit), 'tag-commit authority drifted');
+  must(runnerPath, runner, /verifyFile\(archivePath[\s\S]{0,300}fs\.existsSync\(cacheDir\)/, 'selected archive must be verified before cache trust');
+  must(runnerPath, runner, /target\.archiveSha256/, 'cache identity must include the archive digest');
+  mustNot(runnerPath, runner, /\bfetch\s*\(|node:https|node:http|node:net|node:tls|releases\/download|api\.github\.com|\b(?:curl|wget|npx)\b/, 'runtime actionlint path must contain no network or installer path');
+
+  for (const pattern of [
+    /NETWORK_FORBIDDEN_BY_ACTIONLINT_CONTRACT/,
+    /warm cache corruption must fail closed/,
+    /manifest size corruption must fail closed/,
+    /manifest hash corruption must fail closed/,
+    /syntactically invalid workflow must fail/,
+    /actual checked-in binary must report version 1\.7\.7/,
+    /zero-argument default must lint the repository workflows/,
+    /actionlintArgs\(\['-no-color', 'one\.yml', '--shellcheck='\]\)/,
+  ]) must(contractPath, contract, pattern, `offline regression fixture missing: ${pattern}`);
+
+  let manifest = null;
+  try { manifest = JSON.parse(read(manifestPath)); }
+  catch (error) { issues.push(`${manifestPath}: invalid JSON (${error.message})`); }
+  if (manifest) {
+    if (manifest.version !== ACTIONLINT_OFFLINE_AUTHORITY.version) issues.push(`${manifestPath}: version authority drifted`);
+    if (manifest.upstream?.tagCommit !== ACTIONLINT_OFFLINE_AUTHORITY.tagCommit) issues.push(`${manifestPath}: tag commit authority drifted`);
+    if (manifest.upstream?.releaseId !== ACTIONLINT_OFFLINE_AUTHORITY.releaseId) issues.push(`${manifestPath}: release ID authority drifted`);
+    const targetKeys = Object.keys(manifest.targets || {}).sort();
+    const expectedKeys = Object.keys(ACTIONLINT_OFFLINE_AUTHORITY.targets).sort();
+    if (JSON.stringify(targetKeys) !== JSON.stringify(expectedKeys)) issues.push(`${manifestPath}: target set must remain exactly six canonical mappings`);
+    for (const [key, expected] of Object.entries(ACTIONLINT_OFFLINE_AUTHORITY.targets)) {
+      const target = manifest.targets?.[key];
+      if (!target) continue;
+      for (const [field, value] of [['archive', expected.file], ['assetId', expected.assetId], ['archiveSize', expected.size], ['archiveSha256', expected.sha256]]) {
+        if (target[field] !== value) issues.push(`${manifestPath}: ${key}.${field} drifted from pinned upstream authority`);
+      }
+      verifyPinnedFile(`${toolRoot}/${expected.file}`, expected.size, expected.sha256);
+    }
+    const checksum = manifest.upstream?.checksums || {};
+    for (const [field, value] of [['file', ACTIONLINT_OFFLINE_AUTHORITY.checksums.file], ['assetId', ACTIONLINT_OFFLINE_AUTHORITY.checksums.assetId], ['size', ACTIONLINT_OFFLINE_AUTHORITY.checksums.size], ['sha256', ACTIONLINT_OFFLINE_AUTHORITY.checksums.sha256]]) {
+      if (checksum[field] !== value) issues.push(`${manifestPath}: upstream checksums.${field} drifted`);
+    }
+  }
+
+  verifyPinnedFile(`${toolRoot}/${ACTIONLINT_OFFLINE_AUTHORITY.checksums.file}`, ACTIONLINT_OFFLINE_AUTHORITY.checksums.size, ACTIONLINT_OFFLINE_AUTHORITY.checksums.sha256);
+  verifyPinnedFile(`${toolRoot}/LICENSE.txt`, 1067, '03a26b06d224380a02bf100e05fff3b2dfc71b14d4e2fa685ec9963a87563c22');
+
+  let witness = null;
+  try { witness = JSON.parse(read(witnessPath)); }
+  catch (error) { issues.push(`${witnessPath}: invalid JSON (${error.message})`); }
+  if (witness) {
+    if (witness.tagCommit !== ACTIONLINT_OFFLINE_AUTHORITY.tagCommit || witness.releaseId !== ACTIONLINT_OFFLINE_AUTHORITY.releaseId) issues.push(`${witnessPath}: release identity drifted`);
+    if (witness.acquisition?.workflowRunId !== 31709241523 || witness.acquisition?.workflowRunAttempt !== 1 || witness.acquisition?.workflowSha !== 'b03f15784c991300d7bef65c857e5da4f18301bf') issues.push(`${witnessPath}: acquisition run identity drifted`);
+  }
+  const provenance = read(provenancePath);
+  must(provenancePath, provenance, /03d0035246f3e81f36aed592ffb4bebf33a03106/, 'must bind the exact upstream tag commit');
+  must(provenancePath, provenance, /31709241523/, 'must retain the exact acquisition run');
+  must(provenancePath, provenance, /immutable[^\n]*false/i, 'must disclose that GitHub release metadata is not immutable');
+  must(provenancePath, provenance, /unsigned/i, 'must disclose the unsigned lightweight tag limitation');
+}
+
 function checkSupportingWorkflows(workflowTexts) {
   const diagnosticsPath = '.github/workflows/indexnow.yml';
   const diagnostics = workflowTexts[diagnosticsPath] || read(diagnosticsPath);
@@ -395,6 +525,7 @@ checkReleaseWorkflow(deployPath, deploy);
 const distDryRunPath = '.github/workflows/dist-dry-run.yml';
 const distDryRun = workflowTexts[distDryRunPath] || read(distDryRunPath);
 checkDistDryRun(distDryRunPath, distDryRun);
+checkActionlintOfflineAuthority(workflowTexts);
 checkSupportingWorkflows(workflowTexts);
 
 const shared = workflowTexts['.github/workflows/shared-files-guard.yml'] || '';
@@ -421,3 +552,4 @@ console.log('✅ Explicit autofix capabilities require machine writer lease + ex
 console.log('✅ Production route coverage is registry-driven');
 console.log('✅ Candidate build, immutable promotion and live witnesses remain separated');
 console.log('✅ Actionlint and SYSTEM gate notification coverage remain blocking');
+console.log('✅ Actionlint source authority is offline, checksum-bound and cross-platform');
