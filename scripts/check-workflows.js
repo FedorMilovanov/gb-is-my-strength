@@ -10,7 +10,9 @@
 
 const crypto = require('crypto');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const {
   validateCacheBustWorkflowPolicy,
   runCacheBustWorkflowPolicyMutationSuite,
@@ -97,20 +99,106 @@ function count(text, pattern) {
   return (text.match(pattern) || []).length;
 }
 
-function listGitAttributeFiles(root) {
-  const found = [];
-  function walk(directory) {
-    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
-      if (entry.name === '.git' || entry.name === 'node_modules' || entry.name === '.cache') continue;
-      const absolute = path.join(directory, entry.name);
-      if (entry.isDirectory()) walk(absolute);
-      else if ((entry.isFile() || entry.isSymbolicLink()) && entry.name === '.gitattributes') {
-        found.push(path.relative(root, absolute).replace(/\\/g, '/'));
+const ATTRIBUTE_PATHSPECS = Object.freeze(['.gitattributes', '**/.gitattributes']);
+
+function parseGitAttributeIndex(output) {
+  const files = [];
+  const problems = [];
+  for (const record of output.split('\0').filter(Boolean)) {
+    const match = record.match(/^([0-7]{6}) [a-f0-9]{40,64} ([0-3])\t([\s\S]+)$/);
+    if (!match) {
+      problems.push(`unparseable git index record: ${JSON.stringify(record)}`);
+      continue;
+    }
+    const [, mode, stage, rel] = match;
+    if (stage !== '0') {
+      problems.push(`${rel}: tracked .gitattributes is unmerged at index stage ${stage}`);
+      continue;
+    }
+    if (!['100644', '100755'].includes(mode)) {
+      problems.push(`${rel}: tracked .gitattributes mode ${mode} is not a regular file`);
+      continue;
+    }
+    files.push(rel);
+  }
+  return { files, problems };
+}
+
+function enumerateGitAttributeFiles(root) {
+  const tracked = spawnSync('git', ['ls-files', '-z', '--stage', '--', ...ATTRIBUTE_PATHSPECS], {
+    cwd: root,
+    encoding: 'utf8',
+    shell: false,
+  });
+  if (tracked.error || tracked.status !== 0) {
+    const detail = tracked.error?.message || tracked.stderr?.trim() || `exit ${tracked.status}`;
+    return { files: [], problems: [`cannot enumerate tracked .gitattributes: ${detail}`] };
+  }
+  const parsed = parseGitAttributeIndex(tracked.stdout);
+  const files = new Set(parsed.files);
+  const problems = [...parsed.problems];
+
+  const untracked = spawnSync('git', [
+    'ls-files', '-z', '--others', '--exclude-standard', '--', ...ATTRIBUTE_PATHSPECS,
+  ], { cwd: root, encoding: 'utf8', shell: false });
+  if (untracked.error || untracked.status !== 0) {
+    const detail = untracked.error?.message || untracked.stderr?.trim() || `exit ${untracked.status}`;
+    problems.push(`cannot enumerate untracked .gitattributes: ${detail}`);
+  } else {
+    for (const rel of untracked.stdout.split('\0').filter(Boolean)) {
+      let stat;
+      try { stat = fs.lstatSync(path.join(root, rel)); }
+      catch (error) {
+        problems.push(`${rel}: cannot lstat untracked .gitattributes (${error.message})`);
+        continue;
       }
+      if (!stat.isFile()) {
+        problems.push(`${rel}: untracked .gitattributes is not a regular file`);
+        continue;
+      }
+      files.add(rel);
     }
   }
-  walk(root);
-  return found.sort();
+  return { files: [...files].sort(), problems };
+}
+
+function listGitAttributeFiles(root) {
+  const result = enumerateGitAttributeFiles(root);
+  for (const problem of result.problems) issues.push(`.gitattributes: ${problem}`);
+  return result.files;
+}
+
+function runGitAttributeEnumerationMutationSuite() {
+  const failures = [];
+  const synthetic = parseGitAttributeIndex([
+    `100644 ${'0'.repeat(40)} 0\t.cache/.gitattributes`,
+    `100644 ${'1'.repeat(40)} 0\tnode_modules/vendor/.gitattributes`,
+    `120000 ${'2'.repeat(40)} 0\tlinked/.gitattributes`,
+  ].join('\0'));
+  if (!synthetic.files.includes('.cache/.gitattributes')) failures.push('index parser skipped tracked .cache/.gitattributes');
+  if (!synthetic.files.includes('node_modules/vendor/.gitattributes')) failures.push('index parser skipped tracked node_modules .gitattributes');
+  if (!synthetic.problems.some((problem) => /linked\/\.gitattributes.*120000/.test(problem))) failures.push('index parser accepted a tracked symlink .gitattributes');
+
+  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'gitattributes-authority-'));
+  try {
+    const init = spawnSync('git', ['init', '--quiet'], { cwd: fixture, encoding: 'utf8', shell: false });
+    if (init.error || init.status !== 0) return [...failures, 'could not initialize enumeration fixture'];
+    for (const rel of ['.gitattributes', '.cache/.gitattributes', 'node_modules/vendor/.gitattributes']) {
+      const absolute = path.join(fixture, rel);
+      fs.mkdirSync(path.dirname(absolute), { recursive: true });
+      fs.writeFileSync(absolute, '* text=auto\n');
+    }
+    const add = spawnSync('git', ['add', '--force', '--', ...ATTRIBUTE_PATHSPECS], { cwd: fixture, encoding: 'utf8', shell: false });
+    if (add.error || add.status !== 0) return [...failures, 'could not stage enumeration fixture'];
+    const enumerated = enumerateGitAttributeFiles(fixture);
+    for (const rel of ['.gitattributes', '.cache/.gitattributes', 'node_modules/vendor/.gitattributes']) {
+      if (!enumerated.files.includes(rel)) failures.push(`tracked boundary fixture was skipped: ${rel}`);
+    }
+    if (enumerated.problems.length) failures.push(`enumeration fixture reported: ${enumerated.problems.join('; ')}`);
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
+  return failures;
 }
 
 function parseGitAttributeAuthority(rel, attributes) {
@@ -120,6 +208,7 @@ function parseGitAttributeAuthority(rel, attributes) {
     .filter(({ line }) => line && !line.startsWith('#'));
   const macroDefinitions = new Map();
   const findings = [];
+  const macroTokenName = (token) => token.replace(/^[-!]/, '').split('=', 1)[0];
 
   for (const { line, number } of active) {
     const tokens = line.split(/\s+/);
@@ -138,8 +227,7 @@ function parseGitAttributeAuthority(rel, attributes) {
       if (whitespaceMacros.has(name)) continue;
       if (definition.tokens.some((token) =>
         /^(?:whitespace(?:=|$)|-whitespace$|!whitespace$)/.test(token)
-        || whitespaceMacros.has(token)
-        || (token.startsWith('-') && whitespaceMacros.has(token.slice(1))))) {
+        || whitespaceMacros.has(macroTokenName(token)))) {
         whitespaceMacros.add(name);
         changed = true;
       }
@@ -152,7 +240,7 @@ function parseGitAttributeAuthority(rel, attributes) {
   }
   for (const { line, number } of active) {
     const tokens = line.split(/\s+/).slice(1);
-    if (tokens.some((token) => whitespaceMacros.has(token) || (token.startsWith('-') && whitespaceMacros.has(token.slice(1))))) {
+    if (tokens.some((token) => whitespaceMacros.has(macroTokenName(token)))) {
       findings.push({ rel, number, line, kind: 'whitespace-macro-application' });
     }
   }
@@ -533,6 +621,9 @@ function checkActionlintOfflineAuthority(workflowTexts) {
     /\* !whitespace/,
     /nested\/\.gitattributes/,
     /listGitAttributeFiles\(ROOT\)/,
+    /\.cache\/\.gitattributes/,
+    /node_modules\/vendor\/\.gitattributes/,
+    /tracked \.gitattributes mode \$\{mode\} is not a regular file/,
   ]) must(policyPath, policy, pattern, `repository-wide whitespace authority fixture missing: ${pattern}`);
 
   let manifest = null;
@@ -576,6 +667,7 @@ function checkActionlintOfflineAuthority(workflowTexts) {
   must(provenancePath, provenance, /unsigned/i, 'must disclose the unsigned lightweight tag limitation');
   const attributesPath = '.gitattributes';
   const attributeFiles = Object.fromEntries(listGitAttributeFiles(ROOT).map((rel) => [rel, read(rel)]));
+  for (const issue of runGitAttributeEnumerationMutationSuite()) issues.push(`${attributesPath}: enumeration mutation suite: ${issue}`);
   for (const issue of validateActionlintLicenseWhitespacePolicy(attributeFiles)) issues.push(`${attributesPath}: ${issue}`);
   for (const issue of runActionlintLicenseWhitespaceMutationSuite(attributeFiles)) issues.push(`${attributesPath}: mutation suite: ${issue}`);
 }
