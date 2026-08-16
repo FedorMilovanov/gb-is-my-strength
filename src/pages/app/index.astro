@@ -1,4 +1,6 @@
 ---
+import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
+
 const launchUrl = 'https://t.me/milovanovaibot?startapp=v1_site_app__home';
 const canonicalUrl = 'https://gospod-bog.ru/app/';
 const title = 'Библейский тренажёр — Господь Бог — Сила Моя';
@@ -20,6 +22,7 @@ const structuredData = {
 <html lang="ru">
   <head>
     <meta charset="utf-8" />
+    <ReaderPreferencesHead />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
