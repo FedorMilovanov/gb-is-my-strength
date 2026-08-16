@@ -1,10 +1,11 @@
 {
   "version": 2,
-  "updated": "2026-08-09",
+  "updated": "2026-08-17",
   "description": "Build-time strangler ownership manifest. Production GitHub Pages serves Astro/strangler dist. owner=astro means output is generated from src/pages and must not be overwritten by legacy copy. status=production-dist means the route is allowed in production after its route and release gates pass.",
   "routes": {
     "/": {"owner":"astro","source":"src/pages/index.astro","risk":2,"status":"production-dist"},
     "/about/": {"owner":"astro","source":"src/pages/about/index.astro","risk":2,"status":"production-dist"},
+    "/app/": {"owner":"astro","source":"src/pages/app/index.astro","risk":2,"status":"production-dist"},
     "/articles/": {"owner":"astro","source":"src/pages/articles/index.astro","risk":2,"status":"production-dist"},
     "/articles/20-antisovetov-pastoru/": {"owner":"astro","source":"src/pages/articles/20-antisovetov-pastoru/index.astro","risk":2,"status":"production-dist"},
     "/articles/diotrefy-nashego-vremeni/": {"owner":"astro","source":"src/pages/articles/diotrefy-nashego-vremeni/index.astro","risk":3,"status":"production-dist"},
