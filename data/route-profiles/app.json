@@ -1,0 +1,23 @@
+{
+  "route": "/app/",
+  "profiledAt": "2026-08-17",
+  "migrationLane": "special",
+  "routeType": "app",
+  "surfaceContractVersion": 1,
+  "surface": "special",
+  "section": "app",
+  "slug": "app",
+  "currentStatus": "production-dist",
+  "source": "src/pages/app/index.astro",
+  "risk": 2,
+  "hasMDX": false,
+  "mdxPath": null,
+  "legacyStatus": "absent",
+  "legacyPath": null,
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": null,
+  "migrationMode": "strict-native-app"
+}
