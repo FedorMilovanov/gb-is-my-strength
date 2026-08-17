@@ -26,7 +26,7 @@ const packageJson = readJson(path.join(root, 'package.json'));
 const lock = readJson(path.join(root, 'package-lock.json'));
 const config = fs.readFileSync(path.join(root, 'astro.config.mjs'), 'utf8');
 const expected = new Map([
-  ['astro', '7.2.0'],
+  ['astro', '7.2.2'],
   ['@astrojs/mdx', '7.0.5'],
   ['@astrojs/react', '6.0.2'],
   ['@astrojs/rss', '4.0.19'],

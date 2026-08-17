@@ -209,6 +209,56 @@
       catch (_) { try { element.focus(); return document.activeElement === element; } catch (_) { return false; } }
     }
 
+    function restoreFocusAfterLayout(element, displacedFocus, ownsDisplacedFocus) {
+      if (!element || safeFocus(element)) return;
+      var observer = null;
+      var frame = 0;
+      var settled = false;
+
+      function handoffStillRelevant() {
+        if (element === filterTrigger) return drawerMedia.matches && !sidebar.classList.contains('is-open');
+        if (sidebar.contains(element)) return !drawerMedia.matches;
+        return true;
+      }
+
+      function recoveryStillOwned() {
+        if (!handoffStillRelevant()) return false;
+        var active = document.activeElement;
+        if (active === element) return false;
+        if (active === displacedFocus || active === document.body || active === document.documentElement) return true;
+        if (!focusable(active)) return true;
+        return typeof ownsDisplacedFocus === 'function' && ownsDisplacedFocus(active);
+      }
+
+      function cleanup() {
+        if (settled) return;
+        settled = true;
+        if (observer) observer.disconnect();
+        if (frame && typeof window.cancelAnimationFrame === 'function') window.cancelAnimationFrame(frame);
+      }
+
+      function attempt() {
+        if (settled) return;
+        if (!recoveryStillOwned()) { cleanup(); return; }
+        if (safeFocus(element)) cleanup();
+      }
+
+      if (typeof window.ResizeObserver === 'function') {
+        observer = new window.ResizeObserver(attempt);
+        observer.observe(element);
+      }
+      if (typeof window.requestAnimationFrame === 'function') {
+        var retryWithoutObserver = function () {
+          frame = 0;
+          attempt();
+          if (!settled && !observer) frame = window.requestAnimationFrame(retryWithoutObserver);
+        };
+        frame = window.requestAnimationFrame(retryWithoutObserver);
+      } else {
+        attempt();
+      }
+    }
+
     function setSurfaceInert(element, inert, ariaHidden) {
       if (!element) return;
       if ('inert' in element) element.inert = Boolean(inert);
@@ -262,7 +312,8 @@
     function syncSidebarSurface(open, options) {
       options = options || {};
       var compact = drawerMedia.matches;
-      var activeWasInside = sidebar.contains(document.activeElement);
+      var activeBeforeSync = document.activeElement;
+      var activeWasInside = sidebar.contains(activeBeforeSync);
       var shouldOpen = compact && Boolean(open);
       sidebar.classList.toggle('is-open', shouldOpen);
       filterTrigger.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
@@ -277,7 +328,9 @@
             });
           }
         }
-        if (!shouldOpen && (options.restoreFocus === true || activeWasInside)) safeFocus(filterTrigger);
+        if (!shouldOpen && (options.restoreFocus === true || activeWasInside)) {
+          restoreFocusAfterLayout(filterTrigger, activeBeforeSync, function (active) { return sidebar.contains(active); });
+        }
       } else {
         setSurfaceInert(sidebar, false, null);
       }
@@ -836,12 +889,13 @@
     }
 
     function syncDrawerForViewport() {
-      var activeWasSidebar = sidebar.contains(document.activeElement);
+      var activeBeforeSync = document.activeElement;
+      var activeWasSidebar = sidebar.contains(activeBeforeSync);
       var enteringDrawer = drawerMedia.matches;
       syncSidebarSurface(false, { restoreFocus: activeWasSidebar });
       if (activeWasSidebar && !enteringDrawer) {
         var desktopSidebarTarget = sidebar.querySelector('[data-atlas-group],.atlas-relation-filter input,a[href],button:not(#atlasFilterClose)');
-        if (!safeFocus(desktopSidebarTarget)) focusActiveView(activeFocus);
+        restoreFocusAfterLayout(desktopSidebarTarget, activeBeforeSync, function (active) { return sidebar.contains(active); });
       }
     }
 
