@@ -1,0 +1,161 @@
+---
+interface Props {
+  chapter: 3 | 4;
+}
+
+const { chapter } = Astro.props as Props;
+const startParam = `v1_site_ch${chapter}__chapter${chapter}`;
+const href = `https://t.me/milovanovaibot?startapp=${startParam}`;
+const roman = chapter === 3 ? 'III' : 'IV';
+---
+
+<aside
+  class="genesis6-app-cta"
+  data-pagefind-ignore
+  data-bible-app-chapter={chapter}
+  data-bible-app-start-param={startParam}
+  aria-label={`Тест по 1 Петра, глава ${chapter}`}
+>
+  <div class="genesis6-app-cta__mark" aria-hidden="true">{roman}</div>
+  <div class="genesis6-app-cta__copy">
+    <span class="genesis6-app-cta__eyebrow">Библейский тренажёр · 1 Петра</span>
+    <strong class="genesis6-app-cta__title">Проверьте знания по главе {chapter}</strong>
+    <p>Откроется сразу нужный раздел теста в Telegram.</p>
+  </div>
+  <a
+    class="genesis6-app-cta__action"
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    data-bible-app-launch
+  >
+    <span>Открыть тест</span>
+    <span class="genesis6-app-cta__arrow" aria-hidden="true">↗</span>
+  </a>
+</aside>
+
+<style>
+  .genesis6-app-cta {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+    margin: clamp(34px, 5vw, 58px) 0 30px;
+    padding: clamp(18px, 3vw, 26px);
+    border: 1px solid var(--manuscript-line);
+    border-radius: 8px;
+    background:
+      linear-gradient(135deg, rgba(154, 106, 47, .11), rgba(124, 63, 52, .045)),
+      var(--manuscript-paper);
+    box-shadow: 0 16px 38px var(--manuscript-shadow);
+  }
+
+  .genesis6-app-cta__mark {
+    display: grid;
+    width: 54px;
+    aspect-ratio: 1;
+    place-items: center;
+    border: 1px solid var(--manuscript-line);
+    border-radius: 50%;
+    color: var(--manuscript-gold);
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    background: rgba(154, 106, 47, .07);
+  }
+
+  .genesis6-app-cta__copy {
+    min-width: 0;
+  }
+
+  .genesis6-app-cta__eyebrow {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--manuscript-gold);
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    line-height: 1.35;
+    text-transform: uppercase;
+  }
+
+  .genesis6-app-cta__title {
+    display: block;
+    color: var(--manuscript-ink);
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(19px, 2.4vw, 24px);
+    line-height: 1.18;
+  }
+
+  .genesis6-app-cta p {
+    margin: 7px 0 0;
+    color: var(--manuscript-ink-soft);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .genesis6-app-cta__action {
+    display: inline-flex;
+    min-height: 46px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 17px;
+    border: 1px solid var(--manuscript-gold);
+    border-radius: 999px;
+    color: var(--manuscript-paper);
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1;
+    text-decoration: none;
+    background: var(--manuscript-gold);
+    transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+  }
+
+  .genesis6-app-cta__action:hover {
+    transform: translateY(-1px);
+    background: var(--manuscript-gold-bright);
+    box-shadow: 0 10px 22px rgba(49, 31, 17, .16);
+  }
+
+  .genesis6-app-cta__action:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--manuscript-gold) 42%, transparent);
+    outline-offset: 3px;
+  }
+
+  .genesis6-app-cta__arrow {
+    font-size: 16px;
+  }
+
+  @media (max-width: 700px) {
+    .genesis6-app-cta {
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 14px;
+      padding: 18px;
+    }
+
+    .genesis6-app-cta__mark {
+      width: 46px;
+      font-size: 17px;
+    }
+
+    .genesis6-app-cta__action {
+      grid-column: 1 / -1;
+      width: 100%;
+      min-height: 48px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .genesis6-app-cta__action {
+      transition: none;
+    }
+
+    .genesis6-app-cta__action:hover {
+      transform: none;
+    }
+  }
+</style>
