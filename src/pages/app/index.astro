@@ -5,12 +5,16 @@ const launchUrl = 'https://t.me/milovanovaibot?startapp=v1_site_app__home';
 const canonicalUrl = 'https://gospod-bog.ru/app/';
 const title = 'Библейский тренажёр — Господь Бог — Сила Моя';
 const description = 'Библейский тренажёр по 1 Петра: читайте, проверяйте себя и закрепляйте знания в Telegram-приложении проекта «Господь Бог — Сила Моя».';
+const publishedTime = '2026-08-17T00:00:00+03:00';
+const modifiedTime = '2026-08-17T00:00:00+03:00';
 const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'WebPage',
   name: title,
   description,
   url: canonicalUrl,
+  datePublished: publishedTime,
+  dateModified: modifiedTime,
   isPartOf: {
     '@type': 'WebSite',
     name: 'Господь Бог — Сила Моя',
@@ -29,6 +33,8 @@ const structuredData = {
     <meta name="robots" content="index,follow,max-image-preview:large" />
     <link rel="canonical" href={canonicalUrl} />
     <meta property="og:type" content="website" />
+    <meta property="article:published_time" content={publishedTime} />
+    <meta property="article:modified_time" content={modifiedTime} />
     <meta property="og:site_name" content="Господь Бог — Сила Моя" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -43,6 +49,34 @@ const structuredData = {
     <meta name="twitter:image" content="https://gospod-bog.ru/images/og-preview-1200x630.webp" />
     <meta name="theme-color" content="#11100e" />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)}></script>
+    <script is:inline>
+      window.SITE_CONFIG = {
+        version: 1786935600,
+        site: {
+          id: 'gb-strength',
+          name: 'Господь Бог — Сила Моя',
+          baseUrl: 'https://gospod-bog.ru',
+          locale: 'ru-RU',
+          themeStorageKey: 'theme',
+          debug: false
+        },
+        page: {
+          type: 'app',
+          id: 'app',
+          title: 'Библейский тренажёр',
+          section: 'Библейские инструменты',
+          readingTime: 2
+        },
+        features: {
+          themeToggle: { enabled: false },
+          share: { enabled: false },
+          readingProgress: { enabled: false },
+          toc: { enabled: false },
+          quiz: { enabled: false },
+          bookmarks: { enabled: false }
+        }
+      };
+    </script>
     <style is:global>
       :root {
         color-scheme: dark;
