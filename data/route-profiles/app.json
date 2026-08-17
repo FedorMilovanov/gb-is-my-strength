@@ -1,6 +1,7 @@
 {
   "route": "/app/",
   "profiledAt": "2026-08-17",
+  "migrationContractSyncedAt": "2026-08-17",
   "migrationLane": "special",
   "routeType": "app",
   "surfaceContractVersion": 1,
