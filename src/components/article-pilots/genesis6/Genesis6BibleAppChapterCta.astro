@@ -3,10 +3,21 @@ interface Props {
   chapter: 3 | 4;
 }
 
+const CHAPTER_LAUNCH = {
+  3: {
+    startParam: 'v1_site_ch3__chapter3',
+    href: 'https://t.me/milovanovaibot?startapp=v1_site_ch3__chapter3',
+    roman: 'III',
+  },
+  4: {
+    startParam: 'v1_site_ch4__chapter4',
+    href: 'https://t.me/milovanovaibot?startapp=v1_site_ch4__chapter4',
+    roman: 'IV',
+  },
+} as const satisfies Record<Props['chapter'], { startParam: string; href: string; roman: string }>;
+
 const { chapter } = Astro.props as Props;
-const startParam = `v1_site_ch${chapter}__chapter${chapter}`;
-const href = `https://t.me/milovanovaibot?startapp=${startParam}`;
-const roman = chapter === 3 ? 'III' : 'IV';
+const { startParam, href, roman } = CHAPTER_LAUNCH[chapter];
 ---
 
 <aside
