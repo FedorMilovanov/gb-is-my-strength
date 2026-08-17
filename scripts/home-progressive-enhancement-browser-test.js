@@ -188,6 +188,7 @@ async function runNoJavaScript(browser, origin, report) {
       burger: display('#hMobileMenuBtn'),
       fallback: menu ? getComputedStyle(menu).display : null,
       linkCount: links.length,
+      linkHrefs: links.map((link) => link.getAttribute('href')),
       linkHeights: links.map((link) => link.getBoundingClientRect().height),
     };
   });
@@ -214,7 +215,8 @@ async function runNoJavaScript(browser, origin, report) {
   assert.equal(controls.theme, 'none', 'no-JS theme control must be hidden');
   assert.equal(controls.burger, 'none', 'no-JS burger control must be hidden');
   assert.notEqual(controls.fallback, 'none', 'native no-JS navigation must be visible');
-  assert.equal(controls.linkCount, 8, 'native no-JS navigation must expose eight routes');
+  assert.equal(controls.linkCount, 9, 'native no-JS navigation must expose nine routes');
+  assert.ok(controls.linkHrefs.includes('/app/'), 'native no-JS navigation must expose the Bible app route');
   assert.ok(controls.linkHeights.every((height) => height >= 44), `no-JS link targets below 44px: ${controls.linkHeights.join(', ')}`);
   assert.equal(openAttribute, '', 'native details menu must open without JavaScript');
   assert.equal(sheetVisible, true, 'no-JS navigation sheet must become visible');

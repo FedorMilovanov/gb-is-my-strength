@@ -1,10 +1,11 @@
 {
   "version": 1,
-  "reviewedAt": "2026-08-09",
+  "reviewedAt": "2026-08-17",
   "description": "Explicit search and index policy for every production route. Semantic editing scope is intentionally not consulted.",
   "routes": {
     "/": {"indexPolicy":"index","pagefindPolicy":"include","searchManifestPolicy":"include","sitemapPolicy":"include","rssPolicy":"exclude","contentKind":"landing","librarySection":"Главная","topicCategory":"Библиотека"},
     "/about/": {"indexPolicy":"index","pagefindPolicy":"include","searchManifestPolicy":"include","sitemapPolicy":"include","rssPolicy":"exclude","contentKind":"landing","librarySection":"О проекте","topicCategory":"О проекте"},
+    "/app/": {"indexPolicy":"index","pagefindPolicy":"include","searchManifestPolicy":"include","sitemapPolicy":"include","rssPolicy":"exclude","contentKind":"app","librarySection":"Библейские инструменты","topicCategory":"Библейский тренажёр"},
     "/articles/": {"indexPolicy":"index","pagefindPolicy":"include","searchManifestPolicy":"include","sitemapPolicy":"include","rssPolicy":"exclude","contentKind":"landing","librarySection":"Каталоги","topicCategory":"Каталог статей"},
     "/articles/20-antisovetov-pastoru/": {"indexPolicy":"index","pagefindPolicy":"include","searchManifestPolicy":"include","sitemapPolicy":"include","rssPolicy":"include","contentKind":"series-article","librarySection":"Служение","topicCategory":"Пасторство"},
     "/articles/diotrefy-nashego-vremeni/": {"indexPolicy":"index","pagefindPolicy":"include","searchManifestPolicy":"include","sitemapPolicy":"include","rssPolicy":"include","contentKind":"series-article","librarySection":"Служение","topicCategory":"Пасторство"},
