@@ -64,7 +64,7 @@ for (const entry of entries) {
   assert.match(nav, /\binert(?:\s|>|=)/i, `${entry.route}: rich menu must be inert at SSR`);
   assert.match(backdrop, /\bhidden(?:\s|>|=)/i, `${entry.route}: rich menu backdrop must be natively hidden at SSR`);
   const chevrons = [...html.matchAll(/<svg\b[^>]*\bclass="[^"]*gbs-menu-chevron[^"]*"[^>]*>/gi)].map((match) => match[0]);
-  assert.equal(chevrons.length, 5, `${entry.route}: expected five rich menu chevrons`);
+  assert.equal(chevrons.length, 6, `${entry.route}: expected six rich menu chevrons`);
   for (const svg of chevrons) {
     assert.match(svg, /\bwidth="13"/i, `${entry.route}: chevron missing native width`);
     assert.match(svg, /\bheight="13"/i, `${entry.route}: chevron missing native height`);
@@ -282,7 +282,7 @@ async function auditRoute(page, engine, origin, route) {
     route,
     'open menu exposes live focusable surface',
     opened.open && opened.expanded === 'true' && opened.panelAriaHidden === null
-      && opened.position === 'fixed' && opened.visibleLinks >= 5
+      && opened.position === 'fixed' && opened.visibleLinks >= 6
       && !opened.hidden && !opened.inert && opened.focusInsidePanel,
     opened,
   );
@@ -292,7 +292,7 @@ async function auditRoute(page, engine, origin, route) {
   if (opened.variant === 'rich') {
     const bounded = opened.rect && opened.rect.width >= 180 && opened.rect.width <= 320 && opened.rect.height >= 150 && opened.rect.height <= 520;
     check(engine, supportedViewport, route, 'rich reader menu has bounded canonical card geometry', bounded, opened);
-    const chevronsBounded = opened.chevrons.length === 5 && opened.chevrons.every((row) =>
+    const chevronsBounded = opened.chevrons.length === 6 && opened.chevrons.every((row) =>
       row.width >= 8 && row.width <= 20 && row.height >= 8 && row.height <= 20
       && row.attrWidth === '13' && row.attrHeight === '13'
       && row.attrFill === 'none' && row.attrStroke === 'currentColor'
