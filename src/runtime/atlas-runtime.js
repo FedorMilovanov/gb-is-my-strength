@@ -210,18 +210,53 @@
     }
 
     function restoreFocusAfterLayout(element, displacedFocus, ownsDisplacedFocus) {
-      if (safeFocus(element) || typeof window.requestAnimationFrame !== 'function') return;
-      var framesRemaining = 4;
-      function retry() {
-        var active = document.activeElement;
-        var stillDisplaced = active === displacedFocus || active === document.body
-          || (typeof ownsDisplacedFocus === 'function' && ownsDisplacedFocus(active));
-        if (!stillDisplaced) return;
-        if (safeFocus(element) || framesRemaining <= 0) return;
-        framesRemaining -= 1;
-        window.requestAnimationFrame(retry);
+      if (!element || safeFocus(element)) return;
+      var observer = null;
+      var frame = 0;
+      var settled = false;
+
+      function handoffStillRelevant() {
+        if (element === filterTrigger) return drawerMedia.matches && !sidebar.classList.contains('is-open');
+        if (sidebar.contains(element)) return !drawerMedia.matches;
+        return true;
       }
-      window.requestAnimationFrame(retry);
+
+      function recoveryStillOwned() {
+        if (!handoffStillRelevant()) return false;
+        var active = document.activeElement;
+        if (active === element) return false;
+        if (active === displacedFocus || active === document.body || active === document.documentElement) return true;
+        if (!focusable(active)) return true;
+        return typeof ownsDisplacedFocus === 'function' && ownsDisplacedFocus(active);
+      }
+
+      function cleanup() {
+        if (settled) return;
+        settled = true;
+        if (observer) observer.disconnect();
+        if (frame && typeof window.cancelAnimationFrame === 'function') window.cancelAnimationFrame(frame);
+      }
+
+      function attempt() {
+        if (settled) return;
+        if (!recoveryStillOwned()) { cleanup(); return; }
+        if (safeFocus(element)) cleanup();
+      }
+
+      if (typeof window.ResizeObserver === 'function') {
+        observer = new window.ResizeObserver(attempt);
+        observer.observe(element);
+      }
+      if (typeof window.requestAnimationFrame === 'function') {
+        var retryWithoutObserver = function () {
+          frame = 0;
+          attempt();
+          if (!settled && !observer) frame = window.requestAnimationFrame(retryWithoutObserver);
+        };
+        frame = window.requestAnimationFrame(retryWithoutObserver);
+      } else {
+        attempt();
+      }
     }
 
     function setSurfaceInert(element, inert, ariaHidden) {
