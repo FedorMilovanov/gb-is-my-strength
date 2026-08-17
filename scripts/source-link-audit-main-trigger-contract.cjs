@@ -13,6 +13,9 @@ const EXPECTED_PUSH_PATHS = Object.freeze([
   '.github/workflows/source-links.yml',
   'src/components/article-pilots/antisovetov/AntisovetovBody.astro',
   'src/components/article-pilots/diotrophes/DiotrophesDraft.astro',
+  'src/components/article-pilots/kod-da-vinchi/KodDaVinchiSectionSummaryTitleAuto.astro',
+  'src/components/baptisty-rossii/BaptistyRossiiNochNaKureBody.astro',
+  'src/components/baptisty-rossii/BaptistyRossiiYuzhnayaShtundaBody.astro',
   'data/diotrophes-wave11-faithful-witness-sources.json',
 ]);
 
@@ -55,7 +58,9 @@ assert.deepEqual(validate(workflow), []);
 const mutations = [
   ['main branch removed', workflow.replace('      - main\n', '')],
   ['second push branch added', workflow.replace('      - main\n', '      - main\n      - release\n')],
-  ['reader owner removed', workflow.replace("      - 'src/components/article-pilots/diotrophes/DiotrophesDraft.astro'\n", '')],
+  ['existing reader owner removed', workflow.replace("      - 'src/components/article-pilots/diotrophes/DiotrophesDraft.astro'\n", '')],
+  ['Da Vinci source owner removed', workflow.replace("      - 'src/components/article-pilots/kod-da-vinchi/KodDaVinchiSectionSummaryTitleAuto.astro'\n", '')],
+  ['Baptist source owner removed', workflow.replace("      - 'src/components/baptisty-rossii/BaptistyRossiiNochNaKureBody.astro'\n", '')],
   ['broad source glob introduced', workflow.replace("      - 'src/components/article-pilots/diotrophes/DiotrophesDraft.astro'", "      - 'src/**/*.astro'")],
   ['auditor path leaked into push', workflow.replace("      - '.github/workflows/source-links.yml'\n", "      - '.github/workflows/source-links.yml'\n      - 'scripts/source-link-audit-source-contract-test.cjs'\n")],
   ['contract PR trigger removed', workflow.replace("      - 'scripts/source-link-audit-main-trigger-contract.cjs'\n\npermissions:", '\npermissions:')],
