@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-08T21:00:00Z",
+  "generatedAt": "2026-08-16T21:00:00Z",
   "project": {
     "name": "Господь Бог — Сила Моя",
     "url": "https://gospod-bog.ru/",
@@ -1486,6 +1486,21 @@
       "publishedTime": "2026-08-09T00:00:00+03:00",
       "modifiedTime": "2026-08-09T00:00:00+03:00",
       "readTime": 28
+    },
+    {
+      "id": "app",
+      "type": "tool",
+      "url": "/app/",
+      "title": "Библейский тренажёр — Господь Бог — Сила Моя",
+      "description": "Библейский тренажёр по 1 Петра: читайте, проверяйте себя и закрепляйте знания в Telegram-приложении проекта «Господь Бог — Сила Моя».",
+      "section": "Библейские инструменты",
+      "image": "/images/og-preview-1200x630.webp",
+      "tags": [],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-08-17T00:00:00+03:00",
+      "modifiedTime": "2026-08-17T00:00:00+03:00",
+      "readTime": 2
     }
   ]
 }

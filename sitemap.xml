@@ -559,4 +559,16 @@
       <image:title>Лот: праведник у ворот Содома</image:title>
     </image:image>
   </url>
+
+  <!-- Canonical policy-generated additions -->
+  <url>
+    <loc>https://gospod-bog.ru/app/</loc>
+    <lastmod>2026-08-16T21:00:00.000Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/og-preview-1200x630.webp</image:loc>
+      <image:title>Библейский тренажёр — Господь Бог — Сила Моя</image:title>
+    </image:image>
+  </url>
 </urlset>
