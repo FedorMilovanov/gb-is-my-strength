@@ -105,6 +105,26 @@ async function assertClosedSurfaceState(page, compact) {
   return state;
 }
 
+async function waitForResponsiveState(page, targetWidth) {
+  const drawer = targetWidth <= 980;
+  const compactProfile = targetWidth <= 680;
+  await page.waitForFunction(({ drawer, compactProfile }) => {
+    const sidebar = document.getElementById('atlasSidebar');
+    const trigger = document.getElementById('atlasFilterTrigger');
+    const app = document.getElementById('atlasApp');
+    if (!sidebar || !trigger || !app) return false;
+    if (window.matchMedia('(max-width: 980px)').matches !== drawer) return false;
+    if (window.matchMedia('(max-width: 680px)').matches !== compactProfile) return false;
+    if (app.dataset.layoutProfile !== (compactProfile ? 'compact' : 'desktop')) return false;
+    const sidebarInert = sidebar.hasAttribute('inert');
+    const sidebarAria = sidebar.getAttribute('aria-hidden');
+    const triggerVisible = trigger.getClientRects().length > 0;
+    return drawer
+      ? sidebarInert && sidebarAria === 'true' && triggerVisible
+      : !sidebarInert && sidebarAria !== 'true';
+  }, { drawer, compactProfile });
+}
+
 async function resetThroughVisibleUi(page, compact, label) {
   const reset = page.locator('#atlasReset');
   if (await reset.isVisible()) {
@@ -225,12 +245,12 @@ async function runCase(browserName, browserType, baseUrl, width) {
       await page.waitForFunction(() => document.getElementById('atlasSidebar')?.classList.contains('is-open'));
       await page.locator('#atlasFilterClose').focus();
       await page.setViewportSize({ width: 981, height: HEIGHT });
-      await page.waitForTimeout(180);
+      await waitForResponsiveState(page, 981);
       result.steps.openDrawerToDesktop = await assertSafeFocus(page, `${browserName}/${width}/open-drawer-to-desktop`, (state) =>
         String(state.className).includes('atlas-theme'));
       result.steps.openDrawerToDesktopSurfaces = await assertClosedSurfaceState(page, false);
       await page.setViewportSize({ width: 980, height: HEIGHT });
-      await page.waitForTimeout(180);
+      await waitForResponsiveState(page, 980);
       result.steps.desktopSidebarToDrawer = await assertSafeFocus(page, `${browserName}/${width}/desktop-sidebar-to-drawer`, (state) =>
         state.id === 'atlasFilterTrigger');
       result.steps.desktopSidebarToDrawerSurfaces = await assertClosedSurfaceState(page, true);
@@ -251,7 +271,7 @@ async function runCase(browserName, browserType, baseUrl, width) {
       await resizeNode.focus();
       const resizeTarget = width === 680 ? 681 : width === 681 ? 680 : width === 980 ? 981 : 980;
       await page.setViewportSize({ width: resizeTarget, height: HEIGHT });
-      await page.waitForTimeout(180);
+      await waitForResponsiveState(page, resizeTarget);
       result.steps.resize = await assertSafeFocus(page, `${browserName}/${width}/resize`, (state) =>
         String(state.className).includes('atlas-node') || state.id === 'atlasFilterTrigger');
       result.steps.resizeSurfaces = await assertClosedSurfaceState(page, resizeTarget <= 980);
