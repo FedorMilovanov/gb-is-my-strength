@@ -48,7 +48,7 @@ const structuredData = {
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content="https://gospod-bog.ru/images/og-preview-1200x630.webp" />
     <meta name="theme-color" content="#11100e" />
-    <script type="application/ld+json" set:html={JSON.stringify(structuredData)}></script>
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)}></script>
     <script is:inline>
       window.SITE_CONFIG = {
         version: 1786935600,
