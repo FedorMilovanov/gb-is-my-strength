@@ -209,6 +209,21 @@
       catch (_) { try { element.focus(); return document.activeElement === element; } catch (_) { return false; } }
     }
 
+    function restoreFocusAfterLayout(element, displacedFocus, ownsDisplacedFocus) {
+      if (safeFocus(element) || typeof window.requestAnimationFrame !== 'function') return;
+      var framesRemaining = 4;
+      function retry() {
+        var active = document.activeElement;
+        var stillDisplaced = active === displacedFocus || active === document.body
+          || (typeof ownsDisplacedFocus === 'function' && ownsDisplacedFocus(active));
+        if (!stillDisplaced) return;
+        if (safeFocus(element) || framesRemaining <= 0) return;
+        framesRemaining -= 1;
+        window.requestAnimationFrame(retry);
+      }
+      window.requestAnimationFrame(retry);
+    }
+
     function setSurfaceInert(element, inert, ariaHidden) {
       if (!element) return;
       if ('inert' in element) element.inert = Boolean(inert);
@@ -262,7 +277,8 @@
     function syncSidebarSurface(open, options) {
       options = options || {};
       var compact = drawerMedia.matches;
-      var activeWasInside = sidebar.contains(document.activeElement);
+      var activeBeforeSync = document.activeElement;
+      var activeWasInside = sidebar.contains(activeBeforeSync);
       var shouldOpen = compact && Boolean(open);
       sidebar.classList.toggle('is-open', shouldOpen);
       filterTrigger.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
@@ -278,14 +294,7 @@
           }
         }
         if (!shouldOpen && (options.restoreFocus === true || activeWasInside)) {
-          var displacedFocus = document.activeElement;
-          if (!safeFocus(filterTrigger) && typeof window.requestAnimationFrame === 'function') {
-            window.requestAnimationFrame(function () {
-              if (!drawerMedia.matches || sidebar.classList.contains('is-open')) return;
-              if (document.activeElement !== displacedFocus && !sidebar.contains(document.activeElement)) return;
-              safeFocus(filterTrigger);
-            });
-          }
+          restoreFocusAfterLayout(filterTrigger, activeBeforeSync, function (active) { return sidebar.contains(active); });
         }
       } else {
         setSurfaceInert(sidebar, false, null);
