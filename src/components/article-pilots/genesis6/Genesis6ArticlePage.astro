@@ -2,6 +2,7 @@
 import Seo from '@/components/seo/Seo.astro';
 import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 import SeriesReaderChrome from '@/components/article-pilots/_shared/series/SeriesReaderChrome.astro';
+import Genesis6BibleAppChapterCta from './Genesis6BibleAppChapterCta.astro';
 import { GENESIS6_SERIES } from '@/components/article-pilots/_shared/series/genesis6SeriesConfig';
 import { GENESIS6_SERIES_ITEMS } from '@/components/article-pilots/_shared/series/genesis6SeriesData';
 import { SITE } from '@/data/site';
@@ -57,6 +58,7 @@ if (!item) throw new Error(`Unknown Genesis 6 page: ${pageId}`);
 const next = GENESIS6_SERIES_ITEMS[itemIndex + 1] ?? null;
 const itemSection = item.tier === 'satellite' ? `Экскурс ${item.letter}` : `Часть ${item.roman}`;
 const nextSection = next?.tier === 'satellite' ? `Экскурс ${next.letter}` : next ? `Часть ${next.roman}` : '';
+const bibleAppChapter: 3 | 4 | null = pageId === 'spirits' ? 3 : pageId === 'dead' ? 4 : null;
 const canonical = frontmatter.canonicalOverride || `${SITE.url}/hard-texts/${frontmatter.slug}/`;
 const indexable = frontmatter.draft !== true && frontmatter.noindex !== true;
 const robots = indexable
@@ -227,6 +229,7 @@ const siteConfig = {
           <div class="genesis6-prose">
             <slot />
           </div>
+          {bibleAppChapter && <Genesis6BibleAppChapterCta chapter={bibleAppChapter} />}
           <aside class="author-card genesis6-author">
             <div class="author-card-icon" aria-hidden="true">ФМ</div>
             <div class="author-card-body">
