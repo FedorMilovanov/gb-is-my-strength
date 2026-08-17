@@ -277,16 +277,7 @@
             });
           }
         }
-        if (!shouldOpen && (options.restoreFocus === true || activeWasInside)) {
-          var displacedFocus = document.activeElement;
-          if (!safeFocus(filterTrigger) && typeof window.requestAnimationFrame === 'function') {
-            window.requestAnimationFrame(function () {
-              if (!drawerMedia.matches || sidebar.classList.contains('is-open')) return;
-              if (document.activeElement !== displacedFocus && !sidebar.contains(document.activeElement)) return;
-              safeFocus(filterTrigger);
-            });
-          }
-        }
+        if (!shouldOpen && (options.restoreFocus === true || activeWasInside)) safeFocus(filterTrigger);
       } else {
         setSurfaceInert(sidebar, false, null);
       }
