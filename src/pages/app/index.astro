@@ -1,0 +1,629 @@
+---
+import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
+
+const launchUrl = 'https://t.me/milovanovaibot?startapp=v1_site_app__home';
+const canonicalUrl = 'https://gospod-bog.ru/app/';
+const title = 'Библейский тренажёр — Господь Бог — Сила Моя';
+const description = 'Библейский тренажёр по 1 Петра: читайте, проверяйте себя и закрепляйте знания в Telegram-приложении проекта «Господь Бог — Сила Моя».';
+const publishedTime = '2026-08-17T00:00:00+03:00';
+const modifiedTime = '2026-08-17T00:00:00+03:00';
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: title,
+  description,
+  url: canonicalUrl,
+  datePublished: publishedTime,
+  dateModified: modifiedTime,
+  isPartOf: {
+    '@type': 'WebSite',
+    name: 'Господь Бог — Сила Моя',
+    url: 'https://gospod-bog.ru/',
+  },
+};
+---
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <ReaderPreferencesHead />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="article:published_time" content={publishedTime} />
+    <meta property="article:modified_time" content={modifiedTime} />
+    <meta property="og:site_name" content="Господь Бог — Сила Моя" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content="https://gospod-bog.ru/images/og-preview-1200x630.webp" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/webp" />
+    <meta property="og:image:alt" content="Господь Бог — Сила Моя — для изучения Писания" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@FedorMilovanov" />
+    <meta name="twitter:creator" content="@FedorMilovanov" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content="https://gospod-bog.ru/images/og-preview-1200x630.webp" />
+    <meta name="theme-color" content="#11100e" />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)}></script>
+    <script is:inline>
+      window.SITE_CONFIG = {
+        version: 1786935600,
+        site: {
+          id: 'gb-strength',
+          name: 'Господь Бог — Сила Моя',
+          baseUrl: 'https://gospod-bog.ru',
+          locale: 'ru-RU',
+          themeStorageKey: 'theme',
+          debug: false
+        },
+        page: {
+          type: 'app',
+          id: 'app',
+          title: 'Библейский тренажёр',
+          section: 'Библейские инструменты',
+          readingTime: 2
+        },
+        features: {
+          themeToggle: { enabled: false },
+          share: { enabled: false },
+          readingProgress: { enabled: false },
+          toc: { enabled: false },
+          quiz: { enabled: false },
+          bookmarks: { enabled: false }
+        }
+      };
+    </script>
+    <style is:global>
+      :root {
+        color-scheme: dark;
+        --app-bg: #11100e;
+        --app-bg-soft: #181613;
+        --app-panel: rgba(32, 28, 23, 0.82);
+        --app-panel-strong: #211d18;
+        --app-ink: #f1eadf;
+        --app-muted: #b9ad9b;
+        --app-faint: #817564;
+        --app-gold: #c8a96a;
+        --app-gold-soft: #8f7343;
+        --app-line: rgba(200, 169, 106, 0.22);
+        --app-line-soft: rgba(241, 234, 223, 0.09);
+        --app-shadow: 0 32px 90px rgba(0, 0, 0, 0.32);
+        font-family: Georgia, 'Times New Roman', serif;
+        background: var(--app-bg);
+        color: var(--app-ink);
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; background: var(--app-bg); }
+      body {
+        margin: 0;
+        min-width: 320px;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 50% -10%, rgba(200, 169, 106, 0.10), transparent 34rem),
+          linear-gradient(180deg, #15130f 0%, var(--app-bg) 38%, #0d0c0b 100%);
+        color: var(--app-ink);
+      }
+
+      a { color: inherit; }
+      a:focus-visible {
+        outline: 2px solid var(--app-gold);
+        outline-offset: 4px;
+      }
+
+      .app-shell {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .app-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 72px;
+        border-bottom: 1px solid var(--app-line-soft);
+      }
+
+      .app-home {
+        text-decoration: none;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        color: var(--app-muted);
+      }
+
+      .app-top-label {
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--app-faint);
+      }
+
+      .app-hero {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+        gap: clamp(42px, 7vw, 92px);
+        align-items: center;
+        padding: clamp(76px, 10vw, 132px) 0 clamp(72px, 10vw, 124px);
+      }
+
+      .app-eyebrow,
+      .app-section-kicker {
+        margin: 0 0 18px;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--app-gold);
+      }
+
+      .app-title {
+        max-width: 760px;
+        margin: 0;
+        font-size: clamp(48px, 7.6vw, 102px);
+        font-weight: 400;
+        line-height: 0.94;
+        letter-spacing: -0.045em;
+        text-wrap: balance;
+      }
+
+      .app-title em {
+        display: block;
+        margin-top: 0.12em;
+        color: var(--app-gold);
+        font-weight: 400;
+      }
+
+      .app-lede {
+        max-width: 650px;
+        margin: 32px 0 0;
+        color: var(--app-muted);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: clamp(17px, 2vw, 21px);
+        line-height: 1.62;
+      }
+
+      .app-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        align-items: center;
+        margin-top: 36px;
+      }
+
+      .app-primary {
+        display: inline-flex;
+        min-height: 54px;
+        align-items: center;
+        justify-content: center;
+        padding: 0 26px;
+        border: 1px solid var(--app-gold);
+        border-radius: 999px;
+        background: var(--app-gold);
+        color: #17130d;
+        text-decoration: none;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        transition: transform 160ms ease, background 160ms ease;
+      }
+      .app-primary:hover { transform: translateY(-2px); background: #ddbd7b; }
+
+      .app-launch-note {
+        color: var(--app-faint);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .app-preview {
+        position: relative;
+        overflow: hidden;
+        min-height: 500px;
+        padding: 30px;
+        border: 1px solid var(--app-line);
+        border-radius: 30px;
+        background:
+          linear-gradient(145deg, rgba(200, 169, 106, 0.08), transparent 44%),
+          var(--app-panel);
+        box-shadow: var(--app-shadow);
+      }
+
+      .app-preview::after {
+        content: '';
+        position: absolute;
+        inset: auto -80px -110px auto;
+        width: 260px;
+        height: 260px;
+        border: 1px solid rgba(200, 169, 106, 0.18);
+        border-radius: 50%;
+      }
+
+      .app-preview-label {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        color: var(--app-faint);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.17em;
+        text-transform: uppercase;
+      }
+
+      .app-preview-heading {
+        margin: 48px 0 10px;
+        font-size: clamp(31px, 4vw, 46px);
+        font-weight: 400;
+        line-height: 1.02;
+      }
+
+      .app-preview-copy {
+        max-width: 370px;
+        margin: 0 0 30px;
+        color: var(--app-muted);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 14px;
+        line-height: 1.65;
+      }
+
+      .app-preview-list {
+        display: grid;
+        gap: 11px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .app-preview-list li {
+        display: grid;
+        grid-template-columns: 32px 1fr;
+        gap: 12px;
+        align-items: center;
+        padding: 14px 0;
+        border-top: 1px solid var(--app-line-soft);
+        color: var(--app-ink);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 14px;
+      }
+
+      .app-preview-list span {
+        display: grid;
+        width: 30px;
+        height: 30px;
+        place-items: center;
+        border: 1px solid var(--app-line);
+        border-radius: 50%;
+        color: var(--app-gold);
+        font-family: Georgia, 'Times New Roman', serif;
+      }
+
+      .app-rule { border: 0; border-top: 1px solid var(--app-line-soft); margin: 0; }
+
+      .app-section { padding: clamp(70px, 9vw, 112px) 0; }
+      .app-section-grid {
+        display: grid;
+        grid-template-columns: minmax(220px, 0.65fr) minmax(0, 1.35fr);
+        gap: clamp(42px, 7vw, 96px);
+      }
+
+      .app-section h2 {
+        max-width: 520px;
+        margin: 0;
+        font-size: clamp(34px, 4.8vw, 62px);
+        font-weight: 400;
+        line-height: 1.04;
+        letter-spacing: -0.025em;
+      }
+
+      .app-steps {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .app-step {
+        min-height: 210px;
+        padding: 24px;
+        border: 1px solid var(--app-line-soft);
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.018);
+      }
+
+      .app-step-number {
+        display: block;
+        margin-bottom: 46px;
+        color: var(--app-gold-soft);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+      }
+
+      .app-step h3 {
+        margin: 0 0 10px;
+        font-size: 22px;
+        font-weight: 400;
+      }
+
+      .app-step p,
+      .app-copy,
+      .app-faq dd {
+        margin: 0;
+        color: var(--app-muted);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 15px;
+        line-height: 1.68;
+      }
+
+      .app-courses {
+        display: grid;
+        gap: 1px;
+        margin-top: 44px;
+        border: 1px solid var(--app-line-soft);
+        border-radius: 22px;
+        overflow: hidden;
+        background: var(--app-line-soft);
+      }
+
+      .app-course {
+        display: grid;
+        grid-template-columns: minmax(170px, 0.7fr) minmax(0, 1.3fr);
+        gap: 28px;
+        padding: 24px 26px;
+        background: var(--app-bg-soft);
+      }
+
+      .app-course strong {
+        font-size: 19px;
+        font-weight: 400;
+      }
+
+      .app-course span {
+        color: var(--app-muted);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .app-library-note {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 32px;
+        align-items: center;
+        padding: clamp(30px, 5vw, 52px);
+        border: 1px solid var(--app-line);
+        border-radius: 26px;
+        background: var(--app-panel-strong);
+      }
+
+      .app-library-note h2 { font-size: clamp(30px, 4vw, 48px); }
+      .app-library-note .app-copy { max-width: 650px; margin-top: 16px; }
+      .app-secondary {
+        display: inline-flex;
+        align-items: center;
+        min-height: 46px;
+        padding: 0 20px;
+        border: 1px solid var(--app-line);
+        border-radius: 999px;
+        color: var(--app-ink);
+        text-decoration: none;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .app-faq { display: grid; gap: 0; margin: 42px 0 0; }
+      .app-faq-item {
+        display: grid;
+        grid-template-columns: minmax(190px, 0.72fr) minmax(0, 1.28fr);
+        gap: 36px;
+        padding: 24px 0;
+        border-top: 1px solid var(--app-line-soft);
+      }
+      .app-faq dt { font-size: 19px; }
+      .app-faq dd { margin: 0; }
+
+      .app-final {
+        padding: clamp(72px, 10vw, 128px) 0;
+        text-align: center;
+      }
+      .app-final h2 {
+        max-width: 800px;
+        margin: 0 auto;
+        font-size: clamp(42px, 6.5vw, 84px);
+      }
+      .app-final .app-copy { max-width: 610px; margin: 24px auto 0; }
+      .app-final .app-actions { justify-content: center; }
+
+      .app-footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 28px 0 44px;
+        border-top: 1px solid var(--app-line-soft);
+        color: var(--app-faint);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 11px;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 780px) {
+        .app-shell { width: min(100% - 24px, 720px); }
+        .app-topbar { min-height: 62px; }
+        .app-top-label { display: none; }
+        .app-hero { grid-template-columns: 1fr; padding-top: 62px; }
+        .app-title { font-size: clamp(48px, 15vw, 76px); }
+        .app-preview { min-height: 0; padding: 24px; border-radius: 24px; }
+        .app-section-grid { grid-template-columns: 1fr; gap: 34px; }
+        .app-steps { grid-template-columns: 1fr; }
+        .app-step { min-height: 0; }
+        .app-step-number { margin-bottom: 28px; }
+        .app-course { grid-template-columns: 1fr; gap: 8px; }
+        .app-library-note { grid-template-columns: 1fr; }
+        .app-faq-item { grid-template-columns: 1fr; gap: 10px; }
+        .app-footer { flex-direction: column; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        .app-primary { transition: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-topbar" aria-label="Навигация страницы">
+        <a class="app-home" href="/">← Господь Бог — Сила Моя</a>
+        <span class="app-top-label">Интерактивное изучение Писания</span>
+      </header>
+
+      <main data-pagefind-body>
+        <section class="app-hero" aria-labelledby="app-title">
+          <div>
+            <p class="app-eyebrow">Библейский тренажёр</p>
+            <h1 class="app-title" id="app-title">Читайте. Проверяйте. <em>Запоминайте.</em></h1>
+            <p class="app-lede">
+              Интерактивное продолжение библиотеки «Господь Бог — Сила Моя»: вопросы по тексту,
+              разбор ошибок и последовательное изучение Первого послания Петра.
+            </p>
+            <div class="app-actions">
+              <a class="app-primary" href={launchUrl} target="_blank" rel="noopener noreferrer">Открыть тренажёр</a>
+              <span class="app-launch-note">Откроется в Telegram</span>
+            </div>
+          </div>
+
+          <aside class="app-preview" aria-label="Что есть в тренажёре">
+            <div class="app-preview-label"><span>1 Петра</span><span>Учебный режим</span></div>
+            <h2 class="app-preview-heading">Не просто ответить — понять.</h2>
+            <p class="app-preview-copy">
+              Тренажёр ведёт от чтения к проверке: вопрос, ваш ответ, объяснение и следующий шаг.
+            </p>
+            <ul class="app-preview-list">
+              <li><span>1</span> Вопросы по библейскому тексту</li>
+              <li><span>2</span> Разные уровни и тематические курсы</li>
+              <li><span>3</span> Продолжение с того места, где остановились</li>
+              <li><span>4</span> Отдельные исторические и языковые темы</li>
+            </ul>
+          </aside>
+        </section>
+
+        <hr class="app-rule" />
+
+        <section class="app-section app-section-grid" aria-labelledby="how-title">
+          <div>
+            <p class="app-section-kicker">Как это работает</p>
+            <h2 id="how-title">Четыре шага вместо механического теста.</h2>
+          </div>
+          <div class="app-steps">
+            <article class="app-step">
+              <span class="app-step-number">01 · Читайте</span>
+              <h3>Сначала текст</h3>
+              <p>Начните с главы или темы, которую действительно изучаете.</p>
+            </article>
+            <article class="app-step">
+              <span class="app-step-number">02 · Отвечайте</span>
+              <h3>Проверьте память</h3>
+              <p>Ответьте без подсказки и увидьте, что осталось после чтения.</p>
+            </article>
+            <article class="app-step">
+              <span class="app-step-number">03 · Разбирайте</span>
+              <h3>Поймите ошибку</h3>
+              <p>Неверный ответ — не тупик, а повод вернуться к смыслу текста.</p>
+            </article>
+            <article class="app-step">
+              <span class="app-step-number">04 · Продолжайте</span>
+              <h3>Двигайтесь дальше</h3>
+              <p>Возвращайтесь к следующей части курса, не начиная всё заново.</p>
+            </article>
+          </div>
+        </section>
+
+        <hr class="app-rule" />
+
+        <section class="app-section" aria-labelledby="courses-title">
+          <p class="app-section-kicker">Что уже внутри</p>
+          <h2 id="courses-title">Курсы по 1 Петра и контексту послания.</h2>
+          <div class="app-courses" role="list">
+            <div class="app-course" role="listitem">
+              <strong>1 Петра · глава 1</strong>
+              <span>Несколько отдельных учебных частей, включая уровни сложности и языковые задания.</span>
+            </div>
+            <div class="app-course" role="listitem">
+              <strong>Главы 2–5</strong>
+              <span>Последовательные курсы, которые продолжают изучение послания по главам.</span>
+            </div>
+            <div class="app-course" role="listitem">
+              <strong>Исторический контекст</strong>
+              <span>Отдельные материалы о Нероне, географии и фоне раннехристианского мира.</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="app-section" aria-labelledby="library-title">
+          <div class="app-library-note">
+            <div>
+              <p class="app-section-kicker">Библиотека + тренажёр</p>
+              <h2 id="library-title">Глубокое чтение остаётся на сайте.</h2>
+              <p class="app-copy">
+                Приложение не заменяет статьи и исследования. Оно помогает проверить, что вы поняли и запомнили,
+                а затем вернуться к чтению уже с более точными вопросами.
+              </p>
+            </div>
+            <a class="app-secondary" href="/articles/">Перейти к статьям</a>
+          </div>
+        </section>
+
+        <hr class="app-rule" />
+
+        <section class="app-section app-section-grid" aria-labelledby="faq-title">
+          <div>
+            <p class="app-section-kicker">Коротко о доступе</p>
+            <h2 id="faq-title">Перед началом.</h2>
+          </div>
+          <dl class="app-faq">
+            <div class="app-faq-item">
+              <dt>Где открывается?</dt>
+              <dd>Тренажёр работает как приложение внутри Telegram. Кнопка выше откроет его напрямую.</dd>
+            </div>
+            <div class="app-faq-item">
+              <dt>Нужно ли ставить отдельное приложение?</dt>
+              <dd>Нет. Если Telegram уже установлен, отдельная установка тренажёра не требуется.</dd>
+            </div>
+            <div class="app-faq-item">
+              <dt>Можно ли читать материалы без Telegram?</dt>
+              <dd>Да. Основная библиотека сайта остаётся обычным веб-сайтом и доступна отдельно от тренажёра.</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="app-final" aria-labelledby="final-title">
+          <p class="app-section-kicker">Продолжить изучение</p>
+          <h2 id="final-title">Проверьте, что осталось после чтения.</h2>
+          <p class="app-copy">Откройте тренажёр и выберите подходящую главу, уровень или тематический курс.</p>
+          <div class="app-actions">
+            <a class="app-primary" href={launchUrl} target="_blank" rel="noopener noreferrer">Открыть тренажёр</a>
+          </div>
+        </section>
+      </main>
+
+      <footer class="app-footer">
+        <span>© Господь Бог — Сила Моя</span>
+        <span>Библейский тренажёр · Telegram Mini App</span>
+      </footer>
+    </div>
+  </body>
+</html>

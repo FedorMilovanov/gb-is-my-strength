@@ -27,6 +27,7 @@
   "routes": {
     "/": {"mode":"strict-native","source":"src/pages/index.astro","requiredMarkers":["data-pagefind-body"],"audits":["native-source-contract","native-runtime-taxonomy"],"reason":"Runtime ownership registered from page-ownership + route profile."},
     "/about/": {"mode":"strict-native","source":"src/pages/about/index.astro","requiredMarkers":["data-pagefind-body"],"audits":["native-source-contract","native-runtime-taxonomy"],"reason":"Runtime ownership registered from page-ownership + route profile."},
+    "/app/": {"mode":"strict-native-app","source":"src/pages/app/index.astro","requiredMarkers":["data-pagefind-body"],"audits":["native-source-contract","native-runtime-taxonomy"],"reason":"Native Bible trainer landing route; no legacy document transport."},
     "/articles/": {"mode":"strict-native","source":"src/pages/articles/index.astro","requiredMarkers":["data-pagefind-body"],"audits":["native-source-contract","native-runtime-taxonomy"],"reason":"Runtime ownership registered from page-ownership + route profile."},
     "/articles/20-antisovetov-pastoru/": {"mode":"strict-native","source":"src/pages/articles/20-antisovetov-pastoru/index.astro","requiredMarkers":["data-pagefind-body"],"audits":["native-source-contract","native-runtime-taxonomy"],"reason":"Runtime ownership registered from page-ownership + route profile."},
     "/articles/diotrefy-nashego-vremeni/": {"mode":"strict-native","source":"src/pages/articles/diotrefy-nashego-vremeni/index.astro","requiredMarkers":["data-pagefind-body","data-wave12-publication"],"audits":["native-source-contract","native-runtime-taxonomy","diotrophes-wave12-release"],"reason":"Wave 12 public route composed from the byte-preserved Wave 10 and Wave 11 evidence components."},
@@ -80,6 +81,7 @@
     "/rodosloviye/": {"mode":"strict-native-app","source":"src/pages/rodosloviye/index.astro","requiredMarkers":["data-pagefind-body"],"audits":["native-source-contract","native-runtime-taxonomy"],"reason":"Registered native app route."}
   },
   "changelog": [
+    {"date":"2026-08-17","change":"Registered /app/ as the strict-native Bible trainer landing route."},
     {"date":"2026-08-02","change":"Registered /articles/diotrefy-nashego-vremeni/ as a strict-native Wave 12 public route with an explicit release audit."},
     {"date":"2026-07-09","change":"Native Source Contract v1: runtime matrix covers production routes and derives non-overridden entries from ownership plus route profiles."}
   ]
