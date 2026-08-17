@@ -146,13 +146,16 @@ must(chrome, "window.matchMedia('(min-width: 761px)')", 'exact mobile/desktop bo
 must(chrome, "window.addEventListener('pageshow'", 'BFCache restoration handler');
 mustNot(chrome, 'id="hScriptureBg"', 'legacy ambient owner hook');
 mustNot(chrome, '.addListener(', 'deprecated MediaQueryList.addListener fallback');
+must(chrome, '<li><a href="/app/">Приложение</a></li>', 'desktop navigation exposes Bible app route');
+must(chrome, '<a href="/app/" data-close-nav><span>01</span>Приложение</a>', 'mobile primary navigation exposes Bible app route');
 
 const noJsStart = chrome.indexOf('<nav class="h-nojs-nav__links"');
 const noJsEnd = chrome.indexOf('</nav>', noJsStart);
 const noJsBlock = noJsStart === -1 || noJsEnd === -1 ? '' : chrome.slice(noJsStart, noJsEnd);
-count(noJsBlock, /<a href=/g) === 8
-  ? ok('no-JS menu exposes exactly eight routes')
-  : bad('no-JS menu must expose exactly eight routes');
+count(noJsBlock, /<a href=/g) === 9
+  ? ok('no-JS menu exposes exactly nine routes')
+  : bad('no-JS menu must expose exactly nine routes');
+must(noJsBlock, '<a href="/app/">Приложение</a>', 'no-JS menu exposes Bible app route');
 
 const chromeStyles = read('src/components/home/HomePageChromeStyles.astro');
 for (const marker of [
