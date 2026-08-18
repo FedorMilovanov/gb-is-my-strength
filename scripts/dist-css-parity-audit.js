@@ -1,17 +1,15 @@
 #!/usr/bin/env node
-/*
- */
 /**
  * dist-css-parity-audit.js — verify every public dist page carries project CSS.
  *
  * This gate exists because a regression (AGENTS-r229, 2026-06-18) shipped 41/50
- * dist pages with ZERO project CSS — Astro layouts never linked css/site.css or
- * fonts/fonts.css, and legacyShadow.ts dropped inline <style> blocks. No existing
- * gate caught it (all checked URL/title/word-count/SEO, never CSS linkage).
+ * dist pages with ZERO project CSS — Astro layouts never linked project CSS and
+ * legacyShadow.ts dropped inline <style> blocks. No existing gate caught it
+ * (all checked URL/title/word-count/SEO, never CSS linkage).
  *
  * Rule: every dist HTML page (excluding built-asset _app/) must have at least
- * one of: a <link> to site.css/site.css/home.css, OR an inline <style> block. If a page
- * has NEITHER, it is unstyled → FAIL.
+ * one repository-local stylesheet link (including Astro /_astro/*.css output)
+ * or an inline <style> block. If a page has NEITHER, it is unstyled → FAIL.
  *
  * Run: node scripts/dist-css-parity-audit.js  (after strangler:build)
  */
@@ -22,14 +20,85 @@ const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
+const PROJECT_ORIGIN = 'https://gospod-bog.ru';
+
+// Pages excluded from CSS check (self-contained bundles with their own CSS).
+const EXCLUDE_SUBSTRINGS = ['/_app/'];
+
+function readAttribute(tag, name) {
+  const pattern = new RegExp(`\\b${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i');
+  const match = pattern.exec(tag);
+  return match ? (match[1] ?? match[2] ?? match[3] ?? '') : '';
+}
+
+function localStylesheetPath(href) {
+  const raw = String(href || '').trim();
+  if (!raw) return '';
+
+  if (/^https?:\/\//i.test(raw)) {
+    try {
+      const url = new URL(raw);
+      if (url.origin !== PROJECT_ORIGIN) return '';
+      return url.pathname;
+    } catch {
+      return '';
+    }
+  }
+
+  if (raw.startsWith('//') || /^[a-z][a-z0-9+.-]*:/i.test(raw)) return '';
+  return raw.split(/[?#]/, 1)[0];
+}
+
+function hasLocalStylesheetLink(html) {
+  const links = String(html || '').match(/<link\b[^>]*>/gi) || [];
+  return links.some((tag) => {
+    const rel = readAttribute(tag, 'rel').toLowerCase().split(/\s+/).filter(Boolean);
+    if (!rel.includes('stylesheet')) return false;
+    const stylesheetPath = localStylesheetPath(readAttribute(tag, 'href'));
+    return /\.css$/i.test(stylesheetPath);
+  });
+}
+
+function checkCss(html) {
+  return hasLocalStylesheetLink(html) || /<style\b/i.test(html);
+}
+
+function runInternalContractChecks() {
+  const accepted = [
+    '<link rel="stylesheet" href="/css/site.css?v=1">',
+    "<link href='../css/home.css#publication' rel='stylesheet'>",
+    '<link href="/_astro/index.AbC123.css" rel="stylesheet">',
+    '<link rel=stylesheet href=../../_astro/chunk.4f91.css>',
+    '<link href="https://gospod-bog.ru/_astro/app.hash.css" rel="stylesheet">',
+    '<style>.page{display:block}</style>',
+  ];
+  for (const html of accepted) {
+    if (!checkCss(html)) throw new Error(`internal contract rejected valid project CSS: ${html}`);
+  }
+
+  const rejected = [
+    '<link rel="preload" href="/_astro/app.hash.css">',
+    '<link rel="stylesheet" href="https://cdn.example.com/_astro/app.hash.css">',
+    '<link rel="stylesheet" href="//cdn.example.com/app.css">',
+    '<link rel="stylesheet" href="/assets/app.js">',
+    '<main>unstyled</main>',
+  ];
+  for (const html of rejected) {
+    if (checkCss(html)) throw new Error(`internal contract admitted non-project CSS evidence: ${html}`);
+  }
+}
+
+try {
+  runInternalContractChecks();
+} catch (error) {
+  console.error(`❌ CSS parity validator internal contract failed: ${error.message}`);
+  process.exit(2);
+}
 
 if (!fs.existsSync(DIST)) {
   console.error('❌ dist/ not found. Run npm run strangler:build first.');
   process.exit(1);
 }
-
-// Pages excluded from CSS check (self-contained bundles with their own CSS).
-const EXCLUDE_SUBSTRINGS = ['/_app/'];
 
 const problems = [];
 
@@ -44,12 +113,6 @@ function collectHtml(dir, acc = []) {
     }
   }
   return acc;
-}
-
-function checkCss(html) {
-  const hasSiteCss = /css\/(site|site|home)\.css/.test(html);
-  const hasInlineStyle = /<style\b/i.test(html);
-  return hasSiteCss || hasInlineStyle;
 }
 
 const pages = collectHtml(DIST).filter(p =>
@@ -68,7 +131,7 @@ for (const page of pages) {
     okCount++;
   } else {
     problems.push(rel);
-    console.log(`❌ ${rel}: NO project CSS (no site.css/site.css/home.css link and no inline <style>)`);
+    console.log(`❌ ${rel}: NO project CSS (no local stylesheet link and no inline <style>)`);
   }
 }
 
