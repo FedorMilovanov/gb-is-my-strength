@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'data/editorial-metadata.json'
+      - 'data/editorial-metadata-supplements/**'
       - 'data/editorial-metadata.schema.json'
       - 'data/editorial-metadata-migration-inventory.json'
       - 'scripts/editorial-metadata-*.js'
