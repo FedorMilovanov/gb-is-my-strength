@@ -30,6 +30,52 @@ import HomeArticleEndBlock from '@/components/home/HomeArticleEndBlock.astro';
       <HomePageFooter />
     </HomePageChrome>
 
+    <style is:global>
+      /* Route-local product accent: the App stays part of the native Home chrome,
+         but reads as a live study tool rather than one more catalogue destination. */
+      body.home-page .h-nav-links a[href="/app/"] {
+        position: relative;
+        color: var(--h-heading);
+      }
+
+      body.home-page .h-nav-links a[href="/app/"]::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: -9px;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--h-accent);
+        box-shadow: 0 0 12px color-mix(in srgb, var(--h-accent) 72%, transparent);
+        transform: translateY(-50%);
+      }
+
+      body.home-page .h-mobile-nav__primary a[href="/app/"] {
+        border-color: color-mix(in srgb, var(--h-accent) 26%, var(--h-border));
+        background:
+          linear-gradient(105deg, color-mix(in srgb, var(--h-accent) 8%, transparent), transparent 44%),
+          color-mix(in srgb, var(--h-surface) 96%, transparent);
+        box-shadow: inset 3px 0 var(--h-accent), 0 18px 44px -38px var(--h-glow);
+      }
+
+      body.home-page .h-mobile-nav__primary a[href="/app/"] span {
+        color: var(--h-accent);
+      }
+
+      body.home-page .h-nojs-nav__links a[href="/app/"] {
+        color: var(--h-heading);
+        text-decoration-color: color-mix(in srgb, var(--h-accent) 62%, transparent);
+        text-underline-offset: .28em;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        body.home-page .h-nav-links a[href="/app/"]::before {
+          box-shadow: none;
+        }
+      }
+    </style>
+
     <script is:inline>
       (() => {
         if (window.__gbSearchActionQueryBound) return;
