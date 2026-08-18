@@ -7,7 +7,8 @@
  * A synchronous transcript survives process.exit() inside any imported
  * fail-closed contract and is collected by the existing browser artifact.
  */
-import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import assert from 'node:assert/strict';
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { inspect } from 'node:util';
@@ -39,6 +40,31 @@ process.on('unhandledRejection', (reason) => {
 process.on('exit', (code) => {
   appendFileSync(TRANSCRIPT, `\nfinished=${new Date().toISOString()}\nexit=${code}\n`, 'utf8');
 });
+
+console.log('=== Atlas landmark ownership preflight ===');
+const atlasBodySource = readFileSync(join(ROOT, 'src/components/map/AtlasBody.astro'), 'utf8');
+const atlasNoScriptSource = readFileSync(join(ROOT, 'src/components/map/AtlasNoScriptFallback.astro'), 'utf8');
+assert.equal(
+  (atlasBodySource.match(/<main\b/g) || []).length,
+  1,
+  'interactive Atlas must keep exactly one native main owner',
+);
+assert.equal(
+  (atlasNoScriptSource.match(/<main\b/g) || []).length,
+  0,
+  'no-JS fallback must not add a second native main element',
+);
+assert.match(
+  atlasNoScriptSource,
+  /<section\b[^>]*class="atlas-noscript"[^>]*role="main"[^>]*aria-labelledby="atlasPageTitle"/,
+  'no-JS fallback must expose its conditional main landmark without duplicating the native main element',
+);
+assert.match(
+  atlasNoScriptSource,
+  /\.atlas-app \.atlas-workspace[^}]*display:none!important/,
+  'no-JS mode must hide the interactive workspace before the fallback main role becomes the exposed owner',
+);
+console.log('✅ Atlas exposes one effective main landmark in both JS and no-JS modes');
 
 console.log('=== Biblical map recovery contract ===');
 await import('./map-runtime-fallback-browser-core.mjs');
