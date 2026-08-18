@@ -15,6 +15,7 @@ function mustExist(rel, label){ exists(rel) ? ok(label || rel) : bad(`missing fi
 const legacy = read('biografii/index.html');
 const page = read('src/pages/biografii/index.astro');
 const main = read('src/components/biografii/BiografiiMain.astro');
+const recent = read('src/components/biografii/BiografiiRecentSection.astro');
 
 mustNot(page, "loadLegacyFullDocument", "Astro /biografii/ MUST NOT use loadLegacyFullDocument");
 must(page, 'BiografiiPageChrome', 'Astro /biografii/ uses BiografiiPageChrome component');
@@ -37,10 +38,17 @@ for (const rel of sectionFiles) {
 
 must(main, '<main id="main-content">', 'BiografiiMain preserves semantic main wrapper');
 must(legacy, 'Последние добавленные материалы', 'legacy evidence retains the biography shelf reference');
+must(recent, 'aria-labelledby="biografiiRecentTitle"', 'recent biography shelf is labelled by its semantic heading');
+must(recent, '<h2 id="biografiiRecentTitle"', 'recent biography shelf exposes an H2 owner');
+mustNot(recent, 'aria-label="Последние добавленные материалы"', 'duplicate recent biography shelf aria-label');
+const recentCardHeadings = (recent.match(/<h3 class="h-article-title">/g) || []).length;
+recentCardHeadings === 6
+  ? ok('recent biography shelf keeps six H3 card titles')
+  : bad(`recent biography shelf must keep six H3 card titles, found ${recentCardHeadings}`);
 
 console.log('\nBIOGRAFII VISUAL PARITY AUDIT');
 if (problems.length) {
   console.log(`❌ ${problems.length} problem(s).`);
   process.exit(1);
 }
-ok('/biografii/ Astro migration is 100% native and SSR-visible');
+ok('/biografii/ Astro migration is 100% native, SSR-visible, and heading hierarchy is guarded');
