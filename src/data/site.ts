@@ -37,6 +37,10 @@ export const SECTION_META = {
 
 /** Explicit ordering of articles within series (by slug). */
 export const SERIES_ORDER: Record<string, string[]> = {
+  'pastor-series': [
+    '20-antisovetov-pastoru',
+    'diotrefy-nashego-vremeni',
+  ],
   'dzhon-gill': [
     'dzhon-gill-istoricheskiy-kontekst',
     'dzhon-gill-chast-1-chelovek',
