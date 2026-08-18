@@ -31,6 +31,8 @@ const sortedParts = order
 const currentIdx = sortedParts.findIndex(a => a.data.slug === data.slug);
 const currentPos = currentIdx >= 0 ? currentIdx + 1 : 1;
 const totalParts = sortedParts.length;
+const { Content } = await entry.render();
+
 
 // Derived from entry.data.ogImage
 
@@ -191,7 +193,7 @@ const editorialName = SITE.authorName;
         <article class="article-body" data-pagefind-body>
           <span data-pagefind-meta="author" hidden>{SITE.authorName}</span>
           <span data-pagefind-meta="category" hidden>Баптисты России</span>
-          <slot />
+          <Content />
         </article>
 
         <!-- gbs2-next -->
