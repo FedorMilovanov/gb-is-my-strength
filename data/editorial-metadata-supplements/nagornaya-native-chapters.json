@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "id": "nagornaya-native-chapters-freeze-2026-08-18",
+  "records": {
+    "/nagornaya/chast-1/": {
+      "route": "/nagornaya/chast-1/",
+      "canonical": "https://gospod-bog.ru/nagornaya/chast-1/",
+      "title": "Два текста, один Иисус — Нагорная проповедь I | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/nagornaya/chast-1/NagornayaChast1PageHead.astro",
+      "contentType": "series-chapter",
+      "editorialPublishedAt": "2026-04-30T21:00:00.000Z",
+      "editorialModifiedAt": "2026-06-22T13:21:02.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-04-30T21:00:00.000Z",
+        "metaModifiedAt": "2026-06-22T13:21:02.000Z",
+        "jsonLdPublishedAt": "2026-04-30T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-06-22T13:21:02.000Z",
+        "searchPublishedAt": "2026-04-30T21:00:00.000Z",
+        "searchModifiedAt": "2026-05-21T21:46:34.000Z",
+        "sitemapLastmod": "2026-07-08T21:47:25.000Z",
+        "rssPublishedAt": "2026-04-30T21:00:00.000Z"
+      }
+    },
+    "/nagornaya/chast-2/": {
+      "route": "/nagornaya/chast-2/",
+      "canonical": "https://gospod-bog.ru/nagornaya/chast-2/",
+      "title": "Синоптическая проблема — Нагорная проповедь II | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/nagornaya/chast-2/NagornayaChast2PageHead.astro",
+      "contentType": "series-chapter",
+      "editorialPublishedAt": "2026-04-30T21:00:00.000Z",
+      "editorialModifiedAt": "2026-06-22T13:21:02.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-04-30T21:00:00.000Z",
+        "metaModifiedAt": "2026-06-22T13:21:02.000Z",
+        "jsonLdPublishedAt": "2026-04-30T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-06-22T13:21:02.000Z",
+        "searchPublishedAt": "2026-04-30T21:00:00.000Z",
+        "searchModifiedAt": "2026-05-21T21:46:34.000Z",
+        "sitemapLastmod": "2026-07-08T21:47:25.000Z",
+        "rssPublishedAt": "2026-04-30T21:00:00.000Z"
+      }
+    },
+    "/nagornaya/chast-3/": {
+      "route": "/nagornaya/chast-3/",
+      "canonical": "https://gospod-bog.ru/nagornaya/chast-3/",
+      "title": "Кому адресована Нагорная проповедь? Часть III | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/nagornaya/chast-3/NagornayaChast3PageHead.astro",
+      "contentType": "series-chapter",
+      "editorialPublishedAt": "2026-04-30T21:00:00.000Z",
+      "editorialModifiedAt": "2026-06-22T13:21:02.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-04-30T21:00:00.000Z",
+        "metaModifiedAt": "2026-06-22T13:21:02.000Z",
+        "jsonLdPublishedAt": "2026-04-30T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-06-22T13:21:02.000Z",
+        "searchPublishedAt": "2026-04-30T21:00:00.000Z",
+        "searchModifiedAt": "2026-05-21T21:46:34.000Z",
+        "sitemapLastmod": "2026-07-08T21:47:25.000Z",
+        "rssPublishedAt": "2026-04-30T21:00:00.000Z"
+      }
+    },
+    "/nagornaya/chast-4/": {
+      "route": "/nagornaya/chast-4/",
+      "canonical": "https://gospod-bog.ru/nagornaya/chast-4/",
+      "title": "Можно ли доверять Евангелиям? Часть IV | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/nagornaya/chast-4/NagornayaChast4PageHead.astro",
+      "contentType": "series-chapter",
+      "editorialPublishedAt": "2026-04-30T21:00:00.000Z",
+      "editorialModifiedAt": "2026-06-22T13:21:02.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-04-30T21:00:00.000Z",
+        "metaModifiedAt": "2026-06-22T13:21:02.000Z",
+        "jsonLdPublishedAt": "2026-04-30T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-06-22T13:21:02.000Z",
+        "searchPublishedAt": "2026-04-30T21:00:00.000Z",
+        "searchModifiedAt": "2026-05-21T21:46:34.000Z",
+        "sitemapLastmod": "2026-07-08T21:47:25.000Z",
+        "rssPublishedAt": "2026-04-30T21:00:00.000Z"
+      }
+    },
+    "/nagornaya/chast-5/": {
+      "route": "/nagornaya/chast-5/",
+      "canonical": "https://gospod-bog.ru/nagornaya/chast-5/",
+      "title": "Закон и Евангелие — Нагорная проповедь V | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/nagornaya/chast-5/NagornayaChast5PageHead.astro",
+      "contentType": "series-chapter",
+      "editorialPublishedAt": "2026-04-30T21:00:00.000Z",
+      "editorialModifiedAt": "2026-06-22T13:21:02.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "inconsistent-needs-review",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-04-30T21:00:00.000Z",
+        "metaModifiedAt": "2026-06-22T13:21:02.000Z",
+        "jsonLdPublishedAt": "2026-04-30T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-06-22T13:21:02.000Z",
+        "searchPublishedAt": "2026-04-30T21:00:00.000Z",
+        "searchModifiedAt": "2026-05-21T21:46:34.000Z",
+        "sitemapLastmod": "2026-07-08T21:47:25.000Z",
+        "rssPublishedAt": "2026-04-30T21:00:00.000Z"
+      }
+    }
+  }
+}
