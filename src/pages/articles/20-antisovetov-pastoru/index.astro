@@ -1,13 +1,22 @@
 ---
-import AntisovetovPageHead from '@/components/article-pilots/antisovetov/AntisovetovPageHead.astro';
-import AntisovetovBody from '@/components/article-pilots/antisovetov/AntisovetovBody.astro';
+import SeriesArticleLayout from '@/layouts/SeriesArticleLayout.astro';
+import { getEntry } from 'astro:content';
+
+const entry = await getEntry('articles', '20-antisovetov-pastoru');
+if (!entry) return Astro.redirect('/404');
+
+const seriesMeta = {
+  seriesSlug: 'pastor-series',
+  seriesTitle: '20 антисоветов пастору',
+  seriesKicker: 'Серия · Пасторство',
+  seriesEraRange: 'Практическое руководство',
+  seriesEras: []
+};
 ---
-<!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <AntisovetovPageHead />
-  </head>
-  <body class="gbs-world" data-gbs2-series="pastor-series" data-gbs2-done-min="0" data-gbs2-part-min="67" data-gbs2-total-min="67">
-    <AntisovetovBody />
-  </body>
-</html>
+<SeriesArticleLayout 
+  entry={entry} 
+  canonical="https://gospod-bog.ru/articles/20-antisovetov-pastoru/"
+  {...seriesMeta}
+>
+  {/* The content is rendered by the layout via <slot /> or entry.render() */}
+</SeriesArticleLayout>
