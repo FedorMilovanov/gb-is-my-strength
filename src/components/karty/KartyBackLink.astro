@@ -1,8 +1,13 @@
 ---
 /**
- * KartyBackLink.astro — back-link leaf for /karty/.
+ * KartyBackLink.astro — project navigation leaf for /karty/.
  *
- * Refactoring 6.0 parallel pilot: preserve legacy href, class and visible text.
+ * Keep the standalone cards shell native while exposing both the site home and
+ * the canonical Bible trainer without importing a reader/menu runtime.
  */
 ---
-<a href="../" class="back-link">← Главная</a>
+<nav aria-label="Навигация проекта">
+  <a href="../" class="back-link">← Главная</a>
+  <span aria-hidden="true"> · </span>
+  <a href="/app/" class="back-link">Приложение</a>
+</nav>
