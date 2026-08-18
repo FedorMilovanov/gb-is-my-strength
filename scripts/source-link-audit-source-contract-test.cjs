@@ -39,6 +39,10 @@ function validate({ source, workflow }) {
   must('native response probe caps stored bytes', source, /const remaining = maxProbeBytes - storedBytes;[\s\S]{0,300}finish\(null, snapshot\(true\)\);[\s\S]{0,80}response\.destroy\(\)/);
   mustNot('large response is treated as transport failure', source, /RESPONSE_TOO_LARGE/);
   must('bot and auth response statuses remain warnings', source, /\[401, 403, 405, 418, 429\]\.includes\(status\)/);
+  must('source-link concurrency uses strict parser', source, /const CONCURRENCY = readPositiveIntegerEnv\('SOURCE_LINK_CONCURRENCY', 6\);/);
+  must('source-link concurrency rejects zero and non-integers', source, /if \(!\/\^\[1-9\]\\d\*\$\/\.test\(normalized\)\)/);
+  must('source-link concurrency rejects unsafe integers', source, /if \(!Number\.isSafeInteger\(value\)\)/);
+  must('source-link audit enforces complete pool results', source, /if \(results\.length !== links\.length\)[\s\S]{0,180}source-link-audit incomplete:/);
 
   must('workflow owns source contract path', workflow, /- 'scripts\/source-link-audit-source-contract-test\.cjs'/);
   must('workflow syntax-checks source contract', workflow, /node --check scripts\/source-link-audit-source-contract-test\.cjs/);
@@ -103,6 +107,10 @@ const mutations = [
   ['bounded prefix storage removed', { source: source.replace('const remaining = maxProbeBytes - storedBytes;', 'const remaining = chunk.length;'), workflow }],
   ['large response transport error reintroduced', { source: source.replace('          finish(null, snapshot(true));\n          response.destroy();', "          request.destroy(Object.assign(new Error('probe too large'), { code: 'RESPONSE_TOO_LARGE' }));"), workflow }],
   ['HTTP 418 bot block made hard', { source: source.replace('[401, 403, 405, 418, 429]', '[401, 403, 405, 429]'), workflow }],
+  ['concurrency parser bypassed', { source: source.replace("const CONCURRENCY = readPositiveIntegerEnv('SOURCE_LINK_CONCURRENCY', 6);", 'const CONCURRENCY = Number(process.env.SOURCE_LINK_CONCURRENCY || 6);'), workflow }],
+  ['zero concurrency admitted', { source: source.replace("if (!/^[1-9]\\d*$/.test(normalized)) {", "if (!/^\\d+$/.test(normalized)) {"), workflow }],
+  ['unsafe concurrency admitted', { source: source.replace('if (!Number.isSafeInteger(value)) {', 'if (!Number.isFinite(value)) {'), workflow }],
+  ['pool completeness guard removed', { source: source.replace(/  if \(results\.length !== links\.length\) \{[\s\S]*?\n  \}\n  results\.sort/, '  results.sort'), workflow }],
 ];
 
 for (const [name, mutated] of mutations) {
