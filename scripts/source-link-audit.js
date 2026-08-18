@@ -21,6 +21,20 @@ const https = require('node:https');
 const net = require('node:net');
 const path = require('node:path');
 
+function readPositiveIntegerEnv(name, fallback) {
+  const raw = process.env[name];
+  if (raw === undefined || String(raw).trim() === '') return fallback;
+  const normalized = String(raw).trim();
+  if (!/^[1-9]\d*$/.test(normalized)) {
+    throw new Error(`${name} must be a positive integer; received ${JSON.stringify(raw)}`);
+  }
+  const value = Number(normalized);
+  if (!Number.isSafeInteger(value)) {
+    throw new Error(`${name} must be a safe positive integer; received ${JSON.stringify(raw)}`);
+  }
+  return value;
+}
+
 const REPO_ROOT = path.resolve(__dirname, '..');
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 const BAD_HOSTS = new Set(['arthistoryresources.net']);
@@ -29,7 +43,7 @@ const IGNORE_HOSTS = [/^gospod-bog\.ru$/i, /(^|\.)yandex\./i, /^mc\.yandex\./i];
 const SKIP_DIRS = new Set(['.git', 'node_modules', 'reports', '.astro', 'pagefind']);
 const MAX_REDIRECTS = Number(process.env.SOURCE_LINK_MAX_REDIRECTS || 5);
 const TIMEOUT_MS = Number(process.env.SOURCE_LINK_TIMEOUT_MS || 10000);
-const CONCURRENCY = Number(process.env.SOURCE_LINK_CONCURRENCY || 6);
+const CONCURRENCY = readPositiveIntegerEnv('SOURCE_LINK_CONCURRENCY', 6);
 const MAX_PROBE_BYTES = Number(process.env.SOURCE_LINK_MAX_PROBE_BYTES || 65536);
 
 function argValue(name, fallback = '') {
@@ -483,6 +497,9 @@ async function main() {
       : await auditUrl(item.url);
     results.push({ ...result, files: item.files });
   });
+  if (results.length !== links.length) {
+    throw new Error(`source-link-audit incomplete: checked ${results.length} of ${links.length} extracted external links`);
+  }
   results.sort((left, right) => left.source.localeCompare(right.source));
 
   const hard = results.filter((entry) => entry.result === 'hard');
