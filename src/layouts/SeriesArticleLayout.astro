@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { SECTION_META, SITE, SERIES_ORDER } from '@/data/site';
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
@@ -31,7 +31,7 @@ const sortedParts = order
 const currentIdx = sortedParts.findIndex(a => a.data.slug === data.slug);
 const currentPos = currentIdx >= 0 ? currentIdx + 1 : 1;
 const totalParts = sortedParts.length;
-const { Content } = await entry.render();
+const { Content } = await render(entry);
 
 
 // Derived from entry.data.ogImage
@@ -177,7 +177,6 @@ const editorialName = SITE.authorName;
           <img src={coverImg(data.slug)} alt={`Обложка: ${h1}`} width="1200" height="630" decoding="async" />
           <figcaption class="gbs2-hero-cap"><i aria-hidden="true"></i>Серия «{seriesTitle}» · Часть {currentPos} из {totalParts}</figcaption>
         </figure>
-
         <header class="article-header gbs2-head">
           <span class="gbs2-kinetic" aria-hidden="true">{currentPos}</span>
           <p class="section-label reveal">{articleEyebrow} · {articleSectionName}</p>
