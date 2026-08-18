@@ -8,6 +8,7 @@ const { auditSeriesFragments } = require('./series-reader-fragment-audit');
 
 const ROOT = path.resolve(__dirname, '..');
 const FACADE = path.join(ROOT, 'src/components/article-pilots/_shared/series/SeriesReaderChrome.astro');
+const SERIES_LAYOUT = path.join(ROOT, 'src/layouts/SeriesArticleLayout.astro');
 const HEART_SERIES_DATA = path.join(ROOT, 'src/components/article-pilots/_shared/heartSeriesData.ts');
 const MOBILE_BAR = path.join(ROOT, 'src/components/article-pilots/gill-series/GillSeriesMobileBar.astro');
 const LEARNING_SHEET = path.join(ROOT, 'src/components/article-pilots/gill-series/GillLearningSheet.astro');
@@ -34,6 +35,15 @@ assert.ok(facade.includes(IMPLEMENTATION_IMPORT), 'façade must be the only impl
 assert.ok(facade.includes('<GillSeriesChrome pageId={pageId} config={config}>'), 'façade must forward pageId/config');
 assert.ok(facade.includes('<slot />'), 'façade must forward the default slot');
 assert.equal(typeof auditSeriesFragments, 'function', 'series fragment audit must expose its reusable contract');
+
+const seriesLayout = fs.readFileSync(SERIES_LAYOUT, 'utf8');
+assert.match(
+  seriesLayout,
+  /import\s*\{[^}]*\brender\b[^}]*\}\s*from\s*['"]astro:content['"]/,
+  'SeriesArticleLayout must import the content-layer render(entry) API',
+);
+assert.match(seriesLayout, /await\s+render\(entry\)/, 'SeriesArticleLayout must render content-layer entries through render(entry)');
+assert.doesNotMatch(seriesLayout, /\bentry\.render\s*\(/, 'SeriesArticleLayout must not call the removed entry.render() API');
 
 const heartSeriesData = fs.readFileSync(HEART_SERIES_DATA, 'utf8');
 const heartProgress = heartSeriesData.match(/export function heartProgress\([\s\S]*?\n}\n/);
@@ -79,4 +89,4 @@ if (fs.existsSync(DIST)) {
   assert.equal(report.result, 'PASS', `rendered series fragment contract failed: ${report.errors.join('; ')}`);
 }
 
-console.log(`✅ series-reader-facade: ${facadeImports} consumers; implementation import isolated to façade; heart progress fail-closed; mobile Back config-owned; no-quiz Learning panel relation guarded; fragment audit registered`);
+console.log(`✅ series-reader-facade: ${facadeImports} consumers; implementation import isolated to façade; content-layer rendering uses Astro render(entry); heart progress fail-closed; mobile Back config-owned; no-quiz Learning panel relation guarded; fragment audit registered`);
