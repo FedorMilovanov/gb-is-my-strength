@@ -202,7 +202,7 @@ function eligibleRecords() {
   return records.filter((record) =>
     record.owner.owner === 'astro' &&
     record.owner.status === 'production-dist' &&
-    ARTICLE_ROUTE_TYPES.has(record.profile?.routeType) &&
+    (ARTICLE_ROUTE_TYPES.has(record.profile?.routeType) || record.profile?.routeType === 'series-chapter') &&
     record.profile?.migrationMode === 'strict-native'
   );
 }
