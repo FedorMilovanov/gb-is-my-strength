@@ -70,6 +70,11 @@ assert.match(
   /\{hasQuiz\s*&&\s*\(\s*<section[^>]*id="panelQuiz"[^>]*aria-labelledby="tabQuiz"/,
   'Quiz panel must be gated by the same hasQuiz condition as its labelling tab',
 );
+assert.match(
+  learningSheet,
+  /<input\b(?=[^>]*\bid="learningSearchInput")(?=[^>]*\btype="search")(?=[^>]*\baria-label="Найти в этой статье")(?=[^>]*\bplaceholder="Найти в этой статье")[^>]*>/,
+  'Learning-sheet search must keep a persistent accessible name independent of its placeholder',
+);
 
 const sourceFiles = walk(path.join(ROOT, 'src')).filter((file) => /\.(?:astro|ts|tsx|js|jsx|mjs|cjs)$/.test(file));
 const illegal = [];
@@ -89,4 +94,4 @@ if (fs.existsSync(DIST)) {
   assert.equal(report.result, 'PASS', `rendered series fragment contract failed: ${report.errors.join('; ')}`);
 }
 
-console.log(`✅ series-reader-facade: ${facadeImports} consumers; implementation import isolated to façade; content-layer rendering uses Astro render(entry); heart progress fail-closed; mobile Back config-owned; no-quiz Learning panel relation guarded; fragment audit registered`);
+console.log(`✅ series-reader-facade: ${facadeImports} consumers; implementation import isolated to façade; content-layer rendering uses Astro render(entry); heart progress fail-closed; mobile Back config-owned; no-quiz Learning panel relation guarded; Learning search has persistent accessible name; fragment audit registered`);

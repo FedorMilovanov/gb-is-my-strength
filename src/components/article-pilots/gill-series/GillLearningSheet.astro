@@ -54,7 +54,7 @@ const hasQuiz = quizItems.length > 0;
       <section class="gill-panel" id="panelSearch" role="tabpanel" aria-labelledby="tabSearch" data-panel="search" hidden>
         <label class="gill-searchbox">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
-          <input id="learningSearchInput" type="search" placeholder="Найти в этой статье" autocomplete="off" />
+          <input id="learningSearchInput" type="search" aria-label="Найти в этой статье" placeholder="Найти в этой статье" autocomplete="off" />
         </label>
         <div class="gill-search-status" id="learningSearchStatus" aria-live="polite">Введите минимум 2 символа</div>
         <div class="gill-search-results" id="learningSearchResults"></div>
