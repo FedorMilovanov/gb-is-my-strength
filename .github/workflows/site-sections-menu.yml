@@ -14,10 +14,17 @@ on:
       - 'src/components/biografii/**'
       - 'src/components/hard-texts/**'
       - 'src/components/home/**'
+      - 'src/components/karty/**'
+      - 'src/components/konfessii/russkij-baptizm/**'
       - 'src/components/nagornaya/**'
       - 'src/components/pastor-series/**'
       - 'src/components/rodosloviye/**'
+      - 'src/components/search/AppSearchSurface.astro'
       - 'src/pages/biografii/index.astro'
+      - 'src/pages/karty/**'
+      - 'src/pages/konfessii/russkij-baptizm/**'
+      - 'src/pages/nagornaya/**'
+      - 'src/pages/rodosloviye/index.astro'
       - 'src/runtime/reader-controls-a11y.js'
       - 'scripts/reader-controls-residual-browser-contract.mjs'
       - 'scripts/site-sections-menu-visual-contract.mjs'
@@ -38,10 +45,17 @@ on:
       - 'src/components/biografii/**'
       - 'src/components/hard-texts/**'
       - 'src/components/home/**'
+      - 'src/components/karty/**'
+      - 'src/components/konfessii/russkij-baptizm/**'
       - 'src/components/nagornaya/**'
       - 'src/components/pastor-series/**'
       - 'src/components/rodosloviye/**'
+      - 'src/components/search/AppSearchSurface.astro'
       - 'src/pages/biografii/index.astro'
+      - 'src/pages/karty/**'
+      - 'src/pages/konfessii/russkij-baptizm/**'
+      - 'src/pages/nagornaya/**'
+      - 'src/pages/rodosloviye/index.astro'
       - 'src/runtime/reader-controls-a11y.js'
       - 'scripts/reader-controls-residual-browser-contract.mjs'
       - 'scripts/site-sections-menu-visual-contract.mjs'
@@ -113,6 +127,52 @@ jobs:
           mkdir -p reports
           set -o pipefail
           npm run strangler:build:production-like 2>&1 | tee reports/site-sections-menu-build.log
+
+      - name: Verify nested Bible App entrypoints in built public shells
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const routes = [
+            '/karty/avraam/',
+            '/karty/early-church/',
+            '/karty/ishod/',
+            '/karty/maccabim/',
+            '/karty/melachim/',
+            '/karty/pavel/',
+            '/karty/revelation/',
+            '/karty/shoftim/',
+            '/karty/shvatim/',
+            '/karty/yeshua/',
+            '/nagornaya/chast-1/',
+            '/nagornaya/chast-2/',
+            '/nagornaya/chast-3/',
+            '/nagornaya/chast-4/',
+            '/nagornaya/chast-5/',
+            '/nagornaya/istochniki/',
+            '/nagornaya/nakhodki/',
+            '/konfessii/russkij-baptizm/',
+            '/rodosloviye/',
+          ];
+          const failures = [];
+          for (const route of routes) {
+            const relative = route.replace(/^\/+|\/+$/g, '');
+            const file = path.join('dist', relative, 'index.html');
+            if (!fs.existsSync(file)) {
+              failures.push(`${route}: built shell missing (${file})`);
+              continue;
+            }
+            const html = fs.readFileSync(file, 'utf8');
+            if (!html.includes('href="/app/"')) {
+              failures.push(`${route}: href="/app/" missing from built shell`);
+            }
+          }
+          if (failures.length) {
+            console.error('Nested Bible App entrypoint contract failed:\n' + failures.join('\n'));
+            process.exit(1);
+          }
+          console.log(`Nested Bible App entrypoint contract passed for ${routes.length} public shells.`);
+          NODE
 
       - name: Run full-site menu behavior contract
         env:

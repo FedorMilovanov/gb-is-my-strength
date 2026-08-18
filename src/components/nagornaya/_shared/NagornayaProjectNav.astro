@@ -1,0 +1,58 @@
+<nav class="nag-project-nav" aria-label="Навигация проекта" data-nagornaya-project-nav>
+  <a class="nag-project-nav__link nag-project-nav__link--app" href="/app/">Библейский тренажёр</a>
+  <a class="nag-project-nav__link" href="/">На главную</a>
+</nav>
+
+<style>
+  .nag-project-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 0;
+    padding: 22px 16px calc(84px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid rgba(214, 178, 94, .18);
+    background: #1c1917;
+  }
+
+  .nag-project-nav__link {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    border: 1px solid rgba(214, 178, 94, .26);
+    border-radius: 999px;
+    color: #d6d3d1;
+    background: rgba(255, 255, 255, .035);
+    font: 700 13px/1 Arial, sans-serif;
+    text-decoration: none;
+    transition: border-color .18s ease, background .18s ease, color .18s ease;
+  }
+
+  .nag-project-nav__link--app {
+    color: #f5e6bd;
+    background: rgba(217, 119, 6, .16);
+    border-color: rgba(245, 158, 11, .34);
+  }
+
+  .nag-project-nav__link:is(:hover, :focus-visible) {
+    color: #fff;
+    border-color: rgba(245, 158, 11, .62);
+    background: rgba(217, 119, 6, .22);
+  }
+
+  .nag-project-nav__link:focus-visible {
+    outline: 2px solid #f4d894;
+    outline-offset: 2px;
+  }
+
+  @media (min-width: 1024px) {
+    .nag-project-nav { margin-left: 16rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nag-project-nav__link { transition: none; }
+  }
+</style>
