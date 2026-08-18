@@ -1,6 +1,6 @@
 # gospod-bog.ru — llms.txt
 # AI-readable content index for LLM search engines (Perplexity, ChatGPT Search, Claude, Grok)
-# Format: https://llmstxt.org/ | Updated: 2026-06-25
+# Format: https://llmstxt.org/ | Updated: 2026-08-18
 
 # About
 > gospod-bog.ru — христианский богословский проект на русском языке.
@@ -70,6 +70,8 @@
 
 ## Biblical Tools / Инструменты
 
+- [Библейский тренажёр](https://gospod-bog.ru/app/): Telegram Mini App по Первому посланию Петра — вопросы по главам и контексту, спокойный/таймерный/скоростной режимы, Challenge 20, повтор ошибок, достижения и история результатов
+- [Telegram: @milovanovaibot](https://t.me/milovanovaibot): публичный профиль бота и точка входа в Main Mini App
 - [Родословие от Адама до Христа](https://gospod-bog.ru/rodosloviye/): генеалогическое древо от Бытия до Евангелий (линия обетования)
 
 ## Site navigation
