@@ -180,9 +180,9 @@ function copyFile(src, dest, stats) {
 }
 
 function removeAstroGeneratedSitemaps(stats) {
-  // Until Astro owns sitemap generation for the full site, keep legacy sitemap.xml
-  // as the only sitemap advertised by robots.txt. Astro's partial sitemap-index.xml
-  // would list only Astro-owned routes and is dangerous in a strangler dist.
+  // Until Astro owns sitemap generation for the full site, preserve the curated
+  // root sitemap files copied by PUBLIC_ROOT_FILES. Astro's partial sitemap-index.xml
+  // and numbered sitemap shards list only Astro-owned routes and are unsafe here.
   if (!fs.existsSync(DIST)) return;
   for (const name of fs.readdirSync(DIST)) {
     if (/^sitemap-(?:index|\d+)\.xml$/i.test(name)) {
@@ -246,7 +246,13 @@ function verifyAdvertisedSitemaps() {
       failures.push(`robots.txt Sitemap must be a plain production path: ${value}`);
       continue;
     }
-    const relative = decodeURIComponent(parsed.pathname).replace(/^\/+/, '');
+    let relative;
+    try {
+      relative = decodeURIComponent(parsed.pathname).replace(/^\/+/, '');
+    } catch (_) {
+      failures.push(`robots.txt Sitemap path is not decodable: ${value}`);
+      continue;
+    }
     if (!relative || relative.includes('..')) {
       failures.push(`robots.txt Sitemap path is unsafe: ${value}`);
       continue;
