@@ -118,6 +118,8 @@ async function openSearch(page, baseUrl, route = SCOPE_ROUTE) {
   const dialog = page.getByRole('dialog', { name: 'Поиск по сайту' });
   await dialog.waitFor({ state: 'visible', timeout: 10000 });
   await page.locator('.cp-scope-chip').first().waitFor({ state: 'visible' });
+  await page.waitForFunction(() => document.activeElement?.getAttribute('role') === 'combobox', null, { timeout: 10000 });
+  await assertSearchInputFocused(page, `${route} open`);
   return dialog;
 }
 
