@@ -32,6 +32,7 @@ const DRY_RUN = process.argv.includes('--dry-run');
 const WRITE_MANIFEST = !process.argv.includes('--no-manifest');
 const PUBLIC_SCRIPTURE_INDEX = 'data/scripture-search-index.json';
 const INTERNAL_SOURCE_DIRS = new Set(['data/bible']);
+const PRODUCTION_ORIGIN = 'https://gospod-bog.ru';
 
 const PUBLIC_ROOT_FILES = [
   '.nojekyll',
@@ -39,7 +40,9 @@ const PUBLIC_ROOT_FILES = [
   'CNAME',
   'robots.txt',
   'sitemap.xml',
+  'sitemap-pastor-series.xml',
   'feed.xml',
+  'feed-pastor-series.xml',
   'manifest.json',
   'sw.js',
   'llms.txt',
@@ -218,6 +221,44 @@ function copyDir(srcDir, destDir, astroRoutes, stats) {
     }
   }
 }
+
+function verifyAdvertisedSitemaps() {
+  const robotsPath = path.join(DIST, 'robots.txt');
+  if (!fs.existsSync(robotsPath)) return ['robots.txt is missing'];
+  const failures = [];
+  const directives = fs.readFileSync(robotsPath, 'utf8')
+    .split(/\r?\n/)
+    .map(line => line.match(/^\s*Sitemap:\s*(\S+)\s*$/i)?.[1])
+    .filter(Boolean);
+  if (!directives.length) failures.push('robots.txt does not advertise any Sitemap directive');
+  for (const value of directives) {
+    let parsed;
+    try { parsed = new URL(value); }
+    catch (_) {
+      failures.push(`robots.txt has malformed Sitemap URL: ${value}`);
+      continue;
+    }
+    if (parsed.origin !== PRODUCTION_ORIGIN) {
+      failures.push(`robots.txt Sitemap is outside production origin: ${value}`);
+      continue;
+    }
+    if (parsed.search || parsed.hash) {
+      failures.push(`robots.txt Sitemap must be a plain production path: ${value}`);
+      continue;
+    }
+    const relative = decodeURIComponent(parsed.pathname).replace(/^\/+/, '');
+    if (!relative || relative.includes('..')) {
+      failures.push(`robots.txt Sitemap path is unsafe: ${value}`);
+      continue;
+    }
+    const target = path.join(DIST, relative);
+    if (!fs.existsSync(target) || !fs.statSync(target).isFile()) {
+      failures.push(`robots.txt advertises missing dist sitemap: ${parsed.pathname}`);
+    }
+  }
+  return failures;
+}
+
 function verifyRequiredDist(astroRoutes, omittedRoutes) {
   const missing = [];
   const forbidden = [];
@@ -229,9 +270,21 @@ function verifyRequiredDist(astroRoutes, omittedRoutes) {
     const dest = distPathForRoute(route);
     if (fs.existsSync(dest)) forbidden.push(route);
   }
-  const mustExist = ['index.html', 'sitemap.xml', 'feed.xml', 'robots.txt', 'CNAME', 'css/site.css', 'js/site.js', 'images/og-preview-1200x630.webp'];
+  const mustExist = [
+    'index.html',
+    'sitemap.xml',
+    'sitemap-pastor-series.xml',
+    'feed.xml',
+    'feed-pastor-series.xml',
+    'robots.txt',
+    'CNAME',
+    'css/site.css',
+    'js/site.js',
+    'images/og-preview-1200x630.webp',
+  ];
   for (const file of mustExist) if (!fs.existsSync(path.join(DIST, file))) missing.push('/' + file);
-  if (missing.length || forbidden.length) {
+  const sitemapFailures = verifyAdvertisedSitemaps();
+  if (missing.length || forbidden.length || sitemapFailures.length) {
     if (missing.length) {
       console.error('❌ dist missing required route/file(s):');
       missing.forEach(x => console.error('  - ' + x));
@@ -239,6 +292,10 @@ function verifyRequiredDist(astroRoutes, omittedRoutes) {
     if (forbidden.length) {
       console.error('❌ dist still contains omitted build-only route(s):');
       forbidden.forEach(x => console.error('  - ' + x));
+    }
+    if (sitemapFailures.length) {
+      console.error('❌ robots.txt sitemap publication contract failed:');
+      sitemapFailures.forEach(x => console.error('  - ' + x));
     }
     process.exit(1);
   }
