@@ -179,8 +179,9 @@ jobs:
       - name: Special overlay writer regressions
         run: npm run overlay:special:writers:test
 
-      - name: Map engine P0 regressions
+      - name: Engine contracts and map P0 regressions
         run: |
+          npm run engine:contracts
           node --check karty/_engine/map-engine.js
           node scripts/map-engine-p0-regression-test.js
           node scripts/avraam-map-audit.js
