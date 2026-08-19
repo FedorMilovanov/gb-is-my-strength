@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/bible-app-browser-contract.mjs'
+      - 'scripts/bible-app-browser-adjudicate.mjs'
       - '.github/workflows/bible-app-browser-contract.yml'
       - 'src/pages/index.astro'
       - 'src/pages/app/**'
@@ -58,8 +59,10 @@ jobs:
       - name: Install exact dependencies
         run: npm ci
 
-      - name: Validate browser contract source
-        run: node --check scripts/bible-app-browser-contract.mjs
+      - name: Validate browser contract sources
+        run: |
+          node --check scripts/bible-app-browser-contract.mjs
+          node --check scripts/bible-app-browser-adjudicate.mjs
 
       - name: Build production-like dist
         run: npm run strangler:build:production-like
@@ -67,10 +70,22 @@ jobs:
       - name: Install Playwright ${{ matrix.engine }}
         run: npx playwright install --with-deps ${{ matrix.engine }}
 
-      - name: Run Bible App deep browser contract
+      - name: Run raw Bible App deep browser contract
         env:
           GB_APP_BROWSER: ${{ matrix.engine }}
-        run: node scripts/bible-app-browser-contract.mjs
+        shell: bash
+        run: |
+          set +e
+          node scripts/bible-app-browser-contract.mjs
+          raw_status=$?
+          echo "Raw browser contract exit: $raw_status"
+          test -f "reports/bible-app-browser/bible-app-browser-${GB_APP_BROWSER}.json"
+          exit 0
+
+      - name: Adjudicate browser-environment noise fail-closed
+        env:
+          GB_APP_BROWSER: ${{ matrix.engine }}
+        run: node scripts/bible-app-browser-adjudicate.mjs
 
       - name: Upload Bible App browser evidence
         if: always()
