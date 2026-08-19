@@ -140,13 +140,17 @@ const { startParam, href, roman, articleLabel } = CHAPTER_LAUNCH[chapter];
   .genesis6-app-cta__eyebrow {
     display: block;
     margin-bottom: 7px;
-    color: color-mix(in srgb, #209daf 78%, var(--manuscript-gold));
+    color: color-mix(in srgb, #176d78 78%, var(--manuscript-gold));
     font-family: "Inter", system-ui, sans-serif;
     font-size: 10px;
     font-weight: 820;
     letter-spacing: .14em;
     line-height: 1.35;
     text-transform: uppercase;
+  }
+
+  :global(html.dark) .genesis6-app-cta__eyebrow {
+    color: color-mix(in srgb, #49c6d5 78%, var(--manuscript-gold));
   }
 
   .genesis6-app-cta__title {
@@ -200,16 +204,20 @@ const { startParam, href, roman, articleLabel } = CHAPTER_LAUNCH[chapter];
     justify-content: center;
     gap: 11px;
     padding: 0 18px;
-    border: 1px solid var(--manuscript-gold);
+    border: 1px solid var(--manuscript-gold-bright);
     border-radius: 999px;
-    color: var(--manuscript-paper);
+    color: #19140f;
     font-family: "Inter", system-ui, sans-serif;
     font-size: 12px;
     font-weight: 820;
     line-height: 1;
     text-align: center;
     text-decoration: none;
-    background: linear-gradient(135deg, var(--manuscript-gold-bright), var(--manuscript-gold));
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--manuscript-gold-bright) 86%, white),
+      var(--manuscript-gold-bright)
+    );
     box-shadow: 0 15px 30px -20px rgba(49, 31, 17, .5);
     transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
   }
@@ -221,7 +229,7 @@ const { startParam, href, roman, articleLabel } = CHAPTER_LAUNCH[chapter];
   }
 
   .genesis6-app-cta__action:focus-visible {
-    outline: 3px solid color-mix(in srgb, #35b7c7 48%, transparent);
+    outline: 3px solid #176d78;
     outline-offset: 3px;
   }
 
