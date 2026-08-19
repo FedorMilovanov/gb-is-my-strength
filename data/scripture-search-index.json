@@ -12,10 +12,10 @@
     "manifestItems": 76,
     "indexedRoutes": 75,
     "scannedSourceFiles": 452,
-    "references": 1011,
-    "occurrences": 2430,
+    "references": 1010,
+    "occurrences": 2429,
     "canonicalTextRecords": 148,
-    "referencesWithoutCanonicalText": 863,
+    "referencesWithoutCanonicalText": 862,
     "chapterRanges": 21,
     "manifestOccurrences": 32
   },
@@ -46590,30 +46590,6 @@
             "сердце"
           ],
           "sourceOwner": "src/components/article-pilots/ne-v-odinochku/NeVOdinochkuBody.astro",
-          "sourceKind": "astro-source"
-        }
-      ]
-    },
-    {
-      "id": "1petra:1",
-      "bookId": "1petra",
-      "testament": "NT",
-      "key": "1",
-      "kind": "chapter",
-      "label": "1 Петра 1",
-      "canonicalText": null,
-      "canonicalSource": null,
-      "occurrences": [
-        {
-          "url": "/app/",
-          "title": "Библейский тренажёр — Господь Бог — Сила Моя",
-          "context": "tion \"app-section\" \"inside-title\"> Что внутри Инструменты для регулярной работы с 1 Петра. 01 · ПО ГЛАВАМ Последовательные курсы Переходите от одной главы к другой и продолжайте изучение без потери контекста. <article \"ap",
-          "anchor": "inside-title",
-          "raw": "1 Петра. 01",
-          "topics": [
-            "Библейские инструменты"
-          ],
-          "sourceOwner": "src/pages/app/index.astro",
           "sourceKind": "astro-source"
         }
       ]
