@@ -92,34 +92,6 @@
         }
       }
     },
-    ".github/workflows/notify-on-failure.yml": {
-      "jobs": {
-        "lifecycle": {
-          "permissions": {
-            "actions": "read",
-            "contents": "read",
-            "issues": "write",
-            "pull-requests": "read"
-          },
-          "purpose": "Open, update, recover, and fail-closed retire one factual CI incident per workflow and branch or pull request identity",
-          "allowedEvents": [
-            "workflow_run"
-          ],
-          "repositoryBoundary": "same repository workflow_run metadata; triggering branch code is never executed",
-          "branchBoundary": "notifier implementation fetched from the trusted default branch; retirement runs only after successful Shared Files Guard on the default branch",
-          "mutationTargets": [
-            "machine-marked CI failure lifecycle issues, including not_planned retirement receipts for proven inactive identities"
-          ],
-          "requiresConcurrency": true,
-          "requiredMarkers": [
-            "context.payload.repository.default_branch",
-            "github.rest.repos.getContent",
-            "ref: defaultBranch",
-            "cancel-in-progress: false"
-          ]
-        }
-      }
-    },
     ".github/workflows/glossary-contract.yml": {
       "jobs": {
         "placement-autofix": {

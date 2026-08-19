@@ -2,11 +2,10 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const runNotifier = require('./ci-failure-lifecycle.cjs');
+const runDiagnostics = require('./ci-failure-lifecycle.cjs');
 
 function makeRun(overrides = {}) {
   const id = overrides.id ?? 100;
-  const branch = overrides.head_branch ?? 'agent/example';
   return {
     id,
     run_attempt: overrides.run_attempt ?? 1,
@@ -14,30 +13,26 @@ function makeRun(overrides = {}) {
     conclusion: overrides.conclusion ?? 'failure',
     html_url: overrides.html_url ?? `https://github.com/example/repo/actions/runs/${id}`,
     head_sha: overrides.head_sha ?? String(id).padStart(40, 'a').slice(-40),
-    head_branch: branch,
+    head_branch: overrides.head_branch ?? 'agent/example',
     event: overrides.event ?? 'pull_request',
-    created_at: overrides.created_at ?? '2026-07-25T18:00:00Z',
-    updated_at: overrides.updated_at ?? '2026-07-25T18:05:00Z',
-    actor: overrides.actor ?? { login: 'agent' },
-    head_commit: overrides.head_commit ?? { message: 'test: deterministic notifier fixture' },
     head_repository: overrides.head_repository ?? { full_name: 'example/repo' },
-    pull_requests: overrides.pull_requests ?? [],
   };
 }
 
 function createHarness() {
   const state = {
-    issues: [],
-    comments: [],
     jobsByRun: new Map(),
     artifactsByRun: new Map(),
-    pullsByNumber: new Map(),
-    openPullsByHead: new Map(),
-    branches: new Map(),
-    comparisons: new Map(),
-    nextIssueNumber: 1,
     infos: [],
     warnings: [],
+    jobsCalls: 0,
+    artifactCalls: 0,
+    issueWrites: 0,
+  };
+
+  const forbiddenWrite = async () => {
+    state.issueWrites += 1;
+    throw new Error('Issue/comment writes are forbidden by the silent diagnostics contract');
   };
 
   const github = {
@@ -47,76 +42,19 @@ function createHarness() {
     },
     rest: {
       actions: {
-        listJobsForWorkflowRun: async ({ run_id }) => ({
-          data: state.jobsByRun.get(run_id) || [],
-        }),
-        listWorkflowRunArtifacts: async ({ run_id }) => ({
-          data: state.artifactsByRun.get(run_id) || [],
-        }),
-      },
-      pulls: {
-        get: async ({ pull_number }) => {
-          const pull = state.pullsByNumber.get(pull_number);
-          if (!pull) {
-            const error = new Error(`pull #${pull_number} not found`);
-            error.status = 404;
-            throw error;
-          }
-          return { data: { ...pull } };
+        listJobsForWorkflowRun: async ({ run_id }) => {
+          state.jobsCalls += 1;
+          return { data: state.jobsByRun.get(run_id) || [] };
         },
-        list: async ({ head }) => ({ data: (state.openPullsByHead.get(head) || []).map((pull) => ({ ...pull })) }),
-      },
-      repos: {
-        getBranch: async ({ branch }) => {
-          if (!state.branches.has(branch)) {
-            const error = new Error(`branch ${branch} not found`);
-            error.status = 404;
-            throw error;
-          }
-          return { data: { ...state.branches.get(branch) } };
+        listWorkflowRunArtifacts: async ({ run_id }) => {
+          state.artifactCalls += 1;
+          return { data: state.artifactsByRun.get(run_id) || [] };
         },
-        compareCommits: async ({ head }) => ({
-          data: { ahead_by: state.comparisons.get(head) ?? 1 },
-        }),
       },
       issues: {
-        listForRepo: async ({ state: requestedState, labels }) => {
-          let issues = state.issues;
-          if (requestedState && requestedState !== 'all') {
-            issues = issues.filter((issue) => issue.state === requestedState);
-          }
-          if (labels) {
-            const required = String(labels).split(',').map((value) => value.trim()).filter(Boolean);
-            issues = issues.filter((issue) => required.every((label) => issue.labels.some((item) => item.name === label)));
-          }
-          return { data: issues.map((issue) => ({ ...issue, labels: issue.labels.map((item) => ({ ...item })) })) };
-        },
-        create: async ({ title, body, labels }) => {
-          const issue = {
-            number: state.nextIssueNumber++,
-            title,
-            body,
-            labels: labels.map((name) => ({ name })),
-            state: 'open',
-            state_reason: null,
-          };
-          state.issues.push(issue);
-          return { data: { ...issue } };
-        },
-        update: async ({ issue_number, ...patch }) => {
-          const issue = state.issues.find((item) => item.number === issue_number);
-          assert.ok(issue, `issue #${issue_number} must exist`);
-          if (patch.title !== undefined) issue.title = patch.title;
-          if (patch.body !== undefined) issue.body = patch.body;
-          if (patch.labels !== undefined) issue.labels = patch.labels.map((name) => ({ name }));
-          if (patch.state !== undefined) issue.state = patch.state;
-          if (patch.state_reason !== undefined) issue.state_reason = patch.state_reason;
-          return { data: { ...issue } };
-        },
-        createComment: async ({ issue_number, body }) => {
-          state.comments.push({ issue_number, body });
-          return { data: { id: state.comments.length, body } };
-        },
+        create: forbiddenWrite,
+        update: forbiddenWrite,
+        createComment: forbiddenWrite,
       },
     },
   };
@@ -136,8 +74,6 @@ function failedJob(stepName) {
     name: 'deterministic-job',
     conclusion: 'failure',
     html_url: 'https://github.com/example/repo/actions/runs/100/job/9001',
-    started_at: '2026-07-25T18:01:00Z',
-    completed_at: '2026-07-25T18:02:00Z',
     steps: [
       { number: 1, name: 'checkout', conclusion: 'success' },
       { number: 2, name: stepName, conclusion: 'failure' },
@@ -146,251 +82,76 @@ function failedJob(stepName) {
 }
 
 (async () => {
+  // Failure records exact job/step evidence without repository writes.
   const harness = createHarness();
   const { state, github, context, core } = harness;
-
-  // 1. Failure creates exactly one lifecycle issue with factual job/step data.
   state.jobsByRun.set(100, failedJob('Actual failing step from Jobs API'));
   state.artifactsByRun.set(100, [{
     id: 77,
     name: 'real-diagnostics',
     size_in_bytes: 2048,
-    created_at: '2026-07-25T18:03:00Z',
+    created_at: '2026-08-19T20:00:00Z',
     expired: false,
   }]);
-  const created = await runNotifier({ github, context, core, workflowRun: makeRun({ id: 100 }) });
-  assert.equal(created.action, 'created');
-  assert.equal(state.issues.length, 1);
-  assert.match(state.issues[0].body, /Actual failing step from Jobs API/);
-  assert.match(state.issues[0].body, /real-diagnostics/);
-  assert.doesNotMatch(state.issues[0].body, /Astro or copy-legacy|DOM-structure/i);
 
-  // 2. A newer failure updates the same issue instead of creating a duplicate.
-  state.jobsByRun.set(101, failedJob('Second factual failure'));
-  const updated = await runNotifier({ github, context, core, workflowRun: makeRun({ id: 101 }) });
-  assert.equal(updated.action, 'updated');
-  assert.equal(state.issues.length, 1);
-  assert.match(state.issues[0].body, /Second factual failure/);
-  assert.equal(state.comments.length, 1);
+  const recorded = await runDiagnostics({ github, context, core, workflowRun: makeRun({ id: 100 }) });
+  assert.equal(recorded.action, 'recorded-read-only');
+  assert.equal(state.jobsCalls, 1);
+  assert.equal(state.artifactCalls, 1);
+  assert.equal(state.issueWrites, 0);
+  assert.ok(state.warnings.some((line) => /Actual failing step from Jobs API/.test(line)));
+  assert.ok(state.infos.some((line) => /real-diagnostics/.test(line)));
 
-  // 3. A different branch has a different lifecycle key and issue.
-  state.jobsByRun.set(102, failedJob('Other branch failure'));
-  const otherBranch = await runNotifier({
+  // Non-failure runs are ignored and do not even query evidence APIs.
+  const callsBeforeSuccess = state.jobsCalls + state.artifactCalls;
+  const success = await runDiagnostics({
     github,
     context,
     core,
-    workflowRun: makeRun({ id: 102, head_branch: 'agent/other-branch' }),
+    workflowRun: makeRun({ id: 101, conclusion: 'success' }),
   });
-  assert.equal(otherBranch.action, 'created');
-  assert.equal(state.issues.length, 2);
+  assert.equal(success.action, 'ignored-non-failure');
+  assert.equal(state.jobsCalls + state.artifactCalls, callsBeforeSuccess);
+  assert.equal(state.issueWrites, 0);
 
-  // 4. Cancelled/superseded runs never create false failure alerts.
-  const beforeCancelled = state.issues.length;
-  const cancelled = await runNotifier({
+  // External repository heads are ignored before evidence collection.
+  const callsBeforeExternal = state.jobsCalls + state.artifactCalls;
+  const external = await runDiagnostics({
     github,
     context,
     core,
-    workflowRun: makeRun({ id: 103, conclusion: 'cancelled', head_branch: 'agent/cancelled' }),
-  });
-  assert.equal(cancelled.action, 'ignored-non-failure');
-  assert.equal(state.issues.length, beforeCancelled);
-
-  // 5. An older success cannot close a newer failure.
-  const staleSuccess = await runNotifier({
-    github,
-    context,
-    core,
-    workflowRun: makeRun({ id: 100, conclusion: 'success' }),
-  });
-  assert.equal(staleSuccess.action, 'ignored-stale-success');
-  assert.equal(state.issues[0].state, 'open');
-
-  // 6. A newer success closes the issue with completed reason and recovered comment.
-  const recovered = await runNotifier({
-    github,
-    context,
-    core,
-    workflowRun: makeRun({ id: 104, conclusion: 'success' }),
-  });
-  assert.equal(recovered.action, 'recovered');
-  assert.equal(state.issues[0].state, 'closed');
-  assert.equal(state.issues[0].state_reason, 'completed');
-  assert.ok(state.comments.some((comment) => comment.issue_number === state.issues[0].number && /recovered/.test(comment.body)));
-
-  // A delayed rerun of an older failure must not reopen after a newer recovery transition.
-  const commentsAfterRecovery = state.comments.length;
-  state.jobsByRun.set(101, failedJob('Delayed old failure attempt'));
-  const delayedFailureAfterRecovery = await runNotifier({
-    github,
-    context,
-    core,
-    workflowRun: makeRun({ id: 101, run_attempt: 2 }),
-  });
-  assert.equal(delayedFailureAfterRecovery.action, 'ignored-stale-failure');
-  assert.equal(state.issues[0].state, 'closed');
-  assert.equal(state.comments.length, commentsAfterRecovery);
-
-  // An event equal to the latest recovery transition is also a duplicate.
-  const duplicateRecoveryVersion = await runNotifier({
-    github,
-    context,
-    core,
-    workflowRun: makeRun({ id: 104, run_attempt: 1 }),
-  });
-  assert.equal(duplicateRecoveryVersion.action, 'ignored-stale-failure');
-  assert.equal(state.issues[0].state, 'closed');
-
-  // A genuinely newer failure after recovery reopens the same machine-key issue.
-  state.jobsByRun.set(105, failedJob('Genuinely newer post-recovery failure'));
-  const reopenedAfterRecovery = await runNotifier({
-    github,
-    context,
-    core,
-    workflowRun: makeRun({ id: 105 }),
-  });
-  assert.equal(reopenedAfterRecovery.action, 'reopened');
-  assert.equal(state.issues.length, 2);
-  assert.equal(state.issues[0].state, 'open');
-  assert.match(state.issues[0].body, /Genuinely newer post-recovery failure/);
-
-  const recoveredAgain = await runNotifier({
-    github,
-    context,
-    core,
-    workflowRun: makeRun({ id: 106, conclusion: 'success' }),
-  });
-  assert.equal(recoveredAgain.action, 'recovered');
-  assert.equal(state.issues[0].state, 'closed');
-
-  // Same run ID with a higher successful attempt is also newer and can recover a rerun.
-  state.jobsByRun.set(110, failedJob('Attempt one failed'));
-  await runNotifier({
-    github,
-    context,
-    core,
-    workflowRun: makeRun({ id: 110, run_attempt: 1, head_branch: 'agent/rerun' }),
-  });
-  const rerunRecovery = await runNotifier({
-    github,
-    context,
-    core,
-    workflowRun: makeRun({ id: 110, run_attempt: 2, conclusion: 'success', head_branch: 'agent/rerun' }),
-  });
-  assert.equal(rerunRecovery.action, 'recovered');
-
-  // External repository heads do not receive a write-capable lifecycle mutation.
-  const beforeExternal = state.issues.length;
-  const external = await runNotifier({
-    github,
-    context,
-    core,
-    workflowRun: makeRun({
-      id: 120,
-      head_branch: 'contributor-branch',
-      head_repository: { full_name: 'fork/repo' },
-    }),
+    workflowRun: makeRun({ id: 102, head_repository: { full_name: 'fork/repo' } }),
   });
   assert.equal(external.action, 'ignored-external-repository');
-  assert.equal(state.issues.length, beforeExternal);
+  assert.equal(state.jobsCalls + state.artifactCalls, callsBeforeExternal);
+  assert.equal(state.issueWrites, 0);
 
-  // 7. Evidence comes from job data, never workflow-name root-cause guesses.
-  const factualIssue = state.issues.find((issue) => /agent\/other-branch/.test(issue.body));
-  assert.ok(factualIssue);
-  assert.match(factualIssue.body, /Other branch failure/);
-  assert.doesNotMatch(factualIssue.body, /Вероятно|Как исправить|Подозреваемые route/);
-
-  // 8. Route-impact is explicitly omitted rather than faked.
-  assert.match(state.issues[0].body, /Route impact is not inferred/);
-  assert.doesNotMatch(state.issues[0].body, /route_impact_data=/);
-
-  // 9. Retired identities close only when their source is provably inactive.
-  const retirementHarness = createHarness();
-  const retirement = retirementHarness.state;
-  const retirementArgs = {
-    github: retirementHarness.github,
-    context: retirementHarness.context,
-    core: retirementHarness.core,
-    defaultBranch: 'main',
+  // Evidence API failure is non-fatal and remains read-only.
+  const degraded = createHarness();
+  degraded.github.rest.actions.listJobsForWorkflowRun = async () => {
+    degraded.state.jobsCalls += 1;
+    throw new Error('jobs unavailable');
   };
-
-  retirement.jobsByRun.set(200, failedJob('Closed PR failure'));
-  retirement.pullsByNumber.set(17, { number: 17, state: 'closed', merged: true, merged_at: '2026-07-25T19:00:00Z' });
-  await runNotifier({
-    github: retirementHarness.github,
-    context: retirementHarness.context,
-    core: retirementHarness.core,
-    workflowRun: makeRun({ id: 200, head_branch: 'feature/closed-pr', pull_requests: [{ number: 17 }] }),
+  degraded.github.rest.actions.listWorkflowRunArtifacts = async () => {
+    degraded.state.artifactCalls += 1;
+    throw new Error('artifacts unavailable');
+  };
+  const degradedResult = await runDiagnostics({
+    github: degraded.github,
+    context: degraded.context,
+    core: degraded.core,
+    workflowRun: makeRun({ id: 103 }),
   });
+  assert.equal(degradedResult.action, 'recorded-read-only');
+  assert.equal(degraded.state.issueWrites, 0);
+  assert.ok(degraded.state.warnings.some((line) => /Jobs API: jobs unavailable/.test(line)));
+  assert.ok(degraded.state.warnings.some((line) => /Artifacts API: artifacts unavailable/.test(line)));
 
-  retirement.jobsByRun.set(201, failedJob('Deleted branch failure'));
-  await runNotifier({
-    github: retirementHarness.github,
-    context: retirementHarness.context,
-    core: retirementHarness.core,
-    workflowRun: makeRun({ id: 201, head_branch: 'agent/deleted-branch' }),
-  });
+  // Issue API is a forbidden regression: the harness would throw if touched.
+  assert.equal(state.issueWrites + degraded.state.issueWrites, 0);
 
-  retirement.jobsByRun.set(202, failedJob('Integrated branch failure'));
-  retirement.branches.set('agent/integrated-branch', { name: 'agent/integrated-branch' });
-  retirement.comparisons.set('agent/integrated-branch', 0);
-  await runNotifier({
-    github: retirementHarness.github,
-    context: retirementHarness.context,
-    core: retirementHarness.core,
-    workflowRun: makeRun({ id: 202, head_branch: 'agent/integrated-branch' }),
-  });
-
-  retirement.jobsByRun.set(203, failedJob('Active PR branch failure'));
-  retirement.branches.set('agent/active-pr', { name: 'agent/active-pr' });
-  retirement.openPullsByHead.set('example:agent/active-pr', [{ number: 33, state: 'open' }]);
-  retirement.comparisons.set('agent/active-pr', 0);
-  await runNotifier({
-    github: retirementHarness.github,
-    context: retirementHarness.context,
-    core: retirementHarness.core,
-    workflowRun: makeRun({ id: 203, head_branch: 'agent/active-pr' }),
-  });
-
-  retirement.jobsByRun.set(204, failedJob('Ahead branch failure'));
-  retirement.branches.set('agent/ahead', { name: 'agent/ahead' });
-  retirement.comparisons.set('agent/ahead', 2);
-  await runNotifier({
-    github: retirementHarness.github,
-    context: retirementHarness.context,
-    core: retirementHarness.core,
-    workflowRun: makeRun({ id: 204, head_branch: 'agent/ahead' }),
-  });
-
-  retirement.jobsByRun.set(205, failedJob('Default branch failure'));
-  retirement.branches.set('main', { name: 'main' });
-  retirement.comparisons.set('main', 0);
-  await runNotifier({
-    github: retirementHarness.github,
-    context: retirementHarness.context,
-    core: retirementHarness.core,
-    workflowRun: makeRun({ id: 205, head_branch: 'main' }),
-  });
-
-  const reconciled = await runNotifier.reconcileRetiredIdentities(retirementArgs);
-  assert.equal(reconciled.action, 'reconciled-retired-identities');
-  assert.equal(reconciled.retired.length, 3);
-  assert.deepEqual(
-    reconciled.retired.map((item) => item.reason).sort(),
-    ['closed-merged-pr', 'deleted-branch', 'fully-integrated-branch'],
-  );
-  const issueByIdentity = (identity) => retirement.issues.find((issue) => runNotifier._test.decodeState(issue.body)?.identity === identity);
-  for (const identity of ['pr:example/repo#17', 'branch:example/repo:agent/deleted-branch', 'branch:example/repo:agent/integrated-branch']) {
-    const issue = issueByIdentity(identity);
-    assert.equal(issue.state, 'closed');
-    assert.equal(issue.state_reason, 'not_planned');
-  }
-  assert.equal(issueByIdentity('branch:example/repo:agent/active-pr').state, 'open');
-  assert.equal(issueByIdentity('branch:example/repo:agent/ahead').state, 'open');
-  assert.equal(issueByIdentity('branch:example/repo:main').state, 'open');
-  assert.ok(retirement.comments.some((comment) => /not.*evidence.*recovered/i.test(comment.body)));
-
-  console.log('✅ CI failure lifecycle deterministic contract passed');
+  console.log('✅ Silent CI diagnostics contract passed: exact failure evidence, zero issue/comment writes');
 })().catch((error) => {
-  console.error(error.stack || error.message);
-  process.exit(1);
+  console.error(error);
+  process.exitCode = 1;
 });
