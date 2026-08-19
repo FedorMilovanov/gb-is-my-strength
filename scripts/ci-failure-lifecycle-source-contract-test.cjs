@@ -8,7 +8,7 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '..');
 const read = (relativePath) => fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
 
-function validate({ workflow, sharedGuard, notifier, contract }) {
+function validate({ workflow, sharedGuard, diagnostic, contract }) {
   const problems = [];
   const must = (label, source, pattern) => {
     if (!pattern.test(source)) problems.push(label);
@@ -17,65 +17,54 @@ function validate({ workflow, sharedGuard, notifier, contract }) {
     if (pattern.test(source)) problems.push(label);
   };
 
-  must('readiness gateway is subscribed', workflow, /- "Metadata & IndexNow Readiness"/);
-  must('deploy workflow is subscribed', workflow, /- "Deploy to GitHub Pages"/);
-  must('downstream deployment witness ledger is subscribed', workflow, /- "Deployment Witness Ledger"/);
-  mustNot('stale standalone IndexNow workflow subscription remains', workflow, /IndexNow — Notify Search Engines/);
-  must('workflow handles every completed conclusion', workflow, /types:\s*\n\s*- completed/);
-  mustNot('workflow still runs only on failure', workflow, /conclusion\s*==\s*['"]failure['"]/);
+  for (const name of [
+    'Native Source Contract',
+    'Route Registry Validators',
+    'Metadata & IndexNow Readiness',
+    'Search Manifest Policy',
+    'Deploy Candidate Contract',
+    'Deploy to GitHub Pages',
+    'Deployment Witness Ledger',
+    'Source Link Audit',
+    'Runtime Interactive Audit',
+    'Visual Parity Guard — pixel-diff',
+    'Dist Strangler Dry Run',
+    'Shared Files Guard',
+    'Product to Research release witness',
+  ]) {
+    must(`workflow subscription missing: ${name}`, workflow, new RegExp(`- "${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`));
+  }
+
+  must('workflow handles completed runs', workflow, /types:\s*\n\s*- completed/);
   must('actions read permission is explicit', workflow, /^  actions: read$/m);
   must('contents read permission is explicit', workflow, /^  contents: read$/m);
-  must('issues write permission is explicit', workflow, /^  issues: write$/m);
-  must('pull request read permission is explicit', workflow, /^  pull-requests: read$/m);
-  must('lifecycle concurrency is non-cancelling', workflow, /cancel-in-progress:\s*false/);
+  mustNot('issues write permission is forbidden', workflow, /^\s*issues:\s*write\s*$/m);
+  mustNot('pull request write permission is forbidden', workflow, /^\s*pull-requests:\s*write\s*$/m);
+  mustNot('workflow must not publish issue receipts', workflow, /github\.rest\.issues\.|product-research-release-witness:v1|Publish durable Product to Research success receipt/);
   must('trusted default branch is selected', workflow, /repository\.default_branch/);
-  must('notifier is fetched through Contents API', workflow, /github\.rest\.repos\.getContent/);
-  must('trusted notifier path is fixed', workflow, /path = 'scripts\/ci-failure-lifecycle\.cjs'/);
-  must('workflow invokes retired identity reconciler', workflow, /await loaded\.exports\.reconcileRetiredIdentities/);
-  must('reconciliation is owned by successful Shared Files Guard', workflow, /workflowRun\.name === 'Shared Files Guard'[\s\S]*workflowRun\.conclusion === 'success'/);
-  must('reconciliation is default-branch only', workflow, /workflowRun\.head_branch === defaultBranch/);
+  must('diagnostic module is fetched through Contents API', workflow, /github\.rest\.repos\.getContent/);
+  must('trusted diagnostic path is fixed', workflow, /path = 'scripts\/ci-failure-lifecycle\.cjs'/);
   mustNot('triggering branch is checked out or executed', workflow, /actions\/checkout|workflow_run\.head_sha[^\n]*ref:/);
-  mustNot('fake route-impact downloader remains', workflow, /route-impact|route_impact_data|actions\/artifacts\/.*\/zip/);
-  mustNot('commit-message route guessing remains', workflow, /affectedHint|commitMsg\.toLowerCase|Подозреваемые route/);
-  mustNot('hardcoded root-cause guess remains', workflow, /Вероятно|Диагноз:|copy-legacy|DOM-структура/);
 
-  must('notifier lists exact jobs', notifier, /listJobsForWorkflowRun/);
-  must('notifier lists exact artifacts', notifier, /listWorkflowRunArtifacts/);
-  must('notifier uses machine lifecycle marker', notifier, /ci-failure-lifecycle:v1/);
-  must('notifier stores machine state', notifier, /ci-failure-state:v1/);
-  must('notifier separates workflow identity', notifier, /workflowIdentity/);
-  must('notifier closes recovered issue as completed', notifier, /state_reason:\s*'completed'/);
-  must('notifier rejects external repository heads', notifier, /ignored-external-repository/);
-  must('notifier refuses ambiguous duplicate markers', notifier, /Ambiguous CI lifecycle state/);
-  must('failure ordering uses latest lifecycle transition', notifier, /latestTransition[\s\S]*previousState\.latestSeen/);
-  must('notifier exports retired identity reconciler', notifier, /module\.exports\.reconcileRetiredIdentities = reconcileRetiredIdentities/);
-  must('reconciler verifies closed pull requests', notifier, /github\.rest\.pulls\.get/);
-  must('reconciler verifies branch existence', notifier, /github\.rest\.repos\.getBranch/);
-  must('reconciler preserves branches with open PRs', notifier, /github\.rest\.pulls\.list[\s\S]*if \(openPulls\.length\) return null/);
-  must('reconciler requires zero ahead commits', notifier, /ahead_by\) === 0/);
-  must('retirement is not recovery', notifier, /not.*evidence.*recovered/i);
-  must('retired issues close as not planned', notifier, /state_reason:\s*'not_planned'/);
-  mustNot('notifier infers routes from commit message', notifier, /affectedHint|msg\.includes\(|Подозреваемые route/);
+  must('diagnostic lists exact jobs', diagnostic, /listJobsForWorkflowRun/);
+  must('diagnostic lists exact artifacts', diagnostic, /listWorkflowRunArtifacts/);
+  must('diagnostic reports failed steps', diagnostic, /Failed step/);
+  must('diagnostic rejects external repository heads', diagnostic, /ignored-external-repository/);
+  must('diagnostic is explicitly read-only', diagnostic, /recorded-read-only/);
+  mustNot('diagnostic must never use Issues API', diagnostic, /github\.rest\.issues\./);
+  mustNot('diagnostic must never create comments', diagnostic, /createComment/);
+  mustNot('legacy lifecycle markers remain', diagnostic, /ci-failure-lifecycle:v1|ci-failure-state:v1/);
+  mustNot('legacy issue lifecycle actions remain', diagnostic, /state_reason|issue_number|reconcileRetiredIdentities|reopened|recovered/);
 
-  must('shared guard syntax-checks notifier', sharedGuard, /node --check scripts\/ci-failure-lifecycle\.cjs/);
-  must('shared guard runs deterministic lifecycle contract', sharedGuard, /node scripts\/ci-failure-lifecycle-contract-test\.cjs/);
+  must('shared guard syntax-checks diagnostic', sharedGuard, /node --check scripts\/ci-failure-lifecycle\.cjs/);
+  must('shared guard runs deterministic diagnostic contract', sharedGuard, /node scripts\/ci-failure-lifecycle-contract-test\.cjs/);
   must('shared guard runs source contract', sharedGuard, /node scripts\/ci-failure-lifecycle-source-contract-test\.cjs/);
 
-  must('contract covers failure creation', contract, /Failure creates exactly one lifecycle issue/);
-  must('contract covers repeated failure update', contract, /newer failure updates the same issue/);
-  must('contract covers branch separation', contract, /different branch has a different lifecycle key/);
-  must('contract covers cancelled runs', contract, /Cancelled\/superseded runs never create false failure alerts/);
-  must('contract covers stale success', contract, /older success cannot close a newer failure/);
-  must('contract covers recovery', contract, /newer success closes the issue/);
-  must('contract covers delayed failure after recovery', contract, /delayed rerun of an older failure must not reopen/);
-  must('contract covers genuine post-recovery failure', contract, /genuinely newer failure after recovery reopens/);
-  must('contract covers factual failed steps', contract, /Evidence comes from job data/);
-  must('contract covers route-impact omission', contract, /Route-impact is explicitly omitted rather than faked/);
-  must('contract covers retired identities', contract, /Retired identities close only when their source is provably inactive/);
-  must('contract covers closed PR retirement', contract, /Closed PR failure/);
-  must('contract covers deleted branch retirement', contract, /Deleted branch failure/);
-  must('contract preserves active PR branches', contract, /Active PR branch failure/);
-  must('contract preserves ahead branches', contract, /Ahead branch failure/);
+  must('contract covers read-only failure evidence', contract, /Failure records exact job\/step evidence without repository writes/);
+  must('contract covers non-failure suppression', contract, /Non-failure runs are ignored/);
+  must('contract covers external repository suppression', contract, /External repository heads are ignored/);
+  must('contract covers degraded evidence API behavior', contract, /Evidence API failure is non-fatal/);
+  must('contract makes issue API a forbidden regression', contract, /Issue API is a forbidden regression/);
 
   return problems;
 }
@@ -83,66 +72,48 @@ function validate({ workflow, sharedGuard, notifier, contract }) {
 const sources = {
   workflow: read('.github/workflows/notify-on-failure.yml'),
   sharedGuard: read('.github/workflows/shared-files-guard.yml'),
-  notifier: read('scripts/ci-failure-lifecycle.cjs'),
+  diagnostic: read('scripts/ci-failure-lifecycle.cjs'),
   contract: read('scripts/ci-failure-lifecycle-contract-test.cjs'),
 };
 
 const problems = validate(sources);
-assert.deepEqual(problems, [], `CI failure lifecycle source contract failed:\n- ${problems.join('\n- ')}`);
+assert.deepEqual(problems, [], `Silent CI diagnostics source contract failed:\n- ${problems.join('\n- ')}`);
 
 const mutations = [
   {
-    label: 'readiness subscription removal',
+    label: 'issues write permission regression',
     key: 'workflow',
-    mutate: (source) => source.replace('      - "Metadata & IndexNow Readiness"\n', ''),
+    mutate: (source) => source.replace('  contents: read\n', '  contents: read\n  issues: write\n'),
   },
   {
-    label: 'deployment ledger subscription removal',
+    label: 'workflow issue writer regression',
     key: 'workflow',
-    mutate: (source) => source.replace('      - "Deployment Witness Ledger"\n', ''),
+    mutate: (source) => `${source}\n# github.rest.issues.create\n`,
   },
   {
-    label: 'failure-only job regression',
-    key: 'workflow',
-    mutate: (source) => source.replace('    runs-on: ubuntu-latest', "    if: github.event.workflow_run.conclusion == 'failure'\n    runs-on: ubuntu-latest"),
+    label: 'diagnostic issue writer regression',
+    key: 'diagnostic',
+    mutate: (source) => `${source}\n// github.rest.issues.update\n`,
   },
   {
-    label: 'untrusted checkout regression',
-    key: 'workflow',
-    mutate: (source) => source.replace('    steps:\n', '    steps:\n      - uses: actions/checkout@v4\n        with:\n          ref: ${{ github.event.workflow_run.head_sha }}\n'),
+    label: 'jobs evidence removal',
+    key: 'diagnostic',
+    mutate: (source) => source.replace('listJobsForWorkflowRun', 'listJobs_REMOVED'),
   },
   {
-    label: 'recovery state reason removal',
-    key: 'notifier',
-    mutate: (source) => source.replace("    state_reason: 'completed',\n", ''),
+    label: 'artifact evidence removal',
+    key: 'diagnostic',
+    mutate: (source) => source.replace('listWorkflowRunArtifacts', 'listArtifacts_REMOVED'),
   },
   {
-    label: 'latest transition ordering removal',
-    key: 'notifier',
-    mutate: (source) => source.replace(
-      '  const latestTransition = previousState && (previousState.latestSeen || previousFailure);\n',
-      '  const latestTransition = previousFailure;\n',
-    ),
+    label: 'external repository boundary removal',
+    key: 'diagnostic',
+    mutate: (source) => source.replace("return { action: 'ignored-external-repository' };", "return { action: 'external-allowed' };"),
   },
   {
     label: 'deterministic contract removal',
     key: 'sharedGuard',
     mutate: (source) => source.replace('          node scripts/ci-failure-lifecycle-contract-test.cjs\n', ''),
-  },
-  {
-    label: 'retired identity workflow call removal',
-    key: 'workflow',
-    mutate: (source) => source.replace('              await loaded.exports.reconcileRetiredIdentities({\n', '              await Promise.resolve({\n'),
-  },
-  {
-    label: 'retired identity export removal',
-    key: 'notifier',
-    mutate: (source) => source.replace('module.exports.reconcileRetiredIdentities = reconcileRetiredIdentities;\n', ''),
-  },
-  {
-    label: 'ahead branch safety weakening',
-    key: 'notifier',
-    mutate: (source) => source.replace('comparison.data.ahead_by) === 0', 'comparison.data.ahead_by) >= 0'),
   },
 ];
 
@@ -152,4 +123,4 @@ for (const mutation of mutations) {
   assert.ok(found.length > 0, `${mutation.label} must be rejected`);
 }
 
-console.log(`✅ CI failure lifecycle source contract passed (${mutations.length} adversarial mutations)`);
+console.log(`✅ Silent CI diagnostics source contract passed (${mutations.length} adversarial mutations)`);
