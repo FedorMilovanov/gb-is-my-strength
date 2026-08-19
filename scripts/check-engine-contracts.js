@@ -15,6 +15,136 @@ function syntaxCheck(file) {
   check('JS syntax: ' + file, result.status === 0, (result.stderr || result.stdout || '').trim());
 }
 
+function validateCssSyntax(source) {
+  const errors = [];
+  const stack = [];
+  const openerFor = { '}': '{', ']': '[', ')': '(' };
+  let state = 'normal';
+  let tokenStart = -1;
+
+  for (let i = 0; i < source.length; i += 1) {
+    const ch = source[i];
+    const next = source[i + 1];
+
+    if (state === 'comment') {
+      if (ch === '*' && next === '/') {
+        state = 'normal';
+        tokenStart = -1;
+        i += 1;
+      }
+      continue;
+    }
+
+    if (state === 'single' || state === 'double') {
+      const quote = state === 'single' ? "'" : '"';
+      if (ch === '\\') {
+        if (i + 1 >= source.length) {
+          errors.push(`dangling string escape at ${i}`);
+          break;
+        }
+        if (next === '\r' && source[i + 2] === '\n') i += 2;
+        else i += 1;
+        continue;
+      }
+      if (ch === quote) {
+        state = 'normal';
+        tokenStart = -1;
+        continue;
+      }
+      if (ch === '\n' || ch === '\r' || ch === '\f') {
+        errors.push(`unescaped newline in string at ${i}`);
+        break;
+      }
+      continue;
+    }
+
+    if (ch === '/' && next === '*') {
+      state = 'comment';
+      tokenStart = i;
+      i += 1;
+      continue;
+    }
+    if (ch === "'" || ch === '"') {
+      state = ch === "'" ? 'single' : 'double';
+      tokenStart = i;
+      continue;
+    }
+    if (ch === '\\') {
+      if (i + 1 >= source.length || next === '\n' || next === '\r' || next === '\f') {
+        errors.push(`invalid CSS escape at ${i}`);
+        break;
+      }
+      i += 1;
+      continue;
+    }
+    if (ch === '\0') {
+      errors.push(`NUL byte at ${i}`);
+      break;
+    }
+    if (ch === '*' && next === '/') {
+      errors.push(`stray comment closer at ${i}`);
+      break;
+    }
+
+    if (ch === '{' || ch === '[' || ch === '(') {
+      stack.push({ ch, pos: i });
+      continue;
+    }
+    if (Object.prototype.hasOwnProperty.call(openerFor, ch)) {
+      const expected = openerFor[ch];
+      const actual = stack.pop();
+      if (!actual || actual.ch !== expected) {
+        errors.push(`mismatched ${ch} at ${i}; expected opener ${expected}`);
+        break;
+      }
+    }
+  }
+
+  if (errors.length === 0 && state === 'comment') errors.push(`unterminated comment at ${tokenStart}`);
+  if (errors.length === 0 && (state === 'single' || state === 'double')) errors.push(`unterminated string at ${tokenStart}`);
+  if (errors.length === 0 && stack.length > 0) {
+    const unclosed = stack[stack.length - 1];
+    errors.push(`unclosed ${unclosed.ch} at ${unclosed.pos}`);
+  }
+  return errors;
+}
+
+function runCssSyntaxSelfCheck() {
+  const valid = [
+    'a{color:red}',
+    '@media (min-width:1px){a{content:"}[]";width:calc(100% - 1px)}}',
+    "a{--x:'a\\\\b';background:url(\"data:image/svg+xml,<svg></svg>\")}",
+    String.raw`.a\{b{color:red}`,
+    '@supports selector(:has(> a)){.x{color:var(--c)}}',
+    '/* ]}) */ .x::before{content:"/* not a comment */"}',
+  ];
+  const invalid = [
+    'a{color:red',
+    'a{color:red}}',
+    'a{content:"oops}',
+    'a{/*oops',
+    'a{width:calc(100% - 1px]}',
+    'a{content:"line\nbreak"}',
+    'a{color:red}*/',
+    '.x\\\n{color:red}',
+  ];
+  for (const cssText of valid) {
+    const errors = validateCssSyntax(cssText);
+    if (errors.length) throw new Error(`valid fixture rejected: ${JSON.stringify(cssText)} :: ${errors.join(' | ')}`);
+  }
+  for (const cssText of invalid) {
+    const errors = validateCssSyntax(cssText);
+    if (!errors.length) throw new Error(`invalid fixture admitted: ${JSON.stringify(cssText)}`);
+  }
+}
+
+try {
+  runCssSyntaxSelfCheck();
+} catch (error) {
+  console.error(`❌ CSS syntax guard internal contract failed: ${error.message}`);
+  process.exit(2);
+}
+
 const css = read('css/floating-cluster.css');
 const badOverlay = css.split('\n').filter((line) => /^\s*\.gill-settings-overlay/.test(line) || /,\s*\.gill-settings-overlay/.test(line));
 check('CSS: .gill-settings-overlay scoped by [data-gill-v16]', badOverlay.length === 0, badOverlay.slice(0, 3).join(' | '));
@@ -57,9 +187,13 @@ check('Reader actions: print delegates pagination, records failure and calls win
   readerActions.includes("status: 'failed'") &&
   readerActions.includes('if (printing) return copyReport(report)') &&
   readerActions.includes('window.print();'));
-check('Reader actions: Astro module graph owns hashing and legacy root stays clean',
+const readerAssetCalls = readerActionsRuntime.match(/\bassetUrl\s*\(\s*['"][^'"]+['"]\s*\)/g) || [];
+check('Reader actions: Astro module graph owns hashing and only explicit Vosk asset resolution',
   readerActionsRuntime.includes("import '../../runtime/reader-actions.js';") &&
-  !readerActionsRuntime.includes('assetUrl(') &&
+  readerActionsRuntime.includes("import { assetUrl } from '../../lib/asset-version';") &&
+  readerActionsRuntime.includes("const voskEngineSrc = assetUrl('js/vosk-tts-engine.js');") &&
+  readerActionsRuntime.includes('<script is:inline defer src={voskEngineSrc}></script>') &&
+  readerAssetCalls.length === 1 &&
   !fs.existsSync(path.join(ROOT, 'js/reader-actions.js')));
 check('Reader actions: strict-native series use explicit owner without site.js',
   gillChrome.includes('ReaderActionsRuntime') && nagornayaRuntime.includes('ReaderActionsRuntime') &&
@@ -180,7 +314,14 @@ check('Atlas: relation filters own edge focus, detail neighbors and active-focus
 check('Atlas: group navigation clears stale focus from the URL', /updateUrl\(\{\s*group:[\s\S]{0,160}focus:\s*null/.test(atlasRuntime));
 check('Atlas: keyboard graph and search navigation are native contracts', atlasRuntime.includes('function nearestNode') && atlasRuntime.includes('function handleNodeKeyboard') && atlasRuntime.includes('function moveSearchCursor') && atlasRuntime.includes("event.key === 'ArrowDown'"));
 check('Atlas: deterministic desktop and compact layouts are first-class profiles', atlasRuntime.includes('DESKTOP_WORLD') && atlasRuntime.includes('COMPACT_WORLD') && atlasRuntime.includes('function relayoutForViewport') && atlasRuntime.includes("app.dataset.layoutProfile = profile.id"));
-check('Atlas: detail rail consumes desktop grid only during focus', atlasStyles.includes('--atlas-detail-track:0px') && atlasStyles.includes('.atlas-app.has-detail{--atlas-detail-track:var(--atlas-detail)}') && atlasRuntime.includes("app.classList.add('has-detail')") && atlasRuntime.includes("app.classList.remove('has-detail')"));
+const syncDetailSurfaceMatch = atlasRuntime.match(/function\s+syncDetailSurface\s*\(\s*open\s*\)\s*\{([\s\S]{0,500}?)\n\s*\}/);
+const syncDetailSurface = syncDetailSurfaceMatch?.[1] || '';
+check('Atlas: detail rail consumes desktop grid only during focus',
+  atlasStyles.includes('--atlas-detail-track:0px') &&
+  atlasStyles.includes('.atlas-app.has-detail{--atlas-detail-track:var(--atlas-detail)}') &&
+  syncDetailSurface.includes("detail.classList.toggle('is-open', Boolean(open));") &&
+  syncDetailSurface.includes("app.classList.toggle('has-detail', Boolean(open));") &&
+  syncDetailSurface.includes('setSurfaceInert(detail, !open, open ? false : true);'));
 check('Atlas: compact scenography has a first-class owner and preserves focus contrast',
   atlasRoute.includes("import AtlasVisualPolish from '@/components/map/AtlasVisualPolish.astro'") &&
   atlasRoute.includes('<AtlasVisualPolish />') &&
@@ -215,15 +356,23 @@ const relationContract = spawnSync(process.execPath, [path.join(ROOT, 'scripts/c
 if (relationContract.stdout) process.stdout.write(relationContract.stdout);
 check('Relations: real data passes compiler contracts', relationContract.status === 0, (relationContract.stderr || '').trim());
 
+const cssSyntaxFiles = ['css/site.css', 'css/floating-cluster.css', 'css/mobile-hotfix.css', 'css/series-samizdat.css', 'css/series-manuscript.css', 'css/nagornaya-mobile-toc.css', 'css/home.css', 'src/runtime/relationship-panel.css'];
+let csstree = null;
 try {
-  const csstree = require('css-tree');
-  for (const file of ['css/site.css', 'css/floating-cluster.css', 'css/mobile-hotfix.css', 'css/series-samizdat.css', 'css/series-manuscript.css', 'css/nagornaya-mobile-toc.css', 'css/home.css', 'src/runtime/relationship-panel.css']) {
-    const errors = [];
-    csstree.parse(read(file), { onParseError: (error) => errors.push(error.message) });
-    check('CSS AST: ' + file, errors.length === 0, errors.slice(0, 2).join(' | '));
+  csstree = require('css-tree');
+} catch {
+  // Shared Files Guard intentionally runs without npm ci. Structural syntax
+  // validation below is dependency-free; css-tree remains an additive check
+  // when a declared/installed environment provides it.
+}
+for (const file of cssSyntaxFiles) {
+  const errors = validateCssSyntax(read(file));
+  check('CSS syntax: ' + file, errors.length === 0, errors.slice(0, 2).join(' | '));
+  if (csstree) {
+    const astErrors = [];
+    csstree.parse(read(file), { onParseError: (error) => astErrors.push(error.message) });
+    check('CSS AST: ' + file, astErrors.length === 0, astErrors.slice(0, 2).join(' | '));
   }
-} catch (error) {
-  check('CSS AST: css-tree available', false, error.message);
 }
 
 check('TTS artwork exists', fs.existsSync(path.join(ROOT, 'images/tts-artwork.svg')));

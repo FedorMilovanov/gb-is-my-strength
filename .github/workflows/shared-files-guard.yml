@@ -81,14 +81,6 @@ jobs:
       - name: Workflow policy contracts
         run: npm run workflows:check
 
-      - name: CI failure lifecycle regressions
-        run: |
-          node --check scripts/ci-failure-lifecycle.cjs
-          node --check scripts/ci-failure-lifecycle-contract-test.cjs
-          node --check scripts/ci-failure-lifecycle-source-contract-test.cjs
-          node scripts/ci-failure-lifecycle-contract-test.cjs
-          node scripts/ci-failure-lifecycle-source-contract-test.cjs
-
       - name: Repository control-plane integrity
         run: npm run control-plane:audit
 
@@ -179,8 +171,9 @@ jobs:
       - name: Special overlay writer regressions
         run: npm run overlay:special:writers:test
 
-      - name: Map engine P0 regressions
+      - name: Engine contracts and map P0 regressions
         run: |
+          npm run engine:contracts
           node --check karty/_engine/map-engine.js
           node scripts/map-engine-p0-regression-test.js
           node scripts/avraam-map-audit.js

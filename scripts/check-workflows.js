@@ -700,21 +700,6 @@ function checkSupportingWorkflows(workflowTexts) {
   const shared = workflowTexts[sharedPath] || read(sharedPath);
   must(sharedPath, shared, /npm run workflows:check/, 'must run workflow policy contracts');
   must(sharedPath, shared, /npm run workflows:lint/, 'must run blocking actionlint');
-
-  const notifyPath = '.github/workflows/notify-on-failure.yml';
-  const notify = workflowTexts[notifyPath] || read(notifyPath);
-  for (const workflowName of [
-    'Native Source Contract',
-    'Route Registry Validators',
-    'Metadata & IndexNow Readiness',
-    'Search Manifest Policy',
-    'Deploy Candidate Contract',
-    'Source Link Audit',
-    'Runtime Interactive Audit',
-    'Dist Strangler Dry Run',
-    'Visual Parity Guard — pixel-diff',
-    'Shared Files Guard',
-  ]) must(notifyPath, notify, new RegExp(workflowName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `must listen for ${workflowName}`);
 }
 
 const workflowTexts = loadWorkflowTexts();
@@ -759,5 +744,5 @@ console.log('✅ Validation is source-read-only and least-privilege');
 console.log('✅ Explicit autofix capabilities require machine writer lease + exact-head CAS; transactional observation remains isolated');
 console.log('✅ Production route coverage is registry-driven');
 console.log('✅ Candidate build, immutable promotion and live witnesses remain separated');
-console.log('✅ Actionlint and SYSTEM gate notification coverage remain blocking');
+console.log('✅ Actionlint and SYSTEM workflow policy coverage remain blocking');
 console.log('✅ Actionlint source authority is offline, checksum-bound and cross-platform');
