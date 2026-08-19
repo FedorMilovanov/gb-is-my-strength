@@ -6,7 +6,9 @@
  * string-fragment transport. The semantic <main> is provided
  * by the slot (PastorSeriesMain).
  */
-import SiteSectionsMenu from '@/components/article-pilots/_shared/SiteSectionsMenu.astro';
+import SiteSectionsMenu from '@/components/article-pilots/_shared/SiteSectionsMenu.astro'
+import { assetUrl } from '@/lib/asset-version';;
+const __gbSearchSrc = assetUrl('js/search.js');
 ---
 <a href="#main-content" class="skip-link">Перейти к содержимому</a>
 
@@ -162,4 +164,4 @@ import SiteSectionsMenu from '@/components/article-pilots/_shared/SiteSectionsMe
 <script is:inline src="../js/highlights.js?v=25484760" defer></script>
 <script is:inline src="../js/enhancements.js?v=1b5392b1" defer></script>
 <script is:inline src="../js/sw-register.js?v=e61e1210" defer></script>
-<script is:inline>!function(){if(window.__gbSearchLazyBound)return;window.__gbSearchLazyBound=1;var src="../js/search.js?v=106d65f6";function load(open){if(window.GBSearch&&window.GBSearch.open&&window.GBSearch.__ready){open&&window.GBSearch.open();return}if(open)window.__gbSearchOpenAfterLoad=true;if(window.__gbSearchLoading)return;window.__gbSearchLoading=true;window.__gbSearchBootRequested=true;var s=document.createElement("script");s.defer=true;s.src=src;s.onload=function(){window.__gbSearchLoading=false;if(open&&window.GBSearch&&window.GBSearch.open)window.GBSearch.open()};s.onerror=function(){window.__gbSearchLoading=false};document.head.appendChild(s)}function click(e){var sel="#gbSearchBtn,[data-gbs2-search],["+"data-fc-"+"action='search'],.gb-nav-search-icon,.gb-search-btn",t=e.target&&e.target.closest&&e.target.closest(sel);if(t){e.preventDefault();load(true)}}document.addEventListener("click",click,true);window.addEventListener("gb:openSearch",function(){load(true)})}();</script>
+<script is:inline define:vars={{ __gbSearchSrc }}>!function(){if(window.__gbSearchLazyBound)return;window.__gbSearchLazyBound=1;var src=__gbSearchSrc;function load(open){if(window.GBSearch&&window.GBSearch.open&&window.GBSearch.__ready){open&&window.GBSearch.open();return}if(open)window.__gbSearchOpenAfterLoad=true;if(window.__gbSearchLoading)return;window.__gbSearchLoading=true;window.__gbSearchBootRequested=true;var s=document.createElement("script");s.defer=true;s.src=src;s.onload=function(){window.__gbSearchLoading=false;if(open&&window.GBSearch&&window.GBSearch.open)window.GBSearch.open()};s.onerror=function(){window.__gbSearchLoading=false};document.head.appendChild(s)}function click(e){var sel="#gbSearchBtn,[data-gbs2-search],["+"data-fc-"+"action='search'],.gb-nav-search-icon,.gb-search-btn",t=e.target&&e.target.closest&&e.target.closest(sel);if(t){e.preventDefault();load(true)}}document.addEventListener("click",click,true);window.addEventListener("gb:openSearch",function(){load(true)})}();</script>
