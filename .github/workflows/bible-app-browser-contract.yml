@@ -1,0 +1,82 @@
+name: Bible App Deep Browser Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/bible-app-browser-contract.mjs'
+      - '.github/workflows/bible-app-browser-contract.yml'
+      - 'src/pages/index.astro'
+      - 'src/pages/app/**'
+      - 'src/components/home/**'
+      - 'src/components/article-pilots/genesis6/Genesis6BibleAppChapterCta.astro'
+      - 'src/components/article-pilots/genesis6/Genesis6ArticlePage.astro'
+      - 'src/pages/hard-texts/**'
+      - 'css/**'
+      - 'js/**'
+      - 'src/runtime/**'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bible-app-deep-browser-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser-contract:
+    name: Bible App — ${{ matrix.engine }} deep clicks
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Prove exact source identity
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Validate browser contract source
+        run: node --check scripts/bible-app-browser-contract.mjs
+
+      - name: Build production-like dist
+        run: npm run strangler:build:production-like
+
+      - name: Install Playwright ${{ matrix.engine }}
+        run: timeout 12m npx playwright install --with-deps ${{ matrix.engine }}
+
+      - name: Run Bible App deep browser contract
+        env:
+          GB_APP_BROWSER: ${{ matrix.engine }}
+        run: node scripts/bible-app-browser-contract.mjs
+
+      - name: Upload Bible App browser evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: bible-app-browser-${{ matrix.engine }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/bible-app-browser
+          if-no-files-found: error
+          retention-days: 14
