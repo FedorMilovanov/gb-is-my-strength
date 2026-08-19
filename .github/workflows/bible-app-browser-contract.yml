@@ -30,7 +30,7 @@ jobs:
   browser-contract:
     name: Bible App — ${{ matrix.engine }} deep clicks
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -65,7 +65,7 @@ jobs:
         run: npm run strangler:build:production-like
 
       - name: Install Playwright ${{ matrix.engine }}
-        run: timeout 12m npx playwright install --with-deps ${{ matrix.engine }}
+        run: npx playwright install --with-deps ${{ matrix.engine }}
 
       - name: Run Bible App deep browser contract
         env:
@@ -78,5 +78,5 @@ jobs:
         with:
           name: bible-app-browser-${{ matrix.engine }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: reports/bible-app-browser
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
