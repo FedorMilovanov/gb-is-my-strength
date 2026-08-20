@@ -73,10 +73,10 @@ const expectedHolds = ['EVIDENCE_HOLD', 'LOCATOR_HOLD', 'ARCHIVE_HOLD', 'RIGHTS_
 if (!sameMembers(roadmap.researchEvidenceModel?.classes, expectedEvidenceClasses)) fail('Research evidence classes must stay A1/A2/A3/B1/C/D');
 if (!sameMembers(roadmap.researchEvidenceModel?.stateAxes, expectedStateAxes)) fail('Research state axes must stay access/locator/rights/publication');
 if (!sameMembers(roadmap.researchEvidenceModel?.holds, expectedHolds)) fail('Research HOLD set drifted from Book Authority v2');
-if (roadmap.productConfidenceAxis?.registry !== 'data/baptisty-rossii-source-confidence.json') fail('Product source-confidence registry path mismatch');
+if (roadmap.productConfidenceAxis?.status !== 'not-yet-centralized') fail('Product Baptist source-confidence must stay explicitly not-yet-centralized until a dedicated publication lane creates a real SSOT');
+if (roadmap.productConfidenceAxis?.registry !== null) fail('Product Baptist source-confidence registry must stay null while no canonical registry exists');
 if (roadmap.productConfidenceAxis?.separateFromResearchEvidenceClass !== true) fail('Product confidence must stay independent from Research evidenceClass');
 if (roadmap.productConfidenceAxis?.mechanicalMappingForbidden !== true) fail('mechanical Research→Product confidence mapping must remain forbidden');
-if (!exists(roadmap.productConfidenceAxis?.registry || '')) fail(`Product source-confidence registry missing: ${roadmap.productConfidenceAxis?.registry || '<missing>'}`);
 
 const requiredReady = [
   'independentHistoricalQuestion',
