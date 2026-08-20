@@ -27,6 +27,12 @@ function add(vp, route, check, ok, detail = '') {
 function slug(route) {
   return route === '/' ? 'home' : route.replace(/^\/+|\/+$/g, '').replace(/[^a-z0-9а-яё_-]+/gi, '-').slice(0, 80);
 }
+function isSameOrigin(url) {
+  return url === BASE || url.startsWith(`${BASE}/`);
+}
+function isCoreResource(kind) {
+  return ['document', 'script', 'stylesheet', 'xhr', 'fetch'].includes(kind);
+}
 async function shot(page, vp, route, suffix = '') {
   const dir = join(OUT, vp.id);
   await mkdir(dir, { recursive: true });
@@ -54,13 +60,16 @@ async function generic(page, vp, route, state) {
   });
   add(vp, route, 'runtime:pageerror', state.pageErrors.length === 0, state.pageErrors.join(' | '));
   add(vp, route, 'runtime:console-error', state.consoleErrors.length === 0, state.consoleErrors.join(' | '));
+  add(vp, route, 'assets:same-origin', state.badAssets.length === 0, state.badAssets.join(' | '));
   add(vp, route, 'layout:no-horizontal-overflow', facts.overflow <= 8, `${facts.overflow}px`);
   add(vp, route, 'document:title', facts.title.length > 3, facts.title);
   add(vp, route, 'document:h1', Boolean(facts.h1), facts.h1 || 'missing h1');
   add(vp, route, 'document:canonical-live-origin', facts.canonical.startsWith(`${BASE}/`), facts.canonical);
 }
 async function go(page, vp, route, state) {
-  state.pageErrors.length = 0; state.consoleErrors.length = 0;
+  state.pageErrors.length = 0;
+  state.consoleErrors.length = 0;
+  state.badAssets.length = 0;
   const response = await page.goto(BASE + route, { waitUntil: 'domcontentloaded', timeout: 45000 });
   await page.waitForTimeout(700);
   add(vp, route, 'http:200', response?.status() === 200, response?.status() ?? 'no response');
@@ -99,13 +108,32 @@ for (const vp of VIEWPORTS) {
   // Telemetry is not part of product correctness and can be blocked by CI networks.
   await context.route('https://mc.yandex.**/**', (route) => route.abort());
   const page = await context.newPage();
-  const state = { pageErrors: [], consoleErrors: [] };
+  const state = { pageErrors: [], consoleErrors: [], badAssets: [] };
   page.on('pageerror', (e) => state.pageErrors.push(String(e).slice(0, 400)));
   page.on('console', (m) => {
     if (m.type() !== 'error') return;
     const text = m.text();
-    if (/ERR_FAILED|mc\.yandex/i.test(text)) return;
-    state.consoleErrors.push(text.slice(0, 400));
+    const sourceUrl = String(m.location()?.url || '');
+    if (/mc\.yandex/i.test(sourceUrl) || /mc\.yandex/i.test(text)) return;
+    // Chromium can emit an anonymous network console line without the failed
+    // resource URL. Same-origin network failures are tracked fail-closed below
+    // via response/requestfailed events, so an unattributed browser line is not
+    // allowed to masquerade as a product-owned runtime exception.
+    if (/^Failed to load resource:/i.test(text) && !sourceUrl) return;
+    state.consoleErrors.push(sourceUrl ? `${text.slice(0, 300)} @ ${sourceUrl.slice(0, 300)}` : text.slice(0, 400));
+  });
+  page.on('response', (response) => {
+    const url = response.url();
+    const status = response.status();
+    const kind = response.request().resourceType();
+    if (!isSameOrigin(url) || status < 400 || !isCoreResource(kind)) return;
+    state.badAssets.push(`${status} ${new URL(url).pathname} [${kind}]`);
+  });
+  page.on('requestfailed', (request) => {
+    const url = request.url();
+    const kind = request.resourceType();
+    if (!isSameOrigin(url) || !isCoreResource(kind)) return;
+    state.badAssets.push(`FAILED ${new URL(url).pathname} [${kind}] ${request.failure()?.errorText || ''}`.trim());
   });
 
   try {
