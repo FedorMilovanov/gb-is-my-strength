@@ -9,6 +9,8 @@ on:
       - '.github/workflows/bible-app-browser-contract.yml'
       - 'src/pages/index.astro'
       - 'src/pages/app/**'
+      - 'src/components/app/**'
+      - 'src/data/site-sections.ts'
       - 'src/components/home/**'
       - 'src/components/article-pilots/genesis6/Genesis6BibleAppChapterCta.astro'
       - 'src/components/article-pilots/genesis6/Genesis6ArticlePage.astro'
