@@ -903,10 +903,10 @@
       "metadataSource": "src/components/baptisty-rossii/BaptistyRossiiPeterburgskayaLiniyaPageHead.astro",
       "contentType": "series-article",
       "editorialPublishedAt": "2026-06-04T00:00:00+03:00",
-      "editorialModifiedAt": "2026-06-13T12:00:00+03:00",
+      "editorialModifiedAt": "2026-08-20T00:00:00+03:00",
       "originalWorkPublishedAt": null,
-      "reviewStatus": "inconsistent-needs-review",
-      "provenance": "production-like-dist-migration-freeze",
+      "reviewStatus": "approved",
+      "provenance": "owner-reviewed-editorial-decision",
       "observations": {
         "visiblePublishedAt": "2026-06-13T00:00:00.000Z",
         "visibleModifiedAt": null,
