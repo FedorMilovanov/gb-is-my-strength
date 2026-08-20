@@ -37,7 +37,7 @@
 
 ### 3.1. Legacy route-growth baseline
 
-`47 400` слов — исторический target старого десятимаршрутного expansion-roadmap. Он сохраняется в машинном roadmap как `legacyRouteTargetWords` для сравнения с прежними аудитами, но **не является финальным объёмом книги**.
+`47 400` слов — исторический target старого десятимаршрутного expansion-roadmap. Он сохраняется в машинном roadmap как `legacyRouteGrowth.targetTotalWords` для сравнения с прежними аудитами, но **не является финальным объёмом книги**.
 
 ### 3.2. Book target
 
@@ -126,17 +126,19 @@ Research presence, Drive presence, URL reachability или bibliographic record 
 
 ### 5.3. Не смешивать с Product source-confidence
 
-`data/baptisty-rossii-source-confidence.json` остаётся отдельным Product-механизмом контроля опубликованных claim-confidence токенов. Его enum **не является alias** для `A1/A2/A3/B1/C/D`.
+На текущем Product HEAD **нет отдельного централизованного Baptist source-confidence registry**. Это отсутствие нельзя скрывать созданием пустого реестра ради CI.
 
-Правильная модель:
+Правильная текущая модель:
 
 ```text
 Research evidenceClass + states + HOLDs
                 ↓ editorial verification bridge
-Product publication claim + source-confidence token
+current published claim / source apparatus
                 ↓
-reader-facing prose / note / source apparatus
+reader-facing prose / note / bibliography
 ```
+
+Если отдельный Product confidence layer понадобится, он вводится только в самостоятельном content/publication lane после определения реальных consumers и machine contract. Его enum обязан оставаться независимым от `A1/A2/A3/B1/C/D`.
 
 Нельзя механически преобразовывать `A1 → confirmed`, `B1 → contextual` и т. п. без редакционной проверки конкретного claim.
 
@@ -286,7 +288,7 @@ Publication gates должны доказывать потребляемый р�
 - Этот документ является authority long-horizon book target, evidence bridge и publication readiness.
 - `data/baptisty-rossii-expansion-roadmap.json` — machine-readable projection этой authority + сохранённый legacy route baseline.
 - Research policy/registries остаются authority для Research evidence state; Product не переписывает их локально.
-- `data/baptisty-rossii-source-confidence.json` остаётся Product authority для своего отдельного confidence layer.
+- Dedicated Baptist Product source-confidence registry сейчас отсутствует; если он будет нужен, его создают отдельным publication/content lane с реальными consumers и без смешения с Research evidenceClass.
 - `data/baptisty-rossii-visual-atlas.json` остаётся machine authority atlas-планов; наличие записи не означает implementation.
 - В случае конфликта действуют current owner instruction → current `main`/active lane → current SSOT files → historical reports.
 
