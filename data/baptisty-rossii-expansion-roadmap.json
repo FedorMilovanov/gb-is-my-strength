@@ -43,9 +43,11 @@
     "rule": "Evidence class и operational/publication state — независимые оси. Research presence, Drive presence или URL reachability сами по себе не снимают HOLD."
   },
   "productConfidenceAxis": {
-    "registry": "data/baptisty-rossii-source-confidence.json",
+    "status": "not-yet-centralized",
+    "registry": null,
     "separateFromResearchEvidenceClass": true,
-    "mechanicalMappingForbidden": true
+    "mechanicalMappingForbidden": true,
+    "rule": "Current Product has no dedicated Baptist source-confidence registry. Do not invent an empty SSOT to satisfy a gate; any future Product confidence model must be introduced in a dedicated publication/content lane."
   },
   "readerFacingEvidenceLabels": [
     "Первичный документ",
