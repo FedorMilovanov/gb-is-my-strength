@@ -137,10 +137,56 @@ async function warmScroll(page) {
   await page.waitForTimeout(250);
 }
 
+function isExternalTelemetryNetworkNoise(text) {
+  const value = String(text || '');
+  const yandexTelemetryHost = /(?:https?|wss):\/\/(?:[^/\s'"]+\.)?mc\.yandex\.(?:com|ru)(?:[/:]|$)/i.test(value);
+  const networkFailure = /(?:WebSocket connection|Failed to load resource|net::ERR_|handshake|response code:\s*[45]\d\d|status(?: code)?[=:]?\s*[45]\d\d|HTTP\s+[45]\d\d|REQUEST\s+)/i.test(value);
+  return yandexTelemetryHost && networkFailure;
+}
+
+function isGenericResourceConsoleError(text) {
+  return /^Failed to load resource:/i.test(String(text || '').trim());
+}
+
+assert.equal(
+  isExternalTelemetryNetworkNoise('HTTP 500 image https://mc.yandex.ru/watch/123'),
+  true,
+  'structured Yandex HTTP failures must be classified as external telemetry noise',
+);
+assert.equal(
+  isExternalTelemetryNetworkNoise('HTTP 500 script http://127.0.0.1:4321/js/app.js'),
+  false,
+  'same-origin HTTP failures must remain fatal',
+);
+assert.equal(
+  isExternalTelemetryNetworkNoise('Uncaught TypeError: application crashed at https://mc.yandex.com/runtime.js'),
+  false,
+  'application errors must remain fatal even when text mentions Yandex',
+);
+assert.equal(
+  isGenericResourceConsoleError('Failed to load resource: the server responded with a status of 500 ()'),
+  true,
+  'anonymous resource console failures must be delegated to structured network events',
+);
+
 function monitorRuntime(page, bucket) {
   page.on('pageerror', (error) => bucket.push(`pageerror: ${error.message}`));
+  page.on('response', (response) => {
+    if (response.status() < 400) return;
+    const request = response.request();
+    const detail = `HTTP ${response.status()} ${request.resourceType()} ${response.url()}`;
+    if (!isExternalTelemetryNetworkNoise(detail)) bucket.push(`response: ${detail}`);
+  });
+  page.on('requestfailed', (request) => {
+    const detail = `REQUEST ${request.failure()?.errorText || 'failed'} ${request.resourceType()} ${request.url()}`;
+    if (!isExternalTelemetryNetworkNoise(detail)) bucket.push(`requestfailed: ${detail}`);
+  });
   page.on('console', (message) => {
-    if (message.type() === 'error') bucket.push(`console: ${message.text()}`);
+    if (message.type() !== 'error') return;
+    const text = message.text();
+    if (isGenericResourceConsoleError(text)) return;
+    if (isExternalTelemetryNetworkNoise(text)) return;
+    bucket.push(`console: ${text}`);
   });
 }
 
