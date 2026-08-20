@@ -58,8 +58,12 @@ function withoutNoscript(source) {
 function isExternalTelemetryNetworkNoise(text) {
   const value = String(text || '');
   const yandexTelemetryHost = /(?:https?|wss):\/\/(?:[^/\s'"]+\.)?mc\.yandex\.(?:com|ru)(?:[/:]|$)/i.test(value);
-  const networkFailure = /(?:WebSocket connection|Failed to load resource|net::ERR_|handshake|response code:\s*[45]\d\d|status(?: code)?[=:]?\s*[45]\d\d)/i.test(value);
+  const networkFailure = /(?:WebSocket connection|Failed to load resource|net::ERR_|handshake|response code:\s*[45]\d\d|status(?: code)?[=:]?\s*[45]\d\d|HTTP\s+[45]\d\d|REQUEST\s+)/i.test(value);
   return yandexTelemetryHost && networkFailure;
+}
+
+function isGenericResourceConsoleError(text) {
+  return /^Failed to load resource:/i.test(String(text || '').trim());
 }
 
 function chooseLiveRoot() {
@@ -121,9 +125,24 @@ assert(
   'I1 audit policy: Yandex telemetry network failure classification is missing',
 );
 assert(
+  isExternalTelemetryNetworkNoise('HTTP 500 fetch https://mc.yandex.ru/watch/123'),
+  'I1 audit policy: structured Yandex HTTP failures are classified as noise',
+  'I1 audit policy: structured Yandex HTTP failure classification is missing',
+);
+assert(
+  !isExternalTelemetryNetworkNoise('HTTP 500 script http://127.0.0.1:4321/js/app.js'),
+  'I1 audit policy: same-origin HTTP failures remain fatal',
+  'I1 audit policy: same-origin HTTP failure was incorrectly suppressed',
+);
+assert(
   !isExternalTelemetryNetworkNoise("Uncaught TypeError: application crashed at https://mc.yandex.com/runtime.js"),
   'I1 audit policy: application errors remain fatal even when text mentions Yandex',
   'I1 audit policy: application error was incorrectly suppressed',
+);
+assert(
+  isGenericResourceConsoleError('Failed to load resource: the server responded with a status of 500 ()'),
+  'I1 audit policy: anonymous resource console errors are delegated to structured network events',
+  'I1 audit policy: anonymous resource console errors are not recognized',
 );
 
 const wrap = read(WRAP_REL);
@@ -271,10 +290,27 @@ if (chromium) (async () => {
     } : { viewport: { width: vp.w, height: vp.h } });
     const page = await context.newPage();
     const errors = [];
-    page.on('pageerror', (error) => errors.push(error.message));
+    const networkErrors = [];
+    page.on('pageerror', (error) => errors.push(`pageerror ${error.message}`));
+    page.on('response', (browserResponse) => {
+      const status = browserResponse.status();
+      if (status < 400) return;
+      const request = browserResponse.request();
+      const detail = `HTTP ${status} ${request.resourceType()} ${browserResponse.url()}`;
+      if (!isExternalTelemetryNetworkNoise(detail)) networkErrors.push(detail.slice(0, 300));
+    });
+    page.on('requestfailed', (request) => {
+      const detail = `REQUEST ${request.failure()?.errorText || 'failed'} ${request.resourceType()} ${request.url()}`;
+      if (!isExternalTelemetryNetworkNoise(detail)) networkErrors.push(detail.slice(0, 300));
+    });
     page.on('console', (message) => {
       const text = message.text();
-      if (message.type() === 'error' && !text.includes('manifest') && !isExternalTelemetryNetworkNoise(text)) errors.push(text.slice(0, 140));
+      if (message.type() !== 'error' || text.includes('manifest') || isExternalTelemetryNetworkNoise(text)) return;
+      // Chromium's generic resource error omits the URL. response/requestfailed above
+      // are the fail-closed authority for network failures because they retain URL,
+      // HTTP status and resource type.
+      if (isGenericResourceConsoleError(text)) return;
+      errors.push(`console ${text.slice(0, 240)}`);
     });
 
     const response = await page.goto(wrapUrl, { waitUntil: 'load', timeout: 30000 });
@@ -350,7 +386,8 @@ if (chromium) (async () => {
         assert(/Как\s+читать\s+карту/i.test(uiText), `I10 [${vp.label}] обучающий coach видим на первом входе`, `I10 [${vp.label}] нет подсказки «Как читать карту»`);
       }
     }
-    assert(errors.length === 0, `I1 [${vp.label}] 0 pageerror`, `I1 [${vp.label}] errors: ${errors.slice(0, 3).join(' | ')}`);
+    const browserErrors = [...errors, ...networkErrors];
+    assert(browserErrors.length === 0, `I1 [${vp.label}] 0 browser errors`, `I1 [${vp.label}] errors: ${browserErrors.slice(0, 3).join(' | ')}`);
     await context.close();
   }
 
