@@ -1,0 +1,58 @@
+name: Bible App Live Browser Witness
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/bible-app-live-browser-contract.mjs'
+      - '.github/workflows/bible-app-live-browser-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bible-app-live-browser-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live-chromium:
+    name: Live App integration — Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install exact dependencies
+        run: npm ci
+
+      - name: Validate live browser source
+        run: node --check scripts/bible-app-live-browser-contract.mjs
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run live production witness
+        env:
+          GB_LIVE_BASE: https://gospod-bog.ru
+        run: node scripts/bible-app-live-browser-contract.mjs
+
+      - name: Upload live screenshots and report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: bible-app-live-browser-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/bible-app-live-browser
+          if-no-files-found: warn
+          retention-days: 14
