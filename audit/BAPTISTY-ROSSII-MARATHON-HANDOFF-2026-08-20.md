@@ -77,7 +77,7 @@ Registry/payload existence не должно засчитываться как i
 - `47 400` как legacy route-growth baseline, а не финальную цель;
 - Research evidence bridge `A1/A2/A3/B1/C/D`;
 - независимые `accessState / locatorState / rightsState / publicationState` и HOLD-флаги;
-- независимость Product source-confidence от Research evidenceClass;
+- независимость будущего Product confidence layer от Research evidenceClass;
 - reader-facing evidence labels;
 - четырёхголосную модель спорной истории;
 - publication Definition of Ready / Definition of Done;
@@ -103,7 +103,7 @@ Machine roadmap теперь различает:
 - `chapterTargetWords = 4 500–7 000` как typical planning range;
 - historical Research binding как `legacy-review-required`, а не current publication authority;
 - current Research evidence enum/states/HOLD;
-- Product confidence как отдельную axis;
+- Product confidence как отдельную conceptual axis, не alias Research taxonomy;
 - publication Definition of Ready;
 - future `5 × 20` planning graph;
 - mapping текущих route-materials в будущие planned chapters через `feedsPlannedChapters`;
@@ -124,7 +124,7 @@ Machine roadmap теперь различает:
 - planning graph ровно `5 частей / 20 уникальных chapter IDs`;
 - planned chapter запрещено иметь `href`, `route`, `slug`, `url`, `path`;
 - Research evidence classes/state axes/HOLDs должны совпадать с Book Authority v2;
-- Product confidence registry существует и mechanical mapping запрещён;
+- Product confidence обязан оставаться отдельным от Research evidenceClass, mechanical mapping запрещён;
 - publication Definition of Ready не может незаметно усохнуть;
 - legacy Research binding обязан оставаться review-required;
 - `article-ready != site-ready` закреплено машинно;
@@ -133,6 +133,21 @@ Machine roadmap теперь различает:
 - все 10 текущих parts остаются связаны с publication authority;
 - все non-reference текущие parts должны указывать, какие future chapters они питают;
 - сумма legacy route targets должна реально равняться `47 400`, а не просто быть записана сверху.
+
+### CI-driven truth correction: commits `1d959129ebd9c3ce0c97ee28250cead4401e9d3d`, `86e49e51d89ab1d487562a5100bd7a1f5563904a`, `e5136a842e4688bfd9343f31e6d66e5334a17132`
+
+Первоначальная SYSTEM-модель ошибочно предположила, что в Product уже существует dedicated registry `data/baptisty-rossii-source-confidence.json`. Current `main` такого файла не содержит.
+
+Исправление сделано **без костыля**:
+
+- пустой registry для удовлетворения CI **не создан**;
+- roadmap теперь честно хранит `productConfidenceAxis.status = not-yet-centralized` и `registry = null`;
+- canonical roadmap audit требует именно это текущее состояние;
+- Book Authority v2 объясняет, что dedicated Product confidence layer может появиться только отдельным content/publication lane, когда будут определены реальные consumers и machine contract;
+- mechanical `Research A1/A2/... → Product token` mapping остаётся запрещённым;
+- minor authority naming drift также исправлен: legacy target field называется `legacyRouteGrowth.targetTotalWords`.
+
+Это важный принцип для продолжения марафона: **не создавать SSOT только потому, что будущая архитектура хотела бы его иметь**.
 
 ## 5. Authority-document boundary
 
@@ -175,27 +190,53 @@ Compare base → SYSTEM branch before this handoff update showed:
 
 - exact base/rollback SHA recorded;
 - branch/PR isolation established;
-- GitHub compare confirms bounded SYSTEM diff and no behind-base drift at checkpoint;
+- GitHub compare confirmed bounded SYSTEM diff and no behind-base drift at checkpoint;
 - existing canonical npm command is `npm run baptisty:roadmap:audit` → `node scripts/baptisty-roadmap-audit.js`;
-- no parallel validator introduced.
+- no parallel validator introduced;
+- first two CI failures were traced to exact root causes rather than waived.
 
-### Exact-head CI incident and repair
+### Exact-head CI incident 1 — diff hygiene
 
 At head `5ce0e56a330c7f3da887e9d646b58438eed8ce59`, Source Authority Contract run `32355403417` failed at `git diff --check` because the two new MD files used Markdown hard-break trailing spaces. The actual source-authority/build steps were skipped after diff hygiene failed.
 
-This was treated as a real lane defect, not waived. The repair is whitespace-only:
+This was treated as a real lane defect, not waived. The repair was whitespace-only:
 
 - `docs/BAPTISTY-ROSSII-BOOK-AUTHORITY-V2.md` metadata lines cleaned;
 - this handoff metadata block cleaned;
 - no workflow or guard relaxation.
 
+### Exact-head CI incident 2 — invented Product registry assumption
+
+At head `6116fc99292768e80b10bf61b85f61b3b086e10c`:
+
+- `Metadata & IndexNow Readiness` run `32355589311` — **SUCCESS**;
+- `Shared Files Guard` run `32355589346` — **FAILURE** in `Baptist roadmap publication authority`;
+- `Deploy Candidate Contract` run `32355589327` — **FAILURE** in the same `npm run baptisty:roadmap:audit` gate; later artifact upload failed secondarily because the build never started.
+
+Exact root output in both relevant gates:
+
+```text
+❌ Product source-confidence registry missing: data/baptisty-rossii-source-confidence.json
+```
+
+The repo did not contain this registry before the lane. Therefore the correct repair was **not** to create a dummy file, but to fix the new authority/model as described above.
+
+Useful positive evidence from the same Shared Files run before the Baptist gate failed:
+
+- live PR diff authority passed;
+- lane collision guard passed with zero other open PRs on `main`;
+- asset revision drift read-only check passed;
+- font contracts passed;
+- workflow/control-plane contracts passed;
+- Gill claims surface audit passed.
+
 ### Not yet proven
 
 - local npm execution: **NOT RUN** because environment cannot resolve GitHub for clone;
 - browser/live production: **NOT APPLICABLE / NOT CLAIMED** for this SYSTEM authority lane;
-- repaired final-head GitHub Actions: **PENDING** after whitespace repair commits.
+- exact-head GitHub Actions after the truthful registry-model correction: **PENDING**.
 
-**Не считать SYSTEM lane зелёным, пока repaired final PR head не получил доступный exact-head CI witness.**
+**Не считать SYSTEM lane зелёным, пока current PR head не получил доступный exact-head CI witness.**
 
 ## 8. SYSTEM checklist
 
@@ -205,9 +246,9 @@ This was treated as a real lane defect, not waived. The repair is whitespace-onl
 - [x] Сохранить legacy route/source material без превращения его в final book authority.
 - [x] Усилить **существующий** canonical roadmap audit; не создавать одноразовый validator.
 - [x] Закрепить no-placeholder-route, evidence, media и legacy/book target boundaries машинно.
-- [x] Разобрать первый exact-head CI failure до root cause; не ослаблять guard.
-- [ ] Получить repaired final-head GitHub Actions / repository check witness.
-- [ ] Записать final head/check run IDs/conclusions сюда.
+- [x] Разобрать diff-hygiene CI failure до root cause; не ослаблять guard.
+- [x] Разобрать false Product-registry assumption до root cause; не создавать dummy SSOT.
+- [ ] Получить current exact-head GitHub Actions / repository check witness.
 - [ ] После verification оставить PR review-ready только если он действительно зелёный.
 - [x] Не трогать статьи, media и runtime в SYSTEM lane.
 
@@ -233,6 +274,7 @@ This was treated as a real lane defect, not waived. The repair is whitespace-onl
 - массовый импорт `article-ready` фотографий;
 - AI-псевдоархив;
 - механическое `A1 → Product confidence token` преобразование;
+- создавать пустой Product confidence registry ради CI — current state `not-yet-centralized`;
 - ручное выставление production reading time по редакционному target;
 - дублирование существующего `RSS-SERIES-DATE-COLLAPSE` repair lane;
 - ручное редактирование generated route matrix / `_app`;
