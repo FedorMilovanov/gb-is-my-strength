@@ -11,7 +11,7 @@
   (() => {
     'use strict';
 
-    const VERSION = 3;
+    const VERSION = 4;
     const OWNER_ID = 'site-sections-menu';
     const API_KEY = 'GBSiteSectionsMenu';
     const CONTROLLER_KEY = '__gbSiteSectionsMenuController';
@@ -36,10 +36,6 @@
         return null;
       }
 
-      // A controller may be reused only when its lifecycle generation matches
-      // this runtime. Without the version check, a v1 controller already bound
-      // to the same still-connected nodes could bypass the v3 native-hidden
-      // semantics even though the window-level API version had advanced.
       if (
         previous
         && previous.version === VERSION
@@ -77,12 +73,6 @@
         window.clearTimeout(nativeHideTimer);
         nativeHideTimer = 0;
 
-        // Native hidden is the fail-safe owner. It makes the closed surface
-        // non-rendering even when stylesheet delivery/cascade fails. Remove it
-        // before opening; on close preserve the existing visual exit window
-        // only when a computed transition actually exists. With missing CSS or
-        // reduced motion there is no animation to preserve, so native hidden is
-        // restored immediately instead of leaving a transient raw surface.
         if (open) {
           panel.hidden = false;
           if (backdrop) backdrop.hidden = false;
@@ -130,9 +120,17 @@
           focusTarget: () => firstAction(panel),
           reason,
         });
-        // OverlayRuntime writes aria-hidden=false generically. The historical
-        // menu contract exposes an open surface by removing aria-hidden.
         panel.removeAttribute('aria-hidden');
+        // OverlayRuntime owns the generic focus lifecycle. Keep the menu's
+        // concrete focus target deterministic as well: WebKit can retain the
+        // trigger after programmatic layer.open(), which leaves the visible
+        // panel open but fails the keyboard-accessibility contract. Focus the
+        // first real action on the next frame, after the open state is painted.
+        requestAnimationFrame(() => {
+          if (!layer.isOpen() || panel.hidden || panel.hasAttribute('inert')) return;
+          const target = firstAction(panel);
+          if (target instanceof HTMLElement) target.focus({ preventScroll: true });
+        });
         return true;
       };
 
