@@ -13,7 +13,7 @@
     "indexedRoutes": 75,
     "scannedSourceFiles": 452,
     "references": 1010,
-    "occurrences": 2429,
+    "occurrences": 2430,
     "canonicalTextRecords": 148,
     "referencesWithoutCanonicalText": 862,
     "chapterRanges": 21,
@@ -47088,6 +47088,18 @@
       "canonicalText": null,
       "canonicalSource": null,
       "occurrences": [
+        {
+          "url": "/app/",
+          "title": "Библейский тренажёр — Господь Бог — Сила Моя",
+          "context": "Вопрос греческая морфология Как MorphGNT разбирает ᾧ в 1 Пет. 3:19? 1 Personal pronoun 2",
+          "anchor": null,
+          "raw": "1 Пет. 3:19",
+          "topics": [
+            "Библейские инструменты"
+          ],
+          "sourceOwner": "src/pages/app/index.astro",
+          "sourceKind": "astro-source"
+        },
         {
           "url": "/hard-texts/blagovestie-mertvym-1-petra-4-5-6/",
           "title": "Благовестие мёртвым: что означает 1 Петра 4:5–6 | Господь Бог — Сила Моя",
