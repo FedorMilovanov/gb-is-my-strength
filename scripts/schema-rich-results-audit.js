@@ -18,6 +18,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
+const OWNERSHIP_MANIFEST = path.join(ROOT, 'migration', 'page-ownership.json');
 const rootArg = process.argv.includes('--root')
   ? process.argv[process.argv.indexOf('--root') + 1]
   : '.';
@@ -26,7 +27,7 @@ const BASE = 'https://gospod-bog.ru/';
 const ARTICLE_TYPES = new Set(['Article', 'NewsArticle', 'BlogPosting', 'ScholarlyArticle']);
 const errors = [];
 const warnings = [];
-const stats = { html: 0, blocks: 0, articles: 0, breadcrumbs: 0, faqs: 0, graphs: 0, imageChecks: 0 };
+const stats = { html: 0, blocks: 0, articles: 0, breadcrumbs: 0, faqs: 0, graphs: 0, imageChecks: 0, skippedAstroOwnedRoot: 0 };
 
 function walk(dir, out = []) {
   if (!fs.existsSync(dir)) return out;
@@ -41,6 +42,67 @@ function walk(dir, out = []) {
 
 function rel(file) {
   return path.relative(auditRoot, file).replace(/\\/g, '/') || '.';
+}
+
+function rootRouteForHtml(filePath) {
+  const relative = path.relative(ROOT, filePath).replace(/\\/g, '/');
+  if (relative === 'index.html') return '/';
+  if (relative.endsWith('/index.html')) return `/${relative.slice(0, -'index.html'.length)}`;
+  return `/${relative}`;
+}
+
+function isAstroOwnedMeta(meta) {
+  return String(meta && meta.owner || '').startsWith('astro');
+}
+
+function shouldSkipAstroOwnedRootMirror(filePath, ownershipRoutes, candidateAuditRoot = auditRoot) {
+  if (path.resolve(candidateAuditRoot) !== ROOT) return false;
+  return isAstroOwnedMeta(ownershipRoutes.get(rootRouteForHtml(filePath)));
+}
+
+function loadRootOwnershipRoutes() {
+  if (auditRoot !== ROOT) return new Map();
+  if (!fs.existsSync(OWNERSHIP_MANIFEST)) {
+    throw new Error(`ownership manifest missing: ${path.relative(ROOT, OWNERSHIP_MANIFEST)}`);
+  }
+
+  let manifest;
+  try {
+    manifest = JSON.parse(fs.readFileSync(OWNERSHIP_MANIFEST, 'utf8'));
+  } catch (error) {
+    throw new Error(`ownership manifest invalid JSON: ${error.message}`);
+  }
+
+  if (!manifest || typeof manifest.routes !== 'object' || manifest.routes === null || Array.isArray(manifest.routes)) {
+    throw new Error('ownership manifest routes object missing');
+  }
+  return new Map(Object.entries(manifest.routes));
+}
+
+function runOwnershipBoundarySelfTest() {
+  const fixtureRoutes = new Map([
+    ['/astro-owned/', { owner: 'astro' }],
+    ['/astro-noindex/', { owner: 'astro-noindex' }],
+    ['/legacy-owned/', { owner: 'legacy' }],
+  ]);
+  const rootIndex = path.join(ROOT, 'index.html');
+  const astroFile = path.join(ROOT, 'astro-owned', 'index.html');
+  const astroNoindexFile = path.join(ROOT, 'astro-noindex', 'index.html');
+  const legacyFile = path.join(ROOT, 'legacy-owned', 'index.html');
+  const standaloneFile = path.join(ROOT, '404.html');
+  const distRoot = path.join(ROOT, 'dist');
+
+  const assertions = [
+    [rootRouteForHtml(rootIndex) === '/', 'root index route mapping'],
+    [rootRouteForHtml(astroFile) === '/astro-owned/', 'nested index route mapping'],
+    [rootRouteForHtml(standaloneFile) === '/404.html', 'standalone HTML route mapping'],
+    [shouldSkipAstroOwnedRootMirror(astroFile, fixtureRoutes, ROOT), 'Astro-owned root mirror admission'],
+    [shouldSkipAstroOwnedRootMirror(astroNoindexFile, fixtureRoutes, ROOT), 'Astro noindex root mirror admission'],
+    [!shouldSkipAstroOwnedRootMirror(legacyFile, fixtureRoutes, ROOT), 'legacy-owned root HTML retention'],
+    [!shouldSkipAstroOwnedRootMirror(astroFile, fixtureRoutes, distRoot), 'dist audit must not inherit root shadow filtering'],
+  ];
+  const failed = assertions.find(([ok]) => !ok);
+  if (failed) throw new Error(`ownership-boundary self-test failed: ${failed[1]}`);
 }
 
 function addErr(file, msg) { errors.push(`${file}: ${msg}`); }
@@ -241,7 +303,20 @@ if (!fs.existsSync(auditRoot)) {
   process.exit(1);
 }
 
+let rootOwnershipRoutes;
+try {
+  runOwnershipBoundarySelfTest();
+  rootOwnershipRoutes = loadRootOwnershipRoutes();
+} catch (error) {
+  console.error(`❌ schema audit ownership boundary unavailable: ${error.message}`);
+  process.exit(1);
+}
+
 for (const filePath of walk(auditRoot)) {
+  if (shouldSkipAstroOwnedRootMirror(filePath, rootOwnershipRoutes)) {
+    stats.skippedAstroOwnedRoot++;
+    continue;
+  }
   stats.html++;
   const file = rel(filePath);
   const html = fs.readFileSync(filePath, 'utf8');
@@ -275,6 +350,7 @@ for (const filePath of walk(auditRoot)) {
 
 console.log(`SCHEMA RICH RESULTS AUDIT (${path.relative(ROOT, auditRoot) || '.'})`);
 console.log(`HTML files: ${stats.html}`);
+console.log(`Astro-owned root mirrors skipped: ${stats.skippedAstroOwnedRoot}`);
 console.log(`JSON-LD blocks: ${stats.blocks}`);
 console.log(`Graphs: ${stats.graphs}`);
 console.log(`Articles: ${stats.articles}`);

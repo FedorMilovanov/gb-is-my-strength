@@ -9,19 +9,25 @@ const target = path.join(ROOT, 'dist', 'articles', 'krajne-li-isporcheno-serdce'
 const audit = path.join(ROOT, 'scripts', 'schema-rich-results-audit.js');
 const imageUrl = 'https://gospod-bog.ru/images/og-krajne-isporcheno.webp';
 
-function runAudit() {
-  return spawnSync(process.execPath, [audit, '--root', 'dist'], {
+function runAudit(root) {
+  return spawnSync(process.execPath, [audit, '--root', root], {
     cwd: ROOT,
     encoding: 'utf8',
     env: { ...process.env, FORCE_COLOR: '0' },
   });
 }
 
+function assertAuditPass(result, label) {
+  assert.equal(result.status, 0, `${label} failed:\n${result.stdout}\n${result.stderr}`);
+}
+
+assertAuditPass(runAudit('.'), 'repository-root schema ownership audit');
+
 assert.ok(fs.existsSync(target), 'built Krajne route missing; build production-like dist first');
 const original = fs.readFileSync(target, 'utf8');
 
-const baseline = runAudit();
-assert.equal(baseline.status, 0, `baseline schema audit failed:\n${baseline.stdout}\n${baseline.stderr}`);
+const baseline = runAudit('dist');
+assertAuditPass(baseline, 'baseline dist schema audit');
 
 const anchor = `"url": "${imageUrl}"`;
 const anchorIndex = original.indexOf(anchor);
@@ -35,7 +41,7 @@ const mutated = `${original.slice(0, widthIndex)}"width": 1199${original.slice(w
 
 try {
   fs.writeFileSync(target, mutated);
-  const result = runAudit();
+  const result = runAudit('dist');
   assert.notEqual(result.status, 0, 'schema audit false-greened after declared Krajne width mutation');
   const output = `${result.stdout}\n${result.stderr}`;
   assert.match(output, /ImageObject\.width 1199 (?:contradicts og:image:width 1200|does not match local webp width 1200)/,
@@ -44,6 +50,6 @@ try {
   fs.writeFileSync(target, original);
 }
 
-const restored = runAudit();
-assert.equal(restored.status, 0, `restored schema audit failed:\n${restored.stdout}\n${restored.stderr}`);
-console.log('Schema image-dimension mutation witness: PASS');
+const restored = runAudit('dist');
+assertAuditPass(restored, 'restored dist schema audit');
+console.log('Schema root-ownership + image-dimension mutation witness: PASS');

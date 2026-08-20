@@ -2,8 +2,9 @@
 /**
  * css-layer-validator.js — РЕФАКТОРИНГ 6.0 Phase 2 tool.
  *
- * Validates a CSS file for @layer architecture:
- *   1. A named-layer order statement exists before named layer blocks
+ * Validates CSS @layer architecture:
+ *   1. A named-layer order statement exists before named layer blocks when
+ *      more than one distinct named layer is present
  *   2. Every named layer block belongs to that declared layer set
  *   3. Re-opening an already declared named layer is allowed anywhere later
  *      (CSS Cascade Layers append rules without changing layer precedence)
@@ -11,17 +12,35 @@
  *   5. !important count does not exceed ceiling
  *   6. Reports unlayered rules vs layered rules ratio
  *
+ * Project coverage:
+ *   Invoking this guard for a top-level css/*.css file validates every governed
+ *   @layer root and auto-discovers any additional css/*.css file using @layer.
+ *
  * Usage:
  *   node scripts/css-layer-validator.js css/site.css
- *   node scripts/css-layer-validator.js css/site.css --ceiling=202
+ *   node scripts/css-layer-validator.js css/site.css --ceiling=200
  */
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 
 const LAYERED_TARGET_PCT = 80;
 const LAYER_NAME_PATTERN = '[A-Za-z_][\\w-]*(?:\\.[A-Za-z_][\\w-]*)*';
+const PROJECT_LAYER_ROOTS = new Map([
+  ['css/site.css', 200],
+  ['css/home.css', null],
+  ['css/floating-cluster.css', 524],
+]);
+
+function stripCssComments(cssText) {
+  return cssText.replace(/\/\*[\s\S]*?\*\//g, '');
+}
+
+function hasLayerSyntax(cssText) {
+  return /@layer\b/.test(stripCssComments(cssText));
+}
 
 function parseDeclaredLayers(cssText) {
   const orderRegex = new RegExp(`@layer\\s+(${LAYER_NAME_PATTERN}(?:\\s*,\\s*${LAYER_NAME_PATTERN})*)\\s*;`);
@@ -117,6 +136,24 @@ function runInternalContractChecks() {
     throw new Error('internal contract: missing order declaration was not detected');
   }
 
+  const singleLayerBlocks = collectLayerBlocks('@layer components{} @layer components{}');
+  if ([...new Set(singleLayerBlocks.map(layer => layer.name))].length !== 1) {
+    throw new Error('internal contract: repeated single-layer blocks must remain unambiguous');
+  }
+
+  if (hasLayerSyntax('/* @layer components{} */ .x{}')) {
+    throw new Error('internal contract: commented @layer text entered project discovery');
+  }
+
+  if (
+    PROJECT_LAYER_ROOTS.size !== 3 ||
+    PROJECT_LAYER_ROOTS.get('css/site.css') !== 200 ||
+    PROJECT_LAYER_ROOTS.get('css/home.css') !== null ||
+    PROJECT_LAYER_ROOTS.get('css/floating-cluster.css') !== 524
+  ) {
+    throw new Error('internal contract: governed project roots or !important ratchets drifted');
+  }
+
   if (LAYERED_TARGET_PCT !== 80) {
     throw new Error('internal contract: layered coverage target drifted from the published 80% contract');
   }
@@ -132,7 +169,8 @@ try {
 const args = process.argv.slice(2);
 const cssFile = args.find(a => !a.startsWith('--'));
 const ceilingArg = args.find(a => a.startsWith('--ceiling='));
-const ceiling = ceilingArg ? parseInt(ceilingArg.split('=')[1], 10) : null;
+const singleFileMode = args.includes('--single');
+let ceiling = ceilingArg ? parseInt(ceilingArg.split('=')[1], 10) : null;
 
 if (!cssFile) {
   console.error('Usage: node scripts/css-layer-validator.js <css-file> [--ceiling=N]');
@@ -143,6 +181,83 @@ const cssPath = path.resolve(cssFile);
 if (!fs.existsSync(cssPath)) {
   console.error(`File not found: ${cssPath}`);
   process.exit(2);
+}
+
+const projectRoot = process.cwd();
+const projectCssDir = path.resolve(projectRoot, 'css');
+const inProjectCss =
+  cssPath.startsWith(`${projectCssDir}${path.sep}`) &&
+  path.extname(cssPath) === '.css';
+
+if (!singleFileMode && inProjectCss) {
+  const requestedRepoPath = path.relative(projectRoot, cssPath).split(path.sep).join('/');
+  const governedCeiling = PROJECT_LAYER_ROOTS.get(requestedRepoPath);
+  if (governedCeiling !== undefined) {
+    if (ceiling !== null && governedCeiling !== null && ceiling !== governedCeiling) {
+      console.error(
+        `Governed !important ceiling mismatch for ${requestedRepoPath}: ` +
+        `expected ${governedCeiling}, got ${ceiling}`
+      );
+      process.exit(2);
+    }
+    if (ceiling === null) ceiling = governedCeiling;
+  }
+
+  const discovered = fs.readdirSync(projectCssDir, { withFileTypes: true })
+    .filter(entry => entry.isFile() && entry.name.endsWith('.css'))
+    .map(entry => `css/${entry.name}`)
+    .filter(repoPath => hasLayerSyntax(fs.readFileSync(path.resolve(projectRoot, repoPath), 'utf8')))
+    .sort();
+
+  const coverageErrors = [];
+  for (const repoPath of PROJECT_LAYER_ROOTS.keys()) {
+    const absolute = path.resolve(projectRoot, repoPath);
+    if (!fs.existsSync(absolute)) {
+      coverageErrors.push(`Governed @layer root is missing: ${repoPath}`);
+    } else if (!hasLayerSyntax(fs.readFileSync(absolute, 'utf8'))) {
+      coverageErrors.push(`Governed @layer root lost all @layer syntax: ${repoPath}`);
+    }
+  }
+
+  if (coverageErrors.length > 0) {
+    for (const error of coverageErrors) console.error(`❌ ${error}`);
+    process.exit(1);
+  }
+
+  const targets = [
+    ...PROJECT_LAYER_ROOTS.keys(),
+    ...discovered.filter(repoPath => !PROJECT_LAYER_ROOTS.has(repoPath)),
+  ];
+
+  console.log(
+    `CSS @layer project coverage: ${targets.length} file(s) — ` +
+    targets.join(', ')
+  );
+
+  for (const repoPath of targets) {
+    if (repoPath === requestedRepoPath) continue;
+    const targetCeiling = PROJECT_LAYER_ROOTS.get(repoPath);
+    const childArgs = [
+      __filename,
+      repoPath,
+      '--single',
+      ...(targetCeiling === null || targetCeiling === undefined
+        ? []
+        : [`--ceiling=${targetCeiling}`]),
+    ];
+    const child = spawnSync(process.execPath, childArgs, {
+      cwd: projectRoot,
+      stdio: 'inherit',
+    });
+    if (child.error) {
+      console.error(`Failed to validate ${repoPath}: ${child.error.message}`);
+      process.exit(2);
+    }
+    if (child.status !== 0) {
+      console.error(`❌ Project @layer coverage failed at ${repoPath} (exit ${child.status})`);
+      process.exit(child.status ?? 1);
+    }
+  }
 }
 
 const css = fs.readFileSync(cssPath, 'utf8');
@@ -164,13 +279,19 @@ if (depth > 0) errors.push(`Unbalanced braces: ${depth} unclosed`);
 if (depth === 0) info.push('Brace balance: OK');
 
 // 2. Find @layer order declaration and validate the named-layer contract.
+const foundLayers = collectLayerBlocks(css);
 const declaration = parseDeclaredLayers(css);
 if (!declaration) {
-  errors.push('No @layer order declaration found');
+  const layerNames = [...new Set(foundLayers.map(layer => layer.name))];
+  if (layerNames.length === 1) {
+    info.push(`Implicit single-layer order: ${layerNames[0]} (no precedence ambiguity)`);
+    info.push(`Layer blocks found: ${foundLayers.length}`);
+  } else {
+    errors.push('No @layer order declaration found');
+  }
 } else {
   info.push(`Declared layer order: ${declaration.names.join(' → ')}`);
 
-  const foundLayers = collectLayerBlocks(css);
   const layerResult = validateLayerContract(declaration, foundLayers);
   errors.push(...layerResult.errors);
   warnings.push(...layerResult.warnings);
