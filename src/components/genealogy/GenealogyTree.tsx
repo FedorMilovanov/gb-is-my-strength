@@ -1,4 +1,5 @@
-import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
+import { Component, useMemo, useState, useRef, useEffect, useCallback } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
 import {
   ReactFlow, Background, Controls, MiniMap,
   type Node, type Edge, ConnectionLineType, type ReactFlowInstance,
@@ -20,7 +21,74 @@ const LINEAGE_FILTERS = [
   { id: 'neutral' as LineageFilter, label: 'Прочие' },
 ];
 
-export default function GenealogyTree({ persons, eras }: { persons: Person[]; eras?: Era[] }) {
+type GenealogyTreeProps = { persons: Person[]; eras?: Era[] };
+type GenealogyErrorBoundaryState = { hasError: boolean };
+
+class GenealogyErrorBoundary extends Component<{ children: ReactNode }, GenealogyErrorBoundaryState> {
+  state: GenealogyErrorBoundaryState = { hasError: false };
+
+  static getDerivedStateFromError(): GenealogyErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('[genealogy] interactive tree crashed', error, info.componentStack);
+  }
+
+  private retry = () => {
+    this.setState({ hasError: false });
+  };
+
+  render() {
+    if (!this.state.hasError) return this.props.children;
+
+    return (
+      <section
+        role="alert"
+        aria-live="assertive"
+        data-genealogy-fallback
+        style={{
+          minHeight: '650px',
+          height: '100%',
+          display: 'grid',
+          placeItems: 'center',
+          padding: '32px 20px',
+          background: 'radial-gradient(ellipse at 50% 0%, #1a1510 0%, #0d0a06 50%, #050402 100%)',
+          color: '#e8d5b0',
+          textAlign: 'center',
+        }}
+      >
+        <div style={{ maxWidth: '560px' }}>
+          <h2 style={{ margin: '0 0 12px', color: '#ffd700', fontSize: 'clamp(1.25rem, 3vw, 1.75rem)' }}>
+            Интерактивное древо временно не загрузилось
+          </h2>
+          <p style={{ margin: '0 0 20px', lineHeight: 1.65, color: 'rgba(232,213,176,0.82)' }}>
+            Основной текст страницы сохранён. Можно повторно запустить только интерактивное древо без перезагрузки страницы.
+          </p>
+          <button
+            type="button"
+            onClick={this.retry}
+            style={{
+              minHeight: '44px',
+              padding: '10px 18px',
+              borderRadius: '999px',
+              border: '1px solid rgba(255,215,0,0.45)',
+              background: 'rgba(255,215,0,0.12)',
+              color: '#ffd700',
+              font: 'inherit',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            Повторить загрузку древа
+          </button>
+        </div>
+      </section>
+    );
+  }
+}
+
+function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
   const rfInstance = useRef<ReactFlowInstance | null>(null);
   const [search, setSearch] = useState('');
   const [showLineage, setShowLineage] = useState<LineageFilter>('all');
@@ -353,5 +421,13 @@ export default function GenealogyTree({ persons, eras }: { persons: Person[]; er
         @media (hover: none) { .genealogy-node:hover { transform: none !important; } }
       `}</style>
     </div>
+  );
+}
+
+export default function GenealogyTree(props: GenealogyTreeProps) {
+  return (
+    <GenealogyErrorBoundary>
+      <GenealogyTreeContent {...props} />
+    </GenealogyErrorBoundary>
   );
 }
