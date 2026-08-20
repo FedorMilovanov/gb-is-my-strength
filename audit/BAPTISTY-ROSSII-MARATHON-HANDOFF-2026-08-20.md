@@ -1,13 +1,13 @@
 # Баптисты России — marathon implementation handoff
 
-**Дата:** 2026-08-20  
-**Статус:** ACTIVE — SYSTEM foundation lane, implementation complete pending exact-head CI.  
-**Owner / lane:** `baptisty-book-authority-v2`  
-**Canonical branch:** `codex/baptisty-book-authority-v2`  
-**PR:** `#1765` — `docs(baptisty): establish Book Authority v2`  
-**Mode:** `SYSTEM`  
-**Base / rollback SHA:** `bc7f0d3815e7e41551b3180e3cd22fb55a95dd04`  
-**Current scope:** authority + evidence bridge + machine roadmap/gate + durable handoff.  
+**Дата:** 2026-08-20
+**Статус:** ACTIVE — SYSTEM foundation lane, implementation complete pending exact-head CI.
+**Owner / lane:** `baptisty-book-authority-v2`
+**Canonical branch:** `codex/baptisty-book-authority-v2`
+**PR:** `#1765` — `docs(baptisty): establish Book Authority v2`
+**Mode:** `SYSTEM`
+**Base / rollback SHA:** `bc7f0d3815e7e41551b3180e3cd22fb55a95dd04`
+**Current scope:** authority + evidence bridge + machine roadmap/gate + durable handoff.
 **Explicit non-scope:** route prose, historical media import, shared runtime, homepage, 3D map, RSS repair.
 
 ## 1. Owner request
@@ -179,13 +179,23 @@ Compare base → SYSTEM branch before this handoff update showed:
 - existing canonical npm command is `npm run baptisty:roadmap:audit` → `node scripts/baptisty-roadmap-audit.js`;
 - no parallel validator introduced.
 
+### Exact-head CI incident and repair
+
+At head `5ce0e56a330c7f3da887e9d646b58438eed8ce59`, Source Authority Contract run `32355403417` failed at `git diff --check` because the two new MD files used Markdown hard-break trailing spaces. The actual source-authority/build steps were skipped after diff hygiene failed.
+
+This was treated as a real lane defect, not waived. The repair is whitespace-only:
+
+- `docs/BAPTISTY-ROSSII-BOOK-AUTHORITY-V2.md` metadata lines cleaned;
+- this handoff metadata block cleaned;
+- no workflow or guard relaxation.
+
 ### Not yet proven
 
 - local npm execution: **NOT RUN** because environment cannot resolve GitHub for clone;
 - browser/live production: **NOT APPLICABLE / NOT CLAIMED** for this SYSTEM authority lane;
-- GitHub Actions exact-head: at commit `3f89233...` no PR workflow run had appeared yet.
+- repaired final-head GitHub Actions: **PENDING** after whitespace repair commits.
 
-**Не считать SYSTEM lane зелёным, пока final PR head не получил доступный exact-head CI witness либо явно не зафиксировано отсутствие trigger для этого class of draft PR.**
+**Не считать SYSTEM lane зелёным, пока repaired final PR head не получил доступный exact-head CI witness.**
 
 ## 8. SYSTEM checklist
 
@@ -195,10 +205,11 @@ Compare base → SYSTEM branch before this handoff update showed:
 - [x] Сохранить legacy route/source material без превращения его в final book authority.
 - [x] Усилить **существующий** canonical roadmap audit; не создавать одноразовый validator.
 - [x] Закрепить no-placeholder-route, evidence, media и legacy/book target boundaries машинно.
-- [ ] Получить final-head GitHub Actions / repository check witness.
+- [x] Разобрать первый exact-head CI failure до root cause; не ослаблять guard.
+- [ ] Получить repaired final-head GitHub Actions / repository check witness.
 - [ ] Записать final head/check run IDs/conclusions сюда.
-- [ ] После verification перевести PR из draft только если он действительно review-ready.
-- [ ] Не трогать статьи, media и runtime в SYSTEM lane.
+- [ ] После verification оставить PR review-ready только если он действительно зелёный.
+- [x] Не трогать статьи, media и runtime в SYSTEM lane.
 
 ## 9. Следующие independently mergeable lanes
 
