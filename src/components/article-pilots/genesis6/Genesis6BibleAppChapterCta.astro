@@ -1,6 +1,7 @@
 ---
 interface Props {
   chapter: 3 | 4;
+  variant?: 'compact' | 'full';
 }
 
 const CHAPTER_LAUNCH = {
@@ -18,15 +19,16 @@ const CHAPTER_LAUNCH = {
   },
 } as const satisfies Record<Props['chapter'], { startParam: string; href: string; roman: string; articleLabel: string }>;
 
-const { chapter } = Astro.props as Props;
+const { chapter, variant = 'full' } = Astro.props as Props;
 const { startParam, href, roman, articleLabel } = CHAPTER_LAUNCH[chapter];
 ---
 
 <aside
-  class="genesis6-app-cta"
+  class:list={['genesis6-app-cta', variant === 'compact' && 'genesis6-app-cta--compact']}
   data-pagefind-ignore
   data-bible-app-chapter={chapter}
   data-bible-app-start-param={startParam}
+  data-bible-app-variant={variant}
   aria-label={`Библейский тренажёр по 1 Петра, глава ${chapter}`}
 >
   <div class="genesis6-app-cta__chapter" aria-hidden="true">
@@ -81,6 +83,14 @@ const { startParam, href, roman, articleLabel } = CHAPTER_LAUNCH[chapter];
     box-shadow: 0 22px 54px color-mix(in srgb, var(--manuscript-shadow) 88%, transparent);
   }
 
+  .genesis6-app-cta--compact {
+    grid-template-columns: auto minmax(0, 1fr) minmax(174px, auto);
+    gap: clamp(14px, 2vw, 22px);
+    margin: 8px 0 clamp(30px, 4vw, 44px);
+    padding: 16px 18px;
+    box-shadow: 0 14px 34px color-mix(in srgb, var(--manuscript-shadow) 62%, transparent);
+  }
+
   .genesis6-app-cta::before {
     content: '';
     position: absolute;
@@ -116,6 +126,8 @@ const { startParam, href, roman, articleLabel } = CHAPTER_LAUNCH[chapter];
     background: color-mix(in srgb, var(--manuscript-gold) 6%, transparent);
   }
 
+  .genesis6-app-cta--compact .genesis6-app-cta__chapter { width: 52px; }
+
   .genesis6-app-cta__chapter span {
     font-family: "Playfair Display", Georgia, serif;
     font-size: 21px;
@@ -123,6 +135,8 @@ const { startParam, href, roman, articleLabel } = CHAPTER_LAUNCH[chapter];
     line-height: 1;
     letter-spacing: .05em;
   }
+
+  .genesis6-app-cta--compact .genesis6-app-cta__chapter span { font-size: 18px; }
 
   .genesis6-app-cta__chapter small {
     color: var(--manuscript-ink-soft);
@@ -162,12 +176,21 @@ const { startParam, href, roman, articleLabel } = CHAPTER_LAUNCH[chapter];
     line-height: 1.16;
   }
 
+  .genesis6-app-cta--compact .genesis6-app-cta__title {
+    font-size: clamp(18px, 2vw, 23px);
+  }
+
   .genesis6-app-cta p {
     max-width: 650px;
     margin: 9px 0 0;
     color: var(--manuscript-ink-soft);
     font-size: 14px;
     line-height: 1.62;
+  }
+
+  .genesis6-app-cta--compact p,
+  .genesis6-app-cta--compact .genesis6-app-cta__note {
+    display: none;
   }
 
   .genesis6-app-cta__flow {
@@ -183,6 +206,8 @@ const { startParam, href, roman, articleLabel } = CHAPTER_LAUNCH[chapter];
     letter-spacing: .07em;
     text-transform: uppercase;
   }
+
+  .genesis6-app-cta--compact .genesis6-app-cta__flow { margin-top: 8px; }
 
   .genesis6-app-cta__flow i {
     color: var(--manuscript-gold);
@@ -222,6 +247,11 @@ const { startParam, href, roman, articleLabel } = CHAPTER_LAUNCH[chapter];
     transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
   }
 
+  .genesis6-app-cta--compact .genesis6-app-cta__action {
+    min-height: 46px;
+    padding-inline: 16px;
+  }
+
   .genesis6-app-cta__action:hover {
     transform: translateY(-2px);
     filter: brightness(1.04);
@@ -247,7 +277,8 @@ const { startParam, href, roman, articleLabel } = CHAPTER_LAUNCH[chapter];
   }
 
   @media (max-width: 820px) {
-    .genesis6-app-cta {
+    .genesis6-app-cta,
+    .genesis6-app-cta--compact {
       grid-template-columns: auto minmax(0, 1fr);
     }
 
@@ -257,6 +288,10 @@ const { startParam, href, roman, articleLabel } = CHAPTER_LAUNCH[chapter];
       align-items: center;
     }
 
+    .genesis6-app-cta--compact .genesis6-app-cta__launch {
+      grid-template-columns: 1fr;
+    }
+
     .genesis6-app-cta__note {
       max-width: 180px;
       text-align: left;
@@ -264,11 +299,14 @@ const { startParam, href, roman, articleLabel } = CHAPTER_LAUNCH[chapter];
   }
 
   @media (max-width: 560px) {
-    .genesis6-app-cta {
+    .genesis6-app-cta,
+    .genesis6-app-cta--compact {
       grid-template-columns: 1fr;
       gap: 16px;
       padding: 20px;
     }
+
+    .genesis6-app-cta--compact { padding: 16px; }
 
     .genesis6-app-cta__chapter {
       width: 54px;

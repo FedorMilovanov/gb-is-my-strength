@@ -1,5 +1,6 @@
 ---
 import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
+import AppSiteChrome from '@/components/app/AppSiteChrome.astro';
 
 const launchUrl = 'https://t.me/milovanovaibot?startapp=v1_site_app__home';
 const profileUrl = 'https://t.me/milovanovaibot';
@@ -160,6 +161,7 @@ const structuredData = {
 
       .app-brand {
         display: inline-flex;
+        flex: 0 0 auto;
         align-items: baseline;
         gap: 7px;
         min-height: 44px;
@@ -173,27 +175,6 @@ const structuredData = {
 
       .app-brand span:first-child { color: var(--app-ink); }
       .app-brand span:last-child { color: var(--app-gold); }
-
-      .app-top-label {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        color: var(--app-faint);
-        font-family: var(--app-ui);
-        font-size: 10px;
-        font-weight: 760;
-        letter-spacing: .18em;
-        text-transform: uppercase;
-      }
-
-      .app-top-label::before {
-        content: '';
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--app-accent);
-        box-shadow: 0 0 18px rgba(73, 198, 213, .6);
-      }
 
       .app-hero {
         position: relative;
@@ -837,8 +818,8 @@ const structuredData = {
 
       @media (max-width: 720px) {
         .app-shell { width: min(100% - 24px, 680px); }
-        .app-topbar { min-height: 66px; }
-        .app-top-label { display: none; }
+        .app-topbar { min-height: 66px; gap: 10px; }
+        .app-brand { font-size: 10.5px; letter-spacing: .055em; }
         .app-hero { padding-top: 58px; gap: 44px; }
         .app-title { font-size: clamp(48px, 15vw, 72px); }
         .app-device { min-height: 0; padding: 15px; border-radius: 26px; }
@@ -877,12 +858,7 @@ const structuredData = {
   </head>
   <body>
     <div class="app-shell">
-      <header class="app-topbar" aria-label="Навигация страницы">
-        <a class="app-brand" href="/" aria-label="Господь Бог — Сила Моя — на главную">
-          <span>Господь Бог</span><span>— Сила Моя</span>
-        </a>
-        <span class="app-top-label">Библейский тренажёр · 1 Петра</span>
-      </header>
+      <AppSiteChrome />
 
       <main data-pagefind-body>
         <section class="app-hero" aria-labelledby="app-title">

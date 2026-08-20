@@ -1,0 +1,143 @@
+---
+import { SITE_SECTION_LINKS } from '@/data/site-sections';
+---
+<header class="app-topbar" data-app-site-chrome aria-label="Навигация страницы">
+  <a class="app-brand" href="/" aria-label="Господь Бог — Сила Моя — на главную">
+    <span>Господь Бог</span><span>— Сила Моя</span>
+  </a>
+
+  <nav class="app-site-nav" data-app-site-nav="desktop" aria-label="Разделы сайта">
+    {SITE_SECTION_LINKS.map((link) => (
+      <a href={link.href} aria-current={link.id === 'app' ? 'page' : undefined}>{link.label}</a>
+    ))}
+  </nav>
+
+  <details class="app-site-menu" data-app-site-nav="mobile">
+    <summary>
+      <span>Разделы сайта</span>
+      <span class="app-site-menu__chevron" aria-hidden="true">⌄</span>
+    </summary>
+    <nav aria-label="Разделы сайта на мобильном устройстве">
+      {SITE_SECTION_LINKS.map((link) => (
+        <a href={link.href} aria-current={link.id === 'app' ? 'page' : undefined}>{link.label}</a>
+      ))}
+    </nav>
+  </details>
+</header>
+
+<style is:global>
+  .app-site-nav {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    min-width: 0;
+    font-family: var(--app-ui);
+  }
+
+  .app-site-nav a {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    padding: 0 9px;
+    border-radius: 999px;
+    color: var(--app-muted);
+    font-size: 10px;
+    font-weight: 760;
+    letter-spacing: .035em;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color .16s ease, background-color .16s ease;
+  }
+
+  .app-site-nav a:hover,
+  .app-site-nav a:focus-visible {
+    color: var(--app-ink-strong);
+    background: rgba(255, 255, 255, .035);
+  }
+
+  .app-site-nav a[aria-current="page"] {
+    color: var(--app-accent);
+    background: var(--app-accent-soft);
+  }
+
+  .app-site-menu {
+    position: relative;
+    display: none;
+    margin-left: auto;
+    font-family: var(--app-ui);
+  }
+
+  .app-site-menu summary {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    border: 1px solid var(--app-line-cool);
+    border-radius: 999px;
+    color: var(--app-ink);
+    background: rgba(73, 198, 213, .045);
+    font-size: 11px;
+    font-weight: 780;
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .app-site-menu summary::-webkit-details-marker { display: none; }
+
+  .app-site-menu__chevron {
+    color: var(--app-accent);
+    font-size: 15px;
+    line-height: 1;
+    transition: transform .16s ease;
+  }
+
+  .app-site-menu[open] .app-site-menu__chevron { transform: rotate(180deg); }
+
+  .app-site-menu nav {
+    position: absolute;
+    z-index: 30;
+    top: calc(100% + 8px);
+    right: 0;
+    display: grid;
+    width: min(270px, calc(100vw - 24px));
+    padding: 8px;
+    border: 1px solid var(--app-line-cool);
+    border-radius: 16px;
+    background: rgba(8, 19, 22, .98);
+    box-shadow: 0 24px 64px -28px rgba(0, 0, 0, .92);
+  }
+
+  .app-site-menu nav a {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    padding: 0 12px;
+    border-radius: 10px;
+    color: var(--app-muted);
+    font-size: 12px;
+    font-weight: 720;
+    text-decoration: none;
+  }
+
+  .app-site-menu nav a:hover,
+  .app-site-menu nav a:focus-visible,
+  .app-site-menu nav a[aria-current="page"] {
+    color: var(--app-ink-strong);
+    background: var(--app-accent-soft);
+  }
+
+  .app-site-menu nav a[aria-current="page"] { color: var(--app-accent); }
+
+  @media (max-width: 980px) {
+    .app-site-nav { display: none; }
+    .app-site-menu { display: block; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .app-site-nav a,
+    .app-site-menu__chevron { transition: none; }
+  }
+</style>

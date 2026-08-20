@@ -1,7 +1,8 @@
 ---
 import SiteSectionsMenuRuntime from './SiteSectionsMenuRuntime.astro';
+import { SITE_SECTION_LINKS, type SiteSectionId } from '@/data/site-sections';
 
-type CurrentSection = 'biografii' | 'articles';
+type CurrentSection = SiteSectionId;
 type Variant = 'plain' | 'rich';
 
 interface Props {
@@ -10,14 +11,7 @@ interface Props {
 }
 
 const { current, variant = 'rich' } = Astro.props;
-const links = [
-  { id: 'publications', href: '/#publikacii', label: 'Публикации' },
-  { id: 'refutations', href: '/#razbor', label: 'Разбор заблуждений' },
-  { id: 'biografii', href: '/biografii/', label: 'Биографии' },
-  { id: 'articles', href: '/articles/', label: 'Все статьи' },
-  { id: 'app', href: '/app/', label: 'Приложение' },
-  { id: 'about', href: '/about/', label: 'О проекте' },
-] as const;
+const links = SITE_SECTION_LINKS;
 ---
 <!-- Canonical static projection of the site-sections menu. Runtime lifecycle is
      owned by SiteSectionsMenuRuntime -> OverlayRuntime across every shell.

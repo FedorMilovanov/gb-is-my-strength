@@ -39,6 +39,7 @@ const TELEGRAM = {
   ch3: 'https://t.me/milovanovaibot?startapp=v1_site_ch3__chapter3',
   ch4: 'https://t.me/milovanovaibot?startapp=v1_site_ch4__chapter4',
 };
+const APP_SECTION_HREFS = ['/#publikacii', '/#razbor', '/biografii/', '/articles/', '/app/', '/about/'];
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
@@ -186,7 +187,6 @@ async function verifyLaunch(page, selector, expected, vp, route, name) {
   rec(vp, route, `${name}:focusable`, focus.active, JSON.stringify(focus));
   rec(vp, route, `${name}:visible-focus`, (focus.outlineStyle !== 'none' && outlinePx >= 2) || (focus.boxShadow && focus.boxShadow !== 'none'), JSON.stringify(focus));
 
-  // Real click contract, but outbound response is intercepted locally above.
   const popupPromise = page.waitForEvent('popup', { timeout: 5000 }).catch(() => null);
   await loc.click({ timeout: 5000 }).catch((e) => rec(vp, route, `${name}:click`, false, e.message));
   const popup = await popupPromise;
@@ -250,6 +250,21 @@ async function auditApp(page, state, base, vp) {
   const stage = page.locator('.app-stage');
   rec(vp, route, 'app:preview-visible', (await stage.count()) > 0 && await stage.isVisible().catch(() => false));
   rec(vp, route, 'app:preview-three-modes', await page.locator('.app-mode-row .app-mode').count() === 3, String(await page.locator('.app-mode-row .app-mode').count()));
+
+  const navRoot = vp.mobile ? page.locator('.app-site-menu') : page.locator('.app-site-nav');
+  rec(vp, route, 'app:canonical-nav-visible', (await navRoot.count()) === 1 && await navRoot.isVisible().catch(() => false), vp.mobile ? 'mobile details' : 'desktop nav');
+  if (vp.mobile && await navRoot.count()) {
+    const summary = navRoot.locator('summary');
+    await summary.click({ timeout: 5000 }).catch((e) => rec(vp, route, 'app:mobile-nav-open-click', false, e.message));
+    rec(vp, route, 'app:mobile-nav-open', await navRoot.evaluate((node) => node.hasAttribute('open')).catch(() => false));
+  }
+  for (const href of APP_SECTION_HREFS) {
+    const link = navRoot.locator(`a[href="${href}"]`);
+    rec(vp, route, `app:canonical-nav-link:${href}`, await link.count() === 1, href);
+  }
+  const current = navRoot.locator('a[aria-current="page"]');
+  rec(vp, route, 'app:canonical-nav-current', await current.count() === 1 && await current.getAttribute('href') === ROUTES.app, await current.getAttribute('href').catch(() => '<missing>'));
+
   await fullShot(page, vp, route);
   if (await stage.count()) await elementShot(stage, vp, route, 'product-preview');
   const bridge = page.locator('.app-bridge'); if (await bridge.count()) await elementShot(bridge, vp, route, 'study-bridge');
@@ -267,9 +282,16 @@ async function auditChapter(page, state, base, vp, chapter) {
   const launch = chapter === 3 ? TELEGRAM.ch3 : TELEGRAM.ch4;
   const expectedParam = chapter === 3 ? 'v1_site_ch3__chapter3' : 'v1_site_ch4__chapter4';
   await go(page, state, base, route, vp); await generic(page, state, route, vp);
-  const aside = page.locator(`.genesis6-app-cta[data-bible-app-chapter="${chapter}"]`).first();
-  const visible = (await aside.count()) > 0 && await aside.isVisible().catch(() => false);
+  const ctas = page.locator(`.genesis6-app-cta[data-bible-app-chapter="${chapter}"]`);
+  const count = await ctas.count();
+  rec(vp, route, 'chapter:cta-count', count === 2, String(count));
+  rec(vp, route, 'chapter:compact-after-header', await page.locator(`.article-header + .genesis6-app-cta[data-bible-app-chapter="${chapter}"][data-bible-app-variant="compact"]`).count() === 1);
+  rec(vp, route, 'chapter:full-after-prose', await page.locator(`.genesis6-prose + .genesis6-app-cta[data-bible-app-chapter="${chapter}"][data-bible-app-variant="full"]`).count() === 1);
+
+  const aside = ctas.first();
+  const visible = count > 0 && await aside.isVisible().catch(() => false);
   rec(vp, route, 'chapter:cta-visible', visible, `chapter=${chapter}`);
+  rec(vp, route, 'chapter:first-variant-compact', await aside.getAttribute('data-bible-app-variant') === 'compact', await aside.getAttribute('data-bible-app-variant') || '<missing>');
   if (visible) {
     await aside.scrollIntoViewIfNeeded(); await page.waitForTimeout(250);
     const start = await aside.getAttribute('data-bible-app-start-param');

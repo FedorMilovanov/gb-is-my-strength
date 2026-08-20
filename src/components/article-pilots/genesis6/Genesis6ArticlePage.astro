@@ -226,10 +226,11 @@ const siteConfig = {
             </p>
             <p>{frontmatter.description}</p>
           </header>
+          {bibleAppChapter && <Genesis6BibleAppChapterCta chapter={bibleAppChapter} variant="compact" />}
           <div class="genesis6-prose">
             <slot />
           </div>
-          {bibleAppChapter && <Genesis6BibleAppChapterCta chapter={bibleAppChapter} />}
+          {bibleAppChapter && <Genesis6BibleAppChapterCta chapter={bibleAppChapter} variant="full" />}
           <aside class="author-card genesis6-author">
             <div class="author-card-icon" aria-hidden="true">ФМ</div>
             <div class="author-card-body">
