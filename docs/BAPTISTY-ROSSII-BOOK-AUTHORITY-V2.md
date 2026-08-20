@@ -1,9 +1,9 @@
 # «Баптисты России» — Book Authority v2
 
-**Статус:** каноническая long-horizon authority для превращения опубликованной серии в цифровую документальную книгу.  
-**Дата authority:** 2026-08-20.  
-**Product base / rollback SHA:** `bc7f0d3815e7e41551b3180e3cd22fb55a95dd04`.  
-**Lane:** `SYSTEM / baptisty-book-authority-v2`.  
+**Статус:** каноническая long-horizon authority для превращения опубликованной серии в цифровую документальную книгу.
+**Дата authority:** 2026-08-20.
+**Product base / rollback SHA:** `bc7f0d3815e7e41551b3180e3cd22fb55a95dd04`.
+**Lane:** `SYSTEM / baptisty-book-authority-v2`.
 **Публичный продукт в этом lane не переписывается:** текущие URL, тексты статей, media и reader runtime остаются без изменений.
 
 ## 1. Что этот документ решает
