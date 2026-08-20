@@ -252,6 +252,7 @@ button:disabled{cursor:not-allowed;opacity:.42}
     linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
     linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
   background-size:52px 52px;
+  -webkit-mask-image:radial-gradient(circle at center,#000 22%,rgba(0,0,0,.6) 58%,transparent 88%);
   mask-image:radial-gradient(circle at center,#000 22%,rgba(0,0,0,.6) 58%,transparent 88%);
 }
 .atlas-graph-view::after{
@@ -448,7 +449,7 @@ button:disabled{cursor:not-allowed;opacity:.42}
   .atlas-topbar__actions{grid-column:2;grid-row:1}
   .atlas-filter-trigger{width:44px;padding:0;justify-content:center}
   .atlas-workspace{height:calc(100dvh - var(--atlas-topbar))}
-  .atlas-graph-view::before{background-size:38px 38px;mask-image:linear-gradient(#000,#000)}
+  .atlas-graph-view::before{background-size:38px 38px;-webkit-mask-image:linear-gradient(#000,#000);mask-image:linear-gradient(#000,#000)}
   .atlas-stage-copy{top:13px;left:15px}
   .atlas-stage-copy small{display:none}
   .atlas-zoom-controls{right:12px;bottom:68px}
