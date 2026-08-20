@@ -2,10 +2,10 @@
 
 **Дата:** 2026-08-20
 **Lane:** reader-facing content / spravochnik evidence language
-**Branch:** `codex/baptisty-spravochnik-evidence-language`
+**Branch:** `lane/baptisty-spravochnik-evidence-language-20260820`
 **Base / rollback SHA:** `79d08053ca6c9f95ad6ab797c3ab045656f4e31c`
 **Foundation:** merged PR #1765 (`Book Authority v2`)
-**PR:** #1766 — `content(baptisty): align spravochnik evidence language`
+**PR:** #1767 — canonical successor; predecessor #1766 closed without merge
 
 ## 1. Что требовалось
 
@@ -61,7 +61,7 @@ Commit `883c30b3b415be32f74b83dc4a00c8ccc5a21e19`:
 
 ### Durable lane handoff
 
-Commit `1ec73b040ad9a6af182e83ffe986b2cfea227834` добавил этот handoff и стал первым human exact-head checkpoint до canonical generated-projection reconciliation.
+Commit `1ec73b040ad9a6af182e83ffe986b2cfea227834` добавил первый handoff и стал human exact-head checkpoint до canonical generated-projection reconciliation.
 
 ## 4. Что намеренно НЕ делалось
 
@@ -101,7 +101,7 @@ new: ... типы свидетельств ...
 
 Сообщение было точным: PR body must contain exactly one writer lease marker.
 
-Вместо отключения проверки или ручного push в PR body добавлен активный Writer Lease v1:
+Вместо отключения проверки или ручного push в PR body predecessor #1766 был добавлен активный Writer Lease v1:
 
 - `laneId`: `baptisty-spravochnik-evidence-language-20260820`;
 - `pr`: `1766`;
@@ -119,7 +119,7 @@ Search Manifest Policy run `32359333765` / #1230 принял lease:
 - `Snapshot machine writer lease` — SUCCESS;
 - `Reject stale or foreign writer before mutation` — SUCCESS.
 
-Canonical writer продвинул branch до `eba51e09fc031862589698053d60fa473b944e8c`.
+Canonical writer продвинул predecessor branch до `eba51e09fc031862589698053d60fa473b944e8c`.
 
 Exact machine-only diff от `1ec73b...` до `eba51e09...`:
 
@@ -131,7 +131,7 @@ Exact machine-only diff от `1ec73b...` до `eba51e09...`:
 
 `Справочник серии: люди, даты, документы, типы свидетельств, спорные факты и исторические связи.`
 
-`autofix` label после convergence снят. Следующий commit этого lane — только финализация handoff; machine mutation больше не разрешается без нового явного lease/handoff процесса.
+`autofix` label после convergence снят. Machine mutation больше не разрешается без нового явного lease/handoff процесса.
 
 ## 6. Старые browser failures: как их классифицировать
 
@@ -140,17 +140,40 @@ Exact machine-only diff от `1ec73b...` до `eba51e09...`:
 - Visual Parity Guard run `32358374747` завершился failure после browser-side HTTP 500 на несвязанной home surface;
 - Search Modal Contract run `32358374765` также увидел browser/server HTTP 500, а не evidence-language semantic assertion.
 
-Эти результаты **не считаются доказательством Baptist regression и не считаются закрытыми как external flake**. Они принадлежат старому head и должны быть переоценены только по final-head rerun.
+Эти результаты **не считаются доказательством Baptist regression и не считаются закрытыми как external flake**. Они принадлежат старому head и должны быть переоценены только по successor final-head rerun.
 
 Правило:
 
-- если final-head contracts зелёные — старые 500 остаются obsolete-head infrastructure/browser incidents;
-- если HTTP 500 повторится на final head — разбирать новый exact run до root cause;
+- если successor final-head contracts зелёные — старые 500 остаются obsolete-head infrastructure/browser incidents;
+- если HTTP 500 повторится на successor final head — разбирать новый exact run до root cause;
 - не вносить unrelated homepage/search/runtime изменения в этот content lane без повторяемого final-head доказательства.
 
-## 7. Verification contract
+## 7. Governance migration: #1766 → #1767
 
-До merge требуется exact-head CI на финальном PR head. Минимум:
+После sanctioned writer convergence protected projection `data/search-manifest.json` вошла в фактический PR diff. Shared Files Guard на predecessor final head `528d9e5d5de4689cd558f948659d278c4fc23b13` прошёл lane-collision, workflow policy, Baptist roadmap, runtime, series facade и остальные смысловые проверки, но корректно остановился на `Guard actual shared/system diff`:
+
+```text
+Shared-files guard failed: Protected files changed on non-canonical branch
+'codex/baptisty-spravochnik-evidence-language'.
+Use one of: lane/, agent/, fix/, hotfix/, release/, dependabot/
+```
+
+Это классифицировано как governance defect имени ветки, а не content/projection defect.
+
+Repair выполнен без ослабления guard и без потери sanctioned machine output:
+
+1. exact tree `528d9e5d5de4689cd558f948659d278c4fc23b13` сохранён на `lane/baptisty-spravochnik-evidence-language-20260820`;
+2. predecessor PR #1766 закрыт **без merge**;
+3. его Writer Lease v1 переведён в `retired` на exact head `528d9e5...` с disposition `SUPERSEDED_VERIFIED`;
+4. открыт canonical successor PR #1767 с той же semantic tree;
+5. `autofix` на successor отсутствует; активный writer lease не переносился, потому что final admission должен быть read-only;
+6. этот commit — единственная successor human mutation: обновление durable handoff identity и governance trail.
+
+Следовательно, новый exact head #1767 обязан пройти собственный полный CI. Зелёные результаты #1766 не переносятся как merge witness.
+
+## 8. Verification contract
+
+До merge требуется exact-head CI на финальном PR #1767 head. Минимум:
 
 - diff hygiene;
 - Shared Files Guard / lane collision;
@@ -165,7 +188,7 @@ Exact machine-only diff от `1ec73b...` до `eba51e09...`:
 
 Не заявлять live production witness только на основании merge.
 
-## 8. Definition of Done для этого lane
+## 9. Definition of Done для этого lane
 
 - [x] публичная A/B/C/D taxonomy удалена из Body;
 - [x] `документы уровня A` удалено;
@@ -175,11 +198,12 @@ Exact machine-only diff от `1ec73b...` до `eba51e09...`:
 - [x] historical content/source list не расширялись без evidence work;
 - [x] canonical search/RSS projections сведены штатным writer, без ручного generated-file patch;
 - [x] `autofix` после machine convergence снят;
-- [ ] final exact-head CI зелёный;
-- [ ] writer lease retired после final admission;
-- [ ] PR merged.
+- [x] predecessor #1766 lease retired и PR закрыт без merge;
+- [x] canonical successor #1767 открыт на допустимом `lane/` prefix;
+- [ ] successor final exact-head CI зелёный;
+- [ ] successor PR merged.
 
-## 9. Следующий lane
+## 10. Следующий lane
 
 После merge: **Petersburg Golden Chapter**.
 
