@@ -3,6 +3,8 @@
 **Дата:** 2026-09-02
 **Lane:** `lane/baptisty-petersburg-deepening-20260902`
 **Mode:** LANE
+**Status:** COMPLETED
+**Commit:** `c417ffe`
 **Base / rollback SHA:** `0664bdd5fa773a2581fc87e82809ff685a461ff7` (main current)
 **Route under edit:** `/baptisty-rossii/peterburgskaya-liniya/`
 
@@ -71,6 +73,42 @@ npm run migration:metadata:check
 git diff --check
 ```
 
-## 7. Rollback
+## 7. Completed deepening
+
+### Changes made
+
+1. **Bedeker/Kargel section expanded**
+   - Added: "Каргель с семьёй поселился в доме Ливен, хотя часто отсутствовал, сопровождая доктора Фридриха Вильгельма Бедекера"
+   - Added: "Бедекер занимался тюремной миссией: посещал заключённых, раздавал Евангелия, Новые Заветы и разрешённые цензурой брошюры; Каргель переводил его английские речи на русский"
+   - Added: "через Бедекера и Каргеля оно распространялось в тюрьмы и дальше — вплоть до Сибири"
+
+2. **Heier academic attribution strengthened**
+   - Changed: Added full book title `<em>Religious Schism in the Russian Aristocracy 1860–1900: Radstockism and Pashkovism</em>`
+   - Changed: "В его исследовании показано, что движение не преследовало цели отделиться от православия"
+
+3. **Pashkov Papers composition expanded**
+   - Added: "переписка Пашкова с 1874 года, материалы Евангелического Альянса (1877–1909), переписка с евангельскими христианами (1874–1901), рукописные и печатные материалы (1884–1895), вырезки из прессы (1880–1902)"
+   - Changed: "конкретный тезис требует конкретного документа из этого корпуса"
+
+4. **House of Gospel foundation ceremony added**
+   - Added: "Торжественная закладка здания прошла в сентябре 1910 года — во время Всероссийского съезда баптистов"
+   - Added: "каждый делегат положил по кирпичу"
+   - Added: "На церемонии выступали Вильгельм Фетлер от баптистов, Иван Проханов от евангельских христиан и Иван Каргель с наставлением"
+   - Added: "Этот момент символически объединял три линии петербургского евангельского движения — баптистскую, евангельско-христианскую и ту, что связывала их через тюремную миссию и архивную переписку"
+
+5. **Source note added**
+   - Added: "Данные о закладке Дома Евангелия в сентябре 1910 года на Всероссийском съезде баптистов"
+
+6. **Editorial dates updated**
+   - datePublished: 2026-06-04 → 2026-09-02
+   - dateModified: 2026-08-20 → 2026-09-02
+
+## 8. Rollback
 
 Rollback point: `0664bdd5fa773a2581fc87e82809ff685a461ff7`
+
+## 9. Next steps
+
+1. Open PR from `lane/baptisty-petersburg-deepening-20260902`
+2. Run exact-head checks after PR creation
+3. Move to next wave: **Origins Wave** (Кура → Южная штунда → 1884)
