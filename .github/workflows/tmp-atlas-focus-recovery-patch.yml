@@ -1,0 +1,108 @@
+name: Temporary Atlas focus recovery patch
+
+on:
+  push:
+    branches:
+      - agent/atlas-focus-recovery-helper-20260907
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout helper branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: agent/atlas-focus-recovery-helper-20260907
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Apply bounded Atlas focus recovery repair
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          runtime_path = Path('src/runtime/atlas-runtime.js')
+          runtime = runtime_path.read_text()
+          old_runtime = """      if (typeof window.ResizeObserver === 'function') {
+                observer = new window.ResizeObserver(attempt);
+                observer.observe(element);
+              }
+              if (typeof window.requestAnimationFrame === 'function') {
+                var retryWithoutObserver = function () {
+                  frame = 0;
+                  attempt();
+                  if (!settled && !observer) frame = window.requestAnimationFrame(retryWithoutObserver);
+                };
+                frame = window.requestAnimationFrame(retryWithoutObserver);
+              } else {
+                attempt();
+              }
+          """
+          new_runtime = """      if (typeof window.ResizeObserver === 'function') {
+                observer = new window.ResizeObserver(attempt);
+                observer.observe(element);
+              }
+              if (typeof window.requestAnimationFrame === 'function') {
+                var remainingObservedLayoutFrames = 2;
+                var retryAfterLayout = function () {
+                  frame = 0;
+                  attempt();
+                  if (settled) return;
+                  if (!observer || remainingObservedLayoutFrames > 1) {
+                    if (observer) remainingObservedLayoutFrames -= 1;
+                    frame = window.requestAnimationFrame(retryAfterLayout);
+                  }
+                };
+                frame = window.requestAnimationFrame(retryAfterLayout);
+              } else {
+                attempt();
+              }
+          """
+          if runtime.count(old_runtime) != 1:
+              raise SystemExit(f'expected one runtime recovery block, found {runtime.count(old_runtime)}')
+          runtime_path.write_text(runtime.replace(old_runtime, new_runtime, 1))
+
+          test_path = Path('scripts/atlas-focus-state-browser-test.mjs')
+          test = test_path.read_text()
+          old_test = """      await page.locator('#atlasFilterClose').focus();
+                await page.setViewportSize({ width: 981, height: HEIGHT });
+          """
+          new_test = """      await page.locator('#atlasFilterClose').focus();
+                await page.evaluate(() => {
+                  const target = document.querySelector('#atlasSidebar [data-atlas-group]');
+                  if (!(target instanceof HTMLElement)) throw new Error('desktop sidebar focus target missing');
+                  const nativeFocus = target.focus.bind(target);
+                  let attempts = 0;
+                  target.focus = function faultInjectedFocus(options) {
+                    attempts += 1;
+                    if (attempts >= 3) nativeFocus(options);
+                  };
+                });
+                await page.setViewportSize({ width: 981, height: HEIGHT });
+          """
+          if test.count(old_test) != 1:
+              raise SystemExit(f'expected one 980->981 witness block, found {test.count(old_test)}')
+          test_path.write_text(test.replace(old_test, new_test, 1))
+          PY
+
+      - name: Prove surgical source diff
+        shell: bash
+        run: |
+          git diff --check
+          test "$(git diff --name-only | sort)" = $'scripts/atlas-focus-state-browser-test.mjs\nsrc/runtime/atlas-runtime.js'
+          node --check src/runtime/atlas-runtime.js
+          node --check scripts/atlas-focus-state-browser-test.mjs
+
+      - name: Commit helper result
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/runtime/atlas-runtime.js scripts/atlas-focus-state-browser-test.mjs
+          git commit -m "fix(atlas): make breakpoint focus recovery deterministic"
+          git push origin HEAD:agent/atlas-focus-recovery-helper-20260907
