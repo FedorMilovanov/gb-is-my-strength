@@ -5,11 +5,22 @@
  * Shared asset list for cache-bust.js and audit-pro.js.
  *
  * Single source of truth — both scripts import from here,
- * eliminating manual sync drift.
+ * eliminating manual sync drift. Loading the policy also performs the
+ * read-only source-surface revision census so JS/MJS/TS/TSX/MDX constructors
+ * cannot sit outside the canonical asset-revision evidence.
  *
  * Usage:
  *   const { ASSETS } = require('./cache-bust-assets');
  */
+
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+const {
+  collectProductSourceSurfaces,
+  auditGovernedResourceVersions,
+  assertSourceSurfaceMutationContract,
+} = require('./lib/product-source-surfaces');
 
 const ASSETS = [
   'css/site.css',
@@ -61,4 +72,47 @@ const LAZY_NO_PRECACHE = Object.freeze([
   'data/search-manifest.json',
 ]);
 
-module.exports = { ASSETS, LAZY_NO_PRECACHE };
+function md5short(root, relPath) {
+  const absolute = path.join(root, relPath);
+  if (!fs.existsSync(absolute)) return null;
+  return crypto.createHash('md5').update(fs.readFileSync(absolute)).digest('hex').slice(0, 8);
+}
+
+function assertGovernedResourceSourceSurfaces() {
+  const root = path.resolve(__dirname, '..');
+  assertSourceSurfaceMutationContract();
+  const hashes = Object.fromEntries(ASSETS.map((asset) => [asset, md5short(root, asset)]));
+  const surfaces = collectProductSourceSurfaces(root);
+  const result = auditGovernedResourceVersions(root, ASSETS, hashes, surfaces);
+
+  if (result.unclassified.length) {
+    throw new Error(
+      'asset revision source corpus omitted resource-producing source classes:\n  - '
+      + result.unclassified
+        .map((item) => `${item.relative} (${item.extension || 'no extension'})`)
+        .join('\n  - ')
+    );
+  }
+  if (result.stale.length) {
+    throw new Error(
+      'stale governed asset revision literal(s) outside the old HTML/Astro-only audit:\n  - '
+      + result.stale
+        .map((item) => `${item.relative}: ${item.asset}?v=${item.actual} (expected ${item.expected})`)
+        .join('\n  - ')
+    );
+  }
+
+  return Object.freeze({
+    resourceFiles: surfaces.resourceFiles.length,
+    checkedVersionedLiterals: result.checkedVersionedLiterals,
+  });
+}
+
+const SOURCE_SURFACE_REVISION_AUDIT = assertGovernedResourceSourceSurfaces();
+
+module.exports = {
+  ASSETS,
+  LAZY_NO_PRECACHE,
+  SOURCE_SURFACE_REVISION_AUDIT,
+  assertGovernedResourceSourceSurfaces,
+};
