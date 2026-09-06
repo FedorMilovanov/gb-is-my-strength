@@ -8,7 +8,10 @@
  * ownership is supplied by page-ownership + profiles + explicit matrix overrides.
  */
 
+const { assertApiBibleRightsContract } = require('./lib/api-bible-rights-contract');
 const { assertTmsjTranslationRightsContract } = require('./lib/tmsj-translation-rights-contract');
+
+assertApiBibleRightsContract();
 assertTmsjTranslationRightsContract();
 
 const basePath = require.resolve('./lib/route-source-contract');
