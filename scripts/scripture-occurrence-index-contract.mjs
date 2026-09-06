@@ -6,6 +6,9 @@ import {
   ROOT,
   OUTPUT_FILE,
   buildScriptureOccurrenceIndex,
+  contextAroundVisible,
+  nearestExplicitAnchor,
+  projectVisibleSource,
   serializeScriptureOccurrenceIndex,
 } from './build-scripture-occurrence-index.mjs';
 import {
@@ -97,6 +100,86 @@ function routeDistFile(route) {
   return path.join(DIST_ROOT, clean, 'index.html');
 }
 
+function tagHasLiteralId(tag, expected) {
+  let index = 1;
+  while (index < tag.length && !/[\s/>]/u.test(tag[index])) index += 1;
+  while (index < tag.length) {
+    while (index < tag.length && /\s/u.test(tag[index])) index += 1;
+    if (index >= tag.length || tag[index] === '>' || (tag[index] === '/' && tag[index + 1] === '>')) break;
+
+    const nameStart = index;
+    while (index < tag.length && !/[\s=/>]/u.test(tag[index])) index += 1;
+    const name = tag.slice(nameStart, index).toLowerCase();
+    while (index < tag.length && /\s/u.test(tag[index])) index += 1;
+
+    let value = null;
+    if (tag[index] === '=') {
+      index += 1;
+      while (index < tag.length && /\s/u.test(tag[index])) index += 1;
+      const quote = tag[index];
+      if (quote === '"' || quote === "'") {
+        index += 1;
+        const valueStart = index;
+        while (index < tag.length && tag[index] !== quote) index += 1;
+        value = tag.slice(valueStart, index);
+        if (index < tag.length) index += 1;
+      } else {
+        const valueStart = index;
+        while (index < tag.length && !/[\s>]/u.test(tag[index])) index += 1;
+        value = tag.slice(valueStart, index);
+      }
+    }
+
+    if (name === 'id' && value === expected) return true;
+  }
+  return false;
+}
+
+function htmlHasLiteralId(html, expected) {
+  const tags = String(html || '').match(/<[A-Za-z][^<>]*>/gu) || [];
+  return tags.some((tag) => tagHasLiteralId(tag, expected));
+}
+
+function contextHasSourceSyntax(value) {
+  const context = String(value || '');
+  return /<\/?[A-Za-z][^>]*>|\b(?:class|data-[\w-]+|aria-[\w-]+|href|src|id)\s*=\s*["'{]|!\[[^\]]*\]\(|\]\([^)]*\)|```|`|[{}]/iu.test(context);
+}
+
+function runRepresentationOracleFixtures() {
+  const astro = '<section data-note-id="false-anchor"><h2 id="real-anchor">Тема</h2><p>До Рим. 8:28 после.</p></section>';
+  const offset = astro.indexOf('Рим. 8:28');
+  const end = offset + 'Рим. 8:28'.length;
+  if (nearestExplicitAnchor(astro, offset, '.astro') !== 'real-anchor') {
+    fail('producer fixture: real id attribute was not selected structurally');
+  }
+
+  const falseOnly = '<section data-note-id="false-anchor"><p>Рим. 8:28</p></section>';
+  if (nearestExplicitAnchor(falseOnly, falseOnly.indexOf('Рим. 8:28'), '.astro') !== null) {
+    fail('producer fixture: data-note-id was accepted as a real id attribute');
+  }
+
+  const projected = projectVisibleSource(astro, '.astro');
+  const context = contextAroundVisible(projected, offset, end, '.astro');
+  if (!context.includes('До Рим. 8:28 после.') || contextHasSourceSyntax(context) || context.includes('false-anchor')) {
+    fail(`producer fixture: context is not visible-prose clean: ${context}`);
+  }
+
+  const mdx = '[Рим. 8:28](https://example.invalid/raw-source)\n\n![2 Кор. 5:17](https://example.invalid/image)';
+  const projectedMdx = projectVisibleSource(mdx, '.mdx');
+  if (!projectedMdx.includes('Рим. 8:28') || projectedMdx.includes('raw-source') || projectedMdx.includes('2 Кор. 5:17')) {
+    fail('producer fixture: MDX projection did not keep visible link prose while masking non-visible destinations/image syntax');
+  }
+
+  if (htmlHasLiteralId('<div data-note-id="false-anchor"></div>', 'false-anchor')) {
+    fail('independent dist fixture: data-note-id was accepted as a real id attribute');
+  }
+  if (!htmlHasLiteralId('<div data-note-id="false-anchor" id="real-anchor"></div>', 'real-anchor')) {
+    fail('independent dist fixture: real id attribute was not recognized');
+  }
+}
+
+runRepresentationOracleFixtures();
+
 if (!fs.existsSync(OUTPUT_FILE)) {
   fail('data/scripture-search-index.json is missing');
 } else {
@@ -172,6 +255,9 @@ if (!fs.existsSync(OUTPUT_FILE)) {
       if (!allowedTitles?.has(occurrence.title)) fail(`occurrence title is not manifest-owned: ${reference.id} ${route}`);
       if (!occurrence.context || typeof occurrence.context !== 'string') fail(`missing context: ${reference.id} ${route}`);
       if (!occurrence.raw || typeof occurrence.raw !== 'string') fail(`missing raw reference: ${reference.id} ${route}`);
+      if (occurrence.sourceKind !== 'manifest-metadata' && contextHasSourceSyntax(occurrence.context)) {
+        fail(`source syntax leaked into context: ${reference.id} ${route} ${occurrence.sourceOwner}`);
+      }
       if (!Array.isArray(occurrence.topics) || !sameArray(occurrence.topics, stableSorted(new Set(occurrence.topics)))) {
         fail(`topics must be unique and sorted: ${reference.id} ${route}`);
       }
@@ -200,7 +286,7 @@ if (!fs.existsSync(OUTPUT_FILE)) {
           witness = { html, text: normalizeWitnessText(html) };
           witnessedRoutes.set(route, witness);
         }
-        if (occurrence.anchor && !new RegExp(`\\bid=["']${occurrence.anchor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["']`, 'u').test(witness.html)) {
+        if (occurrence.anchor && !htmlHasLiteralId(witness.html, occurrence.anchor)) {
           fail(`dist anchor missing: ${reference.id} ${route}#${occurrence.anchor}`);
         }
         if (occurrence.sourceKind !== 'manifest-metadata') {
