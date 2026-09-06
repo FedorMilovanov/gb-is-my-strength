@@ -506,6 +506,7 @@ var key = portKey(port);
 touchPort(port);
 if (message.type === 'hello' || message.type === 'ping') return;
 if (message.type === 'disconnect') {
+send(port, 'disconnected', { id: message.id || 0 });
 retirePort(port, true);
 return;
 }
