@@ -16,8 +16,11 @@ ready: false,
 loading: null,
 loadSequence: 0,
 speakSequence: 0,
+disconnectSequence: 0,
 loadRequests: new Map(),
 speakRequests: new Map(),
+disconnectRequests: new Map(),
+retirementPromise: null,
 audio: null,
 audioHandleId: null,
 objectUrl: null,
@@ -300,12 +303,9 @@ if (!entry.handle.cancelled && typeof entry.onerror === 'function') entry.onerro
 function failAllSpeaks(error) {
 Array.from(state.speakRequests.keys()).forEach(function (id) { failSpeak(id, error); });
 }
-function terminateWorker(error) {
+function clearWorkerState(error) {
 if (state.heartbeatTimer) clearInterval(state.heartbeatTimer);
 state.heartbeatTimer = 0;
-if (state.worker) {
-try { state.worker.terminate(); } catch (_) {}
-}
 state.worker = null;
 state.workerMode = null;
 state.ready = false;
@@ -315,13 +315,67 @@ settleAllLoads(error);
 failAllSpeaks(error);
 }
 }
-function retireDocumentClient() {
+function terminateWorker(error) {
+var worker = state.worker;
+if (worker) {
+try { worker.terminate(); } catch (_) {}
+}
+clearWorkerState(error);
+}
+function retireWorker(reason) {
+if (state.retirementPromise) return state.retirementPromise;
+var error = createCancelledError(reason || 'document lifetime ended');
 stopAudio();
 state.speakRequests.forEach(function (entry) { entry.handle.cancelled = true; });
-terminateWorker(createCancelledError('document lifetime ended'));
+if (!state.worker) {
+clearWorkerState(error);
+return Promise.resolve(true);
+}
+if (state.workerMode !== 'shared') {
+terminateWorker(error);
+return Promise.resolve(true);
+}
+var channel = state.worker;
+var id = ++state.disconnectSequence;
+state.retirementPromise = new Promise(function (resolve) {
+var settled = false;
+var timer = setTimeout(function () {
+if (settled) return;
+settled = true;
+state.disconnectRequests.delete(id);
+resolve(false);
+}, 300);
+state.disconnectRequests.set(id, function () {
+if (settled) return;
+settled = true;
+clearTimeout(timer);
+state.disconnectRequests.delete(id);
+resolve(true);
+});
+try {
+channel.postMessage({ type: 'disconnect', clientId: CLIENT_ID, id: id });
+} catch (_) {
+clearTimeout(timer);
+state.disconnectRequests.delete(id);
+settled = true;
+resolve(false);
+}
+}).finally(function () {
+if (state.worker === channel) clearWorkerState(error);
+state.retirementPromise = null;
+});
+return state.retirementPromise;
+}
+function retireDocumentClient() {
+void retireWorker('document lifetime ended');
 }
 function handleWorkerMessage(message) {
 var type = message.type;
+if (type === 'disconnected') {
+var disconnect = state.disconnectRequests.get(message.id);
+if (disconnect) disconnect();
+return;
+}
 if (type === 'status') {
 if (message.phase === 'ready') state.ready = true;
 showStatus(message.phase || 'preparing', {
@@ -531,6 +585,7 @@ ensureLoaded: ensureLoaded,
 retryLoading: retryLoading,
 clearModelDownloadOptOut: clearModelDownloadOptOut,
 cancelLoading: cancelLoading,
+retire: retireWorker,
 speak: speak,
 cancel: cancel
 });
