@@ -29,63 +29,43 @@ jobs:
 
           runtime_path = Path('src/runtime/atlas-runtime.js')
           runtime = runtime_path.read_text()
-          old_runtime = """      if (typeof window.ResizeObserver === 'function') {
-                observer = new window.ResizeObserver(attempt);
-                observer.observe(element);
-              }
-              if (typeof window.requestAnimationFrame === 'function') {
-                var retryWithoutObserver = function () {
-                  frame = 0;
-                  attempt();
-                  if (!settled && !observer) frame = window.requestAnimationFrame(retryWithoutObserver);
-                };
-                frame = window.requestAnimationFrame(retryWithoutObserver);
-              } else {
+          old_runtime = """      var retryWithoutObserver = function () {
+                frame = 0;
                 attempt();
-              }
-          """
-          new_runtime = """      if (typeof window.ResizeObserver === 'function') {
-                observer = new window.ResizeObserver(attempt);
-                observer.observe(element);
-              }
-              if (typeof window.requestAnimationFrame === 'function') {
-                var remainingObservedLayoutFrames = 2;
-                var retryAfterLayout = function () {
-                  frame = 0;
-                  attempt();
-                  if (settled) return;
-                  if (!observer || remainingObservedLayoutFrames > 1) {
-                    if (observer) remainingObservedLayoutFrames -= 1;
-                    frame = window.requestAnimationFrame(retryAfterLayout);
-                  }
-                };
-                frame = window.requestAnimationFrame(retryAfterLayout);
-              } else {
+                if (!settled && !observer) frame = window.requestAnimationFrame(retryWithoutObserver);
+              };
+              frame = window.requestAnimationFrame(retryWithoutObserver);"""
+          new_runtime = """      var remainingObservedLayoutFrames = 2;
+              var retryAfterLayout = function () {
+                frame = 0;
                 attempt();
-              }
-          """
+                if (settled) return;
+                if (!observer || remainingObservedLayoutFrames > 1) {
+                  if (observer) remainingObservedLayoutFrames -= 1;
+                  frame = window.requestAnimationFrame(retryAfterLayout);
+                }
+              };
+              frame = window.requestAnimationFrame(retryAfterLayout);"""
           if runtime.count(old_runtime) != 1:
-              raise SystemExit(f'expected one runtime recovery block, found {runtime.count(old_runtime)}')
+              raise SystemExit(f'expected one retryWithoutObserver block, found {runtime.count(old_runtime)}')
           runtime_path.write_text(runtime.replace(old_runtime, new_runtime, 1))
 
           test_path = Path('scripts/atlas-focus-state-browser-test.mjs')
           test = test_path.read_text()
           old_test = """      await page.locator('#atlasFilterClose').focus();
-                await page.setViewportSize({ width: 981, height: HEIGHT });
-          """
+                await page.setViewportSize({ width: 981, height: HEIGHT });"""
           new_test = """      await page.locator('#atlasFilterClose').focus();
-                await page.evaluate(() => {
-                  const target = document.querySelector('#atlasSidebar [data-atlas-group]');
-                  if (!(target instanceof HTMLElement)) throw new Error('desktop sidebar focus target missing');
-                  const nativeFocus = target.focus.bind(target);
-                  let attempts = 0;
-                  target.focus = function faultInjectedFocus(options) {
-                    attempts += 1;
-                    if (attempts >= 3) nativeFocus(options);
-                  };
-                });
-                await page.setViewportSize({ width: 981, height: HEIGHT });
-          """
+              await page.evaluate(() => {
+                const target = document.querySelector('#atlasSidebar [data-atlas-group]');
+                if (!(target instanceof HTMLElement)) throw new Error('desktop sidebar focus target missing');
+                const nativeFocus = target.focus.bind(target);
+                let attempts = 0;
+                target.focus = function faultInjectedFocus(options) {
+                  attempts += 1;
+                  if (attempts >= 3) nativeFocus(options);
+                };
+              });
+              await page.setViewportSize({ width: 981, height: HEIGHT });"""
           if test.count(old_test) != 1:
               raise SystemExit(f'expected one 980->981 witness block, found {test.count(old_test)}')
           test_path.write_text(test.replace(old_test, new_test, 1))
