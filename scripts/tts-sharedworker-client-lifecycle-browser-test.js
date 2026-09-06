@@ -34,6 +34,33 @@ async function waitFor(predicate, timeoutMs = 3000) {
   throw new Error(`condition not met within ${timeoutMs}ms`);
 }
 
+async function waitForRetirement(retired, minimum, page, label) {
+  try {
+    await waitFor(() => retired.length >= minimum);
+  } catch (error) {
+    let pageState = null;
+    try {
+      pageState = await page.evaluate(() => ({
+        href: location.href,
+        engine: window.VoskTTSEngine?.getStatus?.() || null,
+        navigation: window.navigation ? {
+          currentUrl: window.navigation.currentEntry?.url || '',
+          canGoBack: window.navigation.canGoBack,
+        } : null,
+      }));
+    } catch (pageError) {
+      pageState = { href: page.url(), evaluationError: String(pageError) };
+    }
+    console.error('[TTS-SHAREDWORKER-LIFECYCLE-BROWSER-DIAG]', JSON.stringify({
+      label,
+      minimum,
+      retired: retired.slice(),
+      pageState,
+    }));
+    throw error;
+  }
+}
+
 const FAKE_WORKER = String.raw`'use strict';
 let ready = false;
 function wav() {
@@ -156,12 +183,15 @@ async function clickAway(page) {
     const context = await browser.newContext();
     const owner = await context.newPage();
     const departing = await context.newPage();
+    const probe = await context.newPage();
     await installMediaStub(owner);
     await installMediaStub(departing);
+    await installMediaStub(probe);
 
     await Promise.all([
       owner.goto(`${origin}/owner`, { waitUntil: 'domcontentloaded' }),
       departing.goto(`${origin}/departing`, { waitUntil: 'domcontentloaded' }),
+      probe.goto(`${origin}/probe`, { waitUntil: 'domcontentloaded' }),
     ]);
     report.navigationApi = await departing.evaluate(() => ({
       available: Boolean(window.navigation),
@@ -172,12 +202,20 @@ async function clickAway(page) {
 
     report.ownerInitial = await warm(owner);
     report.departingInitial = await warm(departing);
+    report.probeInitial = await warm(probe);
     assert.equal(workerRequests, 1, 'same-origin pages did not share one SharedWorker instance');
+
+    const directRetireResult = await probe.evaluate(() => window.VoskTTSEngine.retire('browser direct retirement probe'));
+    assert.equal(directRetireResult, true, 'direct SharedWorker retirement did not receive ACK');
+    await waitForRetirement(retired, 1, probe, 'direct-retire-probe');
+    report.directRetireClient = retired[0];
+    assert.ok(report.directRetireClient, 'direct browser retirement did not retire a concrete client');
+    await probe.close();
 
     await departing.evaluate(() => window.VoskTTSEngine.speak('Уходящая страница', 1, 3, () => {}, () => {}));
     await clickAway(departing);
-    await waitFor(() => retired.length >= 1);
-    const firstRetiredClient = retired[0];
+    await waitForRetirement(retired, 2, departing, 'first-document-navigation');
+    const firstRetiredClient = retired[1];
     assert.ok(firstRetiredClient, 'ACK-backed document navigation did not retire the client');
 
     await owner.evaluate(() => window.VoskTTSEngine.speak('Живой клиент', 1, 3, () => {}, () => {}));
@@ -197,8 +235,8 @@ async function clickAway(page) {
 
     await departing.evaluate(() => window.VoskTTSEngine.speak('Уходящая страница снова', 1, 3, () => {}, () => {}));
     await clickAway(departing);
-    await waitFor(() => retired.length >= 2);
-    const secondRetiredClient = retired[1];
+    await waitForRetirement(retired, 3, departing, 'second-document-navigation');
+    const secondRetiredClient = retired[2];
     assert.ok(secondRetiredClient, 'restored peer did not perform second authoritative retirement');
     assert.notEqual(secondRetiredClient, firstRetiredClient, 'restored document reused retired SharedWorker client identity');
 
@@ -214,7 +252,7 @@ async function clickAway(page) {
 
     report.retiredClientCount = new Set(retired.filter(Boolean)).size;
     report.workerRequests = workerRequests;
-    assert.ok(report.retiredClientCount >= 2, 'reconnected document did not receive a fresh retirement identity');
+    assert.ok(report.retiredClientCount >= 3, 'browser lifecycle did not produce distinct direct + restored client retirements');
     assert.equal(workerRequests, 1, 'SharedWorker script was re-instantiated while a live owner remained');
 
     fs.writeFileSync(path.join(REPORTS, 'tts-sharedworker-client-lifecycle-browser.json'), `${JSON.stringify(report, null, 2)}\n`);
