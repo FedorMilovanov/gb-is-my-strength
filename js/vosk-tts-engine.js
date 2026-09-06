@@ -395,7 +395,6 @@ postMessage: function (message) { port.postMessage(message); },
 terminate: function () {
 if (mode === 'shared') {
 try { port.postMessage({ type: 'disconnect', clientId: CLIENT_ID }); } catch (_) {}
-try { port.close(); } catch (_) {}
 } else {
 try { raw.terminate(); } catch (_) {}
 }
