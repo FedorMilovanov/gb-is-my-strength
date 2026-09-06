@@ -267,9 +267,16 @@ async function auditChapter(page, state, base, vp, chapter) {
   const launch = chapter === 3 ? TELEGRAM.ch3 : TELEGRAM.ch4;
   const expectedParam = chapter === 3 ? 'v1_site_ch3__chapter3' : 'v1_site_ch4__chapter4';
   await go(page, state, base, route, vp); await generic(page, state, route, vp);
-  const aside = page.locator(`.genesis6-app-cta[data-bible-app-chapter="${chapter}"]`).first();
-  const visible = (await aside.count()) > 0 && await aside.isVisible().catch(() => false);
+  const ctas = page.locator(`.genesis6-app-cta[data-bible-app-chapter="${chapter}"]`);
+  const count = await ctas.count();
+  rec(vp, route, 'chapter:cta-count', count === 2, String(count));
+  rec(vp, route, 'chapter:compact-after-header', await page.locator(`.article-header + .genesis6-app-cta[data-bible-app-chapter="${chapter}"][data-bible-app-variant="compact"]`).count() === 1);
+  rec(vp, route, 'chapter:full-after-prose', await page.locator(`.genesis6-prose + .genesis6-app-cta[data-bible-app-chapter="${chapter}"][data-bible-app-variant="full"]`).count() === 1);
+
+  const aside = ctas.first();
+  const visible = count > 0 && await aside.isVisible().catch(() => false);
   rec(vp, route, 'chapter:cta-visible', visible, `chapter=${chapter}`);
+  rec(vp, route, 'chapter:first-variant-compact', await aside.getAttribute('data-bible-app-variant') === 'compact', await aside.getAttribute('data-bible-app-variant') || '<missing>');
   if (visible) {
     await aside.scrollIntoViewIfNeeded(); await page.waitForTimeout(250);
     const start = await aside.getAttribute('data-bible-app-start-param');
