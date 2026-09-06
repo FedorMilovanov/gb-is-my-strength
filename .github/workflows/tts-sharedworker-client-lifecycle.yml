@@ -5,6 +5,8 @@ on:
     paths:
       - "js/vosk-tts-engine.js"
       - "js/vosk-tts-worker.js"
+      - "js/floating-cluster-controller.js"
+      - "src/lib/asset-version.js"
       - "src/runtime/reader-tts-lifecycle.js"
       - "scripts/tts-sharedworker-client-lifecycle-contract.js"
       - "scripts/tts-sharedworker-client-lifecycle-browser-test.js"
@@ -14,6 +16,8 @@ on:
     paths:
       - "js/vosk-tts-engine.js"
       - "js/vosk-tts-worker.js"
+      - "js/floating-cluster-controller.js"
+      - "src/lib/asset-version.js"
       - "src/runtime/reader-tts-lifecycle.js"
       - "scripts/tts-sharedworker-client-lifecycle-contract.js"
       - "scripts/tts-sharedworker-client-lifecycle-browser-test.js"
