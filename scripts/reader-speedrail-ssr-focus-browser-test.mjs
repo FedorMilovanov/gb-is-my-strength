@@ -100,7 +100,7 @@ async function inspectRoute(page, kind, route, { focusWitness = false } = {}) {
   const onPageError = (error) => pageErrors.push(String(error?.stack || error));
   page.on('pageerror', onPageError);
   try {
-    const response = await page.goto(route, { waitUntil: 'load' });
+    const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
     assert.ok(response?.ok(), `${kind} ${route}: load failed`);
     const state = await page.evaluate(() => {
       const rails = [...document.querySelectorAll('.mobile-speedrail[aria-hidden="true"]')];
