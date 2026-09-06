@@ -164,10 +164,10 @@ async function clickAway(page) {
     ]);
     report.navigationApi = await departing.evaluate(() => ({
       available: Boolean(window.navigation),
-      intercept: Boolean(window.NavigationEvent?.prototype?.intercept),
+      intercept: Boolean(window.NavigateEvent?.prototype?.intercept),
     }));
     assert.equal(report.navigationApi.available, true, 'Chromium Navigation API unavailable');
-    assert.equal(report.navigationApi.intercept, true, 'Chromium NavigationEvent.intercept unavailable');
+    assert.equal(report.navigationApi.intercept, true, 'Chromium NavigateEvent.intercept unavailable');
 
     report.ownerInitial = await warm(owner);
     report.departingInitial = await warm(departing);
