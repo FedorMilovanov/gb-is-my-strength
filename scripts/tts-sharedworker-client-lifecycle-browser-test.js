@@ -10,6 +10,7 @@ const { chromium } = require('playwright');
 const ROOT = path.resolve(__dirname, '..');
 const REPORTS = path.join(ROOT, 'reports');
 const ENGINE = fs.readFileSync(path.join(ROOT, 'js/vosk-tts-engine.js'), 'utf8');
+const LIFECYCLE = fs.readFileSync(path.join(ROOT, 'src/runtime/reader-tts-lifecycle.js'), 'utf8');
 fs.mkdirSync(REPORTS, { recursive: true });
 
 function listen(handler) {
@@ -103,15 +104,27 @@ async function warm(page) {
   return status;
 }
 
+async function clickAway(page) {
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+    page.click('#leave-document'),
+  ]);
+}
+
 (async () => {
   const retired = [];
   let workerRequests = 0;
-  const html = '<!doctype html><html lang="ru"><head><meta charset="utf-8"></head><body><main>Lifecycle fixture</main><script src="/js/vosk-tts-engine.js"></script></body></html>';
+  const html = '<!doctype html><html lang="ru"><head><meta charset="utf-8"></head><body><main>Lifecycle fixture</main><a id="leave-document" href="/departed">Leave document</a><script src="/js/vosk-tts-engine.js"></script><script src="/src/runtime/reader-tts-lifecycle.js"></script></body></html>';
   const { server, origin } = await listen((req, res) => {
     const url = new URL(req.url || '/', 'http://127.0.0.1');
     if (url.pathname === '/js/vosk-tts-engine.js') {
       res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'no-store' });
       res.end(ENGINE);
+      return;
+    }
+    if (url.pathname === '/src/runtime/reader-tts-lifecycle.js') {
+      res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'no-store' });
+      res.end(LIFECYCLE);
       return;
     }
     if (url.pathname === '/js/vosk-tts-worker.js') {
@@ -153,9 +166,9 @@ async function warm(page) {
     assert.equal(workerRequests, 1, 'same-origin pages did not share one SharedWorker instance');
 
     await departing.evaluate(() => window.VoskTTSEngine.speak('Уходящая страница', 1, 3, () => {}, () => {}));
-    await departing.goto(`${origin}/departed`, { waitUntil: 'domcontentloaded' });
+    await clickAway(departing);
     await waitFor(() => retired.length >= 1);
-    assert.ok(retired[0], 'pagehide disconnect did not carry client identity');
+    assert.ok(retired[0], 'document navigation disconnect did not carry client identity');
 
     await owner.evaluate(() => window.VoskTTSEngine.speak('Живой клиент', 1, 3, () => {}, () => {}));
     await owner.waitForFunction(() => (window.__played || 0) >= 1);
@@ -167,13 +180,13 @@ async function warm(page) {
     assert.equal(report.ownerAfterPeerRetire.status.ready, true);
     assert.ok(report.ownerAfterPeerRetire.played >= 1, 'surviving page could not synthesize after peer retirement');
 
-    await owner.goto(`${origin}/owner-next`, { waitUntil: 'domcontentloaded' });
+    await clickAway(owner);
     await waitFor(() => retired.length >= 2);
     assert.notEqual(retired[0], retired[1], 'two documents retired the same client identity');
 
     await owner.goBack({ waitUntil: 'domcontentloaded' });
     report.restored = await warm(owner);
-    assert.equal(report.restored.workerMode, 'shared', 'restored page did not lazily reconnect after pagehide retirement');
+    assert.equal(report.restored.workerMode, 'shared', 'restored page did not lazily reconnect after navigation retirement');
     assert.equal(report.restored.ready, true, 'restored page did not regain ready SharedWorker state');
 
     report.retiredClientCount = new Set(retired.filter(Boolean)).size;
