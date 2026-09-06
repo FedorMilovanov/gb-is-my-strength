@@ -1,71 +1,80 @@
 # Petersburg Golden Chapter — Deepening Lane Handoff
 
-**Дата:** 2026-09-02
-**Lane:** `lane/baptisty-petersburg-deepening-20260902`
-**Mode:** LANE
-**Status:** COMPLETED
-**Commit:** `c417ffe`
-**Base / rollback SHA:** `0664bdd5fa773a2581fc87e82809ff685a461ff7` (main current)
+**Дата создания:** 2026-09-02  
+**Последняя сверка:** 2026-09-06  
+**Lane:** `lane/baptisty-petersburg-deepening-20260902`  
+**Mode:** LANE  
+**Status:** READY FOR EXACT-HEAD VERIFICATION  
 **Route under edit:** `/baptisty-rossii/peterburgskaya-liniya/`
 
-## 1. Pre-flight
+## 1. Authority and scope
 
-- Branch created: `lane/baptisty-petersburg-deepening-20260902`
-- Existing source matrix: `audit/BAPTISTY-ROSSII-PETERSBURG-SOURCE-MATRIX-2026-08-20.md`
-- Book Authority: `docs/BAPTISTY-ROSSII-BOOK-AUTHORITY-V2.md`
-- Current Body: `src/components/baptisty-rossii/BaptistyRossiiPeterburgskayaLiniyaBody.astro`
+This lane deepens the existing Petersburg chapter. It does not create new routes, change navigation/canonical/title, add unprovenanced media, change reading-time ownership, or bulk-import Research material.
 
-## 2. Current state diagnosis
+Primary authority/evidence surfaces used by the lane:
 
-Article updated 2026-08-20. All P0 HOLDs resolved:
-- ✅ Prokhanov birth year: 1869–1935 with attribution
-- ✅ Two organisations separated: Russian Evangelical Union 1908 ≠ EC Union 1909–1911
-- ✅ 1885 teleology removed: "не доказывает", "не двигались по прямой линии"
-- ✅ Fetler not inserted into 1885 scene
-- ✅ "Direct predecessor of 1944" phrasing removed
-- ✅ "Social alternative in drinking country" attributed carefully
-
-## 3. Scope of this lane
-
-### Allowed
-- Deepening existing sections with more evidence
-- Adding concrete periodical details
-- Strengthening source apparatus
-- Adding PBG-18 Pashkov Papers context
-
-### Forbidden
-- Creating new routes
-- Changing navigation/canonical/title
-- Adding media without rights/provenance bridge
-- Changing reading time
-- Bulk import from Research
-
-## 4. Deepening candidates
-
-From source matrix section 6.2:
-
-### Priority 1: Print expansion (1906–1910)
-- Add concrete issue numbers and dates from Research 03
-- Strengthen "Христианин" vs "Баптист" distinction
-- Add "Утренняя звезда" as separate voice
-
-### Priority 2: Pashkov Papers context
-- PBG-18: Add catalogue facts: 3017 items, 1877–1909
-- Explain what "archival corpus" means vs opened files
-
-### Priority 3: Radstock/Lieven section
-- PBG-03 to PBG-05: Strengthen attribution language
-- Add explicit "page locator pending" where needed
-
-## 5. Evidence anchors
-
-Research files referenced:
+- `audit/BAPTISTY-ROSSII-PETERSBURG-SOURCE-MATRIX-2026-08-20.md`
+- `docs/BAPTISTY-ROSSII-BOOK-AUTHORITY-V2.md`
+- `src/components/baptisty-rossii/BaptistyRossiiPeterburgskayaLiniyaBody.astro`
 - `baptists_v120_TRUE_GROUPED/groups/02_HISTORY_NARRATIVE.md`
 - `baptists_v120_TRUE_GROUPED/groups/03_PERIODICAL_CORPUS.md`
 - `baptists_v120_TRUE_GROUPED/groups/08_INSTRUCTIONAL_LETTER...`
 - `baptists_v120_TRUE_GROUPED/groups/09_CONGRESS_EC_1911...`
 
-## 6. Required checks
+## 2. Retained deepening
+
+The lane keeps the following evidence-backed improvements:
+
+1. **Bedeker/Kargel context**
+   - Kargel/Lieven household context;
+   - Bedeker prison mission;
+   - Kargel as translator;
+   - explicit separation between memoir-level detail and stronger primary-document claims.
+
+2. **Heier attribution**
+   - full title of *Religious Schism in the Russian Aristocracy 1860–1900: Radstockism and Pashkovism*;
+   - the no-simple-conversion/denominational-separation claim remains attributed to the study rather than presented as an unqualified fact.
+
+3. **Pashkov Papers context**
+   - catalogue scale and composition are stated;
+   - catalogue evidence is not treated as proof of every biographical episode;
+   - concrete claims still require concrete documents from the corpus.
+
+4. **House of Gospel foundation scene**
+   - September 1910 foundation ceremony remains;
+   - participation of Fetler, Prokhanov and Kargel remains;
+   - the scene is used as evidence of a shared public moment, not as proof of a common causal origin for the building project.
+
+5. **Source apparatus**
+   - expanded source notes remain in the article;
+   - source classes and evidentiary limits remain explicit.
+
+## 3. 2026-09-06 reconciliation
+
+The first handoff snapshot contained two statements that became stale during review. They are superseded by the reconciled state below.
+
+### Publication metadata
+
+- `datePublished` authority remains **2026-06-04**.
+- The visible Body text already said `4 июня 2026`; its machine-readable `<time datetime>` was corrected from `2026-09-02` to **`2026-06-04`** in commit `9b480b6a280d2e0e6284717e69ce227a14c59ab0`.
+- Governed `dateModified` remains **2026-08-20**; the branch-local `2026-09-02` value was reverted in commit `46fd5b9a7c7acd701e11f3935aabd8b9522f661b`.
+- Therefore the earlier handoff bullets claiming publication/modification dates were intentionally advanced to `2026-09-02` are no longer authoritative.
+
+### House of Gospel causality
+
+The earlier wording said the ceremony showed that the idea of the public house "родилась из съездового единства". That causal inference exceeded the cited support.
+
+Commit `9b480b6a280d2e0e6284717e69ce227a14c59ab0` now keeps the documented ceremony while stating the narrower conclusion: several Petersburg evangelical lines appeared together on one public scene, but the ceremony itself does **not** prove that the House of Gospel concept originated from congress unity or was a common organizational project of all those lines.
+
+### Base synchronization
+
+- Historical fork point: `0664bdd5fa773a2581fc87e82809ff685a461ff7`.
+- The phrase `(main current)` attached to that SHA in the first handoff snapshot is obsolete and must not be used as current-state authority.
+- After the semantic repairs, the lane was refreshed conflict-free against `main` `a8eca5bea0407242865bab62d14224f19afcd43c` using GitHub's tested merge tree; synchronization commit: `886024907bf0c93dec5fee0ca6dd5cc95247b264`.
+
+## 4. Merge gates
+
+Required before merge:
 
 ```bash
 npm run data:consistency
@@ -73,42 +82,13 @@ npm run migration:metadata:check
 git diff --check
 ```
 
-## 7. Completed deepening
+In addition:
 
-### Changes made
+- Source Authority Contract must be green on the final exact head;
+- all other required exact-head checks must be green;
+- the final PR diff must be reviewed after the last synchronization;
+- no new historical claim may be strengthened beyond its cited evidence while closing CI.
 
-1. **Bedeker/Kargel section expanded**
-   - Added: "Каргель с семьёй поселился в доме Ливен, хотя часто отсутствовал, сопровождая доктора Фридриха Вильгельма Бедекера"
-   - Added: "Бедекер занимался тюремной миссией: посещал заключённых, раздавал Евангелия, Новые Заветы и разрешённые цензурой брошюры; Каргель переводил его английские речи на русский"
-   - Added: "через Бедекера и Каргеля оно распространялось в тюрьмы и дальше — вплоть до Сибири"
+## 5. Handoff rule
 
-2. **Heier academic attribution strengthened**
-   - Changed: Added full book title `<em>Religious Schism in the Russian Aristocracy 1860–1900: Radstockism and Pashkovism</em>`
-   - Changed: "В его исследовании показано, что движение не преследовало цели отделиться от православия"
-
-3. **Pashkov Papers composition expanded**
-   - Added: "переписка Пашкова с 1874 года, материалы Евангелического Альянса (1877–1909), переписка с евангельскими христианами (1874–1901), рукописные и печатные материалы (1884–1895), вырезки из прессы (1880–1902)"
-   - Changed: "конкретный тезис требует конкретного документа из этого корпуса"
-
-4. **House of Gospel foundation ceremony added**
-   - Added: "Торжественная закладка здания прошла в сентябре 1910 года — во время Всероссийского съезда баптистов"
-   - Added: "каждый делегат положил по кирпичу"
-   - Added: "На церемонии выступали Вильгельм Фетлер от баптистов, Иван Проханов от евангельских христиан и Иван Каргель с наставлением"
-   - Added: "Этот момент символически объединял три линии петербургского евангельского движения — баптистскую, евангельско-христианскую и ту, что связывала их через тюремную миссию и архивную переписку"
-
-5. **Source note added**
-   - Added: "Данные о закладке Дома Евангелия в сентябре 1910 года на Всероссийском съезде баптистов"
-
-6. **Editorial dates updated**
-   - datePublished: 2026-06-04 → 2026-09-02
-   - dateModified: 2026-08-20 → 2026-09-02
-
-## 8. Rollback
-
-Rollback point: `0664bdd5fa773a2581fc87e82809ff685a461ff7`
-
-## 9. Next steps
-
-1. Open PR from `lane/baptisty-petersburg-deepening-20260902`
-2. Run exact-head checks after PR creation
-3. Move to next wave: **Origins Wave** (Кура → Южная штунда → 1884)
+This lane is content-scoped. Do not use it to start the next Origins wave or to absorb unrelated repository cleanup. Once exact-head verification and final diff review are green, the lane is ready for owner merge; further research should continue in a separate owner-scoped lane.
