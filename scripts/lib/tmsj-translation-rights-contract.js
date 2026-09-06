@@ -81,11 +81,13 @@ function assertTmsjTranslationRightsContract() {
   if (!fs.existsSync(sourcePath)) throw new Error(`TMSJ rights source owner missing: ${SOURCE_REL}`);
   if (!fs.existsSync(receiptPath)) throw new Error(`TMSJ rights receipt missing: ${RECEIPT_REL}`);
 
-  const problems = validateTmsjRightsContract(
-    fs.readFileSync(sourcePath, 'utf8'),
-    fs.readFileSync(receiptPath, 'utf8'),
-  );
+  const source = fs.readFileSync(sourcePath, 'utf8');
+  const receipt = fs.readFileSync(receiptPath, 'utf8');
+  const problems = validateTmsjRightsContract(source, receipt);
   if (problems.length) {
+    const reportsDir = path.join(ROOT, 'reports');
+    fs.mkdirSync(reportsDir, { recursive: true });
+    fs.writeFileSync(path.join(reportsDir, 'native-source-contract-tmsj-source.log'), source, 'utf8');
     throw new Error(`TMSJ translation rights contract failed:\n- ${problems.join('\n- ')}`);
   }
 
