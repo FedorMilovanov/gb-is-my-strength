@@ -9,11 +9,9 @@
     if (!engine) return Promise.resolve(true);
 
     if (typeof engine.retire === 'function') {
-      const current = Promise.resolve(engine.retire('document navigation'))
-        .catch(() => false);
-      retiring = current.finally(() => {
-        if (retiring === current || retiring) retiring = null;
-      });
+      retiring = Promise.resolve(engine.retire('document navigation'))
+        .catch(() => false)
+        .finally(() => { retiring = null; });
       return retiring;
     }
 
