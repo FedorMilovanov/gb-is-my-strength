@@ -258,9 +258,31 @@ async function runCase(browserName, browserType, baseUrl, width) {
       await trigger.click();
       await page.waitForFunction(() => document.getElementById('atlasSidebar')?.classList.contains('is-open'));
       await page.locator('#atlasFilterClose').focus();
+      await page.evaluate(() => {
+        const target = document.querySelector('#atlasSidebar [data-atlas-group]');
+        if (!(target instanceof HTMLElement)) throw new Error('desktop sidebar focus target missing');
+        const nativeFocus = target.focus.bind(target);
+        let attempts = 0;
+        target.focus = function faultInjectedFocus(options) {
+          attempts += 1;
+          if (attempts >= 3) nativeFocus(options);
+        };
+        if (typeof window.ResizeObserver === 'function') {
+          window.__atlasNativeResizeObserverForTest = window.ResizeObserver;
+          window.ResizeObserver = class SilentResizeObserver {
+            observe() {}
+            disconnect() {}
+          };
+        }
+      });
       await page.setViewportSize({ width: 981, height: HEIGHT });
       await waitForResponsiveState(page, 981);
       await waitForFocusState(page, 'desktop-theme');
+      await page.evaluate(() => {
+        const nativeResizeObserver = window.__atlasNativeResizeObserverForTest;
+        if (typeof nativeResizeObserver === 'function') window.ResizeObserver = nativeResizeObserver;
+        delete window.__atlasNativeResizeObserverForTest;
+      });
       result.steps.openDrawerToDesktop = await assertSafeFocus(page, `${browserName}/${width}/open-drawer-to-desktop`, (state) =>
         String(state.className).includes('atlas-theme'));
       result.steps.openDrawerToDesktopSurfaces = await assertClosedSurfaceState(page, false);
