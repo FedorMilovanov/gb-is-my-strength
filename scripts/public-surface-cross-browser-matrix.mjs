@@ -13,13 +13,19 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { chromium, webkit } = require('playwright');
 const { buildPublicSurfaceRegistry } = require('./lib/public-surface-registry');
+const { parseBoundedWorkerCount, runBoundedWorkerPool } = require('./lib/bounded-worker-pool');
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
 const REPORTS = join(ROOT, 'reports');
 const ENGINE = String(process.env.GB_CROSS_BROWSER || 'webkit').toLowerCase();
 if (!['chromium', 'webkit'].includes(ENGINE)) throw new Error(`Unsupported GB_CROSS_BROWSER=${ENGINE}`);
-const WORKERS = Math.max(1, Math.min(4, Number(process.env.GB_CROSS_BROWSER_WORKERS || 2)));
+const WORKERS = parseBoundedWorkerCount(process.env.GB_CROSS_BROWSER_WORKERS, {
+  name: 'GB_CROSS_BROWSER_WORKERS',
+  defaultValue: 2,
+  min: 1,
+  max: 4,
+});
 const DIAGNOSTICS = join(REPORTS, 'public-surface-cross-browser-diagnostics', ENGINE);
 
 const MIME = {
@@ -91,6 +97,10 @@ if (registry.errors.length) {
 const entries = registry.entries.filter((entry) =>
   entry.status === 'production-dist' && !entry.route.startsWith('/dev/') && !entry.route.includes('/_app/')
 );
+if (!entries.length) {
+  console.error('PUBLIC SURFACE CROSS-BROWSER MATRIX: refusing PASS for an empty production route corpus');
+  process.exit(1);
+}
 const results = [];
 function record(entry, profile, contract, ok, detail = '') {
   results.push({
@@ -493,32 +503,36 @@ async function runCase(browser, base, entry, profile) {
   }
 }
 
-async function pool(items, worker) {
-  let cursor = 0;
-  async function run() {
-    while (true) {
-      const index = cursor++;
-      if (index >= items.length) return;
-      await worker(items[index]);
-    }
-  }
-  await Promise.all(Array.from({ length: Math.min(WORKERS, items.length) }, run));
-}
-
 if (!existsSync(DIST)) {
   console.error('dist/ missing; run npm run strangler:build:production-like first');
   process.exit(1);
 }
 const { server, base } = await serve();
 let browser;
+let scheduledCases = 0;
+let completedCases = 0;
 try {
   browser = ENGINE === 'webkit' ? await webkit.launch() : await chromium.launch({ args: ['--disable-dev-shm-usage'] });
   const cases = entries.flatMap((entry) => PROFILES.map((profile) => ({ entry, profile })));
+  scheduledCases = cases.length;
   console.log(`Cross-browser matrix: ${ENGINE}; ${entries.length} routes × ${PROFILES.length} profiles = ${cases.length}; workers=${WORKERS}`);
-  await pool(cases, ({ entry, profile }) => runCase(browser, base, entry, profile));
+  completedCases = await runBoundedWorkerPool(
+    cases,
+    ({ entry, profile }) => runCase(browser, base, entry, profile),
+    WORKERS,
+  );
 } finally {
   await browser?.close().catch(() => {});
   await new Promise((resolve) => server.close(resolve));
+}
+
+if (scheduledCases < 1 || completedCases !== scheduledCases) {
+  console.error(`PUBLIC SURFACE CROSS-BROWSER MATRIX: coverage mismatch; completed ${completedCases}/${scheduledCases} scheduled cases`);
+  process.exit(1);
+}
+if (results.length < 1) {
+  console.error(`PUBLIC SURFACE CROSS-BROWSER MATRIX: refusing zero-contract PASS after ${completedCases} completed cases`);
+  process.exit(1);
 }
 
 results.sort((a, b) => a.route.localeCompare(b.route, 'ru') || a.profile.localeCompare(b.profile) || a.contract.localeCompare(b.contract));
@@ -527,7 +541,9 @@ const passed = results.length - failures.length;
 const summary = {
   generatedAt: new Date().toISOString(), engine: ENGINE,
   registry: { total: registry.entries.length, publicTested: entries.length },
-  profiles: PROFILES, contracts: results.length, passed, failed: failures.length, failures, results,
+  profiles: PROFILES,
+  cases: { scheduled: scheduledCases, completed: completedCases },
+  contracts: results.length, passed, failed: failures.length, failures, results,
 };
 await mkdir(REPORTS, { recursive: true });
 const stem = `public-surface-cross-browser-${ENGINE}`;
@@ -536,6 +552,7 @@ const markdown = [
   `# Public surface cross-browser matrix — ${ENGINE}`, '',
   `- Routes tested: **${entries.length}**`,
   `- Profiles: **${PROFILES.map((profile) => profile.id).join(', ')}**`,
+  `- Cases: **${completedCases}/${scheduledCases} completed**`,
   `- Contracts: **${passed}/${results.length} PASS**`,
   `- Failures: **${failures.length}**`, '',
   ...(failures.length ? ['## Failures', '', ...failures.map((failure) =>
@@ -547,5 +564,5 @@ await writeFile(join(REPORTS, `${stem}.md`), `${markdown.join('\n')}\n`);
 for (const failure of failures) {
   console.error(`FAIL [${ENGINE}/${failure.profile}] ${failure.route} ${failure.contract} :: ${failure.detail}`);
 }
-console.log(`PUBLIC SURFACE CROSS-BROWSER ${ENGINE.toUpperCase()}: ${passed}/${results.length} PASS (${entries.length} routes)`);
+console.log(`PUBLIC SURFACE CROSS-BROWSER ${ENGINE.toUpperCase()}: ${passed}/${results.length} PASS (${completedCases}/${scheduledCases} cases; ${entries.length} routes)`);
 if (failures.length) process.exitCode = 1;
