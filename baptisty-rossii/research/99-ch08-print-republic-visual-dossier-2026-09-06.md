@@ -2,11 +2,11 @@
 
 Дата прохода: 2026-09-06  
 Authority: Book Authority v2 + MASTER Archive Catalog  
-Статус: **DOCUMENTARY VISUAL SHORTLIST / MEDIA GATES OPEN**
+Статус: **DOCUMENTARY VISUAL SHORTLIST / TWO STRONG LOCAL RECEIPTS IDENTIFIED / NOT BOOK-READY**
 
 ## 0. Визуальный принцип главы
 
-Chapter 8 нельзя иллюстрировать портретной галереей редакторов.
+Chapter 8 нельзя превращать в портретную галерею редакторов.
 
 Предпочтительный visual language:
 1. реальный журнал / газета / письмо / листок;
@@ -17,7 +17,7 @@ Chapter 8 нельзя иллюстрировать портретной гал�
 Запрещено:
 - AI-реконструкция подпольной редакции `Беседы`;
 - постановочная фотография, выданная за документальную сцену;
-- generic old newspaper texture;
+- generic old-newspaper texture;
 - внешний случайный портрет вместо архивного объекта;
 - `Article ready=YES` трактовать как `site-ready`.
 
@@ -28,20 +28,19 @@ Full gate:
 
 ## 1. HERO strategy
 
-### Preferred HERO-A — representative early print facsimile, not a person
+### Preferred HERO-A — representative early print facsimile
 
-Лучший концептуальный hero — **подлинный дореволюционный печатный объект**, визуально читаемый как журнал/газета и связанный с переходом к публичной print sphere.
+Лучший концептуальный hero — подлинный дореволюционный печатный объект, визуально читаемый как часть реальной print network.
 
 Priority:
-1. recovered `Беседа` facsimile, если provenance и rights закрыты;
-2. `Христианин` 1905/1906 first regular/trial object;
-3. `Баптист` 1907 №1 exact facsimile.
+1. recovered `Беседа` facsimile, если provenance/rights закроются;
+2. `Христианин` 1905/1906 trial/first regular issue;
+3. `Баптист` 1907 №1;
+4. если ранние объекты не готовы — честный local historical object, а не реконструкция.
 
-Если `Беседа`/`Христианин` не получены контролируемо, **не подменять их реконструкцией**. Временным documentary hero может быть verified first `Баптист` object.
+### Why not a generic Prokhanov portrait
 
-### Why not Prokhanov portrait
-
-Глава о медиасистеме. Лицо редактора визуально сужает историю до biography и скрывает коллективность производства/распространения.
+Глава о медиасистеме. Один редактор визуально скрывает коллективность производства, корреспонденции, подписки и чтения.
 
 ---
 
@@ -51,319 +50,268 @@ Priority:
 
 MASTER row 760  
 `photos/photo_761@18-08-2023_13-51-25.jpg`  
-Category: `05 — PLACES, MAPS & CEMETERIES` (catalog category требует визуальной сверки)  
 Caption source: DIRECT  
 Article ready: YES  
 Album A0418 / message 1327.
 
 Caption identifies I. I. Zhidkov as a Bible colporteur.
 
-**Editorial use:** short prelude: printed Word travels before periodical editorial systems mature.
+**Gate warning:** current MASTER category does not naturally match the described person, so `visual_content_verified` is mandatory.
 
-**Gate warning:** category does not naturally match described person; `visual_content_verified` mandatory.
-
-Exact Drive filename search on 2026-09-06: no result.
+Exact Drive filename search on 2026-09-06 returned no result.
 
 Status: `CATALOG IDENTITY VERIFIED / BINARY NOT RECEIVED / VISUAL CONTENT OPEN / RIGHTS OPEN`.
 
-### EXCLUDE — staged/arrest images
+### EXCLUDE
 
-MASTER row 348 `Задержание книгоноши 1886` — `Article ready=NO`.
-MASTER row 536 explicitly says image is **probably staged** — `Article ready=NO`.
+- MASTER row 348 `Задержание книгоноши 1886` — `Article ready=NO`.
+- MASTER row 536 — caption itself says image is probably staged; `Article ready=NO`.
 
-Do not use as documentary evidence or dramatic hero.
+Neither may be used as documentary evidence or dramatic hero.
 
 ---
 
-## 3. `Беседа`: the most important missing visual
+## 3. `Беседа`: P0 missing visual
 
-### Narrative object
+MASTER rows 991 / 1609 / 2428 preserve the 1895 narrative connecting police discovery, Prokhanov, clandestine `Беседа`, foreign transfer and continued circulation.
 
-MASTER rows 991 / 1609 / 2428 preserve the 1895 story connecting police discovery, Prokhanov, clandestine `Беседа`, foreign transfer and continued circulation.
+These are source/catalog leads, **not proof that the underlying image is an issue facsimile**.
 
-These rows are useful as **catalog/source leads**, not as proof that a `Беседа` issue is visibly depicted.
+Desired objects:
+- early 1889/1890–1893 hectograph/lithograph phase;
+- foreign/Stockholm phase after 1894.
 
-### Desired object
-
-Need one or preferably two exact facsimiles:
-- early hectograph/lithograph phase 1889/1890–1893;
-- Stockholm/foreign phase after 1894.
-
-Visual questions to verify:
-- masthead `Вифезда` vs `Беседа`;
+Need to verify:
+- masthead `Вифезда` / `Беседа`;
 - issue/date;
-- format change;
-- printed vs reproduced method;
-- pseudonyms/bylines;
-- postal/distribution marks if any.
+- production method;
+- pagination;
+- editorial/byline evidence;
+- provenance and rights.
 
-### Current status
-
+Current status:
 - series identity: VERIFIED;
-- broad 1889/1890–1898 chronology: STRONGLY SUPPORTED;
+- broad chronology: STRONGLY SUPPORTED;
 - representative exact issue binary: OPEN;
-- source provenance: OPEN;
-- rights: OPEN;
-- page visual: OPEN.
+- page visual: OPEN;
+- rights: OPEN.
 
-**P0 visual gap of Chapter 8.**
+No generated substitute is allowed.
 
 ---
 
 ## 4. `Христианин`: trial → regular typography
 
-### MASTER-HR-01 — 1905/1906 start narrative
+### MASTER-HR-01
 
 MASTER row 185  
 `photos/photo_186@16-09-2022_21-26-54.jpg`  
 Historical years: 1905, 1906  
 Category: documents/books/press  
 Caption source: DIRECT  
-Article ready: YES  
-Album A0104 / message 337.
+Article ready: YES.
 
-Caption states:
-- permission after 1905 opening;
+Caption records:
 - trial issue in Nov 1905;
 - regular typography from Jan 1906;
-- article `Назревающие вопросы евангельской церкви в России`.
+- early programmatic article.
 
-Exact Drive filename search 2026-09-06: no result.
+Exact filename Drive search: no result.
 
 Status: `CATALOG IDENTITY / BINARY NOT RECEIVED`.
 
-### MASTER-HR-02 — 1906 object
-
-MASTER row 416  
-`photos/photo_417@02-01-2023_13-29-47.jpg`  
-Historical year: 1906  
-Category: documents/books/press  
-Caption source: DIRECT  
-Article ready: YES.
-
-Use only after visual verification identifies whether image is actual page, cover, editorial excerpt or contextual illustration.
-
 ### Official PDF corpus
 
-Repo ledger 84 stores official `baptist.org.ru` PDF routes for `Христианин` 1906 №1, 4, 5, 6, 8, 9, 10, 11, 12; №3 slot confirmed but binary route missing in July pass.
+Repo ledger 84 stores official `baptist.org.ru` routes for `Христианин` 1906 №1, 4, 5, 6, 8–12; №3 was bibliographically confirmed while the direct binary route remained unresolved in the July pass.
 
-**Preferred production route:** receive exact official PDF rather than depend on unresolved Telegram JPEG.
+MASTER `02 Periodicals` search for `1906` on 2026-09-06 surfaced received `Братский листок`, not a received `Христианин` 1906 issue.
 
-### 1909 representative object
-
-MASTER rows 252–253  
-`photos/photo_253...`, `photo_254...`  
-Caption: `Христианин`, September 1909  
-Article ready: YES.
-
-Useful for linking print to formation of the Evangelical Christian union, but Chapter 7 already owns that institutional event; here use for editorial/audience design.
+**Production route:** receive exact official `Христианин` 1906 №1, hash, map pages, then use it. Do not rely on the unresolved Telegram JPEG.
 
 ---
 
-## 5. `Братский листок`: show editorial segmentation
+## 5. `Братский листок`: acquisition no longer a generic blocker
 
-### MASTER lead
+This section supersedes the earlier assessment that representative 1906 bytes were still missing.
 
-MASTER row 2525  
-`photos/photo_2526@02-03-2026_01-01-42.jpg`  
-Historical year: 1906  
-Category: documents/books/press  
-Caption source: DIRECT  
-Article ready: YES.
+### 5.1 Strong local object — MASTER row 75
 
-Caption says `Братский листок` began accompanying `Христианин` from March 1906.
+Canonical receipt:
+- series: `БРАТСКИЙ ЛИСТОК`;
+- year: 1906;
+- source filename labels May;
+- **title audit 2026-07-31 says first page prints it as appendix to `Христианин` №6, 1906**;
+- page count: **10 pages**;
+- size: **4.650 MiB**;
+- SHA256: **`1f2576aeeefdf95f4366b740ecf06a7a1dbd374b82c9575a68d8931021db258b`**.
 
-This is a high-value lead because the object can visually demonstrate that `Христианин` was an ecosystem rather than one title.
+Status:
+- binary receipt: CLOSED;
+- SHA256: CLOSED;
+- first-page / printed-parent visual verification: CLOSED;
+- rights/provenance for site republication: OPEN;
+- derivative/web path: OPEN.
 
-### Independent bibliographic control
+This is already one of the best Chapter 8 Book Authority objects.
 
-Historical periodical catalogue:
-- separate free supplement 1906–1910;
-- monthly, 12 issues/year;
-- from 1911–1916 printed as a department inside `Христианин`;
-- editor-publisher I. S. Prokhanov.
+### 5.2 Other received 1906 objects
 
-### Media gate
+- Aug 1906 — SHA256 `48d8611d27ad9d26329e713e4405ae6d11719f9b42704b88ca68f506f26c45b9`;
+- Jul 1906 — `09fee235887ae29dd60060e277b7208dae3e6baa6c25e95fca7f26269355f333`;
+- Nov 1906 — `fb9030ad4a1309ab578374731c07180b885488406e46ead566b13d7b837a6554`;
+- Sep 1906 — `a90c76e0375ac8ac49177ed5d369891123c42f76748519a4f1db88aeb3af5130`.
 
-Need:
-- exact first or representative 1906 issue/page;
-- parent `Христианин` issue mapping;
-- physical page count;
-- title/masthead visual check;
-- rights/provenance;
-- local SHA256.
+A second Nov-labelled receipt has a different SHA256 (`67c1de40d68ea200c4cc1ea80fa61db6697437d84ad3a9365bad01db1de2bc25`); do not deduplicate only from month/size.
 
-Until then: `SERIES VERIFIED / FIRST-ISSUE PAGE VISUAL OPEN`.
+### 5.3 Series-start precision
+
+MASTER photo caption says the supplement began from March 1906. That **first-issue/start-month claim remains open** until the exact earliest facsimile is recovered.
+
+Thus:
+- representative 1906 local object: CLOSED at byte/hash level;
+- exact first issue: OPEN.
 
 ---
 
-## 6. `Баптист`, 1907 №1 — strongest currently identified facsimile
+## 6. `Баптист`, 1907 №1
 
-### Public exact object
+Public exact object:
+- Wikimedia Commons first-cover scan;
+- full 22-page first issue available in public/official corpus;
+- preliminary public-domain route established.
 
-Wikimedia Commons:
-- cover `Журнал Баптист.jpg`;
-- 763 × 1077;
-- about 320 KB;
-- description: first issue cover, 1907;
-- source: scan of `Баптист`, 1907 №1;
-- public-domain rights statement.
+MASTER row 2289 also identifies the June 1907 launch.
 
-Full first issue also exists as a 22-page PDF/DJVU object in the public corpus and official Baptist route recorded in repo ledger 84.
+MASTER `02 Periodicals` search for 1907 did not surface a received `Баптист` 1907 row.
 
-### MASTER lead
-
-MASTER row 2289  
-`photos/photo_2290@01-01-2026_13-23-52.jpg`  
-Historical year: 1907  
-Category: documents/books/press  
-Caption source: DIRECT  
-Article ready: YES.
-
-Caption identifies Rostov congress decision and June 1907 launch.
-
-### Status
-
+Status:
 - title/year/issue identity: CLOSED;
-- first cover visual identity: CLOSED;
-- preliminary rights: CLOSED / PD route;
-- controlled local receipt: OPEN;
-- local SHA256: OPEN;
+- public facsimile: CLOSED;
+- preliminary rights: CLOSED / PD candidate;
+- canonical local receipt: OPEN;
+- our SHA256: OPEN;
 - derivative: OPEN.
 
-### Editorial use
-
-Can serve as fallback hero or central mid-chapter spread.
+Can become hero/focal spread after controlled receipt.
 
 ---
 
-## 7. `Утренняя звезда`: weekly tempo and current affairs
+## 7. `Утренняя звезда`: weekly tempo
 
-### MASTER-UZ-01 — issue №30, 23 July 1910
+### 7.1 1910 target
 
-MASTER row 93  
-`photos/photo_92@24-07-2022_21-45-35.jpg`  
-Historical year: 1910  
-Category: documents/books/press  
-Caption source: DIRECT  
-Article ready: YES  
-Album A0053 / message 180.
+MASTER photo row 93 identifies issue №30 / 23 July 1910; exact JPEG filename search returned no Drive result.
 
-Exact Drive filename search 2026-09-06: no result.
+Official `baptist.org.ru` index and repo ledger 80 expose the 1910 annual run; ledger 80 recorded 47 direct PDF routes, with №36 as an explicit hole in that pass.
 
-Status: `CATALOG IDENTITY VERIFIED / BINARY NOT RECEIVED`.
+Target article: Prokhanov, `Свобода слова в деле религии или свобода проповеди`, 1910 №4 — especially valuable because it explicitly connects religious liberty with spoken/printed proclamation.
 
-### Official corpus
+MASTER `02 Periodicals` does **not** currently establish a 1910 local receipt.
 
-`baptist.org.ru/izdania/utrenniiazvezda` exposes the 1910 run; repo research 80 stores 47 direct PDF routes, with №36 the explicit missing direct-link slot in that pass.
+Status: `OFFICIAL ROUTE / LOCAL RECEIPT OPEN`.
 
-Official retrospective says weekly paper began 1 Jan 1910.
+### 7.2 Strong local censorship object — 30 Oct 1915
 
-### Strong article object — 1910 №4
+MASTER `02 Periodicals`, row 97:
+- series: `УТРЕННЯЯ ЗВЕЗДА`;
+- date: **30 Oct 1915**;
+- file: `Утренняя_Звезда_30_октября_1915_года_.pdf`;
+- size: **7.632 MiB**;
+- SHA256: **`95751678e4e943de85a2648e79f5e2fa88cb4a55295d0254d1a15e83211c38f7`**.
 
-Prokhanov, `Свобода слова в деле религии или свобода проповеди`.
+MASTER annotation explicitly notes **white unprinted strips where material was removed by censorship**.
 
-Editorial value: text explicitly argues for religious freedom including **printed proclamation**, making the facsimile self-referential evidence for Chapter 8.
+Contents also include:
+- tenth anniversary of `Христианин`;
+- `Еще о журналах`;
+- war/current affairs;
+- community/legal material.
 
-Target:
-- exact PDF №4;
-- article start/end pages;
-- `page_visual_verified`;
-- local SHA256.
+Editorial value: one local object physically joins weekly evangelical current-affairs publishing, the mature print ecosystem, wartime public life and censorship.
 
----
+Current status:
+- canonical receipt: CLOSED;
+- SHA256: CLOSED;
+- issue/date identity: CLOSED;
+- censorship interpretation: MASTER-ANNOTATED;
+- exact page visual recheck: OPEN;
+- rights/provenance: OPEN;
+- derivative: OPEN.
 
-## 8. Censorship scene — one evangelical publication reports another
-
-### MASTER-CENSOR-01
-
-MASTER row 1485 / later duplicate row 2264  
-Historical years: 1911, 1912  
-Category: documents/books/press  
-Caption source: DIRECT  
-Article ready: YES.
-
-The caption attributes to `Утренняя звезда`, 21 Dec 1912, a report about:
-- acting editor A. A. Pluttsov;
-- article in `Баптист`;
-- prosecution;
-- confiscated circulation;
-- Odessa district court;
-- destruction of the issue.
-
-### QA discrepancy inside the caption
-
-The caption first calls the impugned publication `№97` and later says court ordered `№27` destroyed.
-
-**Do not copy either issue number as canonical without primary page verification.**
-
-This is exactly the kind of discrepancy Chapter 8 must surface, not hide.
-
-### Editorial use
-
-Potentially one of the strongest documentary spreads:
-- left: `Утренняя звезда` report;
-- right: exact `Баптист` issue/court-related object if recovered.
-
-Current status: `MASTER CLAIM LEAD / ISSUE-NUMBER CONFLICT / PRIMARY FACSIMILE REQUIRED`.
+This is the second strongest currently local Chapter 8 object.
 
 ---
 
-## 9. External public sphere / anti-sect print
+## 8. 1911–1912 censorship / litigation cross-publication scene
 
-Use existing research 71–76 to build 1–2 controlled contrasts, not a collage of hostile propaganda.
+MASTER row 1485 / duplicate 2264 attributes to `Утренняя звезда`, 21 Dec 1912, a report about prosecution of an acting `Баптист` editor, confiscation, trial and destruction of an issue.
 
-Desired visual objects:
-- exact diocesan periodical page discussing Stundism/Baptists;
-- exact anti-sect brochure title page;
-- exact secular newspaper item showing a different register.
+### Internal caption conflict
 
-Gate:
+The caption first identifies the impugned `Баптист` issue as `№97`, then later says `№27` was ordered destroyed.
+
+Neither number is canonical until the primary `Утренняя звезда` page and relevant `Баптист` issue are checked.
+
+Status: `MASTER CLAIM LEAD / ISSUE-NUMBER CONFLICT / PRIMARY FACSIMILE REQUIRED`.
+
+Potential production spread only after resolution.
+
+---
+
+## 9. External anti-sect / secular public sphere
+
+Use 1–2 exact objects from existing research 71–76:
+- diocesan/missionary page classifying Stundists/Baptists;
+- secular/public press item showing a different register.
+
+Do not create a collage of hostile phrases.
+
+Required fields:
 - publication title;
-- date / issue;
+- date/issue;
 - page;
 - institutional provenance;
 - rights;
-- no isolated inflammatory phrase without context.
-
-This visual layer explains that the movement did not control the language in which society described it.
+- enough context to avoid misleading quotation.
 
 ---
 
-## 10. Youth / audience objects
+## 10. Audience segmentation
 
-Potential supporting facsimiles:
-- `Юный христианин`, late 1908 / early 1909;
-- `Молодой виноградник`, from Apr 1909;
-- selected pamphlet/leaflet attached to `Христианин`.
+Potential facsimiles:
+- `Юный христианин`;
+- `Молодой виноградник`;
+- a selected `Христианин` leaflet/brochure;
+- received `Братский листок` as the strongest concrete evidence of editorial segmentation.
 
-Use one object only if it proves deliberate audience segmentation. Do not overload the chapter with every title.
-
----
-
-## 11. Proposed visual sequence
-
-1. **Prelude:** verified colporteur / Bible-distribution object.
-2. **`Беседа`:** recovered clandestine facsimile — desired hero if quality/provenance allow.
-3. **1905/1906 `Христианин`:** trial-to-type transition.
-4. **`Братский листок`:** editorial ecosystem/audience segmentation.
-5. **`Баптист` №1/1907:** confessional public sphere.
-6. **`Утренняя звезда` №4/1910:** printed-word freedom argument.
-7. **Censorship spread 1911–1912:** one paper reports another paper’s prosecution.
-8. **External press:** one controlled anti-sect or secular witness.
-
-Ideal: 5–7 visual events in long book chapter; Book Authority minimum still requires 2 local historical objects through full gate.
+Use only objects that prove a distinct audience/function.
 
 ---
 
-## 12. P0 media queue
+## 11. Revised documentary sequence
 
-1. Recover representative exact `Беседа` facsimile.
-2. Receive official `Христианин` 1906 №1 + one issue containing `Братский листок`.
-3. Receive `Баптист` 1907 №1 exact official/Commons binary and hash it.
-4. Receive `Утренняя звезда` 1910 №4 and map freedom-of-print article pages.
-5. Recover `Утренняя звезда` 21.12.1912 primary page and resolve `№97` vs `№27` in MASTER caption.
-6. Select one external diocesan/secular press object with exact page.
-7. Only after receipts: derivatives, captions, media ledger, web paths.
+1. verified colporteur/Bible-distribution object if byte recovered;
+2. `Беседа` exact clandestine facsimile — desired early hero but still P0 gap;
+3. `Христианин` 1905/1906 trial-to-type object;
+4. **received `Братский листок` 1906 / parent №6** — local object A;
+5. `Баптист` 1907 №1 — controlled receipt pending;
+6. `Утренняя звезда` 1910 №4 — printed-freedom argument;
+7. **received `Утренняя звезда` 30.10.1915** — local censorship object B;
+8. one controlled external anti-sect/public witness.
 
-Current chapter visual status: **SHORTLIST STRONG / BINARY RECEIPTS INCOMPLETE / NOT BOOK-READY**.
+Ideal final chapter: 5–7 visual events. Book Authority minimum still requires at least 2 local historical objects through the full gate.
+
+---
+
+## 12. Immediate P0 media queue
+
+1. Re-open/render MASTER row75 received `Братский листок`; choose one network page and settle rights/provenance.
+2. Re-open/render MASTER row97 `Утренняя звезда` 30.10.1915; identify exact censorship-strip page(s), settle rights/provenance.
+3. Receive/hash official `Христианин` 1906 №1.
+4. Receive/hash `Баптист` 1907 №1.
+5. Receive/hash `Утренняя звезда` 1910 №4.
+6. Recover representative `Беседа` facsimile.
+7. Select one external anti-sect/public press page.
+8. Generate derivatives only after source objects are verified.
+
+Current verdict: **SHORTLIST STRONG / TWO LOCAL RECEIPTS IDENTIFIED / RIGHTS + PAGE-VISUAL + DERIVATIVES OPEN / NOT BOOK-READY**.
