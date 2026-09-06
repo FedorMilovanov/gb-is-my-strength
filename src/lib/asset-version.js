@@ -32,8 +32,8 @@ export const ASSET_VERSIONS = {
   'js/site-utils.js': '661c6cc1',
   'js/site.js': 'c6b5ccf7',
   'js/sw-register.js': 'e61e1210',
-  'js/vosk-tts-engine.js': 'f9b4905f',
-  'js/vosk-tts-worker.js': '2ea9ada3',
+  'js/vosk-tts-engine.js': 'd1c35564',
+  'js/vosk-tts-worker.js': 'ccc621c4',
   'nagornaya/tw.min.css': '2670414e',
 };
 
