@@ -1,0 +1,78 @@
+name: TTS SharedWorker Client Lifecycle
+
+on:
+  pull_request:
+    paths:
+      - "js/vosk-tts-engine.js"
+      - "js/vosk-tts-worker.js"
+      - "scripts/tts-sharedworker-client-lifecycle-contract.js"
+      - "scripts/tts-sharedworker-client-lifecycle-browser-test.js"
+      - ".github/workflows/tts-sharedworker-client-lifecycle.yml"
+  push:
+    branches: [main]
+    paths:
+      - "js/vosk-tts-engine.js"
+      - "js/vosk-tts-worker.js"
+      - "scripts/tts-sharedworker-client-lifecycle-contract.js"
+      - "scripts/tts-sharedworker-client-lifecycle-browser-test.js"
+      - ".github/workflows/tts-sharedworker-client-lifecycle.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tts-sharedworker-client-lifecycle-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lifecycle:
+    name: Source and Chromium lifecycle contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.23.1"
+          cache: npm
+
+      - name: Install dependencies and Chromium
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Check lifecycle sources
+        run: |
+          node --check js/vosk-tts-engine.js
+          node --check js/vosk-tts-worker.js
+          node --check scripts/tts-sharedworker-client-lifecycle-contract.js
+          node --check scripts/tts-sharedworker-client-lifecycle-browser-test.js
+
+      - name: Run actual-worker lifecycle contract
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/tts-sharedworker-client-lifecycle-contract.js 2>&1 | tee reports/tts-sharedworker-client-lifecycle-contract.log
+
+      - name: Run Chromium SharedWorker lifecycle witness
+        run: |
+          set -o pipefail
+          node scripts/tts-sharedworker-client-lifecycle-browser-test.js 2>&1 | tee reports/tts-sharedworker-client-lifecycle-browser.log
+
+      - name: Upload lifecycle evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: tts-sharedworker-client-lifecycle-${{ github.run_id }}
+          path: |
+            reports/tts-sharedworker-client-lifecycle-contract.log
+            reports/tts-sharedworker-client-lifecycle-contract.json
+            reports/tts-sharedworker-client-lifecycle-browser.log
+            reports/tts-sharedworker-client-lifecycle-browser.json
+          if-no-files-found: warn
+          retention-days: 14
