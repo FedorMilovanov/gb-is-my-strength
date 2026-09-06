@@ -1,18 +1,31 @@
 ---
+import { assetUrl } from '@/lib/asset-version';
+
 /**
- * ResumeMobile.astro — conditional reading-resume blocks for /.
+ * ResumeMobile.astro — canonical ReaderState resume projection for /.
+ * Hidden by default; home-resume.js reveals only real saved progress.
  */
+const readerStateSrc = assetUrl('js/reader-state.js');
+const homeResumeSrc = assetUrl('js/home-resume.js');
 ---
 <section class="resume-reading-block" id="resumeReadingBlock" hidden>
   <div class="resume-reading-card">
     <div class="resume-reading-label">Продолжить чтение</div>
-    <h2 class="resume-reading-title" id="resumeReadingTitle">Статья</h2>
-    <p class="resume-reading-meta" id="resumeReadingMeta">Раздел и прогресс</p>
-    <div class="resume-reading-progress">
+    <h2 class="resume-reading-title" id="resumeReadingTitle">Продолжить чтение</h2>
+    <p class="resume-reading-meta" id="resumeReadingMeta"></p>
+    <div
+      class="resume-reading-progress"
+      id="resumeReadingProgressTrack"
+      role="progressbar"
+      aria-label="Прогресс чтения"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuenow="0"
+    >
       <div class="resume-reading-progress-fill" id="resumeReadingProgress"></div>
     </div>
     <div class="resume-reading-actions">
-      <a href="#" class="resume-reading-btn" id="resumeReadingLink" rel="noopener" data-resume-link>Продолжить</a>
+      <a href="/articles/" class="resume-reading-btn" id="resumeReadingLink" data-resume-link>Продолжить</a>
       <button type="button" class="resume-reading-dismiss" id="resumeReadingDismiss">Скрыть</button>
     </div>
   </div>
@@ -22,3 +35,36 @@
   <div class="resume-list-head"><h2 id="resumeListTitle">Недочитанные статьи</h2></div>
   <div class="resume-list" id="resumeList"></div>
 </section>
+
+<script is:inline src={readerStateSrc} defer></script>
+<script is:inline src={homeResumeSrc} defer></script>
+
+<style is:global>
+  body.home-page .resume-list {
+    display: grid;
+    gap: 8px;
+  }
+
+  body.home-page .resume-list-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    text-decoration: none;
+  }
+
+  body.home-page .resume-list-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  body.home-page .resume-list-meta {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+</style>
