@@ -1,4 +1,4 @@
-# Armed after the workflow definition existed on this branch.
+# Temporary helper. It is never part of the product PR.
 name: Temporary Atlas focus recovery patch
 
 on:
@@ -26,16 +26,19 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
 
           runtime_path = Path('src/runtime/atlas-runtime.js')
           runtime = runtime_path.read_text()
-          old_runtime = """      var retryWithoutObserver = function () {
-                frame = 0;
-                attempt();
-                if (!settled && !observer) frame = window.requestAnimationFrame(retryWithoutObserver);
-              };
-              frame = window.requestAnimationFrame(retryWithoutObserver);"""
-          new_runtime = """      var remainingObservedLayoutFrames = 2;
+          runtime_pattern = re.compile(
+              r"var retryWithoutObserver = function \(\) \{\s*"
+              r"frame = 0;\s*"
+              r"attempt\(\);\s*"
+              r"if \(!settled && !observer\) frame = window\.requestAnimationFrame\(retryWithoutObserver\);\s*"
+              r"\};\s*"
+              r"frame = window\.requestAnimationFrame\(retryWithoutObserver\);"
+          )
+          runtime_replacement = """var remainingObservedLayoutFrames = 2;
               var retryAfterLayout = function () {
                 frame = 0;
                 attempt();
@@ -46,15 +49,18 @@ jobs:
                 }
               };
               frame = window.requestAnimationFrame(retryAfterLayout);"""
-          if runtime.count(old_runtime) != 1:
-              raise SystemExit(f'expected one retryWithoutObserver block, found {runtime.count(old_runtime)}')
-          runtime_path.write_text(runtime.replace(old_runtime, new_runtime, 1))
+          runtime, runtime_count = runtime_pattern.subn(runtime_replacement, runtime, count=1)
+          if runtime_count != 1:
+              raise SystemExit(f'expected one retryWithoutObserver semantic block, found {runtime_count}')
+          runtime_path.write_text(runtime)
 
           test_path = Path('scripts/atlas-focus-state-browser-test.mjs')
           test = test_path.read_text()
-          old_test = """      await page.locator('#atlasFilterClose').focus();
-                await page.setViewportSize({ width: 981, height: HEIGHT });"""
-          new_test = """      await page.locator('#atlasFilterClose').focus();
+          test_pattern = re.compile(
+              r"await page\.locator\('#atlasFilterClose'\)\.focus\(\);\s*"
+              r"await page\.setViewportSize\(\{ width: 981, height: HEIGHT \}\);"
+          )
+          test_replacement = """await page.locator('#atlasFilterClose').focus();
               await page.evaluate(() => {
                 const target = document.querySelector('#atlasSidebar [data-atlas-group]');
                 if (!(target instanceof HTMLElement)) throw new Error('desktop sidebar focus target missing');
@@ -66,9 +72,10 @@ jobs:
                 };
               });
               await page.setViewportSize({ width: 981, height: HEIGHT });"""
-          if test.count(old_test) != 1:
-              raise SystemExit(f'expected one 980->981 witness block, found {test.count(old_test)}')
-          test_path.write_text(test.replace(old_test, new_test, 1))
+          test, test_count = test_pattern.subn(test_replacement, test, count=1)
+          if test_count != 1:
+              raise SystemExit(f'expected one 980->981 focus witness block, found {test_count}')
+          test_path.write_text(test)
           PY
 
       - name: Prove surgical source diff
