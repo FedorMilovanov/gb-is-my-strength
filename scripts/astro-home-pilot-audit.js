@@ -82,6 +82,19 @@ function wordCount(html) {
 function hasNoindex(html) {
   return /\bnoindex\b/i.test(meta(html, 'robots'));
 }
+function runHomepageResumeContract() {
+  const result = spawnSync(process.execPath, [path.join(ROOT, 'scripts/homepage-resume-owner-contract-test.js')], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
+  if (result.status === 0) {
+    if (result.stdout) process.stdout.write(result.stdout);
+    ok('homepage resume owner contract');
+    return;
+  }
+  const detail = (result.stderr || result.stdout || '').trim();
+  bad(`homepage resume owner contract failed${detail ? `: ${detail}` : ''}`);
+}
 function runBuild() {
   if (NO_BUILD) return;
   console.log('▶ Building production-like strangler dist for home audit…');
@@ -100,6 +113,7 @@ function mustContain(label, html, needle) {
 
 function main() {
   console.log(`ASTRO HOME SHADOW AUDIT (${NO_BUILD ? 'no-build' : 'build'})`);
+  runHomepageResumeContract();
   runBuild();
 
   const legacyFile = path.join(ROOT, 'index.html');
@@ -127,6 +141,11 @@ function main() {
   mustContain('home pagefind body', astro, 'data-pagefind-body');
   mustContain('home responsive library gateway', astro, 'h-home-gateway');
   mustContain('home interactive Habakkuk text', astro, 'Аввакум 3:19');
+  mustContain('home canonical ReaderState asset', astro, 'js/reader-state.js');
+  if (astro.includes('js/reader-state-inventory.js') || astro.includes('js/home-resume.js')) bad('home leaked temporary public resume assets');
+  else ok('home resume adapter is route-owned and Astro-bundled');
+  if (/id=["']resumeReadingLink["'][^>]*href=["']#["']/i.test(astro)) bad('home resume link still emits fake href="#"');
+  else ok('home resume shell has no fake href="#"');
   for (const rejected of ['h-mobile-dock', 'h-mobile-dashboard', 'h-mobile-rail', 'h-mobile-paths', 'h-mobile-hero-hub']) {
     if (astro.includes(rejected)) bad(`home contains rejected mobile experiment: ${rejected}`);
     else ok(`home has no rejected mobile experiment: ${rejected}`);
