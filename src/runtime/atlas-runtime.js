@@ -249,16 +249,16 @@
       }
       if (typeof window.requestAnimationFrame === 'function') {
         var remainingObservedLayoutFrames = 2;
-    var retryAfterLayout = function () {
-      frame = 0;
-      attempt();
-      if (settled) return;
-      if (!observer || remainingObservedLayoutFrames > 1) {
-        if (observer) remainingObservedLayoutFrames -= 1;
+        var retryAfterLayout = function () {
+          frame = 0;
+          attempt();
+          if (settled) return;
+          if (!observer || remainingObservedLayoutFrames > 1) {
+            if (observer) remainingObservedLayoutFrames -= 1;
+            frame = window.requestAnimationFrame(retryAfterLayout);
+          }
+        };
         frame = window.requestAnimationFrame(retryAfterLayout);
-      }
-    };
-    frame = window.requestAnimationFrame(retryAfterLayout);
       } else {
         attempt();
       }
