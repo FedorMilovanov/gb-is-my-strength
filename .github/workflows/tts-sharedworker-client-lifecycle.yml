@@ -5,6 +5,7 @@ on:
     paths:
       - "js/vosk-tts-engine.js"
       - "js/vosk-tts-worker.js"
+      - "src/runtime/reader-tts-lifecycle.js"
       - "scripts/tts-sharedworker-client-lifecycle-contract.js"
       - "scripts/tts-sharedworker-client-lifecycle-browser-test.js"
       - ".github/workflows/tts-sharedworker-client-lifecycle.yml"
@@ -13,6 +14,7 @@ on:
     paths:
       - "js/vosk-tts-engine.js"
       - "js/vosk-tts-worker.js"
+      - "src/runtime/reader-tts-lifecycle.js"
       - "scripts/tts-sharedworker-client-lifecycle-contract.js"
       - "scripts/tts-sharedworker-client-lifecycle-browser-test.js"
       - ".github/workflows/tts-sharedworker-client-lifecycle.yml"
@@ -50,6 +52,7 @@ jobs:
         run: |
           node --check js/vosk-tts-engine.js
           node --check js/vosk-tts-worker.js
+          node --check src/runtime/reader-tts-lifecycle.js
           node --check scripts/tts-sharedworker-client-lifecycle-contract.js
           node --check scripts/tts-sharedworker-client-lifecycle-browser-test.js
 
