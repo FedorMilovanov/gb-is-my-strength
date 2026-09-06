@@ -92,14 +92,27 @@ async function runReaderAttempt(failMode) {
   const path = 'src/runtime/reader-tts.js';
   const source = fs.readFileSync(path, 'utf8');
   const code = stripLeadingIife(source);
+  const prefix = code.slice(0, code.indexOf('function withModelLock'));
   const document = new FakeDocument();
   const context = { console, Promise, setTimeout, clearTimeout, document, window: {} };
   context.globalThis = context;
   vm.createContext(context);
-  vm.runInContext(code.slice(0, code.indexOf('function withModelLock')), context, { filename: path });
+  vm.runInContext([
+    '(function () {',
+    prefix,
+    'globalThis.__readerEnsureVoskScript = ensureVoskScript;',
+    'globalThis.__readerState = state;',
+    '})();',
+  ].join('\n'), context, { filename: path });
 
-  const first = context.ensureVoskScript();
-  const concurrent = context.ensureVoskScript();
+  const ensureVoskScript = context.__readerEnsureVoskScript;
+  const readerState = context.__readerState;
+  if (typeof ensureVoskScript !== 'function' || !readerState) {
+    fail(`reader-tts ${failMode}: harness did not expose loader state`);
+  }
+
+  const first = ensureVoskScript();
+  const concurrent = ensureVoskScript();
   if (concurrent !== first) fail(`reader-tts ${failMode}: concurrent requests must share one in-flight promise`);
   if (document.appended !== 1) fail(`reader-tts ${failMode}: concurrent requests appended more than one script`);
 
@@ -110,10 +123,10 @@ async function runReaderAttempt(failMode) {
   const firstError = await first.then(() => null, (error) => error);
   if (!firstError) fail(`reader-tts ${failMode}: terminal failure unexpectedly resolved`);
   await Promise.resolve();
-  if (context.state.engineScriptPromise !== null) fail(`reader-tts ${failMode}: rejected promise stayed sticky`);
+  if (readerState.engineScriptPromise !== null) fail(`reader-tts ${failMode}: rejected promise stayed sticky`);
   if (active.dataset.gbVoskEngineState !== 'failed') fail(`reader-tts ${failMode}: failed script was not marked failed`);
 
-  const second = context.ensureVoskScript();
+  const second = ensureVoskScript();
   if (document.appended !== 2 || document.removed < 1) {
     fail(`reader-tts ${failMode}: retry did not replace the failed script`);
   }
