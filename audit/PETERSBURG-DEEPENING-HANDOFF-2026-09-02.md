@@ -1,10 +1,10 @@
 # Petersburg Golden Chapter — Deepening Lane Handoff
 
-**Дата создания:** 2026-09-02  
-**Последняя сверка:** 2026-09-06  
-**Lane:** `lane/baptisty-petersburg-deepening-20260902`  
-**Mode:** LANE  
-**Status:** READY FOR EXACT-HEAD VERIFICATION  
+**Дата создания:** 2026-09-02
+**Последняя сверка:** 2026-09-06
+**Lane:** `lane/baptisty-petersburg-deepening-20260902`
+**Mode:** LANE
+**Status:** READY FOR EXACT-HEAD VERIFICATION
 **Route under edit:** `/baptisty-rossii/peterburgskaya-liniya/`
 
 ## 1. Authority and scope
