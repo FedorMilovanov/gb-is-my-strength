@@ -165,11 +165,35 @@ A second Nov-labelled receipt has a different SHA256 (`67c1de40d68ea200c4cc1ea80
 
 ### 5.3 Series-start precision
 
-MASTER photo caption says the supplement began from March 1906. That **first-issue/start-month claim remains open** until the exact earliest facsimile is recovered.
+MASTER photo caption says the supplement began from March 1906. That first-issue/start-month claim is now independently strengthened by an exact external first-issue image, but calendar/month chronology still must be reconciled against the complete run before asserting a full monthly sequence.
+
+### 5.4 External first-issue object — Wikimedia Commons
+
+Wikimedia Commons exposes exact file `Братский листок.jpg` with metadata:
+- description: **title page of the first issue of `Братский листок`, 1906**;
+- source: `Братский листок`, 1906, №1;
+- original dimensions: **774 × 1175 px**;
+- file size: **229,776 bytes**;
+- media type: JPEG;
+- Commons checksum SHA-1: **`9ba83bc93f22b9c31ea7380a5a50aa52fb08d28a`**;
+- rights: **Public Domain** / PD-old-70-expired route on Commons.
+
+This external object is **not the same object** as MASTER row 75 / printed parent `Христианин` №6. Do not collapse them.
+
+Current status for Commons first issue:
+- exact issue identity: CLOSED;
+- visible title-page identity: CLOSED from Commons object metadata/preview;
+- external provenance: CLOSED;
+- external rights: CLOSED / PD;
+- external SHA-1: CLOSED;
+- controlled local receipt: OPEN (runtime download unavailable in this pass);
+- our SHA256: OPEN;
+- archive `IN DRIVE`: OPEN;
+- derivative/web path: OPEN.
 
 Thus:
-- representative 1906 local object: CLOSED at byte/hash level;
-- exact first issue: OPEN.
+- representative 1906 local object: CLOSED at byte/hash level via MASTER row75;
+- exact first issue: CLOSED at external identity/rights level, but controlled local receipt is still OPEN.
 
 ---
 
@@ -246,15 +270,24 @@ This is the second strongest currently local Chapter 8 object.
 
 MASTER row 1485 / duplicate 2264 attributes to `Утренняя звезда`, 21 Dec 1912, a report about prosecution of an acting `Баптист` editor, confiscation, trial and destruction of an issue.
 
-### Internal caption conflict
+### Resolved issue-number conflict
 
-The caption first identifies the impugned `Баптист` issue as `№97`, then later says `№27` was ordered destroyed.
+The MASTER caption first says `№97` and later `№27`.
 
-Neither number is canonical until the primary `Утренняя звезда` page and relevant `Баптист` issue are checked.
+A current full-text issue witness resolves the issue identity as:
+- **`Баптист` №27**;
+- **29 June 1911**;
+- Fedor Noskov, `Автобиография и исповедь сектанта`, on p. 7 of the recovered issue witness;
+- the issue is identified as the confiscated number.
 
-Status: `MASTER CLAIM LEAD / ISSUE-NUMBER CONFLICT / PRIMARY FACSIMILE REQUIRED`.
+Canonical rule:
+- `№97` = caption/OCR/transcription error;
+- `№27, 29 Jun 1911` = CLOSED issue identity;
+- detailed 1912 court sequence (acting editor, legal article, exact hearing date, closed-session detail, acquittal wording, destruction-order wording) = **HOLD** pending primary/independent legal source.
 
-Potential production spread only after resolution.
+Do not let modern archive publisher metadata override established Baptist editorial chronology where they conflict.
+
+Potential production spread: confiscated issue + later `Утренняя звезда` report, but only after the court-side source is independently closed.
 
 ---
 
@@ -293,11 +326,12 @@ Use only objects that prove a distinct audience/function.
 1. verified colporteur/Bible-distribution object if byte recovered;
 2. `Беседа` exact clandestine facsimile — desired early hero but still P0 gap;
 3. `Христианин` 1905/1906 trial-to-type object;
-4. **received `Братский листок` 1906 / parent №6** — local object A;
-5. `Баптист` 1907 №1 — controlled receipt pending;
-6. `Утренняя звезда` 1910 №4 — printed-freedom argument;
-7. **received `Утренняя звезда` 30.10.1915** — local censorship object B;
-8. one controlled external anti-sect/public witness.
+4. **external `Братский листок` №1, 1906** for title-page/start identity;
+5. **received `Братский листок` 1906 / parent №6** — local object A;
+6. `Баптист` 1907 №1 — controlled receipt pending;
+7. `Утренняя звезда` 1910 №4 — printed-freedom argument;
+8. **received `Утренняя звезда` 30.10.1915** — local censorship object B;
+9. one controlled external anti-sect/public witness.
 
 Ideal final chapter: 5–7 visual events. Book Authority minimum still requires at least 2 local historical objects through the full gate.
 
@@ -306,12 +340,13 @@ Ideal final chapter: 5–7 visual events. Book Authority minimum still requires 
 ## 12. Immediate P0 media queue
 
 1. Re-open/render MASTER row75 received `Братский листок`; choose one network page and settle rights/provenance.
-2. Re-open/render MASTER row97 `Утренняя звезда` 30.10.1915; identify exact censorship-strip page(s), settle rights/provenance.
-3. Receive/hash official `Христианин` 1906 №1.
-4. Receive/hash `Баптист` 1907 №1.
-5. Receive/hash `Утренняя звезда` 1910 №4.
-6. Recover representative `Беседа` facsimile.
-7. Select one external anti-sect/public press page.
-8. Generate derivatives only after source objects are verified.
+2. Controlled-receive Commons `Братский листок` №1 and compute our SHA256; do not confuse it with row75.
+3. Re-open/render MASTER row97 `Утренняя звезда` 30.10.1915; identify exact censorship-strip page(s), settle rights/provenance.
+4. Receive/hash official `Христианин` 1906 №1.
+5. Receive/hash `Баптист` 1907 №1.
+6. Receive/hash `Утренняя звезда` 1910 №4.
+7. Recover representative `Беседа` facsimile.
+8. Select one external anti-sect/public press page.
+9. Generate derivatives only after source objects are verified.
 
-Current verdict: **SHORTLIST STRONG / TWO LOCAL RECEIPTS IDENTIFIED / RIGHTS + PAGE-VISUAL + DERIVATIVES OPEN / NOT BOOK-READY**.
+Current verdict: **SHORTLIST STRONG / TWO LOCAL RECEIPTS IDENTIFIED / FIRST `БРАТСКИЙ ЛИСТОК` EXTERNAL ID+RIGHTS CLOSED / RIGHTS + PAGE-VISUAL + DERIVATIVES STILL OPEN / NOT BOOK-READY**.
