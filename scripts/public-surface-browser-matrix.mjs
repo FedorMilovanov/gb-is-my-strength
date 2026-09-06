@@ -18,6 +18,7 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const { buildPublicSurfaceRegistry } = require('./lib/public-surface-registry');
+const { parseBoundedWorkerCount, runBoundedWorkerPool } = require('./lib/bounded-worker-pool');
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
@@ -35,7 +36,12 @@ const VIEWPORTS = [
   { id: 'mobile-390', width: 390, height: 844, mobile: true },
   { id: 'desktop-1440', width: 1440, height: 900, mobile: false },
 ];
-const MAX_WORKERS = Math.max(1, Math.min(4, Number(process.env.GB_MATRIX_WORKERS || 4)));
+const MAX_WORKERS = parseBoundedWorkerCount(process.env.GB_MATRIX_WORKERS, {
+  name: 'GB_MATRIX_WORKERS',
+  defaultValue: 4,
+  min: 1,
+  max: 4,
+});
 const PUBLIC_STATUS = new Set(['production-dist']);
 
 function routeFile(urlPath) {
@@ -82,6 +88,10 @@ if (registry.errors.length) {
 const entries = registry.entries.filter((entry) =>
   PUBLIC_STATUS.has(entry.status) && !entry.route.startsWith('/dev/') && !entry.route.includes('/_app/')
 );
+if (!entries.length) {
+  console.error('PUBLIC SURFACE BROWSER MATRIX: refusing PASS for an empty production route corpus');
+  process.exit(1);
+}
 const results = [];
 function record(entry, viewport, contract, ok, detail = '') {
   results.push({ route: entry.route, surface: entry.surface, seriesShape: entry.seriesShape, viewport: viewport.id, contract, ok: Boolean(ok), detail: String(detail || '') });
@@ -321,18 +331,6 @@ async function runCase(browser, base, entry, viewport) {
   }
 }
 
-async function pool(items, worker) {
-  let cursor = 0;
-  async function run() {
-    while (true) {
-      const index = cursor++;
-      if (index >= items.length) return;
-      await worker(items[index], index);
-    }
-  }
-  await Promise.all(Array.from({ length: Math.min(MAX_WORKERS, items.length) }, run));
-}
-
 if (!existsSync(DIST)) {
   console.error('dist/ missing; run npm run strangler:build:production-like first');
   process.exit(1);
@@ -340,14 +338,30 @@ if (!existsSync(DIST)) {
 
 const { server, base } = await serve();
 let browser;
+let scheduledCases = 0;
+let completedCases = 0;
 try {
   browser = await launchBrowser();
   const cases = entries.flatMap((entry) => VIEWPORTS.map((viewport) => ({ entry, viewport })));
+  scheduledCases = cases.length;
   console.log(`Public browser matrix: ${entries.length} routes × ${VIEWPORTS.length} viewports = ${cases.length} cases; workers=${MAX_WORKERS}`);
-  await pool(cases, ({ entry, viewport }) => runCase(browser, base, entry, viewport));
+  completedCases = await runBoundedWorkerPool(
+    cases,
+    ({ entry, viewport }) => runCase(browser, base, entry, viewport),
+    MAX_WORKERS,
+  );
 } finally {
   await browser?.close().catch(() => {});
   await new Promise((resolve) => server.close(resolve));
+}
+
+if (scheduledCases < 1 || completedCases !== scheduledCases) {
+  console.error(`PUBLIC SURFACE BROWSER MATRIX: coverage mismatch; completed ${completedCases}/${scheduledCases} scheduled cases`);
+  process.exit(1);
+}
+if (results.length < 1) {
+  console.error(`PUBLIC SURFACE BROWSER MATRIX: refusing zero-contract PASS after ${completedCases} completed cases`);
+  process.exit(1);
 }
 
 results.sort((a, b) => a.route.localeCompare(b.route, 'ru') || a.viewport.localeCompare(b.viewport) || a.contract.localeCompare(b.contract));
@@ -357,6 +371,7 @@ const summary = {
   generatedAt: new Date().toISOString(),
   registry: { total: registry.entries.length, publicTested: entries.length, counts: registry.counts, seriesShapes: registry.shapeCounts },
   viewports: VIEWPORTS,
+  cases: { scheduled: scheduledCases, completed: completedCases },
   contracts: results.length,
   passed,
   failed: failures.length,
@@ -369,6 +384,7 @@ const md = [
   '# Public surface browser matrix', '',
   `- Routes tested: **${entries.length}**`,
   `- Viewports: **${VIEWPORTS.map((item) => item.id).join(', ')}**`,
+  `- Cases: **${completedCases}/${scheduledCases} completed**`,
   `- Contracts: **${passed}/${results.length} PASS**`,
   `- Failures: **${failures.length}**`, '',
   ...(failures.length ? ['## Failures', '', ...failures.map((f) => `- \`${f.route}\` · \`${f.viewport}\` · **${f.contract}** — ${f.detail || 'failed'}`)] : ['✅ Every public route passed its browser surface contracts.']),
@@ -376,5 +392,5 @@ const md = [
 ];
 await writeFile(join(REPORTS, 'public-surface-browser-matrix.md'), `${md.join('\n')}\n`);
 for (const item of failures) console.error(`FAIL [${item.viewport}] ${item.route} ${item.contract} :: ${item.detail}`);
-console.log(`PUBLIC SURFACE BROWSER MATRIX: ${passed}/${results.length} PASS (${entries.length} routes)`);
+console.log(`PUBLIC SURFACE BROWSER MATRIX: ${passed}/${results.length} PASS (${completedCases}/${scheduledCases} cases; ${entries.length} routes)`);
 if (failures.length) process.exitCode = 1;

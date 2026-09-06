@@ -59,6 +59,8 @@ on:
       - "scripts/seo-route-contract-test.js"
       - "scripts/konfessii-map-audit.js"
       - "scripts/public-surface-browser-matrix.mjs"
+      - "scripts/public-surface-browser-matrix-worker-contract-test.js"
+      - "scripts/lib/bounded-worker-pool.js"
       - "scripts/public-surface-cross-browser-matrix.mjs"
       - "scripts/public-surface-browser-diagnostics.mjs"
       - "scripts/engine-sweep.mjs"
@@ -111,6 +113,9 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22.23.1'
+
+      - name: Public browser matrix worker contract
+        run: node scripts/public-surface-browser-matrix-worker-contract-test.js
 
       - name: Validate effective matrix contract without writing
         run: node scripts/sync-route-migration-matrix.js --check
