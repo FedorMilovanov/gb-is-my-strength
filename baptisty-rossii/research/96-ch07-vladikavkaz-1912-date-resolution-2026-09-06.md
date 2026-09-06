@@ -1,93 +1,92 @@
-# 96. Chapter 7 — Владикавказ 1912: resolution даты совещания и соглашения
+# 96. Chapter 7 — Владикавказ 1912: date control и resolution
 
-Дата проверки: 2026-09-06  
-Статус: **DATE DISCREPANCY RESOLVED FOR NARRATIVE; PRIMARY FACSIMILE OPEN**
+Дата прохода: 2026-09-06  
+Authority: Book Authority v2  
+Статус: **DATE DISTINCTION RESOLVED FOR NARRATIVE / PRIMARY FACSIMILE OPEN**
 
-## 1. Проблема
+## 1. Почему нужен отдельный контроль
 
-В MASTER и ряде исторических/энциклопедических сводок встреча Д. И. Мазаева, И. С. Проханова и других представителей двух братств во Владикавказе датируется **18 июля 1912 года**.
+В MASTER и в ряде поздних энциклопедических/исторических источников Владикавказское совещание Д. И. Мазаева, И. С. Проханова и других представителей двух братств датируется **18 июля 1912 года**.
 
-При этом опубликованный текст договора начинается формулой:
+Но опубликованный текст договора начинается собственной датировочной формулой:
 
 > `Сего 19-го июля 1912 года...`
 
-Если механически выбрать только одну дату, возникает ложный конфликт.
+Поэтому формула `соглашение подписано 18.07.1912` не должна использоваться как бесспорная.
 
 ---
 
-## 2. Evidence split
+## 2. Два уровня одного события
 
-### 18 июля 1912 — совещание
+### A. 18 июля 1912 — совещание / переговоры
 
-Этой датой встречу/совещание фиксируют:
-- Православная энциклопедия, статья `Евангельские христиане`;
-- поздняя история ЕХБ, описывающая по инициативе Проханова совещание представителей двух братств во Владикавказе;
-- MASTER rows 1882–1883.
+Поздняя энциклопедическая и историческая традиция датирует встречу **18 июля 1912 года, Владикавказ**.
+
+Участники обсуждали отношения двух братств и механизм Соединённого комитета; среди центральных фигур — И. С. Проханов и Д. И. Мазаев.
 
 Reader-safe claim:
 
-> 18 июля 1912 года во Владикавказе состоялось совещание представителей двух братств по вопросу совместной работы и Соединённого комитета.
+> 18 июля 1912 года во Владикавказе состоялось совещание представителей двух братств по вопросу совместной работы.
 
-### 19 июля 1912 — датированный текст договора
+### B. 19 июля 1912 — дата сохранившегося текста договора
 
-Опубликованный documentary trail воспроизводит сам текст соглашения с начальной датой **19 июля 1912 года**.
-
-Доступный locator:
-- `История ЕХБ 1905–1944` воспроизводит текст;
-- внутри citation trail указан А. Е. Леушкин, `Письма к братьям`, с. 76.
+В воспроизведённом тексте документа стоит дата **19 июля 1912 года**.
 
 Reader-safe claim:
 
 > Выработанный во Владикавказе договор датирован 19 июля 1912 года.
 
----
+### Canonical resolution
 
-## 3. Canonical resolution
+**18.07.1912 — meeting / negotiation.**  
+**19.07.1912 — dated agreement text.**
 
-Для Chapter 7 использовать двухступенчатую хронологию:
+Если нужен один диапазон: **18–19 июля 1912**.
 
-**18.07.1912 — совещание / переговоры.**  
-**19.07.1912 — дата текста договора / соглашения.**
-
-Если нужен единый диапазон:
-
-**18–19 июля 1912 года.**
-
-Такое чтение совместимо с обеими группами источников и не требует объявлять одну из дат ошибочной до проверки первичного объекта.
+Это объясняет расхождение без искусственного объявления одной группы источников ошибочной до восстановления facsimile.
 
 ---
 
-## 4. Early-source trail
+## 3. Early documentary source trail
 
-Исторические публикации, воспроизводящие или использующие этот материал, называют библиографический объект:
-
-**`Письма к братьям евангельским христианам-баптистам. Тифлис, 1916`.**
-
-Для текста Владикавказского договора доступный locator указывает:
+Развёрнутая история ЕХБ воспроизводит текст Владикавказского договора и ведёт к раннему библиографическому объекту:
 
 **А. Е. Леушкин, `Письма к братьям`, с. 76.**
 
-Публичные trails:
-- `https://djvu.online/file/gUelaYOtdwn1E` — section `Владикавказское соглашение`, с воспроизведением формулы 19 июля и ссылкой на Леушкина, с. 76;
-- `https://rusbaptist.stunda.org/zips/historyofecb.pdf` — библиографический аппарат содержит `Письма к братьям евангельским христианам-баптистам. Тифлис, 1916`;
-- `https://mbchurch.ru/upload/iblock/b044d859a8847d7de9541fccf8d8566f/historyofecb33isff.pdf` — тот же библиографический объект присутствует в опубликованном аппарате.
+Более полное библиографическое название, встречающееся в историческом apparatus:
 
-### Acquisition check 2026-09-06
+**`Письма к братьям евангельским христианам-баптистам. Тифлис, 1916`.**
 
-- GitHub `gb-is-my-strength` + `FedorMilovanov/Research`: standalone object не найден по title/author query;
-- connected Google Drive: standalone object не найден по `Леушкин / Письма к братьям / Тифлис 1916`;
-- public web: bibliographic identity repeatedly corroborated, but controlled standalone scan not recovered.
+Public trail:
+- `https://djvu.online/file/gUelaYOtdwn1E` — раздел о Владикавказском соглашении; воспроизводит opening date 19 July и citation к Леушкину, p. 76;
+- `https://rusbaptist.stunda.org/zips/historyofecb.pdf` — исторический/bibliographic trail к `Письмам к братьям...`;
+- опубликованные истории ЕХБ, использующие тот же ранний corpus.
 
-Status:
-- bibliographic identity: **PASS**
-- early documentary citation trail: **PASS**
-- exact 1916 facsimile: **OPEN**
-- title-page visual verification: **OPEN**
-- p. 76 visual verification: **OPEN**
-- local SHA256: **OPEN**
-- rights: **OPEN**
+### Acquisition status
 
-`Братский Вестник`, 1967, №4 identifies Андрей Ефимович Леушкин as a worker of the Tiflis Baptist community, supporting the identity behind later citations `А. Е. Леушкин`; nevertheless authorship/editorial wording of the 1916 object must be taken from its own title page once received.
+На 2026-09-06:
+- библиографическая identity раннего объекта: **PASS**;
+- early documentary citation trail: **PASS**;
+- standalone controlled scan `Письма к братьям... Тифлис, 1916`: **OPEN**;
+- title-page visual verification: **OPEN**;
+- p. 76 visual verification: **OPEN**;
+- local SHA256: **OPEN**;
+- rights/provenance ledger: **OPEN**.
+
+Нельзя из позднего цитирования додумывать publisher, print shop, pagination, subtitle или точную форму авторства, пока title page 1916 edition не просмотрен.
+
+---
+
+## 4. Attribution: А. Е. Леушкин
+
+Поздний `Братский Вестник` идентифицирует **Андрея Ефимовича Леушкина** как служителя тифлисского баптистского братства.
+
+Это поддерживает личность за библиографической формой `А. Е. Леушкин`, но **не заменяет title-page verification** издания 1916 года.
+
+Publication bibliography должна отделять:
+- установленную identity лица;
+- bibliographic citation trail;
+- exact title-page authorship/editorial wording, пока OPEN.
 
 ---
 
@@ -95,101 +94,100 @@ Status:
 
 Документ относится к отношениям двух союзов и механизму совместной работы через Соединённый комитет.
 
-Не называть событие:
+Запрещено называть событие:
 - слиянием союзов;
 - созданием единого союза;
 - окончательным объединением баптистов и евангельских христиан.
 
-Соглашение требовало дальнейшего принятия/исполнения соответствующими союзными органами и не устранило институциональные различия.
-
-Последующий historical trail сообщает, что в 1913 году практические шаги к исполнению Владикавказского договора не были осуществлены. Это дополнительно запрещает формулировки об уже состоявшемся объединении в июле 1912 года.
+Соглашение требовало дальнейшего принятия/исполнения союзными органами. Последующий source trail показывает, что практическое осуществление этого механизма оставалось проблемой.
 
 ---
 
-## 6. MASTER correction rule
-
-MASTER rows 1882–1883 имеют caption date `18 июля 1912` и `Article ready=YES`.
-
-До выяснения, **что именно изображено** на конкретном binary, caption применять условно:
-
-- если это фотография/сцена встречи → `18 июля 1912` допустимо;
-- если это страница/текст соглашения → указывать `19 июля 1912`;
-- если объект объединяет оба эпизода или его тип не установлен → `18–19 июля 1912` с пояснением.
-
-Recommended conflict note:
-
-`MASTER caption uses 18 Jul 1912 for Vladikavkaz agreement; later reference tradition dates meeting to 18 Jul, while reproduced agreement text itself is dated 19 Jul 1912. Preserve distinction until 1916 facsimile/p.76 is recovered.`
-
-Нельзя исправлять MASTER вслепую: текущая Google Sheet write permission ранее возвращала 403, а shadow catalog запрещён.
-
----
-
-## 7. Media gate
+## 6. MASTER correction / caption rule
 
 MASTER candidates:
 - row 1882 — `photos/photo_1883@19-07-2025_21-11-46.jpg`;
 - row 1883 — `photos/photo_1884@19-07-2025_21-11-46.jpg`.
 
-На 2026-09-06 exact-filename Drive search не восстановил byte.
+MASTER caption ассоциирует объект с **18 июля 1912** и Владикавказским соглашением.
 
-Current status:
-- event identity: VERIFIED;
-- date interpretation: RESOLVED;
-- agreement text date: STRONGLY VERIFIED;
-- exact original agreement facsimile: OPEN;
-- MASTER image byte: NOT RECEIVED;
-- image visual content: NOT VERIFIED;
-- rights: OPEN;
-- SHA256: OPEN.
+### Не переписывать MASTER вслепую
 
-Forbidden hero wording until object inspection:
+Google Sheet write permission в текущем workflow не подтверждён; shadow catalog запрещён.
 
-> `Мазаев и Проханов подписывают соглашение 18 июля 1912 года`.
+До визуального определения объекта использовать `conflict_notes`:
 
-Allowed neutral wording:
+`MASTER caption uses 18 Jul 1912 for Vladikavkaz agreement; historical tradition dates the meeting to 18 Jul, while reproduced agreement text itself is dated 19 Jul 1912. Preserve distinction until the 1916 facsimile/page 76 is recovered.`
+
+### Caption branching
+
+Если recovered object — фотография/сцена встречи:
+- `18 июля 1912` допустимо при подтверждённой provenance.
+
+Если recovered object — страница договора:
+- дата документа `19 июля 1912`.
+
+Если тип объекта не установлен или композиция охватывает весь эпизод:
+- `18–19 июля 1912` + пояснение.
+
+Forbidden caption:
+
+> `Мазаев и Проханов подписывают соглашение 18 июля 1912 года.`
+
+Allowed neutral form:
 
 > `Владикавказ, 18–19 июля 1912 года. Представители двух братств обсуждают механизм совместной работы; сохранившийся текст договора датирован 19 июля.`
 
----
-
-## 8. Calendar-style HOLD
-
-В 1912 году Российская империя использовала юлианский календарь. Однако текущий pass **не установил**, нормализуют ли поздние captions эти даты в новый стиль или просто воспроизводят историческую датировку.
-
-Поэтому:
-- не переводить автоматически 18/19 июля в 31 июля/1 августа;
-- не добавлять `ст. ст.` / `н. ст.` без primary/source convention;
-- calendar system держать отдельным открытым metadata field до title/page verification 1916 object.
+Если image binary не изображает саму встречу/документ, он не становится hero независимо от MASTER caption.
 
 ---
 
-## 9. Publication wording
+## 7. Calendar-style gate
 
-Предпочтительно:
+Документальная формула сохраняет дату `19-го июля 1912 года` в дореволюционном российском контексте.
 
-> 18 июля 1912 года во Владикавказе представители двух братств встретились для переговоров о совместной работе. Текст выработанного ими соглашения датирован следующим днём, 19 июля, и предусматривал механизм Соединённого комитета, а не слияние союзов.
+Но текущий pass **не установил**, переводят ли поздние источники 18/19 July в новый стиль или воспроизводят старостильную дату.
 
-До получения exact primary facsimile не использовать длинные цитаты из договора.
+Поэтому до primary verification:
+- не конвертировать автоматически 18/19 July в 31 July/1 August;
+- не подписывать `old style` / `new style` без source-level evidence;
+- хранить calendar-system precision как открытое metadata field.
 
 ---
 
-## 10. P0 acquisition DoD
+## 8. Media gate
 
-Target:
+Exact MASTER filename searches 2026-09-06 не восстановили bytes `photo_1883...` / `photo_1884...` через подключённый Drive search.
 
-`Письма к братьям евангельским христианам-баптистам. Тифлис, 1916`, especially **p. 76**.
+Current status:
+- event identity: VERIFIED;
+- meeting date tradition: VERIFIED;
+- agreement-text date: STRONGLY VERIFIED;
+- date distinction for narrative: RESOLVED;
+- original 1916 facsimile: OPEN;
+- MASTER image binary: NOT RECEIVED;
+- visual_content_verified: NO;
+- rights: OPEN;
+- SHA256: OPEN.
 
+---
+
+## 9. P0 acquisition target
+
+`Письма к братьям евангельским христианам-баптистам. Тифлис, 1916`, особенно **p. 76**.
+
+Acquisition DoD:
 - [ ] controlled binary received;
 - [ ] title page visually verified;
-- [ ] authorship/editorial attribution verified from object itself;
+- [ ] authorship/editorial attribution verified from object;
 - [ ] p. 76 visually verified;
 - [ ] agreement opening/signatures checked against scan;
 - [ ] page count recorded;
 - [ ] SHA256 recorded;
 - [ ] provenance/rights recorded;
-- [ ] calendar-style convention evaluated;
+- [ ] calendar convention evaluated;
 - [ ] final Chapter 7 caption/media ledger updated.
 
-Until then:
+До этого статус остаётся:
 
 **DATE DISTINCTION RESOLVED FOR NARRATIVE / PRIMARY FACSIMILE OPEN.**
