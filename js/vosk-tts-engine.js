@@ -49,7 +49,9 @@ error = payload && payload.name === 'AbortError'
 error = new Error(message);
 if (payload && payload.name) error.name = payload.name;
 }
-if (payload && payload.name) error.name = payload.name;
+if (payload && payload.name && error.name !== payload.name) {
+try { error.name = payload.name; } catch (_) {}
+}
 if (payload && payload.userCancelled) error.userCancelled = true;
 return error;
 }
