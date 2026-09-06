@@ -213,3 +213,30 @@ Prefer a stable archival mirror or controlled receipt over treating the Telegram
 - утверждение `page_visual_verified`;
 - утверждение `IN DRIVE` для этих targets;
 - выдача внешнего checksum за наш SHA256.
+
+---
+
+## 10. Context witness — confiscated `Баптист` №27, 1911
+
+Этот номер не является одним из четырёх основных Mazaev acquisition targets, но он важен для Chapter 7 как **контекст реального давления на баптистскую печатную инфраструктуру**, внутри которой шла внутренняя полемика Мазаева и Проханова.
+
+### Resolved issue identity
+
+MASTER captions rows 1485 / 2264 содержали внутреннее противоречие `№97` / `№27`.
+
+Full-text issue witness resolves the conflict:
+- `Баптист`, **№27**;
+- date: **29 June 1911**;
+- Фёдор Носков, `Автобиография и исповедь сектанта` — на displayed/printed page 7 in the recovered issue witness;
+- issue is identified there as the confiscated number.
+
+Canonical handling:
+- `№97` = caption/OCR/transcription error;
+- `№27, 29 Jun 1911` = resolved issue identity;
+- exact later court sequence remains **HOLD** until primary/independent legal-source recovery.
+
+### Why this matters for Chapter 7
+
+Не превращать спор о церковном устройстве в стерильную журнальную дискуссию. Те же редакционные сети одновременно работали под риском конфискации и судебного преследования. Но этот контекст не доказывает причинную связь между конкретной Mazaev polemic и конфискацией №27.
+
+Status: `ISSUE IDENTITY RESOLVED / COURT DETAILS OPEN / CONTEXT ONLY`.
