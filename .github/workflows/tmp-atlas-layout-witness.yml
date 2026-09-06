@@ -57,3 +57,5 @@ jobs:
           git add scripts/atlas-focus-state-browser-test.mjs
           git commit -m 'test(atlas): model delayed layout readiness deterministically'
           git push
+
+# trigger: semantic layout-readiness witness
