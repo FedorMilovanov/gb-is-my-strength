@@ -63,6 +63,7 @@ async function waitForRetirement(retired, minimum, page, label) {
 
 const FAKE_WORKER = String.raw`'use strict';
 let ready = false;
+let connectionSequence = 0;
 function wav() {
   const frames = 400;
   const buffer = new ArrayBuffer(44 + frames * 2);
@@ -76,6 +77,7 @@ function wav() {
 }
 function send(port, type, detail, transfer) { port.postMessage(Object.assign({ type }, detail || {}), transfer || []); }
 function attach(port) {
+  const connectionId = String(++connectionSequence);
   let clientId = '';
   let retired = false;
   port.onmessage = (event) => {
@@ -84,7 +86,7 @@ function attach(port) {
     if (message.type === 'hello' || message.type === 'ping') return;
     if (message.type === 'disconnect') {
       retired = true;
-      fetch('/retired?clientId=' + encodeURIComponent(clientId), { method: 'POST' }).then(() => {
+      fetch('/retired?clientId=' + encodeURIComponent(clientId) + '&connectionId=' + encodeURIComponent(connectionId), { method: 'POST' }).then(() => {
         send(port, 'disconnected', { id: message.id || 0 });
         try { port.close(); } catch {}
       });
@@ -168,7 +170,10 @@ async function clickAway(page) {
       return;
     }
     if (url.pathname === '/retired' && req.method === 'POST') {
-      retired.push(url.searchParams.get('clientId') || '');
+      retired.push({
+        clientId: url.searchParams.get('clientId') || '',
+        connectionId: url.searchParams.get('connectionId') || '',
+      });
       res.writeHead(204, { 'cache-control': 'no-store' });
       res.end();
       return;
@@ -208,15 +213,17 @@ async function clickAway(page) {
     const directRetireResult = await probe.evaluate(() => window.VoskTTSEngine.retire('browser direct retirement probe'));
     assert.equal(directRetireResult, true, 'direct SharedWorker retirement did not receive ACK');
     await waitForRetirement(retired, 1, probe, 'direct-retire-probe');
-    report.directRetireClient = retired[0];
-    assert.ok(report.directRetireClient, 'direct browser retirement did not retire a concrete client');
+    report.directRetire = retired[0];
+    assert.ok(report.directRetire.clientId, 'direct browser retirement did not retire a concrete client');
+    assert.ok(report.directRetire.connectionId, 'direct browser retirement did not retire a concrete MessagePort generation');
     await probe.close();
 
     await departing.evaluate(() => window.VoskTTSEngine.speak('Уходящая страница', 1, 3, () => {}, () => {}));
     await clickAway(departing);
     await waitForRetirement(retired, 2, departing, 'first-document-navigation');
-    const firstRetiredClient = retired[1];
-    assert.ok(firstRetiredClient, 'ACK-backed document navigation did not retire the client');
+    const firstRetirement = retired[1];
+    assert.ok(firstRetirement.clientId, 'ACK-backed document navigation did not retire the client');
+    assert.ok(firstRetirement.connectionId, 'ACK-backed document navigation did not retire the MessagePort generation');
 
     await owner.evaluate(() => window.VoskTTSEngine.speak('Живой клиент', 1, 3, () => {}, () => {}));
     await owner.waitForFunction(() => (window.__played || 0) >= 1);
@@ -236,9 +243,10 @@ async function clickAway(page) {
     await departing.evaluate(() => window.VoskTTSEngine.speak('Уходящая страница снова', 1, 3, () => {}, () => {}));
     await clickAway(departing);
     await waitForRetirement(retired, 3, departing, 'second-document-navigation');
-    const secondRetiredClient = retired[2];
-    assert.ok(secondRetiredClient, 'restored peer did not perform second authoritative retirement');
-    assert.notEqual(secondRetiredClient, firstRetiredClient, 'restored document reused retired SharedWorker client identity');
+    const secondRetirement = retired[2];
+    assert.ok(secondRetirement.clientId, 'restored peer did not perform second authoritative retirement');
+    assert.ok(secondRetirement.connectionId, 'restored peer did not retire its reconnected MessagePort generation');
+    assert.notEqual(secondRetirement.connectionId, firstRetirement.connectionId, 'history-restored document reused a retired MessagePort generation');
 
     await owner.evaluate(() => window.VoskTTSEngine.speak('Живой клиент после второго ухода', 1, 3, () => {}, () => {}));
     await owner.waitForFunction(() => (window.__played || 0) >= 2);
@@ -250,9 +258,10 @@ async function clickAway(page) {
     assert.equal(report.ownerAfterSecondPeerRetire.status.ready, true);
     assert.ok(report.ownerAfterSecondPeerRetire.played >= 2, 'surviving page failed after restored peer retired again');
 
-    report.retiredClientCount = new Set(retired.filter(Boolean)).size;
+    report.retiredClientIds = retired.map((entry) => entry.clientId);
+    report.retiredConnectionCount = new Set(retired.map((entry) => entry.connectionId).filter(Boolean)).size;
     report.workerRequests = workerRequests;
-    assert.ok(report.retiredClientCount >= 3, 'browser lifecycle did not produce distinct direct + restored client retirements');
+    assert.ok(report.retiredConnectionCount >= 3, 'browser lifecycle did not retire distinct SharedWorker port generations');
     assert.equal(workerRequests, 1, 'SharedWorker script was re-instantiated while a live owner remained');
 
     fs.writeFileSync(path.join(REPORTS, 'tts-sharedworker-client-lifecycle-browser.json'), `${JSON.stringify(report, null, 2)}\n`);
