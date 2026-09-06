@@ -315,6 +315,11 @@ settleAllLoads(error);
 failAllSpeaks(error);
 }
 }
+function retireDocumentClient() {
+stopAudio();
+state.speakRequests.forEach(function (entry) { entry.handle.cancelled = true; });
+terminateWorker(createCancelledError('document lifetime ended'));
+}
 function handleWorkerMessage(message) {
 var type = message.type;
 if (type === 'status') {
@@ -389,6 +394,7 @@ mode: mode,
 postMessage: function (message) { port.postMessage(message); },
 terminate: function () {
 if (mode === 'shared') {
+try { port.postMessage({ type: 'disconnect', clientId: CLIENT_ID }); } catch (_) {}
 try { port.close(); } catch (_) {}
 } else {
 try { raw.terminate(); } catch (_) {}
@@ -515,6 +521,7 @@ try { send({ type: 'cancel', id: id }); } catch (_) {}
 if (id) state.speakRequests.delete(id);
 if (!id || state.audioHandleId === id) stopAudio();
 }
+window.addEventListener('pagehide', retireDocumentClient);
 window.VoskTTSEngine = Object.freeze({
 version: VERSION,
 isSupported: isSupported,
