@@ -41,24 +41,47 @@ try { port.postMessage(payload, transfer || []); } catch (_) {}
 function broadcast(type, detail) {
 clients.forEach(function (entry) { send(entry.port, type, detail); });
 }
+function portKey(port) {
+return port && port.__gbVoskClientKey ? port.__gbVoskClientKey : 'client';
+}
 function touchPort(port) {
 var key = portKey(port);
 var entry = clients.get(key);
 if (entry) entry.lastSeen = Date.now();
 }
-function dropPort(port) {
+function abortLoadIfUnowned() {
+if (state.loadClients.size !== 0 || !state.loadController) return;
+try { state.loadController.abort(); } catch (_) {}
+}
+function trackJob(port, jobKey) {
+var entry = clients.get(portKey(port));
+if (entry) entry.jobs.add(jobKey);
+}
+function releaseJob(port, jobKey) {
+var entry = clients.get(portKey(port));
+if (entry) entry.jobs.delete(jobKey);
+state.cancelledJobs.delete(jobKey);
+}
+function retirePort(port, closePort) {
 var key = portKey(port);
+var entry = clients.get(key);
 state.loadClients.delete(key);
+if (entry) {
+entry.jobs.forEach(function (jobKey) { state.cancelledJobs.add(jobKey); });
 clients.delete(key);
+}
+abortLoadIfUnowned();
+if (closePort && port) {
+try { port.close && port.close(); } catch (_) {}
+}
+}
+function dropPort(port) {
+retirePort(port, true);
 }
 function pruneClients() {
 var cutoff = Date.now() - CLIENT_TTL_MS;
-clients.forEach(function (entry, key) {
-if (entry.lastSeen < cutoff) {
-state.loadClients.delete(key);
-clients.delete(key);
-try { entry.port.close && entry.port.close(); } catch (_) {}
-}
+clients.forEach(function (entry) {
+if (entry.lastSeen < cutoff) retirePort(entry.port, true);
 });
 }
 function status(phase, detail) {
@@ -71,7 +94,7 @@ if (!port) return;
 var key = 'client-' + (++clientSequence);
 try { Object.defineProperty(port, '__gbVoskClientKey', { value: key }); }
 catch (_) { port.__gbVoskClientKey = key; }
-clients.set(key, { port: port, lastSeen: Date.now() });
+clients.set(key, { port: port, lastSeen: Date.now(), jobs: new Set() });
 port.onmessage = function (event) {
 touchPort(port);
 handleMessage(event.data || {}, port);
@@ -82,9 +105,6 @@ send(port, 'status', Object.assign({
 phase: state.phase === 'idle' ? 'connected' : state.phase,
 ready: state.ready
 }, state.statusDetail));
-}
-function portKey(port) {
-return port && port.__gbVoskClientKey ? port.__gbVoskClientKey : 'client';
 }
 function messageJobKey(port, message) {
 return portKey(port) + ':' + String(message.clientId || 'anonymous') + ':' + String(message.id || 0);
@@ -485,6 +505,10 @@ function handleMessage(message, port) {
 var key = portKey(port);
 touchPort(port);
 if (message.type === 'hello' || message.type === 'ping') return;
+if (message.type === 'disconnect') {
+retirePort(port, true);
+return;
+}
 if (message.type === 'ensure') {
 state.loadClients.add(key);
 ensureLoaded().then(function () {
@@ -499,8 +523,11 @@ return;
 if (message.type === 'speak') {
 var jobKey = messageJobKey(port, message);
 state.cancelledJobs.delete(jobKey);
+trackJob(port, jobKey);
 state.synthQueue = state.synthQueue.catch(function () {}).then(function () {
 return synthesize(message, port);
+}).finally(function () {
+releaseJob(port, jobKey);
 });
 return;
 }
@@ -510,9 +537,7 @@ return;
 }
 if (message.type === 'cancel-load') {
 state.loadClients.delete(key);
-if (state.loadClients.size === 0) {
-try { state.loadController && state.loadController.abort(); } catch (_) {}
-}
+abortLoadIfUnowned();
 }
 }
 if (IS_SHARED_SCOPE) {
