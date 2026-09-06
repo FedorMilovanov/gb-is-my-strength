@@ -5,7 +5,9 @@ on:
     paths:
       - '.github/workflows/search-cold-bootstrap.yml'
       - 'scripts/search-cold-bootstrap-browser-test.mjs'
+      - 'scripts/search-loader-retry-contract-test.js'
       - 'src/components/reader-platform/ReaderPreferencesHead.astro'
+      - 'src/components/article-pilots/_shared/MobileChromePage.astro'
       - 'src/components/articles/**'
       - 'src/components/biografii/**'
       - 'src/components/pastor-series/**'
@@ -20,7 +22,9 @@ on:
     paths:
       - '.github/workflows/search-cold-bootstrap.yml'
       - 'scripts/search-cold-bootstrap-browser-test.mjs'
+      - 'scripts/search-loader-retry-contract-test.js'
       - 'src/components/reader-platform/ReaderPreferencesHead.astro'
+      - 'src/components/article-pilots/_shared/MobileChromePage.astro'
       - 'src/components/articles/**'
       - 'src/components/biografii/**'
       - 'src/components/pastor-series/**'
@@ -55,6 +59,8 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22.23.1'
+      - name: Run mobile search retry source contract
+        run: node scripts/search-loader-retry-contract-test.js
       - name: Install dependencies
         run: npm ci
       - name: Install Chromium and WebKit
