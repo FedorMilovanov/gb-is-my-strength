@@ -141,7 +141,9 @@ const paletteCss = assetUrl('css/command-palette.css');
         __gbSearchLoading?: boolean;
         __gbSearchBootRequested?: boolean;
         __gbSearchOpenAfterLoad?: boolean;
+        __gbSearchLoadState?: 'idle' | 'loading' | 'ready' | 'failed';
       };
+      w.__gbSearchLoadState ||= 'idle';
       const pcss = search.dataset.paletteCss;
       if (pcss && !document.querySelector('link[data-mcp-palette-css]')) {
         const href = pcss.split('?')[0];
@@ -156,6 +158,7 @@ const paletteCss = assetUrl('css/command-palette.css');
         }
       }
       if (w.GBSearch && typeof w.GBSearch.open === 'function') {
+        w.__gbSearchLoadState = 'ready';
         w.GBSearch.open();
         return;
       }
@@ -163,11 +166,27 @@ const paletteCss = assetUrl('css/command-palette.css');
       if (w.__gbSearchLoading || w.__gbSearchBootRequested) return;
       w.__gbSearchLoading = true;
       w.__gbSearchBootRequested = true;
+      w.__gbSearchLoadState = 'loading';
       const s = document.createElement('script');
       s.defer = true;
       s.src = search.dataset.searchSrc || '/js/search.js';
-      s.onload = () => { w.__gbSearchLoading = false; w.GBSearch?.open?.(); };
-      s.onerror = () => { w.__gbSearchLoading = false; };
+      s.onload = () => {
+        w.__gbSearchLoading = false;
+        if (w.GBSearch && typeof w.GBSearch.open === 'function') {
+          w.__gbSearchLoadState = 'ready';
+          w.GBSearch.open();
+          return;
+        }
+        w.__gbSearchLoadState = 'failed';
+        w.__gbSearchBootRequested = false;
+        s.remove();
+      };
+      s.onerror = () => {
+        w.__gbSearchLoading = false;
+        w.__gbSearchBootRequested = false;
+        w.__gbSearchLoadState = 'failed';
+        s.remove();
+      };
       document.head.appendChild(s);
     });
 
