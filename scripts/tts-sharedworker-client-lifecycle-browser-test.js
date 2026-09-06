@@ -57,6 +57,7 @@ function attach(port) {
     if (message.type === 'hello' || message.type === 'ping') return;
     if (message.type === 'disconnect') {
       retired = true;
+      send(port, 'disconnected', { id: message.id || 0 });
       fetch('/retired?clientId=' + encodeURIComponent(clientId), { method: 'POST' }).catch(() => {});
       try { port.close(); } catch {}
       return;
@@ -161,6 +162,13 @@ async function clickAway(page) {
       owner.goto(`${origin}/owner`, { waitUntil: 'domcontentloaded' }),
       departing.goto(`${origin}/departing`, { waitUntil: 'domcontentloaded' }),
     ]);
+    report.navigationApi = await departing.evaluate(() => ({
+      available: Boolean(window.navigation),
+      intercept: Boolean(window.NavigationEvent?.prototype?.intercept),
+    }));
+    assert.equal(report.navigationApi.available, true, 'Chromium Navigation API unavailable');
+    assert.equal(report.navigationApi.intercept, true, 'Chromium NavigationEvent.intercept unavailable');
+
     report.ownerInitial = await warm(owner);
     report.departingInitial = await warm(departing);
     assert.equal(workerRequests, 1, 'same-origin pages did not share one SharedWorker instance');
@@ -168,7 +176,7 @@ async function clickAway(page) {
     await departing.evaluate(() => window.VoskTTSEngine.speak('Уходящая страница', 1, 3, () => {}, () => {}));
     await clickAway(departing);
     await waitFor(() => retired.length >= 1);
-    assert.ok(retired[0], 'document navigation disconnect did not carry client identity');
+    assert.ok(retired[0], 'ACK-backed document navigation did not retire the client');
 
     await owner.evaluate(() => window.VoskTTSEngine.speak('Живой клиент', 1, 3, () => {}, () => {}));
     await owner.waitForFunction(() => (window.__played || 0) >= 1);
