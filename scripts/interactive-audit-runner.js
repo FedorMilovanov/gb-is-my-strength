@@ -13,6 +13,7 @@ const HERMENEVTIKA_REGRESSION_GUARD = path.join(__dirname, 'hermenevtika-regress
 const SCRIPTURE_TOOLTIP_PROJECTION_GUARD = path.join(__dirname, 'scripture-tooltip-projection-browser-test.mjs');
 const LOT_PUBLICATION_BROWSER_GUARD = path.join(__dirname, 'lot-publication-browser-contract.mjs');
 const STANDALONE_READER_LAYOUT_GUARD = path.join(__dirname, 'standalone-reader-layout-guard.mjs');
+const HOME_RESUME_BROWSER_GUARD = path.join(__dirname, 'homepage-resume-browser-contract.mjs');
 const HOME_DESIGN_AUDIT = path.join(__dirname, 'home-design-audit-pro.mjs');
 const HOME_DESIGN_REPORT = path.join(ROOT, 'reports', 'home-design-audit-pro');
 const INTERACTIVE_REPORT = path.join(ROOT, 'reports', 'interactive-audit');
@@ -100,6 +101,16 @@ function runNodeScript(script, args = [], extraEnv = {}) {
 
 function runAudit(baseUrl) {
   return runNodeScript(AUDIT, process.argv.slice(2), { AUDIT_BASE: baseUrl });
+}
+
+function runHomepageResumeBrowserGuard(baseUrl) {
+  if (!fs.existsSync(HOME_RESUME_BROWSER_GUARD)) {
+    throw new Error(`Homepage resume browser guard is missing at ${HOME_RESUME_BROWSER_GUARD}`);
+  }
+  return runNodeScript(HOME_RESUME_BROWSER_GUARD, [], {
+    AUDIT_BASE: baseUrl,
+    SOURCE_SHA: process.env.SOURCE_SHA || process.env.GITHUB_SHA || '',
+  });
 }
 
 function runHermenevtikaRegressionGuard(baseUrl) {
@@ -210,6 +221,8 @@ async function runNativeQuizParityGuard(baseUrl) {
 async function runInteractiveContracts(baseUrl) {
   const auditCode = await runAudit(baseUrl);
   if (auditCode !== 0) return auditCode;
+  const resumeCode = await runHomepageResumeBrowserGuard(baseUrl);
+  if (resumeCode !== 0) return resumeCode;
   const quizCode = await runNativeQuizParityGuard(baseUrl);
   if (quizCode !== 0) return quizCode;
   const tooltipCode = await runHermenevtikaRegressionGuard(baseUrl);

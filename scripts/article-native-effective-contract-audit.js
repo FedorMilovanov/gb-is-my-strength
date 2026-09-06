@@ -8,6 +8,9 @@
  * ownership is supplied by page-ownership + profiles + explicit matrix overrides.
  */
 
+const { assertTmsjTranslationRightsContract } = require('./lib/tmsj-translation-rights-contract');
+assertTmsjTranslationRightsContract();
+
 const basePath = require.resolve('./lib/route-source-contract');
 const effective = require('./lib/effective-route-registry');
 require.cache[basePath].exports = effective;
