@@ -176,7 +176,8 @@ async function clickAway(page) {
     await departing.evaluate(() => window.VoskTTSEngine.speak('Уходящая страница', 1, 3, () => {}, () => {}));
     await clickAway(departing);
     await waitFor(() => retired.length >= 1);
-    assert.ok(retired[0], 'ACK-backed document navigation did not retire the client');
+    const firstRetiredClient = retired[0];
+    assert.ok(firstRetiredClient, 'ACK-backed document navigation did not retire the client');
 
     await owner.evaluate(() => window.VoskTTSEngine.speak('Живой клиент', 1, 3, () => {}, () => {}));
     await owner.waitForFunction(() => (window.__played || 0) >= 1);
@@ -188,18 +189,31 @@ async function clickAway(page) {
     assert.equal(report.ownerAfterPeerRetire.status.ready, true);
     assert.ok(report.ownerAfterPeerRetire.played >= 1, 'surviving page could not synthesize after peer retirement');
 
-    await clickAway(owner);
-    await waitFor(() => retired.length >= 2);
-    assert.notEqual(retired[0], retired[1], 'two documents retired the same client identity');
+    await departing.goBack({ waitUntil: 'domcontentloaded' });
+    report.firstRestore = await warm(departing);
+    assert.equal(report.firstRestore.workerMode, 'shared', 'restored peer did not reconnect to SharedWorker');
+    assert.equal(report.firstRestore.ready, true, 'restored peer did not regain ready SharedWorker state');
 
-    await owner.goBack({ waitUntil: 'domcontentloaded' });
-    report.restored = await warm(owner);
-    assert.equal(report.restored.workerMode, 'shared', 'restored page did not lazily reconnect after navigation retirement');
-    assert.equal(report.restored.ready, true, 'restored page did not regain ready SharedWorker state');
+    await departing.evaluate(() => window.VoskTTSEngine.speak('Уходящая страница снова', 1, 3, () => {}, () => {}));
+    await clickAway(departing);
+    await waitFor(() => retired.length >= 2);
+    const secondRetiredClient = retired[1];
+    assert.ok(secondRetiredClient, 'restored peer did not perform second authoritative retirement');
+    assert.notEqual(secondRetiredClient, firstRetiredClient, 'restored document reused retired SharedWorker client identity');
+
+    await owner.evaluate(() => window.VoskTTSEngine.speak('Живой клиент после второго ухода', 1, 3, () => {}, () => {}));
+    await owner.waitForFunction(() => (window.__played || 0) >= 2);
+    report.ownerAfterSecondPeerRetire = await owner.evaluate(() => ({
+      status: window.VoskTTSEngine.getStatus(),
+      played: window.__played || 0,
+    }));
+    assert.equal(report.ownerAfterSecondPeerRetire.status.workerMode, 'shared');
+    assert.equal(report.ownerAfterSecondPeerRetire.status.ready, true);
+    assert.ok(report.ownerAfterSecondPeerRetire.played >= 2, 'surviving page failed after restored peer retired again');
 
     report.retiredClientCount = new Set(retired.filter(Boolean)).size;
     report.workerRequests = workerRequests;
-    assert.ok(report.retiredClientCount >= 2, 'not all navigated documents performed authoritative retirement');
+    assert.ok(report.retiredClientCount >= 2, 'reconnected document did not receive a fresh retirement identity');
     assert.equal(workerRequests, 1, 'SharedWorker script was re-instantiated while a live owner remained');
 
     fs.writeFileSync(path.join(REPORTS, 'tts-sharedworker-client-lifecycle-browser.json'), `${JSON.stringify(report, null, 2)}\n`);
