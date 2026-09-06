@@ -1,0 +1,73 @@
+name: Temporary dependency security lock refresh
+
+on:
+  push:
+    branches:
+      - agent/deps-security-lock-refresh-20260907
+    paths:
+      - .github/workflows/tmp-deps-security-lock-refresh.yml
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact helper head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up canonical Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.23.1"
+          cache: npm
+
+      - name: Capture vulnerable baseline
+        shell: bash
+        run: |
+          mkdir -p reports/npm-security-refresh
+          set +e
+          npm audit --json > reports/npm-security-refresh/before.json
+          echo "$?" > reports/npm-security-refresh/before-exit.txt
+          set -e
+
+      - name: Generate registry-authoritative security lock repair
+        run: npm audit fix --package-lock-only --ignore-scripts
+
+      - name: Prove package manifest stayed untouched
+        run: git diff --exit-code -- package.json
+
+      - name: Install repaired immutable graph
+        run: npm ci
+
+      - name: Capture exact repaired advisory report
+        shell: bash
+        run: |
+          set +e
+          npm audit --json > reports/npm-security-refresh/after.json
+          status=$?
+          echo "$status" > reports/npm-security-refresh/after-exit.txt
+          set -e
+          node scripts/npm-security-contract.mjs reports/npm-security-refresh/after.json
+
+      - name: Record repaired dependency ancestry and lock diff
+        shell: bash
+        run: |
+          npm ls browserslist fast-uri --all > reports/npm-security-refresh/ancestry.txt
+          git diff -- package-lock.json > reports/npm-security-refresh/package-lock.diff
+          test -s reports/npm-security-refresh/package-lock.diff
+
+      - name: Upload generated lock evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: deps-security-lock-refresh-${{ github.run_id }}
+          path: |
+            package-lock.json
+            reports/npm-security-refresh/
+          if-no-files-found: error
+          retention-days: 1
