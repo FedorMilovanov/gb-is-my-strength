@@ -229,21 +229,33 @@
     if (window.VoskTTSEngine) return Promise.resolve(window.VoskTTSEngine);
     if (state.engineScriptPromise) return state.engineScriptPromise;
     state.engineScriptPromise = new Promise((resolve, reject) => {
-      const existing = Array.from(document.scripts).find((script) => /vosk-tts-engine\.js/i.test(script.src || ''));
-      const script = existing || document.createElement('script');
-      const done = () => window.VoskTTSEngine
-        ? resolve(window.VoskTTSEngine)
-        : reject(new Error('Vosk engine did not initialize'));
-      if (existing) {
-        existing.addEventListener('load', done, { once: true });
-        existing.addEventListener('error', () => reject(new Error('Vosk engine script failed')), { once: true });
-      } else {
+      let script = Array.from(document.scripts).find((candidate) => /vosk-tts-engine\.js/i.test(candidate.src || '')) || null;
+      if (script && script.dataset.gbVoskEngineState !== 'loading') {
+        script.remove();
+        script = null;
+      }
+      const created = !script;
+      if (!script) {
+        script = document.createElement('script');
         script.src = ENGINE_SRC;
         script.defer = true;
-        script.addEventListener('load', done, { once: true });
-        script.addEventListener('error', () => reject(new Error('Vosk engine script failed')), { once: true });
-        document.head.appendChild(script);
+        script.dataset.gbVoskEngineState = 'loading';
       }
+      const fail = (message) => {
+        script.dataset.gbVoskEngineState = 'failed';
+        reject(new Error(message));
+      };
+      const done = () => {
+        if (window.VoskTTSEngine) {
+          script.dataset.gbVoskEngineState = 'ready';
+          resolve(window.VoskTTSEngine);
+          return;
+        }
+        fail('Vosk engine did not initialize');
+      };
+      script.addEventListener('load', done, { once: true });
+      script.addEventListener('error', () => fail('Vosk engine script failed'), { once: true });
+      if (created) document.head.appendChild(script);
     }).finally(() => { state.engineScriptPromise = null; });
     return state.engineScriptPromise;
   }
