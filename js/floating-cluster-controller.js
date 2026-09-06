@@ -385,18 +385,46 @@
     return showFallbackTtsStatus(stateName, options || {});
   }
 
+  function findVoskEngineScript() {
+    return Array.prototype.slice.call(document.scripts).find(function (script) {
+      return /vosk-tts-engine\.js/i.test(script.src || '');
+    }) || null;
+  }
+
   function loadVoskEngineScript() {
     if (window.VoskTTSEngine) return Promise.resolve();
     if (_voskEngineScriptPromise) return _voskEngineScriptPromise;
-    _voskEngineScriptPromise = new Promise(function (resolve, reject) {
-      var s = document.createElement('script');
+
+    var s = findVoskEngineScript();
+    if (s && s.dataset.gbVoskEngineState !== 'loading') {
+      if (s.parentNode) s.parentNode.removeChild(s);
+      s = null;
+    }
+    var created = !s;
+    if (!s) {
+      s = document.createElement('script');
       s.src = VOSK_ENGINE_SRC;
-      s.onload = function () { resolve(); };
-      s.onerror = function () {
+      s.defer = true;
+      s.dataset.gbVoskEngineState = 'loading';
+    }
+
+    _voskEngineScriptPromise = new Promise(function (resolve, reject) {
+      function fail(message) {
+        s.dataset.gbVoskEngineState = 'failed';
         _voskEngineScriptPromise = null;
-        reject(new Error('vosk-tts-engine.js load failed'));
-      };
-      document.head.appendChild(s);
+        reject(new Error(message));
+      }
+      function done() {
+        if (window.VoskTTSEngine) {
+          s.dataset.gbVoskEngineState = 'ready';
+          resolve();
+          return;
+        }
+        fail('vosk-tts-engine.js did not initialize');
+      }
+      s.addEventListener('load', done, { once: true });
+      s.addEventListener('error', function () { fail('vosk-tts-engine.js load failed'); }, { once: true });
+      if (created) document.head.appendChild(s);
     });
     return _voskEngineScriptPromise;
   }
