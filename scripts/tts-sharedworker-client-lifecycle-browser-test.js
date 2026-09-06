@@ -57,9 +57,10 @@ function attach(port) {
     if (message.type === 'hello' || message.type === 'ping') return;
     if (message.type === 'disconnect') {
       retired = true;
-      send(port, 'disconnected', { id: message.id || 0 });
-      fetch('/retired?clientId=' + encodeURIComponent(clientId), { method: 'POST' }).catch(() => {});
-      try { port.close(); } catch {}
+      fetch('/retired?clientId=' + encodeURIComponent(clientId), { method: 'POST' }).then(() => {
+        send(port, 'disconnected', { id: message.id || 0 });
+        try { port.close(); } catch {}
+      });
       return;
     }
     if (message.type === 'ensure') {
