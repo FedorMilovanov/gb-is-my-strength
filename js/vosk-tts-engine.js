@@ -1,7 +1,7 @@
 (function () {
 'use strict';
 var VERSION = 2;
-var WORKER_SRC = '/js/vosk-tts-worker.js?v=7f50541a';
+var WORKER_SRC = '/js/vosk-tts-worker.js?v=ccc621c4';
 var NOTICE_CSS_URL = '/css/tts-download-notice.css?v=b9ef192f';
 var MODEL_DOWNLOAD_OPTOUT_KEY = 'gbx-vosk-warmup';
 var CLIENT_ID = (window.crypto && typeof window.crypto.randomUUID === 'function')
