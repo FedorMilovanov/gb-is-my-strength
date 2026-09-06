@@ -26,9 +26,9 @@ const packageJson = readJson(path.join(root, 'package.json'));
 const lock = readJson(path.join(root, 'package-lock.json'));
 const config = fs.readFileSync(path.join(root, 'astro.config.mjs'), 'utf8');
 const expected = new Map([
-  ['astro', '7.2.2'],
-  ['@astrojs/mdx', '7.0.5'],
-  ['@astrojs/react', '6.0.2'],
+  ['astro', '7.2.9'],
+  ['@astrojs/mdx', '7.0.8'],
+  ['@astrojs/react', '6.0.4'],
   ['@astrojs/rss', '4.0.19'],
   ['@astrojs/sitemap', '3.7.3'],
   ['@astrojs/check', '0.9.10'],
@@ -56,14 +56,14 @@ for (const [pattern, label] of [
 }
 
 const astroPackage = findInstalledPackage('astro');
-if (astroPackage.dependencies?.['@astrojs/markdown-satteri'] !== '0.3.5') {
-  fail('Astro must depend on native Satteri 0.3.5');
+if (astroPackage.dependencies?.['@astrojs/markdown-satteri'] !== '0.3.8') {
+  fail('Astro must depend on native Satteri 0.3.8');
 }
-if (lock.packages?.['node_modules/@astrojs/markdown-satteri']?.version !== '0.3.5') {
-  fail('lockfile must resolve @astrojs/markdown-satteri exactly to 0.3.5');
+if (lock.packages?.['node_modules/@astrojs/markdown-satteri']?.version !== '0.3.8') {
+  fail('lockfile must resolve @astrojs/markdown-satteri exactly to 0.3.8');
 }
 const satteriPackage = findInstalledPackage('@astrojs/markdown-satteri');
-if (satteriPackage.version !== '0.3.5') fail('installed Satteri must be 0.3.5');
+if (satteriPackage.version !== '0.3.8') fail('installed Satteri must be 0.3.8');
 const satteriApi = await import('@astrojs/markdown-satteri');
 for (const name of ['satteri', 'isSatteriProcessor', 'createSatteriMarkdownProcessor']) {
   if (typeof satteriApi[name] !== 'function') fail(`Satteri export ${name} is unavailable`);
