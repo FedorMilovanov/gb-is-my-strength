@@ -3,6 +3,11 @@
 const fs = require('fs');
 const path = require('path');
 const { resolveReferenceForRoute } = require('../../migration/legacy-reference-path');
+const {
+  collectProductSourceSurfaces,
+  auditControlSurfaceCorpus,
+  assertSourceSurfaceMutationContract,
+} = require('./product-source-surfaces');
 
 const VERIFICATION_FILE_RE = /^(google|yandex)[^/]*\.html$/i;
 const LEDGER_REFERENCE_STATUSES = new Set(['canonical', 'reference-only', 'runtime-required']);
@@ -51,6 +56,23 @@ function buildAuditProSourceCorpus({
   resolveReference = resolveReferenceForRoute,
 }) {
   const normalizedRoot = path.resolve(root);
+
+  // Source-surface completeness is a structural invariant, not a hand-counted
+  // route list. The mutation suite protects all supported producer classes and
+  // the live census rejects any button-producing text file that falls outside
+  // the declared executable/source kinds.
+  assertSourceSurfaceMutationContract();
+  const productSourceSurfaces = collectProductSourceSurfaces(normalizedRoot);
+  const controlSurface = auditControlSurfaceCorpus(normalizedRoot, productSourceSurfaces);
+  if (controlSurface.unclassified.length) {
+    throw new Error(
+      'audit-pro source corpus omitted DOM/button producer classes:\n  - '
+      + controlSurface.unclassified
+        .map((item) => `${item.relative} (${item.extension || 'no extension'})`)
+        .join('\n  - ')
+    );
+  }
+
   const records = [...entries].sort((a, b) => String(a.route).localeCompare(String(b.route), 'en'));
   const registeredByFile = new Map();
   const sourcePages = [];
@@ -105,6 +127,8 @@ function buildAuditProSourceCorpus({
     duplicateRootMappings,
     registeredRoutes: records.length,
     productionRoutes: records.filter((entry) => entry.status === 'production-dist').length,
+    productSourceSurfaces,
+    controlSurface,
   };
 }
 

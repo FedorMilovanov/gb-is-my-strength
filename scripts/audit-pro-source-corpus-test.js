@@ -9,6 +9,10 @@ const {
   routeToRootHtml,
   buildAuditProSourceCorpus,
 } = require('./lib/audit-pro-source-corpus');
+const {
+  collectProductSourceSurfaces,
+  auditControlSurfaceCorpus,
+} = require('./lib/product-source-surfaces');
 
 const root = fs.mkdtempSync(path.join(os.tmpdir(), 'audit-pro-source-corpus-'));
 function put(rel, content = '<!doctype html>') {
@@ -134,4 +138,23 @@ assert(!removedShadow.sourcePages.some((item) => item.route === '/articles/one/'
 assert(!removedShadow.currentRuntimePages.some((item) => item.route === '/articles/one/'));
 
 fs.rmSync(root, { recursive: true, force: true });
+
+// Repository-level evidence for SOURCE-SURFACE-AUDIT-FALSE-COMPLETENESS.
+// Cardinality is derived, never frozen: the regression condition is an omitted
+// producer class, not a historical magic count such as 47/49/75.
+const repoRoot = path.resolve(__dirname, '..');
+const repoSurfaces = collectProductSourceSurfaces(repoRoot);
+const repoControls = auditControlSurfaceCorpus(repoRoot, repoSurfaces);
+assert.deepStrictEqual(
+  repoControls.unclassified,
+  [],
+  `unclassified DOM/control producer source(s): ${repoControls.unclassified.map((item) => item.relative).join(', ')}`,
+);
+
 console.log('✅ audit-pro forensic/current-runtime corpus mutations passed with quarantine-aware storage');
+console.log(
+  `✅ source-surface DOM census: ${repoControls.totalControls} controls `
+  + `(${repoControls.staticButtons} markup + ${repoControls.dynamicButtonFactories} dynamic), `
+  + `${repoControls.jsFamilyControls} JS-family, ${repoControls.producerFiles.length} producer files, `
+  + `${repoSurfaces.controlFiles.length} declared control-source files`,
+);
