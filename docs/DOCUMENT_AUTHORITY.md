@@ -7,6 +7,8 @@
 
 A Markdown filename is not an authority signal. Words such as `CURRENT`, `FINAL`, `READY`, a recent-looking date, or a historically important owner quote do not outrank the registered current contract.
 
+This registry governs **repository-wide authority and explicitly classified high-risk documents**. It is not intended to enumerate every route-local guide, design note or surface runbook in the repository.
+
 Authority order remains:
 
 1. current owner instruction;
@@ -16,7 +18,9 @@ Authority order remains:
 5. current supporting contracts;
 6. historical/provenance material.
 
-Unregistered documentation is non-normative by default until deliberately classified. This prevents a forgotten migration plan or lane report from silently becoming policy.
+An unregistered document is `surface-local-non-overriding` by default. It may still be a valid local contract when a current owner, current source contract or registered current document explicitly delegates that surface to it. It cannot independently override registered repository-wide authority or promote itself to a global policy merely by filename, age or wording.
+
+This distinction prevents two opposite failures: a forgotten migration plan cannot silently become global policy, and a legitimate route-local guide such as a series-engine contract is not accidentally invalidated merely because the repository-wide registry does not enumerate every surface document.
 
 ## Lifecycle fields
 
@@ -39,11 +43,22 @@ Each managed document declares:
 
 Current governance then routes to `WORK_MODES`, `LANE_LOCK_POLICY`, branch/worktree lifecycle and owner invariants. Release-state claims route to `docs/RELEASE-LIVE-EVIDENCE.md`; external-tool/environment assumptions route through `audit/external-checks/README.md` plus live discovery, not through a dated sandbox snapshot.
 
+## Surface-local delegation
+
+A route/surface guide that is not explicitly listed in the repository-wide registry is usable only inside its delegated scope. Before treating it as current:
+
+1. identify the current owner/source that delegates to it;
+2. verify the referenced paths/commands against current `main`;
+3. apply registered repository-wide policy first if there is a conflict;
+4. treat mutable counts, versions, implementation snapshots and old migration state as evidence to recheck, not as self-authenticating truth.
+
+`AGENTS-REFERENCE.md` is currently a special mixed case: it still contains unique owner-sensitive surface contracts, but also historical inventories and migration-era instructions. Until its dedicated split lands, `AGENTS.md`, current source owners and registered normative policies override its blanket or stale sections.
+
 ## Machine consumption
 
 `required:true` is consumed by `scripts/repository-control-plane-audit.mjs`. The control-plane audit must not maintain a second handwritten `requiredDocs` list. Its `--no-report` mode is the read-only CI path used when document authority itself is being validated.
 
-This means changing whether a governance document is required is one registry transaction, not two prose/code edits that can silently drift apart.
+This means changing whether a repository-wide governance document is required is one registry transaction, not two prose/code edits that can silently drift apart.
 
 ## Historical material
 
@@ -60,7 +75,7 @@ Known high-risk examples now explicitly classified as historical include:
 
 ## Mutable facts
 
-Route counts, exact dependency versions, workflow counts, search membership and similar source-derived values should be generated or read from registries. They must not be maintained as a second independent prose truth.
+Route counts, exact dependency versions, workflow counts, asset counts, search membership and similar source-derived values should be generated or read from registries/current trees. They must not be maintained as a second independent prose truth.
 
 ## Migration rule
 
