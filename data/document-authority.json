@@ -23,6 +23,7 @@
     {"path":"docs/ARTICLE-STANDARD-CHARTER.md","type":"editorial-charter","status":"current","authority":"normative","required":true,"reconciliationState":"pending-evidence-model-reconcile"},
     {"path":"docs/EDITORIAL-SOURCE-POLICY.md","type":"editorial-policy","status":"current","authority":"normative","required":true,"reconciliationState":"pending-evidence-model-reconcile"},
     {"path":"docs/CONTENT-QUALITY-STANDARD.md","type":"editorial-policy","status":"current","authority":"normative","required":true,"reconciliationState":"pending-semantic-owner-reconcile"},
+    {"path":"audit/external-checks/README.md","type":"toolchain-runbook","status":"current","authority":"supporting","required":true},
     {"path":"docs/RELEASE-LIVE-EVIDENCE-CONTRACT-2026-08-06.md","type":"release-contract-incident-mixed","status":"current","authority":"supporting","required":false,"reconciliationState":"pending-policy-incident-split"},
     {"path":"docs/refactor-2026/lanes/README.md","type":"lane-navigation","status":"current","authority":"supporting","required":true},
 
