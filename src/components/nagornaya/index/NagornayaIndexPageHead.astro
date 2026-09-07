@@ -62,6 +62,32 @@ import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreference
   <noscript><div><img decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute;left:-9999px;" alt=""></div></noscript>
   <meta name="geo.region" content="RU-SPE">
   <meta name="geo.placename" content="Санкт-Петербург">
+
+  <!-- Structured Data: canonical five-part series authority -->
+  <script type="application/ld+json" is:inline>{
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": "https://gospod-bog.ru/nagornaya/#collectionpage",
+    "name": "Нагорная проповедь — серия из 5 статей",
+    "description": "Исследование Матфея 5–7 и Луки 6 в пяти связанных частях: содержание, методология записи, адресат, богодухновенность, Закон и Евангелие.",
+    "url": "https://gospod-bog.ru/nagornaya/",
+    "inLanguage": "ru",
+    "author": {
+      "@id": "https://gospod-bog.ru/about/#person"
+    },
+    "publisher": {
+      "@id": "https://gospod-bog.ru/#organization"
+    },
+    "image": "https://gospod-bog.ru/images/og-nagornaya-propoved.webp",
+    "hasPart": [
+      { "@id": "https://gospod-bog.ru/nagornaya/chast-1/#article" },
+      { "@id": "https://gospod-bog.ru/nagornaya/chast-2/#article" },
+      { "@id": "https://gospod-bog.ru/nagornaya/chast-3/#article" },
+      { "@id": "https://gospod-bog.ru/nagornaya/chast-4/#article" },
+      { "@id": "https://gospod-bog.ru/nagornaya/chast-5/#article" }
+    ]
+  }</script>
+
   <link rel="stylesheet" href="../css/nagornaya-mobile-toc.css?v=30051b58">
   <link rel="stylesheet" href="../css/command-palette.css?v=3b88813f">
     <link rel="stylesheet" href="/css/mobile-hotfix.css?v=a6a3187a">
