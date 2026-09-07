@@ -1,0 +1,48 @@
+name: Temporary Atlas Negative Control
+
+on:
+  push:
+    branches:
+      - agent/atlas-focus-format-helper-20260907
+
+permissions:
+  contents: read
+
+jobs:
+  negative-control:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.1
+      - name: Restore old main Atlas runtime
+        shell: bash
+        run: |
+          git fetch origin main
+          git show origin/main:src/runtime/atlas-runtime.js > src/runtime/atlas-runtime.js
+          test "$(git hash-object src/runtime/atlas-runtime.js)" != "ca170562a8d10653a4402a0800706d2c26a58086"
+          node --check src/runtime/atlas-runtime.js
+          node --check scripts/atlas-focus-state-browser-test.mjs
+      - name: Install dependencies and browsers
+        run: |
+          npm ci
+          timeout 12m npx playwright install --with-deps chromium webkit
+      - name: Build production-like dist with old runtime
+        run: npm run strangler:build:production-like
+      - name: Prove repaired witness rejects old runtime
+        shell: bash
+        run: |
+          set +e
+          node scripts/atlas-focus-state-browser-test.mjs > /tmp/atlas-negative.log 2>&1
+          status=$?
+          set -e
+          cat /tmp/atlas-negative.log
+          if [ "$status" -eq 0 ]; then
+            echo 'NEGATIVE CONTROL FAILED: old main runtime unexpectedly passed the repaired witness' >&2
+            exit 1
+          fi
+          echo "NEGATIVE CONTROL PASS: old main runtime failed repaired witness as expected (exit=$status)"
