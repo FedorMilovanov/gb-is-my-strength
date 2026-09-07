@@ -41,7 +41,9 @@ Each managed document declares:
 - `README.md` — repository navigation;
 - `docs/DOCUMENT_AUTHORITY.md` — documentation lifecycle/index.
 
-Current governance then routes to `WORK_MODES`, `LANE_LOCK_POLICY`, branch/worktree lifecycle and owner invariants. Release-state claims route to `docs/RELEASE-LIVE-EVIDENCE.md`; external-tool/environment assumptions route through `audit/external-checks/README.md` plus live discovery, not through a dated sandbox snapshot.
+Current governance then routes to `WORK_MODES`, `LANE_LOCK_POLICY`, branch/worktree lifecycle and owner invariants. Release-state claims route to `docs/RELEASE-LIVE-EVIDENCE.md`. External-tool decisions route through `audit/external-checks/README.md`; environment capabilities are discovered live, with `docs/SANDBOX-ENV-2026-06-21.md` acting only as a current supporting capability policy that explicitly rejects its own older Arena/E2B snapshot as universal truth.
+
+The dated filename of `SANDBOX-ENV-2026-06-21.md` is therefore not a lifecycle signal. Its current text was reconciled in commit `03276e321eaffd6c136c37a223f054804f2637b1`; the original environment snapshot remains provenance under blob `9349b0868f6e9a8fdf4ba50de19b70c8cbf43936`.
 
 ## Surface-local delegation
 
@@ -70,7 +72,7 @@ Known high-risk examples now explicitly classified as historical include:
 - `ASTRO-PREMIUM-MIGRATION-ROADMAP.md` — migration-era visual transfer plan;
 - `CURRENT_RECHECK_2026-06-22_FIXES.md` — June snapshot, not current status;
 - `dependency-migrations/ASTRO_7_SATTERI.md` — package set at migration time;
-- `RELEASE-LIVE-EVIDENCE-CONTRACT-2026-08-06.md` — compatibility pointer for a mixed dated release/incident document; current policy is `RELEASE-LIVE-EVIDENCE.md`, original incident-era content is preserved under `history/incidents/`;
+- `RELEASE-LIVE-EVIDENCE-CONTRACT-2026-08-06.md` — compatibility pointer for a mixed dated release/incident document; current policy is `RELEASE-LIVE-EVIDENCE.md`, while the normalized historical snapshot and exact original Git blob remain provenance;
 - `refactor-2026/REFRACTOR_AUDIT_LIVING.md` — recorded forensic/source boundary.
 
 ## Mutable facts
