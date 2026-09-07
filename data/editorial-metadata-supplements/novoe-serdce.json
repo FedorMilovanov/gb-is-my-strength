@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "id": "novoe-serdce-publication-and-editorial-update-reconciliation-2026-09-08",
+  "records": {
+    "/articles/novoe-serdce/": {
+      "route": "/articles/novoe-serdce/",
+      "canonical": "https://gospod-bog.ru/articles/novoe-serdce/",
+      "title": "Новое сердце: как Бог меняет то, что мы не смогли исправить | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/novoe-serdce/NovoeSerdcePageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-10T21:00:00.000Z",
+      "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "approved",
+      "provenance": "verified-publication-4af094440b1ce835b1c0df39945be2e90cf44437-and-editorial-update-f8365c23049324fa79dda2348bd725624a3a280b-owner-approved-2026-09-08",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-10T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-11T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-10T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-11T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-14T18:00:00.000Z",
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
+      }
+    }
+  }
+}
