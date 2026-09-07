@@ -20,11 +20,11 @@
     {"path":"docs/OWNER-INVARIANTS.md","type":"owner-policy","status":"current","authority":"normative","required":true},
     {"path":"docs/REFERENCE_TRANSFER_POLICY.md","type":"visual-reference-policy","status":"current","authority":"normative","required":true},
     {"path":"docs/SEARCH_INDEX_POLICY.md","type":"publication-policy","status":"current","authority":"normative","required":true},
+    {"path":"docs/RELEASE-LIVE-EVIDENCE.md","type":"release-policy","status":"current","authority":"normative","required":true},
     {"path":"docs/ARTICLE-STANDARD-CHARTER.md","type":"editorial-charter","status":"current","authority":"normative","required":true,"reconciliationState":"pending-evidence-model-reconcile"},
     {"path":"docs/EDITORIAL-SOURCE-POLICY.md","type":"editorial-policy","status":"current","authority":"normative","required":true,"reconciliationState":"pending-evidence-model-reconcile"},
     {"path":"docs/CONTENT-QUALITY-STANDARD.md","type":"editorial-policy","status":"current","authority":"normative","required":true,"reconciliationState":"pending-semantic-owner-reconcile"},
     {"path":"audit/external-checks/README.md","type":"toolchain-runbook","status":"current","authority":"supporting","required":true},
-    {"path":"docs/RELEASE-LIVE-EVIDENCE-CONTRACT-2026-08-06.md","type":"release-contract-incident-mixed","status":"current","authority":"supporting","required":false,"reconciliationState":"pending-policy-incident-split"},
     {"path":"docs/refactor-2026/lanes/README.md","type":"lane-navigation","status":"current","authority":"supporting","required":true},
 
     {"path":"docs/OWNER-REQUIREMENTS.md","type":"owner-provenance","status":"historical","authority":"provenance-only","required":false,"supersededBy":["docs/OWNER-INVARIANTS.md","docs/REFERENCE_TRANSFER_POLICY.md"]},
@@ -34,6 +34,8 @@
     {"path":"docs/BIBLE-REFERENCE-CLEAN-MIGRATION.md","type":"migration-record","status":"historical","authority":"provenance-only","required":false},
     {"path":"docs/GOVERNANCE_V4_IMPLEMENTATION.md","type":"implementation-record","status":"historical","authority":"provenance-only","required":false},
     {"path":"docs/LEGACY-SHADOW-RETIREMENT-READINESS-2026-08-06.md","type":"readiness-snapshot","status":"historical","authority":"provenance-only","required":false},
+    {"path":"docs/RELEASE-LIVE-EVIDENCE-CONTRACT-2026-08-06.md","type":"release-policy-compatibility-pointer","status":"historical","authority":"provenance-only","required":false,"supersededBy":["docs/RELEASE-LIVE-EVIDENCE.md"]},
+    {"path":"docs/history/incidents/2026-08-06-release-live-evidence-contract-original.md","type":"incident-contract-snapshot","status":"historical","authority":"provenance-only","required":false,"supersededBy":["docs/RELEASE-LIVE-EVIDENCE.md"]},
     {"path":"docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md","type":"forensic-snapshot","status":"historical","authority":"provenance-only","required":false},
     {"path":"docs/SANDBOX-ENV-2026-06-21.md","type":"environment-snapshot","status":"historical","authority":"supporting","required":false},
     {"path":"docs/history/README-2026-09-07-pre-document-authority.md","type":"repository-readme-snapshot","status":"historical","authority":"provenance-only","required":false}
