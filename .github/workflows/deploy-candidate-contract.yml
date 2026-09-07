@@ -127,6 +127,12 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
+      - name: A07 offline/PWA Chromium witness
+        run: node scripts/sw-offline-browser-test.mjs
+
+      - name: SW root generation authority Chromium witness
+        run: node scripts/sw-root-generation-browser-contract.mjs
+
       - name: Verify Home Refutations computed box model
         run: node scripts/visual-parity-home-refutations-box-model-browser-test.js
 
@@ -147,6 +153,10 @@ jobs:
         with:
           name: deploy-candidate-contract-${{ github.run_id }}
           path: |
+            reports/a07-offline-pwa-browser.json
+            reports/a07-offline-pwa-browser.md
+            reports/a07-sw-static-audit.json
+            reports/a07-sw-static-audit.md
             reports/gill-mobile-layout-audit-2026-06-29/summary.json
             reports/gill-v16-mobile-play-smoke-2026-06-28/summary.json
             reports/gill-pre-v16-submenu-audit/**

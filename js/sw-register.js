@@ -4,7 +4,7 @@
   if (!('serviceWorker' in navigator)) return;
 
   var siteVersion = window.SITE_CONFIG && window.SITE_CONFIG.version || '';
-  var workerUrl = '/sw.js' + (siteVersion ? '?v=' + encodeURIComponent(siteVersion) : '');
+  var workerUrl = '/sw.js';
   var toast;
   var hideTimer = 0;
   var reloadButton = null;
