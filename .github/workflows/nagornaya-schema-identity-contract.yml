@@ -1,0 +1,53 @@
+name: Nagornaya Schema Identity Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/components/nagornaya/index/NagornayaIndexPageHead.astro'
+      - 'src/components/nagornaya/seriya/NagornayaSeriyaPageHead.astro'
+      - 'src/components/nagornaya/chast-1/NagornayaChast1PageHead.astro'
+      - 'src/components/nagornaya/chast-2/NagornayaChast2PageHead.astro'
+      - 'src/components/nagornaya/chast-3/NagornayaChast3PageHead.astro'
+      - 'src/components/nagornaya/chast-4/NagornayaChast4PageHead.astro'
+      - 'src/components/nagornaya/chast-5/NagornayaChast5PageHead.astro'
+      - 'scripts/nagornaya-schema-identity-contract.mjs'
+      - '.github/workflows/nagornaya-schema-identity-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nagornaya-schema-identity-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  schema-identity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate source Nagornaya identity graph
+        run: node scripts/nagornaya-schema-identity-contract.mjs
+
+      - name: Build production-like candidate
+        run: npm run strangler:build:production-like
+
+      - name: Validate rendered Nagornaya identity graph
+        run: node scripts/nagornaya-schema-identity-contract.mjs --require-dist
