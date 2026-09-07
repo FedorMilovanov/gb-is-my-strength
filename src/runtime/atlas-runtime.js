@@ -248,12 +248,17 @@
         observer.observe(element);
       }
       if (typeof window.requestAnimationFrame === 'function') {
-        var retryWithoutObserver = function () {
+        var remainingObservedLayoutFrames = 2;
+        var retryAfterLayout = function () {
           frame = 0;
           attempt();
-          if (!settled && !observer) frame = window.requestAnimationFrame(retryWithoutObserver);
+          if (settled) return;
+          if (!observer || remainingObservedLayoutFrames > 1) {
+            if (observer) remainingObservedLayoutFrames -= 1;
+            frame = window.requestAnimationFrame(retryAfterLayout);
+          }
         };
-        frame = window.requestAnimationFrame(retryWithoutObserver);
+        frame = window.requestAnimationFrame(retryAfterLayout);
       } else {
         attempt();
       }
