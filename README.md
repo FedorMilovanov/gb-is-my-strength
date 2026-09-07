@@ -16,7 +16,7 @@ Production публикуется GitHub Pages из production-like `dist/`, с�
 
 ## Документальная модель
 
-`data/document-authority.json` определяет, какие документы являются current normative/supporting authority, а какие — historical/provenance. Незарегистрированный документ по умолчанию **не является нормативным**.
+`data/document-authority.json` управляет repository-wide authority и явно классифицированными high-risk документами. Незарегистрированный документ по умолчанию имеет только `surface-local-non-overriding` роль: он может быть действующим локальным контрактом лишь при явном current delegation от владельца/source/current contract, но не может сам переопределить зарегистрированную глобальную authority.
 
 Исторические документы сохраняются для provenance и расследований; их не надо удалять ради «чистоты». Но operational entrypoint не должен выдавать historical snapshot за текущее состояние.
 
@@ -98,7 +98,7 @@ node scripts/document-authority-audit.mjs
 - [`docs/OWNER-REQUIREMENTS.md`](docs/OWNER-REQUIREMENTS.md) — исторический owner-message provenance, не универсальный live merge-gate.
 - [`docs/ASTRO-PREMIUM-MIGRATION-ROADMAP.md`](docs/ASTRO-PREMIUM-MIGRATION-ROADMAP.md) — исторический migration plan, не текущая route-ownership модель.
 
-Точный статус этих и других документов берётся из `data/document-authority.json`.
+Точный repository-wide статус явно классифицированных документов берётся из `data/document-authority.json`; локальный surface-guide требует current delegation и не получает глобальную authority автоматически.
 
 ## Forensic и audit
 
