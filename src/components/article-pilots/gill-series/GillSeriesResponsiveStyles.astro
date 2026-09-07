@@ -51,6 +51,22 @@
     }
   }
 
+  @media (hover: none) and (pointer: coarse) {
+    /*
+     * `data-gill-v16` is retained as a historical shared-engine layout hook,
+     * so non-Gill series also carry it. Legacy floating-cluster CSS hides
+     * heading paperclips under that hook for Gill touch layouts. Native
+     * heading-anchor ownership is retained by the other series, therefore
+     * restore the touch target only when the canonical series identity says
+     * this is not the Gill series. Gill keeps its reviewed mobile treatment.
+     */
+    body[data-gbs2-series]:not([data-gbs2-series="dzhon-gill"])
+      [data-gill-v16]
+      .heading-anchor[data-gb-heading-anchor-owner="native-v1"] {
+      display: inline-flex !important;
+    }
+  }
+
   @media (max-width: 48rem) {
     [data-gill-v16] .article-body > * {
       min-inline-size: 0;
