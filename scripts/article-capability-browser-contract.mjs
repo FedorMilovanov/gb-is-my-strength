@@ -84,15 +84,10 @@ async function exerciseHeadingAnchor(page, label) {
     if (!href?.startsWith('#')) continue;
     if (await page.locator(href).count() === 0) continue;
 
-    // `.series-content` uses content-visibility:auto. Off-screen descendants can
-    // have no materialized layout box until a normal user scroll brings them
-    // into the rendering viewport. Scroll first, then require real visibility;
-    // hidden/duplicate targets still fail this check and are never force-clicked.
     try {
       await candidate.scrollIntoViewIfNeeded({ timeout: 3000 });
     } catch {
-      // Keep searching; diagnostics below will explain why no retained target
-      // could become user-visible.
+      // Keep searching; diagnostics below explain why a retained target did not materialize.
     }
     if (await candidate.isVisible()) {
       anchor = candidate;
@@ -202,7 +197,18 @@ async function exerciseReversibleCard(page, label) {
 }
 
 async function runCase(browser, browserName, baseUrl, route, viewport) {
-  const context = await browser.newContext({ viewport, permissions: ['clipboard-read', 'clipboard-write'] });
+  const context = await browser.newContext({ viewport });
+  await context.addInitScript(() => {
+    let clipboardValue = '';
+    const clipboard = {
+      writeText: async (value) => { clipboardValue = String(value); },
+      readText: async () => clipboardValue,
+    };
+    Object.defineProperty(Navigator.prototype, 'clipboard', {
+      configurable: true,
+      get: () => clipboard,
+    });
+  });
   const page = await context.newPage();
   const pageErrors = [];
   const legacyRequests = [];
