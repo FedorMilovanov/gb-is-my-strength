@@ -1,8 +1,8 @@
 # AGENTS-REFERENCE.md — current surface authority router
 
-> **Status:** current supporting reference.  
-> **Operational root:** [`AGENTS.md`](AGENTS.md).  
-> **Document lifecycle SSOT:** [`data/document-authority.json`](data/document-authority.json).  
+> **Status:** current supporting reference.
+> **Operational root:** [`AGENTS.md`](AGENTS.md).
+> **Document lifecycle SSOT:** [`data/document-authority.json`](data/document-authority.json).
 > **Pre-split historical snapshot:** [`docs/history/AGENTS-REFERENCE-2026-09-07-pre-split.md`](docs/history/AGENTS-REFERENCE-2026-09-07-pre-split.md).
 
 This file is deliberately a **router**, not a second operational root and not a frozen inventory of the repository. It preserves current cross-surface invariants and points each surface to its real owner. Mutable facts such as framework versions, route counts, CSS/JS counts, workflow counts and implementation snapshots must be read from current source/registries, not maintained here as a second truth.
