@@ -1,34 +1,38 @@
 # Current recheck fixes — 2026-06-22
 
-Context: recheck was performed against current `main` at `affc61e2` and the two audit notes supplied on 2026-06-22. This file records what was fixed in the follow-up patch and what guards now prevent recurrence.
+> **Статус: HISTORICAL SNAPSHOT / PROVENANCE-ONLY.** Слово `Current` относится только к recheck, выполненному 2026-06-22 на `main@affc61e2`. Этот файл не описывает текущий Product `main`, current route ownership, актуальное число проверок, текущие CSS/runtime owners или живой backlog. Используйте его как forensic evidence того, что было проверено и исправлено в той волне; нынешнее состояние устанавливается по current source contracts, exact-head CI и AuditRepo.
+
+Context: recheck was performed against then-current `main` at `affc61e2` and the two audit notes supplied on 2026-06-22. This file records what was fixed in the follow-up patch and what guards existed after that repair wave.
 
 ## Fixed publication/runtime defects
 
-- `/articles/kod-da-vinchi/` theme toggle no longer double-toggles. `site.js` marks legacy theme ownership with `window.__gbLegacyThemeMounted`; extracted `theme.js` / `site-modules.js` skips mounting when legacy already owns the controls.
-- `/articles/kod-da-vinchi/` no longer uses fake cache-bust labels. The Astro page computes md5short hashes for `css/site-layered.css` and `js/site-modules.js` at build time.
-- Gill III readable defects fixed:
+- `/articles/kod-da-vinchi/` theme toggle no longer double-toggled in that snapshot. `site.js` marked legacy theme ownership with `window.__gbLegacyThemeMounted`; extracted `theme.js` / `site-modules.js` skipped mounting when legacy already owned the controls.
+- `/articles/kod-da-vinchi/` no longer used fake cache-bust labels. The Astro page computed md5short hashes for `css/site-layered.css` and `js/site-modules.js` at build time.
+- Gill III readable defects fixed in that wave:
   - `труженикаnister` → `труженика Евангелия`.
   - `Gillism Gillism` duplication removed from reader/search text.
   - `Санhedрин` → `Санхедрин`.
-- Stale root legacy text synced where it could become rollback/source truth:
+- Stale root legacy text synced where it could then become rollback/source truth:
   - home read-time cards: `34 мин`, `47 мин`.
   - `/nagornaya/seriya/`: `89 минут чтения`, `исследовательская находка`.
 
-## Fixed guards / CI policy
+## Fixed guards / CI policy in that snapshot
 
-- `npm run css:layer:validate` now validates `css/site-layered.css --ceiling=202` and is included in `validate:static-publication`.
-- `scripts/css-layer-validator.js` no longer runs a costly duplicate-selector heuristic on very large CSS files.
-- `scripts/visual-audit.js` now fails fast if the HTTP server is absent, does not suppress `crash`, and exits non-zero for remaining HIGH/CRITICAL findings.
-- `scripts/readable-audit.js` supports `--root dist` and blocks fatal readable-publication patterns.
-- `/about/` deploy-readiness no longer compares against stale full-document root legacy; it now guards the approved premium design markers.
-- `visual-parity.yml` summary output is redirected by the shell, not embedded inside JS.
-- `notify-on-failure.yml` listens for **Dist Strangler Dry Run**, and `scripts/check-workflows.js` enforces it.
+- `npm run css:layer:validate` validated `css/site-layered.css --ceiling=202` and was included in `validate:static-publication`.
+- `scripts/css-layer-validator.js` no longer ran a costly duplicate-selector heuristic on very large CSS files.
+- `scripts/visual-audit.js` failed fast if the HTTP server was absent, did not suppress `crash`, and exited non-zero for remaining HIGH/CRITICAL findings.
+- `scripts/readable-audit.js` supported `--root dist` and blocked fatal readable-publication patterns.
+- `/about/` deploy-readiness no longer compared against stale full-document root legacy; it guarded the then-approved premium design markers.
+- `visual-parity.yml` summary output was redirected by the shell, not embedded inside JS.
+- `notify-on-failure.yml` listened for **Dist Strangler Dry Run**, and `scripts/check-workflows.js` enforced it.
 
-## Map publication governance
+These statements are historical evidence, not instructions to restore retired scripts, thresholds or ownership.
 
-Temporary map holding pages are intentionally reachable but no longer promoted as finished production content.
+## Map publication governance in that snapshot
 
-For `pavel`, `early-church`, `revelation`, `maccabim`, `melachim`, `shoftim`, `shvatim`, `yeshua`:
+Temporary map holding pages were intentionally reachable but no longer promoted as finished production content.
+
+For `pavel`, `early-church`, `revelation`, `maccabim`, `melachim`, `shoftim`, `shvatim`, `yeshua` at that time:
 
 - `robots: noindex, follow`.
 - `data-pagefind-body` removed; `data-pagefind-ignore` added.
@@ -36,21 +40,21 @@ For `pavel`, `early-church`, `revelation`, `maccabim`, `melachim`, `shoftim`, `s
 - removed from `llms.txt`.
 - removed from `data/search-manifest.json`.
 - removed from `data/public-content-baseline.json`.
-- `route.json` now records:
+- `route.json` recorded:
   - `publication.status = temporary-placeholder`
   - `indexable/sitemap/llms/pagefind = false`
 
-New guard: `npm run maps:publication-status` (also part of `npm run maps:validate`) verifies these invariants.
+The then-new guard was `npm run maps:publication-status` (also part of `npm run maps:validate`). Current publication membership must be checked from current registries and route data.
 
 ## Search manifest / command palette
 
-`js/search.js` fallback recommendations were updated to match `data/search-manifest.json` read times. `scripts/check-data-consistency.js` now verifies fallback recommendation read-time drift so stale hardcoded values cannot silently return.
+`js/search.js` fallback recommendations were updated in that wave to match `data/search-manifest.json` read times. `scripts/check-data-consistency.js` then verified fallback recommendation read-time drift.
 
 ## Verification performed
 
-The local environment had Node 20 as system Node, so Astro/build gates were run with Node 22.12.0 via `npx -p node@22.12.0`.
+The local environment used for this historical run had Node 20 as system Node, so Astro/build gates were run with Node 22.12.0 via `npx -p node@22.12.0`.
 
-Passed:
+Passed at the 2026-06-22 anchor:
 
 ```bash
 npm run css:layer:validate
@@ -73,25 +77,29 @@ npm run sw:dist:audit:deploy-switch
 npm run visual-audit
 ```
 
-Runtime browser check on production-like `dist` confirmed `/articles/kod-da-vinchi/` theme toggle switches to dark after click while both `site.js` and `site-modules.js` are loaded.
+This command list is evidence of that run, not a current mandatory all-purpose validation recipe. Current checks are selected through `docs/WORK_MODES.md` and current package/workflow contracts.
 
-`npm run visual-audit` without a running server was also checked and now exits with failure instead of producing a false green.
+Runtime browser check on the production-like `dist` of that wave confirmed `/articles/kod-da-vinchi/` theme toggle switched to dark after click while both `site.js` and `site-modules.js` were loaded.
 
-## Known non-blocking notes
+`npm run visual-audit` without a running server was also checked and then exited with failure instead of producing a false green.
 
-- `audit-pro` still warns about total CSS budget and long AGENTS changelog size.
-- URL contract compare reports an informational title drift for `/karty/ishod/`, because this route is now a ready interactive map instead of an old holding page.
+## Known non-blocking notes at the time
 
-## Follow-up cleanup before refactor continuation
+- `audit-pro` still warned about total CSS budget and long AGENTS changelog size.
+- URL contract compare reported an informational title drift for `/karty/ishod/`, because that route had become a ready interactive map instead of an old holding page.
 
-Additional cleanup removed the last non-blocking audit noise:
+## Follow-up cleanup recorded in this snapshot
+
+Additional cleanup removed the then-non-blocking audit noise:
 
 - AGENTS changelog compacted to the latest 20 rows; older AGENTS-r140..r243 rows were preserved in `AUDIT_HISTORY.md`.
-- `audit-pro` CSS budget now treats `css/site-layered.css` as route-scoped/pilot CSS rather than global core CSS, so the global CSS budget measures the real always-loaded surface.
+- `audit-pro` CSS budget treated `css/site-layered.css` as route-scoped/pilot CSS rather than global core CSS, so the global CSS budget measured the then-current always-loaded surface.
 - `data/public-content-baseline.json` was aligned with the ready `/karty/ishod/` title/H1 to remove the stale contract warning.
 
-Current `audit-pro` summary after this cleanup:
+Historical `audit-pro` summary after that cleanup:
 
 ```txt
 165 passed · 0 warnings · 0 errors
 ```
+
+Do not use this number as a current test-count or quality claim.
