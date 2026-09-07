@@ -27,6 +27,11 @@ const {
   validateLegacyAuthorityProfile,
 } = require('./lib/legacy-source-authority');
 const { loadRouteRecords } = require('./lib/route-source-contract');
+const {
+  collectProductSourceSurfaces,
+  auditGovernedResourceVersions,
+  assertSourceSurfaceMutationContract,
+} = require('./lib/product-source-surfaces');
 
 const ROOT = path.resolve(__dirname, '..');
 const WRITE = process.argv.includes('--write');
@@ -385,6 +390,38 @@ function inspectFile(file, transform, hashes, changes) {
   if (WRITE) fs.writeFileSync(file, expected, 'utf8');
 }
 
+function assertCodeOwnedResourceRevisionCorpus(hashes) {
+  assertSourceSurfaceMutationContract();
+  const surfaces = collectProductSourceSurfaces(ROOT);
+  const result = auditGovernedResourceVersions(
+    ROOT,
+    ASSETS,
+    hashes,
+    surfaces,
+    { skipExtensions: ['.html', '.astro'] },
+  );
+
+  if (result.unclassified.length) {
+    throw new Error(
+      'cache-bust source corpus omitted resource-producing source classes:\n  - '
+      + result.unclassified
+        .map((item) => `${item.relative} (${item.extension || 'no extension'})`)
+        .join('\n  - ')
+    );
+  }
+  if (result.stale.length) {
+    throw new Error(
+      'stale code-owned governed asset revision literal(s):\n  - '
+      + result.stale
+        .map((item) => `${item.relative}: ${item.asset}?v=${item.actual} (expected ${item.expected})`)
+        .join('\n  - ')
+    );
+  }
+
+  console.log(`  ✔ code-owned revision literals: ${result.checkedVersionedLiterals}`);
+  return result;
+}
+
 function main() {
   console.log(`\n⚡ asset revision ${WRITE ? 'WRITE' : 'READ-ONLY CHECK'}\n`);
   assertRewriteAstroContract();
@@ -405,6 +442,11 @@ function main() {
       console.log(`  ❌ ${asset}: asset missing`);
     }
   }
+
+  // Existing HTML/Astro ownership remains with rewriteHTML/rewriteAstro below.
+  // This additive census covers the code/data source classes that the old
+  // checker never inspected and fails closed rather than mutating runtime code.
+  assertCodeOwnedResourceRevisionCorpus(hashes);
 
   const changes = [];
   const helper = path.join(ROOT, 'src/lib/asset-version.js');
