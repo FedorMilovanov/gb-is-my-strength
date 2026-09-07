@@ -90,7 +90,7 @@ node scripts/document-authority-audit.mjs
 - [`docs/EDITORIAL-SOURCE-POLICY.md`](docs/EDITORIAL-SOURCE-POLICY.md);
 - [`docs/CONTENT-QUALITY-STANDARD.md`](docs/CONTENT-QUALITY-STANDARD.md).
 
-Их evidence/capability формулировки проходят отдельную reconciliation-волну и не должны переопределять более свежие machine/source contracts. Research closure, editorial readiness, publication eligibility и production/live state — разные границы.
+Их authority reconciled 2026-09-07: Charter определяет publication/editorial eligibility, Editorial Source Policy — research/evidence closure, а Content Quality Standard — reader-facing capability/quality requirements. Эти границы не создают второй source of truth поверх более свежих machine/source contracts. Research closure, editorial readiness, publication eligibility и production/live state — разные границы.
 
 ## Legacy, visual reference и owner provenance
 
