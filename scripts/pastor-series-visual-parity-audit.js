@@ -4,7 +4,7 @@
  *
  * The retired root HTML is historical evidence, not the approved render owner.
  * Blocking correctness is defined by native Astro composition, exact published
- * inventory, roadmap separation, metadata and the named browser/source guards.
+ * inventory, canonical I–IX roadmap separation, metadata and named guards.
  */
 'use strict';
 
@@ -91,9 +91,9 @@ must(head, '<link rel="canonical" href={canonical}>', 'native canonical');
 must(head, 'href="https://gospod-bog.ru/feed.xml"', 'canonical site RSS discovery');
 must(head, 'href="https://gospod-bog.ru/feed-pastor-series.xml"', 'series RSS discovery');
 must(head, 'application/ld+json', 'native JSON-LD');
-must(head, 'numberOfItems: 2', 'structured data publishes exactly two parts');
-must(head, "name: 'Диотрефы нашего времени: власть, подотчётность и верность'", 'Wave 12 structured-data part');
-must(head, 'readingTime: 102', 'canonical 102-minute series total');
+must(head, 'numberOfItems: 2', 'structured data publishes exactly two public materials');
+must(head, "name: 'Диотрефы нашего времени: власть, подотчётность и верность'", 'Dossier A structured-data material');
+must(head, 'readingTime: 102', 'canonical 102-minute published-material total');
 must(head, 'window.SITE_CONFIG', 'native SITE_CONFIG');
 
 must(chrome, '<nav class="h-navbar"', 'native chrome keeps navbar');
@@ -109,37 +109,57 @@ must(main, 'PastorSeriesArticleEndBlock', 'PastorSeriesMain uses terminal SDG bl
 mustNot(main, "import legacyHtml from './_legacy/main.html?raw'", 'raw monolithic main import');
 
 must(cards, 'Материалы серии', 'series materials heading');
-must(cards, 'Опубликованные части', 'published-parts heading');
+must(cards, 'Опубликованные материалы', 'published-materials heading');
 must(cards, 'href="../articles/20-antisovetov-pastoru/"', 'Part I route');
 must(cards, 'Часть I · 67 мин', 'Part I duration');
-must(cards, 'href="../articles/diotrefy-nashego-vremeni/"', 'Part II route');
-must(cards, 'data-wave12-series-card="true"', 'Wave 12 card authority marker');
-must(cards, 'Часть II · 35 мин', 'Part II duration');
-must(cards, '181 источник', 'Wave 12 source-count marker');
-equal(count(cards, 'class="h-meta-tag">Опубликована</span>'), 2, 'published card count');
+must(cards, 'href="../articles/diotrefy-nashego-vremeni/"', 'Dossier A route');
+must(cards, 'data-wave12-series-card="true"', 'Dossier A card authority marker');
+must(cards, 'Досье A · 35 мин', 'Dossier A duration');
+must(cards, '181 источник', 'Dossier A source-count marker');
+equal(count(cards, '<a href="../articles/'), 2, 'published linked-material count');
 
 for (const heading of [
+  'Каноническое ядро: диагностика и границы власти',
+  'Каноническое ядро: здоровый образец',
+  'Сопутствующие инструменты',
+]) {
+  must(cards, heading, `canonical group: ${heading}`);
+}
+
+must(cards, 'Часть II · редакционный черновик', 'draft Part II marker');
+must(cards, 'Анатомия падения: пять стадий институционального разложения', 'canonical Part II title');
+for (const part of ['III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX']) {
+  must(cards, `data-part="${part}"`, `draft canonical part ${part}`);
+  must(cards, `Часть ${part} · редакционный черновик`, `draft status for Part ${part}`);
+}
+equal(count(cards, 'aria-disabled="true"'), 9, 'non-public card count: eight core drafts plus field guide');
+equal(count(cards, 'data-pagefind-ignore'), 9, 'search-excluded non-public card count');
+
+for (const retired of [
+  'Опубликованные части',
+  'Часть II · 35 мин',
   'Дорожная карта: диагностика',
   'Дорожная карта: распознавание',
   'Дорожная карта: здоровый образец',
+  'Блок 2. Распознавание',
+  'Блок 3. Здоровый образец',
 ]) {
-  must(cards, heading, `roadmap group: ${heading}`);
+  mustNot(nativeText, retired, `retired series marker: ${retired}`);
 }
-equal(count(cards, 'aria-disabled="true"'), 8, 'disabled future-module count');
-equal(count(cards, 'data-pagefind-ignore'), 8, 'search-excluded future-module count');
-for (const part of ['III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX']) {
-  must(cards, `data-part="${part}"`, `planned part ${part}`);
-}
-for (const retired of ['Блок 2. Распознавание', 'Блок 3. Здоровый образец']) {
-  mustNot(nativeText, retired, `retired roadmap marker: ${retired}`);
-}
+
+must(stats, '>2</div>', 'two published materials stat');
+must(stats, 'опубликованных материала', 'published-material stat label');
+must(stats, '>9</div>', 'nine-part canonical core stat');
+must(stats, 'частей канонического ядра', 'canonical-core stat label');
+must(stats, '>8</div>', 'eight draft manuscripts stat');
+must(stats, 'рукописей II–IX', 'draft-manuscript stat label');
 
 const pastorSeries = seriesRegistry['pastor-series'];
 if (!pastorSeries) {
   bad('data/series.json: pastor-series missing');
 } else {
   const published = (pastorSeries.parts || []).filter((part) => part.status === 'published');
-  equal(published.length, 2, 'canonical published-part count');
+  equal(published.length, 2, 'registry published-material count');
   const slugs = published.map((part) => part.slug).sort();
   const expected = ['20-antisovetov-pastoru', 'diotrefy-nashego-vremeni'].sort();
   JSON.stringify(slugs) === JSON.stringify(expected)

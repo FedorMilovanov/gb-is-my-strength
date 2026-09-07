@@ -12,10 +12,10 @@
     "manifestItems": 76,
     "indexedRoutes": 75,
     "scannedSourceFiles": 452,
-    "references": 997,
-    "occurrences": 2389,
+    "references": 998,
+    "occurrences": 2392,
     "canonicalTextRecords": 147,
-    "referencesWithoutCanonicalText": 850,
+    "referencesWithoutCanonicalText": 851,
     "chapterRanges": 21,
     "manifestOccurrences": 32
   },
@@ -21698,6 +21698,23 @@
           ],
           "sourceOwner": "src/components/article-pilots/ne-v-odinochku/NeVOdinochkuBody.astro",
           "sourceKind": "astro-source"
+        },
+        {
+          "url": "/pastor-series/",
+          "title": "Тёмная сторона кафедры — пастырская власть и подотчётность | Господь Бог",
+          "context": "Досье 31 · 23 текста Евр. 13:17, Мф. 18, 1 Тим. 5, «не прикасайтесь к помазанным», Корей и другие тексты — с контекстом, пределами применения и двусторонним зеркалом для пастора и прихожанина.",
+          "anchor": null,
+          "raw": "Мф. 18",
+          "topics": [
+            "авторитаризм",
+            "диотрефство",
+            "здоровая церковь",
+            "пасторство",
+            "серия",
+            "Служение"
+          ],
+          "sourceOwner": "src/components/pastor-series/PastorSeriesCardsSection.astro",
+          "sourceKind": "astro-source"
         }
       ]
     },
@@ -41924,6 +41941,35 @@
       ]
     },
     {
+      "id": "1timofeyu:5",
+      "bookId": "1timofeyu",
+      "testament": "NT",
+      "key": "5",
+      "kind": "chapter",
+      "label": "1 Тимофею 5",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/pastor-series/",
+          "title": "Тёмная сторона кафедры — пастырская власть и подотчётность | Господь Бог",
+          "context": "Досье 31 · 23 текста Евр. 13:17, Мф. 18, 1 Тим. 5, «не прикасайтесь к помазанным», Корей и другие тексты — с контекстом, пределами применения и двусторонним зеркалом для пастора и прихожанина.",
+          "anchor": null,
+          "raw": "1 Тим. 5",
+          "topics": [
+            "авторитаризм",
+            "диотрефство",
+            "здоровая церковь",
+            "пасторство",
+            "серия",
+            "Служение"
+          ],
+          "sourceOwner": "src/components/pastor-series/PastorSeriesCardsSection.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
       "id": "1timofeyu:5:8",
       "bookId": "1timofeyu",
       "testament": "NT",
@@ -45000,6 +45046,23 @@
             "экзегеза"
           ],
           "sourceOwner": "src/components/article-pilots/gill-part1/GillPart1SectionSkeppDetail.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/pastor-series/",
+          "title": "Тёмная сторона кафедры — пастырская власть и подотчётность | Господь Бог",
+          "context": "Досье 31 · 23 текста Евр. 13:17, Мф. 18, 1 Тим. 5, «не прикасайтесь к помазанным», Корей и другие тексты — с контекстом, пределами применения и двусторонним зеркалом для пастора и прихожанина.",
+          "anchor": null,
+          "raw": "Евр. 13:17",
+          "topics": [
+            "авторитаризм",
+            "диотрефство",
+            "здоровая церковь",
+            "пасторство",
+            "серия",
+            "Служение"
+          ],
+          "sourceOwner": "src/components/pastor-series/PastorSeriesCardsSection.astro",
           "sourceKind": "astro-source"
         }
       ]
