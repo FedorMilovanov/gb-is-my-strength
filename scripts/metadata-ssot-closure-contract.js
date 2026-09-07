@@ -23,6 +23,12 @@ function normalizeDate(value, label) {
   return date.toISOString();
 }
 
+function metaContent(html, property) {
+  const escaped = property.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const tag = String(html).match(new RegExp(`<meta\\b[^>]*\\bproperty=["']${escaped}["'][^>]*>`, 'i'))?.[0] || '';
+  return tag.match(/\bcontent=["']([^"']*)["']/i)?.[1]?.trim() || null;
+}
+
 function checkSourceAuthorities() {
   const header = read(path.join(ROOT, 'src', 'components', 'ui', 'Header.astro'));
   assert.match(header, /import\s*\{[^}]*SECTION_META[^}]*\}\s*from\s*['"]@\/data\/site['"]/u);
@@ -35,26 +41,34 @@ function checkSourceAuthorities() {
   const syntheticPolicy = {
     version: 1,
     routes: {
-      '/new/': { rssPolicy: 'include', librarySection: 'A' },
-      '/old/': { rssPolicy: 'include', librarySection: 'B' },
+      '/approved/': { rssPolicy: 'include', librarySection: 'A' },
+      '/blocked/': { rssPolicy: 'include', librarySection: 'B' },
     },
   };
   const syntheticManifest = {
     project: { curator: 'Редактор' },
     items: [
-      { url: '/new/', title: 'New', description: 'New', publishedTime: '2020-01-01T00:00:00Z' },
-      { url: '/old/', title: 'Old', description: 'Old', publishedTime: '2030-01-01T00:00:00Z' },
+      { url: '/approved/', title: 'Approved', description: 'Approved', publishedTime: '2020-01-01T00:00:00Z' },
+      { url: '/blocked/', title: 'Blocked', description: 'Blocked', publishedTime: '2030-01-01T00:00:00Z' },
     ],
   };
   const syntheticRecords = [
-    { route: '/new/', owner: { status: 'production-dist' } },
-    { route: '/old/', owner: { status: 'production-dist' } },
+    { route: '/approved/', owner: { status: 'production-dist' } },
+    { route: '/blocked/', owner: { status: 'production-dist' } },
   ];
   const syntheticEditorial = {
     version: 3,
     records: {
-      '/new/': { editorialPublishedAt: '2026-08-02T00:00:00Z', editorialModifiedAt: null },
-      '/old/': { editorialPublishedAt: '2026-08-01T00:00:00Z', editorialModifiedAt: null },
+      '/approved/': {
+        reviewStatus: 'approved',
+        editorialPublishedAt: '2026-08-02T00:00:00Z',
+        editorialModifiedAt: null,
+      },
+      '/blocked/': {
+        reviewStatus: 'inconsistent-needs-review',
+        editorialPublishedAt: '2010-01-01T00:00:00Z',
+        editorialModifiedAt: null,
+      },
     },
   };
   const entries = canonicalRssEntries({
@@ -63,41 +77,75 @@ function checkSourceAuthorities() {
     productionRecords: syntheticRecords,
     editorialRegistry: syntheticEditorial,
   });
-  assert.deepEqual(entries.map((entry) => entry.route), ['/new/', '/old/']);
-  assert.equal(entries[0].published.toISOString(), '2026-08-02T00:00:00.000Z');
-  assert.equal(entries[1].published.toISOString(), '2026-08-01T00:00:00.000Z');
+  assert.deepEqual(entries.map((entry) => entry.route), ['/blocked/', '/approved/']);
+  assert.equal(entries[0].published.toISOString(), '2030-01-01T00:00:00.000Z');
+  assert.equal(entries[0].dateAuthority, 'search-manifest-descriptive');
+  assert.equal(entries[1].published.toISOString(), '2026-08-02T00:00:00.000Z');
+  assert.equal(entries[1].dateAuthority, 'editorial-metadata-approved');
+}
+
+function approvedRecords(registry) {
+  return Object.fromEntries(
+    Object.entries(registry?.records || {}).filter(([, record]) => record.reviewStatus === 'approved')
+  );
+}
+
+function checkHtml(registry) {
+  let matched = 0;
+  for (const [route, record] of Object.entries(approvedRecords(registry))) {
+    const clean = normalizeRoute(route).replace(/^\/+|\/+$/g, '');
+    const file = path.join(DIST, clean, 'index.html');
+    assert.ok(fs.existsSync(file), `${route}: approved dist HTML missing`);
+    const html = read(file);
+    matched += 1;
+    assert.equal(
+      normalizeDate(metaContent(html, 'article:published_time'), `${route} meta published`),
+      normalizeDate(record.editorialPublishedAt, `${route} approved editorialPublishedAt`),
+      `${route}: approved page metadata must come from editorial registry`
+    );
+    assert.equal(
+      normalizeDate(metaContent(html, 'article:modified_time'), `${route} meta modified`),
+      normalizeDate(record.editorialModifiedAt, `${route} approved editorialModifiedAt`),
+      `${route}: approved modified metadata must come from editorial registry`
+    );
+  }
+  return matched;
 }
 
 function checkSearchManifest(registry) {
   const file = path.join(DIST, 'data', 'search-manifest.json');
   assert.ok(fs.existsSync(file), `dist search manifest missing: ${file}`);
   const manifest = JSON.parse(read(file));
-  let matched = 0;
+  let approvedMatched = 0;
+  let blockedSeen = 0;
   for (const item of Array.isArray(manifest.items) ? manifest.items : []) {
     if (!item?.url || String(item.url).includes('#') || String(item.url).includes('?')) continue;
     const route = normalizeRoute(item.url);
     const record = registry.records[route];
     if (!record) continue;
-    matched += 1;
+    if (record.reviewStatus !== 'approved') {
+      blockedSeen += 1;
+      continue;
+    }
+    approvedMatched += 1;
     assert.equal(
       normalizeDate(item.publishedTime, `${route} search publishedTime`),
-      normalizeDate(record.editorialPublishedAt, `${route} editorialPublishedAt`),
-      `${route}: dist search publishedTime must come from editorial registry`
+      normalizeDate(record.editorialPublishedAt, `${route} approved editorialPublishedAt`),
+      `${route}: approved dist search publishedTime must come from editorial registry`
     );
     assert.equal(
       normalizeDate(item.modifiedTime, `${route} search modifiedTime`),
-      normalizeDate(record.editorialModifiedAt, `${route} editorialModifiedAt`),
-      `${route}: dist search modifiedTime must come from editorial registry`
+      normalizeDate(record.editorialModifiedAt, `${route} approved editorialModifiedAt`),
+      `${route}: approved dist search modifiedTime must come from editorial registry`
     );
   }
-  assert.ok(matched > 0, 'dist search manifest matched no editorial records');
-  return matched;
+  return { approvedMatched, blockedSeen, manifest };
 }
 
 function checkSitemaps(registry) {
   const files = fs.readdirSync(DIST).filter((name) => /^sitemap(?:-\d+)?\.xml$/iu.test(name)).sort();
   assert.ok(files.length > 0, 'dist sitemap missing');
-  let matched = 0;
+  let approvedMatched = 0;
   for (const name of files) {
     const xml = read(path.join(DIST, name));
     for (const match of xml.matchAll(/<url>([\s\S]*?)<\/url>/giu)) {
@@ -106,68 +154,97 @@ function checkSitemaps(registry) {
       if (!loc) continue;
       const route = normalizeRoute(loc);
       const record = registry.records[route];
-      if (!record) continue;
-      matched += 1;
+      if (!record || record.reviewStatus !== 'approved') continue;
+      approvedMatched += 1;
       const target = record.editorialModifiedAt || record.editorialPublishedAt;
       const actual = block.match(/<lastmod>([^<]+)<\/lastmod>/iu)?.[1]?.trim() || null;
       assert.equal(
         normalizeDate(actual, `${route} sitemap lastmod`),
-        normalizeDate(target, `${route} editorial sitemap date`),
-        `${route}: dist sitemap lastmod must come from editorial registry`
+        normalizeDate(target, `${route} approved editorial sitemap date`),
+        `${route}: approved dist sitemap lastmod must come from editorial registry`
       );
     }
   }
-  assert.ok(matched > 0, 'dist sitemaps matched no editorial records');
-  return matched;
+  return approvedMatched;
 }
 
-function checkFeed(registry) {
+function checkFeed(registry, manifest) {
   const file = path.join(DIST, 'feed.xml');
   assert.ok(fs.existsSync(file), `dist feed missing: ${file}`);
   const xml = read(file);
   const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/giu)].map((match) => match[1]);
   assert.ok(items.length > 0, 'dist feed contains no items');
+  const manifestByRoute = new Map(
+    (Array.isArray(manifest.items) ? manifest.items : [])
+      .filter((item) => item?.url && !String(item.url).includes('#') && !String(item.url).includes('?'))
+      .map((item) => [normalizeRoute(item.url), item])
+  );
 
+  let approvedMatched = 0;
+  let descriptiveMatched = 0;
   const projected = items.map((block) => {
     const link = block.match(/<link>([^<]+)<\/link>/iu)?.[1]?.trim();
     const pubDate = block.match(/<pubDate>([^<]+)<\/pubDate>/iu)?.[1]?.trim();
     assert.ok(link, 'RSS item missing link');
+    assert.ok(pubDate, `${link}: RSS item missing pubDate`);
     const route = normalizeRoute(link);
-    const record = registry.records[route];
-    assert.ok(record, `${route}: RSS item missing editorial registry record`);
-    assert.ok(record.editorialPublishedAt, `${route}: RSS item missing canonical editorialPublishedAt`);
-    assert.equal(
-      normalizeDate(pubDate, `${route} RSS pubDate`),
-      normalizeDate(record.editorialPublishedAt, `${route} editorialPublishedAt`),
-      `${route}: RSS pubDate must come from editorial registry`
-    );
-    return { route, published: Date.parse(record.editorialPublishedAt) };
+    const record = registry.records[route] || null;
+    const manifestItem = manifestByRoute.get(route);
+    assert.ok(manifestItem, `${route}: RSS item missing descriptive search-manifest record`);
+
+    const actual = normalizeDate(pubDate, `${route} RSS pubDate`);
+    if (record?.reviewStatus === 'approved') {
+      approvedMatched += 1;
+      assert.equal(
+        actual,
+        normalizeDate(record.editorialPublishedAt, `${route} approved editorialPublishedAt`),
+        `${route}: approved RSS pubDate must come from editorial registry`
+      );
+    } else {
+      descriptiveMatched += 1;
+      assert.equal(
+        actual,
+        normalizeDate(manifestItem.publishedTime, `${route} descriptive publishedTime`),
+        `${route}: blocked/unowned RSS chronology must remain descriptive until approval`
+      );
+      if (record?.editorialPublishedAt) {
+        const frozen = normalizeDate(record.editorialPublishedAt, `${route} frozen editorialPublishedAt`);
+        const descriptive = normalizeDate(manifestItem.publishedTime, `${route} descriptive publishedTime`);
+        if (frozen !== descriptive) {
+          assert.notEqual(actual, frozen, `${route}: frozen editorial decision was promoted without approval`);
+        }
+      }
+    }
+    return { route, timestamp: Date.parse(actual) };
   });
 
   for (let index = 1; index < projected.length; index += 1) {
     const previous = projected[index - 1];
     const current = projected[index];
     assert.ok(
-      previous.published > current.published ||
-        (previous.published === current.published && previous.route.localeCompare(current.route, 'ru') <= 0),
-      `RSS order is not canonical at ${previous.route} -> ${current.route}`
+      previous.timestamp > current.timestamp ||
+        (previous.timestamp === current.timestamp && previous.route.localeCompare(current.route, 'ru') <= 0),
+      `RSS order is not descending by effective public chronology at ${previous.route} -> ${current.route}`
     );
   }
-  return projected.length;
+  return { items: projected.length, approvedMatched, descriptiveMatched };
 }
 
 function main() {
   checkSourceAuthorities();
   if (!REQUIRE_DIST) {
-    console.log('✅ Metadata SSOT source authority contract');
+    console.log('✅ Metadata SSOT source authority and approval-gate contract');
     return;
   }
   assert.ok(fs.existsSync(DIST), 'dist is required for --dist');
   const registry = readRegistry();
-  const searchMatched = checkSearchManifest(registry);
+  const htmlMatched = checkHtml(registry);
+  const search = checkSearchManifest(registry);
   const sitemapMatched = checkSitemaps(registry);
-  const rssMatched = checkFeed(registry);
-  console.log(`✅ Metadata SSOT dist parity: search=${searchMatched}, sitemap=${sitemapMatched}, rss=${rssMatched}`);
+  const rss = checkFeed(registry, search.manifest);
+  console.log(
+    `✅ Metadata SSOT dist contract: approved html=${htmlMatched}, search=${search.approvedMatched}, sitemap=${sitemapMatched}, rss-approved=${rss.approvedMatched}, rss-descriptive=${rss.descriptiveMatched}, blocked-search=${search.blockedSeen}, rss-items=${rss.items}`
+  );
 }
 
 try {
