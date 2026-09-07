@@ -2,11 +2,12 @@
 
 Статус: **ACTIVE EDITORIAL RECONCILIATION / NO PUBLICATION PROMOTION**
 Дата: 2026-09-07
-Product anchor / rollback: `d6b1906f0d263e23b45355bea0460ee00581bc38`
+Product anchor / rollback: `2a5bad736ff76651b1dcf26371ea8872862d1d66`
 Original reconciliation base: `066be4fb24089a549ae3b3089700332586585850`
-Research authority anchor: `FedorMilovanov/Research@e8e6b98787019d43a2ffd10eb55bdde04ebfb747`
+Current Research root authority anchor: `FedorMilovanov/Research@56fca4d5a3dbbc4ddb68d4ed5708e91649be8086`
+Part II evidence snapshot remains pinned in its receipt at: `FedorMilovanov/Research@e8e6b98787019d43a2ffd10eb55bdde04ebfb747`
 Канон серии: `research/pastor-series/MASTER-PLAN.md`
-Внешняя evidence authority: `FedorMilovanov/Research` → `00_RESEARCH_CURRENT_AUTHORITY_2026-08-02.md`, `00_RESEARCH_CONTROL_PLANE_AUTHORITY_2026-08-02.md` и corpus-specific OSK authorities, выбранные ими на указанном Research anchor.
+Внешняя evidence authority: `FedorMilovanov/Research` → stable `CURRENT_AUTHORITY.md`, current control-plane/root files и corpus-specific authorities, выбранные ими на соответствующем exact Research anchor. Исторический exact snapshot не переписывается задним числом только потому, что root entrypoint продвинулся.
 
 ## 1. Назначение и граница
 
@@ -20,7 +21,7 @@ Research authority anchor: `FedorMilovanov/Research@e8e6b98787019d43a2ffd10eb55b
 - подтверждает live/production state;
 - переносит Research case closure автоматически в reader wording;
 - разрешает новую прямую цитату без первичного locator;
-- заменяет exegesis, jurisdiction/safety, cross-link или christological pass из `MASTER-PLAN.md`.
+- заменяет jurisdiction/safety, cross-link, christological или release pass из `MASTER-PLAN.md`; для частей, где отдельный exegesis gate уже закрыт receipt, этот факт фиксируется явно и не распространяется на соседние части.
 
 Publication gate остаётся fail-closed до отдельного доказательства для каждой части.
 
@@ -65,7 +66,7 @@ Current OSK corpus уже имеет закрытую case routing/evidence ос
 | Part | Product manuscript | Прямой Research backbone | Что уже есть | Открытый source gate | Текущий статус |
 | --- | --- | --- | --- | --- | --- |
 | **II** | `src/content/articles/anatomiya-padeniya-pyat-stadiy.mdx` | historical dossier 28 + current OSK routing + `research/pastor-series/PART-II-SOURCE-RECEIPT.md` | Bounded wording; public source projection; exact-count defect removed; manuscript blob `3bdd78ab9e9c928e36c3e32acca41b445b63c0f3` | **Нет открытого source gate.** Scripture/exegesis, cross-link, christological, technical/release gates остаются отдельными | `SOURCE_PASS / OTHER_GATES_OPEN` |
-| **III** | `src/content/articles/teksty-pisaniya-kotorymi-manipuliruyut.mdx` | `.../31_SCRIPTURE_TEXTS_MANIPULATED.md` + первичные библейские тексты | Реестр 23 текстов, двусторонняя модель манипуляции, canonical counterweights | Проверить все 23 ближайших контекста, спорные экзегетические выводы, оригинальные языки и русский текст цитат; GRACE/Kruger/Mullen/Langberg/9Marks/CCEF — только через reader-safe public locators | `DIRECT_DOSSIER / SCRIPTURE_AND_LOCATOR_PASS_OPEN` |
+| **III** | `src/content/articles/teksty-pisaniya-kotorymi-manipuliruyut.mdx` | historical dossier 31 + active Research correction overlay `31A_SCRIPTURE_TEXTS_MANIPULATED_EXEGESIS_CORRECTIONS_2026-09-07.md` + первичные библейские тексты + `research/pastor-series/PART-III-SOURCE-EXEGESIS-RECEIPT.md` | 23/23 bounded exegesis verdicts; Мф. 18:15 textual note; disputed Greek claims checked; Синодальные reader quotes checked; exact reader-safe public bibliography; manuscript blob `94d9c7a707a4d3e6e0c17faa9aeaba1099f854f1` | **Нет открытого source/exegesis gate.** Jurisdiction/safeguarding application, cross-link, christological, technical/release gates остаются отдельными | `SOURCE_EXEGESIS_PASS / OTHER_GATES_OPEN` |
 | **IV** | `src/content/articles/sem-tipov-razlichenie-uchiteley.mdx` | `.../30_TEACHER_TAXONOMY_MASTER_AND_CUNNING_AXIS.md` + current OSK case-routing authorities | Семь категорий и редакционный принцип «сила утверждения не сильнее доказательств» | Для каждого современного примера проверить current routing/decision authority; не превращать taxonomy в психиатрический диагноз или окончательный приговор без evidence | `DIRECT_DOSSIER / CASE_ROUTING_RECHECK_OPEN` |
 | **V** | `src/content/articles/cerkovnaya-disciplina-vlast-granicy-zashchita.mdx` | `.../32_CHURCH_DISCIPLINE_THEOLOGY.md` + Писание + точные конфессиональные/первичные источники | Положительное богословие власти, дисциплины, совести и подотчётности | Проверить 1689 LBCF по первичному тексту и locator; Leeman/9Marks/GRACE/Kruger — public locators; не использовать этимологию `κατά` как аргумент; Drive GTY135 — только discovery до первичной проверки | `DIRECT_DOSSIER / CONFESSION_AND_PRIMARY_LOCATOR_PASS_OPEN` |
 | **VI** | `src/content/articles/kogda-uhodit-kogda-ostavatsya.mdx` | `.../33_WHEN_TO_LEAVE_WHEN_TO_STAY.md` + `.../43_WAVE10_FAITHFUL_WITNESS_UNDER_PRESSURE_2026-08-01.md` | Decision framework и документированные pathways членов/служителей под давлением | Сопоставить practical claims с первичными case locators; отдельно не смешивать source verification с jurisdiction/safeguarding pass; Drive GTY135 может быть secondary support после проверки оригинала | `DIRECT_DOSSIER / PATHWAY_LOCATOR_PASS_OPEN` |
@@ -78,7 +79,7 @@ Current OSK corpus уже имеет закрытую case routing/evidence ос
 Следующие блоки уже имеют достаточный backbone, чтобы не открывать новый широкий research marathon:
 
 - Part II — source pass закрыт bounded receipt; новые источники нужны только при добавлении нового конкретного reader claim;
-- Part III — 23-text dossier уже существует;
+- Part III — source + Scripture/exegesis pass закрыты bounded receipt; новые источники нужны только для нового reader claim или отдельного jurisdiction/safeguarding gate;
 - Part IV — teacher taxonomy уже существует;
 - Part V — church-discipline theology уже существует;
 - Part VI — stay/leave dossier + Wave 10 pathways уже существуют;
@@ -91,25 +92,30 @@ Current OSK corpus уже имеет закрытую case routing/evidence ос
 На этих anchors:
 
 - manuscripts II–IX существуют: **8/8**;
-- Parts II–IX с завершённым article-level primary-locator/source-list pass: **1/8** — Part II;
-- Parts II–IX с открытым source pass: **7/8** — Parts III–IX;
-- Parts II–IX publication-ready **в целом**: **0/8** — source PASS не закрывает exegesis/safety/cross-link/christological/technical/release gates;
+- Parts II–IX с завершённым article-level primary-locator/source-list pass: **2/8** — Parts II–III;
+- Parts II–IX с открытым source pass: **6/8** — Parts IV–IX;
+- Part III дополнительно имеет отдельный `SCRIPTURE_EXEGESIS_GATE = PASS`; это не переносится автоматически на Part II или Parts IV–IX;
+- Parts II–IX publication-ready **в целом**: **0/8** — source/exegesis PASS не закрывает safety/cross-link/christological/technical/release gates;
 - case-level OSK Research closure не пересчитывается в «8/8 статей готовы»;
 - public core остаётся **1/9** по опубликованным римским частям до отдельных release PR.
 
-Это означает: source publication barrier снят только с Part II, но **publication promotion не разрешён ни для одной из восьми unpublished частей**.
+Это означает: source publication barrier снят с Parts II–III, но **publication promotion не разрешён ни для одной из восьми unpublished частей**.
 
 ## 6. Порядок source-verification pass
 
-Part II закрыт receipt `research/pastor-series/PART-II-SOURCE-RECEIPT.md`. Дальнейшая последовательность:
+Закрытые receipts:
 
-1. **Part III** — 23 Scripture contexts + reader-safe external bibliography;
-2. **Part IV** — taxonomy + current routing decisions;
-3. **Part V** — confession / ecclesiology / primary-source cleanup;
-4. **Part VI** — pathway locators; jurisdiction/safety остаётся отдельным gate;
-5. **Part VII** — claim classification + minimal positive source map;
-6. **Part VIII** — biblical norm vs prudential governance source map;
-7. **Part IX** — terminology/discernment source map.
+- Part II — `research/pastor-series/PART-II-SOURCE-RECEIPT.md`;
+- Part III — `research/pastor-series/PART-III-SOURCE-EXEGESIS-RECEIPT.md`.
+
+Дальнейшая последовательность:
+
+1. **Part IV** — taxonomy + current routing decisions;
+2. **Part V** — confession / ecclesiology / primary-source cleanup;
+3. **Part VI** — pathway locators; jurisdiction/safety остаётся отдельным gate;
+4. **Part VII** — claim classification + minimal positive source map;
+5. **Part VIII** — biblical norm vs prudential governance source map;
+6. **Part IX** — terminology/discernment source map.
 
 После каждого source pass статья всё ещё остаётся draft/noindex до остальных gate из `MASTER-PLAN.md`.
 
@@ -126,6 +132,6 @@ Part II закрыт receipt `research/pastor-series/PART-II-SOURCE-RECEIPT.md`.
 - публично пригодный source-list projection;
 - результат source gate: `PASS` или точный `HOLD`.
 
-Текущий счётчик receipts: **1/8**.
+Текущий счётчик receipts: **2/8**.
 
-До полного source reconciliation канонический статус: **MANUSCRIPTS EXIST / SOURCE PASSES 1/8 / NO PUBLICATION PROMOTION**.
+До полного source reconciliation канонический статус: **MANUSCRIPTS EXIST / SOURCE PASSES 2/8 / NO PUBLICATION PROMOTION**.
