@@ -1,0 +1,81 @@
+name: Temporary Deploy Pages Pin Refresh Helper
+
+on:
+  push:
+    branches:
+      - agent/deploy-pages-pin-refresh-helper-20260907
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout helper branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: agent/deploy-pages-pin-refresh-helper-20260907
+          fetch-depth: 0
+
+      - name: Set up pinned Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+
+      - name: Apply exact atomic pin refresh
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          const files = [
+            '.github/workflows/deploy.yml',
+            'scripts/check-workflows.js',
+            'scripts/release-pipeline-contract-test.mjs',
+          ];
+          const from = 'actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0';
+          const to = 'actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1';
+          for (const file of files) {
+            const before = fs.readFileSync(file, 'utf8');
+            const occurrences = before.split(from).length - 1;
+            if (occurrences !== 1) throw new Error(`${file}: expected exactly one old deploy-pages pin, found ${occurrences}`);
+            const after = before.replace(from, to);
+            if ((after.split(to).length - 1) !== 1) throw new Error(`${file}: new deploy-pages pin cardinality is not exactly one`);
+            fs.writeFileSync(file, after);
+          }
+          NODE
+
+      - name: Prove workflow and release contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run workflows:check
+          node scripts/release-pipeline-contract-test.mjs
+          node scripts/node-toolchain-pin-contract-test.mjs
+
+      - name: Prove surgical diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          mapfile -t files < <(git diff --name-only | sort)
+          expected=(
+            '.github/workflows/deploy.yml'
+            'scripts/check-workflows.js'
+            'scripts/release-pipeline-contract-test.mjs'
+          )
+          mapfile -t expected_sorted < <(printf '%s\n' "${expected[@]}" | sort)
+          test "${#files[@]}" -eq 3
+          diff -u <(printf '%s\n' "${expected_sorted[@]}") <(printf '%s\n' "${files[@]}")
+          git diff -- .github/workflows/deploy.yml scripts/check-workflows.js scripts/release-pipeline-contract-test.mjs
+
+      - name: Commit verified helper result
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/deploy.yml scripts/check-workflows.js scripts/release-pipeline-contract-test.mjs
+          git commit -m 'ci(deps): refresh deploy-pages pin authority'
+          git push origin HEAD:agent/deploy-pages-pin-refresh-helper-20260907
