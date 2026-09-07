@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "id": "tma-na-serdce-pr518-editorial-reconciliation-2026-09-08",
+  "records": {
+    "/articles/tma-na-serdce/": {
+      "route": "/articles/tma-na-serdce/",
+      "canonical": "https://gospod-bog.ru/articles/tma-na-serdce/",
+      "title": "Тьма на сердце: всегда ли уныние — это грех? | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/tma-na-serdce/TmaNaSerdcePageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-10T21:00:00.000Z",
+      "editorialModifiedAt": "2026-07-29T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "approved",
+      "provenance": "verified-pr-518-merge-5ba4411fc13c315f9f222b738ba22194eb18085d-owner-approved-2026-09-08",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-10T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-29T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-29T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-10T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-29T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-29T21:00:00.000Z",
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
+      }
+    }
+  }
+}
