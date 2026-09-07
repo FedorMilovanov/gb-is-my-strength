@@ -6,6 +6,8 @@
  * boundaries, privileged action identities, and current document authority are
  * checked together. Any new effective write scope or required governance
  * document must be registered before it can enter the control plane.
+ *
+ * Pass --no-report when the caller needs a strictly read-only validation run.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -18,6 +20,7 @@ const REPORTS = path.join(ROOT, 'reports');
 const WORKFLOW_DIR = path.join(ROOT, '.github', 'workflows');
 const POLICY_PATH = 'data/workflow-permission-policy.json';
 const DOCUMENT_AUTHORITY_PATH = 'data/document-authority.json';
+const WRITE_REPORTS = !process.argv.includes('--no-report');
 const issues = [];
 const warnings = [];
 const references = [];
@@ -188,7 +191,6 @@ if (!/npm run workflows:lint/.test(sharedGuard)) {
   addIssue(`${sharedGuardPath}: must run npm run workflows:lint`);
 }
 
-fs.mkdirSync(REPORTS, { recursive: true });
 const report = {
   generatedAt: new Date().toISOString(),
   workflows: workflowFiles().length,
@@ -201,42 +203,46 @@ const report = {
   issues,
   warnings,
 };
-fs.writeFileSync(
-  path.join(REPORTS, 'repository-control-plane-audit.json'),
-  `${JSON.stringify(report, null, 2)}\n`,
-);
-fs.writeFileSync(
-  path.join(REPORTS, 'repository-control-plane-audit.md'),
-  [
-    '# Repository control-plane audit',
-    '',
-    `- Workflows: ${report.workflows}`,
-    `- Package scripts: ${report.packageScripts}`,
-    `- Static local references checked: ${report.localReferences}`,
-    `- Required governance documents: ${report.requiredGovernanceDocuments}`,
-    `- Jobs with explicit effective permissions: ${report.effectivePermissionJobs}`,
-    `- Registered privileged jobs: ${report.privilegedJobs.length}`,
-    `- Issues: ${issues.length}`,
-    `- Warnings: ${warnings.length}`,
-    '',
-    '## Issues',
-    ...(issues.length ? issues.map((item) => `- ${item}`) : ['- None']),
-    '',
-    '## Registered privileged jobs',
-    ...(report.privilegedJobs.length
-      ? report.privilegedJobs.map((item) => `- ${item.workflow} / ${item.job}: ${item.writeScopes.join(', ')} — ${item.purpose}`)
-      : ['- None']),
-    '',
-    '## Effective permission inventory',
-    ...report.effectivePermissions.map((item) => `- ${item.workflow} / ${item.job}: ${JSON.stringify(item.permissions)}`),
-    '',
-    '## Warnings',
-    ...(warnings.length ? warnings.map((item) => `- ${item}`) : ['- None']),
-    '',
-  ].join('\n'),
-);
 
-console.log(`Control-plane audit: ${report.workflows} workflows, ${report.packageScripts} npm scripts, ${report.localReferences} local references, ${report.requiredGovernanceDocuments} required governance documents, ${report.privilegedJobs.length} privileged jobs`);
+if (WRITE_REPORTS) {
+  fs.mkdirSync(REPORTS, { recursive: true });
+  fs.writeFileSync(
+    path.join(REPORTS, 'repository-control-plane-audit.json'),
+    `${JSON.stringify(report, null, 2)}\n`,
+  );
+  fs.writeFileSync(
+    path.join(REPORTS, 'repository-control-plane-audit.md'),
+    [
+      '# Repository control-plane audit',
+      '',
+      `- Workflows: ${report.workflows}`,
+      `- Package scripts: ${report.packageScripts}`,
+      `- Static local references checked: ${report.localReferences}`,
+      `- Required governance documents: ${report.requiredGovernanceDocuments}`,
+      `- Jobs with explicit effective permissions: ${report.effectivePermissionJobs}`,
+      `- Registered privileged jobs: ${report.privilegedJobs.length}`,
+      `- Issues: ${issues.length}`,
+      `- Warnings: ${warnings.length}`,
+      '',
+      '## Issues',
+      ...(issues.length ? issues.map((item) => `- ${item}`) : ['- None']),
+      '',
+      '## Registered privileged jobs',
+      ...(report.privilegedJobs.length
+        ? report.privilegedJobs.map((item) => `- ${item.workflow} / ${item.job}: ${item.writeScopes.join(', ')} — ${item.purpose}`)
+        : ['- None']),
+      '',
+      '## Effective permission inventory',
+      ...report.effectivePermissions.map((item) => `- ${item.workflow} / ${item.job}: ${JSON.stringify(item.permissions)}`),
+      '',
+      '## Warnings',
+      ...(warnings.length ? warnings.map((item) => `- ${item}`) : ['- None']),
+      '',
+    ].join('\n'),
+  );
+}
+
+console.log(`Control-plane audit: ${report.workflows} workflows, ${report.packageScripts} npm scripts, ${report.localReferences} local references, ${report.requiredGovernanceDocuments} required governance documents, ${report.privilegedJobs.length} privileged jobs${WRITE_REPORTS ? '' : ' (read-only)'}`);
 for (const warning of warnings) console.warn(`WARN ${warning}`);
 if (issues.length) {
   for (const issue of issues) console.error(`ERROR ${issue}`);
