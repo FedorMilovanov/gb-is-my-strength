@@ -2808,6 +2808,11 @@ const JS_SIZE_FLOORS = {
   const m = swText.match(/PRECACHE_ASSETS\s*=\s*\[([^\]]+)\]/);
   if (!m) { R.err('sw.js: PRECACHE_ASSETS array not found'); return; }
   const listed = new Set([...m[1].matchAll(/['"]([^'"]+)['"]/g)].map(x => x[1]));
+  const assetVersionText = read('src/lib/asset-version.js');
+  const assetVersions = new Map(
+    [...assetVersionText.matchAll(/^\s*'([^']+)'\s*:\s*'([0-9a-f]{6,12})'\s*,?\s*$/gm)]
+      .map((match) => [match[1], match[2]]),
+  );
   // Only user-facing cache-busted assets are required in the SW precache.
   // Tooling/pilot artifacts (site-modules.js was removed in dead-code cleanup)
   // may physically exist in the repo, but must not force users to download them.
@@ -2816,15 +2821,25 @@ const JS_SIZE_FLOORS = {
   // loaders (search palette, glossary) and wastes mobile bandwidth. They are
   // runtime-cached by the SW on first real use instead.
   const LAZY_NO_PRECACHE = new Set(CACHE_BUST_LAZY_NO_PRECACHE.map((asset) => '/' + String(asset).replace(/^\/+/, '')));
-  const required = CACHE_BUST_ASSETS.map(f => '/' + f).filter(f => !LAZY_NO_PRECACHE.has(f));
-  const missing = [];
-  for (const f of required) {
-    if (!listed.has(f)) missing.push(f);
+  const governedRequired = CACHE_BUST_ASSETS
+    .map((asset) => String(asset).replace(/^\/+/, ''))
+    .filter((asset) => !LAZY_NO_PRECACHE.has('/' + asset));
+  const missingAuthority = governedRequired.filter((asset) => !assetVersions.has(asset));
+  if (missingAuthority.length) {
+    R.err(`ASSET_VERSIONS missing governed precache assets:\n  - ${missingAuthority.join('\n  - ')}`);
+    return;
   }
+  const required = governedRequired.map((asset) => `/${asset}?v=${assetVersions.get(asset)}`);
+  const missing = required.filter((assetUrl) => !listed.has(assetUrl));
+  const queryless = governedRequired
+    .map((asset) => '/' + asset)
+    .filter((assetUrl) => listed.has(assetUrl));
   if (missing.length) {
-    R.err(`sw.js PRECACHE_ASSETS missing live files:\n  - ${missing.join('\n  - ')}`);
+    R.err(`sw.js PRECACHE_ASSETS missing exact authoritative revisions:\n  - ${missing.join('\n  - ')}`);
+  } else if (queryless.length) {
+    R.err(`sw.js PRECACHE_ASSETS contains queryless governed assets:\n  - ${queryless.join('\n  - ')}`);
   } else {
-    R.ok(`sw.js PRECACHE_ASSETS lists all required cache-busted live assets (lazy set excluded by design)`);
+    R.ok(`sw.js PRECACHE_ASSETS lists exact authoritative revisions for all required cache-busted live assets (lazy set excluded by design)`);
   }
   const reintroduced = [...LAZY_NO_PRECACHE].filter(f => listed.has(f));
   if (reintroduced.length) {
