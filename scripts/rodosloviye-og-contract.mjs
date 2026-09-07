@@ -4,7 +4,8 @@ import path from 'node:path';
 import process from 'node:process';
 
 const ROOT = path.resolve(new URL('..', import.meta.url).pathname);
-const ROUTE = 'rodosloviye/index.html';
+const SOURCE_HEAD = 'src/components/rodosloviye/RodosloviyePageHead.astro';
+const DIST_ROUTE = 'rodosloviye/index.html';
 const ASSET = 'images/og-rodosloviye-1200x630.webp';
 const CANONICAL_URL = 'https://gospod-bog.ru/images/og-rodosloviye-1200x630.webp';
 const WIDTH = 1200;
@@ -63,13 +64,7 @@ function webpDimensions(buffer) {
   fail('no VP8/VP8L/VP8X image chunk found');
 }
 
-function validateSurface(root, label) {
-  const routePath = path.join(root, ROUTE);
-  const assetPath = path.join(root, ASSET);
-  if (!fs.existsSync(routePath)) fail(`${label}: missing ${ROUTE}`);
-  if (!fs.existsSync(assetPath)) fail(`${label}: missing ${ASSET}`);
-
-  const html = fs.readFileSync(routePath, 'utf8');
+function validateMetadata(html, label) {
   const og = metaContent(html, 'property', 'og:image');
   const twitter = metaContent(html, 'name', 'twitter:image');
   const ogWidth = metaContent(html, 'property', 'og:image:width');
@@ -87,25 +82,37 @@ function validateSurface(root, label) {
   if (!/родослов|генеалог/i.test(ogAlt) || !/родослов|генеалог/i.test(twitterAlt)) {
     fail(`${label}: social-image alt text must describe genealogy`);
   }
+}
 
+function validateAsset(assetPath, label) {
+  if (!fs.existsSync(assetPath)) fail(`${label}: missing ${ASSET}`);
   const asset = fs.readFileSync(assetPath);
   const dimensions = webpDimensions(asset);
   if (dimensions.width !== WIDTH || dimensions.height !== HEIGHT) {
     fail(`${label}: asset is ${dimensions.width}x${dimensions.height}, expected ${WIDTH}x${HEIGHT}`);
   }
-  return { html, asset, dimensions };
+  return { asset, dimensions };
 }
 
-const source = validateSurface(ROOT, 'source');
+const sourceHeadPath = path.join(ROOT, SOURCE_HEAD);
+if (!fs.existsSync(sourceHeadPath)) fail(`source: missing native metadata owner ${SOURCE_HEAD}`);
+const sourceHead = fs.readFileSync(sourceHeadPath, 'utf8');
+validateMetadata(sourceHead, 'source native head');
+const source = validateAsset(path.join(ROOT, ASSET), 'source');
+
 if (process.argv.includes('--require-dist')) {
   const distRoot = path.join(ROOT, 'dist');
-  const dist = validateSurface(distRoot, 'dist');
+  const distRoutePath = path.join(distRoot, DIST_ROUTE);
+  if (!fs.existsSync(distRoutePath)) fail(`dist: missing ${DIST_ROUTE}`);
+  validateMetadata(fs.readFileSync(distRoutePath, 'utf8'), 'dist');
+  const dist = validateAsset(path.join(distRoot, ASSET), 'dist');
   if (!source.asset.equals(dist.asset)) fail('dist asset is not byte-identical to the route-owned source asset');
 }
 
 console.log(JSON.stringify({
   ok: true,
   route: '/rodosloviye/',
+  sourceOwner: SOURCE_HEAD,
   asset: ASSET,
   url: CANONICAL_URL,
   width: WIDTH,
