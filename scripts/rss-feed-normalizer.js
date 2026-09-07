@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const { loadRouteRecords } = require('./lib/effective-route-registry');
+const { readRegistry } = require('./lib/editorial-metadata');
 const { normalizeRoute } = require('./lib/rss-route-contract');
 const { normalizePolicyRoutes } = require('./lib/search-index-policy-contract');
 
@@ -57,7 +58,7 @@ function manifestRouteMap(manifest) {
   return routes;
 }
 
-function canonicalRssEntries({ policyRegistry, manifest, productionRecords }) {
+function canonicalRssEntries({ policyRegistry, manifest, productionRecords, editorialRegistry }) {
   const policies = normalizePolicyRoutes(policyRegistry);
   const manifestRoutes = manifestRouteMap(manifest);
   const productionRoutes = new Set(
@@ -65,6 +66,7 @@ function canonicalRssEntries({ policyRegistry, manifest, productionRecords }) {
       .filter((record) => record?.owner?.status === 'production-dist')
       .map((record) => normalizeRoute(record.route))
   );
+  const editorialRecords = editorialRegistry?.records || {};
   const entries = [];
 
   for (const [route, policy] of policies) {
@@ -72,11 +74,19 @@ function canonicalRssEntries({ policyRegistry, manifest, productionRecords }) {
     if (!productionRoutes.has(route)) throw new Error(`${route}: RSS policy includes a non-production route`);
     const item = manifestRoutes.get(route);
     if (!item) throw new Error(`${route}: RSS policy requires a search-manifest item`);
+    const editorial = editorialRecords[route];
+    if (!editorial) throw new Error(`${route}: RSS policy requires an editorial metadata record`);
 
-    const missing = ['title', 'description', 'publishedTime'].filter((field) => !item[field]);
+    const missing = ['title', 'description'].filter((field) => !item[field]);
     if (missing.length) throw new Error(`${route}: search-manifest item missing ${missing.join(', ')}`);
-    const published = parseDate(item.publishedTime, `${route} publishedTime`);
-    const modified = parseDate(item.modifiedTime || item.publishedTime, `${route} modifiedTime`);
+    if (!editorial.editorialPublishedAt) {
+      throw new Error(`${route}: editorial metadata missing editorialPublishedAt`);
+    }
+    const published = parseDate(editorial.editorialPublishedAt, `${route} editorialPublishedAt`);
+    const modified = parseDate(
+      editorial.editorialModifiedAt || editorial.editorialPublishedAt,
+      `${route} editorialModifiedAt`
+    );
     const creator = String(item.author || item.editor || manifest?.project?.curator || '').trim();
     if (!creator) throw new Error(`${route}: search-manifest item missing author/editor`);
 
@@ -99,9 +109,9 @@ function canonicalRssEntries({ policyRegistry, manifest, productionRecords }) {
   return entries;
 }
 
-function renderFeed({ policyRegistry, manifest, productionRecords, siteUrl }) {
+function renderFeed({ policyRegistry, manifest, productionRecords, editorialRegistry, siteUrl }) {
   const base = String(siteUrl || manifest?.project?.url || DEFAULT_SITE_URL).replace(/\/+$/, '');
-  const entries = canonicalRssEntries({ policyRegistry, manifest, productionRecords });
+  const entries = canonicalRssEntries({ policyRegistry, manifest, productionRecords, editorialRegistry });
   const lastBuildDate = parseDate(manifest?.generatedAt, 'search manifest generatedAt');
   const title = manifest?.project?.name || 'Господь Бог — Сила Моя';
   const lines = [
@@ -148,29 +158,31 @@ function main() {
   const manifestFile = path.join(ROOT, 'data/search-manifest.json');
   const feedFile = path.join(ROOT, 'feed.xml');
   const loaded = loadRouteRecords();
+  const editorialRegistry = readRegistry();
   const expected = renderFeed({
     policyRegistry: readJson(policyFile),
     manifest: readJson(manifestFile),
     productionRecords: loaded.records,
+    editorialRegistry,
   });
   const current = fs.existsSync(feedFile) ? fs.readFileSync(feedFile, 'utf8') : '';
 
   if (options.write) {
     if (current === expected) {
-      console.log('RSS feed already matches route policy and search manifest.');
+      console.log('RSS feed already matches route policy, descriptive manifest and editorial authority.');
       return;
     }
     fs.writeFileSync(feedFile, expected, 'utf8');
-    console.log('Wrote deterministic feed.xml from route policy and search manifest.');
+    console.log('Wrote deterministic feed.xml from route policy, descriptive manifest and editorial authority.');
     return;
   }
 
   if (current !== expected) {
-    console.error('❌ feed.xml differs from the deterministic policy/manifest projection');
+    console.error('❌ feed.xml differs from the deterministic policy/manifest/editorial projection');
     console.error('Run: node scripts/rss-feed-normalizer.js --write');
     process.exit(1);
   }
-  console.log('✅ feed.xml exactly matches route policy and search manifest');
+  console.log('✅ feed.xml exactly matches route policy, descriptive manifest and editorial authority');
 }
 
 if (require.main === module) {
