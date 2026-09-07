@@ -96,6 +96,14 @@ When applicable to the changed surface:
 - do not remove stable hooks such as article header/author-card contracts without a bounded owner-approved migration;
 - accessibility and browser evidence must be proportional to the actual behavior changed.
 
+### Astro migration — premium visual parity only
+
+This retained owner wording is a protected **design-intent marker**, not a universal numeric merge gate for every native route. Current transfer mode, exactness claims and required evidence are governed by `docs/REFERENCE_TRANSFER_POLICY.md` plus the route's current owner/profile. Native-contract routes must preserve approved hierarchy, semantics and owner-sensitive visual intent without being forced back into a superseded legacy transport merely to mimic historical pixels.
+
+### 3.10 PremiumControls / Floating Cluster
+
+PremiumControls and the canonical floating-control family remain an owner-sensitive protected subsystem. Do not replace, duplicate, restyle or remount those controls from a route-local workaround. Resolve their current source/components and applicable guards first; mutable component inventories belong to the current tree and executable contracts rather than this prose router.
+
 ## 7. John Gill surfaces
 
 Do not maintain a handwritten fixed list of “six surfaces” as a second source of truth. For a Gill factual correction:
