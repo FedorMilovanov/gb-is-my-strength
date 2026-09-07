@@ -2,7 +2,7 @@
 
 Богословский и редакционный сайт: экзегеза, история церкви, апологетика, переводы, серии, исследования и интерактивные библейские карты.
 
-Production публикуется GitHub Pages из production-like `dist/`, собранного из Astro 7, MDX/content collections и явно зарегистрированных legacy/special adapters. Корень репозитория не является Pages-артефактом.
+Production публикуется GitHub Pages из production-like `dist/`, собранного текущим framework/content toolchain и явно зарегистрированными legacy/special adapters. Точная framework/toolchain identity берётся из `package.json`, `package-lock.json` и CI contracts; корень репозитория не является Pages-артефактом.
 
 ## Начать здесь
 
@@ -24,8 +24,8 @@ Production публикуется GitHub Pages из production-like `dist/`, с�
 
 ### Build и deploy
 
-- **Node:** `>=22.12.0`; точная toolchain authority — `package.json`, lockfile и CI contracts.
-- **Framework:** Astro 7 + MDX/content collections; точные package versions берутся из `package.json`/`package-lock.json`, а не из prose.
+- **Toolchain authority:** current Node/npm requirements и точные dependency versions берутся из `package.json`, `package-lock.json` и CI contracts; README не пинит их второй ручной копией.
+- **Framework stack:** current framework/integration identity и версии берутся из package/lock/source contracts; reader/content architecture использует MDX/content collections без version pin в prose.
 - **Production output:** `npm run strangler:build:production-like` → `dist/`.
 - **Deploy source of truth:** `.github/workflows/deploy.yml`.
 - **Runtime:** статический HTML/CSS/vanilla JS с явно изолированными capability adapters.
