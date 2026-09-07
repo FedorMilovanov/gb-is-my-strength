@@ -31,9 +31,9 @@ Each managed document declares:
 - `authority` — `normative`, `supporting`, `informational` or `provenance-only`;
 - `required` — whether the current control plane must retain the path;
 - optional `supersededBy`;
-- optional `reconciliationState` for bounded migration debt that is not yet safe to rewrite in the same PR.
+- optional provenance fields such as `sourceBlobSha` and `snapshotDerivation`.
 
-`reconciliationState` is not permission to ignore a contradiction. It identifies the exact next documentation lane while preserving a truthful current classification.
+`reconciliationState` may be used only for a **currently real, bounded documentation debt**. It must be removed in the same reconciliation transaction that closes that debt; completed work may not remain machine-labelled `pending-*`.
 
 ## Current operational entrypoints
 
@@ -41,7 +41,9 @@ Each managed document declares:
 - `README.md` — repository navigation;
 - `docs/DOCUMENT_AUTHORITY.md` — documentation lifecycle/index.
 
-Current governance then routes to `WORK_MODES`, `LANE_LOCK_POLICY`, branch/worktree lifecycle and owner invariants. Release-state claims route to `docs/RELEASE-LIVE-EVIDENCE.md`. External-tool decisions route through `audit/external-checks/README.md`; environment capabilities are discovered live, with `docs/SANDBOX-ENV-2026-06-21.md` acting only as a current supporting capability policy that explicitly rejects its own older Arena/E2B snapshot as universal truth.
+`AGENTS-REFERENCE.md` is a current supporting **surface router**, not a second operational root or mutable repository census. It delegates each surface to current machine/source owners and narrow policies. The complete pre-split monolith is preserved byte-identically at `docs/history/AGENTS-REFERENCE-2026-09-07-pre-split.md` under original Git blob `96521c8c79bd626c1ca8d09a628b0d5dee2f93d1`; that snapshot is historical/provenance-only.
+
+Current governance routes to `WORK_MODES`, `LANE_LOCK_POLICY`, branch/worktree lifecycle and owner invariants. Release-state claims route to `docs/RELEASE-LIVE-EVIDENCE.md`. External-tool decisions route through `audit/external-checks/README.md`; environment capabilities are discovered live, with `docs/SANDBOX-ENV-2026-06-21.md` acting only as a current supporting capability policy that explicitly rejects its own older Arena/E2B snapshot as universal truth.
 
 The dated filename of `SANDBOX-ENV-2026-06-21.md` is therefore not a lifecycle signal. Its current text was reconciled in commit `03276e321eaffd6c136c37a223f054804f2637b1`; the original environment snapshot remains provenance under blob `9349b0868f6e9a8fdf4ba50de19b70c8cbf43936`.
 
@@ -54,7 +56,7 @@ A route/surface guide that is not explicitly listed in the repository-wide regis
 3. apply registered repository-wide policy first if there is a conflict;
 4. treat mutable counts, versions, implementation snapshots and old migration state as evidence to recheck, not as self-authenticating truth.
 
-`AGENTS-REFERENCE.md` is currently a special mixed case: it still contains unique owner-sensitive surface contracts, but also historical inventories and migration-era instructions. Until its dedicated split lands, `AGENTS.md`, current source owners and registered normative policies override its blanket or stale sections.
+For Maps, Genealogy and other historically design-heavy surfaces, design intent and current implementation truth must remain separate. Current route profiles/source/guards own implementation reality; dated design documents may support owner intent only after their assumptions are revalidated.
 
 ## Machine consumption
 
@@ -62,18 +64,21 @@ A route/surface guide that is not explicitly listed in the repository-wide regis
 
 This means changing whether a repository-wide governance document is required is one registry transaction, not two prose/code edits that can silently drift apart.
 
+`scripts/document-authority-audit.mjs` also fail-closes the `AGENTS-REFERENCE` split: the current router may not reintroduce stale fixed asset counts, Astro-6 current-platform wording, blanket legacy-root ownership or a universal `enhancements.js` fallback, and the historical snapshot must hash to the registered original Git blob.
+
 ## Historical material
 
 Historical does **not** mean useless or deletable. Owner messages, migration plans, incident reports and forensic snapshots may be essential evidence. Their role is provenance: they inform current decisions but do not independently override current owners.
 
-Known high-risk examples now explicitly classified as historical include:
+Known high-risk examples explicitly classified as historical include:
 
 - `OWNER-REQUIREMENTS.md` — direct owner-message provenance; current interpretation lives in `OWNER-INVARIANTS` + `REFERENCE_TRANSFER_POLICY`;
 - `ASTRO-PREMIUM-MIGRATION-ROADMAP.md` — migration-era visual transfer plan;
 - `CURRENT_RECHECK_2026-06-22_FIXES.md` — June snapshot, not current status;
 - `dependency-migrations/ASTRO_7_SATTERI.md` — package set at migration time;
-- `RELEASE-LIVE-EVIDENCE-CONTRACT-2026-08-06.md` — compatibility pointer for a mixed dated release/incident document; current policy is `RELEASE-LIVE-EVIDENCE.md`, while the normalized historical snapshot and exact original Git blob remain provenance;
-- `refactor-2026/REFRACTOR_AUDIT_LIVING.md` — recorded forensic/source boundary.
+- `RELEASE-LIVE-EVIDENCE-CONTRACT-2026-08-06.md` — compatibility pointer; current policy is `RELEASE-LIVE-EVIDENCE.md`, with normalized incident provenance under `docs/history/incidents/`;
+- `refactor-2026/REFRACTOR_AUDIT_LIVING.md` — recorded forensic/source boundary;
+- `history/AGENTS-REFERENCE-2026-09-07-pre-split.md` — byte-identical pre-split surface-reference snapshot.
 
 ## Mutable facts
 
