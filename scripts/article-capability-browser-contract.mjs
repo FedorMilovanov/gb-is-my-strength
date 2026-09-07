@@ -77,17 +77,68 @@ async function exerciseHeadingAnchor(page, label) {
   assert.ok(count > 0, `${label}: no owned heading anchors found`);
 
   let anchor = null;
+  const diagnostics = [];
   for (let index = 0; index < count; index += 1) {
     const candidate = anchors.nth(index);
     const href = await candidate.getAttribute('href');
     if (!href?.startsWith('#')) continue;
-    if (!await candidate.isVisible()) continue;
     if (await page.locator(href).count() === 0) continue;
-    anchor = candidate;
-    break;
+
+    // `.series-content` uses content-visibility:auto. Off-screen descendants can
+    // have no materialized layout box until a normal user scroll brings them
+    // into the rendering viewport. Scroll first, then require real visibility;
+    // hidden/duplicate targets still fail this check and are never force-clicked.
+    try {
+      await candidate.scrollIntoViewIfNeeded({ timeout: 3000 });
+    } catch {
+      // Keep searching; diagnostics below will explain why no retained target
+      // could become user-visible.
+    }
+    if (await candidate.isVisible()) {
+      anchor = candidate;
+      break;
+    }
+
+    if (diagnostics.length < 5) {
+      diagnostics.push(await candidate.evaluate((node) => {
+        const style = getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        let ancestor = node.parentElement;
+        let blocker = null;
+        while (ancestor && ancestor !== document.documentElement) {
+          const ancestorStyle = getComputedStyle(ancestor);
+          const ancestorRect = ancestor.getBoundingClientRect();
+          if (ancestor.hidden || ancestorStyle.display === 'none' || ancestorStyle.visibility === 'hidden' || ancestorRect.width === 0 || ancestorRect.height === 0) {
+            blocker = {
+              tag: ancestor.tagName,
+              id: ancestor.id || '',
+              className: typeof ancestor.className === 'string' ? ancestor.className : '',
+              hidden: ancestor.hidden,
+              display: ancestorStyle.display,
+              visibility: ancestorStyle.visibility,
+              width: ancestorRect.width,
+              height: ancestorRect.height,
+              contentVisibility: ancestorStyle.contentVisibility,
+            };
+            break;
+          }
+          ancestor = ancestor.parentElement;
+        }
+        return {
+          href: node.getAttribute('href'),
+          display: style.display,
+          visibility: style.visibility,
+          opacity: style.opacity,
+          width: rect.width,
+          height: rect.height,
+          contentVisibility: style.contentVisibility,
+          blocker,
+        };
+      }));
+    }
   }
 
-  assert.ok(anchor, `${label}: no visible retained heading anchor with a live fragment target`);
+  assert.ok(anchor, `${label}: no user-visible retained heading anchor with a live fragment target after normal scroll; ${JSON.stringify(diagnostics)}`);
   const href = await anchor.getAttribute('href');
   assert.ok(href?.startsWith('#'), `${label}: heading anchor missing fragment href`);
   assert.equal(await anchor.getAttribute('aria-label'), 'Скопировать ссылку на раздел', `${label}: heading anchor accessibility label drift`);
