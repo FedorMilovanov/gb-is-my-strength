@@ -18,7 +18,6 @@ const {
   validateRegistryV3,
   projectRegistryToDist,
 } = require('./lib/editorial-metadata-v3');
-const { projectCanonicalRssOrder } = require('./lib/editorial-rss-order');
 
 const WRITE = process.argv.includes('--write');
 const PROJECT_DIST = process.argv.includes('--project-dist');
@@ -118,26 +117,16 @@ function projectDist() {
   const approvedRecords = Object.fromEntries(
     Object.entries(registry.records || {}).filter(([, record]) => record.reviewStatus === 'approved')
   );
-  const approvedRegistry = { ...registry, records: approvedRecords };
   const totalRecords = Object.keys(registry.records || {}).length;
   const blockedRecords = totalRecords - Object.keys(approvedRecords).length;
   const report = projectRegistryToDist({
     distRoot: DIST,
     dryRun: DRY_RUN,
-    registry: approvedRegistry,
-  });
-  const rssOrder = projectCanonicalRssOrder({
-    distRoot: DIST,
-    dryRun: DRY_RUN,
-    registry: approvedRegistry,
+    registry: { ...registry, records: approvedRecords },
   });
   report.totalRegistryRecords = totalRecords;
   report.approvedRecords = Object.keys(approvedRecords).length;
   report.blockedEditorialReview = blockedRecords;
-  report.rssOrderItems = rssOrder.items;
-  report.rssOrderChanged = rssOrder.changed;
-  report.rssFirstRoute = rssOrder.firstRoute;
-  report.rssLastRoute = rssOrder.lastRoute;
   if (!DRY_RUN) {
     const reportFile = path.join(ROOT, 'reports', 'editorial-metadata-v3-projection.json');
     fs.writeFileSync(reportFile, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
@@ -150,7 +139,6 @@ function projectDist() {
   console.log(`Search manifest matched: ${report.searchManifestMatched}`);
   console.log(`Sitemap files/routes: ${report.sitemapFiles}/${report.sitemapMatched}`);
   console.log(`RSS matched: ${report.rssMatched}`);
-  console.log(`RSS order items/changed: ${report.rssOrderItems}/${report.rssOrderChanged}`);
   console.log(`Unknown publication/modification dates: ${report.unknownPublished}/${report.unknownModified}`);
   console.log(`Technical build instant: ${report.technicalBuildInstant}`);
   console.log(DRY_RUN ? '✅ Editorial Metadata v3 dry-run passed' : '✅ Editorial Metadata v3 projected approved decisions to final dist');
