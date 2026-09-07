@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "authorityId": "GB-DOCUMENT-AUTHORITY-V1",
+  "registryScope": "repository-wide-and-explicit-high-risk-document-authority",
+  "defaultUnregisteredAuthority": "surface-local-non-overriding",
+  "operationalEntrypoints": [
+    "AGENTS.md",
+    "README.md",
+    "docs/DOCUMENT_AUTHORITY.md"
+  ],
+  "documents": [
+    {"path":"AGENTS.md","type":"operational-contract","status":"current","authority":"normative","role":"operational-root","required":true},
+    {"path":"README.md","type":"navigation","status":"current","authority":"informational","role":"repository-entrypoint","required":true},
+    {"path":"docs/DOCUMENT_AUTHORITY.md","type":"authority-index","status":"current","authority":"normative","role":"document-authority-index","required":true},
+    {"path":"AGENTS-REFERENCE.md","type":"surface-reference","status":"current","authority":"supporting","role":"delegated-surface-contract","required":true,"reconciliationState":"pending-split-of-legacy-sections"},
+    {"path":"docs/WORK_MODES.md","type":"workflow-policy","status":"current","authority":"normative","required":true},
+    {"path":"docs/LANE_LOCK_POLICY.md","type":"workflow-policy","status":"current","authority":"normative","required":true},
+    {"path":"docs/AGENT_PUSH_MODEL.md","type":"workflow-policy","status":"current","authority":"normative","required":true},
+    {"path":"docs/GIT_WORKTREE_POLICY.md","type":"workflow-policy","status":"current","authority":"normative","required":true,"reconciliationState":"pending-effective-since-metadata"},
+    {"path":"docs/BRANCH_LIFECYCLE_V4.md","type":"workflow-policy","status":"current","authority":"normative","required":true,"reconciliationState":"pending-effective-since-metadata"},
+    {"path":"docs/OWNER-INVARIANTS.md","type":"owner-policy","status":"current","authority":"normative","required":true},
+    {"path":"docs/REFERENCE_TRANSFER_POLICY.md","type":"visual-reference-policy","status":"current","authority":"normative","required":true},
+    {"path":"docs/SEARCH_INDEX_POLICY.md","type":"publication-policy","status":"current","authority":"normative","required":true},
+    {"path":"docs/RELEASE-LIVE-EVIDENCE.md","type":"release-policy","status":"current","authority":"normative","required":true},
+    {"path":"docs/ARTICLE-STANDARD-CHARTER.md","type":"editorial-charter","status":"current","authority":"normative","required":true,"reconciliationState":"pending-evidence-model-reconcile"},
+    {"path":"docs/EDITORIAL-SOURCE-POLICY.md","type":"editorial-policy","status":"current","authority":"normative","required":true,"reconciliationState":"pending-evidence-model-reconcile"},
+    {"path":"docs/CONTENT-QUALITY-STANDARD.md","type":"editorial-policy","status":"current","authority":"normative","required":true,"reconciliationState":"pending-semantic-owner-reconcile"},
+    {"path":"audit/external-checks/README.md","type":"toolchain-runbook","status":"current","authority":"supporting","required":true},
+    {"path":"docs/refactor-2026/lanes/README.md","type":"lane-navigation","status":"current","authority":"supporting","required":true},
+    {"path":"docs/SANDBOX-ENV-2026-06-21.md","type":"environment-capability-policy","status":"current","authority":"supporting","required":false,"reconciledAtCommit":"03276e321eaffd6c136c37a223f054804f2637b1","historicalOriginBlobSha":"9349b0868f6e9a8fdf4ba50de19b70c8cbf43936"},
+
+    {"path":"docs/OWNER-REQUIREMENTS.md","type":"owner-provenance","status":"historical","authority":"provenance-only","required":false,"supersededBy":["docs/OWNER-INVARIANTS.md","docs/REFERENCE_TRANSFER_POLICY.md"]},
+    {"path":"docs/ASTRO-PREMIUM-MIGRATION-ROADMAP.md","type":"migration-plan","status":"historical","authority":"provenance-only","required":false,"supersededBy":["docs/REFERENCE_TRANSFER_POLICY.md"]},
+    {"path":"docs/CURRENT_RECHECK_2026-06-22_FIXES.md","type":"snapshot","status":"historical","authority":"provenance-only","required":false},
+    {"path":"docs/dependency-migrations/ASTRO_7_SATTERI.md","type":"dependency-migration-record","status":"historical","authority":"provenance-only","required":false},
+    {"path":"docs/BIBLE-REFERENCE-CLEAN-MIGRATION.md","type":"migration-record","status":"historical","authority":"provenance-only","required":false},
+    {"path":"docs/GOVERNANCE_V4_IMPLEMENTATION.md","type":"implementation-record","status":"historical","authority":"provenance-only","required":false},
+    {"path":"docs/LEGACY-SHADOW-RETIREMENT-READINESS-2026-08-06.md","type":"readiness-snapshot","status":"historical","authority":"provenance-only","required":false},
+    {"path":"docs/RELEASE-LIVE-EVIDENCE-CONTRACT-2026-08-06.md","type":"release-policy-compatibility-pointer","status":"historical","authority":"provenance-only","required":false,"supersededBy":["docs/RELEASE-LIVE-EVIDENCE.md"]},
+    {"path":"docs/history/incidents/2026-08-06-release-live-evidence-contract-original.md","type":"incident-contract-snapshot","status":"historical","authority":"provenance-only","required":false,"sourceBlobSha":"891392d7fa04623339d59a06dcf8667e380954dd","snapshotDerivation":"provenance-annotated-readable-derivative","supersededBy":["docs/RELEASE-LIVE-EVIDENCE.md"]},
+    {"path":"docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md","type":"forensic-snapshot","status":"historical","authority":"provenance-only","required":false},
+    {"path":"docs/history/README-2026-09-07-pre-document-authority.md","type":"repository-readme-snapshot","status":"historical","authority":"provenance-only","required":false}
+  ],
+  "policy": {
+    "unregisteredDocumentCannotOverrideRegisteredCurrentAuthority": true,
+    "unregisteredSurfaceContractRequiresCurrentDelegation": true,
+    "historicalNameDoesNotImplyCurrentStatus": true,
+    "sourceDerivedFactsMustNotUseProseAsSecondSSOT": true,
+    "historicalEvidenceMustBePreserved": true,
+    "massFileMovesRequireReferenceAuditFirst": true
+  }
+}
