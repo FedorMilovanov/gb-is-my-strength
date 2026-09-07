@@ -2,7 +2,8 @@
 
 Статус: **SOURCE PASS / NO PUBLICATION PROMOTION**
 Дата: 2026-09-07
-Product base / rollback: `066be4fb24089a549ae3b3089700332586585850`
+Product base / rollback: `d6b1906f0d263e23b45355bea0460ee00581bc38`
+Original Part II source-pass base: `066be4fb24089a549ae3b3089700332586585850`
 Product manuscript: `src/content/articles/anatomiya-padeniya-pyat-stadiy.mdx`
 Manuscript blob at base: `b7840a8a4957e20b955e72b8d6b2c3ed19f1483b`
 Manuscript blob after bounded source repair: `3bdd78ab9e9c928e36c3e32acca41b445b63c0f3`
