@@ -123,13 +123,35 @@ if (!releasePolicy || releasePolicy.status !== 'current' || releasePolicy.author
   fail('docs/RELEASE-LIVE-EVIDENCE.md must be current normative required authority');
 }
 
+const releaseSnapshotPath = 'docs/history/incidents/2026-08-06-release-live-evidence-contract-original.md';
+const releaseSourceBlob = '891392d7fa04623339d59a06dcf8667e380954dd';
+const releaseSnapshot = documents.find((item) => item.path === releaseSnapshotPath);
+if (!releaseSnapshot || releaseSnapshot.status !== 'historical' || releaseSnapshot.authority !== 'provenance-only') {
+  fail(`${releaseSnapshotPath} must remain historical provenance-only`);
+} else {
+  if (releaseSnapshot.sourceBlobSha !== releaseSourceBlob) {
+    fail(`${releaseSnapshotPath}: sourceBlobSha drift`);
+  }
+  if (releaseSnapshot.snapshotNormalization !== 'markdown-hard-break-whitespace-only') {
+    fail(`${releaseSnapshotPath}: snapshotNormalization drift`);
+  }
+}
+
 const readme = read('README.md');
 const agents = read('AGENTS.md');
 const authorityDoc = read('docs/DOCUMENT_AUTHORITY.md');
+const releaseSnapshotText = read(releaseSnapshotPath);
+const releasePointerText = read('docs/RELEASE-LIVE-EVIDENCE-CONTRACT-2026-08-06.md');
 if (!readme.includes('data/document-authority.json')) fail('README must link document authority SSOT');
 if (!readme.includes('docs/DOCUMENT_AUTHORITY.md')) fail('README must link human document authority index');
 if (!authorityDoc.includes('surface-local-non-overriding')) {
   fail('DOCUMENT_AUTHORITY must explain the surface-local default');
+}
+if (!releaseSnapshotText.includes(releaseSourceBlob)) {
+  fail(`${releaseSnapshotPath} must identify its exact original Git blob`);
+}
+if (!releasePointerText.includes(releaseSourceBlob)) {
+  fail('release compatibility pointer must identify the exact original Git blob');
 }
 if (/\b\d+\s+(?:production|public) routes\b/i.test(readme)) {
   fail('README must not maintain a manual production/public route count');
