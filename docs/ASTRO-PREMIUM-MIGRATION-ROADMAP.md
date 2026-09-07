@@ -1,14 +1,16 @@
 # Astro Premium Migration Roadmap
 
+> **Статус: HISTORICAL / PROVENANCE-ONLY.** Это roadmap миграционной фазы от 2026-06-19, а не текущая route-ownership или production policy. Его устойчивый owner-смысл — не ухудшать визуальный уровень и не объявлять visual parity без визуального доказательства — сохраняется через `docs/OWNER-INVARIANTS.md` и `docs/REFERENCE_TRANSFER_POLICY.md`. Старые правила ниже про `legacy root`, `shadow/pilot`, универсальный 95% threshold и конкретные promotion steps не применяются автоматически к current Astro-owned routes.
+
 Дата: 2026-06-19.
 
 ## Главная цель
 
 Перейти на Astro **без потери премиального визуала**. Не «пересобрать страницы заново», не заменить дизайн generic-карточками, а перенести существующие лучшие страницы так, чтобы владелец и читатель видели тот же уровень или лучше.
 
-**Целевой стандарт: 95%+ визуального совпадения legacy → Astro на desktop и mobile.**
+**Целевой стандарт той миграционной фазы: 95%+ визуального совпадения legacy → Astro на desktop и mobile.**
 
-## Что больше не считается успехом
+## Что больше не считалось успехом в этой миграционной фазе
 
 - Совпали H1/H2 — это не визуальный перенос.
 - Совпали title/description/canonical — это SEO parity, не visual parity.
@@ -16,18 +18,20 @@
 - Страница собрана в Astro, но выглядит как новая заглушка — это 0% визуального переноса.
 - Generic `astro-card`, `astro-page`, `astro-card-grid` вместо авторского legacy-дизайна — production regression.
 
-## Production правило
+## Historical production rule
 
-Пока Astro-версия конкретного URL не прошла visual parity:
+На момент этого roadmap, пока Astro-версия конкретного URL не прошла visual parity:
 
-1. production остаётся на legacy root;
-2. Astro route может быть только shadow/pilot/noindex;
-3. нельзя менять `page-ownership.json` на `production-dist`;
-4. нельзя писать в отчётах «90%+», если не сравнивались скриншоты и DOM-маркеры.
+1. production оставался на legacy root;
+2. Astro route мог быть только shadow/pilot/noindex;
+3. нельзя было менять `page-ownership.json` на `production-dist`;
+4. нельзя было писать в отчётах «90%+», если не сравнивались скриншоты и DOM-маркеры.
 
-## Обязательные проверки для каждого URL
+Эти пункты фиксируют прежний transition state. Текущий render owner определяется текущими route registries/source contracts, а reference-transfer режим — `docs/REFERENCE_TRANSFER_POLICY.md`.
 
-Перед promotion в production:
+## Обязательные проверки для каждого URL в той фазе
+
+Перед promotion в production требовались:
 
 - screenshot legacy vs Astro desktop;
 - screenshot legacy vs Astro mobile;
@@ -53,7 +57,7 @@ Rejected example: грубый отдельный блок «Основные в
 
 ### Нагорная
 
-Нельзя заменять на generic series cards. Обязательны:
+Исторический migration contract запрещал заменять её на generic series cards. В roadmap были обязательны:
 
 - `nagornaya-page`;
 - `nagornaya-series-page` для `/nagornaya/seriya/`;
@@ -61,9 +65,11 @@ Rejected example: грубый отдельный блок «Основные в
 - `h-article-card`;
 - собственный sidebar/mobile TOC мир.
 
+Current applicability этих конкретных markers проверяется по текущему route/source owner, а не по этому snapshot.
+
 ### Джон Гилл
 
-Нельзя превращать серию в отдельные generic articles. Обязательны:
+Roadmap запрещал превращать серию в отдельные generic articles и фиксировал тогдашние markers:
 
 - `gbs-world`;
 - `data-gbs2-series="dzhon-gill"`;
@@ -71,19 +77,23 @@ Rejected example: грубый отдельный блок «Основные в
 - `gbs2-hero`;
 - аккуратная серийная навигация без вылетающих слов.
 
+Current owner-sensitive Gill semantics сохраняются, но конкретная реализация проверяется по текущим source/contracts.
+
 ### Баптисты России
 
-Серия должна выглядеть полной, богатой и удобной, а не как черновой список. Обязательны:
+Серия должна выглядеть полной, богатой и удобной, а не как черновой список. Roadmap требовал:
 
 - GBS2 shell;
-- понятная карта чтения серии;
+- понятную карту чтения серии;
 - красивый список 10 частей;
 - связь с 3D-картой;
 - хороший mobile sheet.
 
+Конкретные counts/engine markers этого snapshot не являются вечным SSOT.
+
 ### Карты
 
-Карта не считается готовой, если есть:
+Карта не считалась готовой, если были:
 
 - наложение labels;
 - плохой initial viewport;
@@ -91,18 +101,22 @@ Rejected example: грубый отдельный блок «Основные в
 - сломанные controls;
 - демо-ощущение вместо premium.
 
-На витрине `/karty/` остаются только карты, которые не стыдно показывать. Остальные — holding page до визуального аудита.
+На витрине `/karty/` должны были оставаться только карты, которые не стыдно показывать; остальные — holding page до визуального аудита. Текущий publication status определяется current route/data contracts.
 
-## Порядок миграции
+## Historical migration sequence
 
-1. Сначала стабилизировать legacy production.
-2. Снять baseline screenshots ключевых legacy страниц.
-3. Выбрать один простой URL-кандидат.
-4. Довести Astro-версию до 95% visual parity.
-5. Добавить route-specific guard.
-6. Только потом включать production ownership для этого одного URL.
-7. Повторять постепенно.
+Roadmap предписывал:
+
+1. стабилизировать legacy production;
+2. снять baseline screenshots ключевых legacy страниц;
+3. выбрать один простой URL-кандидат;
+4. довести Astro-версию до 95% visual parity;
+5. добавить route-specific guard;
+6. только потом включать production ownership для этого одного URL;
+7. повторять постепенно.
+
+Этот sequence завершён как универсальная transition policy и сохраняется только как история миграции.
 
 ## Итог
 
-Astro — не самоцель. Цель — премиальный сайт, который легче поддерживать, но который не теряет визуальную красоту, авторские серии и удобство чтения.
+Устойчивый принцип остаётся: Astro — не самоцель; цель — премиальный сайт, который легче поддерживать и который не теряет визуальную красоту, авторские серии и удобство чтения. Текущие средства доказательства этого принципа задают current owner/source/reference-transfer contracts, а не этот dated roadmap.
