@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "contract": "A07-honest-offline-pwa",
   "decision": "REBUILD_CURRENT_MAIN",
-  "cacheVersion": "gb-v197-bible-legacy-authority-20260804",
+  "cacheVersion": "gb-v198-root-generation-authority-20260907",
   "sourceOwners": {
     "runtime": "sw.js",
     "registrationUi": "js/sw-register.js",
@@ -15,11 +15,14 @@
     "partialPrecacheMayActivate": false,
     "driveOrBuildPresenceImpliesOffline": false,
     "ttsAndStreamingMediaCached": false,
-    "deadMessageApiAllowed": false
+    "deadMessageApiAllowed": false,
+    "rootWorkerIdentityIsRouteIndependent": true,
+    "revisionedFallbackRequiresExactIdentity": true,
+    "installingGenerationMayMutateActiveGenerationCaches": false
   },
   "strategies": [
     {"surface": "navigation-html", "strategy": "network-first", "cache": "content", "offlineFallback": "exact route, canonical route, then /404.html"},
-    {"surface": "revisioned-static", "strategy": "network-first", "cache": "static", "offlineFallback": "exact revision then current canonical precache"},
+    {"surface": "revisioned-static", "strategy": "network-first", "cache": "static", "offlineFallback": "exact requested revision only"},
     {"surface": "unrevisioned-static", "strategy": "cache-first", "cache": "static", "offlineFallback": "cache miss fails"},
     {"surface": "mutable-data-json", "strategy": "network-first", "cache": "data", "offlineFallback": "exact cached response or 503"},
     {"surface": "pagefind-index-fragment", "strategy": "network-first", "cache": "pagefind", "offlineFallback": "exact cached response or 503"},
@@ -38,8 +41,11 @@
     "partial precache failure remains redundant",
     "online first load then offline reload",
     "missing route fallback",
+    "failed successor preserves active-generation cache",
+    "route-local metadata does not change root worker script identity",
     "release update removes old caches and preserves new offline response",
-    "revisioned asset online freshness",
+    "revisioned asset cross-generation miss never downgrades bytes",
+    "revisioned asset exact offline byte identity",
     "mutable JSON online freshness and offline fallback",
     "Pagefind bootstrap/data boundary",
     "TTS/audio bypass"

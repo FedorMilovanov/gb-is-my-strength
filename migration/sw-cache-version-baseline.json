@@ -1,9 +1,9 @@
 {
-  "version": 11,
-  "captured": "2026-08-04",
+  "version": 12,
+  "captured": "2026-09-07",
   "preSwitchProductionCacheVersion": "gb-v171-r62-maps-archaeology-20260612",
-  "lastReviewedDistProductionCacheVersion": "gb-v192-reader-state-20260724",
-  "currentDistProductionCacheVersion": "gb-v197-bible-legacy-authority-20260804",
-  "currentExpectedCacheVersion": "gb-v197-bible-legacy-authority-20260804",
-  "purpose": "Service Worker cache version baseline. currentExpectedCacheVersion MUST equal sw.js CACHE_VERSION at all times. v197 invalidates cached site runtime and CSS after the deprecated flat verse dataset, dead .gbx-verse fetch runtime and matching selectors are removed atomically. Source merge is not a production deployment."
+  "lastReviewedDistProductionCacheVersion": "gb-v197-bible-legacy-authority-20260804",
+  "currentDistProductionCacheVersion": "gb-v198-root-generation-authority-20260907",
+  "currentExpectedCacheVersion": "gb-v198-root-generation-authority-20260907",
+  "purpose": "Service Worker cache version baseline. currentExpectedCacheVersion MUST equal sw.js CACHE_VERSION at all times. v198 establishes one root-worker generation authority, stages under a cache namespace distinct from v197, and prevents revisioned offline fallback from crossing asset revisions. Source merge is not a production deployment."
 }
