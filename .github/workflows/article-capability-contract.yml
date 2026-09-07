@@ -73,5 +73,5 @@ jobs:
         with:
           name: article-capability-${{ github.run_id }}-${{ github.run_attempt }}
           path: reports/article-capability
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 14
