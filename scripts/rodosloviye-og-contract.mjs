@@ -4,6 +4,7 @@ import path from 'node:path';
 import process from 'node:process';
 
 const ROOT = path.resolve(new URL('..', import.meta.url).pathname);
+// Native Astro head is the source authority; retained legacy HTML is deliberately excluded.
 const SOURCE_HEAD = 'src/components/rodosloviye/RodosloviyePageHead.astro';
 const DIST_ROUTE = 'rodosloviye/index.html';
 const ASSET = 'images/og-rodosloviye-1200x630.webp';
