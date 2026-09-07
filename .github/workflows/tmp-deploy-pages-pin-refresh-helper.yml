@@ -77,30 +77,27 @@ jobs:
           test "${#files[@]}" -eq 3
           diff -u <(printf '%s\n' "${expected_sorted[@]}") <(printf '%s\n' "${files[@]}")
 
-      - name: Materialize only verified product files on helper branch
+      - name: Create verified blobs without mutating refs
         shell: bash
+        working-directory: /tmp/deploy-pages-candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          cp /tmp/deploy-pages-candidate/.github/workflows/deploy.yml .github/workflows/deploy.yml
-          cp /tmp/deploy-pages-candidate/scripts/check-workflows.js scripts/check-workflows.js
-          cp /tmp/deploy-pages-candidate/scripts/release-pipeline-contract-test.mjs scripts/release-pipeline-contract-test.mjs
-          git diff --check
-          mapfile -t files < <(git diff --name-only | sort)
-          expected=(
-            '.github/workflows/deploy.yml'
-            'scripts/check-workflows.js'
-            'scripts/release-pipeline-contract-test.mjs'
-          )
-          mapfile -t expected_sorted < <(printf '%s\n' "${expected[@]}" | sort)
-          test "${#files[@]}" -eq 3
-          diff -u <(printf '%s\n' "${expected_sorted[@]}") <(printf '%s\n' "${files[@]}")
-
-      - name: Commit verified helper result
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .github/workflows/deploy.yml scripts/check-workflows.js scripts/release-pipeline-contract-test.mjs
-          git commit -m 'ci(deps): refresh deploy-pages pin authority'
-          git push origin HEAD:agent/deploy-pages-pin-refresh-helper-20260907
+          for file in \
+            .github/workflows/deploy.yml \
+            scripts/check-workflows.js \
+            scripts/release-pipeline-contract-test.mjs
+          do
+            payload=$(jq -n --arg content "$(base64 -w0 "$file")" '{content:$content,encoding:"base64"}')
+            response=$(curl --fail-with-body -sS \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              -X POST "https://api.github.com/repos/FedorMilovanov/gb-is-my-strength/git/blobs" \
+              -d "$payload")
+            sha=$(printf '%s' "$response" | jq -r '.sha')
+            test "$sha" != "null"
+            test -n "$sha"
+            printf 'VERIFIED_BLOB %s %s\n' "$file" "$sha"
+          done
