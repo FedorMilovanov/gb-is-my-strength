@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
   "authorityId": "GB-DOCUMENT-AUTHORITY-V1",
-  "defaultUnregisteredAuthority": "non-normative",
+  "registryScope": "repository-wide-and-explicit-high-risk-document-authority",
+  "defaultUnregisteredAuthority": "surface-local-non-overriding",
   "operationalEntrypoints": [
     "AGENTS.md",
     "README.md",
@@ -42,6 +43,7 @@
   ],
   "policy": {
     "unregisteredDocumentCannotOverrideRegisteredCurrentAuthority": true,
+    "unregisteredSurfaceContractRequiresCurrentDelegation": true,
     "historicalNameDoesNotImplyCurrentStatus": true,
     "sourceDerivedFactsMustNotUseProseAsSecondSSOT": true,
     "historicalEvidenceMustBePreserved": true,
