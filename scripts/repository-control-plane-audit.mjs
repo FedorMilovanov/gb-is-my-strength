@@ -3,9 +3,9 @@
  * Repository control-plane integrity audit.
  *
  * Filesystem-derived references, workflow permission inheritance, mutation
- * boundaries, and privileged action identities are checked together. Any new
- * effective write scope must be registered before it can enter the control
- * plane.
+ * boundaries, privileged action identities, and current document authority are
+ * checked together. Any new effective write scope or required governance
+ * document must be registered before it can enter the control plane.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -17,6 +17,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REPORTS = path.join(ROOT, 'reports');
 const WORKFLOW_DIR = path.join(ROOT, '.github', 'workflows');
 const POLICY_PATH = 'data/workflow-permission-policy.json';
+const DOCUMENT_AUTHORITY_PATH = 'data/document-authority.json';
 const issues = [];
 const warnings = [];
 const references = [];
@@ -140,20 +141,40 @@ try {
 const permissionAudit = auditWorkflowPermissionPolicy(parsedWorkflows, permissionRegistry);
 for (const issue of permissionAudit.issues) addIssue(issue);
 
-const requiredDocs = [
-  'AGENTS.md',
-  'docs/WORK_MODES.md',
-  'docs/LANE_LOCK_POLICY.md',
-  'docs/AGENT_PUSH_MODEL.md',
-  'docs/OWNER-INVARIANTS.md',
-  'docs/SANDBOX-ENV-2026-06-21.md',
-  'docs/refactor-2026/lanes/README.md',
-  'docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md',
-  'audit/external-checks/README.md',
-  POLICY_PATH,
-];
+let documentAuthority = null;
+try {
+  documentAuthority = JSON.parse(fs.readFileSync(path.join(ROOT, DOCUMENT_AUTHORITY_PATH), 'utf8'));
+} catch (error) {
+  addIssue(`${DOCUMENT_AUTHORITY_PATH}: cannot parse document authority registry: ${error.message}`);
+}
+
+let requiredDocs = [];
+if (documentAuthority) {
+  if (documentAuthority.schemaVersion !== 1 || documentAuthority.authorityId !== 'GB-DOCUMENT-AUTHORITY-V1') {
+    addIssue(`${DOCUMENT_AUTHORITY_PATH}: document authority identity/schema drift`);
+  }
+  if (!Array.isArray(documentAuthority.documents)) {
+    addIssue(`${DOCUMENT_AUTHORITY_PATH}: documents must be an array`);
+  } else {
+    requiredDocs = documentAuthority.documents
+      .filter((doc) => doc && doc.required === true)
+      .map((doc) => doc.path);
+    for (const doc of documentAuthority.documents) {
+      if (doc?.required === true && doc.status !== 'current') {
+        addIssue(`${DOCUMENT_AUTHORITY_PATH}: required document is not current: ${doc.path}`);
+      }
+      if (doc?.required === true && (typeof doc.path !== 'string' || !doc.path)) {
+        addIssue(`${DOCUMENT_AUTHORITY_PATH}: required document has invalid path`);
+      }
+    }
+  }
+}
+
 for (const file of requiredDocs) {
   if (!exists(file)) addIssue(`required governance document is missing: ${file}`);
+}
+for (const file of [POLICY_PATH, DOCUMENT_AUTHORITY_PATH]) {
+  if (!exists(file)) addIssue(`required control-plane registry is missing: ${file}`);
 }
 
 const sharedGuardPath = '.github/workflows/shared-files-guard.yml';
@@ -173,6 +194,7 @@ const report = {
   workflows: workflowFiles().length,
   packageScripts: Object.keys(scripts).length,
   localReferences: references.length,
+  requiredGovernanceDocuments: requiredDocs.length,
   effectivePermissionJobs: permissionAudit.effectivePermissions.length,
   privilegedJobs: permissionAudit.privilegedJobs,
   effectivePermissions: permissionAudit.effectivePermissions,
@@ -191,6 +213,7 @@ fs.writeFileSync(
     `- Workflows: ${report.workflows}`,
     `- Package scripts: ${report.packageScripts}`,
     `- Static local references checked: ${report.localReferences}`,
+    `- Required governance documents: ${report.requiredGovernanceDocuments}`,
     `- Jobs with explicit effective permissions: ${report.effectivePermissionJobs}`,
     `- Registered privileged jobs: ${report.privilegedJobs.length}`,
     `- Issues: ${issues.length}`,
@@ -213,7 +236,7 @@ fs.writeFileSync(
   ].join('\n'),
 );
 
-console.log(`Control-plane audit: ${report.workflows} workflows, ${report.packageScripts} npm scripts, ${report.localReferences} local references, ${report.privilegedJobs.length} privileged jobs`);
+console.log(`Control-plane audit: ${report.workflows} workflows, ${report.packageScripts} npm scripts, ${report.localReferences} local references, ${report.requiredGovernanceDocuments} required governance documents, ${report.privilegedJobs.length} privileged jobs`);
 for (const warning of warnings) console.warn(`WARN ${warning}`);
 if (issues.length) {
   for (const issue of issues) console.error(`ERROR ${issue}`);
