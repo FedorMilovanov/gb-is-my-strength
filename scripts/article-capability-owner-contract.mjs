@@ -7,6 +7,7 @@ import path from 'node:path';
 const ROOT = path.resolve(process.cwd());
 const read = (file) => fs.readFileSync(path.join(ROOT, file), 'utf8');
 const count = (text, needle) => text.split(needle).length - 1;
+const countMatches = (text, pattern) => [...text.matchAll(pattern)].length;
 
 const COMPOSER = 'src/runtime/article-interactions.js';
 const READER = 'src/components/reader-platform/ReaderActionsRuntime.astro';
@@ -53,9 +54,18 @@ const krajne = read(KRAJNE);
 
 assert.match(composer, /const VERSION = 3;/, 'article interaction composer must advertise capability-complete version 3');
 assert.equal(count(reader, "../../runtime/article-interactions.js"), 1, 'ReaderActionsRuntime must own exactly one article-interactions transport');
-assert.equal(count(seriesChrome, 'ReaderActionsRuntime'), 1, 'Gill series chrome must mount exactly one ReaderActionsRuntime');
-assert.equal(/enhancements\.js|site\.js/.test(seriesChrome), false, 'Gill series chrome must not restore legacy enhancements/site transport');
-assert.equal(/enhancements\.js|site\.js/.test(composer), false, 'native article composer must not import legacy enhancements/site monoliths');
+assert.equal(
+  countMatches(seriesChrome, /^import\s+ReaderActionsRuntime\s+from\s+['"][^'"]+ReaderActionsRuntime\.astro['"];?\s*$/gm),
+  1,
+  'Gill series chrome must import exactly one ReaderActionsRuntime owner',
+);
+assert.equal(
+  countMatches(seriesChrome, /<ReaderActionsRuntime\s*\/>/g),
+  1,
+  'Gill series chrome must mount exactly one ReaderActionsRuntime component',
+);
+assert.equal(/(?:src=|import\s+[^;]*from\s+)["'][^"']*(?:enhancements|site)\.js(?:\?[^"']*)?["']/.test(seriesChrome), false, 'Gill series chrome must not restore legacy enhancements/site transport');
+assert.equal(/(?:^|\n)\s*import\s+[^;]*from\s+["'][^"']*(?:enhancements|site)\.js["']/.test(composer), false, 'native article composer must not import legacy enhancements/site monoliths');
 
 for (const family of families) {
   const source = read(family.module);
