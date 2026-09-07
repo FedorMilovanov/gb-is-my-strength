@@ -1,8 +1,8 @@
 # Release live evidence contract — historical compatibility pointer
 
-**Status:** historical / provenance-only  
-**Original date:** 2026-08-06  
-**Current release policy:** [`RELEASE-LIVE-EVIDENCE.md`](RELEASE-LIVE-EVIDENCE.md)  
+**Status:** historical / provenance-only
+**Original date:** 2026-08-06
+**Current release policy:** [`RELEASE-LIVE-EVIDENCE.md`](RELEASE-LIVE-EVIDENCE.md)
 **Original bytes/content preserved at:** [`history/incidents/2026-08-06-release-live-evidence-contract-original.md`](history/incidents/2026-08-06-release-live-evidence-contract-original.md)
 
 This path is retained so old links and forensic references continue to resolve. It is **not** the current release-policy owner.
