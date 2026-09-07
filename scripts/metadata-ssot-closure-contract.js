@@ -5,8 +5,8 @@ const assert = require('assert/strict');
 const fs = require('fs');
 const path = require('path');
 const { readRegistry } = require('./lib/editorial-metadata');
+const { orderProjectedRss } = require('./lib/editorial-rss-order');
 const { normalizeRoute } = require('./lib/rss-route-contract');
-const { canonicalRssEntries } = require('./rss-feed-normalizer');
 
 const ROOT = path.resolve(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -38,50 +38,16 @@ function checkSourceAuthorities() {
   const siteData = read(path.join(ROOT, 'src', 'data', 'site.ts'));
   assert.match(siteData, /['"]hard-texts['"]\s*:\s*\{[\s\S]*?label:\s*['"]Трудные тексты['"]/u);
 
-  const syntheticPolicy = {
-    version: 1,
-    routes: {
-      '/approved/': { rssPolicy: 'include', librarySection: 'A' },
-      '/blocked/': { rssPolicy: 'include', librarySection: 'B' },
-    },
-  };
-  const syntheticManifest = {
-    project: { curator: 'Редактор' },
-    items: [
-      { url: '/approved/', title: 'Approved', description: 'Approved', publishedTime: '2020-01-01T00:00:00Z' },
-      { url: '/blocked/', title: 'Blocked', description: 'Blocked', publishedTime: '2030-01-01T00:00:00Z' },
-    ],
-  };
-  const syntheticRecords = [
-    { route: '/approved/', owner: { status: 'production-dist' } },
-    { route: '/blocked/', owner: { status: 'production-dist' } },
-  ];
-  const syntheticEditorial = {
-    version: 3,
-    records: {
-      '/approved/': {
-        reviewStatus: 'approved',
-        editorialPublishedAt: '2026-08-02T00:00:00Z',
-        editorialModifiedAt: null,
-      },
-      '/blocked/': {
-        reviewStatus: 'inconsistent-needs-review',
-        editorialPublishedAt: '2010-01-01T00:00:00Z',
-        editorialModifiedAt: null,
-      },
-    },
-  };
-  const entries = canonicalRssEntries({
-    policyRegistry: syntheticPolicy,
-    manifest: syntheticManifest,
-    productionRecords: syntheticRecords,
-    editorialRegistry: syntheticEditorial,
-  });
-  assert.deepEqual(entries.map((entry) => entry.route), ['/blocked/', '/approved/']);
-  assert.equal(entries[0].published.toISOString(), '2030-01-01T00:00:00.000Z');
-  assert.equal(entries[0].dateAuthority, 'search-manifest-descriptive');
-  assert.equal(entries[1].published.toISOString(), '2026-08-02T00:00:00.000Z');
-  assert.equal(entries[1].dateAuthority, 'editorial-metadata-approved');
+  // The final sorter is deliberately registry-agnostic. It sees only the
+  // already projected public pubDate values, so an approved item may move
+  // without promoting or rewriting the blocked item's frozen decision.
+  const synthetic = `<?xml version="1.0"?><rss><channel>
+    <item><link>https://gospod-bog.ru/blocked/</link><pubDate>Sat, 01 Aug 2026 00:00:00 GMT</pubDate></item>
+    <item><link>https://gospod-bog.ru/approved/</link><pubDate>Sun, 02 Aug 2026 00:00:00 GMT</pubDate></item>
+  </channel></rss>`;
+  const ordered = orderProjectedRss(synthetic);
+  assert.ok(ordered.indexOf('/approved/') < ordered.indexOf('/blocked/'), 'final RSS sorter must use projected public pubDate');
+  assert.match(ordered, /blocked[\s\S]*Sat, 01 Aug 2026 00:00:00 GMT/u, 'blocked public date must remain byte-preserved');
 }
 
 function approvedRecords(registry) {
@@ -172,6 +138,7 @@ function checkFeed(registry, manifest) {
   const file = path.join(DIST, 'feed.xml');
   assert.ok(fs.existsSync(file), `dist feed missing: ${file}`);
   const xml = read(file);
+  assert.equal(orderProjectedRss(xml), xml, 'dist RSS must already be in canonical final pubDate order');
   const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/giu)].map((match) => match[1]);
   assert.ok(items.length > 0, 'dist feed contains no items');
   const manifestByRoute = new Map(
@@ -190,7 +157,7 @@ function checkFeed(registry, manifest) {
     const route = normalizeRoute(link);
     const record = registry.records[route] || null;
     const manifestItem = manifestByRoute.get(route);
-    assert.ok(manifestItem, `${route}: RSS item missing descriptive search-manifest record`);
+    assert.ok(manifestItem, `${route}: RSS item missing search-manifest record`);
 
     const actual = normalizeDate(pubDate, `${route} RSS pubDate`);
     if (record?.reviewStatus === 'approved') {
@@ -233,7 +200,7 @@ function checkFeed(registry, manifest) {
 function main() {
   checkSourceAuthorities();
   if (!REQUIRE_DIST) {
-    console.log('✅ Metadata SSOT source authority and approval-gate contract');
+    console.log('✅ Metadata SSOT source authority and final-order contract');
     return;
   }
   assert.ok(fs.existsSync(DIST), 'dist is required for --dist');
