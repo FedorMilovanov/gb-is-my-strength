@@ -1,7 +1,9 @@
 # Branch Lifecycle v4
 
 **Policy version:** 4.3  
-**Effective:** after merge into `main`  
+**Status:** current  
+**Effective since:** `da72713c550c83591ff7c4630b0cead65a8930e0` (2026-07-28; initial Worktree/Lifecycle v4 merge)  
+**Last policy revision:** `757946da67287354b819737813c0a47095f2d759` (2026-08-10; Writer Lease v1 integration)  
 **Goal:** preserve useful work without turning remote refs into an unreviewed archive.
 
 ## 1. Safety invariant

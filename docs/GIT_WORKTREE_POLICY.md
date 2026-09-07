@@ -1,7 +1,9 @@
 # Git Worktree Policy
 
 **Policy version:** 1.3  
-**Effective:** after merge into `main`  
+**Status:** current  
+**Effective since:** `da72713c550c83591ff7c4630b0cead65a8930e0` (2026-07-28; initial Worktree/Lifecycle v4 merge)  
+**Last policy revision:** `cea7ee3e5227a409adda9ff2459be68ec68fa643` (2026-07-28)  
 **Scope:** local execution by humans and agents, diagnostics, experiments and product work.
 
 ## 1. Principle
