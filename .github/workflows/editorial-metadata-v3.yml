@@ -111,9 +111,8 @@ jobs:
 
           restore_registry
           trap - EXIT
-          git diff --exit-code -- \
-            data/editorial-metadata.json \
-            data/editorial-metadata-supplements
+          git diff --exit-code -- data/editorial-metadata.json
+          git diff --exit-code -- data/editorial-metadata-supplements
 
       - name: Classify projection divergence by date precision
         if: always()
