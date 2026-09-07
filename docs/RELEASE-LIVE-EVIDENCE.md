@@ -1,7 +1,7 @@
 # Release live evidence policy
 
-**Status:** current  
-**Authority:** normative release policy  
+**Status:** current
+**Authority:** normative release policy
 **Owner:** `release-control-plane`
 
 ## Purpose
