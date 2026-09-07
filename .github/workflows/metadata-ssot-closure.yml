@@ -4,30 +4,30 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'src/data/site.ts'
-      - 'src/components/ui/Header.astro'
-      - 'data/editorial-metadata.json'
-      - 'data/route-search-policy.json'
-      - 'data/search-manifest.json'
-      - 'scripts/rss-feed-normalizer.js'
-      - 'scripts/rss-feed-normalizer-test.js'
-      - 'scripts/metadata-ssot-closure-contract.js'
-      - 'scripts/lib/editorial-metadata.js'
-      - 'scripts/lib/editorial-metadata-v3.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'src/**'
+      - 'data/**'
+      - 'migration/**'
+      - 'scripts/**'
+      - '**/*.html'
+      - 'feed.xml'
+      - 'sitemap*.xml'
+      - '.github/workflows/editorial-metadata-v3.yml'
       - '.github/workflows/metadata-ssot-closure.yml'
   push:
     branches: [main]
     paths:
-      - 'src/data/site.ts'
-      - 'src/components/ui/Header.astro'
-      - 'data/editorial-metadata.json'
-      - 'data/route-search-policy.json'
-      - 'data/search-manifest.json'
-      - 'scripts/rss-feed-normalizer.js'
-      - 'scripts/rss-feed-normalizer-test.js'
-      - 'scripts/metadata-ssot-closure-contract.js'
-      - 'scripts/lib/editorial-metadata.js'
-      - 'scripts/lib/editorial-metadata-v3.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'src/**'
+      - 'data/**'
+      - 'migration/**'
+      - 'scripts/**'
+      - '**/*.html'
+      - 'feed.xml'
+      - 'sitemap*.xml'
+      - '.github/workflows/editorial-metadata-v3.yml'
       - '.github/workflows/metadata-ssot-closure.yml'
 
 permissions:
@@ -72,15 +72,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Prove source authority and adversarial RSS chronology
+      - name: Prove source authority, approval gate and source RSS projection
         run: |
           node scripts/rss-feed-normalizer-test.js
           node scripts/metadata-ssot-closure-contract.js
+          node scripts/rss-feed-normalizer.js --check
 
       - name: Build production-like metadata surface
         run: npm run strangler:build:production-like
 
-      - name: Prove final search, sitemap and RSS projections
+      - name: Prove final approval-gated page, search, sitemap and RSS projections
         run: node scripts/metadata-ssot-closure-contract.js --dist
 
       - name: Require canonical v3 projection idempotence
