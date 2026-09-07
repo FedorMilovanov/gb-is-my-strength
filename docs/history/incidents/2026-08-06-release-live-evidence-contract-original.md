@@ -1,8 +1,12 @@
-# Release live evidence contract
+# Release live evidence contract — 2026-08-06 historical snapshot
 
-Date: 2026-08-06  
-Owner: `release-control-plane`  
-Mode: `SYSTEM`  
+**Status:** historical / provenance-only
+**Original Git blob:** `891392d7fa04623339d59a06dcf8667e380954dd`
+**Normalization:** Markdown hard-break trailing spaces were removed from this readable snapshot; the exact original bytes remain recoverable from the Git blob above.
+
+Date: 2026-08-06
+Owner: `release-control-plane`
+Mode: `SYSTEM`
 Rollback base for the repair lane: `main@d4f9ab6afcc36bf4297b660c361d656df1d0f45d`
 
 ## Purpose
@@ -121,3 +125,5 @@ Post-merge requirements:
 - live current pointer and immutable provenance identify the merged release/control-plane SHA, workflow run and candidate digest.
 
 Issue #474 may be closed only after those post-merge proofs are inspected. Merge alone is not production evidence.
+
+> Historical note: the issue-closing condition above is part of the 2026-08-06 snapshot, not a current backlog instruction. Current release authority is `docs/RELEASE-LIVE-EVIDENCE.md`.
