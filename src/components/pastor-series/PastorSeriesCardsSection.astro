@@ -1,9 +1,13 @@
 ---
 /**
- * PastorSeriesCardsSection.astro — visible article-card groups for /pastor-series/.
+ * PastorSeriesCardsSection.astro — visible publication + canonical roadmap.
  *
- * Published reader parts are separated from the longer editorial roadmap so a
- * planned module can never look like an already released numbered article.
+ * Architecture rule:
+ *  - I–IX = the numbered biblical/pastoral core;
+ *  - documentary dossiers and field guides = unnumbered companion materials;
+ *  - a research manuscript never looks published until it owns a public route.
+ *
+ * Canon: research/pastor-series/MASTER-PLAN.md.
  */
 ---
 <section class="h-section h-reveal" aria-labelledby="seriesLabel">
@@ -11,7 +15,7 @@
   <div class="h-section-accent" aria-hidden="true"></div>
 
   <div class="h-articles-group">
-    <h2 class="h-section-label" style="margin-top:24px;margin-bottom:12px;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-main);">Опубликованные части</h2>
+    <h2 class="h-section-label" style="margin-top:24px;margin-bottom:12px;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-main);">Опубликованные материалы</h2>
     <ul class="h-article-list">
       <li>
         <a href="../articles/20-antisovetov-pastoru/" class="h-article-card">
@@ -29,7 +33,7 @@
               <span class="h-meta-sep" aria-hidden="true">·</span>
               <span class="h-meta-tag">Опубликована</span>
             </div>
-            <p class="h-article-abstract">Двадцать системных ошибок в пасторском служении — от культа личности до информационного контроля.</p>
+            <p class="h-article-abstract">Диагностическая карта: как сердце служителя, устройство власти и церковная культура могут постепенно перейти от пастырства к самосохранению системы.</p>
           </div>
         </a>
       </li>
@@ -43,129 +47,146 @@
             </picture>
           </div>
           <div class="h-article-body">
-            <div class="h-article-kicker">Часть II · 35 мин</div>
+            <div class="h-article-kicker">Досье A · 35 мин</div>
             <h3 class="h-article-title">Диотрефы нашего времени: власть, подотчётность и верность</h3>
             <div class="h-article-meta">
               <span class="h-meta-author">Автор-редактор: Фёдор Милованов</span>
               <span class="h-meta-sep" aria-hidden="true">·</span>
-              <span class="h-meta-tag">Опубликована</span>
+              <span class="h-meta-tag">Опубликовано</span>
               <span class="h-meta-tag h-meta-tag--neutral">181 источник</span>
             </div>
-            <p class="h-article-abstract">Двадцать один документированный кейс, пятнадцать путей верного свидетельства и двадцать практических ответов — с точным различением суда, расследования, обвинения и церковного вывода.</p>
+            <p class="h-article-abstract">Документальный casebook: двадцать один кейс, пятнадцать путей верного свидетельства и двадцать практических ответов — с раздельной маркировкой суда, расследования, обвинения и церковного вывода.</p>
           </div>
         </a>
       </li>
     </ul>
 
-    <h2 class="h-section-label" style="margin-top:32px;margin-bottom:12px;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-main);">Дорожная карта: диагностика</h2>
+    <h2 class="h-section-label" style="margin-top:32px;margin-bottom:12px;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-main);">Каноническое ядро: диагностика и границы власти</h2>
     <ul class="h-article-list">
       <li>
-        <div class="h-article-card" style="opacity:0.8;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
+        <div class="h-article-card" style="opacity:0.82;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
           <div class="h-article-thumb">
             <picture>
               <source srcset="../images/pastor-series/manipulation.webp" type="image/webp" />
-              <img src="../images/pastor-series/manipulation.webp" alt="Анатомия манипуляции" decoding="async" loading="lazy" width="160" height="108" />
+              <img src="../images/pastor-series/manipulation.webp" alt="Анатомия падения" decoding="async" loading="lazy" width="160" height="108" />
             </picture>
           </div>
           <div class="h-article-body">
-            <div class="h-article-kicker">Будущий модуль</div>
-            <h3 class="h-article-title">Анатомия манипуляции: 8 способов контроля</h3>
+            <div class="h-article-kicker">Часть II · исследовательский черновик</div>
+            <h3 class="h-article-title">Анатомия падения: пять стадий институционального разложения</h3>
             <div class="h-article-meta">
               <span class="h-meta-author">Редактор: Фёдор Милованов</span>
               <span class="h-meta-sep" aria-hidden="true">·</span>
-              <span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);">В работе</span>
+              <span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);">Досье 28</span>
             </div>
-            <p class="h-article-abstract">Язык для восьми конкретных способов манипуляции: как они выглядят изнутри и как отличать их от законного пастырского призыва.</p>
+            <p class="h-article-abstract">Не каталог «красных флагов», а причинная траектория: идол платформы → демонтаж подотчётности → страх и контроль → защита бренда → косметическое покаяние или распад.</p>
           </div>
         </div>
       </li>
 
       <li>
-        <div class="h-article-card" style="opacity:0.6;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
+        <div class="h-article-card" style="opacity:0.82;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
           <div class="h-article-thumb h-article-thumb--planned" data-part="III" aria-hidden="true"></div>
           <div class="h-article-body">
-            <div class="h-article-kicker">Будущий модуль</div>
+            <div class="h-article-kicker">Часть III · исследовательский черновик</div>
             <h3 class="h-article-title">Тексты Писания, которыми манипулируют</h3>
-            <div class="h-article-meta"><span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);opacity:.7;">Планируется</span></div>
-            <p class="h-article-abstract">Разбор библейских текстов, которыми прикрываются манипуляции — с обеих сторон конфликта.</p>
+            <div class="h-article-meta"><span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);">Досье 31 · 23 текста</span></div>
+            <p class="h-article-abstract">Евр. 13:17, Мф. 18, 1 Тим. 5, «не прикасайтесь к помазанным», Корей и другие тексты — с контекстом, пределами применения и двусторонним зеркалом для пастора и прихожанина.</p>
           </div>
         </div>
       </li>
-    </ul>
 
-    <h2 class="h-section-label" style="margin-top:32px;margin-bottom:12px;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-main);">Дорожная карта: распознавание</h2>
-    <ul class="h-article-list">
       <li>
-        <div class="h-article-card" style="opacity:0.6;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
+        <div class="h-article-card" style="opacity:0.82;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
           <div class="h-article-thumb h-article-thumb--planned" data-part="IV" aria-hidden="true"></div>
           <div class="h-article-body">
-            <div class="h-article-kicker">Будущий модуль</div>
-            <h3 class="h-article-title">Диагностика в реальном времени</h3>
-            <div class="h-article-meta"><span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);opacity:.7;">Планируется</span></div>
-            <p class="h-article-abstract">Как отличить единичную ошибку от системы.</p>
+            <div class="h-article-kicker">Часть IV · исследовательский черновик</div>
+            <h3 class="h-article-title">Диагностика в реальном времени: семь типов учителей и лидеров</h3>
+            <div class="h-article-meta"><span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);">Досье 30</span></div>
+            <p class="h-article-abstract">Как не спутать волка, исправимого учителя, восстановимого брата, правоверного, но непригодного служителя, Диотрефа, Корея и системную порчу — и не вынести приговор сильнее доказательств.</p>
           </div>
         </div>
       </li>
 
       <li>
-        <div class="h-article-card" style="opacity:0.6;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
+        <div class="h-article-card" style="opacity:0.82;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
           <div class="h-article-thumb h-article-thumb--planned" data-part="V" aria-hidden="true"></div>
           <div class="h-article-body">
-            <div class="h-article-kicker">Будущий модуль</div>
+            <div class="h-article-kicker">Часть V · исследовательский черновик</div>
             <h3 class="h-article-title">Церковная дисциплина и власть: принципы, границы, защита</h3>
-            <div class="h-article-meta"><span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);opacity:.7;">Планируется</span></div>
-            <p class="h-article-abstract">Позитивное библейское богословие власти, как власть должна быть устроена и какова цель дисциплины.</p>
+            <div class="h-article-meta"><span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);">Досье 32</span></div>
+            <p class="h-article-abstract">Положительное богословие пастырской власти: реальная власть без господства над совестью; дисциплина, подотчётность, защита от клеветы и защита от неприкасаемости.</p>
           </div>
         </div>
       </li>
 
       <li>
-        <div class="h-article-card" style="opacity:0.6;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
+        <div class="h-article-card" style="opacity:0.82;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
           <div class="h-article-thumb h-article-thumb--planned" data-part="VI" aria-hidden="true"></div>
           <div class="h-article-body">
-            <div class="h-article-kicker">Будущий модуль</div>
-            <h3 class="h-article-title">Когда уходить, когда оставаться</h3>
-            <div class="h-article-meta"><span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);opacity:.7;">Планируется</span></div>
-            <p class="h-article-abstract">Как взвешенно принять решение, не движимое только болью или страхом.</p>
+            <div class="h-article-kicker">Часть VI · исследовательский черновик</div>
+            <h3 class="h-article-title">Когда говорить, когда молчать; когда уходить, когда оставаться</h3>
+            <div class="h-article-meta"><span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);">Досье 33</span></div>
+            <p class="h-article-abstract">Решение не по одной боли и не по одному страху: серьёзность, доказательства, публичность, повторяемость, безопасность, юрисдикция, возможность исправления — и обязанность уходить без фракционности там, где уход действительно нужен.</p>
           </div>
         </div>
       </li>
     </ul>
 
-    <h2 class="h-section-label" style="margin-top:32px;margin-bottom:12px;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-main);">Дорожная карта: здоровый образец</h2>
+    <h2 class="h-section-label" style="margin-top:32px;margin-bottom:12px;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-main);">Каноническое ядро: здоровый образец</h2>
     <ul class="h-article-list">
       <li>
-        <div class="h-article-card" style="opacity:0.6;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
+        <div class="h-article-card" style="opacity:0.72;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
           <div class="h-article-thumb h-article-thumb--planned" data-part="VII" aria-hidden="true"></div>
           <div class="h-article-body">
-            <div class="h-article-kicker">Будущий модуль</div>
+            <div class="h-article-kicker">Часть VII · новый manuscript lane</div>
             <h3 class="h-article-title">Верные и неизвестные: здоровое пастырство</h3>
-            <div class="h-article-meta"><span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);opacity:.7;">Планируется</span></div>
-            <p class="h-article-abstract">Позитивный контрапункт серии: портрет здорового пастыря, которому можно доверять без духовной зависимости и страха.</p>
+            <div class="h-article-meta"><span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);opacity:.8;">Положительное богословие</span></div>
+            <p class="h-article-abstract">Как выглядит пастор, которому можно повиноваться без культа личности: характер прежде платформы, Слово выше собственной воли, способность принимать исправление, прозрачность и верность в малом.</p>
           </div>
         </div>
       </li>
 
       <li>
-        <div class="h-article-card" style="opacity:0.6;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
+        <div class="h-article-card" style="opacity:0.68;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
           <div class="h-article-thumb h-article-thumb--planned" data-part="VIII" aria-hidden="true"></div>
           <div class="h-article-body">
-            <div class="h-article-kicker">Будущий модуль</div>
+            <div class="h-article-kicker">Часть VIII · исследовательский план</div>
             <h3 class="h-article-title">Признаки здоровой церкви</h3>
-            <div class="h-article-meta"><span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);opacity:.7;">Планируется</span></div>
-            <p class="h-article-abstract">Как выглядит живая, честная и зрелая поместная церковь.</p>
+            <div class="h-article-meta"><span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);opacity:.7;">В разработке</span></div>
+            <p class="h-article-abstract">Не «идеальная организация», а церковь, где Слово, зрелые служители, членство, дисциплина, финансы, жалобы и исправление устроены так, чтобы власть оставалась служением.</p>
           </div>
         </div>
       </li>
 
       <li>
-        <div class="h-article-card" style="opacity:0.6;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
+        <div class="h-article-card" style="opacity:0.68;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
           <div class="h-article-thumb h-article-thumb--planned" data-part="IX" aria-hidden="true"></div>
           <div class="h-article-body">
-            <div class="h-article-kicker">Будущий модуль</div>
+            <div class="h-article-kicker">Часть IX · исследовательский план</div>
             <h3 class="h-article-title">Несовершенный человек в несовершенной церкви</h3>
-            <div class="h-article-meta"><span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);opacity:.7;">Планируется</span></div>
-            <p class="h-article-abstract">Заключительная часть о трезвой реальности: ни одна церковь не идеальна, и потому различение должно идти вместе со смирением.</p>
+            <div class="h-article-meta"><span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);opacity:.7;">Финальный предохранитель</span></div>
+            <p class="h-article-abstract">Почему ошибка не всегда означает злоупотребление, конфликт — не всегда насилие, а терпение — не всегда трусость; и почему формула «все несовершенны» никогда не оправдывает повторяющееся зло.</p>
+          </div>
+        </div>
+      </li>
+    </ul>
+
+    <h2 class="h-section-label" style="margin-top:32px;margin-bottom:12px;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-main);">Сопутствующие инструменты</h2>
+    <ul class="h-article-list">
+      <li>
+        <div class="h-article-card" style="opacity:0.72;cursor:default;pointer-events:none;" aria-disabled="true" data-pagefind-ignore>
+          <div class="h-article-thumb">
+            <picture>
+              <source srcset="../images/pastor-series/manipulation.webp" type="image/webp" />
+              <img src="../images/pastor-series/manipulation.webp" alt="Полевой справочник по манипуляции" decoding="async" loading="lazy" width="160" height="108" />
+            </picture>
+          </div>
+          <div class="h-article-body">
+            <div class="h-article-kicker">Полевой справочник · без номера части</div>
+            <h3 class="h-article-title">Анатомия манипуляции: 8 способов контроля</h3>
+            <div class="h-article-meta"><span class="h-meta-tag" style="background:var(--accent-soft);color:var(--accent);opacity:.7;">В разработке</span></div>
+            <p class="h-article-abstract">Краткий прикладной язык для распознавания техник контроля. Психологические названия здесь только описывают поведение; нравственный диагноз и границы применения задаёт Писание.</p>
           </div>
         </div>
       </li>
