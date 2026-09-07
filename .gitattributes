@@ -17,6 +17,11 @@
 # repository-wide whitespace gate strict everywhere else.
 tools/actionlint/v1.7.7/LICENSE.txt whitespace=-blank-at-eof
 
+# Preserve the exact historical 2026-08-06 release-contract blob. Its Markdown
+# hard-break spaces are part of the archived bytes; current policy documents
+# remain subject to the normal trailing-whitespace gate.
+docs/history/incidents/2026-08-06-release-live-evidence-contract-original.md whitespace=-trailing-space
+
 # Binary files — no line-ending conversion
 *.png  binary
 *.jpg  binary
