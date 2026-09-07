@@ -58,6 +58,35 @@ function manifestRouteMap(manifest) {
   return routes;
 }
 
+function effectiveEditorialDates(route, item, editorialRegistry) {
+  const manifestPublished = parseDate(item.publishedTime, `${route} search-manifest publishedTime`);
+  const manifestModified = parseDate(item.modifiedTime || item.publishedTime, `${route} search-manifest modifiedTime`);
+  const editorial = editorialRegistry?.records?.[route] || null;
+
+  // A02 approval gate is authoritative. Frozen/unreviewed registry decisions are
+  // evidence only and must never become public chronology merely because they
+  // exist in the registry.
+  if (!editorial || editorial.reviewStatus !== 'approved') {
+    return {
+      published: manifestPublished,
+      modified: manifestModified,
+      authority: 'search-manifest-descriptive',
+    };
+  }
+
+  if (!editorial.editorialPublishedAt) {
+    throw new Error(`${route}: approved editorial metadata missing editorialPublishedAt`);
+  }
+  return {
+    published: parseDate(editorial.editorialPublishedAt, `${route} approved editorialPublishedAt`),
+    modified: parseDate(
+      editorial.editorialModifiedAt || editorial.editorialPublishedAt,
+      `${route} approved editorialModifiedAt`
+    ),
+    authority: 'editorial-metadata-approved',
+  };
+}
+
 function canonicalRssEntries({ policyRegistry, manifest, productionRecords, editorialRegistry }) {
   const policies = normalizePolicyRoutes(policyRegistry);
   const manifestRoutes = manifestRouteMap(manifest);
@@ -66,7 +95,6 @@ function canonicalRssEntries({ policyRegistry, manifest, productionRecords, edit
       .filter((record) => record?.owner?.status === 'production-dist')
       .map((record) => normalizeRoute(record.route))
   );
-  const editorialRecords = editorialRegistry?.records || {};
   const entries = [];
 
   for (const [route, policy] of policies) {
@@ -74,19 +102,10 @@ function canonicalRssEntries({ policyRegistry, manifest, productionRecords, edit
     if (!productionRoutes.has(route)) throw new Error(`${route}: RSS policy includes a non-production route`);
     const item = manifestRoutes.get(route);
     if (!item) throw new Error(`${route}: RSS policy requires a search-manifest item`);
-    const editorial = editorialRecords[route];
-    if (!editorial) throw new Error(`${route}: RSS policy requires an editorial metadata record`);
 
-    const missing = ['title', 'description'].filter((field) => !item[field]);
+    const missing = ['title', 'description', 'publishedTime'].filter((field) => !item[field]);
     if (missing.length) throw new Error(`${route}: search-manifest item missing ${missing.join(', ')}`);
-    if (!editorial.editorialPublishedAt) {
-      throw new Error(`${route}: editorial metadata missing editorialPublishedAt`);
-    }
-    const published = parseDate(editorial.editorialPublishedAt, `${route} editorialPublishedAt`);
-    const modified = parseDate(
-      editorial.editorialModifiedAt || editorial.editorialPublishedAt,
-      `${route} editorialModifiedAt`
-    );
+    const dates = effectiveEditorialDates(route, item, editorialRegistry);
     const creator = String(item.author || item.editor || manifest?.project?.curator || '').trim();
     if (!creator) throw new Error(`${route}: search-manifest item missing author/editor`);
 
@@ -96,8 +115,9 @@ function canonicalRssEntries({ policyRegistry, manifest, productionRecords, edit
       description: String(item.description).trim(),
       creator,
       category: String(item.section || policy.librarySection || '').trim(),
-      published,
-      modified,
+      published: dates.published,
+      modified: dates.modified,
+      dateAuthority: dates.authority,
     });
   }
 
@@ -169,20 +189,20 @@ function main() {
 
   if (options.write) {
     if (current === expected) {
-      console.log('RSS feed already matches route policy, descriptive manifest and editorial authority.');
+      console.log('RSS feed already matches route policy and approval-gated chronology.');
       return;
     }
     fs.writeFileSync(feedFile, expected, 'utf8');
-    console.log('Wrote deterministic feed.xml from route policy, descriptive manifest and editorial authority.');
+    console.log('Wrote deterministic feed.xml with approved editorial dates and descriptive fallback.');
     return;
   }
 
   if (current !== expected) {
-    console.error('❌ feed.xml differs from the deterministic policy/manifest/editorial projection');
+    console.error('❌ feed.xml differs from the deterministic approval-gated RSS projection');
     console.error('Run: node scripts/rss-feed-normalizer.js --write');
     process.exit(1);
   }
-  console.log('✅ feed.xml exactly matches route policy, descriptive manifest and editorial authority');
+  console.log('✅ feed.xml exactly matches route policy and approval-gated chronology');
 }
 
 if (require.main === module) {
@@ -201,6 +221,7 @@ module.exports = {
   cdata,
   parseDate,
   manifestRouteMap,
+  effectiveEditorialDates,
   canonicalRssEntries,
   renderFeed,
 };
