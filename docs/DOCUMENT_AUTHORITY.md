@@ -1,6 +1,6 @@
 # Document Authority — current vs historical documentation
 
-**Machine SSOT:** [`../data/document-authority.json`](../data/document-authority.json)  
+**Machine SSOT:** [`../data/document-authority.json`](../data/document-authority.json)
 **Validator:** [`../scripts/document-authority-audit.mjs`](../scripts/document-authority-audit.mjs)
 
 ## Rule
