@@ -1,0 +1,71 @@
+name: Security Ownership Contract
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/security-document-policy.js'
+      - 'scripts/security-transport-policy.js'
+      - 'scripts/security-ownership-contract.mjs'
+      - 'scripts/astro-cache-bust-postbuild.js'
+      - '.github/workflows/security-ownership-contract.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/security-document-policy.js'
+      - 'scripts/security-transport-policy.js'
+      - 'scripts/security-ownership-contract.mjs'
+      - 'scripts/astro-cache-bust-postbuild.js'
+      - '.github/workflows/security-ownership-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-ownership-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  security-ownership:
+    name: Document + transport authority
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up pinned Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax and source ownership contract
+        run: |
+          node --check scripts/security-document-policy.js
+          node --check scripts/security-transport-policy.js
+          node --check scripts/security-ownership-contract.mjs
+          node --check scripts/astro-cache-bust-postbuild.js
+          node scripts/security-ownership-contract.mjs
+
+      - name: Build production-like artifact
+        run: npm run strangler:build:production-like
+
+      - name: Prove canonical document artifact and live transport headers
+        env:
+          SECURITY_LIVE_BASE_URL: https://gospod-bog.ru
+        run: node scripts/security-ownership-contract.mjs --dist --live
+
+      - name: Upload security ownership evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: security-ownership-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/security-ownership-contract.json
+          if-no-files-found: error
+          retention-days: 30
