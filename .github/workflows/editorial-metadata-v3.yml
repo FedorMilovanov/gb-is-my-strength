@@ -66,7 +66,8 @@ jobs:
           set -o pipefail
           npm run strangler:build:production-like 2>&1 \
             | tee reports/editorial-metadata-build.log
-          cp data/editorial-metadata.json reports/editorial-metadata-frozen.json
+          node scripts/editorial-metadata-snapshot.js \
+            --out=reports/editorial-metadata-frozen.json
 
       - name: Require final dist projection evidence and idempotence
         shell: bash
@@ -97,17 +98,28 @@ jobs:
           fi
 
           restore_registry() {
-            cp reports/editorial-metadata-frozen.json data/editorial-metadata.json
+            git restore --source=HEAD --worktree -- \
+              data/editorial-metadata.json \
+              data/editorial-metadata-supplements
           }
           trap restore_registry EXIT
 
           node scripts/editorial-metadata-registry.js --write 2>&1 \
             | tee reports/editorial-metadata-capture.log
-          cp data/editorial-metadata.json reports/editorial-metadata-observed.json
+          node scripts/editorial-metadata-snapshot.js \
+            --out=reports/editorial-metadata-observed.json
 
           restore_registry
           trap - EXIT
           git diff --exit-code -- data/editorial-metadata.json
+          git diff --exit-code -- data/editorial-metadata-supplements
+
+      - name: Classify projection divergence by date precision
+        if: always()
+        run: >-
+          node scripts/editorial-metadata-semantic-divergence.js
+          --input=reports/editorial-metadata-observed.json
+          --out=reports/editorial-metadata-semantic-divergence.json
 
       - name: Compare frozen and observed metadata snapshots
         if: always()
@@ -138,6 +150,7 @@ jobs:
             reports/editorial-metadata-frozen.json
             reports/editorial-metadata-observed.json
             reports/editorial-metadata-diff.json
+            reports/editorial-metadata-semantic-divergence.json
             reports/asset-revision-drift.log
             data/editorial-metadata.schema.json
             data/editorial-metadata-migration-inventory.json
