@@ -17,18 +17,9 @@ const records = [
 const policyRegistry = {
   version: 1,
   routes: {
-    '/articles/newer/': {
-      rssPolicy: 'include',
-      librarySection: 'Богословие',
-    },
-    '/articles/older/': {
-      rssPolicy: 'include',
-      librarySection: 'Переводы',
-    },
-    '/excluded/': {
-      rssPolicy: 'exclude',
-      librarySection: 'Служебное',
-    },
+    '/articles/newer/': { rssPolicy: 'include', librarySection: 'Богословие' },
+    '/articles/older/': { rssPolicy: 'include', librarySection: 'Переводы' },
+    '/excluded/': { rssPolicy: 'exclude', librarySection: 'Служебное' },
   },
 };
 const manifest = {
@@ -48,8 +39,6 @@ const manifest = {
       section: 'Переводы',
       author: 'Автор',
       editor: 'Редактор',
-      // Intentionally newer than /newer/ here. RSS chronology must ignore
-      // descriptive-manifest date drift and follow editorial-metadata.json.
       publishedTime: '2026-07-25T12:00:00+03:00',
       modifiedTime: '2026-07-25T13:00:00+03:00',
     },
@@ -80,16 +69,16 @@ const editorialRegistry = {
   version: 3,
   records: {
     '/articles/newer/': {
+      reviewStatus: 'approved',
       editorialPublishedAt: '2026-07-24T12:00:00+03:00',
       editorialModifiedAt: '2026-07-24T13:00:00+03:00',
     },
     '/articles/older/': {
+      reviewStatus: 'inconsistent-needs-review',
+      // Deliberately different from the manifest. Frozen/unapproved evidence
+      // must not be promoted into public RSS chronology.
       editorialPublishedAt: '2026-07-19T12:00:00+03:00',
       editorialModifiedAt: '2026-07-20T13:00:00+03:00',
-    },
-    '/excluded/': {
-      editorialPublishedAt: '2026-07-26T12:00:00+03:00',
-      editorialModifiedAt: null,
     },
   },
 };
@@ -100,10 +89,12 @@ const entries = canonicalRssEntries({
   productionRecords: records,
   editorialRegistry,
 });
-assert.deepEqual(entries.map((item) => item.route), ['/articles/newer/', '/articles/older/']);
-assert.equal(entries[0].published.toISOString(), '2026-07-24T09:00:00.000Z');
-assert.equal(entries[1].published.toISOString(), '2026-07-19T09:00:00.000Z');
-assert.equal(entries[1].creator, 'Автор', 'author must take precedence over editor');
+assert.deepEqual(entries.map((item) => item.route), ['/articles/older/', '/articles/newer/']);
+assert.equal(entries[0].published.toISOString(), '2026-07-25T09:00:00.000Z');
+assert.equal(entries[0].dateAuthority, 'search-manifest-descriptive');
+assert.equal(entries[1].published.toISOString(), '2026-07-24T09:00:00.000Z');
+assert.equal(entries[1].dateAuthority, 'editorial-metadata-approved');
+assert.equal(entries[0].creator, 'Автор', 'author must take precedence over editor');
 
 const rendered = renderFeed({
   policyRegistry,
@@ -113,20 +104,30 @@ const rendered = renderFeed({
 });
 const parsed = parseRss(rendered);
 assert.equal(parsed.items.length, 2);
-assert.equal(parsed.items[0].link, 'https://gospod-bog.ru/articles/newer/');
-assert.equal(parsed.items[0].pubDate, 'Fri, 24 Jul 2026 09:00:00 GMT');
-assert.equal(parsed.items[1].pubDate, 'Sun, 19 Jul 2026 09:00:00 GMT');
-assert.equal(parsed.items[1].title, 'Старый & проверенный');
+assert.equal(parsed.items[0].link, 'https://gospod-bog.ru/articles/older/');
+assert.equal(parsed.items[0].pubDate, 'Sat, 25 Jul 2026 09:00:00 GMT');
+assert.equal(parsed.items[1].link, 'https://gospod-bog.ru/articles/newer/');
+assert.equal(parsed.items[1].pubDate, 'Fri, 24 Jul 2026 09:00:00 GMT');
+assert.equal(parsed.items[0].title, 'Старый & проверенный');
 assert.ok(rendered.includes('Новый &lt;материал&gt;'));
 assert.ok(rendered.includes(']]]]><![CDATA[>'));
 assert.ok(!rendered.includes('/excluded/'));
 assert.ok(rendered.includes('<lastBuildDate>Sat, 25 Jul 2026 10:00:00 GMT</lastBuildDate>'));
-assert.ok(!rendered.includes('<pubDate>Sat, 25 Jul 2026 09:00:00 GMT</pubDate>'), 'manifest chronology must not own RSS');
+assert.ok(!rendered.includes('<pubDate>Sun, 19 Jul 2026 09:00:00 GMT</pubDate>'), 'unapproved frozen date must not become public');
 assert.equal(
   rendered,
   renderFeed({ policyRegistry, manifest, productionRecords: records, editorialRegistry }),
   'render must be deterministic'
 );
+
+const noRegistryEntries = canonicalRssEntries({
+  policyRegistry,
+  manifest,
+  productionRecords: records,
+  editorialRegistry: { version: 3, records: {} },
+});
+assert.equal(noRegistryEntries[0].route, '/articles/older/');
+assert.equal(noRegistryEntries[0].dateAuthority, 'search-manifest-descriptive');
 
 assert.throws(
   () => manifestRouteMap({ items: [manifest.items[0], { ...manifest.items[0], id: 'duplicate' }] }),
@@ -148,18 +149,6 @@ assert.throws(
     productionRecords: records,
     editorialRegistry: {
       ...editorialRegistry,
-      records: { '/articles/older/': editorialRegistry.records['/articles/older/'] },
-    },
-  }),
-  /RSS policy requires an editorial metadata record/
-);
-assert.throws(
-  () => canonicalRssEntries({
-    policyRegistry,
-    manifest,
-    productionRecords: records,
-    editorialRegistry: {
-      ...editorialRegistry,
       records: {
         ...editorialRegistry.records,
         '/articles/newer/': {
@@ -169,7 +158,7 @@ assert.throws(
       },
     },
   }),
-  /editorial metadata missing editorialPublishedAt/
+  /approved editorial metadata missing editorialPublishedAt/
 );
 assert.throws(
   () => canonicalRssEntries({
@@ -196,4 +185,4 @@ assert.throws(
   /search manifest generatedAt: invalid date/
 );
 
-console.log('✅ deterministic RSS normalizer uses canonical editorial date authority');
+console.log('✅ deterministic RSS normalizer preserves the editorial approval gate');
