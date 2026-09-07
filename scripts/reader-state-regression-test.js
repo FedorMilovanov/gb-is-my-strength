@@ -311,6 +311,7 @@ const seriesControllerSource = fs.readFileSync(path.join(ROOT, 'js/floating-clus
 const headSource = fs.readFileSync(path.join(ROOT, 'src/components/reader-platform/ReaderPreferencesHead.astro'), 'utf8');
 const cacheAssetsSource = fs.readFileSync(path.join(ROOT, 'scripts/cache-bust-assets.js'), 'utf8');
 const auditSource = fs.readFileSync(path.join(ROOT, 'scripts/audit-pro.js'), 'utf8');
+const assetVersionSource = fs.readFileSync(path.join(ROOT, 'src/lib/asset-version.js'), 'utf8');
 const swSource = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
 const swBaseline = JSON.parse(fs.readFileSync(path.join(ROOT, 'migration/sw-cache-version-baseline.json'), 'utf8'));
 const swVersion = swSource.match(/\bCACHE_VERSION\s*=\s*['"]([^'"]+)['"]/)?.[1];
@@ -334,7 +335,14 @@ assert(!seriesControllerSource.includes("style.setProperty('--gb-read-pct'"), 's
 assert(headSource.includes("assetUrl('js/reader-state.js')"), 'shared reader head must load ReaderState');
 assert(cacheAssetsSource.includes("'js/reader-state.js'"), 'ReaderState must be cache-bust managed');
 assert(auditSource.includes("'js/reader-state.js'"), 'ReaderState must be in the central JS allowlist');
-assert(/['"]\/js\/reader-state\.js['"]/.test(swSource), 'ReaderState must be precached regardless of quote style');
+const readerStateRevision = assetVersionSource.match(/'js\/reader-state\.js'\s*:\s*'([0-9a-f]{6,12})'/)?.[1];
+assert(readerStateRevision, 'ReaderState must have an authoritative ASSET_VERSIONS revision');
+const readerStatePrecacheUrl = `/js/reader-state.js?v=${readerStateRevision}`;
+assert(
+  swSource.includes(`'${readerStatePrecacheUrl}'`) || swSource.includes(`"${readerStatePrecacheUrl}"`),
+  'ReaderState must be precached at its exact authoritative revision',
+);
+assert(!/['"]\/js\/reader-state\.js['"]/.test(swSource), 'ReaderState precache must not fall back to a queryless identity');
 assert(swVersion, 'service worker must expose CACHE_VERSION');
 assert.strictEqual(swVersion, swBaseline.currentExpectedCacheVersion, 'service worker cache version must match the governed baseline');
 assert.notStrictEqual(swVersion, swBaseline.lastReviewedDistProductionCacheVersion, 'offline contract rollout must advance beyond the prior reviewed cache version');
