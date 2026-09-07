@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v197-bible-legacy-authority-20260804';
+const CACHE_VERSION = 'gb-v198-root-generation-authority-20260907';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -17,32 +17,32 @@ const EXPECTED_CACHES = new Set([
 ]);
 const OFFLINE_FALLBACK = '/404.html';
 const PRECACHE_ASSETS = [
-  '/css/site.css',
-  '/css/home.css',
-  '/css/command-palette.css',
-  '/css/mobile-hotfix.css',
-  '/css/nagornaya-mobile-toc.css',
-  '/css/floating-cluster.css',
-  '/css/series-samizdat.css',
-  '/css/reader-preferences.css',
-  '/css/enhancements-runtime.css',
-  '/css/highlights-runtime.css',
-  '/css/sw-toast.css',
-  '/fonts/fonts.css',
-  '/nagornaya/tw.min.css',
-  '/js/nagornaya-bar-extras.js',
-  '/js/site.js',
-  '/js/site-utils.js',
-  '/js/scroll-perf.js',
-  '/js/bookmark-engine.js',
-  '/js/enhancements.js',
-  '/js/highlights.js',
-  '/js/sw-register.js',
-  '/js/nagornaya-mobile-toc.js',
-  '/js/floating-cluster-controller.js',
-  '/js/reader-preferences-head.js',
-  '/js/reader-preferences.js',
-  '/js/reader-state.js',
+  '/css/site.css?v=d1015157',
+  '/css/home.css?v=a4c21e0e',
+  '/css/command-palette.css?v=3b88813f',
+  '/css/mobile-hotfix.css?v=a6a3187a',
+  '/css/nagornaya-mobile-toc.css?v=30051b58',
+  '/css/floating-cluster.css?v=85a1bfb6',
+  '/css/series-samizdat.css?v=2c4a9f29',
+  '/css/reader-preferences.css?v=2b0b76ce',
+  '/css/enhancements-runtime.css?v=97a3e924',
+  '/css/highlights-runtime.css?v=9f42844a',
+  '/css/sw-toast.css?v=2e540077',
+  '/fonts/fonts.css?v=864cc57a',
+  '/nagornaya/tw.min.css?v=2670414e',
+  '/js/nagornaya-bar-extras.js?v=3c7e0bdd',
+  '/js/site.js?v=c6b5ccf7',
+  '/js/site-utils.js?v=661c6cc1',
+  '/js/scroll-perf.js?v=454d6f7b',
+  '/js/bookmark-engine.js?v=fba4e559',
+  '/js/enhancements.js?v=1b5392b1',
+  '/js/highlights.js?v=25484760',
+  '/js/sw-register.js?v=921dd6a2',
+  '/js/nagornaya-mobile-toc.js?v=649d9217',
+  '/js/floating-cluster-controller.js?v=c8746af7',
+  '/js/reader-preferences-head.js?v=2db7a79e',
+  '/js/reader-preferences.js?v=63b588b5',
+  '/js/reader-state.js?v=b3deb501',
   '/pagefind/pagefind.js',
   '/favicon.ico',
   '/favicon-48.png',
@@ -193,9 +193,6 @@ async function revisionedStaticNetworkFirst(request) {
   } catch (error) {
     const exact = await cache.match(request);
     if (exact) return exact;
-    const url = new URL(request.url);
-    const canonical = await cache.match(canonicalUrl(url));
-    if (canonical) return canonical;
     throw error;
   }
 }

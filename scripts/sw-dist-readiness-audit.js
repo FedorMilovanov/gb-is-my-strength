@@ -8,6 +8,7 @@ const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
 const BASELINE = path.join(ROOT, 'migration', 'sw-cache-version-baseline.json');
 const MATRIX = path.join(ROOT, 'data', 'offline-route-matrix.json');
+const ASSET_VERSION_HELPER = path.join(ROOT, 'src', 'lib', 'asset-version.js');
 const REPORT_DIR = path.join(ROOT, 'reports');
 const REQUIRE_PAGEFIND = process.argv.includes('--require-pagefind');
 const REQUIRE_CACHE_BUMP = process.argv.includes('--require-cache-bump');
@@ -36,12 +37,10 @@ function forbidPattern(label, text, pattern, message) {
   if (pattern.test(text)) bad(`${label}: forbidden ${message}`);
   else ok(`${label}: no ${message}`);
 }
-
 function routeToDist(route) {
   if (route === '/') return path.join(DIST, 'index.html');
   return path.join(DIST, route.replace(/^\/+|\/+$/g, ''), 'index.html');
 }
-
 function walk(root, extensions, output = []) {
   if (!fs.existsSync(root)) return output;
   for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
@@ -51,6 +50,22 @@ function walk(root, extensions, output = []) {
     else if (entry.isFile() && extensions.some((extension) => entry.name.endsWith(extension))) output.push(file);
   }
   return output;
+}
+function functionBody(source, name, nextName) {
+  const start = source.indexOf(`async function ${name}(`);
+  if (start < 0) return '';
+  const next = nextName ? source.indexOf(`async function ${nextName}(`, start + 1) : -1;
+  return source.slice(start, next > start ? next : source.length);
+}
+function loadAssetVersions() {
+  const source = fs.readFileSync(ASSET_VERSION_HELPER, 'utf8');
+  const versions = new Map();
+  for (const match of source.matchAll(/['"]([^'"]+)['"]\s*:\s*['"]([a-f0-9]{8})['"]/g)) {
+    versions.set(match[1], match[2]);
+  }
+  if (!versions.size) bad('src/lib/asset-version.js ASSET_VERSIONS could not be parsed');
+  else ok(`ASSET_VERSIONS parsed (${versions.size})`);
+  return versions;
 }
 
 function checkDistPresence() {
@@ -84,18 +99,18 @@ function checkCacheVersion(rootSw, matrix) {
   catch (error) { bad(`cache-version baseline JSON invalid: ${error.message}`); return version; }
 
   const previous = baseline.preSwitchProductionCacheVersion || '';
+  const lastReviewed = baseline.lastReviewedDistProductionCacheVersion || '';
   const expected = baseline.currentExpectedCacheVersion || baseline.currentDistProductionCacheVersion || '';
   if (!previous) bad('baseline missing preSwitchProductionCacheVersion');
   else if (version === previous) bad(`CACHE_VERSION reuses historical pre-switch version ${previous}`);
   else ok(`CACHE_VERSION differs from historical pre-switch version ${previous}`);
-
+  if (!lastReviewed) bad('baseline missing lastReviewedDistProductionCacheVersion');
+  else if (version === lastReviewed) bad(`CACHE_VERSION must represent a generation distinct from last reviewed active version ${lastReviewed}`);
+  else ok(`CACHE_VERSION is generation-isolated from last reviewed active version ${lastReviewed}`);
   if (!expected) bad('baseline missing currentExpectedCacheVersion');
   else if (version !== expected) bad(`CACHE_VERSION ${version} != baseline currentExpectedCacheVersion ${expected}`);
   else ok(`CACHE_VERSION matches baseline currentExpectedCacheVersion ${expected}`);
-
-  if (REQUIRE_CACHE_BUMP && version === baseline.lastReviewedDistProductionCacheVersion) {
-    bad(`deploy-switch requires a cache bump beyond lastReviewedDistProductionCacheVersion ${baseline.lastReviewedDistProductionCacheVersion}`);
-  }
+  if (REQUIRE_CACHE_BUMP && version === lastReviewed) bad(`deploy-switch requires a cache bump beyond ${lastReviewed}`);
   if (matrix.cacheVersion !== version) bad(`offline matrix cacheVersion ${matrix.cacheVersion} != sw.js ${version}`);
   else ok('offline matrix cacheVersion matches sw.js');
   return version;
@@ -123,23 +138,33 @@ function checkPrecache(rootSw) {
   if (forbiddenHtml.length) forbiddenHtml.forEach((asset) => bad(`content HTML must not be precached: ${asset}`));
   else ok('only /404.html is precached; content routes remain visit-driven');
 
-  if (assets.includes('/karty/_engine/map-engine.js')) {
-    bad('Karty shared map-engine.js must remain runtime-fetched so the freshness strategy can govern it');
-  } else ok('Karty shared map-engine.js is excluded from PRECACHE_ASSETS');
-
+  if (assets.some((asset) => localPath(asset) === 'karty/_engine/map-engine.js')) bad('Karty shared map-engine.js must remain runtime-fetched');
+  else ok('Karty shared map-engine.js is excluded from PRECACHE_ASSETS');
   if (REQUIRE_PAGEFIND) {
     if (assets.includes('/pagefind/pagefind.js')) ok('Pagefind bootstrap is precached');
     else bad('Pagefind bootstrap /pagefind/pagefind.js missing from PRECACHE_ASSETS');
   }
-  if (assets.some((asset) => /(?:audio|tts|model|vosk)|\.(?:zip|bin|mp3|m4a|ogg|wav)$/i.test(asset))) {
-    bad('TTS/audio/model assets must not be precached');
-  } else ok('PRECACHE_ASSETS excludes TTS/audio/model payloads');
+  if (assets.some((asset) => /(?:audio|tts|model|vosk)|\.(?:zip|bin|mp3|m4a|ogg|wav)$/i.test(asset))) bad('TTS/audio/model assets must not be precached');
+  else ok('PRECACHE_ASSETS excludes TTS/audio/model payloads');
+
+  const versions = loadAssetVersions();
+  const byPath = new Map(assets.map((asset) => [localPath(asset), asset]));
+  const mismatches = [];
+  let governedPrecache = 0;
+  for (const [asset, hash] of versions) {
+    if (!byPath.has(asset)) continue;
+    governedPrecache += 1;
+    const expected = `/${asset}?v=${hash}`;
+    if (byPath.get(asset) !== expected) mismatches.push(`${asset}: expected ${expected}, got ${byPath.get(asset)}`);
+  }
+  if (mismatches.length) mismatches.forEach((item) => bad(`revision-governed precache identity mismatch: ${item}`));
+  else ok(`revision-governed precache entries preserve exact ASSET_VERSIONS identity (${governedPrecache})`);
 }
 
 function checkSwRuntimeShape(rootSw) {
   requirePattern('sw.js install', rootSw, /cache\.addAll\s*\(\s*PRECACHE_ASSETS\s*\)/, 'atomic cache.addAll(PRECACHE_ASSETS)');
   forbidPattern('sw.js install', rootSw, /Promise\.allSettled|Failed to precache/, 'fail-open partial precache');
-  requirePattern('sw.js install', rootSw, /caches\.delete\s*\(\s*CACHE_STATIC\s*\)[\s\S]*throw\s+error/, 'failed staging cache cleanup before rethrow');
+  requirePattern('sw.js install', rootSw, /caches\.delete\s*\(\s*CACHE_STATIC\s*\)[\s\S]*throw\s+error/, 'failed staging-generation cache cleanup before rethrow');
   requirePattern('sw.js install', rootSw, /await\s+self\.skipWaiting\s*\(\s*\)/, 'skipWaiting only after successful precache');
 
   requirePattern('sw.js activate', rootSw, /name\.startsWith\s*\(\s*["']gb-["']\s*\)/, 'deletes only governed gb-* caches');
@@ -148,8 +173,14 @@ function checkSwRuntimeShape(rootSw) {
 
   requirePattern('sw.js HTML strategy', rootSw, /function\s+networkFirstHtml\s*\(/, 'network-first navigation owner');
   forbidPattern('sw.js HTML strategy', rootSw, /staleWhileRevalidate/, 'stale-while-revalidate navigation');
-  requirePattern('sw.js revisioned static strategy', rootSw, /function\s+revisionedStaticNetworkFirst\s*\(/, 'network-first revisioned assets');
-  requirePattern('sw.js revisioned static fallback', rootSw, /canonicalUrl\s*\(\s*url\s*\)/, 'canonical precache fallback');
+
+  const revisioned = functionBody(rootSw, 'revisionedStaticNetworkFirst', 'networkFirstWithCache');
+  if (!revisioned) bad('sw.js revisioned static strategy function missing');
+  else {
+    requirePattern('sw.js revisioned static fallback', revisioned, /cache\.match\s*\(\s*request\s*\)/, 'exact requested-revision cache lookup');
+    forbidPattern('sw.js revisioned static fallback', revisioned, /canonicalUrl\s*\(|ignoreSearch\s*:/, 'canonical/search-insensitive downgrade');
+  }
+
   requirePattern('sw.js Karty engine selector', rootSw, /function\s+isNetworkFirstRuntime\s*\(\s*url\s*\)[\s\S]{0,180}?url\.pathname\s*===\s*["']\/karty\/_engine\/map-engine\.js["']/, 'exact shared map-engine network-first selector');
   requirePattern('sw.js Karty engine strategy', rootSw, /isStaticAsset\s*\(\s*url\s*\)[\s\S]{0,300}?isRevisioned\s*\(\s*url\s*\)[\s\S]{0,180}?isNetworkFirstRuntime\s*\(\s*url\s*\)[\s\S]{0,140}?networkFirstWithCache\s*\(\s*request\s*,\s*CACHE_STATIC\s*\)[\s\S]{0,140}?cacheFirst\s*\(\s*request\s*,\s*CACHE_STATIC\s*\)/, 'unversioned Karty engine uses network-first with static-cache offline fallback before generic cache-first');
   requirePattern('sw.js mutable data strategy', rootSw, /isMutableData[\s\S]+CACHE_DATA/, 'mutable /data/*.json network-first cache');
@@ -165,11 +196,28 @@ function checkSwRuntimeShape(rootSw) {
 function checkRegister() {
   if (!existsInDist('js/sw-register.js')) return;
   const register = readDist('js/sw-register.js');
+  requirePattern('sw-register.js authority', register, /\bvar\s+workerUrl\s*=\s*["']\/sw\.js["']\s*;/, 'one bare /sw.js worker identity');
+  forbidPattern('sw-register.js authority', register, /workerUrl\s*=\s*["']\/sw\.js["']\s*\+|\/sw\.js\?v=|encodeURIComponent\s*\(\s*siteVersion\s*\)/, 'route-local worker script identity');
   requirePattern('sw-register.js', register, /navigator\.serviceWorker\.register\s*\(\s*workerUrl\s*,\s*\{\s*scope:\s*["']\/["']\s*\}/, 'registers root /sw.js with root scope');
   requirePattern('sw-register.js', register, /async\s+function\s+currentPageCached/, 'checks current route cache state');
   requirePattern('sw-register.js', register, /эта страница доступна/, 'honest cached-page offline message');
   requirePattern('sw-register.js', register, /эта страница не сохранена/, 'honest uncached-page offline message');
   forbidPattern('sw-register.js', register, /кэшированные статьи доступны/, 'blanket cached-articles claim');
+}
+
+function checkRootRegistrationOwners() {
+  const candidates = [
+    ...walk(path.join(ROOT, 'js'), ['.js', '.mjs']),
+    ...walk(path.join(ROOT, 'src'), ['.js', '.mjs', '.ts', '.astro']),
+    ...fs.readdirSync(ROOT).filter((name) => name.endsWith('.html')).map((name) => path.join(ROOT, name)),
+  ];
+  const owners = [];
+  for (const file of candidates) {
+    const text = fs.readFileSync(file, 'utf8');
+    if (/navigator\.serviceWorker\.register\s*\(/.test(text)) owners.push(path.relative(ROOT, file).replace(/\\/g, '/'));
+  }
+  if (owners.length === 1 && owners[0] === 'js/sw-register.js') ok('root SW registration has exactly one source owner: js/sw-register.js');
+  else bad(`root SW registration owner set must be exactly js/sw-register.js, got: ${owners.join(', ') || '(none)'}`);
 }
 
 function checkDeadProducers() {
@@ -190,9 +238,13 @@ function checkDeadProducers() {
 function checkMatrix(matrix) {
   if (matrix.schemaVersion !== 1) bad('offline route matrix schemaVersion must be 1');
   if (matrix.decision !== 'REBUILD_CURRENT_MAIN') bad(`offline route matrix decision must be REBUILD_CURRENT_MAIN, got ${matrix.decision}`);
-  if (!matrix.principles || matrix.principles.partialPrecacheMayActivate !== false) bad('offline matrix must forbid partial precache activation');
-  if (!Array.isArray(matrix.browserScenarios) || matrix.browserScenarios.length < 9) bad('offline matrix must list all nine browser scenarios');
-  else ok(`offline matrix declares ${matrix.browserScenarios.length} browser scenarios`);
+  const principles = matrix.principles || {};
+  if (principles.partialPrecacheMayActivate !== false) bad('offline matrix must forbid partial precache activation');
+  if (principles.rootWorkerIdentityIsRouteIndependent !== true) bad('offline matrix must require route-independent root worker identity');
+  if (principles.revisionedFallbackRequiresExactIdentity !== true) bad('offline matrix must require exact revision fallback identity');
+  if (principles.installingGenerationMayMutateActiveGenerationCaches !== false) bad('offline matrix must forbid installing generation mutation of active-generation caches');
+  if (!Array.isArray(matrix.browserScenarios) || matrix.browserScenarios.length < 12) bad('offline matrix must list the complete generation-aware browser scenarios');
+  else ok(`offline matrix declares ${matrix.browserScenarios.length} generation-aware browser scenarios`);
   for (const record of matrix.representativeRoutes || []) {
     if (record.role === 'missing') continue;
     const file = routeToDist(record.route);
@@ -207,6 +259,7 @@ function writeReport(version, matrix) {
     contract: 'A07-honest-offline-pwa',
     cacheVersion: version,
     decision: matrix.decision,
+    generationAuthority: true,
     pagefindRequired: REQUIRE_PAGEFIND,
     cacheBumpRequired: REQUIRE_CACHE_BUMP,
     checks,
@@ -218,6 +271,7 @@ function writeReport(version, matrix) {
     '# A07 SW static audit', '',
     `- Cache version: \`${version}\``,
     `- Decision: \`${matrix.decision}\``,
+    '- Generation authority: **enforced**',
     `- Passed checks: **${checks.filter((item) => item.status === 'pass').length}**`,
     `- Errors: **${problems.length}**`,
     `- Notes: **${notes.length}**`, '',
@@ -240,6 +294,7 @@ function main() {
   checkPrecache(rootSw);
   checkSwRuntimeShape(rootSw);
   checkRegister();
+  checkRootRegistrationOwners();
   checkDeadProducers();
   checkMatrix(matrix);
   writeReport(version, matrix);
