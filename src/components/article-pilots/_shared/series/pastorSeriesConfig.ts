@@ -1,9 +1,14 @@
 /**
  * pastorSeriesConfig.ts — серия «Тёмная сторона кафедры» на общем reader engine.
  *
- * Part I gives a diagnostic framework. Part II applies the evidence contract to
- * documented cases and then shows faithful pathways under pressure. Every route
- * remains independently addressable, indexable and auditable.
+ * Каноническая архитектура серии разделяет два яруса:
+ *  - нумерованное богословско-пастырское ядро (римские части);
+ *  - документальные досье (label), которые проверяют тезисы на реальных кейсах,
+ *    но не отнимают номер у ещё не опубликованной следующей части ядра.
+ *
+ * Поэтому опубликованные «Диотрефы нашего времени» сохраняют стабильный URL,
+ * индексируемость и reader chrome, но являются «Досье A», а не «Частью II».
+ * Полный канон I–IX зафиксирован в research/pastor-series/MASTER-PLAN.md.
  */
 import { SERIES_CONFIGS, type SeriesConfig, defineSeriesConfig } from './seriesConfig';
 
@@ -25,9 +30,9 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
     },
     {
       id: 'diotrophes',
-      mark: { kind: 'roman', value: 'II' },
-      title: 'Часть II. Диотрефы нашего времени',
-      shortTitle: 'Механизмы власти и верные ответы',
+      mark: { kind: 'label', value: 'Досье A' },
+      title: 'Диотрефы нашего времени',
+      shortTitle: 'Документальные кейсы · власть и верные ответы',
       href: '/articles/diotrefy-nashego-vremeni/',
       readingTime: '35 мин',
     },
@@ -64,15 +69,15 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
     diotrophes: {
       id: 'diotrophes',
       label: 'Диотрефы нашего времени',
-      title: 'Часть II. Диотрефы нашего времени',
-      mobileSection: 'Механизмы власти',
-      partLabel: 'Часть II · Содержание',
+      title: 'Досье A. Диотрефы нашего времени',
+      mobileSection: 'Документальные кейсы',
+      partLabel: 'Досье A · Содержание',
       readingProgressDoneMin: 67,
       readingProgressPartMin: 35,
       readingProgressTotalMin: 102,
       railNowTitle: 'Диотрефы нашего времени',
       railCover: '../../images/pastor-series/og-20-antisovetov-pastoru.webp',
-      partDialogLabel: 'Часть II · Диотрефы нашего времени',
+      partDialogLabel: 'Досье A · Диотрефы нашего времени',
       partToc: [
         { href: '#short-summary', label: 'Коротко', level: 2, current: true },
         { href: '#interpretive-guardrails', label: 'Границы толкования', level: 2 },
