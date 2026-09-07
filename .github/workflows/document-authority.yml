@@ -41,9 +41,7 @@ jobs:
         run: node scripts/document-authority-audit.mjs
 
       - name: Validate control-plane document consumption
-        run: node scripts/repository-control-plane-audit.mjs
+        run: node scripts/repository-control-plane-audit.mjs --no-report
 
-      - name: Assert validators are read-only outside reports
-        run: |
-          git diff --exit-code -- . ':!reports/**'
-          git status --porcelain --untracked-files=no | grep -Ev '^ [MADRCU?!]{1,2} reports/' | grep -Ev '^[MADRCU?!]{1,2}  reports/' && exit 1 || true
+      - name: Assert validators are read-only
+        run: git diff --exit-code
