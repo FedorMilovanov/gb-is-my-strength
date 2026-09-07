@@ -4,6 +4,7 @@
  *
  * Runs after Astro and legacy-copy, synchronizes asset hashes, materializes the
  * Atlas browser runtime, projects the canonical document security policy,
+ * removes transport-only meta pragmas that cannot own HTTP response policy,
  * projects editorial metadata and sitemap images, and executes the canonical
  * build-time relation projector. Every phase is deterministic and fail-closed.
  */
@@ -122,6 +123,18 @@ function cspMetaTags(html) {
   const tags = html.match(/<meta\b[^>]*>/gi) || [];
   return tags.filter((tag) => /http-equiv\s*=\s*["']Content-Security-Policy["']/i.test(tag));
 }
+function transportOnlyMetaTags(html) {
+  const tags = html.match(/<meta\b[^>]*>/gi) || [];
+  return tags.filter((tag) => /http-equiv\s*=\s*["']X-Content-Type-Options["']/i.test(tag));
+}
+function stripTransportOnlyMetaPragmas(html) {
+  let removed = 0;
+  const updated = html.replace(/\s*<meta\b[^>]*\bhttp-equiv\s*=\s*["']X-Content-Type-Options["'][^>]*>\s*/gi, () => {
+    removed += 1;
+    return '\n';
+  });
+  return { html: updated, removed };
+}
 function canonicalCspMetaTag() {
   return `<meta http-equiv="Content-Security-Policy" content="${DOCUMENT_CSP}">`;
 }
@@ -151,29 +164,38 @@ function hardenCsp(html) {
   };
 }
 
-let cspFilesTouched = 0;
+let securityFilesTouched = 0;
+let transportMetaRemoved = 0;
 let cspInjected = 0;
 let cspCanonicalized = 0;
 let cspVerified = 0;
-const cspFailures = [];
+const securityFailures = [];
 for (const file of htmlFiles) {
-  const source = fs.readFileSync(file, 'utf8');
-  const result = hardenCsp(source);
-  if (result.changed) {
-    cspFilesTouched += 1;
-    if (result.injected) cspInjected += 1;
-    if (result.canonicalized) cspCanonicalized += 1;
-    if (!DRY_RUN) fs.writeFileSync(file, result.html, 'utf8');
+  const original = fs.readFileSync(file, 'utf8');
+  const transport = stripTransportOnlyMetaPragmas(original);
+  const result = hardenCsp(transport.html);
+  const finalHtml = result.html;
+
+  transportMetaRemoved += transport.removed;
+  if (result.injected) cspInjected += 1;
+  if (result.canonicalized) cspCanonicalized += 1;
+  if (finalHtml !== original) {
+    securityFilesTouched += 1;
+    if (!DRY_RUN) fs.writeFileSync(file, finalHtml, 'utf8');
   }
-  if (!/<html\b/i.test(result.html) || !/<head\b/i.test(result.html)) continue;
-  const tags = cspMetaTags(result.html);
-  if (tags.length !== 1 || cspContent(tags[0]) !== DOCUMENT_CSP.trim().replace(/\s+/g, ' ')) {
-    cspFailures.push(path.relative(DIST, file));
+
+  if (!/<html\b/i.test(finalHtml) || !/<head\b/i.test(finalHtml)) continue;
+  const cspTags = cspMetaTags(finalHtml);
+  const transportTags = transportOnlyMetaTags(finalHtml);
+  const relative = path.relative(DIST, file).replace(/\\/g, '/');
+  if (transportTags.length) securityFailures.push(`${relative}: transport-only X-Content-Type-Options meta survived final projection`);
+  if (cspTags.length !== 1 || cspContent(cspTags[0]) !== DOCUMENT_CSP.trim().replace(/\s+/g, ' ')) {
+    securityFailures.push(`${relative}: canonical CSP projection failed`);
   } else {
     cspVerified += 1;
   }
 }
-if (cspFailures.length) throw new Error(`Canonical CSP projection failed in ${cspFailures.join(', ')}`);
+if (securityFailures.length) throw new Error(`Canonical security projection failed:\n${securityFailures.join('\n')}`);
 
 const projector = spawnSync(process.execPath, [PROJECTOR, ...(DRY_RUN ? ['--dry-run'] : [])], { cwd: ROOT, stdio: 'inherit', encoding: 'utf8' });
 if (projector.error) throw projector.error;
@@ -202,7 +224,9 @@ console.log(`  HTML files scanned:       ${htmlFiles.length}`);
 console.log(`  Files touched:            ${filesTouched}`);
 console.log(`  Hash replacements:        ${replacements}`);
 console.log(`  Governed runtime assets:  ${RUNTIME_ASSETS.length}`);
-console.log(`  CSP files touched:        ${cspFilesTouched} (injected: ${cspInjected}, canonicalized: ${cspCanonicalized})`);
+console.log(`  Security files touched:   ${securityFilesTouched}`);
+console.log(`  Transport meta removed:   ${transportMetaRemoved}`);
+console.log(`  CSP injected/canonical:   ${cspInjected}/${cspCanonicalized}`);
 console.log(`  CSP canonical verified:   ${cspVerified}`);
 console.log(`  Sitemap images:           ${sitemapImages.inserted} inserted, ${sitemapImages.replaced} synchronized, ${sitemapImages.unchanged} unchanged`);
-console.log(DRY_RUN ? '\n  (dry-run: nothing written)' : '\n✅ dist asset, CSP, Atlas, relation, editorial metadata, reader semantic projection and sitemap image drift → 0');
+console.log(DRY_RUN ? '\n  (dry-run: nothing written)' : '\n✅ dist asset, security, Atlas, relation, editorial metadata, reader semantic projection and sitemap image drift → 0');
