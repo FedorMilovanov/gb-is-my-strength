@@ -258,9 +258,42 @@ async function runCase(browserName, browserType, baseUrl, width) {
       await trigger.click();
       await page.waitForFunction(() => document.getElementById('atlasSidebar')?.classList.contains('is-open'));
       await page.locator('#atlasFilterClose').focus();
+      await page.evaluate(() => {
+        const target = document.querySelector('#atlasSidebar [data-atlas-group]');
+        if (!(target instanceof HTMLElement)) throw new Error('desktop sidebar focus target missing');
+        const nativeGetClientRects = target.getClientRects.bind(target);
+        target.__atlasNativeGetClientRectsForTest = nativeGetClientRects;
+        window.__atlasFocusGeometryReadsForTest = 0;
+        target.getClientRects = function faultInjectedClientRects() {
+          window.__atlasFocusGeometryReadsForTest += 1;
+          if (window.__atlasFocusGeometryReadsForTest <= 2) return [];
+          return nativeGetClientRects();
+        };
+        if (typeof window.ResizeObserver === 'function') {
+          window.__atlasNativeResizeObserverForTest = window.ResizeObserver;
+          window.ResizeObserver = class SilentResizeObserver {
+            observe() {}
+            disconnect() {}
+          };
+        }
+      });
       await page.setViewportSize({ width: 981, height: HEIGHT });
       await waitForResponsiveState(page, 981);
       await waitForFocusState(page, 'desktop-theme');
+      const layoutWitness = await page.evaluate(() => {
+        const target = document.querySelector('#atlasSidebar [data-atlas-group]');
+        const geometryReads = Number(window.__atlasFocusGeometryReadsForTest || 0);
+        if (target && typeof target.__atlasNativeGetClientRectsForTest === 'function') {
+          target.getClientRects = target.__atlasNativeGetClientRectsForTest;
+          delete target.__atlasNativeGetClientRectsForTest;
+        }
+        delete window.__atlasFocusGeometryReadsForTest;
+        const nativeResizeObserver = window.__atlasNativeResizeObserverForTest;
+        if (typeof nativeResizeObserver === 'function') window.ResizeObserver = nativeResizeObserver;
+        delete window.__atlasNativeResizeObserverForTest;
+        return { geometryReads };
+      });
+      assert.ok(layoutWitness.geometryReads >= 3, `${browserName}/${width}: layout witness did not reach bounded second-frame recovery`);
       result.steps.openDrawerToDesktop = await assertSafeFocus(page, `${browserName}/${width}/open-drawer-to-desktop`, (state) =>
         String(state.className).includes('atlas-theme'));
       result.steps.openDrawerToDesktopSurfaces = await assertClosedSurfaceState(page, false);
