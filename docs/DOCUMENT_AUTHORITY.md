@@ -37,7 +37,13 @@ Each managed document declares:
 - `README.md` — repository navigation;
 - `docs/DOCUMENT_AUTHORITY.md` — documentation lifecycle/index.
 
-Current governance then routes to `WORK_MODES`, `LANE_LOCK_POLICY`, branch/worktree lifecycle and owner invariants.
+Current governance then routes to `WORK_MODES`, `LANE_LOCK_POLICY`, branch/worktree lifecycle and owner invariants. Release-state claims route to `docs/RELEASE-LIVE-EVIDENCE.md`; external-tool/environment assumptions route through `audit/external-checks/README.md` plus live discovery, not through a dated sandbox snapshot.
+
+## Machine consumption
+
+`required:true` is consumed by `scripts/repository-control-plane-audit.mjs`. The control-plane audit must not maintain a second handwritten `requiredDocs` list. Its `--no-report` mode is the read-only CI path used when document authority itself is being validated.
+
+This means changing whether a governance document is required is one registry transaction, not two prose/code edits that can silently drift apart.
 
 ## Historical material
 
@@ -49,6 +55,7 @@ Known high-risk examples now explicitly classified as historical include:
 - `ASTRO-PREMIUM-MIGRATION-ROADMAP.md` — migration-era visual transfer plan;
 - `CURRENT_RECHECK_2026-06-22_FIXES.md` — June snapshot, not current status;
 - `dependency-migrations/ASTRO_7_SATTERI.md` — package set at migration time;
+- `RELEASE-LIVE-EVIDENCE-CONTRACT-2026-08-06.md` — compatibility pointer for a mixed dated release/incident document; current policy is `RELEASE-LIVE-EVIDENCE.md`, original incident-era content is preserved under `history/incidents/`;
 - `refactor-2026/REFRACTOR_AUDIT_LIVING.md` — recorded forensic/source boundary.
 
 ## Mutable facts
