@@ -133,21 +133,39 @@ async function waitForSuccessfulSuccessor(page) {
     const controllerBeforeUpdate = navigator.serviceWorker.controller;
     return new Promise((resolve, reject) => {
       let settled = false;
+      let observedController = null;
+      let observedStateChange = null;
       const timer = setTimeout(() => {
         cleanup();
         reject(new Error('successful successor timeout'));
       }, 10000);
 
+      const detachObservedController = () => {
+        if (observedController && observedStateChange) {
+          observedController.removeEventListener('statechange', observedStateChange);
+        }
+        observedController = null;
+        observedStateChange = null;
+      };
+
       const cleanup = () => {
         clearTimeout(timer);
         navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+        detachObservedController();
       };
 
-      const finishIfSuccessorControls = () => {
+      const observeSuccessorController = () => {
         const controller = navigator.serviceWorker.controller;
-        if (settled || !controller || controller === controllerBeforeUpdate || controller.state !== 'activated') {
-          return false;
+        if (settled || !controller || controller === controllerBeforeUpdate) return false;
+
+        if (observedController !== controller) {
+          detachObservedController();
+          observedController = controller;
+          observedStateChange = () => observeSuccessorController();
+          observedController.addEventListener('statechange', observedStateChange);
         }
+
+        if (controller.state !== 'activated') return false;
         settled = true;
         cleanup();
         resolve({
@@ -157,11 +175,11 @@ async function waitForSuccessfulSuccessor(page) {
         return true;
       };
 
-      const onControllerChange = () => finishIfSuccessorControls();
+      const onControllerChange = () => observeSuccessorController();
       navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
-      finishIfSuccessorControls();
+      observeSuccessorController();
       registration.update().then(() => {
-        finishIfSuccessorControls();
+        observeSuccessorController();
       }).catch((error) => {
         cleanup();
         reject(error);
