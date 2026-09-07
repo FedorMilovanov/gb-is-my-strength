@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,6 +10,12 @@ const errors = [];
 
 const fail = (message) => errors.push(message);
 const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
+const readBytes = (rel) => fs.readFileSync(path.join(ROOT, rel));
+const gitBlobSha = (bytes) => crypto
+  .createHash('sha1')
+  .update(Buffer.from(`blob ${bytes.length}\0`))
+  .update(bytes)
+  .digest('hex');
 
 function safeRepoPath(rel) {
   if (typeof rel !== 'string' || !rel) return false;
@@ -112,10 +119,24 @@ const expectedHistorical = [
   'docs/dependency-migrations/ASTRO_7_SATTERI.md',
   'docs/RELEASE-LIVE-EVIDENCE-CONTRACT-2026-08-06.md',
   'docs/refactor-2026/REFRACTOR_AUDIT_LIVING.md',
+  'docs/history/AGENTS-REFERENCE-2026-09-07-pre-split.md',
 ];
 for (const rel of expectedHistorical) {
   const doc = documents.find((item) => item.path === rel);
   if (!doc || doc.status !== 'historical') fail(`${rel} must remain explicitly historical`);
+}
+
+const resolvedReconciliationDocs = [
+  'docs/GIT_WORKTREE_POLICY.md',
+  'docs/BRANCH_LIFECYCLE_V4.md',
+  'docs/ARTICLE-STANDARD-CHARTER.md',
+  'docs/EDITORIAL-SOURCE-POLICY.md',
+  'docs/CONTENT-QUALITY-STANDARD.md',
+];
+for (const rel of resolvedReconciliationDocs) {
+  const doc = documents.find((item) => item.path === rel);
+  if (!doc || doc.status !== 'current') fail(`${rel} must remain current`);
+  if (doc && Object.hasOwn(doc, 'reconciliationState')) fail(`${rel}: resolved reconciliation must not remain pending`);
 }
 
 const releasePolicy = documents.find((item) => item.path === 'docs/RELEASE-LIVE-EVIDENCE.md');
@@ -142,39 +163,53 @@ const releaseSnapshot = documents.find((item) => item.path === releaseSnapshotPa
 if (!releaseSnapshot || releaseSnapshot.status !== 'historical' || releaseSnapshot.authority !== 'provenance-only') {
   fail(`${releaseSnapshotPath} must remain historical provenance-only`);
 } else {
-  if (releaseSnapshot.sourceBlobSha !== releaseSourceBlob) {
-    fail(`${releaseSnapshotPath}: sourceBlobSha drift`);
-  }
-  if (releaseSnapshot.snapshotDerivation !== 'provenance-annotated-readable-derivative') {
-    fail(`${releaseSnapshotPath}: snapshotDerivation drift`);
+  if (releaseSnapshot.sourceBlobSha !== releaseSourceBlob) fail(`${releaseSnapshotPath}: sourceBlobSha drift`);
+  if (releaseSnapshot.snapshotDerivation !== 'provenance-annotated-readable-derivative') fail(`${releaseSnapshotPath}: snapshotDerivation drift`);
+}
+
+const agentsSnapshotPath = 'docs/history/AGENTS-REFERENCE-2026-09-07-pre-split.md';
+const agentsSourceBlob = '96521c8c79bd626c1ca8d09a628b0d5dee2f93d1';
+const agentsSnapshot = documents.find((item) => item.path === agentsSnapshotPath);
+if (!agentsSnapshot || agentsSnapshot.status !== 'historical' || agentsSnapshot.authority !== 'provenance-only') {
+  fail(`${agentsSnapshotPath} must remain historical provenance-only`);
+} else {
+  if (agentsSnapshot.sourceBlobSha !== agentsSourceBlob) fail(`${agentsSnapshotPath}: sourceBlobSha drift`);
+  if (agentsSnapshot.snapshotDerivation !== 'byte-identical-git-blob-copy') fail(`${agentsSnapshotPath}: snapshotDerivation drift`);
+  if (isFile(agentsSnapshotPath) && gitBlobSha(readBytes(agentsSnapshotPath)) !== agentsSourceBlob) {
+    fail(`${agentsSnapshotPath}: bytes are not the registered original Git blob`);
   }
 }
 
 const readme = read('README.md');
 const agents = read('AGENTS.md');
+const currentReference = read('AGENTS-REFERENCE.md');
 const authorityDoc = read('docs/DOCUMENT_AUTHORITY.md');
 const sandboxText = read(sandboxPath);
 const releaseSnapshotText = read(releaseSnapshotPath);
 const releasePointerText = read('docs/RELEASE-LIVE-EVIDENCE-CONTRACT-2026-08-06.md');
 if (!readme.includes('data/document-authority.json')) fail('README must link document authority SSOT');
 if (!readme.includes('docs/DOCUMENT_AUTHORITY.md')) fail('README must link human document authority index');
-if (!authorityDoc.includes('surface-local-non-overriding')) {
-  fail('DOCUMENT_AUTHORITY must explain the surface-local default');
-}
-if (!sandboxText.includes('no agent may treat that historical snapshot as a universal current environment contract')) {
-  fail(`${sandboxPath} must reject its historical origin as a universal environment contract`);
-}
-if (!releaseSnapshotText.includes(releaseSourceBlob)) {
-  fail(`${releaseSnapshotPath} must identify its exact original Git blob`);
-}
-if (!releasePointerText.includes(releaseSourceBlob)) {
-  fail('release compatibility pointer must identify the exact original Git blob');
-}
-if (/\b\d+\s+(?:production|public) routes\b/i.test(readme)) {
-  fail('README must not maintain a manual production/public route count');
-}
+if (!authorityDoc.includes('surface-local-non-overriding')) fail('DOCUMENT_AUTHORITY must explain the surface-local default');
+if (!authorityDoc.includes(agentsSourceBlob)) fail('DOCUMENT_AUTHORITY must identify the exact pre-split AGENTS-REFERENCE Git blob');
+if (!sandboxText.includes('no agent may treat that historical snapshot as a universal current environment contract')) fail(`${sandboxPath} must reject its historical origin as a universal environment contract`);
+if (!releaseSnapshotText.includes(releaseSourceBlob)) fail(`${releaseSnapshotPath} must identify its exact original Git blob`);
+if (!releasePointerText.includes(releaseSourceBlob)) fail('release compatibility pointer must identify the exact original Git blob');
+if (/\b\d+\s+(?:production|public) routes\b/i.test(readme)) fail('README must not maintain a manual production/public route count');
 if (/Sitemap[^\n]*\b\d+\b/i.test(readme)) fail('README must not maintain a manual sitemap count');
 if (/Astro 6/i.test(readme) || /Astro 6/i.test(agents)) fail('operational entrypoints must not describe current platform as Astro 6');
+
+const staleReferencePhrases = [
+  'Astro 6 scaffold',
+  '9 CSS + 1 шрифтовой + 14 JS',
+  'Архитектурный максимум: **9 CSS',
+  'Полное правило: `AGENTS-REFERENCE.md` §9.20.1',
+];
+for (const phrase of staleReferencePhrases) {
+  if (currentReference.includes(phrase)) fail(`AGENTS-REFERENCE reintroduced stale blanket rule: ${phrase}`);
+}
+if (!currentReference.includes(agentsSnapshotPath)) fail('AGENTS-REFERENCE must link its historical pre-split snapshot');
+if (!currentReference.includes('data/gill-verified-claims.json')) fail('AGENTS-REFERENCE must route Gill truth to the executable registry');
+if (!currentReference.includes('migration/page-ownership.json')) fail('AGENTS-REFERENCE must route route ownership to page-ownership');
 
 const policy = registry.policy || {};
 for (const key of [
