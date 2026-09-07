@@ -4,7 +4,6 @@
 const fs = require('fs');
 const path = require('path');
 const { loadRouteRecords } = require('./lib/effective-route-registry');
-const { readRegistry } = require('./lib/editorial-metadata');
 const { normalizeRoute } = require('./lib/rss-route-contract');
 const { normalizePolicyRoutes } = require('./lib/search-index-policy-contract');
 
@@ -58,36 +57,7 @@ function manifestRouteMap(manifest) {
   return routes;
 }
 
-function effectiveEditorialDates(route, item, editorialRegistry) {
-  const manifestPublished = parseDate(item.publishedTime, `${route} search-manifest publishedTime`);
-  const manifestModified = parseDate(item.modifiedTime || item.publishedTime, `${route} search-manifest modifiedTime`);
-  const editorial = editorialRegistry?.records?.[route] || null;
-
-  // A02 approval gate is authoritative. Frozen/unreviewed registry decisions are
-  // evidence only and must never become public chronology merely because they
-  // exist in the registry.
-  if (!editorial || editorial.reviewStatus !== 'approved') {
-    return {
-      published: manifestPublished,
-      modified: manifestModified,
-      authority: 'search-manifest-descriptive',
-    };
-  }
-
-  if (!editorial.editorialPublishedAt) {
-    throw new Error(`${route}: approved editorial metadata missing editorialPublishedAt`);
-  }
-  return {
-    published: parseDate(editorial.editorialPublishedAt, `${route} approved editorialPublishedAt`),
-    modified: parseDate(
-      editorial.editorialModifiedAt || editorial.editorialPublishedAt,
-      `${route} approved editorialModifiedAt`
-    ),
-    authority: 'editorial-metadata-approved',
-  };
-}
-
-function canonicalRssEntries({ policyRegistry, manifest, productionRecords, editorialRegistry }) {
+function canonicalRssEntries({ policyRegistry, manifest, productionRecords }) {
   const policies = normalizePolicyRoutes(policyRegistry);
   const manifestRoutes = manifestRouteMap(manifest);
   const productionRoutes = new Set(
@@ -105,7 +75,8 @@ function canonicalRssEntries({ policyRegistry, manifest, productionRecords, edit
 
     const missing = ['title', 'description', 'publishedTime'].filter((field) => !item[field]);
     if (missing.length) throw new Error(`${route}: search-manifest item missing ${missing.join(', ')}`);
-    const dates = effectiveEditorialDates(route, item, editorialRegistry);
+    const published = parseDate(item.publishedTime, `${route} publishedTime`);
+    const modified = parseDate(item.modifiedTime || item.publishedTime, `${route} modifiedTime`);
     const creator = String(item.author || item.editor || manifest?.project?.curator || '').trim();
     if (!creator) throw new Error(`${route}: search-manifest item missing author/editor`);
 
@@ -115,9 +86,8 @@ function canonicalRssEntries({ policyRegistry, manifest, productionRecords, edit
       description: String(item.description).trim(),
       creator,
       category: String(item.section || policy.librarySection || '').trim(),
-      published: dates.published,
-      modified: dates.modified,
-      dateAuthority: dates.authority,
+      published,
+      modified,
     });
   }
 
@@ -129,9 +99,9 @@ function canonicalRssEntries({ policyRegistry, manifest, productionRecords, edit
   return entries;
 }
 
-function renderFeed({ policyRegistry, manifest, productionRecords, editorialRegistry, siteUrl }) {
+function renderFeed({ policyRegistry, manifest, productionRecords, siteUrl }) {
   const base = String(siteUrl || manifest?.project?.url || DEFAULT_SITE_URL).replace(/\/+$/, '');
-  const entries = canonicalRssEntries({ policyRegistry, manifest, productionRecords, editorialRegistry });
+  const entries = canonicalRssEntries({ policyRegistry, manifest, productionRecords });
   const lastBuildDate = parseDate(manifest?.generatedAt, 'search manifest generatedAt');
   const title = manifest?.project?.name || 'Господь Бог — Сила Моя';
   const lines = [
@@ -178,31 +148,29 @@ function main() {
   const manifestFile = path.join(ROOT, 'data/search-manifest.json');
   const feedFile = path.join(ROOT, 'feed.xml');
   const loaded = loadRouteRecords();
-  const editorialRegistry = readRegistry();
   const expected = renderFeed({
     policyRegistry: readJson(policyFile),
     manifest: readJson(manifestFile),
     productionRecords: loaded.records,
-    editorialRegistry,
   });
   const current = fs.existsSync(feedFile) ? fs.readFileSync(feedFile, 'utf8') : '';
 
   if (options.write) {
     if (current === expected) {
-      console.log('RSS feed already matches route policy and approval-gated chronology.');
+      console.log('RSS feed already matches route policy and search manifest.');
       return;
     }
     fs.writeFileSync(feedFile, expected, 'utf8');
-    console.log('Wrote deterministic feed.xml with approved editorial dates and descriptive fallback.');
+    console.log('Wrote deterministic feed.xml from route policy and search manifest.');
     return;
   }
 
   if (current !== expected) {
-    console.error('❌ feed.xml differs from the deterministic approval-gated RSS projection');
+    console.error('❌ feed.xml differs from the deterministic policy/manifest projection');
     console.error('Run: node scripts/rss-feed-normalizer.js --write');
     process.exit(1);
   }
-  console.log('✅ feed.xml exactly matches route policy and approval-gated chronology');
+  console.log('✅ feed.xml exactly matches route policy and search manifest');
 }
 
 if (require.main === module) {
@@ -221,7 +189,6 @@ module.exports = {
   cdata,
   parseDate,
   manifestRouteMap,
-  effectiveEditorialDates,
   canonicalRssEntries,
   renderFeed,
 };
