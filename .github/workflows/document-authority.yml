@@ -8,8 +8,10 @@ on:
       - 'AGENTS-REFERENCE.md'
       - 'README.md'
       - 'docs/**'
+      - 'audit/external-checks/README.md'
       - 'data/document-authority.json'
       - 'scripts/document-authority-audit.mjs'
+      - 'scripts/repository-control-plane-audit.mjs'
       - '.github/workflows/document-authority.yml'
   push:
     branches: [main]
@@ -18,8 +20,10 @@ on:
       - 'AGENTS-REFERENCE.md'
       - 'README.md'
       - 'docs/**'
+      - 'audit/external-checks/README.md'
       - 'data/document-authority.json'
       - 'scripts/document-authority-audit.mjs'
+      - 'scripts/repository-control-plane-audit.mjs'
       - '.github/workflows/document-authority.yml'
 
 permissions:
@@ -36,5 +40,10 @@ jobs:
       - name: Validate document authority
         run: node scripts/document-authority-audit.mjs
 
-      - name: Assert validator is read-only
-        run: git diff --exit-code
+      - name: Validate control-plane document consumption
+        run: node scripts/repository-control-plane-audit.mjs
+
+      - name: Assert validators are read-only outside reports
+        run: |
+          git diff --exit-code -- . ':!reports/**'
+          git status --porcelain --untracked-files=no | grep -Ev '^ [MADRCU?!]{1,2} reports/' | grep -Ev '^[MADRCU?!]{1,2}  reports/' && exit 1 || true
