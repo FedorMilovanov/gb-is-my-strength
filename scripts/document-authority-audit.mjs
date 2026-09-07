@@ -145,8 +145,8 @@ if (!releaseSnapshot || releaseSnapshot.status !== 'historical' || releaseSnapsh
   if (releaseSnapshot.sourceBlobSha !== releaseSourceBlob) {
     fail(`${releaseSnapshotPath}: sourceBlobSha drift`);
   }
-  if (releaseSnapshot.snapshotNormalization !== 'markdown-hard-break-whitespace-only') {
-    fail(`${releaseSnapshotPath}: snapshotNormalization drift`);
+  if (releaseSnapshot.snapshotDerivation !== 'provenance-annotated-readable-derivative') {
+    fail(`${releaseSnapshotPath}: snapshotDerivation drift`);
   }
 }
 
