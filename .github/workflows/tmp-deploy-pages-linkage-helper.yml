@@ -1,0 +1,84 @@
+name: Temporary Deploy Pages Linkage Helper
+
+on:
+  push:
+    branches:
+      - agent/deploy-pages-pin-refresh-helper-20260907
+
+permissions:
+  contents: write
+
+jobs:
+  patch-linkage:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout helper branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: agent/deploy-pages-pin-refresh-helper-20260907
+          fetch-depth: 0
+
+      - name: Set up pinned Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+
+      - name: Build exact PR-head candidate worktree
+        shell: bash
+        env:
+          PR_HEAD_SHA: 1216c02202e6e5f9da553a6df04bd1917bd06c70
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$PR_HEAD_SHA"
+          rm -rf /tmp/deploy-pages-linkage-candidate
+          git worktree add --detach /tmp/deploy-pages-linkage-candidate "$PR_HEAD_SHA"
+
+      - name: Patch remaining linkage authority
+        shell: bash
+        working-directory: /tmp/deploy-pages-linkage-candidate
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          const file = 'scripts/workflow-linkage-regression-test.js';
+          const from = 'actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0';
+          const to = 'actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1';
+          const before = fs.readFileSync(file, 'utf8');
+          const occurrences = before.split(from).length - 1;
+          if (occurrences !== 1) throw new Error(`expected exactly one old linkage pin, found ${occurrences}`);
+          const after = before.replace(from, to);
+          if ((after.split(to).length - 1) !== 1) throw new Error('new linkage pin cardinality is not exactly one');
+          fs.writeFileSync(file, after);
+          NODE
+
+      - name: Prove complete four-file authority
+        shell: bash
+        working-directory: /tmp/deploy-pages-linkage-candidate
+        run: |
+          set -euo pipefail
+          npm run workflows:check
+          node scripts/workflow-linkage-regression-test.js
+          node scripts/release-pipeline-contract-test.mjs
+          git diff --check
+          test "$(git diff --name-only | wc -l)" -eq 1
+          test "$(git diff --name-only)" = 'scripts/workflow-linkage-regression-test.js'
+
+      - name: Create verified linkage blob without mutating refs
+        shell: bash
+        working-directory: /tmp/deploy-pages-linkage-candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          file='scripts/workflow-linkage-regression-test.js'
+          payload=$(jq -n --arg content "$(base64 -w0 "$file")" '{content:$content,encoding:"base64"}')
+          response=$(curl --fail-with-body -sS \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -X POST "https://api.github.com/repos/FedorMilovanov/gb-is-my-strength/git/blobs" \
+            -d "$payload")
+          sha=$(printf '%s' "$response" | jq -r '.sha')
+          test "$sha" != 'null'
+          test -n "$sha"
+          printf 'VERIFIED_LINKAGE_BLOB %s\n' "$sha"
