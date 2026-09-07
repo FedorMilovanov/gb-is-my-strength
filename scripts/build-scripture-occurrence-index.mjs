@@ -47,7 +47,22 @@ function maskRange(source, start, end) {
   return source.slice(0, start) + replaceWithSpaces(source.slice(start, end)) + source.slice(end);
 }
 
-function maskCommentsAndCode(source, extension) {
+function preserveMarkdownLabel(match, label) {
+  const start = match.indexOf(label);
+  if (start < 0) return replaceWithSpaces(match);
+  return replaceWithSpaces(match.slice(0, start)) + label + replaceWithSpaces(match.slice(start + label.length));
+}
+
+function maskMarkdownNonVisibleSyntax(source) {
+  let masked = source;
+  masked = masked.replace(/^[ \t]{0,3}\[[^\]\n]+\]:[^\n]*(?:\n|$)/gm, (match) => replaceWithSpaces(match));
+  masked = masked.replace(/!\[[^\]\n]*\]\([^\n)]*\)/g, (match) => replaceWithSpaces(match));
+  masked = masked.replace(/\[([^\]\n]+)\]\([^\n)]*\)/g, (match, label) => preserveMarkdownLabel(match, label));
+  masked = masked.replace(/\[([^\]\n]+)\]\[[^\]\n]*\]/g, (match, label) => preserveMarkdownLabel(match, label));
+  return masked;
+}
+
+export function projectVisibleSource(source, extension) {
   let masked = String(source || '').replace(/\r\n/g, '\n');
   if (extension === '.astro' || extension === '.mdx') {
     const frontmatter = masked.match(/^---\n[\s\S]*?\n---\n?/);
@@ -65,6 +80,8 @@ function maskCommentsAndCode(source, extension) {
   for (const pattern of blockPatterns) {
     masked = masked.replace(pattern, (match) => replaceWithSpaces(match));
   }
+
+  if (extension === '.mdx') masked = maskMarkdownNonVisibleSyntax(masked);
 
   // S1 indexes only literal prose that can become visible route text. Imports,
   // component props, HTML/JSX attributes and Astro/MDX expressions remain
@@ -140,36 +157,101 @@ function decodeEntities(value) {
     .replace(/&([a-z]+);/gi, (match, name) => named.get(name.toLowerCase()) ?? match);
 }
 
-function cleanContext(value) {
-  return decodeEntities(value)
+function cleanContext(value, extension) {
+  let cleaned = decodeEntities(value);
+  if (extension === '.mdx') {
+    cleaned = cleaned
+      .replace(/(^|\n)[ \t]{0,3}(?:#{1,6}[ \t]+|>[ \t]?|[-+*][ \t]+|\d+[.)][ \t]+)/g, '$1')
+      .replace(/[*_~|]+/g, ' ');
+  }
+  return cleaned
     .replace(/<[^>]+>/g, ' ')
-    .replace(/[{}[\]`]/g, ' ')
+    .replace(/[{}\[\]`]/g, ' ')
     .replace(/\b(?:class|data-[\w-]+|aria-[\w-]+|href|src|id)\s*=\s*/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
-function contextAround(source, start, end) {
+export function contextAroundVisible(projectedSource, start, end, extension) {
   const before = Math.max(0, start - 180);
-  const after = Math.min(source.length, end + 220);
-  let context = cleanContext(source.slice(before, after));
+  const after = Math.min(projectedSource.length, end + 220);
+  let context = cleanContext(projectedSource.slice(before, after), extension);
   if (context.length > 360) context = `${context.slice(0, 357).trimEnd()}…`;
   return context;
 }
 
-function nearestExplicitAnchor(source, offset, extension) {
+function maskAnchorNoise(source, extension) {
+  let masked = String(source || '').replace(/\r\n/g, '\n');
+  if (extension === '.astro' || extension === '.mdx') {
+    const frontmatter = masked.match(/^---\n[\s\S]*?\n---\n?/);
+    if (frontmatter) masked = maskRange(masked, 0, frontmatter[0].length);
+  }
+  const patterns = [
+    /<!--[\s\S]*?-->/g,
+    /<script\b[^>]*>[\s\S]*?<\/script>/gi,
+    /<style\b[^>]*>[\s\S]*?<\/style>/gi,
+  ];
+  if (extension === '.mdx') patterns.push(/```[\s\S]*?```/g, /~~~[\s\S]*?~~~/g, /`[^`\n]*`/g);
+  for (const pattern of patterns) masked = masked.replace(pattern, (match) => replaceWithSpaces(match));
+  return masked.replace(/\{[\s\S]*?\}/g, (match) => replaceWithSpaces(match));
+}
+
+function literalIdAttribute(tag) {
+  let index = 1;
+  while (index < tag.length && !/[\s/>]/u.test(tag[index])) index += 1;
+
+  while (index < tag.length) {
+    while (index < tag.length && /\s/u.test(tag[index])) index += 1;
+    if (index >= tag.length || tag[index] === '>' || (tag[index] === '/' && tag[index + 1] === '>')) break;
+
+    const nameStart = index;
+    while (index < tag.length && !/[\s=/>]/u.test(tag[index])) index += 1;
+    const name = tag.slice(nameStart, index).toLowerCase();
+    while (index < tag.length && /\s/u.test(tag[index])) index += 1;
+
+    let value = null;
+    let valueEnd = index;
+    if (tag[index] === '=') {
+      index += 1;
+      while (index < tag.length && /\s/u.test(tag[index])) index += 1;
+      const quote = tag[index];
+      if (quote === '"' || quote === "'") {
+        index += 1;
+        const valueStart = index;
+        while (index < tag.length && tag[index] !== quote) index += 1;
+        value = tag.slice(valueStart, index);
+        if (index < tag.length) index += 1;
+        valueEnd = index;
+      } else {
+        const valueStart = index;
+        while (index < tag.length && !/[\s>]/u.test(tag[index])) index += 1;
+        value = tag.slice(valueStart, index);
+        valueEnd = index;
+      }
+    }
+
+    if (name === 'id' && value !== null) return { value: value.trim(), end: valueEnd };
+  }
+  return null;
+}
+
+export function nearestExplicitAnchor(source, offset, extension) {
   if (!['.astro', '.mdx', '.html'].includes(extension)) return null;
   const start = Math.max(0, offset - 1800);
-  const prefix = source.slice(start, offset);
-  const pattern = /\bid\s*=\s*["']([^"']+)["']/giu;
+  const prefix = maskAnchorNoise(source.slice(start, offset), extension);
+  const tagPattern = /<[A-Za-z][^<>]*>/gu;
   let match;
   let last = null;
-  while ((match = pattern.exec(prefix))) last = match;
+  while ((match = tagPattern.exec(prefix))) {
+    const attribute = literalIdAttribute(match[0]);
+    if (!attribute) continue;
+    const value = attribute.value;
+    if (!SAFE_ANCHOR.test(value)) continue;
+    last = { value, end: match.index + attribute.end };
+  }
   if (!last) return null;
-  const value = last[1].trim();
-  if (!SAFE_ANCHOR.test(value)) return null;
-  if (prefix.length - (last.index + last[0].length) > 1200) return null;
-  return value;
+  if (prefix.length - last.end > 1200) return null;
+  return last.value;
 }
 
 function sourceKind(file) {
@@ -305,13 +387,13 @@ export function buildScriptureOccurrenceIndex(root = ROOT) {
       if (!fs.existsSync(absolute)) continue;
       scannedFiles.add(fileRel);
       const original = fs.readFileSync(absolute, 'utf8').replace(/\r\n/g, '\n');
-      const masked = maskCommentsAndCode(original, extension);
+      const projected = projectVisibleSource(original, extension);
       referenceRegex.lastIndex = 0;
       let match;
-      while ((match = referenceRegex.exec(masked))) {
+      while ((match = referenceRegex.exec(projected))) {
         const candidate = parseCandidate(match, registry);
         if (!candidate) continue;
-        const context = contextAround(original, match.index, match.index + match[0].length);
+        const context = contextAroundVisible(projected, match.index, match.index + match[0].length, extension);
         if (!context) continue;
         addOccurrence(grouped, candidate, {
           url: normalized.route,
