@@ -201,10 +201,10 @@
       "classification": "unknown-blocker",
       "decisionSource": "data/route-profiles/rodosloviye.json:legacyStatus-missing",
       "sourceCommit": "2ec30d22029f2f7e32f13b3d210357554064757f",
-      "gitBlobSha1": "ce9808134f1d75d0fa503311b3a2b166ec4cfdda",
-      "byteSha256": "6a2df0ad82f63bad8036b20887e0867eeff660823efea714bda89e4ffa230e83",
+      "gitBlobSha1": "553fdc661d427dc275249bfc34145bbddd1119d1",
+      "byteSha256": "b30681de20e256f0567b6978a097e8b2ea5b28d4e0c3985a3d46d2d419d05c82",
       "normalizedTextSha256": "9716bd5510806be0f21066d36f02b933286ea1cc22a6bcb40ebf0cc95bd77acb",
-      "bytes": 10359,
+      "bytes": 10156,
       "wordCount": 97,
       "h1Count": 1,
       "h2Count": 1
