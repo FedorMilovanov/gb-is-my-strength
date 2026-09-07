@@ -1,0 +1,47 @@
+name: Document Authority
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'AGENTS.md'
+      - 'AGENTS-REFERENCE.md'
+      - 'README.md'
+      - 'docs/**'
+      - 'audit/external-checks/README.md'
+      - 'data/document-authority.json'
+      - 'scripts/document-authority-audit.mjs'
+      - 'scripts/repository-control-plane-audit.mjs'
+      - '.github/workflows/document-authority.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'AGENTS.md'
+      - 'AGENTS-REFERENCE.md'
+      - 'README.md'
+      - 'docs/**'
+      - 'audit/external-checks/README.md'
+      - 'data/document-authority.json'
+      - 'scripts/document-authority-audit.mjs'
+      - 'scripts/repository-control-plane-audit.mjs'
+      - '.github/workflows/document-authority.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Validate document authority
+        run: node scripts/document-authority-audit.mjs
+
+      - name: Validate control-plane document consumption
+        run: node scripts/repository-control-plane-audit.mjs --no-report
+
+      - name: Assert validators are read-only
+        run: git diff --exit-code
