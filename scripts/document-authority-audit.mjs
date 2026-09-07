@@ -123,6 +123,19 @@ if (!releasePolicy || releasePolicy.status !== 'current' || releasePolicy.author
   fail('docs/RELEASE-LIVE-EVIDENCE.md must be current normative required authority');
 }
 
+const sandboxPath = 'docs/SANDBOX-ENV-2026-06-21.md';
+const sandboxPolicy = documents.find((item) => item.path === sandboxPath);
+if (!sandboxPolicy || sandboxPolicy.status !== 'current' || sandboxPolicy.authority !== 'supporting' || sandboxPolicy.required !== false) {
+  fail(`${sandboxPath} must remain current supporting and non-required`);
+} else {
+  if (sandboxPolicy.reconciledAtCommit !== '03276e321eaffd6c136c37a223f054804f2637b1') {
+    fail(`${sandboxPath}: reconciledAtCommit drift`);
+  }
+  if (sandboxPolicy.historicalOriginBlobSha !== '9349b0868f6e9a8fdf4ba50de19b70c8cbf43936') {
+    fail(`${sandboxPath}: historicalOriginBlobSha drift`);
+  }
+}
+
 const releaseSnapshotPath = 'docs/history/incidents/2026-08-06-release-live-evidence-contract-original.md';
 const releaseSourceBlob = '891392d7fa04623339d59a06dcf8667e380954dd';
 const releaseSnapshot = documents.find((item) => item.path === releaseSnapshotPath);
@@ -140,12 +153,16 @@ if (!releaseSnapshot || releaseSnapshot.status !== 'historical' || releaseSnapsh
 const readme = read('README.md');
 const agents = read('AGENTS.md');
 const authorityDoc = read('docs/DOCUMENT_AUTHORITY.md');
+const sandboxText = read(sandboxPath);
 const releaseSnapshotText = read(releaseSnapshotPath);
 const releasePointerText = read('docs/RELEASE-LIVE-EVIDENCE-CONTRACT-2026-08-06.md');
 if (!readme.includes('data/document-authority.json')) fail('README must link document authority SSOT');
 if (!readme.includes('docs/DOCUMENT_AUTHORITY.md')) fail('README must link human document authority index');
 if (!authorityDoc.includes('surface-local-non-overriding')) {
   fail('DOCUMENT_AUTHORITY must explain the surface-local default');
+}
+if (!sandboxText.includes('no agent may treat that historical snapshot as a universal current environment contract')) {
+  fail(`${sandboxPath} must reject its historical origin as a universal environment contract`);
 }
 if (!releaseSnapshotText.includes(releaseSourceBlob)) {
   fail(`${releaseSnapshotPath} must identify its exact original Git blob`);
