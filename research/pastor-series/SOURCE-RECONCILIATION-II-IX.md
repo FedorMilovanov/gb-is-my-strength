@@ -2,7 +2,8 @@
 
 Статус: **ACTIVE EDITORIAL RECONCILIATION / NO PUBLICATION PROMOTION**
 Дата: 2026-09-07
-Product anchor / rollback: `066be4fb24089a549ae3b3089700332586585850`
+Product anchor / rollback: `d6b1906f0d263e23b45355bea0460ee00581bc38`
+Original reconciliation base: `066be4fb24089a549ae3b3089700332586585850`
 Research authority anchor: `FedorMilovanov/Research@e8e6b98787019d43a2ffd10eb55bdde04ebfb747`
 Канон серии: `research/pastor-series/MASTER-PLAN.md`
 Внешняя evidence authority: `FedorMilovanov/Research` → `00_RESEARCH_CURRENT_AUTHORITY_2026-08-02.md`, `00_RESEARCH_CONTROL_PLANE_AUTHORITY_2026-08-02.md` и corpus-specific OSK authorities, выбранные ими на указанном Research anchor.
