@@ -100,13 +100,14 @@ function routeDistFile(route) {
   return path.join(DIST_ROOT, clean, 'index.html');
 }
 
-function tagHasLiteralId(tag, expected) {
+function literalIdFromTag(tag) {
   let index = 1;
   while (index < tag.length && !/[\s/>]/u.test(tag[index])) index += 1;
   while (index < tag.length) {
     while (index < tag.length && /\s/u.test(tag[index])) index += 1;
     if (index >= tag.length || tag[index] === '>' || (tag[index] === '/' && tag[index + 1] === '>')) break;
 
+    const attributeStart = index;
     const nameStart = index;
     while (index < tag.length && !/[\s=/>]/u.test(tag[index])) index += 1;
     const name = tag.slice(nameStart, index).toLowerCase();
@@ -130,14 +131,24 @@ function tagHasLiteralId(tag, expected) {
       }
     }
 
-    if (name === 'id' && value === expected) return true;
+    if (name === 'id' && value !== null) return value;
+    if (index <= attributeStart) index += 1;
   }
-  return false;
+  return null;
+}
+
+function literalIdsInHtml(html) {
+  const ids = new Set();
+  const tags = String(html || '').match(/<[A-Za-z][^<>]*>/gu) || [];
+  for (const tag of tags) {
+    const id = literalIdFromTag(tag);
+    if (id !== null) ids.add(id);
+  }
+  return ids;
 }
 
 function htmlHasLiteralId(html, expected) {
-  const tags = String(html || '').match(/<[A-Za-z][^<>]*>/gu) || [];
-  return tags.some((tag) => tagHasLiteralId(tag, expected));
+  return literalIdsInHtml(html).has(expected);
 }
 
 function contextHasSourceSyntax(value) {
@@ -283,10 +294,10 @@ if (!fs.existsSync(OUTPUT_FILE)) {
         let witness = witnessedRoutes.get(route);
         if (!witness) {
           const html = fs.readFileSync(file, 'utf8');
-          witness = { html, text: normalizeWitnessText(html) };
+          witness = { ids: literalIdsInHtml(html), text: normalizeWitnessText(html) };
           witnessedRoutes.set(route, witness);
         }
-        if (occurrence.anchor && !htmlHasLiteralId(witness.html, occurrence.anchor)) {
+        if (occurrence.anchor && !witness.ids.has(occurrence.anchor)) {
           fail(`dist anchor missing: ${reference.id} ${route}#${occurrence.anchor}`);
         }
         if (occurrence.sourceKind !== 'manifest-metadata') {
