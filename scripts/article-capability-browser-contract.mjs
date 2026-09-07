@@ -72,18 +72,53 @@ async function exerciseFaq(page, label) {
 }
 
 async function exerciseHeadingAnchor(page, label) {
-  const anchor = page.locator('.heading-anchor[data-gb-heading-anchor-owner="native-v1"]').first();
-  await anchor.waitFor({ state: 'attached' });
+  const anchors = page.locator('.heading-anchor[data-gb-heading-anchor-owner="native-v1"]');
+  const count = await anchors.count();
+  assert.ok(count > 0, `${label}: no owned heading anchors found`);
+
+  let anchor = null;
+  for (let index = 0; index < count; index += 1) {
+    const candidate = anchors.nth(index);
+    const href = await candidate.getAttribute('href');
+    if (!href?.startsWith('#')) continue;
+    if (!await candidate.isVisible()) continue;
+    if (await page.locator(href).count() === 0) continue;
+    anchor = candidate;
+    break;
+  }
+
+  assert.ok(anchor, `${label}: no visible retained heading anchor with a live fragment target`);
   const href = await anchor.getAttribute('href');
   assert.ok(href?.startsWith('#'), `${label}: heading anchor missing fragment href`);
   assert.equal(await anchor.getAttribute('aria-label'), 'Скопировать ссылку на раздел', `${label}: heading anchor accessibility label drift`);
+
+  const expectedUrl = await page.evaluate((fragment) => new URL(fragment, window.location.href).toString(), href);
   await anchor.click();
-  await page.waitForTimeout(50);
+  await page.waitForFunction((fragment) => {
+    const toast = document.getElementById('anchor-copy-toast');
+    return toast?.classList.contains('is-visible') === true || window.location.hash === fragment;
+  }, href);
+
   const feedback = await page.evaluate(() => ({
     toast: document.getElementById('anchor-copy-toast')?.classList.contains('is-visible') === true,
     hash: window.location.hash,
   }));
-  assert.ok(feedback.toast || feedback.hash === href, `${label}: heading-anchor activation produced no copy/hash feedback`);
+  assert.equal(feedback.toast, true, `${label}: heading-anchor activation produced no user feedback`);
+
+  const clipboard = await page.evaluate(async () => {
+    try {
+      if (!navigator.clipboard?.readText) return { readable: false, value: '', error: 'readText unavailable' };
+      return { readable: true, value: await navigator.clipboard.readText(), error: '' };
+    } catch (error) {
+      return { readable: false, value: '', error: String(error?.message || error) };
+    }
+  });
+
+  if (clipboard.readable) {
+    assert.equal(clipboard.value, expectedUrl, `${label}: heading-anchor clipboard value drift`);
+  } else {
+    assert.equal(feedback.hash, href, `${label}: clipboard was unreadable and hash fallback did not activate (${clipboard.error})`);
+  }
 }
 
 async function exerciseStrategicMap(page, label) {
