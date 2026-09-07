@@ -1,7 +1,7 @@
 (function () {
 'use strict';
 var VERSION = 2;
-var WORKER_SRC = '/js/vosk-tts-worker.js?v=2ea9ada3';
+var WORKER_SRC = '/js/vosk-tts-worker.js?v=ccc621c4';
 var NOTICE_CSS_URL = '/css/tts-download-notice.css?v=b9ef192f';
 var MODEL_DOWNLOAD_OPTOUT_KEY = 'gbx-vosk-warmup';
 var CLIENT_ID = (window.crypto && typeof window.crypto.randomUUID === 'function')
@@ -16,8 +16,11 @@ ready: false,
 loading: null,
 loadSequence: 0,
 speakSequence: 0,
+disconnectSequence: 0,
 loadRequests: new Map(),
 speakRequests: new Map(),
+disconnectRequests: new Map(),
+retirementPromise: null,
 audio: null,
 audioHandleId: null,
 objectUrl: null,
@@ -46,7 +49,9 @@ error = payload && payload.name === 'AbortError'
 error = new Error(message);
 if (payload && payload.name) error.name = payload.name;
 }
-if (payload && payload.name) error.name = payload.name;
+if (payload && payload.name && error.name !== payload.name) {
+try { error.name = payload.name; } catch (_) {}
+}
 if (payload && payload.userCancelled) error.userCancelled = true;
 return error;
 }
@@ -300,12 +305,9 @@ if (!entry.handle.cancelled && typeof entry.onerror === 'function') entry.onerro
 function failAllSpeaks(error) {
 Array.from(state.speakRequests.keys()).forEach(function (id) { failSpeak(id, error); });
 }
-function terminateWorker(error) {
+function clearWorkerState(error) {
 if (state.heartbeatTimer) clearInterval(state.heartbeatTimer);
 state.heartbeatTimer = 0;
-if (state.worker) {
-try { state.worker.terminate(); } catch (_) {}
-}
 state.worker = null;
 state.workerMode = null;
 state.ready = false;
@@ -315,8 +317,67 @@ settleAllLoads(error);
 failAllSpeaks(error);
 }
 }
+function terminateWorker(error) {
+var worker = state.worker;
+if (worker) {
+try { worker.terminate(); } catch (_) {}
+}
+clearWorkerState(error);
+}
+function retireWorker(reason) {
+if (state.retirementPromise) return state.retirementPromise;
+var error = createCancelledError(reason || 'document lifetime ended');
+stopAudio();
+state.speakRequests.forEach(function (entry) { entry.handle.cancelled = true; });
+if (!state.worker) {
+clearWorkerState(error);
+return Promise.resolve(true);
+}
+if (state.workerMode !== 'shared') {
+terminateWorker(error);
+return Promise.resolve(true);
+}
+var channel = state.worker;
+var id = ++state.disconnectSequence;
+state.retirementPromise = new Promise(function (resolve) {
+var settled = false;
+var timer = setTimeout(function () {
+if (settled) return;
+settled = true;
+state.disconnectRequests.delete(id);
+resolve(false);
+}, 300);
+state.disconnectRequests.set(id, function () {
+if (settled) return;
+settled = true;
+clearTimeout(timer);
+state.disconnectRequests.delete(id);
+resolve(true);
+});
+try {
+channel.postMessage({ type: 'disconnect', clientId: CLIENT_ID, id: id });
+} catch (_) {
+clearTimeout(timer);
+state.disconnectRequests.delete(id);
+settled = true;
+resolve(false);
+}
+}).finally(function () {
+if (state.worker === channel) clearWorkerState(error);
+state.retirementPromise = null;
+});
+return state.retirementPromise;
+}
+function retireDocumentClient() {
+void retireWorker('document lifetime ended');
+}
 function handleWorkerMessage(message) {
 var type = message.type;
+if (type === 'disconnected') {
+var disconnect = state.disconnectRequests.get(message.id);
+if (disconnect) disconnect();
+return;
+}
 if (type === 'status') {
 if (message.phase === 'ready') state.ready = true;
 showStatus(message.phase || 'preparing', {
@@ -389,7 +450,7 @@ mode: mode,
 postMessage: function (message) { port.postMessage(message); },
 terminate: function () {
 if (mode === 'shared') {
-try { port.close(); } catch (_) {}
+try { port.postMessage({ type: 'disconnect', clientId: CLIENT_ID }); } catch (_) {}
 } else {
 try { raw.terminate(); } catch (_) {}
 }
@@ -515,6 +576,7 @@ try { send({ type: 'cancel', id: id }); } catch (_) {}
 if (id) state.speakRequests.delete(id);
 if (!id || state.audioHandleId === id) stopAudio();
 }
+window.addEventListener('pagehide', retireDocumentClient);
 window.VoskTTSEngine = Object.freeze({
 version: VERSION,
 isSupported: isSupported,
@@ -525,6 +587,7 @@ ensureLoaded: ensureLoaded,
 retryLoading: retryLoading,
 clearModelDownloadOptOut: clearModelDownloadOptOut,
 cancelLoading: cancelLoading,
+retire: retireWorker,
 speak: speak,
 cancel: cancel
 });
