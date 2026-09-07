@@ -1,6 +1,6 @@
 # Work Modes — FAST / LANE / SYSTEM
 
-**Updated:** 2026-08-06  
+**Updated:** 2026-09-08  
 **Current policy version:** 4.5
 
 Purpose: choose proportionate verification without turning every change into the same ceremony.
