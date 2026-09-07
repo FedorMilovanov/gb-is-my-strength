@@ -1,9 +1,10 @@
 # AGENTS.md — operational contract
 
 > **Владелец:** Фёдор Милованов.  
-> Этот короткий файл обязателен перед mutation. Подробные архитектурные, route,
-> content и UI-контракты сохранены без потерь в [`AGENTS-REFERENCE.md`](AGENTS-REFERENCE.md)
-> и читаются только по затронутой поверхности.
+> Этот короткий файл обязателен перед mutation. Текущая маршрутизация архитектурных,
+> route, content и UI-контрактов находится в [`AGENTS-REFERENCE.md`](AGENTS-REFERENCE.md);
+> полный pre-split reference сохранён только как historical provenance в
+> [`docs/history/AGENTS-REFERENCE-2026-09-07-pre-split.md`](docs/history/AGENTS-REFERENCE-2026-09-07-pre-split.md).
 
 ## 1. Authority and pre-flight
 
@@ -13,7 +14,8 @@
 2. текущий `main`, релевантные открытые PR/issues и exact branch heads;
 3. current source-of-truth files;
 4. `docs/OWNER-INVARIANTS.md` для owner-sensitive решений;
-5. исторические отчёты и `AGENTS-REFERENCE.md` только как применимый surface contract/evidence.
+5. current delegated surface contracts;
+6. historical/provenance material только как evidence.
 
 Перед mutation:
 
@@ -21,9 +23,9 @@
 2. проверь только ветки/PR и файлы, которые могут пересечься с планируемым scope;
 3. выбери `FAST`, `LANE` или `SYSTEM` по `docs/WORK_MODES.md`;
 4. объяви owner, bounded scope, source of truth и применимые checks;
-5. прочитай в `AGENTS-REFERENCE.md` только разделы затронутой поверхности.
+5. используй `AGENTS-REFERENCE.md` как router к owner затронутой поверхности.
 
-Не требуется перед каждой задачей перечитывать весь reference/changelog, проводить
+Не требуется перед каждой задачей перечитывать исторический reference/changelog, проводить
 полный environment inventory или запускать все repository checks. Возможности среды
 проверяются только когда выбранные команды от них зависят.
 
@@ -97,17 +99,16 @@ Required checks:
 
 Никогда без отдельного owner-approved SYSTEM scope:
 
-1. не создавай новые CSS/JS-файлы сверх зафиксированной архитектуры;
+1. не меняй shared CSS/JS ownership и не добавляй новый shared runtime без проверки текущего source owner/route profile; фиксированного глобального счётчика файлов здесь нет;
 2. не меняй byline на `Автор: Фёдор Милованов` — только `Автор-редактор:` или `Редактор:`;
 3. не возвращай AI-disclosure в статьи; об ИИ — только `/about/`;
 4. не запускай repository-wide `prettier --write .` или `eslint --fix .`;
 5. не обновляй зависимости без явного запроса;
-6. не удаляй/не подменяй generated `?v=...` asset revisions; после CSS/JS запускай
-   canonical cache-bust flow;
+6. не удаляй/не подменяй generated `?v=...` asset revisions; после CSS/JS запускай canonical cache-bust flow;
 7. не удаляй `article-header` и `author-card` contracts;
 8. не создавай одноразовые root scripts/patch/diff/generated artifacts;
 9. не дублируй OG/meta/runtime handlers;
-10. не возвращай legacy floating controls; canonical controls определены в reference;
+10. не возвращай legacy floating controls; canonical owner определяется текущим source/route contract;
 11. не добавляй `!important` без анализа cascade/layer/specificity;
 12. не оставляй английские прямые цитаты в читательском тексте русских статей;
 13. не меняй owner-sensitive typography, UI hierarchy или protected data по вкусу агента;
@@ -115,7 +116,7 @@ Required checks:
 
 ## 6. Surface routing
 
-Читай применимый раздел [`AGENTS-REFERENCE.md`](AGENTS-REFERENCE.md) перед изменением:
+Используй [`AGENTS-REFERENCE.md`](AGENTS-REFERENCE.md) как current router перед изменением:
 
 - CSS/JS/assets and cache bust;
 - articles, byline, sources, footnotes, quiz and Russian quote policy;
@@ -136,11 +137,10 @@ data/route-profiles/*.json
 `migration/route-migration-matrix.json` — derived output canonical generator; не правь
 его вручную для добавления или переопределения route.
 
-Для контента серии «Джон Гилл» действует **правило шести поверхностей**: фактическая
-правка считается внедрённой только после проверки всех шести Gill-поверхностей
-(Astro-компоненты, route-файлы, MDX, legacy-зеркала, реестры `data/`, search-манифест).
-Реестр закрытых утверждений — `data/gill-verified-claims.json`, гейт —
-`npm run gill:claims:surface:audit`. Полное правило: `AGENTS-REFERENCE.md` §9.20.1.
+Для контента серии «Джон Гилл» executable source of truth —
+`data/gill-verified-claims.json`; фактические поверхности определяются текущим
+registry/source, а не фиксированным prose-списком. Обязательный gate —
+`npm run gill:claims:surface:audit`.
 
 ## 7. Protected paths
 
@@ -178,6 +178,6 @@ Lane завершён, когда:
 - recovery/cleanup disposition записан только если применим;
 - production witness записан только если заявляется production.
 
-Подробный reference сохраняет прежние surface-specific запреты, historical notes и
-инвентари. Его старые blanket-инструкции о полном чтении/универсальных checks
-считаются superseded этим operational contract и `docs/WORK_MODES.md`.
+Historical inventories, migration notes and the full pre-split reference remain preserved
+under `docs/history/` for provenance. They do not independently override this operational
+contract, current registered authority or current source owners.
