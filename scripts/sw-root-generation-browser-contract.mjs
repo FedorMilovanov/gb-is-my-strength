@@ -74,21 +74,53 @@ async function waitForController(page) {
 async function waitForFailedSuccessor(page) {
   return page.evaluate(async () => {
     const registration = await navigator.serviceWorker.ready;
+    const controllerBeforeUpdate = navigator.serviceWorker.controller;
     return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error('failed successor timeout')), 10000);
-      const onUpdate = () => {
-        const worker = registration.installing;
-        if (!worker) return;
-        worker.addEventListener('statechange', () => {
-          if (worker.state === 'redundant') {
-            clearTimeout(timer);
-            resolve({ state: worker.state, controllerState: navigator.serviceWorker.controller?.state || '' });
-          }
-        });
-      };
-      registration.addEventListener('updatefound', onUpdate, { once: true });
-      registration.update().catch((error) => {
+      let settled = false;
+      const observedWorkers = new WeakSet();
+      const timer = setTimeout(() => {
+        cleanup();
+        reject(new Error('failed successor timeout'));
+      }, 10000);
+
+      const cleanup = () => {
         clearTimeout(timer);
+        registration.removeEventListener('updatefound', onUpdate);
+      };
+
+      const finishIfRedundant = (worker) => {
+        if (settled || !worker || worker.state !== 'redundant') return false;
+        settled = true;
+        cleanup();
+        resolve({
+          state: worker.state,
+          controllerState: navigator.serviceWorker.controller?.state || '',
+          controllerUnchanged: navigator.serviceWorker.controller === controllerBeforeUpdate,
+        });
+        return true;
+      };
+
+      const observeWorker = (worker) => {
+        if (!worker || observedWorkers.has(worker)) return;
+        observedWorkers.add(worker);
+        const onStateChange = () => {
+          if (finishIfRedundant(worker)) {
+            worker.removeEventListener('statechange', onStateChange);
+          }
+        };
+        worker.addEventListener('statechange', onStateChange);
+        if (finishIfRedundant(worker)) {
+          worker.removeEventListener('statechange', onStateChange);
+        }
+      };
+
+      const onUpdate = () => observeWorker(registration.installing);
+      registration.addEventListener('updatefound', onUpdate);
+      observeWorker(registration.installing);
+      registration.update().then(() => {
+        observeWorker(registration.installing);
+      }).catch((error) => {
+        cleanup();
         reject(error);
       });
     });
@@ -98,18 +130,40 @@ async function waitForFailedSuccessor(page) {
 async function waitForSuccessfulSuccessor(page) {
   return page.evaluate(async () => {
     const registration = await navigator.serviceWorker.ready;
+    const controllerBeforeUpdate = navigator.serviceWorker.controller;
     return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error('successful successor timeout')), 10000);
-      const finish = () => {
+      let settled = false;
+      const timer = setTimeout(() => {
+        cleanup();
+        reject(new Error('successful successor timeout'));
+      }, 10000);
+
+      const cleanup = () => {
         clearTimeout(timer);
-        resolve({
-          controllerUrl: navigator.serviceWorker.controller?.scriptURL || '',
-          controllerState: navigator.serviceWorker.controller?.state || '',
-        });
+        navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
       };
-      navigator.serviceWorker.addEventListener('controllerchange', finish, { once: true });
-      registration.update().catch((error) => {
-        clearTimeout(timer);
+
+      const finishIfSuccessorControls = () => {
+        const controller = navigator.serviceWorker.controller;
+        if (settled || !controller || controller === controllerBeforeUpdate || controller.state !== 'activated') {
+          return false;
+        }
+        settled = true;
+        cleanup();
+        resolve({
+          controllerUrl: controller.scriptURL || '',
+          controllerState: controller.state || '',
+        });
+        return true;
+      };
+
+      const onControllerChange = () => finishIfSuccessorControls();
+      navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
+      finishIfSuccessorControls();
+      registration.update().then(() => {
+        finishIfSuccessorControls();
+      }).catch((error) => {
+        cleanup();
         reject(error);
       });
     });
@@ -239,6 +293,7 @@ try {
   const failed = await waitForFailedSuccessor(page);
   assert.equal(failed.state, 'redundant', 'failed generation B must become redundant');
   assert.equal(failed.controllerState, 'activated', 'generation A must remain the active controller after B install failure');
+  assert.equal(failed.controllerUnchanged, true, 'failed generation B must not replace the generation A controller');
   const afterFailedNames = await cacheNames(page);
   assert.ok(afterFailedNames.includes(`${VERSION_A}-static`), 'failed B install must preserve A static cache');
   assert.ok(!afterFailedNames.includes(`${VERSION_B}-static`), 'failed B staging cache must be removed');
