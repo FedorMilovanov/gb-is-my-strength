@@ -73,26 +73,34 @@ Research dossier 31 сохраняется только как историче�
 
 Эти locators используются только там, где вывод зависит от текста/лексики:
 
-1. **Мф. 18:15 — NET textual note, `εἰς σέ`**  
+1. **Мф. 18:15 — NET textual note, `εἰς σέ`**
+
    https://classic.net.bible.org/verse.php?book=Mat&chapter=18&theme=false&verse=15
 
-2. **Евр. 13:17 — SBLGNT, `πείθεσθε` + `ὑπείκετε`**  
+2. **Евр. 13:17 — SBLGNT, `πείθεσθε` + `ὑπείκετε`**
+
    https://www.biblegateway.com/passage/?search=Hebrews%2013%3A17&version=SBLGNT%3BNIV
 
-3. **1 Тим. 5:19–21 — SBLGNT, `παραδέχου` + ближайший контекст**  
+3. **1 Тим. 5:19–21 — SBLGNT, `παραδέχου` + ближайший контекст**
+
    https://www.biblegateway.com/passage/?search=1%20Timothy%205%3A19-21&version=SBLGNT
 
-4. **Гал. 6:1 — SBLGNT, `παράπτωμα` / `καταρτίζετε`**  
+4. **Гал. 6:1 — SBLGNT, `παράπτωμα` / `καταρτίζετε`**
+
    https://www.biblegateway.com/passage/?search=Galatians%206%3A1&version=SBLGNT
 
-5. **Иак. 5:16 — SBLGNT, `ἀλλήλοις`**  
+5. **Иак. 5:16 — SBLGNT, `ἀλλήλοις`**
+
    https://www.biblegateway.com/passage/?search=James%205%3A16&version=SBLGNT
 
-6. **Еф. 5:21–22 — SBLGNT**  
+6. **Еф. 5:21–22 — SBLGNT**
+
    https://www.biblegateway.com/passage/?search=Ephesians%205%3A21-22&version=SBLGNT
 
-7. **1 Тим. 3 / Тит. 1 — SBLGNT + translation comparison**  
-   https://www.biblegateway.com/passage/?search=1%20Timothy%203&version=NET%3BSBLGNT  
+7. **1 Тим. 3 / Тит. 1 — SBLGNT + translation comparison**
+
+   https://www.biblegateway.com/passage/?search=1%20Timothy%203&version=NET%3BSBLGNT
+
    https://www.biblegateway.com/passage/?search=Titus%201%3A5-9&version=SBLGNT%3BNIV
 
 ## 5. Русские прямые цитаты — Синодальный contract
@@ -116,35 +124,50 @@ Reader heading Мал. 3 изменён с кавычечного «обкрад
 
 ### Ecclesiology / conscience support
 
-- **Jeramie Rinne / 9Marks, “How Far Does an Elder’s Authority Go?” (2026)**  
-  https://www.9marks.org/article/how-far-does-an-elders-authority-go/  
+- **Jeramie Rinne / 9Marks, “How Far Does an Elder’s Authority Go?” (2026)**
+
+  https://www.9marks.org/article/how-far-does-an-elders-authority-go/
+
   Role: реальность старейшинской власти + её пределы; Scripture remains normative. Не используется как Greek authority.
 
-- **London Baptist Confession of Faith (1689), chapter 21**  
-  https://founders.org/library/chapter-21-christian-liberty-and-liberty-of-conscience/  
+- **London Baptist Confession of Faith (1689), chapter 21**
+
+  https://founders.org/library/chapter-21-christian-liberty-and-liberty-of-conscience/
+
   Role: confessional support для свободы совести и отказа от absolute/blind obedience человеческим повелениям, не содержащимся в Слове.
 
-- **London Baptist Confession of Faith (1689), chapter 26**  
-  https://founders.org/library/chapter-26-the-church/  
+- **London Baptist Confession of Faith (1689), chapter 26**
+
+  https://founders.org/library/chapter-26-the-church/
+
   Role: confessional support для верховенства Христа, реальности церкви/служителей и церковной власти. Confession subordinate to Scripture.
 
 ### Application / safeguarding support
 
-- **GRACE, “Responding to Pastoral Abuse Allegations”**  
-  https://www.netgrace.org/resources/responding-to-pastor-abuse-allegations  
+- **GRACE, “Responding to Pastoral Abuse Allegations”**
+
+  https://www.netgrace.org/resources/responding-to-pastor-abuse-allegations
+
   Role: safeguarding/application evidence; не textual authority для Мф. 18.
 
-- **Michael J. Kruger, “What is Spiritual Abuse?”**  
-  https://michaeljkruger.com/what-is-spiritual-abuse/  
+- **Michael J. Kruger, “What is Spiritual Abuse?”**
+
+  https://michaeljkruger.com/what-is-spiritual-abuse/
+
   Role: bounded application vocabulary для злоупотребления духовной властью; не blanket-label и не экзегетическая authority.
 
-- **Wade Mullen, _Something’s Not Right_ — official Tyndale page**  
-  https://www.tyndale.com/p/somethings-not-right/9781496444707  
+- **Wade Mullen, _Something’s Not Right_ — official Tyndale page**
+
+  https://www.tyndale.com/p/somethings-not-right/9781496444707
+
   Role: наблюдаемые tactics / impression management; не authority для biblical semantics.
 
-- **Diane Langberg, _Redeeming Power_ — Baker**  
-  https://bakerpublishinggroup.com/products/9781587434389_redeeming-power  
-  Public excerpt: https://cdn.bakerpublishinggroup.com/processed/book-resources/files/Excerpt_Langberg_short.pdf  
+- **Diane Langberg, _Redeeming Power_ — Baker**
+
+  https://bakerpublishinggroup.com/products/9781587434389_redeeming-power
+
+  Public excerpt: https://cdn.bakerpublishinggroup.com/processed/book-resources/files/Excerpt_Langberg_short.pdf
+
   Role: application layer о производной власти и злоупотреблении; не authority для original-language claims.
 
 `CCEF / David Powlison` удалён из reader bibliography: в текущем manuscript ему не соответствует конкретный reader-facing claim с точным locator. Оставлять общий бренд «для солидности» хуже, чем не ссылаться вовсе.
