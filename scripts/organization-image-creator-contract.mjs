@@ -13,12 +13,10 @@ const TARGETS = [
   {
     route: '/',
     source: 'src/components/home/HomePageHead.astro',
-    dist: 'index.html',
   },
   {
     route: '/nagornaya/seriya/',
     source: 'src/components/nagornaya/seriya/NagornayaSeriyaPageHead.astro',
-    dist: 'nagornaya/seriya/index.html',
   },
 ];
 
@@ -32,6 +30,11 @@ function asArray(value) {
 
 function hasType(node, wanted) {
   return node && typeof node === 'object' && asArray(node['@type']).includes(wanted);
+}
+
+function distRelativeForRoute(route) {
+  const segments = String(route).split('/').filter(Boolean);
+  return segments.length ? path.join(...segments, 'index.html') : 'index.html';
 }
 
 function parseJsonLd(html, label) {
@@ -134,8 +137,9 @@ if (process.argv.includes('--require-dist')) {
   validateLogoAsset(distRoot);
   result.dist = {};
   for (const target of TARGETS) {
-    const distPath = path.join(distRoot, target.dist);
-    if (!fs.existsSync(distPath)) fail(`dist missing: ${target.dist}`);
+    const relativeDistPath = distRelativeForRoute(target.route);
+    const distPath = path.join(distRoot, relativeDistPath);
+    if (!fs.existsSync(distPath)) fail(`dist missing for route ${target.route}: ${relativeDistPath}`);
     result.dist[target.route] = validateDocument(fs.readFileSync(distPath, 'utf8'), `dist ${target.route}`);
   }
 }
