@@ -109,6 +109,13 @@ jobs:
           trap - EXIT
           git diff --exit-code -- data/editorial-metadata.json
 
+      - name: Classify projection divergence by date precision
+        if: always()
+        run: >-
+          node scripts/editorial-metadata-semantic-divergence.js
+          --input=reports/editorial-metadata-observed.json
+          --out=reports/editorial-metadata-semantic-divergence.json
+
       - name: Compare frozen and observed metadata snapshots
         if: always()
         run: >-
@@ -138,6 +145,7 @@ jobs:
             reports/editorial-metadata-frozen.json
             reports/editorial-metadata-observed.json
             reports/editorial-metadata-diff.json
+            reports/editorial-metadata-semantic-divergence.json
             reports/asset-revision-drift.log
             data/editorial-metadata.schema.json
             data/editorial-metadata-migration-inventory.json
