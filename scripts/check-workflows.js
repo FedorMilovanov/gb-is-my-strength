@@ -28,7 +28,7 @@ const RELEASE_ACTION_PINS = Object.freeze({
   uploadArtifact: 'actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1',
   downloadArtifact: 'actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1',
   uploadPages: 'actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0',
-  deployPages: 'actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0',
+  deployPages: 'actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1',
 });
 
 const ACTIONLINT_OFFLINE_AUTHORITY = Object.freeze({
