@@ -79,15 +79,15 @@ async function captureSegmentedScreenshot(page, engine, profile) {
     };
   });
 
-  const maxScroll = Math.max(0, metrics.pageHeight - metrics.viewportHeight);
+  const maxScreenshotTop = Math.max(0, metrics.pageHeight - metrics.viewportHeight);
   const positions = [];
   for (let requested = 0; requested < metrics.pageHeight; requested += metrics.viewportHeight) {
-    const top = Math.min(requested, maxScroll);
+    const top = Math.min(requested, maxScreenshotTop);
     if (positions.at(-1) !== top) positions.push(top);
-    if (top === maxScroll) break;
+    if (top === maxScreenshotTop) break;
   }
   if (!positions.length) positions.push(0);
-  if (positions.at(-1) !== maxScroll) positions.push(maxScroll);
+  if (positions.at(-1) !== maxScreenshotTop) positions.push(maxScreenshotTop);
 
   const ranges = [];
   const tiles = [];
@@ -95,14 +95,28 @@ async function captureSegmentedScreenshot(page, engine, profile) {
     const requestedTop = positions[index];
     await page.evaluate((top) => window.scrollTo(0, top), requestedTop);
     await page.waitForTimeout(80);
-    const actualTop = await page.evaluate(() => Math.round((document.scrollingElement || document.documentElement).scrollTop));
+    const viewportPosition = await page.evaluate(() => ({
+      layoutScrollTop: Math.round(window.scrollY),
+      visualViewportOffsetTop: Math.round(window.visualViewport?.offsetTop || 0),
+      actualTop: Math.round(window.visualViewport?.pageTop ?? window.scrollY),
+    }));
+    const actualTop = viewportPosition.actualTop;
     const tilePath = join(OUT, `${engine}-${profile.id}-tile-${String(index + 1).padStart(3, '0')}.png`);
     await page.screenshot({ path: tilePath, fullPage: false });
     const bytes = statSync(tilePath).size;
     const start = Math.max(0, Math.min(actualTop, metrics.pageHeight));
     const end = Math.max(start, Math.min(start + metrics.viewportHeight, metrics.pageHeight));
     ranges.push({ start, end });
-    tiles.push({ index: index + 1, requestedTop, actualTop, start, end, bytes });
+    tiles.push({
+      index: index + 1,
+      requestedTop,
+      layoutScrollTop: viewportPosition.layoutScrollTop,
+      visualViewportOffsetTop: viewportPosition.visualViewportOffsetTop,
+      actualTop,
+      start,
+      end,
+      bytes,
+    });
   }
 
   ranges.sort((left, right) => left.start - right.start || left.end - right.end);
@@ -116,10 +130,10 @@ async function captureSegmentedScreenshot(page, engine, profile) {
   const gapPixels = gaps.reduce((sum, gap) => sum + Math.max(0, gap.end - gap.start), 0);
   const coveredPixels = Math.max(0, metrics.pageHeight - gapPixels);
   const emptyTiles = tiles.filter((tile) => tile.bytes < 1000);
-  const terminalScrollReachable = tiles.length > 0 && Math.abs(tiles.at(-1).actualTop - maxScroll) <= 1;
+  const terminalScreenshotReachable = tiles.length > 0 && Math.abs(tiles.at(-1).actualTop - maxScreenshotTop) <= 1;
   const complete =
     metrics.pageHeight > 0 &&
-    terminalScrollReachable &&
+    terminalScreenshotReachable &&
     gaps.length === 0 &&
     emptyTiles.length === 0 &&
     coveredPixels === metrics.pageHeight;
@@ -129,8 +143,8 @@ async function captureSegmentedScreenshot(page, engine, profile) {
     pageHeight: metrics.pageHeight,
     viewportHeight: metrics.viewportHeight,
     viewportWidth: metrics.viewportWidth,
-    maxScroll,
-    terminalScrollReachable,
+    maxScreenshotTop,
+    terminalScreenshotReachable,
     coveredPixels,
     gaps,
     emptyTiles: emptyTiles.map((tile) => tile.index),
