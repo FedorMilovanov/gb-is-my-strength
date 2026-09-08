@@ -1,0 +1,91 @@
+name: Metadata SSOT Closure
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'src/**'
+      - 'data/**'
+      - 'migration/**'
+      - 'scripts/**'
+      - '**/*.html'
+      - 'feed.xml'
+      - 'sitemap*.xml'
+      - '.github/workflows/editorial-metadata-v3.yml'
+      - '.github/workflows/metadata-ssot-closure.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'src/**'
+      - 'data/**'
+      - 'migration/**'
+      - 'scripts/**'
+      - '**/*.html'
+      - 'feed.xml'
+      - 'sitemap*.xml'
+      - '.github/workflows/editorial-metadata-v3.yml'
+      - '.github/workflows/metadata-ssot-closure.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: metadata-ssot-closure-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  metadata-ssot-closure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Verify exact changed diff hygiene
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test -n "$HEAD_SHA"
+          if [[ -n "$BASE_SHA" && ! "$BASE_SHA" =~ ^0+$ ]]; then
+            git diff --check "$BASE_SHA" "$HEAD_SHA"
+          else
+            git diff --check "$HEAD_SHA^" "$HEAD_SHA"
+          fi
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prove source authority, approval gate and source RSS projection
+        run: |
+          node scripts/rss-feed-normalizer-test.js
+          node scripts/metadata-ssot-closure-contract.js
+          node scripts/rss-feed-normalizer.js --check
+
+      - name: Build production-like metadata surface
+        run: npm run strangler:build:production-like
+
+      - name: Prove final approval-gated page, search, sitemap and RSS projections
+        run: node scripts/metadata-ssot-closure-contract.js --dist
+
+      - name: Require canonical v3 projection idempotence
+        run: node scripts/editorial-metadata-registry.js --project-dist --dry-run
+
+      - name: Ensure proof is read-only
+        run: git diff --exit-code
