@@ -70,16 +70,14 @@ async function stabilizeVisualState(page) {
 
 async function captureSegmentedScreenshot(page, engine, profile) {
   await stabilizeVisualState(page);
-  const metrics = await page.evaluate(() => ({
-    pageHeight: Math.max(
-      document.documentElement.scrollHeight,
-      document.body?.scrollHeight || 0,
-      document.documentElement.offsetHeight,
-      document.body?.offsetHeight || 0,
-    ),
-    viewportHeight: window.innerHeight,
-    viewportWidth: window.innerWidth,
-  }));
+  const metrics = await page.evaluate(() => {
+    const scrollingElement = document.scrollingElement || document.documentElement;
+    return {
+      pageHeight: scrollingElement.scrollHeight,
+      viewportHeight: window.innerHeight,
+      viewportWidth: window.innerWidth,
+    };
+  });
 
   const maxScroll = Math.max(0, metrics.pageHeight - metrics.viewportHeight);
   const positions = [];
@@ -97,7 +95,7 @@ async function captureSegmentedScreenshot(page, engine, profile) {
     const requestedTop = positions[index];
     await page.evaluate((top) => window.scrollTo(0, top), requestedTop);
     await page.waitForTimeout(80);
-    const actualTop = await page.evaluate(() => Math.round(window.scrollY));
+    const actualTop = await page.evaluate(() => Math.round((document.scrollingElement || document.documentElement).scrollTop));
     const tilePath = join(OUT, `${engine}-${profile.id}-tile-${String(index + 1).padStart(3, '0')}.png`);
     await page.screenshot({ path: tilePath, fullPage: false });
     const bytes = statSync(tilePath).size;
@@ -118,13 +116,21 @@ async function captureSegmentedScreenshot(page, engine, profile) {
   const gapPixels = gaps.reduce((sum, gap) => sum + Math.max(0, gap.end - gap.start), 0);
   const coveredPixels = Math.max(0, metrics.pageHeight - gapPixels);
   const emptyTiles = tiles.filter((tile) => tile.bytes < 1000);
-  const complete = metrics.pageHeight > 0 && gaps.length === 0 && emptyTiles.length === 0 && coveredPixels === metrics.pageHeight;
+  const terminalScrollReachable = tiles.length > 0 && Math.abs(tiles.at(-1).actualTop - maxScroll) <= 1;
+  const complete =
+    metrics.pageHeight > 0 &&
+    terminalScrollReachable &&
+    gaps.length === 0 &&
+    emptyTiles.length === 0 &&
+    coveredPixels === metrics.pageHeight;
 
   return {
     complete,
     pageHeight: metrics.pageHeight,
     viewportHeight: metrics.viewportHeight,
     viewportWidth: metrics.viewportWidth,
+    maxScroll,
+    terminalScrollReachable,
     coveredPixels,
     gaps,
     emptyTiles: emptyTiles.map((tile) => tile.index),
