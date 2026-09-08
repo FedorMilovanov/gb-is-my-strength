@@ -1,137 +1,149 @@
 # Тёмная сторона кафедры — source reconciliation Parts II–IX
 
-Статус: **ACTIVE EDITORIAL RECONCILIATION / NO PUBLICATION PROMOTION**
-Дата: 2026-09-07
-Product anchor / rollback: `2a5bad736ff76651b1dcf26371ea8872862d1d66`
-Original reconciliation base: `066be4fb24089a549ae3b3089700332586585850`
-Current Research root authority anchor: `FedorMilovanov/Research@56fca4d5a3dbbc4ddb68d4ed5708e91649be8086`
-Part II evidence snapshot remains pinned in its receipt at: `FedorMilovanov/Research@e8e6b98787019d43a2ffd10eb55bdde04ebfb747`
+Статус: **SOURCE RECONCILIATION COMPLETE 8/8 / NO PUBLICATION PROMOTION**
+Дата closure: 2026-09-08
+Product closure base: `FedorMilovanov/gb-is-my-strength@a0d45c13f56f6401aa9c9952165a9177d9292172`
+Current Research root authority: `FedorMilovanov/Research@b5785be744bc8eac14491b972bb99005f1e81322`
 Канон серии: `research/pastor-series/MASTER-PLAN.md`
-Внешняя evidence authority: `FedorMilovanov/Research` → stable `CURRENT_AUTHORITY.md`, current control-plane/root files и corpus-specific authorities, выбранные ими на соответствующем exact Research anchor. Исторический exact snapshot не переписывается задним числом только потому, что root entrypoint продвинулся.
 
 ## 1. Назначение и граница
 
-Этот файл закрывает только **карту источников и оставшегося source debt** для уже существующих content-only manuscripts Parts II–IX.
+Этот файл является канонической картой article-level source reconciliation для content-only manuscripts Parts II–IX.
 
-Он **не**:
+На этом closure source-задача для всех восьми manuscripts закрыта в той форме, которая требуется конкретной статье: primary/source locator pass, exegesis/source pass, claim map, prudential source classification или terminology claim map. Это **не** означает, что все части прошли одинаковые богословские, safety или publication gates.
 
-- делает manuscript опубликованным;
-- снимает `draft:true` или `noindex:true`;
+Этот closure **не**:
+
+- снимает `draft:true`, `noindex:true` или `sourcesRequired:true`;
 - создаёт public route;
-- подтверждает live/production state;
-- переносит Research case closure автоматически в reader wording;
-- разрешает новую прямую цитату без первичного locator;
-- заменяет jurisdiction/safety, cross-link, christological или release pass из `MASTER-PLAN.md`; для частей, где отдельный exegesis gate уже закрыт receipt, этот факт фиксируется явно и не распространяется на соседние части.
+- объявляет статью publication-ready;
+- превращает prudential safeguard в прямую заповедь Писания;
+- превращает Research case closure в reader-facing обвинительный claim;
+- закрывает jurisdiction/safeguarding там, где receipt оставляет его открытым;
+- заменяет общий exegesis red-team, cross-link/series consistency, christological pass, static-publication checks или release transaction.
 
-Publication gate остаётся fail-closed до отдельного доказательства для каждой части.
+`PUBLICATION_PROMOTION = FORBIDDEN` до отдельных доказательств остальных gate из `MASTER-PLAN.md`.
 
-## 2. Governing evidence rules
+## 2. Governing evidence contract
 
-### 2.1. Иерархия
+Для Parts II–IX действует единая иерархия:
 
-Для этой серии действует следующий порядок:
+1. **Писание** — первичная authority для библейских и нравственных утверждений.
+2. **Current Research authority / machine-ledger** — authority для современных кейсов, procedural status, claim boundary и quote-safe routing.
+3. **Первичный публичный источник конкретного factual claim** — предпочтителен и обязателен для сильного утверждения, когда доступен.
+4. **Качественная вторичная литература** — support; она не повышает силу фразы выше доказательств.
+5. **Prudential / governance framework** — маркируется как application или safeguard и не выдаётся за вдохновенный procedural code.
+6. **Psychological / organizational terminology** — вторична наблюдаемому поведению и библейским нравственным категориям.
 
-1. **Писание** — первичная богословская authority для библейских и нравственных тезисов.
-2. **Current Research authority / machine-ledger** — authority для современных кейсов, маршрутизации, claim boundary и quote-safe статуса.
-3. **Первичный публичный источник конкретного утверждения** — обязателен для сильного factual claim и прямой цитаты, когда он доступен.
-4. **Качественная вторичная литература** — служит экзегетическим, историческим или pastoral support, но не повышает силу утверждения выше доказательств.
-5. **Google Drive copies / учебные конспекты** — discovery/support only. Они не становятся reader authority только потому, что доступны в Drive.
+Сила reader-фразы не должна превышать evidence. Для современных кейсов различаются как минимум `alleged`, `reported`, `investigated`, `found`, `adjudicated`, `admitted`, `disputed`.
 
-### 2.2. Research closure ≠ article source closure
+## 3. Закрытая матрица Parts II–IX
 
-Current OSK corpus уже имеет закрытую case routing/evidence основу, но это не означает, что любое предложение Parts II–IX автоматически готово к публикации.
+| Part | Manuscript / exact verified blob | Receipt / source task | Source-reconciliation verdict | Gates, которые остаются открытыми |
+| --- | --- | --- | --- | --- |
+| **II** | `src/content/articles/anatomiya-padeniya-pyat-stadiy.mdx` — `3bdd78ab9e9c928e36c3e32acca41b445b63c0f3` | `PART-II-SOURCE-RECEIPT.md` | `SOURCE_GATE = PASS` | отдельный Scripture/exegesis red-team; jurisdiction/safety where applicable; cross-link; christological; technical/release |
+| **III** | `src/content/articles/teksty-pisaniya-kotorymi-manipuliruyut.mdx` — `94d9c7a707a4d3e6e0c17faa9aeaba1099f854f1` | `PART-III-SOURCE-EXEGESIS-RECEIPT.md` | `SOURCE_GATE = PASS / SCRIPTURE_EXEGESIS_GATE = PASS` | jurisdiction/safeguarding application; cross-link; christological; technical/release |
+| **IV** | `src/content/articles/sem-tipov-razlichenie-uchiteley.mdx` — `f53aa9f785fa161f2321b6a5c7e8c883d8317630` | `PART-IV-SOURCE-EXEGESIS-RECEIPT.md` | `SOURCE_GATE = PASS / SCRIPTURE_EXEGESIS_GATE = PASS` | cross-link/series; christological/theological; jurisdiction/safeguarding where invoked; technical/release |
+| **V** | `src/content/articles/cerkovnaya-disciplina-vlast-granicy-zashchita.mdx` — `2c572a50e4d1bb1a08714e96e6bcd4b461cc48e6` | `PART-V-SOURCE-ECCLESIOLOGY-RECEIPT.md` | `SOURCE_GATE = PASS / ECCLESIOLOGY_EXEGESIS_GATE = PASS / CONFESSIONAL_PRIMARY_LOCATOR_GATE = PASS` | `JURISDICTION_SAFEGUARDING_GATE = OPEN`; cross-link; christological; technical/release |
+| **VI** | `src/content/articles/kogda-uhodit-kogda-ostavatsya.mdx` — `19686692b373de9e700fef8b8f5d5b54c2e5978a` | `PART-VI-SOURCE-EXEGESIS-RECEIPT.md` | `SOURCE_GATE = PASS / SCRIPTURE_EXEGESIS_GATE = PASS` | `JURISDICTION_SAFEGUARDING_GATE = OPEN`; cross-link; christological; technical/release |
+| **VII** | `src/content/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo.mdx` — `d2b0d9682cb9ca9ad9218ba32c0500ceb829a6ad` | `PART-VII-SOURCE-CLAIM-MAP-RECEIPT.md` | `SOURCE_GATE = PASS / CLAIM_MAP_GATE = PASS / CONFESSIONAL_PRIMARY_LOCATOR_GATE = PASS` | `JURISDICTION_SAFEGUARDING_GATE = OPEN`; common exegesis red-team where needed; cross-link; christological; technical/release |
+| **VIII** | `src/content/articles/priznaki-zdorovoy-cerkvi.mdx` — `f1c9204ecfc45439e5e698eb48103ad639bb01e4` | `PART-VIII-PRUDENTIAL-SOURCE-MAP-RECEIPT.md` | `SOURCE_CLASSIFICATION_PASS` — biblical norm / canonical inference / prudential control разделены | `JURISDICTION_OPEN`; common exegesis red-team where needed; cross-link; christological; technical/release |
+| **IX** | `src/content/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi.mdx` — `00d2643463c9ef3ef209ee978a67629f8e17c1c5` | `PART-IX-TERMINOLOGY-CLAIM-MAP-RECEIPT.md` | `TERMINOLOGY_CLAIM_MAP_PASS` — modern labels secondary to observable facts and Scripture | common exegesis red-team where needed; jurisdiction/safety where applicable; cross-link; christological; technical/release |
 
-Перед release каждая reader-facing factual формулировка должна быть сопоставлена с:
+## 4. Что именно закрыто в Parts V–IX
 
-- типом утверждения: biblical / exegetical / historical / contemporary-case / prudential;
-- допустимым evidence level;
-- точным source ID или публичным URL;
-- locator, когда источник длинный;
-- корректным процессуальным статусом (`alleged`, `reported`, `investigated`, `found`, `adjudicated`, `admitted`, `disputed` и т. п.);
-- permitted wording;
-- quote-safe статусом для прямой цитаты.
+### Part V
 
-### 2.3. Drive boundary
+- reader wording reconciled against Research 32A;
+- LBCF 21 §2 and 26 §§7–9, 12, 15 have exact primary locators;
+- church authority and officer-specific ministry are distinguished;
+- plurality is a strong NT pattern without a fabricated universal lexical prohibition;
+- modern complaint/governance controls are prudential safeguards;
+- 1 Тим. 5:19–20 is not presented as an inspired modern `intake → investigation → verdict` workflow;
+- Мф. 18 is not exclusive jurisdiction for every harm or possible crime;
+- forgiveness, fellowship, trust and office qualification remain distinct.
 
-В Google Drive не найден отдельный master-документ серии по точным названиям «Тёмная сторона кафедры», «20 антисоветов» или «антисоветы». Найденные материалы являются поддерживающим слоем:
+### Part VI
 
-- John MacArthur / Grace to You Q&A (`GTY135`) — релевантен границам пастырской власти, Евр. 13:17, подотчётности и вопросу stay/leave; **перед reader citation требуется проверить публичный первичный GTY locator**, а не цитировать Drive-копию как authority;
-- учебный курс «Служение пастора II» — широкий компилятивный ecclesiology/pastoral background; пригоден только как discovery/B-support и требует возврата к первичным авторам;
-- Wolfgang Klippert, «От текста к проповеди» — полезен как методологический support для экзегезы, включая различение этимологии и значения слова; не является case authority.
+- practical stay/leave claims reconciled against Research 33A;
+- TEXT, canonical inference, prudence, safeguarding and civil-jurisdiction application are separated;
+- the decision framework remains pastoral guidance rather than a mechanical divine algorithm;
+- jurisdiction/safeguarding is explicitly held open rather than silently universalized.
 
-Приватные Drive URLs/IDs намеренно не переносятся в публичный репозиторий.
+### Part VII
 
-## 3. Матрица Parts II–IX
+- external and historical claims are classified before sourcing;
+- no new contemporary case roster is created for a positive pastoral-theology article;
+- Scripture remains governing authority, while Wave 10 is supporting/accountability evidence;
+- confessional and prudential claims are marked at their actual evidence level.
 
-| Part | Product manuscript | Прямой Research backbone | Что уже есть | Открытый source gate | Текущий статус |
-| --- | --- | --- | --- | --- | --- |
-| **II** | `src/content/articles/anatomiya-padeniya-pyat-stadiy.mdx` | historical dossier 28 + current OSK routing + `research/pastor-series/PART-II-SOURCE-RECEIPT.md` | Bounded wording; public source projection; exact-count defect removed; manuscript blob `3bdd78ab9e9c928e36c3e32acca41b445b63c0f3` | **Нет открытого source gate.** Scripture/exegesis, cross-link, christological, technical/release gates остаются отдельными | `SOURCE_PASS / OTHER_GATES_OPEN` |
-| **III** | `src/content/articles/teksty-pisaniya-kotorymi-manipuliruyut.mdx` | historical dossier 31 + active Research correction overlay `31A_SCRIPTURE_TEXTS_MANIPULATED_EXEGESIS_CORRECTIONS_2026-09-07.md` + первичные библейские тексты + `research/pastor-series/PART-III-SOURCE-EXEGESIS-RECEIPT.md` | 23/23 bounded exegesis verdicts; Мф. 18:15 textual note; disputed Greek claims checked; Синодальные reader quotes checked; exact reader-safe public bibliography; manuscript blob `94d9c7a707a4d3e6e0c17faa9aeaba1099f854f1` | **Нет открытого source/exegesis gate.** Jurisdiction/safeguarding application, cross-link, christological, technical/release gates остаются отдельными | `SOURCE_EXEGESIS_PASS / OTHER_GATES_OPEN` |
-| **IV** | `src/content/articles/sem-tipov-razlichenie-uchiteley.mdx` | `.../30_TEACHER_TAXONOMY_MASTER_AND_CUNNING_AXIS.md` + current OSK case-routing authorities | Семь категорий и редакционный принцип «сила утверждения не сильнее доказательств» | Для каждого современного примера проверить current routing/decision authority; не превращать taxonomy в психиатрический диагноз или окончательный приговор без evidence | `DIRECT_DOSSIER / CASE_ROUTING_RECHECK_OPEN` |
-| **V** | `src/content/articles/cerkovnaya-disciplina-vlast-granicy-zashchita.mdx` | `.../32_CHURCH_DISCIPLINE_THEOLOGY.md` + Писание + точные конфессиональные/первичные источники | Положительное богословие власти, дисциплины, совести и подотчётности | Проверить 1689 LBCF по первичному тексту и locator; Leeman/9Marks/GRACE/Kruger — public locators; не использовать этимологию `κατά` как аргумент; Drive GTY135 — только discovery до первичной проверки | `DIRECT_DOSSIER / CONFESSION_AND_PRIMARY_LOCATOR_PASS_OPEN` |
-| **VI** | `src/content/articles/kogda-uhodit-kogda-ostavatsya.mdx` | `.../33_WHEN_TO_LEAVE_WHEN_TO_STAY.md` + `.../43_WAVE10_FAITHFUL_WITNESS_UNDER_PRESSURE_2026-08-01.md` | Decision framework и документированные pathways членов/служителей под давлением | Сопоставить practical claims с первичными case locators; отдельно не смешивать source verification с jurisdiction/safeguarding pass; Drive GTY135 может быть secondary support после проверки оригинала | `DIRECT_DOSSIER / PATHWAY_LOCATOR_PASS_OPEN` |
-| **VII** | `src/content/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo.mdx` | Писание + Wave 10 как supporting positive/accountability corpus | Сильный библейский каркас: 1 Тим. 3; Тит. 1; Деян. 20; 1 Пет. 5; Евр. 13; реальные positive/accountability pathways доступны в Research | Нет отдельного numbered dossier и нет явного reader source-map; сначала классифицировать каждое внешнее/историческое утверждение, затем привязать только нужные claims к W10/current primary source. Не создавать новый case roster | `BIBLICAL_BACKBONE_READY / CLAIM_MAP_OPEN` |
-| **VIII** | `src/content/articles/priznaki-zdorovoy-cerkvi.mdx` | Писание + dossier 32 + Wave 10; OSK governance evidence как support | Библейские нормы + institutional safeguards: plurality, complaint path, due process, conflicts, finance, confidentiality | Явно разделить **библейскую норму** и **prudential control**. Для финансовых, governance и safeguarding best-practice claims нужен соответствующий public support; не выдавать разумную процедуру за прямую заповедь стиха | `BIBLICAL_AND_GOVERNANCE_BACKBONE / PRUDENTIAL_SOURCE_MAP_OPEN` |
-| **IX** | `src/content/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi.mdx` | Писание + dossier 30 + dossier 33 + Wave 10 | Финальный двусторонний guardrail: эпизод ≠ система, боль ≠ доказанный мотив, твёрдость ≠ автоматически abuse | Термин `gaslighting` либо получить узкий reader-safe источник/определение, либо оставить только наблюдаемые библейские категории поведения; проверить, что современные психологические термины нигде не становятся нравственной authority | `DISCERNMENT_BACKBONE_READY / TERMINOLOGY_AND_CLAIM_MAP_OPEN` |
+### Part VIII
 
-## 4. Что НЕ нужно исследовать заново
+- plurality, complaint handling, due process, finance, conflicts and safeguarding controls are explicitly prudential/process safeguards where Scripture does not prescribe the modern procedure;
+- institutional checklist is not made a test of whether a church is a true church;
+- 1 Тим. 5 does not encode modern investigative workflow;
+- exact LBCF locators are used where confessional witness is invoked;
+- legal/jurisdiction application remains open.
 
-Следующие блоки уже имеют достаточный backbone, чтобы не открывать новый широкий research marathon:
+### Part IX
 
-- Part II — source pass закрыт bounded receipt; новые источники нужны только при добавлении нового конкретного reader claim;
-- Part III — source + Scripture/exegesis pass закрыты bounded receipt; новые источники нужны только для нового reader claim или отдельного jurisdiction/safeguarding gate;
-- Part IV — teacher taxonomy уже существует;
-- Part V — church-discipline theology уже существует;
-- Part VI — stay/leave dossier + Wave 10 pathways уже существуют;
-- Parts VII–IX могут опираться на Писание и существующие positive/accountability/discernment данные; сначала нужен **claim mapping**, а не сбор ещё сотен ссылок.
+- `gaslighting` and similar modern terminology are optional secondary labels after observable behavior, not moral authority;
+- moral verdict remains grounded in truth/falsehood, witness, deceit, factional conduct and other demonstrated behavior;
+- joint complaint or disagreement does not by itself prove factionalism;
+- editorial diagnostic axes are identified as framework, not inspired taxonomy;
+- terminology/source list is a publication gate rather than rhetorical decoration.
 
-Новые источники добавляются только для **конкретной обнаруженной дыры**: отсутствующий primary locator, спорный экзегетический вывод, prudential best-practice claim или современный factual claim, который не покрыт current authority.
+## 5. Source closure counters
 
-## 5. Что осталось по source gate
+На exact manuscripts listed above:
 
-На этих anchors:
+- manuscripts II–IX exist: **8/8**;
+- article-level source reconciliation tasks complete: **8/8**;
+- open article-level source reconciliation tasks: **0/8**;
+- bounded receipts present: **8/8**;
+- publication-ready Parts II–IX: **0/8**;
+- public Roman-numeral core remains **1/9** until controlled release transactions;
+- no draft/noindex flag is promoted by this closure.
 
-- manuscripts II–IX существуют: **8/8**;
-- Parts II–IX с завершённым article-level primary-locator/source-list pass: **2/8** — Parts II–III;
-- Parts II–IX с открытым source pass: **6/8** — Parts IV–IX;
-- Part III дополнительно имеет отдельный `SCRIPTURE_EXEGESIS_GATE = PASS`; это не переносится автоматически на Part II или Parts IV–IX;
-- Parts II–IX publication-ready **в целом**: **0/8** — source/exegesis PASS не закрывает safety/cross-link/christological/technical/release gates;
-- case-level OSK Research closure не пересчитывается в «8/8 статей готовы»;
-- public core остаётся **1/9** по опубликованным римским частям до отдельных release PR.
+`SOURCE_RECONCILIATION = COMPLETE`
 
-Это означает: source publication barrier снят с Parts II–III, но **publication promotion не разрешён ни для одной из восьми unpublished частей**.
+`SOURCE_DEBT = 0/8`
 
-## 6. Порядок source-verification pass
+`PUBLICATION_PROMOTION = FORBIDDEN`
 
-Закрытые receipts:
+## 6. Remaining gates after source closure
 
-- Part II — `research/pastor-series/PART-II-SOURCE-RECEIPT.md`;
-- Part III — `research/pastor-series/PART-III-SOURCE-EXEGESIS-RECEIPT.md`.
+Source closure changes the owner, not the release status. The remaining canonical order is:
 
-Дальнейшая последовательность:
+1. **Common exegesis red-team II–IX** — especially remaining strong proof-text, language/original-language and canonical-inference claims. Existing Part III/IV/VI exegesis receipts are retained and must not be needlessly reopened; the red-team focuses on still-open claims and cross-part consistency.
+2. **Unified jurisdiction / safeguarding pass** — legal reporting, immediate danger, child/vulnerable-person issues, confidentiality and civil/church jurisdiction must be bounded by applicable context rather than universalized from one country or one verse.
+3. **Cross-link / series consistency pass** — no reader link may point to a route that will not exist in the same release state; terminology, numbering and reciprocal claims across Parts I–IX must agree.
+4. **Christological / theological pass** — conclusions must return the reader to Christ, the Chief Shepherd, repentance, truth and faithful church life rather than ending in institutional technique or suspicion.
+5. **Technical/static-publication gates** — MDX, source/static build, route ownership, noindex/indexing, reader configuration and relevant browser contracts on exact release head.
+6. **Release transaction** — route + reader config + landing + RSS/sitemap + metadata are changed together for the chosen release batch, followed by production witness.
 
-1. **Part IV** — taxonomy + current routing decisions;
-2. **Part V** — confession / ecclesiology / primary-source cleanup;
-3. **Part VI** — pathway locators; jurisdiction/safety остаётся отдельным gate;
-4. **Part VII** — claim classification + minimal positive source map;
-5. **Part VIII** — biblical norm vs prudential governance source map;
-6. **Part IX** — terminology/discernment source map.
+## 7. Fail-closed editorial invariants
 
-После каждого source pass статья всё ещё остаётся draft/noindex до остальных gate из `MASTER-PLAN.md`.
+- Bible first; psychology and organizational vocabulary are subordinate.
+- Pastoral authority is real; pastoral infallibility is rejected.
+- Freedom of conscience is real; autonomism is rejected.
+- Protection of elders from slander is real; immunity from investigation is rejected.
+- Prudential safeguard is not an inspired ordinance merely because it is wise.
+- Forgiveness does not automatically restore trust or office qualification.
+- A modern accusation, independent report, church finding, civil finding and judicial adjudication are not interchangeable evidence states.
+- No claim becomes stronger because it is emotionally compelling.
+- No article becomes public merely because its source receipt says PASS.
 
-## 7. Exit criteria этой reconciliation-матрицы
+## 8. Closure verdict
 
-Этот файл можно считать закрытым как planning authority только когда для Parts II–IX существует восемь bounded receipts, каждый из которых фиксирует:
+`MANUSCRIPTS = 8/8`
 
-- exact Product manuscript SHA;
-- governing Research authority/version;
-- список factual/exegetical claims, требующих внешнего evidence;
-- source ID / URL / locator / evidence class;
-- allowed wording и оставшуюся неопределённость;
-- quote-safe решение;
-- публично пригодный source-list projection;
-- результат source gate: `PASS` или точный `HOLD`.
+`SOURCE_RECONCILIATION = 8/8 PASS`
 
-Текущий счётчик receipts: **2/8**.
+`OPEN_SOURCE_RECONCILIATION = 0/8`
 
-До полного source reconciliation канонический статус: **MANUSCRIPTS EXIST / SOURCE PASSES 2/8 / NO PUBLICATION PROMOTION**.
+`OTHER_PUBLICATION_GATES = OPEN`
+
+`NO_PUBLICATION_PROMOTION`
+
+Следующий canonical owner: **post-source common exegesis / jurisdiction-safeguarding / cross-link / christological sequence defined by `MASTER-PLAN.md`**.

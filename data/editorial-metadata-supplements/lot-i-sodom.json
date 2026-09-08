@@ -11,8 +11,8 @@
       "editorialPublishedAt": "2026-08-08T21:00:00.000Z",
       "editorialModifiedAt": "2026-08-08T21:00:00.000Z",
       "originalWorkPublishedAt": null,
-      "reviewStatus": "migration-freeze-unverified",
-      "provenance": "lot-native-publication-2026-08-09-r3",
+      "reviewStatus": "approved",
+      "provenance": "verified-release-a13ce0da-owner-approved-2026-09-08",
       "observations": {
         "visiblePublishedAt": "2026-08-08T21:00:00.000Z",
         "visibleModifiedAt": null,

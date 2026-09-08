@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "id": "gill-reconciliation-20260908",
+  "changes": {
+    "/articles/dzhon-gill-chast-1-chelovek/": {
+      "from": {
+        "editorialPublishedAt": "2026-05-31T01:05:00+03:00",
+        "editorialModifiedAt": "2026-06-12T15:14:46+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-05-30T22:05:00.000Z",
+        "editorialModifiedAt": "2026-07-24T13:38:56.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-publication-pagehead-and-latest-substantive-gill-57747ccb7ccfcc5adb24f18fdb2dc3377ac5ae45-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/dzhon-gill-chast-2-uchenyi/": {
+      "from": {
+        "editorialPublishedAt": "2026-05-31T01:05:00+03:00",
+        "editorialModifiedAt": "2026-06-12T15:14:46+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-05-30T22:05:00.000Z",
+        "editorialModifiedAt": "2026-07-31T21:47:21.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-publication-pagehead-and-latest-substantive-gill-c32e9cd799727f0a36699794251a07b02434468a-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/dzhon-gill-chast-3-nasledie/": {
+      "from": {
+        "editorialPublishedAt": "2026-05-31T01:05:00+03:00",
+        "editorialModifiedAt": "2026-06-12T15:14:46+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-05-30T22:05:00.000Z",
+        "editorialModifiedAt": "2026-07-24T13:38:56.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-publication-pagehead-and-latest-substantive-gill-57747ccb7ccfcc5adb24f18fdb2dc3377ac5ae45-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/dzhon-gill-chast-4-ekzeget/": {
+      "from": {
+        "editorialPublishedAt": "2026-07-09T12:00:00+03:00",
+        "editorialModifiedAt": "2026-07-09T12:00:00+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-07-09T09:00:00.000Z",
+        "editorialModifiedAt": "2026-07-24T13:38:56.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-publication-pagehead-and-latest-substantive-gill-57747ccb7ccfcc5adb24f18fdb2dc3377ac5ae45-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/dzhon-gill-istoricheskiy-kontekst/": {
+      "from": {
+        "editorialPublishedAt": "2026-06-01T20:17:32+03:00",
+        "editorialModifiedAt": "2026-06-12T15:14:46+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-06-01T17:17:32.000Z",
+        "editorialModifiedAt": "2026-07-31T21:47:21.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-publication-pagehead-and-latest-substantive-gill-c32e9cd799727f0a36699794251a07b02434468a-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/dzhon-gill-spravochnik/": {
+      "from": {
+        "editorialPublishedAt": "2026-06-01T20:17:32+03:00",
+        "editorialModifiedAt": "2026-06-12T15:14:46+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-06-01T17:17:32.000Z",
+        "editorialModifiedAt": "2026-07-31T21:47:21.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-publication-pagehead-and-latest-substantive-gill-c32e9cd799727f0a36699794251a07b02434468a-owner-approved-2026-09-08"
+      }
+    }
+  }
+}
