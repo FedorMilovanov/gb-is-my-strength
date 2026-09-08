@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "id": "romans7-reconciliation-20260908",
+  "changes": {
+    "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/": {
+      "from": {
+        "editorialPublishedAt": "2026-06-02T00:00:00+03:00",
+        "editorialModifiedAt": "2026-07-12T00:00:00+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-06-01T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-publication-pagehead-and-authored-history-cae07ad5cf07f5f94df5568bb0fa59ea24d4e125-and-editorial-release-268603f2ce5f905234f72f591919b24b5dd62211-owner-approved-2026-09-08"
+      }
+    }
+  }
+}

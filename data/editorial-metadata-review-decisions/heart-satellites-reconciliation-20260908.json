@@ -1,0 +1,244 @@
+{
+  "version": 1,
+  "id": "heart-satellites-reconciliation-20260908",
+  "changes": {
+    "/articles/skrytye-idoly-serdca/": {
+      "from": {
+        "editorialPublishedAt": "2026-07-11T00:00:00+03:00",
+        "editorialModifiedAt": "2026-07-11T00:00:00+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-07-10T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-heart-satellite-release-268603f2ce5f905234f72f591919b24b5dd62211-pagehead-date-authority-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/religioznoe-serdce/": {
+      "from": {
+        "editorialPublishedAt": "2026-07-11T00:00:00+03:00",
+        "editorialModifiedAt": "2026-07-11T00:00:00+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-07-10T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-heart-satellite-release-268603f2ce5f905234f72f591919b24b5dd62211-pagehead-date-authority-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/sovest-vnutrenniy-sud/": {
+      "from": {
+        "editorialPublishedAt": "2026-07-12T00:00:00+03:00",
+        "editorialModifiedAt": "2026-07-12T00:00:00+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-heart-satellite-release-268603f2ce5f905234f72f591919b24b5dd62211-pagehead-date-authority-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/myslennaya-zhizn-serdca/": {
+      "from": {
+        "editorialPublishedAt": "2026-07-12T00:00:00+03:00",
+        "editorialModifiedAt": "2026-07-12T00:00:00+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-heart-satellite-release-268603f2ce5f905234f72f591919b24b5dd62211-pagehead-date-authority-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/starye-dorozhki-serdca/": {
+      "from": {
+        "editorialPublishedAt": "2026-07-12T00:00:00+03:00",
+        "editorialModifiedAt": "2026-07-12T00:00:00+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-heart-satellite-release-268603f2ce5f905234f72f591919b24b5dd62211-pagehead-date-authority-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/serdce-i-yazyk/": {
+      "from": {
+        "editorialPublishedAt": "2026-07-12T00:00:00+03:00",
+        "editorialModifiedAt": "2026-07-12T00:00:00+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-heart-satellite-release-268603f2ce5f905234f72f591919b24b5dd62211-pagehead-date-authority-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/serdce-i-telo/": {
+      "from": {
+        "editorialPublishedAt": "2026-07-12T00:00:00+03:00",
+        "editorialModifiedAt": "2026-07-12T00:00:00+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-heart-satellite-release-268603f2ce5f905234f72f591919b24b5dd62211-pagehead-date-authority-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/serdce-i-sokrovishche/": {
+      "from": {
+        "editorialPublishedAt": "2026-07-12T00:00:00+03:00",
+        "editorialModifiedAt": "2026-07-12T00:00:00+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-heart-satellite-release-268603f2ce5f905234f72f591919b24b5dd62211-pagehead-date-authority-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/serdce-pod-skorbyu/": {
+      "from": {
+        "editorialPublishedAt": "2026-07-12T00:00:00+03:00",
+        "editorialModifiedAt": "2026-07-12T00:00:00+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-heart-satellite-release-268603f2ce5f905234f72f591919b24b5dd62211-pagehead-date-authority-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/kak-menyaetsya-serdce/": {
+      "from": {
+        "editorialPublishedAt": "2026-07-11T00:00:00+03:00",
+        "editorialModifiedAt": "2026-07-11T00:00:00+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-07-10T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-heart-satellite-release-268603f2ce5f905234f72f591919b24b5dd62211-pagehead-date-authority-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/serdce-i-iskushenie/": {
+      "from": {
+        "editorialPublishedAt": "2026-07-11T00:00:00+03:00",
+        "editorialModifiedAt": "2026-07-11T00:00:00+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-07-10T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-heart-satellite-release-268603f2ce5f905234f72f591919b24b5dd62211-pagehead-date-authority-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/kak-hranit-serdce/": {
+      "from": {
+        "editorialPublishedAt": "2026-07-12T00:00:00+03:00",
+        "editorialModifiedAt": "2026-07-12T00:00:00+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-heart-satellite-release-268603f2ce5f905234f72f591919b24b5dd62211-pagehead-date-authority-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/strah-bozhij-rabskij-ili-synovnij/": {
+      "from": {
+        "editorialPublishedAt": "2026-07-11T00:00:00+03:00",
+        "editorialModifiedAt": "2026-07-11T00:00:00+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-07-10T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-heart-satellite-release-268603f2ce5f905234f72f591919b24b5dd62211-pagehead-date-authority-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/svoboda-vo-hriste/": {
+      "from": {
+        "editorialPublishedAt": "2026-07-11T00:00:00+03:00",
+        "editorialModifiedAt": "2026-07-11T00:00:00+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-07-10T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-heart-satellite-release-268603f2ce5f905234f72f591919b24b5dd62211-pagehead-date-authority-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/serdce-ne-v-odinochku/": {
+      "from": {
+        "editorialPublishedAt": "2026-07-12T00:00:00+03:00",
+        "editorialModifiedAt": "2026-07-12T00:00:00+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-07-11T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-heart-satellite-release-268603f2ce5f905234f72f591919b24b5dd62211-pagehead-date-authority-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/serdce-hrista-k-nemoshchnym/": {
+      "from": {
+        "editorialPublishedAt": "2026-07-11T00:00:00+03:00",
+        "editorialModifiedAt": "2026-07-12T00:00:00+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-07-10T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-heart-satellite-release-268603f2ce5f905234f72f591919b24b5dd62211-pagehead-date-authority-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/osvobozhdennoe-serdce/": {
+      "from": {
+        "editorialPublishedAt": "2026-07-11T00:00:00+03:00",
+        "editorialModifiedAt": "2026-07-11T00:00:00+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-07-10T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-10T21:00:00.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-heart-satellite-release-268603f2ce5f905234f72f591919b24b5dd62211-pagehead-date-authority-owner-approved-2026-09-08"
+      }
+    }
+  }
+}

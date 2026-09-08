@@ -220,6 +220,11 @@ function projectVisibleDateline(html, record) {
     updated = updated.replace(updatedContainer[0], `<${updatedContainer.groups.tag}${updatedContainer.groups.attrs}>${nextBody}</${updatedContainer.groups.tag}>`);
   }
 
+  const updatedTimeRe = /<time\b[^>]*\bclass=["'][^"']*\barticle-updated\b[^"']*["'][^>]*>/i;
+  if (record.editorialModifiedAt) {
+    updated = updated.replace(updatedTimeRe, (tag) => projectTimeTag(tag, record.editorialModifiedAt));
+  }
+
   const bylineRe = /<(?<tag>p|div)\b(?<attrs>[^>]*\bclass=["'][^"']*\barticle-byline\b[^"']*["'][^>]*)>(?<body>[\s\S]*?)<\/\k<tag>>/i;
   const byline = updated.match(bylineRe);
   if (byline && record.editorialPublishedAt) {
