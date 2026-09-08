@@ -1,11 +1,12 @@
 ---
-import { SITE } from '@/data/site';
+import { SITE, SECTION_META } from '@/data/site';
 
 interface Props {
   badge?: string;
   ariaLabel?: string;
 }
 const { badge, ariaLabel = 'Шапка сайта' } = Astro.props;
+const hardTextsLabel = SECTION_META['hard-texts'].label;
 ---
 <header class="astro-header h-navbar" aria-label={ariaLabel}>
   <a class="astro-header__brand h-brand" href="/">{SITE.name}</a>
@@ -15,7 +16,7 @@ const { badge, ariaLabel = 'Шапка сайта' } = Astro.props;
       <li><a href="/articles/">Все статьи</a></li>
       <li><a href="/app/">Приложение</a></li>
       <li><a href="/biografii/">Биографии</a></li>
-      <li><a href="/hard-texts/">Разбор заблуждений</a></li>
+      <li><a href="/hard-texts/">{hardTextsLabel}</a></li>
       <li><a href="/karty/">Карты</a></li>
       <li><a href="/about/">О проекте</a></li>
     </ul>
