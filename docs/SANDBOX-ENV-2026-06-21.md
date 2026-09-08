@@ -1,6 +1,6 @@
 # Sandbox environment capability policy
 
-**Updated:** 2026-07-24  
+**Updated:** 2026-09-08  
 **Historical origin:** Arena/E2B snapshot first recorded 2026-06-21–23.  
 **Rule:** no agent may treat that historical snapshot as a universal current environment contract.
 
@@ -81,7 +81,7 @@ A probe inside one turn proves only current-session behavior. Durable work belon
 
 ## 6. Node and dependency setup
 
-The repository requires Node `>=22.12.0`. Detect the current version first. Prefer the runtime’s supported installation mechanism; do not blindly reuse a historical `/tmp/node-v22.12.0-linux-x64` path.
+Read the current Node requirement from `package.json`, `package-lock.json` and current CI/toolchain contracts, then detect the runtime’s installed version. Prefer the runtime’s supported installation mechanism; do not blindly reuse the historical `/tmp/node-v22.12.0-linux-x64` snapshot path.
 
 For a clean checkout:
 
