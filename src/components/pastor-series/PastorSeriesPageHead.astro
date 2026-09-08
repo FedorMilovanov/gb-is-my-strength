@@ -87,7 +87,7 @@ const image = 'https://gospod-bog.ru/images/pastor-series/og-hero.webp';
       author: { '@id': 'https://gospod-bog.ru/about/#person', '@type': 'Person', name: 'Фёдор Милованов', url: 'https://gospod-bog.ru/about/' },
       publisher: { '@id': 'https://gospod-bog.ru/#organization' },
       image: { '@type': 'ImageObject', url: image, width: 1200, height: 630 },
-      numberOfItems: 10,
+      numberOfItems: 9,
       hasPart: [
         { '@type': 'Article', position: 1, name: '20 антисоветов, как пастору разрушить своё служение', url: 'https://gospod-bog.ru/articles/20-antisovetov-pastoru/' },
         { '@type': 'Article', position: 2, name: 'Анатомия падения: пять стадий институционального разложения', url: 'https://gospod-bog.ru/articles/anatomiya-padeniya-pyat-stadiy/' },
@@ -97,9 +97,13 @@ const image = 'https://gospod-bog.ru/images/pastor-series/og-hero.webp';
         { '@type': 'Article', position: 6, name: 'Когда говорить, когда молчать; когда уходить, когда оставаться', url: 'https://gospod-bog.ru/articles/kogda-uhodit-kogda-ostavatsya/' },
         { '@type': 'Article', position: 7, name: 'Верные и неизвестные: здоровое пастырство', url: 'https://gospod-bog.ru/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo/' },
         { '@type': 'Article', position: 8, name: 'Признаки здоровой церкви', url: 'https://gospod-bog.ru/articles/priznaki-zdorovoy-cerkvi/' },
-        { '@type': 'Article', position: 9, name: 'Несовершенный человек в несовершенной церкви', url: 'https://gospod-bog.ru/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi/' },
-        { '@type': 'Article', position: 10, name: 'Диотрефы нашего времени: власть, подотчётность и верность', url: 'https://gospod-bog.ru/articles/diotrefy-nashego-vremeni/' }
+        { '@type': 'Article', position: 9, name: 'Несовершенный человек в несовершенной церкви', url: 'https://gospod-bog.ru/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi/' }
       ],
+      subjectOf: {
+        '@type': 'Article',
+        name: 'Досье A. Диотрефы нашего времени: власть, подотчётность и верность',
+        url: 'https://gospod-bog.ru/articles/diotrefy-nashego-vremeni/'
+      },
       speakable: { '@type': 'SpeakableSpecification', cssSelector: ['h1', '.h-hero-desc', '#seriesLabel'] }
     },
     {
@@ -116,7 +120,7 @@ const image = 'https://gospod-bog.ru/images/pastor-series/og-hero.webp';
 window.SITE_CONFIG = {
   version: 20260908,
   site: { id: 'gb-strength', name: 'Господь Бог — Сила Моя', baseUrl: 'https://gospod-bog.ru', locale: 'ru-RU', themeStorageKey: 'theme', debug: false },
-  page: { type: 'series', id: 'pastor-series', title: 'Тёмная сторона кафедры — серия', readingTime: 356 },
+  page: { type: 'series', id: 'pastor-series', title: 'Тёмная сторона кафедры — серия', readingTime: 321, companionReadingTime: 35 },
   features: { themeToggle: { enabled: true }, bookmarks: { enabled: false }, homepageResume: { enabled: false } }
 };
 </script>
