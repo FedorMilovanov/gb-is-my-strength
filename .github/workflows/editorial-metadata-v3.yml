@@ -7,10 +7,12 @@ on:
     paths:
       - 'data/editorial-metadata.json'
       - 'data/editorial-metadata-supplements/**'
+      - 'data/editorial-metadata-review-decisions/**'
       - 'data/editorial-metadata.schema.json'
       - 'data/editorial-metadata-migration-inventory.json'
       - 'scripts/editorial-metadata-*.js'
       - 'scripts/lib/editorial-metadata.js'
+      - 'scripts/lib/editorial-metadata-review-decisions.js'
       - 'scripts/lib/editorial-metadata-v3.js'
       - 'scripts/astro-cache-bust-postbuild.js'
       - 'scripts/rss-feed-normalizer.js'
@@ -55,6 +57,9 @@ jobs:
         run: |
           node scripts/editorial-metadata-registry-preservation-test.js
           node scripts/editorial-metadata-v3-approval-gate-test.js
+
+      - name: Validate review decision overlay contract
+        run: node scripts/editorial-metadata-review-decision-contract-test.js
 
       - name: Validate RSS technical clock contract
         run: node scripts/rss-feed-normalizer-test.js
