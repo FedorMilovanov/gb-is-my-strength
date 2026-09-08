@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "id": "antisovetov-reconciliation-20260908",
+  "changes": {
+    "/articles/20-antisovetov-pastoru/": {
+      "from": {
+        "editorialPublishedAt": "2026-05-13T00:00:00+03:00",
+        "editorialModifiedAt": "2026-06-12T15:14:46+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-05-12T21:00:00.000Z",
+        "editorialModifiedAt": "2026-08-04T23:29:43.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-publication-native-pagehead-2026-05-13-and-latest-substantive-canonical-body-59fc739aa4f97e4f7fb3582912ebd9771cc78348-exact-instant-owner-approved-2026-09-08"
+      }
+    }
+  }
+}
