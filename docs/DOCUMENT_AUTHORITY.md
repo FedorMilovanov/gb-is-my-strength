@@ -45,7 +45,7 @@ Each managed document declares:
 
 Current governance routes to `WORK_MODES`, `LANE_LOCK_POLICY`, branch/worktree lifecycle and owner invariants. Release-state claims route to `docs/RELEASE-LIVE-EVIDENCE.md`. External-tool decisions route through `audit/external-checks/README.md`; environment capabilities are discovered live, with `docs/SANDBOX-ENV-2026-06-21.md` acting only as a current supporting capability policy that explicitly rejects its own older Arena/E2B snapshot as universal truth.
 
-The dated filename of `SANDBOX-ENV-2026-06-21.md` is therefore not a lifecycle signal. Its current text was reconciled in commit `03276e321eaffd6c136c37a223f054804f2637b1`; the original environment snapshot remains provenance under blob `9349b0868f6e9a8fdf4ba50de19b70c8cbf43936`.
+The dated filename of `SANDBOX-ENV-2026-06-21.md` is therefore not a lifecycle signal. The historical Arena snapshot was separated from the current capability policy in commit `03276e321eaffd6c136c37a223f054804f2637b1`; later bounded updates to the current policy do not change that provenance. The original environment snapshot remains preserved under blob `9349b0868f6e9a8fdf4ba50de19b70c8cbf43936`.
 
 ## Surface-local delegation
 

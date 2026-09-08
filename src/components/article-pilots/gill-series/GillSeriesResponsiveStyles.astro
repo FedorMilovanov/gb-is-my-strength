@@ -52,6 +52,23 @@
   }
 
   @media (max-width: 48rem) {
+    /*
+     * `data-gill-v16` is retained as a historical shared-engine layout hook,
+     * so non-Gill series also carry it. Legacy floating-cluster CSS hides
+     * heading paperclips under that hook on narrow layouts with an !important
+     * rule. Native heading-anchor ownership is retained by the other series,
+     * therefore restore the target whenever the canonical series identity says
+     * this is not Gill. Use the same width boundary as the legacy responsive
+     * treatment instead of input-device heuristics: a narrow desktop/browser
+     * viewport must not silently lose a retained capability either. Gill keeps
+     * its reviewed mobile paperclip-hidden treatment.
+     */
+    body[data-gbs2-series]:not([data-gbs2-series="dzhon-gill"])
+      [data-gill-v16]
+      .heading-anchor[data-gb-heading-anchor-owner="native-v1"] {
+      display: inline-flex !important;
+    }
+
     [data-gill-v16] .article-body > * {
       min-inline-size: 0;
       max-inline-size: 100%;
