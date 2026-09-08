@@ -10,8 +10,8 @@
       "editorialPublishedAt": "2026-08-01T21:00:00.000Z",
       "editorialModifiedAt": "2026-08-01T21:00:00.000Z",
       "originalWorkPublishedAt": null,
-      "reviewStatus": "migration-freeze-unverified",
-      "provenance": "wave12-publication-authority",
+      "reviewStatus": "approved",
+      "provenance": "verified-wave12-publication-5d67d5162d2b0fdaa4c66b464434dfa19905d682-owner-approved-2026-09-08",
       "observations": {
         "visiblePublishedAt": "2026-08-02T00:00:00.000Z",
         "visibleModifiedAt": null,
