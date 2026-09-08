@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "id": "standalone-three-exact-instant-reconciliation-20260908",
+  "changes": {
+    "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/": {
+      "from": {
+        "editorialPublishedAt": "2016-09-01T00:00:00+03:00",
+        "editorialModifiedAt": "2026-06-12T15:14:46+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-04-12T21:00:00.000Z",
+        "editorialModifiedAt": "2026-09-06T16:26:46.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-russian-site-publication-day-2026-04-13-visible-byline-original-work-date-separated-and-latest-substantive-tmsj-rights-a8eca5bea0407242865bab62d14224f19afcd43c-exact-instant-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/kod-da-vinchi/": {
+      "from": {
+        "editorialPublishedAt": "2026-04-01T00:00:00+03:00",
+        "editorialModifiedAt": "2026-06-12T15:14:46+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-03-31T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-05T09:14:15.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-publication-pagehead-2026-04-01-and-latest-substantive-kod-6041fa709a475ffcf5b80c2918d0db906f2145e9-exact-instant-owner-approved-2026-09-08"
+      }
+    },
+    "/articles/krajne-li-isporcheno-serdce/": {
+      "from": {
+        "editorialPublishedAt": "2026-04-01T00:00:00+03:00",
+        "editorialModifiedAt": "2026-06-12T15:14:46+03:00",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-03-31T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-05T13:45:56.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-publication-pagehead-2026-04-01-and-latest-substantive-krajne-24228c8e1a1108370f7e18c95f96e153259d5bdc-exact-instant-owner-approved-2026-09-08"
+      }
+    }
+  }
+}
