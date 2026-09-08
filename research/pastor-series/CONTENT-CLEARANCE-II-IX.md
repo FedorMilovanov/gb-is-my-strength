@@ -1,6 +1,6 @@
 # Parts II–IX — series-level content clearance receipt
 
-Статус: **CLEARANCE_AUDIT = OPEN / SOURCE_RECONCILIATION = PASS 8/8 / NO PUBLICATION PROMOTION**
+Статус: **CONTENT_CLEARANCE = PASS / SOURCE_RECONCILIATION = PASS 8/8 / PUBLICATION PROMOTION = FORBIDDEN**
 Дата: 2026-09-08
 Product clearance base: `b5d89b276a3085161be205f22b56f53ddfc8e6f6`
 Source-reconciliation merge: Product #1899 → `b5d89b276a3085161be205f22b56f53ddfc8e6f6`
@@ -9,9 +9,9 @@ Research authority carried by the per-part receipts: `FedorMilovanov/Research@b5
 
 ## 1. Scope
 
-Этот receipt начинает отдельный series-level clearance после завершения article-level source reconciliation II–IX. Он не переоткрывает уже закрытые source/exegesis owners и не разрешает public release.
+Этот receipt закрывает отдельный series-level content clearance после завершения article-level source reconciliation II–IX. Он не переоткрывает уже закрытые source/exegesis owners и **не разрешает public release**.
 
-Проверяются только оставшиеся publication-gate слои:
+Проверены оставшиеся content/publication-gate слои:
 
 1. reader-body hygiene;
 2. jurisdiction / safeguarding boundary;
@@ -21,7 +21,7 @@ Research authority carried by the per-part receipts: `FedorMilovanov/Research@b5
 6. публичная пригодность bibliography/source sections;
 7. technical anchor hygiene перед созданием public routes.
 
-Route/reader/landing/RSS/sitemap/metadata wiring остаётся отдельной будущей atomic release transaction.
+Route/reader/landing/RSS/sitemap/metadata wiring остаётся отдельной atomic release transaction.
 
 ## 2. Already closed before this lane
 
@@ -34,119 +34,224 @@ Route/reader/landing/RSS/sitemap/metadata wiring остаётся отдельн
 - Exact-head #1899 admission на `e18c6f56ffa5556b44eb6ddbbcc88150e4e5b2ce` прошёл applicable workflows terminal-green, после чего #1899 был CAS-safe squash merged.
 - Reader manuscripts II–IX не содержат именованных современных персональных обвинительных case rosters, требующих нового current-case routing.
 
-## 3. Confirmed reader-body clearance defects
+## 3. Final manuscript blobs after clearance
 
-### C1 — internal editorial workflow language remains reader-facing — OPEN
+| Part | Manuscript | Clearance blob |
+| --- | --- | --- |
+| II | `src/content/articles/anatomiya-padeniya-pyat-stadiy.mdx` | `15ce0f99dfcb588e76cb53fe9e6b6ea5c59fb96e` |
+| III | `src/content/articles/teksty-pisaniya-kotorymi-manipuliruyut.mdx` | `1af73097730d410a78eb5232dc118c9f73307567` |
+| IV | `src/content/articles/sem-tipov-razlichenie-uchiteley.mdx` | `245d323aebf37f4bbd437997e9ada2fda099764d` |
+| V | `src/content/articles/cerkovnaya-disciplina-vlast-granicy-zashchita.mdx` | `598d25d344aae70244cb81c7cc14fb6e1eac459a` |
+| VI | `src/content/articles/kogda-uhodit-kogda-ostavatsya.mdx` | `6eb7fb5f958ed18d0de1453ab40080ed652d610a` |
+| VII | `src/content/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo.mdx` | `4b451a06669173ac0263ef3ffd274282ff3ae7e4` |
+| VIII | `src/content/articles/priznaki-zdorovoy-cerkvi.mdx` | `fdbeb67bbff2426fb977065db30dd1efb5167e08` |
+| IX | `src/content/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi.mdx` | `a823ec4e1afce2e1d343b9f64f9bd340c7138670` |
 
-Во всех Parts II–IX обнаружен хотя бы один внутренний publication/editorial marker, который допустим в рабочем manuscript, но не должен попасть в публичную статью.
+These blobs are the only manuscript identities certified by this clearance receipt. Any later content mutation invalidates the affected content verdict and requires bounded re-review.
 
-Confirmed examples:
+## 4. Reader-body workflow hygiene — PASS 8/8
 
-- Part II: heading `Исследовательская база и publication gate`; финальная служебная строка про `draft:true/noindex:true` и будущий exegesis pass.
-- Part III: reader source block заканчивается служебной фразой, что manuscript остаётся `draft:true/noindex:true/sourcesRequired:true` и source/exegesis pass сам по себе не разрешает публикацию.
-- Part IV: `## Редакционный hold` + bounded receipt / technical release wording.
-- Part V: source footer сообщает reader'у имя internal receipt и перечисляет `draft:true/noindex:true`, jurisdiction/cross-link/christological/release gates.
-- Part VI: аналогичный internal receipt / draft / gate footer.
-- Part VII: `## Редакционный hold` + `не publication-ready` + внутренние gate names.
-- Part VIII: `## Редакционный hold` + internal clearance/release wording.
-- Part IX: heading `Источники и publication gate`, затем `## Редакционный hold` с internal gate list.
+Initial audit found internal workflow/editorial language in all eight manuscripts. The clearance pass removed it without removing the useful public bibliography or weakening the evidence boundaries.
 
-Required repair: сохранить полезную reader bibliography/source-role оговорку, но удалить internal workflow terminology, repo paths, draft flags и gate bookkeeping из reader body.
+Closed examples:
 
-### C2 — mixed-script section anchors — OPEN
+- Part II: `Исследовательская база и publication gate` → `Исследовательская база`; removed draft/exegesis bookkeeping from reader body.
+- Part III: removed reader-facing `draft:true/noindex:true/sourcesRequired:true` and source-pass bookkeeping; retained source-role distinctions.
+- Part IV: removed `Редакционный hold`, bounded-receipt and future-route language; taxonomy/exegesis remained unchanged.
+- Parts V–VI: removed internal receipt names, draft flags and gate lists; retained jurisdiction caveats.
+- Part VII: removed claim-map/receipt jargon and editorial hold; retained positive pastoral theology.
+- Part VIII: removed internal Research overlay path, publication-pass language and editorial hold; retained explicit distinction between biblical norms and practical controls.
+- Part IX: removed `publication gate`, editorial hold and internal gate list; retained the Christological finale and two-sided guardrail.
 
-Подтверждены ровно два mixed Latin/Cyrillic HTML id в II–IX:
+`READER_INTERNAL_WORKFLOW_HYGIENE = PASS 8/8`
 
-- Part II: `id="tri-osи"` → canonical ASCII `id="tri-osi"`;
-- Part V: `id="prestupление"` → canonical ASCII `id="prestuplenie"`.
+## 5. Anchor hygiene — PASS
 
-IDs Parts III, IV, VI, VII, VIII, IX в проверенном корпусе ASCII-clean.
+Two mixed Latin/Cyrillic HTML ids were normalized:
 
-Перед mutation требуется проверить отсутствие deliberate inbound deep-link dependency на старые mixed-script fragments. Draft/non-public status означает, что эти anchors ещё не должны считаться стабильным public API.
+- Part II: `tri-osи` → `tri-osi`;
+- Part V: `prestupление` → `prestuplenie`.
 
-## 4. Jurisdiction / safeguarding clearance
+Parts III, IV, VI, VII, VIII and IX were already ASCII-clean in the audited corpus.
 
-### Part V — REVIEW REQUIRED
+Repository search found no deliberate inbound dependency on the old mixed-script fragments. The affected manuscripts had no public routes, so the old fragments were not a published stable URL contract.
 
-Per-part receipt intentionally leaves `JURISDICTION_SAFEGUARDING_GATE = OPEN`.
+`ANCHOR_ID_HYGIENE = PASS (2/2 repaired)`
 
-Current reader wording already preserves important boundaries:
+## 6. Jurisdiction / safeguarding clearance — PASS WITH NON-LEGAL BOUNDARY
 
-- Мф. 18 не является prerequisite для обращения к законной гражданской власти;
-- возможное преступление не становится exclusive church jurisdiction;
-- церковь не объявляет духовный статус заменой профессиональной государственной компетенции;
-- уголовный/гражданский и церковный процессы отвечают на разные вопросы;
-- concrete legal duties не формулируются как universal rule.
+### Governing rule
 
-Clearance task: подтвердить, что reader text остаётся general pastoral/safeguarding guidance и не делает jurisdiction-specific legal claims; при необходимости усилить explicit legal/jurisdiction caveat, не превращая статью в юридическую инструкцию.
+The series may state general pastoral/safeguarding principles, but it does not supply jurisdiction-specific legal advice. Concrete duties depend on applicable law, role, nature of the event, age/vulnerability and immediate risk.
 
-### Part VI — REVIEW REQUIRED
+This limitation is substantive, not decorative. Current external witnesses demonstrate materially different legal formulations by jurisdiction and role:
 
-Per-part receipt intentionally leaves `JURISDICTION_SAFEGUARDING_GATE = OPEN`.
+- Germany, KKG §4: https://www.gesetze-im-internet.de/kkg/__4.html — duties/powers are role-specific for listed professional categories and distinguish consultation, information-sharing and urgent child-protection situations.
+- England, Crime and Policing Act 2026 duty-to-report framework: https://www.gov.uk/government/publications/crime-and-policing-act-2026-factsheets/crime-and-policing-act-2026-independent-inquiry-into-child-sexual-abuse-recommendations-factsheet — the statutory duty is tied to specified/relevant activities and defined triggering circumstances.
+- GRACE abuse-response boundary: https://www.netgrace.org/abuse-response — independent ministry investigation does not replace criminal investigation by law enforcement.
+- GRACE pastoral-abuse response resource: https://www.netgrace.org/resources/responding-to-pastor-abuse-allegations — supports truth/safety/accountability as ministry application, not a universal civil-law code.
 
-Current reader wording уже говорит, что concrete legal duties различаются по стране и характеру дела; safety не зависит от обязательной confrontation с предполагаемым причинителем вреда; гражданская/профессиональная компетенция может быть отдельным адресатом.
+### Part V
 
-Clearance task: проверить отсутствие скрытого scoring/mandatory sequence и подтвердить safe wording для угрозы семье, возможного преступления и выхода из небезопасной ситуации.
+PASS because the final reader text:
 
-### Part VIII — REVIEW REQUIRED
+- does not make Matthew 18 a prerequisite for civil action;
+- does not give the church exclusive jurisdiction over possible crime;
+- distinguishes civil/criminal and ecclesial questions;
+- rejects church self-presentation as forensic/state competence;
+- now explicitly states that reporting, evidence-preservation and child/vulnerable-adult duties depend on applicable law, role and event.
 
-Per-part receipt: `JURISDICTION_OPEN`; отдельно остаются concrete external procedural locators.
+### Part VI
 
-Current reader wording явно маркирует safeguarding block как `safeguarding application`, а не output одного стиха, и предупреждает, что concrete legal duties/routes зависят от jurisdiction.
+PASS because the final reader text:
 
-Clearance task: проверить reader-facing claims про complaint handling, evidence preservation, financial controls, vulnerable people and external review. Prudential controls должны остаться prudential и не маскироваться под universal legal/Scripture procedure.
+- is explicitly non-algorithmic (`Не считайте баллы механически`);
+- does not make private confrontation mandatory where unsafe/inappropriate;
+- keeps civil/professional competence as a distinct possible addressee;
+- now explicitly ties reporting/evidence-preservation/vulnerable-person duties to jurisdiction, role and case;
+- does not convert one red flag into an automatic leave command.
 
-## 5. Christological / theological clearance
+### Part VIII
 
-- Parts III–VIII уже имеют явные reader-facing Christological anchors по предыдущему red-team; это нужно перепроверить на final blobs после source merge.
-- Part IX также имеет явный финал `Финал серии: Пастыреначальник`: Христос назван Добрым Пастырем, Главой и окончательным центром серии.
-- Clearance должен проверить точность allusions к Ин. 10, 1 Пет. 5 и остальному canonical portrait и убедиться, что institutional safeguards не становятся фактическим последним словом серии.
-- Двусторонний guardrail должен сохранять реальную асимметрию власти: критика abuse не превращается в anti-authority individualism, а защита законной власти не превращается в pastor-sovereignty.
+PASS because the final reader text:
 
-## 6. Cross-part / series consistency
+- labels complaint handling, financial separation of duties, succession and external review as practical applications/controls rather than inspired polity definitions;
+- treats evidence preservation and protective measures as general safeguarding principles;
+- states that concrete legal duties/routes vary by jurisdiction, role and event;
+- does not represent church process as a substitute for criminal/civil authority;
+- preserves fairness to the accused while refusing to make a serious report self-proving.
 
-Before release verify:
+`JURISDICTION_SAFEGUARDING = PASS WITH NON-LEGAL / JURISDICTION-SPECIFIC BOUNDARY`
 
-- Part V authority/jurisdiction vocabulary не конфликтует с Part III treatment Евр. 13 / Мф. 18 / 1 Тим. 5;
-- Part VI stay/leave framework не превращает Part IX anti-suspicion guardrail в quietism;
-- Part VIII governance controls не выдаются за inspired church-polity checklist и не дублируют Part V как второй normative ecclesiology owner;
-- Part VII command/order/advice/freedom distinction согласован с Part V authority model;
-- Part IX false-symmetry guard сохраняет stronger accountability where institutional power is greater;
-- cross-links не ведут на отсутствующие routes до atomic release; при release II–IX связанная группа подключается синхронно.
+## 7. Cross-part / theological consistency — PASS
 
-## 7. Publication architecture remains CLOSED
+### III ↔ V
 
-До отдельного release PR запрещено:
+No contradiction on authority texts:
 
-- снимать `draft:true` / `noindex:true`;
-- создавать частичный публичный route только для удобства CI;
-- добавлять manuscripts в RSS/sitemap/search отдельно от route ownership;
-- продолжать старую machine-нумерацию `Диотрефы нашего времени` как Part II.
+- Hebrews 13 retains real elder authority and accountability to God;
+- Matthew 18 remains a real brother/church process without becoming an exhaustive code for every kind of harm;
+- 1 Timothy 5:19–20 protects elders from casual accusation and the church from elder immunity.
 
-Atomic release обязан синхронизировать как минимум:
+### V ↔ VII
+
+The authority ladder is consistent across both parts:
+
+`clear biblical command → confessional/church boundary and lawful order → disputed application → pastoral wisdom → Christian liberty`.
+
+Neither article makes pastoral advice a new divine command; neither reduces elder authority to optional suggestion.
+
+### V ↔ VIII
+
+Part V remains the normative ecclesiology owner. Part VIII presents institutional/governance applications as practical controls and explicitly denies that they are a new inspired church-polity checklist.
+
+### VI ↔ IX
+
+Part VI says neither `stay at all costs` nor `leave at first red flag`; Part IX preserves the same distinction and adds the anti-suspicion guardrail. IX does not neutralize an established pattern with `everyone is imperfect`.
+
+### VII ↔ IX
+
+Positive pastoral authority and freedom of conscience remain compatible: lawful leadership is real, while no human pastor becomes sovereign over truth or conscience.
+
+`CROSS_PART_CONSISTENCY = PASS`
+
+## 8. False-symmetry / two-sided red-team — PASS
+
+The final corpus preserves one moral standard without pretending every conflict has equal power or equal evidence.
+
+- Leaders can abuse institutional authority, suppress correction and weaponize confidential information.
+- Members can slander, form factions, turn pain into claimed infallibility or use abuse vocabulary to evade lawful correction.
+- Greater entrusted power entails greater responsibility and greater need for independent verification.
+- A two-sided guardrail never reduces a proved abuse case to `both sides are imperfect`.
+- A power asymmetry never makes the weaker party automatically factually correct.
+
+Part IX states the terminal rule clearly: observable facts and biblical moral categories precede modern diagnostic labels; evidence strength governs verdict strength.
+
+`FALSE_SYMMETRY_RED_TEAM = PASS`
+
+## 9. Christological / theological clearance — PASS
+
+The series does not end in process engineering.
+
+- Part II ends by preferring faithfulness to Christ over indispensability to a platform.
+- Part III returns both sides under the Word of the Lord of the Church.
+- Part IV makes submission to Christ the practical theological conclusion of taxonomy.
+- Part V makes Christ and His Word the final Lord over church authority.
+- Part VI frames stay/leave as faithfulness to Christ rather than loyalty to pastor or pain.
+- Part VII explicitly centers the Chief Shepherd and authority under the cross.
+- Part VIII ends with a church that knows both authority and the Lord of authority; Christ is already the governing owner of the article's positive ecclesiology.
+- Part IX deliberately concludes with `Финал серии: Пастыреначальник`: Christ is the Good Shepherd, Head and final center, not a decorative final sentence after governance technique.
+
+This is consistent with John 10 / Acts 20 / 1 Peter 5 / the canonical portrait used throughout the corpus: earthly shepherds are subordinate, accountable stewards under Christ.
+
+`CHRISTOLOGICAL_THEOLOGICAL_PASS = PASS`
+
+## 10. Public bibliography / source hygiene — PASS WITH ROLE BOUNDARY
+
+- No final reader source block contains an internal Research path, bounded receipt path, draft flag, source-gate status or release instruction.
+- Scripture remains primary theological authority.
+- LBCF claims are tied to exact chapter/section references; Parts III/IV/V/VII/IX include public locators where the confession is directly used.
+- Part II and Part III retain concrete public web locators for their principal contemporary/institutional verification points.
+- Contemporary books/organizations in V–IX are presented as secondary theological/pastoral/safeguarding bibliography, not as authority for Greek semantics or as proof of a named person's guilt.
+- No new long direct quotation from Bonhoeffer/Baxter/Spurgeon/Kruger/Langberg/Mullen was introduced by clearance; those works therefore do not carry a quote-verification burden in this lane.
+- Jeramie Rinne / 9Marks current public authority-boundary witness: https://www.9marks.org/article/how-far-does-an-elders-authority-go/
+- GRACE public abuse-response witness: https://www.netgrace.org/abuse-response
+
+`PUBLIC_SOURCE_HYGIENE = PASS WITH SECONDARY-BIBLIOGRAPHY BOUNDARY`
+
+## 11. Cross-link boundary — PASS / RELEASE-COUPLED
+
+No clearance change creates a public route or publishes a broken link.
+
+- Current draft manuscripts may name other parts as plain text or hold `related` slugs in frontmatter.
+- Those relationships become public only in the later atomic release, when all Parts II–IX receive routes together.
+- Any future decision to release only a subset invalidates this cross-link verdict and requires a fresh link graph audit.
+
+`CROSS_LINK_CONTENT_CLEARANCE = PASS / ATOMIC_RELEASE_REQUIRED`
+
+## 12. Publication architecture remains CLOSED
+
+This clearance **does not** authorize a partial publication.
+
+Until a separate release PR:
+
+- do not remove `draft:true` / `noindex:true`;
+- do not create a partial public route merely to satisfy CI;
+- do not add manuscripts to RSS/sitemap/search independently of route ownership;
+- do not preserve the old machine numbering `Диотрефы нашего времени = Part II`.
+
+The atomic release must synchronize at least:
 
 - 8 native article route owners;
 - route profiles / page ownership / route migration registry;
 - `pastor-series` reader ordering I–IX;
-- companion status `Диотрефы нашего времени = Досье A`, не Part II;
+- companion status `Диотрефы нашего времени = Досье A`, not Part II;
 - landing cards;
 - metadata/search/sitemap/RSS projections;
 - production/live witness.
 
-## 8. Current verdict
+## 13. Terminal content verdict
 
 `SOURCE_RECONCILIATION = PASS 8/8`
 
-`READER_INTERNAL-WORKFLOW-HYGIENE = FAIL (8/8 manuscripts require cleanup)`
+`READER_INTERNAL_WORKFLOW_HYGIENE = PASS 8/8`
 
-`ANCHOR_ID_HYGIENE = FAIL (2 confirmed mixed-script ids)`
+`ANCHOR_ID_HYGIENE = PASS 2/2`
 
-`JURISDICTION_SAFEGUARDING = OPEN (V / VI / VIII)`
+`JURISDICTION_SAFEGUARDING = PASS WITH NON-LEGAL BOUNDARY`
 
-`CROSS_PART_CONSISTENCY = OPEN`
+`CROSS_PART_CONSISTENCY = PASS`
 
-`CHRISTOLOGICAL_THEOLOGICAL_PASS = OPEN`
+`FALSE_SYMMETRY_RED_TEAM = PASS`
 
-`PUBLICATION_PROMOTION = FORBIDDEN`
+`CHRISTOLOGICAL_THEOLOGICAL_PASS = PASS`
 
-Следующая mutation в этой lane должна быть bounded content-clearance repair. Release wiring не входит в этот PR до отдельного terminal clearance verdict.
+`PUBLIC_SOURCE_HYGIENE = PASS WITH SECONDARY-BIBLIOGRAPHY BOUNDARY`
+
+`CROSS_LINK_CONTENT_CLEARANCE = PASS / ATOMIC_RELEASE_REQUIRED`
+
+`CONTENT_CLEARANCE = PASS`
+
+`PUBLICATION_PROMOTION = FORBIDDEN IN THIS PR`
+
+The next independent owner is the atomic release transaction. Any content mutation after the certified blobs above requires bounded re-clearance of the affected part.
