@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "id": "nagornaya-reconciliation-20260908",
+  "changes": {
+    "/nagornaya/chast-1/": {
+      "from": {
+        "editorialPublishedAt": "2026-04-30T21:00:00.000Z",
+        "editorialModifiedAt": "2026-06-22T13:21:02.000Z",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-04-30T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-22T21:48:34.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-publication-projection-and-latest-substantive-nagornaya-d609f0859d47d91de419bf36ba761cf9dfe08bb9-owner-approved-2026-09-08"
+      }
+    },
+    "/nagornaya/chast-2/": {
+      "from": {
+        "editorialPublishedAt": "2026-04-30T21:00:00.000Z",
+        "editorialModifiedAt": "2026-06-22T13:21:02.000Z",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-04-30T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-22T21:48:34.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-publication-projection-and-latest-substantive-nagornaya-d609f0859d47d91de419bf36ba761cf9dfe08bb9-owner-approved-2026-09-08"
+      }
+    },
+    "/nagornaya/chast-3/": {
+      "from": {
+        "editorialPublishedAt": "2026-04-30T21:00:00.000Z",
+        "editorialModifiedAt": "2026-06-22T13:21:02.000Z",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-04-30T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-05T18:09:08.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-publication-projection-and-latest-substantive-nagornaya-659963b0f4a133c21c6d1b9b11d6b5cf1207a899-owner-approved-2026-09-08"
+      }
+    },
+    "/nagornaya/chast-4/": {
+      "from": {
+        "editorialPublishedAt": "2026-04-30T21:00:00.000Z",
+        "editorialModifiedAt": "2026-06-22T13:21:02.000Z",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-04-30T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-22T21:48:34.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-publication-projection-and-latest-substantive-nagornaya-d609f0859d47d91de419bf36ba761cf9dfe08bb9-owner-approved-2026-09-08"
+      }
+    },
+    "/nagornaya/chast-5/": {
+      "from": {
+        "editorialPublishedAt": "2026-04-30T21:00:00.000Z",
+        "editorialModifiedAt": "2026-06-22T13:21:02.000Z",
+        "reviewStatus": "inconsistent-needs-review",
+        "provenance": "production-like-dist-migration-freeze"
+      },
+      "to": {
+        "editorialPublishedAt": "2026-04-30T21:00:00.000Z",
+        "editorialModifiedAt": "2026-07-22T11:13:44.000Z",
+        "reviewStatus": "approved",
+        "provenance": "verified-publication-projection-and-latest-substantive-nagornaya-091aea0d057aa2b39062e3d95d15d8ab2b333cb9-owner-approved-2026-09-08"
+      }
+    }
+  }
+}
