@@ -108,6 +108,7 @@ const jsonLd = {
       datePublished: frontmatter.publishedAt,
       dateModified: frontmatter.updatedAt,
       author: { '@id': personId, '@type': 'Person', name: SITE.authorName, url: `${SITE.url}/about/` },
+      editor: { '@id': personId },
       publisher: { '@id': SITE.orgId },
       isPartOf: { '@type': 'CreativeWorkSeries', name: PASTOR_SERIES.seriesTitleFull, url: `${SITE.url}/pastor-series/` },
       mainEntityOfPage: { '@id': canonical },
