@@ -57,6 +57,33 @@ function observeDataRequests(page) {
   return requests;
 }
 
+async function pointerReachableAtlasPoint(page) {
+  const selector = '.atlas-node:not(.is-filtered-out)';
+  const point = await page.locator(selector).evaluateAll((nodes) => {
+    for (const node of nodes) {
+      const rect = node.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) continue;
+      const candidates = [
+        [rect.left + rect.width / 2, rect.top + rect.height / 2],
+        [rect.left + rect.width * 0.25, rect.top + rect.height / 2],
+        [rect.left + rect.width * 0.75, rect.top + rect.height / 2],
+        [rect.left + rect.width / 2, rect.top + rect.height * 0.25],
+        [rect.left + rect.width / 2, rect.top + rect.height * 0.75],
+      ];
+      for (const [x, y] of candidates) {
+        if (x < 0 || x >= innerWidth || y < 0 || y >= innerHeight) continue;
+        const hit = document.elementFromPoint(x, y);
+        if (hit && (hit === node || node.contains(hit))) {
+          return { x, y, nodeId: node.getAttribute('data-node-id') || '' };
+        }
+      }
+    }
+    return null;
+  });
+  if (!point) throw new Error('no pointer-reachable Atlas node available for desktop interaction contract');
+  return point;
+}
+
 async function desktopScene(browser, base, compiled) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 950 } });
   const page = await context.newPage();
@@ -88,7 +115,8 @@ async function desktopScene(browser, base, compiled) {
     await page.locator('#atlasZoomIn').click();
     await page.waitForTimeout(450);
     const afterView = viewBox(await page.locator('#atlasCanvas').getAttribute('viewBox'));
-    await page.locator('.atlas-node:not(.is-filtered-out)').first().click();
+    const pointerTarget = await pointerReachableAtlasPoint(page);
+    await page.mouse.click(pointerTarget.x, pointerTarget.y);
     await page.waitForSelector('#atlasApp.has-detail #atlasDetail.is-open .atlas-detail__content:not([hidden])', { timeout: 10_000 });
     await page.waitForFunction(() => {
       const detail = document.getElementById('atlasDetail');
@@ -147,7 +175,7 @@ async function desktopScene(browser, base, compiled) {
       && state.runtimeEngine === compiled.engineVersion && state.listVisible
       && state.listLinks === compiled.nodes.length && state.activeDescendantCleared && state.overflow <= 2
       && requestContract && errors.length === 0,
-      JSON.stringify({ initialGeometry, focusedGeometry, beforeView, afterView, focusParam, searchFocus, ...state, dataRequests, errors }));
+      JSON.stringify({ initialGeometry, focusedGeometry, beforeView, afterView, pointerTarget, focusParam, searchFocus, ...state, dataRequests, errors }));
   } catch (error) {
     record('desktop open-stage/focus/search/list/compiled-source', false, String(error).slice(0, 700));
   } finally { await context.close(); }
