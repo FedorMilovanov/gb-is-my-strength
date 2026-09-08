@@ -104,10 +104,14 @@ must(head, '<link rel="canonical" href={canonical}>', 'native canonical');
 must(head, 'href="https://gospod-bog.ru/feed.xml"', 'canonical site RSS discovery');
 must(head, 'href="https://gospod-bog.ru/feed-pastor-series.xml"', 'series RSS discovery');
 must(head, 'application/ld+json', 'native JSON-LD');
-must(head, 'numberOfItems: 10', 'structured data publishes nine core parts plus Dossier A');
-must(head, "name: 'Диотрефы нашего времени: власть, подотчётность и верность'", 'Dossier A structured-data material');
-must(head, 'readingTime: 356', 'published-material total: 321-minute core plus 35-minute Dossier A');
+must(head, 'numberOfItems: 9', 'structured data numbers only the I–IX core');
+must(head, 'subjectOf:', 'Dossier A is a companion rather than a numbered hasPart item');
+must(head, "name: 'Досье A. Диотрефы нашего времени: власть, подотчётность и верность'", 'Dossier A structured-data companion');
+must(head, 'readingTime: 321', 'SITE_CONFIG owns canonical-core reading time');
+must(head, 'companionReadingTime: 35', 'SITE_CONFIG records Dossier A separately');
 must(head, 'window.SITE_CONFIG', 'native SITE_CONFIG');
+mustNot(head, 'numberOfItems: 10', 'Dossier A counted as numbered series item');
+mustNot(head, 'readingTime: 356', 'core and companion reading times conflated');
 for (const part of expectedCore) {
   must(head, `url: 'https://gospod-bog.ru/articles/${part.slug}/'`, `structured-data core Part ${part.roman}`);
 }
@@ -136,7 +140,7 @@ must(cards, 'href="../articles/diotrefy-nashego-vremeni/"', 'Dossier A route');
 must(cards, 'data-wave12-series-card="true"', 'Dossier A card authority marker');
 must(cards, 'Досье A · 35 мин', 'Dossier A duration');
 must(cards, '181 источник', 'Dossier A source-count marker');
-equal(count(cards, '<a href="../articles/'), 10, 'published linked-material count');
+equal(count(cards, '<a href="../articles/'), 10, 'public link inventory: nine core parts plus Dossier A');
 equal(count(cards, 'aria-disabled="true"'), 1, 'non-public card count: field guide only');
 equal(count(cards, 'data-pagefind-ignore'), 1, 'search-excluded non-public card count: field guide only');
 mustNot(cards, 'редакционный черновик', 'retired staging draft marker');
@@ -161,13 +165,15 @@ for (const retired of [
   mustNot(nativeText, retired, `retired series marker: ${retired}`);
 }
 
-must(stats, '>10</div>', 'ten published materials stat');
-must(stats, 'опубликованных материалов', 'published-material stat label');
-must(stats, '>9</div>', 'nine-part canonical core stat');
-must(stats, 'частей канонического ядра', 'canonical-core stat label');
+must(stats, '>9</div>', 'nine published core parts stat');
+must(stats, 'опубликованных частей ядра', 'published-core stat label');
 must(stats, '>321</div>', '321-minute canonical core stat');
 must(stats, 'минута канонического ядра I–IX', 'canonical-core duration label');
+must(stats, '>1</div>', 'one published dossier stat');
+must(stats, 'опубликованное Досье A', 'Dossier A companion stat label');
 must(stats, '>181</div>', 'Dossier A source-count stat');
+must(stats, 'источник в Досье A', 'Dossier A source-count label');
+mustNot(stats, '>10</div>', 'core and dossier conflated into one publication stat');
 
 const pastorSeries = seriesRegistry['pastor-series'];
 if (!pastorSeries) {
