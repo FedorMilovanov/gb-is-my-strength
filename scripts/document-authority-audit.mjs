@@ -198,6 +198,21 @@ if (/\b\d+\s+(?:production|public) routes\b/i.test(readme)) fail('README must no
 if (/Sitemap[^\n]*\b\d+\b/i.test(readme)) fail('README must not maintain a manual sitemap count');
 if (/Astro 6/i.test(readme) || /Astro 6/i.test(agents)) fail('operational entrypoints must not describe current platform as Astro 6');
 
+const operationalVersionPinDocs = [
+  ['README.md', readme],
+  ['AGENTS.md', agents],
+  ['AGENTS-REFERENCE.md', currentReference],
+];
+const operationalVersionPinPatterns = [
+  ['Astro version', /\bAstro\s+v?\d+(?:\.\d+){0,2}\b/i],
+  ['Node version', /\bNode(?:\.js)?\s*(?::|=|>=|>|~|\^)?\s*`?v?\d+\.\d+(?:\.\d+)?`?/i],
+];
+for (const [rel, text] of operationalVersionPinDocs) {
+  for (const [label, pattern] of operationalVersionPinPatterns) {
+    if (pattern.test(text)) fail(`${rel} must not pin a derived ${label}; use package/lock/CI authority`);
+  }
+}
+
 const staleReferencePhrases = [
   'Astro 6 scaffold',
   '9 CSS + 1 шрифтовой + 14 JS',
