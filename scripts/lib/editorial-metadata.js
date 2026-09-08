@@ -7,11 +7,16 @@ const {
   ARTICLE_ROUTE_TYPES,
   loadRouteRecords,
 } = require('./route-source-contract');
+const {
+  applyReviewDecisions,
+  reverseReviewDecisions,
+} = require('./editorial-metadata-review-decisions');
 
 const SITE = 'https://gospod-bog.ru';
 const REGISTRY_FILE = path.join(ROOT, 'data/editorial-metadata.json');
 const REGISTRY_SUPPLEMENTS_DIR = path.join(ROOT, 'data/editorial-metadata-supplements');
 const REGISTRY_OBSERVATION_CORRECTIONS_DIR = path.join(ROOT, 'data/editorial-metadata-observation-corrections');
+const REGISTRY_REVIEW_DECISIONS_DIR = path.join(ROOT, 'data/editorial-metadata-review-decisions');
 const SEARCH_MANIFEST_FILE = path.join(ROOT, 'data/search-manifest.json');
 const SITEMAP_FILE = path.join(ROOT, 'sitemap.xml');
 const FEED_FILE = path.join(ROOT, 'feed.xml');
@@ -287,7 +292,7 @@ function applyObservationCorrections(records) {
 
 function readRegistrySources() {
   const base = readJson(REGISTRY_FILE, null);
-  if (!base) return { registry: null, ownership: new Map(), supplements: [], corrections: [] };
+  if (!base) return { registry: null, ownership: new Map(), supplements: [], corrections: [], decisions: [] };
 
   const mergedRecords = { ...(base.records || {}) };
   const ownership = new Map();
@@ -312,12 +317,17 @@ function readRegistrySources() {
   }
 
   const corrections = applyObservationCorrections(mergedRecords);
+  const decisions = applyReviewDecisions(mergedRecords, {
+    directory: REGISTRY_REVIEW_DECISIONS_DIR,
+    root: ROOT,
+  });
 
   return {
     registry: { ...base, sourceCommit, records: sortedRecords(mergedRecords) },
     ownership,
     supplements,
     corrections,
+    decisions,
   };
 }
 
@@ -326,13 +336,15 @@ function readRegistry() {
 }
 
 function writeRegistry(registry) {
-  const { ownership, supplements, corrections } = readRegistrySources();
+  const { ownership, supplements, corrections, decisions } = readRegistrySources();
   const storageRecords = Object.fromEntries(
     Object.entries(registry.records || {}).map(([route, record]) => [route, {
       ...record,
       observations: { ...(record.observations || {}) },
     }])
   );
+
+  reverseReviewDecisions(storageRecords, decisions);
 
   for (const correction of corrections) {
     const record = storageRecords[correction.route];
@@ -382,6 +394,7 @@ module.exports = {
   REGISTRY_FILE,
   REGISTRY_SUPPLEMENTS_DIR,
   REGISTRY_OBSERVATION_CORRECTIONS_DIR,
+  REGISTRY_REVIEW_DECISIONS_DIR,
   ALLOWED_REVIEW_STATUS,
   normalizeInstant,
   eligibleRecords,
