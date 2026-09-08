@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /*
- * Guard the current strict-native /pastor-series/ publication contract.
+ * Guard the strict-native /pastor-series/ publication contract.
  *
  * The retired root HTML is historical evidence, not the approved render owner.
  * Blocking correctness is defined by native Astro composition, exact published
- * inventory, canonical I–IX roadmap separation, metadata and named guards.
+ * inventory, canonical I–IX core / Dossier A separation, metadata and named guards.
  */
 'use strict';
 
@@ -60,6 +60,19 @@ const baseline = readJson('data/visual-parity-baseline.json');
 const seriesRegistry = readJson('data/series.json');
 const nativeText = [head, chrome, main, cards, stats, end].join('\n');
 
+const expectedCore = [
+  { roman: 'I', slug: '20-antisovetov-pastoru', minutes: 67 },
+  { roman: 'II', slug: 'anatomiya-padeniya-pyat-stadiy', minutes: 29 },
+  { roman: 'III', slug: 'teksty-pisaniya-kotorymi-manipuliruyut', minutes: 36 },
+  { roman: 'IV', slug: 'sem-tipov-razlichenie-uchiteley', minutes: 30 },
+  { roman: 'V', slug: 'cerkovnaya-disciplina-vlast-granicy-zashchita', minutes: 34 },
+  { roman: 'VI', slug: 'kogda-uhodit-kogda-ostavatsya', minutes: 33 },
+  { roman: 'VII', slug: 'vernye-i-neizvestnye-zdorovoe-pastyrstvo', minutes: 31 },
+  { roman: 'VIII', slug: 'priznaki-zdorovoy-cerkvi', minutes: 30 },
+  { roman: 'IX', slug: 'nesovershennyy-chelovek-v-nesovershennoy-cerkvi', minutes: 31 },
+];
+const expectedCoreMinutes = expectedCore.reduce((sum, part) => sum + part.minutes, 0);
+
 must(page, 'PastorSeriesPageHead', 'Astro /pastor-series/ uses native head component');
 must(page, 'PastorSeriesPageChrome', 'Astro /pastor-series/ uses native chrome component');
 must(page, 'PastorSeriesMain', 'Astro /pastor-series/ uses extracted PastorSeriesMain component');
@@ -91,10 +104,14 @@ must(head, '<link rel="canonical" href={canonical}>', 'native canonical');
 must(head, 'href="https://gospod-bog.ru/feed.xml"', 'canonical site RSS discovery');
 must(head, 'href="https://gospod-bog.ru/feed-pastor-series.xml"', 'series RSS discovery');
 must(head, 'application/ld+json', 'native JSON-LD');
-must(head, 'numberOfItems: 2', 'structured data publishes exactly two public materials');
+must(head, 'numberOfItems: 10', 'structured data publishes nine core parts plus Dossier A');
 must(head, "name: 'Диотрефы нашего времени: власть, подотчётность и верность'", 'Dossier A structured-data material');
-must(head, 'readingTime: 102', 'canonical 102-minute published-material total');
+must(head, 'readingTime: 356', 'published-material total: 321-minute core plus 35-minute Dossier A');
 must(head, 'window.SITE_CONFIG', 'native SITE_CONFIG');
+for (const part of expectedCore) {
+  must(head, `url: 'https://gospod-bog.ru/articles/${part.slug}/'`, `structured-data core Part ${part.roman}`);
+}
+mustNot(head, 'Две опубликованные части', 'staging two-material description');
 
 must(chrome, '<nav class="h-navbar"', 'native chrome keeps navbar');
 must(chrome, '<section class="h-hero"', 'native chrome keeps hero');
@@ -110,13 +127,19 @@ mustNot(main, "import legacyHtml from './_legacy/main.html?raw'", 'raw monolithi
 
 must(cards, 'Материалы серии', 'series materials heading');
 must(cards, 'Опубликованные материалы', 'published-materials heading');
-must(cards, 'href="../articles/20-antisovetov-pastoru/"', 'Part I route');
-must(cards, 'Часть I · 67 мин', 'Part I duration');
+for (const part of expectedCore) {
+  must(cards, `href="../articles/${part.slug}/"`, `public route for Part ${part.roman}`);
+  must(cards, `Часть ${part.roman} · ${part.minutes} мин`, `published duration for Part ${part.roman}`);
+  mustNot(cards, `Часть ${part.roman} · редакционный черновик`, `draft status for Part ${part.roman}`);
+}
 must(cards, 'href="../articles/diotrefy-nashego-vremeni/"', 'Dossier A route');
 must(cards, 'data-wave12-series-card="true"', 'Dossier A card authority marker');
 must(cards, 'Досье A · 35 мин', 'Dossier A duration');
 must(cards, '181 источник', 'Dossier A source-count marker');
-equal(count(cards, '<a href="../articles/'), 2, 'published linked-material count');
+equal(count(cards, '<a href="../articles/'), 10, 'published linked-material count');
+equal(count(cards, 'aria-disabled="true"'), 1, 'non-public card count: field guide only');
+equal(count(cards, 'data-pagefind-ignore'), 1, 'search-excluded non-public card count: field guide only');
+mustNot(cards, 'редакционный черновик', 'retired staging draft marker');
 
 for (const heading of [
   'Каноническое ядро: диагностика и границы власти',
@@ -125,15 +148,6 @@ for (const heading of [
 ]) {
   must(cards, heading, `canonical group: ${heading}`);
 }
-
-must(cards, 'Часть II · редакционный черновик', 'draft Part II marker');
-must(cards, 'Анатомия падения: пять стадий институционального разложения', 'canonical Part II title');
-for (const part of ['III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX']) {
-  must(cards, `data-part="${part}"`, `draft canonical part ${part}`);
-  must(cards, `Часть ${part} · редакционный черновик`, `draft status for Part ${part}`);
-}
-equal(count(cards, 'aria-disabled="true"'), 9, 'non-public card count: eight core drafts plus field guide');
-equal(count(cards, 'data-pagefind-ignore'), 9, 'search-excluded non-public card count');
 
 for (const retired of [
   'Опубликованные части',
@@ -147,25 +161,30 @@ for (const retired of [
   mustNot(nativeText, retired, `retired series marker: ${retired}`);
 }
 
-must(stats, '>2</div>', 'two published materials stat');
-must(stats, 'опубликованных материала', 'published-material stat label');
+must(stats, '>10</div>', 'ten published materials stat');
+must(stats, 'опубликованных материалов', 'published-material stat label');
 must(stats, '>9</div>', 'nine-part canonical core stat');
 must(stats, 'частей канонического ядра', 'canonical-core stat label');
-must(stats, '>8</div>', 'eight draft manuscripts stat');
-must(stats, 'рукописей II–IX', 'draft-manuscript stat label');
+must(stats, '>321</div>', '321-minute canonical core stat');
+must(stats, 'минута канонического ядра I–IX', 'canonical-core duration label');
+must(stats, '>181</div>', 'Dossier A source-count stat');
 
 const pastorSeries = seriesRegistry['pastor-series'];
 if (!pastorSeries) {
   bad('data/series.json: pastor-series missing');
 } else {
   const published = (pastorSeries.parts || []).filter((part) => part.status === 'published');
-  equal(published.length, 2, 'registry published-material count');
+  equal(published.length, 9, 'registry published-core count');
   const slugs = published.map((part) => part.slug).sort();
-  const expected = ['20-antisovetov-pastoru', 'diotrefy-nashego-vremeni'].sort();
+  const expected = expectedCore.map((part) => part.slug).sort();
   JSON.stringify(slugs) === JSON.stringify(expected)
-    ? ok('canonical published slugs')
-    : bad(`canonical published slugs: ${JSON.stringify(slugs)} != ${JSON.stringify(expected)}`);
+    ? ok('canonical published core slugs')
+    : bad(`canonical published core slugs: ${JSON.stringify(slugs)} != ${JSON.stringify(expected)}`);
+  const totalMinutes = published.reduce((sum, part) => sum + Number(part.readingTime || 0), 0);
+  equal(totalMinutes, expectedCoreMinutes, 'registry canonical-core minute total');
 }
+
+equal(expectedCoreMinutes, 321, 'contract canonical-core minute total');
 
 const visualPolicy = baseline.routeModes?.['/pastor-series/'];
 if (!visualPolicy) {
@@ -192,4 +211,4 @@ if (problems.length) {
   console.log(`❌ ${problems.length} problem(s).`);
   process.exit(1);
 }
-ok('/pastor-series/ current native publication contract passed');
+ok('/pastor-series/ I–IX + Dossier A native publication contract passed');
