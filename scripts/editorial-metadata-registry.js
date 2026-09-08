@@ -18,6 +18,7 @@ const {
   validateRegistryV3,
   projectRegistryToDist,
 } = require('./lib/editorial-metadata-v3');
+const { orderProjectedRss } = require('./lib/editorial-rss-order');
 
 const WRITE = process.argv.includes('--write');
 const PROJECT_DIST = process.argv.includes('--project-dist');
@@ -109,6 +110,16 @@ function checkRegistry() {
   console.log('✅ Editorial metadata registry is structurally and semantically complete');
 }
 
+function projectFinalRssOrder(dryRun) {
+  const feedFile = path.join(DIST, 'feed.xml');
+  if (!fs.existsSync(feedFile)) throw new Error(`dist feed missing: ${feedFile}`);
+  const current = fs.readFileSync(feedFile, 'utf8');
+  const ordered = orderProjectedRss(current);
+  const changed = current !== ordered;
+  if (changed && !dryRun) fs.writeFileSync(feedFile, ordered, 'utf8');
+  return changed;
+}
+
 function projectDist() {
   const registry = readRegistry();
   const errors = validateRegistryV3(registry);
@@ -124,6 +135,7 @@ function projectDist() {
     dryRun: DRY_RUN,
     registry: { ...registry, records: approvedRecords },
   });
+  report.rssOrderChanged = projectFinalRssOrder(DRY_RUN);
   report.totalRegistryRecords = totalRecords;
   report.approvedRecords = Object.keys(approvedRecords).length;
   report.blockedEditorialReview = blockedRecords;
@@ -139,6 +151,7 @@ function projectDist() {
   console.log(`Search manifest matched: ${report.searchManifestMatched}`);
   console.log(`Sitemap files/routes: ${report.sitemapFiles}/${report.sitemapMatched}`);
   console.log(`RSS matched: ${report.rssMatched}`);
+  console.log(`RSS final order changed: ${report.rssOrderChanged}`);
   console.log(`Unknown publication/modification dates: ${report.unknownPublished}/${report.unknownModified}`);
   console.log(`Technical build instant: ${report.technicalBuildInstant}`);
   console.log(DRY_RUN ? '✅ Editorial Metadata v3 dry-run passed' : '✅ Editorial Metadata v3 projected approved decisions to final dist');
