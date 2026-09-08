@@ -3,9 +3,10 @@
  * Final production-like dist normalizer.
  *
  * Runs after Astro and legacy-copy, synchronizes asset hashes, materializes the
- * Atlas browser runtime, hardens CSP, projects editorial metadata and sitemap
- * images, and executes the canonical build-time relation projector.
- * Every phase is deterministic and fail-closed.
+ * Atlas browser runtime, projects the canonical document security policy,
+ * removes transport-only meta pragmas that cannot own HTTP response policy,
+ * projects editorial metadata and sitemap images, and executes the canonical
+ * build-time relation projector. Every phase is deterministic and fail-closed.
  */
 'use strict';
 
@@ -14,6 +15,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { spawnSync } = require('child_process');
 const { projectSitemapImages } = require('./lib/sitemap-image-projection');
+const { DOCUMENT_CSP } = require('./security-document-policy.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -117,67 +119,83 @@ for (const file of htmlFiles) {
 if (atlasFailures.length) throw new Error(`Atlas runtime normalization failed in ${atlasFailures.join(', ')}`);
 if (!DRY_RUN && !fs.existsSync(path.join(DIST, atlasJs.publicPath))) throw new Error(`dist is missing governed runtime asset: ${atlasJs.publicPath}`);
 
-const WASM_EVAL_SOURCE = "'wasm-unsafe-eval'";
-const DEFAULT_DIST_CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://cdn.jsdelivr.net; img-src 'self' https://gospod-bog.ru https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com https://commons.wikimedia.org https://upload.wikimedia.org https://cdn.loc.gov https://tile.loc.gov https://www.ritmeyer.com https://*.nasa.gov https://bibleplaces.photoshelter.com data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com wss://mc.yandex.ru wss://*.yandex.ru wss://mc.yandex.com wss://*.yandex.com https://huggingface.co https://*.aws.cdn.hf.co https://cdn.jsdelivr.net; frame-src 'self' https://mc.yandex.ru https://*.yandex.ru https://mc.yandex.com https://*.yandex.com; media-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self';";
-
-function cspMetaTag(html) {
+function cspMetaTags(html) {
   const tags = html.match(/<meta\b[^>]*>/gi) || [];
-  return tags.find((tag) => /http-equiv\s*=\s*["']Content-Security-Policy["']/i.test(tag)) || '';
+  return tags.filter((tag) => /http-equiv\s*=\s*["']Content-Security-Policy["']/i.test(tag));
 }
-function transformCspContent(tag, transform) {
-  return tag ? tag.replace(/content\s*=\s*(["])([\s\S]*?)\1/i, (_match, quote, content) => `content=${quote}${transform(content)}${quote}`) : tag;
+function transportOnlyMetaTags(html) {
+  const tags = html.match(/<meta\b[^>]*>/gi) || [];
+  return tags.filter((tag) => /http-equiv\s*=\s*["']X-Content-Type-Options["']/i.test(tag));
 }
-function addWasmUnsafeEval(tag) {
-  return transformCspContent(tag, (content) => content.replace(/((?:^|;)\s*script-src\s+)([^;]*)/i, (directive, prefix, sources) => {
-    const tokens = sources.trim().split(/\s+/).filter(Boolean);
-    return tokens.includes(WASM_EVAL_SOURCE) ? directive : `${prefix}${tokens.concat(WASM_EVAL_SOURCE).join(' ')}`;
-  }));
+function stripTransportOnlyMetaPragmas(html) {
+  let removed = 0;
+  const updated = html.replace(/\s*<meta\b[^>]*\bhttp-equiv\s*=\s*["']X-Content-Type-Options["'][^>]*>\s*/gi, () => {
+    removed += 1;
+    return '\n';
+  });
+  return { html: updated, removed };
 }
-function addFormAction(tag) {
-  if (!tag || /(?:^|;)\s*form-action\b/i.test(tag)) return tag;
-  return transformCspContent(tag, (content) => `${content.trim().replace(/;+\s*$/, '')}; form-action 'self';`);
+function canonicalCspMetaTag() {
+  return `<meta http-equiv="Content-Security-Policy" content="${DOCUMENT_CSP}">`;
 }
-function cspHasScriptSource(tag, source) {
-  const content = String(tag).match(/content\s*=\s*(["])([\s\S]*?)\1/i);
-  const directive = content && content[2].match(/(?:^|;)\s*script-src\s+([^;]*)/i);
-  return Boolean(directive && directive[1].trim().split(/\s+/).includes(source));
+function cspContent(tag) {
+  const content = String(tag).match(/\bcontent\s*=\s*(["'])([\s\S]*?)\1/i);
+  return content ? content[2].trim().replace(/\s+/g, ' ') : '';
 }
 function hardenCsp(html) {
-  const unchanged = { html, changed: false, injected: false, formFixed: false, wasmFixed: false };
+  const unchanged = { html, changed: false, injected: false, canonicalized: false };
   if (!/<html\b/i.test(html) || !/<head\b/i.test(html)) return unchanged;
-  const current = cspMetaTag(html);
-  if (current) {
-    const withWasm = addWasmUnsafeEval(current);
-    const next = addFormAction(withWasm);
-    return next === current ? unchanged : { html: html.replace(current, next), changed: true, injected: false, formFixed: next !== withWasm, wasmFixed: withWasm !== current };
-  }
-  const meta = `<meta http-equiv="Content-Security-Policy" content="${DEFAULT_DIST_CSP}">`;
-  return /<meta\s+charset=/i.test(html)
-    ? { html: html.replace(/(<meta\s+charset=[^>]*>)/i, `$1\n${meta}`), changed: true, injected: true, formFixed: false, wasmFixed: false }
-    : { html: html.replace(/(<head\b[^>]*>)/i, `$1\n${meta}`), changed: true, injected: true, formFixed: false, wasmFixed: false };
+
+  const currentTags = cspMetaTags(html);
+  let withoutCsp = html;
+  for (const tag of currentTags) withoutCsp = withoutCsp.replace(tag, '');
+
+  const meta = canonicalCspMetaTag();
+  const projected = /<meta\s+charset=/i.test(withoutCsp)
+    ? withoutCsp.replace(/(<meta\s+charset=[^>]*>)/i, `$1\n${meta}`)
+    : withoutCsp.replace(/(<head\b[^>]*>)/i, `$1\n${meta}`);
+
+  if (projected === html) return unchanged;
+  return {
+    html: projected,
+    changed: true,
+    injected: currentTags.length === 0,
+    canonicalized: currentTags.length > 0,
+  };
 }
 
-let cspFilesTouched = 0;
+let securityFilesTouched = 0;
+let transportMetaRemoved = 0;
 let cspInjected = 0;
-let cspFormFixed = 0;
-let cspWasmFixed = 0;
-let cspWasmVerified = 0;
-const cspFailures = [];
+let cspCanonicalized = 0;
+let cspVerified = 0;
+const securityFailures = [];
 for (const file of htmlFiles) {
-  const source = fs.readFileSync(file, 'utf8');
-  const result = hardenCsp(source);
-  if (result.changed) {
-    cspFilesTouched += 1;
-    if (result.injected) cspInjected += 1;
-    if (result.formFixed) cspFormFixed += 1;
-    if (result.wasmFixed) cspWasmFixed += 1;
-    if (!DRY_RUN) fs.writeFileSync(file, result.html, 'utf8');
+  const original = fs.readFileSync(file, 'utf8');
+  const transport = stripTransportOnlyMetaPragmas(original);
+  const result = hardenCsp(transport.html);
+  const finalHtml = result.html;
+
+  transportMetaRemoved += transport.removed;
+  if (result.injected) cspInjected += 1;
+  if (result.canonicalized) cspCanonicalized += 1;
+  if (finalHtml !== original) {
+    securityFilesTouched += 1;
+    if (!DRY_RUN) fs.writeFileSync(file, finalHtml, 'utf8');
   }
-  if (!/<html\b/i.test(result.html) || !/<head\b/i.test(result.html)) continue;
-  if (!cspHasScriptSource(cspMetaTag(result.html), WASM_EVAL_SOURCE)) cspFailures.push(path.relative(DIST, file));
-  else cspWasmVerified += 1;
+
+  if (!/<html\b/i.test(finalHtml) || !/<head\b/i.test(finalHtml)) continue;
+  const cspTags = cspMetaTags(finalHtml);
+  const transportTags = transportOnlyMetaTags(finalHtml);
+  const relative = path.relative(DIST, file).replace(/\\/g, '/');
+  if (transportTags.length) securityFailures.push(`${relative}: transport-only X-Content-Type-Options meta survived final projection`);
+  if (cspTags.length !== 1 || cspContent(cspTags[0]) !== DOCUMENT_CSP.trim().replace(/\s+/g, ' ')) {
+    securityFailures.push(`${relative}: canonical CSP projection failed`);
+  } else {
+    cspVerified += 1;
+  }
 }
-if (cspFailures.length) throw new Error(`CSP hardening failed in ${cspFailures.join(', ')}`);
+if (securityFailures.length) throw new Error(`Canonical security projection failed:\n${securityFailures.join('\n')}`);
 
 const projector = spawnSync(process.execPath, [PROJECTOR, ...(DRY_RUN ? ['--dry-run'] : [])], { cwd: ROOT, stdio: 'inherit', encoding: 'utf8' });
 if (projector.error) throw projector.error;
@@ -206,7 +224,9 @@ console.log(`  HTML files scanned:       ${htmlFiles.length}`);
 console.log(`  Files touched:            ${filesTouched}`);
 console.log(`  Hash replacements:        ${replacements}`);
 console.log(`  Governed runtime assets:  ${RUNTIME_ASSETS.length}`);
-console.log(`  CSP files touched:        ${cspFilesTouched} (injected: ${cspInjected}, form-action fixed: ${cspFormFixed}, wasm fixed: ${cspWasmFixed})`);
-console.log(`  CSP WASM verified:        ${cspWasmVerified}`);
+console.log(`  Security files touched:   ${securityFilesTouched}`);
+console.log(`  Transport meta removed:   ${transportMetaRemoved}`);
+console.log(`  CSP injected/canonical:   ${cspInjected}/${cspCanonicalized}`);
+console.log(`  CSP canonical verified:   ${cspVerified}`);
 console.log(`  Sitemap images:           ${sitemapImages.inserted} inserted, ${sitemapImages.replaced} synchronized, ${sitemapImages.unchanged} unchanged`);
-console.log(DRY_RUN ? '\n  (dry-run: nothing written)' : '\n✅ dist asset, CSP, Atlas, relation, editorial metadata, reader semantic projection and sitemap image drift → 0');
+console.log(DRY_RUN ? '\n  (dry-run: nothing written)' : '\n✅ dist asset, security, Atlas, relation, editorial metadata, reader semantic projection and sitemap image drift → 0');
