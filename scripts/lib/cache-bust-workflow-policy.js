@@ -105,7 +105,7 @@ function runCacheBustWorkflowPolicyMutationSuite(baseline) {
     ['release readiness revision check removed', { ...baseline, deploy: baseline.deploy.replace('run: node scripts/cache-bust.js', 'run: node scripts/cache-bust-disabled.js') }],
     ['release revision check moved after build', { ...baseline, deploy: swapped(baseline.deploy, 'run: node scripts/cache-bust.js', 'run: npm run strangler:build:production-like') }],
     ['deploy loses readiness dependency', { ...baseline, deploy: baseline.deploy.replace('needs: readiness', 'needs: []') }],
-    ['deploy rebuilds candidate', { ...baseline, deploy: baseline.deploy.replace('name: Download exact same-run release candidate', 'run: npm run strangler:build:production-like\n\n      - name: Download exact same-run release candidate') }],
+    ['deploy rebuilds candidate', { ...baseline, deploy: baseline.deploy.replace('name: Download exact readiness candidate by artifact ID', 'run: npm run strangler:build:production-like\n\n      - name: Download exact readiness candidate by artifact ID') }],
     ['cache-bust defaults to writer', { ...baseline, cacheBust: baseline.cacheBust.replace("const WRITE = process.argv.includes('--write');", 'const WRITE = true;') }],
   ];
   if (WRITER_PATTERN.test(glossary)) {

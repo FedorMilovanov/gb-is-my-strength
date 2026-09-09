@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const read = (relative) => fs.readFileSync(path.join(ROOT, relative), 'utf8');
+const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const PINS = Object.freeze({
   checkout: 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1',
   setupNode: 'actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0',
@@ -14,162 +14,165 @@ const PINS = Object.freeze({
   uploadPages: 'actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0',
   deployPages: 'actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1',
 });
-const count = (text, pattern) => (text.match(pattern) || []).length;
-function boundedJobs(workflow) {
-  const readiness = workflow.match(/\n  readiness:\n([\s\S]*?)\n  deploy:\n/);
-  const deploy = workflow.match(/\n  deploy:\n([\s\S]*)$/);
-  return { readiness: readiness?.[1] || '', deploy: deploy?.[1] || '' };
+const count = (s, re) => (s.match(re) || []).length;
+const before = (s, a, b) => s.indexOf(a) >= 0 && s.indexOf(b) >= 0 && s.indexOf(a) < s.indexOf(b);
+
+function jobs(yaml) {
+  return {
+    readiness: yaml.match(/\n  readiness:\n([\s\S]*?)\n  deploy:\n/)?.[1] || '',
+    deploy: yaml.match(/\n  deploy:\n([\s\S]*)$/)?.[1] || '',
+  };
 }
-function boundedStep(job, name) {
-  const marker = `      - name: ${name}\n`;
-  const start = job.indexOf(marker);
+function step(job, name) {
+  const mark = `      - name: ${name}\n`;
+  const start = job.indexOf(mark);
   if (start < 0) return '';
-  const next = job.indexOf('\n      - name: ', start + marker.length);
-  return job.slice(start, next < 0 ? job.length : next);
+  const end = job.indexOf('\n      - name: ', start + mark.length);
+  return job.slice(start, end < 0 ? job.length : end);
 }
-function mutateStep(workflow, name, from, to) {
-  const marker = `      - name: ${name}\n`;
-  const start = workflow.indexOf(marker);
-  assert.notEqual(start, -1, `${name}: step fixture missing`);
-  const next = workflow.indexOf('\n      - name: ', start + marker.length);
-  const end = next < 0 ? workflow.length : next;
-  const step = workflow.slice(start, end);
-  assert.ok(step.includes(from), `${name}: mutation source missing`);
-  return workflow.slice(0, start) + step.replace(from, to) + workflow.slice(end);
-}
-function before(text, first, second) {
-  const left = text.indexOf(first);
-  const right = text.indexOf(second);
-  return left >= 0 && right >= 0 && left < right;
+function mutateStep(yaml, name, from, to) {
+  const j = jobs(yaml);
+  const block = step(j.readiness, name) || step(j.deploy, name);
+  assert.ok(block, `${name}: fixture missing`);
+  assert.ok(block.includes(from), `${name}: mutation source missing`);
+  return yaml.replace(block, block.replace(from, to));
 }
 
 export function validate({ workflow, diagnostics, toolchain, library, writer, verifier, live, tts, ttsWorkflow }) {
-  const problems = [];
-  const jobs = boundedJobs(workflow);
-  const candidateUpload = boundedStep(jobs.readiness, 'Upload immutable release candidate');
-  const gillAudit = boundedStep(jobs.readiness, 'Gill mobile reference layout audit');
-  const gillUpload = boundedStep(jobs.readiness, 'Upload Gill mobile layout readiness evidence');
-  const checks = [
-    ['release owns every main push', workflow, /push:\s*\n\s*branches:\s*\[main\][\s\S]{0,100}- '\*\*'/],
-    ['manual release input exact', workflow, /workflow_dispatch:[\s\S]{0,220}release_sha:[\s\S]{0,160}required:\s*false[\s\S]{0,80}type:\s*string/],
-    ['release top-level read only', workflow, /^permissions:\s*\n\s*contents:\s*read\s*$/m],
-    ['release serializes Pages', workflow, /concurrency:\s*\n\s*group:\s*pages\s*\n\s*cancel-in-progress:\s*true/],
-    ['control SHA comes from workflow', workflow, /CONTROL_PLANE_SHA:\s*\$\{\{ github\.sha \}\}/],
-    ['release SHA selects explicit recovery or current', workflow, /RELEASE_SHA:\s*\$\{\{ github\.event_name == 'workflow_dispatch' && inputs\.release_sha \|\| github\.sha \}\}/],
-    ['candidate artifact is run-attempt addressed', workflow, /pages-release-candidate-\$\{\{ github\.run_id \}\}-\$\{\{ github\.run_attempt \}\}/],
-    ['readiness job exists', jobs.readiness, /name:\s*Build and validate immutable release candidate/],
-    ['readiness is read only', jobs.readiness, /permissions:\s*\n\s*contents:\s*read/],
-    ['release checkout exact', jobs.readiness, /Checkout exact release source[\s\S]{0,180}ref:\s*\$\{\{ env\.RELEASE_SHA \}\}[\s\S]{0,100}fetch-depth:\s*0[\s\S]{0,100}persist-credentials:\s*false/],
-    ['Git boundary fetches current main', jobs.readiness, /git fetch --no-tags origin "\+main:refs\/remotes\/origin\/main"/],
-    ['Git boundary verifies checkout', jobs.readiness, /git rev-parse --verify 'HEAD\^\{commit\}'[\s\S]{0,100}= "\$RELEASE_SHA"/],
-    ['Git boundary verifies control main', jobs.readiness, /'refs\/remotes\/origin\/main\^\{commit\}'[\s\S]{0,100}= "\$CONTROL_PLANE_SHA"/],
-    ['Git boundary verifies ancestry', jobs.readiness, /git merge-base --is-ancestor "\$RELEASE_SHA" "\$CONTROL_PLANE_SHA"/],
-    ['automatic release identities equal', jobs.readiness, /GITHUB_EVENT_NAME" = "push"[\s\S]{0,100}RELEASE_SHA" = "\$CONTROL_PLANE_SHA/],
-    ['readiness pins Node', jobs.readiness, /node-version:\s*'22\.23\.1'/],
-    ['readiness asserts npm', jobs.readiness, /npm --version[\s\S]{0,80}RELEASE_NPM_VERSION/],
-    ['readiness checks revisions', jobs.readiness, /Check source asset revisions without writing[\s\S]{0,120}node scripts\/cache-bust\.js/],
-    ['readiness runs full source gates', jobs.readiness, /npm run validate:static-publication\s*$/m],
-    ['readiness builds Pagefind', jobs.readiness, /npm run pagefind:build:dist/],
-    ['readiness runs strict publication audit', jobs.readiness, /dist-publication-audit\.js --require-pagefind --forbid-dev/],
-    ['readiness runs route browser and SW gates', jobs.readiness, /visual:parity:production[\s\S]*gill:mobile-layout:audit[\s\S]*dist-smoke-audit\.js --no-build --production-like[\s\S]*sw:dist:audit:deploy-switch/],
-    ['Gill audit has stable step id', gillAudit, /id:\s*gill_mobile_layout/],
-    ['Gill evidence immediately follows audit', jobs.readiness, /- name: Gill mobile reference layout audit\s*\n\s*id:\s*gill_mobile_layout\s*\n\s*run:\s*npm run gill:mobile-layout:audit\s*\n\s*\n\s*- name: Upload Gill mobile layout readiness evidence/],
-    ['Gill evidence uploader bound to terminal Gill outcome', gillUpload, /if:\s*\$\{\{ always\(\) && \(steps\.gill_mobile_layout\.outcome == 'success' \|\| steps\.gill_mobile_layout\.outcome == 'failure'\) \}\}/],
-    ['Gill evidence uploader pinned', gillUpload, /uses:\s*actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7\.0\.1/],
-    ['Gill evidence artifact run-attempt addressed', gillUpload, /name:\s*gill-mobile-layout-readiness-\$\{\{ github\.run_id \}\}-\$\{\{ github\.run_attempt \}\}/],
-    ['Gill evidence exact report path', gillUpload, /path:\s*reports\/gill-mobile-layout-audit-2026-06-29\/summary\.json\s*$/m],
-    ['Gill evidence fail closed', gillUpload, /if-no-files-found:\s*error/],
-    ['Gill evidence retention exact', gillUpload, /retention-days:\s*30/],
-    ['release validation leaves tree clean', jobs.readiness, /Ensure release-source validation left tracked files clean[\s\S]{0,100}git diff --exit-code/],
-    ['trusted tools staged from control plane', jobs.readiness, /Stage immutable verification tools from trusted control plane[\s\S]*git show "\$\{CONTROL_PLANE_SHA\}:scripts\/\$\{file\}"[\s\S]*release-tools\/write-deployment-provenance\.mjs/],
-    ['readiness writes provenance with trusted tool', jobs.readiness, /Write generic immutable release provenance[\s\S]{0,180}release-tools\/write-deployment-provenance\.mjs/],
-    ['readiness verifies candidate with two SHAs', jobs.readiness, /EXPECTED_RELEASE_SHA:\s*\$\{\{ env\.RELEASE_SHA \}\}[\s\S]*EXPECTED_CONTROL_PLANE_SHA:\s*\$\{\{ env\.CONTROL_PLANE_SHA \}\}[\s\S]*release-tools\/verify-release-candidate\.mjs/],
-    ['readiness exposes two SHAs', jobs.readiness, /release_sha:\s*\$\{\{ steps\.provenance\.outputs\.release_sha \}\}[\s\S]*control_plane_sha:\s*\$\{\{ steps\.provenance\.outputs\.control_plane_sha \}\}/],
-    ['readiness binds digest output', jobs.readiness, /EXPECTED_CANDIDATE_DIGEST:\s*\$\{\{ steps\.provenance\.outputs\.candidate_digest \}\}/],
-    ['candidate upload keeps hidden files', candidateUpload, /include-hidden-files:\s*true/],
-    ['candidate upload is fail closed and uncompressed', candidateUpload, /if-no-files-found:\s*error[\s\S]{0,120}compression-level:\s*0/],
-    ['candidate upload contains dist and tools', candidateUpload, /path:\s*\|[\s\S]{0,120}\n\s*dist\s*\n\s*release-tools/],
-    ['deploy depends on readiness', jobs.deploy, /needs:\s*readiness/],
-    ['deploy permissions exact', jobs.deploy, /permissions:\s*\n\s*actions:\s*read\s*\n\s*contents:\s*read\s*\n\s*pages:\s*write\s*\n\s*id-token:\s*write/],
-    ['deploy downloads exact candidate', jobs.deploy, /actions\/download-artifact@[a-f0-9]{40}[\s\S]{0,180}name:\s*\$\{\{ env\.RELEASE_ARTIFACT_NAME \}\}/],
-    ['deploy verifies both identities before Pages', jobs.deploy, /Verify downloaded candidate identity[\s\S]*EXPECTED_RELEASE_SHA:\s*\$\{\{ needs\.readiness\.outputs\.release_sha \}\}[\s\S]*EXPECTED_CONTROL_PLANE_SHA:\s*\$\{\{ needs\.readiness\.outputs\.control_plane_sha \}\}[\s\S]*release-tools\/verify-release-candidate\.mjs[\s\S]*Upload exact candidate as Pages artifact/],
-    ['deploy binds candidate digest', jobs.deploy, /EXPECTED_CANDIDATE_DIGEST:\s*\$\{\{ needs\.readiness\.outputs\.candidate_digest \}\}/],
-    ['deploy uploads dist with pinned Pages action', jobs.deploy, /actions\/upload-pages-artifact@[a-f0-9]{40}[\s\S]{0,100}path:\s*dist/],
-    ['generic live receives two SHAs', jobs.deploy, /Verify generic live release contract[\s\S]*RELEASE_SHA:\s*\$\{\{ needs\.readiness\.outputs\.release_sha \}\}[\s\S]*CONTROL_PLANE_SHA:\s*\$\{\{ needs\.readiness\.outputs\.control_plane_sha \}\}/],
-    ['generic live precedes TTS', jobs.deploy, /Verify generic live release contract[\s\S]{0,700}live-release-contract\.mjs[\s\S]*Verify live TTS capability extension[\s\S]{0,700}tts-live-deployment-contract\.mjs/],
-    ['live evidence is deployment-bounded', jobs.deploy, /Upload generic live release evidence\s*\n\s*if:\s*\$\{\{ always\(\) && steps\.deploy_pages\.outcome == 'success' \}\}[\s\S]*Verify live TTS capability extension\s*\n\s*if:\s*\$\{\{ always\(\) && steps\.deploy_pages\.outcome == 'success' \}\}[\s\S]*Upload live TTS capability evidence\s*\n\s*if:\s*\$\{\{ always\(\) && steps\.deploy_pages\.outcome == 'success' \}\}/],
-    ['generic and TTS artifacts separate', jobs.deploy, /release-live-deployment-\$\{\{ github\.run_id \}\}[\s\S]*tts-live-deployment-\$\{\{ github\.run_id \}\}/],
-    ['diagnostics remains manually inspectable', diagnostics, /workflow_dispatch:/],
-    ['diagnostics is build-free', diagnostics, /Validate source metadata without building dist/],
-    ['toolchain exact', toolchain, /"schemaVersion":\s*1[\s\S]*"node":\s*"22\.23\.1"[\s\S]*"npm":\s*"10\.9\.8"/],
-    ['tree rejects symlinks', library, /assert\.equal\(stat\.isSymbolicLink\(\), false/],
-    ['tree digest canonical', library, /sha256-canonical-pages-tree-v1[\s\S]*canonicalTreeStats/],
-    ['manifest schema v4 two-SHA', library, /schemaVersion:\s*4[\s\S]*releaseSha,[\s\S]*controlPlaneSha,[\s\S]*artifact:[\s\S]*build:[\s\S]*extensions:/],
-    ['pointer schema v3 two-SHA', library, /schemaVersion:\s*3[\s\S]*releaseSha,[\s\S]*controlPlaneSha,[\s\S]*immutablePath/],
-    ['candidate addressed by release SHA', library, /candidateId = `\$\{releaseSha\}:\$\{runIdentity\}`[\s\S]*deployments\/\$\{releaseSha\}/],
-    ['workflow identity bound to control plane', library, /workflow = \{[\s\S]*controlPlaneSha,[\s\S]*runId/],
-    ['TTS is extension', library, /extensions:\s*\{[\s\S]*tts:\s*\{/],
-    ['writer invokes two-SHA Git boundary', writer, /const boundary = assertReleaseControlPlaneBoundary\(\{[\s\S]*releaseSha,[\s\S]*controlPlaneSha/],
-    ['writer checks checkout and current main', writer, /HEAD\^\{commit\}[\s\S]*refs\/remotes\/origin\/main\^\{commit\}/],
-    ['writer checks ancestry', writer, /merge-base', '--is-ancestor', releaseSha, controlPlaneSha/],
-    ['writer emits both outputs', writer, /release_sha=\$\{report\.releaseSha\}[\s\S]*control_plane_sha=\$\{report\.controlPlaneSha\}/],
-    ['download verifier recomputes both identities', verifier, /verifyReleaseCandidate\(\{[\s\S]{0,220}expectedReleaseSha,[\s\S]{0,100}expectedControlPlaneSha,/],
-    ['generic live follows pointer', live, /\/deployments\/current\.json[\s\S]*pointer\.immutablePath/],
-    ['generic live verifies both identities', live, /releaseSha[\s\S]*controlPlaneSha[\s\S]*expectedReleaseSha[\s\S]*expectedControlPlaneSha/],
-    ['generic live preserves preflight evidence', live, /phase:\s*'preflight'[\s\S]*catch \(error\) \{\s*failPreflight\(error\);/],
-    ['TTS verifies both identities', tts, /RELEASE_SHA[\s\S]*CONTROL_PLANE_SHA[\s\S]*expectedReleaseSha[\s\S]*expectedControlPlaneSha/],
-    ['TTS preserves preflight evidence', tts, /phase:\s*'preflight'[\s\S]*catch \(error\) \{\s*failPreflight\(error\);/],
-    ['source workflow owns release contract', ttsWorkflow, /scripts\/release-pipeline-contract-test\.mjs/],
-    ['source workflow executes release contract', ttsWorkflow, /node scripts\/release-pipeline-contract-test\.mjs/],
-  ];
-  for (const [label, source, pattern] of checks) if (!pattern.test(source)) problems.push(label);
+  const p = [];
+  const j = jobs(workflow);
+  const has = (label, src, token) => { if (!src.includes(token)) p.push(label); };
+  const matches = (label, src, re) => { if (!re.test(src)) p.push(label); };
 
-  const liveHomeTokens = [
-    ["local candidate path", "const localHomePath = path.join(DIST, 'index.html');"],
-    ["local candidate bytes", "localHomeBuffer = fs.readFileSync(localHomePath);"],
-    ["local candidate digest", "localHomeDigest = sha256(localHomeBuffer);"],
-    ["local candidate semantic contract", "assertHomeContract(localHomeBuffer, 'local candidate home');"],
-    ["live Home fetch", "const homeResponse = await fetchBuffer('/', attempt, 'home-index');"],
-    ["live Home byte equality", "assert.equal(homeResponse.buffer.length, localHomeBuffer.length, 'home-index: live byte count mismatch');"],
-    ["live Home digest equality", "assert.equal(homeDigest, localHomeDigest, 'home-index: live SHA-256 mismatch');"],
-    ["live Home semantic contract", "assertHomeContract(homeResponse.buffer, 'live home');"],
-    ["approved sacred-word marker", "'class=\"h-sacred-word h-sacred-word--name\"'"],
-    ["approved sacred-name label", "'class=\"h-sacred-name-label\"'"],
-    ["approved Refutations marker", "'id=\"hRefutationsLabel\"'"],
-    ["approved library routes", "for (const route of ['articles', 'series', 'biographies', 'maps', 'confessions']) {"],
-    ["approved library dividers", "for (let divider = 0; divider < 4; divider += 1) {"],
-    ["approved Refutations stylesheet local binding", "localRefutationsStylesheet = findRefutationsStylesheet(localHomeStylesheets, 'local candidate home');"],
-    ["approved Refutations stylesheet geometry contract", "function assertRefutationsStylesheet(buffer, label) {"],
-    ["approved Refutations stylesheet live fetch", "const liveRefutationsStyle = await fetchBuffer(localRefutationsStylesheet.path, attempt, 'home-refutations-stylesheet');"],
-    ["approved Refutations stylesheet byte equality", "'home-refutations-stylesheet: live byte count mismatch'"],
-    ["approved Refutations stylesheet digest equality", "'home-refutations-stylesheet: live SHA-256 mismatch'"],
-    ["approved Refutations stylesheet live semantic contract", "assertRefutationsStylesheet(liveRefutationsStyle.buffer, 'live home Refutations stylesheet');"],
-    ["legacy Home owner rejection", "for (const legacy of ['class=\"hb-w\"', 'class=\"h-tetra\"', 'data-sacred-active']) {"],
-  ];
-  for (const [label, token] of liveHomeTokens) if (!live.includes(token)) problems.push(`generic live Home ${label}`);
-  if (live.includes('h-refutation-card[^}]{0,500}box-sizing:border-box')) problems.push('generic live parses extracted CSS from HTML');
+  matches('release owns every main push', workflow, /push:\s*\n\s*branches:\s*\[main\][\s\S]{0,100}- '\*\*'/);
+  has('control SHA from workflow', workflow, 'CONTROL_PLANE_SHA: ${{ github.sha }}');
+  has('release SHA recovery selector', workflow, "RELEASE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.release_sha || github.sha }}");
+  has('candidate run-attempt name', workflow, 'RELEASE_ARTIFACT_NAME: pages-release-candidate-${{ github.run_id }}-${{ github.run_attempt }}');
+  has('Pages run-attempt name', workflow, 'PAGES_ARTIFACT_NAME: github-pages-${{ github.run_id }}-${{ github.run_attempt }}');
+  matches('Pages serialized', workflow, /concurrency:\s*\n\s*group:\s*pages\s*\n\s*cancel-in-progress:\s*true/);
 
-  if (count(workflow, /\bnpm ci\b/g) !== 1) problems.push('release npm ci count drift');
-  if (count(workflow, /npm run strangler:build:production-like/g) !== 1) problems.push('release production build count drift');
-  if (count(workflow, /release-tools\/write-deployment-provenance\.mjs/g) !== 2) problems.push('trusted provenance tool reference count drift');
-  if (count(workflow, /actions\/checkout@/g) !== 1) problems.push('release checkout count drift');
-  if (count(workflow, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/g) !== 4) problems.push('release upload-artifact pin/count drift');
-  if (count(workflow, /actions\/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c/g) !== 1) problems.push('release download-artifact pin/count drift');
-  for (const pin of Object.values(PINS)) if (!workflow.includes(pin)) problems.push(`release action pin drift: ${pin.split('@')[0]}`);
-  if (/uses:\s*actions\/(?:checkout|setup-node|upload-artifact|download-artifact|upload-pages-artifact|deploy-pages)@v\d+/i.test(workflow)) problems.push('release uses mutable action tag');
-  for (const forbidden of [/actions\/checkout@/, /\bnpm ci\b/, /strangler:build/, /cache-bust\.js/, /validate:static-publication/, /pagefind:build/]) {
-    if (forbidden.test(jobs.deploy)) problems.push(`privileged deploy contains forbidden source/build command: ${forbidden}`);
-  }
-  if (/\bnpm ci\b|strangler:build|pagefind:build|dist-publication-audit/.test(diagnostics)) problems.push('diagnostics duplicates release build');
-  if (/pages:\s*write|id-token:\s*write|actions\/deploy-pages|actions\/upload-pages-artifact/.test(diagnostics)) problems.push('diagnostics owns Pages capability');
-  if (/workflow_run:/.test(workflow)) problems.push('release still depends on second workflow');
+  has('exact release checkout', j.readiness, 'ref: ${{ env.RELEASE_SHA }}');
+  has('full checkout', j.readiness, 'fetch-depth: 0');
+  has('checkout credentials disabled', j.readiness, 'persist-credentials: false');
+  has('current main fetched', j.readiness, 'git fetch --no-tags origin "+main:refs/remotes/origin/main"');
+  has('release ancestry proved', j.readiness, 'git merge-base --is-ancestor "$RELEASE_SHA" "$CONTROL_PLANE_SHA"');
+  has('automatic identities equal', j.readiness, 'test "$RELEASE_SHA" = "$CONTROL_PLANE_SHA"');
+  has('pinned Node', j.readiness, "node-version: '22.23.1'");
+  has('pinned npm asserted', j.readiness, 'test "$(npm --version)" = "$RELEASE_NPM_VERSION"');
+  has('purge mock contract in readiness', j.readiness, 'node scripts/cloudflare-release-purge-contract-test.mjs');
+  has('source revisions checked', j.readiness, 'node scripts/cache-bust.js');
+  has('static publication gates', j.readiness, 'npm run validate:static-publication');
+  has('production-like build', j.readiness, 'npm run strangler:build:production-like');
+  has('Pagefind build', j.readiness, 'npm run pagefind:build:dist');
+  has('strict publication audit', j.readiness, 'node scripts/dist-publication-audit.js --require-pagefind --forbid-dev');
+  has('SW deploy switch gate', j.readiness, 'npm run sw:dist:audit:deploy-switch');
+  has('clean tracked source', j.readiness, 'git diff --exit-code');
+  has('trusted tools from control plane', j.readiness, 'git show "${CONTROL_PLANE_SHA}:scripts/${file}" > "release-tools/${file}"');
+  has('purge library staged', j.readiness, 'cloudflare-release-purge-lib.mjs');
+  has('purge CLI staged', j.readiness, 'cloudflare-release-purge.mjs');
+  has('readiness release identity bound', j.readiness, 'EXPECTED_RELEASE_SHA: ${{ env.RELEASE_SHA }}');
+  has('readiness control identity bound', j.readiness, 'EXPECTED_CONTROL_PLANE_SHA: ${{ env.CONTROL_PLANE_SHA }}');
+  has('readiness attempt bound', j.readiness, 'EXPECTED_RUN_ATTEMPT: ${{ github.run_attempt }}');
+  has('artifact ID output', j.readiness, 'transport_artifact_id: ${{ steps.candidate_upload.outputs.artifact-id }}');
+  has('artifact digest output', j.readiness, 'transport_artifact_digest: ${{ steps.candidate_upload.outputs.artifact-digest }}');
+
+  const candidate = step(j.readiness, 'Upload immutable release candidate');
+  has('candidate hidden files retained', candidate, 'include-hidden-files: true');
+  has('candidate missing files fail', candidate, 'if-no-files-found: error');
+  has('candidate transport uncompressed', candidate, 'compression-level: 0');
+
+  matches('deploy permissions exact', j.deploy, /permissions:\s*\n\s*actions:\s*read\s*\n\s*contents:\s*read\s*\n\s*pages:\s*write\s*\n\s*id-token:\s*write/);
+  const download = step(j.deploy, 'Download exact readiness candidate by artifact ID');
+  has('deploy downloads exact artifact ID', download, 'artifact-ids: ${{ needs.readiness.outputs.transport_artifact_id }}');
+  has('deploy merges exact artifact into workspace', download, 'merge-multiple: true');
+  const verify = step(j.deploy, 'Verify downloaded candidate identity');
+  has('deploy release identity bound', verify, 'EXPECTED_RELEASE_SHA: ${{ needs.readiness.outputs.release_sha }}');
+  has('deploy control identity bound', verify, 'EXPECTED_CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.control_plane_sha }}');
+  has('deploy run ID bound', verify, 'EXPECTED_RUN_ID: ${{ github.run_id }}');
+  has('deploy digest bound', verify, 'EXPECTED_CANDIDATE_DIGEST: ${{ needs.readiness.outputs.candidate_digest }}');
+  if (verify.includes('EXPECTED_RUN_ATTEMPT:')) p.push('deploy incorrectly binds rerun attempt');
+
+  const pagesUpload = step(j.deploy, 'Upload exact candidate as Pages artifact');
+  has('Pages upload attempt-specific', pagesUpload, 'name: ${{ env.PAGES_ARTIFACT_NAME }}');
+  has('Pages upload exact dist', pagesUpload, 'path: dist');
+  const pagesDeploy = step(j.deploy, 'Deploy exact candidate to GitHub Pages');
+  has('Pages deploy consumes exact artifact', pagesDeploy, 'artifact_name: ${{ env.PAGES_ARTIFACT_NAME }}');
+
+  const purge = step(j.deploy, 'Purge Cloudflare release cache');
+  has('purge token secret', purge, 'CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}');
+  has('purge zone secret', purge, 'CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}');
+  has('purge exact zone', purge, 'CLOUDFLARE_ZONE_NAME: gospod-bog.ru');
+  has('purge trusted CLI', purge, 'node release-tools/cloudflare-release-purge.mjs');
+  if (!before(j.deploy, 'Deploy exact candidate to GitHub Pages', 'Purge Cloudflare release cache')) p.push('purge before Pages deploy');
+  if (!before(j.deploy, 'Purge Cloudflare release cache', 'Verify generic live release contract')) p.push('live verifier before purge');
+
+  const purgeEvidence = step(j.deploy, 'Upload Cloudflare purge evidence');
+  has('purge evidence deployment-bound', purgeEvidence, "steps.deploy_pages.outcome == 'success'");
+  has('purge evidence terminal-bound', purgeEvidence, "steps.cloudflare_purge.outcome == 'success' || steps.cloudflare_purge.outcome == 'failure'");
+  has('purge evidence rerun overwrite', purgeEvidence, 'overwrite: true');
+  has('purge evidence canonical name', purgeEvidence, 'name: cloudflare-release-purge-${{ github.run_id }}');
+
+  const liveStep = step(j.deploy, 'Verify generic live release contract');
+  has('live release SHA bound', liveStep, 'RELEASE_SHA: ${{ needs.readiness.outputs.release_sha }}');
+  has('live control SHA bound', liveStep, 'CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.control_plane_sha }}');
+  has('live candidate digest bound', liveStep, 'EXPECTED_CANDIDATE_DIGEST: ${{ needs.readiness.outputs.candidate_digest }}');
+  const liveEvidence = step(j.deploy, 'Upload generic live release evidence');
+  has('live evidence deployment-bound', liveEvidence, "steps.deploy_pages.outcome == 'success'");
+  has('live evidence terminal-bound', liveEvidence, "steps.live_release.outcome == 'success' || steps.live_release.outcome == 'failure'");
+  has('live evidence rerun overwrite', liveEvidence, 'overwrite: true');
+  has('live evidence canonical name', liveEvidence, 'name: release-live-deployment-${{ github.run_id }}');
+
+  const ttsStep = step(j.deploy, 'Verify live TTS capability extension');
+  has('TTS deployment-bound', ttsStep, "steps.deploy_pages.outcome == 'success'");
+  has('TTS purge-bound', ttsStep, "steps.cloudflare_purge.outcome == 'success'");
+  const ttsEvidence = step(j.deploy, 'Upload live TTS capability evidence');
+  has('TTS evidence terminal-bound', ttsEvidence, "steps.tts_live.outcome == 'success' || steps.tts_live.outcome == 'failure'");
+  has('TTS evidence rerun overwrite', ttsEvidence, 'overwrite: true');
+  has('TTS evidence canonical name', ttsEvidence, 'name: tts-live-deployment-${{ github.run_id }}');
+
+  if (!before(j.deploy, 'release-tools/verify-release-candidate.mjs', 'Upload exact candidate as Pages artifact')) p.push('Pages packaging precedes candidate verification');
+  if (!before(j.deploy, 'Verify generic live release contract', 'Verify live TTS capability extension')) p.push('TTS precedes generic live verifier');
+  if (/actions\/checkout@|\bnpm ci\b|strangler:build|cache-bust\.js|pagefind:build/.test(j.deploy)) p.push('privileged deploy rebuilds source');
+  if (count(workflow, /\bnpm ci\b/g) !== 1) p.push('release npm ci count drift');
+  if (count(workflow, /npm run strangler:build:production-like/g) !== 1) p.push('release production build count drift');
+  if (count(workflow, /actions\/checkout@/g) !== 1) p.push('release checkout count drift');
+  if (count(workflow, /actions\/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c/g) !== 1) p.push('download-artifact pin/count drift');
+  if (count(workflow, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/g) !== 5) p.push('upload-artifact pin/count drift');
+  for (const pin of Object.values(PINS)) if (!workflow.includes(pin)) p.push(`release action pin drift: ${pin.split('@')[0]}`);
+  if (/uses:\s*actions\/(?:checkout|setup-node|upload-artifact|download-artifact|upload-pages-artifact|deploy-pages)@v\d+/i.test(workflow)) p.push('mutable release action tag');
+
+  has('diagnostics manual', diagnostics, 'workflow_dispatch:');
+  has('diagnostics build-free label', diagnostics, 'Validate source metadata without building dist');
+  if (/\bnpm ci\b|strangler:build|pagefind:build|dist-publication-audit/.test(diagnostics)) p.push('diagnostics duplicates release build');
+  if (/pages:\s*write|id-token:\s*write|actions\/deploy-pages|actions\/upload-pages-artifact/.test(diagnostics)) p.push('diagnostics owns Pages capability');
+  matches('toolchain exact', toolchain, /"schemaVersion":\s*1[\s\S]*"node":\s*"22\.23\.1"[\s\S]*"npm":\s*"10\.9\.8"/);
+
+  has('tree rejects symlinks', library, 'assert.equal(stat.isSymbolicLink(), false');
+  has('canonical tree digest', library, 'sha256-canonical-pages-tree-v1');
+  matches('manifest two-SHA schema', library, /schemaVersion:\s*4[\s\S]*releaseSha,[\s\S]*controlPlaneSha/);
+  has('candidate addressed by release SHA', library, '`${releaseSha}:${runIdentity}`');
+  matches('writer uses two-SHA boundary', writer, /assertReleaseControlPlaneBoundary\(\{[\s\S]*releaseSha,[\s\S]*controlPlaneSha/);
+  has('writer checks ancestry', writer, "['merge-base', '--is-ancestor', releaseSha, controlPlaneSha]");
+  has('writer emits release output', writer, 'release_sha=${report.releaseSha}');
+  has('writer emits control output', writer, 'control_plane_sha=${report.controlPlaneSha}');
+  matches('verifier checks both identities', verifier, /verifyReleaseCandidate\(\{[\s\S]{0,260}expectedReleaseSha,[\s\S]{0,120}expectedControlPlaneSha,/);
+
+  matches('live follows current pointer', live, /\/deployments\/current\.json[\s\S]*pointer\.immutablePath/);
+  matches('live checks two identities', live, /releaseSha[\s\S]*controlPlaneSha[\s\S]*expectedReleaseSha[\s\S]*expectedControlPlaneSha/);
+  has('live local Home bytes', live, "localHomeBuffer = fs.readFileSync(localHomePath);");
+  has('live Home byte equality', live, "assert.equal(homeResponse.buffer.length, localHomeBuffer.length, 'home-index: live byte count mismatch');");
+  has('live Home digest equality', live, "assert.equal(homeDigest, localHomeDigest, 'home-index: live SHA-256 mismatch');");
+  has('live Home semantic check', live, "assertHomeContract(homeResponse.buffer, 'live home');");
+  has('live stylesheet digest equality', live, "'home-refutations-stylesheet: live SHA-256 mismatch'");
+  matches('live preserves preflight evidence', live, /phase:\s*'preflight'[\s\S]*catch \(error\) \{\s*failPreflight\(error\);/);
+  matches('TTS checks two identities', tts, /RELEASE_SHA[\s\S]*CONTROL_PLANE_SHA[\s\S]*expectedReleaseSha[\s\S]*expectedControlPlaneSha/);
+  matches('TTS preserves preflight evidence', tts, /phase:\s*'preflight'[\s\S]*catch \(error\) \{\s*failPreflight\(error\);/);
+  has('TTS workflow owns contract', ttsWorkflow, 'scripts/release-pipeline-contract-test.mjs');
+  has('TTS workflow executes contract', ttsWorkflow, 'node scripts/release-pipeline-contract-test.mjs');
+
   const ambiguous = [library, writer, verifier, live, tts].join('\n');
-  for (const legacy of [/\bcommitSha\b/, /DEPLOYED_SHA/, /EXPECTED_COMMIT_SHA/]) if (legacy.test(ambiguous)) problems.push(`legacy single-SHA alias remains: ${legacy}`);
-  if (!before(jobs.readiness, 'node scripts/cache-bust.js', 'npm run strangler:build:production-like')) problems.push('revision check does not precede candidate build');
-  if (!before(jobs.readiness, 'Stage immutable verification tools from trusted control plane', 'Write generic immutable release provenance')) problems.push('trusted tool staging does not precede provenance');
-  if (!before(jobs.readiness, 'release-tools/write-deployment-provenance.mjs', 'name: Upload immutable release candidate')) problems.push('provenance does not precede candidate upload');
-  if (!before(jobs.deploy, 'release-tools/verify-release-candidate.mjs', PINS.uploadPages.split(' #')[0])) problems.push('candidate verification does not precede Pages packaging');
-  return problems;
+  for (const legacy of [/\bcommitSha\b/, /DEPLOYED_SHA/, /EXPECTED_COMMIT_SHA/]) if (legacy.test(ambiguous)) p.push(`legacy single-SHA alias remains: ${legacy}`);
+  return p;
 }
 
 const sources = {
@@ -186,72 +189,30 @@ const sources = {
 assert.deepEqual(validate(sources), []);
 
 const mutations = [
-  ['direct push removed', { ...sources, workflow: sources.workflow.replace('  push:\n', '  push-disabled:\n') }],
-  ['catch-all narrowed', { ...sources, workflow: sources.workflow.replace("      - '**'", "      - 'src/**'") }],
-  ['manual input removed', { ...sources, workflow: sources.workflow.replace(/\n  workflow_dispatch:[\s\S]*?\n\npermissions:/, '\n  workflow_dispatch:\n\npermissions:') }],
-  ['control SHA detached', { ...sources, workflow: sources.workflow.replace('CONTROL_PLANE_SHA: ${{ github.sha }}', 'CONTROL_PLANE_SHA: ${{ env.RELEASE_SHA }}') }],
-  ['release SHA ignores input', { ...sources, workflow: sources.workflow.replace("github.event_name == 'workflow_dispatch' && inputs.release_sha || github.sha", 'github.sha') }],
-  ['readiness write added', { ...sources, workflow: sources.workflow.replace('      contents: read\n    outputs:', '      contents: write\n    outputs:') }],
-  ['credentials persisted', { ...sources, workflow: sources.workflow.replace('persist-credentials: false', 'persist-credentials: true') }],
-  ['release checkout uses control', { ...sources, workflow: sources.workflow.replace('ref: ${{ env.RELEASE_SHA }}', 'ref: ${{ env.CONTROL_PLANE_SHA }}') }],
-  ['shallow checkout', { ...sources, workflow: sources.workflow.replace('fetch-depth: 0', 'fetch-depth: 1') }],
-  ['current main fetch removed', { ...sources, workflow: sources.workflow.replace('git fetch --no-tags origin "+main:refs/remotes/origin/main"', 'echo no-main-fetch') }],
-  ['checkout assertion removed', { ...sources, workflow: sources.workflow.replace('test "$(git rev-parse --verify \'HEAD^{commit}\')" = "$RELEASE_SHA"', 'true') }],
-  ['control assertion removed', { ...sources, workflow: sources.workflow.replace('test "$(git rev-parse --verify \'refs/remotes/origin/main^{commit}\')" = "$CONTROL_PLANE_SHA"', 'true') }],
+  ['push ownership removed', { ...sources, workflow: sources.workflow.replace('  push:\n', '  push-disabled:\n') }],
   ['ancestry removed', { ...sources, workflow: sources.workflow.replace('git merge-base --is-ancestor "$RELEASE_SHA" "$CONTROL_PLANE_SHA"', 'true') }],
-  ['automatic SHA equality removed', { ...sources, workflow: sources.workflow.replace('test "$RELEASE_SHA" = "$CONTROL_PLANE_SHA"', 'true') }],
-  ['Node floated', { ...sources, workflow: sources.workflow.replace("node-version: '22.23.1'", "node-version: '22'") }],
-  ['second npm install', { ...sources, workflow: sources.workflow.replace('name: Promote exact readiness candidate', 'run: npm ci\n\n    name: Promote exact readiness candidate') }],
-  ['second production build', { ...sources, workflow: sources.workflow.replace('name: Promote exact readiness candidate', 'run: npm run strangler:build:production-like\n\n    name: Promote exact readiness candidate') }],
-  ['revision check removed', { ...sources, workflow: sources.workflow.replace('node scripts/cache-bust.js', 'node scripts/cache-bust-disabled.js') }],
-  ['Pagefind removed', { ...sources, workflow: sources.workflow.replace('npm run pagefind:build:dist', 'echo Pagefind skipped') }],
-  ['publication audit weakened', { ...sources, workflow: sources.workflow.replace('--require-pagefind --forbid-dev', '--warn-only') }],
-  ['SW gate removed', { ...sources, workflow: sources.workflow.replace('npm run sw:dist:audit:deploy-switch', 'echo sw skipped') }],
-  ['Gill evidence loses always', { ...sources, workflow: mutateStep(sources.workflow, 'Upload Gill mobile layout readiness evidence', "if: ${{ always() && (steps.gill_mobile_layout.outcome == 'success' || steps.gill_mobile_layout.outcome == 'failure') }}", "if: ${{ steps.gill_mobile_layout.outcome == 'success' || steps.gill_mobile_layout.outcome == 'failure' }}") }],
-  ['Gill evidence report path changed', { ...sources, workflow: mutateStep(sources.workflow, 'Upload Gill mobile layout readiness evidence', 'path: reports/gill-mobile-layout-audit-2026-06-29/summary.json', 'path: reports/gill-mobile-layout-audit-2026-06-29/other.json') }],
-  ['Gill step id removed', { ...sources, workflow: mutateStep(sources.workflow, 'Gill mobile reference layout audit', '        id: gill_mobile_layout\n', '') }],
-  ['Gill missing evidence downgraded', { ...sources, workflow: mutateStep(sources.workflow, 'Upload Gill mobile layout readiness evidence', 'if-no-files-found: error', 'if-no-files-found: warn') }],
-  ['clean tree removed', { ...sources, workflow: sources.workflow.replace('git diff --exit-code', 'git status --short') }],
-  ['trusted tools use release SHA', { ...sources, workflow: sources.workflow.replace('${CONTROL_PLANE_SHA}:scripts/${file}', '${RELEASE_SHA}:scripts/${file}') }],
-  ['trusted writer bypassed', { ...sources, workflow: sources.workflow.replaceAll('release-tools/write-deployment-provenance.mjs', 'scripts/write-deployment-provenance.mjs') }],
-  ['release/control output aliased', { ...sources, workflow: sources.workflow.replace('control_plane_sha: ${{ steps.provenance.outputs.control_plane_sha }}', 'control_plane_sha: ${{ steps.provenance.outputs.release_sha }}') }],
-  ['candidate missing downgraded', { ...sources, workflow: mutateStep(sources.workflow, 'Upload immutable release candidate', 'if-no-files-found: error', 'if-no-files-found: warn') }],
-  ['hidden files dropped', { ...sources, workflow: sources.workflow.replace('include-hidden-files: true', 'include-hidden-files: false') }],
-  ['candidate recompressed', { ...sources, workflow: sources.workflow.replace('compression-level: 0', 'compression-level: 9') }],
-  ['deploy loses readiness', { ...sources, workflow: sources.workflow.replace('needs: readiness', 'needs: []') }],
-  ['deploy rebuilds', { ...sources, workflow: sources.workflow.replace('name: Download exact same-run release candidate', 'run: npm run strangler:build:production-like\n\n      - name: Download exact same-run release candidate') }],
-  ['deploy checks out', { ...sources, workflow: sources.workflow.replace('name: Download exact same-run release candidate', `uses: ${PINS.checkout}\n\n      - name: Download exact same-run release candidate`) }],
-  ['deploy release SHA aliased', { ...sources, workflow: sources.workflow.replace('EXPECTED_RELEASE_SHA: ${{ needs.readiness.outputs.release_sha }}', 'EXPECTED_RELEASE_SHA: ${{ needs.readiness.outputs.control_plane_sha }}') }],
-  ['deploy control SHA aliased', { ...sources, workflow: sources.workflow.replace('EXPECTED_CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.control_plane_sha }}', 'EXPECTED_CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.release_sha }}') }],
-  ['Pages before verify', { ...sources, workflow: sources.workflow.replace('Verify downloaded candidate identity', '__VERIFY__').replace('Upload exact candidate as Pages artifact', 'Verify downloaded candidate identity').replace('__VERIFY__', 'Upload exact candidate as Pages artifact') }],
-  ['generic and TTS reversed', { ...sources, workflow: sources.workflow.replace('Verify generic live release contract', '__GENERIC__').replace('Verify live TTS capability extension', 'Verify generic live release contract').replace('__GENERIC__', 'Verify live TTS capability extension') }],
-  ['TTS verifier loses independent execution', { ...sources, workflow: sources.workflow.replace("- name: Verify live TTS capability extension\n        if: ${{ always() && steps.deploy_pages.outcome == 'success' }}", '- name: Verify live TTS capability extension') }],
-  ['generic evidence loses deployment boundary', { ...sources, workflow: sources.workflow.replace("- name: Upload generic live release evidence\n        if: ${{ always() && steps.deploy_pages.outcome == 'success' }}", '- name: Upload generic live release evidence\n        if: always()') }],
+  ['second build', { ...sources, workflow: sources.workflow.replace('name: Promote exact readiness candidate', 'run: npm run strangler:build:production-like\n\n    name: Promote exact readiness candidate') }],
+  ['candidate download by name', { ...sources, workflow: mutateStep(sources.workflow, 'Download exact readiness candidate by artifact ID', 'artifact-ids: ${{ needs.readiness.outputs.transport_artifact_id }}', 'name: ${{ env.RELEASE_ARTIFACT_NAME }}') }],
+  ['deploy rerun attempt rebound', { ...sources, workflow: mutateStep(sources.workflow, 'Verify downloaded candidate identity', 'EXPECTED_RUN_ID: ${{ github.run_id }}', 'EXPECTED_RUN_ID: ${{ github.run_id }}\n          EXPECTED_RUN_ATTEMPT: ${{ github.run_attempt }}') }],
+  ['Pages artifact no attempt', { ...sources, workflow: sources.workflow.replace('PAGES_ARTIFACT_NAME: github-pages-${{ github.run_id }}-${{ github.run_attempt }}', 'PAGES_ARTIFACT_NAME: github-pages') }],
+  ['Pages deploy detached', { ...sources, workflow: mutateStep(sources.workflow, 'Deploy exact candidate to GitHub Pages', 'artifact_name: ${{ env.PAGES_ARTIFACT_NAME }}', 'artifact_name: github-pages') }],
+  ['purge token removed', { ...sources, workflow: mutateStep(sources.workflow, 'Purge Cloudflare release cache', 'CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}', 'CLOUDFLARE_API_TOKEN:') }],
+  ['purge zone removed', { ...sources, workflow: mutateStep(sources.workflow, 'Purge Cloudflare release cache', 'CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}', 'CLOUDFLARE_ZONE_ID:') }],
+  ['purge bypassed', { ...sources, workflow: mutateStep(sources.workflow, 'Purge Cloudflare release cache', 'node release-tools/cloudflare-release-purge.mjs', 'echo purge skipped') }],
+  ['purge evidence overwrite removed', { ...sources, workflow: mutateStep(sources.workflow, 'Upload Cloudflare purge evidence', 'overwrite: true', 'overwrite: false') }],
+  ['live moved before purge', { ...sources, workflow: sources.workflow.replace('Purge Cloudflare release cache', '__P__').replace('Verify generic live release contract', 'Purge Cloudflare release cache').replace('__P__', 'Verify generic live release contract') }],
+  ['live evidence overwrite removed', { ...sources, workflow: mutateStep(sources.workflow, 'Upload generic live release evidence', 'overwrite: true', 'overwrite: false') }],
+  ['TTS purge boundary removed', { ...sources, workflow: mutateStep(sources.workflow, 'Verify live TTS capability extension', " && steps.cloudflare_purge.outcome == 'success'", '') }],
+  ['TTS evidence overwrite removed', { ...sources, workflow: mutateStep(sources.workflow, 'Upload live TTS capability evidence', 'overwrite: true', 'overwrite: false') }],
+  ['release/control aliased', { ...sources, workflow: sources.workflow.replace('EXPECTED_CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.control_plane_sha }}', 'EXPECTED_CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.release_sha }}') }],
   ['mutable deploy action', { ...sources, workflow: sources.workflow.replace(PINS.deployPages, 'actions/deploy-pages@v5') }],
-  ['manifest release/control aliased', { ...sources, library: sources.library.replace('controlPlaneSha,\n    immutablePath', 'controlPlaneSha: releaseSha,\n    immutablePath') }],
   ['candidate addressed by control plane', { ...sources, library: sources.library.replace('`${releaseSha}:${runIdentity}`', '`${controlPlaneSha}:${runIdentity}`') }],
-  ['writer boundary bypassed', { ...sources, writer: sources.writer.replace('const boundary = assertReleaseControlPlaneBoundary({', 'const boundary = (() => ({ checked: false }))({') }],
   ['writer output aliased', { ...sources, writer: sources.writer.replace('control_plane_sha=${report.controlPlaneSha}', 'control_plane_sha=${report.releaseSha}') }],
   ['verifier ignores control', { ...sources, verifier: sources.verifier.replace(/\n\s*expectedControlPlaneSha,\n/, '\n') }],
-  ['generic live ignores release', { ...sources, live: sources.live.replace('expectedReleaseSha: releaseSha,', '') }],
-  ['generic live preflight evidence removed', { ...sources, live: sources.live.replace('failPreflight(error);', 'throw error;') }],
-  ['TTS preflight evidence removed', { ...sources, tts: sources.tts.replace('failPreflight(error);', 'throw error;') }],
-  ["generic live local Home binding removed", { ...sources, live: sources.live.replace("assertHomeContract(localHomeBuffer, 'local candidate home');", "") }],
-  ["generic live Home byte equality removed", { ...sources, live: sources.live.replace("assert.equal(homeResponse.buffer.length, localHomeBuffer.length, 'home-index: live byte count mismatch');", "") }],
-  ["generic live Home digest equality removed", { ...sources, live: sources.live.replace("assert.equal(homeDigest, localHomeDigest, 'home-index: live SHA-256 mismatch');", "") }],
-  ["generic live Home semantic contract removed", { ...sources, live: sources.live.replace("assertHomeContract(homeResponse.buffer, 'live home');", "") }],
-  ["generic live approved marker removed", { ...sources, live: sources.live.replace("'class=\"h-sacred-name-label\"',", "") }],
-  ["generic live route set narrowed", { ...sources, live: sources.live.replace("for (const route of ['articles', 'series', 'biographies', 'maps', 'confessions']) {", "for (const route of ['articles']) {") }],
-  ["generic live divider count reduced", { ...sources, live: sources.live.replace("for (let divider = 0; divider < 4; divider += 1) {", "for (let divider = 0; divider < 3; divider += 1) {") }],
-  ["generic live Refutations stylesheet binding removed", { ...sources, live: sources.live.replace("localRefutationsStylesheet = findRefutationsStylesheet(localHomeStylesheets, 'local candidate home');", "") }],
-  ["generic live Refutations stylesheet fetch removed", { ...sources, live: sources.live.replace("const liveRefutationsStyle = await fetchBuffer(localRefutationsStylesheet.path, attempt, 'home-refutations-stylesheet');", "const liveRefutationsStyle = { buffer: localRefutationsStylesheet.buffer, url: 'local' };") }],
-  ["generic live Refutations stylesheet byte equality removed", { ...sources, live: sources.live.replace("'home-refutations-stylesheet: live byte count mismatch'", "'home-refutations-stylesheet: unchecked bytes'") }],
-  ["generic live Refutations stylesheet digest equality removed", { ...sources, live: sources.live.replace("'home-refutations-stylesheet: live SHA-256 mismatch'", "'home-refutations-stylesheet: unchecked digest'") }],
-  ["generic live Refutations stylesheet semantic contract removed", { ...sources, live: sources.live.replace("assertRefutationsStylesheet(liveRefutationsStyle.buffer, 'live home Refutations stylesheet');", "") }],
-  ["generic live legacy rejection removed", { ...sources, live: sources.live.replace("for (const legacy of ['class=\"hb-w\"', 'class=\"h-tetra\"', 'data-sacred-active']) {", "for (const legacy of []) {") }],
-  ['generic live reintroduces CSS-in-HTML guess', { ...sources, live: `${sources.live}\n// h-refutation-card[^}]{0,500}box-sizing:border-box\n` }],
-  ['TTS ignores control', { ...sources, tts: sources.tts.replace('expectedControlPlaneSha: CONTROL_PLANE_SHA,', '') }],
+  ['live Home bytes unchecked', { ...sources, live: sources.live.replace("assert.equal(homeResponse.buffer.length, localHomeBuffer.length, 'home-index: live byte count mismatch');", '') }],
+  ['live Home digest unchecked', { ...sources, live: sources.live.replace("assert.equal(homeDigest, localHomeDigest, 'home-index: live SHA-256 mismatch');", '') }],
+  ['TTS control ignored', { ...sources, tts: sources.tts.replace('expectedControlPlaneSha: CONTROL_PLANE_SHA,', '') }],
   ['diagnostics rebuilds', { ...sources, diagnostics: `${sources.diagnostics}\n# npm ci\n# npm run strangler:build:production-like\n` }],
 ];
-for (const [name, mutated] of mutations) assert.ok(validate(mutated).length > 0, `${name}: mutation must be rejected`);
-console.log(`Release pipeline contract: PASS (${mutations.length} adversarial two-SHA/build-once mutations rejected).`);
+for (const [name, fixture] of mutations) assert.ok(validate(fixture).length > 0, `${name}: mutation must be rejected`);
+console.log(`Release pipeline contract v2: PASS (${mutations.length} adversarial build-once/two-SHA/recovery/edge mutations rejected).`);
