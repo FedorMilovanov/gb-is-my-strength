@@ -3,7 +3,7 @@ import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreference
 
 const canonical = 'https://gospod-bog.ru/pastor-series/';
 const title = 'Тёмная сторона кафедры — пастырская власть и подотчётность | Господь Бог';
-const description = 'Две опубликованные части о пастырской власти: диагностика искажений, 21 документированный кейс, подотчётность, защита уязвимых и пути верного ответа.';
+const description = 'Девять частей канонического ядра о пастырской власти и подотчётности плюс документальное Досье A: диагностика искажений, границы власти, различение, здоровое пастырство и церковь.';
 const image = 'https://gospod-bog.ru/images/pastor-series/og-hero.webp';
 ---
 
@@ -87,21 +87,23 @@ const image = 'https://gospod-bog.ru/images/pastor-series/og-hero.webp';
       author: { '@id': 'https://gospod-bog.ru/about/#person', '@type': 'Person', name: 'Фёдор Милованов', url: 'https://gospod-bog.ru/about/' },
       publisher: { '@id': 'https://gospod-bog.ru/#organization' },
       image: { '@type': 'ImageObject', url: image, width: 1200, height: 630 },
-      numberOfItems: 2,
+      numberOfItems: 9,
       hasPart: [
-        {
-          '@type': 'Article',
-          position: 1,
-          name: '20 антисоветов, как пастору разрушить своё служение',
-          url: 'https://gospod-bog.ru/articles/20-antisovetov-pastoru/'
-        },
-        {
-          '@type': 'Article',
-          position: 2,
-          name: 'Диотрефы нашего времени: власть, подотчётность и верность',
-          url: 'https://gospod-bog.ru/articles/diotrefy-nashego-vremeni/'
-        }
+        { '@type': 'Article', position: 1, name: '20 антисоветов, как пастору разрушить своё служение', url: 'https://gospod-bog.ru/articles/20-antisovetov-pastoru/' },
+        { '@type': 'Article', position: 2, name: 'Анатомия падения: пять стадий институционального разложения', url: 'https://gospod-bog.ru/articles/anatomiya-padeniya-pyat-stadiy/' },
+        { '@type': 'Article', position: 3, name: 'Тексты Писания, которыми манипулируют', url: 'https://gospod-bog.ru/articles/teksty-pisaniya-kotorymi-manipuliruyut/' },
+        { '@type': 'Article', position: 4, name: 'Семь типов: как различать учителей и лидеров', url: 'https://gospod-bog.ru/articles/sem-tipov-razlichenie-uchiteley/' },
+        { '@type': 'Article', position: 5, name: 'Церковная дисциплина: власть, границы и защита', url: 'https://gospod-bog.ru/articles/cerkovnaya-disciplina-vlast-granicy-zashchita/' },
+        { '@type': 'Article', position: 6, name: 'Когда говорить, когда молчать; когда уходить, когда оставаться', url: 'https://gospod-bog.ru/articles/kogda-uhodit-kogda-ostavatsya/' },
+        { '@type': 'Article', position: 7, name: 'Верные и неизвестные: здоровое пастырство', url: 'https://gospod-bog.ru/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo/' },
+        { '@type': 'Article', position: 8, name: 'Признаки здоровой церкви', url: 'https://gospod-bog.ru/articles/priznaki-zdorovoy-cerkvi/' },
+        { '@type': 'Article', position: 9, name: 'Несовершенный человек в несовершенной церкви', url: 'https://gospod-bog.ru/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi/' }
       ],
+      subjectOf: {
+        '@type': 'Article',
+        name: 'Досье A. Диотрефы нашего времени: власть, подотчётность и верность',
+        url: 'https://gospod-bog.ru/articles/diotrefy-nashego-vremeni/'
+      },
       speakable: { '@type': 'SpeakableSpecification', cssSelector: ['h1', '.h-hero-desc', '#seriesLabel'] }
     },
     {
@@ -116,9 +118,9 @@ const image = 'https://gospod-bog.ru/images/pastor-series/og-hero.webp';
 })} />
 <script is:inline>
 window.SITE_CONFIG = {
-  version: 20260802,
+  version: 20260908,
   site: { id: 'gb-strength', name: 'Господь Бог — Сила Моя', baseUrl: 'https://gospod-bog.ru', locale: 'ru-RU', themeStorageKey: 'theme', debug: false },
-  page: { type: 'series', id: 'pastor-series', title: 'Тёмная сторона кафедры — серия', readingTime: 102 },
+  page: { type: 'series', id: 'pastor-series', title: 'Тёмная сторона кафедры — серия', readingTime: 321, companionReadingTime: 35 },
   features: { themeToggle: { enabled: true }, bookmarks: { enabled: false }, homepageResume: { enabled: false } }
 };
 </script>

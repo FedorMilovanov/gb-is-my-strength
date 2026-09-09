@@ -8,7 +8,7 @@
     <link>https://gospod-bog.ru/</link>
     <description><![CDATA[Богословские разборы, переводы и исследования Писания на русском языке.]]></description>
     <language>ru</language>
-    <lastBuildDate>Sun, 16 Aug 2026 21:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 06 Sep 2026 21:00:00 GMT</lastBuildDate>
     <ttl>1440</ttl>
     <image>
       <url>https://gospod-bog.ru/images/og-preview-1200x630.webp</url>
@@ -16,6 +16,36 @@
       <link>https://gospod-bog.ru/</link>
     </image>
     <atom:link href="https://gospod-bog.ru/feed.xml" rel="self" type="application/rss+xml"/>
+
+    <item>
+      <title>Несовершенный человек в несовершенной церкви | Господь Бог — Сила Моя</title>
+      <link>https://gospod-bog.ru/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi/</guid>
+      <pubDate>Sun, 06 Sep 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Служение</category>
+      <description><![CDATA[Финальный библейский предохранитель серии: как различать реальное злоупотребление и обычную человеческую слабость, не оправдывая грех и не превращая различение в хроническую подозрительность.]]></description>
+    </item>
+
+    <item>
+      <title>Признаки здоровой церкви: власть, истина и подотчётность | Господь Бог — Сила Моя</title>
+      <link>https://gospod-bog.ru/articles/priznaki-zdorovoy-cerkvi/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/priznaki-zdorovoy-cerkvi/</guid>
+      <pubDate>Sun, 06 Sep 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Служение</category>
+      <description><![CDATA[Библейский портрет церковной культуры, где Слово выше личности, старейшины реально подотчётны, дисциплина служит восстановлению, а вопросы, жалобы, финансы и конфликты проходят при свете истины.]]></description>
+    </item>
+
+    <item>
+      <title>Верные и неизвестные: здоровое пастырство | Господь Бог — Сила Моя</title>
+      <link>https://gospod-bog.ru/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo/</guid>
+      <pubDate>Sun, 06 Sep 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Служение</category>
+      <description><![CDATA[Положительное библейское богословие пастырского служения: характер, власть под Словом, подотчётность, совесть, исправимость, верность в малом и отношения с церковью без культа личности.]]></description>
+    </item>
 
     <item>
       <title>Лот: праведник у ворот Содома</title>
@@ -198,6 +228,26 @@
     </item>
 
     <item>
+      <title>Анатомия падения: пять стадий институционального разложения | Господь Бог — Сила Моя</title>
+      <link>https://gospod-bog.ru/articles/anatomiya-padeniya-pyat-stadiy/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/anatomiya-padeniya-pyat-stadiy/</guid>
+      <pubDate>Fri, 10 Jul 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Служение</category>
+      <description><![CDATA[Пять повторяющихся стадий, через которые личный грех лидера может стать системным: идол платформы, демонтаж подотчётности, страх, защита репутации и ложное покаяние.]]></description>
+    </item>
+
+    <item>
+      <title>Церковная дисциплина: власть, границы и защита | Господь Бог — Сила Моя</title>
+      <link>https://gospod-bog.ru/articles/cerkovnaya-disciplina-vlast-granicy-zashchita/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/cerkovnaya-disciplina-vlast-granicy-zashchita/</guid>
+      <pubDate>Fri, 10 Jul 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Служение</category>
+      <description><![CDATA[Положительное библейское богословие церковной власти и дисциплины: откуда власть, где её границы, как защищать церковь от упорного греха, пастора от клеветы и паству от неприкасаемости лидера.]]></description>
+    </item>
+
+    <item>
       <title>Библейская кардиология: что Библия называет сердцем</title>
       <link>https://gospod-bog.ru/articles/chto-bibliya-nazyvaet-serdcem/</link>
       <guid isPermaLink="true">https://gospod-bog.ru/articles/chto-bibliya-nazyvaet-serdcem/</guid>
@@ -215,6 +265,16 @@
       <dc:creator>Фёдор Милованов</dc:creator>
       <category>Богословие</category>
       <description><![CDATA[Сердце меняется не усилием воли и не пассивным ожиданием. Что Писание и реформатская традиция говорят об умерщвлении греха, союзе со Христом и силе новой любви — и почему грех побеждается благодатью, а не законом.]]></description>
+    </item>
+
+    <item>
+      <title>Когда говорить, когда молчать; когда уходить, когда оставаться | Господь Бог — Сила Моя</title>
+      <link>https://gospod-bog.ru/articles/kogda-uhodit-kogda-ostavatsya/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/kogda-uhodit-kogda-ostavatsya/</guid>
+      <pubDate>Fri, 10 Jul 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Служение</category>
+      <description><![CDATA[Библейский фреймворк для трудных церковных решений: когда покрыть слабость, когда говорить, как проверять серьёзное обвинение и как решать вопрос об уходе без квиетизма, паники и фракционности.]]></description>
     </item>
 
     <item>
@@ -245,6 +305,16 @@
       <dc:creator>Фёдор Милованов</dc:creator>
       <category>Богословие</category>
       <description><![CDATA[Самое опасное сердце — не безбожное, а религиозное: близкое к форме и далёкое в сути. Что Писание говорит о формализме и самоправедности — и как не превратить эту тему в дубинку.]]></description>
+    </item>
+
+    <item>
+      <title>Семь типов: как различать учителей и лидеров | Господь Бог — Сила Моя</title>
+      <link>https://gospod-bog.ru/articles/sem-tipov-razlichenie-uchiteley/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/sem-tipov-razlichenie-uchiteley/</guid>
+      <pubDate>Fri, 10 Jul 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Служение</category>
+      <description><![CDATA[Инструмент различения: волк, исправимый учитель, восстановимый брат, непригодный к кафедре, Диотреф, Корей, системная порча. Библейский аппарат, ось коварства и защита от ошибки в обе стороны.]]></description>
     </item>
 
     <item>
@@ -305,6 +375,16 @@
       <dc:creator>Фёдор Милованов</dc:creator>
       <category>Богословие</category>
       <description><![CDATA[Если я свободен во Христе, почему всё ещё грешу? Разбор Римлянам 6: свобода — не право грешить и не жизнь без хозяина, а конец господству греха через смерть со Христом. Почему грех остаётся, но не царствует.]]></description>
+    </item>
+
+    <item>
+      <title>Тексты Писания, которыми манипулируют | Господь Бог — Сила Моя</title>
+      <link>https://gospod-bog.ru/articles/teksty-pisaniya-kotorymi-manipuliruyut/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/teksty-pisaniya-kotorymi-manipuliruyut/</guid>
+      <pubDate>Fri, 10 Jul 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Служение</category>
+      <description><![CDATA[23 библейских текста, которыми злоупотребляют в церковных конфликтах: контекст, точная экзегеза, пределы применения и двусторонний библейский противовес.]]></description>
     </item>
 
     <item>
