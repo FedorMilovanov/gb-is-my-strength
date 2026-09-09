@@ -63,6 +63,13 @@ jobs:
       - name: Install dependencies once
         run: npm ci
 
+      - name: Verify Cloudflare release purge contract
+        run: |
+          node --check scripts/cloudflare-release-purge-lib.mjs
+          node --check scripts/cloudflare-release-purge.mjs
+          node --check scripts/cloudflare-release-purge-contract-test.mjs
+          node scripts/cloudflare-release-purge-contract-test.mjs
+
       - name: Verify deterministic local fonts
         run: |
           node --check scripts/font-assets-lib.mjs
