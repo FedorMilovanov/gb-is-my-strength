@@ -149,6 +149,11 @@ jobs:
       - name: Verify Source Authority publication input universe
         run: node scripts/source-authority-trigger-universe-contract-test.js
 
+      - name: Reject transport-only HTML meta pragmas in source
+        run: |
+          node --check scripts/security-source-meta-contract.mjs
+          node scripts/security-source-meta-contract.mjs
+
       - name: Install dependencies
         run: npm ci
 
@@ -190,7 +195,7 @@ jobs:
           run_audit gill-reading-time \
             node scripts/gill-reading-time-canonical-audit.js
           run_audit gill-pagefind-body \
-            node scripts/gill-pagefind-body-audit.js
+            node scripts/gill-pagefind-body-audit.js --require-dist
           run_audit data-consistency \
             node scripts/check-data-consistency.js
 
