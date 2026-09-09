@@ -55,13 +55,12 @@ export async function purgeCloudflareReleaseCache({
     body: JSON.stringify({ purge_everything: true }),
     signal,
   });
-  const purgePayload = await readCloudflareJson(purgeResponse, 'cache purge');
+  await readCloudflareJson(purgeResponse, 'cache purge');
 
   return {
     result: 'PASS',
     provider: 'cloudflare',
     zoneName: normalizedZoneName,
     purgeEverything: true,
-    purgeRequestId: String(purgePayload?.result?.id || purgePayload?.result?.zone_id || ''),
   };
 }
