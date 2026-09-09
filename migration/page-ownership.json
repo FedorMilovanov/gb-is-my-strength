@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updated": "2026-09-09",
+  "updated": "2026-09-10",
   "description": "Build-time strangler ownership manifest. Production GitHub Pages serves Astro/strangler dist. owner=astro means output is generated from src/pages and must not be overwritten by legacy copy. status=production-dist means the route is allowed in production after its route and release gates pass.",
   "routes": {
     "/": {"owner":"astro","source":"src/pages/index.astro","risk":2,"status":"production-dist"},
@@ -33,6 +33,9 @@
     "/articles/myslennaya-zhizn-serdca/": {"owner":"astro","source":"src/pages/articles/myslennaya-zhizn-serdca/index.astro","risk":2,"status":"production-dist"},
     "/articles/novoe-serdce/": {"owner":"astro","source":"src/pages/articles/novoe-serdce/index.astro","risk":2,"status":"production-dist"},
     "/articles/osvobozhdennoe-serdce/": {"owner":"astro","source":"src/pages/articles/osvobozhdennoe-serdce/index.astro","risk":2,"status":"production-dist"},
+    "/articles/podrostok-za-kadrom-dvoynaya-zhizn/": {"owner":"astro","source":"src/pages/articles/podrostok-za-kadrom-dvoynaya-zhizn/index.astro","risk":2,"status":"production-dist"},
+    "/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/": {"owner":"astro","source":"src/pages/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/index.astro","risk":2,"status":"production-dist"},
+    "/articles/podrostok-za-kadrom-chto-delat-tserkvi/": {"owner":"astro","source":"src/pages/articles/podrostok-za-kadrom-chto-delat-tserkvi/index.astro","risk":2,"status":"production-dist"},
     "/articles/religioznoe-serdce/": {"owner":"astro","source":"src/pages/articles/religioznoe-serdce/index.astro","risk":2,"status":"production-dist"},
     "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/": {"owner":"astro","source":"src/pages/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/index.astro","risk":2,"status":"production-dist"},
     "/articles/serdce-hrista-k-nemoshchnym/": {"owner":"astro","source":"src/pages/articles/serdce-hrista-k-nemoshchnym/index.astro","risk":2,"status":"production-dist"},
@@ -45,11 +48,15 @@
     "/articles/serdce-pod-skorbyu/": {"owner":"astro","source":"src/pages/articles/serdce-pod-skorbyu/index.astro","risk":2,"status":"production-dist"},
     "/articles/serdce-spravochnik/": {"owner":"astro","source":"src/pages/articles/serdce-spravochnik/index.astro","risk":2,"status":"production-dist"},
     "/articles/skrytye-idoly-serdca/": {"owner":"astro","source":"src/pages/articles/skrytye-idoly-serdca/index.astro","risk":2,"status":"production-dist"},
+    "/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/": {"owner":"astro","source":"src/pages/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/index.astro","risk":2,"status":"production-dist"},
     "/articles/sovest-vnutrenniy-sud/": {"owner":"astro","source":"src/pages/articles/sovest-vnutrenniy-sud/index.astro","risk":2,"status":"production-dist"},
     "/articles/starye-dorozhki-serdca/": {"owner":"astro","source":"src/pages/articles/starye-dorozhki-serdca/index.astro","risk":2,"status":"production-dist"},
     "/articles/strah-bozhij-rabskij-ili-synovnij/": {"owner":"astro","source":"src/pages/articles/strah-bozhij-rabskij-ili-synovnij/index.astro","risk":2,"status":"production-dist"},
     "/articles/svoboda-vo-hriste/": {"owner":"astro","source":"src/pages/articles/svoboda-vo-hriste/index.astro","risk":2,"status":"production-dist"},
     "/articles/tma-na-serdce/": {"owner":"astro","source":"src/pages/articles/tma-na-serdce/index.astro","risk":2,"status":"production-dist"},
+    "/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/": {"owner":"astro","source":"src/pages/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/index.astro","risk":2,"status":"production-dist"},
+    "/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/": {"owner":"astro","source":"src/pages/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/index.astro","risk":2,"status":"production-dist"},
+    "/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/": {"owner":"astro","source":"src/pages/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/index.astro","risk":2,"status":"production-dist"},
     "/baptisty-rossii/": {"owner":"astro","source":"src/pages/baptisty-rossii/index.astro","risk":2,"status":"production-dist"},
     "/baptisty-rossii/dva-sezda-1884/": {"owner":"astro","source":"src/pages/baptisty-rossii/dva-sezda-1884/index.astro","risk":2,"status":"production-dist"},
     "/baptisty-rossii/goneniya-i-sovest/": {"owner":"astro","source":"src/pages/baptisty-rossii/goneniya-i-sovest/index.astro","risk":2,"status":"production-dist"},
@@ -98,6 +105,7 @@
     "/nagornaya/nakhodki/": {"owner":"astro","source":"src/pages/nagornaya/nakhodki/index.astro","risk":2,"status":"production-dist"},
     "/nagornaya/seriya/": {"owner":"astro","source":"src/pages/nagornaya/seriya/index.astro","risk":2,"status":"production-dist"},
     "/pastor-series/": {"owner":"astro","source":"src/pages/pastor-series/index.astro","risk":2,"status":"production-dist"},
+    "/podrostok-za-kadrom/": {"owner":"astro","source":"src/pages/podrostok-za-kadrom/index.astro","risk":2,"status":"production-dist"},
     "/rodosloviye/": {"owner":"astro","source":"src/pages/rodosloviye/index.astro","risk":2,"status":"production-dist"}
   }
 }
