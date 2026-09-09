@@ -1,0 +1,134 @@
+---
+import Seo from '@/components/seo/Seo.astro';
+import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
+import { TEEN_DOUBLE_LIFE_SERIES } from '@/components/article-pilots/_shared/series/teenSeriesConfig';
+import { SITE } from '@/data/site';
+import { assetUrl } from '@/lib/asset-version';
+
+const canonical = `${SITE.url}/podrostok-za-kadrom/`;
+const ogImagePath = '/images/teen-series/series-hero.svg';
+const ogImage = `${SITE.url}${ogImagePath}`;
+const title = 'Подросток за кадром: двойная жизнь, семья и взросление | Господь Бог — Сила Моя';
+const description = 'Семь больших материалов о скрытой жизни подростка, реакции родителей и церкви, взрослении, границах, деньгах, возвращении и браке — с Писанием как главным ориентиром.';
+const items = TEEN_DOUBLE_LIFE_SERIES.items;
+const totalMinutes = items.reduce((sum, item) => sum + Number.parseInt(item.readingTime, 10), 0);
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'CollectionPage',
+      '@id': canonical,
+      url: canonical,
+      name: TEEN_DOUBLE_LIFE_SERIES.seriesTitleFull,
+      description,
+      inLanguage: 'ru',
+      isPartOf: { '@id': SITE.websiteId },
+      primaryImageOfPage: { '@type': 'ImageObject', url: ogImage, width: 1200, height: 630 },
+      hasPart: items.map((item) => ({
+        '@type': 'Article',
+        name: item.title,
+        url: `${SITE.url}${item.href}`,
+      })),
+    },
+    {
+      '@type': 'BreadcrumbList',
+      '@id': `${canonical}#breadcrumbs`,
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Главная', item: `${SITE.url}/` },
+        { '@type': 'ListItem', position: 2, name: 'Подросток за кадром', item: canonical },
+      ],
+    },
+  ],
+};
+---
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <ReaderPreferencesHead />
+    <Seo
+      title={title}
+      description={description}
+      canonical={canonical}
+      robots="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+      ogImage={ogImage}
+      ogImageAlt="Свет у открытой двери и телефон на пороге — образ скрытой и открытой жизни"
+      ogImageWidth="1200"
+      ogImageHeight="630"
+      ogType="website"
+      jsonLd={jsonLd}
+    />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin />
+    <link rel="stylesheet" href={assetUrl('fonts/fonts.css')} />
+    <link rel="stylesheet" href={assetUrl('css/site.css')} />
+    <link rel="stylesheet" href={assetUrl('css/home.css')} />
+    <link rel="stylesheet" href={assetUrl('css/command-palette.css')} />
+    <link rel="stylesheet" href={assetUrl('css/mobile-hotfix.css')} />
+    <link rel="stylesheet" href={assetUrl('css/floating-cluster.css')} />
+    <link rel="stylesheet" href={assetUrl('css/series-manuscript.css')} />
+  </head>
+  <body class="gbs-world">
+    <main id="main-content" class="article-main" data-pagefind-body>
+      <article>
+        <span data-pagefind-meta="image" hidden>{ogImagePath}</span>
+        <span data-pagefind-meta="author" hidden>Фёдор Милованов</span>
+        <span data-pagefind-meta="readTime" hidden>{totalMinutes}</span>
+        <span data-pagefind-meta="category" hidden>Подростки и взрослые дети</span>
+
+        <header class="article-header gbs2-head">
+          <p class="section-label">Серия · 7 материалов · {totalMinutes} мин</p>
+          <h1>Подросток за кадром</h1>
+          <p class="article-byline"><span class="article-byline__strong">Двойная жизнь, семья и взросление</span></p>
+          <p>{description}</p>
+        </header>
+
+        <figure class="teen-series-hero">
+          <img src={ogImagePath} width="1200" height="630" alt="Свет у открытой двери и телефон на пороге — образ скрытой и открытой жизни" loading="eager" fetchpriority="high" />
+        </figure>
+
+        <section aria-labelledby="series-order">
+          <h2 id="series-order">Читать по порядку</h2>
+          <div class="teen-series-grid">
+            {items.map((item, index) => (
+              <a class="teen-series-card" href={item.href}>
+                <span class="teen-series-card__mark" aria-hidden="true">{item.mark.value}</span>
+                <span class="teen-series-card__body">
+                  <span class="teen-series-card__eyebrow">Шаг {index + 1} из {items.length} · {item.readingTime}</span>
+                  <strong>{item.title}</strong>
+                  <span>{item.shortTitle}</span>
+                </span>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        <section aria-labelledby="how-to-use">
+          <h2 id="how-to-use">Как устроена серия</h2>
+          <p>Первые три материала разбирают двойную жизнь подростка, действия родителей после разоблачения и ответственность церкви. Разделы A–D продолжают тему после совершеннолетия: уход из дома, совместное проживание и деньги, границы родительской власти и вопрос брака взрослой дочери.</p>
+          <p>Буквы A–D — не второстепенные приложения: это полноценные шаги общей последовательности. В каждом материале различаются библейская норма, пастырское применение, фактические данные и вопросы, где нужны осторожность или юрисдикционно-зависимое решение.</p>
+        </section>
+
+        <aside class="author-card">
+          <div class="author-card-icon" aria-hidden="true">ФМ</div>
+          <div class="author-card-body">
+            <div class="author-card-label">Редакционный принцип серии</div>
+            <div class="author-card-name">Истина, защита и надежда — без контроля вместо нового рождения</div>
+            <p class="author-card-desc">Цель серии — не дать универсальную технику управления ребёнком, а помочь применять Писание честно: называть грех грехом, защищать людей от вреда, не подменять покаяние разоблачением и не превращать последствия в месть.</p>
+          </div>
+        </aside>
+      </article>
+    </main>
+    <style>
+      .teen-series-hero{margin:2rem 0 2.5rem}.teen-series-hero img{display:block;width:100%;height:auto;border-radius:1.5rem}
+      .teen-series-grid{display:grid;gap:1rem;margin:1.25rem 0 2.5rem}
+      .teen-series-card{display:flex;gap:1rem;align-items:flex-start;padding:1.1rem 1.2rem;border:1px solid color-mix(in srgb,currentColor 18%,transparent);border-radius:1rem;text-decoration:none;color:inherit;background:color-mix(in srgb,Canvas 94%,currentColor 6%)}
+      .teen-series-card:hover,.teen-series-card:focus-visible{border-color:currentColor;transform:translateY(-1px)}
+      .teen-series-card__mark{display:grid;place-items:center;min-width:2.7rem;height:2.7rem;border-radius:999px;background:currentColor;color:Canvas;font-weight:800}
+      .teen-series-card__body{display:grid;gap:.25rem}.teen-series-card__eyebrow{font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;opacity:.72}.teen-series-card strong{font-size:1.05rem;line-height:1.35}.teen-series-card__body>span:last-child{opacity:.78}
+      @media (min-width:760px){.teen-series-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+      @media (prefers-reduced-motion:no-preference){.teen-series-card{transition:transform .16s ease,border-color .16s ease}}
+    </style>
+  </body>
+</html>
