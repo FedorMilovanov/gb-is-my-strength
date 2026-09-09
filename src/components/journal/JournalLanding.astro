@@ -1,0 +1,165 @@
+---
+import MobileChromePage from '@/components/article-pilots/_shared/MobileChromePage.astro';
+---
+<MobileChromePage backHref="/" homeHref="/" searchLabel="Поиск по сайту…" />
+
+<header class="journal-topbar" aria-label="Навигация журнала">
+  <a class="journal-brand" href="/">Господь Бог — Сила Моя</a>
+  <nav aria-label="Разделы">
+    <a href="/articles/">Статьи</a>
+    <span aria-current="page">Журнал</span>
+  </nav>
+</header>
+
+<main class="journal-landing">
+  <section class="journal-hero" aria-labelledby="journal-title">
+    <p class="journal-kicker">Документальный журнал · новости · расследования · документы</p>
+    <h1 id="journal-title">Журнал</h1>
+    <p class="journal-lead">
+      Проверяемые события, первичные документы и сложные церковные истории — с видимой границей
+      между установленным фактом, свидетельством, спорной версией и тем, чего мы пока не знаем.
+    </p>
+    <div class="journal-trustline" aria-label="Редакционные принципы">
+      <span>Источники до выводов</span>
+      <span>Исправления без тихой перезаписи</span>
+      <span>Неизвестное остаётся неизвестным</span>
+    </div>
+  </section>
+
+  <section class="journal-section" aria-labelledby="lead-dossier">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Первое досье</p>
+        <h2 id="lead-dossier">G3 Ministries: рост, кризис и завершение операций</h2>
+      </div>
+      <span class="status-chip">Проверено · 09.09.2026</span>
+    </div>
+
+    <a class="lead-card" href="/journal/dossiers/g3/">
+      <div class="lead-card-copy">
+        <p class="lead-label">Досье · 2011–2026</p>
+        <h3>Что установлено документами — и где публичная запись заканчивается</h3>
+        <p>
+          История организации, финансовый разворот, кризис 2025 года, спор вокруг Tom Buck,
+          августовский кризис 2026-го, прекращение операций и открытые вопросы о G3+, G3 Press,
+          совете и корпоративном статусе.
+        </p>
+        <span class="read-link">Открыть документальное досье →</span>
+      </div>
+      <dl class="evidence-mini">
+        <div><dt>Research seal</dt><dd>298d00ddc4db</dd></div>
+        <div><dt>Разрешённые проекции</dt><dd>16</dd></div>
+        <div><dt>Ключевые источники</dt><dd>21</dd></div>
+        <div><dt>Статус</dt><dd>bounded publication</dd></div>
+      </dl>
+    </a>
+  </section>
+
+  <section class="journal-section" aria-labelledby="directions">
+    <div class="section-heading compact">
+      <div>
+        <p class="eyebrow">Редакционная вертикаль</p>
+        <h2 id="directions">Что будет жить в журнале</h2>
+      </div>
+    </div>
+    <div class="direction-grid">
+      <article>
+        <p class="direction-index">01</p>
+        <h3>Новости</h3>
+        <p>Датированные проверенные события. Факт отделён от интерпретации и последующих обновлений.</p>
+      </article>
+      <article>
+        <p class="direction-index">02</p>
+        <h3>Расследования</h3>
+        <p>Чувствительные выводы только через claim-level evidence gate и видимые ограничения источников.</p>
+      </article>
+      <article>
+        <p class="direction-index">03</p>
+        <h3>Досье</h3>
+        <p>Одна тема как система: хронология, документы, данные, люди, открытые вопросы и исправления.</p>
+      </article>
+      <article>
+        <p class="direction-index">04</p>
+        <h3>Документы и explainers</h3>
+        <p>Разбор первичных объектов: что документ доказывает, чего не доказывает и каков его контекст.</p>
+      </article>
+    </div>
+    <p class="no-placeholder-note">
+      Отдельные публичные маршруты для этих рубрик появятся только вместе с реальными материалами — пустых страниц-заглушек нет.
+    </p>
+  </section>
+
+  <section class="journal-method" aria-labelledby="method-title">
+    <p class="eyebrow">Метод</p>
+    <h2 id="method-title">Редакционная прозрачность вместо громкости</h2>
+    <div class="method-grid">
+      <div><strong>Установлено</strong><span>Опирается на публикационно разрешённый набор доказательств.</span></div>
+      <div><strong>Подтверждено</strong><span>Имеет независимое или участническое подтверждение с явной оговоркой.</span></div>
+      <div><strong>Версии расходятся</strong><span>Конфликт источников не прячется в гладком пересказе.</span></div>
+      <div><strong>Неизвестно</strong><span>Отсутствие публичного документа не превращается в доказательство отсутствия события.</span></div>
+    </div>
+  </section>
+</main>
+
+<footer class="journal-footer">
+  <a href="/">На главную</a>
+  <span>·</span>
+  <a href="/articles/">Богословские статьи</a>
+  <span>·</span>
+  <span>Автор-редактор: Фёдор Милованов</span>
+</footer>
+
+<style>
+  :global(body) { margin: 0; background: var(--bg, #fdfcf9); color: var(--text, #25211d); font-family: var(--font-body, system-ui, sans-serif); }
+  .journal-topbar { max-width: 1180px; margin: 0 auto; padding: 24px 28px; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-bottom: 1px solid var(--border, #ddd7cf); }
+  .journal-brand { color: inherit; text-decoration: none; font: 700 15px/1.2 var(--font-heading, Georgia, serif); letter-spacing: .01em; }
+  .journal-topbar nav { display: flex; gap: 18px; align-items: center; font-size: 14px; }
+  .journal-topbar nav a { color: var(--muted, #6d665e); text-decoration: none; }
+  .journal-topbar nav span { font-weight: 700; }
+  .journal-landing { max-width: 1120px; margin: 0 auto; padding: 74px 28px 96px; }
+  .journal-hero { max-width: 880px; padding: 24px 0 72px; }
+  .journal-kicker, .eyebrow { margin: 0 0 15px; color: #7a2e2e; font: 700 12px/1.4 var(--font-body, system-ui, sans-serif); letter-spacing: .12em; text-transform: uppercase; }
+  h1, h2, h3 { font-family: var(--font-heading, Georgia, serif); color: var(--text, #25211d); }
+  h1 { margin: 0; font-size: clamp(52px, 8vw, 96px); line-height: .96; font-weight: 650; letter-spacing: -.035em; }
+  .journal-lead { max-width: 800px; margin: 28px 0 0; font: 400 clamp(20px, 2.5vw, 29px)/1.45 var(--font-heading, Georgia, serif); color: var(--muted, #5f5952); }
+  .journal-trustline { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 32px; }
+  .journal-trustline span, .status-chip { border: 1px solid var(--border, #ddd7cf); border-radius: 999px; padding: 8px 12px; font-size: 12px; color: var(--muted, #675f56); background: color-mix(in srgb, var(--bg, #fdfcf9) 88%, #7a2e2e 4%); }
+  .journal-section { padding: 60px 0; border-top: 1px solid var(--border, #ddd7cf); }
+  .section-heading { display: flex; justify-content: space-between; gap: 30px; align-items: end; margin-bottom: 28px; }
+  .section-heading.compact { align-items: start; }
+  .section-heading h2, .journal-method h2 { max-width: 800px; margin: 0; font-size: clamp(30px, 4vw, 48px); line-height: 1.08; letter-spacing: -.025em; }
+  .lead-card { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(240px, .7fr); gap: 38px; padding: clamp(26px, 4vw, 46px); border: 1px solid var(--border, #d9d2c8); border-radius: 22px; text-decoration: none; color: inherit; background: color-mix(in srgb, var(--bg, #fdfcf9) 92%, #7a2e2e 5%); transition: transform .2s ease, border-color .2s ease; }
+  .lead-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, #7a2e2e 45%, var(--border, #d9d2c8)); }
+  .lead-label { margin: 0 0 12px; color: #7a2e2e; font-weight: 700; font-size: 13px; }
+  .lead-card h3 { margin: 0; font-size: clamp(27px, 3.5vw, 42px); line-height: 1.08; }
+  .lead-card-copy > p:not(.lead-label) { max-width: 720px; margin: 20px 0; font-size: 17px; line-height: 1.65; color: var(--muted, #625b53); }
+  .read-link { display: inline-block; margin-top: 8px; font-weight: 750; color: #7a2e2e; }
+  .evidence-mini { margin: 0; border-left: 1px solid var(--border, #d9d2c8); padding-left: 28px; display: grid; align-content: center; gap: 18px; }
+  .evidence-mini div { display: grid; gap: 4px; }
+  .evidence-mini dt { font-size: 11px; text-transform: uppercase; letter-spacing: .09em; color: var(--muted, #746c63); }
+  .evidence-mini dd { margin: 0; font: 650 14px/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
+  .direction-grid, .method-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .direction-grid article, .method-grid > div { padding: 28px; border: 1px solid var(--border, #ddd7cf); border-radius: 16px; }
+  .direction-index { margin: 0 0 28px; font: 700 12px/1 ui-monospace, monospace; color: #7a2e2e; }
+  .direction-grid h3 { margin: 0 0 10px; font-size: 25px; }
+  .direction-grid article > p:last-child, .no-placeholder-note { color: var(--muted, #665f57); line-height: 1.6; }
+  .no-placeholder-note { margin: 20px 0 0; font-size: 14px; }
+  .journal-method { padding: 60px 0 0; border-top: 1px solid var(--border, #ddd7cf); }
+  .method-grid { margin-top: 28px; }
+  .method-grid > div { display: grid; gap: 8px; }
+  .method-grid strong { font-family: var(--font-heading, Georgia, serif); font-size: 20px; }
+  .method-grid span { color: var(--muted, #665f57); line-height: 1.55; }
+  .journal-footer { max-width: 1120px; margin: 0 auto; padding: 32px 28px 50px; border-top: 1px solid var(--border, #ddd7cf); display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted, #6d665e); font-size: 13px; }
+  .journal-footer a { color: inherit; }
+  @media (max-width: 760px) {
+    .journal-topbar { padding: 18px 18px; }
+    .journal-topbar nav { display: none; }
+    .journal-landing { padding: 54px 18px 72px; }
+    .journal-hero { padding-bottom: 52px; }
+    .section-heading { display: grid; align-items: start; }
+    .status-chip { width: fit-content; }
+    .lead-card { grid-template-columns: 1fr; padding: 24px; }
+    .evidence-mini { border-left: 0; border-top: 1px solid var(--border, #d9d2c8); padding: 22px 0 0; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .direction-grid, .method-grid { grid-template-columns: 1fr; }
+  }
+</style>
