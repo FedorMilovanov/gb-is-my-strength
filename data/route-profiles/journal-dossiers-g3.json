@@ -1,0 +1,29 @@
+{
+  "route": "/journal/dossiers/g3/",
+  "profiledAt": "2026-09-09",
+  "migrationLane": "journal-foundation",
+  "routeType": "journal-dossier",
+  "surfaceContractVersion": 1,
+  "surface": "page",
+  "section": "journal",
+  "slug": "g3",
+  "currentStatus": "production-dist",
+  "source": "src/pages/journal/dossiers/g3/index.astro",
+  "risk": 3,
+  "hasMDX": false,
+  "mdxPath": null,
+  "legacyStatus": "absent",
+  "migrationMode": "strict-native",
+  "pagefindContract": {
+    "strategy": "native documentary dossier body",
+    "requiredMarkers": ["data-pagefind-body", "data-journal-surface=\"dossier\"", "data-journal-id=\"g3\""]
+  },
+  "publicationContract": {
+    "participatesIn": ["search", "sitemap", "pagefind", "indexNow"]
+  },
+  "visualParity": {
+    "mode": "native-contract",
+    "legacyComparison": "not-applicable",
+    "reason": "First native documentary dossier has no legacy page to compare against."
+  }
+}
