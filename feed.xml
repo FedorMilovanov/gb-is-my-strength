@@ -8,7 +8,7 @@
     <link>https://gospod-bog.ru/</link>
     <description><![CDATA[Богословские разборы, переводы и исследования Писания на русском языке.]]></description>
     <language>ru</language>
-    <lastBuildDate>Sun, 06 Sep 2026 21:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 09 Sep 2026 09:42:00 GMT</lastBuildDate>
     <ttl>1440</ttl>
     <image>
       <url>https://gospod-bog.ru/images/og-preview-1200x630.webp</url>
@@ -16,6 +16,16 @@
       <link>https://gospod-bog.ru/</link>
     </image>
     <atom:link href="https://gospod-bog.ru/feed.xml" rel="self" type="application/rss+xml"/>
+
+    <item>
+      <title>G3: рост, кризис и завершение операций</title>
+      <link>https://gospod-bog.ru/journal/dossiers/g3/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/journal/dossiers/g3/</guid>
+      <pubDate>Tue, 08 Sep 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Журнал</category>
+      <description><![CDATA[Документальное досье G3 Ministries: история, корпоративные записи, финансы, кризис Josh Buice, спор вокруг Tom Buck, прекращение операций и открытые вопросы с явными границами доказательств.]]></description>
+    </item>
 
     <item>
       <title>Несовершенный человек в несовершенной церкви | Господь Бог — Сила Моя</title>
