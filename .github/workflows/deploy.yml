@@ -29,6 +29,7 @@ env:
   CONTROL_PLANE_SHA: ${{ github.sha }}
   RELEASE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.release_sha || github.sha }}
   RELEASE_ARTIFACT_NAME: pages-release-candidate-${{ github.run_id }}-${{ github.run_attempt }}
+  PAGES_ARTIFACT_NAME: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
 
 jobs:
   readiness:
@@ -81,6 +82,13 @@ jobs:
 
       - name: Install dependencies once
         run: npm ci
+
+      - name: Verify Cloudflare release purge contract
+        run: |
+          node --check scripts/cloudflare-release-purge-lib.mjs
+          node --check scripts/cloudflare-release-purge.mjs
+          node --check scripts/cloudflare-release-purge-contract-test.mjs
+          node scripts/cloudflare-release-purge-contract-test.mjs
 
       - name: Verify deterministic local fonts
         run: |
@@ -214,7 +222,9 @@ jobs:
             write-deployment-provenance.mjs \
             verify-release-candidate.mjs \
             live-release-contract.mjs \
-            tts-live-deployment-contract.mjs
+            tts-live-deployment-contract.mjs \
+            cloudflare-release-purge-lib.mjs \
+            cloudflare-release-purge.mjs
           do
             git show "${CONTROL_PLANE_SHA}:scripts/${file}" > "release-tools/${file}"
           done
@@ -223,6 +233,8 @@ jobs:
           node --check release-tools/verify-release-candidate.mjs
           node --check release-tools/live-release-contract.mjs
           node --check release-tools/tts-live-deployment-contract.mjs
+          node --check release-tools/cloudflare-release-purge-lib.mjs
+          node --check release-tools/cloudflare-release-purge.mjs
 
       - name: Write generic immutable release provenance
         id: provenance
@@ -271,10 +283,11 @@ jobs:
       url: ${{ steps.deploy_pages.outputs.page_url }}
 
     steps:
-      - name: Download exact same-run release candidate
+      - name: Download exact readiness candidate by artifact ID
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: ${{ env.RELEASE_ARTIFACT_NAME }}
+          artifact-ids: ${{ needs.readiness.outputs.transport_artifact_id }}
+          merge-multiple: true
           path: .
 
       - name: Set up pinned Node verifier
@@ -288,20 +301,43 @@ jobs:
           EXPECTED_RELEASE_SHA: ${{ needs.readiness.outputs.release_sha }}
           EXPECTED_CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.control_plane_sha }}
           EXPECTED_RUN_ID: ${{ github.run_id }}
-          EXPECTED_RUN_ATTEMPT: ${{ github.run_attempt }}
           EXPECTED_CANDIDATE_DIGEST: ${{ needs.readiness.outputs.candidate_digest }}
         run: node release-tools/verify-release-candidate.mjs
 
       - name: Upload exact candidate as Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
+          name: ${{ env.PAGES_ARTIFACT_NAME }}
           path: dist
 
       - name: Deploy exact candidate to GitHub Pages
         id: deploy_pages
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+        with:
+          artifact_name: ${{ env.PAGES_ARTIFACT_NAME }}
+
+      - name: Purge Cloudflare release cache
+        id: cloudflare_purge
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_ZONE_NAME: gospod-bog.ru
+          RELEASE_SHA: ${{ needs.readiness.outputs.release_sha }}
+          CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.control_plane_sha }}
+        run: node release-tools/cloudflare-release-purge.mjs
+
+      - name: Upload Cloudflare purge evidence
+        if: ${{ always() && steps.deploy_pages.outcome == 'success' && (steps.cloudflare_purge.outcome == 'success' || steps.cloudflare_purge.outcome == 'failure') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cloudflare-release-purge-${{ github.run_id }}
+          path: reports/cloudflare-release-purge.json
+          if-no-files-found: error
+          retention-days: 30
+          overwrite: true
 
       - name: Verify generic live release contract
+        id: live_release
         env:
           LIVE_BASE_URL: https://gospod-bog.ru
           RELEASE_SHA: ${{ needs.readiness.outputs.release_sha }}
@@ -312,16 +348,18 @@ jobs:
         run: node release-tools/live-release-contract.mjs
 
       - name: Upload generic live release evidence
-        if: ${{ always() && steps.deploy_pages.outcome == 'success' }}
+        if: ${{ always() && steps.deploy_pages.outcome == 'success' && (steps.live_release.outcome == 'success' || steps.live_release.outcome == 'failure') }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: release-live-deployment-${{ github.run_id }}
           path: reports/release-live-deployment-contract.json
           if-no-files-found: error
           retention-days: 30
+          overwrite: true
 
       - name: Verify live TTS capability extension
-        if: ${{ always() && steps.deploy_pages.outcome == 'success' }}
+        id: tts_live
+        if: ${{ always() && steps.deploy_pages.outcome == 'success' && steps.cloudflare_purge.outcome == 'success' }}
         env:
           LIVE_BASE_URL: https://gospod-bog.ru
           RELEASE_SHA: ${{ needs.readiness.outputs.release_sha }}
@@ -330,13 +368,14 @@ jobs:
         run: node release-tools/tts-live-deployment-contract.mjs
 
       - name: Upload live TTS capability evidence
-        if: ${{ always() && steps.deploy_pages.outcome == 'success' }}
+        if: ${{ always() && steps.deploy_pages.outcome == 'success' && (steps.tts_live.outcome == 'success' || steps.tts_live.outcome == 'failure') }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: tts-live-deployment-${{ github.run_id }}
           path: reports/tts-live-deployment-contract.json
           if-no-files-found: error
           retention-days: 30
+          overwrite: true
 
       - name: Submit precomputed URLs to IndexNow
         continue-on-error: true
