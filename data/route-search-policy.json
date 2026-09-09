@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "reviewedAt": "2026-09-08",
+  "reviewedAt": "2026-09-09",
   "description": "Explicit search and index policy for every production route. Semantic editing scope is intentionally not consulted.",
   "routes": {
     "/": {
@@ -602,6 +602,26 @@
       "contentKind": "personal",
       "librarySection": "Личное",
       "topicCategory": "Избранное"
+    },
+    "/journal/": {
+      "indexPolicy": "index",
+      "pagefindPolicy": "include",
+      "searchManifestPolicy": "include",
+      "sitemapPolicy": "include",
+      "rssPolicy": "exclude",
+      "contentKind": "landing",
+      "librarySection": "Журнал",
+      "topicCategory": "Журнал"
+    },
+    "/journal/dossiers/g3/": {
+      "indexPolicy": "index",
+      "pagefindPolicy": "include",
+      "searchManifestPolicy": "include",
+      "sitemapPolicy": "include",
+      "rssPolicy": "include",
+      "contentKind": "article",
+      "librarySection": "Журнал",
+      "topicCategory": "G3 Ministries"
     },
     "/karty/": {
       "indexPolicy": "index",
