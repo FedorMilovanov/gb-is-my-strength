@@ -78,5 +78,19 @@
       {"n":8,"slug":"duhi-v-temnice-noi-kreshchenie-pobeda","title":"Духи в темнице","status":"published","readingTime":28},
       {"n":9,"slug":"blagovestie-mertvym-1-petra-4-5-6","title":"Благовестие мёртвым","status":"published","readingTime":19}
     ]
+  },
+  "teen-double-life": {
+    "title": "Подросток за кадром",
+    "baseUrl": "/articles/",
+    "searchPolicy": {"landingRoute":"/podrostok-za-kadrom/","librarySection":"Семья","topicCategory":"Подростки и взрослые дети"},
+    "parts": [
+      {"n":"I","slug":"podrostok-za-kadrom-dvoynaya-zhizn","title":"Как рождается двойная жизнь","status":"published","readingTime":32},
+      {"n":"II","slug":"podrostok-za-kadrom-roditelyam-posle-razoblacheniya","title":"Что делать родителям после разоблачения","status":"published","readingTime":43},
+      {"n":"III","slug":"podrostok-za-kadrom-chto-delat-tserkvi","title":"Что должна делать церковь","status":"published","readingTime":39},
+      {"n":"A","slug":"vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie","title":"Взрослый ребёнок ушёл: контакт, ожидание, покаяние и возвращение","status":"published","readingTime":37},
+      {"n":"B","slug":"vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya","title":"Взрослый ребёнок дома: правила, деньги, помощь и последствия","status":"published","readingTime":36},
+      {"n":"C","slug":"sovershennoletie-roditelskaya-vlast-chto-menyaetsya","title":"Совершеннолетие и родительская власть: что меняется, что остаётся","status":"published","readingTime":35},
+      {"n":"D","slug":"vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti","title":"Взрослая дочь, отец и брак: согласие и границы власти","status":"published","readingTime":42}
+    ]
   }
 }
