@@ -29,48 +29,29 @@ async function readCloudflareJson(response, label) {
 export async function purgeCloudflareReleaseCache({
   fetchImpl = globalThis.fetch,
   apiToken,
+  zoneId,
   zoneName = DEFAULT_ZONE_NAME,
   apiBaseUrl = DEFAULT_API_BASE_URL,
   signal,
 } = {}) {
   assert.equal(typeof fetchImpl, 'function', 'fetch implementation is required');
+
   const token = String(apiToken || '').trim();
   assert.ok(token, 'CLOUDFLARE_API_TOKEN is required for deterministic production promotion');
 
+  const normalizedZoneId = String(zoneId || '').trim();
+  assert.match(normalizedZoneId, /^[a-f0-9]{16,64}$/i, 'CLOUDFLARE_ZONE_ID is required and must be a Cloudflare zone id');
+
   const normalizedZoneName = normalizeZoneName(zoneName);
   const normalizedApiBaseUrl = normalizeApiBaseUrl(apiBaseUrl);
-  const headers = {
-    authorization: `Bearer ${token}`,
-    'content-type': 'application/json',
-    'user-agent': 'gb-release-cloudflare-purge/1.0',
-  };
-
-  const zoneLookupUrl = new URL(`${normalizedApiBaseUrl}/zones`);
-  zoneLookupUrl.searchParams.set('name', normalizedZoneName);
-  zoneLookupUrl.searchParams.set('status', 'active');
-  zoneLookupUrl.searchParams.set('per_page', '50');
-
-  const zoneResponse = await fetchImpl(zoneLookupUrl, {
-    method: 'GET',
-    headers,
-    signal,
-  });
-  const zonePayload = await readCloudflareJson(zoneResponse, 'zone lookup');
-  const matchingZones = (Array.isArray(zonePayload.result) ? zonePayload.result : [])
-    .filter((zone) => String(zone?.name || '').trim().toLowerCase() === normalizedZoneName);
-
-  assert.equal(
-    matchingZones.length,
-    1,
-    `zone lookup: expected exactly one active Cloudflare zone named ${normalizedZoneName}, found ${matchingZones.length}`,
-  );
-  const zoneId = String(matchingZones[0]?.id || '').trim();
-  assert.match(zoneId, /^[a-f0-9]{16,64}$/i, 'zone lookup: Cloudflare zone id is invalid');
-
-  const purgeUrl = `${normalizedApiBaseUrl}/zones/${encodeURIComponent(zoneId)}/purge_cache`;
+  const purgeUrl = `${normalizedApiBaseUrl}/zones/${encodeURIComponent(normalizedZoneId)}/purge_cache`;
   const purgeResponse = await fetchImpl(purgeUrl, {
     method: 'POST',
-    headers,
+    headers: {
+      authorization: `Bearer ${token}`,
+      'content-type': 'application/json',
+      'user-agent': 'gb-release-cloudflare-purge/1.0',
+    },
     body: JSON.stringify({ purge_everything: true }),
     signal,
   });
@@ -80,7 +61,6 @@ export async function purgeCloudflareReleaseCache({
     result: 'PASS',
     provider: 'cloudflare',
     zoneName: normalizedZoneName,
-    zoneId,
     purgeEverything: true,
     purgeRequestId: String(purgePayload?.result?.id || purgePayload?.result?.zone_id || ''),
   };
