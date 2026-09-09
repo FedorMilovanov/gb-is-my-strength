@@ -38,8 +38,9 @@ function response(status, payload) {
   assert.equal(result.result, 'PASS');
   assert.equal(result.zoneName, 'gospod-bog.ru');
   assert.equal(result.purgeEverything, true);
-  assert.equal(JSON.stringify(result).includes(SECRET), false, 'result must not expose API token');
-  assert.equal(JSON.stringify(result).includes(ZONE_ID), true, 'Cloudflare response id may identify the purge request');
+  const serialized = JSON.stringify(result);
+  assert.equal(serialized.includes(SECRET), false, 'result must not expose API token');
+  assert.equal(serialized.includes(ZONE_ID), false, 'result must not expose Cloudflare zone id');
 }
 
 await assert.rejects(
