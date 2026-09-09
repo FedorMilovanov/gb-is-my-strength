@@ -68,6 +68,25 @@ async function stabilizeVisualState(page) {
   await page.waitForTimeout(100);
 }
 
+function readPngDimensions(path) {
+  const png = readFileSync(path);
+  const signatureOk =
+    png.length >= 24 &&
+    png[0] === 0x89 &&
+    png[1] === 0x50 &&
+    png[2] === 0x4e &&
+    png[3] === 0x47 &&
+    png[4] === 0x0d &&
+    png[5] === 0x0a &&
+    png[6] === 0x1a &&
+    png[7] === 0x0a;
+  return {
+    signatureOk,
+    width: signatureOk ? png.readUInt32BE(16) : 0,
+    height: signatureOk ? png.readUInt32BE(20) : 0,
+  };
+}
+
 async function captureSegmentedScreenshot(page, engine, profile) {
   await stabilizeVisualState(page);
   const metrics = await page.evaluate(() => {
@@ -95,24 +114,80 @@ async function captureSegmentedScreenshot(page, engine, profile) {
     const requestedTop = positions[index];
     await page.evaluate((top) => window.scrollTo(0, top), requestedTop);
     await page.waitForTimeout(80);
-    const viewportPosition = await page.evaluate(() => ({
-      layoutScrollTop: Math.round(window.scrollY),
-      visualViewportOffsetTop: Math.round(window.visualViewport?.offsetTop || 0),
-      actualTop: Math.round(window.visualViewport?.pageTop ?? window.scrollY),
-    }));
-    const actualTop = viewportPosition.actualTop;
+    const viewportPosition = await page.evaluate(() => {
+      const scrollingElement = document.scrollingElement || document.documentElement;
+      const visualViewport = window.visualViewport;
+      return {
+        layoutScrollTop: Math.round(window.scrollY),
+        livePageHeight: Math.round(scrollingElement.scrollHeight),
+        layoutViewportHeight: Math.round(scrollingElement.clientHeight),
+        innerHeight: Math.round(window.innerHeight),
+        visualViewportPageTop: visualViewport ? Math.round(visualViewport.pageTop) : null,
+        visualViewportOffsetTop: visualViewport ? Math.round(visualViewport.offsetTop) : null,
+        visualViewportHeight: visualViewport ? Math.round(visualViewport.height) : null,
+      };
+    });
+    const directTop = viewportPosition.visualViewportPageTop ?? viewportPosition.layoutScrollTop;
     const tilePath = join(OUT, `${engine}-${profile.id}-tile-${String(index + 1).padStart(3, '0')}.png`);
     await page.screenshot({ path: tilePath, fullPage: false });
     const bytes = statSync(tilePath).size;
+    const png = readPngDimensions(tilePath);
+    const pngGeometryValid =
+      png.signatureOk &&
+      png.width === metrics.viewportWidth &&
+      png.height === metrics.viewportHeight;
+    const pageHeightStable = Math.abs(viewportPosition.livePageHeight - metrics.pageHeight) <= 1;
+    const layoutAtLiveBottom =
+      Math.abs(
+        viewportPosition.layoutScrollTop +
+        viewportPosition.layoutViewportHeight -
+        viewportPosition.livePageHeight,
+      ) <= 1;
+    const terminalRequested = Math.abs(requestedTop - maxScreenshotTop) <= 1;
+    const directTerminalReachable = Math.abs(directTop - maxScreenshotTop) <= 1;
+    const terminalBottomCropEligible =
+      terminalRequested &&
+      !directTerminalReachable &&
+      pageHeightStable &&
+      pngGeometryValid &&
+      viewportPosition.layoutViewportHeight >= png.height &&
+      layoutAtLiveBottom &&
+      Math.abs(
+        viewportPosition.layoutScrollTop +
+        viewportPosition.layoutViewportHeight -
+        metrics.pageHeight,
+      ) <= 1;
+
+    let actualTop = directTop;
+    let actualTopSource = viewportPosition.visualViewportPageTop === null
+      ? 'layout-scroll-top'
+      : 'visual-viewport-page-top';
+    if (terminalBottomCropEligible) {
+      actualTop = metrics.pageHeight - png.height;
+      actualTopSource = 'layout-terminal-bottom-crop';
+    }
+
     const start = Math.max(0, Math.min(actualTop, metrics.pageHeight));
-    const end = Math.max(start, Math.min(start + metrics.viewportHeight, metrics.pageHeight));
+    const end = Math.max(start, Math.min(start + png.height, metrics.pageHeight));
     ranges.push({ start, end });
     tiles.push({
       index: index + 1,
       requestedTop,
       layoutScrollTop: viewportPosition.layoutScrollTop,
+      livePageHeight: viewportPosition.livePageHeight,
+      layoutViewportHeight: viewportPosition.layoutViewportHeight,
+      innerHeight: viewportPosition.innerHeight,
+      visualViewportPageTop: viewportPosition.visualViewportPageTop,
       visualViewportOffsetTop: viewportPosition.visualViewportOffsetTop,
+      visualViewportHeight: viewportPosition.visualViewportHeight,
+      pngWidth: png.width,
+      pngHeight: png.height,
+      pngGeometryValid,
+      pageHeightStable,
+      layoutAtLiveBottom,
+      terminalBottomCropEligible,
       actualTop,
+      actualTopSource,
       start,
       end,
       bytes,
@@ -130,9 +205,16 @@ async function captureSegmentedScreenshot(page, engine, profile) {
   const gapPixels = gaps.reduce((sum, gap) => sum + Math.max(0, gap.end - gap.start), 0);
   const coveredPixels = Math.max(0, metrics.pageHeight - gapPixels);
   const emptyTiles = tiles.filter((tile) => tile.bytes < 1000);
-  const terminalScreenshotReachable = tiles.length > 0 && Math.abs(tiles.at(-1).actualTop - maxScreenshotTop) <= 1;
+  const pngGeometryValid = tiles.every((tile) => tile.pngGeometryValid);
+  const pageHeightStable = tiles.every((tile) => tile.pageHeightStable);
+  const terminalTile = tiles.at(-1);
+  const terminalScreenshotReachable =
+    Boolean(terminalTile) &&
+    Math.abs(terminalTile.actualTop + terminalTile.pngHeight - metrics.pageHeight) <= 1;
   const complete =
     metrics.pageHeight > 0 &&
+    pngGeometryValid &&
+    pageHeightStable &&
     terminalScreenshotReachable &&
     gaps.length === 0 &&
     emptyTiles.length === 0 &&
@@ -144,6 +226,8 @@ async function captureSegmentedScreenshot(page, engine, profile) {
     viewportHeight: metrics.viewportHeight,
     viewportWidth: metrics.viewportWidth,
     maxScreenshotTop,
+    pngGeometryValid,
+    pageHeightStable,
     terminalScreenshotReachable,
     coveredPixels,
     gaps,
