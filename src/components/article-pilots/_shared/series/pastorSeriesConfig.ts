@@ -2,15 +2,18 @@
  * pastorSeriesConfig.ts — серия «Тёмная сторона кафедры» на общем reader engine.
  *
  * Каноническая архитектура серии разделяет два яруса:
- *  - нумерованное богословско-пастырское ядро (римские части);
+ *  - нумерованное богословско-пастырское ядро I–IX;
  *  - документальные досье (label), которые проверяют тезисы на реальных кейсах,
- *    но не отнимают номер у ещё не опубликованной следующей части ядра.
+ *    но не занимают номер в богословском ядре.
  *
- * Поэтому опубликованные «Диотрефы нашего времени» сохраняют стабильный URL,
- * индексируемость и reader chrome, но являются «Досье A», а не «Частью II».
- * Полный канон I–IX зафиксирован в research/pastor-series/MASTER-PLAN.md.
+ * «Диотрефы нашего времени» сохраняют стабильный URL и reader chrome как
+ * «Досье A». Канон I–IX зафиксирован в research/pastor-series/MASTER-PLAN.md.
  */
 import { SERIES_CONFIGS, type SeriesConfig, defineSeriesConfig } from './seriesConfig';
+
+const CORE_TOTAL_MIN = 321;
+const CORE_RAIL_COVER = '../../images/pastor-series/og-hero.webp';
+const startToc = [{ href: '#article-content', label: 'Начало статьи', level: 2, current: true }] as const;
 
 export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
   seriesId: 'pastor-series',
@@ -27,6 +30,70 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       shortTitle: 'Диагностика · 20 антисоветов',
       href: '/articles/20-antisovetov-pastoru/',
       readingTime: '67 мин',
+    },
+    {
+      id: 'anatomiya',
+      mark: { kind: 'roman', value: 'II' },
+      title: 'Часть II. Анатомия падения',
+      shortTitle: 'Анатомия падения · пять стадий',
+      href: '/articles/anatomiya-padeniya-pyat-stadiy/',
+      readingTime: '29 мин',
+    },
+    {
+      id: 'teksty',
+      mark: { kind: 'roman', value: 'III' },
+      title: 'Часть III. Тексты Писания, которыми манипулируют',
+      shortTitle: 'Тексты Писания · границы применения',
+      href: '/articles/teksty-pisaniya-kotorymi-manipuliruyut/',
+      readingTime: '36 мин',
+    },
+    {
+      id: 'sem-tipov',
+      mark: { kind: 'roman', value: 'IV' },
+      title: 'Часть IV. Семь типов учителей и лидеров',
+      shortTitle: 'Семь типов · различение лидеров',
+      href: '/articles/sem-tipov-razlichenie-uchiteley/',
+      readingTime: '30 мин',
+    },
+    {
+      id: 'disciplina',
+      mark: { kind: 'roman', value: 'V' },
+      title: 'Часть V. Церковная дисциплина: власть, границы и защита',
+      shortTitle: 'Дисциплина · власть и защита',
+      href: '/articles/cerkovnaya-disciplina-vlast-granicy-zashchita/',
+      readingTime: '34 мин',
+    },
+    {
+      id: 'kogda-uhodit',
+      mark: { kind: 'roman', value: 'VI' },
+      title: 'Часть VI. Когда говорить, молчать, уходить или оставаться',
+      shortTitle: 'Когда говорить · когда уходить',
+      href: '/articles/kogda-uhodit-kogda-ostavatsya/',
+      readingTime: '33 мин',
+    },
+    {
+      id: 'vernye',
+      mark: { kind: 'roman', value: 'VII' },
+      title: 'Часть VII. Верные и неизвестные: здоровое пастырство',
+      shortTitle: 'Верные и неизвестные · здоровый пастор',
+      href: '/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo/',
+      readingTime: '31 мин',
+    },
+    {
+      id: 'zdorovaya-cerkov',
+      mark: { kind: 'roman', value: 'VIII' },
+      title: 'Часть VIII. Признаки здоровой церкви',
+      shortTitle: 'Признаки здоровой церкви',
+      href: '/articles/priznaki-zdorovoy-cerkvi/',
+      readingTime: '30 мин',
+    },
+    {
+      id: 'nesovershennyy',
+      mark: { kind: 'roman', value: 'IX' },
+      title: 'Часть IX. Несовершенный человек в несовершенной церкви',
+      shortTitle: 'Несовершенный человек · несовершенная церковь',
+      href: '/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi/',
+      readingTime: '31 мин',
     },
     {
       id: 'diotrophes',
@@ -46,7 +113,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       partLabel: 'Часть I · Содержание',
       readingProgressDoneMin: 0,
       readingProgressPartMin: 67,
-      readingProgressTotalMin: 102,
+      readingProgressTotalMin: CORE_TOTAL_MIN,
       railNowTitle: '20 антисоветов пастору',
       railCover: '../../images/pastor-series/og-20-antisovetov-pastoru.webp',
       partDialogLabel: 'Часть I · 20 антисоветов пастору',
@@ -66,15 +133,71 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
         { href: '#sec-quiz', label: 'Проверь себя', level: 2 },
       ],
     },
+    anatomiya: {
+      id: 'anatomiya', label: 'Анатомия падения', title: 'Часть II. Анатомия падения',
+      mobileSection: 'Пять стадий', partLabel: 'Часть II · Содержание',
+      readingProgressDoneMin: 67, readingProgressPartMin: 29, readingProgressTotalMin: CORE_TOTAL_MIN,
+      railNowTitle: 'Анатомия падения', railCover: CORE_RAIL_COVER,
+      partDialogLabel: 'Часть II · Анатомия падения', partToc: [...startToc],
+    },
+    teksty: {
+      id: 'teksty', label: 'Тексты Писания', title: 'Часть III. Тексты Писания, которыми манипулируют',
+      mobileSection: 'Герменевтика власти', partLabel: 'Часть III · Содержание',
+      readingProgressDoneMin: 96, readingProgressPartMin: 36, readingProgressTotalMin: CORE_TOTAL_MIN,
+      railNowTitle: 'Тексты Писания, которыми манипулируют', railCover: CORE_RAIL_COVER,
+      partDialogLabel: 'Часть III · Тексты Писания', partToc: [...startToc],
+    },
+    'sem-tipov': {
+      id: 'sem-tipov', label: 'Семь типов', title: 'Часть IV. Семь типов учителей и лидеров',
+      mobileSection: 'Различение лидеров', partLabel: 'Часть IV · Содержание',
+      readingProgressDoneMin: 132, readingProgressPartMin: 30, readingProgressTotalMin: CORE_TOTAL_MIN,
+      railNowTitle: 'Семь типов учителей и лидеров', railCover: CORE_RAIL_COVER,
+      partDialogLabel: 'Часть IV · Семь типов', partToc: [...startToc],
+    },
+    disciplina: {
+      id: 'disciplina', label: 'Церковная дисциплина', title: 'Часть V. Церковная дисциплина: власть, границы и защита',
+      mobileSection: 'Власть и защита', partLabel: 'Часть V · Содержание',
+      readingProgressDoneMin: 162, readingProgressPartMin: 34, readingProgressTotalMin: CORE_TOTAL_MIN,
+      railNowTitle: 'Церковная дисциплина', railCover: CORE_RAIL_COVER,
+      partDialogLabel: 'Часть V · Церковная дисциплина', partToc: [...startToc],
+    },
+    'kogda-uhodit': {
+      id: 'kogda-uhodit', label: 'Когда говорить и уходить', title: 'Часть VI. Когда говорить, молчать, уходить или оставаться',
+      mobileSection: 'Решения под давлением', partLabel: 'Часть VI · Содержание',
+      readingProgressDoneMin: 196, readingProgressPartMin: 33, readingProgressTotalMin: CORE_TOTAL_MIN,
+      railNowTitle: 'Когда говорить, когда уходить', railCover: CORE_RAIL_COVER,
+      partDialogLabel: 'Часть VI · Когда говорить и уходить', partToc: [...startToc],
+    },
+    vernye: {
+      id: 'vernye', label: 'Верные и неизвестные', title: 'Часть VII. Верные и неизвестные: здоровое пастырство',
+      mobileSection: 'Здоровое пастырство', partLabel: 'Часть VII · Содержание',
+      readingProgressDoneMin: 229, readingProgressPartMin: 31, readingProgressTotalMin: CORE_TOTAL_MIN,
+      railNowTitle: 'Верные и неизвестные', railCover: CORE_RAIL_COVER,
+      partDialogLabel: 'Часть VII · Верные и неизвестные', partToc: [...startToc],
+    },
+    'zdorovaya-cerkov': {
+      id: 'zdorovaya-cerkov', label: 'Признаки здоровой церкви', title: 'Часть VIII. Признаки здоровой церкви',
+      mobileSection: 'Здоровая церковь', partLabel: 'Часть VIII · Содержание',
+      readingProgressDoneMin: 260, readingProgressPartMin: 30, readingProgressTotalMin: CORE_TOTAL_MIN,
+      railNowTitle: 'Признаки здоровой церкви', railCover: CORE_RAIL_COVER,
+      partDialogLabel: 'Часть VIII · Признаки здоровой церкви', partToc: [...startToc],
+    },
+    nesovershennyy: {
+      id: 'nesovershennyy', label: 'Несовершенный человек', title: 'Часть IX. Несовершенный человек в несовершенной церкви',
+      mobileSection: 'Финальный предохранитель', partLabel: 'Часть IX · Содержание',
+      readingProgressDoneMin: 290, readingProgressPartMin: 31, readingProgressTotalMin: CORE_TOTAL_MIN,
+      railNowTitle: 'Несовершенный человек в несовершенной церкви', railCover: CORE_RAIL_COVER,
+      partDialogLabel: 'Часть IX · Несовершенный человек', partToc: [...startToc],
+    },
     diotrophes: {
       id: 'diotrophes',
       label: 'Диотрефы нашего времени',
       title: 'Досье A. Диотрефы нашего времени',
       mobileSection: 'Документальные кейсы',
       partLabel: 'Досье A · Содержание',
-      readingProgressDoneMin: 67,
+      readingProgressDoneMin: 0,
       readingProgressPartMin: 35,
-      readingProgressTotalMin: 102,
+      readingProgressTotalMin: 35,
       railNowTitle: 'Диотрефы нашего времени',
       railCover: '../../images/pastor-series/og-20-antisovetov-pastoru.webp',
       partDialogLabel: 'Досье A · Диотрефы нашего времени',

@@ -25,9 +25,17 @@
   "pastor-series": {
     "title": "Тёмная сторона кафедры",
     "baseUrl": "/articles/",
+    "searchPolicy": {"landingRoute":"/pastor-series/","librarySection":"Служение","topicCategory":"Пасторство"},
     "parts": [
       {"n":1,"slug":"20-antisovetov-pastoru","title":"20 антисоветов пастору","status":"published","readingTime":67},
-      {"n":2,"slug":"diotrefy-nashego-vremeni","title":"Диотрефы нашего времени","status":"published","readingTime":35}
+      {"n":2,"slug":"anatomiya-padeniya-pyat-stadiy","title":"Анатомия падения: пять стадий институционального разложения","status":"published","readingTime":29},
+      {"n":3,"slug":"teksty-pisaniya-kotorymi-manipuliruyut","title":"Тексты Писания, которыми манипулируют","status":"published","readingTime":36},
+      {"n":4,"slug":"sem-tipov-razlichenie-uchiteley","title":"Семь типов: как различать учителей и лидеров","status":"published","readingTime":30},
+      {"n":5,"slug":"cerkovnaya-disciplina-vlast-granicy-zashchita","title":"Церковная дисциплина: власть, границы и защита","status":"published","readingTime":34},
+      {"n":6,"slug":"kogda-uhodit-kogda-ostavatsya","title":"Когда говорить, когда молчать; когда уходить, когда оставаться","status":"published","readingTime":33},
+      {"n":7,"slug":"vernye-i-neizvestnye-zdorovoe-pastyrstvo","title":"Верные и неизвестные: здоровое пастырство","status":"published","readingTime":31},
+      {"n":8,"slug":"priznaki-zdorovoy-cerkvi","title":"Признаки здоровой церкви","status":"published","readingTime":30},
+      {"n":9,"slug":"nesovershennyy-chelovek-v-nesovershennoy-cerkvi","title":"Несовершенный человек в несовершенной церкви","status":"published","readingTime":31}
     ]
   },
   "hard-texts": {

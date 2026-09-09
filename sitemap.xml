@@ -571,4 +571,86 @@
       <image:title>Библейский тренажёр — Господь Бог — Сила Моя</image:title>
     </image:image>
   </url>
+
+  <!-- Canonical policy-generated additions -->
+  <url>
+    <loc>https://gospod-bog.ru/articles/anatomiya-padeniya-pyat-stadiy/</loc>
+    <lastmod>2026-09-06T21:00:00.000Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/pastor-series/og-hero.webp</image:loc>
+      <image:title>Анатомия падения: пять стадий институционального разложения | Господь Бог — Сила Моя</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://gospod-bog.ru/articles/cerkovnaya-disciplina-vlast-granicy-zashchita/</loc>
+    <lastmod>2026-09-06T21:00:00.000Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/pastor-series/og-hero.webp</image:loc>
+      <image:title>Церковная дисциплина: власть, границы и защита | Господь Бог — Сила Моя</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://gospod-bog.ru/articles/kogda-uhodit-kogda-ostavatsya/</loc>
+    <lastmod>2026-09-06T21:00:00.000Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/pastor-series/og-hero.webp</image:loc>
+      <image:title>Когда говорить, когда молчать; когда уходить, когда оставаться | Господь Бог — Сила Моя</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://gospod-bog.ru/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi/</loc>
+    <lastmod>2026-09-06T21:00:00.000Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/pastor-series/og-hero.webp</image:loc>
+      <image:title>Несовершенный человек в несовершенной церкви | Господь Бог — Сила Моя</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://gospod-bog.ru/articles/priznaki-zdorovoy-cerkvi/</loc>
+    <lastmod>2026-09-06T21:00:00.000Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/pastor-series/og-hero.webp</image:loc>
+      <image:title>Признаки здоровой церкви: власть, истина и подотчётность | Господь Бог — Сила Моя</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://gospod-bog.ru/articles/sem-tipov-razlichenie-uchiteley/</loc>
+    <lastmod>2026-09-06T21:00:00.000Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/pastor-series/og-hero.webp</image:loc>
+      <image:title>Семь типов: как различать учителей и лидеров | Господь Бог — Сила Моя</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://gospod-bog.ru/articles/teksty-pisaniya-kotorymi-manipuliruyut/</loc>
+    <lastmod>2026-09-06T21:00:00.000Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/pastor-series/og-hero.webp</image:loc>
+      <image:title>Тексты Писания, которыми манипулируют | Господь Бог — Сила Моя</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://gospod-bog.ru/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo/</loc>
+    <lastmod>2026-09-06T21:00:00.000Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/pastor-series/og-hero.webp</image:loc>
+      <image:title>Верные и неизвестные: здоровое пастырство | Господь Бог — Сила Моя</image:title>
+    </image:image>
+  </url>
 </urlset>
