@@ -195,7 +195,7 @@ jobs:
           run_audit gill-reading-time \
             node scripts/gill-reading-time-canonical-audit.js
           run_audit gill-pagefind-body \
-            node scripts/gill-pagefind-body-audit.js --require-dist
+            node scripts/gill-pagefind-body-audit.js
           run_audit data-consistency \
             node scripts/check-data-consistency.js
 
