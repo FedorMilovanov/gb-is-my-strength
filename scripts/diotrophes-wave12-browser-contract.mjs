@@ -110,6 +110,7 @@ async function captureSegmentedScreenshot(page, engine, profile) {
 
   const ranges = [];
   const tiles = [];
+  const terminalClips = [];
   for (let index = 0; index < positions.length; index += 1) {
     const requestedTop = positions[index];
     await page.evaluate((top) => window.scrollTo(0, top), requestedTop);
@@ -127,7 +128,10 @@ async function captureSegmentedScreenshot(page, engine, profile) {
         visualViewportHeight: visualViewport ? Math.round(visualViewport.height) : null,
       };
     });
-    const directTop = viewportPosition.visualViewportPageTop ?? viewportPosition.layoutScrollTop;
+    const actualTop = viewportPosition.visualViewportPageTop ?? viewportPosition.layoutScrollTop;
+    const actualTopSource = viewportPosition.visualViewportPageTop === null
+      ? 'layout-scroll-top'
+      : 'visual-viewport-page-top';
     const tilePath = join(OUT, `${engine}-${profile.id}-tile-${String(index + 1).padStart(3, '0')}.png`);
     await page.screenshot({ path: tilePath, fullPage: false });
     const bytes = statSync(tilePath).size;
@@ -137,45 +141,21 @@ async function captureSegmentedScreenshot(page, engine, profile) {
       png.width === metrics.viewportWidth &&
       png.height === metrics.viewportHeight;
     const pageHeightStable = Math.abs(viewportPosition.livePageHeight - metrics.pageHeight) <= 1;
-    const layoutAtLiveBottom =
-      Math.abs(
-        viewportPosition.layoutScrollTop +
-        viewportPosition.layoutViewportHeight -
-        viewportPosition.livePageHeight,
-      ) <= 1;
+    const layoutViewportBottom = viewportPosition.layoutScrollTop + viewportPosition.layoutViewportHeight;
+    const layoutAtLiveBottom = Math.abs(layoutViewportBottom - viewportPosition.livePageHeight) <= 1;
     const terminalRequested = Math.abs(requestedTop - maxScreenshotTop) <= 1;
-    const directTerminalReachable = Math.abs(directTop - maxScreenshotTop) <= 1;
-    const terminalBottomCropEligible =
-      terminalRequested &&
-      !directTerminalReachable &&
-      pageHeightStable &&
-      pngGeometryValid &&
-      viewportPosition.layoutViewportHeight >= png.height &&
-      layoutAtLiveBottom &&
-      Math.abs(
-        viewportPosition.layoutScrollTop +
-        viewportPosition.layoutViewportHeight -
-        metrics.pageHeight,
-      ) <= 1;
-
-    let actualTop = directTop;
-    let actualTopSource = viewportPosition.visualViewportPageTop === null
-      ? 'layout-scroll-top'
-      : 'visual-viewport-page-top';
-    if (terminalBottomCropEligible) {
-      actualTop = metrics.pageHeight - png.height;
-      actualTopSource = 'layout-terminal-bottom-crop';
-    }
 
     const start = Math.max(0, Math.min(actualTop, metrics.pageHeight));
     const end = Math.max(start, Math.min(start + png.height, metrics.pageHeight));
-    ranges.push({ start, end });
-    tiles.push({
+    ranges.push({ start, end, source:'viewport-tile', index:index + 1 });
+
+    const tile = {
       index: index + 1,
       requestedTop,
       layoutScrollTop: viewportPosition.layoutScrollTop,
       livePageHeight: viewportPosition.livePageHeight,
       layoutViewportHeight: viewportPosition.layoutViewportHeight,
+      layoutViewportBottom,
       innerHeight: viewportPosition.innerHeight,
       visualViewportPageTop: viewportPosition.visualViewportPageTop,
       visualViewportOffsetTop: viewportPosition.visualViewportOffsetTop,
@@ -185,13 +165,70 @@ async function captureSegmentedScreenshot(page, engine, profile) {
       pngGeometryValid,
       pageHeightStable,
       layoutAtLiveBottom,
-      terminalBottomCropEligible,
+      terminalRequested,
       actualTop,
       actualTopSource,
       start,
       end,
       bytes,
-    });
+    };
+    tiles.push(tile);
+
+    const terminalTailStart = end;
+    const terminalTailEnd = metrics.pageHeight;
+    const terminalTailHeight = Math.max(0, terminalTailEnd - terminalTailStart);
+    const terminalTailInsideLayoutViewport =
+      terminalTailHeight > 0 &&
+      terminalTailStart >= viewportPosition.layoutScrollTop - 1 &&
+      terminalTailEnd <= layoutViewportBottom + 1;
+    const terminalClipEligible =
+      terminalRequested &&
+      pageHeightStable &&
+      pngGeometryValid &&
+      layoutAtLiveBottom &&
+      Math.abs(layoutViewportBottom - metrics.pageHeight) <= 1 &&
+      terminalTailInsideLayoutViewport;
+
+    if (terminalClipEligible) {
+      const clipPath = join(OUT, `${engine}-${profile.id}-terminal-tail.png`);
+      await page.screenshot({
+        path: clipPath,
+        clip: {
+          x: 0,
+          y: terminalTailStart,
+          width: metrics.viewportWidth,
+          height: terminalTailHeight,
+        },
+      });
+      const clipBytes = statSync(clipPath).size;
+      const clipPng = readPngDimensions(clipPath);
+      const clipGeometryValid =
+        clipPng.signatureOk &&
+        clipPng.width === metrics.viewportWidth &&
+        clipPng.height === terminalTailHeight;
+      const postClipPageHeight = await page.evaluate(() => {
+        const scrollingElement = document.scrollingElement || document.documentElement;
+        return Math.round(scrollingElement.scrollHeight);
+      });
+      const clipPageHeightStable = Math.abs(postClipPageHeight - metrics.pageHeight) <= 1;
+      const clip = {
+        start: terminalTailStart,
+        end: terminalTailEnd,
+        height: terminalTailHeight,
+        bytes: clipBytes,
+        pngWidth: clipPng.width,
+        pngHeight: clipPng.height,
+        pngGeometryValid: clipGeometryValid,
+        pageHeightStable: clipPageHeightStable,
+        postClipPageHeight,
+        layoutViewportBottom,
+        source:'page-coordinate-terminal-clip',
+      };
+      terminalClips.push(clip);
+      if (clipGeometryValid && clipPageHeightStable) {
+        ranges.push({ start:terminalTailStart, end:terminalTailEnd, source:clip.source, index:terminalClips.length });
+      }
+    }
   }
 
   ranges.sort((left, right) => left.start - right.start || left.end - right.end);
@@ -206,14 +243,24 @@ async function captureSegmentedScreenshot(page, engine, profile) {
   const coveredPixels = Math.max(0, metrics.pageHeight - gapPixels);
   const emptyTiles = tiles.filter((tile) => tile.bytes < 1000);
   const pngGeometryValid = tiles.every((tile) => tile.pngGeometryValid);
-  const pageHeightStable = tiles.every((tile) => tile.pageHeightStable);
+  const pageHeightStable =
+    tiles.every((tile) => tile.pageHeightStable) &&
+    terminalClips.every((clip) => clip.pageHeightStable);
+  const terminalClipGeometryValid = terminalClips.every((clip) => clip.pngGeometryValid);
   const terminalTile = tiles.at(-1);
-  const terminalScreenshotReachable =
+  const terminalViewportCoversBottom =
     Boolean(terminalTile) &&
-    Math.abs(terminalTile.actualTop + terminalTile.pngHeight - metrics.pageHeight) <= 1;
+    terminalTile.end >= metrics.pageHeight - 1;
+  const terminalClipCoversBottom = terminalClips.some((clip) =>
+    clip.pngGeometryValid &&
+    clip.pageHeightStable &&
+    clip.end >= metrics.pageHeight - 1,
+  );
+  const terminalScreenshotReachable = terminalViewportCoversBottom || terminalClipCoversBottom;
   const complete =
     metrics.pageHeight > 0 &&
     pngGeometryValid &&
+    terminalClipGeometryValid &&
     pageHeightStable &&
     terminalScreenshotReachable &&
     gaps.length === 0 &&
@@ -227,13 +274,19 @@ async function captureSegmentedScreenshot(page, engine, profile) {
     viewportWidth: metrics.viewportWidth,
     maxScreenshotTop,
     pngGeometryValid,
+    terminalClipGeometryValid,
     pageHeightStable,
     terminalScreenshotReachable,
+    terminalViewportCoversBottom,
+    terminalClipCoversBottom,
     coveredPixels,
     gaps,
     emptyTiles: emptyTiles.map((tile) => tile.index),
     tileCount: tiles.length,
-    totalPngBytes: tiles.reduce((sum, tile) => sum + tile.bytes, 0),
+    terminalClips,
+    totalPngBytes:
+      tiles.reduce((sum, tile) => sum + tile.bytes, 0) +
+      terminalClips.reduce((sum, clip) => sum + clip.bytes, 0),
     tiles,
   };
 }
