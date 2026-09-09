@@ -1,0 +1,95 @@
+name: Cloudflare Response Header Owner
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/cloudflare-response-header-owner.yml'
+      - 'scripts/cloudflare-response-header-owner-lib.mjs'
+      - 'scripts/cloudflare-response-header-owner.mjs'
+      - 'scripts/cloudflare-response-header-owner-contract-test.mjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cloudflare-response-header-owner.yml'
+      - 'scripts/cloudflare-response-header-owner-lib.mjs'
+      - 'scripts/cloudflare-response-header-owner.mjs'
+      - 'scripts/cloudflare-response-header-owner-contract-test.mjs'
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-response-header-owner-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup pinned Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          check-latest: false
+
+      - name: Validate transport-owner source
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/cloudflare-response-header-owner-lib.mjs
+          node --check scripts/cloudflare-response-header-owner.mjs
+          node --check scripts/cloudflare-response-header-owner-contract-test.mjs
+          node scripts/cloudflare-response-header-owner-contract-test.mjs
+          grep -Fq 'CLOUDFLARE_TRANSFORM_API_TOKEN' scripts/cloudflare-response-header-owner.mjs
+          if grep -Fq 'CLOUDFLARE_API_TOKEN' scripts/cloudflare-response-header-owner.mjs; then
+            echo 'Response-header owner must not reuse the cache-purge token secret.' >&2
+            exit 1
+          fi
+
+  apply-production:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact control-plane source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Setup pinned Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          check-latest: false
+
+      - name: Apply Cloudflare response-header owner and prove live transport
+        env:
+          CLOUDFLARE_TRANSFORM_API_TOKEN: ${{ secrets.CLOUDFLARE_TRANSFORM_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_ZONE_NAME: gospod-bog.ru
+          SOURCE_SHA: ${{ github.sha }}
+        run: node scripts/cloudflare-response-header-owner.mjs
+
+      - name: Upload sanitized transport-owner evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cloudflare-response-header-owner-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/cloudflare-response-header-owner.json
+          if-no-files-found: error
+          retention-days: 14
