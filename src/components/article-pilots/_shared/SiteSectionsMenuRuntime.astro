@@ -11,7 +11,7 @@
   (() => {
     'use strict';
 
-    const VERSION = 4;
+    const VERSION = 5;
     const OWNER_ID = 'site-sections-menu';
     const API_KEY = 'GBSiteSectionsMenu';
     const CONTROLLER_KEY = '__gbSiteSectionsMenuController';
@@ -67,7 +67,12 @@
         if (panel.classList.contains('open')) return;
         panel.hidden = true;
         if (backdrop) backdrop.hidden = true;
+        window.clearTimeout(nativeHideTimer);
         nativeHideTimer = 0;
+      };
+      const onPanelTransitionSettled = (event) => {
+        if (event.target !== panel || panel.classList.contains('open')) return;
+        hideNatively();
       };
       const syncVisual = (open) => {
         window.clearTimeout(nativeHideTimer);
@@ -160,6 +165,8 @@
       const legacyClose = () => close('legacy-api');
       trigger.addEventListener('click', onTrigger);
       panel.addEventListener('click', onPanelClick);
+      panel.addEventListener('transitionend', onPanelTransitionSettled);
+      panel.addEventListener('transitioncancel', onPanelTransitionSettled);
       backdrop?.addEventListener('click', onBackdrop);
       window.addEventListener('pageshow', onPageShow);
       window.closeMobileNav = legacyClose;
@@ -180,6 +187,8 @@
           nativeHideTimer = 0;
           trigger.removeEventListener('click', onTrigger);
           panel.removeEventListener('click', onPanelClick);
+          panel.removeEventListener('transitionend', onPanelTransitionSettled);
+          panel.removeEventListener('transitioncancel', onPanelTransitionSettled);
           backdrop?.removeEventListener('click', onBackdrop);
           window.removeEventListener('pageshow', onPageShow);
           close('destroy', { restoreFocus: false });

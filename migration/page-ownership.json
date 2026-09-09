@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updated": "2026-08-17",
+  "updated": "2026-09-08",
   "description": "Build-time strangler ownership manifest. Production GitHub Pages serves Astro/strangler dist. owner=astro means output is generated from src/pages and must not be overwritten by legacy copy. status=production-dist means the route is allowed in production after its route and release gates pass.",
   "routes": {
     "/": {"owner":"astro","source":"src/pages/index.astro","risk":2,"status":"production-dist"},
@@ -8,6 +8,14 @@
     "/app/": {"owner":"astro","source":"src/pages/app/index.astro","risk":2,"status":"production-dist"},
     "/articles/": {"owner":"astro","source":"src/pages/articles/index.astro","risk":2,"status":"production-dist"},
     "/articles/20-antisovetov-pastoru/": {"owner":"astro","source":"src/pages/articles/20-antisovetov-pastoru/index.astro","risk":2,"status":"production-dist"},
+    "/articles/anatomiya-padeniya-pyat-stadiy/": {"owner":"astro","source":"src/pages/articles/anatomiya-padeniya-pyat-stadiy/index.astro","risk":2,"status":"production-dist"},
+    "/articles/cerkovnaya-disciplina-vlast-granicy-zashchita/": {"owner":"astro","source":"src/pages/articles/cerkovnaya-disciplina-vlast-granicy-zashchita/index.astro","risk":2,"status":"production-dist"},
+    "/articles/kogda-uhodit-kogda-ostavatsya/": {"owner":"astro","source":"src/pages/articles/kogda-uhodit-kogda-ostavatsya/index.astro","risk":2,"status":"production-dist"},
+    "/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi/": {"owner":"astro","source":"src/pages/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi/index.astro","risk":2,"status":"production-dist"},
+    "/articles/priznaki-zdorovoy-cerkvi/": {"owner":"astro","source":"src/pages/articles/priznaki-zdorovoy-cerkvi/index.astro","risk":2,"status":"production-dist"},
+    "/articles/sem-tipov-razlichenie-uchiteley/": {"owner":"astro","source":"src/pages/articles/sem-tipov-razlichenie-uchiteley/index.astro","risk":2,"status":"production-dist"},
+    "/articles/teksty-pisaniya-kotorymi-manipuliruyut/": {"owner":"astro","source":"src/pages/articles/teksty-pisaniya-kotorymi-manipuliruyut/index.astro","risk":2,"status":"production-dist"},
+    "/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo/": {"owner":"astro","source":"src/pages/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo/index.astro","risk":2,"status":"production-dist"},
     "/articles/diotrefy-nashego-vremeni/": {"owner":"astro","source":"src/pages/articles/diotrefy-nashego-vremeni/index.astro","risk":3,"status":"production-dist"},
     "/articles/chto-bibliya-nazyvaet-serdcem/": {"owner":"astro","source":"src/pages/articles/chto-bibliya-nazyvaet-serdcem/index.astro","risk":2,"status":"production-dist"},
     "/articles/dzhon-gill-chast-1-chelovek/": {"owner":"astro","source":"src/pages/articles/dzhon-gill-chast-1-chelovek/index.astro","risk":2,"status":"production-dist"},
