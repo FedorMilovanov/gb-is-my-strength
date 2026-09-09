@@ -149,6 +149,14 @@ jobs:
       - name: Verify Source Authority publication input universe
         run: node scripts/source-authority-trigger-universe-contract-test.js
 
+      - name: Reject transport-only HTML meta pragmas in changed source
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          node --check scripts/security-source-meta-contract.mjs
+          node scripts/security-source-meta-contract.mjs --changed
+
       - name: Install dependencies
         run: npm ci
 
