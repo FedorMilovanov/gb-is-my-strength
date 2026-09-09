@@ -133,7 +133,7 @@ for (const invalid of ['', '0', '-1', '1e3', String(Number.MAX_SAFE_INTEGER + 1)
 
 const mutations = [
   ['release gains issue write', { ...sources, deploy: sources.deploy.replace('  contents: read\n', '  contents: read\n  issues: write\n') }],
-  ['release deploy rebuilds', { ...sources, deploy: sources.deploy.replace('name: Download exact same-run release candidate', 'run: npm run strangler:build:production-like\n\n      - name: Download exact same-run release candidate') }],
+  ['release deploy rebuilds', { ...sources, deploy: sources.deploy.replace('name: Download exact readiness candidate by artifact ID', 'run: npm run strangler:build:production-like\n\n      - name: Download exact readiness candidate by artifact ID') }],
   ['release/control output aliased', { ...sources, deploy: sources.deploy.replace('control_plane_sha: ${{ steps.provenance.outputs.control_plane_sha }}', 'control_plane_sha: ${{ steps.provenance.outputs.release_sha }}') }],
   ['generic evidence downgraded', { ...sources, deploy: downgradeNamedArtifact(sources.deploy, 'release-live-deployment-\\$\\{\\{ github\\.run_id \\}\\}') }],
   ['generic and TTS order reversed', { ...sources, deploy: sources.deploy.replace('Verify generic live release contract', '__GENERIC__').replace('Verify live TTS capability extension', 'Verify generic live release contract').replace('__GENERIC__', 'Verify live TTS capability extension') }],
