@@ -1,10 +1,11 @@
 #!/usr/bin/env node
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const SOURCE_EXTENSIONS = new Set(['.astro', '.html', '.mdx']);
+const SOURCE_EXTENSIONS = new Set(['.astro', '.html', '.mdx', '.jsx', '.tsx']);
 const EXCLUDED_DIRS = new Set([
   '.git',
   '.astro',
@@ -15,15 +16,18 @@ const EXCLUDED_DIRS = new Set([
   'playwright-report',
   'test-results',
 ]);
+const CHANGED_ONLY = process.argv.includes('--changed');
 
 const META_TAG = /<meta\b[^>]*>/gi;
 const TRANSPORT_ONLY_HTTP_EQUIV = /\bhttp-equiv\s*=\s*(["'])?x-content-type-options\1?/i;
 
+function isSourceFile(file) {
+  return SOURCE_EXTENSIONS.has(path.extname(file).toLowerCase());
+}
+
 function walk(dir, output = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (entry.name.startsWith('.') && entry.name !== '.well-known') {
-      if (entry.isDirectory()) continue;
-    }
+    if (entry.name.startsWith('.') && entry.name !== '.well-known' && entry.isDirectory()) continue;
     if (entry.isDirectory() && EXCLUDED_DIRS.has(entry.name)) continue;
 
     const absolute = path.join(dir, entry.name);
@@ -31,14 +35,35 @@ function walk(dir, output = []) {
       walk(absolute, output);
       continue;
     }
-    if (!entry.isFile() || !SOURCE_EXTENSIONS.has(path.extname(entry.name).toLowerCase())) continue;
+    if (!entry.isFile() || !isSourceFile(entry.name)) continue;
     output.push(absolute);
   }
   return output;
 }
 
+function git(args) {
+  return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8' }).trim();
+}
+
+function changedFiles() {
+  let base = String(process.env.BASE_SHA || '').trim();
+  const head = String(process.env.HEAD_SHA || '').trim();
+  if (!base || !head) throw new Error('BASE_SHA and HEAD_SHA are required with --changed');
+  if (/^0+$/.test(base)) base = git(['rev-parse', `${head}^`]);
+
+  const names = git(['diff', '--name-only', '--diff-filter=ACMR', base, head, '--']);
+  if (!names) return [];
+  return names
+    .split('\n')
+    .map((name) => name.trim())
+    .filter(Boolean)
+    .filter(isSourceFile)
+    .map((name) => path.join(ROOT, name))
+    .filter((file) => fs.existsSync(file) && fs.statSync(file).isFile());
+}
+
 const failures = [];
-const files = walk(ROOT);
+const files = CHANGED_ONLY ? changedFiles() : walk(ROOT);
 for (const file of files) {
   const source = fs.readFileSync(file, 'utf8');
   for (const match of source.matchAll(META_TAG)) {
@@ -63,4 +88,5 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`✅ Security source meta contract: ${files.length} HTML-producing source files checked; forbidden transport meta pragmas = 0.`);
+const mode = CHANGED_ONLY ? 'changed-source ratchet' : 'full source census';
+console.log(`✅ Security source meta contract (${mode}): ${files.length} HTML-producing source files checked; forbidden transport meta pragmas = 0.`);
