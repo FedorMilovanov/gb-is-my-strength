@@ -10,6 +10,11 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
 const OUT = join(ROOT, 'reports', 'diotrophes-wave12');
 const ROUTE = '/articles/diotrefy-nashego-vremeni/';
+const PRECONDITIONING_MAX_PASSES = 5;
+const PRECONDITIONING_REQUIRED_STABLE_PASSES = 2;
+const PAGE_HEIGHT_EPSILON_PX = 1;
+const PRECONDITIONING_STEP_WAIT_MS = 80;
+const MOBILE_CHROME_EVIDENCE_PIN_ID = 'wave12-mobile-chrome-evidence-pin';
 const EXPECTED_SHARED_READER_LINKS = [
   'https://www.childabuseroyalcommission.gov.au/case-studies/case-study-18-australian-christian-churches',
   'https://www.childabuseroyalcommission.gov.au/media-releases/findings-released-australian-christian-churches-and-affiliated-pentecostal-churches',
@@ -68,43 +73,343 @@ async function stabilizeVisualState(page) {
   await page.waitForTimeout(100);
 }
 
-async function captureSegmentedScreenshot(page, engine, profile) {
-  await stabilizeVisualState(page);
-  const metrics = await page.evaluate(() => ({
-    pageHeight: Math.max(
-      document.documentElement.scrollHeight,
-      document.body?.scrollHeight || 0,
-      document.documentElement.offsetHeight,
-      document.body?.offsetHeight || 0,
-    ),
-    viewportHeight: window.innerHeight,
-    viewportWidth: window.innerWidth,
-  }));
+async function pinMobileChromeForScreenshotEvidence(page) {
+  const pin = await page.evaluate((pinId) => {
+    const topBar = document.querySelector('.mobile-top-bar[data-gill-mobile-bar]');
+    if (!topBar || getComputedStyle(topBar).display === 'none') {
+      return { applicable:false, active:true, owner:'none' };
+    }
 
-  const maxScroll = Math.max(0, metrics.pageHeight - metrics.viewportHeight);
+    let sink = document.getElementById(pinId);
+    if (!sink) {
+      sink = document.createElement('button');
+      sink.id = pinId;
+      sink.type = 'button';
+      sink.tabIndex = -1;
+      sink.setAttribute('aria-hidden', 'true');
+      sink.style.cssText = [
+        'position:fixed',
+        'left:-10000px',
+        'top:0',
+        'width:1px',
+        'height:1px',
+        'padding:0',
+        'margin:0',
+        'border:0',
+        'outline:0',
+        'opacity:0',
+        'pointer-events:none',
+        'background:transparent',
+      ].join(';');
+      topBar.appendChild(sink);
+    }
+    sink.focus({ preventScroll:true });
+    return {
+      applicable:true,
+      active:topBar.contains(document.activeElement),
+      owner:'top-bar-focus-containment',
+      activeElementId:document.activeElement?.id || '',
+    };
+  }, MOBILE_CHROME_EVIDENCE_PIN_ID);
+  await page.waitForTimeout(100);
+  return pin;
+}
+
+function readPngDimensions(path) {
+  const png = readFileSync(path);
+  const signatureOk =
+    png.length >= 24 &&
+    png[0] === 0x89 &&
+    png[1] === 0x50 &&
+    png[2] === 0x4e &&
+    png[3] === 0x47 &&
+    png[4] === 0x0d &&
+    png[5] === 0x0a &&
+    png[6] === 0x1a &&
+    png[7] === 0x0a;
+  return {
+    signatureOk,
+    width: signatureOk ? png.readUInt32BE(16) : 0,
+    height: signatureOk ? png.readUInt32BE(20) : 0,
+  };
+}
+
+async function readScrollGeometry(page) {
+  return page.evaluate(() => {
+    const scrollingElement = document.scrollingElement || document.documentElement;
+    return {
+      scrollTop: Math.round(window.scrollY),
+      pageHeight: Math.round(scrollingElement.scrollHeight),
+      viewportHeight: Math.round(scrollingElement.clientHeight),
+    };
+  });
+}
+
+async function materializeScrollGeometry(page) {
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(100);
+  const initial = await readScrollGeometry(page);
+  const heightChanges = [];
+  const observedPageHeights = [initial.pageHeight];
+  let lastHeight = null;
+  let requestedTop = 0;
+  let reachedLiveBottom = false;
+  let steps = 0;
+
+  for (; steps < 500; steps += 1) {
+    const before = await readScrollGeometry(page);
+    observedPageHeights.push(before.pageHeight);
+    const maxTop = Math.max(0, before.pageHeight - before.viewportHeight);
+    const targetTop = Math.min(requestedTop, maxTop);
+    await page.evaluate((top) => window.scrollTo(0, top), targetTop);
+    await page.waitForTimeout(PRECONDITIONING_STEP_WAIT_MS);
+    const after = await readScrollGeometry(page);
+    observedPageHeights.push(after.pageHeight);
+    if (after.pageHeight !== lastHeight) {
+      heightChanges.push({
+        step: steps + 1,
+        requestedTop: targetTop,
+        scrollTop: after.scrollTop,
+        pageHeight: after.pageHeight,
+      });
+      lastHeight = after.pageHeight;
+    }
+    const layoutBottom = after.scrollTop + after.viewportHeight;
+    if (layoutBottom >= after.pageHeight - PAGE_HEIGHT_EPSILON_PX) {
+      reachedLiveBottom = true;
+      break;
+    }
+    const nextTop = Math.max(targetTop + before.viewportHeight, layoutBottom);
+    if (nextTop <= requestedTop) break;
+    requestedTop = nextTop;
+  }
+
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(100);
+  const final = await readScrollGeometry(page);
+  observedPageHeights.push(final.pageHeight);
+  const minObservedPageHeight = Math.min(...observedPageHeights);
+  const maxObservedPageHeight = Math.max(...observedPageHeights);
+  const stableDuringPass =
+    maxObservedPageHeight - minObservedPageHeight <= PAGE_HEIGHT_EPSILON_PX;
+
+  return {
+    complete: reachedLiveBottom && final.scrollTop === 0 && final.pageHeight > 0,
+    reachedLiveBottom,
+    initialPageHeight: initial.pageHeight,
+    finalPageHeight: final.pageHeight,
+    viewportHeight: final.viewportHeight,
+    steps: steps + 1,
+    heightChanges,
+    minObservedPageHeight,
+    maxObservedPageHeight,
+    stableDuringPass,
+  };
+}
+
+async function convergeScrollGeometry(page) {
+  const passes = [];
+  let consecutiveStablePasses = 0;
+  let previousSettledPageHeight = null;
+
+  for (let passIndex = 1; passIndex <= PRECONDITIONING_MAX_PASSES; passIndex += 1) {
+    await stabilizeVisualState(page);
+    const pass = await materializeScrollGeometry(page);
+    await stabilizeVisualState(page);
+    const settled = await readScrollGeometry(page);
+    const stableRelativeToPrevious =
+      previousSettledPageHeight === null ||
+      Math.abs(pass.initialPageHeight - previousSettledPageHeight) <= PAGE_HEIGHT_EPSILON_PX;
+    const stableAfterReturn =
+      settled.scrollTop === 0 &&
+      Math.abs(settled.pageHeight - pass.initialPageHeight) <= PAGE_HEIGHT_EPSILON_PX;
+    const stable =
+      pass.complete &&
+      pass.stableDuringPass &&
+      stableRelativeToPrevious &&
+      stableAfterReturn;
+
+    consecutiveStablePasses = stable ? consecutiveStablePasses + 1 : 0;
+    passes.push({
+      pass: passIndex,
+      ...pass,
+      postStabilizePageHeight: settled.pageHeight,
+      postStabilizeScrollTop: settled.scrollTop,
+      stableRelativeToPrevious,
+      stableAfterReturn,
+      stable,
+    });
+    previousSettledPageHeight = settled.pageHeight;
+
+    if (consecutiveStablePasses >= PRECONDITIONING_REQUIRED_STABLE_PASSES) break;
+  }
+
+  const first = passes[0];
+  const last = passes.at(-1);
+  const converged = consecutiveStablePasses >= PRECONDITIONING_REQUIRED_STABLE_PASSES;
+
+  return {
+    complete: converged,
+    converged,
+    reachedLiveBottom: Boolean(last?.reachedLiveBottom),
+    initialPageHeight: first?.initialPageHeight ?? 0,
+    finalPageHeight: last?.postStabilizePageHeight ?? 0,
+    viewportHeight: last?.viewportHeight ?? 0,
+    steps: passes.reduce((sum, pass) => sum + pass.steps, 0),
+    heightChanges: passes.flatMap((pass) =>
+      pass.heightChanges.map((change) => ({ pass: pass.pass, ...change })),
+    ),
+    passCount: passes.length,
+    requiredStablePasses: PRECONDITIONING_REQUIRED_STABLE_PASSES,
+    consecutiveStablePasses,
+    maxPasses: PRECONDITIONING_MAX_PASSES,
+    passes,
+  };
+}
+
+async function captureSegmentedScreenshot(page, engine, profile) {
+  const mobileChromePin = await pinMobileChromeForScreenshotEvidence(page);
+  const preconditioning = await convergeScrollGeometry(page);
+  const metrics = await page.evaluate(() => {
+    const scrollingElement = document.scrollingElement || document.documentElement;
+    return {
+      pageHeight: scrollingElement.scrollHeight,
+      viewportHeight: window.innerHeight,
+      viewportWidth: window.innerWidth,
+    };
+  });
+
+  const maxScreenshotTop = Math.max(0, metrics.pageHeight - metrics.viewportHeight);
   const positions = [];
   for (let requested = 0; requested < metrics.pageHeight; requested += metrics.viewportHeight) {
-    const top = Math.min(requested, maxScroll);
+    const top = Math.min(requested, maxScreenshotTop);
     if (positions.at(-1) !== top) positions.push(top);
-    if (top === maxScroll) break;
+    if (top === maxScreenshotTop) break;
   }
   if (!positions.length) positions.push(0);
-  if (positions.at(-1) !== maxScroll) positions.push(maxScroll);
+  if (positions.at(-1) !== maxScreenshotTop) positions.push(maxScreenshotTop);
 
   const ranges = [];
   const tiles = [];
+  const terminalClips = [];
   for (let index = 0; index < positions.length; index += 1) {
     const requestedTop = positions[index];
     await page.evaluate((top) => window.scrollTo(0, top), requestedTop);
     await page.waitForTimeout(80);
-    const actualTop = await page.evaluate(() => Math.round(window.scrollY));
+    const viewportPosition = await page.evaluate(() => {
+      const scrollingElement = document.scrollingElement || document.documentElement;
+      const visualViewport = window.visualViewport;
+      return {
+        layoutScrollTop: Math.round(window.scrollY),
+        livePageHeight: Math.round(scrollingElement.scrollHeight),
+        layoutViewportHeight: Math.round(scrollingElement.clientHeight),
+        innerHeight: Math.round(window.innerHeight),
+        visualViewportPageTop: visualViewport ? Math.round(visualViewport.pageTop) : null,
+        visualViewportOffsetTop: visualViewport ? Math.round(visualViewport.offsetTop) : null,
+        visualViewportHeight: visualViewport ? Math.round(visualViewport.height) : null,
+      };
+    });
+    const actualTop = viewportPosition.visualViewportPageTop ?? viewportPosition.layoutScrollTop;
+    const actualTopSource = viewportPosition.visualViewportPageTop === null
+      ? 'layout-scroll-top'
+      : 'visual-viewport-page-top';
     const tilePath = join(OUT, `${engine}-${profile.id}-tile-${String(index + 1).padStart(3, '0')}.png`);
     await page.screenshot({ path: tilePath, fullPage: false });
     const bytes = statSync(tilePath).size;
+    const png = readPngDimensions(tilePath);
+    const pngGeometryValid =
+      png.signatureOk &&
+      png.width === metrics.viewportWidth &&
+      png.height === metrics.viewportHeight;
+    const pageHeightStable = Math.abs(viewportPosition.livePageHeight - metrics.pageHeight) <= 1;
+    const layoutViewportBottom = viewportPosition.layoutScrollTop + viewportPosition.layoutViewportHeight;
+    const layoutAtLiveBottom = Math.abs(layoutViewportBottom - viewportPosition.livePageHeight) <= 1;
+    const terminalRequested = Math.abs(requestedTop - maxScreenshotTop) <= 1;
+
     const start = Math.max(0, Math.min(actualTop, metrics.pageHeight));
-    const end = Math.max(start, Math.min(start + metrics.viewportHeight, metrics.pageHeight));
-    ranges.push({ start, end });
-    tiles.push({ index: index + 1, requestedTop, actualTop, start, end, bytes });
+    const end = Math.max(start, Math.min(start + png.height, metrics.pageHeight));
+    ranges.push({ start, end, source:'viewport-tile', index:index + 1 });
+
+    const tile = {
+      index: index + 1,
+      requestedTop,
+      layoutScrollTop: viewportPosition.layoutScrollTop,
+      livePageHeight: viewportPosition.livePageHeight,
+      layoutViewportHeight: viewportPosition.layoutViewportHeight,
+      layoutViewportBottom,
+      innerHeight: viewportPosition.innerHeight,
+      visualViewportPageTop: viewportPosition.visualViewportPageTop,
+      visualViewportOffsetTop: viewportPosition.visualViewportOffsetTop,
+      visualViewportHeight: viewportPosition.visualViewportHeight,
+      pngWidth: png.width,
+      pngHeight: png.height,
+      pngGeometryValid,
+      pageHeightStable,
+      layoutAtLiveBottom,
+      terminalRequested,
+      actualTop,
+      actualTopSource,
+      start,
+      end,
+      bytes,
+    };
+    tiles.push(tile);
+
+    const terminalTailStart = end;
+    const terminalTailEnd = metrics.pageHeight;
+    const terminalTailHeight = Math.max(0, terminalTailEnd - terminalTailStart);
+    const terminalTailInsideLayoutViewport =
+      terminalTailHeight > 0 &&
+      terminalTailStart >= viewportPosition.layoutScrollTop - 1 &&
+      terminalTailEnd <= layoutViewportBottom + 1;
+    const terminalClipEligible =
+      terminalRequested &&
+      pageHeightStable &&
+      pngGeometryValid &&
+      layoutAtLiveBottom &&
+      Math.abs(layoutViewportBottom - metrics.pageHeight) <= 1 &&
+      terminalTailInsideLayoutViewport;
+
+    if (terminalClipEligible) {
+      const clipPath = join(OUT, `${engine}-${profile.id}-terminal-tail.png`);
+      await page.screenshot({
+        path: clipPath,
+        clip: {
+          x: 0,
+          y: terminalTailStart,
+          width: metrics.viewportWidth,
+          height: terminalTailHeight,
+        },
+      });
+      const clipBytes = statSync(clipPath).size;
+      const clipPng = readPngDimensions(clipPath);
+      const clipGeometryValid =
+        clipPng.signatureOk &&
+        clipPng.width === metrics.viewportWidth &&
+        clipPng.height === terminalTailHeight;
+      const postClipPageHeight = await page.evaluate(() => {
+        const scrollingElement = document.scrollingElement || document.documentElement;
+        return Math.round(scrollingElement.scrollHeight);
+      });
+      const clipPageHeightStable = Math.abs(postClipPageHeight - metrics.pageHeight) <= 1;
+      const clip = {
+        start: terminalTailStart,
+        end: terminalTailEnd,
+        height: terminalTailHeight,
+        bytes: clipBytes,
+        pngWidth: clipPng.width,
+        pngHeight: clipPng.height,
+        pngGeometryValid: clipGeometryValid,
+        pageHeightStable: clipPageHeightStable,
+        postClipPageHeight,
+        layoutViewportBottom,
+        source:'page-coordinate-terminal-clip',
+      };
+      terminalClips.push(clip);
+      if (clipGeometryValid && clipPageHeightStable) {
+        ranges.push({ start:terminalTailStart, end:terminalTailEnd, source:clip.source, index:terminalClips.length });
+      }
+    }
   }
 
   ranges.sort((left, right) => left.start - right.start || left.end - right.end);
@@ -118,18 +423,55 @@ async function captureSegmentedScreenshot(page, engine, profile) {
   const gapPixels = gaps.reduce((sum, gap) => sum + Math.max(0, gap.end - gap.start), 0);
   const coveredPixels = Math.max(0, metrics.pageHeight - gapPixels);
   const emptyTiles = tiles.filter((tile) => tile.bytes < 1000);
-  const complete = metrics.pageHeight > 0 && gaps.length === 0 && emptyTiles.length === 0 && coveredPixels === metrics.pageHeight;
+  const pngGeometryValid = tiles.every((tile) => tile.pngGeometryValid);
+  const pageHeightStable =
+    tiles.every((tile) => tile.pageHeightStable) &&
+    terminalClips.every((clip) => clip.pageHeightStable);
+  const terminalClipGeometryValid = terminalClips.every((clip) => clip.pngGeometryValid);
+  const terminalTile = tiles.at(-1);
+  const terminalViewportCoversBottom =
+    Boolean(terminalTile) &&
+    terminalTile.end >= metrics.pageHeight - 1;
+  const terminalClipCoversBottom = terminalClips.some((clip) =>
+    clip.pngGeometryValid &&
+    clip.pageHeightStable &&
+    clip.end >= metrics.pageHeight - 1,
+  );
+  const terminalScreenshotReachable = terminalViewportCoversBottom || terminalClipCoversBottom;
+  const complete =
+    mobileChromePin.active &&
+    preconditioning.complete &&
+    metrics.pageHeight > 0 &&
+    pngGeometryValid &&
+    terminalClipGeometryValid &&
+    pageHeightStable &&
+    terminalScreenshotReachable &&
+    gaps.length === 0 &&
+    emptyTiles.length === 0 &&
+    coveredPixels === metrics.pageHeight;
 
   return {
     complete,
+    mobileChromePin,
+    preconditioning,
     pageHeight: metrics.pageHeight,
     viewportHeight: metrics.viewportHeight,
     viewportWidth: metrics.viewportWidth,
+    maxScreenshotTop,
+    pngGeometryValid,
+    terminalClipGeometryValid,
+    pageHeightStable,
+    terminalScreenshotReachable,
+    terminalViewportCoversBottom,
+    terminalClipCoversBottom,
     coveredPixels,
     gaps,
     emptyTiles: emptyTiles.map((tile) => tile.index),
     tileCount: tiles.length,
-    totalPngBytes: tiles.reduce((sum, tile) => sum + tile.bytes, 0),
+    terminalClips,
+    totalPngBytes:
+      tiles.reduce((sum, tile) => sum + tile.bytes, 0) +
+      terminalClips.reduce((sum, clip) => sum + clip.bytes, 0),
     tiles,
   };
 }
