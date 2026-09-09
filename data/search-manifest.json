@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-09T09:42:00Z",
+  "generatedAt": "2026-09-06T21:00:00Z",
   "project": {
     "name": "Господь Бог — Сила Моя",
     "url": "https://gospod-bog.ru/",
@@ -18,44 +18,16 @@
       "section": "Главная",
       "editor": "Фёдор Милованов",
       "image": "/images/og-preview-1200x630.webp",
-      "tags": ["главная", "библиотека", "навигация"],
+      "tags": [
+        "главная",
+        "библиотека",
+        "навигация"
+      ],
       "featured": true,
       "priority": 100,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
       "readTime": 2
-    },
-    {
-      "id": "journal-g3-dossier",
-      "type": "article",
-      "url": "/journal/dossiers/g3/",
-      "title": "G3: рост, кризис и завершение операций",
-      "description": "Документальное досье G3 Ministries: история, корпоративные записи, финансы, кризис Josh Buice, спор вокруг Tom Buck, прекращение операций и открытые вопросы с явными границами доказательств.",
-      "section": "Журнал",
-      "editor": "Фёдор Милованов",
-      "image": "/images/og-preview-1200x630.webp",
-      "tags": ["G3 Ministries", "досье", "расследование", "документы"],
-      "featured": true,
-      "priority": 99,
-      "publishedTime": "2026-09-09T00:00:00+03:00",
-      "modifiedTime": "2026-09-09T00:00:00+03:00",
-      "readTime": 24
-    },
-    {
-      "id": "journal",
-      "type": "landing",
-      "url": "/journal/",
-      "title": "Журнал — документы, новости и расследования",
-      "description": "Документальный журнал сайта «Господь Бог — Сила Моя»: проверенные новости, расследования, досье, первичные документы, объяснения, открытые вопросы и история исправлений.",
-      "section": "Журнал",
-      "editor": "Фёдор Милованов",
-      "image": "/images/og-preview-1200x630.webp",
-      "tags": ["журнал", "досье", "документы", "расследования"],
-      "featured": true,
-      "priority": 98,
-      "publishedTime": "2026-09-09T00:00:00+03:00",
-      "modifiedTime": "2026-09-09T00:00:00+03:00",
-      "readTime": 3
     },
     {
       "id": "nagornaya-seriya",
@@ -67,7 +39,12 @@
       "editor": "Фёдор Милованов",
       "readTime": 89,
       "image": "/images/og-nagornaya-propoved.webp",
-      "tags": ["серия", "Матфей 5–7", "Лука 6", "TMS"],
+      "tags": [
+        "серия",
+        "Матфей 5–7",
+        "Лука 6",
+        "TMS"
+      ],
       "featured": true,
       "priority": 100,
       "publishedTime": "2026-01-01T00:00:00+03:00",
@@ -84,7 +61,13 @@
       "editor": "Фёдор Милованов",
       "readTime": 239,
       "image": "/images/gill-study-portrait.webp",
-      "tags": ["серия", "биографии", "Джон Гилл", "баптисты", "XVIII век"],
+      "tags": [
+        "серия",
+        "биографии",
+        "Джон Гилл",
+        "баптисты",
+        "XVIII век"
+      ],
       "featured": true,
       "priority": 96,
       "publishedTime": "2026-05-26T00:00:00+03:00",
@@ -100,7 +83,13 @@
       "editor": "Фёдор Милованов",
       "readTime": 28,
       "image": "/images/og-dzhon-gill-istoricheskiy-kontekst.webp",
-      "tags": ["биографии", "Джон Гилл", "диссентеры", "Саутварк", "история церкви"],
+      "tags": [
+        "биографии",
+        "Джон Гилл",
+        "диссентеры",
+        "Саутварк",
+        "история церкви"
+      ],
       "featured": true,
       "priority": 95,
       "publishedTime": "2026-06-01T00:00:00+03:00",
@@ -116,7 +105,13 @@
       "editor": "Фёдор Милованов",
       "readTime": 321,
       "image": "/images/pastor-series/og-hero.webp",
-      "tags": ["серия", "пасторство", "диотрефство", "авторитаризм", "здоровая церковь"],
+      "tags": [
+        "серия",
+        "пасторство",
+        "диотрефство",
+        "авторитаризм",
+        "здоровая церковь"
+      ],
       "featured": true,
       "priority": 95,
       "publishedTime": "2026-05-13T00:00:00+03:00",
@@ -132,7 +127,14 @@
       "editor": "Фёдор Милованов",
       "readTime": 12,
       "image": "/images/og-rodosloviye-1200x630.webp",
-      "tags": ["родословие", "Адам", "Авраам", "Давид", "Иисус Христос", "генеалогия"],
+      "tags": [
+        "родословие",
+        "Адам",
+        "Авраам",
+        "Давид",
+        "Иисус Христос",
+        "генеалогия"
+      ],
       "featured": true,
       "priority": 94,
       "publishedTime": "2026-06-18T00:00:00+03:00",
@@ -148,7 +150,12 @@
       "section": "Баптисты России",
       "editor": "Фёдор Милованов",
       "image": "/images/baptisty-rossii/cover-landing.webp",
-      "tags": ["баптисты", "история ЕХБ", "Россия", "первоисточники"],
+      "tags": [
+        "баптисты",
+        "история ЕХБ",
+        "Россия",
+        "первоисточники"
+      ],
       "featured": true,
       "priority": 93,
       "publishedTime": "2026-06-18T00:00:00+03:00",
@@ -165,7 +172,13 @@
       "editor": "Фёдор Милованов",
       "readTime": 32,
       "image": "/images/og-dzhon-gill-chast-1-chelovek.webp",
-      "tags": ["биографии", "баптисты", "богословие", "экзегеза", "Джон Гилл"],
+      "tags": [
+        "биографии",
+        "баптисты",
+        "богословие",
+        "экзегеза",
+        "Джон Гилл"
+      ],
       "featured": true,
       "priority": 92,
       "modifiedTime": "2026-06-10T00:00:00+03:00",
@@ -181,7 +194,15 @@
       "editor": "Фёдор Милованов",
       "readTime": 39,
       "image": "/images/og-dzhon-gill-chast-2-uchenyi.webp",
-      "tags": ["биографии", "Джон Гилл", "экзегеза", "систематика", "иврит", "раввинистика", "Body of Divinity"],
+      "tags": [
+        "биографии",
+        "Джон Гилл",
+        "экзегеза",
+        "систематика",
+        "иврит",
+        "раввинистика",
+        "Body of Divinity"
+      ],
       "featured": true,
       "priority": 91,
       "publishedTime": "2026-05-26T00:00:00+03:00",
@@ -197,7 +218,14 @@
       "editor": "Фёдор Милованов",
       "readTime": 45,
       "image": "/images/og-rimlyanam-7.webp",
-      "tags": ["Римлянам 7", "освящение", "остаточный грех", "плоть и Дух", "Ллойд-Джонс", "TMSJ"],
+      "tags": [
+        "Римлянам 7",
+        "освящение",
+        "остаточный грех",
+        "плоть и Дух",
+        "Ллойд-Джонс",
+        "TMSJ"
+      ],
       "featured": true,
       "priority": 91,
       "publishedTime": "2026-06-02T00:00:00+03:00",
@@ -214,7 +242,13 @@
       "editor": "Фёдор Милованов",
       "readTime": 67,
       "image": "/images/pastor-series/og-20-antisovetov-pastoru.webp",
-      "tags": ["пасторство", "антисоветы", "диотрефство", "авторитаризм", "подотчётность"],
+      "tags": [
+        "пасторство",
+        "антисоветы",
+        "диотрефство",
+        "авторитаризм",
+        "подотчётность"
+      ],
       "featured": false,
       "priority": 90,
       "publishedTime": "2026-05-13T00:00:00+03:00",
@@ -234,7 +268,13 @@
       "editor": "Фёдор Милованов",
       "readTime": 35,
       "image": "/images/pastor-series/og-20-antisovetov-pastoru.webp",
-      "tags": ["пасторство", "Диотреф", "подотчётность", "защита уязвимых", "церковное управление"],
+      "tags": [
+        "пасторство",
+        "Диотреф",
+        "подотчётность",
+        "защита уязвимых",
+        "церковное управление"
+      ],
       "featured": false,
       "priority": 90,
       "publishedTime": "2026-08-02T00:00:00+03:00",
@@ -253,7 +293,14 @@
       "editor": "Фёдор Милованов",
       "readTime": 54,
       "image": "/images/og-dzhon-gill-chast-3-nasledie.webp",
-      "tags": ["биографии", "Джон Гилл", "Сперджен", "полемика", "наследие", "гиперкальвинизм"],
+      "tags": [
+        "биографии",
+        "Джон Гилл",
+        "Сперджен",
+        "полемика",
+        "наследие",
+        "гиперкальвинизм"
+      ],
       "featured": true,
       "priority": 90,
       "publishedTime": "2026-05-26T00:00:00+03:00",
@@ -269,7 +316,14 @@
       "editor": "Фёдор Милованов",
       "readTime": 71,
       "image": "/images/og-dzhon-gill-chast-4-ekzeget.webp",
-      "tags": ["биографии", "Джон Гилл", "экзегеза", "герменевтика", "богословие", "кальвинизм"],
+      "tags": [
+        "биографии",
+        "Джон Гилл",
+        "экзегеза",
+        "герменевтика",
+        "богословие",
+        "кальвинизм"
+      ],
       "featured": true,
       "priority": 90,
       "publishedTime": "2026-07-09T00:00:00+03:00",
@@ -285,7 +339,13 @@
       "editor": "Фёдор Милованов",
       "readTime": 41,
       "image": "/images/og-krajne-isporcheno.webp",
-      "tags": ["Иеремия", "сердце", "остаточный грех", "Римлянам 7", "освящение"],
+      "tags": [
+        "Иеремия",
+        "сердце",
+        "остаточный грех",
+        "Римлянам 7",
+        "освящение"
+      ],
       "featured": true,
       "priority": 90,
       "modifiedTime": "2026-06-04T00:00:00+03:00",
@@ -302,7 +362,13 @@
       "editor": "Фёдор Милованов",
       "readTime": 15,
       "image": "/images/og-dzhon-gill-spravochnik.webp",
-      "tags": ["биографии", "Джон Гилл", "справочник", "хронология", "Body of Divinity"],
+      "tags": [
+        "биографии",
+        "Джон Гилл",
+        "справочник",
+        "хронология",
+        "Body of Divinity"
+      ],
       "featured": true,
       "priority": 88,
       "publishedTime": "2026-06-01T00:00:00+03:00",
@@ -319,7 +385,12 @@
       "editor": "Фёдор Милованов",
       "readTime": 50,
       "image": "/images/og-hermenevtika-hristotsentrichnaya-otsenka.webp",
-      "tags": ["герменевтика", "перевод", "Чау", "реформатское"],
+      "tags": [
+        "герменевтика",
+        "перевод",
+        "Чау",
+        "реформатское"
+      ],
       "featured": true,
       "priority": 88,
       "modifiedTime": "2026-05-21T23:09:05+03:00",
@@ -335,7 +406,11 @@
       "section": "Конфессии и деноминации",
       "editor": "Фёдор Милованов",
       "image": "/images/og-konfessii-russkij-baptizm-1200x630.webp",
-      "tags": ["русский баптизм", "ЕХБ", "3D карта"],
+      "tags": [
+        "русский баптизм",
+        "ЕХБ",
+        "3D карта"
+      ],
       "featured": true,
       "priority": 88,
       "publishedTime": "2026-06-18T00:00:00+03:00",
@@ -351,7 +426,10 @@
       "section": "Каталоги",
       "editor": "Фёдор Милованов",
       "image": "/images/og-preview-1200x630.webp",
-      "tags": ["статьи", "каталог"],
+      "tags": [
+        "статьи",
+        "каталог"
+      ],
       "featured": false,
       "priority": 86,
       "publishedTime": "2026-06-18T00:00:00+03:00",
@@ -368,7 +446,12 @@
       "editor": "Фёдор Милованов",
       "readTime": 30,
       "image": "/images/og-kod-da-vinchi.webp",
-      "tags": ["апологетика", "Никея", "канон", "гностицизм"],
+      "tags": [
+        "апологетика",
+        "Никея",
+        "канон",
+        "гностицизм"
+      ],
       "featured": true,
       "priority": 85,
       "modifiedTime": "2026-05-21T23:09:05+03:00",
@@ -384,7 +467,11 @@
       "editor": "Фёдор Милованов",
       "readTime": 5,
       "image": "/images/og-biografii.webp",
-      "tags": ["биографии", "христианское наследие", "история церкви"],
+      "tags": [
+        "биографии",
+        "христианское наследие",
+        "история церкви"
+      ],
       "featured": true,
       "priority": 85,
       "modifiedTime": "2026-05-28T00:00:00+03:00",
@@ -399,7 +486,11 @@
       "section": "Нагорная проповедь",
       "editor": "Фёдор Милованов",
       "image": "/images/og-nagornaya-propoved.webp",
-      "tags": ["Нагорная проповедь", "Матфей 5", "Лука 6"],
+      "tags": [
+        "Нагорная проповедь",
+        "Матфей 5",
+        "Лука 6"
+      ],
       "featured": false,
       "priority": 82,
       "publishedTime": "2026-06-18T00:00:00+03:00",
@@ -417,7 +508,11 @@
       "editor": "Фёдор Милованов",
       "readTime": 16,
       "image": "/images/og-nagornaya-propoved-chast-1.webp",
-      "tags": ["Нагорная проповедь", "Блаженства", "Матфей 5"],
+      "tags": [
+        "Нагорная проповедь",
+        "Блаженства",
+        "Матфей 5"
+      ],
       "featured": false,
       "priority": 80,
       "modifiedTime": "2026-05-22T00:46:34+03:00",
@@ -433,7 +528,11 @@
       "section": "Библейские карты",
       "editor": "Фёдор Милованов",
       "image": "/images/og-karty-1200x630.webp",
-      "tags": ["карты", "география", "археология"],
+      "tags": [
+        "карты",
+        "география",
+        "археология"
+      ],
       "featured": false,
       "priority": 78,
       "publishedTime": "2026-06-18T00:00:00+03:00",
@@ -450,7 +549,10 @@
       "editor": "Фёдор Милованов",
       "readTime": 11,
       "image": "/images/og-nagornaya-propoved-chast-2.webp",
-      "tags": ["Нагорная проповедь", "Матфей 5"],
+      "tags": [
+        "Нагорная проповедь",
+        "Матфей 5"
+      ],
       "featured": false,
       "priority": 78,
       "modifiedTime": "2026-05-22T00:46:34+03:00",
@@ -467,7 +569,11 @@
       "editor": "Фёдор Милованов",
       "readTime": 12,
       "image": "/images/og-nagornaya-propoved-chast-3.webp",
-      "tags": ["Нагорная проповедь", "Матфей 5", "Закон"],
+      "tags": [
+        "Нагорная проповедь",
+        "Матфей 5",
+        "Закон"
+      ],
       "featured": false,
       "priority": 76,
       "modifiedTime": "2026-05-22T00:46:34+03:00",
@@ -483,7 +589,11 @@
       "section": "Баптисты России",
       "editor": "Фёдор Милованов",
       "image": "/images/baptisty-rossii/cover-03-1884.webp",
-      "tags": ["баптисты", "ЕХБ", "история"],
+      "tags": [
+        "баптисты",
+        "ЕХБ",
+        "история"
+      ],
       "featured": false,
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
@@ -499,7 +609,11 @@
       "section": "Баптисты России",
       "editor": "Фёдор Милованов",
       "image": "/images/baptisty-rossii/cover-05-conscience.webp",
-      "tags": ["баптисты", "ЕХБ", "история"],
+      "tags": [
+        "баптисты",
+        "ЕХБ",
+        "история"
+      ],
       "featured": false,
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
@@ -515,7 +629,11 @@
       "section": "Баптисты России",
       "editor": "Фёдор Милованов",
       "image": "/images/baptisty-rossii/cover-08-initiative.webp",
-      "tags": ["баптисты", "ЕХБ", "история"],
+      "tags": [
+        "баптисты",
+        "ЕХБ",
+        "история"
+      ],
       "featured": false,
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
@@ -531,7 +649,11 @@
       "section": "Баптисты России",
       "editor": "Фёдор Милованов",
       "image": "/images/baptisty-rossii/cover-01-kura.webp",
-      "tags": ["баптисты", "ЕХБ", "история"],
+      "tags": [
+        "баптисты",
+        "ЕХБ",
+        "история"
+      ],
       "featured": false,
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
@@ -547,7 +669,11 @@
       "section": "Баптисты России",
       "editor": "Фёдор Милованов",
       "image": "/images/baptisty-rossii/cover-04-peterburg.webp",
-      "tags": ["баптисты", "ЕХБ", "история"],
+      "tags": [
+        "баптисты",
+        "ЕХБ",
+        "история"
+      ],
       "featured": false,
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
@@ -563,7 +689,11 @@
       "section": "Баптисты России",
       "editor": "Фёдор Милованов",
       "image": "/images/baptisty-rossii/cover-09-samizdat.webp",
-      "tags": ["баптисты", "ЕХБ", "история"],
+      "tags": [
+        "баптисты",
+        "ЕХБ",
+        "история"
+      ],
       "featured": false,
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
@@ -579,7 +709,11 @@
       "section": "Баптисты России",
       "editor": "Фёдор Милованов",
       "image": "/images/baptisty-rossii/cover-06-soviet-night.webp",
-      "tags": ["баптисты", "ЕХБ", "история"],
+      "tags": [
+        "баптисты",
+        "ЕХБ",
+        "история"
+      ],
       "featured": false,
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
@@ -595,7 +729,11 @@
       "section": "Баптисты России",
       "editor": "Фёдор Милованов",
       "image": "/images/baptisty-rossii/cover-10-reference.webp",
-      "tags": ["баптисты", "ЕХБ", "история"],
+      "tags": [
+        "баптисты",
+        "ЕХБ",
+        "история"
+      ],
       "featured": false,
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
@@ -611,7 +749,11 @@
       "section": "Баптисты России",
       "editor": "Фёдор Милованов",
       "image": "/images/baptisty-rossii/cover-07-vsehib.webp",
-      "tags": ["баптисты", "ЕХБ", "история"],
+      "tags": [
+        "баптисты",
+        "ЕХБ",
+        "история"
+      ],
       "featured": false,
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
@@ -627,7 +769,11 @@
       "section": "Баптисты России",
       "editor": "Фёдор Милованов",
       "image": "/images/baptisty-rossii/cover-02-shtunda.webp",
-      "tags": ["баптисты", "ЕХБ", "история"],
+      "tags": [
+        "баптисты",
+        "ЕХБ",
+        "история"
+      ],
       "featured": false,
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
@@ -644,7 +790,11 @@
       "editor": "Фёдор Милованов",
       "readTime": 25,
       "image": "/images/og-nagornaya-propoved-chast-4.webp",
-      "tags": ["Нагорная проповедь", "Молитва", "Матфей 6"],
+      "tags": [
+        "Нагорная проповедь",
+        "Молитва",
+        "Матфей 6"
+      ],
       "featured": false,
       "priority": 74,
       "modifiedTime": "2026-05-22T00:46:34+03:00",
@@ -661,7 +811,10 @@
       "editor": "Фёдор Милованов",
       "readTime": 25,
       "image": "/images/og-nagornaya-propoved-chast-5.webp",
-      "tags": ["Нагорная проповедь", "Матфей 7"],
+      "tags": [
+        "Нагорная проповедь",
+        "Матфей 7"
+      ],
       "featured": false,
       "priority": 72,
       "modifiedTime": "2026-05-22T00:46:34+03:00",
@@ -677,7 +830,11 @@
       "section": "Конфессии и деноминации",
       "editor": "Фёдор Милованов",
       "image": "/images/og-konfessii-1200x630.webp",
-      "tags": ["конфессии", "деноминации", "история"],
+      "tags": [
+        "конфессии",
+        "деноминации",
+        "история"
+      ],
       "featured": false,
       "priority": 70,
       "publishedTime": "2026-06-18T00:00:00+03:00",
@@ -693,7 +850,10 @@
       "section": "Нагорная проповедь",
       "editor": "Фёдор Милованов",
       "image": "/images/og-nagornaya-propoved.webp",
-      "tags": ["источники", "библиография"],
+      "tags": [
+        "источники",
+        "библиография"
+      ],
       "featured": false,
       "priority": 52,
       "publishedTime": "2026-06-18T00:00:00+03:00",
@@ -710,7 +870,10 @@
       "section": "Нагорная проповедь",
       "editor": "Фёдор Милованов",
       "image": "/images/og-nagornaya-propoved.webp",
-      "tags": ["находки", "исследования"],
+      "tags": [
+        "находки",
+        "исследования"
+      ],
       "featured": false,
       "priority": 51,
       "publishedTime": "2026-06-18T00:00:00+03:00",
@@ -727,7 +890,10 @@
       "section": "О проекте",
       "editor": "Фёдор Милованов",
       "readTime": 3,
-      "tags": ["о проекте", "редактор"],
+      "tags": [
+        "о проекте",
+        "редактор"
+      ],
       "featured": false,
       "priority": 50,
       "modifiedTime": "2026-04-18T00:00:00+03:00",
@@ -740,7 +906,12 @@
       "description": "Книга статей о человеческом сердце: четыре главы о диагнозе греха, внутренней войне, перемене и жизни Духом, с библейским справочником и пастырскими разборами.",
       "type": "series",
       "section": "Богословие",
-      "tags": ["Иеремия 17", "Римлянам 7", "экзегеза", "сердце"],
+      "tags": [
+        "Иеремия 17",
+        "Римлянам 7",
+        "экзегеза",
+        "сердце"
+      ],
       "readTime": 2,
       "scripture": "Иер 17:9, Рим 7:14–25",
       "image": "/images/og-series-heart.webp"
@@ -752,7 +923,11 @@
       "description": "Премиальная витрина библейских карт. Сейчас открыта проверенная карта пути Авраама; остальные карты возвращаются только после визуального аудита.",
       "type": "catalog",
       "section": "Библейские инструменты",
-      "tags": ["карты", "география", "археология"],
+      "tags": [
+        "карты",
+        "география",
+        "археология"
+      ],
       "readTime": 1,
       "image": "/images/og-karty-1200x630.webp"
     },
@@ -763,7 +938,12 @@
       "description": "Интерактивная карта Авраама: от Ура Халдейского до горы Мория. 19 мест, 8 этапов, 5 сюжетов (Лех-леха, Война царей, Акеда), кинотур, археология, иврит, хронология 175 лет.",
       "type": "article",
       "section": "Библейские инструменты",
-      "tags": ["Авраам", "Бытие", "карты", "археология"],
+      "tags": [
+        "Авраам",
+        "Бытие",
+        "карты",
+        "археология"
+      ],
       "readTime": 5,
       "image": "/images/og-karty-avraam.webp"
     },
@@ -774,7 +954,10 @@
       "description": "Интерактивный Атлас исследований сайта: приближайте тематические кластеры, находите статьи, изучайте связи между сериями, биографиями, библейскими картами и богословскими разборами.",
       "type": "navigation",
       "section": "Библейские инструменты",
-      "tags": ["навигация", "карта"],
+      "tags": [
+        "навигация",
+        "карта"
+      ],
       "readTime": 1,
       "image": "/images/og-map-connections.webp"
     },
@@ -787,7 +970,9 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["сердце"],
+      "tags": [
+        "сердце"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
@@ -803,7 +988,9 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["сердце"],
+      "tags": [
+        "сердце"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
@@ -819,7 +1006,9 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["сердце"],
+      "tags": [
+        "сердце"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-12T00:00:00+03:00",
@@ -835,7 +1024,9 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["сердце"],
+      "tags": [
+        "сердце"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-12T00:00:00+03:00",
@@ -851,7 +1042,9 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["сердце"],
+      "tags": [
+        "сердце"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-12T00:00:00+03:00",
@@ -867,7 +1060,9 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["сердце"],
+      "tags": [
+        "сердце"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-12T00:00:00+03:00",
@@ -883,7 +1078,9 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["сердце"],
+      "tags": [
+        "сердце"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-12T00:00:00+03:00",
@@ -899,7 +1096,9 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["сердце"],
+      "tags": [
+        "сердце"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-12T00:00:00+03:00",
@@ -915,7 +1114,9 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["сердце"],
+      "tags": [
+        "сердце"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
@@ -931,7 +1132,9 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["сердце"],
+      "tags": [
+        "сердце"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-12T00:00:00+03:00",
@@ -947,7 +1150,9 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["сердце"],
+      "tags": [
+        "сердце"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
@@ -963,7 +1168,9 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["сердце"],
+      "tags": [
+        "сердце"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
@@ -979,7 +1186,9 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["сердце"],
+      "tags": [
+        "сердце"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-12T00:00:00+03:00",
@@ -995,7 +1204,9 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["сердце"],
+      "tags": [
+        "сердце"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
@@ -1011,7 +1222,9 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["сердце"],
+      "tags": [
+        "сердце"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
@@ -1027,7 +1240,9 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["сердце"],
+      "tags": [
+        "сердце"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-12T00:00:00+03:00",
@@ -1043,7 +1258,9 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["сердце"],
+      "tags": [
+        "сердце"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
@@ -1059,7 +1276,9 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["сердце"],
+      "tags": [
+        "сердце"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
@@ -1075,7 +1294,12 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["сердце", "библейское богословие", "антропология", "Писание"],
+      "tags": [
+        "сердце",
+        "библейское богословие",
+        "антропология",
+        "Писание"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
@@ -1091,7 +1315,12 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["возрождение", "новое рождение", "сердце", "благодать"],
+      "tags": [
+        "возрождение",
+        "новое рождение",
+        "сердце",
+        "благодать"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
@@ -1107,7 +1336,12 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["Римлянам 8", "Святой Дух", "сердце", "освящение"],
+      "tags": [
+        "Римлянам 8",
+        "Святой Дух",
+        "сердце",
+        "освящение"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
@@ -1123,7 +1357,12 @@
       "section": "Богословие",
       "editor": "Фёдор Милованов",
       "image": "/images/og-series-heart.webp",
-      "tags": ["справочник", "сердце", "библейское богословие", "Писание"],
+      "tags": [
+        "справочник",
+        "сердце",
+        "библейское богословие",
+        "Писание"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-12T00:00:00+03:00",
@@ -1236,7 +1475,12 @@
       "author": "Фёдор Милованов",
       "editor": "Фёдор Милованов",
       "image": "/images/articles/lot/og-lot-i-sodom.webp",
-      "tags": ["Лот", "Содом", "Бытие 19", "археология Библии"],
+      "tags": [
+        "Лот",
+        "Содом",
+        "Бытие 19",
+        "археология Библии"
+      ],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-08-09T00:00:00+03:00",
