@@ -1,5 +1,5 @@
 ---
-import JournalDocumentHead from '@/components/journal/JournalDocumentHead.astro';
+import JournalPageHead from '@/components/journal/JournalDocumentHead.astro';
 import JournalLanding from '@/components/journal/JournalLanding.astro';
 
 const title = 'Журнал — документы, новости и расследования';
@@ -9,7 +9,7 @@ const canonical = 'https://gospod-bog.ru/journal/';
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <JournalDocumentHead title={title} description={description} canonical={canonical} kind="CollectionPage" />
+    <JournalPageHead title={title} description={description} canonical={canonical} kind="CollectionPage" />
   </head>
   <body data-pagefind-body data-journal-surface="landing">
     <JournalLanding />
