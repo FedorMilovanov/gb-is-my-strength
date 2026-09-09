@@ -1,0 +1,432 @@
+---
+import MobileChromePage from '@/components/article-pilots/_shared/MobileChromePage.astro';
+import {
+  G3_PUBLICATION_HANDOFF,
+  assertG3PublicationProjection,
+  researchSnapshotShort,
+  type G3PublicationClaimId,
+} from '@/data/journal/g3PublicationHandoff';
+
+const projectedClaims: G3PublicationClaimId[] = [
+  'G3-PUB-001', 'G3-PUB-002', 'G3-PUB-003', 'G3-PUB-004',
+  'G3-PUB-005', 'G3-PUB-006', 'G3-PUB-007', 'G3-PUB-008',
+  'G3-PUB-009', 'G3-PUB-010', 'G3-PUB-011', 'G3-PUB-012',
+  'G3-PUB-013', 'G3-PUB-014', 'G3-PUB-015', 'G3-PUB-016',
+];
+projectedClaims.forEach(assertG3PublicationProjection);
+
+const corrections: Array<{
+  correctedAt: string;
+  scope: string;
+  previousMeaning: string;
+  newMeaning: string;
+  reason: string;
+  researchSnapshot: string;
+}> = [];
+
+const handoffUrl = `https://github.com/${G3_PUBLICATION_HANDOFF.researchRepo}/blob/${G3_PUBLICATION_HANDOFF.researchSealCommit}/${G3_PUBLICATION_HANDOFF.handoffPath}`;
+const snapshot = researchSnapshotShort();
+---
+<MobileChromePage backHref="/journal/" homeHref="/" searchLabel="Поиск по сайту…" />
+
+<header class="journal-topbar" aria-label="Навигация журнала">
+  <a class="journal-brand" href="/journal/">Журнал</a>
+  <nav aria-label="Хлебные крошки">
+    <a href="/">Главная</a>
+    <span>·</span>
+    <a href="/journal/">Журнал</a>
+    <span>·</span>
+    <span aria-current="page">G3</span>
+  </nav>
+</header>
+
+<main class="dossier" data-journal-dossier="g3" data-research-seal={G3_PUBLICATION_HANDOFF.researchSealCommit}>
+  <header class="dossier-hero">
+    <p class="kicker">Документальное досье · G3 Ministries · 2011–2026</p>
+    <h1>G3: рост, кризис и завершение операций</h1>
+    <p class="dek">
+      Что можно установить по официальным заявлениям, корпоративным записям, налоговым формам,
+      архивным страницам и независимым свидетельствам — и где доказательства требуют остановиться.
+    </p>
+    <div class="evidence-strip" aria-label="Статус доказательств">
+      <div><span>Тип</span><strong>Досье</strong></div>
+      <div><span>Статус</span><strong>Проверено</strong></div>
+      <div><span>Опубликовано</span><strong>09.09.2026</strong></div>
+      <div><span>Публикационные проекции</span><strong>16</strong></div>
+      <div><span>Pinned sources</span><strong>21</strong></div>
+      <div><span>Research snapshot</span><strong>{snapshot}</strong></div>
+    </div>
+    <p class="authority-note">
+      Публикация ограничена immutable Research handoff. Непроверенные, спорные и исключённые утверждения
+      не повышаются до факта. <a href={handoffUrl}>Посмотреть pinned handoff</a>.
+    </p>
+  </header>
+
+  <nav class="dossier-nav" aria-label="Модули досье">
+    <a href="#overview">Обзор</a>
+    <a href="#timeline">Хронология</a>
+    <a href="#finance">Финансы</a>
+    <a href="#governance">Управление</a>
+    <a href="#buice">Josh Buice</a>
+    <a href="#buck">Tom Buck</a>
+    <a href="#wind-down">Завершение</a>
+    <a href="#unknowns">Неизвестное</a>
+    <a href="#corrections">Исправления</a>
+  </nav>
+
+  <section id="overview" class="module intro-module">
+    <div class="module-label">01 · Обзор</div>
+    <div class="prose wide">
+      <h2>Главный вывод</h2>
+      <p class="standfirst">
+        Публичная история G3 не сводится к одной точке «закрытия». Документы показывают несколько
+        разных процессов: кризис руководства в 2025 году, попытку институционального перезапуска,
+        новый конфликт в 2026-м, прекращение операций, отмену будущей конференции и при этом —
+        отдельный юридический статус корпорации и не до конца раскрытую судьбу цифровых и издательских активов.
+      </p>
+      <aside class="boundary-box">
+        <strong>Ключевая граница.</strong>
+        «Операции прекращаются» не означает автоматически «юридическое лицо ликвидировано».
+        По официальной записи Georgia Secretary of State на 8 сентября 2026 года корпорация оставалась
+        <em>Active/Compliance</em>. Это датированное состояние, которое может измениться позднее.
+        <span class="claim-ref">G3-PUB-001</span>
+      </aside>
+    </div>
+  </section>
+
+  <section id="timeline" class="module">
+    <div class="module-label">02 · Хронология</div>
+    <div class="prose">
+      <h2>Контрольные точки, которые выдерживают публикационный порог</h2>
+    </div>
+    <ol class="timeline">
+      <li>
+        <time datetime="2019-06-06">6 июня 2019</time>
+        <div><h3>Юридическое оформление</h3><p>G3 Ministries for the Church, Inc. оформлена как domestic nonprofit corporation в Georgia.</p><span class="claim-ref">G3-PUB-001 · G3-S001</span></div>
+      </li>
+      <li>
+        <time datetime="2025-05-08">8–12 мая 2025</time>
+        <div><h3>Кризис Josh Buice</h3><p>По заявлению G3, отставка Buice с поста президента была принята 8 мая; 12 мая организация публично сообщила о confrontation, confession, resignation и анонимных аккаунтах/каналах. Конференция 2025 года была отменена.</p><span class="claim-ref">G3-PUB-005 · G3-PUB-006</span></div>
+      </li>
+      <li>
+        <time datetime="2025-07-09">9 июля 2025</time>
+        <div><h3>Scott Aniol становится президентом</h3><p>Официальное объявление G3 устанавливает effective date назначения Aniol на 9 июля 2025 года.</p><span class="claim-ref">G3-PUB-006</span></div>
+      </li>
+      <li>
+        <time datetime="2026-07-21">21 июля 2026</time>
+        <div><h3>Последний primary-verified состав совета в публичном архиве</h3><p>Архивный снимок официальной страницы «Who We Are» перечисляет Buck Braswell, Matt Broome, Jon Norton, Matt Sikes, Dylan Joyner и Ron Mooney как Board of Directors.</p><span class="claim-ref">G3-PUB-008 · G3-S096</span></div>
+      </li>
+      <li>
+        <time datetime="2026-08">август 2026</time>
+        <div><h3>Новый конфликт и признание процессуальных ошибок</h3><p>Сохранённый текст заявления четырёх пасторов признаёт неправильное вмешательство в автономный дисциплинарный процесс другой церкви, недостаточно информированную характеристику этого процесса и анонимную рассылку материалов третьим лицам.</p><span class="claim-ref">G3-PUB-011</span></div>
+      </li>
+      <li>
+        <time datetime="2026-09">сентябрь 2026</time>
+        <div><h3>Прекращение операций — но не один юридический «рубильник»</h3><p>Публично сообщалось о завершении Church Network и broader G3 operations; G3-контролируемый регистрационный маршрут будущей конференции указывал, что мероприятие 27–29 мая 2027 года отменено, регистрации отменяются/возвращаются.</p><span class="claim-ref">G3-PUB-012</span></div>
+      </li>
+    </ol>
+  </section>
+
+  <section id="finance" class="module">
+    <div class="module-label">03 · Финансы</div>
+    <div class="prose">
+      <h2>Что показывают IRS Form 990 — и чего они не показывают</h2>
+      <p>
+        Наиболее резкий подтверждённый сдвиг виден в FY2023. По raw IRS Part IX общие расходы выросли
+        на <strong>$1,061,800</strong> относительно FY2022; расходы на conferences/meetings выросли на
+        <strong>$817,283</strong>, advertising — на <strong>$246,511</strong>. В FY2023 функциональные
+        расходы были отражены как 100% program services, при $0 management/general и $0 fundraising.
+        <span class="claim-ref">G3-PUB-002</span>
+      </p>
+      <p>
+        Эти строки — классификации самой налоговой формы. Они не доказывают мошенничество, вывод средств,
+        справедливость конкретных vendor contracts или вывод внешнего аудитора.
+      </p>
+      <div class="fact-grid">
+        <article>
+          <p class="fact-label">FY2024 filing</p>
+          <strong>«No material diversion» — self-reported</strong>
+          <p>Form 990 также сообщала о conflict-of-interest policy и отсутствии whistleblower/document-retention policy.</p>
+          <span class="claim-ref">G3-PUB-003</span>
+        </article>
+        <article>
+          <p class="fact-label">Schedule L</p>
+          <strong>$30,409 → $31,880</strong>
+          <p>Компенсация Karis L Buice, описанной формой как «Daughter of Board Member», в FY2024 и FY2025 соответственно.</p>
+          <span class="claim-ref">G3-PUB-004</span>
+        </article>
+      </div>
+      <aside class="boundary-box">
+        Сама фамилия и Schedule L disclosure не дают права устанавливать личность родителя или объявлять
+        fraud/excess benefit без отдельного доказательства.
+      </aside>
+    </div>
+  </section>
+
+  <section id="governance" class="module">
+    <div class="module-label">04 · Управление</div>
+    <div class="prose">
+      <h2>Известный снимок — не непрерывная линия</h2>
+      <p>
+        Между G3 и Pray’s Mill перед кризисом 2026 года документируется заметное пересечение персонала:
+        пасторы PMBC одновременно фигурируют в G3 как преподаватели, участники network-активности и,
+        для части лиц, члены совета. Это подтверждает организационное пересечение ролей, но не доказывает
+        denominational jurisdiction, полный корпоративный контроль или общий заговор.
+        <span class="claim-ref">G3-PUB-009</span>
+      </p>
+      <p>
+        Последний доступный primary-verified roster — архивный официальный снимок 21 июля 2026 года.
+        Мы не интерполируем его автоматически на поздний август: точная continuity в момент кризиса остаётся открытым вопросом.
+        <span class="claim-ref">G3-PUB-008 · G3-PUB-016</span>
+      </p>
+    </div>
+  </section>
+
+  <section id="buice" class="module">
+    <div class="module-label">05 · Josh Buice, 2025</div>
+    <div class="prose">
+      <h2>Кризис, признание и попытка перезапуска</h2>
+      <p>
+        В мае 2025 года G3 сообщила, что Josh Buice управлял несколькими анонимными аккаунтами,
+        email-адресами и Substack-каналами, был confronted, confessed и resigned. Формулировка здесь
+        намеренно атрибутирована организации: публичный материал не превращает институциональное заявление
+        в независимый внешний forensic finding.
+        <span class="claim-ref">G3-PUB-005</span>
+      </p>
+      <p>
+        После кризиса G3 публично продвигала renewed vision, кадровый переход и Pastor-Theologian/local-church emphasis.
+        Это позволяет говорить о <strong>попытке институционального перезапуска</strong>, но не доказывает её эффективность
+        или внутреннюю искренность.
+        <span class="claim-ref">G3-PUB-007</span>
+      </p>
+    </div>
+  </section>
+
+  <section id="buck" class="module sensitive-module">
+    <div class="module-label">06 · Tom Buck, 2026</div>
+    <div class="prose">
+      <h2>Два разных вопроса, которые нельзя склеивать</h2>
+      <p>
+        В споре вокруг проповедей Tom Buck доказательный набор требует разделять два трека:
+        <strong>атрибуцию/зависимость от комментариев</strong> и <strong>анонимное распространение dossier / процессуальное поведение</strong>.
+        Ошибки или чрезмерность в одном треке не стирают данные другого.
+      </p>
+      <div class="claim-matrix">
+        <div class="matrix-row confirmed">
+          <span class="matrix-state">Подтверждено</span>
+          <p>Независимый/участнический review обнаруживал реальные фрагменты недостаточно атрибутированного commentary wording.</p>
+          <span class="claim-ref">G3-PUB-010</span>
+        </div>
+        <div class="matrix-row refuted">
+          <span class="matrix-state">Не поддержано имеющимися данными</span>
+          <p>Более сильная формула, будто Buck систематически проповедовал целые готовые sermons других авторов, не выдерживает приобретённого evidence set.</p>
+          <span class="claim-ref">G3-PUB-010</span>
+        </div>
+        <div class="matrix-row confirmed">
+          <span class="matrix-state">Подтверждено с оговоркой</span>
+          <p>FBC Lindale проводила процесс рассмотрения и коррекции; это не равнозначно утверждению, что каждый спорный эпизод был правильно решён.</p>
+          <span class="claim-ref">G3-PUB-010</span>
+        </div>
+        <div class="matrix-row disputed">
+          <span class="matrix-state">HOLD</span>
+          <p>Поэпизодный финальный verdict требует человеческого прослушивания original audio, exact source edition и attribution context.</p>
+          <span class="claim-ref">G3-PUB-016</span>
+        </div>
+      </div>
+      <aside class="warning-box">
+        <strong>Чего здесь нет:</strong> счётчика «45 доказанных случаев», утверждения «17 проповедей доказанно сплагиачены»
+        или прямых цитат из machine transcripts. В Research имеется 17 item files, но на publication snapshot
+        <strong>0/17 имеют статус ITEM_VERIFIED</strong>.
+      </aside>
+      <p>
+        Отдельно сохранённое заявление Scott Aniol, Jon Norton, Dylan Joyner и Matt Sikes позволяет
+        атрибутированно пересказать признанные ими процессуальные ошибки: вмешательство в автономный процесс другой церкви,
+        характеристику этого процесса без всех деталей и анонимную отправку материалов людям из окружения Buck.
+        Оно не решает спор о том, были ли все четыре последующие отставки добровольными или требуемыми.
+        <span class="claim-ref">G3-PUB-011</span>
+      </p>
+    </div>
+  </section>
+
+  <section id="wind-down" class="module">
+    <div class="module-label">07 · Завершение G3</div>
+    <div class="prose">
+      <h2>Пять состояний вместо одного слова «закрылось»</h2>
+      <div class="state-stack">
+        <article><span>Church Network</span><strong>Объявлен завершённым</strong><p>Отдельный институциональный слой.</p><span class="claim-ref">G3-PUB-012</span></article>
+        <article><span>National Conference 2027</span><strong>Отменена, регистрации отменяются/возвращаются</strong><p>Подтверждено G3-контролируемым registration route.</p><span class="claim-ref">G3-PUB-012</span></article>
+        <article><span>Operations</span><strong>Объявлено о завершении</strong><p>Операционное состояние не тождественно corporate dissolution.</p><span class="claim-ref">G3-PUB-012</span></article>
+        <article><span>Georgia corporation</span><strong>Active/Compliance на 08.09.2026</strong><p>Датированный primary registry state; может измениться после публикации.</p><span class="claim-ref">G3-PUB-001</span></article>
+        <article><span>G3+ / G3 Press</span><strong>Aftermath частично открыт</strong><p>App/storefront state виден, но transferee, closing, terms, rights и inventory не выводятся из метаданных платформ.</p><span class="claim-ref">G3-PUB-013 · G3-PUB-014</span></article>
+      </div>
+      <p>
+        После wind-down app-store surfaces всё ещё показывали G3-linked developer/seller/support identity для G3+,
+        а G3 Press storefront оставался видимым. Это доказывает только датированное состояние платформы/витрины,
+        но не beneficial ownership или юридическое завершение передачи.
+        <span class="claim-ref">G3-PUB-013 · G3-PUB-014</span>
+      </p>
+      <p>
+        Отдельно наблюдается post-G3 presence книги Dave Jenkins <em>The Word Matters</em> в его нынешней
+        Servants of Grace / Theology for Life ecosystem. Один title-level факт не позволяет вывести общий контрактный
+        механизм возврата прав для всего каталога G3 Press.
+        <span class="claim-ref">G3-PUB-015</span>
+      </p>
+    </div>
+  </section>
+
+  <section id="unknowns" class="module unknown-module">
+    <div class="module-label">08 · Что ещё не известно</div>
+    <div class="prose">
+      <h2>Открытые узлы — это часть результата</h2>
+      <p>
+        Публичный evidence route по этим вопросам исчерпан до появления нового первичного объекта,
+        авторизованного доступа или человеческой проверки original media. Они не считаются «недоделанной статьёй»
+        и не заполняются предположением.
+        <span class="claim-ref">G3-PUB-016</span>
+      </p>
+      <ul class="unknown-list">
+        {G3_PUBLICATION_HANDOFF.knownOpenQuestions.map((question) => <li>{question}</li>)}
+      </ul>
+      <aside class="boundary-box">
+        Отсутствие публичного документа не является доказательством того, что событие не происходило.
+        Если появляется новый primary object, Research создаёт новый snapshot, а материал получает датированное обновление/исправление.
+      </aside>
+    </div>
+  </section>
+
+  <section id="documents" class="module">
+    <div class="module-label">Документы · provenance</div>
+    <div class="prose">
+      <h2>Ключевые классы источников</h2>
+      <div class="document-grid">
+        <article><span class="source-badge primary">Первичный документ</span><h3>Georgia Secretary of State</h3><p>Корпоративное образование и датированный legal status.</p><p class="claim-ref">G3-S001</p></article>
+        <article><span class="source-badge primary">Первичный документ</span><h3>IRS Form 990 / TEOS raw XML</h3><p>Финансы, governance disclosures, Schedule L, FY2025 program history.</p><p class="claim-ref">G3-S002 · G3-S028</p></article>
+        <article><span class="source-badge official">Официальное заявление</span><h3>G3 statements and event routes</h3><p>Buice crisis, Aniol appointment, reform attempt, conference cancellation.</p><p class="claim-ref">G3-S008 · S009 · S010 · S011 · S023 · S024</p></article>
+        <article><span class="source-badge archive">Архивный источник</span><h3>Official G3 “Who We Are” capture</h3><p>Датированный Board of Directors roster на 21 июля 2026.</p><p class="claim-ref">G3-S096</p></article>
+        <article><span class="source-badge corroboration">Независимое подтверждение</span><h3>Phil Johnson / Protestia review</h3><p>Ограниченный Buck attribution/process finding; не item-count verdict.</p><p class="claim-ref">G3-S012 · G3-S035</p></article>
+        <article><span class="source-badge participant">Заявление участника</span><h3>Four-pastor statement lineage</h3><p>Используется только как attributed paraphrase; републикации не считаются независимыми witnesses.</p><p class="claim-ref">G3-S015 · G3-S042</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="corrections" class="module corrections-module">
+    <div class="module-label">09 · Исправления</div>
+    <div class="prose">
+      <h2>Журнал исправлений</h2>
+      {corrections.length === 0 ? (
+        <p class="empty-corrections">
+          Материальных исправлений после публикации пока нет. Базовая версия привязана к Research seal
+          <code>{G3_PUBLICATION_HANDOFF.researchSealCommit}</code>. Изменение смысла любого reader-facing claim
+          требует нового Research handoff и датированной записи здесь.
+        </p>
+      ) : (
+        <ol>{corrections.map((item) => <li>{item.correctedAt}: {item.newMeaning}</li>)}</ol>
+      )}
+    </div>
+  </section>
+
+  <footer class="dossier-footer">
+    <p><strong>Автор-редактор:</strong> Фёдор Милованов</p>
+    <p><strong>Research authority:</strong> <a href={handoffUrl}>{G3_PUBLICATION_HANDOFF.researchRepo} · {snapshot}</a></p>
+    <p><a href="/journal/">← Вернуться в Журнал</a></p>
+  </footer>
+</main>
+
+<style>
+  :global(body) { margin: 0; background: var(--bg, #fdfcf9); color: var(--text, #25211d); font-family: var(--font-body, system-ui, sans-serif); }
+  .journal-topbar { max-width: 1180px; margin: 0 auto; padding: 22px 28px; display: flex; align-items: center; justify-content: space-between; gap: 22px; border-bottom: 1px solid var(--border, #ddd7cf); }
+  .journal-brand { text-decoration: none; color: inherit; font: 700 15px/1.2 var(--font-heading, Georgia, serif); }
+  .journal-topbar nav { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; color: var(--muted, #6c645c); font-size: 13px; }
+  .journal-topbar nav a { color: inherit; }
+  .dossier { max-width: 1120px; margin: 0 auto; padding: 0 28px 80px; }
+  .dossier-hero { padding: 76px 0 44px; max-width: 970px; }
+  .kicker, .module-label { color: #7a2e2e; text-transform: uppercase; letter-spacing: .11em; font: 750 12px/1.45 var(--font-body, system-ui, sans-serif); }
+  h1, h2, h3 { font-family: var(--font-heading, Georgia, serif); color: var(--text, #25211d); }
+  h1 { margin: 14px 0 0; max-width: 950px; font-size: clamp(43px, 7vw, 82px); line-height: .99; letter-spacing: -.04em; }
+  .dek { margin: 28px 0 0; max-width: 840px; color: var(--muted, #5f5951); font: 400 clamp(19px, 2.4vw, 27px)/1.5 var(--font-heading, Georgia, serif); }
+  .evidence-strip { margin-top: 36px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--border, #d9d3cb); border-radius: 15px; overflow: hidden; }
+  .evidence-strip div { min-width: 0; padding: 16px 18px; border-right: 1px solid var(--border, #d9d3cb); border-bottom: 1px solid var(--border, #d9d3cb); display: grid; gap: 5px; }
+  .evidence-strip div:nth-child(3n) { border-right: 0; }
+  .evidence-strip div:nth-last-child(-n+3) { border-bottom: 0; }
+  .evidence-strip span { color: var(--muted, #716960); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+  .evidence-strip strong { font-size: 13px; overflow-wrap: anywhere; }
+  .authority-note { max-width: 820px; margin: 18px 0 0; color: var(--muted, #6d655d); font-size: 13px; line-height: 1.55; }
+  .authority-note a, .dossier-footer a { color: #7a2e2e; }
+  .dossier-nav { position: sticky; top: 0; z-index: 20; margin: 0 -10px; padding: 11px 10px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: thin; background: color-mix(in srgb, var(--bg, #fdfcf9) 92%, transparent); backdrop-filter: blur(12px); border-top: 1px solid var(--border, #ddd7cf); border-bottom: 1px solid var(--border, #ddd7cf); }
+  .dossier-nav a { white-space: nowrap; text-decoration: none; color: var(--muted, #655d55); border: 1px solid var(--border, #ddd7cf); border-radius: 999px; padding: 7px 11px; font-size: 12px; background: var(--bg, #fdfcf9); }
+  .module { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 44px; padding: 68px 0; border-bottom: 1px solid var(--border, #ddd7cf); scroll-margin-top: 80px; }
+  .module-label { padding-top: 8px; }
+  .prose { max-width: 780px; }
+  .prose.wide { max-width: 850px; }
+  .prose h2 { margin: 0 0 24px; font-size: clamp(31px, 4vw, 48px); line-height: 1.08; letter-spacing: -.025em; }
+  .prose > p { font-size: 17px; line-height: 1.72; color: var(--text, #302b26); }
+  .standfirst { font: 400 clamp(20px, 2.5vw, 27px)/1.55 var(--font-heading, Georgia, serif) !important; }
+  .claim-ref { display: inline-block; color: #8a6b59; font: 650 10px/1.3 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .02em; }
+  .boundary-box, .warning-box { margin: 28px 0; padding: 20px 22px; border-left: 3px solid #7a2e2e; background: color-mix(in srgb, var(--bg, #fdfcf9) 90%, #7a2e2e 6%); line-height: 1.65; }
+  .boundary-box .claim-ref { display: block; margin-top: 10px; }
+  .warning-box { border-left-color: #8a5b19; background: color-mix(in srgb, var(--bg, #fdfcf9) 90%, #b57a24 7%); }
+  .timeline { grid-column: 2; list-style: none; padding: 0; margin: 0; max-width: 800px; }
+  .timeline li { display: grid; grid-template-columns: 150px 1fr; gap: 26px; padding: 26px 0; border-top: 1px solid var(--border, #ddd7cf); }
+  .timeline time { color: #7a2e2e; font-weight: 750; font-size: 13px; }
+  .timeline h3 { margin: 0 0 8px; font-size: 23px; }
+  .timeline p { margin: 0 0 10px; line-height: 1.62; color: var(--muted, #615a52); }
+  .fact-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 28px 0; }
+  .fact-grid article { padding: 22px; border: 1px solid var(--border, #ddd7cf); border-radius: 14px; }
+  .fact-grid .fact-label { margin: 0 0 14px; color: #7a2e2e; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+  .fact-grid strong { display: block; font-family: var(--font-heading, Georgia, serif); font-size: 22px; }
+  .fact-grid article > p:not(.fact-label) { line-height: 1.55; color: var(--muted, #655d55); }
+  .claim-matrix { margin: 28px 0; border: 1px solid var(--border, #ddd7cf); border-radius: 15px; overflow: hidden; }
+  .matrix-row { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 18px; padding: 19px; border-bottom: 1px solid var(--border, #ddd7cf); }
+  .matrix-row:last-child { border-bottom: 0; }
+  .matrix-row p { margin: 0; line-height: 1.55; }
+  .matrix-state { font-weight: 800; font-size: 12px; color: #3f654b; }
+  .matrix-row.disputed .matrix-state { color: #8a5b19; }
+  .matrix-row.refuted .matrix-state { color: #6f4b76; }
+  .matrix-row .claim-ref { grid-column: 2; }
+  .state-stack { display: grid; gap: 10px; margin: 28px 0; }
+  .state-stack article { display: grid; grid-template-columns: 155px minmax(0, 1fr); gap: 4px 22px; padding: 18px 20px; border: 1px solid var(--border, #ddd7cf); border-radius: 12px; }
+  .state-stack article > span:first-child { grid-row: 1 / span 3; color: #7a2e2e; font-weight: 750; font-size: 13px; }
+  .state-stack strong { font-family: var(--font-heading, Georgia, serif); font-size: 19px; }
+  .state-stack p { margin: 3px 0; color: var(--muted, #655d55); line-height: 1.5; }
+  .unknown-list { margin: 28px 0; padding-left: 22px; display: grid; gap: 12px; }
+  .unknown-list li { padding-left: 6px; line-height: 1.55; }
+  .document-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .document-grid article { padding: 22px; border: 1px solid var(--border, #ddd7cf); border-radius: 14px; }
+  .document-grid h3 { margin: 15px 0 8px; font-size: 21px; }
+  .document-grid p { margin: 0 0 10px; color: var(--muted, #655d55); line-height: 1.5; }
+  .source-badge { display: inline-flex; border-radius: 999px; padding: 5px 9px; font-size: 10px; font-weight: 800; background: #ece8e1; }
+  .source-badge.primary { background: #e3ede4; color: #36563d; }
+  .source-badge.official { background: #e4e9ef; color: #3f5269; }
+  .source-badge.archive { background: #eee7dc; color: #67523c; }
+  .source-badge.corroboration { background: #ece5ed; color: #604b65; }
+  .source-badge.participant { background: #efe9dd; color: #6b582e; }
+  .empty-corrections code { font-size: 12px; overflow-wrap: anywhere; }
+  .dossier-footer { padding: 42px 0 0 214px; color: var(--muted, #655d55); font-size: 13px; line-height: 1.55; }
+  .dossier-footer p { margin: 6px 0; }
+  @media (max-width: 820px) {
+    .journal-topbar { padding: 18px; }
+    .journal-topbar nav { font-size: 12px; }
+    .dossier { padding: 0 18px 64px; }
+    .dossier-hero { padding-top: 56px; }
+    .evidence-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .evidence-strip div:nth-child(3n) { border-right: 1px solid var(--border, #d9d3cb); }
+    .evidence-strip div:nth-child(2n) { border-right: 0; }
+    .evidence-strip div:nth-last-child(-n+3) { border-bottom: 1px solid var(--border, #d9d3cb); }
+    .evidence-strip div:nth-last-child(-n+2) { border-bottom: 0; }
+    .module { grid-template-columns: 1fr; gap: 18px; padding: 52px 0; }
+    .timeline { grid-column: 1; }
+    .dossier-footer { padding-left: 0; }
+  }
+  @media (max-width: 620px) {
+    .journal-topbar nav span:not([aria-current]) { display: none; }
+    .evidence-strip { grid-template-columns: 1fr; }
+    .evidence-strip div, .evidence-strip div:nth-child(2n), .evidence-strip div:nth-child(3n), .evidence-strip div:nth-last-child(-n+2), .evidence-strip div:nth-last-child(-n+3) { border-right: 0; border-bottom: 1px solid var(--border, #d9d3cb); }
+    .evidence-strip div:last-child { border-bottom: 0; }
+    .timeline li { grid-template-columns: 1fr; gap: 8px; }
+    .fact-grid, .document-grid { grid-template-columns: 1fr; }
+    .matrix-row { grid-template-columns: 1fr; gap: 8px; }
+    .matrix-row .claim-ref { grid-column: 1; }
+    .state-stack article { grid-template-columns: 1fr; gap: 6px; }
+    .state-stack article > span:first-child { grid-row: auto; }
+  }
+</style>
