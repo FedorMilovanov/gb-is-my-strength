@@ -83,9 +83,6 @@ for (const [slug, expectedMinutes, displayMark, mobileLabel] of SERIES) {
     fail(`${slug}: production route exists during foundation phase (${path.relative(ROOT, routeDir)})`);
   }
 
-  // A-D are presentation marks on first-class core articles. Do not translate
-  // these display letters into shared-engine mark.kind='letter', because that
-  // semantic means satellite and removes the item from normal prev/next/rail.
   if (['A', 'B', 'C', 'D'].includes(displayMark) && !mobileLabel) {
     fail(`${slug}: companion core item requires an explicit short mobile label`);
   }
@@ -93,6 +90,49 @@ for (const [slug, expectedMinutes, displayMark, mobileLabel] of SERIES) {
 
 if (SERIES.length !== 7) fail(`canonical series must contain exactly 7 core items, got ${SERIES.length}`);
 if (total !== 264) fail(`canonical total reading time must be 264 min, got ${total}`);
+
+const configPath = path.join(
+  ROOT,
+  'src',
+  'components',
+  'article-pilots',
+  '_shared',
+  'series',
+  'teenSeriesConfig.ts',
+);
+
+if (!fs.existsSync(configPath)) {
+  fail(`missing prepublication series config: ${path.relative(ROOT, configPath)}`);
+} else {
+  const config = fs.readFileSync(configPath, 'utf8');
+  if (!/seriesId:\s*['"]teen-double-life['"]/.test(config)) {
+    fail('teenSeriesConfig.ts must declare seriesId teen-double-life');
+  }
+  if (!/quiz:\s*\[\s*\]/.test(config)) {
+    fail('teenSeriesConfig.ts must keep quiz disabled during initial publication');
+  }
+  if (/mark:\s*\{\s*kind:\s*['"]letter['"]/.test(config)) {
+    fail("teenSeriesConfig.ts must not use mark.kind='letter'; A-D are core labels, not satellites");
+  }
+
+  for (const [slug, expectedMinutes, displayMark, mobileLabel] of SERIES) {
+    if (!config.includes(`/articles/${slug}/`)) {
+      fail(`teenSeriesConfig.ts missing canonical href for ${slug}`);
+    }
+    if (!config.includes(`readingTime: '${expectedMinutes} мин'`)) {
+      fail(`teenSeriesConfig.ts missing readingTime ${expectedMinutes} мин for ${slug}`);
+    }
+    if (!config.includes(`mobileSection: '${mobileLabel}'`)) {
+      fail(`teenSeriesConfig.ts missing mobile label «${mobileLabel}» for ${slug}`);
+    }
+    if (['A', 'B', 'C', 'D'].includes(displayMark)) {
+      const labelMark = `mark: { kind: 'label', value: '${displayMark}' }`;
+      if (!config.includes(labelMark)) {
+        fail(`teenSeriesConfig.ts must encode ${displayMark} as a core label mark`);
+      }
+    }
+  }
+}
 
 const seriesJsonPath = path.join(ROOT, 'data', 'series.json');
 if (fs.existsSync(seriesJsonPath)) {
@@ -108,5 +148,6 @@ if (!process.exitCode) {
   console.log(`  core order: ${SERIES.map(([, , mark]) => mark).join(' -> ')}`);
   console.log(`  articles: ${SERIES.length}`);
   console.log(`  total reading time: ${total} min`);
+  console.log('  series config: present, quiz disabled, A-D encoded as core labels');
   console.log('  publication: blocked (draft + noindex + no production routes)');
 }
