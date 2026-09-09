@@ -14,6 +14,7 @@ const PRECONDITIONING_MAX_PASSES = 5;
 const PRECONDITIONING_REQUIRED_STABLE_PASSES = 2;
 const PAGE_HEIGHT_EPSILON_PX = 1;
 const PRECONDITIONING_STEP_WAIT_MS = 80;
+const MOBILE_CHROME_EVIDENCE_PIN_ID = 'wave12-mobile-chrome-evidence-pin';
 const EXPECTED_SHARED_READER_LINKS = [
   'https://www.childabuseroyalcommission.gov.au/case-studies/case-study-18-australian-christian-churches',
   'https://www.childabuseroyalcommission.gov.au/media-releases/findings-released-australian-christian-churches-and-affiliated-pentecostal-churches',
@@ -70,6 +71,48 @@ async function stabilizeVisualState(page) {
     await Promise.all([...document.images].map((image) => image.decode?.().catch(() => {})));
   });
   await page.waitForTimeout(100);
+}
+
+async function pinMobileChromeForScreenshotEvidence(page) {
+  const pin = await page.evaluate((pinId) => {
+    const topBar = document.querySelector('.mobile-top-bar[data-gill-mobile-bar]');
+    if (!topBar || getComputedStyle(topBar).display === 'none') {
+      return { applicable:false, active:true, owner:'none' };
+    }
+
+    let sink = document.getElementById(pinId);
+    if (!sink) {
+      sink = document.createElement('button');
+      sink.id = pinId;
+      sink.type = 'button';
+      sink.tabIndex = -1;
+      sink.setAttribute('aria-hidden', 'true');
+      sink.style.cssText = [
+        'position:fixed',
+        'left:-10000px',
+        'top:0',
+        'width:1px',
+        'height:1px',
+        'padding:0',
+        'margin:0',
+        'border:0',
+        'outline:0',
+        'opacity:0',
+        'pointer-events:none',
+        'background:transparent',
+      ].join(';');
+      topBar.appendChild(sink);
+    }
+    sink.focus({ preventScroll:true });
+    return {
+      applicable:true,
+      active:topBar.contains(document.activeElement),
+      owner:'top-bar-focus-containment',
+      activeElementId:document.activeElement?.id || '',
+    };
+  }, MOBILE_CHROME_EVIDENCE_PIN_ID);
+  await page.waitForTimeout(100);
+  return pin;
 }
 
 function readPngDimensions(path) {
@@ -225,6 +268,7 @@ async function convergeScrollGeometry(page) {
 }
 
 async function captureSegmentedScreenshot(page, engine, profile) {
+  const mobileChromePin = await pinMobileChromeForScreenshotEvidence(page);
   const preconditioning = await convergeScrollGeometry(page);
   const metrics = await page.evaluate(() => {
     const scrollingElement = document.scrollingElement || document.documentElement;
@@ -395,6 +439,7 @@ async function captureSegmentedScreenshot(page, engine, profile) {
   );
   const terminalScreenshotReachable = terminalViewportCoversBottom || terminalClipCoversBottom;
   const complete =
+    mobileChromePin.active &&
     preconditioning.complete &&
     metrics.pageHeight > 0 &&
     pngGeometryValid &&
@@ -407,6 +452,7 @@ async function captureSegmentedScreenshot(page, engine, profile) {
 
   return {
     complete,
+    mobileChromePin,
     preconditioning,
     pageHeight: metrics.pageHeight,
     viewportHeight: metrics.viewportHeight,
