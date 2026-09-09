@@ -10,6 +10,10 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
 const OUT = join(ROOT, 'reports', 'diotrophes-wave12');
 const ROUTE = '/articles/diotrefy-nashego-vremeni/';
+const PRECONDITIONING_MAX_PASSES = 5;
+const PRECONDITIONING_REQUIRED_STABLE_PASSES = 2;
+const PAGE_HEIGHT_EPSILON_PX = 1;
+const PRECONDITIONING_STEP_WAIT_MS = 80;
 const EXPECTED_SHARED_READER_LINKS = [
   'https://www.childabuseroyalcommission.gov.au/case-studies/case-study-18-australian-christian-churches',
   'https://www.childabuseroyalcommission.gov.au/media-releases/findings-released-australian-christian-churches-and-affiliated-pentecostal-churches',
@@ -87,40 +91,37 @@ function readPngDimensions(path) {
   };
 }
 
-async function materializeScrollGeometry(page) {
-  const initial = await page.evaluate(() => {
+async function readScrollGeometry(page) {
+  return page.evaluate(() => {
     const scrollingElement = document.scrollingElement || document.documentElement;
     return {
+      scrollTop: Math.round(window.scrollY),
       pageHeight: Math.round(scrollingElement.scrollHeight),
       viewportHeight: Math.round(scrollingElement.clientHeight),
     };
   });
+}
+
+async function materializeScrollGeometry(page) {
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(100);
+  const initial = await readScrollGeometry(page);
   const heightChanges = [];
+  const observedPageHeights = [initial.pageHeight];
   let lastHeight = null;
   let requestedTop = 0;
   let reachedLiveBottom = false;
   let steps = 0;
 
   for (; steps < 500; steps += 1) {
-    const before = await page.evaluate(() => {
-      const scrollingElement = document.scrollingElement || document.documentElement;
-      return {
-        pageHeight: Math.round(scrollingElement.scrollHeight),
-        viewportHeight: Math.round(scrollingElement.clientHeight),
-      };
-    });
+    const before = await readScrollGeometry(page);
+    observedPageHeights.push(before.pageHeight);
     const maxTop = Math.max(0, before.pageHeight - before.viewportHeight);
     const targetTop = Math.min(requestedTop, maxTop);
     await page.evaluate((top) => window.scrollTo(0, top), targetTop);
-    await page.waitForTimeout(50);
-    const after = await page.evaluate(() => {
-      const scrollingElement = document.scrollingElement || document.documentElement;
-      return {
-        scrollTop: Math.round(window.scrollY),
-        pageHeight: Math.round(scrollingElement.scrollHeight),
-        viewportHeight: Math.round(scrollingElement.clientHeight),
-      };
-    });
+    await page.waitForTimeout(PRECONDITIONING_STEP_WAIT_MS);
+    const after = await readScrollGeometry(page);
+    observedPageHeights.push(after.pageHeight);
     if (after.pageHeight !== lastHeight) {
       heightChanges.push({
         step: steps + 1,
@@ -131,7 +132,7 @@ async function materializeScrollGeometry(page) {
       lastHeight = after.pageHeight;
     }
     const layoutBottom = after.scrollTop + after.viewportHeight;
-    if (layoutBottom >= after.pageHeight - 1) {
+    if (layoutBottom >= after.pageHeight - PAGE_HEIGHT_EPSILON_PX) {
       reachedLiveBottom = true;
       break;
     }
@@ -142,14 +143,12 @@ async function materializeScrollGeometry(page) {
 
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(100);
-  const final = await page.evaluate(() => {
-    const scrollingElement = document.scrollingElement || document.documentElement;
-    return {
-      pageHeight: Math.round(scrollingElement.scrollHeight),
-      viewportHeight: Math.round(scrollingElement.clientHeight),
-      scrollTop: Math.round(window.scrollY),
-    };
-  });
+  const final = await readScrollGeometry(page);
+  observedPageHeights.push(final.pageHeight);
+  const minObservedPageHeight = Math.min(...observedPageHeights);
+  const maxObservedPageHeight = Math.max(...observedPageHeights);
+  const stableDuringPass =
+    maxObservedPageHeight - minObservedPageHeight <= PAGE_HEIGHT_EPSILON_PX;
 
   return {
     complete: reachedLiveBottom && final.scrollTop === 0 && final.pageHeight > 0,
@@ -159,13 +158,74 @@ async function materializeScrollGeometry(page) {
     viewportHeight: final.viewportHeight,
     steps: steps + 1,
     heightChanges,
+    minObservedPageHeight,
+    maxObservedPageHeight,
+    stableDuringPass,
+  };
+}
+
+async function convergeScrollGeometry(page) {
+  const passes = [];
+  let consecutiveStablePasses = 0;
+  let previousSettledPageHeight = null;
+
+  for (let passIndex = 1; passIndex <= PRECONDITIONING_MAX_PASSES; passIndex += 1) {
+    await stabilizeVisualState(page);
+    const pass = await materializeScrollGeometry(page);
+    await stabilizeVisualState(page);
+    const settled = await readScrollGeometry(page);
+    const stableRelativeToPrevious =
+      previousSettledPageHeight === null ||
+      Math.abs(pass.initialPageHeight - previousSettledPageHeight) <= PAGE_HEIGHT_EPSILON_PX;
+    const stableAfterReturn =
+      settled.scrollTop === 0 &&
+      Math.abs(settled.pageHeight - pass.initialPageHeight) <= PAGE_HEIGHT_EPSILON_PX;
+    const stable =
+      pass.complete &&
+      pass.stableDuringPass &&
+      stableRelativeToPrevious &&
+      stableAfterReturn;
+
+    consecutiveStablePasses = stable ? consecutiveStablePasses + 1 : 0;
+    passes.push({
+      pass: passIndex,
+      ...pass,
+      postStabilizePageHeight: settled.pageHeight,
+      postStabilizeScrollTop: settled.scrollTop,
+      stableRelativeToPrevious,
+      stableAfterReturn,
+      stable,
+    });
+    previousSettledPageHeight = settled.pageHeight;
+
+    if (consecutiveStablePasses >= PRECONDITIONING_REQUIRED_STABLE_PASSES) break;
+  }
+
+  const first = passes[0];
+  const last = passes.at(-1);
+  const converged = consecutiveStablePasses >= PRECONDITIONING_REQUIRED_STABLE_PASSES;
+
+  return {
+    complete: converged,
+    converged,
+    reachedLiveBottom: Boolean(last?.reachedLiveBottom),
+    initialPageHeight: first?.initialPageHeight ?? 0,
+    finalPageHeight: last?.postStabilizePageHeight ?? 0,
+    viewportHeight: last?.viewportHeight ?? 0,
+    steps: passes.reduce((sum, pass) => sum + pass.steps, 0),
+    heightChanges: passes.flatMap((pass) =>
+      pass.heightChanges.map((change) => ({ pass: pass.pass, ...change })),
+    ),
+    passCount: passes.length,
+    requiredStablePasses: PRECONDITIONING_REQUIRED_STABLE_PASSES,
+    consecutiveStablePasses,
+    maxPasses: PRECONDITIONING_MAX_PASSES,
+    passes,
   };
 }
 
 async function captureSegmentedScreenshot(page, engine, profile) {
-  await stabilizeVisualState(page);
-  const preconditioning = await materializeScrollGeometry(page);
-  await stabilizeVisualState(page);
+  const preconditioning = await convergeScrollGeometry(page);
   const metrics = await page.evaluate(() => {
     const scrollingElement = document.scrollingElement || document.documentElement;
     return {
