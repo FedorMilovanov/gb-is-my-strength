@@ -87,7 +87,84 @@ function readPngDimensions(path) {
   };
 }
 
+async function materializeScrollGeometry(page) {
+  const initial = await page.evaluate(() => {
+    const scrollingElement = document.scrollingElement || document.documentElement;
+    return {
+      pageHeight: Math.round(scrollingElement.scrollHeight),
+      viewportHeight: Math.round(scrollingElement.clientHeight),
+    };
+  });
+  const heightChanges = [];
+  let lastHeight = null;
+  let requestedTop = 0;
+  let reachedLiveBottom = false;
+  let steps = 0;
+
+  for (; steps < 500; steps += 1) {
+    const before = await page.evaluate(() => {
+      const scrollingElement = document.scrollingElement || document.documentElement;
+      return {
+        pageHeight: Math.round(scrollingElement.scrollHeight),
+        viewportHeight: Math.round(scrollingElement.clientHeight),
+      };
+    });
+    const maxTop = Math.max(0, before.pageHeight - before.viewportHeight);
+    const targetTop = Math.min(requestedTop, maxTop);
+    await page.evaluate((top) => window.scrollTo(0, top), targetTop);
+    await page.waitForTimeout(50);
+    const after = await page.evaluate(() => {
+      const scrollingElement = document.scrollingElement || document.documentElement;
+      return {
+        scrollTop: Math.round(window.scrollY),
+        pageHeight: Math.round(scrollingElement.scrollHeight),
+        viewportHeight: Math.round(scrollingElement.clientHeight),
+      };
+    });
+    if (after.pageHeight !== lastHeight) {
+      heightChanges.push({
+        step: steps + 1,
+        requestedTop: targetTop,
+        scrollTop: after.scrollTop,
+        pageHeight: after.pageHeight,
+      });
+      lastHeight = after.pageHeight;
+    }
+    const layoutBottom = after.scrollTop + after.viewportHeight;
+    if (layoutBottom >= after.pageHeight - 1) {
+      reachedLiveBottom = true;
+      break;
+    }
+    const nextTop = Math.max(targetTop + before.viewportHeight, layoutBottom);
+    if (nextTop <= requestedTop) break;
+    requestedTop = nextTop;
+  }
+
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(100);
+  const final = await page.evaluate(() => {
+    const scrollingElement = document.scrollingElement || document.documentElement;
+    return {
+      pageHeight: Math.round(scrollingElement.scrollHeight),
+      viewportHeight: Math.round(scrollingElement.clientHeight),
+      scrollTop: Math.round(window.scrollY),
+    };
+  });
+
+  return {
+    complete: reachedLiveBottom && final.scrollTop === 0 && final.pageHeight > 0,
+    reachedLiveBottom,
+    initialPageHeight: initial.pageHeight,
+    finalPageHeight: final.pageHeight,
+    viewportHeight: final.viewportHeight,
+    steps: steps + 1,
+    heightChanges,
+  };
+}
+
 async function captureSegmentedScreenshot(page, engine, profile) {
+  await stabilizeVisualState(page);
+  const preconditioning = await materializeScrollGeometry(page);
   await stabilizeVisualState(page);
   const metrics = await page.evaluate(() => {
     const scrollingElement = document.scrollingElement || document.documentElement;
@@ -258,6 +335,7 @@ async function captureSegmentedScreenshot(page, engine, profile) {
   );
   const terminalScreenshotReachable = terminalViewportCoversBottom || terminalClipCoversBottom;
   const complete =
+    preconditioning.complete &&
     metrics.pageHeight > 0 &&
     pngGeometryValid &&
     terminalClipGeometryValid &&
@@ -269,6 +347,7 @@ async function captureSegmentedScreenshot(page, engine, profile) {
 
   return {
     complete,
+    preconditioning,
     pageHeight: metrics.pageHeight,
     viewportHeight: metrics.viewportHeight,
     viewportWidth: metrics.viewportWidth,
