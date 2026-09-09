@@ -8,6 +8,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REPORTS = path.join(ROOT, 'reports');
 const REPORT_PATH = path.join(REPORTS, 'cloudflare-release-purge.json');
 const apiToken = String(process.env.CLOUDFLARE_API_TOKEN || '').trim();
+const zoneId = String(process.env.CLOUDFLARE_ZONE_ID || '').trim();
 const zoneName = String(process.env.CLOUDFLARE_ZONE_NAME || 'gospod-bog.ru').trim();
 const releaseSha = String(process.env.RELEASE_SHA || '').trim().toLowerCase();
 const controlPlaneSha = String(process.env.CONTROL_PLANE_SHA || '').trim().toLowerCase();
@@ -19,7 +20,9 @@ fs.mkdirSync(REPORTS, { recursive: true });
 
 function redact(value) {
   let text = String(value || '');
-  if (apiToken) text = text.split(apiToken).join('[REDACTED]');
+  for (const secret of [apiToken, zoneId]) {
+    if (secret) text = text.split(secret).join('[REDACTED]');
+  }
   return text;
 }
 
@@ -36,6 +39,7 @@ const report = {
 try {
   const evidence = await purgeCloudflareReleaseCache({
     apiToken,
+    zoneId,
     zoneName,
     signal: AbortSignal.timeout(timeoutMs),
   });
