@@ -7,7 +7,7 @@
   "surface": "page",
   "section": "journal",
   "slug": "g3",
-  "currentStatus": "production-dist",
+  "currentStatus": "build-only",
   "source": "src/pages/journal/dossiers/g3/index.astro",
   "risk": 3,
   "hasMDX": false,
@@ -19,7 +19,7 @@
     "requiredMarkers": ["data-pagefind-body", "data-journal-surface=\"dossier\"", "data-journal-id=\"g3\""]
   },
   "publicationContract": {
-    "participatesIn": ["search", "sitemap", "pagefind", "indexNow"]
+    "participatesIn": []
   },
   "visualParity": {
     "mode": "native-contract",
