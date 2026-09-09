@@ -59,7 +59,6 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
   has('automatic identities equal', j.readiness, 'test "$RELEASE_SHA" = "$CONTROL_PLANE_SHA"');
   has('pinned Node', j.readiness, "node-version: '22.23.1'");
   has('pinned npm asserted', j.readiness, 'test "$(npm --version)" = "$RELEASE_NPM_VERSION"');
-  has('purge mock contract in readiness', j.readiness, 'node scripts/cloudflare-release-purge-contract-test.mjs');
   has('source revisions checked', j.readiness, 'node scripts/cache-bust.js');
   has('static publication gates', j.readiness, 'npm run validate:static-publication');
   has('production-like build', j.readiness, 'npm run strangler:build:production-like');
@@ -68,8 +67,6 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
   has('SW deploy switch gate', j.readiness, 'npm run sw:dist:audit:deploy-switch');
   has('clean tracked source', j.readiness, 'git diff --exit-code');
   has('trusted tools from control plane', j.readiness, 'git show "${CONTROL_PLANE_SHA}:scripts/${file}" > "release-tools/${file}"');
-  has('purge library staged', j.readiness, 'cloudflare-release-purge-lib.mjs');
-  has('purge CLI staged', j.readiness, 'cloudflare-release-purge.mjs');
   has('readiness release identity bound', j.readiness, 'EXPECTED_RELEASE_SHA: ${{ env.RELEASE_SHA }}');
   has('readiness control identity bound', j.readiness, 'EXPECTED_CONTROL_PLANE_SHA: ${{ env.CONTROL_PLANE_SHA }}');
   has('readiness attempt bound', j.readiness, 'EXPECTED_RUN_ATTEMPT: ${{ github.run_attempt }}');
@@ -98,19 +95,9 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
   const pagesDeploy = step(j.deploy, 'Deploy exact candidate to GitHub Pages');
   has('Pages deploy consumes exact artifact', pagesDeploy, 'artifact_name: ${{ env.PAGES_ARTIFACT_NAME }}');
 
-  const purge = step(j.deploy, 'Purge Cloudflare release cache');
-  has('purge token secret', purge, 'CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}');
-  has('purge zone secret', purge, 'CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}');
-  has('purge exact zone', purge, 'CLOUDFLARE_ZONE_NAME: gospod-bog.ru');
-  has('purge trusted CLI', purge, 'node release-tools/cloudflare-release-purge.mjs');
-  if (!before(j.deploy, 'Deploy exact candidate to GitHub Pages', 'Purge Cloudflare release cache')) p.push('purge before Pages deploy');
-  if (!before(j.deploy, 'Purge Cloudflare release cache', 'Verify generic live release contract')) p.push('live verifier before purge');
-
-  const purgeEvidence = step(j.deploy, 'Upload Cloudflare purge evidence');
-  has('purge evidence deployment-bound', purgeEvidence, "steps.deploy_pages.outcome == 'success'");
-  has('purge evidence terminal-bound', purgeEvidence, "steps.cloudflare_purge.outcome == 'success' || steps.cloudflare_purge.outcome == 'failure'");
-  has('purge evidence rerun overwrite', purgeEvidence, 'overwrite: true');
-  has('purge evidence canonical name', purgeEvidence, 'name: cloudflare-release-purge-${{ github.run_id }}');
+  if (/CLOUDFLARE_(?:API_TOKEN|ZONE_ID)|cloudflare-release-purge|Purge Cloudflare release cache/.test(workflow)) {
+    p.push('release unexpectedly depends on Cloudflare HTTP edge');
+  }
 
   const liveStep = step(j.deploy, 'Verify generic live release contract');
   has('live release SHA bound', liveStep, 'RELEASE_SHA: ${{ needs.readiness.outputs.release_sha }}');
@@ -124,20 +111,21 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
 
   const ttsStep = step(j.deploy, 'Verify live TTS capability extension');
   has('TTS deployment-bound', ttsStep, "steps.deploy_pages.outcome == 'success'");
-  has('TTS purge-bound', ttsStep, "steps.cloudflare_purge.outcome == 'success'");
+  has('TTS live-bound', ttsStep, "steps.live_release.outcome == 'success'");
   const ttsEvidence = step(j.deploy, 'Upload live TTS capability evidence');
   has('TTS evidence terminal-bound', ttsEvidence, "steps.tts_live.outcome == 'success' || steps.tts_live.outcome == 'failure'");
   has('TTS evidence rerun overwrite', ttsEvidence, 'overwrite: true');
   has('TTS evidence canonical name', ttsEvidence, 'name: tts-live-deployment-${{ github.run_id }}');
 
   if (!before(j.deploy, 'release-tools/verify-release-candidate.mjs', 'Upload exact candidate as Pages artifact')) p.push('Pages packaging precedes candidate verification');
+  if (!before(j.deploy, 'Deploy exact candidate to GitHub Pages', 'Verify generic live release contract')) p.push('live verifier precedes Pages deploy');
   if (!before(j.deploy, 'Verify generic live release contract', 'Verify live TTS capability extension')) p.push('TTS precedes generic live verifier');
   if (/actions\/checkout@|\bnpm ci\b|strangler:build|cache-bust\.js|pagefind:build/.test(j.deploy)) p.push('privileged deploy rebuilds source');
   if (count(workflow, /\bnpm ci\b/g) !== 1) p.push('release npm ci count drift');
   if (count(workflow, /npm run strangler:build:production-like/g) !== 1) p.push('release production build count drift');
   if (count(workflow, /actions\/checkout@/g) !== 1) p.push('release checkout count drift');
   if (count(workflow, /actions\/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c/g) !== 1) p.push('download-artifact pin/count drift');
-  if (count(workflow, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/g) !== 5) p.push('upload-artifact pin/count drift');
+  if (count(workflow, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/g) !== 4) p.push('upload-artifact pin/count drift');
   for (const pin of Object.values(PINS)) if (!workflow.includes(pin)) p.push(`release action pin drift: ${pin.split('@')[0]}`);
   if (/uses:\s*actions\/(?:checkout|setup-node|upload-artifact|download-artifact|upload-pages-artifact|deploy-pages)@v\d+/i.test(workflow)) p.push('mutable release action tag');
 
@@ -196,13 +184,10 @@ const mutations = [
   ['deploy rerun attempt rebound', { ...sources, workflow: mutateStep(sources.workflow, 'Verify downloaded candidate identity', 'EXPECTED_RUN_ID: ${{ github.run_id }}', 'EXPECTED_RUN_ID: ${{ github.run_id }}\n          EXPECTED_RUN_ATTEMPT: ${{ github.run_attempt }}') }],
   ['Pages artifact no attempt', { ...sources, workflow: sources.workflow.replace('PAGES_ARTIFACT_NAME: github-pages-${{ github.run_id }}-${{ github.run_attempt }}', 'PAGES_ARTIFACT_NAME: github-pages') }],
   ['Pages deploy detached', { ...sources, workflow: mutateStep(sources.workflow, 'Deploy exact candidate to GitHub Pages', 'artifact_name: ${{ env.PAGES_ARTIFACT_NAME }}', 'artifact_name: github-pages') }],
-  ['purge token removed', { ...sources, workflow: mutateStep(sources.workflow, 'Purge Cloudflare release cache', 'CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}', 'CLOUDFLARE_API_TOKEN:') }],
-  ['purge zone removed', { ...sources, workflow: mutateStep(sources.workflow, 'Purge Cloudflare release cache', 'CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}', 'CLOUDFLARE_ZONE_ID:') }],
-  ['purge bypassed', { ...sources, workflow: mutateStep(sources.workflow, 'Purge Cloudflare release cache', 'node release-tools/cloudflare-release-purge.mjs', 'echo purge skipped') }],
-  ['purge evidence overwrite removed', { ...sources, workflow: mutateStep(sources.workflow, 'Upload Cloudflare purge evidence', 'overwrite: true', 'overwrite: false') }],
-  ['live moved before purge', { ...sources, workflow: sources.workflow.replace('Purge Cloudflare release cache', '__P__').replace('Verify generic live release contract', 'Purge Cloudflare release cache').replace('__P__', 'Verify generic live release contract') }],
+  ['Cloudflare dependency reintroduced', { ...sources, workflow: sources.workflow.replace('      - name: Verify generic live release contract', "      - name: Purge Cloudflare release cache\n        env:\n          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}\n        run: node release-tools/cloudflare-release-purge.mjs\n\n      - name: Verify generic live release contract") }],
+  ['live moved before deploy', { ...sources, workflow: sources.workflow.replace('Deploy exact candidate to GitHub Pages', '__DEPLOY__').replace('Verify generic live release contract', 'Deploy exact candidate to GitHub Pages').replace('__DEPLOY__', 'Verify generic live release contract') }],
   ['live evidence overwrite removed', { ...sources, workflow: mutateStep(sources.workflow, 'Upload generic live release evidence', 'overwrite: true', 'overwrite: false') }],
-  ['TTS purge boundary removed', { ...sources, workflow: mutateStep(sources.workflow, 'Verify live TTS capability extension', " && steps.cloudflare_purge.outcome == 'success'", '') }],
+  ['TTS live boundary removed', { ...sources, workflow: mutateStep(sources.workflow, 'Verify live TTS capability extension', " && steps.live_release.outcome == 'success'", '') }],
   ['TTS evidence overwrite removed', { ...sources, workflow: mutateStep(sources.workflow, 'Upload live TTS capability evidence', 'overwrite: true', 'overwrite: false') }],
   ['release/control aliased', { ...sources, workflow: sources.workflow.replace('EXPECTED_CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.control_plane_sha }}', 'EXPECTED_CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.release_sha }}') }],
   ['mutable deploy action', { ...sources, workflow: sources.workflow.replace(PINS.deployPages, 'actions/deploy-pages@v5') }],
@@ -215,4 +200,4 @@ const mutations = [
   ['diagnostics rebuilds', { ...sources, diagnostics: `${sources.diagnostics}\n# npm ci\n# npm run strangler:build:production-like\n` }],
 ];
 for (const [name, fixture] of mutations) assert.ok(validate(fixture).length > 0, `${name}: mutation must be rejected`);
-console.log(`Release pipeline contract v2: PASS (${mutations.length} adversarial build-once/two-SHA/recovery/edge mutations rejected).`);
+console.log(`Release pipeline contract v3: PASS (${mutations.length} adversarial build-once/two-SHA/recovery/direct-Pages mutations rejected).`);
