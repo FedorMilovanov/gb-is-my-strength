@@ -1,0 +1,29 @@
+{
+  "route": "/journal/",
+  "profiledAt": "2026-09-09",
+  "migrationLane": "journal-foundation",
+  "routeType": "journal-index",
+  "surfaceContractVersion": 1,
+  "surface": "page",
+  "section": "journal",
+  "slug": null,
+  "currentStatus": "production-dist",
+  "source": "src/pages/journal/index.astro",
+  "risk": 2,
+  "hasMDX": false,
+  "mdxPath": null,
+  "legacyStatus": "absent",
+  "migrationMode": "strict-native",
+  "pagefindContract": {
+    "strategy": "native visible editorial landing",
+    "requiredMarkers": ["data-pagefind-body", "data-journal-surface=\"landing\""]
+  },
+  "publicationContract": {
+    "participatesIn": ["search", "sitemap", "pagefind", "indexNow"]
+  },
+  "visualParity": {
+    "mode": "native-contract",
+    "legacyComparison": "not-applicable",
+    "reason": "New native editorial vertical has no legacy page to compare against."
+  }
+}
