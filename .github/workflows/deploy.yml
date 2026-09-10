@@ -4,6 +4,10 @@ name: Deploy to GitHub Pages
 # promotes those same bytes. Automatic releases use one SHA for both roles;
 # manual recovery may select an older release SHA, but only when it is already
 # an ancestor of the current main control plane.
+#
+# HTTP publication is intentionally direct GitHub Pages. Cloudflare may remain
+# the authoritative DNS provider, but it is not part of the release control
+# plane and no release credential/purge dependency is permitted here.
 on:
   push:
     branches: [main]
@@ -82,13 +86,6 @@ jobs:
 
       - name: Install dependencies once
         run: npm ci
-
-      - name: Verify Cloudflare release purge contract
-        run: |
-          node --check scripts/cloudflare-release-purge-lib.mjs
-          node --check scripts/cloudflare-release-purge.mjs
-          node --check scripts/cloudflare-release-purge-contract-test.mjs
-          node scripts/cloudflare-release-purge-contract-test.mjs
 
       - name: Verify deterministic local fonts
         run: |
@@ -222,9 +219,7 @@ jobs:
             write-deployment-provenance.mjs \
             verify-release-candidate.mjs \
             live-release-contract.mjs \
-            tts-live-deployment-contract.mjs \
-            cloudflare-release-purge-lib.mjs \
-            cloudflare-release-purge.mjs
+            tts-live-deployment-contract.mjs
           do
             git show "${CONTROL_PLANE_SHA}:scripts/${file}" > "release-tools/${file}"
           done
@@ -233,8 +228,6 @@ jobs:
           node --check release-tools/verify-release-candidate.mjs
           node --check release-tools/live-release-contract.mjs
           node --check release-tools/tts-live-deployment-contract.mjs
-          node --check release-tools/cloudflare-release-purge-lib.mjs
-          node --check release-tools/cloudflare-release-purge.mjs
 
       - name: Write generic immutable release provenance
         id: provenance
@@ -316,26 +309,6 @@ jobs:
         with:
           artifact_name: ${{ env.PAGES_ARTIFACT_NAME }}
 
-      - name: Purge Cloudflare release cache
-        id: cloudflare_purge
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-          CLOUDFLARE_ZONE_NAME: gospod-bog.ru
-          RELEASE_SHA: ${{ needs.readiness.outputs.release_sha }}
-          CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.control_plane_sha }}
-        run: node release-tools/cloudflare-release-purge.mjs
-
-      - name: Upload Cloudflare purge evidence
-        if: ${{ always() && steps.deploy_pages.outcome == 'success' && (steps.cloudflare_purge.outcome == 'success' || steps.cloudflare_purge.outcome == 'failure') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: cloudflare-release-purge-${{ github.run_id }}
-          path: reports/cloudflare-release-purge.json
-          if-no-files-found: error
-          retention-days: 30
-          overwrite: true
-
       - name: Verify generic live release contract
         id: live_release
         env:
@@ -359,7 +332,7 @@ jobs:
 
       - name: Verify live TTS capability extension
         id: tts_live
-        if: ${{ always() && steps.deploy_pages.outcome == 'success' && steps.cloudflare_purge.outcome == 'success' }}
+        if: ${{ always() && steps.deploy_pages.outcome == 'success' && steps.live_release.outcome == 'success' }}
         env:
           LIVE_BASE_URL: https://gospod-bog.ru
           RELEASE_SHA: ${{ needs.readiness.outputs.release_sha }}
