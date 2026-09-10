@@ -44,6 +44,7 @@ const ownership = readJson('migration/page-ownership.json');
 const series = readJson('data/series.json');
 const config = read('src/components/article-pilots/_shared/series/teenSeriesConfig.ts');
 const wrapper = read('src/components/article-pilots/teen-series/TeenSeriesArticlePage.astro');
+const readerProjector = read('scripts/project-reader-linear-text-to-dist.mjs');
 const landingSource = read('src/pages/podrostok-za-kadrom/index.astro');
 const asset = read('public/images/teen-series/series-hero.svg');
 const rasterPath = 'public/images/teen-series/series-hero.webp';
@@ -64,8 +65,13 @@ if (/PREPUBLICATION_RAIL_COVER|icons\/icon-512\.png/.test(config)) fail('prepubl
 if (!wrapper.includes('data-gbs2-series="teen-double-life"')) fail('teen wrapper series identity missing');
 if (wrapper.includes('PASTOR_SERIES') || wrapper.includes('pastor-series/og-hero')) fail('pastor-series metadata leaked into teen wrapper');
 if (!wrapper.includes(`const ogImagePath = '${PUBLIC_OG}'`)) fail('article wrapper social image must use raster WebP');
-if (!wrapper.includes("Astro.slots.render('default')") || !wrapper.includes('data-pagefind-ignore')) fail('static bibliography projection missing from article wrapper');
-if (wrapper.includes("document.querySelector('.teen-series-prose')")) fail('bibliography exclusion must not depend on client-side DOM mutation');
+if (!wrapper.includes('<slot />')) fail('teen wrapper must preserve native Astro slot rendering');
+if (/Astro\.slots\.render\(['"]default['"]\)|set:html|document\.querySelector\(['"]\.teen-series-prose['"]\)/u.test(wrapper)) {
+  fail('teen bibliography projection must not use raw-HTML or client-side DOM rewriting');
+}
+if (!readerProjector.includes('projectTeenSourcesBoundary') || !readerProjector.includes('class="sources-block"') || !readerProjector.includes('data-reader-exclude') || !readerProjector.includes('data-pagefind-ignore')) {
+  fail('canonical reader projector is missing teen bibliography boundary ownership');
+}
 if (!landingSource.includes(`const ogImagePath = '${PUBLIC_OG}'`)) fail('landing social image must use raster WebP');
 if (!landingSource.includes("'@type': 'Organization'") || !landingSource.includes("'@id': SITE.orgId")) fail('landing source lacks Organization JSON-LD owner');
 if (!landingSource.includes("'@type': 'WebSite'") || !landingSource.includes("'@id': SITE.websiteId")) fail('landing source lacks WebSite JSON-LD owner');
@@ -162,7 +168,7 @@ if (fs.existsSync(DIST)) {
     if (route !== LANDING) {
       if (!html.includes('data-gbs2-series="teen-double-life"')) fail(`${route}: reader series identity missing`);
       if (!/<section\b[^>]*class="sources-block"[^>]*data-reader-exclude[^>]*data-pagefind-ignore/iu.test(html)) {
-        fail(`${route}: bibliography boundary is not static in built HTML`);
+        fail(`${route}: bibliography boundary is not static in built HTML before Pagefind`);
       }
     } else {
       if (!html.includes(SITE + '/#organization')) fail(`${route}: Organization JSON-LD node missing`);
@@ -182,5 +188,5 @@ console.log('  order: I -> II -> III -> A -> B -> C -> D');
 console.log('  publication source: seven MDX canonical + raw HTML comments rejected');
 console.log('  publication date: 2026-09-10');
 console.log('  media: SVG editorial hero + 1200x630 WebP social projection');
-console.log('  bibliography: build-time data-pagefind-ignore boundary');
+console.log('  bibliography: canonical reader projector owns build-time data-pagefind-ignore boundary');
 console.log('  production ownership: astro/production-dist');

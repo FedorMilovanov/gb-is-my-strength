@@ -62,24 +62,6 @@ const dateRu = (value: string) => new Intl.DateTimeFormat('ru-RU', {
   day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Moscow',
 }).format(new Date(value));
 
-function withStaticSourcesBoundary(html: string) {
-  if (html.includes('class="sources-block"')) {
-    throw new Error(`${frontmatter.slug}: sources boundary must have exactly one route-owned projection`);
-  }
-  const sourceHeading = /<h2\b[^>]*>\s*Источники[^<]*<\/h2>/iu.exec(html);
-  if (!sourceHeading || sourceHeading.index === undefined) {
-    throw new Error(`${frontmatter.slug}: published teen article is missing an Источники H2`);
-  }
-  const start = sourceHeading.index;
-  const afterHeading = start + sourceHeading[0].length;
-  const nextHeadingOffset = html.slice(afterHeading).search(/<h2\b/iu);
-  const end = nextHeadingOffset === -1 ? html.length : afterHeading + nextHeadingOffset;
-  const sources = html.slice(start, end);
-  return `${html.slice(0, start)}<section class="sources-block" data-reader-exclude data-pagefind-ignore>${sources}</section>${html.slice(end)}`;
-}
-
-const renderedBody = withStaticSourcesBoundary(await Astro.slots.render('default'));
-
 const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -212,7 +194,7 @@ const siteConfig = {
             <p>{frontmatter.description}</p>
           </header>
           <div class="genesis6-prose teen-series-prose" id="article-content">
-            <Fragment set:html={renderedBody} />
+            <slot />
           </div>
           <aside class="author-card">
             <div class="author-card-icon" aria-hidden="true">ФМ</div>
