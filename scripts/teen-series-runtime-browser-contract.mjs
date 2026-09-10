@@ -19,6 +19,11 @@ const ROUTES = [
   ['/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/', 2],
   ['/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/', 3],
 ];
+const REQUIRED_LATERAL_EDGES = [
+  ['teen-part-i-heart-anthropology', '/articles/podrostok-za-kadrom-dvoynaya-zhizn/', '/articles/krajne-li-isporcheno-serdce/'],
+  ['teen-part-iii-church-leadership', '/articles/podrostok-za-kadrom-chto-delat-tserkvi/', '/articles/20-antisovetov-pastoru/'],
+  ['teen-companion-d-hermeneutics', '/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/', '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/'],
+];
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -87,6 +92,22 @@ assert.equal(chain.length, 6, 'teen series must compile exactly six series-next 
 for (let i = 0; i < 6; i += 1) {
   assert(chain.some((edge) => edge.source === teenNodes[i].id && edge.target === teenNodes[i + 1].id),
     `missing teen series-next edge ${i + 1} -> ${i + 2}`);
+}
+
+for (const [edgeId, sourceRoute, targetRoute] of REQUIRED_LATERAL_EDGES) {
+  const sourceNode = compiled.nodes.find((node) => normalizeRoute(node.url) === sourceRoute);
+  const targetNode = compiled.nodes.find((node) => normalizeRoute(node.url) === targetRoute);
+  assert(sourceNode, `${edgeId}: source node missing`);
+  assert(targetNode, `${edgeId}: target node missing`);
+  const edge = compiled.edges.find((item) => item.id === edgeId);
+  assert(edge, `${edgeId}: required lateral catalog edge missing`);
+  assert.equal(edge.origin, 'catalog', `${edgeId}: lateral edge must come from canonical editorial catalog`);
+  assert.equal(edge.editorialStatus, 'verified', `${edgeId}: lateral edge must be verified`);
+  assert.equal(edge.source, sourceNode.id, `${edgeId}: source identity drifted`);
+  assert.equal(edge.target, targetNode.id, `${edgeId}: target identity drifted`);
+  const projection = compiled.projections?.byNode?.[sourceNode.id]?.article || [];
+  assert(projection.some((item) => item.edgeId === edgeId && item.targetId === targetNode.id),
+    `${edgeId}: required lateral edge missing from article projection`);
 }
 
 let totalRefs = 0;
@@ -212,7 +233,7 @@ try {
 }
 
 console.log('✅ Teen runtime closure PASS');
-console.log('  compiled relations: 7 teen nodes / 6 series-next edges');
+console.log('  compiled relations: 7 teen nodes / 6 series-next edges / 3 verified lateral catalog edges');
 console.log('  correction boundary: 7/7 shared owner + safeguarding disclaimer');
 console.log('  Scripture UX: 18 bounded .bref[data-ref] triggers; desktop + mobile interaction');
 console.log('  Psalm guard: visible Пс. 49:16–21 / machine Псалтирь 49:16–21');

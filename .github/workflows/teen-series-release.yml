@@ -19,6 +19,10 @@ on:
       - "public/images/teen-series/**"
       - "docs/TEEN-SERIES-*.md"
       - "data/series.json"
+      - "data/relations.json"
+      - "data/links-graph.json"
+      - "src/lib/relations/**"
+      - "scripts/project-relations-to-dist.mjs"
       - "data/route-profiles/**"
       - "data/route-search-policy.json"
       - "data/search-manifest.json"
@@ -62,6 +66,9 @@ jobs:
 
       - name: Validate route registry and source provenance
         run: npm run migration:metadata:check:strict
+
+      - name: Validate canonical relation graph
+        run: node scripts/check-relations.mjs
 
       - name: Build production-like candidate
         run: npm run strangler:build:production-like
