@@ -5,6 +5,12 @@ export const G3_PUBLICATION_HANDOFF = {
   handoffPath: 'G3_HISTORY/PRODUCT_HANDOFF_G3_DOSSIER_2026-09-09.md',
   publicationDecision: 'PUBLICATION_AUTHORIZED_FOR_PINNED_CLAIM_SET',
   correctionBaseline: 'Research evidence snapshot 893e952de4e7ae617af02aca1344d385abcdf71b plus publication seal 298d00ddc4db46522c8ad904016e98a4426c9fcf',
+  productMetadata: {
+    readingTimeMinutes: 8,
+    readingTimeBasis: 'editorial-estimate',
+    librarySection: 'Журнал',
+    topicCategory: 'Документальные досье',
+  },
   claimIds: [
     'G3-PUB-001', 'G3-PUB-002', 'G3-PUB-003', 'G3-PUB-004',
     'G3-PUB-005', 'G3-PUB-006', 'G3-PUB-007', 'G3-PUB-008',
