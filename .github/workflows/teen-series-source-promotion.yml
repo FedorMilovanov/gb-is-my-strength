@@ -2,7 +2,7 @@ name: Teen Series Source Promotion
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, edited]
+    types: [opened, synchronize, reopened, edited, labeled]
     branches: [main]
     paths:
       - "src/content/articles/podrostok-za-kadrom-*.mdx"
@@ -18,7 +18,7 @@ on:
       - ".github/workflows/teen-series-source-promotion.yml"
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: read
 
 concurrency:
@@ -29,10 +29,14 @@ jobs:
   promote-source:
     if: >-
       github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.labels.*.name, 'autofix') &&
       github.event.pull_request.head.repo.full_name == github.repository &&
       startsWith(github.event.pull_request.head.ref, 'release/teen-series-live-')
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: read
     steps:
       - name: Checkout exact pull request branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -53,7 +57,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/writer-lease.mjs assert-live --phase=pre-mutation
 
-      - name: Normalize only the seven teen MDX frontmatters
+      - name: Normalize only the seven teen MDX publication sources
         run: node scripts/teen-series-source-promotion.mjs --write
 
       - name: Validate bounded mutation
@@ -101,6 +105,6 @@ jobs:
                   src/content/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya.mdx \
                   src/content/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya.mdx \
                   src/content/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti.mdx
-          git commit -m "content(teen): promote canonical publication frontmatter" -m "${LEASE_TRAILER}"
+          git commit -m "content(teen): promote canonical publication source" -m "${LEASE_TRAILER}"
           node scripts/writer-lease.mjs assert-live --phase=pre-push
           git push --force-with-lease="refs/heads/${HEAD_REF}:${EXPECTED_HEAD}" origin "HEAD:${HEAD_REF}"

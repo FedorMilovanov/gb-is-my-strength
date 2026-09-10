@@ -51,6 +51,26 @@ function updateFrontmatter(source, slug) {
   return source.replace(match[0], `---\n${lines.join('\n')}\n---\n`);
 }
 
+function normalizeMdxComments(source, slug) {
+  let converted = 0;
+  const normalized = source.replace(/<!--([\s\S]*?)-->/g, (_match, body) => {
+    if (body.includes('*/')) {
+      throw new Error(`${slug}: HTML comment contains */ and cannot be converted safely`);
+    }
+    converted += 1;
+    return `{/*${body}*/}`;
+  });
+  if (normalized.includes('<!--') || normalized.includes('-->')) {
+    throw new Error(`${slug}: raw HTML comment marker remains after MDX normalization`);
+  }
+  return { source: normalized, converted };
+}
+
+function normalizeSource(source, slug) {
+  const frontmatter = updateFrontmatter(source, slug);
+  return normalizeMdxComments(frontmatter, slug);
+}
+
 function assertPublished(source, slug) {
   const required = [
     'contentStatus: "published"',
@@ -70,13 +90,19 @@ function assertPublished(source, slug) {
   if (/^# (?:Контент загружен с опережением|Явный draft)/mu.test(source)) {
     throw new Error(`${slug}: prepublication frontmatter comment remains`);
   }
+  if (source.includes('<!--') || source.includes('-->')) {
+    throw new Error(`${slug}: raw HTML comment is invalid in published MDX`);
+  }
 }
 
 let changed = 0;
+let convertedComments = 0;
 for (const slug of SLUGS) {
   const file = path.join(ROOT, 'src', 'content', 'articles', `${slug}.mdx`);
   const source = fs.readFileSync(file, 'utf8');
-  const normalized = updateFrontmatter(source, slug);
+  const result = normalizeSource(source, slug);
+  const normalized = result.source;
+  convertedComments += result.converted;
   assertPublished(normalized, slug);
   if (source !== normalized) {
     changed += 1;
@@ -88,4 +114,4 @@ if (!WRITE && changed) {
   console.error(`❌ ${changed} teen source file(s) require publication normalization`);
   process.exit(1);
 }
-console.log(`✅ Teen source publication state ${WRITE ? 'normalized' : 'canonical'} (${SLUGS.length} files${WRITE ? `; changed ${changed}` : ''})`);
+console.log(`✅ Teen source publication state ${WRITE ? 'normalized' : 'canonical'} (${SLUGS.length} files${WRITE ? `; changed ${changed}; converted comments ${convertedComments}` : ''})`);
