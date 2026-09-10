@@ -8,7 +8,7 @@
     <link>https://gospod-bog.ru/</link>
     <description><![CDATA[Богословские разборы, переводы и исследования Писания на русском языке.]]></description>
     <language>ru</language>
-    <lastBuildDate>Sun, 06 Sep 2026 21:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 09 Sep 2026 21:00:00 GMT</lastBuildDate>
     <ttl>1440</ttl>
     <image>
       <url>https://gospod-bog.ru/images/og-preview-1200x630.webp</url>
@@ -16,6 +16,76 @@
       <link>https://gospod-bog.ru/</link>
     </image>
     <atom:link href="https://gospod-bog.ru/feed.xml" rel="self" type="application/rss+xml"/>
+
+    <item>
+      <title>Подросток за кадром: что должна делать церковь | Господь Бог — Сила Моя</title>
+      <link>https://gospod-bog.ru/articles/podrostok-za-kadrom-chto-delat-tserkvi/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/podrostok-za-kadrom-chto-delat-tserkvi/</guid>
+      <pubDate>Wed, 09 Sep 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Семья</category>
+      <description><![CDATA[Как церкви относиться к ребёнку или подростку, который слышит Слово, но живёт в серьёзном сознательном грехе: поклонение, хор, молодёжная среда, увещевание, дисциплина, защита других и восстановление.]]></description>
+    </item>
+
+    <item>
+      <title>Подросток за кадром: как рождается двойная жизнь | Господь Бог — Сила Моя</title>
+      <link>https://gospod-bog.ru/articles/podrostok-za-kadrom-dvoynaya-zhizn/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/podrostok-za-kadrom-dvoynaya-zhizn/</guid>
+      <pubDate>Wed, 09 Sep 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Семья</category>
+      <description><![CDATA[Почему подросток, выросший рядом с Евангелием, может построить скрытую жизнь из похоти, пошлости, лжи и цифровой тайны; как грех притупляет совесть — и почему библейский ответ не заканчивается отчаянием.]]></description>
+    </item>
+
+    <item>
+      <title>Подросток за кадром: что делать родителям после разоблачения | Господь Бог — Сила Моя</title>
+      <link>https://gospod-bog.ru/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/</guid>
+      <pubDate>Wed, 09 Sep 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Семья</category>
+      <description><![CDATA[Как верующим родителям действовать, когда открылась тайная жизнь подростка: границы, правда, покаяние, доверие и восстановление — без фатализма и без попытки контролем заменить новое рождение.]]></description>
+    </item>
+
+    <item>
+      <title>Совершеннолетие и родительская власть: что меняется, что остаётся | Господь Бог — Сила Моя</title>
+      <link>https://gospod-bog.ru/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/</guid>
+      <pubDate>Wed, 09 Sep 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Семья</category>
+      <description><![CDATA[Как меняется родительская власть после совершеннолетия: пожизненное почитание, пределы послушания, совет, ответственность, самостоятельность, брак и защита от двух крайностей.]]></description>
+    </item>
+
+    <item>
+      <title>Взрослая дочь, отец и брак: согласие и границы власти | Господь Бог — Сила Моя</title>
+      <link>https://gospod-bog.ru/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/</guid>
+      <pubDate>Wed, 09 Sep 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Семья</category>
+      <description><![CDATA[Как соединить почитание родителей, серьёзный отцовский совет, свободное согласие на брак и пределы власти без автономизма, тайного романа и отцовского абсолютизма.]]></description>
+    </item>
+
+    <item>
+      <title>Взрослый ребёнок дома: правила, деньги, помощь и последствия | Господь Бог — Сила Моя</title>
+      <link>https://gospod-bog.ru/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/</guid>
+      <pubDate>Wed, 09 Sep 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Семья</category>
+      <description><![CDATA[Как христианским родителям устроить совместную жизнь со взрослым ребёнком: правила дома, работа, деньги, помощь без потворства, отдельное проживание, посредничество и границы без мести.]]></description>
+    </item>
+
+    <item>
+      <title>Взрослый ребёнок ушёл: контакт, ожидание, покаяние и возвращение | Господь Бог — Сила Моя</title>
+      <link>https://gospod-bog.ru/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/</guid>
+      <pubDate>Wed, 09 Sep 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Семья</category>
+      <description><![CDATA[Что делать христианским родителям, если взрослый сын или дочь ушёл из дома, остаётся в бунте или возвращается: контакт без контроля, последствия без мести, покаяние, доверие и надежда на Божью благодать.]]></description>
+    </item>
 
     <item>
       <title>Несовершенный человек в несовершенной церкви | Господь Бог — Сила Моя</title>
