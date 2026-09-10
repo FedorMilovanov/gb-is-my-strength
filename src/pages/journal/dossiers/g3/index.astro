@@ -1,11 +1,12 @@
 ---
 import JournalPageHead from '@/components/journal/JournalDocumentHead.astro';
 import G3Dossier from '@/components/journal/G3Dossier.astro';
+import { G3_PUBLICATION_HANDOFF } from '@/data/journal/g3PublicationHandoff';
 
 const title = 'G3: рост, кризис и завершение операций';
 const description = 'Документальное досье G3 Ministries: корпоративные записи, IRS Form 990, кризис Josh Buice, спор вокруг Tom Buck, прекращение операций и открытые вопросы без повышения спорных версий до факта.';
 const canonical = 'https://gospod-bog.ru/journal/dossiers/g3/';
-const readingTime = 8;
+const readingTime = G3_PUBLICATION_HANDOFF.productMetadata.readingTimeMinutes;
 ---
 <!DOCTYPE html>
 <html lang="ru">
