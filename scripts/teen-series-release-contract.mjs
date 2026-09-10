@@ -9,6 +9,7 @@ const SITE = 'https://gospod-bog.ru';
 const RELEASE_DATE = '2026-09-10T00:00:00+03:00';
 const LANDING = '/podrostok-za-kadrom/';
 const SERIES_KEY = 'teen-double-life';
+const OG = '/images/teen-series/series-hero.svg';
 const ITEMS = [
   ['I', 'teen-double-life', 'podrostok-za-kadrom-dvoynaya-zhizn', 32, 0],
   ['II', 'teen-parents-after-disclosure', 'podrostok-za-kadrom-roditelyam-posle-razoblacheniya', 43, 32],
@@ -91,6 +92,24 @@ for (const [route, source] of requiredOwnership) {
 }
 
 for (const [mark, pageId, slug, minutes, done] of ITEMS) {
+  const sourceRel = `src/content/articles/${slug}.mdx`;
+  const mdx = read(sourceRel);
+  const requiredSourceFields = [
+    'contentStatus: "published"',
+    `publishedAt: "${RELEASE_DATE}"`,
+    `updatedAt: "${RELEASE_DATE}"`,
+    'draft: false',
+    'noindex: false',
+    'sourcesRequired: true',
+    'series: "teen-double-life"',
+    `canonicalOverride: "${SITE}/articles/${slug}/"`,
+    `ogImage: "${OG}"`,
+  ];
+  for (const field of requiredSourceFields) {
+    if (!mdx.includes(field)) fail(`${slug}: canonical publication source missing ${field}`);
+  }
+  if (/<!--|-->/.test(mdx)) fail(`${slug}: raw HTML comment marker remains in published MDX`);
+
   const routeRel = `src/pages/articles/${slug}/index.astro`;
   const source = read(routeRel);
   if (!source.includes(`pageId="${pageId}"`)) fail(`${slug}: pageId mismatch`);
@@ -125,7 +144,7 @@ if (fs.existsSync(DIST)) {
     if (!html.includes('data-pagefind-body')) fail(`${route}: data-pagefind-body missing`);
     if (route !== LANDING) {
       if (!html.includes('data-gbs2-series="teen-double-life"')) fail(`${route}: reader series identity missing`);
-      if (!html.includes('/images/teen-series/series-hero.svg')) fail(`${route}: final teen media missing`);
+      if (!html.includes(OG)) fail(`${route}: final teen media missing`);
     }
   }
 }
@@ -138,6 +157,7 @@ if (errors.length) {
 console.log('✅ Teen series release contract PASS');
 console.log(`  routes: ${requiredOwnership.length} (landing + 7 articles)`);
 console.log('  order: I -> II -> III -> A -> B -> C -> D');
+console.log('  publication source: seven MDX canonical + raw HTML comments rejected');
 console.log('  publication date: 2026-09-10');
 console.log('  media: original 1200x630 SVG');
 console.log('  production ownership: astro/production-dist');
