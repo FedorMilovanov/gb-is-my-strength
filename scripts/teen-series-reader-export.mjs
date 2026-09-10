@@ -15,6 +15,14 @@ const SLUGS = [
   'vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti',
 ];
 
+const EXACT_VISIBLE = [
+  [
+    '**LOVE DOES NOT CREATE A DUTY TO CO-SIGN EVERY LOAN.**',
+    '**Любовь не создаёт обязанности становиться поручителем по каждому кредиту.**',
+    1,
+  ],
+];
+
 const CASE_INSENSITIVE_VISIBLE = [
   [/\bstewardship\b/giu, 'ответственное распоряжение'],
   [/\bhouse rules?\b/giu, 'правила дома'],
@@ -43,9 +51,14 @@ function preNormalizeVisible(source) {
   const normalizedBody = parts.map((part, index) => {
     if (index % 2) return part;
     let next = part;
+    for (const [from, to] of EXACT_VISIBLE) next = next.split(from).join(to);
     for (const [pattern, replacement] of CASE_INSENSITIVE_VISIBLE) next = next.replace(pattern, replacement);
     return next;
   }).join('');
+  for (const [from, _to, expectedCount] of EXACT_VISIBLE) {
+    const originalCount = parts.filter((_part, index) => index % 2 === 0).reduce((sum, part) => sum + part.split(from).length - 1, 0);
+    if (originalCount !== expectedCount) throw new Error(`exact reader replacement count drifted for ${JSON.stringify(from)}: expected ${expectedCount}, got ${originalCount}`);
+  }
   return head + normalizedBody;
 }
 
