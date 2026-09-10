@@ -19,6 +19,11 @@ const SLUGS = [
 ];
 
 const UPPERCASE_TERMS = {
+  "MODE CHANGE, NOT TRUTH CHANGE": 'МЕНЯЕТСЯ СПОСОБ ДЕЙСТВИЯ, А НЕ ИСТИНА',
+  "LOVE DOES NOT CREATE A DUTY TO CO-SIGN EVERY LOAN": 'ЛЮБОВЬ НЕ СОЗДАЁТ ОБЯЗАННОСТИ ПОРУЧАТЬСЯ ПО КАЖДОМУ КРЕДИТУ',
+  "EMOTIONAL STORY → SECRET COALITION → MONEY/HOUSING → MAYBE FACTS LATER": 'ЭМОЦИОНАЛЬНЫЙ РАССКАЗ → ТАЙНАЯ КОАЛИЦИЯ → ДЕНЬГИ/ЖИЛЬЁ → ФАКТЫ, ВОЗМОЖНО, ПОТОМ',
+  "MEDIATE BEFORE COALITION": 'СНАЧАЛА ПОСРЕДНИЧЕСТВО, А НЕ КОАЛИЦИЯ',
+  "A BOUNDARY SHOULD HAVE A STEWARDSHIP PURPOSE, NOT A RETALIATION PURPOSE": 'ГРАНИЦА ДОЛЖНА СЛУЖИТЬ ОТВЕТСТВЕННОМУ РАСПОРЯЖЕНИЮ, А НЕ ВОЗМЕЗДИЮ',
   "INITIAL SAFETY CLARIFICATION": 'ПЕРВИЧНАЯ ПРОВЕРКА БЕЗОПАСНОСТИ',
   "PERMANENT RIGHT TO ADULT OMNISCIENCE": 'ПОСТОЯННОЕ ПРАВО ЗНАТЬ ВСЁ О ВЗРОСЛОМ',
   "NARRATIVE SILENCE": 'МОЛЧАНИЕ ПОВЕСТВОВАНИЯ',
@@ -198,30 +203,50 @@ function updateFrontmatter(source, slug) {
   return source.replace(match[0], `---\n${lines.join('\n')}\n---\n`);
 }
 
+function transformReaderText(input, transform) {
+  const htmlParts = input.split(/(<[^>\n]+>)/g);
+  return htmlParts.map((part, index) => {
+    if (index % 2) return part;
+    const markdownDestinations = part.split(/(\]\([^\)\n]*\))/g);
+    return markdownDestinations.map((segment, segmentIndex) => segmentIndex % 2 ? segment : transform(segment)).join('');
+  }).join('');
+}
+
 function transformVisibleBody(source, transform) {
   const frontmatter = source.match(/^---\n[\s\S]*?\n---\n/);
   if (!frontmatter) throw new Error('missing frontmatter');
   const head = frontmatter[0];
   const body = source.slice(head.length);
   const parts = body.split(/(\{\/\*[\s\S]*?\*\/\})/g);
-  return head + parts.map((part, index) => index % 2 ? part : transform(part)).join('');
+  return head + parts.map((part, index) => index % 2 ? part : transformReaderText(part, transform)).join('');
 }
-
 function visibleBody(source) {
   const frontmatter = source.match(/^---\n[\s\S]*?\n---\n/);
   const body = frontmatter ? source.slice(frontmatter[0].length) : source;
   return body.replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
 }
 
+function replaceCaseInsensitive(text, from, to) {
+  const lowerText = text.toLowerCase();
+  const lowerFrom = from.toLowerCase();
+  let cursor = 0;
+  let result = '';
+  while (true) {
+    const index = lowerText.indexOf(lowerFrom, cursor);
+    if (index < 0) return result + text.slice(cursor);
+    result += text.slice(cursor, index) + to;
+    cursor = index + from.length;
+  }
+}
+
 function normalizeReaderSurface(source) {
   return transformVisibleBody(source, (input) => {
     let text = input;
     for (const [from, to] of Object.entries(UPPERCASE_TERMS).sort((a, b) => b[0].length - a[0].length)) text = text.split(from).join(to);
-    for (const [from, to] of PLAIN_REPLACEMENTS) text = text.split(from).join(to);
+    for (const [from, to] of PLAIN_REPLACEMENTS) text = replaceCaseInsensitive(text, from, to);
     return text;
   });
 }
-
 function normalizeMdxComments(source, slug) {
   let converted = 0;
   const normalized = source.replace(/<!--([\s\S]*?)-->/g, (_match, body) => {
