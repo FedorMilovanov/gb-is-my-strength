@@ -26,6 +26,7 @@ on:
       - "feed.xml"
       - "sitemap.xml"
       - "scripts/teen-series-release-contract.mjs"
+      - "scripts/teen-series-runtime-browser-contract.mjs"
       - ".github/workflows/teen-series-release.yml"
   workflow_dispatch:
 
@@ -77,6 +78,12 @@ jobs:
 
       - name: Build Pagefind index
         run: npm run pagefind:build:dist
+
+      - name: Install Chromium for teen runtime witness
+        run: npx playwright install --with-deps chromium
+
+      - name: Validate teen runtime closure
+        run: node scripts/teen-series-runtime-browser-contract.mjs
 
       - name: Audit production publication
         run: |
