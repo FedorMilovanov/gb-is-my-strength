@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "sourceCommit": "7687f871f8f72e7e8adabaf4050152410eec17ea",
+  "records": {
+    "/articles/podrostok-za-kadrom-chto-delat-tserkvi/": {
+      "route": "/articles/podrostok-za-kadrom-chto-delat-tserkvi/",
+      "canonical": "https://gospod-bog.ru/articles/podrostok-za-kadrom-chto-delat-tserkvi/",
+      "title": "Подросток за кадром: что должна делать церковь | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/teen-series/TeenSeriesArticlePage.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-09-09T21:00:00.000Z",
+      "editorialModifiedAt": "2026-09-09T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "approved",
+      "provenance": "teen-series-editorial-publication-decision-20260910",
+      "observations": {}
+    },
+    "/articles/podrostok-za-kadrom-dvoynaya-zhizn/": {
+      "route": "/articles/podrostok-za-kadrom-dvoynaya-zhizn/",
+      "canonical": "https://gospod-bog.ru/articles/podrostok-za-kadrom-dvoynaya-zhizn/",
+      "title": "Подросток за кадром: как рождается двойная жизнь | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/teen-series/TeenSeriesArticlePage.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-09-09T21:00:00.000Z",
+      "editorialModifiedAt": "2026-09-09T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "approved",
+      "provenance": "teen-series-editorial-publication-decision-20260910",
+      "observations": {}
+    },
+    "/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/": {
+      "route": "/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/",
+      "canonical": "https://gospod-bog.ru/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/",
+      "title": "Подросток за кадром: что делать родителям после разоблачения | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/teen-series/TeenSeriesArticlePage.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-09-09T21:00:00.000Z",
+      "editorialModifiedAt": "2026-09-09T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "approved",
+      "provenance": "teen-series-editorial-publication-decision-20260910",
+      "observations": {}
+    },
+    "/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/": {
+      "route": "/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/",
+      "canonical": "https://gospod-bog.ru/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/",
+      "title": "Совершеннолетие и родительская власть: что меняется, что остаётся | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/teen-series/TeenSeriesArticlePage.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-09-09T21:00:00.000Z",
+      "editorialModifiedAt": "2026-09-09T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "approved",
+      "provenance": "teen-series-editorial-publication-decision-20260910",
+      "observations": {}
+    },
+    "/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/": {
+      "route": "/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/",
+      "canonical": "https://gospod-bog.ru/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/",
+      "title": "Взрослая дочь, отец и брак: согласие и границы власти | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/teen-series/TeenSeriesArticlePage.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-09-09T21:00:00.000Z",
+      "editorialModifiedAt": "2026-09-09T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "approved",
+      "provenance": "teen-series-editorial-publication-decision-20260910",
+      "observations": {}
+    },
+    "/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/": {
+      "route": "/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/",
+      "canonical": "https://gospod-bog.ru/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/",
+      "title": "Взрослый ребёнок дома: правила, деньги, помощь и последствия | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/teen-series/TeenSeriesArticlePage.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-09-09T21:00:00.000Z",
+      "editorialModifiedAt": "2026-09-09T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "approved",
+      "provenance": "teen-series-editorial-publication-decision-20260910",
+      "observations": {}
+    },
+    "/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/": {
+      "route": "/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/",
+      "canonical": "https://gospod-bog.ru/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/",
+      "title": "Взрослый ребёнок ушёл: контакт, ожидание, покаяние и возвращение | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/teen-series/TeenSeriesArticlePage.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-09-09T21:00:00.000Z",
+      "editorialModifiedAt": "2026-09-09T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "approved",
+      "provenance": "teen-series-editorial-publication-decision-20260910",
+      "observations": {}
+    }
+  }
+}

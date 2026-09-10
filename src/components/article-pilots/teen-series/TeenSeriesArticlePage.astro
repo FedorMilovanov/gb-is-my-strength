@@ -1,0 +1,238 @@
+---
+import Seo from '@/components/seo/Seo.astro';
+import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
+import SeriesReaderChrome from '@/components/article-pilots/_shared/series/SeriesReaderChrome.astro';
+import { TEEN_DOUBLE_LIFE_SERIES } from '@/components/article-pilots/_shared/series/teenSeriesConfig';
+import { seriesItem } from '@/components/article-pilots/_shared/series/seriesConfig';
+import TeenSeriesCorrectionBoundary from '@/components/article-pilots/teen-series/TeenSeriesCorrectionBoundary.astro';
+import { SITE } from '@/data/site';
+import { assetUrl } from '@/lib/asset-version';
+
+interface Frontmatter {
+  title: string;
+  h1: string;
+  description: string;
+  slug: string;
+  publishedAt: string;
+  updatedAt: string;
+  readingTime: number;
+  draft?: boolean;
+  noindex?: boolean;
+  canonicalOverride?: string;
+}
+
+interface Props {
+  pageId: string;
+  frontmatter: unknown;
+}
+
+const { pageId, frontmatter } = Astro.props as Props;
+
+function assertFrontmatter(value: unknown): asserts value is Frontmatter {
+  if (!value || typeof value !== 'object') throw new Error('Teen-series frontmatter must be an object');
+  const record = value as Record<string, unknown>;
+  for (const field of ['title', 'h1', 'description', 'slug', 'publishedAt', 'updatedAt'] as const) {
+    if (typeof record[field] !== 'string' || record[field].length === 0) {
+      throw new Error(`Teen-series frontmatter field "${field}" must be a non-empty string`);
+    }
+  }
+  if (typeof record.readingTime !== 'number' || !Number.isFinite(record.readingTime) || record.readingTime <= 0) {
+    throw new Error('Teen-series frontmatter readingTime must be a positive number');
+  }
+}
+
+assertFrontmatter(frontmatter);
+const item = seriesItem(TEEN_DOUBLE_LIFE_SERIES, pageId);
+const page = TEEN_DOUBLE_LIFE_SERIES.pages[pageId];
+if (!page) throw new Error(`Unknown teen-series page: ${pageId}`);
+
+const canonical = frontmatter.canonicalOverride || `${SITE.url}/articles/${frontmatter.slug}/`;
+const indexable = frontmatter.draft !== true && frontmatter.noindex !== true;
+const robots = indexable
+  ? 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1'
+  : 'noindex, nofollow, noarchive';
+const ogImagePath = '/images/teen-series/series-hero.svg';
+const ogImage = `${SITE.url}${ogImagePath}`;
+const personId = `${SITE.url}/about/#person`;
+const breadcrumbsId = `${canonical}#breadcrumbs`;
+const articleId = `${canonical}#article`;
+const markText = String(item.mark.value);
+const partLabel = item.mark.kind === 'roman' ? `Часть ${markText}` : `Раздел ${markText}`;
+const dateRu = (value: string) => new Intl.DateTimeFormat('ru-RU', {
+  day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Moscow',
+}).format(new Date(value));
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': SITE.orgId,
+      name: SITE.name,
+      url: `${SITE.url}/`,
+      logo: { '@type': 'ImageObject', url: `${SITE.url}/icons/icon-512.png`, width: 512, height: 512 },
+    },
+    {
+      '@type': 'WebSite',
+      '@id': SITE.websiteId,
+      name: SITE.name,
+      url: `${SITE.url}/`,
+      inLanguage: SITE.locale,
+      publisher: { '@id': SITE.orgId },
+    },
+    {
+      '@type': 'WebPage',
+      '@id': canonical,
+      url: canonical,
+      name: frontmatter.h1,
+      description: frontmatter.description,
+      inLanguage: 'ru',
+      isPartOf: { '@id': SITE.websiteId },
+      breadcrumb: { '@id': breadcrumbsId },
+      primaryImageOfPage: { '@type': 'ImageObject', url: ogImage, width: 1200, height: 630 },
+    },
+    {
+      '@type': 'Article',
+      '@id': articleId,
+      headline: frontmatter.h1,
+      description: frontmatter.description,
+      url: canonical,
+      inLanguage: 'ru',
+      image: { '@type': 'ImageObject', url: ogImage, width: 1200, height: 630 },
+      datePublished: frontmatter.publishedAt,
+      dateModified: frontmatter.updatedAt,
+      author: { '@id': personId, '@type': 'Person', name: SITE.authorName, url: `${SITE.url}/about/` },
+      editor: { '@id': personId },
+      publisher: { '@id': SITE.orgId },
+      isPartOf: {
+        '@type': 'CreativeWorkSeries',
+        name: TEEN_DOUBLE_LIFE_SERIES.seriesTitleFull,
+        url: `${SITE.url}/podrostok-za-kadrom/`,
+      },
+      mainEntityOfPage: { '@id': canonical },
+    },
+    {
+      '@type': 'BreadcrumbList',
+      '@id': breadcrumbsId,
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Главная', item: `${SITE.url}/` },
+        { '@type': 'ListItem', position: 2, name: 'Подросток за кадром', item: `${SITE.url}/podrostok-za-kadrom/` },
+        { '@type': 'ListItem', position: 3, name: item.shortTitle, item: canonical },
+      ],
+    },
+  ],
+};
+
+const siteConfig = {
+  version: 1,
+  site: { id: 'gb-strength', name: SITE.name, baseUrl: SITE.url, locale: 'ru-RU', themeStorageKey: 'theme', debug: false },
+  page: { type: 'article', id: frontmatter.slug, title: frontmatter.h1 },
+  features: { themeToggle: { enabled: true }, search: { enabled: true }, share: { enabled: true } },
+};
+---
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+    <meta name="color-scheme" content="light dark" />
+    <ReaderPreferencesHead />
+    <Seo
+      title={frontmatter.title}
+      description={frontmatter.description}
+      canonical={canonical}
+      robots={robots}
+      ogImage={ogImage}
+      ogImageAlt="Свет у открытой двери и телефон на пороге — образ скрытой и открытой жизни"
+      ogImageWidth="1200"
+      ogImageHeight="630"
+      ogType="article"
+      articlePublishedTime={frontmatter.publishedAt}
+      articleModifiedTime={frontmatter.updatedAt}
+      articleAuthor="Фёдор Милованов"
+      jsonLd={jsonLd}
+    />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin />
+    <link rel="stylesheet" href={assetUrl('fonts/fonts.css')} />
+    <link rel="stylesheet" href={assetUrl('css/site.css')} />
+    <link rel="stylesheet" href={assetUrl('css/home.css')} />
+    <link rel="stylesheet" href={assetUrl('css/command-palette.css')} />
+    <link rel="stylesheet" href={assetUrl('css/mobile-hotfix.css')} />
+    <link rel="stylesheet" href={assetUrl('css/floating-cluster.css')} />
+    <link rel="stylesheet" href={assetUrl('css/series-manuscript.css')} />
+    <script is:inline define:vars={{ siteConfig }}>window.SITE_CONFIG = siteConfig;</script>
+  </head>
+  <body
+    class="gbs-world"
+    data-gbs2-series="teen-double-life"
+    data-gbs2-done-min={page.readingProgressDoneMin}
+    data-gbs2-part-min={frontmatter.readingTime}
+    data-gbs2-total-min={page.readingProgressTotalMin}
+  >
+    <SeriesReaderChrome pageId={pageId} config={TEEN_DOUBLE_LIFE_SERIES}>
+      <main class="article-main" id="main-content">
+        <article data-pagefind-body={indexable ? '' : undefined} data-teen-series-article={pageId}>
+          {indexable && (
+            <>
+              <span data-pagefind-meta="image" hidden>{ogImagePath}</span>
+              <span data-pagefind-meta="author" hidden>Фёдор Милованов</span>
+              <span data-pagefind-meta="readTime" hidden>{frontmatter.readingTime}</span>
+              <span data-pagefind-meta="category" hidden>Подростки и взрослые дети</span>
+            </>
+          )}
+          <header class="article-header gbs2-head">
+            <span aria-hidden="true" class="gbs2-kinetic">{markText}</span>
+            <p class="section-label">Подросток за кадром · {partLabel}</p>
+            <h1>{frontmatter.h1}</h1>
+            <p class="article-byline">
+              <span class="article-byline__strong">Автор-редактор: Фёдор Милованов</span>
+              <span aria-hidden="true" class="article-byline__sep">·</span>
+              <time datetime={frontmatter.publishedAt}>{dateRu(frontmatter.publishedAt)}</time>
+              <span aria-hidden="true" class="article-byline__sep">·</span>
+              <span>⏱ {frontmatter.readingTime} мин</span>
+            </p>
+            <p>{frontmatter.description}</p>
+          </header>
+          <div class="genesis6-prose teen-series-prose" id="article-content">
+            <slot />
+          </div>
+          <aside class="author-card">
+            <div class="author-card-icon" aria-hidden="true">ФМ</div>
+            <div class="author-card-body">
+              <div class="author-card-label">Редакционный принцип</div>
+              <div class="author-card-name">Писание выше страха, контроля и культурной реакции</div>
+              <p class="author-card-desc">Библейская норма, пастырское применение, фактическое свидетельство и степень уверенности различаются явно; защита от греха не должна превращаться в месть, а надежда — в отрицание реальности.</p>
+            </div>
+          </aside>
+          <TeenSeriesCorrectionBoundary />
+        </article>
+        <div class="article-end-block article-end-sdg-wrap"><div class="article-end-sdg"><span class="sdg">Soli Deo Gloria</span></div></div>
+      </main>
+    </SeriesReaderChrome>
+    <script is:inline>
+      (() => {
+        const root = document.querySelector('.teen-series-prose');
+        if (!root) return;
+        const headings = [...root.querySelectorAll('h2')];
+        for (const heading of headings) {
+          const text = (heading.textContent || '').trim().toLowerCase();
+          if (!text.startsWith('источники')) continue;
+          if (heading.parentElement?.classList.contains('sources-block')) continue;
+          const section = document.createElement('section');
+          section.className = 'sources-block';
+          section.setAttribute('data-reader-exclude', '');
+          section.setAttribute('data-pagefind-ignore', '');
+          heading.before(section);
+          section.append(heading);
+          let node = section.nextSibling;
+          while (node) {
+            const next = node.nextSibling;
+            if (node.nodeType === Node.ELEMENT_NODE && node instanceof HTMLElement && node.tagName === 'H2') break;
+            section.append(node);
+            node = next;
+          }
+        }
+      })();
+    </script>
+  </body>
+</html>
