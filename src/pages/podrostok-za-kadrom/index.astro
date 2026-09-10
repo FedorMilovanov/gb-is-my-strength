@@ -6,7 +6,7 @@ import { SITE } from '@/data/site';
 import { assetUrl } from '@/lib/asset-version';
 
 const canonical = `${SITE.url}/podrostok-za-kadrom/`;
-const ogImagePath = '/images/teen-series/series-hero.svg';
+const ogImagePath = '/images/teen-series/series-hero.webp';
 const ogImage = `${SITE.url}${ogImagePath}`;
 const title = 'Подросток за кадром: двойная жизнь, семья и взросление | Господь Бог — Сила Моя';
 const description = 'Семь больших материалов о скрытой жизни подростка, реакции родителей и церкви, взрослении, границах, деньгах, возвращении и браке — с Писанием как главным ориентиром.';
@@ -16,6 +16,21 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
     {
+      '@type': 'Organization',
+      '@id': SITE.orgId,
+      name: SITE.name,
+      url: `${SITE.url}/`,
+      logo: { '@type': 'ImageObject', url: `${SITE.url}/icons/icon-512.png`, width: 512, height: 512 },
+    },
+    {
+      '@type': 'WebSite',
+      '@id': SITE.websiteId,
+      name: SITE.name,
+      url: `${SITE.url}/`,
+      inLanguage: SITE.locale,
+      publisher: { '@id': SITE.orgId },
+    },
+    {
       '@type': 'CollectionPage',
       '@id': canonical,
       url: canonical,
@@ -23,6 +38,7 @@ const jsonLd = {
       description,
       inLanguage: 'ru',
       isPartOf: { '@id': SITE.websiteId },
+      publisher: { '@id': SITE.orgId },
       primaryImageOfPage: { '@type': 'ImageObject', url: ogImage, width: 1200, height: 630 },
       hasPart: items.map((item) => ({
         '@type': 'Article',
@@ -85,7 +101,7 @@ const jsonLd = {
         </header>
 
         <figure class="teen-series-hero">
-          <img src={ogImagePath} width="1200" height="630" alt="Свет у открытой двери и телефон на пороге — образ скрытой и открытой жизни" loading="eager" fetchpriority="high" />
+          <img src="/images/teen-series/series-hero.svg" width="1200" height="630" alt="Свет у открытой двери и телефон на пороге — образ скрытой и открытой жизни" loading="eager" fetchpriority="high" />
         </figure>
 
         <section aria-labelledby="series-order">

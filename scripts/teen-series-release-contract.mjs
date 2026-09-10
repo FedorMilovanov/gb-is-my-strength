@@ -9,7 +9,8 @@ const SITE = 'https://gospod-bog.ru';
 const RELEASE_DATE = '2026-09-10T00:00:00+03:00';
 const LANDING = '/podrostok-za-kadrom/';
 const SERIES_KEY = 'teen-double-life';
-const OG = '/images/teen-series/series-hero.svg';
+const SOURCE_OG = '/images/teen-series/series-hero.svg';
+const PUBLIC_OG = '/images/teen-series/series-hero.webp';
 const ITEMS = [
   ['I', 'teen-double-life', 'podrostok-za-kadrom-dvoynaya-zhizn', 32, 0],
   ['II', 'teen-parents-after-disclosure', 'podrostok-za-kadrom-roditelyam-posle-razoblacheniya', 43, 32],
@@ -43,16 +44,31 @@ const ownership = readJson('migration/page-ownership.json');
 const series = readJson('data/series.json');
 const config = read('src/components/article-pilots/_shared/series/teenSeriesConfig.ts');
 const wrapper = read('src/components/article-pilots/teen-series/TeenSeriesArticlePage.astro');
+const landingSource = read('src/pages/podrostok-za-kadrom/index.astro');
 const asset = read('public/images/teen-series/series-hero.svg');
+const rasterPath = 'public/images/teen-series/series-hero.webp';
 
 if (!exists('src/pages/podrostok-za-kadrom/index.astro')) fail('series landing source missing');
 if (!/width="1200" height="630"/.test(asset)) fail('series hero must remain intrinsic 1200x630');
+if (!exists(rasterPath)) fail('raster social hero missing');
+else {
+  const raster = fs.readFileSync(path.join(ROOT, rasterPath));
+  if (raster.length < 16 || raster.subarray(0, 4).toString('ascii') !== 'RIFF' || raster.subarray(8, 12).toString('ascii') !== 'WEBP') {
+    fail('raster social hero is not a valid WebP container');
+  }
+}
 if (!config.includes("seriesId: 'teen-double-life'")) fail('teen config seriesId drift');
 if (!config.includes("railBackHref: '/podrostok-za-kadrom/'")) fail('teen config landing href drift');
 if (!config.includes("const TEEN_SERIES_RAIL_COVER = '/images/teen-series/series-hero.svg'")) fail('final rail cover missing');
 if (/PREPUBLICATION_RAIL_COVER|icons\/icon-512\.png/.test(config)) fail('prepublication rail cover leaked into release config');
 if (!wrapper.includes('data-gbs2-series="teen-double-life"')) fail('teen wrapper series identity missing');
 if (wrapper.includes('PASTOR_SERIES') || wrapper.includes('pastor-series/og-hero')) fail('pastor-series metadata leaked into teen wrapper');
+if (!wrapper.includes(`const ogImagePath = '${PUBLIC_OG}'`)) fail('article wrapper social image must use raster WebP');
+if (!wrapper.includes("Astro.slots.render('default')") || !wrapper.includes('data-pagefind-ignore')) fail('static bibliography projection missing from article wrapper');
+if (wrapper.includes("document.querySelector('.teen-series-prose')")) fail('bibliography exclusion must not depend on client-side DOM mutation');
+if (!landingSource.includes(`const ogImagePath = '${PUBLIC_OG}'`)) fail('landing social image must use raster WebP');
+if (!landingSource.includes("'@type': 'Organization'") || !landingSource.includes("'@id': SITE.orgId")) fail('landing source lacks Organization JSON-LD owner');
+if (!landingSource.includes("'@type': 'WebSite'") || !landingSource.includes("'@id': SITE.websiteId")) fail('landing source lacks WebSite JSON-LD owner');
 
 const registered = series[SERIES_KEY];
 if (!registered) fail('data/series.json missing teen-double-life');
@@ -103,7 +119,7 @@ for (const [mark, pageId, slug, minutes, done] of ITEMS) {
     'sourcesRequired: true',
     'series: "teen-double-life"',
     `canonicalOverride: "${SITE}/articles/${slug}/"`,
-    `ogImage: "${OG}"`,
+    `ogImage: "${SOURCE_OG}"`,
   ];
   for (const field of requiredSourceFields) {
     if (!mdx.includes(field)) fail(`${slug}: canonical publication source missing ${field}`);
@@ -142,9 +158,15 @@ if (fs.existsSync(DIST)) {
     if (canonical(html) !== expectedCanonical) fail(`${route}: canonical mismatch`);
     if (/\bnoindex\b/i.test(meta(html, 'robots'))) fail(`${route}: live candidate remains noindex`);
     if (!html.includes('data-pagefind-body')) fail(`${route}: data-pagefind-body missing`);
+    if (!html.includes(PUBLIC_OG)) fail(`${route}: raster social metadata missing`);
     if (route !== LANDING) {
       if (!html.includes('data-gbs2-series="teen-double-life"')) fail(`${route}: reader series identity missing`);
-      if (!html.includes(OG)) fail(`${route}: final teen media missing`);
+      if (!/<section\b[^>]*class="sources-block"[^>]*data-reader-exclude[^>]*data-pagefind-ignore/iu.test(html)) {
+        fail(`${route}: bibliography boundary is not static in built HTML`);
+      }
+    } else {
+      if (!html.includes(SITE + '/#organization')) fail(`${route}: Organization JSON-LD node missing`);
+      if (!html.includes(SITE + '/#website')) fail(`${route}: WebSite JSON-LD node missing`);
     }
   }
 }
@@ -159,5 +181,6 @@ console.log(`  routes: ${requiredOwnership.length} (landing + 7 articles)`);
 console.log('  order: I -> II -> III -> A -> B -> C -> D');
 console.log('  publication source: seven MDX canonical + raw HTML comments rejected');
 console.log('  publication date: 2026-09-10');
-console.log('  media: original 1200x630 SVG');
+console.log('  media: SVG editorial hero + 1200x630 WebP social projection');
+console.log('  bibliography: build-time data-pagefind-ignore boundary');
 console.log('  production ownership: astro/production-dist');

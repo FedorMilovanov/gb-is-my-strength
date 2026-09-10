@@ -51,7 +51,7 @@ const indexable = frontmatter.draft !== true && frontmatter.noindex !== true;
 const robots = indexable
   ? 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1'
   : 'noindex, nofollow, noarchive';
-const ogImagePath = '/images/teen-series/series-hero.svg';
+const ogImagePath = '/images/teen-series/series-hero.webp';
 const ogImage = `${SITE.url}${ogImagePath}`;
 const personId = `${SITE.url}/about/#person`;
 const breadcrumbsId = `${canonical}#breadcrumbs`;
@@ -61,6 +61,24 @@ const partLabel = item.mark.kind === 'roman' ? `Часть ${markText}` : `Ра�
 const dateRu = (value: string) => new Intl.DateTimeFormat('ru-RU', {
   day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Moscow',
 }).format(new Date(value));
+
+function withStaticSourcesBoundary(html: string) {
+  if (html.includes('class="sources-block"')) {
+    throw new Error(`${frontmatter.slug}: sources boundary must have exactly one route-owned projection`);
+  }
+  const sourceHeading = /<h2\b[^>]*>\s*Источники[^<]*<\/h2>/iu.exec(html);
+  if (!sourceHeading || sourceHeading.index === undefined) {
+    throw new Error(`${frontmatter.slug}: published teen article is missing an Источники H2`);
+  }
+  const start = sourceHeading.index;
+  const afterHeading = start + sourceHeading[0].length;
+  const nextHeadingOffset = html.slice(afterHeading).search(/<h2\b/iu);
+  const end = nextHeadingOffset === -1 ? html.length : afterHeading + nextHeadingOffset;
+  const sources = html.slice(start, end);
+  return `${html.slice(0, start)}<section class="sources-block" data-reader-exclude data-pagefind-ignore>${sources}</section>${html.slice(end)}`;
+}
+
+const renderedBody = withStaticSourcesBoundary(await Astro.slots.render('default'));
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -194,7 +212,7 @@ const siteConfig = {
             <p>{frontmatter.description}</p>
           </header>
           <div class="genesis6-prose teen-series-prose" id="article-content">
-            <slot />
+            <Fragment set:html={renderedBody} />
           </div>
           <aside class="author-card">
             <div class="author-card-icon" aria-hidden="true">ФМ</div>
@@ -209,30 +227,5 @@ const siteConfig = {
         <div class="article-end-block article-end-sdg-wrap"><div class="article-end-sdg"><span class="sdg">Soli Deo Gloria</span></div></div>
       </main>
     </SeriesReaderChrome>
-    <script is:inline>
-      (() => {
-        const root = document.querySelector('.teen-series-prose');
-        if (!root) return;
-        const headings = [...root.querySelectorAll('h2')];
-        for (const heading of headings) {
-          const text = (heading.textContent || '').trim().toLowerCase();
-          if (!text.startsWith('источники')) continue;
-          if (heading.parentElement?.classList.contains('sources-block')) continue;
-          const section = document.createElement('section');
-          section.className = 'sources-block';
-          section.setAttribute('data-reader-exclude', '');
-          section.setAttribute('data-pagefind-ignore', '');
-          heading.before(section);
-          section.append(heading);
-          let node = section.nextSibling;
-          while (node) {
-            const next = node.nextSibling;
-            if (node.nodeType === Node.ELEMENT_NODE && node instanceof HTMLElement && node.tagName === 'H2') break;
-            section.append(node);
-            node = next;
-          }
-        }
-      })();
-    </script>
   </body>
 </html>
