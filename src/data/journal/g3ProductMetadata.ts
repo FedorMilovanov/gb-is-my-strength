@@ -6,6 +6,4 @@ export const G3_PRODUCT_METADATA = {
   modifiedAt: '2026-09-09T00:00:00+03:00',
   readingTimeMinutes: 8,
   readingTimeBasis: 'editorial-estimate',
-  librarySection: 'Журнал',
-  topicCategory: 'Документальные досье',
 } as const;
