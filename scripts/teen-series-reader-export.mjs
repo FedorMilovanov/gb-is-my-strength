@@ -14,6 +14,41 @@ const SLUGS = [
   'sovershennoletie-roditelskaya-vlast-chto-menyaetsya',
   'vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti',
 ];
+
+const CASE_INSENSITIVE_VISIBLE = [
+  [/\bstewardship\b/giu, 'ответственное распоряжение'],
+  [/\bhouse rules?\b/giu, 'правила дома'],
+  [/\bco-residence\b/giu, 'совместное проживание'],
+  [/\bcourtship\b/giu, 'ухаживание'],
+  [/\bconsent\b/giu, 'согласие'],
+  [/\bhousehold\b/giu, 'дом'],
+  [/\bcounsel\b/giu, 'совет'],
+  [/\bdependence\b/giu, 'зависимость'],
+  [/\bprudence\b/giu, 'благоразумие'],
+  [/\bprudential\b/giu, 'практический'],
+  [/\bsafeguards?\b/giu, 'меры защиты'],
+  [/\bno-contact\b/giu, 'полное прекращение контакта'],
+  [/\bevidence ladder\b/giu, 'иерархия доказательств'],
+  [/\blease agreement\b/giu, 'договор аренды'],
+  [/\bcash transfer\b/giu, 'денежная выплата'],
+  [/\bestate planning\b/giu, 'планирование наследства'],
+];
+
+function preNormalizeVisible(source) {
+  const frontmatter = source.match(/^---\n[\s\S]*?\n---\n/);
+  if (!frontmatter) throw new Error('missing frontmatter');
+  const head = frontmatter[0];
+  const body = source.slice(head.length);
+  const parts = body.split(/(\{\/\*[\s\S]*?\*\/\})/g);
+  const normalizedBody = parts.map((part, index) => {
+    if (index % 2) return part;
+    let next = part;
+    for (const [pattern, replacement] of CASE_INSENSITIVE_VISIBLE) next = next.replace(pattern, replacement);
+    return next;
+  }).join('');
+  return head + normalizedBody;
+}
+
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'teen-reader-export-'));
 try {
   const tempScripts = path.join(temp, 'scripts');
@@ -25,10 +60,8 @@ try {
     path.join(tempScripts, 'teen-series-source-promotion.mjs'),
   );
   for (const slug of SLUGS) {
-    fs.copyFileSync(
-      path.join(ROOT, 'src', 'content', 'articles', `${slug}.mdx`),
-      path.join(tempArticles, `${slug}.mdx`),
-    );
+    const source = fs.readFileSync(path.join(ROOT, 'src', 'content', 'articles', `${slug}.mdx`), 'utf8');
+    fs.writeFileSync(path.join(tempArticles, `${slug}.mdx`), preNormalizeVisible(source), 'utf8');
   }
 
   const write = spawnSync(process.execPath, ['scripts/teen-series-source-promotion.mjs', '--write'], {
