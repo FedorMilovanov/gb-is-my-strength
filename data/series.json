@@ -82,7 +82,14 @@
   "teen-double-life": {
     "title": "Подросток за кадром",
     "baseUrl": "/articles/",
-    "searchPolicy": {"landingRoute":"/podrostok-za-kadrom/","librarySection":"Семья","topicCategory":"Подростки и взрослые дети"},
+    "searchPolicy": {
+      "landingRoute": "/podrostok-za-kadrom/",
+      "librarySection": "Семья",
+      "topicCategory": "Подростки и взрослые дети",
+      "includeLandingInManifest": true,
+      "landingPublishedTime": "2026-09-10T00:00:00+03:00",
+      "landingModifiedTime": "2026-09-10T00:00:00+03:00"
+    },
     "parts": [
       {"n":"I","slug":"podrostok-za-kadrom-dvoynaya-zhizn","title":"Как рождается двойная жизнь","status":"published","readingTime":32},
       {"n":"II","slug":"podrostok-za-kadrom-roditelyam-posle-razoblacheniya","title":"Что делать родителям после разоблачения","status":"published","readingTime":43},

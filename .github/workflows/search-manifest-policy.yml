@@ -20,6 +20,9 @@ on:
       - "scripts/rss-feed-normalizer-test.js"
       - "scripts/sitemap-policy-normalizer.js"
       - "scripts/search-manifest-policy-normalizer.js"
+      - "scripts/search-manifest-policy-normalizer-core.js"
+      - "scripts/series-landing-discovery-seed.mjs"
+      - "scripts/series-landing-discovery-seed-test.mjs"
       - "scripts/search-manifest-policy-normalizer-test.js"
       - "scripts/search-manifest-new-row-role-authority-test.js"
       - "scripts/search-index-policy-inventory.js"
@@ -45,6 +48,9 @@ on:
       - "scripts/rss-feed-normalizer-test.js"
       - "scripts/sitemap-policy-normalizer.js"
       - "scripts/search-manifest-policy-normalizer.js"
+      - "scripts/search-manifest-policy-normalizer-core.js"
+      - "scripts/series-landing-discovery-seed.mjs"
+      - "scripts/series-landing-discovery-seed-test.mjs"
       - "scripts/search-manifest-policy-normalizer-test.js"
       - "scripts/search-manifest-new-row-role-authority-test.js"
       - "scripts/search-index-policy-inventory.js"
@@ -81,6 +87,9 @@ jobs:
       - name: Check normalizer syntax
         run: |
           node --check scripts/search-manifest-policy-normalizer.js
+          node --check scripts/search-manifest-policy-normalizer-core.js
+          node --check scripts/series-landing-discovery-seed.mjs
+          node --check scripts/series-landing-discovery-seed-test.mjs
           node --check scripts/search-manifest-policy-normalizer-test.js
           node --check scripts/search-manifest-new-row-role-authority-test.js
           node --check scripts/rss-feed-normalizer.js
@@ -90,6 +99,7 @@ jobs:
 
       - name: Test normalizer mutations and idempotence
         run: |
+          node scripts/series-landing-discovery-seed-test.mjs
           node scripts/search-manifest-policy-normalizer-test.js
           node scripts/search-manifest-new-row-role-authority-test.js
           node scripts/rss-feed-normalizer-test.js
@@ -222,6 +232,7 @@ jobs:
       - name: Test normalizer contracts
         if: steps.pr-branch.outputs.exists == 'true'
         run: |
+          node scripts/series-landing-discovery-seed-test.mjs
           node scripts/search-manifest-policy-normalizer-test.js
           node scripts/search-manifest-new-row-role-authority-test.js
           node scripts/rss-feed-normalizer-test.js
