@@ -13,6 +13,7 @@ body[data-series-theme="samizdat"]{
   /* Газетная бумага под всей страницей (перебивает --color-canvas). */
   --color-canvas:#efe7d7;
   --bg:#efe7d7;
+  --color-text-muted:#655e59; /* AA on newspaper paper (#efe7d7): 5.18:1 */
 
   /* Фиолетовые гектографные чернила — главный акцент светлой темы. */
   --gbs2-accent:#5b3a86;
@@ -57,6 +58,7 @@ body[data-series-theme="samizdat"]{
 html.dark body[data-series-theme="samizdat"]{
   --color-canvas:#14111b;
   --bg:#14111b;
+  --color-text-muted:#9ca3af;
   --gbs2-accent:#c1a7e6;           /* чернила ярче на тёмном */
   --gbs2-accent2:#e0788c;
   --gbs2-soft:rgba(193,167,230,.14);
@@ -90,6 +92,23 @@ body[data-series-theme="samizdat"]::before{
     radial-gradient(120% 90% at 50% 0%, transparent 60%, rgba(60,40,20,.06) 100%);
   mix-blend-mode:multiply;
 }
+/* Mobile fallback controls are cloned from the dark rail. On the light
+   newspaper pill they must use the mobile-bar foreground instead of retaining
+   --gbs2-rtext from the rail. The same token flips safely in dark mode. */
+@media (max-width:899px){
+  body[data-series-theme="samizdat"] .gb-mobile-fallback-controls{
+    --gbs2-rtext:var(--gill-mobile-bar-ink);
+    --smz-ink:var(--gill-mobile-bar-ink);
+    --smz-ink-strong:var(--gill-mobile-bar-ink);
+    color:var(--gill-mobile-bar-ink);
+  }
+  body[data-series-theme="samizdat"] .gb-mobile-fallback-controls .gbs2-ctl,
+  body[data-series-theme="samizdat"] .gb-mobile-fallback-controls .gb-ember,
+  body[data-series-theme="samizdat"] .gb-mobile-fallback-controls .gb-save{
+    color:var(--gill-mobile-bar-ink) !important;
+  }
+}
+
 html.dark body[data-series-theme="samizdat"]::before{
   background:
     radial-gradient(circle at 50% 50%, rgba(180,150,230,.05) 0.6px, transparent 1.3px) 0 0 / 5px 5px,
