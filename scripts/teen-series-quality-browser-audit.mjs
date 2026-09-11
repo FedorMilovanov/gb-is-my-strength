@@ -124,10 +124,11 @@ async function inspectArticle(page, spec, vp) {
     const h1Style = h1 ? getComputedStyle(h1) : null;
     const ids = [...document.querySelectorAll('[id]')].map((el) => el.id).filter(Boolean);
     const duplicateIds = [...new Set(ids.filter((id, index) => ids.indexOf(id) !== index))];
-    const tocHrefs = [...document.querySelectorAll('.gbs2-toc a[href^="#"]')]
+    const tocHrefs = [...document.querySelectorAll('#gbs2PartToc .gbat-part.cur a.gbat-sub[href^="#"]')]
       .map((a) => a.getAttribute('href'))
       .filter(Boolean);
     const uniqueTocHrefs = [...new Set(tocHrefs)];
+    const currentPartCount = document.querySelectorAll('#gbs2PartToc .gbat-part.cur').length;
     const missingTocTargets = uniqueTocHrefs.filter((href) => !document.getElementById(href.slice(1)));
     const terms = [...document.querySelectorAll('article .gterm')];
     const forbiddenGlossary = document.querySelectorAll(
@@ -167,6 +168,7 @@ async function inspectArticle(page, spec, vp) {
       h1FontSize: h1Style ? parseFloat(h1Style.fontSize) : 0,
       duplicateIds,
       tocCount: uniqueTocHrefs.length,
+      currentPartCount,
       missingTocTargets,
       glossaryCount: terms.length,
       glossaryReady: terms.filter((el) => el.dataset.gbTooltipReady === '1').length,
@@ -206,8 +208,10 @@ async function inspectArticle(page, spec, vp) {
     `reading measure too wide: ${metrics.firstPRect?.width || 0}px`);
   check(metrics.duplicateIds.length === 0, route, viewport,
     `duplicate DOM ids: ${metrics.duplicateIds.join(', ')}`);
+  check(metrics.currentPartCount === 1, route, viewport,
+    `part TOC current owner drifted: ${metrics.currentPartCount}`);
   check(metrics.tocCount >= 8, route, viewport,
-    `part TOC is too shallow for long-form article: ${metrics.tocCount}`);
+    `configured current-part TOC is too shallow for long-form article: ${metrics.tocCount}`);
   check(metrics.missingTocTargets.length === 0, route, viewport,
     `part TOC has missing targets: ${metrics.missingTocTargets.join(', ')}`);
   const glossaryMaxCanonicalCount = Math.max(0, ...Object.values(metrics.glossaryTermCounts));
