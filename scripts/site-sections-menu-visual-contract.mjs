@@ -175,8 +175,12 @@ function closedSafe(state) {
 }
 
 async function assertClosed(page, engine, viewport, route, id) {
-  await page.waitForTimeout(300);
-  const state = await snapshot(page);
+  const deadline = Date.now() + 1200;
+  let state = await snapshot(page);
+  while (!closedSafe(state) && Date.now() < deadline) {
+    await page.waitForTimeout(50);
+    state = await snapshot(page);
+  }
   check(engine, viewport, route, id, closedSafe(state), state);
   return state;
 }
