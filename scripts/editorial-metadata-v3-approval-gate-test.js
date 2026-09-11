@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { projectVisibleDateline, validateDecisionRecord } = require('./lib/editorial-metadata-v3');
+const { metadataSourceForRecord } = require('./lib/editorial-metadata');
 
 const ROOT = path.resolve(__dirname, '..');
 const registryCli = fs.readFileSync(path.join(ROOT, 'scripts/editorial-metadata-registry.js'), 'utf8');
@@ -47,6 +48,22 @@ const approved = Object.fromEntries(
 );
 assert.deepEqual(Object.keys(approved), ['/approved/']);
 assert.equal(Object.keys(records).length - Object.keys(approved).length, 2);
+
+assert.equal(
+  metadataSourceForRecord({
+    sourceRel: 'src/pages/articles/example/index.astro',
+    profile: {
+      metadataSourceMode: 'content-frontmatter',
+      mdxPath: 'src/content/articles/example.mdx',
+    },
+    inspection: {
+      mdxImports: [{ resolved: 'src/content/articles/example.mdx' }],
+      headImports: [{ resolved: 'src/components/reader-platform/ReaderPreferencesHead.astro' }],
+    },
+  }),
+  'src/content/articles/example.mdx',
+  'content-frontmatter routes must project metadataSource from canonical MDX authority'
+);
 
 const wrongMetadataOwner = {
   route: '/articles/metadata-owner-fixture/',
