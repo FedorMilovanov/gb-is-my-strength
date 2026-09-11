@@ -15,6 +15,7 @@ interface Frontmatter {
   publishedAt: string;
   updatedAt: string;
   readingTime: number;
+  tags?: string[];
   draft?: boolean;
   noindex?: boolean;
   canonicalOverride?: string;
@@ -152,6 +153,7 @@ const siteConfig = {
       articlePublishedTime={frontmatter.publishedAt}
       articleModifiedTime={frontmatter.updatedAt}
       articleAuthor="Фёдор Милованов"
+      articleTags={frontmatter.tags}
       jsonLd={jsonLd}
     />
     <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin />

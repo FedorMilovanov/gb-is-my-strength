@@ -25,6 +25,7 @@ const EXISTING_RECONCILABLE_FIELDS = Object.freeze([
   'description',
   'section',
   'image',
+  'tags',
   'readTime',
 ]);
 
@@ -350,6 +351,7 @@ function deriveManifestFields(route, policy, html, fallbackReadTime = null) {
   };
   const ownedFields = new Set(['title', 'description', 'section']);
   if (rawImage) ownedFields.add('image');
+  if (tags.length) ownedFields.add('tags');
   if (Number.isInteger(readTime) && readTime > 0) ownedFields.add('readTime');
 
   return { values, ownedFields };

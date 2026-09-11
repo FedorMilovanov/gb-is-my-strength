@@ -40,6 +40,7 @@ const html = `<!doctype html><html><head>
 <script>window.SITE_CONFIG={page:{readingTime: 17}}</script>
 </head><body></body></html>`;
 const htmlWithoutRuntimeReadTime = html.replace('<script>window.SITE_CONFIG={page:{readingTime: 17}}</script>', '');
+const htmlWithoutArticleTags = html.replace(/<meta property="article:tag" content="[^"]+">\n?/g, '');
 
 const staleGeneratedAtManifest = {
   generatedAt: '2026-07-29T00:12:25Z',
@@ -160,10 +161,11 @@ assert.equal(existingResult.reconciled.length, 1);
 assert.equal(existingResult.reconciled[0].route, route);
 assert.deepEqual(
   existingResult.reconciled[0].fields.map((entry) => entry.field).sort(),
-  ['description', 'image', 'readTime', 'section', 'title'].sort()
+  ['description', 'image', 'readTime', 'section', 'tags', 'title'].sort()
 );
 const existingKinds = Object.fromEntries(existingResult.reconciled[0].fields.map((entry) => [entry.field, entry.kind]));
 assert.equal(existingKinds.image, 'missing');
+assert.equal(existingKinds.tags, 'mismatch');
 for (const field of ['description', 'readTime', 'section', 'title']) {
   assert.equal(existingKinds[field], 'mismatch');
 }
@@ -174,7 +176,7 @@ assert.equal(reconciledItem.section, 'Богословие');
 assert.equal(reconciledItem.image, '/images/fixture.webp');
 assert.equal(reconciledItem.readTime, 17);
 assert.equal(reconciledItem.editor, 'Старый редактор');
-assert.deepEqual(reconciledItem.tags, ['редакционный-тег']);
+assert.deepEqual(reconciledItem.tags, ['сердце', 'богословие']);
 assert.equal(reconciledItem.publishedTime, '2025-01-01T00:00:00+03:00');
 assert.equal(reconciledItem.modifiedTime, '2025-01-02T00:00:00+03:00');
 assert.equal(reconciledItem.featured, true);
@@ -197,6 +199,27 @@ const existingSecond = applyMigration({
 });
 assert.deepEqual(existingSecond.reconciled, []);
 assert.equal(refreshGeneratedAt(existingManifest), false);
+
+const manualTagRoute = '/articles/manual-tags/';
+const manualTagPolicy = { ...policy, searchManifestPolicy: 'include' };
+const manualTagFile = path.join(root, 'articles/manual-tags/index.html');
+fs.mkdirSync(path.dirname(manualTagFile), { recursive: true });
+fs.writeFileSync(manualTagFile, htmlWithoutArticleTags);
+const manualTagItem = {
+  ...buildManifestItem(manualTagRoute, manualTagPolicy, htmlWithoutArticleTags),
+  tags: ['ручной-тег'],
+};
+const manualTagManifest = { version: 1, items: [manualTagItem] };
+const manualTagResult = applyMigration({
+  policyRegistry: { version: 1, routes: { [manualTagRoute]: manualTagPolicy } },
+  manifest: manualTagManifest,
+  seriesData: {},
+  productionRecords: [{ route: manualTagRoute, owner: { status: 'production-dist' } }],
+  distRoot: root,
+  promoteRssArticles: false,
+});
+assert.deepEqual(manualTagResult.reconciled, []);
+assert.deepEqual(manualTagManifest.items[0].tags, ['ручной-тег']);
 
 const landingRoute = '/';
 const landingPolicy = {
