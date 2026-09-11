@@ -48,6 +48,7 @@ const frontmatterScalar = (source, key) => {
 const ownership = readJson('migration/page-ownership.json');
 const series = readJson('data/series.json');
 const config = read('src/components/article-pilots/_shared/series/teenSeriesConfig.ts');
+const siteData = read('src/data/site.ts');
 const wrapper = read('src/components/article-pilots/teen-series/TeenSeriesArticlePage.astro');
 const readerProjector = read('scripts/project-reader-linear-text-to-dist.mjs');
 const landingSource = read('src/pages/podrostok-za-kadrom/index.astro');
@@ -83,6 +84,12 @@ if (!landingSource.includes("'@type': 'WebSite'") || !landingSource.includes("'@
 
 const registered = series[SERIES_KEY];
 if (!registered) fail('data/series.json missing teen-double-life');
+const expectedSlugs = ITEMS.map(([, , slug]) => slug);
+const siteOrderBody = siteData.match(/['"]teen-double-life['"]\s*:\s*\[([\s\S]*?)\]/u)?.[1] || '';
+const siteOrder = [...siteOrderBody.matchAll(/['"]([^'"]+)['"]/g)].map((match) => match[1]);
+if (siteOrder.length !== expectedSlugs.length || siteOrder.some((slug, index) => slug !== expectedSlugs[index])) {
+  fail(`src/data/site.ts teen SERIES_ORDER drift: ${siteOrder.join(' -> ') || 'missing'}`);
+}
 else {
   if (registered.baseUrl !== '/articles/') fail(`series baseUrl=${registered.baseUrl}`);
   if (registered.searchPolicy?.landingRoute !== LANDING) fail('series landingRoute policy drift');
