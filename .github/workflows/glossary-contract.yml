@@ -22,6 +22,7 @@ on:
       - "konfessii/**"
       - "pastor-series/**"
       - "baptisty-rossii/**"
+      - "!baptisty-rossii/research/**"
       - ".github/workflows/glossary-contract.yml"
   push:
     branches: [main]
@@ -44,6 +45,7 @@ on:
       - "konfessii/**"
       - "pastor-series/**"
       - "baptisty-rossii/**"
+      - "!baptisty-rossii/research/**"
       - ".github/workflows/glossary-contract.yml"
 
 permissions:
