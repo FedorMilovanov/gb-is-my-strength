@@ -11,8 +11,10 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
-    paths:
-      - '**'
+    # baptisty-rossii/research/** is non-rendered evidence. Research-only
+    # admissions must not cancel an in-flight Pages promotion.
+    paths-ignore:
+      - 'baptisty-rossii/research/**'
   workflow_dispatch:
     inputs:
       release_sha:
