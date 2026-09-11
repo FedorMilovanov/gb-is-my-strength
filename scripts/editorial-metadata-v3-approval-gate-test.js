@@ -4,7 +4,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { projectVisibleDateline } = require('./lib/editorial-metadata-v3');
+const { projectVisibleDateline, validateDecisionRecord } = require('./lib/editorial-metadata-v3');
 
 const ROOT = path.resolve(__dirname, '..');
 const registryCli = fs.readFileSync(path.join(ROOT, 'scripts/editorial-metadata-registry.js'), 'utf8');
@@ -47,6 +47,23 @@ const approved = Object.fromEntries(
 );
 assert.deepEqual(Object.keys(approved), ['/approved/']);
 assert.equal(Object.keys(records).length - Object.keys(approved).length, 2);
+
+const wrongMetadataOwner = {
+  route: '/articles/metadata-owner-fixture/',
+  canonical: 'https://gospod-bog.ru/articles/metadata-owner-fixture/',
+  metadataSource: 'src/components/reader-platform/ReaderPreferencesHead.astro',
+  provenance: 'editorial-fixture',
+  reviewStatus: 'approved',
+  observations: {},
+  editorialPublishedAt: '2026-07-10T21:00:00.000Z',
+  editorialModifiedAt: '2026-07-10T21:00:00.000Z',
+  originalWorkPublishedAt: null,
+};
+assert.match(
+  validateDecisionRecord(wrongMetadataOwner, wrongMetadataOwner.route).join('\n'),
+  /route metadata owner, not a reader-platform utility/,
+  'reader-platform utility must never be accepted as editorial metadataSource'
+);
 
 const directUpdatedTime = [
   '<p class="article-byline">',
