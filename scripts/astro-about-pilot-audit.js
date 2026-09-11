@@ -44,6 +44,14 @@ const VIEWPORTS = [
   { name: 'desktop', options: { viewport: { width: 1366, height: 900 } } },
   { name: 'mobile', options: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true } },
 ];
+const ACCURACY_SOURCE_COMPONENTS = [
+  'src/components/about/AboutAccuracyBlock.astro',
+  'src/components/articles/ArticlesPageFooter.astro',
+  'src/components/biografii/BiografiiPageFooter.astro',
+  'src/components/hard-texts/HardTextsPageFooter.astro',
+  'src/components/home/HomeAccuracyBlock.astro',
+  'src/components/home/HomeSections/Accuracy.astro',
+];
 
 function run(cmd, args, opts = {}) {
   const res = spawnSync(cmd, args, { cwd: ROOT, stdio: 'inherit', shell: process.platform === 'win32', ...opts });
@@ -122,6 +130,23 @@ function normalizeHtmlForFullDocumentParity(html) {
     .trim();
   return out.replace(/\u0000(\d+)\u0000/g, (_, i) => protectedNodes[+i]);
 }
+function checkAccuracySourceSemantics(problems) {
+  for (const relative of ACCURACY_SOURCE_COMPONENTS) {
+    const file = path.join(ROOT, relative);
+    if (!fs.existsSync(file)) {
+      problems.push(`accuracy source missing: ${relative}`);
+      continue;
+    }
+    const source = fs.readFileSync(file, 'utf8');
+    if (!source.includes('gb-accuracy-actions')) {
+      problems.push(`accuracy action owner missing expected marker: ${relative}`);
+      continue;
+    }
+    if (/role=["'](?:list|listitem)["']/.test(source)) {
+      problems.push(`accuracy source overrides native link semantics: ${relative}`);
+    }
+  }
+}
 function checkFullDocumentParity(problems) {
   const distFile = path.join(DIST, 'about/index.html');
   if (!fs.existsSync(distFile)) {
@@ -194,6 +219,12 @@ async function inspect(page, url, label, viewportName) {
       jsonLdTypes,
       invalidJsonLd,
       hasPagefindBody: Boolean(document.querySelector('[data-pagefind-body]')),
+      accuracyActionsRole: document.querySelector('.gb-accuracy-actions')?.getAttribute('role') || '',
+      accuracyLinks: [...document.querySelectorAll('.gb-accuracy-actions a[href]')].map((a) => ({
+        href: a.getAttribute('href') || '',
+        ariaLabel: a.getAttribute('aria-label') || '',
+        explicitRole: a.getAttribute('role') || '',
+      })),
     };
   }, PARITY_META_FIELDS);
   data.status = response ? response.status() : 0;
@@ -228,6 +259,12 @@ function checkOneViewport(problems, notes, viewportName, legacy, astro) {
   if (!astro.hasPagefindBody) problems.push(`${prefix} astro /about/ missing data-pagefind-body`);
   for (const marker of ['about-page', 'about-resources', 'about-contact-card', 'gb-accuracy-block']) {
     if (!astro.html.includes(marker)) problems.push(`${prefix} astro missing legacy visual marker: ${marker}`);
+  }
+  if (astro.accuracyActionsRole) problems.push(`${prefix} accuracy actions must not override native link semantics with container role=${astro.accuracyActionsRole}`);
+  if (astro.accuracyLinks.length !== 2) problems.push(`${prefix} expected 2 accuracy action links, got ${astro.accuracyLinks.length}`);
+  for (const link of astro.accuracyLinks) {
+    if (link.explicitRole) problems.push(`${prefix} accuracy link ${link.href} overrides native link role with ${link.explicitRole}`);
+    if (!link.ariaLabel) problems.push(`${prefix} accuracy link ${link.href} is missing an accessible label`);
   }
   for (const marker of ['class="astro-about"', 'astro-contact-grid', 'astro-accuracy-block']) {
     if (astro.html.includes(marker)) problems.push(`${prefix} astro contains old generic marker: ${marker}`);
@@ -269,6 +306,7 @@ async function checkNoJsAstro(browser, problems) {
   console.log('▶ Building strangler dist…');
   run('npm', ['run', 'strangler:build']);
   const earlyProblems = [];
+  checkAccuracySourceSemantics(earlyProblems);
   checkFullDocumentParity(earlyProblems);
   if (earlyProblems.length) {
     console.error('\n❌ about full-document parity failed:');
