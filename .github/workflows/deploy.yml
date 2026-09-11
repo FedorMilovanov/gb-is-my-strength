@@ -197,15 +197,37 @@ jobs:
           node scripts/editorial-metadata-freeze-audit.js 2>&1 \
             | tee reports/editorial-metadata-freeze.log
 
-      - name: Prepare IndexNow URL list without storing the secret
+      - name: Prepare IndexNow URL list from last published release
         env:
-          BEFORE_SHA: ${{ github.event.before }}
           AFTER_SHA: ${{ env.RELEASE_SHA }}
+        shell: bash
         run: |
-          mkdir -p reports
-          CHANGED=$(git diff --name-only "${BEFORE_SHA:-HEAD~1}" "${AFTER_SHA:-HEAD}" 2>/dev/null || git diff --name-only HEAD~1 HEAD 2>/dev/null || true)
-          printf '%s\n' "$CHANGED" | node scripts/build-indexnow-urls.js --base "https://gospod-bog.ru" > reports/indexnow-urls.json
-          node -e "const x=require('./reports/indexnow-urls.json'); if(!Array.isArray(x)) process.exit(1)"
+          set -euo pipefail
+          mkdir -p reports release-tools
+
+          # Recovery may checkout an older release source. Use the current
+          # control-plane mapper while resolving routes against release bytes.
+          git show "${CONTROL_PLANE_SHA}:scripts/build-indexnow-urls.js" > release-tools/build-indexnow-urls.js
+          node --check release-tools/build-indexnow-urls.js
+
+          LIVE_SHA="$(
+            curl --fail --silent --show-error --retry 2 --max-time 10 \
+              "https://gospod-bog.ru/deployments/current.json?indexnow_baseline=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+              | jq -r '.releaseSha // empty' 2>/dev/null || true
+          )"
+
+          if [[ "$LIVE_SHA" =~ ^[a-f0-9]{40}$ ]] && git cat-file -e "${LIVE_SHA}^{commit}" 2>/dev/null; then
+            echo "IndexNow delta: published ${LIVE_SHA} -> candidate ${AFTER_SHA}"
+            git diff --name-only "$LIVE_SHA" "$AFTER_SHA" \
+              | node release-tools/build-indexnow-urls.js --base "https://gospod-bog.ru" \
+              > reports/indexnow-urls.json
+          else
+            echo "IndexNow published baseline unavailable; notifying full public indexable corpus"
+            node release-tools/build-indexnow-urls.js --base "https://gospod-bog.ru" --all-public \
+              > reports/indexnow-urls.json
+          fi
+
+          node -e "const x=require('./reports/indexnow-urls.json'); if(!Array.isArray(x)||x.length===0) process.exit(1)"
 
       - name: Ensure release-source validation left tracked files clean
         run: git diff --exit-code
