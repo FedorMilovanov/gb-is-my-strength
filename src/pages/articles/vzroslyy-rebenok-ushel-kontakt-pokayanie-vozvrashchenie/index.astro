@@ -1,15 +1,7 @@
 ---
 import Content, { frontmatter } from '@/content/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie.mdx';
 import TeenSeriesArticlePage from '@/components/article-pilots/teen-series/TeenSeriesArticlePage.astro';
-const publishedFrontmatter = {
-  ...frontmatter,
-  draft: false,
-  noindex: false,
-  publishedAt: '2026-09-10T00:00:00+03:00',
-  updatedAt: '2026-09-10T00:00:00+03:00',
-  canonicalOverride: 'https://gospod-bog.ru/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/',
-};
 ---
-<TeenSeriesArticlePage pageId="adult-child-left-home" frontmatter={publishedFrontmatter}>
+<TeenSeriesArticlePage pageId="adult-child-left-home" frontmatter={frontmatter}>
   <Content />
 </TeenSeriesArticlePage>
