@@ -1,8 +1,8 @@
 # Teen series — media and OG plan
 
-Status: **FOUNDATION / NO PRODUCTION MEDIA ADMISSION**
+Status: **PUBLISHED V1 / SERIES ASSET ADMITTED / ROUTE-SPECIFIC DERIVATIVES OPTIONAL**
 
-This plan applies the current Article Standard / Content Quality image contract to the seven-part teen/adult-child series without using sensational or pseudo-documentary imagery of minors.
+This plan applies the current Article Standard / Content Quality image contract to the published seven-part teen/adult-child series without using sensational or pseudo-documentary imagery of minors. The admitted v1 asset and its rights/provenance record are authoritative in `docs/TEEN-SERIES-MEDIA-PROVENANCE.md`.
 
 ## 1. Release invariant
 
@@ -152,7 +152,7 @@ For each public route verify:
 - Twitter/social projection uses the same approved rights object or an explicitly controlled derivative;
 - structured data image points to an admitted object, not a placeholder.
 
-The temporary neutral icon in `teenSeriesConfig.ts` is **foundation-only** and is a release blocker if any public route would expose it as a series cover.
+The current v1 series cover is the admitted repository-owned `series-hero.svg`, with the approved 1200×630 WebP social projection. A future route-specific family is a quality enhancement, not a publication blocker, and must pass the same provenance/rights/crop review.
 
 ## 8. Rights/provenance record
 
@@ -187,6 +187,6 @@ Required before release:
 - lazy/eager/fetchpriority follows current hero/body loading policy;
 - no horizontal overflow from figure/caption/source links.
 
-## 10. Admission boundary
+## 10. Future media admission boundary
 
-This document authorizes planning only. No image is production-authorized until its bytes, provenance, rights, crop, alt/caption and route projection are reviewed together.
+The v1 series asset recorded in `TEEN-SERIES-MEDIA-PROVENANCE.md` is already production-authorized. Any replacement, route-specific derivative family or new body figure is not authorized until its bytes, provenance, rights, crop, alt/caption and route projection are reviewed together.

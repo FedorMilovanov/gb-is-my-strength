@@ -159,7 +159,6 @@ const siteConfig = {
     <link rel="stylesheet" href={assetUrl('css/command-palette.css')} />
     <link rel="stylesheet" href={assetUrl('css/mobile-hotfix.css')} />
     <link rel="stylesheet" href={assetUrl('css/floating-cluster.css')} />
-    <link rel="stylesheet" href={assetUrl('css/series-manuscript.css')} />
     <script is:inline define:vars={{ siteConfig }}>window.SITE_CONFIG = siteConfig;</script>
   </head>
   <body
@@ -210,4 +209,27 @@ const siteConfig = {
       </main>
     </SeriesReaderChrome>
   </body>
+
+<style is:global>
+  /*
+   * The shared desktop series rail owns 304px from 64rem upward.
+   * Keep the Teen reader surface inside the remaining viewport; otherwise
+   * overflow-x hiding masks an article/prose rectangle that extends off-screen
+   * at the exact 1024px desktop breakpoint.
+   */
+  @media (min-width: 64rem) {
+    body[data-gbs2-series="teen-double-life"] [data-gill-v16] .page-wrap {
+      box-sizing: border-box;
+      width: min(820px, calc(100vw - 304px));
+      max-width: calc(100vw - 304px);
+    }
+
+    body[data-gbs2-series="teen-double-life"] [data-gill-v16] .page-wrap > main.article-main {
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 100%;
+      margin-inline: auto;
+    }
+  }
+</style>
 </html>

@@ -28,7 +28,7 @@ const policy = {
 };
 const html = `<!doctype html><html><head>
 <title>Fallback | Господь Бог — Сила Моя</title>
-<meta property="og:title" content="Нативный заголовок">
+<meta property="og:title" content="Нативный заголовок | Господь Бог — Сила Моя">
 <meta name="description" content="Нативное описание">
 <meta name="author" content="Автор, не редактор">
 <meta property="article:section" content="Тематический раздел">
