@@ -167,3 +167,85 @@ Live proof: Chapter 17 research-only PR runs only lightweight generic guards.
 8. Recover media source containers and re-register accessible binary receipts.
 9. Build governed chapter-specific visual ledgers.
 10. Only then add expanded-book public routes.
+
+
+## Addendum — quality findings after deep article-standard audit
+
+### Visible publication/update dates
+
+Nine Baptist reader surfaces had reader-visible date drift against their own PageHead JSON-LD:
+
+- Parts 1–3 and 5–9 displayed 13 June 2026 as the only byline date, while PageHead authority records publication dates 1–3 and 5–9 June and modification on 13 June.
+- `spravochnik` displayed 14 June even though both retained MDX and PageHead agree on `publishedAt/datePublished = 10 June` and `updatedAt/dateModified = 13 June`.
+- Petersburg is the correct existing exemplar: visible publication date plus a distinct `Обновлено` date.
+
+Prepared repair + regression contract:
+
+`fix/baptisty-visible-date-semantics-20260911`
+
+The existing `astro:audit:baptisty-series` entrypoint is extended to compare visible byline dates with PageHead `datePublished/dateModified`, so the drift fails closed in future validation.
+
+### Delyakov quote-grade boundary
+
+The public Kura article and public source reference repeated the formula:
+
+`«Он — немец, ты — русский, а я — сириец»`
+
+as a direct quotation, while the same article's source note says strong direct quotations from Delyakov still require a page-level locator.
+
+Current Product and Research ledgers do not expose a closed exact page locator for this wording.
+
+Prepared repair:
+
+`fix/baptisty-source-provenance-polish-20260911`
+
+It keeps the historical meaning but converts the formula to explicit paraphrase until locator closure, and updates both native reader surfaces and reference-only MDX so a future migration cannot silently restore the quote.
+
+### Research provenance labels
+
+Four public articles still called old snapshot
+`e8e6b98787019d43a2ffd10eb55bdde04ebfb747`
+“Research main / canonical”.
+
+Current Research main checked during this audit:
+`94f05457c2cfb03560c41414cb6a44cc1fdd4a98`.
+
+Prepared repair stops treating a moving branch as a permanent SHA identity: it names `Research main` as moving authority and records the checked snapshot/date separately.
+
+### Glossary runtime and coverage
+
+Correction to an earlier source-only impression: Baptist native pages **do load global `glossary.js`**, indirectly through
+`SeriesReaderChrome → GillSeriesChrome`.
+
+Therefore manual `gterm` counts do not equal reader glossary coverage.
+
+However the global dictionary itself is thin for this historical series. Direct dictionary/alias check found:
+
+- covered globally: `баптист`, `штундизм/штунда`;
+- not globally defined under direct keys/aliases: `молокане`, `ВСЕХ/ВСЕХБ/ВСЕХиБ`, `Инициативная группа`, `Оргкомитет`, `Совет Церквей ЕХБ`, `самиздат`, `Инструктивное письмо`, `старший пресвитер`, `Совет по делам религиозных культов`, `Совет по делам религий`, `ОГПУ`, `НКВД`.
+
+Several of these are covered manually in individual Baptist articles; others are not. A shared-glossary expansion should be treated as a governed shared-data change, not injected ad hoc while another live owner lane is active.
+
+### Browser/visual contract blind spots
+
+Successful native browser contracts already cover:
+- 320/390/1440 surfaces;
+- horizontal overflow;
+- H1/canonical;
+- duplicate interactive IDs;
+- aria-controls targets;
+- series rail/mobile bar/settings/TOC.
+
+They do **not** by themselves prove:
+- contrast/axe compliance;
+- historical image availability, because browser matrix intentionally aborts image/media/font requests;
+- historical visual completeness;
+- visible byline date agreement with structured metadata (now addressed by the prepared Baptist date contract).
+
+Built Baptist 3D app measurement from the successful visual artifact:
+- monolithic HTML about 2.25 MB;
+- Chromium median FCP about 288 ms;
+- median DCL about 152 ms;
+- no console/page/request errors;
+- no horizontal overflow;
+- current recommendation remains cacheability optimization, not runtime P0.
