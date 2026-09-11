@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Свет у открытой двери и телефон на пороге</title>
+  <desc id="desc">Абстрактная редакционная иллюстрация о скрытой и открытой жизни, разговоре, границах и возвращении.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#101827"/>
+      <stop offset="0.52" stop-color="#26354a"/>
+      <stop offset="1" stop-color="#b8874e"/>
+    </linearGradient>
+    <linearGradient id="door" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#f2d3a4" stop-opacity=".72"/>
+      <stop offset="1" stop-color="#fff8e8" stop-opacity=".97"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="630" rx="36" fill="url(#bg)"/>
+  <path d="M660 110h275v410H660z" fill="#0b111c" opacity=".75"/>
+  <path d="M706 154h183v322H706z" fill="url(#door)"/>
+  <path d="M730 476 540 585h555L889 476z" fill="#f3cf95" opacity=".28" filter="url(#glow)"/>
+  <path d="M730 476 560 575h510L889 476z" fill="#f8ddb1" opacity=".38"/>
+  <rect x="321" y="244" width="176" height="318" rx="30" fill="#0a0f18" stroke="#d7c4a5" stroke-width="6"/>
+  <rect x="343" y="282" width="132" height="216" rx="13" fill="#25384b"/>
+  <circle cx="409" cy="531" r="11" fill="#d7c4a5"/>
+  <path d="M409 282v216" stroke="#90b5c4" stroke-width="2" opacity=".35"/>
+  <path d="M343 390h132" stroke="#90b5c4" stroke-width="2" opacity=".35"/>
+  <circle cx="409" cy="390" r="32" fill="#d7c4a5" opacity=".16"/>
+  <path d="M160 545c120-95 241-128 362-100 78 18 146 58 205 120H160z" fill="#0b111c" opacity=".5"/>
+  <path d="M947 188c42 22 72 61 82 107" fill="none" stroke="#fff4da" stroke-width="8" stroke-linecap="round" opacity=".42"/>
+  <path d="M986 176c45 34 76 82 87 138" fill="none" stroke="#fff4da" stroke-width="3" stroke-linecap="round" opacity=".28"/>
+</svg>

@@ -171,6 +171,33 @@
       "weight": 62,
       "rationale": "Исторические биографии дополняют тематическую серию примерами реального служения, характера и ответственности.",
       "editorialStatus": "verified"
+    },
+    {
+      "id": "teen-part-i-heart-anthropology",
+      "source": "series-teen-double-life-podrostok-za-kadrom-dvoynaya-zhizn",
+      "target": "krajne-li-isporcheno-serdce",
+      "kind": "expands",
+      "weight": 86,
+      "rationale": "Разбор Иеремии 17 дополняет антропологическую основу статьи о скрытом грехе, сердце, совести и освящении.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "teen-part-iii-church-leadership",
+      "source": "series-teen-double-life-podrostok-za-kadrom-chto-delat-tserkvi",
+      "target": "20-antisovetov-pastoru",
+      "kind": "recommended-next",
+      "weight": 84,
+      "rationale": "Материал о пастырской власти и подотчётности расширяет церковный контекст дисциплины, ролей и защиты людей.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "teen-companion-d-hermeneutics",
+      "source": "series-teen-double-life-vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti",
+      "target": "hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki",
+      "kind": "methodological-context",
+      "weight": 88,
+      "rationale": "Методологический разбор помогает удержать спорный текст 1 Кор. 7:36–38 в рамках грамматико-исторической экзегезы и не превращать традиционное чтение в новый закон.",
+      "editorialStatus": "verified"
     }
   ]
 }

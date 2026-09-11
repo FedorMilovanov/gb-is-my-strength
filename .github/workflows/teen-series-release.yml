@@ -1,0 +1,100 @@
+name: Teen Series Release
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+    branches: [main]
+    paths:
+      - "src/content/articles/podrostok-za-kadrom-*.mdx"
+      - "src/content/articles/vzroslyy-rebenok-*.mdx"
+      - "src/content/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya.mdx"
+      - "src/content/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti.mdx"
+      - "src/pages/podrostok-za-kadrom/**"
+      - "src/pages/articles/podrostok-za-kadrom-*/**"
+      - "src/pages/articles/vzroslyy-rebenok-*/**"
+      - "src/pages/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/**"
+      - "src/pages/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/**"
+      - "src/components/article-pilots/teen-series/**"
+      - "src/components/article-pilots/_shared/series/teenSeriesConfig.ts"
+      - "public/images/teen-series/**"
+      - "docs/TEEN-SERIES-*.md"
+      - "data/series.json"
+      - "data/relations.json"
+      - "data/links-graph.json"
+      - "src/lib/relations/**"
+      - "scripts/project-relations-to-dist.mjs"
+      - "data/route-profiles/**"
+      - "data/route-search-policy.json"
+      - "data/search-manifest.json"
+      - "migration/page-ownership.json"
+      - "feed.xml"
+      - "sitemap.xml"
+      - "scripts/teen-series-release-contract.mjs"
+      - "scripts/teen-series-runtime-browser-contract.mjs"
+      - ".github/workflows/teen-series-release.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: teen-series-release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publication-contract:
+    name: Atomic teen publication contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Install immutable dependencies
+        run: npm ci
+
+      - name: Check static release contract
+        run: node scripts/teen-series-release-contract.mjs
+
+      - name: Validate route registry and source provenance
+        run: npm run migration:metadata:check:strict
+
+      - name: Validate canonical relation graph
+        run: node scripts/check-relations.mjs
+
+      - name: Build production-like candidate
+        run: npm run strangler:build:production-like
+
+      - name: Check rendered release contract
+        run: node scripts/teen-series-release-contract.mjs
+
+      - name: Verify canonical discovery projections
+        run: |
+          node scripts/search-manifest-policy-normalizer.js --dist=dist --promote-rss-articles
+          node scripts/rss-feed-normalizer.js --check
+          node scripts/sitemap-policy-normalizer.js --check
+          node scripts/search-index-policy-inventory.js --dist=dist --strict
+
+      - name: Build Pagefind index
+        run: npm run pagefind:build:dist
+
+      - name: Install Chromium for teen runtime witness
+        run: npx playwright install --with-deps chromium
+
+      - name: Validate teen runtime closure
+        run: node scripts/teen-series-runtime-browser-contract.mjs
+
+      - name: Audit production publication
+        run: |
+          npm run page-ownership:dist:production-like
+          node scripts/dist-publication-audit.js --require-pagefind --forbid-dev
+          npm run dist:jsonld:audit
+          npm run schema:rich-results:audit:dist
