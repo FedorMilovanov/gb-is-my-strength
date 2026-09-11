@@ -80,6 +80,9 @@ assert.ok(antisovetov.includes('map-trigger'), 'Antisovetov retained strategic-m
 assert.ok(antisovetov.includes('faq-accordion__q'), 'Antisovetov retained FAQ capability disappeared');
 assert.ok(krajne.includes('faq-accordion__q'), 'Krajne retained FAQ capability disappeared');
 assert.ok(krajne.includes('heart-flip-card'), 'Krajne retained reversible-card capability disappeared');
+const headingAnchorOwner = read('src/runtime/article-heading-anchors.js');
+assert.match(headingAnchorOwner, /const CLIPBOARD_TIMEOUT_MS = \d+;/, 'heading-anchor clipboard timeout guard disappeared');
+assert.match(headingAnchorOwner, /clipboard write timed out/, 'heading-anchor stalled clipboard fallback disappeared');
 
 const legacyEnhancements = read('js/enhancements.js');
 const legacySite = read('js/site.js');

@@ -310,9 +310,16 @@ function applyPolicySeeds({ policyRegistry, seriesData, productionRecords }) {
   return seeded;
 }
 
+function normalizeSearchTitle(value) {
+  return String(value || '')
+    .replace(/\s*\|\s*Господь Бог — Сила Моя\s*$/u, '')
+    .trim();
+}
+
 function deriveManifestFields(route, policy, html, fallbackReadTime = null) {
-  const title = firstMeta(html, 'property', 'og:title')
-    || titleText(html).replace(/\s*\|\s*Господь Бог — Сила Моя\s*$/, '');
+  const title = normalizeSearchTitle(
+    firstMeta(html, 'property', 'og:title') || titleText(html)
+  );
   const description = firstMeta(html, 'name', 'description')
     || firstMeta(html, 'property', 'og:description');
   const editor = firstMeta(html, 'name', 'author') || 'Фёдор Милованов';
@@ -356,8 +363,9 @@ function deriveManifestFields(route, policy, html, fallbackReadTime = null) {
 }
 
 function buildManifestItem(route, policy, html, fallbackReadTime = null) {
-  const title = firstMeta(html, 'property', 'og:title')
-    || titleText(html).replace(/\s*\|\s*Господь Бог — Сила Моя\s*$/, '');
+  const title = normalizeSearchTitle(
+    firstMeta(html, 'property', 'og:title') || titleText(html)
+  );
   const description = firstMeta(html, 'name', 'description')
     || firstMeta(html, 'property', 'og:description');
   const roles = deriveNewRowRoles(html);

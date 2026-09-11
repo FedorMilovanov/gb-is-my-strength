@@ -68,10 +68,13 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
   has('IndexNow reads live release SHA', indexNowStep, "jq -r '.releaseSha // empty'");
   has('IndexNow validates live SHA object', indexNowStep, 'git cat-file -e "${LIVE_SHA}^{commit}"');
   has('IndexNow compares published release to candidate', indexNowStep, 'git diff --name-only "$LIVE_SHA" "$AFTER_SHA"');
+  has('IndexNow passes published release for deletion detection', indexNowStep, '--previous-ref "$LIVE_SHA"');
   has('IndexNow conservative full-corpus fallback', indexNowStep, '--all-public');
   if (/github\.event\.before|HEAD~1/.test(indexNowStep)) p.push('IndexNow uses commit-adjacent baseline');
   matches('IndexNow public set uses production ownership + index policy', indexNow, /owner\?\.status === 'production-dist'[\s\S]{0,180}indexPolicy === 'index'/);
   has('IndexNow full public mode exists', indexNow, "process.argv.includes('--all-public')");
+  has('IndexNow reads prior public registry', indexNow, 'loadPreviousPublicUrls(PREVIOUS_REF)');
+  has('IndexNow submits removed routes', indexNow, 'if (!publicSet.has(url)) urls.add(url);');
   has('Pagefind build', j.readiness, 'npm run pagefind:build:dist');
   has('strict publication audit', j.readiness, 'node scripts/dist-publication-audit.js --require-pagefind --forbid-dev');
   has('SW deploy switch gate', j.readiness, 'npm run sw:dist:audit:deploy-switch');
@@ -191,7 +194,9 @@ const mutations = [
   ['push ownership removed', { ...sources, workflow: sources.workflow.replace('  push:\n', '  push-disabled:\n') }],
   ['running release cancellation reintroduced', { ...sources, workflow: sources.workflow.replace('cancel-in-progress: false', 'cancel-in-progress: true') }],
   ['IndexNow regresses to adjacent commit', { ...sources, workflow: sources.workflow.replace('git diff --name-only "$LIVE_SHA" "$AFTER_SHA"', 'git diff --name-only HEAD~1 HEAD') }],
-  ['IndexNow loses production policy filter', { ...sources, indexNow: sources.indexNow.replace("policy.routes?.[route]?.indexPolicy === 'index'", 'true') }],
+  ['IndexNow loses production policy filter', { ...sources, indexNow: sources.indexNow.replace("policy?.routes?.[route]?.indexPolicy === 'index'", 'true') }],
+  ['IndexNow loses previous release reference', { ...sources, workflow: sources.workflow.replace(' --previous-ref "$LIVE_SHA"', '') }],
+  ['IndexNow loses deleted-route submission', { ...sources, indexNow: sources.indexNow.replace('if (!publicSet.has(url)) urls.add(url);', '') }],
   ['ancestry removed', { ...sources, workflow: sources.workflow.replace('git merge-base --is-ancestor "$RELEASE_SHA" "$CONTROL_PLANE_SHA"', 'true') }],
   ['second build', { ...sources, workflow: sources.workflow.replace('name: Promote exact readiness candidate', 'run: npm run strangler:build:production-like\n\n    name: Promote exact readiness candidate') }],
   ['candidate download by name', { ...sources, workflow: mutateStep(sources.workflow, 'Download exact readiness candidate by artifact ID', 'artifact-ids: ${{ needs.readiness.outputs.transport_artifact_id }}', 'name: ${{ env.RELEASE_ARTIFACT_NAME }}') }],

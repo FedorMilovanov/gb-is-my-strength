@@ -11,7 +11,7 @@ const file = path.join(root, 'series-fixture', 'index.html');
 fs.mkdirSync(path.dirname(file), { recursive: true });
 fs.writeFileSync(file, `<!doctype html><html><head>
 <title>Fallback | Господь Бог — Сила Моя</title>
-<meta property="og:title" content="Тестовая серия">
+<meta property="og:title" content="Тестовая серия | Господь Бог — Сила Моя">
 <meta name="description" content="Описание тестовой серии для проверки детерминированного discovery seed.">
 <meta property="og:image" content="https://gospod-bog.ru/images/fixture.webp">
 </head><body><span data-pagefind-meta="readTime" hidden>42</span></body></html>`);
@@ -47,6 +47,7 @@ assert.equal(policyRegistry.reviewedAt, '2026-09-10');
 assert.equal(manifest.items.length, 1);
 assert.equal(manifest.items[0].id, 'series-fixture');
 assert.equal(manifest.items[0].type, 'series');
+assert.equal(manifest.items[0].title, 'Тестовая серия');
 assert.equal(manifest.items[0].readTime, 42);
 assert.equal(manifest.items[0].image, '/images/fixture.webp');
 assert.equal(manifest.items[0].publishedTime, '2026-09-10T00:00:00+03:00');

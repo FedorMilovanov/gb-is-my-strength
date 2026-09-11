@@ -52,6 +52,8 @@ function validateDecisionRecord(record, routeKey, options = {}) {
   }
   if (!record.metadataSource || typeof record.metadataSource !== 'string') {
     errors.push(`${routeKey}: metadataSource missing`);
+  } else if (/[\\/]reader-platform[\\/]/i.test(record.metadataSource)) {
+    errors.push(`${routeKey}: metadataSource must reference the route metadata owner, not a reader-platform utility`);
   }
   if (!record.provenance || typeof record.provenance !== 'string') {
     errors.push(`${routeKey}: provenance missing`);
