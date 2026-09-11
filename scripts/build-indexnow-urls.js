@@ -16,6 +16,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_BASE = 'https://gospod-bog.ru';
@@ -28,6 +29,7 @@ function argValue(name, fallback = '') {
 const BASE = String(argValue('--base', process.env.INDEXNOW_BASE || DEFAULT_BASE)).replace(/\/+$/, '');
 const INCLUDE_HOME = !process.argv.includes('--no-home');
 const ALL_PUBLIC = process.argv.includes('--all-public');
+const PREVIOUS_REF = argValue('--previous-ref');
 
 function readStdin() {
   try {
@@ -78,16 +80,20 @@ function loadLegacyBaselineUrls() {
   }
 }
 
+function publicUrlsFromRegistries(ownership, policy) {
+  return Object.entries(ownership?.routes || {})
+    .filter(([route, owner]) =>
+      owner?.status === 'production-dist' &&
+      policy?.routes?.[route]?.indexPolicy === 'index')
+    .map(([route]) => toUrl(route))
+    .filter(Boolean);
+}
+
 function loadPublicUrls() {
   try {
     const ownership = JSON.parse(safeRead('migration/page-ownership.json') || '{}');
     const policy = JSON.parse(safeRead('data/route-search-policy.json') || '{}');
-    const urls = Object.entries(ownership.routes || {})
-      .filter(([route, owner]) =>
-        owner?.status === 'production-dist' &&
-        policy.routes?.[route]?.indexPolicy === 'index')
-      .map(([route]) => toUrl(route))
-      .filter(Boolean);
+    const urls = publicUrlsFromRegistries(ownership, policy);
     if (urls.length) return urls;
   } catch {
     // Historical recovery commits may predate the modern ownership/policy
@@ -96,7 +102,31 @@ function loadPublicUrls() {
   return loadLegacyBaselineUrls();
 }
 
+function gitShowJson(ref, rel) {
+  if (!ref) return null;
+  try {
+    const raw = execFileSync('git', ['show', `${ref}:${rel}`], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function loadPreviousPublicUrls(ref) {
+  if (!ref) return [];
+  const ownership = gitShowJson(ref, 'migration/page-ownership.json');
+  const policy = gitShowJson(ref, 'data/route-search-policy.json');
+  if (!ownership || !policy) return [];
+  return publicUrlsFromRegistries(ownership, policy);
+}
+
 const publicUrls = loadPublicUrls();
+const previousPublicUrls = loadPreviousPublicUrls(PREVIOUS_REF);
+const notificationSet = new Set([...publicUrls, ...previousPublicUrls]);
 const publicSet = new Set(publicUrls);
 const contentRouteIndex = loadContentRouteIndex();
 const routeOrder = new Map(publicUrls.map((url, idx) => [url, idx]));
@@ -123,7 +153,7 @@ function addUrl(routeOrUrl) {
   const url = toUrl(routeOrUrl);
   if (!url) return;
   // Notify only the current indexable production surface.
-  if (publicSet.size && !publicSet.has(url)) return;
+  if (notificationSet.size && !notificationSet.has(url)) return;
   urls.add(url);
 }
 
@@ -209,6 +239,13 @@ const inputFiles = readStdin()
 if (ALL_PUBLIC) {
   addAllPublic();
 } else {
+  // IndexNow expects deleted or redirected URLs to be submitted as changes.
+  // Add routes that were public in the live release but are no longer
+  // indexable/public in the candidate before mapping changed source files.
+  for (const url of previousPublicUrls) {
+    if (!publicSet.has(url)) urls.add(url);
+  }
+
   for (const rel of inputFiles) {
     const contentRoute = srcContentRoute(rel);
     if (contentRoute) { addUrl(contentRoute); continue; }
