@@ -43,7 +43,7 @@
    римская. Для спутника — `mark:{kind:'letter',value:'А'}, tier:'satellite',
    parent:'<id части>'`.
 2. **Конфиг** (`_shared/series/<серия>SeriesConfig.ts`): добавь
-   `pages['<id>']` — label/title/cover/минуты/`partToc` (все H2/H3 тела с
+   `pages['<id>']` — label/title/cover/минуты/`partToc` (curated deep-link outline из
    `#якорями`, у ОДНОЙ строки `current:true`).
 3. **Тело статьи**: компонент `<...>Body.astro`, внутри —
    `<SeriesReaderChrome pageId="<id>" config={<СЕРИЯ>}><article>…</article></SeriesReaderChrome>`.
