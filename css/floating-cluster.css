@@ -3766,7 +3766,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
    All rules scoped to [data-gill-v16] under <64em; nothing here
    touches desktop Gill or any other route.
    ===================================================== */
-@media (max-width: 64em) {
+@media (max-width: 63.99em) {
   /* ---- Top bar: Learning trigger / inline speed rail slot-swap ---- */
   [data-gill-v16] .mobile-top-slot {
     position: relative;
