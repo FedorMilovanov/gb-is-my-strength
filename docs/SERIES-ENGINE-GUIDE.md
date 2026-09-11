@@ -101,8 +101,7 @@
 - `defineSeriesConfig` валидирует каждый конфиг на каждой сборке.
 - `npm run engine:contracts` — 20+ статических контрактов (AST CSS, изоляция
   движков, реестры) за секунды.
-- `npm run engine:sweep` — 87 функциональных Playwright-проверок (деск+мобила,
-  все серии, живой PLAY). Меняешь движок → добавь проверку на новое поведение.
+- `npm run engine:sweep` — функциональный Playwright-прогон деск+мобила по представителю каждой активной shared-series wrapper family (Gill, Hard Texts, Baptists, Pastor, Teen, Genesis 6), плюс живой PLAY. Меняешь движок или добавляешь новую wrapper family → добавь её представитель в `SERIES`.
 - Прецеденты регрессий и их уроки: auditrepo
   `references/gb-ui-canon-2026-07-13/` (ENGINES_ARCHITECTURE.md, BRANCH_AUDIT).
 
