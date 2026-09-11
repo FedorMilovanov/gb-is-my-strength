@@ -1,8 +1,8 @@
 # Teen series — relations and correction UX plan
 
-Status: **FOUNDATION / NO PUBLICATION**
+Status: **PUBLISHED / RELATIONS + CORRECTION REGRESSION PLAN**
 
-This plan records the current site architecture for related-content projection and the currently missing correction/report-error owner so the teen release does not depend on an imagined component.
+This plan records the current site architecture for related-content projection and the now-admitted shared correction/report-error owner. It is a post-release regression reference, not a publication TODO list.
 
 ## 1. Current relation engine is build-time, not an article-local widget
 
@@ -35,9 +35,9 @@ Use relations for genuinely useful lateral context, for example:
 
 A relation edge should have an editorial rationale and verified status through the shared `data/relations.json` schema. Do not manufacture edges simply to reach a target card count.
 
-## 3. Teen release relation gate
+## 3. Teen relation regression gate
 
-Before public release:
+For post-release regression checks:
 
 1. all seven public article routes must exist as canonical graph nodes;
 2. the `teen-double-life` series must be present in the shared series owner;
@@ -58,22 +58,20 @@ Do not assume that adding `related:` to seven MDX files automatically creates th
 
 Release parity should explicitly compare any frontmatter relationship intent against the canonical compiled graph rather than allow two contradictory recommendation systems.
 
-## 5. Correction/report-error owner — current gap
+## 5. Correction/report-error owner — admitted shared capability
 
-The Article Standard expects a reader-visible way to report a factual or editorial problem. In the current repository pass no established shared implementation was found under the obvious reader-facing identities (`неточность`, `сообщить об ошибке`, `feedback`, or a dedicated mailto/report surface).
+The Article Standard correction surface is now implemented through `TeenSeriesCorrectionBoundary.astro`, which mounts the shared `AboutAccuracyBlock.astro` contact owner and explicitly separates editorial correction from emergency/safeguarding disclosures.
 
-This is a **site-wide capability gap**, not a reason to create a one-off teen form.
+Current rule:
 
-Foundation rule:
-
-- do not hardcode a teen-only email address or form;
+- do not fork a teen-only correction transport;
 - do not add a third-party form endpoint casually;
-- do not expose private maintainer contact details from repository metadata;
-- do not claim correction UX is closed until a shared site owner exists.
+- preserve the shared editorial-contact owner and the Teen safeguarding warning;
+- keep correction UI excluded from reader/TTS and Pagefind projection as declared by the Teen boundary.
 
-## 6. Desired shared correction contract
+## 6. Shared correction contract
 
-A later site-wide owner should provide a reusable, privacy-conscious correction action that can be mounted by any article route. At minimum it should carry enough context to identify:
+The shared correction owner must remain a reusable, privacy-conscious action that can be mounted by article routes. Its surrounding route-specific boundary should carry enough context to identify:
 
 - canonical route;
 - article title;
@@ -93,7 +91,7 @@ The correction mechanism MUST NOT present itself as an emergency/safeguarding ho
 
 Because these articles discuss minors, sexual material, coercion and family crisis, a generic `Сообщить о неточности` action can attract personal disclosures.
 
-Before public release decide explicitly:
+Post-release regression must preserve the explicit decision:
 
 - whether the correction channel accepts only editorial reports;
 - what warning appears before a reader submits sensitive personal information;
@@ -102,8 +100,8 @@ Before public release decide explicitly:
 
 Until that is resolved, the teen series should not invent a contact form that creates an unowned safeguarding inbox.
 
-## 8. Release verdict
+## 8. Current verdict
 
-Relations: **shared engine exists; wire the teen series into it through canonical graph data.**
+Relations: **closed for publication; shared engine owns the series graph, including verified lateral edges in `data/relations.json`.**
 
-Corrections: **shared owner not yet established in this audit; publication dependency remains open.**
+Corrections: **closed for publication; Teen uses the shared correction owner behind an explicit safeguarding boundary.**

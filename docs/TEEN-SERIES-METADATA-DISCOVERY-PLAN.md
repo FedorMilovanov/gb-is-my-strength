@@ -1,22 +1,21 @@
 # Teen series — metadata and discovery release plan
 
-Status: **FOUNDATION / NO PUBLICATION**
+Status: **PUBLISHED / POST-RELEASE DISCOVERY REGRESSION PLAN**
 
-The seven teen/adult-child MDX files are intentionally admitted as Draft/noindex content before routes. This document defines the later atomic publication transition so no route becomes half-public.
+The seven teen/adult-child articles are published production routes. This document is retained as the discovery contract and post-release regression checklist; statements below that describe the old Draft/noindex foundation are historical context, not current state.
 
-## 1. Current foundation state
+## 1. Current published state
 
-All seven content records currently carry:
+All seven canonical content records and public routes must remain coherent across the same release surfaces:
 
-- `draft: true`;
-- `noindex: true`;
+- `draft: false`;
+- `noindex: false`;
 - `sourcesRequired: true`;
-- historical/prepublication `publishedAt` / `updatedAt` values;
-- `contentStatus: "draft"` as a human coordination marker.
+- authoritative `publishedAt` plus truthful forward-moving `updatedAt`;
+- `contentStatus: "published"` as editorial coordination metadata;
+- registered production routes, landing, search, sitemap/feed and relation projection.
 
-`contentStatus` is not part of the current Astro content schema and must not be treated as a machine publication lock.
-
-The real foundation boundary is the combination of Draft/noindex plus absence of public route/discovery projection.
+`contentStatus` is not by itself a machine publication lock. The effective public boundary is the agreement of canonical frontmatter, route ownership, robots/index policy and discovery projections.
 
 ## 2. Publication must be one logical transaction
 
@@ -137,9 +136,9 @@ A teen route may reuse the shared reader/series runtime, but must not inherit Pa
 
 Use a teen-specific thin wrapper or a safely generalized shared wrapper with explicit configuration. No second reader engine.
 
-## 8. Pre-release fail-closed checks
+## 8. Post-release fail-closed checks
 
-Before the release PR can become Ready, require a script/browser witness that fails if any one of the following is true:
+For every post-release change that can affect this series, require script/browser evidence that fails if any one of the following is true:
 
 - fewer/more than seven canonical article routes;
 - missing landing;
@@ -151,7 +150,7 @@ Before the release PR can become Ready, require a script/browser witness that fa
 - missing search node, relation graph node or sitemap URL;
 - duplicate canonical/discovery URL;
 - missing final OG asset;
-- temporary foundation rail cover reaches public HTML;
+- an unapproved placeholder/temporary rail cover reaches public HTML;
 - internal `draft`, `HOLD`, Research PR coordination language appears in reader-facing content.
 
 ## 9. Post-deploy witness

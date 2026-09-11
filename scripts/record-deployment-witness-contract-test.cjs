@@ -31,6 +31,8 @@ function workflowRun(overrides = {}) {
   return {
     id: RUN_ID,
     run_attempt: RUN_ATTEMPT,
+    workflow_id: 7001,
+    run_number: 42,
     name: 'Deploy to GitHub Pages',
     status: 'completed',
     conclusion: 'success',
@@ -175,26 +177,37 @@ function createWitnessDirectory({ generic = genericReport(), tts = ttsReport() }
   return root;
 }
 
-function createHarness({ artifacts = [candidateArtifact(), genericArtifact(), ttsArtifact()], pulls = [], issues = [], comments = {} } = {}) {
-  const calls = { comments: [], updates: [], warnings: [], infos: [], summaries: [], associatedCommitShas: [] };
+function createHarness({ artifacts = [candidateArtifact(), genericArtifact(), ttsArtifact()], pulls = [], pullsByCommit = null, workflowRuns = [], comparison = null, issues = [], comments = {} } = {}) {
+  const calls = { comments: [], updates: [], warnings: [], infos: [], summaries: [], associatedCommitShas: [], comparisons: [], workflowRunLists: [] };
   const listWorkflowRunArtifacts = endpoint('listWorkflowRunArtifacts');
+  const listWorkflowRuns = endpoint('listWorkflowRuns');
   const listPullRequestsAssociatedWithCommit = endpoint('listPullRequestsAssociatedWithCommit');
   const listForRepo = endpoint('listForRepo');
   const listComments = endpoint('listComments');
   const github = {
     paginate: async (fn, params) => {
       if (fn.kind === 'listWorkflowRunArtifacts') return artifacts;
+      if (fn.kind === 'listWorkflowRuns') {
+        calls.workflowRunLists.push(params);
+        return workflowRuns;
+      }
       if (fn.kind === 'listPullRequestsAssociatedWithCommit') {
         calls.associatedCommitShas.push(params.commit_sha);
-        return pulls;
+        return pullsByCommit ? (pullsByCommit[params.commit_sha] || []) : pulls;
       }
       if (fn.kind === 'listForRepo') return issues;
       if (fn.kind === 'listComments') return comments[params.issue_number] || [];
       throw new Error(`unexpected paginate endpoint: ${fn.kind}`);
     },
     rest: {
-      actions: { listWorkflowRunArtifacts },
-      repos: { listPullRequestsAssociatedWithCommit },
+      actions: { listWorkflowRunArtifacts, listWorkflowRuns },
+      repos: {
+        listPullRequestsAssociatedWithCommit,
+        compareCommits: async (params) => {
+          calls.comparisons.push(params);
+          return { data: comparison || { status: 'ahead', ahead_by: 0, commits: [] } };
+        },
+      },
       issues: {
         listForRepo,
         listComments,
@@ -276,6 +289,68 @@ async function invoke(harness, witnessDirectory, overrides = {}) {
     }
 
     {
+      const previousSha = '1'.repeat(40);
+      const ancestorSha = '2'.repeat(40);
+      const pushRun = workflowRun({
+        event: 'push',
+        head_sha: RELEASE_SHA,
+        workflow_id: 7001,
+        run_number: 42,
+      });
+      const previousRun = {
+        id: RUN_ID - 1,
+        run_attempt: 1,
+        workflow_id: 7001,
+        run_number: 41,
+        name: 'Deploy to GitHub Pages',
+        status: 'completed',
+        conclusion: 'success',
+        head_branch: 'main',
+        head_sha: previousSha,
+        event: 'push',
+        head_repository: { full_name: 'FedorMilovanov/gb-is-my-strength' },
+      };
+      const generic = genericReport();
+      generic.controlPlaneSha = RELEASE_SHA;
+      generic.attempts[0].evidence.controlPlaneSha = RELEASE_SHA;
+      const tts = ttsReport();
+      tts.controlPlaneSha = RELEASE_SHA;
+      tts.attempts[0].evidence.discovery.controlPlaneSha = RELEASE_SHA;
+      tts.attempts[0].evidence.provenance.controlPlaneSha = RELEASE_SHA;
+      const artifactHead = { id: RUN_ID, head_sha: RELEASE_SHA };
+      const witnessDirectory = createWitnessDirectory({ generic, tts });
+      directories.push(witnessDirectory);
+      const harness = createHarness({
+        artifacts: [
+          candidateArtifact({ workflow_run: artifactHead }),
+          genericArtifact({ workflow_run: artifactHead }),
+          ttsArtifact({ workflow_run: artifactHead }),
+        ],
+        workflowRuns: [pushRun, previousRun],
+        comparison: {
+          status: 'ahead',
+          ahead_by: 2,
+          commits: [{ sha: ancestorSha }, { sha: RELEASE_SHA }],
+        },
+        pullsByCommit: {
+          [ancestorSha]: [{ number: 401, merged_at: '2026-09-11T08:00:00Z', merge_commit_sha: ancestorSha }],
+          [RELEASE_SHA]: [{ number: 402, merged_at: '2026-09-11T08:10:00Z', merge_commit_sha: RELEASE_SHA }],
+        },
+      });
+      const result = await invoke(harness, witnessDirectory, { workflowRun: pushRun });
+      assert.deepEqual(result.touched, ['PR #401 commented', 'PR #402 commented']);
+      assert.deepEqual(harness.calls.comments.map((entry) => entry.issue_number), [401, 402]);
+      assert.ok(harness.calls.comments[0].body.includes(`Included PR merge SHA:** \`${ancestorSha}`));
+      assert.ok(harness.calls.comments[0].body.includes(`Published interval:** \`${previousSha}\` → \`${RELEASE_SHA}`));
+      assert.ok(harness.calls.comments[0].body.includes('included in the successfully published push interval'));
+      assert.equal(harness.calls.comments[1].body.includes('Included PR merge SHA'), false);
+      assert.deepEqual(harness.calls.associatedCommitShas, [RELEASE_SHA, ancestorSha, RELEASE_SHA]);
+      assert.equal(harness.calls.comparisons.length, 1);
+      assert.equal(harness.calls.comparisons[0].base, previousSha);
+      assert.equal(harness.calls.comparisons[0].head, RELEASE_SHA);
+    }
+
+    {
       const witnessDirectory = createWitnessDirectory();
       directories.push(witnessDirectory);
       const harness = createHarness({ artifacts: [candidateArtifact(), genericArtifact(), genericArtifact({ id: GENERIC_ARTIFACT_ID + 1 }), ttsArtifact()] });
@@ -352,7 +427,7 @@ async function invoke(harness, witnessDirectory, overrides = {}) {
       );
     }
 
-    console.log('Deployment release witness contract: PASS (independent release/control identities, artifact transport, generic live, TTS extension, exact release PR, idempotency, ambiguity and scope).');
+    console.log('Deployment release witness contract: PASS (independent identities, exact fallback, bounded push-interval PR attribution, idempotency, ambiguity and scope).');
   } finally {
     for (const directory of directories) fs.rmSync(directory, { recursive: true, force: true });
   }

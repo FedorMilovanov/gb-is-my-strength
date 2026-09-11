@@ -196,19 +196,23 @@ async function exerciseReversibleCard(page, label) {
   assert.equal(await card.getAttribute('aria-expanded'), String(afterSpace), `${label}: reversible card aria-expanded drift after Space`);
 }
 
-async function runCase(browser, browserName, baseUrl, route, viewport) {
+async function runCase(browser, browserName, baseUrl, route, viewport, { clipboardMode = 'normal' } = {}) {
   const context = await browser.newContext({ viewport });
-  await context.addInitScript(() => {
+  await context.addInitScript((mode) => {
     let clipboardValue = '';
     const clipboard = {
-      writeText: async (value) => { clipboardValue = String(value); },
-      readText: async () => clipboardValue,
+      writeText: mode === 'hang'
+        ? async () => new Promise(() => {})
+        : async (value) => { clipboardValue = String(value); },
+      readText: mode === 'hang'
+        ? async () => { throw new Error('clipboard read disabled for hanging-write regression'); }
+        : async () => clipboardValue,
     };
     Object.defineProperty(Navigator.prototype, 'clipboard', {
       configurable: true,
       get: () => clipboard,
     });
-  });
+  }, clipboardMode);
   const page = await context.newPage();
   const pageErrors = [];
   const legacyRequests = [];
@@ -217,7 +221,7 @@ async function runCase(browser, browserName, baseUrl, route, viewport) {
     if (/\/js\/(?:enhancements|site)\.js(?:\?|$)/.test(request.url())) legacyRequests.push(request.url());
   });
 
-  const label = `${browserName} ${route.path} ${viewport.width}`;
+  const label = `${browserName} ${route.path} ${viewport.width}${clipboardMode === 'normal' ? '' : ` clipboard=${clipboardMode}`}`;
   try {
     const response = await page.goto(`${baseUrl}${route.path}`, { waitUntil: 'networkidle' });
     assert.ok(response?.ok(), `${label}: route did not load`);
@@ -260,7 +264,7 @@ async function runCase(browser, browserName, baseUrl, route, viewport) {
     await exerciseHeadingAnchor(page, label);
     assert.deepEqual(pageErrors, [], `${label}: uncaught page errors`);
 
-    return { browser: browserName, route: route.path, viewport, baseline, legacyRequests, pageErrors };
+    return { browser: browserName, route: route.path, viewport, clipboardMode, baseline, legacyRequests, pageErrors };
   } finally {
     await context.close();
   }
@@ -280,6 +284,16 @@ async function main() {
         for (const viewport of viewports) {
           for (const route of routes) results.push(await runCase(browser, browserName, server.baseUrl, route, viewport));
         }
+        if (browserName === 'chromium') {
+          results.push(await runCase(
+            browser,
+            browserName,
+            server.baseUrl,
+            routes[0],
+            viewports[0],
+            { clipboardMode: 'hang' },
+          ));
+        }
       } finally {
         await browser.close();
       }
@@ -290,7 +304,7 @@ async function main() {
 
   const report = { schemaVersion: 1, conclusion: 'success', sha: process.env.SOURCE_SHA || '', browsers: browserNames, routes, viewports, results };
   fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify(report, null, 2)}\n`);
-  console.log(`Article capability browser contract: PASS (${results.length} cases)`);
+  console.log(`Article capability browser contract: PASS (${results.length} cases, including bounded hanging-clipboard fallback)`);
 }
 
 main().catch((error) => {
