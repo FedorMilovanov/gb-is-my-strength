@@ -209,4 +209,26 @@ const siteConfig = {
       </main>
     </SeriesReaderChrome>
   </body>
+
+<style is:global>
+  /*
+   * Teen-specific desktop containment. The shared reader rail consumes 304px
+   * from 64rem upward; keep this route family inside the remaining viewport
+   * without changing the protected shared Gill responsive owner.
+   */
+  @media (min-width: 64rem) {
+    body[data-gbs2-series="teen-double-life"] [data-gill-v16] .page-wrap {
+      box-sizing: border-box;
+      width: min(820px, calc(100vw - 304px));
+      max-width: calc(100vw - 304px);
+    }
+
+    body[data-gbs2-series="teen-double-life"] [data-gill-v16] .page-wrap > main.article-main {
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 100%;
+      margin-inline: auto;
+    }
+  }
+</style>
 </html>
