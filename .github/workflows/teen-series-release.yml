@@ -92,6 +92,19 @@ jobs:
       - name: Validate teen runtime closure
         run: node scripts/teen-series-runtime-browser-contract.mjs
 
+      - name: Run Teen visual, glossary and article-quality Playwright audit
+        id: teen_quality
+        run: node scripts/teen-series-quality-browser-audit.mjs
+
+      - name: Upload Teen browser quality evidence
+        if: ${{ always() && (steps.teen_quality.outcome == 'success' || steps.teen_quality.outcome == 'failure') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: teen-series-browser-quality-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/teen-series-browser/
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Audit production publication
         run: |
           npm run page-ownership:dist:production-like

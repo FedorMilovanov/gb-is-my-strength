@@ -74,8 +74,14 @@ function canonicalPolicy(declaration) {
   };
 }
 
+function normalizeSearchTitle(value) {
+  return String(value || '')
+    .replace(/\s*\|\s*Господь Бог — Сила Моя\s*$/u, '')
+    .trim();
+}
+
 function canonicalItem({ seriesId, series, declaration, route, html }) {
-  const title = metaContent(html, 'property', 'og:title') || titleText(html).replace(/\s*\|\s*Господь Бог — Сила Моя\s*$/, '');
+  const title = normalizeSearchTitle(metaContent(html, 'property', 'og:title') || titleText(html));
   const description = metaContent(html, 'name', 'description') || metaContent(html, 'property', 'og:description');
   const image = normalizeImage(metaContent(html, 'property', 'og:image'));
   const readTime = Number.parseInt(pagefindMeta(html, 'readTime'), 10);
