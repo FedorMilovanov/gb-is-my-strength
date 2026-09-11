@@ -40,6 +40,53 @@ const canonical = (html) => {
   return '';
 };
 
+const frontmatterScalar = (source, key) => {
+  const block = source.match(/^---\s*\r?\n([\s\S]*?)\r?\n---/u)?.[1] || '';
+  const raw = block.match(new RegExp(`^${key}:\\s*(.+?)\\s*#!/usr/bin/env node
+import fs from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
+
+const ROOT = process.cwd();
+const DIST = path.join(ROOT, 'dist');
+const SITE = 'https://gospod-bog.ru';
+const RELEASE_DATE = '2026-09-10T00:00:00+03:00';
+const LANDING = '/podrostok-za-kadrom/';
+const SERIES_KEY = 'teen-double-life';
+const SOURCE_OG = '/images/teen-series/series-hero.svg';
+const PUBLIC_OG = '/images/teen-series/series-hero.webp';
+const ITEMS = [
+  ['I', 'teen-double-life', 'podrostok-za-kadrom-dvoynaya-zhizn', 32, 0],
+  ['II', 'teen-parents-after-disclosure', 'podrostok-za-kadrom-roditelyam-posle-razoblacheniya', 43, 32],
+  ['III', 'teen-church-response', 'podrostok-za-kadrom-chto-delat-tserkvi', 39, 75],
+  ['A', 'adult-child-left-home', 'vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie', 37, 114],
+  ['B', 'adult-child-home-money', 'vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya', 36, 151],
+  ['C', 'adult-child-authority', 'sovershennoletie-roditelskaya-vlast-chto-menyaetsya', 35, 187],
+  ['D', 'adult-daughter-marriage', 'vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti', 42, 222],
+];
+
+const errors = [];
+const fail = (message) => errors.push(message);
+const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
+const readJson = (rel) => JSON.parse(read(rel));
+const exists = (rel) => fs.existsSync(path.join(ROOT, rel));
+const routeFile = (route) => path.join(DIST, route.replace(/^\//, ''), 'index.html');
+const meta = (html, key) => {
+  const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const tag = html.match(new RegExp(`<meta\\b([^>]*\\b(?:name|property)=["']${escaped}["'][^>]*)>`, 'i'))?.[1] || '';
+  return tag.match(/\bcontent=["']([^"']*)["']/i)?.[1]?.trim() || '';
+};
+const canonical = (html) => {
+  for (const match of html.matchAll(/<link\b([^>]+)>/gi)) {
+    if (!/\brel=["']canonical["']/i.test(match[1])) continue;
+    return match[1].match(/\bhref=["']([^"']+)["']/i)?.[1]?.trim() || '';
+  }
+  return '';
+};
+
+, 'm'))?.[1]?.trim() || '';
+  return raw.replace(/^["']|["']$/g, '');
+};
 const ownership = readJson('migration/page-ownership.json');
 const series = readJson('data/series.json');
 const config = read('src/components/article-pilots/_shared/series/teenSeriesConfig.ts');
@@ -118,8 +165,6 @@ for (const [mark, pageId, slug, minutes, done] of ITEMS) {
   const mdx = read(sourceRel);
   const requiredSourceFields = [
     'contentStatus: "published"',
-    `publishedAt: "${RELEASE_DATE}"`,
-    `updatedAt: "${RELEASE_DATE}"`,
     'draft: false',
     'noindex: false',
     'sourcesRequired: true',
@@ -130,13 +175,21 @@ for (const [mark, pageId, slug, minutes, done] of ITEMS) {
   for (const field of requiredSourceFields) {
     if (!mdx.includes(field)) fail(`${slug}: canonical publication source missing ${field}`);
   }
+  const publishedAt = frontmatterScalar(mdx, 'publishedAt');
+  const updatedAt = frontmatterScalar(mdx, 'updatedAt');
+  if (publishedAt !== RELEASE_DATE) fail(`${slug}: publishedAt=${publishedAt || 'missing'}, expected ${RELEASE_DATE}`);
+  if (!Number.isFinite(Date.parse(updatedAt)) || Date.parse(updatedAt) < Date.parse(publishedAt)) {
+    fail(`${slug}: updatedAt must be a valid instant on/after publishedAt`);
+  }
   if (/<!--|-->/.test(mdx)) fail(`${slug}: raw HTML comment marker remains in published MDX`);
 
   const routeRel = `src/pages/articles/${slug}/index.astro`;
   const source = read(routeRel);
   if (!source.includes(`pageId="${pageId}"`)) fail(`${slug}: pageId mismatch`);
-  if (!source.includes('draft: false') || !source.includes('noindex: false')) fail(`${slug}: release override must be indexable`);
-  if (!source.includes(`publishedAt: '${RELEASE_DATE}'`) || !source.includes(`updatedAt: '${RELEASE_DATE}'`)) fail(`${slug}: release date drift`);
+  if (!source.includes('frontmatter={frontmatter}')) fail(`${slug}: route must pass canonical MDX frontmatter directly`);
+  if (/publishedFrontmatter|\b(?:draft|noindex|publishedAt|updatedAt|canonicalOverride)\s*:/.test(source)) {
+    fail(`${slug}: route must not shadow canonical publication frontmatter`);
+  }
   if (!config.includes(`readingProgressDoneMin: ${done}`)) fail(`${slug}: cumulative progress ${done} missing`);
   if (!config.includes(`readingProgressPartMin: ${minutes}`)) fail(`${slug}: reading time ${minutes} missing`);
   if (['A','B','C','D'].includes(mark) && !config.includes(`mark: { kind: 'label', value: '${mark}' }`)) fail(`${slug}: ${mark} must remain core label`);
@@ -186,7 +239,7 @@ console.log('✅ Teen series release contract PASS');
 console.log(`  routes: ${requiredOwnership.length} (landing + 7 articles)`);
 console.log('  order: I -> II -> III -> A -> B -> C -> D');
 console.log('  publication source: seven MDX canonical + raw HTML comments rejected');
-console.log('  publication date: 2026-09-10');
+console.log('  publication date: 2026-09-10; updatedAt stays owned by canonical frontmatter');
 console.log('  media: SVG editorial hero + 1200x630 WebP social projection');
 console.log('  bibliography: canonical reader projector owns build-time data-pagefind-ignore boundary');
 console.log('  production ownership: astro/production-dist');
