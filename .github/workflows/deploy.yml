@@ -219,7 +219,7 @@ jobs:
           if [[ "$LIVE_SHA" =~ ^[a-f0-9]{40}$ ]] && git cat-file -e "${LIVE_SHA}^{commit}" 2>/dev/null; then
             echo "IndexNow delta: published ${LIVE_SHA} -> candidate ${AFTER_SHA}"
             git diff --name-only "$LIVE_SHA" "$AFTER_SHA" \
-              | node release-tools/build-indexnow-urls.js --base "https://gospod-bog.ru" \
+              | node release-tools/build-indexnow-urls.js --base "https://gospod-bog.ru" --previous-ref "$LIVE_SHA" \
               > reports/indexnow-urls.json
           else
             echo "IndexNow published baseline unavailable; notifying full public indexable corpus"
