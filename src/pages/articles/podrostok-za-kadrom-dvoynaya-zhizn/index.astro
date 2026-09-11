@@ -1,15 +1,7 @@
 ---
 import Content, { frontmatter } from '@/content/articles/podrostok-za-kadrom-dvoynaya-zhizn.mdx';
 import TeenSeriesArticlePage from '@/components/article-pilots/teen-series/TeenSeriesArticlePage.astro';
-const publishedFrontmatter = {
-  ...frontmatter,
-  draft: false,
-  noindex: false,
-  publishedAt: '2026-09-10T00:00:00+03:00',
-  updatedAt: '2026-09-10T00:00:00+03:00',
-  canonicalOverride: 'https://gospod-bog.ru/articles/podrostok-za-kadrom-dvoynaya-zhizn/',
-};
 ---
-<TeenSeriesArticlePage pageId="teen-double-life" frontmatter={publishedFrontmatter}>
+<TeenSeriesArticlePage pageId="teen-double-life" frontmatter={frontmatter}>
   <Content />
 </TeenSeriesArticlePage>
