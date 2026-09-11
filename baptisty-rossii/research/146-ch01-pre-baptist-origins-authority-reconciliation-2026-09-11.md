@@ -37,8 +37,19 @@ Research `RUSSIAN_BAPTISTS_ARCHIVE/00_CURRENT_AUTHORITY_2026-08-02.md` фикс�
 - canonical acquisition зарегистрирован;
 - **current status:** `CANONICAL_DRIVE_REGISTERED / TEXT_LAYER_PRESENT / VISUAL_PENDING / NOT_QUOTE_READY`.
 
-Следовательно, прежний Product blocker «файл/текст не получен» закрыт.  
+Следовательно, прежний Product blocker «файл/текст не получен» закрыт **историческим immutable acquisition receipt**.  
 Не закрыты: визуальный page-card pass, source-chain pass и право использовать exact wording как финальную первичную цитату.
+
+### Live Drive recheck — 2026-09-11
+
+Текущий подключённый Google Drive не находит оба canonical IDs из Research authority даже при direct-ID fetch: оба ответа — `404 File not found`. Broad filename/name search также не находит Voronin/Sinichkin corpus.
+
+Это **не отменяет** зафиксированные в Research bytes/pages/SHA receipts, но меняет current access claim:
+
+- `historical acquisition receipt = VERIFIED`;
+- `current connected Drive availability = NOT VERIFIED / ACCESS HOLD`;
+- перед финальной visual/quote-card стадией binary нужно восстановить из доступного archive/duplicate/export source или повторно зарегистрировать в текущем Drive owner context.
+
 
 ## 3. Воронин / Кура — что теперь можно считать сильной evidence chain
 
@@ -131,6 +142,7 @@ Chapter 1 должен отвечать не на вопрос «были ли �
 
 ### До BOOK-READY всё ещё требуется
 
+- [ ] восстановить current binary access либо зарегистрировать новый canonical accessible copy для Voronin/Sinichkin dossiers;
 - [ ] visual/source-chain closure для Voronin dossiers;
 - [ ] stronger primary Molokan/pre-1867 document layer;
 - [ ] governed visual dossier: identity → provenance → rights → binary → SHA → caption;
