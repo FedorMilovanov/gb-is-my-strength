@@ -77,4 +77,13 @@ export const SERIES_ORDER: Record<string, string[]> = {
     'duhi-v-temnice-noi-kreshchenie-pobeda',
     'blagovestie-mertvym-1-petra-4-5-6',
   ],
+  'teen-double-life': [
+    'podrostok-za-kadrom-dvoynaya-zhizn',
+    'podrostok-za-kadrom-roditelyam-posle-razoblacheniya',
+    'podrostok-za-kadrom-chto-delat-tserkvi',
+    'vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie',
+    'vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya',
+    'sovershennoletie-roditelskaya-vlast-chto-menyaetsya',
+    'vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti',
+  ],
 };

@@ -1,28 +1,24 @@
 /**
- * teenSeriesConfig.ts — prepublication reader config for the seven-part
+ * teenSeriesConfig.ts — reader config for the seven-part
  * «Подросток за кадром» / adult-child continuation series.
  *
  * IMPORTANT: A-D are first-class core reading steps. In the shared engine
  * mark.kind='letter' has satellite semantics and would remove them from the
  * normal rail/prev-next flow. Therefore A-D use core `label` marks.
- *
- * This file is safe to exist before publication: it creates no route and is
- * not imported by a public page yet. Media paths are deliberately provisional
- * until the separate rights/provenance/OG release gate is closed.
  */
 import { SERIES_CONFIGS, type SeriesConfig, defineSeriesConfig } from './seriesConfig';
 
 const TOTAL_MIN = 264;
-const PREPUBLICATION_RAIL_COVER = '../../icons/icon-512.png';
+const TEEN_SERIES_RAIL_COVER = '/images/teen-series/series-hero.svg';
 const startToc = [{ href: '#article-content', label: 'Начало статьи', level: 2, current: true }] as const;
 
 export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
   seriesId: 'teen-double-life',
   seriesTitle: 'Подросток за кадром',
   seriesTitleFull: 'Подросток за кадром: двойная жизнь, семья и взросление',
-  railBackHref: '../../podrostok-za-kadrom/',
+  railBackHref: '/podrostok-za-kadrom/',
   quiz: [],
-  breadcrumbParent: { label: 'Подросток за кадром', href: '../../podrostok-za-kadrom/' },
+  breadcrumbParent: { label: 'Подросток за кадром', href: '/podrostok-za-kadrom/' },
   items: [
     {
       id: 'teen-double-life',
@@ -92,7 +88,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressPartMin: 32,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Как рождается двойная жизнь',
-      railCover: PREPUBLICATION_RAIL_COVER,
+      railCover: TEEN_SERIES_RAIL_COVER,
       partDialogLabel: 'Часть I · Двойная жизнь',
       partToc: [...startToc],
     },
@@ -106,7 +102,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressPartMin: 43,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Что делать родителям после разоблачения',
-      railCover: PREPUBLICATION_RAIL_COVER,
+      railCover: TEEN_SERIES_RAIL_COVER,
       partDialogLabel: 'Часть II · После разоблачения',
       partToc: [...startToc],
     },
@@ -120,7 +116,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressPartMin: 39,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Что должна делать церковь',
-      railCover: PREPUBLICATION_RAIL_COVER,
+      railCover: TEEN_SERIES_RAIL_COVER,
       partDialogLabel: 'Часть III · Церковь',
       partToc: [...startToc],
     },
@@ -134,7 +130,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressPartMin: 37,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Контакт, ожидание, покаяние и возвращение',
-      railCover: PREPUBLICATION_RAIL_COVER,
+      railCover: TEEN_SERIES_RAIL_COVER,
       partDialogLabel: 'A · Взрослый ребёнок ушёл',
       partToc: [...startToc],
     },
@@ -148,7 +144,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressPartMin: 36,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Правила, деньги, помощь и последствия',
-      railCover: PREPUBLICATION_RAIL_COVER,
+      railCover: TEEN_SERIES_RAIL_COVER,
       partDialogLabel: 'B · Дом и деньги',
       partToc: [...startToc],
     },
@@ -162,7 +158,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressPartMin: 35,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Что меняется, что остаётся',
-      railCover: PREPUBLICATION_RAIL_COVER,
+      railCover: TEEN_SERIES_RAIL_COVER,
       partDialogLabel: 'C · Родительская власть',
       partToc: [...startToc],
     },
@@ -176,7 +172,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressPartMin: 42,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Согласие и границы власти',
-      railCover: PREPUBLICATION_RAIL_COVER,
+      railCover: TEEN_SERIES_RAIL_COVER,
       partDialogLabel: 'D · Дочь, отец и брак',
       partToc: [...startToc],
     },
