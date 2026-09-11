@@ -235,6 +235,47 @@ for (const [id, url] of SERIES) {
   await ctx.close();
 }
 
+/* ============ СЕРИЯ-ДВИЖОК — ГРАНИЦА 64em / 1024px ============ */
+for (const [id, url] of SERIES) {
+  const { ctx, page } = await newPage({ width: 1024, height: 768 });
+  await page.goto(base + url, { waitUntil: 'networkidle' });
+  await page.waitForTimeout(250);
+
+  const compact = await page.evaluate(() => {
+    const root = document.documentElement;
+    const rail = document.querySelector('[data-gill-v16] .gbs-rail');
+    const top = document.querySelector('[data-gill-v16] .mobile-top-bar');
+    const bottom = document.querySelector('[data-gill-v16] .mobile-bottom-bar');
+    const pageWrap = document.querySelector('[data-gill-v16] .page-wrap');
+    const rect = pageWrap?.getBoundingClientRect();
+    const display = (node) => node ? getComputedStyle(node).display : 'absent';
+    return {
+      viewport: innerWidth,
+      scrollWidth: root.scrollWidth,
+      rail: display(rail),
+      top: display(top),
+      bottom: display(bottom),
+      pageLeft: rect ? Math.round(rect.left) : null,
+      pageRight: rect ? Math.round(rect.right) : null,
+    };
+  });
+
+  R(id, 'compact-1024: desktop rail active / mobile bars off',
+    !!compact && compact.rail !== 'none' && compact.rail !== 'absent' &&
+      (compact.top === 'none' || compact.top === 'absent') &&
+      (compact.bottom === 'none' || compact.bottom === 'absent'),
+    JSON.stringify(compact));
+  R(id, 'compact-1024: no horizontal overflow',
+    !!compact && compact.scrollWidth <= compact.viewport + 1,
+    JSON.stringify(compact));
+  R(id, 'compact-1024: article remains inside viewport',
+    !!compact && compact.pageLeft !== null && compact.pageLeft >= 0 &&
+      compact.pageRight !== null && compact.pageRight <= compact.viewport + 1,
+    JSON.stringify(compact));
+
+  await ctx.close();
+}
+
 /* ============ СЕРИЯ-ДВИЖОК — МОБИЛА ============ */
 for (const [id, url] of SERIES) {
   const { ctx, page } = await newPage({ width: 390, height: 844 });
