@@ -5,6 +5,29 @@
     min-inline-size: 0;
   }
 
+  /*
+   * Desktop series chrome starts at 64rem and reserves a fixed 304px rail.
+   * The legacy page/main widths are viewport-based, so at the exact 1024px
+   * boundary a nested article can remain 92vw wide inside the reduced content
+   * area and create a ~147px horizontal overflow. Keep the desktop rail, but
+   * size the content column against the viewport remainder and force nested
+   * article mains to honor that containing block.
+   */
+  @media (min-width: 64rem) {
+    body[data-gbs2-series] [data-gill-v16] .page-wrap {
+      box-sizing: border-box;
+      width: min(820px, calc(100vw - 304px));
+      max-width: calc(100vw - 304px);
+    }
+
+    body[data-gbs2-series] [data-gill-v16] .page-wrap > main.article-main {
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 100%;
+      margin-inline: auto;
+    }
+  }
+
   @media (max-width: 63.999rem) {
     /*
      * The fixed mobile bar is the interaction owner. WebKit can otherwise

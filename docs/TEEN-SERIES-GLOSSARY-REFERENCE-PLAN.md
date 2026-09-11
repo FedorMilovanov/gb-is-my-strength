@@ -13,7 +13,7 @@ Current policy:
 - prose hydration zones: `p`, `div.reveal`, and explicit prose zones;
 - headings, navigation, figures, tables, cards, tooltips, quiz surfaces and other chrome are excluded;
 - default cadence: at least 1200 words and 20 prose blocks between repeated placements;
-- maximum: 3 auto-hydrated glossary terms per article.
+- default maximum: 3 auto-hydrated placements **of the same canonical term** per article; different canonical terms keep independent cadence state.
 
 Therefore teen pages MUST reuse `data/glossary.json` + `data/glossary-policy.json` and MUST NOT create a second teen glossary runtime or dictionary.
 

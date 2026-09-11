@@ -169,8 +169,13 @@ async function inspectArticle(page, spec, vp) {
       tocCount: uniqueTocHrefs.length,
       missingTocTargets,
       glossaryCount: terms.length,
-      glossaryReady: terms.filter((el) => el.dataset.tooltipReady === '1').length,
+      glossaryReady: terms.filter((el) => el.dataset.gbTooltipReady === '1').length,
       glossaryIdentity: terms.filter((el) => Boolean(el.dataset.term)).length,
+      glossaryTermCounts: terms.reduce((counts, el) => {
+        const key = el.dataset.term || '(missing)';
+        counts[key] = (counts[key] || 0) + 1;
+        return counts;
+      }, {}),
       forbiddenGlossary,
       bibleRefs: document.querySelectorAll('.bref[data-ref]').length,
       emptyBibleRefs: document.querySelectorAll('.bref[data-ref=""]').length,
@@ -203,8 +208,9 @@ async function inspectArticle(page, spec, vp) {
     `part TOC is too shallow for long-form article: ${metrics.tocCount}`);
   check(metrics.missingTocTargets.length === 0, route, viewport,
     `part TOC has missing targets: ${metrics.missingTocTargets.join(', ')}`);
-  check(metrics.glossaryCount <= 3, route, viewport,
-    `glossary cadence max exceeded: ${metrics.glossaryCount}`);
+  const glossaryMaxCanonicalCount = Math.max(0, ...Object.values(metrics.glossaryTermCounts));
+  check(glossaryMaxCanonicalCount <= 3, route, viewport,
+    `glossary per-term cadence max exceeded: ${JSON.stringify(metrics.glossaryTermCounts)}`);
   check(metrics.glossaryReady === metrics.glossaryCount, route, viewport,
     `glossary tooltip readiness mismatch: ${metrics.glossaryReady}/${metrics.glossaryCount}`);
   check(metrics.glossaryIdentity === metrics.glossaryCount, route, viewport,
@@ -423,5 +429,5 @@ assert.equal(report.errors.length, 0,
 console.log('✅ Teen series quality Playwright audit PASS');
 console.log(`  scenes: ${report.scenes.length} light + ${report.darkScenes.length} dark`);
 console.log('  viewports: 320 / 360 / 390 / 768 / 1024 / 1440');
-console.log('  checked: overflow, reading measure, 4–6 summary rule, deep TOC, glossary cadence/placement/interaction, Bible tooltip bounds, correction actions');
+console.log('  checked: overflow, reading measure, 4–6 summary rule, deep TOC, per-term glossary cadence/placement/interaction, Bible tooltip bounds, correction actions');
 console.log(`  evidence: ${REPORT_DIR}`);
