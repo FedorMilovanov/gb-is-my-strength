@@ -38,7 +38,7 @@ function mutateStep(yaml, name, from, to) {
   return yaml.replace(block, block.replace(from, to));
 }
 
-export function validate({ workflow, diagnostics, toolchain, library, writer, verifier, live, tts, ttsWorkflow }) {
+export function validate({ workflow, diagnostics, toolchain, library, writer, verifier, live, tts, ttsWorkflow, indexNow }) {
   const p = [];
   const j = jobs(workflow);
   const has = (label, src, token) => { if (!src.includes(token)) p.push(label); };
@@ -62,6 +62,16 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
   has('source revisions checked', j.readiness, 'node scripts/cache-bust.js');
   has('static publication gates', j.readiness, 'npm run validate:static-publication');
   has('production-like build', j.readiness, 'npm run strangler:build:production-like');
+  const indexNowStep = step(j.readiness, 'Prepare IndexNow URL list from last published release');
+  has('IndexNow mapper from trusted control plane', indexNowStep, 'git show "${CONTROL_PLANE_SHA}:scripts/build-indexnow-urls.js" > release-tools/build-indexnow-urls.js');
+  has('IndexNow baseline from live pointer', indexNowStep, 'https://gospod-bog.ru/deployments/current.json');
+  has('IndexNow reads live release SHA', indexNowStep, "jq -r '.releaseSha // empty'");
+  has('IndexNow validates live SHA object', indexNowStep, 'git cat-file -e "${LIVE_SHA}^{commit}"');
+  has('IndexNow compares published release to candidate', indexNowStep, 'git diff --name-only "$LIVE_SHA" "$AFTER_SHA"');
+  has('IndexNow conservative full-corpus fallback', indexNowStep, '--all-public');
+  if (/github\.event\.before|HEAD~1/.test(indexNowStep)) p.push('IndexNow uses commit-adjacent baseline');
+  matches('IndexNow public set uses production ownership + index policy', indexNow, /owner\?\.status === 'production-dist'[\s\S]{0,180}indexPolicy === 'index'/);
+  has('IndexNow full public mode exists', indexNow, "process.argv.includes('--all-public')");
   has('Pagefind build', j.readiness, 'npm run pagefind:build:dist');
   has('strict publication audit', j.readiness, 'node scripts/dist-publication-audit.js --require-pagefind --forbid-dev');
   has('SW deploy switch gate', j.readiness, 'npm run sw:dist:audit:deploy-switch');
@@ -173,12 +183,15 @@ const sources = {
   live: read('scripts/live-release-contract.mjs'),
   tts: read('scripts/tts-live-deployment-contract.mjs'),
   ttsWorkflow: read('.github/workflows/tts-download-consent.yml'),
+  indexNow: read('scripts/build-indexnow-urls.js'),
 };
 assert.deepEqual(validate(sources), []);
 
 const mutations = [
   ['push ownership removed', { ...sources, workflow: sources.workflow.replace('  push:\n', '  push-disabled:\n') }],
   ['running release cancellation reintroduced', { ...sources, workflow: sources.workflow.replace('cancel-in-progress: false', 'cancel-in-progress: true') }],
+  ['IndexNow regresses to adjacent commit', { ...sources, workflow: sources.workflow.replace('git diff --name-only "$LIVE_SHA" "$AFTER_SHA"', 'git diff --name-only HEAD~1 HEAD') }],
+  ['IndexNow loses production policy filter', { ...sources, indexNow: sources.indexNow.replace("policy.routes?.[route]?.indexPolicy === 'index'", 'true') }],
   ['ancestry removed', { ...sources, workflow: sources.workflow.replace('git merge-base --is-ancestor "$RELEASE_SHA" "$CONTROL_PLANE_SHA"', 'true') }],
   ['second build', { ...sources, workflow: sources.workflow.replace('name: Promote exact readiness candidate', 'run: npm run strangler:build:production-like\n\n    name: Promote exact readiness candidate') }],
   ['candidate download by name', { ...sources, workflow: mutateStep(sources.workflow, 'Download exact readiness candidate by artifact ID', 'artifact-ids: ${{ needs.readiness.outputs.transport_artifact_id }}', 'name: ${{ env.RELEASE_ARTIFACT_NAME }}') }],

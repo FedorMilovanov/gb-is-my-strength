@@ -1,15 +1,7 @@
 ---
 import Content, { frontmatter } from '@/content/articles/podrostok-za-kadrom-chto-delat-tserkvi.mdx';
 import TeenSeriesArticlePage from '@/components/article-pilots/teen-series/TeenSeriesArticlePage.astro';
-const publishedFrontmatter = {
-  ...frontmatter,
-  draft: false,
-  noindex: false,
-  publishedAt: '2026-09-10T00:00:00+03:00',
-  updatedAt: '2026-09-10T00:00:00+03:00',
-  canonicalOverride: 'https://gospod-bog.ru/articles/podrostok-za-kadrom-chto-delat-tserkvi/',
-};
 ---
-<TeenSeriesArticlePage pageId="teen-church-response" frontmatter={publishedFrontmatter}>
+<TeenSeriesArticlePage pageId="teen-church-response" frontmatter={frontmatter}>
   <Content />
 </TeenSeriesArticlePage>
