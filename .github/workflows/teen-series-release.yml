@@ -16,6 +16,7 @@ on:
       - "src/pages/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/**"
       - "src/components/article-pilots/teen-series/**"
       - "src/components/article-pilots/_shared/series/teenSeriesConfig.ts"
+      - "src/data/site.ts"
       - "public/images/teen-series/**"
       - "docs/TEEN-SERIES-*.md"
       - "data/series.json"
