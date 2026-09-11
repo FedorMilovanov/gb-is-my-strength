@@ -1,8 +1,8 @@
 # Teen series — glossary and Scripture-reference plan
 
-Status: **FOUNDATION / NO PUBLICATION**
+Status: **PUBLISHED / SHARED GLOSSARY OWNER RETAINED / POST-RELEASE REGRESSION PLAN**
 
-This plan prevents two opposite failures in the seven-part teen/adult-child series: a prose surface overloaded with glossary decorations, and a Scripture-first series whose biblical citations remain inert plain text.
+This plan now documents the published seven-part teen/adult-child series and its regression boundary. It prevents two opposite failures: a prose surface overloaded with glossary decorations, and a Scripture-first series whose biblical citations remain inert plain text.
 
 ## 1. Existing glossary owner controls terminology
 
@@ -25,9 +25,9 @@ The shared glossary already contains suitable canonical entries for several high
 |---|---|---|
 | возрождение | `возрождение` | AUTO-HYDRATE; do not add manual duplicate |
 | освящение | `освящение` | AUTO-HYDRATE; do not add manual duplicate |
-| тотальная / полная испорченность | `тотальная испорченность` | AUTO-HYDRATE where wording naturally occurs |
+| тотальная / полная испорченность | `тотальная испорченность` | SHARED ENTRY, `autoHydrate:false`; explain inline unless a deliberate manual placement is separately justified |
 | остаточный грех | `остаточный грех` | AUTO-HYDRATE where relevant |
-| остаточная порча | `остаточная порча` | AUTO-HYDRATE only if the actual term is used |
+| остаточная порча | `остаточная порча` | SHARED ENTRY, `autoHydrate:false`; explain inline unless a deliberate manual placement is separately justified |
 
 The series should not be rewritten merely to trigger a glossary alias. Good prose controls terminology; glossary hydration is secondary.
 
@@ -40,7 +40,7 @@ The current shared glossary pass did not establish standalone canonical entries 
 - средства благодати;
 - апостасия / отступничество.
 
-Foundation default: **EXPLAIN INLINE, DO NOT CREATE A SHARED ENTRY YET.**
+Published-series default: **EXPLAIN INLINE, DO NOT CREATE A SHARED ENTRY CASUALLY.**
 
 Reason: all four terms are central enough that a one-sentence tooltip can become doctrinally reductive if added casually. The article itself should carry the distinction it needs (for example, remorse/fear/exposure is not automatically repentance). A later glossary-expansion PR may add a shared term only if it improves the whole site and passes the normal Glossary Contract.
 
@@ -132,11 +132,11 @@ Required witness:
 - glossary auto-hydration never nests inside `.bref` because links/abbr/`.gterm` and other forbidden surfaces are excluded by policy;
 - TTS/linear-text projection reads the visible sentence/reference, not hidden tooltip detail twice.
 
-## 8. Release gate
+## 8. Post-release regression gate
 
-The teen series is not Scripture-UX complete merely because Scripture Occurrence Index Contract is green. That contract and reader-facing `.bref` interactivity are different concerns.
+The published teen series must not be treated as Scripture-UX regression-safe merely because Scripture Occurrence Index Contract is green. That contract and reader-facing `.bref` interactivity are different concerns.
 
-Publication requires a dedicated reference witness proving, for each of the seven routes:
+Regression coverage requires a dedicated reference witness proving, for each of the seven routes:
 
 - important visible citations remain correct;
 - intended `.bref[data-ref]` anchors exist;
@@ -145,4 +145,4 @@ Publication requires a dedicated reference witness proving, for each of the seve
 - no duplicate tooltip runtime;
 - desktop, keyboard and mobile interactions work.
 
-This plan deliberately does **not** mutate the shared glossary or shared tooltip engines during foundation.
+This plan deliberately keeps the shared glossary and shared tooltip engines as the single owners; Teen-specific quality work must test them rather than fork them.
