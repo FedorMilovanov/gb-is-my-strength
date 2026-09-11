@@ -27,6 +27,7 @@ function argValue(name, fallback = '') {
 
 const BASE = String(argValue('--base', process.env.INDEXNOW_BASE || DEFAULT_BASE)).replace(/\/+$/, '');
 const INCLUDE_HOME = !process.argv.includes('--no-home');
+const ALL_PUBLIC = process.argv.includes('--all-public');
 
 function readStdin() {
   try {
@@ -67,7 +68,7 @@ function loadContentRouteIndex() {
   return index;
 }
 
-function loadBaselineUrls() {
+function loadLegacyBaselineUrls() {
   const file = path.join(ROOT, 'data/public-content-baseline.json');
   try {
     const json = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -77,10 +78,28 @@ function loadBaselineUrls() {
   }
 }
 
-const baselineUrls = loadBaselineUrls();
-const baselineSet = new Set(baselineUrls);
+function loadPublicUrls() {
+  try {
+    const ownership = JSON.parse(safeRead('migration/page-ownership.json') || '{}');
+    const policy = JSON.parse(safeRead('data/route-search-policy.json') || '{}');
+    const urls = Object.entries(ownership.routes || {})
+      .filter(([route, owner]) =>
+        owner?.status === 'production-dist' &&
+        policy.routes?.[route]?.indexPolicy === 'index')
+      .map(([route]) => toUrl(route))
+      .filter(Boolean);
+    if (urls.length) return urls;
+  } catch {
+    // Historical recovery commits may predate the modern ownership/policy
+    // registries. Only then fall back to their retained migration baseline.
+  }
+  return loadLegacyBaselineUrls();
+}
+
+const publicUrls = loadPublicUrls();
+const publicSet = new Set(publicUrls);
 const contentRouteIndex = loadContentRouteIndex();
-const routeOrder = new Map(baselineUrls.map((url, idx) => [url, idx]));
+const routeOrder = new Map(publicUrls.map((url, idx) => [url, idx]));
 const urls = new Set();
 
 function normalizeRel(raw) {
@@ -103,13 +122,13 @@ function toUrl(routeOrUrl) {
 function addUrl(routeOrUrl) {
   const url = toUrl(routeOrUrl);
   if (!url) return;
-  // Do not notify noindex/system/private URLs unless they are in the public baseline.
-  if (baselineSet.size && !baselineSet.has(url)) return;
+  // Notify only the current indexable production surface.
+  if (publicSet.size && !publicSet.has(url)) return;
   urls.add(url);
 }
 
 function addAllPublic() {
-  for (const url of baselineUrls) urls.add(url);
+  for (const url of publicUrls) urls.add(url);
 }
 
 function rootHtmlRoute(rel) {
@@ -159,9 +178,9 @@ function legacySectionRoute(rel) {
   if (html) return html;
 
   // Data/assets inside a public route directory. Notify the nearest route when
-  // it is a baseline URL; for shared map engines notify all map pages.
+  // it is a public URL; for shared map engines notify all map pages.
   if (rel.startsWith('karty/_engine/') || rel.startsWith('karty/_shared/')) {
-    for (const url of baselineUrls.filter((u) => u.startsWith(`${BASE}/karty/`))) urls.add(url);
+    for (const url of publicUrls.filter((u) => u.startsWith(`${BASE}/karty/`))) urls.add(url);
     return '';
   }
   const parts = rel.split('/');
@@ -187,21 +206,25 @@ const inputFiles = readStdin()
   .map(normalizeRel)
   .filter(Boolean);
 
-for (const rel of inputFiles) {
-  const contentRoute = srcContentRoute(rel);
-  if (contentRoute) { addUrl(contentRoute); continue; }
+if (ALL_PUBLIC) {
+  addAllPublic();
+} else {
+  for (const rel of inputFiles) {
+    const contentRoute = srcContentRoute(rel);
+    if (contentRoute) { addUrl(contentRoute); continue; }
 
-  const pageRoute = srcPageRoute(rel);
-  if (pageRoute) { addUrl(pageRoute); continue; }
+    const pageRoute = srcPageRoute(rel);
+    if (pageRoute) { addUrl(pageRoute); continue; }
 
-  const htmlRoute = rootHtmlRoute(rel);
-  if (htmlRoute) { addUrl(htmlRoute); continue; }
+    const htmlRoute = rootHtmlRoute(rel);
+    if (htmlRoute) { addUrl(htmlRoute); continue; }
 
-  const legacyRoute = legacySectionRoute(rel);
-  if (legacyRoute) { addUrl(legacyRoute); continue; }
+    const legacyRoute = legacySectionRoute(rel);
+    if (legacyRoute) { addUrl(legacyRoute); continue; }
 
-  if (isGlobalProductionInput(rel) || isAstroGlobalInput(rel) || rel === '.github/workflows/deploy.yml') {
-    addAllPublic();
+    if (isGlobalProductionInput(rel) || isAstroGlobalInput(rel) || rel === '.github/workflows/deploy.yml') {
+      addAllPublic();
+    }
   }
 }
 
