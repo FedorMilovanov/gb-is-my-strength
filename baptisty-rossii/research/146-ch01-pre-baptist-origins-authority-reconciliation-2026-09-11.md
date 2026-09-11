@@ -42,12 +42,13 @@ Research `RUSSIAN_BAPTISTS_ARCHIVE/00_CURRENT_AUTHORITY_2026-08-02.md` фикс�
 
 ### Live Drive recheck — 2026-09-11
 
-Текущий подключённый Google Drive не находит оба canonical IDs из Research authority даже при direct-ID fetch: оба ответа — `404 File not found`. Broad filename/name search также не находит Voronin/Sinichkin corpus.
+Текущий подключённый Google Drive не находит оба canonical IDs из Research authority даже при direct-ID fetch: оба ответа — `404 File not found`. Проверены также оба зафиксированных raw duplicate IDs — они тоже возвращают 404. Broad filename/name search не находит Voronin/Sinichkin corpus.
 
 Это **не отменяет** зафиксированные в Research bytes/pages/SHA receipts, но меняет current access claim:
 
 - `historical acquisition receipt = VERIFIED`;
 - `current connected Drive availability = NOT VERIFIED / ACCESS HOLD`;
+- `canonical + recorded raw duplicate IDs = 4/4 currently unavailable in connected Drive`;
 - перед финальной visual/quote-card стадией binary нужно восстановить из доступного archive/duplicate/export source или повторно зарегистрировать в текущем Drive owner context.
 
 
