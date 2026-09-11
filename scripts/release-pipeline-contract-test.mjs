@@ -49,7 +49,7 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
   has('release SHA recovery selector', workflow, "RELEASE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.release_sha || github.sha }}");
   has('candidate run-attempt name', workflow, 'RELEASE_ARTIFACT_NAME: pages-release-candidate-${{ github.run_id }}-${{ github.run_attempt }}');
   has('Pages run-attempt name', workflow, 'PAGES_ARTIFACT_NAME: github-pages-${{ github.run_id }}-${{ github.run_attempt }}');
-  matches('Pages serialized', workflow, /concurrency:\s*\n\s*group:\s*pages\s*\n\s*cancel-in-progress:\s*true/);
+  matches('Pages serialized without cancelling active release', workflow, /concurrency:\s*\n\s*group:\s*pages[\s\S]{0,220}cancel-in-progress:\s*false/);
 
   has('exact release checkout', j.readiness, 'ref: ${{ env.RELEASE_SHA }}');
   has('full checkout', j.readiness, 'fetch-depth: 0');
@@ -178,6 +178,7 @@ assert.deepEqual(validate(sources), []);
 
 const mutations = [
   ['push ownership removed', { ...sources, workflow: sources.workflow.replace('  push:\n', '  push-disabled:\n') }],
+  ['running release cancellation reintroduced', { ...sources, workflow: sources.workflow.replace('cancel-in-progress: false', 'cancel-in-progress: true') }],
   ['ancestry removed', { ...sources, workflow: sources.workflow.replace('git merge-base --is-ancestor "$RELEASE_SHA" "$CONTROL_PLANE_SHA"', 'true') }],
   ['second build', { ...sources, workflow: sources.workflow.replace('name: Promote exact readiness candidate', 'run: npm run strangler:build:production-like\n\n    name: Promote exact readiness candidate') }],
   ['candidate download by name', { ...sources, workflow: mutateStep(sources.workflow, 'Download exact readiness candidate by artifact ID', 'artifact-ids: ${{ needs.readiness.outputs.transport_artifact_id }}', 'name: ${{ env.RELEASE_ARTIFACT_NAME }}') }],
