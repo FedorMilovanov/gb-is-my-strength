@@ -27,17 +27,41 @@ else {
 const diagrams = atlas.diagrams || [];
 if (diagrams.length !== 10) bad(`expected 10 diagrams, got ${diagrams.length}`);
 const bySlug = new Map(diagrams.map(d => [d.slug, d]));
+const allowedStatuses = new Set(['planned', 'production']);
 for (const part of series.parts || []) {
   const d = bySlug.get(part.slug);
   if (!d) { bad(`missing diagram for ${part.slug}`); continue; }
   for (const key of ['id','type','status','priority','title','purpose']) {
     if (!d[key]) bad(`${part.slug}: missing ${key}`);
   }
+  if (!allowedStatuses.has(d.status)) bad(`${part.slug}: unsupported status ${d.status}`);
   if (!Array.isArray(d.nodes) || d.nodes.length < 4) bad(`${part.slug}: diagram needs >=4 nodes`);
   if (!Array.isArray(d.sourceFiles) || !d.sourceFiles.length) bad(`${part.slug}: diagram needs source files`);
   if (!Array.isArray(d.mapSync) || !d.mapSync.length) bad(`${part.slug}: diagram needs mapSync`);
   if (!Array.isArray(d.visualRisks) || !d.visualRisks.length) bad(`${part.slug}: diagram needs visualRisks`);
   for (const f of d.sourceFiles || []) if (!exists(`baptisty-rossii/research/${f}`)) bad(`${part.slug}: missing source ${f}`);
+
+  if (d.status === 'production') {
+    for (const key of ['assetPath','articleComponent','articleAnchor','implementedAt','caption','sourceConfidence']) {
+      if (!d[key]) bad(`${part.slug}: production diagram missing ${key}`);
+    }
+    if (d.assetPath && !exists(d.assetPath)) bad(`${part.slug}: production SVG missing at ${d.assetPath}`);
+    if (d.articleComponent && !exists(d.articleComponent)) bad(`${part.slug}: article component missing at ${d.articleComponent}`);
+    if (d.assetPath && exists(d.assetPath)) {
+      const svg = read(d.assetPath);
+      if (!/<svg\b/i.test(svg)) bad(`${part.slug}: asset is not SVG`);
+      if (!/<title\b[^>]*>/i.test(svg)) bad(`${part.slug}: SVG title missing`);
+      if (!/<desc\b[^>]*>/i.test(svg)) bad(`${part.slug}: SVG desc missing`);
+      if (/<image\b[^>]*(?:href|xlink:href)=[\"']https?:/i.test(svg)) bad(`${part.slug}: remote raster inside SVG forbidden`);
+      if (Buffer.byteLength(svg) > (atlas.policy.maxSvgBytesPreferred || 45000)) bad(`${part.slug}: SVG exceeds preferred byte ceiling`);
+    }
+    if (d.articleComponent && exists(d.articleComponent)) {
+      const article = read(d.articleComponent);
+      if (d.assetPath && !article.includes(path.basename(d.assetPath))) bad(`${part.slug}: article does not reference production SVG`);
+      if (d.articleAnchor && !article.includes(`id="${d.articleAnchor}"`)) bad(`${part.slug}: article anchor missing`);
+      if (!article.includes('<figcaption')) bad(`${part.slug}: visible figure caption missing`);
+    }
+  }
 }
 if (!exists('baptisty-rossii/research/32-2d-svg-visual-atlas-plan-2026-06-19.md')) bad('human SVG atlas plan missing');
 else {
@@ -51,4 +75,4 @@ if (problems.length) {
   console.log(`❌ ${problems.length} problem(s).`);
   process.exit(1);
 }
-ok('2D SVG atlas plan is guarded');
+ok(`${diagrams.filter(d => d.status === 'production').length}/${diagrams.length} production atlas diagrams guarded`);

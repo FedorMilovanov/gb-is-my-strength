@@ -1,7 +1,7 @@
 {
   "series": "russian-baptism",
   "title": "Баптисты России — 2D SVG visual atlas plan",
-  "updated": "2026-06-19",
+  "updated": "2026-09-12",
   "purpose": "Локальные 2D SVG-схемы для статей серии: маршруты, timeline, сети влияния, документы, persecution layers. Это дополняет 3D-карту, но не заменяет её.",
   "policy": {
     "format": "inline-or-local-svg",
@@ -141,14 +141,20 @@
       "id": "rb-09-underground-press-distribution",
       "slug": "podpolnaya-pechat",
       "type": "publication-flow-map",
-      "status": "planned",
+      "status": "production",
       "priority": "P0",
       "title": "Подпольная печать: память, выпуск, распространение",
       "purpose": "Сделать визуально сильную схему самиздата и церковной памяти.",
       "nodes": ["Vestnik Spaseniya", "Vestnik Istiny", "Council of relatives", "Christianin", "printing", "distribution"],
-      "sourceFiles": ["12-underground-press-article-transfer-and-primary-sources-2026-06-13.md", "14-council-relatives-bulletin-pdf-catalog-2026-06-14.md"],
+      "sourceFiles": ["12-underground-press-article-transfer-and-primary-sources-2026-06-13.md", "14-council-relatives-bulletin-pdf-catalog-2026-06-14.md", "14-podpolnaya-pechat-golden-chapter-source-to-claim-2026-09-06.md", "15-podpolnaya-pechat-visual-dossier-2026-09-06.md", "16-podpolnaya-pechat-bulletin-44-pdf-verification-2026-09-06.md"],
       "mapSync": ["Underground press route", "bulletin catalog"],
-      "visualRisks": ["не использовать обложки без проверки прав"]
+      "visualRisks": ["не использовать обложки без проверки прав"],
+      "assetPath": "images/baptisty-rossii/atlas/rb-09-underground-press-distribution.svg",
+      "articleComponent": "src/components/baptisty-rossii/BaptistyRossiiPodpolnayaPechatBody.astro",
+      "articleAnchor": "visual-atlas-underground-press",
+      "implementedAt": "2026-09-12",
+      "caption": "Редакционная схема по проверенной библиографии: сообщения и бюллетени фиксировали сведения; издательство и типографии размножали тексты; общины и семьи возвращали новые сведения в сеть. Схема не является исторической фотографией или картой конкретных типографий.",
+      "sourceConfidence": {"chronology": "verified", "named1977Anchor": "primary-issue-verified", "networkFlow": "editorial-synthesis"}
     },
     {
       "id": "rb-10-source-confidence-matrix",
