@@ -60,40 +60,16 @@
       "priority": "P0",
       "title": "Южная штунда: сеть людей и колоний",
       "purpose": "Развести штундистское движение, немецкую линию и баптистское оформление.",
-      "nodes": [
-        "Unger",
-        "Tsymbal",
-        "Ryaboshapka",
-        "Ratushny",
-        "Pritzkau",
-        "Oncken",
-        "Wheeler"
-      ],
-      "sourceFiles": [
-        "20-southern-ukraine-primary-source-pass-2026-06-18.md",
-        "21-dorodnitsyn-official-reports-southern-line-2026-06-18.md",
-        "22-rozhdestvensky-shtunda-not-baptism-nuance-2026-06-18.md",
-        "37-pritzkau-1914-english-translation-source-2026-06-19.md"
-      ],
-      "mapSync": [
-        "Southern Ukraine route",
-        "Shtunda/Baptist distinction"
-      ],
-      "visualRisks": [
-        "не делать все узлы одинаково достоверными",
-        "не терять нюанс штунда ≠ баптизм"
-      ],
+      "nodes": ["Unger", "Tsymbal", "Ryaboshapka", "Ratushny", "Pritzkau", "Oncken", "Wheeler"],
+      "sourceFiles": ["20-southern-ukraine-primary-source-pass-2026-06-18.md", "21-dorodnitsyn-official-reports-southern-line-2026-06-18.md", "22-rozhdestvensky-shtunda-not-baptism-nuance-2026-06-18.md", "37-pritzkau-1914-english-translation-source-2026-06-19.md"],
+      "mapSync": ["Southern Ukraine route", "Shtunda/Baptist distinction"],
+      "visualRisks": ["не делать все узлы одинаково достоверными", "не терять нюанс штунда ≠ баптизм"],
       "assetPath": "images/baptisty-rossii/atlas/rb-02-southern-shtunda-network.svg",
       "articleComponent": "src/components/baptisty-rossii/BaptistyRossiiYuzhnayaShtundaBody.astro",
       "articleAnchor": "visual-atlas-southern-shtunda-network",
       "implementedAt": "2026-09-12",
       "caption": "Схема показывает встречу местного библейского пробуждения юга с немецко-баптистскими и меннонитско-братскими каналами: штундистская среда не объявляется баптистской с первого дня, а баптистская форма возникает через крещение, церковный порядок и межобщинные связи.",
-      "sourceConfidence": {
-        "localBiblicalSearch": "source-backed",
-        "baptistAndBrethrenChannels": "documented",
-        "datedBaptisms": "documented",
-        "networkInterpretation": "editorial-synthesis"
-      }
+      "sourceConfidence": {"localBiblicalSearch": "source-backed", "baptistAndBrethrenChannels": "documented", "datedBaptisms": "documented", "networkInterpretation": "editorial-synthesis"}
     },
     {
       "id": "rb-03-two-1884-events",
