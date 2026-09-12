@@ -5,12 +5,14 @@ import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import {
+  assertEvidenceArtifactProvenance,
   normalizeArtifactDigest,
   verifyDiotrophesLiveRelease,
 } from './diotrophes-live-release-contract.mjs';
 
 const RELEASE_SHA = 'a'.repeat(40);
 const CONTROL_SHA = 'b'.repeat(40);
+const RECORDER_SHA = 'e'.repeat(40);
 const RUN_ID = 30850000001;
 const RUN_ATTEMPT = 1;
 const CANDIDATE_DIGEST = `sha256:${'c'.repeat(64)}`;
@@ -184,6 +186,36 @@ try {
     `sha256:${ARTIFACT_DIGEST_PAYLOAD}`,
   );
   assert.throws(() => normalizeArtifactDigest('sha256:not-a-digest'), /artifact digest is invalid/);
+
+  {
+    const artifact = {
+      name: `diotrophes-live-deployment-${RUN_ID}`,
+      expired: false,
+      workflow_run: {
+        id: RUN_ID + 1,
+        head_sha: RECORDER_SHA,
+      },
+      digest: `sha256:${ARTIFACT_DIGEST_PAYLOAD}`,
+    };
+    assert.doesNotThrow(() => assertEvidenceArtifactProvenance({
+      artifact,
+      expectedName: artifact.name,
+      recorderRunId: RUN_ID + 1,
+      recorderSha: RECORDER_SHA,
+      artifactDigest: ARTIFACT_DIGEST_PAYLOAD,
+    }));
+    assert.notEqual(RECORDER_SHA, CONTROL_SHA, 'test must model recorder/control-plane SHA divergence');
+    assert.throws(
+      () => assertEvidenceArtifactProvenance({
+        artifact,
+        expectedName: artifact.name,
+        recorderRunId: RUN_ID + 1,
+        recorderSha: CONTROL_SHA,
+        artifactDigest: ARTIFACT_DIGEST_PAYLOAD,
+      }),
+      /evidence artifact recorder SHA mismatch/,
+    );
+  }
 
   {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'diotrophes-live-pass-'));
