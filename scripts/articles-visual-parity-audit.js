@@ -11,6 +11,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { repositoryStaticAssetPath } = require('./lib/static-public-asset');
 const ROOT = path.join(__dirname, '..');
 const REQUIRE_DIST = process.argv.includes('--require-dist');
 const problems = [];
@@ -26,13 +27,6 @@ function mustNotExist(rel, label){ !exists(rel) ? ok(`absent: ${label || rel}`) 
 function publicRoute(url){
   const route = String(url || '').split(/[?#]/, 1)[0] || '/';
   return route === '/' ? '/' : `${route.replace(/^\/+|\/+$/g, '')}/`.replace(/^/, '/');
-}
-function repositoryMediaPath(image){
-  const value = String(image || '').split(/[?#]/, 1)[0];
-  if (!value.startsWith('/') || value.startsWith('//')) return null;
-  const rel = value.replace(/^\/+/, '');
-  if (!rel || rel.includes('..')) return null;
-  return rel;
 }
 
 const legacy = read('articles/index.html');
@@ -152,13 +146,9 @@ else bad('derived catalog would render duplicate article/series URLs');
 
 for (const item of projected) {
   const label = item.id || item.url || '<unknown>';
-  const rel = repositoryMediaPath(item.image);
+  const rel = repositoryStaticAssetPath(ROOT, item.image);
   if (!rel) {
-    bad(`${label}: published catalog item has no repository-local image authority`);
-    continue;
-  }
-  if (!exists(rel)) {
-    bad(`${label}: catalog image missing from repository: ${rel}`);
+    bad(`${label}: published catalog image has no repository static-asset authority: ${item.image || '(missing)'}`);
     continue;
   }
   ok(`${label}: catalog image authority resolves: ${rel}`);

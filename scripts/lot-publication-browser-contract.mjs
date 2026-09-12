@@ -284,8 +284,26 @@ async function exerciseQuiz(page) {
 
   await page.locator('#quizLaunch').click();
   for (let index = 0; index < authority.correct.length; index += 1) {
-    await page.locator('.quiz-option').nth(authority.correct[index]).click({ timeout: 5000 });
-    await page.locator('.quiz-feedback').waitFor({ state: 'visible', timeout: 5000 });
+    const option = page.locator('.quiz-option').nth(authority.correct[index]);
+    await option.click({ timeout: 5000 });
+    const feedbackState = await page.evaluate(() => {
+      const feedback = document.querySelector('.quiz-feedback');
+      const rect = feedback?.getBoundingClientRect();
+      const style = feedback ? getComputedStyle(feedback) : null;
+      const options = [...document.querySelectorAll('.quiz-option')];
+      return {
+        exists: Boolean(feedback),
+        visible: Boolean(feedback && rect && rect.width > 0 && rect.height > 0 && style?.display !== 'none' && style?.visibility !== 'hidden'),
+        text: (feedback?.textContent || '').trim(),
+        optionCount: options.length,
+        allDisabled: options.length > 0 && options.every((node) => node.disabled),
+      };
+    });
+    assert.equal(feedbackState.exists, true, `quiz question ${index + 1}: feedback missing after answer click`);
+    assert.equal(feedbackState.visible, true, `quiz question ${index + 1}: feedback is not user-visible after answer click`);
+    assert.ok(feedbackState.text, `quiz question ${index + 1}: feedback text is empty`);
+    assert.equal(feedbackState.optionCount, 4, `quiz question ${index + 1}: option count drifted`);
+    assert.equal(feedbackState.allDisabled, true, `quiz question ${index + 1}: answered options did not lock`);
     if (index === 0) {
       assert.equal((await page.locator('.quiz-explanation--short').textContent())?.trim(), authority.firstShort);
       assert.equal((await page.locator('.quiz-explanation--full').textContent())?.trim(), authority.firstFull);
