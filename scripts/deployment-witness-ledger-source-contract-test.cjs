@@ -94,7 +94,11 @@ function validate({ deploy, ledger, workflow, recorder }) {
     ['recorder marker binds both SHAs and all artifacts', recorder, /deployment-release-witness:\$\{releaseSha\}:\$\{controlPlaneSha\}:\$\{runId\}:\$\{runAttempt\}:\$\{candidateArtifact\.id\}:\$\{genericArtifact\.id\}:\$\{ttsArtifact\.id\}/],
     ['recorder supports generic target', recorder, /deployment-witness-target:release:\$\{releaseSha\}/],
     ['recorder supports legacy TTS target', recorder, /deployment-witness-target:tts:\$\{releaseSha\}/],
-    ['recorder exact release merge SHA only', recorder, /normalize\(pull\.merge_commit_sha\)\.toLowerCase\(\) === releaseSha/],
+    ['recorder exact merge SHA association remains fail closed', recorder, /exactMergedPullsForCommit[\s\S]*normalize\(pull\.merge_commit_sha\)\.toLowerCase\(\) === sha/],
+    ['recorder cumulative attribution is push only', recorder, /normalize\(workflowRun\.event\) !== 'push'[\s\S]*releaseSha !== controlPlaneSha[\s\S]*normalize\(previous\.event\) !== 'push'/],
+    ['recorder finds previous successful deploy', recorder, /actions\.listWorkflowRuns[\s\S]*run_number[\s\S]*Deploy to GitHub Pages/],
+    ['recorder compares bounded deploy interval', recorder, /repos\.compareCommits[\s\S]*base: previousSha[\s\S]*head: releaseSha/],
+    ['recorder annotates ancestor inclusion explicitly', recorder, /Included PR merge SHA:[\s\S]*Published interval:[\s\S]*successfully published push interval/],
     ['recorder truthful release wording', recorder, /Release candidate witness accepted[\s\S]*same candidate bytes/],
 
     ['source workflow owns recorder', workflow, /scripts\/record-deployment-witness\.cjs/],
@@ -157,6 +161,8 @@ const mutations = [
   ['TTS candidate unchecked', { ...sources, recorder: sources.recorder.replace('TTS witness candidate digest mismatch', 'TTS candidate unchecked') }],
   ['envelope downgraded', { ...sources, recorder: sources.recorder.replace("schemaVersion: 3", "schemaVersion: 2") }],
   ['comment marker shortened', { ...sources, recorder: sources.recorder.replace('deployment-release-witness:${releaseSha}:${controlPlaneSha}:${runId}:${runAttempt}:${candidateArtifact.id}:${genericArtifact.id}:${ttsArtifact.id}', 'deployment-release-witness:${releaseSha.slice(0, 7)}') }],
+  ['push interval previous-run guard removed', { ...sources, recorder: sources.recorder.replace("normalize(previous.event) !== 'push'", 'false') }],
+  ['push interval compare removed', { ...sources, recorder: sources.recorder.replace('github.rest.repos.compareCommits', 'github.rest.repos.getCommit') }],
   ['recorder test skipped', { ...sources, workflow: sources.workflow.replace('node scripts/record-deployment-witness-contract-test.cjs', 'echo recorder skipped') }],
   ['ledger lint skipped', { ...sources, workflow: sources.workflow.replace('node scripts/run-actionlint.mjs -no-color .github/workflows/deployment-witness-ledger.yml', 'echo ledger lint skipped') }],
 ];

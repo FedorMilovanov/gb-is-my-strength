@@ -136,6 +136,29 @@ function feedObservation(routeUrl, feedXml) {
   return null;
 }
 
+function metadataSourceForRecord(record) {
+  const mode = record?.profile?.metadataSourceMode || '';
+  if (mode === 'content-frontmatter') {
+    return record?.profile?.mdxPath ||
+      record?.inspection?.mdxImports?.[0]?.resolved ||
+      record?.sourceRel;
+  }
+  if (mode === 'inline-head' || mode === 'app-manifest') {
+    return record?.sourceRel;
+  }
+  const preferredHead = record?.inspection?.headImports?.find((item) =>
+    item?.resolved && !/[\\/]reader-platform[\\/]/i.test(item.resolved)
+  );
+  if (mode === 'astro-head-import') {
+    return preferredHead?.resolved ||
+      record?.inspection?.headImports?.[0]?.resolved ||
+      record?.sourceRel;
+  }
+  return preferredHead?.resolved ||
+    record?.inspection?.headImports?.[0]?.resolved ||
+    record?.sourceRel;
+}
+
 function observeRoute(record, distRoot, shared) {
   const route = record.route;
   const routeUrl = `${SITE}${route}`;
@@ -180,7 +203,7 @@ function observeRoute(record, distRoot, shared) {
     route,
     canonical: canonical(html),
     title: stripTags(html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1] || ''),
-    metadataSource: record.inspection.headImports[0]?.resolved || record.sourceRel,
+    metadataSource: metadataSourceForRecord(record),
     contentType: record.profile?.routeType || 'article',
     editorialPublishedAt: observations.visiblePublishedAt || observations.rssPublishedAt || observations.metaPublishedAt || observations.jsonLdPublishedAt,
     editorialModifiedAt: observations.visibleModifiedAt || observations.metaModifiedAt || observations.jsonLdModifiedAt || observations.searchModifiedAt || observations.sitemapLastmod,
@@ -399,6 +422,7 @@ module.exports = {
   normalizeInstant,
   eligibleRecords,
   sharedProjectionData,
+  metadataSourceForRecord,
   observeRoute,
   mergeObservedRecord,
   readRegistry,

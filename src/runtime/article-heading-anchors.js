@@ -1,5 +1,6 @@
 const OWNER = 'native-v1';
 const TOAST_ID = 'anchor-copy-toast';
+const CLIPBOARD_TIMEOUT_MS = 1200;
 const ICON = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M13.5 6.5L7 13a3.536 3.536 0 0 1-5-5l7-7a2.121 2.121 0 0 1 3 3L5.5 10.5a.707.707 0 0 1-1-1L11 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const CHECK = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M3 8l4 4 6-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
@@ -23,7 +24,32 @@ function ensureToast() {
 }
 
 function copyText(value) {
-  if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(value);
+  if (navigator.clipboard?.writeText) {
+    return new Promise((resolve, reject) => {
+      let settled = false;
+      const timer = window.setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        reject(new Error('clipboard write timed out'));
+      }, CLIPBOARD_TIMEOUT_MS);
+      Promise.resolve()
+        .then(() => navigator.clipboard.writeText(value))
+        .then(
+          (result) => {
+            if (settled) return;
+            settled = true;
+            window.clearTimeout(timer);
+            resolve(result);
+          },
+          (error) => {
+            if (settled) return;
+            settled = true;
+            window.clearTimeout(timer);
+            reject(error);
+          },
+        );
+    });
+  }
   return new Promise((resolve, reject) => {
     const input = document.createElement('textarea');
     input.value = value;
