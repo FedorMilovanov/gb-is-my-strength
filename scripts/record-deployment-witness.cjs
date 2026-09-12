@@ -138,6 +138,113 @@ async function ensureComment({ github, owner, repo, issueNumber, marker, body })
   return true;
 }
 
+async function exactMergedPullsForCommit({ github, owner, repo, sha }) {
+  const associatedPulls = await github.paginate(
+    github.rest.repos.listPullRequestsAssociatedWithCommit,
+    { owner, repo, commit_sha: sha, per_page: 100 },
+  );
+  const exact = associatedPulls.filter(
+    (pull) => pull.merged_at && normalize(pull.merge_commit_sha).toLowerCase() === sha,
+  );
+  if (exact.length > 1) throw new Error(`multiple merged pull requests claim exact release SHA ${sha}`);
+  return exact;
+}
+
+async function resolvePushIntervalPulls({
+  github,
+  owner,
+  repo,
+  repository,
+  workflowRun,
+  releaseSha,
+  controlPlaneSha,
+  exactMergedPulls,
+}) {
+  const fallback = { mode: 'exact', previousReleaseSha: null, pulls: exactMergedPulls };
+  const currentRunNumber = Number(workflowRun.run_number);
+  const workflowId = Number(workflowRun.workflow_id);
+  if (
+    normalize(workflowRun.event) !== 'push' ||
+    releaseSha !== controlPlaneSha ||
+    !Number.isSafeInteger(currentRunNumber) ||
+    currentRunNumber <= 0 ||
+    !Number.isSafeInteger(workflowId) ||
+    workflowId <= 0
+  ) return fallback;
+
+  const successfulRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
+    owner,
+    repo,
+    workflow_id: workflowId,
+    branch: 'main',
+    status: 'success',
+    per_page: 100,
+  });
+  const previous = successfulRuns
+    .filter((run) =>
+      Number(run.run_number) < currentRunNumber &&
+      run.name === 'Deploy to GitHub Pages' &&
+      run.status === 'completed' &&
+      run.conclusion === 'success' &&
+      run.head_branch === 'main' &&
+      run.head_repository?.full_name === repository)
+    .sort((left, right) => Number(right.run_number) - Number(left.run_number))[0];
+
+  if (!previous || normalize(previous.event) !== 'push') return fallback;
+  const previousSha = normalize(previous.head_sha).toLowerCase();
+  if (!FULL_SHA_RE.test(previousSha) || previousSha === releaseSha) return fallback;
+
+  let page = 1;
+  let status = '';
+  let aheadBy = null;
+  const commits = [];
+  while (page <= 20) {
+    const response = await github.rest.repos.compareCommits({
+      owner,
+      repo,
+      base: previousSha,
+      head: releaseSha,
+      per_page: 100,
+      page,
+    });
+    const data = response.data || {};
+    if (page === 1) {
+      status = normalize(data.status);
+      aheadBy = Number(data.ahead_by);
+      if (status !== 'ahead') return fallback;
+      if (!Number.isSafeInteger(aheadBy) || aheadBy <= 0) return fallback;
+    }
+    const batch = Array.isArray(data.commits) ? data.commits : [];
+    commits.push(...batch);
+    if (commits.length >= aheadBy) break;
+    if (batch.length === 0) break;
+    page += 1;
+  }
+  if (commits.length < aheadBy) {
+    throw new Error(`deployment witness commit interval truncated: ${commits.length}/${aheadBy}`);
+  }
+
+  const pulls = [];
+  const seen = new Set();
+  for (const commit of commits.slice(0, aheadBy)) {
+    const sha = normalize(commit.sha).toLowerCase();
+    if (!FULL_SHA_RE.test(sha)) throw new Error('deployment witness interval contains invalid commit SHA');
+    const exact = await exactMergedPullsForCommit({ github, owner, repo, sha });
+    for (const pull of exact) {
+      if (seen.has(pull.number)) continue;
+      seen.add(pull.number);
+      pulls.push(pull);
+    }
+  }
+  for (const pull of exactMergedPulls) {
+    if (seen.has(pull.number)) continue;
+    seen.add(pull.number);
+    pulls.push(pull);
+  }
+
+  return { mode: 'push-interval', previousReleaseSha: previousSha, pulls };
+}
+
 module.exports = async function recordDeploymentWitness({ github, context, core, workflowRun, witnessDirectory }) {
   assert.ok(github?.rest?.actions, 'github actions client is required');
   assert.ok(github?.rest?.issues, 'github issues client is required');
@@ -257,18 +364,42 @@ module.exports = async function recordDeploymentWitness({ github, context, core,
     '</details>',
   ].join('\n');
 
-  const associatedPulls = await github.paginate(github.rest.repos.listPullRequestsAssociatedWithCommit, { owner, repo, commit_sha: releaseSha, per_page: 100 });
-  const exactMergedPulls = associatedPulls.filter((pull) => pull.merged_at && normalize(pull.merge_commit_sha).toLowerCase() === releaseSha);
-  if (exactMergedPulls.length > 1) throw new Error(`multiple merged pull requests claim exact release SHA ${releaseSha}`);
+  const exactMergedPulls = await exactMergedPullsForCommit({ github, owner, repo, sha: releaseSha });
+  const inclusion = await resolvePushIntervalPulls({
+    github,
+    owner,
+    repo,
+    repository,
+    workflowRun,
+    releaseSha,
+    controlPlaneSha,
+    exactMergedPulls,
+  });
 
   const issues = await github.paginate(github.rest.issues.listForRepo, { owner, repo, state: 'all', per_page: 100 });
   const markedIssues = issues.filter((issue) => !issue.pull_request && (normalize(issue.body).includes(releaseTargetMarker) || normalize(issue.body).includes(legacyTargetMarker)));
   if (markedIssues.length > 1) throw new Error(`multiple issues contain a deployment witness target marker for ${releaseSha}`);
 
   const touched = [];
-  if (exactMergedPulls.length === 1) {
-    const pull = exactMergedPulls[0];
-    const created = await ensureComment({ github, owner, repo, issueNumber: pull.number, marker, body });
+  for (const pull of inclusion.pulls) {
+    const pullMergeSha = normalize(pull.merge_commit_sha).toLowerCase();
+    const isAncestorInclusion = Boolean(
+      inclusion.previousReleaseSha &&
+      FULL_SHA_RE.test(pullMergeSha) &&
+      pullMergeSha !== releaseSha
+    );
+    const pullBody = isAncestorInclusion
+      ? body
+        .replace(
+          `- **Control-plane SHA:** \`${controlPlaneSha}\``,
+          `- **Control-plane SHA:** \`${controlPlaneSha}\`\n- **Included PR merge SHA:** \`${pullMergeSha}\`\n- **Published interval:** \`${inclusion.previousReleaseSha}\` → \`${releaseSha}\``,
+        )
+        .replace(
+          'The trusted control-plane run built one exact release candidate, published the same candidate bytes, and produced generic and TTS live PASS reports bound to both the release SHA and control-plane SHA.',
+          `This PR merge commit is included in the successfully published push interval ending at release ${releaseSha}.\n\nThe trusted control-plane run built one exact release candidate, published the same candidate bytes, and produced generic and TTS live PASS reports bound to both the release SHA and control-plane SHA.`,
+        )
+      : body;
+    const created = await ensureComment({ github, owner, repo, issueNumber: pull.number, marker, body: pullBody });
     touched.push(`PR #${pull.number}${created ? ' commented' : ' already recorded'}`);
   }
   if (markedIssues.length === 1) {
@@ -295,3 +426,5 @@ module.exports = async function recordDeploymentWitness({ github, context, core,
   core.info(`Release candidate witness recorded for release ${releaseSha} via control plane ${controlPlaneSha}: ${touched.join('; ') || `candidate artifact ${candidateArtifact.id}`}`);
   return { envelope, touched, marker, legacyTargetMarker, releaseTargetMarker };
 };
+
+module.exports.resolvePushIntervalPulls = resolvePushIntervalPulls;

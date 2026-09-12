@@ -1,8 +1,8 @@
 # Teen double-life series — publication contract
 
-Status: **FOUNDATION / NOT PUBLICATION**
+Status: **PUBLISHED / POST-RELEASE CONTRACT**
 
-This contract is the release authority for the seven-article teen/adult-child series admitted as Draft/noindex content. It does not itself create routes, discovery entries, media, or indexability.
+This contract records the canonical seven-article teen/adult-child publication shape and remains the post-release regression authority for sequence, metadata, reader behavior and safeguarding boundaries. The routes, discovery entries, media and indexability are already published.
 
 ## Canonical linear order
 
@@ -49,18 +49,18 @@ Teen-specific code should be configuration/presentation only unless a proven sha
 
 Initial publication contract: **quiz disabled** (`quiz: []`). Do not use cross-part fallback questions or score-style gamification for sexual sin, coercion, repentance, abuse, or family crisis. Any future learning surface requires an explicit pastoral-reflection design review.
 
-## Draft/indexing boundary
+## Published indexing boundary
 
-`contentStatus: draft` is editorial metadata, not the controlling Astro publication gate. Until the atomic release transaction, every article MUST retain:
+`contentStatus` is editorial metadata, not the sole Astro publication gate. In the admitted production state every article MUST preserve:
 
-- `draft: true`;
-- `noindex: true`;
+- `draft: false`;
+- `noindex: false`;
 - `sourcesRequired: true`;
-- no production article route;
-- no series landing/discovery projection;
-- no sitemap/feed/search publication.
+- a registered production article route;
+- series landing/discovery projection;
+- sitemap/feed/search publication according to route policy.
 
-Do not treat a change to `contentStatus` as sufficient publication authorization.
+A future temporary withdrawal or `noindex` change must be performed coherently across the same canonical frontmatter, route/search policy and discovery owners; route-local overrides must not silently defeat canonical metadata.
 
 ## Publication metadata
 
@@ -113,7 +113,7 @@ Where the article discusses coercion, sextortion, grooming, threats, non-consens
 
 ## TTS / print / accessibility gates
 
-Before publication verify in the rendered DOM, not just source:
+Post-release changes must continue to verify in the rendered DOM, not just source:
 
 - TTS reads the article body but does not continue through long source machinery or hidden UI unless intentionally requested;
 - print hides fixed bars, overlays and interactive-only controls while preserving title, body and sources;
@@ -128,9 +128,9 @@ Before publication verify in the rendered DOM, not just source:
 - selection/highlight and tooltip interactions do not fight;
 - deep links to headings survive reload/back navigation.
 
-## Atomic publication transaction
+## Atomic publication transaction — historical release shape
 
-The final release is a separate transaction after content admission. It may own, in one reviewed lane:
+The initial release was intentionally treated as one transaction after content admission. Any future change that crosses these same owners should preserve that atomicity:
 
 1. series configuration and parity contract;
 2. landing and article routes;
@@ -146,4 +146,4 @@ Do not split indexability from discovery in a way that can expose a half-publish
 
 ## Current concurrency boundary
 
-This foundation must not mutate shared release/security infrastructure, `migration/page-ownership.json`, shared discovery registries, shared reader runtime, or the seven MDX files while those paths are owned by active lanes. Stacked work may proceed on new teen-owned contract/config surfaces and be retargeted to `main` only after its parent content admission lands.
+Post-release work must respect the live shared-file/ownership guards. Do not mutate release/security infrastructure, route ownership, discovery registries, shared reader runtime or the seven MDX files from overlapping active lanes. Prefer narrow current-main successors and explicit ownership transfer over reviving stale pre-release branches.

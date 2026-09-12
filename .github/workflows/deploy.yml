@@ -4,6 +4,10 @@ name: Deploy to GitHub Pages
 # promotes those same bytes. Automatic releases use one SHA for both roles;
 # manual recovery may select an older release SHA, but only when it is already
 # an ancestor of the current main control plane.
+#
+# HTTP publication is intentionally direct GitHub Pages. Cloudflare may remain
+# the authoritative DNS provider, but it is not part of the release control
+# plane and no release credential/purge dependency is permitted here.
 on:
   push:
     branches: [main]
@@ -21,7 +25,9 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  # Never cancel the release already being promoted. A newer main push may
+  # wait/coalesce as pending, but the running immutable candidate must finish.
+  cancel-in-progress: false
 
 env:
   RELEASE_NODE_VERSION: '22.23.1'
@@ -82,13 +88,6 @@ jobs:
 
       - name: Install dependencies once
         run: npm ci
-
-      - name: Verify Cloudflare release purge contract
-        run: |
-          node --check scripts/cloudflare-release-purge-lib.mjs
-          node --check scripts/cloudflare-release-purge.mjs
-          node --check scripts/cloudflare-release-purge-contract-test.mjs
-          node scripts/cloudflare-release-purge-contract-test.mjs
 
       - name: Verify deterministic local fonts
         run: |
@@ -198,15 +197,37 @@ jobs:
           node scripts/editorial-metadata-freeze-audit.js 2>&1 \
             | tee reports/editorial-metadata-freeze.log
 
-      - name: Prepare IndexNow URL list without storing the secret
+      - name: Prepare IndexNow URL list from last published release
         env:
-          BEFORE_SHA: ${{ github.event.before }}
           AFTER_SHA: ${{ env.RELEASE_SHA }}
+        shell: bash
         run: |
-          mkdir -p reports
-          CHANGED=$(git diff --name-only "${BEFORE_SHA:-HEAD~1}" "${AFTER_SHA:-HEAD}" 2>/dev/null || git diff --name-only HEAD~1 HEAD 2>/dev/null || true)
-          printf '%s\n' "$CHANGED" | node scripts/build-indexnow-urls.js --base "https://gospod-bog.ru" > reports/indexnow-urls.json
-          node -e "const x=require('./reports/indexnow-urls.json'); if(!Array.isArray(x)) process.exit(1)"
+          set -euo pipefail
+          mkdir -p reports release-tools
+
+          # Recovery may checkout an older release source. Use the current
+          # control-plane mapper while resolving routes against release bytes.
+          git show "${CONTROL_PLANE_SHA}:scripts/build-indexnow-urls.js" > release-tools/build-indexnow-urls.js
+          node --check release-tools/build-indexnow-urls.js
+
+          LIVE_SHA="$(
+            curl --fail --silent --show-error --retry 2 --max-time 10 \
+              "https://gospod-bog.ru/deployments/current.json?indexnow_baseline=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+              | jq -r '.releaseSha // empty' 2>/dev/null || true
+          )"
+
+          if [[ "$LIVE_SHA" =~ ^[a-f0-9]{40}$ ]] && git cat-file -e "${LIVE_SHA}^{commit}" 2>/dev/null; then
+            echo "IndexNow delta: published ${LIVE_SHA} -> candidate ${AFTER_SHA}"
+            git diff --name-only "$LIVE_SHA" "$AFTER_SHA" \
+              | node release-tools/build-indexnow-urls.js --base "https://gospod-bog.ru" --previous-ref "$LIVE_SHA" \
+              > reports/indexnow-urls.json
+          else
+            echo "IndexNow published baseline unavailable; notifying full public indexable corpus"
+            node release-tools/build-indexnow-urls.js --base "https://gospod-bog.ru" --all-public \
+              > reports/indexnow-urls.json
+          fi
+
+          node -e "const x=require('./reports/indexnow-urls.json'); if(!Array.isArray(x)||x.length===0) process.exit(1)"
 
       - name: Ensure release-source validation left tracked files clean
         run: git diff --exit-code
@@ -222,9 +243,7 @@ jobs:
             write-deployment-provenance.mjs \
             verify-release-candidate.mjs \
             live-release-contract.mjs \
-            tts-live-deployment-contract.mjs \
-            cloudflare-release-purge-lib.mjs \
-            cloudflare-release-purge.mjs
+            tts-live-deployment-contract.mjs
           do
             git show "${CONTROL_PLANE_SHA}:scripts/${file}" > "release-tools/${file}"
           done
@@ -233,8 +252,6 @@ jobs:
           node --check release-tools/verify-release-candidate.mjs
           node --check release-tools/live-release-contract.mjs
           node --check release-tools/tts-live-deployment-contract.mjs
-          node --check release-tools/cloudflare-release-purge-lib.mjs
-          node --check release-tools/cloudflare-release-purge.mjs
 
       - name: Write generic immutable release provenance
         id: provenance
@@ -316,26 +333,6 @@ jobs:
         with:
           artifact_name: ${{ env.PAGES_ARTIFACT_NAME }}
 
-      - name: Purge Cloudflare release cache
-        id: cloudflare_purge
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-          CLOUDFLARE_ZONE_NAME: gospod-bog.ru
-          RELEASE_SHA: ${{ needs.readiness.outputs.release_sha }}
-          CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.control_plane_sha }}
-        run: node release-tools/cloudflare-release-purge.mjs
-
-      - name: Upload Cloudflare purge evidence
-        if: ${{ always() && steps.deploy_pages.outcome == 'success' && (steps.cloudflare_purge.outcome == 'success' || steps.cloudflare_purge.outcome == 'failure') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: cloudflare-release-purge-${{ github.run_id }}
-          path: reports/cloudflare-release-purge.json
-          if-no-files-found: error
-          retention-days: 30
-          overwrite: true
-
       - name: Verify generic live release contract
         id: live_release
         env:
@@ -359,7 +356,7 @@ jobs:
 
       - name: Verify live TTS capability extension
         id: tts_live
-        if: ${{ always() && steps.deploy_pages.outcome == 'success' && steps.cloudflare_purge.outcome == 'success' }}
+        if: ${{ always() && steps.deploy_pages.outcome == 'success' && steps.live_release.outcome == 'success' }}
         env:
           LIVE_BASE_URL: https://gospod-bog.ru
           RELEASE_SHA: ${{ needs.readiness.outputs.release_sha }}

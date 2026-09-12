@@ -3,7 +3,7 @@
  * ЗАЩИТА ОТ РЕГРЕССИЙ: функциональный прогон трёх движков (Playwright).
  *
  * Геометрия + функции на реальном dist: серия-движок (Гилл/Сердце/Баптисты/
- * пастор) деск+мобила, одиночный (Герменевтика/kod-da-vinchi), page-движок
+ * пастор/Teen/Genesis 6) деск+мобила, одиночный (Герменевтика/kod-da-vinchi), page-движок
  * (6 каталогов), плюс живой PLAY: стаб speechSynthesis → состояние playing,
  * follow-скролл ведёт страницу, Media Session (метаданные, playbackState,
  * фоновый якорь), пауза.
@@ -84,6 +84,8 @@ const SERIES = [
   ['heart', '/articles/novoe-serdce/'],
   ['baptist', '/baptisty-rossii/podpolnaya-pechat/'],
   ['antisov', '/articles/20-antisovetov-pastoru/'],
+  ['teen', '/articles/podrostok-za-kadrom-dvoynaya-zhizn/'],
+  ['genesis6', '/hard-texts/enoh-prorochestvoval-iuda-14-15-4q204/'],
 ];
 const SINGLES = [
   ['herm', '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/'],
@@ -232,6 +234,47 @@ for (const [id, url] of SERIES) {
     R(id, 'desk: samizdat активна',
       (await page.evaluate(() => document.querySelector('.gbs2-world')?.getAttribute('data-series-theme'))) === 'samizdat');
   }
+  await ctx.close();
+}
+
+/* ============ СЕРИЯ-ДВИЖОК — ГРАНИЦА 64em / 1024px ============ */
+for (const [id, url] of SERIES) {
+  const { ctx, page } = await newPage({ width: 1024, height: 768 });
+  await page.goto(base + url, { waitUntil: 'networkidle' });
+  await page.waitForTimeout(250);
+
+  const compact = await page.evaluate(() => {
+    const root = document.documentElement;
+    const rail = document.querySelector('[data-gill-v16] .gbs-rail');
+    const top = document.querySelector('[data-gill-v16] .mobile-top-bar');
+    const bottom = document.querySelector('[data-gill-v16] .mobile-bottom-bar');
+    const pageWrap = document.querySelector('[data-gill-v16] .page-wrap');
+    const rect = pageWrap?.getBoundingClientRect();
+    const display = (node) => node ? getComputedStyle(node).display : 'absent';
+    return {
+      viewport: innerWidth,
+      scrollWidth: root.scrollWidth,
+      rail: display(rail),
+      top: display(top),
+      bottom: display(bottom),
+      pageLeft: rect ? Math.round(rect.left) : null,
+      pageRight: rect ? Math.round(rect.right) : null,
+    };
+  });
+
+  R(id, 'compact-1024: desktop rail active / mobile bars off',
+    !!compact && compact.rail !== 'none' && compact.rail !== 'absent' &&
+      (compact.top === 'none' || compact.top === 'absent') &&
+      (compact.bottom === 'none' || compact.bottom === 'absent'),
+    JSON.stringify(compact));
+  R(id, 'compact-1024: no horizontal overflow',
+    !!compact && compact.scrollWidth <= compact.viewport + 1,
+    JSON.stringify(compact));
+  R(id, 'compact-1024: article remains inside viewport',
+    !!compact && compact.pageLeft !== null && compact.pageLeft >= 0 &&
+      compact.pageRight !== null && compact.pageRight <= compact.viewport + 1,
+    JSON.stringify(compact));
+
   await ctx.close();
 }
 

@@ -177,24 +177,64 @@ function applyOperations(html, operations) {
   return output;
 }
 
+function projectTeenSourcesBoundary(html, article, descendants, operations) {
+  if (!hasAttr(article.startRaw, 'data-teen-series-article')) return 0;
+  const prose = descendants.find(node => node.name === 'div' && classSet(node.startRaw).has('teen-series-prose'));
+  if (!prose || prose.endTagStart == null) throw new Error('teen-series article is missing bounded .teen-series-prose');
+
+  const existing = descendants.filter(node => node.name === 'section' && inside(node, prose) && classSet(node.startRaw).has('sources-block'));
+  if (existing.length > 1) throw new Error('teen-series article has multiple sources-block boundaries');
+  if (existing.length === 1) {
+    const boundary = existing[0];
+    if (!hasAttr(boundary.startRaw, 'data-reader-exclude') || !hasAttr(boundary.startRaw, 'data-pagefind-ignore')) {
+      throw new Error('teen-series sources-block is missing reader/Pagefind exclusion attributes');
+    }
+    return 1;
+  }
+
+  const headings = descendants
+    .filter(node => node.name === 'h2' && node.endTagStart != null && inside(node, prose))
+    .sort((a, b) => a.start - b.start);
+  const sourceHeading = headings.find(node => decodeText(html.slice(node.startTagEnd, node.endTagStart)).toLocaleLowerCase('ru-RU').startsWith('источники'));
+  if (!sourceHeading) throw new Error('teen-series article is missing an Источники H2');
+  const nextHeading = headings.find(node => node.start > sourceHeading.start);
+  const boundaryEnd = nextHeading?.start ?? prose.endTagStart;
+  if (boundaryEnd <= sourceHeading.start) throw new Error('teen-series sources boundary is empty or inverted');
+
+  operations.push({
+    start: sourceHeading.start,
+    end: sourceHeading.start,
+    text: '<section class="sources-block" data-reader-exclude data-pagefind-ignore>',
+  });
+  operations.push({ start: boundaryEnd, end: boundaryEnd, text: '</section>' });
+  return 1;
+}
+
 function projectFile(file) {
   const html = fs.readFileSync(file, 'utf8');
   const nodes = scanElements(html);
   const head = nodes.find(node => node.name === 'head' && node.endTagStart != null);
-  if (!head) return { changed: false, articles: 0, metadata: 0, popups: 0 };
+  if (!head) return { changed: false, articles: 0, metadata: 0, popups: 0, sources: 0, teenArticles: 0 };
   const charset = nodes.find(node => node.name === 'meta' && inside(node, head) && hasAttr(node.startRaw, 'charset'));
   const headMetaInsert = charset?.end ?? head.startTagEnd;
 
   const articles = nodes.filter(node => node.name === 'article' && hasAttr(node.startRaw, 'data-pagefind-body'));
-  if (!articles.length) return { changed: false, articles: 0, metadata: 0, popups: 0 };
+  if (!articles.length) return { changed: false, articles: 0, metadata: 0, popups: 0, sources: 0, teenArticles: 0 };
 
   const operations = [];
   const headMeta = [];
   let metadataCount = 0;
   let popupCount = 0;
+  let sourcesCount = 0;
+  let teenArticleCount = 0;
 
   for (const article of articles) {
     const descendants = nodes.filter(node => node.end != null && inside(node, article));
+    if (hasAttr(article.startRaw, 'data-teen-series-article')) {
+      teenArticleCount += 1;
+      sourcesCount += projectTeenSourcesBoundary(html, article, descendants, operations);
+    }
+
     for (const node of descendants) {
       if (hasAttr(node.startRaw, 'data-pagefind-meta') && node.endTagStart != null) {
         const key = attrValue(node.startRaw, 'data-pagefind-meta');
@@ -217,6 +257,10 @@ function projectFile(file) {
     }
   }
 
+  if (teenArticleCount && sourcesCount !== teenArticleCount) {
+    throw new Error(`teen-series source boundary coverage ${sourcesCount}/${teenArticleCount}`);
+  }
+
   if (headMeta.length) {
     operations.push({
       start: headMetaInsert,
@@ -225,25 +269,28 @@ function projectFile(file) {
     });
   }
 
-  if (!operations.length) return { changed: false, articles: articles.length, metadata: 0, popups: 0 };
+  if (!operations.length) return { changed: false, articles: articles.length, metadata: 0, popups: 0, sources: sourcesCount, teenArticles: teenArticleCount };
   const projected = applyOperations(html, operations);
-  if (projected === html) return { changed: false, articles: articles.length, metadata: metadataCount, popups: popupCount };
+  if (projected === html) return { changed: false, articles: articles.length, metadata: metadataCount, popups: popupCount, sources: sourcesCount, teenArticles: teenArticleCount };
   if (!DRY_RUN) fs.writeFileSync(file, projected, 'utf8');
-  return { changed: true, articles: articles.length, metadata: metadataCount, popups: popupCount };
+  return { changed: true, articles: articles.length, metadata: metadataCount, popups: popupCount, sources: sourcesCount, teenArticles: teenArticleCount };
 }
 
 if (!fs.existsSync(DIST)) throw new Error(`reader linear-text projector root missing: ${DIST}`);
 const files = walk(DIST);
-const totals = { files: files.length, changed: 0, articles: 0, metadata: 0, popups: 0 };
+const totals = { files: files.length, changed: 0, articles: 0, metadata: 0, popups: 0, sources: 0, teenArticles: 0 };
 for (const file of files) {
   const result = projectFile(file);
   if (result.changed) totals.changed += 1;
   totals.articles += result.articles;
   totals.metadata += result.metadata;
   totals.popups += result.popups;
+  totals.sources += result.sources;
+  totals.teenArticles += result.teenArticles;
 }
 
-console.log(`Reader linear-text projection${DRY_RUN ? ' [DRY RUN]' : ''}: ${totals.changed} file(s), ${totals.articles} article(s), ${totals.metadata} metadata field(s), ${totals.popups} popup payload(s)`);
+console.log(`Reader linear-text projection${DRY_RUN ? ' [DRY RUN]' : ''}: ${totals.changed} file(s), ${totals.articles} article(s), ${totals.metadata} metadata field(s), ${totals.popups} popup payload(s), ${totals.sources}/${totals.teenArticles} teen source boundaries`);
 if (!totals.articles) throw new Error('reader linear-text projector found no data-pagefind-body article surfaces');
-if (!totals.metadata && !totals.popups && !DRY_RUN) throw new Error('reader linear-text projector made no semantic projection claims');
+if (totals.teenArticles && totals.sources !== totals.teenArticles) throw new Error(`reader linear-text projector teen source boundary coverage ${totals.sources}/${totals.teenArticles}`);
+if (!totals.metadata && !totals.popups && !totals.sources && !DRY_RUN) throw new Error('reader linear-text projector made no semantic projection claims');
 if (DRY_RUN && totals.changed) throw new Error(`reader linear-text projector dry-run detected ${totals.changed} file(s) with semantic drift`);

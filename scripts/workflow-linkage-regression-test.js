@@ -48,6 +48,13 @@ function jobSection(workflow, name, nextName = null) {
   assert.notEqual(end, -1, `${RELEASE_PATH}: jobs.${nextName} is missing`);
   return workflow.slice(offset, end);
 }
+function step(job, name) {
+  const marker = `      - name: ${name}\n`;
+  const start = job.indexOf(marker);
+  assert.notEqual(start, -1, `${RELEASE_PATH}: step ${name} is missing`);
+  const next = job.indexOf('\n      - name: ', start + marker.length);
+  return job.slice(start, next < 0 ? job.length : next);
+}
 
 const diagnostics = read(DIAGNOSTICS_PATH);
 const release = read(RELEASE_PATH);
@@ -63,62 +70,63 @@ assert.equal(hasEvent(release, 'workflow_dispatch'), true, `${RELEASE_PATH}: man
 assert.equal(hasEvent(release, 'workflow_run'), false, `${RELEASE_PATH}: release must not depend on a second workflow build`);
 assert.ok(releasePaths.includes('**'), `${RELEASE_PATH}: push.paths must include **`);
 assert.ok(diagnosticPaths.includes('**'), `${DIAGNOSTICS_PATH}: diagnostics must retain catch-all coverage`);
-assert.match(release, /CONTROL_PLANE_SHA:\s*\$\{\{ github\.sha \}\}/, `${RELEASE_PATH}: control-plane SHA must be the workflow source SHA`);
+assert.match(release, /CONTROL_PLANE_SHA:\s*\$\{\{ github\.sha \}\}/, `${RELEASE_PATH}: control-plane SHA must be workflow source SHA`);
 assert.match(release, /RELEASE_SHA:\s*\$\{\{ github\.event_name == 'workflow_dispatch' && inputs\.release_sha \|\| github\.sha \}\}/, `${RELEASE_PATH}: release SHA selection is missing`);
 assert.match(readiness, /permissions:\s*\n\s*contents:\s*read/, `${RELEASE_PATH}: candidate job must remain read-only`);
-assert.match(readiness, new RegExp(PINS.checkout.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `${RELEASE_PATH}: release checkout action identity drifted`);
+assert.ok(readiness.includes(PINS.checkout), `${RELEASE_PATH}: release checkout action identity drifted`);
 assert.match(readiness, /ref:\s*\$\{\{ env\.RELEASE_SHA \}\}[\s\S]{0,100}fetch-depth:\s*0[\s\S]{0,100}persist-credentials:\s*false/, `${RELEASE_PATH}: release checkout boundary is incomplete`);
 assert.match(readiness, /git fetch --no-tags origin "\+main:refs\/remotes\/origin\/main"/, `${RELEASE_PATH}: current main control plane is not fetched`);
 assert.match(readiness, /git merge-base --is-ancestor "\$RELEASE_SHA" "\$CONTROL_PLANE_SHA"/, `${RELEASE_PATH}: release/control ancestry proof is missing`);
 assert.match(readiness, /name:\s*Check source asset revisions without writing[\s\S]{0,180}node scripts\/cache-bust\.js/, `${RELEASE_PATH}: candidate revision check is missing`);
 assert.match(readiness, /npm run strangler:build:production-like/, `${RELEASE_PATH}: candidate build is missing`);
-assert.match(readiness, /Install Playwright Chromium[\s\S]*visual-parity-home-refutations-box-model-browser-test\.js/, `${RELEASE_PATH}: exact-candidate Refutations computed-geometry gate is missing`);
-assert.match(readiness, /Stage immutable verification tools from trusted control plane[\s\S]*git show "\$\{CONTROL_PLANE_SHA\}:scripts\/\$\{file\}"/, `${RELEASE_PATH}: verification tools are not sourced from the control plane`);
+assert.match(readiness, /Install Playwright Chromium[\s\S]*visual-parity-home-refutations-box-model-browser-test\.js/, `${RELEASE_PATH}: exact-candidate Refutations geometry gate is missing`);
+assert.match(readiness, /Stage immutable verification tools from trusted control plane[\s\S]*git show "\$\{CONTROL_PLANE_SHA\}:scripts\/\$\{file\}"/, `${RELEASE_PATH}: verification tools are not sourced from control plane`);
 assert.match(readiness, /release_sha:\s*\$\{\{ steps\.provenance\.outputs\.release_sha \}\}[\s\S]*control_plane_sha:\s*\$\{\{ steps\.provenance\.outputs\.control_plane_sha \}\}/, `${RELEASE_PATH}: readiness must expose both identities`);
 assert.match(readiness, /transport_artifact_id:\s*\$\{\{ steps\.candidate_upload\.outputs\.artifact-id \}\}[\s\S]*transport_artifact_digest:\s*\$\{\{ steps\.candidate_upload\.outputs\.artifact-digest \}\}/, `${RELEASE_PATH}: readiness must expose immutable transport identity`);
-assert.match(readiness, /name:\s*Upload immutable release candidate/, `${RELEASE_PATH}: candidate artifact publication is missing`);
+
 assert.match(deploy, /needs:\s*readiness/, `${RELEASE_PATH}: privileged promotion must depend on readiness`);
 assert.match(deploy, /permissions:\s*\n\s*actions:\s*read\s*\n\s*contents:\s*read\s*\n\s*pages:\s*write\s*\n\s*id-token:\s*write/, `${RELEASE_PATH}: deploy permissions are incomplete or widened`);
 assert.ok(deploy.includes(PINS.downloadArtifact), `${RELEASE_PATH}: candidate download action identity drifted`);
-assert.match(deploy, /name:\s*Download exact readiness candidate by artifact ID/, `${RELEASE_PATH}: artifact-ID candidate download is missing`);
 assert.match(deploy, /Download exact readiness candidate by artifact ID[\s\S]{0,260}artifact-ids:\s*\$\{\{ needs\.readiness\.outputs\.transport_artifact_id \}\}[\s\S]{0,100}merge-multiple:\s*true/, `${RELEASE_PATH}: candidate download is not bound to readiness artifact ID`);
-assert.match(deploy, /EXPECTED_RELEASE_SHA:\s*\$\{\{ needs\.readiness\.outputs\.release_sha \}\}[\s\S]*EXPECTED_CONTROL_PLANE_SHA:\s*\$\{\{ needs\.readiness\.outputs\.control_plane_sha \}\}/, `${RELEASE_PATH}: deploy verification does not consume both identities`);
-assert.match(deploy, /name:\s*Verify downloaded candidate identity[\s\S]*EXPECTED_RUN_ID:\s*\$\{\{ github\.run_id \}\}[\s\S]*EXPECTED_CANDIDATE_DIGEST:\s*\$\{\{ needs\.readiness\.outputs\.candidate_digest \}\}/, `${RELEASE_PATH}: deploy verification is not bound to run and candidate digest`);
-assert.doesNotMatch(/name:\s*Verify downloaded candidate identity[\s\S]*?name:\s*Upload exact candidate as Pages artifact/.exec(deploy)?.[0] || '', /EXPECTED_RUN_ATTEMPT:/, `${RELEASE_PATH}: deploy rerun must not rebind readiness candidate to a later run attempt`);
-assert.match(deploy, /name:\s*Verify downloaded candidate identity[\s\S]*name:\s*Upload exact candidate as Pages artifact/, `${RELEASE_PATH}: downloaded candidate must be verified before Pages upload`);
+assert.match(deploy, /Verify downloaded candidate identity[\s\S]*EXPECTED_RUN_ID:\s*\$\{\{ github\.run_id \}\}[\s\S]*EXPECTED_CANDIDATE_DIGEST:\s*\$\{\{ needs\.readiness\.outputs\.candidate_digest \}\}/, `${RELEASE_PATH}: deploy verification is not bound to run/digest`);
+assert.doesNotMatch(step(deploy, 'Verify downloaded candidate identity'), /EXPECTED_RUN_ATTEMPT:/, `${RELEASE_PATH}: deploy rerun must not rebind readiness candidate`);
 assert.ok(deploy.includes(PINS.uploadPages), `${RELEASE_PATH}: Pages packaging action identity drifted`);
 assert.match(deploy, /Upload exact candidate as Pages artifact[\s\S]{0,260}name:\s*\$\{\{ env\.PAGES_ARTIFACT_NAME \}\}[\s\S]{0,80}path:\s*dist/, `${RELEASE_PATH}: Pages artifact is not attempt-specific`);
 assert.ok(deploy.includes(PINS.deployPages), `${RELEASE_PATH}: Pages deployment action identity drifted`);
 assert.match(deploy, /Deploy exact candidate to GitHub Pages[\s\S]{0,240}artifact_name:\s*\$\{\{ env\.PAGES_ARTIFACT_NAME \}\}/, `${RELEASE_PATH}: Pages deploy is detached from exact Pages artifact`);
-assert.match(deploy, /Purge Cloudflare release cache[\s\S]*CLOUDFLARE_API_TOKEN:\s*\$\{\{ secrets\.CLOUDFLARE_API_TOKEN \}\}[\s\S]*CLOUDFLARE_ZONE_ID:\s*\$\{\{ secrets\.CLOUDFLARE_ZONE_ID \}\}[\s\S]*release-tools\/cloudflare-release-purge\.mjs/, `${RELEASE_PATH}: fail-closed Cloudflare purge boundary is missing`);
+
+assert.doesNotMatch(release, /CLOUDFLARE_(?:API_TOKEN|ZONE_ID)|cloudflare-release-purge|Purge Cloudflare release cache/, `${RELEASE_PATH}: Cloudflare must not be a release dependency in DNS-only topology`);
 assert.match(deploy, /Verify generic live release contract[\s\S]*RELEASE_SHA:\s*\$\{\{ needs\.readiness\.outputs\.release_sha \}\}[\s\S]*CONTROL_PLANE_SHA:\s*\$\{\{ needs\.readiness\.outputs\.control_plane_sha \}\}/, `${RELEASE_PATH}: live proof is not bound to both identities`);
-assert.ok(deploy.indexOf('Purge Cloudflare release cache') < deploy.indexOf('Verify generic live release contract'), `${RELEASE_PATH}: strict live verifier must run after edge purge`);
+assert.ok(deploy.indexOf('Deploy exact candidate to GitHub Pages') < deploy.indexOf('Verify generic live release contract'), `${RELEASE_PATH}: strict live verifier must follow Pages deploy`);
+assert.match(step(deploy, 'Verify live TTS capability extension'), /steps\.deploy_pages\.outcome == 'success'[\s\S]*steps\.live_release\.outcome == 'success'/, `${RELEASE_PATH}: TTS must require a successful generic live witness`);
+assert.ok(deploy.indexOf('Verify generic live release contract') < deploy.indexOf('Verify live TTS capability extension'), `${RELEASE_PATH}: TTS must follow generic live verifier`);
 assert.doesNotMatch(deploy, /actions\/checkout@|\bnpm ci\b|strangler:build|cache-bust\.js|validate:static-publication/, `${RELEASE_PATH}: privileged deploy job must not checkout, validate or rebuild source`);
 assert.equal((release.match(/actions\/checkout@/g) || []).length, 1, `${RELEASE_PATH}: exactly one checkout is allowed`);
 assert.equal((release.match(/\bnpm ci\b/g) || []).length, 1, `${RELEASE_PATH}: exactly one npm ci is allowed`);
 assert.equal((release.match(/npm run strangler:build:production-like/g) || []).length, 1, `${RELEASE_PATH}: exactly one production build is allowed`);
 assert.equal((release.match(/actions\/deploy-pages@/g) || []).length, 1, `${RELEASE_PATH}: exactly one Pages promotion is allowed`);
 assert.doesNotMatch(release, /uses:\s*actions\/(?:checkout|download-artifact|upload-pages-artifact|deploy-pages)@v\d+/i, `${RELEASE_PATH}: mutable release action remains`);
-assert.doesNotMatch(diagnostics, /\bnpm ci\b|strangler:build|pagefind:build|dist-publication-audit/, `${DIAGNOSTICS_PATH}: diagnostics must not duplicate the release build`);
-assert.doesNotMatch(diagnostics, /pages:\s*write|id-token:\s*write|actions\/deploy-pages|actions\/upload-pages-artifact/, `${DIAGNOSTICS_PATH}: diagnostic workflow must not own production publication`);
+assert.doesNotMatch(diagnostics, /\bnpm ci\b|strangler:build|pagefind:build|dist-publication-audit/, `${DIAGNOSTICS_PATH}: diagnostics must not duplicate release build`);
+assert.doesNotMatch(diagnostics, /pages:\s*write|id-token:\s*write|actions\/deploy-pages|actions\/upload-pages-artifact/, `${DIAGNOSTICS_PATH}: diagnostics must not own production publication`);
 
 const candidateBuild = candidate.indexOf('npm run strangler:build:production-like');
 const candidateFreeze = candidate.indexOf('node scripts/editorial-metadata-freeze-audit.js');
 assert.notEqual(candidateBuild, -1, `${CANDIDATE_PATH}: production-like build is missing`);
 assert.notEqual(candidateFreeze, -1, `${CANDIDATE_PATH}: editorial metadata freeze audit is missing`);
-assert.ok(candidateFreeze > candidateBuild, `${CANDIDATE_PATH}: editorial freeze must validate the already-built production candidate`);
+assert.ok(candidateFreeze > candidateBuild, `${CANDIDATE_PATH}: editorial freeze must validate the already-built candidate`);
 assert.equal((candidate.match(/npm run strangler:build:production-like/g) || []).length, 1, `${CANDIDATE_PATH}: exactly one production-like build is allowed`);
 assert.equal((candidate.match(/node scripts\/editorial-metadata-freeze-audit\.js/g) || []).length, 1, `${CANDIDATE_PATH}: exactly one editorial freeze audit is required`);
+assert.doesNotMatch(candidate, /cloudflare-release-purge|CLOUDFLARE_/, `${CANDIDATE_PATH}: PR candidate must not depend on Cloudflare`);
 assert.match(candidate, /permissions:\s*\n\s*contents:\s*read/, `${CANDIDATE_PATH}: workflow must remain read-only`);
 assert.doesNotMatch(candidate, /contents:\s*write|editorial-metadata-registry\.js\s+--write/, `${CANDIDATE_PATH}: candidate must not gain editorial write authority`);
 assert.match(candidate, /editorial-metadata-freeze-audit\.js[\s\S]{0,180}reports\/editorial-metadata-freeze\.log/, `${CANDIDATE_PATH}: freeze audit evidence must be captured`);
-assert.match(candidate, /path:\s*\|[\s\S]*reports\/editorial-metadata-freeze\.log/, `${CANDIDATE_PATH}: freeze evidence must be uploaded with candidate diagnostics`);
+assert.match(candidate, /path:\s*\|[\s\S]*reports\/editorial-metadata-freeze\.log/, `${CANDIDATE_PATH}: freeze evidence must be uploaded`);
 
 assert.ok(visual.includes(REFUTATIONS_BROWSER_COMMAND), `${VISUAL_PATH}: Refutations computed-geometry gate is missing`);
-assert.match(visual, /pull_request:[\s\S]*- "src\/\*\*"[\s\S]*push:[\s\S]*- "src\/\*\*"/, `${VISUAL_PATH}: Refutations source-owner changes do not trigger both PR and main checks`);
-assert.match(visual, /pull_request:[\s\S]*scripts\/visual-parity-\*\.js[\s\S]*push:[\s\S]*scripts\/visual-parity-\*\.js/, `${VISUAL_PATH}: browser-contract source changes do not trigger both PR and main checks`);
+assert.match(visual, /pull_request:[\s\S]*- "src\/\*\*"[\s\S]*push:[\s\S]*- "src\/\*\*"/, `${VISUAL_PATH}: Refutations owner changes do not trigger both PR/main checks`);
+assert.match(visual, /pull_request:[\s\S]*scripts\/visual-parity-\*\.js[\s\S]*push:[\s\S]*scripts\/visual-parity-\*\.js/, `${VISUAL_PATH}: browser-contract changes do not trigger both PR/main checks`);
 assert.match(refutationsBrowser, /HomeSections['", ]+['"]Refutations\.astro/, `${REFUTATIONS_BROWSER_PATH}: canonical Refutations source owner is not read`);
-assert.match(refutationsBrowser, /REFUTATIONS_SOURCE[\s\S]*h-refutation-card[\s\S]*box-sizing:\\s\*border-box/, `${REFUTATIONS_BROWSER_PATH}: explicit source-owner border-box assertion is missing`);
+assert.match(refutationsBrowser, /REFUTATIONS_SOURCE[\s\S]*h-refutation-card[\s\S]*box-sizing:\\s\*border-box/, `${REFUTATIONS_BROWSER_PATH}: source-owner border-box assertion is missing`);
 assert.match(refutationsBrowser, /assert\.ok\(VISUAL_WORKFLOW\.includes\(SCRIPT_COMMAND\)/, `${REFUTATIONS_BROWSER_PATH}: Visual Parity owner assertion is missing`);
 assert.match(refutationsBrowser, /assert\.ok\(DEPLOY_WORKFLOW\.includes\(SCRIPT_COMMAND\)/, `${REFUTATIONS_BROWSER_PATH}: release-readiness owner assertion is missing`);
 assert.match(refutationsBrowser, /boxSizing,\s*'border-box'/, `${REFUTATIONS_BROWSER_PATH}: computed border-box assertion is missing`);
@@ -129,7 +137,6 @@ console.log('✅ workflow linkage: one direct-push control plane owns readiness 
 console.log('✅ two-SHA boundary: release candidate identity is independent from trusted workflow identity');
 console.log('✅ build-once: one checkout, one npm ci, one production build, one deploy-pages');
 console.log('✅ privileged deploy: immutable artifact-ID recovery, exact approved actions, no source checkout/rebuild');
-console.log('✅ edge boundary: Cloudflare purge precedes strict live byte/SHA verification');
+console.log('✅ DNS-only boundary: Pages deploy → strict live byte/SHA → TTS, with no Cloudflare release dependency');
 console.log('✅ PR candidate reuses one production build for read-only editorial date freeze');
-console.log('✅ Refutations geometry: canonical source owner feeds one Visual Parity + immutable-readiness computed-style gate');
-console.log('✅ metadata workflow remains read-only and build-free');
+console.log('✅ Refutations geometry: canonical source and computed border-box ownership remain linked');

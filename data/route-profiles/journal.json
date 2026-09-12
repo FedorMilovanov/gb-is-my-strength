@@ -7,7 +7,7 @@
   "surface": "page",
   "section": "journal",
   "slug": null,
-  "currentStatus": "build-only",
+  "currentStatus": "production-dist",
   "source": "src/pages/journal/index.astro",
   "risk": 2,
   "hasMDX": false,

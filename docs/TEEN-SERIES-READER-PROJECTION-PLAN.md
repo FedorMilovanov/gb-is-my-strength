@@ -1,6 +1,6 @@
 # Teen series — reader projection / TTS / print plan
 
-Status: **FOUNDATION / NO PUBLICATION**
+Status: **PUBLISHED / READER-PROJECTION REGRESSION PLAN**
 
 This plan applies the current shared `GBReaderProjection` semantics to the seven teen/adult-child articles.
 
@@ -20,17 +20,15 @@ The projection excludes, among other surfaces:
 
 The teen series must reuse this owner. No teen TTS parser or print-specific DOM clone is allowed.
 
-## 2. Confirmed current defect in teen drafts
+## 2. Historical pre-release defect — closed
 
-The existing teen MDX source sections are ordinary Markdown prose headed by `## Источники и сверка`; at least Part I has no `.sources-block` or equivalent reader exclusion around that bibliography.
+The pre-release audit found bibliography/source sections that would have entered the linear reader/TTS projection if routed unchanged. That release blocker is closed in the admitted series: the current reader-projection contract reports all seven Teen source boundaries as excluded from the narrative projection.
 
-Therefore, if the draft were routed through the current reader runtime unchanged, bibliography paragraphs/list items would be projected into reader/TTS text as though they were the article's main narrative.
+This was a content-semantic markup issue, not a TTS-engine defect.
 
-This is not a TTS-engine bug. It is a **content-semantic markup bug**.
+## 3. Post-release source-boundary invariant
 
-## 3. Required content fix before public routes
-
-All seven source/bibliography regions must receive the canonical semantic exclusion wrapper used by the current reader projection.
+All seven source/bibliography regions must retain the canonical semantic exclusion boundary used by the current reader projection.
 
 Preferred invariant:
 
