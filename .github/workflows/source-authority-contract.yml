@@ -155,7 +155,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           node --check scripts/security-source-meta-contract.mjs
-          node scripts/security-source-meta-contract.mjs --changed
+          node scripts/security-source-meta-contract.mjs
 
       - name: Install dependencies
         run: npm ci
