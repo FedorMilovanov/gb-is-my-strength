@@ -160,14 +160,20 @@
       "id": "rb-10-source-confidence-matrix",
       "slug": "spravochnik",
       "type": "source-matrix",
-      "status": "planned",
+      "status": "production",
       "priority": "P0",
       "title": "Матрица источников и уровней уверенности",
       "purpose": "Показать пользователю, какие факты основаны на первичных документах, какие на поздней памяти, какие остаются спорными.",
       "nodes": ["primary", "secondary", "memory", "disputed", "map correction queue"],
       "sourceFiles": ["00-master-source-index-glossary-map.md", "13-reference-article-transfer-2026-06-14.md", "18-primary-source-link-register-30plus-2026-06-14.md", "40-origins-corpus-status-and-draft-repos-recovery-2026-06-19.md"],
       "mapSync": ["source confidence taxonomy", "map correction queue"],
-      "visualRisks": ["не делать псевдоточность там, где источник спорный"]
+      "visualRisks": ["не делать псевдоточность там, где источник спорный"],
+      "assetPath": "images/baptisty-rossii/atlas/rb-10-source-confidence-matrix.svg",
+      "articleComponent": "src/components/baptisty-rossii/BaptistyRossiiSpravochnikBody.astro",
+      "articleAnchor": "visual-atlas-source-confidence",
+      "implementedAt": "2026-09-12",
+      "caption": "Пять читательских типов свидетельств показывают происхождение и проверяемость утверждения; внутренние A/B/C/D остаются редакционным инструментом и не превращаются в публичную шкалу истинности.",
+      "sourceConfidence": {"readerTaxonomy": "published-reference-page", "internalABCD": "editorial-only", "openQuestions": "explicit-boundary"}
     }
   ]
 }
