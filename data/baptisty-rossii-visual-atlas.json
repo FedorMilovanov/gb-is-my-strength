@@ -108,14 +108,20 @@
       "id": "rb-06-soviet-night-repression-layer",
       "slug": "sovetskaya-noch",
       "type": "timeline-plus-map",
-      "status": "planned",
+      "status": "production",
       "priority": "P0",
       "title": "Советская ночь: механизм давления",
       "purpose": "Связать закон 1929 года, инструкции, закрытия и репрессии в понятную визуальную структуру.",
       "nodes": ["1929 law", "NKVD instruction", "closures", "arrests", "local cases"],
       "sourceFiles": ["03-soviet-night-1917-1944-law-repressions-press.md", "09-soviet-night-article-transfer-and-new-sources-2026-06-13.md", "16-persecution-case-index-1930s-1980s-2026-06-14.md"],
       "mapSync": ["closure-events-draft.csv", "persecution cases layer"],
-      "visualRisks": ["не перегрузить ужасом без источников", "не публиковать case points без проверки"]
+      "visualRisks": ["не перегрузить ужасом без источников", "не публиковать case points без проверки"],
+      "assetPath": "images/baptisty-rossii/atlas/rb-06-soviet-night-pressure-layers.svg",
+      "articleComponent": "src/components/baptisty-rossii/BaptistyRossiiSovetskayaNochBody.astro",
+      "articleAnchor": "visual-atlas-soviet-night-pressure",
+      "implementedAt": "2026-09-12",
+      "caption": "Правовая рамка 1929 года, административные процедуры НКВД и локальные последствия показаны отдельными слоями. Закон или инструкция сами по себе не считаются доказательством конкретного ареста или закрытия.",
+      "sourceConfidence": {"legalFramework": "document-verified", "administrativeProcedure": "document-publication-verified", "localConsequences": "case-level-source-required"}
     },
     {
       "id": "rb-07-vsehib-union-under-oversight",
