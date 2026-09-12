@@ -156,36 +156,16 @@
       "priority": "P0",
       "title": "1960–1966: от Инициативной группы к Совету Церквей",
       "purpose": "Показать последовательность документов, решений и церковного сопротивления.",
-      "nodes": [
-        "1960",
-        "Regulation",
-        "Letter",
-        "Organizing committee",
-        "Council of Churches"
-      ],
-      "sourceFiles": [
-        "05-council-of-churches-underground-press-1960-1991.md",
-        "11-initiative-group-article-transfer-and-primary-sources-2026-06-13.md"
-      ],
-      "mapSync": [
-        "Council of Churches layer",
-        "Initiative group nodes"
-      ],
-      "visualRisks": [
-        "не превращать в сухую хронологию"
-      ],
+      "nodes": ["1960", "Regulation", "Letter", "Organizing committee", "Council of Churches"],
+      "sourceFiles": ["05-council-of-churches-underground-press-1960-1991.md", "11-initiative-group-article-transfer-and-primary-sources-2026-06-13.md"],
+      "mapSync": ["Council of Churches layer", "Initiative group nodes"],
+      "visualRisks": ["не превращать в сухую хронологию"],
       "assetPath": "images/baptisty-rossii/atlas/rb-08-initiative-group-1960-1966.svg",
       "articleComponent": "src/components/baptisty-rossii/BaptistyRossiiIniciativnayaGruppaBody.astro",
       "articleAnchor": "visual-atlas-initiative-1960-1966",
       "implementedAt": "2026-09-12",
       "caption": "Схема проводит документальную линию от Положения и Инструктивного письма 1960 года через Инициативную группу и Оргкомитет к Совету Церквей 1965 года и публичной делегации 1966 года; численность делегации намеренно дана как «несколько сотен» из-за расхождения источников.",
-      "sourceConfidence": {
-        "documents1960": "documented",
-        "initiativeLetters1961": "primary-documents",
-        "organizingCommittee1962": "primary-document",
-        "council1965": "primary-document",
-        "may1966DelegationSize": "multi-source-range"
-      }
+      "sourceConfidence": {"documents1960": "documented", "initiativeLetters1961": "primary-documents", "organizingCommittee1962": "primary-document", "council1965": "primary-document", "may1966DelegationSize": "multi-source-range"}
     },
     {
       "id": "rb-09-underground-press-distribution",
