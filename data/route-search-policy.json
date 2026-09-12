@@ -603,6 +603,26 @@
       "librarySection": "Личное",
       "topicCategory": "Избранное"
     },
+    "/journal/": {
+      "indexPolicy": "index",
+      "pagefindPolicy": "include",
+      "searchManifestPolicy": "include",
+      "sitemapPolicy": "include",
+      "rssPolicy": "exclude",
+      "contentKind": "landing",
+      "librarySection": "Журнал",
+      "topicCategory": "Документальный журнал"
+    },
+    "/journal/dossiers/g3/": {
+      "indexPolicy": "index",
+      "pagefindPolicy": "include",
+      "searchManifestPolicy": "include",
+      "sitemapPolicy": "include",
+      "rssPolicy": "include",
+      "contentKind": "article",
+      "librarySection": "Журнал",
+      "topicCategory": "Документальные досье"
+    },
     "/karty/": {
       "indexPolicy": "index",
       "pagefindPolicy": "include",
