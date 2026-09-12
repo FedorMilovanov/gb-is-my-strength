@@ -1,10 +1,16 @@
 ---
 import JournalPageHead from '@/components/journal/JournalDocumentHead.astro';
 import G3Dossier from '@/components/journal/G3Dossier.astro';
+import { G3_PRODUCT_METADATA } from '@/data/journal/g3ProductMetadata';
 
-const title = 'G3: рост, кризис и завершение операций';
-const description = 'Документальное досье G3 Ministries: корпоративные записи, IRS Form 990, кризис Josh Buice, спор вокруг Tom Buck, прекращение операций и открытые вопросы без повышения спорных версий до факта.';
-const canonical = 'https://gospod-bog.ru/journal/dossiers/g3/';
+const {
+  title,
+  description,
+  canonical,
+  publishedAt,
+  modifiedAt,
+  readingTimeMinutes,
+} = G3_PRODUCT_METADATA;
 ---
 <!DOCTYPE html>
 <html lang="ru">
@@ -14,8 +20,9 @@ const canonical = 'https://gospod-bog.ru/journal/dossiers/g3/';
       description={description}
       canonical={canonical}
       kind="Article"
-      publishedAt="2026-09-09T00:00:00+03:00"
-      modifiedAt="2026-09-09T00:00:00+03:00"
+      publishedAt={publishedAt}
+      modifiedAt={modifiedAt}
+      readingTime={readingTimeMinutes}
     />
   </head>
   <body data-pagefind-body data-journal-surface="dossier" data-journal-id="g3">
