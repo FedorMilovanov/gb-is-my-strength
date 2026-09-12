@@ -9,9 +9,9 @@
     "routeSourceContract": "scripts/lib/route-source-contract.js"
   },
   "stats": {
-    "manifestItems": 92,
-    "indexedRoutes": 91,
-    "scannedSourceFiles": 486,
+    "manifestItems": 94,
+    "indexedRoutes": 93,
+    "scannedSourceFiles": 491,
     "references": 1216,
     "occurrences": 3050,
     "canonicalTextRecords": 148,
