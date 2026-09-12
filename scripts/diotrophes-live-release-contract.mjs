@@ -35,6 +35,27 @@ export function normalizeArtifactDigest(value) {
   return `sha256:${payload}`;
 }
 
+export function assertEvidenceArtifactProvenance({
+  artifact,
+  expectedName,
+  recorderRunId,
+  recorderSha,
+  artifactDigest,
+}) {
+  const normalizedRecorderSha = normalize(recorderSha).toLowerCase();
+  const normalizedDigest = normalizeArtifactDigest(artifactDigest);
+  assert.match(normalizedRecorderSha, FULL_SHA_RE, 'recorder SHA is invalid');
+  assert.equal(artifact?.name, expectedName, 'evidence artifact name mismatch');
+  assert.equal(artifact?.expired, false, 'evidence artifact is expired');
+  assert.equal(Number(artifact?.workflow_run?.id), Number(recorderRunId), 'evidence artifact run mismatch');
+  assert.equal(
+    normalize(artifact?.workflow_run?.head_sha).toLowerCase(),
+    normalizedRecorderSha,
+    'evidence artifact recorder SHA mismatch',
+  );
+  assert.equal(normalize(artifact?.digest).toLowerCase(), normalizedDigest, 'evidence artifact digest mismatch');
+}
+
 function findFiles(root, basename) {
   const matches = [];
   const visit = (directory) => {

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="520" viewBox="0 0 760 520" role="img" aria-labelledby="rb06-title rb06-desc">
+  <title id="rb06-title">1929 и далее: слои государственного давления на религиозную общину</title>
+  <desc id="rb06-desc">Редакционная схема разделяет правовую рамку, административные процедуры и локальные последствия. Она не утверждает, что один закон автоматически вызвал каждый конкретный арест или закрытие. Конкретные случаи требуют собственных документов.</desc>
+  <style>
+    .bg{fill:#f7f4ed}.panel{fill:#fffdf8;stroke:#c8b993;stroke-width:1.5}.layer1{fill:#f5eee0;stroke:#9a8456;stroke-width:1.5}.layer2{fill:#eee5d2;stroke:#9a8456;stroke-width:1.5}.layer3{fill:#e6dcc6;stroke:#9a8456;stroke-width:1.5}.case{fill:#fff;stroke:#9a8456;stroke-width:1.5}.ink{fill:#22201c}.muted{fill:#635f55}.accent{fill:#7d642d}.head{font:700 22px system-ui,-apple-system,"Segoe UI",sans-serif}.label{font:700 14px system-ui,-apple-system,"Segoe UI",sans-serif}.body{font:500 12.5px system-ui,-apple-system,"Segoe UI",sans-serif}.date{font:700 13px system-ui,-apple-system,"Segoe UI",sans-serif}.line{stroke:#8f7b51;stroke-width:2;fill:none}.dash{stroke:#8f7b51;stroke-width:1.8;stroke-dasharray:6 5;fill:none}
+    @media (prefers-color-scheme:dark){.bg{fill:#171612}.panel{fill:#201f1a;stroke:#6f6245}.layer1{fill:#2c281f;stroke:#aa925a}.layer2{fill:#332d20;stroke:#aa925a}.layer3{fill:#3a321f;stroke:#aa925a}.case{fill:#27241e;stroke:#aa925a}.ink{fill:#f3efe5}.muted{fill:#c7c0b0}.accent{fill:#d0ad62}.line,.dash{stroke:#d0ad62}}
+  </style>
+  <defs><marker id="rb06-arrow" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0l10 5-10 5z" class="accent"/></marker></defs>
+  <rect class="bg" width="760" height="520" rx="24"/>
+  <rect class="panel" x="18" y="18" width="724" height="484" rx="20"/>
+  <text class="head ink" x="42" y="57">Советская ночь: не один запрет, а несколько слоёв давления</text>
+  <text class="body muted" x="42" y="80">Норма, процедура и конкретное исполнение должны проверяться раздельно.</text>
+
+  <rect class="layer1" x="42" y="110" width="676" height="82" rx="15"/>
+  <text class="date accent" x="60" y="135">8 апреля + 18 мая 1929</text>
+  <text class="label ink" x="60" y="158">Правовая рамка</text>
+  <text class="body muted" x="194" y="158">религиозная община сужается до контролируемой культовой деятельности;</text>
+  <text class="body muted" x="194" y="178">миссия, обучение, помощь и публичное убеждение получают более узкие границы.</text>
+
+  <path class="line" d="M380 192V218" marker-end="url(#rb06-arrow)"/>
+
+  <rect class="layer2" x="42" y="225" width="676" height="94" rx="15"/>
+  <text class="date accent" x="60" y="250">1 октября 1929 · Инструкция №328 + регистрация №329</text>
+  <text class="label ink" x="60" y="274">Административная машина</text>
+  <text class="body muted" x="236" y="274">перерегистрация · сведения о служителях · контроль собраний</text>
+  <text class="body muted" x="236" y="294">наблюдение · возможность закрыть собрание · признать общину незарегистрированной</text>
+
+  <path class="line" d="M380 319V345" marker-end="url(#rb06-arrow)"/>
+
+  <rect class="layer3" x="42" y="352" width="318" height="92" rx="15"/>
+  <text class="label ink" x="60" y="380">Локальные последствия</text>
+  <text class="body muted" x="60" y="402">закрытие молитвенных домов</text>
+  <text class="body muted" x="60" y="421">ликвидация союзных структур</text>
+
+  <rect class="case" x="400" y="352" width="318" height="92" rx="15"/>
+  <text class="label ink" x="418" y="380">Отдельные дела и репрессии</text>
+  <text class="body muted" x="418" y="402">арест · приговор · изъятие · судьба человека</text>
+  <text class="body muted" x="418" y="421">требуют собственного case-level источника</text>
+
+  <path class="dash" d="M360 398H393" marker-end="url(#rb06-arrow)"/>
+
+  <text class="body accent" x="42" y="475">Важно: закон 1929 года не является доказательством любого конкретного ареста или закрытия.</text>
+  <text class="body muted" x="42" y="495">Для события нужен отдельный акт, дело, регистрационный отказ, протокол, бюллетень или надёжная биографическая цепочка.</text>
+</svg>
