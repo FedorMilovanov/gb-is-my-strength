@@ -139,7 +139,7 @@ async function warmScroll(page) {
 
 function isExternalTelemetryNetworkNoise(text) {
   const value = String(text || '');
-  const yandexTelemetryHost = /(?:https?|wss):\/\/(?:[^/\s'"]+\.)?mc\.yandex\.(?:com|ru)(?:[/:]|$)/i.test(value);
+  const yandexTelemetryHost = /(?:https?|wss):\/\/(?:(?:[^/\s'"]+\.)?mc\.yandex\.(?:com|ru)|(?:hdrc|mdd)\.yandex\.net)(?:[/:]|$)/i.test(value);
   const networkFailure = /(?:WebSocket connection|Failed to load resource|net::ERR_|handshake|response code:\s*[45]\d\d|status(?: code)?[=:]?\s*[45]\d\d|HTTP\s+[45]\d\d|REQUEST\s+)/i.test(value);
   return yandexTelemetryHost && networkFailure;
 }
@@ -162,6 +162,21 @@ assert.equal(
   isExternalTelemetryNetworkNoise('Uncaught TypeError: application crashed at https://mc.yandex.com/runtime.js'),
   false,
   'application errors must remain fatal even when text mentions Yandex',
+);
+assert.equal(
+  isExternalTelemetryNetworkNoise('REQUEST net::ERR_CERT_AUTHORITY_INVALID xhr https://hdrc.yandex.net/'),
+  true,
+  'Yandex Metrica hdrc transport failures must be classified as external telemetry noise',
+);
+assert.equal(
+  isExternalTelemetryNetworkNoise('REQUEST net::ERR_CERT_AUTHORITY_INVALID xhr https://mdd.yandex.net/'),
+  true,
+  'Yandex Metrica mdd transport failures must be classified as external telemetry noise',
+);
+assert.equal(
+  isExternalTelemetryNetworkNoise('REQUEST net::ERR_CERT_AUTHORITY_INVALID xhr https://api.yandex.net/'),
+  false,
+  'unrelated yandex.net application requests must remain fatal',
 );
 assert.equal(
   isGenericResourceConsoleError('Failed to load resource: the server responded with a status of 500 ()'),
