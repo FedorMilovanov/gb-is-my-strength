@@ -3,7 +3,7 @@
  * ЗАЩИТА ОТ РЕГРЕССИЙ: функциональный прогон трёх движков (Playwright).
  *
  * Геометрия + функции на реальном dist: серия-движок (Гилл/Сердце/Баптисты/
- * пастор) деск+мобила, одиночный (Герменевтика/kod-da-vinchi), page-движок
+ * пастор/Teen/Genesis 6) деск+мобила, одиночный (Герменевтика/kod-da-vinchi), page-движок
  * (6 каталогов), плюс живой PLAY: стаб speechSynthesis → состояние playing,
  * follow-скролл ведёт страницу, Media Session (метаданные, playbackState,
  * фоновый якорь), пауза.
@@ -84,6 +84,8 @@ const SERIES = [
   ['heart', '/articles/novoe-serdce/'],
   ['baptist', '/baptisty-rossii/podpolnaya-pechat/'],
   ['antisov', '/articles/20-antisovetov-pastoru/'],
+  ['teen', '/articles/podrostok-za-kadrom-dvoynaya-zhizn/'],
+  ['genesis6', '/hard-texts/enoh-prorochestvoval-iuda-14-15-4q204/'],
 ];
 const SINGLES = [
   ['herm', '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/'],

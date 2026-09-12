@@ -43,7 +43,7 @@
    римская. Для спутника — `mark:{kind:'letter',value:'А'}, tier:'satellite',
    parent:'<id части>'`.
 2. **Конфиг** (`_shared/series/<серия>SeriesConfig.ts`): добавь
-   `pages['<id>']` — label/title/cover/минуты/`partToc` (все H2/H3 тела с
+   `pages['<id>']` — label/title/cover/минуты/`partToc` (curated deep-link outline из
    `#якорями`, у ОДНОЙ строки `current:true`).
 3. **Тело статьи**: компонент `<...>Body.astro`, внутри —
    `<SeriesReaderChrome pageId="<id>" config={<СЕРИЯ>}><article>…</article></SeriesReaderChrome>`.
@@ -101,8 +101,7 @@
 - `defineSeriesConfig` валидирует каждый конфиг на каждой сборке.
 - `npm run engine:contracts` — 20+ статических контрактов (AST CSS, изоляция
   движков, реестры) за секунды.
-- `npm run engine:sweep` — 87 функциональных Playwright-проверок (деск+мобила,
-  все серии, живой PLAY). Меняешь движок → добавь проверку на новое поведение.
+- `npm run engine:sweep` — функциональный Playwright-прогон деск+мобила по представителю каждой активной shared-series wrapper family (Gill, Hard Texts, Baptists, Pastor, Teen, Genesis 6), плюс живой PLAY. Меняешь движок или добавляешь новую wrapper family → добавь её представитель в `SERIES`.
 - Прецеденты регрессий и их уроки: auditrepo
   `references/gb-ui-canon-2026-07-13/` (ENGINES_ARCHITECTURE.md, BRANCH_AUDIT).
 
