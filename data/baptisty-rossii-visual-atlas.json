@@ -37,14 +37,20 @@
       "id": "rb-01-kura-origins-route",
       "slug": "noch-na-kure",
       "type": "route-map",
-      "status": "planned",
+      "status": "production",
       "priority": "P0",
       "title": "Тифлис и Кура: линия ранней памяти",
       "purpose": "Показать сцену ранней истории без превращения памяти в недоказанную легенду.",
       "nodes": ["Tiflis", "Kura", "Voronin", "Kalweit", "Delyakov"],
       "sourceFiles": ["29-voronin-letter-1889-and-ivanov-manuscript-leads-2026-06-18.md", "30-valkevich-appendix-voronin-letter-page-27-verified-2026-06-18.md", "36-wardin-2009-indigenous-question-verified-2026-06-19.md"],
       "mapSync": ["Tiflis/Kura node", "source confidence: memory vs primary"],
-      "visualRisks": ["не рисовать как точную географическую GPS-карту", "не смешивать предание и источник"]
+      "visualRisks": ["не рисовать как точную географическую GPS-карту", "не смешивать предание и источник"],
+      "assetPath": "images/baptisty-rossii/atlas/rb-01-kura-origins-route.svg",
+      "articleComponent": "src/components/baptisty-rossii/BaptistyRossiiNochNaKureBody.astro",
+      "articleAnchor": "visual-atlas-kura-origins-route",
+      "implementedAt": "2026-09-12",
+      "caption": "Маршрут показывает последовательность свидетельств и связей, а не точную географическую трассу по Тифлису. Письмо Воронина 1889 года и письмо Кальвейта 1869 года выполняют разные источниковые функции.",
+      "sourceConfidence": {"voronin1889": "page-verified-later-memory", "kalweit1869": "contemporary-context-not-baptism-protocol", "routeGeometry": "editorial-non-gps"}
     },
     {
       "id": "rb-02-shtunda-south-network",
