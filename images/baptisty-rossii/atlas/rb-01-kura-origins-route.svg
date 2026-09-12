@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="520" viewBox="0 0 760 520" role="img" aria-labelledby="rb01-title rb01-desc">
+  <title id="rb01-title">Тифлис и Кура: маршрут ранней баптистской памяти</title>
+  <desc id="rb01-desc">Редакционная схема показывает не географический GPS-маршрут, а последовательность свидетельств: вопросы Никиты Воронина о водном крещении с 1863 года, знакомства 1864–1865 годов, встречу с Яковом Деляковым и Мартином Кальвейтом, крещение 20 августа 1867 года, русскоязычную евангельскую среду 1869 года и присоединение Василия Павлова в 1870 году.</desc>
+  <style>
+    .bg{fill:#f7f4ed}.panel{fill:#fffdf8;stroke:#c8b993;stroke-width:1.5}.node{fill:#fff;stroke:#927b4d;stroke-width:1.5}.event{fill:#f1ead8;stroke:#927b4d;stroke-width:1.5}.ink{fill:#22201c}.muted{fill:#635f55}.accent{fill:#7d642d}.head{font:700 22px system-ui,-apple-system,"Segoe UI",sans-serif}.date{font:700 13px system-ui,-apple-system,"Segoe UI",sans-serif}.label{font:700 13.5px system-ui,-apple-system,"Segoe UI",sans-serif}.body{font:500 11.5px system-ui,-apple-system,"Segoe UI",sans-serif}.line{stroke:#7d642d;stroke-width:2.2;fill:none}.dash{stroke:#8c877c;stroke-width:1.7;stroke-dasharray:6 5;fill:none}
+    @media (prefers-color-scheme:dark){.bg{fill:#171612}.panel{fill:#201f1a;stroke:#6f6245}.node{fill:#27241e;stroke:#aa925a}.event{fill:#342d20;stroke:#aa925a}.ink{fill:#f3efe5}.muted{fill:#c7c0b0}.accent{fill:#d0ad62}.line{stroke:#d0ad62}.dash{stroke:#a8a193}}
+  </style>
+  <defs><marker id="rb01-arrow" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0l10 5-10 5z" class="accent"/></marker></defs>
+  <rect class="bg" width="760" height="520" rx="24"/>
+  <rect class="panel" x="18" y="18" width="724" height="484" rx="20"/>
+  <text class="head ink" x="42" y="57">Тифлис и Кура: от вопроса к сети</text>
+  <text class="body muted" x="42" y="80">Это маршрут свидетельств и связей, а не точная карта перемещений по городу.</text>
+
+  <rect class="node" x="42" y="112" width="206" height="84" rx="14"/>
+  <text class="date accent" x="58" y="137">с 1863</text>
+  <text class="label ink" x="58" y="159">Внутренний вопрос Воронина</text>
+  <text class="body muted" x="58" y="178">Северов и Танасов → вопрос</text>
+  <text class="body muted" x="58" y="192">о водном крещении</text>
+
+  <rect class="node" x="277" y="112" width="206" height="84" rx="14"/>
+  <text class="date accent" x="293" y="137">1864–1865</text>
+  <text class="label ink" x="293" y="159">Посредники и Писание</text>
+  <text class="body muted" x="293" y="178">Мельвил и Яков Деляков</text>
+  <text class="body muted" x="293" y="192">уточняют путь веры</text>
+
+  <rect class="event" x="512" y="112" width="206" height="84" rx="14"/>
+  <text class="date accent" x="528" y="137">20 августа 1867</text>
+  <text class="label ink" x="528" y="159">Тифлис · Кура</text>
+  <text class="body muted" x="528" y="178">Кальвейт крестит Воронина;</text>
+  <text class="body muted" x="528" y="192">Деляков переводит беседу</text>
+
+  <path class="line" d="M248 154H270" marker-end="url(#rb01-arrow)"/>
+  <path class="line" d="M483 154H505" marker-end="url(#rb01-arrow)"/>
+
+  <rect class="event" x="116" y="250" width="238" height="96" rx="14"/>
+  <text class="date accent" x="132" y="275">1869 · письмо Кальвейта</text>
+  <text class="label ink" x="132" y="297">Русскоязычная среда</text>
+  <text class="body muted" x="132" y="316">11 человек · русские гимны ·</text>
+  <text class="body muted" x="132" y="332">двуязычное объяснение Писания</text>
+
+  <rect class="node" x="406" y="250" width="238" height="96" rx="14"/>
+  <text class="date accent" x="422" y="275">1870 → далее</text>
+  <text class="label ink" x="422" y="297">От сцены к сети</text>
+  <text class="body muted" x="422" y="316">Василий Павлов и новые связи</text>
+  <text class="body muted" x="422" y="332">соединяют Тифлис с другими узлами</text>
+
+  <path class="line" d="M615 196C615 225 525 229 525 243" marker-end="url(#rb01-arrow)"/>
+  <path class="line" d="M354 298H399" marker-end="url(#rb01-arrow)"/>
+
+  <rect class="panel" x="42" y="386" width="676" height="78" rx="14"/>
+  <text class="label accent" x="58" y="411">Как читать источники</text>
+  <text class="body ink" x="58" y="432">Письмо Воронина 1889 года — собственная поздняя память, постранично проверенная у Валькевича.</text>
+  <text class="body ink" x="58" y="449">Письмо Кальвейта 1869 года подтверждает среду, но не является протоколом крещения 1867 года.</text>
+
+  <text class="body muted" x="42" y="487">Схема не утверждает, что Воронин был единственным источником последующего русского баптизма.</text>
+</svg>
