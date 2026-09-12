@@ -8,18 +8,18 @@ export const TEEN_SERIES_MEDIA = {
   series: {
     hero: '/images/teen-series/series-cover.webp',
     rail: '/images/teen-series/series-cover-600w.webp',
-    alt: 'Телефон между холодным светом комнаты и тёплым светом семьи — образ скрытой и открытой жизни',
+    alt: 'Синий свет телефона в тёмном помещении и тёплая открытая дверь вдали — образ скрытой жизни и возвращения к свету',
   },
   pages: {
     'teen-double-life': {
       hero: '/images/teen-series/01-double-life.webp',
       rail: '/images/teen-series/01-double-life-600w.webp',
-      alt: 'Девушка-подросток с телефоном у дождливого окна; в стекле отражается её лицо — образ двойной жизни',
+      alt: 'Одинокий светящийся телефон в тёмном зале и далёкая открытая дверь — образ двойной жизни',
     },
     'teen-parents-after-disclosure': {
       hero: '/images/teen-series/02-after-disclosure.webp',
       rail: '/images/teen-series/02-after-disclosure-600w.webp',
-      alt: 'Родители после трудного разговора на ночной кухне; на столе Библия и выключенный телефон',
+      alt: 'Открытая Библия, выключенный телефон и две чашки на ночном столе — образ трудного разговора и восстановления',
     },
     'teen-church-response': {
       hero: '/images/teen-series/03-church-response.webp',
@@ -28,12 +28,12 @@ export const TEEN_SERIES_MEDIA = {
     },    'adult-child-left-home': {
       hero: '/images/teen-series/04-left-home.webp',
       rail: '/images/teen-series/04-left-home-600w.webp',
-      alt: 'Молодой взрослый уходит с сумкой по мокрому двору от освещённого подъезда',
+      alt: 'Ночная дорога ведёт к освещённому дому; рюкзак оставлен у ворот — образ ухода и надежды на возвращение',
     },
     'adult-child-home-money': {
       hero: '/images/teen-series/05-home-money.webp',
       rail: '/images/teen-series/05-home-money-600w.webp',
-      alt: 'Ключи, телефон и банковская карта на тумбе в прихожей; взрослый сын возвращается домой',
+      alt: 'Ключи, монеты, блокнот, банковская карта и телефон на домашнем столе — образ правил, денег и ответственности',
     },
     'adult-child-authority': {
       hero: '/images/teen-series/06-adult-authority.webp',
@@ -43,7 +43,7 @@ export const TEEN_SERIES_MEDIA = {
     'adult-daughter-marriage': {
       hero: '/images/teen-series/07-daughter-marriage.webp',
       rail: '/images/teen-series/07-daughter-marriage-600w.webp',
-      alt: 'Молодая взрослая дочь с ключами у двери в подъезд разговаривает с отцом в прихожей',
+      alt: 'Библия с обручальными кольцами, письмо, белые цветы и две чашки — образ брака, совета и завета',
     },
   },
 } as const satisfies {
