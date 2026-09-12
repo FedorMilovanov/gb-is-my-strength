@@ -7,6 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 const { legacyIsAuthoritative, loadRouteProfile } = require('./lib/legacy-source-authority');
+const { staticAssetExists } = require('./lib/static-public-asset');
 const ROOT = path.resolve(__dirname, '..');
 const issues = [];
 function fail(kind, detail) { issues.push({ kind, detail }); }
@@ -113,7 +114,7 @@ const series = JSON.parse(read('data/series.json'));
         fail('search-item-control-char', `${item.url} ${key}`);
       }
     }
-    if (item.image && isLocalImage(item.image) && !exists(item.image.replace(/^\//, ''))) {
+    if (item.image && isLocalImage(item.image) && !staticAssetExists(ROOT, item.image)) {
       fail('search-item-image-missing', `${item.url}: ${item.image}`);
     }
     const mv = dateValue(item.modifiedTime);

@@ -22,6 +22,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { staticAssetExists } = require('./lib/static-public-asset');
 const crypto = require('crypto');
 const gzip = require('zlib').gzipSync;
 const vm = require('vm');
@@ -339,9 +340,9 @@ const SITE_CSS_MIN_BYTES = 200_000;
   if (fs.existsSync(sm)) collect(fs.readFileSync(sm, 'utf8'), 'sitemap.xml');
   let broken = 0;
   for (const [rel, sources] of refs) {
-    if (!fs.existsSync(path.join(ROOT, rel))) {
+    if (!staticAssetExists(ROOT, `/${rel}`)) {
       broken++;
-      R.err(`image cross-ref broken: ${rel} referenced by ${sources.join(', ')} but missing on disk`);
+      R.err(`image cross-ref broken: ${rel} referenced by ${sources.join(', ')} but missing from repository static roots`);
     }
   }
   if (!broken) R.ok(`image cross-ref: all ${refs.size} referenced /images/ paths exist (data/*.json + sitemap.xml)`);
@@ -3701,8 +3702,8 @@ const JS_SIZE_FLOORS = {
   const imgLocs = [...xml.matchAll(/<image:loc>([^<]+)<\/image:loc>/g)].map(m => m[1].trim());
   const missing = [];
   for (const u of imgLocs) {
-    const local = u.replace(/^https?:\/\/[^/]+/, '').replace(/^\//, '');
-    if (!fs.existsSync(path.join(ROOT, local))) {
+    const publicPath = u.replace(/^https?:\/\/[^/]+/, '');
+    if (!staticAssetExists(ROOT, publicPath)) {
       missing.push(`image:loc ${u} → file missing`);
     }
   }
@@ -4170,8 +4171,7 @@ const JS_SIZE_FLOORS = {
       urls.add(m[1]);
     }
     for (const url of urls) {
-      const local = path.join(ROOT, url.replace(/^\//, ''));
-      if (!fs.existsSync(local)) {
+      if (!staticAssetExists(ROOT, url)) {
         missing.add(`${src} → ${url} (file deleted but link remains)`);
       }
     }
