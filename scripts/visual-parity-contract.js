@@ -119,6 +119,7 @@ if (!fs.existsSync(DIST)) {
     ['scripts/about-visual-parity-audit.js', '/about/'],
     ['scripts/articles-visual-parity-audit.js', '/articles/'],
     ['scripts/home-visual-parity-audit.js', '/'],
+    ['scripts/series-reader-facade-regression-test.js', 'series reader façade/fragments'],
   ]) {
     runStrictDistAudit(script, label);
   }
