@@ -12,6 +12,7 @@
 const fs = require('fs');
 const path = require('path');
 const ROOT = path.join(__dirname, '..');
+const REQUIRE_DIST = process.argv.includes('--require-dist');
 const problems = [];
 function read(rel){ return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
 function readJson(rel){ return JSON.parse(read(rel)); }
@@ -165,15 +166,31 @@ for (const item of projected) {
 if (projected.length) ok(`derived catalog media coverage checked for ${projected.length} published article/series item(s)`);
 else bad('derived catalog projection has no published article/series items');
 
-const dist = exists('dist/articles/index.html') ? read('dist/articles/index.html') : '';
-if (dist) {
-  for (const marker of ['articles-index-page', 'home-v20', 'h-hero-title', 'h-article-card', 'h-article-thumb', 'gb-accuracy-block', 'data-catalog-role=', 'h-mobile-nav', 'data-gb-site-menu-runtime="canonical"']) {
-    must(dist, marker, `dist /articles/ marker: ${marker}`);
+if (REQUIRE_DIST) {
+  if (!exists('dist/articles/index.html')) {
+    bad('dist /articles/ missing; run production-like build before --require-dist audit');
+  } else {
+    const dist = read('dist/articles/index.html');
+    for (const marker of ['articles-index-page', 'home-v20', 'h-hero-title', 'h-article-card', 'h-article-thumb', 'gb-accuracy-block', 'data-catalog-role=', 'h-mobile-nav', 'data-gb-site-menu-runtime="canonical"']) {
+      must(dist, marker, `dist /articles/ marker: ${marker}`);
+    }
+    mustNot(dist, 'astro-card-grid', 'dist /articles/ generic regression marker absent');
+    const renderedCatalogUrls = [...dist.matchAll(/data-catalog-(?:route|series)=["']([^"']+)["']/g)].map((match) => match[1]);
+    const renderedCatalogUnique = [...new Set(renderedCatalogUrls)].sort();
+    const projectedUnique = [...new Set(projectedUrls)].sort();
+    if (renderedCatalogUrls.length !== renderedCatalogUnique.length) {
+      bad(`dist catalog contains duplicate rendered routes: ${renderedCatalogUrls.length} entries / ${renderedCatalogUnique.length} unique`);
+    } else if (JSON.stringify(renderedCatalogUnique) !== JSON.stringify(projectedUnique)) {
+      bad(`dist catalog route set differs from projected authority: rendered=${renderedCatalogUnique.length}, projected=${projectedUnique.length}`);
+    } else {
+      ok(`dist catalog route set exactly matches projected authority: ${renderedCatalogUnique.length}/${projectedUnique.length}`);
+    }
+    const renderedThumbs = (dist.match(/class=["'][^"']*\bh-article-thumb\b[^"']*["']/g) || []).length;
+    if (renderedThumbs >= renderedCatalogUrls.length) ok(`dist thumbnail shells cover every catalog entry: ${renderedThumbs} shells / ${renderedCatalogUrls.length} catalog entries`);
+    else bad(`dist thumbnail shell count ${renderedThumbs} is below rendered catalog entry count ${renderedCatalogUrls.length}`);
   }
-  mustNot(dist, 'astro-card-grid', 'dist /articles/ generic regression marker absent');
-  const renderedThumbs = (dist.match(/class=["'][^"']*\bh-article-thumb\b[^"']*["']/g) || []).length;
-  if (renderedThumbs >= projected.length) ok(`dist catalog thumbnails cover projected items: ${renderedThumbs}/${projected.length}`);
-  else bad(`dist catalog thumbnail count ${renderedThumbs} is below projected item count ${projected.length}`);
+} else {
+  console.log('ℹ️ dist /articles/ assertions skipped in source mode; use --require-dist after production-like build');
 }
 
 console.log('\nARTICLES VISUAL PARITY AUDIT');
