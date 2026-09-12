@@ -15,6 +15,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
+const REQUIRE_DIST = process.argv.includes('--require-dist');
 const problems = [];
 function read(rel) { return fs.readFileSync(path.join(ROOT, rel), 'utf8'); }
 function exists(rel) { return fs.existsSync(path.join(ROOT, rel)); }
@@ -110,20 +111,26 @@ for (const content of [page, chrome, main, article, accuracy]) {
   }
 }
 
-const dist = exists('dist/about/index.html') ? read('dist/about/index.html') : '';
-if (dist) {
-  for (const marker of ['about-page', 'about-resources', 'about-contact-card', 'gb-accuracy-block', 'Фёдор Милованов']) {
-    must(dist, marker, `dist /about/ marker: ${marker}`);
-  }
-  mustNot(dist, 'class="astro-shell"', 'dist /about/ no astro-shell fallback');
-  const mainOpen = dist.indexOf('<main id="main-content">');
-  const articleAt = dist.indexOf('<article class="about-page"');
-  const mainClose = dist.indexOf('</main>', mainOpen);
-  if (mainOpen !== -1 && articleAt !== -1 && mainClose !== -1 && mainOpen < articleAt && articleAt < mainClose) {
-    ok('dist /about/ article is inside <main> (balanced wrapper regression fixed)');
+if (REQUIRE_DIST) {
+  if (!exists('dist/about/index.html')) {
+    bad('dist /about/ missing; run production-like build before --require-dist audit');
   } else {
-    bad('dist /about/ article is NOT inside <main>');
+    const dist = read('dist/about/index.html');
+    for (const marker of ['about-page', 'about-resources', 'about-contact-card', 'gb-accuracy-block', 'Фёдор Милованов']) {
+      must(dist, marker, `dist /about/ marker: ${marker}`);
+    }
+    mustNot(dist, 'class="astro-shell"', 'dist /about/ no astro-shell fallback');
+    const mainOpen = dist.indexOf('<main id="main-content">');
+    const articleAt = dist.indexOf('<article class="about-page"');
+    const mainClose = dist.indexOf('</main>', mainOpen);
+    if (mainOpen !== -1 && articleAt !== -1 && mainClose !== -1 && mainOpen < articleAt && articleAt < mainClose) {
+      ok('dist /about/ article is inside <main> (balanced wrapper regression fixed)');
+    } else {
+      bad('dist /about/ article is NOT inside <main>');
+    }
   }
+} else {
+  console.log('ℹ️ dist /about/ assertions skipped in source mode; use --require-dist after production-like build');
 }
 
 console.log('\nABOUT VISUAL PARITY AUDIT');

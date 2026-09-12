@@ -13,6 +13,7 @@ const path = require('path');
 const { PNG } = require('pngjs');
 
 const ROOT = path.join(__dirname, '..');
+const REQUIRE_DIST = process.argv.includes('--require-dist');
 const problems = [];
 const warnings = [];
 
@@ -336,41 +337,45 @@ for (const rel of files) {
   mustNot(file, '?raw', `${path.basename(rel)} raw import`);
 }
 
-const dist = exists('dist/index.html') ? read('dist/index.html') : '';
-if (dist) {
-  for (const marker of ['home-v20', 'h-hero-brand', 'h-ambient-native', 'h-home-gateway', 'h-route-object', 'main-content', 'gb-accuracy-block']) {
-    must(dist, marker, `dist / marker: ${marker}`);
-  }
-  for (const asset of directionAssets) {
-    const publicUrl = `/${asset.replace(/^public\//, '')}`;
-    must(dist, publicUrl, `dist / direction asset: ${publicUrl}`);
-  }
-  mustNot(dist, 'data:image/png;base64,', 'dist / embedded direction data URI');
-  mustNot(dist, 'h-route-pictogram', 'dist / obsolete SVG direction family');
-  mustNot(dist, 'id="hScriptureBg"', 'dist / legacy ambient hook');
-  mustNot(dist, 'role="button" class="hb-w"', 'dist / Hebrew pseudo-button');
-  must(dist, 'href="/articles/krajne-li-isporcheno-serdce/"', 'dist / corrected Jeremiah route');
-  count(dist, /class="h-ambient-word /g) === 32
-    ? ok('dist / renders exactly 32 ambient phrases')
-    : bad('dist / must render exactly 32 ambient phrases');
-  count(dist, /Это не лента быстрых заметок/g) === 1
-    ? ok('dist / About lead renders exactly once')
-    : bad('dist / About lead must render exactly once');
-  for (const retired of [
-    'h-drop-cap__letter',
-    '<span class="sr-only">Это</span>',
-  ]) mustNot(dist, retired, `dist / retired duplicated About drop-cap markup: ${retired}`);
-  const distMainClose = dist.indexOf('</main>');
-  const distSoli = dist.indexOf('class="article-end-sdg"', distMainClose);
-  const distFooter = dist.indexOf('<footer', distSoli);
-  distMainClose !== -1 && distSoli > distMainClose && distFooter > distSoli
-    ? ok('dist / preserves main → Soli Deo Gloria → footer order')
-    : bad('dist / landmark order is invalid');
-  for (const forbidden of ['h-brand-lion', 'AudioContext', 'class="astro-shell"', '_legacy/']) {
-    mustNot(dist, forbidden, `dist / ${forbidden}`);
+if (REQUIRE_DIST) {
+  if (!exists('dist/index.html')) {
+    bad('dist / missing; run production-like build before --require-dist audit');
+  } else {
+    const dist = read('dist/index.html');
+    for (const marker of ['home-v20', 'h-hero-brand', 'h-ambient-native', 'h-home-gateway', 'h-route-object', 'main-content', 'gb-accuracy-block']) {
+      must(dist, marker, `dist / marker: ${marker}`);
+    }
+    for (const asset of directionAssets) {
+      const publicUrl = `/${asset.replace(/^public\//, '')}`;
+      must(dist, publicUrl, `dist / direction asset: ${publicUrl}`);
+    }
+    mustNot(dist, 'data:image/png;base64,', 'dist / embedded direction data URI');
+    mustNot(dist, 'h-route-pictogram', 'dist / obsolete SVG direction family');
+    mustNot(dist, 'id="hScriptureBg"', 'dist / legacy ambient hook');
+    mustNot(dist, 'role="button" class="hb-w"', 'dist / Hebrew pseudo-button');
+    must(dist, 'href="/articles/krajne-li-isporcheno-serdce/"', 'dist / corrected Jeremiah route');
+    count(dist, /class="h-ambient-word /g) === 32
+      ? ok('dist / renders exactly 32 ambient phrases')
+      : bad('dist / must render exactly 32 ambient phrases');
+    count(dist, /Это не лента быстрых заметок/g) === 1
+      ? ok('dist / About lead renders exactly once')
+      : bad('dist / About lead must render exactly once');
+    for (const retired of [
+      'h-drop-cap__letter',
+      '<span class="sr-only">Это</span>',
+    ]) mustNot(dist, retired, `dist / retired duplicated About drop-cap markup: ${retired}`);
+    const distMainClose = dist.indexOf('</main>');
+    const distSoli = dist.indexOf('class="article-end-sdg"', distMainClose);
+    const distFooter = dist.indexOf('<footer', distSoli);
+    distMainClose !== -1 && distSoli > distMainClose && distFooter > distSoli
+      ? ok('dist / preserves main → Soli Deo Gloria → footer order')
+      : bad('dist / landmark order is invalid');
+    for (const forbidden of ['h-brand-lion', 'AudioContext', 'class="astro-shell"', '_legacy/']) {
+      mustNot(dist, forbidden, `dist / ${forbidden}`);
+    }
   }
 } else {
-  warn('dist/index.html not found — production-like build remains required');
+  console.log('ℹ️ dist / assertions skipped in source mode; use --require-dist after production-like build');
 }
 
 console.log('\nHOME NATIVE CONTRACT AUDIT');

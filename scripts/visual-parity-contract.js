@@ -14,6 +14,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const {
   listReferenceRoutes,
   resolveReferenceForRoute,
@@ -28,6 +29,14 @@ function relToFile(root, rel) { return path.join(root, rel); }
 function read(file) { return fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : ''; }
 function bad(msg) { problems.push(msg); console.log('❌ ' + msg); }
 function ok(msg) { console.log('✅ ' + msg); }
+function runStrictDistAudit(script, label) {
+  const result = spawnSync(process.execPath, [path.join(ROOT, script), '--require-dist'], {
+    cwd: ROOT,
+    stdio: 'inherit',
+  });
+  if (result.status === 0) ok(label + ': strict dist audit passed');
+  else bad(label + ': strict dist audit failed (exit ' + (result.status ?? 'null') + ')');
+}
 function routeLabel(rel) { return rel.replace(/\/index\.html$/, '/').replace(/^index\.html$/, '/'); }
 function legacyFileFor(rel) {
   const route = routeLabel(rel);
@@ -104,6 +113,14 @@ if (!fs.existsSync(DIST)) {
       if (dist.includes(marker)) bad(`${route}: dist contains forbidden generic/regression marker: ${marker}`);
       else ok(`${route}: forbidden marker absent: ${marker}`);
     }
+  }
+
+  for (const [script, label] of [
+    ['scripts/about-visual-parity-audit.js', '/about/'],
+    ['scripts/articles-visual-parity-audit.js', '/articles/'],
+    ['scripts/home-visual-parity-audit.js', '/'],
+  ]) {
+    runStrictDistAudit(script, label);
   }
 }
 
