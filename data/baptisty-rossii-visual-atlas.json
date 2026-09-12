@@ -107,14 +107,20 @@
       "id": "rb-05-conscience-decision-tree",
       "slug": "goneniya-i-sovest",
       "type": "decision-tree",
-      "status": "planned",
+      "status": "production",
       "priority": "P1",
       "title": "Совесть, военный вопрос и государство",
       "purpose": "Показать богословско-этические развилки без упрощённой героизации.",
       "nodes": ["Conscience", "Military question", "State pressure", "Church response"],
       "sourceFiles": ["04-persecution-conscience-military-question.md", "08-conscience-article-transfer-2026-06-13.md"],
       "mapSync": ["conscience cases layer"],
-      "visualRisks": ["не делать карикатурную моральную схему"]
+      "visualRisks": ["не делать карикатурную моральную схему"],
+      "assetPath": "images/baptisty-rossii/atlas/rb-05-conscience-decision-tree.svg",
+      "articleComponent": "src/components/baptisty-rossii/BaptistyRossiiGoneniyaISovestBody.astro",
+      "articleAnchor": "visual-atlas-conscience-decision-tree",
+      "implementedAt": "2026-09-12",
+      "caption": "Военный вопрос показан как столкновение государственного требования, личной и церковной совести и нескольких исторически существовавших ответов: вооружённой службы, отказа по совести и поиска небоевой формы.",
+      "sourceConfidence": {"responsePlurality": "documented-history", "legalPressure": "period-dependent", "moralRanking": "not-asserted", "churchResponses": "editorial-synthesis-from-documented-cases"}
     },
     {
       "id": "rb-06-soviet-night-repression-layer",

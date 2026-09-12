@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="520" viewBox="0 0 760 520" role="img" aria-labelledby="rb05-title rb05-desc">
+  <title id="rb05-title">Совесть, военный вопрос и государство: несколько исторических развилок</title>
+  <desc id="rb05-desc">Редакционная схема показывает государственное требование как внешнее давление, личную совесть как точку решения и три встречавшихся ответа: вооружённая служба, отказ по совести и поиск небоевой или альтернативной формы. Ни один путь не обозначен как универсально единственный для всех евангельских христиан и баптистов. Ниже показаны способы церковного ответа: объяснять, апеллировать к закону, организовываться и иногда разделяться.</desc>
+  <style>
+    .bg{fill:#f7f4ed}.panel{fill:#fffdf8;stroke:#c8b993;stroke-width:1.5}.node{fill:#fff;stroke:#9a8456;stroke-width:1.5}.node2{fill:#f3ead8;stroke:#9a8456;stroke-width:1.5}.ink{fill:#22201c}.muted{fill:#635f55}.accent{fill:#7d642d}.head{font:700 22px system-ui,-apple-system,"Segoe UI",sans-serif}.label{font:700 14px system-ui,-apple-system,"Segoe UI",sans-serif}.body{font:500 12px system-ui,-apple-system,"Segoe UI",sans-serif}.tiny{font:500 11px system-ui,-apple-system,"Segoe UI",sans-serif}.line{stroke:#9a8456;stroke-width:2;fill:none}.dash{stroke:#9a8456;stroke-width:1.5;stroke-dasharray:6 5;fill:none}
+    @media (prefers-color-scheme:dark){.bg{fill:#171612}.panel{fill:#201f1a;stroke:#6f6245}.node{fill:#27241e;stroke:#aa925a}.node2{fill:#342d20;stroke:#aa925a}.ink{fill:#f3efe5}.muted{fill:#c7c0b0}.accent{fill:#d0ad62}.line,.dash{stroke:#d0ad62}}
+  </style>
+  <rect class="bg" width="760" height="520" rx="24"/>
+  <rect class="panel" x="18" y="18" width="724" height="484" rx="20"/>
+  <text class="head ink" x="42" y="58">Военный вопрос: совесть внутри меняющейся правовой рамки</text>
+  <text class="body muted" x="42" y="82">Схема показывает варианты, а не присваивает им одинаковую частоту или моральный ранг.</text>
+
+  <rect class="node2" x="250" y="108" width="260" height="62" rx="14"/>
+  <text class="label ink" x="269" y="134">Государственное требование</text>
+  <text class="body muted" x="269" y="154">закон · призыв · регистрация · давление</text>
+
+  <path class="line" d="M380 170V207"/>
+  <rect class="node" x="250" y="207" width="260" height="62" rx="14"/>
+  <text class="label ink" x="269" y="233">Личная и церковная совесть</text>
+  <text class="body muted" x="269" y="253">что допустимо перед Богом и ближним?</text>
+
+  <path class="line" d="M380 269V295M160 295H600M160 295V322M380 295V322M600 295V322"/>
+
+  <rect class="node2" x="54" y="322" width="212" height="88" rx="14"/>
+  <text class="label ink" x="72" y="348">Вооружённая служба</text>
+  <text class="body muted" x="72" y="369">гражданский долг;</text>
+  <text class="body muted" x="72" y="386">позднее — официальная линия</text>
+
+  <rect class="node2" x="274" y="322" width="212" height="88" rx="14"/>
+  <text class="label ink" x="292" y="348">Отказ по совести</text>
+  <text class="body muted" x="292" y="369">личное убеждение;</text>
+  <text class="body muted" x="292" y="386">риск суда, ссылки, давления</text>
+
+  <rect class="node2" x="494" y="322" width="212" height="88" rx="14"/>
+  <text class="label ink" x="512" y="348">Небоевая / иная форма</text>
+  <text class="body muted" x="512" y="369">поиск правового компромисса;</text>
+  <text class="body muted" x="512" y="386">возможность зависела от периода</text>
+
+  <path class="dash" d="M160 410V438M380 410V438M600 410V438"/>
+  <rect class="node" x="76" y="438" width="608" height="48" rx="13"/>
+  <text class="label ink" x="95" y="460">Церковные ответы: объяснять · апеллировать · организовываться · иногда разделяться</text>
+  <text class="tiny muted" x="95" y="478">Исторические решения менялись вместе с законом, войной, репрессиями и внутренними спорами.</text>
+
+  <text class="body accent" x="42" y="505">Редакционная граница: схема не сводит совесть к лозунгу и не героизирует один ответ за всех.</text>
+</svg>
