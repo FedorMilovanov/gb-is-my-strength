@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="500" viewBox="0 0 760 500" role="img" aria-labelledby="rb03-title rb03-desc">
+  <title id="rb03-title">1884: Петербург и Ново-Васильевка — два разных события</title>
+  <desc id="rb03-desc">Разделённая временная схема сопоставляет петербургское евангельское совещание 1–6 апреля 1884 года и баптистскую конференцию в Ново-Васильевке 30 апреля — 1 мая 1884 года. События показаны раздельно и не соединены как один съезд. Михаил Ратушный отмечен как участник обоих событий.</desc>
+  <style>
+    .bg{fill:#f7f4ed}.panel{fill:#fffdf8;stroke:#c8b993;stroke-width:1.5}.left{fill:#f3ead8;stroke:#9a8456;stroke-width:1.5}.right{fill:#fff;stroke:#9a8456;stroke-width:1.5}.ink{fill:#22201c}.muted{fill:#635f55}.accent{fill:#7d642d}.head{font:700 22px system-ui,-apple-system,"Segoe UI",sans-serif}.date{font:700 17px system-ui,-apple-system,"Segoe UI",sans-serif}.label{font:700 14px system-ui,-apple-system,"Segoe UI",sans-serif}.body{font:500 12.5px system-ui,-apple-system,"Segoe UI",sans-serif}.line{stroke:#9a8456;stroke-width:2;fill:none}.dash{stroke:#9a8456;stroke-width:1.6;stroke-dasharray:6 5;fill:none}
+    @media (prefers-color-scheme:dark){.bg{fill:#171612}.panel{fill:#201f1a;stroke:#6f6245}.left{fill:#342d20;stroke:#aa925a}.right{fill:#27241e;stroke:#aa925a}.ink{fill:#f3efe5}.muted{fill:#c7c0b0}.accent{fill:#d0ad62}.line,.dash{stroke:#d0ad62}}
+  </style>
+  <rect class="bg" width="760" height="500" rx="24"/>
+  <rect class="panel" x="18" y="18" width="724" height="464" rx="20"/>
+  <text class="head ink" x="42" y="57">1884: два события, две разные задачи</text>
+  <text class="body muted" x="42" y="80">Не один «первый съезд», а две развилки одного месяца.</text>
+
+  <rect class="left" x="42" y="112" width="318" height="252" rx="16"/>
+  <text class="date accent" x="60" y="142">1–6 апреля · Петербург</text>
+  <text class="label ink" x="60" y="171">Широкое евангельское совещание</text>
+  <text class="body muted" x="60" y="197">Пашков / Корф · разные евангельские</text>
+  <text class="body muted" x="60" y="216">течения · попытка координации</text>
+  <path class="line" d="M60 238H340"/>
+  <text class="label ink" x="60" y="266">Ключевая граница</text>
+  <text class="body muted" x="60" y="289">вопрос крещения показал, что общего</text>
+  <text class="body muted" x="60" y="308">деноминационного основания ещё нет</text>
+  <text class="body muted" x="60" y="337">Собрание прервано полицейским давлением.</text>
+
+  <rect class="right" x="400" y="112" width="318" height="252" rx="16"/>
+  <text class="date accent" x="418" y="142">30 апреля – 1 мая · Ново-Васильевка</text>
+  <text class="label ink" x="418" y="171">Баптистская конференция</text>
+  <text class="body muted" x="418" y="197">протокол · южные общины · миссия</text>
+  <text class="body muted" x="418" y="216">и координация братства</text>
+  <path class="line" d="M418 238H698"/>
+  <text class="label ink" x="418" y="266">Организационная развилка</text>
+  <text class="body muted" x="418" y="289">союзная форма и вопросы Вечери;</text>
+  <text class="body muted" x="418" y="308">не «готовая организация за один день»</text>
+  <text class="body muted" x="418" y="337">Протокол сохранился в двух публикациях.</text>
+
+  <path class="dash" d="M201 365V397M559 365V397"/>
+  <rect class="panel" x="155" y="397" width="450" height="50" rx="13"/>
+  <text class="label ink" x="173" y="420">Михаил Ратушный — участник обоих событий</text>
+  <text class="body muted" x="173" y="439">общий человек не превращает два собрания в одно</text>
+
+  <text class="body accent" x="42" y="471">Редакционное правило: на карте и в тексте держать два отдельных узла 1884 года.</text>
+</svg>

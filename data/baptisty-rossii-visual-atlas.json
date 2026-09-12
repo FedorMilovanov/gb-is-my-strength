@@ -63,14 +63,20 @@
       "id": "rb-03-two-1884-events",
       "slug": "dva-sezda-1884",
       "type": "split-timeline-map",
-      "status": "planned",
+      "status": "production",
       "priority": "P0",
       "title": "1884: два события, две развилки",
       "purpose": "Визуально исключить смешение Петербургского совещания и Ново-Васильевского съезда.",
       "nodes": ["St Petersburg meeting", "Novo-Vasilievka congress", "Confession", "Brotherhood order"],
       "sourceFiles": ["23-two-1884-meetings-primary-source-trail-2026-06-18.md", "24-first-confession-and-brotherhood-order-source-trail-2026-06-18.md", "38-dorodnitsyn-1908-documents-rules-catechism-1884-2026-06-19.md", "39-two-1884-events-coleman-verified-2026-06-19.md"],
       "mapSync": ["1884 dual event distinction", "document node"],
-      "visualRisks": ["не соединять события одной стрелкой как одно собрание"]
+      "visualRisks": ["не соединять события одной стрелкой как одно собрание"],
+      "assetPath": "images/baptisty-rossii/atlas/rb-03-two-1884-events.svg",
+      "articleComponent": "src/components/baptisty-rossii/BaptistyRossiiDvaSezda1884Body.astro",
+      "articleAnchor": "visual-atlas-two-1884-events",
+      "implementedAt": "2026-09-12",
+      "caption": "Петербургское совещание 1–6 апреля и Ново-Васильевская конференция 30 апреля – 1 мая показаны как два отдельных события. Участие Михаила Ратушного в обоих не превращает их в один съезд.",
+      "sourceConfidence": {"eventSeparation": "primary-plus-academic", "petersburgDates": "verified", "novoVasilyevkaDates": "primary-protocol", "unionFormula": "editorially-qualified"}
     },
     {
       "id": "rb-04-petersburg-line-network",
