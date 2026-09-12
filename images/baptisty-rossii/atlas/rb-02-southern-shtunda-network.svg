@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="520" viewBox="0 0 760 520" role="img" aria-labelledby="rb02-title rb02-desc">
+  <title id="rb02-title">Южная штунда: местное библейское пробуждение и баптистская форма</title>
+  <desc id="rb02-desc">Редакционная схема показывает две сходящиеся линии: местные домашние чтения и поиск евангельской жизни, а также немецко-баптистские и меннонитско-братские каналы. Их встреча видна в крещениях Цимбала, Рябошапки и Ратушного, церковном порядке и сети общин. Схема подчёркивает, что ранняя штунда не тождественна баптизму с первого дня.</desc>
+  <style>
+    .bg{fill:#f7f4ed}.panel{fill:#fffdf8;stroke:#c8b993;stroke-width:1.5}.local{fill:#f3ead8;stroke:#9a8456;stroke-width:1.5}.external{fill:#fff;stroke:#9a8456;stroke-width:1.5}.merge{fill:#eee4ce;stroke:#8b733e;stroke-width:1.7}.ink{fill:#22201c}.muted{fill:#635f55}.accent{fill:#7d642d}.head{font:700 22px system-ui,-apple-system,"Segoe UI",sans-serif}.label{font:700 14px system-ui,-apple-system,"Segoe UI",sans-serif}.body{font:500 12.2px system-ui,-apple-system,"Segoe UI",sans-serif}.year{font:700 13px system-ui,-apple-system,"Segoe UI",sans-serif}.line{stroke:#8f7b51;stroke-width:2.1;fill:none}.dash{stroke:#8f7b51;stroke-width:1.7;stroke-dasharray:6 5;fill:none}
+    @media (prefers-color-scheme:dark){.bg{fill:#171612}.panel{fill:#201f1a;stroke:#6f6245}.local{fill:#342d20;stroke:#aa925a}.external{fill:#27241e;stroke:#aa925a}.merge{fill:#3c321d;stroke:#b79a5e}.ink{fill:#f3efe5}.muted{fill:#c7c0b0}.accent{fill:#d0ad62}.line,.dash{stroke:#d0ad62}}
+  </style>
+  <defs><marker id="rb02-arrow" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0l10 5-10 5z" class="accent"/></marker></defs>
+  <rect class="bg" width="760" height="520" rx="24"/>
+  <rect class="panel" x="18" y="18" width="724" height="484" rx="20"/>
+  <text class="head ink" x="42" y="57">Южная штунда: встреча двух линий, а не односторонний «импорт»</text>
+  <text class="body muted" x="42" y="80">Местный библейский поиск получает баптистскую форму через людей, крещение, порядок и связи общин.</text>
+
+  <rect class="local" x="42" y="112" width="294" height="116" rx="15"/>
+  <text class="label ink" x="60" y="139">Местная линия</text>
+  <text class="body muted" x="60" y="162">домашние часы чтения · Новый Завет</text>
+  <text class="body muted" x="60" y="183">Карловка · Любомирка · Основа</text>
+  <text class="body muted" x="60" y="204">поиск, спор с обрядовой практикой</text>
+
+  <rect class="external" x="424" y="112" width="294" height="116" rx="15"/>
+  <text class="label ink" x="442" y="139">Баптистская / братская линия</text>
+  <text class="body muted" x="442" y="162">Унгер · Альт-Данциг · Онкен · Прицкау</text>
+  <text class="body muted" x="442" y="183">крещение верующих · порядок · конференции</text>
+  <text class="body muted" x="442" y="204">межобщинная и международная связь</text>
+
+  <path class="line" d="M190 228C220 264 292 272 338 294" marker-end="url(#rb02-arrow)"/>
+  <path class="line" d="M570 228C540 264 468 272 422 294" marker-end="url(#rb02-arrow)"/>
+
+  <rect class="merge" x="214" y="292" width="332" height="106" rx="16"/>
+  <text class="year accent" x="232" y="318">1869 → 1870 → 1871</text>
+  <text class="label ink" x="232" y="343">Цимбал → Рябошапка → Ратушный</text>
+  <text class="body muted" x="232" y="365">датированные крещения становятся узлами</text>
+  <text class="body muted" x="232" y="384">славянской проповеднической и церковной сети</text>
+
+  <path class="line" d="M380 398V425" marker-end="url(#rb02-arrow)"/>
+
+  <rect class="external" x="128" y="432" width="504" height="48" rx="13"/>
+  <text class="label ink" x="146" y="455">К 1870-м: общины, хлебопреломление, служители, конференционная связь</text>
+  <text class="body muted" x="146" y="472">ещё не готовая всероссийская конфессия — но уже сеть, из которой вырастет союзная форма</text>
+
+  <text class="body accent" x="42" y="503">Граница: «штунда» — меняющийся исторический термин; часть штундистской среды получила баптистскую форму.</text>
+</svg>
