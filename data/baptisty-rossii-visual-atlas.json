@@ -88,14 +88,20 @@
       "id": "rb-04-petersburg-line-network",
       "slug": "peterburgskaya-liniya",
       "type": "influence-network",
-      "status": "planned",
+      "status": "production",
       "priority": "P1",
       "title": "Петербургская евангельская сеть",
       "purpose": "Показать Редстока, Пашкова, Корфа, Каргеля, Проханова как сеть, а не список имён.",
       "nodes": ["Radstock", "Pashkov", "Korf", "Kargel", "Prokhanov"],
       "sourceFiles": ["07-petersburg-line-redstock-pashkov-prokhanov-2026-06-13.md"],
       "mapSync": ["Petersburg network", "Pashkov circle", "Prokhanov node"],
-      "visualRisks": ["не перегрузить подписями", "не подменить баптистскую линию общей евангельской историей"]
+      "visualRisks": ["не перегрузить подписями", "не подменить баптистскую линию общей евангельской историей"],
+      "assetPath": "images/baptisty-rossii/atlas/rb-04-petersburg-line-network.svg",
+      "articleComponent": "src/components/baptisty-rossii/BaptistyRossiiPeterburgskayaLiniyaBody.astro",
+      "articleAnchor": "visual-atlas-petersburg-network",
+      "implementedAt": "2026-09-12",
+      "caption": "Схема показывает Петербург как сеть нескольких связанных центров и двух временных слоёв, а не как прямую цепь преемников: Редсток, Пашков, Корф и Ливены, Каргель с Бедекером и следующее поколение Проханова.",
+      "sourceConfidence": {"networkShape": "editorial-synthesis", "pashkov1880": "primary-participant", "kargel1885": "primary-protocol", "prokhanovInstitutionalization": "documented-next-generation"}
     },
     {
       "id": "rb-05-conscience-decision-tree",
