@@ -212,7 +212,8 @@ const siteConfig = {
 
 <style is:global>
   /*
-   * The shared desktop series rail owns 304px from 64rem upward.
+   * The shared desktop series rail exposes its full live reserve (left margin
+   * + rail width + breathing gap) through --gb-rail-reserve from 64rem upward.
    * Keep the Teen reader surface inside the remaining viewport; otherwise
    * overflow-x hiding masks an article/prose rectangle that extends off-screen
    * at the exact 1024px desktop breakpoint.
@@ -220,8 +221,8 @@ const siteConfig = {
   @media (min-width: 64rem) {
     body[data-gbs2-series="teen-double-life"] [data-gill-v16] .page-wrap {
       box-sizing: border-box;
-      width: min(820px, calc(100vw - 304px));
-      max-width: calc(100vw - 304px);
+      width: min(820px, calc(100vw - var(--gb-rail-reserve)));
+      max-width: calc(100vw - var(--gb-rail-reserve));
     }
 
     body[data-gbs2-series="teen-double-life"] [data-gill-v16] .page-wrap > main.article-main {
