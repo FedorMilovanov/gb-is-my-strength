@@ -86,6 +86,10 @@ const focusableSelector = [
   '.cp-backdrop.is-open a[href]',
   '.cp-backdrop.is-open [tabindex]:not([tabindex="-1"]):not([role="option"])',
 ].join(',');
+const WEBKIT_LOCAL_CERT_DIAGNOSTIC = 'Failed to load resource: SSL peer certificate or SSH remote key was not OK';
+function isExpectedWebKitLocalCertificateDiagnostic(browserName, text) {
+  return browserName === 'webkit' && text === WEBKIT_LOCAL_CERT_DIAGNOSTIC;
+}
 
 async function runCase(browserType, browserName, viewport, port, ordinal) {
   const browser = await browserType.launch({ headless: true });
@@ -99,6 +103,10 @@ async function runCase(browserType, browserName, viewport, port, ordinal) {
     const expectedWebKitViewportWarning =
       text === 'Viewport argument key "interactive-widget" not recognized and ignored.';
     if (browserName === 'webkit' && expectedWebKitViewportWarning) {
+      engineWarnings.push(text);
+      return;
+    }
+    if (isExpectedWebKitLocalCertificateDiagnostic(browserName, text)) {
       engineWarnings.push(text);
       return;
     }
@@ -414,7 +422,12 @@ async function runContinuationContract(browserType, browserName, port, viewport)
     activePage = page;
     consoleErrors = [];
     pageErrors = [];
-    page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()); });
+    page.on('console', (message) => {
+      if (message.type() !== 'error') return;
+      const text = message.text();
+      if (isExpectedWebKitLocalCertificateDiagnostic(browserName, text)) return;
+      consoleErrors.push(text);
+    });
     page.on('pageerror', (error) => pageErrors.push(String(error)));
     if (configure) await configure(page);
     await page.goto('http://127.0.0.1:' + port + '/', { waitUntil: 'domcontentloaded', timeout: 60_000 });
