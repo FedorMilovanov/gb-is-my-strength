@@ -10,6 +10,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { spawnNpm } = require('./lib/npm-spawn');
 
 const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -98,9 +99,8 @@ function runHomepageResumeContract() {
 function runBuild() {
   if (NO_BUILD) return;
   console.log('▶ Building production-like strangler dist for home audit…');
-  const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-  const res = spawnSync(npm, ['run', 'strangler:build:production-like'], { cwd: ROOT, stdio: 'inherit' });
-  if (res.status !== 0) process.exit(res.status || 1);
+  const res = spawnNpm(['run', 'strangler:build:production-like'], { cwd: ROOT, stdio: 'inherit' });
+  if (res.status !== 0) process.exit(res.status);
 }
 function mustEqual(label, actual, expected) {
   if (actual === expected) ok(`${label}: ${expected}`);
