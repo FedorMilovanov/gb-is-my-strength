@@ -3,7 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { spawnSync } = require('child_process');
+const { spawnNpm } = require('./lib/npm-spawn');
 const { resolveReferenceForRoute } = require('../migration/legacy-reference-path');
 
 const ROOT = path.join(__dirname, '..');
@@ -54,9 +54,8 @@ function canonical(html) {
 function runBuild() {
   if (NO_BUILD) return;
   console.log('▶ Building production-like strangler dist for ishod audit…');
-  const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-  const res = spawnSync(npm, ['run', 'strangler:build:production-like'], { cwd: ROOT, stdio: 'inherit' });
-  if (res.status !== 0) process.exit(res.status || 1);
+  const res = spawnNpm(['run', 'strangler:build:production-like'], { cwd: ROOT, stdio: 'inherit' });
+  if (res.status !== 0) process.exit(res.status);
 }
 function mustEqual(label, actual, expected) {
   if (actual === expected) ok(`${label}: ${expected}`);
