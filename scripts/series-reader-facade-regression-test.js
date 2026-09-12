@@ -15,6 +15,11 @@ const LEARNING_SHEET = path.join(ROOT, 'src/components/article-pilots/gill-serie
 const SERIES_CONFIG = path.join(ROOT, 'src/components/article-pilots/_shared/series/seriesConfig.ts');
 const BAPTIST_SERIES_CONFIG = path.join(ROOT, 'src/components/article-pilots/_shared/series/baptistFlatSeriesConfig.ts');
 const DIST = path.join(ROOT, 'dist');
+const REQUIRE_DIST = process.argv.includes('--require-dist');
+const DIST_ARG = process.argv.find((arg) => arg.startsWith('--dist='));
+const REPORT_ARG = process.argv.find((arg) => arg.startsWith('--report='));
+const STRICT_DIST = DIST_ARG ? path.resolve(ROOT, DIST_ARG.slice('--dist='.length)) : DIST;
+const STRICT_REPORT = REPORT_ARG ? path.resolve(ROOT, REPORT_ARG.slice('--report='.length)) : undefined;
 const IMPLEMENTATION_IMPORT = "import GillSeriesChrome from '../../gill-series/GillSeriesChrome.astro';";
 const DIRECT_IMPORT_RE = /import\s+[A-Za-z_$][\w$]*\s+from\s+['"][^'"]*GillSeriesChrome\.astro['"]/;
 const FACADE_IMPORT_RE = /import\s+SeriesReaderChrome\s+from\s+['"][^'"]*SeriesReaderChrome\.astro['"]/g;
@@ -89,9 +94,19 @@ for (const file of sourceFiles) {
 assert.deepEqual(illegal, [], `direct GillSeriesChrome imports outside façade: ${illegal.join(', ')}`);
 assert.ok(facadeImports >= 41, `expected at least 41 SeriesReaderChrome consumers, found ${facadeImports}`);
 
-if (fs.existsSync(DIST)) {
-  const report = auditSeriesFragments({ dist: DIST, failOnMissingDist: false });
-  assert.equal(report.result, 'PASS', `rendered series fragment contract failed: ${report.errors.join('; ')}`);
+if ((DIST_ARG || REPORT_ARG) && !REQUIRE_DIST) {
+  throw new Error('--dist/--report require --require-dist; default facade guard is source-only');
 }
 
-console.log(`✅ series-reader-facade: ${facadeImports} consumers; implementation import isolated to façade; content-layer rendering uses Astro render(entry); heart progress fail-closed; mobile Back config-owned; no-quiz Learning panel relation guarded; Learning search has persistent accessible name; fragment audit registered`);
+let strictFragmentSummary = 'fragment audit registered (source-only mode)';
+if (REQUIRE_DIST) {
+  const report = auditSeriesFragments({
+    dist: STRICT_DIST,
+    reportPath: STRICT_REPORT,
+    failOnMissingDist: true,
+  });
+  assert.equal(report.result, 'PASS', `rendered series fragment contract failed: ${report.errors.join('; ')}`);
+  strictFragmentSummary = `strict fragment audit passed: ${report.totals.pages} page(s), ${report.totals.uniqueFragments} unique target(s)`;
+}
+
+console.log(`✅ series-reader-facade: ${facadeImports} consumers; implementation import isolated to façade; content-layer rendering uses Astro render(entry); heart progress fail-closed; mobile Back config-owned; no-quiz Learning panel relation guarded; Learning search has persistent accessible name; ${strictFragmentSummary}`);

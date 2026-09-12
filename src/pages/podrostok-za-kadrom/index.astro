@@ -2,15 +2,17 @@
 import Seo from '@/components/seo/Seo.astro';
 import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 import { TEEN_DOUBLE_LIFE_SERIES } from '@/components/article-pilots/_shared/series/teenSeriesConfig';
+import { TEEN_SERIES_MEDIA, teenSeriesMediaFor } from '@/components/article-pilots/_shared/series/teenSeriesMedia';
 import { SITE } from '@/data/site';
 import { assetUrl } from '@/lib/asset-version';
 
 const canonical = `${SITE.url}/podrostok-za-kadrom/`;
-const ogImagePath = '/images/teen-series/series-hero.webp';
+const ogImagePath = TEEN_SERIES_MEDIA.series.hero;
 const ogImage = `${SITE.url}${ogImagePath}`;
 const title = 'Подросток за кадром: двойная жизнь, семья и взросление | Господь Бог — Сила Моя';
 const description = 'Семь больших материалов о скрытой жизни подростка, реакции родителей и церкви, взрослении, границах, деньгах, возвращении и браке — с Писанием как главным ориентиром.';
 const items = TEEN_DOUBLE_LIFE_SERIES.items;
+const cards = items.map((item) => ({ ...item, media: teenSeriesMediaFor(item.id) }));
 const totalMinutes = items.reduce((sum, item) => sum + Number.parseInt(item.readingTime, 10), 0);
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -70,7 +72,7 @@ const jsonLd = {
       canonical={canonical}
       robots="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
       ogImage={ogImage}
-      ogImageAlt="Свет у открытой двери и телефон на пороге — образ скрытой и открытой жизни"
+      ogImageAlt={TEEN_SERIES_MEDIA.series.alt}
       ogImageWidth="1200"
       ogImageHeight="630"
       ogType="website"
@@ -100,19 +102,40 @@ const jsonLd = {
         </header>
 
         <figure class="teen-series-hero">
-          <img src="/images/teen-series/series-hero.svg" width="1200" height="630" alt="Свет у открытой двери и телефон на пороге — образ скрытой и открытой жизни" loading="eager" fetchpriority="high" />
+          <img
+            src={TEEN_SERIES_MEDIA.series.hero}
+            srcset={`${TEEN_SERIES_MEDIA.series.rail} 600w, ${TEEN_SERIES_MEDIA.series.hero} 1200w`}
+            sizes="(max-width: 48rem) 100vw, 820px"
+            width="1200"
+            height="630"
+            alt={TEEN_SERIES_MEDIA.series.alt}
+            loading="eager"
+            decoding="async"
+            fetchpriority="high"
+          />
         </figure>
 
         <section aria-labelledby="series-order">
           <h2 id="series-order">Читать по порядку</h2>
           <div class="teen-series-grid">
-            {items.map((item, index) => (
+            {cards.map((item, index) => (
               <a class="teen-series-card" href={item.href}>
-                <span class="teen-series-card__mark" aria-hidden="true">{item.mark.value}</span>
-                <span class="teen-series-card__body">
-                  <span class="teen-series-card__eyebrow">Шаг {index + 1} из {items.length} · {item.readingTime}</span>
-                  <strong>{item.title}</strong>
-                  <span>{item.shortTitle}</span>
+                <img
+                  class="teen-series-card__image"
+                  src={item.media.rail}
+                  width="600"
+                  height="315"
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="teen-series-card__content">
+                  <span class="teen-series-card__mark" aria-hidden="true">{item.mark.value}</span>
+                  <span class="teen-series-card__body">
+                    <span class="teen-series-card__eyebrow">Шаг {index + 1} из {cards.length} · {item.readingTime}</span>
+                    <strong>{item.title}</strong>
+                    <span>{item.shortTitle}</span>
+                  </span>
                 </span>
               </a>
             ))}
@@ -136,12 +159,14 @@ const jsonLd = {
       </article>
     </main>
     <style>
-      .teen-series-hero{margin:2rem 0 2.5rem}.teen-series-hero img{display:block;width:100%;height:auto;border-radius:1.5rem}
+      .teen-series-hero{margin:2rem 0 2.5rem}.teen-series-hero img{display:block;width:100%;height:auto;aspect-ratio:1200/630;object-fit:cover;border-radius:1.5rem}
       .teen-series-grid{display:grid;gap:1rem;margin:1.25rem 0 2.5rem}
-      .teen-series-card{display:flex;gap:1rem;align-items:flex-start;padding:1.1rem 1.2rem;border:1px solid color-mix(in srgb,currentColor 18%,transparent);border-radius:1rem;text-decoration:none;color:inherit;background:color-mix(in srgb,Canvas 94%,currentColor 6%)}
-      .teen-series-card:hover,.teen-series-card:focus-visible{border-color:currentColor;transform:translateY(-1px)}
-      .teen-series-card__mark{display:grid;place-items:center;min-width:2.7rem;height:2.7rem;border-radius:999px;background:var(--color-text);color:var(--color-canvas);font-weight:800}
-      .teen-series-card__body{display:grid;gap:.25rem}.teen-series-card__eyebrow{font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;opacity:.72}.teen-series-card strong{font-size:1.05rem;line-height:1.35}.teen-series-card__body>span:last-child{opacity:.78}
+      .teen-series-card{display:grid;grid-template-rows:auto 1fr;overflow:hidden;border:1px solid color-mix(in srgb,currentColor 18%,transparent);border-radius:1rem;text-decoration:none;color:inherit;background:color-mix(in srgb,Canvas 94%,currentColor 6%)}
+      .teen-series-card:hover,.teen-series-card:focus-visible{border-color:currentColor;transform:translateY(-2px)}
+      .teen-series-card__image{display:block;width:100%;height:auto;aspect-ratio:600/315;object-fit:cover;background:color-mix(in srgb,Canvas 88%,currentColor 12%)}
+      .teen-series-card__content{display:flex;gap:.85rem;align-items:flex-start;padding:1rem 1.05rem 1.1rem}
+      .teen-series-card__mark{display:grid;place-items:center;flex:0 0 2.7rem;width:2.7rem;height:2.7rem;border-radius:999px;background:var(--color-text);color:var(--color-canvas);font-weight:800}
+      .teen-series-card__body{display:grid;gap:.25rem;min-width:0}.teen-series-card__eyebrow{font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;opacity:.72}.teen-series-card strong{font-size:1.05rem;line-height:1.35}.teen-series-card__body>span:last-child{opacity:.78}
       @media (min-width:760px){.teen-series-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
       @media (prefers-reduced-motion:no-preference){.teen-series-card{transition:transform .16s ease,border-color .16s ease}}
     </style>
