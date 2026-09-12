@@ -7,9 +7,9 @@
  * normal rail/prev-next flow. Therefore A-D use core `label` marks.
  */
 import { SERIES_CONFIGS, type SeriesConfig, type SeriesPartTocItem, defineSeriesConfig } from './seriesConfig';
+import { teenSeriesMediaFor } from './teenSeriesMedia';
 
 const TOTAL_MIN = 264;
-const TEEN_SERIES_RAIL_COVER = '/images/teen-series/series-hero.svg';
 const toc = (...items: SeriesPartTocItem[]): SeriesPartTocItem[] => items;
 
 const teenDoubleLifeToc = toc(
@@ -182,7 +182,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressPartMin: 32,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Как рождается двойная жизнь',
-      railCover: TEEN_SERIES_RAIL_COVER,
+      railCover: teenSeriesMediaFor('teen-double-life').rail,
       partDialogLabel: 'Часть I · Двойная жизнь',
       partToc: teenDoubleLifeToc,
     },
@@ -196,7 +196,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressPartMin: 43,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Что делать родителям после разоблачения',
-      railCover: TEEN_SERIES_RAIL_COVER,
+      railCover: teenSeriesMediaFor('teen-parents-after-disclosure').rail,
       partDialogLabel: 'Часть II · После разоблачения',
       partToc: teenParentsToc,
     },
@@ -210,7 +210,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressPartMin: 39,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Что должна делать церковь',
-      railCover: TEEN_SERIES_RAIL_COVER,
+      railCover: teenSeriesMediaFor('teen-church-response').rail,
       partDialogLabel: 'Часть III · Церковь',
       partToc: teenChurchToc,
     },
@@ -224,7 +224,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressPartMin: 37,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Контакт, ожидание, покаяние и возвращение',
-      railCover: TEEN_SERIES_RAIL_COVER,
+      railCover: teenSeriesMediaFor('adult-child-left-home').rail,
       partDialogLabel: 'A · Взрослый ребёнок ушёл',
       partToc: adultChildLeftToc,
     },
@@ -238,7 +238,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressPartMin: 36,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Правила, деньги, помощь и последствия',
-      railCover: TEEN_SERIES_RAIL_COVER,
+      railCover: teenSeriesMediaFor('adult-child-home-money').rail,
       partDialogLabel: 'B · Дом и деньги',
       partToc: adultChildHomeToc,
     },
@@ -252,7 +252,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressPartMin: 35,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Что меняется, что остаётся',
-      railCover: TEEN_SERIES_RAIL_COVER,
+      railCover: teenSeriesMediaFor('adult-child-authority').rail,
       partDialogLabel: 'C · Родительская власть',
       partToc: adultAuthorityToc,
     },
@@ -266,7 +266,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressPartMin: 42,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Согласие и границы власти',
-      railCover: TEEN_SERIES_RAIL_COVER,
+      railCover: teenSeriesMediaFor('adult-daughter-marriage').rail,
       partDialogLabel: 'D · Дочь, отец и брак',
       partToc: adultDaughterToc,
     },

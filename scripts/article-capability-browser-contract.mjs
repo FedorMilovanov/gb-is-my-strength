@@ -61,14 +61,27 @@ async function startServer() {
 async function exerciseFaq(page, label) {
   const button = page.locator('.faq-accordion__q[data-gb-faq-owner="native-v1"]').first();
   await button.waitFor({ state: 'visible' });
-  const before = await button.getAttribute('aria-expanded');
-  await button.click();
-  const after = await button.getAttribute('aria-expanded');
-  assert.notEqual(after, before, `${label}: FAQ click did not toggle aria-expanded`);
-  const itemOpen = await button.evaluate((node) => node.closest('.faq-accordion__item')?.classList.contains('is-open') === true);
-  assert.equal(itemOpen, after === 'true', `${label}: FAQ visual/open state diverges from aria-expanded`);
-  await button.click();
-  assert.equal(await button.getAttribute('aria-expanded'), before, `${label}: FAQ second click did not restore state`);
+  const firstTransition = await button.evaluate((node) => {
+    const before = node.getAttribute('aria-expanded');
+    node.click();
+    return {
+      before,
+      after: node.getAttribute('aria-expanded'),
+      itemOpen: node.closest('.faq-accordion__item')?.classList.contains('is-open') === true,
+    };
+  });
+  assert.notEqual(firstTransition.after, firstTransition.before, `${label}: FAQ click did not toggle aria-expanded`);
+  assert.equal(firstTransition.itemOpen, firstTransition.after === 'true', `${label}: FAQ visual/open state diverges from aria-expanded`);
+
+  const restored = await button.evaluate((node) => {
+    node.click();
+    return {
+      expanded: node.getAttribute('aria-expanded'),
+      itemOpen: node.closest('.faq-accordion__item')?.classList.contains('is-open') === true,
+    };
+  });
+  assert.equal(restored.expanded, firstTransition.before, `${label}: FAQ second click did not restore state`);
+  assert.equal(restored.itemOpen, restored.expanded === 'true', `${label}: FAQ restored visual/open state diverges from aria-expanded`);
 }
 
 async function exerciseHeadingAnchor(page, label) {
@@ -139,17 +152,25 @@ async function exerciseHeadingAnchor(page, label) {
   assert.equal(await anchor.getAttribute('aria-label'), 'Скопировать ссылку на раздел', `${label}: heading anchor accessibility label drift`);
 
   const expectedUrl = await page.evaluate((fragment) => new URL(fragment, window.location.href).toString(), href);
-  await anchor.click();
-  await page.waitForFunction((fragment) => {
+  await page.evaluate(() => {
     const toast = document.getElementById('anchor-copy-toast');
-    return toast?.classList.contains('is-visible') === true || window.location.hash === fragment;
-  }, href);
+    window.__gbAnchorFeedbackSeen = toast?.classList.contains('is-visible') === true;
+    if (!toast || window.__gbAnchorFeedbackSeen) return;
+    const observer = new MutationObserver(() => {
+      if (!toast.classList.contains('is-visible')) return;
+      window.__gbAnchorFeedbackSeen = true;
+      observer.disconnect();
+    });
+    observer.observe(toast, { attributes: true, attributeFilter: ['class'] });
+  });
+  await anchor.click();
+  await page.waitForFunction(() => window.__gbAnchorFeedbackSeen === true);
 
   const feedback = await page.evaluate(() => ({
-    toast: document.getElementById('anchor-copy-toast')?.classList.contains('is-visible') === true,
+    toastSeen: window.__gbAnchorFeedbackSeen === true,
     hash: window.location.hash,
   }));
-  assert.equal(feedback.toast, true, `${label}: heading-anchor activation produced no user feedback`);
+  assert.equal(feedback.toastSeen, true, `${label}: heading-anchor activation produced no user feedback`);
 
   const clipboard = await page.evaluate(async () => {
     try {
@@ -174,9 +195,19 @@ async function exerciseStrategicMap(page, label) {
   await page.keyboard.press('Enter');
   const popover = page.locator('#gb-strategic-map-popover');
   await popover.waitFor({ state: 'visible' });
+  await page.waitForFunction(() => {
+    const trigger = document.querySelector('.map-trigger[data-gb-strategic-map-owner="native-v1"]');
+    return trigger?.getAttribute('aria-expanded') === 'true';
+  });
   assert.equal(await trigger.getAttribute('aria-expanded'), 'true', `${label}: strategic map did not expose expanded state`);
   await page.keyboard.press('Escape');
-  await page.waitForFunction(() => document.getElementById('gb-strategic-map-popover')?.hidden === true);
+  await page.waitForFunction(() => {
+    const popover = document.getElementById('gb-strategic-map-popover');
+    const trigger = document.querySelector('.map-trigger[data-gb-strategic-map-owner="native-v1"]');
+    return popover?.hidden === true
+      && trigger?.getAttribute('aria-expanded') === 'false'
+      && document.activeElement === trigger;
+  });
   assert.equal(await trigger.getAttribute('aria-expanded'), 'false', `${label}: strategic map Escape did not collapse trigger`);
   assert.equal(await trigger.evaluate((node) => document.activeElement === node), true, `${label}: strategic map Escape did not restore focus`);
 }
@@ -185,12 +216,25 @@ async function exerciseReversibleCard(page, label) {
   const card = page.locator('.heart-flip-card[data-gb-reversible-card-owner="native-v1"]').first();
   await card.waitFor({ state: 'visible' });
   await card.focus();
+  const selector = '.heart-flip-card[data-gb-reversible-card-owner="native-v1"]';
   const before = await card.evaluate((node) => node.classList.contains('flipped'));
   await page.keyboard.press('Enter');
+  await page.waitForFunction(({ selector, before }) => {
+    const card = document.querySelector(selector);
+    if (!card) return false;
+    const flipped = card.classList.contains('flipped');
+    return flipped !== before && card.getAttribute('aria-expanded') === String(flipped);
+  }, { selector, before });
   const afterEnter = await card.evaluate((node) => node.classList.contains('flipped'));
   assert.notEqual(afterEnter, before, `${label}: reversible card Enter did not toggle exactly once`);
   assert.equal(await card.getAttribute('aria-expanded'), String(afterEnter), `${label}: reversible card aria-expanded drift after Enter`);
   await page.keyboard.press('Space');
+  await page.waitForFunction(({ selector, expected }) => {
+    const card = document.querySelector(selector);
+    if (!card) return false;
+    const flipped = card.classList.contains('flipped');
+    return flipped === expected && card.getAttribute('aria-expanded') === String(flipped);
+  }, { selector, expected: before });
   const afterSpace = await card.evaluate((node) => node.classList.contains('flipped'));
   assert.equal(afterSpace, before, `${label}: reversible card Space did not restore state`);
   assert.equal(await card.getAttribute('aria-expanded'), String(afterSpace), `${label}: reversible card aria-expanded drift after Space`);
