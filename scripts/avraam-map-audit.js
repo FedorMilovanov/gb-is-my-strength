@@ -4,6 +4,8 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { inspectMapInitSource } = require('./lib/map-init-source-contract');
+const { run: runMapInitSourceContractRegression } = require('./map-init-source-contract-test');
 
 const ROOT = path.resolve(__dirname, '..');
 const htmlPath = path.join(ROOT, 'karty/avraam/index.html');
@@ -284,11 +286,14 @@ assert('ABRAHAM research doc has no stale proposal noise', !/(research-only|0 ph
 
 // Native fail-visible contract: full editorial text becomes readable without JS,
 // while all runtime failures render one shared accessible recovery card.
+runMapInitSourceContractRegression();
 assert('native Avraam imports shared runtime fallback', astro.includes("import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.astro'"));
 assert('native Avraam preserves complete text fallback marker', /class="sr-only map-text-fallback"/.test(astro));
 assert('native Avraam stage owns loading/busy state', astro.includes('data-map-state="loading"') && astro.includes('aria-busy="true"'));
-assert('native Avraam rejects absent engine', /!window\.MapEngine[\s\S]*?throw new Error\('движок карты не загрузился'\)/.test(astro));
-assert('native Avraam rejects null map instance', /if \(!inst\) throw new Error\('движок не создал карту'\)/.test(astro));
+const avraamMapInit = inspectMapInitSource(astro);
+assert('native Avraam rejects absent engine before initialization', avraamMapInit.engineGuard);
+assert('native Avraam captures MapEngine.createMap result', avraamMapInit.createMapAssigned);
+assert('native Avraam rejects null map instance before ready state', avraamMapInit.nullGuardBeforeReady);
 assert('native Avraam reports failures through shared renderer', /GBMapRuntime\.renderFailure\(container/.test(astro));
 assert('native Avraam marks successful stage ready', /data-map-state', 'ready'/.test(astro));
 assert('shared no-JS CSS hides opaque stage', /<noscript>[\s\S]*?\[data-map-stage\][\s\S]*?display:\s*none\s*!important/.test(fallback));
