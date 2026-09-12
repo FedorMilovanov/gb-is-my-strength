@@ -1,0 +1,200 @@
+﻿---
+interface HistoricalMediaItem {
+  evidenceId: string;
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  title: string;
+  meta: string;
+  caption: string;
+  sourceUrl: string;
+  sourceLabel: string;
+}
+
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  intro?: string;
+  items: HistoricalMediaItem[];
+  variant?: 'standard' | 'wide';
+}
+
+const {
+  eyebrow = 'Архивный визуал',
+  heading,
+  intro,
+  items,
+  variant = 'standard',
+} = Astro.props;
+---
+
+<section class:list={['baptist-authentic-media', `baptist-authentic-media--${variant}`]} aria-label={heading}>
+  <header class="baptist-authentic-media__head">
+    <p class="baptist-authentic-media__eyebrow">{eyebrow}</p>
+    <h3>{heading}</h3>
+    {intro && <p>{intro}</p>}
+  </header>
+  <div class:list={['baptist-authentic-media__grid', items.length === 1 && 'baptist-authentic-media__grid--single']}>
+    {items.map((item) => (
+      <figure class="baptist-authentic-media__figure" data-baptist-master-evidence={item.evidenceId}>
+        <a class="baptist-authentic-media__image-link" href={item.sourceUrl} target="_blank" rel="noopener">
+          <img
+            src={item.src}
+            alt={item.alt}
+            width={item.width}
+            height={item.height}
+            loading="lazy"
+            decoding="async"
+          />
+        </a>
+        <figcaption>
+          <span class="baptist-authentic-media__meta">{item.meta}</span>
+          <strong>{item.title}</strong>
+          <p>{item.caption}</p>
+          <a href={item.sourceUrl} target="_blank" rel="noopener">{item.sourceLabel}</a>
+        </figcaption>
+      </figure>
+    ))}
+  </div>
+</section>
+
+<style>
+  .baptist-authentic-media {
+    margin: clamp(2rem, 5vw, 3.5rem) 0;
+    padding: clamp(1rem, 2.6vw, 1.5rem);
+    border: 1px solid color-mix(in srgb, var(--color-border) 88%, var(--gbs2-accent) 12%);
+    border-radius: 22px;
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--color-surface) 94%, var(--gbs2-accent) 6%), var(--color-surface));
+    box-shadow: 0 18px 48px color-mix(in srgb, var(--color-text) 8%, transparent);
+  }
+
+  .baptist-authentic-media__head {
+    display: grid;
+    gap: .45rem;
+    margin-bottom: 1.15rem;
+  }
+
+  .baptist-authentic-media__eyebrow {
+    margin: 0;
+    color: var(--gbs2-accent);
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+
+  .baptist-authentic-media__head h3 {
+    margin: 0;
+    color: var(--color-text);
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+    line-height: 1.15;
+  }
+
+  .baptist-authentic-media__head > p:not(.baptist-authentic-media__eyebrow) {
+    max-width: 56rem;
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: .96rem;
+    line-height: 1.55;
+  }
+
+  .baptist-authentic-media__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(.85rem, 2vw, 1.2rem);
+    align-items: start;
+  }
+
+  .baptist-authentic-media__grid--single {
+    grid-template-columns: minmax(0, 32rem);
+    justify-content: center;
+  }
+
+  .baptist-authentic-media--wide .baptist-authentic-media__grid--single {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .baptist-authentic-media--wide .baptist-authentic-media__figure img {
+    height: auto;
+    max-height: 38rem;
+  }
+
+  .baptist-authentic-media__figure {
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    background: var(--color-surface);
+  }
+
+  .baptist-authentic-media__image-link {
+    display: block;
+    padding: .55rem;
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--color-surface) 86%, #000 14%), color-mix(in srgb, var(--color-surface) 94%, #000 6%));
+  }
+
+  .baptist-authentic-media__figure img {
+    display: block;
+    width: 100%;
+    height: clamp(18rem, 42vw, 28rem);
+    border-radius: 10px;
+    object-fit: contain;
+    background: #171411;
+  }
+
+  .baptist-authentic-media__figure figcaption {
+    display: grid;
+    gap: .45rem;
+    padding: .9rem 1rem 1rem;
+    color: var(--color-text-muted);
+    font-size: .86rem;
+    line-height: 1.5;
+  }
+
+  .baptist-authentic-media__meta {
+    color: var(--gbs2-accent);
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+
+  .baptist-authentic-media__figure strong {
+    color: var(--color-text);
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.03rem;
+  }
+
+  .baptist-authentic-media__figure p {
+    margin: 0;
+  }
+
+  .baptist-authentic-media__figure figcaption > a {
+    width: fit-content;
+    color: var(--gbs2-accent);
+    font-size: .78rem;
+    font-weight: 700;
+    text-underline-offset: 3px;
+  }
+
+  @media (max-width: 640px) {
+    .baptist-authentic-media {
+      margin: 1.65rem 0;
+      padding: .72rem;
+      border-radius: 17px;
+    }
+
+    .baptist-authentic-media__grid {
+      grid-template-columns: 1fr;
+    }
+
+    .baptist-authentic-media__figure img {
+      height: min(112vw, 31rem);
+    }
+  }
+</style>

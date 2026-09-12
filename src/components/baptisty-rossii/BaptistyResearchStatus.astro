@@ -1,0 +1,137 @@
+---
+interface StatusItem {
+  label: string;
+  title: string;
+  text: string;
+  state: 'verified' | 'working' | 'blocked';
+}
+
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  intro?: string;
+  items: StatusItem[];
+}
+
+const {
+  eyebrow = 'Статус исследования',
+  heading,
+  intro,
+  items,
+} = Astro.props;
+---
+
+<section class="baptist-research-status" aria-label={heading}>
+  <header class="baptist-research-status__head">
+    <p class="baptist-research-status__eyebrow">{eyebrow}</p>
+    <h3>{heading}</h3>
+    {intro && <p>{intro}</p>}
+  </header>
+  <div class="baptist-research-status__grid">
+    {items.map((item) => (
+      <article class:list={['baptist-research-status__card', `baptist-research-status__card--${item.state}`]}>
+        <span class="baptist-research-status__label">{item.label}</span>
+        <strong>{item.title}</strong>
+        <p>{item.text}</p>
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .baptist-research-status {
+    margin: clamp(2rem, 5vw, 3.5rem) 0;
+    padding: clamp(1rem, 2.5vw, 1.45rem);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--color-surface) 96%, var(--gbs2-accent) 4%);
+  }
+
+  .baptist-research-status__head {
+    display: grid;
+    gap: .45rem;
+    margin-bottom: 1rem;
+  }
+  .baptist-research-status__eyebrow {
+    margin: 0;
+    color: var(--gbs2-accent);
+    font-size: .7rem;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+
+  .baptist-research-status__head h3 {
+    margin: 0;
+    color: var(--color-text);
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(1.3rem, 2.4vw, 1.8rem);
+    line-height: 1.15;
+  }
+
+  .baptist-research-status__head > p:not(.baptist-research-status__eyebrow) {
+    margin: 0;
+    max-width: 56rem;
+    color: var(--color-text-muted);
+    line-height: 1.55;
+  }
+
+  .baptist-research-status__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .75rem;
+  }
+  .baptist-research-status__card {
+    min-width: 0;
+    padding: .95rem;
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    background: var(--color-surface);
+  }
+
+  .baptist-research-status__label {
+    display: block;
+    margin-bottom: .35rem;
+    color: var(--gbs2-accent);
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .baptist-research-status__card strong {
+    display: block;
+    color: var(--color-text);
+    font-size: .96rem;
+    line-height: 1.35;
+  }
+
+  .baptist-research-status__card p {
+    margin: .42rem 0 0;
+    color: var(--color-text-muted);
+    font-size: .84rem;
+    line-height: 1.48;
+  }
+  .baptist-research-status__card--verified {
+    border-top: 3px solid color-mix(in srgb, var(--gbs2-accent) 78%, var(--color-border));
+  }
+
+  .baptist-research-status__card--working {
+    border-top: 3px solid color-mix(in srgb, #b88435 72%, var(--color-border));
+  }
+
+  .baptist-research-status__card--blocked {
+    border-top: 3px solid color-mix(in srgb, #8b5a5a 66%, var(--color-border));
+  }
+
+  @media (max-width: 720px) {
+    .baptist-research-status {
+      padding: .8rem;
+      border-radius: 16px;
+    }
+
+    .baptist-research-status__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
