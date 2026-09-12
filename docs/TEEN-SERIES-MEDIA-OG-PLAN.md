@@ -1,6 +1,6 @@
 # Teen series — media and OG plan
 
-Status: **PUBLISHED V1 / SERIES ASSET ADMITTED / ROUTE-SPECIFIC DERIVATIVES OPTIONAL**
+Status: **ROUTE-SPECIFIC PRODUCTION FAMILY ADMITTED / 2026-09-12**
 
 This plan applies the current Article Standard / Content Quality image contract to the published seven-part teen/adult-child series without using sensational or pseudo-documentary imagery of minors. The admitted v1 asset and its rights/provenance record are authoritative in `docs/TEEN-SERIES-MEDIA-PROVENANCE.md`.
 
@@ -152,7 +152,7 @@ For each public route verify:
 - Twitter/social projection uses the same approved rights object or an explicitly controlled derivative;
 - structured data image points to an admitted object, not a placeholder.
 
-The current v1 series cover is the admitted repository-owned `series-hero.svg`, with the approved 1200×630 WebP social projection. A future route-specific family is a quality enhancement, not a publication blocker, and must pass the same provenance/rights/crop review.
+The admitted production family is the route-specific WebP set recorded in `TEEN-SERIES-MEDIA-PROVENANCE.md`: one series cover plus seven article covers, each with a 1200×630 hero/OG derivative and a 600×315 card/rail derivative. The legacy `series-hero.svg` / `series-hero.webp` pair is superseded.
 
 ## 8. Rights/provenance record
 
@@ -189,4 +189,4 @@ Required before release:
 
 ## 10. Future media admission boundary
 
-The v1 series asset recorded in `TEEN-SERIES-MEDIA-PROVENANCE.md` is already production-authorized. Any replacement, route-specific derivative family or new body figure is not authorized until its bytes, provenance, rights, crop, alt/caption and route projection are reviewed together.
+The route-specific family recorded in `TEEN-SERIES-MEDIA-PROVENANCE.md` is the production-authorized baseline. Any replacement asset or new body figure is not authorized until its bytes, provenance, crop, alt/caption, weight budget and route projection are reviewed together. Generated source PNG/JPEG files remain outside the repository unless a separate archival decision explicitly admits them.

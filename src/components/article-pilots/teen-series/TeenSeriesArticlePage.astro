@@ -3,6 +3,7 @@ import Seo from '@/components/seo/Seo.astro';
 import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 import SeriesReaderChrome from '@/components/article-pilots/_shared/series/SeriesReaderChrome.astro';
 import { TEEN_DOUBLE_LIFE_SERIES } from '@/components/article-pilots/_shared/series/teenSeriesConfig';
+import { teenSeriesMediaFor } from '@/components/article-pilots/_shared/series/teenSeriesMedia';
 import { seriesItem } from '@/components/article-pilots/_shared/series/seriesConfig';
 import TeenSeriesCorrectionBoundary from '@/components/article-pilots/teen-series/TeenSeriesCorrectionBoundary.astro';
 import { SITE } from '@/data/site';
@@ -51,7 +52,8 @@ const indexable = frontmatter.draft !== true && frontmatter.noindex !== true;
 const robots = indexable
   ? 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1'
   : 'noindex, nofollow, noarchive';
-const ogImagePath = '/images/teen-series/series-hero.webp';
+const media = teenSeriesMediaFor(pageId);
+const ogImagePath = media.hero;
 const ogImage = `${SITE.url}${ogImagePath}`;
 const personId = `${SITE.url}/about/#person`;
 const breadcrumbsId = `${canonical}#breadcrumbs`;
@@ -143,7 +145,7 @@ const siteConfig = {
       canonical={canonical}
       robots={robots}
       ogImage={ogImage}
-      ogImageAlt="Свет у открытой двери и телефон на пороге — образ скрытой и открытой жизни"
+      ogImageAlt={media.alt}
       ogImageWidth="1200"
       ogImageHeight="630"
       ogType="article"
@@ -192,6 +194,19 @@ const siteConfig = {
             </p>
             <p>{frontmatter.description}</p>
           </header>
+          <figure class="teen-series-article-hero">
+            <img
+              src={media.hero}
+              srcset={`${media.rail} 600w, ${media.hero} 1200w`}
+              sizes="(max-width: 48rem) 100vw, 820px"
+              width="1200"
+              height="630"
+              alt={media.alt}
+              loading="eager"
+              decoding="async"
+              fetchpriority="high"
+            />
+          </figure>
           <div class="genesis6-prose teen-series-prose" id="article-content">
             <slot />
           </div>
@@ -211,6 +226,19 @@ const siteConfig = {
   </body>
 
 <style is:global>
+  .teen-series-article-hero {
+    margin: 1.25rem 0 2.25rem;
+  }
+
+  .teen-series-article-hero img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1200 / 630;
+    object-fit: cover;
+    border-radius: 1.25rem;
+  }
+
   /*
    * The shared desktop series rail exposes its full live reserve (left margin
    * + rail width + breathing gap) through --gb-rail-reserve from 64rem upward.
