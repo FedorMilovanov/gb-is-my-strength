@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="520" viewBox="0 0 760 520" role="img" aria-labelledby="rb08-title rb08-desc">
+  <title id="rb08-title">1960–1966: от документов ВСЕХБ к Совету Церквей и публичному протесту</title>
+  <desc id="rb08-desc">Редакционная временная схема показывает последовательность: Положение и Инструктивное письмо 1960 года, послания Инициативной группы 1961 года, образование Оргкомитета 25 февраля 1962 года, съезд ВСЕХБ 1963 года и спор о представительстве, образование Совета Церквей 18–19 сентября 1965 года и майскую делегацию 1966 года. Число участников делегации указано как несколько сотен из-за расхождения источников.</desc>
+  <style>
+    .bg{fill:#f7f4ed}.panel{fill:#fffdf8;stroke:#c8b993;stroke-width:1.5}.node{fill:#fff;stroke:#9a8456;stroke-width:1.4}.node2{fill:#f2ead8;stroke:#9a8456;stroke-width:1.4}.ink{fill:#22201c}.muted{fill:#635f55}.accent{fill:#7d642d}.head{font:700 22px system-ui,-apple-system,"Segoe UI",sans-serif}.year{font:700 13px system-ui,-apple-system,"Segoe UI",sans-serif}.label{font:700 13px system-ui,-apple-system,"Segoe UI",sans-serif}.body{font:500 11.8px system-ui,-apple-system,"Segoe UI",sans-serif}.line{stroke:#8f7b51;stroke-width:2.1;fill:none}.dash{stroke:#8f7b51;stroke-width:1.7;stroke-dasharray:6 5;fill:none}
+    @media (prefers-color-scheme:dark){.bg{fill:#171612}.panel{fill:#201f1a;stroke:#6f6245}.node{fill:#27241e;stroke:#aa925a}.node2{fill:#342d20;stroke:#aa925a}.ink{fill:#f3efe5}.muted{fill:#c7c0b0}.accent{fill:#d0ad62}.line,.dash{stroke:#d0ad62}}
+  </style>
+  <defs><marker id="rb08-arrow" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0l10 5-10 5z" class="accent"/></marker></defs>
+  <rect class="bg" width="760" height="520" rx="24"/>
+  <rect class="panel" x="18" y="18" width="724" height="484" rx="20"/>
+  <text class="head ink" x="42" y="57">1960–1966: как протест стал отдельной церковной сетью</text>
+  <text class="body muted" x="42" y="80">Документы, спор о представительстве и публичное давление — не один момент, а последовательность.</text>
+
+  <rect class="node2" x="42" y="110" width="200" height="82" rx="14"/>
+  <text class="year accent" x="58" y="134">1959/1960</text>
+  <text class="label ink" x="58" y="157">Положение + Инструктивное письмо</text>
+  <text class="body muted" x="58" y="178">контроль, регистрация, ограничения</text>
+
+  <rect class="node" x="280" y="110" width="200" height="82" rx="14"/>
+  <text class="year accent" x="296" y="134">13 и 23 августа 1961</text>
+  <text class="label ink" x="296" y="157">Инициативная группа</text>
+  <text class="body muted" x="296" y="178">требование съезда и обращение к церкви</text>
+
+  <rect class="node" x="518" y="110" width="200" height="82" rx="14"/>
+  <text class="year accent" x="534" y="134">25 февраля 1962</text>
+  <text class="label ink" x="534" y="157">Оргкомитет</text>
+  <text class="body muted" x="534" y="178">организационный центр подготовки съезда</text>
+
+  <path class="line" d="M242 151H273" marker-end="url(#rb08-arrow)"/>
+  <path class="line" d="M480 151H511" marker-end="url(#rb08-arrow)"/>
+
+  <rect class="node2" x="78" y="245" width="258" height="98" rx="14"/>
+  <text class="year accent" x="94" y="270">15–17 октября 1963</text>
+  <text class="label ink" x="94" y="294">Съезд ВСЕХБ и новый Устав</text>
+  <text class="body muted" x="94" y="315">официальная система меняет документы,</text>
+  <text class="body muted" x="94" y="332">но Оргкомитет не признаёт представительство</text>
+
+  <rect class="node" x="424" y="245" width="258" height="98" rx="14"/>
+  <text class="year accent" x="440" y="270">18–19 сентября 1965</text>
+  <text class="label ink" x="440" y="294">Совет Церквей ЕХБ</text>
+  <text class="body muted" x="440" y="315">Оргкомитет переименован; сеть действует</text>
+  <text class="body muted" x="440" y="332">как всесоюзный центр нерегистрированных церквей</text>
+
+  <path class="dash" d="M618 192C618 218 576 226 555 245" marker-end="url(#rb08-arrow)"/>
+  <path class="dash" d="M518 192C468 214 382 230 336 270" marker-end="url(#rb08-arrow)"/>
+  <path class="line" d="M336 294H417" marker-end="url(#rb08-arrow)"/>
+
+  <rect class="node2" x="164" y="392" width="432" height="72" rx="14"/>
+  <text class="year accent" x="180" y="416">16–19 мая 1966 · Москва</text>
+  <text class="label ink" x="180" y="438">Несколько сотен верующих → разгон → аресты Винса и Хорева</text>
+  <text class="body muted" x="180" y="456">точная численность расходится по источникам и здесь намеренно не фиксируется</text>
+
+  <path class="line" d="M553 343C553 370 510 382 486 392" marker-end="url(#rb08-arrow)"/>
+  <text class="body muted" x="42" y="493">Схема показывает изменение структуры конфликта, а не объявляет одну сторону единственным голосом всей церкви.</text>
+</svg>
