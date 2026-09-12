@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="520" viewBox="0 0 760 520" role="img" aria-labelledby="rb07-title rb07-desc">
+  <title id="rb07-title">ВСЕХиБ: церковное единство и административный контекст</title>
+  <desc id="rb07-desc">Организационная схема показывает Всесоюзный Совет евангельских христиан и баптистов в центре, региональных уполномоченных и общины как церковную сеть, Братский Вестник как общий печатный орган и государственный надзор как внешнюю рамку разрешённой религиозной деятельности. Пунктир к государственному блоку означает административный контекст и надзор, а не доказанную прямую команду по каждому церковному решению.</desc>
+  <style>
+    .bg{fill:#f7f4ed}.panel{fill:#fffdf8;stroke:#c8b993;stroke-width:1.5}.node{fill:#fff;stroke:#9a8456;stroke-width:1.5}.node2{fill:#f3ead8;stroke:#9a8456;stroke-width:1.5}.state{fill:#f4f0e7;stroke:#7e7562;stroke-width:1.5}.ink{fill:#22201c}.muted{fill:#635f55}.accent{fill:#7d642d}.head{font:700 22px system-ui,-apple-system,"Segoe UI",sans-serif}.label{font:700 14px system-ui,-apple-system,"Segoe UI",sans-serif}.body{font:500 12px system-ui,-apple-system,"Segoe UI",sans-serif}.tiny{font:500 11px system-ui,-apple-system,"Segoe UI",sans-serif}.line{stroke:#9a8456;stroke-width:2;fill:none}.dash{stroke:#7e7562;stroke-width:1.6;stroke-dasharray:6 5;fill:none}
+    @media (prefers-color-scheme:dark){.bg{fill:#171612}.panel{fill:#201f1a;stroke:#6f6245}.node{fill:#27241e;stroke:#aa925a}.node2{fill:#342d20;stroke:#aa925a}.state{fill:#2b2924;stroke:#8f8674}.ink{fill:#f3efe5}.muted{fill:#c7c0b0}.accent{fill:#d0ad62}.line{stroke:#d0ad62}.dash{stroke:#b7ad99}}
+  </style>
+  <rect class="bg" width="760" height="520" rx="24"/>
+  <rect class="panel" x="18" y="18" width="724" height="484" rx="20"/>
+  <text class="head ink" x="42" y="58">ВСЕХиБ после 1944: братская структура и внешняя рамка</text>
+  <text class="body muted" x="42" y="82">Сплошные линии — церковные связи; пунктир — административный контекст и надзор.</text>
+
+  <rect class="node2" x="246" y="112" width="268" height="76" rx="15"/>
+  <text class="label ink" x="264" y="140">ВСЕХиБ · союзный Совет</text>
+  <text class="body muted" x="264" y="161">общее руководство после объединения</text>
+  <text class="body muted" x="264" y="178">ЕХ и баптистов в 1944 году</text>
+
+  <rect class="node" x="66" y="244" width="230" height="90" rx="15"/>
+  <text class="label ink" x="84" y="272">Уполномоченные / регионы</text>
+  <text class="body muted" x="84" y="294">связь центра с территорией;</text>
+  <text class="body muted" x="84" y="312">более централизованная модель</text>
+
+  <rect class="node" x="464" y="244" width="230" height="90" rx="15"/>
+  <text class="label ink" x="482" y="272">«Братский Вестник»</text>
+  <text class="body muted" x="482" y="294">общий журнал · новости ·</text>
+  <text class="body muted" x="482" y="312">язык единства и дисциплины</text>
+
+  <path class="line" d="M310 188L211 244M450 188L579 244"/>
+
+  <rect class="node2" x="174" y="382" width="412" height="68" rx="15"/>
+  <text class="label ink" x="193" y="409">Местные общины и расширяющееся братство</text>
+  <text class="body muted" x="193" y="431">ЕХ + баптисты; в 1945 — новые группы и регионы на согласованных условиях</text>
+  <path class="line" d="M181 334L300 382M579 334L460 382"/>
+
+  <rect class="state" x="540" y="108" width="166" height="86" rx="15"/>
+  <text class="label ink" x="558" y="136">Государственная рамка</text>
+  <text class="body muted" x="558" y="158">разрешения · регистрация</text>
+  <text class="body muted" x="558" y="176">надзор религиозной жизни</text>
+  <path class="dash" d="M540 151H514"/>
+  <text class="tiny muted" x="548" y="213">не «приказ на каждое решение»</text>
+
+  <text class="body accent" x="42" y="482">Редакционная граница: церковное единство было реальным, но существовало внутри контролируемой правовой системы.</text>
+</svg>
