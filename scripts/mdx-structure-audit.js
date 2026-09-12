@@ -36,18 +36,43 @@ const BAD_PATTERNS = [
 const errors = [];
 const warnings = [];
 
+function structureBody(content) {
+  if (!content.startsWith('---')) return { text: content, lineOffset: 0 };
+  const match = content.match(/^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/);
+  if (!match) return { text: content, lineOffset: 0 };
+  return {
+    text: content.slice(match[0].length),
+    lineOffset: (match[0].match(/\n/g) || []).length,
+  };
+}
+
+function assertStructureScopeContract() {
+  const frontmatterOnly = '---\ntags:\n  - "4Q204"\n---\n\nНормальный текст.\n';
+  const { text } = structureBody(frontmatterOnly);
+  const footnoteGlue = BAD_PATTERNS.find((item) => item.kind === 'footnote-source-glue').rx;
+  if (footnoteGlue.test(text)) {
+    throw new Error('MDX structure scope regression: frontmatter leaked into reader-body checks');
+  }
+  if (!footnoteGlue.test('Фраза.12Следующее предложение')) {
+    throw new Error('MDX structure scope regression: real footnote glue is no longer detected');
+  }
+}
+
+assertStructureScopeContract();
+
 const mdxFiles = fs.readdirSync(CONTENT_DIR).filter(f => f.endsWith('.mdx'));
 
 for (const file of mdxFiles) {
   const filePath = path.join(CONTENT_DIR, file);
   const content = fs.readFileSync(filePath, 'utf8');
+  const { text: structureText, lineOffset } = structureBody(content);
 
   for (const { kind, rx, desc } of BAD_PATTERNS) {
-    const matches = [...content.matchAll(new RegExp(rx.source, (rx.flags || '') + 'g'))];
+    const matches = [...structureText.matchAll(new RegExp(rx.source, (rx.flags || '') + 'g'))];
     if (matches.length > 0) {
       for (const m of matches) {
-        const line = content.substring(0, m.index).split('\n').length;
-        const ctx = content.substring(Math.max(0, m.index - 30), m.index + 30).replace(/\n/g, '↵');
+        const line = lineOffset + structureText.substring(0, m.index).split('\n').length;
+        const ctx = structureText.substring(Math.max(0, m.index - 30), m.index + 30).replace(/\n/g, '↵');
         const msg = `${file}:${line} [${kind}] ${desc}: ...${ctx}...`;
         if (kind === 'ukrainian-minute' || kind === 'spurgeon-typo') {
           errors.push(msg);
