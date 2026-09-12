@@ -39,6 +39,10 @@
 const fs   = require('fs');
 const path = require('path');
 const vm   = require('vm');
+const {
+  legacyIsAuthoritative,
+  loadRouteProfile,
+} = require('./lib/legacy-source-authority');
 
 const ARTICLES  = path.resolve(__dirname, '../articles');
 const CSS_DIR   = path.resolve(__dirname, '../css');
@@ -58,7 +62,7 @@ const PROJECT_BREAKPOINTS = new Set([
   '360px', '380px', '390px', '420px', '430px', '440px', '480px',
   '500px', '540px', '560px', '600px', '640px', '660px', '680px',
   '700px', '760px', '768px', '820px', '860px', '899px',
-  '900px', '960px', '1024px', '1100px', '1200px',
+  '900px', '960px', '1024px', '1100px', '1199px', '1200px',
 ]);
 
 let errors   = 0;
@@ -69,6 +73,27 @@ let warnings = 0;
 function err(slug, msg)  { console.log(`  ❌  [${slug}] ${msg}`); errors++;   }
 function warn(slug, msg) { console.log(`  ⚠️  [${slug}] ${msg}`); warnings++; }
 function ok(slug, msg)   { console.log(`  ✔  [${slug}] ${msg}`); }
+
+function legacyReaderSurfaceIsAuthoritative(slug) {
+  const route = `/articles/${slug}/`;
+  const { profile } = loadRouteProfile(route);
+  return legacyIsAuthoritative(profile);
+}
+
+function assertValidationAuthorityContract() {
+  if (!PROJECT_BREAKPOINTS.has('1199px') || !PROJECT_BREAKPOINTS.has('1200px')) {
+    throw new Error('Validation authority regression: the current 1199/1200 reader breakpoint pair must remain recognized');
+  }
+  if (legacyReaderSurfaceIsAuthoritative('20-antisovetov-pastoru')) {
+    throw new Error('Validation authority regression: reference-only article legacy surface must not own live reader semantics');
+  }
+  const { profile: runtimeProfile } = loadRouteProfile('/konfessii/russkij-baptizm/_app/');
+  if (!legacyIsAuthoritative(runtimeProfile)) {
+    throw new Error('Validation authority regression: runtime-required legacy surface lost semantic ownership');
+  }
+}
+
+assertValidationAuthorityContract();
 
 // ── Утилиты ───────────────────────────────────────────────────────────────────
 
@@ -241,7 +266,7 @@ function validateArticle(slug) {
       break;
     }
   }
-  if (titleNorm && ogTitle && titleNorm !== ogTitle) {
+  if (legacyReaderSurfaceIsAuthoritative(slug) && titleNorm && ogTitle && titleNorm !== ogTitle) {
     warn(slug,
       `<title> ≠ og:title\\n` +
       `           <title>: "${titleNorm}"\\n` +
