@@ -50,7 +50,12 @@ const hasReadingTime = Number.isInteger(readingTime) && Number(readingTime) > 0;
 <meta property="og:site_name" content="Господь Бог — Сила Моя">
 <meta property="og:locale" content="ru_RU">
 <meta property="og:image" content={icon}>
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta property="og:image:type" content="image/png">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@FedorMilovanov">
+<meta name="twitter:creator" content="@FedorMilovanov">
 <meta name="twitter:title" content={title}>
 <meta name="twitter:description" content={description}>
 <meta name="twitter:image" content={icon}>
@@ -71,6 +76,14 @@ const hasReadingTime = Number.isInteger(readingTime) && Number(readingTime) > 0;
       name: 'Господь Бог — Сила Моя',
       url: 'https://gospod-bog.ru/',
       logo: { '@type': 'ImageObject', url: icon, width: 512, height: 512 },
+    },
+    {
+      '@type': 'WebSite',
+      '@id': 'https://gospod-bog.ru/#website',
+      name: 'Господь Бог — Сила Моя',
+      url: 'https://gospod-bog.ru/',
+      inLanguage: 'ru',
+      publisher: { '@id': 'https://gospod-bog.ru/#organization' },
     },
     {
       '@type': schemaType,
