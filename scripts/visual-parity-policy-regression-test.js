@@ -9,6 +9,8 @@ const { spawnSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const SCRIPT = path.join(ROOT, 'scripts', 'visual-parity-baseline.js');
+const FACADE_GUARD = path.join(ROOT, 'scripts', 'series-reader-facade-regression-test.js');
+const VISUAL_CONTRACT = path.join(ROOT, 'scripts', 'visual-parity-contract.js');
 const WORKFLOW = path.join(ROOT, '.github', 'workflows', 'visual-parity.yml');
 const POLICY_FILE = path.join(ROOT, 'data', 'visual-parity-baseline.json');
 const ARTICLES_PROFILE = path.join(ROOT, 'data', 'route-profiles', 'articles.json');
@@ -130,5 +132,53 @@ assert.strictEqual(policy.routes['/karty/'].mobile, karty.visualParity.mobile,
 assert.strictEqual(policy.tolerancePct, 0.5, 'global tolerance must remain 0.5%');
 assert.strictEqual(policy.policy.globalToleranceWasNotRaised, true);
 
+function runFacade(extra = []) {
+  return spawnSync(process.execPath, [FACADE_GUARD, ...extra], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
+}
+
+const sourceOnlyFacade = runFacade();
+assert.strictEqual(
+  sourceOnlyFacade.status,
+  0,
+  `default series facade guard must stay source-only regardless of incidental local dist:\n${sourceOnlyFacade.stdout}\n${sourceOnlyFacade.stderr}`,
+);
+assert.match(sourceOnlyFacade.stdout, /fragment audit registered \(source-only mode\)/);
+
+const fragmentDist = path.join(temp, 'series-dist');
+const fragmentRoute = path.join(fragmentDist, 'series');
+fs.mkdirSync(fragmentRoute, { recursive: true });
+fs.writeFileSync(
+  path.join(fragmentRoute, 'index.html'),
+  '<!doctype html><html><body><nav class="gbs2-toc"><a href="#missing-target">broken</a></nav><div id="other-target"></div></body></html>',
+  'utf8',
+);
+const fragmentReport = path.join(temp, 'series-fragment-report.json');
+const brokenFragments = runFacade(['--require-dist', `--dist=${fragmentDist}`, `--report=${fragmentReport}`]);
+assert.strictEqual(brokenFragments.status, 1, 'explicit strict series fragment mode must fail broken rendered fragments');
+assert.match(`${brokenFragments.stdout}\n${brokenFragments.stderr}`, /missing-target|rendered series fragment contract failed/);
+
+fs.writeFileSync(
+  path.join(fragmentRoute, 'index.html'),
+  '<!doctype html><html><body><nav class="gbs2-toc"><a href="#missing-target">fixed</a></nav><div id="missing-target"></div></body></html>',
+  'utf8',
+);
+const fixedFragments = runFacade(['--require-dist', `--dist=${fragmentDist}`, `--report=${fragmentReport}`]);
+assert.strictEqual(
+  fixedFragments.status,
+  0,
+  `explicit strict series fragment mode must pass repaired rendered fragments:\n${fixedFragments.stdout}\n${fixedFragments.stderr}`,
+);
+assert.match(fixedFragments.stdout, /strict fragment audit passed: 1 page\(s\), 1 unique target\(s\)/);
+
+const visualContract = fs.readFileSync(VISUAL_CONTRACT, 'utf8');
+assert.match(
+  visualContract,
+  /series-reader-facade-regression-test\.js['"],\s*['"]series reader façade\/fragments['"]/,
+  'post-build visual parity contract must own the explicit strict series fragment audit',
+);
+
 fs.rmSync(temp, { recursive: true, force: true });
-console.log('✅ Visual parity policy regression: native delegation, fake-guard rejection, legacy failure, unknown-mode, strict-new-route, owner-update and Articles/Baptist/HardTexts/Karty SSOT witnesses passed');
+console.log('✅ Visual parity policy regression: native delegation, fake-guard rejection, legacy failure, unknown-mode, strict-new-route, owner-update, Articles/Baptist/HardTexts/Karty SSOT, and explicit series source-vs-dist authority witnesses passed');
