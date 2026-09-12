@@ -23,6 +23,7 @@ const {
 
 const siteTitle = `${title} | Господь Бог — Сила Моя`;
 const icon = 'https://gospod-bog.ru/icons/icon-512.png';
+const socialImage = 'https://gospod-bog.ru/images/og-preview-1200x630.webp';
 const schemaType = kind;
 const hasReadingTime = Number.isInteger(readingTime) && Number(readingTime) > 0;
 ---
@@ -49,16 +50,16 @@ const hasReadingTime = Number.isInteger(readingTime) && Number(readingTime) > 0;
 <meta property="og:url" content={canonical}>
 <meta property="og:site_name" content="Господь Бог — Сила Моя">
 <meta property="og:locale" content="ru_RU">
-<meta property="og:image" content={icon}>
-<meta property="og:image:width" content="512">
-<meta property="og:image:height" content="512">
-<meta property="og:image:type" content="image/png">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content={socialImage}>
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/webp">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@FedorMilovanov">
 <meta name="twitter:creator" content="@FedorMilovanov">
 <meta name="twitter:title" content={title}>
 <meta name="twitter:description" content={description}>
-<meta name="twitter:image" content={icon}>
+<meta name="twitter:image" content={socialImage}>
 <meta property="article:published_time" content={publishedAt} />
 <meta property="article:modified_time" content={modifiedAt} />
 {hasReadingTime && <meta name="readingTime" content={`readingTime: ${readingTime}`} />}
@@ -96,6 +97,7 @@ const hasReadingTime = Number.isInteger(readingTime) && Number(readingTime) > 0;
       datePublished: publishedAt,
       dateModified: modifiedAt,
       timeRequired: hasReadingTime ? `PT${readingTime}M` : undefined,
+      image: { '@type': 'ImageObject', url: socialImage, width: 1200, height: 630 },
       author: kind === 'Article' ? { '@type': 'Person', name: 'Фёдор Милованов', url: 'https://gospod-bog.ru/about/' } : undefined,
       editor: kind === 'Article' ? { '@type': 'Person', name: 'Фёдор Милованов', url: 'https://gospod-bog.ru/about/' } : undefined,
       publisher: { '@id': 'https://gospod-bog.ru/#organization' },
