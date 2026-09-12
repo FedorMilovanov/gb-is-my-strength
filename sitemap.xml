@@ -735,4 +735,26 @@
       <image:title>Подросток за кадром: двойная жизнь, семья и взросление | Господь Бог — Сила Моя</image:title>
     </image:image>
   </url>
+
+  <!-- Canonical policy-generated additions -->
+  <url>
+    <loc>https://gospod-bog.ru/journal/</loc>
+    <lastmod>2026-09-09T21:00:00.000Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/icons/icon-512.png</image:loc>
+      <image:title>Журнал — документы, новости и расследования</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://gospod-bog.ru/journal/dossiers/g3/</loc>
+    <lastmod>2026-09-08T21:00:00.000Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/icons/icon-512.png</image:loc>
+      <image:title>G3: рост, кризис и завершение операций</image:title>
+    </image:image>
+  </url>
 </urlset>
