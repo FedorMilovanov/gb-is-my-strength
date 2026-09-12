@@ -2,7 +2,7 @@
 
 **Дата:** 2026-09-06  
 **Lane:** `book/podpolnaya-pechat-golden-chapter` / PR #1794  
-**Status:** `PDF/TEXT VERIFIED`; `LOCAL BINARY PRESENT`; `FACSIMILE VISUAL PENDING`; `SHA256 PENDING`.
+**Status:** `PDF/TEXT VERIFIED`; `LOCAL BINARY PRESENT`; `SHA256 VERIFIED`; `FACSIMILE VISUAL PENDING`.
 
 ## Source
 
@@ -16,9 +16,10 @@ A controlled local binary already exists in the Product repository on `main`:
 
 - path: `baptisty-rossii/research/raw-sources/bulletin-council-relatives-044-1977.pdf`;
 - size: **1,171,788 bytes**;
-- Git blob SHA: `66f54198e369f836387a18b40c203468c662a4eb`.
+- Git blob SHA: `66f54198e369f836387a18b40c203468c662a4eb`;
+- SHA256: `79e9fab61164ffd2c881ac641402e8b8bd9806bad8cf9b1360aa8b35568ce55c`.
 
-Important: the Git blob SHA is repository object identity, **not SHA256 of the PDF bytes**. Do not substitute one for the other in the media ledger.
+Important: the Git blob SHA is repository object identity, **not SHA256 of the PDF bytes**. Both are now recorded independently. On 2026-09-12 the exact file in the primary local clone (`C:\\Users\\Fedor\\Documents\\GitHub\\gb-is-my-strength`) was checked with `Get-FileHash -Algorithm SHA256` and `git hash-object`; its byte length was 1,171,788, its Git blob SHA matched the GitHub repository object exactly, and its SHA256 was fixed as shown above.
 
 ## Page-level text anchors
 
@@ -58,11 +59,10 @@ What may now be treated as verified:
 
 What remains open:
 
-1. compute SHA256 on the exact repository binary through a byte-capable path;
-2. run visual page verification on the title page and the relevant `Христианин` page;
-3. create a publication derivative only from that verified local binary;
-4. record rights/provenance/caption before web use.
+1. run visual page verification on the title page and the relevant `Христианин` page;
+2. create a publication derivative only from that verified local binary;
+3. record rights/provenance/caption before web use.
 
 ## Important guard
 
-Do **not** mark this issue `FACSIMILE VERIFIED` yet. The web PDF text layer is available and the local binary is present, but the screenshot renderer failed with a cache miss. The correct state is `PDF/TEXT VERIFIED + LOCAL BINARY PRESENT` until a visual page read succeeds from the exact repository binary or another deterministic renderer.
+Do **not** mark this issue `FACSIMILE VERIFIED` yet. The web PDF text layer is available and the local binary is present, but the screenshot renderer failed with a cache miss. The correct state is `PDF/TEXT VERIFIED + LOCAL BINARY PRESENT + SHA256 VERIFIED`, while `FACSIMILE VISUAL PENDING` remains in force until a visual page read succeeds from the exact repository binary or another deterministic renderer.
