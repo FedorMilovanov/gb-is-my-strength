@@ -41,16 +41,36 @@
       "priority": "P0",
       "title": "Тифлис и Кура: линия ранней памяти",
       "purpose": "Показать сцену ранней истории без превращения памяти в недоказанную легенду.",
-      "nodes": ["Tiflis", "Kura", "Voronin", "Kalweit", "Delyakov"],
-      "sourceFiles": ["29-voronin-letter-1889-and-ivanov-manuscript-leads-2026-06-18.md", "30-valkevich-appendix-voronin-letter-page-27-verified-2026-06-18.md", "36-wardin-2009-indigenous-question-verified-2026-06-19.md"],
-      "mapSync": ["Tiflis/Kura node", "source confidence: memory vs primary"],
-      "visualRisks": ["не рисовать как точную географическую GPS-карту", "не смешивать предание и источник"],
+      "nodes": [
+        "Tiflis",
+        "Kura",
+        "Voronin",
+        "Kalweit",
+        "Delyakov"
+      ],
+      "sourceFiles": [
+        "29-voronin-letter-1889-and-ivanov-manuscript-leads-2026-06-18.md",
+        "30-valkevich-appendix-voronin-letter-page-27-verified-2026-06-18.md",
+        "36-wardin-2009-indigenous-question-verified-2026-06-19.md"
+      ],
+      "mapSync": [
+        "Tiflis/Kura node",
+        "source confidence: memory vs primary"
+      ],
+      "visualRisks": [
+        "не рисовать как точную географическую GPS-карту",
+        "не смешивать предание и источник"
+      ],
       "assetPath": "images/baptisty-rossii/atlas/rb-01-kura-origins-route.svg",
       "articleComponent": "src/components/baptisty-rossii/BaptistyRossiiNochNaKureBody.astro",
       "articleAnchor": "visual-atlas-kura-origins-route",
       "implementedAt": "2026-09-12",
       "caption": "Маршрут показывает последовательность свидетельств и связей, а не точную географическую трассу по Тифлису. Письмо Воронина 1889 года и письмо Кальвейта 1869 года выполняют разные источниковые функции.",
-      "sourceConfidence": {"voronin1889": "page-verified-later-memory", "kalweit1869": "contemporary-context-not-baptism-protocol", "routeGeometry": "editorial-non-gps"}
+      "sourceConfidence": {
+        "voronin1889": "page-verified-later-memory",
+        "kalweit1869": "contemporary-context-not-baptism-protocol",
+        "routeGeometry": "editorial-non-gps"
+      }
     },
     {
       "id": "rb-02-shtunda-south-network",
@@ -60,10 +80,29 @@
       "priority": "P0",
       "title": "Южная штунда: сеть людей и колоний",
       "purpose": "Развести штундистское движение, немецкую линию и баптистское оформление.",
-      "nodes": ["Unger", "Tsymbal", "Ryaboshapka", "Ratushny", "Pritzkau", "Oncken", "Wheeler"],
-      "sourceFiles": ["20-southern-ukraine-primary-source-pass-2026-06-18.md", "21-dorodnitsyn-official-reports-southern-line-2026-06-18.md", "22-rozhdestvensky-shtunda-not-baptism-nuance-2026-06-18.md", "37-pritzkau-1914-english-translation-source-2026-06-19.md"],
-      "mapSync": ["Southern Ukraine route", "Shtunda/Baptist distinction"],
-      "visualRisks": ["не делать все узлы одинаково достоверными", "не терять нюанс штунда ≠ баптизм"]
+      "nodes": [
+        "Unger",
+        "Tsymbal",
+        "Ryaboshapka",
+        "Ratushny",
+        "Pritzkau",
+        "Oncken",
+        "Wheeler"
+      ],
+      "sourceFiles": [
+        "20-southern-ukraine-primary-source-pass-2026-06-18.md",
+        "21-dorodnitsyn-official-reports-southern-line-2026-06-18.md",
+        "22-rozhdestvensky-shtunda-not-baptism-nuance-2026-06-18.md",
+        "37-pritzkau-1914-english-translation-source-2026-06-19.md"
+      ],
+      "mapSync": [
+        "Southern Ukraine route",
+        "Shtunda/Baptist distinction"
+      ],
+      "visualRisks": [
+        "не делать все узлы одинаково достоверными",
+        "не терять нюанс штунда ≠ баптизм"
+      ]
     },
     {
       "id": "rb-03-two-1884-events",
@@ -73,16 +112,36 @@
       "priority": "P0",
       "title": "1884: два события, две развилки",
       "purpose": "Визуально исключить смешение Петербургского совещания и Ново-Васильевского съезда.",
-      "nodes": ["St Petersburg meeting", "Novo-Vasilievka congress", "Confession", "Brotherhood order"],
-      "sourceFiles": ["23-two-1884-meetings-primary-source-trail-2026-06-18.md", "24-first-confession-and-brotherhood-order-source-trail-2026-06-18.md", "38-dorodnitsyn-1908-documents-rules-catechism-1884-2026-06-19.md", "39-two-1884-events-coleman-verified-2026-06-19.md"],
-      "mapSync": ["1884 dual event distinction", "document node"],
-      "visualRisks": ["не соединять события одной стрелкой как одно собрание"],
+      "nodes": [
+        "St Petersburg meeting",
+        "Novo-Vasilievka congress",
+        "Confession",
+        "Brotherhood order"
+      ],
+      "sourceFiles": [
+        "23-two-1884-meetings-primary-source-trail-2026-06-18.md",
+        "24-first-confession-and-brotherhood-order-source-trail-2026-06-18.md",
+        "38-dorodnitsyn-1908-documents-rules-catechism-1884-2026-06-19.md",
+        "39-two-1884-events-coleman-verified-2026-06-19.md"
+      ],
+      "mapSync": [
+        "1884 dual event distinction",
+        "document node"
+      ],
+      "visualRisks": [
+        "не соединять события одной стрелкой как одно собрание"
+      ],
       "assetPath": "images/baptisty-rossii/atlas/rb-03-two-1884-events.svg",
       "articleComponent": "src/components/baptisty-rossii/BaptistyRossiiDvaSezda1884Body.astro",
       "articleAnchor": "visual-atlas-two-1884-events",
       "implementedAt": "2026-09-12",
       "caption": "Петербургское совещание 1–6 апреля и Ново-Васильевская конференция 30 апреля – 1 мая показаны как два отдельных события. Участие Михаила Ратушного в обоих не превращает их в один съезд.",
-      "sourceConfidence": {"eventSeparation": "primary-plus-academic", "petersburgDates": "verified", "novoVasilyevkaDates": "primary-protocol", "unionFormula": "editorially-qualified"}
+      "sourceConfidence": {
+        "eventSeparation": "primary-plus-academic",
+        "petersburgDates": "verified",
+        "novoVasilyevkaDates": "primary-protocol",
+        "unionFormula": "editorially-qualified"
+      }
     },
     {
       "id": "rb-04-petersburg-line-network",
@@ -92,16 +151,36 @@
       "priority": "P1",
       "title": "Петербургская евангельская сеть",
       "purpose": "Показать Редстока, Пашкова, Корфа, Каргеля, Проханова как сеть, а не список имён.",
-      "nodes": ["Radstock", "Pashkov", "Korf", "Kargel", "Prokhanov"],
-      "sourceFiles": ["07-petersburg-line-redstock-pashkov-prokhanov-2026-06-13.md"],
-      "mapSync": ["Petersburg network", "Pashkov circle", "Prokhanov node"],
-      "visualRisks": ["не перегрузить подписями", "не подменить баптистскую линию общей евангельской историей"],
+      "nodes": [
+        "Radstock",
+        "Pashkov",
+        "Korf",
+        "Kargel",
+        "Prokhanov"
+      ],
+      "sourceFiles": [
+        "07-petersburg-line-redstock-pashkov-prokhanov-2026-06-13.md"
+      ],
+      "mapSync": [
+        "Petersburg network",
+        "Pashkov circle",
+        "Prokhanov node"
+      ],
+      "visualRisks": [
+        "не перегрузить подписями",
+        "не подменить баптистскую линию общей евангельской историей"
+      ],
       "assetPath": "images/baptisty-rossii/atlas/rb-04-petersburg-line-network.svg",
       "articleComponent": "src/components/baptisty-rossii/BaptistyRossiiPeterburgskayaLiniyaBody.astro",
       "articleAnchor": "visual-atlas-petersburg-network",
       "implementedAt": "2026-09-12",
       "caption": "Схема показывает Петербург как сеть нескольких связанных центров и двух временных слоёв, а не как прямую цепь преемников: Редсток, Пашков, Корф и Ливены, Каргель с Бедекером и следующее поколение Проханова.",
-      "sourceConfidence": {"networkShape": "editorial-synthesis", "pashkov1880": "primary-participant", "kargel1885": "primary-protocol", "prokhanovInstitutionalization": "documented-next-generation"}
+      "sourceConfidence": {
+        "networkShape": "editorial-synthesis",
+        "pashkov1880": "primary-participant",
+        "kargel1885": "primary-protocol",
+        "prokhanovInstitutionalization": "documented-next-generation"
+      }
     },
     {
       "id": "rb-05-conscience-decision-tree",
@@ -111,16 +190,33 @@
       "priority": "P1",
       "title": "Совесть, военный вопрос и государство",
       "purpose": "Показать богословско-этические развилки без упрощённой героизации.",
-      "nodes": ["Conscience", "Military question", "State pressure", "Church response"],
-      "sourceFiles": ["04-persecution-conscience-military-question.md", "08-conscience-article-transfer-2026-06-13.md"],
-      "mapSync": ["conscience cases layer"],
-      "visualRisks": ["не делать карикатурную моральную схему"],
+      "nodes": [
+        "Conscience",
+        "Military question",
+        "State pressure",
+        "Church response"
+      ],
+      "sourceFiles": [
+        "04-persecution-conscience-military-question.md",
+        "08-conscience-article-transfer-2026-06-13.md"
+      ],
+      "mapSync": [
+        "conscience cases layer"
+      ],
+      "visualRisks": [
+        "не делать карикатурную моральную схему"
+      ],
       "assetPath": "images/baptisty-rossii/atlas/rb-05-conscience-decision-tree.svg",
       "articleComponent": "src/components/baptisty-rossii/BaptistyRossiiGoneniyaISovestBody.astro",
       "articleAnchor": "visual-atlas-conscience-decision-tree",
       "implementedAt": "2026-09-12",
       "caption": "Военный вопрос показан как столкновение государственного требования, личной и церковной совести и нескольких исторически существовавших ответов: вооружённой службы, отказа по совести и поиска небоевой формы.",
-      "sourceConfidence": {"responsePlurality": "documented-history", "legalPressure": "period-dependent", "moralRanking": "not-asserted", "churchResponses": "editorial-synthesis-from-documented-cases"}
+      "sourceConfidence": {
+        "responsePlurality": "documented-history",
+        "legalPressure": "period-dependent",
+        "moralRanking": "not-asserted",
+        "churchResponses": "editorial-synthesis-from-documented-cases"
+      }
     },
     {
       "id": "rb-06-soviet-night-repression-layer",
@@ -130,10 +226,26 @@
       "priority": "P0",
       "title": "Советская ночь: механизм давления",
       "purpose": "Связать закон 1929 года, инструкции, закрытия и репрессии в понятную визуальную структуру.",
-      "nodes": ["1929 law", "NKVD instruction", "closures", "arrests", "local cases"],
-      "sourceFiles": ["03-soviet-night-1917-1944-law-repressions-press.md", "09-soviet-night-article-transfer-and-new-sources-2026-06-13.md", "16-persecution-case-index-1930s-1980s-2026-06-14.md"],
-      "mapSync": ["closure-events-draft.csv", "persecution cases layer"],
-      "visualRisks": ["не перегрузить ужасом без источников", "не публиковать case points без проверки"]
+      "nodes": [
+        "1929 law",
+        "NKVD instruction",
+        "closures",
+        "arrests",
+        "local cases"
+      ],
+      "sourceFiles": [
+        "03-soviet-night-1917-1944-law-repressions-press.md",
+        "09-soviet-night-article-transfer-and-new-sources-2026-06-13.md",
+        "16-persecution-case-index-1930s-1980s-2026-06-14.md"
+      ],
+      "mapSync": [
+        "closure-events-draft.csv",
+        "persecution cases layer"
+      ],
+      "visualRisks": [
+        "не перегрузить ужасом без источников",
+        "не публиковать case points без проверки"
+      ]
     },
     {
       "id": "rb-07-vsehib-union-under-oversight",
@@ -143,23 +255,62 @@
       "priority": "P1",
       "title": "ВСЕХБ: единство и надзор",
       "purpose": "Показать двойной характер объединения 1944 года: церковная структура и административный контроль.",
-      "nodes": ["VSEKhB", "Brotherly Herald", "State oversight", "regional churches"],
-      "sourceFiles": ["02-union-1944-1945-and-vsehib.md", "10-vsehib-article-transfer-and-primary-sources-2026-06-13.md", "28-brotherly-herald-origins-memory-1947-1967-2026-06-18.md"],
-      "mapSync": ["VSEKhB organization node"],
-      "visualRisks": ["не рисовать объединение только позитивно или только негативно"]
+      "nodes": [
+        "VSEKhB",
+        "Brotherly Herald",
+        "State oversight",
+        "regional churches"
+      ],
+      "sourceFiles": [
+        "02-union-1944-1945-and-vsehib.md",
+        "10-vsehib-article-transfer-and-primary-sources-2026-06-13.md",
+        "28-brotherly-herald-origins-memory-1947-1967-2026-06-18.md"
+      ],
+      "mapSync": [
+        "VSEKhB organization node"
+      ],
+      "visualRisks": [
+        "не рисовать объединение только позитивно или только негативно"
+      ]
     },
     {
       "id": "rb-08-initiative-group-1960-1966",
       "slug": "iniciativnaya-gruppa",
       "type": "timeline-network",
-      "status": "planned",
+      "status": "production",
       "priority": "P0",
       "title": "1960–1966: от Инициативной группы к Совету Церквей",
       "purpose": "Показать последовательность документов, решений и церковного сопротивления.",
-      "nodes": ["1960", "Regulation", "Letter", "Organizing committee", "Council of Churches"],
-      "sourceFiles": ["05-council-of-churches-underground-press-1960-1991.md", "11-initiative-group-article-transfer-and-primary-sources-2026-06-13.md"],
-      "mapSync": ["Council of Churches layer", "Initiative group nodes"],
-      "visualRisks": ["не превращать в сухую хронологию"]
+      "nodes": [
+        "1960",
+        "Regulation",
+        "Letter",
+        "Organizing committee",
+        "Council of Churches"
+      ],
+      "sourceFiles": [
+        "05-council-of-churches-underground-press-1960-1991.md",
+        "11-initiative-group-article-transfer-and-primary-sources-2026-06-13.md"
+      ],
+      "mapSync": [
+        "Council of Churches layer",
+        "Initiative group nodes"
+      ],
+      "visualRisks": [
+        "не превращать в сухую хронологию"
+      ],
+      "assetPath": "images/baptisty-rossii/atlas/rb-08-initiative-group-1960-1966.svg",
+      "articleComponent": "src/components/baptisty-rossii/BaptistyRossiiIniciativnayaGruppaBody.astro",
+      "articleAnchor": "visual-atlas-initiative-1960-1966",
+      "implementedAt": "2026-09-12",
+      "caption": "Схема проводит документальную линию от Положения и Инструктивного письма 1960 года через Инициативную группу и Оргкомитет к Совету Церквей 1965 года и публичной делегации 1966 года; численность делегации намеренно дана как «несколько сотен» из-за расхождения источников.",
+      "sourceConfidence": {
+        "documents1960": "documented",
+        "initiativeLetters1961": "primary-documents",
+        "organizingCommittee1962": "primary-document",
+        "council1965": "primary-document",
+        "may1966DelegationSize": "multi-source-range"
+      }
     },
     {
       "id": "rb-09-underground-press-distribution",
@@ -169,16 +320,38 @@
       "priority": "P0",
       "title": "Подпольная печать: память, выпуск, распространение",
       "purpose": "Сделать визуально сильную схему самиздата и церковной памяти.",
-      "nodes": ["Vestnik Spaseniya", "Vestnik Istiny", "Council of relatives", "Christianin", "printing", "distribution"],
-      "sourceFiles": ["12-underground-press-article-transfer-and-primary-sources-2026-06-13.md", "14-council-relatives-bulletin-pdf-catalog-2026-06-14.md", "14-podpolnaya-pechat-golden-chapter-source-to-claim-2026-09-06.md", "15-podpolnaya-pechat-visual-dossier-2026-09-06.md", "16-podpolnaya-pechat-bulletin-44-pdf-verification-2026-09-06.md"],
-      "mapSync": ["Underground press route", "bulletin catalog"],
-      "visualRisks": ["не использовать обложки без проверки прав"],
+      "nodes": [
+        "Vestnik Spaseniya",
+        "Vestnik Istiny",
+        "Council of relatives",
+        "Christianin",
+        "printing",
+        "distribution"
+      ],
+      "sourceFiles": [
+        "12-underground-press-article-transfer-and-primary-sources-2026-06-13.md",
+        "14-council-relatives-bulletin-pdf-catalog-2026-06-14.md",
+        "14-podpolnaya-pechat-golden-chapter-source-to-claim-2026-09-06.md",
+        "15-podpolnaya-pechat-visual-dossier-2026-09-06.md",
+        "16-podpolnaya-pechat-bulletin-44-pdf-verification-2026-09-06.md"
+      ],
+      "mapSync": [
+        "Underground press route",
+        "bulletin catalog"
+      ],
+      "visualRisks": [
+        "не использовать обложки без проверки прав"
+      ],
       "assetPath": "images/baptisty-rossii/atlas/rb-09-underground-press-distribution.svg",
       "articleComponent": "src/components/baptisty-rossii/BaptistyRossiiPodpolnayaPechatBody.astro",
       "articleAnchor": "visual-atlas-underground-press",
       "implementedAt": "2026-09-12",
       "caption": "Редакционная схема по проверенной библиографии: сообщения и бюллетени фиксировали сведения; издательство и типографии размножали тексты; общины и семьи возвращали новые сведения в сеть. Схема не является исторической фотографией или картой конкретных типографий.",
-      "sourceConfidence": {"chronology": "verified", "named1977Anchor": "primary-issue-verified", "networkFlow": "editorial-synthesis"}
+      "sourceConfidence": {
+        "chronology": "verified",
+        "named1977Anchor": "primary-issue-verified",
+        "networkFlow": "editorial-synthesis"
+      }
     },
     {
       "id": "rb-10-source-confidence-matrix",
@@ -188,16 +361,36 @@
       "priority": "P0",
       "title": "Матрица источников и уровней уверенности",
       "purpose": "Показать пользователю, какие факты основаны на первичных документах, какие на поздней памяти, какие остаются спорными.",
-      "nodes": ["primary", "secondary", "memory", "disputed", "map correction queue"],
-      "sourceFiles": ["00-master-source-index-glossary-map.md", "13-reference-article-transfer-2026-06-14.md", "18-primary-source-link-register-30plus-2026-06-14.md", "40-origins-corpus-status-and-draft-repos-recovery-2026-06-19.md"],
-      "mapSync": ["source confidence taxonomy", "map correction queue"],
-      "visualRisks": ["не делать псевдоточность там, где источник спорный"],
+      "nodes": [
+        "primary",
+        "secondary",
+        "memory",
+        "disputed",
+        "map correction queue"
+      ],
+      "sourceFiles": [
+        "00-master-source-index-glossary-map.md",
+        "13-reference-article-transfer-2026-06-14.md",
+        "18-primary-source-link-register-30plus-2026-06-14.md",
+        "40-origins-corpus-status-and-draft-repos-recovery-2026-06-19.md"
+      ],
+      "mapSync": [
+        "source confidence taxonomy",
+        "map correction queue"
+      ],
+      "visualRisks": [
+        "не делать псевдоточность там, где источник спорный"
+      ],
       "assetPath": "images/baptisty-rossii/atlas/rb-10-source-confidence-matrix.svg",
       "articleComponent": "src/components/baptisty-rossii/BaptistyRossiiSpravochnikBody.astro",
       "articleAnchor": "visual-atlas-source-confidence",
       "implementedAt": "2026-09-12",
       "caption": "Пять читательских типов свидетельств показывают происхождение и проверяемость утверждения; внутренние A/B/C/D остаются редакционным инструментом и не превращаются в публичную шкалу истинности.",
-      "sourceConfidence": {"readerTaxonomy": "published-reference-page", "internalABCD": "editorial-only", "openQuestions": "explicit-boundary"}
+      "sourceConfidence": {
+        "readerTaxonomy": "published-reference-page",
+        "internalABCD": "editorial-only",
+        "openQuestions": "explicit-boundary"
+      }
     }
   ]
 }
