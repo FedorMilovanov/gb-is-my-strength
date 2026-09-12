@@ -830,7 +830,7 @@ const structuredData = {
       }
 
       @media (max-width: 980px) {
-        .app-hero { grid-template-columns: 1fr; }
+        .app-hero { grid-template-columns: minmax(0, 1fr); }
         .app-stage { min-height: 0; }
         .app-device { margin-top: 6px; }
         .app-section-grid { grid-template-columns: 1fr; gap: 34px; }
@@ -841,7 +841,8 @@ const structuredData = {
         .app-topbar { min-height: 66px; }
         .app-top-label { display: none; }
         .app-hero { padding-top: 58px; gap: 44px; }
-        .app-title { font-size: clamp(48px, 15vw, 72px); }
+        .app-title { font-size: clamp(40px, 12.5vw, 72px); }
+        .app-bridge h2 { font-size: clamp(27px, 8vw, 34px); }
         .app-device { min-height: 0; padding: 15px; border-radius: 26px; }
         .app-capabilities,
         .app-study-cards,
