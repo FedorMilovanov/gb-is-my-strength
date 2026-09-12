@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="520" viewBox="0 0 760 520" role="img" aria-labelledby="rb04-title rb04-desc">
+  <title id="rb04-title">Петербургская евангельская сеть: несколько центров и два временных слоя</title>
+  <desc id="rb04-desc">Сетевая схема показывает Редстока как ранний импульс пробуждения; Пашкова, Корфа и Ливенов как связанные узлы петербургской среды; Каргеля и Бедекера как мост к тюремной миссии и контактам с баптистами; Проханова как представителя следующего поколения печати и союзного строительства. Стрелки обозначают связи и влияние, а не прямую организационную преемственность.</desc>
+  <style>
+    .bg{fill:#f7f4ed}.panel{fill:#fffdf8;stroke:#c8b993;stroke-width:1.5}.node{fill:#fff;stroke:#9a8456;stroke-width:1.5}.node2{fill:#f3ead8;stroke:#9a8456;stroke-width:1.5}.ink{fill:#22201c}.muted{fill:#635f55}.accent{fill:#7d642d}.head{font:700 22px system-ui,-apple-system,"Segoe UI",sans-serif}.era{font:700 14px system-ui,-apple-system,"Segoe UI",sans-serif}.label{font:700 14px system-ui,-apple-system,"Segoe UI",sans-serif}.body{font:500 12px system-ui,-apple-system,"Segoe UI",sans-serif}.line{stroke:#9a8456;stroke-width:2;fill:none}.dash{stroke:#9a8456;stroke-width:1.6;stroke-dasharray:6 5;fill:none}
+    @media (prefers-color-scheme:dark){.bg{fill:#171612}.panel{fill:#201f1a;stroke:#6f6245}.node{fill:#27241e;stroke:#aa925a}.node2{fill:#342d20;stroke:#aa925a}.ink{fill:#f3efe5}.muted{fill:#c7c0b0}.accent{fill:#d0ad62}.line,.dash{stroke:#d0ad62}}
+  </style>
+  <rect class="bg" width="760" height="520" rx="24"/>
+  <rect class="panel" x="18" y="18" width="724" height="484" rx="20"/>
+  <text class="head ink" x="42" y="58">Петербургская сеть: не один центр и не одна деноминация</text>
+  <text class="body muted" x="42" y="82">Связи показаны по функции и времени; пунктир не означает формального подчинения.</text>
+
+  <text class="era accent" x="42" y="116">1874–1884 · раннее пробуждение и домашняя сеть</text>
+
+  <rect class="node2" x="52" y="138" width="150" height="72" rx="14"/>
+  <text class="label ink" x="69" y="166">Редсток</text>
+  <text class="body muted" x="69" y="188">проповедь · личное</text>
+  <text class="body muted" x="69" y="203">обращение</text>
+
+  <rect class="node" x="270" y="126" width="164" height="86" rx="14"/>
+  <text class="label ink" x="288" y="154">Пашков</text>
+  <text class="body muted" x="288" y="176">русская проповедь · дома</text>
+  <text class="body muted" x="288" y="194">литература · помощь</text>
+
+  <rect class="node" x="510" y="126" width="170" height="86" rx="14"/>
+  <text class="label ink" x="528" y="154">Корф и Ливены</text>
+  <text class="body muted" x="528" y="176">параллельные дома</text>
+  <text class="body muted" x="528" y="194">и продолжение сети</text>
+
+  <path class="line" d="M202 174H270"/>
+  <path class="line" d="M434 170H510"/>
+  <text class="body accent" x="214" y="162">импульс</text>
+  <text class="body accent" x="449" y="158">сеть</text>
+
+  <path class="dash" d="M352 212V257M595 212V257"/>
+  <text class="era accent" x="42" y="265">1880-е · мосты между средами</text>
+
+  <rect class="node2" x="192" y="286" width="180" height="88" rx="14"/>
+  <text class="label ink" x="210" y="314">И. В. Каргель</text>
+  <text class="body muted" x="210" y="336">петербургская среда ·</text>
+  <text class="body muted" x="210" y="354">контакт с баптистами</text>
+
+  <rect class="node" x="426" y="286" width="180" height="88" rx="14"/>
+  <text class="label ink" x="444" y="314">Ф. В. Бедекер</text>
+  <text class="body muted" x="444" y="336">тюремная миссия ·</text>
+  <text class="body muted" x="444" y="354">поездки и литература</text>
+
+  <path class="line" d="M372 330H426"/>
+  <text class="body accent" x="382" y="318">служение</text>
+
+  <text class="era accent" x="42" y="410">1906–1911 · следующее поколение институционализации</text>
+  <rect class="node2" x="248" y="428" width="264" height="56" rx="14"/>
+  <text class="label ink" x="267" y="452">И. С. Проханов</text>
+  <text class="body muted" x="267" y="472">печать · съезды · союзные проекты · Дом Евангелия</text>
+  <path class="dash" d="M282 374L336 428M516 374L430 428"/>
+
+  <text class="body accent" x="42" y="496">Редакционная граница: сеть влияний ≠ готовая цепь организационной преемственности.</text>
+</svg>
