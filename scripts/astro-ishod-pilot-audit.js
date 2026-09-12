@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnNpm } = require('./lib/npm-spawn');
+const { inspectMapInitSource } = require('./lib/map-init-source-contract');
 const { resolveReferenceForRoute } = require('../migration/legacy-reference-path');
 
 const ROOT = path.join(__dirname, '..');
@@ -112,8 +113,13 @@ function main() {
   mustContain('ishod imports shared fallback', component, 'MapRuntimeFallback');
   mustContain('ishod stage owns runtime state', component, 'data-map-state="loading"');
   mustContain('ishod stage exposes busy state', component, 'aria-busy="true"');
-  mustMatch('ishod throws when engine is absent', component, /!window\.MapEngine[\s\S]*?throw new Error\('движок карты не загрузился'\)/);
-  mustMatch('ishod rejects null map instances', component, /if \(!inst\) throw new Error\('движок не создал карту'\)/);
+  const mapInit = inspectMapInitSource(component);
+  if (mapInit.engineGuard) ok('ishod rejects absent map engine before initialization');
+  else bad('ishod missing fail-closed MapEngine availability guard');
+  if (mapInit.createMapAssigned) ok(`ishod captures createMap result as ${mapInit.resultVariable}`);
+  else bad('ishod must capture MapEngine.createMap result');
+  if (mapInit.nullGuardBeforeReady) ok('ishod rejects null map instance before ready state');
+  else bad('ishod missing null map-instance guard before ready state');
   mustMatch('ishod routes failures to visible renderer', component, /GBMapRuntime\.renderFailure\(container/);
   mustMatch('ishod marks successful stage ready', component, /data-map-state', 'ready'/);
 
