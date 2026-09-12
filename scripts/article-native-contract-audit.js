@@ -3,7 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { spawnSync } = require('child_process');
+const { spawnNpm } = require('./lib/npm-spawn');
 const {
   ROOT,
   ARTICLE_ROUTE_TYPES,
@@ -38,13 +38,12 @@ function bad(message) { errors.push(message); console.log(`❌ ${message}`); }
 
 function runBuild() {
   if (NO_BUILD) return;
-  const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
   console.log('▶ Building production-like strangler dist for native article audit…');
-  const result = spawnSync(npm, ['run', 'strangler:build:production-like'], {
+  const result = spawnNpm(['run', 'strangler:build:production-like'], {
     cwd: ROOT,
     stdio: 'inherit',
   });
-  if (result.status !== 0) process.exit(result.status || 1);
+  if (result.status !== 0) process.exit(result.status);
 }
 
 function stripTags(html) {
