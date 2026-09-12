@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const { spawnNpm } = require('./lib/npm-spawn');
 const {
   ROOT,
   eligibleRecords,
@@ -38,8 +39,8 @@ function gitHead() {
 
 function buildDist() {
   if (!BUILD) return;
-  const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-  execFileSync(npm, ['run', 'strangler:build:production-like'], { cwd: ROOT, stdio: 'inherit' });
+  const result = spawnNpm(['run', 'strangler:build:production-like'], { cwd: ROOT, stdio: 'inherit' });
+  if (result.status !== 0) process.exit(result.status);
 }
 
 function stableRegistry(records, sourceCommit) {
