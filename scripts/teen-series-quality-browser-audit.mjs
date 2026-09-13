@@ -49,6 +49,7 @@ const report = {
   viewports: VIEWPORTS,
   scenes: [],
   darkScenes: [],
+  screenshots: [],
   errors: [],
 };
 
@@ -69,6 +70,30 @@ function insideViewport(box, width, height, tolerance = 2) {
     box.x + box.width <= width + tolerance &&
     box.y + box.height <= height + tolerance
   );
+}
+
+async function captureViewportEvidence(page, { route, viewport, file, quality }) {
+  const buffer = await page.screenshot({
+    path: file,
+    fullPage: false,
+    type: 'jpeg',
+    quality,
+    animations: 'disabled',
+  });
+  let fileSize = (await stat(file)).size;
+  if (buffer.byteLength > 0 && fileSize !== buffer.byteLength) {
+    await writeFile(file, buffer);
+    fileSize = (await stat(file)).size;
+  }
+  const valid = buffer.byteLength > 1024 && fileSize === buffer.byteLength;
+  check(valid, route, viewport,
+    `screenshot evidence invalid: buffer=${buffer.byteLength} bytes, file=${fileSize} bytes`);
+  report.screenshots.push({
+    route,
+    viewport,
+    file: file.slice(REPORT_DIR.length + 1),
+    bytes: fileSize,
+  });
 }
 
 async function serve(root) {
@@ -235,12 +260,11 @@ async function inspectArticle(page, spec, vp) {
     `series identity drifted: ${metrics.seriesIdentity}`);
 
   if (SCREENSHOT_WIDTHS.has(vp.width)) {
-    await page.screenshot({
-      path: join(REPORT_DIR, `${safeName(route)}-${vp.name}-light.jpg`),
-      fullPage: true,
-      type: 'jpeg',
+    await captureViewportEvidence(page, {
+      route,
+      viewport,
+      file: join(REPORT_DIR, `${safeName(route)}-${vp.name}-light.jpg`),
       quality: 66,
-      animations: 'disabled',
     });
   }
 
@@ -328,12 +352,11 @@ async function inspectLanding(page, vp) {
     route, viewport, 'landing hero escapes viewport');
   check(metrics.h1Count === 1, route, viewport, `landing H1 count=${metrics.h1Count}`);
   if (SCREENSHOT_WIDTHS.has(vp.width)) {
-    await page.screenshot({
-      path: join(REPORT_DIR, `landing-${vp.name}-light.jpg`),
-      fullPage: true,
-      type: 'jpeg',
+    await captureViewportEvidence(page, {
+      route,
+      viewport,
+      file: join(REPORT_DIR, `landing-${vp.name}-light.jpg`),
       quality: 68,
-      animations: 'disabled',
     });
   }
   report.scenes.push({ route, viewport, metrics, pageErrors: errors });
@@ -362,12 +385,11 @@ async function captureDark(browser, base, spec, vp) {
     }));
     check(metrics.scrollWidth <= metrics.width + 2, spec.route, `${vp.name}-dark`, 'dark-mode horizontal overflow');
     check(metrics.dark, spec.route, `${vp.name}-dark`, 'dark theme did not apply');
-    await page.screenshot({
-      path: join(REPORT_DIR, `${safeName(spec.route)}-${vp.name}-dark.jpg`),
-      fullPage: true,
-      type: 'jpeg',
+    await captureViewportEvidence(page, {
+      route: spec.route,
+      viewport: `${vp.name}-dark`,
+      file: join(REPORT_DIR, `${safeName(spec.route)}-${vp.name}-dark.jpg`),
       quality: 66,
-      animations: 'disabled',
     });
     report.darkScenes.push({ route: spec.route, viewport: vp.name, metrics, pageErrors: errors });
     check(errors.length === 0, spec.route, `${vp.name}-dark`, `pageerror: ${errors.join('; ')}`);
@@ -419,7 +441,7 @@ try {
 report.summary = {
   sceneCount: report.scenes.length,
   darkSceneCount: report.darkScenes.length,
-  screenshotCount: 8 * SCREENSHOT_WIDTHS.size + 4,
+  screenshotCount: report.screenshots.length,
   errorCount: report.errors.length,
   expectedArticleScenes: ARTICLE_ROUTES.length * VIEWPORTS.length,
   expectedLandingScenes: VIEWPORTS.length,
@@ -428,6 +450,10 @@ await writeFile(join(REPORT_DIR, 'summary.json'), `${JSON.stringify(report, null
 
 assert.equal(report.scenes.length, ARTICLE_ROUTES.length * VIEWPORTS.length + VIEWPORTS.length,
   'quality audit scene count drifted');
+assert.equal(report.screenshots.length, 8 * SCREENSHOT_WIDTHS.size + 4,
+  'quality audit screenshot evidence count drifted');
+assert.equal(report.screenshots.filter((entry) => entry.bytes <= 1024).length, 0,
+  'quality audit contains empty or invalid screenshot evidence');
 assert.equal(report.errors.length, 0,
   `Teen series quality browser audit failed with ${report.errors.length} issue(s):\n` +
   report.errors.map((entry) => `- ${entry.route} @ ${entry.viewport}: ${entry.message}`).join('\n'));
