@@ -181,6 +181,8 @@ function checkSwRuntimeShape(rootSw) {
     forbidPattern('sw.js revisioned static fallback', revisioned, /canonicalUrl\s*\(|ignoreSearch\s*:/, 'canonical/search-insensitive downgrade');
   }
 
+  requirePattern('sw.js Teen image selector', rootSw, /function\s+isTeenSeriesImage\s*\(\s*url\s*\)[\s\S]{0,240}?url\.pathname\.startsWith\s*\(\s*["']\/images\/teen-series\/["']\s*\)[\s\S]{0,160}?isImage\s*\(\s*url\s*\)/, 'exact Teen series mutable-image selector');
+  requirePattern('sw.js Teen image strategy', rootSw, /isTeenSeriesImage\s*\(\s*url\s*\)[\s\S]{0,180}?networkFirstWithCache\s*\(\s*request\s*,\s*CACHE_IMAGES\s*,\s*IMAGE_CACHE_LIMIT\s*\)[\s\S]{0,220}?isImage\s*\(\s*url\s*\)[\s\S]{0,160}?cacheFirst\s*\(\s*request\s*,\s*CACHE_IMAGES\s*,\s*IMAGE_CACHE_LIMIT\s*\)/, 'Teen series images refresh online before generic image cache-first');
   requirePattern('sw.js Karty engine selector', rootSw, /function\s+isNetworkFirstRuntime\s*\(\s*url\s*\)[\s\S]{0,180}?url\.pathname\s*===\s*["']\/karty\/_engine\/map-engine\.js["']/, 'exact shared map-engine network-first selector');
   requirePattern('sw.js Karty engine strategy', rootSw, /isStaticAsset\s*\(\s*url\s*\)[\s\S]{0,300}?isRevisioned\s*\(\s*url\s*\)[\s\S]{0,180}?isNetworkFirstRuntime\s*\(\s*url\s*\)[\s\S]{0,140}?networkFirstWithCache\s*\(\s*request\s*,\s*CACHE_STATIC\s*\)[\s\S]{0,140}?cacheFirst\s*\(\s*request\s*,\s*CACHE_STATIC\s*\)/, 'unversioned Karty engine uses network-first with static-cache offline fallback before generic cache-first');
   requirePattern('sw.js mutable data strategy', rootSw, /isMutableData[\s\S]+CACHE_DATA/, 'mutable /data/*.json network-first cache');

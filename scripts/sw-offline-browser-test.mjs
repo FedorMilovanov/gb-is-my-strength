@@ -22,12 +22,14 @@ const pagefindDataFile = findFirst(path.join(DIST, 'pagefind'), (file) => /[\\/]
 assert.ok(pagefindDataFile, 'production-like dist must contain Pagefind index/fragment data');
 const pagefindDataPath = `/${path.relative(DIST, pagefindDataFile).replace(/\\/g, '/')}`;
 const mapEnginePath = '/karty/_engine/map-engine.js';
+const teenImagePath = '/images/teen-series/a07-fixture.webp';
 
 const state = {
   release: 'old',
   failPrecachePath: '',
   dataValue: 'old',
   mapEngineValue: 'old',
+  teenImageValue: 'old',
   requestCounts: new Map(),
 };
 
@@ -85,6 +87,10 @@ const server = http.createServer((request, response) => {
   }
   if (pathname === mapEnginePath) {
     send(response, 200, 'application/javascript; charset=utf-8', `window.__A07_MAP_ENGINE_VERSION__=${JSON.stringify(state.mapEngineValue)};`);
+    return;
+  }
+  if (pathname === teenImagePath) {
+    send(response, 200, 'image/webp', Buffer.from(`teen-image-${state.teenImageValue}`));
     return;
   }
   if (pathname === '/audio/a07-model.bin') {
@@ -184,6 +190,7 @@ try {
   state.release = 'old';
   state.dataValue = 'old';
   state.mapEngineValue = 'old';
+  state.teenImageValue = 'old';
   const context = await browser.newContext({ serviceWorkers: 'allow' });
   const page = await context.newPage();
   await registerAndControl(page);
@@ -228,6 +235,25 @@ try {
   assert.ok(mapEngine.text.includes('"new"'));
   assert.equal((state.requestCounts.get(mapEnginePath) || 0) - engineRequestsBefore, 2);
   pass('Karty engine online freshness + offline fallback', 'latest successful unrevisioned runtime value remains available offline');
+  await context.setOffline(false);
+
+  const teenImageRequestsBefore = state.requestCounts.get(teenImagePath) || 0;
+  let teenImage = await responseDigest(page, teenImagePath);
+  assert.equal(teenImage.status, 200);
+  assert.ok(teenImage.text.includes('teen-image-old'));
+  state.teenImageValue = 'new';
+  teenImage = await responseDigest(page, teenImagePath);
+  assert.equal(teenImage.status, 200);
+  assert.ok(teenImage.text.includes('teen-image-new'));
+  assert.equal((state.requestCounts.get(teenImagePath) || 0) - teenImageRequestsBefore, 2,
+    'Teen image must hit network on every online request so in-place artwork refreshes');
+  await context.setOffline(true);
+  teenImage = await responseDigest(page, teenImagePath);
+  assert.equal(teenImage.status, 200);
+  assert.ok(teenImage.text.includes('teen-image-new'));
+  assert.equal((state.requestCounts.get(teenImagePath) || 0) - teenImageRequestsBefore, 2,
+    'Teen image offline fallback must use the latest successful cached bytes');
+  pass('Teen image online freshness + offline fallback', 'stable TEEN image URL refreshes online and latest bytes remain available offline');
   await context.setOffline(false);
 
   await page.reload({ waitUntil: 'domcontentloaded' });
@@ -301,7 +327,7 @@ try {
   fs.mkdirSync(REPORT_DIR, { recursive: true });
   const report = {
     contract: 'A07-honest-offline-pwa', browser: 'chromium', cacheVersion: currentVersion,
-    oldFixtureVersion: oldVersion, exactSiteUtilsUrl, expectedSiteUtilsSha, pagefindDataPath, mapEnginePath,
+    oldFixtureVersion: oldVersion, exactSiteUtilsUrl, expectedSiteUtilsSha, pagefindDataPath, mapEnginePath, teenImagePath,
     scenarios: results, requestCounts: Object.fromEntries([...state.requestCounts.entries()].sort()),
   };
   fs.writeFileSync(path.join(REPORT_DIR, 'a07-offline-pwa-browser.json'), `${JSON.stringify(report, null, 2)}\n`);
