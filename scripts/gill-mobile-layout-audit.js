@@ -203,29 +203,34 @@ function classifyResourceUrl(rawUrl, base = BASE) {
   return { category: 'unknown-external', hardFail: true };
 }
 
-const OPTIONAL_HDRC_FAILURE_ERROR_TEXTS = new Set([
+const OPTIONAL_YANDEX_TRANSPORT_ERROR_TEXTS = new Set([
   'net::ERR_CERT_AUTHORITY_INVALID',
   'net::ERR_ABORTED',
 ]);
 
-function isExactHdrcKnownFailure(record) {
+function exactKnownYandexTransportCategory(record) {
   let url;
   try {
     url = new URL(record.url);
   } catch (_) {
-    return false;
+    return null;
   }
-  return url.protocol === 'https:' &&
-    url.hostname.toLowerCase() === 'hdrc.yandex.net' &&
+  const commonTupleMatches = url.protocol === 'https:' &&
     url.pathname === '/' &&
     record.method === 'GET' &&
     record.resourceType === 'xhr' &&
-    OPTIONAL_HDRC_FAILURE_ERROR_TEXTS.has(record.errorText);
+    OPTIONAL_YANDEX_TRANSPORT_ERROR_TEXTS.has(record.errorText);
+  if (!commonTupleMatches) return null;
+  const host = url.hostname.toLowerCase();
+  if (host === 'hdrc.yandex.net') return 'optional-hdrc-transport-diagnostic';
+  if (host === 'mdd.yandex.net') return 'optional-mdd-transport-diagnostic';
+  return null;
 }
 
 function classifyRequestFailureEvidence(record, base = BASE) {
-  if (isExactHdrcKnownFailure(record)) {
-    return { category: 'optional-hdrc-transport-diagnostic', hardFail: false };
+  const yandexTransportCategory = exactKnownYandexTransportCategory(record);
+  if (yandexTransportCategory) {
+    return { category: yandexTransportCategory, hardFail: false };
   }
   return classifyResourceUrl(record.url, base);
 }
@@ -319,15 +324,26 @@ function runAuthoritySelfTests() {
     resourceType: 'xhr',
     errorText: 'net::ERR_CERT_AUTHORITY_INVALID',
   };
+  const exactMddFailure = {
+    ...exactHdrcFailure,
+    url: 'https://mdd.yandex.net/',
+  };
   const requestFixtures = [
     ['exact HDRC certificate tuple', exactHdrcFailure, 'optional-hdrc-transport-diagnostic', false],
     ['exact HDRC aborted tuple', { ...exactHdrcFailure, errorText: 'net::ERR_ABORTED' }, 'optional-hdrc-transport-diagnostic', false],
+    ['exact MDD certificate tuple', exactMddFailure, 'optional-mdd-transport-diagnostic', false],
+    ['exact MDD aborted tuple', { ...exactMddFailure, errorText: 'net::ERR_ABORTED' }, 'optional-mdd-transport-diagnostic', false],
     ['another yandex.net host', { ...exactHdrcFailure, url: 'https://other.yandex.net/' }, 'unknown-external', true],
     ['another HDRC path', { ...exactHdrcFailure, url: 'https://hdrc.yandex.net/other' }, 'unknown-external', true],
     ['HDRC POST', { ...exactHdrcFailure, method: 'POST' }, 'unknown-external', true],
     ['HDRC non-XHR', { ...exactHdrcFailure, resourceType: 'script' }, 'unknown-external', true],
     ['HDRC unobserved transport error', { ...exactHdrcFailure, errorText: 'net::ERR_FAILED' }, 'unknown-external', true],
     ['HDRC name-resolution error', { ...exactHdrcFailure, errorText: 'net::ERR_NAME_NOT_RESOLVED' }, 'unknown-external', true],
+    ['another MDD path', { ...exactMddFailure, url: 'https://mdd.yandex.net/other' }, 'unknown-external', true],
+    ['MDD POST', { ...exactMddFailure, method: 'POST' }, 'unknown-external', true],
+    ['MDD non-XHR', { ...exactMddFailure, resourceType: 'script' }, 'unknown-external', true],
+    ['MDD unobserved transport error', { ...exactMddFailure, errorText: 'net::ERR_FAILED' }, 'unknown-external', true],
+    ['MDD name-resolution error', { ...exactMddFailure, errorText: 'net::ERR_NAME_NOT_RESOLVED' }, 'unknown-external', true],
     ['same-origin request failure', { ...exactHdrcFailure, url: `${base}/css/site.css` }, 'mandatory-same-origin', true],
     ['generic unknown external request failure', { ...exactHdrcFailure, url: 'https://example.invalid/app.js' }, 'unknown-external', true],
   ];
