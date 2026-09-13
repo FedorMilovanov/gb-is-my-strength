@@ -5,6 +5,10 @@ import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
 import { chromium, webkit } from 'playwright';
+import { assertGospelContract } from './genealogy-gospel-contract.mjs';
+import { getGospelComparison } from '../src/components/genealogy/gospelSequences.ts';
+
+assertGospelContract();
 
 const ROOT = path.resolve(process.cwd());
 const DIST = path.join(ROOT, 'dist');
@@ -154,6 +158,29 @@ async function assertSplitLifecycle(page) {
   await opener.press('Enter');
   const dialog = page.getByRole('dialog', { name: 'Две родословные Христа' });
   await dialog.waitFor({ state: 'visible' });
+
+  const persons = JSON.parse(fs.readFileSync(GENEALOGY_DATA_PATH, 'utf8')).persons;
+  for (const range of ['david', 'full']) {
+    await dialog.getByRole('button', { name: range === 'david' ? 'От Давида' : 'Полностью', exact: true }).click();
+    for (const line of getGospelComparison(persons, range).lines) {
+      const entries = dialog.locator(`[data-gospel="${line.id}"] [data-gospel-entry]`);
+      assert.deepEqual(await entries.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-person-id'))),
+        line.entries.map(entry => entry.personId), `${line.id}/${range}: rendered sequence/order is wrong`);
+      assert.deepEqual(await dialog.locator(`[data-gospel="${line.id}"] .genealogy-split-person`).allTextContents(),
+        line.entries.map(entry => entry.name), `${line.id}/${range}: displayed names differ from the source`);
+    }
+  }
+  const dialogBounds = await dialog.evaluate(node => ({ scrollWidth: node.scrollWidth, clientWidth: node.clientWidth }));
+  assert.ok(dialogBounds.scrollWidth <= dialogBounds.clientWidth, 'comparison overflows horizontally');
+  const mobileSwitch = dialog.getByRole('group', { name: 'Показать родословную' });
+  if (await mobileSwitch.isVisible()) {
+    await mobileSwitch.getByRole('button', { name: 'Лука', exact: true }).click();
+    assert.equal(await dialog.getByRole('region', { name: 'Родословие по Матфею' }).isVisible(), false);
+    assert.equal(await dialog.getByRole('region', { name: 'Родословие по Луке' }).isVisible(), true);
+    await mobileSwitch.getByRole('button', { name: 'Матфей', exact: true }).click();
+    assert.equal(await dialog.getByRole('region', { name: 'Родословие по Луке' }).isVisible(), false);
+    await mobileSwitch.getByRole('button', { name: 'Обе линии', exact: true }).click();
+  }
 
   assert.equal(await page.evaluate(() => {
     const current = document.activeElement;

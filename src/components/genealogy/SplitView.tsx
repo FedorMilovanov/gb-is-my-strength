@@ -1,13 +1,4 @@
-/**
- * SplitView — side-by-side comparison of Matthew 1 and Luke 3 genealogies.
- *
- * Shows both lines from David to Christ in parallel columns:
- * - Left:  Matthew (Solomon → kings → Joseph, royal/legal line)
- * - Right: Luke    (Nathan → ... → Mary, blood line)
- * Meeting point: Jesus Christ.
- *
- * Highlights differences, shared names, and the Jeconiah curse problem.
- */
+/** Source-based comparison of Matthew 1 and Luke 3, in the named edition. */
 
 import {
   memo,
@@ -15,31 +6,17 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
   type KeyboardEvent as ReactKeyboardEvent,
   type SyntheticEvent,
 } from 'react';
 import type { Person } from './types';
-import { getLineStyle, ROLE_LABELS } from './theme';
+import { getGospelComparison, gospelSource, type ComparisonRange } from './gospelSequences';
+import './SplitView.css';
 
 interface SplitViewProps {
   persons: Person[];
   onClose: () => void;
-}
-
-function traceLine(persons: Person[], fromId: string, toId: string): Person[] {
-  const chain: Person[] = [];
-  const byId = new Map(persons.map(p => [p.id, p]));
-  let cur = byId.get(fromId);
-  const guard = new Set<string>();
-  while (cur && !guard.has(cur.id)) {
-    chain.push(cur);
-    guard.add(cur.id);
-    if (cur.id === toId) break;
-    // Follow father, or mother for Jesus→Mary
-    if (cur.id === 'jesus' && cur.mother) cur = byId.get(cur.mother);
-    else cur = cur.father ? byId.get(cur.father) : undefined;
-  }
-  return chain;
 }
 
 function SplitViewComponent({ persons, onClose }: SplitViewProps) {
@@ -53,22 +30,9 @@ function SplitViewComponent({ persons, onClose }: SplitViewProps) {
       : null,
   );
 
-  const { matthewLine, lukeLine, sharedNames } = useMemo(() => {
-    // Matthew: Jesus → Joseph → Jacob → ... → Solomon → David → ... → Abraham
-    const mt = traceLine(persons, 'jesus', 'david')
-      .filter(p => p.lineage === 'messianic-matthew' || p.lineage === 'messianic-fulfillment' || p.id === 'david')
-      .reverse();
-    // Luke: Jesus → Mary → Heli → ... → Nathan → David → ... → Adam
-    const lk = traceLine(persons, 'jesus', 'david')
-      .filter(p => p.lineage === 'messianic-luke' || p.lineage === 'messianic-fulfillment' || p.id === 'david')
-      .reverse();
-
-    const mtNames = new Set(mt.map(p => p.name.ru));
-    const lkNames = new Set(lk.map(p => p.name.ru));
-    const shared = new Set([...mtNames].filter(n => lkNames.has(n)));
-
-    return { matthewLine: mt, lukeLine: lk, sharedNames: shared };
-  }, [persons]);
+  const [range, setRange] = useState<ComparisonRange>('david');
+  const [mobileLine, setMobileLine] = useState('both');
+  const { lines, sharedIds } = useMemo(() => getGospelComparison(persons, range), [persons, range]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -118,10 +82,11 @@ function SplitViewComponent({ persons, onClose }: SplitViewProps) {
       'input:not([disabled])',
       'select:not([disabled])',
       'textarea:not([disabled])',
+      'summary',
       '[tabindex]:not([tabindex="-1"])',
     ].join(','))).filter(element => {
       const style = window.getComputedStyle(element);
-      return style.display !== 'none' && style.visibility !== 'hidden' && !element.hasAttribute('inert');
+      return element.getClientRects().length > 0 && style.display !== 'none' && style.visibility !== 'hidden' && !element.hasAttribute('inert');
     });
 
     if (focusable.length === 0) {
@@ -144,46 +109,6 @@ function SplitViewComponent({ persons, onClose }: SplitViewProps) {
     }
   }, []);
 
-  const renderEntry = (p: Person) => {
-    const ls = getLineStyle(p.lineage);
-    const isShared = sharedNames.has(p.name.ru);
-    const isDisputed = Boolean(p.disputed);
-    const roleLabel = p.role ? ROLE_LABELS[p.role] : undefined;
-    return (
-      <div
-        key={p.id}
-        style={{
-          display: 'flex', alignItems: 'center', gap: '8px',
-          padding: '5px 8px', borderRadius: '6px',
-          background: isShared ? 'rgba(212,168,87,0.08)' : 'transparent',
-          border: isDisputed ? '1px solid rgba(192,57,43,0.3)' : '1px solid transparent',
-          marginBottom: '2px',
-        }}
-      >
-        <span style={{
-          width: '6px', height: '6px', borderRadius: '50%',
-          background: ls.fill, flexShrink: 0,
-        }} />
-        <span style={{
-          color: p.role === 'messiah' ? '#ffd700' : ls.text,
-          fontSize: '12px', fontWeight: isShared ? 600 : 400,
-          fontFamily: '"Lora", Georgia, serif',
-        }}>
-          {p.name.ru}
-        </span>
-        {roleLabel && roleLabel !== 'Личность' && (
-          <span style={{ color: 'rgba(200,184,154,0.35)', fontSize: '9px' }}>{roleLabel}</span>
-        )}
-        {isDisputed && (
-          <span style={{ color: '#e87060', fontSize: '9px', fontWeight: 700 }}>⚠</span>
-        )}
-        {isShared && (
-          <span style={{ color: 'rgba(212,168,87,0.5)', fontSize: '8px' }}>≡</span>
-        )}
-      </div>
-    );
-  };
-
   return (
     <dialog
       ref={dialogRef}
@@ -194,100 +119,67 @@ function SplitViewComponent({ persons, onClose }: SplitViewProps) {
       onClose={handleDialogClose}
       onKeyDown={handleKeyDown}
       tabIndex={-1}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 60,
-        width: '100vw', height: '100dvh', maxWidth: 'none', maxHeight: 'none',
-        margin: 0, padding: 0, border: 0,
-        background: 'rgba(5,4,2,0.95)', backdropFilter: 'blur(20px)',
-        display: 'flex', flexDirection: 'column',
-        color: '#c8b89a',
-        fontFamily: '"Lora", Georgia, serif',
-        animation: 'genealogy-fade-in .2s ease-out',
-        overflow: 'hidden',
-      }}
     >
-      {/* Header */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '14px 20px', borderBottom: '1px solid rgba(212,168,87,0.12)',
-      }}>
+      <header className="genealogy-split-header">
         <div>
-          <div id="genealogy-split-title" style={{ color: '#d4a857', fontSize: '16px', fontWeight: 700 }}>
-            Две родословные Христа
-          </div>
-          <div id="genealogy-split-description" style={{ color: 'rgba(200,184,154,0.4)', fontSize: '11px', marginTop: '2px' }}>
-            Матфей (царственная линия через Соломона) vs Лука (кровная линия через Нафана)
-          </div>
+          <p className="genealogy-split-eyebrow">{gospelSource.translation}</p>
+          <h2 id="genealogy-split-title">Две родословные Христа</h2>
+          <p id="genealogy-split-description">
+            Последовательности Матфея и Луки. Имена расположены от предков к Христу.
+          </p>
         </div>
-        <button
-          ref={closeButtonRef}
-          autoFocus
-          onClick={requestClose}
-          aria-label="Закрыть сравнение"
-          style={{
-            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,168,87,0.2)',
-            borderRadius: '8px', color: '#c8b89a', fontSize: '18px',
-            cursor: 'pointer', width: '36px', height: '36px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-        >×</button>
-      </div>
+        <button ref={closeButtonRef} autoFocus onClick={requestClose}
+          className="genealogy-split-close" aria-label="Закрыть сравнение">×</button>
+      </header>
 
-      {/* Two columns */}
-      <div style={{ display: 'flex', gap: '0', flex: 1, overflow: 'hidden' }}>
-        {/* Matthew column */}
-        <div
-          role="region"
-          aria-label="Родословие по Матфею"
-          tabIndex={0}
-          style={{ flex: 1, overflowY: 'auto', padding: '14px', borderRight: '1px solid rgba(212,168,87,0.08)' }}
-        >
-          <div style={{ color: '#c8923d', fontSize: '13px', fontWeight: 700, marginBottom: '8px', paddingBottom: '6px', borderBottom: '1px solid rgba(200,146,61,0.2)' }}>
-            📜 Матфей 1:1–17
-          </div>
-          <div style={{ color: 'rgba(200,184,154,0.35)', fontSize: '10px', marginBottom: '10px' }}>
-            Авраам → Давид → <b style={{color:'#c8923d'}}>Соломон</b> → цари → Иосиф → Христос
-          </div>
-          {matthewLine.map(renderEntry)}
+      <div className="genealogy-split-options">
+        <div className="genealogy-split-switch" role="group" aria-label="Границы сравнения">
+          <button type="button" aria-pressed={range === 'david'} onClick={() => setRange('david')}>От Давида</button>
+          <button type="button" aria-pressed={range === 'full'} onClick={() => setRange('full')}>Полностью</button>
         </div>
-
-        {/* Luke column */}
-        <div
-          role="region"
-          aria-label="Родословие по Луке"
-          tabIndex={0}
-          style={{ flex: 1, overflowY: 'auto', padding: '14px' }}
-        >
-          <div style={{ color: '#b8965a', fontSize: '13px', fontWeight: 700, marginBottom: '8px', paddingBottom: '6px', borderBottom: '1px solid rgba(184,150,90,0.2)' }}>
-            📜 Лука 3:23–38
-          </div>
-          <div style={{ color: 'rgba(200,184,154,0.35)', fontSize: '10px', marginBottom: '10px' }}>
-            Адам → Ной → Авраам → Давид → <b style={{color:'#b8965a'}}>Нафан</b> → ... → Мария → Христос
-          </div>
-          {lukeLine.map(renderEntry)}
+        <div className="genealogy-split-switch genealogy-split-mobile-switch" role="group" aria-label="Показать родословную">
+          {([['matthew', 'Матфей'], ['both', 'Обе линии'], ['luke', 'Лука']] as const).map(([id, label]) => (
+            <button key={id} type="button" aria-pressed={mobileLine === id}
+              onClick={() => setMobileLine(id)}>{label}</button>
+          ))}
         </div>
       </div>
 
-      {/* Legend */}
-      <div style={{
-        padding: '10px 20px', borderTop: '1px solid rgba(212,168,87,0.08)',
-        display: 'flex', gap: '16px', fontSize: '10px', color: 'rgba(200,184,154,0.4)',
-      }}>
-        <span>≡ — общее имя в обеих линиях</span>
-        <span>⚠ — спорное место (нажмите в древе для деталей)</span>
-        <span style={{ marginLeft: 'auto' }}>{matthewLine.length} Мф · {lukeLine.length} Лк</span>
+      <div className="genealogy-split-columns" data-mobile-line={mobileLine} data-range={range}>
+        {lines.map(line => (
+          <section key={line.id} className={`genealogy-split-column genealogy-split-${line.id}`}
+            data-gospel={line.id} role="region" aria-label={line.title} tabIndex={0}>
+            <div className="genealogy-split-column-heading">
+              <h3>{line.title}</h3>
+              <a href={line.sourceUrl} target="_blank" rel="noopener noreferrer"
+                aria-label={`Открыть ${line.sourceRef}, Синодальный перевод, в новой вкладке`}>{line.sourceRef} ↗</a>
+            </div>
+            <p className="genealogy-split-line-context">
+              {line.id === 'matthew' ? 'Через Соломона' : 'Через Нафана'} · {line.entries.length} записей
+            </p>
+            <ol className="genealogy-split-list" aria-label={`Последовательность: ${line.title}`}>
+              {line.entries.map(entry => (
+                <li key={entry.id} data-gospel-entry={entry.id} data-person-id={entry.personId}
+                  className={sharedIds.has(entry.personId) ? 'genealogy-split-shared' : undefined}>
+                  <span className="genealogy-split-person">{entry.name}</span>
+                  <span className="genealogy-split-entry-ref" title={`Форма в тексте: ${entry.sourceForm}`}>{entry.ref}</span>
+                  {sharedIds.has(entry.personId) && <span className="genealogy-split-shared-mark" aria-label="Общая персона">≡</span>}
+                </li>
+              ))}
+            </ol>
+            <details className="genealogy-split-notes">
+              <summary>Как читать эту последовательность</summary>
+              {line.notes.map(note => <p key={note}>{note}</p>)}
+              <p>Имена приведены в именительном падеже. Список передаёт порядок родословной и не утверждает непосредственное биологическое отцовство между каждой парой.</p>
+            </details>
+          </section>
+        ))}
       </div>
 
-      <style>{`
-        .genealogy-split-dialog::backdrop {
-          background: rgba(5, 4, 2, 0.7);
-          backdrop-filter: blur(4px);
-        }
-        @keyframes genealogy-fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-      `}</style>
+      <footer className="genealogy-split-footer">
+        <span>≡ — общая персона. Совпадение имени само по себе не означает родство или тождество людей.</span>
+        <span className="genealogy-split-count" aria-live="polite">{lines[0].entries.length} Мф · {lines[1].entries.length} Лк</span>
+      </footer>
     </dialog>
   );
 }
