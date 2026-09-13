@@ -248,9 +248,14 @@ async function assertFocusInteractions(page) {
     }, true);
   });
   const assertNodeFocus = async (id, message) => {
+    // Observe React's completed focus/selection update; do not assume that
+    // returning from the browser key dispatch also flushed its render queue.
+    await page.waitForFunction(expected => document.activeElement?.getAttribute('data-id') === expected
+      && document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-active-person') === expected,
+    id, { timeout: 5000 }).catch(() => undefined);
     const state = await page.evaluate(() => ({ focused: document.activeElement?.getAttribute('data-id'),
       selected: document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-active-person'), keys: window.__genealogyKeyTrace }));
-    assert.equal(state.focused, id, `${message}; keyboard trace: ${JSON.stringify(state.keys)}`);
+    assert.equal(state.focused, id, `${message}; focus state: ${JSON.stringify(state)}`);
     assert.equal(state.selected, id, 'Keyboard focus and selected genealogy person disagree');
   };
   await isaacNode.focus();
