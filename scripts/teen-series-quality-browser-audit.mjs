@@ -340,6 +340,7 @@ async function inspectLanding(page, vp) {
       heroHeightAttr: hero?.getAttribute('height'),
       heroNaturalWidth: hero?.naturalWidth || 0,
       heroNaturalHeight: hero?.naturalHeight || 0,
+      heroCurrentSrc: hero?.currentSrc || '',
       heroComplete: Boolean(hero?.complete),
       heroRect: rect ? { x: rect.x, width: rect.width, right: rect.right } : null,
       cardImages: cardImages.map((img) => ({
@@ -360,9 +361,20 @@ async function inspectLanding(page, vp) {
     `landing card projection drifted: cards=${metrics.cardCount}, unique=${metrics.uniqueLinks}`);
   check(metrics.heroWidthAttr === '1200' && metrics.heroHeightAttr === '630', route, viewport,
     `landing hero intrinsic dimensions drifted: ${metrics.heroWidthAttr}x${metrics.heroHeightAttr}`);
-  check(metrics.heroComplete && metrics.heroNaturalWidth === 1200 && metrics.heroNaturalHeight === 630,
-    route, viewport,
-    `landing hero failed to load at canonical dimensions: ${metrics.heroNaturalWidth}x${metrics.heroNaturalHeight}`);
+  const heroRatio = metrics.heroNaturalHeight > 0
+    ? metrics.heroNaturalWidth / metrics.heroNaturalHeight
+    : 0;
+  check(
+    metrics.heroComplete &&
+    metrics.heroNaturalWidth > 0 &&
+    metrics.heroNaturalHeight > 0 &&
+    metrics.heroCurrentSrc &&
+    /\/images\/teen-series\/series-cover(?:-600w)?\.webp(?:\?|$)/.test(metrics.heroCurrentSrc) &&
+    Math.abs(heroRatio - (1200 / 630)) < 0.01,
+    route,
+    viewport,
+    `landing hero responsive candidate failed: src=${metrics.heroCurrentSrc || 'missing'}, natural=${metrics.heroNaturalWidth}x${metrics.heroNaturalHeight}`
+  );
   check(metrics.heroRect && metrics.heroRect.x >= -2 && metrics.heroRect.right <= metrics.innerWidth + 2,
     route, viewport, 'landing hero escapes viewport');
   check(metrics.cardImages.length === 7, route, viewport,
