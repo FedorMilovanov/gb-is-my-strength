@@ -119,6 +119,8 @@ if (!readerProjector.includes('projectTeenSourcesBoundary') || !readerProjector.
 }
 if (!landingSource.includes('const ogImagePath = TEEN_SERIES_MEDIA.series.hero;')) fail('landing social image must use media authority');
 if (!landingSource.includes('{cards.map((item, index) => (')) fail('landing route-specific visual cards missing');
+if (!landingSource.includes('srcset={`${item.media.rail} 600w, ${item.media.hero} 1200w`}')) fail('landing cards must expose 600w/1200w responsive srcset');
+if (!landingSource.includes('sizes="(max-width: 47.499rem) 100vw, 410px"')) fail('landing card responsive sizes contract missing');
 if (!landingSource.includes("'@type': 'Organization'") || !landingSource.includes("'@id': SITE.orgId")) fail('landing source lacks Organization JSON-LD owner');
 if (!landingSource.includes("'@type': 'WebSite'") || !landingSource.includes("'@id': SITE.websiteId")) fail('landing source lacks WebSite JSON-LD owner');
 
