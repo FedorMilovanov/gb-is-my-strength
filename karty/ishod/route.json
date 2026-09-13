@@ -19,11 +19,7 @@
       "cy": 900,
       "w": 1200
     },
-    "mobile_viewport_init": {
-      "cx": 450,
-      "cy": 1040,
-      "w": 560
-    },
+    "mobile_viewport_init": {"cx": 500, "cy": 1040, "w": 830},
     "sheet_viewport": {
       "cx": 660,
       "cy": 860,
