@@ -160,6 +160,7 @@ async function assertSplitLifecycle(page) {
   await dialog.waitFor({ state: 'visible' });
 
   const persons = JSON.parse(fs.readFileSync(GENEALOGY_DATA_PATH, 'utf8')).persons;
+  const screenshotPrefix = `${page.context().browser().browserType().name()}-${page.viewportSize().width}x${page.viewportSize().height}`;
   for (const range of ['david', 'full']) {
     await dialog.getByRole('button', { name: range === 'david' ? 'От Давида' : 'Полностью', exact: true }).click();
     for (const line of getGospelComparison(persons, range).lines) {
@@ -169,9 +170,15 @@ async function assertSplitLifecycle(page) {
       assert.deepEqual(await dialog.locator(`[data-gospel="${line.id}"] .genealogy-split-person`).allTextContents(),
         line.entries.map(entry => entry.name), `${line.id}/${range}: displayed names differ from the source`);
     }
+    await dialog.screenshot({ path: path.join(REPORT_DIR, `${screenshotPrefix}-${range}.png`), animations: 'disabled' });
   }
   const dialogBounds = await dialog.evaluate(node => ({ scrollWidth: node.scrollWidth, clientWidth: node.clientWidth }));
   assert.ok(dialogBounds.scrollWidth <= dialogBounds.clientWidth, 'comparison overflows horizontally');
+  for (const button of await dialog.locator('button').all()) {
+    if (!await button.isVisible()) continue;
+    const bounds = await button.boundingBox();
+    assert.ok(bounds && bounds.width >= 44 && bounds.height >= 44, 'comparison button is smaller than 44 CSS px');
+  }
   const mobileSwitch = dialog.getByRole('group', { name: 'Показать родословную' });
   if (await mobileSwitch.isVisible()) {
     await mobileSwitch.getByRole('button', { name: 'Лука', exact: true }).click();
