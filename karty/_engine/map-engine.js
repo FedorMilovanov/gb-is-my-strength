@@ -504,6 +504,9 @@ const MapEngine = (function() {
     const layerDefinitions=[...(opts.layers||route.layers||[])];
     if(route.signature&&route.signature.type)layerDefinitions.push({id:'signature',label:route.signature.label||'Сигнатура',color:'#e8c879',on:true,selector:'#me-signature'});
     const layerState=new Map(layerDefinitions.filter(layer=>layer&&layer.id).map(layer=>[String(layer.id),layer.on!==false]));
+    // Facets the reader switched by hand. A story may reveal its own places when
+    // an untouched facet is off, but an explicit choice must survive a story change.
+    const explicitLayerChoices=new Set();
     const themeStorageKey='me-map-theme';
     let activeTheme='dark';
     try{activeTheme=localStorage.getItem(themeStorageKey)==='light'?'light':'dark'}catch(e){}
@@ -603,7 +606,7 @@ const MapEngine = (function() {
 .me-panel__meta{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
 .me-panel__meta span{font-size:9px;color:rgba(154,162,174,.7);padding:3px 10px;border:1px solid rgba(255,255,255,.06);border-radius:6px;background:rgba(255,255,255,.02)}
 .me-panel__backdrop{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:19;opacity:0;pointer-events:none;transition:opacity .3s}
-.me-panel__backdrop--active{opacity:1;pointer-events:auto}
+.me-panel__backdrop--active{opacity:1}
 .me-panel__resize{position:absolute;left:-6px;top:50%;transform:translateY(-50%);width:12px;height:60px;cursor:ew-resize;z-index:25;display:none}
 .me-panel__resize::after{content:'';position:absolute;left:4px;top:10px;bottom:10px;width:3px;border-radius:2px;background:rgba(255,255,255,.15);transition:background .2s}
 .me-panel__resize:hover::after{background:rgba(232,200,121,.4)}
@@ -1286,7 +1289,9 @@ _on(searchInput,'input',()=>{
       markersG.querySelectorAll('g[transform]').forEach(g => {
         if (g.style.opacity !== '0.08' && g.style.opacity !== '.08') visibleCount++;
       });
-      if (visibleCount > 0 && visibleCount < mc) {
+      if (visibleCount === 0) {
+        showToast('Ничего не найдено в активном сюжете', 1800);
+      } else if (visibleCount < mc) {
         showToast('Найдено: ' + visibleCount, 1500);
       }
     }
@@ -1472,13 +1477,20 @@ header.appendChild(shareBtn);
       scaleResizeObserver.observe(canvas);
     }
 
-    // Panel backdrop
+    // Panel backdrop. It is purely a dimming layer: it must stay inert so a
+    // marker under the scrim is still clickable while a dossier is open.
+    // "Click outside closes" is handled on the canvas instead (see below).
     const panelBackdrop=document.createElement('div');panelBackdrop.className='me-panel__backdrop';
-    panelBackdrop.addEventListener('click', ()=>{ close(); });
+    panelBackdrop.setAttribute('aria-hidden','true');
     container.appendChild(panelBackdrop);
     
     // Panel
     const panel=document.createElement('div');panel.className='me-panel';
+    // The panel behaves modally (the map behind it is inert while it is open),
+    // so it is announced as a dialog and labelled with the open place.
+    panel.setAttribute('role','dialog');
+    panel.setAttribute('aria-modal','true');
+    panel.setAttribute('aria-label','Досье места');
     panel.setAttribute('aria-hidden','true');
     panel.setAttribute('inert','');
     panel.innerHTML='<button class="me-panel__close">×</button><button class="me-panel__scroll-top" style="display:none;position:absolute;top:10px;right:44px;z-index:5;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:#9aa2ae;font-size:14px;cursor:pointer;padding:3px 7px;line-height:1">↑</button><div class="me-panel__resize"></div><div class="me-tour-progress" id="me-tour-bar"><div class="me-tour-progress__fill"></div><div id="me-tour-speed" style="display:none;position:absolute;top:4px;right:8px;display:none;gap:4px"><button id="me-tour-faster" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:4px;color:#9aa2ae;font-size:10px;cursor:pointer;padding:1px 6px">▶▶</button><button id="me-tour-slower" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:4px;color:#9aa2ae;font-size:10px;cursor:pointer;padding:1px 6px">▶</button></div></div><div class="me-panel__head"></div><div class="me-tabs"></div><div class="me-content"></div><div class="me-nav"></div>';
@@ -1625,7 +1637,11 @@ container.appendChild(panel);
         const restrictive=[...info.all,...info.explicit].filter(id=>layerState.has(id));
         const alternatives=[...info.any].filter(id=>layerState.has(id));
         const selectedStoryElement=activeStoryId!=='main'&&el.getAttribute('data-story-active')==='1';
-        const hidden=!selectedStoryElement&&(restrictive.some(id=>layerState.get(id)===false)||(alternatives.length>0&&!alternatives.some(id=>layerState.get(id)!==false)));
+        // A selected story reveals its own places, yet a facet the reader switched
+        // off explicitly stays off across story changes.
+        const restrictivelyHidden=restrictive.some(id=>layerState.get(id)===false&&(!selectedStoryElement||explicitLayerChoices.has(id)));
+        const withoutAlternative=alternatives.length>0&&!alternatives.some(id=>layerState.get(id)!==false)&&(!selectedStoryElement||alternatives.some(id=>explicitLayerChoices.has(id)));
+        const hidden=restrictivelyHidden||withoutAlternative;
         el.setAttribute('data-me-layer-hidden',hidden?'1':'0');
         if(hidden){
           el.style.opacity='0';el.style.visibility='hidden';el.style.pointerEvents='none';el.setAttribute('aria-hidden','true');
@@ -1640,6 +1656,7 @@ container.appendChild(panel);
     function setLayerEnabled(id,enabled,announce=true){
       if(!layerState.has(id))return false;
       layerState.set(id,!!enabled);
+      explicitLayerChoices.add(String(id));
       const row=container.querySelector(`.me-layers__row[data-layer-id="${id}"]`);
       const toggle=row&&row.querySelector('.me-layers__toggle');
       if(toggle){toggle.classList.toggle('me-layers__toggle--on',!!enabled);toggle.setAttribute('aria-pressed',enabled?'true':'false')}
@@ -1732,6 +1749,40 @@ container.appendChild(panel);
         mmRect.setAttribute('width', view.w);
         mmRect.setAttribute('height', view.h);
       }
+    }
+
+    // Resolve a tap to the marker the reader actually aimed at. Overlapping hit
+    // circles (dense overview zooms) put a neighbouring marker on top of the DOM
+    // hit-test, so the closest marker centre wins; markers sharing one map point
+    // cannot be told apart at all, so repeated taps on one pile cycle through it.
+    const MARKER_TAP_RADIUS=26;
+    let pileTapState=null;
+    function resolveTapTarget(clickedNode,place,clientX,clientY){
+      if(!Number.isFinite(clientX)||!Number.isFinite(clientY))return place.id;
+      const pile=[];
+      markersG.querySelectorAll('g[data-place-id][role="button"]').forEach(node=>{
+        const dot=node.querySelector('.me-marker-dot')||node;
+        const r=dot.getBoundingClientRect();
+        if(!r.width&&!r.height)return;
+        const d=Math.hypot(clientX-(r.left+r.width/2),clientY-(r.top+r.height/2));
+        if(d<=MARKER_TAP_RADIUS)pile.push({node,id:node.getAttribute('data-place-id'),d});
+      });
+      if(!pile.length)return place.id;
+      pile.sort((a,b)=>a.d-b.d);
+      const bestDist=pile[0].d;
+      const grouped=pile.filter(item=>item.d<=bestDist+2);
+      const clickedIndex=grouped.findIndex(item=>item.node===clickedNode);
+      if(clickedIndex>0)grouped.unshift(grouped.splice(clickedIndex,1)[0]);
+      if(grouped.length<2)return grouped[0].id;
+      const key=grouped.map(item=>item.id).sort().join('|');
+      const now=performance.now();
+      if(pileTapState&&pileTapState.key===key&&now-pileTapState.at<4000&&Math.hypot(clientX-pileTapState.x,clientY-pileTapState.y)<10){
+        pileTapState.index=(pileTapState.index+1)%grouped.length;
+      }else{
+        pileTapState={key,index:0,x:clientX,y:clientY,at:now};
+      }
+      pileTapState.at=now;
+      return grouped[pileTapState.index].id;
     }
 
     function renderMarkers(){
@@ -2162,7 +2213,7 @@ container.appendChild(panel);
       });
       g.addEventListener('pointerup', () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } });
       g.addEventListener('pointerleave', () => { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } });
-      g.addEventListener('click',()=>{if(longPressFired){longPressFired=false;return;}haptic();addRipple(svg,place.x,place.y,getStageColor(place.stage));const d2=g.querySelector('.me-marker-dot');if(d2){d2.style.transition='transform .15s cubic-bezier(.34,1.56,.64,1)';d2.style.transform='scale(1.4)';_tm(()=>{d2.style.transform='scale(1)';_tm(()=>{d2.style.transition='r .2s ease, fill .2s ease, filter .2s ease';},160);},160);}open(place.id);});
+      g.addEventListener('click',(e)=>{if(longPressFired){longPressFired=false;return;}const targetId=resolveTapTarget(g,place,e.clientX,e.clientY);const targetPlace=(route.places||[]).find(p=>p.id===targetId)||place;haptic();addRipple(svg,targetPlace.x,targetPlace.y,getStageColor(targetPlace.stage));const d2=g.querySelector('.me-marker-dot');if(d2){d2.style.transition='transform .15s cubic-bezier(.34,1.56,.64,1)';d2.style.transform='scale(1.4)';_tm(()=>{d2.style.transform='scale(1)';_tm(()=>{d2.style.transition='r .2s ease, fill .2s ease, filter .2s ease';},160);},160);}open(targetPlace.id);e.stopPropagation();});
         g.addEventListener('keydown',(event)=>{if(event.key==='Enter'||event.key===' '||event.key==='Spacebar'){event.preventDefault();event.stopPropagation();open(place.id);}});
         g.addEventListener('dblclick',(e)=>{e.preventDefault();e.stopPropagation();flyTo(place.x,place.y,Math.min(view.w,450),600);});
       }
@@ -2289,6 +2340,7 @@ container.appendChild(panel);
     function renderPanel(){
       const place=getActivePlace();
       if(!place)return;
+      panel.setAttribute('aria-label','Досье места: '+(place.name||place.id));
       const head=panel.querySelector('.me-panel__head');
       const tabsEl=panel.querySelector('.me-tabs');
       const content=panel.querySelector('.me-content');
@@ -2567,6 +2619,7 @@ container.appendChild(panel);
     }
 
     // ── Public API ──
+    let panelOpenedAt=0;
     function open(id){
       try {
       const panelOpener = document.activeElement;
@@ -2578,6 +2631,7 @@ container.appendChild(panel);
       }
       activePlaceId=id;
       panel.classList.add('me-panel--open');
+      panelOpenedAt=performance.now();
       panelBackdrop.classList.add('me-panel__backdrop--active');
       updateUrl();
       renderMarkers();
@@ -2758,13 +2812,26 @@ container.appendChild(panel);
     }
 
     // ── Pan/Zoom ──
+    // Capture must not start on pointerdown: setPointerCapture retargets every
+    // following pointer event (and the derived click) to the canvas, so the click
+    // never reached the marker's own handler and real clicks could not open a
+    // dossier. Capture is deferred until the gesture is clearly a drag.
+    const DRAG_START_THRESHOLD=5;
+    function releaseDragCapture(id){
+      if(id===undefined||id===null)return;
+      try{ if(canvas.hasPointerCapture(id))canvas.releasePointerCapture(id); }catch(err){}
+    }
     _on(canvas,'pointerdown',e=>{
       if(e.target.closest('button,a,.me-story-chip'))return;
-      canvas.setPointerCapture(e.pointerId);
-      dragState={sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y};
+      dragState={sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,pointerId:e.pointerId};
     });
     _on(canvas,'pointermove',e=>{
       if(!dragState)return;
+      if(!dragState.moved){
+        if(Math.hypot(e.clientX-dragState.sx,e.clientY-dragState.sy)<DRAG_START_THRESHOLD)return;
+        dragState.moved=true;
+        try{canvas.setPointerCapture(dragState.pointerId)}catch(err){}
+      }
       const r=canvas.getBoundingClientRect();
       const sc=r.width/view.w;
       view.x=clamp(dragState.vx-(e.clientX-dragState.sx)/sc,-cfg.padX,cfg.W0+cfg.padX-view.w);
@@ -2806,7 +2873,24 @@ container.appendChild(panel);
     canvas.addEventListener('touchend', e => {
       if (e.touches.length < 2) { pinchView0 = null; }
     });
-    canvas.addEventListener('pointerup',()=>{dragState=null});
+    // The captured pointer is always released when the gesture ends, so the next
+    // tap is evaluated against the real element under the finger/cursor.
+    const endDrag=()=>{if(dragState)releaseDragCapture(dragState.pointerId);dragState=null};
+    canvas.addEventListener('pointerup',endDrag);
+    canvas.addEventListener('pointercancel',endDrag);
+    // With the dimming layer inert, "click outside the dossier closes it" is
+    // enforced here. The listener sits on the container because the header band
+    // and the map margins are not covered by the canvas element; clicking another
+    // marker or a control must switch/keep the dossier instead of closing it.
+    _on(container,'click',e=>{
+      if(measuring)return;
+      if(!panel.classList.contains('me-panel--open'))return;
+      // The click that just opened a dossier (marker, stage dot, deep link) must
+      // not be read as "click outside the dossier".
+      if(performance.now()-panelOpenedAt<250)return;
+      if(e.target.closest('.me-panel,[data-place-id],button,a,.me-story-chip'))return;
+      close('outside');
+    });
     canvas.addEventListener('wheel',e=>{
       e.preventDefault();
       const r=canvas.getBoundingClientRect();

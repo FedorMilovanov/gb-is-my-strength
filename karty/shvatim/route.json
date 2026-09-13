@@ -833,5 +833,7 @@
     "sitemap": false,
     "llms": false,
     "pagefind": false
-  }
+  },
+  "archetype": "territorial",
+  "capabilities": ["stages", "stories", "layers", "timeline", "signature", "interpretations"]
 }

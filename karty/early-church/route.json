@@ -596,5 +596,7 @@
     "sitemap": false,
     "llms": false,
     "pagefind": false
-  }
+  },
+  "archetype": "route",
+  "capabilities": ["stages", "stories", "layers", "timeline", "signature", "interpretations"]
 }

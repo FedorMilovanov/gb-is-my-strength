@@ -440,5 +440,7 @@
     "sitemap": false,
     "llms": false,
     "pagefind": false
-  }
+  },
+  "archetype": "thematic",
+  "capabilities": ["stages", "stories", "layers", "timeline", "signature", "interpretations"]
 }
