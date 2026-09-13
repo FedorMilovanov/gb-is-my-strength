@@ -49,6 +49,8 @@ const report = {
   viewports: VIEWPORTS,
   scenes: [],
   darkScenes: [],
+  screenshots: [],
+  responsiveScenes: [],
   errors: [],
 };
 
@@ -69,6 +71,30 @@ function insideViewport(box, width, height, tolerance = 2) {
     box.x + box.width <= width + tolerance &&
     box.y + box.height <= height + tolerance
   );
+}
+
+async function captureViewportEvidence(page, { route, viewport, file, quality }) {
+  const buffer = await page.screenshot({
+    path: file,
+    fullPage: false,
+    type: 'jpeg',
+    quality,
+    animations: 'disabled',
+  });
+  let fileSize = (await stat(file)).size;
+  if (buffer.byteLength > 0 && fileSize !== buffer.byteLength) {
+    await writeFile(file, buffer);
+    fileSize = (await stat(file)).size;
+  }
+  const valid = buffer.byteLength > 1024 && fileSize === buffer.byteLength;
+  check(valid, route, viewport,
+    `screenshot evidence invalid: buffer=${buffer.byteLength} bytes, file=${fileSize} bytes`);
+  report.screenshots.push({
+    route,
+    viewport,
+    file: file.slice(REPORT_DIR.length + 1),
+    bytes: fileSize,
+  });
 }
 
 async function serve(root) {
@@ -235,12 +261,11 @@ async function inspectArticle(page, spec, vp) {
     `series identity drifted: ${metrics.seriesIdentity}`);
 
   if (SCREENSHOT_WIDTHS.has(vp.width)) {
-    await page.screenshot({
-      path: join(REPORT_DIR, `${safeName(route)}-${vp.name}-light.jpg`),
-      fullPage: true,
-      type: 'jpeg',
+    await captureViewportEvidence(page, {
+      route,
+      viewport,
+      file: join(REPORT_DIR, `${safeName(route)}-${vp.name}-light.jpg`),
       quality: 66,
-      animations: 'disabled',
     });
   }
 
@@ -305,6 +330,7 @@ async function inspectLanding(page, vp) {
     const cards = [...document.querySelectorAll('.teen-series-card')];
     const hero = document.querySelector('.teen-series-hero img');
     const links = cards.map((a) => a.getAttribute('href')).filter(Boolean);
+    const cardImages = cards.map((card) => card.querySelector('.teen-series-card__image'));
     const rect = hero?.getBoundingClientRect();
     return {
       innerWidth: window.innerWidth,
@@ -313,7 +339,19 @@ async function inspectLanding(page, vp) {
       uniqueLinks: new Set(links).size,
       heroWidthAttr: hero?.getAttribute('width'),
       heroHeightAttr: hero?.getAttribute('height'),
+      heroNaturalWidth: hero?.naturalWidth || 0,
+      heroNaturalHeight: hero?.naturalHeight || 0,
+      heroCurrentSrc: hero?.currentSrc || '',
+      heroComplete: Boolean(hero?.complete),
       heroRect: rect ? { x: rect.x, width: rect.width, right: rect.right } : null,
+      cardImages: cardImages.map((img) => ({
+        srcset: img?.getAttribute('srcset') || '',
+        sizes: img?.getAttribute('sizes') || '',
+        currentSrc: img?.currentSrc || '',
+        naturalWidth: img?.naturalWidth || 0,
+        naturalHeight: img?.naturalHeight || 0,
+        complete: Boolean(img?.complete),
+      })),
       h1Count: document.querySelectorAll('h1').length,
     };
   });
@@ -324,19 +362,85 @@ async function inspectLanding(page, vp) {
     `landing card projection drifted: cards=${metrics.cardCount}, unique=${metrics.uniqueLinks}`);
   check(metrics.heroWidthAttr === '1200' && metrics.heroHeightAttr === '630', route, viewport,
     `landing hero intrinsic dimensions drifted: ${metrics.heroWidthAttr}x${metrics.heroHeightAttr}`);
+  const heroRatio = metrics.heroNaturalHeight > 0
+    ? metrics.heroNaturalWidth / metrics.heroNaturalHeight
+    : 0;
+  check(
+    metrics.heroComplete &&
+    metrics.heroNaturalWidth > 0 &&
+    metrics.heroNaturalHeight > 0 &&
+    metrics.heroCurrentSrc &&
+    /\/images\/teen-series\/series-cover(?:-600w)?\.webp(?:\?|$)/.test(metrics.heroCurrentSrc) &&
+    Math.abs(heroRatio - (1200 / 630)) < 0.01,
+    route,
+    viewport,
+    `landing hero responsive candidate failed: src=${metrics.heroCurrentSrc || 'missing'}, natural=${metrics.heroNaturalWidth}x${metrics.heroNaturalHeight}`
+  );
   check(metrics.heroRect && metrics.heroRect.x >= -2 && metrics.heroRect.right <= metrics.innerWidth + 2,
     route, viewport, 'landing hero escapes viewport');
+  check(metrics.cardImages.length === 7, route, viewport,
+    `landing card image projection drifted: ${metrics.cardImages.length}`);
+  check(metrics.cardImages.every((img) => /600w/.test(img.srcset) && /1200w/.test(img.srcset)),
+    route, viewport, 'landing card responsive srcset missing');
+  check(metrics.cardImages.every((img) => img.sizes === '(max-width: 47.499rem) 100vw, 410px'),
+    route, viewport, 'landing card sizes contract drifted');
+  check(metrics.cardImages.every((img) => img.complete && img.naturalWidth > 0 && img.naturalHeight > 0 && img.currentSrc),
+    route, viewport, 'landing card image failed to load');
   check(metrics.h1Count === 1, route, viewport, `landing H1 count=${metrics.h1Count}`);
   if (SCREENSHOT_WIDTHS.has(vp.width)) {
-    await page.screenshot({
-      path: join(REPORT_DIR, `landing-${vp.name}-light.jpg`),
-      fullPage: true,
-      type: 'jpeg',
+    await captureViewportEvidence(page, {
+      route,
+      viewport,
+      file: join(REPORT_DIR, `landing-${vp.name}-light.jpg`),
       quality: 68,
-      animations: 'disabled',
     });
   }
   report.scenes.push({ route, viewport, metrics, pageErrors: errors });
+}
+
+async function inspectLandingDpr2(browser, base) {
+  const route = '/podrostok-za-kadrom/';
+  const viewport = '390x844@2x';
+  const context = await browser.newContext({
+    baseURL: base,
+    viewport: { width: 390, height: 844 },
+    deviceScaleFactor: 2,
+    colorScheme: 'light',
+  });
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  try {
+    const response = await page.goto(route, { waitUntil: 'networkidle', timeout: 45_000 });
+    check(response?.ok(), route, viewport, `HTTP response is not OK: ${response?.status()}`);
+    const metrics = await page.evaluate(() => {
+      const hero = document.querySelector('.teen-series-hero img');
+      const cards = [...document.querySelectorAll('.teen-series-card__image')];
+      return {
+        devicePixelRatio: window.devicePixelRatio,
+        heroCurrentSrc: hero?.currentSrc || '',
+        heroComplete: Boolean(hero?.complete),
+        cardCurrentSrc: cards.map((img) => img.currentSrc || ''),
+        cardComplete: cards.map((img) => Boolean(img.complete)),
+      };
+    });
+    check(errors.length === 0, route, viewport, `pageerror: ${errors.join('; ')}`);
+    check(metrics.devicePixelRatio === 2, route, viewport,
+      `DPR witness drifted: ${metrics.devicePixelRatio}`);
+    check(metrics.heroComplete && /\/images\/teen-series\/series-cover\.webp(?:\?|$)/.test(metrics.heroCurrentSrc),
+      route, viewport, `2x landing hero did not select 1200w candidate: ${metrics.heroCurrentSrc || 'missing'}`);
+    check(metrics.cardCurrentSrc.length === 7, route, viewport,
+      `2x landing card count drifted: ${metrics.cardCurrentSrc.length}`);
+    check(metrics.cardComplete.every(Boolean), route, viewport, '2x landing card image failed to load');
+    check(metrics.cardCurrentSrc.every((src) =>
+      /\/images\/teen-series\/(?:0[1-7][^/]*|04-left-home|05-home-money|06-adult-authority|07-daughter-marriage)\.webp(?:\?|$)/.test(src) &&
+      !/-600w\.webp(?:\?|$)/.test(src)
+    ), route, viewport,
+    `2x landing cards did not select 1200w candidates: ${metrics.cardCurrentSrc.join(', ')}`);
+    report.responsiveScenes.push({ route, viewport, metrics, pageErrors: errors });
+  } finally {
+    await context.close();
+  }
 }
 
 async function captureDark(browser, base, spec, vp) {
@@ -362,12 +466,11 @@ async function captureDark(browser, base, spec, vp) {
     }));
     check(metrics.scrollWidth <= metrics.width + 2, spec.route, `${vp.name}-dark`, 'dark-mode horizontal overflow');
     check(metrics.dark, spec.route, `${vp.name}-dark`, 'dark theme did not apply');
-    await page.screenshot({
-      path: join(REPORT_DIR, `${safeName(spec.route)}-${vp.name}-dark.jpg`),
-      fullPage: true,
-      type: 'jpeg',
+    await captureViewportEvidence(page, {
+      route: spec.route,
+      viewport: `${vp.name}-dark`,
+      file: join(REPORT_DIR, `${safeName(spec.route)}-${vp.name}-dark.jpg`),
       quality: 66,
-      animations: 'disabled',
     });
     report.darkScenes.push({ route: spec.route, viewport: vp.name, metrics, pageErrors: errors });
     check(errors.length === 0, spec.route, `${vp.name}-dark`, `pageerror: ${errors.join('; ')}`);
@@ -406,6 +509,8 @@ try {
     }
   }
 
+  await inspectLandingDpr2(browser, base);
+
   for (const spec of [ARTICLE_ROUTES[0], ARTICLE_ROUTES.at(-1)]) {
     for (const vp of VIEWPORTS.filter((item) => item.width === 390 || item.width === 1440)) {
       await captureDark(browser, base, spec, vp);
@@ -419,7 +524,8 @@ try {
 report.summary = {
   sceneCount: report.scenes.length,
   darkSceneCount: report.darkScenes.length,
-  screenshotCount: 8 * SCREENSHOT_WIDTHS.size + 4,
+  responsiveSceneCount: report.responsiveScenes.length,
+  screenshotCount: report.screenshots.length,
   errorCount: report.errors.length,
   expectedArticleScenes: ARTICLE_ROUTES.length * VIEWPORTS.length,
   expectedLandingScenes: VIEWPORTS.length,
@@ -428,6 +534,12 @@ await writeFile(join(REPORT_DIR, 'summary.json'), `${JSON.stringify(report, null
 
 assert.equal(report.scenes.length, ARTICLE_ROUTES.length * VIEWPORTS.length + VIEWPORTS.length,
   'quality audit scene count drifted');
+assert.equal(report.responsiveScenes.length, 1,
+  'quality audit responsive DPR witness count drifted');
+assert.equal(report.screenshots.length, 8 * SCREENSHOT_WIDTHS.size + 4,
+  'quality audit screenshot evidence count drifted');
+assert.equal(report.screenshots.filter((entry) => entry.bytes <= 1024).length, 0,
+  'quality audit contains empty or invalid screenshot evidence');
 assert.equal(report.errors.length, 0,
   `Teen series quality browser audit failed with ${report.errors.length} issue(s):\n` +
   report.errors.map((entry) => `- ${entry.route} @ ${entry.viewport}: ${entry.message}`).join('\n'));
@@ -435,5 +547,5 @@ assert.equal(report.errors.length, 0,
 console.log('✅ Teen series quality Playwright audit PASS');
 console.log(`  scenes: ${report.scenes.length} light + ${report.darkScenes.length} dark`);
 console.log('  viewports: 320 / 360 / 390 / 768 / 1024 / 1440');
-console.log('  checked: overflow, reading measure, 4–6 summary rule, deep TOC, per-term glossary cadence/placement/interaction, Bible tooltip bounds, correction actions');
+console.log('  checked: overflow, reading measure, 4–6 summary rule, deep TOC, per-term glossary cadence/placement/interaction, Bible tooltip bounds, correction actions, DPR2 responsive image selection');
 console.log(`  evidence: ${REPORT_DIR}`);

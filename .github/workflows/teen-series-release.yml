@@ -32,6 +32,7 @@ on:
       - "sitemap.xml"
       - "scripts/teen-series-release-contract.mjs"
       - "scripts/teen-series-runtime-browser-contract.mjs"
+      - "scripts/teen-series-quality-browser-audit.mjs"
       - ".github/workflows/teen-series-release.yml"
   workflow_dispatch:
 
