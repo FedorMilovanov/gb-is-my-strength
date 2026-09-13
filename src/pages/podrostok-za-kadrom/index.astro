@@ -123,6 +123,8 @@ const jsonLd = {
                 <img
                   class="teen-series-card__image"
                   src={item.media.rail}
+                  srcset={`${item.media.rail} 600w, ${item.media.hero} 1200w`}
+                  sizes="(max-width: 47.499rem) 100vw, 410px"
                   width="600"
                   height="315"
                   alt=""
