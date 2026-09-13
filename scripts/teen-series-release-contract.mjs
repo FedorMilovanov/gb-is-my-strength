@@ -54,6 +54,13 @@ const ownership = readJson('migration/page-ownership.json');
 const series = readJson('data/series.json');
 const config = read('src/components/article-pilots/_shared/series/teenSeriesConfig.ts');
 const mediaSource = read('src/components/article-pilots/_shared/series/teenSeriesMedia.ts');
+const mediaAltFor = (pageId) => {
+  const start = mediaSource.indexOf(`'${pageId}': {`);
+  if (start < 0) return '';
+  const end = mediaSource.indexOf('\n    },', start);
+  const block = end < 0 ? mediaSource.slice(start) : mediaSource.slice(start, end);
+  return block.match(/\balt:\s*'([^']+)'/u)?.[1] || '';
+};
 const siteData = read('src/data/site.ts');
 const wrapper = read('src/components/article-pilots/teen-series/TeenSeriesArticlePage.astro');
 const readerProjector = read('scripts/project-reader-linear-text-to-dist.mjs');
@@ -119,6 +126,8 @@ if (!readerProjector.includes('projectTeenSourcesBoundary') || !readerProjector.
 }
 if (!landingSource.includes('const ogImagePath = TEEN_SERIES_MEDIA.series.hero;')) fail('landing social image must use media authority');
 if (!landingSource.includes('{cards.map((item, index) => (')) fail('landing route-specific visual cards missing');
+if (!landingSource.includes('srcset={`${item.media.rail} 600w, ${item.media.hero} 1200w`}')) fail('landing cards must expose 600w/1200w responsive srcset');
+if (!landingSource.includes('sizes="(max-width: 47.499rem) 100vw, 410px"')) fail('landing card responsive sizes contract missing');
 if (!landingSource.includes("'@type': 'Organization'") || !landingSource.includes("'@id': SITE.orgId")) fail('landing source lacks Organization JSON-LD owner');
 if (!landingSource.includes("'@type': 'WebSite'") || !landingSource.includes("'@id': SITE.websiteId")) fail('landing source lacks WebSite JSON-LD owner');
 
@@ -180,6 +189,10 @@ for (const [mark, pageId, slug, minutes, done, heroFile] of ITEMS) {
   for (const field of requiredSourceFields) {
     if (!mdx.includes(field)) fail(`${slug}: canonical publication source missing ${field}`);
   }
+  const expectedMediaAlt = mediaAltFor(pageId);
+  const canonicalMediaAlt = frontmatterScalar(mdx, 'ogImageAlt');
+  if (!expectedMediaAlt) fail(`${slug}: media authority alt is missing`);
+  else if (canonicalMediaAlt !== expectedMediaAlt) fail(`${slug}: ogImageAlt drift from teenSeriesMedia authority`);
   const publishedAt = frontmatterScalar(mdx, 'publishedAt');
   const updatedAt = frontmatterScalar(mdx, 'updatedAt');
   if (publishedAt !== RELEASE_DATE) fail(`${slug}: publishedAt=${publishedAt || 'missing'}, expected ${RELEASE_DATE}`);
