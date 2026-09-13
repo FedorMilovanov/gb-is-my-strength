@@ -1,7 +1,7 @@
 import { Component, useMemo, useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import type { ErrorInfo, ReactNode, KeyboardEvent as ReactKeyboardEvent } from 'react';
 import {
-  ReactFlow, Background, Controls, MiniMap,
+  ReactFlow, Background, Controls, MiniMap, useNodesState,
   type Node, type Edge, ConnectionLineType, type ReactFlowInstance,
 } from '@xyflow/react';
 import { MarkerType } from '@xyflow/react';
@@ -101,13 +101,6 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [keyboardTarget, setKeyboardTarget] = useState<{ id: string } | null>(null);
   const [tourIndex, setTourIndex] = useState(-1);
-
-  // Apply keyboard focus after React has committed the changed node/card state.
-  // A new request object also handles navigation to an already active person.
-  useLayoutEffect(() => {
-    if (!keyboardTarget) return;
-    treeRoot.current?.querySelector<HTMLElement>(`.react-flow__node[data-id="${CSS.escape(keyboardTarget.id)}"]`)?.focus({ preventScroll: true });
-  }, [keyboardTarget]);
 
   // ── Layout (source of truth) ──
   const { nodes: laidNodes, edges: laidEdges, goldenPath, worldHeight } = useMemo(
@@ -224,6 +217,28 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
       };
     });
   }, [laidNodes, visibleNodeIds, searchMatch, activeId, focusLineageIds]);
+
+  // ReactFlow's controlled nodes must retain dimension changes. Replacing the
+  // input with fresh objects without `measured` resets their geometry and hides
+  // the wrappers until ResizeObserver runs, including the keyboard destination.
+  const [flowNodes, setFlowNodes, onNodesChange] = useNodesState(displayNodes);
+  useLayoutEffect(() => {
+    setFlowNodes(current => {
+      if (current === displayNodes) return current;
+      const previous = new Map(current.map(node => [node.id, node]));
+      return displayNodes.map(node => ({
+        ...node,
+        measured: previous.get(node.id)?.measured,
+      }));
+    });
+  }, [displayNodes, setFlowNodes]);
+
+  // Apply keyboard focus after React has committed the changed node/card state.
+  // A new request object also handles navigation to an already active person.
+  useLayoutEffect(() => {
+    if (!keyboardTarget) return;
+    treeRoot.current?.querySelector<HTMLElement>(`.react-flow__node[data-id="${CSS.escape(keyboardTarget.id)}"]`)?.focus({ preventScroll: true });
+  }, [keyboardTarget]);
 
   // ── Compute display edges with focus highlighting ──
   const displayEdges: Edge[] = useMemo(() => {
@@ -404,7 +419,8 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
       {eras && amMax > amMin && <TimelineAxis eras={eras} amMin={amMin} amMax={amMax} height={worldHeight} />}
 
       <ReactFlow
-        nodes={displayNodes}
+        nodes={flowNodes}
+        onNodesChange={onNodesChange}
         edges={displayEdges}
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
@@ -419,6 +435,8 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
         maxZoom={3}
         nodesDraggable={false}
         nodesConnectable={false}
+        elementsSelectable={false}
+        deleteKeyCode={null}
         connectionLineType={ConnectionLineType.SmoothStep}
         proOptions={{ hideAttribution: true }}
         style={{ background: 'transparent' }}

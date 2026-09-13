@@ -253,8 +253,15 @@ async function assertFocusInteractions(page) {
     await page.waitForFunction(expected => document.activeElement?.getAttribute('data-id') === expected
       && document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-active-person') === expected,
     id, { timeout: 5000 }).catch(() => undefined);
-    const state = await page.evaluate(() => ({ focused: document.activeElement?.getAttribute('data-id'),
-      selected: document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-active-person'), keys: window.__genealogyKeyTrace }));
+    const state = await page.evaluate(expected => {
+      const node = document.querySelector(`.react-flow__node[data-id="${expected}"]`);
+      return { focused: document.activeElement?.getAttribute('data-id'),
+        selected: document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-active-person'),
+        target: node ? { style: node.getAttribute('style'), tabIndex: node.getAttribute('tabindex'),
+          visibility: getComputedStyle(node).visibility, width: node.getBoundingClientRect().width,
+          height: node.getBoundingClientRect().height } : null,
+        keys: window.__genealogyKeyTrace };
+    }, id);
     assert.equal(state.focused, id, `${message}; focus state: ${JSON.stringify(state)}`);
     assert.equal(state.selected, id, 'Keyboard focus and selected genealogy person disagree');
   };
@@ -263,6 +270,8 @@ async function assertFocusInteractions(page) {
   await assertNodeFocus('abram', 'ArrowUp left keyboard focus on Isaac');
   await page.keyboard.press('ArrowUp');
   await assertNodeFocus('terah', 'A second family-navigation key did not reach Terah');
+  await page.keyboard.press('Delete');
+  assert.equal(await page.locator('.react-flow__node').count(), EXPECTED_PERSON_NODES, 'Read-only atlas allowed a person to be deleted');
   await page.keyboard.press('Enter');
   await page.getByRole('complementary', { name: 'Детали: Фарра' }).waitFor({ state: 'visible' });
   await page.getByRole('button', { name: 'Закрыть панель', exact: true }).focus();
