@@ -127,6 +127,9 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
+      - name: Teen series browser release gate
+        run: node scripts/teen-series-quality-browser-audit.mjs
+
       - name: A07 offline/PWA Chromium witness
         run: node scripts/sw-offline-browser-test.mjs
 
@@ -157,6 +160,7 @@ jobs:
             reports/a07-offline-pwa-browser.md
             reports/a07-sw-static-audit.json
             reports/a07-sw-static-audit.md
+            reports/teen-series-browser/**
             reports/gill-mobile-layout-audit-2026-06-29/summary.json
             reports/gill-v16-mobile-play-smoke-2026-06-28/summary.json
             reports/gill-pre-v16-submenu-audit/**
