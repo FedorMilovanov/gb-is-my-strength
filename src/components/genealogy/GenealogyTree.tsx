@@ -1,4 +1,4 @@
-import { Component, useMemo, useState, useRef, useEffect, useCallback } from 'react';
+import { Component, useMemo, useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import type { ErrorInfo, ReactNode, KeyboardEvent as ReactKeyboardEvent } from 'react';
 import {
   ReactFlow, Background, Controls, MiniMap,
@@ -99,7 +99,15 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
   const [showSplit, setShowSplit] = useState(false);
   const [detailLevel, setDetailLevel] = useState<DetailLevel>(2);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [keyboardTarget, setKeyboardTarget] = useState<{ id: string } | null>(null);
   const [tourIndex, setTourIndex] = useState(-1);
+
+  // Apply keyboard focus after React has committed the changed node/card state.
+  // A new request object also handles navigation to an already active person.
+  useLayoutEffect(() => {
+    if (!keyboardTarget) return;
+    treeRoot.current?.querySelector<HTMLElement>(`.react-flow__node[data-id="${CSS.escape(keyboardTarget.id)}"]`)?.focus({ preventScroll: true });
+  }, [keyboardTarget]);
 
   // ── Layout (source of truth) ──
   const { nodes: laidNodes, edges: laidEdges, goldenPath, worldHeight } = useMemo(
@@ -246,9 +254,9 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
   }, [laidEdges, visibleNodeIds, focusLineageIds, goldenPath]);
 
   // ── Helpers ──
-  const focusPerson = useCallback((id: string, zoom?: number) => {
+  const focusPerson = useCallback((id: string, zoom?: number, duration = 500) => {
     const n = laidNodes.find(n => n.id === id);
-    if (n && rfInstance.current) rfInstance.current.setCenter(n.position.x + 86, n.position.y + 36, { zoom: zoom ?? 1.0, duration: 500 });
+    if (n && rfInstance.current) rfInstance.current.setCenter(n.position.x + 86, n.position.y + 36, { zoom: zoom ?? 1.0, duration });
     setActiveId(id);
   }, [laidNodes]);
 
@@ -287,7 +295,7 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
       e.preventDefault();
       e.stopPropagation();
       setSelected(null);
-      treeRoot.current.querySelector<HTMLElement>(`.react-flow__node[data-id="${CSS.escape(selected.id)}"]`)?.focus({ preventScroll: true });
+      setKeyboardTarget({ id: selected.id });
       return;
     }
     // Toolbar, dialogs, links and editable fields own their native keys.
@@ -307,9 +315,10 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
     const availableIds = new Set(laidNodes.map(node => node.id));
     const moveFocus = (id: string | undefined) => {
       if (!id || !availableIds.has(id)) return;
-      focusPerson(id);
+      // Repeated arrow keys must not compete with queued camera animations.
+      focusPerson(id, 1, 0);
       setSelected(null);
-      treeRoot.current?.querySelector<HTMLElement>(`.react-flow__node[data-id="${CSS.escape(id)}"]`)?.focus({ preventScroll: true });
+      setKeyboardTarget({ id });
     };
     switch (e.key) {
       case 'ArrowUp': { moveFocus([person.father, person.mother].find(id => id && availableIds.has(id)) ?? undefined); break; }
@@ -350,7 +359,7 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
   const detailHint = detailLevel === 0 ? 'приблизьте для деталей' : detailLevel === 1 ? 'ещё ближе — все имена' : `${visibleCount} из ${persons.length}`;
 
   return (
-    <div ref={treeRoot} data-genealogy-app onKeyDownCapture={handleGraphKeyDown} style={{ width: '100%', height: '100dvh', position: 'relative', background: 'radial-gradient(ellipse at 50% 0%, #1a1510 0%, #0d0a06 50%, #050402 100%)', overflow: 'hidden' }}>
+    <div ref={treeRoot} data-genealogy-app data-genealogy-active-person={activeId ?? undefined} onKeyDownCapture={handleGraphKeyDown} style={{ width: '100%', height: '100dvh', position: 'relative', background: 'radial-gradient(ellipse at 50% 0%, #1a1510 0%, #0d0a06 50%, #050402 100%)', overflow: 'hidden' }}>
       <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.025, pointerEvents: 'none' }} aria-hidden="true">
         <filter id="parchment-noise"><feTurbulence baseFrequency="0.9" numOctaves="2" seed="42" /><feColorMatrix values="0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.5  0 0 0 0.5 0" /></filter>
         <rect width="100%" height="100%" filter="url(#parchment-noise)" />

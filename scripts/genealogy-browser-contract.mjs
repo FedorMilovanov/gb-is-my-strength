@@ -238,14 +238,20 @@ async function assertFocusInteractions(page) {
   await page.evaluate(() => {
     window.__genealogyKeyTrace = [];
     document.addEventListener('keydown', event => {
-      window.__genealogyKeyTrace.push({ key: event.key, composing: event.isComposing,
+      window.__genealogyKeyTrace.push({ type: event.type, key: event.key, composing: event.isComposing,
         target: event.target instanceof Element ? event.target.closest('.react-flow__node')?.getAttribute('data-id') : null,
         focused: document.activeElement?.getAttribute('data-id') });
     }, true);
+    document.addEventListener('focusin', event => {
+      window.__genealogyKeyTrace.push({ type: event.type,
+        target: event.target instanceof Element ? event.target.closest('.react-flow__node')?.getAttribute('data-id') : null });
+    }, true);
   });
   const assertNodeFocus = async (id, message) => {
-    const state = await page.evaluate(() => ({ focused: document.activeElement?.getAttribute('data-id'), keys: window.__genealogyKeyTrace }));
+    const state = await page.evaluate(() => ({ focused: document.activeElement?.getAttribute('data-id'),
+      selected: document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-active-person'), keys: window.__genealogyKeyTrace }));
     assert.equal(state.focused, id, `${message}; keyboard trace: ${JSON.stringify(state.keys)}`);
+    assert.equal(state.selected, id, 'Keyboard focus and selected genealogy person disagree');
   };
   await isaacNode.focus();
   await isaacNode.press('ArrowUp');
