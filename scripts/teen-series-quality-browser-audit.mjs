@@ -12,13 +12,13 @@ const DIST = join(ROOT, 'dist');
 const REPORT_DIR = join(ROOT, 'reports', 'teen-series-browser');
 
 const ARTICLE_ROUTES = [
-  { route: '/articles/podrostok-za-kadrom-dvoynaya-zhizn/', id: 'teen-double-life', refs: 3 },
-  { route: '/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/', id: 'teen-parents-after-disclosure', refs: 2 },
-  { route: '/articles/podrostok-za-kadrom-chto-delat-tserkvi/', id: 'teen-church-response', refs: 3 },
-  { route: '/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/', id: 'adult-child-left-home', refs: 2 },
-  { route: '/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/', id: 'adult-child-home-money', refs: 3 },
-  { route: '/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/', id: 'adult-child-authority', refs: 2 },
-  { route: '/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/', id: 'adult-daughter-marriage', refs: 3 },
+  { route: '/articles/podrostok-za-kadrom-dvoynaya-zhizn/', id: 'teen-double-life', refs: 3, hero: '01-double-life.webp' },
+  { route: '/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/', id: 'teen-parents-after-disclosure', refs: 2, hero: '02-after-disclosure.webp' },
+  { route: '/articles/podrostok-za-kadrom-chto-delat-tserkvi/', id: 'teen-church-response', refs: 3, hero: '03-church-response.webp' },
+  { route: '/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/', id: 'adult-child-left-home', refs: 2, hero: '04-left-home.webp' },
+  { route: '/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/', id: 'adult-child-home-money', refs: 3, hero: '05-home-money.webp' },
+  { route: '/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/', id: 'adult-child-authority', refs: 2, hero: '06-adult-authority.webp' },
+  { route: '/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/', id: 'adult-daughter-marriage', refs: 3, hero: '07-daughter-marriage.webp' },
 ];
 
 const VIEWPORTS = [
@@ -144,6 +144,7 @@ async function inspectArticle(page, spec, vp) {
   const metrics = await page.evaluate(() => {
     const article = document.querySelector('article[data-teen-series-article]');
     const prose = document.querySelector('.teen-series-prose');
+    const hero = document.querySelector('.teen-series-article-hero img');
     const firstP = prose?.querySelector('p');
     const h1 = document.querySelector('h1');
     const pStyle = firstP ? getComputedStyle(firstP) : null;
@@ -185,6 +186,17 @@ async function inspectArticle(page, spec, vp) {
       innerWidth: window.innerWidth,
       innerHeight: window.innerHeight,
       docWidth: document.documentElement.scrollWidth,
+      hero: hero ? {
+        src: hero.getAttribute('src') || '',
+        srcset: hero.getAttribute('srcset') || '',
+        sizes: hero.getAttribute('sizes') || '',
+        widthAttr: hero.getAttribute('width') || '',
+        heightAttr: hero.getAttribute('height') || '',
+        currentSrc: hero.currentSrc || '',
+        naturalWidth: hero.naturalWidth || 0,
+        naturalHeight: hero.naturalHeight || 0,
+        complete: Boolean(hero.complete),
+      } : null,
       bodyWidth: document.body.scrollWidth,
       articleRect: articleRect ? { x: articleRect.x, width: articleRect.width, right: articleRect.right } : null,
       proseRect: proseRect ? { x: proseRect.x, width: proseRect.width, right: proseRect.right } : null,
@@ -216,6 +228,31 @@ async function inspectArticle(page, spec, vp) {
   });
 
   check(errors.length === 0, route, viewport, `pageerror: ${errors.join('; ')}`);
+  const expectedHero = `/images/teen-series/${spec.hero}`;
+  const expectedRail = expectedHero.replace(/\.webp$/, '-600w.webp');
+  const heroRatio = (metrics.hero?.naturalHeight || 0) > 0
+    ? metrics.hero.naturalWidth / metrics.hero.naturalHeight
+    : 0;
+  check(Boolean(metrics.hero), route, viewport, 'article hero image missing');
+  check(metrics.hero?.widthAttr === '1200' && metrics.hero?.heightAttr === '630',
+    route, viewport, `article hero intrinsic attrs drifted: ${metrics.hero?.widthAttr}x${metrics.hero?.heightAttr}`);
+  check(metrics.hero?.src === expectedHero,
+    route, viewport, `article hero src drifted: ${metrics.hero?.src || 'missing'} != ${expectedHero}`);
+  check(metrics.hero?.srcset.includes(`${expectedRail} 600w`) && metrics.hero?.srcset.includes(`${expectedHero} 1200w`),
+    route, viewport, `article hero responsive srcset drifted: ${metrics.hero?.srcset || 'missing'}`);
+  check(metrics.hero?.sizes === '(max-width: 48rem) 100vw, 820px',
+    route, viewport, `article hero sizes drifted: ${metrics.hero?.sizes || 'missing'}`);
+  check(
+    metrics.hero?.complete &&
+    metrics.hero.naturalWidth > 0 &&
+    metrics.hero.naturalHeight > 0 &&
+    metrics.hero.currentSrc &&
+    (metrics.hero.currentSrc.endsWith(expectedHero) || metrics.hero.currentSrc.endsWith(expectedRail)) &&
+    Math.abs(heroRatio - (1200 / 630)) < 0.01,
+    route,
+    viewport,
+    `article hero responsive candidate failed: src=${metrics.hero?.currentSrc || 'missing'}, natural=${metrics.hero?.naturalWidth || 0}x${metrics.hero?.naturalHeight || 0}`
+  );
   check(metrics.docWidth <= metrics.innerWidth + 2, route, viewport,
     `document horizontal overflow: ${metrics.docWidth} > ${metrics.innerWidth}`);
   // documentElement.scrollWidth is the browser's actual horizontal-scroll owner.
@@ -547,5 +584,5 @@ assert.equal(report.errors.length, 0,
 console.log('✅ Teen series quality Playwright audit PASS');
 console.log(`  scenes: ${report.scenes.length} light + ${report.darkScenes.length} dark`);
 console.log('  viewports: 320 / 360 / 390 / 768 / 1024 / 1440');
-console.log('  checked: overflow, reading measure, 4–6 summary rule, deep TOC, per-term glossary cadence/placement/interaction, Bible tooltip bounds, correction actions, DPR2 responsive image selection');
+console.log('  checked: all article hero image families/srcset/sizes/runtime load, overflow, reading measure, 4–6 summary rule, deep TOC, per-term glossary cadence/placement/interaction, Bible tooltip bounds, correction actions, DPR2 responsive image selection');
 console.log(`  evidence: ${REPORT_DIR}`);

@@ -33,6 +33,8 @@ on:
       - "scripts/teen-series-release-contract.mjs"
       - "scripts/teen-series-runtime-browser-contract.mjs"
       - "scripts/teen-series-quality-browser-audit.mjs"
+      - ".github/workflows/deploy.yml"
+      - ".github/workflows/deploy-candidate-contract.yml"
       - ".github/workflows/teen-series-release.yml"
   workflow_dispatch:
 

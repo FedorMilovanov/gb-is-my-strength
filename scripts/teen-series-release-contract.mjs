@@ -65,6 +65,8 @@ const siteData = read('src/data/site.ts');
 const wrapper = read('src/components/article-pilots/teen-series/TeenSeriesArticlePage.astro');
 const readerProjector = read('scripts/project-reader-linear-text-to-dist.mjs');
 const landingSource = read('src/pages/podrostok-za-kadrom/index.astro');
+const deployWorkflow = read('.github/workflows/deploy.yml');
+const deployCandidateWorkflow = read('.github/workflows/deploy-candidate-contract.yml');
 
 const mediaUrls = [
   SERIES_OG,
@@ -130,6 +132,14 @@ if (!landingSource.includes('srcset={`${item.media.rail} 600w, ${item.media.hero
 if (!landingSource.includes('sizes="(max-width: 47.499rem) 100vw, 410px"')) fail('landing card responsive sizes contract missing');
 if (!landingSource.includes("'@type': 'Organization'") || !landingSource.includes("'@id': SITE.orgId")) fail('landing source lacks Organization JSON-LD owner');
 if (!landingSource.includes("'@type': 'WebSite'") || !landingSource.includes("'@id': SITE.websiteId")) fail('landing source lacks WebSite JSON-LD owner');
+for (const [name, workflow] of [
+  ['deploy', deployWorkflow],
+  ['deploy-candidate', deployCandidateWorkflow],
+]) {
+  if (!workflow.includes('node scripts/teen-series-quality-browser-audit.mjs')) {
+    fail(`${name}: Teen browser quality release gate missing`);
+  }
+}
 
 const registered = series[SERIES_KEY];
 if (!registered) fail('data/series.json missing teen-double-life');
