@@ -87,6 +87,12 @@ function isImage(url) {
   return /\.(?:jpg|jpeg|webp|avif|gif|png)$/i.test(url.pathname);
 }
 
+function isTeenSeriesImage(url) {
+  return url.origin === self.location.origin &&
+    url.pathname.startsWith('/images/teen-series/') &&
+    isImage(url);
+}
+
 function isFont(url) {
   return (url.origin === self.location.origin && url.pathname.startsWith('/fonts/')) || url.hostname === 'fonts.gstatic.com';
 }
@@ -334,6 +340,8 @@ self.addEventListener('fetch', (event) => {
       : isNetworkFirstRuntime(url)
         ? networkFirstWithCache(request, CACHE_STATIC)
         : cacheFirst(request, CACHE_STATIC));
+  } else if (isTeenSeriesImage(url)) {
+    event.respondWith(networkFirstWithCache(request, CACHE_IMAGES, IMAGE_CACHE_LIMIT));
   } else if (isImage(url)) {
     event.respondWith(cacheFirst(request, CACHE_IMAGES, IMAGE_CACHE_LIMIT));
   } else if (isHtmlPage(request)) {
