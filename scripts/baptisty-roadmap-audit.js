@@ -220,11 +220,31 @@ else {
 
   const evidenceMarkers = new Map();
   const componentDir = path.join(ROOT, 'src/components/baptisty-rossii');
+  const historicalMediaComponent = 'src/components/baptisty-rossii/BaptistyHistoricalMedia.astro';
+  const historicalMediaSource = read(historicalMediaComponent);
+  if (!historicalMediaSource.includes('data-baptist-master-evidence={item.evidenceId}')) {
+    fail(`${historicalMediaComponent}: reusable historical-media component must emit data-baptist-master-evidence from item.evidenceId`);
+  } else {
+    ok('reusable historical-media component emits dynamic evidence marker');
+  }
+
   for (const name of fs.readdirSync(componentDir).filter((entry) => entry.endsWith('.astro'))) {
     const rel = `src/components/baptisty-rossii/${name}`;
     const source = read(rel);
-    const markerRe = /data-baptist-master-evidence="([^"]+)"/g;
-    for (const match of source.matchAll(markerRe)) {
+
+    const literalMarkerRe = /data-baptist-master-evidence="([^"]+)"/g;
+    for (const match of source.matchAll(literalMarkerRe)) {
+      const evidenceId = match[1];
+      if (evidenceMarkers.has(evidenceId)) fail(`duplicate published Baptist evidence id: ${evidenceId}`);
+      else evidenceMarkers.set(evidenceId, rel);
+    }
+
+    const usesHistoricalMedia = source.includes("import BaptistyHistoricalMedia from './BaptistyHistoricalMedia.astro';")
+      && /<BaptistyHistoricalMedia\b/.test(source);
+    if (!usesHistoricalMedia) continue;
+
+    const evidenceIdRe = /evidenceId:\s*["']([^"']+)["']/g;
+    for (const match of source.matchAll(evidenceIdRe)) {
       const evidenceId = match[1];
       if (evidenceMarkers.has(evidenceId)) fail(`duplicate published Baptist evidence id: ${evidenceId}`);
       else evidenceMarkers.set(evidenceId, rel);
