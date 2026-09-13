@@ -234,6 +234,22 @@ async function assertFocusInteractions(page) {
     }, id);
   }
   await page.getByRole('button', { name: 'Закрыть панель', exact: true }).click();
+  const isaacNode = page.locator('.react-flow__node[data-id="isaac"]');
+  await isaacNode.focus();
+  await isaacNode.press('ArrowUp');
+  assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'abram', 'ArrowUp left keyboard focus on Isaac');
+  await page.keyboard.press('ArrowUp');
+  assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'terah', 'A second family-navigation key did not reach Terah');
+  await page.keyboard.press('Enter');
+  await page.getByRole('complementary', { name: 'Детали: Фарра' }).waitFor({ state: 'visible' });
+  await page.getByRole('button', { name: 'Закрыть панель', exact: true }).focus();
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('[data-genealogy-details]').count(), 0, 'Escape in person details did not close the panel');
+  assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'terah', 'Person details did not restore node focus');
+  await isaacNode.focus();
+  await isaacNode.press('Enter');
+  await page.getByRole('complementary', { name: 'Детали: Исаак' }).waitFor({ state: 'visible' });
+  await page.getByRole('button', { name: 'Закрыть панель', exact: true }).click();
   const opener = page.getByTitle('Сравнить Мф/Лк');
   await opener.press('Enter');
   const dialog = page.getByRole('dialog', { name: 'Две родословные Христа' });
@@ -248,6 +264,10 @@ async function assertFocusInteractions(page) {
   assert.equal(await page.locator('[data-genealogy-focus-count]').count(), 0, 'Excluded person left stale focus');
   assert.equal(await page.locator('[data-genealogy-details]').count(), 0, 'Excluded person left stale details');
   await page.getByRole('button', { name: 'Все', exact: true }).click();
+  await isaacNode.focus();
+  await isaacNode.press('Enter');
+  await page.getByRole('complementary', { name: 'Детали: Исаак' }).waitFor({ state: 'visible' });
+  await page.getByRole('button', { name: 'Закрыть панель', exact: true }).click();
 }
 
 async function runViewport(browserName, browserType, baseUrl, viewport) {

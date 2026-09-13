@@ -1,5 +1,5 @@
 import { Component, useMemo, useState, useRef, useEffect, useCallback } from 'react';
-import type { ErrorInfo, ReactNode } from 'react';
+import type { ErrorInfo, ReactNode, KeyboardEvent as ReactKeyboardEvent } from 'react';
 import {
   ReactFlow, Background, Controls, MiniMap,
   type Node, type Edge, ConnectionLineType, type ReactFlowInstance,
@@ -279,46 +279,51 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
   }, [activeId, persons, selected]);
 
   // ── Keyboard nav ──
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (showSplit || !activeId) return;
-      const target = e.target;
-      if (!(target instanceof HTMLElement) || !treeRoot.current?.contains(target)) return;
-      if (e.key === 'Escape' && selected && target.closest('[data-genealogy-details]')) {
-        e.preventDefault();
-        setSelected(null);
-        treeRoot.current.querySelector<HTMLElement>(`.react-flow__node[data-id="${CSS.escape(activeId)}"]`)?.focus({ preventScroll: true });
-        return;
-      }
-      // Toolbar, dialogs, links and editable fields own their native keys.
-      // Only a focused node inside this atlas can invoke graph navigation.
-      const graphNode = target.closest('.react-flow__node');
-      const control = target.closest('button, a, input, textarea, select, summary, [contenteditable], [role="button"], [role="link"]');
-      if (!graphNode || (control && control !== graphNode) || graphNode.getAttribute('data-id') !== activeId) return;
-      if (e.isComposing || e.altKey || e.ctrlKey || e.metaKey) return;
-      const person = persons.find(p => p.id === activeId);
-      if (!person) return;
-      const byId = new Map(persons.map(p => [p.id, p]));
-      switch (e.key) {
-        case 'ArrowUp': { const pid = person.father ?? person.mother; if (pid && byId.has(pid)) { e.preventDefault(); focusPerson(pid); } break; }
-        case 'ArrowDown': { const ch = person.children?.filter(c => byId.has(c)); if (ch?.length) { e.preventDefault(); focusPerson(ch[0]); } break; }
-        case 'ArrowLeft': case 'ArrowRight': {
-          const pid = person.father ?? person.mother; if (!pid) break;
-          const parent = byId.get(pid);
-          const sibs = parent?.children?.filter(c => c !== activeId && byId.has(c)) ?? [];
-          if (!sibs.length) break; e.preventDefault();
-          const idx = parent?.children?.indexOf(activeId) ?? 0;
-          const target = sibs[Math.min(e.key === 'ArrowLeft' ? Math.max(0, idx - 1) : Math.min(sibs.length, idx + 1), sibs.length - 1)];
-          if (target) focusPerson(target);
-          break;
-        }
-        case 'Enter': case ' ': { e.preventDefault(); const p = persons.find(pp => pp.id === activeId); if (p) setSelected(p); break; }
-        case 'Escape': setActiveId(null); setSelected(null); break;
-      }
+  const handleGraphKeyDown = useCallback((e: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (showSplit || e.nativeEvent.isComposing || e.altKey || e.ctrlKey || e.metaKey) return;
+    const target = e.target;
+    if (!(target instanceof HTMLElement) || !treeRoot.current?.contains(target)) return;
+    if (e.key === 'Escape' && selected && target.closest('[data-genealogy-details]')) {
+      e.preventDefault();
+      e.stopPropagation();
+      setSelected(null);
+      treeRoot.current.querySelector<HTMLElement>(`.react-flow__node[data-id="${CSS.escape(selected.id)}"]`)?.focus({ preventScroll: true });
+      return;
+    }
+    // Toolbar, dialogs, links and editable fields own their native keys.
+    // Only a focused node inside this atlas can invoke graph navigation.
+    const graphNode = target.closest('.react-flow__node');
+    const control = target.closest('button, a, input, textarea, select, summary, [contenteditable], [role="button"], [role="link"]');
+    if (!graphNode || (control && control !== graphNode)) return;
+    const focusedId = graphNode.getAttribute('data-id');
+    const person = persons.find(p => p.id === focusedId);
+    if (!person) return;
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', ' ', 'Escape'].includes(e.key)) return;
+    // This atlas owns family navigation; ReactFlow must not also move/select
+    // its editor nodes in response to the same key.
+    e.preventDefault();
+    e.stopPropagation();
+    const availableIds = new Set(laidNodes.map(node => node.id));
+    const moveFocus = (id: string | undefined) => {
+      if (!id || !availableIds.has(id)) return;
+      focusPerson(id);
+      setSelected(null);
+      treeRoot.current?.querySelector<HTMLElement>(`.react-flow__node[data-id="${CSS.escape(id)}"]`)?.focus({ preventScroll: true });
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [activeId, persons, selected, showSplit, focusPerson]);
+    switch (e.key) {
+      case 'ArrowUp': { moveFocus([person.father, person.mother].find(id => id && availableIds.has(id)) ?? undefined); break; }
+      case 'ArrowDown': { moveFocus(persons.find(child => availableIds.has(child.id) && (child.father === person.id || child.mother === person.id))?.id); break; }
+      case 'ArrowLeft': case 'ArrowRight': {
+        const pid = person.father ?? person.mother; if (!pid) break;
+        const siblings = persons.filter(sibling => availableIds.has(sibling.id) && (sibling.father === pid || sibling.mother === pid));
+        const index = siblings.findIndex(sibling => sibling.id === person.id);
+        moveFocus(siblings[index + (e.key === 'ArrowLeft' ? -1 : 1)]?.id);
+        break;
+      }
+      case 'Enter': case ' ': { setActiveId(person.id); setSelected(person); break; }
+      case 'Escape': setActiveId(null); setSelected(null); break;
+    }
+  }, [persons, laidNodes, selected, showSplit, focusPerson]);
 
   // ── Golden path tour ──
   const goldenArray = useMemo(() => {
@@ -344,7 +349,7 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
   const detailHint = detailLevel === 0 ? 'приблизьте для деталей' : detailLevel === 1 ? 'ещё ближе — все имена' : `${visibleCount} из ${persons.length}`;
 
   return (
-    <div ref={treeRoot} data-genealogy-app style={{ width: '100%', height: '100dvh', position: 'relative', background: 'radial-gradient(ellipse at 50% 0%, #1a1510 0%, #0d0a06 50%, #050402 100%)', overflow: 'hidden' }}>
+    <div ref={treeRoot} data-genealogy-app onKeyDownCapture={handleGraphKeyDown} style={{ width: '100%', height: '100dvh', position: 'relative', background: 'radial-gradient(ellipse at 50% 0%, #1a1510 0%, #0d0a06 50%, #050402 100%)', overflow: 'hidden' }}>
       <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.025, pointerEvents: 'none' }} aria-hidden="true">
         <filter id="parchment-noise"><feTurbulence baseFrequency="0.9" numOctaves="2" seed="42" /><feColorMatrix values="0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.5  0 0 0 0.5 0" /></filter>
         <rect width="100%" height="100%" filter="url(#parchment-noise)" />
