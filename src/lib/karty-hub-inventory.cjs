@@ -3,7 +3,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const PUBLISHED_KARTY_SLUGS = Object.freeze(['avraam']);
+// Maps whose visual audit passed and which are opened on the /karty/ hub.
+// Order defines the hub card order.
+const PUBLISHED_KARTY_SLUGS = Object.freeze(['avraam', 'ishod']);
 
 function isAtlasSheetDraft(route) {
   return Boolean(route?.meta?.sheet_no != null && route?.meta?.id == null);

@@ -1,15 +1,40 @@
 ---
 /**
- * KartyHeroSection.astro — hero + featured Avraam card for /karty/.
+ * KartyHeroSection.astro — hero + published map cards for /karty/.
  *
  * Refactoring 6.0 parallel pilot: preserve legacy structure/classes/text.
  * Counts are derived from the governed route inventory so a newly added
  * audit-pending map cannot desynchronise the hub and its fail-closed validator.
+ *
+ * Publication model: a map is opened on the hub only after it passed the visual
+ * audit, which is recorded once in PUBLISHED_KARTY_SLUGS and projected here as
+ * one card per published map. The remaining routes stay listed as audit-pending
+ * material and are never shown as ready.
  */
 import inventoryModule from '../../lib/karty-hub-inventory.cjs';
 
 const { getKartyHubInventory } = inventoryModule;
-const { routeCount, publishedCount, auditCount } = getKartyHubInventory();
+const { routeCount, publishedCount, auditCount, publishedSlugs } = getKartyHubInventory();
+const publishedLabel = publishedCount === 1 ? 'карта открыта' : 'карты открыты';
+
+type PublishedCard = { href: string; aria: string; title: string; hebrew: string; description: string };
+const PUBLISHED_CARDS: Record<string, PublishedCard> = {
+  avraam: {
+    href: './avraam/',
+    aria: 'Открыть карту Путь Авраама',
+    title: 'Путь Авраама',
+    hebrew: 'אַבְרָהָם',
+    description: 'Бытие 11–25: маршрут патриарха, ключевые места, богословский и исторический слой.',
+  },
+  ishod: {
+    href: './ishod/',
+    aria: 'Открыть карту Исход из Египта',
+    title: 'Исход из Египта',
+    hebrew: 'יְצִיאַת מִצְרַיִם',
+    description: 'Числа 33: станы исхода, Пи-Гахироф как нерешённая локализация, Синай и путь к Моаву.',
+  },
+};
+const cards = publishedSlugs.map((slug) => PUBLISHED_CARDS[slug]).filter((card): card is PublishedCard => Boolean(card));
 ---
 <section class="karty-hero" aria-labelledby="mapsTitle">
   <div class="karty-hero__inner">
@@ -19,18 +44,22 @@ const { routeCount, publishedCount, auditCount } = getKartyHubInventory();
       <div class="he" lang="he">מַפּוֹת</div>
       <p class="desc">Карты должны помогать видеть текст Писания в пространстве: маршруты, города, реки, пустыни, спорные точки локализации и исторический контекст. Поэтому на витрине остаётся только то, что прошло визуальную проверку.</p>
       <div class="karty-hero__meta" role="group" aria-label="Статус раздела" data-route-count={routeCount} data-published-count={publishedCount} data-audit-count={auditCount}>
-        <div class="karty-stat"><b>{publishedCount}</b><span>карта открыта</span></div>
+        <div class="karty-stat"><b>{publishedCount}</b><span>{publishedLabel}</span></div>
         <div class="karty-stat"><b>{auditCount}</b><span>на аудите</span></div>
         <div class="karty-stat"><b>0</b><span>черновиков на витрине</span></div>
       </div>
     </div>
-    <a href="./avraam/" class="karty-feature" aria-label="Открыть карту Путь Авраама">
-      <div class="karty-feature__body">
-        <span class="badge badge--ready">Проверенная карта</span>
-        <h2>Путь Авраама <span lang="he">אַבְרָהָם</span></h2>
-        <p>Бытие 11–25: маршрут патриарха, ключевые места, богословский и исторический слой.</p>
-        <span class="karty-feature__cta">Открыть карту →</span>
-      </div>
-    </a>
+    <div class="karty-feature-list" data-published-map-count={publishedCount}>
+      {cards.map((card) => (
+        <a href={card.href} class="karty-feature" aria-label={card.aria}>
+          <div class="karty-feature__body">
+            <span class="badge badge--ready">Проверенная карта</span>
+            <h2>{card.title} <span lang="he">{card.hebrew}</span></h2>
+            <p>{card.description}</p>
+            <span class="karty-feature__cta">Открыть карту →</span>
+          </div>
+        </a>
+      ))}
+    </div>
   </div>
 </section>

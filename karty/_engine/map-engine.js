@@ -1006,6 +1006,11 @@ const MapEngine = (function() {
 .me-map[data-map-theme="light"] [data-story-role="focus"] .me-place-label{fill:#2d2317}
 .me-map[data-map-theme="light"] [data-story-role="context"] .me-place-label-bg{fill:rgba(255,249,235,.72)}
 .me-map[data-map-theme="light"] [data-story-role="candidate"] .me-place-label-bg{fill:rgba(249,244,255,.72)}
+/* Label declutter: a suppressed label keeps its authored opacity but stops
+   painting, so clipped or colliding captions never reach the reader. */
+.me-map g[data-label-declutter="hidden"] .me-place-label,
+.me-map g[data-label-declutter="hidden"] .me-place-label-bg,
+.me-map g[data-label-declutter="hidden"] .me-place-label-leader{opacity:0!important}
 
 .me-map svg[data-zoom-bucket="overview"] #me-base-geo .lbl-z1,
 .me-map svg[data-zoom-bucket="overview"] #me-base-geo .lbl-z2,
@@ -1095,7 +1100,14 @@ const MapEngine = (function() {
     function viewHeightForWidth(width){return width*viewportAspect()}
     function clampViewAround(cx,cy,width){
       const w=clamp(width,activeMinViewWidth(),cfg.maxW),h=viewHeightForWidth(w);
-      return{x:clamp(cx-w/2,-cfg.padX,cfg.W0+cfg.padX-w),y:clamp(cy-h/2,-cfg.padY,cfg.H0+cfg.padY-h),w,h};
+      // A tall portrait frame can be higher than the authored map plus its
+      // padding, which inverts the vertical clamp interval. Clamping into an
+      // inverted interval throws the frame to one of its bounds and pushes the
+      // route to the edge of the screen; an authored frame that large is kept
+      // centred instead.
+      const yLo=-cfg.padY,yHi=cfg.H0+cfg.padY-h;
+      const y=yLo>yHi?cy-h/2:clamp(cy-h/2,yLo,yHi);
+      return{x:clamp(cx-w/2,-cfg.padX,cfg.W0+cfg.padX-w),y,w,h};
     }
     const authoredMobileInit=route.meta?.mobile_viewport_init;
     if(matchMedia('(max-width:560px)').matches&&authoredMobileInit){
@@ -1108,6 +1120,11 @@ const MapEngine = (function() {
     const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
     svg.setAttribute('viewBox',`${view.x} ${view.y} ${view.w} ${view.h}`);
     svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+    // Rendering quality: keep glyph shaping and curve geometry at full precision
+    // so labels and the authored geography stay crisp at every zoom and in the
+    // exported 2x/3x PNG previews.
+    svg.setAttribute('text-rendering','optimizeLegibility');
+    svg.setAttribute('shape-rendering','geometricPrecision');
     function semanticZoomBucket(width=view.w){
       // Authored map width remains the primary semantic contract. Rendered
       // density only resolves narrow portrait canvases where raw width lies.
@@ -1749,6 +1766,157 @@ container.appendChild(panel);
         mmRect.setAttribute('width', view.w);
         mmRect.setAttribute('height', view.h);
       }
+      scheduleLabelDeclutter();
+    }
+
+    // ── Label declutter ──
+    // Place labels keep a constant CSS-pixel size, so a wide or zoomed-out view
+    // can push a caption past the canvas edge or on top of a neighbour. The
+    // repository contract (scripts/avraam-reference-baseline.mjs) counts clipped
+    // labels and overlapping labels as verification failures, and the hub states
+    // that a map must not ship with overlapping captions. A caption that does not
+    // fit is therefore first mirrored to the other side of its marker and only
+    // suppressed when neither side has room.
+    let labelDeclutterFrame=0;
+    function scheduleLabelDeclutter(){
+      if(labelDeclutterFrame)return;
+      labelDeclutterFrame=requestAnimationFrame(()=>{labelDeclutterFrame=0;declutterPlaceLabels();});
+    }
+    function declutterPlaceLabels(){
+      if(!markersG)return;
+      const rect=(canvas.isConnected?canvas:container).getBoundingClientRect();
+      if(!(rect.width>1&&rect.height>1))return;
+      // Reserves: the canvas edge, the open dossier and every on-map control
+      // (zoom column, chips, search, legend, scale bar). A caption must never sit
+      // under a control, otherwise it reads as a torn-off fragment of text.
+      const reserves=[];
+      if(panel.classList.contains('me-panel--open')){
+        const p=panel.getBoundingClientRect();
+        if(p.width>1&&p.height>1)reserves.push(p);
+      }
+      const controlSelectors=['.me-zoom-btn','.me-zoom','.me-share-btn','.me-theme-btn','.me-search','.me-stories','.me-story-chip','.me-stages','.me-layers','.me-legend','.me-minimap','.me-scale','.me-shortcuts','.me-back','.me-intro'];
+      controlSelectors.forEach(selector=>{
+        container.querySelectorAll(selector).forEach(el=>{
+          // A dismissed overlay (the intro card) keeps its box but paints
+          // nothing, so ask the engine what is actually visible instead of
+          // trusting a class list.
+          let visible=true;
+          if(typeof el.checkVisibility==='function'){
+            visible=el.checkVisibility({checkOpacity:true,checkVisibilityCSS:true,contentVisibilityAuto:true});
+          }else{
+            const cs=getComputedStyle(el);
+            visible=cs.visibility!=='hidden'&&Number(cs.opacity)>0.05;
+          }
+          if(!visible)return;
+          const b=el.getBoundingClientRect();
+          if(b.width>1&&b.height>1)reserves.push(b);
+        });
+      });
+      const GAP=3;
+      const fits=(box)=>{
+        if(box.left<rect.left-GAP||box.top<rect.top-GAP||box.right>rect.right+GAP||box.bottom>rect.bottom+GAP)return false;
+        for(const r of reserves){
+          if(box.right>r.left-GAP&&box.left<r.right+GAP&&box.bottom>r.top-GAP&&box.top<r.bottom+GAP)return false;
+        }
+        return true;
+      };
+      const authoredOf=(g,label,bg,leader)=>{
+        if(g.__meLabelAuthored)return g.__meLabelAuthored;
+        const authored={
+          lx:Number(label.getAttribute('x'))||0,
+          ly:Number(label.getAttribute('y'))||0,
+          ta:label.getAttribute('text-anchor')||'start',
+          bgX:bg?Number(bg.getAttribute('x'))||0:0,
+          bgW:bg?Number(bg.getAttribute('width'))||0:0,
+          leader:leader?{x1:Number(leader.getAttribute('x1'))||0,y1:Number(leader.getAttribute('y1'))||0,x2:Number(leader.getAttribute('x2'))||0,y2:Number(leader.getAttribute('y2'))||0}:null,
+        };
+        g.__meLabelAuthored=authored;
+        return authored;
+      };
+      const paint=(label,bg,leader,authored,mirrored)=>{
+        const ta=mirrored?(authored.ta==='middle'?'middle':(authored.ta==='end'?'start':'end')):authored.ta;
+        const lx=mirrored&&authored.ta!=='middle'?-authored.lx:authored.lx;
+        label.setAttribute('text-anchor',ta);
+        label.setAttribute('x',String(lx));
+        label.setAttribute('y',String(authored.ly));
+        if(bg){
+          const bgX=authored.bgW?authored.bgX:0;
+          const width=bg.getAttribute('width');
+          const newBgX=ta==='end'?lx-Number(width)+3:ta==='middle'?authored.bgX:lx-3;
+          // keep the authored background width; only its anchor follows the text
+          bg.setAttribute('x',String(authored.bgW?newBgX:bgX));
+        }
+        if(leader&&authored.leader){
+          const sign=mirrored?-1:1;
+          leader.setAttribute('x1',String(authored.leader.x1*sign));
+          leader.setAttribute('x2',String(authored.leader.x2*sign));
+        }
+      };
+      const items=[];
+      markersG.querySelectorAll('g[data-place-id] .me-place-label').forEach(label=>{
+        const g=label.closest('g[data-place-id]');
+        if(!g)return;
+        g.removeAttribute('data-label-declutter');
+        g.removeAttribute('data-label-mirrored');
+        const bg=g.querySelector('.me-place-label-bg');
+        const leader=g.querySelector('.me-place-label-leader');
+        const authored=authoredOf(g,label,bg,leader);
+        paint(label,bg,leader,authored,false);
+        const role=g.getAttribute('data-story-role')||'';
+        items.push({
+          g,label,bg,leader,authored,
+          placeholder:!g.getAttribute('data-place-id'),
+          rank:role==='focus'?0:role==='context'?1:2,
+          isActive:g.getAttribute('data-place-id')===activePlaceId?0:1,
+          canMirror:authored.ta!=='middle',
+        });
+      });
+      // The authored background rect is sized from an estimated glyph width and
+      // can be narrower than the painted text, so the reserved box is the union
+      // of the caption and its plate.
+      const boxOf=(item)=>{
+        const a=item.label.getBoundingClientRect();
+        if(!item.bg)return a;
+        const b=item.bg.getBoundingClientRect();
+        if(!b.width||!b.height)return a;
+        return{left:Math.min(a.left,b.left),top:Math.min(a.top,b.top),right:Math.max(a.right,b.right),bottom:Math.max(a.bottom,b.bottom),width:Math.max(a.right,b.right)-Math.min(a.left,b.left),height:Math.max(a.bottom,b.bottom)-Math.min(a.top,b.top)};
+      };
+      const hiddenOf=(item)=>(Number(getComputedStyle(item.label).opacity)<=0.25);
+      // Candidates: authored placement first, then the mirrored side. The open
+      // dossier outranks story focus, which outranks context and candidates.
+      // A caption inside a story layer the reader has not opened has no painted
+      // box at all; it is not a candidate and must not consume a slot.
+      const placeable=items.filter(item=>{
+        if(hiddenOf(item))return false;
+        const b=boxOf(item);
+        return b.width>1&&b.height>1;
+      });
+      placeable.forEach(item=>{item.area=boxOf(item).width*boxOf(item).height});
+      placeable.sort((a,b)=>a.isActive-b.isActive||a.rank-b.rank||b.area-a.area);
+      const accepted=[];
+      let hidden=0;
+      for(const item of placeable){
+        const collides=(box)=>accepted.some(o=>Math.min(o.right,box.right)-Math.max(o.left,box.left)>-GAP&&Math.min(o.bottom,box.bottom)-Math.max(o.top,box.top)>-GAP);
+        let box=boxOf(item);
+        if(fits(box)&&!collides(box)){
+          accepted.push(box);
+          continue;
+        }
+        if(item.canMirror){
+          paint(item.label,item.bg,item.leader,item.authored,true);
+          const mirroredBox=boxOf(item);
+          if(fits(mirroredBox)&&!collides(mirroredBox)){
+            item.g.setAttribute('data-label-mirrored','1');
+            accepted.push(mirroredBox);
+            continue;
+          }
+          paint(item.label,item.bg,item.leader,item.authored,false);
+        }
+        item.g.setAttribute('data-label-declutter','hidden');
+        hidden+=1;
+      }
+      container.setAttribute('data-label-declutter-count',String(hidden));
+      container.setAttribute('data-label-declutter-total',String(items.length));
     }
 
     // Resolve a tap to the marker the reader actually aimed at. Overlapping hit
@@ -2631,6 +2799,7 @@ container.appendChild(panel);
       }
       activePlaceId=id;
       panel.classList.add('me-panel--open');
+      scheduleLabelDeclutter();
       panelOpenedAt=performance.now();
       panelBackdrop.classList.add('me-panel__backdrop--active');
       updateUrl();
@@ -2709,6 +2878,7 @@ container.appendChild(panel);
       closePhoto('panel-close', {restoreFocus:false});
       activePlaceId=null;
       panel.classList.remove('me-panel--open');
+      scheduleLabelDeclutter();
       // Restore story-aware route hierarchy.
       const allPaths = pathsG.querySelectorAll('path[data-stage]');
       allPaths.forEach(p => {
