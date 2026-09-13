@@ -9,6 +9,7 @@ import '@xyflow/react/dist/style.css';
 import type { Person, Era, LineageFilter, DetailLevel } from './types';
 import { getLineStyle, KEY_ROLES, COSMIC_ANCHORS } from './theme';
 import { buildLayout, computeFocusLineage } from './layout';
+import { matchesLineage } from './focusGraph';
 import { PersonCardContent } from './PersonNode';
 import { DetailPanel } from './DetailPanel';
 import { TimelineAxis } from './TimelineAxis';
@@ -89,6 +90,7 @@ class GenealogyErrorBoundary extends Component<{ children: ReactNode }, Genealog
 }
 
 function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
+  const treeRoot = useRef<HTMLDivElement | null>(null);
   const rfInstance = useRef<ReactFlowInstance | null>(null);
   const [search, setSearch] = useState('');
   const [showLineage, setShowLineage] = useState<LineageFilter>('all');
@@ -268,12 +270,32 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
     setSelected(null);
   }, []);
 
+  const changeLineage = useCallback((filter: LineageFilter) => {
+    setShowLineage(filter);
+    const active = persons.find(person => person.id === activeId);
+    if (active && !matchesLineage(active, filter)) setActiveId(null);
+    if (selected && !matchesLineage(selected, filter)) setSelected(null);
+    setTourIndex(-1);
+  }, [activeId, persons, selected]);
+
   // ── Keyboard nav ──
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (showSplit || !activeId) return;
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      const target = e.target;
+      if (!(target instanceof HTMLElement) || !treeRoot.current?.contains(target)) return;
+      if (e.key === 'Escape' && selected && target.closest('[data-genealogy-details]')) {
+        e.preventDefault();
+        setSelected(null);
+        treeRoot.current.querySelector<HTMLElement>(`.react-flow__node[data-id="${CSS.escape(activeId)}"]`)?.focus({ preventScroll: true });
+        return;
+      }
+      // Toolbar, dialogs, links and editable fields own their native keys.
+      // Only a focused node inside this atlas can invoke graph navigation.
+      const graphNode = target.closest('.react-flow__node');
+      const control = target.closest('button, a, input, textarea, select, summary, [contenteditable], [role="button"], [role="link"]');
+      if (!graphNode || (control && control !== graphNode) || graphNode.getAttribute('data-id') !== activeId) return;
+      if (e.isComposing || e.altKey || e.ctrlKey || e.metaKey) return;
       const person = persons.find(p => p.id === activeId);
       if (!person) return;
       const byId = new Map(persons.map(p => [p.id, p]));
@@ -296,7 +318,7 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [activeId, persons, showSplit, focusPerson]);
+  }, [activeId, persons, selected, showSplit, focusPerson]);
 
   // ── Golden path tour ──
   const goldenArray = useMemo(() => {
@@ -315,11 +337,14 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
   const tourPrev = useCallback(() => setTourIndex(i => { const n = Math.max(i - 1, 0); if (goldenArray[n]) focusPerson(goldenArray[n], 1.0); return n; }), [goldenArray, focusPerson]);
 
   const visibleCount = visibleNodeIds ? visibleNodeIds.size : displayNodes.length;
+  const visibleFocusCount = focusLineageIds
+    ? displayNodes.filter(node => focusLineageIds.has(node.id) && (!visibleNodeIds || visibleNodeIds.has(node.id))).length
+    : 0;
   const detailLabel = detailLevel === 0 ? 'Обзор' : detailLevel === 1 ? 'Ключевые' : 'Все детали';
   const detailHint = detailLevel === 0 ? 'приблизьте для деталей' : detailLevel === 1 ? 'ещё ближе — все имена' : `${visibleCount} из ${persons.length}`;
 
   return (
-    <div style={{ width: '100%', height: '100dvh', position: 'relative', background: 'radial-gradient(ellipse at 50% 0%, #1a1510 0%, #0d0a06 50%, #050402 100%)', overflow: 'hidden' }}>
+    <div ref={treeRoot} data-genealogy-app style={{ width: '100%', height: '100dvh', position: 'relative', background: 'radial-gradient(ellipse at 50% 0%, #1a1510 0%, #0d0a06 50%, #050402 100%)', overflow: 'hidden' }}>
       <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.025, pointerEvents: 'none' }} aria-hidden="true">
         <filter id="parchment-noise"><feTurbulence baseFrequency="0.9" numOctaves="2" seed="42" /><feColorMatrix values="0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.5  0 0 0 0.5 0" /></filter>
         <rect width="100%" height="100%" filter="url(#parchment-noise)" />
@@ -332,7 +357,7 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
       <div role="toolbar" aria-label="Управление древом" style={{ position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', zIndex: 11, display: 'flex', gap: '6px', alignItems: 'center', background: 'rgba(13,10,6,0.88)', backdropFilter: 'blur(14px)', borderRadius: '999px', padding: '6px 8px', border: '1px solid rgba(212,168,87,0.2)', maxWidth: 'calc(100vw - 28px)', flexWrap: 'wrap', justifyContent: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.5)' }}>
         <input type="text" placeholder="🔍 Поиск имени..." value={search} onChange={e => setSearch(e.target.value)} aria-label="Поиск по имени" style={{ background: 'transparent', border: 'none', color: '#e8d5b0', fontFamily: '"Lora", Georgia, serif', fontSize: '13px', outline: 'none', width: '150px', minHeight: '40px' }} />
         <span style={{ color: 'rgba(200,184,154,0.3)', fontSize: '11px' }}>|</span>
-        {LINEAGE_FILTERS.map(l => <button key={l.id} onClick={() => setShowLineage(l.id)} aria-pressed={showLineage === l.id} style={{ background: showLineage === l.id ? 'rgba(212,168,87,0.2)' : 'transparent', border: showLineage === l.id ? '1px solid rgba(212,168,87,0.4)' : '1px solid transparent', borderRadius: '999px', padding: '9px 12px', cursor: 'pointer', minHeight: '40px', color: showLineage === l.id ? '#d4a857' : 'rgba(200,184,154,0.5)', fontFamily: 'inherit', fontSize: '11px', transition: 'all .2s' }}>{l.label}</button>)}
+        {LINEAGE_FILTERS.map(l => <button key={l.id} onClick={() => changeLineage(l.id)} aria-pressed={showLineage === l.id} style={{ background: showLineage === l.id ? 'rgba(212,168,87,0.2)' : 'transparent', border: showLineage === l.id ? '1px solid rgba(212,168,87,0.4)' : '1px solid transparent', borderRadius: '999px', padding: '9px 12px', cursor: 'pointer', minHeight: '40px', color: showLineage === l.id ? '#d4a857' : 'rgba(200,184,154,0.5)', fontFamily: 'inherit', fontSize: '11px', transition: 'all .2s' }}>{l.label}</button>)}
         <span style={{ color: 'rgba(200,184,154,0.3)', fontSize: '11px' }}>|</span>
         <button onClick={() => setShowGolden(g => !g)} aria-pressed={showGolden} title="Золотая мессианская нить" style={{ background: showGolden ? 'rgba(255,215,0,0.15)' : 'transparent', border: showGolden ? '1px solid rgba(255,215,0,0.4)' : '1px solid transparent', borderRadius: '999px', padding: '9px 12px', cursor: 'pointer', minHeight: '40px', color: showGolden ? '#ffd700' : 'rgba(200,184,154,0.4)', fontFamily: 'inherit', fontSize: '11px', transition: 'all .2s' }}>✦ Нить</button>
         <span style={{ color: 'rgba(200,184,154,0.3)', fontSize: '11px' }}>|</span>
@@ -356,7 +381,7 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
 
       {activeId && (
         <div style={{ position: 'absolute', top: '60px', right: '14px', zIndex: 11, background: 'rgba(13,10,6,0.82)', backdropFilter: 'blur(10px)', borderRadius: '10px', padding: '6px 12px', border: '1px solid rgba(255,215,0,0.2)', display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <span style={{ color: '#ffd700', fontSize: '11px' }}>✦ Фокус: {focusLineageIds?.size ?? 0} в ветви</span>
+          <span data-genealogy-focus-count style={{ color: '#ffd700', fontSize: '11px' }}>✦ Фокус: показано {visibleFocusCount} из {focusLineageIds?.size ?? 0}</span>
           <button onClick={() => { setActiveId(null); setSelected(null); }} style={{ background: 'none', border: 'none', color: 'rgba(200,184,154,0.5)', fontSize: '14px', cursor: 'pointer', padding: '0 4px' }}>×</button>
         </div>
       )}

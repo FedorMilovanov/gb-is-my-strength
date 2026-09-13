@@ -25,6 +25,7 @@ function DetailPanelComponent({ person, onClose }: DetailPanelProps) {
 
   return (
     <aside
+      data-genealogy-details
       role="complementary"
       aria-label={`Детали: ${person.name.ru}`}
       style={{

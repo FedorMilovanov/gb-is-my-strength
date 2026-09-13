@@ -188,6 +188,34 @@ async function assertSplitLifecycle(page) {
   assert.equal(await opener.evaluate((node) => document.activeElement === node), true, 'explicit Split View close did not restore focus to opener');
 }
 
+async function assertFocusInteractions(page) {
+  await page.getByRole('textbox', { name: 'Поиск по имени' }).fill('Исаак');
+  await waitForViewportStable(page);
+  await page.locator('.react-flow__node[data-id="isaac"]').click();
+  await page.getByRole('complementary', { name: 'Детали: Исаак' }).waitFor({ state: 'visible' });
+  for (const id of ['abram', 'sarah']) {
+    await page.waitForFunction(personId => {
+      const node = document.querySelector(`.react-flow__node[data-id="${personId}"] .genealogy-node`);
+      return node && Number.parseFloat(getComputedStyle(node).opacity) > 0.5;
+    }, id);
+  }
+  await page.getByRole('button', { name: 'Закрыть панель', exact: true }).click();
+  const opener = page.getByTitle('Сравнить Мф/Лк');
+  await opener.press('Enter');
+  const dialog = page.getByRole('dialog', { name: 'Две родословные Христа' });
+  await dialog.waitFor({ state: 'visible' });
+  assert.equal(await page.locator('[data-genealogy-details]').count(), 0, 'Enter on comparison reopened person details');
+  await page.keyboard.press('Escape');
+  await dialog.waitFor({ state: 'detached' });
+  assert.equal(await opener.evaluate(node => document.activeElement === node), true);
+  const filter = page.getByRole('button', { name: 'Каинова', exact: true });
+  await filter.press('Space');
+  assert.equal(await filter.getAttribute('aria-pressed'), 'true', 'Space did not activate the filter');
+  assert.equal(await page.locator('[data-genealogy-focus-count]').count(), 0, 'Excluded person left stale focus');
+  assert.equal(await page.locator('[data-genealogy-details]').count(), 0, 'Excluded person left stale details');
+  await page.getByRole('button', { name: 'Все', exact: true }).click();
+}
+
 async function runViewport(browserName, browserType, baseUrl, viewport) {
   const browser = await browserType.launch({ headless: true });
   const context = await browser.newContext({ viewport });
@@ -229,6 +257,8 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
 
     phase = 'split-view';
     await assertSplitLifecycle(page);
+    phase = 'focus-and-controls';
+    await assertFocusInteractions(page);
     phase = 'final';
     assert.deepEqual(pageErrors, [], `${browserName} ${viewport.width}x${viewport.height}: uncaught page errors`);
 
@@ -240,6 +270,8 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
 }
 
 async function main() {
+  const { assertGenealogyFocusContract } = await import('./genealogy-focus-contract.mjs');
+  assertGenealogyFocusContract();
   fs.mkdirSync(REPORT_DIR, { recursive: true });
   const server = await startServer();
   const results = [];

@@ -7,6 +7,8 @@ import { MarkerType } from '@xyflow/react';
 import dagre from '@dagrejs/dagre';
 import type { Person, LayoutOptions, PersonNodeData } from './types';
 import { getLineStyle, NODE_W, NODE_H } from './theme';
+import { matchesLineage } from './focusGraph';
+export { computeFocusLineage } from './focusGraph';
 
 /**
  * Canonical vertical world extent for both the genealogy graph and chronology
@@ -35,53 +37,8 @@ export function traceGoldenPath(persons: Person[]): Set<string> {
   return path;
 }
 
-/**
- * Compute the "focus lineage" for a person:
- * - All ancestors (tracing father/mother up to root)
- * - All descendants (tracing children recursively down)
- * Returns a Set of person IDs in the focus lineage.
- */
-export function computeFocusLineage(persons: Person[], personId: string): Set<string> {
-  const byId = new Map(persons.map(p => [p.id, p]));
-  const result = new Set<string>();
-  const target = byId.get(personId);
-  if (!target) return result;
-
-  // 1. Trace ancestors UP (father/mother → their father/mother → ... → root)
-  let cur: Person | undefined = target;
-  const upGuard = new Set<string>();
-  while (cur && !upGuard.has(cur.id)) {
-    result.add(cur.id);
-    upGuard.add(cur.id);
-    if (cur.id === 'jesus' && cur.mother) cur = byId.get(cur.mother);
-    else cur = cur.father ? byId.get(cur.father) : (cur.mother ? byId.get(cur.mother) : undefined);
-  }
-
-  // 2. Trace descendants DOWN (recursive)
-  const queue: string[] = [personId];
-  const downGuard = new Set<string>();
-  while (queue.length > 0) {
-    const id = queue.shift()!;
-    if (downGuard.has(id)) continue;
-    downGuard.add(id);
-    result.add(id);
-    const p = byId.get(id);
-    if (p?.children) {
-      for (const childId of p.children) {
-        if (byId.has(childId) && !downGuard.has(childId)) {
-          queue.push(childId);
-        }
-      }
-    }
-  }
-
-  return result;
-}
-
 function filterPersons(persons: Person[], opts: LayoutOptions): Person[] {
-  if (opts.showLineage === 'all') return persons;
-  if (opts.showLineage === 'messianic') return persons.filter(p => p.lineage.startsWith('messianic'));
-  return persons.filter(p => p.lineage === opts.showLineage);
+  return persons.filter(person => matchesLineage(person, opts.showLineage));
 }
 
 export function buildLayout(persons: Person[], opts: LayoutOptions): LayoutResult {
