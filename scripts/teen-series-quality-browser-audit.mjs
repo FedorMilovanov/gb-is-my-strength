@@ -50,6 +50,7 @@ const report = {
   scenes: [],
   darkScenes: [],
   screenshots: [],
+  responsiveScenes: [],
   errors: [],
 };
 
@@ -397,6 +398,51 @@ async function inspectLanding(page, vp) {
   report.scenes.push({ route, viewport, metrics, pageErrors: errors });
 }
 
+async function inspectLandingDpr2(browser, base) {
+  const route = '/podrostok-za-kadrom/';
+  const viewport = '390x844@2x';
+  const context = await browser.newContext({
+    baseURL: base,
+    viewport: { width: 390, height: 844 },
+    deviceScaleFactor: 2,
+    colorScheme: 'light',
+  });
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  try {
+    const response = await page.goto(route, { waitUntil: 'networkidle', timeout: 45_000 });
+    check(response?.ok(), route, viewport, `HTTP response is not OK: ${response?.status()}`);
+    const metrics = await page.evaluate(() => {
+      const hero = document.querySelector('.teen-series-hero img');
+      const cards = [...document.querySelectorAll('.teen-series-card__image')];
+      return {
+        devicePixelRatio: window.devicePixelRatio,
+        heroCurrentSrc: hero?.currentSrc || '',
+        heroComplete: Boolean(hero?.complete),
+        cardCurrentSrc: cards.map((img) => img.currentSrc || ''),
+        cardComplete: cards.map((img) => Boolean(img.complete)),
+      };
+    });
+    check(errors.length === 0, route, viewport, `pageerror: ${errors.join('; ')}`);
+    check(metrics.devicePixelRatio === 2, route, viewport,
+      `DPR witness drifted: ${metrics.devicePixelRatio}`);
+    check(metrics.heroComplete && /\/images\/teen-series\/series-cover\.webp(?:\?|$)/.test(metrics.heroCurrentSrc),
+      route, viewport, `2x landing hero did not select 1200w candidate: ${metrics.heroCurrentSrc || 'missing'}`);
+    check(metrics.cardCurrentSrc.length === 7, route, viewport,
+      `2x landing card count drifted: ${metrics.cardCurrentSrc.length}`);
+    check(metrics.cardComplete.every(Boolean), route, viewport, '2x landing card image failed to load');
+    check(metrics.cardCurrentSrc.every((src) =>
+      /\/images\/teen-series\/(?:0[1-7][^/]*|04-left-home|05-home-money|06-adult-authority|07-daughter-marriage)\.webp(?:\?|$)/.test(src) &&
+      !/-600w\.webp(?:\?|$)/.test(src)
+    ), route, viewport,
+    `2x landing cards did not select 1200w candidates: ${metrics.cardCurrentSrc.join(', ')}`);
+    report.responsiveScenes.push({ route, viewport, metrics, pageErrors: errors });
+  } finally {
+    await context.close();
+  }
+}
+
 async function captureDark(browser, base, spec, vp) {
   const context = await browser.newContext({
     viewport: { width: vp.width, height: vp.height },
@@ -463,6 +509,8 @@ try {
     }
   }
 
+  await inspectLandingDpr2(browser, base);
+
   for (const spec of [ARTICLE_ROUTES[0], ARTICLE_ROUTES.at(-1)]) {
     for (const vp of VIEWPORTS.filter((item) => item.width === 390 || item.width === 1440)) {
       await captureDark(browser, base, spec, vp);
@@ -476,6 +524,7 @@ try {
 report.summary = {
   sceneCount: report.scenes.length,
   darkSceneCount: report.darkScenes.length,
+  responsiveSceneCount: report.responsiveScenes.length,
   screenshotCount: report.screenshots.length,
   errorCount: report.errors.length,
   expectedArticleScenes: ARTICLE_ROUTES.length * VIEWPORTS.length,
@@ -485,6 +534,8 @@ await writeFile(join(REPORT_DIR, 'summary.json'), `${JSON.stringify(report, null
 
 assert.equal(report.scenes.length, ARTICLE_ROUTES.length * VIEWPORTS.length + VIEWPORTS.length,
   'quality audit scene count drifted');
+assert.equal(report.responsiveScenes.length, 1,
+  'quality audit responsive DPR witness count drifted');
 assert.equal(report.screenshots.length, 8 * SCREENSHOT_WIDTHS.size + 4,
   'quality audit screenshot evidence count drifted');
 assert.equal(report.screenshots.filter((entry) => entry.bytes <= 1024).length, 0,
@@ -496,5 +547,5 @@ assert.equal(report.errors.length, 0,
 console.log('✅ Teen series quality Playwright audit PASS');
 console.log(`  scenes: ${report.scenes.length} light + ${report.darkScenes.length} dark`);
 console.log('  viewports: 320 / 360 / 390 / 768 / 1024 / 1440');
-console.log('  checked: overflow, reading measure, 4–6 summary rule, deep TOC, per-term glossary cadence/placement/interaction, Bible tooltip bounds, correction actions');
+console.log('  checked: overflow, reading measure, 4–6 summary rule, deep TOC, per-term glossary cadence/placement/interaction, Bible tooltip bounds, correction actions, DPR2 responsive image selection');
 console.log(`  evidence: ${REPORT_DIR}`);
