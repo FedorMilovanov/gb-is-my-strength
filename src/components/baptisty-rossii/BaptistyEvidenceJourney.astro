@@ -1,0 +1,156 @@
+---
+interface JourneyItem {
+  marker: string;
+  title: string;
+  text: string;
+  tone?: 'source' | 'process' | 'boundary';
+}
+
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  intro?: string;
+  items: JourneyItem[];
+}
+
+const {
+  eyebrow = 'Редакционная карта',
+  heading,
+  intro,
+  items,
+} = Astro.props;
+---
+
+<section class="baptist-evidence-journey" aria-label={heading}>
+  <header class="baptist-evidence-journey__head">
+    <p class="baptist-evidence-journey__eyebrow">{eyebrow}</p>
+    <h3>{heading}</h3>
+    {intro && <p>{intro}</p>}
+  </header>
+  <ol class="baptist-evidence-journey__items">
+    {items.map((item, index) => (
+      <li class:list={['baptist-evidence-journey__item', item.tone && `baptist-evidence-journey__item--${item.tone}`]}>
+        <span class="baptist-evidence-journey__index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+        <div>
+          <span class="baptist-evidence-journey__marker">{item.marker}</span>
+          <strong>{item.title}</strong>
+          <p>{item.text}</p>
+        </div>
+      </li>
+    ))}
+  </ol>
+</section>
+
+<style>
+  .baptist-evidence-journey {
+    margin: clamp(2rem, 5vw, 3.5rem) 0;
+    padding: clamp(1.1rem, 2.8vw, 1.7rem);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--color-surface) 95%, var(--gbs2-accent) 5%);
+  }
+
+  .baptist-evidence-journey__head {
+    display: grid;
+    gap: .45rem;
+    max-width: 54rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .baptist-evidence-journey__eyebrow {
+    margin: 0;
+    color: var(--gbs2-accent);
+    font-size: .7rem;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+  .baptist-evidence-journey__head h3 {
+    margin: 0;
+    color: var(--color-text);
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(1.35rem, 2.5vw, 1.9rem);
+    line-height: 1.15;
+  }
+
+  .baptist-evidence-journey__head > p:not(.baptist-evidence-journey__eyebrow) {
+    margin: 0;
+    color: var(--color-text-muted);
+    line-height: 1.55;
+  }
+
+  .baptist-evidence-journey__items {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .8rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .baptist-evidence-journey__item {
+    display: grid;
+    grid-template-columns: 2.35rem minmax(0, 1fr);
+    gap: .75rem;
+    min-width: 0;
+    padding: 1rem;
+    border: 1px solid color-mix(in srgb, var(--color-border) 92%, var(--gbs2-accent) 8%);
+    border-radius: 14px;
+    background: var(--color-surface);
+  }
+  .baptist-evidence-journey__index {
+    display: grid;
+    width: 2.1rem;
+    height: 2.1rem;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--gbs2-accent) 42%, var(--color-border));
+    border-radius: 50%;
+    color: var(--gbs2-accent);
+    font-size: .72rem;
+    font-weight: 800;
+  }
+
+  .baptist-evidence-journey__marker {
+    display: block;
+    margin-bottom: .28rem;
+    color: var(--gbs2-accent);
+    font-size: .7rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .baptist-evidence-journey__item strong {
+    display: block;
+    color: var(--color-text);
+    font-size: .98rem;
+    line-height: 1.35;
+  }
+
+  .baptist-evidence-journey__item p {
+    margin: .45rem 0 0;
+    color: var(--color-text-muted);
+    font-size: .86rem;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 640px) {
+    .baptist-evidence-journey {
+      padding: .8rem;
+      border-radius: 16px;
+    }
+    .baptist-evidence-journey__items {
+      grid-template-columns: 1fr;
+    }
+
+    .baptist-evidence-journey__item {
+      grid-template-columns: 2rem minmax(0, 1fr);
+      padding: .85rem;
+    }
+
+    .baptist-evidence-journey__index {
+      width: 1.85rem;
+      height: 1.85rem;
+    }
+  }
+</style>
