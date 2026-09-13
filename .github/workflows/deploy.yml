@@ -156,6 +156,19 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
+      - name: Teen series browser release gate
+        id: teen_quality
+        run: node scripts/teen-series-quality-browser-audit.mjs
+
+      - name: Upload Teen series release evidence
+        if: ${{ always() && (steps.teen_quality.outcome == 'success' || steps.teen_quality.outcome == 'failure') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: teen-series-deploy-readiness-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/teen-series-browser/
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Verify Home Refutations computed box model
         run: node scripts/visual-parity-home-refutations-box-model-browser-test.js
 
