@@ -3371,12 +3371,44 @@ container.appendChild(panel);
     renderMarkers();
     
     // Load base-geo.svg if provided
+    // A route-owned wrapper may reference the shared geography through
+    // <image href="...svg">; such a reference stays an opaque raster-like node, so
+    // the map theme, label declutter and assistive tech could not reach it.
+    // Nested SVG references are therefore flattened into real geometry.
+    const nestedBaseGeoCache=new Map();
+    function fetchBaseGeoSvg(url){
+      if(!nestedBaseGeoCache.has(url)){
+        nestedBaseGeoCache.set(url,fetch(url).then(r=>(r&&r.ok)?r.text():null).catch(()=>null));
+      }
+      return nestedBaseGeoCache.get(url);
+    }
+    async function inlineNestedBaseGeo(root,baseUrl,depth=0){
+      if(!root||depth>3)return;
+      for(const image of [...root.querySelectorAll('image')]){
+        const href=image.getAttribute('href')||image.getAttribute('xlink:href')||'';
+        if(!/\.svg(\?|#|$)/i.test(href))continue;
+        let resolved=null;
+        try{resolved=new URL(href,new URL(baseUrl,location.href)).href}catch(err){continue}
+        const text=await fetchBaseGeoSvg(resolved);
+        if(!text)continue;
+        const nestedDoc=new DOMParser().parseFromString(text,'image/svg+xml');
+        const nestedRoot=nestedDoc.querySelector('svg');
+        if(!nestedRoot)continue;
+        await inlineNestedBaseGeo(nestedRoot,resolved,depth+1);
+        const wrap=document.createElementNS('http://www.w3.org/2000/svg','g');
+        wrap.setAttribute('data-inlined-base','1');
+        try{wrap.setAttribute('data-inlined-from',new URL(resolved).pathname)}catch(err){}
+        while(nestedRoot.firstChild)wrap.appendChild(nestedRoot.firstChild);
+        image.replaceWith(wrap);
+      }
+    }
     if (opts.baseGeoUrl) {
-      fetch(opts.baseGeoUrl).then(r => r.text()).then(svgText => {
+      fetch(opts.baseGeoUrl).then(r => r.text()).then(async svgText => {
         const parser = new DOMParser();
         const geoDoc = parser.parseFromString(svgText, 'image/svg+xml');
         const geoRoot = geoDoc.querySelector('svg');
         if (geoRoot) {
+          await inlineNestedBaseGeo(geoRoot,opts.baseGeoUrl);
           // Insert base-geo as first child of SVG (behind paths/markers)
           const baseGeoG = document.createElementNS('http://www.w3.org/2000/svg','g');
           baseGeoG.id = 'me-base-geo';

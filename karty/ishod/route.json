@@ -19,6 +19,11 @@
       "cy": 900,
       "w": 1200
     },
+    "mobile_viewport_init": {
+      "cx": 450,
+      "cy": 1040,
+      "w": 560
+    },
     "sheet_viewport": {
       "cx": 660,
       "cy": 860,
@@ -721,6 +726,5 @@
   },
   "archetype": "route",
   "capabilities": ["stages", "stories", "layers", "timeline", "signature", "interpretations", "uncertainty"],
-  "publication": {"status": "ready", "indexable": true, "sitemap": true, "llms": false, "pagefind": true},
-  "mobile_viewport_init": {"cx": 450, "cy": 1040, "w": 560}
+  "publication": {"status": "ready", "indexable": true, "sitemap": true, "llms": false, "pagefind": true}
 }
