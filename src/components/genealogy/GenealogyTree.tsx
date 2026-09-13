@@ -292,9 +292,10 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
     }
     // Toolbar, dialogs, links and editable fields own their native keys.
     // Only a focused node inside this atlas can invoke graph navigation.
-    const graphNode = target.closest('.react-flow__node');
+    const focusedElement = document.activeElement;
+    const graphNode = focusedElement instanceof HTMLElement ? focusedElement.closest('.react-flow__node') : null;
     const control = target.closest('button, a, input, textarea, select, summary, [contenteditable], [role="button"], [role="link"]');
-    if (!graphNode || (control && control !== graphNode)) return;
+    if (!graphNode || !treeRoot.current.contains(graphNode) || (control && control !== graphNode)) return;
     const focusedId = graphNode.getAttribute('data-id');
     const person = persons.find(p => p.id === focusedId);
     if (!person) return;

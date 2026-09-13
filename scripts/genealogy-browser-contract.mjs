@@ -235,11 +235,23 @@ async function assertFocusInteractions(page) {
   }
   await page.getByRole('button', { name: 'Закрыть панель', exact: true }).click();
   const isaacNode = page.locator('.react-flow__node[data-id="isaac"]');
+  await page.evaluate(() => {
+    window.__genealogyKeyTrace = [];
+    document.addEventListener('keydown', event => {
+      window.__genealogyKeyTrace.push({ key: event.key, composing: event.isComposing,
+        target: event.target instanceof Element ? event.target.closest('.react-flow__node')?.getAttribute('data-id') : null,
+        focused: document.activeElement?.getAttribute('data-id') });
+    }, true);
+  });
+  const assertNodeFocus = async (id, message) => {
+    const state = await page.evaluate(() => ({ focused: document.activeElement?.getAttribute('data-id'), keys: window.__genealogyKeyTrace }));
+    assert.equal(state.focused, id, `${message}; keyboard trace: ${JSON.stringify(state.keys)}`);
+  };
   await isaacNode.focus();
   await isaacNode.press('ArrowUp');
-  assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'abram', 'ArrowUp left keyboard focus on Isaac');
+  await assertNodeFocus('abram', 'ArrowUp left keyboard focus on Isaac');
   await page.keyboard.press('ArrowUp');
-  assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'terah', 'A second family-navigation key did not reach Terah');
+  await assertNodeFocus('terah', 'A second family-navigation key did not reach Terah');
   await page.keyboard.press('Enter');
   await page.getByRole('complementary', { name: 'Детали: Фарра' }).waitFor({ state: 'visible' });
   await page.getByRole('button', { name: 'Закрыть панель', exact: true }).focus();
