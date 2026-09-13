@@ -87,6 +87,7 @@ const jsonLd = {
     <link rel="stylesheet" href={assetUrl('css/floating-cluster.css')} />
   </head>
   <body class="teen-series-hub-page">
+    <a href="#main-content" class="skip-link">Перейти к содержимому</a>
     <main id="main-content" class="article-main" data-pagefind-body>
       <article>
         <span data-pagefind-meta="image" hidden>{ogImagePath}</span>
@@ -95,6 +96,9 @@ const jsonLd = {
         <span data-pagefind-meta="category" hidden>Подростки и взрослые дети</span>
 
         <header class="article-header gbs2-head">
+          <nav aria-label="Хлебные крошки" style="margin-bottom:.75rem">
+            <a href="/" class="gb-text-link">← Главная</a>
+          </nav>
           <p class="section-label">Серия · 7 материалов · {totalMinutes} мин</p>
           <h1>Подросток за кадром</h1>
           <p class="article-byline"><span class="article-byline__strong">Двойная жизнь, семья и взросление</span></p>
@@ -160,6 +164,7 @@ const jsonLd = {
         </aside>
       </article>
     </main>
+    <script is:inline src={assetUrl('js/sw-register.js')} defer></script>
     <style>
       .teen-series-hero{margin:2rem 0 2.5rem}.teen-series-hero img{display:block;width:100%;height:auto;aspect-ratio:1200/630;object-fit:cover;border-radius:1.5rem}
       .teen-series-grid{display:grid;gap:1rem;margin:1.25rem 0 2.5rem}
