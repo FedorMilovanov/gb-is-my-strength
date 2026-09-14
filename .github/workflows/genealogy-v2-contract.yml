@@ -51,6 +51,9 @@ jobs:
       - name: Check genealogy pipeline syntax
         run: |
           node --check scripts/genealogy-build/build.mjs
+          node --check scripts/genealogy-build/lib/skeleton-matcher.mjs
+          node --check scripts/genealogy-build/lib/layout-l1-lineages.mjs
+          node --check scripts/genealogy-build/lib/spine.mjs
           node --check scripts/genealogy-v2-publication-audit.mjs
 
       - name: Run deterministic genealogy matcher regressions
