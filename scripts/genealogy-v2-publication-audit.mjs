@@ -14,6 +14,7 @@ const v1 = readJson(V1);
 const persons = readJson(path.join(V2, 'persons.json'));
 const groups = readJson(path.join(V2, 'groups.json'));
 const views = readJson(path.join(V2, 'views.json'));
+const tableOfNations = readJson(path.join(V2, 'table-of-nations.json'));
 const meta = readJson(path.join(V2, 'meta.json'));
 const spine = readJson(path.join(V2, 'spine.json'));
 const edgeAnnotations = readJson(path.join(V2, 'edge-annotations.json'));
@@ -45,8 +46,15 @@ const reviewQueue = persons.filter(person => person.ru?.review === true).length;
 const curatedRulePolicy = {
   'matthew-1': ['explicitSequence'],
   'luke-3': ['explicitSequence'],
-  'nations-of-noah': ['explicitMembers', 'tableOfNations'],
 };
+const nationsViewIssues = [];
+const nationsView = (views.views ?? []).find(view => view.id === 'nations');
+if (!nationsView || nationsView.kind !== 'archetype' || nationsView.target !== 'nations') {
+  nationsViewIssues.push('views.nations-routing');
+}
+if (tableOfNations.counts?.nationsProper !== 70) nationsViewIssues.push('table-of-nations.count');
+if (!/phase2-verified/u.test(tableOfNations._meta?.status ?? '')) nationsViewIssues.push('table-of-nations.status');
+
 const genericCuratedViews = [];
 for (const cluster of groups.clusters ?? []) {
   const allowed = curatedRulePolicy[cluster.id];
@@ -147,6 +155,7 @@ if (fuzzyMappings.length) blockers.push({ code: 'UNAPPROVED_FUZZY_MAPPING', coun
 if (unresolvedRefs === null || unresolvedRefs > 0) blockers.push({ code: 'UNRESOLVED_RELATIONS', count: unresolvedRefs });
 if (reviewQueue > 0) blockers.push({ code: 'RU_REVIEW_QUEUE', count: reviewQueue });
 if (genericCuratedViews.length) blockers.push({ code: 'GENERIC_CURATED_VIEW_RULES', count: genericCuratedViews.length });
+if (nationsViewIssues.length) blockers.push({ code: 'NATIONS_VIEW_NOT_CURATED', count: nationsViewIssues.length });
 if (spineProvenanceIssues.length) blockers.push({ code: 'SPINE_PROVENANCE_INCOMPLETE', count: spineProvenanceIssues.length });
 if (relationProvenanceIssues.length) blockers.push({ code: 'RELATION_PROVENANCE_INCOMPLETE', count: relationProvenanceIssues.length });
 if (interpretationWordingIssues.length) blockers.push({ code: 'OVERSTATED_INTERPRETATION_WORDING', count: interpretationWordingIssues.length });
@@ -168,6 +177,7 @@ const report = {
     genderMismatches,
     fuzzyMappings,
     genericCuratedViews,
+    nationsViewIssues,
     spineProvenanceIssues,
     relationProvenanceIssues,
     interpretationWordingIssues,
@@ -191,6 +201,7 @@ const md = [
   `- Fuzzy skeleton mappings: ${fuzzyMappings.length}`,
   `- Seed↔TIPNR gender mismatches: ${genderMismatches.length}`,
   `- Generic rules in curated views: ${genericCuratedViews.length}`,
+  `- Nations curated-view issues: ${nationsViewIssues.length}`,
   `- Spine provenance issues: ${spineProvenanceIssues.length}`,
   `- Relation provenance issues: ${relationProvenanceIssues.length}`,
   `- Overstated interpretation wording: ${interpretationWordingIssues.length}`,
