@@ -289,6 +289,123 @@
         "карты",
         "археология"
       ]
+    },
+    {
+      "id": "anatomiya-padeniya-pyat-stadiy",
+      "title": "Анатомия падения: пять стадий институционального разложения",
+      "url": "/articles/anatomiya-padeniya-pyat-stadiy/",
+      "group": "pastor-series",
+      "readingTime": 29,
+      "cover": "/images/pastor-series/og-anatomiya-padeniya-pyat-stadiy.webp",
+      "desc": "Причинная траектория разложения пастырского служения: идол платформы, демонтаж подотчётности, страх, защита репутации, ложное покаяние. Не каталог «красных флагов», а последовательность стадий с ранними маркерами.",
+      "tags": [
+        "Пасторство",
+        "Церковь"
+      ]
+    },
+    {
+      "id": "teksty-pisaniya-kotorymi-manipuliruyut",
+      "title": "Тексты Писания, которыми манипулируют",
+      "url": "/articles/teksty-pisaniya-kotorymi-manipuliruyut/",
+      "group": "pastor-series",
+      "readingTime": 36,
+      "cover": "/images/pastor-series/og-teksty-pisaniya-kotorymi-manipuliruyut.webp",
+      "desc": "23 библейских текста, которыми злоупотребляют в церковных конфликтах: изоляция от контекста, устранение подотчётности, смешение сфер, игнорирование жанра — с двусторонним библейским противовесом.",
+      "tags": [
+        "Пасторство",
+        "Экзегеза"
+      ]
+    },
+    {
+      "id": "sem-tipov-razlichenie-uchiteley",
+      "title": "Семь типов: как различать учителей и лидеров",
+      "url": "/articles/sem-tipov-razlichenie-uchiteley/",
+      "group": "pastor-series",
+      "readingTime": 30,
+      "cover": "/images/pastor-series/og-sem-tipov-razlichenie-uchiteley.webp",
+      "desc": "Инструмент различения: волк, исправимый учитель, восстановимый брат, непригодный к кафедре, Диотреф, Корей, системная порча. Сила утверждения не сильнее доказательств.",
+      "tags": [
+        "Пасторство",
+        "Церковь"
+      ]
+    },
+    {
+      "id": "cerkovnaya-disciplina-vlast-granicy-zashchita",
+      "title": "Церковная дисциплина: власть, границы и защита",
+      "url": "/articles/cerkovnaya-disciplina-vlast-granicy-zashchita/",
+      "group": "pastor-series",
+      "readingTime": 34,
+      "cover": "/images/pastor-series/og-cerkovnaya-disciplina-vlast-granicy-zashchita.webp",
+      "desc": "Позитивное библейское богословие церковной власти: шесть сфер пастырского требования, законная процедура, восемь признаков законной дисциплины и десять признаков её превращения в оружие.",
+      "tags": [
+        "Пасторство",
+        "Дисциплина"
+      ]
+    },
+    {
+      "id": "kogda-uhodit-kogda-ostavatsya",
+      "title": "Когда говорить, когда молчать; когда уходить, когда оставаться",
+      "url": "/articles/kogda-uhodit-kogda-ostavatsya/",
+      "group": "pastor-series",
+      "readingTime": 33,
+      "cover": "/images/pastor-series/og-kogda-uhodit-kogda-ostavatsya.webp",
+      "desc": "Библейский фреймворк трудных решений: семь вопросов факта, когда молчание — мудрость, а когда — соучастие, как проверить серьёзное обвинение и как уйти без разрушения.",
+      "tags": [
+        "Пасторство",
+        "Церковь"
+      ]
+    },
+    {
+      "id": "vernye-i-neizvestnye-zdorovoe-pastyrstvo",
+      "title": "Верные и неизвестные: здоровое пастырство",
+      "url": "/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo/",
+      "group": "pastor-series",
+      "readingTime": 31,
+      "cover": "/images/pastor-series/og-vernye-i-neizvestnye-zdorovoe-pastyrstvo.webp",
+      "desc": "Портрет здорового пастыря: характер прежде платформы, власть под Словом, Бог один Господь совести, пастор, которого можно поправить, и достойный путь ухода человека.",
+      "tags": [
+        "Пасторство",
+        "Церковь"
+      ]
+    },
+    {
+      "id": "priznaki-zdorovoy-cerkvi",
+      "title": "Признаки здоровой церкви",
+      "url": "/articles/priznaki-zdorovoy-cerkvi/",
+      "group": "pastor-series",
+      "readingTime": 30,
+      "cover": "/images/pastor-series/og-priznaki-zdorovoy-cerkvi.webp",
+      "desc": "Пятнадцать признаков здоровой поместной церкви: Слово выше личности, подотчётное старейшинство, работающий путь жалобы, финансы под контролем, конфиденциальность без тайной системы.",
+      "tags": [
+        "Пасторство",
+        "Церковь"
+      ]
+    },
+    {
+      "id": "nesovershennyy-chelovek-v-nesovershennoy-cerkvi",
+      "title": "Несовершенный человек в несовершенной церкви",
+      "url": "/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi/",
+      "group": "pastor-series",
+      "readingTime": 31,
+      "cover": "/images/pastor-series/og-nesovershennyy-chelovek-v-nesovershennoy-cerkvi.webp",
+      "desc": "Финальный предохранитель серии: ошибка не равна паттерну, боль — не верховный судья, обличение не равно газлайтингу. Матрица трезвого различения без хронической подозрительности.",
+      "tags": [
+        "Пасторство",
+        "Церковь"
+      ]
+    },
+    {
+      "id": "diotrefy-nashego-vremeni",
+      "title": "Диотрефы нашего времени",
+      "url": "/articles/diotrefy-nashego-vremeni/",
+      "group": "pastor-series",
+      "readingTime": 35,
+      "cover": "/images/pastor-series/og-20-antisovetov-pastoru.webp",
+      "desc": "Документальное досье о портрете Диотрефа из 3 Ин.: любовь к первенству, неприятие служения, злые слова. Власть, подотчётность и верность.",
+      "tags": [
+        "Пасторство",
+        "Досье"
+      ]
     }
   ],
   "edges": [
@@ -639,6 +756,78 @@
     [
       "biografii",
       "dzhon-gill-chast-4-ekzeget"
+    ],
+    [
+      "anatomiya-padeniya-pyat-stadiy",
+      "pastor-series"
+    ],
+    [
+      "pastor-series",
+      "anatomiya-padeniya-pyat-stadiy"
+    ],
+    [
+      "teksty-pisaniya-kotorymi-manipuliruyut",
+      "pastor-series"
+    ],
+    [
+      "pastor-series",
+      "teksty-pisaniya-kotorymi-manipuliruyut"
+    ],
+    [
+      "sem-tipov-razlichenie-uchiteley",
+      "pastor-series"
+    ],
+    [
+      "pastor-series",
+      "sem-tipov-razlichenie-uchiteley"
+    ],
+    [
+      "cerkovnaya-disciplina-vlast-granicy-zashchita",
+      "pastor-series"
+    ],
+    [
+      "pastor-series",
+      "cerkovnaya-disciplina-vlast-granicy-zashchita"
+    ],
+    [
+      "kogda-uhodit-kogda-ostavatsya",
+      "pastor-series"
+    ],
+    [
+      "pastor-series",
+      "kogda-uhodit-kogda-ostavatsya"
+    ],
+    [
+      "vernye-i-neizvestnye-zdorovoe-pastyrstvo",
+      "pastor-series"
+    ],
+    [
+      "pastor-series",
+      "vernye-i-neizvestnye-zdorovoe-pastyrstvo"
+    ],
+    [
+      "priznaki-zdorovoy-cerkvi",
+      "pastor-series"
+    ],
+    [
+      "pastor-series",
+      "priznaki-zdorovoy-cerkvi"
+    ],
+    [
+      "nesovershennyy-chelovek-v-nesovershennoy-cerkvi",
+      "pastor-series"
+    ],
+    [
+      "pastor-series",
+      "nesovershennyy-chelovek-v-nesovershennoy-cerkvi"
+    ],
+    [
+      "diotrefy-nashego-vremeni",
+      "pastor-series"
+    ],
+    [
+      "pastor-series",
+      "diotrefy-nashego-vremeni"
     ]
   ]
 }
