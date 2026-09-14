@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/avraam-dossier-witness.yml'
       - 'scripts/avraam-dossier-witness.mjs'
+      - 'scripts/astro-cache-bust-postbuild.js'
       - 'karty/_engine/**'
       - 'karty/avraam/**'
       - 'src/components/karty/avraam/**'
