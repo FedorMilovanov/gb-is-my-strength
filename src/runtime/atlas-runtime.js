@@ -602,7 +602,7 @@
           button.appendChild(createElement('span', '', relationLabel(item)));
           button.appendChild(createElement('strong', '', neighbor.title));
           if (item.edge.rationale) button.title = item.edge.rationale;
-          button.addEventListener('click', function () { focusNode(neighbor.id, true, true); });
+          button.addEventListener('click', function () { focusNode(neighbor.id, true, true, true); });
           list.appendChild(button);
         });
         relations.appendChild(list);
@@ -666,8 +666,8 @@
       history[method]({ atlas: true }, '', url);
     }
 
-    function focusNode(id, moveCamera, pushHistory) {
-      var detailOwnedFocus = detail.contains(document.activeElement);
+    function focusNode(id, moveCamera, pushHistory, restoreDetailFocus) {
+      var detailOwnedFocus = restoreDetailFocus === true || detail.contains(document.activeElement);
       var node = nodeById.get(id);
       var position = nodePositions.get(id);
       if (!node || !position || !isNodeVisible(node) || !matchesSearch(node)) return;
@@ -751,7 +751,7 @@
       if (activeGraphNode && activeGraphNode.classList.contains('is-filtered-out')) focusGraphOwner(null);
     }
 
-    function setGroup(group, pushHistory) {
+    function setGroup(group, pushHistory, restoreSidebarFocus) {
       activeGroup = groupById.has(group) ? group : 'all';
       document.querySelectorAll('[data-atlas-group]').forEach(function (button) {
         var active = button.dataset.atlasGroup === activeGroup;
@@ -760,7 +760,7 @@
       });
       clearFocus(false);
       applyFilters();
-      closeFilters({ restoreFocus: sidebar.contains(document.activeElement) });
+      closeFilters({ restoreFocus: restoreSidebarFocus === true || sidebar.contains(document.activeElement) });
       updateUrl({
         group: activeGroup === 'all' ? null : activeGroup,
         focus: null,
@@ -1021,7 +1021,11 @@
       button.addEventListener('click', function () { setView(button.dataset.atlasView, true); });
     });
     document.querySelectorAll('[data-atlas-group]').forEach(function (button) {
-      button.addEventListener('click', function () { setGroup(button.dataset.atlasGroup, true); });
+      button.addEventListener('click', function () {
+        var drawer = drawerMedia.matches;
+        setGroup(button.dataset.atlasGroup, true, drawer);
+        if (!drawer) safeFocus(button);
+      });
     });
     document.querySelectorAll('.atlas-relation-filter input').forEach(function (input) {
       input.addEventListener('change', function () {
@@ -1081,6 +1085,7 @@
       setView('graph', false);
       setViewBox(initialView(), true);
       history.pushState({ atlas: true }, '', location.pathname);
+      safeFocus(resetButton);
     });
 
     document.addEventListener('keydown', function (event) {
