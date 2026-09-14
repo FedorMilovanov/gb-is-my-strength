@@ -115,11 +115,13 @@ async function runAll() {
 
   // 1. Парсинг TIPNR
   const tipnrText = await loadCached('tipnr');
-  const { persons, groups, stats: parseStats } = parseTipnr(tipnrText);
-  const relStats = resolveRelations(persons);
-  log(`parse: персон ${parseStats.personRecords}, групп-народов ${parseStats.groupRecords}, ` +
+  const { persons, groups, places, stats: parseStats } = parseTipnr(tipnrText);
+  const relStats = resolveRelations(persons, { groups, places });
+  log(`parse: персон ${parseStats.personRecords}, групп-народов ${parseStats.groupRecords}, мест ${parseStats.placeRecords}, ` +
       `топ-строк ${parseStats.topLines}, типы ${JSON.stringify(parseStats.byType)}, дубликатов ${parseStats.duplicates.length}`);
-  log(`resolve: связей ${relStats.resolved}, нерезолв ${relStats.unresolvedRefs.length}, (d)-пропущено ${relStats.skippedDescendedGroup}`);
+  log(`resolve: person-связей ${relStats.resolved}, external ${relStats.resolvedExternal} ` +
+      `(groups ${relStats.externalByType.group}, places ${relStats.externalByType.place}), ` +
+      `нерезолв ${relStats.unresolvedRefs.length}, (d)-вне person graph ${relStats.skippedDescendedGroup}`);
 
   // 2. Синодальный текст
   const synRaw = await loadCached('synodal');
@@ -813,6 +815,28 @@ async function runTests() {
   const rs = resolveRelations(persons);
   assert(persons.get('Seth@Gen.4.25').parents.every(p => p.resolved), 'mini-резолв родителей Сифа');
   assert(rs.unresolvedRefs.length === 0, 'mini-резолв без потерь');
+
+  const externalMini = [
+    '$==========PERSON(s)',
+    'UnifiedName=uStrong\tDescription\tParents\tSiblings\tPartners\tOffspring\tTribe\t#Summary\tType',
+    'Canaan@Gen.9.18═H3667\tson of Ham\t–\t–\t–\tJebusites@Gen.10.16-Zec\t–\t#…\tMale',
+    'Jebusites@Gen.10.16-Zec═H2983\tpeople group\t–\t–\t–\t–\t–\t#…\tGroup',
+    'Ashhur@1Ch.2.24═H0806\tfounder\t–\t–\t–\tTekoa@2Sa.14.2-Amo(f)\t–\t#…\tMale',
+    'Tekoa@2Sa.14.2-Amo═H8620\tplace\t–\t–\t–\t–\t–\t#…\tPlace',
+  ].join('\n');
+  const externalParsed = parseTipnr(externalMini);
+  const externalStats = resolveRelations(externalParsed.persons, {
+    groups: externalParsed.groups,
+    places: externalParsed.places,
+  });
+  assert(externalParsed.stats.groupRecords === 1 && externalParsed.stats.placeRecords === 1,
+    'mini-парс сохраняет Group и Place как внешние сущности');
+  assert(externalStats.unresolvedRefs.length === 0 && externalStats.resolvedExternal === 2,
+    'person→Group/Place refs типизируются, а не считаются dangling person refs');
+  assert(externalParsed.persons.get('Canaan@Gen.9.18').offspring[0].resolvedEntity === 'group',
+    'Canaan→Jebusites классифицирован как group relation');
+  assert(externalParsed.persons.get('Ashhur@1Ch.2.24').offspring[0].resolvedEntity === 'place',
+    'Ashhur→Tekoa классифицирован как place relation');
 
   log('tests done');
 }
