@@ -44,10 +44,6 @@
 .genealogy-canvas { position: relative; flex: 1; min-height: 280px; min-width: 0; background: radial-gradient(ellipse at 50% 15%, #303027, var(--genealogy-bg) 75%); }
 .genealogy-app .react-flow { background: transparent; }
 .genealogy-app .react-flow__node-default { padding: 0; border: 0; background: transparent; border-radius: 10px; }
-.genealogy-app .react-flow__controls { display: flex; flex-direction: row; overflow: hidden; border: 1px solid var(--genealogy-border); border-radius: 10px; background: var(--genealogy-panel); box-shadow: 0 3px 16px #0005; }
-.genealogy-app .react-flow__controls-button { width: 44px; height: 44px; min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 0; color: var(--genealogy-text); background: var(--genealogy-panel); font-size: 25px; }
-.genealogy-app .react-flow__controls-button + .react-flow__controls-button { border-left: 1px solid var(--genealogy-border); }
-.genealogy-app .react-flow__controls-button svg { width: 20px; height: 20px; max-width: 20px; max-height: 20px; fill: currentColor; }
 .genealogy-app .react-flow__minimap { background: var(--genealogy-panel); border: 1px solid var(--genealogy-border); border-radius: 8px; overflow: hidden; }
 .genealogy-app .genealogy-minimap-toggle { display: none; }
 .genealogy-compact-card { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 3px; padding: 5px 10px; border: 1.5px solid; border-radius: 9px; background: #272820; color: #f4ead4; box-shadow: 0 3px 12px #0005; cursor: pointer; }
@@ -74,7 +70,7 @@
   .genealogy-primary-tools input { font-size: 14px; }
   .genealogy-app .react-flow__minimap { display: none; }
   .genealogy-app .genealogy-minimap-toggle { display: flex; }
-  .genealogy-app[data-minimap-open="true"] .react-flow__minimap { display: block; bottom: 52px; }
+  .genealogy-app[data-minimap-open="true"] .react-flow__minimap { display: block; }
   .genealogy-filter-tools button, .genealogy-filter-tools select { font-size: 12px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -84,3 +80,10 @@
 .genealogy-details { position: absolute; top: 0; right: 0; bottom: 0; width: min(380px, 100%); }
 @media (max-width: 639px) { .genealogy-details { top: auto; left: 0; width: 100%; max-height: 78%; border-radius: 16px 16px 0 0; } }
 @media (prefers-reduced-motion: reduce) { .genealogy-app { --genealogy-messiah-animation: none; --genealogy-panel-animation: none; --genealogy-person-transition: none; } }
+
+.genealogy-heading { display: flex; align-items: center; min-height: 36px; margin-bottom: 8px; padding-right: 56px; }
+.genealogy-heading h2 { margin: 0; color: var(--genealogy-text); font: 600 18px/1.25 "Lora", Georgia, serif; }
+.genealogy-navigation { display: flex; justify-content: space-between; gap: 8px; align-items: center; padding: 6px 8px; background: var(--genealogy-panel); border-top: 1px solid var(--genealogy-border); }
+.genealogy-navigation > div { display: flex; gap: 4px; flex-shrink: 0; }
+.genealogy-navigation button { width: 44px; height: 44px; padding: 0; font-size: 24px; display: flex; justify-content: center; align-items: center; }
+.genealogy-navigation select { min-width: 0; max-width: 240px; flex: 1; width: 0; font-size: 12px; }

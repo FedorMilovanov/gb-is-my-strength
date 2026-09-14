@@ -13,16 +13,16 @@ export function PersonCardContent({ data }: { data: any }) {
   // Focused = in the focus lineage (highlighted path)
   const focused = data.focused === true;
 
-  const opacity = dimmed ? 0.12 : 1;
+  const opacity = dimmed ? 0.25 : 1;
   const filter = dimmed ? 'grayscale(0.8)' : 'none';
 
   // Focused nodes get stronger border + glow
-  const borderColor = focused ? '#ffd700' : (data.golden ? '#ffd700' : ls.border);
-  const borderWidth = focused ? '2.5px' : '1.5px';
+  const borderColor = data.golden ? '#d4a857' : (focused ? '#9fc1b3' : ls.border);
+  const borderWidth = focused ? '2px' : '1.5px';
   const boxShadow = focused
-    ? `0 0 20px rgba(255,215,0,0.5), 0 0 40px rgba(255,215,0,0.2)`
+    ? `0 0 10px ${data.golden ? 'rgba(212,168,87,0.2)' : 'rgba(159,193,179,0.15)'}`
     : data.golden
-      ? `0 0 14px ${ls.glow}, 0 2px 8px rgba(0,0,0,0.4)`
+      ? '0 2px 8px rgba(0,0,0,0.3)'
       : '0 2px 10px rgba(0,0,0,0.35)';
 
   return (
@@ -81,8 +81,8 @@ export function PersonCardContent({ data }: { data: any }) {
           <div style={{ height: '3px', borderRadius: '2px', overflow: 'hidden', background: 'rgba(255,255,255,0.06)' }}>
             <div style={{
               height: '100%', width: `${lifeBarW}%`,
-              background: data.golden || focused
-                ? 'linear-gradient(90deg, #ffd700, #ffe87a)'
+              background: data.golden
+                ? 'linear-gradient(90deg, #d4a857, #e6cc91)'
                 : `linear-gradient(90deg, ${ls.fill}aa, ${ls.fill}66)`,
               borderRadius: '2px',
             }} />

@@ -230,6 +230,14 @@ async function assertFocusInteractions(page) {
   await waitForViewportStable(page);
   await page.locator('.react-flow__node[data-id="isaac"]').click();
   await page.getByRole('complementary', { name: 'Детали: Исаак' }).waitFor({ state: 'visible' });
+  const details = page.locator('[data-genealogy-details]');
+  const closeBox = await details.getByRole('button', { name: 'Закрыть панель' }).boundingBox();
+  assert.ok(closeBox && closeBox.width >= 44 && closeBox.height >= 44, 'Person close control is too small');
+  assert.equal(await details.getByRole('button', { name: 'Закрыть панель' }).evaluate(node => document.activeElement === node), true,
+    'Focus did not enter the person drawer');
+  assert.equal(await details.evaluate(node => node.scrollWidth <= node.clientWidth), true, 'Person drawer overflows horizontally');
+  await page.locator('[data-genealogy-app]').screenshot({ path: path.join(REPORT_DIR,
+    `${page.context().browser().browserType().name()}-${page.viewportSize().width}x${page.viewportSize().height}-details.png`), animations: 'disabled' });
   for (const id of ['abram', 'sarah']) {
     await page.waitForFunction(personId => {
       const node = document.querySelector(`.react-flow__node[data-id="${personId}"] .genealogy-node`);
@@ -298,8 +306,9 @@ async function assertFocusInteractions(page) {
   assert.equal(await filter.getAttribute('aria-pressed'), 'true', 'Space did not activate the filter');
   assert.equal(await page.locator('[data-genealogy-focus-count]').count(), 0, 'Excluded person left stale focus');
   assert.equal(await page.locator('[data-genealogy-details]').count(), 0, 'Excluded person left stale details');
-  await page.getByRole('button', { name: 'Все', exact: true }).click();
+  // Search must reveal a person even when the active filter excludes them.
   await page.getByRole('textbox', { name: 'Поиск по имени' }).fill('Исаак');
+  await page.waitForFunction(() => document.querySelector('.genealogy-filter-tools button[aria-pressed="true"]')?.textContent === 'Все');
   await waitForViewportStable(page);
   await isaacNode.focus();
   await isaacNode.press('Enter');
@@ -319,7 +328,7 @@ async function assertAtlasNavigation(page, viewport, screenshotPrefix) {
     appWidth: document.querySelector('[data-genealogy-app]').getBoundingClientRect().width,
   }));
   assert.ok(layout.documentWidth <= layout.width, `Page overflow: ${JSON.stringify(layout)}`);
-  for (const button of await app.locator('.genealogy-toolbar button, .react-flow__controls-button').all()) {
+  for (const button of await app.locator('.genealogy-toolbar button, .genealogy-navigation button').all()) {
     if (!await button.isVisible()) continue;
     const box = await button.boundingBox();
     assert.ok(box && box.width >= 44 && box.height >= 44, 'Atlas primary control smaller than 44px');
@@ -327,7 +336,17 @@ async function assertAtlasNavigation(page, viewport, screenshotPrefix) {
   const labels = await app.locator('.react-flow__node .genealogy-node').evaluateAll(cards => cards
     .filter(card => getComputedStyle(card).visibility !== 'hidden')
     .map(card => { const r = card.getBoundingClientRect(); return { width: r.width, height: r.height }; }));
-  assert.ok(labels.every(r => r.width >= 143 && r.height >= 43), 'Overview labels became microscopic');
+  assert.ok(labels.every(r => r.width >= 143.9 && r.height >= 43.9), 'Overview labels became microscopic');
+  const obstructed = await app.locator('.react-flow__node').evaluateAll(nodes => nodes.flatMap(node => {
+    const card = node.querySelector('.genealogy-node');
+    if (!card || getComputedStyle(card).visibility === 'hidden') return [];
+    const r = card.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+    if (x < 0 || x > innerWidth || y < 0 || y > innerHeight) return ['offscreen:' + node.getAttribute('data-id')];
+    const hit = document.elementFromPoint(x, y);
+    return hit?.closest('.react-flow__node') === node ? [] : [node.getAttribute('data-id')];
+  }));
+  assert.deepEqual(obstructed, [], 'Overview card is covered by controls or outside the screen');
+
   await app.screenshot({ path: path.join(REPORT_DIR, `${screenshotPrefix}-overview.png`), animations: 'disabled' });
   const mini = app.getByRole('button', { name: 'Мини-карта', exact: true });
   if (viewport.width < 640) {
@@ -357,6 +376,15 @@ async function assertAtlasNavigation(page, viewport, screenshotPrefix) {
   assert.ok((await measurePersonViewport(page)).visiblePersonCards > 0, 'Era navigation produced an empty viewport');
   await app.getByRole('button', { name: 'Обзор древа', exact: true }).click();
   await waitForViewportStable(page);
+  const tour = app.getByTitle('Тур', { exact: true });
+  if (viewport.width <= 430) await tour.tap(); else await tour.click();
+  await app.getByRole('group', { name: 'Путешествие по родословию' }).waitFor({ state: 'visible' });
+  await waitForViewportStable(page);
+  assert.ok((await measurePersonViewport(page)).visibleIds.includes('adam'), 'Tour did not reach its first person');
+  await app.getByRole('button', { name: 'Закрыть тур' }).click();
+  await app.getByRole('button', { name: 'Обзор древа', exact: true }).click();
+  await waitForViewportStable(page);
+
 }
 
 async function runViewport(browserName, browserType, baseUrl, viewport) {
@@ -410,7 +438,8 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     phase = 'final';
     assert.deepEqual(pageErrors, [], `${browserName} ${viewport.width}x${viewport.height}: uncaught page errors`);
 
-    return { browser: browserName, viewport, initial, afterFit, afterSearch, pageErrors };
+    return { browser: browserName, viewport, touch, mobileEmulation: touch && browserName !== 'firefox',
+      reducedMotion: process.env.GENEALOGY_REDUCED_MOTION === '1', initial, afterFit, afterSearch, pageErrors };
   } finally {
     await context.close();
     await browser.close();

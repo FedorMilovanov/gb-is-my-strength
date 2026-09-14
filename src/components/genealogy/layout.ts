@@ -41,7 +41,7 @@ export function buildLayout(persons: Person[], opts: LayoutOptions): LayoutResul
   const ids = new Set(filtered.map(p => p.id));
   const goldenPath = traceGoldenPath(persons);
 
-  // Layout the complete corpus once. Filters retain the same world positions.
+  // Layout the complete corpus before selecting a view. Filters retain the same world positions.
   // Years of birth are evidence shown in details, never a replacement for rank.
   const g = new dagre.graphlib.Graph();
   g.setDefaultEdgeLabel(() => ({}));
@@ -108,16 +108,16 @@ export function buildLayout(persons: Person[], opts: LayoutOptions): LayoutResul
         source: parentId,
         target: p.id,
         type: 'smoothstep',
-        animated: isGoldenEdge,
+        animated: false,
         style: {
-          stroke: isGoldenEdge ? '#ffd700' : ls.border,
+          stroke: isGoldenEdge ? '#d4a857' : ls.border,
           strokeWidth: isGoldenEdge ? 3.5 : p.lineage.startsWith('messianic') ? 2.2 : 1.4,
           opacity: isGoldenEdge ? 0.95 : isMaternal ? 0.28 : p.lineage.startsWith('messianic') ? 0.7 : 0.35,
           // Both parents are direct edges here; dashes are reserved for folded paths.
         },
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          color: isGoldenEdge ? '#ffd700' : ls.border,
+          color: isGoldenEdge ? '#d4a857' : ls.border,
           width: 14,
         },
       });

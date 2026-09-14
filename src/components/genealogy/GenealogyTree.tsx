@@ -1,10 +1,9 @@
 import { Component, useMemo, useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import type { ErrorInfo, ReactNode, KeyboardEvent as ReactKeyboardEvent } from 'react';
 import {
-  ReactFlow, Background, Controls, ControlButton, MiniMap, useNodesState,
+  ReactFlow, Background, MiniMap, useNodesState,
   type Node, type Edge, ConnectionLineType, type ReactFlowInstance, type Viewport,
 } from '@xyflow/react';
-import { MarkerType } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type { Person, Era, LineageFilter } from './types';
 import { getLineStyle, NODE_W, NODE_H } from './theme';
@@ -173,7 +172,8 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
   useEffect(() => {
     if (!searchMatch || !rfInstance.current) return;
     const n = laidNodes.find(n => n.id === searchMatch.id);
-    if (n) rfInstance.current.setCenter(n.position.x + NODE_W / 2, n.position.y + NODE_H / 2, { zoom: 1.2, duration: reducedMotion ? 0 : 350 });
+    if (!n) { setShowLineage('all'); setActiveId(null); setSelected(null); return; }
+    rfInstance.current.setCenter(n.position.x + NODE_W / 2, n.position.y + NODE_H / 2, { zoom: 1.2, duration: reducedMotion ? 0 : 350 });
   }, [searchMatch, laidNodes, reducedMotion]);
 
   const projection = useMemo(() => projectGenealogy(laidNodes, laidEdges, camera.zoom,
@@ -255,9 +255,8 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
         if (inFocus) {
           return {
             ...e,
-            animated: !e.data?.collapsed && !reducedMotion,
-            style: { ...e.style, stroke: '#ffd700', strokeWidth: Math.max(4, 2 / camera.zoom), opacity: 1 },
-            markerEnd: e.data?.collapsed ? undefined : { type: MarkerType.ArrowClosed, color: '#ffd700', width: 16 },
+            animated: false,
+            style: { ...e.style, strokeWidth: Math.max(Number(e.style?.strokeWidth ?? 1.5), 2.2 / camera.zoom), opacity: 1 },
           };
         }
         return {
@@ -366,9 +365,15 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
 
   const tourActive = tourIndex >= 0;
   const tourPerson = tourActive ? persons.find(p => p.id === goldenArray[tourIndex]) : null;
-  const startTour = useCallback(() => { setTourIndex(0); if (goldenArray[0]) focusPerson(goldenArray[0], 1.0); }, [goldenArray, focusPerson]);
-  const tourNext = useCallback(() => setTourIndex(i => { const n = Math.min(i + 1, goldenArray.length - 1); if (goldenArray[n]) focusPerson(goldenArray[n], 1.0); return n; }), [goldenArray, focusPerson]);
-  const tourPrev = useCallback(() => setTourIndex(i => { const n = Math.max(i - 1, 0); if (goldenArray[n]) focusPerson(goldenArray[n], 1.0); return n; }), [goldenArray, focusPerson]);
+  const startTour = useCallback(() => {
+    setShowLineage('all'); setSearch(''); setSelected(null); setTourIndex(0);
+    if (goldenArray[0]) focusPerson(goldenArray[0], 1, 0);
+  }, [goldenArray, focusPerson]);
+  const tourNext = useCallback(() => setTourIndex(i => Math.min(i + 1, goldenArray.length - 1)), [goldenArray.length]);
+  const tourPrev = useCallback(() => setTourIndex(i => Math.max(i - 1, 0)), []);
+  useEffect(() => {
+    if (tourIndex >= 0 && goldenArray[tourIndex]) focusPerson(goldenArray[tourIndex], 1, 0);
+  }, [tourIndex, goldenArray, focusPerson]);
 
   const visibleCount = visibleNodeIds.size;
   const visibleFocusCount = focusLineageIds ? laidNodes.filter(n => focusLineageIds.has(n.id) && visibleNodeIds.has(n.id)).length : 0;
@@ -384,19 +389,17 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
     const members = laidNodes.filter(n => n.data.era === eraId);
     if (!members.length || !rfInstance.current) return;
     setSearch(''); setSelected(null); setActiveId(null); setTourIndex(-1);
-    const viewport = fitGenealogyView(members, canvasSize.width, canvasSize.height, 0.65);
-    // Keep an era representative visible even if this view uses the overview scale.
-    setActiveId(members[0].id);
-    setCamera(viewport);
-    void rfInstance.current.setViewport(viewport, { duration: 0 });
+    const first = [...members].sort((a, b) => a.position.y - b.position.y)[0];
+    focusPerson(first.id, 1, 0);
   };
 
   return (
     <div ref={treeRoot} className="genealogy-app" data-genealogy-app data-genealogy-level={detailLevel} data-minimap-open={showMiniMap}
       data-genealogy-active-person={activeId ?? undefined} onKeyDownCapture={handleGraphKeyDown}>
       <div className="genealogy-toolbar" role="toolbar" aria-label="Управление древом">
+        <div className="genealogy-heading"><h2>Библейские родословия</h2></div>
         <div className="genealogy-primary-tools">
-          <input type="text" placeholder="Найти человека…" value={search} onChange={e => setSearch(e.target.value)}
+          <input type="text" placeholder="Найти человека…" value={search} onChange={e => { setSearch(e.target.value); setActiveId(null); setSelected(null); }}
             aria-label="Поиск по имени" />
           <button type="button" onClick={() => setShowSplit(true)} title="Сравнить Мф/Лк">Мф / Лк</button>
           <button type="button" onClick={startTour} title="Тур">Пройти нить</button>
@@ -406,10 +409,7 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
             aria-pressed={showLineage === l.id}>{l.label}</button>)}
           <button type="button" onClick={() => setShowGolden(g => !g)} aria-pressed={showGolden}
             title="Золотая мессианская нить">✦ Нить</button>
-          {eras && <select aria-label="Перейти к эпохе" value="" onChange={e => focusEra(e.target.value)}>
-            <option value="" disabled>К эпохе…</option>
-            {eras.map(era => <option key={era.id} value={era.id}>{era.name}</option>)}
-          </select>}
+
         </div>
       </div>
       <div ref={canvasRoot} className="genealogy-canvas">
@@ -429,16 +429,28 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
           connectionLineType={ConnectionLineType.SmoothStep} proOptions={{ hideAttribution: true }}
         >
           <Background color="rgba(190,165,117,0.12)" gap={36} size={1} />
-          <Controls showFitView={false} showInteractive={false}>
-            <ControlButton className="react-flow__controls-fitview" onClick={resetView} title="Обзор древа" aria-label="Обзор древа">⌖</ControlButton>
-            <ControlButton className="genealogy-minimap-toggle" onClick={() => setShowMiniMap(v => !v)} title="Мини-карта" aria-label="Мини-карта" aria-expanded={showMiniMap}>⊞</ControlButton>
-          </Controls>
           <MiniMap nodeColor={(n: Node) => getLineStyle((n.data as Record<string, string>)?.lineage ?? 'neutral').fill}
             nodeStrokeWidth={3} maskColor="rgba(12,12,14,0.6)" pannable zoomable style={{ width: 144, height: 96 }} ariaLabel="Мини-карта родословий" />
         </ReactFlow>
         {!hasCardsInView && canvasSize.width > 0 && <div className="genealogy-empty-view" role="status">
           <p>Карточки остались за пределами экрана</p><button type="button" onClick={resetView}>Вернуться к обзору</button>
         </div>}
+      </div>
+      <div className="genealogy-navigation" role="group" aria-label="Навигация по карте">
+        <div>
+          <button type="button" data-genealogy-zoom-in className="react-flow__controls-zoomin" aria-label="Приблизить"
+            disabled={camera.zoom >= MAX_ZOOM} onClick={() => void rfInstance.current?.zoomIn({ duration: 0 })}>+</button>
+          <button type="button" aria-label="Отдалить" disabled={camera.zoom <= MIN_ZOOM}
+            onClick={() => void rfInstance.current?.zoomOut({ duration: 0 })}>−</button>
+          <button type="button" data-genealogy-overview className="react-flow__controls-fitview" onClick={resetView}
+            aria-label="Обзор древа" title="Обзор древа">⌖</button>
+          <button type="button" className="genealogy-minimap-toggle" onClick={() => setShowMiniMap(v => !v)}
+            title="Мини-карта" aria-label="Мини-карта" aria-expanded={showMiniMap}>⊞</button>
+        </div>
+          {eras && <select aria-label="Перейти к эпохе" value="" onChange={e => focusEra(e.target.value)}>
+            <option value="" disabled>К эпохе…</option>
+            {eras.map(era => <option key={era.id} value={era.id}>{era.name}</option>)}
+          </select>}
       </div>
       <div className="genealogy-status">
         <div><strong>{detailLabel}</strong><span>Показано {visibleCount} из {laidNodes.length}</span></div>
