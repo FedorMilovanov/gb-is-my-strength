@@ -399,8 +399,28 @@ async function runAll() {
       annotations: [
         {
           from: 'joseph--mat-1-16', to: 'jesus--isa-7-14', kind: 'parent',
-          set: { legal: true },
-          note: 'Иосиф — обручник: юридическая (не кровная) линия Мф 1; кровная — через Марию (Лк 3). См. GENEALOGY-DEEP-ANALYSIS §5.',
+          set: {
+            legal: true,
+            biology: 'legal',
+            assertion: 'explicit-textual',
+            confidence: 'certain',
+            directScripture: true,
+            editorialPosition: 'text',
+            refs: ['Мф 1:16', 'Лк 3:23'],
+          },
+          note: 'Иосиф назван мужем Марии и считается отцом Иисуса по закону/общественному восприятию; биологическое отцовство ему не приписывается.',
+        },
+        {
+          from: 'heli--luk-3-23', to: 'mary--mat-1-16', kind: 'parent',
+          set: {
+            biology: 'unknown',
+            assertion: 'editorial-harmonization',
+            confidence: 'disputed',
+            directScripture: false,
+            editorialPosition: 'preferred',
+            refs: ['Лк 3:23', 'Мф 1:16'],
+          },
+          note: 'Илий как отец Марии — предпочитаемая гармонизация проекта. Лк 3:23 прямо этого не утверждает.',
         },
       ],
     };
@@ -489,7 +509,7 @@ async function runAll() {
       { ru: byKeyL2.get('Solomon@2Sa.5.14')?.ru?.name ?? 'Соломон', refRu: '2Цар 5:14',
         line: 'matthew', lineRu: 'Матфей · царская линия', icon: 'temple' },
       { ru: byKeyL2.get('Nathan@2Sa.5.14')?.ru?.name ?? 'Нафан', refRu: '2Цар 5:14',
-        line: 'luke', lineRu: 'Лука · кровная линия', icon: 'scroll' },
+        line: 'luke', lineRu: 'Лука · ветвь через Нафана', icon: 'scroll' },
     ],
     // Источник-JSON Синодального опускает Руф 4:17 (в главе 21 стих вместо 22),
     // хвост сдвинут на −1 от канонической нумерации. Ищем стих с Давидом в широком
@@ -560,6 +580,7 @@ async function runAll() {
   }, null, 1) + '\n');
   await writeFile(path.join(PATHS.outDir, 'spine.json'), JSON.stringify({
     _status: 'phase1-draft: золотой мессианский хребет (Христос→Адам), L0-persistent якоря',
+    model: spine.model,
     reachedRoot: spine.reachedRoot,
     length: spine.length,
     missingAnchors: spine.missingAnchors,
