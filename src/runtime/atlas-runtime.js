@@ -248,14 +248,21 @@
         observer.observe(element);
       }
       if (typeof window.requestAnimationFrame === 'function') {
-        var remainingObservedLayoutFrames = 2;
+        // ResizeObserver is an early signal, not the owner of fallback progress.
+        // Keep a short bounded RAF window even when an observer exists: during
+        // the 980→981 drawer-to-sidebar transition geometry can become focusable
+        // only after more than one paint, and a silent/missed observer callback
+        // must not strand focus on a control that just became hidden.
+        var remainingLayoutFrames = 8;
         var retryAfterLayout = function () {
           frame = 0;
           attempt();
           if (settled) return;
-          if (!observer || remainingObservedLayoutFrames > 1) {
-            if (observer) remainingObservedLayoutFrames -= 1;
+          remainingLayoutFrames -= 1;
+          if (remainingLayoutFrames > 0) {
             frame = window.requestAnimationFrame(retryAfterLayout);
+          } else {
+            cleanup();
           }
         };
         frame = window.requestAnimationFrame(retryAfterLayout);
