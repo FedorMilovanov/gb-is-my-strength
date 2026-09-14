@@ -146,7 +146,7 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
   if (count(workflow, /npm run strangler:build:production-like/g) !== 1) p.push('release production build count drift');
   if (count(workflow, /actions\/checkout@/g) !== 1) p.push('release checkout count drift');
   if (count(workflow, /actions\/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c/g) !== 1) p.push('download-artifact pin/count drift');
-  if (count(workflow, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/g) !== 5) p.push('upload-artifact pin/count drift');
+  if (count(workflow, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/g) !== 6) p.push('upload-artifact pin/count drift');
   for (const pin of Object.values(PINS)) if (!workflow.includes(pin)) p.push(`release action pin drift: ${pin.split('@')[0]}`);
   if (/uses:\s*actions\/(?:checkout|setup-node|upload-artifact|download-artifact|upload-pages-artifact|deploy-pages)@v\d+/i.test(workflow)) p.push('mutable release action tag');
 
