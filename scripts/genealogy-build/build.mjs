@@ -880,6 +880,18 @@ async function runTests() {
   assert(externalParsed.persons.get('Ashhur@1Ch.2.24').offspring[0].resolvedEntity === 'place',
     'Ashhur→Tekoa классифицирован как place relation');
 
+  const founderOnlyMini = [
+    '$==========PERSON(s)',
+    'UnifiedName=uStrong\tDescription\tParents\tSiblings\tPartners\tOffspring\tTribe\t#Summary\tType',
+    'Salma@1Ch.2.51═H8007\tfounder\t–\t–\t–\tBethlehem@Gen.35.16-Jhn(f)\t–\t#…\tMale',
+  ].join('\n');
+  const founderParsed = parseTipnr(founderOnlyMini);
+  const founderStats = resolveRelations(founderParsed.persons);
+  assert(founderStats.unresolvedRefs.length === 0,
+    '(f) founder target вне person corpus не считается dangling family ref');
+  assert(founderParsed.persons.get('Salma@1Ch.2.51').offspring[0].resolvedEntity === 'founder-external',
+    'unparsed (f) target сохраняется как typed founder-external relation');
+
   log('tests done');
 }
 
