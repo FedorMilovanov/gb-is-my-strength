@@ -8,6 +8,10 @@ import { OSIS_RU, parseRef } from './refs.mjs';
 import { similarity, translitEnRu } from './ru-extract.mjs';
 
 const RU_BOOK_TO_OSIS = Object.fromEntries(Object.entries(OSIS_RU).map(([osis, ru]) => [ru, osis]));
+Object.assign(RU_BOOK_TO_OSIS, {
+  'Руфь': 'Rut',
+  'Числ': 'Num',
+});
 
 export const V1_EXCEPTIONS = Object.freeze({
   abram: 'Abraham@Gen.11.26',
@@ -16,6 +20,11 @@ export const V1_EXCEPTIONS = Object.freeze({
   jacob_mt: 'Jacob@Mat.1.15',
   arphaxad: 'Arpachshad@Gen.10.22',
   jeconiah: 'Jehoiachin@2Ki.24.6',
+  phinehas: 'Phinehas@Exo.6.25',
+  amminadab: 'Amminadab@Exo.6.23',
+  abijah: 'Abijah@1Ki.14.31',
+  jehoshaphat: 'Jehoshaphat@1Ki.15.24',
+  josiah: 'Josiah@1Ki.13.2',
   shelah: 'Shelah@Gen.10.24',
   mizraim: 'Egypt@Gen.10.6',
   joseph_nt: 'Joseph@Mat.1.16',
@@ -112,6 +121,13 @@ function disambiguate(person, initialCandidates) {
 
   const scope = v1PrimaryRefScope(person);
   if (scope) {
+    const sameVerse = scope.chapter == null || scope.verse == null ? [] : candidates.filter(candidate => {
+      const ref = parseRef(candidate.ref);
+      return ref?.osis === scope.osis && ref.chapter === scope.chapter && ref.verse === scope.verse;
+    });
+    if (sameVerse.length === 1) return { rec: sameVerse[0], method: 'source-verse' };
+    if (sameVerse.length > 1) candidates = sameVerse;
+
     const sameChapter = scope.chapter == null ? [] : candidates.filter(candidate => {
       const ref = parseRef(candidate.ref);
       return ref?.osis === scope.osis && ref.chapter === scope.chapter;
