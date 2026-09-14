@@ -5,7 +5,11 @@ import { existsSync, readFileSync } from 'node:fs';
 
 const paths = {
   authority: 'karty/ishod/pihahiroth-authority.json',
-  historicalRoute: 'karty/ishod/route.json',
+  // The historical route is a byte-frozen forensic artifact. It used to point at
+  // the live route file, which turned every legitimate map edit (a mobile frame,
+  // a copy fix) into a red release gate; the frozen copy keeps the pin honest
+  // while the live route keeps evolving.
+  historicalRoute: 'research/PIHAHIROTH_HISTORICAL_ROUTE_2026-08-02.json',
   adapter: 'src/components/karty/ishod/IshodMap.astro',
 };
 const errors = [];
