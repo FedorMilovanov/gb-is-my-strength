@@ -126,7 +126,9 @@ async function runAll() {
   const synodal = new SynodalText(JSON.parse(synRaw.replace(/^﻿/, '')));
 
   // 3. v1-скелет
-  const v1 = JSON.parse(await readFile(PATHS.v1Skeleton, 'utf8'));
+  const v1Raw = await readFile(PATHS.v1Skeleton, 'utf8');
+  const v1SkeletonSha256 = createHash('sha256').update(v1Raw).digest('hex');
+  const v1 = JSON.parse(v1Raw);
   const { matches: v1Matches, decisions: v1Decisions, unmatched: v1Unmatched, soft: v1Soft, collisions: v1Collisions } = matchSkeleton(v1.persons, persons);
   if (v1Collisions.length) log(`skeleton COLLISIONS (два v1-id → один ключ): ${v1Collisions.map(c => `${c.key}=[${c.ids.join(',')}]`).join('; ')}`);
   const v1ByTipnrKey = new Map();
@@ -399,6 +401,13 @@ async function runAll() {
     generatedAt: new Date().toISOString(),
     counts: report.counts,
     sources: Object.fromEntries(Object.entries(SOURCES).map(([k, s]) => [k, { url: s.url, sha256: s.sha256, license: s.license }])),
+    inputs: {
+      v1Skeleton: {
+        path: 'data/genealogy/genealogy.json',
+        sha256: v1SkeletonSha256,
+        persons: v1.persons.length,
+      },
+    },
     attribution: [SOURCES.tipnr.attribution, SOURCES.synodal.attribution,
       'Хронология (MT AM), спорные узлы, значимость: редакция проекта (v1-скелет)'],
     license: 'Derived dataset: CC BY 4.0 (attribution: STEPBible.org / Tyndale House Cambridge)',
