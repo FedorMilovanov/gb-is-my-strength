@@ -189,7 +189,8 @@
                 "properties": { "basis": { "const": "legacy-production" } },
                 "required": ["basis"]
               }
-            }
+            },
+            "required": ["hub_approval"]
           }
         }
       },
