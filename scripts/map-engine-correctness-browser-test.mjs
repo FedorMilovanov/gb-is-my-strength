@@ -96,6 +96,17 @@ async function openReadyPage(context, base) {
   await page.waitForSelector('#stage[data-map-state="ready"]', { timeout: 20000 });
   check('Avraam route returns HTTP 200', response?.status() === 200, String(response?.status()));
   check('Avraam route reaches ready MapEngine state', true);
+  const bootstrapApi = await page.evaluate(() => ({
+    mountRoute: typeof window.MapEngine?.mountRoute,
+    bootRoute: typeof window.MapEngine?.bootRoute,
+    loadJsonResource: typeof window.MapEngine?.loadJsonResource,
+    readArchaeologyProjection: typeof window.MapEngine?.readArchaeologyProjection,
+  }));
+  check(
+    'MapEngine exports one shared route bootstrap lifecycle',
+    Object.values(bootstrapApi).every((value) => value === 'function'),
+    JSON.stringify(bootstrapApi),
+  );
   return { page, pageErrors };
 }
 
@@ -313,6 +324,47 @@ try {
     });
     check('Search cannot promote Ur outside the active Lot story', searchFacts.story === 'lot' && searchFacts.opacity === '0', JSON.stringify(searchFacts));
     check('Search/live-region scenario has no page errors', pageErrors.length === 0, pageErrors.join(' | '));
+    await context.close();
+  }
+
+
+  // Shared bootstrap must own fail-visible behavior when route data is unavailable.
+  {
+    const context = await createContext(browser, base);
+    await context.route('**/karty/avraam/route.json', async (requestRoute) => {
+      await requestRoute.fulfill({
+        status: 503,
+        contentType: 'application/json; charset=utf-8',
+        body: JSON.stringify({ error: 'intentional bootstrap failure' }),
+      });
+    });
+    const page = await context.newPage();
+    const pageErrors = [];
+    page.on('pageerror', (error) => pageErrors.push(String(error)));
+    const response = await page.goto(base + ROUTE_PATH, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForSelector('#stage[data-map-state="error"] .me-error', { timeout: 15000 });
+    const failureFacts = await page.evaluate(() => {
+      const stage = document.querySelector('#stage');
+      const card = stage?.querySelector('.me-error');
+      return {
+        state: stage?.getAttribute('data-map-state') || '',
+        busy: stage?.getAttribute('aria-busy'),
+        cardVisible: Boolean(card && card.getClientRects().length),
+        heading: card?.querySelector('h2')?.textContent || '',
+        retry: Boolean(card?.querySelector('.me-error__retry')),
+      };
+    });
+    check('Bootstrap failure fixture still returns the page shell', response?.status() === 200, String(response?.status()));
+    check(
+      'Shared route bootstrap renders one fail-visible recovery surface',
+      failureFacts.state === 'error'
+        && failureFacts.busy === 'false'
+        && failureFacts.cardVisible
+        && failureFacts.heading.includes('Авраама')
+        && failureFacts.retry,
+      JSON.stringify(failureFacts),
+    );
+    check('Bootstrap failure path has no uncaught page errors', pageErrors.length === 0, pageErrors.join(' | '));
     await context.close();
   }
 
