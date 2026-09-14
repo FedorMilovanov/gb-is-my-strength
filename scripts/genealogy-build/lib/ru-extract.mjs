@@ -167,8 +167,16 @@ export function extractRuName(enName, verses) {
     for (const c of pats) scored.push({ c, bonus: 0.25, via: 'pattern' });
     for (const c of caps) scored.push({ c, bonus: 0, via: 'candidate' });
     for (const { c, bonus, via } of scored) {
-      const score = similarity(approx, c) + bonus - Math.abs(v.offset) * 0.03;
-      if (!best || score > best.score) best = { score, c, via, verseRef: v.ref };
+      const lexicalSimilarity = similarity(approx, c);
+      // A syntactic name-pattern is evidence that the token is *an* name, not
+      // that it is the current TIPNR person. Never let the pattern bonus rescue
+      // a poor lexical match from a neighbouring person in the verse window.
+      const minLexicalSimilarity = via === 'pattern' ? 0.68 : 0.62;
+      if (lexicalSimilarity < minLexicalSimilarity) continue;
+      const score = lexicalSimilarity + bonus - Math.abs(v.offset) * 0.03;
+      if (!best || score > best.score) {
+        best = { score, lexicalSimilarity, c, via, verseRef: v.ref };
+      }
     }
   }
 
@@ -177,8 +185,9 @@ export function extractRuName(enName, verses) {
     return {
       name: normalized,
       source: best.via,
-      confidence: Number(best.score.toFixed(3)),
-      review: best.score < 0.8 || normalized !== best.c,
+      confidence: Number(Math.min(1, best.score).toFixed(3)),
+      // Similarity is machine confidence, never an editorial approval.
+      review: true,
       verseForm: normalized !== best.c ? best.c : undefined,
       verseRef: best.verseRef,
     };
