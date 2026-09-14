@@ -337,6 +337,8 @@
       "type": "arch"
     }
   ],
+  "archetype": "overview",
+  "capabilities": ["stages"],
   "publication": {
     "status": "draft",
     "indexable": false,
