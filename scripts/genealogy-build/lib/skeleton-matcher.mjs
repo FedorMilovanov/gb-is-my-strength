@@ -156,8 +156,20 @@ export function matchSkeleton(v1Persons, tipnrPersons) {
 
     if (V1_EXCEPTIONS[person.id]) {
       const target = V1_EXCEPTIONS[person.id];
-      if (!tipnrPersons.has(target)) {
+      const explicit = tipnrPersons.get(target);
+      if (!explicit) {
         unmatched.push({ id: person.id, ru: person.name?.ru, ref: person.ref ?? null, candidates: 'explicit-target-missing', target });
+        continue;
+      }
+      if (!genderCompatible(person, explicit)) {
+        unmatched.push({
+          id: person.id,
+          ru: person.name?.ru,
+          ref: person.ref ?? null,
+          candidates: 'explicit-gender-mismatch',
+          target,
+          targetType: explicit.type ?? null,
+        });
         continue;
       }
       matches.set(person.id, target);
