@@ -70,7 +70,31 @@ data/genealogy/v2/
 
 ## Статус Phase 1
 
-Exit-критерии (Foundation-док §4.1): 0 orphans/циклов; ключевые персоны (v1-156 +
-золотой хребет) — ru-имена руками/сидами; ≥98% персон с ru-именем (авто+редактура);
-счётчики кластеров сверены. До достижения — датасет `v2` считается ЧЕРНОВИКОМ
-(в рантайм сайта не подключается, /rodosloviye/ живёт на v1).
+Структурный `build.mjs validate` **не является разрешением на публикацию**. Он отвечает
+только за машинные инварианты графа (циклы, duplicate IDs, dangling edge refs).
+
+Publication readiness проверяется отдельно:
+
+```bash
+node scripts/genealogy-v2-publication-audit.mjs
+node scripts/genealogy-v2-publication-audit.mjs --strict-publish
+```
+
+До подключения v2 в runtime должны одновременно выполняться:
+
+1. structural validate = PASS;
+2. 0 seed↔TIPNR gender mismatches;
+3. 0 неутверждённых fuzzy v1→TIPNR mappings;
+4. 0 unresolved relations, влияющих на публикуемые curated views;
+5. canonical RU display names для публикуемого корпуса не находятся в review queue;
+6. Matthew 1, Luke 3 и Table of Nations имеют explicit curated membership/sequence,
+   а не generic `ancestorsVia` / `refRange` traversal;
+7. `meta.status` осознанно переведён из `phase1-draft` после редакционной сертификации;
+8. runtime guard не находит импорта `data/genealogy/v2` до выполнения пунктов выше.
+
+Fuzzy matching — только вспомогательный кандидатный механизм. Он учитывает gender,
+source book/chapter и minimum score margin; неоднозначность остаётся `unmatched`, а не
+автоматически превращается в факт.
+
+До достижения publication exit-критериев датасет `v2` считается **ЧЕРНОВИКОМ**
+и `/rodosloviye/` остаётся на canonical v1.
