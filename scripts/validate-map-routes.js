@@ -97,10 +97,53 @@ function validateSignature(route, label, placeIds) {
     if (sig.divide !== undefined && typeof sig.divide !== 'string') bad(`${label}: signature.divide must be SVG path string when present`);
   }
 }
+const ALLOWED_PUBLICATION_STATUSES = new Set(['ready','temporary-placeholder','draft']);
+const ALLOWED_HUB_STATES = new Set(['featured','listed','withheld']);
+function validatePublication(route, label) {
+  const publication = route.publication;
+  if (!publication || typeof publication !== 'object' || Array.isArray(publication)) {
+    bad(`${label}: publication missing/invalid`);
+    return;
+  }
+  if (!ALLOWED_PUBLICATION_STATUSES.has(publication.status)) {
+    bad(`${label}: publication.status ${publication.status} is not allowed`);
+  }
+  if (!ALLOWED_HUB_STATES.has(publication.hub)) {
+    bad(`${label}: publication.hub ${publication.hub} is not allowed`);
+  }
+  for (const key of ['indexable','sitemap','llms','pagefind']) {
+    if (typeof publication[key] !== 'boolean') bad(`${label}: publication.${key} must be boolean`);
+  }
+
+  if (publication.status === 'ready') {
+    for (const key of ['indexable','sitemap','pagefind']) {
+      if (publication[key] !== true) bad(`${label}: ready route requires publication.${key}=true`);
+    }
+  } else if (publication.status === 'temporary-placeholder' || publication.status === 'draft') {
+    for (const key of ['indexable','sitemap','llms','pagefind']) {
+      if (publication[key] !== false) bad(`${label}: ${publication.status} requires publication.${key}=false`);
+    }
+    if (publication.hub !== 'withheld') bad(`${label}: ${publication.status} route must be withheld from hub`);
+  }
+
+  if (publication.hub === 'featured' || publication.hub === 'listed') {
+    if (publication.status !== 'ready') bad(`${label}: hub-visible route must have publication.status=ready`);
+    if (!Number.isInteger(publication.hub_order) || publication.hub_order < 0) bad(`${label}: hub-visible route requires non-negative integer publication.hub_order`);
+    if (typeof publication.hub_summary !== 'string' || publication.hub_summary.trim().length < 20) bad(`${label}: hub-visible route requires publication.hub_summary`);
+    if (typeof publication.hub_image !== 'string' || !/^\/images\/[^?#]+\.(?:avif|webp|png|jpe?g)$/i.test(publication.hub_image)) {
+      bad(`${label}: hub-visible route requires publication.hub_image under /images/`);
+    } else {
+      const imageFile = path.join(ROOT, publication.hub_image.replace(/^\//, ''));
+      if (!fs.existsSync(imageFile)) bad(`${label}: publication.hub_image missing: ${publication.hub_image}`);
+    }
+  }
+}
+
 function validateRoute(file) {
   const route = readJson(file);
   if (!route) return;
   const label = rel(file);
+  validatePublication(route, label);
   if (!route.meta || typeof route.meta !== 'object') bad(`${label}: missing meta`);
   if (!route.meta?.id || !/^[a-z0-9-]+$/.test(route.meta.id)) bad(`${label}: meta.id invalid`);
   if (!route.meta?.title) bad(`${label}: meta.title missing`);
