@@ -39,8 +39,22 @@ const genderMismatches = skeletonMappings.flatMap(person => {
   }];
 });
 
-const fuzzyMappings = [...validationText.matchAll(/^-\s+([^\n]+?)\s+←\s+fuzzy:([^\n]+)$/gmu)]
-  .map(match => ({ v1Id: match[1].trim(), target: match[2].trim() }));
+const heuristicSection = (validationText.split('## v1-скелет: эвристические сопоставления')[1] ?? '')
+  .split('\n> Статус')[0];
+const heuristicMappings = heuristicSection.split('\n')
+  .filter(line => line.startsWith('- ') && line.includes('←'))
+  .map(line => {
+    const match = /^-\s+(.+?)\s+←\s+(.+)$/u.exec(line);
+    if (!match) return null;
+    const evidence = match[2].trim();
+    return {
+      v1Id: match[1].trim(),
+      evidence,
+      kind: evidence.startsWith('fuzzy:') ? 'fuzzy' : evidence.startsWith('disamb:') ? 'disambiguation' : 'other',
+    };
+  })
+  .filter(Boolean);
+const fuzzyMappings = heuristicMappings.filter(mapping => mapping.kind === 'fuzzy');
 const unresolvedMatch = /нерезолв:\s*(\d+)/u.exec(validationText);
 const unresolvedRefs = unresolvedMatch ? Number(unresolvedMatch[1]) : null;
 const reviewQueue = persons.filter(person => person.ru?.review === true).length;
@@ -173,6 +187,7 @@ if (/phase1-draft|НЕ подключать в рантайм/u.test(meta.status
   blockers.push({ code: 'DATASET_STATUS_MISSING', detail: null });
 }
 if (genderMismatches.length) blockers.push({ code: 'SKELETON_GENDER_MISMATCH', count: genderMismatches.length });
+if (heuristicMappings.length) blockers.push({ code: 'UNAPPROVED_HEURISTIC_MAPPING', count: heuristicMappings.length });
 if (fuzzyMappings.length) blockers.push({ code: 'UNAPPROVED_FUZZY_MAPPING', count: fuzzyMappings.length });
 if (unresolvedRefs === null || unresolvedRefs > 0) blockers.push({ code: 'UNRESOLVED_RELATIONS', count: unresolvedRefs });
 if (reviewQueue > 0) blockers.push({ code: 'RU_REVIEW_QUEUE', count: reviewQueue });
@@ -199,6 +214,7 @@ const report = {
   blockers,
   evidence: {
     genderMismatches,
+    heuristicMappings,
     fuzzyMappings,
     genericCuratedViews,
     nationsViewIssues,
@@ -223,6 +239,7 @@ const md = [
   `- Pipeline: ${meta.pipelineVersion ?? 'missing'} (expected ${PIPELINE_VERSION})`,
   `- RU review queue: ${reviewQueue}`,
   `- Unresolved relations: ${unresolvedRefs ?? 'unknown'}`,
+  `- Heuristic skeleton mappings: ${heuristicMappings.length}`,
   `- Fuzzy skeleton mappings: ${fuzzyMappings.length}`,
   `- Seed↔TIPNR gender mismatches: ${genderMismatches.length}`,
   `- Generic rules in curated views: ${genericCuratedViews.length}`,
