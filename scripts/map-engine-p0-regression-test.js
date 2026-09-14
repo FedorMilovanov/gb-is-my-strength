@@ -197,10 +197,12 @@ check(
 );
 
 check(
-  'Ishod page no longer monkey-patches MapEngine.createMap',
-  !/engine\.createMap\s*=/.test(ishodPageSource) &&
+  'Route code never monkey-patches shared MapEngine methods',
+  !/(?:window\.)?MapEngine\.[A-Za-z_$][\w$]*\s*=/.test(avraamMapSource) &&
+    !/(?:window\.)?MapEngine\.[A-Za-z_$][\w$]*\s*=/.test(ishodMapSource) &&
+    !/engine\.createMap\s*=/.test(ishodPageSource) &&
     !/var createMap\s*=\s*engine\.createMap/.test(ishodPageSource),
-  'Route pages must not monkey-patch shared engine methods to inject options.'
+  'Route pages/components must pass config/hooks through the shared bootstrap, never mutate the shared engine API.'
 );
 
 
