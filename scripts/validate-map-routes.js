@@ -97,6 +97,44 @@ function validateSignature(route, label, placeIds) {
     if (sig.divide !== undefined && typeof sig.divide !== 'string') bad(`${label}: signature.divide must be SVG path string when present`);
   }
 }
+const ALLOWED_ARCHETYPES = new Set(['route','political','thematic','territorial','overview']);
+const ALLOWED_CAPABILITIES = new Set(['stages','stories','layers','timeline','signature','interpretations','uncertainty']);
+const BASE_LIVE_CAPABILITIES = ['stages','stories','layers','timeline','interpretations'];
+
+function validateMapContract(route, label, file) {
+  if (!ALLOWED_ARCHETYPES.has(route.archetype)) {
+    bad(`${label}: archetype ${route.archetype} is not allowed`);
+  }
+  if (!Array.isArray(route.capabilities) || !route.capabilities.length) {
+    bad(`${label}: capabilities[] missing/empty`);
+    return;
+  }
+  const seen = new Set();
+  for (const capability of route.capabilities) {
+    if (!ALLOWED_CAPABILITIES.has(capability)) bad(`${label}: unknown capability ${capability}`);
+    if (seen.has(capability)) bad(`${label}: duplicate capability ${capability}`);
+    seen.add(capability);
+  }
+  for (const capability of BASE_LIVE_CAPABILITIES) {
+    if (!seen.has(capability)) bad(`${label}: live route missing base capability ${capability}`);
+  }
+  if (seen.has('layers') !== Array.isArray(route.layers)) {
+    bad(`${label}: layers capability must match route.layers presence`);
+  }
+  const hasSignature = Boolean(route.signature && typeof route.signature === 'object');
+  if (seen.has('signature') !== hasSignature) {
+    bad(`${label}: signature capability must match route.signature presence`);
+  }
+  const hasInterpretations = Boolean(route.scientific_variants && typeof route.scientific_variants === 'object');
+  if (seen.has('interpretations') !== hasInterpretations) {
+    bad(`${label}: interpretations capability must match scientific_variants presence`);
+  }
+  if (seen.has('uncertainty')) {
+    const authorityFile = path.join(path.dirname(file), 'pihahiroth-authority.json');
+    if (!fs.existsSync(authorityFile)) bad(`${label}: uncertainty capability requires route authority data`);
+  }
+}
+
 const ALLOWED_PUBLICATION_STATUSES = new Set(['ready','temporary-placeholder','draft']);
 const ALLOWED_HUB_STATES = new Set(['featured','listed','withheld']);
 function validatePublication(route, label) {
@@ -143,6 +181,7 @@ function validateRoute(file) {
   const route = readJson(file);
   if (!route) return;
   const label = rel(file);
+  validateMapContract(route, label, file);
   validatePublication(route, label);
   if (!route.meta || typeof route.meta !== 'object') bad(`${label}: missing meta`);
   if (!route.meta?.id || !/^[a-z0-9-]+$/.test(route.meta.id)) bad(`${label}: meta.id invalid`);
