@@ -12,6 +12,7 @@ const ishodMapSource = fs.readFileSync(path.join(root, 'src/components/karty/ish
 const ishodPageSource = fs.readFileSync(path.join(root, 'src/pages/karty/ishod/index.astro'), 'utf8');
 const avraamPageSource = fs.readFileSync(path.join(root, 'src/pages/karty/avraam/index.astro'), 'utf8');
 const mapSearchRailSource = fs.readFileSync(path.join(root, 'src/components/karty/_shared/MapSearchRail.astro'), 'utf8');
+const mapPageShellSource = fs.readFileSync(path.join(root, 'src/components/karty/_shared/MapPageShell.astro'), 'utf8');
 let failures = 0;
 
 function check(name, condition, detail) {
@@ -204,15 +205,19 @@ check(
 
 
 check(
-  'Map pages share one search/application rail',
+  'Map pages share one document shell and one search/application rail',
   /AppSearchSurface/.test(mapSearchRailSource) &&
-    /<MapSearchRail\s*\/>/.test(avraamPageSource) &&
-    /<MapSearchRail\s*\/>/.test(ishodPageSource) &&
+    /<MapSearchRail\s*\/>/.test(mapPageShellSource) &&
+    /class="has-app-search-map"/.test(mapPageShellSource) &&
+    /<MapPageShell>/.test(avraamPageSource) &&
+    /<MapPageShell>/.test(ishodPageSource) &&
     !/AppSearchSurface/.test(avraamPageSource) &&
     !/AppSearchSurface/.test(ishodPageSource) &&
     !/<nav[^>]+map-search-rail/.test(avraamPageSource) &&
-    !/<nav[^>]+map-search-rail/.test(ishodPageSource),
-  'Shared map chrome belongs in MapSearchRail.astro; route pages must not copy the rail markup.'
+    !/<nav[^>]+map-search-rail/.test(ishodPageSource) &&
+    !/<body\b/.test(avraamPageSource) &&
+    !/<body\b/.test(ishodPageSource),
+  'Strict-native map document/chrome belongs in MapPageShell + MapSearchRail, not route pages.'
 );
 
 if (failures) {
