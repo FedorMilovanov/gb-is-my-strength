@@ -234,21 +234,27 @@ function matchSkeleton(v1Persons, tipnrPersons) {
     if (V1_EXCEPTIONS[p.id]) { matches.set(p.id, V1_EXCEPTIONS[p.id]); continue; }
     const base = p.id.replace(/_[a-z0-9]{1,6}$/i, '');
     let cands = (byName.get(slugName(base)) ?? []).filter(rec => genderCompatible(p, rec));
+    let fuzzyVia = null;
     if (cands.length === 0) {
       const fuzzy = pickFuzzy(p, all);
       if (fuzzy) {
         cands = (byName.get(slugName(fuzzy.rec.name)) ?? [fuzzy.rec])
           .filter(rec => genderCompatible(p, rec));
-        soft.push({
-          id: p.id,
-          via: `fuzzy:${fuzzy.rec.name}(${fuzzy.score.toFixed(2)}; margin=${fuzzy.margin.toFixed(2)}; scope=${fuzzy.scopeLevel})`,
-        });
+        fuzzyVia = `fuzzy:${fuzzy.rec.name}(${fuzzy.score.toFixed(2)}; margin=${fuzzy.margin.toFixed(2)}; scope=${fuzzy.scopeLevel})`;
       }
     }
-    if (cands.length === 1) { matches.set(p.id, cands[0].key); continue; }
+    if (cands.length === 1) {
+      matches.set(p.id, cands[0].key);
+      if (fuzzyVia) soft.push({ id: p.id, via: fuzzyVia });
+      continue;
+    }
     if (cands.length > 1) {
       const pick = disambiguate(p, cands);
-      if (pick) { matches.set(p.id, pick.key); soft.push({ id: p.id, via: `disamb:${pick.key}` }); continue; }
+      if (pick) {
+        matches.set(p.id, pick.key);
+        soft.push({ id: p.id, via: fuzzyVia ? `${fuzzyVia} → disamb:${pick.key}` : `disamb:${pick.key}` });
+        continue;
+      }
     }
     unmatched.push({ id: p.id, ru: p.name?.ru, ref: p.ref ?? null, candidates: cands.length });
   }
