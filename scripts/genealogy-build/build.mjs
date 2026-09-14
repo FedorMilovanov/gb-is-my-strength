@@ -406,6 +406,7 @@ async function runAll() {
     // Machine-readable publication evidence. VALIDATION.md is a human report,
     // never the authority for runtime/publication decisions.
     publicationEvidence: {
+      schemaVersion: 1,
       skeleton: {
         total: v1.persons.length,
         matched: v1Matches.size,
