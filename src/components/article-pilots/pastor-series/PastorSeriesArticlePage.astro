@@ -2,6 +2,7 @@
 import Seo from '@/components/seo/Seo.astro';
 import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 import SeriesReaderChrome from '@/components/article-pilots/_shared/series/SeriesReaderChrome.astro';
+import AboutAccuracyBlock from '@/components/about/AboutAccuracyBlock.astro';
 import { PASTOR_SERIES } from '@/components/article-pilots/_shared/series/pastorSeriesConfig';
 import { seriesItem } from '@/components/article-pilots/_shared/series/seriesConfig';
 import { SITE } from '@/data/site';
@@ -208,6 +209,10 @@ const siteConfig = {
             </div>
           </aside>
         </article>
+        {/* S22 «Исправимость»: единый механизм сообщения о неточности для всех частей
+            серии. Размещение после </article> внутри <main> — как в Части I и в статьях
+            серии «Сердце»; leaf-компонент переиспользуется без изменения разметки. */}
+        <AboutAccuracyBlock />
         <div class="article-end-block article-end-sdg-wrap"><div class="article-end-sdg"><span class="sdg">Soli Deo Gloria</span></div></div>
       </main>
     </SeriesReaderChrome>

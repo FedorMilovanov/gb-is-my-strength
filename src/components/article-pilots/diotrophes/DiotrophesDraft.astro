@@ -1,4 +1,6 @@
 ---
+import AboutAccuracyBlock from '@/components/about/AboutAccuracyBlock.astro';
+
 type SectionId =
   | 'authority-capture'
   | 'governance-procedure'
@@ -425,4 +427,7 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
       <p><strong>Фёдор Милованов</strong> — автор-редактор проекта «Господь Бог — Сила Моя». Материал подготовлен как богословско-редакционное исследование с отдельной проверкой первичных документов, юридических статусов и границ допустимой формулировки.</p>
     </aside>
   </article>
+  {/* S22 «Исправимость»: тот же leaf-блок обратной связи, что в Части I и в частях
+      ядра серии; размещён после </article> внутри <main>. */}
+  <AboutAccuracyBlock />
 </main>
