@@ -13,7 +13,7 @@ const ROUTE_URL = `${BASE_URL}/karty/avraam/`;
 const VIEWPORTS = [
   ['desktop-1920x1080',1920,1080],['desktop-1440x900',1440,900],
   ['desktop-1366x768',1366,768],['tablet-1024x768',1024,768],
-  ['mobile-430x932',430,932],['mobile-390x844',390,844],['mobile-360x800',360,800],
+  ['mobile-430x932',430,932],['mobile-390x844',390,844],['mobile-360x800',360,800],['mobile-360x740',360,740],
 ].map(([id,width,height])=>({id,width,height}));
 const KEY_PLACES = ['ur','harran','shechem','bethel','egypt','hebron','sodom','dan','beersheba','salem'];
 
