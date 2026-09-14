@@ -103,6 +103,11 @@ source book/chapter и minimum score margin; неоднозначность ос
 pipeline. Если версия pipeline актуальна, а structured evidence отсутствует или
 расходится с данными, publication audit блокирует выпуск.
 
+`meta.json.inputs.v1Skeleton` также фиксирует путь, число персон и SHA256 точного
+`data/genealogy/genealogy.json`, использованного при build. Поэтому изменение v1
+автоматически делает старый v2 output непригодным для публикации до полной регенерации,
+даже если версия pipeline не изменилась.
+
 
 До достижения publication exit-критериев датасет `v2` считается **ЧЕРНОВИКОМ**
 и `/rodosloviye/` остаётся на canonical v1.
