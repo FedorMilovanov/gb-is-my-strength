@@ -1,6 +1,13 @@
 # Parts II–IX — series-level content clearance receipt
 
 Статус: **CONTENT_CLEARANCE = PASS / SOURCE_RECONCILIATION = PASS 8/8 / PUBLICATION PROMOTION = FORBIDDEN**
+
+> Обновление 2026-09-15: запретительная часть статуса утратила силу — публикация частей II–IX
+> легализована решением владельца, см. `research/pastor-series/PROMOTION-RECEIPT-II-IX.md`.
+> Содержательные вердикты (CONTENT_CLEARANCE, SOURCE_RECONCILIATION) сохраняют силу, но
+> blob-идентичность рукописей нарушена: опубликованный текст расходится с сертифицированными
+> blob'ами §3, поэтому требуется bounded re-clearance (§5 promotion receipt'а, follow-up 2.17).
+
 Дата: 2026-09-08
 Product clearance base: `b5d89b276a3085161be205f22b56f53ddfc8e6f6`
 Source-reconciliation merge: Product #1899 → `b5d89b276a3085161be205f22b56f53ddfc8e6f6`
