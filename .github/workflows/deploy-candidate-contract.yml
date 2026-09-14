@@ -66,7 +66,7 @@ jobs:
           set -euo pipefail
           run=false
           reason=unrelated-change
-          genealogy_pattern='^(\.github/workflows/(deploy\.yml|deploy-candidate-contract\.yml)|scripts/genealogy-|data/genealogy/|src/pages/rodosloviye/|src/components/(genealogy|rodosloviye)/|src/components/search/|src/components/article-pilots/_shared/|src/layouts/|src/styles/|css/|js/|package\.json|package-lock\.json)'
+          genealogy_pattern='^(\.github/workflows/(deploy\.yml|deploy-candidate-contract\.yml)|scripts/genealogy-|data/genealogy/|src/pages/rodosloviye/|src/components/(genealogy|rodosloviye)/|src/components/search/|src/components/article-pilots/_shared/|src/components/ui/floating-cluster/|src/runtime/|src/layouts/|src/styles/|css/|js/|astro\.config\.mjs|package\.json|package-lock\.json)'
           case "$EVENT_NAME" in
             workflow_dispatch)
               run=true
