@@ -400,9 +400,26 @@ async function runAll() {
     counts: report.counts,
     sources: Object.fromEntries(Object.entries(SOURCES).map(([k, s]) => [k, { url: s.url, sha256: s.sha256, license: s.license }])),
     attribution: [SOURCES.tipnr.attribution, SOURCES.synodal.attribution,
-      'Хронология (MT AM), спорные узлы, значимость: редакция проекта (v1-скелет, 156 персон)'],
+      'Хронология (MT AM), спорные узлы, значимость: редакция проекта (v1-скелет)'],
     license: 'Derived dataset: CC BY 4.0 (attribution: STEPBible.org / Tyndale House Cambridge)',
     status: 'phase1-draft — НЕ подключать в рантайм до exit-критериев Phase 1',
+    // Machine-readable publication evidence. VALIDATION.md is a human report,
+    // never the authority for runtime/publication decisions.
+    publicationEvidence: {
+      skeleton: {
+        total: v1.persons.length,
+        matched: v1Matches.size,
+        decisions: v1Decisions,
+        soft: v1Soft,
+        unmatched: v1Unmatched,
+        collisions: v1Collisions,
+      },
+      relations: {
+        unresolvedCount: relStats.unresolvedRefs.length,
+        unresolved: relStats.unresolvedRefs,
+      },
+      ruReviewQueue: ruStats.review,
+    },
   };
   await writeFile(path.join(PATHS.outDir, 'persons.json'), JSON.stringify(outPersons, null, 1) + '\n');
   await writeFile(path.join(PATHS.outDir, 'edges.json'), JSON.stringify(edges, null, 1) + '\n');
