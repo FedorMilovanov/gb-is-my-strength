@@ -10,6 +10,8 @@ const fallbackSource = fs.readFileSync(path.join(root, 'src/components/karty/_sh
 const avraamMapSource = fs.readFileSync(path.join(root, 'src/components/karty/avraam/AvraamMap.astro'), 'utf8');
 const ishodMapSource = fs.readFileSync(path.join(root, 'src/components/karty/ishod/IshodMap.astro'), 'utf8');
 const ishodPageSource = fs.readFileSync(path.join(root, 'src/pages/karty/ishod/index.astro'), 'utf8');
+const avraamPageSource = fs.readFileSync(path.join(root, 'src/pages/karty/avraam/index.astro'), 'utf8');
+const mapSearchRailSource = fs.readFileSync(path.join(root, 'src/components/karty/_shared/MapSearchRail.astro'), 'utf8');
 let failures = 0;
 
 function check(name, condition, detail) {
@@ -198,6 +200,19 @@ check(
   !/engine\.createMap\s*=/.test(ishodPageSource) &&
     !/var createMap\s*=\s*engine\.createMap/.test(ishodPageSource),
   'Route pages must not monkey-patch shared engine methods to inject options.'
+);
+
+
+check(
+  'Map pages share one search/application rail',
+  /AppSearchSurface/.test(mapSearchRailSource) &&
+    /<MapSearchRail\s*\/>/.test(avraamPageSource) &&
+    /<MapSearchRail\s*\/>/.test(ishodPageSource) &&
+    !/AppSearchSurface/.test(avraamPageSource) &&
+    !/AppSearchSurface/.test(ishodPageSource) &&
+    !/<nav[^>]+map-search-rail/.test(avraamPageSource) &&
+    !/<nav[^>]+map-search-rail/.test(ishodPageSource),
+  'Shared map chrome belongs in MapSearchRail.astro; route pages must not copy the rail markup.'
 );
 
 if (failures) {
