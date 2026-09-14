@@ -7,7 +7,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { getKartyHubInventory } = require('../src/lib/karty-hub-inventory.cjs');
+const { getKartyHubInventory, isAtlasSheetDraft } = require('../src/lib/karty-hub-inventory.cjs');
 
 const ROOT = path.join(__dirname, '..');
 const ROUTES_ROOT = path.join(ROOT, 'karty');
@@ -115,8 +115,10 @@ function validateMapContract(route, label, file) {
     if (seen.has(capability)) bad(`${label}: duplicate capability ${capability}`);
     seen.add(capability);
   }
-  for (const capability of BASE_LIVE_CAPABILITIES) {
-    if (!seen.has(capability)) bad(`${label}: live route missing base capability ${capability}`);
+  if (route.publication?.status !== 'draft') {
+    for (const capability of BASE_LIVE_CAPABILITIES) {
+      if (!seen.has(capability)) bad(`${label}: live route missing base capability ${capability}`);
+    }
   }
   if (seen.has('layers') !== Array.isArray(route.layers)) {
     bad(`${label}: layers capability must match route.layers presence`);
@@ -174,8 +176,23 @@ function validatePublication(route, label) {
       const imageFile = path.join(ROOT, publication.hub_image.replace(/^\//, ''));
       if (!fs.existsSync(imageFile)) bad(`${label}: publication.hub_image missing: ${publication.hub_image}`);
     }
+
+    const approval = publication.hub_approval;
+    if (!approval || typeof approval !== 'object' || Array.isArray(approval)) {
+      bad(`${label}: hub-visible route requires publication.hub_approval`);
+    } else if (approval.basis === 'legacy-production') {
+      if (route.meta?.id !== 'avraam') bad(`${label}: legacy-production hub approval is reserved for avraam migration`);
+    } else if (approval.basis === 'owner-receipt') {
+      if (typeof approval.receipt !== 'string' || approval.receipt.trim().length < 3) {
+        bad(`${label}: owner-receipt hub approval requires publication.hub_approval.receipt`);
+      }
+    } else {
+      bad(`${label}: publication.hub_approval.basis must be legacy-production or owner-receipt`);
+    }
   }
 }
+
+function validateRoute(file) {}
 
 function validateRoute(file) {
   const route = readJson(file);
@@ -184,8 +201,10 @@ function validateRoute(file) {
   validateMapContract(route, label, file);
   validatePublication(route, label);
   if (!route.meta || typeof route.meta !== 'object') bad(`${label}: missing meta`);
-  if (!route.meta?.id || !/^[a-z0-9-]+$/.test(route.meta.id)) bad(`${label}: meta.id invalid`);
-  if (!route.meta?.title) bad(`${label}: meta.title missing`);
+  const draftSheet = isAtlasSheetDraft(route);
+  if (!draftSheet && (!route.meta?.id || !/^[a-z0-9-]+$/.test(route.meta.id))) bad(`${label}: meta.id invalid`);
+  if (draftSheet && route.meta?.sheet_no == null) bad(`${label}: draft atlas sheet requires meta.sheet_no`);
+  if (!route.meta?.title) bad(`${label}: meta.title missing`);  if (!route.meta?.title) bad(`${label}: meta.title missing`);
   if (!route.meta?.era) bad(`${label}: meta.era missing`);
   if (!route.meta?.viewport_init || !isFiniteNum(route.meta.viewport_init.cx) || !isFiniteNum(route.meta.viewport_init.cy) || !isFiniteNum(route.meta.viewport_init.w)) bad(`${label}: meta.viewport_init invalid`);
 
@@ -414,19 +433,16 @@ function main() {
     if (fs.existsSync(f)) files.push(f);
   }
   if (!files.length) bad('No karty/*/route.json files found');
-  const routeFiles = files.filter(f => {
+  files.sort().forEach(validateRoute);
+  const hubRouteFiles = files.filter(f => {
     try {
-      const probe = JSON.parse(fs.readFileSync(f, 'utf8'));
-      if (probe && probe.meta && probe.meta.sheet_no != null && probe.meta.id == null) {
-        ok(path.relative(ROOT, f) + ': лист Атласа (ждёт публикации) — пропущен');
-        return false;
-      }
-    } catch (_) {}
-    return true;
+      return !isAtlasSheetDraft(JSON.parse(fs.readFileSync(f, 'utf8')));
+    } catch (_) {
+      return false;
+    }
   });
-  routeFiles.sort().forEach(validateRoute);
-  checkAstroHub(routeFiles);
-  if (errors.length) {
+  checkAstroHub(hubRouteFiles);
+  if (errors.length) {  if (errors.length) {
     console.log(`\n❌ Map route validation failed: ${errors.length} issue(s)`);
     process.exit(1);
   }
