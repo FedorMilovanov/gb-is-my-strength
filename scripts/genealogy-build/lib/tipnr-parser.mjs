@@ -76,6 +76,7 @@ export function parseTipnr(text) {
   };
   const persons = new Map();
   const groups = new Map();   // Type === 'Group': народы/роды (Быт 10 и др.)
+  const places = new Map();   // Type === 'Place': топонимы, встречающиеся в founder/offspring refs
   let section = null;
   let current = null;
 
@@ -148,10 +149,12 @@ export function parseTipnr(text) {
         groups.set(rec.key, rec);
         stats.groupRecords += 1;
       }
+    } else if (type === 'Place') {
+      if (!places.has(rec.key)) places.set(rec.key, rec);
     }
     current = rec;
   }
-  return { persons, groups, stats };
+  return { persons, groups, places, stats };
 }
 
 /**
@@ -160,19 +163,47 @@ export function parseTipnr(text) {
  * Ссылки с маркером (d) «народ-потомок» на персон не резолвятся — это связь
  * персона→народ, она уйдёт в groups-слой (Phase 1.5), не в parent-рёбра.
  */
-export function resolveRelations(persons) {
-  const stats = { resolved: 0, unresolvedRefs: [], skippedDescendedGroup: 0 };
+export function resolveRelations(persons, { groups = new Map(), places = new Map() } = {}) {
+  const stats = {
+    resolved: 0,
+    resolvedExternal: 0,
+    unresolvedRefs: [],
+    skippedDescendedGroup: 0,
+    externalByType: { group: 0, place: 0 },
+  };
   for (const rec of persons.values()) {
     for (const relName of ['parents', 'siblings', 'partners', 'offspring']) {
       for (const rel of rec[relName]) {
-        if (rel.markers.descendedGroup) { rel.resolved = false; stats.skippedDescendedGroup += 1; continue; }
         if (rel.refKey && persons.has(rel.refKey)) {
           rel.resolved = true;
+          rel.resolvedEntity = 'person';
           stats.resolved += 1;
-        } else {
-          rel.resolved = false;
-          stats.unresolvedRefs.push({ from: rec.key, field: relName, raw: rel.raw });
+          continue;
         }
+        const externalType = rel.refKey && groups.has(rel.refKey) ? 'group'
+          : rel.refKey && places.has(rel.refKey) ? 'place'
+          : null;
+        if (externalType) {
+          // This is a valid relation, but not an edge in the person genealogy graph.
+          rel.resolved = false;
+          rel.resolvedEntity = externalType;
+          stats.resolvedExternal += 1;
+          stats.externalByType[externalType] += 1;
+          if (rel.markers.descendedGroup) stats.skippedDescendedGroup += 1;
+          continue;
+        }
+        if (rel.markers.descendedGroup) {
+          // Preserve TIPNR's explicit person→group marker even if that group record
+          // is outside the parsed corpus; it belongs to the nations layer, not the
+          // person-edge dangling-ref budget.
+          rel.resolved = false;
+          rel.resolvedEntity = 'group-external';
+          stats.skippedDescendedGroup += 1;
+          continue;
+        }
+        rel.resolved = false;
+        rel.resolvedEntity = null;
+        stats.unresolvedRefs.push({ from: rec.key, field: relName, raw: rel.raw });
       }
     }
   }
