@@ -762,14 +762,17 @@ try {
   else if (cmd === 'validate') {
     const personsArr = JSON.parse(await readFile(path.join(PATHS.outDir, 'persons.json'), 'utf8'));
     const edges = JSON.parse(await readFile(path.join(PATHS.outDir, 'edges.json'), 'utf8'));
+    // Structural-only validation intentionally does NOT rewrite VALIDATION.md:
+    // parse/matcher/review evidence can only be reproduced by a full pinned-source build.
+    // Writing a report with dummy empty context would falsely erase publication blockers.
     const report = validate(personsArr, edges, {
-      parseStats: { topLines: '-', personRecords: personsArr.length, badTopLines: '-', byType: {}, duplicates: [] },
-      relStats: { resolved: '-', unresolvedRefs: [], skippedDescendedGroup: '-' },
-      ruStats: { override: '-', seed: '-', pattern: '-', candidate: '-', translit: '-', none: '-', review: '-' },
-      v1Unmatched: [], v1Soft: [], v1Decisions: [], v1Collisions: [], v1Total: '-', v1Matched: '-',
+      parseStats: { topLines: 'not-recomputed', personRecords: personsArr.length, badTopLines: 'not-recomputed', byType: {}, duplicates: [] },
+      relStats: { resolved: 'not-recomputed', unresolvedRefs: [], skippedDescendedGroup: 'not-recomputed' },
+      ruStats: { override: 'not-recomputed', seed: 'not-recomputed', pattern: 'not-recomputed', candidate: 'not-recomputed', translit: 'not-recomputed', none: 'not-recomputed', review: 'not-recomputed' },
+      v1Unmatched: [], v1Soft: [], v1Decisions: [], v1Collisions: [], v1Total: 'not-recomputed', v1Matched: 'not-recomputed',
     });
-    await writeFile(path.join(PATHS.outDir, 'VALIDATION.md'), report.markdown);
-    log(report.ok ? 'validate: OK' : 'validate: НАРУШЕНИЯ'); if (!report.ok) process.exitCode = 1;
+    log(report.ok ? 'validate: structural OK (publication evidence unchanged)' : 'validate: structural НАРУШЕНИЯ');
+    if (!report.ok) process.exitCode = 1;
   }
   else { console.error(`Неизвестная команда: ${cmd} (fetch|test|all|validate)`); process.exitCode = 2; }
 } catch (err) {
