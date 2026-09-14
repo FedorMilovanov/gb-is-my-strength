@@ -133,12 +133,16 @@ export function similarity(a, b) {
 export function normalizeRuCandidate(en, cand) {
   const e = String(en).split('|')[0].trim();
   let c = String(cand);
-  // 1) притяжательное -ов/-ев (но не законные -ов/-ев в самих именах EN: -ov/-ev)
+  // 1) Притяжательное -ов/-ев. Само окончание недостаточно: «Халев» — уже
+  //    каноническая форма, а не притяжательное от «Хал». Принимаем срез только
+  //    если он действительно приближает русскую форму к EN-транслитерации.
   if (/[а-яё](ов|ев)$/.test(c) && !/(ov|ev)$/i.test(e)) {
-    let stem = c.replace(/(ов|ев)$/, '');
-    if (/ias$/i.test(e)) return stem.endsWith('и') ? stem + 'я' : stem + 'ия';
-    if (/i$/i.test(e)) return stem.endsWith('и') ? stem + 'й' : stem + 'ий';
-    return stem;
+    const stem = c.replace(/(ов|ев)$/, '');
+    let proposal = stem;
+    if (/ias$/i.test(e)) proposal = stem.endsWith('и') ? stem + 'я' : stem + 'ия';
+    else if (/i$/i.test(e)) proposal = stem.endsWith('и') ? stem + 'й' : stem + 'ий';
+    const approx = translitEnRu(e);
+    if (similarity(approx, proposal) > similarity(approx, c)) return proposal;
   }
   // 2) вин./род. «-а» при EN на твёрдую согласную (Elnathan → Елнафан[а])
   if (/[бвгджзклмнпрстфхцчшщ]а$/.test(c) && /[bcdfgklmnpqrstvxz]$/i.test(e) && c.length >= 5) {
