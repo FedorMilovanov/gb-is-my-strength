@@ -15,7 +15,7 @@ export function buildViews({ clusters = [], persons = [], nationsCount = 70 } = 
   const women = persons.filter(p => p.gender === 'f').length;
   return [
     { id: 'spine', titleRu: 'Адам → Христос', icon: 'cross', kind: 'focus-spine',
-      hint: 'хребет', descRu: 'Золотая мессианская нить через всю Библию' },
+      hint: 'хребет', descRu: 'Мессианская обзорная проекция; гармонизация Лк через Марию помечается отдельно' },
     { id: 'tribes-12', titleRu: '12 колен Израиля', icon: 'tribes', kind: 'cluster',
       target: 'tribes-12', count: c('tribes-12'), hint: 'L1',
       descRu: 'Сыновья Иакова — родоначальники колен (радиальная развёртка)' },
@@ -30,7 +30,7 @@ export function buildViews({ clusters = [], persons = [], nationsCount = 70 } = 
       descRu: 'Царская (юридическая) линия: Авраам → Иосиф' },
     { id: 'luke-3', titleRu: 'Родословие Луки', icon: 'scroll', kind: 'cluster',
       target: 'luke-3', count: c('luke-3'), hint: 'Лк 3',
-      descRu: 'Кровная линия через Марию: Христос → Адам' },
+      descRu: 'Текстовая последовательность Лк 3: Христос → Адам; объяснение через Марию — отдельная гармонизация' },
     { id: 'women', titleRu: 'Женские фигуры', icon: 'people', kind: 'filter',
       target: 'gender:f', count: women, hint: String(women),
       descRu: 'Все женщины генеалогии (матери, жёны, дочери)' },
