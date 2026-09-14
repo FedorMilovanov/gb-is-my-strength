@@ -13,6 +13,7 @@ const STRICT_PUBLISH = process.argv.includes('--strict-publish');
 const readJson = (p) => JSON.parse(fs.readFileSync(p, 'utf8'));
 const v1 = readJson(V1);
 const persons = readJson(path.join(V2, 'persons.json'));
+const edges = readJson(path.join(V2, 'edges.json'));
 const groups = readJson(path.join(V2, 'groups.json'));
 const views = readJson(path.join(V2, 'views.json'));
 const tableOfNations = readJson(path.join(V2, 'table-of-nations.json'));
@@ -114,6 +115,20 @@ for (const expected of requiredRelationAnnotations) {
   if (set.assertion !== expected.assertion) relationProvenanceIssues.push({ edge: `${expected.from}→${expected.to}`, issue: 'assertion-mismatch' });
   if (set.directScripture !== expected.directScripture) relationProvenanceIssues.push({ edge: `${expected.from}→${expected.to}`, issue: 'directScripture-mismatch' });
   if (set.editorialPosition !== expected.editorialPosition) relationProvenanceIssues.push({ edge: `${expected.from}→${expected.to}`, issue: 'editorialPosition-mismatch' });
+
+  const generatedEdge = edges.find(edge => edge.from === expected.from && edge.to === expected.to && edge.kind === (annotation.kind ?? 'parent'));
+  if (!generatedEdge) {
+    relationProvenanceIssues.push({ edge: `${expected.from}→${expected.to}`, issue: 'missing-generated-edge' });
+  } else if (meta.pipelineVersion === PIPELINE_VERSION) {
+    for (const field of ['assertion', 'confidence', 'directScripture', 'editorialPosition']) {
+      if (generatedEdge[field] !== set[field]) {
+        relationProvenanceIssues.push({ edge: `${expected.from}→${expected.to}`, issue: `generated-${field}-drift` });
+      }
+    }
+    if (JSON.stringify(generatedEdge.refs ?? []) !== JSON.stringify(set.refs ?? [])) {
+      relationProvenanceIssues.push({ edge: `${expected.from}→${expected.to}`, issue: 'generated-refs-drift' });
+    }
+  }
 }
 
 function walk(dir, out = []) {
