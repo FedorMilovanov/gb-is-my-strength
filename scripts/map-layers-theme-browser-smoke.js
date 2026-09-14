@@ -36,8 +36,30 @@ async function mountRouteFixture(page, routeUrl) {
   await page.waitForTimeout(450);
 }
 
+// The layers panel is a collapsed <details>-style summary by default; rows are
+// only interactable after the summary is expanded.
+async function expandLayersPanel(page) {
+  await page.waitForSelector('.me-layers__summary', { timeout: 8000 });
+  const expanded = await page.evaluate(() => {
+    const summary = document.querySelector('.me-layers__summary');
+    if (!summary) return false;
+    if (summary.getAttribute('aria-expanded') === 'true') return true;
+    summary.click();
+    return true;
+  });
+  if (!expanded) throw new Error('layers summary missing');
+  await page.waitForFunction(
+    () => document.querySelector('.me-layers__summary')?.getAttribute('aria-expanded') === 'true' ||
+          document.querySelector('.me-layers__row[data-layer-id]'),
+    null,
+    { timeout: 4000 }
+  ).catch(() => {});
+  await page.waitForTimeout(150);
+}
+
 async function clickLayer(page, id) {
   const selector = `.me-layers__row[data-layer-id="${id}"] .me-layers__toggle`;
+  await expandLayersPanel(page);
   await page.waitForSelector(selector, { timeout: 8000 });
   await page.evaluate((sel) => document.querySelector(sel)?.click(), selector);
   await page.waitForTimeout(120);
@@ -88,7 +110,20 @@ async function elementLayerState(page, selector) {
         filter: getComputedStyle(document.querySelector('.me-canvas svg')).filter,
       }));
       await page.evaluate(() => document.querySelector('.me-theme-btn')?.click());
-      await page.waitForTimeout(180);
+      // The palette switch is animated (background + svg filter transitions), so
+      // waiting a fixed 180ms sampled mid-transition values. Wait for the rendered
+      // background to actually leave the previous palette instead.
+      await page
+        .waitForFunction(
+          (previous) => {
+            const node = document.querySelector('.me-map');
+            return Boolean(node) && getComputedStyle(node).backgroundColor !== previous;
+          },
+          before.bg,
+          { timeout: 4000 },
+        )
+        .catch(() => {});
+      await page.waitForTimeout(120);
       const after = await page.evaluate(() => ({
         theme: document.querySelector('.me-map')?.getAttribute('data-map-theme'),
         bg: getComputedStyle(document.querySelector('.me-map')).backgroundColor,
@@ -112,6 +147,7 @@ async function elementLayerState(page, selector) {
         stored: localStorage.getItem('me-map-theme'),
       }));
       const candDefaultOff = await elementLayerState(page, candSelector);
+      await expandLayersPanel(page);
       const candToggleDefault = await page.$eval('.me-layers__row[data-layer-id="cand"] .me-layers__toggle', (el) => ({
         pressed: el.getAttribute('aria-pressed'),
         onClass: el.classList.contains('me-layers__toggle--on'),

@@ -831,13 +831,15 @@ ${ovls.join('')}
 ${sidenote}
 ${labels.join('')}
 </g>
+<!-- Сетка градусов — слой карты: под плашками, иначе подписи меридианов
+     печатаются поверх картуша и легенды. -->
+${graticule(family, x0, y0, W, H, k)}
 ${cart}
 ${legend}
 ${furn}
 <rect x="${x0}" y="${y0}" width="${W}" height="${H}" fill="url(#sunGlow)" pointer-events="none" class="paper-fx"/>
 <rect x="${x0}" y="${y0}" width="${W}" height="${H}" fill="url(#edgeFog)" pointer-events="none" class="paper-fx"/>
 <rect x="${x0}" y="${y0}" width="${W}" height="${H}" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none" class="paper-fx paper-grain"/>
-${graticule(family, x0, y0, W, H, k)}
 <rect x="${x0 + 8 * k}" y="${y0 + 8 * k}" width="${W - 16 * k}" height="${H - 16 * k}" class="frame"/>
 <rect x="${x0 + 12 * k}" y="${y0 + 12 * k}" width="${W - 24 * k}" height="${H - 24 * k}" class="frame frame-inner"/>
 <g class="frame-orn">
@@ -848,10 +850,13 @@ ${graticule(family, x0, y0, W, H, k)}
 </g>
 </svg>`;
 
-  return { svg, stageStripHtml, meta: { title: meta.title || slug, subtitle: meta.subtitle || '' } };
+  return { svg, stageStripHtml, k, meta: { title: meta.title || slug, subtitle: meta.subtitle || '' } };
 }
 
-function sheetCss() {
+// CSS листа. k — масштаб листа (W/1200): ступени зума считаются от него,
+// иначе абсолютные px держатся только на эталонной раме.
+function sheetCss(k = 1) {
+  const fontMain = 13 * k, fontMinor = 11 * k; // те же кегли, что у подписей листа
   return `
   html,body{margin:0;min-height:100%;background:#e3d4ac}
   body{display:grid;place-items:center;padding:12px;box-sizing:border-box}
@@ -910,45 +915,49 @@ function sheetCss() {
   #sheet-svg .ovl-ctxpath{stroke-width:1.2px;stroke-dasharray:2.8 4.6}
   #sheet-svg .grat{stroke-width:.8px}
   #sheet-svg .leader{stroke-width:.75px}
-  /* ── ступень z2 (≈1.6–3.1×, целевые экранные: main 13 · minor 11 · точка 4.4) ── */
-  svg.z2 text.lab-main{font-size:7.1px}
-  svg.z2 text.lab-minor{font-size:6px}
-  svg.z2 text.lab-cand{font-size:5.5px}
+  /* ── Лестница зумов (z2 ≈1,6–3,1× · z3 ≈3,1–5,5× · z4 ≥5,5×) ──
+     Кегль ступени = базовый кегль / z. Раньше здесь стояли абсолютные px,
+     выверенные по одной раме: на рамке другого масштаба кегль уезжал из нормы
+     8–19 px (Исход, k=1,08, 8× — 21,2 px), тогда как ВСЕ остальные размеры
+     листа заданы в единицах листа (×k). Точки хранят свой экранный размер
+     произведением r×k на scale ступени; подписи теперь держат ровно
+     экранный кегль уровня 1× (base/z × k) — одна формула на все листы. */
+  svg.z2 text.lab-main{font-size:${(fontMain / 2).toFixed(2)}px}
+  svg.z2 text.lab-minor{font-size:${(fontMinor / 2).toFixed(2)}px}
+  svg.z2 text.lab-cand{font-size:${(fontMinor / 2 * 0.92).toFixed(2)}px}
   svg.z2 .pl-city{transform:scale(.257);transform-box:fill-box;transform-origin:center}
   svg.z2 .pl-cand{transform:scale(.27);transform-box:fill-box;transform-origin:center}
   svg.z2 .pl-ctx{transform:scale(.293);transform-box:fill-box;transform-origin:center}
-  svg.z2 .mile-t{font-size:5.5px}
-  svg.z2 .lab-war{font-size:4.7px}
-  svg.z2 .lab-ovl{font-size:4.4px}
-  svg.z2 .lab-ctx{font-size:4.7px}
-  svg.z2 text.lab-wp{font-size:4.4px}
+  svg.z2 .mile-t{font-size:${(10 * k / 2).toFixed(2)}px}
+  svg.z2 .lab-war{font-size:${(9 * k / 2).toFixed(2)}px}
+  svg.z2 .lab-ovl{font-size:${(9.5 * k / 2).toFixed(2)}px}
+  svg.z2 .lab-ctx{font-size:${(10 * k / 2).toFixed(2)}px}
+  svg.z2 text.lab-wp{font-size:${(10 * k / 2).toFixed(2)}px}
   svg.z2 .war-x{transform:scale(.6);transform-box:fill-box;transform-origin:center}
-  /* ── ступень z3 (≈3.1–5.5×) ── */
-  svg.z3 text.lab-main{font-size:3.7px}
-  svg.z3 text.lab-minor{font-size:3.2px}
-  svg.z3 text.lab-cand{font-size:2.9px}
+  svg.z3 text.lab-main{font-size:${(fontMain / 4).toFixed(2)}px}
+  svg.z3 text.lab-minor{font-size:${(fontMinor / 4).toFixed(2)}px}
+  svg.z3 text.lab-cand{font-size:${(fontMinor / 4 * 0.92).toFixed(2)}px}
   svg.z3 .pl-city{transform:scale(.137);transform-box:fill-box;transform-origin:center}
   svg.z3 .pl-cand{transform:scale(.144);transform-box:fill-box;transform-origin:center}
   svg.z3 .pl-ctx{transform:scale(.16);transform-box:fill-box;transform-origin:center}
-  svg.z3 .mile-t{font-size:2.9px}
-  svg.z3 .lab-war{font-size:2.4px}
-  svg.z3 .lab-ovl{font-size:2.3px}
-  svg.z3 .lab-ctx{font-size:2.4px}
-  svg.z3 text.lab-wp{font-size:2.3px}
+  svg.z3 .mile-t{font-size:${(10 * k / 4).toFixed(2)}px}
+  svg.z3 .lab-war{font-size:${(9 * k / 4).toFixed(2)}px}
+  svg.z3 .lab-ovl{font-size:${(9.5 * k / 4).toFixed(2)}px}
+  svg.z3 .lab-ctx{font-size:${(10 * k / 4).toFixed(2)}px}
+  svg.z3 text.lab-wp{font-size:${(10 * k / 4).toFixed(2)}px}
   svg.z3 .war-x{transform:scale(.34);transform-box:fill-box;transform-origin:center}
   svg.z3 .lab-region{opacity:.22}
-  /* ── ступень z4 (≥5.5×) ── */
-  svg.z4 text.lab-main{font-size:2.3px}
-  svg.z4 text.lab-minor{font-size:2px}
-  svg.z4 text.lab-cand{font-size:1.8px}
+  svg.z4 text.lab-main{font-size:${(fontMain / 8).toFixed(2)}px}
+  svg.z4 text.lab-minor{font-size:${(fontMinor / 8).toFixed(2)}px}
+  svg.z4 text.lab-cand{font-size:${(fontMinor / 8 * 0.92).toFixed(2)}px}
   svg.z4 .pl-city{transform:scale(.0857);transform-box:fill-box;transform-origin:center}
   svg.z4 .pl-cand{transform:scale(.09);transform-box:fill-box;transform-origin:center}
   svg.z4 .pl-ctx{transform:scale(.107);transform-box:fill-box;transform-origin:center}
-  svg.z4 .mile-t{font-size:1.8px}
-  svg.z4 .lab-war{font-size:1.5px}
-  svg.z4 .lab-ovl{font-size:1.4px}
-  svg.z4 .lab-ctx{font-size:1.5px}
-  svg.z4 text.lab-wp{font-size:1.4px}
+  svg.z4 .mile-t{font-size:${(10 * k / 8).toFixed(2)}px}
+  svg.z4 .lab-war{font-size:${(9 * k / 8).toFixed(2)}px}
+  svg.z4 .lab-ovl{font-size:${(9.5 * k / 8).toFixed(2)}px}
+  svg.z4 .lab-ctx{font-size:${(10 * k / 8).toFixed(2)}px}
+  svg.z4 text.lab-wp{font-size:${(10 * k / 8).toFixed(2)}px}
   svg.z4 .war-x{transform:scale(.2);transform-box:fill-box;transform-origin:center}
   svg.z4 .lab-region{opacity:0}
   /* глифы: контур постоянный (ve), геометрия скейлится — тоньше не нужно */
@@ -1190,7 +1199,7 @@ function sheetCss() {
 }
 
 function buildSheetHtml(route, opts) {
-  const { svg, stageStripHtml, meta } = renderSheet(route, opts);
+  const { svg, stageStripHtml, meta, k } = renderSheet(route, opts);
   const badge = opts.badge || `${String(opts.slug || '').toUpperCase()} · SHEET · awaiting G9`;
   const spine = JSON.stringify(opts.spine || []);
   // Пакет ховер-карточек: фото раскопок + небанальный факт из данных карты
@@ -1227,7 +1236,7 @@ function buildSheetHtml(route, opts) {
 <meta name="robots" content="noindex,nofollow">
 <title>${esc(meta.title)} — лист Атласа (светлый, awaiting G9)</title>
 <link rel="stylesheet" href="${opts.fontsHref || '../../fonts/fonts.css'}">
-<style>${sheetCss()}
+<style>${sheetCss(k)}
 </style>
 </head>
 <body>

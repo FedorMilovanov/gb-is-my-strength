@@ -24,9 +24,7 @@ const edgeKinds = compiled.edgeKinds;
     <div class="atlas-search" role="search">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.6-3.6" /></svg>
       <label class="sr-only" for="atlasSearchInput">Найти материал в Атласе</label>
-      <!-- ARIA 1.2 combobox-with-input: the runtime drives aria-expanded and
-           aria-activedescendant, which searchbox does not allow. -->
-      <input id="atlasSearchInput" type="search" role="combobox" aria-haspopup="listbox" aria-autocomplete="list" autocomplete="off" placeholder="Найти материал, тему или автора…" aria-controls="atlasSearchResults" aria-expanded="false" />
+      <!-- ARIA 1.2 combobox-with-input: the runtime drives aria-expanded and\n           aria-activedescendant, which searchbox does not allow. -->\n      <input id="atlasSearchInput" type="search" role="combobox" aria-haspopup="listbox" aria-autocomplete="list" autocomplete="off" placeholder="Найти материал, тему или автора…" aria-controls="atlasSearchResults" aria-expanded="false" />
       <div class="atlas-search__results" id="atlasSearchResults" role="listbox" hidden></div>
     </div>
 
@@ -38,9 +36,7 @@ const edgeKinds = compiled.edgeKinds;
         <button type="button" data-atlas-view="graph" aria-pressed="true">Карта</button>
         <button type="button" data-atlas-view="list" aria-pressed="false">Список</button>
       </div>
-      <!-- The label text is display:none on compact widths, so the button carries
-           the same word as an explicit accessible name. -->
-      <button class="atlas-filter-trigger" id="atlasFilterTrigger" type="button" aria-label="Фильтры" aria-expanded="false" aria-controls="atlasSidebar">
+      <!-- The label text is display:none on compact widths, so the button carries\n           the same word as an explicit accessible name. -->\n      <button class="atlas-filter-trigger" id="atlasFilterTrigger" type="button" aria-label="Фильтры" aria-expanded="false" aria-controls="atlasSidebar">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M7 12h10M10 19h4" /></svg>
         <span>Фильтры</span>
       </button>

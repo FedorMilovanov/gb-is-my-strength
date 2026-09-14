@@ -21,55 +21,6 @@ const { title, description, archaeologyMapId } = Astro.props;
 {archaeologyMapId && <MapArchaeologyProjectionBootstrap mapId={archaeologyMapId} />}
 
 <noscript>
-  <style is:global>
-    html,
-    body {
-      height: auto !important;
-      min-height: 100% !important;
-      overflow-x: hidden !important;
-      overflow-y: auto !important;
-    }
-
-    [data-map-stage] {
-      display: none !important;
-    }
-
-    .map-text-fallback.sr-only {
-      position: static !important;
-      width: min(760px, calc(100% - 32px)) !important;
-      height: auto !important;
-      margin: 24px auto !important;
-      padding: clamp(20px, 5vw, 40px) !important;
-      overflow: visible !important;
-      clip: auto !important;
-      clip-path: none !important;
-      white-space: normal !important;
-      border: 1px solid rgba(232, 200, 121, 0.28) !important;
-      border-radius: 20px !important;
-      background: #10151d !important;
-      color: #e9e4d6 !important;
-      box-sizing: border-box !important;
-      font: 16px/1.7 Georgia, "Times New Roman", serif !important;
-    }
-
-    .map-text-fallback h2,
-    .map-text-fallback h3 {
-      color: #f3d98b !important;
-      line-height: 1.25 !important;
-    }
-
-    .map-text-fallback a {
-      color: #9fd7ff !important;
-    }
-
-    .map-text-fallback .map-static-facts {
-      margin: 0 0 24px !important;
-      padding: 14px 16px !important;
-      border-left: 3px solid #e8c879 !important;
-      background: rgba(232, 200, 121, 0.08) !important;
-      color: #f2ead5 !important;
-    }
-  </style>
   <section class="map-runtime-noscript" role="status" aria-label="Текстовая замена интерактивной карты">
     <p class="map-runtime-kicker">Текстовый режим</p>
     <h2>{title}</h2>
