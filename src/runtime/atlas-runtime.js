@@ -205,8 +205,16 @@
 
     function safeFocus(element) {
       if (!focusable(element)) return false;
-      try { element.focus({ preventScroll: true }); return document.activeElement === element; }
-      catch (_) { try { element.focus(); return document.activeElement === element; } catch (_) { return false; } }
+      try {
+        element.focus({ preventScroll: true });
+        if (document.activeElement === element) return true;
+      } catch (_) {}
+      try {
+        element.focus();
+        return document.activeElement === element;
+      } catch (_) {
+        return false;
+      }
     }
 
     function restoreFocusAfterLayout(element, displacedFocus, ownsDisplacedFocus) {
@@ -248,14 +256,21 @@
         observer.observe(element);
       }
       if (typeof window.requestAnimationFrame === 'function') {
-        var remainingObservedLayoutFrames = 2;
+        // ResizeObserver is an early signal, not the owner of fallback progress.
+        // Keep a bounded RAF window even when an observer exists: during
+        // the 980→981 drawer-to-sidebar transition geometry can become focusable
+        // only after more than one paint, and a silent/missed observer callback
+        // must not strand focus on a control that just became hidden.
+        var remainingLayoutFrames = 8;
         var retryAfterLayout = function () {
           frame = 0;
           attempt();
           if (settled) return;
-          if (!observer || remainingObservedLayoutFrames > 1) {
-            if (observer) remainingObservedLayoutFrames -= 1;
+          remainingLayoutFrames -= 1;
+          if (remainingLayoutFrames > 0) {
             frame = window.requestAnimationFrame(retryAfterLayout);
+          } else {
+            cleanup();
           }
         };
         frame = window.requestAnimationFrame(retryAfterLayout);
@@ -595,7 +610,7 @@
           button.appendChild(createElement('span', '', relationLabel(item)));
           button.appendChild(createElement('strong', '', neighbor.title));
           if (item.edge.rationale) button.title = item.edge.rationale;
-          button.addEventListener('click', function () { focusNode(neighbor.id, true, true); });
+          button.addEventListener('click', function () { focusNode(neighbor.id, true, true, true); });
           list.appendChild(button);
         });
         relations.appendChild(list);
@@ -659,8 +674,8 @@
       history[method]({ atlas: true }, '', url);
     }
 
-    function focusNode(id, moveCamera, pushHistory) {
-      var detailOwnedFocus = detail.contains(document.activeElement);
+    function focusNode(id, moveCamera, pushHistory, restoreDetailFocus) {
+      var detailOwnedFocus = restoreDetailFocus === true || detail.contains(document.activeElement);
       var node = nodeById.get(id);
       var position = nodePositions.get(id);
       if (!node || !position || !isNodeVisible(node) || !matchesSearch(node)) return;
@@ -744,7 +759,7 @@
       if (activeGraphNode && activeGraphNode.classList.contains('is-filtered-out')) focusGraphOwner(null);
     }
 
-    function setGroup(group, pushHistory) {
+    function setGroup(group, pushHistory, restoreSidebarFocus) {
       activeGroup = groupById.has(group) ? group : 'all';
       document.querySelectorAll('[data-atlas-group]').forEach(function (button) {
         var active = button.dataset.atlasGroup === activeGroup;
@@ -753,7 +768,7 @@
       });
       clearFocus(false);
       applyFilters();
-      closeFilters({ restoreFocus: sidebar.contains(document.activeElement) });
+      closeFilters({ restoreFocus: restoreSidebarFocus === true || sidebar.contains(document.activeElement) });
       updateUrl({
         group: activeGroup === 'all' ? null : activeGroup,
         focus: null,
@@ -894,11 +909,13 @@
     }
 
     function syncDrawerForViewport() {
+      var drawerWasOpen = sidebar.classList.contains('is-open');
       var activeBeforeSync = document.activeElement;
       var activeWasSidebar = sidebar.contains(activeBeforeSync);
       var enteringDrawer = drawerMedia.matches;
-      syncSidebarSurface(false, { restoreFocus: activeWasSidebar });
-      if (activeWasSidebar && !enteringDrawer) {
+      var ownsDrawerFocus = activeWasSidebar || drawerWasOpen;
+      syncSidebarSurface(false, { restoreFocus: ownsDrawerFocus });
+      if (ownsDrawerFocus && !enteringDrawer) {
         var desktopSidebarTarget = sidebar.querySelector('[data-atlas-group],.atlas-relation-filter input,a[href],button:not(#atlasFilterClose)');
         restoreFocusAfterLayout(desktopSidebarTarget, activeBeforeSync, function (active) { return sidebar.contains(active); });
       }
@@ -1014,7 +1031,11 @@
       button.addEventListener('click', function () { setView(button.dataset.atlasView, true); });
     });
     document.querySelectorAll('[data-atlas-group]').forEach(function (button) {
-      button.addEventListener('click', function () { setGroup(button.dataset.atlasGroup, true); });
+      button.addEventListener('click', function () {
+        var drawer = drawerMedia.matches;
+        setGroup(button.dataset.atlasGroup, true, drawer);
+        if (!drawer) safeFocus(button);
+      });
     });
     document.querySelectorAll('.atlas-relation-filter input').forEach(function (input) {
       input.addEventListener('change', function () {
@@ -1074,6 +1095,7 @@
       setView('graph', false);
       setViewBox(initialView(), true);
       history.pushState({ atlas: true }, '', location.pathname);
+      safeFocus(resetButton);
     });
 
     document.addEventListener('keydown', function (event) {
