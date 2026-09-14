@@ -349,6 +349,8 @@ async function runAll() {
       theophoric: analyzeTheophoric(rec.nameForms),
       skeleton: seed ? {
         v1Id: seed.id,
+        sourceRef: seed.ref ?? null,
+        sourceGender: seed.gender ?? null,
         lineage: seed.lineage,
         era: seed.era,
         role: seed.role,
