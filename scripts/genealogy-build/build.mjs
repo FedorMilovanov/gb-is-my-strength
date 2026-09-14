@@ -32,7 +32,7 @@ import { renderNationsMapSvg } from './lib/render-map-nations.mjs';
 import { renderPersonL2Svg } from './lib/render-l2-person.mjs';
 import { renderMorphFramesSvg } from './lib/render-morph-frames.mjs';
 import { renderTimelineSvg } from './lib/render-timeline.mjs';
-import { matchSkeleton } from './lib/skeleton-matcher.mjs';
+import { matchSkeleton, v1PrimaryRefScope } from './lib/skeleton-matcher.mjs';
 
 const log = (...a) => console.log('[genealogy-build]', ...a);
 
@@ -682,6 +682,13 @@ async function runTests() {
   assert(normalizeRuCandidate('Judah', 'Иуда') === 'Иуда', 'именительный не трогаем (Иуда)');
   assert(normalizeRuCandidate('Reuben', 'Рувим') === 'Рувим', 'без ложных срабатываний (Рувим)');
 
+
+  const broadGenesisScope = v1PrimaryRefScope({ ref: 'Быт 29-30, 49' });
+  assert(broadGenesisScope?.osis === 'Gen' && broadGenesisScope.chapter === null,
+    'широкая ссылка Быт 29-30 сохраняет book-only scope без ложной главы');
+  const exactLukeScope = v1PrimaryRefScope({ ref: 'Лк 3:25' });
+  assert(exactLukeScope?.osis === 'Luk' && exactLukeScope.chapter === 3 && exactLukeScope.verse === 25,
+    'точная ссылка Лк 3:25 сохраняет chapter/verse scope');
 
   const matcherFixture = new Map([
     ['Jecoliah@2Ki.15.2', { key: 'Jecoliah@2Ki.15.2', name: 'Jecoliah', ref: '2Ki.15.2', type: 'Female' }],
