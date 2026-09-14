@@ -89,7 +89,7 @@ function DetailPanelComponent({ person, onClose }: DetailPanelProps) {
           <span style={{
             fontSize: '10px', padding: '3px 9px', borderRadius: '999px',
             background: 'rgba(200,100,140,0.1)', color: '#d4889a', border: '1px solid rgba(200,100,140,0.2)',
-          }}>жена/мать</span>
+          }}>Женщина</span>
         )}
       </div>
 
