@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PIPELINE_VERSION } from './genealogy-build/config.mjs';
+import { emittedPersonsAsTipnrMap, matchSkeleton } from './genealogy-build/lib/skeleton-matcher.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const V1 = path.join(ROOT, 'data', 'genealogy', 'genealogy.json');
@@ -58,6 +59,14 @@ const fuzzyMappings = heuristicMappings.filter(mapping => mapping.kind === 'fuzz
 const unresolvedMatch = /нерезолв:\s*(\d+)/u.exec(validationText);
 const unresolvedRefs = unresolvedMatch ? Number(unresolvedMatch[1]) : null;
 const reviewQueue = persons.filter(person => person.ru?.review === true).length;
+const prospectiveMapping = matchSkeleton(v1.persons, emittedPersonsAsTipnrMap(persons));
+const prospectiveUnexpectedUnmatched = prospectiveMapping.unmatched.filter(item => item.candidates !== 'no-tipnr-counterpart');
+const prospectiveMethodCounts = Object.fromEntries(
+  Object.entries(prospectiveMapping.decisions.reduce((acc, decision) => {
+    acc[decision.method] = (acc[decision.method] ?? 0) + 1;
+    return acc;
+  }, {})).sort(([a], [b]) => a.localeCompare(b)),
+);
 
 const curatedRulePolicy = {
   'matthew-1': ['explicitSequence'],
@@ -191,6 +200,9 @@ if (heuristicMappings.length) blockers.push({ code: 'UNAPPROVED_HEURISTIC_MAPPIN
 if (fuzzyMappings.length) blockers.push({ code: 'UNAPPROVED_FUZZY_MAPPING', count: fuzzyMappings.length });
 if (unresolvedRefs === null || unresolvedRefs > 0) blockers.push({ code: 'UNRESOLVED_RELATIONS', count: unresolvedRefs });
 if (reviewQueue > 0) blockers.push({ code: 'RU_REVIEW_QUEUE', count: reviewQueue });
+if (prospectiveMapping.soft.length) blockers.push({ code: 'PROSPECTIVE_SOFT_MAPPING', count: prospectiveMapping.soft.length });
+if (prospectiveUnexpectedUnmatched.length) blockers.push({ code: 'PROSPECTIVE_UNEXPECTED_UNMATCHED', count: prospectiveUnexpectedUnmatched.length });
+if (prospectiveMapping.collisions.length) blockers.push({ code: 'PROSPECTIVE_MAPPING_COLLISION', count: prospectiveMapping.collisions.length });
 if (genericCuratedViews.length) blockers.push({ code: 'GENERIC_CURATED_VIEW_RULES', count: genericCuratedViews.length });
 if (nationsViewIssues.length) blockers.push({ code: 'NATIONS_VIEW_NOT_CURATED', count: nationsViewIssues.length });
 if (spineProvenanceIssues.length) blockers.push({ code: 'SPINE_PROVENANCE_INCOMPLETE', count: spineProvenanceIssues.length });
@@ -210,10 +222,21 @@ const report = {
     pipelineStatus: meta.status ?? null,
     pipelineVersion: meta.pipelineVersion ?? null,
     expectedPipelineVersion: PIPELINE_VERSION,
+    prospectiveMappings: prospectiveMapping.matches.size,
+    prospectiveSoftMappings: prospectiveMapping.soft.length,
+    prospectiveUnexpectedUnmatched: prospectiveUnexpectedUnmatched.length,
+    prospectiveCollisions: prospectiveMapping.collisions.length,
   },
   blockers,
   evidence: {
     genderMismatches,
+    prospectiveMapping: {
+      methodCounts: prospectiveMethodCounts,
+      soft: prospectiveMapping.soft,
+      unexpectedUnmatched: prospectiveUnexpectedUnmatched,
+      expectedNoCounterpart: prospectiveMapping.unmatched.filter(item => item.candidates === 'no-tipnr-counterpart'),
+      collisions: prospectiveMapping.collisions,
+    },
     heuristicMappings,
     fuzzyMappings,
     genericCuratedViews,
@@ -242,6 +265,10 @@ const md = [
   `- Heuristic skeleton mappings: ${heuristicMappings.length}`,
   `- Fuzzy skeleton mappings: ${fuzzyMappings.length}`,
   `- Seed↔TIPNR gender mismatches: ${genderMismatches.length}`,
+  `- Prospective matcher methods: ${JSON.stringify(prospectiveMethodCounts)}`,
+  `- Prospective soft mappings: ${prospectiveMapping.soft.length}`,
+  `- Prospective unexpected unmatched: ${prospectiveUnexpectedUnmatched.length}`,
+  `- Prospective collisions: ${prospectiveMapping.collisions.length}`,
   `- Generic rules in curated views: ${genericCuratedViews.length}`,
   `- Nations curated-view issues: ${nationsViewIssues.length}`,
   `- Spine provenance issues: ${spineProvenanceIssues.length}`,
