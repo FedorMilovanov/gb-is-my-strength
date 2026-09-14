@@ -192,8 +192,6 @@ function validatePublication(route, label) {
   }
 }
 
-function validateRoute(file) {}
-
 function validateRoute(file) {
   const route = readJson(file);
   if (!route) return;
@@ -204,7 +202,7 @@ function validateRoute(file) {
   const draftSheet = isAtlasSheetDraft(route);
   if (!draftSheet && (!route.meta?.id || !/^[a-z0-9-]+$/.test(route.meta.id))) bad(`${label}: meta.id invalid`);
   if (draftSheet && route.meta?.sheet_no == null) bad(`${label}: draft atlas sheet requires meta.sheet_no`);
-  if (!route.meta?.title) bad(`${label}: meta.title missing`);  if (!route.meta?.title) bad(`${label}: meta.title missing`);
+  if (!route.meta?.title) bad(`${label}: meta.title missing`);
   if (!route.meta?.era) bad(`${label}: meta.era missing`);
   if (!route.meta?.viewport_init || !isFiniteNum(route.meta.viewport_init.cx) || !isFiniteNum(route.meta.viewport_init.cy) || !isFiniteNum(route.meta.viewport_init.w)) bad(`${label}: meta.viewport_init invalid`);
 
@@ -442,7 +440,7 @@ function main() {
     }
   });
   checkAstroHub(hubRouteFiles);
-  if (errors.length) {  if (errors.length) {
+  if (errors.length) {
     console.log(`\n❌ Map route validation failed: ${errors.length} issue(s)`);
     process.exit(1);
   }
