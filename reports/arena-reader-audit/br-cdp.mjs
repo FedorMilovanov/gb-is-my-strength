@@ -1,0 +1,14 @@
+import { chromium } from 'playwright';
+const browser = await chromium.connectOverCDP('http://127.0.0.1:9222');
+const ctx = browser.contexts()[0] || await browser.newContext();
+const page = await ctx.newPage();
+await page.setViewportSize({width:1280,height:800});
+await page.setContent('<h1 id=t>Привет, браузер</h1><div id=b style="width:300px;height:20px;background:#7a2e2e">x</div>');
+console.log('version:', browser.version ? browser.version() : 'n/a');
+console.log('h1 text:', await page.textContent('#t'));
+console.log('h1 box:', JSON.stringify(await page.$eval('#t', e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height};})));
+console.log('div box:', JSON.stringify(await page.$eval('#b', e=>{const r=e.getBoundingClientRect();return {w:r.width};})));
+console.log('computed font:', await page.$eval('#t', e=>getComputedStyle(e).fontFamily+' / '+getComputedStyle(e).fontSize));
+await page.screenshot({path:'reports/arena-reader-audit/shot-test.png'});
+console.log('screenshot saved');
+await page.close(); await browser.close();

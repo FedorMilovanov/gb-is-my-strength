@@ -1,0 +1,946 @@
+[
+ {
+  "fam": "B",
+  "url": "/articles/serdce-i-duh/",
+  "vw": 1024,
+  "n": 48,
+  "medW": 772,
+  "sampleW": 772,
+  "sampleL": 375.3,
+  "sampleR": 1147.3,
+  "sampleTag": "P.(none) in ARTICLE",
+  "lineH": "36.225px",
+  "fontS": "20.7px",
+  "rail": {
+   "x": 24.6,
+   "right": 296.6,
+   "w": 272
+  },
+  "wrap": {
+   "x": 327.3,
+   "right": 820,
+   "w": 492.7
+  },
+  "main": {
+   "x": 351.3,
+   "right": 1171.3,
+   "w": 820
+  },
+  "art": {
+   "x": 375.3,
+   "right": 1147.3,
+   "w": 772
+  },
+  "underRail": 0,
+  "mainUnderRail": 0,
+  "drift": 249.3,
+  "ovfX": 0,
+  "bodyOvfX": 162,
+  "vars": {
+   "gbMeasure": "min( 46rem, calc(100vw - calc(clamp(16px,2.4vw,40px) + clamp",
+   "gbs2Line": "1.85",
+   "gbs2Measure": "min(46rem, min( 46rem, calc(100vw - calc",
+   "readerLine": "1.85",
+   "readerMeasure": "46rem",
+   "fontScale": "1.15"
+  },
+  "mainCls": "article-main",
+  "artCls": "(none)"
+ },
+ {
+  "fam": "B",
+  "url": "/articles/serdce-i-duh/",
+  "vw": 1280,
+  "n": 48,
+  "medW": 772,
+  "sampleW": 772,
+  "sampleL": 421.1,
+  "sampleR": 1193.1,
+  "sampleTag": "P.(none) in ARTICLE",
+  "lineH": "36.225px",
+  "fontS": "20.7px",
+  "rail": {
+   "x": 30.7,
+   "right": 334.7,
+   "w": 304
+  },
+  "wrap": {
+   "x": 373.1,
+   "right": 1076,
+   "w": 702.9
+  },
+  "main": {
+   "x": 397.1,
+   "right": 1217.1,
+   "w": 820
+  },
+  "art": {
+   "x": 421.1,
+   "right": 1193.1,
+   "w": 772
+  },
+  "underRail": 0,
+  "mainUnderRail": 0,
+  "drift": 167.1,
+  "ovfX": 0,
+  "bodyOvfX": 0,
+  "vars": {
+   "gbMeasure": "min( 46rem, calc(100vw - calc(clamp(16px,2.4vw,40px) + clamp",
+   "gbs2Line": "1.85",
+   "gbs2Measure": "min(46rem, min( 46rem, calc(100vw - calc",
+   "readerLine": "1.85",
+   "readerMeasure": "46rem",
+   "fontScale": "1.15"
+  },
+  "mainCls": "article-main",
+  "artCls": "(none)"
+ },
+ {
+  "fam": "B",
+  "url": "/articles/serdce-i-duh/",
+  "vw": 1440,
+  "n": 48,
+  "medW": 772,
+  "sampleW": 772,
+  "sampleL": 429.8,
+  "sampleR": 1201.8,
+  "sampleTag": "P.(none) in ARTICLE",
+  "lineH": "36.225px",
+  "fontS": "20.7px",
+  "rail": {
+   "x": 34.5,
+   "right": 338.5,
+   "w": 304
+  },
+  "wrap": {
+   "x": 381.8,
+   "right": 1117.8,
+   "w": 736
+  },
+  "main": {
+   "x": 405.8,
+   "right": 1225.8,
+   "w": 820
+  },
+  "art": {
+   "x": 429.8,
+   "right": 1201.8,
+   "w": 772
+  },
+  "underRail": 0,
+  "mainUnderRail": 0,
+  "drift": 95.8,
+  "ovfX": 0,
+  "bodyOvfX": 0,
+  "vars": {
+   "gbMeasure": "min( 46rem, calc(100vw - calc(clamp(16px,2.4vw,40px) + clamp",
+   "gbs2Line": "1.85",
+   "gbs2Measure": "min(46rem, min( 46rem, calc(100vw - calc",
+   "readerLine": "1.85",
+   "readerMeasure": "46rem",
+   "fontScale": "1.15"
+  },
+  "mainCls": "article-main",
+  "artCls": "(none)"
+ },
+ {
+  "fam": "B",
+  "url": "/articles/serdce-i-duh/",
+  "vw": 1920,
+  "n": 48,
+  "medW": 772,
+  "sampleW": 772,
+  "sampleL": 628,
+  "sampleR": 1400,
+  "sampleTag": "P.(none) in ARTICLE",
+  "lineH": "36.225px",
+  "fontS": "20.7px",
+  "rail": {
+   "x": 40,
+   "right": 344,
+   "w": 304
+  },
+  "wrap": {
+   "x": 580,
+   "right": 1340,
+   "w": 760
+  },
+  "main": {
+   "x": 604,
+   "right": 1424,
+   "w": 820
+  },
+  "art": {
+   "x": 628,
+   "right": 1400,
+   "w": 772
+  },
+  "underRail": 0,
+  "mainUnderRail": 0,
+  "drift": 54,
+  "ovfX": 0,
+  "bodyOvfX": 0,
+  "vars": {
+   "gbMeasure": "min(760px, calc(100vw - 48px))",
+   "gbs2Line": "1.85",
+   "gbs2Measure": "min(46rem, min(760px, calc(100vw - 48px)",
+   "readerLine": "1.85",
+   "readerMeasure": "46rem",
+   "fontScale": "1.15"
+  },
+  "mainCls": "article-main",
+  "artCls": "(none)"
+ },
+ {
+  "fam": "B",
+  "url": "/hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda/",
+  "vw": 1024,
+  "n": 131,
+  "medW": 772,
+  "sampleW": 772,
+  "sampleL": 375.3,
+  "sampleR": 1147.3,
+  "sampleTag": "P.(none) in genesis6-prose",
+  "lineH": "36.225px",
+  "fontS": "20.7px",
+  "rail": {
+   "x": 24.6,
+   "right": 296.6,
+   "w": 272
+  },
+  "wrap": {
+   "x": 327.3,
+   "right": 820,
+   "w": 492.7
+  },
+  "main": {
+   "x": 351.3,
+   "right": 1171.3,
+   "w": 820
+  },
+  "art": {
+   "x": 375.3,
+   "right": 1147.3,
+   "w": 772
+  },
+  "underRail": 0,
+  "mainUnderRail": 0,
+  "drift": 249.3,
+  "ovfX": 0,
+  "bodyOvfX": 162,
+  "vars": {
+   "gbMeasure": "min( 46rem, calc(100vw - calc(clamp(16px,2.4vw,40px) + clamp",
+   "gbs2Line": "1.85",
+   "gbs2Measure": "min(46rem, min( 46rem, calc(100vw - calc",
+   "readerLine": "1.85",
+   "readerMeasure": "46rem",
+   "fontScale": "1.15"
+  },
+  "mainCls": "article-main",
+  "artCls": "(none)"
+ },
+ {
+  "fam": "B",
+  "url": "/hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda/",
+  "vw": 1280,
+  "n": 131,
+  "medW": 772,
+  "sampleW": 772,
+  "sampleL": 421.1,
+  "sampleR": 1193.1,
+  "sampleTag": "P.(none) in genesis6-prose",
+  "lineH": "36.225px",
+  "fontS": "20.7px",
+  "rail": {
+   "x": 30.7,
+   "right": 334.7,
+   "w": 304
+  },
+  "wrap": {
+   "x": 373.1,
+   "right": 1076,
+   "w": 702.9
+  },
+  "main": {
+   "x": 397.1,
+   "right": 1217.1,
+   "w": 820
+  },
+  "art": {
+   "x": 421.1,
+   "right": 1193.1,
+   "w": 772
+  },
+  "underRail": 0,
+  "mainUnderRail": 0,
+  "drift": 167.1,
+  "ovfX": 0,
+  "bodyOvfX": 0,
+  "vars": {
+   "gbMeasure": "min( 46rem, calc(100vw - calc(clamp(16px,2.4vw,40px) + clamp",
+   "gbs2Line": "1.85",
+   "gbs2Measure": "min(46rem, min( 46rem, calc(100vw - calc",
+   "readerLine": "1.85",
+   "readerMeasure": "46rem",
+   "fontScale": "1.15"
+  },
+  "mainCls": "article-main",
+  "artCls": "(none)"
+ },
+ {
+  "fam": "B",
+  "url": "/hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda/",
+  "vw": 1440,
+  "n": 131,
+  "medW": 772,
+  "sampleW": 772,
+  "sampleL": 429.8,
+  "sampleR": 1201.8,
+  "sampleTag": "P.(none) in genesis6-prose",
+  "lineH": "36.225px",
+  "fontS": "20.7px",
+  "rail": {
+   "x": 34.5,
+   "right": 338.5,
+   "w": 304
+  },
+  "wrap": {
+   "x": 381.8,
+   "right": 1117.8,
+   "w": 736
+  },
+  "main": {
+   "x": 405.8,
+   "right": 1225.8,
+   "w": 820
+  },
+  "art": {
+   "x": 429.8,
+   "right": 1201.8,
+   "w": 772
+  },
+  "underRail": 0,
+  "mainUnderRail": 0,
+  "drift": 95.8,
+  "ovfX": 0,
+  "bodyOvfX": 0,
+  "vars": {
+   "gbMeasure": "min( 46rem, calc(100vw - calc(clamp(16px,2.4vw,40px) + clamp",
+   "gbs2Line": "1.85",
+   "gbs2Measure": "min(46rem, min( 46rem, calc(100vw - calc",
+   "readerLine": "1.85",
+   "readerMeasure": "46rem",
+   "fontScale": "1.15"
+  },
+  "mainCls": "article-main",
+  "artCls": "(none)"
+ },
+ {
+  "fam": "B",
+  "url": "/hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda/",
+  "vw": 1920,
+  "n": 131,
+  "medW": 772,
+  "sampleW": 772,
+  "sampleL": 628,
+  "sampleR": 1400,
+  "sampleTag": "P.(none) in genesis6-prose",
+  "lineH": "36.225px",
+  "fontS": "20.7px",
+  "rail": {
+   "x": 40,
+   "right": 344,
+   "w": 304
+  },
+  "wrap": {
+   "x": 580,
+   "right": 1340,
+   "w": 760
+  },
+  "main": {
+   "x": 604,
+   "right": 1424,
+   "w": 820
+  },
+  "art": {
+   "x": 628,
+   "right": 1400,
+   "w": 772
+  },
+  "underRail": 0,
+  "mainUnderRail": 0,
+  "drift": 54,
+  "ovfX": 0,
+  "bodyOvfX": 0,
+  "vars": {
+   "gbMeasure": "min(760px, calc(100vw - 48px))",
+   "gbs2Line": "1.85",
+   "gbs2Measure": "min(46rem, min(760px, calc(100vw - 48px)",
+   "readerLine": "1.85",
+   "readerMeasure": "46rem",
+   "fontScale": "1.15"
+  },
+  "mainCls": "article-main",
+  "artCls": "(none)"
+ },
+ {
+  "fam": "A",
+  "url": "/articles/dzhon-gill-chast-1-chelovek/",
+  "vw": 1024,
+  "n": 67,
+  "medW": 444.7,
+  "sampleW": 444.7,
+  "sampleL": 351.3,
+  "sampleR": 796,
+  "sampleTag": "P.reveal in article-body",
+  "lineH": "38.295px",
+  "fontS": "20.7px",
+  "rail": {
+   "x": 24.6,
+   "right": 296.6,
+   "w": 272
+  },
+  "wrap": {
+   "x": 327.3,
+   "right": 820,
+   "w": 492.7
+  },
+  "main": {
+   "x": 351.3,
+   "right": 796,
+   "w": 444.7
+  },
+  "art": {
+   "x": 351.3,
+   "right": 796,
+   "w": 444.7
+  },
+  "underRail": 0,
+  "mainUnderRail": 0,
+  "drift": 61.6,
+  "ovfX": 0,
+  "bodyOvfX": 0,
+  "vars": {
+   "gbMeasure": "min( 46rem, calc(100vw - calc(clamp(16px,2.4vw,40px) + clamp",
+   "gbs2Line": "1.85",
+   "gbs2Measure": "min(46rem, min( 46rem, calc(100vw - calc",
+   "readerLine": "1.85",
+   "readerMeasure": "46rem",
+   "fontScale": "1.15"
+  },
+  "mainCls": "(none)",
+  "artCls": "article-body"
+ },
+ {
+  "fam": "A",
+  "url": "/articles/dzhon-gill-chast-1-chelovek/",
+  "vw": 1280,
+  "n": 67,
+  "medW": 654.9,
+  "sampleW": 654.9,
+  "sampleL": 397.1,
+  "sampleR": 1052,
+  "sampleTag": "P.reveal in article-body",
+  "lineH": "38.295px",
+  "fontS": "20.7px",
+  "rail": {
+   "x": 30.7,
+   "right": 334.7,
+   "w": 304
+  },
+  "wrap": {
+   "x": 373.1,
+   "right": 1076,
+   "w": 702.9
+  },
+  "main": {
+   "x": 397.1,
+   "right": 1052,
+   "w": 654.9
+  },
+  "art": {
+   "x": 397.1,
+   "right": 1052,
+   "w": 654.9
+  },
+  "underRail": 0,
+  "mainUnderRail": 0,
+  "drift": 84.5,
+  "ovfX": 0,
+  "bodyOvfX": 0,
+  "vars": {
+   "gbMeasure": "min( 46rem, calc(100vw - calc(clamp(16px,2.4vw,40px) + clamp",
+   "gbs2Line": "1.85",
+   "gbs2Measure": "min(46rem, min( 46rem, calc(100vw - calc",
+   "readerLine": "1.85",
+   "readerMeasure": "46rem",
+   "fontScale": "1.15"
+  },
+  "mainCls": "(none)",
+  "artCls": "article-body"
+ },
+ {
+  "fam": "A",
+  "url": "/articles/dzhon-gill-chast-1-chelovek/",
+  "vw": 1440,
+  "n": 67,
+  "medW": 688,
+  "sampleW": 688,
+  "sampleL": 405.8,
+  "sampleR": 1093.8,
+  "sampleTag": "P.reveal in article-body",
+  "lineH": "38.295px",
+  "fontS": "20.7px",
+  "rail": {
+   "x": 34.5,
+   "right": 338.5,
+   "w": 304
+  },
+  "wrap": {
+   "x": 381.8,
+   "right": 1117.8,
+   "w": 736
+  },
+  "main": {
+   "x": 405.8,
+   "right": 1093.8,
+   "w": 688
+  },
+  "art": {
+   "x": 405.8,
+   "right": 1093.8,
+   "w": 688
+  },
+  "underRail": 0,
+  "mainUnderRail": 0,
+  "drift": 29.8,
+  "ovfX": 0,
+  "bodyOvfX": 0,
+  "vars": {
+   "gbMeasure": "min( 46rem, calc(100vw - calc(clamp(16px,2.4vw,40px) + clamp",
+   "gbs2Line": "1.85",
+   "gbs2Measure": "min(46rem, min( 46rem, calc(100vw - calc",
+   "readerLine": "1.85",
+   "readerMeasure": "46rem",
+   "fontScale": "1.15"
+  },
+  "mainCls": "(none)",
+  "artCls": "article-body"
+ },
+ {
+  "fam": "A",
+  "url": "/articles/dzhon-gill-chast-1-chelovek/",
+  "vw": 1920,
+  "n": 67,
+  "medW": 712,
+  "sampleW": 712,
+  "sampleL": 604,
+  "sampleR": 1316,
+  "sampleTag": "P.reveal in article-body",
+  "lineH": "38.295px",
+  "fontS": "20.7px",
+  "rail": {
+   "x": 40,
+   "right": 344,
+   "w": 304
+  },
+  "wrap": {
+   "x": 580,
+   "right": 1340,
+   "w": 760
+  },
+  "main": {
+   "x": 604,
+   "right": 1316,
+   "w": 712
+  },
+  "art": {
+   "x": 604,
+   "right": 1316,
+   "w": 712
+  },
+  "underRail": 0,
+  "mainUnderRail": 0,
+  "drift": 0,
+  "ovfX": 0,
+  "bodyOvfX": 0,
+  "vars": {
+   "gbMeasure": "min(760px, calc(100vw - 48px))",
+   "gbs2Line": "1.85",
+   "gbs2Measure": "min(46rem, min(760px, calc(100vw - 48px)",
+   "readerLine": "1.85",
+   "readerMeasure": "46rem",
+   "fontScale": "1.15"
+  },
+  "mainCls": "(none)",
+  "artCls": "article-body"
+ },
+ {
+  "fam": "A",
+  "url": "/baptisty-rossii/sovetskaya-noch/",
+  "vw": 1024,
+  "n": 52,
+  "medW": 444.7,
+  "sampleW": 444.7,
+  "sampleL": 351.3,
+  "sampleR": 796,
+  "sampleTag": "P.(none) in article-body",
+  "lineH": "38.295px",
+  "fontS": "20.7px",
+  "rail": {
+   "x": 24.6,
+   "right": 296.6,
+   "w": 272
+  },
+  "wrap": {
+   "x": 327.3,
+   "right": 820,
+   "w": 492.7
+  },
+  "main": {
+   "x": 351.3,
+   "right": 796,
+   "w": 444.7
+  },
+  "art": {
+   "x": 351.3,
+   "right": 796,
+   "w": 444.7
+  },
+  "underRail": 0,
+  "mainUnderRail": 0,
+  "drift": 61.6,
+  "ovfX": 0,
+  "bodyOvfX": 0,
+  "vars": {
+   "gbMeasure": "min( 46rem, calc(100vw - calc(clamp(16px,2.4vw,40px) + clamp",
+   "gbs2Line": "1.85",
+   "gbs2Measure": "min(46rem, min( 46rem, calc(100vw - calc",
+   "readerLine": "1.85",
+   "readerMeasure": "46rem",
+   "fontScale": "1.15"
+  },
+  "mainCls": "(none)",
+  "artCls": "article-body"
+ },
+ {
+  "fam": "A",
+  "url": "/baptisty-rossii/sovetskaya-noch/",
+  "vw": 1280,
+  "n": 52,
+  "medW": 654.9,
+  "sampleW": 654.9,
+  "sampleL": 397.1,
+  "sampleR": 1052,
+  "sampleTag": "P.(none) in article-body",
+  "lineH": "38.295px",
+  "fontS": "20.7px",
+  "rail": {
+   "x": 30.7,
+   "right": 334.7,
+   "w": 304
+  },
+  "wrap": {
+   "x": 373.1,
+   "right": 1076,
+   "w": 702.9
+  },
+  "main": {
+   "x": 397.1,
+   "right": 1052,
+   "w": 654.9
+  },
+  "art": {
+   "x": 397.1,
+   "right": 1052,
+   "w": 654.9
+  },
+  "underRail": 0,
+  "mainUnderRail": 0,
+  "drift": 84.5,
+  "ovfX": 0,
+  "bodyOvfX": 0,
+  "vars": {
+   "gbMeasure": "min( 46rem, calc(100vw - calc(clamp(16px,2.4vw,40px) + clamp",
+   "gbs2Line": "1.85",
+   "gbs2Measure": "min(46rem, min( 46rem, calc(100vw - calc",
+   "readerLine": "1.85",
+   "readerMeasure": "46rem",
+   "fontScale": "1.15"
+  },
+  "mainCls": "(none)",
+  "artCls": "article-body"
+ },
+ {
+  "fam": "A",
+  "url": "/baptisty-rossii/sovetskaya-noch/",
+  "vw": 1440,
+  "n": 52,
+  "medW": 688,
+  "sampleW": 688,
+  "sampleL": 405.8,
+  "sampleR": 1093.8,
+  "sampleTag": "P.(none) in article-body",
+  "lineH": "38.295px",
+  "fontS": "20.7px",
+  "rail": {
+   "x": 34.5,
+   "right": 338.5,
+   "w": 304
+  },
+  "wrap": {
+   "x": 381.8,
+   "right": 1117.8,
+   "w": 736
+  },
+  "main": {
+   "x": 405.8,
+   "right": 1093.8,
+   "w": 688
+  },
+  "art": {
+   "x": 405.8,
+   "right": 1093.8,
+   "w": 688
+  },
+  "underRail": 0,
+  "mainUnderRail": 0,
+  "drift": 29.8,
+  "ovfX": 0,
+  "bodyOvfX": 0,
+  "vars": {
+   "gbMeasure": "min( 46rem, calc(100vw - calc(clamp(16px,2.4vw,40px) + clamp",
+   "gbs2Line": "1.85",
+   "gbs2Measure": "min(46rem, min( 46rem, calc(100vw - calc",
+   "readerLine": "1.85",
+   "readerMeasure": "46rem",
+   "fontScale": "1.15"
+  },
+  "mainCls": "(none)",
+  "artCls": "article-body"
+ },
+ {
+  "fam": "A",
+  "url": "/baptisty-rossii/sovetskaya-noch/",
+  "vw": 1920,
+  "n": 52,
+  "medW": 712,
+  "sampleW": 712,
+  "sampleL": 604,
+  "sampleR": 1316,
+  "sampleTag": "P.(none) in article-body",
+  "lineH": "38.295px",
+  "fontS": "20.7px",
+  "rail": {
+   "x": 40,
+   "right": 344,
+   "w": 304
+  },
+  "wrap": {
+   "x": 580,
+   "right": 1340,
+   "w": 760
+  },
+  "main": {
+   "x": 604,
+   "right": 1316,
+   "w": 712
+  },
+  "art": {
+   "x": 604,
+   "right": 1316,
+   "w": 712
+  },
+  "underRail": 0,
+  "mainUnderRail": 0,
+  "drift": 0,
+  "ovfX": 0,
+  "bodyOvfX": 0,
+  "vars": {
+   "gbMeasure": "min(760px, calc(100vw - 48px))",
+   "gbs2Line": "1.85",
+   "gbs2Measure": "min(46rem, min(760px, calc(100vw - 48px)",
+   "readerLine": "1.85",
+   "readerMeasure": "46rem",
+   "fontScale": "1.15"
+  },
+  "mainCls": "(none)",
+  "artCls": "article-body"
+ },
+ {
+  "fam": "HR",
+  "url": "/articles/lot-i-sodom/",
+  "vw": 1024,
+  "n": 58,
+  "medW": 772,
+  "sampleW": 772,
+  "sampleL": 118.5,
+  "sampleR": 890.5,
+  "sampleTag": "P.article-lead in article-body",
+  "lineH": "38.295px",
+  "fontS": "20.7px",
+  "rail": {
+   "x": 0,
+   "right": 0,
+   "w": 0
+  },
+  "wrap": null,
+  "main": {
+   "x": 94.5,
+   "right": 914.5,
+   "w": 820
+  },
+  "art": {
+   "x": 118.5,
+   "right": 890.5,
+   "w": 772
+  },
+  "underRail": 0,
+  "mainUnderRail": 0,
+  "drift": -7.5,
+  "ovfX": 0,
+  "bodyOvfX": 0,
+  "vars": {
+   "gbMeasure": "",
+   "gbs2Line": "",
+   "gbs2Measure": "",
+   "readerLine": "1.85",
+   "readerMeasure": "46rem",
+   "fontScale": "1.15"
+  },
+  "mainCls": "article-main article-main--hrail",
+  "artCls": "article-body"
+ },
+ {
+  "fam": "HR",
+  "url": "/articles/lot-i-sodom/",
+  "vw": 1280,
+  "n": 58,
+  "medW": 863.5,
+  "sampleW": 863.5,
+  "sampleL": 339.1,
+  "sampleR": 1202.6,
+  "sampleTag": "P.article-lead in article-body",
+  "lineH": "38.295px",
+  "fontS": "20.7px",
+  "rail": {
+   "x": 30.7,
+   "right": 300.7,
+   "w": 270
+  },
+  "wrap": null,
+  "main": {
+   "x": 315.1,
+   "right": 1226.6,
+   "w": 911.5
+  },
+  "art": {
+   "x": 339.1,
+   "right": 1202.6,
+   "w": 863.5
+  },
+  "underRail": 0,
+  "mainUnderRail": 0,
+  "drift": 130.8,
+  "ovfX": 0,
+  "bodyOvfX": 0,
+  "vars": {
+   "gbMeasure": "",
+   "gbs2Line": "",
+   "gbs2Measure": "",
+   "readerLine": "1.85",
+   "readerMeasure": "46rem",
+   "fontScale": "1.15"
+  },
+  "mainCls": "article-main article-main--hrail",
+  "artCls": "article-body"
+ },
+ {
+  "fam": "HR",
+  "url": "/articles/lot-i-sodom/",
+  "vw": 1440,
+  "n": 58,
+  "medW": 928,
+  "sampleW": 928,
+  "sampleL": 347.8,
+  "sampleR": 1275.8,
+  "sampleTag": "P.article-lead in article-body",
+  "lineH": "38.295px",
+  "fontS": "20.7px",
+  "rail": {
+   "x": 34.5,
+   "right": 304.5,
+   "w": 270
+  },
+  "wrap": null,
+  "main": {
+   "x": 299.8,
+   "right": 1323.8,
+   "w": 1024
+  },
+  "art": {
+   "x": 323.8,
+   "right": 1299.8,
+   "w": 976
+  },
+  "underRail": 0,
+  "mainUnderRail": 4.8,
+  "drift": 91.8,
+  "ovfX": 0,
+  "bodyOvfX": 0,
+  "vars": {
+   "gbMeasure": "",
+   "gbs2Line": "",
+   "gbs2Measure": "",
+   "readerLine": "1.85",
+   "readerMeasure": "46rem",
+   "fontScale": "1.15"
+  },
+  "mainCls": "article-main article-main--hrail",
+  "artCls": "article-body"
+ },
+ {
+  "fam": "HR",
+  "url": "/articles/lot-i-sodom/",
+  "vw": 1920,
+  "n": 58,
+  "medW": 928,
+  "sampleW": 928,
+  "sampleL": 488.5,
+  "sampleR": 1416.5,
+  "sampleTag": "P.article-lead in article-body",
+  "lineH": "38.295px",
+  "fontS": "20.7px",
+  "rail": {
+   "x": 40,
+   "right": 310,
+   "w": 270
+  },
+  "wrap": null,
+  "main": {
+   "x": 440.5,
+   "right": 1464.5,
+   "w": 1024
+  },
+  "art": {
+   "x": 464.5,
+   "right": 1440.5,
+   "w": 976
+  },
+  "underRail": 0,
+  "mainUnderRail": 0,
+  "drift": -7.5,
+  "ovfX": 0,
+  "bodyOvfX": 0,
+  "vars": {
+   "gbMeasure": "",
+   "gbs2Line": "",
+   "gbs2Measure": "",
+   "readerLine": "1.85",
+   "readerMeasure": "46rem",
+   "fontScale": "1.15"
+  },
+  "mainCls": "article-main article-main--hrail",
+  "artCls": "article-body"
+ }
+]
