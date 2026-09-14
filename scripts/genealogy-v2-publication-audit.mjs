@@ -74,6 +74,7 @@ if (pipelineCurrent) {
   if (!publicationEvidence || typeof publicationEvidence !== 'object') {
     publicationEvidenceIssues.push('missing-publicationEvidence');
   } else {
+    if (publicationEvidence.schemaVersion !== 1) publicationEvidenceIssues.push('publicationEvidence-schema-version');
     if (!Array.isArray(publicationEvidence.skeleton?.decisions)) publicationEvidenceIssues.push('missing-skeleton-decisions');
     if (!Array.isArray(publicationEvidence.skeleton?.soft)) publicationEvidenceIssues.push('missing-skeleton-soft');
     if (!Array.isArray(publicationEvidence.skeleton?.unmatched)) publicationEvidenceIssues.push('missing-skeleton-unmatched');
