@@ -16,6 +16,7 @@
         "title": { "type": "string", "minLength": 2 },
         "title_he": { "type": "string" },
         "subtitle": { "type": "string" },
+        "base_geo_url": { "type": "string", "pattern": "^[^?#]+\\.svg(?:[?#].*)?$" },
         "era": { "type": "string" },
         "stats": { "type": "object", "additionalProperties": true },
         "viewport_init": {
