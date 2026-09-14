@@ -144,15 +144,15 @@ export function normalizeRuCandidate(en, cand) {
   if (/[бвгджзклмнпрстфхцчшщ]а$/.test(c) && /[bcdfgklmnpqrstvxz]$/i.test(e) && c.length >= 5) {
     return c.slice(0, -1);
   }
-  // 3) русская косвенная форма имён, чья canonical форма по EN оканчивается на -a/-ah.
+  // 3) -ia/-iah: род./дат. -ии → именит. -ия (Марии→Мария).
+  if (/(?:ia|iah)$/i.test(e) && /ии$/u.test(c) && c.length >= 4) {
+    return c.slice(0, -1) + 'я';
+  }
+  // 4) русская косвенная форма имён, чья canonical форма по EN оканчивается на -a/-ah.
   //    Шеву→Шева, Хавилу→Хавила, Иски→Иска, Елисавету→Елисавета.
   if (/(?:a|ah)$/i.test(e) && c.length >= 4) {
     if (/у$/u.test(c)) return c.slice(0, -1) + 'а';
     if (/[ыи]$/u.test(c)) return c.slice(0, -1) + 'а';
-  }
-  // 4) -ia/-iah: род./дат. -ии → именит. -ия (Марии→Мария).
-  if (/(?:ia|iah)$/i.test(e) && /ии$/u.test(c) && c.length >= 4) {
-    return c.slice(0, -1) + 'я';
   }
   return c;
 }
