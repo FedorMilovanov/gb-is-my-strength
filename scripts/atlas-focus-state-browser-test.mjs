@@ -286,7 +286,29 @@ async function runCase(browserName, browserType, baseUrl, width) {
       });
       await page.setViewportSize({ width: 981, height: HEIGHT });
       await waitForResponsiveState(page, 981);
-      await waitForFocusState(page, 'desktop-theme');
+      try {
+        await waitForFocusState(page, 'desktop-theme');
+      } catch (error) {
+        const focusDebug = await page.evaluate(() => {
+          const active = document.activeElement;
+          const target = document.querySelector('#atlasSidebar [data-atlas-group]');
+          const sidebar = document.getElementById('atlasSidebar');
+          const trigger = document.getElementById('atlasFilterTrigger');
+          return {
+            activeTag: active?.tagName || null,
+            activeId: active?.id || null,
+            activeClass: active?.className || null,
+            activeRects: active?.getClientRects?.().length ?? null,
+            targetRects: target?.getClientRects?.().length ?? null,
+            geometryReads: Number(window.__atlasFocusGeometryReadsForTest || 0),
+            sidebarInert: sidebar?.hasAttribute('inert') ?? null,
+            sidebarAriaHidden: sidebar?.getAttribute('aria-hidden') ?? null,
+            triggerRects: trigger?.getClientRects?.().length ?? null,
+            drawer: matchMedia('(max-width: 980px)').matches,
+          };
+        });
+        throw new Error(`${browserName}/${width} open-drawer-to-desktop timeout: ${JSON.stringify(focusDebug)}\n${error.stack || error}`);
+      }
       const layoutWitness = await page.evaluate(() => {
         const target = document.querySelector('#atlasSidebar [data-atlas-group]');
         const geometryReads = Number(window.__atlasFocusGeometryReadsForTest || 0);
