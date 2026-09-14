@@ -253,7 +253,7 @@ function renderedCount(htmlSrc, label) {
   const dataMatch = htmlSrc.match(new RegExp(`data-${label}-count=["'](\\d+)["']`, 'i'));
   const visibleMatch = label === 'audit'
     ? htmlSrc.match(/<b[^>]*>\s*(\d+)\s*<\/b>\s*<span[^>]*>\s*на\s+аудите\s*<\/span>/i)
-    : htmlSrc.match(/<b[^>]*>\s*(\d+)\s*<\/b>\s*<span[^>]*>\s*карта\s+открыта\s*<\/span>/i);
+    : htmlSrc.match(/<b[^>]*>\s*(\d+)\s*<\/b>\s*<span[^>]*>\s*(?:карта\s+открыта|карты\s+открыты|карт\s+открыто)\s*<\/span>/i);
   return {
     data: dataMatch ? Number(dataMatch[1]) : null,
     visible: visibleMatch ? Number(visibleMatch[1]) : null,
@@ -268,9 +268,12 @@ function hasGovernedAuditPendingDesign({ htmlSrc, heroSrc, missingIds, inventory
 
   const producerIsGoverned =
     heroSrc.includes('getKartyHubInventory') &&
+    heroSrc.includes('publishedRecords') &&
     heroSrc.includes('data-audit-count={auditCount}') &&
+    heroSrc.includes('data-published-count={publishedCount}') &&
     heroSrc.includes('<b>{auditCount}</b><span>на аудите</span>') &&
-    heroSrc.includes('<b>{publishedCount}</b><span>карта открыта</span>');
+    heroSrc.includes('<b>{publishedCount}</b><span>{publishedLabel(publishedCount)}</span>') &&
+    heroSrc.includes('data-karty-published={record.slug}');
   if (!producerIsGoverned) return false;
 
   if (!isBuiltHtml) return true;
