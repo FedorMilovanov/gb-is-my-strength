@@ -59,6 +59,16 @@ jobs:
       - name: Run deterministic genealogy matcher regressions
         run: node scripts/genealogy-build/build.mjs test
 
+      - name: Prove structural validate cannot rewrite publication evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          before="$(sha256sum data/genealogy/v2/VALIDATION.md | awk '{print $1}')"
+          node scripts/genealogy-build/build.mjs validate
+          after="$(sha256sum data/genealogy/v2/VALIDATION.md | awk '{print $1}')"
+          test "$before" = "$after"
+          git diff --exit-code -- data/genealogy/v2/VALIDATION.md
+
       - name: Audit committed v2 publication readiness and runtime boundary
         run: node scripts/genealogy-v2-publication-audit.mjs
 
