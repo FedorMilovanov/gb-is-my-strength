@@ -33,7 +33,7 @@ export const SOURCES = {
   },
 };
 
-export const PIPELINE_VERSION = '0.1.0-phase1';
+export const PIPELINE_VERSION = '0.2.0-phase1-publication-safety';
 
 /** Жёсткие инварианты валидатора (провал = exit 1). */
 export const HARD_INVARIANTS = {
