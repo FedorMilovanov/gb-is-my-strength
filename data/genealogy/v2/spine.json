@@ -384,5 +384,17 @@
    "key": "Adam@Gen.2.19",
    "ru": "Адам"
   }
- ]
+ ],
+ "model": {
+  "kind": "interpretive-projection",
+  "assertion": "editorial-harmonization",
+  "confidence": "disputed",
+  "editorialPosition": "preferred",
+  "directScripture": false,
+  "refs": [
+   "Мф 1:16",
+   "Лк 3:23–38"
+  ],
+  "note": "Переход Иисус → Мария → Илий используется как предпочитаемая гармонизация. Лк 3:23 не называет Марию дочерью Илия."
+ }
 }
