@@ -653,6 +653,7 @@
     "indexable": false,
     "sitemap": false,
     "llms": false,
-    "pagefind": false
+    "pagefind": false,
+    "hub": "withheld"
   }
 }
