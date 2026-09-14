@@ -117,11 +117,13 @@
 
 ---
 
-## 6. Баг №5 (средний, доказан): на hrail-десктопе «Настройки чтения» — невидимая кнопка
+## 6. Баг №5 — **ОТОЗВАН (false positive, 2026-09-15)**: «невидимые настройки» на hrail-десктопе
 
-Замер (`r-verify.mjs`, `/articles/lot-i-sodom/`, 1280px): клик по `.hrail-bottom-btn[aria-label="Настройки чтения"]` переключает состояние, но лист `#hmSettings.hmsheet.hmsettings` остаётся `display:none`, сегменты «Плотный/Свободный/Узкая/Сепия» имеют rect **0×0** (`shots/hrail-desktop-settings.png`).
-Причина в CSS компонента (`src/components/article-pilots/_shared/ReaderSettings.astro:99–101` + собранный `_astro/ReaderSettings.*.css`): `.hmsettings{display:none}` на верхнем уровне, а включающее правило `.hmsettings.is-open{display:block}` лежит **внутри мобильного медиа**; на ≥1200px есть только `.hmsheet:not(.hmsettings){display:none!important}` и `.hmsettings .hmsheet-panel{width:300px}` — включать нечему.
-Следствие: на трёх страницах герменевтики десктопный пользователь не имеет UI для интервала/ширины/шрифта вообще (есть только переключатель темы в рельсе); мобильный (<1200px) лист при этом работает.
+Первоначальный замер утверждал: лист `#hmSettings` остаётся `display:none`, сегменты 0×0. Перепроверка скриншотом (`shots/hrail-desktop-settings.png`, а теперь и `shots/fix-hrail-sepia.png`, 1280px) показывает поповер **открытым**, со всеми сегментами. Ошибки зонда:
+1. Rect 0×0 измерялся у `#hmSettings` — это нулевой flow-контейнер; сам поповер — его `position:fixed` потомок, у которого размеры нормальные.
+2. «display:none» получилось из неоднозначного селектора `.hmsheet`: он матчил закрытый TOC-лист `#hmSheet`, а не `#hmSettings`.
+3. Утверждение «включающее правило лежит внутри мобильного медиа» неверно: в исходнике `ReaderSettings.astro:99–101` `.hmsettings.is-open{display:block}` уже вынесено в `@media all` (с поясняющим комментарием), и собранный `dist/_astro/ReaderSettings.*.css` этому соответствует.
+Вывод: десктопный UI настроек hrail работает; баг снят с плана починки. Урок метода зафиксирован в §0-примечании: display-утверждения подтверждать скриншотом, листы зондировать по id.
 
 ---
 
@@ -181,3 +183,39 @@
 
 * Реальные устройства (safe-area на notch-телефонах, производительность 102 backdrop-filter на слабом железе), TTS/Vosk-плеер в рельсе, view-transitions между статьями разных семейств, длинные оглавления в `toc-sheet`.
 * Прод-специфика: метрика, PWA/SW-режим и поведение на реальных notch-устройствах (в песочнице внешние запросы частично недоступны).
+
+---
+
+## 13. Реализованные исправления (2026-09-15, ветка `arena/01a0a1ce-gb-is-my-strength`)
+
+План §11 выполнен в исходниках (`css/`, `js/`, `src/components/`); `dist/` не в git и пересобирается CI (`npm run strangler:build`). Каждая правка переверена живым Chromium (CDP :9222) на собранном dist.
+
+### 13.1 Что изменено (файл → суть)
+
+1. **`css/reader-preferences.css`** — мост настроек на семейство B: селекторы интервала/кегля и кэпа ширины расширены на `[data-gill-v16] .page-wrap > main.article-main` (+ `> article > *` для кэпа) и получили `margin-inline:auto` (центровка вместо дрейфа); новый блок `@media (max-width:960px)`: `html[data-reader-measure="narrow|normal|wide"]` → `--gb-mobile-measure` 80vw/92vw/100% (100% вместо 100vw — классический скроллбар-овершут), применяется к `.page-wrap`/`main.article-main` обоих семейств.
+2. **`css/site.css`** (минифицирован) — нейтрализатор семейства B: `.gbs2-world[data-gill-v16] .page-wrap>main.article-main{width:auto!important;max-width:100%!important;margin:0!important;padding:0!important}` рядом с существующим `.page-wrap>main:not([class])`.
+3. **`css/floating-cluster.css`** — (a) `--gb-measure` на ≥64em теперь `min(var(--gb-reader-measure,43rem),760px,calc(100vw - 48px))`: десктопная ширина слушает настройку; (b) удалено мёртвое противоречие `.setting-group--measure{display:none}` (§4); (c) удалён мёртвый `:root` внутри `@layer components` (§5, 744 байта, значения противоречили живым токенам); (d) z-эскалация `2147483000/…100` заменена токенами `var(--z-bottom-bar,2000)` / `var(--z-overlay-high,3000)` (§8); (e) тап-таргеты: иконки верхней/нижней панелей 40/38→44, в `@media ≤390` 36/34→40, «назад» в toc-sheet 34/36→40, ghost-кнопки 38→44.
+4. **`js/floating-cluster-controller.js`** — `closeOpenSheetsForSearch()`: при открытии поиска (`openSearch()` — основной путь, и `window`-слушатель `gb:openSearch` — фолбэк) закрываются открытые оверлеи `.toc-overlay.is-open / .gill-settings-overlay.is-open / .gbs2-open` через их `[data-overlay-close]/[data-gbs2-close]`. Убирает «поиск поверх открытого листа» (§8-стек).
+5. **`src/components/article-pilots/_shared/ReaderSettings.astro`** — (a) `MEASURE_VALUES` 42/50/58 → **36/43/46** = шкала стора (конец last-writer-wins войны, §7); фолбэк `--hm-article-measure:50rem→43rem`; (b) удалены `background:#ece0c6 !important` (селекторы root/.article-main/.article-body и `html:has(...) body`) — сепия hrail теперь целиком из универсальных токенов `#eee3c8` (§7).
+6. **`src/components/article-pilots/gill-series/GillReaderSettingsSheet.astro`** — `--gbs2-article-measure` пишется простым значением (убран `min(…, var(--gb-measure,…))`, возвращавший десктопный кэп и рассогласование шкал).
+
+### 13.2 Переверификация (до → после)
+
+| Проверка | До | После | Скрипт/шот |
+|---|---|---|---|
+| Интервал на B (клики по сегментам) | фикс. 1.750 | 1.450/1.600/1.850 = как A | `r-line.mjs` |
+| Clip правым краем @1024 | 39 стр. (45/45 B, ovfX 162) | 1 стр. (`diotrefy`, семейство A, clip 112 — существовал до правок, вне плана) | `r-scan.mjs` |
+| bodyOvfX @390 | 46 стр. (8px) | 1 стр. (тот же `diotrefy`, 16px) | `r-scan.mjs` |
+| Геометрия B @1024/1280/1440/1920 | main 820 > контейнер, clip ~123 | clip 0; mainW = wrap − padding; дрейф как у A (дизайнерский сдвиг под левый кластер) | `r-fix1.mjs` |
+| Ширина на телефоне (B, 390) | настройка не действовала | narrow 264 / normal 311 / wide 327 (текст), ovfX 0 | `r-fix1/r-fix3.mjs`, `shots/fix-b-mobile-narrow.png` |
+| Две шкалы hrail | inline 42rem vs стор 36rem | 36rem == 36rem (и 43/46 при normal) | `r-fix1.mjs` |
+| Сепия hrail | `#ece0c6` | `rgb(238,227,200)` = `--color-canvas #eee3c8` | `r-fix1.mjs`, `shots/fix-hrail-sepia.png` |
+| Поиск поверх листа | два модала | лист закрыт, палитра открыта (`cp-backdrop.is-open`, фокус `cp-input`) | `r-fix3/r-fix4.mjs` |
+| Тап-таргеты панелей | 34–38px | 44 (база) / 40 (≤390) | `r-fix1.mjs` |
+| Гварды | — | `gill:chrome:guard` ✅ «канон v2.9, регрессии нет»; сборка `strangler:build` ✅ 103 страницы | CLI |
+
+Остаток вне правок (осознанно): `diotrefy-nashego-vremeni` (семейство A, собственный широкий элемент, clip и до правок); дрейф колонки вправо на десктопе (общий для A и B дизайнерский сдвиг под левый кластер); палитра хрома Gill в сепии `#f8f0dc` (акцент серии, не «бумага»); 15px `bodyOvfX` на 5 страницах подростковой серии при 1024 (100vw-элементы вне колоночных правил, существовали до правок).
+
+### 13.3 Замечание о гварде shared-files
+
+`scripts/guard-shared-files.js` защищает `css/` и `js/` целиком и требует канонических префиксов веток (`lane/`, `fix/`, …). Сессия Arena закреплена за `arena/01a0a1ce-gb-is-my-strength`, поэтому: push даёт в CI лишь `--warn` (workflow `shared-files-guard.yml`: для push в не-main передаётся `--warn`), а будущий PR с этими файлами со strict-проверкой упадёт — мерж должен пройти через канонический lane/PR владельца. Локально гвард предупреждает о двух защищённых путях: `css/site.css`, `js/floating-cluster-controller.js`.

@@ -100,7 +100,7 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
       if (gillRoot) {
         gillRoot.style.setProperty('--gbs2-article-line', LINE_VALUES[line] || LINE_VALUES.normal);
         const measureValue = MEASURE_VALUES[measure] || MEASURE_VALUES.normal;
-        gillRoot.style.setProperty('--gbs2-article-measure', `min(${measureValue}, var(--gb-measure, ${measureValue}))`);
+        gillRoot.style.setProperty('--gbs2-article-measure', measureValue); // audit 2026-09-15: plain value, same as js/reader-preferences.js (min() fought the shared --gb-reader-measure)
         if (preferences.theme === 'sepia') gillRoot.setAttribute('data-gill-reader-theme', 'sepia');
         else gillRoot.removeAttribute('data-gill-reader-theme');
       }

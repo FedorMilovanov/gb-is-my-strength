@@ -139,7 +139,7 @@
        figures and settings modes cannot acquire independent horizontal axes. */
     :global([data-reader-root]) {
       --hm-article-line: 1.6;
-      --hm-article-measure: 50rem;
+      --hm-article-measure: 43rem; /* audit 2026-09-15: matches store default */
       --hm-article-shell: calc(var(--hm-article-measure) + 6rem);
     }
     :global([data-reader-root] .article-body) { line-height: var(--hm-article-line); }
@@ -161,9 +161,9 @@
 
     /* Compatibility selector for existing standalone article CSS. The canonical
        Sepia state is global; GBReaderPreferences mirrors it onto this root. */
-    :global([data-reader-root][data-hm-reader-theme="sepia"]),
-    :global([data-reader-root][data-hm-reader-theme="sepia"] .article-main),
-    :global([data-reader-root][data-hm-reader-theme="sepia"] .article-body) { background: #ece0c6 !important; }
+    /* Audit 2026-09-15: the #ece0c6 !important paper overrides were removed —
+       canonical sepia (#eee3c8 etc.) comes from the global tokens in
+       css/reader-preferences.css keyed on html[data-reader-theme="sepia"]. */
     :global([data-reader-root][data-hm-reader-theme="sepia"] .article-body),
     :global([data-reader-root][data-hm-reader-theme="sepia"] .article-body p),
     :global([data-reader-root][data-hm-reader-theme="sepia"] .article-body li),
@@ -185,7 +185,6 @@
     :global([data-reader-root][data-hm-reader-theme="sepia"] .summary-card__item + .summary-card__item) {
       border-color: rgba(74,56,32,.14) !important;
     }
-    :global(html:has([data-reader-root][data-hm-reader-theme="sepia"]) body) { background: #ece0c6; }
   }
 
   /* A padded page-wrap can be the ReaderRail shell itself. On desktop the rail
@@ -217,7 +216,7 @@
 
 <script>
   const LINE_VALUES: Record<string, string> = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
-  const MEASURE_VALUES: Record<string, string> = { narrow: '42rem', normal: '50rem', wide: '58rem' };
+  const MEASURE_VALUES: Record<string, string> = { narrow: '36rem', normal: '43rem', wide: '46rem' }; // audit 2026-09-15: was 42/50/58, fought the store's 36/43/46 (last-writer-wins produced 42rem)
 
   function readerPreferences() {
     return (window as any).GBReaderPreferences || null;

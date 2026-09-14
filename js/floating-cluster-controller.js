@@ -133,7 +133,22 @@
      Делегирует на существующий command palette сайта.
      НЕ создаёт второй поиск.
      ===================================================== */
+  // Audit 2026-09-15: the search palette paints above open Gill/gbs2 sheets
+  // (their z-context is trapped inside .gbs2-world{z-index:1}), which left two
+  // stacked modals on screen. Close any open sheet before opening search.
+  function closeOpenSheetsForSearch() {
+    qsa('.toc-overlay.is-open, .gill-settings-overlay.is-open, .gbs2-open').forEach(function (ov) {
+      var closer = ov.querySelector('[data-overlay-close], [data-gbs2-close]');
+      if (closer) closer.click();
+      else {
+        ov.classList.remove('is-open', 'gbs2-open');
+        ov.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+
   function openSearch(sourceBtn) {
+    closeOpenSheetsForSearch();
     // Active selectors: data-gbs2-search (GBS2 rail buttons), #gbSearchBtn (search.js injects)
     // Removed dead selectors: [data-search-open], #searchToggle, #searchButton,
     //   #hCpBtnNav (renamed to #gbSearchBtn by search.js), #hSearchBtn, [data-open-search]
@@ -1366,6 +1381,10 @@
     syncSaveState();
     if (fontScale !== 1) applyFontScale(); // restore persisted font scale
     initKeyboard();
+
+    // Audit 2026-09-15: also cover direct gb:openSearch dispatches (fallback
+    // path in openSearch and any external callers) with the same closer.
+    window.addEventListener('gb:openSearch', closeOpenSheetsForSearch);
 
     // Ember ARIA labels
     qsa('.gb-ember').forEach(function (ember) {

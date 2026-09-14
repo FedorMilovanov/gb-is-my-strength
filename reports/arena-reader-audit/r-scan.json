@@ -1,7 +1,7 @@
 {
  "390/articles/20-antisovetov-pastoru/": {
   "np": 176,
-  "medW": 327,
+  "medW": 311,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -24,7 +24,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -38,7 +38,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -52,7 +52,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -71,7 +71,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 16,
   "rail": null,
   "fam": "gillA",
   "perr": [],
@@ -86,7 +86,7 @@
  },
  "390/articles/dzhon-gill-chast-1-chelovek/": {
   "np": 73,
-  "medW": 327,
+  "medW": 311,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -105,7 +105,7 @@
  },
  "390/articles/dzhon-gill-chast-2-uchenyi/": {
   "np": 110,
-  "medW": 327,
+  "medW": 311,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 28,
@@ -124,7 +124,7 @@
  },
  "390/articles/dzhon-gill-chast-3-nasledie/": {
   "np": 133,
-  "medW": 327,
+  "medW": 311,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 26,
@@ -143,7 +143,7 @@
  },
  "390/articles/dzhon-gill-chast-4-ekzeget/": {
   "np": 51,
-  "medW": 327,
+  "medW": 311,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -162,7 +162,7 @@
  },
  "390/articles/dzhon-gill-istoricheskiy-kontekst/": {
   "np": 58,
-  "medW": 327,
+  "medW": 311,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 146,
@@ -181,10 +181,10 @@
  },
  "390/articles/dzhon-gill-spravochnik/": {
   "np": 17,
-  "medW": 293,
+  "medW": 277,
   "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 142,
+  "overCount": 143,
   "bodyOvfX": 0,
   "rail": null,
   "fam": "gillA",
@@ -223,7 +223,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -242,7 +242,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -280,7 +280,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -294,7 +294,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -330,7 +330,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -349,7 +349,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -363,7 +363,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -382,7 +382,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -401,7 +401,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -415,7 +415,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -429,7 +429,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -443,7 +443,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -457,7 +457,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -476,7 +476,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -495,7 +495,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -509,7 +509,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -528,7 +528,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -547,7 +547,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -566,7 +566,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -585,7 +585,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -604,7 +604,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -623,7 +623,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -642,7 +642,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -661,7 +661,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -680,7 +680,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -699,7 +699,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -713,7 +713,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -732,7 +732,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -751,7 +751,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -770,7 +770,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -789,7 +789,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -803,7 +803,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -822,7 +822,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -836,7 +836,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -850,7 +850,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -864,7 +864,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -874,7 +874,7 @@
  },
  "390/baptisty-rossii/dva-sezda-1884/": {
   "np": 31,
-  "medW": 327,
+  "medW": 311,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -888,7 +888,7 @@
  },
  "390/baptisty-rossii/goneniya-i-sovest/": {
   "np": 49,
-  "medW": 327,
+  "medW": 311,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -902,7 +902,7 @@
  },
  "390/baptisty-rossii/iniciativnaya-gruppa/": {
   "np": 48,
-  "medW": 327,
+  "medW": 311,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -916,7 +916,7 @@
  },
  "390/baptisty-rossii/noch-na-kure/": {
   "np": 51,
-  "medW": 327,
+  "medW": 311,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -930,7 +930,7 @@
  },
  "390/baptisty-rossii/peterburgskaya-liniya/": {
   "np": 53,
-  "medW": 327,
+  "medW": 311,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -944,7 +944,7 @@
  },
  "390/baptisty-rossii/podpolnaya-pechat/": {
   "np": 45,
-  "medW": 327,
+  "medW": 311,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -958,7 +958,7 @@
  },
  "390/baptisty-rossii/sovetskaya-noch/": {
   "np": 52,
-  "medW": 327,
+  "medW": 311,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -972,7 +972,7 @@
  },
  "390/baptisty-rossii/spravochnik/": {
   "np": 25,
-  "medW": 299,
+  "medW": 283,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -986,7 +986,7 @@
  },
  "390/baptisty-rossii/vsehib-1944/": {
   "np": 41,
-  "medW": 327,
+  "medW": 311,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -1000,7 +1000,7 @@
  },
  "390/baptisty-rossii/yuzhnaya-shtunda/": {
   "np": 37,
-  "medW": 327,
+  "medW": 311,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -1018,7 +1018,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 31,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -1031,8 +1031,8 @@
   "medW": 311,
   "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 26,
-  "bodyOvfX": 8,
+  "overCount": 24,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -1045,8 +1045,8 @@
   "medW": 311,
   "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 34,
-  "bodyOvfX": 8,
+  "overCount": 30,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -1060,7 +1060,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 7,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -1074,7 +1074,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 8,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -1087,8 +1087,8 @@
   "medW": 311,
   "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 9,
-  "bodyOvfX": 8,
+  "overCount": 6,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillB",
   "perr": [],
@@ -1250,11 +1250,11 @@
  },
  "1024/articles/anatomiya-padeniya-pyat-stadiy/": {
   "np": 55,
-  "medW": null,
-  "clippedRight": 55,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 197,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1267,11 +1267,11 @@
  },
  "1024/articles/cerkovnaya-disciplina-vlast-granicy-zashchita/": {
   "np": 64,
-  "medW": null,
-  "clippedRight": 64,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 206,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1284,11 +1284,11 @@
  },
  "1024/articles/chto-bibliya-nazyvaet-serdcem/": {
   "np": 43,
-  "medW": 345,
-  "clippedRight": 40,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 124,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1309,7 +1309,7 @@
   "medW": null,
   "clippedRight": 112,
   "clippedLeft": 0,
-  "overCount": 313,
+  "overCount": 312,
   "bodyOvfX": 162,
   "rail": {
    "x": 25,
@@ -1460,7 +1460,7 @@
  },
  "1024/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/": {
   "np": 101,
-  "medW": 772,
+  "medW": 688,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -1479,11 +1479,11 @@
  },
  "1024/articles/kak-hranit-serdce/": {
   "np": 31,
-  "medW": 345,
-  "clippedRight": 28,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 102,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1501,11 +1501,11 @@
  },
  "1024/articles/kak-menyaetsya-serdce/": {
   "np": 35,
-  "medW": 345,
-  "clippedRight": 32,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 108,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1523,7 +1523,7 @@
  },
  "1024/articles/kod-da-vinchi/": {
   "np": 79,
-  "medW": 772,
+  "medW": 688,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -1542,11 +1542,11 @@
  },
  "1024/articles/kogda-uhodit-kogda-ostavatsya/": {
   "np": 85,
-  "medW": null,
-  "clippedRight": 85,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 219,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1559,11 +1559,11 @@
  },
  "1024/articles/krajne-li-isporcheno-serdce/": {
   "np": 104,
-  "medW": 497,
-  "clippedRight": 100,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 430,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1581,7 +1581,7 @@
  },
  "1024/articles/lot-i-sodom/": {
   "np": 60,
-  "medW": 772,
+  "medW": 688,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -1598,11 +1598,11 @@
  },
  "1024/articles/myslennaya-zhizn-serdca/": {
   "np": 34,
-  "medW": 345,
-  "clippedRight": 31,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 120,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1620,11 +1620,11 @@
  },
  "1024/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi/": {
   "np": 94,
-  "medW": null,
-  "clippedRight": 94,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 243,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1637,11 +1637,11 @@
  },
  "1024/articles/novoe-serdce/": {
   "np": 37,
-  "medW": 345,
-  "clippedRight": 34,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 119,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1659,11 +1659,11 @@
  },
  "1024/articles/osvobozhdennoe-serdce/": {
   "np": 31,
-  "medW": 345,
-  "clippedRight": 28,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 95,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1681,7 +1681,7 @@
  },
  "1024/articles/podrostok-za-kadrom-chto-delat-tserkvi/": {
   "np": 244,
-  "medW": 601,
+  "medW": 649,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -1698,7 +1698,7 @@
  },
  "1024/articles/podrostok-za-kadrom-dvoynaya-zhizn/": {
   "np": 136,
-  "medW": 601,
+  "medW": 649,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -1715,7 +1715,7 @@
  },
  "1024/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/": {
   "np": 236,
-  "medW": 601,
+  "medW": 649,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -1732,11 +1732,11 @@
  },
  "1024/articles/priznaki-zdorovoy-cerkvi/": {
   "np": 71,
-  "medW": null,
-  "clippedRight": 71,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 227,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1749,11 +1749,11 @@
  },
  "1024/articles/religioznoe-serdce/": {
   "np": 28,
-  "medW": 345,
-  "clippedRight": 25,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 91,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1771,11 +1771,11 @@
  },
  "1024/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/": {
   "np": 60,
-  "medW": 497,
-  "clippedRight": 56,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 225,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1793,11 +1793,11 @@
  },
  "1024/articles/sem-tipov-razlichenie-uchiteley/": {
   "np": 25,
-  "medW": null,
-  "clippedRight": 25,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 92,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1810,11 +1810,11 @@
  },
  "1024/articles/serdce-hrista-k-nemoshchnym/": {
   "np": 59,
-  "medW": 345,
-  "clippedRight": 56,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 176,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1832,11 +1832,11 @@
  },
  "1024/articles/serdce-i-duh/": {
   "np": 48,
-  "medW": 345,
-  "clippedRight": 45,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 142,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1854,11 +1854,11 @@
  },
  "1024/articles/serdce-i-iskushenie/": {
   "np": 36,
-  "medW": 345,
-  "clippedRight": 33,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 109,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1876,11 +1876,11 @@
  },
  "1024/articles/serdce-i-sokrovishche/": {
   "np": 28,
-  "medW": 345,
-  "clippedRight": 25,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 93,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1898,11 +1898,11 @@
  },
  "1024/articles/serdce-i-telo/": {
   "np": 29,
-  "medW": 345,
-  "clippedRight": 26,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 101,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1920,11 +1920,11 @@
  },
  "1024/articles/serdce-i-yazyk/": {
   "np": 33,
-  "medW": 345,
-  "clippedRight": 30,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 102,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1942,11 +1942,11 @@
  },
  "1024/articles/serdce-ne-v-odinochku/": {
   "np": 29,
-  "medW": 345,
-  "clippedRight": 26,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 99,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1964,11 +1964,11 @@
  },
  "1024/articles/serdce-pod-skorbyu/": {
   "np": 30,
-  "medW": 345,
-  "clippedRight": 27,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 95,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1986,11 +1986,11 @@
  },
  "1024/articles/serdce-spravochnik/": {
   "np": 35,
-  "medW": 345,
-  "clippedRight": 32,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 195,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -2008,11 +2008,11 @@
  },
  "1024/articles/skrytye-idoly-serdca/": {
   "np": 36,
-  "medW": 345,
-  "clippedRight": 33,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 105,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -2030,7 +2030,7 @@
  },
  "1024/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/": {
   "np": 291,
-  "medW": 601,
+  "medW": 649,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -2047,11 +2047,11 @@
  },
  "1024/articles/sovest-vnutrenniy-sud/": {
   "np": 45,
-  "medW": 345,
-  "clippedRight": 42,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 117,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -2069,11 +2069,11 @@
  },
  "1024/articles/starye-dorozhki-serdca/": {
   "np": 38,
-  "medW": 345,
-  "clippedRight": 35,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 109,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -2091,11 +2091,11 @@
  },
  "1024/articles/strah-bozhij-rabskij-ili-synovnij/": {
   "np": 29,
-  "medW": 345,
-  "clippedRight": 26,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 85,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -2113,11 +2113,11 @@
  },
  "1024/articles/svoboda-vo-hriste/": {
   "np": 32,
-  "medW": 345,
-  "clippedRight": 29,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 91,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -2135,11 +2135,11 @@
  },
  "1024/articles/teksty-pisaniya-kotorymi-manipuliruyut/": {
   "np": 70,
-  "medW": null,
-  "clippedRight": 70,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 164,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -2152,11 +2152,11 @@
  },
  "1024/articles/tma-na-serdce/": {
   "np": 60,
-  "medW": 345,
-  "clippedRight": 57,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 157,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -2174,11 +2174,11 @@
  },
  "1024/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo/": {
   "np": 95,
-  "medW": null,
-  "clippedRight": 95,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 205,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -2191,7 +2191,7 @@
  },
  "1024/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/": {
   "np": 385,
-  "medW": 601,
+  "medW": 649,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -2208,7 +2208,7 @@
  },
  "1024/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/": {
   "np": 273,
-  "medW": 601,
+  "medW": 649,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -2225,7 +2225,7 @@
  },
  "1024/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/": {
   "np": 299,
-  "medW": 601,
+  "medW": 649,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
@@ -2412,11 +2412,11 @@
  },
  "1024/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/": {
   "np": 105,
-  "medW": null,
-  "clippedRight": 105,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 280,
-  "bodyOvfX": 162,
+  "overCount": 3,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -2428,12 +2428,12 @@
   "http": []
  },
  "1024/hard-texts/blagovestie-mertvym-1-petra-4-5-6/": {
-  "np": 116,
-  "medW": 370,
-  "clippedRight": 115,
+  "np": 115,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 304,
-  "bodyOvfX": 162,
+  "overCount": 5,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -2445,12 +2445,12 @@
   "http": []
  },
  "1024/hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda/": {
-  "np": 131,
-  "medW": 370,
-  "clippedRight": 130,
+  "np": 130,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 351,
-  "bodyOvfX": 162,
+  "overCount": 3,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -2463,11 +2463,11 @@
  },
  "1024/hard-texts/enoh-prorochestvoval-iuda-14-15-4q204/": {
   "np": 75,
-  "medW": null,
-  "clippedRight": 75,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 193,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -2480,11 +2480,11 @@
  },
  "1024/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/": {
   "np": 197,
-  "medW": null,
-  "clippedRight": 197,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 521,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -2497,11 +2497,11 @@
  },
  "1024/hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/": {
   "np": 202,
-  "medW": null,
-  "clippedRight": 202,
+  "medW": 445,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 619,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297

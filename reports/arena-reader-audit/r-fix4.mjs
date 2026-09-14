@@ -1,0 +1,18 @@
+import { chromium } from 'playwright';
+const BASE='http://127.0.0.1:8080';
+const browser=await chromium.connectOverCDP('http://127.0.0.1:9222');
+const ctx=browser.contexts()[0];
+const A='/articles/dzhon-gill-chast-1-chelovek/';
+const p=await ctx.newPage();
+const errs=[];p.on('console',m=>{if(m.type()==='error')errs.push(m.text().slice(0,120));});
+p.on('pageerror',e=>errs.push('PAGEERROR '+String(e).slice(0,120)));
+await p.setViewportSize({width:390,height:844});
+await p.goto(BASE+A,{waitUntil:'load'});await p.waitForTimeout(800);
+await p.evaluate(`document.querySelector('.mobile-btoc-section')?.click()`);await p.waitForTimeout(400);
+const st1=await p.evaluate(`!!document.querySelector('.toc-overlay.is-open,.gbs2-open')`);
+await p.evaluate(`(document.querySelector('[data-gbs2-search]')||document.querySelector('[data-fc-action="search"]')||document.querySelector('#gbSearchBtn'))?.click()`);
+await p.waitForTimeout(600);
+const st2=await p.evaluate(`({anySheetOpen:!!document.querySelector('.toc-overlay.is-open,.gbs2-open'),openOverlays:[...document.querySelectorAll('.is-open')].map(e=>e.tagName+'.'+String(e.className).slice(0,50)).slice(0,5),active:document.activeElement?.id||document.activeElement?.className?.toString().slice(0,40)})`);
+console.log('sheetWasOpen:',st1,'| after:',JSON.stringify(st2));
+console.log('console errors:',errs.length?errs:'none');
+await p.close();await browser.close();

@@ -33,28 +33,9 @@
 
 @layer components {
 
-:root {
-  --gb-accent-strong: #d4af37;
-  --gb-ease-out: cubic-bezier(.2,.7,.2,1);
-  --gb-ease-spring: cubic-bezier(.34,1.56,.64,1);
-  --gb-accent: #d4af37;
-  --gb-font-serif-display: "Lora", serif;
-  --gb-accent-gold: #d4af37;
-  --gb-accent-gold-bright: #ffd700;
-  --gb-font-serif: "Lora", serif;
-  --gb-font-sans: "Source Sans 3", sans-serif;
-  --gb-border: rgba(255,255,255,0.15);
-  --gb-text: #fff;
-  --gb-text-muted: rgba(255,255,255,0.6);
-  --z-sheet: 1000;
-  --gb-surface: #1a1a1a;
-  --gb-ease-overshoot: cubic-bezier(.34,1.56,.64,1);
-  --gb-border-strong: rgba(255,255,255,0.25);
-  --gb-surface-muted: #2a2a2a;
-  --gb-ease-precise: cubic-bezier(.2,.7,.2,1);
-  --gb-text-faint: rgba(255,255,255,0.4);
-  --gb-accent-gold-deep: #b8860b;
-}
+/* Audit 2026-09-15: removed a dead :root block here. Inside @layer components
+   it lost to every unlayered rule, and its values (--gb-text:#fff on white,
+   --z-sheet:1000) contradicted the live tokens defined above @layer. */
 
 /* =========================================================
    gb-floater — standalone vertical cluster
@@ -1557,7 +1538,7 @@ html.dark [data-gill-v16] .toc-sheet{background:var(--gb-surface);border-color:v
 [data-gill-v16] .toc-sheet__head h3{font-family:var(--gb-font-serif);font-size:18px;margin:0;line-height:1.25;color:var(--gb-text);font-weight:600}
 [data-gill-v16] .toc-sheet__head .back{
   position:absolute;left:14px;top:14px;
-  width:28px;height:28px;border-radius:8px;
+  width:32px;height:32px;border-radius:8px;
   display:grid;place-items:center;
   color:var(--gb-text-muted);
   background:transparent;border:0;
@@ -1854,8 +1835,8 @@ html.dark [data-gill-v16] .toc-sheet__actions{background:color-mix(in srgb,var(-
   }
 [data-gill-v16] .toc-sheet__actions .toc-action-btn--ghost {
     padding: 9px;
-    width: 38px;
-    min-width: 38px;
+    width: 44px;
+    min-width: 44px;
     justify-content: center;
   }
 }
@@ -1892,7 +1873,7 @@ html.dark [data-gill-v16] .toc-part-item.is-current .toc-part-item__num {
 }
 [data-gill-v16] .toc-sheet__head--grid .back {
   position: static !important;
-  width: 36px !important; height: 36px !important;
+  width: 40px !important; height: 40px !important;
   border-radius: 10px !important;
   display: grid !important; place-items: center !important;
   background: var(--gb-surface-muted) !important;
@@ -2027,7 +2008,7 @@ html.dark [data-gill-v16] .toc-part-item:hover .toc-part-item__num {
 }
 [data-gill-v16] .toc-sheet__head .back {
   position: static !important;
-  width: 34px !important; height: 34px !important;
+  width: 40px !important; height: 40px !important;
   border-radius: 8px !important;
   display: grid !important; place-items: center !important;
   margin: 0 !important; padding: 0 !important;
@@ -2725,7 +2706,7 @@ html.dark .gb-roman {
        margin + width + a breathing gap) — used as the minimum left margin so
        the article clears the rail on narrower desktops. */
     --gb-rail-reserve:calc(clamp(16px,2.4vw,40px) + clamp(272px,24vw,304px) + clamp(24px,3vw,48px));
-    --gb-measure:min(760px, calc(100vw - 48px));
+    --gb-measure:min(var(--gb-reader-measure, 43rem), 760px, calc(100vw - 48px));
     display:block;
     min-height:auto;
   }
@@ -3252,7 +3233,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
-    z-index: 2147483000 !important;
+    z-index: var(--z-bottom-bar, 2000) !important;
     min-height: var(--gill-mobile-bar-h) !important;
     box-sizing: border-box !important;
     display: flex !important;
@@ -3297,7 +3278,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
     left: 0;
     right: 0;
     top: 0;
-    z-index: 2147483000;
+    z-index: var(--z-bottom-bar, 2000);
     min-height: var(--gill-mobile-topbar-h);
     box-sizing: border-box;
     display: flex;
@@ -3314,9 +3295,9 @@ html.dark [data-gill-v16] .mobile-top-bar {
     isolation: isolate;
   }
   [data-gill-v16] .mobile-top-bar .gb-icon {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
     min-height: 40px;
     border-radius: 999px;
     background: transparent;
@@ -3488,8 +3469,8 @@ html.dark [data-gill-v16] .mobile-top-bar {
      сделал бы их заметнее, чем в образце. */
   [data-gill-v16] .mobile-bottom-bar > .gb-icon {
     flex: 0 0 auto;
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
     min-width: 38px;
     min-height: 38px;
     border-radius: 999px;
@@ -3517,7 +3498,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
   [data-gill-v16] .mobile-font-btn:active { transform: scale(.94); }
 
   [data-gill-v16] .toc-overlay.is-open {
-    z-index: 2147483100 !important;
+    z-index: var(--z-overlay-high, 3000) !important;
   }
   [data-gill-v16] .toc-sheet {
     background: color-mix(in srgb, var(--gill-mobile-bar-bg) 98%, white) !important;
@@ -3569,18 +3550,18 @@ html.dark [data-gill-v16] .mobile-top-bar {
   }
   [data-gill-v16] .mobile-top-bar .gb-icon,
   [data-gill-v16] .mobile-playwrap .mobile-top-ember {
-    width: 36px !important;
-    height: 36px !important;
-    min-width: 36px !important;
-    min-height: 36px !important;
-    --ember-size: 36px !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    --ember-size: 40px !important;
   }
   [data-gill-v16] .mobile-btoc-section__main,
   [data-gill-v16] #gbs2MobSec { font-size: 12.5px !important; }
   [data-gill-v16] .bar-progress.dual-progress,
   [data-gill-v16] .bar-progress.dual-progress svg { width: 34px !important; height: 34px !important; }
   [data-gill-v16] .mobile-bottom-bar > .gb-icon,
-  [data-gill-v16] .mobile-font-btn { width: 34px !important; min-width: 34px !important; }
+  [data-gill-v16] .mobile-font-btn { width: 40px !important; min-width: 40px !important; }
 }
 
 /* Gill header watermark removed (giant faint "ВВЕДЕНИЕ"/roman numeral behind
@@ -4395,7 +4376,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
-    z-index: 2147483000 !important;
+    z-index: var(--z-bottom-bar, 2000) !important;
     min-height: var(--gill-mobile-bar-h, 78px) !important;
     border: 0 !important;
     border-radius: 0 !important;
@@ -4598,7 +4579,6 @@ html.dark [data-gill-v16] .mobile-top-bar {
   }
   [data-gill-v16] .gill-settings-overlay .setting-group { padding: 10px 16px 11px; border-bottom: 1px solid var(--gb-border); }
   [data-gill-v16] .gill-settings-overlay .setting-group:last-child { border-bottom: 0; }
-  [data-gill-v16] .gill-settings-overlay .setting-group--measure { display: none; }
   [data-gill-v16] .gill-settings-overlay .setting-label {
     display: block; margin-bottom: 7px;
     font-family: var(--gb-font-sans, system-ui, sans-serif);
