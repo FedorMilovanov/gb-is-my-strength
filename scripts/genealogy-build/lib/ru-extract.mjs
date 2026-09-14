@@ -57,6 +57,33 @@ export function patternCandidates(text) {
   return out;
 }
 
+/**
+ * TIPNR содержит структурные псевдоперсоны вроде father_of_Mamre,
+ * a_wife_of_Lot, daughter1_of_Lot. Это не имена и их нельзя транслитерировать
+ * как «Фафероф...». Возвращаем честную анонимную роль; конкретная связь живёт
+ * в relation graph и не дублируется в display-name.
+ */
+export function structuralRuLabel(enName) {
+  const raw = String(enName).split('|')[0].trim();
+  const normalized = raw.toLowerCase().replace(/[-\s]+/g, '_');
+  const patterns = [
+    [/^(?:a_)?father_of_.+$/, 'Отец (имя не указано)'],
+    [/^(?:a_)?mother_of_.+$/, 'Мать (имя не указано)'],
+    [/^(?:a_)?wife_of_.+$/, 'Жена (имя не указано)'],
+    [/^(?:a_)?husband_of_.+$/, 'Муж (имя не указано)'],
+    [/^daughter1_of_.+$/, 'Первая дочь (имя не указано)'],
+    [/^daughter2_of_.+$/, 'Вторая дочь (имя не указано)'],
+    [/^(?:a_)?daughter_of_.+$/, 'Дочь (имя не указано)'],
+    [/^son1_of_.+$/, 'Первый сын (имя не указано)'],
+    [/^son2_of_.+$/, 'Второй сын (имя не указано)'],
+    [/^(?:a_)?son_of_.+$/, 'Сын (имя не указано)'],
+    [/^(?:a_)?brother_of_.+$/, 'Брат (имя не указано)'],
+    [/^(?:a_)?sister_of_.+$/, 'Сестра (имя не указано)'],
+  ];
+  const match = patterns.find(([re]) => re.test(normalized));
+  return match ? { name: match[1], source: 'structural', confidence: 1, review: false, anonymous: true } : null;
+}
+
 /** Грубая транслитерация библейского EN-имени в русскую форму (для скоринга и фолбэка). */
 export function translitEnRu(en) {
   let s = String(en).toLowerCase()
