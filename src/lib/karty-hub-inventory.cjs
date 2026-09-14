@@ -7,7 +7,11 @@ const READY_STATUS = 'ready';
 const HUB_VISIBLE_STATES = new Set(['featured', 'listed']);
 
 function isAtlasSheetDraft(route) {
-  return Boolean(route?.meta?.sheet_no != null && route?.meta?.id == null);
+  return Boolean(
+    route?.publication?.status === 'draft' &&
+    route?.meta?.sheet_no != null &&
+    route?.meta?.id == null
+  );
 }
 
 function readRouteRecord(routesRoot, slug) {
