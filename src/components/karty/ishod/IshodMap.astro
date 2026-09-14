@@ -89,26 +89,6 @@ import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.as
   var EXPECTED_RESEARCH = 'ATLAS-PIHAHIROTH-AUTHORITY-2026-08-02';
   var EXPECTED_CORRIDORS = ['PH-CAND-NORTH','PH-CAND-BALLAH','PH-CAND-BITTER'];
 
-  function fail(container, error) {
-    var message = error && error.message
-      ? 'Не удалось запустить карту: ' + error.message
-      : 'Не удалось запустить интерактивную карту.';
-    if (window.GBMapRuntime && typeof window.GBMapRuntime.renderFailure === 'function') {
-      window.GBMapRuntime.renderFailure(container, {
-        title: 'Карта Исхода временно недоступна',
-        message: message
-      });
-    }
-    console.error('[ishod] MapEngine init failed:', error);
-  }
-
-  function readArchaeologyProjection() {
-    var payload = document.getElementById('map-archaeology-projection');
-    if (!payload) return null;
-    try { return JSON.parse(payload.dataset.projection || 'null'); }
-    catch (error) { console.error('[map-archaeology] invalid projection payload:', error); return null; }
-  }
-
   function requireValue(condition, message) {
     if (!condition) throw new Error('Pihahiroth authority: ' + message);
   }
@@ -263,30 +243,24 @@ import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.as
     container.setAttribute('data-pihahiroth-corridor-count', String(authority.corridors.length));
   }
 
-  function init() {
-    var container = document.getElementById('stage');
-    if (!container) return;
-    Promise.all([
-      fetch('route.json').then(function(response){ if(!response.ok) throw new Error('route HTTP '+response.status); return response.json(); }),
-      fetch('pihahiroth-authority.json').then(function(response){ if(!response.ok) throw new Error('authority HTTP '+response.status); return response.json(); })
-    ])
-      .then(function(payload){
-        if (!window.MapEngine || typeof window.MapEngine.createMap !== 'function') {
-          throw new Error('движок карты не загрузился');
-        }
-        var route = payload[0];
-        var authority = validateAuthority(payload[1]);
-        var adapted = adaptRoute(route, authority);
-        var instance = window.MapEngine.createMap(container, adapted, { archaeologyProjection: readArchaeologyProjection() });
-        if (!instance) throw new Error('движок не создал карту');
-        renderCorridors(container, authority, instance);
-        container.setAttribute('data-map-state', 'ready');
-        container.setAttribute('aria-busy', 'false');
-      })
-      .catch(function(error){ fail(container, error); });
+  if (window.GBMapRuntime && typeof window.GBMapRuntime.bootEngineRoute === 'function') {
+    window.GBMapRuntime.bootEngineRoute({
+      container: '#stage',
+      routeUrl: 'route.json',
+      baseGeoUrl: 'base.svg',
+      resources: {
+        authority: 'pihahiroth-authority.json'
+      },
+      errorTitle: 'Карта Исхода временно недоступна',
+      logLabel: 'ishod',
+      transformRoute: function(route, resources) {
+        resources.authority = validateAuthority(resources.authority);
+        return adaptRoute(route, resources.authority);
+      },
+      afterCreate: function(context) {
+        renderCorridors(context.container, context.resources.authority, context.instance);
+      }
+    });
   }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init, { once: true });
-  } else { init(); }
 })();
 </script>
