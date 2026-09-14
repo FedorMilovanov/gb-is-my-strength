@@ -22,6 +22,9 @@ const tableOfNations = readJson(path.join(V2, 'table-of-nations.json'));
 const meta = readJson(path.join(V2, 'meta.json'));
 const spine = readJson(path.join(V2, 'spine.json'));
 const edgeAnnotations = readJson(path.join(V2, 'edge-annotations.json'));
+const committedMatthewLukeLayout = readJson(path.join(V2, 'build', 'layout-l1-matthew-luke.json'));
+const committedMatthewLukeSvg = fs.readFileSync(path.join(V2, 'build', 'genealogy-l1-matthew-luke.svg'), 'utf8');
+const committedMatthewLukeDarkSvg = fs.readFileSync(path.join(V2, 'build', 'genealogy-l1-matthew-luke-dark.svg'), 'utf8');
 const validationText = fs.readFileSync(path.join(V2, 'VALIDATION.md'), 'utf8');
 
 const v1ById = new Map(v1.persons.map(person => [person.id, person]));
@@ -193,6 +196,35 @@ if (/кровн[^\n]*через Мари/u.test(layoutCopy)) {
   matthewLukeLayoutIssues.push('layout-overstates-mary-harmonization');
 }
 
+const committedMatthewLukeArtifactIssues = [];
+const semanticNode = node => ({
+  name: node.name ?? null,
+  ref: node.ref ?? null,
+  kind: node.kind ?? null,
+  row: node.row ?? null,
+  disputed: Boolean(node.disputed),
+  note: node.note ?? null,
+  sub: node.sub ?? null,
+});
+if (JSON.stringify(committedMatthewLukeLayout.nodes.map(semanticNode)) !==
+    JSON.stringify(matthewLukeLayout.nodes.map(semanticNode))) {
+  committedMatthewLukeArtifactIssues.push('layout-json-semantic-drift');
+}
+if (committedMatthewLukeLayout.subtitle !== matthewLukeLayout.subtitle) {
+  committedMatthewLukeArtifactIssues.push('layout-json-subtitle-drift');
+}
+if (JSON.stringify(committedMatthewLukeLayout.notes ?? []) !== JSON.stringify(matthewLukeLayout.notes ?? [])) {
+  committedMatthewLukeArtifactIssues.push('layout-json-notes-drift');
+}
+for (const [name, svg] of [
+  ['light', committedMatthewLukeSvg],
+  ['dark', committedMatthewLukeDarkSvg],
+]) {
+  if (/Лука 3 · кровная/u.test(svg)) committedMatthewLukeArtifactIssues.push(`${name}-svg-overstates-luke`);
+  if (/>Мария<\/text>/u.test(svg)) committedMatthewLukeArtifactIssues.push(`${name}-svg-inserts-mary`);
+  if (/обе линии/u.test(svg)) committedMatthewLukeArtifactIssues.push(`${name}-svg-shares-occurrence-by-name`);
+}
+
 const relationProvenanceIssues = [];
 for (const expected of requiredRelationAnnotations) {
   const annotation = (edgeAnnotations.annotations ?? []).find(item => item.from === expected.from && item.to === expected.to);
@@ -281,6 +313,10 @@ if (spineProvenanceIssues.length) blockers.push({ code: 'SPINE_PROVENANCE_INCOMP
 if (relationProvenanceIssues.length) blockers.push({ code: 'RELATION_PROVENANCE_INCOMPLETE', count: relationProvenanceIssues.length });
 if (interpretationWordingIssues.length) blockers.push({ code: 'OVERSTATED_INTERPRETATION_WORDING', count: interpretationWordingIssues.length });
 if (matthewLukeLayoutIssues.length) blockers.push({ code: 'MATTHEW_LUKE_LAYOUT_TRUTH_MODEL', count: matthewLukeLayoutIssues.length });
+if (committedMatthewLukeArtifactIssues.length) blockers.push({
+  code: 'MATTHEW_LUKE_COMMITTED_ARTIFACT_STALE',
+  count: committedMatthewLukeArtifactIssues.length,
+});
 
 const runtimeViolation = runtimeV2Refs.length > 0 && blockers.length > 0;
 const report = {
@@ -320,6 +356,7 @@ const report = {
     relationProvenanceIssues,
     interpretationWordingIssues,
     matthewLukeLayoutIssues,
+    committedMatthewLukeArtifactIssues,
     runtimeV2Refs,
   },
   runtimeGuard: {
@@ -353,6 +390,7 @@ const md = [
   `- Relation provenance issues: ${relationProvenanceIssues.length}`,
   `- Overstated interpretation wording: ${interpretationWordingIssues.length}`,
   `- Matthew/Luke layout truth-model issues: ${matthewLukeLayoutIssues.length}`,
+  `- Matthew/Luke committed artifact drift: ${committedMatthewLukeArtifactIssues.length}`,
   `- Runtime v2 references: ${runtimeV2Refs.length}`,
   '',
   '## Blockers',
