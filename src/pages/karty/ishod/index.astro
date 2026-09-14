@@ -9,15 +9,9 @@
  */
 import IshodPageHead from '@/components/karty/ishod/IshodPageHead.astro';
 import IshodMap from '@/components/karty/ishod/IshodMap.astro';
-import MapSearchRail from '@/components/karty/_shared/MapSearchRail.astro';
+import MapPageShell from '@/components/karty/_shared/MapPageShell.astro';
 ---
-<!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <IshodPageHead />
-  </head>
-  <body class="has-app-search-map">
-    <IshodMap />
-    <MapSearchRail />
-  </body>
-</html>
+<MapPageShell>
+  <IshodPageHead slot="head" />
+  <IshodMap />
+</MapPageShell>
