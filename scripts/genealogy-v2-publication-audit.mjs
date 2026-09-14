@@ -90,8 +90,10 @@ function walkRuntimeRefs(roots) {
 }
 
 const blockers = [];
-if (!/phase1-draft|НЕ подключать в рантайм/u.test(meta.status ?? '')) {
-  blockers.push({ code: 'STATUS_NOT_DRAFT_GUARDED', detail: meta.status ?? null });
+if (/phase1-draft|НЕ подключать в рантайм/u.test(meta.status ?? '')) {
+  blockers.push({ code: 'DATASET_STATUS_DRAFT', detail: meta.status ?? null });
+} else if (!meta.status) {
+  blockers.push({ code: 'DATASET_STATUS_MISSING', detail: null });
 }
 if (genderMismatches.length) blockers.push({ code: 'SKELETON_GENDER_MISMATCH', count: genderMismatches.length });
 if (fuzzyMappings.length) blockers.push({ code: 'UNAPPROVED_FUZZY_MAPPING', count: fuzzyMappings.length });
