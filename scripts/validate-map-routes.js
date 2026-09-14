@@ -203,15 +203,22 @@ function validateRoute(file) {
   if (!draftSheet && (!route.meta?.id || !/^[a-z0-9-]+$/.test(route.meta.id))) bad(`${label}: meta.id invalid`);
   if (draftSheet && route.meta?.sheet_no == null) bad(`${label}: draft atlas sheet requires meta.sheet_no`);
   if (!route.meta?.title) bad(`${label}: meta.title missing`);
-  if (!route.meta?.era) bad(`${label}: meta.era missing`);
-  if (!route.meta?.viewport_init || !isFiniteNum(route.meta.viewport_init.cx) || !isFiniteNum(route.meta.viewport_init.cy) || !isFiniteNum(route.meta.viewport_init.w)) bad(`${label}: meta.viewport_init invalid`);
+  if (draftSheet) {
+    const sheetViewport = route.meta?.sheet_viewport;
+    if (!sheetViewport || !isFiniteNum(sheetViewport.cx) || !isFiniteNum(sheetViewport.cy) || !isFiniteNum(sheetViewport.w) || sheetViewport.w <= 0) {
+      bad(`${label}: draft atlas sheet requires valid meta.sheet_viewport`);
+    }
+  } else {
+    if (!route.meta?.era) bad(`${label}: meta.era missing`);
+    if (!route.meta?.viewport_init || !isFiniteNum(route.meta.viewport_init.cx) || !isFiniteNum(route.meta.viewport_init.cy) || !isFiniteNum(route.meta.viewport_init.w)) bad(`${label}: meta.viewport_init invalid`);
+  }
 
   const places = Array.isArray(route.places) ? route.places : [];
   const stages = Array.isArray(route.stages) ? route.stages : [];
   const stories = Array.isArray(route.stories) ? route.stories : [];
   if (!places.length) bad(`${label}: places[] empty/missing`);
   if (!stages.length) bad(`${label}: stages[] empty/missing`);
-  if (!stories.length) bad(`${label}: stories[] empty/missing`);
+  if (!draftSheet && !stories.length) bad(`${label}: stories[] empty/missing`);
 
   const placeIds = ids(places);
   const placeDups = findDuplicateIds(places);
@@ -230,14 +237,19 @@ function validateRoute(file) {
     if (!isFiniteNum(p.x) || !isFiniteNum(p.y)) bad(`${where}: invalid coordinates`);
     if (isFiniteNum(p.x) && (p.x < -250 || p.x > 2200)) bad(`${where}: x out of expected SVG range (${p.x})`);
     if (isFiniteNum(p.y) && (p.y < -250 || p.y > 1600)) bad(`${where}: y out of expected SVG range (${p.y})`);
-    if (p.type !== 'ctx' && p.type !== 'region') {
+    if (draftSheet) {
+      if (p.stage !== undefined && (!Number.isInteger(p.stage) || p.stage < 0 || p.stage >= stages.length)) {
+        bad(`${where}: optional draft stage ${p.stage} outside stages[]`);
+      }
+    } else if (p.type !== 'ctx' && p.type !== 'region') {
       if (!Number.isInteger(p.stage) || p.stage < 0 || p.stage >= stages.length) bad(`${where}: stage ${p.stage} outside stages[]`);
     }
     if (!p.type) bad(`${where}: missing type`);
     if (p.photos) {
       if (!Array.isArray(p.photos)) bad(`${where}: photos must be array`);
       else p.photos.forEach((photo, n) => {
-        if (!photo.src || !photo.alt) bad(`${where}: photos[${n}] must have src + alt`);
+        if (!photo.src) bad(`${where}: photos[${n}] must have src`);
+        if (!draftSheet && !photo.alt) bad(`${where}: photos[${n}] must have alt on live routes`);
       });
     }
   });
