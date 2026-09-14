@@ -6,6 +6,10 @@ const path = require('path');
 
 const root = path.join(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'karty/_engine/map-engine.js'), 'utf8');
+const fallbackSource = fs.readFileSync(path.join(root, 'src/components/karty/_shared/MapRuntimeFallback.astro'), 'utf8');
+const avraamMapSource = fs.readFileSync(path.join(root, 'src/components/karty/avraam/AvraamMap.astro'), 'utf8');
+const ishodMapSource = fs.readFileSync(path.join(root, 'src/components/karty/ishod/IshodMap.astro'), 'utf8');
+const ishodPageSource = fs.readFileSync(path.join(root, 'src/pages/karty/ishod/index.astro'), 'utf8');
 let failures = 0;
 
 function check(name, condition, detail) {
@@ -154,6 +158,46 @@ check(
     /const\s+unitsPerPixel\s*=\s*1\/Math\.max\(viewScale,Number\.EPSILON\)/.test(source) &&
     /scaleResizeObserver\s*=\s*new ResizeObserver\(\(\)\s*=>\s*applyViewBox\(\)\)/.test(source),
   'WAYP-P1-01 and all data-screen-anchor geometry require the actual xMidYMid meet scale to be reapplied on resize.'
+);
+
+
+check(
+  'Shared MapEngine bootstrap owns route fetch, resources, options and ready state',
+  /async function mountRoute\(target,config=\{\}\)/.test(source) &&
+    /loadRoute\(routeUrl,config\.fetchOptions\|\|\{\}\)/.test(source) &&
+    /Object\.entries\(config\.resources\|\|\{\}\)/.test(source) &&
+    /typeof config\.transformRoute===['"]function['"]/.test(source) &&
+    /typeof config\.afterCreate===['"]function['"]/.test(source) &&
+    /config\.baseGeoUrl\?\?route\?\.meta\?\.base_geo_url/.test(source) &&
+    /readArchaeologyProjection\(config\.archaeologyPayloadId\|\|['"]map-archaeology-projection['"]\)/.test(source) &&
+    /container\.setAttribute\(['"]data-map-state['"],['"]ready['"]\)/.test(source),
+  'All MapEngine routes must share one fetch/create/ready lifecycle instead of duplicating it in route components.'
+);
+
+check(
+  'Shared runtime boundary delegates boot and owns missing-engine failure UI',
+  /function bootEngineRoute\(config\)/.test(fallbackSource) &&
+    /engine\.bootRoute\(options\)/.test(fallbackSource) &&
+    /renderFailure\(container/.test(fallbackSource),
+  'MapRuntimeFallback must remain the one fail-visible boundary when MapEngine itself is unavailable.'
+);
+
+check(
+  'Live route components use the shared bootstrap instead of route-local engine lifecycles',
+  /GBMapRuntime\.bootEngineRoute\(/.test(avraamMapSource) &&
+    /GBMapRuntime\.bootEngineRoute\(/.test(ishodMapSource) &&
+    !/fetch\(['"]route\.json['"]\)/.test(avraamMapSource) &&
+    !/fetch\(['"]route\.json['"]\)/.test(ishodMapSource) &&
+    !/MapEngine\.createMap\(/.test(avraamMapSource) &&
+    !/MapEngine\.createMap\(/.test(ishodMapSource),
+  'Avraam and Ishod must express only route configuration/hooks; fetch/create/ready belongs to MapEngine.'
+);
+
+check(
+  'Ishod page no longer monkey-patches MapEngine.createMap',
+  !/engine\.createMap\s*=/.test(ishodPageSource) &&
+    !/var createMap\s*=\s*engine\.createMap/.test(ishodPageSource),
+  'Route pages must not monkey-patch shared engine methods to inject options.'
 );
 
 if (failures) {
