@@ -648,6 +648,8 @@
     "origin": "jerusalem_meet",
     "description": "Ханукальные огни отмечают очищение Храма и возвращение богослужения после восстания Маккавеев."
   },
+  "archetype": "political",
+  "capabilities": ["stages","stories","layers","timeline","signature","interpretations"],
   "publication": {
     "status": "temporary-placeholder",
     "indexable": false,
