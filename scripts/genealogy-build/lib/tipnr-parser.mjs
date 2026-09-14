@@ -204,6 +204,15 @@ export function resolveRelations(persons, { groups = new Map(), places = new Map
           stats.skippedDescendedGroup += 1;
           continue;
         }
+        if (rel.markers.founder) {
+          // TIPNR defines (f) as founder of a place or group. Some targets live in
+          // external sections not represented in the person corpus. Treat the
+          // relation as typed external evidence, never as a dangling family edge.
+          rel.resolved = false;
+          rel.resolvedEntity = 'founder-external';
+          stats.resolvedExternal += 1;
+          continue;
+        }
         rel.resolved = false;
         rel.resolvedEntity = null;
         stats.unresolvedRefs.push({ from: rec.key, field: relName, raw: rel.raw });
