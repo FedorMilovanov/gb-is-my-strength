@@ -205,8 +205,16 @@
 
     function safeFocus(element) {
       if (!focusable(element)) return false;
-      try { element.focus({ preventScroll: true }); return document.activeElement === element; }
-      catch (_) { try { element.focus(); return document.activeElement === element; } catch (_) { return false; } }
+      try {
+        element.focus({ preventScroll: true });
+        if (document.activeElement === element) return true;
+      } catch (_) {}
+      try {
+        element.focus();
+        return document.activeElement === element;
+      } catch (_) {
+        return false;
+      }
     }
 
     function restoreFocusAfterLayout(element, displacedFocus, ownsDisplacedFocus) {
@@ -249,11 +257,11 @@
       }
       if (typeof window.requestAnimationFrame === 'function') {
         // ResizeObserver is an early signal, not the owner of fallback progress.
-        // Keep a short bounded RAF window even when an observer exists: during
+        // Keep a bounded RAF window even when an observer exists: during
         // the 980→981 drawer-to-sidebar transition geometry can become focusable
         // only after more than one paint, and a silent/missed observer callback
         // must not strand focus on a control that just became hidden.
-        var remainingLayoutFrames = 8;
+        var remainingLayoutFrames = 60;
         var retryAfterLayout = function () {
           frame = 0;
           attempt();
