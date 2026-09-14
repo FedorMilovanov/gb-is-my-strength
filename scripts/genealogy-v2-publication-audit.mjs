@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PIPELINE_VERSION } from './genealogy-build/config.mjs';
 import { emittedPersonsAsTipnrMap, matchSkeleton } from './genealogy-build/lib/skeleton-matcher.mjs';
+import { buildMatthewLuke } from './genealogy-build/lib/layout-l1-lineages.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const V1 = path.join(ROOT, 'data', 'genealogy', 'genealogy.json');
@@ -124,6 +125,24 @@ const interpretationWordingIssues = (views.views ?? [])
   .filter(view => /кровн[^\n]*через Мари/u.test(view.descRu ?? ''))
   .map(view => ({ id: view.id, descRu: view.descRu }));
 
+const matthewLukeLayout = buildMatthewLuke();
+const matthewLukeLayoutIssues = [];
+if (matthewLukeLayout.nodes.some(node => node.kind === 'lk' && node.name === 'Мария')) {
+  matthewLukeLayoutIssues.push('luke-column-inserts-mary');
+}
+if (!matthewLukeLayout.nodes.some(node => node.kind === 'lk' && node.name === 'Иосиф' && node.ref === 'Лк 3:23')) {
+  matthewLukeLayoutIssues.push('luke-column-missing-joseph-luke-3-23');
+}
+for (const name of ['Салафиил', 'Зоровавель']) {
+  if (matthewLukeLayout.nodes.some(node => node.kind === 'shared' && node.name === name)) {
+    matthewLukeLayoutIssues.push(`shared-by-name:${name}`);
+  }
+}
+const layoutCopy = [matthewLukeLayout.subtitle, ...(matthewLukeLayout.notes ?? [])].join('\n');
+if (/кровн[^\n]*через Мари/u.test(layoutCopy)) {
+  matthewLukeLayoutIssues.push('layout-overstates-mary-harmonization');
+}
+
 const relationProvenanceIssues = [];
 for (const expected of requiredRelationAnnotations) {
   const annotation = (edgeAnnotations.annotations ?? []).find(item => item.from === expected.from && item.to === expected.to);
@@ -163,11 +182,10 @@ function walk(dir, out = []) {
   }
   return out;
 }
-const runtimeRoots = [
-  path.join(ROOT, 'src', 'pages', 'rodosloviye'),
-  path.join(ROOT, 'src', 'components', 'genealogy'),
-  path.join(ROOT, 'src', 'components', 'rodosloviye'),
-];
+// Any import from src/ can reach production through an indirect helper/component.
+// Scan the whole runtime source tree so draft v2 cannot bypass the guard by moving
+// the import outside the genealogy component directory.
+const runtimeRoots = [path.join(ROOT, 'src')];
 const runtimeV2Refs = walkRuntimeRefs(runtimeRoots);
 
 function walkRuntimeRefs(roots) {
@@ -208,6 +226,7 @@ if (nationsViewIssues.length) blockers.push({ code: 'NATIONS_VIEW_NOT_CURATED', 
 if (spineProvenanceIssues.length) blockers.push({ code: 'SPINE_PROVENANCE_INCOMPLETE', count: spineProvenanceIssues.length });
 if (relationProvenanceIssues.length) blockers.push({ code: 'RELATION_PROVENANCE_INCOMPLETE', count: relationProvenanceIssues.length });
 if (interpretationWordingIssues.length) blockers.push({ code: 'OVERSTATED_INTERPRETATION_WORDING', count: interpretationWordingIssues.length });
+if (matthewLukeLayoutIssues.length) blockers.push({ code: 'MATTHEW_LUKE_LAYOUT_TRUTH_MODEL', count: matthewLukeLayoutIssues.length });
 
 const runtimeViolation = runtimeV2Refs.length > 0 && blockers.length > 0;
 const report = {
@@ -244,6 +263,7 @@ const report = {
     spineProvenanceIssues,
     relationProvenanceIssues,
     interpretationWordingIssues,
+    matthewLukeLayoutIssues,
     runtimeV2Refs,
   },
   runtimeGuard: {
@@ -274,6 +294,7 @@ const md = [
   `- Spine provenance issues: ${spineProvenanceIssues.length}`,
   `- Relation provenance issues: ${relationProvenanceIssues.length}`,
   `- Overstated interpretation wording: ${interpretationWordingIssues.length}`,
+  `- Matthew/Luke layout truth-model issues: ${matthewLukeLayoutIssues.length}`,
   `- Runtime v2 references: ${runtimeV2Refs.length}`,
   '',
   '## Blockers',
