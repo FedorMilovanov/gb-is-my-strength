@@ -339,6 +339,11 @@
   ],
   "publication": {
     "status": "draft",
+    "indexable": false,
+    "sitemap": false,
+    "llms": false,
+    "pagefind": false,
+    "hub": "withheld",
     "note": "Лист-пролог; ждёт G9 владельца"
   },
   "sidenote": {
