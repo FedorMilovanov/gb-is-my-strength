@@ -745,6 +745,19 @@ async function runTests() {
   assert(jeconiahProbe.matches.get('jeconiah_probe') !== 'Jecoliah@2Ki.15.2',
     'gender/context guard запрещает fuzzy Jeconiah → Jecoliah');
 
+  const zerubbabelFixture = new Map([
+    ['Zerubbabel@1Ch.3.19', { key: 'Zerubbabel@1Ch.3.19', name: 'Zerubbabel', ref: '1Ch.3.19', type: 'Male' }],
+    ['Zerubbabel@Luk.3.27', { key: 'Zerubbabel@Luk.3.27', name: 'Zerubbabel', ref: 'Luk.3.27', type: 'Male' }],
+  ]);
+  const zerubbabelMatches = matchSkeleton([
+    { id: 'zerubbabel', name: { ru: 'Зоровавель' }, ref: 'Езд 3:2; Агг 2:23; Зах 4; Мф 1:13; Лк 3:27', gender: 'm' },
+    { id: 'zerubbabel_lk', name: { ru: 'Зоровавель (Лк)' }, ref: 'Лк 3:27', gender: 'm' },
+  ], zerubbabelFixture);
+  assert(zerubbabelMatches.matches.get('zerubbabel') === 'Zerubbabel@1Ch.3.19',
+    'основной Зоровавель закреплён за исторической записью 1Пар 3:19');
+  assert(zerubbabelMatches.matches.get('zerubbabel_lk') === 'Zerubbabel@Luk.3.27',
+    'occurrence Зоровавеля в Лк 3:27 остаётся отдельным от основной исторической записи');
+
   const missingExceptionTarget = matchSkeleton([
     { id: 'jesus', name: { ru: 'Иисус Христос' }, ref: 'Мф 1:16', gender: 'm' },
   ], new Map());
