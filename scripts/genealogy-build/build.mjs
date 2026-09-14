@@ -135,6 +135,59 @@ function slugName(s) {
   return String(s).split('|')[0].toLowerCase().replace(/[^a-z0-9]+/g, '');
 }
 
+const FUZZY_MIN_SCORE = 0.80;
+const FUZZY_CONTEXT_MIN_SCORE = 0.76;
+const FUZZY_MIN_MARGIN = 0.06;
+
+function v1PrimaryRefScope(person) {
+  const first = String(person.ref ?? '').split(';')[0].trim();
+  const match = /^([1-4]?[А-Яа-яЁё]+)\s+(\d+):(\d+)/u.exec(first);
+  if (!match) return null;
+  const osis = RU_BOOK_TO_OSIS[match[1]];
+  return osis ? { osis, chapter: Number(match[2]), verse: Number(match[3]) } : null;
+}
+
+function genderCompatible(person, rec) {
+  if (!person.gender || person.gender === 'u') return true;
+  if (person.gender === 'm') return rec.type === 'Male';
+  if (person.gender === 'f') return rec.type === 'Female';
+  return true;
+}
+
+function scopedFuzzyCandidates(person, all) {
+  const genderScoped = all.filter(rec => genderCompatible(person, rec));
+  const pool = genderScoped.length ? genderScoped : all;
+  const scope = v1PrimaryRefScope(person);
+  if (!scope) return { pool, scopeLevel: 'gender' };
+
+  const sameChapter = pool.filter(rec => {
+    const ref = parseRef(rec.ref);
+    return ref?.osis === scope.osis && ref.chapter === scope.chapter;
+  });
+  if (sameChapter.length) return { pool: sameChapter, scopeLevel: 'chapter' };
+
+  const sameBook = pool.filter(rec => parseRef(rec.ref)?.osis === scope.osis);
+  if (sameBook.length) return { pool: sameBook, scopeLevel: 'book' };
+
+  return { pool, scopeLevel: 'gender' };
+}
+
+function pickFuzzy(person, all) {
+  const { pool, scopeLevel } = scopedFuzzyCandidates(person, all);
+  const target = slugName(person.id.replace(/_[a-z0-9]{1,6}$/i, ''));
+  const ranked = pool
+    .map(rec => ({ rec, score: similarity(target, slugName(rec.name)) }))
+    .sort((a, b) => b.score - a.score || a.rec.key.localeCompare(b.rec.key));
+  const best = ranked[0];
+  const second = ranked[1];
+  if (!best) return null;
+
+  const minScore = scopeLevel === 'chapter' || scopeLevel === 'book' ? FUZZY_CONTEXT_MIN_SCORE : FUZZY_MIN_SCORE;
+  const margin = second ? best.score - second.score : 1;
+  if (best.score < minScore || margin < FUZZY_MIN_MARGIN) return null;
+  return { rec: best.rec, score: best.score, margin, scopeLevel };
+}
+
 function matchSkeleton(v1Persons, tipnrPersons) {
   const byName = new Map();
   const all = [...tipnrPersons.values()];
@@ -144,23 +197,31 @@ function matchSkeleton(v1Persons, tipnrPersons) {
     byName.get(k).push(rec);
   }
 
-  // выбор из нескольких кандидатов: сначала книга первого упоминания v1,
-  // затем близость русского имени v1 к транслиту английского имени кандидата
-  const disambiguate = (p, cands) => {
+  // Выбор из нескольких exact-name кандидатов: сначала совместимый пол и книга
+  // первого упоминания v1, затем близость русского имени к транслиту кандидата.
+  const disambiguate = (p, initialCands) => {
+    let cands = initialCands.filter(rec => genderCompatible(p, rec));
+    if (!cands.length) return null;
     if (p.ref) {
-      const ruBook = String(p.ref).trim().split(/\s+/)[0].replace(/[;,.]$/, '');
-      const osis = RU_BOOK_TO_OSIS[ruBook];
-      const scoped = osis ? cands.filter(c => c.ref?.startsWith(osis + '.')) : [];
-      if (scoped.length === 1) return scoped[0];
-      if (scoped.length > 1) cands = scoped;
+      const scope = v1PrimaryRefScope(p);
+      const sameChapter = scope ? cands.filter(c => {
+        const ref = parseRef(c.ref);
+        return ref?.osis === scope.osis && ref.chapter === scope.chapter;
+      }) : [];
+      if (sameChapter.length === 1) return sameChapter[0];
+      if (sameChapter.length > 1) cands = sameChapter;
+      else if (scope) {
+        const sameBook = cands.filter(c => parseRef(c.ref)?.osis === scope.osis);
+        if (sameBook.length === 1) return sameBook[0];
+        if (sameBook.length > 1) cands = sameBook;
+      }
     }
     if (p.name?.ru) {
-      let best = null;
-      for (const c of cands) {
-        const score = similarity(translitEnRu(c.name), p.name.ru);
-        if (!best || score > best.score) best = { c, score };
-      }
-      if (best && best.score >= 0.55) return best.c;
+      const ranked = cands
+        .map(c => ({ c, score: similarity(translitEnRu(c.name), p.name.ru) }))
+        .sort((a, b) => b.score - a.score || a.c.key.localeCompare(b.c.key));
+      const best = ranked[0], second = ranked[1];
+      if (best && best.score >= 0.55 && (!second || best.score - second.score >= 0.03)) return best.c;
     }
     return null;
   };
@@ -171,19 +232,17 @@ function matchSkeleton(v1Persons, tipnrPersons) {
   for (const p of v1Persons) {
     if (V1_NO_MATCH.has(p.id)) { unmatched.push({ id: p.id, ru: p.name?.ru, ref: p.ref ?? null, candidates: 'no-tipnr-counterpart' }); continue; }
     if (V1_EXCEPTIONS[p.id]) { matches.set(p.id, V1_EXCEPTIONS[p.id]); continue; }
-    const base = p.id.replace(/_[a-z0-9]{1,6}$/i, ''); // joseph_nt / kenan_gen5 / melki_lk → базовое имя
-    let cands = byName.get(slugName(base)) ?? [];
+    const base = p.id.replace(/_[a-z0-9]{1,6}$/i, '');
+    let cands = (byName.get(slugName(base)) ?? []).filter(rec => genderCompatible(p, rec));
     if (cands.length === 0) {
-      // фуззи по всем именам (melki↔Melchi, arphaxad↔Arpachshad, jeconiah↔Jechoniah)
-      const target = slugName(base);
-      let best = null;
-      for (const rec of all) {
-        const score = similarity(target, slugName(rec.name));
-        if (!best || score > best.score) best = { rec, score };
-      }
-      if (best && best.score >= 0.74) {
-        cands = byName.get(slugName(best.rec.name)) ?? [best.rec];
-        soft.push({ id: p.id, via: `fuzzy:${best.rec.name}(${best.score.toFixed(2)})` });
+      const fuzzy = pickFuzzy(p, all);
+      if (fuzzy) {
+        cands = (byName.get(slugName(fuzzy.rec.name)) ?? [fuzzy.rec])
+          .filter(rec => genderCompatible(p, rec));
+        soft.push({
+          id: p.id,
+          via: `fuzzy:${fuzzy.rec.name}(${fuzzy.score.toFixed(2)}; margin=${fuzzy.margin.toFixed(2)}; scope=${fuzzy.scopeLevel})`,
+        });
       }
     }
     if (cands.length === 1) { matches.set(p.id, cands[0].key); continue; }
@@ -194,8 +253,7 @@ function matchSkeleton(v1Persons, tipnrPersons) {
     unmatched.push({ id: p.id, ru: p.name?.ru, ref: p.ref ?? null, candidates: cands.length });
   }
 
-  // Коллизии: два v1-id указывают на один TIPNR-ключ (напр. jacob + jacob_mt → один Jacob).
-  // Тихо теряется seed одного из них — это баг данных, а не мелочь: surface явно.
+  // Коллизии: два v1-id указывают на один TIPNR-ключ.
   const byTarget = new Map();
   for (const [id, key] of matches) {
     if (!byTarget.has(key)) byTarget.set(key, []);
@@ -729,6 +787,26 @@ async function runTests() {
   assert(normalizeRuCandidate('Mattathias', 'Маттафиев') === 'Маттафия', 'нормализация -ias (Маттафиев→Маттафия)');
   assert(normalizeRuCandidate('Judah', 'Иуда') === 'Иуда', 'именительный не трогаем (Иуда)');
   assert(normalizeRuCandidate('Reuben', 'Рувим') === 'Рувим', 'без ложных срабатываний (Рувим)');
+
+
+  const matcherFixture = new Map([
+    ['Jecoliah@2Ki.15.2', { key: 'Jecoliah@2Ki.15.2', name: 'Jecoliah', ref: '2Ki.15.2', type: 'Female' }],
+    ['Jechoniah@Mat.1.11', { key: 'Jechoniah@Mat.1.11', name: 'Jechoniah', ref: 'Mat.1.11', type: 'Male' }],
+  ]);
+  const jeconiahMatch = matchSkeleton([
+    { id: 'jeconiah', name: { ru: 'Иехония' }, ref: '4Цар 24:8–17; Мф 1:11', gender: 'm' },
+  ], matcherFixture);
+  assert(jeconiahMatch.matches.get('jeconiah') === 'Jechoniah@Mat.1.11',
+    'fuzzy matcher не смешивает мужского Иехонию с Jecoliah-женщиной');
+
+  const ambiguousFixture = new Map([
+    ['Naham@1Ch.4.19', { key: 'Naham@1Ch.4.19', name: 'Naham', ref: '1Ch.4.19', type: 'Male' }],
+    ['Nahum@Nam.1.1', { key: 'Nahum@Nam.1.1', name: 'Nahum', ref: 'Nam.1.1', type: 'Male' }],
+  ]);
+  const ambiguous = matchSkeleton([
+    { id: 'nahamx', name: { ru: 'Наам' }, ref: null, gender: 'm' },
+  ], ambiguousFixture);
+  assert(!ambiguous.matches.has('nahamx'), 'неуверенный fuzzy без контекста остаётся unmatched');
 
   const mini = [
     '$==========PERSON(s)',
