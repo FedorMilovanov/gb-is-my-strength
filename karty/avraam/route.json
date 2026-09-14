@@ -2780,6 +2780,8 @@
       ]
     }
   ],
+  "archetype": "route",
+  "capabilities": ["stages","stories","layers","timeline","interpretations"],
   "publication": {
     "status": "ready",
     "indexable": true,
