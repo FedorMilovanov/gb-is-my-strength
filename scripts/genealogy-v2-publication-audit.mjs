@@ -189,11 +189,18 @@ if (expectedSpinePrefix.every((id, index) => spine.chain?.[index]?.id === id)) {
 const requiredRelationAnnotations = [
   {
     from: 'joseph--mat-1-16', to: 'jesus--isa-7-14',
-    assertion: 'explicit-textual', directScripture: true, editorialPosition: 'text',
+    assertion: 'explicit-qualified-textual', directScripture: true, editorialPosition: 'text',
+    required: {
+      biology: 'non-biological',
+      textualRelation: 'as-supposed-son',
+      legal: true,
+      legalAssertion: 'source-derived',
+    },
   },
   {
     from: 'heli--luk-3-23', to: 'mary--mat-1-16',
     assertion: 'editorial-harmonization', directScripture: false, editorialPosition: 'preferred',
+    required: { biology: 'unknown' },
   },
 ];
 const interpretationWordingIssues = (views.views ?? [])
@@ -261,12 +268,17 @@ for (const expected of requiredRelationAnnotations) {
   if (set.assertion !== expected.assertion) relationProvenanceIssues.push({ edge: `${expected.from}→${expected.to}`, issue: 'assertion-mismatch' });
   if (set.directScripture !== expected.directScripture) relationProvenanceIssues.push({ edge: `${expected.from}→${expected.to}`, issue: 'directScripture-mismatch' });
   if (set.editorialPosition !== expected.editorialPosition) relationProvenanceIssues.push({ edge: `${expected.from}→${expected.to}`, issue: 'editorialPosition-mismatch' });
+  for (const [field, value] of Object.entries(expected.required ?? {})) {
+    if (set[field] !== value) {
+      relationProvenanceIssues.push({ edge: `${expected.from}→${expected.to}`, issue: `${field}-mismatch` });
+    }
+  }
 
   const generatedEdge = edges.find(edge => edge.from === expected.from && edge.to === expected.to && edge.kind === (annotation.kind ?? 'parent'));
   if (!generatedEdge) {
     relationProvenanceIssues.push({ edge: `${expected.from}→${expected.to}`, issue: 'missing-generated-edge' });
   } else if (meta.pipelineVersion === PIPELINE_VERSION) {
-    for (const field of ['assertion', 'confidence', 'directScripture', 'editorialPosition']) {
+    for (const field of ['assertion', 'confidence', 'directScripture', 'editorialPosition', ...Object.keys(expected.required ?? {})]) {
       if (generatedEdge[field] !== set[field]) {
         relationProvenanceIssues.push({ edge: `${expected.from}→${expected.to}`, issue: `generated-${field}-drift` });
       }
