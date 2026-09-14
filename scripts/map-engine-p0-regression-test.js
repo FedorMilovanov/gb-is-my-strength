@@ -171,6 +171,7 @@ check(
     /Object\.entries\(config\.resources\|\|\{\}\)/.test(source) &&
     /typeof config\.transformRoute===['"]function['"]/.test(source) &&
     /typeof config\.afterCreate===['"]function['"]/.test(source) &&
+    /typeof instance\.destroy===['"]function['"]\)instance\.destroy\(\)/.test(source) &&
     /config\.baseGeoUrl\?\?route\?\.meta\?\.base_geo_url/.test(source) &&
     /readArchaeologyProjection\(config\.archaeologyPayloadId\|\|['"]map-archaeology-projection['"]\)/.test(source) &&
     /container\.setAttribute\(['"]data-map-state['"],['"]ready['"]\)/.test(source),
