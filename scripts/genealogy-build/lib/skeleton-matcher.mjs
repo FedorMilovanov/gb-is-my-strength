@@ -29,6 +29,7 @@ export const V1_EXCEPTIONS = Object.freeze({
   mattathias_lk: 'Mattathias@Luk.3.26',
   mattathias2_lk: 'Mattathias@Luk.3.25',
   naggesi_lk: 'Naggai@Luk.3.25',
+  naum_lk: 'Nahum@Luk.3.25',
   judah_lk: 'Judah@Luk.3.30',
 });
 
