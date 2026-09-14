@@ -1,0 +1,12 @@
+---
+import AppSearchSurface from '@/components/search/AppSearchSurface.astro';
+
+interface Props {
+  label?: string;
+}
+
+const { label = 'Поиск и приложение' } = Astro.props;
+---
+<nav class="map-search-rail" aria-label={label}>
+  <AppSearchSurface mode="map-engine" />
+</nav>

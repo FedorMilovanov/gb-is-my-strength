@@ -260,6 +260,25 @@ const { title, description, archaeologyMapId } = Astro.props;
       return card;
     }
 
-    window.GBMapRuntime = Object.freeze({ renderFailure: renderFailure });
+    function bootEngineRoute(config) {
+      var options = config || {};
+      var engine = window.MapEngine;
+      if (engine && typeof engine.bootRoute === 'function') {
+        return engine.bootRoute(options);
+      }
+      var container = document.querySelector(options.container || '#stage');
+      var error = new Error('движок карты не загрузился');
+      renderFailure(container, {
+        title: options.errorTitle || 'Интерактивная карта временно недоступна',
+        message: 'Не удалось запустить карту: ' + error.message
+      });
+      console.error('[' + (options.logLabel || 'map') + '] MapEngine mount failed:', error);
+      return Promise.resolve(null);
+    }
+
+    window.GBMapRuntime = Object.freeze({
+      renderFailure: renderFailure,
+      bootEngineRoute: bootEngineRoute
+    });
   })();
 </script>

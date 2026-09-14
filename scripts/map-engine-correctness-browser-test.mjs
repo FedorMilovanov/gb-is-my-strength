@@ -96,6 +96,17 @@ async function openReadyPage(context, base) {
   await page.waitForSelector('#stage[data-map-state="ready"]', { timeout: 20000 });
   check('Avraam route returns HTTP 200', response?.status() === 200, String(response?.status()));
   check('Avraam route reaches ready MapEngine state', true);
+  const bootstrapApi = await page.evaluate(() => ({
+    mountRoute: typeof window.MapEngine?.mountRoute,
+    bootRoute: typeof window.MapEngine?.bootRoute,
+    loadJsonResource: typeof window.MapEngine?.loadJsonResource,
+    readArchaeologyProjection: typeof window.MapEngine?.readArchaeologyProjection,
+  }));
+  check(
+    'MapEngine exports one shared route bootstrap lifecycle',
+    Object.values(bootstrapApi).every((value) => value === 'function'),
+    JSON.stringify(bootstrapApi),
+  );
   return { page, pageErrors };
 }
 
@@ -313,6 +324,95 @@ try {
     });
     check('Search cannot promote Ur outside the active Lot story', searchFacts.story === 'lot' && searchFacts.opacity === '0', JSON.stringify(searchFacts));
     check('Search/live-region scenario has no page errors', pageErrors.length === 0, pageErrors.join(' | '));
+    await context.close();
+  }
+
+
+  // A route-specific post-create hook may fail after createMap has already
+  // installed DOM/listeners. The shared lifecycle must destroy that partial
+  // instance before propagating the hook error.
+  {
+    const context = await createContext(browser, base);
+    const { page, pageErrors } = await openReadyPage(context, base);
+    const cleanupFacts = await page.evaluate(async () => {
+      const fixture = document.createElement('div');
+      fixture.id = 'map-after-create-failure-fixture';
+      fixture.className = 'pre-mount-fixture';
+      document.body.appendChild(fixture);
+      let rejected = false;
+      let message = '';
+      try {
+        await window.MapEngine.mountRoute(fixture, {
+          routeUrl: '/karty/avraam/route.json',
+          afterCreate() { throw new Error('intentional afterCreate hook failure'); },
+        });
+      } catch (error) {
+        rejected = true;
+        message = String(error?.message || error);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 80));
+      const facts = {
+        rejected,
+        message,
+        children: fixture.childElementCount,
+        html: fixture.innerHTML,
+        className: fixture.className,
+        state: fixture.getAttribute('data-map-state'),
+      };
+      fixture.remove();
+      return facts;
+    });
+    check(
+      'Failed afterCreate hook destroys the partially mounted map instance',
+      cleanupFacts.rejected
+        && cleanupFacts.message.includes('intentional afterCreate hook failure')
+        && cleanupFacts.children === 0
+        && cleanupFacts.html === ''
+        && cleanupFacts.className === ''
+        && cleanupFacts.state !== 'ready',
+      JSON.stringify(cleanupFacts),
+    );
+    check('Failed-hook cleanup scenario has no page errors', pageErrors.length === 0, pageErrors.join(' | '));
+    await context.close();
+  }
+
+  // Shared bootstrap must own fail-visible behavior when route data is unavailable.
+  {
+    const context = await createContext(browser, base);
+    await context.route('**/karty/avraam/route.json', async (requestRoute) => {
+      await requestRoute.fulfill({
+        status: 503,
+        contentType: 'application/json; charset=utf-8',
+        body: JSON.stringify({ error: 'intentional bootstrap failure' }),
+      });
+    });
+    const page = await context.newPage();
+    const pageErrors = [];
+    page.on('pageerror', (error) => pageErrors.push(String(error)));
+    const response = await page.goto(base + ROUTE_PATH, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForSelector('#stage[data-map-state="error"] .me-error', { timeout: 15000 });
+    const failureFacts = await page.evaluate(() => {
+      const stage = document.querySelector('#stage');
+      const card = stage?.querySelector('.me-error');
+      return {
+        state: stage?.getAttribute('data-map-state') || '',
+        busy: stage?.getAttribute('aria-busy'),
+        cardVisible: Boolean(card && card.getClientRects().length),
+        heading: card?.querySelector('h2')?.textContent || '',
+        retry: Boolean(card?.querySelector('.me-error__retry')),
+      };
+    });
+    check('Bootstrap failure fixture still returns the page shell', response?.status() === 200, String(response?.status()));
+    check(
+      'Shared route bootstrap renders one fail-visible recovery surface',
+      failureFacts.state === 'error'
+        && failureFacts.busy === 'false'
+        && failureFacts.cardVisible
+        && failureFacts.heading.includes('Авраама')
+        && failureFacts.retry,
+      JSON.stringify(failureFacts),
+    );
+    check('Bootstrap failure path has no uncaught page errors', pageErrors.length === 0, pageErrors.join(' | '));
     await context.close();
   }
 
