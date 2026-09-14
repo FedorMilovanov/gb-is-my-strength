@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { PIPELINE_VERSION } from './genealogy-build/config.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const V1 = path.join(ROOT, 'data', 'genealogy', 'genealogy.json');
@@ -144,7 +145,13 @@ function walkRuntimeRefs(roots) {
   return refs.sort();
 }
 
+const pipelineVersionMismatch = meta.pipelineVersion !== PIPELINE_VERSION;
 const blockers = [];
+if (pipelineVersionMismatch) blockers.push({
+  code: 'PIPELINE_OUTPUT_STALE',
+  expected: PIPELINE_VERSION,
+  actual: meta.pipelineVersion ?? null,
+});
 if (/phase1-draft|НЕ подключать в рантайм/u.test(meta.status ?? '')) {
   blockers.push({ code: 'DATASET_STATUS_DRAFT', detail: meta.status ?? null });
 } else if (!meta.status) {
@@ -171,6 +178,8 @@ const report = {
     reviewQueue,
     unresolvedRefs,
     pipelineStatus: meta.status ?? null,
+    pipelineVersion: meta.pipelineVersion ?? null,
+    expectedPipelineVersion: PIPELINE_VERSION,
   },
   blockers,
   evidence: {
@@ -196,6 +205,7 @@ const md = [
   '',
   `- Status: **${report.status}**`,
   `- Persons: ${persons.length}`,
+  `- Pipeline: ${meta.pipelineVersion ?? 'missing'} (expected ${PIPELINE_VERSION})`,
   `- RU review queue: ${reviewQueue}`,
   `- Unresolved relations: ${unresolvedRefs ?? 'unknown'}`,
   `- Fuzzy skeleton mappings: ${fuzzyMappings.length}`,
