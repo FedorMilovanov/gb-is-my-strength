@@ -146,6 +146,32 @@ async function openPlace(page, id) {
   await waitForStablePanelGeometry(page, id);
 }
 
+// Real pointer input must open the dossier too: pointerdown on an interactive
+// marker must not be captured by the pan handler, otherwise the click is
+// retargeted to the canvas and the panel never opens (regression guard for the
+// marker pointer-capture defect).
+async function assertRealPointerOpensPlace(page, id) {
+  await page.keyboard.press('Escape').catch(() => {});
+  await page.waitForTimeout(250);
+  const target = await page.evaluate((placeId) => {
+    const marker = document.querySelector(`[data-place-id="${CSS.escape(placeId)}"]`);
+    if (!marker) return null;
+    const dot = marker.querySelector('.me-marker-dot') || marker;
+    const rect = dot.getBoundingClientRect();
+    const x = rect.x + rect.width / 2;
+    const y = rect.y + rect.height / 2;
+    if (x <= 0 || y <= 0 || x >= innerWidth || y >= innerHeight) return { offscreen: true, x, y };
+    const top = document.elementFromPoint(x, y);
+    return { x, y, reachable: Boolean(top && (top === marker || marker.contains(top))) };
+  }, id);
+  assert(target, `real-pointer probe: marker ${id} is missing`);
+  if (target.offscreen || !target.reachable) return { id, skipped: true, reason: target.offscreen ? 'offscreen' : 'covered' };
+  await page.mouse.click(target.x, target.y);
+  await page.waitForFunction(() => document.querySelector('.me-panel')?.classList.contains('me-panel--open'), null, { timeout: 4000 });
+  const openedName = await page.evaluate(() => document.querySelector('.me-panel.me-panel--open .me-panel__name')?.textContent || '');
+  return { id, skipped: false, openedName };
+}
+
 async function mountSharedEngineRoute(page, route) {
   await page.goto(`${BASE}/karty/ishod/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForFunction(() => Boolean(window.MapEngine && document.querySelector('.me-map [data-place-id]')), null, { timeout: 20000 });
@@ -280,6 +306,16 @@ async function runScenario(browser, route, viewport) {
     await page.waitForTimeout(80);
     const resizedSnapshot = await panelSnapshot(page);
     assertBounded(resizedSnapshot, `${route}/${viewport.id}/resized-${reducedHeight}`, { requireScroll: true });
+
+    await page.evaluate(() => {
+      document.querySelector('.me-panel__close')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    await page.waitForTimeout(300);
+    const realPointer = await assertRealPointerOpensPlace(page, ids[0]);
+    if (!realPointer.skipped) {
+      assert(realPointer.openedName.length > 0, `${route}/${viewport.id}: real pointer click opened an unnamed dossier`, realPointer);
+    }
+    result.realPointer = realPointer;
 
     const screenshot = path.join(EVIDENCE, `${BROWSER_NAME}-${route}-${viewport.id}.png`);
     await page.screenshot({ path: screenshot, fullPage: false });
