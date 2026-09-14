@@ -704,6 +704,8 @@
     ],
     "description": "Вращающиеся кольца напоминают повторяющийся цикл книги Судей: отступление, угнетение, вопль, избавление."
   },
+  "archetype": "route",
+  "capabilities": ["stages","stories","layers","timeline","signature","interpretations"],
   "publication": {
     "status": "temporary-placeholder",
     "indexable": false,
