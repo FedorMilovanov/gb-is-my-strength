@@ -237,8 +237,13 @@ function matchSkeleton(v1Persons, tipnrPersons) {
   for (const p of v1Persons) {
     if (V1_NO_MATCH.has(p.id)) { unmatched.push({ id: p.id, ru: p.name?.ru, ref: p.ref ?? null, candidates: 'no-tipnr-counterpart' }); continue; }
     if (V1_EXCEPTIONS[p.id]) {
-      matches.set(p.id, V1_EXCEPTIONS[p.id]);
-      decisions.push({ id: p.id, target: V1_EXCEPTIONS[p.id], method: 'explicit-exception' });
+      const target = V1_EXCEPTIONS[p.id];
+      if (!tipnrPersons.has(target)) {
+        unmatched.push({ id: p.id, ru: p.name?.ru, ref: p.ref ?? null, candidates: 'explicit-target-missing', target });
+        continue;
+      }
+      matches.set(p.id, target);
+      decisions.push({ id: p.id, target, method: 'explicit-exception' });
       continue;
     }
     const base = p.id.replace(/_[a-z0-9]{1,6}$/i, '');
@@ -857,6 +862,13 @@ async function runTests() {
   ], matcherFixture);
   assert(jeconiahMatch.matches.get('jeconiah') === 'Jehoiachin@2Ki.24.6',
     'Иехония имеет явное соответствие Jehoiachin и никогда не смешивается с Jecoliah');
+
+  const missingExceptionTarget = matchSkeleton([
+    { id: 'jesus', name: { ru: 'Иисус Христос' }, ref: 'Мф 1:16', gender: 'm' },
+  ], new Map());
+  assert(!missingExceptionTarget.matches.has('jesus') &&
+    missingExceptionTarget.unmatched.some(item => item.id === 'jesus' && item.candidates === 'explicit-target-missing'),
+    'explicit exception не засчитывается, если target отсутствует в TIPNR');
 
   const ambiguousFixture = new Map([
     ['Naham@1Ch.4.19', { key: 'Naham@1Ch.4.19', name: 'Naham', ref: '1Ch.4.19', type: 'Male' }],
