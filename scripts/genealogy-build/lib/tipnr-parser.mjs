@@ -71,7 +71,7 @@ const SECTION_RE = /^\$=+\s*(PERSON|PLACE|OTHER)/i;
  */
 export function parseTipnr(text) {
   const stats = {
-    topLines: 0, personRecords: 0, groupRecords: 0, byType: {}, duplicates: [],
+    topLines: 0, personRecords: 0, groupRecords: 0, placeRecords: 0, byType: {}, duplicates: [],
     subRecordLines: 0, badTopLines: 0,
   };
   const persons = new Map();
@@ -150,7 +150,10 @@ export function parseTipnr(text) {
         stats.groupRecords += 1;
       }
     } else if (type === 'Place') {
-      if (!places.has(rec.key)) places.set(rec.key, rec);
+      if (!places.has(rec.key)) {
+        places.set(rec.key, rec);
+        stats.placeRecords += 1;
+      }
     }
     current = rec;
   }
