@@ -579,7 +579,7 @@ async function runAll() {
     nations,
   }, null, 1) + '\n');
   await writeFile(path.join(PATHS.outDir, 'spine.json'), JSON.stringify({
-    _status: 'phase1-draft: золотой мессианский хребет (Христос→Адам), L0-persistent якоря',
+    _status: 'phase1-draft: интерпретационная мессианская проекция (Христос→Адам), L0-persistent якоря',
     model: spine.model,
     reachedRoot: spine.reachedRoot,
     length: spine.length,
@@ -754,7 +754,7 @@ ${cycles.length ? '\nЦиклы:\n' + cycles.slice(0, 5).map(c => '- ' + c.join(
 ### Нерезолвнутые ссылки (первые 20 — вход для Phase 1 доводки)
 ${ctx.relStats.unresolvedRefs.slice(0, 20).map(u => `- ${u.from} · ${u.field}: \`${u.raw}\``).join('\n') || '- нет'}
 
-## Золотой хребет (Христос→Адам) — ${ctx.spine?.reachedRoot ? '✅ СВЯЗАН' : '❌ РАЗОРВАН'}
+## Мессианский хребет — интерпретационная проекция (Христос→Адам) — ${ctx.spine?.reachedRoot ? '✅ СВЯЗАН' : '❌ РАЗОРВАН'}
 
 Длина цепи: ${ctx.spine?.length ?? '—'} узлов.${(ctx.spine?.missingAnchors?.length) ? ` Отсутствуют якоря: ${ctx.spine.missingAnchors.join(', ')}` : ' Все контрольные якоря на месте.'}
 
