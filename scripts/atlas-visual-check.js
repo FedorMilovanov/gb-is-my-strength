@@ -33,7 +33,9 @@ const T = {
 };
 
 (async () => {
-  const br = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--no-sandbox'] });
+  // Same browser override as atlas-export-sheet.js: the hardcoded path only
+  // exists in the original build container.
+  const br = await chromium.launch({ executablePath: process.env.PW_CHROMIUM || '/opt/pw-browsers/chromium', args: ['--no-sandbox'] });
   const pg = await br.newPage({ viewport: { width: 1536, height: 960 } });
   await pg.goto(URL, { waitUntil: 'networkidle' });
   await pg.waitForTimeout(500);

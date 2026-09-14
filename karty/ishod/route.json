@@ -16,7 +16,7 @@
     },
     "viewport_init": {
       "cx": 450,
-      "cy": 900,
+      "cy": 933,
       "w": 1200
     },
     "mobile_viewport_init": {
@@ -26,7 +26,7 @@
     },
     "sheet_viewport": {
       "cx": 660,
-      "cy": 860,
+      "cy": 933,
       "w": 1300
     },
     "sheet_no": "II"
