@@ -173,7 +173,15 @@ async function runAll() {
       id,
       key: rec.key,
       en: rec.name,
-      ru: ru.name ? { name: ru.name, source: ru.source, confidence: ru.confidence, review: ru.review, verseRef: ru.verseRef ?? null, ...(ru.anonymous ? { anonymous: true } : {}) } : null,
+      ru: ru.name ? {
+        name: ru.name,
+        source: ru.source,
+        confidence: ru.confidence,
+        review: ru.review,
+        verseRef: ru.verseRef ?? null,
+        ...(ru.verseForm ? { verseForm: ru.verseForm } : {}),
+        ...(ru.anonymous ? { anonymous: true } : {}),
+      } : null,
       gender: rec.type === 'Male' ? 'm' : 'f',
       firstRef: { osis: rec.ref, ru: refToRu(rec.ref) },
       tribe: rec.tribe,
@@ -685,6 +693,12 @@ async function runTests() {
   assert(normalizeRuCandidate('Mattathias', 'Маттафиев') === 'Маттафия', 'нормализация -ias (Маттафиев→Маттафия)');
   assert(normalizeRuCandidate('Judah', 'Иуда') === 'Иуда', 'именительный не трогаем (Иуда)');
   assert(normalizeRuCandidate('Reuben', 'Рувим') === 'Рувим', 'без ложных срабатываний (Рувим)');
+
+  assert(normalizeRuCandidate('Sheba', 'Шеву') === 'Шева', 'вин. форма -у → canonical -а');
+  assert(normalizeRuCandidate('Havilah', 'Хавилу') === 'Хавила', 'Havilah: -у → -а');
+  assert(normalizeRuCandidate('Iscah', 'Иски') === 'Иска', 'род. форма -и → canonical -а');
+  assert(normalizeRuCandidate('Elisheba', 'Елисавету') === 'Елисавета', 'Елисавету → Елисавета');
+  assert(normalizeRuCandidate('Maria', 'Марии') === 'Мария', '-ia: Марии → Мария');
 
   assert(structuralRuLabel('father_of_Mamre')?.name === 'Отец (имя не указано)' &&
     structuralRuLabel('father_of_Mamre')?.review === false,
