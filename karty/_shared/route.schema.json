@@ -9,10 +9,11 @@
   "properties": {
     "meta": {
       "type": "object",
-      "required": ["id", "title", "era", "stats", "viewport_init"],
+      "required": ["title", "era", "stats", "viewport_init"],
       "additionalProperties": true,
       "properties": {
         "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "sheet_no": { "type": ["string", "integer"] },
         "title": { "type": "string", "minLength": 2 },
         "title_he": { "type": "string" },
         "subtitle": { "type": "string" },
@@ -55,7 +56,7 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["id", "name", "x", "y", "type", "stage"],
+        "required": ["id", "name", "x", "y", "type"],
         "additionalProperties": true,
         "properties": {
           "id": { "type": "string", "pattern": "^[a-z0-9_-]+$" },
@@ -69,7 +70,13 @@
           "story": { "type": "string" },
           "bible": { "type": "string" },
           "arch": { "type": "string" }
-        }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "type": { "enum": ["ctx", "region"] } }, "required": ["type"] },
+            "else": { "required": ["stage"] }
+          }
+        ]
       }
     },
     "stages": {
@@ -127,6 +134,22 @@
         "hub_order": { "type": "integer", "minimum": 0 },
         "hub_summary": { "type": "string", "minLength": 20, "maxLength": 320 },
         "hub_image": { "type": "string", "pattern": "^/images/[^?#]+\\.(?:avif|webp|png|jpe?g)$" },
+        "hub_approval": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["basis"],
+          "properties": {
+            "basis": { "type": "string", "enum": ["legacy-production", "owner-receipt"] },
+            "receipt": { "type": "string", "minLength": 3, "maxLength": 320 },
+            "note": { "type": "string", "minLength": 3, "maxLength": 320 }
+          },
+          "allOf": [
+            {
+              "if": { "properties": { "basis": { "const": "owner-receipt" } }, "required": ["basis"] },
+              "then": { "required": ["receipt"] }
+            }
+          ]
+        },
         "note": { "type": "string", "minLength": 1, "maxLength": 320 }
       },
       "allOf": [
@@ -140,9 +163,44 @@
         },
         {
           "if": { "properties": { "hub": { "enum": ["featured", "listed"] } }, "required": ["hub"] },
-          "then": { "required": ["hub_order", "hub_summary", "hub_image"], "properties": { "status": { "const": "ready" } } }
+          "then": { "required": ["hub_order", "hub_summary", "hub_image", "hub_approval"], "properties": { "status": { "const": "ready" } } }
         }
       ]
     }
-  }
+  },
+  "allOf": [
+    {
+      "anyOf": [
+        { "properties": { "meta": { "required": ["id"] } } },
+        {
+          "properties": {
+            "publication": { "properties": { "status": { "const": "draft" } }, "required": ["status"] },
+            "meta": { "required": ["sheet_no"] }
+          }
+        }
+      ]
+    },
+    {
+      "if": {
+        "properties": {
+          "publication": {
+            "properties": {
+              "hub_approval": {
+                "properties": { "basis": { "const": "legacy-production" } },
+                "required": ["basis"]
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "meta": {
+            "properties": { "id": { "const": "avraam" } },
+            "required": ["id"]
+          }
+        }
+      }
+    }
+  ]
 }
