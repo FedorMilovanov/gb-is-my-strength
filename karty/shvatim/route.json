@@ -21,32 +21,162 @@
     }
   },
   "regions": [
-    { "id": "asher", "name": "Асир", "badge": 9, "tint": "asher", "labelSize": 6,
-      "d": "M618,636 L612,655 L600,672 L592,690 L590,706 L626,706 L628,672 L628,648 L626,636 Z", "labelPos": [607, 676] },
-    { "id": "naphtali", "name": "Наффтали", "badge": 10, "tint": "naphtali", "labelSize": 6,
-      "d": "M628,636 L628,648 L628,672 L626,706 L647,706 L648,672 L648,648 L645,636 Z", "labelPos": [640, 682] },
-    { "id": "zebulun", "name": "Завулон", "badge": 11, "tint": "zebulun", "labelSize": 5.4,
-      "d": "M590,706 L588,726 L591,736 L632,736 L633,708 L626,706 Z", "labelPos": [610, 724] },
-    { "id": "issachar", "name": "Иссахар", "badge": 12, "tint": "issachar", "labelSize": 5.4,
-      "d": "M632,708 L632,736 L634,746 L656,745 L654,706 L650,706 Z", "labelPos": [645, 728] },
-    { "id": "manasseh_w", "name": "Манассия", "badge": 4, "tint": "manasseh", "labelSize": 7.5,
-      "d": "M588,730 L578,745 L577,772 L651,772 L656,745 L634,746 L633,736 L591,736 L590,730 Z", "labelPos": [612, 760] },
-    { "id": "ephraim", "name": "Ефрем", "badge": 3, "tint": "ephraim", "labelSize": 7,
-      "d": "M577,772 L572,782 L569,797 L649,796 L651,772 Z", "labelPos": [606, 787] },
-    { "id": "dan", "name": "Дан", "badge": 5, "tint": "dan", "labelSize": 5.6,
-      "d": "M569,797 L566,802 L557,818 L556,824 L601,822 L601,797 Z", "labelPos": [580, 813] },
-    { "id": "benjamin", "name": "Вениамин", "badge": 2, "tint": "benjamin", "labelSize": 5,
-      "d": "M601,797 L601,822 L632,820 L636,798 Z", "labelPos": [620, 810] },
-    { "id": "judah", "name": "Иуда", "badge": 1, "tint": "judah", "labelSize": 8.5,
-      "d": "M601,822 L556,824 L544,836 L528,852 L560,865 L588,868 L616,896 L632,878 L632,840 L633,820 Z", "labelPos": [596, 848] },
-    { "id": "simeon", "name": "Симеон", "badge": 6, "tint": "simeon", "labelSize": 6,
-      "d": "M528,852 L512,864 L520,886 L576,889 L588,868 L560,865 Z", "labelPos": [548, 874] },
-    { "id": "manasseh_e", "name": "Манассия", "badge": 4, "tint": "manasseh", "labelSize": 6,
-      "d": "M666,654 L665,692 L668,720 L712,718 L716,662 L692,650 L676,650 Z", "labelPos": [688, 690] },
-    { "id": "gad", "name": "Гад", "badge": 7, "tint": "gad", "labelSize": 7.5,
-      "d": "M657,720 L657,762 L654,800 L708,800 L714,760 L712,718 Z", "labelPos": [684, 762] },
-    { "id": "reuben", "name": "Рувим", "badge": 8, "tint": "reuben", "labelSize": 7.5,
-      "d": "M656,802 L662,838 L667,870 L704,868 L708,804 Z", "labelPos": [683, 836] }
+    {
+      "id": "asher",
+      "name": "Асир",
+      "badge": 9,
+      "tint": "asher",
+      "labelSize": 6,
+      "d": "M618,636 L612,655 L600,672 L592,690 L590,706 L626,706 L628,672 L628,648 L626,636 Z",
+      "labelPos": [
+        607,
+        676
+      ]
+    },
+    {
+      "id": "naphtali",
+      "name": "Наффтали",
+      "badge": 10,
+      "tint": "naphtali",
+      "labelSize": 6,
+      "d": "M628,636 L628,648 L628,672 L626,706 L647,706 L648,672 L648,648 L645,636 Z",
+      "labelPos": [
+        640,
+        682
+      ]
+    },
+    {
+      "id": "zebulun",
+      "name": "Завулон",
+      "badge": 11,
+      "tint": "zebulun",
+      "labelSize": 5.4,
+      "d": "M590,706 L588,726 L591,736 L632,736 L633,708 L626,706 Z",
+      "labelPos": [
+        610,
+        724
+      ]
+    },
+    {
+      "id": "issachar",
+      "name": "Иссахар",
+      "badge": 12,
+      "tint": "issachar",
+      "labelSize": 5.4,
+      "d": "M632,708 L632,736 L634,746 L656,745 L654,706 L650,706 Z",
+      "labelPos": [
+        645,
+        728
+      ]
+    },
+    {
+      "id": "manasseh_w",
+      "name": "Манассия",
+      "badge": 4,
+      "tint": "manasseh",
+      "labelSize": 7.5,
+      "d": "M588,730 L578,745 L577,772 L651,772 L656,745 L634,746 L633,736 L591,736 L590,730 Z",
+      "labelPos": [
+        612,
+        760
+      ]
+    },
+    {
+      "id": "ephraim",
+      "name": "Ефрем",
+      "badge": 3,
+      "tint": "ephraim",
+      "labelSize": 7,
+      "d": "M577,772 L572,782 L569,797 L649,796 L651,772 Z",
+      "labelPos": [
+        606,
+        787
+      ]
+    },
+    {
+      "id": "dan",
+      "name": "Дан",
+      "badge": 5,
+      "tint": "dan",
+      "labelSize": 5.6,
+      "d": "M569,797 L566,802 L557,818 L556,824 L601,822 L601,797 Z",
+      "labelPos": [
+        580,
+        813
+      ]
+    },
+    {
+      "id": "benjamin",
+      "name": "Вениамин",
+      "badge": 2,
+      "tint": "benjamin",
+      "labelSize": 5,
+      "d": "M601,797 L601,822 L632,820 L636,798 Z",
+      "labelPos": [
+        620,
+        810
+      ]
+    },
+    {
+      "id": "judah",
+      "name": "Иуда",
+      "badge": 1,
+      "tint": "judah",
+      "labelSize": 8.5,
+      "d": "M601,822 L556,824 L544,836 L528,852 L560,865 L588,868 L616,896 L632,878 L632,840 L633,820 Z",
+      "labelPos": [
+        596,
+        848
+      ]
+    },
+    {
+      "id": "simeon",
+      "name": "Симеон",
+      "badge": 6,
+      "tint": "simeon",
+      "labelSize": 6,
+      "d": "M528,852 L512,864 L520,886 L576,889 L588,868 L560,865 Z",
+      "labelPos": [
+        548,
+        874
+      ]
+    },
+    {
+      "id": "manasseh_e",
+      "name": "Манассия",
+      "badge": 4,
+      "tint": "manasseh",
+      "labelSize": 6,
+      "d": "M666,654 L665,692 L668,720 L712,718 L716,662 L692,650 L676,650 Z",
+      "labelPos": [
+        688,
+        690
+      ]
+    },
+    {
+      "id": "gad",
+      "name": "Гад",
+      "badge": 7,
+      "tint": "gad",
+      "labelSize": 7.5,
+      "d": "M657,720 L657,762 L654,800 L708,800 L714,760 L712,718 Z",
+      "labelPos": [
+        684,
+        762
+      ]
+    },
+    {
+      "id": "reuben",
+      "name": "Рувим",
+      "badge": 8,
+      "tint": "reuben",
+      "labelSize": 7.5,
+      "d": "M656,802 L662,838 L667,870 L704,868 L708,804 Z",
+      "labelPos": [
+        683,
+        836
+      ]
+    }
   ],
   "stories": [
     {
@@ -832,6 +962,7 @@
     "indexable": false,
     "sitemap": false,
     "llms": false,
-    "pagefind": false
+    "pagefind": false,
+    "hub": "withheld"
   }
 }
