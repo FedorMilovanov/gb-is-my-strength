@@ -4,12 +4,12 @@
   "$comment": "places[].id and stories[].id must be unique within a single route. Validated at runtime by scripts/validate-map-routes.js (findDuplicateIds) and scripts/map-layers-theme-regression-test.js. JSON Schema 2020-12 has no built-in 'unique by property' keyword — schema-level uniqueItems: true checks deep equality, not what we need. Story ids intentionally allow underscore because they are internal filter/deep-link identifiers, not public route slugs.",
   "title": "GB Historical Map Route",
   "type": "object",
-  "required": ["meta", "stories", "places", "stages", "archetype", "capabilities", "publication"],
+  "required": ["meta", "places", "stages", "archetype", "capabilities", "publication"],
   "additionalProperties": true,
   "properties": {
     "meta": {
       "type": "object",
-      "required": ["title", "era", "stats", "viewport_init"],
+      "required": ["title"],
       "additionalProperties": true,
       "properties": {
         "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
@@ -21,6 +21,16 @@
         "era": { "type": "string" },
         "stats": { "type": "object", "additionalProperties": true },
         "viewport_init": {
+          "type": "object",
+          "required": ["cx", "cy", "w"],
+          "properties": {
+            "cx": { "type": "number" },
+            "cy": { "type": "number" },
+            "w": { "type": "number", "exclusiveMinimum": 0 }
+          },
+          "additionalProperties": true
+        },
+        "sheet_viewport": {
           "type": "object",
           "required": ["cx", "cy", "w"],
           "properties": {
@@ -70,13 +80,7 @@
           "story": { "type": "string" },
           "bible": { "type": "string" },
           "arch": { "type": "string" }
-        },
-        "allOf": [
-          {
-            "if": { "properties": { "type": { "enum": ["ctx", "region"] } }, "required": ["type"] },
-            "else": { "required": ["stage"] }
-          }
-        ]
+        }
       }
     },
     "stages": {
@@ -170,15 +174,35 @@
   },
   "allOf": [
     {
-      "anyOf": [
-        { "properties": { "meta": { "required": ["id"] } } },
-        {
-          "properties": {
-            "publication": { "properties": { "status": { "const": "draft" } }, "required": ["status"] },
-            "meta": { "required": ["sheet_no"] }
+      "if": {
+        "properties": {
+          "publication": {
+            "properties": { "status": { "const": "draft" } },
+            "required": ["status"]
           }
         }
-      ]
+      },
+      "then": {
+        "properties": {
+          "meta": { "required": ["sheet_no", "sheet_viewport"] }
+        }
+      },
+      "else": {
+        "required": ["stories"],
+        "properties": {
+          "meta": { "required": ["id", "era", "stats", "viewport_init"] },
+          "places": {
+            "items": {
+              "allOf": [
+                {
+                  "if": { "properties": { "type": { "enum": ["ctx", "region"] } }, "required": ["type"] },
+                  "else": { "required": ["stage"] }
+                }
+              ]
+            }
+          }
+        }
+      }
     },
     {
       "if": {
