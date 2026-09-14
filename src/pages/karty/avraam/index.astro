@@ -8,34 +8,28 @@
  */
 import AvraamPageHead from '@/components/karty/avraam/AvraamPageHead.astro';
 import AvraamMap from '@/components/karty/avraam/AvraamMap.astro';
-import MapSearchRail from '@/components/karty/_shared/MapSearchRail.astro';
+import MapPageShell from '@/components/karty/_shared/MapPageShell.astro';
 ---
-<!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <AvraamPageHead />
-  </head>
-  <body class="has-app-search-map">
-    <AvraamMap />
-    <MapSearchRail />
-    <script>
-      const stage = document.querySelector('[data-map-stage]');
-      const fallbackHeading = document.querySelector('h1.sr-only[data-pagefind-body]');
+<MapPageShell>
+  <AvraamPageHead slot="head" />
+  <AvraamMap />
+  <script>
+    const stage = document.querySelector('[data-map-stage]');
+    const fallbackHeading = document.querySelector('h1.sr-only[data-pagefind-body]');
 
-      if (stage && fallbackHeading) {
-        const removeFallbackHeadingWhenReady = () => {
-          if (stage.getAttribute('data-map-state') !== 'ready') return false;
-          fallbackHeading.remove();
-          return true;
-        };
+    if (stage && fallbackHeading) {
+      const removeFallbackHeadingWhenReady = () => {
+        if (stage.getAttribute('data-map-state') !== 'ready') return false;
+        fallbackHeading.remove();
+        return true;
+      };
 
-        if (!removeFallbackHeadingWhenReady()) {
-          const observer = new MutationObserver(() => {
-            if (removeFallbackHeadingWhenReady()) observer.disconnect();
-          });
-          observer.observe(stage, { attributes: true, attributeFilter: ['data-map-state'] });
-        }
+      if (!removeFallbackHeadingWhenReady()) {
+        const observer = new MutationObserver(() => {
+          if (removeFallbackHeadingWhenReady()) observer.disconnect();
+        });
+        observer.observe(stage, { attributes: true, attributeFilter: ['data-map-state'] });
       }
-    </script>
-  </body>
-</html>
+    }
+  </script>
+</MapPageShell>
