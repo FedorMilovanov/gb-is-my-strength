@@ -1,5 +1,5 @@
 {
-  "_readme": "Редакционные пометки рёбер поверх TIPNR. Поля assertion/confidence/directScripture/editorialPosition обязательны для интерпретационных и юридических связей.",
+  "_readme": "Редакционные пометки рёбер поверх TIPNR. assertion описывает характер текстового утверждения; interpretation-классификации (например legal) имеют собственный *Assertion. Поля confidence/directScripture/editorialPosition/refs обязательны для сложных связей.",
   "annotations": [
     {
       "from": "joseph--mat-1-16",
@@ -7,17 +7,21 @@
       "kind": "parent",
       "set": {
         "legal": true,
-        "biology": "legal",
-        "assertion": "explicit-textual",
+        "legalAssertion": "source-derived",
+        "biology": "non-biological",
+        "assertion": "explicit-qualified-textual",
+        "textualRelation": "as-supposed-son",
         "confidence": "certain",
         "directScripture": true,
         "editorialPosition": "text",
         "refs": [
           "Мф 1:16",
+          "Мф 1:18–25",
+          "Лк 1:34–35",
           "Лк 3:23"
         ]
       },
-      "note": "Иосиф назван мужем Марии и считается отцом Иисуса по закону/общественному восприятию; биологическое отцовство ему не приписывается."
+      "note": "Мф 1:16 называет Иосифа мужем Марии; Лк 3:23 — Иисуса «как думали, сыном Иосифовым». Девственное зачатие исключает биологическое отцовство Иосифа (Мф 1:18–25; Лк 1:34–35). Категория «legal» — source-derived модель роли Иосифа, а не отдельная буквальная формулировка стиха."
     },
     {
       "from": "heli--luk-3-23",
