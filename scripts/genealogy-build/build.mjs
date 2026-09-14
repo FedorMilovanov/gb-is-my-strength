@@ -109,6 +109,7 @@ const V1_EXCEPTIONS = {
   jacob: 'Israel@Gen.25.26',          // патриарх Иаков в TIPNR = Israel@Gen.25.26 (не Jacob@Mat = NT-тёзка)
   jacob_mt: 'Jacob@Mat.1.15',         // NT-Иаков, отец Иосифа-обручника
   arphaxad: 'Arpachshad@Gen.10.22',
+  jeconiah: 'Jehoiachin@2Ki.24.6',   // Иехония/Иоахин; не Jecoliah (женщина, 4Цар 15:2)
   shelah: 'Shelah@Gen.10.24',        // сын Арфаксада (не Шела сын Иуды Gen.38.5)
   mizraim: 'Egypt@Gen.10.6',         // Мицраим = Egypt в ESV-номенклатуре TIPNR
   joseph_nt: 'Joseph@Mat.1.16',      // Обручник
@@ -820,13 +821,13 @@ async function runTests() {
 
   const matcherFixture = new Map([
     ['Jecoliah@2Ki.15.2', { key: 'Jecoliah@2Ki.15.2', name: 'Jecoliah', ref: '2Ki.15.2', type: 'Female' }],
-    ['Jechoniah@Mat.1.11', { key: 'Jechoniah@Mat.1.11', name: 'Jechoniah', ref: 'Mat.1.11', type: 'Male' }],
+    ['Jehoiachin@2Ki.24.6', { key: 'Jehoiachin@2Ki.24.6', name: 'Jehoiachin', ref: '2Ki.24.6', type: 'Male' }],
   ]);
   const jeconiahMatch = matchSkeleton([
     { id: 'jeconiah', name: { ru: 'Иехония' }, ref: '4Цар 24:8–17; Мф 1:11', gender: 'm' },
   ], matcherFixture);
-  assert(jeconiahMatch.matches.get('jeconiah') === 'Jechoniah@Mat.1.11',
-    'fuzzy matcher не смешивает мужского Иехонию с Jecoliah-женщиной');
+  assert(jeconiahMatch.matches.get('jeconiah') === 'Jehoiachin@2Ki.24.6',
+    'Иехония имеет явное соответствие Jehoiachin и никогда не смешивается с Jecoliah');
 
   const ambiguousFixture = new Map([
     ['Naham@1Ch.4.19', { key: 'Naham@1Ch.4.19', name: 'Naham', ref: '1Ch.4.19', type: 'Male' }],
