@@ -160,8 +160,13 @@ const MapEngine = (function() {
     const instance=createMap(container,route,mapOptions);
     if(!instance)throw new Error('MapEngine.mountRoute: createMap returned no instance');
 
-    if(typeof config.afterCreate==='function'){
-      await config.afterCreate({container,route,resources,instance,mapOptions});
+    try{
+      if(typeof config.afterCreate==='function'){
+        await config.afterCreate({container,route,resources,instance,mapOptions});
+      }
+    }catch(error){
+      try{if(typeof instance.destroy==='function')instance.destroy()}catch(cleanupError){console.error('[MapEngine] mount cleanup failed:',cleanupError)}
+      throw error;
     }
 
     container.setAttribute('data-map-state','ready');
