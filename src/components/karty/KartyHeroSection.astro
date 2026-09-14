@@ -26,7 +26,7 @@ function publishedLabel(count: number) {
       <h1 id="mapsTitle">Библейские карты</h1>
       <div class="he" lang="he">מַפּוֹת</div>
       <p class="desc">Карты должны помогать видеть текст Писания в пространстве: маршруты, города, реки, пустыни, спорные точки локализации и исторический контекст. Поэтому на витрине остаётся только то, что прошло техническую проверку и обязательный ручной визуальный контроль.</p>
-      <div class="karty-hero__meta" aria-label="Статус раздела" data-route-count={routeCount} data-published-count={publishedCount} data-audit-count={auditCount}>
+      <div class="karty-hero__meta" role="group" aria-label="Статус раздела" data-route-count={routeCount} data-published-count={publishedCount} data-audit-count={auditCount}>
         <div class="karty-stat"><b>{publishedCount}</b><span>{publishedLabel(publishedCount)}</span></div>
         <div class="karty-stat"><b>{auditCount}</b><span>на аудите</span></div>
         <div class="karty-stat"><b>0</b><span>черновиков на витрине</span></div>
@@ -44,7 +44,6 @@ function publishedLabel(count: number) {
           <a
             href={`./${record.slug}/`}
             class="karty-feature"
-            aria-label={`Открыть карту ${title}`}
             style={`--karty-feature-image:url('${image}')`}
             data-karty-published={record.slug}
           >
