@@ -17,7 +17,11 @@ import AppSearchSurface from '@/components/search/AppSearchSurface.astro';
   </head>
   <body class="has-app-search-map">
     <AvraamMap />
-    <AppSearchSurface mode="map-engine" />
+    <!-- The two fixed map controls are page chrome, not part of the map:
+         a navigation landmark keeps them out of the axe/`region` gap. -->
+    <nav class="map-search-rail" aria-label="Поиск и приложение">
+      <AppSearchSurface mode="map-engine" />
+    </nav>
     <script>
       const stage = document.querySelector('[data-map-stage]');
       const fallbackHeading = document.querySelector('h1.sr-only[data-pagefind-body]');

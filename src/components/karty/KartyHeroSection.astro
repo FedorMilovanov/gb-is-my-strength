@@ -17,18 +17,19 @@ const { getKartyHubInventory } = inventoryModule;
 const { routeCount, publishedCount, auditCount, publishedSlugs } = getKartyHubInventory();
 const publishedLabel = publishedCount === 1 ? 'карта открыта' : 'карты открыты';
 
-type PublishedCard = { href: string; aria: string; title: string; hebrew: string; description: string };
+// The card link carries no aria-label on purpose: an action-only name such as
+// «Открыть карту …» would hide the visible card text from the accessible name
+// (axe label-content-name-mismatch), so the visible card content is the name.
+type PublishedCard = { href: string; title: string; hebrew: string; description: string };
 const PUBLISHED_CARDS: Record<string, PublishedCard> = {
   avraam: {
     href: './avraam/',
-    aria: 'Открыть карту Путь Авраама',
     title: 'Путь Авраама',
     hebrew: 'אַבְרָהָם',
     description: 'Бытие 11–25: маршрут патриарха, ключевые места, богословский и исторический слой.',
   },
   ishod: {
     href: './ishod/',
-    aria: 'Открыть карту Исход из Египта',
     title: 'Исход из Египта',
     hebrew: 'יְצִיאַת מִצְרַיִם',
     description: 'Числа 33: станы исхода, Пи-Гахироф как нерешённая локализация, Синай и путь к Моаву.',
@@ -51,7 +52,7 @@ const cards = publishedSlugs.map((slug) => PUBLISHED_CARDS[slug]).filter((card):
     </div>
     <div class="karty-feature-list" data-published-map-count={publishedCount}>
       {cards.map((card) => (
-        <a href={card.href} class="karty-feature" aria-label={card.aria}>
+        <a href={card.href} class="karty-feature">
           <div class="karty-feature__body">
             <span class="badge badge--ready">Проверенная карта</span>
             <h2>{card.title} <span lang="he">{card.hebrew}</span></h2>

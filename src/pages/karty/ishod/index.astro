@@ -33,6 +33,10 @@ import AppSearchSurface from '@/components/search/AppSearchSurface.astro';
         };
       })();
     </script>
-    <AppSearchSurface mode="map-engine" />
+    <!-- The two fixed map controls are page chrome, not part of the map:
+         a navigation landmark keeps them out of the axe/`region` gap. -->
+    <nav class="map-search-rail" aria-label="Поиск и приложение">
+      <AppSearchSurface mode="map-engine" />
+    </nav>
   </body>
 </html>
