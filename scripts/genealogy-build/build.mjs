@@ -15,7 +15,7 @@ import path from 'node:path';
 import { PATHS, SOURCES, PIPELINE_VERSION, HARD_INVARIANTS } from './config.mjs';
 import { SynodalText, refToRu, parseRef } from './lib/refs.mjs';
 import { parseTipnr, resolveRelations, parseUnifiedRef, parseRelField } from './lib/tipnr-parser.mjs';
-import { extractRuName, translitEnRu, similarity, normalizeRuCandidate } from './lib/ru-extract.mjs';
+import { extractRuName, translitEnRu, similarity, normalizeRuCandidate, structuralRuLabel } from './lib/ru-extract.mjs';
 import { computeClusters, nationsLayer } from './lib/clusters.mjs';
 import { traceSpine } from './lib/spine.mjs';
 import { buildLayoutL0 } from './lib/layout-l0.mjs';
@@ -161,6 +161,8 @@ async function runAll() {
       ru = { name: '(без имени)', source: 'structural', confidence: 1, review: false, anonymous: true };
     } else if (seed?.name?.ru) {
       ru = { name: seed.name.ru, source: 'seed', confidence: 1, review: false };
+    } else if (structuralRuLabel(rec.name)) {
+      ru = structuralRuLabel(rec.name);
     } else {
       ru = extractRuName(rec.name, synodal.verseWindow(rec.ref, 2)) ?? { name: null, source: 'none', confidence: 0, review: true };
     }
@@ -683,6 +685,19 @@ async function runTests() {
   assert(normalizeRuCandidate('Mattathias', 'Маттафиев') === 'Маттафия', 'нормализация -ias (Маттафиев→Маттафия)');
   assert(normalizeRuCandidate('Judah', 'Иуда') === 'Иуда', 'именительный не трогаем (Иуда)');
   assert(normalizeRuCandidate('Reuben', 'Рувим') === 'Рувим', 'без ложных срабатываний (Рувим)');
+
+  assert(structuralRuLabel('father_of_Mamre')?.name === 'Отец (имя не указано)' &&
+    structuralRuLabel('father_of_Mamre')?.review === false,
+    'structural father placeholder не транслитерируется как имя');
+  assert(structuralRuLabel('a_wife_of_Lot')?.name === 'Жена (имя не указано)',
+    'structural wife placeholder локализуется как анонимная роль');
+  assert(structuralRuLabel('daughter1_of_Lot')?.name === 'Первая дочь (имя не указано)' &&
+    structuralRuLabel('daughter2_of_Lot')?.name === 'Вторая дочь (имя не указано)',
+    'нумерованные дочери сохраняют различимость без псевдоимён');
+  assert(structuralRuLabel('son_of_Jashen')?.anonymous === true,
+    'structural relation node маркируется anonymous');
+  assert(structuralRuLabel('Abraham') === null,
+    'обычное имя не попадает в structural placeholder classifier');
 
 
   const broadGenesisScope = v1PrimaryRefScope({ ref: 'Быт 29-30, 49' });
