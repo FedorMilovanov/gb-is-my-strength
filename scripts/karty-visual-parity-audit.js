@@ -30,8 +30,18 @@ for (const marker of ['<div class="karty-hub" data-pagefind-body>','KartyBackLin
 if (exists('src/components/karty/_legacy')) bad('src/components/karty/_legacy must be retired'); else ok('src/components/karty/_legacy retired');
 
 const inventory = getKartyHubInventory(ROOT);
-if (inventory.publishedSlugs.length === 1 && inventory.publishedSlugs[0] === 'avraam') ok('Karty published inventory owns Avraam');
+if (inventory.publishedSlugs.length === 2 && inventory.publishedSlugs[0] === 'avraam' && inventory.publishedSlugs[1] === 'ishod') ok('Karty published inventory owns the audited Avraam and Ishod maps');
 else bad(`unexpected published inventory: ${inventory.publishedSlugs.join(', ')}`);
+for (const slug of inventory.publishedSlugs) {
+  // Cards are projected from the governed inventory, so the hub owns the slug
+  // once and renders one card per published map.
+  if (hero.includes(`'./${slug}/'`)) ok(`Karty hub exposes a published card for ${slug}`);
+  else bad(`Karty hub is missing a published card for ${slug}`);
+}
+for (const slug of inventory.auditSlugs) {
+  if (hero.includes(`'./${slug}/'`)) bad(`Karty hub shows audit-pending map ${slug} as published`);
+}
+if (inventory.auditSlugs.every((slug) => !hero.includes(`'./${slug}/'`))) ok('Karty hub cards are limited to published maps');
 if (inventory.routeCount === inventory.publishedCount + inventory.auditCount) ok('Karty inventory counts are internally consistent');
 else bad('Karty inventory count equation failed');
 if (inventory.auditSlugs.every((slug) => !inventory.publishedSlugs.includes(slug))) ok('Karty audit and published inventories are disjoint');
@@ -42,7 +52,8 @@ for (const marker of [
   'data-route-count={routeCount}',
   'data-published-count={publishedCount}',
   'data-audit-count={auditCount}',
-  '<b>{publishedCount}</b><span>карта открыта</span>',
+  '<b>{publishedCount}</b><span>{publishedLabel}</span>',
+  'карты открыты',
   '<b>{auditCount}</b><span>на аудите</span>',
 ]) must(hero, marker, `Karty hero governed inventory marker: ${marker}`);
 mustNot(hero, '<b>9</b><span>на аудите</span>', 'hardcoded Karty audit count');
@@ -55,12 +66,13 @@ try {
     fs.writeFileSync(path.join(dir, 'route.json'), JSON.stringify(route), 'utf8');
   };
   writeRoute('avraam', { meta: { id: 'avraam' } });
+  writeRoute('ishod', { meta: { id: 'ishod' } });
   writeRoute('future-map', { meta: { id: 'future-map' } });
   writeRoute('sheet-draft', { meta: { sheet_no: 12 } });
   const fixture = getKartyHubInventory(fixtureRoot);
   if (
-    fixture.routeCount === 2 &&
-    fixture.publishedCount === 1 &&
+    fixture.routeCount === 3 &&
+    fixture.publishedCount === 2 &&
     fixture.auditCount === 1 &&
     fixture.auditSlugs[0] === 'future-map'
   ) ok('Karty inventory automatically counts a new audit route and excludes sheet drafts');
