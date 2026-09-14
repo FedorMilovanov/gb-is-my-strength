@@ -17,18 +17,15 @@ import './SplitView.css';
 interface SplitViewProps {
   persons: Person[];
   onClose: () => void;
+  returnFocusTo: HTMLElement | null;
 }
 
-function SplitViewComponent({ persons, onClose }: SplitViewProps) {
+function SplitViewComponent({ persons, onClose, returnFocusTo }: SplitViewProps) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
-  // Capture the focused opener during this conditional component's render,
-  // before the dialog commit/autofocus can move focus into the modal surface.
-  const restoreFocusRef = useRef<HTMLElement | null>(
-    typeof document !== 'undefined' && document.activeElement instanceof HTMLElement
-      ? document.activeElement
-      : null,
-  );
+  // A touch activation in WebKit need not focus its button. The caller owns
+  // the actual opener; document.activeElement can still be the search field.
+  const restoreFocusRef = useRef<HTMLElement | null>(returnFocusTo);
 
   const [range, setRange] = useState<ComparisonRange>('david');
   const [mobileLine, setMobileLine] = useState('both');

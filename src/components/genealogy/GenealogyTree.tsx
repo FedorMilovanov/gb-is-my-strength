@@ -96,6 +96,7 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
   const [showLineage, setShowLineage] = useState<LineageFilter>('all');
   const [showGolden, setShowGolden] = useState(true);
   const [selected, setSelected] = useState<Person | null>(null);
+  const splitOpener = useRef<HTMLButtonElement | null>(null);
   const [showMiniMap, setShowMiniMap] = useState(false);
   const [showSplit, setShowSplit] = useState(false);
   const canvasRoot = useRef<HTMLDivElement | null>(null);
@@ -112,51 +113,6 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
     () => buildLayout(persons, { showGolden, showLineage }), [persons, showGolden, showLineage],
   );
 
-  useEffect(() => {
-    const node = canvasRoot.current;
-    if (!node) return;
-    const observer = new ResizeObserver(([entry]) => {
-      setCanvasSize({ width: entry.contentRect.width, height: entry.contentRect.height });
-    });
-    observer.observe(node);
-    const motion = matchMedia('(prefers-reduced-motion: reduce)');
-    const updateMotion = () => setReducedMotion(motion.matches);
-    updateMotion();
-    motion.addEventListener('change', updateMotion);
-    return () => { observer.disconnect(); motion.removeEventListener('change', updateMotion); };
-  }, []);
-
-  const fitOverview = useCallback(() => {
-    const ids = overviewIds(laidNodes);
-    if (!rfInstance.current || !canvasSize.width || !canvasSize.height) return;
-    const viewport = fitGenealogyView(laidNodes.filter(n => ids.has(n.id)), canvasSize.width, canvasSize.height);
-    setCamera(viewport);
-    void rfInstance.current.setViewport(viewport, { duration: 0 });
-  }, [laidNodes, canvasSize]);
-
-  // A new filter gets its own overview. Golden styling never moves the camera.
-  const lastFrame = useRef({ width: 0, height: 0, filter: '' });
-  useEffect(() => {
-    if (!canvasSize.width || !canvasSize.height) return;
-    const before = lastFrame.current;
-    if (!before.width || before.filter !== showLineage || getDetailLevel(rfInstance.current?.getZoom() ?? 0) === 0) {
-      fitOverview();
-    } else if (before.width !== canvasSize.width || before.height !== canvasSize.height) {
-      const current = rfInstance.current?.getViewport();
-      if (current) void rfInstance.current?.setViewport({ ...current,
-        x: current.x + (canvasSize.width - before.width) / 2,
-        y: current.y + (canvasSize.height - before.height) / 2,
-      });
-    }
-    lastFrame.current = { ...canvasSize, filter: showLineage };
-  }, [canvasSize, showLineage, fitOverview]);
-
-  // ── Focus lineage: when activeId is set, compute ancestor+descendant set ──
-  const focusLineageIds = useMemo(() => {
-    if (!activeId) return null;
-    return computeFocusLineage(persons, activeId);
-  }, [activeId, persons]);
-
   // ── Search match ──
   const searchMatch = useMemo(() => {
     if (!search.trim()) return null;
@@ -170,11 +126,73 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
   }, [search, persons]);
 
   useEffect(() => {
-    if (!searchMatch || !rfInstance.current) return;
-    const n = laidNodes.find(n => n.id === searchMatch.id);
-    if (!n) { setShowLineage('all'); setActiveId(null); setSelected(null); return; }
-    rfInstance.current.setCenter(n.position.x + NODE_W / 2, n.position.y + NODE_H / 2, { zoom: 1.2, duration: reducedMotion ? 0 : 350 });
-  }, [searchMatch, laidNodes, reducedMotion]);
+    const node = canvasRoot.current;
+    if (!node) return;
+    let resizeFrame: number | null = null;
+    const observer = new ResizeObserver(([entry]) => {
+      const next = { width: entry.contentRect.width, height: entry.contentRect.height };
+      if (resizeFrame !== null) cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(() => {
+        resizeFrame = null;
+        setCanvasSize(current => current.width === next.width && current.height === next.height ? current : next);
+      });
+    });
+    observer.observe(node);
+    const motion = matchMedia('(prefers-reduced-motion: reduce)');
+    const updateMotion = () => setReducedMotion(motion.matches);
+    updateMotion();
+    motion.addEventListener('change', updateMotion);
+    return () => {
+      observer.disconnect();
+      if (resizeFrame !== null) cancelAnimationFrame(resizeFrame);
+      motion.removeEventListener('change', updateMotion);
+    };
+  }, []);
+
+  const fitOverview = useCallback(() => {
+    const ids = overviewIds(laidNodes);
+    if (!rfInstance.current || !canvasSize.width || !canvasSize.height) return;
+    const viewport = fitGenealogyView(laidNodes.filter(n => ids.has(n.id)), canvasSize.width, canvasSize.height);
+    void rfInstance.current.setViewport(viewport, { duration: 0 });
+  }, [laidNodes, canvasSize]);
+
+  // Search, filters and resize share one camera decision. In particular, a
+  // search that clears an excluding filter must not race a second fit command.
+  const lastFrame = useRef({ width: 0, height: 0, filter: '', searchId: null as string | null });
+  useEffect(() => {
+    const instance = rfInstance.current;
+    if (!instance || !canvasSize.width || !canvasSize.height) return;
+    const before = lastFrame.current;
+    const resized = before.width !== canvasSize.width || before.height !== canvasSize.height;
+    const filterChanged = before.filter !== showLineage;
+    const searchId = searchMatch?.id ?? null;
+    if (searchMatch) {
+      const node = laidNodes.find(n => n.id === searchMatch.id);
+      if (!node) { setShowLineage('all'); setActiveId(null); setSelected(null); return; }
+      if (searchId !== before.searchId || filterChanged || resized) {
+        const center = centerOf(node);
+        void instance.setCenter(center.x, center.y, { zoom: 1.2, duration: 0 });
+      }
+    } else if (!before.width || filterChanged || (resized && getDetailLevel(instance.getZoom()) === 0)) {
+      fitOverview();
+    } else if (resized) {
+      const current = instance.getViewport();
+      void instance.setViewport({ ...current, x: current.x + (canvasSize.width - before.width) / 2,
+        y: current.y + (canvasSize.height - before.height) / 2 }, { duration: 0 });
+    }
+    lastFrame.current = { ...canvasSize, filter: showLineage, searchId };
+  }, [canvasSize, showLineage, searchMatch, laidNodes, fitOverview]);
+
+  const worldExtent = useMemo<[[number, number], [number, number]]>(() => [
+    [bounds.x - 300, bounds.y - 300],
+    [bounds.x + bounds.width + 300, bounds.y + bounds.height + 300],
+  ], [bounds.x, bounds.y, bounds.width, bounds.height]);
+
+  // ── Focus lineage: when activeId is set, compute ancestor+descendant set ──
+  const focusLineageIds = useMemo(() => {
+    if (!activeId) return null;
+    return computeFocusLineage(persons, activeId);
+  }, [activeId, persons]);
 
   const projection = useMemo(() => projectGenealogy(laidNodes, laidEdges, camera.zoom,
     [activeId, searchMatch?.id].filter((id): id is string => Boolean(id)), goldenPath),
@@ -197,14 +215,22 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
         hidden: false,
         focusable: !semanticHidden,
         ariaLabel: `${d.name}: открыть сведения и семью`,
-        position: { x: center.x - projection.width / 2, y: center.y - projection.height / 2 },
-        width: projection.width,
-        height: projection.height,
-        style: { width: projection.width, height: projection.height, pointerEvents: semanticHidden ? 'none' : 'auto' },
+        // Keep ReactFlow's measured node box stable across semantic zoom. The
+        // compact card is centred inside it and may overflow visually, which
+        // prevents the 154-node ResizeObserver set from thrashing on zoom.
+        position: { x: center.x - NODE_W / 2, y: center.y - NODE_H / 2 },
+        width: NODE_W,
+        height: NODE_H,
+        style: { width: NODE_W, height: NODE_H, pointerEvents: semanticHidden ? 'none' : 'auto' },
         data: {
           ...cardData,
           label: (
             <div aria-hidden={semanticHidden || undefined} style={{
+              position: compact ? 'absolute' : undefined,
+              left: compact ? `calc(${(NODE_W - projection.width) / 2}px)` : undefined,
+              top: compact ? `calc(${(NODE_H - projection.height) / 2}px)` : undefined,
+              width: compact ? projection.width : undefined,
+              height: compact ? projection.height : undefined,
               visibility: semanticHidden ? 'hidden' : 'visible',
               transform: compact ? `scale(${projection.scale})` : undefined,
               transformOrigin: '0 0',
@@ -218,9 +244,9 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
     });
   }, [laidNodes, visibleNodeIds, searchMatch, activeId, focusLineageIds, projection]);
 
-  // ReactFlow's controlled nodes must retain dimension changes. Replacing the
-  // input with fresh objects without `measured` resets their geometry and hides
-  // the wrappers until ResizeObserver runs, including the keyboard destination.
+  // ReactFlow's controlled nodes must retain measured geometry. Replacing the
+  // input with fresh objects without `measured` resets the wrappers and can hide
+  // the keyboard destination until ResizeObserver measures them again.
   const [flowNodes, setFlowNodes, onNodesChange] = useNodesState(displayNodes);
   useLayoutEffect(() => {
     setFlowNodes(current => {
@@ -401,8 +427,8 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
         <div className="genealogy-primary-tools">
           <input type="text" placeholder="Найти человека…" value={search} onChange={e => { setSearch(e.target.value); setActiveId(null); setSelected(null); }}
             aria-label="Поиск по имени" />
-          <button type="button" onClick={() => setShowSplit(true)} title="Сравнить Мф/Лк">Мф / Лк</button>
-          <button type="button" onClick={startTour} title="Тур">Пройти нить</button>
+          <button ref={splitOpener} type="button" onClick={() => setShowSplit(true)} title="Сравнить Мф/Лк">Мф / Лк</button>
+          <button type="button" onClick={startTour} title="Тур" aria-label="Пройти мессианскую нить">Тур</button>
         </div>
         <div className="genealogy-filter-tools" role="group" aria-label="Линии и эпохи">
           {LINEAGE_FILTERS.map(l => <button type="button" key={l.id} onClick={() => changeLineage(l.id)}
@@ -421,10 +447,10 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
             if (ids?.length) focusPerson(ids[Math.floor(ids.length / 2)], 1, 0);
           }}
           onInit={inst => { rfInstance.current = inst; fitOverview(); }}
-          onMoveEnd={(_event, viewport) => setCamera(viewport)}
+          onMoveEnd={(_event, viewport) => setCamera(current => current.x === viewport.x && current.y === viewport.y && current.zoom === viewport.zoom ? current : viewport)}
           defaultViewport={{ x: 0, y: 0, zoom: 0.04 }}
           minZoom={MIN_ZOOM} maxZoom={MAX_ZOOM}
-          translateExtent={detailLevel === 0 ? undefined : [[bounds.x - 300, bounds.y - 300], [bounds.x + bounds.width + 300, bounds.y + bounds.height + 300]]}
+          translateExtent={worldExtent}
           nodesDraggable={false} nodesConnectable={false} elementsSelectable={false} deleteKeyCode={null}
           connectionLineType={ConnectionLineType.SmoothStep} proOptions={{ hideAttribution: true }}
         >
@@ -460,7 +486,7 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
         </button>}
       </div>
       <DetailPanel person={selected} onClose={() => { if (selected) setKeyboardTarget({ id: selected.id }); setSelected(null); }} />
-      {showSplit && <SplitView persons={persons} onClose={() => setShowSplit(false)} />}
+      {showSplit && <SplitView persons={persons} returnFocusTo={splitOpener.current} onClose={() => setShowSplit(false)} />}
       {tourActive && tourPerson && <div className="genealogy-tour" role="group" aria-label="Путешествие по родословию">
         <button type="button" onClick={tourPrev} disabled={tourIndex === 0} aria-label="Предыдущий">←</button>
         <div><strong>{tourPerson.name.ru}</strong><span>Шаг {tourIndex + 1} из {goldenArray.length}</span></div>

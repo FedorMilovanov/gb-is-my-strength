@@ -17,6 +17,12 @@ const DIST = path.join(ROOT, 'dist');
 const REPORT_DIR = path.join(ROOT, 'reports', 'genealogy-browser-contract');
 const GENEALOGY_DATA_PATH = path.join(ROOT, 'data', 'genealogy', 'genealogy.json');
 const BROWSERS = { chromium, webkit, firefox };
+// WebKit emits this delivery diagnostic from ReactFlow's internal observers
+// during controlled viewport updates. Keep it visible in the report while
+// failing on every other page exception.
+const KNOWN_WEBKIT_RESIZE_DIAGNOSTIC = 'ResizeObserver loop completed with undelivered notifications.';
+// CSS min-height/min-width is 44px; tolerate sub-pixel engine rounding.
+const MIN_TOUCH_TARGET = 43.9;
 const browserNames = String(process.env.GENEALOGY_BROWSERS || 'chromium,webkit')
   .split(',')
   .map((value) => value.trim())
@@ -112,6 +118,30 @@ async function waitForViewportStable(page) {
   });
 }
 
+async function waitForAtlasChromeStable(page) {
+  await page.evaluate(async () => {
+    const selector = '.genealogy-primary-tools button, .genealogy-primary-tools input';
+    await new Promise((resolve, reject) => {
+      let last = '';
+      let stableFrames = 0;
+      let frames = 0;
+      const tick = () => {
+        const current = [...document.querySelectorAll(selector)].map((element) => {
+          const rect = element.getBoundingClientRect();
+          return [rect.left, rect.top, rect.width, rect.height].join(',');
+        }).join('|');
+        stableFrames = current && current === last ? stableFrames + 1 : 0;
+        last = current;
+        frames += 1;
+        if (stableFrames >= 4) return resolve();
+        if (frames > 600) return reject(new Error('Atlas controls did not settle'));
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+  });
+}
+
 async function measurePersonViewport(page) {
   return page.evaluate(() => {
     const canvas = document.querySelector('.react-flow');
@@ -180,7 +210,7 @@ async function assertSplitLifecycle(page, touch) {
   for (const button of await dialog.locator('button').all()) {
     if (!await button.isVisible()) continue;
     const bounds = await button.boundingBox();
-    assert.ok(bounds && bounds.width >= 44 && bounds.height >= 44, 'comparison button is smaller than 44 CSS px');
+    assert.ok(bounds && bounds.width >= MIN_TOUCH_TARGET && bounds.height >= MIN_TOUCH_TARGET, 'comparison button is smaller than 44 CSS px');
   }
   const mobileSwitch = dialog.getByRole('group', { name: 'Показать родословную' });
   if (await mobileSwitch.isVisible()) {
@@ -232,7 +262,7 @@ async function assertFocusInteractions(page) {
   await page.getByRole('complementary', { name: 'Детали: Исаак' }).waitFor({ state: 'visible' });
   const details = page.locator('[data-genealogy-details]');
   const closeBox = await details.getByRole('button', { name: 'Закрыть панель' }).boundingBox();
-  assert.ok(closeBox && closeBox.width >= 44 && closeBox.height >= 44, 'Person close control is too small');
+  assert.ok(closeBox && closeBox.width >= MIN_TOUCH_TARGET && closeBox.height >= MIN_TOUCH_TARGET, 'Person close control is too small');
   assert.equal(await details.getByRole('button', { name: 'Закрыть панель' }).evaluate(node => document.activeElement === node), true,
     'Focus did not enter the person drawer');
   assert.equal(await details.evaluate(node => node.scrollWidth <= node.clientWidth), true, 'Person drawer overflows horizontally');
@@ -309,8 +339,10 @@ async function assertFocusInteractions(page) {
   // Search must reveal a person even when the active filter excludes them.
   await page.getByRole('textbox', { name: 'Поиск по имени' }).fill('Исаак');
   await page.waitForFunction(() => document.querySelector('.genealogy-filter-tools button[aria-pressed="true"]')?.textContent === 'Все');
+  await page.waitForFunction(() => document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-level') === '2');
   await waitForViewportStable(page);
   await isaacNode.focus();
+
   await isaacNode.press('Enter');
   await page.getByRole('complementary', { name: 'Детали: Исаак' }).waitFor({ state: 'visible' });
   await page.getByRole('button', { name: 'Закрыть панель', exact: true }).click();
@@ -321,6 +353,7 @@ async function assertAtlasNavigation(page, viewport, screenshotPrefix) {
   const app = page.locator('[data-genealogy-app]');
   await app.scrollIntoViewIfNeeded();
   await page.waitForFunction(() => document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-level') === '0');
+  await waitForAtlasChromeStable(page);
   const overview = await measurePersonViewport(page);
   assert.deepEqual([...overview.visibleIds].sort(), ['adam', 'noah', 'abram', 'david', 'jesus'].sort(), 'Initial L0 must show every story anchor');
   const layout = await page.evaluate(() => ({
@@ -331,8 +364,29 @@ async function assertAtlasNavigation(page, viewport, screenshotPrefix) {
   for (const button of await app.locator('.genealogy-toolbar button, .genealogy-navigation button').all()) {
     if (!await button.isVisible()) continue;
     const box = await button.boundingBox();
-    assert.ok(box && box.width >= 44 && box.height >= 44, 'Atlas primary control smaller than 44px');
+    if (!box || box.width < MIN_TOUCH_TARGET || box.height < MIN_TOUCH_TARGET) {
+      throw new Error(`Atlas primary control smaller than 44px: ${JSON.stringify({ text: await button.textContent(), box })}`);
+    }
   }
+  await page.waitForFunction(() => {
+    const controls = [...document.querySelectorAll('.genealogy-primary-tools button, .genealogy-primary-tools input')];
+    return controls.length > 0 && controls.every(control => {
+      const r = control.getBoundingClientRect();
+      return [0.2, 0.5, 0.8].every(fraction => {
+        const hit = document.elementFromPoint(r.left + r.width * fraction, r.top + r.height / 2);
+        return hit === control || control.contains(hit);
+      });
+    });
+  }, undefined, { polling: 'raf', timeout: 3000 });
+  const controlObstructions = await app.locator('.genealogy-primary-tools button, .genealogy-primary-tools input').evaluateAll(controls =>
+    controls.flatMap(control => {
+      const r = control.getBoundingClientRect();
+      return [0.2, 0.5, 0.8].flatMap(fraction => {
+        const hit = document.elementFromPoint(r.left + r.width * fraction, r.top + r.height / 2);
+        return hit && (hit === control || control.contains(hit)) ? [] : [control.getAttribute('title') || control.getAttribute('aria-label')];
+      });
+    }));
+  assert.deepEqual(controlObstructions, [], 'Site controls obscure atlas search or actions');
   const labels = await app.locator('.react-flow__node .genealogy-node').evaluateAll(cards => cards
     .filter(card => getComputedStyle(card).visibility !== 'hidden')
     .map(card => { const r = card.getBoundingClientRect(); return { width: r.width, height: r.height }; }));
@@ -431,15 +485,22 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     await page.getByText('Все детали', { exact: true }).waitFor({ state: 'visible' });
 
     await page.locator('[data-genealogy-app]').screenshot({ path: path.join(REPORT_DIR, `${browserName}-${viewport.width}x${viewport.height}-search.png`), animations: 'disabled' });
+    if (process.env.GENEALOGY_REDUCED_MOTION === '1') {
+      const running = await page.locator('[data-genealogy-app]').evaluate(root =>
+        root.getAnimations({ subtree: true }).filter(animation => animation.playState === 'running').length);
+      assert.equal(running, 0, 'Reduced-motion atlas still runs animations');
+    }
     phase = 'split-view';
     await assertSplitLifecycle(page, touch);
     phase = 'focus-and-controls';
     await assertFocusInteractions(page);
     phase = 'final';
-    assert.deepEqual(pageErrors, [], `${browserName} ${viewport.width}x${viewport.height}: uncaught page errors`);
+    const browserDiagnostics = pageErrors.filter(error => browserName === 'webkit' && error.includes(KNOWN_WEBKIT_RESIZE_DIAGNOSTIC));
+    const actionablePageErrors = pageErrors.filter(error => !browserDiagnostics.includes(error));
+    assert.deepEqual(actionablePageErrors, [], `${browserName} ${viewport.width}x${viewport.height}: uncaught page errors`);
 
     return { browser: browserName, viewport, touch, mobileEmulation: touch && browserName !== 'firefox',
-      reducedMotion: process.env.GENEALOGY_REDUCED_MOTION === '1', initial, afterFit, afterSearch, pageErrors };
+      reducedMotion: process.env.GENEALOGY_REDUCED_MOTION === '1', initial, afterFit, afterSearch, pageErrors, browserDiagnostics };
   } finally {
     await context.close();
     await browser.close();
