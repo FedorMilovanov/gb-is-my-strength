@@ -129,7 +129,7 @@ async function collectGeometry(page,stateId){
     const offscreenControls=controls.filter(({box,scrollReachable,placeId,focusOnlySkip})=>!placeId&&!scrollReachable&&!focusOnlySkip&&(box.left<-1||box.top<-1||box.right>width+1||box.bottom>height+1));
     const markers=[...document.querySelectorAll('[data-place-id]')].filter(isVisible).map(el=>{
       const label=el.querySelector('.me-place-label'),bg=el.querySelector('.me-place-label-bg'),dot=el.querySelector('.me-marker-dot');
-      return{...describe(el),box:rect(el),labelOpacity:label?Number(getComputedStyle(label).opacity):null,labelFontSize:label?parseFloat(getComputedStyle(label).fontSize):null,labelBgOpacity:bg?Number(getComputedStyle(bg).opacity):null,dotRadius:dot?Number(dot.getAttribute('r')):null};
+      return{...describe(el),box:rect(el),dotBox:dot?rect(dot):null,labelOpacity:label?Number(getComputedStyle(label).opacity):null,labelFontSize:label?parseFloat(getComputedStyle(label).fontSize):null,labelBgOpacity:bg?Number(getComputedStyle(bg).opacity):null,dotRadius:dot?Number(dot.getAttribute('r')):null};
     });
     const routes=[...document.querySelectorAll('.me-route-main,.me-route-underlay,[data-route-segment]')].filter(isVisible).map(el=>{
       let svgBox=null;try{const b=el.getBBox();svgBox={x:b.x,y:b.y,width:b.width,height:b.height}}catch{}
@@ -191,6 +191,15 @@ async function runViewport(browser,viewport){
     await screenshot(page,dir,'01-overview.png');
     result.overview=await collectGeometry(page,`${viewport.id}:overview`);
     if(result.overview.map.zoomBucket!=='overview')result.verificationFailures.push(`unexpected overview zoom bucket: ${result.overview.map.zoomBucket}`);
+    if(viewport.width<=560){
+      const authoredRouteIds=(SOURCE_ROUTE.places||[]).filter(place=>Number.isInteger(place.stage)).map(place=>place.id);
+      const inFrameIds=new Set(result.overview.markers.filter(marker=>{
+        const box=marker.dotBox;
+        return box&&box.left>=-1&&box.top>=-1&&box.right<=viewport.width+1&&box.bottom<=viewport.height+1;
+      }).map(marker=>marker.placeId).filter(Boolean));
+      const missingAuthoredRouteIds=authoredRouteIds.filter(id=>!inFrameIds.has(id));
+      if(missingAuthoredRouteIds.length)result.verificationFailures.push(`mobile main route frame misses ${missingAuthoredRouteIds.length}/${authoredRouteIds.length} markers: ${missingAuthoredRouteIds.join(', ')}`);
+    }
     const clippedOverviewLabels=result.overview.offscreenLabels.filter(label=>String(label.className||'').split(/\s+/).includes('lbl-overview'));
     if(clippedOverviewLabels.length)result.verificationFailures.push(`overview labels outside safe area: ${clippedOverviewLabels.map(label=>label.text||label.id||label.index).join(', ')}`);
     if(result.overview.motion.prefersReducedMotion&&result.overview.motion.smilAnimations>0&&!result.overview.motion.smilPaused)result.verificationFailures.push('reduced motion did not pause SVG animations');
