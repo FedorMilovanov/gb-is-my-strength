@@ -699,6 +699,18 @@ async function runTests() {
   assert(structuralRuLabel('Abraham') === null,
     'обычное имя не попадает в structural placeholder classifier');
 
+  const badNeighbour = extractRuName('Naamah', [
+    { ref: 'Gen.4.20', offset: -2, text: 'Ада родила Иавала; он был отец живущих в шатрах со стадами.' },
+    { ref: 'Gen.4.22', offset: 0, text: 'Сестра Тувалкаина Ноема.' },
+  ]);
+  assert(badNeighbour?.name !== 'Иавала' && badNeighbour?.name !== 'Иавал',
+    'pattern bonus не может присвоить соседнее имя Naamah');
+  const autoReviewed = extractRuName('Almodad', [
+    { ref: 'Gen.10.26', offset: 0, text: 'Иоктан родил Алмодада, Шалефа, Хацармавефа, Иераха.' },
+  ]);
+  assert(autoReviewed?.review === true && (autoReviewed?.confidence ?? 0) <= 1,
+    'auto-extracted имя остаётся в editorial review и confidence ограничен 1');
+
 
   const broadGenesisScope = v1PrimaryRefScope({ ref: 'Быт 29-30, 49' });
   assert(broadGenesisScope?.osis === 'Gen' && broadGenesisScope.chapter === null,
