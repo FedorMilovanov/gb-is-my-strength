@@ -34,7 +34,11 @@
       "cy": 620,
       "w": 1800
     },
-    "mobile_viewport_init": {"cx": 947, "cy": 549, "w": 1750},
+    "mobile_viewport_init": {
+      "cx": 947,
+      "cy": 549,
+      "w": 1750
+    },
     "mobile_story_viewports": {
       "main": [
         947,
