@@ -102,6 +102,14 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
   has('deploy digest bound', verify, 'EXPECTED_CANDIDATE_DIGEST: ${{ needs.readiness.outputs.candidate_digest }}');
   if (verify.includes('EXPECTED_RUN_ATTEMPT:')) p.push('deploy incorrectly binds rerun attempt');
 
+  const genealogyEvidence = step(j.readiness, 'Upload genealogy release evidence');
+  has('genealogy evidence upload exists', j.readiness, 'Upload genealogy release evidence');
+  has('genealogy evidence condition scoped', genealogyEvidence, "steps.genealogy-scope.outputs.run == 'true'");
+  has('genealogy evidence attempt-specific', genealogyEvidence, 'name: genealogy-deploy-readiness-${{ github.run_id }}-${{ github.run_attempt }}');
+  has('genealogy full-matrix evidence retained', genealogyEvidence, 'reports/genealogy-browser-contract-full/');
+  has('genealogy reduced-motion evidence retained', genealogyEvidence, 'reports/genealogy-browser-contract/');
+  has('genealogy evidence upload pinned', genealogyEvidence, PINS.uploadArtifact);
+
   const pagesUpload = step(j.deploy, 'Upload exact candidate as Pages artifact');
   has('Pages upload attempt-specific', pagesUpload, 'name: ${{ env.PAGES_ARTIFACT_NAME }}');
   has('Pages upload exact dist', pagesUpload, 'path: dist');
@@ -138,7 +146,7 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
   if (count(workflow, /npm run strangler:build:production-like/g) !== 1) p.push('release production build count drift');
   if (count(workflow, /actions\/checkout@/g) !== 1) p.push('release checkout count drift');
   if (count(workflow, /actions\/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c/g) !== 1) p.push('download-artifact pin/count drift');
-  if (count(workflow, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/g) !== 4) p.push('upload-artifact pin/count drift');
+  if (count(workflow, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/g) !== 5) p.push('upload-artifact pin/count drift');
   for (const pin of Object.values(PINS)) if (!workflow.includes(pin)) p.push(`release action pin drift: ${pin.split('@')[0]}`);
   if (/uses:\s*actions\/(?:checkout|setup-node|upload-artifact|download-artifact|upload-pages-artifact|deploy-pages)@v\d+/i.test(workflow)) p.push('mutable release action tag');
 
@@ -208,6 +216,8 @@ const mutations = [
   ['live evidence overwrite removed', { ...sources, workflow: mutateStep(sources.workflow, 'Upload generic live release evidence', 'overwrite: true', 'overwrite: false') }],
   ['TTS live boundary removed', { ...sources, workflow: mutateStep(sources.workflow, 'Verify live TTS capability extension', " && steps.live_release.outcome == 'success'", '') }],
   ['TTS evidence overwrite removed', { ...sources, workflow: mutateStep(sources.workflow, 'Upload live TTS capability evidence', 'overwrite: true', 'overwrite: false') }],
+  ['genealogy evidence detached', { ...sources, workflow: mutateStep(sources.workflow, 'Upload genealogy release evidence', "steps.genealogy-scope.outputs.run == 'true'", "steps.genealogy-scope.outputs.run == 'false'") }],
+  ['genealogy full matrix evidence removed', { ...sources, workflow: mutateStep(sources.workflow, 'Upload genealogy release evidence', 'reports/genealogy-browser-contract-full/', 'reports/genealogy-browser-contract-missing/') }],
   ['release/control aliased', { ...sources, workflow: sources.workflow.replace('EXPECTED_CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.control_plane_sha }}', 'EXPECTED_CONTROL_PLANE_SHA: ${{ needs.readiness.outputs.release_sha }}') }],
   ['mutable deploy action', { ...sources, workflow: sources.workflow.replace(PINS.deployPages, 'actions/deploy-pages@v5') }],
   ['candidate addressed by control plane', { ...sources, library: sources.library.replace('`${releaseSha}:${runIdentity}`', '`${controlPlaneSha}:${runIdentity}`') }],
