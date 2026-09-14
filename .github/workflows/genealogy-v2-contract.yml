@@ -132,4 +132,3 @@ jobs:
             reports/genealogy-v2-regenerated-stat.txt
           if-no-files-found: error
           retention-days: 30
-
