@@ -686,7 +686,8 @@ async function runTests() {
 
   const fakeVerses = [{ ref: 'Gen.10.25', offset: 0, text: 'У Евера родились два сына; имя одному: Фалек, потому что во дни его земля разделена; имя брата его: Иоктан.' }];
   const ru = extractRuName('Peleg', fakeVerses);
-  assert(ru?.name === 'Фалек' && ru.source === 'pattern', `extractRuName Peleg→Фалек (получили ${JSON.stringify(ru)})`);
+  assert(ru?.name === 'Пелег' && ru.source === 'translit' && ru.review === true,
+    `слабое Peleg↔Фалек сходство fail-closed уходит в review fallback (получили ${JSON.stringify(ru)})`);
 
   assert(normalizeRuCandidate('Elnathan', 'Елнафана') === 'Елнафан', 'нормализация вин. падежа (Елнафана→Елнафан)');
   assert(normalizeRuCandidate('Melchi', 'Мелхиев') === 'Мелхий', 'нормализация притяжательного (Мелхиев→Мелхий)');
