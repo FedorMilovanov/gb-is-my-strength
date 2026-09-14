@@ -6,6 +6,7 @@ import { PASTOR_SERIES } from '@/components/article-pilots/_shared/series/pastor
 import { seriesItem } from '@/components/article-pilots/_shared/series/seriesConfig';
 import { SITE } from '@/data/site';
 import { assetUrl } from '@/lib/asset-version';
+import { PASTOR_SERIES_QUIZZES } from '@/data/pastor-series-quizzes';
 
 interface Frontmatter {
   title: string;
@@ -18,6 +19,10 @@ interface Frontmatter {
   draft?: boolean;
   noindex?: boolean;
   canonicalOverride?: string;
+  /** Относительный путь к og-изображению 1200×630 (по умолчанию og-hero.webp). */
+  ogImage?: string;
+  /** Alt для og-изображения. */
+  ogImageAlt?: string;
 }
 
 interface Props {
@@ -46,6 +51,11 @@ function assertFrontmatter(value: unknown): asserts value is Frontmatter {
   if (record.canonicalOverride !== undefined && typeof record.canonicalOverride !== 'string') {
     throw new Error('Pastor-series frontmatter canonicalOverride must be a string when present');
   }
+  for (const field of ['ogImage', 'ogImageAlt'] as const) {
+    if (record[field] !== undefined && typeof record[field] !== 'string') {
+      throw new Error(`Pastor-series frontmatter field "${field}" must be a string when present`);
+    }
+  }
 }
 
 assertFrontmatter(frontmatter);
@@ -59,8 +69,12 @@ const indexable = frontmatter.draft !== true && frontmatter.noindex !== true;
 const robots = indexable
   ? 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1'
   : 'noindex, nofollow, noarchive';
-const ogImagePath = '/images/pastor-series/og-hero.webp';
+const ogImagePath = frontmatter.ogImage && frontmatter.ogImage.startsWith('/images/')
+  ? frontmatter.ogImage
+  : '/images/pastor-series/og-hero.webp';
 const ogImage = `${SITE.url}${ogImagePath}`;
+const ogImageAlt = frontmatter.ogImageAlt || `${PASTOR_SERIES.seriesTitle} · Часть ${item.mark.value}`;
+const quizQuestions = PASTOR_SERIES_QUIZZES[pageId as keyof typeof PASTOR_SERIES_QUIZZES];
 const personId = `${SITE.url}/about/#person`;
 const breadcrumbsId = `${canonical}#breadcrumbs`;
 const articleId = `${canonical}#article`;
@@ -129,7 +143,13 @@ const siteConfig = {
   version: 1,
   site: { id: 'gb-strength', name: SITE.name, baseUrl: SITE.url, locale: 'ru-RU', themeStorageKey: 'theme', debug: false },
   page: { type: 'article', id: frontmatter.slug, title: frontmatter.h1 },
-  features: { themeToggle: { enabled: true }, search: { enabled: true }, share: { enabled: true } },
+  features: {
+    themeToggle: { enabled: true },
+    search: { enabled: true },
+    share: { enabled: true },
+    ...(quizQuestions ? { quiz: { enabled: true } } : {}),
+  },
+  ...(quizQuestions ? { quiz: { questions: quizQuestions } } : {}),
 };
 ---
 <!doctype html>
@@ -145,7 +165,7 @@ const siteConfig = {
       canonical={canonical}
       robots={robots}
       ogImage={ogImage}
-      ogImageAlt={`${PASTOR_SERIES.seriesTitle} · Часть ${item.mark.value}`}
+      ogImageAlt={ogImageAlt}
       ogImageWidth="1200"
       ogImageHeight="630"
       ogType="article"
@@ -198,6 +218,12 @@ const siteConfig = {
           </header>
           <div class="genesis6-prose" id="article-content">
             <slot />
+            {quizQuestions && (
+              <>
+                <h2 id="sec-quiz">Проверь себя</h2>
+                <div id="quizPlaceholder"></div>
+              </>
+            )}
           </div>
           <aside class="author-card">
             <div class="author-card-icon" aria-hidden="true">ФМ</div>
