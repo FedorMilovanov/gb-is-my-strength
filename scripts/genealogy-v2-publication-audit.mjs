@@ -41,9 +41,16 @@ const genderMismatches = skeletonMappings.flatMap(person => {
   }];
 });
 
+const pipelineCurrent = meta.pipelineVersion === PIPELINE_VERSION;
+const publicationEvidence = meta.publicationEvidence ?? null;
+const publicationEvidenceIssues = [];
+const reviewQueueFromPersons = persons.filter(person => person.ru?.review === true).length;
+
+// Legacy committed v2 artifacts predate machine-readable publicationEvidence.
+// They remain useful diagnostics only while PIPELINE_OUTPUT_STALE already blocks publish.
 const heuristicSection = (validationText.split('## v1-скелет: эвристические сопоставления')[1] ?? '')
   .split('\n> Статус')[0];
-const heuristicMappings = heuristicSection.split('\n')
+const legacyHeuristicMappings = heuristicSection.split('\n')
   .filter(line => line.startsWith('- ') && line.includes('←'))
   .map(line => {
     const match = /^-\s+(.+?)\s+←\s+(.+)$/u.exec(line);
@@ -53,13 +60,56 @@ const heuristicMappings = heuristicSection.split('\n')
       v1Id: match[1].trim(),
       evidence,
       kind: evidence.startsWith('fuzzy:') ? 'fuzzy' : evidence.startsWith('disamb:') ? 'disambiguation' : 'other',
+      authority: 'legacy-validation-markdown',
     };
   })
   .filter(Boolean);
+const legacyUnresolvedMatch = /нерезолв:\s*(\d+)/u.exec(validationText);
+const legacyUnresolvedRefs = legacyUnresolvedMatch ? Number(legacyUnresolvedMatch[1]) : null;
+
+if (pipelineCurrent) {
+  if (!publicationEvidence || typeof publicationEvidence !== 'object') {
+    publicationEvidenceIssues.push('missing-publicationEvidence');
+  } else {
+    if (!Array.isArray(publicationEvidence.skeleton?.decisions)) publicationEvidenceIssues.push('missing-skeleton-decisions');
+    if (!Array.isArray(publicationEvidence.skeleton?.soft)) publicationEvidenceIssues.push('missing-skeleton-soft');
+    if (!Array.isArray(publicationEvidence.skeleton?.unmatched)) publicationEvidenceIssues.push('missing-skeleton-unmatched');
+    if (!Array.isArray(publicationEvidence.skeleton?.collisions)) publicationEvidenceIssues.push('missing-skeleton-collisions');
+    if (!Number.isInteger(publicationEvidence.relations?.unresolvedCount)) publicationEvidenceIssues.push('missing-relations-unresolvedCount');
+    if (!Array.isArray(publicationEvidence.relations?.unresolved)) publicationEvidenceIssues.push('missing-relations-unresolved');
+    if (!Number.isInteger(publicationEvidence.ruReviewQueue)) publicationEvidenceIssues.push('missing-ruReviewQueue');
+    if (Array.isArray(publicationEvidence.relations?.unresolved) &&
+        publicationEvidence.relations.unresolved.length !== publicationEvidence.relations.unresolvedCount) {
+      publicationEvidenceIssues.push('unresolved-count-drift');
+    }
+    if (Number.isInteger(publicationEvidence.ruReviewQueue) &&
+        publicationEvidence.ruReviewQueue !== reviewQueueFromPersons) {
+      publicationEvidenceIssues.push('ru-review-count-drift');
+    }
+  }
+}
+
+const structuredSoft = publicationEvidence?.skeleton?.soft;
+const heuristicMappings = pipelineCurrent && Array.isArray(structuredSoft)
+  ? structuredSoft.map(item => {
+      const evidence = String(item.via ?? '');
+      return {
+        v1Id: item.id ?? null,
+        evidence,
+        kind: evidence.startsWith('fuzzy:') ? 'fuzzy'
+          : evidence.startsWith('disamb:') || evidence.startsWith('ru-name-similarity:') ? 'disambiguation'
+          : 'other',
+        authority: 'meta.publicationEvidence',
+      };
+    })
+  : legacyHeuristicMappings;
 const fuzzyMappings = heuristicMappings.filter(mapping => mapping.kind === 'fuzzy');
-const unresolvedMatch = /нерезолв:\s*(\d+)/u.exec(validationText);
-const unresolvedRefs = unresolvedMatch ? Number(unresolvedMatch[1]) : null;
-const reviewQueue = persons.filter(person => person.ru?.review === true).length;
+const unresolvedRefs = pipelineCurrent && Number.isInteger(publicationEvidence?.relations?.unresolvedCount)
+  ? publicationEvidence.relations.unresolvedCount
+  : legacyUnresolvedRefs;
+const reviewQueue = pipelineCurrent && Number.isInteger(publicationEvidence?.ruReviewQueue)
+  ? publicationEvidence.ruReviewQueue
+  : reviewQueueFromPersons;
 const prospectiveMapping = matchSkeleton(v1.persons, emittedPersonsAsTipnrMap(persons));
 const prospectiveUnexpectedUnmatched = prospectiveMapping.unmatched.filter(item => item.candidates !== 'no-tipnr-counterpart');
 const prospectiveMethodCounts = Object.fromEntries(
@@ -208,6 +258,10 @@ if (pipelineVersionMismatch) blockers.push({
   expected: PIPELINE_VERSION,
   actual: meta.pipelineVersion ?? null,
 });
+if (publicationEvidenceIssues.length) blockers.push({
+  code: 'PUBLICATION_EVIDENCE_INVALID',
+  count: publicationEvidenceIssues.length,
+});
 if (/phase1-draft|НЕ подключать в рантайм/u.test(meta.status ?? '')) {
   blockers.push({ code: 'DATASET_STATUS_DRAFT', detail: meta.status ?? null });
 } else if (!meta.status) {
@@ -249,6 +303,8 @@ const report = {
   blockers,
   evidence: {
     genderMismatches,
+    publicationEvidenceIssues,
+    publicationEvidenceAuthority: pipelineCurrent ? 'meta.publicationEvidence' : 'legacy-stale-artifacts',
     prospectiveMapping: {
       methodCounts: prospectiveMethodCounts,
       soft: prospectiveMapping.soft,
@@ -280,6 +336,8 @@ const md = [
   `- Status: **${report.status}**`,
   `- Persons: ${persons.length}`,
   `- Pipeline: ${meta.pipelineVersion ?? 'missing'} (expected ${PIPELINE_VERSION})`,
+  `- Publication evidence: ${pipelineCurrent ? 'meta.publicationEvidence' : 'legacy diagnostics (pipeline stale)'}`,
+  `- Publication evidence issues: ${publicationEvidenceIssues.length}`,
   `- RU review queue: ${reviewQueue}`,
   `- Unresolved relations: ${unresolvedRefs ?? 'unknown'}`,
   `- Heuristic skeleton mappings: ${heuristicMappings.length}`,
