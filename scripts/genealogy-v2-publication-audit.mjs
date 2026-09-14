@@ -149,7 +149,11 @@ const nationsView = (views.views ?? []).find(view => view.id === 'nations');
 if (!nationsView || nationsView.kind !== 'archetype' || nationsView.target !== 'nations') {
   nationsViewIssues.push('views.nations-routing');
 }
-if (tableOfNations.counts?.nationsProper !== 70) nationsViewIssues.push('table-of-nations.count');
+const nationsCounts = tableOfNations._meta?.counts;
+if (nationsCounts?.nationsProper !== 70) nationsViewIssues.push('table-of-nations.count');
+if ((nationsCounts?.japheth ?? 0) + (nationsCounts?.ham ?? 0) + (nationsCounts?.shem ?? 0) !== nationsCounts?.nationsProper) {
+  nationsViewIssues.push('table-of-nations.branch-sum');
+}
 if (!/phase2-verified/u.test(tableOfNations._meta?.status ?? '')) nationsViewIssues.push('table-of-nations.status');
 
 const genericCuratedViews = [];
