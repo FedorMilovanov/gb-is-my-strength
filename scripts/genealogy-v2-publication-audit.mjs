@@ -14,6 +14,8 @@ const v1 = readJson(V1);
 const persons = readJson(path.join(V2, 'persons.json'));
 const groups = readJson(path.join(V2, 'groups.json'));
 const meta = readJson(path.join(V2, 'meta.json'));
+const spine = readJson(path.join(V2, 'spine.json'));
+const edgeAnnotations = readJson(path.join(V2, 'edge-annotations.json'));
 const validationText = fs.readFileSync(path.join(V2, 'VALIDATION.md'), 'utf8');
 
 const v1ById = new Map(v1.persons.map(person => [person.id, person]));
@@ -60,6 +62,46 @@ for (const cluster of groups.clusters ?? []) {
   }
 }
 
+
+const spineProvenanceIssues = [];
+const expectedSpinePrefix = ['jesus--isa-7-14', 'mary--mat-1-16', 'heli--luk-3-23'];
+if (expectedSpinePrefix.every((id, index) => spine.chain?.[index]?.id === id)) {
+  const model = spine.model ?? {};
+  if (model.kind !== 'interpretive-projection') spineProvenanceIssues.push('spine.kind');
+  if (model.assertion !== 'editorial-harmonization') spineProvenanceIssues.push('spine.assertion');
+  if (model.directScripture !== false) spineProvenanceIssues.push('spine.directScripture');
+  if (model.editorialPosition !== 'preferred') spineProvenanceIssues.push('spine.editorialPosition');
+  if (!Array.isArray(model.refs) || !model.refs.some(ref => /Лк 3:23/u.test(ref))) spineProvenanceIssues.push('spine.refs');
+} else {
+  spineProvenanceIssues.push('spine.prefix');
+}
+
+const requiredRelationAnnotations = [
+  {
+    from: 'joseph--mat-1-16', to: 'jesus--isa-7-14',
+    assertion: 'explicit-textual', directScripture: true, editorialPosition: 'text',
+  },
+  {
+    from: 'heli--luk-3-23', to: 'mary--mat-1-16',
+    assertion: 'editorial-harmonization', directScripture: false, editorialPosition: 'preferred',
+  },
+];
+const relationProvenanceIssues = [];
+for (const expected of requiredRelationAnnotations) {
+  const annotation = (edgeAnnotations.annotations ?? []).find(item => item.from === expected.from && item.to === expected.to);
+  if (!annotation) {
+    relationProvenanceIssues.push({ edge: `${expected.from}→${expected.to}`, issue: 'missing-annotation' });
+    continue;
+  }
+  const set = annotation.set ?? {};
+  for (const field of ['assertion', 'confidence', 'directScripture', 'editorialPosition', 'refs']) {
+    if (!(field in set)) relationProvenanceIssues.push({ edge: `${expected.from}→${expected.to}`, issue: `missing-${field}` });
+  }
+  if (set.assertion !== expected.assertion) relationProvenanceIssues.push({ edge: `${expected.from}→${expected.to}`, issue: 'assertion-mismatch' });
+  if (set.directScripture !== expected.directScripture) relationProvenanceIssues.push({ edge: `${expected.from}→${expected.to}`, issue: 'directScripture-mismatch' });
+  if (set.editorialPosition !== expected.editorialPosition) relationProvenanceIssues.push({ edge: `${expected.from}→${expected.to}`, issue: 'editorialPosition-mismatch' });
+}
+
 function walk(dir, out = []) {
   if (!fs.existsSync(dir)) return out;
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -100,6 +142,8 @@ if (fuzzyMappings.length) blockers.push({ code: 'UNAPPROVED_FUZZY_MAPPING', coun
 if (unresolvedRefs === null || unresolvedRefs > 0) blockers.push({ code: 'UNRESOLVED_RELATIONS', count: unresolvedRefs });
 if (reviewQueue > 0) blockers.push({ code: 'RU_REVIEW_QUEUE', count: reviewQueue });
 if (genericCuratedViews.length) blockers.push({ code: 'GENERIC_CURATED_VIEW_RULES', count: genericCuratedViews.length });
+if (spineProvenanceIssues.length) blockers.push({ code: 'SPINE_PROVENANCE_INCOMPLETE', count: spineProvenanceIssues.length });
+if (relationProvenanceIssues.length) blockers.push({ code: 'RELATION_PROVENANCE_INCOMPLETE', count: relationProvenanceIssues.length });
 
 const runtimeViolation = runtimeV2Refs.length > 0 && blockers.length > 0;
 const report = {
@@ -118,6 +162,8 @@ const report = {
     genderMismatches,
     fuzzyMappings,
     genericCuratedViews,
+    spineProvenanceIssues,
+    relationProvenanceIssues,
     runtimeV2Refs,
   },
   runtimeGuard: {
@@ -138,6 +184,8 @@ const md = [
   `- Fuzzy skeleton mappings: ${fuzzyMappings.length}`,
   `- Seed↔TIPNR gender mismatches: ${genderMismatches.length}`,
   `- Generic rules in curated views: ${genericCuratedViews.length}`,
+  `- Spine provenance issues: ${spineProvenanceIssues.length}`,
+  `- Relation provenance issues: ${relationProvenanceIssues.length}`,
   `- Runtime v2 references: ${runtimeV2Refs.length}`,
   '',
   '## Blockers',
