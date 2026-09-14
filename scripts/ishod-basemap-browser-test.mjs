@@ -75,10 +75,14 @@ try {
 
   const response = await page.goto(base + '/karty/ishod/', { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForSelector('#stage[data-map-state="ready"]', { timeout: 20000 });
-  await page.waitForSelector('#me-base-geo image', { timeout: 10000 });
+  // The wrapper may be mounted either as a live <image> reference or — after the
+  // engine flattens nested SVG references so the theme palette, label declutter
+  // and assistive tech can reach the geography — as inlined real geometry.
   await page.waitForFunction(() => {
-    const image = document.querySelector('#me-base-geo image');
-    const rect = image?.getBoundingClientRect();
+    const base = document.querySelector('#me-base-geo');
+    if (!base) return false;
+    const node = base.querySelector('image') || base.querySelector('[data-inlined-base]');
+    const rect = node?.getBoundingClientRect();
     return !!rect && rect.width > 100 && rect.height > 100;
   }, null, { timeout: 10000 });
   await page.waitForFunction(() => document.querySelectorAll('[data-pihahiroth-corridor]').length === 3, null, { timeout: 10000 });
@@ -88,12 +92,17 @@ try {
     const stage = document.querySelector('#stage');
     const base = document.querySelector('#me-base-geo');
     const image = base?.querySelector('image');
-    const rect = image?.getBoundingClientRect();
+    const inlined = base?.querySelector('[data-inlined-base]');
+    const geographyNode = image || inlined;
+    const rect = geographyNode?.getBoundingClientRect();
     const historicalPoint = stage?.querySelector('[data-place-id="pihahiroth"]');
     return {
       mapState: stage?.getAttribute('data-map-state') || '',
       basePresent: !!base,
-      imageHref: image?.getAttribute('href') || image?.getAttribute('xlink:href') || '',
+      geographyKind: image ? 'image' : (inlined ? 'inlined-svg' : 'missing'),
+      imageHref: image?.getAttribute('href') || image?.getAttribute('xlink:href') || inlined?.getAttribute('data-inlined-from') || '',
+      inlinedPaths: inlined ? inlined.querySelectorAll('path').length : 0,
+      inlinedTexts: inlined ? inlined.querySelectorAll('text').length : 0,
       imageWidth: rect?.width || 0,
       imageHeight: rect?.height || 0,
       coordinateStatus: stage?.getAttribute('data-pihahiroth-coordinate-status') || '',
@@ -110,6 +119,7 @@ try {
   check('MapEngine mounts #me-base-geo', facts.basePresent, JSON.stringify(facts));
   check('Mounted geography points to the atlas base asset', facts.imageHref === '/karty/avraam/base.svg', JSON.stringify(facts));
   check('Mounted geography has nonzero rendered geometry', facts.imageWidth > 100 && facts.imageHeight > 100, JSON.stringify(facts));
+  check('Inlined atlas geography keeps its real geometry', facts.geographyKind === 'image' || (facts.inlinedPaths > 100 && facts.inlinedTexts > 50), JSON.stringify(facts));
   check('Pihahiroth remains unresolved', facts.coordinateStatus === 'UNRESOLVED', JSON.stringify(facts));
   check('Exactly three Pihahiroth uncertainty corridors remain', facts.corridorCount === 3 && facts.corridorCountAttr === '3', JSON.stringify(facts));
   check('Historical Pihahiroth point stays non-authoritative', facts.historicalPointDisplay === 'none' || facts.historicalPointDisplay === '<absent>', JSON.stringify(facts));

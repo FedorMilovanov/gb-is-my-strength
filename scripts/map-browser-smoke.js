@@ -41,6 +41,15 @@ const MAPS = (process.env.MAP_SMOKE_ROUTES || DEFAULT_MAP_ENGINE_MAPS.join(','))
       const signature = await page.evaluate(async () => {
         try {
           const route = await fetch('./route.json').then(r => r.json());
+          // A published Pihahiroth uncertainty projection deliberately drops the
+          // "Переход через море" signature (it would pin a doctrinal coordinate) and
+          // renders the corridor layer instead — assert that replacement, not the
+          // raw route.json key.
+          const corridors = document.querySelector('[data-pihahiroth-corridors]');
+          if (corridors) {
+            const paths = corridors.querySelectorAll('[data-pihahiroth-corridor]').length;
+            return {expected:false, ok:paths>0, nodes:0, replacedBy:'pihahiroth-uncertainty', corridors:paths};
+          }
           if (!route.signature) return {expected:false, ok:true, nodes:0};
           const root = document.querySelector('#me-signature');
           const nodes = document.querySelectorAll('#me-signature .me-signature').length;
