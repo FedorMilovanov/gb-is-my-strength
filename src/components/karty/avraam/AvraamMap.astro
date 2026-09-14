@@ -134,25 +134,9 @@ import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.as
   // Avraam-specific presentation stays route-owned; lifecycle is shared by MapEngine.
   var style = document.createElement('style');
   style.textContent = `
-    :root {
-      --lot:#e0813f;
-      --cand:#9b8cf0;
-    }
     .me-sig-light-node { fill: rgba(232,200,121,0.2) }
   `;
   document.head.appendChild(style);
-
-  if (window.MapEngine) {
-    window.MapEngine.getPlaceVisual = function(pl) {
-      if (pl.type === 'lot') {
-        return { markerClass: 'me-place me-place-lot', cssColor: 'var(--lot)', color: '#e0813f' };
-      }
-      if (pl.type === 'cand') {
-        return { markerClass: 'me-place me-place-cand', cssColor: 'var(--cand)', color: '#9b8cf0' };
-      }
-      return null;
-    };
-  }
 
   if (window.GBMapRuntime && typeof window.GBMapRuntime.bootEngineRoute === 'function') {
     window.GBMapRuntime.bootEngineRoute({
