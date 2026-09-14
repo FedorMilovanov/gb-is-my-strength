@@ -288,6 +288,22 @@ function hasGovernedAuditPendingDesign({ htmlSrc, heroSrc, missingIds, inventory
 function checkAstroHub(files) {
   const routeIds = files.map(f => path.basename(path.dirname(f))).sort();
   const inventory = getKartyHubInventory(ROOT);
+
+  for (const record of inventory.records) {
+    if (record.publication?.status !== 'temporary-placeholder') continue;
+    const pageFile = path.join(ROOT, 'src', 'pages', 'karty', record.slug, 'index.astro');
+    if (!fs.existsSync(pageFile)) {
+      bad(`temporary-placeholder route missing Astro page: /karty/${record.slug}/`);
+      continue;
+    }
+    const pageSrc = fs.readFileSync(pageFile, 'utf8');
+    if (!pageSrc.includes(`<KartyHoldingPage slug="${record.slug}" />`)) {
+      bad(`/karty/${record.slug}/ must render shared KartyHoldingPage by slug only`);
+    }
+    if (/\b(?:title|canonical|ogTitle)=/.test(pageSrc)) {
+      bad(`/karty/${record.slug}/ duplicates holding-page metadata outside route SSOT`);
+    }
+  }
   const hubOrders = inventory.publishedRecords.map((record) => record.publication.hub_order);
   const duplicateHubOrders = hubOrders.filter((value, index) => hubOrders.indexOf(value) !== index);
   if (duplicateHubOrders.length) bad(`karty hub publication has duplicate hub_order: ${[...new Set(duplicateHubOrders)].join(', ')}`);
