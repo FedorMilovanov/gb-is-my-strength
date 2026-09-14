@@ -209,11 +209,11 @@ function matchSkeleton(v1Persons, tipnrPersons) {
         const ref = parseRef(c.ref);
         return ref?.osis === scope.osis && ref.chapter === scope.chapter;
       }) : [];
-      if (sameChapter.length === 1) return sameChapter[0];
+      if (sameChapter.length === 1) return { rec: sameChapter[0], method: 'source-chapter' };
       if (sameChapter.length > 1) cands = sameChapter;
       else if (scope) {
         const sameBook = cands.filter(c => parseRef(c.ref)?.osis === scope.osis);
-        if (sameBook.length === 1) return sameBook[0];
+        if (sameBook.length === 1) return { rec: sameBook[0], method: 'source-book' };
         if (sameBook.length > 1) cands = sameBook;
       }
     }
@@ -222,17 +222,25 @@ function matchSkeleton(v1Persons, tipnrPersons) {
         .map(c => ({ c, score: similarity(translitEnRu(c.name), p.name.ru) }))
         .sort((a, b) => b.score - a.score || a.c.key.localeCompare(b.c.key));
       const best = ranked[0], second = ranked[1];
-      if (best && best.score >= 0.55 && (!second || best.score - second.score >= 0.03)) return best.c;
+      const margin = second ? best.score - second.score : 1;
+      if (best && best.score >= 0.55 && margin >= 0.03) {
+        return { rec: best.c, method: 'ru-name-similarity', score: best.score, margin };
+      }
     }
     return null;
   };
 
   const matches = new Map();   // v1.id → tipnr key
-  const soft = [];             // сопоставлено эвристикой — в отчёт для сверки
+  const decisions = [];        // provenance каждого принятого mapping
+  const soft = [];             // только решения, требующие редакционной сверки
   const unmatched = [];
   for (const p of v1Persons) {
     if (V1_NO_MATCH.has(p.id)) { unmatched.push({ id: p.id, ru: p.name?.ru, ref: p.ref ?? null, candidates: 'no-tipnr-counterpart' }); continue; }
-    if (V1_EXCEPTIONS[p.id]) { matches.set(p.id, V1_EXCEPTIONS[p.id]); continue; }
+    if (V1_EXCEPTIONS[p.id]) {
+      matches.set(p.id, V1_EXCEPTIONS[p.id]);
+      decisions.push({ id: p.id, target: V1_EXCEPTIONS[p.id], method: 'explicit-exception' });
+      continue;
+    }
     const base = p.id.replace(/_[a-z0-9]{1,6}$/i, '');
     let cands = (byName.get(slugName(base)) ?? []).filter(rec => genderCompatible(p, rec));
     let fuzzyVia = null;
@@ -246,14 +254,28 @@ function matchSkeleton(v1Persons, tipnrPersons) {
     }
     if (cands.length === 1) {
       matches.set(p.id, cands[0].key);
+      const method = fuzzyVia ? 'fuzzy' : 'exact-name';
+      decisions.push({ id: p.id, target: cands[0].key, method });
       if (fuzzyVia) soft.push({ id: p.id, via: fuzzyVia });
       continue;
     }
     if (cands.length > 1) {
       const pick = disambiguate(p, cands);
       if (pick) {
-        matches.set(p.id, pick.key);
-        soft.push({ id: p.id, via: fuzzyVia ? `${fuzzyVia} → disamb:${pick.key}` : `disamb:${pick.key}` });
+        matches.set(p.id, pick.rec.key);
+        const method = fuzzyVia ? 'fuzzy' : pick.method;
+        decisions.push({
+          id: p.id,
+          target: pick.rec.key,
+          method,
+          ...(pick.score == null ? {} : { score: pick.score, margin: pick.margin }),
+        });
+        if (fuzzyVia || pick.method === 'ru-name-similarity') {
+          const via = fuzzyVia
+            ? `${fuzzyVia} → ${pick.method}:${pick.rec.key}`
+            : `${pick.method}:${pick.rec.key}(${pick.score.toFixed(2)}; margin=${pick.margin.toFixed(2)})`;
+          soft.push({ id: p.id, via });
+        }
         continue;
       }
     }
@@ -269,7 +291,7 @@ function matchSkeleton(v1Persons, tipnrPersons) {
   const collisions = [...byTarget.entries()].filter(([, ids]) => ids.length > 1)
     .map(([key, ids]) => ({ key, ids }));
 
-  return { matches, unmatched, soft, collisions };
+  return { matches, decisions, unmatched, soft, collisions };
 }
 
 // ─────────────────────────── сборка ───────────────────────────
@@ -297,7 +319,7 @@ async function runAll() {
 
   // 3. v1-скелет
   const v1 = JSON.parse(await readFile(PATHS.v1Skeleton, 'utf8'));
-  const { matches: v1Matches, unmatched: v1Unmatched, soft: v1Soft, collisions: v1Collisions } = matchSkeleton(v1.persons, persons);
+  const { matches: v1Matches, decisions: v1Decisions, unmatched: v1Unmatched, soft: v1Soft, collisions: v1Collisions } = matchSkeleton(v1.persons, persons);
   if (v1Collisions.length) log(`skeleton COLLISIONS (два v1-id → один ключ): ${v1Collisions.map(c => `${c.key}=[${c.ids.join(',')}]`).join('; ')}`);
   const v1ByTipnrKey = new Map();
   for (const p of v1.persons) {
@@ -560,7 +582,7 @@ async function runAll() {
   log(`layout-l0: узлов ${layoutL0.nodes.length} (хребет ${layoutL0.nodes.filter(n => n.kind === 'spine').length} + мега ${layoutL0.nodes.filter(n => n.kind === 'mega').length}), bbox ${Math.round(layoutL0.bbox.w)}×${Math.round(layoutL0.bbox.h)}`);
 
   // 7. Валидация
-  const report = validate(outPersons, edges, { parseStats, relStats, ruStats, v1Unmatched, v1Soft, v1Collisions, v1Total: v1.persons.length, v1Matched: v1Matches.size, mirrorMisses, clusters, nations, spine });
+  const report = validate(outPersons, edges, { parseStats, relStats, ruStats, v1Unmatched, v1Soft, v1Decisions, v1Collisions, v1Total: v1.persons.length, v1Matched: v1Matches.size, mirrorMisses, clusters, nations, spine });
 
   // 8. Emit
   await mkdir(PATHS.outDir, { recursive: true });
@@ -776,6 +798,13 @@ ${(ctx.mirrorMisses ?? []).slice(0, 12).map(m => `- ${m}`).join('\n') || '- не
 ## v1-скелет: немэпнутые (${ctx.v1Unmatched.length})
 ${ctx.v1Unmatched.slice(0, 30).map(u => `- ${u.id} (${u.ru ?? '?'}; ${u.ref ?? '—'}; кандидатов ${u.candidates})`).join('\n') || '- нет'}
 
+## v1-скелет: методы принятых mappings
+
+${Object.entries((ctx.v1Decisions ?? []).reduce((acc, item) => {
+  acc[item.method] = (acc[item.method] ?? 0) + 1;
+  return acc;
+}, {})).map(([method, count]) => `- ${method}: ${count}`).join('\n') || '- нет'}
+
 ## v1-скелет: коллизии мэппинга (два v1-id → один TIPNR-ключ) — ${(ctx.v1Collisions ?? []).length}
 ${(ctx.v1Collisions ?? []).map(c => `- \`${c.key}\` ← [${c.ids.join(', ')}]`).join('\n') || '- нет'}
 
@@ -884,7 +913,7 @@ try {
       parseStats: { topLines: '-', personRecords: personsArr.length, badTopLines: '-', byType: {}, duplicates: [] },
       relStats: { resolved: '-', unresolvedRefs: [], skippedDescendedGroup: '-' },
       ruStats: { override: '-', seed: '-', pattern: '-', candidate: '-', translit: '-', none: '-', review: '-' },
-      v1Unmatched: [], v1Total: '-', v1Matched: '-',
+      v1Unmatched: [], v1Soft: [], v1Decisions: [], v1Collisions: [], v1Total: '-', v1Matched: '-',
     });
     await writeFile(path.join(PATHS.outDir, 'VALIDATION.md'), report.markdown);
     log(report.ok ? 'validate: OK' : 'validate: НАРУШЕНИЯ'); if (!report.ok) process.exitCode = 1;
