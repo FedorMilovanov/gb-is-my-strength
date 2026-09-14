@@ -64,45 +64,49 @@
   #sheet-svg .ovl-ctxpath{stroke-width:1.2px;stroke-dasharray:2.8 4.6}
   #sheet-svg .grat{stroke-width:.8px}
   #sheet-svg .leader{stroke-width:.75px}
-  /* ── ступень z2 (≈1.6–3.1×, целевые экранные: main 13 · minor 11 · точка 4.4) ── */
-  svg.z2 text.lab-main{font-size:7.1px}
-  svg.z2 text.lab-minor{font-size:6px}
-  svg.z2 text.lab-cand{font-size:5.5px}
+  /* ── Лестница зумов (z2 ≈1,6–3,1× · z3 ≈3,1–5,5× · z4 ≥5,5×) ──
+     Кегль ступени = базовый кегль / z. Раньше здесь стояли абсолютные px,
+     выверенные по одной раме: на рамке другого масштаба кегль уезжал из нормы
+     8–19 px (Исход, k=1,08, 8× — 21,2 px), тогда как ВСЕ остальные размеры
+     листа заданы в единицах листа (×k). Точки хранят свой экранный размер
+     произведением r×k на scale ступени; подписи теперь держат ровно
+     экранный кегль уровня 1× (base/z × k) — одна формула на все листы. */
+  svg.z2 text.lab-main{font-size:10.29px}
+  svg.z2 text.lab-minor{font-size:8.71px}
+  svg.z2 text.lab-cand{font-size:8.01px}
   svg.z2 .pl-city{transform:scale(.257);transform-box:fill-box;transform-origin:center}
   svg.z2 .pl-cand{transform:scale(.27);transform-box:fill-box;transform-origin:center}
   svg.z2 .pl-ctx{transform:scale(.293);transform-box:fill-box;transform-origin:center}
-  svg.z2 .mile-t{font-size:5.5px}
-  svg.z2 .lab-war{font-size:4.7px}
-  svg.z2 .lab-ovl{font-size:4.4px}
-  svg.z2 .lab-ctx{font-size:4.7px}
-  svg.z2 text.lab-wp{font-size:4.4px}
+  svg.z2 .mile-t{font-size:7.92px}
+  svg.z2 .lab-war{font-size:7.13px}
+  svg.z2 .lab-ovl{font-size:7.52px}
+  svg.z2 .lab-ctx{font-size:7.92px}
+  svg.z2 text.lab-wp{font-size:7.92px}
   svg.z2 .war-x{transform:scale(.6);transform-box:fill-box;transform-origin:center}
-  /* ── ступень z3 (≈3.1–5.5×) ── */
-  svg.z3 text.lab-main{font-size:3.7px}
-  svg.z3 text.lab-minor{font-size:3.2px}
-  svg.z3 text.lab-cand{font-size:2.9px}
+  svg.z3 text.lab-main{font-size:5.15px}
+  svg.z3 text.lab-minor{font-size:4.35px}
+  svg.z3 text.lab-cand{font-size:4.01px}
   svg.z3 .pl-city{transform:scale(.137);transform-box:fill-box;transform-origin:center}
   svg.z3 .pl-cand{transform:scale(.144);transform-box:fill-box;transform-origin:center}
   svg.z3 .pl-ctx{transform:scale(.16);transform-box:fill-box;transform-origin:center}
-  svg.z3 .mile-t{font-size:2.9px}
-  svg.z3 .lab-war{font-size:2.4px}
-  svg.z3 .lab-ovl{font-size:2.3px}
-  svg.z3 .lab-ctx{font-size:2.4px}
-  svg.z3 text.lab-wp{font-size:2.3px}
+  svg.z3 .mile-t{font-size:3.96px}
+  svg.z3 .lab-war{font-size:3.56px}
+  svg.z3 .lab-ovl{font-size:3.76px}
+  svg.z3 .lab-ctx{font-size:3.96px}
+  svg.z3 text.lab-wp{font-size:3.96px}
   svg.z3 .war-x{transform:scale(.34);transform-box:fill-box;transform-origin:center}
   svg.z3 .lab-region{opacity:.22}
-  /* ── ступень z4 (≥5.5×) ── */
-  svg.z4 text.lab-main{font-size:2.3px}
-  svg.z4 text.lab-minor{font-size:2px}
-  svg.z4 text.lab-cand{font-size:1.8px}
+  svg.z4 text.lab-main{font-size:2.57px}
+  svg.z4 text.lab-minor{font-size:2.18px}
+  svg.z4 text.lab-cand{font-size:2.00px}
   svg.z4 .pl-city{transform:scale(.0857);transform-box:fill-box;transform-origin:center}
   svg.z4 .pl-cand{transform:scale(.09);transform-box:fill-box;transform-origin:center}
   svg.z4 .pl-ctx{transform:scale(.107);transform-box:fill-box;transform-origin:center}
-  svg.z4 .mile-t{font-size:1.8px}
-  svg.z4 .lab-war{font-size:1.5px}
-  svg.z4 .lab-ovl{font-size:1.4px}
-  svg.z4 .lab-ctx{font-size:1.5px}
-  svg.z4 text.lab-wp{font-size:1.4px}
+  svg.z4 .mile-t{font-size:1.98px}
+  svg.z4 .lab-war{font-size:1.78px}
+  svg.z4 .lab-ovl{font-size:1.88px}
+  svg.z4 .lab-ctx{font-size:1.98px}
+  svg.z4 text.lab-wp{font-size:1.98px}
   svg.z4 .war-x{transform:scale(.2);transform-box:fill-box;transform-origin:center}
   svg.z4 .lab-region{opacity:0}
   /* глифы: контур постоянный (ve), геометрия скейлится — тоньше не нужно */
@@ -613,6 +617,9 @@ M1610,60 C1652,118 1678,186 1688,262 C1696,332 1692,402 1672,462 C1660,498 1668,
     </g>
 <text x="705.7" y="280.1" class="lab-place lab-main lab-cand" font-size="20.58" text-anchor="start">Эдем? (версии)</text><text x="890.8" y="194.2" class="lab-place lab-main lab-cand" font-size="20.58" text-anchor="start">Горы Араратские</text><text x="681.3" y="542.0" class="lab-place lab-main" font-size="20.58" text-anchor="end">Ниневия</text><text x="758.3" y="595.8" class="lab-place lab-minor" font-size="17.42" text-anchor="start">Калах</text><text x="838.3" y="952.8" class="lab-place lab-minor lab-cand" font-size="17.42" text-anchor="end">Аккад</text><text x="905.4" y="997.6" class="lab-place lab-main" font-size="20.58" text-anchor="start">Вавилон · башня</text><text x="1066.7" y="1199.0" class="lab-place lab-minor" font-size="17.42" text-anchor="start">Эрех (Урук)</text><text x="1123.4" y="1270.0" class="lab-place lab-main" font-size="20.58" text-anchor="start">Ур Халдейский</text><text x="744.5" y="551.9" class="lab-place lab-minor lab-cand" font-size="17.42" text-anchor="start">Ресен?</text>
 </g>
+<!-- Сетка градусов — слой карты: под плашками, иначе подписи меридианов
+     печатаются поверх картуша и легенды. -->
+<g class="graticule" aria-hidden="true"><line x1="170.0" y1="94.3" x2="170.0" y2="100.7" class="grat"/><line x1="300.0" y1="94.3" x2="300.0" y2="105.4" class="grat"/><text x="300.0" y="121.2" text-anchor="middle" class="grat-t" font-size="12.67">40°</text><line x1="430.0" y1="94.3" x2="430.0" y2="100.7" class="grat"/><line x1="560.0" y1="94.3" x2="560.0" y2="105.4" class="grat"/><text x="560.0" y="121.2" text-anchor="middle" class="grat-t" font-size="12.67">42°</text><line x1="690.0" y1="94.3" x2="690.0" y2="100.7" class="grat"/><line x1="820.0" y1="94.3" x2="820.0" y2="105.4" class="grat"/><text x="820.0" y="121.2" text-anchor="middle" class="grat-t" font-size="12.67">44°</text><line x1="950.0" y1="94.3" x2="950.0" y2="100.7" class="grat"/><line x1="1080.0" y1="94.3" x2="1080.0" y2="105.4" class="grat"/><text x="1080.0" y="121.2" text-anchor="middle" class="grat-t" font-size="12.67">46°</text><line x1="1210.0" y1="94.3" x2="1210.0" y2="100.7" class="grat"/><line x1="1340.0" y1="94.3" x2="1340.0" y2="105.4" class="grat"/><text x="1340.0" y="121.2" text-anchor="middle" class="grat-t" font-size="12.67">48°</text><line x1="1470.0" y1="94.3" x2="1470.0" y2="100.7" class="grat"/><line x1="1600.0" y1="94.3" x2="1600.0" y2="105.4" class="grat"/><text x="1600.0" y="121.2" text-anchor="middle" class="grat-t" font-size="12.67">50°</text><line x1="1730.0" y1="94.3" x2="1730.0" y2="100.7" class="grat"/><line x1="12.7" y1="1230.0" x2="19.0" y2="1230.0" class="grat"/><line x1="1887.3" y1="1230.0" x2="1881.0" y2="1230.0" class="grat"/><line x1="12.7" y1="1100.0" x2="23.8" y2="1100.0" class="grat"/><text x="28.5" y="1104.4" text-anchor="start" class="grat-t" font-size="12.67">32°</text><line x1="1887.3" y1="1100.0" x2="1876.3" y2="1100.0" class="grat"/><text x="1871.5" y="1104.4" text-anchor="end" class="grat-t" font-size="12.67">32°</text><line x1="12.7" y1="970.0" x2="19.0" y2="970.0" class="grat"/><line x1="1887.3" y1="970.0" x2="1881.0" y2="970.0" class="grat"/><line x1="12.7" y1="840.0" x2="23.8" y2="840.0" class="grat"/><text x="28.5" y="844.4" text-anchor="start" class="grat-t" font-size="12.67">34°</text><line x1="1887.3" y1="840.0" x2="1876.3" y2="840.0" class="grat"/><text x="1871.5" y="844.4" text-anchor="end" class="grat-t" font-size="12.67">34°</text><line x1="12.7" y1="710.0" x2="19.0" y2="710.0" class="grat"/><line x1="1887.3" y1="710.0" x2="1881.0" y2="710.0" class="grat"/><line x1="12.7" y1="580.0" x2="23.8" y2="580.0" class="grat"/><text x="28.5" y="584.4" text-anchor="start" class="grat-t" font-size="12.67">36°</text><line x1="1887.3" y1="580.0" x2="1876.3" y2="580.0" class="grat"/><text x="1871.5" y="584.4" text-anchor="end" class="grat-t" font-size="12.67">36°</text><line x1="12.7" y1="450.0" x2="19.0" y2="450.0" class="grat"/><line x1="1887.3" y1="450.0" x2="1881.0" y2="450.0" class="grat"/><line x1="12.7" y1="320.0" x2="23.8" y2="320.0" class="grat"/><text x="28.5" y="324.4" text-anchor="start" class="grat-t" font-size="12.67">38°</text><line x1="1887.3" y1="320.0" x2="1876.3" y2="320.0" class="grat"/><text x="1871.5" y="324.4" text-anchor="end" class="grat-t" font-size="12.67">38°</text><line x1="12.7" y1="190.0" x2="19.0" y2="190.0" class="grat"/><line x1="1887.3" y1="190.0" x2="1881.0" y2="190.0" class="grat"/></g>
 
   <g class="cartouche">
     <rect x="38" y="110.16666666666663" width="720.1" height="133" rx="7.916666666666666" class="cart-plate"/>
@@ -658,7 +665,6 @@ M1610,60 C1652,118 1678,186 1688,262 C1696,332 1692,402 1672,462 C1660,498 1668,
 <rect x="0" y="81.66666666666663" width="1900" height="1266.6666666666667" fill="url(#sunGlow)" pointer-events="none" class="paper-fx"/>
 <rect x="0" y="81.66666666666663" width="1900" height="1266.6666666666667" fill="url(#edgeFog)" pointer-events="none" class="paper-fx"/>
 <rect x="0" y="81.66666666666663" width="1900" height="1266.6666666666667" filter="url(#parchmentGrain)" opacity=".5" pointer-events="none" class="paper-fx paper-grain"/>
-<g class="graticule" aria-hidden="true"><line x1="170.0" y1="94.3" x2="170.0" y2="100.7" class="grat"/><line x1="300.0" y1="94.3" x2="300.0" y2="105.4" class="grat"/><text x="300.0" y="121.2" text-anchor="middle" class="grat-t" font-size="12.67">40°</text><line x1="430.0" y1="94.3" x2="430.0" y2="100.7" class="grat"/><line x1="560.0" y1="94.3" x2="560.0" y2="105.4" class="grat"/><text x="560.0" y="121.2" text-anchor="middle" class="grat-t" font-size="12.67">42°</text><line x1="690.0" y1="94.3" x2="690.0" y2="100.7" class="grat"/><line x1="820.0" y1="94.3" x2="820.0" y2="105.4" class="grat"/><text x="820.0" y="121.2" text-anchor="middle" class="grat-t" font-size="12.67">44°</text><line x1="950.0" y1="94.3" x2="950.0" y2="100.7" class="grat"/><line x1="1080.0" y1="94.3" x2="1080.0" y2="105.4" class="grat"/><text x="1080.0" y="121.2" text-anchor="middle" class="grat-t" font-size="12.67">46°</text><line x1="1210.0" y1="94.3" x2="1210.0" y2="100.7" class="grat"/><line x1="1340.0" y1="94.3" x2="1340.0" y2="105.4" class="grat"/><text x="1340.0" y="121.2" text-anchor="middle" class="grat-t" font-size="12.67">48°</text><line x1="1470.0" y1="94.3" x2="1470.0" y2="100.7" class="grat"/><line x1="1600.0" y1="94.3" x2="1600.0" y2="105.4" class="grat"/><text x="1600.0" y="121.2" text-anchor="middle" class="grat-t" font-size="12.67">50°</text><line x1="1730.0" y1="94.3" x2="1730.0" y2="100.7" class="grat"/><line x1="12.7" y1="1230.0" x2="19.0" y2="1230.0" class="grat"/><line x1="1887.3" y1="1230.0" x2="1881.0" y2="1230.0" class="grat"/><line x1="12.7" y1="1100.0" x2="23.8" y2="1100.0" class="grat"/><text x="28.5" y="1104.4" text-anchor="start" class="grat-t" font-size="12.67">32°</text><line x1="1887.3" y1="1100.0" x2="1876.3" y2="1100.0" class="grat"/><text x="1871.5" y="1104.4" text-anchor="end" class="grat-t" font-size="12.67">32°</text><line x1="12.7" y1="970.0" x2="19.0" y2="970.0" class="grat"/><line x1="1887.3" y1="970.0" x2="1881.0" y2="970.0" class="grat"/><line x1="12.7" y1="840.0" x2="23.8" y2="840.0" class="grat"/><text x="28.5" y="844.4" text-anchor="start" class="grat-t" font-size="12.67">34°</text><line x1="1887.3" y1="840.0" x2="1876.3" y2="840.0" class="grat"/><text x="1871.5" y="844.4" text-anchor="end" class="grat-t" font-size="12.67">34°</text><line x1="12.7" y1="710.0" x2="19.0" y2="710.0" class="grat"/><line x1="1887.3" y1="710.0" x2="1881.0" y2="710.0" class="grat"/><line x1="12.7" y1="580.0" x2="23.8" y2="580.0" class="grat"/><text x="28.5" y="584.4" text-anchor="start" class="grat-t" font-size="12.67">36°</text><line x1="1887.3" y1="580.0" x2="1876.3" y2="580.0" class="grat"/><text x="1871.5" y="584.4" text-anchor="end" class="grat-t" font-size="12.67">36°</text><line x1="12.7" y1="450.0" x2="19.0" y2="450.0" class="grat"/><line x1="1887.3" y1="450.0" x2="1881.0" y2="450.0" class="grat"/><line x1="12.7" y1="320.0" x2="23.8" y2="320.0" class="grat"/><text x="28.5" y="324.4" text-anchor="start" class="grat-t" font-size="12.67">38°</text><line x1="1887.3" y1="320.0" x2="1876.3" y2="320.0" class="grat"/><text x="1871.5" y="324.4" text-anchor="end" class="grat-t" font-size="12.67">38°</text><line x1="12.7" y1="190.0" x2="19.0" y2="190.0" class="grat"/><line x1="1887.3" y1="190.0" x2="1881.0" y2="190.0" class="grat"/></g>
 <rect x="12.666666666666666" y="94.3333333333333" width="1874.6666666666667" height="1241.3333333333335" class="frame"/>
 <rect x="19" y="100.66666666666663" width="1862" height="1228.6666666666667" class="frame frame-inner"/>
 <g class="frame-orn">
