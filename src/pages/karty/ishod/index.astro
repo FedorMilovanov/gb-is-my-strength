@@ -9,7 +9,7 @@
  */
 import IshodPageHead from '@/components/karty/ishod/IshodPageHead.astro';
 import IshodMap from '@/components/karty/ishod/IshodMap.astro';
-import AppSearchSurface from '@/components/search/AppSearchSurface.astro';
+import MapSearchRail from '@/components/karty/_shared/MapSearchRail.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru">
@@ -18,8 +18,6 @@ import AppSearchSurface from '@/components/search/AppSearchSurface.astro';
   </head>
   <body class="has-app-search-map">
     <IshodMap />
-    <nav class="map-search-rail" aria-label="Поиск и приложение">
-      <AppSearchSurface mode="map-engine" />
-    </nav>
+    <MapSearchRail />
   </body>
 </html>
