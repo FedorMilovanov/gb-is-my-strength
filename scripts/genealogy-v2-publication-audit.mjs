@@ -13,6 +13,7 @@ const readJson = (p) => JSON.parse(fs.readFileSync(p, 'utf8'));
 const v1 = readJson(V1);
 const persons = readJson(path.join(V2, 'persons.json'));
 const groups = readJson(path.join(V2, 'groups.json'));
+const views = readJson(path.join(V2, 'views.json'));
 const meta = readJson(path.join(V2, 'meta.json'));
 const spine = readJson(path.join(V2, 'spine.json'));
 const edgeAnnotations = readJson(path.join(V2, 'edge-annotations.json'));
@@ -86,6 +87,10 @@ const requiredRelationAnnotations = [
     assertion: 'editorial-harmonization', directScripture: false, editorialPosition: 'preferred',
   },
 ];
+const interpretationWordingIssues = (views.views ?? [])
+  .filter(view => /кровн[^\n]*через Мари/u.test(view.descRu ?? ''))
+  .map(view => ({ id: view.id, descRu: view.descRu }));
+
 const relationProvenanceIssues = [];
 for (const expected of requiredRelationAnnotations) {
   const annotation = (edgeAnnotations.annotations ?? []).find(item => item.from === expected.from && item.to === expected.to);
@@ -144,6 +149,7 @@ if (reviewQueue > 0) blockers.push({ code: 'RU_REVIEW_QUEUE', count: reviewQueue
 if (genericCuratedViews.length) blockers.push({ code: 'GENERIC_CURATED_VIEW_RULES', count: genericCuratedViews.length });
 if (spineProvenanceIssues.length) blockers.push({ code: 'SPINE_PROVENANCE_INCOMPLETE', count: spineProvenanceIssues.length });
 if (relationProvenanceIssues.length) blockers.push({ code: 'RELATION_PROVENANCE_INCOMPLETE', count: relationProvenanceIssues.length });
+if (interpretationWordingIssues.length) blockers.push({ code: 'OVERSTATED_INTERPRETATION_WORDING', count: interpretationWordingIssues.length });
 
 const runtimeViolation = runtimeV2Refs.length > 0 && blockers.length > 0;
 const report = {
@@ -164,6 +170,7 @@ const report = {
     genericCuratedViews,
     spineProvenanceIssues,
     relationProvenanceIssues,
+    interpretationWordingIssues,
     runtimeV2Refs,
   },
   runtimeGuard: {
@@ -186,6 +193,7 @@ const md = [
   `- Generic rules in curated views: ${genericCuratedViews.length}`,
   `- Spine provenance issues: ${spineProvenanceIssues.length}`,
   `- Relation provenance issues: ${relationProvenanceIssues.length}`,
+  `- Overstated interpretation wording: ${interpretationWordingIssues.length}`,
   `- Runtime v2 references: ${runtimeV2Refs.length}`,
   '',
   '## Blockers',
