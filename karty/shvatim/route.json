@@ -827,6 +827,8 @@
     ],
     "description": "Звёздная сеть соединяет уделы колен, подчёркивая, что это богословская схема наследия, а не современная политическая карта."
   },
+  "archetype": "territorial",
+  "capabilities": ["stages","stories","layers","timeline","signature","interpretations"],
   "publication": {
     "status": "temporary-placeholder",
     "indexable": false,
