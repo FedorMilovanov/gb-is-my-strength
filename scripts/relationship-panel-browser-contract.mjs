@@ -11,6 +11,7 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join, extname, dirname, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -43,12 +44,42 @@ function record(name, ok, detail = '') {
   console.log(`${ok ? '✅' : '❌'} Relations · ${name}${detail ? ` — ${detail}` : ''}`);
 }
 
-function relevantConsoleError(message) {
+// Repo policy (see home-progressive-enhancement-browser-test, konfessii-map-audit):
+// an unreachable external Yandex telemetry endpoint is network noise, never a
+// same-origin relation defect. Application errors stay fatal even when the text
+// mentions Yandex, and same-origin request failures stay fatal.
+function isExternalTelemetryNetworkNoise(text) {
+  const value = String(text || '');
+  const yandexTelemetryHost = /(?:https?|wss):\/\/(?:(?:[^/\s'"]+\.)?mc\.yandex\.(?:com|ru)|(?:hdrc|mdd)\.yandex\.net)(?:[/:]|$)/i.test(value);
+  const networkFailure = /(?:WebSocket connection|Failed to load resource|net::ERR_|handshake|response code:\s*[45]\d\d|status(?: code)?[=:]?\s*[45]\d\d|HTTP\s+[45]\d\d|REQUEST\s+)/i.test(value);
+  return yandexTelemetryHost && networkFailure;
+}
+
+function relevantConsoleError(message, locationUrl = '') {
   const value = String(message || '');
   const localOriginProductionIcon = /Loading the image 'https:\/\/gospod-bog\.ru\/(?:favicon|apple-touch-icon|icons\/icon-)/.test(value)
     && /Content Security Policy directive/.test(value);
-  return !localOriginProductionIcon;
+  if (localOriginProductionIcon) return false;
+  // Chrome reports a blocked/failed subresource with the offending URL only in
+  // the message location, so classify text and location together.
+  return !isExternalTelemetryNetworkNoise(`${value} ${String(locationUrl || '')}`.trim());
 }
+
+assert.equal(
+  isExternalTelemetryNetworkNoise('Failed to load resource: net::ERR_CONNECTION_CLOSED https://mc.yandex.ru/metrika/tag.js?id=108353327'),
+  true,
+  'offline Yandex Metrika load failures must classify as external telemetry noise',
+);
+assert.equal(
+  isExternalTelemetryNetworkNoise('Failed to load resource: net::ERR_CONNECTION_CLOSED http://127.0.0.1:4321/js/app.js'),
+  false,
+  'same-origin resource failures must stay fatal',
+);
+assert.equal(
+  isExternalTelemetryNetworkNoise('Uncaught TypeError: application crashed at https://mc.yandex.ru/runtime.js'),
+  false,
+  'application errors must stay fatal even when the text mentions Yandex',
+);
 
 function normalizeRoute(value) {
   let route = String(value || '/').split(/[?#]/)[0].replace(/\\/g, '/').replace(/\/{2,}/g, '/');
@@ -269,7 +300,7 @@ async function scene(browser, base, spec, node, viewport, javaScriptEnabled) {
   }
   page.on('pageerror', (error) => errors.push(String(error)));
   page.on('console', (message) => {
-    if (message.type() === 'error' && relevantConsoleError(message.text())) errors.push(message.text());
+    if (message.type() === 'error' && relevantConsoleError(message.text(), message.location()?.url)) errors.push(message.text());
   });
   page.on('request', (request) => {
     const pathname = new URL(request.url()).pathname;
