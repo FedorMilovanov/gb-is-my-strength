@@ -10,7 +10,7 @@
 node scripts/genealogy-build/build.mjs all      # fetch → parse → ru → merge → validate → emit
 node scripts/genealogy-build/build.mjs fetch    # только скачивание источников в .cache/
 node scripts/genealogy-build/build.mjs test     # самопроверки парсера/экстрактора (fixtures)
-node scripts/genealogy-build/build.mjs validate # валидаторы на текущем data/genealogy/v2/
+node scripts/genealogy-build/build.mjs validate # structural-only; НЕ переписывает publication evidence/VALIDATION.md
 ```
 
 Требования: Node ≥ 22 (встроенный `fetch`). Внешних npm-зависимостей НЕТ (намеренно:
