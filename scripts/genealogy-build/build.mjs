@@ -801,10 +801,10 @@ async function runTests() {
 
   const ambiguousFixture = new Map([
     ['Naham@1Ch.4.19', { key: 'Naham@1Ch.4.19', name: 'Naham', ref: '1Ch.4.19', type: 'Male' }],
-    ['Nahum@Nam.1.1', { key: 'Nahum@Nam.1.1', name: 'Nahum', ref: 'Nam.1.1', type: 'Male' }],
+    ['Nahar@1Ch.4.20', { key: 'Nahar@1Ch.4.20', name: 'Nahar', ref: '1Ch.4.20', type: 'Male' }],
   ]);
   const ambiguous = matchSkeleton([
-    { id: 'nahamx', name: { ru: 'Наам' }, ref: null, gender: 'm' },
+    { id: 'nahaz', name: { ru: 'Нааз' }, ref: null, gender: 'm' },
   ], ambiguousFixture);
   assert(!ambiguous.matches.has('nahamx'), 'неуверенный fuzzy без контекста остаётся unmatched');
 
