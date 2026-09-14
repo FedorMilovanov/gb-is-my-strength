@@ -4,7 +4,7 @@
   "$comment": "places[].id and stories[].id must be unique within a single route. Validated at runtime by scripts/validate-map-routes.js (findDuplicateIds) and scripts/map-layers-theme-regression-test.js. JSON Schema 2020-12 has no built-in 'unique by property' keyword — schema-level uniqueItems: true checks deep equality, not what we need. Story ids intentionally allow underscore because they are internal filter/deep-link identifiers, not public route slugs.",
   "title": "GB Historical Map Route",
   "type": "object",
-  "required": ["meta", "stories", "places", "stages", "publication"],
+  "required": ["meta", "stories", "places", "stages", "archetype", "capabilities", "publication"],
   "additionalProperties": true,
   "properties": {
     "meta": {
@@ -104,6 +104,13 @@
         "south_ids": { "type": "array", "items": { "type": "string" } },
         "divide": { "type": "string" }
       }
+    },
+    "archetype": { "type": "string", "enum": ["route", "political", "thematic", "territorial", "overview"] },
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "enum": ["stages", "stories", "layers", "timeline", "signature", "interpretations", "uncertainty"] }
     },
     "publication": {
       "type": "object",
