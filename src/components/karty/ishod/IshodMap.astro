@@ -11,7 +11,11 @@
  */
 import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.astro';
 ---
-<h1 class="sr-only" data-pagefind-body>Исход из Египта — интерактивная карта. Маршрут странствий народа Израиля от Раамсеса до Ханаана: 11 мест, 6 этапов, 40 лет, Синайский завет, Числа 33.</h1>
+<!-- Landmarks: page content (document heading, recovery surface and the map
+     stage) lives inside <main>; the engine owns only #stage inner markup. -->
+<main class="map-document">
+  <h1 class="sr-only" data-pagefind-body>Исход из Египта — интерактивная карта. Маршрут странствий народа Израиля от Раамсеса до Ханаана: 11 мест, 6 этапов, 40 лет, Синайский завет, Числа 33.</h1>
+
 <MapRuntimeFallback
   title="Карта Исхода доступна в текстовом режиме"
   description="Для интерактивного маршрута нужен JavaScript. Основные сведения о карте доступны в заголовке страницы; можно вернуться к разделу карт и выбрать другой материал."
@@ -28,14 +32,15 @@ import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.as
     </ol>
   </section>
 </noscript>
-<div
+<section
   id="stage"
   data-map-stage
   data-map-state="loading"
   aria-busy="true"
   aria-label="Интерактивная карта Исхода"
   style="position:fixed;inset:0;background:#070a10"
-></div>
+></section>
+</main>
 <style is:global>
   /* The historical route source retains its old point for forensic comparison.
      Product runtime must never render it as an authoritative coordinate. */
