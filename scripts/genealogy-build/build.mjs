@@ -13,7 +13,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile, access } from 'node:fs/promises';
 import path from 'node:path';
 import { PATHS, SOURCES, PIPELINE_VERSION, HARD_INVARIANTS } from './config.mjs';
-import { SynodalText, refToRu, parseRef, OSIS_RU } from './lib/refs.mjs';
+import { SynodalText, refToRu, parseRef } from './lib/refs.mjs';
 import { parseTipnr, resolveRelations, parseUnifiedRef, parseRelField } from './lib/tipnr-parser.mjs';
 import { extractRuName, translitEnRu, similarity, normalizeRuCandidate } from './lib/ru-extract.mjs';
 import { computeClusters, nationsLayer } from './lib/clusters.mjs';
@@ -32,6 +32,7 @@ import { renderNationsMapSvg } from './lib/render-map-nations.mjs';
 import { renderPersonL2Svg } from './lib/render-l2-person.mjs';
 import { renderMorphFramesSvg } from './lib/render-morph-frames.mjs';
 import { renderTimelineSvg } from './lib/render-timeline.mjs';
+import { matchSkeleton } from './lib/skeleton-matcher.mjs';
 
 const log = (...a) => console.log('[genealogy-build]', ...a);
 
@@ -98,206 +99,8 @@ async function loadCached(key) {
 
 // ─────────────────────────── v1-скелет ───────────────────────────
 
-/** Мэппинг v1-id → TIPNR-key: имя + при неоднозначности книга первого упоминания. */
-const RU_BOOK_TO_OSIS = Object.fromEntries(Object.entries(OSIS_RU).map(([o, r]) => [r, o]));
-
-const V1_EXCEPTIONS = {
-  // v1-id: точный TIPNR-ключ (по отчёту unmatched; решения — по father/children v1
-  // против канонического порядка Лк 3:23-31 и текста Быт)
-  abram: 'Abraham@Gen.11.26',
-  jesus: 'Jesus@Isa.7.14',
-  jacob: 'Israel@Gen.25.26',          // патриарх Иаков в TIPNR = Israel@Gen.25.26 (не Jacob@Mat = NT-тёзка)
-  jacob_mt: 'Jacob@Mat.1.15',         // NT-Иаков, отец Иосифа-обручника
-  arphaxad: 'Arpachshad@Gen.10.22',
-  jeconiah: 'Jehoiachin@2Ki.24.6',   // Иехония/Иоахин; не Jecoliah (женщина, 4Цар 15:2)
-  shelah: 'Shelah@Gen.10.24',        // сын Арфаксада (не Шела сын Иуды Gen.38.5)
-  mizraim: 'Egypt@Gen.10.6',         // Мицраим = Egypt в ESV-номенклатуре TIPNR
-  joseph_nt: 'Joseph@Mat.1.16',      // Обручник
-  joseph_lk: 'Joseph@Luk.3.30',      // отец jonam → Лк 3:30
-  joseph_lk2: 'Joseph@Luk.3.24',     // сын Маттафии (Лк 3:24-25)
-  simeon_lk: 'Simeon@Luk.3.30',
-  levi_lk: 'Levi@Luk.3.29',
-  levi_lk2: 'Levi@Luk.3.24',
-  melki_lk: 'Melchi@Luk.3.28',       // сын Аддия
-  melchi_lk2: 'Melchi@Luk.3.24',
-  mattathias_lk: 'Mattathias@Luk.3.26',  // сын Семеина
-  mattathias2_lk: 'Mattathias@Luk.3.25', // сын Амоса
-  naggesi_lk: 'Naggai@Luk.3.25',
-  judah_lk: 'Judah@Luk.3.30',
-};
-
-// v1-узлы БЕЗ TIPNR-аналога: реконструкции цепи Луки (Лк 3:26-30), где v1 смоделировал
-// больше повторяющихся имён (Иосиф/Симеон/Левий/Иуда ×2), чем различает TIPNR/канон.
-// Не матчить — иначе фуззи притянет их к единственному TIPNR-тёзке (коллизия).
-// Их русские имена/структура сохранены в v1-скелете; в v2 они — редакторское решение.
-const V1_NO_MATCH = new Set(['judah_lk2', 'simeon_lk2', 'joseph_lk3']);
-
-function slugName(s) {
-  return String(s).split('|')[0].toLowerCase().replace(/[^a-z0-9]+/g, '');
-}
-
-const FUZZY_MIN_SCORE = 0.80;
-const FUZZY_CONTEXT_MIN_SCORE = 0.76;
-const FUZZY_MIN_MARGIN = 0.06;
-
-function v1PrimaryRefScope(person) {
-  const first = String(person.ref ?? '').split(';')[0].trim();
-  const match = /^([1-4]?[А-Яа-яЁё]+)\s+(\d+):(\d+)/u.exec(first);
-  if (!match) return null;
-  const osis = RU_BOOK_TO_OSIS[match[1]];
-  return osis ? { osis, chapter: Number(match[2]), verse: Number(match[3]) } : null;
-}
-
-function genderCompatible(person, rec) {
-  if (!person.gender || person.gender === 'u') return true;
-  if (person.gender === 'm') return rec.type === 'Male';
-  if (person.gender === 'f') return rec.type === 'Female';
-  return true;
-}
-
-function scopedFuzzyCandidates(person, all) {
-  const genderScoped = all.filter(rec => genderCompatible(person, rec));
-  const pool = genderScoped.length ? genderScoped : all;
-  const scope = v1PrimaryRefScope(person);
-  if (!scope) return { pool, scopeLevel: 'gender' };
-
-  const sameChapter = pool.filter(rec => {
-    const ref = parseRef(rec.ref);
-    return ref?.osis === scope.osis && ref.chapter === scope.chapter;
-  });
-  if (sameChapter.length) return { pool: sameChapter, scopeLevel: 'chapter' };
-
-  const sameBook = pool.filter(rec => parseRef(rec.ref)?.osis === scope.osis);
-  if (sameBook.length) return { pool: sameBook, scopeLevel: 'book' };
-
-  return { pool, scopeLevel: 'gender' };
-}
-
-function pickFuzzy(person, all) {
-  const { pool, scopeLevel } = scopedFuzzyCandidates(person, all);
-  const target = slugName(person.id.replace(/_[a-z0-9]{1,6}$/i, ''));
-  const ranked = pool
-    .map(rec => ({ rec, score: similarity(target, slugName(rec.name)) }))
-    .sort((a, b) => b.score - a.score || a.rec.key.localeCompare(b.rec.key));
-  const best = ranked[0];
-  const second = ranked[1];
-  if (!best) return null;
-
-  const minScore = scopeLevel === 'chapter' || scopeLevel === 'book' ? FUZZY_CONTEXT_MIN_SCORE : FUZZY_MIN_SCORE;
-  const margin = second ? best.score - second.score : 1;
-  if (best.score < minScore || margin < FUZZY_MIN_MARGIN) return null;
-  return { rec: best.rec, score: best.score, margin, scopeLevel };
-}
-
-function matchSkeleton(v1Persons, tipnrPersons) {
-  const byName = new Map();
-  const all = [...tipnrPersons.values()];
-  for (const rec of all) {
-    const k = slugName(rec.name);
-    if (!byName.has(k)) byName.set(k, []);
-    byName.get(k).push(rec);
-  }
-
-  // Выбор из нескольких exact-name кандидатов: сначала совместимый пол и книга
-  // первого упоминания v1, затем близость русского имени к транслиту кандидата.
-  const disambiguate = (p, initialCands) => {
-    let cands = initialCands.filter(rec => genderCompatible(p, rec));
-    if (!cands.length) return null;
-    if (p.ref) {
-      const scope = v1PrimaryRefScope(p);
-      const sameChapter = scope ? cands.filter(c => {
-        const ref = parseRef(c.ref);
-        return ref?.osis === scope.osis && ref.chapter === scope.chapter;
-      }) : [];
-      if (sameChapter.length === 1) return { rec: sameChapter[0], method: 'source-chapter' };
-      if (sameChapter.length > 1) cands = sameChapter;
-      else if (scope) {
-        const sameBook = cands.filter(c => parseRef(c.ref)?.osis === scope.osis);
-        if (sameBook.length === 1) return { rec: sameBook[0], method: 'source-book' };
-        if (sameBook.length > 1) cands = sameBook;
-      }
-    }
-    if (p.name?.ru) {
-      const ranked = cands
-        .map(c => ({ c, score: similarity(translitEnRu(c.name), p.name.ru) }))
-        .sort((a, b) => b.score - a.score || a.c.key.localeCompare(b.c.key));
-      const best = ranked[0], second = ranked[1];
-      const margin = second ? best.score - second.score : 1;
-      if (best && best.score >= 0.55 && margin >= 0.03) {
-        return { rec: best.c, method: 'ru-name-similarity', score: best.score, margin };
-      }
-    }
-    return null;
-  };
-
-  const matches = new Map();   // v1.id → tipnr key
-  const decisions = [];        // provenance каждого принятого mapping
-  const soft = [];             // только решения, требующие редакционной сверки
-  const unmatched = [];
-  for (const p of v1Persons) {
-    if (V1_NO_MATCH.has(p.id)) { unmatched.push({ id: p.id, ru: p.name?.ru, ref: p.ref ?? null, candidates: 'no-tipnr-counterpart' }); continue; }
-    if (V1_EXCEPTIONS[p.id]) {
-      const target = V1_EXCEPTIONS[p.id];
-      if (!tipnrPersons.has(target)) {
-        unmatched.push({ id: p.id, ru: p.name?.ru, ref: p.ref ?? null, candidates: 'explicit-target-missing', target });
-        continue;
-      }
-      matches.set(p.id, target);
-      decisions.push({ id: p.id, target, method: 'explicit-exception' });
-      continue;
-    }
-    const base = p.id.replace(/_[a-z0-9]{1,6}$/i, '');
-    let cands = (byName.get(slugName(base)) ?? []).filter(rec => genderCompatible(p, rec));
-    let fuzzyVia = null;
-    if (cands.length === 0) {
-      const fuzzy = pickFuzzy(p, all);
-      if (fuzzy) {
-        cands = (byName.get(slugName(fuzzy.rec.name)) ?? [fuzzy.rec])
-          .filter(rec => genderCompatible(p, rec));
-        fuzzyVia = `fuzzy:${fuzzy.rec.name}(${fuzzy.score.toFixed(2)}; margin=${fuzzy.margin.toFixed(2)}; scope=${fuzzy.scopeLevel})`;
-      }
-    }
-    if (cands.length === 1) {
-      matches.set(p.id, cands[0].key);
-      const method = fuzzyVia ? 'fuzzy' : 'exact-name';
-      decisions.push({ id: p.id, target: cands[0].key, method });
-      if (fuzzyVia) soft.push({ id: p.id, via: fuzzyVia });
-      continue;
-    }
-    if (cands.length > 1) {
-      const pick = disambiguate(p, cands);
-      if (pick) {
-        matches.set(p.id, pick.rec.key);
-        const method = fuzzyVia ? 'fuzzy' : pick.method;
-        decisions.push({
-          id: p.id,
-          target: pick.rec.key,
-          method,
-          ...(pick.score == null ? {} : { score: pick.score, margin: pick.margin }),
-        });
-        if (fuzzyVia || pick.method === 'ru-name-similarity') {
-          const via = fuzzyVia
-            ? `${fuzzyVia} → ${pick.method}:${pick.rec.key}`
-            : `${pick.method}:${pick.rec.key}(${pick.score.toFixed(2)}; margin=${pick.margin.toFixed(2)})`;
-          soft.push({ id: p.id, via });
-        }
-        continue;
-      }
-    }
-    unmatched.push({ id: p.id, ru: p.name?.ru, ref: p.ref ?? null, candidates: cands.length });
-  }
-
-  // Коллизии: два v1-id указывают на один TIPNR-ключ.
-  const byTarget = new Map();
-  for (const [id, key] of matches) {
-    if (!byTarget.has(key)) byTarget.set(key, []);
-    byTarget.get(key).push(id);
-  }
-  const collisions = [...byTarget.entries()].filter(([, ids]) => ids.length > 1)
-    .map(([key, ids]) => ({ key, ids }));
-
-  return { matches, decisions, unmatched, soft, collisions };
-}
+/** Identity matching lives in lib/skeleton-matcher.mjs so build and
+ * publication audit share one pure, reproducible implementation. */
 
 // ─────────────────────────── сборка ───────────────────────────
 
