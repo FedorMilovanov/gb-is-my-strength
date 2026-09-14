@@ -666,12 +666,30 @@ async function runTests() {
   assert(jeconiahMatch.matches.get('jeconiah') === 'Jehoiachin@2Ki.24.6',
     'Иехония имеет явное соответствие Jehoiachin и никогда не смешивается с Jecoliah');
 
+  // Regression against the original failure mode WITHOUT using the explicit exception.
+  // The probe may resolve to the male/context-compatible Jehoiachin or stay unmatched,
+  // but it must never be attracted to female Jecoliah by name similarity.
+  const jeconiahProbe = matchSkeleton([
+    { id: 'jeconiah_probe', name: { ru: 'Иехония' }, ref: '4Цар 24:8', gender: 'm' },
+  ], matcherFixture);
+  assert(jeconiahProbe.matches.get('jeconiah_probe') !== 'Jecoliah@2Ki.15.2',
+    'gender/context guard запрещает fuzzy Jeconiah → Jecoliah');
+
   const missingExceptionTarget = matchSkeleton([
     { id: 'jesus', name: { ru: 'Иисус Христос' }, ref: 'Мф 1:16', gender: 'm' },
   ], new Map());
   assert(!missingExceptionTarget.matches.has('jesus') &&
     missingExceptionTarget.unmatched.some(item => item.id === 'jesus' && item.candidates === 'explicit-target-missing'),
     'explicit exception не засчитывается, если target отсутствует в TIPNR');
+
+  const wrongGenderException = matchSkeleton([
+    { id: 'jesus', name: { ru: 'Иисус Христос' }, ref: 'Мф 1:16', gender: 'm' },
+  ], new Map([
+    ['Jesus@Isa.7.14', { key: 'Jesus@Isa.7.14', name: 'Jesus', ref: 'Isa.7.14', type: 'Female' }],
+  ]));
+  assert(!wrongGenderException.matches.has('jesus') &&
+    wrongGenderException.unmatched.some(item => item.id === 'jesus' && item.candidates === 'explicit-gender-mismatch'),
+    'explicit exception fail-closed при несовместимом gender');
 
   const ambiguousFixture = new Map([
     ['Naham@1Ch.4.19', { key: 'Naham@1Ch.4.19', name: 'Naham', ref: '1Ch.4.19', type: 'Male' }],
@@ -680,7 +698,9 @@ async function runTests() {
   const ambiguous = matchSkeleton([
     { id: 'nahaz', name: { ru: 'Нааз' }, ref: null, gender: 'm' },
   ], ambiguousFixture);
-  assert(!ambiguous.matches.has('nahamx'), 'неуверенный fuzzy без контекста остаётся unmatched');
+  assert(!ambiguous.matches.has('nahaz') &&
+    ambiguous.unmatched.some(item => item.id === 'nahaz'),
+    'неуверенный fuzzy без контекста остаётся unmatched');
 
   const spineFixture = traceSpine([
     { id: 'jesus--isa-7-14', key: 'Jesus@Isa.7.14', ru: { name: 'Иисус Христос' } },
