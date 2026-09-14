@@ -49,10 +49,18 @@ function slugName(value) {
 
 export function v1PrimaryRefScope(person) {
   const first = String(person.ref ?? '').split(';')[0].trim();
-  const match = /^([1-4]?[А-Яа-яЁё]+)\s+(\d+):(\d+)/u.exec(first);
-  if (!match) return null;
-  const osis = RU_BOOK_TO_OSIS[match[1]];
-  return osis ? { osis, chapter: Number(match[2]), verse: Number(match[3]) } : null;
+  const verseMatch = /^([1-4]?[А-Яа-яЁё]+)\s+(\d+):(\d+)/u.exec(first);
+  if (verseMatch) {
+    const osis = RU_BOOK_TO_OSIS[verseMatch[1]];
+    return osis ? { osis, chapter: Number(verseMatch[2]), verse: Number(verseMatch[3]) } : null;
+  }
+  // Broad references such as "Быт 29-30, 49" still provide safe book context,
+  // but not a single canonical chapter. Never collapse a chapter range to its
+  // first number merely to force a match.
+  const bookMatch = /^([1-4]?[А-Яа-яЁё]+)(?:\s+\d+)?/u.exec(first);
+  if (!bookMatch) return null;
+  const osis = RU_BOOK_TO_OSIS[bookMatch[1]];
+  return osis ? { osis, chapter: null, verse: null } : null;
 }
 
 function genderCompatible(person, rec) {
@@ -68,7 +76,7 @@ function scopedFuzzyCandidates(person, all) {
   const scope = v1PrimaryRefScope(person);
   if (!scope) return { pool, scopeLevel: 'gender' };
 
-  const sameChapter = pool.filter(rec => {
+  const sameChapter = scope.chapter == null ? [] : pool.filter(rec => {
     const ref = parseRef(rec.ref);
     return ref?.osis === scope.osis && ref.chapter === scope.chapter;
   });
@@ -104,7 +112,7 @@ function disambiguate(person, initialCandidates) {
 
   const scope = v1PrimaryRefScope(person);
   if (scope) {
-    const sameChapter = candidates.filter(candidate => {
+    const sameChapter = scope.chapter == null ? [] : candidates.filter(candidate => {
       const ref = parseRef(candidate.ref);
       return ref?.osis === scope.osis && ref.chapter === scope.chapter;
     });
