@@ -727,6 +727,9 @@
     "sitemap": true,
     "llms": false,
     "pagefind": true,
-    "hub": "withheld"
+    "hub": "withheld",
+    "hub_order": 20,
+    "hub_summary": "Исход 1–40 и Числа 33: путь из Египта через Синай, этапы странствий, спорные локализации и коридоры неопределённости.",
+    "hub_image": "/images/og-karty-ishod.webp"
   }
 }
