@@ -21,6 +21,7 @@
       "route_places": 19,
       "context_places": 3
     },
+    "base_geo_url": "base.svg",
     "viewport_init": {
       "cx": 1000,
       "cy": 620,
