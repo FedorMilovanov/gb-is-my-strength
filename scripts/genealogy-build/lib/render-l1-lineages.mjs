@@ -1,8 +1,9 @@
 /**
  * render-l1-lineages.mjs — SVG колоночной развёртки «Матфей 1 / Лука 3» (L1).
  *
- * Две родословные Христа рядом, сходятся ко Христу. Единый визуальный язык (palette).
- * Матфей — пурпур (царская), Лука — бирюза (кровная), общие узлы и хребет — золото.
+ * Две евангельские последовательности рядом, сходятся ко Христу. Единый визуальный
+ * язык (palette): цвет различает источники Матфея и Луки, а не заявляет биологический
+ * тип родства. Интерпретационные гармонизации живут отдельным overlay.
  * Детерминированный вывод.
  */
 import { getPalette, commonDefs } from './palette.mjs';
@@ -55,8 +56,8 @@ export function renderMatthewLukeSvg(layout, { title, subtitle, theme = 'light' 
   // ярлыки колонок
   const topMt = rows.map(r => byRow.get(r).mt).find(Boolean);
   const topLk = rows.map(r => byRow.get(r).lk).find(Boolean);
-  if (topMt) P.push(`<text x="${f(cx(topMt))}" y="${f(topMt.y - 16)}" text-anchor="middle" font-size="16" fill="${C.matthew}" font-weight="bold">Матфей 1 · царская</text>`);
-  if (topLk) P.push(`<text x="${f(cx(topLk))}" y="${f(topLk.y - 16)}" text-anchor="middle" font-size="16" fill="${C.luke}" font-weight="bold">Лука 3 · кровная</text>`);
+  if (topMt) P.push(`<text x="${f(cx(topMt))}" y="${f(topMt.y - 16)}" text-anchor="middle" font-size="16" fill="${C.matthew}" font-weight="bold">Матфей 1 · текст</text>`);
+  if (topLk) P.push(`<text x="${f(cx(topLk))}" y="${f(topLk.y - 16)}" text-anchor="middle" font-size="16" fill="${C.luke}" font-weight="bold">Лука 3 · текст</text>`);
 
   // ── коннекторы (под узлами) ──
   const nodeAt = (row, kind) => byRow.get(row)?.[kind];
