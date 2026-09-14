@@ -20,6 +20,7 @@ export const V1_EXCEPTIONS = Object.freeze({
   jacob_mt: 'Jacob@Mat.1.15',
   arphaxad: 'Arpachshad@Gen.10.22',
   jeconiah: 'Jehoiachin@2Ki.24.6',
+  zerubbabel: 'Zerubbabel@1Ch.3.19',
   phinehas: 'Phinehas@Exo.6.25',
   amminadab: 'Amminadab@Exo.6.23',
   abijah: 'Abijah@1Ki.14.31',
