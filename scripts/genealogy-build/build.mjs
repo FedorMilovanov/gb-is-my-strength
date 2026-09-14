@@ -835,6 +835,20 @@ async function runTests() {
   ], ambiguousFixture);
   assert(!ambiguous.matches.has('nahamx'), 'неуверенный fuzzy без контекста остаётся unmatched');
 
+  const spineFixture = traceSpine([
+    { id: 'jesus--isa-7-14', key: 'Jesus@Isa.7.14', ru: { name: 'Иисус Христос' } },
+    { id: 'mary--mat-1-16', key: 'Mary@Mat.1.16', ru: { name: 'Мария' } },
+    { id: 'heli--luk-3-23', key: 'Heli@Luk.3.23', ru: { name: 'Илий' } },
+    { id: 'adam--gen-2-19', key: 'Adam@Gen.2.19', ru: { name: 'Адам' } },
+  ], [
+    { kind: 'parent', role: 'mother', from: 'mary--mat-1-16', to: 'jesus--isa-7-14' },
+    { kind: 'parent', role: 'father', from: 'heli--luk-3-23', to: 'mary--mat-1-16' },
+    { kind: 'parent', role: 'father', from: 'adam--gen-2-19', to: 'heli--luk-3-23' },
+  ]);
+  assert(spineFixture.reachedRoot === true, 'spine fixture достигает Адама');
+  assert(spineFixture.model?.assertion === 'editorial-harmonization' && spineFixture.model?.directScripture === false,
+    'spine provenance явно отделяет гармонизацию от текста Писания');
+
   const mini = [
     '$==========PERSON(s)',
     'UnifiedName=uStrong\tDescription\tParents\tSiblings\tPartners\tOffspring\tTribe\t#Summary\tType',
