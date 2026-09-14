@@ -288,6 +288,13 @@ function hasGovernedAuditPendingDesign({ htmlSrc, heroSrc, missingIds, inventory
 function checkAstroHub(files) {
   const routeIds = files.map(f => path.basename(path.dirname(f))).sort();
   const inventory = getKartyHubInventory(ROOT);
+  const hubOrders = inventory.publishedRecords.map((record) => record.publication.hub_order);
+  const duplicateHubOrders = hubOrders.filter((value, index) => hubOrders.indexOf(value) !== index);
+  if (duplicateHubOrders.length) bad(`karty hub publication has duplicate hub_order: ${[...new Set(duplicateHubOrders)].join(', ')}`);
+  const featured = inventory.publishedRecords.filter((record) => record.publication.hub === 'featured');
+  if (featured.length > 1) bad(`karty hub publication has multiple featured routes: ${featured.map((record) => record.slug).join(', ')}`);
+  if (inventory.publishedCount > 0 && featured.length !== 1) bad('karty hub publication requires exactly one featured route when hub is non-empty');
+
   if (!sameStringSet(routeIds, inventory.routeSlugs)) {
     bad(`karty hub inventory mismatch: validator=${routeIds.join(',')} inventory=${inventory.routeSlugs.join(',')}`);
   }
