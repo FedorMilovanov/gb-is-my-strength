@@ -16,6 +16,8 @@ const mobileChrome = mobileChromeFor('/karty/');
     {mobileChrome?.enabled && mobileChrome.mount === 'registry' && mobileChrome.engine === 'page' && (
       <MobileChromePage backHref={mobileChrome.backHref ?? '/'} homeHref="../" />
     )}
-    <KartyMain />
+    <main>
+      <KartyMain />
+    </main>
   </body>
 </html>

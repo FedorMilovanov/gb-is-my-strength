@@ -188,10 +188,14 @@ async function overlaySnapshot(page) {
 }
 
 async function triggerState(trigger) {
-  return trigger.evaluate((element) => ({
-    inert: element.hasAttribute('inert'),
-    ariaHidden: element.getAttribute('aria-hidden'),
-  }));
+  return trigger.evaluate((element) => {
+    const inertOwner = element.closest('[inert]');
+    const ariaHiddenOwner = element.closest('[aria-hidden="true"]');
+    return {
+      inert: Boolean(inertOwner),
+      ariaHidden: ariaHiddenOwner ? 'true' : null,
+    };
+  });
 }
 
 async function runOverlayCase(name, browserType, viewport, baseUrl) {
