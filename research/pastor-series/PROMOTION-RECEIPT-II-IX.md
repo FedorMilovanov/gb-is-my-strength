@@ -66,6 +66,7 @@ receipts запрещали публикацию, тогда как публич
 | `PASTOR_SERIES_NATIVE_PUBLICATION_AUDIT` | PASS | `scripts/pastor-series-visual-parity-audit.js` |
 | `PUBLIC_CONTENT_BASELINE` | PASS | `npm run content:guard` (43 базовые страницы) |
 | `AUDIT_PRO` | PASS | `node scripts/audit-pro.js` |
+| `DIOTROPHES_WAVE10_BOUNDED_DIFF` (CI) | PASS | `.github/workflows/diotrophes-wave10-product-draft.yml`: PR не затрагивает `src/components/article-pilots/diotrophes/**` (см. §7) |
 | `JURISDICTION_SAFEGUARDING_GATE` | **OPEN** | §6 |
 | `BOUNDED_RE_CLEARANCE` (идентичность рукописей) | **REQUIRED** | §5 |
 
@@ -207,9 +208,26 @@ safeguarding-утверждения, не публиковать без отде
    (`/articles/anatomiya-padeniya-pyat-stadiy/`, `/articles/kogda-uhodit-kogda-ostavatsya/`).
    Основание: S15 (единый язык читательского текста), S21 (навигация без тупиков).
 
-Канал обратной связи заменён на работающий: на всех десяти страницах серии выводится единый
-leaf-блок `src/components/about/AboutAccuracyBlock.astro` (почта и Telegram) — тот же, что в
-Части I и в серии «Сердце». Основание: S22 («Исправимость»).
+Канал обратной связи заменён на работающий: единый leaf-блок
+`src/components/about/AboutAccuracyBlock.astro` (почта и Telegram) — тот же, что в Части I и в
+серии «Сердце» — выводится на **девяти страницах серии (Части I–IX)**. Основание: S22
+(«Исправимость»).
+
+**Досье A в этот PR не вошло — по governance-причине, а не по содержательной.** Блок был
+добавлен в `DiotrophesDraft.astro` после `</article>` внутри `<main>` (единственное структурно
+правильное место: `<main>` и `<article>` Досье A живут именно в этом файле), но CI-гейт
+`.github/workflows/diotrophes-wave10-product-draft.yml`, шаг «Enforce bounded Wave 10 diff»,
+требует: если PR затрагивает `DiotrophesDraft.astro`, то **все** изменённые файлы PR должны
+входить в wave10-owned набор (`data/diotrophes-wave10-product-draft.json`,
+`DiotrophesDraft.astro`, `scripts/diotrophes-wave10-contract.mjs`,
+`research/WAVE10_DIOTROPHES_PRODUCT_DRAFT_2026-08-01.md`, сам workflow). Любой смешанный PR
+красит гейт, поэтому правка Досье A откачена, а её выполнение перенесено в отдельный
+ограниченный PR (§8).
+
+Размещение блока в route-странице `DiotrophesPublishedPage.astro` гейт бы пропустил
+(`DiotrophesPublishedPage.astro` не входит в wave10-owned набор), но это структурно неверно:
+блок оказался бы **после** `</main>` — ровно тот дефект, который описан в позиции 2.14
+(второе тело Досье A вне `<main>`), и он ломает landmark-навигацию и покрытие озвучкой.
 
 ## 8. Follow-up после легализации
 
@@ -221,7 +239,7 @@ leaf-блок `src/components/about/AboutAccuracyBlock.astro` (почта и Tel
 | № | Позиция | Результат |
 |---|---|---|
 | 2.1 | Заполнить `partToc` для 8 частей | **DONE** — 117 строк оглавления вместо 8 (по одной строке «Начало статьи» на часть). Оглавление работает в reader rail (счётчик `1 / N`) и в мобильном листе «Оглавление части»; 0 мёртвых якорей |
-| 2.2 | Подключить `AboutAccuracyBlock` на все страницы серии и убрать мёртвый `<h2>Нашли неточность?</h2>` из III/IV | **DONE** — блок на 10 из 10 страниц (I–IX и Досье A), мёртвые разделы удалены |
+| 2.2 | Подключить `AboutAccuracyBlock` на все страницы серии и убрать мёртвый `<h2>Нашли неточность?</h2>` из III/IV | **DONE 9/10** — блок на страницах Частей I–IX, мёртвые разделы удалены; Досье A вынесено в отдельный PR (§7) |
 | 2.5 | Оживить «Связанные материалы серии» в Части IV | **DONE** — «Часть II» и «Часть VI» кириллицей, с рабочими ссылками на routes |
 
 Остаётся открытым:
@@ -229,6 +247,7 @@ leaf-блок `src/components/about/AboutAccuracyBlock.astro` (почта и Tel
 | № | Позиция | Статус на 2026-09-15 |
 |---|---|---|
 | 1.1 | «181 источник» против 73 кликабельных читательских ссылок | OPEN |
+| 2.2 (Досье A) | Блок обратной связи на странице Досье A | OPEN — нужен отдельный PR, ограниченный wave10-owned файлами (§7); после него — 10/10 |
 | 1.5 | Время чтения: 321 мин на ядро против ≈178 мин при 200 сл/мин (I–IX = 35 073 слов) | OPEN |
 | 2.3 | Кросс-ссылки между частями (минимум 3–5 на часть) | OPEN |
 | 2.4 | «Читайте также» в каждую часть (2–4 ссылки, включая другие серии) | OPEN |
@@ -261,5 +280,5 @@ CSS-селектор, поэтому такие идентификаторы б�
 OWNER DECISION  = ФЁДОР МИЛОВАНОВ — публикация частей II–IX разрешена (вариант B), 2026-09-15
 EXECUTION       = редакторский lane проекта, сессия Arena.ai
 CONTENT GATES   = PASS; JURISDICTION_SAFEGUARDING_GATE = OPEN (§6); BOUNDED_RE_CLEARANCE = REQUIRED (§5)
-PRODUCT GATES   = PARTIAL — продуктовый минимум 2.1 и 2.2 выполнен, спектр §8 открыт
+PRODUCT GATES   = PARTIAL — выполнены 2.1, 2.2 (9/10 страниц) и 2.5, спектр §8 открыт
 ```

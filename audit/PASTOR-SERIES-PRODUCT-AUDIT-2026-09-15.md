@@ -513,6 +513,20 @@ partToc: [...startToc],
 | 2.14 | **Вернуть блок Wave 11 внутрь `<article>`/`<main>`** — сейчас 3 821 слово (53 % страницы Досье A) лежат после `</main>` | `DiotrophesPublishedPage.astro` / `FaithfulWitnessSupplement.astro`; проверить селекторы `reader-tts.js:197`, `reader-projection.js:12–13` | S18 + a11y (landmark `main`) | Озвучка, выделение и закладки покрывают всю страницу; `landmark`-навигация видит оба блока; контракт `articleCount === 1` при этом сохраняет смысл |
 | 2.15 | Убрать номера волн из читательской навигации («Источники Wave 10», «Новые источники Wave 11») | `pastorSeriesConfig.ts` (partToc `diotrophes`), заголовки секций Досье A | S12 | «Источники», «Дополнительные источники» |
 
+> **Уточнение от 2026-09-15 (после выполнения 2.1, 2.2 и 2.5).** Позиция 2.2 не выполняется
+> одним PR на все десять страниц: `.github/workflows/diotrophes-wave10-product-draft.yml`
+> (шаг «Enforce bounded Wave 10 diff») требует, чтобы PR, затрагивающий
+> `DiotrophesDraft.astro`, менял **только** wave10-owned файлы
+> (`data/diotrophes-wave10-product-draft.json`, `DiotrophesDraft.astro`,
+> `scripts/diotrophes-wave10-contract.mjs`, `research/WAVE10_DIOTROPHES_PRODUCT_DRAFT_2026-08-01.md`,
+> сам workflow). Смешанный PR красит гейт, поэтому блок обратной связи добавлен на девяти
+> страницах (Части I–IX), а Досье A требует отдельного ограниченного PR. Обходной вариант —
+> вставить блок в `DiotrophesPublishedPage.astro` — гейт пропускает, но структурно неверен:
+> `<main>` и `<article>` Досье A находятся в `DiotrophesDraft.astro`, поэтому блок оказался бы
+> после `</main>` (тот же класс дефекта, что в позиции 2.14). Рекомендуется выполнять 2.2 для
+> Досье A отдельным PR из одного файла, а 2.14 — отдельно, с wave11-набором файлов.
+> Подробности: `research/pastor-series/PROMOTION-RECEIPT-II-IX.md` §7.
+
 ### ПАКЕТ 3 — Развитие (3–5 недель): квиз, визуал, глубина Писания
 
 | # | Работа | Объём | Правило | Приёмка |
