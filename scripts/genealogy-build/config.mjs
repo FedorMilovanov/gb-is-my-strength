@@ -19,7 +19,7 @@ export const PATHS = {
 export const SOURCES = {
   tipnr: {
     file: 'tipnr.txt',
-    url: 'https://raw.githubusercontent.com/STEPBible/STEPBible-Data/master/Proper%20Nouns/TIPNR%20-%20Translators%20Individualised%20Proper%20Names%20with%20all%20References%20-%20STEPBible.org%20CC%20BY.txt',
+    url: 'https://raw.githubusercontent.com/STEPBible/STEPBible-Data/1f342173b881ba5d1a5a4cae6e7c6c3fcc7cac51/Proper%20Nouns/TIPNR%20-%20Translators%20Individualised%20Proper%20Names%20with%20all%20References%20-%20STEPBible.org%20CC%20BY.txt',
     sha256: '1a3b7d7df5cfa1e96eefa07dec92900bea278370c6788fadb5d036f3223b637c',
     license: 'CC BY 4.0 — STEPBible.org / Tyndale House Cambridge',
     attribution: 'Данные персон: STEPBible.org (Tyndale House, Cambridge), CC BY 4.0, github.com/STEPBible',
