@@ -517,6 +517,10 @@ const MapEngine = (function() {
     let scaleResizeObserver = null;
     let baseCssLeaseActive = false;
     let cleanupComplete = false;
+    // Declared with the rest of the map state: the boot path applies the palette
+    // before the label-declutter section below is evaluated, and that early call
+    // must not hit the temporal dead zone.
+    let labelDeclutterFrame = 0;
     function _on(el, ev, fn, opts) { el.addEventListener(ev, fn, opts); _listeners.push({el, ev, fn, opts}); }
     function _tm(fn, ms) { const t = setTimeout(fn, ms); _timers.push(t); return t; }
     
@@ -1007,7 +1011,10 @@ const MapEngine = (function() {
 .me-map[data-map-theme="light"] [data-story-role="context"] .me-place-label-bg{fill:rgba(255,249,235,.72)}
 .me-map[data-map-theme="light"] [data-story-role="candidate"] .me-place-label-bg{fill:rgba(249,244,255,.72)}
 /* Label declutter: a suppressed label keeps its authored opacity but stops
-   painting, so clipped or colliding captions never reach the reader. */
+   painting, so clipped or colliding captions never reach the reader. A suppressed
+   annotation (a geography name or a corridor caption) is its own background layer
+   and is hidden on the node itself, never together with its sibling labels. */
+.me-map [data-label-annotation="1"][data-label-declutter="hidden"]{opacity:0!important}
 .me-map g[data-label-declutter="hidden"] .me-place-label,
 .me-map g[data-label-declutter="hidden"] .me-place-label-bg,
 .me-map g[data-label-declutter="hidden"] .me-place-label-leader{opacity:0!important}
@@ -1327,6 +1334,7 @@ container.appendChild(header);
       const palette=getMapThemePalette(theme);
       activeTheme=palette.id;
       container.setAttribute('data-map-theme',palette.id);
+      scheduleLabelDeclutter();
       container.style.backgroundColor=palette.bg;
       container.style.color=palette.text;
       container.style.setProperty('--me-bg',palette.bg);
@@ -1777,10 +1785,17 @@ container.appendChild(panel);
     // that a map must not ship with overlapping captions. A caption that does not
     // fit is therefore first mirrored to the other side of its marker and only
     // suppressed when neither side has room.
-    let labelDeclutterFrame=0;
     function scheduleLabelDeclutter(){
       if(labelDeclutterFrame)return;
       labelDeclutterFrame=requestAnimationFrame(()=>{labelDeclutterFrame=0;declutterPlaceLabels();});
+    }
+    // The caption plate is sized from the painted text, and the webfonts arrive
+    // after the first layout: without this hook the plate keeps the fallback
+    // metrics and ends up narrower than the final glyph run, so two captions can
+    // also drift into each other. Re-run once the fonts settle.
+    if(document.fonts&&typeof document.fonts.ready?.then==='function'){
+      document.fonts.ready.then(()=>{scheduleLabelDeclutter();});
+      _on(document.fonts,'loadingdone',()=>{scheduleLabelDeclutter();});
     }
     function declutterPlaceLabels(){
       if(!markersG)return;
@@ -1794,7 +1809,10 @@ container.appendChild(panel);
         const p=panel.getBoundingClientRect();
         if(p.width>1&&p.height>1)reserves.push(p);
       }
-      const controlSelectors=['.me-zoom-btn','.me-zoom','.me-share-btn','.me-theme-btn','.me-search','.me-stories','.me-story-chip','.me-stages','.me-layers','.me-legend','.me-minimap','.me-scale','.me-shortcuts','.me-back','.me-intro'];
+      // The intro card is a full-screen scrim, not a control: while it is up the
+      // reader is looking at the card, and treating it as a reserve would
+      // suppress every caption at once.
+      const controlSelectors=['.me-zoom-btn','.me-zoom','.me-share-btn','.me-theme-btn','.me-search','.me-stories','.me-story-chip','.me-stages','.me-layers','.me-legend','.me-minimap','.me-scale','.me-shortcuts','.me-back'];
       controlSelectors.forEach(selector=>{
         container.querySelectorAll(selector).forEach(el=>{
           // A dismissed overlay (the intro card) keeps its box but paints
@@ -1813,12 +1831,36 @@ container.appendChild(panel);
         });
       });
       const GAP=3;
+      // The canvas edge is a hard boundary: a plate that crosses it reads as a
+      // torn-off fragment, so captions get no outward tolerance there.
+      const EDGE=0.5;
       const fits=(box)=>{
-        if(box.left<rect.left-GAP||box.top<rect.top-GAP||box.right>rect.right+GAP||box.bottom>rect.bottom+GAP)return false;
+        if(box.left<rect.left+EDGE||box.top<rect.top+EDGE||box.right>rect.right-EDGE||box.bottom>rect.bottom-EDGE)return false;
         for(const r of reserves){
           if(box.right>r.left-GAP&&box.left<r.right+GAP&&box.bottom>r.top-GAP&&box.top<r.bottom+GAP)return false;
         }
         return true;
+      };
+      // The authored plate width is estimated from the average glyph width, which
+      // under-covers long names and wide letters. Measure the painted text and
+      // widen the plate so a caption never reads as a torn-off fragment.
+      const fitPlate=(item)=>{
+        const bg=item.bg,label=item.label;
+        if(!bg||typeof label.getComputedTextLength!=='function')return;
+        let textLength=0;
+        try{textLength=label.getComputedTextLength()}catch(e){return}
+        if(!(textLength>0))return;
+        const anchorAttr=label.getAttribute('text-anchor')||'start';
+        const x=Number(label.getAttribute('x'))||0;
+        const room=textLength+8;
+        if(anchorAttr==='middle'){
+          bg.setAttribute('x',String(x-room/2));
+        }else if(anchorAttr==='end'){
+          bg.setAttribute('x',String(x-room+4));
+        }else{
+          bg.setAttribute('x',String(x-3));
+        }
+        bg.setAttribute('width',String(room));
       };
       const authoredOf=(g,label,bg,leader)=>{
         if(g.__meLabelAuthored)return g.__meLabelAuthored;
@@ -1862,6 +1904,7 @@ container.appendChild(panel);
         const leader=g.querySelector('.me-place-label-leader');
         const authored=authoredOf(g,label,bg,leader);
         paint(label,bg,leader,authored,false);
+        fitPlate({label,bg});
         const role=g.getAttribute('data-story-role')||'';
         items.push({
           g,label,bg,leader,authored,
@@ -1874,6 +1917,32 @@ container.appendChild(panel);
       // The authored background rect is sized from an estimated glyph width and
       // can be narrower than the painted text, so the reserved box is the union
       // of the caption and its plate.
+      // The waypoint captions are engine-rendered too, so they take part in the
+      // same pass: they are the scientific layer, not the reading path, so they
+      // queue behind the place captions and mirror to the other side of their
+      // marker before they are given up.
+      // The authored annotations — geography names of the shared basemap and the
+      // corridor captions rendered by the route page — are not the engine's to
+      // move, but they are the lowest tier: when one of them lands on a place
+      // caption the annotation yields (background geography gives way to the
+      // interactive reading path) and comes back as soon as the frame has room.
+      const annotations=[...container.querySelectorAll('#me-base-geo text,.pihahiroth-corridor-label')];
+      annotations.forEach(el=>{
+        el.removeAttribute('data-label-declutter');
+        el.setAttribute('data-label-annotation','1');
+        if(getComputedStyle(el).display==='none')return;
+        items.push({g:el,label:el,bg:null,leader:null,authored:null,placeholder:false,rank:4,isActive:1,canMirror:false,annotation:true});
+      });
+      waypointsG.querySelectorAll('g[data-screen-anchor="waypoint"]').forEach(g=>{
+        const label=g.querySelector('text'),bg=g.querySelector('rect');
+        if(!label||!bg)return;
+        g.removeAttribute('data-label-declutter');
+        g.removeAttribute('data-label-mirrored');
+        const authored=authoredOf(g,label,bg,null);
+        paint(label,bg,null,authored,false);
+        fitPlate({label,bg});
+        items.push({g,label,bg,leader:null,authored,placeholder:false,rank:3,isActive:1,canMirror:true});
+      });
       const boxOf=(item)=>{
         const a=item.label.getBoundingClientRect();
         if(!item.bg)return a;
@@ -1881,7 +1950,13 @@ container.appendChild(panel);
         if(!b.width||!b.height)return a;
         return{left:Math.min(a.left,b.left),top:Math.min(a.top,b.top),right:Math.max(a.right,b.right),bottom:Math.max(a.bottom,b.bottom),width:Math.max(a.right,b.right)-Math.min(a.left,b.left),height:Math.max(a.bottom,b.bottom)-Math.min(a.top,b.top)};
       };
-      const hiddenOf=(item)=>(Number(getComputedStyle(item.label).opacity)<=0.25);
+      // "Not a candidate" means the reader's own choices left the caption
+      // unpublished: a switched-off layer, or a story the reader has not opened.
+      // A caption caught mid-fade must stay a candidate — its geometry is what
+      // will be painted a moment later, and judging by the computed opacity made
+      // the pass skip labels that were still transitioning, so they came back on
+      // top of their already-accepted neighbours.
+      const hiddenOf=(item)=>Boolean(item.g.closest('[data-me-layer-hidden="1"]'))||item.g.getAttribute('data-story-active')==='0';
       // Candidates: authored placement first, then the mirrored side. The open
       // dossier outranks story focus, which outranks context and candidates.
       // A caption inside a story layer the reader has not opened has no painted
@@ -1895,6 +1970,7 @@ container.appendChild(panel);
       placeable.sort((a,b)=>a.isActive-b.isActive||a.rank-b.rank||b.area-a.area);
       const accepted=[];
       let hidden=0;
+      let anchorKept=0;
       for(const item of placeable){
         const collides=(box)=>accepted.some(o=>Math.min(o.right,box.right)-Math.max(o.left,box.left)>-GAP&&Math.min(o.bottom,box.bottom)-Math.max(o.top,box.top)>-GAP);
         let box=boxOf(item);
@@ -1904,6 +1980,7 @@ container.appendChild(panel);
         }
         if(item.canMirror){
           paint(item.label,item.bg,item.leader,item.authored,true);
+          fitPlate(item);
           const mirroredBox=boxOf(item);
           if(fits(mirroredBox)&&!collides(mirroredBox)){
             item.g.setAttribute('data-label-mirrored','1');
@@ -1911,8 +1988,20 @@ container.appendChild(panel);
             continue;
           }
           paint(item.label,item.bg,item.leader,item.authored,false);
+          fitPlate(item);
         }
-        item.g.setAttribute('data-label-declutter','hidden');
+        // A focus place of the active story and the place whose dossier is open are
+        // the reader's anchors: their caption stays painted even when neither side
+        // of the marker has room (a frame edge plus an open dossier can leave
+        // none), because a nameless focus marker breaks the story-hierarchy
+        // contract of scripts/avraam-reference-baseline.mjs. The frame still takes
+        // its slot so that a lower tier cannot paint over the anchor.
+        if(item.rank===0||item.isActive===0){
+          accepted.push(box);
+          anchorKept+=1;
+          continue;
+        }
+        (item.annotation?item.label:item.g).setAttribute('data-label-declutter','hidden');
         hidden+=1;
       }
       container.setAttribute('data-label-declutter-count',String(hidden));
@@ -2139,9 +2228,14 @@ container.appendChild(panel);
         const bg=document.createElementNS('http://www.w3.org/2000/svg','rect');
         bg.setAttribute('x','7');bg.setAttribute('y','-9');bg.setAttribute('width',String(labelWidth));bg.setAttribute('height','18');bg.setAttribute('rx','4');
         bg.setAttribute('fill','var(--me-label-bg,rgba(7,10,16,.78))');bg.setAttribute('stroke','var(--me-border,rgba(255,255,255,.12))');bg.setAttribute('stroke-width','.6');
+        // The same part classes as a place caption: the declutter pass suppresses
+        // a waypoint caption that found room neither right nor left of its
+        // marker, and the shared rule does the hiding.
+        bg.setAttribute('class','me-place-label-part me-place-label-bg');
         g.appendChild(bg);
         const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x','11');t.setAttribute('y','4');
         t.setAttribute('fill','var(--me-label-text,#f4eedd)');t.setAttribute('font-size','11');t.textContent=labelText;
+        t.setAttribute('class','me-place-label-part me-place-label');
         g.appendChild(t);
         waypointsG.appendChild(g);
       });
@@ -2922,6 +3016,7 @@ container.appendChild(panel);
       renderMarkers();
       renderStages();
       _tm(animateMarkersIn, 150);
+      scheduleLabelDeclutter();
       showStoryToast(story);
       const mobileViewport=matchMedia('(max-width:560px)').matches?route.meta?.mobile_story_viewports?.[storyId]:null;
       const storyViewport = Array.isArray(mobileViewport)?mobileViewport:getStoryViewport(route, storyId);
@@ -3432,6 +3527,11 @@ container.appendChild(panel);
           dot.addEventListener('animationend', function() { this.style.animation = ''; }, {once: true});
         }
       });
+      // Every marker fades in on its own stagger, and a caption that is still
+      // fully transparent is not a declutter candidate. Re-run once the last
+      // marker has landed, otherwise the layout keeps the gaps of the fade and a
+      // late caption can land on top of an accepted one.
+      _tm(() => { scheduleLabelDeclutter(); }, Math.max(0,allMarkers.length-1)*60+700);
     }
 
     // ── Canonical query-based deep linking (legacy hash remains readable) ──
@@ -3474,7 +3574,8 @@ container.appendChild(panel);
         intro.style.transform = 'scale(0.95)';
         intro.style.transition = 'opacity .4s ease, transform .4s cubic-bezier(.4,0,.2,1)';
         intro.style.pointerEvents = 'none';
-        _tm(() => { intro.remove(); focusMapOwner(); }, 450);
+        scheduleLabelDeclutter();
+        _tm(() => { intro.remove(); focusMapOwner(); scheduleLabelDeclutter(); }, 450);
         return true;
       };
 
