@@ -48,6 +48,36 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Determine genealogy release proof scope
+        id: genealogy-scope
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          run=false
+          reason=unrelated-change
+          genealogy_pattern='^(\.github/workflows/(deploy\.yml|deploy-candidate-contract\.yml)|scripts/genealogy-|data/genealogy/|src/pages/rodosloviye/|src/components/(genealogy|rodosloviye)/|src/components/search/|src/components/article-pilots/_shared/|src/layouts/|src/styles/|css/|js/|package\.json|package-lock\.json)'
+          case "$EVENT_NAME" in
+            workflow_dispatch)
+              run=true
+              reason=workflow_dispatch
+              ;;
+            pull_request)
+              if git diff --name-only "$PR_BASE_SHA" "$PR_HEAD_SHA" | grep -Eq "$genealogy_pattern"; then
+                run=true
+                reason=genealogy-impacting-change
+              fi
+              ;;
+          esac
+          {
+            echo "run=$run"
+            echo "reason=$reason"
+          } >> "$GITHUB_OUTPUT"
+          printf 'Genealogy release proof: %s (%s)\n' "$run" "$reason" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Set up pinned Node toolchain
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -80,6 +110,13 @@ jobs:
 
       - name: Static publication source gates
         run: npm run validate:static-publication
+
+      - name: Genealogy source and data contracts
+        if: steps.genealogy-scope.outputs.run == 'true'
+        run: |
+          node scripts/genealogy-gospel-contract.mjs
+          node scripts/genealogy-focus-contract.mjs
+          node scripts/genealogy-geometry-contract.mjs
 
       - name: Build production-like dist once
         run: npm run strangler:build:production-like
@@ -127,6 +164,31 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
+      - name: Install Playwright WebKit and Firefox for genealogy release proof
+        if: steps.genealogy-scope.outputs.run == 'true'
+        run: npx playwright install --with-deps webkit firefox
+
+      - name: Genealogy full browser release gate
+        if: steps.genealogy-scope.outputs.run == 'true'
+        env:
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          GENEALOGY_BROWSERS: chromium,webkit,firefox
+          GENEALOGY_VIEWPORTS: 320x760,360x800,390x844,430x932,768x1024,1024x768,1440x1000,1920x1080
+        run: node scripts/genealogy-browser-contract.mjs
+
+      - name: Preserve genealogy full-matrix evidence
+        if: steps.genealogy-scope.outputs.run == 'true'
+        run: cp -a reports/genealogy-browser-contract reports/genealogy-browser-contract-full
+
+      - name: Genealogy reduced-motion release gate
+        if: steps.genealogy-scope.outputs.run == 'true'
+        env:
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          GENEALOGY_BROWSERS: chromium,webkit
+          GENEALOGY_VIEWPORTS: 390x844,1440x1000
+          GENEALOGY_REDUCED_MOTION: '1'
+        run: node scripts/genealogy-browser-contract.mjs
+
       - name: Teen series browser release gate
         run: node scripts/teen-series-quality-browser-audit.mjs
 
@@ -161,6 +223,8 @@ jobs:
             reports/a07-sw-static-audit.json
             reports/a07-sw-static-audit.md
             reports/teen-series-browser/**
+            reports/genealogy-browser-contract/**
+            reports/genealogy-browser-contract-full/**
             reports/gill-mobile-layout-audit-2026-06-29/summary.json
             reports/gill-v16-mobile-play-smoke-2026-06-28/summary.json
             reports/gill-pre-v16-submenu-audit/**
