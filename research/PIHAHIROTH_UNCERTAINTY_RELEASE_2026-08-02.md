@@ -12,6 +12,11 @@
 
 `f1cb58be907efb0fb9cfa8bc344b07b5cf84edb2`
 
+Побайтная копия этого исторического состояния лежит в
+`research/PIHAHIROTH_HISTORICAL_ROUTE_2026-08-02.json`, и release-контракт
+закрепляет Git blob SHA именно за ней: живой `karty/ishod/route.json`
+продолжает развиваться (копирайт, мобильный кадр), не ломая forensic pin.
+
 До создания карты native Astro adapter загружает `pihahiroth-authority.json` и выполняет ограниченную projection-транзакцию:
 
 1. единственная историческая точка `pihahiroth` исключается из stage-path и скрывается до первого кадра;
