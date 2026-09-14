@@ -96,5 +96,13 @@ Fuzzy matching — только вспомогательный кандидат�
 source book/chapter и minimum score margin; неоднозначность остаётся `unmatched`, а не
 автоматически превращается в факт.
 
+Начиная с pipeline `0.2.x`, машинным источником publication evidence является
+`meta.json.publicationEvidence`: решения matcher-а, soft/unmatched/collisions,
+нерезолвнутые relation refs и размер RU review queue. `VALIDATION.md` — только
+человекочитаемый отчёт и не должен парситься как API после регенерации актуальным
+pipeline. Если версия pipeline актуальна, а structured evidence отсутствует или
+расходится с данными, publication audit блокирует выпуск.
+
+
 До достижения publication exit-критериев датасет `v2` считается **ЧЕРНОВИКОМ**
 и `/rodosloviye/` остаётся на canonical v1.
