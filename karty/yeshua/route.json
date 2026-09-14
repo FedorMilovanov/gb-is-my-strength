@@ -765,6 +765,8 @@
     ],
     "description": "Световая линия ведёт по ключевым точкам земного служения Христа от рождения к воскресению."
   },
+  "archetype": "route",
+  "capabilities": ["stages","stories","layers","timeline","signature","interpretations"],
   "publication": {
     "status": "temporary-placeholder",
     "indexable": false,
