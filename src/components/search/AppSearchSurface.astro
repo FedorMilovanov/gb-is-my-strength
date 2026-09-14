@@ -111,8 +111,20 @@ const { mode, showApp = mode === 'map-engine' || mode === 'baptizm' } = Astro.pr
     -webkit-backdrop-filter: blur(8px);
   }
 
-  body.has-app-search-map .me-search { inset-inline-end: 168px; }
-  body.has-app-search-map .me-search:focus { inset-inline-end: 168px; }
+  /*
+   * Map-engine mode adds two fixed 44px controls on the right edge. The map's
+   * own top-right cluster (theme at 62px, share at 10px) must stay clickable,
+   * so the surface cluster and the map search input are ordered right-to-left:
+   *   share 10 | theme 62 | site search 116 | app shortcut 168 | map search 220
+   * Chip row (.me-stories) reserves the same 390px so chips never slide under
+   * the search field (previously the last chip was unclickable at >=1024px).
+   */
+  @media (min-width: 701px) {
+    body.has-app-search-map .gb-app-shortcut--map-engine { inset-inline-end: 168px; }
+    body.has-app-search-map .me-search,
+    body.has-app-search-map .me-search:focus { inset-inline-end: 220px; }
+    body.has-app-search-map .me-stories { inset-inline-end: 390px; max-width: calc(100% - 794px); }
+  }
 
   .gb-app-search--atlas {
     flex: 0 0 auto;
@@ -137,13 +149,18 @@ const { mode, showApp = mode === 'map-engine' || mode === 'baptizm' } = Astro.pr
   }
 
   @media (max-width: 700px) {
+    /*
+     * A 390px row cannot hold the map's own controls (back, place search, theme,
+     * share) and the two site controls without overlap, so the site pair stacks
+     * below the map header row instead of covering the share button.
+     */
     .gb-app-search--map-engine {
-      inset-block-start: 8px;
-      inset-inline-end: 112px;
+      inset-block-start: 112px;
+      inset-inline-end: 8px;
     }
 
     .gb-app-shortcut--map-engine {
-      inset-block-start: 8px;
+      inset-block-start: 164px;
       inset-inline-end: 8px;
     }
 

@@ -17,8 +17,8 @@
  * обязан быть в базовом (незумленном) состоянии листа.
  *
  * Запуск: node scripts/atlas-export-sheet.js [slug ...]  (по умолчанию — все)
- * Требует поднятый http://localhost:8090 (audit/atlas-preview) и
- * playwright-core + Chromium (см. PW_CORE/PW_CHROMIUM ниже).
+ * Требует поднятый http://localhost:8090 (audit/atlas-preview) и playwright-core;
+ * браузер — из образа (GB_PLAYWRIGHT_CHROMIUM) либо из установки Playwright.
  */
 'use strict';
 
@@ -27,9 +27,10 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const OUTDIR = path.join(ROOT, 'images', 'atlas-export');
-const PW_CORE = process.env.PW_CORE || '/tmp/claude-0/-home-user/d356c92e-ba9c-5386-aecc-b168f622c1f7/scratchpad/node_modules/playwright-core';
-const PW_CHROMIUM = process.env.PW_CHROMIUM || '/opt/pw-browsers/chromium';
 const BASE_URL = process.env.AUDIT_BASE || 'http://127.0.0.1:8090';
+// Same browser resolution as the other browser contracts: the packaged Chromium
+// if the image pins one (GB_PLAYWRIGHT_CHROMIUM), else Playwright's own install.
+const PINNED_CHROMIUM = process.env.GB_PLAYWRIGHT_CHROMIUM || '/opt/pw-browsers/chromium';
 
 const UI_CLASSES = ['.spine', '.dive-btn', '.home-btn', '.g9', '.dossier', '.place-card', '.stage-strip'];
 const FORBIDDEN_CLASSES = ['zoomed', 'z2', 'z3', 'z4'];
@@ -39,9 +40,11 @@ const slugs = args.length ? args :
   fs.readdirSync(path.join(ROOT, 'karty')).filter((d) => !d.startsWith('_') && fs.existsSync(path.join(ROOT, 'karty', d, 'route.json'))).sort();
 
 (async () => {
-  const { chromium } = require(PW_CORE);
+  const { chromium } = require('playwright-core');
   fs.mkdirSync(OUTDIR, { recursive: true });
-  const br = await chromium.launch({ executablePath: PW_CHROMIUM, args: ['--no-sandbox'] });
+  const br = await chromium.launch(fs.existsSync(PINNED_CHROMIUM)
+    ? { executablePath: PINNED_CHROMIUM, args: ['--no-sandbox'] }
+    : { args: ['--no-sandbox'] });
   let failed = 0;
 
   for (const slug of slugs) {
