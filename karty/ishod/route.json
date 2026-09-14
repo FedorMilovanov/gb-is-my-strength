@@ -14,6 +14,7 @@
       "scientific_variants": 12,
       "waypoints": 6
     },
+    "base_geo_url": "base.svg",
     "viewport_init": {
       "cx": 450,
       "cy": 900,
