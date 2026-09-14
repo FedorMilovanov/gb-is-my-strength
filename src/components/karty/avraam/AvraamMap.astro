@@ -38,7 +38,11 @@ import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.as
     outline-offset: 3px;
   }
 </style>
-<h1 class="sr-only" data-pagefind-body>Путь Авраама — интерактивная карта. От Ура Халдейского до горы Мория: 22 объекта — 19 маршрутных мест и 3 контекстные точки; 8 этапов; 5 сюжетов; археология; хронология 175 лет.</h1>
+<!-- Landmarks: the document heading, the static projection and the map stage
+     live inside <main>; the engine owns only #stage inner markup. -->
+<main class="map-document">
+  <h1 class="sr-only" data-pagefind-body>Путь Авраама — интерактивная карта. От Ура Халдейского до горы Мория: 22 объекта — 19 маршрутных мест и 3 контекстные точки; 8 этапов; 5 сюжетов; археология; хронология 175 лет.</h1>
+
 <section class="sr-only map-text-fallback" data-map-static-projection data-pagefind-body aria-label="Путь Авраама — текстовая версия карты с источниками">
   <h2>Путь Авраама по Бытие 11–25: маршрут, этапы и историко-археологический контекст</h2>
   <p class="map-static-facts"><strong>Состав карты:</strong> 22 объекта — 19 маршрутных мест и 3 контекстные точки; 8 этапов; 5 сюжетов; 40 фотографий.</p>
@@ -114,7 +118,7 @@ import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.as
   description="Для свободного исследования карты нужен JavaScript. Полная текстовая версия маршрута, этапов и источников раскрыта на этой странице."
   archaeologyMapId="avraam"
 />
-<div
+<section
   id="stage"
   data-map-stage
   data-map-state="loading"
@@ -122,7 +126,8 @@ import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.as
   aria-label="Интерактивная карта пути Авраама"
   tabindex="-1"
   style="position:fixed;inset:0;background:#070a10"
-></div>
+></section>
+</main>
 <script is:inline src="../_engine/map-engine.js"></script>
 <script is:inline>
 (function(){
