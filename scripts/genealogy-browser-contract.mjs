@@ -332,7 +332,9 @@ async function assertFocusInteractions(page) {
   await dialog.waitFor({ state: 'detached' });
   assert.equal(await opener.evaluate(node => document.activeElement === node), true);
   const filter = page.getByRole('button', { name: 'Каинова', exact: true });
-  await filter.press('Space');
+  await filter.focus();
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => document.querySelector('.genealogy-filter-tools button[aria-pressed="true"]')?.textContent === 'Каинова');
   assert.equal(await filter.getAttribute('aria-pressed'), 'true', 'Space did not activate the filter');
   assert.equal(await page.locator('[data-genealogy-focus-count]').count(), 0, 'Excluded person left stale focus');
   assert.equal(await page.locator('[data-genealogy-details]').count(), 0, 'Excluded person left stale details');
