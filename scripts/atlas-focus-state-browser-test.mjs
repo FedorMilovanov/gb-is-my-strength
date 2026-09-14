@@ -10,6 +10,13 @@ const DIST = path.join(ROOT, 'dist');
 const REPORT_DIR = path.join(ROOT, 'reports', 'atlas-focus-state');
 const ROUTE = '/map/';
 const BROWSERS = { chromium, webkit };
+// CI runs the full matrix. Local runs may narrow it explicitly when a browser
+// binary is unavailable; the default always remains Chromium + WebKit.
+const BROWSER_FILTER = (process.env.ATLAS_FOCUS_BROWSERS || '').split(',').map((name) => name.trim()).filter(Boolean);
+const SELECTED_BROWSERS = BROWSER_FILTER.length
+  ? Object.fromEntries(Object.entries(BROWSERS).filter(([name]) => BROWSER_FILTER.includes(name)))
+  : BROWSERS;
+assert.ok(Object.keys(SELECTED_BROWSERS).length, `ATLAS_FOCUS_BROWSERS selected no known browser: ${BROWSER_FILTER.join(',')}`);
 const WIDTHS = [390, 680, 681, 980, 981, 1440];
 const HEIGHT = 900;
 
@@ -342,7 +349,7 @@ async function main() {
   const server = await startServer();
   const results = [];
   try {
-    for (const [browserName, browserType] of Object.entries(BROWSERS)) {
+    for (const [browserName, browserType] of Object.entries(SELECTED_BROWSERS)) {
       for (const width of WIDTHS) results.push(await runCase(browserName, browserType, server.baseUrl, width));
     }
   } finally {
