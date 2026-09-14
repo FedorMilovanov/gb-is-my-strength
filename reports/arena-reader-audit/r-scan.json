@@ -71,7 +71,7 @@
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 16,
+  "bodyOvfX": 0,
   "rail": null,
   "fam": "gillA",
   "perr": [],
@@ -1306,11 +1306,11 @@
  },
  "1024/articles/diotrefy-nashego-vremeni/": {
   "np": 112,
-  "medW": null,
-  "clippedRight": 112,
+  "medW": 379,
+  "clippedRight": 0,
   "clippedLeft": 0,
-  "overCount": 312,
-  "bodyOvfX": 162,
+  "overCount": 0,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1681,11 +1681,11 @@
  },
  "1024/articles/podrostok-za-kadrom-chto-delat-tserkvi/": {
   "np": 244,
-  "medW": 649,
+  "medW": 634,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 15,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1698,11 +1698,11 @@
  },
  "1024/articles/podrostok-za-kadrom-dvoynaya-zhizn/": {
   "np": 136,
-  "medW": 649,
+  "medW": 634,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 15,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -1715,11 +1715,11 @@
  },
  "1024/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/": {
   "np": 236,
-  "medW": 649,
+  "medW": 634,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 15,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -2030,11 +2030,11 @@
  },
  "1024/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/": {
   "np": 291,
-  "medW": 649,
+  "medW": 634,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 15,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -2191,11 +2191,11 @@
  },
  "1024/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/": {
   "np": 385,
-  "medW": 649,
+  "medW": 634,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 15,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -2208,11 +2208,11 @@
  },
  "1024/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/": {
   "np": 273,
-  "medW": 649,
+  "medW": 634,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 15,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297
@@ -2225,11 +2225,11 @@
  },
  "1024/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/": {
   "np": 299,
-  "medW": 649,
+  "medW": 634,
   "clippedRight": 0,
   "clippedLeft": 0,
   "overCount": 0,
-  "bodyOvfX": 15,
+  "bodyOvfX": 0,
   "rail": {
    "x": 25,
    "r": 297

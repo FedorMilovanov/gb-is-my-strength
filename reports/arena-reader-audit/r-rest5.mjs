@@ -1,0 +1,10 @@
+import { chromium } from 'playwright';
+const browser=await chromium.connectOverCDP('http://127.0.0.1:9222');
+const ctx=browser.contexts()[0];
+const p=await ctx.newPage();await p.setViewportSize({width:390,height:844});
+await p.goto('http://127.0.0.1:8080/articles/dzhon-gill-chast-1-chelovek/',{waitUntil:'load'});await p.waitForTimeout(800);
+await p.evaluate(`GBReaderPreferences.set({theme:'sepia'})`);await p.waitForTimeout(400);
+console.log(JSON.stringify(await p.evaluate(`(()=>{const bar=document.querySelector('.mobile-bottom-bar');const top=document.querySelector('.mobile-top-bar');const sheet=document.querySelector('.toc-sheet');return {bar:bar?getComputedStyle(bar).backgroundColor:null, top:top?getComputedStyle(top).backgroundColor:null, frost:getComputedStyle(document.querySelector('[data-gill-v16]')).getPropertyValue('--gill-mobile-bar-frost').trim()};})()`)));
+await p.screenshot({path:'shots/fix2-gill-sepia-mobile.png'});
+await p.evaluate(`GBReaderPreferences.set({theme:'light'})`);
+await p.close();await browser.close();

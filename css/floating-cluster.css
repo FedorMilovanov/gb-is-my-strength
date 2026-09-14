@@ -4482,27 +4482,33 @@ html.dark [data-gill-v16] .mobile-top-bar {
    consume, so no component needs a separate "sepia" branch. Was mobile-only
    (<64em) — owner asked for the same Тема picker on desktop; unwrapped so the
    rail/theme-corner/sheets pick up the same tokens above 64em too. */
+/* Audit 2026-09-15: sepia chrome no longer keeps a private palette (#f8f0dc и
+   ко) — it mirrors the canonical sepia tokens from css/reader-preferences.css,
+   so «Сепия» looks identical in Gill chrome, hrail and article paper. Gold
+   stays series identity; fallbacks keep the block self-sufficient. */
 [data-gill-v16][data-gill-reader-theme="sepia"] {
-  --gb-surface: #f8f0dc;
-  --gb-surface-muted: #e9dcc0;
-  --gb-text: #493823;
-  --gb-text-muted: #776348;
-  --gb-text-faint: #9a825d;
-  --gb-border: #d8c49e;
-  --gb-border-strong: #bea778;
-  --gb-accent: #87562b;
-  --gb-accent-strong: #a16a36;
+  --gb-surface: var(--color-surface, #f6ecd6);
+  --gb-surface-muted: var(--color-surface-muted, #e8d9ba);
+  --gb-text: var(--color-text, #493720);
+  --gb-text-muted: var(--color-text-muted, #68543a);
+  --gb-text-faint: var(--color-text-faint, #76654d);
+  --gb-border: var(--color-border, #d5c39f);
+  --gb-border-strong: var(--color-border-strong, #bda77d);
+  --gb-accent: var(--color-accent, #7b3f2b);
+  --gb-accent-strong: var(--color-accent-strong, #5f2f20);
   --gb-accent-gold: #8a612f;
   --gb-accent-gold-bright: #b68445;
-  --gill-mobile-bar-bg: rgba(243, 234, 212, .96);
-  --gill-mobile-bar-border: rgba(135, 86, 43, .30);
-  --gill-mobile-bar-ink: #3a2c1a;
-  --gill-mobile-bar-muted: rgba(58, 44, 26, .74);
-  --gill-mobile-bar-gold: #87562b;
-  background: #f3ead4;
+  --gill-mobile-bar-bg: rgba(238, 227, 200, .96);
+  --gill-mobile-bar-border: rgba(123, 63, 43, .30);
+  --gill-mobile-bar-ink: var(--color-text-primary, #3d2d1b);
+  --gill-mobile-bar-muted: rgba(61, 45, 27, .74);
+  --gill-mobile-bar-gold: var(--color-accent, #7b3f2b);
+  --gill-mobile-bar-frost: rgba(238, 227, 200, .82);
+  --gill-mobile-hairline: rgba(123, 63, 43, .16);
+  background: var(--color-canvas, #eee3c8);
 }
 [data-gill-v16][data-gill-reader-theme="sepia"] .toc-sheet {
-  background: #f3ead4 !important;
+  background: var(--color-surface, #f6ecd6) !important;
 }
 /* Polish (5f54989): sepia tinted the page background but left the reading text
    itself neutral grey/black (several paragraph-holding classes set their own

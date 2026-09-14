@@ -219,3 +219,39 @@
 ### 13.3 Замечание о гварде shared-files
 
 `scripts/guard-shared-files.js` защищает `css/` и `js/` целиком и требует канонических префиксов веток (`lane/`, `fix/`, …). Сессия Arena закреплена за `arena/01a0a1ce-gb-is-my-strength`, поэтому: push даёт в CI лишь `--warn` (workflow `shared-files-guard.yml`: для push в не-main передаётся `--warn`), а будущий PR с этими файлами со strict-проверкой упадёт — мерж должен пройти через канонический lane/PR владельца. Локально гвард предупреждает о двух защищённых путях: `css/site.css`, `js/floating-cluster-controller.js`.
+
+---
+
+## 14. Зачистка остатков (2026-09-15, второй проход, коммит следом за §13)
+
+Три остатка из §13.2 закрыты; итог скана — ноль переполнений на всех 148 загрузках.
+
+### 14.1 `diotrefy-nashego-vremeni`: clip 112 / ovfX 162 @1024, ovfX 16 @390 → 0/0
+
+Причина: `main#main-content` на этой странице вложен в `.wave12-publication-boundary`, поэтому нейтрализатор `.page-wrap>main:not([class])` (child-комбинатор) до него не доставал, а базовое `main:not([class]){width:min(820px,92vw)}` распирало колонку до 820px внутри контейнера 445px (`r-rest1.mjs`: chain `MAIN < DIV.wave12-publication-boundary < DIV#content.page-wrap < DIV.gbs2-world`).
+Правка: в `css/site.css` добавлен descendant-нейтрализатор `.gbs2-world[data-gill-v16] .page-wrap main:not([class]){width:auto!important;max-width:100%!important;margin:0!important;padding:0!important}` (скоуп только на Gill-мир; кэп абзацев даёт существующий мост `[data-gill-v16] .article-body > *`).
+Результат: @1024 ovfX 162→0, clip 112→0; @390 ovfX 16→0 (`r-rest4.mjs`, `shots/fix2-diotrefy-1024.png`). Косметика: медианная ширина абзаца 379px вместо 445 — колонка ограничена контентом page-wrap, центрирована, не режется.
+
+### 14.2 Подростковая серия: ovfX 15 @1024 на 7 страницах → 0
+
+Причина: `TeenSeriesArticlePage.astro:252–253` задавал `width/max-width: calc(100vw - var(--gb-rail-reserve))`; 100vw включает классический скроллбар (15px) → правый край wrap упирался в 1024 при clientWidth 1009.
+Правка: `100vw` → `100%` (резолвится против `.gbs2-world` = clientWidth).
+Результат: ovfX 15→0 на всех 7 страницах, медиана текста 649→634 (`r-rest4.mjs`, `shots/fix2-teen-1024.png`).
+
+### 14.3 Сепия хрома Gill: приватная палитра → универсальные токены
+
+Блок `[data-gill-v16][data-gill-reader-theme="sepia"]` (`floating-cluster.css:4485`) держал собственные `#f8f0dc/#e9dcc0/#493823/…` и `background:#f3ead4` — «Сепия» выглядела третьей по счёту бумагой (§7).
+Правка: все поверхностные/текстовые/бордюрные токены блока замаплены на универсальные `var(--color-surface/#f6ecd6)`, `var(--color-text/#493720)`, `var(--color-border/#d5c39f)` и т.д.; фон мира → `var(--color-canvas,#eee3c8)`; фон toc-sheet → `var(--color-surface,…)`; дополнительно переопределены `--gill-mobile-bar-frost` (rgba(238,227,200,.82)) и `--gill-mobile-hairline`, которые иначе оставляли белёсые панели; золотые акценты оставлены как идентичность серии.
+Результат (`r-rest4/r-rest5.mjs`, `shots/fix2-gill-sepia-mobile.png`): `--gb-surface=#f6ecd6`, фон мира `rgb(238,227,200)` = `--color-canvas`, нижний бар `rgba(238,227,200,.82)` — бумага и хром совпадают с hrail и статьёй.
+
+### 14.4 Итоговый скан (`r-scan.mjs`, послe обоих проходов)
+
+| Вьюпорт | Страниц | clippedRight>0 | bodyOvfX>0 | local 404 |
+|---|---|---|---|---|
+| 1024 | 66 | **0** (было 39) | **0** (было 46) | 0 |
+| 390 | 74 | **0** | **0** (было 46) | 0 |
+| 1280 | 8 | **0** | **0** | 0 |
+
+`gill:chrome:guard` ✅ (канон v2.9, регрессии нет). JS-«ошибки» в скане — прежний CSP-шум favicon из манифеста (внешний домен), не ошибки страниц.
+
+Осознанно не правится: дизайнерский сдвиг колонки вправо на десктопе (общий для A/B, место под левый рельс); прозрачный фон верхней панели в сепии (панель красится слоем страницы); медиана 379px на diotrefy (см. 14.1).
