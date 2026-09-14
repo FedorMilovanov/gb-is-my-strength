@@ -75,10 +75,27 @@ if (pipelineCurrent) {
     publicationEvidenceIssues.push('missing-publicationEvidence');
   } else {
     if (publicationEvidence.schemaVersion !== 1) publicationEvidenceIssues.push('publicationEvidence-schema-version');
+    if (!Number.isInteger(publicationEvidence.skeleton?.total)) publicationEvidenceIssues.push('missing-skeleton-total');
+    if (!Number.isInteger(publicationEvidence.skeleton?.matched)) publicationEvidenceIssues.push('missing-skeleton-matched');
     if (!Array.isArray(publicationEvidence.skeleton?.decisions)) publicationEvidenceIssues.push('missing-skeleton-decisions');
     if (!Array.isArray(publicationEvidence.skeleton?.soft)) publicationEvidenceIssues.push('missing-skeleton-soft');
     if (!Array.isArray(publicationEvidence.skeleton?.unmatched)) publicationEvidenceIssues.push('missing-skeleton-unmatched');
     if (!Array.isArray(publicationEvidence.skeleton?.collisions)) publicationEvidenceIssues.push('missing-skeleton-collisions');
+    if (Number.isInteger(publicationEvidence.skeleton?.total) &&
+        publicationEvidence.skeleton.total !== v1.persons.length) {
+      publicationEvidenceIssues.push('skeleton-total-drift');
+    }
+    if (Number.isInteger(publicationEvidence.skeleton?.matched) &&
+        Array.isArray(publicationEvidence.skeleton?.decisions) &&
+        publicationEvidence.skeleton.decisions.length !== publicationEvidence.skeleton.matched) {
+      publicationEvidenceIssues.push('skeleton-decision-count-drift');
+    }
+    if (Number.isInteger(publicationEvidence.skeleton?.total) &&
+        Number.isInteger(publicationEvidence.skeleton?.matched) &&
+        Array.isArray(publicationEvidence.skeleton?.unmatched) &&
+        publicationEvidence.skeleton.matched + publicationEvidence.skeleton.unmatched.length !== publicationEvidence.skeleton.total) {
+      publicationEvidenceIssues.push('skeleton-partition-drift');
+    }
     if (!Number.isInteger(publicationEvidence.relations?.unresolvedCount)) publicationEvidenceIssues.push('missing-relations-unresolvedCount');
     if (!Array.isArray(publicationEvidence.relations?.unresolved)) publicationEvidenceIssues.push('missing-relations-unresolved');
     if (!Number.isInteger(publicationEvidence.ruReviewQueue)) publicationEvidenceIssues.push('missing-ruReviewQueue');
