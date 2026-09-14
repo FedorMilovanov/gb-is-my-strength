@@ -261,7 +261,7 @@
         // the 980→981 drawer-to-sidebar transition geometry can become focusable
         // only after more than one paint, and a silent/missed observer callback
         // must not strand focus on a control that just became hidden.
-        var remainingLayoutFrames = 60;
+        var remainingLayoutFrames = 8;
         var retryAfterLayout = function () {
           frame = 0;
           attempt();
@@ -909,11 +909,13 @@
     }
 
     function syncDrawerForViewport() {
+      var drawerWasOpen = sidebar.classList.contains('is-open');
       var activeBeforeSync = document.activeElement;
       var activeWasSidebar = sidebar.contains(activeBeforeSync);
       var enteringDrawer = drawerMedia.matches;
-      syncSidebarSurface(false, { restoreFocus: activeWasSidebar });
-      if (activeWasSidebar && !enteringDrawer) {
+      var ownsDrawerFocus = activeWasSidebar || drawerWasOpen;
+      syncSidebarSurface(false, { restoreFocus: ownsDrawerFocus });
+      if (ownsDrawerFocus && !enteringDrawer) {
         var desktopSidebarTarget = sidebar.querySelector('[data-atlas-group],.atlas-relation-filter input,a[href],button:not(#atlasFilterClose)');
         restoreFocusAfterLayout(desktopSidebarTarget, activeBeforeSync, function (active) { return sidebar.contains(active); });
       }
