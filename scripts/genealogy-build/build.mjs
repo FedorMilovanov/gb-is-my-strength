@@ -689,6 +689,42 @@ async function runTests() {
   const exactLukeScope = v1PrimaryRefScope({ ref: 'Лк 3:25' });
   assert(exactLukeScope?.osis === 'Luk' && exactLukeScope.chapter === 3 && exactLukeScope.verse === 25,
     'точная ссылка Лк 3:25 сохраняет chapter/verse scope');
+  const ruthScope = v1PrimaryRefScope({ ref: 'Руфь 4:17' });
+  assert(ruthScope?.osis === 'Rut' && ruthScope.chapter === 4 && ruthScope.verse === 17,
+    'алиас Руфь сохраняет точный source scope');
+  const numbersScope = v1PrimaryRefScope({ ref: 'Числ 25:7-13' });
+  assert(numbersScope?.osis === 'Num' && numbersScope.chapter === 25 && numbersScope.verse === 7,
+    'алиас Числ сохраняет точный source scope');
+
+  const homonymFixture = new Map([
+    ['Enoch@Gen.4.17', { key: 'Enoch@Gen.4.17', name: 'Enoch', ref: 'Gen.4.17', type: 'Male' }],
+    ['Enoch@Gen.5.18', { key: 'Enoch@Gen.5.18', name: 'Enoch', ref: 'Gen.5.18', type: 'Male' }],
+    ['Lamech@Gen.4.18', { key: 'Lamech@Gen.4.18', name: 'Lamech', ref: 'Gen.4.18', type: 'Male' }],
+    ['Lamech@Gen.5.25', { key: 'Lamech@Gen.5.25', name: 'Lamech', ref: 'Gen.5.25', type: 'Male' }],
+    ['Obed@Rut.4.17', { key: 'Obed@Rut.4.17', name: 'Obed', ref: 'Rut.4.17', type: 'Male' }],
+    ['Obed@1Ch.11.47', { key: 'Obed@1Ch.11.47', name: 'Obed', ref: '1Ch.11.47', type: 'Male' }],
+    ['Matthat@Luk.3.24', { key: 'Matthat@Luk.3.24', name: 'Matthat', ref: 'Luk.3.24', type: 'Male' }],
+    ['Matthat@Luk.3.29', { key: 'Matthat@Luk.3.29', name: 'Matthat', ref: 'Luk.3.29', type: 'Male' }],
+    ['Phinehas@Exo.6.25', { key: 'Phinehas@Exo.6.25', name: 'Phinehas', ref: 'Exo.6.25', type: 'Male' }],
+    ['Phinehas@1Sa.1.3', { key: 'Phinehas@1Sa.1.3', name: 'Phinehas', ref: '1Sa.1.3', type: 'Male' }],
+  ]);
+  const homonymMatches = matchSkeleton([
+    { id: 'enoch_probe', name: { ru: 'Енох' }, ref: 'Быт 5:18–24', gender: 'm' },
+    { id: 'lamech_probe', name: { ru: 'Ламех' }, ref: 'Быт 5:25–31', gender: 'm' },
+    { id: 'obed_probe', name: { ru: 'Овид' }, ref: 'Руфь 4:17,21', gender: 'm' },
+    { id: 'matthat_probe', name: { ru: 'Матфат' }, ref: 'Лк 3:29', gender: 'm' },
+    { id: 'phinehas', name: { ru: 'Финеес' }, ref: 'Числ 25:7-13', gender: 'm' },
+  ], homonymFixture);
+  assert(homonymMatches.matches.get('enoch_probe') === 'Enoch@Gen.5.18',
+    'Енох Gen 5 не смешивается с Енохом Каиновой линии Gen 4');
+  assert(homonymMatches.matches.get('lamech_probe') === 'Lamech@Gen.5.25',
+    'Ламех Gen 5 не смешивается с Ламехом Каиновой линии Gen 4');
+  assert(homonymMatches.matches.get('obed_probe') === 'Obed@Rut.4.17',
+    'Овид Руф 4 не смешивается с одноимёнными 1Пар');
+  assert(homonymMatches.matches.get('matthat_probe') === 'Matthat@Luk.3.29',
+    'Матфат Лк 3:29 не смешивается с Матфатом Лк 3:24');
+  assert(homonymMatches.matches.get('phinehas') === 'Phinehas@Exo.6.25',
+    'Финеес Числ 25 закреплён за сыном Елеазара, не за сыном Илия');
 
   const matcherFixture = new Map([
     ['Jecoliah@2Ki.15.2', { key: 'Jecoliah@2Ki.15.2', name: 'Jecoliah', ref: '2Ki.15.2', type: 'Female' }],
