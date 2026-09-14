@@ -13,17 +13,20 @@
  *   - отсутствие UI-классов внутри #sheet-svg.
  *
  * Запуск: node scripts/atlas-visual-check.js [slug] [--url URL]
- * Требует поднятый http://localhost:8090 (audit/atlas-preview).
+ * Нужна отдача каталога audit/atlas-preview статикой: адрес берётся из --url,
+ * иначе из AUDIT_BASE, иначе http://localhost:8090 (историческое значение).
  * Выход 1 при нарушениях. Гонять вместе с data-check в гейтах.
  */
 'use strict';
 
-const { chromium } = require(process.env.PW_CORE || '/tmp/claude-0/-home-user/d356c92e-ba9c-5386-aecc-b168f622c1f7/scratchpad/node_modules/playwright-core');
+const fs = require('fs');
+const { chromium } = require('playwright-core');
 
 const slug = process.argv[2] && !process.argv[2].startsWith('--') ? process.argv[2] : 'avraam';
+const PREVIEW_BASE = process.env.AUDIT_BASE || 'http://localhost:8090';
 const URL = process.argv.includes('--url')
   ? process.argv[process.argv.indexOf('--url') + 1]
-  : `http://localhost:8090/audit/atlas-preview/sheet-${slug}.html`;
+  : `${PREVIEW_BASE}/audit/atlas-preview/sheet-${slug}.html`;
 
 const ZOOMS = [1, 2, 4, 8];
 const T = {
@@ -33,11 +36,27 @@ const T = {
 };
 
 (async () => {
-  // Same browser override as atlas-export-sheet.js: the hardcoded path only
-  // exists in the original build container.
-  const br = await chromium.launch({ executablePath: process.env.PW_CHROMIUM || '/opt/pw-browsers/chromium', args: ['--no-sandbox'] });
+  // Same browser resolution as atlas-export-sheet.js.
+  const pinned = process.env.GB_PLAYWRIGHT_CHROMIUM || '/opt/pw-browsers/chromium';
+  const br = await chromium.launch(fs.existsSync(pinned)
+    ? { executablePath: pinned, args: ['--no-sandbox'] }
+    : { args: ['--no-sandbox'] });
   const pg = await br.newPage({ viewport: { width: 1536, height: 960 } });
-  await pg.goto(URL, { waitUntil: 'networkidle' });
+  let resp = null;
+  try {
+    resp = await pg.goto(URL, { waitUntil: 'networkidle' });
+  } catch (err) {
+    console.error(`❌ лист не открывается: ${URL} (${err.message.split('\n')[0]}).`);
+    console.error('   Подними статику audit/atlas-preview и передай адрес через AUDIT_BASE или --url.');
+    await br.close();
+    process.exit(1);
+  }
+  if (!resp || !resp.ok()) {
+    console.error(`❌ лист не отдаётся: ${URL} (HTTP ${resp ? resp.status() : 'нет ответа'}).`);
+    console.error('   Подними статику audit/atlas-preview и передай адрес через AUDIT_BASE или --url.');
+    await br.close();
+    process.exit(1);
+  }
   await pg.waitForTimeout(500);
   const fails = [];
   const warn = [];
@@ -45,6 +64,7 @@ const T = {
   // Статические проверки DOM (один раз)
   const domIssues = await pg.evaluate(() => {
     const svg = document.getElementById('sheet-svg');
+    if (!svg) return ['нет #sheet-svg — это не лист Атласа?'];
     const out = [];
     const ids = {};
     svg.querySelectorAll('[id]').forEach((el) => {

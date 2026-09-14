@@ -3,21 +3,21 @@
   "maps": [
     {
       "slug": "avraam",
-      "publication": "none",
+      "publication": "ready",
       "signature": null,
-      "archetype": null,
+      "archetype": "route",
       "counts": {
-        "places": 19,
+        "places": 22,
         "stages": 8,
         "stories": 5,
         "ctx": 7,
         "layers": 4,
         "timeline": 9,
-        "verified_waypoints": 5,
+        "verified_waypoints": 3,
         "scientific_variants": 19,
         "scientific_variants_linked": 19,
         "photos": 40,
-        "content_chars": 61554,
+        "content_chars": 61454,
         "places_with_story": 19,
         "places_with_bible": 19,
         "places_with_bible_extra": 19,
@@ -25,7 +25,7 @@
         "places_with_dispute": 19,
         "places_with_he": 19,
         "places_with_he_deep": 19,
-        "places_with_kick": 19,
+        "places_with_kick": 21,
         "places_with_tr": 19
       },
       "errors": []
@@ -34,7 +34,7 @@
       "slug": "early-church",
       "publication": "temporary-placeholder",
       "signature": "gospel-waves",
-      "archetype": null,
+      "archetype": "route",
       "counts": {
         "places": 11,
         "stages": 4,
@@ -61,9 +61,9 @@
     },
     {
       "slug": "ishod",
-      "publication": "none",
+      "publication": "ready",
       "signature": "water-split",
-      "archetype": null,
+      "archetype": "route",
       "counts": {
         "places": 11,
         "stages": 6,
@@ -92,7 +92,7 @@
       "slug": "maccabim",
       "publication": "temporary-placeholder",
       "signature": "hanukkah-lights",
-      "archetype": null,
+      "archetype": "political",
       "counts": {
         "places": 12,
         "stages": 5,
@@ -121,7 +121,7 @@
       "slug": "melachim",
       "publication": "temporary-placeholder",
       "signature": "split-kingdom",
-      "archetype": null,
+      "archetype": "political",
       "counts": {
         "places": 17,
         "stages": 6,
@@ -147,10 +147,39 @@
       "errors": []
     },
     {
+      "slug": "nachalo",
+      "publication": "draft",
+      "signature": null,
+      "archetype": "overview",
+      "counts": {
+        "places": 9,
+        "stages": 5,
+        "stories": 0,
+        "ctx": 3,
+        "layers": 0,
+        "timeline": 0,
+        "verified_waypoints": 3,
+        "scientific_variants": 0,
+        "scientific_variants_linked": 0,
+        "photos": 3,
+        "content_chars": 1812,
+        "places_with_story": 0,
+        "places_with_bible": 0,
+        "places_with_bible_extra": 0,
+        "places_with_arch": 8,
+        "places_with_dispute": 0,
+        "places_with_he": 0,
+        "places_with_he_deep": 0,
+        "places_with_kick": 9,
+        "places_with_tr": 0
+      },
+      "errors": []
+    },
+    {
       "slug": "pavel",
       "publication": "temporary-placeholder",
       "signature": "sea-voyage",
-      "archetype": null,
+      "archetype": "route",
       "counts": {
         "places": 10,
         "stages": 3,
@@ -179,7 +208,7 @@
       "slug": "revelation",
       "publication": "temporary-placeholder",
       "signature": "lampstands",
-      "archetype": null,
+      "archetype": "thematic",
       "counts": {
         "places": 7,
         "stages": 1,
@@ -208,7 +237,7 @@
       "slug": "shoftim",
       "publication": "temporary-placeholder",
       "signature": "judge-cycles",
-      "archetype": null,
+      "archetype": "route",
       "counts": {
         "places": 12,
         "stages": 6,
@@ -237,7 +266,7 @@
       "slug": "shvatim",
       "publication": "temporary-placeholder",
       "signature": "tribe-stars",
-      "archetype": null,
+      "archetype": "territorial",
       "counts": {
         "places": 18,
         "stages": 3,
@@ -266,7 +295,7 @@
       "slug": "yeshua",
       "publication": "temporary-placeholder",
       "signature": "ministry-light",
-      "archetype": null,
+      "archetype": "route",
       "counts": {
         "places": 15,
         "stages": 5,
@@ -293,25 +322,25 @@
     }
   ],
   "totals": {
-    "places": 132,
-    "stages": 47,
+    "places": 144,
+    "stages": 52,
     "stories": 52,
-    "ctx": 26,
+    "ctx": 29,
     "layers": 18,
     "timeline": 91,
-    "verified_waypoints": 23,
+    "verified_waypoints": 24,
     "scientific_variants": 84,
     "scientific_variants_linked": 59,
-    "photos": 153,
-    "content_chars": 223928,
+    "photos": 156,
+    "content_chars": 225640,
     "places_with_story": 132,
     "places_with_bible": 121,
     "places_with_bible_extra": 132,
-    "places_with_arch": 132,
+    "places_with_arch": 140,
     "places_with_dispute": 35,
     "places_with_he": 132,
     "places_with_he_deep": 132,
-    "places_with_kick": 132,
+    "places_with_kick": 143,
     "places_with_tr": 30
   }
 }
