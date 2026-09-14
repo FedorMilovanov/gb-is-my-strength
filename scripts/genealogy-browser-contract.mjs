@@ -4,25 +4,28 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
-import { chromium, webkit } from 'playwright';
+import { chromium, webkit, firefox } from 'playwright';
+import { assertGenealogyGeometryContract } from './genealogy-geometry-contract.mjs';
 import { assertGospelContract } from './genealogy-gospel-contract.mjs';
 import { getGospelComparison } from '../src/components/genealogy/gospelSequences.ts';
 
 assertGospelContract();
+assertGenealogyGeometryContract();
 
 const ROOT = path.resolve(process.cwd());
 const DIST = path.join(ROOT, 'dist');
 const REPORT_DIR = path.join(ROOT, 'reports', 'genealogy-browser-contract');
 const GENEALOGY_DATA_PATH = path.join(ROOT, 'data', 'genealogy', 'genealogy.json');
-const BROWSERS = { chromium, webkit };
+const BROWSERS = { chromium, webkit, firefox };
 const browserNames = String(process.env.GENEALOGY_BROWSERS || 'chromium,webkit')
   .split(',')
   .map((value) => value.trim())
   .filter(Boolean);
-const VIEWPORTS = [
-  { width: 390, height: 844 },
-  { width: 1440, height: 1000 },
-];
+const VIEWPORTS = String(process.env.GENEALOGY_VIEWPORTS || '390x844,1440x1000').split(',').map(value => {
+  const match = /^(\d+)x(\d+)$/.exec(value.trim());
+  assert.ok(match, `Invalid genealogy viewport: ${value}`);
+  return { width: Number(match[1]), height: Number(match[2]) };
+});
 
 function readExpectedPersonNodes() {
   const source = JSON.parse(fs.readFileSync(GENEALOGY_DATA_PATH, 'utf8'));
@@ -150,12 +153,12 @@ async function measurePersonViewport(page) {
   });
 }
 
-async function assertSplitLifecycle(page) {
+async function assertSplitLifecycle(page, touch) {
   const opener = page.getByTitle('Сравнить Мф/Лк');
   const tour = page.getByTitle('Тур');
 
-  await opener.focus();
-  await opener.press('Enter');
+  if (touch) await opener.tap();
+  else { await opener.focus(); await opener.press('Enter'); }
   const dialog = page.getByRole('dialog', { name: 'Две родословные Христа' });
   await dialog.waitFor({ state: 'visible' });
 
@@ -296,15 +299,71 @@ async function assertFocusInteractions(page) {
   assert.equal(await page.locator('[data-genealogy-focus-count]').count(), 0, 'Excluded person left stale focus');
   assert.equal(await page.locator('[data-genealogy-details]').count(), 0, 'Excluded person left stale details');
   await page.getByRole('button', { name: 'Все', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Поиск по имени' }).fill('Исаак');
+  await waitForViewportStable(page);
   await isaacNode.focus();
   await isaacNode.press('Enter');
   await page.getByRole('complementary', { name: 'Детали: Исаак' }).waitFor({ state: 'visible' });
   await page.getByRole('button', { name: 'Закрыть панель', exact: true }).click();
 }
 
+
+async function assertAtlasNavigation(page, viewport, screenshotPrefix) {
+  const app = page.locator('[data-genealogy-app]');
+  await app.scrollIntoViewIfNeeded();
+  await page.waitForFunction(() => document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-level') === '0');
+  const overview = await measurePersonViewport(page);
+  assert.deepEqual([...overview.visibleIds].sort(), ['adam', 'noah', 'abram', 'david', 'jesus'].sort(), 'Initial L0 must show every story anchor');
+  const layout = await page.evaluate(() => ({
+    width: window.innerWidth, documentWidth: document.documentElement.scrollWidth,
+    appWidth: document.querySelector('[data-genealogy-app]').getBoundingClientRect().width,
+  }));
+  assert.ok(layout.documentWidth <= layout.width, `Page overflow: ${JSON.stringify(layout)}`);
+  for (const button of await app.locator('.genealogy-toolbar button, .react-flow__controls-button').all()) {
+    if (!await button.isVisible()) continue;
+    const box = await button.boundingBox();
+    assert.ok(box && box.width >= 44 && box.height >= 44, 'Atlas primary control smaller than 44px');
+  }
+  const labels = await app.locator('.react-flow__node .genealogy-node').evaluateAll(cards => cards
+    .filter(card => getComputedStyle(card).visibility !== 'hidden')
+    .map(card => { const r = card.getBoundingClientRect(); return { width: r.width, height: r.height }; }));
+  assert.ok(labels.every(r => r.width >= 143 && r.height >= 43), 'Overview labels became microscopic');
+  await app.screenshot({ path: path.join(REPORT_DIR, `${screenshotPrefix}-overview.png`), animations: 'disabled' });
+  const mini = app.getByRole('button', { name: 'Мини-карта', exact: true });
+  if (viewport.width < 640) {
+    await mini.tap();
+    assert.equal(await mini.getAttribute('aria-expanded'), 'true');
+    assert.equal(await app.locator('.react-flow__minimap').isVisible(), true, 'Mobile minimap did not open');
+    await mini.tap();
+  } else {
+    assert.equal(await app.locator('.react-flow__minimap').isVisible(), true);
+  }
+  await page.locator('.react-flow__node[data-id="noah"]').click();
+  await page.waitForFunction(() => document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-level') === '2');
+  await waitForViewportStable(page);
+  assert.ok((await measurePersonViewport(page)).visibleIds.includes('noah'), 'Overview did not open Noah in the detail graph');
+  await app.screenshot({ path: path.join(REPORT_DIR, `${screenshotPrefix}-branch.png`), animations: 'disabled' });
+  await app.getByRole('button', { name: 'Обзор древа', exact: true }).click();
+  await waitForViewportStable(page);
+  assert.equal(await app.getAttribute('data-genealogy-level'), '0');
+  // Reach L1 through the actual shipped zoom control.
+  for (let i = 0; i < 32 && await app.getAttribute('data-genealogy-level') === '0'; i++) {
+    await app.locator('.react-flow__controls-zoomin').click();
+    await waitForViewportStable(page);
+  }
+  assert.equal(await app.getAttribute('data-genealogy-level'), '1', 'Zoom controls skip or cannot reach L1');
+  await app.getByRole('combobox', { name: 'Перейти к эпохе' }).selectOption('kings');
+  await waitForViewportStable(page);
+  assert.ok((await measurePersonViewport(page)).visiblePersonCards > 0, 'Era navigation produced an empty viewport');
+  await app.getByRole('button', { name: 'Обзор древа', exact: true }).click();
+  await waitForViewportStable(page);
+}
+
 async function runViewport(browserName, browserType, baseUrl, viewport) {
   const browser = await browserType.launch({ headless: true });
-  const context = await browser.newContext({ viewport });
+  const touch = viewport.width <= 430;
+  const context = await browser.newContext({ viewport, hasTouch: touch, isMobile: touch && browserName !== 'firefox',
+    reducedMotion: process.env.GENEALOGY_REDUCED_MOTION === '1' ? 'reduce' : 'no-preference' });
   const page = await context.newPage();
   const pageErrors = [];
   let phase = 'navigation';
@@ -323,6 +382,8 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     assert.ok(initial.visiblePersonCards > 0, `${browserName} ${viewport.width}x${viewport.height}: settled initial viewport contains no visible person cards`);
     assert.ok(initial.visibleArea > 0, `${browserName} ${viewport.width}x${viewport.height}: settled initial viewport has no useful person-card area`);
 
+    phase = 'atlas-navigation';
+    await assertAtlasNavigation(page, viewport, `${browserName}-${viewport.width}x${viewport.height}`);
     phase = 'fit-view';
     const fitButton = page.locator('.react-flow__controls-fitview');
     await fitButton.waitFor({ state: 'visible' });
@@ -341,8 +402,9 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     assert.ok(afterSearch.visibleIds.includes('adam'), `${browserName} ${viewport.width}x${viewport.height}: search did not center Adam into the useful viewport`);
     await page.getByText('Все детали', { exact: true }).waitFor({ state: 'visible' });
 
+    await page.locator('[data-genealogy-app]').screenshot({ path: path.join(REPORT_DIR, `${browserName}-${viewport.width}x${viewport.height}-search.png`), animations: 'disabled' });
     phase = 'split-view';
-    await assertSplitLifecycle(page);
+    await assertSplitLifecycle(page, touch);
     phase = 'focus-and-controls';
     await assertFocusInteractions(page);
     phase = 'final';
@@ -387,7 +449,7 @@ async function main() {
     results,
   };
   fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify(report, null, 2)}\n`);
-  console.log('Genealogy Chromium/WebKit browser contract: PASS');
+  console.log('Genealogy browser contract: PASS');
 }
 
 main().catch((error) => {

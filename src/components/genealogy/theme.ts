@@ -60,7 +60,7 @@ export const ROLE_LABELS: Record<Role, string> = {
 
 // ── Layout constants ──
 export const NODE_W = 172;
-export const NODE_H = 72;
+export const NODE_H = 112;
 export const MAX_LIFESPAN = 969; // Methuselah
 
 // ── Semantic-zoom visibility rules ──
@@ -69,4 +69,4 @@ export const KEY_ROLES = new Set<Role>([
 ]);
 
 /** Persons always visible at the cosmic (zoomed-out) level. */
-export const COSMIC_ANCHORS = new Set<string>(['adam', 'noah', 'abram', 'david']);
+export const COSMIC_ANCHORS = new Set<string>(['adam', 'noah', 'abram', 'david', 'jesus']);

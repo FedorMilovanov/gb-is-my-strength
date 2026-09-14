@@ -1,26 +1,21 @@
 /**
- * layout.ts — dagre layout + golden path + coherent chronology-aware world coordinates.
+ * layout.ts — stable topological coordinates for a multi-parent genealogy.
  */
 
 import type { Node, Edge } from '@xyflow/react';
 import { MarkerType } from '@xyflow/react';
 import dagre from '@dagrejs/dagre';
 import type { Person, LayoutOptions, PersonNodeData } from './types';
-import { getLineStyle, NODE_W, NODE_H } from './theme';
-import { matchesLineage } from './focusGraph';
-export { computeFocusLineage } from './focusGraph';
+import { getLineStyle, NODE_W, NODE_H } from './theme.ts';
+import { matchesLineage } from './focusGraph.ts';
+export { computeFocusLineage } from './focusGraph.ts';
 
-/**
- * Canonical vertical world extent for both the genealogy graph and chronology
- * axis. Every vertical source is normalized into this same bounded space.
- */
-export const GENEALOGY_WORLD_HEIGHT = 4200;
 
 interface LayoutResult {
   nodes: Node<PersonNodeData>[];
   edges: Edge[];
   goldenPath: Set<string>;
-  worldHeight: number;
+  bounds: { x: number; y: number; width: number; height: number };
 }
 
 export function traceGoldenPath(persons: Person[]): Set<string> {
@@ -44,73 +39,38 @@ function filterPersons(persons: Person[], opts: LayoutOptions): Person[] {
 export function buildLayout(persons: Person[], opts: LayoutOptions): LayoutResult {
   const filtered = filterPersons(persons, opts);
   const ids = new Set(filtered.map(p => p.id));
-  const goldenPath = opts.showGolden ? traceGoldenPath(persons) : new Set<string>();
+  const goldenPath = traceGoldenPath(persons);
 
-  const withAM = filtered.filter(p => p.chronology?.mt?.birthAM != null) as Array<
-    Person & { chronology: { mt: { birthAM: number } } }
-  >;
-  let amMin = Infinity, amMax = -Infinity;
-  for (const p of withAM) {
-    const am = p.chronology.mt.birthAM;
-    if (am < amMin) amMin = am;
-    if (am > amMax) amMax = am;
-  }
-  const hasChronology = Number.isFinite(amMin) && Number.isFinite(amMax);
-  const amRange = hasChronology ? Math.max(1, amMax - amMin) : 1;
-
+  // Layout the complete corpus once. Filters retain the same world positions.
+  // Years of birth are evidence shown in details, never a replacement for rank.
   const g = new dagre.graphlib.Graph();
   g.setDefaultEdgeLabel(() => ({}));
-  g.setGraph({ rankdir: 'TB', ranksep: 110, nodesep: 44, marginx: 80, marginy: 100 });
+  g.setGraph({ rankdir: 'TB', ranksep: 88, nodesep: 56, marginx: 80, marginy: 100 });
 
-  for (const p of filtered) {
-    const h = NODE_H + (p.chronology?.mt?.lifespan ? 14 : 0);
-    g.setNode(p.id, { width: NODE_W, height: h });
-  }
-  for (const p of filtered) {
+  for (const p of persons) g.setNode(p.id, { width: NODE_W, height: NODE_H });
+  const allIds = new Set(persons.map(p => p.id));
+  for (const p of persons) {
     // Feed BOTH parents (father + mother) into the dagre graph so matriarchs
     // (Sarah, Rebekah, Leah, Bathsheba, Jochebed, Rahab, Ruth, Mary) rank near
     // their children instead of floating disconnected.
-    for (const parent of resolveParents(p, ids)) {
+    for (const parent of resolveParents(p, allIds)) {
       g.setEdge(parent, p.id);
     }
   }
 
   dagre.layout(g);
 
-  /*
-   * World-coordinate contract
-   * -------------------------
-   * Dagre owns topology for every person; chronology owns historical ordering
-   * when a birth-AM value exists. Neither source is allowed to contribute raw
-   * pixels. Both are normalized into one bounded 0..1 vertical coordinate and
-   * then projected into the single GENEALOGY_WORLD_HEIGHT used by the graph and
-   * the chronology axis:
-   *
-   *   known birthAM -> normalized AM position -> bounded world Y
-   *   no birthAM    -> normalized Dagre rank  -> bounded world Y
-   *
-   * This eliminates the old 0..4200 AM / unbounded Dagre split-world envelope.
-   */
-  const dagreYs = filtered.map(p => g.node(p.id).y as number);
-  const dagreMin = dagreYs.length ? Math.min(...dagreYs) : 0;
-  const dagreMax = dagreYs.length ? Math.max(...dagreYs) : NODE_H;
-  const dagreRange = Math.max(1, dagreMax - dagreMin);
-  const usableWorldHeight = Math.max(1, GENEALOGY_WORLD_HEIGHT - NODE_H);
-
-  const topologyT = (dagreY: number): number => (dagreY - dagreMin) / dagreRange;
-  const chronologyT = (am: number | undefined): number | undefined =>
-    hasChronology && am != null ? (am - amMin) / amRange : undefined;
-
   const nodes: Node<PersonNodeData>[] = filtered.map(p => {
     const pos = g.node(p.id);
-    const verticalT = chronologyT(p.chronology?.mt?.birthAM) ?? topologyT(pos.y);
     return {
       id: p.id,
       type: 'default',
       position: {
         x: pos.x - NODE_W / 2,
-        y: Math.max(0, Math.min(1, verticalT)) * usableWorldHeight,
+        y: pos.y - NODE_H / 2,
       },
+      width: NODE_W,
+      height: NODE_H,
       data: {
         name: p.name.ru,
         hebrew: p.name.he,
@@ -124,7 +84,7 @@ export function buildLayout(persons: Person[], opts: LayoutOptions): LayoutResul
         ref: p.ref,
         era: p.era,
         gender: p.gender,
-        golden: goldenPath.has(p.id),
+        golden: opts.showGolden && goldenPath.has(p.id),
       },
     };
   });
@@ -141,7 +101,7 @@ export function buildLayout(persons: Person[], opts: LayoutOptions): LayoutResul
     const ls = getLineStyle(p.lineage);
     for (const parentId of parents) {
       const isPrimary = parentId === primary;
-      const isGoldenEdge = isPrimary && goldenPath.has(p.id) && goldenPath.has(parentId);
+      const isGoldenEdge = opts.showGolden && isPrimary && goldenPath.has(p.id) && goldenPath.has(parentId);
       const isMaternal = !isPrimary;
       edges.push({
         id: `${parentId}->${p.id}`,
@@ -153,7 +113,7 @@ export function buildLayout(persons: Person[], opts: LayoutOptions): LayoutResul
           stroke: isGoldenEdge ? '#ffd700' : ls.border,
           strokeWidth: isGoldenEdge ? 3.5 : p.lineage.startsWith('messianic') ? 2.2 : 1.4,
           opacity: isGoldenEdge ? 0.95 : isMaternal ? 0.28 : p.lineage.startsWith('messianic') ? 0.7 : 0.35,
-          strokeDasharray: isMaternal ? '5 4' : undefined,
+          // Both parents are direct edges here; dashes are reserved for folded paths.
         },
         markerEnd: {
           type: MarkerType.ArrowClosed,
@@ -164,7 +124,8 @@ export function buildLayout(persons: Person[], opts: LayoutOptions): LayoutResul
     }
   }
 
-  return { nodes, edges, goldenPath, worldHeight: GENEALOGY_WORLD_HEIGHT };
+  const bounds = { x: 0, y: 0, width: g.graph().width ?? NODE_W, height: g.graph().height ?? NODE_H };
+  return { nodes, edges, goldenPath, bounds };
 }
 
 function resolveParent(p: Person, ids: Set<string>): string | null {
