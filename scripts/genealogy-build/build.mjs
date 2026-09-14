@@ -161,10 +161,10 @@ async function runAll() {
       ru = { name: '(без имени)', source: 'structural', confidence: 1, review: false, anonymous: true };
     } else if (seed?.name?.ru) {
       ru = { name: seed.name.ru, source: 'seed', confidence: 1, review: false };
-    } else if (structuralRuLabel(rec.name)) {
-      ru = structuralRuLabel(rec.name);
     } else {
-      ru = extractRuName(rec.name, synodal.verseWindow(rec.ref, 2)) ?? { name: null, source: 'none', confidence: 0, review: true };
+      const structural = structuralRuLabel(rec.name);
+      ru = structural ?? extractRuName(rec.name, synodal.verseWindow(rec.ref, 2)) ??
+        { name: null, source: 'none', confidence: 0, review: true };
     }
     ruStats[ru.source] = (ruStats[ru.source] ?? 0) + 1;
     if (ru.review) ruStats.review += 1;
