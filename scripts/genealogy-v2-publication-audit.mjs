@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 import { PIPELINE_VERSION } from './genealogy-build/config.mjs';
 import { emittedPersonsAsTipnrMap, matchSkeleton } from './genealogy-build/lib/skeleton-matcher.mjs';
 import { buildMatthewLuke } from './genealogy-build/lib/layout-l1-lineages.mjs';
@@ -13,7 +14,9 @@ const REPORT_DIR = path.join(ROOT, 'reports');
 const STRICT_PUBLISH = process.argv.includes('--strict-publish');
 
 const readJson = (p) => JSON.parse(fs.readFileSync(p, 'utf8'));
-const v1 = readJson(V1);
+const v1Raw = fs.readFileSync(V1, 'utf8');
+const v1SkeletonSha256 = createHash('sha256').update(v1Raw).digest('hex');
+const v1 = JSON.parse(v1Raw);
 const persons = readJson(path.join(V2, 'persons.json'));
 const edges = readJson(path.join(V2, 'edges.json'));
 const groups = readJson(path.join(V2, 'groups.json'));
@@ -47,6 +50,16 @@ const genderMismatches = skeletonMappings.flatMap(person => {
 const pipelineCurrent = meta.pipelineVersion === PIPELINE_VERSION;
 const publicationEvidence = meta.publicationEvidence ?? null;
 const publicationEvidenceIssues = [];
+const inputProvenanceIssues = [];
+if (pipelineCurrent) {
+  const input = meta.inputs?.v1Skeleton;
+  if (!input) inputProvenanceIssues.push('missing-v1-skeleton-input');
+  else {
+    if (input.path !== 'data/genealogy/genealogy.json') inputProvenanceIssues.push('v1-skeleton-path');
+    if (input.sha256 !== v1SkeletonSha256) inputProvenanceIssues.push('v1-skeleton-sha256-drift');
+    if (input.persons !== v1.persons.length) inputProvenanceIssues.push('v1-skeleton-person-count-drift');
+  }
+}
 const reviewQueueFromPersons = persons.filter(person => person.ru?.review === true).length;
 
 // Legacy committed v2 artifacts predate machine-readable publicationEvidence.
@@ -328,6 +341,10 @@ if (publicationEvidenceIssues.length) blockers.push({
   code: 'PUBLICATION_EVIDENCE_INVALID',
   count: publicationEvidenceIssues.length,
 });
+if (inputProvenanceIssues.length) blockers.push({
+  code: 'V1_SKELETON_INPUT_PROVENANCE',
+  count: inputProvenanceIssues.length,
+});
 if (/phase1-draft|НЕ подключать в рантайм/u.test(meta.status ?? '')) {
   blockers.push({ code: 'DATASET_STATUS_DRAFT', detail: meta.status ?? null });
 } else if (!meta.status) {
@@ -374,6 +391,8 @@ const report = {
   evidence: {
     genderMismatches,
     publicationEvidenceIssues,
+    inputProvenanceIssues,
+    v1SkeletonSha256,
     publicationEvidenceAuthority: pipelineCurrent ? 'meta.publicationEvidence' : 'legacy-stale-artifacts',
     prospectiveMapping: {
       methodCounts: prospectiveMethodCounts,
@@ -409,6 +428,8 @@ const md = [
   `- Pipeline: ${meta.pipelineVersion ?? 'missing'} (expected ${PIPELINE_VERSION})`,
   `- Publication evidence: ${pipelineCurrent ? 'meta.publicationEvidence' : 'legacy diagnostics (pipeline stale)'}`,
   `- Publication evidence issues: ${publicationEvidenceIssues.length}`,
+  `- v1 skeleton input provenance issues: ${inputProvenanceIssues.length}`,
+  `- v1 skeleton SHA256: ${v1SkeletonSha256}`,
   `- RU review queue: ${reviewQueue}`,
   `- Unresolved relations: ${unresolvedRefs ?? 'unknown'}`,
   `- Heuristic skeleton mappings: ${heuristicMappings.length}`,
