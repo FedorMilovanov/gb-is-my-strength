@@ -9,9 +9,13 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const V2 = path.join(ROOT, 'data', 'genealogy', 'v2');
 const OUT = path.join(ROOT, 'reports', 'genealogy-v2-ru-review');
 
-const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 const sha256 = value => createHash('sha256').update(value).digest('hex');
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
+const compareText = (a, b) => {
+  const left = String(a ?? '');
+  const right = String(b ?? '');
+  return left < right ? -1 : left > right ? 1 : 0;
+};
 
 const personsText = fs.readFileSync(path.join(V2, 'persons.json'), 'utf8');
 const metaText = fs.readFileSync(path.join(V2, 'meta.json'), 'utf8');
@@ -95,8 +99,8 @@ const tierIndex = new Map(tierOrder.map((tier, index) => [tier, index]));
 rows.sort((a, b) =>
   (tierIndex.get(a.tier) - tierIndex.get(b.tier)) ||
   b.confidence - a.confidence ||
-  String(a.firstRef ?? '').localeCompare(String(b.firstRef ?? '')) ||
-  a.key.localeCompare(b.key)
+  compareText(a.firstRef, b.firstRef) ||
+  compareText(a.key, b.key)
 );
 
 const bySource = {};
