@@ -38,7 +38,7 @@ for (const { slug, route } of allRoutes) {
   }
 }
 
-assert.strictEqual(MapEngine.version, '0.59.0', 'layers/theme/runtime contract belongs to the shared-bootstrap MapEngine v0.59.0');
+assert.strictEqual(MapEngine.version, '0.60.0', 'layers/theme/runtime contract belongs to capability-governed MapEngine v0.60.0');
 assert.strictEqual(MapEngine.getStageColor(0), '#e8c879');
 assert.strictEqual(MapEngine.getStageColor(6), 'hsl(320 48% 58%)', 'extended stages must receive a deterministic fallback color');
 assert.strictEqual(MapEngine.getStageColor(-3), '#e8c879', 'invalid negative stages must normalize to the first stage');

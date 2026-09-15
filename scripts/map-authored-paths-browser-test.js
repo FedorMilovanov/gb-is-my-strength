@@ -138,7 +138,7 @@ async function run() {
     await page.waitForFunction(() => Boolean(window.MapEngine && document.querySelector('#stage #me-paths .me-route-main')), null, { timeout: 20000 });
 
     report.engineVersion = await page.evaluate(() => window.MapEngine?.version || null);
-    assert(report.engineVersion === '0.59.0', 'MapEngine public version is not synchronized with v0.59 shared-bootstrap renderer', { engineVersion: report.engineVersion });
+    assert(report.engineVersion === '0.60.0', 'MapEngine public version is not synchronized with v0.60 capability-governed renderer', { engineVersion: report.engineVersion });
 
     const fallback = await collectRenderedPaths(page, '#stage');
     assert(fallback.main.length > 0, 'Ishod generated fallback paths are missing', fallback);

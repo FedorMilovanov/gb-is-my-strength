@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.59 — reusable biblical map rendering engine. Provenance projection + authored route geometry + viewport-bound panels.
+ * map-engine.js v0.60 — reusable biblical map rendering engine. Capability-governed runtime surfaces + provenance projection + authored route geometry + viewport-bound panels.
  * v0.53 (§11 P-8/P-9): label-модель v2 — 8 якорей place.labelAnchor + выноски place.leader{dx,dy};
  * labelBg следует за сдвигом текста (фикс разорванных плашек). Legacy side 'l'/'r' полностью совместим.
  *
@@ -81,6 +81,24 @@ const MapEngine = (function() {
     const ctx=Array.isArray(data.ctx)?data.ctx:(data.ctx_index||[]);
     const stories=Array.isArray(data.stories)?data.stories:[];
     return {...data,places,stages,ctx,stories};
+  }
+
+  const ROUTE_CAPABILITY_KEYS=Object.freeze(['stages','stories','layers','timeline','signature','interpretations','uncertainty']);
+
+  function hasRouteCapability(data={},capability=''){
+    const declared=Array.isArray(data.capabilities)?data.capabilities:null;
+    if(declared)return declared.includes(capability);
+    if(capability==='stages')return Array.isArray(data.stages)&&data.stages.length>0;
+    if(capability==='stories')return Array.isArray(data.stories)&&data.stories.length>0;
+    if(capability==='layers')return Array.isArray(data.layers)&&data.layers.length>0;
+    if(capability==='timeline')return Array.isArray(data.timeline)&&data.timeline.length>0;
+    if(capability==='signature')return Boolean(data.signature&&typeof data.signature==='object');
+    if(capability==='interpretations')return Boolean(data.scientific_variants&&typeof data.scientific_variants==='object');
+    return false;
+  }
+
+  function getRouteCapabilities(data={}){
+    return ROUTE_CAPABILITY_KEYS.filter(capability=>hasRouteCapability(data,capability));
   }
 
   async function loadRoute(url,opts={}){
@@ -512,6 +530,9 @@ const MapEngine = (function() {
       return null;
     }
     const route = normalizeRouteData(routeData);
+    const capabilities=new Set(getRouteCapabilities(route));
+    const hasCapability=capability=>capabilities.has(capability);
+    container.setAttribute('data-map-capabilities',[...capabilities].join(' '));
     const cfg = {...DEFAULTS, ...opts};
     const semanticZoomConfig = route.meta?.semantic_zoom || route.semantic_zoom || {};
     const semanticOverviewMinW = Number(semanticZoomConfig.overview_min_w ?? semanticZoomConfig.overviewMinW) || cfg.W0 * 0.68;
@@ -603,7 +624,7 @@ const MapEngine = (function() {
     const initialState = resolveInitialMapState(route, location, savedInitialState);
     const initialPlaceId = initialState.place;
     let activePlaceId = null;
-    let activeStoryId = initialState.story;
+    let activeStoryId = hasCapability('stories')?initialState.story:'main';
     container.setAttribute('data-active-story',activeStoryId);
     function activeMinViewWidth(){
       const authored=matchMedia('(max-width:560px)').matches
@@ -623,8 +644,8 @@ const MapEngine = (function() {
       return { place: activePlaceId, story: activeStoryId };
     }
 
-    const layerDefinitions=[...(opts.layers||route.layers||[])];
-    if(route.signature&&route.signature.type)layerDefinitions.push({id:'signature',label:route.signature.label||'Сигнатура',color:'#e8c879',on:true,selector:'#me-signature'});
+    const layerDefinitions=hasCapability('layers')?[...(opts.layers||route.layers||[])]:[];
+    if(hasCapability('layers')&&hasCapability('signature')&&route.signature&&route.signature.type)layerDefinitions.push({id:'signature',label:route.signature.label||'Сигнатура',color:'#e8c879',on:true,selector:'#me-signature'});
     const layerState=new Map(layerDefinitions.filter(layer=>layer&&layer.id).map(layer=>[String(layer.id),layer.on!==false]));
     // Facets the reader switched by hand. A story may reveal its own places when
     // an untouched facet is off, but an explicit choice must survive a story change.
@@ -1369,7 +1390,7 @@ const MapEngine = (function() {
     header.appendChild(headerLeft);
     
     const storiesBar=document.createElement('div');storiesBar.className='me-stories';storiesBar.setAttribute('data-horizontal-scroll','stories');storiesBar.setAttribute('role','tablist');storiesBar.setAttribute('aria-label','Сюжеты карты');
-    header.appendChild(storiesBar);
+    if(hasCapability('stories')&&(route.stories||[]).length)header.appendChild(storiesBar);
     // Search input
 const searchInput=document.createElement('input');searchInput.className='me-search';searchInput.type='text';searchInput.placeholder='Поиск места…';searchInput.setAttribute('aria-label','Поиск места на карте');searchInput.setAttribute('role','searchbox');
 let searchTimer = null;
@@ -1509,11 +1530,11 @@ header.appendChild(shareBtn);
 
     // Stage dots
     const stagesBar=document.createElement('div');stagesBar.className='me-stages';
-    container.appendChild(stagesBar);
+    if(hasCapability('stages')&&(route.stages||[]).length)container.appendChild(stagesBar);
 
 
     // Timeline bar
-    if ((route.stages||[]).length > 1) {
+    if (hasCapability('stages') && (route.stages||[]).length > 1) {
       const timelineWrap = document.createElement('div');
       timelineWrap.className = 'me-timeline';
       const timelineTrack = document.createElement('div');
@@ -1538,7 +1559,7 @@ header.appendChild(shareBtn);
 
 
     // Life Timeline (bottom)
-    if (route.timeline && route.timeline.length > 0) {
+    if (hasCapability('timeline') && route.timeline && route.timeline.length > 0) {
       const lifeWrap = document.createElement('div');
       lifeWrap.className = 'me-life';
       const lifeTrack = document.createElement('div');
@@ -1692,9 +1713,10 @@ header.appendChild(shareBtn);
     }
     // Legend
 const legend=document.createElement('div');legend.className='me-legend';
-const legendItems=(route.stages||[]).map((st,i)=>`<div class="me-legend__item"><span class="me-legend__dot" style="background:${getStageColor(i)}"></span>${st.t||''}</div>`).join('');
-const sigLegend=route.signature?`<div class="me-legend__item me-legend__item--signature me-signature-note" data-signature-note="${esc(route.signature.type||'')}"><span class="me-legend__dot" style="background:#e8c879;box-shadow:0 0 8px rgba(232,200,121,.55)"></span><span class="me-legend__sig-body"><span class="me-legend__sig-label">${esc(route.signature.label||'Сигнатура карты')}</span>${route.signature.description?`<span class="me-legend__sig-desc">${esc(route.signature.description)}</span>`:''}</span></div>`:'';
-legend.innerHTML=`<div class="me-legend__title">Этапы <span class="me-legend__arrow">▾</span></div>${legendItems}${sigLegend}`;
+const showLegend=hasCapability('stages')||hasCapability('signature');
+const legendItems=hasCapability('stages')?(route.stages||[]).map((st,i)=>`<div class="me-legend__item"><span class="me-legend__dot" style="background:${getStageColor(i)}"></span>${st.t||''}</div>`).join(''):'';
+const sigLegend=hasCapability('signature')&&route.signature?`<div class="me-legend__item me-legend__item--signature me-signature-note" data-signature-note="${esc(route.signature.type||'')}"><span class="me-legend__dot" style="background:#e8c879;box-shadow:0 0 8px rgba(232,200,121,.55)"></span><span class="me-legend__sig-body"><span class="me-legend__sig-label">${esc(route.signature.label||'Сигнатура карты')}</span>${route.signature.description?`<span class="me-legend__sig-desc">${esc(route.signature.description)}</span>`:''}</span></div>`:'';
+legend.innerHTML=`<div class="me-legend__title">${hasCapability('stages')?'Этапы':'Обозначения'} <span class="me-legend__arrow">▾</span></div>${legendItems}${sigLegend}`;
 // Legend arrow rotation on expand
 const legendArrow = legend.querySelector('.me-legend__arrow');
 const legendObserver = new MutationObserver(() => {
@@ -1704,7 +1726,7 @@ const legendObserver = new MutationObserver(() => {
   }
 });
 legendObserver.observe(legend, { attributes: true, attributeFilter: ['class'] });
-container.appendChild(legend);
+if(showLegend)container.appendChild(legend);
 container.appendChild(panel);
 
     // Minimap (if opts.showMinimap)
@@ -1811,7 +1833,7 @@ container.appendChild(panel);
       if(announce){const layer=layerDefinitions.find(item=>String(item.id)===String(id));showToast((layer?.label||id)+(enabled?' показан':' скрыт'),1200)}
       return true;
     }
-    if(layerDefinitions.length){
+    if(hasCapability('layers')&&layerDefinitions.length){
       const layerPanel=document.createElement('div');
       layerPanel.className='me-layers';
       const layerSummary=document.createElement('button');
@@ -2377,7 +2399,7 @@ container.appendChild(panel);
       }
 
       function renderSignatureOverlay() {
-        const sig = route.signature;
+        const sig = hasCapability('signature') ? route.signature : null;
         if (!sig || !sig.type) {
           signatureG.removeAttribute('data-signature-kind');
           signatureG.removeAttribute('aria-label');
@@ -3125,6 +3147,7 @@ container.appendChild(panel);
     }
 
     function setStory(storyId){
+      if(!hasCapability('stories'))return;
       const story=(route.stories||[]).find(s=>s.id===storyId);
       if(!story)return;
       // Fade out all markers
@@ -3148,6 +3171,7 @@ container.appendChild(panel);
     }
 
     function renderStories(){
+      if(!hasCapability('stories')){storiesBar.innerHTML='';return}
       storiesBar.innerHTML=(route.stories||[]).map(s=>`
         <button class="me-story-chip${s.id===activeStoryId?' me-story-chip--active':''}" data-story="${s.id}" role="tab" aria-selected="${s.id===activeStoryId?'true':'false'}">${esc(s.label)}</button>
       `).join('');
@@ -3158,6 +3182,7 @@ container.appendChild(panel);
     }
 
     function renderStages(){
+      if(!hasCapability('stages')){stagesBar.innerHTML='';return}
       stagesBar.innerHTML=(route.stages||[]).map((st,i)=>`
         <div class="me-stage-dot" style="color:${getStageColor(i)};cursor:pointer" data-stage="${i}">${esc(st.n||'')}</div>
       `).join('');
@@ -3678,7 +3703,7 @@ container.appendChild(panel);
           ${route.meta?.subtitle ? `<p class="me-intro__sub">${esc(route.meta.subtitle)}</p>` : ''}
           <div class="me-intro__stats">
             ${(route.places||[]).length ? `<span>${route.places.length} мест</span>` : ''}
-            ${(route.stories||[]).length ? `<span>${route.stories.length} сюжетов</span>` : ''}
+            ${hasCapability('stories')&&(route.stories||[]).length ? `<span>${route.stories.length} сюжетов</span>` : ''}
           </div>
           <button class="me-intro__btn">Начать изучение</button>
         </div>`;
@@ -3837,8 +3862,9 @@ container.appendChild(panel);
 
     // ── Instance ──
     const instance={
-      open,close,setStory,startTour,stopTour,flyTo,resetView,setLayerEnabled,applyMapTheme,
+      open,close,setStory,startTour,stopTour,flyTo,resetView,setLayerEnabled,applyMapTheme,hasCapability,
       get routeData(){return route},
+      get capabilities(){return [...capabilities]},
       get theme(){return activeTheme},
       get layers(){return Object.fromEntries(layerState)},
       destroy(){
@@ -3859,7 +3885,7 @@ container.appendChild(panel);
   // ── Public exports ──
   return {
     // v0.2 data layer
-    loadRoute,loadJsonResource,mountRoute,bootRoute,readArchaeologyProjection,validateRoute,compareRouteData,normalizeRouteData,collectPhotoHosts,
+    loadRoute,loadJsonResource,mountRoute,bootRoute,readArchaeologyProjection,validateRoute,compareRouteData,normalizeRouteData,hasRouteCapability,getRouteCapabilities,collectPhotoHosts,
     getPlaceIndex,getPlaceById,getStageForPlace,getRelatedPlaceIds,getTabContentKey,
     getPanelModel,getPanelSections,getStoryViewport,getStoryState,getPlaceOrder,auditStoryDefinitions,
     parseMapStateFromLocation,resolveInitialMapState,buildMapStateUrl,
@@ -3867,7 +3893,7 @@ container.appendChild(panel);
     getStageColor,clientPointToView,distanceKm,
     // v0.3 rendering
     createMap,
-    version:'0.59.0',buildDate:'2026-09-15'
+    version:'0.60.0',buildDate:'2026-09-15'
   };
 })();
 
