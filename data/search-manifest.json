@@ -103,7 +103,7 @@
       "description": "Девять частей канонического ядра о пастырской власти и подотчётности плюс документальное Досье A: диагностика искажений, границы власти, различение, здоровое пастырство и церковь.",
       "section": "Служение",
       "editor": "Фёдор Милованов",
-      "readTime": 321,
+      "readTime": 157,
       "image": "/images/pastor-series/og-hero.webp",
       "tags": [
         "серия",
@@ -1511,13 +1511,13 @@
       "section": "Служение",
       "author": "Фёдор Милованов",
       "editor": "Фёдор Милованов",
-      "image": "/images/pastor-series/og-hero.webp",
+      "image": "/images/pastor-series/og-anatomiya-padeniya-pyat-stadiy.webp",
       "tags": [],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 29
+      "readTime": 9
     },
     {
       "id": "cerkovnaya-disciplina-vlast-granicy-zashchita",
@@ -1528,13 +1528,13 @@
       "section": "Служение",
       "author": "Фёдор Милованов",
       "editor": "Фёдор Милованов",
-      "image": "/images/pastor-series/og-hero.webp",
+      "image": "/images/pastor-series/og-cerkovnaya-disciplina-vlast-granicy-zashchita.webp",
       "tags": [],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 34
+      "readTime": 11
     },
     {
       "id": "kogda-uhodit-kogda-ostavatsya",
@@ -1545,13 +1545,13 @@
       "section": "Служение",
       "author": "Фёдор Милованов",
       "editor": "Фёдор Милованов",
-      "image": "/images/pastor-series/og-hero.webp",
+      "image": "/images/pastor-series/og-kogda-uhodit-kogda-ostavatsya.webp",
       "tags": [],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 33
+      "readTime": 11
     },
     {
       "id": "nesovershennyy-chelovek-v-nesovershennoy-cerkvi",
@@ -1562,13 +1562,13 @@
       "section": "Служение",
       "author": "Фёдор Милованов",
       "editor": "Фёдор Милованов",
-      "image": "/images/pastor-series/og-hero.webp",
+      "image": "/images/pastor-series/og-nesovershennyy-chelovek-v-nesovershennoy-cerkvi.webp",
       "tags": [],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-09-07T00:00:00+03:00",
       "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 31
+      "readTime": 11
     },
     {
       "id": "priznaki-zdorovoy-cerkvi",
@@ -1579,13 +1579,13 @@
       "section": "Служение",
       "author": "Фёдор Милованов",
       "editor": "Фёдор Милованов",
-      "image": "/images/pastor-series/og-hero.webp",
+      "image": "/images/pastor-series/og-priznaki-zdorovoy-cerkvi.webp",
       "tags": [],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-09-07T00:00:00+03:00",
       "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 30
+      "readTime": 11
     },
     {
       "id": "sem-tipov-razlichenie-uchiteley",
@@ -1596,13 +1596,13 @@
       "section": "Служение",
       "author": "Фёдор Милованов",
       "editor": "Фёдор Милованов",
-      "image": "/images/pastor-series/og-hero.webp",
+      "image": "/images/pastor-series/og-sem-tipov-razlichenie-uchiteley.webp",
       "tags": [],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 30
+      "readTime": 9
     },
     {
       "id": "teksty-pisaniya-kotorymi-manipuliruyut",
@@ -1613,13 +1613,13 @@
       "section": "Служение",
       "author": "Фёдор Милованов",
       "editor": "Фёдор Милованов",
-      "image": "/images/pastor-series/og-hero.webp",
+      "image": "/images/pastor-series/og-teksty-pisaniya-kotorymi-manipuliruyut.webp",
       "tags": [],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 36
+      "readTime": 14
     },
     {
       "id": "vernye-i-neizvestnye-zdorovoe-pastyrstvo",
@@ -1630,13 +1630,13 @@
       "section": "Служение",
       "author": "Фёдор Милованов",
       "editor": "Фёдор Милованов",
-      "image": "/images/pastor-series/og-hero.webp",
+      "image": "/images/pastor-series/og-vernye-i-neizvestnye-zdorovoe-pastyrstvo.webp",
       "tags": [],
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-09-07T00:00:00+03:00",
       "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 31
+      "readTime": 14
     },
     {
       "id": "podrostok-za-kadrom",
