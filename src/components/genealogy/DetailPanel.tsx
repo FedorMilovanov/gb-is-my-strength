@@ -7,15 +7,39 @@
  */
 
 import { memo, useEffect, useRef } from 'react';
-import type { Person } from './types';
+import type { Person, RuntimeGenealogyRelation } from './types';
 import { getLineStyle, ERA_META, ROLE_LABELS } from './theme';
 
 interface DetailPanelProps {
   person: Person | null;
+  relations?: RuntimeGenealogyRelation[];
+  persons?: Person[];
+  onInspectRelation?: (relation: RuntimeGenealogyRelation) => void;
   onClose: () => void;
 }
 
-function DetailPanelComponent({ person, onClose }: DetailPanelProps) {
+function relationshipKindLabel(relation: RuntimeGenealogyRelation, currentId: string) {
+  if (relation.kind === 'legal-parent') return currentId === relation.from
+    ? 'Юридический родитель'
+    : 'Юридический ребёнок';
+  if (relation.kind === 'spouse') return 'Супруги';
+  if (relation.role === 'mother') return currentId === relation.from ? 'Мать' : 'Ребёнок';
+  if (relation.role === 'father') return currentId === relation.from ? 'Отец' : 'Ребёнок';
+  return 'Родственная связь';
+}
+
+function relationshipEvidenceLabel(relation: RuntimeGenealogyRelation) {
+  if (relation.evidence.refsStatus === 'relation-level-review-pending') return 'ссылки проверяются';
+  if (relation.evidence.directScripture === true) return 'прямой текст';
+  if (relation.evidence.directScripture === false) return 'интерпретация';
+  return 'редакторская связь';
+}
+
+function compareText(left: string, right: string) {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
+function DetailPanelComponent({ person, relations = [], persons = [], onInspectRelation, onClose }: DetailPanelProps) {
   const panel = useRef<HTMLElement | null>(null);
   useEffect(() => { if (person) panel.current?.querySelector<HTMLButtonElement>('button')?.focus({ preventScroll: true }); }, [person?.id]);
   if (!person) return null;
@@ -24,6 +48,14 @@ function DetailPanelComponent({ person, onClose }: DetailPanelProps) {
   const era = person.era ? ERA_META[person.era] : null;
   const chron = person.chronology?.mt;
   const roleLabel = person.role ? ROLE_LABELS[person.role] : undefined;
+  const personById = new Map(persons.map(item => [item.id, item]));
+  const personRelations = relations
+    .filter(relation => relation.from === person.id || relation.to === person.id)
+    .sort((a, b) =>
+      compareText(a.kind, b.kind) ||
+      compareText(a.role ?? '', b.role ?? '') ||
+      compareText(a.from === person.id ? a.to : a.from, b.from === person.id ? b.to : b.from)
+    );
 
   return (
     <aside
@@ -134,6 +166,35 @@ function DetailPanelComponent({ person, onClose }: DetailPanelProps) {
             </div>
           ))}
         </div>
+      )}
+
+      {personRelations.length > 0 && (
+        <section className="genealogy-person-relations" aria-labelledby="genealogy-person-relations-title">
+          <div id="genealogy-person-relations-title" className="genealogy-person-relations__title">Связи</div>
+          <div className="genealogy-person-relations__list">
+            {personRelations.map(relation => {
+              const peerId = relation.from === person.id ? relation.to : relation.from;
+              const peerName = personById.get(peerId)?.name.ru ?? peerId;
+              return (
+                <button
+                  key={relation.id}
+                  type="button"
+                  className="genealogy-person-relation"
+                  onClick={() => onInspectRelation?.(relation)}
+                  aria-label={`Открыть основание связи: ${person.name.ru} — ${peerName}`}
+                >
+                  <span className="genealogy-person-relation__main">
+                    <strong>{relationshipKindLabel(relation, person.id)}</strong>
+                    <span>{peerName}</span>
+                  </span>
+                  <span className="genealogy-person-relation__status">
+                    {relationshipEvidenceLabel(relation)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
       )}
 
       {/* Biblical reference */}
