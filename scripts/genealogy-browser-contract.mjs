@@ -183,12 +183,23 @@ async function measurePersonViewport(page) {
   });
 }
 
+async function pressFocused(page, locator, key, label) {
+  await locator.waitFor({ state: 'visible' });
+  await locator.focus();
+  assert.equal(await locator.evaluate(node => document.activeElement === node), true,
+    `${label} did not receive DOM focus before ${key}`);
+  // Dispatch through the browser keyboard once focus is proven. Using
+  // locator.press() here can re-enter Playwright actionability waits while
+  // ReactFlow is replacing the same controlled node during WebKit renders.
+  await page.keyboard.press(key);
+}
+
 async function assertSplitLifecycle(page, touch) {
   const opener = page.getByTitle('Сравнить Мф/Лк');
   const tour = page.getByTitle('Тур');
 
   if (touch) await opener.tap();
-  else { await opener.focus(); await opener.press('Enter'); }
+  else await pressFocused(page, opener, 'Enter', 'Split View opener');
   const dialog = page.getByRole('dialog', { name: 'Две родословные Христа' });
   await dialog.waitFor({ state: 'visible' });
 
@@ -247,7 +258,7 @@ async function assertSplitLifecycle(page, touch) {
   await dialog.waitFor({ state: 'detached' });
   assert.equal(await opener.evaluate((node) => document.activeElement === node), true, 'Escape did not restore focus to Split View opener');
 
-  await opener.press('Enter');
+  await pressFocused(page, opener, 'Enter', 'Split View opener');
   const reopened = page.getByRole('dialog', { name: 'Две родословные Христа' });
   await reopened.waitFor({ state: 'visible' });
   await reopened.getByRole('button', { name: 'Закрыть сравнение' }).click();
@@ -306,8 +317,7 @@ async function assertFocusInteractions(page) {
     assert.equal(state.focused, id, `${message}; focus state: ${JSON.stringify(state)}`);
     assert.equal(state.selected, id, 'Keyboard focus and selected genealogy person disagree');
   };
-  await isaacNode.focus();
-  await isaacNode.press('ArrowUp');
+  await pressFocused(page, isaacNode, 'ArrowUp', 'Isaac genealogy node');
   await assertNodeFocus('abram', 'ArrowUp left keyboard focus on Isaac');
   await page.keyboard.press('ArrowUp');
   await assertNodeFocus('terah', 'A second family-navigation key did not reach Terah');
@@ -319,12 +329,11 @@ async function assertFocusInteractions(page) {
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('[data-genealogy-details]').count(), 0, 'Escape in person details did not close the panel');
   assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'terah', 'Person details did not restore node focus');
-  await isaacNode.focus();
-  await isaacNode.press('Enter');
+  await pressFocused(page, isaacNode, 'Enter', 'Isaac genealogy node');
   await page.getByRole('complementary', { name: 'Детали: Исаак' }).waitFor({ state: 'visible' });
   await page.getByRole('button', { name: 'Закрыть панель', exact: true }).click();
   const opener = page.getByTitle('Сравнить Мф/Лк');
-  await opener.press('Enter');
+  await pressFocused(page, opener, 'Enter', 'Split View opener');
   const dialog = page.getByRole('dialog', { name: 'Две родословные Христа' });
   await dialog.waitFor({ state: 'visible' });
   assert.equal(await page.locator('[data-genealogy-details]').count(), 0, 'Enter on comparison reopened person details');
@@ -343,9 +352,7 @@ async function assertFocusInteractions(page) {
   await page.waitForFunction(() => document.querySelector('.genealogy-filter-tools button[aria-pressed="true"]')?.textContent === 'Все');
   await page.waitForFunction(() => document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-level') === '2');
   await waitForViewportStable(page);
-  await isaacNode.focus();
-
-  await isaacNode.press('Enter');
+  await pressFocused(page, isaacNode, 'Enter', 'Isaac genealogy node');
   await page.getByRole('complementary', { name: 'Детали: Исаак' }).waitFor({ state: 'visible' });
   await page.getByRole('button', { name: 'Закрыть панель', exact: true }).click();
 }
