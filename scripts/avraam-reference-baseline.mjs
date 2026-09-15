@@ -13,7 +13,7 @@ const ROUTE_URL = `${BASE_URL}/karty/avraam/`;
 const VIEWPORTS = [
   ['desktop-1920x1080',1920,1080],['desktop-1440x900',1440,900],
   ['desktop-1366x768',1366,768],['tablet-1024x768',1024,768],
-  ['mobile-430x932',430,932],['mobile-390x844',390,844],['mobile-360x800',360,800],
+  ['mobile-430x932',430,932],['mobile-390x844',390,844],['mobile-360x800',360,800],['mobile-360x740',360,740],
 ].map(([id,width,height])=>({id,width,height}));
 const KEY_PLACES = ['ur','harran','shechem','bethel','egypt','hebron','sodom','dan','beersheba','salem'];
 
@@ -191,6 +191,22 @@ async function runViewport(browser,viewport){
     await screenshot(page,dir,'01-overview.png');
     result.overview=await collectGeometry(page,`${viewport.id}:overview`);
     if(result.overview.map.zoomBucket!=='overview')result.verificationFailures.push(`unexpected overview zoom bucket: ${result.overview.map.zoomBucket}`);
+    if(viewport.width<=560){
+      const values=String(result.overview.map.viewBox||'').trim().split(/\s+/).map(Number);
+      if(values.length!==4||values.some(value=>!Number.isFinite(value))){
+        result.verificationFailures.push(`mobile main route viewBox invalid: ${result.overview.map.viewBox}`);
+      }else{
+        const [x,y,w,h]=values;
+        const margin=24;
+        const authoredRoutePlaces=(SOURCE_ROUTE.places||[]).filter(place=>Number.isInteger(place.stage));
+        const outside=authoredRoutePlaces.filter(place=>(
+          !Number.isFinite(place.x)||!Number.isFinite(place.y)||
+          place.x<x+margin||place.x>x+w-margin||
+          place.y<y+margin||place.y>y+h-margin
+        )).map(place=>place.id);
+        if(outside.length)result.verificationFailures.push(`mobile main route frame excludes ${outside.length}/${authoredRoutePlaces.length} authored route points: ${outside.join(', ')}`);
+      }
+    }
     const clippedOverviewLabels=result.overview.offscreenLabels.filter(label=>String(label.className||'').split(/\s+/).includes('lbl-overview'));
     if(clippedOverviewLabels.length)result.verificationFailures.push(`overview labels outside safe area: ${clippedOverviewLabels.map(label=>label.text||label.id||label.index).join(', ')}`);
     if(result.overview.motion.prefersReducedMotion&&result.overview.motion.smilAnimations>0&&!result.overview.motion.smilPaused)result.verificationFailures.push('reduced motion did not pause SVG animations');
