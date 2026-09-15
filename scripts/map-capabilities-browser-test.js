@@ -20,13 +20,14 @@ const baseRoute = {
   }],
 };
 
-async function mount(page, capabilities) {
-  await page.evaluate(({ route, caps }) => {
+async function mount(page, capabilities, { omitCapabilities = false } = {}) {
+  await page.evaluate(({ route, caps, omit }) => {
     try { window.__capMap?.destroy?.(); } catch (_) {}
     const container = document.getElementById('map');
     container.replaceChildren();
     const data = JSON.parse(JSON.stringify(route));
-    data.capabilities = caps;
+    if (omit) delete data.capabilities;
+    else data.capabilities = caps;
     window.__capMap = window.MapEngine.createMap(container, data, {
       showIntro: false,
       showCompass: false,
@@ -39,7 +40,7 @@ async function mount(page, capabilities) {
       },
     });
     if (!window.__capMap) throw new Error('MapEngine fixture failed to mount');
-  }, { route: baseRoute, caps: capabilities });
+  }, { route: baseRoute, caps: capabilities, omit: omitCapabilities });
   await page.waitForTimeout(80);
 }
 
@@ -123,6 +124,25 @@ async function snapshot(page) {
     assert.equal(typeof full.routeData.arch, 'string');
     assert.equal(typeof full.routeData.dispute, 'string');
     assert.equal(full.routeData.scientific, true);
+
+    await mount(page, [], { omitCapabilities: true });
+    const legacy = await snapshot(page);
+    assert.equal(legacy.capabilitiesAttr, fullCaps.join(' '), 'absent capabilities must infer data-backed surfaces');
+    assert.deepEqual(legacy.instanceCapabilities, fullCaps, 'legacy instance must expose inferred capabilities');
+    assert.equal(legacy.stories, true);
+    assert.equal(legacy.stages, true);
+    assert.equal(legacy.layers, true);
+    assert.equal(legacy.life, true);
+    assert(legacy.signatureNodes > 0, 'legacy signature surface must render');
+    for (const tab of ['arch','dispute','sci']) assert(legacy.tabs.includes(tab), `legacy interpretation tab missing: ${tab}`);
+    assert.equal(legacy.routeData.stories, 1);
+    assert.equal(legacy.routeData.stages, 1);
+    assert.equal(legacy.routeData.layers, 1);
+    assert.equal(legacy.routeData.timeline, 1);
+    assert.equal(legacy.routeData.signature, true);
+    assert.equal(typeof legacy.routeData.arch, 'string');
+    assert.equal(typeof legacy.routeData.dispute, 'string');
+    assert.equal(legacy.routeData.scientific, true);
 
     assert.deepEqual(runtimeErrors, [], `runtime console/page errors: ${runtimeErrors.join(' | ')}`);
     console.log('MAP CAPABILITIES BROWSER CONTRACT: PASS — fail-closed and declared DOM surfaces');
