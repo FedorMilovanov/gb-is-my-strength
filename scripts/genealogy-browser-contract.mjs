@@ -609,14 +609,23 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
       Number(searchListGeometry.style.opacity) > 0,
       `${browserName} ${viewport.width}x${viewport.height}: chooser has no visible geometry: ${JSON.stringify(searchListGeometry)}`,
     );
-    await searchList.waitFor({ state: 'visible', timeout: 3000 });
+    await searchList.waitFor({ state: 'attached', timeout: 3000 });
+    const ambiguousOptions = searchList.getByRole('option');
+    await ambiguousOptions.first().waitFor({ state: 'visible', timeout: 3000 });
+    assert.equal(await ambiguousOptions.count(), 2,
+      `${browserName} ${viewport.width}x${viewport.height}: ambiguous chooser must render exactly two Joseph options`);
+    for (const option of await ambiguousOptions.all()) {
+      const box = await option.boundingBox();
+      assert.ok(box && box.width > 0 && box.height >= MIN_TOUCH_TARGET,
+        `${browserName} ${viewport.width}x${viewport.height}: visible search option lacks >=44px geometry`);
+    }
     assert.equal(await searchList.getAttribute('role'), 'listbox',
       `${browserName} ${viewport.width}x${viewport.height}: chooser lost listbox role`);
     assert.equal(await searchList.getAttribute('aria-label'), 'Люди с похожим именем',
       `${browserName} ${viewport.width}x${viewport.height}: chooser lost accessible label`);
     assert.equal(await search.getAttribute('aria-expanded'), 'true',
       `${browserName} ${viewport.width}x${viewport.height}: ambiguous search did not expose listbox`);
-    const ambiguousIds = await searchList.getByRole('option').evaluateAll(options =>
+    const ambiguousIds = await ambiguousOptions.evaluateAll(options =>
       options.map(option => option.getAttribute('data-person-id')));
     assert.deepEqual(ambiguousIds, ['joseph_lk', 'joseph_lk2'],
       `${browserName} ${viewport.width}x${viewport.height}: duplicate Joseph candidates were collapsed or reordered`);
@@ -635,7 +644,8 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
       `${browserName} ${viewport.width}x${viewport.height}: chosen duplicate Joseph was not centered into view`);
 
     await search.fill('Иосиф (Лк)');
-    await searchList.waitFor({ state: 'visible' });
+    await searchList.waitFor({ state: 'attached' });
+    await searchList.getByRole('option').first().waitFor({ state: 'visible' });
     await search.press('ArrowUp');
     assert.equal(await search.getAttribute('aria-activedescendant'), 'genealogy-search-option-joseph_lk2',
       `${browserName} ${viewport.width}x${viewport.height}: ArrowUp did not wrap to the last duplicate candidate`);
@@ -646,7 +656,8 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
       `${browserName} ${viewport.width}x${viewport.height}: Escape left stale search choices mounted`);
 
     await search.fill('Иосиф (Лк)');
-    await searchList.waitFor({ state: 'visible' });
+    await searchList.waitFor({ state: 'attached' });
+    await searchList.getByRole('option').first().waitFor({ state: 'visible' });
     const secondJoseph = searchList.getByRole('option').nth(1);
     if (touch) await secondJoseph.tap();
     else await secondJoseph.click();
