@@ -1,3 +1,5 @@
+import { buildTextualAssertions } from './textual-assertions.mjs';
+
 /**
  * Build a closed, publication-safe projection from the curated v1 genealogy
  * and the richer v2 identity graph.
@@ -12,6 +14,10 @@ function invariant(condition, message) {
 
 function stableObject(value) {
   return value == null ? null : value;
+}
+
+function compareText(left, right) {
+  return left < right ? -1 : left > right ? 1 : 0;
 }
 
 function relationKey(kind, from, to, role = '') {
@@ -307,11 +313,17 @@ export function buildPublishableProjection({
     'Luke textual sequence must not insert Mary');
 
   const relationList = [...relations.values()].sort((a, b) =>
-    a.kind.localeCompare(b.kind) ||
-    a.from.localeCompare(b.from) ||
-    a.to.localeCompare(b.to) ||
-    String(a.role ?? '').localeCompare(String(b.role ?? ''))
+    compareText(a.kind, b.kind) ||
+    compareText(a.from, b.from) ||
+    compareText(a.to, b.to) ||
+    compareText(String(a.role ?? ''), String(b.role ?? ''))
   );
+
+  const textualAssertions = buildTextualAssertions({
+    gospelSequences: projectedGospels,
+    relations: relationList,
+  });
+  const textualAssertionList = textualAssertions.assertions;
 
   const meta = {
     schemaVersion: 1,
@@ -332,6 +344,7 @@ export function buildPublishableProjection({
       spouses: 'reciprocal curated v1 assertions only',
       annotations: 'qualify projected relations; legal/non-biological relation remains distinct from biological parent',
       relationEvidence: 'curated topology remains source-derived with directScripture=null until relation-level refs are editorially reviewed',
+      textualAssertions: 'Gospel occurrence adjacency is text-only; it never creates or upgrades a family relation',
       rawGraph: 'TIPNR-only persons and raw TIPNR-only edges are excluded',
     },
     counts: {
@@ -345,6 +358,13 @@ export function buildPublishableProjection({
       directScriptureRelations: relationList.filter(relation => relation.evidence?.directScripture === true).length,
       gospelSequences: projectedGospels.sequences.length,
       gospelOccurrences: projectedGospels.sequences.reduce((sum, sequence) => sum + sequence.occurrences.length, 0),
+      textualAssertions: textualAssertionList.length,
+      textualAssertionsMatchedRelations: textualAssertionList.filter(assertion =>
+        assertion.relationCrosswalk.status === 'matched-publishable-relation').length,
+      textualAssertionsWithoutRelations: textualAssertionList.filter(assertion =>
+        assertion.relationCrosswalk.status === 'no-publishable-relation').length,
+      textualAssertionsReviewedCrosswalks: textualAssertionList.filter(assertion =>
+        assertion.relationCrosswalk.evidenceStatus === 'editorially-reviewed').length,
     },
     sourceHashes,
     diagnostics,
@@ -355,5 +375,6 @@ export function buildPublishableProjection({
     persons: selected,
     relations: relationList,
     gospelSequences: projectedGospels,
+    textualAssertions,
   };
 }
