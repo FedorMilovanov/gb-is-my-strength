@@ -571,7 +571,45 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     }, `${browserName} ${viewport.width}x${viewport.height}: ambiguous search state diverged: ${JSON.stringify(searchState)}`);
 
     const searchList = page.locator('#genealogy-person-search-results');
-    await searchList.waitFor({ state: 'visible' });
+    await searchList.waitFor({ state: 'attached' });
+    const searchListGeometry = await searchList.evaluate(node => {
+      const rect = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      const parent = node.parentElement;
+      const parentRect = parent?.getBoundingClientRect();
+      const parentStyle = parent ? getComputedStyle(parent) : null;
+      return {
+        rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+        client: { width: node.clientWidth, height: node.clientHeight },
+        scroll: { width: node.scrollWidth, height: node.scrollHeight },
+        style: {
+          display: style.display,
+          visibility: style.visibility,
+          opacity: style.opacity,
+          position: style.position,
+          overflow: style.overflow,
+        },
+        parent: parentRect && parentStyle ? {
+          rect: { x: parentRect.x, y: parentRect.y, width: parentRect.width, height: parentRect.height },
+          display: parentStyle.display,
+          visibility: parentStyle.visibility,
+          overflow: parentStyle.overflow,
+        } : null,
+      };
+    });
+    await app.screenshot({
+      path: path.join(REPORT_DIR, `${browserName}-${viewport.width}x${viewport.height}-ambiguous-search.png`),
+      animations: 'disabled',
+    });
+    assert.ok(
+      searchListGeometry.rect.width > 0 &&
+      searchListGeometry.rect.height > 0 &&
+      searchListGeometry.style.display !== 'none' &&
+      searchListGeometry.style.visibility !== 'hidden' &&
+      Number(searchListGeometry.style.opacity) > 0,
+      `${browserName} ${viewport.width}x${viewport.height}: chooser has no visible geometry: ${JSON.stringify(searchListGeometry)}`,
+    );
+    await searchList.waitFor({ state: 'visible', timeout: 3000 });
     assert.equal(await searchList.getAttribute('role'), 'listbox',
       `${browserName} ${viewport.width}x${viewport.height}: chooser lost listbox role`);
     assert.equal(await searchList.getAttribute('aria-label'), 'Люди с похожим именем',
