@@ -55,7 +55,11 @@ assert.ok(!bootstrap.includes('map-archaeology-adapter.js'));assert.ok(!bootstra
 const fallback=fs.readFileSync('src/components/karty/_shared/MapRuntimeFallback.astro','utf8');
 assert.ok(fallback.includes('archaeologyMapId?: string'));
 assert.ok(fallback.includes('mapId={archaeologyMapId}'));
+assert.match(engine,/const archaeologyProjection=readArchaeologyProjection\(config\.archaeologyPayloadId\|\|'map-archaeology-projection'\)/);
+assert.match(engine,/if\(archaeologyProjection!==null\)mapOptions\.archaeologyProjection=archaeologyProjection/);
 for(const [file,mapId] of [['src/components/karty/ishod/IshodMap.astro','ishod'],['src/components/karty/avraam/AvraamMap.astro','avraam']]){
-  const source=fs.readFileSync(file,'utf8');assert.match(source,new RegExp(`archaeologyMapId=\"${mapId}\"`));assert.match(source,/archaeologyProjection: readArchaeologyProjection()/);
+  const source=fs.readFileSync(file,'utf8');
+  assert.match(source,new RegExp(`archaeologyMapId=\"${mapId}\"`));
+  assert.doesNotMatch(source,/archaeologyProjection\s*:|readArchaeologyProjection\(/,'route components must not duplicate shared archaeology projection ownership');
 }
 console.log(JSON.stringify({avraamPlaces:Object.keys(avraam.byPlace).length,runtimeScopes:runtimeScopes.length,runtimeCards:runtimeScopes.reduce((sum,id)=>sum+buildMapArchaeologyProjection(id,registry,provenance).mapCards.length,0),sources:Object.keys(avraam.sourceMeta).length},null,2));
