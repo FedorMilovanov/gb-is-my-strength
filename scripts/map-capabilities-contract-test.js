@@ -76,6 +76,34 @@ assert.equal(staged.scientific_variants, undefined, 'undeclared scientific varia
 assert.equal(rich.stories.length, 1, 'projection must not mutate source stories');
 assert.equal(rich.places[0].arch, 'Arch', 'projection must not mutate source place content');
 
+const legacyRich = {...rich};
+delete legacyRich.capabilities;
+const legacyCaps = ['stages','stories','layers','timeline','signature','interpretations'];
+assert.deepEqual(
+  MapEngine.normalizeRouteCapabilities(legacyRich),
+  legacyCaps,
+  'legacy routes without a capabilities property must infer data-backed surfaces',
+);
+const legacyProjected = MapEngine.projectRouteCapabilities(legacyRich);
+assert.deepEqual(legacyProjected.capabilities, legacyCaps, 'legacy projection must publish inferred capabilities');
+assert.equal(legacyProjected.stories.length, 1, 'legacy stories must remain available');
+assert.equal(legacyProjected.stages.length, 1, 'legacy stages must remain available');
+assert.equal(legacyProjected.layers.length, 1, 'legacy layers must remain available');
+assert.equal(legacyProjected.timeline.length, 1, 'legacy timeline must remain available');
+assert.equal(Boolean(legacyProjected.signature), true, 'legacy signature must remain available');
+assert.equal(legacyProjected.places[0].arch, 'Arch', 'legacy interpretation content must remain available');
+assert.equal(legacyProjected.places[0].dispute, 'Dispute', 'legacy dispute content must remain available');
+assert.equal(Boolean(legacyProjected.scientific_variants), true, 'legacy scientific variants must remain available');
+
+const explicitEmpty = MapEngine.projectRouteCapabilities({...legacyRich, capabilities: []});
+assert.deepEqual(explicitEmpty.capabilities, [], 'an explicit empty capability set must remain authoritative');
+assert.equal(explicitEmpty.stories.length, 0, 'explicit capabilities must fail closed for stories');
+assert.equal(explicitEmpty.stages.length, 0, 'explicit capabilities must fail closed for stages');
+assert.equal(explicitEmpty.layers.length, 0, 'explicit capabilities must fail closed for layers');
+assert.equal(explicitEmpty.timeline.length, 0, 'explicit capabilities must fail closed for timeline');
+assert.equal(explicitEmpty.signature, undefined, 'explicit capabilities must fail closed for signature');
+assert.equal(explicitEmpty.places[0].arch, undefined, 'explicit capabilities must fail closed for interpretations');
+
 const interpretationsOnly = MapEngine.projectRouteCapabilities({...rich, capabilities: ['interpretations']});
 assert.equal(interpretationsOnly.stages.length, 0, 'undeclared stages must be removed');
 assert.equal(interpretationsOnly.places[0].stage, undefined, 'undeclared place stage must be removed');
