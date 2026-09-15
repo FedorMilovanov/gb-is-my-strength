@@ -1,1 +1,36 @@
-{"schemaVersion":1,"authorityId":"PRODUCT-OSK-WAVE11-FAITHFUL-WITNESS-2026-08-01","researchAuthorityId":"RESEARCH-OSK-AUTHORITY-2026-08-01-W10-FAITHFUL-WITNESS","researchMergeSha":"f50b21ad6af5dd7aaa53c5be381929b353b26d58","productBaseSha":"6645112103e00112a569e8738dda2e2791364662","status":"EDITORIAL_DRAFT_PUBLICATION_HOLD","routeCandidate":"/articles/diotrefy-nashego-vremeni/","publicRouteRegistered":false,"indexingApproved":false,"directQuotesApproved":false,"counts":{"existingAuthoritySources":148,"newAuthoritySources":33,"totalAuthoritySources":181,"existingReaderLinks":40,"newReaderLinks":33,"totalReaderLinks":73,"casePathways":15,"faithfulResponses":20,"publicRoutesAdded":0},"safety":{"disagreementIsNotAbuse":true,"allegationIsNotEstablishedFact":true,"privateApproachNotUniversal":true,"civilReportingNotReplacedByChurchProcess":true,"forgivenessNotAutomaticRestoration":true,"b1NeverSoleDisputedSupport":true}}
+{
+  "schemaVersion": 1,
+  "authorityId": "PRODUCT-OSK-WAVE11-FAITHFUL-WITNESS-2026-08-01",
+  "researchAuthorityId": "RESEARCH-OSK-AUTHORITY-2026-08-01-W10-FAITHFUL-WITNESS",
+  "researchMergeSha": "f50b21ad6af5dd7aaa53c5be381929b353b26d58",
+  "productBaseSha": "6645112103e00112a569e8738dda2e2791364662",
+  "status": "EDITORIAL_DRAFT_PUBLICATION_HOLD",
+  "routeCandidate": "/articles/diotrefy-nashego-vremeni/",
+  "publicRouteRegistered": false,
+  "indexingApproved": false,
+  "directQuotesApproved": false,
+  "counts": {
+    "existingAuthoritySources": 148,
+    "newAuthoritySources": 33,
+    "totalAuthoritySources": 181,
+    "existingReaderLinks": 40,
+    "newReaderLinks": 33,
+    "totalReaderLinks": 73,
+    "casePathways": 15,
+    "faithfulResponses": 20,
+    "publicRoutesAdded": 0
+  },
+  "safety": {
+    "disagreementIsNotAbuse": true,
+    "allegationIsNotEstablishedFact": true,
+    "privateApproachNotUniversal": true,
+    "civilReportingNotReplacedByChurchProcess": true,
+    "forgivenessNotAutomaticRestoration": true,
+    "b1NeverSoleDisputedSupport": true
+  },
+  "supersededBy": {
+    "file": "data/diotrophes-wave12-release-manifest.json",
+    "at": "2026-08-02T00:00:00+03:00",
+    "reason": "публичный маршрут /articles/diotrefy-nashego-vremeni/ выпущен транзакцией Wave 12; статусы PUBLICATION_HOLD/registered=false в этом манифесте отражают состояние до выпуска и более не действуют"
+  }
+}
