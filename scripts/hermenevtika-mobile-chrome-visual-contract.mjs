@@ -166,7 +166,10 @@ async function exerciseHighlights(page, engine, viewport, route) {
   const fab = page.locator('#gb-hl-fab');
   await fab.focus();
   await fab.click();
-  await page.waitForTimeout(120);
+  await page.waitForFunction(() => {
+    const backdrop = document.getElementById('gb-hl-backdrop');
+    return Boolean(backdrop?.classList.contains('is-open') && backdrop.contains(document.activeElement));
+  }, null, { timeout: 2000 }).catch(() => {});
   const opened = await page.evaluate(() => {
     const backdrop = document.getElementById('gb-hl-backdrop');
     const panel = document.getElementById('gb-hl-panel');
@@ -184,7 +187,9 @@ async function exerciseHighlights(page, engine, viewport, route) {
   });
   check(engine, viewport, route, 'saved-quotes panel opens above mobile chrome with focus inside', opened.open && opened.ariaHidden === 'false' && opened.panelVisible && opened.focusInside, opened);
   await page.locator('#gb-hl-close').click();
-  await page.waitForTimeout(80);
+  await page.waitForFunction(() => (
+    document.activeElement === document.getElementById('gb-hl-fab')
+  ), null, { timeout: 2000 }).catch(() => {});
   const closed = await page.evaluate(() => ({
     open: document.getElementById('gb-hl-backdrop')?.classList.contains('is-open'),
     ariaHidden: document.getElementById('gb-hl-backdrop')?.getAttribute('aria-hidden'),
