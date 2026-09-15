@@ -510,6 +510,32 @@ async function assertFocusInteractions(page) {
   await legalPanel.waitFor({ state: 'detached' });
   assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'joseph_nt',
     'Legal-parent inspector did not restore focus to Joseph');
+
+  await personSearch.fill('Иисус Христос');
+  await page.waitForFunction(() =>
+    document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-search-person') === 'jesus');
+  await waitForViewportStable(page);
+  await page.locator('.react-flow__node[data-id="jesus"]').click();
+
+  const jesusDetails = page.getByRole('complementary', { name: 'Детали: Иисус Христос' });
+  await jesusDetails.waitFor({ state: 'visible' });
+  const childSideLegalRelation = jesusDetails.getByRole('button', {
+    name: 'Открыть основание связи: Иисус Христос — Иосиф (Обручник)',
+  });
+  await childSideLegalRelation.waitFor({ state: 'visible' });
+  assert.equal(await childSideLegalRelation.getByText('Юридический ребёнок', { exact: true }).isVisible(), true,
+    'Jesus detail drawer did not expose the reverse side of legal parentage');
+  if ((page.viewportSize()?.width ?? 999) <= 430) await childSideLegalRelation.tap();
+  else await childSideLegalRelation.click();
+
+  const childSidePanel = page.getByRole('complementary', {
+    name: 'Основание связи: Иосиф (Обручник) — Иисус Христос',
+  });
+  await childSidePanel.waitFor({ state: 'visible' });
+  await page.keyboard.press('Escape');
+  await childSidePanel.waitFor({ state: 'detached' });
+  assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'jesus',
+    'Relation inspector returned focus to relation.from instead of the person who opened it');
 }
 
 
