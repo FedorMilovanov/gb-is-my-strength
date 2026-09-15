@@ -11,6 +11,7 @@ const paths = {
   // while the live route keeps evolving.
   historicalRoute: 'research/PIHAHIROTH_HISTORICAL_ROUTE_2026-08-02.json',
   adapter: 'src/components/karty/ishod/IshodMap.astro',
+  engine: 'karty/_engine/map-engine.js',
 };
 const errors = [];
 const requireValue = (condition, message) => { if (!condition) errors.push(message); };
@@ -30,6 +31,7 @@ const authority = json(paths.authority);
 const historicalText = text(paths.historicalRoute);
 const historicalRoute = json(paths.historicalRoute);
 const adapter = text(paths.adapter);
+const engine = text(paths.engine);
 const expectedCorridors = ['PH-CAND-NORTH', 'PH-CAND-BALLAH', 'PH-CAND-BITTER'];
 const expectedConstraints = Array.from({ length: 8 }, (_, index) => `PH-T${String(index + 1).padStart(2, '0')}`);
 const expectedSources = Array.from({ length: 9 }, (_, index) => `PH-S${String(index + 1).padStart(2, '0')}`);
@@ -105,7 +107,20 @@ requireValue(historicalRoute.signature?.type === 'water-split' && historicalRout
 requireValue(JSON.stringify(historicalRoute.scientific_variants?.pihahiroth || []).includes('Нувейба'), 'historical fringe-claim control missing');
 
 for (const marker of [
-  "fetch('pihahiroth-authority.json')",
+  "const resourceEntries=Object.entries(config.resources||{})",
+  "...resourceEntries.map(([,url])=>loadJsonResource(url,config.fetchOptions||{}))",
+  "resourceEntries.forEach(([key],index)=>{resources[key]=loaded[index+1]})",
+  "const transformed=await config.transformRoute(route,resources)",
+  "await config.afterCreate({container,route,resources,instance,mapOptions})",
+]) requireValue(engine.includes(marker), `shared MapEngine resource contract marker missing: ${marker}`);
+
+for (const marker of [
+  "resources: {",
+  "authority: 'pihahiroth-authority.json'",
+  "transformRoute: function(route, resources)",
+  "resources.authority = validateAuthority(resources.authority)",
+  "afterCreate: function(context)",
+  "renderCorridors(context.container, context.resources.authority, context.instance)",
   "place.stage = null",
   "place.photos = []",
   "item.id !== 'wp-suez'",

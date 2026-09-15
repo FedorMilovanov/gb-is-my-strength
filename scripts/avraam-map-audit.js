@@ -4,7 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const { inspectMapInitSource } = require('./lib/map-init-source-contract');
+const { inspectSharedMapInitSource } = require('./lib/map-init-source-contract');
 const { run: runMapInitSourceContractRegression } = require('./map-init-source-contract-test');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -290,12 +290,14 @@ runMapInitSourceContractRegression();
 assert('native Avraam imports shared runtime fallback', astro.includes("import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.astro'"));
 assert('native Avraam preserves complete text fallback marker', /class="sr-only map-text-fallback"/.test(astro));
 assert('native Avraam stage owns loading/busy state', astro.includes('data-map-state="loading"') && astro.includes('aria-busy="true"'));
-const avraamMapInit = inspectMapInitSource(astro);
-assert('native Avraam rejects absent engine before initialization', avraamMapInit.engineGuard);
-assert('native Avraam captures MapEngine.createMap result', avraamMapInit.createMapAssigned);
-assert('native Avraam rejects null map instance before ready state', avraamMapInit.nullGuardBeforeReady);
-assert('native Avraam reports failures through shared renderer', /GBMapRuntime\.renderFailure\(container/.test(astro));
-assert('native Avraam marks successful stage ready', /data-map-state', 'ready'/.test(astro));
+const avraamMapInit = inspectSharedMapInitSource(astro);
+assert('native Avraam guards shared runtime before bootstrap', avraamMapInit.runtimeGuard);
+assert('native Avraam delegates explicit routeUrl through bootEngineRoute', avraamMapInit.bootEngineRouteCalled && avraamMapInit.routeUrlConfigured);
+assert('native Avraam does not duplicate createMap/ready lifecycle', avraamMapInit.noLocalLifecycle);
+assert('shared runtime delegates Avraam lifecycle to MapEngine.bootRoute', /return engine\.bootRoute\(options\)/.test(fallback));
+assert('shared runtime reports missing engine through visible renderer', /renderFailure\(container,[\s\S]*?MapEngine mount failed/.test(fallback));
+const sharedEngineSource = fs.readFileSync(enginePath, 'utf8');
+assert('shared engine marks successful stage ready after lifecycle hooks', /container\.setAttribute\('data-map-state','ready'\)/.test(sharedEngineSource));
 assert('shared no-JS CSS hides opaque stage', /<noscript>[\s\S]*?\[data-map-stage\][\s\S]*?display:\s*none\s*!important/.test(fallback));
 assert('shared no-JS CSS reveals Avraam full text', /\.map-text-fallback\.sr-only[\s\S]*?position:\s*static\s*!important/.test(fallback));
 assert('shared failure card is an alert', /card\.className = 'me-error'[\s\S]*?role', 'alert'/.test(fallback));
@@ -304,7 +306,7 @@ assert('shared recovery controls are at least 44px', /min-height:\s*44px/.test(f
 
 // ── MapEngine lifecycle checks ──
 const engineSrc = fs.readFileSync(enginePath, 'utf8');
-assert('MapEngine Hebrew repair preserves canonical version contract', MapEngine.version === '0.58.0', MapEngine.version);
+assert('MapEngine shared-bootstrap release preserves canonical version contract', MapEngine.version === '0.59.0', MapEngine.version);
 assert(
   'MapEngine Hebrew tokens use a Hebrew-capable isolated RTL font stack',
   engineSrc.includes('.me-content .hw{color:#e8c879;font-size:20px;font-family:"Noto Sans Hebrew","Arial Hebrew",Arial,sans-serif;direction:rtl;unicode-bidi:isolate}')

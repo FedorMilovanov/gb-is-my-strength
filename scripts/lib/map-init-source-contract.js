@@ -31,6 +31,40 @@ function findNullGuardBeforeReady(source, assignment) {
   return { index: assignment.index + match.index };
 }
 
+function findSharedRuntimeAvailabilityGuard(source) {
+  const text = String(source || '');
+  const pattern = /if\s*\(\s*window\.GBMapRuntime\s*&&\s*typeof\s+window\.GBMapRuntime\.bootEngineRoute\s*===\s*['"]function['"]\s*\)\s*\{?/g;
+  const match = pattern.exec(text);
+  return match ? { index: match.index } : null;
+}
+
+function findSharedBootstrapCall(source) {
+  const text = String(source || '');
+  const pattern = /window\.GBMapRuntime\.bootEngineRoute\s*\(/g;
+  const match = pattern.exec(text);
+  return match ? { index: match.index } : null;
+}
+
+function inspectSharedMapInitSource(source) {
+  const text = String(source || '');
+  const runtimeGuard = findSharedRuntimeAvailabilityGuard(text);
+  const bootstrapCall = findSharedBootstrapCall(text);
+  const routeUrlConfigured = /\brouteUrl\s*:\s*['"][^'"]+['"]/.test(text);
+  const localCreateMap = /(?:window\.)?MapEngine\.createMap\s*\(/.test(text);
+  const localReadyWrite = /setAttribute\(\s*['"]data-map-state['"]\s*,\s*['"]ready['"]\s*\)/.test(text);
+  return {
+    runtimeGuard: Boolean(runtimeGuard && bootstrapCall && runtimeGuard.index < bootstrapCall.index),
+    bootEngineRouteCalled: Boolean(bootstrapCall),
+    routeUrlConfigured,
+    noLocalLifecycle: !localCreateMap && !localReadyWrite,
+  };
+}
+
+function hasDelegatedMapInit(source) {
+  const result = inspectSharedMapInitSource(source);
+  return result.runtimeGuard && result.bootEngineRouteCalled && result.routeUrlConfigured && result.noLocalLifecycle;
+}
+
 function inspectMapInitSource(source) {
   const text = String(source || '');
   const assignment = findCreateMapAssignment(text);
@@ -53,6 +87,10 @@ module.exports = {
   findCreateMapAssignment,
   findEngineAvailabilityGuard,
   findNullGuardBeforeReady,
+  findSharedRuntimeAvailabilityGuard,
+  findSharedBootstrapCall,
+  hasDelegatedMapInit,
   hasFailClosedMapInit,
   inspectMapInitSource,
+  inspectSharedMapInitSource,
 };

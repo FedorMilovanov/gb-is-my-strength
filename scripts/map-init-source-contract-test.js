@@ -4,7 +4,12 @@
 const assert = require('assert/strict');
 const fs = require('fs');
 const path = require('path');
-const { hasFailClosedMapInit, inspectMapInitSource } = require('./lib/map-init-source-contract');
+const {
+  hasDelegatedMapInit,
+  hasFailClosedMapInit,
+  inspectMapInitSource,
+  inspectSharedMapInitSource,
+} = require('./lib/map-init-source-contract');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -44,14 +49,31 @@ function run() {
 
   const ishod = fs.readFileSync(path.join(ROOT, 'src/components/karty/ishod/IshodMap.astro'), 'utf8');
   const avraam = fs.readFileSync(path.join(ROOT, 'src/components/karty/avraam/AvraamMap.astro'), 'utf8');
-  const ishodResult = inspectMapInitSource(ishod);
-  const avraamResult = inspectMapInitSource(avraam);
-  assert.equal(hasFailClosedMapInit(ishod), true, 'current Ishod source must satisfy map init contract');
-  assert.equal(hasFailClosedMapInit(avraam), true, 'current Avraam source must satisfy map init contract');
-  assert.equal(ishodResult.resultVariable, 'instance', 'Ishod current result identifier must be accepted');
-  assert.equal(avraamResult.resultVariable, 'inst', 'Avraam current result identifier must be accepted');
+  const runtime = fs.readFileSync(path.join(ROOT, 'src/components/karty/_shared/MapRuntimeFallback.astro'), 'utf8');
+  const engine = fs.readFileSync(path.join(ROOT, 'karty/_engine/map-engine.js'), 'utf8');
 
-  console.log('✅ Map init source contract regression: ordering/rename-safe and guard-removal fail-closed');
+  for (const [name, source] of [['Ishod', ishod], ['Avraam', avraam]]) {
+    const result = inspectSharedMapInitSource(source);
+    assert.equal(result.runtimeGuard, true, `${name}: shared runtime guard must precede bootstrap call`);
+    assert.equal(result.bootEngineRouteCalled, true, `${name}: route must call shared bootEngineRoute`);
+    assert.equal(result.routeUrlConfigured, true, `${name}: routeUrl must remain explicit`);
+    assert.equal(result.noLocalLifecycle, true, `${name}: route must not own createMap/ready lifecycle`);
+    assert.equal(hasDelegatedMapInit(source), true, `${name}: shared bootstrap contract must pass`);
+  }
+
+  assert.match(runtime, /function bootEngineRoute\(config\)/, 'shared runtime must own route bootstrap');
+  assert.match(runtime, /typeof engine\.bootRoute === 'function'/, 'shared runtime must guard MapEngine.bootRoute');
+  assert.match(runtime, /return engine\.bootRoute\(options\)/, 'shared runtime must delegate to MapEngine.bootRoute');
+  assert.match(runtime, /renderFailure\(container,[\s\S]*?MapEngine mount failed/, 'missing engine must render a visible failure');
+
+  const createIndex = engine.indexOf('const instance=createMap(container,route,mapOptions);');
+  const afterCreateIndex = engine.indexOf("if(typeof config.afterCreate==='function')");
+  const readyIndex = engine.indexOf("container.setAttribute('data-map-state','ready');");
+  assert.ok(createIndex >= 0 && afterCreateIndex > createIndex && readyIndex > afterCreateIndex, 'shared engine must create, run post-create hook, then mark ready');
+  assert.match(engine, /if\(!instance\)throw new Error\('MapEngine\.mountRoute: createMap returned no instance'\)/, 'shared engine must reject a null map instance');
+  assert.match(engine, /if\(typeof instance\.destroy==='function'\)instance\.destroy\(\)/, 'shared engine must destroy partial instance when afterCreate fails');
+
+  console.log('✅ Map init source contract regression: legacy direct init remains fail-closed; live routes delegate to shared fail-visible bootstrap');
 }
 
 if (require.main === module) run();

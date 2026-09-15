@@ -4,7 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnNpm } = require('./lib/npm-spawn');
-const { inspectMapInitSource } = require('./lib/map-init-source-contract');
+const { inspectSharedMapInitSource } = require('./lib/map-init-source-contract');
 const { resolveReferenceForRoute } = require('../migration/legacy-reference-path');
 
 const ROOT = path.join(__dirname, '..');
@@ -15,6 +15,7 @@ const DIST_ROUTE = 'karty/ishod/index.html';
 const URL = 'https://gospod-bog.ru/karty/ishod/';
 const COMPONENT = 'src/components/karty/ishod/IshodMap.astro';
 const FALLBACK = 'src/components/karty/_shared/MapRuntimeFallback.astro';
+const ENGINE = 'karty/_engine/map-engine.js';
 
 const problems = [];
 const notes = [];
@@ -86,14 +87,17 @@ function main() {
   const distPath = path.join(DIST, DIST_ROUTE);
   const componentPath = path.join(ROOT, COMPONENT);
   const fallbackPath = path.join(ROOT, FALLBACK);
+  const enginePath = path.join(ROOT, ENGINE);
   if (!fs.existsSync(distPath)) return bad(`dist route missing: ${DIST_ROUTE}`);
   if (!fs.existsSync(componentPath)) return bad(`Ishod component missing: ${COMPONENT}`);
   if (!fs.existsSync(fallbackPath)) return bad(`shared map fallback missing: ${FALLBACK}`);
+  if (!fs.existsSync(enginePath)) return bad(`shared MapEngine missing: ${ENGINE}`);
 
   const legacy = read(referencePath);
   const astro = read(distPath);
   const component = read(componentPath);
   const fallback = read(fallbackPath);
+  const engine = read(enginePath);
 
   mustEqual('ishod canonical', canonical(astro), URL);
   mustEqual('ishod title mirrors legacy', title(astro), title(legacy));
@@ -113,15 +117,16 @@ function main() {
   mustContain('ishod imports shared fallback', component, 'MapRuntimeFallback');
   mustContain('ishod stage owns runtime state', component, 'data-map-state="loading"');
   mustContain('ishod stage exposes busy state', component, 'aria-busy="true"');
-  const mapInit = inspectMapInitSource(component);
-  if (mapInit.engineGuard) ok('ishod rejects absent map engine before initialization');
-  else bad('ishod missing fail-closed MapEngine availability guard');
-  if (mapInit.createMapAssigned) ok(`ishod captures createMap result as ${mapInit.resultVariable}`);
-  else bad('ishod must capture MapEngine.createMap result');
-  if (mapInit.nullGuardBeforeReady) ok('ishod rejects null map instance before ready state');
-  else bad('ishod missing null map-instance guard before ready state');
-  mustMatch('ishod routes failures to visible renderer', component, /GBMapRuntime\.renderFailure\(container/);
-  mustMatch('ishod marks successful stage ready', component, /data-map-state', 'ready'/);
+  const mapInit = inspectSharedMapInitSource(component);
+  if (mapInit.runtimeGuard) ok('ishod guards the shared runtime before bootstrap');
+  else bad('ishod missing shared GBMapRuntime availability guard');
+  if (mapInit.bootEngineRouteCalled && mapInit.routeUrlConfigured) ok('ishod delegates route loading to shared bootEngineRoute');
+  else bad('ishod must delegate an explicit routeUrl to shared bootEngineRoute');
+  if (mapInit.noLocalLifecycle) ok('ishod does not duplicate createMap/ready lifecycle');
+  else bad('ishod must not own createMap or ready-state lifecycle');
+  mustMatch('shared runtime delegates to MapEngine.bootRoute', fallback, /return engine\.bootRoute\(options\)/);
+  mustMatch('shared runtime routes missing-engine failure to visible renderer', fallback, /renderFailure\(container,[\s\S]*?MapEngine mount failed/);
+  mustMatch('shared engine marks successful stage ready', engine, /container\.setAttribute\('data-map-state','ready'\)/);
 
   mustContain('fallback includes no-JS surface', fallback, 'map-runtime-noscript');
   mustMatch('fallback hides only the stage without JS', fallback, /<noscript>[\s\S]*?\[data-map-stage\][\s\S]*?display:\s*none\s*!important/);
