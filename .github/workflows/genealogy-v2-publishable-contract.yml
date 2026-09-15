@@ -10,6 +10,11 @@ on:
       - 'scripts/genealogy-build/**'
       - 'scripts/genealogy-v2-publication-audit.mjs'
       - 'scripts/genealogy-v2-publishable-audit.mjs'
+      - 'scripts/genealogy-runtime-data-boundary.mjs'
+      - 'src/pages/rodosloviye/**'
+      - 'src/components/rodosloviye/**'
+      - 'src/components/genealogy/**'
+      - 'rodosloviye/**'
   workflow_dispatch:
 
 permissions:
@@ -41,8 +46,13 @@ jobs:
       - name: Check projection pipeline syntax
         run: |
           node --check scripts/genealogy-build/lib/publishable-projection.mjs
+          node --check scripts/genealogy-build/lib/textual-assertions.mjs
           node --check scripts/genealogy-build/build-publishable-projection.mjs
           node --check scripts/genealogy-v2-publishable-audit.mjs
+          node --check scripts/genealogy-runtime-data-boundary.mjs
+
+      - name: Guard genealogy runtime data authority
+        run: node scripts/genealogy-runtime-data-boundary.mjs
 
       - name: Build curated publishable projection
         run: node scripts/genealogy-build/build-publishable-projection.mjs
