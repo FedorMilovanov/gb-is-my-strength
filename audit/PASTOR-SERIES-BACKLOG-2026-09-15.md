@@ -204,10 +204,10 @@ PR ещё нет; merge-tree с origin/main чистый; все контрак�
 | WU-2.6 таблица V | OPEN P2 | OPEN — не тронуты |
 | WU-2.7 блоки/названия | OPEN P1 | **PARTIAL**: заголовки карточек приведены к канону; разнобой note-box/info-box остаётся |
 | WU-2.8 og:alt | OPEN P1 | **PARTIAL**: II–IX — один владелец (frontmatter) + описательные alt ✓; мёртвое поле ogImageAlt Части I остаётся |
-| WU-3.1 типографика I | OPEN P2 | OPEN — не тронуты (.heading-serif, фикс-px) |
-| WU-3.2 outline Части I | OPEN P2 | OPEN — не тронуты |
-| WU-3.3 anchors | OPEN P2 | OPEN — кириллические/авто-id в теле остались (partToc использует только латинские — хорошо) |
-| WU-3.4 wave11-манифест | OPEN P2 | OPEN — не тронуты |
+| WU-3.1 типографика I | OPEN P2 | **CLOSED (pass-12)**: `data-series-theme="manuscript"` добавлен на body II–IX (PastorSeriesArticlePage) и Части I (мёртвый attribute — manuscript-CSS не действовал на статьи II–IX); токены `.heading-serif` h2/h3 вынесены в css/series-manuscript.css (тема-scoped, глобальный — astro-scoped копия в head Части I никогда не матчила AntisovetovBody); шкала унифицирована с `article h2/h3` (clamp 20–24 / 17–20 + Playfair); фикс-утилиты text-4xl/text-3xl/text-2xl сняты с 42 заголовков |
+| WU-3.2 outline Части I | OPEN P2 | **CLOSED (pass-12)**: 20 anti-kicker h4 → div/strong; 4 зеркало/скрытый-способ h4 → h3; h2 «не приговор» выровнен; каскад h1→h2→h3 без скипов |
+| WU-3.3 anchors | OPEN P2 | **CLOSED (pass-12)**: 8 H3 Части II с префиксом стадии (0 дублей H3 в серии); авто-кириллические id сняты — postbuild `scripts/pastor-series-heading-id-hygiene.js` в обеих сборочных цепях (98 id/8 страниц); rehype-плагин в конфиге невозможен (Satteri: markdown.rehypePlugins — legacy-путь, запрещён контрактом) |
+| WU-3.4 wave11-манифест | OPEN P2 | **CLOSED (pass-11)**: supersededBy→wave12 + статусы |
 | WU-4.1/4.2 дубли/тень | OPEN P2 | OPEN — не тронуты |
 | WU-4.3 канцелярит/витрина | OPEN P2 | **PARTIAL**: англицизмы reader-текста II–IX переведены (finding→вывод и др.), «Part II/VI»→«Часть»; backtick-термины и «Досье NN»-теги остаются |
 | WU-4.4 расшифровка 181 | OPEN P2 | OPEN |
@@ -502,3 +502,79 @@ fetch + diff до remote-ветки.
 mdx:structure:audit, data:consistency, content:guard, contract:compare, editorial:lint,
 readable-audit, pastor-series guard, editorial registry --check, content-source-provenance —
 все зелёные; сборка 0 errors.
+
+---
+
+## PASS-12 — закрытие Волны 3 (WU-3.1 + WU-3.2 + WU-3.3)
+
+### WU-3.3 (якоря) — DONE
+**Часть A — дубли H3 (Часть II).** 8 H3-переименований в
+`src/content/articles/anatomiya-padeniya-pyat-stadiy.mdx`: «Механизм» ×4 →
+«Стадия 1·2·3·4 · Механизм», «Ранний маркер» ×3 → «Стадия 1·2·3 · Ранний маркер»,
+«Ранние маркеры» → «Стадия 5 · Ранний маркер». Итог: 0 дублей H3 во всех 8 частях
+II–IX (инвентаризация: III 0 / VI 0 / IX 11 → 11 уникальных после проверки, остальные
+уникальны). Не префиксованы осознанно (уникальны в своей части, самоочевидны):
+«Здоровый противовес»-серии по стадиям — нет (они префиксованы), исключение — одиночные
+уникальные H3 («Внутренняя проверка и независимость», «Ось N» и др.).
+
+**Часть B — авто-кириллические id.** Источники: (1) Satteri heading-ids-плагин
+(`@astrojs/markdown-satteri` 0.3.8) присваивает slug каждому h1–h6 без явного id
+(включая HTML-заголовки); (2) `markdown.rehypePlugins` в astro.config.mjs — legacy-путь,
+требующий `@astrojs/markdown-remark`, который Satteri-контракт (`scripts/astro7-satteri-contract.mjs`)
+прямо запрещает как прямую зависимость. ⇒ Единственный чистый путь — **postbuild-гигиена**:
+`scripts/pastor-series-heading-id-hygiene.js` (удаление `id` с не-латинским значением с h1–h6
+на 8 публикационных страницах II–IX; явные латинские id — partToc-якоря — не трогаются;
+residual-assert = fail-fast). Вшита в `strangler:build` и `strangler:build:production-like`.
+Результат: 98 авто-id сняты (19/4/4/14/35/9/3/10 по частям), 0 внутри `<script>`.
+Безопасность: in-MDX anchor-ссылок нет ни в одном файле; «Конспект»-карточки строятся из
+partToc (латинские явные id); landing/catalog не читают авто-slug (census pass-11).
+
+### WU-3.2 (outline Части I) — DONE
+`src/components/article-pilots/antisovetov/AntisovetovBody.astro`:
+- 20 × `<h4 class="anti-kicker">` (кикеры-коробки) → `<div class="anti-kicker"><strong>…</strong></div>` —
+  декоративные метки больше не заголовки;
+- 4 зеркало/скрытый-способ `<h4 class="heading-serif text-2xl">` → `<h3>` (по месту в иерархии:
+  под h2 «Двустороннее зеркало…» и h2 «Скрытый способ…»);
+- h2 «Эта статья — не приговор…» выровнен на канонический класс h2 Части I;
+- каскад: h1 (page) → 14 h2 → 24 h3; 0 h4 до первого h3; 0 скипов h1→h4.
+
+### WU-3.1 (типографика, единая система I ↔ II–IX) — DONE
+**Корневые причины (найдены при верификации):**
+1. `data-series-theme="manuscript"` отсутствует на body статей II–IX и Части I ⇒ ВСЕ
+   manuscript-правила (Playfair h2/h3, золотой борд под h2, золотые blockquote, kinetic,
+   summary-card gold) были МЁРТВЫМИ на 9 публикационных страницах, хотя
+   `css/series-manuscript.css` линкуется. Genesis6 (шаблон-донор) атрибут имеет.
+2. `.heading-serif` в Части I определена в scoped `<style>` AntisovetovPageHead.astro —
+   astro-scope (data-astro-cid) не покрывает AntisovetovBody ⇒ токен никогда не применялся;
+   заголовки Части I фактически были на фикс-утилитах text-4xl/text-3xl (36/30px, Lora).
+
+**Ремонт:**
+- `data-series-theme="manuscript"` добавлен: body `PastorSeriesArticlePage.astro` (II–IX)
+  и body `src/pages/articles/20-antisovetov-pastoru/index.astro` (Часть I; конфликтов нет —
+  в Части I нет .gbs2-head/.gbs2-kinetic/.section-label, атрибут безопасно инертен там);
+- токены вынесены в `css/series-manuscript.css` (глобальный файл, тема-scoped):
+  `article h2.heading-serif` = Playfair + `clamp(20px, 3.2vw, 24px)` + border + margin clamp(44–70)/20;
+  `article h3.heading-serif` = Playfair + `clamp(17px, 2.5vw, 20px)` + margin clamp(32–50)/16;
+  `article h4.heading-serif` = Playfair 1.15rem. Шкала = точное зеркало `article h2/h3`
+  в css/site.css ⇒ Часть I и II–IX в единой clamp-системе, media-паритет по построению;
+- из AntisovetovPageHead.astro удалены мёртвые scoped-копии + добавлен
+  `<link href="../../css/series-manuscript.css">`;
+- сняты фикс-утилиты с 42 заголовков (14 h2: text-4xl/mt-16/mb-8; 20 h3: text-3xl;
+  8 h3/h4: text-2xl) — разметка теперь честна относительно применяемого CSS.
+
+### Верификация
+- `npm run strangler:build` — 0 errors; hygiene-шаг в логе: 8 pages, 98 stripped;
+- dist: Часть I — theme-атрибут ✓, series-manuscript.css в head ✓, правило
+  `[data-series-theme="manuscript"] article h2.heading-serif{…Playfair…clamp(20px, 3.2vw, 24px)…}`
+  в dist/css/series-manuscript.css ✓, 0 фикс-утилит на h2/h3 ✓, первый h2 раньше первого h3 ✓;
+- dist II–IX: theme-атрибут ✓ (Playfair + борд действуют), 0 кириллических id,
+  латинские partToc-id сохранены (metod, rannie-markery, stadiya-1..5, tri-osi) ✓;
+- батарея: pastor-series:visual-parity:audit ✓, data:consistency ✓, page-ownership:dist ✓,
+  contract:extract:dist ✓ (compare — только known baseline-drift, не новый),
+  dist-publication-audit ✓.
+
+### Следующее (не тронуто)
+Волна 2 (WU-2.2 .bref ×239, WU-2.5 «Коротко», WU-2.6 таблица V, WU-2.7 note/info-box,
+WU-2.8 og:alt Части I, N-1 quiz bias 62/64, N-2 глоссарий-safeguarding/senior, N-3 figure-обёртки),
+Волна 5 (G-5 approval-пакет: diotrefy migration-freeze + Part I inconsistent-needs-review;
+WU-5.0; WU-6.6 полный), WU-1.3 reading-time T1–T2 + links-graph N-4.
