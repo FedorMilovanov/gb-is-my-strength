@@ -10,7 +10,7 @@
 node scripts/genealogy-build/build.mjs all      # fetch → parse → ru → merge → validate → emit
 node scripts/genealogy-build/build.mjs fetch    # только скачивание источников в .cache/
 node scripts/genealogy-build/build.mjs test     # самопроверки парсера/экстрактора (fixtures)
-node scripts/genealogy-build/build.mjs validate # валидаторы на текущем data/genealogy/v2/
+node scripts/genealogy-build/build.mjs validate # structural-only; НЕ переписывает publication evidence/VALIDATION.md
 ```
 
 Требования: Node ≥ 22 (встроенный `fetch`). Внешних npm-зависимостей НЕТ (намеренно:
@@ -70,7 +70,44 @@ data/genealogy/v2/
 
 ## Статус Phase 1
 
-Exit-критерии (Foundation-док §4.1): 0 orphans/циклов; ключевые персоны (v1-156 +
-золотой хребет) — ru-имена руками/сидами; ≥98% персон с ru-именем (авто+редактура);
-счётчики кластеров сверены. До достижения — датасет `v2` считается ЧЕРНОВИКОМ
-(в рантайм сайта не подключается, /rodosloviye/ живёт на v1).
+Структурный `build.mjs validate` **не является разрешением на публикацию**. Он отвечает
+только за машинные инварианты графа (циклы, duplicate IDs, dangling edge refs).
+
+Publication readiness проверяется отдельно:
+
+```bash
+node scripts/genealogy-v2-publication-audit.mjs
+node scripts/genealogy-v2-publication-audit.mjs --strict-publish
+```
+
+До подключения v2 в runtime должны одновременно выполняться:
+
+1. structural validate = PASS;
+2. 0 seed↔TIPNR gender mismatches;
+3. 0 неутверждённых fuzzy v1→TIPNR mappings;
+4. 0 unresolved relations, влияющих на публикуемые curated views;
+5. canonical RU display names для публикуемого корпуса не находятся в review queue;
+6. Matthew 1, Luke 3 и Table of Nations имеют explicit curated membership/sequence,
+   а не generic `ancestorsVia` / `refRange` traversal;
+7. `meta.status` осознанно переведён из `phase1-draft` после редакционной сертификации;
+8. runtime guard не находит импорта `data/genealogy/v2` до выполнения пунктов выше.
+
+Fuzzy matching — только вспомогательный кандидатный механизм. Он учитывает gender,
+source book/chapter и minimum score margin; неоднозначность остаётся `unmatched`, а не
+автоматически превращается в факт.
+
+Начиная с pipeline `0.2.x`, машинным источником publication evidence является
+`meta.json.publicationEvidence`: решения matcher-а, soft/unmatched/collisions,
+нерезолвнутые relation refs и размер RU review queue. `VALIDATION.md` — только
+человекочитаемый отчёт и не должен парситься как API после регенерации актуальным
+pipeline. Если версия pipeline актуальна, а structured evidence отсутствует или
+расходится с данными, publication audit блокирует выпуск.
+
+`meta.json.inputs.v1Skeleton` также фиксирует путь, число персон и SHA256 точного
+`data/genealogy/genealogy.json`, использованного при build. Поэтому изменение v1
+автоматически делает старый v2 output непригодным для публикации до полной регенерации,
+даже если версия pipeline не изменилась.
+
+
+До достижения publication exit-критериев датасет `v2` считается **ЧЕРНОВИКОМ**
+и `/rodosloviye/` остаётся на canonical v1.

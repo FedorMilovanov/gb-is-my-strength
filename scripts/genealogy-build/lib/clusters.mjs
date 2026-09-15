@@ -13,7 +13,7 @@ import { parseRef } from './refs.mjs';
 export const CLUSTER_DEFS = [
   { id: 'antediluvian-patriarchs', titleRu: 'Допотопные патриархи',
     rule: { type: 'refRange', books: ['Gen'], chapters: [4, 5, 6] } },
-  { id: 'nations-of-noah', titleRu: 'Народы от Ноя',
+  { id: 'nations-of-noah', titleRu: 'Быт 10–11: родословный контекст',
     rule: { type: 'refRange', books: ['Gen'], chapters: [10, 11] } },
   { id: 'abraham-descendants', titleRu: 'Потомки Авраама',
     rule: { type: 'descendants', rootKey: 'Abraham@Gen.11.26' } },

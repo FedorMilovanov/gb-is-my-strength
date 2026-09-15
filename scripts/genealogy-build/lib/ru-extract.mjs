@@ -57,6 +57,33 @@ export function patternCandidates(text) {
   return out;
 }
 
+/**
+ * TIPNR содержит структурные псевдоперсоны вроде father_of_Mamre,
+ * a_wife_of_Lot, daughter1_of_Lot. Это не имена и их нельзя транслитерировать
+ * как «Фафероф...». Возвращаем честную анонимную роль; конкретная связь живёт
+ * в relation graph и не дублируется в display-name.
+ */
+export function structuralRuLabel(enName) {
+  const raw = String(enName).split('|')[0].trim();
+  const normalized = raw.toLowerCase().replace(/[-\s]+/g, '_');
+  const patterns = [
+    [/^(?:a_)?father_of_.+$/, 'Отец (имя не указано)'],
+    [/^(?:a_)?mother_of_.+$/, 'Мать (имя не указано)'],
+    [/^(?:a_)?wife_of_.+$/, 'Жена (имя не указано)'],
+    [/^(?:a_)?husband_of_.+$/, 'Муж (имя не указано)'],
+    [/^daughter1_of_.+$/, 'Первая дочь (имя не указано)'],
+    [/^daughter2_of_.+$/, 'Вторая дочь (имя не указано)'],
+    [/^(?:a_)?daughter_of_.+$/, 'Дочь (имя не указано)'],
+    [/^son1_of_.+$/, 'Первый сын (имя не указано)'],
+    [/^son2_of_.+$/, 'Второй сын (имя не указано)'],
+    [/^(?:a_)?son_of_.+$/, 'Сын (имя не указано)'],
+    [/^(?:a_)?brother_of_.+$/, 'Брат (имя не указано)'],
+    [/^(?:a_)?sister_of_.+$/, 'Сестра (имя не указано)'],
+  ];
+  const match = patterns.find(([re]) => re.test(normalized));
+  return match ? { name: match[1], source: 'structural', confidence: 1, review: false, anonymous: true } : null;
+}
+
 /** Грубая транслитерация библейского EN-имени в русскую форму (для скоринга и фолбэка). */
 export function translitEnRu(en) {
   let s = String(en).toLowerCase()
@@ -106,16 +133,35 @@ export function similarity(a, b) {
 export function normalizeRuCandidate(en, cand) {
   const e = String(en).split('|')[0].trim();
   let c = String(cand);
-  // 1) притяжательное -ов/-ев (но не законные -ов/-ев в самих именах EN: -ov/-ev)
+  // 1) Притяжательное -ов/-ев. Само окончание недостаточно: «Халев» — уже
+  //    каноническая форма, а не притяжательное от «Хал». Принимаем срез только
+  //    если он действительно приближает русскую форму к EN-транслитерации.
   if (/[а-яё](ов|ев)$/.test(c) && !/(ov|ev)$/i.test(e)) {
-    let stem = c.replace(/(ов|ев)$/, '');
-    if (/ias$/i.test(e)) return stem.endsWith('и') ? stem + 'я' : stem + 'ия';
-    if (/i$/i.test(e)) return stem.endsWith('и') ? stem + 'й' : stem + 'ий';
-    return stem;
+    const stem = c.replace(/(ов|ев)$/, '');
+    let proposal = stem;
+    if (/ias$/i.test(e)) proposal = stem.endsWith('и') ? stem + 'я' : stem + 'ия';
+    else if (/i$/i.test(e)) proposal = stem.endsWith('и') ? stem + 'й' : stem + 'ий';
+    const approx = translitEnRu(e);
+    // The possessive form can be exactly as close to the rough EN transliteration
+    // as the canonical nominative (Mattathias: Маттафиев → Маттафия). Once the
+    // morphology produced a distinct proposal, accept it when it does not make
+    // the transliteration fit worse; this still preserves guards such as Caleb
+    // → Халев, where stripping -ев materially decreases similarity.
+    if (proposal !== c && similarity(approx, proposal) >= similarity(approx, c)) return proposal;
   }
   // 2) вин./род. «-а» при EN на твёрдую согласную (Elnathan → Елнафан[а])
   if (/[бвгджзклмнпрстфхцчшщ]а$/.test(c) && /[bcdfgklmnpqrstvxz]$/i.test(e) && c.length >= 5) {
     return c.slice(0, -1);
+  }
+  // 3) -ia/-iah: род./дат. -ии → именит. -ия (Марии→Мария).
+  if (/(?:ia|iah)$/i.test(e) && /ии$/u.test(c) && c.length >= 4) {
+    return c.slice(0, -1) + 'я';
+  }
+  // 4) русская косвенная форма имён, чья canonical форма по EN оканчивается на -a/-ah.
+  //    Шеву→Шева, Хавилу→Хавила, Иски→Иска, Елисавету→Елисавета.
+  if (/(?:a|ah)$/i.test(e) && c.length >= 4) {
+    if (/у$/u.test(c)) return c.slice(0, -1) + 'а';
+    if (/[ыи]$/u.test(c)) return c.slice(0, -1) + 'а';
   }
   return c;
 }
@@ -140,8 +186,16 @@ export function extractRuName(enName, verses) {
     for (const c of pats) scored.push({ c, bonus: 0.25, via: 'pattern' });
     for (const c of caps) scored.push({ c, bonus: 0, via: 'candidate' });
     for (const { c, bonus, via } of scored) {
-      const score = similarity(approx, c) + bonus - Math.abs(v.offset) * 0.03;
-      if (!best || score > best.score) best = { score, c, via, verseRef: v.ref };
+      const lexicalSimilarity = similarity(approx, c);
+      // A syntactic name-pattern is evidence that the token is *an* name, not
+      // that it is the current TIPNR person. Never let the pattern bonus rescue
+      // a poor lexical match from a neighbouring person in the verse window.
+      const minLexicalSimilarity = via === 'pattern' ? 0.68 : 0.62;
+      if (lexicalSimilarity < minLexicalSimilarity) continue;
+      const score = lexicalSimilarity + bonus - Math.abs(v.offset) * 0.03;
+      if (!best || score > best.score) {
+        best = { score, lexicalSimilarity, c, via, verseRef: v.ref };
+      }
     }
   }
 
@@ -150,8 +204,9 @@ export function extractRuName(enName, verses) {
     return {
       name: normalized,
       source: best.via,
-      confidence: Number(best.score.toFixed(3)),
-      review: best.score < 0.8 || normalized !== best.c,
+      confidence: Number(Math.min(1, best.score).toFixed(3)),
+      // Similarity is machine confidence, never an editorial approval.
+      review: true,
       verseForm: normalized !== best.c ? best.c : undefined,
       verseRef: best.verseRef,
     };
