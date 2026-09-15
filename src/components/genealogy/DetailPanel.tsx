@@ -13,6 +13,7 @@ import { getLineStyle, ERA_META, ROLE_LABELS } from './theme';
 interface DetailPanelProps {
   person: Person | null;
   relations?: RuntimeGenealogyRelation[];
+  persons?: Person[];
   onInspectRelation?: (relation: RuntimeGenealogyRelation) => void;
   onClose: () => void;
 }
@@ -38,7 +39,7 @@ function compareText(left: string, right: string) {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
-function DetailPanelComponent({ person, relations = [], onInspectRelation, onClose }: DetailPanelProps) {
+function DetailPanelComponent({ person, relations = [], persons = [], onInspectRelation, onClose }: DetailPanelProps) {
   const panel = useRef<HTMLElement | null>(null);
   useEffect(() => { if (person) panel.current?.querySelector<HTMLButtonElement>('button')?.focus({ preventScroll: true }); }, [person?.id]);
   if (!person) return null;
@@ -47,11 +48,7 @@ function DetailPanelComponent({ person, relations = [], onInspectRelation, onClo
   const era = person.era ? ERA_META[person.era] : null;
   const chron = person.chronology?.mt;
   const roleLabel = person.role ? ROLE_LABELS[person.role] : undefined;
-  const byId = new Map(relations.flatMap(relation => [
-    [relation.from, relation],
-    [relation.to, relation],
-  ]));
-  void byId;
+  const personById = new Map(persons.map(item => [item.id, item]));
   const personRelations = relations
     .filter(relation => relation.from === person.id || relation.to === person.id)
     .sort((a, b) =>
@@ -177,10 +174,7 @@ function DetailPanelComponent({ person, relations = [], onInspectRelation, onClo
           <div className="genealogy-person-relations__list">
             {personRelations.map(relation => {
               const peerId = relation.from === person.id ? relation.to : relation.from;
-              const peer = relations.length
-                ? undefined
-                : undefined;
-              const peerName = peerId;
+              const peerName = personById.get(peerId)?.name.ru ?? peerId;
               return (
                 <button
                   key={relation.id}
