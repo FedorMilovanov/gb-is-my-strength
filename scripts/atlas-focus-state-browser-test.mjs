@@ -10,6 +10,13 @@ const DIST = path.join(ROOT, 'dist');
 const REPORT_DIR = path.join(ROOT, 'reports', 'atlas-focus-state');
 const ROUTE = '/map/';
 const BROWSERS = { chromium, webkit };
+// CI runs the full matrix. Local runs may narrow it explicitly when a browser
+// binary is unavailable; the default always remains Chromium + WebKit.
+const BROWSER_FILTER = (process.env.ATLAS_FOCUS_BROWSERS || '').split(',').map((name) => name.trim()).filter(Boolean);
+const SELECTED_BROWSERS = BROWSER_FILTER.length
+  ? Object.fromEntries(Object.entries(BROWSERS).filter(([name]) => BROWSER_FILTER.includes(name)))
+  : BROWSERS;
+assert.ok(Object.keys(SELECTED_BROWSERS).length, `ATLAS_FOCUS_BROWSERS selected no known browser: ${BROWSER_FILTER.join(',')}`);
 const WIDTHS = [390, 680, 681, 980, 981, 1440];
 const HEIGHT = 900;
 
@@ -279,7 +286,29 @@ async function runCase(browserName, browserType, baseUrl, width) {
       });
       await page.setViewportSize({ width: 981, height: HEIGHT });
       await waitForResponsiveState(page, 981);
-      await waitForFocusState(page, 'desktop-theme');
+      try {
+        await waitForFocusState(page, 'desktop-theme');
+      } catch (error) {
+        const focusDebug = await page.evaluate(() => {
+          const active = document.activeElement;
+          const target = document.querySelector('#atlasSidebar [data-atlas-group]');
+          const sidebar = document.getElementById('atlasSidebar');
+          const trigger = document.getElementById('atlasFilterTrigger');
+          return {
+            activeTag: active?.tagName || null,
+            activeId: active?.id || null,
+            activeClass: active?.className || null,
+            activeRects: active?.getClientRects?.().length ?? null,
+            targetRects: target?.getClientRects?.().length ?? null,
+            geometryReads: Number(window.__atlasFocusGeometryReadsForTest || 0),
+            sidebarInert: sidebar?.hasAttribute('inert') ?? null,
+            sidebarAriaHidden: sidebar?.getAttribute('aria-hidden') ?? null,
+            triggerRects: trigger?.getClientRects?.().length ?? null,
+            drawer: matchMedia('(max-width: 980px)').matches,
+          };
+        });
+        throw new Error(`${browserName}/${width} open-drawer-to-desktop timeout: ${JSON.stringify(focusDebug)}\n${error.stack || error}`);
+      }
       const layoutWitness = await page.evaluate(() => {
         const target = document.querySelector('#atlasSidebar [data-atlas-group]');
         const geometryReads = Number(window.__atlasFocusGeometryReadsForTest || 0);
@@ -342,7 +371,7 @@ async function main() {
   const server = await startServer();
   const results = [];
   try {
-    for (const [browserName, browserType] of Object.entries(BROWSERS)) {
+    for (const [browserName, browserType] of Object.entries(SELECTED_BROWSERS)) {
       for (const width of WIDTHS) results.push(await runCase(browserName, browserType, server.baseUrl, width));
     }
   } finally {
