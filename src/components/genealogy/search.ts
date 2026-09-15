@@ -26,36 +26,25 @@ export interface GenealogySearchResult {
 }
 
 function bestMatch(person: Person, query: string): Omit<GenealogySearchResult, 'person'> | null {
-  const candidates: Array<{ score: number; matchedField: GenealogySearchResult['matchedField'] } | null> = [
-    fieldScore(person.id, query, 0, 4, 12) == null ? null : {
-      score: fieldScore(person.id, query, 0, 4, 12)!,
-      matchedField: 'id',
-    },
-    fieldScore(person.name.ru, query, 1, 5, 10) == null ? null : {
-      score: fieldScore(person.name.ru, query, 1, 5, 10)!,
-      matchedField: 'ru',
-    },
-    fieldScore(person.name.altName, query, 2, 6, 11) == null ? null : {
-      score: fieldScore(person.name.altName, query, 2, 6, 11)!,
-      matchedField: 'altName',
-    },
-    fieldScore(person.name.birthName, query, 2, 6, 11) == null ? null : {
-      score: fieldScore(person.name.birthName, query, 2, 6, 11)!,
-      matchedField: 'birthName',
-    },
-    fieldScore(person.name.he, query, 3, 7, 13) == null ? null : {
-      score: fieldScore(person.name.he, query, 3, 7, 13)!,
-      matchedField: 'he',
-    },
-    fieldScore(person.name.greek, query, 3, 7, 13) == null ? null : {
-      score: fieldScore(person.name.greek, query, 3, 7, 13)!,
-      matchedField: 'greek',
-    },
-    fieldScore(person.ref, query, 8, 9, 14) == null ? null : {
-      score: fieldScore(person.ref, query, 8, 9, 14)!,
-      matchedField: 'ref',
-    },
-  ].filter((candidate): candidate is { score: number; matchedField: GenealogySearchResult['matchedField'] } => Boolean(candidate));
+  const candidates: Array<{ score: number; matchedField: GenealogySearchResult['matchedField'] }> = [];
+  const addCandidate = (
+    value: string | null | undefined,
+    matchedField: GenealogySearchResult['matchedField'],
+    exact: number,
+    prefix: number,
+    contains: number,
+  ) => {
+    const score = fieldScore(value, query, exact, prefix, contains);
+    if (score !== null) candidates.push({ score, matchedField });
+  };
+
+  addCandidate(person.id, 'id', 0, 4, 12);
+  addCandidate(person.name.ru, 'ru', 1, 5, 10);
+  addCandidate(person.name.altName, 'altName', 2, 6, 11);
+  addCandidate(person.name.birthName, 'birthName', 2, 6, 11);
+  addCandidate(person.name.he, 'he', 3, 7, 13);
+  addCandidate(person.name.greek, 'greek', 3, 7, 13);
+  addCandidate(person.ref, 'ref', 8, 9, 14);
 
   if (!candidates.length) return null;
   candidates.sort((a, b) => a.score - b.score || compareText(a.matchedField, b.matchedField));
