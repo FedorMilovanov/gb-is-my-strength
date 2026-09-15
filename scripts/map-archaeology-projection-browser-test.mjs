@@ -8,6 +8,8 @@ if (!browserType) throw new Error(`unsupported browser ${browserName}`);
 
 const engine = fs.readFileSync('karty/_engine/map-engine.js', 'utf8');
 const route = {
+  archetype: 'route',
+  capabilities: ['stages','stories','interpretations'],
   meta: { id: 'projection-test', title: 'Projection test', viewport_init: { cx: 500, cy: 400, w: 900 } },
   stages: [{ n: 'I', t: 'Test', ids: ['ur', 'hammam'] }],
   stories: [{ id: 'main', label: 'Main', place_ids: ['ur', 'hammam'], stage_ids: [0], active_by_default: true }],
