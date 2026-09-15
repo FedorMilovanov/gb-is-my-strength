@@ -152,11 +152,7 @@ async function exerciseHeadingAnchor(page, label) {
   assert.equal(await anchor.getAttribute('aria-label'), 'Скопировать ссылку на раздел', `${label}: heading anchor accessibility label drift`);
 
   const expectedUrl = await page.evaluate((fragment) => new URL(fragment, window.location.href).toString(), href);
-  const hitTestBeforeClick = await anchor.evaluate((node) => {
-    const rect = node.getBoundingClientRect();
-    const x = rect.left + rect.width / 2;
-    const y = rect.top + rect.height / 2;
-    const hit = document.elementFromPoint(x, y);
+  const hitTestBeforeClick = await anchor.evaluate(async (node) => {
     const describe = (target) => {
       if (!(target instanceof Element)) {
         return {
@@ -171,14 +167,40 @@ async function exerciseHeadingAnchor(page, label) {
         closestAnchorHref: target.closest('.heading-anchor')?.getAttribute('href') || '',
       };
     };
-    return {
-      rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
-      center: { x, y },
-      pointerEvents: getComputedStyle(node).pointerEvents,
-      opacity: getComputedStyle(node).opacity,
-      hit: describe(hit),
+    const sample = () => {
+      const rect = node.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      const hit = document.elementFromPoint(x, y);
+      return {
+        rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+        center: { x, y },
+        pointerEvents: getComputedStyle(node).pointerEvents,
+        opacity: getComputedStyle(node).opacity,
+        hit: describe(hit),
+        ownedHit: hit instanceof Element
+          && hit.closest('.heading-anchor[data-gb-heading-anchor-owner="native-v1"]') === node,
+      };
     };
+    const stable = (left, right) => left && right
+      && Math.abs(left.rect.x - right.rect.x) <= 0.25
+      && Math.abs(left.rect.y - right.rect.y) <= 0.25
+      && Math.abs(left.rect.width - right.rect.width) <= 0.25
+      && Math.abs(left.rect.height - right.rect.height) <= 0.25;
+
+    let previous = null;
+    let stableFrames = 0;
+    for (let frame = 0; frame < 120; frame += 1) {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      const next = sample();
+      stableFrames = stable(previous, next) && next.ownedHit ? stableFrames + 1 : 0;
+      previous = next;
+      if (stableFrames >= 3) return { ...next, stableFrames };
+    }
+    return { ...sample(), stableFrames };
   });
+  assert.equal(hitTestBeforeClick.ownedHit, true, `${label}: heading-anchor center is not a stable native hit target; ${JSON.stringify(hitTestBeforeClick)}`);
+  assert.ok(hitTestBeforeClick.stableFrames >= 3, `${label}: heading-anchor geometry did not settle before pointer activation; ${JSON.stringify(hitTestBeforeClick)}`);
   await page.evaluate(() => {
     window.__gbAnchorFeedbackSeen = false;
     const markFeedback = () => {
@@ -244,7 +266,7 @@ async function exerciseHeadingAnchor(page, label) {
     window.__gbAnchorCaptureProbe = capture;
     window.__gbAnchorBubbleProbe = bubble;
   });
-  await anchor.click();
+  await page.mouse.click(hitTestBeforeClick.center.x, hitTestBeforeClick.center.y);
   try {
     await page.waitForFunction(
       () => document.getElementById('anchor-copy-toast')?.classList.contains('is-visible') === true
