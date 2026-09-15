@@ -542,26 +542,29 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
               aria-activedescendant={activeSearchOptionId}
             />
             {searchNeedsChoice && (
-              <div className="genealogy-search-popover">
-                <ul id={searchListId} role="listbox" aria-label="Люди с похожим именем">
-                  {visibleSearchResults.map((result, index) => (
-                    <li
-                      key={result.person.id}
-                      id={`genealogy-search-option-${result.person.id}`}
-                      role="option"
-                      aria-selected={searchCursor === index}
-                      data-person-id={result.person.id}
-                      aria-label={genealogySearchOptionLabel(result.person)}
-                      onPointerDown={event => {
-                        event.preventDefault();
-                        chooseSearchPerson(result.person.id);
-                      }}
-                    >
-                      <strong>{result.person.name.ru}</strong>
-                      <span>{genealogySearchOptionContext(result.person)}</span>
-                    </li>
-                  ))}
-                </ul>
+              <div
+                id={searchListId}
+                className="genealogy-search-popover"
+                role="listbox"
+                aria-label="Люди с похожим именем"
+              >
+                {visibleSearchResults.map((result, index) => (
+                  <div
+                    key={result.person.id}
+                    id={`genealogy-search-option-${result.person.id}`}
+                    role="option"
+                    aria-selected={searchCursor === index}
+                    data-person-id={result.person.id}
+                    aria-label={genealogySearchOptionLabel(result.person)}
+                    onPointerDown={event => {
+                      event.preventDefault();
+                      chooseSearchPerson(result.person.id);
+                    }}
+                  >
+                    <strong>{result.person.name.ru}</strong>
+                    <span>{genealogySearchOptionContext(result.person)}</span>
+                  </div>
+                ))}
                 {searchResults.length > visibleSearchResults.length && (
                   <p>Ещё {searchResults.length - visibleSearchResults.length} — уточните запрос</p>
                 )}
