@@ -2,7 +2,7 @@
   "meta": {
     "title": "Родословие от Адама до Христа",
     "subtitle": "Генеалогия Священного Писания",
-    "version": "2026-06-19-v3-integrity-fix",
+    "version": "2026-09-13-gospel-sequences",
     "chronologyBase": "Masoretic Text (MT)",
     "perspective": "Young-earth, historical-grammatical, Bible-first",
     "centralIdea": "Все линии ведут к воплощению Сына Божия"
@@ -1030,10 +1030,25 @@
       ],
       "ref": "Мф 1:16,18–25; Лк 1:26–56",
       "lineage": "messianic-luke",
-      "significance": "Мать Иисуса. Кровная линия через Нафана (Лк 3). Дева (Ис 7:14).",
+      "significance": "Мать Иисуса; девственное рождение (Мф 1:18–25; Лк 1:26–35). Связь с Илием показана согласно гармонизации родословия Луки через Марию; в Лк 3:23 имя Марии не названо.",
       "era": "incarnation",
       "gender": "f",
-      "role": "matriarch"
+      "role": "matriarch",
+      "disputed": {
+        "level": "genealogical",
+        "positions": [
+          {
+            "view": "В гармонизации через Марию Илий рассматривается как её отец, а Иосиф — как его зять.",
+            "proponents": "Гармонизация, используемая в этой карте",
+            "evidence": "Лк 3:23 называет Иосифа и Илия; родство Илия и Марии в стихе прямо не указано."
+          },
+          {
+            "view": "Другая гармонизация связывает две родословные с Иосифом, различая юридическое и биологическое родство.",
+            "proponents": "Альтернативное объяснение",
+            "evidence": "Сопоставление Мф 1:16 и Лк 3:23."
+          }
+        ]
+      }
     },
     {
       "id": "joseph_nt",
@@ -2319,9 +2334,9 @@
         "jeconiah"
       ],
       "chronology": null,
-      "ref": "4Цар 23:34; 1Пар 3:16",
+      "ref": "4Цар 23:34; 1Пар 3:16; Мф 1:11 (Синодальный перевод)",
       "lineage": "messianic-matthew",
-      "significance": "Царь. Пропущен в Мф 1 (Иосия «родил Иехонию»). Контекст плена.",
+      "significance": "Царь Иудеи, отец Иехонии. В Синодальном переводе назван в Мф 1:11; в ряде других текстовых изданий это имя отсутствует.",
       "era": "kings",
       "gender": "m",
       "role": "king",
@@ -3078,7 +3093,7 @@
       "mother": null,
       "spouse": [],
       "children": [
-        "simeon_lk2"
+        "matthat_lk2"
       ],
       "chronology": null,
       "ref": "Лк 3:26-30",
@@ -3090,61 +3105,21 @@
       "disputed": null
     },
     {
-      "id": "simeon_lk2",
+      "id": "matthat_lk2",
       "name": {
-        "ru": "Симеон (Лк)"
+        "ru": "Матфат (Лк 3:24)"
       },
       "father": "levi_lk2",
-      "mother": null,
-      "spouse": [],
-      "children": [
-        "judah_lk2"
-      ],
-      "chronology": null,
-      "ref": "Лк 3:26-30",
-      "lineage": "messianic-luke",
-      "significance": "В Лк ветви.",
-      "era": "exile",
-      "gender": "m",
-      "role": "person",
-      "disputed": null
-    },
-    {
-      "id": "judah_lk2",
-      "name": {
-        "ru": "Иуда (Лк)"
-      },
-      "father": "simeon_lk2",
-      "mother": null,
-      "spouse": [],
-      "children": [
-        "joseph_lk3"
-      ],
-      "chronology": null,
-      "ref": "Лк 3:26-30",
-      "lineage": "messianic-luke",
-      "significance": "В Лк ветви.",
-      "era": "exile",
-      "gender": "m",
-      "role": "person",
-      "disputed": null
-    },
-    {
-      "id": "joseph_lk3",
-      "name": {
-        "ru": "Иосиф (Лк, отец Илий?)"
-      },
-      "father": "judah_lk2",
       "mother": null,
       "spouse": [],
       "children": [
         "heli_lk"
       ],
       "chronology": null,
-      "ref": "Лк 3:23-26",
+      "ref": "Лк 3:24",
       "lineage": "messianic-luke",
-      "significance": "",
-      "era": "exile",
+      "significance": "Матфат, названный между Илием и Левием в Лк 3:23–24. Отличается от Матфата в Лк 3:29.",
+      "era": "incarnation",
       "gender": "m",
       "role": "person",
       "disputed": null
@@ -3155,7 +3130,7 @@
         "ru": "Илий",
         "he": "Ἠλὶ"
       },
-      "father": "joseph_lk3",
+      "father": "matthat_lk2",
       "mother": null,
       "spouse": [
         "mary_mother"
@@ -3166,25 +3141,39 @@
       "chronology": null,
       "ref": "Лк 3:23",
       "lineage": "messianic-luke",
-      "significance": "Отец Марии (по кровной Лк линии). Лк 3:23: «Иисус... был, как думали, сын Иосифов, [сын] Илиев».",
+      "significance": "Илий назван в Лк 3:23 после Иосифа. Отождествление его с отцом Марии относится к гармонизации родословных; сам стих этого прямо не утверждает.",
       "era": "incarnation",
       "gender": "m",
       "role": "patriarch",
-      "disputed": null
+      "disputed": {
+        "level": "genealogical",
+        "positions": [
+          {
+            "view": "В гармонизации через Марию Илий рассматривается как её отец, а Иосиф — как его зять.",
+            "proponents": "Гармонизация, используемая в этой карте",
+            "evidence": "Лк 3:23 называет Иосифа и Илия; родство Илия и Марии в стихе прямо не указано."
+          },
+          {
+            "view": "Другая гармонизация связывает две родословные с Иосифом, различая юридическое и биологическое родство.",
+            "proponents": "Альтернативное объяснение",
+            "evidence": "Сопоставление Мф 1:16 и Лк 3:23."
+          }
+        ]
+      }
     },
     {
       "id": "abihud_mt",
       "name": {
         "ru": "Авиуд (Мф)"
       },
-      "father": null,
+      "father": "zerubbabel",
       "mother": null,
       "spouse": [],
       "children": [
         "eliakim_mt"
       ],
       "chronology": null,
-      "ref": "Мф 1:13-16",
+      "ref": "Мф 1:13",
       "lineage": "messianic-matthew",
       "significance": "В Матфеевой линии.",
       "era": "exile",
@@ -3197,14 +3186,14 @@
       "name": {
         "ru": "Елиаким (Мф)"
       },
-      "father": null,
+      "father": "abihud_mt",
       "mother": null,
       "spouse": [],
       "children": [
         "azor_mt"
       ],
       "chronology": null,
-      "ref": "Мф 1:13-16",
+      "ref": "Мф 1:13",
       "lineage": "messianic-matthew",
       "significance": "В Матфеевой линии.",
       "era": "exile",
@@ -3217,14 +3206,14 @@
       "name": {
         "ru": "Азор (Мф)"
       },
-      "father": null,
+      "father": "eliakim_mt",
       "mother": null,
       "spouse": [],
       "children": [
         "zadok_mt"
       ],
       "chronology": null,
-      "ref": "Мф 1:13-16",
+      "ref": "Мф 1:13–14",
       "lineage": "messianic-matthew",
       "significance": "В Матфеевой линии.",
       "era": "exile",
@@ -3237,14 +3226,14 @@
       "name": {
         "ru": "Садок (Мф)"
       },
-      "father": null,
+      "father": "azor_mt",
       "mother": null,
       "spouse": [],
       "children": [
         "achim_mt"
       ],
       "chronology": null,
-      "ref": "Мф 1:13-16",
+      "ref": "Мф 1:14",
       "lineage": "messianic-matthew",
       "significance": "В Матфеевой линии.",
       "era": "exile",
@@ -3257,14 +3246,14 @@
       "name": {
         "ru": "Ахим (Мф)"
       },
-      "father": null,
+      "father": "zadok_mt",
       "mother": null,
       "spouse": [],
       "children": [
         "eliud_mt"
       ],
       "chronology": null,
-      "ref": "Мф 1:13-16",
+      "ref": "Мф 1:14",
       "lineage": "messianic-matthew",
       "significance": "В Матфеевой линии.",
       "era": "exile",
@@ -3277,14 +3266,14 @@
       "name": {
         "ru": "Елиуд (Мф)"
       },
-      "father": null,
+      "father": "achim_mt",
       "mother": null,
       "spouse": [],
       "children": [
         "eleazar_mt"
       ],
       "chronology": null,
-      "ref": "Мф 1:13-16",
+      "ref": "Мф 1:14–15",
       "lineage": "messianic-matthew",
       "significance": "В Матфеевой линии.",
       "era": "exile",
@@ -3297,14 +3286,14 @@
       "name": {
         "ru": "Елеазар (Мф)"
       },
-      "father": null,
+      "father": "eliud_mt",
       "mother": null,
       "spouse": [],
       "children": [
         "matthan_mt"
       ],
       "chronology": null,
-      "ref": "Мф 1:13-16",
+      "ref": "Мф 1:15",
       "lineage": "messianic-matthew",
       "significance": "В Матфеевой линии.",
       "era": "exile",
@@ -3317,14 +3306,14 @@
       "name": {
         "ru": "Матфан (Мф)"
       },
-      "father": null,
+      "father": "eleazar_mt",
       "mother": null,
       "spouse": [],
       "children": [
         "jacob_mt"
       ],
       "chronology": null,
-      "ref": "Мф 1:13-16",
+      "ref": "Мф 1:15",
       "lineage": "messianic-matthew",
       "significance": "В Матфеевой линии.",
       "era": "exile",
@@ -3337,14 +3326,14 @@
       "name": {
         "ru": "Иаков (Мф)"
       },
-      "father": null,
+      "father": "matthan_mt",
       "mother": null,
       "spouse": [],
       "children": [
         "joseph_nt"
       ],
       "chronology": null,
-      "ref": "Мф 1:13-16",
+      "ref": "Мф 1:15–16",
       "lineage": "messianic-matthew",
       "significance": "В Матфеевой линии.",
       "era": "exile",
@@ -3544,5 +3533,5 @@
       "disputed": null
     }
   ],
-  "_status": "v3-integrity: all parent references fixed, children arrays consistent, deathAM computed. 156 persons, 0 orphan references."
+  "_status": "Уточнены последовательность Лк 3:23–24 и связи Мф 1:13–16. Состав сравнения определяется gospel-sequences.json. Остальные ветви и редакционные отождествления требуют отдельной проверки."
 }
