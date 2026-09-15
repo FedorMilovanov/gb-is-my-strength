@@ -255,3 +255,38 @@
 `gill:chrome:guard` ✅ (канон v2.9, регрессии нет). JS-«ошибки» в скане — прежний CSP-шум favicon из манифеста (внешний домен), не ошибки страниц.
 
 Осознанно не правится: дизайнерский сдвиг колонки вправо на десктопе (общий для A/B, место под левый рельс); прозрачный фон верхней панели в сепии (панель красится слоем страницы); медиана 379px на diotrefy (см. 14.1).
+
+---
+
+## 15. Третий проход: контрактные гварды, корпус ревизий, контраст сепии (2026-09-15)
+
+### 15.1 `engine:guard` полностью зелёный
+
+* `engine:contracts` ✅ (reader/relation/Atlas-контракты, series-facade 45 потребителей).
+* `nagornaya:bar-asset:contract` ✅ — но после правок §13/§14 он начал падать: `sw.js` хранит code-owned литералы `?v=`_precache-списка, и четыре моих файла (site.css, reader-preferences.css, floating-cluster.css, floating-cluster-controller.js) получили новые хэши. Легальный рефреш: вручную обновить литералы в `sw.js` до хэшей из `cache-bust.js`, затем `node scripts/cache-bust.js --write` синхронизирует astro/HTML-литералы (ассерт fail-closed и не даёт `--write` чинить корпус за нас). После этого контракт проходит, включая adversarial-witness.
+* `engine:sweep` ✅ **221/221 PASS** + `map-runtime-fallback-browser-test` ✅. В песочнице не было playwright-браузера: `engine-sweep` уваживает `GB_PLAYWRIGHT_CHROMIUM` (обёртка над headless_shell из бандла @sparticuz с `--no-sandbox` и `LD_LIBRARY_PATH`), а для скриптов без хука wrapper положен по пути реестра `~/.cache/ms-playwright/chromium_headless_shell-1234/…/chrome-headless-shell` (CDN Playwright в песочнице недоступен). Это инфраструктура песочницы, не правки репозитория.
+* `gill:chrome:guard` ✅ (канон v2.9).
+
+### 15.2 Дубль `ReaderActionsRuntime.*.css` (§9): анализ, правка не требуется
+
+Два чанка в `dist/_astro/` — артефакт chunk-splitting Vite: компонент импортирует три css из `src/runtime/`, а блок `html[data-gb-article-tooltips-owner=…]` живёт в `src/runtime/article-tooltips.css` и попадает только в один чанк. Физически правило существует ровно один раз, поэтому порядок подключения **не меняет** применение блока (он применён всегда тем чанком, где есть); конфликтующих дублей правил между чанками нет. Рефактор импортов ради имени чанка = риск без выигрыша; оставлено осознанно.
+
+### 15.3 Контраст единой сепии (WCAG, расчёт)
+
+| Пара | Контраст | Норма |
+|---|---|---|
+| текст #493720 на surface #f6ecd6 | 9.67 | AA/AAA ✓ |
+| текст на canvas #eee3c8 | 8.89 | ✓ |
+| muted #76654d на surface | 4.78 | AA ✓ |
+| secondary #68543a на surface | 6.13 | ✓ |
+| accent #7b3f2b на surface | 6.91 | ✓ |
+| faint #907d61 на surface | 3.38 | микро-лейблы/UI (3:1 ✓); старая приватная палитра Gill имела 3.23 — не регресс |
+| muted на canvas | 4.40 | мета-строки; универсальная палитра сайта, общая для всех семейств |
+
+### 15.4 diotrefy: медиана 379px — артефакт метрики, не макета
+
+Замер (`r-rest6.mjs`): `main`, `.wave12-publication-boundary`, `.article-body` и первые абзацы = **445px** (контент page-wrap). Медиану 379 в r-scan дают узкие служебные `p` (киккер/байлайн), которых на этой странице больше половины; клиппинга и переполнений нет (0/0). Правка не требуется.
+
+### 15.5 Состояние после третьего прохода
+
+`strangler:build` ✅; `cache-bust` read-only ✅ (корпус синхронен); r-scan 148 загрузок: 0 clip / 0 ovfX / 0 404 (см. §14.4); engine:guard ✅ целиком. Изменённые файлы прохода: `sw.js` (литералы ревизий), astro-`PageHead`/`Head`-литералы `?v=` (синхронизация `cache-bust --write`).

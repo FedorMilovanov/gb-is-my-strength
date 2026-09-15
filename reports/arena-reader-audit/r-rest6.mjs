@@ -1,0 +1,10 @@
+import { chromium } from 'playwright';
+const browser=await chromium.connectOverCDP('http://127.0.0.1:9222');
+const ctx=browser.contexts()[0];
+const p=await ctx.newPage();await p.setViewportSize({width:1024,height:900});
+await p.goto('http://127.0.0.1:8080/articles/diotrefy-nashego-vremeni/',{waitUntil:'load'});await p.waitForTimeout(800);
+console.log(await p.evaluate(`(()=>{const b=document.querySelector('.wave12-publication-boundary');const ab=document.querySelector('.article-body');const m=document.querySelector('main');
+ const i=el=>{if(!el)return null;const cs=getComputedStyle(el);const r=el.getBoundingClientRect();return {w:+r.width.toFixed(0),pad:cs.paddingLeft+'/'+cs.paddingRight,mx:cs.marginLeft+'/'+cs.marginRight,maxW:cs.maxWidth};};
+ const par=[...ab.querySelectorAll(':scope > p')].slice(0,3).map(x=>+x.getBoundingClientRect().width.toFixed(0));
+ return {boundary:i(b), ab:i(ab), main:i(m), pWidths:par, abMax:getComputedStyle(ab).maxWidth};})()`));
+await p.close();await browser.close();
