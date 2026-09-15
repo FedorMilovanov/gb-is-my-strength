@@ -421,7 +421,6 @@ async function runAll() {
   await mkdir(PATHS.outDir, { recursive: true });
   const meta = {
     pipelineVersion: PIPELINE_VERSION,
-    generatedAt: new Date().toISOString(),
     counts: report.counts,
     sources: Object.fromEntries(Object.entries(SOURCES).map(([k, s]) => [k, { url: s.url, sha256: s.sha256, license: s.license }])),
     inputs: {
@@ -598,7 +597,7 @@ function validate(personsArr, edges, ctx) {
 
   const md = `# VALIDATION — data/genealogy/v2 (генерируется build.mjs)
 
-Пайплайн: ${PIPELINE_VERSION} · ${new Date().toISOString()}
+Пайплайн: ${PIPELINE_VERSION} · детерминированная сборка из pinned inputs
 
 ## Жёсткие инварианты — ${ok ? '✅ OK' : '❌ НАРУШЕНЫ'}
 
