@@ -27,24 +27,26 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const SERIES_PAGES = [
-  ['I', 'articles/20-antisovetov-pastoru/index.html'],
-  ['II', 'articles/anatomiya-padeniya-pyat-stadiy/index.html'],
-  ['III', 'articles/teksty-pisaniya-kotorymi-manipuliruyut/index.html'],
-  ['IV', 'articles/sem-tipov-razlichenie-uchiteley/index.html'],
-  ['V', 'articles/cerkovnaya-disciplina-vlast-granicy-zashchita/index.html'],
-  ['VI', 'articles/kogda-uhodit-kogda-ostavatsya/index.html'],
-  ['VII', 'articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo/index.html'],
-  ['VIII', 'articles/priznaki-zdorovoy-cerkvi/index.html'],
-  ['IX', 'articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi/index.html'],
-  ['A', 'articles/diotrefy-nashego-vremeni/index.html'],
+  ['I', '20-antisovetov-pastoru'],
+  ['II', 'anatomiya-padeniya-pyat-stadiy'],
+  ['III', 'teksty-pisaniya-kotorymi-manipuliruyut'],
+  ['IV', 'sem-tipov-razlichenie-uchiteley'],
+  ['V', 'cerkovnaya-disciplina-vlast-granicy-zashchita'],
+  ['VI', 'kogda-uhodit-kogda-ostavatsya'],
+  ['VII', 'vernye-i-neizvestnye-zdorovoe-pastyrstvo'],
+  ['VIII', 'priznaki-zdorovoy-cerkvi'],
+  ['IX', 'nesovershennyy-chelovek-v-nesovershennoy-cerkvi'],
+  ['A', 'diotrefy-nashego-vremeni'],
 ];
+const distArticleRel = (slug) => path.join('articles', slug, 'index.html');
 const QUIZ_ROUTES = SERIES_PAGES.filter(([part]) => part !== 'A'); // Dossier A: no quiz by owner decision
 
 const issues = [];
 const fail = (guard, part, msg) => issues.push(`[${guard}] [${part}] ${msg}`);
 
 const pages = {};
-for (const [part, rel] of SERIES_PAGES) {
+for (const [part, slug] of SERIES_PAGES) {
+  const rel = distArticleRel(slug);
   const file = path.join(ROOT, 'dist', rel);
   if (!fs.existsSync(file)) {
     fail('DIST', part, `missing dist page: ${rel}`);
@@ -93,9 +95,6 @@ for (const [part, html] of Object.entries(pages)) {
 }
 
 /* G-7 — quiz block inside the pagefind article root */
-for (const [part, html] of QUIZ_ROUTES.map(([, rel]) => [rel, null])) {
-  // map rel -> part
-}
 for (const [part] of QUIZ_ROUTES) {
   const html = pages[part];
   if (!html) continue;
@@ -137,7 +136,7 @@ for (const [part] of QUIZ_ROUTES) {
 {
   const { readRegistry } = require('./lib/editorial-metadata');
   const registry = readRegistry();
-  const seriesRoutes = SERIES_PAGES.map(([, rel]) => `/${rel.replace(/index\.html$/, '')}`);
+  const seriesRoutes = SERIES_PAGES.map(([, slug]) => `/articles/${slug}/`);
   for (const route of seriesRoutes) {
     const record = registry.records[route];
     if (!record) {
@@ -153,7 +152,7 @@ for (const [part] of QUIZ_ROUTES) {
   const registrySeries = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'series.json'), 'utf8'));
   const parts = (registrySeries['pastor-series'] || {}).parts || [];
   const bySlug = new Map(parts.map((p) => [p.slug, p.readingTime]));
-  const slugByPart = Object.fromEntries(SERIES_PAGES.map(([part, rel]) => [part, rel.replace(/^articles\//, '').replace('/index.html', '')]));
+  const slugByPart = Object.fromEntries(SERIES_PAGES);
   let coreTotal = 0;
   for (const [part, slug] of Object.entries(slugByPart)) {
     if (part === 'A') continue;

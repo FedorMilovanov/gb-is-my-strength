@@ -2,41 +2,11 @@
   "nagornaya": {
     "title": "Нагорная проповедь",
     "parts": [
-      {
-        "n": 1,
-        "slug": "chast-1",
-        "title": "Два текста, один Иисус",
-        "status": "published",
-        "readingTime": 16
-      },
-      {
-        "n": 2,
-        "slug": "chast-2",
-        "title": "Как это записывалось",
-        "status": "published",
-        "readingTime": 11
-      },
-      {
-        "n": 3,
-        "slug": "chast-3",
-        "title": "Кому это сказано?",
-        "status": "published",
-        "readingTime": 12
-      },
-      {
-        "n": 4,
-        "slug": "chast-4",
-        "title": "Можно ли доверять Евангелиям?",
-        "status": "published",
-        "readingTime": 25
-      },
-      {
-        "n": 5,
-        "slug": "chast-5",
-        "title": "Закон, Евангелие и Нагорная проповедь",
-        "status": "published",
-        "readingTime": 25
-      }
+      {"n":1,"slug":"chast-1","title":"Два текста, один Иисус","status":"published","readingTime":16},
+      {"n":2,"slug":"chast-2","title":"Как это записывалось","status":"published","readingTime":11},
+      {"n":3,"slug":"chast-3","title":"Кому это сказано?","status":"published","readingTime":12},
+      {"n":4,"slug":"chast-4","title":"Можно ли доверять Евангелиям?","status":"published","readingTime":25},
+      {"n":5,"slug":"chast-5","title":"Закон, Евангелие и Нагорная проповедь","status":"published","readingTime":25}
     ],
     "baseUrl": "/nagornaya/"
   },
@@ -44,299 +14,69 @@
     "title": "Джон Гилл (1697–1771)",
     "baseUrl": "/articles/",
     "parts": [
-      {
-        "n": 1,
-        "slug": "dzhon-gill-istoricheskiy-kontekst",
-        "title": "Исторический контекст",
-        "status": "published",
-        "readingTime": 28
-      },
-      {
-        "n": 2,
-        "slug": "dzhon-gill-chast-1-chelovek",
-        "title": "Часть I. Человек",
-        "status": "published",
-        "readingTime": 32
-      },
-      {
-        "n": 3,
-        "slug": "dzhon-gill-chast-2-uchenyi",
-        "title": "Часть II. Учёный",
-        "status": "published",
-        "readingTime": 39
-      },
-      {
-        "n": 4,
-        "slug": "dzhon-gill-chast-4-ekzeget",
-        "title": "Часть III. Экзегет",
-        "status": "published",
-        "readingTime": 71
-      },
-      {
-        "n": 5,
-        "slug": "dzhon-gill-chast-3-nasledie",
-        "title": "Часть IV. Наследие",
-        "status": "published",
-        "readingTime": 54
-      },
-      {
-        "n": 6,
-        "slug": "dzhon-gill-spravochnik",
-        "title": "Справочник по Гиллу",
-        "status": "published",
-        "readingTime": 15
-      }
+      {"n":1,"slug":"dzhon-gill-istoricheskiy-kontekst","title":"Исторический контекст","status":"published","readingTime":28},
+      {"n":2,"slug":"dzhon-gill-chast-1-chelovek","title":"Часть I. Человек","status":"published","readingTime":32},
+      {"n":3,"slug":"dzhon-gill-chast-2-uchenyi","title":"Часть II. Учёный","status":"published","readingTime":39},
+      {"n":4,"slug":"dzhon-gill-chast-4-ekzeget","title":"Часть III. Экзегет","status":"published","readingTime":71},
+      {"n":5,"slug":"dzhon-gill-chast-3-nasledie","title":"Часть IV. Наследие","status":"published","readingTime":54},
+      {"n":6,"slug":"dzhon-gill-spravochnik","title":"Справочник по Гиллу","status":"published","readingTime":15}
     ]
   },
   "pastor-series": {
     "title": "Тёмная сторона кафедры",
     "baseUrl": "/articles/",
-    "searchPolicy": {
-      "landingRoute": "/pastor-series/",
-      "librarySection": "Служение",
-      "topicCategory": "Пасторство"
-    },
+    "searchPolicy": {"landingRoute":"/pastor-series/","librarySection":"Служение","topicCategory":"Пасторство"},
     "parts": [
-      {
-        "n": 1,
-        "slug": "20-antisovetov-pastoru",
-        "title": "20 антисоветов пастору",
-        "status": "published",
-        "readingTime": 67
-      },
-      {
-        "n": 2,
-        "slug": "anatomiya-padeniya-pyat-stadiy",
-        "title": "Анатомия падения: пять стадий институционального разложения",
-        "status": "published",
-        "readingTime": 29
-      },
-      {
-        "n": 3,
-        "slug": "teksty-pisaniya-kotorymi-manipuliruyut",
-        "title": "Тексты Писания, которыми манипулируют",
-        "status": "published",
-        "readingTime": 36
-      },
-      {
-        "n": 4,
-        "slug": "sem-tipov-razlichenie-uchiteley",
-        "title": "Семь типов: как различать учителей и лидеров",
-        "status": "published",
-        "readingTime": 30
-      },
-      {
-        "n": 5,
-        "slug": "cerkovnaya-disciplina-vlast-granicy-zashchita",
-        "title": "Церковная дисциплина: власть, границы и защита",
-        "status": "published",
-        "readingTime": 34
-      },
-      {
-        "n": 6,
-        "slug": "kogda-uhodit-kogda-ostavatsya",
-        "title": "Когда говорить, когда молчать; когда уходить, когда оставаться",
-        "status": "published",
-        "readingTime": 33
-      },
-      {
-        "n": 7,
-        "slug": "vernye-i-neizvestnye-zdorovoe-pastyrstvo",
-        "title": "Верные и неизвестные: здоровое пастырство",
-        "status": "published",
-        "readingTime": 31
-      },
-      {
-        "n": 8,
-        "slug": "priznaki-zdorovoy-cerkvi",
-        "title": "Признаки здоровой церкви",
-        "status": "published",
-        "readingTime": 30
-      },
-      {
-        "n": 9,
-        "slug": "nesovershennyy-chelovek-v-nesovershennoy-cerkvi",
-        "title": "Несовершенный человек в несовершенной церкви",
-        "status": "published",
-        "readingTime": 31
-      }
+      {"n":1,"slug":"20-antisovetov-pastoru","title":"20 антисоветов пастору","status":"published","readingTime":67},
+      {"n":2,"slug":"anatomiya-padeniya-pyat-stadiy","title":"Анатомия падения: пять стадий институционального разложения","status":"published","readingTime":9},
+      {"n":3,"slug":"teksty-pisaniya-kotorymi-manipuliruyut","title":"Тексты Писания, которыми манипулируют","status":"published","readingTime":14},
+      {"n":4,"slug":"sem-tipov-razlichenie-uchiteley","title":"Семь типов: как различать учителей и лидеров","status":"published","readingTime":9},
+      {"n":5,"slug":"cerkovnaya-disciplina-vlast-granicy-zashchita","title":"Церковная дисциплина: власть, границы и защита","status":"published","readingTime":11},
+      {"n":6,"slug":"kogda-uhodit-kogda-ostavatsya","title":"Когда говорить, когда молчать; когда уходить, когда оставаться","status":"published","readingTime":11},
+      {"n":7,"slug":"vernye-i-neizvestnye-zdorovoe-pastyrstvo","title":"Верные и неизвестные: здоровое пастырство","status":"published","readingTime":14},
+      {"n":8,"slug":"priznaki-zdorovoy-cerkvi","title":"Признаки здоровой церкви","status":"published","readingTime":11},
+      {"n":9,"slug":"nesovershennyy-chelovek-v-nesovershennoy-cerkvi","title":"Несовершенный человек в несовершенной церкви","status":"published","readingTime":11}
     ]
   },
   "hard-texts": {
     "title": "Тайны человеческого сердца",
     "baseUrl": "/articles/",
     "parts": [
-      {
-        "n": 0,
-        "slug": "chto-bibliya-nazyvaet-serdcem",
-        "title": "Библейская кардиология: что Библия называет сердцем",
-        "status": "published",
-        "readingTime": 39
-      },
-      {
-        "n": 1,
-        "slug": "krajne-li-isporcheno-serdce",
-        "title": "Крайне ли испорчено сердце верующего?",
-        "status": "published",
-        "readingTime": 41
-      },
-      {
-        "n": 2,
-        "slug": "rimlyanam-7-veruyushchiy-ili-neveruyushchiy",
-        "title": "Римлянам 7: верующий, неверующий или человек под законом?",
-        "status": "published",
-        "readingTime": 45
-      },
-      {
-        "n": 3,
-        "slug": "novoe-serdce",
-        "title": "Новое сердце: как Бог меняет то, что мы не смогли исправить",
-        "status": "published",
-        "readingTime": 38
-      },
-      {
-        "n": 4,
-        "slug": "serdce-i-duh",
-        "title": "Сердце и Дух: как Бог живёт в том, что Сам оживил",
-        "status": "published",
-        "readingTime": 42
-      },
-      {
-        "n": 5,
-        "slug": "serdce-spravochnik",
-        "title": "Сердце: библейский справочник",
-        "status": "published",
-        "readingTime": 23
-      }
+      {"n":0,"slug":"chto-bibliya-nazyvaet-serdcem","title":"Библейская кардиология: что Библия называет сердцем","status":"published","readingTime":39},
+      {"n":1,"slug":"krajne-li-isporcheno-serdce","title":"Крайне ли испорчено сердце верующего?","status":"published","readingTime":41},
+      {"n":2,"slug":"rimlyanam-7-veruyushchiy-ili-neveruyushchiy","title":"Римлянам 7: верующий, неверующий или человек под законом?","status":"published","readingTime":45},
+      {"n":3,"slug":"novoe-serdce","title":"Новое сердце: как Бог меняет то, что мы не смогли исправить","status":"published","readingTime":38},
+      {"n":4,"slug":"serdce-i-duh","title":"Сердце и Дух: как Бог живёт в том, что Сам оживил","status":"published","readingTime":42},
+      {"n":5,"slug":"serdce-spravochnik","title":"Сердце: библейский справочник","status":"published","readingTime":23}
     ]
   },
   "russian-baptism": {
     "title": "Баптисты России: история веры и совести",
     "baseUrl": "/baptisty-rossii/",
     "parts": [
-      {
-        "n": 1,
-        "slug": "noch-na-kure",
-        "title": "Воронин и ночь на Куре",
-        "status": "published",
-        "readingTime": 18
-      },
-      {
-        "n": 2,
-        "slug": "yuzhnaya-shtunda",
-        "title": "Южная штунда и первые крещения",
-        "status": "published",
-        "readingTime": 20
-      },
-      {
-        "n": 3,
-        "slug": "dva-sezda-1884",
-        "title": "Петербург и Ново-Васильевка: две развилки 1884 года",
-        "status": "published",
-        "readingTime": 17
-      },
-      {
-        "n": 4,
-        "slug": "peterburgskaya-liniya",
-        "title": "Петербургское пробуждение: Редсток, Пашков и Проханов",
-        "status": "published",
-        "readingTime": 21
-      },
-      {
-        "n": 5,
-        "slug": "goneniya-i-sovest",
-        "title": "Свобода совести и военный вопрос",
-        "status": "published",
-        "readingTime": 24
-      },
-      {
-        "n": 6,
-        "slug": "sovetskaya-noch",
-        "title": "Советская ночь: закон 1929 года и репрессии",
-        "status": "published",
-        "readingTime": 28
-      },
-      {
-        "n": 7,
-        "slug": "vsehib-1944",
-        "title": "ВСЕХБ 1944: один союз под надзором",
-        "status": "published",
-        "readingTime": 26
-      },
-      {
-        "n": 8,
-        "slug": "iniciativnaya-gruppa",
-        "title": "Инициативная группа: путь к Совету Церквей",
-        "status": "published",
-        "readingTime": 25
-      },
-      {
-        "n": 9,
-        "slug": "podpolnaya-pechat",
-        "title": "Подпольная печать: Вестники, «Христианин» и память узников",
-        "status": "published",
-        "readingTime": 23
-      },
-      {
-        "n": 10,
-        "slug": "spravochnik",
-        "title": "Справочник источников",
-        "status": "published",
-        "readingTime": 27
-      }
+      {"n":1,"slug":"noch-na-kure","title":"Воронин и ночь на Куре","status":"published","readingTime":18},
+      {"n":2,"slug":"yuzhnaya-shtunda","title":"Южная штунда и первые крещения","status":"published","readingTime":20},
+      {"n":3,"slug":"dva-sezda-1884","title":"Петербург и Ново-Васильевка: две развилки 1884 года","status":"published","readingTime":17},
+      {"n":4,"slug":"peterburgskaya-liniya","title":"Петербургское пробуждение: Редсток, Пашков и Проханов","status":"published","readingTime":21},
+      {"n":5,"slug":"goneniya-i-sovest","title":"Свобода совести и военный вопрос","status":"published","readingTime":24},
+      {"n":6,"slug":"sovetskaya-noch","title":"Советская ночь: закон 1929 года и репрессии","status":"published","readingTime":28},
+      {"n":7,"slug":"vsehib-1944","title":"ВСЕХБ 1944: один союз под надзором","status":"published","readingTime":26},
+      {"n":8,"slug":"iniciativnaya-gruppa","title":"Инициативная группа: путь к Совету Церквей","status":"published","readingTime":25},
+      {"n":9,"slug":"podpolnaya-pechat","title":"Подпольная печать: Вестники, «Христианин» и память узников","status":"published","readingTime":23},
+      {"n":10,"slug":"spravochnik","title":"Справочник источников","status":"published","readingTime":27}
     ]
   },
   "genesis-6": {
     "title": "Бытие 6, Енох, Иуда и Пётр",
     "baseUrl": "/hard-texts/",
-    "searchPolicy": {
-      "landingRoute": "/hard-texts/genesis-6/",
-      "librarySection": "Богословие",
-      "topicCategory": "Бытие 6"
-    },
+    "searchPolicy": {"landingRoute":"/hard-texts/genesis-6/","librarySection":"Богословие","topicCategory":"Бытие 6"},
     "parts": [
-      {
-        "n": 6,
-        "slug": "enoh-prorochestvoval-iuda-14-15-4q204",
-        "title": "Енох пророчествовал",
-        "status": "published",
-        "readingTime": 19
-      },
-      {
-        "n": "6A",
-        "slug": "kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom",
-        "title": "Книга Еноха, которой не было",
-        "status": "published",
-        "readingTime": 38
-      },
-      {
-        "n": "6B",
-        "slug": "mozhno-li-doveryat-1-enohu-kanonicheskiy-audit",
-        "title": "Можно ли доверять 1 Еноху",
-        "status": "published",
-        "readingTime": 42
-      },
-      {
-        "n": 7,
-        "slug": "angely-pod-mrakom-iuda-6-7-2-petra-2",
-        "title": "Ангелы под мраком",
-        "status": "published",
-        "readingTime": 24
-      },
-      {
-        "n": 8,
-        "slug": "duhi-v-temnice-noi-kreshchenie-pobeda",
-        "title": "Духи в темнице",
-        "status": "published",
-        "readingTime": 28
-      },
-      {
-        "n": 9,
-        "slug": "blagovestie-mertvym-1-petra-4-5-6",
-        "title": "Благовестие мёртвым",
-        "status": "published",
-        "readingTime": 19
-      }
+      {"n":6,"slug":"enoh-prorochestvoval-iuda-14-15-4q204","title":"Енох пророчествовал","status":"published","readingTime":19},
+      {"n":"6A","slug":"kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom","title":"Книга Еноха, которой не было","status":"published","readingTime":38},
+      {"n":"6B","slug":"mozhno-li-doveryat-1-enohu-kanonicheskiy-audit","title":"Можно ли доверять 1 Еноху","status":"published","readingTime":42},
+      {"n":7,"slug":"angely-pod-mrakom-iuda-6-7-2-petra-2","title":"Ангелы под мраком","status":"published","readingTime":24},
+      {"n":8,"slug":"duhi-v-temnice-noi-kreshchenie-pobeda","title":"Духи в темнице","status":"published","readingTime":28},
+      {"n":9,"slug":"blagovestie-mertvym-1-petra-4-5-6","title":"Благовестие мёртвым","status":"published","readingTime":19}
     ]
   },
   "teen-double-life": {
@@ -351,55 +91,13 @@
       "landingModifiedTime": "2026-09-10T00:00:00+03:00"
     },
     "parts": [
-      {
-        "n": "I",
-        "slug": "podrostok-za-kadrom-dvoynaya-zhizn",
-        "title": "Как рождается двойная жизнь",
-        "status": "published",
-        "readingTime": 32
-      },
-      {
-        "n": "II",
-        "slug": "podrostok-za-kadrom-roditelyam-posle-razoblacheniya",
-        "title": "Что делать родителям после разоблачения",
-        "status": "published",
-        "readingTime": 43
-      },
-      {
-        "n": "III",
-        "slug": "podrostok-za-kadrom-chto-delat-tserkvi",
-        "title": "Что должна делать церковь",
-        "status": "published",
-        "readingTime": 39
-      },
-      {
-        "n": "A",
-        "slug": "vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie",
-        "title": "Взрослый ребёнок ушёл: контакт, ожидание, покаяние и возвращение",
-        "status": "published",
-        "readingTime": 37
-      },
-      {
-        "n": "B",
-        "slug": "vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya",
-        "title": "Взрослый ребёнок дома: правила, деньги, помощь и последствия",
-        "status": "published",
-        "readingTime": 36
-      },
-      {
-        "n": "C",
-        "slug": "sovershennoletie-roditelskaya-vlast-chto-menyaetsya",
-        "title": "Совершеннолетие и родительская власть: что меняется, что остаётся",
-        "status": "published",
-        "readingTime": 35
-      },
-      {
-        "n": "D",
-        "slug": "vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti",
-        "title": "Взрослая дочь, отец и брак: согласие и границы власти",
-        "status": "published",
-        "readingTime": 42
-      }
+      {"n":"I","slug":"podrostok-za-kadrom-dvoynaya-zhizn","title":"Как рождается двойная жизнь","status":"published","readingTime":32},
+      {"n":"II","slug":"podrostok-za-kadrom-roditelyam-posle-razoblacheniya","title":"Что делать родителям после разоблачения","status":"published","readingTime":43},
+      {"n":"III","slug":"podrostok-za-kadrom-chto-delat-tserkvi","title":"Что должна делать церковь","status":"published","readingTime":39},
+      {"n":"A","slug":"vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie","title":"Взрослый ребёнок ушёл: контакт, ожидание, покаяние и возвращение","status":"published","readingTime":37},
+      {"n":"B","slug":"vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya","title":"Взрослый ребёнок дома: правила, деньги, помощь и последствия","status":"published","readingTime":36},
+      {"n":"C","slug":"sovershennoletie-roditelskaya-vlast-chto-menyaetsya","title":"Совершеннолетие и родительская власть: что меняется, что остаётся","status":"published","readingTime":35},
+      {"n":"D","slug":"vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti","title":"Взрослая дочь, отец и брак: согласие и границы власти","status":"published","readingTime":42}
     ]
   }
 }

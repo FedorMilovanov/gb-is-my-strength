@@ -18,22 +18,24 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const PAGES = [
-  '/articles/anatomiya-padeniya-pyat-stadiy/index.html',
-  '/articles/teksty-pisaniya-kotorymi-manipuliruyut/index.html',
-  '/articles/sem-tipov-razlichenie-uchiteley/index.html',
-  '/articles/cerkovnaya-disciplina-vlast-granicy-zashchita/index.html',
-  '/articles/kogda-uhodit-kogda-ostavatsya/index.html',
-  '/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo/index.html',
-  '/articles/priznaki-zdorovoy-cerkvi/index.html',
-  '/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi/index.html',
+const SLUGS = [
+  'anatomiya-padeniya-pyat-stadiy',
+  'teksty-pisaniya-kotorymi-manipuliruyut',
+  'sem-tipov-razlichenie-uchiteley',
+  'cerkovnaya-disciplina-vlast-granicy-zashchita',
+  'kogda-uhodit-kogda-ostavatsya',
+  'vernye-i-neizvestnye-zdorovoe-pastyrstvo',
+  'priznaki-zdorovoy-cerkvi',
+  'nesovershennyy-chelovek-v-nesovershennoy-cerkvi',
 ];
+const distArticleRel = (slug) => path.join('articles', slug, 'index.html');
 
 const NON_LATIN_ID = /(<h[1-6][^>]*?)\s+id="([^"]*[^\x00-\x7F][^"]*)"/g;
 const RESIDUAL = /<h[1-6][^>]*\sid="[^"]*[^\x00-\x7F][^"]*"/g;
 
 let stripped = 0;
-for (const rel of PAGES) {
+for (const slug of SLUGS) {
+  const rel = distArticleRel(slug);
   const file = path.join(ROOT, 'dist', rel);
   if (!fs.existsSync(file)) {
     console.error(`❌ pastor-series heading id hygiene: missing dist page: ${rel}`);
@@ -51,4 +53,4 @@ for (const rel of PAGES) {
   }
   if (next !== html) fs.writeFileSync(file, next);
 }
-console.log(`✅ pastor-series heading id hygiene: ${PAGES.length} pages, ${stripped} auto non-latin heading ids stripped`);
+console.log(`✅ pastor-series heading id hygiene: ${SLUGS.length} pages, ${stripped} auto non-latin heading ids stripped`);
