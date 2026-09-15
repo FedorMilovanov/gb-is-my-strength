@@ -21,6 +21,7 @@ import {
 
 const require = createRequire(import.meta.url);
 const { loadRouteRecords } = require('./lib/route-source-contract.js');
+const { getKartyHubInventory } = require('../src/lib/karty-hub-inventory.cjs');
 const SAFE_ANCHOR = /^[A-Za-zА-Яа-яЁё0-9][A-Za-zА-Яа-яЁё0-9_:.-]{0,127}$/u;
 const DIST_ARGUMENT = process.argv.find((argument) => argument.startsWith('--dist='));
 const DIST_ROOT = DIST_ARGUMENT ? path.resolve(ROOT, DIST_ARGUMENT.slice('--dist='.length)) : null;
@@ -208,6 +209,8 @@ if (!fs.existsSync(OUTPUT_FILE)) {
   const manifest = readJson(path.join(ROOT, 'data/search-manifest.json'));
   const routeData = loadRouteRecords();
   const routeRecords = new Map(routeData.records.map((record) => [record.route, record]));
+  const kartyHubInventory = getKartyHubInventory(ROOT);
+  const kartyHubOwners = new Map((kartyHubInventory.publishedRecords || []).map((record) => [`karty/${record.slug}/route.json`, record]));
   const manifestTitles = new Map();
   for (const item of manifest.items || []) {
     const route = normalizeRoute(item.url);
@@ -225,6 +228,7 @@ if (!fs.existsSync(OUTPUT_FILE)) {
   const ids = new Set();
   const occurrenceKeys = new Set();
   let occurrenceCount = 0;
+  let kartyHubOccurrenceCount = 0;
   let canonicalTextCount = 0;
   const witnessedRoutes = new Map();
 
@@ -276,6 +280,17 @@ if (!fs.existsSync(OUTPUT_FILE)) {
 
       if (occurrence.sourceKind === 'manifest-metadata') {
         if (occurrence.sourceOwner !== 'data/search-manifest.json') fail(`manifest occurrence owner drift: ${reference.id} ${route}`);
+      } else if (occurrence.sourceKind === 'karty-publication-metadata') {
+        kartyHubOccurrenceCount += 1;
+        if (route !== '/karty/') fail(`karty publication occurrence must belong to /karty/: ${reference.id} ${route}`);
+        const owner = kartyHubOwners.get(occurrence.sourceOwner);
+        if (!owner) {
+          fail(`karty publication occurrence owner is not hub-published: ${reference.id} ${occurrence.sourceOwner}`);
+        } else {
+          const summary = String(owner.publication?.hub_summary || '');
+          if (!summary.includes(occurrence.raw)) fail(`karty publication occurrence is absent from governed hub_summary: ${reference.id} ${occurrence.sourceOwner}`);
+        }
+        if (occurrence.anchor !== 'mapsTitle') fail(`karty publication occurrence anchor drift: ${reference.id} ${occurrence.anchor}`);
       } else {
         const sourceFiles = new Set(routeRecord?.inspection?.files || []);
         if (!sourceFiles.has(occurrence.sourceOwner)) fail(`source owner is outside route import graph: ${reference.id} ${route} ${occurrence.sourceOwner}`);
@@ -309,6 +324,7 @@ if (!fs.existsSync(OUTPUT_FILE)) {
   }
 
   if (occurrenceCount !== index.stats?.occurrences) fail(`occurrence stats mismatch: ${occurrenceCount} != ${index.stats?.occurrences}`);
+  if (kartyHubOccurrenceCount !== index.stats?.kartyHubOccurrences) fail(`karty hub occurrence stats mismatch: ${kartyHubOccurrenceCount} != ${index.stats?.kartyHubOccurrences}`);
   if (references.length !== index.stats?.references) fail(`reference stats mismatch: ${references.length} != ${index.stats?.references}`);
   if (canonicalTextCount !== index.stats?.canonicalTextRecords) fail(`canonicalText stats mismatch: ${canonicalTextCount} != ${index.stats?.canonicalTextRecords}`);
   if (references.length - canonicalTextCount !== index.stats?.referencesWithoutCanonicalText) fail('missing-canonical stats mismatch');
