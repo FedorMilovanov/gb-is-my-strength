@@ -1,4 +1,4 @@
-import { getLineStyle, ERA_META, NODE_W, MAX_LIFESPAN } from './theme';
+import { getLineStyle, ERA_META, NODE_W, NODE_H, MAX_LIFESPAN } from './theme';
 
 export function PersonCardContent({ data }: { data: any }) {
   const ls = getLineStyle(data.lineage);
@@ -13,16 +13,16 @@ export function PersonCardContent({ data }: { data: any }) {
   // Focused = in the focus lineage (highlighted path)
   const focused = data.focused === true;
 
-  const opacity = dimmed ? 0.12 : 1;
+  const opacity = dimmed ? 0.25 : 1;
   const filter = dimmed ? 'grayscale(0.8)' : 'none';
 
   // Focused nodes get stronger border + glow
-  const borderColor = focused ? '#ffd700' : (data.golden ? '#ffd700' : ls.border);
-  const borderWidth = focused ? '2.5px' : '1.5px';
+  const borderColor = data.golden ? '#d4a857' : (focused ? '#9fc1b3' : ls.border);
+  const borderWidth = focused ? '2px' : '1.5px';
   const boxShadow = focused
-    ? `0 0 20px rgba(255,215,0,0.5), 0 0 40px rgba(255,215,0,0.2)`
+    ? `0 0 10px ${data.golden ? 'rgba(212,168,87,0.2)' : 'rgba(159,193,179,0.15)'}`
     : data.golden
-      ? `0 0 14px ${ls.glow}, 0 2px 8px rgba(0,0,0,0.4)`
+      ? '0 2px 8px rgba(0,0,0,0.3)'
       : '0 2px 10px rgba(0,0,0,0.35)';
 
   return (
@@ -33,7 +33,12 @@ export function PersonCardContent({ data }: { data: any }) {
         border: `${borderWidth} solid ${borderColor}`,
         borderRadius: '10px',
         padding: '7px 11px 8px',
-        width: `${NODE_W - 4}px`,
+        width: `${NODE_W}px`,
+        height: `${NODE_H}px`,
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
         textAlign: 'center',
         fontFamily: '"Lora", Georgia, serif',
         cursor: 'pointer',
@@ -43,7 +48,7 @@ export function PersonCardContent({ data }: { data: any }) {
         overflow: 'hidden',
         opacity,
         filter,
-        transition: 'opacity .3s ease, filter .3s ease, box-shadow .3s ease, border-color .3s ease, transform .15s ease',
+        transition: 'var(--genealogy-person-transition, opacity .3s ease, filter .3s ease, box-shadow .3s ease, border-color .3s ease, transform .15s ease)',
         transform: data.highlighted ? 'scale(1.08)' : 'scale(1)',
         zIndex: focused ? 100 : 1,
       }}
@@ -59,7 +64,7 @@ export function PersonCardContent({ data }: { data: any }) {
       )}
       <div style={{
         color: isMessiah ? '#ffd700' : ls.text,
-        fontSize: isMessiah ? '15px' : '13px',
+        fontSize: isMessiah ? '16px' : '14px',
         fontWeight: 700, lineHeight: 1.15,
         textShadow: isMessiah ? '0 0 8px rgba(255,215,0,0.4)' : 'none',
       }}>
@@ -76,8 +81,8 @@ export function PersonCardContent({ data }: { data: any }) {
           <div style={{ height: '3px', borderRadius: '2px', overflow: 'hidden', background: 'rgba(255,255,255,0.06)' }}>
             <div style={{
               height: '100%', width: `${lifeBarW}%`,
-              background: data.golden || focused
-                ? 'linear-gradient(90deg, #ffd700, #ffe87a)'
+              background: data.golden
+                ? 'linear-gradient(90deg, #d4a857, #e6cc91)'
                 : `linear-gradient(90deg, ${ls.fill}aa, ${ls.fill}66)`,
               borderRadius: '2px',
             }} />
@@ -91,9 +96,23 @@ export function PersonCardContent({ data }: { data: any }) {
         <div style={{
           position: 'absolute', inset: '-5px', borderRadius: '14px',
           border: '2px solid rgba(255,215,0,0.6)', boxShadow: '0 0 28px rgba(255,215,0,0.5)',
-          pointerEvents: 'none', animation: 'genealogy-pulse-gold 2.5s ease-in-out infinite',
+          pointerEvents: 'none', animation: 'var(--genealogy-messiah-animation, genealogy-pulse-gold 2.5s ease-in-out infinite)',
         }} />
       )}
+    </div>
+  );
+}
+
+/** A screen-sized label at overview/branch scales, sharing the real world center. */
+export function CompactPersonCard({ data, overview }: { data: any; overview: boolean }) {
+  return (
+    <div className="genealogy-node genealogy-compact-card" style={{
+      width: 144, height: 44, boxSizing: 'border-box',
+      borderColor: data.golden ? '#d4a857' : '#867762',
+      opacity: data.dimmed ? 0.3 : 1,
+    }}>
+      <strong>{data.name}</strong>
+      {overview && <span>Открыть ветвь</span>}
     </div>
   );
 }

@@ -1,17 +1,18 @@
-import { Component, useMemo, useState, useRef, useEffect, useCallback } from 'react';
-import type { ErrorInfo, ReactNode } from 'react';
+import { Component, useMemo, useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
+import type { ErrorInfo, ReactNode, KeyboardEvent as ReactKeyboardEvent } from 'react';
 import {
-  ReactFlow, Background, Controls, MiniMap,
-  type Node, type Edge, ConnectionLineType, type ReactFlowInstance,
+  ReactFlow, Background, MiniMap, useNodesState,
+  type Node, type Edge, ConnectionLineType, type ReactFlowInstance, type Viewport,
 } from '@xyflow/react';
-import { MarkerType } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import type { Person, Era, LineageFilter, DetailLevel } from './types';
-import { getLineStyle, KEY_ROLES, COSMIC_ANCHORS } from './theme';
+import type { Person, Era, LineageFilter } from './types';
+import { getLineStyle, NODE_W, NODE_H } from './theme';
+import { projectGenealogy, overviewIds, fitGenealogyView, centerOf, getDetailLevel, MIN_ZOOM, MAX_ZOOM, boxesOverlap } from './semanticGraph';
+import './GenealogyTree.css';
 import { buildLayout, computeFocusLineage } from './layout';
-import { PersonCardContent } from './PersonNode';
+import { matchesLineage } from './focusGraph';
+import { PersonCardContent, CompactPersonCard } from './PersonNode';
 import { DetailPanel } from './DetailPanel';
-import { TimelineAxis } from './TimelineAxis';
 import { SplitView } from './SplitView';
 
 const LINEAGE_FILTERS = [
@@ -89,78 +90,28 @@ class GenealogyErrorBoundary extends Component<{ children: ReactNode }, Genealog
 }
 
 function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
+  const treeRoot = useRef<HTMLDivElement | null>(null);
   const rfInstance = useRef<ReactFlowInstance | null>(null);
   const [search, setSearch] = useState('');
   const [showLineage, setShowLineage] = useState<LineageFilter>('all');
   const [showGolden, setShowGolden] = useState(true);
   const [selected, setSelected] = useState<Person | null>(null);
+  const splitOpener = useRef<HTMLButtonElement | null>(null);
+  const [showMiniMap, setShowMiniMap] = useState(false);
   const [showSplit, setShowSplit] = useState(false);
-  const [detailLevel, setDetailLevel] = useState<DetailLevel>(2);
+  const canvasRoot = useRef<HTMLDivElement | null>(null);
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+  const [camera, setCamera] = useState<Viewport>({ x: 0, y: 0, zoom: 0.04 });
+  const detailLevel = getDetailLevel(camera.zoom);
+  const [reducedMotion, setReducedMotion] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [keyboardTarget, setKeyboardTarget] = useState<{ id: string } | null>(null);
   const [tourIndex, setTourIndex] = useState(-1);
 
   // ── Layout (source of truth) ──
-  const { nodes: laidNodes, edges: laidEdges, goldenPath, worldHeight } = useMemo(
+  const { nodes: laidNodes, edges: laidEdges, goldenPath, bounds } = useMemo(
     () => buildLayout(persons, { showGolden, showLineage }), [persons, showGolden, showLineage],
   );
-
-  // ── AM range for timeline ──
-  const { amMin, amMax } = useMemo(() => {
-    const withAM = persons.filter(p => p.chronology?.mt?.birthAM != null);
-    let mn = Infinity, mx = -Infinity;
-    for (const p of withAM) { const am = p.chronology!.mt!.birthAM!; if (am < mn) mn = am; if (am > mx) mx = am; }
-    return { amMin: isFinite(mn) ? mn : 0, amMax: isFinite(mx) ? mx : 4000 };
-  }, [persons]);
-
-  // ── Semantic zoom ──
-  const visibleNodeIds = useMemo(() => {
-    if (detailLevel === 2) return null;
-    const ids = new Set<string>();
-    for (const p of persons) {
-      const isGolden = goldenPath.has(p.id);
-      const isKeyRole = p.role ? KEY_ROLES.has(p.role) : false;
-      const isDisputed = Boolean(p.disputed);
-      if (detailLevel === 0) { if (isGolden || p.role === 'messiah' || COSMIC_ANCHORS.has(p.id)) ids.add(p.id); }
-      else { if (isGolden || isKeyRole || isDisputed) ids.add(p.id); }
-    }
-    return ids;
-  }, [detailLevel, persons, goldenPath]);
-
-  /*
-   * Canonical Fit View contract
-   * ---------------------------
-   * Fit View must target people that remain semantically visible at the zoom it
-   * produces. Fitting the full 143-node envelope and then hiding non-key nodes
-   * at semantic zoom can center the camera over an empty region even though the
-   * graph itself is mounted. The canonical fit cohort therefore follows the
-   * currently laid-out golden lineage, with key/cosmic/disputed landmarks as a
-   * filter-safe fallback. This is still ReactFlow Fit View — no hardcoded center
-   * and no dataset reduction — and the same options drive initial and explicit
-   * Fit View.
-   */
-  const canonicalFitNodes = useMemo(() => {
-    const laidIds = new Set(laidNodes.map(n => n.id));
-    const golden = laidNodes.filter(n => goldenPath.has(n.id));
-    if (golden.length > 0) return golden.map(n => ({ id: n.id }));
-
-    const semantic = persons
-      .filter(p => laidIds.has(p.id) && ((p.role ? KEY_ROLES.has(p.role) : false) || COSMIC_ANCHORS.has(p.id) || Boolean(p.disputed)))
-      .map(p => ({ id: p.id }));
-    return semantic.length > 0 ? semantic : laidNodes.map(n => ({ id: n.id }));
-  }, [laidNodes, goldenPath, persons]);
-
-  const canonicalFitOptions = useMemo(() => ({
-    padding: 0.15,
-    minZoom: 0.55,
-    maxZoom: 1.5,
-    nodes: canonicalFitNodes,
-  }), [canonicalFitNodes]);
-
-  // ── Focus lineage: when activeId is set, compute ancestor+descendant set ──
-  const focusLineageIds = useMemo(() => {
-    if (!activeId) return null;
-    return computeFocusLineage(persons, activeId);
-  }, [activeId, persons]);
 
   // ── Search match ──
   const searchMatch = useMemo(() => {
@@ -175,10 +126,78 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
   }, [search, persons]);
 
   useEffect(() => {
-    if (!searchMatch || !rfInstance.current) return;
-    const n = laidNodes.find(n => n.id === searchMatch.id);
-    if (n) rfInstance.current.setCenter(n.position.x + 86, n.position.y + 36, { zoom: 1.2, duration: 600 });
-  }, [searchMatch, laidNodes]);
+    const node = canvasRoot.current;
+    if (!node) return;
+    let resizeFrame: number | null = null;
+    const observer = new ResizeObserver(([entry]) => {
+      const next = { width: entry.contentRect.width, height: entry.contentRect.height };
+      if (resizeFrame !== null) cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(() => {
+        resizeFrame = null;
+        setCanvasSize(current => current.width === next.width && current.height === next.height ? current : next);
+      });
+    });
+    observer.observe(node);
+    const motion = matchMedia('(prefers-reduced-motion: reduce)');
+    const updateMotion = () => setReducedMotion(motion.matches);
+    updateMotion();
+    motion.addEventListener('change', updateMotion);
+    return () => {
+      observer.disconnect();
+      if (resizeFrame !== null) cancelAnimationFrame(resizeFrame);
+      motion.removeEventListener('change', updateMotion);
+    };
+  }, []);
+
+  const fitOverview = useCallback(() => {
+    const ids = overviewIds(laidNodes);
+    if (!rfInstance.current || !canvasSize.width || !canvasSize.height) return;
+    const viewport = fitGenealogyView(laidNodes.filter(n => ids.has(n.id)), canvasSize.width, canvasSize.height);
+    void rfInstance.current.setViewport(viewport, { duration: 0 });
+  }, [laidNodes, canvasSize]);
+
+  // Search, filters and resize share one camera decision. In particular, a
+  // search that clears an excluding filter must not race a second fit command.
+  const lastFrame = useRef({ width: 0, height: 0, filter: '', searchId: null as string | null });
+  useEffect(() => {
+    const instance = rfInstance.current;
+    if (!instance || !canvasSize.width || !canvasSize.height) return;
+    const before = lastFrame.current;
+    const resized = before.width !== canvasSize.width || before.height !== canvasSize.height;
+    const filterChanged = before.filter !== showLineage;
+    const searchId = searchMatch?.id ?? null;
+    if (searchMatch) {
+      const node = laidNodes.find(n => n.id === searchMatch.id);
+      if (!node) { setShowLineage('all'); setActiveId(null); setSelected(null); return; }
+      if (searchId !== before.searchId || filterChanged || resized) {
+        const center = centerOf(node);
+        void instance.setCenter(center.x, center.y, { zoom: 1.2, duration: 0 });
+      }
+    } else if (!before.width || filterChanged || (resized && getDetailLevel(instance.getZoom()) === 0)) {
+      fitOverview();
+    } else if (resized) {
+      const current = instance.getViewport();
+      void instance.setViewport({ ...current, x: current.x + (canvasSize.width - before.width) / 2,
+        y: current.y + (canvasSize.height - before.height) / 2 }, { duration: 0 });
+    }
+    lastFrame.current = { ...canvasSize, filter: showLineage, searchId };
+  }, [canvasSize, showLineage, searchMatch, laidNodes, fitOverview]);
+
+  const worldExtent = useMemo<[[number, number], [number, number]]>(() => [
+    [bounds.x - 300, bounds.y - 300],
+    [bounds.x + bounds.width + 300, bounds.y + bounds.height + 300],
+  ], [bounds.x, bounds.y, bounds.width, bounds.height]);
+
+  // ── Focus lineage: when activeId is set, compute ancestor+descendant set ──
+  const focusLineageIds = useMemo(() => {
+    if (!activeId) return null;
+    return computeFocusLineage(persons, activeId);
+  }, [activeId, persons]);
+
+  const projection = useMemo(() => projectGenealogy(laidNodes, laidEdges, camera.zoom,
+    [activeId, searchMatch?.id].filter((id): id is string => Boolean(id)), goldenPath),
+  [laidNodes, laidEdges, camera.zoom, activeId, searchMatch, goldenPath]);
+  const visibleNodeIds = projection.visibleIds;
 
   // ── Compute display nodes with dimming/focus ──
   const displayNodes: Node[] = useMemo(() => {
@@ -187,39 +206,73 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
       const isHighlighted = n.id === searchMatch?.id;
       const isInFocus = focusLineageIds?.has(n.id) ?? false;
       const isDimmed = focusLineageIds ? !isInFocus : false;
-      const semanticHidden = visibleNodeIds ? !visibleNodeIds.has(n.id) : false;
+      const semanticHidden = !visibleNodeIds.has(n.id);
+      const center = centerOf(n);
+      const cardData = { ...d, highlighted: isHighlighted, dimmed: isDimmed, focused: focusLineageIds ? isInFocus : false };
+      const compact = projection.level !== 2;
       return {
         ...n,
-        // Keep every ReactFlow wrapper mounted and measured. Semantic zoom is
-        // presentation-only inside the stable node box, avoiding geometry
-        // churn during fit while preserving all 143 semantic DOM nodes.
         hidden: false,
+        focusable: !semanticHidden,
+        ariaLabel: `${d.name}: открыть сведения и семью`,
+        // Keep ReactFlow's measured node box stable across semantic zoom. The
+        // compact card is centred inside it and may overflow visually, which
+        // prevents the 154-node ResizeObserver set from thrashing on zoom.
+        position: { x: center.x - NODE_W / 2, y: center.y - NODE_H / 2 },
+        width: NODE_W,
+        height: NODE_H,
+        style: { width: NODE_W, height: NODE_H, pointerEvents: semanticHidden ? 'none' : 'auto' },
         data: {
-          ...d,
-          highlighted: isHighlighted,
-          dimmed: isDimmed,
-          focused: focusLineageIds ? isInFocus : false,
+          ...cardData,
           label: (
-            <div
-              aria-hidden={semanticHidden || undefined}
-              style={{
-                visibility: semanticHidden ? 'hidden' : 'visible',
-                pointerEvents: semanticHidden ? 'none' : 'auto',
-              }}
-            >
-              <PersonCardContent data={{ ...d, highlighted: isHighlighted, dimmed: isDimmed, focused: focusLineageIds ? isInFocus : false }} />
+            <div aria-hidden={semanticHidden || undefined} style={{
+              position: compact ? 'absolute' : undefined,
+              left: compact ? `calc(${(NODE_W - projection.width) / 2}px)` : undefined,
+              top: compact ? `calc(${(NODE_H - projection.height) / 2}px)` : undefined,
+              width: compact ? projection.width : undefined,
+              height: compact ? projection.height : undefined,
+              visibility: semanticHidden ? 'hidden' : 'visible',
+              transform: compact ? `scale(${projection.scale})` : undefined,
+              transformOrigin: '0 0',
+            }}>
+              {compact ? <CompactPersonCard data={cardData} overview={projection.level === 0} />
+                : <PersonCardContent data={cardData} />}
             </div>
           ),
         },
       };
     });
-  }, [laidNodes, visibleNodeIds, searchMatch, activeId, focusLineageIds]);
+  }, [laidNodes, visibleNodeIds, searchMatch, activeId, focusLineageIds, projection]);
+
+  // ReactFlow's controlled nodes must retain measured geometry. Replacing the
+  // input with fresh objects without `measured` resets the wrappers and can hide
+  // the keyboard destination until ResizeObserver measures them again.
+  const [flowNodes, setFlowNodes, onNodesChange] = useNodesState(displayNodes);
+  useLayoutEffect(() => {
+    setFlowNodes(current => {
+      if (current === displayNodes) return current;
+      const previous = new Map(current.map(node => [node.id, node]));
+      return displayNodes.map(node => ({
+        ...node,
+        measured: previous.get(node.id)?.measured,
+      }));
+    });
+  }, [displayNodes, setFlowNodes]);
+
+  // Apply keyboard focus after React has committed the changed node/card state.
+  // A new request object also handles navigation to an already active person.
+  useLayoutEffect(() => {
+    if (!keyboardTarget) return;
+    const node = treeRoot.current?.querySelector<HTMLElement>(`.react-flow__node[data-id="${CSS.escape(keyboardTarget.id)}"]`);
+    if (node && node.tabIndex >= 0 && getComputedStyle(node).visibility === 'visible') {
+      node.focus({ preventScroll: true });
+      setKeyboardTarget(null);
+    }
+  }, [keyboardTarget, flowNodes]);
 
   // ── Compute display edges with focus highlighting ──
   const displayEdges: Edge[] = useMemo(() => {
-    let result = visibleNodeIds
-      ? laidEdges.filter(e => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target))
-      : laidEdges;
+    let result = projection.edges;
 
     // If focus lineage is active, dim non-focus edges and highlight focus edges
     if (focusLineageIds) {
@@ -228,29 +281,29 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
         if (inFocus) {
           return {
             ...e,
-            animated: true,
-            style: { stroke: '#ffd700', strokeWidth: 4, opacity: 1 },
-            markerEnd: { type: MarkerType.ArrowClosed, color: '#ffd700', width: 16 },
+            animated: false,
+            style: { ...e.style, strokeWidth: Math.max(Number(e.style?.strokeWidth ?? 1.5), 2.2 / camera.zoom), opacity: 1 },
           };
         }
         return {
           ...e,
           animated: false,
-          style: { stroke: (e.style?.stroke as string) || '#555', strokeWidth: 1, opacity: 0.05 },
+          style: { ...e.style, stroke: (e.style?.stroke as string) || '#888', opacity: 0.12 },
         };
       });
     }
     return result;
-  }, [laidEdges, visibleNodeIds, focusLineageIds, goldenPath]);
+  }, [projection.edges, focusLineageIds, camera.zoom, reducedMotion]);
 
   // ── Helpers ──
-  const focusPerson = useCallback((id: string, zoom?: number) => {
+  const focusPerson = useCallback((id: string, zoom?: number, duration = 500) => {
     const n = laidNodes.find(n => n.id === id);
-    if (n && rfInstance.current) rfInstance.current.setCenter(n.position.x + 86, n.position.y + 36, { zoom: zoom ?? 1.0, duration: 500 });
+    if (n && rfInstance.current) rfInstance.current.setCenter(n.position.x + NODE_W / 2, n.position.y + NODE_H / 2, { zoom: zoom ?? 1.0, duration: reducedMotion ? 0 : duration });
     setActiveId(id);
-  }, [laidNodes]);
+  }, [laidNodes, reducedMotion]);
 
   const onNodeClick = useCallback((_evt: React.MouseEvent, node: Node) => {
+    if (detailLevel < 2) { focusPerson(node.id, 1, 0); setSelected(null); return; }
     // Toggle: if clicking same node, deactivate focus
     if (activeId === node.id) {
       setActiveId(null);
@@ -260,7 +313,7 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
     setActiveId(node.id);
     const p = persons.find(pp => pp.id === node.id);
     if (p) setSelected(p);
-  }, [persons, activeId]);
+  }, [persons, activeId, detailLevel, focusPerson]);
 
   // Click on empty canvas → clear focus
   const onPaneClick = useCallback(() => {
@@ -268,35 +321,63 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
     setSelected(null);
   }, []);
 
+  const changeLineage = useCallback((filter: LineageFilter) => {
+    setShowLineage(filter);
+    setSearch('');
+    const active = persons.find(person => person.id === activeId);
+    if (active && !matchesLineage(active, filter)) setActiveId(null);
+    if (selected && !matchesLineage(selected, filter)) setSelected(null);
+    setTourIndex(-1);
+  }, [activeId, persons, selected]);
+
   // ── Keyboard nav ──
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (showSplit || !activeId) return;
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-      const person = persons.find(p => p.id === activeId);
-      if (!person) return;
-      const byId = new Map(persons.map(p => [p.id, p]));
-      switch (e.key) {
-        case 'ArrowUp': { const pid = person.father ?? person.mother; if (pid && byId.has(pid)) { e.preventDefault(); focusPerson(pid); } break; }
-        case 'ArrowDown': { const ch = person.children?.filter(c => byId.has(c)); if (ch?.length) { e.preventDefault(); focusPerson(ch[0]); } break; }
-        case 'ArrowLeft': case 'ArrowRight': {
-          const pid = person.father ?? person.mother; if (!pid) break;
-          const parent = byId.get(pid);
-          const sibs = parent?.children?.filter(c => c !== activeId && byId.has(c)) ?? [];
-          if (!sibs.length) break; e.preventDefault();
-          const idx = parent?.children?.indexOf(activeId) ?? 0;
-          const target = sibs[Math.min(e.key === 'ArrowLeft' ? Math.max(0, idx - 1) : Math.min(sibs.length, idx + 1), sibs.length - 1)];
-          if (target) focusPerson(target);
-          break;
-        }
-        case 'Enter': case ' ': { e.preventDefault(); const p = persons.find(pp => pp.id === activeId); if (p) setSelected(p); break; }
-        case 'Escape': setActiveId(null); setSelected(null); break;
-      }
+  const handleGraphKeyDown = useCallback((e: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (showSplit || e.nativeEvent.isComposing || e.altKey || e.ctrlKey || e.metaKey) return;
+    const target = e.target;
+    if (!(target instanceof HTMLElement) || !treeRoot.current?.contains(target)) return;
+    if (e.key === 'Escape' && selected && target.closest('[data-genealogy-details]')) {
+      e.preventDefault();
+      e.stopPropagation();
+      setSelected(null);
+      setKeyboardTarget({ id: selected.id });
+      return;
+    }
+    // Toolbar, dialogs, links and editable fields own their native keys.
+    // Only a focused node inside this atlas can invoke graph navigation.
+    const focusedElement = document.activeElement;
+    const graphNode = focusedElement instanceof HTMLElement ? focusedElement.closest('.react-flow__node') : null;
+    const control = target.closest('button, a, input, textarea, select, summary, [contenteditable], [role="button"], [role="link"]');
+    if (!graphNode || !treeRoot.current.contains(graphNode) || (control && control !== graphNode)) return;
+    const focusedId = graphNode.getAttribute('data-id');
+    const person = persons.find(p => p.id === focusedId);
+    if (!person) return;
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', ' ', 'Escape'].includes(e.key)) return;
+    // This atlas owns family navigation; ReactFlow must not also move/select
+    // its editor nodes in response to the same key.
+    e.preventDefault();
+    e.stopPropagation();
+    const availableIds = new Set(laidNodes.map(node => node.id));
+    const moveFocus = (id: string | undefined) => {
+      if (!id || !availableIds.has(id)) return;
+      // Repeated arrow keys must not compete with queued camera animations.
+      focusPerson(id, 1, 0);
+      setSelected(null);
+      setKeyboardTarget({ id });
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [activeId, persons, showSplit, focusPerson]);
+    switch (e.key) {
+      case 'ArrowUp': { moveFocus([person.father, person.mother].find(id => id && availableIds.has(id)) ?? undefined); break; }
+      case 'ArrowDown': { moveFocus(persons.find(child => availableIds.has(child.id) && (child.father === person.id || child.mother === person.id))?.id); break; }
+      case 'ArrowLeft': case 'ArrowRight': {
+        const pid = person.father ?? person.mother; if (!pid) break;
+        const siblings = persons.filter(sibling => availableIds.has(sibling.id) && (sibling.father === pid || sibling.mother === pid));
+        const index = siblings.findIndex(sibling => sibling.id === person.id);
+        moveFocus(siblings[index + (e.key === 'ArrowLeft' ? -1 : 1)]?.id);
+        break;
+      }
+      case 'Enter': case ' ': { if (detailLevel < 2) { moveFocus(person.id); } else { setActiveId(person.id); setSelected(person); } break; }
+      case 'Escape': setActiveId(null); setSelected(null); break;
+    }
+  }, [persons, laidNodes, selected, showSplit, focusPerson, detailLevel]);
 
   // ── Golden path tour ──
   const goldenArray = useMemo(() => {
@@ -310,116 +391,109 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
 
   const tourActive = tourIndex >= 0;
   const tourPerson = tourActive ? persons.find(p => p.id === goldenArray[tourIndex]) : null;
-  const startTour = useCallback(() => { setTourIndex(0); if (goldenArray[0]) focusPerson(goldenArray[0], 1.0); }, [goldenArray, focusPerson]);
-  const tourNext = useCallback(() => setTourIndex(i => { const n = Math.min(i + 1, goldenArray.length - 1); if (goldenArray[n]) focusPerson(goldenArray[n], 1.0); return n; }), [goldenArray, focusPerson]);
-  const tourPrev = useCallback(() => setTourIndex(i => { const n = Math.max(i - 1, 0); if (goldenArray[n]) focusPerson(goldenArray[n], 1.0); return n; }), [goldenArray, focusPerson]);
+  const startTour = useCallback(() => {
+    setShowLineage('all'); setSearch(''); setSelected(null); setTourIndex(0);
+    if (goldenArray[0]) focusPerson(goldenArray[0], 1, 0);
+  }, [goldenArray, focusPerson]);
+  const tourNext = useCallback(() => setTourIndex(i => Math.min(i + 1, goldenArray.length - 1)), [goldenArray.length]);
+  const tourPrev = useCallback(() => setTourIndex(i => Math.max(i - 1, 0)), []);
+  useEffect(() => {
+    if (tourIndex >= 0 && goldenArray[tourIndex]) focusPerson(goldenArray[tourIndex], 1, 0);
+  }, [tourIndex, goldenArray, focusPerson]);
 
-  const visibleCount = visibleNodeIds ? visibleNodeIds.size : displayNodes.length;
+  const visibleCount = visibleNodeIds.size;
+  const visibleFocusCount = focusLineageIds ? laidNodes.filter(n => focusLineageIds.has(n.id) && visibleNodeIds.has(n.id)).length : 0;
   const detailLabel = detailLevel === 0 ? 'Обзор' : detailLevel === 1 ? 'Ключевые' : 'Все детали';
-  const detailHint = detailLevel === 0 ? 'приблизьте для деталей' : detailLevel === 1 ? 'ещё ближе — все имена' : `${visibleCount} из ${persons.length}`;
+  const resetView = () => { setSearch(''); setActiveId(null); setSelected(null); setTourIndex(-1); fitOverview(); };
+  const hasCardsInView = laidNodes.some(node => {
+    if (!visibleNodeIds.has(node.id)) return false;
+    const center = centerOf(node);
+    return boxesOverlap({ x: center.x * camera.zoom + camera.x - 72, y: center.y * camera.zoom + camera.y - 26, width: 144, height: 52 },
+      { x: 0, y: 0, ...canvasSize });
+  });
+  const focusEra = (eraId: string) => {
+    const members = laidNodes.filter(n => n.data.era === eraId);
+    if (!members.length || !rfInstance.current) return;
+    setSearch(''); setSelected(null); setActiveId(null); setTourIndex(-1);
+    const first = [...members].sort((a, b) => a.position.y - b.position.y)[0];
+    focusPerson(first.id, 1, 0);
+  };
 
   return (
-    <div style={{ width: '100%', height: '100dvh', position: 'relative', background: 'radial-gradient(ellipse at 50% 0%, #1a1510 0%, #0d0a06 50%, #050402 100%)', overflow: 'hidden' }}>
-      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.025, pointerEvents: 'none' }} aria-hidden="true">
-        <filter id="parchment-noise"><feTurbulence baseFrequency="0.9" numOctaves="2" seed="42" /><feColorMatrix values="0 0 0 0 0.8  0 0 0 0 0.7  0 0 0 0 0.5  0 0 0 0.5 0" /></filter>
-        <rect width="100%" height="100%" filter="url(#parchment-noise)" />
-      </svg>
-
-      <div style={{ position: 'absolute', top: '10px', left: '14px', zIndex: 11 }}>
-        <a href="/" style={{ color: 'rgba(200,184,154,0.5)', fontSize: '11px', textDecoration: 'none', padding: '8px 12px', background: 'rgba(13,10,6,0.8)', backdropFilter: 'blur(10px)', borderRadius: '999px', border: '1px solid rgba(212,168,87,0.15)', minHeight: '36px', display: 'flex', alignItems: 'center' }}>← Главная</a>
-      </div>
-
-      <div role="toolbar" aria-label="Управление древом" style={{ position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', zIndex: 11, display: 'flex', gap: '6px', alignItems: 'center', background: 'rgba(13,10,6,0.88)', backdropFilter: 'blur(14px)', borderRadius: '999px', padding: '6px 8px', border: '1px solid rgba(212,168,87,0.2)', maxWidth: 'calc(100vw - 28px)', flexWrap: 'wrap', justifyContent: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.5)' }}>
-        <input type="text" placeholder="🔍 Поиск имени..." value={search} onChange={e => setSearch(e.target.value)} aria-label="Поиск по имени" style={{ background: 'transparent', border: 'none', color: '#e8d5b0', fontFamily: '"Lora", Georgia, serif', fontSize: '13px', outline: 'none', width: '150px', minHeight: '40px' }} />
-        <span style={{ color: 'rgba(200,184,154,0.3)', fontSize: '11px' }}>|</span>
-        {LINEAGE_FILTERS.map(l => <button key={l.id} onClick={() => setShowLineage(l.id)} aria-pressed={showLineage === l.id} style={{ background: showLineage === l.id ? 'rgba(212,168,87,0.2)' : 'transparent', border: showLineage === l.id ? '1px solid rgba(212,168,87,0.4)' : '1px solid transparent', borderRadius: '999px', padding: '9px 12px', cursor: 'pointer', minHeight: '40px', color: showLineage === l.id ? '#d4a857' : 'rgba(200,184,154,0.5)', fontFamily: 'inherit', fontSize: '11px', transition: 'all .2s' }}>{l.label}</button>)}
-        <span style={{ color: 'rgba(200,184,154,0.3)', fontSize: '11px' }}>|</span>
-        <button onClick={() => setShowGolden(g => !g)} aria-pressed={showGolden} title="Золотая мессианская нить" style={{ background: showGolden ? 'rgba(255,215,0,0.15)' : 'transparent', border: showGolden ? '1px solid rgba(255,215,0,0.4)' : '1px solid transparent', borderRadius: '999px', padding: '9px 12px', cursor: 'pointer', minHeight: '40px', color: showGolden ? '#ffd700' : 'rgba(200,184,154,0.4)', fontFamily: 'inherit', fontSize: '11px', transition: 'all .2s' }}>✦ Нить</button>
-        <span style={{ color: 'rgba(200,184,154,0.3)', fontSize: '11px' }}>|</span>
-        <button onClick={() => setShowSplit(true)} title="Сравнить Мф/Лк" style={{ background: 'transparent', border: '1px solid rgba(212,168,87,0.2)', borderRadius: '999px', padding: '9px 12px', cursor: 'pointer', minHeight: '40px', color: 'rgba(200,184,154,0.5)', fontFamily: 'inherit', fontSize: '11px', transition: 'all .2s' }}>⇆ Мф/Лк</button>
-        <span style={{ color: 'rgba(200,184,154,0.3)', fontSize: '11px' }}>|</span>
-        <button onClick={startTour} title="Тур" style={{ background: 'transparent', border: '1px solid rgba(212,168,87,0.2)', borderRadius: '999px', padding: '9px 12px', cursor: 'pointer', minHeight: '40px', color: 'rgba(200,184,154,0.5)', fontFamily: 'inherit', fontSize: '11px', transition: 'all .2s' }}>🎬 Тур</button>
-      </div>
-
-      {eras && (
-        <div style={{ position: 'absolute', bottom: '12px', left: '14px', zIndex: 11, background: 'rgba(13,10,6,0.82)', backdropFilter: 'blur(10px)', borderRadius: '10px', padding: '10px 12px', border: '1px solid rgba(212,168,87,0.12)', display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '180px', pointerEvents: 'none' }}>
-          <div style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(200,184,154,0.35)', marginBottom: '2px' }}>Эпохи</div>
-          {eras.map(e => <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: '8px', height: '8px', borderRadius: '2px', background: e.color, flexShrink: 0 }} /><span style={{ color: 'rgba(200,184,154,0.55)', fontSize: '10.5px' }}>{e.name}</span></div>)}
+    <div ref={treeRoot} className="genealogy-app" data-genealogy-app data-genealogy-level={detailLevel} data-minimap-open={showMiniMap}
+      data-genealogy-active-person={activeId ?? undefined} onKeyDownCapture={handleGraphKeyDown}>
+      <div className="genealogy-toolbar" role="toolbar" aria-label="Управление древом">
+        <div className="genealogy-heading"><h2>Библейские родословия</h2></div>
+        <div className="genealogy-primary-tools">
+          <input type="text" placeholder="Найти человека…" value={search} onChange={e => { setSearch(e.target.value); setActiveId(null); setSelected(null); }}
+            aria-label="Поиск по имени" />
+          <button ref={splitOpener} type="button" onClick={() => setShowSplit(true)} title="Сравнить Мф/Лк">Мф / Лк</button>
+          <button type="button" onClick={startTour} title="Тур" aria-label="Пройти мессианскую нить">Тур</button>
         </div>
-      )}
+        <div className="genealogy-filter-tools" role="group" aria-label="Линии и эпохи">
+          {LINEAGE_FILTERS.map(l => <button type="button" key={l.id} onClick={() => changeLineage(l.id)}
+            aria-pressed={showLineage === l.id}>{l.label}</button>)}
+          <button type="button" onClick={() => setShowGolden(g => !g)} aria-pressed={showGolden}
+            title="Золотая мессианская нить">✦ Нить</button>
 
-      <div style={{ position: 'absolute', bottom: '12px', right: '14px', zIndex: 11, background: 'rgba(13,10,6,0.82)', backdropFilter: 'blur(10px)', borderRadius: '10px', padding: '8px 12px', border: '1px solid rgba(212,168,87,0.12)', display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center', pointerEvents: 'none' }}>
-        <div style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(200,184,154,0.35)' }}>Уровень</div>
-        <div style={{ color: detailLevel === 0 ? '#d4a857' : detailLevel === 1 ? '#e8c87a' : '#ffd700', fontSize: '12px', fontWeight: 700 }}>{detailLabel}</div>
-        <div style={{ color: 'rgba(200,184,154,0.3)', fontSize: '8.5px' }}>{detailHint}</div>
+        </div>
       </div>
-
-      {activeId && (
-        <div style={{ position: 'absolute', top: '60px', right: '14px', zIndex: 11, background: 'rgba(13,10,6,0.82)', backdropFilter: 'blur(10px)', borderRadius: '10px', padding: '6px 12px', border: '1px solid rgba(255,215,0,0.2)', display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <span style={{ color: '#ffd700', fontSize: '11px' }}>✦ Фокус: {focusLineageIds?.size ?? 0} в ветви</span>
-          <button onClick={() => { setActiveId(null); setSelected(null); }} style={{ background: 'none', border: 'none', color: 'rgba(200,184,154,0.5)', fontSize: '14px', cursor: 'pointer', padding: '0 4px' }}>×</button>
+      <div ref={canvasRoot} className="genealogy-canvas">
+        <ReactFlow
+          nodes={flowNodes} onNodesChange={onNodesChange} edges={displayEdges}
+          onNodeClick={onNodeClick} onPaneClick={onPaneClick}
+          onEdgeClick={(_event, edge) => {
+            const ids = edge.data?.pathIds as string[] | undefined;
+            if (ids?.length) focusPerson(ids[Math.floor(ids.length / 2)], 1, 0);
+          }}
+          onInit={inst => { rfInstance.current = inst; fitOverview(); }}
+          onMoveEnd={(_event, viewport) => setCamera(current => current.x === viewport.x && current.y === viewport.y && current.zoom === viewport.zoom ? current : viewport)}
+          defaultViewport={{ x: 0, y: 0, zoom: 0.04 }}
+          minZoom={MIN_ZOOM} maxZoom={MAX_ZOOM}
+          translateExtent={worldExtent}
+          nodesDraggable={false} nodesConnectable={false} elementsSelectable={false} deleteKeyCode={null}
+          connectionLineType={ConnectionLineType.SmoothStep} proOptions={{ hideAttribution: true }}
+        >
+          <Background color="rgba(190,165,117,0.12)" gap={36} size={1} />
+          <MiniMap nodeColor={(n: Node) => getLineStyle((n.data as Record<string, string>)?.lineage ?? 'neutral').fill}
+            nodeStrokeWidth={3} maskColor="rgba(12,12,14,0.6)" pannable zoomable style={{ width: 144, height: 96 }} ariaLabel="Мини-карта родословий" />
+        </ReactFlow>
+        {!hasCardsInView && canvasSize.width > 0 && <div className="genealogy-empty-view" role="status">
+          <p>Карточки остались за пределами экрана</p><button type="button" onClick={resetView}>Вернуться к обзору</button>
+        </div>}
+      </div>
+      <div className="genealogy-navigation" role="group" aria-label="Навигация по карте">
+        <div>
+          <button type="button" data-genealogy-zoom-in className="react-flow__controls-zoomin" aria-label="Приблизить"
+            disabled={camera.zoom >= MAX_ZOOM} onClick={() => void rfInstance.current?.zoomIn({ duration: 0 })}>+</button>
+          <button type="button" aria-label="Отдалить" disabled={camera.zoom <= MIN_ZOOM}
+            onClick={() => void rfInstance.current?.zoomOut({ duration: 0 })}>−</button>
+          <button type="button" data-genealogy-overview className="react-flow__controls-fitview" onClick={resetView}
+            aria-label="Обзор древа" title="Обзор древа">⌖</button>
+          <button type="button" className="genealogy-minimap-toggle" onClick={() => setShowMiniMap(v => !v)}
+            title="Мини-карта" aria-label="Мини-карта" aria-expanded={showMiniMap}>⊞</button>
         </div>
-      )}
-
-      {eras && amMax > amMin && <TimelineAxis eras={eras} amMin={amMin} amMax={amMax} height={worldHeight} />}
-
-      <ReactFlow
-        nodes={displayNodes}
-        edges={displayEdges}
-        onNodeClick={onNodeClick}
-        onPaneClick={onPaneClick}
-        onInit={(inst) => { rfInstance.current = inst; }}
-        onMoveEnd={(_event, { zoom }) => {
-          const nextLevel: DetailLevel = zoom < 0.3 ? 0 : zoom < 0.7 ? 1 : 2;
-          setDetailLevel(current => current === nextLevel ? current : nextLevel);
-        }}
-        fitView
-        fitViewOptions={canonicalFitOptions}
-        minZoom={0.5}
-        maxZoom={3}
-        nodesDraggable={false}
-        nodesConnectable={false}
-        connectionLineType={ConnectionLineType.SmoothStep}
-        proOptions={{ hideAttribution: true }}
-        style={{ background: 'transparent' }}
-      >
-        <Background color="rgba(212,168,87,0.05)" gap={36} size={1} />
-        <Controls fitViewOptions={canonicalFitOptions} style={{ background: 'rgba(13,10,6,0.85)', borderColor: 'rgba(212,168,87,0.2)', borderRadius: '8px' }} showInteractive={false} />
-        <MiniMap style={{ background: 'rgba(13,10,6,0.85)', border: '1px solid rgba(212,168,87,0.15)', borderRadius: '8px' }} nodeColor={(n: Node) => getLineStyle((n.data as Record<string, string>)?.lineage ?? 'neutral').fill} nodeStrokeWidth={3} maskColor="rgba(0,0,0,0.65)" pannable zoomable />
-      </ReactFlow>
-
-      <DetailPanel person={selected} onClose={() => setSelected(null)} />
-      {showSplit && <SplitView persons={persons} onClose={() => setShowSplit(false)} />}
-
-      {tourActive && tourPerson && (
-        <div style={{ position: 'absolute', bottom: '70px', left: '50%', transform: 'translateX(-50%)', zIndex: 40, display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(13,10,6,0.92)', backdropFilter: 'blur(16px)', borderRadius: '12px', padding: '10px 16px', border: '1px solid rgba(255,215,0,0.25)', boxShadow: '0 4px 24px rgba(0,0,0,0.6)', maxWidth: 'calc(100vw - 40px)' }}>
-          <button onClick={tourPrev} disabled={tourIndex === 0} aria-label="Предыдущий" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,168,87,0.2)', borderRadius: '8px', color: tourIndex === 0 ? 'rgba(100,100,100,0.3)' : '#c8b89a', fontSize: '14px', cursor: tourIndex === 0 ? 'default' : 'pointer', width: '36px', height: '36px', minHeight: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>←</button>
-          <div style={{ textAlign: 'center', minWidth: '120px' }}><div style={{ color: '#ffd700', fontSize: '14px', fontWeight: 700 }}>{tourPerson.name.ru}</div>{tourPerson.chronology?.mt?.birthAM != null && <div style={{ color: 'rgba(200,184,154,0.4)', fontSize: '9px' }}>AM {tourPerson.chronology.mt.birthAM} · шаг {tourIndex + 1} из {goldenArray.length}</div>}</div>
-          <button onClick={tourNext} disabled={tourIndex >= goldenArray.length - 1} aria-label="Следующий" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,168,87,0.2)', borderRadius: '8px', color: tourIndex >= goldenArray.length - 1 ? 'rgba(100,100,100,0.3)' : '#c8b89a', fontSize: '14px', cursor: tourIndex >= goldenArray.length - 1 ? 'default' : 'pointer', width: '36px', height: '36px', minHeight: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>→</button>
-          <button onClick={() => { setTourIndex(-1); setSelected(tourPerson); }} style={{ background: 'transparent', border: 'none', color: 'rgba(200,184,154,0.5)', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }}>Подробнее</button>
-          <button onClick={() => setTourIndex(-1)} aria-label="Закрыть тур" style={{ background: 'transparent', border: 'none', color: 'rgba(200,184,154,0.4)', fontSize: '16px', cursor: 'pointer' }}>×</button>
-        </div>
-      )}
-
-      <style>{`
-        @keyframes genealogy-pulse-gold { 0%,100% { box-shadow: 0 0 16px rgba(255,215,0,0.25); } 50% { box-shadow: 0 0 32px rgba(255,215,0,0.55); } }
-        @keyframes genealogy-slide-in-right { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes genealogy-fade-in { from { opacity: 0; } to { opacity: 1; } }
-        .react-flow__attribution { display: none !important; }
-        .react-flow__node { padding: 0 !important; border: none !important; background: transparent !important; }
-        .react-flow__node-default { padding: 0 !important; border: none !important; background: transparent !important; }
-        .react-flow__controls { box-shadow: 0 2px 12px rgba(0,0,0,0.4) !important; }
-        .react-flow__controls-button { width: 40px !important; height: 40px !important; min-width: 40px !important; min-height: 40px !important; color: #c8b89a !important; }
-        .react-flow__controls-button:hover { background: rgba(212,168,87,0.12) !important; }
-        .react-flow__controls-button svg { fill: #c8b89a !important; }
-        .react-flow__minimap { border-radius: 8px !important; }
-        .react-flow__edge-path { transition: stroke-width .2s ease, opacity .3s ease; }
-        .react-flow__edge.animated path { stroke-dasharray: 8; animation: genealogy-dash 1s linear infinite; }
-        @keyframes genealogy-dash { to { stroke-dashoffset: -16; } }
-        .genealogy-node:hover { transform: scale(1.06) !important; z-index: 1000 !important; box-shadow: 0 0 28px rgba(212,168,87,0.35) !important; border-color: #ffd700 !important; }
-        .genealogy-node { transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease, opacity .3s ease, filter .3s ease; }
-        @media (hover: none) { .genealogy-node:hover { transform: none !important; } }
-      `}</style>
+          {eras && <select aria-label="Перейти к эпохе" value="" onChange={e => focusEra(e.target.value)}>
+            <option value="" disabled>К эпохе…</option>
+            {eras.map(era => <option key={era.id} value={era.id}>{era.name}</option>)}
+          </select>}
+      </div>
+      <div className="genealogy-status">
+        <div><strong>{detailLabel}</strong><span>Показано {visibleCount} из {laidNodes.length}</span></div>
+        <p>{detailLevel < 2 ? 'Пунктир — путь через скрытые персоны. Нажмите имя, чтобы раскрыть ветвь.' : 'Схема поколений: расстояния не обозначают годы.'}</p>
+        {activeId && <button type="button" data-genealogy-focus-count onClick={() => { setActiveId(null); setSelected(null); }}>
+          Фокус: {visibleFocusCount} из {focusLineageIds?.size ?? 0} · Сбросить
+        </button>}
+      </div>
+      <DetailPanel person={selected} onClose={() => { if (selected) setKeyboardTarget({ id: selected.id }); setSelected(null); }} />
+      {showSplit && <SplitView persons={persons} returnFocusTo={splitOpener.current} onClose={() => setShowSplit(false)} />}
+      {tourActive && tourPerson && <div className="genealogy-tour" role="group" aria-label="Путешествие по родословию">
+        <button type="button" onClick={tourPrev} disabled={tourIndex === 0} aria-label="Предыдущий">←</button>
+        <div><strong>{tourPerson.name.ru}</strong><span>Шаг {tourIndex + 1} из {goldenArray.length}</span></div>
+        <button type="button" onClick={tourNext} disabled={tourIndex >= goldenArray.length - 1} aria-label="Следующий">→</button>
+        <button type="button" onClick={() => { setTourIndex(-1); setSelected(tourPerson); }}>Подробнее</button>
+        <button type="button" onClick={() => setTourIndex(-1)} aria-label="Закрыть тур">×</button>
+      </div>}
     </div>
   );
 }

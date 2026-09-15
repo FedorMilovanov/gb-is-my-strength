@@ -33,7 +33,7 @@ const mobileChrome = mobileChromeFor('/rodosloviye/');
       <MobileChromePage backHref={mobileChrome.backHref ?? '/'} homeHref="../" />
     )}
     <RodosloviyeBody />
-    <div id="genealogy-tree" class="genealogy-interactive-wrap" style="width: 100%; height: 85vh; min-height: 650px; border-top: 1px solid var(--border-color, #e2e8f0); margin-top: 2rem; position: relative;">
+    <div id="genealogy-tree" class="genealogy-interactive-wrap" style="width: 100%; height: 100dvh; min-height: 760px; border-top: 1px solid var(--border-color, #e2e8f0); margin-top: 2rem; position: relative;">
       <GenealogyTree client:only="react" persons={persons} eras={eras} />
     </div>
   </body>

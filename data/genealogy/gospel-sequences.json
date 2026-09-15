@@ -1,0 +1,860 @@
+{
+  "schemaVersion": 1,
+  "translation": "Синодальный перевод",
+  "scope": "Имена основной последовательности; супруги и боковые ветви не включены в счётчик. Имена приведены в именительном падеже, форма источника сохранена отдельно. Порядок упоминаний не означает непосредственное биологическое отцовство.",
+  "sequences": [
+    {
+      "id": "matthew",
+      "title": "Родословие по Матфею",
+      "sourceRef": "Мф 1:1–17",
+      "sourceUrl": "https://bible.by/syn/40/1/",
+      "direction": "ancestors-first",
+      "notes": [
+        "В Мф 1:16 Иосиф назван мужем Марии, от которой родился Иисус. Он не представлен здесь как биологический отец Иисуса.",
+        "Иоаким включён согласно Синодальному переводу Мф 1:11. Число записей списка не подменяет объяснение трёх групп по четырнадцать родов из Мф 1:17."
+      ],
+      "entries": [
+        {
+          "id": "matthew-1-2-1",
+          "personId": "abram",
+          "name": "Авраам",
+          "sourceForm": "Авраам",
+          "ref": "Мф 1:2"
+        },
+        {
+          "id": "matthew-1-2-2",
+          "personId": "isaac",
+          "name": "Исаак",
+          "sourceForm": "Исаака",
+          "ref": "Мф 1:2"
+        },
+        {
+          "id": "matthew-1-2-3",
+          "personId": "jacob",
+          "name": "Иаков",
+          "sourceForm": "Иакова",
+          "ref": "Мф 1:2"
+        },
+        {
+          "id": "matthew-1-2-4",
+          "personId": "judah",
+          "name": "Иуда",
+          "sourceForm": "Иуду",
+          "ref": "Мф 1:2"
+        },
+        {
+          "id": "matthew-1-3-1",
+          "personId": "perez",
+          "name": "Фарес",
+          "sourceForm": "Фареса",
+          "ref": "Мф 1:3"
+        },
+        {
+          "id": "matthew-1-3-2",
+          "personId": "hezron",
+          "name": "Есром",
+          "sourceForm": "Есрома",
+          "ref": "Мф 1:3"
+        },
+        {
+          "id": "matthew-1-3-3",
+          "personId": "ram",
+          "name": "Арам",
+          "sourceForm": "Арама",
+          "ref": "Мф 1:3"
+        },
+        {
+          "id": "matthew-1-4-1",
+          "personId": "amminadab",
+          "name": "Аминадав",
+          "sourceForm": "Аминадава",
+          "ref": "Мф 1:4"
+        },
+        {
+          "id": "matthew-1-4-2",
+          "personId": "nahshon",
+          "name": "Наассон",
+          "sourceForm": "Наассона",
+          "ref": "Мф 1:4"
+        },
+        {
+          "id": "matthew-1-4-3",
+          "personId": "salmon",
+          "name": "Салмон",
+          "sourceForm": "Салмона",
+          "ref": "Мф 1:4"
+        },
+        {
+          "id": "matthew-1-5-1",
+          "personId": "boaz",
+          "name": "Вооз",
+          "sourceForm": "Вооза",
+          "ref": "Мф 1:5"
+        },
+        {
+          "id": "matthew-1-5-2",
+          "personId": "obed",
+          "name": "Овид",
+          "sourceForm": "Овида",
+          "ref": "Мф 1:5"
+        },
+        {
+          "id": "matthew-1-5-3",
+          "personId": "jesse",
+          "name": "Иессей",
+          "sourceForm": "Иессея",
+          "ref": "Мф 1:5"
+        },
+        {
+          "id": "matthew-1-6-1",
+          "personId": "david",
+          "name": "Давид",
+          "sourceForm": "Давида",
+          "ref": "Мф 1:6"
+        },
+        {
+          "id": "matthew-1-6-2",
+          "personId": "solomon",
+          "name": "Соломон",
+          "sourceForm": "Соломона",
+          "ref": "Мф 1:6"
+        },
+        {
+          "id": "matthew-1-7-1",
+          "personId": "rehoboam",
+          "name": "Ровоам",
+          "sourceForm": "Ровоама",
+          "ref": "Мф 1:7"
+        },
+        {
+          "id": "matthew-1-7-2",
+          "personId": "abijah",
+          "name": "Авия",
+          "sourceForm": "Авию",
+          "ref": "Мф 1:7"
+        },
+        {
+          "id": "matthew-1-7-3",
+          "personId": "asa",
+          "name": "Аса",
+          "sourceForm": "Асу",
+          "ref": "Мф 1:7"
+        },
+        {
+          "id": "matthew-1-8-1",
+          "personId": "jehoshaphat",
+          "name": "Иосафат",
+          "sourceForm": "Иосафата",
+          "ref": "Мф 1:8"
+        },
+        {
+          "id": "matthew-1-8-2",
+          "personId": "joram",
+          "name": "Иорам",
+          "sourceForm": "Иорама",
+          "ref": "Мф 1:8"
+        },
+        {
+          "id": "matthew-1-8-3",
+          "personId": "uzziah",
+          "name": "Озия",
+          "sourceForm": "Озию",
+          "ref": "Мф 1:8"
+        },
+        {
+          "id": "matthew-1-9-1",
+          "personId": "jotham",
+          "name": "Иоафам",
+          "sourceForm": "Иоафама",
+          "ref": "Мф 1:9"
+        },
+        {
+          "id": "matthew-1-9-2",
+          "personId": "ahaz",
+          "name": "Ахаз",
+          "sourceForm": "Ахаза",
+          "ref": "Мф 1:9"
+        },
+        {
+          "id": "matthew-1-9-3",
+          "personId": "hezekiah",
+          "name": "Езекия",
+          "sourceForm": "Езекию",
+          "ref": "Мф 1:9"
+        },
+        {
+          "id": "matthew-1-10-1",
+          "personId": "manasseh",
+          "name": "Манассия",
+          "sourceForm": "Манассию",
+          "ref": "Мф 1:10"
+        },
+        {
+          "id": "matthew-1-10-2",
+          "personId": "amon",
+          "name": "Амон",
+          "sourceForm": "Амона",
+          "ref": "Мф 1:10"
+        },
+        {
+          "id": "matthew-1-10-3",
+          "personId": "josiah",
+          "name": "Иосия",
+          "sourceForm": "Иосию",
+          "ref": "Мф 1:10"
+        },
+        {
+          "id": "matthew-1-11-1",
+          "personId": "jehoiakim",
+          "name": "Иоаким",
+          "sourceForm": "Иоакима",
+          "ref": "Мф 1:11"
+        },
+        {
+          "id": "matthew-1-11-2",
+          "personId": "jeconiah",
+          "name": "Иехония",
+          "sourceForm": "Иехонию",
+          "ref": "Мф 1:11"
+        },
+        {
+          "id": "matthew-1-12-1",
+          "personId": "shealtiel",
+          "name": "Салафииль",
+          "sourceForm": "Салафииля",
+          "ref": "Мф 1:12"
+        },
+        {
+          "id": "matthew-1-12-2",
+          "personId": "zerubbabel",
+          "name": "Зоровавель",
+          "sourceForm": "Зоровавеля",
+          "ref": "Мф 1:12"
+        },
+        {
+          "id": "matthew-1-13-1",
+          "personId": "abihud_mt",
+          "name": "Авиуд",
+          "sourceForm": "Авиуда",
+          "ref": "Мф 1:13"
+        },
+        {
+          "id": "matthew-1-13-2",
+          "personId": "eliakim_mt",
+          "name": "Елиаким",
+          "sourceForm": "Елиакима",
+          "ref": "Мф 1:13"
+        },
+        {
+          "id": "matthew-1-13-3",
+          "personId": "azor_mt",
+          "name": "Азор",
+          "sourceForm": "Азора",
+          "ref": "Мф 1:13"
+        },
+        {
+          "id": "matthew-1-14-1",
+          "personId": "zadok_mt",
+          "name": "Садок",
+          "sourceForm": "Садока",
+          "ref": "Мф 1:14"
+        },
+        {
+          "id": "matthew-1-14-2",
+          "personId": "achim_mt",
+          "name": "Ахим",
+          "sourceForm": "Ахима",
+          "ref": "Мф 1:14"
+        },
+        {
+          "id": "matthew-1-14-3",
+          "personId": "eliud_mt",
+          "name": "Елиуд",
+          "sourceForm": "Елиуда",
+          "ref": "Мф 1:14"
+        },
+        {
+          "id": "matthew-1-15-1",
+          "personId": "eleazar_mt",
+          "name": "Елеазар",
+          "sourceForm": "Елеазара",
+          "ref": "Мф 1:15"
+        },
+        {
+          "id": "matthew-1-15-2",
+          "personId": "matthan_mt",
+          "name": "Матфан",
+          "sourceForm": "Матфана",
+          "ref": "Мф 1:15"
+        },
+        {
+          "id": "matthew-1-15-3",
+          "personId": "jacob_mt",
+          "name": "Иаков",
+          "sourceForm": "Иакова",
+          "ref": "Мф 1:15"
+        },
+        {
+          "id": "matthew-1-16-1",
+          "personId": "joseph_nt",
+          "name": "Иосиф",
+          "sourceForm": "Иосифа",
+          "ref": "Мф 1:16"
+        },
+        {
+          "id": "matthew-1-16-2",
+          "personId": "jesus",
+          "name": "Иисус Христос",
+          "sourceForm": "Иисус",
+          "ref": "Мф 1:16"
+        }
+      ]
+    },
+    {
+      "id": "luke",
+      "title": "Родословие по Луке",
+      "sourceRef": "Лк 3:23–38",
+      "sourceUrl": "https://bible.by/syn/42/3/",
+      "direction": "descendants-first",
+      "notes": [
+        "Для сравнения порядок Луки развёрнут: от предков к Христу. В самом тексте перечисление начинается с Иисуса.",
+        "Лк 3:23 называет Иосифа и Илия. Объяснение через Марию относится к гармонизации; её имя не вставляется в последовательность текста.",
+        "Завершающее «Божий» (Лк 3:38) сохранено как указание на происхождение Адама от Бога. Бог не включён в список людей и числовой счётчик."
+      ],
+      "entries": [
+        {
+          "id": "luke-3-23-1",
+          "personId": "jesus",
+          "name": "Иисус Христос",
+          "sourceForm": "Иисус",
+          "ref": "Лк 3:23"
+        },
+        {
+          "id": "luke-3-23-2",
+          "personId": "joseph_nt",
+          "name": "Иосиф",
+          "sourceForm": "Иосифов",
+          "ref": "Лк 3:23"
+        },
+        {
+          "id": "luke-3-23-3",
+          "personId": "heli_lk",
+          "name": "Илий",
+          "sourceForm": "Илиев",
+          "ref": "Лк 3:23"
+        },
+        {
+          "id": "luke-3-24-1",
+          "personId": "matthat_lk2",
+          "name": "Матфат",
+          "sourceForm": "Матфатов",
+          "ref": "Лк 3:24"
+        },
+        {
+          "id": "luke-3-24-2",
+          "personId": "levi_lk2",
+          "name": "Левий",
+          "sourceForm": "Левиин",
+          "ref": "Лк 3:24"
+        },
+        {
+          "id": "luke-3-24-3",
+          "personId": "melchi_lk2",
+          "name": "Мелхий",
+          "sourceForm": "Мелхиев",
+          "ref": "Лк 3:24"
+        },
+        {
+          "id": "luke-3-24-4",
+          "personId": "jannai_lk",
+          "name": "Ианнай",
+          "sourceForm": "Ианнаев",
+          "ref": "Лк 3:24"
+        },
+        {
+          "id": "luke-3-24-5",
+          "personId": "joseph_lk2",
+          "name": "Иосиф",
+          "sourceForm": "Иосифов",
+          "ref": "Лк 3:24"
+        },
+        {
+          "id": "luke-3-25-1",
+          "personId": "mattathias2_lk",
+          "name": "Маттафия",
+          "sourceForm": "Маттафиев",
+          "ref": "Лк 3:25"
+        },
+        {
+          "id": "luke-3-25-2",
+          "personId": "amos_lk",
+          "name": "Амос",
+          "sourceForm": "Амосов",
+          "ref": "Лк 3:25"
+        },
+        {
+          "id": "luke-3-25-3",
+          "personId": "naum_lk",
+          "name": "Наум",
+          "sourceForm": "Наумов",
+          "ref": "Лк 3:25"
+        },
+        {
+          "id": "luke-3-25-4",
+          "personId": "esli_lk",
+          "name": "Еслим",
+          "sourceForm": "Еслимов",
+          "ref": "Лк 3:25"
+        },
+        {
+          "id": "luke-3-25-5",
+          "personId": "naggesi_lk",
+          "name": "Наггей",
+          "sourceForm": "Наггеев",
+          "ref": "Лк 3:25"
+        },
+        {
+          "id": "luke-3-26-1",
+          "personId": "maath_lk",
+          "name": "Мааф",
+          "sourceForm": "Маафов",
+          "ref": "Лк 3:26"
+        },
+        {
+          "id": "luke-3-26-2",
+          "personId": "mattathias_lk",
+          "name": "Маттафия",
+          "sourceForm": "Маттафиев",
+          "ref": "Лк 3:26"
+        },
+        {
+          "id": "luke-3-26-3",
+          "personId": "semein_lk",
+          "name": "Семеий",
+          "sourceForm": "Семеиев",
+          "ref": "Лк 3:26"
+        },
+        {
+          "id": "luke-3-26-4",
+          "personId": "josech_lk",
+          "name": "Иосиф",
+          "sourceForm": "Иосифов",
+          "ref": "Лк 3:26"
+        },
+        {
+          "id": "luke-3-26-5",
+          "personId": "joda_lk",
+          "name": "Иуда",
+          "sourceForm": "Иудин",
+          "ref": "Лк 3:26"
+        },
+        {
+          "id": "luke-3-27-1",
+          "personId": "joanan_lk",
+          "name": "Иоаннан",
+          "sourceForm": "Иоаннанов",
+          "ref": "Лк 3:27"
+        },
+        {
+          "id": "luke-3-27-2",
+          "personId": "rhesa_lk",
+          "name": "Рисай",
+          "sourceForm": "Рисаев",
+          "ref": "Лк 3:27"
+        },
+        {
+          "id": "luke-3-27-3",
+          "personId": "zerubbabel_lk",
+          "name": "Зоровавель",
+          "sourceForm": "Зоровавелев",
+          "ref": "Лк 3:27"
+        },
+        {
+          "id": "luke-3-27-4",
+          "personId": "shealtiel_lk",
+          "name": "Салафииль",
+          "sourceForm": "Салафиилев",
+          "ref": "Лк 3:27"
+        },
+        {
+          "id": "luke-3-27-5",
+          "personId": "neri",
+          "name": "Нирий",
+          "sourceForm": "Нириев",
+          "ref": "Лк 3:27"
+        },
+        {
+          "id": "luke-3-28-1",
+          "personId": "melki_lk",
+          "name": "Мелхий",
+          "sourceForm": "Мелхиев",
+          "ref": "Лк 3:28"
+        },
+        {
+          "id": "luke-3-28-2",
+          "personId": "addi",
+          "name": "Аддий",
+          "sourceForm": "Аддиев",
+          "ref": "Лк 3:28"
+        },
+        {
+          "id": "luke-3-28-3",
+          "personId": "cosam",
+          "name": "Косам",
+          "sourceForm": "Косамов",
+          "ref": "Лк 3:28"
+        },
+        {
+          "id": "luke-3-28-4",
+          "personId": "elmadam",
+          "name": "Елмодам",
+          "sourceForm": "Елмодамов",
+          "ref": "Лк 3:28"
+        },
+        {
+          "id": "luke-3-28-5",
+          "personId": "er_lk",
+          "name": "Ир",
+          "sourceForm": "Иров",
+          "ref": "Лк 3:28"
+        },
+        {
+          "id": "luke-3-29-1",
+          "personId": "joshua_lk",
+          "name": "Иосия",
+          "sourceForm": "Иосиев",
+          "ref": "Лк 3:29"
+        },
+        {
+          "id": "luke-3-29-2",
+          "personId": "eliezer_lk",
+          "name": "Елиезер",
+          "sourceForm": "Елиезеров",
+          "ref": "Лк 3:29"
+        },
+        {
+          "id": "luke-3-29-3",
+          "personId": "jorim",
+          "name": "Иорим",
+          "sourceForm": "Иоримов",
+          "ref": "Лк 3:29"
+        },
+        {
+          "id": "luke-3-29-4",
+          "personId": "matthat",
+          "name": "Матфат",
+          "sourceForm": "Матфатов",
+          "ref": "Лк 3:29"
+        },
+        {
+          "id": "luke-3-29-5",
+          "personId": "levi_lk",
+          "name": "Левий",
+          "sourceForm": "Левиин",
+          "ref": "Лк 3:29"
+        },
+        {
+          "id": "luke-3-30-1",
+          "personId": "simeon_lk",
+          "name": "Симеон",
+          "sourceForm": "Симеонов",
+          "ref": "Лк 3:30"
+        },
+        {
+          "id": "luke-3-30-2",
+          "personId": "judah_lk",
+          "name": "Иуда",
+          "sourceForm": "Иудин",
+          "ref": "Лк 3:30"
+        },
+        {
+          "id": "luke-3-30-3",
+          "personId": "joseph_lk",
+          "name": "Иосиф",
+          "sourceForm": "Иосифов",
+          "ref": "Лк 3:30"
+        },
+        {
+          "id": "luke-3-30-4",
+          "personId": "jonam",
+          "name": "Ионан",
+          "sourceForm": "Ионанов",
+          "ref": "Лк 3:30"
+        },
+        {
+          "id": "luke-3-30-5",
+          "personId": "eliakim_lk",
+          "name": "Елиаким",
+          "sourceForm": "Елиакимов",
+          "ref": "Лк 3:30"
+        },
+        {
+          "id": "luke-3-31-1",
+          "personId": "melea",
+          "name": "Мелеай",
+          "sourceForm": "Мелеаев",
+          "ref": "Лк 3:31"
+        },
+        {
+          "id": "luke-3-31-2",
+          "personId": "menna",
+          "name": "Маинан",
+          "sourceForm": "Маинанов",
+          "ref": "Лк 3:31"
+        },
+        {
+          "id": "luke-3-31-3",
+          "personId": "mattatha",
+          "name": "Маттафай",
+          "sourceForm": "Маттафаев",
+          "ref": "Лк 3:31"
+        },
+        {
+          "id": "luke-3-31-4",
+          "personId": "nathan_prince",
+          "name": "Нафан",
+          "sourceForm": "Нафанов",
+          "ref": "Лк 3:31"
+        },
+        {
+          "id": "luke-3-31-5",
+          "personId": "david",
+          "name": "Давид",
+          "sourceForm": "Давидов",
+          "ref": "Лк 3:31"
+        },
+        {
+          "id": "luke-3-32-1",
+          "personId": "jesse",
+          "name": "Иессей",
+          "sourceForm": "Иессеев",
+          "ref": "Лк 3:32"
+        },
+        {
+          "id": "luke-3-32-2",
+          "personId": "obed",
+          "name": "Овид",
+          "sourceForm": "Овидов",
+          "ref": "Лк 3:32"
+        },
+        {
+          "id": "luke-3-32-3",
+          "personId": "boaz",
+          "name": "Вооз",
+          "sourceForm": "Воозов",
+          "ref": "Лк 3:32"
+        },
+        {
+          "id": "luke-3-32-4",
+          "personId": "salmon",
+          "name": "Салмон",
+          "sourceForm": "Салмонов",
+          "ref": "Лк 3:32"
+        },
+        {
+          "id": "luke-3-32-5",
+          "personId": "nahshon",
+          "name": "Наассон",
+          "sourceForm": "Наассонов",
+          "ref": "Лк 3:32"
+        },
+        {
+          "id": "luke-3-33-1",
+          "personId": "amminadab",
+          "name": "Аминадав",
+          "sourceForm": "Аминадавов",
+          "ref": "Лк 3:33"
+        },
+        {
+          "id": "luke-3-33-2",
+          "personId": "ram",
+          "name": "Арам",
+          "sourceForm": "Арамов",
+          "ref": "Лк 3:33"
+        },
+        {
+          "id": "luke-3-33-3",
+          "personId": "hezron",
+          "name": "Есром",
+          "sourceForm": "Есромов",
+          "ref": "Лк 3:33"
+        },
+        {
+          "id": "luke-3-33-4",
+          "personId": "perez",
+          "name": "Фарес",
+          "sourceForm": "Фаресов",
+          "ref": "Лк 3:33"
+        },
+        {
+          "id": "luke-3-33-5",
+          "personId": "judah",
+          "name": "Иуда",
+          "sourceForm": "Иудин",
+          "ref": "Лк 3:33"
+        },
+        {
+          "id": "luke-3-34-1",
+          "personId": "jacob",
+          "name": "Иаков",
+          "sourceForm": "Иаковлев",
+          "ref": "Лк 3:34"
+        },
+        {
+          "id": "luke-3-34-2",
+          "personId": "isaac",
+          "name": "Исаак",
+          "sourceForm": "Исааков",
+          "ref": "Лк 3:34"
+        },
+        {
+          "id": "luke-3-34-3",
+          "personId": "abram",
+          "name": "Авраам",
+          "sourceForm": "Авраамов",
+          "ref": "Лк 3:34"
+        },
+        {
+          "id": "luke-3-34-4",
+          "personId": "terah",
+          "name": "Фарра",
+          "sourceForm": "Фаррин",
+          "ref": "Лк 3:34"
+        },
+        {
+          "id": "luke-3-34-5",
+          "personId": "nahor_serug",
+          "name": "Нахор",
+          "sourceForm": "Нахоров",
+          "ref": "Лк 3:34"
+        },
+        {
+          "id": "luke-3-35-1",
+          "personId": "serug",
+          "name": "Серух",
+          "sourceForm": "Серухов",
+          "ref": "Лк 3:35"
+        },
+        {
+          "id": "luke-3-35-2",
+          "personId": "reu",
+          "name": "Рагав",
+          "sourceForm": "Рагавов",
+          "ref": "Лк 3:35"
+        },
+        {
+          "id": "luke-3-35-3",
+          "personId": "peleg",
+          "name": "Фалек",
+          "sourceForm": "Фалеков",
+          "ref": "Лк 3:35"
+        },
+        {
+          "id": "luke-3-35-4",
+          "personId": "eber",
+          "name": "Евер",
+          "sourceForm": "Еверов",
+          "ref": "Лк 3:35"
+        },
+        {
+          "id": "luke-3-35-5",
+          "personId": "shelah",
+          "name": "Сала",
+          "sourceForm": "Салин",
+          "ref": "Лк 3:35"
+        },
+        {
+          "id": "luke-3-36-1",
+          "personId": "cainan_2",
+          "name": "Каинан",
+          "sourceForm": "Каинанов",
+          "ref": "Лк 3:36"
+        },
+        {
+          "id": "luke-3-36-2",
+          "personId": "arphaxad",
+          "name": "Арфаксад",
+          "sourceForm": "Арфаксадов",
+          "ref": "Лк 3:36"
+        },
+        {
+          "id": "luke-3-36-3",
+          "personId": "shem",
+          "name": "Сим",
+          "sourceForm": "Симов",
+          "ref": "Лк 3:36"
+        },
+        {
+          "id": "luke-3-36-4",
+          "personId": "noah",
+          "name": "Ной",
+          "sourceForm": "Ноев",
+          "ref": "Лк 3:36"
+        },
+        {
+          "id": "luke-3-36-5",
+          "personId": "lamech_gen5",
+          "name": "Ламех",
+          "sourceForm": "Ламехов",
+          "ref": "Лк 3:36"
+        },
+        {
+          "id": "luke-3-37-1",
+          "personId": "methuselah",
+          "name": "Мафусал",
+          "sourceForm": "Мафусалов",
+          "ref": "Лк 3:37"
+        },
+        {
+          "id": "luke-3-37-2",
+          "personId": "enoch",
+          "name": "Енох",
+          "sourceForm": "Енохов",
+          "ref": "Лк 3:37"
+        },
+        {
+          "id": "luke-3-37-3",
+          "personId": "jared",
+          "name": "Иаред",
+          "sourceForm": "Иаредов",
+          "ref": "Лк 3:37"
+        },
+        {
+          "id": "luke-3-37-4",
+          "personId": "mahalalel",
+          "name": "Малелеил",
+          "sourceForm": "Малелеилов",
+          "ref": "Лк 3:37"
+        },
+        {
+          "id": "luke-3-37-5",
+          "personId": "kenan_gen5",
+          "name": "Каинан",
+          "sourceForm": "Каинанов",
+          "ref": "Лк 3:37"
+        },
+        {
+          "id": "luke-3-38-1",
+          "personId": "enosh",
+          "name": "Енос",
+          "sourceForm": "Еносов",
+          "ref": "Лк 3:38"
+        },
+        {
+          "id": "luke-3-38-2",
+          "personId": "seth",
+          "name": "Сиф",
+          "sourceForm": "Сифов",
+          "ref": "Лк 3:38"
+        },
+        {
+          "id": "luke-3-38-3",
+          "personId": "adam",
+          "name": "Адам",
+          "sourceForm": "Адамов",
+          "ref": "Лк 3:38"
+        }
+      ]
+    }
+  ]
+}

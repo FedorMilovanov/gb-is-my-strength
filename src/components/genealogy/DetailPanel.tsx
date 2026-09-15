@@ -6,7 +6,7 @@
  * positions, and biblical reference.
  */
 
-import { memo } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import type { Person } from './types';
 import { getLineStyle, ERA_META, ROLE_LABELS } from './theme';
 
@@ -16,6 +16,8 @@ interface DetailPanelProps {
 }
 
 function DetailPanelComponent({ person, onClose }: DetailPanelProps) {
+  const panel = useRef<HTMLElement | null>(null);
+  useEffect(() => { if (person) panel.current?.querySelector<HTMLButtonElement>('button')?.focus({ preventScroll: true }); }, [person?.id]);
   if (!person) return null;
 
   const ls = getLineStyle(person.lineage);
@@ -25,18 +27,20 @@ function DetailPanelComponent({ person, onClose }: DetailPanelProps) {
 
   return (
     <aside
+      ref={panel}
+      className="genealogy-details"
+      data-genealogy-details
       role="complementary"
       aria-label={`Детали: ${person.name.ru}`}
       style={{
-        position: 'absolute', top: 0, right: 0, bottom: 0,
-        width: 'min(380px, 100vw)', zIndex: 50,
+        zIndex: 50,
         background: 'linear-gradient(180deg, rgba(20,16,10,0.97), rgba(10,8,5,0.98))',
         backdropFilter: 'blur(20px)',
         borderLeft: `1px solid ${ls.border}40`,
         boxShadow: '-8px 0 40px rgba(0,0,0,0.5)',
         overflowY: 'auto', padding: '20px 22px',
         fontFamily: '"Lora", Georgia, serif',
-        animation: 'genealogy-slide-in-right .25s ease-out',
+        animation: 'var(--genealogy-panel-animation, genealogy-fade-in .2s ease-out)',
       }}
     >
       {/* Close button */}
@@ -47,13 +51,13 @@ function DetailPanelComponent({ person, onClose }: DetailPanelProps) {
           position: 'absolute', top: '14px', right: '14px',
           background: 'rgba(255,255,255,0.05)', border: `1px solid ${ls.border}30`,
           borderRadius: '8px', color: '#c8b89a', fontSize: '18px',
-          cursor: 'pointer', width: '36px', height: '36px',
+          cursor: 'pointer', width: '44px', height: '44px',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}
       >×</button>
 
       {/* Name */}
-      <div style={{ fontSize: '22px', fontWeight: 700, color: ls.text, lineHeight: 1.2, paddingRight: '32px' }}>
+      <div style={{ fontSize: '22px', fontWeight: 700, color: ls.text, lineHeight: 1.2, paddingRight: '52px' }}>
         {person.name.ru}
       </div>
       {person.name.he && (
@@ -85,7 +89,7 @@ function DetailPanelComponent({ person, onClose }: DetailPanelProps) {
           <span style={{
             fontSize: '10px', padding: '3px 9px', borderRadius: '999px',
             background: 'rgba(200,100,140,0.1)', color: '#d4889a', border: '1px solid rgba(200,100,140,0.2)',
-          }}>жена/мать</span>
+          }}>Женщина</span>
         )}
       </div>
 
@@ -121,7 +125,7 @@ function DetailPanelComponent({ person, onClose }: DetailPanelProps) {
           background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.25)',
         }}>
           <div style={{ fontSize: '11px', fontWeight: 700, color: '#e87060', marginBottom: '8px' }}>
-            ⚠ Спорное место ({person.disputed.level})
+            ⚠ Спорное место ({({ textual: 'текстология', genealogical: 'родственные связи', theological: 'толкование' })[person.disputed.level]})
           </div>
           {person.disputed.positions.map((pos, i) => (
             <div key={i} style={{ marginBottom: '8px' }}>
