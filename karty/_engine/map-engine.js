@@ -74,7 +74,29 @@ const MapEngine = (function() {
   const ROUTE_ARCHETYPE_VALUES = Object.freeze(['route','political','thematic','territorial','overview']);
   const ROUTE_ARCHETYPE_SET = new Set(ROUTE_ARCHETYPE_VALUES);
 
+  function deriveLegacyRouteCapabilities(data={}){
+    const inferred=new Set();
+    if(Array.isArray(data?.stages)&&data.stages.length>0)inferred.add('stages');
+    if(Array.isArray(data?.stories)&&data.stories.length>0)inferred.add('stories');
+    if(Array.isArray(data?.layers)&&data.layers.length>0)inferred.add('layers');
+    if(Array.isArray(data?.timeline)&&data.timeline.length>0)inferred.add('timeline');
+    if(data?.signature&&typeof data.signature==='object')inferred.add('signature');
+    const places=Array.isArray(data?.places)?data.places:(Array.isArray(data?.places_index)?data.places_index:[]);
+    const hasInterpretations=Boolean(
+      (data?.scientific_variants&&typeof data.scientific_variants==='object')||
+      (data?.variants&&typeof data.variants==='object')||
+      places.some(place=>place&&typeof place==='object'&&(
+        (typeof place.arch==='string'&&place.arch.trim())||
+        (typeof place.dispute==='string'&&place.dispute.trim())
+      ))
+    );
+    if(hasInterpretations)inferred.add('interpretations');
+    return ROUTE_CAPABILITY_VALUES.filter(capability=>inferred.has(capability));
+  }
+
   function normalizeRouteCapabilities(data={}){
+    const hasDeclared=Object.prototype.hasOwnProperty.call(data||{},'capabilities');
+    if(!hasDeclared)return deriveLegacyRouteCapabilities(data);
     const declared=Array.isArray(data?.capabilities)?data.capabilities:[];
     const seen=new Set(declared.filter(value=>typeof value==='string'));
     return ROUTE_CAPABILITY_VALUES.filter(capability=>seen.has(capability));
