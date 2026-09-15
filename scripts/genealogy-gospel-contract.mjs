@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { getGospelComparison, gospelSource } from '../src/components/genealogy/gospelSequences.ts';
+import { readGenealogyRuntimePersons } from './genealogy-runtime-fixture.mjs';
 
 // Editorial acceptance fixtures, transcribed against the named Synodal passages.
 // They intentionally do not use parent traversal or generated group membership.
@@ -10,8 +10,7 @@ const MATTHEW_NAMES = 'Авраам|Исаак|Иаков|Иуда|Фарес|Е
 const LUKE_FORMS = 'Иисус|Иосифов|Илиев|Матфатов|Левиин|Мелхиев|Ианнаев|Иосифов|Маттафиев|Амосов|Наумов|Еслимов|Наггеев|Маафов|Маттафиев|Семеиев|Иосифов|Иудин|Иоаннанов|Рисаев|Зоровавелев|Салафиилев|Нириев|Мелхиев|Аддиев|Косамов|Елмодамов|Иров|Иосиев|Елиезеров|Иоримов|Матфатов|Левиин|Симеонов|Иудин|Иосифов|Ионанов|Елиакимов|Мелеаев|Маинанов|Маттафаев|Нафанов|Давидов|Иессеев|Овидов|Воозов|Салмонов|Наассонов|Аминадавов|Арамов|Есромов|Фаресов|Иудин|Иаковлев|Исааков|Авраамов|Фаррин|Нахоров|Серухов|Рагавов|Фалеков|Еверов|Салин|Каинанов|Арфаксадов|Симов|Ноев|Ламехов|Мафусалов|Енохов|Иаредов|Малелеилов|Каинанов|Еносов|Сифов|Адамов'.split('|');
 
 export function assertGospelContract() {
-  const data = JSON.parse(fs.readFileSync(new URL('../data/genealogy/genealogy.json', import.meta.url), 'utf8'));
-  const { persons } = data;
+  const persons = readGenealogyRuntimePersons();
   const byId = new Map(persons.map(person => [person.id, person]));
   const [matthew, luke] = gospelSource.sequences;
   assert.equal(gospelSource.translation, 'Синодальный перевод');
