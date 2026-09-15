@@ -1,8 +1,9 @@
 /**
  * Genealogy types — strict TypeScript definitions for the biblical genealogy tree.
  *
- * These types model the data shape in data/genealogy/genealogy.json and are the
- * single source of truth consumed by layout, nodes, panels, and search.
+ * These types model the stable runtime shape consumed by layout, nodes, panels,
+ * and search. Production persons are adapted from the certified v2 publishable
+ * projection; the legacy curated file remains an editorial/build input.
  */
 
 /** A textual tradition variant (Masoretic / Septuagint / Samaritan). */
