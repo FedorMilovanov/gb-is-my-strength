@@ -19,6 +19,7 @@ const expectedProjectionFiles = new Set([
   'meta.json',
   'persons.json',
   'relations.json',
+  'textual-assertions.json',
 ]);
 const actualProjectionFiles = fs.readdirSync(OUT, { withFileTypes: true });
 assert(actualProjectionFiles.every(entry => entry.isFile()),
@@ -40,6 +41,7 @@ const meta = readJson(path.join(OUT, 'meta.json'));
 const persons = readJson(path.join(OUT, 'persons.json'));
 const relations = readJson(path.join(OUT, 'relations.json'));
 const gospels = readJson(path.join(OUT, 'gospel-sequences.json'));
+const textualAssertions = readJson(path.join(OUT, 'textual-assertions.json'));
 
 const expectedSourceHashes = {
   curatedV1: sha256(v1Raw),
@@ -65,6 +67,7 @@ assert(persons.length === v1.persons.length, `Publishable identity count drift: 
 
 const ids = new Set();
 const byV1 = new Map();
+const sourceByV1 = new Map(v1.persons.map(person => [person.id, person]));
 for (const person of persons) {
   assert(person.id && !ids.has(person.id), `Duplicate publishable person id: ${person.id}`);
   ids.add(person.id);
@@ -73,6 +76,18 @@ for (const person of persons) {
   assert(person.names?.ru, `Missing Russian label: ${person.v1Id}`);
   assert(person.identity?.authority === 'curated-v1-to-tipnr', `Wrong identity authority: ${person.v1Id}`);
   assert(person.identity?.russianLabelReview === false, `Unreviewed Russian label leaked into publishable projection: ${person.v1Id}`);
+  const source = sourceByV1.get(person.v1Id);
+  assert(source, `Missing curated source for publishable identity: ${person.v1Id}`);
+  for (const field of ['birthName', 'altName']) {
+    const expected = source.name?.[field];
+    if (expected) {
+      assert(person.names?.[field] === expected,
+        `Curated display alias drift: ${person.v1Id}:${field}`);
+    } else {
+      assert(!(field in (person.names ?? {})),
+        `Unexpected publishable display alias: ${person.v1Id}:${field}`);
+    }
+  }
 }
 
 for (const source of v1.persons) {
@@ -175,6 +190,100 @@ const luke = (gospels.sequences ?? []).find(sequence => sequence.id === 'luke');
 assert(luke && !luke.occurrences.some(occurrence => occurrence.sourcePersonId === 'mary'),
   'Luke textual sequence improperly inserts Mary');
 
+assert(textualAssertions.schemaVersion === 1, 'Unexpected textual assertion schema');
+assert(textualAssertions.authority === 'explicit-gospel-occurrence-adjacency',
+  'Textual assertion authority drift');
+assert(textualAssertions.policy?.familyInference === 'forbidden',
+  'Textual assertions must forbid family inference');
+
+const gospelById = new Map((gospels.sequences ?? []).map(sequence => [sequence.id, sequence]));
+const textualIds = new Set();
+const unmatchedTextualIds = [];
+let matchedTextualAssertions = 0;
+let reviewedTextualCrosswalks = 0;
+
+for (const assertion of textualAssertions.assertions ?? []) {
+  assert(assertion.id && !textualIds.has(assertion.id),
+    `Duplicate textual assertion id: ${assertion.id}`);
+  textualIds.add(assertion.id);
+  assert(assertion.assertion === 'textual-genealogy-adjacency',
+    `Unexpected textual assertion class: ${assertion.id}`);
+  assert(assertion.familyInference === 'none',
+    `Textual assertion attempted family inference: ${assertion.id}`);
+
+  const sequence = gospelById.get(assertion.sequenceId);
+  assert(sequence, `Textual assertion references unknown Gospel sequence: ${assertion.id}`);
+  const index = assertion.position - 1;
+  assert(Number.isInteger(index) && index >= 0 && index < sequence.occurrences.length - 1,
+    `Textual assertion position is outside sequence: ${assertion.id}`);
+
+  const from = sequence.occurrences[index];
+  const to = sequence.occurrences[index + 1];
+  const expectedId = `${sequence.id}:${from.occurrenceId}->${to.occurrenceId}`;
+  assert(assertion.id === expectedId, `Textual assertion id/order drift: ${assertion.id}`);
+  assert(assertion.source?.fromOccurrenceId === from.occurrenceId &&
+    assertion.source?.toOccurrenceId === to.occurrenceId,
+  `Textual assertion occurrence crosswalk drift: ${assertion.id}`);
+  assert(assertion.source?.fromRef === (from.ref ?? null) &&
+    assertion.source?.toRef === (to.ref ?? null),
+  `Textual assertion source refs drift: ${assertion.id}`);
+  assert(assertion.fromPersonId === from.personId && assertion.toPersonId === to.personId,
+    `Textual assertion identity crosswalk drift: ${assertion.id}`);
+
+  const matches = relations.filter(relation =>
+    (relation.from === assertion.fromPersonId && relation.to === assertion.toPersonId) ||
+    (relation.from === assertion.toPersonId && relation.to === assertion.fromPersonId));
+  assert(matches.length <= 1, `Ambiguous textual assertion relation crosswalk: ${assertion.id}`);
+
+  const crosswalk = assertion.relationCrosswalk;
+  assert(crosswalk, `Missing textual assertion relation crosswalk: ${assertion.id}`);
+  if (matches.length === 0) {
+    assert(crosswalk.status === 'no-publishable-relation' &&
+      crosswalk.relationKey === null &&
+      crosswalk.kind === null &&
+      crosswalk.from === null &&
+      crosswalk.to === null &&
+      crosswalk.role === null &&
+      crosswalk.authority === null &&
+      crosswalk.evidenceStatus === null &&
+      crosswalk.directScripture === null,
+    `Unmatched textual assertion must stay relation-free: ${assertion.id}`);
+    unmatchedTextualIds.push(assertion.id);
+    continue;
+  }
+
+  const relation = matches[0];
+  const expectedRelationKey =
+    `${relation.kind}:${relation.from}->${relation.to}:${relation.role ?? ''}`;
+  assert(crosswalk.status === 'matched-publishable-relation',
+    `Matched textual assertion lost relation status: ${assertion.id}`);
+  assert(crosswalk.relationKey === expectedRelationKey,
+    `Textual assertion relation key drift: ${assertion.id}`);
+  assert(crosswalk.kind === relation.kind &&
+    crosswalk.from === relation.from &&
+    crosswalk.to === relation.to &&
+    crosswalk.role === (relation.role ?? null) &&
+    crosswalk.authority === relation.authority,
+  `Textual assertion relation locator drift: ${assertion.id}`);
+  assert(crosswalk.evidenceStatus === (relation.evidence?.refsStatus ?? null) &&
+    crosswalk.directScripture === (relation.evidence?.directScripture ?? null),
+  `Textual assertion relation evidence crosswalk drift: ${assertion.id}`);
+  matchedTextualAssertions += 1;
+  if (crosswalk.evidenceStatus === 'editorially-reviewed') reviewedTextualCrosswalks += 1;
+}
+
+const expectedTextualAssertions = [...gospelById.values()].reduce((sum, sequence) =>
+  sum + Math.max(0, (sequence.occurrences ?? []).length - 1), 0);
+assert(textualIds.size === expectedTextualAssertions,
+  `Textual assertion count drift: ${textualIds.size}/${expectedTextualAssertions}`);
+
+const expectedUnmatchedTextualIds = [
+  'luke:luke-3-23-2->luke-3-23-3',
+  'luke:luke-3-35-5->luke-3-36-1',
+];
+assert(JSON.stringify(unmatchedTextualIds.sort()) === JSON.stringify(expectedUnmatchedTextualIds.sort()),
+  `Unexpected no-relation Gospel adjacencies: ${JSON.stringify(unmatchedTextualIds)}`);
+
 const counts = {
   persons: persons.length,
   relations: relations.length,
@@ -187,6 +296,10 @@ const counts = {
     relation.evidence?.refsStatus === 'relation-level-review-pending').length,
   directScriptureRelations: relations.filter(relation =>
     relation.evidence?.directScripture === true).length,
+  textualAssertions: textualIds.size,
+  textualAssertionsMatchedRelations: matchedTextualAssertions,
+  textualAssertionsWithoutRelations: unmatchedTextualIds.length,
+  textualAssertionsReviewedCrosswalks: reviewedTextualCrosswalks,
   externalRefsOmitted: meta.diagnostics?.externalRefs?.length ?? 0,
   childIndexConflictsOmitted: meta.diagnostics?.childIndexConflicts?.length ?? 0,
   asymmetricSpousesOmitted: meta.diagnostics?.asymmetricSpouses?.length ?? 0,
@@ -204,6 +317,14 @@ assert(meta.counts?.relationEvidencePending === counts.relationEvidencePending,
   'meta pending relation-evidence count drift');
 assert(meta.counts?.directScriptureRelations === counts.directScriptureRelations,
   'meta direct-Scripture relation count drift');
+assert(meta.counts?.textualAssertions === counts.textualAssertions,
+  'meta textual assertion count drift');
+assert(meta.counts?.textualAssertionsMatchedRelations === counts.textualAssertionsMatchedRelations,
+  'meta matched textual assertion count drift');
+assert(meta.counts?.textualAssertionsWithoutRelations === counts.textualAssertionsWithoutRelations,
+  'meta unmatched textual assertion count drift');
+assert(meta.counts?.textualAssertionsReviewedCrosswalks === counts.textualAssertionsReviewedCrosswalks,
+  'meta reviewed textual crosswalk count drift');
 assert(counts.relationEvidenceReviewed === (rawAnnotations.annotations ?? []).length,
   'Every editorial edge annotation must correspond to one reviewed publishable relation');
 assert(counts.relationEvidencePending + counts.relationEvidenceReviewed === counts.relations,
