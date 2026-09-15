@@ -11,10 +11,14 @@ import RodosloviyeStyles from '@/components/rodosloviye/RodosloviyeStyles.astro'
 import RodosloviyeBody from '@/components/rodosloviye/RodosloviyeBody.astro';
 import GenealogyTree from '@/components/genealogy/GenealogyTree.tsx';
 import type { Person, Era } from '@/components/genealogy/types';
-import { adaptPublishableGenealogy } from '@/components/genealogy/publishableAdapter.mjs';
+import {
+  adaptPublishableGenealogy,
+  adaptPublishableRelationEvidence,
+} from '@/components/genealogy/publishableAdapter.mjs';
 import legacyGenealogyData from '../../../data/genealogy/genealogy.json';
 import publishablePersons from '../../../data/genealogy/v2/publishable/persons.json';
 import publishableRelations from '../../../data/genealogy/v2/publishable/relations.json';
+import publishableTextualAssertions from '../../../data/genealogy/v2/publishable/textual-assertions.json';
 import MobileChromePage from '@/components/article-pilots/_shared/MobileChromePage.astro';
 import { mobileChromeFor } from '@/components/article-pilots/_shared/mobileChromeRegistry';
 
@@ -22,6 +26,11 @@ const persons = adaptPublishableGenealogy({
   persons: publishablePersons,
   relations: publishableRelations,
 }) as Person[];
+const relationEvidence = adaptPublishableRelationEvidence({
+  persons: publishablePersons,
+  relations: publishableRelations,
+  textualAssertions: publishableTextualAssertions,
+});
 const eras = legacyGenealogyData.eras as unknown as Era[];
 
 // Мобильная обвязка выбирается registry (движок «page»: Back·Home·Поиск сверху).
@@ -40,7 +49,7 @@ const mobileChrome = mobileChromeFor('/rodosloviye/');
     )}
     <RodosloviyeBody />
     <div id="genealogy-tree" class="genealogy-interactive-wrap" style="width: 100%; height: 100dvh; min-height: 760px; border-top: 1px solid var(--border-color, #e2e8f0); margin-top: 2rem; position: relative;">
-      <GenealogyTree client:only="react" persons={persons} eras={eras} />
+      <GenealogyTree client:only="react" persons={persons} eras={eras} relations={relationEvidence} />
     </div>
   </body>
 </html>
