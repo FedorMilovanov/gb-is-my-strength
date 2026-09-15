@@ -583,6 +583,20 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     assert.equal(await searchList.count(), 0,
       `${browserName} ${viewport.width}x${viewport.height}: Escape left stale search choices mounted`);
 
+    await search.fill('Иосиф (Лк)');
+    await searchList.waitFor({ state: 'visible' });
+    const secondJoseph = searchList.getByRole('option').nth(1);
+    if (touch) await secondJoseph.tap();
+    else await secondJoseph.click();
+    await page.waitForFunction(() =>
+      document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-search-person') === 'joseph_lk2');
+    assert.equal(await search.getAttribute('aria-expanded'), 'false',
+      `${browserName} ${viewport.width}x${viewport.height}: pointer selection left ambiguous listbox open`);
+    await waitForViewportStable(page);
+    assert.ok((await measurePersonViewport(page)).visibleIds.includes('joseph_lk2'),
+      `${browserName} ${viewport.width}x${viewport.height}: pointer-selected second Joseph was not centered`);
+    await search.fill('');
+
     if (process.env.GENEALOGY_REDUCED_MOTION === '1') {
       const running = await page.locator('[data-genealogy-app]').evaluate(root =>
         root.getAnimations({ subtree: true }).filter(animation => animation.playState === 'running').length);
