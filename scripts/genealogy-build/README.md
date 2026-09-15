@@ -27,7 +27,8 @@ node scripts/genealogy-build/build.mjs validate # structural-only; НЕ пере
 |---|---|---|
 | STEPBible **TIPNR** (Tyndale House) | ядро: персоны, родители/партнёры/потомки, все ссылки | CC BY 4.0, атрибуция обязательна |
 | Синодальный перевод (JSON, 66 книг) | извлечение русских имён по стиху первого упоминания | public domain (1876) |
-| `data/genealogy/genealogy.json` (v1, 156 персон) | ручной скелет: русские имена-сиды, MT/LXX/Sam-хронология, disputed, significance | наш, in-repo |
+| `data/genealogy/genealogy.json` (v1, 154 персоны) | ручной скелет: русские имена-сиды, MT/LXX/Sam-хронология, disputed, significance | наш, in-repo |
+| `data/genealogy/gospel-sequences.json` | явные текстовые occurrences Мф 1:1–17 и Лк 3:23–38; SSOT curated Gospel views | наш, in-repo |
 | Theographic Bible Metadata | НЕ входит в пайплайн — независимый свидетель для сверки | CC BY-SA 4.0 (share-alike — потому и не копируем) |
 
 **Лицензионные обязательства выхода:** производный датасет `data/genealogy/v2/` —
@@ -42,6 +43,7 @@ CC BY 4.0, атрибуция «Данные персон: STEPBible.org / Tynda
 data/genealogy/v2/
 ├── persons.json     # ~3k персон: id, en, ru{name,source,review}, gender, firstRef, tribe, skeleton-поля
 ├── edges.json       # типизированные связи: parent (отдельно father/mother), spouse; маркеры (a)/(d)/(f)/(?)
+├── gospel-sequences.json # derived explicit source-occurrence → v2 identity projection для Мф/Лк
 ├── ru-overrides.json# ручные правки русских имён (редакторский слой; выигрывает у автоизвлечения)
 ├── meta.json        # счётчики, версия пайплайна, атрибуция, sha256 источников
 └── VALIDATION.md    # человекочитаемый отчёт валидаторов (регенерируется)
@@ -57,16 +59,17 @@ data/genealogy/v2/
 2. **parse** — строгий парсер PERSON-секции TIPNR: uid `Name@Book.c.v`, родители
    («Отец + Мать»), сиблинги/партнёры/потомки, колено, описание, маркеры `(a)` предок,
    `(d)` народ-потомок, `(f)` основатель, `(?)` неоднозначность (решения Tyndale).
-3. **ru** — русские имена: (1) сиды из v1-скелета; (2) извлечение из Синодального
+3. **curated Gospel input** — `gospel-sequences.json` хешируется как отдельный input; каждое occurrence резолвится только через безопасный v1→TIPNR matcher. Мф/Лк не выводятся из parent traversal.
+4. **ru** — русские имена: (1) сиды из v1-скелета; (2) извлечение из Синодального
    стиха первого упоминания (паттерны «имя одному: X», «родил X», списки сыновей;
    версификационный фолбэк ±2 стиха); (3) транслит-фолбэк по правилам (метится
    `review: true`). Ручной слой — `ru-overrides.json`, побеждает всё.
-4. **merge** — влить v1-скелет (156): хронология MT/LXX/Sam (AM), disputed-узлы,
+5. **merge** — влить v1-скелет (156): хронология MT/LXX/Sam (AM), disputed-узлы,
    significance, lineage/era/role. Мэппинг slug↔TIPNR + таблица исключений; немэпнутые — в отчёт.
-5. **validate** — дубликаты id, битые ссылки рёбер, циклы родительского графа,
+6. **validate** — дубликаты id, битые ссылки рёбер, циклы родительского графа,
    изолированные персоны, покрытие ru-имён по source-типам, гендерная целостность.
    Провал жёстких инвариантов = exit 1.
-6. **emit** — запись `data/genealogy/v2/*` + VALIDATION.md.
+7. **emit** — запись `data/genealogy/v2/*` + VALIDATION.md.
 
 ## Статус Phase 1
 
