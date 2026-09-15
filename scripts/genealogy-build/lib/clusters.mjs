@@ -9,6 +9,7 @@
  * Статус Phase 1: правила — эвристики-черновик; сверка редактором обязательна.
  */
 import { parseRef } from './refs.mjs';
+import { gospelSequenceForCluster } from './gospel-sequences.mjs';
 
 export const CLUSTER_DEFS = [
   { id: 'antediluvian-patriarchs', titleRu: 'Допотопные патриархи',
@@ -32,9 +33,9 @@ export const CLUSTER_DEFS = [
   { id: 'return-from-exile', titleRu: 'Возвращение из плена',
     rule: { type: 'refBooks', books: ['Ezr', 'Neh'] } },
   { id: 'matthew-1', titleRu: 'Родословие по Матфею',
-    rule: { type: 'ancestorsVia', rootKey: 'Joseph@Mat.1.16', role: 'father', includeRoot: true } },
+    rule: { type: 'explicitSequence', sequenceId: 'matthew', source: 'data/genealogy/gospel-sequences.json' } },
   { id: 'luke-3', titleRu: 'Родословие по Луке',
-    rule: { type: 'ancestorsVia', rootKey: 'Mary@Mat.1.16', role: 'father', includeRoot: true } },
+    rule: { type: 'explicitSequence', sequenceId: 'luke', source: 'data/genealogy/gospel-sequences.json' } },
   { id: 'lords-relatives', titleRu: 'Родственники Господа',
     rule: { type: 'siblingsOf', rootKey: 'Jesus@Isa.7.14' } },
   { id: 'disciples-apostles', titleRu: 'Ученики и апостолы',
@@ -46,17 +47,15 @@ export const CLUSTER_DEFS = [
  * @param personsArr — эмитнутые персоны ({id, key, en, gender, firstRef, tribe, description})
  * @param edges — эмитнутые рёбра ({kind, from, to, role})
  */
-export function computeClusters(personsArr, edges) {
+export function computeClusters(personsArr, edges, { gospelSequences = null } = {}) {
   const byKey = new Map(personsArr.map(p => [p.key, p]));
   const byId = new Map(personsArr.map(p => [p.id, p]));
 
   const childrenOf = new Map();  // parentId → [childId]
-  const fatherOf = new Map();    // childId → fatherId
   for (const e of edges) {
     if (e.kind !== 'parent' && e.kind !== 'ancestor') continue;
     if (!childrenOf.has(e.from)) childrenOf.set(e.from, []);
     childrenOf.get(e.from).push(e.to);
-    if (e.role === 'father') fatherOf.set(e.to, e.from);
   }
 
   const descendants = (rootId, includeRoot) => {
@@ -68,19 +67,6 @@ export function computeClusters(personsArr, edges) {
       }
     }
     if (!includeRoot) out.delete(rootId);
-    return out;
-  };
-
-  const ancestorsVia = (rootId, includeRoot) => {
-    const out = new Set(includeRoot ? [rootId] : []);
-    let cur = rootId;
-    const guard = new Set();
-    while (cur && !guard.has(cur)) {
-      guard.add(cur);
-      const f = fatherOf.get(cur);
-      if (f) out.add(f);
-      cur = f;
-    }
     return out;
   };
 
@@ -102,9 +88,12 @@ export function computeClusters(personsArr, edges) {
     } else if (r.type === 'descendants') {
       const root = byKey.get(r.rootKey);
       members = root ? [...descendants(root.id, Boolean(r.includeRoot))] : [];
-    } else if (r.type === 'ancestorsVia') {
-      const root = byKey.get(r.rootKey);
-      members = root ? [...ancestorsVia(root.id, Boolean(r.includeRoot))] : [];
+    } else if (r.type === 'explicitSequence') {
+      const sequence = gospelSequenceForCluster(gospelSequences, def.id);
+      if (!sequence || sequence.id !== r.sequenceId) {
+        throw new Error(`Missing explicit Gospel sequence for cluster ${def.id}`);
+      }
+      members = sequence.occurrences.map(occurrence => occurrence.personId);
     } else if (r.type === 'childrenOf') {
       const root = byKey.get(r.rootKey);
       members = root
