@@ -112,14 +112,39 @@ html[data-reader-theme="sepia"] .info-box {
 /* Shared reading values. Adapters opt their article root into these variables
    without scaling navigation or control chrome. */
 [data-reader-root] .article-body,
-[data-gill-v16] .article-body {
+[data-gill-v16] .article-body,
+[data-gill-v16] .page-wrap > main.article-main {
   font-size: calc(1em * var(--gb-reader-font-scale, 1));
   line-height: var(--gb-reader-line-height, 1.6);
 }
 
+/* Audit 2026-09-15: family-B pages (45) use <main class="article-main"> as the
+   content root; opt them into the same shared reading values. margin-inline
+   keeps capped children centred (fixes the −12/−68px drift at ≥1600px). */
 [data-reader-root] .article-body > *,
-[data-gill-v16] .article-body > * {
+[data-gill-v16] .article-body > *,
+[data-gill-v16] .page-wrap > main.article-main > article > * {
   max-width: var(--gb-reader-measure, 43rem);
+  margin-inline: auto;
+}
+
+/* Mobile measure scale: rem-based values are wider than any phone, so below
+   960px the «Ширина статьи» preference drives the column in viewport units
+   (html[data-reader-measure] is kept in sync by js/reader-preferences.js). */
+@media (max-width: 960px) {
+  html[data-reader-measure="narrow"] { --gb-mobile-measure: 80vw; }
+  html[data-reader-measure="normal"] { --gb-mobile-measure: 92vw; }
+  html[data-reader-measure="wide"]   { --gb-mobile-measure: 100%; } /* 100vw overshoots by the classic-scrollbar width */
+  html[data-reader-measure] [data-gill-v16] .page-wrap,
+  html[data-reader-measure] [data-gill-v16] main.article-main,
+  html[data-reader-measure] [data-reader-root] .article-main,
+  /* hrail: [data-reader-root] sits ON the main itself (HermenevtikaBody),
+     so the descendant form above never matched — self-form added (audit §16). */
+  html[data-reader-measure] [data-reader-root].article-main {
+    width: min(820px, var(--gb-mobile-measure));
+    max-width: var(--gb-mobile-measure) !important;
+    margin-inline: auto !important;
+  }
 }
 
 html[data-reader-text-mode="plain"] [data-reader-decorative="true"] {
