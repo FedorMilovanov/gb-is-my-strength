@@ -15,6 +15,11 @@ import { PersonCardContent, CompactPersonCard } from './PersonNode';
 import { DetailPanel } from './DetailPanel';
 import { SplitView } from './SplitView';
 import { RelationshipInspector } from './RelationshipInspector';
+import {
+  automaticGenealogySearchResult,
+  genealogySearchOptionLabel,
+  searchGenealogyPeople,
+} from './search';
 
 const LINEAGE_FILTERS = [
   { id: 'all' as LineageFilter, label: 'Все' },
@@ -94,6 +99,8 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
   const treeRoot = useRef<HTMLDivElement | null>(null);
   const rfInstance = useRef<ReactFlowInstance | null>(null);
   const [search, setSearch] = useState('');
+  const [searchSelectionId, setSearchSelectionId] = useState<string | null>(null);
+  const [searchCursor, setSearchCursor] = useState(-1);
   const [showLineage, setShowLineage] = useState<LineageFilter>('all');
   const [showGolden, setShowGolden] = useState(true);
   const [selected, setSelected] = useState<Person | null>(null);
@@ -116,16 +123,28 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
   );
 
   // ── Search match ──
+  const searchResults = useMemo(() => searchGenealogyPeople(persons, search), [persons, search]);
+  const visibleSearchResults = useMemo(() => searchResults.slice(0, 8), [searchResults]);
   const searchMatch = useMemo(() => {
     if (!search.trim()) return null;
-    const q = search.toLowerCase().trim();
-    return persons.find(p =>
-      p.name.ru.toLowerCase().includes(q) ||
-      (p.name.he?.includes(search.trim()) ?? false) ||
-      (p.name.altName?.toLowerCase().includes(q) ?? false) ||
-      p.id.toLowerCase().includes(q),
-    ) ?? null;
-  }, [search, persons]);
+    if (searchSelectionId) {
+      return searchResults.find(result => result.person.id === searchSelectionId)?.person ?? null;
+    }
+    return automaticGenealogySearchResult(searchResults, search);
+  }, [search, searchResults, searchSelectionId]);
+  const searchNeedsChoice = Boolean(search.trim() && !searchMatch && searchResults.length > 1);
+  const searchListId = 'genealogy-person-search-results';
+  const activeSearchOptionId = searchNeedsChoice && searchCursor >= 0 && visibleSearchResults[searchCursor]
+    ? `genealogy-search-option-${visibleSearchResults[searchCursor].person.id}`
+    : undefined;
+
+  const chooseSearchPerson = useCallback((id: string) => {
+    setSearchSelectionId(id);
+    setSearchCursor(-1);
+    setActiveId(null);
+    setSelected(null);
+    setSelectedRelation(null);
+  }, []);
 
   useEffect(() => {
     const node = canvasRoot.current;
