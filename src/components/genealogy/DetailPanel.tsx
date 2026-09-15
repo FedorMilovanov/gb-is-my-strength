@@ -15,6 +15,7 @@ interface DetailPanelProps {
   relations?: RuntimeGenealogyRelation[];
   persons?: Person[];
   onInspectRelation?: (relation: RuntimeGenealogyRelation) => void;
+  onNavigatePerson?: (personId: string) => void;
   onClose: () => void;
 }
 
@@ -39,7 +40,7 @@ function compareText(left: string, right: string) {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
-function DetailPanelComponent({ person, relations = [], persons = [], onInspectRelation, onClose }: DetailPanelProps) {
+function DetailPanelComponent({ person, relations = [], persons = [], onInspectRelation, onNavigatePerson, onClose }: DetailPanelProps) {
   const panel = useRef<HTMLElement | null>(null);
   useEffect(() => { if (person) panel.current?.querySelector<HTMLButtonElement>('button')?.focus({ preventScroll: true }); }, [person?.id]);
   if (!person) return null;
@@ -56,6 +57,42 @@ function DetailPanelComponent({ person, relations = [], persons = [], onInspectR
       compareText(a.role ?? '', b.role ?? '') ||
       compareText(a.from === person.id ? a.to : a.from, b.from === person.id ? b.to : b.from)
     );
+
+  const familyGroups = [
+    {
+      id: 'parents',
+      label: 'Родители',
+      members: [
+        person.father ? { id: person.father, relation: 'Отец' } : null,
+        person.mother ? { id: person.mother, relation: 'Мать' } : null,
+      ].filter((member): member is { id: string; relation: string } => Boolean(member)),
+    },
+    {
+      id: 'spouses',
+      label: 'Супруги',
+      members: [...(person.spouse ?? [])]
+        .sort(compareText)
+        .map(id => ({ id, relation: 'Супруги' })),
+    },
+    {
+      id: 'children',
+      label: 'Дети',
+      members: [...(person.children ?? [])]
+        .sort(compareText)
+        .map(id => {
+          const gender = personById.get(id)?.gender;
+          return {
+            id,
+            relation: gender === 'f' ? 'Дочь' : gender === 'm' ? 'Сын' : 'Ребёнок',
+          };
+        }),
+    },
+  ].map(group => ({
+    ...group,
+    members: group.members
+      .map(member => ({ ...member, person: personById.get(member.id) }))
+      .filter((member): member is { id: string; relation: string; person: Person } => Boolean(member.person)),
+  })).filter(group => group.members.length > 0);
 
   return (
     <aside
@@ -166,6 +203,33 @@ function DetailPanelComponent({ person, relations = [], persons = [], onInspectR
             </div>
           ))}
         </div>
+      )}
+
+      {familyGroups.length > 0 && (
+        <section className="genealogy-family" aria-labelledby="genealogy-family-title">
+          <div id="genealogy-family-title" className="genealogy-family__title">Семья</div>
+          <div className="genealogy-family__groups">
+            {familyGroups.map(group => (
+              <div key={group.id} className="genealogy-family__group">
+                <div className="genealogy-family__group-label">{group.label}</div>
+                <div className="genealogy-family__list">
+                  {group.members.map(member => (
+                    <button
+                      key={member.id}
+                      type="button"
+                      className="genealogy-family-person"
+                      onClick={() => onNavigatePerson?.(member.id)}
+                      aria-label={`Открыть человека: ${member.person.name.ru} — ${member.relation}`}
+                    >
+                      <span>{member.person.name.ru}</span>
+                      <small>{member.relation}</small>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
 
       {personRelations.length > 0 && (

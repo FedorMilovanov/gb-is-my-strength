@@ -180,7 +180,8 @@ html.dark .genealogy-app {
 }
 
 .genealogy-details { position: absolute; top: 0; right: 0; bottom: 0; width: min(380px, 100%); }
-.genealogy-person-relations { margin-top: 16px; }
+.genealogy-family { margin-top: 16px; }
+.genealogy-family__title,
 .genealogy-person-relations__title {
   margin-bottom: 7px;
   color: var(--genealogy-gold);
@@ -189,6 +190,38 @@ html.dark .genealogy-app {
   letter-spacing: .1em;
   text-transform: uppercase;
 }
+.genealogy-family__groups { display: grid; gap: 10px; }
+.genealogy-family__group-label {
+  margin-bottom: 5px;
+  color: var(--genealogy-muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+.genealogy-family__list { display: grid; gap: 6px; }
+.genealogy-app .genealogy-family-person {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  text-align: left;
+  background: var(--genealogy-soft-surface);
+}
+.genealogy-family-person span {
+  min-width: 0;
+  color: var(--genealogy-text);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+.genealogy-family-person small {
+  flex: 0 0 auto;
+  color: var(--genealogy-muted);
+  font-size: 10px;
+}
+.genealogy-person-relations { margin-top: 16px; }
 .genealogy-person-relations__list { display: grid; gap: 7px; }
 .genealogy-app .genealogy-person-relation {
   width: 100%;

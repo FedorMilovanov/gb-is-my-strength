@@ -515,10 +515,6 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
   return (
     <div ref={treeRoot} className="genealogy-app" data-genealogy-app data-genealogy-level={detailLevel} data-minimap-open={showMiniMap}
       data-genealogy-active-person={activeId ?? undefined}
-      data-genealogy-search-query={search || undefined}
-      data-genealogy-search-result-count={searchResults.length}
-      data-genealogy-search-needs-choice={searchNeedsChoice ? 'true' : 'false'}
-      data-genealogy-search-selection={searchSelectionId ?? undefined}
       data-genealogy-search-person={searchMatch?.id ?? undefined}
       onKeyDownCapture={handleGraphKeyDown}>
       <div className="genealogy-toolbar" role="toolbar" aria-label="Управление древом">
@@ -639,6 +635,15 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
           setSelected(null);
           setRelationReturnFocusId(returnId);
           setSelectedRelation(relation);
+        }}
+        onNavigatePerson={personId => {
+          const target = persons.find(person => person.id === personId);
+          if (!target) return;
+          setSelectedRelation(null);
+          setRelationReturnFocusId(null);
+          setActiveId(personId);
+          setSelected(target);
+          focusPerson(personId, 1, 0);
         }}
         onClose={() => {
           if (selected) setKeyboardTarget({ id: selected.id });
