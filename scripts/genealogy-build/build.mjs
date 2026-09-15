@@ -13,9 +13,9 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile, access } from 'node:fs/promises';
 import path from 'node:path';
 import { PATHS, SOURCES, PIPELINE_VERSION, HARD_INVARIANTS } from './config.mjs';
-import { SynodalText, refToRu, parseRef, OSIS_RU } from './lib/refs.mjs';
+import { SynodalText, refToRu, parseRef } from './lib/refs.mjs';
 import { parseTipnr, resolveRelations, parseUnifiedRef, parseRelField } from './lib/tipnr-parser.mjs';
-import { extractRuName, translitEnRu, similarity, normalizeRuCandidate } from './lib/ru-extract.mjs';
+import { extractRuName, translitEnRu, similarity, normalizeRuCandidate, structuralRuLabel } from './lib/ru-extract.mjs';
 import { computeClusters, nationsLayer } from './lib/clusters.mjs';
 import { traceSpine } from './lib/spine.mjs';
 import { buildLayoutL0 } from './lib/layout-l0.mjs';
@@ -32,6 +32,7 @@ import { renderNationsMapSvg } from './lib/render-map-nations.mjs';
 import { renderPersonL2Svg } from './lib/render-l2-person.mjs';
 import { renderMorphFramesSvg } from './lib/render-morph-frames.mjs';
 import { renderTimelineSvg } from './lib/render-timeline.mjs';
+import { matchSkeleton, v1PrimaryRefScope } from './lib/skeleton-matcher.mjs';
 
 const log = (...a) => console.log('[genealogy-build]', ...a);
 
@@ -98,114 +99,8 @@ async function loadCached(key) {
 
 // ─────────────────────────── v1-скелет ───────────────────────────
 
-/** Мэппинг v1-id → TIPNR-key: имя + при неоднозначности книга первого упоминания. */
-const RU_BOOK_TO_OSIS = Object.fromEntries(Object.entries(OSIS_RU).map(([o, r]) => [r, o]));
-
-const V1_EXCEPTIONS = {
-  // v1-id: точный TIPNR-ключ (по отчёту unmatched; решения — по father/children v1
-  // против канонического порядка Лк 3:23-31 и текста Быт)
-  abram: 'Abraham@Gen.11.26',
-  jesus: 'Jesus@Isa.7.14',
-  jacob: 'Israel@Gen.25.26',          // патриарх Иаков в TIPNR = Israel@Gen.25.26 (не Jacob@Mat = NT-тёзка)
-  jacob_mt: 'Jacob@Mat.1.15',         // NT-Иаков, отец Иосифа-обручника
-  arphaxad: 'Arpachshad@Gen.10.22',
-  shelah: 'Shelah@Gen.10.24',        // сын Арфаксада (не Шела сын Иуды Gen.38.5)
-  mizraim: 'Egypt@Gen.10.6',         // Мицраим = Egypt в ESV-номенклатуре TIPNR
-  joseph_nt: 'Joseph@Mat.1.16',      // Обручник
-  joseph_lk: 'Joseph@Luk.3.30',      // отец jonam → Лк 3:30
-  joseph_lk2: 'Joseph@Luk.3.24',     // сын Маттафии (Лк 3:24-25)
-  simeon_lk: 'Simeon@Luk.3.30',
-  levi_lk: 'Levi@Luk.3.29',
-  levi_lk2: 'Levi@Luk.3.24',
-  melki_lk: 'Melchi@Luk.3.28',       // сын Аддия
-  melchi_lk2: 'Melchi@Luk.3.24',
-  mattathias_lk: 'Mattathias@Luk.3.26',  // сын Семеина
-  mattathias2_lk: 'Mattathias@Luk.3.25', // сын Амоса
-  naggesi_lk: 'Naggai@Luk.3.25',
-  judah_lk: 'Judah@Luk.3.30',
-};
-
-// v1-узлы БЕЗ TIPNR-аналога: реконструкции цепи Луки (Лк 3:26-30), где v1 смоделировал
-// больше повторяющихся имён (Иосиф/Симеон/Левий/Иуда ×2), чем различает TIPNR/канон.
-// Не матчить — иначе фуззи притянет их к единственному TIPNR-тёзке (коллизия).
-// Их русские имена/структура сохранены в v1-скелете; в v2 они — редакторское решение.
-const V1_NO_MATCH = new Set(['judah_lk2', 'simeon_lk2', 'joseph_lk3']);
-
-function slugName(s) {
-  return String(s).split('|')[0].toLowerCase().replace(/[^a-z0-9]+/g, '');
-}
-
-function matchSkeleton(v1Persons, tipnrPersons) {
-  const byName = new Map();
-  const all = [...tipnrPersons.values()];
-  for (const rec of all) {
-    const k = slugName(rec.name);
-    if (!byName.has(k)) byName.set(k, []);
-    byName.get(k).push(rec);
-  }
-
-  // выбор из нескольких кандидатов: сначала книга первого упоминания v1,
-  // затем близость русского имени v1 к транслиту английского имени кандидата
-  const disambiguate = (p, cands) => {
-    if (p.ref) {
-      const ruBook = String(p.ref).trim().split(/\s+/)[0].replace(/[;,.]$/, '');
-      const osis = RU_BOOK_TO_OSIS[ruBook];
-      const scoped = osis ? cands.filter(c => c.ref?.startsWith(osis + '.')) : [];
-      if (scoped.length === 1) return scoped[0];
-      if (scoped.length > 1) cands = scoped;
-    }
-    if (p.name?.ru) {
-      let best = null;
-      for (const c of cands) {
-        const score = similarity(translitEnRu(c.name), p.name.ru);
-        if (!best || score > best.score) best = { c, score };
-      }
-      if (best && best.score >= 0.55) return best.c;
-    }
-    return null;
-  };
-
-  const matches = new Map();   // v1.id → tipnr key
-  const soft = [];             // сопоставлено эвристикой — в отчёт для сверки
-  const unmatched = [];
-  for (const p of v1Persons) {
-    if (V1_NO_MATCH.has(p.id)) { unmatched.push({ id: p.id, ru: p.name?.ru, ref: p.ref ?? null, candidates: 'no-tipnr-counterpart' }); continue; }
-    if (V1_EXCEPTIONS[p.id]) { matches.set(p.id, V1_EXCEPTIONS[p.id]); continue; }
-    const base = p.id.replace(/_[a-z0-9]{1,6}$/i, ''); // joseph_nt / kenan_gen5 / melki_lk → базовое имя
-    let cands = byName.get(slugName(base)) ?? [];
-    if (cands.length === 0) {
-      // фуззи по всем именам (melki↔Melchi, arphaxad↔Arpachshad, jeconiah↔Jechoniah)
-      const target = slugName(base);
-      let best = null;
-      for (const rec of all) {
-        const score = similarity(target, slugName(rec.name));
-        if (!best || score > best.score) best = { rec, score };
-      }
-      if (best && best.score >= 0.74) {
-        cands = byName.get(slugName(best.rec.name)) ?? [best.rec];
-        soft.push({ id: p.id, via: `fuzzy:${best.rec.name}(${best.score.toFixed(2)})` });
-      }
-    }
-    if (cands.length === 1) { matches.set(p.id, cands[0].key); continue; }
-    if (cands.length > 1) {
-      const pick = disambiguate(p, cands);
-      if (pick) { matches.set(p.id, pick.key); soft.push({ id: p.id, via: `disamb:${pick.key}` }); continue; }
-    }
-    unmatched.push({ id: p.id, ru: p.name?.ru, ref: p.ref ?? null, candidates: cands.length });
-  }
-
-  // Коллизии: два v1-id указывают на один TIPNR-ключ (напр. jacob + jacob_mt → один Jacob).
-  // Тихо теряется seed одного из них — это баг данных, а не мелочь: surface явно.
-  const byTarget = new Map();
-  for (const [id, key] of matches) {
-    if (!byTarget.has(key)) byTarget.set(key, []);
-    byTarget.get(key).push(id);
-  }
-  const collisions = [...byTarget.entries()].filter(([, ids]) => ids.length > 1)
-    .map(([key, ids]) => ({ key, ids }));
-
-  return { matches, unmatched, soft, collisions };
-}
+/** Identity matching lives in lib/skeleton-matcher.mjs so build and
+ * publication audit share one pure, reproducible implementation. */
 
 // ─────────────────────────── сборка ───────────────────────────
 
@@ -220,19 +115,23 @@ async function runAll() {
 
   // 1. Парсинг TIPNR
   const tipnrText = await loadCached('tipnr');
-  const { persons, groups, stats: parseStats } = parseTipnr(tipnrText);
-  const relStats = resolveRelations(persons);
-  log(`parse: персон ${parseStats.personRecords}, групп-народов ${parseStats.groupRecords}, ` +
+  const { persons, groups, places, stats: parseStats } = parseTipnr(tipnrText);
+  const relStats = resolveRelations(persons, { groups, places });
+  log(`parse: персон ${parseStats.personRecords}, групп-народов ${parseStats.groupRecords}, мест ${parseStats.placeRecords}, ` +
       `топ-строк ${parseStats.topLines}, типы ${JSON.stringify(parseStats.byType)}, дубликатов ${parseStats.duplicates.length}`);
-  log(`resolve: связей ${relStats.resolved}, нерезолв ${relStats.unresolvedRefs.length}, (d)-пропущено ${relStats.skippedDescendedGroup}`);
+  log(`resolve: person-связей ${relStats.resolved}, external ${relStats.resolvedExternal} ` +
+      `(groups ${relStats.externalByType.group}, places ${relStats.externalByType.place}), ` +
+      `нерезолв ${relStats.unresolvedRefs.length}, (d)-вне person graph ${relStats.skippedDescendedGroup}`);
 
   // 2. Синодальный текст
   const synRaw = await loadCached('synodal');
   const synodal = new SynodalText(JSON.parse(synRaw.replace(/^﻿/, '')));
 
   // 3. v1-скелет
-  const v1 = JSON.parse(await readFile(PATHS.v1Skeleton, 'utf8'));
-  const { matches: v1Matches, unmatched: v1Unmatched, soft: v1Soft, collisions: v1Collisions } = matchSkeleton(v1.persons, persons);
+  const v1Raw = await readFile(PATHS.v1Skeleton, 'utf8');
+  const v1SkeletonSha256 = createHash('sha256').update(v1Raw).digest('hex');
+  const v1 = JSON.parse(v1Raw);
+  const { matches: v1Matches, decisions: v1Decisions, unmatched: v1Unmatched, soft: v1Soft, collisions: v1Collisions } = matchSkeleton(v1.persons, persons);
   if (v1Collisions.length) log(`skeleton COLLISIONS (два v1-id → один ключ): ${v1Collisions.map(c => `${c.key}=[${c.ids.join(',')}]`).join('; ')}`);
   const v1ByTipnrKey = new Map();
   for (const p of v1.persons) {
@@ -263,7 +162,9 @@ async function runAll() {
     } else if (seed?.name?.ru) {
       ru = { name: seed.name.ru, source: 'seed', confidence: 1, review: false };
     } else {
-      ru = extractRuName(rec.name, synodal.verseWindow(rec.ref, 2)) ?? { name: null, source: 'none', confidence: 0, review: true };
+      const structural = structuralRuLabel(rec.name);
+      ru = structural ?? extractRuName(rec.name, synodal.verseWindow(rec.ref, 2)) ??
+        { name: null, source: 'none', confidence: 0, review: true };
     }
     ruStats[ru.source] = (ruStats[ru.source] ?? 0) + 1;
     if (ru.review) ruStats.review += 1;
@@ -272,7 +173,15 @@ async function runAll() {
       id,
       key: rec.key,
       en: rec.name,
-      ru: ru.name ? { name: ru.name, source: ru.source, confidence: ru.confidence, review: ru.review, verseRef: ru.verseRef ?? null, ...(ru.anonymous ? { anonymous: true } : {}) } : null,
+      ru: ru.name ? {
+        name: ru.name,
+        source: ru.source,
+        confidence: ru.confidence,
+        review: ru.review,
+        verseRef: ru.verseRef ?? null,
+        ...(ru.verseForm ? { verseForm: ru.verseForm } : {}),
+        ...(ru.anonymous ? { anonymous: true } : {}),
+      } : null,
       gender: rec.type === 'Male' ? 'm' : 'f',
       firstRef: { osis: rec.ref, ru: refToRu(rec.ref) },
       tribe: rec.tribe,
@@ -285,6 +194,8 @@ async function runAll() {
       theophoric: analyzeTheophoric(rec.nameForms),
       skeleton: seed ? {
         v1Id: seed.id,
+        sourceRef: seed.ref ?? null,
+        sourceGender: seed.gender ?? null,
         lineage: seed.lineage,
         era: seed.era,
         role: seed.role,
@@ -335,8 +246,28 @@ async function runAll() {
       annotations: [
         {
           from: 'joseph--mat-1-16', to: 'jesus--isa-7-14', kind: 'parent',
-          set: { legal: true },
-          note: 'Иосиф — обручник: юридическая (не кровная) линия Мф 1; кровная — через Марию (Лк 3). См. GENEALOGY-DEEP-ANALYSIS §5.',
+          set: {
+            legal: true,
+            biology: 'legal',
+            assertion: 'explicit-textual',
+            confidence: 'certain',
+            directScripture: true,
+            editorialPosition: 'text',
+            refs: ['Мф 1:16', 'Лк 3:23'],
+          },
+          note: 'Иосиф назван мужем Марии и считается отцом Иисуса по закону/общественному восприятию; биологическое отцовство ему не приписывается.',
+        },
+        {
+          from: 'heli--luk-3-23', to: 'mary--mat-1-16', kind: 'parent',
+          set: {
+            biology: 'unknown',
+            assertion: 'editorial-harmonization',
+            confidence: 'disputed',
+            directScripture: false,
+            editorialPosition: 'preferred',
+            refs: ['Лк 3:23', 'Мф 1:16'],
+          },
+          note: 'Илий как отец Марии — предпочитаемая гармонизация проекта. Лк 3:23 прямо этого не утверждает.',
         },
       ],
     };
@@ -425,7 +356,7 @@ async function runAll() {
       { ru: byKeyL2.get('Solomon@2Sa.5.14')?.ru?.name ?? 'Соломон', refRu: '2Цар 5:14',
         line: 'matthew', lineRu: 'Матфей · царская линия', icon: 'temple' },
       { ru: byKeyL2.get('Nathan@2Sa.5.14')?.ru?.name ?? 'Нафан', refRu: '2Цар 5:14',
-        line: 'luke', lineRu: 'Лука · кровная линия', icon: 'scroll' },
+        line: 'luke', lineRu: 'Лука · ветвь через Нафана', icon: 'scroll' },
     ],
     // Источник-JSON Синодального опускает Руф 4:17 (в главе 21 стих вместо 22),
     // хвост сдвинут на −1 от канонической нумерации. Ищем стих с Давидом в широком
@@ -473,7 +404,7 @@ async function runAll() {
   log(`layout-l0: узлов ${layoutL0.nodes.length} (хребет ${layoutL0.nodes.filter(n => n.kind === 'spine').length} + мега ${layoutL0.nodes.filter(n => n.kind === 'mega').length}), bbox ${Math.round(layoutL0.bbox.w)}×${Math.round(layoutL0.bbox.h)}`);
 
   // 7. Валидация
-  const report = validate(outPersons, edges, { parseStats, relStats, ruStats, v1Unmatched, v1Soft, v1Collisions, v1Total: v1.persons.length, v1Matched: v1Matches.size, mirrorMisses, clusters, nations, spine });
+  const report = validate(outPersons, edges, { parseStats, relStats, ruStats, v1Unmatched, v1Soft, v1Decisions, v1Collisions, v1Total: v1.persons.length, v1Matched: v1Matches.size, mirrorMisses, clusters, nations, spine });
 
   // 8. Emit
   await mkdir(PATHS.outDir, { recursive: true });
@@ -482,10 +413,35 @@ async function runAll() {
     generatedAt: new Date().toISOString(),
     counts: report.counts,
     sources: Object.fromEntries(Object.entries(SOURCES).map(([k, s]) => [k, { url: s.url, sha256: s.sha256, license: s.license }])),
+    inputs: {
+      v1Skeleton: {
+        path: 'data/genealogy/genealogy.json',
+        sha256: v1SkeletonSha256,
+        persons: v1.persons.length,
+      },
+    },
     attribution: [SOURCES.tipnr.attribution, SOURCES.synodal.attribution,
-      'Хронология (MT AM), спорные узлы, значимость: редакция проекта (v1-скелет, 156 персон)'],
+      'Хронология (MT AM), спорные узлы, значимость: редакция проекта (v1-скелет)'],
     license: 'Derived dataset: CC BY 4.0 (attribution: STEPBible.org / Tyndale House Cambridge)',
     status: 'phase1-draft — НЕ подключать в рантайм до exit-критериев Phase 1',
+    // Machine-readable publication evidence. VALIDATION.md is a human report,
+    // never the authority for runtime/publication decisions.
+    publicationEvidence: {
+      schemaVersion: 1,
+      skeleton: {
+        total: v1.persons.length,
+        matched: v1Matches.size,
+        decisions: v1Decisions,
+        soft: v1Soft,
+        unmatched: v1Unmatched,
+        collisions: v1Collisions,
+      },
+      relations: {
+        unresolvedCount: relStats.unresolvedRefs.length,
+        unresolved: relStats.unresolvedRefs,
+      },
+      ruReviewQueue: ruStats.review,
+    },
   };
   await writeFile(path.join(PATHS.outDir, 'persons.json'), JSON.stringify(outPersons, null, 1) + '\n');
   await writeFile(path.join(PATHS.outDir, 'edges.json'), JSON.stringify(edges, null, 1) + '\n');
@@ -495,7 +451,8 @@ async function runAll() {
     nations,
   }, null, 1) + '\n');
   await writeFile(path.join(PATHS.outDir, 'spine.json'), JSON.stringify({
-    _status: 'phase1-draft: золотой мессианский хребет (Христос→Адам), L0-persistent якоря',
+    _status: 'phase1-draft: интерпретационная мессианская проекция (Христос→Адам), L0-persistent якоря',
+    model: spine.model,
     reachedRoot: spine.reachedRoot,
     length: spine.length,
     missingAnchors: spine.missingAnchors,
@@ -669,7 +626,7 @@ ${cycles.length ? '\nЦиклы:\n' + cycles.slice(0, 5).map(c => '- ' + c.join(
 ### Нерезолвнутые ссылки (первые 20 — вход для Phase 1 доводки)
 ${ctx.relStats.unresolvedRefs.slice(0, 20).map(u => `- ${u.from} · ${u.field}: \`${u.raw}\``).join('\n') || '- нет'}
 
-## Золотой хребет (Христос→Адам) — ${ctx.spine?.reachedRoot ? '✅ СВЯЗАН' : '❌ РАЗОРВАН'}
+## Мессианский хребет — интерпретационная проекция (Христос→Адам) — ${ctx.spine?.reachedRoot ? '✅ СВЯЗАН' : '❌ РАЗОРВАН'}
 
 Длина цепи: ${ctx.spine?.length ?? '—'} узлов.${(ctx.spine?.missingAnchors?.length) ? ` Отсутствуют якоря: ${ctx.spine.missingAnchors.join(', ')}` : ' Все контрольные якоря на месте.'}
 
@@ -687,6 +644,13 @@ ${(ctx.mirrorMisses ?? []).slice(0, 12).map(m => `- ${m}`).join('\n') || '- не
 
 ## v1-скелет: немэпнутые (${ctx.v1Unmatched.length})
 ${ctx.v1Unmatched.slice(0, 30).map(u => `- ${u.id} (${u.ru ?? '?'}; ${u.ref ?? '—'}; кандидатов ${u.candidates})`).join('\n') || '- нет'}
+
+## v1-скелет: методы принятых mappings
+
+${Object.entries((ctx.v1Decisions ?? []).reduce((acc, item) => {
+  acc[item.method] = (acc[item.method] ?? 0) + 1;
+  return acc;
+}, {})).map(([method, count]) => `- ${method}: ${count}`).join('\n') || '- нет'}
 
 ## v1-скелет: коллизии мэппинга (два v1-id → один TIPNR-ключ) — ${(ctx.v1Collisions ?? []).length}
 ${(ctx.v1Collisions ?? []).map(c => `- \`${c.key}\` ← [${c.ids.join(', ')}]`).join('\n') || '- нет'}
@@ -722,13 +686,164 @@ async function runTests() {
 
   const fakeVerses = [{ ref: 'Gen.10.25', offset: 0, text: 'У Евера родились два сына; имя одному: Фалек, потому что во дни его земля разделена; имя брата его: Иоктан.' }];
   const ru = extractRuName('Peleg', fakeVerses);
-  assert(ru?.name === 'Фалек' && ru.source === 'pattern', `extractRuName Peleg→Фалек (получили ${JSON.stringify(ru)})`);
+  assert(ru?.name === 'Пелег' && ru.source === 'translit' && ru.review === true,
+    `слабое Peleg↔Фалек сходство fail-closed уходит в review fallback (получили ${JSON.stringify(ru)})`);
 
   assert(normalizeRuCandidate('Elnathan', 'Елнафана') === 'Елнафан', 'нормализация вин. падежа (Елнафана→Елнафан)');
   assert(normalizeRuCandidate('Melchi', 'Мелхиев') === 'Мелхий', 'нормализация притяжательного (Мелхиев→Мелхий)');
+  assert(normalizeRuCandidate('Caleb', 'Халев') === 'Халев',
+    'канонический Халев не разрушается ложным срезом -ев');
   assert(normalizeRuCandidate('Mattathias', 'Маттафиев') === 'Маттафия', 'нормализация -ias (Маттафиев→Маттафия)');
   assert(normalizeRuCandidate('Judah', 'Иуда') === 'Иуда', 'именительный не трогаем (Иуда)');
   assert(normalizeRuCandidate('Reuben', 'Рувим') === 'Рувим', 'без ложных срабатываний (Рувим)');
+
+  assert(normalizeRuCandidate('Sheba', 'Шеву') === 'Шева', 'вин. форма -у → canonical -а');
+  assert(normalizeRuCandidate('Havilah', 'Хавилу') === 'Хавила', 'Havilah: -у → -а');
+  assert(normalizeRuCandidate('Iscah', 'Иски') === 'Иска', 'род. форма -и → canonical -а');
+  assert(normalizeRuCandidate('Elisheba', 'Елисавету') === 'Елисавета', 'Елисавету → Елисавета');
+  assert(normalizeRuCandidate('Maria', 'Марии') === 'Мария', '-ia: Марии → Мария');
+
+  assert(structuralRuLabel('father_of_Mamre')?.name === 'Отец (имя не указано)' &&
+    structuralRuLabel('father_of_Mamre')?.review === false,
+    'structural father placeholder не транслитерируется как имя');
+  assert(structuralRuLabel('a_wife_of_Lot')?.name === 'Жена (имя не указано)',
+    'structural wife placeholder локализуется как анонимная роль');
+  assert(structuralRuLabel('daughter1_of_Lot')?.name === 'Первая дочь (имя не указано)' &&
+    structuralRuLabel('daughter2_of_Lot')?.name === 'Вторая дочь (имя не указано)',
+    'нумерованные дочери сохраняют различимость без псевдоимён');
+  assert(structuralRuLabel('son_of_Jashen')?.anonymous === true,
+    'structural relation node маркируется anonymous');
+  assert(structuralRuLabel('Abraham') === null,
+    'обычное имя не попадает в structural placeholder classifier');
+
+  const badNeighbour = extractRuName('Naamah', [
+    { ref: 'Gen.4.20', offset: -2, text: 'Ада родила Иавала; он был отец живущих в шатрах со стадами.' },
+    { ref: 'Gen.4.22', offset: 0, text: 'Сестра Тувалкаина Ноема.' },
+  ]);
+  assert(badNeighbour?.name !== 'Иавала' && badNeighbour?.name !== 'Иавал',
+    'pattern bonus не может присвоить соседнее имя Naamah');
+  const autoReviewed = extractRuName('Almodad', [
+    { ref: 'Gen.10.26', offset: 0, text: 'Иоктан родил Алмодада, Шалефа, Хацармавефа, Иераха.' },
+  ]);
+  assert(autoReviewed?.review === true && (autoReviewed?.confidence ?? 0) <= 1,
+    'auto-extracted имя остаётся в editorial review и confidence ограничен 1');
+
+
+  const broadGenesisScope = v1PrimaryRefScope({ ref: 'Быт 29-30, 49' });
+  assert(broadGenesisScope?.osis === 'Gen' && broadGenesisScope.chapter === null,
+    'широкая ссылка Быт 29-30 сохраняет book-only scope без ложной главы');
+  const exactLukeScope = v1PrimaryRefScope({ ref: 'Лк 3:25' });
+  assert(exactLukeScope?.osis === 'Luk' && exactLukeScope.chapter === 3 && exactLukeScope.verse === 25,
+    'точная ссылка Лк 3:25 сохраняет chapter/verse scope');
+  const ruthScope = v1PrimaryRefScope({ ref: 'Руфь 4:17' });
+  assert(ruthScope?.osis === 'Rut' && ruthScope.chapter === 4 && ruthScope.verse === 17,
+    'алиас Руфь сохраняет точный source scope');
+  const numbersScope = v1PrimaryRefScope({ ref: 'Числ 25:7-13' });
+  assert(numbersScope?.osis === 'Num' && numbersScope.chapter === 25 && numbersScope.verse === 7,
+    'алиас Числ сохраняет точный source scope');
+
+  const homonymFixture = new Map([
+    ['Enoch@Gen.4.17', { key: 'Enoch@Gen.4.17', name: 'Enoch', ref: 'Gen.4.17', type: 'Male' }],
+    ['Enoch@Gen.5.18', { key: 'Enoch@Gen.5.18', name: 'Enoch', ref: 'Gen.5.18', type: 'Male' }],
+    ['Lamech@Gen.4.18', { key: 'Lamech@Gen.4.18', name: 'Lamech', ref: 'Gen.4.18', type: 'Male' }],
+    ['Lamech@Gen.5.25', { key: 'Lamech@Gen.5.25', name: 'Lamech', ref: 'Gen.5.25', type: 'Male' }],
+    ['Obed@Rut.4.17', { key: 'Obed@Rut.4.17', name: 'Obed', ref: 'Rut.4.17', type: 'Male' }],
+    ['Obed@1Ch.11.47', { key: 'Obed@1Ch.11.47', name: 'Obed', ref: '1Ch.11.47', type: 'Male' }],
+    ['Matthat@Luk.3.24', { key: 'Matthat@Luk.3.24', name: 'Matthat', ref: 'Luk.3.24', type: 'Male' }],
+    ['Matthat@Luk.3.29', { key: 'Matthat@Luk.3.29', name: 'Matthat', ref: 'Luk.3.29', type: 'Male' }],
+    ['Phinehas@Exo.6.25', { key: 'Phinehas@Exo.6.25', name: 'Phinehas', ref: 'Exo.6.25', type: 'Male' }],
+    ['Phinehas@1Sa.1.3', { key: 'Phinehas@1Sa.1.3', name: 'Phinehas', ref: '1Sa.1.3', type: 'Male' }],
+  ]);
+  const homonymMatches = matchSkeleton([
+    { id: 'enoch_probe', name: { ru: 'Енох' }, ref: 'Быт 5:18–24', gender: 'm' },
+    { id: 'lamech_probe', name: { ru: 'Ламех' }, ref: 'Быт 5:25–31', gender: 'm' },
+    { id: 'obed_probe', name: { ru: 'Овид' }, ref: 'Руфь 4:17,21', gender: 'm' },
+    { id: 'matthat_probe', name: { ru: 'Матфат' }, ref: 'Лк 3:29', gender: 'm' },
+    { id: 'phinehas', name: { ru: 'Финеес' }, ref: 'Числ 25:7-13', gender: 'm' },
+  ], homonymFixture);
+  assert(homonymMatches.matches.get('enoch_probe') === 'Enoch@Gen.5.18',
+    'Енох Gen 5 не смешивается с Енохом Каиновой линии Gen 4');
+  assert(homonymMatches.matches.get('lamech_probe') === 'Lamech@Gen.5.25',
+    'Ламех Gen 5 не смешивается с Ламехом Каиновой линии Gen 4');
+  assert(homonymMatches.matches.get('obed_probe') === 'Obed@Rut.4.17',
+    'Овид Руф 4 не смешивается с одноимёнными 1Пар');
+  assert(homonymMatches.matches.get('matthat_probe') === 'Matthat@Luk.3.29',
+    'Матфат Лк 3:29 не смешивается с Матфатом Лк 3:24');
+  assert(homonymMatches.matches.get('phinehas') === 'Phinehas@Exo.6.25',
+    'Финеес Числ 25 закреплён за сыном Елеазара, не за сыном Илия');
+
+  const matcherFixture = new Map([
+    ['Jecoliah@2Ki.15.2', { key: 'Jecoliah@2Ki.15.2', name: 'Jecoliah', ref: '2Ki.15.2', type: 'Female' }],
+    ['Jehoiachin@2Ki.24.6', { key: 'Jehoiachin@2Ki.24.6', name: 'Jehoiachin', ref: '2Ki.24.6', type: 'Male' }],
+  ]);
+  const jeconiahMatch = matchSkeleton([
+    { id: 'jeconiah', name: { ru: 'Иехония' }, ref: '4Цар 24:8–17; Мф 1:11', gender: 'm' },
+  ], matcherFixture);
+  assert(jeconiahMatch.matches.get('jeconiah') === 'Jehoiachin@2Ki.24.6',
+    'Иехония имеет явное соответствие Jehoiachin и никогда не смешивается с Jecoliah');
+
+  // Regression against the original failure mode WITHOUT using the explicit exception.
+  // The probe may resolve to the male/context-compatible Jehoiachin or stay unmatched,
+  // but it must never be attracted to female Jecoliah by name similarity.
+  const jeconiahProbe = matchSkeleton([
+    { id: 'jeconiah_probe', name: { ru: 'Иехония' }, ref: '4Цар 24:8', gender: 'm' },
+  ], matcherFixture);
+  assert(jeconiahProbe.matches.get('jeconiah_probe') !== 'Jecoliah@2Ki.15.2',
+    'gender/context guard запрещает fuzzy Jeconiah → Jecoliah');
+
+  const zerubbabelFixture = new Map([
+    ['Zerubbabel@1Ch.3.19', { key: 'Zerubbabel@1Ch.3.19', name: 'Zerubbabel', ref: '1Ch.3.19', type: 'Male' }],
+    ['Zerubbabel@Luk.3.27', { key: 'Zerubbabel@Luk.3.27', name: 'Zerubbabel', ref: 'Luk.3.27', type: 'Male' }],
+  ]);
+  const zerubbabelMatches = matchSkeleton([
+    { id: 'zerubbabel', name: { ru: 'Зоровавель' }, ref: 'Езд 3:2; Агг 2:23; Зах 4; Мф 1:13; Лк 3:27', gender: 'm' },
+    { id: 'zerubbabel_lk', name: { ru: 'Зоровавель (Лк)' }, ref: 'Лк 3:27', gender: 'm' },
+  ], zerubbabelFixture);
+  assert(zerubbabelMatches.matches.get('zerubbabel') === 'Zerubbabel@1Ch.3.19',
+    'основной Зоровавель закреплён за исторической записью 1Пар 3:19');
+  assert(zerubbabelMatches.matches.get('zerubbabel_lk') === 'Zerubbabel@Luk.3.27',
+    'occurrence Зоровавеля в Лк 3:27 остаётся отдельным от основной исторической записи');
+
+  const missingExceptionTarget = matchSkeleton([
+    { id: 'jesus', name: { ru: 'Иисус Христос' }, ref: 'Мф 1:16', gender: 'm' },
+  ], new Map());
+  assert(!missingExceptionTarget.matches.has('jesus') &&
+    missingExceptionTarget.unmatched.some(item => item.id === 'jesus' && item.candidates === 'explicit-target-missing'),
+    'explicit exception не засчитывается, если target отсутствует в TIPNR');
+
+  const wrongGenderException = matchSkeleton([
+    { id: 'jesus', name: { ru: 'Иисус Христос' }, ref: 'Мф 1:16', gender: 'm' },
+  ], new Map([
+    ['Jesus@Isa.7.14', { key: 'Jesus@Isa.7.14', name: 'Jesus', ref: 'Isa.7.14', type: 'Female' }],
+  ]));
+  assert(!wrongGenderException.matches.has('jesus') &&
+    wrongGenderException.unmatched.some(item => item.id === 'jesus' && item.candidates === 'explicit-gender-mismatch'),
+    'explicit exception fail-closed при несовместимом gender');
+
+  const ambiguousFixture = new Map([
+    ['Naham@1Ch.4.19', { key: 'Naham@1Ch.4.19', name: 'Naham', ref: '1Ch.4.19', type: 'Male' }],
+    ['Nahar@1Ch.4.20', { key: 'Nahar@1Ch.4.20', name: 'Nahar', ref: '1Ch.4.20', type: 'Male' }],
+  ]);
+  const ambiguous = matchSkeleton([
+    { id: 'nahaz', name: { ru: 'Нааз' }, ref: null, gender: 'm' },
+  ], ambiguousFixture);
+  assert(!ambiguous.matches.has('nahaz') &&
+    ambiguous.unmatched.some(item => item.id === 'nahaz'),
+    'неуверенный fuzzy без контекста остаётся unmatched');
+
+  const spineFixture = traceSpine([
+    { id: 'jesus--isa-7-14', key: 'Jesus@Isa.7.14', ru: { name: 'Иисус Христос' } },
+    { id: 'mary--mat-1-16', key: 'Mary@Mat.1.16', ru: { name: 'Мария' } },
+    { id: 'heli--luk-3-23', key: 'Heli@Luk.3.23', ru: { name: 'Илий' } },
+    { id: 'adam--gen-2-19', key: 'Adam@Gen.2.19', ru: { name: 'Адам' } },
+  ], [
+    { kind: 'parent', role: 'mother', from: 'mary--mat-1-16', to: 'jesus--isa-7-14' },
+    { kind: 'parent', role: 'father', from: 'heli--luk-3-23', to: 'mary--mat-1-16' },
+    { kind: 'parent', role: 'father', from: 'adam--gen-2-19', to: 'heli--luk-3-23' },
+  ]);
+  assert(spineFixture.reachedRoot === true, 'spine fixture достигает Адама');
+  assert(spineFixture.model?.assertion === 'editorial-harmonization' && spineFixture.model?.directScripture === false,
+    'spine provenance явно отделяет гармонизацию от текста Писания');
 
   const mini = [
     '$==========PERSON(s)',
@@ -745,6 +860,40 @@ async function runTests() {
   assert(persons.get('Seth@Gen.4.25').parents.every(p => p.resolved), 'mini-резолв родителей Сифа');
   assert(rs.unresolvedRefs.length === 0, 'mini-резолв без потерь');
 
+  const externalMini = [
+    '$==========PERSON(s)',
+    'UnifiedName=uStrong\tDescription\tParents\tSiblings\tPartners\tOffspring\tTribe\t#Summary\tType',
+    'Canaan@Gen.9.18═H3667\tson of Ham\t–\t–\t–\tJebusites@Gen.10.16-Zec\t–\t#…\tMale',
+    'Jebusites@Gen.10.16-Zec═H2983\tpeople group\t–\t–\t–\t–\t–\t#…\tGroup',
+    'Ashhur@1Ch.2.24═H0806\tfounder\t–\t–\t–\tTekoa@2Sa.14.2-Amo(f)\t–\t#…\tMale',
+    'Tekoa@2Sa.14.2-Amo═H8620\tplace\t–\t–\t–\t–\t–\t#…\tPlace',
+  ].join('\n');
+  const externalParsed = parseTipnr(externalMini);
+  const externalStats = resolveRelations(externalParsed.persons, {
+    groups: externalParsed.groups,
+    places: externalParsed.places,
+  });
+  assert(externalParsed.stats.groupRecords === 1 && externalParsed.stats.placeRecords === 1,
+    'mini-парс сохраняет Group и Place как внешние сущности');
+  assert(externalStats.unresolvedRefs.length === 0 && externalStats.resolvedExternal === 2,
+    'person→Group/Place refs типизируются, а не считаются dangling person refs');
+  assert(externalParsed.persons.get('Canaan@Gen.9.18').offspring[0].resolvedEntity === 'group',
+    'Canaan→Jebusites классифицирован как group relation');
+  assert(externalParsed.persons.get('Ashhur@1Ch.2.24').offspring[0].resolvedEntity === 'place',
+    'Ashhur→Tekoa классифицирован как place relation');
+
+  const founderOnlyMini = [
+    '$==========PERSON(s)',
+    'UnifiedName=uStrong\tDescription\tParents\tSiblings\tPartners\tOffspring\tTribe\t#Summary\tType',
+    'Salma@1Ch.2.51═H8007\tfounder\t–\t–\t–\tBethlehem@Gen.35.16-Jhn(f)\t–\t#…\tMale',
+  ].join('\n');
+  const founderParsed = parseTipnr(founderOnlyMini);
+  const founderStats = resolveRelations(founderParsed.persons);
+  assert(founderStats.unresolvedRefs.length === 0,
+    '(f) founder target вне person corpus не считается dangling family ref');
+  assert(founderParsed.persons.get('Salma@1Ch.2.51').offspring[0].resolvedEntity === 'founder-external',
+    'unparsed (f) target сохраняется как typed founder-external relation');
+
   log('tests done');
 }
 
@@ -758,14 +907,17 @@ try {
   else if (cmd === 'validate') {
     const personsArr = JSON.parse(await readFile(path.join(PATHS.outDir, 'persons.json'), 'utf8'));
     const edges = JSON.parse(await readFile(path.join(PATHS.outDir, 'edges.json'), 'utf8'));
+    // Structural-only validation intentionally does NOT rewrite VALIDATION.md:
+    // parse/matcher/review evidence can only be reproduced by a full pinned-source build.
+    // Writing a report with dummy empty context would falsely erase publication blockers.
     const report = validate(personsArr, edges, {
-      parseStats: { topLines: '-', personRecords: personsArr.length, badTopLines: '-', byType: {}, duplicates: [] },
-      relStats: { resolved: '-', unresolvedRefs: [], skippedDescendedGroup: '-' },
-      ruStats: { override: '-', seed: '-', pattern: '-', candidate: '-', translit: '-', none: '-', review: '-' },
-      v1Unmatched: [], v1Total: '-', v1Matched: '-',
+      parseStats: { topLines: 'not-recomputed', personRecords: personsArr.length, badTopLines: 'not-recomputed', byType: {}, duplicates: [] },
+      relStats: { resolved: 'not-recomputed', unresolvedRefs: [], skippedDescendedGroup: 'not-recomputed' },
+      ruStats: { override: 'not-recomputed', seed: 'not-recomputed', pattern: 'not-recomputed', candidate: 'not-recomputed', translit: 'not-recomputed', none: 'not-recomputed', review: 'not-recomputed' },
+      v1Unmatched: [], v1Soft: [], v1Decisions: [], v1Collisions: [], v1Total: 'not-recomputed', v1Matched: 'not-recomputed',
     });
-    await writeFile(path.join(PATHS.outDir, 'VALIDATION.md'), report.markdown);
-    log(report.ok ? 'validate: OK' : 'validate: НАРУШЕНИЯ'); if (!report.ok) process.exitCode = 1;
+    log(report.ok ? 'validate: structural OK (publication evidence unchanged)' : 'validate: structural НАРУШЕНИЯ');
+    if (!report.ok) process.exitCode = 1;
   }
   else { console.error(`Неизвестная команда: ${cmd} (fetch|test|all|validate)`); process.exitCode = 2; }
 } catch (err) {

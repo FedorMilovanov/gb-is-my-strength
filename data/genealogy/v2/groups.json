@@ -47,7 +47,7 @@
   },
   {
    "id": "nations-of-noah",
-   "titleRu": "Народы от Ноя",
+   "titleRu": "Быт 10–11: родословный контекст",
    "kind": "cluster",
    "rule": {
     "type": "refRange",

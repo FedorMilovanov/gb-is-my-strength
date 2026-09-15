@@ -1,0 +1,134 @@
+name: Genealogy v2 Publication Safety
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/genealogy-build/**'
+      - 'scripts/genealogy-v2-publication-audit.mjs'
+      - 'data/genealogy/genealogy.json'
+      - 'data/genealogy/v2/**'
+      - '.github/workflows/genealogy-v2-contract.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/genealogy-build/**'
+      - 'scripts/genealogy-v2-publication-audit.mjs'
+      - 'data/genealogy/genealogy.json'
+      - 'data/genealogy/v2/**'
+      - '.github/workflows/genealogy-v2-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: genealogy-v2-contract-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publication-safety:
+    name: Matcher and publication guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Prove exact source
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+
+      - name: Check genealogy pipeline syntax
+        run: |
+          node --check scripts/genealogy-build/build.mjs
+          node --check scripts/genealogy-build/lib/skeleton-matcher.mjs
+          node --check scripts/genealogy-build/lib/layout-l1-lineages.mjs
+          node --check scripts/genealogy-build/lib/spine.mjs
+          node --check scripts/genealogy-v2-publication-audit.mjs
+
+      - name: Run deterministic genealogy matcher regressions
+        run: node scripts/genealogy-build/build.mjs test
+
+      - name: Prove structural validate cannot rewrite publication evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          before="$(sha256sum data/genealogy/v2/VALIDATION.md | awk '{print $1}')"
+          node scripts/genealogy-build/build.mjs validate
+          after="$(sha256sum data/genealogy/v2/VALIDATION.md | awk '{print $1}')"
+          test "$before" = "$after"
+          git diff --exit-code -- data/genealogy/v2/VALIDATION.md
+
+      - name: Audit committed v2 publication readiness and runtime boundary
+        run: node scripts/genealogy-v2-publication-audit.mjs
+
+      - name: Upload genealogy v2 publication evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: genealogy-v2-publication-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            reports/genealogy-v2-publication-audit.json
+            reports/genealogy-v2-publication-audit.md
+          if-no-files-found: error
+          retention-days: 30
+
+  regeneration-proof:
+    name: Regenerate pinned v2 corpus
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Prove exact source
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+
+      - name: Regenerate v2 from pinned upstream inputs
+        run: node scripts/genealogy-build/build.mjs all
+
+      - name: Audit regenerated publication state
+        run: node scripts/genealogy-v2-publication-audit.mjs --allow-blockers=DATASET_STATUS_DRAFT,RU_REVIEW_QUEUE,GENERIC_CURATED_VIEW_RULES
+
+      - name: Record regenerated drift
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports
+          git status --short -- data/genealogy/v2 > reports/genealogy-v2-regenerated-status.txt
+          git diff --stat -- data/genealogy/v2 > reports/genealogy-v2-regenerated-stat.txt
+
+      - name: Upload regenerated v2 corpus and evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: genealogy-v2-regenerated-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            data/genealogy/v2/
+            reports/genealogy-v2-publication-audit.json
+            reports/genealogy-v2-publication-audit.md
+            reports/genealogy-v2-regenerated-status.txt
+            reports/genealogy-v2-regenerated-stat.txt
+          if-no-files-found: error
+          retention-days: 30

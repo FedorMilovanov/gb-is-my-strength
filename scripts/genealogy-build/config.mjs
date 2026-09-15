@@ -19,7 +19,7 @@ export const PATHS = {
 export const SOURCES = {
   tipnr: {
     file: 'tipnr.txt',
-    url: 'https://raw.githubusercontent.com/STEPBible/STEPBible-Data/master/Proper%20Nouns/TIPNR%20-%20Translators%20Individualised%20Proper%20Names%20with%20all%20References%20-%20STEPBible.org%20CC%20BY.txt',
+    url: 'https://raw.githubusercontent.com/STEPBible/STEPBible-Data/b86d26cdb1f51729e73b5b4eb7f7ccadc5dfba39/Proper%20Nouns/TIPNR%20-%20Translators%20Individualised%20Proper%20Names%20with%20all%20References%20-%20STEPBible.org%20CC%20BY.txt',
     sha256: '1a3b7d7df5cfa1e96eefa07dec92900bea278370c6788fadb5d036f3223b637c',
     license: 'CC BY 4.0 — STEPBible.org / Tyndale House Cambridge',
     attribution: 'Данные персон: STEPBible.org (Tyndale House, Cambridge), CC BY 4.0, github.com/STEPBible',
@@ -33,7 +33,7 @@ export const SOURCES = {
   },
 };
 
-export const PIPELINE_VERSION = '0.1.0-phase1';
+export const PIPELINE_VERSION = '0.2.0-phase1-publication-safety';
 
 /** Жёсткие инварианты валидатора (провал = exit 1). */
 export const HARD_INVARIANTS = {
