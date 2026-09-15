@@ -250,7 +250,7 @@ html.dark [data-series-theme="manuscript"] .summary-card {
   font-family: "Playfair Display", Georgia, serif;
   font-size: clamp(20px, 3.2vw, 24px);
   line-height: 1.28;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--color-border);
   padding-bottom: .75rem;
   margin-top: clamp(44px, 6vw, 70px);
   margin-bottom: 20px;
