@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.59 — reusable biblical map rendering engine. Provenance projection + authored route geometry + viewport-bound panels.
+ * map-engine.js v0.60 — reusable biblical map rendering engine. Provenance projection + authored route geometry + viewport-bound panels.
  * v0.53 (§11 P-8/P-9): label-модель v2 — 8 якорей place.labelAnchor + выноски place.leader{dx,dy};
  * labelBg следует за сдвигом текста (фикс разорванных плашек). Legacy side 'l'/'r' полностью совместим.
  *
@@ -69,6 +69,48 @@ const MapEngine = (function() {
   }
   const TAB_LABELS = {story:'Сюжет',bible:'Писание',arch:'Археология',he:'Иврит',dispute:'Дискуссия',sci:'Наука',photos:'Фото',extra:'Библ.контекст'};
   const TAB_KEYS = ['story','bible','arch','he','dispute','sci','photos','extra'];
+  const ROUTE_CAPABILITY_VALUES = Object.freeze(['stages','stories','layers','timeline','signature','interpretations','uncertainty']);
+  const ROUTE_CAPABILITY_SET = new Set(ROUTE_CAPABILITY_VALUES);
+  const ROUTE_ARCHETYPE_VALUES = Object.freeze(['route','political','thematic','territorial','overview']);
+  const ROUTE_ARCHETYPE_SET = new Set(ROUTE_ARCHETYPE_VALUES);
+
+  function normalizeRouteCapabilities(data={}){
+    const declared=Array.isArray(data?.capabilities)?data.capabilities:[];
+    const seen=new Set(declared.filter(value=>typeof value==='string'));
+    return ROUTE_CAPABILITY_VALUES.filter(capability=>seen.has(capability));
+  }
+
+  function hasRouteCapability(data={},capability){
+    return ROUTE_CAPABILITY_SET.has(capability)&&normalizeRouteCapabilities(data).includes(capability);
+  }
+
+  function normalizeRouteArchetype(data={}){
+    const value=typeof data?.archetype==='string'?data.archetype.trim():'';
+    return ROUTE_ARCHETYPE_SET.has(value)?value:null;
+  }
+
+  function projectRouteCapabilities(data={}){
+    const route=normalizeRouteData(data);
+    const capabilities=normalizeRouteCapabilities(route);
+    const active=new Set(capabilities);
+    const withStages=active.has('stages');
+    const withInterpretations=active.has('interpretations');
+    const places=(withStages&&withInterpretations)?route.places:route.places.map(place=>{
+      if(!place||typeof place!=='object')return place;
+      const projected={...place};
+      if(!withStages)delete projected.stage;
+      if(!withInterpretations){delete projected.arch;delete projected.dispute}
+      return projected;
+    });
+    const projected={...route,capabilities,places};
+    if(!withStages)projected.stages=[];
+    if(!active.has('stories'))projected.stories=[];
+    if(!active.has('layers'))projected.layers=[];
+    if(!active.has('timeline'))projected.timeline=[];
+    if(!active.has('signature'))delete projected.signature;
+    if(!withInterpretations){delete projected.scientific_variants;delete projected.variants}
+    return projected;
+  }
 
   function clamp(n,a,b){return Math.min(Math.max(n,a),b)}
   function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
@@ -152,9 +194,13 @@ const MapEngine = (function() {
       const baseGeoUrl=config.baseGeoUrl??route?.meta?.base_geo_url;
       if(baseGeoUrl)mapOptions.baseGeoUrl=baseGeoUrl;
     }
-    if(!Object.prototype.hasOwnProperty.call(mapOptions,'archaeologyProjection')){
-      const archaeologyProjection=readArchaeologyProjection(config.archaeologyPayloadId||'map-archaeology-projection');
-      if(archaeologyProjection!==null)mapOptions.archaeologyProjection=archaeologyProjection;
+    if(hasRouteCapability(route,'interpretations')){
+      if(!Object.prototype.hasOwnProperty.call(mapOptions,'archaeologyProjection')){
+        const archaeologyProjection=readArchaeologyProjection(config.archaeologyPayloadId||'map-archaeology-projection');
+        if(archaeologyProjection!==null)mapOptions.archaeologyProjection=archaeologyProjection;
+      }
+    }else{
+      delete mapOptions.archaeologyProjection;
     }
 
     const instance=createMap(container,route,mapOptions);
@@ -511,8 +557,13 @@ const MapEngine = (function() {
       container.innerHTML = '<div class="me-error" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#9aa2ae;font-family:Georgia,serif"><div style="font-size:48px;margin-bottom:12px">⚠</div><div style="font-size:16px;color:#e9e4d6;margin-bottom:4px">Карта пуста</div><div style="font-size:12px">route.json не содержит мест для отображения</div></div>';
       return null;
     }
-    const route = normalizeRouteData(routeData);
+    const route = projectRouteCapabilities(routeData);
     const cfg = {...DEFAULTS, ...opts};
+    const routeCapabilities=normalizeRouteCapabilities(route);
+    const capabilitySet=new Set(routeCapabilities);
+    const hasCapability=capability=>capabilitySet.has(capability);
+    const routeArchetype=normalizeRouteArchetype(route);
+    if(!hasCapability('interpretations'))cfg.archaeologyProjection=null;
     const semanticZoomConfig = route.meta?.semantic_zoom || route.semantic_zoom || {};
     const semanticOverviewMinW = Number(semanticZoomConfig.overview_min_w ?? semanticZoomConfig.overviewMinW) || cfg.W0 * 0.68;
     const semanticDetailMaxW = Number(semanticZoomConfig.detail_max_w ?? semanticZoomConfig.detailMaxW) || cfg.W0 * 0.34;
@@ -1219,7 +1270,10 @@ const MapEngine = (function() {
 
     // Build DOM
     container.innerHTML='';
-    container.className='me-map';
+    container.className='me-map'+(routeArchetype?` me-map--${routeArchetype}`:'');
+    if(routeArchetype)container.setAttribute('data-map-archetype',routeArchetype);
+    else container.removeAttribute('data-map-archetype');
+    container.setAttribute('data-map-capabilities',routeCapabilities.join(' '));
     
     const canvas=document.createElement('div');canvas.className='me-canvas';
     function viewportAspect(){
@@ -1369,7 +1423,7 @@ const MapEngine = (function() {
     header.appendChild(headerLeft);
     
     const storiesBar=document.createElement('div');storiesBar.className='me-stories';storiesBar.setAttribute('data-horizontal-scroll','stories');storiesBar.setAttribute('role','tablist');storiesBar.setAttribute('aria-label','Сюжеты карты');
-    header.appendChild(storiesBar);
+    if(hasCapability('stories'))header.appendChild(storiesBar);
     // Search input
 const searchInput=document.createElement('input');searchInput.className='me-search';searchInput.type='text';searchInput.placeholder='Поиск места…';searchInput.setAttribute('aria-label','Поиск места на карте');searchInput.setAttribute('role','searchbox');
 let searchTimer = null;
@@ -1509,11 +1563,11 @@ header.appendChild(shareBtn);
 
     // Stage dots
     const stagesBar=document.createElement('div');stagesBar.className='me-stages';
-    container.appendChild(stagesBar);
+    if(hasCapability('stages'))container.appendChild(stagesBar);
 
 
     // Timeline bar
-    if ((route.stages||[]).length > 1) {
+    if (hasCapability('stages') && (route.stages||[]).length > 1) {
       const timelineWrap = document.createElement('div');
       timelineWrap.className = 'me-timeline';
       const timelineTrack = document.createElement('div');
@@ -1538,7 +1592,7 @@ header.appendChild(shareBtn);
 
 
     // Life Timeline (bottom)
-    if (route.timeline && route.timeline.length > 0) {
+    if (hasCapability('timeline') && route.timeline && route.timeline.length > 0) {
       const lifeWrap = document.createElement('div');
       lifeWrap.className = 'me-life';
       const lifeTrack = document.createElement('div');
@@ -2754,7 +2808,7 @@ container.appendChild(panel);
 
       // Head
       head.innerHTML=`
-        <div class="me-panel__stage"><span class="me-panel__stage-dot" style="background:${getStageColor(place.stage)}"></span>Этап ${(place.stage||0)+1} · ${esc(place.id2||'')}</div>
+        ${hasCapability('stages')?`<div class="me-panel__stage"><span class="me-panel__stage-dot" style="background:${getStageColor(place.stage)}"></span>Этап ${(place.stage||0)+1} · ${esc(place.id2||'')}</div>`:''}
         <div class="me-panel__name">${esc(place.name)}</div>
         ${place.he?`<div class="me-panel__he" lang="he" dir="rtl">${esc(place.he)}</div>`:''}
         ${place.kick?`<div class="me-panel__kick">${esc(place.kick)}</div>`:''}
@@ -3839,6 +3893,9 @@ container.appendChild(panel);
     const instance={
       open,close,setStory,startTour,stopTour,flyTo,resetView,setLayerEnabled,applyMapTheme,
       get routeData(){return route},
+      get archetype(){return routeArchetype},
+      get capabilities(){return [...routeCapabilities]},
+      hasCapability,
       get theme(){return activeTheme},
       get layers(){return Object.fromEntries(layerState)},
       destroy(){
@@ -3851,6 +3908,7 @@ container.appendChild(panel);
         destroySpecialOverlay(introOverlayOwner);
         _cleanupAll();
         container.innerHTML='';container.className='';
+        container.removeAttribute('data-map-archetype');container.removeAttribute('data-map-capabilities');
       }
     };
     return instance;
@@ -3860,6 +3918,7 @@ container.appendChild(panel);
   return {
     // v0.2 data layer
     loadRoute,loadJsonResource,mountRoute,bootRoute,readArchaeologyProjection,validateRoute,compareRouteData,normalizeRouteData,collectPhotoHosts,
+    ROUTE_CAPABILITY_VALUES,ROUTE_ARCHETYPE_VALUES,normalizeRouteCapabilities,hasRouteCapability,normalizeRouteArchetype,projectRouteCapabilities,
     getPlaceIndex,getPlaceById,getStageForPlace,getRelatedPlaceIds,getTabContentKey,
     getPanelModel,getPanelSections,getStoryViewport,getStoryState,getPlaceOrder,auditStoryDefinitions,
     parseMapStateFromLocation,resolveInitialMapState,buildMapStateUrl,
@@ -3867,7 +3926,7 @@ container.appendChild(panel);
     getStageColor,clientPointToView,distanceKm,
     // v0.3 rendering
     createMap,
-    version:'0.59.0',buildDate:'2026-09-15'
+    version:'0.60.0',buildDate:'2026-09-15'
   };
 })();
 

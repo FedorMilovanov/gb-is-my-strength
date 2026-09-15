@@ -33,6 +33,8 @@ const mapEngine = fs.readFileSync('karty/_engine/map-engine.js', 'utf8');
 
     await page.evaluate(() => {
       const route = {
+        archetype:'route',
+        capabilities:['stages','stories'],
         meta:{id:'runtime-fixture',title:'Runtime fixture',viewport_init:{cx:500,cy:350,w:1000}},
         stages:[{n:'I',t:'Stage'}],
         stories:[{id:'main',label:'Main',places:['p1'],stage_ids:[0],active_by_default:true}],
