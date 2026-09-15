@@ -195,15 +195,15 @@ PR ещё нет; merge-tree с origin/main чистый; все контрак�
 | WU-1.4 фид/sitemap-шард | OPEN P0 | **OPEN (отложено владельчески)**: фид 2 item, шард 3 loc, robots:123 рекламирует; основной sitemap/feed полны |
 | WU-1.5 reconciliation | OPEN P0 | **PARTIAL**: MASTER-PLAN product-репо обновлён (статусы, field-guide «отложено», 2026-09-15); CONTENT-CLEARANCE receipt, AuditRepo-запись, внешний Research-репо — открыты |
 | WU-1.6 aria-label | P3-hardening | без изменений (V-13) |
-| WU-1.7 «Проверь себя» | OPEN P1 | **OPEN (не замечено ими)**: sec-quiz Части I по-прежнему вне `</article>`; у II–IX новый квиз — внутри (асимметрия выросла) |
-| WU-2.1 OG/фигуры | OPEN P1 | **CLOSED**: 8 og-webp 1200×630, описательные ogImageAlt, 8 in-body изображений, per-part railCover. Остаток → N-3 (figure-обёртки) |
-| WU-2.2 .bref ×239 | OPEN P1 | OPEN — не тронуты |
-| WU-2.3 gterm/Термины | OPEN P1 | **PARTIAL**: +5 терминов (контракт зелёный); рабочие — газлайтинг/духовное насилие/LBCF; **риск мёртвых записей — safeguarding (URL+backtick), senior pastor (голое «senior»)** → N-2 |
-| WU-2.4 квизы | OPEN P1 | **PARTIAL**: II–IX 8×8 вопросов, схема/якоря/explanation — отлично; **N-1 (P1): 62/64 correct=B, C/D никогда**; Часть I (3 варианта, 9/10=B) не тронута; Досье — по-прежнему третий механизм |
-| WU-2.5 «Коротко» | OPEN P2 | OPEN — не тронуты |
-| WU-2.6 таблица V | OPEN P2 | OPEN — не тронуты |
-| WU-2.7 блоки/названия | OPEN P1 | **PARTIAL**: заголовки карточек приведены к канону; разнобой note-box/info-box остаётся |
-| WU-2.8 og:alt | OPEN P1 | **PARTIAL**: II–IX — один владелец (frontmatter) + описательные alt ✓; мёртвое поле ogImageAlt Части I остаётся |
+| WU-1.7 «Проверь себя» | OPEN P1 | **CLOSED (перепроверка pass-12)**: sec-quiz Части I в dist ВНУТРИ `<article class="article-body" data-pagefind-body>` (pos 250444 < close 250507); квиз = 10 вопросов × 4 варианта, correct 3/3/2/2; асимметрии с II–IX нет |
+| WU-2.1 OG/фигуры | OPEN P1 | **CLOSED (re-verified pass-13)**: 8 og-webp, per-part railCover; 8 in-body изображений — теперь в `<figure class="article-figure">` с figcaption (N-3 закрыт; в pass-12 verify grep "<figure"≥1 был неверен: было 0) |
+| WU-2.2 .bref ×239 | OPEN P1 | **CLOSED (pass-13, деградация принята)**: finding «в legacy были» устарел — в legacy-зеркале articles/20-antisovetov-pastoru/index.html также 0 .bref-элементов; восстанавливать нечего. Решение зафиксировано в data/route-profiles/articles-20-antisovetov-pastoru.json (knownDegradations, route:profiles:check зелёный) |
+| WU-2.3 gterm/Термины | OPEN P1 | **STATUS-CORRECTION (pass-13)**: вкладка «Термины»/заглушка «Конспект появится…» принадлежат GILL-пилоту (GillLearningSheet), не pastor-серии; в pastor-страницах termsList/gterm-разметки нет, тултипы терминов работают site-level runtime (js/glossary.js, DO-NOT): glossary-contract-audit = 130 терминов, зелёный. N-2 (safeguarding/senior) остаётся зафиксированным owner-риском в glossary-контракте |
+| WU-2.4 квизы | OPEN P1 | **PARTIAL→**: II–IX 8×8 — **сбалансированы 2/2/2/2 в каждой части (pass-12 dist-проверка, N-1 закрыт)**; Часть I 10×4, correct 3/3/2/2 (сбалансировано); остаток: Досье A — отдельный механизм (решение владельца) |
+| WU-2.5 «Коротко» | OPEN P2 | **CLOSED (pass-13)**: единый `.summary-card` на всех 9 частях + Досье A (у Досье был свой, теперь канон общий): II–IX — md-списки «Коротко» (5 тезисов/часть, ** → <strong>) перевёрнуты в каноническую разметку; Часть I — создан 5-тезисный конспект; partToc всех 10 маршрутов: «Коротко» первым пунктом (#kortko / #short-summary); `.summary-card` уже в SPEAKABLE_SELECTORS + data-speakable |
+| WU-2.6 таблица V | OPEN P2 | **CLOSED (pass-13)**: таблица Части V — семантическая HTML (`<caption>`, `scope="col"`, class manuscript-table); print-правила таблиц расширены с gill-only на `html body [data-gbs2-series] article …` (4 селектора); TTS-политика: таблицы читаются в DOM-линейном порядке (6 строк — без спецобработки), SPEAKABLE на таблицы не претендует (осознанно) |
+| WU-2.7 блоки/названия | OPEN P1 | **CLOSED (pass-13)**: словарь блоков серии = note-box (нейтральные заметки, 76 в Части I) + warn-box (предупреждения, 6); 12 info-box → note-box (все 12 — нейтральный контент: «Библейский контраст/кейс», «Здоровый пастор скажет», «Здоровое покаяние звучит так»); в II–IX box-классов нет; заголовки — канон (pass-10) |
+| WU-2.8 og:alt | OPEN P1 | **CLOSED (pass-13)**: og:image:alt Части I и Досье A заменён с ложного/заголовочного на описание реального кадра (пастор со склонённой головой у кафедры; разбитое зеркало с искажёнными отражениями — проверено по файлу og-20-antisovetov-pastoru.webp); II–IX — frontmatter-владелец (без изменений) |
 | WU-3.1 типографика I | OPEN P2 | **CLOSED (pass-12)**: `data-series-theme="manuscript"` добавлен на body II–IX (PastorSeriesArticlePage) и Части I (мёртвый attribute — manuscript-CSS не действовал на статьи II–IX); токены `.heading-serif` h2/h3 вынесены в css/series-manuscript.css (тема-scoped, глобальный — astro-scoped копия в head Части I никогда не матчила AntisovetovBody); шкала унифицирована с `article h2/h3` (clamp 20–24 / 17–20 + Playfair); фикс-утилиты text-4xl/text-3xl/text-2xl сняты с 42 заголовков |
 | WU-3.2 outline Части I | OPEN P2 | **CLOSED (pass-12)**: 20 anti-kicker h4 → div/strong; 4 зеркало/скрытый-способ h4 → h3; h2 «не приговор» выровнен; каскад h1→h2→h3 без скипов |
 | WU-3.3 anchors | OPEN P2 | **CLOSED (pass-12)**: 8 H3 Части II с префиксом стадии (0 дублей H3 в серии); авто-кириллические id сняты — postbuild `scripts/pastor-series-heading-id-hygiene.js` в обеих сборочных цепях (98 id/8 страниц); rehype-плагин в конфиге невозможен (Satteri: markdown.rehypePlugins — legacy-путь, запрещён контрактом) |
@@ -578,3 +578,88 @@ partToc (латинские явные id); landing/catalog не читают а
 WU-2.8 og:alt Части I, N-1 quiz bias 62/64, N-2 глоссарий-safeguarding/senior, N-3 figure-обёртки),
 Волна 5 (G-5 approval-пакет: diotrefy migration-freeze + Part I inconsistent-needs-review;
 WU-5.0; WU-6.6 полный), WU-1.3 reading-time T1–T2 + links-graph N-4.
+
+---
+
+## PASS-13 — закрытие Волны 2 (WU-2.2/2.5/2.6/2.7/2.8 + N-1/N-3)
+
+### WU-2.5 + N-3 — единый «Коротко» и фигуры (DONE)
+**WU-2.5.** До pass-13: 0 `.summary-card` на 9 публикационных маршрутах серии (у heart/gill-статей
+16–34, у лендинга 18). Ремонт:
+- II–IX (8 MDX): `## Коротко` + нумерованный список (5 тезисов/часть) → каноническая разметка
+  `<section class="summary-card" aria-labelledby="kortko" data-speakable>` с `__head/__body/__item/
+  __num/__text`; inline-markdown `**…**` переведён в `<strong>` (MDX не парсит md внутри HTML);
+- Часть I: создан 5-тезисный конспект (система ≠ разовая ошибка; двустороннее зеркало;
+  идолопоклонство перед служением; 5 групп + антидот; различение, а не приговор) — вставлен
+  после drop-cap, до warn-box «Важная оговорка»;
+- partToc всех 10 маршрутов: «Коротко» первым пунктом (#kortko ×9, #short-summary у Досье A),
+  current-флаг Части I перенесён с #two-way-mirror на #kortko;
+- `.summary-card` уже входит в SPEAKABLE_SELECTORS (src/runtime/reader-projection.js L48)
+  + data-speakable в разметке ⇒ TTS-readable по построению;
+- Досье A уже имело `<aside class="summary-card" id-якорь="short-summary">` — канон общий, без дублей.
+
+**N-3 (остаток WU-2.1).** 8 in-body изображений II–IX были «голыми» `<img>` (verify WU-2.1
+`grep "<figure" ≥ 1` был ложнозелёным: фактически 0 фигур). Конвертация в
+`<figure class="article-figure">` + `<img … width=600 height=400 loading=lazy />` + figcaption
+(текст = alt). Нюанс: MDX/JSX требует self-closing `/>` (первая сборка упала на
+mdx-jsx:unexpected-character — исправлено).
+
+### WU-2.6 — таблица Части V (DONE)
+Markdown-таблица (6 сфер) → семантическая HTML: `<table class="manuscript-table">` +
+`<caption>Шесть сфер: что вправе делать церковная власть</caption>` + `scope="col"` ×2.
+Print: site.css имел табличные print-правила только под `html body [data-gill-v16]`/
+`[data-reader-root]` — расширено на `html body [data-gbs2-series] article (table|thead|tr|th)`.
+TTS-политика (решение): таблицы читаются в DOM-линейном порядке; таблица короткая (6 строк) —
+без спецобработки; SPEAKABLE_SELECTORS на таблицы не претендует — осознанно.
+
+### WU-2.7 — словарь блоков (DONE)
+Инвентаризация: box-классы есть только в Части I (note-box 64, info-box 12, warn-box 6);
+II–IX — 0. Все 12 info-box проверены по содержимому (Библейский контраст/кейс ×4,
+«Здоровый пастор скажет» ×7, «Здоровое покаяние звучит так» ×1) — ни одно не предупреждение
+⇒ info-box → note-box. Итоговый словарь серии: note-box (нейтрально) + warn-box (предупреждения).
+warn-box не тронуты (6 реальных оговорок/предупреждений).
+
+### WU-2.8 — og:image:alt (DONE)
+Часть I: alt был заголовочный («20 антисоветов пастору — как разрушить своё служение») →
+описание реального кадра. Досье A: ложный alt «Пустая кафедра…» (кадра нет) → тот же реальный
+кадр (общее og-изображение). Кадр проверен по файлу: пастор со склонённой головой у деревянной
+кафедры с открытой Библией и крестом; за ним большое разбитое зеркало с искажёнными
+множественными отражениями. II–IX: владелец alt = frontmatter ogImageAlt (без изменений).
+
+### WU-2.2 — .bref ×239 (CLOSED как деградация, верифицированно)
+Проверка legacy-зеркала: `articles/20-antisovetov-pastoru/index.html` — 0 .bref-элементов
+(и по class, и по data-ref). Finding «в legacy были» устарел/ошибочен — восстанавливать нечего.
+Решение владельца (делегировано): принять деградацию — библейские ссылки остаются обычным
+текстом; зафиксировано в `data/route-profiles/articles-20-antisovetov-pastoru.json`
+(`knownDegradations[0] = WU-2.2-bref`); route:profiles:check зелёный.
+
+### N-1 — квизы (CLOSED перепроверкой, см. pass-12 статусы)
+II–IX: 2/2/2/2 в каждой части (dist-проверка); Часть I: 10 вопросов × 4 варианта, correct 3/3/2/2.
+
+### N-2 — глоссарий (остаётся owner-риском)
+js/glossary.js = DO-NOT. glossary-contract-audit: 130 терминов / 370 aliases — зелёный.
+Риски safeguarding (упоминания в backtick/URL) и senior pastor (голое «senior») — приняты
+контрактом; действий в этой волне нет.
+
+### WU-2.3 — статус-коррекция
+Вкладка «Термины» и заглушка «Конспект появится…» — это GILL-пилот (GillLearningSheet.astro),
+не pastor-серия; в pastor-страницах нет termsList/gterm-разметки. Тултипы терминов на сериях
+обслуживает site-level runtime glossary.js (DO-NOT, контракт зелёный). «+5 терминов» из pass-10 —
+про GILL, не про pastor.
+
+### Верификация
+- `npm run strangler:build` — 0 errors; hygiene: 8 pages, 90 stripped (−8: «Коротко» теперь
+  с явными latin-id #kortko и авто-id не получает);
+- dist: 9/9 частей + Досье A — summary-card=1, id="kortko" ✓; II–IX figure=1 ✓ (Часть I figure=10);
+  Part V: caption + scope="col"×2 + manuscript-table ✓; site.css print `[data-gbs2-series] article table` ✓;
+  og:image:alt Части I и Досье — реальный кадр ✓; info-box в dist Части I = 0 ✓;
+  partToc «Коротко» первым во всех 10 маршрутах ✓;
+- батарея: pastor-series:visual-parity ✓, data:consistency ✓, page-ownership:dist ✓,
+  contract:extract:dist ✓, dist-publication-audit ✓, mdx:structure:audit ✓ (63 файла),
+  content:guard ✓ (43 baseline + delta), article-mdx no-build ✓ (body floor Части I 15314 ≥ 13625),
+  editorial:lint ✓, route:profiles:check ✓, glossary-contract ✓.
+
+### Остаток плана
+Волна 5: G-5 approval-пакет (diotrefy migration-freeze-unverified + Part I
+inconsistent-needs-review), WU-5.0, WU-6.6 полный; WU-1.3 reading-time T1–T2 (+ links-graph N-4);
+WU-1.5 внешние записи (CONTENT-CLEARANCE/AuditRepo/Research).

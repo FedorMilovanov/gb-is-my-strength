@@ -116,7 +116,8 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       railCover: '../../images/pastor-series/og-20-antisovetov-pastoru.webp',
       partDialogLabel: 'Часть I · 20 антисоветов пастору',
       partToc: [
-        { href: '#two-way-mirror', label: 'Двустороннее зеркало', level: 2, current: true, summary: 'Статью можно злоупотребить с обеих сторон: и пастор, и прихожанин способны манипулировать Писанием.' },
+        { href: '#kortko', label: 'Коротко', level: 2, current: true },
+        { href: '#two-way-mirror', label: 'Двустороннее зеркало', level: 2, summary: 'Статью можно злоупотребить с обеих сторон: и пастор, и прихожанин способны манипулировать Писанием.' },
         { href: '#roots', label: 'Откуда это берётся', level: 2, summary: 'Корень всех антисоветов — идолопоклонство перед служением.' },
         { href: '#section-1', label: 'I. Сердце и авторитет', level: 2 },
         { href: '#section-2', label: 'II. Команда и ближайшее окружение', level: 2 },
@@ -137,7 +138,8 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressDoneMin: 67, readingProgressPartMin: 9, readingProgressTotalMin: CORE_TOTAL_MIN,
       railNowTitle: 'Анатомия падения', railCover: '../../images/pastor-series/og-anatomiya-padeniya-pyat-stadiy.webp',
       partDialogLabel: 'Часть II · Анатомия падения', partToc: [
-        { href: '#metod', label: 'Что эта модель утверждает — и чего не утверждает', level: 2, summary: 'Повторяемость механизмов в документированных случаях полезна, но её нельзя превращать в закон природы.' },
+{ href: '#kortko', label: 'Коротко', level: 2 },
+                { href: '#metod', label: 'Что эта модель утверждает — и чего не утверждает', level: 2, summary: 'Повторяемость механизмов в документированных случаях полезна, но её нельзя превращать в закон природы.' },
         { href: '#lichnoe-sistemnoe', label: 'Личный грех и системное зло — не одно', level: 2, summary: 'Система — это механизм, который защищает грех от света: подотчётность, информация, страх.' },
         { href: '#stadiya-1', label: 'Стадия 1. Служение становится платформой, которую нельзя потерять', level: 2, summary: 'Идол платформы: достижения и аудитория перестают быть для стада и становятся собственностью.' },
         { href: '#stadiya-2', label: 'Стадия 2. Подотчётность становится декоративной', level: 2, summary: 'Точка перехода: система теряет механизм, которым замечает собственные ошибки.' },
@@ -158,7 +160,8 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressDoneMin: 76, readingProgressPartMin: 14, readingProgressTotalMin: CORE_TOTAL_MIN,
       railNowTitle: 'Тексты Писания, которыми манипулируют', railCover: '../../images/pastor-series/og-teksty-pisaniya-kotorymi-manipuliruyut.webp',
       partDialogLabel: 'Часть III · Тексты Писания', partToc: [
-        { href: '#obshchee', label: 'Пять операций над текстом', level: 2, summary: 'Изоляция от контекста, устранение подотчётности, смешение сфер власти, игнорирование жанра, асимметричное применение.' },
+        { href: '#kortko', label: 'Коротко', level: 2 },
+                { href: '#obshchee', label: 'Пять операций над текстом', level: 2, summary: 'Изоляция от контекста, устранение подотчётности, смешение сфер власти, игнорирование жанра, асимметричное применение.' },
         { href: '#pomazanniki', label: '«Не трогай помазанника»: тексты о неприкосновенности', level: 2, summary: 'Текст ограничивает насилие, но не запрещает словесного обличения установленного греха.' },
         { href: '#ne-sudite', label: '«Не судите» и процедуры молчания', level: 2, summary: 'Запрет касается позы осуждения, а не установления фактов: в том же контексте заповедано различать по плодам.' },
         { href: '#semya-dengi', label: 'Семья, деньги, кротость и прощение', level: 2 },
@@ -178,7 +181,8 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressDoneMin: 90, readingProgressPartMin: 9, readingProgressTotalMin: CORE_TOTAL_MIN,
       railNowTitle: 'Семь типов учителей и лидеров', railCover: '../../images/pastor-series/og-sem-tipov-razlichenie-uchiteley.webp',
       partDialogLabel: 'Часть IV · Семь типов', partToc: [
-        { href: '#sem-kategoriy', label: 'Семь категорий', level: 2, summary: 'Семь категорий — редакционная аналитическая модель статьи: она описывает роли и не является исчерпывающей вдохновенной классификацией.' },
+        { href: '#kortko', label: 'Коротко', level: 2 },
+                { href: '#sem-kategoriy', label: 'Семь категорий', level: 2, summary: 'Семь категорий — редакционная аналитическая модель статьи: она описывает роли и не является исчерпывающей вдохновенной классификацией.' },
         { href: '#os-kovarstva', label: 'Ось коварства внутри категории «волк»', level: 2, summary: 'Три полюса мотивов — корысть, карательная вражда и маскировка — аналитическая модель статьи, а не клиническая шкала.' },
         { href: '#eliy', label: 'Илий: попустительство вместо защиты', level: 2, summary: 'Лидер, знающий о продолжающемся вреде и обязанный действовать, отвечает и за виновное бездействие.' },
         { href: '#saul', label: 'Саул: траектория, а не готовый портрет современного лидера', level: 2, summary: 'Текст предупреждает о паттерне давления и компромиссов, но современный пастор не отождествляется с Саулом.' },
@@ -195,7 +199,8 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressDoneMin: 99, readingProgressPartMin: 11, readingProgressTotalMin: CORE_TOTAL_MIN,
       railNowTitle: 'Церковная дисциплина', railCover: '../../images/pastor-series/og-cerkovnaya-disciplina-vlast-granicy-zashchita.webp',
       partDialogLabel: 'Часть V · Церковная дисциплина', partToc: [
-        { href: '#bogoslovie-vlasti', label: 'Позитивное богословие власти', level: 2, summary: 'Власть служебная и подотчётная: Церковь принадлежит Христу, а не старейшинам.' },
+        { href: '#kortko', label: 'Коротко', level: 2 },
+                { href: '#bogoslovie-vlasti', label: 'Позитивное богословие власти', level: 2, summary: 'Власть служебная и подотчётная: Церковь принадлежит Христу, а не старейшинам.' },
         { href: '#shest-sfer', label: 'Шесть уровней пастырского требования', level: 2, summary: 'От ясного библейского греха до личной свободы, где «Бог один является Господом совести».' },
         { href: '#mnozhestvennost', label: 'Множественность: сильный паттерн, не магический талисман', level: 2, summary: 'Численность ничего не гарантирует: критерий — реальная взаимная подотчётность.' },
         { href: '#cel', label: 'Цель дисциплины: приобрести, очистить, восстановить', level: 2, summary: 'Дисциплина служит славе Христа, святости общины, защите других, покаянию согрешившего и ясности свидетельства — а не мести церкви.' },
@@ -218,7 +223,8 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressDoneMin: 110, readingProgressPartMin: 11, readingProgressTotalMin: CORE_TOTAL_MIN,
       railNowTitle: 'Когда говорить, когда уходить', railCover: '../../images/pastor-series/og-kogda-uhodit-kogda-ostavatsya.webp',
       partDialogLabel: 'Часть VI · Когда говорить и уходить', partToc: [
-        { href: '#dve-kanavy', label: 'Две канавы: квиетизм и гипербдительность', level: 2, summary: 'Квиетизм называет свидетельство мятежом; гипербдительность делает различение иммунитетом. Задача — пройти между.' },
+        { href: '#kortko', label: 'Коротко', level: 2 },
+                { href: '#dve-kanavy', label: 'Две канавы: квиетизм и гипербдительность', level: 2, summary: 'Квиетизм называет свидетельство мятежом; гипербдительность делает различение иммунитетом. Задача — пройти между.' },
         { href: '#snachala', label: 'До решения: семь вопросов факта', level: 2, summary: 'Семь вопросов отделяют наблюдаемое от прочитанного между строк: «он поступил так» и «он поступил так, потому что боится меня» — разные уровни.' },
         { href: '#kogda-molchat', label: 'Когда молчание может быть мудростью', level: 2 },
         { href: '#kogda-govorit', label: 'Когда молчание перестаёт быть добродетелью', level: 2, summary: 'Установленный продолжающийся вред: «не выносить сор из избы» становится служением фасаду.' },
@@ -242,7 +248,8 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressDoneMin: 121, readingProgressPartMin: 14, readingProgressTotalMin: CORE_TOTAL_MIN,
       railNowTitle: 'Верные и неизвестные', railCover: '../../images/pastor-series/og-vernye-i-neizvestnye-zdorovoe-pastyrstvo.webp',
       partDialogLabel: 'Часть VII · Верные и неизвестные', partToc: [
-        { href: '#glava', label: 'Сначала Глава: пастор не владеет церковью', level: 2, summary: 'Церковь принадлежит Христу: пастор — распорядитель чужого стада, а не владелец общины.' },
+        { href: '#kortko', label: 'Коротко', level: 2 },
+                { href: '#glava', label: 'Сначала Глава: пастор не владеет церковью', level: 2, summary: 'Церковь принадлежит Христу: пастор — распорядитель чужого стада, а не владелец общины.' },
         { href: '#harakter', label: 'Характер прежде платформы', level: 2, summary: 'Норма Нового Завета — не впечатляющий человек, а проверенный человек.' },
         { href: '#primer', label: 'Не господствуя, а подавая пример', level: 2 },
         { href: '#realnaya-vlast', label: 'Реальная власть — не необязательный совет', level: 2, summary: 'Опровергаются обе крайности: формула «пастор может только предложить мнение» слишком слабая, а пасторская абсолютность разрушается тем же Евр. 13:17.' },
@@ -270,7 +277,8 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressDoneMin: 135, readingProgressPartMin: 11, readingProgressTotalMin: CORE_TOTAL_MIN,
       railNowTitle: 'Признаки здоровой церкви', railCover: '../../images/pastor-series/og-priznaki-zdorovoy-cerkvi.webp',
       partDialogLabel: 'Часть VIII · Признаки здоровой церкви', partToc: [
-        { href: '#ne-ideal', label: 'Здоровая — не значит идеальная', level: 2, summary: 'Здоровье — способность обнаруживать, называть и лечить болезнь средствами, которые дал Христос.' },
+        { href: '#kortko', label: 'Коротко', level: 2 },
+                { href: '#ne-ideal', label: 'Здоровая — не значит идеальная', level: 2, summary: 'Здоровье — способность обнаруживать, называть и лечить болезнь средствами, которые дал Христос.' },
         { href: '#slovo', label: '1. Слово выше личности', level: 2, summary: 'Авторитет учителя не автономный: он убедителен, пока приводит к Слову, а не заменяет его.' },
         { href: '#stareyshiny', label: '2. Старейшинство, которое действительно может остановить старейшину', level: 2, summary: 'Критерий — реальная взаимная проверка, а не численность и демонстрация единодушия.' },
         { href: '#chlenstvo', label: '3. Членство как завет ответственности, а не собственность руководства', level: 2 },
@@ -298,7 +306,8 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       readingProgressDoneMin: 146, readingProgressPartMin: 11, readingProgressTotalMin: CORE_TOTAL_MIN,
       railNowTitle: 'Несовершенный человек в несовершенной церкви', railCover: '../../images/pastor-series/og-nesovershennyy-chelovek-v-nesovershennoy-cerkvi.webp',
       partDialogLabel: 'Часть IX · Несовершенный человек', partToc: [
-        { href: '#zachem', label: 'Почему эта часть должна быть последней', level: 2, summary: 'Диагностический язык легко превратить в линзу, через которую всё выглядит болезнью: серия заканчивается возвращением различающего под исправление собственного сердца.' },
+{ href: '#kortko', label: 'Коротко', level: 2 },
+                { href: '#zachem', label: 'Почему эта часть должна быть последней', level: 2, summary: 'Диагностический язык легко превратить в линзу, через которую всё выглядит болезнью: серия заканчивается возвращением различающего под исправление собственного сердца.' },
         { href: '#ideal', label: 'Идеальная церковь не обещана', level: 2 },
         { href: '#oshibka-pattern', label: 'Ошибка и паттерн — не одно', level: 2, summary: 'Эпизод — повод для проверки, а не приговор; «все несовершенны» не оправдывает повторяющееся зло.' },
         { href: '#bol', label: 'Боль — свидетель, но не верховный судья', level: 2, summary: 'Боль открывает вопрос, а факты отвечают на него.' },
