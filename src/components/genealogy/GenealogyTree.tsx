@@ -15,6 +15,12 @@ import { PersonCardContent, CompactPersonCard } from './PersonNode';
 import { DetailPanel } from './DetailPanel';
 import { SplitView } from './SplitView';
 import { RelationshipInspector } from './RelationshipInspector';
+import {
+  automaticGenealogySearchResult,
+  genealogySearchOptionContext,
+  genealogySearchOptionLabel,
+  searchGenealogyPeople,
+} from './search';
 
 const LINEAGE_FILTERS = [
   { id: 'all' as LineageFilter, label: 'Все' },
@@ -94,6 +100,8 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
   const treeRoot = useRef<HTMLDivElement | null>(null);
   const rfInstance = useRef<ReactFlowInstance | null>(null);
   const [search, setSearch] = useState('');
+  const [searchSelectionId, setSearchSelectionId] = useState<string | null>(null);
+  const [searchCursor, setSearchCursor] = useState(-1);
   const [showLineage, setShowLineage] = useState<LineageFilter>('all');
   const [showGolden, setShowGolden] = useState(true);
   const [selected, setSelected] = useState<Person | null>(null);
@@ -116,16 +124,28 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
   );
 
   // ── Search match ──
+  const searchResults = useMemo(() => searchGenealogyPeople(persons, search), [persons, search]);
+  const visibleSearchResults = useMemo(() => searchResults.slice(0, 8), [searchResults]);
   const searchMatch = useMemo(() => {
     if (!search.trim()) return null;
-    const q = search.toLowerCase().trim();
-    return persons.find(p =>
-      p.name.ru.toLowerCase().includes(q) ||
-      (p.name.he?.includes(search.trim()) ?? false) ||
-      (p.name.altName?.toLowerCase().includes(q) ?? false) ||
-      p.id.toLowerCase().includes(q),
-    ) ?? null;
-  }, [search, persons]);
+    if (searchSelectionId) {
+      return searchResults.find(result => result.person.id === searchSelectionId)?.person ?? null;
+    }
+    return automaticGenealogySearchResult(searchResults, search);
+  }, [search, searchResults, searchSelectionId]);
+  const searchNeedsChoice = Boolean(search.trim() && !searchMatch && searchResults.length > 1);
+  const searchListId = 'genealogy-person-search-results';
+  const activeSearchOptionId = searchNeedsChoice && searchCursor >= 0 && visibleSearchResults[searchCursor]
+    ? `genealogy-search-option-${visibleSearchResults[searchCursor].person.id}`
+    : undefined;
+
+  const chooseSearchPerson = useCallback((id: string) => {
+    setSearchSelectionId(id);
+    setSearchCursor(-1);
+    setActiveId(null);
+    setSelected(null);
+    setSelectedRelation(null);
+  }, []);
 
   useEffect(() => {
     const node = canvasRoot.current;
@@ -328,6 +348,8 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
   const changeLineage = useCallback((filter: LineageFilter) => {
     setShowLineage(filter);
     setSearch('');
+    setSearchSelectionId(null);
+    setSearchCursor(-1);
     const active = persons.find(person => person.id === activeId);
     if (active && !matchesLineage(active, filter)) setActiveId(null);
     if (selected && !matchesLineage(selected, filter)) setSelected(null);
@@ -404,7 +426,7 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
   const tourActive = tourIndex >= 0;
   const tourPerson = tourActive ? persons.find(p => p.id === goldenArray[tourIndex]) : null;
   const startTour = useCallback(() => {
-    setShowLineage('all'); setSearch(''); setSelected(null); setSelectedRelation(null); setTourIndex(0);
+    setShowLineage('all'); setSearch(''); setSearchSelectionId(null); setSearchCursor(-1); setSelected(null); setSelectedRelation(null); setTourIndex(0);
     if (goldenArray[0]) focusPerson(goldenArray[0], 1, 0);
   }, [goldenArray, focusPerson]);
   const tourNext = useCallback(() => setTourIndex(i => Math.min(i + 1, goldenArray.length - 1)), [goldenArray.length]);
@@ -427,10 +449,51 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
     setSelectedRelation(relation);
   }, [relations, focusPerson]);
 
+  const handleSearchKeyDown = useCallback((event: ReactKeyboardEvent<HTMLInputElement>) => {
+    if (event.nativeEvent.isComposing) return;
+
+    if (event.key === 'Escape') {
+      if (!search) return;
+      event.preventDefault();
+      setSearch('');
+      setSearchSelectionId(null);
+      setSearchCursor(-1);
+      setActiveId(null);
+      setSelected(null);
+      setSelectedRelation(null);
+      return;
+    }
+
+    if (!searchNeedsChoice) return;
+
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      setSearchCursor(current => {
+        if (!visibleSearchResults.length) return -1;
+        if (current < 0) return event.key === 'ArrowDown' ? 0 : visibleSearchResults.length - 1;
+        return (current + (event.key === 'ArrowDown' ? 1 : -1) + visibleSearchResults.length) % visibleSearchResults.length;
+      });
+      return;
+    }
+
+    if (event.key === 'Home' || event.key === 'End') {
+      event.preventDefault();
+      setSearchCursor(event.key === 'Home' ? 0 : visibleSearchResults.length - 1);
+      return;
+    }
+
+    if (event.key === 'Enter' && searchCursor >= 0) {
+      const result = visibleSearchResults[searchCursor];
+      if (!result) return;
+      event.preventDefault();
+      chooseSearchPerson(result.person.id);
+    }
+  }, [search, searchNeedsChoice, searchCursor, visibleSearchResults, chooseSearchPerson]);
+
   const visibleCount = visibleNodeIds.size;
   const visibleFocusCount = focusLineageIds ? laidNodes.filter(n => focusLineageIds.has(n.id) && visibleNodeIds.has(n.id)).length : 0;
   const detailLabel = detailLevel === 0 ? 'Обзор' : detailLevel === 1 ? 'Ключевые' : 'Все детали';
-  const resetView = () => { setSearch(''); setActiveId(null); setSelected(null); setSelectedRelation(null); setTourIndex(-1); fitOverview(); };
+  const resetView = () => { setSearch(''); setSearchSelectionId(null); setSearchCursor(-1); setActiveId(null); setSelected(null); setSelectedRelation(null); setTourIndex(-1); fitOverview(); };
   const hasCardsInView = laidNodes.some(node => {
     if (!visibleNodeIds.has(node.id)) return false;
     const center = centerOf(node);
@@ -440,19 +503,77 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
   const focusEra = (eraId: string) => {
     const members = laidNodes.filter(n => n.data.era === eraId);
     if (!members.length || !rfInstance.current) return;
-    setSearch(''); setSelected(null); setSelectedRelation(null); setActiveId(null); setTourIndex(-1);
+    setSearch(''); setSearchSelectionId(null); setSearchCursor(-1); setSelected(null); setSelectedRelation(null); setActiveId(null); setTourIndex(-1);
     const first = [...members].sort((a, b) => a.position.y - b.position.y)[0];
     focusPerson(first.id, 1, 0);
   };
 
   return (
     <div ref={treeRoot} className="genealogy-app" data-genealogy-app data-genealogy-level={detailLevel} data-minimap-open={showMiniMap}
-      data-genealogy-active-person={activeId ?? undefined} onKeyDownCapture={handleGraphKeyDown}>
+      data-genealogy-active-person={activeId ?? undefined}
+      data-genealogy-search-query={search || undefined}
+      data-genealogy-search-result-count={searchResults.length}
+      data-genealogy-search-needs-choice={searchNeedsChoice ? 'true' : 'false'}
+      data-genealogy-search-selection={searchSelectionId ?? undefined}
+      data-genealogy-search-person={searchMatch?.id ?? undefined}
+      onKeyDownCapture={handleGraphKeyDown}>
       <div className="genealogy-toolbar" role="toolbar" aria-label="Управление древом">
         <div className="genealogy-heading"><h2>Библейские родословия</h2></div>
         <div className="genealogy-primary-tools">
-          <input type="text" placeholder="Найти человека…" value={search} onChange={e => { setSearch(e.target.value); setActiveId(null); setSelected(null); setSelectedRelation(null); }}
-            aria-label="Поиск по имени" />
+          <div className="genealogy-person-search">
+            <input
+              type="text"
+              role="combobox"
+              placeholder="Найти человека…"
+              value={search}
+              onChange={event => {
+                setSearch(event.target.value);
+                setSearchSelectionId(null);
+                setSearchCursor(-1);
+                setActiveId(null);
+                setSelected(null);
+                setSelectedRelation(null);
+              }}
+              onKeyDown={handleSearchKeyDown}
+              aria-label="Поиск по имени"
+              aria-autocomplete="list"
+              aria-expanded={searchNeedsChoice}
+              aria-controls={searchNeedsChoice ? searchListId : undefined}
+              aria-activedescendant={activeSearchOptionId}
+            />
+            {searchNeedsChoice && (
+              <div
+                id={searchListId}
+                className="genealogy-search-popover"
+                role="listbox"
+                aria-label="Люди с похожим именем"
+              >
+                {visibleSearchResults.map((result, index) => (
+                  <div
+                    key={result.person.id}
+                    id={`genealogy-search-option-${result.person.id}`}
+                    role="option"
+                    aria-selected={searchCursor === index}
+                    data-person-id={result.person.id}
+                    aria-label={genealogySearchOptionLabel(result.person)}
+                    onPointerDown={event => {
+                      event.preventDefault();
+                      chooseSearchPerson(result.person.id);
+                    }}
+                  >
+                    <strong>{result.person.name.ru}</strong>
+                    <span>{genealogySearchOptionContext(result.person)}</span>
+                  </div>
+                ))}
+                {searchResults.length > visibleSearchResults.length && (
+                  <p>Ещё {searchResults.length - visibleSearchResults.length} — уточните запрос</p>
+                )}
+              </div>
+            )}
+            {Boolean(search.trim()) && searchResults.length === 0 && (
+              <div className="genealogy-search-empty" role="status">Ничего не найдено</div>
+            )}
+          </div>
           <button ref={splitOpener} type="button" onClick={() => setShowSplit(true)} title="Сравнить Мф/Лк">Мф / Лк</button>
           <button type="button" onClick={startTour} title="Тур" aria-label="Пройти мессианскую нить">Тур</button>
         </div>
