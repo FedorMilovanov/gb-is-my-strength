@@ -1,8 +1,16 @@
 {
   "schemaVersion": 1,
-  "status": "curated-release-candidate",
+  "status": "curated-subset-release-candidate",
   "rawCorpusStatus": "phase1-draft — НЕ подключать в рантайм до exit-критериев Phase 1",
   "rawPipelineVersion": "0.3.0-phase1-explicit-gospels",
+  "scope": {
+    "type": "closed-curated-subset",
+    "curatedPersons": 154,
+    "rawPersons": 3056,
+    "excludesRawOnlyIdentities": true,
+    "excludesRawOnlyRelations": true,
+    "completeness": "partial-by-design"
+  },
   "policy": {
     "identities": "all curated v1 persons mapped 1:1 to v2 TIPNR identities; ru.review must be false",
     "parents": "explicit father/mother first; children[] supplements only missing non-conflicting same-role links",
