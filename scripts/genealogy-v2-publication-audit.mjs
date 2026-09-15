@@ -412,19 +412,51 @@ function walk(dir, out = []) {
 const runtimeRoots = [path.join(ROOT, 'src')];
 const runtimeV2Refs = walkRuntimeRefs(runtimeRoots);
 
+function classifyRuntimeV2Text(text) {
+  let raw = false;
+  let publishable = false;
+  const pattern = /(?:data\/)?genealogy\/v2(?:\/[A-Za-z0-9._/-]+)?/gu;
+  for (const match of text.matchAll(pattern)) {
+    const ref = match[0];
+    if (/genealogy\/v2\/publishable(?:\/|$)/u.test(ref)) publishable = true;
+    else raw = true;
+  }
+  return { raw, publishable };
+}
+
+for (const fixture of [
+  {
+    label: 'publishable-only',
+    text: "import people from '../../data/genealogy/v2/publishable/persons.json';",
+    expected: { raw: false, publishable: true },
+  },
+  {
+    label: 'raw-only',
+    text: "import people from '../../data/genealogy/v2/persons.json';",
+    expected: { raw: true, publishable: false },
+  },
+  {
+    label: 'mixed',
+    text: "const a='genealogy/v2/publishable/meta.json'; const b='genealogy/v2/edges.json';",
+    expected: { raw: true, publishable: true },
+  },
+]) {
+  const actual = classifyRuntimeV2Text(fixture.text);
+  if (actual.raw !== fixture.expected.raw || actual.publishable !== fixture.expected.publishable) {
+    throw new Error(`Runtime v2 classifier regression (${fixture.label}): ${JSON.stringify(actual)}`);
+  }
+}
+
 function walkRuntimeRefs(roots) {
   const raw = new Set();
   const publishable = new Set();
-  const pattern = /(?:data\/)?genealogy\/v2(?:\/[A-Za-z0-9._/-]+)?/gu;
   for (const root of roots) {
     for (const file of walk(root)) {
       const text = fs.readFileSync(file, 'utf8');
       const rel = path.relative(ROOT, file).replaceAll(path.sep, '/');
-      for (const match of text.matchAll(pattern)) {
-        const ref = match[0];
-        if (/genealogy\/v2\/publishable(?:\/|$)/u.test(ref)) publishable.add(rel);
-        else raw.add(rel);
-      }
+      const classification = classifyRuntimeV2Text(text);
+      if (classification.raw) raw.add(rel);
+      if (classification.publishable) publishable.add(rel);
     }
   }
   return {
