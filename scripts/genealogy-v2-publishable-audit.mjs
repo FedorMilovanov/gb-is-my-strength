@@ -67,6 +67,7 @@ assert(persons.length === v1.persons.length, `Publishable identity count drift: 
 
 const ids = new Set();
 const byV1 = new Map();
+const sourceByV1 = new Map(v1.persons.map(person => [person.id, person]));
 for (const person of persons) {
   assert(person.id && !ids.has(person.id), `Duplicate publishable person id: ${person.id}`);
   ids.add(person.id);
@@ -75,6 +76,18 @@ for (const person of persons) {
   assert(person.names?.ru, `Missing Russian label: ${person.v1Id}`);
   assert(person.identity?.authority === 'curated-v1-to-tipnr', `Wrong identity authority: ${person.v1Id}`);
   assert(person.identity?.russianLabelReview === false, `Unreviewed Russian label leaked into publishable projection: ${person.v1Id}`);
+  const source = sourceByV1.get(person.v1Id);
+  assert(source, `Missing curated source for publishable identity: ${person.v1Id}`);
+  for (const field of ['birthName', 'altName']) {
+    const expected = source.name?.[field];
+    if (expected) {
+      assert(person.names?.[field] === expected,
+        `Curated display alias drift: ${person.v1Id}:${field}`);
+    } else {
+      assert(!(field in (person.names ?? {})),
+        `Unexpected publishable display alias: ${person.v1Id}:${field}`);
+    }
+  }
 }
 
 for (const source of v1.persons) {
