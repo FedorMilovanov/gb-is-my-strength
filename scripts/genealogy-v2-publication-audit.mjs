@@ -176,6 +176,78 @@ const prospectiveMethodCounts = Object.fromEntries(
   }, {})).sort(([a], [b]) => a.localeCompare(b)),
 );
 
+const gospelProjectionIssues = [];
+if (pipelineCurrent) {
+  if (!derivedGospel) {
+    gospelProjectionIssues.push('missing-derived-gospel-sequences');
+  } else {
+    if (derivedGospel.schemaVersion !== 1) gospelProjectionIssues.push('derived-schema-version');
+    if (derivedGospel.authority !== 'explicit-scriptural-sequences') gospelProjectionIssues.push('derived-authority');
+    if (derivedGospel.sourcePath !== 'data/genealogy/gospel-sequences.json') gospelProjectionIssues.push('derived-source-path');
+    if (derivedGospel.translation !== gospelSource.translation) gospelProjectionIssues.push('derived-translation');
+
+    const personByKey = new Map(persons.map(person => [person.key, person]));
+    const derivedById = new Map((derivedGospel.sequences ?? []).map(sequence => [sequence.id, sequence]));
+    for (const sourceSequence of gospelSource.sequences ?? []) {
+      const derivedSequence = derivedById.get(sourceSequence.id);
+      if (!derivedSequence) {
+        gospelProjectionIssues.push(`missing-derived-sequence:${sourceSequence.id}`);
+        continue;
+      }
+      if (derivedSequence.authority !== 'explicit-scriptural-sequence') {
+        gospelProjectionIssues.push(`sequence-authority:${sourceSequence.id}`);
+      }
+      if (derivedSequence.sourceRef !== sourceSequence.sourceRef ||
+          derivedSequence.direction !== sourceSequence.direction ||
+          derivedSequence.translation !== gospelSource.translation) {
+        gospelProjectionIssues.push(`sequence-metadata:${sourceSequence.id}`);
+      }
+      if ((derivedSequence.occurrences ?? []).length !== sourceSequence.entries.length) {
+        gospelProjectionIssues.push(`sequence-count:${sourceSequence.id}`);
+        continue;
+      }
+
+      sourceSequence.entries.forEach((entry, index) => {
+        const occurrence = derivedSequence.occurrences[index];
+        const expectedKey = prospectiveMapping.matches.get(entry.personId);
+        const expectedPerson = expectedKey ? personByKey.get(expectedKey) : null;
+        if (!expectedKey || !expectedPerson) {
+          gospelProjectionIssues.push(`unresolved-source-occurrence:${sourceSequence.id}:${entry.id}`);
+          return;
+        }
+        if (occurrence?.occurrenceId !== entry.id ||
+            occurrence?.sourcePersonId !== entry.personId ||
+            occurrence?.personKey !== expectedKey ||
+            occurrence?.personId !== expectedPerson.id ||
+            occurrence?.name !== entry.name ||
+            occurrence?.sourceForm !== entry.sourceForm ||
+            occurrence?.ref !== entry.ref) {
+          gospelProjectionIssues.push(`occurrence-drift:${sourceSequence.id}:${entry.id}`);
+        }
+      });
+    }
+
+    const luke = derivedById.get('luke');
+    if (luke?.occurrences?.some(occurrence => occurrence.sourcePersonId === 'mary')) {
+      gospelProjectionIssues.push('luke-inserts-mary');
+    }
+    for (const sequence of derivedGospel.sequences ?? []) {
+      const cluster = (groups.clusters ?? []).find(item => item.id === sequence.clusterId);
+      if (!cluster) {
+        gospelProjectionIssues.push(`missing-sequence-cluster:${sequence.id}`);
+        continue;
+      }
+      if (cluster.rule?.type !== 'explicitSequence' || cluster.rule?.sequenceId !== sequence.id) {
+        gospelProjectionIssues.push(`sequence-cluster-rule:${sequence.id}`);
+      }
+      const expectedMembers = [...new Set(sequence.occurrences.map(occurrence => occurrence.personId))].sort();
+      if (JSON.stringify(cluster.members ?? []) !== JSON.stringify(expectedMembers) || cluster.count !== expectedMembers.length) {
+        gospelProjectionIssues.push(`sequence-cluster-members:${sequence.id}`);
+      }
+    }
+  }
+}
+
 const curatedRulePolicy = {
   'matthew-1': ['explicitSequence'],
   'luke-3': ['explicitSequence'],
@@ -365,8 +437,12 @@ if (publicationEvidenceIssues.length) blockers.push({
   count: publicationEvidenceIssues.length,
 });
 if (inputProvenanceIssues.length) blockers.push({
-  code: 'V1_SKELETON_INPUT_PROVENANCE',
+  code: 'INPUT_PROVENANCE_INVALID',
   count: inputProvenanceIssues.length,
+});
+if (gospelProjectionIssues.length) blockers.push({
+  code: 'GOSPEL_SEQUENCE_PROJECTION_INVALID',
+  count: gospelProjectionIssues.length,
 });
 if (/phase1-draft|НЕ подключать в рантайм/u.test(meta.status ?? '')) {
   blockers.push({ code: 'DATASET_STATUS_DRAFT', detail: meta.status ?? null });
@@ -416,6 +492,8 @@ const report = {
     publicationEvidenceIssues,
     inputProvenanceIssues,
     v1SkeletonSha256,
+    gospelSourceSha256,
+    gospelProjectionIssues,
     publicationEvidenceAuthority: pipelineCurrent ? 'meta.publicationEvidence' : 'legacy-stale-artifacts',
     prospectiveMapping: {
       methodCounts: prospectiveMethodCounts,
@@ -453,6 +531,8 @@ const md = [
   `- Publication evidence issues: ${publicationEvidenceIssues.length}`,
   `- v1 skeleton input provenance issues: ${inputProvenanceIssues.length}`,
   `- v1 skeleton SHA256: ${v1SkeletonSha256}`,
+  `- Gospel source SHA256: ${gospelSourceSha256}`,
+  `- Gospel projection issues: ${gospelProjectionIssues.length}`,
   `- RU review queue: ${reviewQueue}`,
   `- Unresolved relations: ${unresolvedRefs ?? 'unknown'}`,
   `- Heuristic skeleton mappings: ${heuristicMappings.length}`,
