@@ -142,7 +142,12 @@ export function normalizeRuCandidate(en, cand) {
     if (/ias$/i.test(e)) proposal = stem.endsWith('и') ? stem + 'я' : stem + 'ия';
     else if (/i$/i.test(e)) proposal = stem.endsWith('и') ? stem + 'й' : stem + 'ий';
     const approx = translitEnRu(e);
-    if (similarity(approx, proposal) > similarity(approx, c)) return proposal;
+    // The possessive form can be exactly as close to the rough EN transliteration
+    // as the canonical nominative (Mattathias: Маттафиев → Маттафия). Once the
+    // morphology produced a distinct proposal, accept it when it does not make
+    // the transliteration fit worse; this still preserves guards such as Caleb
+    // → Халев, where stripping -ев materially decreases similarity.
+    if (proposal !== c && similarity(approx, proposal) >= similarity(approx, c)) return proposal;
   }
   // 2) вин./род. «-а» при EN на твёрдую согласную (Elnathan → Елнафан[а])
   if (/[бвгджзклмнпрстфхцчшщ]а$/.test(c) && /[bcdfgklmnpqrstvxz]$/i.test(e) && c.length >= 5) {
