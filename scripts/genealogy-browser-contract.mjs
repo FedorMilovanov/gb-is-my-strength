@@ -185,7 +185,7 @@ async function measurePersonViewport(page) {
 
 async function pressFocused(page, locator, key, label) {
   await locator.waitFor({ state: 'visible' });
-  await locator.focus();
+  await locator.evaluate(node => node.focus({ preventScroll: true }));
   assert.equal(await locator.evaluate(node => document.activeElement === node), true,
     `${label} did not receive DOM focus before ${key}`);
   // Dispatch through the browser keyboard once focus is proven. Using
