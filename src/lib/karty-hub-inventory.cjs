@@ -47,15 +47,14 @@ function hasValidHubApproval(record) {
 
   if (approval.basis !== 'owner-receipt') return false;
   const receipt = approval.receipt;
+  if (!receipt || typeof receipt !== 'object' || Array.isArray(receipt)) return false;
+  const receiptKeys = Object.keys(receipt);
   return Boolean(
-    receipt &&
-    typeof receipt === 'object' &&
-    !Array.isArray(receipt) &&
+    receiptKeys.length === 3 &&
+    receiptKeys.every((key) => ['gate', 'id', 'head_sha'].includes(key)) &&
     receipt.gate === 'G9' &&
     typeof receipt.id === 'string' &&
     /^[A-Za-z0-9._:-]{3,120}$/.test(receipt.id) &&
-    typeof receipt.path === 'string' &&
-    /^projects\/gb-is-my-strength\/[^\s]+$/.test(receipt.path) &&
     typeof receipt.head_sha === 'string' &&
     /^[0-9a-f]{40}$/.test(receipt.head_sha)
   );

@@ -191,8 +191,9 @@ function validatePublication(route, label) {
         if (typeof receipt.id !== 'string' || !/^[A-Za-z0-9._:-]{3,120}$/.test(receipt.id)) {
           bad(`${label}: owner receipt id invalid`);
         }
-        if (typeof receipt.path !== 'string' || !/^projects\/gb-is-my-strength\/[^\s]+$/.test(receipt.path)) {
-          bad(`${label}: owner receipt path must point inside AuditRepo projects/gb-is-my-strength/`);
+        const unexpectedReceiptKeys = Object.keys(receipt).filter((key) => !['gate', 'id', 'head_sha'].includes(key));
+        if (unexpectedReceiptKeys.length) {
+          bad(`${label}: owner receipt contains unsupported fields: ${unexpectedReceiptKeys.join(', ')}`);
         }
         if (typeof receipt.head_sha !== 'string' || !/^[0-9a-f]{40}$/.test(receipt.head_sha)) {
           bad(`${label}: owner receipt head_sha must be an exact 40-char git SHA`);

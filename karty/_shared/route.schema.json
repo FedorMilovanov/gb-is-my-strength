@@ -147,11 +147,10 @@
             "receipt": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["gate", "id", "path", "head_sha"],
+              "required": ["gate", "id", "head_sha"],
               "properties": {
                 "gate": { "const": "G9" },
                 "id": { "type": "string", "pattern": "^[A-Za-z0-9._:-]{3,120}$" },
-                "path": { "type": "string", "pattern": "^projects/gb-is-my-strength/[^\\s]+$" },
                 "head_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
               }
             },

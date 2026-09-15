@@ -88,7 +88,6 @@ try {
         receipt:{
           gate:'G9',
           id:'G9-approved-map',
-          path:'projects/gb-is-my-strength/verification/atlas/approved-map/G9.json',
           head_sha:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         },
       },
@@ -99,15 +98,15 @@ try {
     publication: {
       status:'ready', indexable:true, sitemap:true, llms:false, pagefind:true,
       hub:'listed', hub_order:30,
-      hub_summary:'Synthetic route whose malformed receipt must fail closed at runtime.',
+      hub_summary:'Synthetic route whose non-canonical receipt must fail closed at runtime.',
       hub_image:'/images/bad-owner.webp',
       hub_approval:{
         basis:'owner-receipt',
         receipt:{
           gate:'G9',
           id:'G9-bad-owner',
-          path:'projects/gb-is-my-strength/verification/atlas/bad-owner/G9.json',
-          head_sha:'not-an-exact-head-sha',
+          head_sha:'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+          path:'spoofed-internal-locator',
         },
       },
     },
