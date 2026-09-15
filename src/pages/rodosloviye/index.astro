@@ -11,8 +11,8 @@ import RodosloviyeStyles from '@/components/rodosloviye/RodosloviyeStyles.astro'
 import RodosloviyeBody from '@/components/rodosloviye/RodosloviyeBody.astro';
 import GenealogyTree from '@/components/genealogy/GenealogyTree.tsx';
 import type { Person, Era } from '@/components/genealogy/types';
+import { ERA_META } from '@/components/genealogy/theme';
 import { adaptPublishableGenealogy } from '@/components/genealogy/publishableAdapter.mjs';
-import legacyGenealogyData from '../../../data/genealogy/genealogy.json';
 import publishablePersons from '../../../data/genealogy/v2/publishable/persons.json';
 import publishableRelations from '../../../data/genealogy/v2/publishable/relations.json';
 import MobileChromePage from '@/components/article-pilots/_shared/MobileChromePage.astro';
@@ -22,7 +22,11 @@ const persons = adaptPublishableGenealogy({
   persons: publishablePersons,
   relations: publishableRelations,
 }) as Person[];
-const eras = legacyGenealogyData.eras as unknown as Era[];
+const eras = Object.entries(ERA_META).map(([id, meta]) => ({
+  id,
+  name: meta.label,
+  color: meta.color,
+})) as Era[];
 
 // Мобильная обвязка выбирается registry (движок «page»: Back·Home·Поиск сверху).
 const mobileChrome = mobileChromeFor('/rodosloviye/');
