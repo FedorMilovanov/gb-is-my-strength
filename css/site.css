@@ -1099,7 +1099,8 @@ html:not(.dark) .gtip.gb-floating-tip::before {
   }
 
   html body [data-gill-v16] .article-body table,
-  html body [data-reader-root] .article-body table {
+  html body [data-reader-root] .article-body table,
+  html body [data-gbs2-series] article table {
     width: 100%;
     border-collapse: collapse;
     background: #fff;
@@ -1109,18 +1110,21 @@ html:not(.dark) .gtip.gb-floating-tip::before {
   }
 
   html body [data-gill-v16] .article-body thead,
-  html body [data-reader-root] .article-body thead {
+  html body [data-reader-root] .article-body thead,
+  html body [data-gbs2-series] article thead {
     display: table-header-group;
   }
 
   html body [data-gill-v16] .article-body tr,
-  html body [data-reader-root] .article-body tr {
+  html body [data-reader-root] .article-body tr,
+  html body [data-gbs2-series] article tr {
     break-inside: avoid-page;
     page-break-inside: avoid;
   }
 
   html body [data-gill-v16] .article-body th,
-  html body [data-reader-root] .article-body th {
+  html body [data-reader-root] .article-body th,
+  html body [data-gbs2-series] article th {
     background: #f1f1ef;
     color: #111;
   }

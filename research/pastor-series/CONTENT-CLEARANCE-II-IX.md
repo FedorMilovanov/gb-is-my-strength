@@ -1,6 +1,13 @@
 # Parts II–IX — series-level content clearance receipt
 
 Статус: **CONTENT_CLEARANCE = PASS / SOURCE_RECONCILIATION = PASS 8/8 / PUBLICATION PROMOTION = FORBIDDEN**
+
+> Обновление 2026-09-15: запретительная часть статуса утратила силу — публикация частей II–IX
+> легализована решением владельца, см. `research/pastor-series/PROMOTION-RECEIPT-II-IX.md`.
+> Содержательные вердикты (CONTENT_CLEARANCE, SOURCE_RECONCILIATION) сохраняют силу, но
+> blob-идентичность рукописей нарушена: опубликованный текст расходится с сертифицированными
+> blob'ами §3, поэтому требуется bounded re-clearance (§5 promotion receipt'а, follow-up 2.17).
+
 Дата: 2026-09-08
 Product clearance base: `b5d89b276a3085161be205f22b56f53ddfc8e6f6`
 Source-reconciliation merge: Product #1899 → `b5d89b276a3085161be205f22b56f53ddfc8e6f6`
@@ -255,3 +262,14 @@ The atomic release must synchronize at least:
 `PUBLICATION_PROMOTION = FORBIDDEN IN THIS PR`
 
 The next independent owner is the atomic release transaction. Any content mutation after the certified blobs above requires bounded re-clearance of the affected part.
+## Addendum (2026-09-15) — exact-blob re-clearance
+
+Post-clearance product mutations II–IX переаттестованы на финальных blob identities, перечисленных в `RE-CLEARANCE-II-IX-2026-09-15.md`.
+
+`EXACT_BLOB_RE_CLEARANCE = PASS`
+
+`JURISDICTION_SAFEGUARDING = PASS WITH NON-LEGAL / JURISDICTION-SPECIFIC BOUNDARY`
+
+`CHRISTOLOGICAL_THEOLOGICAL_PASS = PASS`
+
+Историческая таблица §3 остаётся provenance прежнего clearance и не переписывается; текущим сертификатом для post-mutation текста является re-clearance receipt 2026-09-15.
