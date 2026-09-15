@@ -38,7 +38,7 @@ assert.match(engine,/dataset.sourcePerspective/);
 assert.match(engine,/url.protocol==='https:'/);
 assert.match(engine,/textContent/);
 assert.match(engine,/version:'0.60.0'/);
-assert.match(engine,/map-engine\.js v0\.59/);
+assert.match(engine,/map-engine\.js v0\.60/);
 assert.ok(engine.includes('const fallbackOverlayStates = new Map()'));
 assert.ok(engine.includes("element.removeAttribute('inert')"));
 assert.ok(engine.includes("overlayState.element.setAttribute('inert', '')"));
