@@ -12,6 +12,10 @@ const V1 = path.join(ROOT, 'data', 'genealogy', 'genealogy.json');
 const V2 = path.join(ROOT, 'data', 'genealogy', 'v2');
 const REPORT_DIR = path.join(ROOT, 'reports');
 const STRICT_PUBLISH = process.argv.includes('--strict-publish');
+const ALLOWED_BLOCKERS_ARG = process.argv.find(arg => arg.startsWith('--allow-blockers='));
+const ALLOWED_BLOCKERS = ALLOWED_BLOCKERS_ARG
+  ? new Set(ALLOWED_BLOCKERS_ARG.slice('--allow-blockers='.length).split(',').map(value => value.trim()).filter(Boolean))
+  : null;
 
 const readJson = (p) => JSON.parse(fs.readFileSync(p, 'utf8'));
 const v1Raw = fs.readFileSync(V1, 'utf8');
@@ -460,4 +464,10 @@ const md = [
 fs.writeFileSync(path.join(REPORT_DIR, 'genealogy-v2-publication-audit.md'), md);
 
 console.log(JSON.stringify(report, null, 2));
-if (runtimeViolation || (STRICT_PUBLISH && blockers.length > 0)) process.exitCode = 1;
+const unexpectedBlockers = ALLOWED_BLOCKERS
+  ? blockers.filter(blocker => !ALLOWED_BLOCKERS.has(blocker.code))
+  : [];
+if (unexpectedBlockers.length) {
+  console.error('Unexpected genealogy v2 publication blockers:', unexpectedBlockers.map(blocker => blocker.code).join(', '));
+}
+if (runtimeViolation || unexpectedBlockers.length || (STRICT_PUBLISH && blockers.length > 0)) process.exitCode = 1;
