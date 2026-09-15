@@ -60,17 +60,29 @@ const baseline = readJson('data/visual-parity-baseline.json');
 const seriesRegistry = readJson('data/series.json');
 const nativeText = [head, chrome, main, cards, stats, end].join('\n');
 
+// Canonical minutes are owned by data/series.json (single source of truth);
+// the contract constants below pin the canonical totals so silent registry
+// drift fails instead of silently re-basing the guard.
+const CONTRACT_CORE_TOTAL_MIN = 157;
+const CONTRACT_COMPANION_MIN = 15;
 const expectedCore = [
-  { roman: 'I', slug: '20-antisovetov-pastoru', minutes: 67 },
-  { roman: 'II', slug: 'anatomiya-padeniya-pyat-stadiy', minutes: 29 },
-  { roman: 'III', slug: 'teksty-pisaniya-kotorymi-manipuliruyut', minutes: 36 },
-  { roman: 'IV', slug: 'sem-tipov-razlichenie-uchiteley', minutes: 30 },
-  { roman: 'V', slug: 'cerkovnaya-disciplina-vlast-granicy-zashchita', minutes: 34 },
-  { roman: 'VI', slug: 'kogda-uhodit-kogda-ostavatsya', minutes: 33 },
-  { roman: 'VII', slug: 'vernye-i-neizvestnye-zdorovoe-pastyrstvo', minutes: 31 },
-  { roman: 'VIII', slug: 'priznaki-zdorovoy-cerkvi', minutes: 30 },
-  { roman: 'IX', slug: 'nesovershennyy-chelovek-v-nesovershennoy-cerkvi', minutes: 31 },
+  { roman: 'I', slug: '20-antisovetov-pastoru' },
+  { roman: 'II', slug: 'anatomiya-padeniya-pyat-stadiy' },
+  { roman: 'III', slug: 'teksty-pisaniya-kotorymi-manipuliruyut' },
+  { roman: 'IV', slug: 'sem-tipov-razlichenie-uchiteley' },
+  { roman: 'V', slug: 'cerkovnaya-disciplina-vlast-granicy-zashchita' },
+  { roman: 'VI', slug: 'kogda-uhodit-kogda-ostavatsya' },
+  { roman: 'VII', slug: 'vernye-i-neizvestnye-zdorovoe-pastyrstvo' },
+  { roman: 'VIII', slug: 'priznaki-zdorovoy-cerkvi' },
+  { roman: 'IX', slug: 'nesovershennyy-chelovek-v-nesovershennoy-cerkvi' },
 ];
+const registryMinutes = Object.fromEntries(
+  ((seriesRegistry['pastor-series'] || {}).parts || []).map((part) => [part.slug, Number(part.readingTime || 0)]),
+);
+for (const part of expectedCore) {
+  part.minutes = registryMinutes[part.slug] || 0;
+  if (!part.minutes) bad(`data/series.json: readingTime missing for ${part.slug}`);
+}
 const expectedCoreMinutes = expectedCore.reduce((sum, part) => sum + part.minutes, 0);
 
 must(page, 'PastorSeriesPageHead', 'Astro /pastor-series/ uses native head component');
@@ -107,8 +119,8 @@ must(head, 'application/ld+json', 'native JSON-LD');
 must(head, 'numberOfItems: 9', 'structured data numbers only the I–IX core');
 must(head, 'subjectOf:', 'Dossier A is a companion rather than a numbered hasPart item');
 must(head, "name: 'Досье A. Диотрефы нашего времени: власть, подотчётность и верность'", 'Dossier A structured-data companion');
-must(head, 'readingTime: 321', 'SITE_CONFIG owns canonical-core reading time');
-must(head, 'companionReadingTime: 35', 'SITE_CONFIG records Dossier A separately');
+must(head, `readingTime: ${CONTRACT_CORE_TOTAL_MIN}`, 'SITE_CONFIG owns canonical-core reading time');
+must(head, `companionReadingTime: ${CONTRACT_COMPANION_MIN}`, 'SITE_CONFIG records Dossier A separately');
 must(head, 'window.SITE_CONFIG', 'native SITE_CONFIG');
 mustNot(head, 'numberOfItems: 10', 'Dossier A counted as numbered series item');
 mustNot(head, 'readingTime: 356', 'core and companion reading times conflated');
@@ -138,7 +150,7 @@ for (const part of expectedCore) {
 }
 must(cards, 'href="../articles/diotrefy-nashego-vremeni/"', 'Dossier A route');
 must(cards, 'data-wave12-series-card="true"', 'Dossier A card authority marker');
-must(cards, 'Досье A · 35 мин', 'Dossier A duration');
+must(cards, `Досье A · ${CONTRACT_COMPANION_MIN} мин`, 'Dossier A duration');
 must(cards, '181 источник', 'Dossier A source-count marker');
 equal(count(cards, '<a href="../articles/'), 10, 'public link inventory: nine core parts plus Dossier A');
 equal(count(cards, 'aria-disabled="true"'), 1, 'non-public card count: field guide only');
@@ -167,7 +179,7 @@ for (const retired of [
 
 must(stats, '>9</div>', 'nine published core parts stat');
 must(stats, 'опубликованных частей ядра', 'published-core stat label');
-must(stats, '>321</div>', '321-minute canonical core stat');
+must(stats, `>${CONTRACT_CORE_TOTAL_MIN}</div>`, 'canonical-core minute stat (contract-anchored)');
 must(stats, 'минута канонического ядра I–IX', 'canonical-core duration label');
 must(stats, '>1</div>', 'one published dossier stat');
 must(stats, 'опубликованное Досье A', 'Dossier A companion stat label');
@@ -190,7 +202,7 @@ if (!pastorSeries) {
   equal(totalMinutes, expectedCoreMinutes, 'registry canonical-core minute total');
 }
 
-equal(expectedCoreMinutes, 321, 'contract canonical-core minute total');
+equal(expectedCoreMinutes, CONTRACT_CORE_TOTAL_MIN, 'contract canonical-core minute total');
 
 const visualPolicy = baseline.routeModes?.['/pastor-series/'];
 if (!visualPolicy) {

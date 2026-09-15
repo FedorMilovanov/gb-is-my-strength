@@ -1,6 +1,13 @@
 # Тёмная сторона кафедры — source reconciliation Parts II–IX
 
 Статус: **SOURCE RECONCILIATION COMPLETE 8/8 / NO PUBLICATION PROMOTION**
+
+> Обновление 2026-09-15: `PUBLICATION_PROMOTION = FORBIDDEN` (ниже по тексту) утратил силу —
+> публикация частей II–IX легализована решением владельца, см.
+> `research/pastor-series/PROMOTION-RECEIPT-II-IX.md`. Результаты source reconciliation 8/8
+> сохраняют силу; расхождение опубликованных рукописей с сертифицированными blob'ами и
+> обязательный bounded re-clearance описаны в §5 того же receipt'а.
+
 Дата closure: 2026-09-08
 Product closure base: `FedorMilovanov/gb-is-my-strength@a0d45c13f56f6401aa9c9952165a9177d9292172`
 Current Research root authority: `FedorMilovanov/Research@b5785be744bc8eac14491b972bb99005f1e81322`

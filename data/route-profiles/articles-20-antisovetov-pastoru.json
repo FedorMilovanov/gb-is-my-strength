@@ -16,8 +16,8 @@
   "renderSource": "src/pages/articles/20-antisovetov-pastoru/index.astro",
   "metadataSourceMode": "astro-head-import",
   "hasMDX": false,
-  "mdxStatus": "reference-only",
-  "mdxPath": "src/content/articles/20-antisovetov-pastoru.mdx",
+  "mdxStatus": "absent",
+  "mdxPath": null,
   "legacyStatus": "reference-only",
   "legacyPath": "articles/20-antisovetov-pastoru/index.html",
   "visualParity": {
@@ -25,5 +25,13 @@
     "mobile": 0
   },
   "cssPilot": null,
-  "migrationMode": "strict-native"
+  "migrationMode": "strict-native",
+  "knownDegradations": [
+    {
+      "id": "WU-2.2-bref",
+      "acceptedAt": "2026-09-15",
+      "decision": "degradation-accepted (owner-delegated)",
+      "detail": "Библейские ссылки в Части I — обычный текст без .bref-тултипов. Верификация pass-12: в legacy-зеркале articles/20-antisovetov-pastoru/index.html также 0 .bref-элементов — восстанавливать нечего; исходный finding 'в legacy были' устарел."
+    }
+  ]
 }

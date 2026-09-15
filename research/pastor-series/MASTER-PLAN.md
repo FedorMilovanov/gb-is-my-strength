@@ -1,7 +1,7 @@
 # Тёмная сторона кафедры — канонический master plan
 
 Статус: **редакционный authority-файл серии**
-Дата актуализации: 2026-09-07
+Дата актуализации: 2026-09-15
 Публичная серия: `/pastor-series/`
 
 ## 1. Назначение
@@ -42,7 +42,8 @@
 
 ### II. Анатомия падения: пять стадий институционального разложения
 
-**Статус:** manuscript написан; `draft:true/noindex:true`; public route отсутствует.
+**Статус:** опубликовано (сентябрь 2026).
+**URL:** `/articles/anatomiya-padeniya-pyat-stadiy/`
 **Файл:** `src/content/articles/anatomiya-padeniya-pyat-stadiy.mdx`
 **Research authority:** досье 28; синтез 27 Level-A кейсов.
 **Роль:** причинная траектория, а не каталог «красных флагов».
@@ -53,7 +54,8 @@
 
 ### III. Тексты Писания, которыми манипулируют
 
-**Статус:** manuscript глубоко вычитан; `draft:true/noindex:true`; public route отсутствует.
+**Статус:** опубликовано (сентябрь 2026).
+**URL:** `/articles/teksty-pisaniya-kotorymi-manipuliruyut/`
 **Файл:** `src/content/articles/teksty-pisaniya-kotorymi-manipuliruyut.mdx`
 **Research authority:** досье 31; 23 текста; Kruger, Mullen, Langberg, GRACE, 9Marks, CCEF + первичные библейские тексты.
 **Роль:** показать операции над текстом: изоляцию от контекста, устранение подотчётности, смешение сфер власти, игнорирование жанра и асимметричное применение.
@@ -67,9 +69,11 @@
 - 1 Тим. 5:19–20 защищает и пресвитера от лёгкого обвинения, и церковь от пресвитерской неприкасаемости;
 - Корей предупреждает против честолюбивой фракционности, но современный пастор не отождествляется с Моисеем в его уникальной заветной роли.
 
-### IV. Диагностика в реальном времени: семь типов учителей и лидеров
+### IV. Семь типов: как различать учителей и лидеров
 
-**Статус:** manuscript существует; 2026-09-07 приведён в fail-closed состояние `draft:true/noindex:true`; public route отсутствует.
+**Статус:** опубликовано (сентябрь 2026).
+**URL:** `/articles/sem-tipov-razlichenie-uchiteley/`
+**Примечание:** рабочее название «Диагностика в реальном времени» заменено при публикации.
 **Файл:** `src/content/articles/sem-tipov-razlichenie-uchiteley.mdx`
 **Research authority:** досье 30.
 **Роль:** не позволить языку «абьюза» превратиться в универсальный приговор.
@@ -80,7 +84,8 @@
 
 ### V. Церковная дисциплина и власть: принципы, границы, защита
 
-**Статус:** manuscript глубоко вычитан; `draft:true/noindex:true`; public route отсутствует.
+**Статус:** опубликовано (сентябрь 2026).
+**URL:** `/articles/cerkovnaya-disciplina-vlast-granicy-zashchita/`
 **Файл:** `src/content/articles/cerkovnaya-disciplina-vlast-granicy-zashchita.mdx`
 **Research authority:** досье 32; 1689 LBCF, Leeman/9Marks, Kruger, GRACE + Писание.
 **Роль:** положительное богословие законной церковной власти.
@@ -99,7 +104,8 @@
 
 ### VI. Когда говорить, когда молчать; когда уходить, когда оставаться
 
-**Статус:** manuscript глубоко вычитан; `draft:true/noindex:true`; public route отсутствует.
+**Статус:** опубликовано (сентябрь 2026).
+**URL:** `/articles/kogda-uhodit-kogda-ostavatsya/`
 **Файл:** `src/content/articles/kogda-uhodit-kogda-ostavatsya.mdx`
 **Research authority:** досье 33.
 **Роль:** decision framework, который не управляется одной болью, страхом или лояльностью.
@@ -110,7 +116,8 @@
 
 ### VII. Верные и неизвестные: здоровое пастырство
 
-**Статус:** новый manuscript написан; `draft:true/noindex:true`; public route отсутствует.
+**Статус:** опубликовано (сентябрь 2026).
+**URL:** `/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo/`
 **Файл:** `src/content/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo.mdx`
 **Роль:** положительный центр второй половины серии.
 
@@ -120,7 +127,8 @@
 
 ### VIII. Признаки здоровой церкви
 
-**Статус:** новый manuscript написан; `draft:true/noindex:true`; public route отсутствует.
+**Статус:** опубликовано (сентябрь 2026).
+**URL:** `/articles/priznaki-zdorovoy-cerkvi/`
 **Файл:** `src/content/articles/priznaki-zdorovoy-cerkvi.mdx`
 **Роль:** институциональный положительный контрапункт.
 
@@ -128,7 +136,8 @@
 
 ### IX. Несовершенный человек в несовершенной церкви
 
-**Статус:** новый manuscript написан; `draft:true/noindex:true`; public route отсутствует.
+**Статус:** опубликовано (сентябрь 2026).
+**URL:** `/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi/`
 **Файл:** `src/content/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi.mdx`
 **Роль:** финальный анти-подозрительный предохранитель.
 
@@ -148,8 +157,8 @@
 
 ### Полевой справочник. Анатомия манипуляции: 8 способов контроля
 
-**Статус:** идея/в разработке; без номера части.
-**Решение о выпуске:** только после Parts II–IV. Если материал полностью поглощён ядром, отдельный route не нужен.
+**Статус:** отложено (решение 2026-09-15); без номера части.
+**Решение о выпуске:** материал описанных механизмов поглощён ядром серии (Часть I, диагностические блоки; Часть II — траектория разложения); отдельный route не создаётся. Выпуск возможен только по решению владельца и только с новым research-пакетом, а не переупаковкой опубликованного материала.
 
 Психологический термин может описывать проверяемое поведение, но нравственный диагноз задаётся библейскими категориями.
 
@@ -245,7 +254,9 @@
 - [ ] MDX/structure/source/static-publication gates зелёные;
 - [ ] route, reader config, landing, RSS/sitemap/series metadata подключаются одним release-проходом.
 
-## 12. Фактический статус реализации на 2026-09-07
+## 12. Фактический статус реализации (обновлено 2026-09-15)
+
+> **Граница статуса.** Отметки `product-level` ниже фиксируют редакционный/продуктовый аудит текущего текста, но не подменяют exact-blob clearance. После post-clearance мутаций II–IX отдельный bounded re-clearance финальных blob'ов остаётся fail-closed воротами до формальной переаттестации.
 
 - [x] Канон I–IX зафиксирован.
 - [x] Досье A отделено от римской нумерации без смены публичного URL.
@@ -253,12 +264,16 @@
 - [x] Part IV приведена в fail-closed draft/noindex состояние и включена в канон.
 - [x] Parts VII, VIII, IX написаны как content-only manuscripts.
 - [x] Landing разделяет опубликованные материалы и roadmap; manuscripts не маскируются под routes.
-- [ ] Провести финальный source-verification pass II–IX по первичным локаторам.
-- [ ] Провести общий exegesis red-team II–IX, особенно сильные language/original-language claims.
-- [ ] Провести единый jurisdiction/safety pass safeguarding-формулировок.
-- [ ] Проверить перекрёстные ссылки и удалить ссылки на route, которого ещё нет, либо выпускать связанную группу синхронно.
-- [ ] Выполнить christological pass финалов II–IX, чтобы серия завершалась не институциональной техникой, а Христом.
-- [ ] После зелёных content gates собрать public routes/reader metadata и выпускать части управляемыми партиями.
+- [x] **Product-level:** финальный source-verification pass II–IX по первичным локаторам (аудит 2026-09-14/15: все части сверены с research-реестром и живыми источниками; evidence contract цел).
+- [x] **Product-level:** общий exegesis red-team II–IX, особенно сильные language/original-language claims (аудит 2026-09-14/15: открытых редакционно-экзегетических дефектов не зафиксировано).
+- [x] **Product-level:** jurisdiction/safety audit читательских формулировок подтверждает non-legal boundaries и scope-limit маркеры; это не считается formal exact-blob recertification.
+- [x] Перекрёстные ссылки проверены: ссылки на существующие routes, navigator Части I и landing синхронизированы с опубликованным состоянием (2026-09-15, по итогам аудита PASTOR-SERIES-AUDIT-2026-09-14).
+- [x] **Product-level:** christological pass финалов II–IX подтверждён: каждая часть возвращает аргумент ко Христу/Слову, а не завершает его институциональной техникой.
+- [x] Public routes/reader metadata собраны: I–IX и Досье A опубликованы с синхронным подключением route/reader/landing/metadata.
+- [x] 2026-09-15: дрейф после публикации закрыт — устаревший «Скоро/Планируется»-блок Части I заменён на опубликованную навигацию; текстовые дефекты Части II и терминология Части IV исправлены; MASTER-PLAN/llms.txt/links-graph синхронизированы; у частей II–IX добавлены quiz, partToc, og-изображения; в глоссарий добавлены термины серии.
+- [x] 2026-09-15 (Wave 1 reconciliation): дата релиза II–IX зафиксирована как 2026-09-08 (PR #1923, «release(pastor-series): publish canonical Parts II–IX»): RSS (shard-фид 10 материалов, main-фид), sitemap (shard 11 URL), search-манифест и editorial-metadata (8 записей `approved`) синхронизированы с релизом. Канонические минуты пересчитаны по фактическому объёму: ядро I–IX = 157 мин (67/9/14/9/11/11/14/11/11), Досье A = 15 мин; источник канона — `data/series.json` (SSOT), гвард-скрипт деривирует минуты из реестра с контрактными константами 157/15. Пять внутренних тегов «Досье NN» удалены с витрины /pastor-series/.
+- [x] **Formal gate:** bounded re-clearance текущих exact manuscript blobs II–IX закрыт `RE-CLEARANCE-II-IX-2026-09-15.md`; current blob identities переаттестованы с `JURISDICTION_SAFEGUARDING = PASS WITH NON-LEGAL BOUNDARY`.
+- [ ] Полевой справочник: решение зафиксировано как отложенное (§4); выпуск — только по решению владельца.
 
 ## 13. Неизменяемые редакционные принципы
 
