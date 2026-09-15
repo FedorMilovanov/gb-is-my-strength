@@ -53,7 +53,13 @@ assert(meta.rawCorpusStatus === (rawMeta.status ?? null), 'Raw corpus status pro
 assert(meta.rawPipelineVersion === (rawMeta.pipelineVersion ?? null), 'Raw pipeline version provenance drift');
 
 assert(meta.schemaVersion === 1, 'Unexpected publishable meta schema');
-assert(meta.status === 'curated-release-candidate', 'Publishable projection must remain an explicit release candidate');
+assert(meta.status === 'curated-subset-release-candidate',
+  'Publishable projection must remain an explicit curated-subset release candidate');
+assert(meta.scope?.type === 'closed-curated-subset', 'Publishable scope type drift');
+assert(meta.scope?.curatedPersons === v1.persons.length, 'Publishable scope curated-person count drift');
+assert(meta.scope?.excludesRawOnlyIdentities === true, 'Publishable scope must exclude raw-only identities');
+assert(meta.scope?.excludesRawOnlyRelations === true, 'Publishable scope must exclude raw-only relations');
+assert(meta.scope?.completeness === 'partial-by-design', 'Publishable scope completeness marker drift');
 assert(persons.length === v1.persons.length, `Publishable identity count drift: ${persons.length}/${v1.persons.length}`);
 
 const ids = new Set();
