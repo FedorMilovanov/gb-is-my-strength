@@ -1,5 +1,17 @@
 {
  "_status": "phase1-draft: интерпретационная мессианская проекция (Христос→Адам), L0-persistent якоря",
+ "model": {
+  "kind": "interpretive-projection",
+  "assertion": "editorial-harmonization",
+  "confidence": "disputed",
+  "editorialPosition": "preferred",
+  "directScripture": false,
+  "refs": [
+   "Мф 1:16",
+   "Лк 3:23–38"
+  ],
+  "note": "Переход Иисус → Мария → Илий используется как предпочитаемая гармонизация. Лк 3:23 не называет Марию дочерью Илия."
+ },
  "reachedRoot": true,
  "length": 76,
  "missingAnchors": [],
@@ -22,7 +34,7 @@
   {
    "id": "matthat--luk-3-24",
    "key": "Matthat@Luk.3.24",
-   "ru": "Матфат"
+   "ru": "Матфат (Лк 3:24)"
   },
   {
    "id": "levi--luk-3-24",
@@ -342,7 +354,7 @@
   {
    "id": "lamech--gen-5-25",
    "key": "Lamech@Gen.5.25",
-   "ru": "Ламеха"
+   "ru": "Ламех"
   },
   {
    "id": "methuselah--gen-5-21",
@@ -352,7 +364,7 @@
   {
    "id": "enoch--gen-5-18",
    "key": "Enoch@Gen.5.18",
-   "ru": "Еноха"
+   "ru": "Енох"
   },
   {
    "id": "jared--gen-5-15",
@@ -384,17 +396,5 @@
    "key": "Adam@Gen.2.19",
    "ru": "Адам"
   }
- ],
- "model": {
-  "kind": "interpretive-projection",
-  "assertion": "editorial-harmonization",
-  "confidence": "disputed",
-  "editorialPosition": "preferred",
-  "directScripture": false,
-  "refs": [
-   "Мф 1:16",
-   "Лк 3:23–38"
-  ],
-  "note": "Переход Иисус → Мария → Илий используется как предпочитаемая гармонизация. Лк 3:23 не называет Марию дочерью Илия."
- }
+ ]
 }

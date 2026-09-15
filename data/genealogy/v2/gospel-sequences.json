@@ -1,0 +1,1102 @@
+{
+ "schemaVersion": 1,
+ "authority": "explicit-scriptural-sequences",
+ "sourcePath": "data/genealogy/gospel-sequences.json",
+ "translation": "Синодальный перевод",
+ "scope": "Имена основной последовательности; супруги и боковые ветви не включены в счётчик. Имена приведены в именительном падеже, форма источника сохранена отдельно. Порядок упоминаний не означает непосредственное биологическое отцовство.",
+ "sequences": [
+  {
+   "id": "matthew",
+   "clusterId": "matthew-1",
+   "authority": "explicit-scriptural-sequence",
+   "sourcePath": "data/genealogy/gospel-sequences.json",
+   "sourceRef": "Мф 1:1–17",
+   "translation": "Синодальный перевод",
+   "direction": "ancestors-first",
+   "notes": [
+    "В Мф 1:16 Иосиф назван мужем Марии, от которой родился Иисус. Он не представлен здесь как биологический отец Иисуса.",
+    "Иоаким включён согласно Синодальному переводу Мф 1:11. Число записей списка не подменяет объяснение трёх групп по четырнадцать родов из Мф 1:17."
+   ],
+   "occurrences": [
+    {
+     "occurrenceId": "matthew-1-2-1",
+     "personId": "abraham--gen-11-26",
+     "personKey": "Abraham@Gen.11.26",
+     "sourcePersonId": "abram",
+     "name": "Авраам",
+     "sourceForm": "Авраам",
+     "ref": "Мф 1:2"
+    },
+    {
+     "occurrenceId": "matthew-1-2-2",
+     "personId": "isaac--gen-17-19",
+     "personKey": "Isaac@Gen.17.19",
+     "sourcePersonId": "isaac",
+     "name": "Исаак",
+     "sourceForm": "Исаака",
+     "ref": "Мф 1:2"
+    },
+    {
+     "occurrenceId": "matthew-1-2-3",
+     "personId": "israel--gen-25-26",
+     "personKey": "Israel@Gen.25.26",
+     "sourcePersonId": "jacob",
+     "name": "Иаков",
+     "sourceForm": "Иакова",
+     "ref": "Мф 1:2"
+    },
+    {
+     "occurrenceId": "matthew-1-2-4",
+     "personId": "judah--gen-29-35",
+     "personKey": "Judah@Gen.29.35",
+     "sourcePersonId": "judah",
+     "name": "Иуда",
+     "sourceForm": "Иуду",
+     "ref": "Мф 1:2"
+    },
+    {
+     "occurrenceId": "matthew-1-3-1",
+     "personId": "perez--gen-38-29",
+     "personKey": "Perez@Gen.38.29",
+     "sourcePersonId": "perez",
+     "name": "Фарес",
+     "sourceForm": "Фареса",
+     "ref": "Мф 1:3"
+    },
+    {
+     "occurrenceId": "matthew-1-3-2",
+     "personId": "hezron--gen-46-12",
+     "personKey": "Hezron@Gen.46.12",
+     "sourcePersonId": "hezron",
+     "name": "Есром",
+     "sourceForm": "Есрома",
+     "ref": "Мф 1:3"
+    },
+    {
+     "occurrenceId": "matthew-1-3-3",
+     "personId": "ram--rut-4-19",
+     "personKey": "Ram@Rut.4.19",
+     "sourcePersonId": "ram",
+     "name": "Арам",
+     "sourceForm": "Арама",
+     "ref": "Мф 1:3"
+    },
+    {
+     "occurrenceId": "matthew-1-4-1",
+     "personId": "amminadab--exo-6-23",
+     "personKey": "Amminadab@Exo.6.23",
+     "sourcePersonId": "amminadab",
+     "name": "Аминадав",
+     "sourceForm": "Аминадава",
+     "ref": "Мф 1:4"
+    },
+    {
+     "occurrenceId": "matthew-1-4-2",
+     "personId": "nahshon--exo-6-23",
+     "personKey": "Nahshon@Exo.6.23",
+     "sourcePersonId": "nahshon",
+     "name": "Наассон",
+     "sourceForm": "Наассона",
+     "ref": "Мф 1:4"
+    },
+    {
+     "occurrenceId": "matthew-1-4-3",
+     "personId": "salmon--rut-4-20",
+     "personKey": "Salmon@Rut.4.20",
+     "sourcePersonId": "salmon",
+     "name": "Салмон",
+     "sourceForm": "Салмона",
+     "ref": "Мф 1:4"
+    },
+    {
+     "occurrenceId": "matthew-1-5-1",
+     "personId": "boaz--rut-2-1",
+     "personKey": "Boaz@Rut.2.1",
+     "sourcePersonId": "boaz",
+     "name": "Вооз",
+     "sourceForm": "Вооза",
+     "ref": "Мф 1:5"
+    },
+    {
+     "occurrenceId": "matthew-1-5-2",
+     "personId": "obed--rut-4-17",
+     "personKey": "Obed@Rut.4.17",
+     "sourcePersonId": "obed",
+     "name": "Овид",
+     "sourceForm": "Овида",
+     "ref": "Мф 1:5"
+    },
+    {
+     "occurrenceId": "matthew-1-5-3",
+     "personId": "jesse--rut-4-17",
+     "personKey": "Jesse@Rut.4.17",
+     "sourcePersonId": "jesse",
+     "name": "Иессей",
+     "sourceForm": "Иессея",
+     "ref": "Мф 1:5"
+    },
+    {
+     "occurrenceId": "matthew-1-6-1",
+     "personId": "david--rut-4-17",
+     "personKey": "David@Rut.4.17",
+     "sourcePersonId": "david",
+     "name": "Давид",
+     "sourceForm": "Давида",
+     "ref": "Мф 1:6"
+    },
+    {
+     "occurrenceId": "matthew-1-6-2",
+     "personId": "solomon--2sa-5-14",
+     "personKey": "Solomon@2Sa.5.14",
+     "sourcePersonId": "solomon",
+     "name": "Соломон",
+     "sourceForm": "Соломона",
+     "ref": "Мф 1:6"
+    },
+    {
+     "occurrenceId": "matthew-1-7-1",
+     "personId": "rehoboam--1ki-11-43",
+     "personKey": "Rehoboam@1Ki.11.43",
+     "sourcePersonId": "rehoboam",
+     "name": "Ровоам",
+     "sourceForm": "Ровоама",
+     "ref": "Мф 1:7"
+    },
+    {
+     "occurrenceId": "matthew-1-7-2",
+     "personId": "abijah--1ki-14-31",
+     "personKey": "Abijah@1Ki.14.31",
+     "sourcePersonId": "abijah",
+     "name": "Авия",
+     "sourceForm": "Авию",
+     "ref": "Мф 1:7"
+    },
+    {
+     "occurrenceId": "matthew-1-7-3",
+     "personId": "asa--1ki-15-8",
+     "personKey": "Asa@1Ki.15.8",
+     "sourcePersonId": "asa",
+     "name": "Аса",
+     "sourceForm": "Асу",
+     "ref": "Мф 1:7"
+    },
+    {
+     "occurrenceId": "matthew-1-8-1",
+     "personId": "jehoshaphat--1ki-15-24",
+     "personKey": "Jehoshaphat@1Ki.15.24",
+     "sourcePersonId": "jehoshaphat",
+     "name": "Иосафат",
+     "sourceForm": "Иосафата",
+     "ref": "Мф 1:8"
+    },
+    {
+     "occurrenceId": "matthew-1-8-2",
+     "personId": "joram--2ki-1-17",
+     "personKey": "Joram@2Ki.1.17",
+     "sourcePersonId": "joram",
+     "name": "Иорам",
+     "sourceForm": "Иорама",
+     "ref": "Мф 1:8"
+    },
+    {
+     "occurrenceId": "matthew-1-8-3",
+     "personId": "uzziah--2ki-14-21",
+     "personKey": "Uzziah@2Ki.14.21",
+     "sourcePersonId": "uzziah",
+     "name": "Озия",
+     "sourceForm": "Озию",
+     "ref": "Мф 1:8"
+    },
+    {
+     "occurrenceId": "matthew-1-9-1",
+     "personId": "jotham--2ki-15-5",
+     "personKey": "Jotham@2Ki.15.5",
+     "sourcePersonId": "jotham",
+     "name": "Иоафам",
+     "sourceForm": "Иоафама",
+     "ref": "Мф 1:9"
+    },
+    {
+     "occurrenceId": "matthew-1-9-2",
+     "personId": "ahaz--2ki-15-38",
+     "personKey": "Ahaz@2Ki.15.38",
+     "sourcePersonId": "ahaz",
+     "name": "Ахаз",
+     "sourceForm": "Ахаза",
+     "ref": "Мф 1:9"
+    },
+    {
+     "occurrenceId": "matthew-1-9-3",
+     "personId": "hezekiah--2ki-16-20",
+     "personKey": "Hezekiah@2Ki.16.20",
+     "sourcePersonId": "hezekiah",
+     "name": "Езекия",
+     "sourceForm": "Езекию",
+     "ref": "Мф 1:9"
+    },
+    {
+     "occurrenceId": "matthew-1-10-1",
+     "personId": "manasseh--2ki-20-21",
+     "personKey": "Manasseh@2Ki.20.21",
+     "sourcePersonId": "manasseh",
+     "name": "Манассия",
+     "sourceForm": "Манассию",
+     "ref": "Мф 1:10"
+    },
+    {
+     "occurrenceId": "matthew-1-10-2",
+     "personId": "amon--2ki-21-18",
+     "personKey": "Amon@2Ki.21.18",
+     "sourcePersonId": "amon",
+     "name": "Амон",
+     "sourceForm": "Амона",
+     "ref": "Мф 1:10"
+    },
+    {
+     "occurrenceId": "matthew-1-10-3",
+     "personId": "josiah--1ki-13-2",
+     "personKey": "Josiah@1Ki.13.2",
+     "sourcePersonId": "josiah",
+     "name": "Иосия",
+     "sourceForm": "Иосию",
+     "ref": "Мф 1:10"
+    },
+    {
+     "occurrenceId": "matthew-1-11-1",
+     "personId": "jehoiakim--2ki-23-34",
+     "personKey": "Jehoiakim@2Ki.23.34",
+     "sourcePersonId": "jehoiakim",
+     "name": "Иоаким",
+     "sourceForm": "Иоакима",
+     "ref": "Мф 1:11"
+    },
+    {
+     "occurrenceId": "matthew-1-11-2",
+     "personId": "jehoiachin--2ki-24-6",
+     "personKey": "Jehoiachin@2Ki.24.6",
+     "sourcePersonId": "jeconiah",
+     "name": "Иехония",
+     "sourceForm": "Иехонию",
+     "ref": "Мф 1:11"
+    },
+    {
+     "occurrenceId": "matthew-1-12-1",
+     "personId": "shealtiel--1ch-3-17",
+     "personKey": "Shealtiel@1Ch.3.17",
+     "sourcePersonId": "shealtiel",
+     "name": "Салафииль",
+     "sourceForm": "Салафииля",
+     "ref": "Мф 1:12"
+    },
+    {
+     "occurrenceId": "matthew-1-12-2",
+     "personId": "zerubbabel--1ch-3-19",
+     "personKey": "Zerubbabel@1Ch.3.19",
+     "sourcePersonId": "zerubbabel",
+     "name": "Зоровавель",
+     "sourceForm": "Зоровавеля",
+     "ref": "Мф 1:12"
+    },
+    {
+     "occurrenceId": "matthew-1-13-1",
+     "personId": "abihud--1ch-8-3",
+     "personKey": "Abihud@1Ch.8.3",
+     "sourcePersonId": "abihud_mt",
+     "name": "Авиуд",
+     "sourceForm": "Авиуда",
+     "ref": "Мф 1:13"
+    },
+    {
+     "occurrenceId": "matthew-1-13-2",
+     "personId": "eliakim--mat-1-13",
+     "personKey": "Eliakim@Mat.1.13",
+     "sourcePersonId": "eliakim_mt",
+     "name": "Елиаким",
+     "sourceForm": "Елиакима",
+     "ref": "Мф 1:13"
+    },
+    {
+     "occurrenceId": "matthew-1-13-3",
+     "personId": "azor--mat-1-13",
+     "personKey": "Azor@Mat.1.13",
+     "sourcePersonId": "azor_mt",
+     "name": "Азор",
+     "sourceForm": "Азора",
+     "ref": "Мф 1:13"
+    },
+    {
+     "occurrenceId": "matthew-1-14-1",
+     "personId": "zadok--mat-1-14",
+     "personKey": "Zadok@Mat.1.14",
+     "sourcePersonId": "zadok_mt",
+     "name": "Садок",
+     "sourceForm": "Садока",
+     "ref": "Мф 1:14"
+    },
+    {
+     "occurrenceId": "matthew-1-14-2",
+     "personId": "achim--mat-1-14",
+     "personKey": "Achim@Mat.1.14",
+     "sourcePersonId": "achim_mt",
+     "name": "Ахим",
+     "sourceForm": "Ахима",
+     "ref": "Мф 1:14"
+    },
+    {
+     "occurrenceId": "matthew-1-14-3",
+     "personId": "eliud--mat-1-14",
+     "personKey": "Eliud@Mat.1.14",
+     "sourcePersonId": "eliud_mt",
+     "name": "Елиуд",
+     "sourceForm": "Елиуда",
+     "ref": "Мф 1:14"
+    },
+    {
+     "occurrenceId": "matthew-1-15-1",
+     "personId": "eleazar--mat-1-15",
+     "personKey": "Eleazar@Mat.1.15",
+     "sourcePersonId": "eleazar_mt",
+     "name": "Елеазар",
+     "sourceForm": "Елеазара",
+     "ref": "Мф 1:15"
+    },
+    {
+     "occurrenceId": "matthew-1-15-2",
+     "personId": "matthan--mat-1-15",
+     "personKey": "Matthan@Mat.1.15",
+     "sourcePersonId": "matthan_mt",
+     "name": "Матфан",
+     "sourceForm": "Матфана",
+     "ref": "Мф 1:15"
+    },
+    {
+     "occurrenceId": "matthew-1-15-3",
+     "personId": "jacob--mat-1-15",
+     "personKey": "Jacob@Mat.1.15",
+     "sourcePersonId": "jacob_mt",
+     "name": "Иаков",
+     "sourceForm": "Иакова",
+     "ref": "Мф 1:15"
+    },
+    {
+     "occurrenceId": "matthew-1-16-1",
+     "personId": "joseph--mat-1-16",
+     "personKey": "Joseph@Mat.1.16",
+     "sourcePersonId": "joseph_nt",
+     "name": "Иосиф",
+     "sourceForm": "Иосифа",
+     "ref": "Мф 1:16"
+    },
+    {
+     "occurrenceId": "matthew-1-16-2",
+     "personId": "jesus--isa-7-14",
+     "personKey": "Jesus@Isa.7.14",
+     "sourcePersonId": "jesus",
+     "name": "Иисус Христос",
+     "sourceForm": "Иисус",
+     "ref": "Мф 1:16"
+    }
+   ]
+  },
+  {
+   "id": "luke",
+   "clusterId": "luke-3",
+   "authority": "explicit-scriptural-sequence",
+   "sourcePath": "data/genealogy/gospel-sequences.json",
+   "sourceRef": "Лк 3:23–38",
+   "translation": "Синодальный перевод",
+   "direction": "descendants-first",
+   "notes": [
+    "Для сравнения порядок Луки развёрнут: от предков к Христу. В самом тексте перечисление начинается с Иисуса.",
+    "Лк 3:23 называет Иосифа и Илия. Объяснение через Марию относится к гармонизации; её имя не вставляется в последовательность текста.",
+    "Завершающее «Божий» (Лк 3:38) сохранено как указание на происхождение Адама от Бога. Бог не включён в список людей и числовой счётчик."
+   ],
+   "occurrences": [
+    {
+     "occurrenceId": "luke-3-23-1",
+     "personId": "jesus--isa-7-14",
+     "personKey": "Jesus@Isa.7.14",
+     "sourcePersonId": "jesus",
+     "name": "Иисус Христос",
+     "sourceForm": "Иисус",
+     "ref": "Лк 3:23"
+    },
+    {
+     "occurrenceId": "luke-3-23-2",
+     "personId": "joseph--mat-1-16",
+     "personKey": "Joseph@Mat.1.16",
+     "sourcePersonId": "joseph_nt",
+     "name": "Иосиф",
+     "sourceForm": "Иосифов",
+     "ref": "Лк 3:23"
+    },
+    {
+     "occurrenceId": "luke-3-23-3",
+     "personId": "heli--luk-3-23",
+     "personKey": "Heli@Luk.3.23",
+     "sourcePersonId": "heli_lk",
+     "name": "Илий",
+     "sourceForm": "Илиев",
+     "ref": "Лк 3:23"
+    },
+    {
+     "occurrenceId": "luke-3-24-1",
+     "personId": "matthat--luk-3-24",
+     "personKey": "Matthat@Luk.3.24",
+     "sourcePersonId": "matthat_lk2",
+     "name": "Матфат",
+     "sourceForm": "Матфатов",
+     "ref": "Лк 3:24"
+    },
+    {
+     "occurrenceId": "luke-3-24-2",
+     "personId": "levi--luk-3-24",
+     "personKey": "Levi@Luk.3.24",
+     "sourcePersonId": "levi_lk2",
+     "name": "Левий",
+     "sourceForm": "Левиин",
+     "ref": "Лк 3:24"
+    },
+    {
+     "occurrenceId": "luke-3-24-3",
+     "personId": "melchi--luk-3-24",
+     "personKey": "Melchi@Luk.3.24",
+     "sourcePersonId": "melchi_lk2",
+     "name": "Мелхий",
+     "sourceForm": "Мелхиев",
+     "ref": "Лк 3:24"
+    },
+    {
+     "occurrenceId": "luke-3-24-4",
+     "personId": "jannai--luk-3-24",
+     "personKey": "Jannai@Luk.3.24",
+     "sourcePersonId": "jannai_lk",
+     "name": "Ианнай",
+     "sourceForm": "Ианнаев",
+     "ref": "Лк 3:24"
+    },
+    {
+     "occurrenceId": "luke-3-24-5",
+     "personId": "joseph--luk-3-24",
+     "personKey": "Joseph@Luk.3.24",
+     "sourcePersonId": "joseph_lk2",
+     "name": "Иосиф",
+     "sourceForm": "Иосифов",
+     "ref": "Лк 3:24"
+    },
+    {
+     "occurrenceId": "luke-3-25-1",
+     "personId": "mattathias--luk-3-25",
+     "personKey": "Mattathias@Luk.3.25",
+     "sourcePersonId": "mattathias2_lk",
+     "name": "Маттафия",
+     "sourceForm": "Маттафиев",
+     "ref": "Лк 3:25"
+    },
+    {
+     "occurrenceId": "luke-3-25-2",
+     "personId": "amos--luk-3-25",
+     "personKey": "Amos@Luk.3.25",
+     "sourcePersonId": "amos_lk",
+     "name": "Амос",
+     "sourceForm": "Амосов",
+     "ref": "Лк 3:25"
+    },
+    {
+     "occurrenceId": "luke-3-25-3",
+     "personId": "nahum--luk-3-25",
+     "personKey": "Nahum@Luk.3.25",
+     "sourcePersonId": "naum_lk",
+     "name": "Наум",
+     "sourceForm": "Наумов",
+     "ref": "Лк 3:25"
+    },
+    {
+     "occurrenceId": "luke-3-25-4",
+     "personId": "esli--luk-3-25",
+     "personKey": "Esli@Luk.3.25",
+     "sourcePersonId": "esli_lk",
+     "name": "Еслим",
+     "sourceForm": "Еслимов",
+     "ref": "Лк 3:25"
+    },
+    {
+     "occurrenceId": "luke-3-25-5",
+     "personId": "naggai--luk-3-25",
+     "personKey": "Naggai@Luk.3.25",
+     "sourcePersonId": "naggesi_lk",
+     "name": "Наггей",
+     "sourceForm": "Наггеев",
+     "ref": "Лк 3:25"
+    },
+    {
+     "occurrenceId": "luke-3-26-1",
+     "personId": "maath--luk-3-26",
+     "personKey": "Maath@Luk.3.26",
+     "sourcePersonId": "maath_lk",
+     "name": "Мааф",
+     "sourceForm": "Маафов",
+     "ref": "Лк 3:26"
+    },
+    {
+     "occurrenceId": "luke-3-26-2",
+     "personId": "mattathias--luk-3-26",
+     "personKey": "Mattathias@Luk.3.26",
+     "sourcePersonId": "mattathias_lk",
+     "name": "Маттафия",
+     "sourceForm": "Маттафиев",
+     "ref": "Лк 3:26"
+    },
+    {
+     "occurrenceId": "luke-3-26-3",
+     "personId": "semein--luk-3-26",
+     "personKey": "Semein@Luk.3.26",
+     "sourcePersonId": "semein_lk",
+     "name": "Семеий",
+     "sourceForm": "Семеиев",
+     "ref": "Лк 3:26"
+    },
+    {
+     "occurrenceId": "luke-3-26-4",
+     "personId": "josech--luk-3-26",
+     "personKey": "Josech@Luk.3.26",
+     "sourcePersonId": "josech_lk",
+     "name": "Иосиф",
+     "sourceForm": "Иосифов",
+     "ref": "Лк 3:26"
+    },
+    {
+     "occurrenceId": "luke-3-26-5",
+     "personId": "joda--luk-3-26",
+     "personKey": "Joda@Luk.3.26",
+     "sourcePersonId": "joda_lk",
+     "name": "Иуда",
+     "sourceForm": "Иудин",
+     "ref": "Лк 3:26"
+    },
+    {
+     "occurrenceId": "luke-3-27-1",
+     "personId": "joanan--luk-3-27",
+     "personKey": "Joanan@Luk.3.27",
+     "sourcePersonId": "joanan_lk",
+     "name": "Иоаннан",
+     "sourceForm": "Иоаннанов",
+     "ref": "Лк 3:27"
+    },
+    {
+     "occurrenceId": "luke-3-27-2",
+     "personId": "rhesa--luk-3-27",
+     "personKey": "Rhesa@Luk.3.27",
+     "sourcePersonId": "rhesa_lk",
+     "name": "Рисай",
+     "sourceForm": "Рисаев",
+     "ref": "Лк 3:27"
+    },
+    {
+     "occurrenceId": "luke-3-27-3",
+     "personId": "zerubbabel--luk-3-27",
+     "personKey": "Zerubbabel@Luk.3.27",
+     "sourcePersonId": "zerubbabel_lk",
+     "name": "Зоровавель",
+     "sourceForm": "Зоровавелев",
+     "ref": "Лк 3:27"
+    },
+    {
+     "occurrenceId": "luke-3-27-4",
+     "personId": "shealtiel--luk-3-27",
+     "personKey": "Shealtiel@Luk.3.27",
+     "sourcePersonId": "shealtiel_lk",
+     "name": "Салафииль",
+     "sourceForm": "Салафиилев",
+     "ref": "Лк 3:27"
+    },
+    {
+     "occurrenceId": "luke-3-27-5",
+     "personId": "neri--luk-3-27",
+     "personKey": "Neri@Luk.3.27",
+     "sourcePersonId": "neri",
+     "name": "Нирий",
+     "sourceForm": "Нириев",
+     "ref": "Лк 3:27"
+    },
+    {
+     "occurrenceId": "luke-3-28-1",
+     "personId": "melchi--luk-3-28",
+     "personKey": "Melchi@Luk.3.28",
+     "sourcePersonId": "melki_lk",
+     "name": "Мелхий",
+     "sourceForm": "Мелхиев",
+     "ref": "Лк 3:28"
+    },
+    {
+     "occurrenceId": "luke-3-28-2",
+     "personId": "addi--luk-3-28",
+     "personKey": "Addi@Luk.3.28",
+     "sourcePersonId": "addi",
+     "name": "Аддий",
+     "sourceForm": "Аддиев",
+     "ref": "Лк 3:28"
+    },
+    {
+     "occurrenceId": "luke-3-28-3",
+     "personId": "cosam--luk-3-28",
+     "personKey": "Cosam@Luk.3.28",
+     "sourcePersonId": "cosam",
+     "name": "Косам",
+     "sourceForm": "Косамов",
+     "ref": "Лк 3:28"
+    },
+    {
+     "occurrenceId": "luke-3-28-4",
+     "personId": "elmadam--luk-3-28",
+     "personKey": "Elmadam@Luk.3.28",
+     "sourcePersonId": "elmadam",
+     "name": "Елмодам",
+     "sourceForm": "Елмодамов",
+     "ref": "Лк 3:28"
+    },
+    {
+     "occurrenceId": "luke-3-28-5",
+     "personId": "er--luk-3-28",
+     "personKey": "Er@Luk.3.28",
+     "sourcePersonId": "er_lk",
+     "name": "Ир",
+     "sourceForm": "Иров",
+     "ref": "Лк 3:28"
+    },
+    {
+     "occurrenceId": "luke-3-29-1",
+     "personId": "joshua--luk-3-29",
+     "personKey": "Joshua@Luk.3.29",
+     "sourcePersonId": "joshua_lk",
+     "name": "Иосия",
+     "sourceForm": "Иосиев",
+     "ref": "Лк 3:29"
+    },
+    {
+     "occurrenceId": "luke-3-29-2",
+     "personId": "eliezer--luk-3-29",
+     "personKey": "Eliezer@Luk.3.29",
+     "sourcePersonId": "eliezer_lk",
+     "name": "Елиезер",
+     "sourceForm": "Елиезеров",
+     "ref": "Лк 3:29"
+    },
+    {
+     "occurrenceId": "luke-3-29-3",
+     "personId": "jorim--luk-3-29",
+     "personKey": "Jorim@Luk.3.29",
+     "sourcePersonId": "jorim",
+     "name": "Иорим",
+     "sourceForm": "Иоримов",
+     "ref": "Лк 3:29"
+    },
+    {
+     "occurrenceId": "luke-3-29-4",
+     "personId": "matthat--luk-3-29",
+     "personKey": "Matthat@Luk.3.29",
+     "sourcePersonId": "matthat",
+     "name": "Матфат",
+     "sourceForm": "Матфатов",
+     "ref": "Лк 3:29"
+    },
+    {
+     "occurrenceId": "luke-3-29-5",
+     "personId": "levi--luk-3-29",
+     "personKey": "Levi@Luk.3.29",
+     "sourcePersonId": "levi_lk",
+     "name": "Левий",
+     "sourceForm": "Левиин",
+     "ref": "Лк 3:29"
+    },
+    {
+     "occurrenceId": "luke-3-30-1",
+     "personId": "simeon--luk-3-30",
+     "personKey": "Simeon@Luk.3.30",
+     "sourcePersonId": "simeon_lk",
+     "name": "Симеон",
+     "sourceForm": "Симеонов",
+     "ref": "Лк 3:30"
+    },
+    {
+     "occurrenceId": "luke-3-30-2",
+     "personId": "judah--luk-3-30",
+     "personKey": "Judah@Luk.3.30",
+     "sourcePersonId": "judah_lk",
+     "name": "Иуда",
+     "sourceForm": "Иудин",
+     "ref": "Лк 3:30"
+    },
+    {
+     "occurrenceId": "luke-3-30-3",
+     "personId": "joseph--luk-3-30",
+     "personKey": "Joseph@Luk.3.30",
+     "sourcePersonId": "joseph_lk",
+     "name": "Иосиф",
+     "sourceForm": "Иосифов",
+     "ref": "Лк 3:30"
+    },
+    {
+     "occurrenceId": "luke-3-30-4",
+     "personId": "jonam--luk-3-30",
+     "personKey": "Jonam@Luk.3.30",
+     "sourcePersonId": "jonam",
+     "name": "Ионан",
+     "sourceForm": "Ионанов",
+     "ref": "Лк 3:30"
+    },
+    {
+     "occurrenceId": "luke-3-30-5",
+     "personId": "eliakim--luk-3-30",
+     "personKey": "Eliakim@Luk.3.30",
+     "sourcePersonId": "eliakim_lk",
+     "name": "Елиаким",
+     "sourceForm": "Елиакимов",
+     "ref": "Лк 3:30"
+    },
+    {
+     "occurrenceId": "luke-3-31-1",
+     "personId": "melea--luk-3-31",
+     "personKey": "Melea@Luk.3.31",
+     "sourcePersonId": "melea",
+     "name": "Мелеай",
+     "sourceForm": "Мелеаев",
+     "ref": "Лк 3:31"
+    },
+    {
+     "occurrenceId": "luke-3-31-2",
+     "personId": "menna--luk-3-31",
+     "personKey": "Menna@Luk.3.31",
+     "sourcePersonId": "menna",
+     "name": "Маинан",
+     "sourceForm": "Маинанов",
+     "ref": "Лк 3:31"
+    },
+    {
+     "occurrenceId": "luke-3-31-3",
+     "personId": "mattatha--luk-3-31",
+     "personKey": "Mattatha@Luk.3.31",
+     "sourcePersonId": "mattatha",
+     "name": "Маттафай",
+     "sourceForm": "Маттафаев",
+     "ref": "Лк 3:31"
+    },
+    {
+     "occurrenceId": "luke-3-31-4",
+     "personId": "nathan--2sa-5-14",
+     "personKey": "Nathan@2Sa.5.14",
+     "sourcePersonId": "nathan_prince",
+     "name": "Нафан",
+     "sourceForm": "Нафанов",
+     "ref": "Лк 3:31"
+    },
+    {
+     "occurrenceId": "luke-3-31-5",
+     "personId": "david--rut-4-17",
+     "personKey": "David@Rut.4.17",
+     "sourcePersonId": "david",
+     "name": "Давид",
+     "sourceForm": "Давидов",
+     "ref": "Лк 3:31"
+    },
+    {
+     "occurrenceId": "luke-3-32-1",
+     "personId": "jesse--rut-4-17",
+     "personKey": "Jesse@Rut.4.17",
+     "sourcePersonId": "jesse",
+     "name": "Иессей",
+     "sourceForm": "Иессеев",
+     "ref": "Лк 3:32"
+    },
+    {
+     "occurrenceId": "luke-3-32-2",
+     "personId": "obed--rut-4-17",
+     "personKey": "Obed@Rut.4.17",
+     "sourcePersonId": "obed",
+     "name": "Овид",
+     "sourceForm": "Овидов",
+     "ref": "Лк 3:32"
+    },
+    {
+     "occurrenceId": "luke-3-32-3",
+     "personId": "boaz--rut-2-1",
+     "personKey": "Boaz@Rut.2.1",
+     "sourcePersonId": "boaz",
+     "name": "Вооз",
+     "sourceForm": "Воозов",
+     "ref": "Лк 3:32"
+    },
+    {
+     "occurrenceId": "luke-3-32-4",
+     "personId": "salmon--rut-4-20",
+     "personKey": "Salmon@Rut.4.20",
+     "sourcePersonId": "salmon",
+     "name": "Салмон",
+     "sourceForm": "Салмонов",
+     "ref": "Лк 3:32"
+    },
+    {
+     "occurrenceId": "luke-3-32-5",
+     "personId": "nahshon--exo-6-23",
+     "personKey": "Nahshon@Exo.6.23",
+     "sourcePersonId": "nahshon",
+     "name": "Наассон",
+     "sourceForm": "Наассонов",
+     "ref": "Лк 3:32"
+    },
+    {
+     "occurrenceId": "luke-3-33-1",
+     "personId": "amminadab--exo-6-23",
+     "personKey": "Amminadab@Exo.6.23",
+     "sourcePersonId": "amminadab",
+     "name": "Аминадав",
+     "sourceForm": "Аминадавов",
+     "ref": "Лк 3:33"
+    },
+    {
+     "occurrenceId": "luke-3-33-2",
+     "personId": "ram--rut-4-19",
+     "personKey": "Ram@Rut.4.19",
+     "sourcePersonId": "ram",
+     "name": "Арам",
+     "sourceForm": "Арамов",
+     "ref": "Лк 3:33"
+    },
+    {
+     "occurrenceId": "luke-3-33-3",
+     "personId": "hezron--gen-46-12",
+     "personKey": "Hezron@Gen.46.12",
+     "sourcePersonId": "hezron",
+     "name": "Есром",
+     "sourceForm": "Есромов",
+     "ref": "Лк 3:33"
+    },
+    {
+     "occurrenceId": "luke-3-33-4",
+     "personId": "perez--gen-38-29",
+     "personKey": "Perez@Gen.38.29",
+     "sourcePersonId": "perez",
+     "name": "Фарес",
+     "sourceForm": "Фаресов",
+     "ref": "Лк 3:33"
+    },
+    {
+     "occurrenceId": "luke-3-33-5",
+     "personId": "judah--gen-29-35",
+     "personKey": "Judah@Gen.29.35",
+     "sourcePersonId": "judah",
+     "name": "Иуда",
+     "sourceForm": "Иудин",
+     "ref": "Лк 3:33"
+    },
+    {
+     "occurrenceId": "luke-3-34-1",
+     "personId": "israel--gen-25-26",
+     "personKey": "Israel@Gen.25.26",
+     "sourcePersonId": "jacob",
+     "name": "Иаков",
+     "sourceForm": "Иаковлев",
+     "ref": "Лк 3:34"
+    },
+    {
+     "occurrenceId": "luke-3-34-2",
+     "personId": "isaac--gen-17-19",
+     "personKey": "Isaac@Gen.17.19",
+     "sourcePersonId": "isaac",
+     "name": "Исаак",
+     "sourceForm": "Исааков",
+     "ref": "Лк 3:34"
+    },
+    {
+     "occurrenceId": "luke-3-34-3",
+     "personId": "abraham--gen-11-26",
+     "personKey": "Abraham@Gen.11.26",
+     "sourcePersonId": "abram",
+     "name": "Авраам",
+     "sourceForm": "Авраамов",
+     "ref": "Лк 3:34"
+    },
+    {
+     "occurrenceId": "luke-3-34-4",
+     "personId": "terah--gen-11-24",
+     "personKey": "Terah@Gen.11.24",
+     "sourcePersonId": "terah",
+     "name": "Фарра",
+     "sourceForm": "Фаррин",
+     "ref": "Лк 3:34"
+    },
+    {
+     "occurrenceId": "luke-3-34-5",
+     "personId": "nahor--gen-11-22",
+     "personKey": "Nahor@Gen.11.22",
+     "sourcePersonId": "nahor_serug",
+     "name": "Нахор",
+     "sourceForm": "Нахоров",
+     "ref": "Лк 3:34"
+    },
+    {
+     "occurrenceId": "luke-3-35-1",
+     "personId": "serug--gen-11-20",
+     "personKey": "Serug@Gen.11.20",
+     "sourcePersonId": "serug",
+     "name": "Серух",
+     "sourceForm": "Серухов",
+     "ref": "Лк 3:35"
+    },
+    {
+     "occurrenceId": "luke-3-35-2",
+     "personId": "reu--gen-11-18",
+     "personKey": "Reu@Gen.11.18",
+     "sourcePersonId": "reu",
+     "name": "Рагав",
+     "sourceForm": "Рагавов",
+     "ref": "Лк 3:35"
+    },
+    {
+     "occurrenceId": "luke-3-35-3",
+     "personId": "peleg--gen-10-25",
+     "personKey": "Peleg@Gen.10.25",
+     "sourcePersonId": "peleg",
+     "name": "Фалек",
+     "sourceForm": "Фалеков",
+     "ref": "Лк 3:35"
+    },
+    {
+     "occurrenceId": "luke-3-35-4",
+     "personId": "eber--gen-10-21",
+     "personKey": "Eber@Gen.10.21",
+     "sourcePersonId": "eber",
+     "name": "Евер",
+     "sourceForm": "Еверов",
+     "ref": "Лк 3:35"
+    },
+    {
+     "occurrenceId": "luke-3-35-5",
+     "personId": "shelah--gen-10-24",
+     "personKey": "Shelah@Gen.10.24",
+     "sourcePersonId": "shelah",
+     "name": "Сала",
+     "sourceForm": "Салин",
+     "ref": "Лк 3:35"
+    },
+    {
+     "occurrenceId": "luke-3-36-1",
+     "personId": "cainan--luk-3-36",
+     "personKey": "Cainan@Luk.3.36",
+     "sourcePersonId": "cainan_2",
+     "name": "Каинан",
+     "sourceForm": "Каинанов",
+     "ref": "Лк 3:36"
+    },
+    {
+     "occurrenceId": "luke-3-36-2",
+     "personId": "arpachshad--gen-10-22",
+     "personKey": "Arpachshad@Gen.10.22",
+     "sourcePersonId": "arphaxad",
+     "name": "Арфаксад",
+     "sourceForm": "Арфаксадов",
+     "ref": "Лк 3:36"
+    },
+    {
+     "occurrenceId": "luke-3-36-3",
+     "personId": "shem--gen-5-32",
+     "personKey": "Shem@Gen.5.32",
+     "sourcePersonId": "shem",
+     "name": "Сим",
+     "sourceForm": "Симов",
+     "ref": "Лк 3:36"
+    },
+    {
+     "occurrenceId": "luke-3-36-4",
+     "personId": "noah--gen-5-29",
+     "personKey": "Noah@Gen.5.29",
+     "sourcePersonId": "noah",
+     "name": "Ной",
+     "sourceForm": "Ноев",
+     "ref": "Лк 3:36"
+    },
+    {
+     "occurrenceId": "luke-3-36-5",
+     "personId": "lamech--gen-5-25",
+     "personKey": "Lamech@Gen.5.25",
+     "sourcePersonId": "lamech_gen5",
+     "name": "Ламех",
+     "sourceForm": "Ламехов",
+     "ref": "Лк 3:36"
+    },
+    {
+     "occurrenceId": "luke-3-37-1",
+     "personId": "methuselah--gen-5-21",
+     "personKey": "Methuselah@Gen.5.21",
+     "sourcePersonId": "methuselah",
+     "name": "Мафусал",
+     "sourceForm": "Мафусалов",
+     "ref": "Лк 3:37"
+    },
+    {
+     "occurrenceId": "luke-3-37-2",
+     "personId": "enoch--gen-5-18",
+     "personKey": "Enoch@Gen.5.18",
+     "sourcePersonId": "enoch",
+     "name": "Енох",
+     "sourceForm": "Енохов",
+     "ref": "Лк 3:37"
+    },
+    {
+     "occurrenceId": "luke-3-37-3",
+     "personId": "jared--gen-5-15",
+     "personKey": "Jared@Gen.5.15",
+     "sourcePersonId": "jared",
+     "name": "Иаред",
+     "sourceForm": "Иаредов",
+     "ref": "Лк 3:37"
+    },
+    {
+     "occurrenceId": "luke-3-37-4",
+     "personId": "mahalalel--gen-5-12",
+     "personKey": "Mahalalel@Gen.5.12",
+     "sourcePersonId": "mahalalel",
+     "name": "Малелеил",
+     "sourceForm": "Малелеилов",
+     "ref": "Лк 3:37"
+    },
+    {
+     "occurrenceId": "luke-3-37-5",
+     "personId": "kenan--gen-5-9",
+     "personKey": "Kenan@Gen.5.9",
+     "sourcePersonId": "kenan_gen5",
+     "name": "Каинан",
+     "sourceForm": "Каинанов",
+     "ref": "Лк 3:37"
+    },
+    {
+     "occurrenceId": "luke-3-38-1",
+     "personId": "enosh--gen-4-26",
+     "personKey": "Enosh@Gen.4.26",
+     "sourcePersonId": "enosh",
+     "name": "Енос",
+     "sourceForm": "Еносов",
+     "ref": "Лк 3:38"
+    },
+    {
+     "occurrenceId": "luke-3-38-2",
+     "personId": "seth--gen-4-25",
+     "personKey": "Seth@Gen.4.25",
+     "sourcePersonId": "seth",
+     "name": "Сиф",
+     "sourceForm": "Сифов",
+     "ref": "Лк 3:38"
+    },
+    {
+     "occurrenceId": "luke-3-38-3",
+     "personId": "adam--gen-2-19",
+     "personKey": "Adam@Gen.2.19",
+     "sourcePersonId": "adam",
+     "name": "Адам",
+     "sourceForm": "Адамов",
+     "ref": "Лк 3:38"
+    }
+   ]
+  }
+ ]
+}

@@ -172,7 +172,7 @@
    "y": 122,
    "w": 210,
    "h": 76,
-   "label": "Народы от Ноя",
+   "label": "Быт 10–11: родословный контекст",
    "count": 63,
    "anchorKey": "Noah@Gen.5.29",
    "side": "right"
@@ -290,7 +290,7 @@
    "w": 210,
    "h": 76,
    "label": "Родословие по Матфею",
-   "count": 74,
+   "count": 42,
    "anchorKey": "Jesus@Isa.7.14",
    "side": "left"
   },
@@ -303,7 +303,7 @@
    "w": 210,
    "h": 76,
    "label": "Родословие по Луке",
-   "count": 75,
+   "count": 76,
    "anchorKey": "Jesus@Isa.7.14",
    "side": "right"
   },
