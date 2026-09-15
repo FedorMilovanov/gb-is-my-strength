@@ -41,6 +41,7 @@ jobs:
       - name: Check projection pipeline syntax
         run: |
           node --check scripts/genealogy-build/lib/publishable-projection.mjs
+          node --check scripts/genealogy-build/lib/textual-assertions.mjs
           node --check scripts/genealogy-build/build-publishable-projection.mjs
           node --check scripts/genealogy-v2-publishable-audit.mjs
 
