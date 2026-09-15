@@ -9,6 +9,10 @@ import { assertGenealogyGeometryContract } from './genealogy-geometry-contract.m
 import { assertGospelContract } from './genealogy-gospel-contract.mjs';
 import { getGospelComparison } from '../src/components/genealogy/gospelSequences.ts';
 import { adaptPublishableGenealogy } from '../src/components/genealogy/publishableAdapter.mjs';
+import {
+  automaticGenealogySearchResult,
+  searchGenealogyPeople,
+} from '../src/components/genealogy/search.ts';
 
 assertGospelContract();
 assertGenealogyGeometryContract();
@@ -45,6 +49,27 @@ function readRuntimePersons() {
 
 const RUNTIME_PERSONS = readRuntimePersons();
 const EXPECTED_PERSON_NODES = RUNTIME_PERSONS.length;
+
+function assertGenealogySearchContract() {
+  const ambiguous = searchGenealogyPeople(RUNTIME_PERSONS, 'Иосиф (Лк)');
+  assert.deepEqual(ambiguous.map(result => result.person.id), ['joseph_lk', 'joseph_lk2'],
+    'Duplicate Joseph/Luke identities must remain deterministic and separately selectable');
+  assert.equal(automaticGenealogySearchResult(ambiguous, 'Иосиф (Лк)'), null,
+    'Ambiguous exact duplicate name must not auto-select the first dataset row');
+
+  const isaac = searchGenealogyPeople(RUNTIME_PERSONS, 'Исаак');
+  assert.equal(automaticGenealogySearchResult(isaac, 'Исаак')?.id, 'isaac',
+    'Unique exact search must still resolve directly');
+
+  const israel = searchGenealogyPeople(RUNTIME_PERSONS, 'Израиль');
+  assert.equal(automaticGenealogySearchResult(israel, 'Израиль')?.id, 'jacob',
+    'Curated alternate name must resolve Jacob deterministically');
+
+  const noMatch = searchGenealogyPeople(RUNTIME_PERSONS, 'несуществующий-персонаж');
+  assert.deepEqual(noMatch, [], 'Unknown search must remain empty');
+}
+
+assertGenealogySearchContract();
 
 function contentType(filePath) {
   const extension = path.extname(filePath).toLowerCase();
@@ -271,7 +296,7 @@ async function assertSplitLifecycle(page, touch) {
 }
 
 async function assertFocusInteractions(page) {
-  await page.getByRole('textbox', { name: 'Поиск по имени' }).fill('Исаак');
+  await page.getByRole('combobox', { name: 'Поиск по имени' }).fill('Исаак');
   await waitForViewportStable(page);
   await page.locator('.react-flow__node[data-id="isaac"]').click();
   await page.getByRole('complementary', { name: 'Детали: Исаак' }).waitFor({ state: 'visible' });
@@ -352,7 +377,7 @@ async function assertFocusInteractions(page) {
   assert.equal(await page.locator('[data-genealogy-focus-count]').count(), 0, 'Excluded person left stale focus');
   assert.equal(await page.locator('[data-genealogy-details]').count(), 0, 'Excluded person left stale details');
   // Search must reveal a person even when the active filter excludes them.
-  await page.getByRole('textbox', { name: 'Поиск по имени' }).fill('Исаак');
+  await page.getByRole('combobox', { name: 'Поиск по имени' }).fill('Исаак');
   await page.waitForFunction(() => document.querySelector('.genealogy-filter-tools button[aria-pressed="true"]')?.textContent === 'Все');
   await page.waitForFunction(() => document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-level') === '2');
   await waitForViewportStable(page);
@@ -514,7 +539,7 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     assert.ok(afterFit.visibleArea > 0, `${browserName} ${viewport.width}x${viewport.height}: canonical Fit View has no useful person-card area`);
 
     phase = 'search';
-    const search = page.getByRole('textbox', { name: 'Поиск по имени' });
+    const search = page.getByRole('combobox', { name: 'Поиск по имени' });
     await search.fill('Адам');
     await waitForViewportStable(page);
     const afterSearch = await measurePersonViewport(page);
@@ -522,6 +547,42 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     await page.getByText('Все детали', { exact: true }).waitFor({ state: 'visible' });
 
     await page.locator('[data-genealogy-app]').screenshot({ path: path.join(REPORT_DIR, `${browserName}-${viewport.width}x${viewport.height}-search.png`), animations: 'disabled' });
+
+    phase = 'ambiguous-search';
+    await search.fill('Иосиф (Лк)');
+    const searchList = page.getByRole('listbox', { name: 'Люди с похожим именем' });
+    await searchList.waitFor({ state: 'visible' });
+    assert.equal(await search.getAttribute('aria-expanded'), 'true',
+      `${browserName} ${viewport.width}x${viewport.height}: ambiguous search did not expose listbox`);
+    const ambiguousIds = await searchList.getByRole('option').evaluateAll(options =>
+      options.map(option => option.getAttribute('data-person-id')));
+    assert.deepEqual(ambiguousIds, ['joseph_lk', 'joseph_lk2'],
+      `${browserName} ${viewport.width}x${viewport.height}: duplicate Joseph candidates were collapsed or reordered`);
+    assert.equal(await page.locator('[data-genealogy-app]').getAttribute('data-genealogy-search-person'), null,
+      `${browserName} ${viewport.width}x${viewport.height}: ambiguous search silently selected a person`);
+    await search.press('ArrowDown');
+    assert.equal(await search.getAttribute('aria-activedescendant'), 'genealogy-search-option-joseph_lk',
+      `${browserName} ${viewport.width}x${viewport.height}: ArrowDown did not expose active search option`);
+    await search.press('Enter');
+    await page.waitForFunction(() =>
+      document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-search-person') === 'joseph_lk');
+    assert.equal(await search.getAttribute('aria-expanded'), 'false',
+      `${browserName} ${viewport.width}x${viewport.height}: explicit search selection did not close listbox`);
+    await waitForViewportStable(page);
+    assert.ok((await measurePersonViewport(page)).visibleIds.includes('joseph_lk'),
+      `${browserName} ${viewport.width}x${viewport.height}: chosen duplicate Joseph was not centered into view`);
+
+    await search.fill('Иосиф (Лк)');
+    await searchList.waitFor({ state: 'visible' });
+    await search.press('ArrowUp');
+    assert.equal(await search.getAttribute('aria-activedescendant'), 'genealogy-search-option-joseph_lk2',
+      `${browserName} ${viewport.width}x${viewport.height}: ArrowUp did not wrap to the last duplicate candidate`);
+    await search.press('Escape');
+    assert.equal(await search.inputValue(), '',
+      `${browserName} ${viewport.width}x${viewport.height}: Escape did not clear ambiguous search`);
+    assert.equal(await searchList.count(), 0,
+      `${browserName} ${viewport.width}x${viewport.height}: Escape left stale search choices mounted`);
+
     if (process.env.GENEALOGY_REDUCED_MOTION === '1') {
       const running = await page.locator('[data-genealogy-app]').evaluate(root =>
         root.getAnimations({ subtree: true }).filter(animation => animation.playState === 'running').length);
