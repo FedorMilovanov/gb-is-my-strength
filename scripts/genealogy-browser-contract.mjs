@@ -320,10 +320,13 @@ async function assertDepartmentShell(page, browserName, viewport) {
 
   const explore = page.getByRole('link', { name: 'Исследовать атлас', exact: true });
   const methodology = page.getByRole('link', { name: 'Как читать связи', exact: true });
+  const bibleApp = page.getByRole('link', { name: 'Открыть приложение', exact: true });
   assert.equal(await explore.getAttribute('href'), '#genealogy-tree',
     'Department primary action does not target the atlas');
   assert.equal(await methodology.getAttribute('href'), '#genealogy-methodology',
     'Department methodology action does not target the evidence explanation');
+  assert.equal(await bibleApp.getAttribute('href'), '/app/',
+    'Department shell lost the canonical Bible App entrypoint');
 
   for (const heading of ['Исследовать', 'Сравнить', 'Проверить основание']) {
     assert.equal(await main.getByRole('heading', { level: 3, name: heading, exact: true }).count(), 1,
