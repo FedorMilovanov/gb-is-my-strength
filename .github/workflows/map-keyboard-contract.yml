@@ -46,7 +46,7 @@ jobs:
           const source = fs.readFileSync('karty/_engine/map-engine.js', 'utf8');
           const required = [
             'map-engine.js v0.59',
-            "version:'0.59.0',buildDate:'2026-08-07'",
+            "version:'0.59.0',buildDate:'2026-09-15'",
             'cfg.archaeologyProjection',
             'max-height:calc(100% - max(8px,env(safe-area-inset-top)))',
             '.me-panel__head,.me-tabs,.me-nav{flex:0 0 auto}',
