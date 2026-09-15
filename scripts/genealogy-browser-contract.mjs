@@ -643,6 +643,7 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     assert.ok((await measurePersonViewport(page)).visibleIds.includes('joseph_lk'),
       `${browserName} ${viewport.width}x${viewport.height}: chosen duplicate Joseph was not centered into view`);
 
+    await search.fill('');
     await search.fill('Иосиф (Лк)');
     await searchList.waitFor({ state: 'attached' });
     await searchList.getByRole('option').first().waitFor({ state: 'visible' });
@@ -718,7 +719,7 @@ async function main() {
     sha: process.env.SOURCE_SHA || '',
     route: '/rodosloviye/',
     expectedPersonNodes: EXPECTED_PERSON_NODES,
-    expectedPersonNodesAuthority: 'data/genealogy/genealogy.json#persons.length',
+    expectedPersonNodesAuthority: 'data/genealogy/v2/publishable/persons.json via adaptPublishableGenealogy',
     browsers: browserNames,
     viewports: VIEWPORTS,
     results,
@@ -735,7 +736,7 @@ main().catch((error) => {
     sha: process.env.SOURCE_SHA || '',
     route: '/rodosloviye/',
     expectedPersonNodes: EXPECTED_PERSON_NODES,
-    expectedPersonNodesAuthority: 'data/genealogy/genealogy.json#persons.length',
+    expectedPersonNodesAuthority: 'data/genealogy/v2/publishable/persons.json via adaptPublishableGenealogy',
     error: String(error?.stack || error),
   };
   fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify(report, null, 2)}\n`);
