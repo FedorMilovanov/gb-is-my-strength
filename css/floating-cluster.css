@@ -33,28 +33,9 @@
 
 @layer components {
 
-:root {
-  --gb-accent-strong: #d4af37;
-  --gb-ease-out: cubic-bezier(.2,.7,.2,1);
-  --gb-ease-spring: cubic-bezier(.34,1.56,.64,1);
-  --gb-accent: #d4af37;
-  --gb-font-serif-display: "Lora", serif;
-  --gb-accent-gold: #d4af37;
-  --gb-accent-gold-bright: #ffd700;
-  --gb-font-serif: "Lora", serif;
-  --gb-font-sans: "Source Sans 3", sans-serif;
-  --gb-border: rgba(255,255,255,0.15);
-  --gb-text: #fff;
-  --gb-text-muted: rgba(255,255,255,0.6);
-  --z-sheet: 1000;
-  --gb-surface: #1a1a1a;
-  --gb-ease-overshoot: cubic-bezier(.34,1.56,.64,1);
-  --gb-border-strong: rgba(255,255,255,0.25);
-  --gb-surface-muted: #2a2a2a;
-  --gb-ease-precise: cubic-bezier(.2,.7,.2,1);
-  --gb-text-faint: rgba(255,255,255,0.4);
-  --gb-accent-gold-deep: #b8860b;
-}
+/* Audit 2026-09-15: removed a dead :root block here. Inside @layer components
+   it lost to every unlayered rule, and its values (--gb-text:#fff on white,
+   --z-sheet:1000) contradicted the live tokens defined above @layer. */
 
 /* =========================================================
    gb-floater — standalone vertical cluster
@@ -1557,7 +1538,7 @@ html.dark [data-gill-v16] .toc-sheet{background:var(--gb-surface);border-color:v
 [data-gill-v16] .toc-sheet__head h3{font-family:var(--gb-font-serif);font-size:18px;margin:0;line-height:1.25;color:var(--gb-text);font-weight:600}
 [data-gill-v16] .toc-sheet__head .back{
   position:absolute;left:14px;top:14px;
-  width:28px;height:28px;border-radius:8px;
+  width:32px;height:32px;border-radius:8px;
   display:grid;place-items:center;
   color:var(--gb-text-muted);
   background:transparent;border:0;
@@ -1854,8 +1835,8 @@ html.dark [data-gill-v16] .toc-sheet__actions{background:color-mix(in srgb,var(-
   }
 [data-gill-v16] .toc-sheet__actions .toc-action-btn--ghost {
     padding: 9px;
-    width: 38px;
-    min-width: 38px;
+    width: 44px;
+    min-width: 44px;
     justify-content: center;
   }
 }
@@ -1892,7 +1873,7 @@ html.dark [data-gill-v16] .toc-part-item.is-current .toc-part-item__num {
 }
 [data-gill-v16] .toc-sheet__head--grid .back {
   position: static !important;
-  width: 36px !important; height: 36px !important;
+  width: 40px !important; height: 40px !important;
   border-radius: 10px !important;
   display: grid !important; place-items: center !important;
   background: var(--gb-surface-muted) !important;
@@ -2027,7 +2008,7 @@ html.dark [data-gill-v16] .toc-part-item:hover .toc-part-item__num {
 }
 [data-gill-v16] .toc-sheet__head .back {
   position: static !important;
-  width: 34px !important; height: 34px !important;
+  width: 40px !important; height: 40px !important;
   border-radius: 8px !important;
   display: grid !important; place-items: center !important;
   margin: 0 !important; padding: 0 !important;
@@ -2725,7 +2706,7 @@ html.dark .gb-roman {
        margin + width + a breathing gap) — used as the minimum left margin so
        the article clears the rail on narrower desktops. */
     --gb-rail-reserve:calc(clamp(16px,2.4vw,40px) + clamp(272px,24vw,304px) + clamp(24px,3vw,48px));
-    --gb-measure:min(760px, calc(100vw - 48px));
+    --gb-measure:min(var(--gb-reader-measure, 43rem), 760px, calc(100vw - 48px));
     display:block;
     min-height:auto;
   }
@@ -3252,7 +3233,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
-    z-index: 2147483000 !important;
+    z-index: var(--z-bottom-bar, 2000) !important;
     min-height: var(--gill-mobile-bar-h) !important;
     box-sizing: border-box !important;
     display: flex !important;
@@ -3297,7 +3278,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
     left: 0;
     right: 0;
     top: 0;
-    z-index: 2147483000;
+    z-index: var(--z-bottom-bar, 2000);
     min-height: var(--gill-mobile-topbar-h);
     box-sizing: border-box;
     display: flex;
@@ -3314,9 +3295,9 @@ html.dark [data-gill-v16] .mobile-top-bar {
     isolation: isolate;
   }
   [data-gill-v16] .mobile-top-bar .gb-icon {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
     min-height: 40px;
     border-radius: 999px;
     background: transparent;
@@ -3488,8 +3469,8 @@ html.dark [data-gill-v16] .mobile-top-bar {
      сделал бы их заметнее, чем в образце. */
   [data-gill-v16] .mobile-bottom-bar > .gb-icon {
     flex: 0 0 auto;
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
     min-width: 38px;
     min-height: 38px;
     border-radius: 999px;
@@ -3517,7 +3498,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
   [data-gill-v16] .mobile-font-btn:active { transform: scale(.94); }
 
   [data-gill-v16] .toc-overlay.is-open {
-    z-index: 2147483100 !important;
+    z-index: var(--z-overlay-high, 3000) !important;
   }
   [data-gill-v16] .toc-sheet {
     background: color-mix(in srgb, var(--gill-mobile-bar-bg) 98%, white) !important;
@@ -3569,18 +3550,18 @@ html.dark [data-gill-v16] .mobile-top-bar {
   }
   [data-gill-v16] .mobile-top-bar .gb-icon,
   [data-gill-v16] .mobile-playwrap .mobile-top-ember {
-    width: 36px !important;
-    height: 36px !important;
-    min-width: 36px !important;
-    min-height: 36px !important;
-    --ember-size: 36px !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+    --ember-size: 40px !important;
   }
   [data-gill-v16] .mobile-btoc-section__main,
   [data-gill-v16] #gbs2MobSec { font-size: 12.5px !important; }
   [data-gill-v16] .bar-progress.dual-progress,
   [data-gill-v16] .bar-progress.dual-progress svg { width: 34px !important; height: 34px !important; }
   [data-gill-v16] .mobile-bottom-bar > .gb-icon,
-  [data-gill-v16] .mobile-font-btn { width: 34px !important; min-width: 34px !important; }
+  [data-gill-v16] .mobile-font-btn { width: 40px !important; min-width: 40px !important; }
 }
 
 /* Gill header watermark removed (giant faint "ВВЕДЕНИЕ"/roman numeral behind
@@ -4395,7 +4376,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
-    z-index: 2147483000 !important;
+    z-index: var(--z-bottom-bar, 2000) !important;
     min-height: var(--gill-mobile-bar-h, 78px) !important;
     border: 0 !important;
     border-radius: 0 !important;
@@ -4501,27 +4482,33 @@ html.dark [data-gill-v16] .mobile-top-bar {
    consume, so no component needs a separate "sepia" branch. Was mobile-only
    (<64em) — owner asked for the same Тема picker on desktop; unwrapped so the
    rail/theme-corner/sheets pick up the same tokens above 64em too. */
+/* Audit 2026-09-15: sepia chrome no longer keeps a private palette (#f8f0dc и
+   ко) — it mirrors the canonical sepia tokens from css/reader-preferences.css,
+   so «Сепия» looks identical in Gill chrome, hrail and article paper. Gold
+   stays series identity; fallbacks keep the block self-sufficient. */
 [data-gill-v16][data-gill-reader-theme="sepia"] {
-  --gb-surface: #f8f0dc;
-  --gb-surface-muted: #e9dcc0;
-  --gb-text: #493823;
-  --gb-text-muted: #776348;
-  --gb-text-faint: #9a825d;
-  --gb-border: #d8c49e;
-  --gb-border-strong: #bea778;
-  --gb-accent: #87562b;
-  --gb-accent-strong: #a16a36;
+  --gb-surface: var(--color-surface, #f6ecd6);
+  --gb-surface-muted: var(--color-surface-muted, #e8d9ba);
+  --gb-text: var(--color-text, #493720);
+  --gb-text-muted: var(--color-text-muted, #68543a);
+  --gb-text-faint: var(--color-text-faint, #76654d);
+  --gb-border: var(--color-border, #d5c39f);
+  --gb-border-strong: var(--color-border-strong, #bda77d);
+  --gb-accent: var(--color-accent, #7b3f2b);
+  --gb-accent-strong: var(--color-accent-strong, #5f2f20);
   --gb-accent-gold: #8a612f;
   --gb-accent-gold-bright: #b68445;
-  --gill-mobile-bar-bg: rgba(243, 234, 212, .96);
-  --gill-mobile-bar-border: rgba(135, 86, 43, .30);
-  --gill-mobile-bar-ink: #3a2c1a;
-  --gill-mobile-bar-muted: rgba(58, 44, 26, .74);
-  --gill-mobile-bar-gold: #87562b;
-  background: #f3ead4;
+  --gill-mobile-bar-bg: rgba(238, 227, 200, .96);
+  --gill-mobile-bar-border: rgba(123, 63, 43, .30);
+  --gill-mobile-bar-ink: var(--color-text-primary, #3d2d1b);
+  --gill-mobile-bar-muted: rgba(61, 45, 27, .74);
+  --gill-mobile-bar-gold: var(--color-accent, #7b3f2b);
+  --gill-mobile-bar-frost: rgba(238, 227, 200, .82);
+  --gill-mobile-hairline: rgba(123, 63, 43, .16);
+  background: var(--color-canvas, #eee3c8);
 }
 [data-gill-v16][data-gill-reader-theme="sepia"] .toc-sheet {
-  background: #f3ead4 !important;
+  background: var(--color-surface, #f6ecd6) !important;
 }
 /* Polish (5f54989): sepia tinted the page background but left the reading text
    itself neutral grey/black (several paragraph-holding classes set their own
@@ -4598,7 +4585,6 @@ html.dark [data-gill-v16] .mobile-top-bar {
   }
   [data-gill-v16] .gill-settings-overlay .setting-group { padding: 10px 16px 11px; border-bottom: 1px solid var(--gb-border); }
   [data-gill-v16] .gill-settings-overlay .setting-group:last-child { border-bottom: 0; }
-  [data-gill-v16] .gill-settings-overlay .setting-group--measure { display: none; }
   [data-gill-v16] .gill-settings-overlay .setting-label {
     display: block; margin-bottom: 7px;
     font-family: var(--gb-font-sans, system-ui, sans-serif);

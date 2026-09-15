@@ -9,7 +9,7 @@
   var lines = ['compact', 'normal', 'relaxed'];
   var measures = ['narrow', 'normal', 'wide'];
   var lineValues = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
-  var measureValues = { narrow: '36rem', normal: '43rem', wide: '46rem' };
+  var measureValues = { narrow: '42rem', normal: '50rem', wide: '58rem' };
 
   function get(key) {
     try { return w.localStorage && w.localStorage.getItem(key); }

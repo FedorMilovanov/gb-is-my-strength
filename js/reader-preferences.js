@@ -33,7 +33,7 @@
   var TEXT_MODES = ['rich', 'plain'];
   var MOTIONS = ['system', 'reduced'];
   var LINE_VALUES = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
-  var MEASURE_VALUES = { narrow: '36rem', normal: '43rem', wide: '46rem' };
+  var MEASURE_VALUES = { narrow: '42rem', normal: '50rem', wide: '58rem' };
   var DEFAULTS = Object.freeze({
     version: 1,
     theme: 'light',
