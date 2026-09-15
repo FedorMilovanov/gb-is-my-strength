@@ -209,8 +209,8 @@ PR ещё нет; merge-tree с origin/main чистый; все контрак�
 | WU-3.3 anchors | OPEN P2 | **CLOSED (pass-12)**: 8 H3 Части II с префиксом стадии (0 дублей H3 в серии); авто-кириллические id сняты — postbuild `scripts/pastor-series-heading-id-hygiene.js` в обеих сборочных цепях (98 id/8 страниц); rehype-плагин в конфиге невозможен (Satteri: markdown.rehypePlugins — legacy-путь, запрещён контрактом) |
 | WU-3.4 wave11-манифест | OPEN P2 | **CLOSED (pass-11)**: supersededBy→wave12 + статусы |
 | WU-4.1/4.2 дубли/тень | OPEN P2 | OPEN — не тронуты |
-| WU-4.3 канцелярит/витрина | OPEN P2 | **PARTIAL**: англицизмы reader-текста II–IX переведены (finding→вывод и др.), «Part II/VI»→«Часть»; backtick-термины и «Досье NN»-теги остаются |
-| WU-4.4 расшифровка 181 | OPEN P2 | OPEN |
+| WU-4.3 канцелярит/витрина | OPEN P2 | **CLOSED (re-verified pass-15)**: англицизмы переведены (pass-10); остатков «Досье NN»-тегов на витрине нет (dist-проверка); backtick-термины — только намеренные: греческие оригиналы Части V (οἰκονόμος θεοῦ, κατά, καταρτίζω) и термин-цитаты Части IX (gaslighting ×2, safeguarding — в предложениях, явно оговаривающих дисциплину термина); канцелярит-остатков нет |
+| WU-4.4 расшифровка 181 | OPEN P2 | **CLOSED (re-verified pass-15)**: Досье A (DiotrophesDraft L401) несёт строку «181 запись: 148 исходных записей и 33 источника дополнения Wave 11 о верных свидетелях» + состав читательского корпуса (54 = 42 дела + 12 контролирующих) — всё в published-разметке |
 | WU-4.5 llms.txt | OPEN P2 | **CLOSED**: II–IX + Досье A с описаниями, Updated 2026-09-15 |
 | D-05 metadata | OPEN P1 | **CLOSED (pass-14)**: effective-статус всех 10 published-маршрутов = approved (owner-решения в ledger: diotrophes-reconciliation-20260908 + antisovetov-reconciliation-20260908); raw storage сохраняет *-unverified/*-needs-review за ledger-механизмом — это проектируемое поведение, не дефект; site-wide effective non-approved = 0; registry --check 71/71, freeze-audit зелёный; guard G-5 держит |
 
@@ -732,3 +732,27 @@ diff = только незакоммиченная работа pass-14; npm ci;
 - WU-1.5 внешние записи (CONTENT-CLEARANCE receipt, AuditRepo, Research-репо).
 - N-2 glossary (safeguarding/senior) — зафиксированный risk, js/glossary.js = DO-NOT.
 - WU-4.3 остаток (backtick-термины, «Досье NN»-теги), WU-4.4 (расшифровка 181).
+
+---
+
+## PASS-15 — финальная инвентаризация: исполнимый backlog пуст
+
+Ре-верификация остатков (dist + source):
+- **WU-4.3** — CLOSED: «Досье NN»-тегов на витрине нет; backtick'и — только намеренные
+  (греческие термины Части V; термин-цитаты gaslighting/safeguarding Части IX с явной
+  дисциплиной термина в тексте).
+- **WU-4.4** — CLOSED: расшифровка «181» (148 authority + 33 faithful-witness + корпус 54 =
+  42 дела + 12 контролирующих) уже в Досье A, published-разметка.
+
+**Итог по плану Волн 1–5:** исполнимые WU закрыты (WU-1.1–1.5*, 2.1–2.8, 3.1–3.4, 4.1–4.5,
+G-1…G-8; *WU-1.4 — отложен владельчески, WU-1.5 — внешние записи).
+**Остаток (owner-lane, не исполняется агентом):**
+- WU-1.4 — фид/sitemap-шард серии (T3 плана; решение владельца о политике дат);
+- WU-1.5 — внешние reconciliation-записи (CONTENT-CLEARANCE receipt, AuditRepo, Research-репо);
+- N-2 — glossary-риски safeguarding/senior (js/glossary.js = DO-NOT; риск принят контрактом);
+- WU-2.4-остаток — Досье A квиз-механизм (решение владельца: оставить отдельным).
+**Guard-сеть серии (автоматическая защита от регрессий):**
+`strangler:build` ⇒ heading-id-hygiene (G-2) ⇒ `pastor-series-guards-dist.js`
+(G-1 a11y, G-2 якоря, G-3 summary-card, G-4 конспект, G-5 metadata-effective,
+G-6 reading-time, G-7 article-root, G-8 print) + pastor-series:visual-parity-audit
+(контракт публикации) + data:consistency + route:profiles + glossary-contract.
