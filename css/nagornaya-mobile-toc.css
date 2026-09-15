@@ -62,3 +62,8 @@ html.dark body.nagornaya-page .text-purple-700{color:#c4b5fd}
 html.dark body.nagornaya-page .text-teal-700{color:#5eead4}
 html.dark body.nagornaya-page .text-orange-700{color:#fdba74}
 html.dark body.nagornaya-page .bg-stone-200{background-color:var(--color-surface-muted);color:var(--color-text);border-color:var(--color-border)}
+
+/* B18: 44px tap targets — invisible halo, visuals unchanged. The bar inner
+   is 56px tall, so ±6px fits unclipped. */
+body.nagornaya-page .bar-icon-btn{position:relative}
+body.nagornaya-page .bar-icon-btn::after{content:'';position:absolute;inset:-6px}

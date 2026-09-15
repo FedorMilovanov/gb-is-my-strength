@@ -196,6 +196,29 @@
   opacity: 0.5;
   transform: scale(1);
 }
+
+/* B18: 44px+ tap targets without changing visuals — an invisible ::after
+   halo extends the hit area (same pattern as .bref::before in site.css).
+   [data-tip] carriers (ember/save) are excluded: that pseudo is reserved
+   for tooltips, and they already clear 36px. */
+[data-gill-mobile-bar] .gb-icon:not([data-tip])::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+}
+[data-gill-v16] .mobile-font-btn { position: relative; }
+[data-gill-v16] .mobile-font-btn::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+}
+/* Speed badge sits on the ember corner — a modest halo on purpose, so it
+   doesn't steal play taps. */
+[data-gill-v16] .mobile-spdbadge::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+}
 .gb-icon:focus-visible {
   outline: 2px solid var(--color-accent, #7a2e2e);
   outline-offset: 4px;
@@ -3587,6 +3610,15 @@ html.dark [data-gill-v16] .mobile-top-bar {
   [data-gill-v16] .bar-progress.dual-progress svg { width: 34px !important; height: 34px !important; }
   [data-gill-v16] .mobile-bottom-bar > .gb-icon,
   [data-gill-v16] .mobile-font-btn { width: 34px !important; min-width: 34px !important; }
+}
+
+/* B17: 320px (iPhone SE-1, Fold) — the Learning trigger goes icon-only and
+   gaps tighten; the bottom bar already flex-squeezes its context. */
+@media (max-width: 360px) {
+  [data-gill-v16] .mobile-top-bar { gap: 4px !important; }
+  [data-gill-v16] .mobile-learning-trigger span { display: none !important; }
+  [data-gill-v16] .mobile-learning-trigger { min-width: 36px; }
+  [data-gill-v16] .mobile-bottom-bar { gap: 2px !important; }
 }
 
 /* Gill header watermark removed (giant faint "ВВЕДЕНИЕ"/roman numeral behind

@@ -172,6 +172,11 @@ const { title, backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC } = Astro.p
     }
     .article-main--hrail{ padding-top:calc(60px + env(safe-area-inset-top,0px)); padding-bottom: calc(84px + env(safe-area-inset-bottom,0px)); }
   }
+  /* B17: 320px safety — tighten gaps/padding; the middle slot already flexes. */
+  @media(max-width:360px){
+    .hmtop{gap:4px;padding-left:8px;padding-right:8px}
+    .hmbar{gap:6px;padding-left:8px;padding-right:8px}
+  }
   @media(min-width:1200px){ .hmtop, .hmbar{display:none !important} }
 
   /* ---- top bar: canon .gb-icon halo, slot-swap search⇄speeds, Play badge ---- */
@@ -264,6 +269,12 @@ const { title, backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC } = Astro.p
   .hmbar-font{width:32px;height:36px;border:0;background:none;cursor:pointer;border-radius:8px;
     display:grid;place-items:center;font:700 15px var(--f-serif,Lora,Georgia,serif);color:#8a5a4a;flex-shrink:0}
   html.dark .hmbar-font{color:#caa1a0}
+  /* B18: 44px+ tap targets — invisible ::after halo, visuals unchanged. */
+  .hmbar-btn::after,.hmtop .hm-icon::after,.hmbar-progress::after{content:'';position:absolute;inset:-4px}
+  .hmbar-font{position:relative}
+  .hmbar-font::after{content:'';position:absolute;inset:-4px -6px}
+  .hmsheet-close{position:relative}
+  .hmsheet-close::after{content:'';position:absolute;inset:-8px}
 
   /* ---- TOC sheet ---- */
   .hmsheet{display:none}

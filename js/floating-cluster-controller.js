@@ -2592,3 +2592,171 @@
   }
 
 })();
+
+/* =====================================================
+   GB round-2 (B12 + gestures): keyboard & sheet swipe-down.
+   Article pages never load js/site.js, so T/D/B, arrows and
+   swipe-to-close live here, next to the engine that owns these
+   surfaces. Additive IIFE — the controller above is untouched.
+   Letters use e.code (KeyT/KeyD/KeyB), so shortcuts work in both
+   Latin and Cyrillic layouts. Нагорная btoc swipe is skipped —
+   that sheet is JS-rendered with its own close path.
+   ===================================================== */
+(function () {
+  'use strict';
+
+  function inField() {
+    var t = (document.activeElement || {}).tagName || '';
+    if (t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT') return true;
+    return Boolean(document.activeElement && document.activeElement.isContentEditable);
+  }
+  function modalsOpen() {
+    return Boolean(document.querySelector('#share-dialog-overlay.is-open,.cp-backdrop.is-open,#gb-hl-backdrop.is-open'));
+  }
+  function sheetsOpen() {
+    return Boolean(document.querySelector('.toc-overlay.is-open,.hmsheet.is-open,#btocOverlay.open,#toc-panel.open'));
+  }
+  function hint(key, label) {
+    var el = document.querySelector('.kbd-hint-toast');
+    if (!el) { el = document.createElement('div'); el.className = 'kbd-hint-toast'; document.body.appendChild(el); }
+    el.innerHTML = '<kbd>' + key + '</kbd> ' + label;
+    el.classList.add('visible');
+    clearTimeout(hint._t);
+    hint._t = setTimeout(function () { el.classList.remove('visible'); }, 1400);
+  }
+
+  /* --- prev/next resolution: a[rel] (Нагорная) or the Gill card pair
+     (the card whose eyebrow says «Дальше» is next, the other is prev). --- */
+  function resolveSeriesLink(dir) {
+    var link = document.querySelector('a[rel="' + dir + '"]');
+    if (link && link.getAttribute('href')) return link;
+    var cards = Array.prototype.slice.call(document.querySelectorAll('.gbs2-next-card[href]'));
+    var i, isNext;
+    for (i = 0; i < cards.length; i++) {
+      isNext = /дальше/i.test(cards[i].textContent || '');
+      if ((dir === 'next') === isNext) return cards[i];
+    }
+    return null;
+  }
+
+  function toggleToc() {
+    var gill = document.querySelector('.toc-overlay.is-open');
+    if (gill) {
+      var handle = gill.querySelector('[data-overlay-close], .toc-sheet__handle');
+      if (handle) { handle.click(); return true; }
+    }
+    var hm = document.querySelector('.hmsheet.is-open');
+    if (hm) {
+      var hmClose = hm.querySelector('.hmsheet-close');
+      if (hmClose) { hmClose.click(); return true; }
+    }
+    var btoc = document.getElementById('btocOverlay');
+    if (btoc) {
+      if (btoc.classList.contains('open')) {
+        if (window.SiteBTOC) window.SiteBTOC.close();
+        else { btoc.classList.remove('open'); if (window.SiteUtils) window.SiteUtils.unlockScroll('btoc'); }
+      } else if (window.SiteBTOC) window.SiteBTOC.open();
+      else { var barBtn = document.getElementById('barSectionBtn'); if (barBtn) barBtn.click(); }
+      return true;
+    }
+    var panel = document.getElementById('toc-panel');
+    if (panel) {
+      if (panel.classList.contains('open')) { var tocClose = document.getElementById('toc-close'); if (tocClose) tocClose.click(); }
+      else { var tocToggle = document.getElementById('toc-toggle'); if (tocToggle) tocToggle.click(); }
+      return true;
+    }
+    var trigger = document.querySelector('#mobPartTocBtn, #hmSectionBtn, #hmBottomBtn, #barSectionBtn');
+    if (trigger) { trigger.click(); return true; }
+    return false;
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey || inField()) return;
+    var key = e.key || '';
+    if (key === 'ArrowLeft' || key === 'ArrowRight') {
+      if (e.shiftKey || modalsOpen() || sheetsOpen()) return;
+      var dir = key === 'ArrowRight' ? 'next' : 'prev';
+      var link = resolveSeriesLink(dir);
+      if (!link) return;
+      e.preventDefault();
+      hint(key === 'ArrowRight' ? '→' : '←', dir === 'next' ? 'Дальше' : 'Назад');
+      link.click();
+      return;
+    }
+    var code = e.code || '';
+    if (code === 'KeyT') {
+      if (modalsOpen()) return;
+      e.preventDefault();
+      if (toggleToc()) hint('T', 'Оглавление');
+      return;
+    }
+    if (modalsOpen() || sheetsOpen()) return;
+    if (code === 'KeyD') {
+      var themeBtn = document.querySelector('.gb-theme-toggle, [data-fc-action="theme"], #themeToggle, #hThemeBtn, .gb-fc-theme');
+      if (!themeBtn) return;
+      e.preventDefault();
+      hint('D', 'Тема');
+      themeBtn.click();
+      return;
+    }
+    if (code === 'KeyB') {
+      e.preventDefault();
+      hint('B', 'Наверх');
+      try { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+      catch (_) { window.scrollTo(0, 0); }
+    }
+  });
+
+  /* --- swipe-down-to-close for Gill (.toc-sheet) and HM (.hmsheet-panel).
+     Port of the highlights-panel gesture: drag only when the inner list
+     is at its top, close past 80px through the real close button (keeps
+     focus-restore and scroll-unlock paths intact). --- */
+  (function initSheetSwipe() {
+    var SCROLL_SELS = '.toc-sheet__list, .toc-sheet__body, .hmsheet-list';
+    var startY = 0, panel = null, active = false;
+
+    function findPanel(target) {
+      if (!target || !target.closest) return null;
+      return target.closest('.toc-overlay.is-open .toc-sheet, .hmsheet.is-open .hmsheet-panel');
+    }
+    function scrollerBlocked(p, target) {
+      var sc = target.closest ? target.closest(SCROLL_SELS) : null;
+      if (sc && p.contains(sc)) return sc.scrollTop > 0;
+      var regions = p.querySelectorAll(SCROLL_SELS);
+      for (var i = 0; i < regions.length; i++) {
+        if (regions[i].scrollTop > 0) return true;
+      }
+      return false;
+    }
+    function reset() {
+      if (panel) { panel.style.transform = ''; panel.style.transition = ''; }
+      active = false; panel = null;
+    }
+    document.addEventListener('touchstart', function (e) {
+      reset();
+      if (!e.touches || e.touches.length !== 1) return;
+      var p = findPanel(e.target);
+      if (!p || scrollerBlocked(p, e.target)) return;
+      panel = p; startY = e.touches[0].clientY; active = true;
+    }, { passive: true });
+    document.addEventListener('touchmove', function (e) {
+      if (!active || !panel || !e.touches || e.touches.length !== 1) return;
+      var dy = e.touches[0].clientY - startY;
+      if (dy <= 0) { panel.style.transform = ''; return; }
+      e.preventDefault();
+      panel.style.transition = 'none';
+      panel.style.transform = 'translateY(' + dy + 'px)';
+    }, { passive: false });
+    document.addEventListener('touchend', function (e) {
+      if (!active || !panel) return;
+      var dy = (e.changedTouches && e.changedTouches[0].clientY - startY) || 0;
+      var p = panel;
+      reset();
+      if (dy > 80) {
+        var closer = p.querySelector('[data-overlay-close], .toc-sheet__handle, .hmsheet-close');
+        if (closer) closer.click();
+      }
+    }, { passive: true });
+    document.addEventListener('touchcancel', reset, { passive: true });
+  })();
+})();
