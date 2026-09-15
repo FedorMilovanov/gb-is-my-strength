@@ -16,6 +16,7 @@
     "parents": "explicit father/mother first; children[] supplements only missing non-conflicting same-role links",
     "spouses": "reciprocal curated v1 assertions only",
     "annotations": "qualify projected relations; legal/non-biological relation remains distinct from biological parent",
+    "relationEvidence": "curated topology remains source-derived with directScripture=null until relation-level refs are editorially reviewed",
     "rawGraph": "TIPNR-only persons and raw TIPNR-only edges are excluded"
   },
   "counts": {
@@ -24,6 +25,9 @@
     "parentRelations": 171,
     "spouseRelations": 9,
     "legalParentRelations": 1,
+    "relationEvidenceReviewed": 2,
+    "relationEvidencePending": 179,
+    "directScriptureRelations": 1,
     "gospelSequences": 2,
     "gospelOccurrences": 118
   },

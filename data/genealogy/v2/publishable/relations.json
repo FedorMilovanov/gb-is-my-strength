@@ -6,6 +6,8 @@
     "role": "legal-father",
     "authority": "explicit-qualified-textual-annotation",
     "evidence": {
+      "provenanceClass": "direct-scripture-qualified",
+      "refsStatus": "editorially-reviewed",
       "legal": true,
       "legalAssertion": "source-derived",
       "biology": "non-biological",
@@ -32,6 +34,13 @@
     "source": {
       "childV1Id": "eleazar",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -43,6 +52,13 @@
     "source": {
       "childV1Id": "eliakim_mt",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -54,6 +70,13 @@
     "source": {
       "childV1Id": "asa",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -65,6 +88,13 @@
     "source": {
       "childV1Id": "isaac",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -76,6 +106,13 @@
     "source": {
       "childV1Id": "eliud_mt",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -87,6 +124,13 @@
     "source": {
       "childV1Id": "abel",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -98,6 +142,13 @@
     "source": {
       "childV1Id": "cain",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -109,6 +160,13 @@
     "source": {
       "childV1Id": "seth",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -120,6 +178,13 @@
     "source": {
       "childV1Id": "melki_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -131,6 +196,13 @@
     "source": {
       "childV1Id": "hezekiah",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -142,6 +214,13 @@
     "source": {
       "childV1Id": "nahshon",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -153,6 +232,13 @@
     "source": {
       "childV1Id": "josiah",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -164,6 +250,13 @@
     "source": {
       "childV1Id": "mattathias2_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -175,6 +268,13 @@
     "source": {
       "childV1Id": "aaron",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -186,6 +286,13 @@
     "source": {
       "childV1Id": "miriam",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -197,6 +304,13 @@
     "source": {
       "childV1Id": "moses",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -208,6 +322,13 @@
     "source": {
       "childV1Id": "cainan_2",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -219,6 +340,13 @@
     "source": {
       "childV1Id": "shelah",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -230,6 +358,13 @@
     "source": {
       "childV1Id": "jehoshaphat",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -241,6 +376,13 @@
     "source": {
       "childV1Id": "zadok_mt",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -252,6 +394,13 @@
     "source": {
       "childV1Id": "nathan_prince",
       "field": "mother"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -263,6 +412,13 @@
     "source": {
       "childV1Id": "solomon",
       "field": "mother"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -274,6 +430,13 @@
     "source": {
       "childV1Id": "laban",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -285,6 +448,13 @@
     "source": {
       "childV1Id": "rebekah",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -296,6 +466,13 @@
     "source": {
       "childV1Id": "obed",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -307,6 +484,13 @@
     "source": {
       "childV1Id": "addi",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -318,6 +502,13 @@
     "source": {
       "childV1Id": "nimrod",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -329,6 +520,13 @@
     "source": {
       "childV1Id": "nathan_prince",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -340,6 +538,13 @@
     "source": {
       "childV1Id": "solomon",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -351,6 +556,13 @@
     "source": {
       "childV1Id": "peleg",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -362,6 +574,13 @@
     "source": {
       "childV1Id": "phinehas",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -373,6 +592,13 @@
     "source": {
       "childV1Id": "matthan_mt",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -384,6 +610,13 @@
     "source": {
       "childV1Id": "jonam",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -395,6 +628,13 @@
     "source": {
       "childV1Id": "azor_mt",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -406,6 +646,13 @@
     "source": {
       "childV1Id": "joshua_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -417,6 +664,13 @@
     "source": {
       "childV1Id": "eleazar_mt",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -428,6 +682,13 @@
     "source": {
       "childV1Id": "cosam",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -439,6 +700,13 @@
     "source": {
       "childV1Id": "methuselah",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -450,6 +718,13 @@
     "source": {
       "childV1Id": "kenan_gen5",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -461,6 +736,13 @@
     "source": {
       "childV1Id": "elmadam",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -472,6 +754,13 @@
     "source": {
       "childV1Id": "naum_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -483,6 +772,13 @@
     "source": {
       "parentV1Id": "eve",
       "field": "children"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -494,6 +790,13 @@
     "source": {
       "parentV1Id": "eve",
       "field": "children"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -505,6 +808,13 @@
     "source": {
       "parentV1Id": "eve",
       "field": "children"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -516,6 +826,13 @@
     "source": {
       "childV1Id": "canaan",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -527,6 +844,13 @@
     "source": {
       "childV1Id": "cush",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -538,6 +862,13 @@
     "source": {
       "childV1Id": "mizraim",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -549,6 +880,13 @@
     "source": {
       "childV1Id": "put",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -562,6 +900,8 @@
       "field": "father"
     },
     "evidence": {
+      "provenanceClass": "editorial-qualified",
+      "refsStatus": "editorially-reviewed",
       "biology": "unknown",
       "assertion": "editorial-harmonization",
       "confidence": "disputed",
@@ -583,6 +923,13 @@
     "source": {
       "childV1Id": "manasseh",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -594,6 +941,13 @@
     "source": {
       "childV1Id": "ram",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -605,6 +959,13 @@
     "source": {
       "childV1Id": "esau",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -616,6 +977,13 @@
     "source": {
       "childV1Id": "jacob",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -627,6 +995,13 @@
     "source": {
       "childV1Id": "asher",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -638,6 +1013,13 @@
     "source": {
       "childV1Id": "benjamin",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -649,6 +1031,13 @@
     "source": {
       "childV1Id": "dan",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -660,6 +1049,13 @@
     "source": {
       "childV1Id": "gad",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -671,6 +1067,13 @@
     "source": {
       "childV1Id": "issachar",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -682,6 +1085,13 @@
     "source": {
       "childV1Id": "joseph",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -693,6 +1103,13 @@
     "source": {
       "childV1Id": "judah",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -704,6 +1121,13 @@
     "source": {
       "childV1Id": "levi",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -715,6 +1139,13 @@
     "source": {
       "childV1Id": "naphtali",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -726,6 +1157,13 @@
     "source": {
       "childV1Id": "reuben",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -737,6 +1175,13 @@
     "source": {
       "childV1Id": "simeon",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -748,6 +1193,13 @@
     "source": {
       "childV1Id": "zebulun",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -759,6 +1211,13 @@
     "source": {
       "childV1Id": "joseph_nt",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -770,6 +1229,13 @@
     "source": {
       "childV1Id": "melchi_lk2",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -781,6 +1247,13 @@
     "source": {
       "childV1Id": "gomer",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -792,6 +1265,13 @@
     "source": {
       "childV1Id": "javan",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -803,6 +1283,13 @@
     "source": {
       "childV1Id": "madai",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -814,6 +1301,13 @@
     "source": {
       "childV1Id": "magog",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -825,6 +1319,13 @@
     "source": {
       "childV1Id": "meshech",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -836,6 +1337,13 @@
     "source": {
       "childV1Id": "tiras",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -847,6 +1355,13 @@
     "source": {
       "childV1Id": "tubal_jp",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -858,6 +1373,13 @@
     "source": {
       "childV1Id": "enoch",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -869,6 +1391,13 @@
     "source": {
       "childV1Id": "shealtiel",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -880,6 +1409,13 @@
     "source": {
       "childV1Id": "jeconiah",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -891,6 +1427,13 @@
     "source": {
       "childV1Id": "joram",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -902,6 +1445,13 @@
     "source": {
       "childV1Id": "david",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -913,6 +1463,13 @@
     "source": {
       "childV1Id": "joda_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -924,6 +1481,13 @@
     "source": {
       "childV1Id": "aaron",
       "field": "mother"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -935,6 +1499,13 @@
     "source": {
       "childV1Id": "amram",
       "field": "mother"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -946,6 +1517,13 @@
     "source": {
       "childV1Id": "miriam",
       "field": "mother"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -957,6 +1535,13 @@
     "source": {
       "childV1Id": "moses",
       "field": "mother"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -968,6 +1553,13 @@
     "source": {
       "childV1Id": "josech_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -979,6 +1571,13 @@
     "source": {
       "childV1Id": "joseph_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -990,6 +1589,13 @@
     "source": {
       "childV1Id": "uzziah",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1001,6 +1607,13 @@
     "source": {
       "childV1Id": "eliezer_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1012,6 +1625,13 @@
     "source": {
       "childV1Id": "semein_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1023,6 +1643,13 @@
     "source": {
       "childV1Id": "jannai_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1034,6 +1661,13 @@
     "source": {
       "childV1Id": "judah_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1045,6 +1679,13 @@
     "source": {
       "childV1Id": "er_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1056,6 +1697,13 @@
     "source": {
       "childV1Id": "jehoiakim",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1067,6 +1715,13 @@
     "source": {
       "childV1Id": "ahaz",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1078,6 +1733,13 @@
     "source": {
       "childV1Id": "perez",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1089,6 +1751,13 @@
     "source": {
       "childV1Id": "simeon_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1100,6 +1769,13 @@
     "source": {
       "childV1Id": "mahalalel",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1111,6 +1787,13 @@
     "source": {
       "childV1Id": "amram",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1122,6 +1805,13 @@
     "source": {
       "childV1Id": "leah",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1133,6 +1823,13 @@
     "source": {
       "childV1Id": "rachel",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1144,6 +1841,13 @@
     "source": {
       "childV1Id": "noah",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1155,6 +1859,13 @@
     "source": {
       "parentV1Id": "leah",
       "field": "children"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1166,6 +1877,13 @@
     "source": {
       "childV1Id": "judah",
       "field": "mother"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1177,6 +1895,13 @@
     "source": {
       "parentV1Id": "leah",
       "field": "children"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1188,6 +1913,13 @@
     "source": {
       "parentV1Id": "leah",
       "field": "children"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1199,6 +1931,13 @@
     "source": {
       "parentV1Id": "leah",
       "field": "children"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1210,6 +1949,13 @@
     "source": {
       "parentV1Id": "leah",
       "field": "children"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1221,6 +1967,13 @@
     "source": {
       "childV1Id": "kohath",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1232,6 +1985,13 @@
     "source": {
       "childV1Id": "matthat_lk2",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1243,6 +2003,13 @@
     "source": {
       "childV1Id": "matthat",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1254,6 +2021,13 @@
     "source": {
       "childV1Id": "naggesi_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1265,6 +2039,13 @@
     "source": {
       "childV1Id": "jared",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1276,6 +2057,13 @@
     "source": {
       "childV1Id": "amon",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1287,6 +2075,13 @@
     "source": {
       "childV1Id": "jesus",
       "field": "mother"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1298,6 +2093,13 @@
     "source": {
       "childV1Id": "menna",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1309,6 +2111,13 @@
     "source": {
       "childV1Id": "joseph_lk2",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1320,6 +2129,13 @@
     "source": {
       "childV1Id": "maath_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1331,6 +2147,13 @@
     "source": {
       "childV1Id": "jacob_mt",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1342,6 +2165,13 @@
     "source": {
       "childV1Id": "heli_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1353,6 +2183,13 @@
     "source": {
       "childV1Id": "jorim",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1364,6 +2201,13 @@
     "source": {
       "childV1Id": "levi_lk2",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1375,6 +2219,13 @@
     "source": {
       "childV1Id": "neri",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1386,6 +2237,13 @@
     "source": {
       "childV1Id": "eliakim_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1397,6 +2255,13 @@
     "source": {
       "childV1Id": "melea",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1408,6 +2273,13 @@
     "source": {
       "childV1Id": "lamech_gen5",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1419,6 +2291,13 @@
     "source": {
       "childV1Id": "esli_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1430,6 +2309,13 @@
     "source": {
       "childV1Id": "bethuel",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1441,6 +2327,13 @@
     "source": {
       "childV1Id": "terah",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1452,6 +2345,13 @@
     "source": {
       "childV1Id": "salmon",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1463,6 +2363,13 @@
     "source": {
       "childV1Id": "amos_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1474,6 +2381,13 @@
     "source": {
       "childV1Id": "mattatha",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1485,6 +2399,13 @@
     "source": {
       "childV1Id": "shealtiel_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1496,6 +2417,13 @@
     "source": {
       "childV1Id": "ham",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1507,6 +2435,13 @@
     "source": {
       "childV1Id": "japheth",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1518,6 +2453,13 @@
     "source": {
       "childV1Id": "shem",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1529,6 +2471,13 @@
     "source": {
       "childV1Id": "jesse",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1540,6 +2489,13 @@
     "source": {
       "childV1Id": "reu",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1551,6 +2507,13 @@
     "source": {
       "childV1Id": "hezron",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1562,6 +2525,13 @@
     "source": {
       "parentV1Id": "rachel",
       "field": "children"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1573,6 +2543,13 @@
     "source": {
       "parentV1Id": "rachel",
       "field": "children"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1584,6 +2561,13 @@
     "source": {
       "childV1Id": "boaz",
       "field": "mother"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1595,6 +2579,13 @@
     "source": {
       "childV1Id": "salmon",
       "field": "mother"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1606,6 +2597,13 @@
     "source": {
       "childV1Id": "amminadab",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1617,6 +2615,13 @@
     "source": {
       "childV1Id": "esau",
       "field": "mother"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1628,6 +2633,13 @@
     "source": {
       "parentV1Id": "rebekah",
       "field": "children"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1639,6 +2651,13 @@
     "source": {
       "childV1Id": "abijah",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1650,6 +2669,13 @@
     "source": {
       "childV1Id": "serug",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1661,6 +2687,13 @@
     "source": {
       "childV1Id": "joanan_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1672,6 +2705,13 @@
     "source": {
       "childV1Id": "obed",
       "field": "mother"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1683,6 +2723,13 @@
     "source": {
       "childV1Id": "boaz",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1694,6 +2741,13 @@
     "source": {
       "childV1Id": "isaac",
       "field": "mother"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1705,6 +2759,13 @@
     "source": {
       "childV1Id": "mattathias_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1716,6 +2777,13 @@
     "source": {
       "childV1Id": "nahor_serug",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1727,6 +2795,13 @@
     "source": {
       "childV1Id": "enosh",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1738,6 +2813,13 @@
     "source": {
       "childV1Id": "zerubbabel",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1749,6 +2831,13 @@
     "source": {
       "childV1Id": "zerubbabel_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1760,6 +2849,13 @@
     "source": {
       "childV1Id": "eber",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1771,6 +2867,13 @@
     "source": {
       "childV1Id": "aram",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1782,6 +2885,13 @@
     "source": {
       "childV1Id": "arphaxad",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1793,6 +2903,13 @@
     "source": {
       "childV1Id": "asshur",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1804,6 +2921,13 @@
     "source": {
       "childV1Id": "elam",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1815,6 +2939,13 @@
     "source": {
       "childV1Id": "lud_shem",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1826,6 +2957,13 @@
     "source": {
       "childV1Id": "levi_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1837,6 +2975,13 @@
     "source": {
       "childV1Id": "rehoboam",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1848,6 +2993,13 @@
     "source": {
       "parentV1Id": "tamar",
       "field": "children"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1859,6 +3011,13 @@
     "source": {
       "childV1Id": "abram",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1870,6 +3029,13 @@
     "source": {
       "childV1Id": "sarah",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1881,6 +3047,13 @@
     "source": {
       "childV1Id": "jotham",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1892,6 +3065,13 @@
     "source": {
       "childV1Id": "achim_mt",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1903,6 +3083,13 @@
     "source": {
       "childV1Id": "abihud_mt",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1914,6 +3101,13 @@
     "source": {
       "childV1Id": "rhesa_lk",
       "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1926,6 +3120,13 @@
         "abram",
         "sarah"
       ]
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1938,6 +3139,13 @@
         "adam",
         "eve"
       ]
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1950,6 +3158,13 @@
         "bathsheba",
         "david"
       ]
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1962,6 +3177,13 @@
         "boaz",
         "ruth"
       ]
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1974,6 +3196,13 @@
         "isaac",
         "rebekah"
       ]
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1986,6 +3215,13 @@
         "jacob",
         "leah"
       ]
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -1998,6 +3234,13 @@
         "jacob",
         "rachel"
       ]
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -2010,6 +3253,13 @@
         "joseph_nt",
         "mary"
       ]
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   },
   {
@@ -2022,6 +3272,13 @@
         "rahab",
         "salmon"
       ]
+    },
+    "evidence": {
+      "provenanceClass": "curated-source-derived",
+      "assertion": "source-derived",
+      "directScripture": null,
+      "refsStatus": "relation-level-review-pending",
+      "refs": []
     }
   }
 ]

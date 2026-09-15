@@ -34,6 +34,7 @@ const rawGospelText = readText(path.join(V2, 'gospel-sequences.json'));
 const rawAnnotationsText = readText(path.join(V2, 'edge-annotations.json'));
 const rawMetaText = readText(path.join(V2, 'meta.json'));
 const v1 = JSON.parse(v1Raw);
+const rawAnnotations = JSON.parse(rawAnnotationsText);
 const rawMeta = JSON.parse(rawMetaText);
 const meta = readJson(path.join(OUT, 'meta.json'));
 const persons = readJson(path.join(OUT, 'persons.json'));
@@ -86,11 +87,42 @@ const allowedAuthorities = new Set([
   'curated-v1-reciprocal-spouse',
   'explicit-qualified-textual-annotation',
 ]);
+const allowedEvidenceClasses = new Set([
+  'curated-source-derived',
+  'direct-scripture-qualified',
+  'editorial-qualified',
+]);
 for (const relation of relations) {
   assert(ids.has(relation.from) && ids.has(relation.to),
     `Relation endpoint escaped curated projection: ${relation.kind}:${relation.from}->${relation.to}`);
   assert(allowedAuthorities.has(relation.authority),
     `Unapproved relation authority: ${relation.authority}`);
+  assert(relation.evidence && allowedEvidenceClasses.has(relation.evidence.provenanceClass),
+    `Missing/invalid relation evidence class: ${relation.kind}:${relation.from}->${relation.to}`);
+
+  if (relation.evidence.refsStatus === 'relation-level-review-pending') {
+    assert(relation.evidence.provenanceClass === 'curated-source-derived',
+      'Pending relation evidence must remain curated-source-derived');
+    assert(relation.evidence.assertion === 'source-derived',
+      'Pending relation evidence must remain source-derived');
+    assert(relation.evidence.directScripture === null,
+      'Pending relation evidence must use directScripture=null, not guess true/false');
+    assert(Array.isArray(relation.evidence.refs) && relation.evidence.refs.length === 0,
+      'Pending relation evidence must not synthesize Scripture refs');
+  } else if (relation.evidence.refsStatus === 'editorially-reviewed') {
+    assert(typeof relation.evidence.directScripture === 'boolean',
+      'Reviewed relation evidence requires explicit directScripture boolean');
+    assert(Array.isArray(relation.evidence.refs) && relation.evidence.refs.length > 0,
+      'Reviewed relation evidence requires explicit refs');
+    assert(
+      relation.evidence.provenanceClass ===
+        (relation.evidence.directScripture ? 'direct-scripture-qualified' : 'editorial-qualified'),
+      'Reviewed relation provenance class does not match directScripture classification',
+    );
+  } else {
+    fail(`Unknown relation refsStatus: ${relation.evidence.refsStatus}`);
+  }
+
   const key = `${relation.kind}:${relation.from}->${relation.to}:${relation.role ?? ''}`;
   assert(!relationKeys.has(key), `Duplicate publishable relation: ${key}`);
   relationKeys.add(key);
@@ -149,6 +181,12 @@ const counts = {
   parents: relations.filter(relation => relation.kind === 'parent').length,
   spouses: relations.filter(relation => relation.kind === 'spouse').length,
   legalParents: relations.filter(relation => relation.kind === 'legal-parent').length,
+  relationEvidenceReviewed: relations.filter(relation =>
+    relation.evidence?.refsStatus === 'editorially-reviewed').length,
+  relationEvidencePending: relations.filter(relation =>
+    relation.evidence?.refsStatus === 'relation-level-review-pending').length,
+  directScriptureRelations: relations.filter(relation =>
+    relation.evidence?.directScripture === true).length,
   externalRefsOmitted: meta.diagnostics?.externalRefs?.length ?? 0,
   childIndexConflictsOmitted: meta.diagnostics?.childIndexConflicts?.length ?? 0,
   asymmetricSpousesOmitted: meta.diagnostics?.asymmetricSpouses?.length ?? 0,
@@ -160,6 +198,19 @@ assert(meta.counts?.relations === counts.relations, 'meta relation count drift')
 assert(meta.counts?.parentRelations === counts.parents, 'meta parent relation count drift');
 assert(meta.counts?.spouseRelations === counts.spouses, 'meta spouse relation count drift');
 assert(meta.counts?.legalParentRelations === counts.legalParents, 'meta legal-parent count drift');
+assert(meta.counts?.relationEvidenceReviewed === counts.relationEvidenceReviewed,
+  'meta reviewed relation-evidence count drift');
+assert(meta.counts?.relationEvidencePending === counts.relationEvidencePending,
+  'meta pending relation-evidence count drift');
+assert(meta.counts?.directScriptureRelations === counts.directScriptureRelations,
+  'meta direct-Scripture relation count drift');
+assert(counts.relationEvidenceReviewed === (rawAnnotations.annotations ?? []).length,
+  'Every editorial edge annotation must correspond to one reviewed publishable relation');
+assert(counts.relationEvidencePending + counts.relationEvidenceReviewed === counts.relations,
+  'Every publishable relation must be explicitly pending or editorially reviewed');
+assert(counts.directScriptureRelations === (rawAnnotations.annotations ?? [])
+  .filter(annotation => annotation.set?.directScripture === true).length,
+  'Direct-Scripture relation count must match reviewed annotations');
 assert(meta.counts?.gospelSequences === (gospels.sequences ?? []).length, 'meta Gospel sequence count drift');
 assert(meta.counts?.gospelOccurrences === (gospels.sequences ?? []).reduce((sum, sequence) =>
   sum + (sequence.occurrences ?? []).length, 0), 'meta Gospel occurrence count drift');

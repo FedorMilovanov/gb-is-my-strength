@@ -22,6 +22,33 @@ function pushOmission(list, item) {
   list.push(item);
 }
 
+function curatedRelationEvidence() {
+  return {
+    provenanceClass: 'curated-source-derived',
+    assertion: 'source-derived',
+    directScripture: null,
+    refsStatus: 'relation-level-review-pending',
+    refs: [],
+  };
+}
+
+function qualifiedRelationEvidence(set = {}) {
+  invariant(typeof set.directScripture === 'boolean',
+    'Qualified relation evidence requires explicit directScripture boolean');
+  invariant(typeof set.assertion === 'string' && set.assertion.length > 0,
+    'Qualified relation evidence requires assertion classification');
+  invariant(Array.isArray(set.refs) && set.refs.length > 0,
+    'Qualified relation evidence requires reviewed refs');
+  return {
+    provenanceClass: set.directScripture === true
+      ? 'direct-scripture-qualified'
+      : 'editorial-qualified',
+    refsStatus: 'editorially-reviewed',
+    ...set,
+    refs: [...set.refs],
+  };
+}
+
 export function buildPublishableProjection({
   v1,
   persons,
@@ -126,6 +153,7 @@ export function buildPublishableProjection({
         role,
         authority: 'curated-v1-explicit-field',
         source: { childV1Id: child.id, field },
+        evidence: curatedRelationEvidence(),
       });
     }
   }
@@ -169,6 +197,7 @@ export function buildPublishableProjection({
         role,
         authority: 'curated-v1-children-index',
         source: { parentV1Id: parent.id, field: 'children' },
+        evidence: curatedRelationEvidence(),
       });
     }
   }
@@ -206,6 +235,7 @@ export function buildPublishableProjection({
         to: selectedByV1.get(pair[1]).id,
         authority: 'curated-v1-reciprocal-spouse',
         source: { v1Ids: pair },
+        evidence: curatedRelationEvidence(),
       });
     }
   }
@@ -232,7 +262,7 @@ export function buildPublishableProjection({
         to: annotation.to,
         role: 'legal-father',
         authority: 'explicit-qualified-textual-annotation',
-        evidence: annotation.set,
+        evidence: qualifiedRelationEvidence(annotation.set),
         note: annotation.note ?? null,
       });
       continue;
@@ -244,7 +274,7 @@ export function buildPublishableProjection({
       relation.to === annotation.to
     );
     if (candidates.length === 1) {
-      candidates[0].evidence = annotation.set;
+      candidates[0].evidence = qualifiedRelationEvidence(annotation.set);
       candidates[0].note = annotation.note ?? null;
     } else {
       diagnostics.orphanAnnotations.push({
@@ -301,6 +331,7 @@ export function buildPublishableProjection({
       parents: 'explicit father/mother first; children[] supplements only missing non-conflicting same-role links',
       spouses: 'reciprocal curated v1 assertions only',
       annotations: 'qualify projected relations; legal/non-biological relation remains distinct from biological parent',
+      relationEvidence: 'curated topology remains source-derived with directScripture=null until relation-level refs are editorially reviewed',
       rawGraph: 'TIPNR-only persons and raw TIPNR-only edges are excluded',
     },
     counts: {
@@ -309,6 +340,9 @@ export function buildPublishableProjection({
       parentRelations: relationList.filter(relation => relation.kind === 'parent').length,
       spouseRelations: relationList.filter(relation => relation.kind === 'spouse').length,
       legalParentRelations: relationList.filter(relation => relation.kind === 'legal-parent').length,
+      relationEvidenceReviewed: relationList.filter(relation => relation.evidence?.refsStatus === 'editorially-reviewed').length,
+      relationEvidencePending: relationList.filter(relation => relation.evidence?.refsStatus === 'relation-level-review-pending').length,
+      directScriptureRelations: relationList.filter(relation => relation.evidence?.directScripture === true).length,
       gospelSequences: projectedGospels.sequences.length,
       gospelOccurrences: projectedGospels.sequences.reduce((sum, sequence) => sum + sequence.occurrences.length, 0),
     },

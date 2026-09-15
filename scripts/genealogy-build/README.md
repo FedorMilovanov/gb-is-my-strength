@@ -64,7 +64,7 @@ data/genealogy/v2/
    стиха первого упоминания (паттерны «имя одному: X», «родил X», списки сыновей;
    версификационный фолбэк ±2 стиха); (3) транслит-фолбэк по правилам (метится
    `review: true`). Ручной слой — `ru-overrides.json`, побеждает всё.
-5. **merge** — влить v1-скелет (156): хронология MT/LXX/Sam (AM), disputed-узлы,
+5. **merge** — влить v1-скелет (154): хронология MT/LXX/Sam (AM), disputed-узлы,
    significance, lineage/era/role. Мэппинг slug↔TIPNR + таблица исключений; немэпнутые — в отчёт.
 6. **validate** — дубликаты id, битые ссылки рёбер, циклы родительского графа,
    изолированные персоны, покрытие ru-имён по source-типам, гендерная целостность.
@@ -146,6 +146,7 @@ node scripts/genealogy-v2-publishable-audit.mjs
 - spouse автоматически публикуется только при reciprocal curated assertion;
 - Joseph→Jesus хранится как отдельный `legal-parent` и остаётся `non-biological`;
 - Heli→Mary сохраняет `editorial-harmonization`, `directScripture=false`, `disputed`;
+- каждая relation несёт machine-readable evidence status: unreviewed curated topology = `directScripture=null` + `relation-level-review-pending`; только редакционно проверенные relation-level refs получают boolean `directScripture`;
 - Matthew/Luke берутся только из explicit Gospel occurrence SSOT;
 - CI требует byte-identical regeneration и фиксированный набор из четырёх generated JSON.
 
