@@ -50,6 +50,18 @@ jobs:
       - name: Audit curated publishable projection
         run: node scripts/genealogy-v2-publishable-audit.mjs
 
+      - name: Require byte-identical committed projection
+        shell: bash
+        run: |
+          set -euo pipefail
+          drift="$(git status --porcelain -- data/genealogy/v2/publishable)"
+          if [ -n "$drift" ]; then
+            echo "Curated projection drifted from committed bytes:" >&2
+            printf '%s\n' "$drift" >&2
+            git diff --stat -- data/genealogy/v2/publishable >&2
+            exit 1
+          fi
+
       - name: Upload exact projection evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
