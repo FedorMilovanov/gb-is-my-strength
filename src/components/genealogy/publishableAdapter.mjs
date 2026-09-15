@@ -28,6 +28,72 @@ export const PUBLISHABLE_RUNTIME_POLICY = Object.freeze({
  * evidence-only until the relation-aware Atlas runtime lands. Legal parentage
  * likewise remains non-topological and must never become father.
  */
+function publishableRelationKey(relation) {
+  return `${relation.kind}:${relation.from}->${relation.to}:${relation.role ?? ''}`;
+}
+
+export function adaptPublishableRelationEvidence({ persons, relations, textualAssertions }) {
+  invariant(Array.isArray(persons) && persons.length > 0,
+    'Publishable persons are required for relation evidence');
+  invariant(Array.isArray(relations),
+    'Publishable relations are required for relation evidence');
+  invariant(Array.isArray(textualAssertions?.assertions),
+    'Publishable textual assertions are required for relation evidence');
+
+  const v1IdByPublishableId = new Map();
+  for (const person of persons) {
+    invariant(person?.id && person?.v1Id,
+      'Every publishable person requires id and v1Id for relation evidence');
+    invariant(!v1IdByPublishableId.has(person.id),
+      `Duplicate publishable person id in relation evidence: ${person.id}`);
+    v1IdByPublishableId.set(person.id, person.v1Id);
+  }
+
+  const textualByRelation = new Map();
+  for (const assertion of textualAssertions.assertions) {
+    const key = assertion.relationCrosswalk?.relationKey;
+    if (!key) continue;
+    const item = {
+      id: assertion.id,
+      sequenceId: assertion.sequenceId,
+      position: assertion.position,
+      fromRef: assertion.source?.fromRef ?? null,
+      toRef: assertion.source?.toRef ?? null,
+    };
+    textualByRelation.set(key, [...(textualByRelation.get(key) ?? []), item]);
+  }
+
+  const out = [];
+  const ids = new Set();
+  for (const relation of relations) {
+    const id = publishableRelationKey(relation);
+    invariant(!ids.has(id), `Duplicate runtime relation evidence id: ${id}`);
+    ids.add(id);
+
+    const from = v1IdByPublishableId.get(relation.from);
+    const to = v1IdByPublishableId.get(relation.to);
+    invariant(from && to,
+      `Runtime relation evidence escaped curated identities: ${id}`);
+
+    out.push({
+      id,
+      kind: relation.kind,
+      from,
+      to,
+      role: relation.role ?? null,
+      authority: relation.authority,
+      evidence: {
+        ...relation.evidence,
+        refs: [...(relation.evidence?.refs ?? [])],
+      },
+      note: relation.note ?? null,
+      textualAssertions: [...(textualByRelation.get(id) ?? [])],
+    });
+  }
+
+  return out;
+}
+
 export function adaptPublishableGenealogy({ persons, relations }) {
   invariant(Array.isArray(persons) && persons.length > 0,
     'Publishable persons are required');
