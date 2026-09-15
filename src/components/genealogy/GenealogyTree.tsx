@@ -5,7 +5,7 @@ import {
   type Node, type Edge, ConnectionLineType, type ReactFlowInstance, type Viewport,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import type { Person, Era, LineageFilter } from './types';
+import type { Person, Era, LineageFilter, RuntimeGenealogyRelation } from './types';
 import { getLineStyle, NODE_W, NODE_H } from './theme';
 import { projectGenealogy, overviewIds, fitGenealogyView, centerOf, getDetailLevel, MIN_ZOOM, MAX_ZOOM, boxesOverlap } from './semanticGraph';
 import './GenealogyTree.css';
@@ -14,6 +14,7 @@ import { matchesLineage } from './focusGraph';
 import { PersonCardContent, CompactPersonCard } from './PersonNode';
 import { DetailPanel } from './DetailPanel';
 import { SplitView } from './SplitView';
+import { RelationshipInspector } from './RelationshipInspector';
 
 const LINEAGE_FILTERS = [
   { id: 'all' as LineageFilter, label: 'Все' },
@@ -22,7 +23,7 @@ const LINEAGE_FILTERS = [
   { id: 'neutral' as LineageFilter, label: 'Прочие' },
 ];
 
-type GenealogyTreeProps = { persons: Person[]; eras?: Era[] };
+type GenealogyTreeProps = { persons: Person[]; eras?: Era[]; relations?: RuntimeGenealogyRelation[] };
 type GenealogyErrorBoundaryState = { hasError: boolean };
 
 class GenealogyErrorBoundary extends Component<{ children: ReactNode }, GenealogyErrorBoundaryState> {
@@ -89,13 +90,14 @@ class GenealogyErrorBoundary extends Component<{ children: ReactNode }, Genealog
   }
 }
 
-function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
+function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreeProps) {
   const treeRoot = useRef<HTMLDivElement | null>(null);
   const rfInstance = useRef<ReactFlowInstance | null>(null);
   const [search, setSearch] = useState('');
   const [showLineage, setShowLineage] = useState<LineageFilter>('all');
   const [showGolden, setShowGolden] = useState(true);
   const [selected, setSelected] = useState<Person | null>(null);
+  const [selectedRelation, setSelectedRelation] = useState<RuntimeGenealogyRelation | null>(null);
   const splitOpener = useRef<HTMLButtonElement | null>(null);
   const [showMiniMap, setShowMiniMap] = useState(false);
   const [showSplit, setShowSplit] = useState(false);
@@ -303,6 +305,7 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
   }, [laidNodes, reducedMotion]);
 
   const onNodeClick = useCallback((_evt: React.MouseEvent, node: Node) => {
+    setSelectedRelation(null);
     if (detailLevel < 2) { focusPerson(node.id, 1, 0); setSelected(null); return; }
     // Toggle: if clicking same node, deactivate focus
     if (activeId === node.id) {
@@ -319,6 +322,7 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
   const onPaneClick = useCallback(() => {
     setActiveId(null);
     setSelected(null);
+    setSelectedRelation(null);
   }, []);
 
   const changeLineage = useCallback((filter: LineageFilter) => {
@@ -328,6 +332,7 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
     if (active && !matchesLineage(active, filter)) setActiveId(null);
     if (selected && !matchesLineage(selected, filter)) setSelected(null);
     setTourIndex(-1);
+    setSelectedRelation(null);
   }, [activeId, persons, selected]);
 
   // ── Keyboard nav ──
@@ -340,6 +345,13 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
       e.stopPropagation();
       setSelected(null);
       setKeyboardTarget({ id: selected.id });
+      return;
+    }
+    if (e.key === 'Escape' && selectedRelation && target.closest('[data-genealogy-relation-details]')) {
+      e.preventDefault();
+      e.stopPropagation();
+      setSelectedRelation(null);
+      setKeyboardTarget({ id: selectedRelation.from });
       return;
     }
     // Toolbar, dialogs, links and editable fields own their native keys.
@@ -377,7 +389,7 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
       case 'Enter': case ' ': { if (detailLevel < 2) { moveFocus(person.id); } else { setActiveId(person.id); setSelected(person); } break; }
       case 'Escape': setActiveId(null); setSelected(null); break;
     }
-  }, [persons, laidNodes, selected, showSplit, focusPerson, detailLevel]);
+  }, [persons, laidNodes, selected, selectedRelation, showSplit, focusPerson, detailLevel]);
 
   // ── Golden path tour ──
   const goldenArray = useMemo(() => {
@@ -392,7 +404,7 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
   const tourActive = tourIndex >= 0;
   const tourPerson = tourActive ? persons.find(p => p.id === goldenArray[tourIndex]) : null;
   const startTour = useCallback(() => {
-    setShowLineage('all'); setSearch(''); setSelected(null); setTourIndex(0);
+    setShowLineage('all'); setSearch(''); setSelected(null); setSelectedRelation(null); setTourIndex(0);
     if (goldenArray[0]) focusPerson(goldenArray[0], 1, 0);
   }, [goldenArray, focusPerson]);
   const tourNext = useCallback(() => setTourIndex(i => Math.min(i + 1, goldenArray.length - 1)), [goldenArray.length]);
@@ -401,10 +413,24 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
     if (tourIndex >= 0 && goldenArray[tourIndex]) focusPerson(goldenArray[tourIndex], 1, 0);
   }, [tourIndex, goldenArray, focusPerson]);
 
+  const onEdgeClick = useCallback((_event: React.MouseEvent, edge: Edge) => {
+    const pathIds = edge.data?.pathIds as string[] | undefined;
+    if (pathIds?.length) {
+      setSelectedRelation(null);
+      focusPerson(pathIds[Math.floor(pathIds.length / 2)], 1, 0);
+      return;
+    }
+    const relation = relations.find(item =>
+      item.kind === 'parent' && item.from === edge.source && item.to === edge.target);
+    if (!relation) return;
+    setSelected(null);
+    setSelectedRelation(relation);
+  }, [relations, focusPerson]);
+
   const visibleCount = visibleNodeIds.size;
   const visibleFocusCount = focusLineageIds ? laidNodes.filter(n => focusLineageIds.has(n.id) && visibleNodeIds.has(n.id)).length : 0;
   const detailLabel = detailLevel === 0 ? 'Обзор' : detailLevel === 1 ? 'Ключевые' : 'Все детали';
-  const resetView = () => { setSearch(''); setActiveId(null); setSelected(null); setTourIndex(-1); fitOverview(); };
+  const resetView = () => { setSearch(''); setActiveId(null); setSelected(null); setSelectedRelation(null); setTourIndex(-1); fitOverview(); };
   const hasCardsInView = laidNodes.some(node => {
     if (!visibleNodeIds.has(node.id)) return false;
     const center = centerOf(node);
@@ -414,7 +440,7 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
   const focusEra = (eraId: string) => {
     const members = laidNodes.filter(n => n.data.era === eraId);
     if (!members.length || !rfInstance.current) return;
-    setSearch(''); setSelected(null); setActiveId(null); setTourIndex(-1);
+    setSearch(''); setSelected(null); setSelectedRelation(null); setActiveId(null); setTourIndex(-1);
     const first = [...members].sort((a, b) => a.position.y - b.position.y)[0];
     focusPerson(first.id, 1, 0);
   };
@@ -425,7 +451,7 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
       <div className="genealogy-toolbar" role="toolbar" aria-label="Управление древом">
         <div className="genealogy-heading"><h2>Библейские родословия</h2></div>
         <div className="genealogy-primary-tools">
-          <input type="text" placeholder="Найти человека…" value={search} onChange={e => { setSearch(e.target.value); setActiveId(null); setSelected(null); }}
+          <input type="text" placeholder="Найти человека…" value={search} onChange={e => { setSearch(e.target.value); setActiveId(null); setSelected(null); setSelectedRelation(null); }}
             aria-label="Поиск по имени" />
           <button ref={splitOpener} type="button" onClick={() => setShowSplit(true)} title="Сравнить Мф/Лк">Мф / Лк</button>
           <button type="button" onClick={startTour} title="Тур" aria-label="Пройти мессианскую нить">Тур</button>
@@ -442,10 +468,7 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
         <ReactFlow
           nodes={flowNodes} onNodesChange={onNodesChange} edges={displayEdges}
           onNodeClick={onNodeClick} onPaneClick={onPaneClick}
-          onEdgeClick={(_event, edge) => {
-            const ids = edge.data?.pathIds as string[] | undefined;
-            if (ids?.length) focusPerson(ids[Math.floor(ids.length / 2)], 1, 0);
-          }}
+          onEdgeClick={onEdgeClick}
           onInit={inst => { rfInstance.current = inst; fitOverview(); }}
           onMoveEnd={(_event, viewport) => setCamera(current => current.x === viewport.x && current.y === viewport.y && current.zoom === viewport.zoom ? current : viewport)}
           defaultViewport={{ x: 0, y: 0, zoom: 0.04 }}
@@ -481,11 +504,19 @@ function GenealogyTreeContent({ persons, eras }: GenealogyTreeProps) {
       <div className="genealogy-status">
         <div><strong>{detailLabel}</strong><span>Показано {visibleCount} из {laidNodes.length}</span></div>
         <p>{detailLevel < 2 ? 'Пунктир — путь через скрытые персоны. Нажмите имя, чтобы раскрыть ветвь.' : 'Схема поколений: расстояния не обозначают годы.'}</p>
-        {activeId && <button type="button" data-genealogy-focus-count onClick={() => { setActiveId(null); setSelected(null); }}>
+        {activeId && <button type="button" data-genealogy-focus-count onClick={() => { setActiveId(null); setSelected(null); setSelectedRelation(null); }}>
           Фокус: {visibleFocusCount} из {focusLineageIds?.size ?? 0} · Сбросить
         </button>}
       </div>
       <DetailPanel person={selected} onClose={() => { if (selected) setKeyboardTarget({ id: selected.id }); setSelected(null); }} />
+      <RelationshipInspector
+        relation={selectedRelation}
+        persons={persons}
+        onClose={() => {
+          if (selectedRelation) setKeyboardTarget({ id: selectedRelation.from });
+          setSelectedRelation(null);
+        }}
+      />
       {showSplit && <SplitView persons={persons} returnFocusTo={splitOpener.current} onClose={() => setShowSplit(false)} />}
       {tourActive && tourPerson && <div className="genealogy-tour" role="group" aria-label="Путешествие по родословию">
         <button type="button" onClick={tourPrev} disabled={tourIndex === 0} aria-label="Предыдущий">←</button>
