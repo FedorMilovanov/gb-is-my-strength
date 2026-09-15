@@ -231,6 +231,9 @@ async function assertSplitLifecycle(page, touch) {
   else await pressFocused(page, opener, 'Enter', 'Split View opener');
   const dialog = page.getByRole('dialog', { name: 'Две родословные Христа' });
   await dialog.waitFor({ state: 'visible' });
+  assert.equal(await dialog.evaluate(node =>
+    getComputedStyle(node).getPropertyValue('--split-bg').trim()), '#f8f2e7',
+  'Split View did not inherit canonical light theme');
 
   const persons = RUNTIME_PERSONS;
   const screenshotPrefix = `${page.context().browser().browserType().name()}-${page.viewportSize().width}x${page.viewportSize().height}`;
@@ -287,12 +290,22 @@ async function assertSplitLifecycle(page, touch) {
   await dialog.waitFor({ state: 'detached' });
   assert.equal(await opener.evaluate((node) => document.activeElement === node), true, 'Escape did not restore focus to Split View opener');
 
+  const themeToggle = page.locator('#themeToggle');
+  await themeToggle.evaluate(button => button.click());
+  await page.waitForFunction(() => document.documentElement.classList.contains('dark'));
+
   await pressFocused(page, opener, 'Enter', 'Split View opener');
   const reopened = page.getByRole('dialog', { name: 'Две родословные Христа' });
   await reopened.waitFor({ state: 'visible' });
+  assert.equal(await reopened.evaluate(node =>
+    getComputedStyle(node).getPropertyValue('--split-bg').trim()), '#191711',
+  'Split View did not follow canonical dark theme');
   await reopened.getByRole('button', { name: 'Закрыть сравнение' }).click();
   await reopened.waitFor({ state: 'detached' });
   assert.equal(await opener.evaluate((node) => document.activeElement === node), true, 'explicit Split View close did not restore focus to opener');
+
+  await themeToggle.evaluate(button => button.click());
+  await page.waitForFunction(() => !document.documentElement.classList.contains('dark'));
 }
 
 async function assertGenealogyThemeLifecycle(page, browserName, viewport) {
