@@ -210,8 +210,8 @@ for (const [id, url] of SERIES) {
       visible: getComputedStyle(button.closest('.setting-group')).display !== 'none'
     };
   });
-  R(id, 'desk: настройка «Шире» доступна и ограничена 46rem',
-    !!measure && measure.visible && measure.rootMeasure === 'wide' && measure.cssMeasure === '46rem' &&
+  R(id, 'desk: настройка «Шире» доступна и ограничена 58rem',
+    !!measure && measure.visible && measure.rootMeasure === 'wide' && measure.cssMeasure === '58rem' &&
       (id !== 'gill3' || measure.delta >= 24),
     JSON.stringify(measure));
   if (ARTIFACT_DIR && id === 'gill3') {
