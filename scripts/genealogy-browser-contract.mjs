@@ -295,6 +295,59 @@ async function assertSplitLifecycle(page, touch) {
   assert.equal(await opener.evaluate((node) => document.activeElement === node), true, 'explicit Split View close did not restore focus to opener');
 }
 
+async function assertGenealogyThemeLifecycle(page, browserName, viewport) {
+  const app = page.locator('[data-genealogy-app]');
+  const toggle = page.locator('#themeToggle');
+  await toggle.waitFor({ state: 'attached' });
+
+  const readTheme = () => app.evaluate(node => {
+    const style = getComputedStyle(node);
+    return {
+      dark: document.documentElement.classList.contains('dark'),
+      bg: style.getPropertyValue('--genealogy-bg').trim(),
+      panel: style.getPropertyValue('--genealogy-panel').trim(),
+      text: style.getPropertyValue('--genealogy-text').trim(),
+      nodeText: style.getPropertyValue('--genealogy-node-text').trim(),
+      actualBg: style.backgroundColor,
+      color: style.color,
+    };
+  });
+
+  const light = await readTheme();
+  assert.equal(light.dark, false,
+    `${browserName} ${viewport.width}x${viewport.height}: genealogy did not start in canonical light theme`);
+  assert.equal(light.bg, '#f4efe5');
+  assert.equal(light.panel, '#fffaf2');
+  assert.equal(light.text, '#30271d');
+  assert.equal(light.nodeText, '#33291f');
+  await app.screenshot({
+    path: path.join(REPORT_DIR, `${browserName}-${viewport.width}x${viewport.height}-theme-light.png`),
+    animations: 'disabled',
+  });
+
+  await toggle.evaluate(button => button.click());
+  await page.waitForFunction(() => document.documentElement.classList.contains('dark'));
+  const dark = await readTheme();
+  assert.equal(dark.dark, true);
+  assert.equal(dark.bg, '#171816');
+  assert.equal(dark.panel, '#23251f');
+  assert.equal(dark.text, '#ede6d5');
+  assert.equal(dark.nodeText, '#f0e3c9');
+  assert.notEqual(dark.actualBg, light.actualBg,
+    `${browserName} ${viewport.width}x${viewport.height}: atlas background did not change with site theme`);
+  assert.notEqual(dark.color, light.color,
+    `${browserName} ${viewport.width}x${viewport.height}: atlas text did not change with site theme`);
+  await app.screenshot({
+    path: path.join(REPORT_DIR, `${browserName}-${viewport.width}x${viewport.height}-theme-dark.png`),
+    animations: 'disabled',
+  });
+
+  await toggle.evaluate(button => button.click());
+  await page.waitForFunction(() => !document.documentElement.classList.contains('dark'));
+  const restored = await readTheme();
+  assert.equal(restored.bg, light.bg, 'Theme round-trip did not restore genealogy light tokens');
+}
+
 async function assertFocusInteractions(page) {
   await page.getByRole('combobox', { name: 'Поиск по имени' }).fill('Исаак');
   await waitForViewportStable(page);
@@ -506,8 +559,13 @@ async function assertAtlasNavigation(page, viewport, screenshotPrefix) {
 async function runViewport(browserName, browserType, baseUrl, viewport) {
   const browser = await browserType.launch({ headless: true });
   const touch = viewport.width <= 430;
-  const context = await browser.newContext({ viewport, hasTouch: touch, isMobile: touch && browserName !== 'firefox',
-    reducedMotion: process.env.GENEALOGY_REDUCED_MOTION === '1' ? 'reduce' : 'no-preference' });
+  const context = await browser.newContext({
+    viewport,
+    hasTouch: touch,
+    isMobile: touch && browserName !== 'firefox',
+    colorScheme: 'light',
+    reducedMotion: process.env.GENEALOGY_REDUCED_MOTION === '1' ? 'reduce' : 'no-preference',
+  });
   const page = await context.newPage();
   const pageErrors = [];
   let phase = 'navigation';
@@ -522,6 +580,7 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     await waitForViewportStable(page);
 
     const initial = await measurePersonViewport(page);
+    await assertGenealogyThemeLifecycle(page, browserName, viewport);
     assert.equal(initial.mountedPersonNodes, EXPECTED_PERSON_NODES, `${browserName} ${viewport.width}x${viewport.height}: genealogy dataset mount count diverged from canonical data/genealogy/genealogy.json`);
     assert.ok(initial.visiblePersonCards > 0, `${browserName} ${viewport.width}x${viewport.height}: settled initial viewport contains no visible person cards`);
     assert.ok(initial.visibleArea > 0, `${browserName} ${viewport.width}x${viewport.height}: settled initial viewport has no useful person-card area`);
