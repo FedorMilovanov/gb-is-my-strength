@@ -80,6 +80,10 @@ async function snapshot(page) {
 
   try {
     await page.setContent('<!doctype html><html><body><div id="map" style="width:1200px;height:800px"></div></body></html>');
+    // This fixture runs on about:blank. URL-state/history behavior has its own
+    // MapEngine contracts; keep this DOM-capability witness isolated from the
+    // opaque-origin SecurityError that history.replaceState would otherwise raise.
+    await page.evaluate(() => { window.history.replaceState = () => {}; });
     await page.addScriptTag({ content: engine });
 
     await mount(page, ['stages']);
