@@ -413,16 +413,24 @@ const runtimeRoots = [path.join(ROOT, 'src')];
 const runtimeV2Refs = walkRuntimeRefs(runtimeRoots);
 
 function walkRuntimeRefs(roots) {
-  const refs = [];
+  const raw = new Set();
+  const publishable = new Set();
+  const pattern = /(?:data\/)?genealogy\/v2(?:\/[A-Za-z0-9._/-]+)?/gu;
   for (const root of roots) {
     for (const file of walk(root)) {
       const text = fs.readFileSync(file, 'utf8');
-      if (/data\/genealogy\/v2|genealogy\/v2\//u.test(text)) {
-        refs.push(path.relative(ROOT, file).replaceAll(path.sep, '/'));
+      const rel = path.relative(ROOT, file).replaceAll(path.sep, '/');
+      for (const match of text.matchAll(pattern)) {
+        const ref = match[0];
+        if (/genealogy\/v2\/publishable(?:\/|$)/u.test(ref)) publishable.add(rel);
+        else raw.add(rel);
       }
     }
   }
-  return refs.sort();
+  return {
+    raw: [...raw].sort(),
+    publishable: [...publishable].sort(),
+  };
 }
 
 const pipelineVersionMismatch = meta.pipelineVersion !== PIPELINE_VERSION;
@@ -468,7 +476,7 @@ if (committedMatthewLukeArtifactIssues.length) blockers.push({
   count: committedMatthewLukeArtifactIssues.length,
 });
 
-const runtimeViolation = runtimeV2Refs.length > 0 && blockers.length > 0;
+const runtimeViolation = runtimeV2Refs.raw.length > 0 && blockers.length > 0;
 const report = {
   schemaVersion: 1,
   status: blockers.length === 0 ? 'publishable' : 'draft-blocked',
@@ -511,11 +519,16 @@ const report = {
     interpretationWordingIssues,
     matthewLukeLayoutIssues,
     committedMatthewLukeArtifactIssues,
-    runtimeV2Refs,
+    runtimeRawV2Refs: runtimeV2Refs.raw,
+    runtimePublishableV2Refs: runtimeV2Refs.publishable,
   },
   runtimeGuard: {
     ok: !runtimeViolation,
-    reason: runtimeViolation ? 'v2 is referenced by runtime while publication blockers remain' : 'draft v2 is not wired into runtime',
+    reason: runtimeViolation
+      ? 'blocked raw v2 is referenced by runtime while raw-corpus blockers remain'
+      : runtimeV2Refs.publishable.length
+        ? 'runtime references only the separately audited publishable v2 projection'
+        : 'no v2 runtime references detected',
   },
 };
 
@@ -549,7 +562,8 @@ const md = [
   `- Overstated interpretation wording: ${interpretationWordingIssues.length}`,
   `- Matthew/Luke layout truth-model issues: ${matthewLukeLayoutIssues.length}`,
   `- Matthew/Luke committed artifact drift: ${committedMatthewLukeArtifactIssues.length}`,
-  `- Runtime v2 references: ${runtimeV2Refs.length}`,
+  `- Runtime raw-v2 references: ${runtimeV2Refs.raw.length}`,
+  `- Runtime publishable-v2 references: ${runtimeV2Refs.publishable.length}`,
   '',
   '## Blockers',
   '',
@@ -557,7 +571,9 @@ const md = [
   '',
   '## Runtime guard',
   '',
-  report.runtimeGuard.ok ? '- PASS: draft v2 is not connected to the genealogy runtime.' : '- FAIL: draft v2 is connected while blockers remain.',
+  report.runtimeGuard.ok
+    ? '- PASS: no blocked raw-v2 runtime reference is present.'
+    : '- FAIL: blocked raw v2 is connected while raw-corpus blockers remain.',
   '',
 ].join('\n');
 fs.writeFileSync(path.join(REPORT_DIR, 'genealogy-v2-publication-audit.md'), md);
