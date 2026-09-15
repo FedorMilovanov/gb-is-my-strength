@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { translitEnRu, similarity } from './genealogy-build/lib/ru-extract.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const V2 = path.join(ROOT, 'data', 'genealogy', 'v2');
@@ -59,6 +60,15 @@ const rows = review.map(person => {
   if (person.ru.source === 'translit') riskFlags.push('TRANSLIT_NO_TEXTUAL_EVIDENCE');
   if (!verseRef) riskFlags.push('NO_VERSE_EVIDENCE');
   if (person.ru.verseForm) riskFlags.push('NORMALIZED_FROM_VERSE_FORM');
+  if (['pattern', 'candidate'].includes(person.ru.source) &&
+      /[бвгджзклмнпрстфхцчшщ]а$/u.test(person.ru.name) &&
+      person.ru.name.length >= 5) {
+    const stem = person.ru.name.slice(0, -1);
+    const approx = translitEnRu(person.en);
+    if (similarity(approx, stem) > similarity(approx, person.ru.name)) {
+      riskFlags.push('POSSIBLE_INFLECTED_CASE_FORM');
+    }
+  }
   if ((labelFrequency.get(person.ru.name) ?? 0) > 1) riskFlags.push('DUPLICATE_RU_LABEL');
   if (confidence < 0.8) riskFlags.push('LOW_CONFIDENCE');
   if (verseRef && firstRef && verseRef !== firstRef) riskFlags.push('EVIDENCE_REF_DIFFERS_FROM_FIRST_REF');
