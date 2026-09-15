@@ -1,0 +1,259 @@
+{
+ "gillA-1280": {
+  "steps": {
+   "base": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 18,
+    "ratio": 1.6,
+    "col": 640
+   },
+   "sepia": {
+    "bg": "rgb(238, 227, 200)",
+    "font": 18,
+    "ratio": 1.6,
+    "col": 640
+   },
+   "night": {
+    "bg": "rgb(14, 17, 22)",
+    "font": 18,
+    "ratio": 1.6,
+    "col": 640
+   },
+   "line-dense": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 18,
+    "ratio": 1.45,
+    "col": 640
+   },
+   "measure-narrow": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 18,
+    "ratio": 1.6,
+    "col": 528
+   },
+   "font+1": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 18.9,
+    "ratio": 1.6,
+    "col": 640
+   }
+  },
+  "errors": [],
+  "opener": true
+ },
+ "gillB-1280": {
+  "steps": {
+   "base": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 18,
+    "ratio": 1.6,
+    "col": 640
+   },
+   "sepia": {
+    "bg": "rgb(238, 227, 200)",
+    "font": 18,
+    "ratio": 1.6,
+    "col": 640
+   },
+   "night": {
+    "bg": "rgb(14, 17, 22)",
+    "font": 18,
+    "ratio": 1.6,
+    "col": 640
+   },
+   "line-dense": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 18,
+    "ratio": 1.45,
+    "col": 640
+   },
+   "measure-narrow": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 18,
+    "ratio": 1.6,
+    "col": 528
+   },
+   "font+1": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 18.9,
+    "ratio": 1.6,
+    "col": 640
+   }
+  },
+  "errors": [],
+  "opener": true
+ },
+ "hrail-1280": {
+  "steps": {
+   "base": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 18,
+    "ratio": 1.6,
+    "col": 688
+   },
+   "sepia": {
+    "bg": "rgb(238, 227, 200)",
+    "font": 18,
+    "ratio": 1.6,
+    "col": 688
+   },
+   "night": {
+    "bg": "rgb(14, 17, 22)",
+    "font": 18,
+    "ratio": 1.6,
+    "col": 688
+   },
+   "line-dense": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 18,
+    "ratio": 1.45,
+    "col": 688
+   },
+   "measure-narrow": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 18,
+    "ratio": 1.6,
+    "col": 576
+   },
+   "font+1": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 18.9,
+    "ratio": 1.6,
+    "col": 688
+   }
+  },
+  "errors": [],
+  "opener": true
+ },
+ "nagornaya-1280": {
+  "steps": {},
+  "errors": [],
+  "opener": false
+ },
+ "gillA-390": {
+  "steps": {
+   "base": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 16,
+    "ratio": 1.6,
+    "col": 311
+   },
+   "sepia": {
+    "bg": "rgb(238, 227, 200)",
+    "font": 16,
+    "ratio": 1.6,
+    "col": 311
+   },
+   "night": {
+    "bg": "rgb(14, 17, 22)",
+    "font": 16,
+    "ratio": 1.6,
+    "col": 311
+   },
+   "line-dense": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 16,
+    "ratio": 1.45,
+    "col": 311
+   },
+   "measure-narrow": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 16,
+    "ratio": 1.6,
+    "col": 264
+   },
+   "font+1": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 16.8,
+    "ratio": 1.6,
+    "col": 311
+   }
+  },
+  "errors": [],
+  "opener": true
+ },
+ "gillB-390": {
+  "steps": {
+   "base": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 16,
+    "ratio": 1.6,
+    "col": 311
+   },
+   "sepia": {
+    "bg": "rgb(238, 227, 200)",
+    "font": 16,
+    "ratio": 1.6,
+    "col": 311
+   },
+   "night": {
+    "bg": "rgb(14, 17, 22)",
+    "font": 16,
+    "ratio": 1.6,
+    "col": 311
+   },
+   "line-dense": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 16,
+    "ratio": 1.45,
+    "col": 311
+   },
+   "measure-narrow": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 16,
+    "ratio": 1.6,
+    "col": 264
+   },
+   "font+1": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 16.8,
+    "ratio": 1.6,
+    "col": 311
+   }
+  },
+  "errors": [],
+  "opener": true
+ },
+ "hrail-390": {
+  "steps": {
+   "base": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 16,
+    "ratio": 1.6,
+    "col": 311
+   },
+   "sepia": {
+    "bg": "rgb(238, 227, 200)",
+    "font": 16,
+    "ratio": 1.6,
+    "col": 311
+   },
+   "night": {
+    "bg": "rgb(14, 17, 22)",
+    "font": 16,
+    "ratio": 1.6,
+    "col": 311
+   },
+   "line-dense": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 16,
+    "ratio": 1.45,
+    "col": 311
+   },
+   "measure-narrow": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 16,
+    "ratio": 1.6,
+    "col": 264
+   },
+   "font+1": {
+    "bg": "rgb(253, 252, 249)",
+    "font": 16.8,
+    "ratio": 1.6,
+    "col": 311
+   }
+  },
+  "errors": [],
+  "opener": true
+ }
+}

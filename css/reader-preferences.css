@@ -137,7 +137,10 @@ html[data-reader-theme="sepia"] .info-box {
   html[data-reader-measure="wide"]   { --gb-mobile-measure: 100%; } /* 100vw overshoots by the classic-scrollbar width */
   html[data-reader-measure] [data-gill-v16] .page-wrap,
   html[data-reader-measure] [data-gill-v16] main.article-main,
-  html[data-reader-measure] [data-reader-root] .article-main {
+  html[data-reader-measure] [data-reader-root] .article-main,
+  /* hrail: [data-reader-root] sits ON the main itself (HermenevtikaBody),
+     so the descendant form above never matched — self-form added (audit §16). */
+  html[data-reader-measure] [data-reader-root].article-main {
     width: min(820px, var(--gb-mobile-measure));
     max-width: var(--gb-mobile-measure) !important;
     margin-inline: auto !important;
