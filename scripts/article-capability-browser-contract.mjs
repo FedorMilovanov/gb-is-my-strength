@@ -152,6 +152,33 @@ async function exerciseHeadingAnchor(page, label) {
   assert.equal(await anchor.getAttribute('aria-label'), 'Скопировать ссылку на раздел', `${label}: heading anchor accessibility label drift`);
 
   const expectedUrl = await page.evaluate((fragment) => new URL(fragment, window.location.href).toString(), href);
+  const hitTestBeforeClick = await anchor.evaluate((node) => {
+    const rect = node.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    const hit = document.elementFromPoint(x, y);
+    const describe = (target) => {
+      if (!(target instanceof Element)) {
+        return {
+          nodeName: target?.nodeName || '',
+          nodeType: target?.nodeType || null,
+        };
+      }
+      return {
+        tag: target.tagName,
+        id: target.id || '',
+        className: typeof target.className === 'string' ? target.className : (target.className?.baseVal || ''),
+        closestAnchorHref: target.closest('.heading-anchor')?.getAttribute('href') || '',
+      };
+    };
+    return {
+      rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+      center: { x, y },
+      pointerEvents: getComputedStyle(node).pointerEvents,
+      opacity: getComputedStyle(node).opacity,
+      hit: describe(hit),
+    };
+  });
   await page.evaluate(() => {
     window.__gbAnchorFeedbackSeen = false;
     const markFeedback = () => {
@@ -168,26 +195,52 @@ async function exerciseHeadingAnchor(page, label) {
     });
     window.__gbAnchorFeedbackObserver = observer;
 
+    const describeTarget = (target) => {
+      if (!(target instanceof Element)) {
+        return {
+          nodeName: target?.nodeName || '',
+          nodeType: target?.nodeType || null,
+        };
+      }
+      return {
+        tag: target.tagName,
+        id: target.id || '',
+        className: typeof target.className === 'string' ? target.className : (target.className?.baseVal || ''),
+        closestAnchorHref: target.closest('.heading-anchor')?.getAttribute('href') || '',
+      };
+    };
     const matchesAnchor = (event) => event.target instanceof Element
       && Boolean(event.target.closest('.heading-anchor[data-gb-heading-anchor-owner="native-v1"]'));
     window.__gbAnchorClickTrace = {
-      capture: 0,
-      bubble: 0,
-      captureDefaultPrevented: null,
-      bubbleDefaultPrevented: null,
+      windowCapture: 0,
+      documentCapture: 0,
+      documentBubble: 0,
+      windowDefaultPrevented: null,
+      documentCaptureDefaultPrevented: null,
+      documentBubbleDefaultPrevented: null,
+      windowTarget: null,
+      windowPath: [],
+    };
+    const windowCapture = (event) => {
+      window.__gbAnchorClickTrace.windowCapture += 1;
+      window.__gbAnchorClickTrace.windowDefaultPrevented = event.defaultPrevented;
+      window.__gbAnchorClickTrace.windowTarget = describeTarget(event.target);
+      window.__gbAnchorClickTrace.windowPath = event.composedPath().slice(0, 8).map(describeTarget);
     };
     const capture = (event) => {
       if (!matchesAnchor(event)) return;
-      window.__gbAnchorClickTrace.capture += 1;
-      window.__gbAnchorClickTrace.captureDefaultPrevented = event.defaultPrevented;
+      window.__gbAnchorClickTrace.documentCapture += 1;
+      window.__gbAnchorClickTrace.documentCaptureDefaultPrevented = event.defaultPrevented;
     };
     const bubble = (event) => {
       if (!matchesAnchor(event)) return;
-      window.__gbAnchorClickTrace.bubble += 1;
-      window.__gbAnchorClickTrace.bubbleDefaultPrevented = event.defaultPrevented;
+      window.__gbAnchorClickTrace.documentBubble += 1;
+      window.__gbAnchorClickTrace.documentBubbleDefaultPrevented = event.defaultPrevented;
     };
+    window.addEventListener('click', windowCapture, true);
     document.addEventListener('click', capture, true);
     document.addEventListener('click', bubble);
+    window.__gbAnchorWindowProbe = windowCapture;
     window.__gbAnchorCaptureProbe = capture;
     window.__gbAnchorBubbleProbe = bubble;
   });
@@ -218,11 +271,12 @@ async function exerciseHeadingAnchor(page, label) {
         headingAnchors: window.GBArticleInteractions?.headingAnchors || null,
       };
       window.__gbAnchorFeedbackObserver?.disconnect();
+      if (window.__gbAnchorWindowProbe) window.removeEventListener('click', window.__gbAnchorWindowProbe, true);
       if (window.__gbAnchorCaptureProbe) document.removeEventListener('click', window.__gbAnchorCaptureProbe, true);
       if (window.__gbAnchorBubbleProbe) document.removeEventListener('click', window.__gbAnchorBubbleProbe);
       return snapshot;
     });
-    throw new Error(`${label}: heading-anchor feedback timeout: ${JSON.stringify(diagnostics)}; ${String(error?.message || error)}`);
+    throw new Error(`${label}: heading-anchor feedback timeout: ${JSON.stringify({ hitTestBeforeClick, diagnostics })}; ${String(error?.message || error)}`);
   }
 
   const feedback = await page.evaluate(() => {
@@ -230,8 +284,10 @@ async function exerciseHeadingAnchor(page, label) {
     const toastSeen = toast?.classList.contains('is-visible') === true || window.__gbAnchorFeedbackSeen === true;
     window.__gbAnchorFeedbackObserver?.disconnect();
     delete window.__gbAnchorFeedbackObserver;
+    if (window.__gbAnchorWindowProbe) window.removeEventListener('click', window.__gbAnchorWindowProbe, true);
     if (window.__gbAnchorCaptureProbe) document.removeEventListener('click', window.__gbAnchorCaptureProbe, true);
     if (window.__gbAnchorBubbleProbe) document.removeEventListener('click', window.__gbAnchorBubbleProbe);
+    delete window.__gbAnchorWindowProbe;
     delete window.__gbAnchorCaptureProbe;
     delete window.__gbAnchorBubbleProbe;
     return {
