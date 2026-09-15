@@ -105,8 +105,8 @@ export function automaticGenealogySearchResult(
   return exact.length === 1 ? exact[0].person : null;
 }
 
-export function genealogySearchOptionLabel(person: Person): string {
-  const context = [
+export function genealogySearchOptionContext(person: Person): string {
+  return [
     person.ref,
     person.role === 'messiah' ? 'Мессия' :
       person.role === 'king' ? 'царь' :
@@ -114,6 +114,9 @@ export function genealogySearchOptionLabel(person: Person): string {
       person.role === 'prophet' ? 'пророк' :
       person.role === 'foster-father' ? 'обручник Марии' :
       null,
-  ].filter(Boolean);
-  return context.length ? `${person.name.ru} — ${context.join(' · ')}` : person.name.ru;
+  ].filter(Boolean).join(' · ') || person.id;
+}
+
+export function genealogySearchOptionLabel(person: Person): string {
+  return `${person.name.ru} — ${genealogySearchOptionContext(person)}`;
 }
