@@ -191,7 +191,7 @@ PR ещё нет; merge-tree с origin/main чистый; все контрак�
 |---|---|---|
 | WU-1.1 landing | OPEN P0→P2 | **CLOSED** марафоном: --planned сняты, реальные thumbs (II: crisis.webp), справочник «Отложено — решение за владельцем», byline «Автор-редактор:» ×10. Остаток: теги «Досье 28/30/31/32/33» на витрине → переносится в WU-4.3 |
 | WU-1.2 partToc | OPEN P0 | **CLOSED**: 9–20 пунктов/часть, 6–9 summary, 125/125 якорей валидны; «Конспект» оживает |
-| WU-1.3 reading-time | OPEN P0 | **OPEN (сознательно сохранено)**: 321/29–36 везде + guard зелёный на старых константах; план T1–T2 в силе; **новая поверхность: links-graph.json (N-4)** |
+| WU-1.3 reading-time | OPEN P0 | **CLOSED (re-verified pass-14)**: честный пересчёт (200 wpm) уже применён на ВСЕХ поверхностях: data/series.json, pastorSeriesConfig (CORE_TOTAL_MIN=157, кумулятивы 67/76/90/99/110/121/135/146), frontmatter II–IX (9/14/9/11/11/14/11/11), landing head (157/15), StatsSection (157), CardsSection, Часть I body (data-gbs2-total-min=157), search-manifest (157), links-graph.json (readingTime: 9…) — независимые замеры из dist (9–16 мин/часть, ±1) подтверждают порядок; guard G-6 держит консистентность |
 | WU-1.4 фид/sitemap-шард | OPEN P0 | **OPEN (отложено владельчески)**: фид 2 item, шард 3 loc, robots:123 рекламирует; основной sitemap/feed полны |
 | WU-1.5 reconciliation | OPEN P0 | **PARTIAL**: MASTER-PLAN product-репо обновлён (статусы, field-guide «отложено», 2026-09-15); CONTENT-CLEARANCE receipt, AuditRepo-запись, внешний Research-репо — открыты |
 | WU-1.6 aria-label | P3-hardening | без изменений (V-13) |
@@ -212,7 +212,7 @@ PR ещё нет; merge-tree с origin/main чистый; все контрак�
 | WU-4.3 канцелярит/витрина | OPEN P2 | **PARTIAL**: англицизмы reader-текста II–IX переведены (finding→вывод и др.), «Part II/VI»→«Часть»; backtick-термины и «Досье NN»-теги остаются |
 | WU-4.4 расшифровка 181 | OPEN P2 | OPEN |
 | WU-4.5 llms.txt | OPEN P2 | **CLOSED**: II–IX + Досье A с описаниями, Updated 2026-09-15 |
-| D-05 metadata | OPEN P1 | OPEN — 8× migration-freeze-unverified не тронуты |
+| D-05 metadata | OPEN P1 | **CLOSED (pass-14)**: effective-статус всех 10 published-маршрутов = approved (owner-решения в ledger: diotrophes-reconciliation-20260908 + antisovetov-reconciliation-20260908); raw storage сохраняет *-unverified/*-needs-review за ledger-механизмом — это проектируемое поведение, не дефект; site-wide effective non-approved = 0; registry --check 71/71, freeze-audit зелёный; guard G-5 держит |
 
 ## Новые WU из верификации марафона
 
@@ -663,3 +663,72 @@ js/glossary.js = DO-NOT. glossary-contract-audit: 130 терминов / 370 ali
 Волна 5: G-5 approval-пакет (diotrefy migration-freeze-unverified + Part I
 inconsistent-needs-review), WU-5.0, WU-6.6 полный; WU-1.3 reading-time T1–T2 (+ links-graph N-4);
 WU-1.5 внешние записи (CONTENT-CLEARANCE/AuditRepo/Research).
+
+---
+
+## PASS-14 — закрытие Волны 5 (G-1…G-8 guard-контракты) + ре-верификация WU-1.3
+
+### G-1 a11y — реальный дефект, исправлен
+Part I: 36 role="button" без accessible name — fn-marker-триггеры стратегической карты
+(34 цифровых + 2 текстовых ключа oim/ambiguity). Runtime article-strategic-map.js ставит
+aria-label в рантайме (L142), но статичная published-разметка имени не несла.
+Исправлено: статические `aria-label="Открыть пояснение N"` (и «Управление впечатлениями» /
+«Стратегическая двусмысленность» для именованных ключей) — runtime-проверка hasAttribute
+не затирает статические имена.
+
+### G-4 — реальный дефект, исправлен
+Досье A: вкладка «Конспект» листа обучения (GillLearningSheet — общий через
+GillSeriesChrome → SeriesReaderChrome) показывала ложную заглушку «Конспект появится,
+когда в разделе будет структура»: outline строится из partToc-пунктов c `summary`,
+а у Досье 17/17 пунктов без summary. Исправлено: 17 summary в partToc Досье
+(согласованы с реальным содержимым, включая faithful-witness секции:
+«15 реальных путей», «20 верных ответов», «лестница различения»).
+
+### Guard-контракт (G-1…G-8) — `scripts/pastor-series-guards-dist.js`
+Dist-level guard, закреплён в обеих сборочных цепях (`strangler:build` +
+`strangler:build:production-like`, после heading-id-гигиены) и в standalone-скрипте
+`pastor-series:guards:dist`:
+- **G-1** — каждый role="button" несёт имя (aria-label или текст);
+- **G-2** — 0 не-латинских heading-id + каждый href="#…" разрешается в реальный id;
+- **G-3** — .summary-card «Коротко» ≥ 1 на каждом маршруте серии;
+- **G-4** — 0 заглушек «Конспект появится…» И ≥ 1 outline-card (позитивная проверка);
+- **G-5** — effective reviewStatus всех 10 published-маршрутов = approved
+  (через readRegistry с application ledger-решений — raw storage может нести
+  *-unverified за owner-решениями, это проектируемое поведение);
+- **G-6** — readingTime консистентен: series.json == frontmatter == data-gbs2-* в dist
+  == SITE_CONFIG landing (ядро 157, companion 15);
+- **G-7** — sec-quiz внутри article[data-pagefind-body] (9 маршрутов; Досье без квиза — owner-решение);
+- **G-8** — print-правила таблиц покрывают [data-gbs2-series] (4 селектора в @media print).
+
+### WU-1.3 / G-6 — статус-коррекция (ре-верификация)
+Бэклог-статус «321/29–36 везде + guard на старых константах» устарел: честный пересчёт
+(200 wpm; ядро 157 = 67+9+14+9+11+11+14+11+11, Досье 15) уже применён на всех поверхностях
+(config/series.json/frontmatter/landing/stats/cards/Part-I-body/search-manifest/links-graph,
+guard visual-parity на 157). Независимый замер dist (без summary-card): II 10, III 14, IV 9,
+V 12, VI 11, VII 15, VIII 11, IX 12 — ±1 к плану (шум экстракции/округления); согласованные
+значения плана сохранены как канон (search-manifest уже материализовал их). WU-1.3 = CLOSED.
+
+### D-05 / G-5 — статус-коррекция (ре-верификация)
+«8× migration-freeze-unverified + Part I inconsistent-needs-review» — это RAW-STORAGE-чтение.
+Effective-состояние (readRegistry → applyReviewDecisions): все 10 маршрутов = approved
+(owner-решения 2026-09-08: diotrophes-reconciliation, antisovetov-reconciliation),
+site-wide effective non-approved = 0. Registry --check 71/71; freeze-audit «approved
+metadata converges; unapproved projections remain frozen». D-05 = CLOSED.
+
+### Инцидент (инфраструктурный)
+Среда сбросилась к base-коммиту (HEAD 3b40889, node_modules/dist стёрты), worktree и
+ветка origin уцелели. Восстановление: git fetch + reset --soft origin-tip + git reset →
+diff = только незакоммиченная работа pass-14; npm ci; пересборка. Урок подтверждён:
+проверять remote перед любыми коммитами после сброса.
+
+### Верификация
+- `npm run strangler:build` — 0 errors; в логе цепочки: heading-id hygiene (90/8) +
+  pastor-series guards G-1…G-8 — all passed (guard теперь часть сборки);
+- data:consistency ✓, page-ownership:dist ✓, pastor-series:visual-parity ✓,
+  dist-publication-audit ✓, route:profiles:check ✓.
+
+### Остаток плана (owner-lane)
+- WU-1.4 (фид/sitemap-шард серии) — отложен владельчески; T3 плана в силе для будущего транша.
+- WU-1.5 внешние записи (CONTENT-CLEARANCE receipt, AuditRepo, Research-репо).
+- N-2 glossary (safeguarding/senior) — зафиксированный risk, js/glossary.js = DO-NOT.
+- WU-4.3 остаток (backtick-термины, «Досье NN»-теги), WU-4.4 (расшифровка 181).
