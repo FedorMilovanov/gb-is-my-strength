@@ -950,11 +950,14 @@
     ],
     "description": "Две подсвеченные области помогают читать разрыв между Северным царством Израиля и Южным царством Иуды."
   },
+  "archetype": "political",
+  "capabilities": ["stages","stories","layers","timeline","signature","interpretations"],
   "publication": {
     "status": "temporary-placeholder",
     "indexable": false,
     "sitemap": false,
     "llms": false,
-    "pagefind": false
+    "pagefind": false,
+    "hub": "withheld"
   }
 }

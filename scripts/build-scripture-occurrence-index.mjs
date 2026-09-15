@@ -15,6 +15,7 @@ import {
 
 const require = createRequire(import.meta.url);
 const { loadRouteRecords } = require('./lib/route-source-contract.js');
+const { getKartyHubInventory } = require('../src/lib/karty-hub-inventory.cjs');
 
 export const ROOT = DEFAULT_REPOSITORY_ROOT;
 export const OUTPUT_FILE = path.join(ROOT, 'data/scripture-search-index.json');
@@ -344,6 +345,47 @@ function exactCandidate(reference, registry, referenceRegex) {
   return parseCandidate(match, registry);
 }
 
+function addKartyHubPublicationOccurrences({ manifest, grouped, registry, corpus, referenceRegex, scannedFiles }) {
+  const hubItem = (manifest.items || []).find((item) => normalizeRoute(item.url).route === '/karty/');
+  if (!hubItem) return 0;
+
+  const inventory = getKartyHubInventory(ROOT);
+  const topics = [...new Set([hubItem.section, ...(hubItem.tags || [])].filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, 'ru'));
+  let count = 0;
+
+  for (const record of inventory.publishedRecords || []) {
+    const summary = String(record.publication?.hub_summary || '').trim();
+    if (!summary) continue;
+
+    const title = String(record.route?.meta?.title || record.slug);
+    const titleHe = String(record.route?.meta?.title_he || '').trim();
+    const context = ['Проверенная карта', title, titleHe, summary, 'Открыть карту →'].filter(Boolean).join(' ');
+    const sourceOwner = `karty/${record.slug}/route.json`;
+    scannedFiles.add(sourceOwner);
+
+    referenceRegex.lastIndex = 0;
+    let match;
+    while ((match = referenceRegex.exec(summary))) {
+      const candidate = parseCandidate(match, registry);
+      if (!candidate) continue;
+      addOccurrence(grouped, candidate, {
+        url: '/karty/',
+        title: hubItem.title,
+        context,
+        anchor: 'mapsTitle',
+        raw: candidate.raw,
+        topics,
+        sourceOwner,
+        sourceKind: 'karty-publication-metadata',
+      }, registry, corpus);
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
 export function buildScriptureOccurrenceIndex(root = ROOT) {
   if (root !== ROOT) throw new Error('custom roots are not supported by the current route-source contract');
   const manifest = readJson(MANIFEST_FILE);
@@ -356,6 +398,9 @@ export function buildScriptureOccurrenceIndex(root = ROOT) {
   const scannedFiles = new Set();
   const indexedRoutes = new Set();
   let manifestOccurrences = 0;
+  const kartyHubOccurrences = addKartyHubPublicationOccurrences({
+    manifest, grouped, registry, corpus, referenceRegex, scannedFiles,
+  });
 
   for (const item of manifest.items || []) {
     const normalized = normalizeRoute(item.url);
@@ -433,6 +478,7 @@ export function buildScriptureOccurrenceIndex(root = ROOT) {
       bibleRegistry: 'data/bible/books.json',
       bibleResolver: 'src/lib/bible-reference-core.mjs',
       routeSourceContract: 'scripts/lib/route-source-contract.js',
+      kartyHubInventory: 'src/lib/karty-hub-inventory.cjs',
     },
     stats: {
       manifestItems: (manifest.items || []).length,
@@ -444,6 +490,7 @@ export function buildScriptureOccurrenceIndex(root = ROOT) {
       referencesWithoutCanonicalText: references.length - canonicalTextRecords,
       chapterRanges,
       manifestOccurrences,
+      kartyHubOccurrences,
     },
     references,
   };
