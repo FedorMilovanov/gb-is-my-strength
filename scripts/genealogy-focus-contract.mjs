@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { computeFocusLineage, matchesLineage } from '../src/components/genealogy/focusGraph.ts';
+import { readGenealogyRuntimePersons } from './genealogy-runtime-fixture.mjs';
 
 export function assertGenealogyFocusContract() {
   const person = (id, father = null, mother = null, children = []) => ({ id, name: { ru: id }, father, mother, children, lineage: 'neutral' });
@@ -17,13 +17,13 @@ export function assertGenealogyFocusContract() {
   assert.deepEqual([...computeFocusLineage([person('a', 'b'), person('b', 'a')], 'a')].sort(), ['a', 'b']);
   assert.deepEqual([...computeFocusLineage([person('a', 'missing')], 'a')], ['a']);
 
-  const data = JSON.parse(fs.readFileSync(new URL('../data/genealogy/genealogy.json', import.meta.url), 'utf8'));
-  const isaac = computeFocusLineage(data.persons, 'isaac');
+  const persons = readGenealogyRuntimePersons();
+  const isaac = computeFocusLineage(persons, 'isaac');
   assert.ok(isaac.has('abram'), 'Isaac must retain Abraham');
   assert.ok(isaac.has('sarah'), 'Isaac must retain Sarah');
-  const sarah = computeFocusLineage(data.persons, 'sarah');
+  const sarah = computeFocusLineage(persons, 'sarah');
   assert.ok(sarah.has('isaac') && sarah.has('jacob'), 'Maternal descendants are missing');
-  const isaacPerson = data.persons.find(person => person.id === 'isaac');
+  const isaacPerson = persons.find(person => person.id === 'isaac');
   assert.equal(matchesLineage(isaacPerson, 'all'), true);
   assert.equal(matchesLineage(isaacPerson, 'messianic'), true);
   assert.equal(matchesLineage(isaacPerson, 'cainite'), false);
