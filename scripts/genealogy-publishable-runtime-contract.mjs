@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   adaptPublishableGenealogy,
+  adaptPublishableRelationEvidence,
   PUBLISHABLE_RUNTIME_POLICY,
 } from '../src/components/genealogy/publishableAdapter.mjs';
 
@@ -15,6 +16,7 @@ const assert = (condition, message) => { if (!condition) fail(message); };
 const legacy = readJson('data/genealogy/genealogy.json');
 const publishablePersons = readJson('data/genealogy/v2/publishable/persons.json');
 const relations = readJson('data/genealogy/v2/publishable/relations.json');
+const textualAssertions = readJson('data/genealogy/v2/publishable/textual-assertions.json');
 
 const adapted = adaptPublishableGenealogy({
   persons: publishablePersons,
@@ -119,6 +121,42 @@ assert(PUBLISHABLE_RUNTIME_POLICY.materializedParentAuthorities.length === 1 &&
   PUBLISHABLE_RUNTIME_POLICY.materializedParentAuthorities[0] === 'curated-v1-explicit-field',
 'Runtime parent policy unexpectedly broadened');
 
+const runtimeRelations = adaptPublishableRelationEvidence({
+  persons: publishablePersons,
+  relations,
+  textualAssertions,
+});
+assert(runtimeRelations.length === relations.length,
+  `Runtime relation evidence count drift: ${runtimeRelations.length}/${relations.length}`);
+
+const josephJesus = runtimeRelations.find(relation =>
+  relation.kind === 'legal-parent' && relation.from === 'joseph_nt' && relation.to === 'jesus');
+assert(josephJesus, 'Joseph→Jesus runtime legal relation missing');
+assert(josephJesus.evidence.directScripture === true &&
+  josephJesus.evidence.biology === 'non-biological',
+'Joseph→Jesus runtime evidence lost direct/non-biological qualification');
+assert(josephJesus.textualAssertions.length === 2,
+  'Joseph→Jesus should retain both Matthew and Luke textual adjacencies');
+
+const heliMary = runtimeRelations.find(relation =>
+  relation.kind === 'parent' && relation.from === 'heli_lk' && relation.to === 'mary');
+assert(heliMary, 'Heli→Mary runtime relation evidence missing');
+assert(heliMary.evidence.assertion === 'editorial-harmonization' &&
+  heliMary.evidence.directScripture === false &&
+  heliMary.evidence.confidence === 'disputed',
+'Heli→Mary runtime evidence lost harmonization/disputed qualification');
+assert(heliMary.textualAssertions.length === 0,
+  'Heli→Mary must not gain a Gospel textual adjacency');
+
+const abrahamIsaac = runtimeRelations.find(relation =>
+  relation.kind === 'parent' && relation.from === 'abram' && relation.to === 'isaac');
+assert(abrahamIsaac, 'Abraham→Isaac runtime relation evidence missing');
+assert(abrahamIsaac.evidence.refsStatus === 'relation-level-review-pending' &&
+  abrahamIsaac.evidence.directScripture === null,
+'Pending Abraham→Isaac evidence was over-promoted');
+assert(abrahamIsaac.textualAssertions.length >= 1,
+  'Abraham→Isaac should expose Gospel textual adjacency context');
+
 console.log(JSON.stringify({
   status: 'genealogy-publishable-runtime-parity-ok',
   persons: adapted.length,
@@ -126,4 +164,7 @@ console.log(JSON.stringify({
   evidenceOnlyParentRelations: authorityCounts['curated-v1-children-index'],
   reciprocalSpouseRelations: authorityCounts['curated-v1-reciprocal-spouse'],
   nonTopologicalLegalRelations: authorityCounts['explicit-qualified-textual-annotation'],
+  runtimeRelationEvidence: runtimeRelations.length,
+  josephJesusTextualAssertions: josephJesus.textualAssertions.length,
+  abrahamIsaacTextualAssertions: abrahamIsaac.textualAssertions.length,
 }, null, 2));
