@@ -17,6 +17,7 @@ import { SplitView } from './SplitView';
 import { RelationshipInspector } from './RelationshipInspector';
 import {
   automaticGenealogySearchResult,
+  genealogySearchOptionContext,
   genealogySearchOptionLabel,
   searchGenealogyPeople,
 } from './search';
@@ -347,6 +348,8 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
   const changeLineage = useCallback((filter: LineageFilter) => {
     setShowLineage(filter);
     setSearch('');
+    setSearchSelectionId(null);
+    setSearchCursor(-1);
     const active = persons.find(person => person.id === activeId);
     if (active && !matchesLineage(active, filter)) setActiveId(null);
     if (selected && !matchesLineage(selected, filter)) setSelected(null);
@@ -542,13 +545,14 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
                       role="option"
                       aria-selected={searchCursor === index}
                       data-person-id={result.person.id}
+                      aria-label={genealogySearchOptionLabel(result.person)}
                       onMouseDown={event => {
                         event.preventDefault();
                         chooseSearchPerson(result.person.id);
                       }}
                     >
                       <strong>{result.person.name.ru}</strong>
-                      <span>{genealogySearchOptionLabel(result.person).replace(`${result.person.name.ru} — `, '')}</span>
+                      <span>{genealogySearchOptionContext(result.person)}</span>
                     </li>
                   ))}
                 </ul>
