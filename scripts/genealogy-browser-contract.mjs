@@ -359,6 +359,30 @@ async function assertFocusInteractions(page) {
   await pressFocused(page, isaacNode, 'Enter', 'Isaac genealogy node');
   await page.getByRole('complementary', { name: 'Детали: Исаак' }).waitFor({ state: 'visible' });
   await page.getByRole('button', { name: 'Закрыть панель', exact: true }).click();
+
+  // A direct family edge opens evidence; a folded semantic path is tested
+  // separately by navigation and must never masquerade as one direct relation.
+  const abrahamIsaacEdge = page.locator('[data-testid="rf__edge-abram->isaac"] .react-flow__edge-interaction');
+  await abrahamIsaacEdge.waitFor({ state: 'visible' });
+  await abrahamIsaacEdge.click();
+  const relationPanel = page.getByRole('complementary', { name: 'Основание связи: Авраам — Исаак' });
+  await relationPanel.waitFor({ state: 'visible' });
+  assert.equal(await relationPanel.getByRole('button', { name: 'Закрыть сведения о связи' })
+    .evaluate(node => document.activeElement === node), true,
+  'Focus did not enter the relationship inspector');
+  const relationCloseBox = await relationPanel.getByRole('button', { name: 'Закрыть сведения о связи' }).boundingBox();
+  assert.ok(relationCloseBox && relationCloseBox.width >= MIN_TOUCH_TARGET && relationCloseBox.height >= MIN_TOUCH_TARGET,
+    'Relationship inspector close control is too small');
+  assert.equal(await relationPanel.getByText('Ссылки к самой связи ещё не проверены', { exact: true }).isVisible(), true,
+    'Pending relation-level review status is not visible to the user');
+  assert.ok((await relationPanel.locator('text=Матфей').count()) + (await relationPanel.locator('text=Лука').count()) > 0,
+    'Relationship inspector omitted Gospel textual adjacency context');
+  assert.equal(await relationPanel.evaluate(node => node.scrollWidth <= node.clientWidth), true,
+    'Relationship inspector overflows horizontally');
+  await page.keyboard.press('Escape');
+  await relationPanel.waitFor({ state: 'detached' });
+  assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'abram',
+    'Relationship inspector did not restore focus to the source genealogy node');
 }
 
 
