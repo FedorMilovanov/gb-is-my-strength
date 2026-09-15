@@ -8,6 +8,7 @@ on:
       - 'karty/*/route.json'
       - src/components/karty/ishod/IshodMap.astro
       - scripts/map-capabilities-contract-test.js
+      - scripts/map-capabilities-browser-test.js
       - scripts/map-keyboard-contract-test.js
       - scripts/map-browser-smoke.js
       - scripts/map-panel-viewport-browser-test.js
@@ -22,6 +23,7 @@ on:
       - 'karty/*/route.json'
       - src/components/karty/ishod/IshodMap.astro
       - scripts/map-capabilities-contract-test.js
+      - scripts/map-capabilities-browser-test.js
       - scripts/map-keyboard-contract-test.js
       - scripts/map-browser-smoke.js
       - scripts/map-panel-viewport-browser-test.js
@@ -120,6 +122,8 @@ jobs:
         run: |
           set -o pipefail
           node scripts/map-browser-smoke.js 2>&1 | tee /tmp/map-keyboard-smoke.log
+      - name: Verify capability-driven DOM surfaces
+        run: node scripts/map-capabilities-browser-test.js
       - name: Upload keyboard smoke evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
