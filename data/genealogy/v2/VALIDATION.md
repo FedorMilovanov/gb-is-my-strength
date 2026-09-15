@@ -1,6 +1,6 @@
 # VALIDATION — data/genealogy/v2 (генерируется build.mjs)
 
-Пайплайн: 0.3.0-phase1-explicit-gospels · 2026-09-15T06:16:49.350Z
+Пайплайн: 0.3.0-phase1-explicit-gospels · детерминированная сборка из pinned inputs
 
 ## Жёсткие инварианты — ✅ OK
 
