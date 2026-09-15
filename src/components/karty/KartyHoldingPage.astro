@@ -1,36 +1,37 @@
 ---
 /**
- * KartyHoldingPage — shared native template for map routes on visual audit.
+ * KartyHoldingPage — shared native template for map routes withheld from the hub.
  *
- * Рефакторинг 6.0: all 8 holding/audit-pending map routes use this single
- * native Astro component instead of 8 identical shadow-wrapped legacy files.
- * Each route passes its slug/title/h1 as Astro props.
- *
- * Design: dark premium placeholder, self-contained inline styles (does NOT
- * use site.css — intentional standalone aesthetic). noindex until the map
- * passes visual audit. data-pagefind-ignore — not indexed by search.
+ * Route metadata is the single source of truth. Callers provide only slug;
+ * title, canonical and OG copy are derived from karty/<slug>/route.json.
  */
+import fs from 'node:fs';
+import path from 'node:path';
+import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
+
 export interface Props {
   slug: string;
-  title: string;
-  h1: string;
-  canonical: string;
-  ogTitle?: string;
-  description?: string;
-  ogDescription?: string;
-  twitterDescription?: string;
 }
 
-const {
-  slug,
-  title,
-  h1,
-  canonical,
-  ogTitle = title,
-  description = 'Карта временно снята с публикации до ручной визуальной доводки: масштаб, подписи, мобильный вид и общее качество.',
-  ogDescription = description,
-  twitterDescription = description,
-} = Astro.props;
+const { slug } = Astro.props;
+if (!/^[a-z0-9-]+$/.test(slug)) throw new Error(`Invalid Karty holding slug: ${slug}`);
+
+const routePath = path.join(process.cwd(), 'karty', slug, 'route.json');
+if (!fs.existsSync(routePath)) throw new Error(`Missing Karty route metadata: ${routePath}`);
+const route = JSON.parse(fs.readFileSync(routePath, 'utf8'));
+const publication = route.publication || {};
+if (publication.hub !== 'withheld') {
+  throw new Error(`KartyHoldingPage may only render hub-withheld routes: ${slug}`);
+}
+
+const routeTitle = String(route.meta?.title || slug);
+const canonical = `https://gospod-bog.ru/karty/${slug}/`;
+const title = `${routeTitle} — временно на визуальном аудите | Господь Бог — Сила Моя`;
+const h1 = routeTitle;
+const ogTitle = `${routeTitle} — визуальный аудит`;
+const description = 'Карта временно снята с витрины до ручной визуальной доводки: масштаб, подписи, мобильный вид и общее качество.';
+const ogDescription = description;
+const twitterDescription = description;
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -40,7 +41,6 @@ const jsonLd = {
     { "@type": "WebSite", "@id": "https://gospod-bog.ru/#website", name: "Господь Бог — Сила Моя", url: "https://gospod-bog.ru/", inLanguage: "ru-RU", publisher: { "@id": "https://gospod-bog.ru/#organization" } },
   ],
 };
-import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 ---
 <!DOCTYPE html>
 <html lang="ru">
@@ -87,10 +87,9 @@ main{width:min(760px,100%);min-width:0;border:1px solid color-mix(in srgb,var(--
 <main data-pagefind-ignore data-content-status="temporary-placeholder">
   <p class="eyebrow">Визуальный аудит карт</p>
   <h1>{h1}</h1>
-  <p>Эта карта временно снята с публичного просмотра. Мы не показываем недоведённые интерактивные материалы как готовые: перед возвратом нужны ручная доводка масштаба, наложения подписей, мобильного вида и общего визуального качества.</p>
-  <p class="note">Пока доступна проверенная карта Авраама. Остальные карты вернутся только после премиального визуального контроля, а не формального прохождения технических тестов.</p>
+  <p>Эта карта временно не показывается на витрине. Мы не выдаём недоведённые интерактивные материалы за готовые: перед возвратом нужны ручная доводка масштаба, наложения подписей, мобильного вида и общего визуального качества.</p>
+  <p class="note">Статус витрины управляется метаданными самой карты. Маршрут возвращается в раздел только после технических проверок и обязательного owner review.</p>
   <div class="actions">
-    <a class="btn" href="../avraam/">Открыть карту Авраама</a>
     <a class="btn btn--ghost" href="/app/">Приложение</a>
     <a class="btn btn--ghost" href="../">К разделу карт</a>
     <a class="btn btn--ghost" href="../../">На главную</a>

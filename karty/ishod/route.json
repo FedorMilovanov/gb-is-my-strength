@@ -723,5 +723,15 @@
     "label": "Переход через море",
     "origin": "pihahiroth",
     "description": "Водные стены и золотая тропа выделяют переход через море; точка привязана к маршрутной гипотезе, а не к догматической координате."
+  },
+  "archetype": "route",
+  "capabilities": ["stages","stories","layers","timeline","signature","interpretations","uncertainty"],
+  "publication": {
+    "status": "ready",
+    "indexable": true,
+    "sitemap": true,
+    "llms": false,
+    "pagefind": true,
+    "hub": "withheld"
   }
 }

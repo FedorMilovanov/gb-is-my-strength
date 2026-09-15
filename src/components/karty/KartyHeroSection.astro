@@ -1,15 +1,23 @@
 ---
 /**
- * KartyHeroSection.astro — hero + featured Avraam card for /karty/.
+ * KartyHeroSection — publication-driven map hub.
  *
- * Refactoring 6.0 parallel pilot: preserve legacy structure/classes/text.
- * Counts are derived from the governed route inventory so a newly added
- * audit-pending map cannot desynchronise the hub and its fail-closed validator.
+ * The hub never owns a second allowlist. route.publication is the sole source
+ * of technical readiness and owner-approved hub visibility.
  */
 import inventoryModule from '../../lib/karty-hub-inventory.cjs';
 
 const { getKartyHubInventory } = inventoryModule;
-const { routeCount, publishedCount, auditCount } = getKartyHubInventory();
+const { routeCount, publishedCount, auditCount, publishedRecords } = getKartyHubInventory();
+
+function publishedLabel(count: number) {
+  const mod100 = count % 100;
+  const mod10 = count % 10;
+  if (mod100 >= 11 && mod100 <= 14) return 'карт открыто';
+  if (mod10 === 1) return 'карта открыта';
+  if (mod10 >= 2 && mod10 <= 4) return 'карты открыты';
+  return 'карт открыто';
+}
 ---
 <section class="karty-hero" aria-labelledby="mapsTitle">
   <div class="karty-hero__inner">
@@ -17,20 +25,37 @@ const { routeCount, publishedCount, auditCount } = getKartyHubInventory();
       <p class="karty-kicker">Премиальная витрина карт</p>
       <h1 id="mapsTitle">Библейские карты</h1>
       <div class="he" lang="he">מַפּוֹת</div>
-      <p class="desc">Карты должны помогать видеть текст Писания в пространстве: маршруты, города, реки, пустыни, спорные точки локализации и исторический контекст. Поэтому на витрине остаётся только то, что прошло визуальную проверку.</p>
-      <div class="karty-hero__meta" aria-label="Статус раздела" data-route-count={routeCount} data-published-count={publishedCount} data-audit-count={auditCount}>
-        <div class="karty-stat"><b>{publishedCount}</b><span>карта открыта</span></div>
+      <p class="desc">Карты должны помогать видеть текст Писания в пространстве: маршруты, города, реки, пустыни, спорные точки локализации и исторический контекст. Поэтому на витрине остаётся только то, что прошло техническую проверку и обязательный ручной визуальный контроль.</p>
+      <div class="karty-hero__meta" role="group" aria-label="Статус раздела" data-route-count={routeCount} data-published-count={publishedCount} data-audit-count={auditCount}>
+        <div class="karty-stat"><b>{publishedCount}</b><span>{publishedLabel(publishedCount)}</span></div>
         <div class="karty-stat"><b>{auditCount}</b><span>на аудите</span></div>
         <div class="karty-stat"><b>0</b><span>черновиков на витрине</span></div>
       </div>
     </div>
-    <a href="./avraam/" class="karty-feature" aria-label="Открыть карту Путь Авраама">
-      <div class="karty-feature__body">
-        <span class="badge badge--ready">Проверенная карта</span>
-        <h2>Путь Авраама <span lang="he">אַבְרָהָם</span></h2>
-        <p>Бытие 11–25: маршрут патриарха, ключевые места, богословский и исторический слой.</p>
-        <span class="karty-feature__cta">Открыть карту →</span>
-      </div>
-    </a>
+    <div class="karty-feature-list" data-karty-published-list>
+      {publishedRecords.map((record) => {
+        const route = record.route;
+        const publication = record.publication;
+        const title = String(route.meta?.title || record.slug);
+        const titleHe = String(route.meta?.title_he || '');
+        const image = String(publication?.hub_image || '/images/og-karty-1200x630.webp');
+        const summary = String(publication?.hub_summary || route.meta?.subtitle || '');
+        return (
+          <a
+            href={`./${record.slug}/`}
+            class="karty-feature"
+            style={`--karty-feature-image:url('${image}')`}
+            data-karty-published={record.slug}
+          >
+            <div class="karty-feature__body">
+              <span class="badge badge--ready">Проверенная карта</span>
+              <h2>{title} {titleHe && <span lang="he">{titleHe}</span>}</h2>
+              <p>{summary}</p>
+              <span class="karty-feature__cta">Открыть карту →</span>
+            </div>
+          </a>
+        );
+      })}
+    </div>
   </div>
 </section>

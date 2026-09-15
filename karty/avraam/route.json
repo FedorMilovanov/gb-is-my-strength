@@ -2779,5 +2779,22 @@
         ]
       ]
     }
-  ]
+  ],
+  "archetype": "route",
+  "capabilities": ["stages","stories","layers","timeline","interpretations"],
+  "publication": {
+    "status": "ready",
+    "indexable": true,
+    "sitemap": true,
+    "llms": false,
+    "pagefind": true,
+    "hub": "featured",
+    "hub_order": 10,
+    "hub_summary": "Бытие 11–25: маршрут патриарха, ключевые места, богословский и исторический слой.",
+    "hub_image": "/images/og-karty-1200x630.webp",
+    "hub_approval": {
+      "basis": "legacy-production",
+      "note": "Миграция исторически опубликованной flagship-карты Авраама в publication SSOT."
+    }
+  }
 }

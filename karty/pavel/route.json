@@ -516,11 +516,14 @@
     ],
     "description": "Корабли и следы волн визуально отделяют морские переходы миссионерских путешествий Павла."
   },
+  "archetype": "route",
+  "capabilities": ["stages","stories","layers","timeline","signature","interpretations"],
   "publication": {
     "status": "temporary-placeholder",
     "indexable": false,
     "sitemap": false,
     "llms": false,
-    "pagefind": false
+    "pagefind": false,
+    "hub": "withheld"
   }
 }

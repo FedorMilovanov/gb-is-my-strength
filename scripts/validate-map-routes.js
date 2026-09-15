@@ -7,7 +7,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { getKartyHubInventory } = require('../src/lib/karty-hub-inventory.cjs');
+const { getKartyHubInventory, isAtlasSheetDraft } = require('../src/lib/karty-hub-inventory.cjs');
 
 const ROOT = path.join(__dirname, '..');
 const ROUTES_ROOT = path.join(ROOT, 'karty');
@@ -97,22 +97,140 @@ function validateSignature(route, label, placeIds) {
     if (sig.divide !== undefined && typeof sig.divide !== 'string') bad(`${label}: signature.divide must be SVG path string when present`);
   }
 }
+const ALLOWED_ARCHETYPES = new Set(['route','political','thematic','territorial','overview']);
+const ALLOWED_CAPABILITIES = new Set(['stages','stories','layers','timeline','signature','interpretations','uncertainty']);
+const BASE_LIVE_CAPABILITIES = ['stages','stories','layers','timeline','interpretations'];
+
+function validateMapContract(route, label, file) {
+  if (!ALLOWED_ARCHETYPES.has(route.archetype)) {
+    bad(`${label}: archetype ${route.archetype} is not allowed`);
+  }
+  if (!Array.isArray(route.capabilities) || !route.capabilities.length) {
+    bad(`${label}: capabilities[] missing/empty`);
+    return;
+  }
+  const seen = new Set();
+  for (const capability of route.capabilities) {
+    if (!ALLOWED_CAPABILITIES.has(capability)) bad(`${label}: unknown capability ${capability}`);
+    if (seen.has(capability)) bad(`${label}: duplicate capability ${capability}`);
+    seen.add(capability);
+  }
+  if (route.publication?.status !== 'draft') {
+    for (const capability of BASE_LIVE_CAPABILITIES) {
+      if (!seen.has(capability)) bad(`${label}: live route missing base capability ${capability}`);
+    }
+  }
+  if (seen.has('layers') !== Array.isArray(route.layers)) {
+    bad(`${label}: layers capability must match route.layers presence`);
+  }
+  const hasSignature = Boolean(route.signature && typeof route.signature === 'object');
+  if (seen.has('signature') !== hasSignature) {
+    bad(`${label}: signature capability must match route.signature presence`);
+  }
+  const hasInterpretations = Boolean(route.scientific_variants && typeof route.scientific_variants === 'object');
+  if (seen.has('interpretations') !== hasInterpretations) {
+    bad(`${label}: interpretations capability must match scientific_variants presence`);
+  }
+  if (seen.has('uncertainty')) {
+    const authorityFile = path.join(path.dirname(file), 'pihahiroth-authority.json');
+    if (!fs.existsSync(authorityFile)) bad(`${label}: uncertainty capability requires route authority data`);
+  }
+}
+
+const ALLOWED_PUBLICATION_STATUSES = new Set(['ready','temporary-placeholder','draft']);
+const ALLOWED_HUB_STATES = new Set(['featured','listed','withheld']);
+function validatePublication(route, label) {
+  const publication = route.publication;
+  if (!publication || typeof publication !== 'object' || Array.isArray(publication)) {
+    bad(`${label}: publication missing/invalid`);
+    return;
+  }
+  if (!ALLOWED_PUBLICATION_STATUSES.has(publication.status)) {
+    bad(`${label}: publication.status ${publication.status} is not allowed`);
+  }
+  if (!ALLOWED_HUB_STATES.has(publication.hub)) {
+    bad(`${label}: publication.hub ${publication.hub} is not allowed`);
+  }
+  for (const key of ['indexable','sitemap','llms','pagefind']) {
+    if (typeof publication[key] !== 'boolean') bad(`${label}: publication.${key} must be boolean`);
+  }
+
+  if (publication.status === 'ready') {
+    for (const key of ['indexable','sitemap','pagefind']) {
+      if (publication[key] !== true) bad(`${label}: ready route requires publication.${key}=true`);
+    }
+  } else if (publication.status === 'temporary-placeholder' || publication.status === 'draft') {
+    for (const key of ['indexable','sitemap','llms','pagefind']) {
+      if (publication[key] !== false) bad(`${label}: ${publication.status} requires publication.${key}=false`);
+    }
+    if (publication.hub !== 'withheld') bad(`${label}: ${publication.status} route must be withheld from hub`);
+  }
+
+  if (publication.hub === 'featured' || publication.hub === 'listed') {
+    if (publication.status !== 'ready') bad(`${label}: hub-visible route must have publication.status=ready`);
+    if (!Number.isInteger(publication.hub_order) || publication.hub_order < 0) bad(`${label}: hub-visible route requires non-negative integer publication.hub_order`);
+    if (typeof publication.hub_summary !== 'string' || publication.hub_summary.trim().length < 20) bad(`${label}: hub-visible route requires publication.hub_summary`);
+    if (typeof publication.hub_image !== 'string' || !/^\/images\/[^?#]+\.(?:avif|webp|png|jpe?g)$/i.test(publication.hub_image)) {
+      bad(`${label}: hub-visible route requires publication.hub_image under /images/`);
+    } else {
+      const imageFile = path.join(ROOT, publication.hub_image.replace(/^\//, ''));
+      if (!fs.existsSync(imageFile)) bad(`${label}: publication.hub_image missing: ${publication.hub_image}`);
+    }
+
+    const approval = publication.hub_approval;
+    if (!approval || typeof approval !== 'object' || Array.isArray(approval)) {
+      bad(`${label}: hub-visible route requires publication.hub_approval`);
+    } else if (approval.basis === 'legacy-production') {
+      if (route.meta?.id !== 'avraam') bad(`${label}: legacy-production hub approval is reserved for avraam migration`);
+    } else if (approval.basis === 'owner-receipt') {
+      const receipt = approval.receipt;
+      if (!receipt || typeof receipt !== 'object' || Array.isArray(receipt)) {
+        bad(`${label}: owner-receipt hub approval requires structured publication.hub_approval.receipt`);
+      } else {
+        if (receipt.gate !== 'G9') bad(`${label}: owner receipt must declare gate=G9`);
+        if (typeof receipt.id !== 'string' || !/^[A-Za-z0-9._:-]{3,120}$/.test(receipt.id)) {
+          bad(`${label}: owner receipt id invalid`);
+        }
+        if (typeof receipt.path !== 'string' || !/^projects\/gb-is-my-strength\/[^\s]+$/.test(receipt.path)) {
+          bad(`${label}: owner receipt path must point inside AuditRepo projects/gb-is-my-strength/`);
+        }
+        if (typeof receipt.head_sha !== 'string' || !/^[0-9a-f]{40}$/.test(receipt.head_sha)) {
+          bad(`${label}: owner receipt head_sha must be an exact 40-char git SHA`);
+        }
+      }
+    } else {
+      bad(`${label}: publication.hub_approval.basis must be legacy-production or owner-receipt`);
+    }
+  }
+}
+
 function validateRoute(file) {
   const route = readJson(file);
   if (!route) return;
   const label = rel(file);
+  validateMapContract(route, label, file);
+  validatePublication(route, label);
   if (!route.meta || typeof route.meta !== 'object') bad(`${label}: missing meta`);
-  if (!route.meta?.id || !/^[a-z0-9-]+$/.test(route.meta.id)) bad(`${label}: meta.id invalid`);
+  const draftSheet = isAtlasSheetDraft(route);
+  if (!draftSheet && (!route.meta?.id || !/^[a-z0-9-]+$/.test(route.meta.id))) bad(`${label}: meta.id invalid`);
+  if (draftSheet && route.meta?.sheet_no == null) bad(`${label}: draft atlas sheet requires meta.sheet_no`);
   if (!route.meta?.title) bad(`${label}: meta.title missing`);
-  if (!route.meta?.era) bad(`${label}: meta.era missing`);
-  if (!route.meta?.viewport_init || !isFiniteNum(route.meta.viewport_init.cx) || !isFiniteNum(route.meta.viewport_init.cy) || !isFiniteNum(route.meta.viewport_init.w)) bad(`${label}: meta.viewport_init invalid`);
+  if (draftSheet) {
+    const sheetViewport = route.meta?.sheet_viewport;
+    if (!sheetViewport || !isFiniteNum(sheetViewport.cx) || !isFiniteNum(sheetViewport.cy) || !isFiniteNum(sheetViewport.w) || sheetViewport.w <= 0) {
+      bad(`${label}: draft atlas sheet requires valid meta.sheet_viewport`);
+    }
+  } else {
+    if (!route.meta?.era) bad(`${label}: meta.era missing`);
+    if (!route.meta?.viewport_init || !isFiniteNum(route.meta.viewport_init.cx) || !isFiniteNum(route.meta.viewport_init.cy) || !isFiniteNum(route.meta.viewport_init.w)) bad(`${label}: meta.viewport_init invalid`);
+  }
 
   const places = Array.isArray(route.places) ? route.places : [];
   const stages = Array.isArray(route.stages) ? route.stages : [];
   const stories = Array.isArray(route.stories) ? route.stories : [];
   if (!places.length) bad(`${label}: places[] empty/missing`);
   if (!stages.length) bad(`${label}: stages[] empty/missing`);
-  if (!stories.length) bad(`${label}: stories[] empty/missing`);
+  if (!draftSheet && !stories.length) bad(`${label}: stories[] empty/missing`);
 
   const placeIds = ids(places);
   const placeDups = findDuplicateIds(places);
@@ -131,14 +249,19 @@ function validateRoute(file) {
     if (!isFiniteNum(p.x) || !isFiniteNum(p.y)) bad(`${where}: invalid coordinates`);
     if (isFiniteNum(p.x) && (p.x < -250 || p.x > 2200)) bad(`${where}: x out of expected SVG range (${p.x})`);
     if (isFiniteNum(p.y) && (p.y < -250 || p.y > 1600)) bad(`${where}: y out of expected SVG range (${p.y})`);
-    if (p.type !== 'ctx' && p.type !== 'region') {
+    if (draftSheet) {
+      if (p.stage !== undefined && (!Number.isInteger(p.stage) || p.stage < 0 || p.stage >= stages.length)) {
+        bad(`${where}: optional draft stage ${p.stage} outside stages[]`);
+      }
+    } else if (p.type !== 'ctx' && p.type !== 'region') {
       if (!Number.isInteger(p.stage) || p.stage < 0 || p.stage >= stages.length) bad(`${where}: stage ${p.stage} outside stages[]`);
     }
     if (!p.type) bad(`${where}: missing type`);
     if (p.photos) {
       if (!Array.isArray(p.photos)) bad(`${where}: photos must be array`);
       else p.photos.forEach((photo, n) => {
-        if (!photo.src || !photo.alt) bad(`${where}: photos[${n}] must have src + alt`);
+        if (!photo.src) bad(`${where}: photos[${n}] must have src`);
+        if (!draftSheet && !photo.alt) bad(`${where}: photos[${n}] must have alt on live routes`);
       });
     }
   });
@@ -210,7 +333,7 @@ function renderedCount(htmlSrc, label) {
   const dataMatch = htmlSrc.match(new RegExp(`data-${label}-count=["'](\\d+)["']`, 'i'));
   const visibleMatch = label === 'audit'
     ? htmlSrc.match(/<b[^>]*>\s*(\d+)\s*<\/b>\s*<span[^>]*>\s*на\s+аудите\s*<\/span>/i)
-    : htmlSrc.match(/<b[^>]*>\s*(\d+)\s*<\/b>\s*<span[^>]*>\s*карта\s+открыта\s*<\/span>/i);
+    : htmlSrc.match(/<b[^>]*>\s*(\d+)\s*<\/b>\s*<span[^>]*>\s*(?:карта\s+открыта|карты\s+открыты|карт\s+открыто)\s*<\/span>/i);
   return {
     data: dataMatch ? Number(dataMatch[1]) : null,
     visible: visibleMatch ? Number(visibleMatch[1]) : null,
@@ -225,9 +348,12 @@ function hasGovernedAuditPendingDesign({ htmlSrc, heroSrc, missingIds, inventory
 
   const producerIsGoverned =
     heroSrc.includes('getKartyHubInventory') &&
+    heroSrc.includes('publishedRecords') &&
     heroSrc.includes('data-audit-count={auditCount}') &&
+    heroSrc.includes('data-published-count={publishedCount}') &&
     heroSrc.includes('<b>{auditCount}</b><span>на аудите</span>') &&
-    heroSrc.includes('<b>{publishedCount}</b><span>карта открыта</span>');
+    heroSrc.includes('<b>{publishedCount}</b><span>{publishedLabel(publishedCount)}</span>') &&
+    heroSrc.includes('data-karty-published={record.slug}');
   if (!producerIsGoverned) return false;
 
   if (!isBuiltHtml) return true;
@@ -242,6 +368,29 @@ function hasGovernedAuditPendingDesign({ htmlSrc, heroSrc, missingIds, inventory
 function checkAstroHub(files) {
   const routeIds = files.map(f => path.basename(path.dirname(f))).sort();
   const inventory = getKartyHubInventory(ROOT);
+
+  for (const record of inventory.records) {
+    if (record.publication?.status !== 'temporary-placeholder') continue;
+    const pageFile = path.join(ROOT, 'src', 'pages', 'karty', record.slug, 'index.astro');
+    if (!fs.existsSync(pageFile)) {
+      bad(`temporary-placeholder route missing Astro page: /karty/${record.slug}/`);
+      continue;
+    }
+    const pageSrc = fs.readFileSync(pageFile, 'utf8');
+    if (!pageSrc.includes(`<KartyHoldingPage slug="${record.slug}" />`)) {
+      bad(`/karty/${record.slug}/ must render shared KartyHoldingPage by slug only`);
+    }
+    if (/\b(?:title|canonical|ogTitle)=/.test(pageSrc)) {
+      bad(`/karty/${record.slug}/ duplicates holding-page metadata outside route SSOT`);
+    }
+  }
+  const hubOrders = inventory.publishedRecords.map((record) => record.publication.hub_order);
+  const duplicateHubOrders = hubOrders.filter((value, index) => hubOrders.indexOf(value) !== index);
+  if (duplicateHubOrders.length) bad(`karty hub publication has duplicate hub_order: ${[...new Set(duplicateHubOrders)].join(', ')}`);
+  const featured = inventory.publishedRecords.filter((record) => record.publication.hub === 'featured');
+  if (featured.length > 1) bad(`karty hub publication has multiple featured routes: ${featured.map((record) => record.slug).join(', ')}`);
+  if (inventory.publishedCount > 0 && featured.length !== 1) bad('karty hub publication requires exactly one featured route when hub is non-empty');
+
   if (!sameStringSet(routeIds, inventory.routeSlugs)) {
     bad(`karty hub inventory mismatch: validator=${routeIds.join(',')} inventory=${inventory.routeSlugs.join(',')}`);
   }
@@ -306,18 +455,15 @@ function main() {
     if (fs.existsSync(f)) files.push(f);
   }
   if (!files.length) bad('No karty/*/route.json files found');
-  const routeFiles = files.filter(f => {
+  files.sort().forEach(validateRoute);
+  const hubRouteFiles = files.filter(f => {
     try {
-      const probe = JSON.parse(fs.readFileSync(f, 'utf8'));
-      if (probe && probe.meta && probe.meta.sheet_no != null && probe.meta.id == null) {
-        ok(path.relative(ROOT, f) + ': лист Атласа (ждёт публикации) — пропущен');
-        return false;
-      }
-    } catch (_) {}
-    return true;
+      return !isAtlasSheetDraft(JSON.parse(fs.readFileSync(f, 'utf8')));
+    } catch (_) {
+      return false;
+    }
   });
-  routeFiles.sort().forEach(validateRoute);
-  checkAstroHub(routeFiles);
+  checkAstroHub(hubRouteFiles);
   if (errors.length) {
     console.log(`\n❌ Map route validation failed: ${errors.length} issue(s)`);
     process.exit(1);

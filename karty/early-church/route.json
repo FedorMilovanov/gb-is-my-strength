@@ -590,11 +590,14 @@
     "origin": "jerusalem_upper",
     "description": "Волны показывают расширение свидетельства от Иерусалима к народам по логике Деян 1:8."
   },
+  "archetype": "route",
+  "capabilities": ["stages","stories","layers","timeline","signature","interpretations"],
   "publication": {
     "status": "temporary-placeholder",
     "indexable": false,
     "sitemap": false,
     "llms": false,
-    "pagefind": false
+    "pagefind": false,
+    "hub": "withheld"
   }
 }
