@@ -13,6 +13,9 @@
   --genealogy-node-shadow: 0 3px 14px rgba(75,56,34,.14);
   --genealogy-node-shadow-gold: 0 3px 14px rgba(139,104,47,.18);
   --genealogy-life-track: rgba(75,56,34,.10);
+  --genealogy-messiah-text: #755515;
+  --genealogy-messiah-ring: rgba(139,104,47,.58);
+  --genealogy-messiah-glow: rgba(139,104,47,.24);
   --genealogy-detail-bg: linear-gradient(180deg, rgba(255,252,246,.985), rgba(246,238,224,.985));
   --genealogy-soft-surface: rgba(91,67,38,.055);
   --genealogy-section-text: #5f5345;
@@ -55,6 +58,9 @@ html.dark .genealogy-app {
   --genealogy-node-shadow: 0 2px 10px rgba(0,0,0,.35);
   --genealogy-node-shadow-gold: 0 2px 8px rgba(0,0,0,.30);
   --genealogy-life-track: rgba(255,255,255,.06);
+  --genealogy-messiah-text: #ffd700;
+  --genealogy-messiah-ring: rgba(255,215,0,.60);
+  --genealogy-messiah-glow: rgba(255,215,0,.50);
   --genealogy-detail-bg: linear-gradient(180deg, rgba(20,16,10,.97), rgba(10,8,5,.98));
   --genealogy-soft-surface: rgba(255,255,255,.05);
   --genealogy-section-text: #d8c8a8;
