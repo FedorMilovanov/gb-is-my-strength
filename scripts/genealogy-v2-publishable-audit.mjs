@@ -10,6 +10,20 @@ const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 const fail = message => { throw new Error(message); };
 const assert = (condition, message) => { if (!condition) fail(message); };
 
+const expectedProjectionFiles = new Set([
+  'gospel-sequences.json',
+  'meta.json',
+  'persons.json',
+  'relations.json',
+]);
+const actualProjectionFiles = fs.readdirSync(OUT, { withFileTypes: true });
+assert(actualProjectionFiles.every(entry => entry.isFile()),
+  'Publishable projection must not contain nested or non-file entries');
+const actualProjectionNames = actualProjectionFiles.map(entry => entry.name).sort();
+assert(actualProjectionNames.length === expectedProjectionFiles.size &&
+  actualProjectionNames.every(name => expectedProjectionFiles.has(name)),
+  `Unexpected publishable projection file set: ${actualProjectionNames.join(', ')}`);
+
 const v1 = readJson(V1);
 const meta = readJson(path.join(OUT, 'meta.json'));
 const persons = readJson(path.join(OUT, 'persons.json'));
