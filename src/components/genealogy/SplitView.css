@@ -1,9 +1,14 @@
 .genealogy-split-dialog {
-  --split-bg: #191711;
-  --split-surface: #242018;
-  --split-ink: #eee6d6;
-  --split-muted: #bdb29e;
-  --split-rule: #4a4030;
+  --split-bg: #f8f2e7;
+  --split-surface: #fffaf2;
+  --split-ink: #30271d;
+  --split-muted: #766a5b;
+  --split-rule: #cdbfa8;
+  --split-accent: #8b682f;
+  --split-selected-bg: #e3d5b9;
+  --split-selected-ink: #392a18;
+  --split-row-rule: #ded3c1;
+  --split-shared-bg: #eee2cc;
   box-sizing: border-box;
   position: fixed;
   inset: 0;
@@ -19,10 +24,22 @@
   font-family: "Lora", Georgia, serif;
   overflow: hidden;
 }
+html.dark .genealogy-split-dialog {
+  --split-bg: #191711;
+  --split-surface: #242018;
+  --split-ink: #eee6d6;
+  --split-muted: #bdb29e;
+  --split-rule: #4a4030;
+  --split-accent: #e2c482;
+  --split-selected-bg: #e5d7b9;
+  --split-selected-ink: #292014;
+  --split-row-rule: #332e23;
+  --split-shared-bg: #2f281b;
+}
 .genealogy-split-dialog[open] { display: flex; flex-direction: column; }
 .genealogy-split-dialog::backdrop { background: rgb(0 0 0 / 75%); }
 .genealogy-split-dialog * { box-sizing: border-box; }
-.genealogy-split-dialog :focus-visible { outline: 2px solid #e9c87c; outline-offset: 3px; }
+.genealogy-split-dialog :focus-visible { outline: 2px solid var(--split-accent); outline-offset: 3px; }
 .genealogy-split-header {
   display: flex;
   align-items: flex-start;
@@ -33,7 +50,7 @@
 .genealogy-split-header > div { min-width: 0; flex: 1; }
 .genealogy-split-header h2 { font-size: clamp(19px, 3vw, 26px); line-height: 1.25; color: var(--split-ink); margin: 0; }
 .genealogy-split-header p { color: var(--split-muted); font-size: 13px; line-height: 1.5; margin: 8px 0 0; }
-.genealogy-split-header .genealogy-split-eyebrow { color: #d7b56e; font: 12px/1.5 system-ui, sans-serif; margin: 0 0 6px; }
+.genealogy-split-header .genealogy-split-eyebrow { color: var(--split-accent); font: 12px/1.5 system-ui, sans-serif; margin: 0 0 6px; }
 .genealogy-split-dialog button {
   font: 500 14px/1.25 system-ui, sans-serif;
   color: var(--split-ink);
@@ -48,24 +65,24 @@
 .genealogy-split-dialog .genealogy-split-close { width: 44px; height: 44px; padding: 0; flex-shrink: 0; font-size: 26px; }
 .genealogy-split-options { display: flex; flex-wrap: wrap; gap: 10px; padding: 4px 24px 16px; border-bottom: 1px solid var(--split-rule); }
 .genealogy-split-switch { display: flex; gap: 6px; }
-.genealogy-split-switch button[aria-pressed="true"] { background: #e5d7b9; color: #292014; border-color: #e5d7b9; }
+.genealogy-split-switch button[aria-pressed="true"] { background: var(--split-selected-bg); color: var(--split-selected-ink); border-color: var(--split-selected-bg); }
 .genealogy-split-mobile-switch { display: none; }
 .genealogy-split-columns { display: flex; flex: 1; min-height: 0; overflow: hidden; }
 .genealogy-split-column { flex: 1; min-width: 0; overflow: auto; overscroll-behavior: contain; padding: 18px 24px 24px; }
 .genealogy-split-column + .genealogy-split-column { border-left: 1px solid var(--split-rule); }
 .genealogy-split-column-heading { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; justify-content: space-between; }
 .genealogy-split-column h3 { color: var(--split-ink); font-size: 18px; line-height: 1.35; margin: 0; }
-.genealogy-split-column-heading a { display: inline-flex; align-items: center; min-height: 44px; color: #e2c482; text-decoration: underline; text-underline-offset: 3px; font: 13px/1.4 system-ui, sans-serif; }
+.genealogy-split-column-heading a { display: inline-flex; align-items: center; min-height: 44px; color: var(--split-accent); text-decoration: underline; text-underline-offset: 3px; font: 13px/1.4 system-ui, sans-serif; }
 .genealogy-split-line-context { color: var(--split-muted); font-size: 13px; margin: 4px 0 16px; }
 .genealogy-split-list { padding: 0; margin: 0; list-style: none; counter-reset: gospel; }
-.genealogy-split-list li { display: flex; align-items: baseline; gap: 10px; padding: 11px 8px; min-height: 44px; border-bottom: 1px solid #332e23; line-height: 1.45; }
+.genealogy-split-list li { display: flex; align-items: baseline; gap: 10px; padding: 11px 8px; min-height: 44px; border-bottom: 1px solid var(--split-row-rule); line-height: 1.45; }
 .genealogy-split-list li::before { content: counter(gospel); counter-increment: gospel; flex: 0 0 22px; color: var(--split-muted); font: 12px/1.5 system-ui, sans-serif; }
 .genealogy-split-person { font-size: 15px; overflow-wrap: anywhere; }
 .genealogy-split-entry-ref { margin-left: auto; flex-shrink: 0; color: var(--split-muted); font: 12px/1.5 system-ui, sans-serif; }
-.genealogy-split-shared { background: #2f281b; }
-.genealogy-split-shared-mark { color: #e2c482; flex-shrink: 0; }
+.genealogy-split-shared { background: var(--split-shared-bg); }
+.genealogy-split-shared-mark { color: var(--split-accent); flex-shrink: 0; }
 .genealogy-split-notes { margin-top: 20px; padding: 0 12px; border: 1px solid var(--split-rule); border-radius: 8px; }
-.genealogy-split-notes summary { cursor: pointer; padding: 13px 0; min-height: 44px; color: #e2c482; font: 14px/1.4 system-ui, sans-serif; }
+.genealogy-split-notes summary { cursor: pointer; padding: 13px 0; min-height: 44px; color: var(--split-accent); font: 14px/1.4 system-ui, sans-serif; }
 .genealogy-split-notes p { color: var(--split-muted); font-size: 13px; line-height: 1.6; margin: 0 0 14px; }
 .genealogy-split-footer { display: flex; align-items: center; gap: 16px; padding: 12px 24px max(12px, env(safe-area-inset-bottom)); border-top: 1px solid var(--split-rule); color: var(--split-muted); font: 12px/1.5 system-ui, sans-serif; }
 .genealogy-split-count { margin-left: auto; flex-shrink: 0; color: var(--split-ink); font-variant-numeric: tabular-nums; }
