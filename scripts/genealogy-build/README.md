@@ -114,3 +114,40 @@ pipeline. Если версия pipeline актуальна, а structured evide
 
 До достижения publication exit-критериев датасет `v2` считается **ЧЕРНОВИКОМ**
 и `/rodosloviye/` остаётся на canonical v1.
+
+## Publishable projection
+
+Полный `data/genealogy/v2/` — исследовательский corpus и остаётся `phase1-draft`, пока не закрыта редакционная очередь всех raw-имён. Runtime не должен импортировать его напрямую.
+
+Для production-перехода существует отдельная производная проекция:
+
+```
+data/genealogy/v2/publishable/
+├── meta.json
+├── persons.json
+├── relations.json
+└── gospel-sequences.json
+```
+
+Она строится командой:
+
+```bash
+node scripts/genealogy-build/build-publishable-projection.mjs
+node scripts/genealogy-v2-publishable-audit.mjs
+```
+
+Контракт проекции fail-closed:
+
+- входят только все 154 curated v1 identity, однозначно сопоставленные с canonical v2/TIPNR identity;
+- русское имя допускается только при `ru.review=false`;
+- raw TIPNR-only persons и raw-only edges исключены;
+- `father/mother` из curated v1 — первичный authority;
+- `children[]` может дополнить только отсутствующий non-conflicting same-role relation;
+- spouse автоматически публикуется только при reciprocal curated assertion;
+- Joseph→Jesus хранится как отдельный `legal-parent` и остаётся `non-biological`;
+- Heli→Mary сохраняет `editorial-harmonization`, `directScripture=false`, `disputed`;
+- Matthew/Luke берутся только из explicit Gospel occurrence SSOT;
+- CI требует byte-identical regeneration и фиксированный набор из четырёх generated JSON.
+
+Raw-v2 runtime guard различает `v2/publishable/` и остальные `v2/` пути: blockers исследовательского корпуса не наследуются сертифицированной проекцией, но любой прямой импорт blocked raw-v2 остаётся ошибкой.
+
