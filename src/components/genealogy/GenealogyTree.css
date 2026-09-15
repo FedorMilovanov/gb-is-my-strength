@@ -24,21 +24,20 @@
   .genealogy-toolbar { grid-template-columns: minmax(0, 1100px) 120px; }
 }
 .genealogy-primary-tools, .genealogy-filter-tools { grid-column: 1; display: flex; align-items: center; gap: 6px; min-width: 0; }
-.genealogy-primary-tools { position: relative; margin-bottom: 6px; overflow: visible; z-index: 21; }
+.genealogy-primary-tools { position: relative; align-items: flex-start; margin-bottom: 6px; overflow: visible; z-index: 21; }
 .genealogy-app .genealogy-primary-tools input { min-width: 0; width: 100%; margin: 0; }
 .genealogy-person-search { position: relative; flex: 1; min-width: 0; overflow: visible; z-index: 22; }
 .genealogy-search-popover, .genealogy-search-empty {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  z-index: 80;
+  position: static;
   display: block;
   visibility: visible;
   opacity: 1;
   pointer-events: auto;
-  width: max(100%, 280px);
-  max-width: min(520px, calc(100vw - 24px));
+  width: 100%;
+  min-width: 0;
+  max-width: none;
   min-height: 44px;
+  margin-top: 6px;
   overflow: hidden;
   background: var(--genealogy-panel);
   border: 1px solid var(--genealogy-border);
