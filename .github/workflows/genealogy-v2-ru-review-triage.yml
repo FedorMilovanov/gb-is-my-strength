@@ -1,0 +1,68 @@
+name: Genealogy v2 RU Review Triage
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/genealogy-v2-ru-review-triage.yml'
+      - 'data/genealogy/v2/persons.json'
+      - 'data/genealogy/v2/meta.json'
+      - 'scripts/genealogy-v2-ru-review-report.mjs'
+      - 'scripts/genealogy-build/lib/ru-extract.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  triage:
+    name: Build deterministic read-only review queue
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Prove exact source
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+
+      - name: Check triage script syntax
+        run: node --check scripts/genealogy-v2-ru-review-report.mjs
+
+      - name: Build review triage report
+        run: node scripts/genealogy-v2-ru-review-report.mjs
+
+      - name: Record first report digests
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum reports/genealogy-v2-ru-review/queue.json                     reports/genealogy-v2-ru-review/queue.csv                     reports/genealogy-v2-ru-review/summary.md             > /tmp/ru-review-first.sha256
+
+      - name: Rebuild and require deterministic bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf reports/genealogy-v2-ru-review
+          node scripts/genealogy-v2-ru-review-report.mjs
+          sha256sum -c /tmp/ru-review-first.sha256
+
+      - name: Require data tree to remain read-only
+        run: git diff --exit-code -- data/genealogy/v2
+
+      - name: Upload editorial queue evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: genealogy-v2-ru-review-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/genealogy-v2-ru-review/
+          if-no-files-found: error
+          retention-days: 30

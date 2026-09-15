@@ -12,7 +12,7 @@ const siteUtils = fs.readFileSync('js/site-utils.js','utf8');
 const mapEngine = fs.readFileSync('karty/_engine/map-engine.js','utf8');
 const builtMindMap = fs.readFileSync('konfessii/russkij-baptizm/_app/index.html','utf8');
 const pixel = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
-const route = {meta:{id:'special-witness',title:'Witness',viewport_init:{cx:500,cy:350,w:1000}},stages:[{n:'I',t:'Stage'}],stories:[{id:'main',label:'Main',places:['p1'],stage_ids:[0],active_by_default:true}],places:[{id:'p1',name:'Place',stage:0,x:500,y:350,story:'Story',photos:[{thumb:pixel,src:pixel,label:'Photo',credit:'Fixture'}]}]};
+const route = {archetype:'route',capabilities:['stages','stories'],meta:{id:'special-witness',title:'Witness',viewport_init:{cx:500,cy:350,w:1000}},stages:[{n:'I',t:'Stage'}],stories:[{id:'main',label:'Main',places:['p1'],stage_ids:[0],active_by_default:true}],places:[{id:'p1',name:'Place',stage:0,x:500,y:350,story:'Story',photos:[{thumb:pixel,src:pixel,label:'Photo',credit:'Fixture'}]}]};
 
 async function builtLauncherWitness(browser) {
   const page = await browser.newPage({viewport:{width:844,height:620}});

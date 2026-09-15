@@ -4,6 +4,11 @@ on:
   pull_request:
     paths:
       - karty/_engine/map-engine.js
+      - karty/_shared/route.schema.json
+      - 'karty/*/route.json'
+      - src/components/karty/ishod/IshodMap.astro
+      - scripts/map-capabilities-contract-test.js
+      - scripts/map-capabilities-browser-test.js
       - scripts/map-keyboard-contract-test.js
       - scripts/map-browser-smoke.js
       - scripts/map-panel-viewport-browser-test.js
@@ -14,6 +19,11 @@ on:
       - main
     paths:
       - karty/_engine/map-engine.js
+      - karty/_shared/route.schema.json
+      - 'karty/*/route.json'
+      - src/components/karty/ishod/IshodMap.astro
+      - scripts/map-capabilities-contract-test.js
+      - scripts/map-capabilities-browser-test.js
       - scripts/map-keyboard-contract-test.js
       - scripts/map-browser-smoke.js
       - scripts/map-panel-viewport-browser-test.js
@@ -35,6 +45,8 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22.23.1'
+      - name: Verify route capability runtime contract
+        run: node scripts/map-capabilities-contract-test.js
       - name: Verify source keyboard policy
         run: node scripts/map-keyboard-contract-test.js
       - name: Verify viewport and authored-path sources
@@ -45,8 +57,8 @@ jobs:
           const fs = require('node:fs');
           const source = fs.readFileSync('karty/_engine/map-engine.js', 'utf8');
           const required = [
-            'map-engine.js v0.59',
-            "version:'0.59.0',buildDate:'2026-09-15'",
+            'map-engine.js v0.60',
+            "version:'0.60.0',buildDate:'2026-09-15'",
             'cfg.archaeologyProjection',
             'max-height:calc(100% - max(8px,env(safe-area-inset-top)))',
             '.me-panel__head,.me-tabs,.me-nav{flex:0 0 auto}',
@@ -71,7 +83,7 @@ jobs:
             console.error('Missing or stale map source contract:', {missing, staleModulo: source.includes('stageIndex%STAGE_COLORS.length'), staleLegacyArchaeology});
             process.exit(1);
           }
-          console.log('PASS source map viewport, authored-path and v0.59 projection contracts');
+          console.log('PASS source map viewport, authored-path and v0.60 capability/projection contracts');
           NODE
       - name: Lint workflow
         run: node scripts/run-actionlint.mjs -no-color .github/workflows/map-keyboard-contract.yml
@@ -110,6 +122,8 @@ jobs:
         run: |
           set -o pipefail
           node scripts/map-browser-smoke.js 2>&1 | tee /tmp/map-keyboard-smoke.log
+      - name: Verify capability-driven DOM surfaces
+        run: node scripts/map-capabilities-browser-test.js
       - name: Upload keyboard smoke evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

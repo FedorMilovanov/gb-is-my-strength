@@ -199,9 +199,9 @@ check(
 
 check(
   'Route code never monkey-patches shared MapEngine methods',
-  !/(?:window\.)?MapEngine\.[A-Za-z_$][\w$]*\s*=/.test(avraamMapSource) &&
-    !/(?:window\.)?MapEngine\.[A-Za-z_$][\w$]*\s*=/.test(ishodMapSource) &&
-    !/engine\.createMap\s*=/.test(ishodPageSource) &&
+  !/(?:window\.)?MapEngine\.[A-Za-z_$][\w$]*\s*=(?!=)/.test(avraamMapSource) &&
+    !/(?:window\.)?MapEngine\.[A-Za-z_$][\w$]*\s*=(?!=)/.test(ishodMapSource) &&
+    !/engine\.createMap\s*=(?!=)/.test(ishodPageSource) &&
     !/var createMap\s*=\s*engine\.createMap/.test(ishodPageSource),
   'Route pages/components must pass config/hooks through the shared bootstrap, never mutate the shared engine API.'
 );
