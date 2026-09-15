@@ -35,15 +35,15 @@
       "w": 1800
     },
     "mobile_viewport_init": {
-      "cx": 650,
-      "cy": 710,
-      "w": 640
+      "cx": 947,
+      "cy": 549,
+      "w": 1750
     },
     "mobile_story_viewports": {
       "main": [
-        650,
-        710,
-        640
+        947,
+        549,
+        1750
       ],
       "lekh-lekha": [
         1167,
