@@ -19,13 +19,50 @@
   isolation: isolate;
 }
 .genealogy-app *, .genealogy-app *::before, .genealogy-app *::after { box-sizing: border-box; }
-.genealogy-toolbar { display: grid; grid-template-columns: minmax(0, 1100px) 72px; flex: none; padding: 10px 12px; background: var(--genealogy-panel); border-bottom: 1px solid var(--genealogy-border); z-index: 10; }
+.genealogy-toolbar { position: relative; display: grid; grid-template-columns: minmax(0, 1100px) 72px; flex: none; padding: 10px 12px; overflow: visible; background: var(--genealogy-panel); border-bottom: 1px solid var(--genealogy-border); z-index: 20; }
 @media (min-width: 640px) {
   .genealogy-toolbar { grid-template-columns: minmax(0, 1100px) 120px; }
 }
 .genealogy-primary-tools, .genealogy-filter-tools { grid-column: 1; display: flex; align-items: center; gap: 6px; min-width: 0; }
-.genealogy-primary-tools { margin-bottom: 6px; }
-.genealogy-app .genealogy-primary-tools input { flex: 1; min-width: 0; width: auto; margin: 0; }
+.genealogy-primary-tools { position: relative; align-items: flex-start; margin-bottom: 6px; overflow: visible; z-index: 21; }
+.genealogy-app .genealogy-primary-tools input { min-width: 0; width: 100%; margin: 0; }
+.genealogy-person-search { position: relative; flex: 1; min-width: 0; overflow: visible; z-index: 22; }
+.genealogy-search-popover, .genealogy-search-empty {
+  position: static;
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  min-height: 44px;
+  margin-top: 6px;
+  overflow: hidden;
+  background: var(--genealogy-panel);
+  border: 1px solid var(--genealogy-border);
+  border-radius: 10px;
+  box-shadow: 0 12px 30px #0009;
+}
+.genealogy-search-popover {
+  max-height: min(360px, 48vh);
+  padding: 5px;
+  overflow-y: auto;
+}
+.genealogy-search-popover [role="option"] {
+  display: flex; min-height: 44px; flex-direction: column; justify-content: center; gap: 2px;
+  padding: 7px 9px; border-radius: 7px; cursor: pointer;
+}
+.genealogy-search-popover [role="option"][aria-selected="true"],
+.genealogy-search-popover [role="option"]:hover {
+  background: #443d2d; outline: 1px solid var(--genealogy-gold);
+}
+.genealogy-search-popover strong { color: var(--genealogy-text); font-size: 12px; line-height: 1.25; }
+.genealogy-search-popover span, .genealogy-search-popover p, .genealogy-search-empty {
+  color: var(--genealogy-muted); font-size: 10.5px; line-height: 1.35;
+}
+.genealogy-search-popover p { margin: 0; padding: 7px 10px 9px; border-top: 1px solid var(--genealogy-border); }
+.genealogy-search-empty { padding: 10px 12px; }
 .genealogy-app button, .genealogy-app input, .genealogy-app select {
   min-height: 44px;
   min-width: 44px;
