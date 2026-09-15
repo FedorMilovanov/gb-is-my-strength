@@ -650,6 +650,15 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
           setRelationReturnFocusId(returnId);
           setSelectedRelation(relation);
         }}
+        onNavigatePerson={personId => {
+          const target = persons.find(person => person.id === personId);
+          if (!target) return;
+          setSelectedRelation(null);
+          setRelationReturnFocusId(null);
+          setActiveId(personId);
+          setSelected(target);
+          focusPerson(personId, 1, 0);
+        }}
         onClose={() => {
           if (selected) setKeyboardTarget({ id: selected.id });
           setSelected(null);
