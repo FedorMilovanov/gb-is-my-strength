@@ -550,8 +550,32 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
 
     phase = 'ambiguous-search';
     await search.fill('Иосиф (Лк)');
-    const searchList = page.getByRole('listbox', { name: 'Люди с похожим именем' });
+    const app = page.locator('[data-genealogy-app]');
+    await page.waitForFunction(() => {
+      const root = document.querySelector('[data-genealogy-app]');
+      return root?.getAttribute('data-genealogy-search-query') === 'Иосиф (Лк)';
+    });
+    const searchState = await app.evaluate(root => ({
+      query: root.getAttribute('data-genealogy-search-query'),
+      resultCount: Number(root.getAttribute('data-genealogy-search-result-count')),
+      needsChoice: root.getAttribute('data-genealogy-search-needs-choice'),
+      selection: root.getAttribute('data-genealogy-search-selection'),
+      resolved: root.getAttribute('data-genealogy-search-person'),
+    }));
+    assert.deepEqual(searchState, {
+      query: 'Иосиф (Лк)',
+      resultCount: 2,
+      needsChoice: 'true',
+      selection: null,
+      resolved: null,
+    }, `${browserName} ${viewport.width}x${viewport.height}: ambiguous search state diverged: ${JSON.stringify(searchState)}`);
+
+    const searchList = page.locator('#genealogy-person-search-results');
     await searchList.waitFor({ state: 'visible' });
+    assert.equal(await searchList.getAttribute('role'), 'listbox',
+      `${browserName} ${viewport.width}x${viewport.height}: chooser lost listbox role`);
+    assert.equal(await searchList.getAttribute('aria-label'), 'Люди с похожим именем',
+      `${browserName} ${viewport.width}x${viewport.height}: chooser lost accessible label`);
     assert.equal(await search.getAttribute('aria-expanded'), 'true',
       `${browserName} ${viewport.width}x${viewport.height}: ambiguous search did not expose listbox`);
     const ambiguousIds = await searchList.getByRole('option').evaluateAll(options =>
