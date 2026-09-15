@@ -33,6 +33,7 @@ import { renderPersonL2Svg } from './lib/render-l2-person.mjs';
 import { renderMorphFramesSvg } from './lib/render-morph-frames.mjs';
 import { renderTimelineSvg } from './lib/render-timeline.mjs';
 import { matchSkeleton, v1PrimaryRefScope } from './lib/skeleton-matcher.mjs';
+import { resolveGospelSequences } from './lib/gospel-sequences.mjs';
 
 const log = (...a) => console.log('[genealogy-build]', ...a);
 
@@ -131,6 +132,9 @@ async function runAll() {
   const v1Raw = await readFile(PATHS.v1Skeleton, 'utf8');
   const v1SkeletonSha256 = createHash('sha256').update(v1Raw).digest('hex');
   const v1 = JSON.parse(v1Raw);
+  const gospelRaw = await readFile(PATHS.gospelSequences, 'utf8');
+  const gospelSequencesSha256 = createHash('sha256').update(gospelRaw).digest('hex');
+  const gospelSource = JSON.parse(gospelRaw);
   const { matches: v1Matches, decisions: v1Decisions, unmatched: v1Unmatched, soft: v1Soft, collisions: v1Collisions } = matchSkeleton(v1.persons, persons);
   if (v1Collisions.length) log(`skeleton COLLISIONS (два v1-id → один ключ): ${v1Collisions.map(c => `${c.key}=[${c.ids.join(',')}]`).join('; ')}`);
   const v1ByTipnrKey = new Map();
@@ -297,8 +301,15 @@ async function runAll() {
     }
   }
 
-  // 6.3. Кластеры генеалогии + слой народов
-  const clusters = computeClusters(outPersons, edges);
+  // 6.3. Curated textual Gospel sequences + genealogy clusters + nations layer.
+  // Matthew/Luke membership is resolved from explicit source occurrences through
+  // the reviewed v1→TIPNR identity matcher, never inferred by parent traversal.
+  const gospelSequences = resolveGospelSequences(gospelSource, {
+    v1Matches,
+    persons: outPersons,
+    sourcePath: 'data/genealogy/gospel-sequences.json',
+  });
+  const clusters = computeClusters(outPersons, edges, { gospelSequences });
   const byKeyOut = new Map(outPersons.map(p => [p.key, p]));
   const nations = nationsLayer(groups, byKeyOut);
   log(`clusters: ${clusters.map(c => `${c.id}:${c.count}`).join(', ')}`);
@@ -419,6 +430,12 @@ async function runAll() {
         sha256: v1SkeletonSha256,
         persons: v1.persons.length,
       },
+      gospelSequences: {
+        path: 'data/genealogy/gospel-sequences.json',
+        sha256: gospelSequencesSha256,
+        schemaVersion: gospelSource.schemaVersion,
+        sequences: gospelSource.sequences.map(sequence => ({ id: sequence.id, entries: sequence.entries.length })),
+      },
     },
     attribution: [SOURCES.tipnr.attribution, SOURCES.synodal.attribution,
       'Хронология (MT AM), спорные узлы, значимость: редакция проекта (v1-скелет)'],
@@ -445,6 +462,7 @@ async function runAll() {
   };
   await writeFile(path.join(PATHS.outDir, 'persons.json'), JSON.stringify(outPersons, null, 1) + '\n');
   await writeFile(path.join(PATHS.outDir, 'edges.json'), JSON.stringify(edges, null, 1) + '\n');
+  await writeFile(path.join(PATHS.outDir, 'gospel-sequences.json'), JSON.stringify(gospelSequences, null, 1) + '\n');
   await writeFile(path.join(PATHS.outDir, 'groups.json'), JSON.stringify({
     _status: 'phase1-draft: членство кластеров — воспроизводимые эвристики (rule хранится рядом), сверка редактором обязательна',
     clusters,
