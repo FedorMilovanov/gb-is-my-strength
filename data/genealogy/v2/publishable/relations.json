@@ -1,0 +1,2027 @@
+[
+  {
+    "kind": "legal-parent",
+    "from": "joseph--mat-1-16",
+    "to": "jesus--isa-7-14",
+    "role": "legal-father",
+    "authority": "explicit-qualified-textual-annotation",
+    "evidence": {
+      "legal": true,
+      "legalAssertion": "source-derived",
+      "biology": "non-biological",
+      "assertion": "explicit-qualified-textual",
+      "textualRelation": "as-supposed-son",
+      "confidence": "certain",
+      "directScripture": true,
+      "editorialPosition": "text",
+      "refs": [
+        "Мф 1:16",
+        "Мф 1:18–25",
+        "Лк 1:34–35",
+        "Лк 3:23"
+      ]
+    },
+    "note": "Мф 1:16 называет Иосифа мужем Марии; Лк 3:23 — Иисуса «как думали, сыном Иосифовым». Девственное зачатие исключает биологическое отцовство Иосифа (Мф 1:18–25; Лк 1:34–35). Категория «legal» — source-derived модель роли Иосифа, а не отдельная буквальная формулировка стиха."
+  },
+  {
+    "kind": "parent",
+    "from": "aaron--exo-4-14",
+    "to": "eleazar--exo-6-23",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "eleazar",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "abihud--1ch-8-3",
+    "to": "eliakim--mat-1-13",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "eliakim_mt",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "abijah--1ki-14-31",
+    "to": "asa--1ki-15-8",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "asa",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "abraham--gen-11-26",
+    "to": "isaac--gen-17-19",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "isaac",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "achim--mat-1-14",
+    "to": "eliud--mat-1-14",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "eliud_mt",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "adam--gen-2-19",
+    "to": "abel--gen-4-2",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "abel",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "adam--gen-2-19",
+    "to": "cain--gen-4-1",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "cain",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "adam--gen-2-19",
+    "to": "seth--gen-4-25",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "seth",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "addi--luk-3-28",
+    "to": "melchi--luk-3-28",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "melki_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "ahaz--2ki-15-38",
+    "to": "hezekiah--2ki-16-20",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "hezekiah",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "amminadab--exo-6-23",
+    "to": "nahshon--exo-6-23",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "nahshon",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "amon--2ki-21-18",
+    "to": "josiah--1ki-13-2",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "josiah",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "amos--luk-3-25",
+    "to": "mattathias--luk-3-25",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "mattathias2_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "amram--exo-6-18",
+    "to": "aaron--exo-4-14",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "aaron",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "amram--exo-6-18",
+    "to": "miriam--exo-15-20",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "miriam",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "amram--exo-6-18",
+    "to": "moses--exo-2-10",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "moses",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "arpachshad--gen-10-22",
+    "to": "cainan--luk-3-36",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "cainan_2",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "arpachshad--gen-10-22",
+    "to": "shelah--gen-10-24",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "shelah",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "asa--1ki-15-8",
+    "to": "jehoshaphat--1ki-15-24",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "jehoshaphat",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "azor--mat-1-13",
+    "to": "zadok--mat-1-14",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "zadok_mt",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "bathsheba--2sa-11-3",
+    "to": "nathan--2sa-5-14",
+    "role": "mother",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "nathan_prince",
+      "field": "mother"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "bathsheba--2sa-11-3",
+    "to": "solomon--2sa-5-14",
+    "role": "mother",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "solomon",
+      "field": "mother"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "bethuel--gen-22-22",
+    "to": "laban--gen-24-29",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "laban",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "bethuel--gen-22-22",
+    "to": "rebekah--gen-22-23",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "rebekah",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "boaz--rut-2-1",
+    "to": "obed--rut-4-17",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "obed",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "cosam--luk-3-28",
+    "to": "addi--luk-3-28",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "addi",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "cush--gen-10-6",
+    "to": "nimrod--gen-10-8",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "nimrod",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "david--rut-4-17",
+    "to": "nathan--2sa-5-14",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "nathan_prince",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "david--rut-4-17",
+    "to": "solomon--2sa-5-14",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "solomon",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "eber--gen-10-21",
+    "to": "peleg--gen-10-25",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "peleg",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "eleazar--exo-6-23",
+    "to": "phinehas--exo-6-25",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "phinehas",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "eleazar--mat-1-15",
+    "to": "matthan--mat-1-15",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "matthan_mt",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "eliakim--luk-3-30",
+    "to": "jonam--luk-3-30",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "jonam",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "eliakim--mat-1-13",
+    "to": "azor--mat-1-13",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "azor_mt",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "eliezer--luk-3-29",
+    "to": "joshua--luk-3-29",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "joshua_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "eliud--mat-1-14",
+    "to": "eleazar--mat-1-15",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "eleazar_mt",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "elmadam--luk-3-28",
+    "to": "cosam--luk-3-28",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "cosam",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "enoch--gen-5-18",
+    "to": "methuselah--gen-5-21",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "methuselah",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "enosh--gen-4-26",
+    "to": "kenan--gen-5-9",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "kenan_gen5",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "er--luk-3-28",
+    "to": "elmadam--luk-3-28",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "elmadam",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "esli--luk-3-25",
+    "to": "nahum--luk-3-25",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "naum_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "eve--gen-3-20",
+    "to": "abel--gen-4-2",
+    "role": "mother",
+    "authority": "curated-v1-children-index",
+    "source": {
+      "parentV1Id": "eve",
+      "field": "children"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "eve--gen-3-20",
+    "to": "cain--gen-4-1",
+    "role": "mother",
+    "authority": "curated-v1-children-index",
+    "source": {
+      "parentV1Id": "eve",
+      "field": "children"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "eve--gen-3-20",
+    "to": "seth--gen-4-25",
+    "role": "mother",
+    "authority": "curated-v1-children-index",
+    "source": {
+      "parentV1Id": "eve",
+      "field": "children"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "ham--gen-5-32",
+    "to": "canaan--gen-9-18",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "canaan",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "ham--gen-5-32",
+    "to": "cush--gen-10-6",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "cush",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "ham--gen-5-32",
+    "to": "egypt--gen-10-6",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "mizraim",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "ham--gen-5-32",
+    "to": "put--gen-10-6",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "put",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "heli--luk-3-23",
+    "to": "mary--mat-1-16",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "mary",
+      "field": "father"
+    },
+    "evidence": {
+      "biology": "unknown",
+      "assertion": "editorial-harmonization",
+      "confidence": "disputed",
+      "directScripture": false,
+      "editorialPosition": "preferred",
+      "refs": [
+        "Лк 3:23",
+        "Мф 1:16"
+      ]
+    },
+    "note": "Илий как отец Марии — предпочитаемая гармонизация проекта. Лк 3:23 прямо этого не утверждает."
+  },
+  {
+    "kind": "parent",
+    "from": "hezekiah--2ki-16-20",
+    "to": "manasseh--2ki-20-21",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "manasseh",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "hezron--gen-46-12",
+    "to": "ram--rut-4-19",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "ram",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "isaac--gen-17-19",
+    "to": "esau--gen-25-25",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "esau",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "isaac--gen-17-19",
+    "to": "israel--gen-25-26",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "jacob",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "israel--gen-25-26",
+    "to": "asher--gen-30-13",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "asher",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "israel--gen-25-26",
+    "to": "benjamin--gen-35-18",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "benjamin",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "israel--gen-25-26",
+    "to": "dan--gen-30-6",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "dan",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "israel--gen-25-26",
+    "to": "gad--gen-30-11",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "gad",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "israel--gen-25-26",
+    "to": "issachar--gen-30-18",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "issachar",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "israel--gen-25-26",
+    "to": "joseph--gen-30-24",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "joseph",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "israel--gen-25-26",
+    "to": "judah--gen-29-35",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "judah",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "israel--gen-25-26",
+    "to": "levi--gen-29-34",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "levi",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "israel--gen-25-26",
+    "to": "naphtali--gen-30-8",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "naphtali",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "israel--gen-25-26",
+    "to": "reuben--gen-29-32",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "reuben",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "israel--gen-25-26",
+    "to": "simeon--gen-29-33",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "simeon",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "israel--gen-25-26",
+    "to": "zebulun--gen-30-20",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "zebulun",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "jacob--mat-1-15",
+    "to": "joseph--mat-1-16",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "joseph_nt",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "jannai--luk-3-24",
+    "to": "melchi--luk-3-24",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "melchi_lk2",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "japheth--gen-5-32",
+    "to": "gomer--gen-10-2",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "gomer",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "japheth--gen-5-32",
+    "to": "javan--gen-10-2",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "javan",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "japheth--gen-5-32",
+    "to": "madai--gen-10-2",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "madai",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "japheth--gen-5-32",
+    "to": "magog--gen-10-2",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "magog",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "japheth--gen-5-32",
+    "to": "meshech--gen-10-2",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "meshech",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "japheth--gen-5-32",
+    "to": "tiras--gen-10-2",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "tiras",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "japheth--gen-5-32",
+    "to": "tubal--gen-10-2",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "tubal_jp",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "jared--gen-5-15",
+    "to": "enoch--gen-5-18",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "enoch",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "jehoiachin--2ki-24-6",
+    "to": "shealtiel--1ch-3-17",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "shealtiel",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "jehoiakim--2ki-23-34",
+    "to": "jehoiachin--2ki-24-6",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "jeconiah",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "jehoshaphat--1ki-15-24",
+    "to": "joram--2ki-1-17",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "joram",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "jesse--rut-4-17",
+    "to": "david--rut-4-17",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "david",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "joanan--luk-3-27",
+    "to": "joda--luk-3-26",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "joda_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "jochebed--exo-6-20",
+    "to": "aaron--exo-4-14",
+    "role": "mother",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "aaron",
+      "field": "mother"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "jochebed--exo-6-20",
+    "to": "amram--exo-6-18",
+    "role": "mother",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "amram",
+      "field": "mother"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "jochebed--exo-6-20",
+    "to": "miriam--exo-15-20",
+    "role": "mother",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "miriam",
+      "field": "mother"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "jochebed--exo-6-20",
+    "to": "moses--exo-2-10",
+    "role": "mother",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "moses",
+      "field": "mother"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "joda--luk-3-26",
+    "to": "josech--luk-3-26",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "josech_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "jonam--luk-3-30",
+    "to": "joseph--luk-3-30",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "joseph_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "joram--2ki-1-17",
+    "to": "uzziah--2ki-14-21",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "uzziah",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "jorim--luk-3-29",
+    "to": "eliezer--luk-3-29",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "eliezer_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "josech--luk-3-26",
+    "to": "semein--luk-3-26",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "semein_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "joseph--luk-3-24",
+    "to": "jannai--luk-3-24",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "jannai_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "joseph--luk-3-30",
+    "to": "judah--luk-3-30",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "judah_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "joshua--luk-3-29",
+    "to": "er--luk-3-28",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "er_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "josiah--1ki-13-2",
+    "to": "jehoiakim--2ki-23-34",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "jehoiakim",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "jotham--2ki-15-5",
+    "to": "ahaz--2ki-15-38",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "ahaz",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "judah--gen-29-35",
+    "to": "perez--gen-38-29",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "perez",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "judah--luk-3-30",
+    "to": "simeon--luk-3-30",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "simeon_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "kenan--gen-5-9",
+    "to": "mahalalel--gen-5-12",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "mahalalel",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "kohath--gen-46-11",
+    "to": "amram--exo-6-18",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "amram",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "laban--gen-24-29",
+    "to": "leah--gen-29-16",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "leah",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "laban--gen-24-29",
+    "to": "rachel--gen-29-6",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "rachel",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "lamech--gen-5-25",
+    "to": "noah--gen-5-29",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "noah",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "leah--gen-29-16",
+    "to": "issachar--gen-30-18",
+    "role": "mother",
+    "authority": "curated-v1-children-index",
+    "source": {
+      "parentV1Id": "leah",
+      "field": "children"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "leah--gen-29-16",
+    "to": "judah--gen-29-35",
+    "role": "mother",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "judah",
+      "field": "mother"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "leah--gen-29-16",
+    "to": "levi--gen-29-34",
+    "role": "mother",
+    "authority": "curated-v1-children-index",
+    "source": {
+      "parentV1Id": "leah",
+      "field": "children"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "leah--gen-29-16",
+    "to": "reuben--gen-29-32",
+    "role": "mother",
+    "authority": "curated-v1-children-index",
+    "source": {
+      "parentV1Id": "leah",
+      "field": "children"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "leah--gen-29-16",
+    "to": "simeon--gen-29-33",
+    "role": "mother",
+    "authority": "curated-v1-children-index",
+    "source": {
+      "parentV1Id": "leah",
+      "field": "children"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "leah--gen-29-16",
+    "to": "zebulun--gen-30-20",
+    "role": "mother",
+    "authority": "curated-v1-children-index",
+    "source": {
+      "parentV1Id": "leah",
+      "field": "children"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "levi--gen-29-34",
+    "to": "kohath--gen-46-11",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "kohath",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "levi--luk-3-24",
+    "to": "matthat--luk-3-24",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "matthat_lk2",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "levi--luk-3-29",
+    "to": "matthat--luk-3-29",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "matthat",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "maath--luk-3-26",
+    "to": "naggai--luk-3-25",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "naggesi_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "mahalalel--gen-5-12",
+    "to": "jared--gen-5-15",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "jared",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "manasseh--2ki-20-21",
+    "to": "amon--2ki-21-18",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "amon",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "mary--mat-1-16",
+    "to": "jesus--isa-7-14",
+    "role": "mother",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "jesus",
+      "field": "mother"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "mattatha--luk-3-31",
+    "to": "menna--luk-3-31",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "menna",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "mattathias--luk-3-25",
+    "to": "joseph--luk-3-24",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "joseph_lk2",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "mattathias--luk-3-26",
+    "to": "maath--luk-3-26",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "maath_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "matthan--mat-1-15",
+    "to": "jacob--mat-1-15",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "jacob_mt",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "matthat--luk-3-24",
+    "to": "heli--luk-3-23",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "heli_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "matthat--luk-3-29",
+    "to": "jorim--luk-3-29",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "jorim",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "melchi--luk-3-24",
+    "to": "levi--luk-3-24",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "levi_lk2",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "melchi--luk-3-28",
+    "to": "neri--luk-3-27",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "neri",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "melea--luk-3-31",
+    "to": "eliakim--luk-3-30",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "eliakim_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "menna--luk-3-31",
+    "to": "melea--luk-3-31",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "melea",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "methuselah--gen-5-21",
+    "to": "lamech--gen-5-25",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "lamech_gen5",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "naggai--luk-3-25",
+    "to": "esli--luk-3-25",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "esli_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "nahor--gen-11-22",
+    "to": "bethuel--gen-22-22",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "bethuel",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "nahor--gen-11-22",
+    "to": "terah--gen-11-24",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "terah",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "nahshon--exo-6-23",
+    "to": "salmon--rut-4-20",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "salmon",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "nahum--luk-3-25",
+    "to": "amos--luk-3-25",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "amos_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "nathan--2sa-5-14",
+    "to": "mattatha--luk-3-31",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "mattatha",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "neri--luk-3-27",
+    "to": "shealtiel--luk-3-27",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "shealtiel_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "noah--gen-5-29",
+    "to": "ham--gen-5-32",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "ham",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "noah--gen-5-29",
+    "to": "japheth--gen-5-32",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "japheth",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "noah--gen-5-29",
+    "to": "shem--gen-5-32",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "shem",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "obed--rut-4-17",
+    "to": "jesse--rut-4-17",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "jesse",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "peleg--gen-10-25",
+    "to": "reu--gen-11-18",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "reu",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "perez--gen-38-29",
+    "to": "hezron--gen-46-12",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "hezron",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "rachel--gen-29-6",
+    "to": "benjamin--gen-35-18",
+    "role": "mother",
+    "authority": "curated-v1-children-index",
+    "source": {
+      "parentV1Id": "rachel",
+      "field": "children"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "rachel--gen-29-6",
+    "to": "joseph--gen-30-24",
+    "role": "mother",
+    "authority": "curated-v1-children-index",
+    "source": {
+      "parentV1Id": "rachel",
+      "field": "children"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "rahab--jos-2-1",
+    "to": "boaz--rut-2-1",
+    "role": "mother",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "boaz",
+      "field": "mother"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "rahab--jos-2-1",
+    "to": "salmon--rut-4-20",
+    "role": "mother",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "salmon",
+      "field": "mother"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "ram--rut-4-19",
+    "to": "amminadab--exo-6-23",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "amminadab",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "rebekah--gen-22-23",
+    "to": "esau--gen-25-25",
+    "role": "mother",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "esau",
+      "field": "mother"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "rebekah--gen-22-23",
+    "to": "israel--gen-25-26",
+    "role": "mother",
+    "authority": "curated-v1-children-index",
+    "source": {
+      "parentV1Id": "rebekah",
+      "field": "children"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "rehoboam--1ki-11-43",
+    "to": "abijah--1ki-14-31",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "abijah",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "reu--gen-11-18",
+    "to": "serug--gen-11-20",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "serug",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "rhesa--luk-3-27",
+    "to": "joanan--luk-3-27",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "joanan_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "ruth--rut-1-4",
+    "to": "obed--rut-4-17",
+    "role": "mother",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "obed",
+      "field": "mother"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "salmon--rut-4-20",
+    "to": "boaz--rut-2-1",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "boaz",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "sarah--gen-11-29",
+    "to": "isaac--gen-17-19",
+    "role": "mother",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "isaac",
+      "field": "mother"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "semein--luk-3-26",
+    "to": "mattathias--luk-3-26",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "mattathias_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "serug--gen-11-20",
+    "to": "nahor--gen-11-22",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "nahor_serug",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "seth--gen-4-25",
+    "to": "enosh--gen-4-26",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "enosh",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "shealtiel--1ch-3-17",
+    "to": "zerubbabel--1ch-3-19",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "zerubbabel",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "shealtiel--luk-3-27",
+    "to": "zerubbabel--luk-3-27",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "zerubbabel_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "shelah--gen-10-24",
+    "to": "eber--gen-10-21",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "eber",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "shem--gen-5-32",
+    "to": "aram--gen-10-22",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "aram",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "shem--gen-5-32",
+    "to": "arpachshad--gen-10-22",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "arphaxad",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "shem--gen-5-32",
+    "to": "asshur--gen-10-22",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "asshur",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "shem--gen-5-32",
+    "to": "elam--gen-10-22",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "elam",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "shem--gen-5-32",
+    "to": "lud--gen-10-22",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "lud_shem",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "simeon--luk-3-30",
+    "to": "levi--luk-3-29",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "levi_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "solomon--2sa-5-14",
+    "to": "rehoboam--1ki-11-43",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "rehoboam",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "tamar--gen-38-6",
+    "to": "perez--gen-38-29",
+    "role": "mother",
+    "authority": "curated-v1-children-index",
+    "source": {
+      "parentV1Id": "tamar",
+      "field": "children"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "terah--gen-11-24",
+    "to": "abraham--gen-11-26",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "abram",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "terah--gen-11-24",
+    "to": "sarah--gen-11-29",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "sarah",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "uzziah--2ki-14-21",
+    "to": "jotham--2ki-15-5",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "jotham",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "zadok--mat-1-14",
+    "to": "achim--mat-1-14",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "achim_mt",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "zerubbabel--1ch-3-19",
+    "to": "abihud--1ch-8-3",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "abihud_mt",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "parent",
+    "from": "zerubbabel--luk-3-27",
+    "to": "rhesa--luk-3-27",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "rhesa_lk",
+      "field": "father"
+    }
+  },
+  {
+    "kind": "spouse",
+    "from": "abraham--gen-11-26",
+    "to": "sarah--gen-11-29",
+    "authority": "curated-v1-reciprocal-spouse",
+    "source": {
+      "v1Ids": [
+        "abram",
+        "sarah"
+      ]
+    }
+  },
+  {
+    "kind": "spouse",
+    "from": "adam--gen-2-19",
+    "to": "eve--gen-3-20",
+    "authority": "curated-v1-reciprocal-spouse",
+    "source": {
+      "v1Ids": [
+        "adam",
+        "eve"
+      ]
+    }
+  },
+  {
+    "kind": "spouse",
+    "from": "bathsheba--2sa-11-3",
+    "to": "david--rut-4-17",
+    "authority": "curated-v1-reciprocal-spouse",
+    "source": {
+      "v1Ids": [
+        "bathsheba",
+        "david"
+      ]
+    }
+  },
+  {
+    "kind": "spouse",
+    "from": "boaz--rut-2-1",
+    "to": "ruth--rut-1-4",
+    "authority": "curated-v1-reciprocal-spouse",
+    "source": {
+      "v1Ids": [
+        "boaz",
+        "ruth"
+      ]
+    }
+  },
+  {
+    "kind": "spouse",
+    "from": "isaac--gen-17-19",
+    "to": "rebekah--gen-22-23",
+    "authority": "curated-v1-reciprocal-spouse",
+    "source": {
+      "v1Ids": [
+        "isaac",
+        "rebekah"
+      ]
+    }
+  },
+  {
+    "kind": "spouse",
+    "from": "israel--gen-25-26",
+    "to": "leah--gen-29-16",
+    "authority": "curated-v1-reciprocal-spouse",
+    "source": {
+      "v1Ids": [
+        "jacob",
+        "leah"
+      ]
+    }
+  },
+  {
+    "kind": "spouse",
+    "from": "israel--gen-25-26",
+    "to": "rachel--gen-29-6",
+    "authority": "curated-v1-reciprocal-spouse",
+    "source": {
+      "v1Ids": [
+        "jacob",
+        "rachel"
+      ]
+    }
+  },
+  {
+    "kind": "spouse",
+    "from": "joseph--mat-1-16",
+    "to": "mary--mat-1-16",
+    "authority": "curated-v1-reciprocal-spouse",
+    "source": {
+      "v1Ids": [
+        "joseph_nt",
+        "mary"
+      ]
+    }
+  },
+  {
+    "kind": "spouse",
+    "from": "rahab--jos-2-1",
+    "to": "salmon--rut-4-20",
+    "authority": "curated-v1-reciprocal-spouse",
+    "source": {
+      "v1Ids": [
+        "rahab",
+        "salmon"
+      ]
+    }
+  }
+]

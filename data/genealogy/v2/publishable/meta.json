@@ -1,0 +1,445 @@
+{
+  "schemaVersion": 1,
+  "status": "curated-release-candidate",
+  "rawCorpusStatus": "phase1-draft — НЕ подключать в рантайм до exit-критериев Phase 1",
+  "rawPipelineVersion": "0.3.0-phase1-explicit-gospels",
+  "policy": {
+    "identities": "all curated v1 persons mapped 1:1 to v2 TIPNR identities; ru.review must be false",
+    "parents": "explicit father/mother first; children[] supplements only missing non-conflicting same-role links",
+    "spouses": "reciprocal curated v1 assertions only",
+    "annotations": "qualify projected relations; legal/non-biological relation remains distinct from biological parent",
+    "rawGraph": "TIPNR-only persons and raw TIPNR-only edges are excluded"
+  },
+  "counts": {
+    "persons": 154,
+    "relations": 181,
+    "parentRelations": 171,
+    "spouseRelations": 9,
+    "legalParentRelations": 1,
+    "gospelSequences": 2,
+    "gospelOccurrences": 118
+  },
+  "sourceHashes": {
+    "curatedV1": "b66da575abe6a34189d8ae192b30e4e4934210c5cd51c046c12c5c28de9e1d85",
+    "v2Persons": "b24cc8252592a5cd13a6c617d65a9d83bfa799ab42d87b9c97f7446fd3dc59dc",
+    "v2GospelSequences": "f9f65044a77bdb01dabc7059379aa4c75a8ea1c223be15455d542ca697bdfd91",
+    "v2EdgeAnnotations": "1facaeea2a5ddafe11b7019763b6a8482fc714d83b9d61d369d1e699d722a54d",
+    "v2Meta": "9ca808477decc57d7cb3a1526a39ff540978e3800076d5b1e392869ec5fbb551"
+  },
+  "diagnostics": {
+    "externalRefs": [
+      {
+        "sourceV1Id": "cain",
+        "field": "children",
+        "targetV1Id": "hanoch_cain",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "eber",
+        "field": "children",
+        "targetV1Id": "joktan",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "terah",
+        "field": "children",
+        "targetV1Id": "nahor_haran",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "terah",
+        "field": "children",
+        "targetV1Id": "haran",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "abram",
+        "field": "children",
+        "targetV1Id": "ishmael",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "judah",
+        "field": "children",
+        "targetV1Id": "zerah",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "cush",
+        "field": "children",
+        "targetV1Id": "seba",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "cush",
+        "field": "children",
+        "targetV1Id": "havilah_gen10",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "cush",
+        "field": "children",
+        "targetV1Id": "sabtah",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "cush",
+        "field": "children",
+        "targetV1Id": "raamah",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "cush",
+        "field": "children",
+        "targetV1Id": "sabteca",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "mizraim",
+        "field": "children",
+        "targetV1Id": "ludim",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "mizraim",
+        "field": "children",
+        "targetV1Id": "anamim",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "mizraim",
+        "field": "children",
+        "targetV1Id": "lehabim",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "mizraim",
+        "field": "children",
+        "targetV1Id": "naphtuhim",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "mizraim",
+        "field": "children",
+        "targetV1Id": "pathrusim",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "mizraim",
+        "field": "children",
+        "targetV1Id": "casluhim",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "mizraim",
+        "field": "children",
+        "targetV1Id": "caphtorim",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "canaan",
+        "field": "children",
+        "targetV1Id": "sidon",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "canaan",
+        "field": "children",
+        "targetV1Id": "heth",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "canaan",
+        "field": "children",
+        "targetV1Id": "jebusite",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "canaan",
+        "field": "children",
+        "targetV1Id": "amorite",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "canaan",
+        "field": "children",
+        "targetV1Id": "girgashite",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "canaan",
+        "field": "children",
+        "targetV1Id": "hivite",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "canaan",
+        "field": "children",
+        "targetV1Id": "arkite",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "canaan",
+        "field": "children",
+        "targetV1Id": "sinite",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "canaan",
+        "field": "children",
+        "targetV1Id": "arvadite",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "canaan",
+        "field": "children",
+        "targetV1Id": "zemarite",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "canaan",
+        "field": "children",
+        "targetV1Id": "hamathite",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "gomer",
+        "field": "children",
+        "targetV1Id": "ashkenaz",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "gomer",
+        "field": "children",
+        "targetV1Id": "rippath",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "gomer",
+        "field": "children",
+        "targetV1Id": "togarmah",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "javan",
+        "field": "children",
+        "targetV1Id": "elishah",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "javan",
+        "field": "children",
+        "targetV1Id": "tarshish",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "javan",
+        "field": "children",
+        "targetV1Id": "kittim",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "javan",
+        "field": "children",
+        "targetV1Id": "dodanim",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "aram",
+        "field": "children",
+        "targetV1Id": "uz_aram",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "aram",
+        "field": "children",
+        "targetV1Id": "hul",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "aram",
+        "field": "children",
+        "targetV1Id": "gether",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "aram",
+        "field": "children",
+        "targetV1Id": "mash",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "kohath",
+        "field": "children",
+        "targetV1Id": "izhar",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "kohath",
+        "field": "children",
+        "targetV1Id": "hebron",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "kohath",
+        "field": "children",
+        "targetV1Id": "uzziel",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "aaron",
+        "field": "children",
+        "targetV1Id": "ithamar",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "aaron",
+        "field": "children",
+        "targetV1Id": "nadab",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "aaron",
+        "field": "children",
+        "targetV1Id": "abihu",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "moses",
+        "field": "children",
+        "targetV1Id": "gershom",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "moses",
+        "field": "children",
+        "targetV1Id": "eliezer_moses",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "hezron",
+        "field": "children",
+        "targetV1Id": "jerahmeel",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "hezron",
+        "field": "children",
+        "targetV1Id": "chelubai",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "amminadab",
+        "field": "children",
+        "targetV1Id": "elisheba",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "jesse",
+        "field": "children",
+        "targetV1Id": "eliab",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "jesse",
+        "field": "children",
+        "targetV1Id": "abindab",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "jesse",
+        "field": "children",
+        "targetV1Id": "shammah",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "jesse",
+        "field": "children",
+        "targetV1Id": "others_jesse",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "esau",
+        "field": "children",
+        "targetV1Id": "eliphaz_esau",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "esau",
+        "field": "children",
+        "targetV1Id": "reuel_esau",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "leah",
+        "field": "children",
+        "targetV1Id": "dinah",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "tamar",
+        "field": "children",
+        "targetV1Id": "zerah",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "abram",
+        "field": "spouse",
+        "targetV1Id": "keturah",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "abram",
+        "field": "spouse",
+        "targetV1Id": "hagar",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "jacob",
+        "field": "spouse",
+        "targetV1Id": "bilhah",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "jacob",
+        "field": "spouse",
+        "targetV1Id": "zilpah",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "moses",
+        "field": "spouse",
+        "targetV1Id": "zipporah",
+        "reason": "outside-curated-subset"
+      },
+      {
+        "sourceV1Id": "heli_lk",
+        "field": "spouse",
+        "targetV1Id": "mary_mother",
+        "reason": "outside-curated-subset"
+      }
+    ],
+    "childIndexConflicts": [
+      {
+        "parentV1Id": "cainan_2",
+        "childV1Id": "shelah",
+        "role": "father",
+        "explicitV1Id": "arphaxad",
+        "action": "omitted"
+      }
+    ],
+    "asymmetricSpouses": [
+      {
+        "leftV1Id": "jochebed",
+        "rightV1Id": "amram",
+        "action": "omitted"
+      },
+      {
+        "leftV1Id": "tamar",
+        "rightV1Id": "judah",
+        "action": "omitted"
+      }
+    ],
+    "orphanAnnotations": []
+  }
+}
