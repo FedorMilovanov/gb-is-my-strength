@@ -255,3 +255,20 @@ The atomic release must synchronize at least:
 `PUBLICATION_PROMOTION = FORBIDDEN IN THIS PR`
 
 The next independent owner is the atomic release transaction. Any content mutation after the certified blobs above requires bounded re-clearance of the affected part.
+
+## Addendum (2026-09-15) — release reconciled
+
+Факт публикации II–IX: PR #1923 «release(pastor-series): publish canonical Parts II–IX», merged 2026-09-08T23:27:22Z
+(государственная дата релиза для метаданных — 2026-09-08). Ограничение «PUBLICATION PROMOTION = FORBIDDEN» в этом
+receipt действует только на сам receipt: он не являлся release-разрешением, а запись о публикации ниже фиксирует
+факт отдельной release-транзакции.
+
+Синхронизация post-release (транзакция 2026-09-15):
+
+- `publishedAt`/`updatedAt` frontmatter II–IX: 2026-09-09T00:00:00+03:00 / 2026-09-15T00:00:00+03:00;
+- shard RSS-фид (10 материалов) и main RSS-фид: pubDate II–IX = Tue, 08 Sep 2026 21:00:00 GMT;
+- shard sitemap (11 URL) и main sitemap: lastmod обновлены;
+- `data/search-manifest.json` (II–IX): publishedTime/modifiedTime/readTime синхронизированы;
+- `data/editorial-metadata-supplements/pastor-series-ii-ix-20260908.json`: 8 записей `approved`,
+  editorialPublishedAt = 2026-09-08T21:00:00.000Z;
+- канонические минуты: ядро I–IX = 157, Досье A = 15 (SSOT: `data/series.json`).

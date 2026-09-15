@@ -13,7 +13,18 @@
       "originalWorkPublishedAt": null,
       "reviewStatus": "approved",
       "provenance": "teen-series-editorial-publication-decision-20260910",
-      "observations": {}
+      "observations": {
+        "visiblePublishedAt": "2026-09-09T21:00:00.000Z",
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-09-09T21:00:00.000Z",
+        "metaModifiedAt": "2026-09-09T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-09-09T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-09-09T21:00:00.000Z",
+        "searchPublishedAt": "2026-09-09T21:00:00.000Z",
+        "searchModifiedAt": "2026-09-09T21:00:00.000Z",
+        "sitemapLastmod": "2026-09-09T21:00:00.000Z",
+        "rssPublishedAt": "2026-09-09T21:00:00.000Z"
+      }
     },
     "/articles/podrostok-za-kadrom-dvoynaya-zhizn/": {
       "route": "/articles/podrostok-za-kadrom-dvoynaya-zhizn/",
@@ -26,7 +37,18 @@
       "originalWorkPublishedAt": null,
       "reviewStatus": "approved",
       "provenance": "teen-series-editorial-publication-decision-20260910",
-      "observations": {}
+      "observations": {
+        "visiblePublishedAt": "2026-09-09T21:00:00.000Z",
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-09-09T21:00:00.000Z",
+        "metaModifiedAt": "2026-09-09T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-09-09T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-09-09T21:00:00.000Z",
+        "searchPublishedAt": "2026-09-09T21:00:00.000Z",
+        "searchModifiedAt": "2026-09-09T21:00:00.000Z",
+        "sitemapLastmod": "2026-09-09T21:00:00.000Z",
+        "rssPublishedAt": "2026-09-09T21:00:00.000Z"
+      }
     },
     "/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/": {
       "route": "/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/",
@@ -39,7 +61,18 @@
       "originalWorkPublishedAt": null,
       "reviewStatus": "approved",
       "provenance": "teen-series-editorial-publication-decision-20260910",
-      "observations": {}
+      "observations": {
+        "visiblePublishedAt": "2026-09-09T21:00:00.000Z",
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-09-09T21:00:00.000Z",
+        "metaModifiedAt": "2026-09-09T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-09-09T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-09-09T21:00:00.000Z",
+        "searchPublishedAt": "2026-09-09T21:00:00.000Z",
+        "searchModifiedAt": "2026-09-09T21:00:00.000Z",
+        "sitemapLastmod": "2026-09-09T21:00:00.000Z",
+        "rssPublishedAt": "2026-09-09T21:00:00.000Z"
+      }
     },
     "/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/": {
       "route": "/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/",
@@ -52,7 +85,18 @@
       "originalWorkPublishedAt": null,
       "reviewStatus": "approved",
       "provenance": "teen-series-editorial-publication-decision-20260910",
-      "observations": {}
+      "observations": {
+        "visiblePublishedAt": "2026-09-09T21:00:00.000Z",
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-09-09T21:00:00.000Z",
+        "metaModifiedAt": "2026-09-09T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-09-09T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-09-09T21:00:00.000Z",
+        "searchPublishedAt": "2026-09-09T21:00:00.000Z",
+        "searchModifiedAt": "2026-09-09T21:00:00.000Z",
+        "sitemapLastmod": "2026-09-09T21:00:00.000Z",
+        "rssPublishedAt": "2026-09-09T21:00:00.000Z"
+      }
     },
     "/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/": {
       "route": "/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/",
@@ -65,7 +109,18 @@
       "originalWorkPublishedAt": null,
       "reviewStatus": "approved",
       "provenance": "teen-series-editorial-publication-decision-20260910",
-      "observations": {}
+      "observations": {
+        "visiblePublishedAt": "2026-09-09T21:00:00.000Z",
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-09-09T21:00:00.000Z",
+        "metaModifiedAt": "2026-09-09T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-09-09T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-09-09T21:00:00.000Z",
+        "searchPublishedAt": "2026-09-09T21:00:00.000Z",
+        "searchModifiedAt": "2026-09-09T21:00:00.000Z",
+        "sitemapLastmod": "2026-09-09T21:00:00.000Z",
+        "rssPublishedAt": "2026-09-09T21:00:00.000Z"
+      }
     },
     "/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/": {
       "route": "/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/",
@@ -78,7 +133,18 @@
       "originalWorkPublishedAt": null,
       "reviewStatus": "approved",
       "provenance": "teen-series-editorial-publication-decision-20260910",
-      "observations": {}
+      "observations": {
+        "visiblePublishedAt": "2026-09-09T21:00:00.000Z",
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-09-09T21:00:00.000Z",
+        "metaModifiedAt": "2026-09-09T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-09-09T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-09-09T21:00:00.000Z",
+        "searchPublishedAt": "2026-09-09T21:00:00.000Z",
+        "searchModifiedAt": "2026-09-09T21:00:00.000Z",
+        "sitemapLastmod": "2026-09-09T21:00:00.000Z",
+        "rssPublishedAt": "2026-09-09T21:00:00.000Z"
+      }
     },
     "/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/": {
       "route": "/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/",
@@ -91,7 +157,18 @@
       "originalWorkPublishedAt": null,
       "reviewStatus": "approved",
       "provenance": "teen-series-editorial-publication-decision-20260910",
-      "observations": {}
+      "observations": {
+        "visiblePublishedAt": "2026-09-09T21:00:00.000Z",
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-09-09T21:00:00.000Z",
+        "metaModifiedAt": "2026-09-09T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-09-09T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-09-09T21:00:00.000Z",
+        "searchPublishedAt": "2026-09-09T21:00:00.000Z",
+        "searchModifiedAt": "2026-09-09T21:00:00.000Z",
+        "sitemapLastmod": "2026-09-09T21:00:00.000Z",
+        "rssPublishedAt": "2026-09-09T21:00:00.000Z"
+      }
     }
   }
 }

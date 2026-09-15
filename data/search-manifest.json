@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-09T21:00:00Z",
+  "generatedAt": "2026-09-15T00:40:00Z",
   "project": {
     "name": "Господь Бог — Сила Моя",
     "url": "https://gospod-bog.ru/",
@@ -103,7 +103,7 @@
       "description": "Девять частей канонического ядра о пастырской власти и подотчётности плюс документальное Досье A: диагностика искажений, границы власти, различение, здоровое пастырство и церковь.",
       "section": "Служение",
       "editor": "Фёдор Милованов",
-      "readTime": 321,
+      "readTime": 157,
       "image": "/images/pastor-series/og-hero.webp",
       "tags": [
         "серия",
@@ -266,7 +266,7 @@
       "description": "Документированное исследование 21 церковного кейса и 15 путей верного ответа: власть, сокрытие, подотчётность, защита уязвимых и точные границы доказательств.",
       "section": "Служение",
       "editor": "Фёдор Милованов",
-      "readTime": 35,
+      "readTime": 15,
       "image": "/images/pastor-series/og-20-antisovetov-pastoru.webp",
       "tags": [
         "пасторство",
@@ -1515,9 +1515,9 @@
       "tags": [],
       "featured": false,
       "priority": 0.6,
-      "publishedTime": "2026-07-11T00:00:00+03:00",
-      "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 29
+      "publishedTime": "2026-09-09T00:00:00+03:00",
+      "modifiedTime": "2026-09-15T00:00:00+03:00",
+      "readTime": 9
     },
     {
       "id": "cerkovnaya-disciplina-vlast-granicy-zashchita",
@@ -1532,9 +1532,9 @@
       "tags": [],
       "featured": false,
       "priority": 0.6,
-      "publishedTime": "2026-07-11T00:00:00+03:00",
-      "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 34
+      "publishedTime": "2026-09-09T00:00:00+03:00",
+      "modifiedTime": "2026-09-15T00:00:00+03:00",
+      "readTime": 11
     },
     {
       "id": "kogda-uhodit-kogda-ostavatsya",
@@ -1549,9 +1549,9 @@
       "tags": [],
       "featured": false,
       "priority": 0.6,
-      "publishedTime": "2026-07-11T00:00:00+03:00",
-      "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 33
+      "publishedTime": "2026-09-09T00:00:00+03:00",
+      "modifiedTime": "2026-09-15T00:00:00+03:00",
+      "readTime": 11
     },
     {
       "id": "nesovershennyy-chelovek-v-nesovershennoy-cerkvi",
@@ -1566,9 +1566,9 @@
       "tags": [],
       "featured": false,
       "priority": 0.6,
-      "publishedTime": "2026-09-07T00:00:00+03:00",
-      "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 31
+      "publishedTime": "2026-09-09T00:00:00+03:00",
+      "modifiedTime": "2026-09-15T00:00:00+03:00",
+      "readTime": 11
     },
     {
       "id": "priznaki-zdorovoy-cerkvi",
@@ -1583,9 +1583,9 @@
       "tags": [],
       "featured": false,
       "priority": 0.6,
-      "publishedTime": "2026-09-07T00:00:00+03:00",
-      "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 30
+      "publishedTime": "2026-09-09T00:00:00+03:00",
+      "modifiedTime": "2026-09-15T00:00:00+03:00",
+      "readTime": 11
     },
     {
       "id": "sem-tipov-razlichenie-uchiteley",
@@ -1600,9 +1600,9 @@
       "tags": [],
       "featured": false,
       "priority": 0.6,
-      "publishedTime": "2026-07-11T00:00:00+03:00",
-      "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 30
+      "publishedTime": "2026-09-09T00:00:00+03:00",
+      "modifiedTime": "2026-09-15T00:00:00+03:00",
+      "readTime": 9
     },
     {
       "id": "teksty-pisaniya-kotorymi-manipuliruyut",
@@ -1617,9 +1617,9 @@
       "tags": [],
       "featured": false,
       "priority": 0.6,
-      "publishedTime": "2026-07-11T00:00:00+03:00",
-      "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 36
+      "publishedTime": "2026-09-09T00:00:00+03:00",
+      "modifiedTime": "2026-09-15T00:00:00+03:00",
+      "readTime": 14
     },
     {
       "id": "vernye-i-neizvestnye-zdorovoe-pastyrstvo",
@@ -1634,9 +1634,9 @@
       "tags": [],
       "featured": false,
       "priority": 0.6,
-      "publishedTime": "2026-09-07T00:00:00+03:00",
-      "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 31
+      "publishedTime": "2026-09-09T00:00:00+03:00",
+      "modifiedTime": "2026-09-15T00:00:00+03:00",
+      "readTime": 14
     },
     {
       "id": "podrostok-za-kadrom",

@@ -255,7 +255,7 @@
       "title": "Тёмная сторона кафедры",
       "url": "/pastor-series/",
       "group": "landing",
-      "readingTime": 321,
+      "readingTime": 157,
       "cover": "/images/pastor-series/hero-main.webp",
       "desc": "Авторская серия о системных искажениях церковного руководства, механике манипуляций и путях восстановления библейского пасторства.",
       "tags": [
@@ -295,7 +295,7 @@
       "title": "Анатомия падения: пять стадий институционального разложения",
       "url": "/articles/anatomiya-padeniya-pyat-stadiy/",
       "group": "pastor-series",
-      "readingTime": 29,
+      "readingTime": 9,
       "cover": "/images/pastor-series/og-anatomiya-padeniya-pyat-stadiy.webp",
       "desc": "Причинная траектория разложения пастырского служения: идол платформы, демонтаж подотчётности, страх, защита репутации, ложное покаяние. Не каталог «красных флагов», а последовательность стадий с ранними маркерами.",
       "tags": [
@@ -308,7 +308,7 @@
       "title": "Тексты Писания, которыми манипулируют",
       "url": "/articles/teksty-pisaniya-kotorymi-manipuliruyut/",
       "group": "pastor-series",
-      "readingTime": 36,
+      "readingTime": 14,
       "cover": "/images/pastor-series/og-teksty-pisaniya-kotorymi-manipuliruyut.webp",
       "desc": "23 библейских текста, которыми злоупотребляют в церковных конфликтах: изоляция от контекста, устранение подотчётности, смешение сфер, игнорирование жанра — с двусторонним библейским противовесом.",
       "tags": [
@@ -321,7 +321,7 @@
       "title": "Семь типов: как различать учителей и лидеров",
       "url": "/articles/sem-tipov-razlichenie-uchiteley/",
       "group": "pastor-series",
-      "readingTime": 30,
+      "readingTime": 9,
       "cover": "/images/pastor-series/og-sem-tipov-razlichenie-uchiteley.webp",
       "desc": "Инструмент различения: волк, исправимый учитель, восстановимый брат, непригодный к кафедре, Диотреф, Корей, системная порча. Семь категорий — редакционная аналитическая модель, а не исчерпывающая вдохновенная классификация.",
       "tags": [
@@ -334,7 +334,7 @@
       "title": "Церковная дисциплина: власть, границы и защита",
       "url": "/articles/cerkovnaya-disciplina-vlast-granicy-zashchita/",
       "group": "pastor-series",
-      "readingTime": 34,
+      "readingTime": 11,
       "cover": "/images/pastor-series/og-cerkovnaya-disciplina-vlast-granicy-zashchita.webp",
       "desc": "Позитивное библейское богословие церковной власти: шесть сфер пастырского требования, законная процедура, восемь признаков законной дисциплины и десять признаков её превращения в оружие.",
       "tags": [
@@ -347,7 +347,7 @@
       "title": "Когда говорить, когда молчать; когда уходить, когда оставаться",
       "url": "/articles/kogda-uhodit-kogda-ostavatsya/",
       "group": "pastor-series",
-      "readingTime": 33,
+      "readingTime": 11,
       "cover": "/images/pastor-series/og-kogda-uhodit-kogda-ostavatsya.webp",
       "desc": "Библейский фреймворк трудных решений: семь вопросов факта, когда молчание — мудрость, а когда — соучастие, как проверить серьёзное обвинение и как уйти без разрушения.",
       "tags": [
@@ -360,7 +360,7 @@
       "title": "Верные и неизвестные: здоровое пастырство",
       "url": "/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo/",
       "group": "pastor-series",
-      "readingTime": 31,
+      "readingTime": 14,
       "cover": "/images/pastor-series/og-vernye-i-neizvestnye-zdorovoe-pastyrstvo.webp",
       "desc": "Портрет здорового пастыря: характер прежде платформы, власть под Словом, Бог один Господь совести, пастор, которого можно поправить, и достойный путь ухода человека.",
       "tags": [
@@ -373,7 +373,7 @@
       "title": "Признаки здоровой церкви",
       "url": "/articles/priznaki-zdorovoy-cerkvi/",
       "group": "pastor-series",
-      "readingTime": 30,
+      "readingTime": 11,
       "cover": "/images/pastor-series/og-priznaki-zdorovoy-cerkvi.webp",
       "desc": "Пятнадцать признаков здоровой поместной церкви: Слово выше личности, подотчётное старейшинство, работающий путь жалобы, финансы под контролем, конфиденциальность без тайной системы.",
       "tags": [
@@ -386,7 +386,7 @@
       "title": "Несовершенный человек в несовершенной церкви",
       "url": "/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi/",
       "group": "pastor-series",
-      "readingTime": 31,
+      "readingTime": 11,
       "cover": "/images/pastor-series/og-nesovershennyy-chelovek-v-nesovershennoy-cerkvi.webp",
       "desc": "Финальный предохранитель серии: ошибка не равна паттерну, боль — не верховный судья, обличение не равно газлайтингу. Матрица трезвого различения без хронической подозрительности.",
       "tags": [
@@ -399,7 +399,7 @@
       "title": "Диотрефы нашего времени",
       "url": "/articles/diotrefy-nashego-vremeni/",
       "group": "pastor-series",
-      "readingTime": 35,
+      "readingTime": 15,
       "cover": "/images/pastor-series/og-20-antisovetov-pastoru.webp",
       "desc": "Документальное досье о портрете Диотрефа из 3 Ин.: любовь к первенству, неприятие служения, злые слова. Власть, подотчётность и верность.",
       "tags": [

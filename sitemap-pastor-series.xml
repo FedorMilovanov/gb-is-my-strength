@@ -2,23 +2,79 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://gospod-bog.ru/pastor-series/</loc>
-    <lastmod>2026-08-02T00:00:00+03:00</lastmod>
+    <lastmod>2026-09-15T00:00:00+03:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/pastor-series/hero-main.webp</image:loc><image:title>Тёмная сторона кафедры</image:title></image:image>
   </url>
   <url>
     <loc>https://gospod-bog.ru/articles/20-antisovetov-pastoru/</loc>
-    <lastmod>2026-08-02T00:00:00+03:00</lastmod>
+    <lastmod>2026-09-15T00:00:00+03:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/pastor-series/hero-main.webp</image:loc><image:title>20 антисоветов пастору</image:title></image:image>
   </url>
   <url>
     <loc>https://gospod-bog.ru/articles/diotrefy-nashego-vremeni/</loc>
-    <lastmod>2026-08-02T00:00:00+03:00</lastmod>
+    <lastmod>2026-09-15T00:00:00+03:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <image:image><image:loc>https://gospod-bog.ru/images/pastor-series/og-20-antisovetov-pastoru.webp</image:loc><image:title>Диотрефы нашего времени</image:title></image:image>
+  </url>
+  <url>
+    <loc>https://gospod-bog.ru/articles/anatomiya-padeniya-pyat-stadiy/</loc>
+    <lastmod>2026-09-15T00:00:00+03:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/pastor-series/og-anatomiya-padeniya-pyat-stadiy.webp</image:loc><image:title>Анатомия падения</image:title></image:image>
+  </url>
+  <url>
+    <loc>https://gospod-bog.ru/articles/teksty-pisaniya-kotorymi-manipuliruyut/</loc>
+    <lastmod>2026-09-15T00:00:00+03:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/pastor-series/og-teksty-pisaniya-kotorymi-manipuliruyut.webp</image:loc><image:title>Тексты Писания</image:title></image:image>
+  </url>
+  <url>
+    <loc>https://gospod-bog.ru/articles/sem-tipov-razlichenie-uchiteley/</loc>
+    <lastmod>2026-09-15T00:00:00+03:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/pastor-series/og-sem-tipov-razlichenie-uchiteley.webp</image:loc><image:title>Семь типов</image:title></image:image>
+  </url>
+  <url>
+    <loc>https://gospod-bog.ru/articles/cerkovnaya-disciplina-vlast-granicy-zashchita/</loc>
+    <lastmod>2026-09-15T00:00:00+03:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/pastor-series/og-cerkovnaya-disciplina-vlast-granicy-zashchita.webp</image:loc><image:title>Церковная дисциплина</image:title></image:image>
+  </url>
+  <url>
+    <loc>https://gospod-bog.ru/articles/kogda-uhodit-kogda-ostavatsya/</loc>
+    <lastmod>2026-09-15T00:00:00+03:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/pastor-series/og-kogda-uhodit-kogda-ostavatsya.webp</image:loc><image:title>Когда говорить, когда уходить</image:title></image:image>
+  </url>
+  <url>
+    <loc>https://gospod-bog.ru/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo/</loc>
+    <lastmod>2026-09-15T00:00:00+03:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/pastor-series/og-vernye-i-neizvestnye-zdorovoe-pastyrstvo.webp</image:loc><image:title>Верные и неизвестные</image:title></image:image>
+  </url>
+  <url>
+    <loc>https://gospod-bog.ru/articles/priznaki-zdorovoy-cerkvi/</loc>
+    <lastmod>2026-09-15T00:00:00+03:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/pastor-series/og-priznaki-zdorovoy-cerkvi.webp</image:loc><image:title>Признаки здоровой церкви</image:title></image:image>
+  </url>
+  <url>
+    <loc>https://gospod-bog.ru/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi/</loc>
+    <lastmod>2026-09-15T00:00:00+03:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image><image:loc>https://gospod-bog.ru/images/pastor-series/og-nesovershennyy-chelovek-v-nesovershennoy-cerkvi.webp</image:loc><image:title>Несовершенный человек в несовершенной церкви</image:title></image:image>
   </url>
 </urlset>

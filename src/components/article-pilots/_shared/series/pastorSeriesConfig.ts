@@ -11,7 +11,7 @@
  */
 import { SERIES_CONFIGS, type SeriesConfig, defineSeriesConfig } from './seriesConfig';
 
-const CORE_TOTAL_MIN = 321;
+const CORE_TOTAL_MIN = 157;
 
 export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
   seriesId: 'pastor-series',
@@ -35,7 +35,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'Часть II. Анатомия падения',
       shortTitle: 'Анатомия падения · пять стадий',
       href: '/articles/anatomiya-padeniya-pyat-stadiy/',
-      readingTime: '29 мин',
+      readingTime: '9 мин',
     },
     {
       id: 'teksty',
@@ -43,7 +43,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'Часть III. Тексты Писания, которыми манипулируют',
       shortTitle: 'Тексты Писания · границы применения',
       href: '/articles/teksty-pisaniya-kotorymi-manipuliruyut/',
-      readingTime: '36 мин',
+      readingTime: '14 мин',
     },
     {
       id: 'sem-tipov',
@@ -51,7 +51,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'Часть IV. Семь типов учителей и лидеров',
       shortTitle: 'Семь типов · различение лидеров',
       href: '/articles/sem-tipov-razlichenie-uchiteley/',
-      readingTime: '30 мин',
+      readingTime: '9 мин',
     },
     {
       id: 'disciplina',
@@ -59,7 +59,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'Часть V. Церковная дисциплина: власть, границы и защита',
       shortTitle: 'Дисциплина · власть и защита',
       href: '/articles/cerkovnaya-disciplina-vlast-granicy-zashchita/',
-      readingTime: '34 мин',
+      readingTime: '11 мин',
     },
     {
       id: 'kogda-uhodit',
@@ -67,7 +67,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'Часть VI. Когда говорить, молчать, уходить или оставаться',
       shortTitle: 'Когда говорить · когда уходить',
       href: '/articles/kogda-uhodit-kogda-ostavatsya/',
-      readingTime: '33 мин',
+      readingTime: '11 мин',
     },
     {
       id: 'vernye',
@@ -75,7 +75,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'Часть VII. Верные и неизвестные: здоровое пастырство',
       shortTitle: 'Верные и неизвестные · здоровый пастор',
       href: '/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo/',
-      readingTime: '31 мин',
+      readingTime: '14 мин',
     },
     {
       id: 'zdorovaya-cerkov',
@@ -83,7 +83,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'Часть VIII. Признаки здоровой церкви',
       shortTitle: 'Признаки здоровой церкви',
       href: '/articles/priznaki-zdorovoy-cerkvi/',
-      readingTime: '30 мин',
+      readingTime: '11 мин',
     },
     {
       id: 'nesovershennyy',
@@ -91,7 +91,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'Часть IX. Несовершенный человек в несовершенной церкви',
       shortTitle: 'Несовершенный человек · несовершенная церковь',
       href: '/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi/',
-      readingTime: '31 мин',
+      readingTime: '11 мин',
     },
     {
       id: 'diotrophes',
@@ -99,7 +99,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'Диотрефы нашего времени',
       shortTitle: 'Документальные случаи · власть и верные ответы',
       href: '/articles/diotrefy-nashego-vremeni/',
-      readingTime: '35 мин',
+      readingTime: '15 мин',
     },
   ],
   pages: {
@@ -134,7 +134,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
     anatomiya: {
       id: 'anatomiya', label: 'Анатомия падения', title: 'Часть II. Анатомия падения',
       mobileSection: 'Пять стадий', partLabel: 'Часть II · Содержание',
-      readingProgressDoneMin: 67, readingProgressPartMin: 29, readingProgressTotalMin: CORE_TOTAL_MIN,
+      readingProgressDoneMin: 67, readingProgressPartMin: 9, readingProgressTotalMin: CORE_TOTAL_MIN,
       railNowTitle: 'Анатомия падения', railCover: '../../images/pastor-series/og-anatomiya-padeniya-pyat-stadiy.webp',
       partDialogLabel: 'Часть II · Анатомия падения', partToc: [
         { href: '#metod', label: 'Что эта модель утверждает — и чего не утверждает', level: 2, summary: 'Повторяемость механизмов в документированных случаях полезна, но её нельзя превращать в закон природы.' },
@@ -155,7 +155,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
     teksty: {
       id: 'teksty', label: 'Тексты Писания', title: 'Часть III. Тексты Писания, которыми манипулируют',
       mobileSection: 'Герменевтика власти', partLabel: 'Часть III · Содержание',
-      readingProgressDoneMin: 96, readingProgressPartMin: 36, readingProgressTotalMin: CORE_TOTAL_MIN,
+      readingProgressDoneMin: 76, readingProgressPartMin: 14, readingProgressTotalMin: CORE_TOTAL_MIN,
       railNowTitle: 'Тексты Писания, которыми манипулируют', railCover: '../../images/pastor-series/og-teksty-pisaniya-kotorymi-manipuliruyut.webp',
       partDialogLabel: 'Часть III · Тексты Писания', partToc: [
         { href: '#obshchee', label: 'Пять операций над текстом', level: 2, summary: 'Изоляция от контекста, устранение подотчётности, смешение сфер власти, игнорирование жанра, асимметричное применение.' },
@@ -175,7 +175,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
     'sem-tipov': {
       id: 'sem-tipov', label: 'Семь типов', title: 'Часть IV. Семь типов учителей и лидеров',
       mobileSection: 'Различение лидеров', partLabel: 'Часть IV · Содержание',
-      readingProgressDoneMin: 132, readingProgressPartMin: 30, readingProgressTotalMin: CORE_TOTAL_MIN,
+      readingProgressDoneMin: 90, readingProgressPartMin: 9, readingProgressTotalMin: CORE_TOTAL_MIN,
       railNowTitle: 'Семь типов учителей и лидеров', railCover: '../../images/pastor-series/og-sem-tipov-razlichenie-uchiteley.webp',
       partDialogLabel: 'Часть IV · Семь типов', partToc: [
         { href: '#sem-kategoriy', label: 'Семь категорий', level: 2, summary: 'Семь категорий — редакционная аналитическая модель статьи: она описывает роли и не является исчерпывающей вдохновенной классификацией.' },
@@ -192,7 +192,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
     disciplina: {
       id: 'disciplina', label: 'Церковная дисциплина', title: 'Часть V. Церковная дисциплина: власть, границы и защита',
       mobileSection: 'Власть и защита', partLabel: 'Часть V · Содержание',
-      readingProgressDoneMin: 162, readingProgressPartMin: 34, readingProgressTotalMin: CORE_TOTAL_MIN,
+      readingProgressDoneMin: 99, readingProgressPartMin: 11, readingProgressTotalMin: CORE_TOTAL_MIN,
       railNowTitle: 'Церковная дисциплина', railCover: '../../images/pastor-series/og-cerkovnaya-disciplina-vlast-granicy-zashchita.webp',
       partDialogLabel: 'Часть V · Церковная дисциплина', partToc: [
         { href: '#bogoslovie-vlasti', label: 'Позитивное богословие власти', level: 2, summary: 'Власть служебная и подотчётная: Церковь принадлежит Христу, а не старейшинам.' },
@@ -215,11 +215,11 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
     'kogda-uhodit': {
       id: 'kogda-uhodit', label: 'Когда говорить и уходить', title: 'Часть VI. Когда говорить, молчать, уходить или оставаться',
       mobileSection: 'Решения под давлением', partLabel: 'Часть VI · Содержание',
-      readingProgressDoneMin: 196, readingProgressPartMin: 33, readingProgressTotalMin: CORE_TOTAL_MIN,
+      readingProgressDoneMin: 110, readingProgressPartMin: 11, readingProgressTotalMin: CORE_TOTAL_MIN,
       railNowTitle: 'Когда говорить, когда уходить', railCover: '../../images/pastor-series/og-kogda-uhodit-kogda-ostavatsya.webp',
       partDialogLabel: 'Часть VI · Когда говорить и уходить', partToc: [
         { href: '#dve-kanavy', label: 'Две канавы: квиетизм и гипербдительность', level: 2, summary: 'Квиетизм называет свидетельство мятежом; гипербдительность делает различение иммунитетом. Задача — пройти между.' },
-        { href: '#snachala', label: 'До решения: семь вопросов факта', level: 2, summary: 'Семь вопросов отделяют наблюдаемое от прочитанного между строк: «он сделал X» и «он сделал X, потому что боится меня» — разные уровни.' },
+        { href: '#snachala', label: 'До решения: семь вопросов факта', level: 2, summary: 'Семь вопросов отделяют наблюдаемое от прочитанного между строк: «он поступил так» и «он поступил так, потому что боится меня» — разные уровни.' },
         { href: '#kogda-molchat', label: 'Когда молчание может быть мудростью', level: 2 },
         { href: '#kogda-govorit', label: 'Когда молчание перестаёт быть добродетелью', level: 2, summary: 'Установленный продолжающийся вред: «не выносить сор из избы» становится служением фасаду.' },
         { href: '#komu-govorit', label: 'Кому говорить: адресат имеет значение', level: 2, summary: 'Правильная информация, переданная неправильному адресату ради партии, становится сплетней и фракционностью.' },
@@ -239,7 +239,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
     vernye: {
       id: 'vernye', label: 'Верные и неизвестные', title: 'Часть VII. Верные и неизвестные: здоровое пастырство',
       mobileSection: 'Здоровое пастырство', partLabel: 'Часть VII · Содержание',
-      readingProgressDoneMin: 229, readingProgressPartMin: 31, readingProgressTotalMin: CORE_TOTAL_MIN,
+      readingProgressDoneMin: 121, readingProgressPartMin: 14, readingProgressTotalMin: CORE_TOTAL_MIN,
       railNowTitle: 'Верные и неизвестные', railCover: '../../images/pastor-series/og-vernye-i-neizvestnye-zdorovoe-pastyrstvo.webp',
       partDialogLabel: 'Часть VII · Верные и неизвестные', partToc: [
         { href: '#glava', label: 'Сначала Глава: пастор не владеет церковью', level: 2, summary: 'Церковь принадлежит Христу: пастор — распорядитель чужого стада, а не владелец общины.' },
@@ -267,7 +267,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
     'zdorovaya-cerkov': {
       id: 'zdorovaya-cerkov', label: 'Признаки здоровой церкви', title: 'Часть VIII. Признаки здоровой церкви',
       mobileSection: 'Здоровая церковь', partLabel: 'Часть VIII · Содержание',
-      readingProgressDoneMin: 260, readingProgressPartMin: 30, readingProgressTotalMin: CORE_TOTAL_MIN,
+      readingProgressDoneMin: 135, readingProgressPartMin: 11, readingProgressTotalMin: CORE_TOTAL_MIN,
       railNowTitle: 'Признаки здоровой церкви', railCover: '../../images/pastor-series/og-priznaki-zdorovoy-cerkvi.webp',
       partDialogLabel: 'Часть VIII · Признаки здоровой церкви', partToc: [
         { href: '#ne-ideal', label: 'Здоровая — не значит идеальная', level: 2, summary: 'Здоровье — способность обнаруживать, называть и лечить болезнь средствами, которые дал Христос.' },
@@ -295,7 +295,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
     nesovershennyy: {
       id: 'nesovershennyy', label: 'Несовершенный человек', title: 'Часть IX. Несовершенный человек в несовершенной церкви',
       mobileSection: 'Финальный предохранитель', partLabel: 'Часть IX · Содержание',
-      readingProgressDoneMin: 290, readingProgressPartMin: 31, readingProgressTotalMin: CORE_TOTAL_MIN,
+      readingProgressDoneMin: 146, readingProgressPartMin: 11, readingProgressTotalMin: CORE_TOTAL_MIN,
       railNowTitle: 'Несовершенный человек в несовершенной церкви', railCover: '../../images/pastor-series/og-nesovershennyy-chelovek-v-nesovershennoy-cerkvi.webp',
       partDialogLabel: 'Часть IX · Несовершенный человек', partToc: [
         { href: '#zachem', label: 'Почему эта часть должна быть последней', level: 2, summary: 'Диагностический язык легко превратить в линзу, через которую всё выглядит болезнью: серия заканчивается возвращением различающего под исправление собственного сердца.' },
@@ -327,8 +327,8 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       mobileSection: 'Документальные случаи',
       partLabel: 'Досье A · Содержание',
       readingProgressDoneMin: 0,
-      readingProgressPartMin: 35,
-      readingProgressTotalMin: 35,
+      readingProgressPartMin: 15,
+      readingProgressTotalMin: 15,
       railNowTitle: 'Диотрефы нашего времени',
       railCover: '../../images/pastor-series/og-20-antisovetov-pastoru.webp',
       partDialogLabel: 'Досье A · Диотрефы нашего времени',

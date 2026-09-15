@@ -385,3 +385,78 @@ teksty q6 D0/D2/D3, scare-quotes, идиома «не выносить сор и
 идентичны во всех трёх копиях (src / root / dist); полная контрактная матрица на `strangler:build`
 — зелёная (article:qa 0/0, data:consistency, pastor-series + articles visual-parity, content:guard
 43 страницы, glossary 370 алиасов, quiz-native-parity).
+
+---
+
+# ДОПОЛНЕНИЕ pass-10 (2026-09-15, ночь): Wave 1 транзакция — закрыто
+
+По третьему приказу владельца («продолжай работу, которую еще можно сделать и не закрыли») закрыты
+все оставшиеся пункты волны 1, включая бывшие «решения владельца». Один атомарный коммит.
+
+**T1 + T2 + WU-6.4 — честные минуты (атомарно с гвардом):**
+- Ре-тайминг @200wpm по dist: II–IX = 9/14/9/11/11/14/11/11 → **ядро I–IX = 157 мин** (I = 67 без
+  изменения), **Досье A = 15 мин** (было: фикция 321/35, ±11% к измерению).
+- Все 12 поверхностей синхронизированы: `data/series.json` (SSOT), `pastorSeriesConfig.ts`
+  (CORE_TOTAL_MIN=157, items, done-min 67/76/90/99/110/121/135/146, part/total Досье 15/15),
+  8×MDX `readingTime`, PageHead (157/15), StatsSection (157), 10 карточек-кикеров лендинга,
+  Part I route total-min=157, diotrefy route part/total=15, DiotrophesDraft «15 мин»,
+  `data/search-manifest.json` (readTime 9 записей + landing 157), `data/links-graph.json`
+  (n18=157, n21–28 новые, n29=15).
+- **C-5 (гвард):** `pastor-series-visual-parity-audit.js` больше не дублирует минуты —
+  `expectedCore` деривирует их из `data/series.json`; контрактные константы
+  `CONTRACT_CORE_TOTAL_MIN=157` / `CONTRACT_COMPANION_MIN=15` фиксируют канон, чтобы тихий
+  дрейф реестра падал, а не перебазировал гвард. mustNot «readingTime: 356» и «Часть II · 35 мин»
+  сохранены.
+
+**T3 — фиды и sitemap:**
+- `feed-pastor-series.xml`: 2 → **10 материалов** (I–IX + Досье A); pubDate II–IX =
+  Tue, 08 Sep 2026 21:00:00 GMT — фактическая дата релиза, **верифицирована через
+  `gh pr view 1923`** (PR #1923 «release(pastor-series): publish canonical Parts II–IX»,
+  merged 2026-09-08T23:27:22Z). lastBuildDate = дата транзакции.
+- `sitemap-pastor-series.xml`: 3 → **11 URL** (II–IX с per-part og-изображениями).
+- `feed.xml` (main): 8 pubDate II–IX (было 2026-07-10/2026-09-06 — даты манускриптов) → релиз.
+- `sitemap.xml` (main): lastmod 11 pastor-URL обновлены (все страницы меняются транзакцией).
+
+**T4 — editorial metadata:**
+- Frontmatter II–IX: `publishedAt` → 2026-09-09T00:00:00+03:00 (релиз, MSK-полночь),
+  `updatedAt` → 2026-09-15T00:00:00+03:00 (фактическая последняя правка; ≥ published).
+- `data/search-manifest.json` II–IX: publishedTime/modifiedTime/readTime синхронизированы.
+- `pastor-series-ii-ix-20260908.json`: 8 записей `migration-freeze-unverified` → **`approved`**
+  (единственное допустимое «верифицированное» значение по ALLOWED_REVIEW_STATUS),
+  editorialPublishedAt = 2026-09-08T21:00:00.000Z, editorialModifiedAt = 2026-09-14T21:00:00.000Z.
+- Наблюдения обновлены писателем реестра (`registry.js --write`): все 5 published-поверхностей
+  сошлись в единый момент, modified-поверхности сошлись; `registry --check`,
+  `freeze-audit` («Approved metadata converges»), `workflow-contract-test` — зелёные.
+  Побочный эффект: записи teen-series (были с пустыми observations) и nagornaya (устаревшие
+  modified-значения) также получили корректные наблюдения тем же писателем.
+
+**WU-4.3 — витрина:** 5 внутренних тегов «Досье 28/30/31/32/33» удалены с карточек
+`/pastor-series/` (в статьях эти номера не присутствуют; публичный канон — «Досье A»).
+
+**WU-6.6 (минимум) — арт:** пересечение множеств изображений тела I и тел II–IX было ≠ 0
+(все 8 body-фигур II–IX дублировались в теле Части I). Сгенерированы 8 новых body-фигур
+(anatomiya/teksty/sem-tipov/disciplina/kogda-uhodit/vernye/priznaki/nesovershennyy-600w.webp,
+600×400, lossy q80, 17–49KB) в стилистике серии, по alt-ТЗ каждой части; Part I не тронут.
+**Verify: пересечение = 0** ✓. (Полный WU-6.6 — новые арты для landing-карточек и дизjointность
+og-наборов — остаётся на волну 4 как арт-работа.)
+
+**T7 (in-repo):** `research/pastor-series/MASTER-PLAN.md` §12 — строка Wave 1 reconciliation
+(дата релиза, PR #1923, минуты 157/15, SSOT, удаление тегов); `CONTENT-CLEARANCE-II-IX.md` —
+addendum с фактом публикации и списком синхронизации. (Реceipt в AuditRepo `verified/` — за
+границей этой транзакции, не трогали.)
+
+**Финальная верификация (блок плана) — всё зелёное:**
+- guard: ✅ на новых константах (деривация из реестра, контракт 157/15);
+- rss-feed-normalizer-test ✅, sitemap-route-contract-test ✅;
+- `<item>` в shard-фиде = 10; `<loc>` в shard-sitemap = 11;
+- grep «321 | companionReadingTime: 35» по src/components/pastor-series + series.json = 0;
+- dist: все 9 core-страниц `data-gbs2-total-min="157"`, Досье A 15/15 (компаньон по дизайну),
+  done-min 67/76/90/99/110/121/135/146;
+- `reviewStatus … unverified` в supplements II–IX = 0;
+- sec-quiz Части I INSIDE article (проверка из плана пройдена повторно);
+- data:consistency ✅ (после синхронизации landing readTime 157 + generatedAt),
+  content:guard ✅, editorial:lint ✅, contract:compare ✅, migration:metadata:check:strict ✅,
+  mdx:structure:audit ✅.
+
+**Остатки (не в этой транзакции):** WU-2.2 (239 .bref — объёмная механика), остальное WU-2.x/3.x,
+Wave 5 guards G-1…G-8, полный WU-6.6 (landing-арт), AuditRepo receipt.
