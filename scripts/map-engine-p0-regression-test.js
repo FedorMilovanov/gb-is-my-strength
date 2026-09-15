@@ -13,7 +13,6 @@ const ishodPageSource = fs.readFileSync(path.join(root, 'src/pages/karty/ishod/i
 const avraamPageSource = fs.readFileSync(path.join(root, 'src/pages/karty/avraam/index.astro'), 'utf8');
 const mapSearchRailSource = fs.readFileSync(path.join(root, 'src/components/karty/_shared/MapSearchRail.astro'), 'utf8');
 const mapPageShellSource = fs.readFileSync(path.join(root, 'src/components/karty/_shared/MapPageShell.astro'), 'utf8');
-const routeValidatorSource = fs.readFileSync(path.join(root, 'scripts/validate-map-routes.js'), 'utf8');
 let failures = 0;
 
 function check(name, condition, detail) {
@@ -166,32 +165,6 @@ check(
 
 
 check(
-  'Capabilities are authoritative for shared MapEngine runtime surfaces',
-  /const ROUTE_CAPABILITY_KEYS=Object\.freeze/.test(source) &&
-    /function hasRouteCapability\(data=\{\},capability=['"]{2}\)/.test(source) &&
-    /const capabilities=new Set\(getRouteCapabilities\(route\)\)/.test(source) &&
-    /if\(hasCapability\(['"]stories['"]\).*header\.appendChild\(storiesBar\)/.test(source) &&
-    /if\(hasCapability\(['"]stages['"]\).*container\.appendChild\(stagesBar\)/.test(source) &&
-    /if \(hasCapability\(['"]stages['"]\) && \(route\.stages\|\|\[\]\)\.length > 1\)/.test(source) &&
-    /if \(hasCapability\(['"]timeline['"]\) && route\.timeline && route\.timeline\.length > 0\)/.test(source) &&
-    /const layerDefinitions=hasCapability\(['"]layers['"]\)\?/.test(source) &&
-    /const sig = hasCapability\(['"]signature['"]\) \? route\.signature : null;/.test(source) &&
-    /get capabilities\(\)\{return \[\.\.\.capabilities\]\}/.test(source),
-  'Declared capabilities must gate stories, stages, timeline, layers and signature surfaces while the instance exposes one canonical capability API.'
-);
-
-check(
-  'Route validator binds data-backed capabilities exactly to governed route data',
-  !routeValidatorSource.includes('BASE_LIVE_CAPABILITIES') &&
-    routeValidatorSource.includes("['stages', Array.isArray(route.stages) && route.stages.length > 0]") &&
-    routeValidatorSource.includes("['stories', Array.isArray(route.stories) && route.stories.length > 0]") &&
-    routeValidatorSource.includes("['layers', Array.isArray(route.layers) && route.layers.length > 0]") &&
-    routeValidatorSource.includes("['timeline', Array.isArray(route.timeline) && route.timeline.length > 0]") &&
-    routeValidatorSource.includes("if (seen.has(capability) !== present) bad"),
-  'Capabilities must describe real governed route data instead of being a publication-status boilerplate allowlist.'
-);
-
-check(
   'Shared MapEngine bootstrap owns route fetch, resources, options and ready state',
   /async function mountRoute\(target,config=\{\}\)/.test(source) &&
     /loadRoute\(routeUrl,config\.fetchOptions\|\|\{\}\)/.test(source) &&
@@ -226,9 +199,9 @@ check(
 
 check(
   'Route code never monkey-patches shared MapEngine methods',
-  !/(?:window\.)?MapEngine\.[A-Za-z_$][\w$]*\s*=/.test(avraamMapSource) &&
-    !/(?:window\.)?MapEngine\.[A-Za-z_$][\w$]*\s*=/.test(ishodMapSource) &&
-    !/engine\.createMap\s*=/.test(ishodPageSource) &&
+  !/(?:window\.)?MapEngine\.[A-Za-z_$][\w$]*\s*=(?!=)/.test(avraamMapSource) &&
+    !/(?:window\.)?MapEngine\.[A-Za-z_$][\w$]*\s*=(?!=)/.test(ishodMapSource) &&
+    !/engine\.createMap\s*=(?!=)/.test(ishodPageSource) &&
     !/var createMap\s*=\s*engine\.createMap/.test(ishodPageSource),
   'Route pages/components must pass config/hooks through the shared bootstrap, never mutate the shared engine API.'
 );

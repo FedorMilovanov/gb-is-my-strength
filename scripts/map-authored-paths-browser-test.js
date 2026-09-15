@@ -138,7 +138,7 @@ async function run() {
     await page.waitForFunction(() => Boolean(window.MapEngine && document.querySelector('#stage #me-paths .me-route-main')), null, { timeout: 20000 });
 
     report.engineVersion = await page.evaluate(() => window.MapEngine?.version || null);
-    assert(report.engineVersion === '0.60.0', 'MapEngine public version is not synchronized with v0.60 capability-governed renderer', { engineVersion: report.engineVersion });
+    assert(report.engineVersion === '0.60.0', 'MapEngine public version is not synchronized with v0.60 capability-driven renderer', { engineVersion: report.engineVersion });
 
     const fallback = await collectRenderedPaths(page, '#stage');
     assert(fallback.main.length > 0, 'Ishod generated fallback paths are missing', fallback);
@@ -212,6 +212,8 @@ async function run() {
     }
 
     const invalidRoute = {
+      archetype: 'route',
+      capabilities: ['stages','stories'],
       meta: { id: 'invalid-authored-fallback', title: 'Invalid authored fallback', viewport_init: { cx: 200, cy: 120, w: 500 } },
       stories: [{ id: 'main', label: 'Весь путь', places: null, stages: null }],
       places: [
@@ -229,6 +231,8 @@ async function run() {
     report.invalidFallback = { generated: invalidFallback.main.length, d: invalidFallback.main[0].d };
 
     const highStageRoute = {
+      archetype: 'route',
+      capabilities: ['stages','stories'],
       meta: { id: 'high-stage-fallback', title: 'High stage fallback', viewport_init: { cx: 200, cy: 120, w: 500 } },
       stories: [{ id: 'main', label: 'Весь путь', places: null, stages: null }],
       places: [

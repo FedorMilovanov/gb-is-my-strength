@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.60 — reusable biblical map rendering engine. Capability-governed runtime surfaces + provenance projection + authored route geometry + viewport-bound panels.
+ * map-engine.js v0.60 — reusable biblical map rendering engine. Provenance projection + authored route geometry + viewport-bound panels.
  * v0.53 (§11 P-8/P-9): label-модель v2 — 8 якорей place.labelAnchor + выноски place.leader{dx,dy};
  * labelBg следует за сдвигом текста (фикс разорванных плашек). Legacy side 'l'/'r' полностью совместим.
  *
@@ -69,6 +69,48 @@ const MapEngine = (function() {
   }
   const TAB_LABELS = {story:'Сюжет',bible:'Писание',arch:'Археология',he:'Иврит',dispute:'Дискуссия',sci:'Наука',photos:'Фото',extra:'Библ.контекст'};
   const TAB_KEYS = ['story','bible','arch','he','dispute','sci','photos','extra'];
+  const ROUTE_CAPABILITY_VALUES = Object.freeze(['stages','stories','layers','timeline','signature','interpretations','uncertainty']);
+  const ROUTE_CAPABILITY_SET = new Set(ROUTE_CAPABILITY_VALUES);
+  const ROUTE_ARCHETYPE_VALUES = Object.freeze(['route','political','thematic','territorial','overview']);
+  const ROUTE_ARCHETYPE_SET = new Set(ROUTE_ARCHETYPE_VALUES);
+
+  function normalizeRouteCapabilities(data={}){
+    const declared=Array.isArray(data?.capabilities)?data.capabilities:[];
+    const seen=new Set(declared.filter(value=>typeof value==='string'));
+    return ROUTE_CAPABILITY_VALUES.filter(capability=>seen.has(capability));
+  }
+
+  function hasRouteCapability(data={},capability){
+    return ROUTE_CAPABILITY_SET.has(capability)&&normalizeRouteCapabilities(data).includes(capability);
+  }
+
+  function normalizeRouteArchetype(data={}){
+    const value=typeof data?.archetype==='string'?data.archetype.trim():'';
+    return ROUTE_ARCHETYPE_SET.has(value)?value:null;
+  }
+
+  function projectRouteCapabilities(data={}){
+    const route=normalizeRouteData(data);
+    const capabilities=normalizeRouteCapabilities(route);
+    const active=new Set(capabilities);
+    const withStages=active.has('stages');
+    const withInterpretations=active.has('interpretations');
+    const places=(withStages&&withInterpretations)?route.places:route.places.map(place=>{
+      if(!place||typeof place!=='object')return place;
+      const projected={...place};
+      if(!withStages)delete projected.stage;
+      if(!withInterpretations){delete projected.arch;delete projected.dispute}
+      return projected;
+    });
+    const projected={...route,capabilities,places};
+    if(!withStages)projected.stages=[];
+    if(!active.has('stories'))projected.stories=[];
+    if(!active.has('layers'))projected.layers=[];
+    if(!active.has('timeline'))projected.timeline=[];
+    if(!active.has('signature'))delete projected.signature;
+    if(!withInterpretations){delete projected.scientific_variants;delete projected.variants}
+    return projected;
+  }
 
   function clamp(n,a,b){return Math.min(Math.max(n,a),b)}
   function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
@@ -81,24 +123,6 @@ const MapEngine = (function() {
     const ctx=Array.isArray(data.ctx)?data.ctx:(data.ctx_index||[]);
     const stories=Array.isArray(data.stories)?data.stories:[];
     return {...data,places,stages,ctx,stories};
-  }
-
-  const ROUTE_CAPABILITY_KEYS=Object.freeze(['stages','stories','layers','timeline','signature','interpretations','uncertainty']);
-
-  function hasRouteCapability(data={},capability=''){
-    const declared=Array.isArray(data.capabilities)?data.capabilities:null;
-    if(declared)return declared.includes(capability);
-    if(capability==='stages')return Array.isArray(data.stages)&&data.stages.length>0;
-    if(capability==='stories')return Array.isArray(data.stories)&&data.stories.length>0;
-    if(capability==='layers')return Array.isArray(data.layers)&&data.layers.length>0;
-    if(capability==='timeline')return Array.isArray(data.timeline)&&data.timeline.length>0;
-    if(capability==='signature')return Boolean(data.signature&&typeof data.signature==='object');
-    if(capability==='interpretations')return Boolean(data.scientific_variants&&typeof data.scientific_variants==='object');
-    return false;
-  }
-
-  function getRouteCapabilities(data={}){
-    return ROUTE_CAPABILITY_KEYS.filter(capability=>hasRouteCapability(data,capability));
   }
 
   async function loadRoute(url,opts={}){
@@ -170,9 +194,13 @@ const MapEngine = (function() {
       const baseGeoUrl=config.baseGeoUrl??route?.meta?.base_geo_url;
       if(baseGeoUrl)mapOptions.baseGeoUrl=baseGeoUrl;
     }
-    if(!Object.prototype.hasOwnProperty.call(mapOptions,'archaeologyProjection')){
-      const archaeologyProjection=readArchaeologyProjection(config.archaeologyPayloadId||'map-archaeology-projection');
-      if(archaeologyProjection!==null)mapOptions.archaeologyProjection=archaeologyProjection;
+    if(hasRouteCapability(route,'interpretations')){
+      if(!Object.prototype.hasOwnProperty.call(mapOptions,'archaeologyProjection')){
+        const archaeologyProjection=readArchaeologyProjection(config.archaeologyPayloadId||'map-archaeology-projection');
+        if(archaeologyProjection!==null)mapOptions.archaeologyProjection=archaeologyProjection;
+      }
+    }else{
+      delete mapOptions.archaeologyProjection;
     }
 
     const instance=createMap(container,route,mapOptions);
@@ -529,11 +557,13 @@ const MapEngine = (function() {
       container.innerHTML = '<div class="me-error" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#9aa2ae;font-family:Georgia,serif"><div style="font-size:48px;margin-bottom:12px">⚠</div><div style="font-size:16px;color:#e9e4d6;margin-bottom:4px">Карта пуста</div><div style="font-size:12px">route.json не содержит мест для отображения</div></div>';
       return null;
     }
-    const route = normalizeRouteData(routeData);
-    const capabilities=new Set(getRouteCapabilities(route));
-    const hasCapability=capability=>capabilities.has(capability);
-    container.setAttribute('data-map-capabilities',[...capabilities].join(' '));
+    const route = projectRouteCapabilities(routeData);
     const cfg = {...DEFAULTS, ...opts};
+    const routeCapabilities=normalizeRouteCapabilities(route);
+    const capabilitySet=new Set(routeCapabilities);
+    const hasCapability=capability=>capabilitySet.has(capability);
+    const routeArchetype=normalizeRouteArchetype(route);
+    if(!hasCapability('interpretations'))cfg.archaeologyProjection=null;
     const semanticZoomConfig = route.meta?.semantic_zoom || route.semantic_zoom || {};
     const semanticOverviewMinW = Number(semanticZoomConfig.overview_min_w ?? semanticZoomConfig.overviewMinW) || cfg.W0 * 0.68;
     const semanticDetailMaxW = Number(semanticZoomConfig.detail_max_w ?? semanticZoomConfig.detailMaxW) || cfg.W0 * 0.34;
@@ -624,7 +654,7 @@ const MapEngine = (function() {
     const initialState = resolveInitialMapState(route, location, savedInitialState);
     const initialPlaceId = initialState.place;
     let activePlaceId = null;
-    let activeStoryId = hasCapability('stories')?initialState.story:'main';
+    let activeStoryId = initialState.story;
     container.setAttribute('data-active-story',activeStoryId);
     function activeMinViewWidth(){
       const authored=matchMedia('(max-width:560px)').matches
@@ -644,8 +674,8 @@ const MapEngine = (function() {
       return { place: activePlaceId, story: activeStoryId };
     }
 
-    const layerDefinitions=hasCapability('layers')?[...(opts.layers||route.layers||[])]:[];
-    if(hasCapability('layers')&&hasCapability('signature')&&route.signature&&route.signature.type)layerDefinitions.push({id:'signature',label:route.signature.label||'Сигнатура',color:'#e8c879',on:true,selector:'#me-signature'});
+    const layerDefinitions=[...(opts.layers||route.layers||[])];
+    if(route.signature&&route.signature.type)layerDefinitions.push({id:'signature',label:route.signature.label||'Сигнатура',color:'#e8c879',on:true,selector:'#me-signature'});
     const layerState=new Map(layerDefinitions.filter(layer=>layer&&layer.id).map(layer=>[String(layer.id),layer.on!==false]));
     // Facets the reader switched by hand. A story may reveal its own places when
     // an untouched facet is off, but an explicit choice must survive a story change.
@@ -1240,7 +1270,10 @@ const MapEngine = (function() {
 
     // Build DOM
     container.innerHTML='';
-    container.className='me-map';
+    container.className='me-map'+(routeArchetype?` me-map--${routeArchetype}`:'');
+    if(routeArchetype)container.setAttribute('data-map-archetype',routeArchetype);
+    else container.removeAttribute('data-map-archetype');
+    container.setAttribute('data-map-capabilities',routeCapabilities.join(' '));
     
     const canvas=document.createElement('div');canvas.className='me-canvas';
     function viewportAspect(){
@@ -1390,7 +1423,7 @@ const MapEngine = (function() {
     header.appendChild(headerLeft);
     
     const storiesBar=document.createElement('div');storiesBar.className='me-stories';storiesBar.setAttribute('data-horizontal-scroll','stories');storiesBar.setAttribute('role','tablist');storiesBar.setAttribute('aria-label','Сюжеты карты');
-    if(hasCapability('stories')&&(route.stories||[]).length)header.appendChild(storiesBar);
+    if(hasCapability('stories'))header.appendChild(storiesBar);
     // Search input
 const searchInput=document.createElement('input');searchInput.className='me-search';searchInput.type='text';searchInput.placeholder='Поиск места…';searchInput.setAttribute('aria-label','Поиск места на карте');searchInput.setAttribute('role','searchbox');
 let searchTimer = null;
@@ -1530,7 +1563,7 @@ header.appendChild(shareBtn);
 
     // Stage dots
     const stagesBar=document.createElement('div');stagesBar.className='me-stages';
-    if(hasCapability('stages')&&(route.stages||[]).length)container.appendChild(stagesBar);
+    if(hasCapability('stages'))container.appendChild(stagesBar);
 
 
     // Timeline bar
@@ -1713,10 +1746,9 @@ header.appendChild(shareBtn);
     }
     // Legend
 const legend=document.createElement('div');legend.className='me-legend';
-const showLegend=hasCapability('stages')||hasCapability('signature');
-const legendItems=hasCapability('stages')?(route.stages||[]).map((st,i)=>`<div class="me-legend__item"><span class="me-legend__dot" style="background:${getStageColor(i)}"></span>${st.t||''}</div>`).join(''):'';
-const sigLegend=hasCapability('signature')&&route.signature?`<div class="me-legend__item me-legend__item--signature me-signature-note" data-signature-note="${esc(route.signature.type||'')}"><span class="me-legend__dot" style="background:#e8c879;box-shadow:0 0 8px rgba(232,200,121,.55)"></span><span class="me-legend__sig-body"><span class="me-legend__sig-label">${esc(route.signature.label||'Сигнатура карты')}</span>${route.signature.description?`<span class="me-legend__sig-desc">${esc(route.signature.description)}</span>`:''}</span></div>`:'';
-legend.innerHTML=`<div class="me-legend__title">${hasCapability('stages')?'Этапы':'Обозначения'} <span class="me-legend__arrow">▾</span></div>${legendItems}${sigLegend}`;
+const legendItems=(route.stages||[]).map((st,i)=>`<div class="me-legend__item"><span class="me-legend__dot" style="background:${getStageColor(i)}"></span>${st.t||''}</div>`).join('');
+const sigLegend=route.signature?`<div class="me-legend__item me-legend__item--signature me-signature-note" data-signature-note="${esc(route.signature.type||'')}"><span class="me-legend__dot" style="background:#e8c879;box-shadow:0 0 8px rgba(232,200,121,.55)"></span><span class="me-legend__sig-body"><span class="me-legend__sig-label">${esc(route.signature.label||'Сигнатура карты')}</span>${route.signature.description?`<span class="me-legend__sig-desc">${esc(route.signature.description)}</span>`:''}</span></div>`:'';
+legend.innerHTML=`<div class="me-legend__title">Этапы <span class="me-legend__arrow">▾</span></div>${legendItems}${sigLegend}`;
 // Legend arrow rotation on expand
 const legendArrow = legend.querySelector('.me-legend__arrow');
 const legendObserver = new MutationObserver(() => {
@@ -1726,7 +1758,7 @@ const legendObserver = new MutationObserver(() => {
   }
 });
 legendObserver.observe(legend, { attributes: true, attributeFilter: ['class'] });
-if(showLegend)container.appendChild(legend);
+container.appendChild(legend);
 container.appendChild(panel);
 
     // Minimap (if opts.showMinimap)
@@ -1833,7 +1865,7 @@ container.appendChild(panel);
       if(announce){const layer=layerDefinitions.find(item=>String(item.id)===String(id));showToast((layer?.label||id)+(enabled?' показан':' скрыт'),1200)}
       return true;
     }
-    if(hasCapability('layers')&&layerDefinitions.length){
+    if(layerDefinitions.length){
       const layerPanel=document.createElement('div');
       layerPanel.className='me-layers';
       const layerSummary=document.createElement('button');
@@ -2399,7 +2431,7 @@ container.appendChild(panel);
       }
 
       function renderSignatureOverlay() {
-        const sig = hasCapability('signature') ? route.signature : null;
+        const sig = route.signature;
         if (!sig || !sig.type) {
           signatureG.removeAttribute('data-signature-kind');
           signatureG.removeAttribute('aria-label');
@@ -2776,7 +2808,7 @@ container.appendChild(panel);
 
       // Head
       head.innerHTML=`
-        <div class="me-panel__stage"><span class="me-panel__stage-dot" style="background:${getStageColor(place.stage)}"></span>Этап ${(place.stage||0)+1} · ${esc(place.id2||'')}</div>
+        ${hasCapability('stages')?`<div class="me-panel__stage"><span class="me-panel__stage-dot" style="background:${getStageColor(place.stage)}"></span>Этап ${(place.stage||0)+1} · ${esc(place.id2||'')}</div>`:''}
         <div class="me-panel__name">${esc(place.name)}</div>
         ${place.he?`<div class="me-panel__he" lang="he" dir="rtl">${esc(place.he)}</div>`:''}
         ${place.kick?`<div class="me-panel__kick">${esc(place.kick)}</div>`:''}
@@ -3147,7 +3179,6 @@ container.appendChild(panel);
     }
 
     function setStory(storyId){
-      if(!hasCapability('stories'))return;
       const story=(route.stories||[]).find(s=>s.id===storyId);
       if(!story)return;
       // Fade out all markers
@@ -3171,7 +3202,6 @@ container.appendChild(panel);
     }
 
     function renderStories(){
-      if(!hasCapability('stories')){storiesBar.innerHTML='';return}
       storiesBar.innerHTML=(route.stories||[]).map(s=>`
         <button class="me-story-chip${s.id===activeStoryId?' me-story-chip--active':''}" data-story="${s.id}" role="tab" aria-selected="${s.id===activeStoryId?'true':'false'}">${esc(s.label)}</button>
       `).join('');
@@ -3182,7 +3212,6 @@ container.appendChild(panel);
     }
 
     function renderStages(){
-      if(!hasCapability('stages')){stagesBar.innerHTML='';return}
       stagesBar.innerHTML=(route.stages||[]).map((st,i)=>`
         <div class="me-stage-dot" style="color:${getStageColor(i)};cursor:pointer" data-stage="${i}">${esc(st.n||'')}</div>
       `).join('');
@@ -3703,7 +3732,7 @@ container.appendChild(panel);
           ${route.meta?.subtitle ? `<p class="me-intro__sub">${esc(route.meta.subtitle)}</p>` : ''}
           <div class="me-intro__stats">
             ${(route.places||[]).length ? `<span>${route.places.length} мест</span>` : ''}
-            ${hasCapability('stories')&&(route.stories||[]).length ? `<span>${route.stories.length} сюжетов</span>` : ''}
+            ${(route.stories||[]).length ? `<span>${route.stories.length} сюжетов</span>` : ''}
           </div>
           <button class="me-intro__btn">Начать изучение</button>
         </div>`;
@@ -3862,9 +3891,11 @@ container.appendChild(panel);
 
     // ── Instance ──
     const instance={
-      open,close,setStory,startTour,stopTour,flyTo,resetView,setLayerEnabled,applyMapTheme,hasCapability,
+      open,close,setStory,startTour,stopTour,flyTo,resetView,setLayerEnabled,applyMapTheme,
       get routeData(){return route},
-      get capabilities(){return [...capabilities]},
+      get archetype(){return routeArchetype},
+      get capabilities(){return [...routeCapabilities]},
+      hasCapability,
       get theme(){return activeTheme},
       get layers(){return Object.fromEntries(layerState)},
       destroy(){
@@ -3877,6 +3908,7 @@ container.appendChild(panel);
         destroySpecialOverlay(introOverlayOwner);
         _cleanupAll();
         container.innerHTML='';container.className='';
+        container.removeAttribute('data-map-archetype');container.removeAttribute('data-map-capabilities');
       }
     };
     return instance;
@@ -3885,7 +3917,8 @@ container.appendChild(panel);
   // ── Public exports ──
   return {
     // v0.2 data layer
-    loadRoute,loadJsonResource,mountRoute,bootRoute,readArchaeologyProjection,validateRoute,compareRouteData,normalizeRouteData,hasRouteCapability,getRouteCapabilities,collectPhotoHosts,
+    loadRoute,loadJsonResource,mountRoute,bootRoute,readArchaeologyProjection,validateRoute,compareRouteData,normalizeRouteData,collectPhotoHosts,
+    ROUTE_CAPABILITY_VALUES,ROUTE_ARCHETYPE_VALUES,normalizeRouteCapabilities,hasRouteCapability,normalizeRouteArchetype,projectRouteCapabilities,
     getPlaceIndex,getPlaceById,getStageForPlace,getRelatedPlaceIds,getTabContentKey,
     getPanelModel,getPanelSections,getStoryViewport,getStoryState,getPlaceOrder,auditStoryDefinitions,
     parseMapStateFromLocation,resolveInitialMapState,buildMapStateUrl,

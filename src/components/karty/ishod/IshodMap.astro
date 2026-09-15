@@ -255,10 +255,16 @@ import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.as
       errorTitle: 'Карта Исхода временно недоступна',
       logLabel: 'ishod',
       transformRoute: function(route, resources) {
+        requireValue(window.MapEngine && typeof window.MapEngine.hasRouteCapability === 'function', 'MapEngine capability contract missing');
+        if (!window.MapEngine.hasRouteCapability(route, 'uncertainty')) {
+          resources.authority = null;
+          return route;
+        }
         resources.authority = validateAuthority(resources.authority);
         return adaptRoute(route, resources.authority);
       },
       afterCreate: function(context) {
+        if (!window.MapEngine.hasRouteCapability(context.route, 'uncertainty')) return;
         renderCorridors(context.container, context.resources.authority, context.instance);
       }
     });
