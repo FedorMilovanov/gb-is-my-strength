@@ -20,6 +20,8 @@ const files = {
   browser: read('scripts/app-search-surface-browser-contract.mjs'),
   avraamPage: read('src/pages/karty/avraam/index.astro'),
   ishodPage: read('src/pages/karty/ishod/index.astro'),
+  mapPageShell: read('src/components/karty/_shared/MapPageShell.astro'),
+  mapSearchRail: read('src/components/karty/_shared/MapSearchRail.astro'),
   avraamHead: read('src/components/karty/avraam/AvraamPageHead.astro'),
   ishodHead: read('src/components/karty/ishod/IshodPageHead.astro'),
   baptismHead: read('src/components/konfessii/russkij-baptizm/Baptizm3DPageHead.astro'),
@@ -150,11 +152,16 @@ for (const [name, text] of Object.entries({
 }
 
 for (const [name, text] of Object.entries({ avraamPage: files.avraamPage, ishodPage: files.ishodPage })) {
-  check(text.includes('class="has-app-search-map"'), `${name}: map body scope missing`);
-  check(count(text, '<AppSearchSurface mode="map-engine" />') === 1, `${name}: map search surface count`);
+  check(count(text, '<MapPageShell>') === 1, `${name}: shared map shell count`);
+  check(count(text, '<AppSearchSurface mode="map-engine" />') === 0, `${name}: route-local map search surface survived`);
+  check(!text.includes('class="has-app-search-map"'), `${name}: route-local body scope survived`);
   check(!/href=["'][^"']*\/css\/site\.css/.test(text), `${name}: strict-native site.css boundary changed`);
   check(!/src=["'][^"']*\/js\/site\.js/.test(text), `${name}: strict-native site.js boundary changed`);
 }
+check(files.mapPageShell.includes('class="has-app-search-map"'), 'shared map shell body scope missing');
+check(count(files.mapPageShell, '<MapSearchRail />') === 1, 'shared map shell search rail count');
+check(count(files.mapSearchRail, '<AppSearchSurface mode="map-engine" />') === 1, 'shared map search surface count');
+check(files.mapSearchRail.includes('aria-label={label}'), 'shared map search rail accessible label missing');
 
 check(count(files.baptismBody, '<AppSearchSurface mode="baptizm" />') === 1, 'Baptism surface count');
 check(files.baptismBody.includes('<iframe id="appframe"'), 'Baptism iframe owner changed');
@@ -162,8 +169,8 @@ check(count(files.atlasBody, '<AppSearchSurface mode="atlas" />') === 1, 'Atlas 
 check(files.atlasBody.includes('id="atlasSearchInput"'), 'Atlas local search must remain');
 check(files.atlasBody.includes('/js/atlas-runtime.js'), 'Atlas runtime owner changed');
 
-const allRouteText = [files.avraamPage, files.ishodPage, files.baptismBody, files.atlasBody].join('\n');
-check(count(allRouteText, '<AppSearchSurface mode=') === 4, 'exactly four app search surfaces required');
+const allRouteText = [files.mapSearchRail, files.baptismBody, files.atlasBody].join('\n');
+check(count(allRouteText, '<AppSearchSurface mode=') === 3, 'exactly three source-owned app search surfaces required: shared map, Baptism and Atlas');
 check(count(allRouteText, 'id="gbSearchBtn"') === 0, 'route owners must not duplicate trigger internals');
 
 for (const marker of [
