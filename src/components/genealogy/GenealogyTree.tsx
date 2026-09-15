@@ -515,6 +515,10 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
   return (
     <div ref={treeRoot} className="genealogy-app" data-genealogy-app data-genealogy-level={detailLevel} data-minimap-open={showMiniMap}
       data-genealogy-active-person={activeId ?? undefined}
+      data-genealogy-search-query={search || undefined}
+      data-genealogy-search-result-count={searchResults.length}
+      data-genealogy-search-needs-choice={searchNeedsChoice ? 'true' : 'false'}
+      data-genealogy-search-selection={searchSelectionId ?? undefined}
       data-genealogy-search-person={searchMatch?.id ?? undefined}
       onKeyDownCapture={handleGraphKeyDown}>
       <div className="genealogy-toolbar" role="toolbar" aria-label="Управление древом">
