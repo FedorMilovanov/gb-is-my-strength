@@ -460,3 +460,45 @@ addendum с фактом публикации и списком синхрони
 
 **Остатки (не в этой транзакции):** WU-2.2 (239 .bref — объёмная механика), остальное WU-2.x/3.x,
 Wave 5 guards G-1…G-8, полный WU-6.6 (landing-арт), AuditRepo receipt.
+
+---
+
+# ДОПОЛНЕНИЕ pass-11 (2026-09-15, ночь): Волна 4 закрыта
+
+**WU-4.1 — CLOSED.** `data/strategic-map-antisovetov.json` удалён: repo-wide grep — ноль
+ссылок из кода (только исторические audit/docs-документы и dist-copy-manifest как реестр
+файлов); живые данные strategic map — inline-JSON в компоненте.
+
+**WU-4.2 — CLOSED.** Stale MDX-тень `src/content/articles/20-antisovetov-pastoru.mdx` (197KB,
+frontmatter с датой 2026-05-13/06-12, ложный ogImageAlt «Пастор за кафедрой в раздумьях»,
+related на сердцевые статьи) удалена; route-profile
+`data/route-profiles/articles-20-antisovetov-pastoru.json`: `mdxStatus: reference-only → absent`,
+`mdxPath: null` (contentSourceMode=astro-native-entry, renderSource = index.astro — не менялись).
+Проверено: content-source-provenance-audit зелёный (нет unowned MDX, нет absent+path-конфликта),
+article-qa / sources:hygiene / mdx:structure:audit / migration:metadata:check:strict — зелёные,
+сборка 0 errors (collection больше не собирает тень).
+
+**WU-4.4 — CLOSED.** Абзац «Источники и границы проверки» Досье A теперь раскрывает состав «181»:
+«181 запись: 148 исходных записей и 33 источника дополнения Wave 11 о верных свидетелях… Ниже — 40
+прямых читательских ссылок; раздел Wave 11 добавляет ещё 33 ссылки — 73 всего». Числа сверены с
+`data/diotrophes-wave11-faithful-witness-manifest.json` (counts: 148+33=181, 40+33=73) и
+`diotrophes-wave12-release-manifest.json` (authoritySources=181); Wave 11-раздел действительно
+рендерится на публичном маршруте (DiotrophesPublishedPage → DiotrophesWave11Draft →
+FaithfulWitnessSupplement, в dist data-authority-sources="181").
+
+**WU-3.4 — CLOSED.** `data/diotrophes-wave11-faithful-witness-manifest.json`: добавлен
+`supersededBy` → `data/diotrophes-wave12-release-manifest.json` (at 2026-08-02T00:00:00+03:00,
+reason: маршрут выпущен Wave 12; PUBLICATION_HOLD/registered=false — состояние до выпуска).
+Исторический статус wave11 не переписан (receipt-семантика); wave12-манифест (актуальный,
+PUBLIC_ROUTE_RELEASED, readingTimeMinutes=35 на момент выпуска) не тронут.
+
+**Промежуточный инцидент (зафиксировать для future-своод):** между ходами среда сбросила локальный
+git до base 3b40889 и стёрла node_modules/dist//tmp, но worktree и remote-ветка сохранились;
+`git diff 3d1b07f` = пусто → `git reset --hard 3d1b07f` вернул полную историю (9081593→7ba3258→
+3d1b07f). Урок: перед любыми коммитами — проверить `git log -1` и, при расхождении с ожидаемым,
+fetch + diff до remote-ветки.
+
+**Матрица после транзакции:** migration:metadata:check:strict, article:qa, sources:hygiene,
+mdx:structure:audit, data:consistency, content:guard, contract:compare, editorial:lint,
+readable-audit, pastor-series guard, editorial registry --check, content-source-provenance —
+все зелёные; сборка 0 errors.

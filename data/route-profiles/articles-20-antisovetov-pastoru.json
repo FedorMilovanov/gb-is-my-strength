@@ -16,8 +16,8 @@
   "renderSource": "src/pages/articles/20-antisovetov-pastoru/index.astro",
   "metadataSourceMode": "astro-head-import",
   "hasMDX": false,
-  "mdxStatus": "reference-only",
-  "mdxPath": "src/content/articles/20-antisovetov-pastoru.mdx",
+  "mdxStatus": "absent",
+  "mdxPath": null,
   "legacyStatus": "reference-only",
   "legacyPath": "articles/20-antisovetov-pastoru/index.html",
   "visualParity": {
