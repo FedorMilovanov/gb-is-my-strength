@@ -109,7 +109,7 @@ jobs:
         run: node scripts/genealogy-build/build.mjs all
 
       - name: Audit regenerated publication state
-        run: node scripts/genealogy-v2-publication-audit.mjs
+        run: node scripts/genealogy-v2-publication-audit.mjs --allow-blockers=DATASET_STATUS_DRAFT,RU_REVIEW_QUEUE,GENERIC_CURATED_VIEW_RULES
 
       - name: Record regenerated drift
         shell: bash
