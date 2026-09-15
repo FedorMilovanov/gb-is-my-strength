@@ -321,3 +321,35 @@ Pageerrors: нет ни на одной комбинации. Универсал
 ### 16.4 Примечание о кэше и `?v=`
 
 Локальная подмена css в dist без смены `?v=` в HTML оставляет браузер на старом файле (эвристический кэш); зонды с `Network.setCacheDisabled` показывают свежую картину. В проде проблему исключает сам механизм: postbuild переписывает `?v=`-хэши в HTML, и новый контент приходит по новому URL. После правки 16.2 корпус ревизий пересинхронизирован (sw.js литерал `b740c21f`, `cache-bust --write`), `strangler:build` ✅, `cache-bust` read-only exit 0, `nagornaya:bar-asset:contract` ✅.
+
+---
+
+## 17. Пятый проход: вес CSS — home.css убран со статей (−111KB/страница)
+
+### 17.1 Инвентаризация (`i-perf.mjs`, до)
+
+Gill-статья несла 750KB CSS в 13 таблицах; третьей по весу шла **home.css (111KB)** — стили главной (`.h-hero-title`, `.h-article-list`, `.home-page`, `.h-mobile-dashboard` …). Замер usage по построенным страницам: на статьях (Gill A/B, hrail, teen) ни один из этих классов **не встречается** (0 вхождений), тогда как хабы (`/`, `/articles/`, `/baptisty-rossii/`, `/hard-texts/`) используют их (1+). home.css подключался в 35 astro-головах article-pilots механически.
+
+### 17.2 Правка
+
+Удалена строка `<link … home.css …>` из 35 файлов `src/components/article-pilots/**` (article-головы). Хабы, главная и legacy-страницы home.css сохраняют. Другие таблицы не тронуты: command-palette (нужна до первого открытия), mobile-hotfix иSiteSectionsMenu остаются (байты экономятся только полным снятием ссылки, а их классы живы на статьях).
+
+### 17.3 Результат
+
+| Страница | CSSkb до | после | #css | bdfilt | fixed |
+|---|---|---|---|---|---|
+| Gill A `/articles/dzhon-gill-chast-1…` | 750 | **639** | 13→12 | 102→84 | 67→61 |
+| Gill B `/articles/serdce-i-duh/` | 739 | **628** | 11→10 | 102→84 | 67→61 |
+
+Бонус: home.css владел 18 `backdrop-filter` и 6 `position:fixed` на статью — композитинг на телефоне стал дешевле.
+
+### 17.4 Верификация
+
+* Сеть: 0 запросов home.css на A/B/B390/hrail/teen (`r-weight1.mjs`, кэш отключён); хабы по-прежнему с home.css (grep dist).
+* Геометрия: ovfX 0, clip 0, медианы те же (640/640/311/688/634); скриншоты `shots/weight-A-1280.png`, `weight-B-1280.png` визуально идентичны прежним.
+* Полный r-scan: 1024/390/1280 = 148 загрузок, 0 clip / 0 ovfX / 0 404 (без изменений).
+* Гварды: `gill:chrome:guard` ✅ канон v2.9; `cache-bust` read-only exit 0; `nagornaya:bar-asset:contract` ✅; `engine:guard` ✅ целиком (sweep 221/221 + map fallback).
+
+### 17.5 Что ещё остаётся в весе (осознанно)
+
+site.css 307KB и floating-cluster.css 231KB — ядро хрома/легаси, дедупликация требует build-level code splitting и отдельного lane; дубль-чанк ReaderActionsRuntime (§15.2) — артефакт Vite без функционального эффекта. Текущий итог прохода: −111KB CSS и −18 backdrop-filter на каждой из 63 Gill-страниц без единого визуального изменения.
