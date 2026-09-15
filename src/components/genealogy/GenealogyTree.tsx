@@ -622,7 +622,19 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
           Фокус: {visibleFocusCount} из {focusLineageIds?.size ?? 0} · Сбросить
         </button>}
       </div>
-      <DetailPanel person={selected} onClose={() => { if (selected) setKeyboardTarget({ id: selected.id }); setSelected(null); }} />
+      <DetailPanel
+        person={selected}
+        persons={persons}
+        relations={relations}
+        onInspectRelation={relation => {
+          setSelected(null);
+          setSelectedRelation(relation);
+        }}
+        onClose={() => {
+          if (selected) setKeyboardTarget({ id: selected.id });
+          setSelected(null);
+        }}
+      />
       <RelationshipInspector
         relation={selectedRelation}
         persons={persons}
