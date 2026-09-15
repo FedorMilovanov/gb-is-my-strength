@@ -6,18 +6,20 @@
     "pageOwnership": "migration/page-ownership.json",
     "bibleRegistry": "data/bible/books.json",
     "bibleResolver": "src/lib/bible-reference-core.mjs",
-    "routeSourceContract": "scripts/lib/route-source-contract.js"
+    "routeSourceContract": "scripts/lib/route-source-contract.js",
+    "kartyHubInventory": "src/lib/karty-hub-inventory.cjs"
   },
   "stats": {
     "manifestItems": 94,
     "indexedRoutes": 93,
-    "scannedSourceFiles": 497,
+    "scannedSourceFiles": 498,
     "references": 1216,
     "occurrences": 3050,
     "canonicalTextRecords": 148,
     "referencesWithoutCanonicalText": 1068,
     "chapterRanges": 31,
-    "manifestOccurrences": 32
+    "manifestOccurrences": 32,
+    "kartyHubOccurrences": 1
   },
   "references": [
     {
@@ -1824,7 +1826,7 @@
         {
           "url": "/karty/",
           "title": "Библейские карты",
-          "context": "Проверенная карта Путь Авраама אַבְרָהָם Бытие 11–25: маршрут патриарха, ключевые места, богословский и исторический слой. Открыть карту →",
+          "context": "Проверенная карта Путь Авраама אַבְרָהָם אָבִינוּ Бытие 11–25: маршрут патриарха, ключевые места, богословский и исторический слой. Открыть карту →",
           "anchor": "mapsTitle",
           "raw": "Бытие 11–25",
           "topics": [
@@ -1833,8 +1835,8 @@
             "география",
             "карты"
           ],
-          "sourceOwner": "src/components/karty/KartyHeroSection.astro",
-          "sourceKind": "astro-source"
+          "sourceOwner": "karty/avraam/route.json",
+          "sourceKind": "karty-publication-metadata"
         },
         {
           "url": "/karty/avraam/",
