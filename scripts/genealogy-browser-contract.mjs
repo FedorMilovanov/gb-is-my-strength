@@ -308,6 +308,46 @@ async function assertSplitLifecycle(page, touch) {
   await page.waitForFunction(() => !document.documentElement.classList.contains('dark'));
 }
 
+async function assertDepartmentShell(page, browserName, viewport) {
+  const main = page.locator('#main-content.genealogy-department');
+  await main.waitFor({ state: 'visible' });
+  await page.getByRole('heading', { level: 1, name: 'От Адама до Христа' }).waitFor({ state: 'visible' });
+  await page.getByRole('heading', { level: 2, name: 'Три входа в исследование' }).waitFor({ state: 'visible' });
+  await page.getByRole('heading', { level: 2, name: 'Что именно утверждает линия' }).waitFor({ state: 'visible' });
+
+  assert.equal(await page.getByRole('heading', { name: 'Коротко', exact: true }).count(), 0,
+    'Legacy article summary remained in the genealogy department shell');
+
+  const explore = page.getByRole('link', { name: 'Исследовать атлас', exact: true });
+  const methodology = page.getByRole('link', { name: 'Как читать связи', exact: true });
+  assert.equal(await explore.getAttribute('href'), '#genealogy-tree',
+    'Department primary action does not target the atlas');
+  assert.equal(await methodology.getAttribute('href'), '#genealogy-methodology',
+    'Department methodology action does not target the evidence explanation');
+
+  for (const heading of ['Исследовать', 'Сравнить', 'Проверить основание']) {
+    assert.equal(await main.getByRole('heading', { level: 3, name: heading, exact: true }).count(), 1,
+      `Department mode card missing or duplicated: ${heading}`);
+  }
+
+  for (const heading of ['Редакторски проверено', 'Интерпретация', 'На проверке']) {
+    assert.equal(await main.getByRole('heading', { level: 3, name: heading, exact: true }).count(), 1,
+      `Evidence methodology state missing or duplicated: ${heading}`);
+  }
+
+  const shellMetrics = await main.evaluate(node => ({
+    scrollWidth: node.scrollWidth,
+    clientWidth: node.clientWidth,
+  }));
+  assert.ok(shellMetrics.scrollWidth <= shellMetrics.clientWidth,
+    `${browserName} ${viewport.width}x${viewport.height}: department shell overflows horizontally`);
+
+  await main.screenshot({
+    path: path.join(REPORT_DIR, `${browserName}-${viewport.width}x${viewport.height}-department-shell.png`),
+    animations: 'disabled',
+  });
+}
+
 async function assertGenealogyThemeLifecycle(page, browserName, viewport) {
   const app = page.locator('[data-genealogy-app]');
   const toggle = page.locator('#themeToggle');
@@ -650,13 +690,16 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     const response = await page.goto(`${baseUrl}/rodosloviye/`, { waitUntil: 'networkidle' });
     assert.ok(response?.ok(), `${browserName} ${viewport.width}x${viewport.height}: /rodosloviye/ did not load successfully`);
 
+    phase = 'department-shell';
+    await assertDepartmentShell(page, browserName, viewport);
+
     phase = 'initial-settle';
     await page.locator('.react-flow__node .genealogy-node').first().waitFor({ state: 'attached' });
     await waitForViewportStable(page);
 
     const initial = await measurePersonViewport(page);
     await assertGenealogyThemeLifecycle(page, browserName, viewport);
-    assert.equal(initial.mountedPersonNodes, EXPECTED_PERSON_NODES, `${browserName} ${viewport.width}x${viewport.height}: genealogy dataset mount count diverged from canonical data/genealogy/genealogy.json`);
+    assert.equal(initial.mountedPersonNodes, EXPECTED_PERSON_NODES, `${browserName} ${viewport.width}x${viewport.height}: genealogy dataset mount count diverged from certified publishable runtime`);
     assert.ok(initial.visiblePersonCards > 0, `${browserName} ${viewport.width}x${viewport.height}: settled initial viewport contains no visible person cards`);
     assert.ok(initial.visibleArea > 0, `${browserName} ${viewport.width}x${viewport.height}: settled initial viewport has no useful person-card area`);
 
