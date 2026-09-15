@@ -112,13 +112,19 @@ jobs:
       - name: Audit regenerated publication state
         run: node scripts/genealogy-v2-publication-audit.mjs --allow-blockers=DATASET_STATUS_DRAFT,RU_REVIEW_QUEUE
 
-      - name: Record regenerated drift
+      - name: Require byte-identical committed regeneration
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p reports
           git status --short -- data/genealogy/v2 > reports/genealogy-v2-regenerated-status.txt
           git diff --stat -- data/genealogy/v2 > reports/genealogy-v2-regenerated-stat.txt
+          if [ -s reports/genealogy-v2-regenerated-status.txt ]; then
+            echo "Pinned regeneration drifted from committed data/genealogy/v2:" >&2
+            cat reports/genealogy-v2-regenerated-status.txt >&2
+            cat reports/genealogy-v2-regenerated-stat.txt >&2
+            exit 1
+          fi
 
       - name: Upload regenerated v2 corpus and evidence
         if: always()
