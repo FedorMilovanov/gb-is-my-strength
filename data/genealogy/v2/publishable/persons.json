@@ -1,0 +1,4709 @@
+[
+  {
+    "id": "adam--gen-2-19",
+    "key": "Adam@Gen.2.19",
+    "v1Id": "adam",
+    "names": {
+      "ru": "Адам",
+      "en": "Adam",
+      "he": "אָדָם",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 1:26–5:5",
+    "firstRef": {
+      "osis": "Gen.2.19",
+      "ru": "Быт 2:19"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "creation",
+    "significance": "Первый человек. Образ Божий. Грехопадение. Обетование о «семени жены» (Быт 3:15).",
+    "chronology": {
+      "mt": {
+        "ageAtSon": 130,
+        "lifespan": 930,
+        "birthAM": 0,
+        "deathAM": 930
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "adam",
+      "tipnrKey": "Adam@Gen.2.19",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "eve--gen-3-20",
+    "key": "Eve@Gen.3.20",
+    "v1Id": "eve",
+    "names": {
+      "ru": "Ева",
+      "en": "Eve",
+      "he": "חַוָּה",
+      "greek": null
+    },
+    "gender": "f",
+    "ref": "Быт 2:22–4:2",
+    "firstRef": {
+      "osis": "Gen.3.20",
+      "ru": "Быт 3:20"
+    },
+    "lineage": "messianic",
+    "role": "matriarch",
+    "era": "creation",
+    "significance": "«Мать всех живущих».",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "eve",
+      "tipnrKey": "Eve@Gen.3.20",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "cain--gen-4-1",
+    "key": "Cain@Gen.4.1",
+    "v1Id": "cain",
+    "names": {
+      "ru": "Каин",
+      "en": "Cain",
+      "he": "קַיִן",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 4:1–17",
+    "firstRef": {
+      "osis": "Gen.4.1",
+      "ru": "Быт 4:1"
+    },
+    "lineage": "cainite",
+    "role": "person",
+    "era": "antediluvian",
+    "significance": "Первый убийца. Отвергнутая линия.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "cain",
+      "tipnrKey": "Cain@Gen.4.1",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "abel--gen-4-2",
+    "key": "Abel@Gen.4.2",
+    "v1Id": "abel",
+    "names": {
+      "ru": "Авель",
+      "en": "Abel",
+      "he": "הֶבֶל",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 4:2–8; Мф 23:35; Евр 11:4",
+    "firstRef": {
+      "osis": "Gen.4.2",
+      "ru": "Быт 4:2"
+    },
+    "lineage": "rejected",
+    "role": "person",
+    "era": "antediluvian",
+    "significance": "Первый праведник. Принятая жертва. Убит Каином.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "abel",
+      "tipnrKey": "Abel@Gen.4.2",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "seth--gen-4-25",
+    "key": "Seth@Gen.4.25",
+    "v1Id": "seth",
+    "names": {
+      "ru": "Сиф",
+      "en": "Seth",
+      "he": "שֵׁת",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 4:25–5:8",
+    "firstRef": {
+      "osis": "Gen.4.25",
+      "ru": "Быт 4:25"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "antediluvian",
+    "significance": "Данный Богом вместо Авеля. Через него — мессианская линия.",
+    "chronology": {
+      "mt": {
+        "ageAtSon": 105,
+        "lifespan": 912,
+        "birthAM": 130,
+        "deathAM": 1042
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "seth",
+      "tipnrKey": "Seth@Gen.4.25",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "enosh--gen-4-26",
+    "key": "Enosh@Gen.4.26",
+    "v1Id": "enosh",
+    "names": {
+      "ru": "Енос",
+      "en": "Enosh",
+      "he": "אֱנוֹשׁ",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 5:6–11",
+    "firstRef": {
+      "osis": "Gen.4.26",
+      "ru": "Быт 4:26"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "antediluvian",
+    "significance": "При нём «начали призывать имя Господа» (Быт 4:26).",
+    "chronology": {
+      "mt": {
+        "ageAtSon": 90,
+        "lifespan": 905,
+        "birthAM": 235,
+        "deathAM": 1140
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "enosh",
+      "tipnrKey": "Enosh@Gen.4.26",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "kenan--gen-5-9",
+    "key": "Kenan@Gen.5.9",
+    "v1Id": "kenan_gen5",
+    "names": {
+      "ru": "Каинан",
+      "en": "Kenan",
+      "he": "קֵינָן",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 5:9–14",
+    "firstRef": {
+      "osis": "Gen.5.9",
+      "ru": "Быт 5:9"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "antediluvian",
+    "significance": "Не путать со вторым Каинаном (Лк 3:36).",
+    "chronology": {
+      "mt": {
+        "ageAtSon": 70,
+        "lifespan": 910,
+        "birthAM": 325,
+        "deathAM": 1235
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "kenan_gen5",
+      "tipnrKey": "Kenan@Gen.5.9",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "mahalalel--gen-5-12",
+    "key": "Mahalalel@Gen.5.12",
+    "v1Id": "mahalalel",
+    "names": {
+      "ru": "Малелеил",
+      "en": "Mahalalel",
+      "he": "מַהֲלַלְאֵל",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 5:12–17",
+    "firstRef": {
+      "osis": "Gen.5.12",
+      "ru": "Быт 5:12"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "antediluvian",
+    "significance": "Имя значит «слава Божия».",
+    "chronology": {
+      "mt": {
+        "ageAtSon": 65,
+        "lifespan": 895,
+        "birthAM": 395,
+        "deathAM": 1290
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "mahalalel",
+      "tipnrKey": "Mahalalel@Gen.5.12",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "jared--gen-5-15",
+    "key": "Jared@Gen.5.15",
+    "v1Id": "jared",
+    "names": {
+      "ru": "Иаред",
+      "en": "Jared",
+      "he": "יָרֶד",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 5:15–20",
+    "firstRef": {
+      "osis": "Gen.5.15",
+      "ru": "Быт 5:15"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "antediluvian",
+    "significance": "Отец Еноха.",
+    "chronology": {
+      "mt": {
+        "ageAtSon": 162,
+        "lifespan": 962,
+        "birthAM": 460,
+        "deathAM": 1422
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "jared",
+      "tipnrKey": "Jared@Gen.5.15",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "enoch--gen-5-18",
+    "key": "Enoch@Gen.5.18",
+    "v1Id": "enoch",
+    "names": {
+      "ru": "Енох",
+      "en": "Enoch",
+      "he": "חֲנוֹךְ",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 5:18–24; Евр 11:5; Иуд 14",
+    "firstRef": {
+      "osis": "Gen.5.18",
+      "ru": "Быт 5:18"
+    },
+    "lineage": "messianic",
+    "role": "prophet",
+    "era": "antediluvian",
+    "significance": "«Ходил пред Богом; и не стало его, потому что Бог взял его». Не умер.",
+    "chronology": {
+      "mt": {
+        "ageAtSon": 65,
+        "lifespan": 365,
+        "birthAM": 622,
+        "deathAM": 987
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "enoch",
+      "tipnrKey": "Enoch@Gen.5.18",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "methuselah--gen-5-21",
+    "key": "Methuselah@Gen.5.21",
+    "v1Id": "methuselah",
+    "names": {
+      "ru": "Мафусал",
+      "en": "Methuselah",
+      "he": "מְתוּשֶׁלַח",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 5:21–27",
+    "firstRef": {
+      "osis": "Gen.5.21",
+      "ru": "Быт 5:21"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "antediluvian",
+    "significance": "Долгожитель (969 лет). Умер в год Потопа (AM 1656) по MT — инженерия текста.",
+    "chronology": {
+      "mt": {
+        "ageAtSon": 187,
+        "lifespan": 969,
+        "birthAM": 687,
+        "deathAM": 1656
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "methuselah",
+      "tipnrKey": "Methuselah@Gen.5.21",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "lamech--gen-5-25",
+    "key": "Lamech@Gen.5.25",
+    "v1Id": "lamech_gen5",
+    "names": {
+      "ru": "Ламех",
+      "en": "Lamech",
+      "he": "לֶמֶךְ",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 5:25–31",
+    "firstRef": {
+      "osis": "Gen.5.25",
+      "ru": "Быт 5:25"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "antediluvian",
+    "significance": "Пророчество при рождении Ноя: «утешит нас» (Быт 5:29).",
+    "chronology": {
+      "mt": {
+        "ageAtSon": 182,
+        "lifespan": 777,
+        "birthAM": 874,
+        "deathAM": 1651
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "lamech_gen5",
+      "tipnrKey": "Lamech@Gen.5.25",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "noah--gen-5-29",
+    "key": "Noah@Gen.5.29",
+    "v1Id": "noah",
+    "names": {
+      "ru": "Ной",
+      "en": "Noah",
+      "he": "נֹחַ",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 5:28–9:29; Мф 24:37; Евр 11:7",
+    "firstRef": {
+      "osis": "Gen.5.29",
+      "ru": "Быт 5:29"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "antediluvian",
+    "significance": "Праведник. Ковчег. Спас человечество. Предок Христа.",
+    "chronology": {
+      "mt": {
+        "ageAtSon": 500,
+        "lifespan": 950,
+        "birthAM": 1056,
+        "deathAM": 2006
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "noah",
+      "tipnrKey": "Noah@Gen.5.29",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "shem--gen-5-32",
+    "key": "Shem@Gen.5.32",
+    "v1Id": "shem",
+    "names": {
+      "ru": "Сим",
+      "en": "Shem",
+      "he": "שֵׁם",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 5:32, 10:21–31, 11:10–26",
+    "firstRef": {
+      "osis": "Gen.5.32",
+      "ru": "Быт 5:32"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Через Сима — Авраам и мессианская линия.",
+    "chronology": {
+      "mt": {
+        "ageAtSon": 100,
+        "lifespan": 600,
+        "birthAM": 1558,
+        "deathAM": 2158
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "shem",
+      "tipnrKey": "Shem@Gen.5.32",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "ham--gen-5-32",
+    "key": "Ham@Gen.5.32",
+    "v1Id": "ham",
+    "names": {
+      "ru": "Хам",
+      "en": "Ham",
+      "he": "חָם",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 5:32, 9:22–10:20",
+    "firstRef": {
+      "osis": "Gen.5.32",
+      "ru": "Быт 5:32"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Проклятие Ханаана. Предки египтян, ханаанеян, эфиопов.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "ham",
+      "tipnrKey": "Ham@Gen.5.32",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "japheth--gen-5-32",
+    "key": "Japheth@Gen.5.32",
+    "v1Id": "japheth",
+    "names": {
+      "ru": "Иафет",
+      "en": "Japheth",
+      "he": "יֶפֶת",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 5:32, 10:1–5",
+    "firstRef": {
+      "osis": "Gen.5.32",
+      "ru": "Быт 5:32"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "«Да распространит Бог Иафета». Предки индоевропейцев.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "japheth",
+      "tipnrKey": "Japheth@Gen.5.32",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "arpachshad--gen-10-22",
+    "key": "Arpachshad@Gen.10.22",
+    "v1Id": "arphaxad",
+    "names": {
+      "ru": "Арфаксад",
+      "en": "Arpachshad",
+      "he": "אַרְפַּכְשַׁד",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 10:22, 11:10–13",
+    "firstRef": {
+      "osis": "Gen.10.22",
+      "ru": "Быт 10:22"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Родился через 2 года после Потопа.",
+    "chronology": {
+      "mt": {
+        "ageAtSon": 35,
+        "lifespan": 438,
+        "birthAM": 1658,
+        "deathAM": 2096
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "arphaxad",
+      "tipnrKey": "Arpachshad@Gen.10.22",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "cainan--luk-3-36",
+    "key": "Cainan@Luk.3.36",
+    "v1Id": "cainan_2",
+    "names": {
+      "ru": "Каинан (Лк 3:36)",
+      "en": "Cainan",
+      "he": "Καιναν",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:36 (LXX); Быт 10:24, 11:12 (MT — отсутствует)",
+    "firstRef": {
+      "osis": "Luk.3.36",
+      "ru": "Лк 3:36"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Спорный узел: присутствует в Лк 3:36 и поздних LXX, но отсутствует в MT, ранних LXX, Иосий Флавий, Юлии Африкан. Два решения: (A) копистская ошибка (Sarfati); (B) намеренно опущен в Бытии (Brigden).",
+    "chronology": {
+      "lxx": {
+        "ageAtSon": 130,
+        "lifespan": 460
+      }
+    },
+    "disputed": {
+      "level": "textual",
+      "positions": [
+        {
+          "view": "Копистская ошибка",
+          "proponents": "Sarfati, Pierce, AiG"
+        },
+        {
+          "view": "Подлинный, опущен в Бытии",
+          "proponents": "Brigden, TBS"
+        }
+      ]
+    },
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "cainan_2",
+      "tipnrKey": "Cainan@Luk.3.36",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "shelah--gen-10-24",
+    "key": "Shelah@Gen.10.24",
+    "v1Id": "shelah",
+    "names": {
+      "ru": "Сала",
+      "en": "Shelah",
+      "he": "שֶׁלַח",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 10:24, 11:12–15",
+    "firstRef": {
+      "osis": "Gen.10.24",
+      "ru": "Быт 10:24"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Предок Авраама.",
+    "chronology": {
+      "mt": {
+        "ageAtSon": 30,
+        "lifespan": 433,
+        "birthAM": 1693,
+        "deathAM": 2126
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "shelah",
+      "tipnrKey": "Shelah@Gen.10.24",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "eber--gen-10-21",
+    "key": "Eber@Gen.10.21",
+    "v1Id": "eber",
+    "names": {
+      "ru": "Евер",
+      "en": "Eber",
+      "he": "עֵבֶר",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 10:21, 11:14–17",
+    "firstRef": {
+      "osis": "Gen.10.21",
+      "ru": "Быт 10:21"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "От его имени — «еврей».",
+    "chronology": {
+      "mt": {
+        "ageAtSon": 34,
+        "lifespan": 464,
+        "birthAM": 1723,
+        "deathAM": 2187
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "eber",
+      "tipnrKey": "Eber@Gen.10.21",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "peleg--gen-10-25",
+    "key": "Peleg@Gen.10.25",
+    "v1Id": "peleg",
+    "names": {
+      "ru": "Фалек",
+      "en": "Peleg",
+      "he": "פֶּלֶג",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 10:25, 11:16–19",
+    "firstRef": {
+      "osis": "Gen.10.25",
+      "ru": "Быт 10:25"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "«Во дни его разделена земля» — Вавилонское столпотворение.",
+    "chronology": {
+      "mt": {
+        "ageAtSon": 30,
+        "lifespan": 239,
+        "birthAM": 1757,
+        "deathAM": 1996
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "peleg",
+      "tipnrKey": "Peleg@Gen.10.25",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "reu--gen-11-18",
+    "key": "Reu@Gen.11.18",
+    "v1Id": "reu",
+    "names": {
+      "ru": "Рагав",
+      "en": "Reu",
+      "he": "רְעוּ",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 11:18–21",
+    "firstRef": {
+      "osis": "Gen.11.18",
+      "ru": "Быт 11:18"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": null,
+    "chronology": {
+      "mt": {
+        "ageAtSon": 32,
+        "lifespan": 239,
+        "birthAM": 1787,
+        "deathAM": 2026
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "reu",
+      "tipnrKey": "Reu@Gen.11.18",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "serug--gen-11-20",
+    "key": "Serug@Gen.11.20",
+    "v1Id": "serug",
+    "names": {
+      "ru": "Серуг",
+      "en": "Serug",
+      "he": "שְׂרוּג",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 11:20–23",
+    "firstRef": {
+      "osis": "Gen.11.20",
+      "ru": "Быт 11:20"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": null,
+    "chronology": {
+      "mt": {
+        "ageAtSon": 30,
+        "lifespan": 230,
+        "birthAM": 1819,
+        "deathAM": 2049
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "serug",
+      "tipnrKey": "Serug@Gen.11.20",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "nahor--gen-11-22",
+    "key": "Nahor@Gen.11.22",
+    "v1Id": "nahor_serug",
+    "names": {
+      "ru": "Нахор",
+      "en": "Nahor",
+      "he": "נָחוֹר",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 11:22–25",
+    "firstRef": {
+      "osis": "Gen.11.22",
+      "ru": "Быт 11:22"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": null,
+    "chronology": {
+      "mt": {
+        "ageAtSon": 29,
+        "lifespan": 148,
+        "birthAM": 1849,
+        "deathAM": 1997
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "nahor_serug",
+      "tipnrKey": "Nahor@Gen.11.22",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "terah--gen-11-24",
+    "key": "Terah@Gen.11.24",
+    "v1Id": "terah",
+    "names": {
+      "ru": "Фарра",
+      "en": "Terah",
+      "he": "תֶּרַח",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 11:24–32; Нав 24:2",
+    "firstRef": {
+      "osis": "Gen.11.24",
+      "ru": "Быт 11:24"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Отец Авраама. Вышел из Ура в Харран.",
+    "chronology": {
+      "mt": {
+        "ageAtSon": 70,
+        "lifespan": 205,
+        "birthAM": 1878,
+        "deathAM": 2083
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "terah",
+      "tipnrKey": "Terah@Gen.11.24",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "abraham--gen-11-26",
+    "key": "Abraham@Gen.11.26",
+    "v1Id": "abram",
+    "names": {
+      "ru": "Авраам",
+      "en": "Abraham",
+      "he": "אַבְרָהָם",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 11:26–25:11; Мф 1:2; Рим 4; Гал 3; Евр 11:8",
+    "firstRef": {
+      "osis": "Gen.11.26",
+      "ru": "Быт 11:26"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "Отец верующих. Завет обетования. «В тебе благословятся все племена земные».",
+    "chronology": {
+      "mt": {
+        "ageAtSon": 100,
+        "lifespan": 175,
+        "birthAM": 1948,
+        "deathAM": 2123
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "abram",
+      "tipnrKey": "Abraham@Gen.11.26",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "sarah--gen-11-29",
+    "key": "Sarah@Gen.11.29",
+    "v1Id": "sarah",
+    "names": {
+      "ru": "Сарра",
+      "en": "Sarah",
+      "he": "שָׂרָה",
+      "greek": null
+    },
+    "gender": "f",
+    "ref": "Быт 11:29–23:2; Евр 11:11",
+    "firstRef": {
+      "osis": "Gen.11.29",
+      "ru": "Быт 11:29"
+    },
+    "lineage": "messianic",
+    "role": "matriarch",
+    "era": "patriarchs",
+    "significance": "Мать Исаака в старости.",
+    "chronology": {
+      "mt": {
+        "lifespan": 127,
+        "birthAM": 1958,
+        "deathAM": 2085
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "sarah",
+      "tipnrKey": "Sarah@Gen.11.29",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "isaac--gen-17-19",
+    "key": "Isaac@Gen.17.19",
+    "v1Id": "isaac",
+    "names": {
+      "ru": "Исаак",
+      "en": "Isaac",
+      "he": "יִצְחָק",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 21:1–35:29; Мф 1:2; Евр 11:9",
+    "firstRef": {
+      "osis": "Gen.17.19",
+      "ru": "Быт 17:19"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "Обещанный сын. Жертва на Мории — прообраз Христа.",
+    "chronology": {
+      "mt": {
+        "ageAtSon": 60,
+        "lifespan": 180,
+        "birthAM": 2048,
+        "deathAM": 2228
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "isaac",
+      "tipnrKey": "Isaac@Gen.17.19",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "israel--gen-25-26",
+    "key": "Israel@Gen.25.26",
+    "v1Id": "jacob",
+    "names": {
+      "ru": "Иаков",
+      "en": "Israel",
+      "he": "יַעֲקֹב",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 25:26–49:33; Мф 1:2; Лк 3:34",
+    "firstRef": {
+      "osis": "Gen.25.26",
+      "ru": "Быт 25:26"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "Израиль. 12 колен от него. Предок Христа через Иуду.",
+    "chronology": {
+      "mt": {
+        "lifespan": 147,
+        "birthAM": 2108,
+        "deathAM": 2255
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "jacob",
+      "tipnrKey": "Israel@Gen.25.26",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "judah--gen-29-35",
+    "key": "Judah@Gen.29.35",
+    "v1Id": "judah",
+    "names": {
+      "ru": "Иуда",
+      "en": "Judah",
+      "he": "יְהוּדָה",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 29:35, 38:1–30, 49:8–12; Мф 1:2–3; Откр 5:5",
+    "firstRef": {
+      "osis": "Gen.29.35",
+      "ru": "Быт 29:35"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "Царственное колено. «Не отойдёт скипетр от Иуды» (Быт 49:10).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "judah",
+      "tipnrKey": "Judah@Gen.29.35",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "perez--gen-38-29",
+    "key": "Perez@Gen.38.29",
+    "v1Id": "perez",
+    "names": {
+      "ru": "Фарес",
+      "en": "Perez",
+      "he": "פֶּרֶץ",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 38:29; Руфь 4:12,18–22; Мф 1:3; Лк 3:33",
+    "firstRef": {
+      "osis": "Gen.38.29",
+      "ru": "Быт 38:29"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "В мессианской линии (Руфь 4, Мф 1, Лк 3).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "perez",
+      "tipnrKey": "Perez@Gen.38.29",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "david--rut-4-17",
+    "key": "David@Rut.4.17",
+    "v1Id": "david",
+    "names": {
+      "ru": "Давид",
+      "en": "David",
+      "he": "דָּוִד",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Руфь 4:17–22; 2Цар 7; Мф 1:6; Лк 3:31; Деян 13:22",
+    "firstRef": {
+      "osis": "Rut.4.17",
+      "ru": "Руф 4:17"
+    },
+    "lineage": "messianic",
+    "role": "king",
+    "era": "kings",
+    "significance": "Царь. Завет о вечном царстве. Предок Христа по обеим линиям (Соломон — Мф; Нафан — Лк).",
+    "chronology": {
+      "mt": {
+        "lifespan": 70,
+        "birthAM": 2920,
+        "deathAM": 2990
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "david",
+      "tipnrKey": "David@Rut.4.17",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "solomon--2sa-5-14",
+    "key": "Solomon@2Sa.5.14",
+    "v1Id": "solomon",
+    "names": {
+      "ru": "Соломон",
+      "en": "Solomon",
+      "he": "שְׁלֹמֹה",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "3Цар 1–11; Мф 1:6–7",
+    "firstRef": {
+      "osis": "2Sa.5.14",
+      "ru": "2Цар 5:14"
+    },
+    "lineage": "messianic-matthew",
+    "role": "king",
+    "era": "kings",
+    "significance": "Построил Храм. Матфеева линия (царственная).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "solomon",
+      "tipnrKey": "Solomon@2Sa.5.14",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "nathan--2sa-5-14",
+    "key": "Nathan@2Sa.5.14",
+    "v1Id": "nathan_prince",
+    "names": {
+      "ru": "Нафан",
+      "en": "Nathan",
+      "he": "נָתָן",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "2Цар 5:14; Лк 3:31",
+    "firstRef": {
+      "osis": "2Sa.5.14",
+      "ru": "2Цар 5:14"
+    },
+    "lineage": "messianic-luke",
+    "role": "prince",
+    "era": "kings",
+    "significance": "Сын Давида. Луканова кровная линия к Христу (через Марию).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "nathan_prince",
+      "tipnrKey": "Nathan@2Sa.5.14",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "jehoiachin--2ki-24-6",
+    "key": "Jehoiachin@2Ki.24.6",
+    "v1Id": "jeconiah",
+    "names": {
+      "ru": "Иехония",
+      "en": "Jehoiachin",
+      "he": "יְכָנְיָה",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "4Цар 24:8–17; 1Пар 3:16; Мф 1:11–12; Иер 22:24–30; Агг 2:23",
+    "firstRef": {
+      "osis": "2Ki.24.6",
+      "ru": "4Цар 24:6"
+    },
+    "lineage": "messianic-matthew",
+    "role": "king",
+    "era": "exile",
+    "significance": "Проклят Иеремией: «лишённым детей» (Иер 22:30). Проклятие снято через Зоровавеля (Агг 2:23).",
+    "chronology": null,
+    "disputed": {
+      "level": "theological",
+      "positions": [
+        {
+          "view": "Проклятие снято в Зоровавеле",
+          "proponents": "Консервативные толковники"
+        },
+        {
+          "view": "Лк ведёт через Нафана, минуя проклятие",
+          "proponents": "Традиционная апологетика"
+        }
+      ]
+    },
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "jeconiah",
+      "tipnrKey": "Jehoiachin@2Ki.24.6",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "shealtiel--1ch-3-17",
+    "key": "Shealtiel@1Ch.3.17",
+    "v1Id": "shealtiel",
+    "names": {
+      "ru": "Салафиил",
+      "en": "Shealtiel",
+      "he": "שְׁאַלְתִּיאֵל",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "1Пар 3:17; Езд 3:2; Мф 1:12; Лк 3:27",
+    "firstRef": {
+      "osis": "1Ch.3.17",
+      "ru": "1Пар 3:17"
+    },
+    "lineage": "messianic",
+    "role": "prince",
+    "era": "exile",
+    "significance": "Точка схождения Мф/Лк.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "shealtiel",
+      "tipnrKey": "Shealtiel@1Ch.3.17",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "zerubbabel--1ch-3-19",
+    "key": "Zerubbabel@1Ch.3.19",
+    "v1Id": "zerubbabel",
+    "names": {
+      "ru": "Зоровавель",
+      "en": "Zerubbabel",
+      "he": "זְרֻבָּבֶל",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Езд 3:2; Агг 2:23; Зах 4; Мф 1:13; Лк 3:27",
+    "firstRef": {
+      "osis": "1Ch.3.19",
+      "ru": "1Пар 3:19"
+    },
+    "lineage": "messianic",
+    "role": "governor",
+    "era": "exile",
+    "significance": "Восстановитель Храма. «Печатный перстень» (Агг 2:23) — снятие проклятия Иехонии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "zerubbabel",
+      "tipnrKey": "Zerubbabel@1Ch.3.19",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "mary--mat-1-16",
+    "key": "Mary@Mat.1.16",
+    "v1Id": "mary",
+    "names": {
+      "ru": "Мария",
+      "en": "Mary",
+      "he": "מִרְיָם",
+      "greek": null
+    },
+    "gender": "f",
+    "ref": "Мф 1:16,18–25; Лк 1:26–56",
+    "firstRef": {
+      "osis": "Mat.1.16",
+      "ru": "Мф 1:16"
+    },
+    "lineage": "messianic-luke",
+    "role": "matriarch",
+    "era": "incarnation",
+    "significance": "Мать Иисуса; девственное рождение (Мф 1:18–25; Лк 1:26–35). Связь с Илием показана согласно гармонизации родословия Луки через Марию; в Лк 3:23 имя Марии не названо.",
+    "chronology": null,
+    "disputed": {
+      "level": "genealogical",
+      "positions": [
+        {
+          "view": "В гармонизации через Марию Илий рассматривается как её отец, а Иосиф — как его зять.",
+          "proponents": "Гармонизация, используемая в этой карте",
+          "evidence": "Лк 3:23 называет Иосифа и Илия; родство Илия и Марии в стихе прямо не указано."
+        },
+        {
+          "view": "Другая гармонизация связывает две родословные с Иосифом, различая юридическое и биологическое родство.",
+          "proponents": "Альтернативное объяснение",
+          "evidence": "Сопоставление Мф 1:16 и Лк 3:23."
+        }
+      ]
+    },
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "mary",
+      "tipnrKey": "Mary@Mat.1.16",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "joseph--mat-1-16",
+    "key": "Joseph@Mat.1.16",
+    "v1Id": "joseph_nt",
+    "names": {
+      "ru": "Иосиф (Обручник)",
+      "en": "Joseph",
+      "he": "יוֹסֵף",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Мф 1:16; Лк 3:23",
+    "firstRef": {
+      "osis": "Mat.1.16",
+      "ru": "Мф 1:16"
+    },
+    "lineage": "messianic-matthew",
+    "role": "foster-father",
+    "era": "incarnation",
+    "significance": "Приёмный отец Иисуса. Юридическая линия через Соломона (Мф).",
+    "chronology": null,
+    "disputed": {
+      "level": "genealogical",
+      "positions": [
+        {
+          "view": "Лк — линия Иосифа через Илий (Levirat)",
+          "proponents": "Традиционное"
+        },
+        {
+          "view": "Лк — кровная линия Марии через отца Илий",
+          "proponents": "Hill, Bauckham"
+        }
+      ]
+    },
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "joseph_nt",
+      "tipnrKey": "Joseph@Mat.1.16",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "jesus--isa-7-14",
+    "key": "Jesus@Isa.7.14",
+    "v1Id": "jesus",
+    "names": {
+      "ru": "Иисус Христос",
+      "en": "Jesus",
+      "he": "יֵשׁוּעַ הַמָּשִׁיחַ",
+      "greek": "Ἰησοῦς Χριστός"
+    },
+    "gender": "m",
+    "ref": "Мф 1:1–25; Лк 1:26–3:38; Гал 4:4",
+    "firstRef": {
+      "osis": "Isa.7.14",
+      "ru": "Ис 7:14"
+    },
+    "lineage": "messianic-fulfillment",
+    "role": "messiah",
+    "era": "incarnation",
+    "significance": "Сын Божий, воплотившийся. Исполнение ВСЕХ обетований: «семя жены» (Быт 3:15), «семя Авраама» (Быт 12), «из колена Иудина» (Быт 49:10), «Сын Давидов» (2Цар 7). Центр и цель всей родословной.",
+    "chronology": {
+      "mt": {
+        "birthAM": 4000
+      }
+    },
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "jesus",
+      "tipnrKey": "Jesus@Isa.7.14",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "cush--gen-10-6",
+    "key": "Cush@Gen.10.6",
+    "v1Id": "cush",
+    "names": {
+      "ru": "Хус",
+      "en": "Cush",
+      "he": "כּוּשׁ",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 10:6–12",
+    "firstRef": {
+      "osis": "Gen.10.6",
+      "ru": "Быт 10:6"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Предок эфиопов (Куша). Отец Нимрода.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "cush",
+      "tipnrKey": "Cush@Gen.10.6",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "egypt--gen-10-6",
+    "key": "Egypt@Gen.10.6",
+    "v1Id": "mizraim",
+    "names": {
+      "ru": "Мицраим",
+      "en": "Egypt",
+      "he": "מִצְרַיִם",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 10:13–14",
+    "firstRef": {
+      "osis": "Gen.10.6",
+      "ru": "Быт 10:6"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Предок египтян (Мицраим = Египет).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "mizraim",
+      "tipnrKey": "Egypt@Gen.10.6",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "put--gen-10-6",
+    "key": "Put@Gen.10.6",
+    "v1Id": "put",
+    "names": {
+      "ru": "Фув",
+      "en": "Put",
+      "he": "פוּט",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 10:6",
+    "firstRef": {
+      "osis": "Gen.10.6",
+      "ru": "Быт 10:6"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Предок ливийцев.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "put",
+      "tipnrKey": "Put@Gen.10.6",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "canaan--gen-9-18",
+    "key": "Canaan@Gen.9.18",
+    "v1Id": "canaan",
+    "names": {
+      "ru": "Ханаан",
+      "en": "Canaan",
+      "he": "כְּנַעַן",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 10:15–18",
+    "firstRef": {
+      "osis": "Gen.9.18",
+      "ru": "Быт 9:18"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Предок ханаанеян. Проклят Ной (Быт 9:25).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "canaan",
+      "tipnrKey": "Canaan@Gen.9.18",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "nimrod--gen-10-8",
+    "key": "Nimrod@Gen.10.8",
+    "v1Id": "nimrod",
+    "names": {
+      "ru": "Нимрод",
+      "en": "Nimrod",
+      "he": "נִמְרֹד",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 10:8–12",
+    "firstRef": {
+      "osis": "Gen.10.8",
+      "ru": "Быт 10:8"
+    },
+    "lineage": "cainite",
+    "role": "person",
+    "era": "postdiluvian",
+    "significance": "«Сильный зверолов пред Господом». Основатель Вавилона и Ниневии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "nimrod",
+      "tipnrKey": "Nimrod@Gen.10.8",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "gomer--gen-10-2",
+    "key": "Gomer@Gen.10.2",
+    "v1Id": "gomer",
+    "names": {
+      "ru": "Гомер",
+      "en": "Gomer",
+      "he": "גֹּמֶר",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 10:2–3",
+    "firstRef": {
+      "osis": "Gen.10.2",
+      "ru": "Быт 10:2"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Предок киммерийцев.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "gomer",
+      "tipnrKey": "Gomer@Gen.10.2",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "magog--gen-10-2",
+    "key": "Magog@Gen.10.2",
+    "v1Id": "magog",
+    "names": {
+      "ru": "Магог",
+      "en": "Magog",
+      "he": "מָגוֹג",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 10:2",
+    "firstRef": {
+      "osis": "Gen.10.2",
+      "ru": "Быт 10:2"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Предок скифов.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "magog",
+      "tipnrKey": "Magog@Gen.10.2",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "madai--gen-10-2",
+    "key": "Madai@Gen.10.2",
+    "v1Id": "madai",
+    "names": {
+      "ru": "Мадай",
+      "en": "Madai",
+      "he": "מָדַי",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 10:2",
+    "firstRef": {
+      "osis": "Gen.10.2",
+      "ru": "Быт 10:2"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Предок мидян.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "madai",
+      "tipnrKey": "Madai@Gen.10.2",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "javan--gen-10-2",
+    "key": "Javan@Gen.10.2",
+    "v1Id": "javan",
+    "names": {
+      "ru": "Иаван",
+      "en": "Javan",
+      "he": "יָוָן",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 10:4",
+    "firstRef": {
+      "osis": "Gen.10.2",
+      "ru": "Быт 10:2"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Предок греков (Ионийцев).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "javan",
+      "tipnrKey": "Javan@Gen.10.2",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "tubal--gen-10-2",
+    "key": "Tubal@Gen.10.2",
+    "v1Id": "tubal_jp",
+    "names": {
+      "ru": "Фувал",
+      "en": "Tubal",
+      "he": "תֻּבַל",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 10:2",
+    "firstRef": {
+      "osis": "Gen.10.2",
+      "ru": "Быт 10:2"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Предок тибаренов.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "tubal_jp",
+      "tipnrKey": "Tubal@Gen.10.2",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "meshech--gen-10-2",
+    "key": "Meshech@Gen.10.2",
+    "v1Id": "meshech",
+    "names": {
+      "ru": "Мешех",
+      "en": "Meshech",
+      "he": "מֶשֶׁךְ",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 10:2",
+    "firstRef": {
+      "osis": "Gen.10.2",
+      "ru": "Быт 10:2"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Предок мосхов.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "meshech",
+      "tipnrKey": "Meshech@Gen.10.2",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "tiras--gen-10-2",
+    "key": "Tiras@Gen.10.2",
+    "v1Id": "tiras",
+    "names": {
+      "ru": "Фирас",
+      "en": "Tiras",
+      "he": "תִּירָס",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 10:2",
+    "firstRef": {
+      "osis": "Gen.10.2",
+      "ru": "Быт 10:2"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Предок фракийцев.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "tiras",
+      "tipnrKey": "Tiras@Gen.10.2",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "elam--gen-10-22",
+    "key": "Elam@Gen.10.22",
+    "v1Id": "elam",
+    "names": {
+      "ru": "Елам",
+      "en": "Elam",
+      "he": "עֵילָם",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 10:22",
+    "firstRef": {
+      "osis": "Gen.10.22",
+      "ru": "Быт 10:22"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Предок эламитян.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "elam",
+      "tipnrKey": "Elam@Gen.10.22",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "asshur--gen-10-22",
+    "key": "Asshur@Gen.10.22",
+    "v1Id": "asshur",
+    "names": {
+      "ru": "Ассур",
+      "en": "Asshur",
+      "he": "אַשּׁוּר",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 10:22",
+    "firstRef": {
+      "osis": "Gen.10.22",
+      "ru": "Быт 10:22"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Предок ассирийцев. Основатель Ниневии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "asshur",
+      "tipnrKey": "Asshur@Gen.10.22",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "lud--gen-10-22",
+    "key": "Lud@Gen.10.22",
+    "v1Id": "lud_shem",
+    "names": {
+      "ru": "Луд",
+      "en": "Lud",
+      "he": "לוּד",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 10:22",
+    "firstRef": {
+      "osis": "Gen.10.22",
+      "ru": "Быт 10:22"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Предок лидийцев.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "lud_shem",
+      "tipnrKey": "Lud@Gen.10.22",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "aram--gen-10-22",
+    "key": "Aram@Gen.10.22",
+    "v1Id": "aram",
+    "names": {
+      "ru": "Арам",
+      "en": "Aram",
+      "he": "אֲרָם",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 10:23",
+    "firstRef": {
+      "osis": "Gen.10.22",
+      "ru": "Быт 10:22"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "postdiluvian",
+    "significance": "Предок арамеев (сирийцев).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "aram",
+      "tipnrKey": "Aram@Gen.10.22",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "reuben--gen-29-32",
+    "key": "Reuben@Gen.29.32",
+    "v1Id": "reuben",
+    "names": {
+      "ru": "Рувим",
+      "en": "Reuben",
+      "he": "רְאוּבֵן",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 29-30, 49",
+    "firstRef": {
+      "osis": "Gen.29.32",
+      "ru": "Быт 29:32"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "Первородный. Осквернил ложесна отца (Быт 35:22). Лишён первородства.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "reuben",
+      "tipnrKey": "Reuben@Gen.29.32",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "simeon--gen-29-33",
+    "key": "Simeon@Gen.29.33",
+    "v1Id": "simeon",
+    "names": {
+      "ru": "Симеон",
+      "en": "Simeon",
+      "he": "שִׁמְעוֹן",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 29-30, 49",
+    "firstRef": {
+      "osis": "Gen.29.33",
+      "ru": "Быт 29:33"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "Жестокий (с Левием — месть Сихему). Рассеян в Иакове (Быт 49:5-7).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "simeon",
+      "tipnrKey": "Simeon@Gen.29.33",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "levi--gen-29-34",
+    "key": "Levi@Gen.29.34",
+    "v1Id": "levi",
+    "names": {
+      "ru": "Левий",
+      "en": "Levi",
+      "he": "לֵוִי",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 29-30, 49",
+    "firstRef": {
+      "osis": "Gen.29.34",
+      "ru": "Быт 29:34"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "Священство. Колено Левия (Аарон, Моисей). Рассеян, но в благословении (Быт 49:5-7).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "levi",
+      "tipnrKey": "Levi@Gen.29.34",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "issachar--gen-30-18",
+    "key": "Issachar@Gen.30.18",
+    "v1Id": "issachar",
+    "names": {
+      "ru": "Иссахар",
+      "en": "Issachar",
+      "he": "יִשָּׂשׁכָר",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 29-30, 49",
+    "firstRef": {
+      "osis": "Gen.30.18",
+      "ru": "Быт 30:18"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "«Крепкий осёл». Осёл, лежащий между пределами (Быт 49:14-15).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "issachar",
+      "tipnrKey": "Issachar@Gen.30.18",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "zebulun--gen-30-20",
+    "key": "Zebulun@Gen.30.20",
+    "v1Id": "zebulun",
+    "names": {
+      "ru": "Завулон",
+      "en": "Zebulun",
+      "he": "זְבוּלֻן",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 29-30, 49",
+    "firstRef": {
+      "osis": "Gen.30.20",
+      "ru": "Быт 30:20"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "«Будет жить у берега моря». Пристань для кораблей (Быт 49:13).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "zebulun",
+      "tipnrKey": "Zebulun@Gen.30.20",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "dan--gen-30-6",
+    "key": "Dan@Gen.30.6",
+    "v1Id": "dan",
+    "names": {
+      "ru": "Дан",
+      "en": "Dan",
+      "he": "דָּן",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 29-30, 49",
+    "firstRef": {
+      "osis": "Gen.30.6",
+      "ru": "Быт 30:6"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "«Будет судить Израиль». Змей на дороге (Быт 49:16-17).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "dan",
+      "tipnrKey": "Dan@Gen.30.6",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "naphtali--gen-30-8",
+    "key": "Naphtali@Gen.30.8",
+    "v1Id": "naphtali",
+    "names": {
+      "ru": "Неффалим",
+      "en": "Naphtali",
+      "he": "נַפְתָּלִי",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 29-30, 49",
+    "firstRef": {
+      "osis": "Gen.30.8",
+      "ru": "Быт 30:8"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": {
+      "ru": "Неффалим",
+      "he": "נַפְתָּלִי"
+    },
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "naphtali",
+      "tipnrKey": "Naphtali@Gen.30.8",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "gad--gen-30-11",
+    "key": "Gad@Gen.30.11",
+    "v1Id": "gad",
+    "names": {
+      "ru": "Гад",
+      "en": "Gad",
+      "he": "גָּד",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 29-30, 49",
+    "firstRef": {
+      "osis": "Gen.30.11",
+      "ru": "Быт 30:11"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "«Будет тесним разбойниками, но сам оттеснит их» (Быт 49:19).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "gad",
+      "tipnrKey": "Gad@Gen.30.11",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "asher--gen-30-13",
+    "key": "Asher@Gen.30.13",
+    "v1Id": "asher",
+    "names": {
+      "ru": "Асир",
+      "en": "Asher",
+      "he": "אָשֵׁר",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 29-30, 49",
+    "firstRef": {
+      "osis": "Gen.30.13",
+      "ru": "Быт 30:13"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "«Хлеб его тук» (Быт 49:20). Урожай и изобилие.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "asher",
+      "tipnrKey": "Asher@Gen.30.13",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "joseph--gen-30-24",
+    "key": "Joseph@Gen.30.24",
+    "v1Id": "joseph",
+    "names": {
+      "ru": "Иосиф",
+      "en": "Joseph",
+      "he": "יוֹסֵף",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 29-30, 49",
+    "firstRef": {
+      "osis": "Gen.30.24",
+      "ru": "Быт 30:24"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "Плодоносная ветвь. Спаситель семьи в Египте. Благословение первородства (1Пар 5:1-2).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "joseph",
+      "tipnrKey": "Joseph@Gen.30.24",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "benjamin--gen-35-18",
+    "key": "Benjamin@Gen.35.18",
+    "v1Id": "benjamin",
+    "names": {
+      "ru": "Вениамин",
+      "en": "Benjamin",
+      "he": "בִּנְיָמִין",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 29-30, 49",
+    "firstRef": {
+      "osis": "Gen.35.18",
+      "ru": "Быт 35:18"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "«Волк хищный». Меньший, но любимый. Саул, ап. Павел — из него (Быт 49:27).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "benjamin",
+      "tipnrKey": "Benjamin@Gen.35.18",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "kohath--gen-46-11",
+    "key": "Kohath@Gen.46.11",
+    "v1Id": "kohath",
+    "names": {
+      "ru": "Кааф",
+      "en": "Kohath",
+      "he": "קְהָת",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Исх 6:18; Числ 3:17",
+    "firstRef": {
+      "osis": "Gen.46.11",
+      "ru": "Быт 46:11"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "Сын Левия. Священство. Предок Аарона и Моисея.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "kohath",
+      "tipnrKey": "Kohath@Gen.46.11",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "amram--exo-6-18",
+    "key": "Amram@Exo.6.18",
+    "v1Id": "amram",
+    "names": {
+      "ru": "Амрам",
+      "en": "Amram",
+      "he": "עַמְרָם",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Исх 6:20; Числ 26:59",
+    "firstRef": {
+      "osis": "Exo.6.18",
+      "ru": "Исх 6:18"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "Отец Моисея и Аарона. Женился на Иохаведе (тётке своей).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "amram",
+      "tipnrKey": "Amram@Exo.6.18",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "jochebed--exo-6-20",
+    "key": "Jochebed@Exo.6.20",
+    "v1Id": "jochebed",
+    "names": {
+      "ru": "Иохаведа",
+      "en": "Jochebed",
+      "he": "יוֹכֶבֶד",
+      "greek": null
+    },
+    "gender": "f",
+    "ref": "Числ 26:59",
+    "firstRef": {
+      "osis": "Exo.6.20",
+      "ru": "Исх 6:20"
+    },
+    "lineage": "neutral",
+    "role": "matriarch",
+    "era": "patriarchs",
+    "significance": "Мать Моисея, Аарона и Мариам. Дочь Левия.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "jochebed",
+      "tipnrKey": "Jochebed@Exo.6.20",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "aaron--exo-4-14",
+    "key": "Aaron@Exo.4.14",
+    "v1Id": "aaron",
+    "names": {
+      "ru": "Аарон",
+      "en": "Aaron",
+      "he": "אַהֲרֹן",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Исх 6:20; 28:1",
+    "firstRef": {
+      "osis": "Exo.4.14",
+      "ru": "Исх 4:14"
+    },
+    "lineage": "neutral",
+    "role": "priest",
+    "era": "patriarchs",
+    "significance": "Первый первосвященник. Брат Моисея. Предок священства.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "aaron",
+      "tipnrKey": "Aaron@Exo.4.14",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "moses--exo-2-10",
+    "key": "Moses@Exo.2.10",
+    "v1Id": "moses",
+    "names": {
+      "ru": "Моисей",
+      "en": "Moses",
+      "he": "מֹשֶׁה",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Исх 2–Втор 34; Евр 11:23-29",
+    "firstRef": {
+      "osis": "Exo.2.10",
+      "ru": "Исх 2:10"
+    },
+    "lineage": "neutral",
+    "role": "prophet",
+    "era": "patriarchs",
+    "significance": "Законодатель. Вывел Израиль из Египта. Пророк.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "moses",
+      "tipnrKey": "Moses@Exo.2.10",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "miriam--exo-15-20",
+    "key": "Miriam@Exo.15.20",
+    "v1Id": "miriam",
+    "names": {
+      "ru": "Мариам",
+      "en": "Miriam",
+      "he": "מִרְיָם",
+      "greek": null
+    },
+    "gender": "f",
+    "ref": "Исх 15:20",
+    "firstRef": {
+      "osis": "Exo.15.20",
+      "ru": "Исх 15:20"
+    },
+    "lineage": "neutral",
+    "role": "prophet",
+    "era": "patriarchs",
+    "significance": "Сестра Моисея. Пророчица.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "miriam",
+      "tipnrKey": "Miriam@Exo.15.20",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "eleazar--exo-6-23",
+    "key": "Eleazar@Exo.6.23",
+    "v1Id": "eleazar",
+    "names": {
+      "ru": "Елеазар",
+      "en": "Eleazar",
+      "he": "אֶלְעָזָר",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Исх 6:25; Числ 20:25-28",
+    "firstRef": {
+      "osis": "Exo.6.23",
+      "ru": "Исх 6:23"
+    },
+    "lineage": "neutral",
+    "role": "priest",
+    "era": "patriarchs",
+    "significance": "Преемник Аарона как первосвященник.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "eleazar",
+      "tipnrKey": "Eleazar@Exo.6.23",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "phinehas--exo-6-25",
+    "key": "Phinehas@Exo.6.25",
+    "v1Id": "phinehas",
+    "names": {
+      "ru": "Финеес",
+      "en": "Phinehas",
+      "he": "פִּינְחָס",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Числ 25:7-13; Пс 106:30",
+    "firstRef": {
+      "osis": "Exo.6.25",
+      "ru": "Исх 6:25"
+    },
+    "lineage": "neutral",
+    "role": "priest",
+    "era": "patriarchs",
+    "significance": "«Завет вечного священства» за ревность.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "phinehas",
+      "tipnrKey": "Phinehas@Exo.6.25",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "hezron--gen-46-12",
+    "key": "Hezron@Gen.46.12",
+    "v1Id": "hezron",
+    "names": {
+      "ru": "Есром",
+      "en": "Hezron",
+      "he": "חֶצְרוֹן",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 46:12; Руфь 4:18-19; 1Пар 2:5,9",
+    "firstRef": {
+      "osis": "Gen.46.12",
+      "ru": "Быт 46:12"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "В мессианской линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "hezron",
+      "tipnrKey": "Hezron@Gen.46.12",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "ram--rut-4-19",
+    "key": "Ram@Rut.4.19",
+    "v1Id": "ram",
+    "names": {
+      "ru": "Арам",
+      "en": "Ram",
+      "he": "רָם",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Руфь 4:19; 1Пар 2:9; Мф 1:4; Лк 3:33",
+    "firstRef": {
+      "osis": "Rut.4.19",
+      "ru": "Руф 4:19"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "В мессианской линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "ram",
+      "tipnrKey": "Ram@Rut.4.19",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "amminadab--exo-6-23",
+    "key": "Amminadab@Exo.6.23",
+    "v1Id": "amminadab",
+    "names": {
+      "ru": "Аминадав",
+      "en": "Amminadab",
+      "he": "עַמִּינָדָב",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Руфь 4:20; Исх 6:23; Числ 1:7; Мф 1:4",
+    "firstRef": {
+      "osis": "Exo.6.23",
+      "ru": "Исх 6:23"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "Князь Иуды при Исходе. Сестра жена Аарона.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "amminadab",
+      "tipnrKey": "Amminadab@Exo.6.23",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "nahshon--exo-6-23",
+    "key": "Nahshon@Exo.6.23",
+    "v1Id": "nahshon",
+    "names": {
+      "ru": "Наасон",
+      "en": "Nahshon",
+      "he": "נַחְשׁוֹן",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Числ 1:7; Руфь 4:20; Мф 1:4; Лк 3:32",
+    "firstRef": {
+      "osis": "Exo.6.23",
+      "ru": "Исх 6:23"
+    },
+    "lineage": "messianic",
+    "role": "prince",
+    "era": "patriarchs",
+    "significance": "Князь колена Иудина. Первый при переписи.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "nahshon",
+      "tipnrKey": "Nahshon@Exo.6.23",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "salmon--rut-4-20",
+    "key": "Salmon@Rut.4.20",
+    "v1Id": "salmon",
+    "names": {
+      "ru": "Салмон",
+      "en": "Salmon",
+      "he": "שַׂלְמָה",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Руфь 4:20-21; Мф 1:4-5; Лк 3:32",
+    "firstRef": {
+      "osis": "Rut.4.20",
+      "ru": "Руф 4:20"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "Женился на Раав (блуднице Иерихонской). Предок Давида.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "salmon",
+      "tipnrKey": "Salmon@Rut.4.20",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "rahab--jos-2-1",
+    "key": "Rahab@Jos.2.1",
+    "v1Id": "rahab",
+    "names": {
+      "ru": "Раав",
+      "en": "Rahab",
+      "he": "רָחָב",
+      "greek": null
+    },
+    "gender": "f",
+    "ref": "Нав 2, 6; Мф 1:5; Евр 11:31; Иак 2:25",
+    "firstRef": {
+      "osis": "Jos.2.1",
+      "ru": "Нав 2:1"
+    },
+    "lineage": "messianic",
+    "role": "matriarch",
+    "era": "patriarchs",
+    "significance": "Блудница, спасшая разведчиков. Праматерь в мессианской линии. Вера.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "rahab",
+      "tipnrKey": "Rahab@Jos.2.1",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "boaz--rut-2-1",
+    "key": "Boaz@Rut.2.1",
+    "v1Id": "boaz",
+    "names": {
+      "ru": "Вооз",
+      "en": "Boaz",
+      "he": "בֹּעַז",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Руфь 2–4; Мф 1:5",
+    "firstRef": {
+      "osis": "Rut.2.1",
+      "ru": "Руф 2:1"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "Искупитель (Goel). Женился на Руфи.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "boaz",
+      "tipnrKey": "Boaz@Rut.2.1",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "ruth--rut-1-4",
+    "key": "Ruth@Rut.1.4",
+    "v1Id": "ruth",
+    "names": {
+      "ru": "Руфь",
+      "en": "Ruth",
+      "he": "רוּת",
+      "greek": null
+    },
+    "gender": "f",
+    "ref": "Руфь 1–4; Мф 1:5",
+    "firstRef": {
+      "osis": "Rut.1.4",
+      "ru": "Руф 1:4"
+    },
+    "lineage": "messianic",
+    "role": "matriarch",
+    "era": "patriarchs",
+    "significance": "Моавитянка. Верность: «твой народ — мой народ». Праматерь Давида.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "ruth",
+      "tipnrKey": "Ruth@Rut.1.4",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "obed--rut-4-17",
+    "key": "Obed@Rut.4.17",
+    "v1Id": "obed",
+    "names": {
+      "ru": "Овид",
+      "en": "Obed",
+      "he": "עוֹבֵד",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Руфь 4:17,21; Мф 1:5; Лк 3:32",
+    "firstRef": {
+      "osis": "Rut.4.17",
+      "ru": "Руф 4:17"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "Сын Вооза и Руфи. Дед Давида.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "obed",
+      "tipnrKey": "Obed@Rut.4.17",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "jesse--rut-4-17",
+    "key": "Jesse@Rut.4.17",
+    "v1Id": "jesse",
+    "names": {
+      "ru": "Иессей",
+      "en": "Jesse",
+      "he": "יִשַׁי",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Руфь 4:22; 1Цар 16; Мф 1:6; Лк 3:32",
+    "firstRef": {
+      "osis": "Rut.4.17",
+      "ru": "Руф 4:17"
+    },
+    "lineage": "messianic",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "Отец Давида (8 сыновей).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "jesse",
+      "tipnrKey": "Jesse@Rut.4.17",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "rehoboam--1ki-11-43",
+    "key": "Rehoboam@1Ki.11.43",
+    "v1Id": "rehoboam",
+    "names": {
+      "ru": "Ровоам",
+      "en": "Rehoboam",
+      "he": "רְחַבְעָם",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "3Цар 12, 14; Мф 1:7",
+    "firstRef": {
+      "osis": "1Ki.11.43",
+      "ru": "3Цар 11:43"
+    },
+    "lineage": "messianic-matthew",
+    "role": "king",
+    "era": "kings",
+    "significance": "Разделил царство. Иудея осталась с ним.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "rehoboam",
+      "tipnrKey": "Rehoboam@1Ki.11.43",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "abijah--1ki-14-31",
+    "key": "Abijah@1Ki.14.31",
+    "v1Id": "abijah",
+    "names": {
+      "ru": "Авия",
+      "en": "Abijah",
+      "he": "אֲבִיָּה",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "3Цар 15; Мф 1:7",
+    "firstRef": {
+      "osis": "1Ki.14.31",
+      "ru": "3Цар 14:31"
+    },
+    "lineage": "messianic-matthew",
+    "role": "king",
+    "era": "kings",
+    "significance": "Царь Иудеи.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "abijah",
+      "tipnrKey": "Abijah@1Ki.14.31",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "asa--1ki-15-8",
+    "key": "Asa@1Ki.15.8",
+    "v1Id": "asa",
+    "names": {
+      "ru": "Аса",
+      "en": "Asa",
+      "he": "אָסָא",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "3Цар 15; Мф 1:7-8",
+    "firstRef": {
+      "osis": "1Ki.15.8",
+      "ru": "3Цар 15:8"
+    },
+    "lineage": "messianic-matthew",
+    "role": "king",
+    "era": "kings",
+    "significance": "Царь-реформатор. Удалил идолов.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "asa",
+      "tipnrKey": "Asa@1Ki.15.8",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "jehoshaphat--1ki-15-24",
+    "key": "Jehoshaphat@1Ki.15.24",
+    "v1Id": "jehoshaphat",
+    "names": {
+      "ru": "Иосафат",
+      "en": "Jehoshaphat",
+      "he": "יְהוֹשָׁפָט",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "3Цар 22; Мф 1:8",
+    "firstRef": {
+      "osis": "1Ki.15.24",
+      "ru": "3Цар 15:24"
+    },
+    "lineage": "messianic-matthew",
+    "role": "king",
+    "era": "kings",
+    "significance": "Царь благочестивый. Союз с Ахавом — ошибка.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "jehoshaphat",
+      "tipnrKey": "Jehoshaphat@1Ki.15.24",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "joram--2ki-1-17",
+    "key": "Joram@2Ki.1.17",
+    "v1Id": "joram",
+    "names": {
+      "ru": "Иорам",
+      "en": "Joram",
+      "he": "יְהוֹרָם",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "4Цар 8; Мф 1:8",
+    "firstRef": {
+      "osis": "2Ki.1.17",
+      "ru": "4Цар 1:17"
+    },
+    "lineage": "messianic-matthew",
+    "role": "king",
+    "era": "kings",
+    "significance": "Царь Иудеи. Мф 1 пропускает 3 царей (Ахазия, Иоас, Амасия).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "joram",
+      "tipnrKey": "Joram@2Ki.1.17",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "uzziah--2ki-14-21",
+    "key": "Uzziah@2Ki.14.21",
+    "v1Id": "uzziah",
+    "names": {
+      "ru": "Озия (Азария)",
+      "en": "Uzziah",
+      "he": "עֻזִּיָּה",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "4Цар 15; Мф 1:8-9",
+    "firstRef": {
+      "osis": "2Ki.14.21",
+      "ru": "4Цар 14:21"
+    },
+    "lineage": "messianic-matthew",
+    "role": "king",
+    "era": "kings",
+    "significance": "Сильный царь, поражён проказой за гордыню (2Пар 26).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "uzziah",
+      "tipnrKey": "Uzziah@2Ki.14.21",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "jotham--2ki-15-5",
+    "key": "Jotham@2Ki.15.5",
+    "v1Id": "jotham",
+    "names": {
+      "ru": "Иоафам",
+      "en": "Jotham",
+      "he": "יוֹתָם",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "4Цар 15; Мф 1:9",
+    "firstRef": {
+      "osis": "2Ki.15.5",
+      "ru": "4Цар 15:5"
+    },
+    "lineage": "messianic-matthew",
+    "role": "king",
+    "era": "kings",
+    "significance": "Царь благочестивый.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "jotham",
+      "tipnrKey": "Jotham@2Ki.15.5",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "ahaz--2ki-15-38",
+    "key": "Ahaz@2Ki.15.38",
+    "v1Id": "ahaz",
+    "names": {
+      "ru": "Ахаз",
+      "en": "Ahaz",
+      "he": "אָחָז",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "4Цар 16; Мф 1:9",
+    "firstRef": {
+      "osis": "2Ki.15.38",
+      "ru": "4Цар 15:38"
+    },
+    "lineage": "messianic-matthew",
+    "role": "king",
+    "era": "kings",
+    "significance": "Нечестивый царь. Пророчество Исайи об Эммануиле (Ис 7).",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "ahaz",
+      "tipnrKey": "Ahaz@2Ki.15.38",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "hezekiah--2ki-16-20",
+    "key": "Hezekiah@2Ki.16.20",
+    "v1Id": "hezekiah",
+    "names": {
+      "ru": "Езекия",
+      "en": "Hezekiah",
+      "he": "חִזְקִיָּה",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "4Цар 18-20; Мф 1:9-10",
+    "firstRef": {
+      "osis": "2Ki.16.20",
+      "ru": "4Цар 16:20"
+    },
+    "lineage": "messianic-matthew",
+    "role": "king",
+    "era": "kings",
+    "significance": "Великий реформатор. Очистил Храм. 15 лет прибавлено.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "hezekiah",
+      "tipnrKey": "Hezekiah@2Ki.16.20",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "manasseh--2ki-20-21",
+    "key": "Manasseh@2Ki.20.21",
+    "v1Id": "manasseh",
+    "names": {
+      "ru": "Манассия",
+      "en": "Manasseh",
+      "he": "מְנַשֶּׁה",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "4Цар 21; Мф 1:10",
+    "firstRef": {
+      "osis": "2Ki.20.21",
+      "ru": "4Цар 20:21"
+    },
+    "lineage": "messianic-matthew",
+    "role": "king",
+    "era": "kings",
+    "significance": "Самый нечестивый царь, но покаялся в плену.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "manasseh",
+      "tipnrKey": "Manasseh@2Ki.20.21",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "amon--2ki-21-18",
+    "key": "Amon@2Ki.21.18",
+    "v1Id": "amon",
+    "names": {
+      "ru": "Амон",
+      "en": "Amon",
+      "he": "אָמוֹן",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "4Цар 21; Мф 1:10",
+    "firstRef": {
+      "osis": "2Ki.21.18",
+      "ru": "4Цар 21:18"
+    },
+    "lineage": "messianic-matthew",
+    "role": "king",
+    "era": "kings",
+    "significance": "Царь нечестивый. Убит слугами.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "amon",
+      "tipnrKey": "Amon@2Ki.21.18",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "josiah--1ki-13-2",
+    "key": "Josiah@1Ki.13.2",
+    "v1Id": "josiah",
+    "names": {
+      "ru": "Иосия",
+      "en": "Josiah",
+      "he": "יֹאשִׁיָּהוּ",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "4Цар 22-23; Мф 1:10-11",
+    "firstRef": {
+      "osis": "1Ki.13.2",
+      "ru": "3Цар 13:2"
+    },
+    "lineage": "messianic-matthew",
+    "role": "king",
+    "era": "kings",
+    "significance": "Реформатор. Нашёл книгу Закона. Последний благочестивый царь.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "josiah",
+      "tipnrKey": "Josiah@1Ki.13.2",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "jehoiakim--2ki-23-34",
+    "key": "Jehoiakim@2Ki.23.34",
+    "v1Id": "jehoiakim",
+    "names": {
+      "ru": "Иоаким (Елиаким)",
+      "en": "Jehoiakim",
+      "he": "יְהוֹיָקִים",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "4Цар 23:34; 1Пар 3:16; Мф 1:11 (Синодальный перевод)",
+    "firstRef": {
+      "osis": "2Ki.23.34",
+      "ru": "4Цар 23:34"
+    },
+    "lineage": "messianic-matthew",
+    "role": "king",
+    "era": "kings",
+    "significance": "Царь Иудеи, отец Иехонии. В Синодальном переводе назван в Мф 1:11; в ряде других текстовых изданий это имя отсутствует.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "jehoiakim",
+      "tipnrKey": "Jehoiakim@2Ki.23.34",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "mattatha--luk-3-31",
+    "key": "Mattatha@Luk.3.31",
+    "v1Id": "mattatha",
+    "names": {
+      "ru": "Маттафа",
+      "en": "Mattatha",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:31",
+    "firstRef": {
+      "osis": "Luk.3.31",
+      "ru": "Лк 3:31"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "kings",
+    "significance": "В Лукановой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "mattatha",
+      "tipnrKey": "Mattatha@Luk.3.31",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "menna--luk-3-31",
+    "key": "Menna@Luk.3.31",
+    "v1Id": "menna",
+    "names": {
+      "ru": "Менна",
+      "en": "Menna",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:31",
+    "firstRef": {
+      "osis": "Luk.3.31",
+      "ru": "Лк 3:31"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "kings",
+    "significance": "В Лукановой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "menna",
+      "tipnrKey": "Menna@Luk.3.31",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "melea--luk-3-31",
+    "key": "Melea@Luk.3.31",
+    "v1Id": "melea",
+    "names": {
+      "ru": "Мелеа",
+      "en": "Melea",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:31",
+    "firstRef": {
+      "osis": "Luk.3.31",
+      "ru": "Лк 3:31"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "kings",
+    "significance": "В Лукановой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "melea",
+      "tipnrKey": "Melea@Luk.3.31",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "eliakim--luk-3-30",
+    "key": "Eliakim@Luk.3.30",
+    "v1Id": "eliakim_lk",
+    "names": {
+      "ru": "Елиаким",
+      "en": "Eliakim",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:30-31",
+    "firstRef": {
+      "osis": "Luk.3.30",
+      "ru": "Лк 3:30"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "kings",
+    "significance": "В Лукановой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "eliakim_lk",
+      "tipnrKey": "Eliakim@Luk.3.30",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "jonam--luk-3-30",
+    "key": "Jonam@Luk.3.30",
+    "v1Id": "jonam",
+    "names": {
+      "ru": "Ионан",
+      "en": "Jonam",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:30",
+    "firstRef": {
+      "osis": "Luk.3.30",
+      "ru": "Лк 3:30"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "kings",
+    "significance": "В Лукановой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "jonam",
+      "tipnrKey": "Jonam@Luk.3.30",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "joseph--luk-3-30",
+    "key": "Joseph@Luk.3.30",
+    "v1Id": "joseph_lk",
+    "names": {
+      "ru": "Иосиф (Лк)",
+      "en": "Joseph",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:26-30",
+    "firstRef": {
+      "osis": "Luk.3.30",
+      "ru": "Лк 3:30"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "kings",
+    "significance": "В Лукановой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "joseph_lk",
+      "tipnrKey": "Joseph@Luk.3.30",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "judah--luk-3-30",
+    "key": "Judah@Luk.3.30",
+    "v1Id": "judah_lk",
+    "names": {
+      "ru": "Иуда (Лк)",
+      "en": "Judah",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:30",
+    "firstRef": {
+      "osis": "Luk.3.30",
+      "ru": "Лк 3:30"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "kings",
+    "significance": "В Лукановой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "judah_lk",
+      "tipnrKey": "Judah@Luk.3.30",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "simeon--luk-3-30",
+    "key": "Simeon@Luk.3.30",
+    "v1Id": "simeon_lk",
+    "names": {
+      "ru": "Симеон (Лк)",
+      "en": "Simeon",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:30",
+    "firstRef": {
+      "osis": "Luk.3.30",
+      "ru": "Лк 3:30"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "kings",
+    "significance": "В Лукановой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "simeon_lk",
+      "tipnrKey": "Simeon@Luk.3.30",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "levi--luk-3-29",
+    "key": "Levi@Luk.3.29",
+    "v1Id": "levi_lk",
+    "names": {
+      "ru": "Левий (Лк)",
+      "en": "Levi",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:29",
+    "firstRef": {
+      "osis": "Luk.3.29",
+      "ru": "Лк 3:29"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "kings",
+    "significance": "В Лукановой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "levi_lk",
+      "tipnrKey": "Levi@Luk.3.29",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "matthat--luk-3-29",
+    "key": "Matthat@Luk.3.29",
+    "v1Id": "matthat",
+    "names": {
+      "ru": "Матфат",
+      "en": "Matthat",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:29",
+    "firstRef": {
+      "osis": "Luk.3.29",
+      "ru": "Лк 3:29"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "kings",
+    "significance": "В Лукановой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "matthat",
+      "tipnrKey": "Matthat@Luk.3.29",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "jorim--luk-3-29",
+    "key": "Jorim@Luk.3.29",
+    "v1Id": "jorim",
+    "names": {
+      "ru": "Иорим",
+      "en": "Jorim",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:29",
+    "firstRef": {
+      "osis": "Luk.3.29",
+      "ru": "Лк 3:29"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "kings",
+    "significance": "В Лукановой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "jorim",
+      "tipnrKey": "Jorim@Luk.3.29",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "eliezer--luk-3-29",
+    "key": "Eliezer@Luk.3.29",
+    "v1Id": "eliezer_lk",
+    "names": {
+      "ru": "Елиезер (Лк)",
+      "en": "Eliezer",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:29",
+    "firstRef": {
+      "osis": "Luk.3.29",
+      "ru": "Лк 3:29"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "kings",
+    "significance": "В Лукановой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "eliezer_lk",
+      "tipnrKey": "Eliezer@Luk.3.29",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "joshua--luk-3-29",
+    "key": "Joshua@Luk.3.29",
+    "v1Id": "joshua_lk",
+    "names": {
+      "ru": "Иисус (Лк)",
+      "en": "Joshua",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:29",
+    "firstRef": {
+      "osis": "Luk.3.29",
+      "ru": "Лк 3:29"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "kings",
+    "significance": "В Лукановой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "joshua_lk",
+      "tipnrKey": "Joshua@Luk.3.29",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "er--luk-3-28",
+    "key": "Er@Luk.3.28",
+    "v1Id": "er_lk",
+    "names": {
+      "ru": "Ер (Лк)",
+      "en": "Er",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:28",
+    "firstRef": {
+      "osis": "Luk.3.28",
+      "ru": "Лк 3:28"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "kings",
+    "significance": "В Лукановой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "er_lk",
+      "tipnrKey": "Er@Luk.3.28",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "elmadam--luk-3-28",
+    "key": "Elmadam@Luk.3.28",
+    "v1Id": "elmadam",
+    "names": {
+      "ru": "Елмодам",
+      "en": "Elmadam",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:28",
+    "firstRef": {
+      "osis": "Luk.3.28",
+      "ru": "Лк 3:28"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "kings",
+    "significance": "В Лукановой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "elmadam",
+      "tipnrKey": "Elmadam@Luk.3.28",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "cosam--luk-3-28",
+    "key": "Cosam@Luk.3.28",
+    "v1Id": "cosam",
+    "names": {
+      "ru": "Косам",
+      "en": "Cosam",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:28",
+    "firstRef": {
+      "osis": "Luk.3.28",
+      "ru": "Лк 3:28"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "kings",
+    "significance": "В Лукановой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "cosam",
+      "tipnrKey": "Cosam@Luk.3.28",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "addi--luk-3-28",
+    "key": "Addi@Luk.3.28",
+    "v1Id": "addi",
+    "names": {
+      "ru": "Аддин",
+      "en": "Addi",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:28",
+    "firstRef": {
+      "osis": "Luk.3.28",
+      "ru": "Лк 3:28"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "kings",
+    "significance": "В Лукановой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "addi",
+      "tipnrKey": "Addi@Luk.3.28",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "melchi--luk-3-28",
+    "key": "Melchi@Luk.3.28",
+    "v1Id": "melki_lk",
+    "names": {
+      "ru": "Мелхий",
+      "en": "Melchi",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:27-28",
+    "firstRef": {
+      "osis": "Luk.3.28",
+      "ru": "Лк 3:28"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "kings",
+    "significance": "В Лукановой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "melki_lk",
+      "tipnrKey": "Melchi@Luk.3.28",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "neri--luk-3-27",
+    "key": "Neri@Luk.3.27",
+    "v1Id": "neri",
+    "names": {
+      "ru": "Нири",
+      "en": "Neri",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:27",
+    "firstRef": {
+      "osis": "Luk.3.27",
+      "ru": "Лк 3:27"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "kings",
+    "significance": "В Лукановой линии. (Салафиил здесь — от Нири, не от Иехония — Лк vs Мф.)",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "neri",
+      "tipnrKey": "Neri@Luk.3.27",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "shealtiel--luk-3-27",
+    "key": "Shealtiel@Luk.3.27",
+    "v1Id": "shealtiel_lk",
+    "names": {
+      "ru": "Салафиил (Лк)",
+      "en": "Shealtiel",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:27",
+    "firstRef": {
+      "osis": "Luk.3.27",
+      "ru": "Лк 3:27"
+    },
+    "lineage": "messianic-luke",
+    "role": "prince",
+    "era": "exile",
+    "significance": "В Лк — сын Нири (не Иехония). Возможно Levirate-брак.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "shealtiel_lk",
+      "tipnrKey": "Shealtiel@Luk.3.27",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "zerubbabel--luk-3-27",
+    "key": "Zerubbabel@Luk.3.27",
+    "v1Id": "zerubbabel_lk",
+    "names": {
+      "ru": "Зоровавель (Лк)",
+      "en": "Zerubbabel",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:27",
+    "firstRef": {
+      "osis": "Luk.3.27",
+      "ru": "Лк 3:27"
+    },
+    "lineage": "messianic-luke",
+    "role": "governor",
+    "era": "exile",
+    "significance": "Восстановитель Храма. Лк ветвь.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "zerubbabel_lk",
+      "tipnrKey": "Zerubbabel@Luk.3.27",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "rhesa--luk-3-27",
+    "key": "Rhesa@Luk.3.27",
+    "v1Id": "rhesa_lk",
+    "names": {
+      "ru": "Риса (Лк)",
+      "en": "Rhesa",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:27",
+    "firstRef": {
+      "osis": "Luk.3.27",
+      "ru": "Лк 3:27"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "exile",
+    "significance": "",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "rhesa_lk",
+      "tipnrKey": "Rhesa@Luk.3.27",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "joanan--luk-3-27",
+    "key": "Joanan@Luk.3.27",
+    "v1Id": "joanan_lk",
+    "names": {
+      "ru": "Иоанан (Лк)",
+      "en": "Joanan",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:26-30",
+    "firstRef": {
+      "osis": "Luk.3.27",
+      "ru": "Лк 3:27"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Лк ветви.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "joanan_lk",
+      "tipnrKey": "Joanan@Luk.3.27",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "joda--luk-3-26",
+    "key": "Joda@Luk.3.26",
+    "v1Id": "joda_lk",
+    "names": {
+      "ru": "Иода (Лк)",
+      "en": "Joda",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:26-30",
+    "firstRef": {
+      "osis": "Luk.3.26",
+      "ru": "Лк 3:26"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Лк ветви.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "joda_lk",
+      "tipnrKey": "Joda@Luk.3.26",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "josech--luk-3-26",
+    "key": "Josech@Luk.3.26",
+    "v1Id": "josech_lk",
+    "names": {
+      "ru": "Иосиев (Лк)",
+      "en": "Josech",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:26-30",
+    "firstRef": {
+      "osis": "Luk.3.26",
+      "ru": "Лк 3:26"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Лк ветви.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "josech_lk",
+      "tipnrKey": "Josech@Luk.3.26",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "semein--luk-3-26",
+    "key": "Semein@Luk.3.26",
+    "v1Id": "semein_lk",
+    "names": {
+      "ru": "Семеин (Лк)",
+      "en": "Semein",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:26-30",
+    "firstRef": {
+      "osis": "Luk.3.26",
+      "ru": "Лк 3:26"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Лк ветви.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "semein_lk",
+      "tipnrKey": "Semein@Luk.3.26",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "mattathias--luk-3-26",
+    "key": "Mattathias@Luk.3.26",
+    "v1Id": "mattathias_lk",
+    "names": {
+      "ru": "Маттафия (Лк)",
+      "en": "Mattathias",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:26-30",
+    "firstRef": {
+      "osis": "Luk.3.26",
+      "ru": "Лк 3:26"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Лк ветви.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "mattathias_lk",
+      "tipnrKey": "Mattathias@Luk.3.26",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "maath--luk-3-26",
+    "key": "Maath@Luk.3.26",
+    "v1Id": "maath_lk",
+    "names": {
+      "ru": "Мааф (Лк)",
+      "en": "Maath",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:26-30",
+    "firstRef": {
+      "osis": "Luk.3.26",
+      "ru": "Лк 3:26"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Лк ветви.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "maath_lk",
+      "tipnrKey": "Maath@Luk.3.26",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "naggai--luk-3-25",
+    "key": "Naggai@Luk.3.25",
+    "v1Id": "naggesi_lk",
+    "names": {
+      "ru": "Наггесий (Лк)",
+      "en": "Naggai",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:26-30",
+    "firstRef": {
+      "osis": "Luk.3.25",
+      "ru": "Лк 3:25"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Лк ветви.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "naggesi_lk",
+      "tipnrKey": "Naggai@Luk.3.25",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "esli--luk-3-25",
+    "key": "Esli@Luk.3.25",
+    "v1Id": "esli_lk",
+    "names": {
+      "ru": "Если (Лк)",
+      "en": "Esli",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:26-30",
+    "firstRef": {
+      "osis": "Luk.3.25",
+      "ru": "Лк 3:25"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Лк ветви.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "esli_lk",
+      "tipnrKey": "Esli@Luk.3.25",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "nahum--luk-3-25",
+    "key": "Nahum@Luk.3.25",
+    "v1Id": "naum_lk",
+    "names": {
+      "ru": "Наум (Лк)",
+      "en": "Nahum",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:26-30",
+    "firstRef": {
+      "osis": "Luk.3.25",
+      "ru": "Лк 3:25"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Лк ветви.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "naum_lk",
+      "tipnrKey": "Nahum@Luk.3.25",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "amos--luk-3-25",
+    "key": "Amos@Luk.3.25",
+    "v1Id": "amos_lk",
+    "names": {
+      "ru": "Амос (Лк)",
+      "en": "Amos",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:26-30",
+    "firstRef": {
+      "osis": "Luk.3.25",
+      "ru": "Лк 3:25"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Лк ветви.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "amos_lk",
+      "tipnrKey": "Amos@Luk.3.25",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "mattathias--luk-3-25",
+    "key": "Mattathias@Luk.3.25",
+    "v1Id": "mattathias2_lk",
+    "names": {
+      "ru": "Маттафия (Лк)",
+      "en": "Mattathias",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:26-30",
+    "firstRef": {
+      "osis": "Luk.3.25",
+      "ru": "Лк 3:25"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Лк ветви.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "mattathias2_lk",
+      "tipnrKey": "Mattathias@Luk.3.25",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "joseph--luk-3-24",
+    "key": "Joseph@Luk.3.24",
+    "v1Id": "joseph_lk2",
+    "names": {
+      "ru": "Иосиф (Лк)",
+      "en": "Joseph",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:26-30",
+    "firstRef": {
+      "osis": "Luk.3.24",
+      "ru": "Лк 3:24"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Лк ветви.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "joseph_lk2",
+      "tipnrKey": "Joseph@Luk.3.24",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "jannai--luk-3-24",
+    "key": "Jannai@Luk.3.24",
+    "v1Id": "jannai_lk",
+    "names": {
+      "ru": "Ианнай (Лк)",
+      "en": "Jannai",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:26-30",
+    "firstRef": {
+      "osis": "Luk.3.24",
+      "ru": "Лк 3:24"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Лк ветви.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "jannai_lk",
+      "tipnrKey": "Jannai@Luk.3.24",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "melchi--luk-3-24",
+    "key": "Melchi@Luk.3.24",
+    "v1Id": "melchi_lk2",
+    "names": {
+      "ru": "Мелхий (Лк)",
+      "en": "Melchi",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:26-30",
+    "firstRef": {
+      "osis": "Luk.3.24",
+      "ru": "Лк 3:24"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Лк ветви.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "melchi_lk2",
+      "tipnrKey": "Melchi@Luk.3.24",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "levi--luk-3-24",
+    "key": "Levi@Luk.3.24",
+    "v1Id": "levi_lk2",
+    "names": {
+      "ru": "Левий (Лк)",
+      "en": "Levi",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:26-30",
+    "firstRef": {
+      "osis": "Luk.3.24",
+      "ru": "Лк 3:24"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Лк ветви.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "levi_lk2",
+      "tipnrKey": "Levi@Luk.3.24",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "matthat--luk-3-24",
+    "key": "Matthat@Luk.3.24",
+    "v1Id": "matthat_lk2",
+    "names": {
+      "ru": "Матфат (Лк 3:24)",
+      "en": "Matthat",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:24",
+    "firstRef": {
+      "osis": "Luk.3.24",
+      "ru": "Лк 3:24"
+    },
+    "lineage": "messianic-luke",
+    "role": "person",
+    "era": "incarnation",
+    "significance": "Матфат, названный между Илием и Левием в Лк 3:23–24. Отличается от Матфата в Лк 3:29.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "matthat_lk2",
+      "tipnrKey": "Matthat@Luk.3.24",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "heli--luk-3-23",
+    "key": "Heli@Luk.3.23",
+    "v1Id": "heli_lk",
+    "names": {
+      "ru": "Илий",
+      "en": "Heli",
+      "he": "Ἠλὶ",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Лк 3:23",
+    "firstRef": {
+      "osis": "Luk.3.23",
+      "ru": "Лк 3:23"
+    },
+    "lineage": "messianic-luke",
+    "role": "patriarch",
+    "era": "incarnation",
+    "significance": "Илий назван в Лк 3:23 после Иосифа. Отождествление его с отцом Марии относится к гармонизации родословных; сам стих этого прямо не утверждает.",
+    "chronology": null,
+    "disputed": {
+      "level": "genealogical",
+      "positions": [
+        {
+          "view": "В гармонизации через Марию Илий рассматривается как её отец, а Иосиф — как его зять.",
+          "proponents": "Гармонизация, используемая в этой карте",
+          "evidence": "Лк 3:23 называет Иосифа и Илия; родство Илия и Марии в стихе прямо не указано."
+        },
+        {
+          "view": "Другая гармонизация связывает две родословные с Иосифом, различая юридическое и биологическое родство.",
+          "proponents": "Альтернативное объяснение",
+          "evidence": "Сопоставление Мф 1:16 и Лк 3:23."
+        }
+      ]
+    },
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "heli_lk",
+      "tipnrKey": "Heli@Luk.3.23",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "abihud--1ch-8-3",
+    "key": "Abihud@1Ch.8.3",
+    "v1Id": "abihud_mt",
+    "names": {
+      "ru": "Авиуд (Мф)",
+      "en": "Abihud",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Мф 1:13",
+    "firstRef": {
+      "osis": "1Ch.8.3",
+      "ru": "1Пар 8:3"
+    },
+    "lineage": "messianic-matthew",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Матфеевой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "abihud_mt",
+      "tipnrKey": "Abihud@1Ch.8.3",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "eliakim--mat-1-13",
+    "key": "Eliakim@Mat.1.13",
+    "v1Id": "eliakim_mt",
+    "names": {
+      "ru": "Елиаким (Мф)",
+      "en": "Eliakim",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Мф 1:13",
+    "firstRef": {
+      "osis": "Mat.1.13",
+      "ru": "Мф 1:13"
+    },
+    "lineage": "messianic-matthew",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Матфеевой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "eliakim_mt",
+      "tipnrKey": "Eliakim@Mat.1.13",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "azor--mat-1-13",
+    "key": "Azor@Mat.1.13",
+    "v1Id": "azor_mt",
+    "names": {
+      "ru": "Азор (Мф)",
+      "en": "Azor",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Мф 1:13–14",
+    "firstRef": {
+      "osis": "Mat.1.13",
+      "ru": "Мф 1:13"
+    },
+    "lineage": "messianic-matthew",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Матфеевой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "azor_mt",
+      "tipnrKey": "Azor@Mat.1.13",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "zadok--mat-1-14",
+    "key": "Zadok@Mat.1.14",
+    "v1Id": "zadok_mt",
+    "names": {
+      "ru": "Садок (Мф)",
+      "en": "Zadok",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Мф 1:14",
+    "firstRef": {
+      "osis": "Mat.1.14",
+      "ru": "Мф 1:14"
+    },
+    "lineage": "messianic-matthew",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Матфеевой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "zadok_mt",
+      "tipnrKey": "Zadok@Mat.1.14",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "achim--mat-1-14",
+    "key": "Achim@Mat.1.14",
+    "v1Id": "achim_mt",
+    "names": {
+      "ru": "Ахим (Мф)",
+      "en": "Achim",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Мф 1:14",
+    "firstRef": {
+      "osis": "Mat.1.14",
+      "ru": "Мф 1:14"
+    },
+    "lineage": "messianic-matthew",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Матфеевой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "achim_mt",
+      "tipnrKey": "Achim@Mat.1.14",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "eliud--mat-1-14",
+    "key": "Eliud@Mat.1.14",
+    "v1Id": "eliud_mt",
+    "names": {
+      "ru": "Елиуд (Мф)",
+      "en": "Eliud",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Мф 1:14–15",
+    "firstRef": {
+      "osis": "Mat.1.14",
+      "ru": "Мф 1:14"
+    },
+    "lineage": "messianic-matthew",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Матфеевой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "eliud_mt",
+      "tipnrKey": "Eliud@Mat.1.14",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "eleazar--mat-1-15",
+    "key": "Eleazar@Mat.1.15",
+    "v1Id": "eleazar_mt",
+    "names": {
+      "ru": "Елеазар (Мф)",
+      "en": "Eleazar",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Мф 1:15",
+    "firstRef": {
+      "osis": "Mat.1.15",
+      "ru": "Мф 1:15"
+    },
+    "lineage": "messianic-matthew",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Матфеевой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "eleazar_mt",
+      "tipnrKey": "Eleazar@Mat.1.15",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "matthan--mat-1-15",
+    "key": "Matthan@Mat.1.15",
+    "v1Id": "matthan_mt",
+    "names": {
+      "ru": "Матфан (Мф)",
+      "en": "Matthan",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Мф 1:15",
+    "firstRef": {
+      "osis": "Mat.1.15",
+      "ru": "Мф 1:15"
+    },
+    "lineage": "messianic-matthew",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Матфеевой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "matthan_mt",
+      "tipnrKey": "Matthan@Mat.1.15",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "jacob--mat-1-15",
+    "key": "Jacob@Mat.1.15",
+    "v1Id": "jacob_mt",
+    "names": {
+      "ru": "Иаков (Мф)",
+      "en": "Jacob",
+      "he": null,
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Мф 1:15–16",
+    "firstRef": {
+      "osis": "Mat.1.15",
+      "ru": "Мф 1:15"
+    },
+    "lineage": "messianic-matthew",
+    "role": "person",
+    "era": "exile",
+    "significance": "В Матфеевой линии.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "jacob_mt",
+      "tipnrKey": "Jacob@Mat.1.15",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "rebekah--gen-22-23",
+    "key": "Rebekah@Gen.22.23",
+    "v1Id": "rebekah",
+    "names": {
+      "ru": "Ревекка",
+      "en": "Rebekah",
+      "he": "רִבְקָה",
+      "greek": null
+    },
+    "gender": "f",
+    "ref": "Быт 24, 25",
+    "firstRef": {
+      "osis": "Gen.22.23",
+      "ru": "Быт 22:23"
+    },
+    "lineage": "messianic",
+    "role": "matriarch",
+    "era": "patriarchs",
+    "significance": "Жена Исаака. Мать близнецов.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "rebekah",
+      "tipnrKey": "Rebekah@Gen.22.23",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "bethuel--gen-22-22",
+    "key": "Bethuel@Gen.22.22",
+    "v1Id": "bethuel",
+    "names": {
+      "ru": "Вафуил",
+      "en": "Bethuel",
+      "he": "בְּתוּאֵל",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 22:22-23; 24:15",
+    "firstRef": {
+      "osis": "Gen.22.22",
+      "ru": "Быт 22:22"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "Арамеянин. Отец Ревекки и Лавана.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "bethuel",
+      "tipnrKey": "Bethuel@Gen.22.22",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "esau--gen-25-25",
+    "key": "Esau@Gen.25.25",
+    "v1Id": "esau",
+    "names": {
+      "ru": "Исав",
+      "en": "Esau",
+      "he": "עֵשָׂו",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 25:25, 36; Евр 12:16",
+    "firstRef": {
+      "osis": "Gen.25.25",
+      "ru": "Быт 25:25"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "Брат Иакова. Продал первородство. Предок эдомитян.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "esau",
+      "tipnrKey": "Esau@Gen.25.25",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "leah--gen-29-16",
+    "key": "Leah@Gen.29.16",
+    "v1Id": "leah",
+    "names": {
+      "ru": "Лия",
+      "en": "Leah",
+      "he": "לֵאָה",
+      "greek": null
+    },
+    "gender": "f",
+    "ref": "Быт 29",
+    "firstRef": {
+      "osis": "Gen.29.16",
+      "ru": "Быт 29:16"
+    },
+    "lineage": "messianic",
+    "role": "matriarch",
+    "era": "patriarchs",
+    "significance": "Первая жена Иакова. Мать Иуды.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "leah",
+      "tipnrKey": "Leah@Gen.29.16",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "rachel--gen-29-6",
+    "key": "Rachel@Gen.29.6",
+    "v1Id": "rachel",
+    "names": {
+      "ru": "Рахиль",
+      "en": "Rachel",
+      "he": "רָחֵל",
+      "greek": null
+    },
+    "gender": "f",
+    "ref": "Быт 29, 35",
+    "firstRef": {
+      "osis": "Gen.29.6",
+      "ru": "Быт 29:6"
+    },
+    "lineage": "messianic",
+    "role": "matriarch",
+    "era": "patriarchs",
+    "significance": "Любимая жена Иакова. Мать Иосифа и Вениамина.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "rachel",
+      "tipnrKey": "Rachel@Gen.29.6",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "laban--gen-24-29",
+    "key": "Laban@Gen.24.29",
+    "v1Id": "laban",
+    "names": {
+      "ru": "Лаван",
+      "en": "Laban",
+      "he": "לָבָן",
+      "greek": null
+    },
+    "gender": "m",
+    "ref": "Быт 24:29, 29-31",
+    "firstRef": {
+      "osis": "Gen.24.29",
+      "ru": "Быт 24:29"
+    },
+    "lineage": "neutral",
+    "role": "patriarch",
+    "era": "patriarchs",
+    "significance": "Арамеянин. Брат Ревекки. Отец Лии и Рахили.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "laban",
+      "tipnrKey": "Laban@Gen.24.29",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "bathsheba--2sa-11-3",
+    "key": "Bathsheba@2Sa.11.3",
+    "v1Id": "bathsheba",
+    "names": {
+      "ru": "Вирсавия",
+      "en": "Bathsheba",
+      "he": "בַּת־שֶׁבַע",
+      "greek": null
+    },
+    "gender": "f",
+    "ref": "2Цар 11-12; Мф 1:6",
+    "firstRef": {
+      "osis": "2Sa.11.3",
+      "ru": "2Цар 11:3"
+    },
+    "lineage": "messianic",
+    "role": "matriarch",
+    "era": "kings",
+    "significance": "Жена Урии, затем Давида. Мать Соломона.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "bathsheba",
+      "tipnrKey": "Bathsheba@2Sa.11.3",
+      "russianLabelReview": false
+    }
+  },
+  {
+    "id": "tamar--gen-38-6",
+    "key": "Tamar@Gen.38.6",
+    "v1Id": "tamar",
+    "names": {
+      "ru": "Фамарь",
+      "en": "Tamar",
+      "he": "תָּמָר",
+      "greek": null
+    },
+    "gender": "f",
+    "ref": "Быт 38; Мф 1:3",
+    "firstRef": {
+      "osis": "Gen.38.6",
+      "ru": "Быт 38:6"
+    },
+    "lineage": "messianic",
+    "role": "matriarch",
+    "era": "patriarchs",
+    "significance": "Невестка Иуды. Хитростью продолжила мессианскую линию. В Мф 1.",
+    "chronology": null,
+    "disputed": null,
+    "identity": {
+      "authority": "curated-v1-to-tipnr",
+      "v1Id": "tamar",
+      "tipnrKey": "Tamar@Gen.38.6",
+      "russianLabelReview": false
+    }
+  }
+]
