@@ -154,6 +154,8 @@ const { title, backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC } = Astro.p
       border-bottom:1px solid #e8d9c8;
     }
     html.dark .hmtop{background:color-mix(in srgb, #1c0e14 90%, transparent); border-bottom-color:rgba(212,140,150,.16)}
+    /* B16: sepia variants mirror the Gill sepia bar/TOC-sheet palette (#f3ead4 family). */
+    html[data-reader-theme="sepia"] .hmtop{background:color-mix(in srgb, #f3ead4 92%, transparent); border-bottom-color:#d8c9a8}
     .hmbar{
       display:flex; align-items:center; gap:8px; position:fixed; left:0; right:0; bottom:0;
       z-index:var(--z-bottom-bar,2000); padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));
@@ -163,6 +165,10 @@ const { title, backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC } = Astro.p
     html.dark .hmbar{
       background:linear-gradient(180deg,#241019,#150a0e); border-top-color:rgba(212,140,150,.16);
       box-shadow:0 -8px 24px -12px rgba(0,0,0,.5);
+    }
+    html[data-reader-theme="sepia"] .hmbar{
+      background:linear-gradient(180deg,#f3ead4,#e9dcc0); border-top-color:#d8c9a8;
+      box-shadow:0 -8px 24px -12px rgba(122,90,48,.20);
     }
     .article-main--hrail{ padding-top:calc(60px + env(safe-area-inset-top,0px)); padding-bottom: calc(84px + env(safe-area-inset-bottom,0px)); }
   }

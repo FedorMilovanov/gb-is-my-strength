@@ -2387,6 +2387,10 @@
         '<button type="button" class="gbs2-resume-go">Продолжить</button>' +
         '<button type="button" class="gbs2-resume-x" aria-label="Скрыть">×</button>';
       document.body.appendChild(toast);
+      // B13: acknowledge on SHOW, not only in hide() — BookmarkEngine's
+      // #bookmarkToast (900ms delay) shares this flag; whoever shows first
+      // must win, or both prompts can appear on one page.
+      if (readerState.markResumeAcknowledged) readerState.markResumeAcknowledged();
       var hideT = null;
       function hide(mute) {
         toast.classList.remove('gbs2-on');

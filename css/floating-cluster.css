@@ -538,6 +538,12 @@ html.dark .gb-ember {
   color: var(--color-accent-gold-bright, #d8aa6d);
 }
 
+/* B15: keep the toast above fixed mobile bottom bars (Gill/HM/Нагорная) —
+   same 88px clearance as .kbd-hint-toast. Desktop keeps the base 28px. */
+@media (max-width: 1199px) {
+  .gb-fc-toast { bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
+}
+
 /* =========================================================
    gb-floater--series-lite — compact серийный кластер
    (SeriesLiteCluster.astro)

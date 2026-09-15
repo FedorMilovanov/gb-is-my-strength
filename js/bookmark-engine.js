@@ -209,6 +209,9 @@
     elements.meta.textContent = 'Остановились примерно на ' + Math.round(saved.progress) + '% · ' + relativeTime(saved.savedAt);
     elements.progress.style.width = Math.max(0, Math.min(100, saved.progress || 0)) + '%';
     elements.toast.hidden = false;
+    // B13: same mutual exclusion as the engine toast — mark acknowledged on
+    // show so a second resume surface can't fire after this one.
+    acknowledgeResume();
     requestAnimationFrame(function () { requestAnimationFrame(function () { elements.toast.classList.add('show'); }); });
 
     elements.close.onclick = function () {
