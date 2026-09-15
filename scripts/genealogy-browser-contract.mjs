@@ -8,6 +8,7 @@ import { chromium, webkit, firefox } from 'playwright';
 import { assertGenealogyGeometryContract } from './genealogy-geometry-contract.mjs';
 import { assertGospelContract } from './genealogy-gospel-contract.mjs';
 import { getGospelComparison } from '../src/components/genealogy/gospelSequences.ts';
+import { adaptPublishableGenealogy } from '../src/components/genealogy/publishableAdapter.mjs';
 
 assertGospelContract();
 assertGenealogyGeometryContract();
@@ -15,7 +16,8 @@ assertGenealogyGeometryContract();
 const ROOT = path.resolve(process.cwd());
 const DIST = path.join(ROOT, 'dist');
 const REPORT_DIR = path.join(ROOT, 'reports', 'genealogy-browser-contract');
-const GENEALOGY_DATA_PATH = path.join(ROOT, 'data', 'genealogy', 'genealogy.json');
+const PUBLISHABLE_PERSONS_PATH = path.join(ROOT, 'data', 'genealogy', 'v2', 'publishable', 'persons.json');
+const PUBLISHABLE_RELATIONS_PATH = path.join(ROOT, 'data', 'genealogy', 'v2', 'publishable', 'relations.json');
 const BROWSERS = { chromium, webkit, firefox };
 // WebKit emits this delivery diagnostic from ReactFlow's internal observers
 // during controlled viewport updates. Keep it visible in the report while
@@ -33,14 +35,16 @@ const VIEWPORTS = String(process.env.GENEALOGY_VIEWPORTS || '390x844,1440x1000')
   return { width: Number(match[1]), height: Number(match[2]) };
 });
 
-function readExpectedPersonNodes() {
-  const source = JSON.parse(fs.readFileSync(GENEALOGY_DATA_PATH, 'utf8'));
-  const count = Array.isArray(source?.persons) ? source.persons.length : 0;
-  assert.ok(count > 0, 'canonical data/genealogy/genealogy.json has no persons');
-  return count;
+function readRuntimePersons() {
+  const persons = JSON.parse(fs.readFileSync(PUBLISHABLE_PERSONS_PATH, 'utf8'));
+  const relations = JSON.parse(fs.readFileSync(PUBLISHABLE_RELATIONS_PATH, 'utf8'));
+  const adapted = adaptPublishableGenealogy({ persons, relations });
+  assert.ok(adapted.length > 0, 'publishable genealogy runtime has no persons');
+  return adapted;
 }
 
-const EXPECTED_PERSON_NODES = readExpectedPersonNodes();
+const RUNTIME_PERSONS = readRuntimePersons();
+const EXPECTED_PERSON_NODES = RUNTIME_PERSONS.length;
 
 function contentType(filePath) {
   const extension = path.extname(filePath).toLowerCase();
@@ -203,7 +207,7 @@ async function assertSplitLifecycle(page, touch) {
   const dialog = page.getByRole('dialog', { name: 'Две родословные Христа' });
   await dialog.waitFor({ state: 'visible' });
 
-  const persons = JSON.parse(fs.readFileSync(GENEALOGY_DATA_PATH, 'utf8')).persons;
+  const persons = RUNTIME_PERSONS;
   const screenshotPrefix = `${page.context().browser().browserType().name()}-${page.viewportSize().width}x${page.viewportSize().height}`;
   for (const range of ['david', 'full']) {
     await dialog.getByRole('button', { name: range === 'david' ? 'От Давида' : 'Полностью', exact: true }).click();
@@ -355,6 +359,30 @@ async function assertFocusInteractions(page) {
   await pressFocused(page, isaacNode, 'Enter', 'Isaac genealogy node');
   await page.getByRole('complementary', { name: 'Детали: Исаак' }).waitFor({ state: 'visible' });
   await page.getByRole('button', { name: 'Закрыть панель', exact: true }).click();
+
+  // A direct family edge opens evidence; a folded semantic path is tested
+  // separately by navigation and must never masquerade as one direct relation.
+  const abrahamIsaacEdge = page.locator('[data-testid="rf__edge-abram->isaac"] .react-flow__edge-interaction');
+  await abrahamIsaacEdge.waitFor({ state: 'visible' });
+  await abrahamIsaacEdge.click();
+  const relationPanel = page.getByRole('complementary', { name: 'Основание связи: Авраам — Исаак' });
+  await relationPanel.waitFor({ state: 'visible' });
+  assert.equal(await relationPanel.getByRole('button', { name: 'Закрыть сведения о связи' })
+    .evaluate(node => document.activeElement === node), true,
+  'Focus did not enter the relationship inspector');
+  const relationCloseBox = await relationPanel.getByRole('button', { name: 'Закрыть сведения о связи' }).boundingBox();
+  assert.ok(relationCloseBox && relationCloseBox.width >= MIN_TOUCH_TARGET && relationCloseBox.height >= MIN_TOUCH_TARGET,
+    'Relationship inspector close control is too small');
+  assert.equal(await relationPanel.getByText('Ссылки к самой связи ещё не проверены', { exact: true }).isVisible(), true,
+    'Pending relation-level review status is not visible to the user');
+  assert.ok((await relationPanel.locator('text=Матфей').count()) + (await relationPanel.locator('text=Лука').count()) > 0,
+    'Relationship inspector omitted Gospel textual adjacency context');
+  assert.equal(await relationPanel.evaluate(node => node.scrollWidth <= node.clientWidth), true,
+    'Relationship inspector overflows horizontally');
+  await page.keyboard.press('Escape');
+  await relationPanel.waitFor({ state: 'detached' });
+  assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'abram',
+    'Relationship inspector did not restore focus to the source genealogy node');
 }
 
 
@@ -481,7 +509,7 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     await fitButton.click();
     await waitForViewportStable(page);
     const afterFit = await measurePersonViewport(page);
-    assert.equal(afterFit.mountedPersonNodes, EXPECTED_PERSON_NODES, `${browserName} ${viewport.width}x${viewport.height}: Fit View changed mounted person count relative to canonical dataset`);
+    assert.equal(afterFit.mountedPersonNodes, EXPECTED_PERSON_NODES, `${browserName} ${viewport.width}x${viewport.height}: Fit View changed mounted person count relative to certified publishable runtime`);
     assert.ok(afterFit.visiblePersonCards > 0, `${browserName} ${viewport.width}x${viewport.height}: canonical Fit View contains no visible person cards`);
     assert.ok(afterFit.visibleArea > 0, `${browserName} ${viewport.width}x${viewport.height}: canonical Fit View has no useful person-card area`);
 
