@@ -1,12 +1,16 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const V1 = path.join(ROOT, 'data', 'genealogy', 'genealogy.json');
-const OUT = path.join(ROOT, 'data', 'genealogy', 'v2', 'publishable');
-const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8'));
+const V2 = path.join(ROOT, 'data', 'genealogy', 'v2');
+const OUT = path.join(V2, 'publishable');
+const readText = file => fs.readFileSync(file, 'utf8');
+const readJson = file => JSON.parse(readText(file));
+const sha256 = value => createHash('sha256').update(value).digest('hex');
 const fail = message => { throw new Error(message); };
 const assert = (condition, message) => { if (!condition) fail(message); };
 
@@ -24,11 +28,29 @@ assert(actualProjectionNames.length === expectedProjectionFiles.size &&
   actualProjectionNames.every(name => expectedProjectionFiles.has(name)),
   `Unexpected publishable projection file set: ${actualProjectionNames.join(', ')}`);
 
-const v1 = readJson(V1);
+const v1Raw = readText(V1);
+const rawPersonsText = readText(path.join(V2, 'persons.json'));
+const rawGospelText = readText(path.join(V2, 'gospel-sequences.json'));
+const rawAnnotationsText = readText(path.join(V2, 'edge-annotations.json'));
+const rawMetaText = readText(path.join(V2, 'meta.json'));
+const v1 = JSON.parse(v1Raw);
+const rawMeta = JSON.parse(rawMetaText);
 const meta = readJson(path.join(OUT, 'meta.json'));
 const persons = readJson(path.join(OUT, 'persons.json'));
 const relations = readJson(path.join(OUT, 'relations.json'));
 const gospels = readJson(path.join(OUT, 'gospel-sequences.json'));
+
+const expectedSourceHashes = {
+  curatedV1: sha256(v1Raw),
+  v2Persons: sha256(rawPersonsText),
+  v2GospelSequences: sha256(rawGospelText),
+  v2EdgeAnnotations: sha256(rawAnnotationsText),
+  v2Meta: sha256(rawMetaText),
+};
+assert(JSON.stringify(meta.sourceHashes) === JSON.stringify(expectedSourceHashes),
+  `Publishable source provenance drift: ${JSON.stringify({ expected: expectedSourceHashes, actual: meta.sourceHashes })}`);
+assert(meta.rawCorpusStatus === (rawMeta.status ?? null), 'Raw corpus status provenance drift');
+assert(meta.rawPipelineVersion === (rawMeta.pipelineVersion ?? null), 'Raw pipeline version provenance drift');
 
 assert(meta.schemaVersion === 1, 'Unexpected publishable meta schema');
 assert(meta.status === 'curated-release-candidate', 'Publishable projection must remain an explicit release candidate');
@@ -129,6 +151,12 @@ const counts = {
 
 assert(meta.counts?.persons === counts.persons, 'meta person count drift');
 assert(meta.counts?.relations === counts.relations, 'meta relation count drift');
+assert(meta.counts?.parentRelations === counts.parents, 'meta parent relation count drift');
+assert(meta.counts?.spouseRelations === counts.spouses, 'meta spouse relation count drift');
+assert(meta.counts?.legalParentRelations === counts.legalParents, 'meta legal-parent count drift');
+assert(meta.counts?.gospelSequences === (gospels.sequences ?? []).length, 'meta Gospel sequence count drift');
+assert(meta.counts?.gospelOccurrences === (gospels.sequences ?? []).reduce((sum, sequence) =>
+  sum + (sequence.occurrences ?? []).length, 0), 'meta Gospel occurrence count drift');
 assert(counts.orphanAnnotations === 0, 'Truth-model annotation could not be attached to curated projection');
 
 console.log(JSON.stringify({ status: 'publishable-projection-ok', counts }, null, 2));
