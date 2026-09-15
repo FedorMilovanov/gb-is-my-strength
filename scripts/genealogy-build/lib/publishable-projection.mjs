@@ -285,7 +285,15 @@ export function buildPublishableProjection({
 
   const meta = {
     schemaVersion: 1,
-    status: 'curated-release-candidate',
+    status: 'curated-subset-release-candidate',
+    scope: {
+      type: 'closed-curated-subset',
+      curatedPersons: selected.length,
+      rawPersons: persons.length,
+      excludesRawOnlyIdentities: true,
+      excludesRawOnlyRelations: true,
+      completeness: 'partial-by-design',
+    },
     rawCorpusStatus: rawMeta?.status ?? null,
     rawPipelineVersion: rawMeta?.pipelineVersion ?? null,
     policy: {
