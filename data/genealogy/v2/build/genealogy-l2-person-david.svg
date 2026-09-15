@@ -106,7 +106,7 @@
 <rect x="780" y="455" width="3.5" height="54" rx="2" fill="#3f8a9a" opacity="0.8"/>
 <use href="#ic-scroll" x="794.0" y="471.0" width="22" height="22" color="#3f8a9a" opacity="0.9"/>
 <text x="826" y="478" font-size="16" fill="#3c3120" font-weight="bold">Нафан</text>
-<text x="826" y="496" font-size="10" fill="#3f8a9a" font-style="italic">Лука · кровная линия</text>
+<text x="826" y="496" font-size="10" fill="#3f8a9a" font-style="italic">Лука · ветвь через Нафана</text>
 <text x="1020" y="496" text-anchor="end" font-size="9" fill="#9c8862">2Цар 5:14</text>
 <text x="590" y="486" text-anchor="middle" font-size="10.5" fill="#9c8862" font-style="italic">две евангельские линии</text>
 <g filter="url(#cardShadow)"><rect x="240" y="564" width="700" height="75" rx="13" fill="#fdf9ef" stroke="#c8a961" stroke-width="1" opacity="0.97"/></g>

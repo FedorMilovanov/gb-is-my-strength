@@ -1,6 +1,5 @@
 {
-  "pipelineVersion": "0.1.0-phase1",
-  "generatedAt": "2026-07-17T22:23:44.909Z",
+  "pipelineVersion": "0.3.0-phase1-explicit-gospels",
   "counts": {
     "persons": 3056,
     "edges": 2053,
@@ -10,14 +9,14 @@
     "isolatedPersons": 982,
     "ruNamed": 3056,
     "ruCoveragePct": 100,
-    "skeletonMerged": 153,
+    "skeletonMerged": 154,
     "clusters": 14,
     "nations": 76,
     "mirrorMisses": 0
   },
   "sources": {
     "tipnr": {
-      "url": "https://raw.githubusercontent.com/STEPBible/STEPBible-Data/master/Proper%20Nouns/TIPNR%20-%20Translators%20Individualised%20Proper%20Names%20with%20all%20References%20-%20STEPBible.org%20CC%20BY.txt",
+      "url": "https://raw.githubusercontent.com/STEPBible/STEPBible-Data/b86d26cdb1f51729e73b5b4eb7f7ccadc5dfba39/Proper%20Nouns/TIPNR%20-%20Translators%20Individualised%20Proper%20Names%20with%20all%20References%20-%20STEPBible.org%20CC%20BY.txt",
       "sha256": "1a3b7d7df5cfa1e96eefa07dec92900bea278370c6788fadb5d036f3223b637c",
       "license": "CC BY 4.0 — STEPBible.org / Tyndale House Cambridge"
     },
@@ -27,11 +26,820 @@
       "license": "Синодальный перевод — public domain (1876); JSON-подача: github.com/thiagobodruk/bible"
     }
   },
+  "inputs": {
+    "v1Skeleton": {
+      "path": "data/genealogy/genealogy.json",
+      "sha256": "b66da575abe6a34189d8ae192b30e4e4934210c5cd51c046c12c5c28de9e1d85",
+      "persons": 154
+    },
+    "gospelSequences": {
+      "path": "data/genealogy/gospel-sequences.json",
+      "sha256": "54d05b43ef5cac63d8ef2fa5101e23fa12ee10449cbee0bda8eb8c7911f78c15",
+      "schemaVersion": 1,
+      "sequences": [
+        {
+          "id": "matthew",
+          "entries": 42
+        },
+        {
+          "id": "luke",
+          "entries": 76
+        }
+      ]
+    }
+  },
   "attribution": [
     "Данные персон: STEPBible.org (Tyndale House, Cambridge), CC BY 4.0, github.com/STEPBible",
     "Русский текст: Синодальный перевод (public domain)",
-    "Хронология (MT AM), спорные узлы, значимость: редакция проекта (v1-скелет, 156 персон)"
+    "Хронология (MT AM), спорные узлы, значимость: редакция проекта (v1-скелет)"
   ],
   "license": "Derived dataset: CC BY 4.0 (attribution: STEPBible.org / Tyndale House Cambridge)",
-  "status": "phase1-draft — НЕ подключать в рантайм до exit-критериев Phase 1"
+  "status": "phase1-draft — НЕ подключать в рантайм до exit-критериев Phase 1",
+  "publicationEvidence": {
+    "schemaVersion": 1,
+    "skeleton": {
+      "total": 154,
+      "matched": 154,
+      "decisions": [
+        {
+          "id": "adam",
+          "target": "Adam@Gen.2.19",
+          "method": "exact-name"
+        },
+        {
+          "id": "eve",
+          "target": "Eve@Gen.3.20",
+          "method": "exact-name"
+        },
+        {
+          "id": "cain",
+          "target": "Cain@Gen.4.1",
+          "method": "exact-name"
+        },
+        {
+          "id": "abel",
+          "target": "Abel@Gen.4.2",
+          "method": "exact-name"
+        },
+        {
+          "id": "seth",
+          "target": "Seth@Gen.4.25",
+          "method": "exact-name"
+        },
+        {
+          "id": "enosh",
+          "target": "Enosh@Gen.4.26",
+          "method": "exact-name"
+        },
+        {
+          "id": "kenan_gen5",
+          "target": "Kenan@Gen.5.9",
+          "method": "exact-name"
+        },
+        {
+          "id": "mahalalel",
+          "target": "Mahalalel@Gen.5.12",
+          "method": "source-verse"
+        },
+        {
+          "id": "jared",
+          "target": "Jared@Gen.5.15",
+          "method": "exact-name"
+        },
+        {
+          "id": "enoch",
+          "target": "Enoch@Gen.5.18",
+          "method": "source-verse"
+        },
+        {
+          "id": "methuselah",
+          "target": "Methuselah@Gen.5.21",
+          "method": "exact-name"
+        },
+        {
+          "id": "lamech_gen5",
+          "target": "Lamech@Gen.5.25",
+          "method": "source-verse"
+        },
+        {
+          "id": "noah",
+          "target": "Noah@Gen.5.29",
+          "method": "exact-name"
+        },
+        {
+          "id": "shem",
+          "target": "Shem@Gen.5.32",
+          "method": "exact-name"
+        },
+        {
+          "id": "ham",
+          "target": "Ham@Gen.5.32",
+          "method": "exact-name"
+        },
+        {
+          "id": "japheth",
+          "target": "Japheth@Gen.5.32",
+          "method": "exact-name"
+        },
+        {
+          "id": "arphaxad",
+          "target": "Arpachshad@Gen.10.22",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "cainan_2",
+          "target": "Cainan@Luk.3.36",
+          "method": "exact-name"
+        },
+        {
+          "id": "shelah",
+          "target": "Shelah@Gen.10.24",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "eber",
+          "target": "Eber@Gen.10.21",
+          "method": "source-verse"
+        },
+        {
+          "id": "peleg",
+          "target": "Peleg@Gen.10.25",
+          "method": "exact-name"
+        },
+        {
+          "id": "reu",
+          "target": "Reu@Gen.11.18",
+          "method": "exact-name"
+        },
+        {
+          "id": "serug",
+          "target": "Serug@Gen.11.20",
+          "method": "exact-name"
+        },
+        {
+          "id": "nahor_serug",
+          "target": "Nahor@Gen.11.22",
+          "method": "source-verse"
+        },
+        {
+          "id": "terah",
+          "target": "Terah@Gen.11.24",
+          "method": "exact-name"
+        },
+        {
+          "id": "abram",
+          "target": "Abraham@Gen.11.26",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "sarah",
+          "target": "Sarah@Gen.11.29",
+          "method": "exact-name"
+        },
+        {
+          "id": "isaac",
+          "target": "Isaac@Gen.17.19",
+          "method": "exact-name"
+        },
+        {
+          "id": "jacob",
+          "target": "Israel@Gen.25.26",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "judah",
+          "target": "Judah@Gen.29.35",
+          "method": "source-verse"
+        },
+        {
+          "id": "perez",
+          "target": "Perez@Gen.38.29",
+          "method": "exact-name"
+        },
+        {
+          "id": "david",
+          "target": "David@Rut.4.17",
+          "method": "exact-name"
+        },
+        {
+          "id": "solomon",
+          "target": "Solomon@2Sa.5.14",
+          "method": "exact-name"
+        },
+        {
+          "id": "nathan_prince",
+          "target": "Nathan@2Sa.5.14",
+          "method": "source-verse"
+        },
+        {
+          "id": "jeconiah",
+          "target": "Jehoiachin@2Ki.24.6",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "shealtiel",
+          "target": "Shealtiel@1Ch.3.17",
+          "method": "source-verse"
+        },
+        {
+          "id": "zerubbabel",
+          "target": "Zerubbabel@1Ch.3.19",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "mary",
+          "target": "Mary@Mat.1.16",
+          "method": "source-verse"
+        },
+        {
+          "id": "joseph_nt",
+          "target": "Joseph@Mat.1.16",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "jesus",
+          "target": "Jesus@Isa.7.14",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "cush",
+          "target": "Cush@Gen.10.6",
+          "method": "source-verse"
+        },
+        {
+          "id": "mizraim",
+          "target": "Egypt@Gen.10.6",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "put",
+          "target": "Put@Gen.10.6",
+          "method": "exact-name"
+        },
+        {
+          "id": "canaan",
+          "target": "Canaan@Gen.9.18",
+          "method": "exact-name"
+        },
+        {
+          "id": "nimrod",
+          "target": "Nimrod@Gen.10.8",
+          "method": "exact-name"
+        },
+        {
+          "id": "gomer",
+          "target": "Gomer@Gen.10.2",
+          "method": "exact-name"
+        },
+        {
+          "id": "magog",
+          "target": "Magog@Gen.10.2",
+          "method": "exact-name"
+        },
+        {
+          "id": "madai",
+          "target": "Madai@Gen.10.2",
+          "method": "exact-name"
+        },
+        {
+          "id": "javan",
+          "target": "Javan@Gen.10.2",
+          "method": "exact-name"
+        },
+        {
+          "id": "tubal_jp",
+          "target": "Tubal@Gen.10.2",
+          "method": "exact-name"
+        },
+        {
+          "id": "meshech",
+          "target": "Meshech@Gen.10.2",
+          "method": "exact-name"
+        },
+        {
+          "id": "tiras",
+          "target": "Tiras@Gen.10.2",
+          "method": "exact-name"
+        },
+        {
+          "id": "elam",
+          "target": "Elam@Gen.10.22",
+          "method": "source-verse"
+        },
+        {
+          "id": "asshur",
+          "target": "Asshur@Gen.10.22",
+          "method": "exact-name"
+        },
+        {
+          "id": "lud_shem",
+          "target": "Lud@Gen.10.22",
+          "method": "exact-name"
+        },
+        {
+          "id": "aram",
+          "target": "Aram@Gen.10.22",
+          "method": "source-chapter"
+        },
+        {
+          "id": "reuben",
+          "target": "Reuben@Gen.29.32",
+          "method": "exact-name"
+        },
+        {
+          "id": "simeon",
+          "target": "Simeon@Gen.29.33",
+          "method": "source-book"
+        },
+        {
+          "id": "levi",
+          "target": "Levi@Gen.29.34",
+          "method": "source-book"
+        },
+        {
+          "id": "issachar",
+          "target": "Issachar@Gen.30.18",
+          "method": "source-book"
+        },
+        {
+          "id": "zebulun",
+          "target": "Zebulun@Gen.30.20",
+          "method": "exact-name"
+        },
+        {
+          "id": "dan",
+          "target": "Dan@Gen.30.6",
+          "method": "exact-name"
+        },
+        {
+          "id": "naphtali",
+          "target": "Naphtali@Gen.30.8",
+          "method": "exact-name"
+        },
+        {
+          "id": "gad",
+          "target": "Gad@Gen.30.11",
+          "method": "source-book"
+        },
+        {
+          "id": "asher",
+          "target": "Asher@Gen.30.13",
+          "method": "exact-name"
+        },
+        {
+          "id": "joseph",
+          "target": "Joseph@Gen.30.24",
+          "method": "source-book"
+        },
+        {
+          "id": "benjamin",
+          "target": "Benjamin@Gen.35.18",
+          "method": "source-book"
+        },
+        {
+          "id": "kohath",
+          "target": "Kohath@Gen.46.11",
+          "method": "exact-name"
+        },
+        {
+          "id": "amram",
+          "target": "Amram@Exo.6.18",
+          "method": "source-chapter"
+        },
+        {
+          "id": "jochebed",
+          "target": "Jochebed@Exo.6.20",
+          "method": "exact-name"
+        },
+        {
+          "id": "aaron",
+          "target": "Aaron@Exo.4.14",
+          "method": "exact-name"
+        },
+        {
+          "id": "moses",
+          "target": "Moses@Exo.2.10",
+          "method": "exact-name"
+        },
+        {
+          "id": "miriam",
+          "target": "Miriam@Exo.15.20",
+          "method": "source-verse"
+        },
+        {
+          "id": "eleazar",
+          "target": "Eleazar@Exo.6.23",
+          "method": "source-chapter"
+        },
+        {
+          "id": "phinehas",
+          "target": "Phinehas@Exo.6.25",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "hezron",
+          "target": "Hezron@Gen.46.12",
+          "method": "source-verse"
+        },
+        {
+          "id": "ram",
+          "target": "Ram@Rut.4.19",
+          "method": "source-verse"
+        },
+        {
+          "id": "amminadab",
+          "target": "Amminadab@Exo.6.23",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "nahshon",
+          "target": "Nahshon@Exo.6.23",
+          "method": "exact-name"
+        },
+        {
+          "id": "salmon",
+          "target": "Salmon@Rut.4.20",
+          "method": "exact-name"
+        },
+        {
+          "id": "rahab",
+          "target": "Rahab@Jos.2.1",
+          "method": "exact-name"
+        },
+        {
+          "id": "boaz",
+          "target": "Boaz@Rut.2.1",
+          "method": "exact-name"
+        },
+        {
+          "id": "ruth",
+          "target": "Ruth@Rut.1.4",
+          "method": "exact-name"
+        },
+        {
+          "id": "obed",
+          "target": "Obed@Rut.4.17",
+          "method": "source-verse"
+        },
+        {
+          "id": "jesse",
+          "target": "Jesse@Rut.4.17",
+          "method": "exact-name"
+        },
+        {
+          "id": "rehoboam",
+          "target": "Rehoboam@1Ki.11.43",
+          "method": "exact-name"
+        },
+        {
+          "id": "abijah",
+          "target": "Abijah@1Ki.14.31",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "asa",
+          "target": "Asa@1Ki.15.8",
+          "method": "source-book"
+        },
+        {
+          "id": "jehoshaphat",
+          "target": "Jehoshaphat@1Ki.15.24",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "joram",
+          "target": "Joram@2Ki.1.17",
+          "method": "source-book"
+        },
+        {
+          "id": "uzziah",
+          "target": "Uzziah@2Ki.14.21",
+          "method": "source-book"
+        },
+        {
+          "id": "jotham",
+          "target": "Jotham@2Ki.15.5",
+          "method": "source-book"
+        },
+        {
+          "id": "ahaz",
+          "target": "Ahaz@2Ki.15.38",
+          "method": "source-book"
+        },
+        {
+          "id": "hezekiah",
+          "target": "Hezekiah@2Ki.16.20",
+          "method": "source-book"
+        },
+        {
+          "id": "manasseh",
+          "target": "Manasseh@2Ki.20.21",
+          "method": "source-book"
+        },
+        {
+          "id": "amon",
+          "target": "Amon@2Ki.21.18",
+          "method": "source-book"
+        },
+        {
+          "id": "josiah",
+          "target": "Josiah@1Ki.13.2",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "jehoiakim",
+          "target": "Jehoiakim@2Ki.23.34",
+          "method": "exact-name"
+        },
+        {
+          "id": "mattatha",
+          "target": "Mattatha@Luk.3.31",
+          "method": "exact-name"
+        },
+        {
+          "id": "menna",
+          "target": "Menna@Luk.3.31",
+          "method": "exact-name"
+        },
+        {
+          "id": "melea",
+          "target": "Melea@Luk.3.31",
+          "method": "exact-name"
+        },
+        {
+          "id": "eliakim_lk",
+          "target": "Eliakim@Luk.3.30",
+          "method": "source-verse"
+        },
+        {
+          "id": "jonam",
+          "target": "Jonam@Luk.3.30",
+          "method": "exact-name"
+        },
+        {
+          "id": "joseph_lk",
+          "target": "Joseph@Luk.3.30",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "judah_lk",
+          "target": "Judah@Luk.3.30",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "simeon_lk",
+          "target": "Simeon@Luk.3.30",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "levi_lk",
+          "target": "Levi@Luk.3.29",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "matthat",
+          "target": "Matthat@Luk.3.29",
+          "method": "source-verse"
+        },
+        {
+          "id": "jorim",
+          "target": "Jorim@Luk.3.29",
+          "method": "exact-name"
+        },
+        {
+          "id": "eliezer_lk",
+          "target": "Eliezer@Luk.3.29",
+          "method": "source-verse"
+        },
+        {
+          "id": "joshua_lk",
+          "target": "Joshua@Luk.3.29",
+          "method": "source-verse"
+        },
+        {
+          "id": "er_lk",
+          "target": "Er@Luk.3.28",
+          "method": "source-verse"
+        },
+        {
+          "id": "elmadam",
+          "target": "Elmadam@Luk.3.28",
+          "method": "exact-name"
+        },
+        {
+          "id": "cosam",
+          "target": "Cosam@Luk.3.28",
+          "method": "exact-name"
+        },
+        {
+          "id": "addi",
+          "target": "Addi@Luk.3.28",
+          "method": "exact-name"
+        },
+        {
+          "id": "melki_lk",
+          "target": "Melchi@Luk.3.28",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "neri",
+          "target": "Neri@Luk.3.27",
+          "method": "exact-name"
+        },
+        {
+          "id": "shealtiel_lk",
+          "target": "Shealtiel@Luk.3.27",
+          "method": "source-verse"
+        },
+        {
+          "id": "zerubbabel_lk",
+          "target": "Zerubbabel@Luk.3.27",
+          "method": "source-verse"
+        },
+        {
+          "id": "rhesa_lk",
+          "target": "Rhesa@Luk.3.27",
+          "method": "exact-name"
+        },
+        {
+          "id": "joanan_lk",
+          "target": "Joanan@Luk.3.27",
+          "method": "exact-name"
+        },
+        {
+          "id": "joda_lk",
+          "target": "Joda@Luk.3.26",
+          "method": "exact-name"
+        },
+        {
+          "id": "josech_lk",
+          "target": "Josech@Luk.3.26",
+          "method": "exact-name"
+        },
+        {
+          "id": "semein_lk",
+          "target": "Semein@Luk.3.26",
+          "method": "exact-name"
+        },
+        {
+          "id": "mattathias_lk",
+          "target": "Mattathias@Luk.3.26",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "maath_lk",
+          "target": "Maath@Luk.3.26",
+          "method": "exact-name"
+        },
+        {
+          "id": "naggesi_lk",
+          "target": "Naggai@Luk.3.25",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "esli_lk",
+          "target": "Esli@Luk.3.25",
+          "method": "exact-name"
+        },
+        {
+          "id": "naum_lk",
+          "target": "Nahum@Luk.3.25",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "amos_lk",
+          "target": "Amos@Luk.3.25",
+          "method": "source-chapter"
+        },
+        {
+          "id": "mattathias2_lk",
+          "target": "Mattathias@Luk.3.25",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "joseph_lk2",
+          "target": "Joseph@Luk.3.24",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "jannai_lk",
+          "target": "Jannai@Luk.3.24",
+          "method": "exact-name"
+        },
+        {
+          "id": "melchi_lk2",
+          "target": "Melchi@Luk.3.24",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "levi_lk2",
+          "target": "Levi@Luk.3.24",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "matthat_lk2",
+          "target": "Matthat@Luk.3.24",
+          "method": "source-verse"
+        },
+        {
+          "id": "heli_lk",
+          "target": "Heli@Luk.3.23",
+          "method": "exact-name"
+        },
+        {
+          "id": "abihud_mt",
+          "target": "Abihud@1Ch.8.3",
+          "method": "exact-name"
+        },
+        {
+          "id": "eliakim_mt",
+          "target": "Eliakim@Mat.1.13",
+          "method": "source-verse"
+        },
+        {
+          "id": "azor_mt",
+          "target": "Azor@Mat.1.13",
+          "method": "exact-name"
+        },
+        {
+          "id": "zadok_mt",
+          "target": "Zadok@Mat.1.14",
+          "method": "source-verse"
+        },
+        {
+          "id": "achim_mt",
+          "target": "Achim@Mat.1.14",
+          "method": "exact-name"
+        },
+        {
+          "id": "eliud_mt",
+          "target": "Eliud@Mat.1.14",
+          "method": "exact-name"
+        },
+        {
+          "id": "eleazar_mt",
+          "target": "Eleazar@Mat.1.15",
+          "method": "source-verse"
+        },
+        {
+          "id": "matthan_mt",
+          "target": "Matthan@Mat.1.15",
+          "method": "exact-name"
+        },
+        {
+          "id": "jacob_mt",
+          "target": "Jacob@Mat.1.15",
+          "method": "explicit-exception"
+        },
+        {
+          "id": "rebekah",
+          "target": "Rebekah@Gen.22.23",
+          "method": "exact-name"
+        },
+        {
+          "id": "bethuel",
+          "target": "Bethuel@Gen.22.22",
+          "method": "exact-name"
+        },
+        {
+          "id": "esau",
+          "target": "Esau@Gen.25.25",
+          "method": "exact-name"
+        },
+        {
+          "id": "leah",
+          "target": "Leah@Gen.29.16",
+          "method": "exact-name"
+        },
+        {
+          "id": "rachel",
+          "target": "Rachel@Gen.29.6",
+          "method": "exact-name"
+        },
+        {
+          "id": "laban",
+          "target": "Laban@Gen.24.29",
+          "method": "exact-name"
+        },
+        {
+          "id": "bathsheba",
+          "target": "Bathsheba@2Sa.11.3",
+          "method": "exact-name"
+        },
+        {
+          "id": "tamar",
+          "target": "Tamar@Gen.38.6",
+          "method": "source-book"
+        }
+      ],
+      "soft": [],
+      "unmatched": [],
+      "collisions": []
+    },
+    "relations": {
+      "unresolvedCount": 0,
+      "unresolved": []
+    },
+    "ruReviewQueue": 2825
+  }
 }
