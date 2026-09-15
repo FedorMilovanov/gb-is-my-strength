@@ -153,23 +153,40 @@ async function exerciseHeadingAnchor(page, label) {
 
   const expectedUrl = await page.evaluate((fragment) => new URL(fragment, window.location.href).toString(), href);
   await page.evaluate(() => {
-    const toast = document.getElementById('anchor-copy-toast');
-    window.__gbAnchorFeedbackSeen = toast?.classList.contains('is-visible') === true;
-    if (!toast || window.__gbAnchorFeedbackSeen) return;
-    const observer = new MutationObserver(() => {
-      if (!toast.classList.contains('is-visible')) return;
-      window.__gbAnchorFeedbackSeen = true;
-      observer.disconnect();
+    window.__gbAnchorFeedbackSeen = false;
+    const markFeedback = () => {
+      const toast = document.getElementById('anchor-copy-toast');
+      if (toast?.classList.contains('is-visible')) window.__gbAnchorFeedbackSeen = true;
+    };
+    markFeedback();
+    const observer = new MutationObserver(markFeedback);
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class'],
     });
-    observer.observe(toast, { attributes: true, attributeFilter: ['class'] });
+    window.__gbAnchorFeedbackObserver = observer;
   });
   await anchor.click();
-  await page.waitForFunction(() => window.__gbAnchorFeedbackSeen === true);
+  await page.waitForFunction(
+    () => document.getElementById('anchor-copy-toast')?.classList.contains('is-visible') === true
+      || window.__gbAnchorFeedbackSeen === true,
+    null,
+    { timeout: 5000 },
+  );
 
-  const feedback = await page.evaluate(() => ({
-    toastSeen: window.__gbAnchorFeedbackSeen === true,
-    hash: window.location.hash,
-  }));
+  const feedback = await page.evaluate(() => {
+    const toast = document.getElementById('anchor-copy-toast');
+    const toastSeen = toast?.classList.contains('is-visible') === true || window.__gbAnchorFeedbackSeen === true;
+    window.__gbAnchorFeedbackObserver?.disconnect();
+    delete window.__gbAnchorFeedbackObserver;
+    return {
+      toastSeen,
+      toastConnected: toast?.isConnected === true,
+      hash: window.location.hash,
+    };
+  });
   assert.equal(feedback.toastSeen, true, `${label}: heading-anchor activation produced no user feedback`);
 
   const clipboard = await page.evaluate(async () => {
