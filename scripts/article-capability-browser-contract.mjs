@@ -167,20 +167,73 @@ async function exerciseHeadingAnchor(page, label) {
       attributeFilter: ['class'],
     });
     window.__gbAnchorFeedbackObserver = observer;
+
+    const matchesAnchor = (event) => event.target instanceof Element
+      && Boolean(event.target.closest('.heading-anchor[data-gb-heading-anchor-owner="native-v1"]'));
+    window.__gbAnchorClickTrace = {
+      capture: 0,
+      bubble: 0,
+      captureDefaultPrevented: null,
+      bubbleDefaultPrevented: null,
+    };
+    const capture = (event) => {
+      if (!matchesAnchor(event)) return;
+      window.__gbAnchorClickTrace.capture += 1;
+      window.__gbAnchorClickTrace.captureDefaultPrevented = event.defaultPrevented;
+    };
+    const bubble = (event) => {
+      if (!matchesAnchor(event)) return;
+      window.__gbAnchorClickTrace.bubble += 1;
+      window.__gbAnchorClickTrace.bubbleDefaultPrevented = event.defaultPrevented;
+    };
+    document.addEventListener('click', capture, true);
+    document.addEventListener('click', bubble);
+    window.__gbAnchorCaptureProbe = capture;
+    window.__gbAnchorBubbleProbe = bubble;
   });
   await anchor.click();
-  await page.waitForFunction(
-    () => document.getElementById('anchor-copy-toast')?.classList.contains('is-visible') === true
-      || window.__gbAnchorFeedbackSeen === true,
-    null,
-    { timeout: 5000 },
-  );
+  try {
+    await page.waitForFunction(
+      () => document.getElementById('anchor-copy-toast')?.classList.contains('is-visible') === true
+        || window.__gbAnchorFeedbackSeen === true,
+      null,
+      { timeout: 5000 },
+    );
+  } catch (error) {
+    const diagnostics = await page.evaluate(() => {
+      const toast = document.getElementById('anchor-copy-toast');
+      const owned = document.querySelector('.heading-anchor[data-gb-heading-anchor-owner="native-v1"]');
+      const snapshot = {
+        trace: window.__gbAnchorClickTrace || null,
+        toastExists: Boolean(toast),
+        toastConnected: toast?.isConnected === true,
+        toastClass: toast?.className || '',
+        toastText: toast?.textContent || '',
+        hash: window.location.hash,
+        anchorConnected: owned?.isConnected === true,
+        anchorCopied: owned?.classList.contains('copied') === true,
+        anchorHref: owned?.getAttribute('href') || '',
+        anchorsReady: document.documentElement.dataset.gbHeadingAnchorsReady || '',
+        interactionVersion: window.GBArticleInteractions?.version || null,
+        headingAnchors: window.GBArticleInteractions?.headingAnchors || null,
+      };
+      window.__gbAnchorFeedbackObserver?.disconnect();
+      if (window.__gbAnchorCaptureProbe) document.removeEventListener('click', window.__gbAnchorCaptureProbe, true);
+      if (window.__gbAnchorBubbleProbe) document.removeEventListener('click', window.__gbAnchorBubbleProbe);
+      return snapshot;
+    });
+    throw new Error(`${label}: heading-anchor feedback timeout: ${JSON.stringify(diagnostics)}; ${String(error?.message || error)}`);
+  }
 
   const feedback = await page.evaluate(() => {
     const toast = document.getElementById('anchor-copy-toast');
     const toastSeen = toast?.classList.contains('is-visible') === true || window.__gbAnchorFeedbackSeen === true;
     window.__gbAnchorFeedbackObserver?.disconnect();
     delete window.__gbAnchorFeedbackObserver;
+    if (window.__gbAnchorCaptureProbe) document.removeEventListener('click', window.__gbAnchorCaptureProbe, true);
+    if (window.__gbAnchorBubbleProbe) document.removeEventListener('click', window.__gbAnchorBubbleProbe);
+    delete window.__gbAnchorCaptureProbe;
+    delete window.__gbAnchorBubbleProbe;
     return {
       toastSeen,
       toastConnected: toast?.isConnected === true,
