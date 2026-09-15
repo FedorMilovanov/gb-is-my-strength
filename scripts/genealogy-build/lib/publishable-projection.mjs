@@ -96,6 +96,8 @@ export function buildPublishableProjection({
         en: person.en,
         he: source.name?.he ?? person.skeleton?.he ?? null,
         greek: source.name?.greek ?? null,
+        ...(source.name?.birthName ? { birthName: source.name.birthName } : {}),
+        ...(source.name?.altName ? { altName: source.name.altName } : {}),
       },
       gender: source.gender ?? person.gender,
       ref: source.ref ?? null,
