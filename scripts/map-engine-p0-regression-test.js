@@ -6,6 +6,13 @@ const path = require('path');
 
 const root = path.join(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'karty/_engine/map-engine.js'), 'utf8');
+const fallbackSource = fs.readFileSync(path.join(root, 'src/components/karty/_shared/MapRuntimeFallback.astro'), 'utf8');
+const avraamMapSource = fs.readFileSync(path.join(root, 'src/components/karty/avraam/AvraamMap.astro'), 'utf8');
+const ishodMapSource = fs.readFileSync(path.join(root, 'src/components/karty/ishod/IshodMap.astro'), 'utf8');
+const ishodPageSource = fs.readFileSync(path.join(root, 'src/pages/karty/ishod/index.astro'), 'utf8');
+const avraamPageSource = fs.readFileSync(path.join(root, 'src/pages/karty/avraam/index.astro'), 'utf8');
+const mapSearchRailSource = fs.readFileSync(path.join(root, 'src/components/karty/_shared/MapSearchRail.astro'), 'utf8');
+const mapPageShellSource = fs.readFileSync(path.join(root, 'src/components/karty/_shared/MapPageShell.astro'), 'utf8');
 let failures = 0;
 
 function check(name, condition, detail) {
@@ -154,6 +161,73 @@ check(
     /const\s+unitsPerPixel\s*=\s*1\/Math\.max\(viewScale,Number\.EPSILON\)/.test(source) &&
     /scaleResizeObserver\s*=\s*new ResizeObserver\(\(\)\s*=>\s*applyViewBox\(\)\)/.test(source),
   'WAYP-P1-01 and all data-screen-anchor geometry require the actual xMidYMid meet scale to be reapplied on resize.'
+);
+
+
+check(
+  'Shared MapEngine bootstrap owns route fetch, resources, options and ready state',
+  /async function mountRoute\(target,config=\{\}\)/.test(source) &&
+    /loadRoute\(routeUrl,config\.fetchOptions\|\|\{\}\)/.test(source) &&
+    /Object\.entries\(config\.resources\|\|\{\}\)/.test(source) &&
+    /typeof config\.transformRoute===['"]function['"]/.test(source) &&
+    /typeof config\.afterCreate===['"]function['"]/.test(source) &&
+    /typeof instance\.destroy===['"]function['"]\)instance\.destroy\(\)/.test(source) &&
+    /config\.baseGeoUrl\?\?route\?\.meta\?\.base_geo_url/.test(source) &&
+    /readArchaeologyProjection\(config\.archaeologyPayloadId\|\|['"]map-archaeology-projection['"]\)/.test(source) &&
+    /container\.setAttribute\(['"]data-map-state['"],['"]ready['"]\)/.test(source),
+  'All MapEngine routes must share one fetch/create/ready lifecycle instead of duplicating it in route components.'
+);
+
+check(
+  'Shared runtime boundary delegates boot and owns missing-engine failure UI',
+  /function bootEngineRoute\(config\)/.test(fallbackSource) &&
+    /engine\.bootRoute\(options\)/.test(fallbackSource) &&
+    /renderFailure\(container/.test(fallbackSource),
+  'MapRuntimeFallback must remain the one fail-visible boundary when MapEngine itself is unavailable.'
+);
+
+check(
+  'Live route components use the shared bootstrap instead of route-local engine lifecycles',
+  /GBMapRuntime\.bootEngineRoute\(/.test(avraamMapSource) &&
+    /GBMapRuntime\.bootEngineRoute\(/.test(ishodMapSource) &&
+    !/fetch\(['"]route\.json['"]\)/.test(avraamMapSource) &&
+    !/fetch\(['"]route\.json['"]\)/.test(ishodMapSource) &&
+    !/MapEngine\.createMap\(/.test(avraamMapSource) &&
+    !/MapEngine\.createMap\(/.test(ishodMapSource),
+  'Avraam and Ishod must express only route configuration/hooks; fetch/create/ready belongs to MapEngine.'
+);
+
+check(
+  'Route code never monkey-patches shared MapEngine methods',
+  !/(?:window\.)?MapEngine\.[A-Za-z_$][\w$]*\s*=/.test(avraamMapSource) &&
+    !/(?:window\.)?MapEngine\.[A-Za-z_$][\w$]*\s*=/.test(ishodMapSource) &&
+    !/engine\.createMap\s*=/.test(ishodPageSource) &&
+    !/var createMap\s*=\s*engine\.createMap/.test(ishodPageSource),
+  'Route pages/components must pass config/hooks through the shared bootstrap, never mutate the shared engine API.'
+);
+
+check(
+  'Shared label declutter uses a generic route annotation contract',
+  /data-map-declutter-annotation/.test(source) &&
+    !/pihahiroth-corridor-label/.test(source) &&
+    /data-map-declutter-annotation/.test(ishodMapSource),
+  'MapEngine must not know route-specific annotation class names; routes opt in through data-map-declutter-annotation.'
+);
+
+check(
+  'Map pages share one document shell and one search/application rail',
+  /AppSearchSurface/.test(mapSearchRailSource) &&
+    /<MapSearchRail\s*\/>/.test(mapPageShellSource) &&
+    /class="has-app-search-map"/.test(mapPageShellSource) &&
+    /<MapPageShell>/.test(avraamPageSource) &&
+    /<MapPageShell>/.test(ishodPageSource) &&
+    !/AppSearchSurface/.test(avraamPageSource) &&
+    !/AppSearchSurface/.test(ishodPageSource) &&
+    !/<nav[^>]+map-search-rail/.test(avraamPageSource) &&
+    !/<nav[^>]+map-search-rail/.test(ishodPageSource) &&
+    !/<body\b/.test(avraamPageSource) &&
+    !/<body\b/.test(ishodPageSource),
+  'Strict-native map document/chrome belongs in MapPageShell + MapSearchRail, not route pages.'
 );
 
 if (failures) {

@@ -1,5 +1,5 @@
 /**
- * map-engine.js v0.58 — reusable biblical map rendering engine. Provenance projection + authored route geometry + viewport-bound panels.
+ * map-engine.js v0.59 — reusable biblical map rendering engine. Provenance projection + authored route geometry + viewport-bound panels.
  * v0.53 (§11 P-8/P-9): label-модель v2 — 8 якорей place.labelAnchor + выноски place.leader{dx,dy};
  * labelBg следует за сдвигом текста (фикс разорванных плашек). Legacy side 'l'/'r' полностью совместим.
  *
@@ -87,6 +87,128 @@ const MapEngine = (function() {
     const res=await fetch(url,{credentials:opts.credentials||'same-origin',headers:{Accept:'application/json',...(opts.headers||{})}});
     if(!res.ok)throw new Error(`MapEngine.loadRoute: ${res.status} ${url}`);
     return normalizeRouteData(await res.json());
+  }
+
+  async function loadJsonResource(url,opts={}){
+    const res=await fetch(url,{credentials:opts.credentials||'same-origin',headers:{Accept:'application/json',...(opts.headers||{})}});
+    if(!res.ok)throw new Error(`MapEngine.loadJsonResource: ${res.status} ${url}`);
+    return res.json();
+  }
+
+  function resolveMountContainer(target){
+    if(typeof document==='undefined')return null;
+    if(typeof target==='string')return document.querySelector(target);
+    return target&&target.nodeType===1?target:null;
+  }
+
+  function readArchaeologyProjection(payloadId='map-archaeology-projection'){
+    if(typeof document==='undefined')return null;
+    const payload=document.getElementById(payloadId);
+    if(!payload)return null;
+    try{return JSON.parse(payload.dataset?.projection||'null')}
+    catch(error){console.error('[map-archaeology] invalid projection payload:',error);return null}
+  }
+
+  function bindMapSkipLink(container,selector='[data-map-skip-link]'){
+    if(typeof document==='undefined'||!container)return;
+    const skipLink=document.querySelector(selector);
+    if(!skipLink||skipLink.dataset.mapEngineBound==='1')return;
+    skipLink.dataset.mapEngineBound='1';
+    skipLink.addEventListener('click',()=>{
+      setTimeout(()=>{
+        try{container.focus({preventScroll:true})}
+        catch(_){try{container.focus()}catch(__){}}
+      },0);
+    });
+  }
+
+  async function mountRoute(target,config={}){
+    const container=resolveMountContainer(target||config.container||'#stage');
+    if(!container)throw new Error('MapEngine.mountRoute: map container missing');
+
+    bindMapSkipLink(container,config.skipLinkSelector||'[data-map-skip-link]');
+
+    const routeUrl=config.routeUrl||'route.json';
+    const resourceEntries=Object.entries(config.resources||{});
+    const loaded=await Promise.all([
+      loadRoute(routeUrl,config.fetchOptions||{}),
+      ...resourceEntries.map(([,url])=>loadJsonResource(url,config.fetchOptions||{}))
+    ]);
+    let route=loaded[0];
+    const resources={};
+    resourceEntries.forEach(([key],index)=>{resources[key]=loaded[index+1]});
+
+    if(typeof config.transformRoute==='function'){
+      const transformed=await config.transformRoute(route,resources);
+      if(transformed)route=transformed;
+    }
+
+    let mapOptions=typeof config.mapOptions==='function'
+      ? await config.mapOptions(route,resources)
+      : {...(config.mapOptions||{})};
+    if(!mapOptions||typeof mapOptions!=='object')mapOptions={};
+
+    if(mapOptions.baseGeoUrl==null){
+      const baseGeoUrl=config.baseGeoUrl??route?.meta?.base_geo_url;
+      if(baseGeoUrl)mapOptions.baseGeoUrl=baseGeoUrl;
+    }
+    if(!Object.prototype.hasOwnProperty.call(mapOptions,'archaeologyProjection')){
+      const archaeologyProjection=readArchaeologyProjection(config.archaeologyPayloadId||'map-archaeology-projection');
+      if(archaeologyProjection!==null)mapOptions.archaeologyProjection=archaeologyProjection;
+    }
+
+    const instance=createMap(container,route,mapOptions);
+    if(!instance)throw new Error('MapEngine.mountRoute: createMap returned no instance');
+
+    try{
+      if(typeof config.afterCreate==='function'){
+        await config.afterCreate({container,route,resources,instance,mapOptions});
+      }
+    }catch(error){
+      try{if(typeof instance.destroy==='function')instance.destroy()}catch(cleanupError){console.error('[MapEngine] mount cleanup failed:',cleanupError)}
+      throw error;
+    }
+
+    container.setAttribute('data-map-state','ready');
+    container.setAttribute('aria-busy','false');
+    return {container,route,resources,instance,mapOptions};
+  }
+
+  function reportMountFailure(container,error,config={}){
+    const detail=error&&error.message
+      ? 'Не удалось запустить карту: '+error.message
+      : 'Не удалось запустить интерактивную карту.';
+    const runtime=typeof window!=='undefined'?window.GBMapRuntime:null;
+    if(container&&runtime&&typeof runtime.renderFailure==='function'){
+      runtime.renderFailure(container,{
+        title:config.errorTitle||'Интерактивная карта временно недоступна',
+        message:detail
+      });
+    }else if(container){
+      container.setAttribute('data-map-state','error');
+      container.setAttribute('aria-busy','false');
+    }
+    if(typeof config.onError==='function'){
+      try{config.onError(error,container)}catch(hookError){console.error('[MapEngine] onError hook failed:',hookError)}
+    }
+    console.error(`[${config.logLabel||'map'}] MapEngine mount failed:`,error);
+  }
+
+  function bootRoute(config={}){
+    const start=()=>{
+      const container=resolveMountContainer(config.container||'#stage');
+      return mountRoute(container,config).catch(error=>{
+        reportMountFailure(container,error,config);
+        if(config.rethrow===true)throw error;
+        return null;
+      });
+    };
+    if(typeof document!=='undefined'&&document.readyState==='loading'){
+      return new Promise(resolve=>{
+        document.addEventListener('DOMContentLoaded',()=>resolve(start()),{once:true});
+      });
+    }
+    return start();
   }
 
   function validateRoute(data={}){
@@ -1926,7 +2048,7 @@ container.appendChild(panel);
       // move, but they are the lowest tier: when one of them lands on a place
       // caption the annotation yields (background geography gives way to the
       // interactive reading path) and comes back as soon as the frame has room.
-      const annotations=[...container.querySelectorAll('#me-base-geo text,.pihahiroth-corridor-label')];
+      const annotations=[...container.querySelectorAll('#me-base-geo text,[data-map-declutter-annotation]')];
       annotations.forEach(el=>{
         el.removeAttribute('data-label-declutter');
         el.setAttribute('data-label-annotation','1');
@@ -3737,7 +3859,7 @@ container.appendChild(panel);
   // ── Public exports ──
   return {
     // v0.2 data layer
-    loadRoute,validateRoute,compareRouteData,normalizeRouteData,collectPhotoHosts,
+    loadRoute,loadJsonResource,mountRoute,bootRoute,readArchaeologyProjection,validateRoute,compareRouteData,normalizeRouteData,collectPhotoHosts,
     getPlaceIndex,getPlaceById,getStageForPlace,getRelatedPlaceIds,getTabContentKey,
     getPanelModel,getPanelSections,getStoryViewport,getStoryState,getPlaceOrder,auditStoryDefinitions,
     parseMapStateFromLocation,resolveInitialMapState,buildMapStateUrl,
@@ -3745,7 +3867,7 @@ container.appendChild(panel);
     getStageColor,clientPointToView,distanceKm,
     // v0.3 rendering
     createMap,
-    version:'0.58.0',buildDate:'2026-08-07'
+    version:'0.59.0',buildDate:'2026-09-15'
   };
 })();
 

@@ -9,32 +9,9 @@
  */
 import IshodPageHead from '@/components/karty/ishod/IshodPageHead.astro';
 import IshodMap from '@/components/karty/ishod/IshodMap.astro';
-import AppSearchSurface from '@/components/search/AppSearchSurface.astro';
+import MapPageShell from '@/components/karty/_shared/MapPageShell.astro';
 ---
-<!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <IshodPageHead />
-  </head>
-  <body class="has-app-search-map">
-    <IshodMap />
-    <script is:inline>
-      (function(){
-        var engine = window.MapEngine;
-        if (!engine || typeof engine.createMap !== 'function') return;
-        var createMap = engine.createMap;
-        engine.createMap = function(container, routeData, options) {
-          if (!container || container.id !== 'stage') {
-            return createMap.call(engine, container, routeData, options);
-          }
-          engine.createMap = createMap;
-          var nextOptions = Object.assign({}, options || {}, { baseGeoUrl: 'base.svg' });
-          return createMap.call(engine, container, routeData, nextOptions);
-        };
-      })();
-    </script>
-    <nav class="map-search-rail" aria-label="Поиск и приложение">
-      <AppSearchSurface mode="map-engine" />
-    </nav>
-  </body>
-</html>
+<MapPageShell>
+  <IshodPageHead slot="head" />
+  <IshodMap />
+</MapPageShell>
