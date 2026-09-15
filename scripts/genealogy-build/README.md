@@ -151,4 +151,3 @@ node scripts/genealogy-v2-publishable-audit.mjs
 - CI требует byte-identical regeneration и фиксированный набор из четырёх generated JSON.
 
 Raw-v2 runtime guard различает `v2/publishable/` и остальные `v2/` пути: blockers исследовательского корпуса не наследуются сертифицированной проекцией, но любой прямой импорт blocked raw-v2 остаётся ошибкой.
-
