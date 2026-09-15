@@ -22,14 +22,14 @@ export function PersonCardContent({ data }: { data: any }) {
   const boxShadow = focused
     ? `0 0 10px ${data.golden ? 'rgba(212,168,87,0.2)' : 'rgba(159,193,179,0.15)'}`
     : data.golden
-      ? '0 2px 8px rgba(0,0,0,0.3)'
-      : '0 2px 10px rgba(0,0,0,0.35)';
+      ? 'var(--genealogy-node-shadow-gold)'
+      : 'var(--genealogy-node-shadow)';
 
   return (
     <div
       className="genealogy-node"
       style={{
-        background: `linear-gradient(135deg, ${ls.bg}, rgba(13,10,6,0.6))`,
+        background: `linear-gradient(135deg, ${ls.bg}, var(--genealogy-node-base))`,
         border: `${borderWidth} solid ${borderColor}`,
         borderRadius: '10px',
         padding: '7px 11px 8px',
@@ -63,10 +63,10 @@ export function PersonCardContent({ data }: { data: any }) {
         >?</div>
       )}
       <div style={{
-        color: isMessiah ? '#ffd700' : ls.text,
+        color: isMessiah ? 'var(--genealogy-messiah-text)' : 'var(--genealogy-node-text)',
         fontSize: isMessiah ? '16px' : '14px',
         fontWeight: 700, lineHeight: 1.15,
-        textShadow: isMessiah ? '0 0 8px rgba(255,215,0,0.4)' : 'none',
+        textShadow: isMessiah ? '0 0 8px var(--genealogy-messiah-glow)' : 'none',
       }}>
         {data.name}
       </div>
@@ -74,11 +74,11 @@ export function PersonCardContent({ data }: { data: any }) {
         <div style={{ color: ls.border, fontSize: '11px', direction: 'rtl', marginTop: '1px', opacity: 0.8 }}>{data.hebrew}</div>
       )}
       {data.birthName && (
-        <div style={{ color: 'rgba(200,184,154,0.45)', fontSize: '9px', marginTop: '1px' }}>рожд. {data.birthName}</div>
+        <div style={{ color: 'var(--genealogy-muted)', fontSize: '9px', marginTop: '1px' }}>рожд. {data.birthName}</div>
       )}
       {lifespan != null && (
         <div style={{ marginTop: '4px' }}>
-          <div style={{ height: '3px', borderRadius: '2px', overflow: 'hidden', background: 'rgba(255,255,255,0.06)' }}>
+          <div style={{ height: '3px', borderRadius: '2px', overflow: 'hidden', background: 'var(--genealogy-life-track)' }}>
             <div style={{
               height: '100%', width: `${lifeBarW}%`,
               background: data.golden
@@ -87,7 +87,7 @@ export function PersonCardContent({ data }: { data: any }) {
               borderRadius: '2px',
             }} />
           </div>
-          <div style={{ color: 'rgba(200,184,154,0.5)', fontSize: '8.5px', marginTop: '2px' }}>
+          <div style={{ color: 'var(--genealogy-muted)', fontSize: '8.5px', marginTop: '2px' }}>
             {lifespan} лет{birthAM != null ? ` · AM ${birthAM}` : ''}
           </div>
         </div>
@@ -95,7 +95,7 @@ export function PersonCardContent({ data }: { data: any }) {
       {isMessiah && (
         <div style={{
           position: 'absolute', inset: '-5px', borderRadius: '14px',
-          border: '2px solid rgba(255,215,0,0.6)', boxShadow: '0 0 28px rgba(255,215,0,0.5)',
+          border: '2px solid var(--genealogy-messiah-ring)', boxShadow: '0 0 28px var(--genealogy-messiah-glow)',
           pointerEvents: 'none', animation: 'var(--genealogy-messiah-animation, genealogy-pulse-gold 2.5s ease-in-out infinite)',
         }} />
       )}
