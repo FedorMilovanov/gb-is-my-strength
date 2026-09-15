@@ -9,6 +9,7 @@ import { buildMatthewLuke } from './genealogy-build/lib/layout-l1-lineages.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const V1 = path.join(ROOT, 'data', 'genealogy', 'genealogy.json');
+const GOSPEL_SOURCE = path.join(ROOT, 'data', 'genealogy', 'gospel-sequences.json');
 const V2 = path.join(ROOT, 'data', 'genealogy', 'v2');
 const REPORT_DIR = path.join(ROOT, 'reports');
 const STRICT_PUBLISH = process.argv.includes('--strict-publish');
@@ -21,6 +22,9 @@ const readJson = (p) => JSON.parse(fs.readFileSync(p, 'utf8'));
 const v1Raw = fs.readFileSync(V1, 'utf8');
 const v1SkeletonSha256 = createHash('sha256').update(v1Raw).digest('hex');
 const v1 = JSON.parse(v1Raw);
+const gospelSourceRaw = fs.readFileSync(GOSPEL_SOURCE, 'utf8');
+const gospelSourceSha256 = createHash('sha256').update(gospelSourceRaw).digest('hex');
+const gospelSource = JSON.parse(gospelSourceRaw);
 const persons = readJson(path.join(V2, 'persons.json'));
 const edges = readJson(path.join(V2, 'edges.json'));
 const groups = readJson(path.join(V2, 'groups.json'));
@@ -33,6 +37,8 @@ const committedMatthewLukeLayout = readJson(path.join(V2, 'build', 'layout-l1-ma
 const committedMatthewLukeSvg = fs.readFileSync(path.join(V2, 'build', 'genealogy-l1-matthew-luke.svg'), 'utf8');
 const committedMatthewLukeDarkSvg = fs.readFileSync(path.join(V2, 'build', 'genealogy-l1-matthew-luke-dark.svg'), 'utf8');
 const validationText = fs.readFileSync(path.join(V2, 'VALIDATION.md'), 'utf8');
+const derivedGospelPath = path.join(V2, 'gospel-sequences.json');
+const derivedGospel = fs.existsSync(derivedGospelPath) ? readJson(derivedGospelPath) : null;
 
 const v1ById = new Map(v1.persons.map(person => [person.id, person]));
 const skeletonMappings = persons.filter(person => person.skeleton?.v1Id);
@@ -62,6 +68,19 @@ if (pipelineCurrent) {
     if (input.path !== 'data/genealogy/genealogy.json') inputProvenanceIssues.push('v1-skeleton-path');
     if (input.sha256 !== v1SkeletonSha256) inputProvenanceIssues.push('v1-skeleton-sha256-drift');
     if (input.persons !== v1.persons.length) inputProvenanceIssues.push('v1-skeleton-person-count-drift');
+  }
+  const gospelInput = meta.inputs?.gospelSequences;
+  if (!gospelInput) inputProvenanceIssues.push('missing-gospel-sequences-input');
+  else {
+    if (gospelInput.path !== 'data/genealogy/gospel-sequences.json') inputProvenanceIssues.push('gospel-sequences-path');
+    if (gospelInput.sha256 !== gospelSourceSha256) inputProvenanceIssues.push('gospel-sequences-sha256-drift');
+    if (gospelInput.schemaVersion !== gospelSource.schemaVersion) inputProvenanceIssues.push('gospel-sequences-schema-version-drift');
+    const expectedCounts = new Map((gospelSource.sequences ?? []).map(sequence => [sequence.id, sequence.entries.length]));
+    for (const item of gospelInput.sequences ?? []) {
+      if (expectedCounts.get(item.id) !== item.entries) inputProvenanceIssues.push(`gospel-sequences-count-drift:${item.id}`);
+      expectedCounts.delete(item.id);
+    }
+    for (const missing of expectedCounts.keys()) inputProvenanceIssues.push(`gospel-sequences-input-missing:${missing}`);
   }
 }
 const reviewQueueFromPersons = persons.filter(person => person.ru?.review === true).length;
