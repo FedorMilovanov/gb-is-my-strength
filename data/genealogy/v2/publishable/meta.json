@@ -17,8 +17,8 @@
     "spouses": "reciprocal curated v1 assertions only",
     "annotations": "qualify projected relations; legal/non-biological relation remains distinct from biological parent",
     "relationEvidence": "curated topology remains source-derived with directScripture=null until relation-level refs are editorially reviewed",
-    "rawGraph": "TIPNR-only persons and raw TIPNR-only edges are excluded",
-    "textualAssertions": "Gospel occurrence adjacency is text-only; it never creates or upgrades a family relation"
+    "textualAssertions": "Gospel occurrence adjacency is text-only; it never creates or upgrades a family relation",
+    "rawGraph": "TIPNR-only persons and raw TIPNR-only edges are excluded"
   },
   "counts": {
     "persons": 154,
