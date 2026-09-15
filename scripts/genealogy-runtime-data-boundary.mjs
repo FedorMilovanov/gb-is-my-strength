@@ -12,6 +12,7 @@ const RUNTIME_OWNERS = [
 ];
 const TEXT_EXTENSIONS = new Set(['.astro', '.html', '.js', '.mjs', '.ts', '.tsx']);
 const RAW_V2_PATH = /data\/genealogy\/v2\/(?!publishable(?:\/|['"`]))/gu;
+const LEGACY_RUNTIME_PATH = /data\/genealogy\/genealogy\.json/gu;
 
 const fail = message => { throw new Error(message); };
 
@@ -32,18 +33,30 @@ function collectFiles(relative) {
 
 const files = RUNTIME_OWNERS.flatMap(collectFiles);
 const violations = [];
+const legacyViolations = [];
 for (const file of files) {
   const text = fs.readFileSync(file, 'utf8').replaceAll('\\', '/');
   const matches = [...text.matchAll(RAW_V2_PATH)];
-  if (!matches.length) continue;
-  violations.push({
-    file: path.relative(ROOT, file).replaceAll('\\', '/'),
-    count: matches.length,
-  });
+  if (matches.length) {
+    violations.push({
+      file: path.relative(ROOT, file).replaceAll('\\', '/'),
+      count: matches.length,
+    });
+  }
+  const legacyMatches = [...text.matchAll(LEGACY_RUNTIME_PATH)];
+  if (legacyMatches.length) {
+    legacyViolations.push({
+      file: path.relative(ROOT, file).replaceAll('\\', '/'),
+      count: legacyMatches.length,
+    });
+  }
 }
 
 if (violations.length) {
   fail(`Genealogy runtime referenced raw v2 data outside publishable/: ${JSON.stringify(violations)}`);
+}
+if (legacyViolations.length) {
+  fail(`Genealogy runtime referenced legacy genealogy.json: ${JSON.stringify(legacyViolations)}`);
 }
 
 const routePath = path.join(ROOT, 'src', 'pages', 'rodosloviye', 'index.astro');
@@ -65,4 +78,5 @@ console.log(JSON.stringify({
   runtimeFiles: files.length,
   mode,
   rawV2References: 0,
+  legacyRuntimeReferences: 0,
 }, null, 2));
