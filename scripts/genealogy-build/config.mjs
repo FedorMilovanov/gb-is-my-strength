@@ -13,6 +13,7 @@ export const PATHS = {
   cache: path.join(HERE, '.cache'),
   repoRoot: path.resolve(HERE, '..', '..'),
   v1Skeleton: path.resolve(HERE, '..', '..', 'data', 'genealogy', 'genealogy.json'),
+  gospelSequences: path.resolve(HERE, '..', '..', 'data', 'genealogy', 'gospel-sequences.json'),
   outDir: path.resolve(HERE, '..', '..', 'data', 'genealogy', 'v2'),
 };
 
@@ -33,7 +34,7 @@ export const SOURCES = {
   },
 };
 
-export const PIPELINE_VERSION = '0.2.0-phase1-publication-safety';
+export const PIPELINE_VERSION = '0.3.0-phase1-explicit-gospels';
 
 /** Жёсткие инварианты валидатора (провал = exit 1). */
 export const HARD_INVARIANTS = {
