@@ -226,6 +226,9 @@ function hasRealHead(source) {
 function importsPageHead(source) {
   return /<[A-Z][A-Za-z0-9]*PageHead\b/.test(source);
 }
+function delegatesHeadToNamedSlot(source) {
+  return /<head(?:\s|>)[\s\S]*?<slot\s+name=["']head["']\s*\/>[\s\S]*?<\/head>/i.test(source);
+}
 
 function hasLegacyThemeBootstrap(source) {
   const scripts = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
@@ -247,6 +250,12 @@ for (const file of walk(path.join(ROOT, 'src'), '.astro')) {
   const fullHead = hasRealHead(source);
   if (!pageHead && !fullHead) continue;
   if (fullHead && !pageHead && importsPageHead(source)) continue;
+  if (fullHead && !pageHead && delegatesHeadToNamedSlot(source)) {
+    const relative = path.relative(ROOT, file).replace(/\\/g, '/');
+    assert.strictEqual(relative, 'src/components/karty/_shared/MapPageShell.astro', `${relative} must not introduce an ungoverned delegated head slot`);
+    assert(!source.includes('ReaderPreferencesHead'), `${relative} must not duplicate preferences already owned by slotted PageHead components`);
+    continue;
+  }
   astroTargets.push(file);
   assert(!hasLegacyThemeBootstrap(source), `${path.relative(ROOT, file)} must not contain a route-owned theme bootstrap`);
   assert(source.includes('ReaderPreferencesHead'), `${path.relative(ROOT, file)} must import shared head preferences`);
@@ -258,6 +267,14 @@ for (const file of walk(path.join(ROOT, 'src'), '.astro')) {
   if (csp) assert(preferenceIndex > csp.index + csp[0].length - 1, `${path.relative(ROOT, file)} preferences must follow CSP`);
 }
 assert(astroTargets.length >= 65, `expected broad Astro head coverage, got ${astroTargets.length}`);
+for (const relative of [
+  'src/components/karty/avraam/AvraamPageHead.astro',
+  'src/components/karty/ishod/IshodPageHead.astro',
+]) {
+  const pageHeadSource = read(relative);
+  assert(pageHeadSource.includes('ReaderPreferencesHead'), `${relative} delegated map head must import shared preferences`);
+  assert(pageHeadSource.includes('<ReaderPreferencesHead />'), `${relative} delegated map head must render shared preferences`);
+}
 
 const legacyTargets = [];
 for (const file of walk(ROOT, '.html', new Set(['node_modules', 'dist', 'out', 'build', 'coverage', 'reports', 'audit', '_build-tools', 'src', 'scripts', 'docs', 'migration']))) {
