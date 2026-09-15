@@ -548,7 +548,7 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
                       aria-selected={searchCursor === index}
                       data-person-id={result.person.id}
                       aria-label={genealogySearchOptionLabel(result.person)}
-                      onMouseDown={event => {
+                      onPointerDown={event => {
                         event.preventDefault();
                         chooseSearchPerson(result.person.id);
                       }}
