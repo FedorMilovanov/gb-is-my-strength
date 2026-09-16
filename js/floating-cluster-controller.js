@@ -834,10 +834,15 @@
     });
   }
 
-  // B4: legacy-only — reachable solely via handlePlayClick's pre-module
-  // fallback (other caller: this file's MediaSession-pause handler, which
-  // v2's installMediaSession overwrites on every engine page).
+  // B1 FACADE: pause through v2 (owns playback) and return — the legacy
+  // body below would cancel v2's shared speechSynthesis voice and fork
+  // ember state. Live via MediaSession on the 3 layouts where this script
+  // installs handlers after the v2 module (kod-da-vinchi, lot, hermenevtika).
   function pauseTts() {
+    if (window.GBReaderTTS && typeof window.GBReaderTTS.pause === 'function') {
+      try { window.GBReaderTTS.pause(); } catch (_) {}
+      return;
+    }
     if (!ttsAvailable()) return;
     // Cancel-based pause (no real pause/resume in either engine).
     // Mark paused/suppress BEFORE cancel: some engines synchronously fire onend.
@@ -864,11 +869,10 @@
     speakNextChunk();
   }
 
-  // B1: LEGACY TTS — this stop path drives the controller's internal speech
-  // state (ttsState/utterance/chunks), while actual playback is owned by TTS
-  // v2 (reader-tts). The stop button and long-press-stop land here and can
-  // desync from v2 — the known double-ownership root. Any stop/pause fix
-  // belongs in a shared facade, not by extending this function.
+  // B1: double-ownership RESOLVED by the facade inside — stop routes through
+  // v2 first (owns playback/ember/MediaSession); the legacy reset after it
+  // writes the same idle values and stays as the pre-module fallback.
+  // Pause/seek siblings (pauseTts/skipChunk) delegate the same way.
   function stopTts() {
     // B1 FACADE: stop through v2 first — it owns playback, ember state and
     // MediaSession. The legacy reset below stays as belt-and-braces (same
@@ -939,10 +943,16 @@
     return msAnchor;
   }
 
-  // B4: DEAD — sole callers are this file's MediaSession seek handlers,
-  // which v2's installMediaSession overwrites on every engine page
-  // (the v2 chunk executes after this script: document order, both deferred).
+  // B1 FACADE: seek through v2. NOT dead: on the 3 layouts where this
+  // script's tag follows the v2 module tag (kod-da-vinchi, lot,
+  // hermenevtika article), the engine installs MediaSession handlers last
+  // and these seek actions are live. Early return keeps legacy chunk state
+  // from forking; legacy body stays as the pre-module fallback.
   function skipChunk(delta) {
+    if (window.GBReaderTTS && typeof window.GBReaderTTS.skip === 'function') {
+      try { window.GBReaderTTS.skip(delta); } catch (_) {}
+      return;
+    }
     if (!ttsState.chunks.length) return;
     var next = Math.max(0, Math.min(ttsState.chunks.length - 1, ttsState.chunkIdx + delta));
     ttsState.runId += 1;
