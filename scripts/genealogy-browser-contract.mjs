@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
@@ -14,14 +15,90 @@ import {
   searchGenealogyPeople,
 } from '../src/components/genealogy/search.ts';
 
-assertGospelContract();
-assertGenealogyGeometryContract();
+function assertGenealogyFallbackThemeSourceContract() {
+  const source = fs.readFileSync(GENEALOGY_TREE_SOURCE_PATH, 'utf8');
+  const css = fs.readFileSync(GENEALOGY_TREE_CSS_PATH, 'utf8');
+  const routeSource = fs.readFileSync(GENEALOGY_ROUTE_SOURCE_PATH, 'utf8');
+  const marker = 'className="genealogy-fallback"';
+  const markerIndex = source.indexOf(marker);
+  assert.ok(markerIndex >= 0, 'Genealogy crash fallback lost its canonical CSS class');
+
+  const fallbackSource = source.slice(Math.max(0, markerIndex - 300), markerIndex + 2600);
+  for (const forbidden of [
+    '#1a1510',
+    '#0d0a06',
+    '#050402',
+    '#e8d5b0',
+    '#ffd700',
+    'rgba(232,213,176',
+    'rgba(255,215,0',
+  ]) {
+    assert.equal(fallbackSource.includes(forbidden), false,
+      `Genealogy fallback reintroduced hard-coded dark theme token: ${forbidden}`);
+  }
+  assert.equal(/style=\{\{/.test(fallbackSource), false,
+    'Genealogy crash fallback must not own inline theme styling');
+
+  for (const selector of [
+    '.genealogy-fallback {',
+    '.genealogy-fallback__title {',
+    '.genealogy-fallback__copy {',
+    '.genealogy-fallback__retry {',
+  ]) {
+    assert.ok(css.includes(selector), `Missing genealogy fallback selector: ${selector}`);
+  }
+  for (const token of [
+    'var(--color-canvas)',
+    'var(--color-text)',
+    'var(--color-text-muted)',
+    'var(--color-accent)',
+  ]) {
+    assert.ok(css.includes(token), `Genealogy fallback lost canonical site theme token: ${token}`);
+  }
+
+  const retryBlockStart = css.indexOf('.genealogy-fallback__retry {');
+  const retryBlock = css.slice(retryBlockStart, retryBlockStart + 700);
+  assert.match(retryBlock, /min-height:\s*44px/,
+    'Genealogy fallback retry control must retain a 44px minimum touch target');
+
+  assert.ok(source.includes('maskColor="var(--genealogy-minimap-mask)"'),
+    'Genealogy MiniMap must use the canonical theme mask token');
+  assert.equal(source.includes('maskColor="rgba(12,12,14,0.6)"'), false,
+    'Genealogy MiniMap reintroduced a hard-coded dark mask');
+  assert.match(css, /--genealogy-minimap-mask:\s*rgba\(244,239,229,\.72\)/,
+    'Genealogy light theme lost its MiniMap mask value');
+  assert.match(css, /html\.dark \.genealogy-app[\s\S]*--genealogy-minimap-mask:\s*rgba\(12,12,14,\.60\)/,
+    'Genealogy dark theme lost its MiniMap mask value');
+
+  assert.ok(routeSource.includes('slot="fallback"'),
+    'Genealogy client:only island must provide Astro fallback content');
+  assert.ok(routeSource.includes('class="genealogy-island-fallback"'),
+    'Genealogy client:only fallback lost its stable source marker');
+  assert.ok(routeSource.includes('var(--color-canvas)') &&
+    routeSource.includes('var(--color-text)') &&
+    routeSource.includes('var(--color-text-muted)') &&
+    routeSource.includes('var(--color-accent)'),
+  'Genealogy client:only fallback must use canonical site theme tokens');
+  assert.match(routeSource, /\.genealogy-island-fallback a \{[\s\S]*min-height:\s*44px/,
+    'Genealogy client:only fallback link must retain a 44px minimum touch target');
+  assert.equal(/genealogy-island-fallback[\s\S]{0,2500}<script/i.test(routeSource), false,
+    'Genealogy client:only fallback must remain native Astro content without a custom loader script');
+}
 
 const ROOT = path.resolve(process.cwd());
 const DIST = path.join(ROOT, 'dist');
-const REPORT_DIR = path.join(ROOT, 'reports', 'genealogy-browser-contract');
+const REPORT_DIR = process.env.GENEALOGY_REPORT_DIR
+  ? path.resolve(process.env.GENEALOGY_REPORT_DIR)
+  : path.join(ROOT, 'reports', 'genealogy-browser-contract');
 const PUBLISHABLE_PERSONS_PATH = path.join(ROOT, 'data', 'genealogy', 'v2', 'publishable', 'persons.json');
 const PUBLISHABLE_RELATIONS_PATH = path.join(ROOT, 'data', 'genealogy', 'v2', 'publishable', 'relations.json');
+const GENEALOGY_TREE_SOURCE_PATH = path.join(ROOT, 'src', 'components', 'genealogy', 'GenealogyTree.tsx');
+const GENEALOGY_TREE_CSS_PATH = path.join(ROOT, 'src', 'components', 'genealogy', 'GenealogyTree.css');
+const GENEALOGY_ROUTE_SOURCE_PATH = path.join(ROOT, 'src', 'pages', 'rodosloviye', 'index.astro');
+
+assertGospelContract();
+assertGenealogyGeometryContract();
+assertGenealogyFallbackThemeSourceContract();
 const BROWSERS = { chromium, webkit, firefox };
 // WebKit emits this delivery diagnostic from ReactFlow's internal observers
 // during controlled viewport updates. Keep it visible in the report while
@@ -38,6 +115,100 @@ const VIEWPORTS = String(process.env.GENEALOGY_VIEWPORTS || '390x844,1440x1000')
   assert.ok(match, `Invalid genealogy viewport: ${value}`);
   return { width: Number(match[1]), height: Number(match[2]) };
 });
+const MATRIX_WORKER = process.env.GENEALOGY_MATRIX_WORKER === '1';
+const SKIP_HYDRATION_FALLBACK = process.env.GENEALOGY_SKIP_HYDRATION_FALLBACK === '1';
+const WEBKIT_PROCESS_CHUNK_SIZE = Math.max(
+  1,
+  Number(process.env.GENEALOGY_WEBKIT_PROCESS_CHUNK_SIZE || 1),
+);
+
+function viewportToken(viewport) {
+  return `${viewport.width}x${viewport.height}`;
+}
+
+function copyWorkerArtifacts(workerDir) {
+  if (!fs.existsSync(workerDir)) return;
+  for (const entry of fs.readdirSync(workerDir, { withFileTypes: true })) {
+    if (entry.name === 'result.json') continue;
+    fs.cpSync(
+      path.join(workerDir, entry.name),
+      path.join(REPORT_DIR, entry.name),
+      { recursive: true, force: true },
+    );
+  }
+}
+
+function runIsolatedWebKitMatrix() {
+  const hydrationFallbackResults = [];
+  const results = [];
+  const workerRoot = path.join(REPORT_DIR, 'workers');
+  fs.mkdirSync(workerRoot, { recursive: true });
+
+  for (let offset = 0; offset < VIEWPORTS.length; offset += WEBKIT_PROCESS_CHUNK_SIZE) {
+    const chunk = VIEWPORTS.slice(offset, offset + WEBKIT_PROCESS_CHUNK_SIZE);
+    const chunkLabel = chunk.map(viewportToken).join('__');
+    const workerIndex = String(offset / WEBKIT_PROCESS_CHUNK_SIZE + 1).padStart(2, '0');
+    const workerDir = path.join(workerRoot, `webkit-${workerIndex}-${chunkLabel}`);
+    fs.rmSync(workerDir, { recursive: true, force: true });
+
+    const child = spawnSync(process.execPath, [process.argv[1]], {
+      cwd: ROOT,
+      env: {
+        ...process.env,
+        GENEALOGY_MATRIX_WORKER: '1',
+        GENEALOGY_BROWSERS: 'webkit',
+        GENEALOGY_VIEWPORTS: chunk.map(viewportToken).join(','),
+        GENEALOGY_REPORT_DIR: workerDir,
+        GENEALOGY_SKIP_HYDRATION_FALLBACK: offset === 0 ? '0' : '1',
+      },
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+    });
+
+    if (child.stdout) process.stdout.write(child.stdout);
+    if (child.stderr) process.stderr.write(child.stderr);
+
+    const workerResultPath = path.join(workerDir, 'result.json');
+    if (child.status !== 0) {
+      let workerError = `exit ${child.status}`;
+      if (fs.existsSync(workerResultPath)) {
+        try {
+          workerError = JSON.parse(fs.readFileSync(workerResultPath, 'utf8')).error || workerError;
+        } catch {}
+      }
+      throw new Error(`Isolated WebKit worker failed for ${chunkLabel}: ${workerError}`);
+    }
+
+    assert.ok(fs.existsSync(workerResultPath),
+      `Isolated WebKit worker produced no result.json for ${chunkLabel}`);
+    const workerResult = JSON.parse(fs.readFileSync(workerResultPath, 'utf8'));
+    assert.equal(workerResult.conclusion, 'success',
+      `Isolated WebKit worker did not report success for ${chunkLabel}`);
+    assert.deepEqual(workerResult.browsers, ['webkit'],
+      `Isolated worker unexpectedly changed browser scope for ${chunkLabel}`);
+    assert.equal(workerResult.results.length, chunk.length,
+      `Isolated WebKit worker lost viewport results for ${chunkLabel}`);
+
+    hydrationFallbackResults.push(...(workerResult.hydrationFallbackResults || []));
+    results.push(...workerResult.results);
+    copyWorkerArtifacts(workerDir);
+  }
+
+  assert.equal(results.length, VIEWPORTS.length,
+    'Isolated WebKit process matrix did not preserve every requested viewport');
+  assert.equal(
+    new Set(results.map(result => viewportToken(result.viewport))).size,
+    VIEWPORTS.length,
+    'Isolated WebKit process matrix duplicated or lost a viewport',
+  );
+  assert.equal(
+    hydrationFallbackResults.length,
+    1,
+    'Isolated WebKit process matrix must execute the no-hydration fallback witness exactly once',
+  );
+
+  return { hydrationFallbackResults, results };
+}
 
 function readRuntimePersons() {
   const persons = JSON.parse(fs.readFileSync(PUBLISHABLE_PERSONS_PATH, 'utf8'));
@@ -705,8 +876,86 @@ async function assertAtlasNavigation(page, viewport, screenshotPrefix) {
 
 }
 
-async function runViewport(browserName, browserType, baseUrl, viewport) {
-  const browser = await browserType.launch({ headless: true });
+async function assertHydrationFallback(browserName, browser, baseUrl) {
+  const viewport = { width: 390, height: 844 };
+  const context = await browser.newContext({
+    viewport,
+    hasTouch: true,
+    isMobile: browserName !== 'firefox',
+    colorScheme: 'light',
+  });
+  let blockedIslandScripts = 0;
+  await context.route('**/*', async (route) => {
+    const request = route.request();
+    const pathname = new URL(request.url()).pathname;
+    if (request.resourceType() === 'script' && pathname.startsWith('/_astro/')) {
+      blockedIslandScripts += 1;
+      await route.abort('blockedbyclient');
+      return;
+    }
+    await route.continue();
+  });
+  const page = await context.newPage();
+
+  try {
+    const response = await page.goto(`${baseUrl}/rodosloviye/`, { waitUntil: 'domcontentloaded' });
+    assert.ok(response?.ok(), `${browserName}: no-hydration /rodosloviye/ did not load successfully`);
+
+    const fallback = page.locator('.genealogy-island-fallback');
+    await fallback.waitFor({ state: 'visible' });
+    assert.ok(blockedIslandScripts > 0,
+      `${browserName}: no Astro island script was actually blocked in the hydration fallback witness`);
+    assert.equal(await page.locator('[data-genealogy-app]').count(), 0,
+      `${browserName}: genealogy app hydrated even though Astro island scripts were blocked`);
+
+    await fallback.getByRole('heading', { name: 'Загружаем интерактивный атлас' }).waitFor({ state: 'visible' });
+    const methodology = fallback.getByRole('link', { name: 'Как читать связи', exact: true });
+    const linkBox = await methodology.boundingBox();
+    assert.ok(linkBox && linkBox.width >= MIN_TOUCH_TARGET && linkBox.height >= MIN_TOUCH_TARGET,
+      `${browserName}: no-hydration methodology link is smaller than 44 CSS px`);
+    assert.equal(await methodology.getAttribute('href'), '#genealogy-methodology',
+      `${browserName}: no-hydration fallback lost its methodology target`);
+    assert.equal(await page.locator('#genealogy-methodology').count(), 1,
+      `${browserName}: methodology content disappeared with the client island unavailable`);
+
+    const readTheme = () => fallback.evaluate((node) => {
+      const root = getComputedStyle(document.documentElement);
+      const style = getComputedStyle(node);
+      return {
+        bg: root.getPropertyValue('--color-canvas').trim(),
+        text: root.getPropertyValue('--color-text').trim(),
+        muted: root.getPropertyValue('--color-text-muted').trim(),
+        accent: root.getPropertyValue('--color-accent').trim(),
+        computedText: style.color,
+      };
+    });
+    const lightTheme = await readTheme();
+    for (const [token, value] of Object.entries(lightTheme)) {
+      assert.ok(value, `${browserName}: hydration fallback has empty light theme value for ${token}`);
+    }
+
+    await page.locator('#themeToggle').evaluate(button => button.click());
+    await page.waitForFunction(() => document.documentElement.classList.contains('dark'));
+    const darkTheme = await readTheme();
+    assert.notEqual(darkTheme.bg, lightTheme.bg,
+      `${browserName}: hydration fallback did not follow canonical light/dark background tokens`);
+    assert.notEqual(darkTheme.text, lightTheme.text,
+      `${browserName}: hydration fallback did not follow canonical light/dark text tokens`);
+    await fallback.waitFor({ state: 'visible' });
+
+    await page.screenshot({
+      path: path.join(REPORT_DIR, `${browserName}-390x844-no-hydration-fallback.png`),
+      fullPage: false,
+      animations: 'disabled',
+    });
+
+    return { browser: browserName, viewport, blockedIslandScripts, lightTheme, darkTheme };
+  } finally {
+    await context.close();
+  }
+}
+
+async function runViewport(browserName, browser, baseUrl, viewport) {
   const touch = viewport.width <= 430;
   const context = await browser.newContext({
     viewport,
@@ -900,7 +1149,6 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
       reducedMotion: process.env.GENEALOGY_REDUCED_MOTION === '1', initial, afterFit, afterSearch, pageErrors, browserDiagnostics };
   } finally {
     await context.close();
-    await browser.close();
   }
 }
 
@@ -909,15 +1157,48 @@ async function main() {
   assertGenealogyFocusContract();
   fs.mkdirSync(REPORT_DIR, { recursive: true });
   const server = await startServer();
+  const hydrationFallbackResults = [];
   const results = [];
   try {
     for (const browserName of browserNames) {
       const browserType = BROWSERS[browserName];
       assert.ok(browserType, `unsupported browser: ${browserName}`);
-      for (const viewport of VIEWPORTS) {
-        const result = await runViewport(browserName, browserType, server.baseUrl, viewport);
-        results.push(result);
-        console.log(`[genealogy] ${browserName} ${viewport.width}x${viewport.height}: expected=${EXPECTED_PERSON_NODES}, initial=${result.initial.visiblePersonCards}, fit=${result.afterFit.visiblePersonCards}, search=${result.afterSearch.visiblePersonCards}`);
+
+      // Preserve the complete WebKit viewport matrix, but release native
+      // Playwright/WebKit resources at a process boundary for every viewport by
+      // default. Hosted WebKit can stall the next ReactFlow interaction even
+      // after one otherwise-green viewport. Worker processes never recurse.
+      if (
+        browserName === 'webkit' &&
+        VIEWPORTS.length > WEBKIT_PROCESS_CHUNK_SIZE &&
+        !MATRIX_WORKER
+      ) {
+        const isolated = runIsolatedWebKitMatrix();
+        hydrationFallbackResults.push(...isolated.hydrationFallbackResults);
+        results.push(...isolated.results);
+        continue;
+      }
+
+      if (!SKIP_HYDRATION_FALLBACK) {
+        const fallbackBrowser = await browserType.launch({ headless: true });
+        try {
+          hydrationFallbackResults.push(
+            await assertHydrationFallback(browserName, fallbackBrowser, server.baseUrl),
+          );
+        } finally {
+          await fallbackBrowser.close();
+        }
+      }
+
+      const browser = await browserType.launch({ headless: true });
+      try {
+        for (const viewport of VIEWPORTS) {
+          const result = await runViewport(browserName, browser, server.baseUrl, viewport);
+          results.push(result);
+          console.log(`[genealogy] ${browserName} ${viewport.width}x${viewport.height}: expected=${EXPECTED_PERSON_NODES}, initial=${result.initial.visiblePersonCards}, fit=${result.afterFit.visiblePersonCards}, search=${result.afterSearch.visiblePersonCards}`);
+        }
+      } finally {
+        await browser.close();
       }
     }
   } finally {
@@ -933,6 +1214,7 @@ async function main() {
     expectedPersonNodesAuthority: 'data/genealogy/v2/publishable/persons.json via adaptPublishableGenealogy',
     browsers: browserNames,
     viewports: VIEWPORTS,
+    hydrationFallbackResults,
     results,
   };
   fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify(report, null, 2)}\n`);

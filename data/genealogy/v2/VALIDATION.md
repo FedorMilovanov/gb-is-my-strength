@@ -92,4 +92,4 @@
 ## v1-скелет: эвристические сопоставления — сверить редактору (0)
 - нет
 
-> Статус: **phase1-draft**. В рантайм не подключать. Exit-критерии Phase 1 — см. scripts/genealogy-build/README.md.
+> Статус полного raw-корпуса: **phase1-draft**. Raw/full outputs вне `data/genealogy/v2/publishable/` не подключать в runtime; `v2/publishable/` — отдельная сертифицированная closed-curated projection с собственными fail-closed контрактами. Exit-критерии Phase 1 — см. scripts/genealogy-build/README.md.
