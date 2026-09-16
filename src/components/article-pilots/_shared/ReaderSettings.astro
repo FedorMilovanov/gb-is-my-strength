@@ -236,6 +236,8 @@
 
 <script>
   const LINE_VALUES: Record<string, string> = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
+  // B6: intentional — standalone maps narrow/normal/wide to 42/50/58rem;
+  // Gill maps the same keys to 36/43/46rem (its sheet + head bootstrap).
   const MEASURE_VALUES: Record<string, string> = { narrow: '42rem', normal: '50rem', wide: '58rem' };
 
   function readerPreferences() {
