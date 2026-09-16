@@ -3324,10 +3324,10 @@ html.dark [data-gill-v16] .mobile-top-bar {
     isolation: isolate;
   }
   [data-gill-v16] .mobile-top-bar .gb-icon {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    min-height: 40px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
     border-radius: 999px;
     background: transparent;
     color: var(--gill-mobile-bar-ink);
@@ -3498,10 +3498,10 @@ html.dark [data-gill-v16] .mobile-top-bar {
      сделал бы их заметнее, чем в образце. */
   [data-gill-v16] .mobile-bottom-bar > .gb-icon {
     flex: 0 0 auto;
-    width: 38px;
-    height: 38px;
-    min-width: 38px;
-    min-height: 38px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
     border-radius: 999px;
     background: transparent;
     color: var(--gill-mobile-bar-muted);
@@ -3512,8 +3512,10 @@ html.dark [data-gill-v16] .mobile-top-bar {
 
   [data-gill-v16] .mobile-font-btn {
     flex: 0 0 auto;
-    width: 30px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
     border: 0;
     border-radius: 8px;
     background: transparent;
@@ -3579,10 +3581,10 @@ html.dark [data-gill-v16] .mobile-top-bar {
   }
   [data-gill-v16] .mobile-top-bar .gb-icon,
   [data-gill-v16] .mobile-playwrap .mobile-top-ember {
-    width: 36px !important;
-    height: 36px !important;
-    min-width: 36px !important;
-    min-height: 36px !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
     --ember-size: 36px !important;
   }
   [data-gill-v16] .mobile-btoc-section__main,
@@ -3590,7 +3592,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
   [data-gill-v16] .bar-progress.dual-progress,
   [data-gill-v16] .bar-progress.dual-progress svg { width: 34px !important; height: 34px !important; }
   [data-gill-v16] .mobile-bottom-bar > .gb-icon,
-  [data-gill-v16] .mobile-font-btn { width: 34px !important; min-width: 34px !important; }
+  [data-gill-v16] .mobile-font-btn { width: 44px !important; min-width: 44px !important; }
 }
 
 /* B17: 320px (iPhone SE-1, Fold) — the Learning trigger goes icon-only and
@@ -3598,7 +3600,8 @@ html.dark [data-gill-v16] .mobile-top-bar {
 @media (max-width: 360px) {
   [data-gill-v16] .mobile-top-bar { gap: 4px !important; }
   [data-gill-v16] .mobile-learning-trigger span { display: none !important; }
-  [data-gill-v16] .mobile-learning-trigger { min-width: 36px; }
+  [data-gill-v16] .mobile-learning-trigger { min-width: 36px; min-height: 44px; }
+  [data-gill-v16] .mobile-btoc-section { min-height: 44px; }
   [data-gill-v16] .mobile-bottom-bar { gap: 2px !important; }
 }
 
@@ -3881,8 +3884,8 @@ html.dark [data-gill-v16] .mobile-top-bar {
     right: -2px;
     bottom: -2px;
     z-index: 3;
-    min-width: 20px;
-    height: 16px;
+    min-width: 24px;
+    height: 24px;
     padding: 2px 4px 0; /* оптическое центрирование «1×» (порт 1249e56) */
     display: grid;
     place-items: center;
@@ -5094,37 +5097,3 @@ html.dark .gb-floater .gbs-rail-spdbadge {
   }
 }
 
-
-/* GB reader integration hardening — physical mobile targets.
-   This late block intentionally overrides compact <=390px dimensions while
-   keeping the Play ring itself at 36px inside a 44px clickable button. */
-@media (max-width: 1023px) {
-  [data-gill-v16] .mobile-top-bar .gb-icon,
-  [data-gill-v16] .mobile-bottom-bar > .gb-icon,
-  [data-gill-v16] .mobile-font-btn {
-    width: 44px !important;
-    height: 44px !important;
-    min-width: 44px !important;
-    min-height: 44px !important;
-  }
-  [data-gill-v16] .mobile-playwrap {
-    min-width: 44px !important;
-    min-height: 44px !important;
-  }
-  [data-gill-v16] .mobile-playwrap .mobile-top-ember {
-    width: 44px !important;
-    height: 44px !important;
-    min-width: 44px !important;
-    min-height: 44px !important;
-    --ember-size: 36px !important;
-  }
-  [data-gill-v16] .mobile-btoc-section,
-  [data-gill-v16] .mobile-learning-trigger {
-    min-height: 44px !important;
-  }
-  [data-gill-v16] .mobile-spdbadge {
-    min-width: 24px !important;
-    min-height: 24px !important;
-    height: 24px !important;
-  }
-}
