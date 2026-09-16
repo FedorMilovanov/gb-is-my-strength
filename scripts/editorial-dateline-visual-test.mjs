@@ -72,6 +72,17 @@ try {
           flow: node.getAttribute('data-print-flow'),
         })));
         assert.ok(printAudit.every((item) => item.keepNext), `${route}: a dateline can orphan from following content`);
+        const terminalChrome = await page.evaluate(() => [...document.querySelectorAll('.gbs2-vignette,.gbs2-next,.gbs2-timeline')].map((node) => ({
+          className: node.className,
+          display: getComputedStyle(node).display,
+          printPolicy: node.getAttribute('data-print-policy'),
+          inlineDisplay: node.style.getPropertyValue('display'),
+          inlinePriority: node.style.getPropertyPriority('display'),
+        })));
+        assert.ok(
+          terminalChrome.every((item) => item.display === 'none'),
+          `${route}: terminal reader chrome leaked into paper flow: ${JSON.stringify(terminalChrome)}`,
+        );
         await page.pdf({ path: path.join(OUT, `${slug}.pdf`), format: 'A4', printBackground: true, preferCSSPageSize: true });
         await page.emulateMedia({ media: 'screen' });
         await page.evaluate(() => window.GBPrintPagination?.reset?.());
