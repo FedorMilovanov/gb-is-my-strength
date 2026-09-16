@@ -592,7 +592,7 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
         >
           <Background color="rgba(190,165,117,0.12)" gap={36} size={1} />
           <MiniMap nodeColor={(n: Node) => getLineStyle((n.data as Record<string, string>)?.lineage ?? 'neutral').fill}
-            nodeStrokeWidth={3} maskColor="rgba(12,12,14,0.6)" pannable zoomable style={{ width: 144, height: 96 }} ariaLabel="Мини-карта родословий" />
+            nodeStrokeWidth={3} maskColor="var(--genealogy-minimap-mask)" pannable zoomable style={{ width: 144, height: 96 }} ariaLabel="Мини-карта родословий" />
         </ReactFlow>
         {!hasCardsInView && canvasSize.width > 0 && <div className="genealogy-empty-view" role="status">
           <p>Карточки остались за пределами экрана</p><button type="button" onClick={resetView}>Вернуться к обзору</button>
