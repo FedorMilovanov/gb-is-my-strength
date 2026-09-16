@@ -84,10 +84,6 @@ function assertGenealogyFallbackThemeSourceContract() {
     'Genealogy client:only fallback must remain native Astro content without a custom loader script');
 }
 
-assertGospelContract();
-assertGenealogyGeometryContract();
-assertGenealogyFallbackThemeSourceContract();
-
 const ROOT = path.resolve(process.cwd());
 const DIST = path.join(ROOT, 'dist');
 const REPORT_DIR = path.join(ROOT, 'reports', 'genealogy-browser-contract');
@@ -96,6 +92,10 @@ const PUBLISHABLE_RELATIONS_PATH = path.join(ROOT, 'data', 'genealogy', 'v2', 'p
 const GENEALOGY_TREE_SOURCE_PATH = path.join(ROOT, 'src', 'components', 'genealogy', 'GenealogyTree.tsx');
 const GENEALOGY_TREE_CSS_PATH = path.join(ROOT, 'src', 'components', 'genealogy', 'GenealogyTree.css');
 const GENEALOGY_ROUTE_SOURCE_PATH = path.join(ROOT, 'src', 'pages', 'rodosloviye', 'index.astro');
+
+assertGospelContract();
+assertGenealogyGeometryContract();
+assertGenealogyFallbackThemeSourceContract();
 const BROWSERS = { chromium, webkit, firefox };
 // WebKit emits this delivery diagnostic from ReactFlow's internal observers
 // during controlled viewport updates. Keep it visible in the report while
