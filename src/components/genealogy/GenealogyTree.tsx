@@ -52,41 +52,22 @@ class GenealogyErrorBoundary extends Component<{ children: ReactNode }, Genealog
 
     return (
       <section
+        className="genealogy-fallback"
         role="alert"
         aria-live="assertive"
         data-genealogy-fallback
-        style={{
-          minHeight: '650px',
-          height: '100%',
-          display: 'grid',
-          placeItems: 'center',
-          padding: '32px 20px',
-          background: 'radial-gradient(ellipse at 50% 0%, #1a1510 0%, #0d0a06 50%, #050402 100%)',
-          color: '#e8d5b0',
-          textAlign: 'center',
-        }}
       >
-        <div style={{ maxWidth: '560px' }}>
-          <h2 style={{ margin: '0 0 12px', color: '#ffd700', fontSize: 'clamp(1.25rem, 3vw, 1.75rem)' }}>
+        <div className="genealogy-fallback__content">
+          <h2 className="genealogy-fallback__title">
             Интерактивное древо временно не загрузилось
           </h2>
-          <p style={{ margin: '0 0 20px', lineHeight: 1.65, color: 'rgba(232,213,176,0.82)' }}>
+          <p className="genealogy-fallback__copy">
             Основной текст страницы сохранён. Можно повторно запустить только интерактивное древо без перезагрузки страницы.
           </p>
           <button
+            className="genealogy-fallback__retry"
             type="button"
             onClick={this.retry}
-            style={{
-              minHeight: '44px',
-              padding: '10px 18px',
-              borderRadius: '999px',
-              border: '1px solid rgba(255,215,0,0.45)',
-              background: 'rgba(255,215,0,0.12)',
-              color: '#ffd700',
-              font: 'inherit',
-              fontWeight: 700,
-              cursor: 'pointer',
-            }}
           >
             Повторить загрузку древа
           </button>
