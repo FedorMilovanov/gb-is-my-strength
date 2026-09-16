@@ -58,6 +58,15 @@ function assertGenealogyFallbackThemeSourceContract() {
   const retryBlock = css.slice(retryBlockStart, retryBlockStart + 700);
   assert.match(retryBlock, /min-height:\s*44px/,
     'Genealogy fallback retry control must retain a 44px minimum touch target');
+
+  assert.ok(source.includes('maskColor="var(--genealogy-minimap-mask)"'),
+    'Genealogy MiniMap must use the canonical theme mask token');
+  assert.equal(source.includes('maskColor="rgba(12,12,14,0.6)"'), false,
+    'Genealogy MiniMap reintroduced a hard-coded dark mask');
+  assert.match(css, /--genealogy-minimap-mask:\s*rgba\(244,239,229,\.72\)/,
+    'Genealogy light theme lost its MiniMap mask value');
+  assert.match(css, /html\.dark \.genealogy-app[\s\S]*--genealogy-minimap-mask:\s*rgba\(12,12,14,\.60\)/,
+    'Genealogy dark theme lost its MiniMap mask value');
 }
 
 assertGospelContract();
