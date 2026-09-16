@@ -1,30 +1,303 @@
 
   <a class="skip-link" href="#main-content">Перейти к содержанию</a>
-  <main id="main-content" class="page-wrap" data-pagefind-body>
+  <button id="themeToggle" class="theme-toggle" type="button" aria-label="Переключить тему" title="Тема">
+    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"></path></svg>
+  </button>
+  <main id="main-content" class="page-wrap genealogy-department" data-pagefind-body>
     <nav aria-label="Хлебные крошки" class="breadcrumb">
       <ol class="breadcrumb__list">
         <li class="breadcrumb__item"><a class="breadcrumb__link" href="/">Главная</a></li>
         <li class="breadcrumb__item" aria-current="page"><span class="breadcrumb__current">Родословие</span></li>
       </ol>
     </nav>
-    <article class="article-body">
-      <header class="article-header">
-        <p class="section-label">Библейские инструменты</p>
-        <h1>Родословие от Адама до Христа</h1>
-        <p class="article-desc">Интерактивное генеалогическое древо: Адам, Ной, Авраам, Иуда, Давид, плен, возвращение и мессианская линия ко Христу.</p>
-      </header>
-      <section class="summary-card">
-        <h2>Коротко</h2>
-        <ol class="summary-card__body">
-          <li class="summary-card__item"><span class="summary-card__num" aria-hidden="true" data-num="01"></span><p class="summary-card__text">Полная версия страницы показывает интерактивное древо с навигацией, фильтрами и визуальными связями.</p></li>
-          <li class="summary-card__item"><span class="summary-card__num" aria-hidden="true" data-num="02"></span><p class="summary-card__text">Статическая версия сохраняет доступность раздела даже в режиме ограниченного просмотра.</p></li>
-          <li class="summary-card__item"><span class="summary-card__num" aria-hidden="true" data-num="03"></span><p class="summary-card__text">Раздел помогает видеть линию завета и мессианское ожидание от Бытия до Евангелия.</p></li>
-        </ol>
-      </section>
-      <p>Полная интерактивная версия содержит навигацию, фильтры и визуальное древо родословий; статический текст сохраняет смысл раздела для чтения и поиска.</p>
-      <p><a class="btn btn-primary" href="#genealogy-tree">К интерактивному древу</a> <a class="btn" href="/app/">Открыть приложение</a> <a class="btn" href="/karty/">К разделу карт и инструментов</a></p>
-    </article>
+
+    <section class="genealogy-hero" aria-labelledby="genealogy-department-title">
+      <div class="genealogy-hero__copy">
+        <p class="section-label">Библейский атлас родословий</p>
+        <h1 id="genealogy-department-title">От Адама до Христа</h1>
+        <p class="genealogy-hero__lead">
+          Исследуйте людей, поколения и мессианскую линию Библии как единую карту:
+          от общего обзора — к конкретному человеку, семье и основанию каждой связи.
+        </p>
+        <div class="genealogy-hero__actions">
+          <a class="btn btn-primary" href="#genealogy-tree">Исследовать атлас</a>
+          <a class="btn" href="#genealogy-methodology">Как читать связи</a>
+          <a class="btn" href="/app/">Открыть приложение</a>
+        </div>
+      </div>
+
+      <dl class="genealogy-hero__facts" aria-label="Возможности атласа">
+        <div>
+          <dt>Масштаб</dt>
+          <dd>Обзор → ключевые узлы → все детали</dd>
+        </div>
+        <div>
+          <dt>Сравнение</dt>
+          <dd>Матфей и Лука — отдельные текстовые последовательности</dd>
+        </div>
+        <div>
+          <dt>Доказательность</dt>
+          <dd>Прямой текст, редакторская реконструкция и ожидающая проверки связь различаются явно</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="genealogy-entry" aria-labelledby="genealogy-entry-title">
+      <div class="genealogy-section-heading">
+        <p class="section-label">Как работать с разделом</p>
+        <h2 id="genealogy-entry-title">Три входа в исследование</h2>
+      </div>
+      <div class="genealogy-entry__grid">
+        <article class="genealogy-entry-card">
+          <span class="genealogy-entry-card__index" aria-hidden="true">01</span>
+          <h3>Исследовать</h3>
+          <p>Панорамируйте карту, меняйте масштаб, используйте поиск, линии и переходы по эпохам.</p>
+          <a href="#genealogy-tree">Открыть древо <span aria-hidden="true">→</span></a>
+        </article>
+        <article class="genealogy-entry-card">
+          <span class="genealogy-entry-card__index" aria-hidden="true">02</span>
+          <h3>Сравнить</h3>
+          <p>Откройте режим «Мф / Лк», чтобы видеть две евангельские родословные как независимые текстовые последовательности.</p>
+          <a href="#genealogy-tree">К сравнению <span aria-hidden="true">→</span></a>
+        </article>
+        <article class="genealogy-entry-card">
+          <span class="genealogy-entry-card__index" aria-hidden="true">03</span>
+          <h3>Проверить основание</h3>
+          <p>Нажимайте прямые линии или раздел «Связи» в карточке человека, чтобы увидеть тип и статус доказательства.</p>
+          <a href="#genealogy-methodology">Понять статусы <span aria-hidden="true">→</span></a>
+        </article>
+      </div>
+    </section>
+
+    <section id="genealogy-methodology" class="genealogy-methodology" aria-labelledby="genealogy-methodology-title">
+      <div class="genealogy-section-heading">
+        <p class="section-label">Методология</p>
+        <h2 id="genealogy-methodology-title">Что именно утверждает линия</h2>
+      </div>
+      <p class="genealogy-methodology__intro">
+        Атлас не смешивает библейский текст и редакторскую реконструкцию. Статус связи показывается отдельно,
+        а текстовое соседство в родословии само по себе не превращается в биологическое или юридическое родство.
+      </p>
+      <div class="genealogy-methodology__grid">
+        <article>
+          <span class="genealogy-methodology__mark" data-state="reviewed" aria-hidden="true"></span>
+          <h3>Редакторски проверено</h3>
+          <p>Для связи указаны проверенные источники и отдельно отмечено, является ли утверждение прямым текстом.</p>
+        </article>
+        <article>
+          <span class="genealogy-methodology__mark" data-state="interpretive" aria-hidden="true"></span>
+          <h3>Интерпретация</h3>
+          <p>Гармонизация или редакторская реконструкция отображается как интерпретация, а не как буквальная формулировка Писания.</p>
+        </article>
+        <article>
+          <span class="genealogy-methodology__mark" data-state="pending" aria-hidden="true"></span>
+          <h3>На проверке</h3>
+          <p>Курированная связь может оставаться в схеме, но relation-level ссылки не считаются подтверждёнными до редакционной проверки.</p>
+        </article>
+      </div>
+      <p class="genealogy-methodology__note">
+        В интерактивный runtime поступает сертифицированное publishable-ядро. Незавершённые данные полного исследовательского корпуса не публикуются как установленный факт.
+      </p>
+    </section>
   </main>
+
+  <style>
+    .genealogy-department {
+      width: min(1120px, 94vw);
+      padding-top: clamp(28px, 4vw, 54px);
+      padding-bottom: clamp(42px, 6vw, 76px);
+    }
+    .genealogy-department .breadcrumb {
+      margin-bottom: clamp(22px, 3vw, 34px);
+    }
+    .genealogy-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(280px, .8fr);
+      gap: clamp(28px, 5vw, 64px);
+      align-items: stretch;
+      padding: clamp(28px, 5vw, 58px);
+      border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 12% 12%, color-mix(in srgb, var(--color-accent) 12%, transparent), transparent 38%),
+        color-mix(in srgb, var(--color-bg) 96%, var(--color-text) 4%);
+      box-shadow: 0 20px 55px color-mix(in srgb, #000 9%, transparent);
+    }
+    .genealogy-hero__copy {
+      align-self: center;
+    }
+    .genealogy-hero h1 {
+      max-width: 12ch;
+      margin: 0;
+      font-size: clamp(40px, 7vw, 78px);
+      line-height: .98;
+      letter-spacing: -.035em;
+      text-wrap: balance;
+    }
+    .genealogy-hero__lead {
+      max-width: 64ch;
+      margin: 22px 0 0;
+      color: var(--color-text-muted);
+      font-size: clamp(17px, 2vw, 21px);
+      line-height: 1.6;
+    }
+    .genealogy-hero__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 28px;
+    }
+    .genealogy-hero__facts {
+      display: grid;
+      gap: 1px;
+      margin: 0;
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--color-text) 11%, transparent);
+    }
+    .genealogy-hero__facts > div {
+      padding: 18px 20px;
+      background: color-mix(in srgb, var(--color-bg) 96%, var(--color-text) 4%);
+    }
+    .genealogy-hero__facts dt {
+      color: var(--color-accent);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .genealogy-hero__facts dd {
+      margin: 6px 0 0;
+      color: var(--color-text);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .genealogy-entry,
+    .genealogy-methodology {
+      margin-top: clamp(50px, 7vw, 82px);
+    }
+    .genealogy-section-heading {
+      max-width: 760px;
+    }
+    .genealogy-section-heading h2 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.1;
+      letter-spacing: -.025em;
+    }
+    .genealogy-entry__grid,
+    .genealogy-methodology__grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 24px;
+    }
+    .genealogy-entry-card,
+    .genealogy-methodology__grid article {
+      min-width: 0;
+      padding: 22px;
+      border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--color-bg) 97%, var(--color-text) 3%);
+    }
+    .genealogy-entry-card__index {
+      display: block;
+      margin-bottom: 32px;
+      color: var(--color-text-muted);
+      font: 700 11px/1 system-ui, sans-serif;
+      letter-spacing: .08em;
+    }
+    .genealogy-entry-card h3,
+    .genealogy-methodology__grid h3 {
+      margin: 0;
+      color: var(--color-text);
+      font-size: 19px;
+      line-height: 1.25;
+    }
+    .genealogy-entry-card p,
+    .genealogy-methodology__grid p,
+    .genealogy-methodology__intro,
+    .genealogy-methodology__note {
+      color: var(--color-text-muted);
+      line-height: 1.6;
+    }
+    .genealogy-entry-card p {
+      min-height: 5.1em;
+      margin: 10px 0 18px;
+      font-size: 14px;
+    }
+    .genealogy-entry-card a {
+      font-weight: 650;
+    }
+    .genealogy-methodology__intro {
+      max-width: 78ch;
+      margin: 16px 0 0;
+      font-size: 16px;
+    }
+    .genealogy-methodology__mark {
+      display: block;
+      width: 12px;
+      height: 12px;
+      margin-bottom: 18px;
+      border: 2px solid currentColor;
+      border-radius: 999px;
+    }
+    .genealogy-methodology__mark[data-state="reviewed"] { color: #4f7a38; background: #4f7a38; }
+    .genealogy-methodology__mark[data-state="interpretive"] { color: #9a6b2f; background: #9a6b2f; }
+    .genealogy-methodology__mark[data-state="pending"] { color: #7c7569; background: transparent; }
+    .genealogy-methodology__grid p {
+      margin: 9px 0 0;
+      font-size: 14px;
+    }
+    .genealogy-methodology__note {
+      margin: 20px 0 0;
+      padding: 15px 18px;
+      border-left: 3px solid var(--color-accent);
+      background: color-mix(in srgb, var(--color-accent) 7%, transparent);
+      font-size: 13px;
+    }
+    html.dark .genealogy-hero,
+    html.dark .genealogy-entry-card,
+    html.dark .genealogy-methodology__grid article {
+      box-shadow: none;
+    }
+    @media (max-width: 860px) {
+      .genealogy-hero {
+        grid-template-columns: 1fr;
+      }
+      .genealogy-hero h1 {
+        max-width: 14ch;
+      }
+      .genealogy-entry__grid,
+      .genealogy-methodology__grid {
+        grid-template-columns: 1fr;
+      }
+      .genealogy-entry-card p {
+        min-height: auto;
+      }
+    }
+    @media (max-width: 600px) {
+      .genealogy-department {
+        width: min(100%, 100vw);
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+      .genealogy-hero {
+        padding: 24px 18px;
+        border-radius: 18px;
+      }
+      .genealogy-hero__actions {
+        display: grid;
+      }
+      .genealogy-hero__actions .btn {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+      }
+    }
+  </style>
   <script is:inline>
   window.SITE_CONFIG = {
     version: 1,

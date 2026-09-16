@@ -8,6 +8,11 @@ import { chromium, webkit, firefox } from 'playwright';
 import { assertGenealogyGeometryContract } from './genealogy-geometry-contract.mjs';
 import { assertGospelContract } from './genealogy-gospel-contract.mjs';
 import { getGospelComparison } from '../src/components/genealogy/gospelSequences.ts';
+import { adaptPublishableGenealogy } from '../src/components/genealogy/publishableAdapter.mjs';
+import {
+  automaticGenealogySearchResult,
+  searchGenealogyPeople,
+} from '../src/components/genealogy/search.ts';
 
 assertGospelContract();
 assertGenealogyGeometryContract();
@@ -15,7 +20,8 @@ assertGenealogyGeometryContract();
 const ROOT = path.resolve(process.cwd());
 const DIST = path.join(ROOT, 'dist');
 const REPORT_DIR = path.join(ROOT, 'reports', 'genealogy-browser-contract');
-const GENEALOGY_DATA_PATH = path.join(ROOT, 'data', 'genealogy', 'genealogy.json');
+const PUBLISHABLE_PERSONS_PATH = path.join(ROOT, 'data', 'genealogy', 'v2', 'publishable', 'persons.json');
+const PUBLISHABLE_RELATIONS_PATH = path.join(ROOT, 'data', 'genealogy', 'v2', 'publishable', 'relations.json');
 const BROWSERS = { chromium, webkit, firefox };
 // WebKit emits this delivery diagnostic from ReactFlow's internal observers
 // during controlled viewport updates. Keep it visible in the report while
@@ -33,14 +39,37 @@ const VIEWPORTS = String(process.env.GENEALOGY_VIEWPORTS || '390x844,1440x1000')
   return { width: Number(match[1]), height: Number(match[2]) };
 });
 
-function readExpectedPersonNodes() {
-  const source = JSON.parse(fs.readFileSync(GENEALOGY_DATA_PATH, 'utf8'));
-  const count = Array.isArray(source?.persons) ? source.persons.length : 0;
-  assert.ok(count > 0, 'canonical data/genealogy/genealogy.json has no persons');
-  return count;
+function readRuntimePersons() {
+  const persons = JSON.parse(fs.readFileSync(PUBLISHABLE_PERSONS_PATH, 'utf8'));
+  const relations = JSON.parse(fs.readFileSync(PUBLISHABLE_RELATIONS_PATH, 'utf8'));
+  const adapted = adaptPublishableGenealogy({ persons, relations });
+  assert.ok(adapted.length > 0, 'publishable genealogy runtime has no persons');
+  return adapted;
 }
 
-const EXPECTED_PERSON_NODES = readExpectedPersonNodes();
+const RUNTIME_PERSONS = readRuntimePersons();
+const EXPECTED_PERSON_NODES = RUNTIME_PERSONS.length;
+
+function assertGenealogySearchContract() {
+  const ambiguous = searchGenealogyPeople(RUNTIME_PERSONS, 'Иосиф (Лк)');
+  assert.deepEqual(ambiguous.map(result => result.person.id), ['joseph_lk', 'joseph_lk2'],
+    'Duplicate Joseph/Luke identities must remain deterministic and separately selectable');
+  assert.equal(automaticGenealogySearchResult(ambiguous, 'Иосиф (Лк)'), null,
+    'Ambiguous exact duplicate name must not auto-select the first dataset row');
+
+  const isaac = searchGenealogyPeople(RUNTIME_PERSONS, 'Исаак');
+  assert.equal(automaticGenealogySearchResult(isaac, 'Исаак')?.id, 'isaac',
+    'Unique exact search must still resolve directly');
+
+  const israel = searchGenealogyPeople(RUNTIME_PERSONS, 'Израиль');
+  assert.equal(automaticGenealogySearchResult(israel, 'Израиль')?.id, 'jacob',
+    'Curated alternate name must resolve Jacob deterministically');
+
+  const noMatch = searchGenealogyPeople(RUNTIME_PERSONS, 'несуществующий-персонаж');
+  assert.deepEqual(noMatch, [], 'Unknown search must remain empty');
+}
+
+assertGenealogySearchContract();
 
 function contentType(filePath) {
   const extension = path.extname(filePath).toLowerCase();
@@ -202,8 +231,11 @@ async function assertSplitLifecycle(page, touch) {
   else await pressFocused(page, opener, 'Enter', 'Split View opener');
   const dialog = page.getByRole('dialog', { name: 'Две родословные Христа' });
   await dialog.waitFor({ state: 'visible' });
+  assert.equal(await dialog.evaluate(node =>
+    getComputedStyle(node).getPropertyValue('--split-bg').trim()), '#f8f2e7',
+  'Split View did not inherit canonical light theme');
 
-  const persons = JSON.parse(fs.readFileSync(GENEALOGY_DATA_PATH, 'utf8')).persons;
+  const persons = RUNTIME_PERSONS;
   const screenshotPrefix = `${page.context().browser().browserType().name()}-${page.viewportSize().width}x${page.viewportSize().height}`;
   for (const range of ['david', 'full']) {
     await dialog.getByRole('button', { name: range === 'david' ? 'От Давида' : 'Полностью', exact: true }).click();
@@ -258,16 +290,122 @@ async function assertSplitLifecycle(page, touch) {
   await dialog.waitFor({ state: 'detached' });
   assert.equal(await opener.evaluate((node) => document.activeElement === node), true, 'Escape did not restore focus to Split View opener');
 
+  const themeToggle = page.locator('#themeToggle');
+  await themeToggle.evaluate(button => button.click());
+  await page.waitForFunction(() => document.documentElement.classList.contains('dark'));
+
   await pressFocused(page, opener, 'Enter', 'Split View opener');
   const reopened = page.getByRole('dialog', { name: 'Две родословные Христа' });
   await reopened.waitFor({ state: 'visible' });
+  assert.equal(await reopened.evaluate(node =>
+    getComputedStyle(node).getPropertyValue('--split-bg').trim()), '#191711',
+  'Split View did not follow canonical dark theme');
   await reopened.getByRole('button', { name: 'Закрыть сравнение' }).click();
   await reopened.waitFor({ state: 'detached' });
   assert.equal(await opener.evaluate((node) => document.activeElement === node), true, 'explicit Split View close did not restore focus to opener');
+
+  await themeToggle.evaluate(button => button.click());
+  await page.waitForFunction(() => !document.documentElement.classList.contains('dark'));
+}
+
+async function assertDepartmentShell(page, browserName, viewport) {
+  const main = page.locator('#main-content.genealogy-department');
+  await main.waitFor({ state: 'visible' });
+  await page.getByRole('heading', { level: 1, name: 'От Адама до Христа' }).waitFor({ state: 'visible' });
+  await page.getByRole('heading', { level: 2, name: 'Три входа в исследование' }).waitFor({ state: 'visible' });
+  await page.getByRole('heading', { level: 2, name: 'Что именно утверждает линия' }).waitFor({ state: 'visible' });
+
+  assert.equal(await page.getByRole('heading', { name: 'Коротко', exact: true }).count(), 0,
+    'Legacy article summary remained in the genealogy department shell');
+
+  const explore = page.getByRole('link', { name: 'Исследовать атлас', exact: true });
+  const methodology = page.getByRole('link', { name: 'Как читать связи', exact: true });
+  const bibleApp = page.getByRole('link', { name: 'Открыть приложение', exact: true });
+  assert.equal(await explore.getAttribute('href'), '#genealogy-tree',
+    'Department primary action does not target the atlas');
+  assert.equal(await methodology.getAttribute('href'), '#genealogy-methodology',
+    'Department methodology action does not target the evidence explanation');
+  assert.equal(await bibleApp.getAttribute('href'), '/app/',
+    'Department shell lost the canonical Bible App entrypoint');
+
+  for (const heading of ['Исследовать', 'Сравнить', 'Проверить основание']) {
+    assert.equal(await main.getByRole('heading', { level: 3, name: heading, exact: true }).count(), 1,
+      `Department mode card missing or duplicated: ${heading}`);
+  }
+
+  for (const heading of ['Редакторски проверено', 'Интерпретация', 'На проверке']) {
+    assert.equal(await main.getByRole('heading', { level: 3, name: heading, exact: true }).count(), 1,
+      `Evidence methodology state missing or duplicated: ${heading}`);
+  }
+
+  const shellMetrics = await main.evaluate(node => ({
+    scrollWidth: node.scrollWidth,
+    clientWidth: node.clientWidth,
+  }));
+  assert.ok(shellMetrics.scrollWidth <= shellMetrics.clientWidth,
+    `${browserName} ${viewport.width}x${viewport.height}: department shell overflows horizontally`);
+
+  await main.screenshot({
+    path: path.join(REPORT_DIR, `${browserName}-${viewport.width}x${viewport.height}-department-shell.png`),
+    animations: 'disabled',
+  });
+}
+
+async function assertGenealogyThemeLifecycle(page, browserName, viewport) {
+  const app = page.locator('[data-genealogy-app]');
+  const toggle = page.locator('#themeToggle');
+  await toggle.waitFor({ state: 'attached' });
+
+  const readTheme = () => app.evaluate(node => {
+    const style = getComputedStyle(node);
+    return {
+      dark: document.documentElement.classList.contains('dark'),
+      bg: style.getPropertyValue('--genealogy-bg').trim(),
+      panel: style.getPropertyValue('--genealogy-panel').trim(),
+      text: style.getPropertyValue('--genealogy-text').trim(),
+      nodeText: style.getPropertyValue('--genealogy-node-text').trim(),
+      actualBg: style.backgroundColor,
+      color: style.color,
+    };
+  });
+
+  const light = await readTheme();
+  assert.equal(light.dark, false,
+    `${browserName} ${viewport.width}x${viewport.height}: genealogy did not start in canonical light theme`);
+  assert.equal(light.bg, '#f4efe5');
+  assert.equal(light.panel, '#fffaf2');
+  assert.equal(light.text, '#30271d');
+  assert.equal(light.nodeText, '#33291f');
+  await app.screenshot({
+    path: path.join(REPORT_DIR, `${browserName}-${viewport.width}x${viewport.height}-theme-light.png`),
+    animations: 'disabled',
+  });
+
+  await toggle.evaluate(button => button.click());
+  await page.waitForFunction(() => document.documentElement.classList.contains('dark'));
+  const dark = await readTheme();
+  assert.equal(dark.dark, true);
+  assert.equal(dark.bg, '#171816');
+  assert.equal(dark.panel, '#23251f');
+  assert.equal(dark.text, '#ede6d5');
+  assert.equal(dark.nodeText, '#f0e3c9');
+  assert.notEqual(dark.actualBg, light.actualBg,
+    `${browserName} ${viewport.width}x${viewport.height}: atlas background did not change with site theme`);
+  assert.notEqual(dark.color, light.color,
+    `${browserName} ${viewport.width}x${viewport.height}: atlas text did not change with site theme`);
+  await app.screenshot({
+    path: path.join(REPORT_DIR, `${browserName}-${viewport.width}x${viewport.height}-theme-dark.png`),
+    animations: 'disabled',
+  });
+
+  await toggle.evaluate(button => button.click());
+  await page.waitForFunction(() => !document.documentElement.classList.contains('dark'));
+  const restored = await readTheme();
+  assert.equal(restored.bg, light.bg, 'Theme round-trip did not restore genealogy light tokens');
 }
 
 async function assertFocusInteractions(page) {
-  await page.getByRole('textbox', { name: 'Поиск по имени' }).fill('Исаак');
+  await page.getByRole('combobox', { name: 'Поиск по имени' }).fill('Исаак');
   await waitForViewportStable(page);
   await page.locator('.react-flow__node[data-id="isaac"]').click();
   await page.getByRole('complementary', { name: 'Детали: Исаак' }).waitFor({ state: 'visible' });
@@ -279,6 +417,37 @@ async function assertFocusInteractions(page) {
   assert.equal(await details.evaluate(node => node.scrollWidth <= node.clientWidth), true, 'Person drawer overflows horizontally');
   await page.locator('[data-genealogy-app]').screenshot({ path: path.join(REPORT_DIR,
     `${page.context().browser().browserType().name()}-${page.viewportSize().width}x${page.viewportSize().height}-details.png`), animations: 'disabled' });
+
+  const fatherNav = details.getByRole('button', { name: 'Открыть человека: Авраам — Отец' });
+  const motherNav = details.getByRole('button', { name: 'Открыть человека: Сарра — Мать' });
+  for (const control of [fatherNav, motherNav]) {
+    await control.waitFor({ state: 'visible' });
+    const box = await control.boundingBox();
+    assert.ok(box && box.height >= MIN_TOUCH_TARGET,
+      'Family navigation control is smaller than the 44px touch target');
+  }
+
+  if ((page.viewportSize()?.width ?? 999) <= 430) await fatherNav.tap();
+  else await fatherNav.click();
+  await page.getByRole('complementary', { name: 'Детали: Авраам' }).waitFor({ state: 'visible' });
+  await waitForViewportStable(page);
+  assert.equal(await page.locator('[data-genealogy-app]').getAttribute('data-genealogy-active-person'), 'abram',
+    'Family navigation did not update the active genealogy person to Abraham');
+  assert.ok((await measurePersonViewport(page)).visibleIds.includes('abram'),
+    'Family navigation did not center Abraham into the useful viewport');
+
+  const abrahamDetails = page.getByRole('complementary', { name: 'Детали: Авраам' });
+  const backToIsaac = abrahamDetails.getByRole('button', { name: 'Открыть человека: Исаак — Сын' });
+  await backToIsaac.waitFor({ state: 'visible' });
+  if ((page.viewportSize()?.width ?? 999) <= 430) await backToIsaac.tap();
+  else await backToIsaac.click();
+  await page.getByRole('complementary', { name: 'Детали: Исаак' }).waitFor({ state: 'visible' });
+  await waitForViewportStable(page);
+  assert.equal(await page.locator('[data-genealogy-app]').getAttribute('data-genealogy-active-person'), 'isaac',
+    'Reverse family navigation did not restore Isaac as the active person');
+  assert.ok((await measurePersonViewport(page)).visibleIds.includes('isaac'),
+    'Reverse family navigation did not center Isaac into the useful viewport');
+
   for (const id of ['abram', 'sarah']) {
     await page.waitForFunction(personId => {
       const node = document.querySelector(`.react-flow__node[data-id="${personId}"] .genealogy-node`);
@@ -348,13 +517,99 @@ async function assertFocusInteractions(page) {
   assert.equal(await page.locator('[data-genealogy-focus-count]').count(), 0, 'Excluded person left stale focus');
   assert.equal(await page.locator('[data-genealogy-details]').count(), 0, 'Excluded person left stale details');
   // Search must reveal a person even when the active filter excludes them.
-  await page.getByRole('textbox', { name: 'Поиск по имени' }).fill('Исаак');
+  await page.getByRole('combobox', { name: 'Поиск по имени' }).fill('Исаак');
   await page.waitForFunction(() => document.querySelector('.genealogy-filter-tools button[aria-pressed="true"]')?.textContent === 'Все');
   await page.waitForFunction(() => document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-level') === '2');
   await waitForViewportStable(page);
   await pressFocused(page, isaacNode, 'Enter', 'Isaac genealogy node');
   await page.getByRole('complementary', { name: 'Детали: Исаак' }).waitFor({ state: 'visible' });
   await page.getByRole('button', { name: 'Закрыть панель', exact: true }).click();
+
+  // A direct family edge opens evidence; a folded semantic path is tested
+  // separately by navigation and must never masquerade as one direct relation.
+  const abrahamIsaacEdge = page.locator('[data-testid="rf__edge-abram->isaac"] .react-flow__edge-interaction');
+  await abrahamIsaacEdge.waitFor({ state: 'visible' });
+  await abrahamIsaacEdge.click();
+  const relationPanel = page.getByRole('complementary', { name: 'Основание связи: Авраам — Исаак' });
+  await relationPanel.waitFor({ state: 'visible' });
+  assert.equal(await relationPanel.getByRole('button', { name: 'Закрыть сведения о связи' })
+    .evaluate(node => document.activeElement === node), true,
+  'Focus did not enter the relationship inspector');
+  const relationCloseBox = await relationPanel.getByRole('button', { name: 'Закрыть сведения о связи' }).boundingBox();
+  assert.ok(relationCloseBox && relationCloseBox.width >= MIN_TOUCH_TARGET && relationCloseBox.height >= MIN_TOUCH_TARGET,
+    'Relationship inspector close control is too small');
+  assert.equal(await relationPanel.getByText('Ссылки к самой связи ещё не проверены', { exact: true }).isVisible(), true,
+    'Pending relation-level review status is not visible to the user');
+  assert.ok((await relationPanel.locator('text=Матфей').count()) + (await relationPanel.locator('text=Лука').count()) > 0,
+    'Relationship inspector omitted Gospel textual adjacency context');
+  assert.equal(await relationPanel.evaluate(node => node.scrollWidth <= node.clientWidth), true,
+    'Relationship inspector overflows horizontally');
+  await page.keyboard.press('Escape');
+  await relationPanel.waitFor({ state: 'detached' });
+  assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'abram',
+    'Relationship inspector did not restore focus to the source genealogy node');
+
+  const personSearch = page.getByRole('combobox', { name: 'Поиск по имени' });
+  await personSearch.fill('Иосиф (Обручник)');
+  await page.waitForFunction(() =>
+    document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-search-person') === 'joseph_nt');
+  await waitForViewportStable(page);
+  await page.locator('.react-flow__node[data-id="joseph_nt"]').click();
+
+  const josephDetails = page.getByRole('complementary', { name: 'Детали: Иосиф (Обручник)' });
+  await josephDetails.waitFor({ state: 'visible' });
+  const legalRelation = josephDetails.getByRole('button', {
+    name: 'Открыть основание связи: Иосиф (Обручник) — Иисус Христос',
+  });
+  await legalRelation.waitFor({ state: 'visible' });
+  assert.equal(await legalRelation.getByText('Юридический родитель', { exact: true }).isVisible(), true,
+    'Joseph detail drawer did not expose the legal-parent relation');
+  assert.equal(await legalRelation.getByText('прямой текст', { exact: true }).isVisible(), true,
+    'Joseph legal-parent relation lost its evidence status');
+  const legalRelationBox = await legalRelation.boundingBox();
+  assert.ok(legalRelationBox && legalRelationBox.height >= MIN_TOUCH_TARGET,
+    'Person relation evidence control is smaller than the 44px touch target');
+  if ((page.viewportSize()?.width ?? 999) <= 430) await legalRelation.tap();
+  else await legalRelation.click();
+
+  const legalPanel = page.getByRole('complementary', {
+    name: 'Основание связи: Иосиф (Обручник) — Иисус Христос',
+  });
+  await legalPanel.waitFor({ state: 'visible' });
+  assert.equal(await legalPanel.getByText('Связь квалифицирована как юридическая / небиологическая.', { exact: true }).isVisible(), true,
+    'Legal-parent inspector did not expose non-biological qualification');
+  assert.equal(await legalPanel.getByText('Мф 1:18–25', { exact: true }).isVisible(), true,
+    'Legal-parent inspector omitted reviewed virgin-birth evidence');
+  await page.keyboard.press('Escape');
+  await legalPanel.waitFor({ state: 'detached' });
+  assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'joseph_nt',
+    'Legal-parent inspector did not restore focus to Joseph');
+
+  await personSearch.fill('Иисус Христос');
+  await page.waitForFunction(() =>
+    document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-search-person') === 'jesus');
+  await waitForViewportStable(page);
+  await page.locator('.react-flow__node[data-id="jesus"]').click();
+
+  const jesusDetails = page.getByRole('complementary', { name: 'Детали: Иисус Христос' });
+  await jesusDetails.waitFor({ state: 'visible' });
+  const childSideLegalRelation = jesusDetails.getByRole('button', {
+    name: 'Открыть основание связи: Иисус Христос — Иосиф (Обручник)',
+  });
+  await childSideLegalRelation.waitFor({ state: 'visible' });
+  assert.equal(await childSideLegalRelation.getByText('Юридический ребёнок', { exact: true }).isVisible(), true,
+    'Jesus detail drawer did not expose the reverse side of legal parentage');
+  if ((page.viewportSize()?.width ?? 999) <= 430) await childSideLegalRelation.tap();
+  else await childSideLegalRelation.click();
+
+  const childSidePanel = page.getByRole('complementary', {
+    name: 'Основание связи: Иосиф (Обручник) — Иисус Христос',
+  });
+  await childSidePanel.waitFor({ state: 'visible' });
+  await page.keyboard.press('Escape');
+  await childSidePanel.waitFor({ state: 'detached' });
+  assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'jesus',
+    'Relation inspector returned focus to relation.from instead of the person who opened it');
 }
 
 
@@ -453,8 +708,13 @@ async function assertAtlasNavigation(page, viewport, screenshotPrefix) {
 async function runViewport(browserName, browserType, baseUrl, viewport) {
   const browser = await browserType.launch({ headless: true });
   const touch = viewport.width <= 430;
-  const context = await browser.newContext({ viewport, hasTouch: touch, isMobile: touch && browserName !== 'firefox',
-    reducedMotion: process.env.GENEALOGY_REDUCED_MOTION === '1' ? 'reduce' : 'no-preference' });
+  const context = await browser.newContext({
+    viewport,
+    hasTouch: touch,
+    isMobile: touch && browserName !== 'firefox',
+    colorScheme: 'light',
+    reducedMotion: process.env.GENEALOGY_REDUCED_MOTION === '1' ? 'reduce' : 'no-preference',
+  });
   const page = await context.newPage();
   const pageErrors = [];
   let phase = 'navigation';
@@ -464,12 +724,16 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     const response = await page.goto(`${baseUrl}/rodosloviye/`, { waitUntil: 'networkidle' });
     assert.ok(response?.ok(), `${browserName} ${viewport.width}x${viewport.height}: /rodosloviye/ did not load successfully`);
 
+    phase = 'department-shell';
+    await assertDepartmentShell(page, browserName, viewport);
+
     phase = 'initial-settle';
     await page.locator('.react-flow__node .genealogy-node').first().waitFor({ state: 'attached' });
     await waitForViewportStable(page);
 
     const initial = await measurePersonViewport(page);
-    assert.equal(initial.mountedPersonNodes, EXPECTED_PERSON_NODES, `${browserName} ${viewport.width}x${viewport.height}: genealogy dataset mount count diverged from canonical data/genealogy/genealogy.json`);
+    await assertGenealogyThemeLifecycle(page, browserName, viewport);
+    assert.equal(initial.mountedPersonNodes, EXPECTED_PERSON_NODES, `${browserName} ${viewport.width}x${viewport.height}: genealogy dataset mount count diverged from certified publishable runtime`);
     assert.ok(initial.visiblePersonCards > 0, `${browserName} ${viewport.width}x${viewport.height}: settled initial viewport contains no visible person cards`);
     assert.ok(initial.visibleArea > 0, `${browserName} ${viewport.width}x${viewport.height}: settled initial viewport has no useful person-card area`);
 
@@ -481,12 +745,12 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     await fitButton.click();
     await waitForViewportStable(page);
     const afterFit = await measurePersonViewport(page);
-    assert.equal(afterFit.mountedPersonNodes, EXPECTED_PERSON_NODES, `${browserName} ${viewport.width}x${viewport.height}: Fit View changed mounted person count relative to canonical dataset`);
+    assert.equal(afterFit.mountedPersonNodes, EXPECTED_PERSON_NODES, `${browserName} ${viewport.width}x${viewport.height}: Fit View changed mounted person count relative to certified publishable runtime`);
     assert.ok(afterFit.visiblePersonCards > 0, `${browserName} ${viewport.width}x${viewport.height}: canonical Fit View contains no visible person cards`);
     assert.ok(afterFit.visibleArea > 0, `${browserName} ${viewport.width}x${viewport.height}: canonical Fit View has no useful person-card area`);
 
     phase = 'search';
-    const search = page.getByRole('textbox', { name: 'Поиск по имени' });
+    const search = page.getByRole('combobox', { name: 'Поиск по имени' });
     await search.fill('Адам');
     await waitForViewportStable(page);
     const afterSearch = await measurePersonViewport(page);
@@ -494,6 +758,130 @@ async function runViewport(browserName, browserType, baseUrl, viewport) {
     await page.getByText('Все детали', { exact: true }).waitFor({ state: 'visible' });
 
     await page.locator('[data-genealogy-app]').screenshot({ path: path.join(REPORT_DIR, `${browserName}-${viewport.width}x${viewport.height}-search.png`), animations: 'disabled' });
+
+    phase = 'ambiguous-search';
+    await search.fill('Иосиф (Лк)');
+    const app = page.locator('[data-genealogy-app]');
+    await page.waitForFunction(() => {
+      const root = document.querySelector('[data-genealogy-app]');
+      return root?.getAttribute('data-genealogy-search-query') === 'Иосиф (Лк)';
+    });
+    const searchState = await app.evaluate(root => ({
+      query: root.getAttribute('data-genealogy-search-query'),
+      resultCount: Number(root.getAttribute('data-genealogy-search-result-count')),
+      needsChoice: root.getAttribute('data-genealogy-search-needs-choice'),
+      selection: root.getAttribute('data-genealogy-search-selection'),
+      resolved: root.getAttribute('data-genealogy-search-person'),
+    }));
+    assert.deepEqual(searchState, {
+      query: 'Иосиф (Лк)',
+      resultCount: 2,
+      needsChoice: 'true',
+      selection: null,
+      resolved: null,
+    }, `${browserName} ${viewport.width}x${viewport.height}: ambiguous search state diverged: ${JSON.stringify(searchState)}`);
+
+    const searchList = page.locator('#genealogy-person-search-results');
+    await searchList.waitFor({ state: 'attached' });
+    const searchListGeometry = await searchList.evaluate(node => {
+      const rect = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      const parent = node.parentElement;
+      const parentRect = parent?.getBoundingClientRect();
+      const parentStyle = parent ? getComputedStyle(parent) : null;
+      return {
+        rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+        client: { width: node.clientWidth, height: node.clientHeight },
+        scroll: { width: node.scrollWidth, height: node.scrollHeight },
+        style: {
+          display: style.display,
+          visibility: style.visibility,
+          opacity: style.opacity,
+          position: style.position,
+          overflow: style.overflow,
+        },
+        parent: parentRect && parentStyle ? {
+          rect: { x: parentRect.x, y: parentRect.y, width: parentRect.width, height: parentRect.height },
+          display: parentStyle.display,
+          visibility: parentStyle.visibility,
+          overflow: parentStyle.overflow,
+        } : null,
+      };
+    });
+    await app.screenshot({
+      path: path.join(REPORT_DIR, `${browserName}-${viewport.width}x${viewport.height}-ambiguous-search.png`),
+      animations: 'disabled',
+    });
+    assert.ok(
+      searchListGeometry.rect.width > 0 &&
+      searchListGeometry.rect.height > 0 &&
+      searchListGeometry.style.display !== 'none' &&
+      searchListGeometry.style.visibility !== 'hidden' &&
+      Number(searchListGeometry.style.opacity) > 0,
+      `${browserName} ${viewport.width}x${viewport.height}: chooser has no visible geometry: ${JSON.stringify(searchListGeometry)}`,
+    );
+    await searchList.waitFor({ state: 'attached', timeout: 3000 });
+    const ambiguousOptions = searchList.getByRole('option');
+    await ambiguousOptions.first().waitFor({ state: 'visible', timeout: 3000 });
+    assert.equal(await ambiguousOptions.count(), 2,
+      `${browserName} ${viewport.width}x${viewport.height}: ambiguous chooser must render exactly two Joseph options`);
+    for (const option of await ambiguousOptions.all()) {
+      const box = await option.boundingBox();
+      assert.ok(box && box.width > 0 && box.height >= MIN_TOUCH_TARGET,
+        `${browserName} ${viewport.width}x${viewport.height}: visible search option lacks >=44px geometry`);
+    }
+    assert.equal(await searchList.getAttribute('role'), 'listbox',
+      `${browserName} ${viewport.width}x${viewport.height}: chooser lost listbox role`);
+    assert.equal(await searchList.getAttribute('aria-label'), 'Люди с похожим именем',
+      `${browserName} ${viewport.width}x${viewport.height}: chooser lost accessible label`);
+    assert.equal(await search.getAttribute('aria-expanded'), 'true',
+      `${browserName} ${viewport.width}x${viewport.height}: ambiguous search did not expose listbox`);
+    const ambiguousIds = await ambiguousOptions.evaluateAll(options =>
+      options.map(option => option.getAttribute('data-person-id')));
+    assert.deepEqual(ambiguousIds, ['joseph_lk', 'joseph_lk2'],
+      `${browserName} ${viewport.width}x${viewport.height}: duplicate Joseph candidates were collapsed or reordered`);
+    assert.equal(await page.locator('[data-genealogy-app]').getAttribute('data-genealogy-search-person'), null,
+      `${browserName} ${viewport.width}x${viewport.height}: ambiguous search silently selected a person`);
+    await search.press('ArrowDown');
+    assert.equal(await search.getAttribute('aria-activedescendant'), 'genealogy-search-option-joseph_lk',
+      `${browserName} ${viewport.width}x${viewport.height}: ArrowDown did not expose active search option`);
+    await search.press('Enter');
+    await page.waitForFunction(() =>
+      document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-search-person') === 'joseph_lk');
+    assert.equal(await search.getAttribute('aria-expanded'), 'false',
+      `${browserName} ${viewport.width}x${viewport.height}: explicit search selection did not close listbox`);
+    await waitForViewportStable(page);
+    assert.ok((await measurePersonViewport(page)).visibleIds.includes('joseph_lk'),
+      `${browserName} ${viewport.width}x${viewport.height}: chosen duplicate Joseph was not centered into view`);
+
+    await search.fill('');
+    await search.fill('Иосиф (Лк)');
+    await searchList.waitFor({ state: 'attached' });
+    await searchList.getByRole('option').first().waitFor({ state: 'visible' });
+    await search.press('ArrowUp');
+    assert.equal(await search.getAttribute('aria-activedescendant'), 'genealogy-search-option-joseph_lk2',
+      `${browserName} ${viewport.width}x${viewport.height}: ArrowUp did not wrap to the last duplicate candidate`);
+    await search.press('Escape');
+    assert.equal(await search.inputValue(), '',
+      `${browserName} ${viewport.width}x${viewport.height}: Escape did not clear ambiguous search`);
+    assert.equal(await searchList.count(), 0,
+      `${browserName} ${viewport.width}x${viewport.height}: Escape left stale search choices mounted`);
+
+    await search.fill('Иосиф (Лк)');
+    await searchList.waitFor({ state: 'attached' });
+    await searchList.getByRole('option').first().waitFor({ state: 'visible' });
+    const secondJoseph = searchList.getByRole('option').nth(1);
+    if (touch) await secondJoseph.tap();
+    else await secondJoseph.click();
+    await page.waitForFunction(() =>
+      document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-search-person') === 'joseph_lk2');
+    assert.equal(await search.getAttribute('aria-expanded'), 'false',
+      `${browserName} ${viewport.width}x${viewport.height}: pointer selection left ambiguous listbox open`);
+    await waitForViewportStable(page);
+    assert.ok((await measurePersonViewport(page)).visibleIds.includes('joseph_lk2'),
+      `${browserName} ${viewport.width}x${viewport.height}: pointer-selected second Joseph was not centered`);
+    await search.fill('');
+
     if (process.env.GENEALOGY_REDUCED_MOTION === '1') {
       const running = await page.locator('[data-genealogy-app]').evaluate(root =>
         root.getAnimations({ subtree: true }).filter(animation => animation.playState === 'running').length);
@@ -542,7 +930,7 @@ async function main() {
     sha: process.env.SOURCE_SHA || '',
     route: '/rodosloviye/',
     expectedPersonNodes: EXPECTED_PERSON_NODES,
-    expectedPersonNodesAuthority: 'data/genealogy/genealogy.json#persons.length',
+    expectedPersonNodesAuthority: 'data/genealogy/v2/publishable/persons.json via adaptPublishableGenealogy',
     browsers: browserNames,
     viewports: VIEWPORTS,
     results,
@@ -559,7 +947,7 @@ main().catch((error) => {
     sha: process.env.SOURCE_SHA || '',
     route: '/rodosloviye/',
     expectedPersonNodes: EXPECTED_PERSON_NODES,
-    expectedPersonNodesAuthority: 'data/genealogy/genealogy.json#persons.length',
+    expectedPersonNodesAuthority: 'data/genealogy/v2/publishable/persons.json via adaptPublishableGenealogy',
     error: String(error?.stack || error),
   };
   fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify(report, null, 2)}\n`);

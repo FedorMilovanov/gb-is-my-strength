@@ -141,4 +141,40 @@ export interface LayoutOptions {
 
 export type LineageFilter = 'all' | Lineage | 'messianic';
 
+export type RelationKind = 'parent' | 'spouse' | 'legal-parent';
+
+export interface RelationEvidence {
+  provenanceClass: string;
+  assertion: string;
+  directScripture: boolean | null;
+  refsStatus: string;
+  refs: string[];
+  confidence?: string;
+  editorialPosition?: string;
+  biology?: string;
+  legal?: boolean;
+  legalAssertion?: string;
+  textualRelation?: string;
+}
+
+export interface RuntimeTextualAssertion {
+  id: string;
+  sequenceId: string;
+  position: number;
+  fromRef: string | null;
+  toRef: string | null;
+}
+
+export interface RuntimeGenealogyRelation {
+  id: string;
+  kind: RelationKind;
+  from: string;
+  to: string;
+  role: string | null;
+  authority: string;
+  evidence: RelationEvidence;
+  note: string | null;
+  textualAssertions: RuntimeTextualAssertion[];
+}
+
 export type DetailLevel = 0 | 1 | 2;
