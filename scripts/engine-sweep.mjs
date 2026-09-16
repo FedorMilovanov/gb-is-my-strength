@@ -433,7 +433,7 @@ for (const [id, url] of SINGLES) {
   await page.emulateMedia({ media: 'print' });
   await page.waitForTimeout(250);
   const printLayout = await page.evaluate(() => {
-    const known = ['.gbs-rail','.gbs-theme-corner','.mobile-top-bar','.mobile-bottom-bar','.toc-overlay','.gb-floater','.hrail'];
+    const known = ['.gbs-rail','.gbs-theme-corner','.mobile-top-bar','.mobile-bottom-bar','.toc-overlay','.gb-floater','.hrail','.gbs2-vignette','.gbs2-next'];
     const visibleChrome = known.filter((selector) => {
       const node = document.querySelector(selector);
       if (!node) return false;
