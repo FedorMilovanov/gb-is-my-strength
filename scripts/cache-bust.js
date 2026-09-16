@@ -125,13 +125,41 @@ function deriveReferenceOnlyHtmlPaths(entries, options = {}) {
   return protectedPaths;
 }
 
-function collectReferenceOnlyHtmlPaths() {
-  // Reuse the same effective registry definition of production routes as the
-  // canonical route-profile contract. Build-only/dev fixtures and built apps are
-  // not production Astro profiles and must not become a second authority policy
-  // merely because a JSON fixture lives under data/route-profiles/.
+function deriveBuiltAppHtmlPaths(records, options = {}) {
+  const protectedPaths = new Set();
+  const pathExists = typeof options.pathExists === 'function'
+    ? options.pathExists
+    : (rel) => {
+        const target = resolveRepoHtml(rel);
+        return Boolean(target && fs.existsSync(target.abs));
+      };
+
+  for (const record of records) {
+    if (record?.owner?.owner !== 'built-app') continue;
+    const route = record.route || '(unknown built app)';
+    if (record.owner.status !== 'copy-as-built-asset') {
+      throw new Error(`cache-bust built-app owner must use copy-as-built-asset status: ${route}`);
+    }
+    const target = resolveRepoHtml(record.profile?.legacyPath);
+    if (!target || !pathExists(target.rel)) {
+      throw new Error(`cache-bust built-app entry HTML missing for ${route}: ${record.profile?.legacyPath || '(missing)'}`);
+    }
+    protectedPaths.add(target.abs);
+  }
+
+  return protectedPaths;
+}
+
+function collectProtectedHtmlPaths() {
   const { records } = loadRouteRecords();
-  return deriveReferenceOnlyHtmlPaths(productionAuthorityEntries(records));
+  const protectedPaths = deriveReferenceOnlyHtmlPaths(productionAuthorityEntries(records));
+
+  // Built apps are independent shipped artifacts, not Astro migration shadows.
+  // Their explicit route owner is the mutation authority: cache-bust may
+  // version callers of the app, but must never rewrite the built artifact.
+  for (const file of deriveBuiltAppHtmlPaths(records)) protectedPaths.add(file);
+
+  return protectedPaths;
 }
 
 function collectHTML(dir, acc = []) {
@@ -287,6 +315,34 @@ function assertAuthorityMutationContract() {
     throw new Error('cache-bust contract: runtime-required HTML must remain in mutable revision coverage');
   }
 
+  const builtAppProtected = deriveBuiltAppHtmlPaths([
+    {
+      route: '/app/',
+      owner: { owner: 'built-app', status: 'copy-as-built-asset' },
+      profile: { legacyPath: 'app/index.html' },
+    },
+  ], {
+    pathExists: (rel) => rel === 'app/index.html',
+  });
+  if (!builtAppProtected.has(path.join(ROOT, 'app/index.html'))) {
+    throw new Error('cache-bust contract: explicit built-app entry was not protected');
+  }
+  let builtAppFailure = null;
+  try {
+    deriveBuiltAppHtmlPaths([
+      {
+        route: '/app/',
+        owner: { owner: 'built-app', status: 'production-dist' },
+        profile: { legacyPath: 'app/index.html' },
+      },
+    ], { pathExists: () => true });
+  } catch (error) {
+    builtAppFailure = error;
+  }
+  if (!builtAppFailure || !/copy-as-built-asset/.test(String(builtAppFailure.message))) {
+    throw new Error('cache-bust contract: invalid built-app ownership status did not fail closed');
+  }
+
   const filtered = productionAuthorityEntries([
     {
       route: '/dev/astro-test/',
@@ -361,13 +417,13 @@ function assertAuthorityMutationContract() {
   console.log('  ✔ cache-bust authority mutation contract: 12/12 checks');
 }
 
-function assertReferenceOnlyBoundaryContract(referenceOnlyHtml, htmlFiles) {
-  if (!referenceOnlyHtml.size) {
-    throw new Error('cache-bust authority contract expected at least one reference-only HTML snapshot');
+function assertProtectedHtmlBoundaryContract(protectedHtml, htmlFiles) {
+  if (!protectedHtml.size) {
+    throw new Error('cache-bust authority contract expected at least one protected HTML artifact');
   }
 
   const collected = new Set(htmlFiles.map((file) => path.resolve(file)));
-  const protectedInCorpus = [...referenceOnlyHtml].filter((file) => collected.has(file));
+  const protectedInCorpus = [...protectedHtml].filter((file) => collected.has(file));
 
   // A fully migrated reference set may have zero active-root snapshots in the
   // mutable corpus. Any logical reference that is still present there must stay
@@ -377,8 +433,8 @@ function assertReferenceOnlyBoundaryContract(referenceOnlyHtml, htmlFiles) {
   }
 
   const utility404 = path.join(ROOT, '404.html');
-  if (referenceOnlyHtml.has(utility404)) {
-    throw new Error('cache-bust authority contract must not classify 404.html as reference-only');
+  if (protectedHtml.has(utility404)) {
+    throw new Error('cache-bust authority contract must not classify 404.html as protected');
   }
 }
 
@@ -427,9 +483,9 @@ function main() {
   assertRewriteAstroContract();
   assertAuthorityMutationContract();
 
-  const referenceOnlyHtml = collectReferenceOnlyHtmlPaths();
+  const protectedHtml = collectProtectedHtmlPaths();
   const htmlFiles = collectHTML(ROOT);
-  assertReferenceOnlyBoundaryContract(referenceOnlyHtml, htmlFiles);
+  assertProtectedHtmlBoundaryContract(protectedHtml, htmlFiles);
 
   const hashes = {};
   const missingAssets = [];
@@ -454,7 +510,7 @@ function main() {
 
   let protectedCount = 0;
   for (const file of htmlFiles) {
-    if (referenceOnlyHtml.has(path.resolve(file))) {
+    if (protectedHtml.has(path.resolve(file))) {
       protectedCount += 1;
       continue;
     }
@@ -462,7 +518,7 @@ function main() {
   }
   for (const file of collectAstro(path.join(ROOT, 'src'))) inspectFile(file, rewriteAstro, hashes, changes);
 
-  console.log(`  ↪ preserved reference-only HTML snapshots: ${protectedCount}`);
+  console.log(`  ↪ preserved protected HTML artifacts: ${protectedCount}`);
   console.log('\n' + '─'.repeat(60));
   if (missingAssets.length) {
     console.error(`❌ Missing declared assets: ${missingAssets.join(', ')}`);

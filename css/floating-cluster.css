@@ -3796,6 +3796,11 @@ html.dark [data-gill-v16] .mobile-top-bar {
     pointer-events: none;
     transition: opacity .2s ease, transform .24s var(--gb-ease-out);
   }
+  /* SSR / no-JS contract: aria-hidden must remove the rail from both layout
+     and sequential focus before the inline-speed controller hydrates. */
+  .mobile-speedrail[aria-hidden="true"] {
+    display: none !important;
+  }
   [data-gill-v16] .mobile-speedrail::-webkit-scrollbar { display: none; }
   [data-gill-v16] .mobile-top-bar.speed-open .mobile-learning-trigger {
     opacity: 0;

@@ -74,7 +74,7 @@ function sourceContracts() {
     ['SRL-S19', 'Kod Da Vinci outer shell retires only the inherited max-width cap', kdvShell.includes('max-width: none')],
     ['SRL-S20', 'Kod Da Vinci outer shell exposes its true 24px inline inset to ReaderRail', kdvShell.includes('--hrail-base-inset: 24px')],
     ['SRL-S21', 'Kod Da Vinci shell contract has no width, offset, transform or overflow masking workaround', !/(?:^|\n)\s*(?:width|margin-left|margin-right|left|right|transform|overflow|overflow-x)\s*:/.test(kdvShell) && !kdvShell.includes('100vw') && !kdvShell.includes('100dvw')],
-    ['SRL-S22', 'Kod Da Vinci classless base-shell reset remains present', siteCss.includes('.page-wrap>main:not([class]){width:auto!important;max-width:100%!important;margin:0!important;padding:0!important}')],
+    ['SRL-S22', 'Classless main reset remains authoritative anywhere inside page-wrap', siteCss.includes('.page-wrap main:not([class]){width:auto!important;max-width:100%!important;margin:0!important;padding:0!important}')],
     ['SRL-S23', 'Hermenevtika retains its real 24px shell inset', rail.includes('.article-main.article-main--hrail{--hrail-base-inset:24px}')],
     ['SRL-S24', 'Kod Da Vinci route contains exactly one static rail owner marker', (kdvRoute.match(/data-reader-rail-main/g) || []).length === 1 && !kdvChrome.includes('data-reader-rail-main') && !kdvMain.includes('data-reader-rail-main')],
     ['SRL-S25', 'Kod Da Vinci reader root and rail shell are the same static element', (kdvRoute.match(/data-reader-root/g) || []).length === 1 && /<div[^>]*class="page-wrap"[^>]*data-reader-root[^>]*data-reader-rail-main[^>]*>/.test(kdvRoute)],

@@ -2092,6 +2092,7 @@
       open = next;
       root.classList.toggle('speed-open', open);
       rail.setAttribute('aria-hidden', open ? 'false' : 'true');
+      rail.hidden = !open;
       if (learningBtn) learningBtn.tabIndex = open ? -1 : 0;
       speedButtons.forEach(function(btn) { btn.tabIndex = open ? 0 : -1; });
       if (open) { try { document.dispatchEvent(new CustomEvent('gb:gill-sheet-open')); } catch(_) {} }
