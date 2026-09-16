@@ -17,6 +17,7 @@ import {
 function assertGenealogyFallbackThemeSourceContract() {
   const source = fs.readFileSync(GENEALOGY_TREE_SOURCE_PATH, 'utf8');
   const css = fs.readFileSync(GENEALOGY_TREE_CSS_PATH, 'utf8');
+  const routeSource = fs.readFileSync(GENEALOGY_ROUTE_SOURCE_PATH, 'utf8');
   const marker = 'className="genealogy-fallback"';
   const markerIndex = source.indexOf(marker);
   assert.ok(markerIndex >= 0, 'Genealogy crash fallback lost its canonical CSS class');
@@ -67,6 +68,20 @@ function assertGenealogyFallbackThemeSourceContract() {
     'Genealogy light theme lost its MiniMap mask value');
   assert.match(css, /html\.dark \.genealogy-app[\s\S]*--genealogy-minimap-mask:\s*rgba\(12,12,14,\.60\)/,
     'Genealogy dark theme lost its MiniMap mask value');
+
+  assert.ok(routeSource.includes('slot="fallback"'),
+    'Genealogy client:only island must provide Astro fallback content');
+  assert.ok(routeSource.includes('class="genealogy-island-fallback"'),
+    'Genealogy client:only fallback lost its stable source marker');
+  assert.ok(routeSource.includes('var(--color-bg)') &&
+    routeSource.includes('var(--color-text)') &&
+    routeSource.includes('var(--color-text-muted)') &&
+    routeSource.includes('var(--color-accent)'),
+  'Genealogy client:only fallback must use canonical site theme tokens');
+  assert.match(routeSource, /\.genealogy-island-fallback a \{[\s\S]*min-height:\s*44px/,
+    'Genealogy client:only fallback link must retain a 44px minimum touch target');
+  assert.equal(/genealogy-island-fallback[\s\S]{0,2500}<script/i.test(routeSource), false,
+    'Genealogy client:only fallback must remain native Astro content without a custom loader script');
 }
 
 assertGospelContract();
@@ -80,6 +95,7 @@ const PUBLISHABLE_PERSONS_PATH = path.join(ROOT, 'data', 'genealogy', 'v2', 'pub
 const PUBLISHABLE_RELATIONS_PATH = path.join(ROOT, 'data', 'genealogy', 'v2', 'publishable', 'relations.json');
 const GENEALOGY_TREE_SOURCE_PATH = path.join(ROOT, 'src', 'components', 'genealogy', 'GenealogyTree.tsx');
 const GENEALOGY_TREE_CSS_PATH = path.join(ROOT, 'src', 'components', 'genealogy', 'GenealogyTree.css');
+const GENEALOGY_ROUTE_SOURCE_PATH = path.join(ROOT, 'src', 'pages', 'rodosloviye', 'index.astro');
 const BROWSERS = { chromium, webkit, firefox };
 // WebKit emits this delivery diagnostic from ReactFlow's internal observers
 // during controlled viewport updates. Keep it visible in the report while
