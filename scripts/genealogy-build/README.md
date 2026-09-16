@@ -83,7 +83,7 @@ node scripts/genealogy-v2-publication-audit.mjs
 node scripts/genealogy-v2-publication-audit.mjs --strict-publish
 ```
 
-До подключения v2 в runtime должны одновременно выполняться:
+До прямого подключения raw/full v2-корпуса вне `data/genealogy/v2/publishable/` в runtime должны одновременно выполняться:
 
 1. structural validate = PASS;
 2. 0 seed↔TIPNR gender mismatches;
@@ -93,7 +93,7 @@ node scripts/genealogy-v2-publication-audit.mjs --strict-publish
 6. Matthew 1, Luke 3 и Table of Nations имеют explicit curated membership/sequence,
    а не generic `ancestorsVia` / `refRange` traversal;
 7. `meta.status` осознанно переведён из `phase1-draft` после редакционной сертификации;
-8. runtime guard не находит импорта `data/genealogy/v2` до выполнения пунктов выше.
+8. runtime guard не находит прямого импорта raw-v2 путей вне `data/genealogy/v2/publishable/` до выполнения пунктов выше.
 
 Fuzzy matching — только вспомогательный кандидатный механизм. Он учитывает gender,
 source book/chapter и minimum score margin; неоднозначность остаётся `unmatched`, а не
@@ -112,8 +112,7 @@ pipeline. Если версия pipeline актуальна, а structured evide
 даже если версия pipeline не изменилась.
 
 
-До достижения publication exit-критериев датасет `v2` считается **ЧЕРНОВИКОМ**
-и `/rodosloviye/` остаётся на canonical v1.
+До достижения publication exit-критериев полный raw-корпус `data/genealogy/v2/` считается **ЧЕРНОВИКОМ** и не является runtime authority. Production `/rodosloviye/` использует только отдельно сертифицированную закрытую проекцию `data/genealogy/v2/publishable/`; это исключение не означает публикацию всего raw-корпуса.
 
 ## Publishable projection
 

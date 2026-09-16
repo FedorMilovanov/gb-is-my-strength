@@ -52,41 +52,22 @@ class GenealogyErrorBoundary extends Component<{ children: ReactNode }, Genealog
 
     return (
       <section
+        className="genealogy-fallback"
         role="alert"
         aria-live="assertive"
         data-genealogy-fallback
-        style={{
-          minHeight: '650px',
-          height: '100%',
-          display: 'grid',
-          placeItems: 'center',
-          padding: '32px 20px',
-          background: 'radial-gradient(ellipse at 50% 0%, #1a1510 0%, #0d0a06 50%, #050402 100%)',
-          color: '#e8d5b0',
-          textAlign: 'center',
-        }}
       >
-        <div style={{ maxWidth: '560px' }}>
-          <h2 style={{ margin: '0 0 12px', color: '#ffd700', fontSize: 'clamp(1.25rem, 3vw, 1.75rem)' }}>
+        <div className="genealogy-fallback__content">
+          <h2 className="genealogy-fallback__title">
             Интерактивное древо временно не загрузилось
           </h2>
-          <p style={{ margin: '0 0 20px', lineHeight: 1.65, color: 'rgba(232,213,176,0.82)' }}>
+          <p className="genealogy-fallback__copy">
             Основной текст страницы сохранён. Можно повторно запустить только интерактивное древо без перезагрузки страницы.
           </p>
           <button
+            className="genealogy-fallback__retry"
             type="button"
             onClick={this.retry}
-            style={{
-              minHeight: '44px',
-              padding: '10px 18px',
-              borderRadius: '999px',
-              border: '1px solid rgba(255,215,0,0.45)',
-              background: 'rgba(255,215,0,0.12)',
-              color: '#ffd700',
-              font: 'inherit',
-              fontWeight: 700,
-              cursor: 'pointer',
-            }}
           >
             Повторить загрузку древа
           </button>
@@ -611,7 +592,7 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
         >
           <Background color="rgba(190,165,117,0.12)" gap={36} size={1} />
           <MiniMap nodeColor={(n: Node) => getLineStyle((n.data as Record<string, string>)?.lineage ?? 'neutral').fill}
-            nodeStrokeWidth={3} maskColor="rgba(12,12,14,0.6)" pannable zoomable style={{ width: 144, height: 96 }} ariaLabel="Мини-карта родословий" />
+            nodeStrokeWidth={3} maskColor="var(--genealogy-minimap-mask)" pannable zoomable style={{ width: 144, height: 96 }} ariaLabel="Мини-карта родословий" />
         </ReactFlow>
         {!hasCardsInView && canvasSize.width > 0 && <div className="genealogy-empty-view" role="status">
           <p>Карточки остались за пределами экрана</p><button type="button" onClick={resetView}>Вернуться к обзору</button>
