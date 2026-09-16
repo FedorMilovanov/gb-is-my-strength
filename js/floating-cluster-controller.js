@@ -721,6 +721,8 @@
     if (pct >= 0.99) setEmberState('complete');
   }
 
+  // B4: legacy-only chain link — callers are the dead rate-change handler
+  // (guarded by ttsState.utterance, always null post-facade) and startTts.
   function speakNextChunk() {
     var runId = ttsState.runId;
     if (ttsState.chunkIdx >= ttsState.chunks.length) {
@@ -783,6 +785,8 @@
     window.speechSynthesis.speak(u);
   }
 
+  // B4: legacy-only — sole caller is handlePlayClick's pre-module fallback
+  // (the speed-chip path that used to speak through here now delegates to v2).
   function startTts() {
     if (!ttsAvailable()) {
       showToast('Браузер не поддерживает озвучку', false);
@@ -826,6 +830,9 @@
     });
   }
 
+  // B4: legacy-only — reachable solely via handlePlayClick's pre-module
+  // fallback (other caller: this file's MediaSession-pause handler, which
+  // v2's installMediaSession overwrites on every engine page).
   function pauseTts() {
     if (!ttsAvailable()) return;
     // Cancel-based pause (no real pause/resume in either engine).
@@ -839,6 +846,7 @@
     setEmberState('paused');
   }
 
+  // B4: legacy-only — sole caller is handlePlayClick's pre-module fallback.
   function resumeTts() {
     if (!ttsAvailable()) return;
     ttsState.paused = false;
@@ -858,6 +866,12 @@
   // desync from v2 — the known double-ownership root. Any stop/pause fix
   // belongs in a shared facade, not by extending this function.
   function stopTts() {
+    // B1 FACADE: stop through v2 first — it owns playback, ember state and
+    // MediaSession. The legacy reset below stays as belt-and-braces (same
+    // idle values v2 writes) and as the only path pre-module.
+    if (window.GBReaderTTS && typeof window.GBReaderTTS.stop === 'function') {
+      try { window.GBReaderTTS.stop(); } catch (_) {}
+    }
     if (!ttsAvailable()) return;
     ttsState.runId += 1;
     ttsState.suppressEnd = true;
@@ -921,6 +935,9 @@
     return msAnchor;
   }
 
+  // B4: DEAD — sole callers are this file's MediaSession seek handlers,
+  // which v2's installMediaSession overwrites on every engine page
+  // (the v2 chunk executes after this script: document order, both deferred).
   function skipChunk(delta) {
     if (!ttsState.chunks.length) return;
     var next = Math.max(0, Math.min(ttsState.chunks.length - 1, ttsState.chunkIdx + delta));
@@ -995,14 +1012,16 @@
   }
 
   function handlePlayClick(clickedEmber) {
-    var state = currentTtsUiState(clickedEmber);
-
-    // Внешний движок имеет приоритет
-    if (window.GBAudio && typeof window.GBAudio.toggle === 'function') {
-      window.GBAudio.toggle();
+    // B1 FACADE: TTS v2 (reader-tts) owns all playback on engine pages —
+    // ember clicks already reach it via capture, and this direct-call path
+    // (speed chips, MediaSession) must not drive the legacy state machine.
+    // GBAudio priority is preserved inside v2's toggle(). The legacy branch
+    // below runs only when the v2 module hasn't executed yet.
+    if (window.GBReaderTTS && typeof window.GBReaderTTS.toggle === 'function') {
+      try { window.GBReaderTTS.toggle(); } catch (_) {}
       return;
     }
-
+    var state = currentTtsUiState(clickedEmber);
     // Vosk TTS (нейросеть) с автооткатом на Web Speech API
     if (ttsAvailable()) {
       if (state === 'playing')      { pauseTts();  return; }

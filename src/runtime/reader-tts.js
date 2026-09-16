@@ -572,6 +572,8 @@
   }
 
   function toggle() {
+    // Dead branch: nothing in dist defines window.GBAudio — kept for a
+    // hypothetical external engine; the legacy caller agrees (same check).
     if (window.GBAudio?.toggle) {
       window.GBAudio.toggle();
       return;
