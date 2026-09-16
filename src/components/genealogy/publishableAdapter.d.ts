@@ -1,4 +1,4 @@
-import type { Person } from './types';
+import type { Person, RuntimeGenealogyRelation } from './types';
 
 export interface PublishableRuntimePolicy {
   readonly personIdAuthority: string;
@@ -14,3 +14,9 @@ export function adaptPublishableGenealogy(input: {
   persons: readonly unknown[];
   relations: readonly unknown[];
 }): Person[];
+
+export function adaptPublishableRelationEvidence(input: {
+  persons: readonly unknown[];
+  relations: readonly unknown[];
+  textualAssertions: unknown;
+}): RuntimeGenealogyRelation[];
