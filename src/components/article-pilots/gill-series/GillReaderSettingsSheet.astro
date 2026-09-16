@@ -67,12 +67,28 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
           <button type="button" class="reader-setting-btn" data-measure="wide" aria-pressed="false">Шире</button>
         </div>
       </div>
+      <div class="setting-group">
+        <span class="setting-label">Оформление текста</span>
+        <div class="setting-segment" id="gillTextModeGroup">
+          <button type="button" class="reader-setting-btn" data-text-mode="rich" aria-pressed="true">Полное</button>
+          <button type="button" class="reader-setting-btn" data-text-mode="plain" aria-pressed="false">Простое</button>
+        </div>
+      </div>
+      <div class="setting-group">
+        <span class="setting-label">Анимация</span>
+        <div class="setting-segment" id="gillMotionGroup">
+          <button type="button" class="reader-setting-btn" data-motion="system" aria-pressed="true">Обычная</button>
+          <button type="button" class="reader-setting-btn" data-motion="reduced" aria-pressed="false">Спокойная</button>
+        </div>
+      </div>
     </div>
   </section>
 </div>
 
 <script>
   const LINE_VALUES: Record<string, string> = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
+  // B6: intentional — Gill maps narrow/normal/wide to 36/43/46rem (same as the
+  // first-paint bootstrap); standalone maps the same keys to 42/50/58rem.
   const MEASURE_VALUES: Record<string, string> = { narrow: '36rem', normal: '43rem', wide: '46rem' };
 
   function initGillReaderSettings() {
@@ -92,6 +108,8 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
     const lineGroup = document.getElementById('gillLineHeightGroup');
     const measureGroup = document.getElementById('gillMeasureGroup');
     const themeGroup = document.getElementById('gillSettingsThemeGroup');
+    const textModeGroup = document.getElementById('gillTextModeGroup');
+    const motionGroup = document.getElementById('gillMotionGroup');
     const dots = document.getElementById('gillFontDots');
 
     function applyCompatibility(preferences: any) {
@@ -120,6 +138,8 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
       setPressed(lineGroup, 'data-line', preferences.lineHeight || 'normal');
       setPressed(measureGroup, 'data-measure', preferences.measure || 'normal');
       setPressed(themeGroup, 'data-theme', preferences.theme || 'light');
+      setPressed(textModeGroup, 'data-text-mode', preferences.textMode || 'rich');
+      setPressed(motionGroup, 'data-motion', preferences.motion || 'system');
       syncDots(preferences.fontScale || 1);
     }
 
@@ -137,6 +157,22 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
       const value = button.dataset.measure || 'normal';
       if (api()) api().set({ measure: value }, { source: 'series-reader-settings' });
       else sync({ ...state(), measure: value });
+    });
+
+    textModeGroup?.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest('[data-text-mode]') as HTMLElement | null;
+      if (!button) return;
+      const value = button.dataset.textMode || 'rich';
+      if (api()) api().set({ textMode: value }, { source: 'series-reader-settings' });
+      else sync({ ...state(), textMode: value });
+    });
+
+    motionGroup?.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest('[data-motion]') as HTMLElement | null;
+      if (!button) return;
+      const value = button.dataset.motion || 'system';
+      if (api()) api().set({ motion: value }, { source: 'series-reader-settings' });
+      else sync({ ...state(), motion: value });
     });
 
     themeGroup?.addEventListener('click', (event) => {

@@ -196,6 +196,10 @@
   opacity: 0.5;
   transform: scale(1);
 }
+
+/* B18 hardening: interactive targets use real layout boxes.
+   Do not extend adjacent controls with overlapping pseudo-elements. */
+[data-gill-v16] .mobile-font-btn { position: relative; }
 .gb-icon:focus-visible {
   outline: 2px solid var(--color-accent, #7a2e2e);
   outline-offset: 4px;
@@ -536,6 +540,12 @@ html.dark .gb-ember {
   stroke-linecap: round;
   stroke-linejoin: round;
   color: var(--color-accent-gold-bright, #d8aa6d);
+}
+
+/* B15: keep the toast above fixed mobile bottom bars (Gill/HM/Нагорная) —
+   same 88px clearance as .kbd-hint-toast. Desktop keeps the base 28px. */
+@media (max-width: 1199px) {
+  .gb-fc-toast { bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* =========================================================
@@ -3583,6 +3593,15 @@ html.dark [data-gill-v16] .mobile-top-bar {
   [data-gill-v16] .mobile-font-btn { width: 34px !important; min-width: 34px !important; }
 }
 
+/* B17: 320px (iPhone SE-1, Fold) — the Learning trigger goes icon-only and
+   gaps tighten; the bottom bar already flex-squeezes its context. */
+@media (max-width: 360px) {
+  [data-gill-v16] .mobile-top-bar { gap: 4px !important; }
+  [data-gill-v16] .mobile-learning-trigger span { display: none !important; }
+  [data-gill-v16] .mobile-learning-trigger { min-width: 36px; }
+  [data-gill-v16] .mobile-bottom-bar { gap: 2px !important; }
+}
+
 /* Gill header watermark removed (giant faint "ВВЕДЕНИЕ"/roman numeral behind
    the H1) — the .gbs2-kinetic <SeriesMark> element was deleted from all 5
    Gill header-hero components. .gbs2-head's right gutter (css/site.css) was
@@ -5072,5 +5091,40 @@ html.dark .gb-floater .gbs-rail-spdbadge {
   html body .heart-flip-card.flipped > .heart-flip-inner > .heart-flip-back,
   html body .error-flip-card.flipped > .error-flip-inner > .error-flip-back {
     display: flex !important;
+  }
+}
+
+
+/* GB reader integration hardening — physical mobile targets.
+   This late block intentionally overrides compact <=390px dimensions while
+   keeping the Play ring itself at 36px inside a 44px clickable button. */
+@media (max-width: 1023px) {
+  [data-gill-v16] .mobile-top-bar .gb-icon,
+  [data-gill-v16] .mobile-bottom-bar > .gb-icon,
+  [data-gill-v16] .mobile-font-btn {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+  [data-gill-v16] .mobile-playwrap {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+  [data-gill-v16] .mobile-playwrap .mobile-top-ember {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    --ember-size: 36px !important;
+  }
+  [data-gill-v16] .mobile-btoc-section,
+  [data-gill-v16] .mobile-learning-trigger {
+    min-height: 44px !important;
+  }
+  [data-gill-v16] .mobile-spdbadge {
+    min-width: 24px !important;
+    min-height: 24px !important;
+    height: 24px !important;
   }
 }

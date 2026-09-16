@@ -2,7 +2,7 @@
 /**
  * ReaderSettings — премиум-лист «Настройки чтения» для мобильной
  * (<64em) обвязки Hermenevtika, по стандарту Gill v5 (тема День/Сепия/Ночь,
- * размер текста, межстрочный интервал, ширина колонки).
+ * размер текста, межстрочный интервал, ширина колонки, оформление, анимация).
  *
  * Разметка и scoped-стили остаются самостоятельным standalone-adapter, чтобы
  * не менять рабочие селекторы Hermenevtika/Kod Da Vinci. Состояние больше не
@@ -62,6 +62,22 @@
         <button type="button" class="hmset-btn" data-hm-measure="wide" aria-pressed="false">Шире</button>
       </div>
     </div>
+
+    <div class="hmset-group">
+      <span class="hmset-label">Оформление текста</span>
+      <div class="hmset-segment" id="hmTextModeGroup">
+        <button type="button" class="hmset-btn" data-hm-text-mode="rich" aria-pressed="true">Полное</button>
+        <button type="button" class="hmset-btn" data-hm-text-mode="plain" aria-pressed="false">Простое</button>
+      </div>
+    </div>
+
+    <div class="hmset-group">
+      <span class="hmset-label">Анимация</span>
+      <div class="hmset-segment" id="hmMotionGroup">
+        <button type="button" class="hmset-btn" data-hm-motion="system" aria-pressed="true">Обычная</button>
+        <button type="button" class="hmset-btn" data-hm-motion="reduced" aria-pressed="false">Спокойная</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -78,6 +94,9 @@
     transform:translateY(100%);transition:transform .3s cubic-bezier(.22,1,.36,1)}
   .hmsheet.is-open .hmsheet-panel{transform:translateY(0)}
   :global(html.dark) .hmsheet-panel{background:#1c0e14;box-shadow:0 -20px 50px -10px rgba(0,0,0,.6)}
+  /* B16: сепия скелета листа — дублирует глобал бара, т.к. лист самодостаточен
+     и живёт в т.ч. на страницах без бара. */
+  :global(html[data-reader-theme="sepia"]) .hmsheet-panel{background:#f3ead4;box-shadow:0 -20px 50px -10px rgba(122,90,48,.25)}
   .hmsheet-handle{width:36px;height:4px;border-radius:2px;background:rgba(0,0,0,.15);margin:0 auto 8px}
   :global(html.dark) .hmsheet-handle{background:rgba(255,255,255,.15)}
   .hmsheet-head{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:8px}
@@ -217,6 +236,8 @@
 
 <script>
   const LINE_VALUES: Record<string, string> = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
+  // B6: intentional — standalone maps narrow/normal/wide to 42/50/58rem;
+  // Gill maps the same keys to 36/43/46rem (its sheet + head bootstrap).
   const MEASURE_VALUES: Record<string, string> = { narrow: '42rem', normal: '50rem', wide: '58rem' };
 
   function readerPreferences() {
@@ -291,6 +312,8 @@
     const themeGroup = document.getElementById('hmThemeGroup');
     const lineGroup = document.getElementById('hmLineGroup');
     const measureGroup = document.getElementById('hmMeasureGroup');
+    const textModeGroup = document.getElementById('hmTextModeGroup');
+    const motionGroup = document.getElementById('hmMotionGroup');
     const dots = document.getElementById('hmFontDots');
 
     function applyCompatibility(state: any) {
@@ -315,6 +338,8 @@
       setPressed(themeGroup, 'hmTheme', state.theme || 'light');
       setPressed(lineGroup, 'hmLine', state.lineHeight || 'normal');
       setPressed(measureGroup, 'hmMeasure', state.measure || 'normal');
+      setPressed(textModeGroup, 'hmTextMode', state.textMode || 'rich');
+      setPressed(motionGroup, 'hmMotion', state.motion || 'system');
       syncDots(state.fontScale || 1);
     }
 
@@ -347,6 +372,24 @@
       const api = readerPreferences();
       if (api) api.set({ measure: value }, { source: 'standalone-reader-settings' });
       else sync({ ...currentPreferences(), measure: value });
+    });
+
+    textModeGroup?.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest('[data-hm-text-mode]') as HTMLElement | null;
+      if (!button) return;
+      const value = button.dataset.hmTextMode || 'rich';
+      const api = readerPreferences();
+      if (api) api.set({ textMode: value }, { source: 'standalone-reader-settings' });
+      else sync({ ...currentPreferences(), textMode: value });
+    });
+
+    motionGroup?.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest('[data-hm-motion]') as HTMLElement | null;
+      if (!button) return;
+      const value = button.dataset.hmMotion || 'system';
+      const api = readerPreferences();
+      if (api) api.set({ motion: value }, { source: 'standalone-reader-settings' });
+      else sync({ ...currentPreferences(), motion: value });
     });
 
     document.querySelectorAll('[data-fc-action="theme"], [data-fc-action="font-up"], [data-fc-action="font-down"]').forEach((button) => {

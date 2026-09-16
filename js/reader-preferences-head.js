@@ -9,6 +9,9 @@
   var lines = ['compact', 'normal', 'relaxed'];
   var measures = ['narrow', 'normal', 'wide'];
   var lineValues = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
+  // B6: intentional — the first-paint default carries the GILL measure mapping
+  // (36/43/46); standalone surfaces remap the same narrow/normal/wide keys to
+  // 42/50/58 in their settings adapters after hydration.
   var measureValues = { narrow: '36rem', normal: '43rem', wide: '46rem' };
 
   function get(key) {

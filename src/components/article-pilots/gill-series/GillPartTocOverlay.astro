@@ -193,12 +193,24 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
                 document.querySelector('.gbs-theme-corner .gb-ember');
     if (ember) setTimeout(function () { ember.click(); }, 120);
   });
-  /* Продолжить: закрыть и плавно вернуть читателя к текущему разделу. */
+  /* Продолжить: закрыть и плавно вернуть читателя к текущему разделу.
+     Живая секция берётся из ReaderState-снапшота, а не из статичного
+     SSR-якоря (тот ведёт на старт части); currentAnchor — фолбэк. */
   var cont = ov.querySelector('[data-gbat-continue]');
   if (cont) cont.addEventListener('click', function () {
     closeOverlay();
-    if (!currentAnchor) return;
-    var el = document.querySelector(currentAnchor);
+    var anchor = currentAnchor;
+    try {
+      var rs = window.GBReaderState || window.ReaderState;
+      var saved = rs && rs.getSaved && rs.getSaved();
+      if (saved && saved.sectionId && document.getElementById(saved.sectionId)) anchor = '#' + saved.sectionId;
+    } catch (_) {}
+    if (!anchor) return;
+    // Harden: a sectionId with CSS-special chars would make querySelector
+    // throw — fall back to getElementById for plain #id anchors.
+    var el = null;
+    try { el = document.querySelector(anchor); }
+    catch (_) { el = anchor.charAt(0) === '#' ? document.getElementById(anchor.slice(1)) : null; }
     if (el) setTimeout(function () { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 140);
   });
 })();
