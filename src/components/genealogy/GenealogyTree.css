@@ -29,6 +29,7 @@
   --genealogy-warning-text: #80501d;
   --genealogy-warning-bg: rgba(177,116,49,.10);
   --genealogy-warning-border: rgba(154,100,42,.28);
+  --genealogy-minimap-mask: rgba(244,239,229,.72);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -74,6 +75,7 @@ html.dark .genealogy-app {
   --genealogy-warning-text: #f0c392;
   --genealogy-warning-bg: rgba(142,91,42,.14);
   --genealogy-warning-border: rgba(195,136,73,.36);
+  --genealogy-minimap-mask: rgba(12,12,14,.60);
 }
 
 .genealogy-app *, .genealogy-app *::before, .genealogy-app *::after { box-sizing: border-box; }
