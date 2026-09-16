@@ -713,7 +713,7 @@ html:not(.dark) .gtip.gb-floating-tip::before {
   .mobile-chrome, .mobile-top-bar, .mobile-bottom-bar,
   .toc-overlay, .btoc-overlay, .hmsheet, .bookmark-toast,
   .gbs2-resume, .gbs2-peek, .gbs2-swipetip, .gbx-tts,
-  .gbs2-vignette, .gbs2-next, .gbs2-timeline,
+  .gbs2-vignette, .gbs2-next,
   #selection-share-popup, .selection-share-popup, .article-end-actions,
   [data-fc-root], [data-fc-controls], [data-overlay-root],
   [data-print-policy="exclude"],
