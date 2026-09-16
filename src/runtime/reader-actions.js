@@ -123,8 +123,14 @@
     const icon = toast.querySelector('svg');
     if (icon) icon.style.display = showCheck ? '' : 'none';
     toast.classList.add('is-open');
+    // Same shared token as the engine's showToast() — a stale timeout must
+    // not hide the other module's fresh message.
     window.clearTimeout(toastTimer);
-    toastTimer = window.setTimeout(function () { toast.classList.remove('is-open'); }, 2200);
+    window.__gbFcToastToken = (window.__gbFcToastToken || 0) + 1;
+    const shownToken = window.__gbFcToastToken;
+    toastTimer = window.setTimeout(function () {
+      if (window.__gbFcToastToken === shownToken) toast.classList.remove('is-open');
+    }, 2200);
   }
 
   async function share(trigger) {

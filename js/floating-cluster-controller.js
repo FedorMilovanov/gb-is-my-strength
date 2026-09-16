@@ -1075,9 +1075,14 @@
     if (span) span.textContent = message;
     if (svg) svg.style.display = showCheck ? '' : 'none';
     toast.classList.add('is-open');
+    // Shared ownership token: reader-actions.js notify() shows on the same
+    // element with its own timer — a stale timeout must not hide a fresh
+    // message from the other module.
     clearTimeout(toastTimer);
+    window.__gbFcToastToken = (window.__gbFcToastToken || 0) + 1;
+    var shownToken = window.__gbFcToastToken;
     toastTimer = setTimeout(function () {
-      toast.classList.remove('is-open');
+      if (window.__gbFcToastToken === shownToken) toast.classList.remove('is-open');
     }, 2200);
   }
 
@@ -2888,7 +2893,10 @@
         var el = document.createElement('aside');
         el.className = 'gbs2-peek gbs2-peek-' + dir;
         el.setAttribute('aria-hidden', 'true');
-        el.innerHTML = '<span class="gbs2-peek-img"' + (dirData.img ? ' style="background-image:url(' + dirData.img + ')"' : '') + '></span>' +
+        // Quote the cover URL (spaces would break an unquoted url()) and strip
+        // any quotes the source serialization left behind.
+        var peekImg = dirData.img ? String(dirData.img).replace(/"/g, '') : '';
+        el.innerHTML = '<span class="gbs2-peek-img"' + (peekImg ? ' style="background-image:url("' + peekImg + '")"' : '') + '></span>' +
           '<span class="gbs2-peek-b"><small>' + (dir === 'next' ? 'Дальше' : 'Назад') + '</small><b></b><i>Отпустите, чтобы перейти</i></span>';
         el.querySelector('b').textContent = dirData.title;
         document.body.appendChild(el);

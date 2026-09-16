@@ -206,7 +206,11 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
       if (saved && saved.sectionId && document.getElementById(saved.sectionId)) anchor = '#' + saved.sectionId;
     } catch (_) {}
     if (!anchor) return;
-    var el = document.querySelector(anchor);
+    // Harden: a sectionId with CSS-special chars would make querySelector
+    // throw — fall back to getElementById for plain #id anchors.
+    var el = null;
+    try { el = document.querySelector(anchor); }
+    catch (_) { el = anchor.charAt(0) === '#' ? document.getElementById(anchor.slice(1)) : null; }
     if (el) setTimeout(function () { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 140);
   });
 })();
