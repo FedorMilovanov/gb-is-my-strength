@@ -226,14 +226,6 @@ html.dark .genealogy-app {
   font-size: 10px;
 }
 .genealogy-person-relations { margin-top: 16px; }
-.genealogy-person-relations__title {
-  margin-bottom: 7px;
-  color: var(--genealogy-gold);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-}
 .genealogy-person-relations__list { display: grid; gap: 7px; }
 .genealogy-app .genealogy-person-relation {
   width: 100%;
