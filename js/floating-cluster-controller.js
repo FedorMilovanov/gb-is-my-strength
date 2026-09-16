@@ -2709,6 +2709,10 @@
     return false;
   }
 
+  // Pages that also load site.js (baptisty-rossii) get its own T/D/B
+  // dispatcher, registered first with the same targets — see the guard below.
+  var siteJsOwnsKeys = !!document.querySelector('script[src*="js/site.js"]');
+
   document.addEventListener('keydown', function (e) {
     if (e.ctrlKey || e.metaKey || e.altKey || inField()) return;
     var key = e.key || '';
@@ -2723,6 +2727,10 @@
       return;
     }
     var code = e.code || '';
+    // Double-fire guard: site.js runs first on its pages and already toggles
+    // the same T/D/B targets — a second toggle here would cancel it out
+    // (dead T/D keys on baptisty-rossii). Yield; arrows stay ours.
+    if ((code === 'KeyT' || code === 'KeyD' || code === 'KeyB') && siteJsOwnsKeys) return;
     if (code === 'KeyT') {
       if (modalsOpen()) return;
       e.preventDefault();
