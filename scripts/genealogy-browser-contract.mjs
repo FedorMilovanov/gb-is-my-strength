@@ -417,6 +417,37 @@ async function assertFocusInteractions(page) {
   assert.equal(await details.evaluate(node => node.scrollWidth <= node.clientWidth), true, 'Person drawer overflows horizontally');
   await page.locator('[data-genealogy-app]').screenshot({ path: path.join(REPORT_DIR,
     `${page.context().browser().browserType().name()}-${page.viewportSize().width}x${page.viewportSize().height}-details.png`), animations: 'disabled' });
+
+  const fatherNav = details.getByRole('button', { name: 'Открыть человека: Авраам — Отец' });
+  const motherNav = details.getByRole('button', { name: 'Открыть человека: Сарра — Мать' });
+  for (const control of [fatherNav, motherNav]) {
+    await control.waitFor({ state: 'visible' });
+    const box = await control.boundingBox();
+    assert.ok(box && box.height >= MIN_TOUCH_TARGET,
+      'Family navigation control is smaller than the 44px touch target');
+  }
+
+  if ((page.viewportSize()?.width ?? 999) <= 430) await fatherNav.tap();
+  else await fatherNav.click();
+  await page.getByRole('complementary', { name: 'Детали: Авраам' }).waitFor({ state: 'visible' });
+  await waitForViewportStable(page);
+  assert.equal(await page.locator('[data-genealogy-app]').getAttribute('data-genealogy-active-person'), 'abram',
+    'Family navigation did not update the active genealogy person to Abraham');
+  assert.ok((await measurePersonViewport(page)).visibleIds.includes('abram'),
+    'Family navigation did not center Abraham into the useful viewport');
+
+  const abrahamDetails = page.getByRole('complementary', { name: 'Детали: Авраам' });
+  const backToIsaac = abrahamDetails.getByRole('button', { name: 'Открыть человека: Исаак — Сын' });
+  await backToIsaac.waitFor({ state: 'visible' });
+  if ((page.viewportSize()?.width ?? 999) <= 430) await backToIsaac.tap();
+  else await backToIsaac.click();
+  await page.getByRole('complementary', { name: 'Детали: Исаак' }).waitFor({ state: 'visible' });
+  await waitForViewportStable(page);
+  assert.equal(await page.locator('[data-genealogy-app]').getAttribute('data-genealogy-active-person'), 'isaac',
+    'Reverse family navigation did not restore Isaac as the active person');
+  assert.ok((await measurePersonViewport(page)).visibleIds.includes('isaac'),
+    'Reverse family navigation did not center Isaac into the useful viewport');
+
   for (const id of ['abram', 'sarah']) {
     await page.waitForFunction(personId => {
       const node = document.querySelector(`.react-flow__node[data-id="${personId}"] .genealogy-node`);
