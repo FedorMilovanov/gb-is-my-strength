@@ -160,10 +160,13 @@
     }
   }
 </style>
-<style is:global>
-  /* GB_GILL_PRINT_SERIES_CHROME_V1 — the series map is reader navigation,
-     not authored article content; it must not reserve a paged-media fragment. */
+<style is:inline>
+  /* GB_GILL_PRINT_SERIES_CHROME_V2 — terminal series navigation is reader
+     chrome, not authored article content. Keep this inline so the native
+     route owns final print cascade order independently of legacy bundles. */
   @media print {
-    [data-gill-v16] .gbs2-timeline { display: none !important; }
+    html body [data-gill-v16] :is(.gbs2-vignette, .gbs2-next, .gbs2-timeline) {
+      display: none !important;
+    }
   }
 </style>
