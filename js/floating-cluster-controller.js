@@ -204,8 +204,9 @@
       }
     });
     updateEmberAriaLabel(state);
-    // Broadcast so non-ember Play surfaces (SpeedBloom goo control) can mirror
-    // play/pause + progress without being a .gb-ember themselves.
+    // B4: DEAD broadcast — no listener for 'gb:tts-state' exists in src/js
+    // or dist (verified same-turn); SpeedBloom mirroring never landed.
+    // v2 emits 'gb:reader-tts-state' instead.
     try {
       window.dispatchEvent(new CustomEvent('gb:tts-state', {
         detail: { state: state, progress: progress },
@@ -267,6 +268,9 @@
   // the alphacephei.com CORS outage went unnoticed in production for days
   // until a user manually checked DevTools. Same ym() reachGoal pattern as
   // js/enhancements.js's quiz tracking.
+  // B4: legacy-only reporters — callers are the pre-module legacy chain
+  // (this one + reportTtsOutcome below); live sessions are reported by
+  // v2's mirror in reader-tts.js (same counter/goal names).
   function reportTtsIssue(reason) {
     try {
       window.ym && window.ym(108353327, 'reachGoal', 'vosk_tts_failed', { reason: reason });

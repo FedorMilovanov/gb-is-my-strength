@@ -22,6 +22,19 @@
     '.footnote-popup', '[aria-hidden="true"]', '[data-no-speech]',
   ].join(',');
 
+  // TTS outcome telemetry (Metrika): mirrors the legacy reportTtsOutcome /
+  // reportTtsIssue pair. v2 owns all playback, so the legacy pings went
+  // silent and the Vosk-vs-WebSpeech split went blind again — the exact
+  // outage-invisibility the legacy comments warn about. Same counter,
+  // same goal names, fire-and-forget.
+  const TTS_YM_ID = 108353327;
+  function reportTtsOutcome(engine) {
+    try { window.ym && window.ym(TTS_YM_ID, 'reachGoal', 'tts_engine_selected', { engine }); } catch {}
+  }
+  function reportTtsIssue(reason) {
+    try { window.ym && window.ym(TTS_YM_ID, 'reachGoal', 'vosk_tts_failed', { reason }); } catch {}
+  }
+
   const state = {
     phase: 'idle',
     parts: [],
@@ -45,6 +58,7 @@
     engineScriptPromise: null,
     warmPromise: null,
     lastError: null,
+    outcomeReported: false,
   };
 
   function clamp(value, min, max) {
@@ -279,7 +293,10 @@
         });
       })
       .catch((error) => {
-        if (!error?.userCancelled) console.warn('[GBReaderTTS] Vosk warm-up failed; system voice remains available', error);
+        if (!error?.userCancelled) {
+          console.warn('[GBReaderTTS] Vosk warm-up failed; system voice remains available', error);
+          reportTtsIssue('warmup: ' + (error?.message || error));
+        }
         return null;
       })
       .finally(() => { state.warmPromise = null; });
@@ -370,6 +387,7 @@
     clearProgressLoop();
     state.lastError = error instanceof Error ? error.message : String(error || 'unknown error');
     console.error('[GBReaderTTS] playback failed', error);
+    if (state.engine === 'vosk') reportTtsIssue('chunk_playback: ' + state.lastError);
     if (state.engine === 'vosk' && window.speechSynthesis && window.SpeechSynthesisUtterance) {
       state.engine = 'webspeech';
       state.voskHandle = null;
@@ -403,6 +421,7 @@
     };
     state.utterance = utterance;
     state.engine = 'webspeech';
+    if (!state.outcomeReported) { state.outcomeReported = true; reportTtsOutcome('webspeech'); }
     setPhase('playing');
     followCurrentElement();
     window.speechSynthesis.speak(utterance);
@@ -428,6 +447,7 @@
       return;
     }
     state.engine = 'vosk';
+    if (!state.outcomeReported) { state.outcomeReported = true; reportTtsOutcome('vosk'); }
     state.generatedRate = state.rate;
     state.voskAudio = null;
     state.voskSynthesisProgress = 0;
@@ -472,6 +492,7 @@
     state.completedChars = 0;
     state.totalChars = 0;
     state.lastError = null;
+    state.outcomeReported = false;
     state.pausedDuringStart = false;
     state.voskSynthesisProgress = 0;
     setProgress(0);
