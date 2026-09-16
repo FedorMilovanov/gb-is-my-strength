@@ -14,14 +14,63 @@ import {
   searchGenealogyPeople,
 } from '../src/components/genealogy/search.ts';
 
+function assertGenealogyFallbackThemeSourceContract() {
+  const source = fs.readFileSync(GENEALOGY_TREE_SOURCE_PATH, 'utf8');
+  const css = fs.readFileSync(GENEALOGY_TREE_CSS_PATH, 'utf8');
+  const marker = 'className="genealogy-fallback"';
+  const markerIndex = source.indexOf(marker);
+  assert.ok(markerIndex >= 0, 'Genealogy crash fallback lost its canonical CSS class');
+
+  const fallbackSource = source.slice(Math.max(0, markerIndex - 300), markerIndex + 2600);
+  for (const forbidden of [
+    '#1a1510',
+    '#0d0a06',
+    '#050402',
+    '#e8d5b0',
+    '#ffd700',
+    'rgba(232,213,176',
+    'rgba(255,215,0',
+  ]) {
+    assert.equal(fallbackSource.includes(forbidden), false,
+      `Genealogy fallback reintroduced hard-coded dark theme token: ${forbidden}`);
+  }
+  assert.equal(/style=\{\{/.test(fallbackSource), false,
+    'Genealogy crash fallback must not own inline theme styling');
+
+  for (const selector of [
+    '.genealogy-fallback {',
+    '.genealogy-fallback__title {',
+    '.genealogy-fallback__copy {',
+    '.genealogy-fallback__retry {',
+  ]) {
+    assert.ok(css.includes(selector), `Missing genealogy fallback selector: ${selector}`);
+  }
+  for (const token of [
+    'var(--color-bg)',
+    'var(--color-text)',
+    'var(--color-text-muted)',
+    'var(--color-accent)',
+  ]) {
+    assert.ok(css.includes(token), `Genealogy fallback lost canonical site theme token: ${token}`);
+  }
+
+  const retryBlockStart = css.indexOf('.genealogy-fallback__retry {');
+  const retryBlock = css.slice(retryBlockStart, retryBlockStart + 700);
+  assert.match(retryBlock, /min-height:\s*44px/,
+    'Genealogy fallback retry control must retain a 44px minimum touch target');
+}
+
 assertGospelContract();
 assertGenealogyGeometryContract();
+assertGenealogyFallbackThemeSourceContract();
 
 const ROOT = path.resolve(process.cwd());
 const DIST = path.join(ROOT, 'dist');
 const REPORT_DIR = path.join(ROOT, 'reports', 'genealogy-browser-contract');
 const PUBLISHABLE_PERSONS_PATH = path.join(ROOT, 'data', 'genealogy', 'v2', 'publishable', 'persons.json');
 const PUBLISHABLE_RELATIONS_PATH = path.join(ROOT, 'data', 'genealogy', 'v2', 'publishable', 'relations.json');
+const GENEALOGY_TREE_SOURCE_PATH = path.join(ROOT, 'src', 'components', 'genealogy', 'GenealogyTree.tsx');
+const GENEALOGY_TREE_CSS_PATH = path.join(ROOT, 'src', 'components', 'genealogy', 'GenealogyTree.css');
 const BROWSERS = { chromium, webkit, firefox };
 // WebKit emits this delivery diagnostic from ReactFlow's internal observers
 // during controlled viewport updates. Keep it visible in the report while
