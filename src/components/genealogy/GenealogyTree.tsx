@@ -106,6 +106,7 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
   const [showGolden, setShowGolden] = useState(true);
   const [selected, setSelected] = useState<Person | null>(null);
   const [selectedRelation, setSelectedRelation] = useState<RuntimeGenealogyRelation | null>(null);
+  const [relationReturnFocusId, setRelationReturnFocusId] = useState<string | null>(null);
   const splitOpener = useRef<HTMLButtonElement | null>(null);
   const [showMiniMap, setShowMiniMap] = useState(false);
   const [showSplit, setShowSplit] = useState(false);
@@ -145,6 +146,7 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
     setActiveId(null);
     setSelected(null);
     setSelectedRelation(null);
+    setRelationReturnFocusId(null);
   }, []);
 
   useEffect(() => {
@@ -326,6 +328,7 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
 
   const onNodeClick = useCallback((_evt: React.MouseEvent, node: Node) => {
     setSelectedRelation(null);
+    setRelationReturnFocusId(null);
     if (detailLevel < 2) { focusPerson(node.id, 1, 0); setSelected(null); return; }
     // Toggle: if clicking same node, deactivate focus
     if (activeId === node.id) {
@@ -343,6 +346,7 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
     setActiveId(null);
     setSelected(null);
     setSelectedRelation(null);
+    setRelationReturnFocusId(null);
   }, []);
 
   const changeLineage = useCallback((filter: LineageFilter) => {
@@ -355,6 +359,7 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
     if (selected && !matchesLineage(selected, filter)) setSelected(null);
     setTourIndex(-1);
     setSelectedRelation(null);
+    setRelationReturnFocusId(null);
   }, [activeId, persons, selected]);
 
   // ── Keyboard nav ──
@@ -372,8 +377,10 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
     if (e.key === 'Escape' && selectedRelation && target.closest('[data-genealogy-relation-details]')) {
       e.preventDefault();
       e.stopPropagation();
+      const returnId = relationReturnFocusId ?? selectedRelation.from;
       setSelectedRelation(null);
-      setKeyboardTarget({ id: selectedRelation.from });
+      setRelationReturnFocusId(null);
+      setKeyboardTarget({ id: returnId });
       return;
     }
     // Toolbar, dialogs, links and editable fields own their native keys.
@@ -411,7 +418,7 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
       case 'Enter': case ' ': { if (detailLevel < 2) { moveFocus(person.id); } else { setActiveId(person.id); setSelected(person); } break; }
       case 'Escape': setActiveId(null); setSelected(null); break;
     }
-  }, [persons, laidNodes, selected, selectedRelation, showSplit, focusPerson, detailLevel]);
+  }, [persons, laidNodes, selected, selectedRelation, relationReturnFocusId, showSplit, focusPerson, detailLevel]);
 
   // ── Golden path tour ──
   const goldenArray = useMemo(() => {
@@ -426,7 +433,7 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
   const tourActive = tourIndex >= 0;
   const tourPerson = tourActive ? persons.find(p => p.id === goldenArray[tourIndex]) : null;
   const startTour = useCallback(() => {
-    setShowLineage('all'); setSearch(''); setSearchSelectionId(null); setSearchCursor(-1); setSelected(null); setSelectedRelation(null); setTourIndex(0);
+    setShowLineage('all'); setSearch(''); setSearchSelectionId(null); setSearchCursor(-1); setSelected(null); setSelectedRelation(null); setRelationReturnFocusId(null); setTourIndex(0);
     if (goldenArray[0]) focusPerson(goldenArray[0], 1, 0);
   }, [goldenArray, focusPerson]);
   const tourNext = useCallback(() => setTourIndex(i => Math.min(i + 1, goldenArray.length - 1)), [goldenArray.length]);
@@ -439,6 +446,7 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
     const pathIds = edge.data?.pathIds as string[] | undefined;
     if (pathIds?.length) {
       setSelectedRelation(null);
+      setRelationReturnFocusId(null);
       focusPerson(pathIds[Math.floor(pathIds.length / 2)], 1, 0);
       return;
     }
@@ -446,6 +454,7 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
       item.kind === 'parent' && item.from === edge.source && item.to === edge.target);
     if (!relation) return;
     setSelected(null);
+    setRelationReturnFocusId(edge.source);
     setSelectedRelation(relation);
   }, [relations, focusPerson]);
 
@@ -461,6 +470,7 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
       setActiveId(null);
       setSelected(null);
       setSelectedRelation(null);
+      setRelationReturnFocusId(null);
       return;
     }
 
@@ -493,7 +503,7 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
   const visibleCount = visibleNodeIds.size;
   const visibleFocusCount = focusLineageIds ? laidNodes.filter(n => focusLineageIds.has(n.id) && visibleNodeIds.has(n.id)).length : 0;
   const detailLabel = detailLevel === 0 ? 'Обзор' : detailLevel === 1 ? 'Ключевые' : 'Все детали';
-  const resetView = () => { setSearch(''); setSearchSelectionId(null); setSearchCursor(-1); setActiveId(null); setSelected(null); setSelectedRelation(null); setTourIndex(-1); fitOverview(); };
+  const resetView = () => { setSearch(''); setSearchSelectionId(null); setSearchCursor(-1); setActiveId(null); setSelected(null); setSelectedRelation(null); setRelationReturnFocusId(null); setTourIndex(-1); fitOverview(); };
   const hasCardsInView = laidNodes.some(node => {
     if (!visibleNodeIds.has(node.id)) return false;
     const center = centerOf(node);
@@ -503,7 +513,7 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
   const focusEra = (eraId: string) => {
     const members = laidNodes.filter(n => n.data.era === eraId);
     if (!members.length || !rfInstance.current) return;
-    setSearch(''); setSearchSelectionId(null); setSearchCursor(-1); setSelected(null); setSelectedRelation(null); setActiveId(null); setTourIndex(-1);
+    setSearch(''); setSearchSelectionId(null); setSearchCursor(-1); setSelected(null); setSelectedRelation(null); setRelationReturnFocusId(null); setActiveId(null); setTourIndex(-1);
     const first = [...members].sort((a, b) => a.position.y - b.position.y)[0];
     focusPerson(first.id, 1, 0);
   };
@@ -533,6 +543,7 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
                 setActiveId(null);
                 setSelected(null);
                 setSelectedRelation(null);
+                setRelationReturnFocusId(null);
               }}
               onKeyDown={handleSearchKeyDown}
               aria-label="Поиск по имени"
@@ -625,17 +636,33 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
       <div className="genealogy-status">
         <div><strong>{detailLabel}</strong><span>Показано {visibleCount} из {laidNodes.length}</span></div>
         <p>{detailLevel < 2 ? 'Пунктир — путь через скрытые персоны. Нажмите имя, чтобы раскрыть ветвь.' : 'Схема поколений: расстояния не обозначают годы.'}</p>
-        {activeId && <button type="button" data-genealogy-focus-count onClick={() => { setActiveId(null); setSelected(null); setSelectedRelation(null); }}>
+        {activeId && <button type="button" data-genealogy-focus-count onClick={() => { setActiveId(null); setSelected(null); setSelectedRelation(null); setRelationReturnFocusId(null); }}>
           Фокус: {visibleFocusCount} из {focusLineageIds?.size ?? 0} · Сбросить
         </button>}
       </div>
-      <DetailPanel person={selected} onClose={() => { if (selected) setKeyboardTarget({ id: selected.id }); setSelected(null); }} />
+      <DetailPanel
+        person={selected}
+        persons={persons}
+        relations={relations}
+        onInspectRelation={relation => {
+          const returnId = selected?.id ?? null;
+          setSelected(null);
+          setRelationReturnFocusId(returnId);
+          setSelectedRelation(relation);
+        }}
+        onClose={() => {
+          if (selected) setKeyboardTarget({ id: selected.id });
+          setSelected(null);
+        }}
+      />
       <RelationshipInspector
         relation={selectedRelation}
         persons={persons}
         onClose={() => {
-          if (selectedRelation) setKeyboardTarget({ id: selectedRelation.from });
+          const returnId = relationReturnFocusId ?? selectedRelation?.from ?? null;
           setSelectedRelation(null);
+          setRelationReturnFocusId(null);
+          if (returnId) setKeyboardTarget({ id: returnId });
         }}
       />
       {showSplit && <SplitView persons={persons} returnFocusTo={splitOpener.current} onClose={() => setShowSplit(false)} />}
