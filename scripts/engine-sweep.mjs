@@ -441,12 +441,16 @@ for (const [id, url] of SINGLES) {
       return style.display !== 'none' && style.visibility !== 'hidden';
     });
     const body = document.querySelector('.article-body');
+    const pageWrap = document.querySelector('.page-wrap');
     const hero = document.querySelector('.gbs2-hero img, .article-hero img, .article-figure img');
     const bs = body ? getComputedStyle(body) : null;
+    const ps = pageWrap ? getComputedStyle(pageWrap) : null;
     const hs = hero ? getComputedStyle(hero) : null;
     return {
       visibleChrome,
       bodyOpacity: bs?.opacity, bodyColor: bs?.color,
+      bodyPaddingTop: bs?.paddingTop, bodyPaddingBottom: bs?.paddingBottom,
+      pageWrapPaddingTop: ps?.paddingTop, pageWrapPaddingBottom: ps?.paddingBottom,
       heroPosition: hs?.position, heroTransform: hs?.transform,
       heroBefore: getComputedStyle(document.querySelector('.gbs2-hero'), '::before').display,
       heroAfter: getComputedStyle(document.querySelector('.gbs2-hero'), '::after').display,
@@ -458,7 +462,9 @@ for (const [id, url] of SINGLES) {
   R('print', 'A4 media hides chrome and restores readable normal flow',
     !!printLayout && printLayout.visibleChrome.length === 0 && Number(printLayout.bodyOpacity) === 1 &&
     printLayout.heroPosition !== 'fixed' && printLayout.heroBefore === 'none' && printLayout.heroAfter === 'none' &&
-    printLayout.heroPaddingTop === '0px' && printLayout.heroCapDisplay === 'none' && printLayout.worldDisplay === 'block',
+    printLayout.heroPaddingTop === '0px' && printLayout.heroCapDisplay === 'none' && printLayout.worldDisplay === 'block' &&
+    printLayout.bodyPaddingTop === '0px' && printLayout.bodyPaddingBottom === '0px' &&
+    printLayout.pageWrapPaddingTop === '0px' && printLayout.pageWrapPaddingBottom === '0px',
     JSON.stringify(printLayout));
   if (ARTIFACT_DIR) {
     await page.screenshot({ path: join(ARTIFACT_DIR, 'reader-print-preview.png'), fullPage: false });

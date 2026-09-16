@@ -2823,7 +2823,7 @@ html.dark .gb-roman {
 }
 
 /* ---- Mobile/tablet (<64em): hide rail, show fixed bottom bar ---- */
-@media (max-width:63.99em){
+@media screen and (max-width:63.99em){
   .gbs2-world[data-gill-v16]{display:block;min-height:0}
   [data-gill-v16] .gbs-rail{display:none}
   /* Owner + референс (gill-mobile-bars-v2.9: крошек нет): на мобиле у
@@ -3109,7 +3109,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
    already-synced static root HTML because JS upgrades the old markup at runtime.
    ========================================================= */
 
-@media (max-width: 960px) {
+@media screen and (max-width: 960px) {
   :root {
     --gill-mobile-bar-h: 78px;
     --gill-mobile-bar-bg: rgba(253, 251, 246, .99);
