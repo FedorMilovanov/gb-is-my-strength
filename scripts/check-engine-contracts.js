@@ -154,12 +154,20 @@ check('CSS: no double .gill-tab focus ring', tabIndex === -1 || !/outline-offset
 check('CSS: series mobile breadcrumbs hidden', /\[data-gill-v16\]\s*\.page-wrap\s*>\s*nav\.breadcrumb\s*\{[^}]*display:\s*none/.test(css));
 check('CSS: idle PLAY outline for series', /\.gbs-theme-corner \.gb-ember__ring-svg\s*\{\s*opacity:\s*1/.test(css));
 check('CSS: idle PLAY outline for articles', /\.gb-floater \.gb-ember__ring-svg\s*\{\s*opacity:\s*1/.test(css));
-const badgeRules = [
+const desktopBadgeRules = [
   /\[data-gill-v16\] \.gbs-rail-spdbadge\s*\{[^}]*right:\s*-2px;\s*bottom:\s*-2px/,
   /\.gb-floater \.gbs-rail-spdbadge\s*\{[^}]*right:\s*-2px;\s*bottom:\s*-2px/,
-  /\.mobile-spdbadge\s*\{[^}]*right:\s*-2px;\s*bottom:\s*-2px/,
 ];
-check('CSS: speed badge anchored inside PLAY', badgeRules.every((rule) => rule.test(css)));
+check('CSS: desktop speed badges anchored inside PLAY', desktopBadgeRules.every((rule) => rule.test(css)));
+const gillMobileBar = read('src/components/article-pilots/gill-series/GillSeriesMobileBar.astro');
+const mobilePlayStart = gillMobileBar.indexOf('<span class="mobile-playwrap"');
+const mobilePlayEnd = mobilePlayStart === -1 ? -1 : gillMobileBar.indexOf('</span>', mobilePlayStart);
+const mobilePlayBlock = mobilePlayEnd === -1 ? '' : gillMobileBar.slice(mobilePlayStart, mobilePlayEnd);
+check('Gill mobile: speed badge remains Play-owned with canonical non-center-intercepting corner geometry',
+  mobilePlayBlock.includes('class="mobile-spdbadge"')
+    && /\[data-gill-v16\] \.mobile-playwrap\s*\{[^}]*position:\s*relative;[^}]*display:\s*flex;[^}]*gap:\s*2px/.test(css)
+    && /\[data-gill-v16\] \.mobile-spdbadge\s*\{[^}]*position:\s*absolute;[^}]*right:\s*-4px;[^}]*bottom:\s*-4px;[^}]*min-width:\s*24px;[^}]*height:\s*24px/.test(css)
+    && /\[data-gill-v16\] \.mobile-top-bar \.gb-icon,[\s\S]*?\[data-gill-v16\] \.mobile-playwrap \.mobile-top-ember\s*\{[^}]*width:\s*44px !important;[^}]*height:\s*44px !important;[^}]*min-width:\s*44px !important;[^}]*min-height:\s*44px !important/.test(css));
 
 const controller = read('js/floating-cluster-controller.js');
 check('Reader: follow-scroll contract', controller.includes('function buildFollowMap') && controller.includes('function followReading') && controller.includes('followReading(ttsState.spokenChars)'));
