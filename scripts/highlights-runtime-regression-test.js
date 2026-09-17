@@ -79,4 +79,7 @@ assert.match(source, /aria-modal","true"\),l\.setAttribute\("aria-hidden","true"
 assert.match(source, /classList\.add\("is-open"\),l\.setAttribute\("aria-hidden","false"\)/, 'open path exposes dialog');
 assert.match(source, /classList\.remove\("is-open"\),l\.setAttribute\("aria-hidden","true"\)/, 'close path hides dialog');
 
+assert.match(source, /p=e&&e\.currentTarget===s\?s:document\.activeElement/, 'click-open path captures the saved-quotes FAB as focus-return owner');
+assert.match(source, /p&&p\.focus&&p\.focus\(\)/, 'close path restores captured opener focus');
+
 console.log('✅ highlights runtime dedupe + ARIA regression passed');

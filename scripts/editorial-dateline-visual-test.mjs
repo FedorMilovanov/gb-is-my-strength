@@ -72,6 +72,25 @@ try {
           flow: node.getAttribute('data-print-flow'),
         })));
         assert.ok(printAudit.every((item) => item.keepNext), `${route}: a dateline can orphan from following content`);
+        const terminalChrome = await page.evaluate(() => [...document.querySelectorAll('.gbs2-vignette,.gbs2-next')].map((node) => ({
+          className: node.className,
+          display: getComputedStyle(node).display,
+          printPolicy: node.getAttribute('data-print-policy'),
+          inlineDisplay: node.style.getPropertyValue('display'),
+          inlinePriority: node.style.getPropertyPriority('display'),
+        })));
+        assert.ok(
+          terminalChrome.every((item) => item.display === 'none'),
+          `${route}: terminal reader chrome leaked into paper flow: ${JSON.stringify(terminalChrome)}`,
+        );
+        const seriesMaps = await page.evaluate(() => [...document.querySelectorAll('.gbs2-timeline')].map((node) => ({
+          display: getComputedStyle(node).display,
+          printPolicy: node.getAttribute('data-print-policy'),
+        })));
+        assert.ok(
+          seriesMaps.length > 0 && seriesMaps.every((item) => item.display !== 'none' && item.printPolicy !== 'exclude'),
+          `${route}: authored series map was removed from paper flow: ${JSON.stringify(seriesMaps)}`,
+        );
         await page.pdf({ path: path.join(OUT, `${slug}.pdf`), format: 'A4', printBackground: true, preferCSSPageSize: true });
         await page.emulateMedia({ media: 'screen' });
         await page.evaluate(() => window.GBPrintPagination?.reset?.());

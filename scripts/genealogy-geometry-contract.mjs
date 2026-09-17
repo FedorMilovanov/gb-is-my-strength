@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { buildLayout } from '../src/components/genealogy/layout.ts';
 import { projectGenealogy, overviewIds, fitGenealogyView, centerOf, boxesOverlap, getDetailLevel, MIN_ZOOM } from '../src/components/genealogy/semanticGraph.ts';
 import { NODE_W, NODE_H } from '../src/components/genealogy/theme.ts';
+import { readGenealogyRuntimePersons } from './genealogy-runtime-fixture.mjs';
 
 export function assertGenealogyGeometryContract() {
-  const persons = JSON.parse(fs.readFileSync(new URL('../data/genealogy/genealogy.json', import.meta.url), 'utf8')).persons;
+  const persons = readGenealogyRuntimePersons();
   const full = buildLayout(persons, { showGolden: true, showLineage: 'all' });
   const positions = new Map(full.nodes.map(node => [node.id, node.position]));
   for (const lineage of ['all', 'messianic', 'cainite', 'neutral']) {

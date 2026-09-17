@@ -1,4 +1,6 @@
 ---
+import AboutAccuracyBlock from '@/components/about/AboutAccuracyBlock.astro';
+
 type SectionId =
   | 'authority-capture'
   | 'governance-procedure'
@@ -255,7 +257,7 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
         <span aria-hidden="true" class="article-byline__sep">·</span>
         <time datetime={publicationMode ? '2026-08-02' : '2026-08-01'}>{publicationMode ? '2 августа 2026' : '1 августа 2026'}</time>
         <span aria-hidden="true" class="article-byline__sep">·</span>
-        <span>{publicationMode ? '35 мин' : 'Исследовательский черновик'}</span>
+        <span>{publicationMode ? '15 мин' : 'Исследовательский черновик'}</span>
       </p>
     </header>
 
@@ -398,7 +400,7 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
 
     <section class="reading-list-section" id="sources" data-reader-source-links="40">
       <h2>Источники и границы проверки</h2>
-      <p>Полная Research-authority содержит 148 записей. В читательский корпус вынесена отобранная рамка из 54 источников: 42 записи по конкретным делам и 12 библейских, академических и контролирующих источников по защите уязвимых. Ниже — 40 прямых читательских ссылок. Источники без восстановленного стабильного URL остаются внутренними точными указателями и используются только для ограниченного пересказа, без прямой цитаты.</p>
+      <p>Полная Research-authority содержит 181 запись: 148 исходных записей и 33 источника дополнения Wave 11 о верных свидетелях (свой раздел — ниже). В читательский корпус вынесена отобранная рамка из 54 источников: 42 записи по конкретным делам и 12 библейских, академических и контролирующих источников по защите уязвимых. Ниже — 40 прямых читательских ссылок; раздел Wave 11 добавляет ещё 33 ссылки — 73 всего. Источники без восстановленного стабильного URL остаются внутренними точными указателями и используются только для ограниченного пересказа, без прямой цитаты.</p>
       <ol>
         {sourceLinks.map(([label, href]) => (
           <li><a href={href} rel="noopener noreferrer">{label}</a></li>
@@ -425,4 +427,5 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
       <p><strong>Фёдор Милованов</strong> — автор-редактор проекта «Господь Бог — Сила Моя». Материал подготовлен как богословско-редакционное исследование с отдельной проверкой первичных документов, юридических статусов и границ допустимой формулировки.</p>
     </aside>
   </article>
+  <AboutAccuracyBlock />
 </main>

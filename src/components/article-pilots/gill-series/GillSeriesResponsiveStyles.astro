@@ -106,6 +106,13 @@
   }
 
   @media print {
+    /* Terminal series navigation is reader chrome, not authored paper content.
+       Keep the rule in the compiled global SeriesReader stylesheet so it stays
+       active after GBPrintPagination prepares terminal followers. */
+    [data-gill-v16] :is(.gbs2-vignette, .gbs2-next) {
+      display: none !important;
+    }
+
     [data-gill-v16] table.manuscript-table {
       display: table;
       inline-size: 100%;

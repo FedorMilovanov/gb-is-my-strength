@@ -1,0 +1,3027 @@
+{
+  "schemaVersion": 1,
+  "authority": "explicit-gospel-occurrence-adjacency",
+  "policy": {
+    "meaning": "source-order textual adjacency only",
+    "familyInference": "forbidden",
+    "relationCrosswalk": "informational-only; relation authority remains in publishable relations"
+  },
+  "assertions": [
+    {
+      "id": "matthew:matthew-1-2-1->matthew-1-2-2",
+      "sequenceId": "matthew",
+      "position": 1,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-2-1",
+        "toOccurrenceId": "matthew-1-2-2",
+        "fromRef": "Мф 1:2",
+        "toRef": "Мф 1:2"
+      },
+      "fromPersonId": "abraham--gen-11-26",
+      "toPersonId": "isaac--gen-17-19",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:abraham--gen-11-26->isaac--gen-17-19:father",
+        "kind": "parent",
+        "from": "abraham--gen-11-26",
+        "to": "isaac--gen-17-19",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-2-2->matthew-1-2-3",
+      "sequenceId": "matthew",
+      "position": 2,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-2-2",
+        "toOccurrenceId": "matthew-1-2-3",
+        "fromRef": "Мф 1:2",
+        "toRef": "Мф 1:2"
+      },
+      "fromPersonId": "isaac--gen-17-19",
+      "toPersonId": "israel--gen-25-26",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:isaac--gen-17-19->israel--gen-25-26:father",
+        "kind": "parent",
+        "from": "isaac--gen-17-19",
+        "to": "israel--gen-25-26",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-2-3->matthew-1-2-4",
+      "sequenceId": "matthew",
+      "position": 3,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-2-3",
+        "toOccurrenceId": "matthew-1-2-4",
+        "fromRef": "Мф 1:2",
+        "toRef": "Мф 1:2"
+      },
+      "fromPersonId": "israel--gen-25-26",
+      "toPersonId": "judah--gen-29-35",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:israel--gen-25-26->judah--gen-29-35:father",
+        "kind": "parent",
+        "from": "israel--gen-25-26",
+        "to": "judah--gen-29-35",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-2-4->matthew-1-3-1",
+      "sequenceId": "matthew",
+      "position": 4,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-2-4",
+        "toOccurrenceId": "matthew-1-3-1",
+        "fromRef": "Мф 1:2",
+        "toRef": "Мф 1:3"
+      },
+      "fromPersonId": "judah--gen-29-35",
+      "toPersonId": "perez--gen-38-29",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:judah--gen-29-35->perez--gen-38-29:father",
+        "kind": "parent",
+        "from": "judah--gen-29-35",
+        "to": "perez--gen-38-29",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-3-1->matthew-1-3-2",
+      "sequenceId": "matthew",
+      "position": 5,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-3-1",
+        "toOccurrenceId": "matthew-1-3-2",
+        "fromRef": "Мф 1:3",
+        "toRef": "Мф 1:3"
+      },
+      "fromPersonId": "perez--gen-38-29",
+      "toPersonId": "hezron--gen-46-12",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:perez--gen-38-29->hezron--gen-46-12:father",
+        "kind": "parent",
+        "from": "perez--gen-38-29",
+        "to": "hezron--gen-46-12",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-3-2->matthew-1-3-3",
+      "sequenceId": "matthew",
+      "position": 6,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-3-2",
+        "toOccurrenceId": "matthew-1-3-3",
+        "fromRef": "Мф 1:3",
+        "toRef": "Мф 1:3"
+      },
+      "fromPersonId": "hezron--gen-46-12",
+      "toPersonId": "ram--rut-4-19",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:hezron--gen-46-12->ram--rut-4-19:father",
+        "kind": "parent",
+        "from": "hezron--gen-46-12",
+        "to": "ram--rut-4-19",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-3-3->matthew-1-4-1",
+      "sequenceId": "matthew",
+      "position": 7,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-3-3",
+        "toOccurrenceId": "matthew-1-4-1",
+        "fromRef": "Мф 1:3",
+        "toRef": "Мф 1:4"
+      },
+      "fromPersonId": "ram--rut-4-19",
+      "toPersonId": "amminadab--exo-6-23",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:ram--rut-4-19->amminadab--exo-6-23:father",
+        "kind": "parent",
+        "from": "ram--rut-4-19",
+        "to": "amminadab--exo-6-23",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-4-1->matthew-1-4-2",
+      "sequenceId": "matthew",
+      "position": 8,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-4-1",
+        "toOccurrenceId": "matthew-1-4-2",
+        "fromRef": "Мф 1:4",
+        "toRef": "Мф 1:4"
+      },
+      "fromPersonId": "amminadab--exo-6-23",
+      "toPersonId": "nahshon--exo-6-23",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:amminadab--exo-6-23->nahshon--exo-6-23:father",
+        "kind": "parent",
+        "from": "amminadab--exo-6-23",
+        "to": "nahshon--exo-6-23",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-4-2->matthew-1-4-3",
+      "sequenceId": "matthew",
+      "position": 9,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-4-2",
+        "toOccurrenceId": "matthew-1-4-3",
+        "fromRef": "Мф 1:4",
+        "toRef": "Мф 1:4"
+      },
+      "fromPersonId": "nahshon--exo-6-23",
+      "toPersonId": "salmon--rut-4-20",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:nahshon--exo-6-23->salmon--rut-4-20:father",
+        "kind": "parent",
+        "from": "nahshon--exo-6-23",
+        "to": "salmon--rut-4-20",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-4-3->matthew-1-5-1",
+      "sequenceId": "matthew",
+      "position": 10,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-4-3",
+        "toOccurrenceId": "matthew-1-5-1",
+        "fromRef": "Мф 1:4",
+        "toRef": "Мф 1:5"
+      },
+      "fromPersonId": "salmon--rut-4-20",
+      "toPersonId": "boaz--rut-2-1",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:salmon--rut-4-20->boaz--rut-2-1:father",
+        "kind": "parent",
+        "from": "salmon--rut-4-20",
+        "to": "boaz--rut-2-1",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-5-1->matthew-1-5-2",
+      "sequenceId": "matthew",
+      "position": 11,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-5-1",
+        "toOccurrenceId": "matthew-1-5-2",
+        "fromRef": "Мф 1:5",
+        "toRef": "Мф 1:5"
+      },
+      "fromPersonId": "boaz--rut-2-1",
+      "toPersonId": "obed--rut-4-17",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:boaz--rut-2-1->obed--rut-4-17:father",
+        "kind": "parent",
+        "from": "boaz--rut-2-1",
+        "to": "obed--rut-4-17",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-5-2->matthew-1-5-3",
+      "sequenceId": "matthew",
+      "position": 12,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-5-2",
+        "toOccurrenceId": "matthew-1-5-3",
+        "fromRef": "Мф 1:5",
+        "toRef": "Мф 1:5"
+      },
+      "fromPersonId": "obed--rut-4-17",
+      "toPersonId": "jesse--rut-4-17",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:obed--rut-4-17->jesse--rut-4-17:father",
+        "kind": "parent",
+        "from": "obed--rut-4-17",
+        "to": "jesse--rut-4-17",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-5-3->matthew-1-6-1",
+      "sequenceId": "matthew",
+      "position": 13,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-5-3",
+        "toOccurrenceId": "matthew-1-6-1",
+        "fromRef": "Мф 1:5",
+        "toRef": "Мф 1:6"
+      },
+      "fromPersonId": "jesse--rut-4-17",
+      "toPersonId": "david--rut-4-17",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:jesse--rut-4-17->david--rut-4-17:father",
+        "kind": "parent",
+        "from": "jesse--rut-4-17",
+        "to": "david--rut-4-17",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-6-1->matthew-1-6-2",
+      "sequenceId": "matthew",
+      "position": 14,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-6-1",
+        "toOccurrenceId": "matthew-1-6-2",
+        "fromRef": "Мф 1:6",
+        "toRef": "Мф 1:6"
+      },
+      "fromPersonId": "david--rut-4-17",
+      "toPersonId": "solomon--2sa-5-14",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:david--rut-4-17->solomon--2sa-5-14:father",
+        "kind": "parent",
+        "from": "david--rut-4-17",
+        "to": "solomon--2sa-5-14",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-6-2->matthew-1-7-1",
+      "sequenceId": "matthew",
+      "position": 15,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-6-2",
+        "toOccurrenceId": "matthew-1-7-1",
+        "fromRef": "Мф 1:6",
+        "toRef": "Мф 1:7"
+      },
+      "fromPersonId": "solomon--2sa-5-14",
+      "toPersonId": "rehoboam--1ki-11-43",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:solomon--2sa-5-14->rehoboam--1ki-11-43:father",
+        "kind": "parent",
+        "from": "solomon--2sa-5-14",
+        "to": "rehoboam--1ki-11-43",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-7-1->matthew-1-7-2",
+      "sequenceId": "matthew",
+      "position": 16,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-7-1",
+        "toOccurrenceId": "matthew-1-7-2",
+        "fromRef": "Мф 1:7",
+        "toRef": "Мф 1:7"
+      },
+      "fromPersonId": "rehoboam--1ki-11-43",
+      "toPersonId": "abijah--1ki-14-31",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:rehoboam--1ki-11-43->abijah--1ki-14-31:father",
+        "kind": "parent",
+        "from": "rehoboam--1ki-11-43",
+        "to": "abijah--1ki-14-31",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-7-2->matthew-1-7-3",
+      "sequenceId": "matthew",
+      "position": 17,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-7-2",
+        "toOccurrenceId": "matthew-1-7-3",
+        "fromRef": "Мф 1:7",
+        "toRef": "Мф 1:7"
+      },
+      "fromPersonId": "abijah--1ki-14-31",
+      "toPersonId": "asa--1ki-15-8",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:abijah--1ki-14-31->asa--1ki-15-8:father",
+        "kind": "parent",
+        "from": "abijah--1ki-14-31",
+        "to": "asa--1ki-15-8",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-7-3->matthew-1-8-1",
+      "sequenceId": "matthew",
+      "position": 18,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-7-3",
+        "toOccurrenceId": "matthew-1-8-1",
+        "fromRef": "Мф 1:7",
+        "toRef": "Мф 1:8"
+      },
+      "fromPersonId": "asa--1ki-15-8",
+      "toPersonId": "jehoshaphat--1ki-15-24",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:asa--1ki-15-8->jehoshaphat--1ki-15-24:father",
+        "kind": "parent",
+        "from": "asa--1ki-15-8",
+        "to": "jehoshaphat--1ki-15-24",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-8-1->matthew-1-8-2",
+      "sequenceId": "matthew",
+      "position": 19,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-8-1",
+        "toOccurrenceId": "matthew-1-8-2",
+        "fromRef": "Мф 1:8",
+        "toRef": "Мф 1:8"
+      },
+      "fromPersonId": "jehoshaphat--1ki-15-24",
+      "toPersonId": "joram--2ki-1-17",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:jehoshaphat--1ki-15-24->joram--2ki-1-17:father",
+        "kind": "parent",
+        "from": "jehoshaphat--1ki-15-24",
+        "to": "joram--2ki-1-17",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-8-2->matthew-1-8-3",
+      "sequenceId": "matthew",
+      "position": 20,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-8-2",
+        "toOccurrenceId": "matthew-1-8-3",
+        "fromRef": "Мф 1:8",
+        "toRef": "Мф 1:8"
+      },
+      "fromPersonId": "joram--2ki-1-17",
+      "toPersonId": "uzziah--2ki-14-21",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:joram--2ki-1-17->uzziah--2ki-14-21:father",
+        "kind": "parent",
+        "from": "joram--2ki-1-17",
+        "to": "uzziah--2ki-14-21",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-8-3->matthew-1-9-1",
+      "sequenceId": "matthew",
+      "position": 21,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-8-3",
+        "toOccurrenceId": "matthew-1-9-1",
+        "fromRef": "Мф 1:8",
+        "toRef": "Мф 1:9"
+      },
+      "fromPersonId": "uzziah--2ki-14-21",
+      "toPersonId": "jotham--2ki-15-5",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:uzziah--2ki-14-21->jotham--2ki-15-5:father",
+        "kind": "parent",
+        "from": "uzziah--2ki-14-21",
+        "to": "jotham--2ki-15-5",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-9-1->matthew-1-9-2",
+      "sequenceId": "matthew",
+      "position": 22,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-9-1",
+        "toOccurrenceId": "matthew-1-9-2",
+        "fromRef": "Мф 1:9",
+        "toRef": "Мф 1:9"
+      },
+      "fromPersonId": "jotham--2ki-15-5",
+      "toPersonId": "ahaz--2ki-15-38",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:jotham--2ki-15-5->ahaz--2ki-15-38:father",
+        "kind": "parent",
+        "from": "jotham--2ki-15-5",
+        "to": "ahaz--2ki-15-38",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-9-2->matthew-1-9-3",
+      "sequenceId": "matthew",
+      "position": 23,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-9-2",
+        "toOccurrenceId": "matthew-1-9-3",
+        "fromRef": "Мф 1:9",
+        "toRef": "Мф 1:9"
+      },
+      "fromPersonId": "ahaz--2ki-15-38",
+      "toPersonId": "hezekiah--2ki-16-20",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:ahaz--2ki-15-38->hezekiah--2ki-16-20:father",
+        "kind": "parent",
+        "from": "ahaz--2ki-15-38",
+        "to": "hezekiah--2ki-16-20",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-9-3->matthew-1-10-1",
+      "sequenceId": "matthew",
+      "position": 24,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-9-3",
+        "toOccurrenceId": "matthew-1-10-1",
+        "fromRef": "Мф 1:9",
+        "toRef": "Мф 1:10"
+      },
+      "fromPersonId": "hezekiah--2ki-16-20",
+      "toPersonId": "manasseh--2ki-20-21",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:hezekiah--2ki-16-20->manasseh--2ki-20-21:father",
+        "kind": "parent",
+        "from": "hezekiah--2ki-16-20",
+        "to": "manasseh--2ki-20-21",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-10-1->matthew-1-10-2",
+      "sequenceId": "matthew",
+      "position": 25,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-10-1",
+        "toOccurrenceId": "matthew-1-10-2",
+        "fromRef": "Мф 1:10",
+        "toRef": "Мф 1:10"
+      },
+      "fromPersonId": "manasseh--2ki-20-21",
+      "toPersonId": "amon--2ki-21-18",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:manasseh--2ki-20-21->amon--2ki-21-18:father",
+        "kind": "parent",
+        "from": "manasseh--2ki-20-21",
+        "to": "amon--2ki-21-18",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-10-2->matthew-1-10-3",
+      "sequenceId": "matthew",
+      "position": 26,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-10-2",
+        "toOccurrenceId": "matthew-1-10-3",
+        "fromRef": "Мф 1:10",
+        "toRef": "Мф 1:10"
+      },
+      "fromPersonId": "amon--2ki-21-18",
+      "toPersonId": "josiah--1ki-13-2",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:amon--2ki-21-18->josiah--1ki-13-2:father",
+        "kind": "parent",
+        "from": "amon--2ki-21-18",
+        "to": "josiah--1ki-13-2",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-10-3->matthew-1-11-1",
+      "sequenceId": "matthew",
+      "position": 27,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-10-3",
+        "toOccurrenceId": "matthew-1-11-1",
+        "fromRef": "Мф 1:10",
+        "toRef": "Мф 1:11"
+      },
+      "fromPersonId": "josiah--1ki-13-2",
+      "toPersonId": "jehoiakim--2ki-23-34",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:josiah--1ki-13-2->jehoiakim--2ki-23-34:father",
+        "kind": "parent",
+        "from": "josiah--1ki-13-2",
+        "to": "jehoiakim--2ki-23-34",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-11-1->matthew-1-11-2",
+      "sequenceId": "matthew",
+      "position": 28,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-11-1",
+        "toOccurrenceId": "matthew-1-11-2",
+        "fromRef": "Мф 1:11",
+        "toRef": "Мф 1:11"
+      },
+      "fromPersonId": "jehoiakim--2ki-23-34",
+      "toPersonId": "jehoiachin--2ki-24-6",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:jehoiakim--2ki-23-34->jehoiachin--2ki-24-6:father",
+        "kind": "parent",
+        "from": "jehoiakim--2ki-23-34",
+        "to": "jehoiachin--2ki-24-6",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-11-2->matthew-1-12-1",
+      "sequenceId": "matthew",
+      "position": 29,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-11-2",
+        "toOccurrenceId": "matthew-1-12-1",
+        "fromRef": "Мф 1:11",
+        "toRef": "Мф 1:12"
+      },
+      "fromPersonId": "jehoiachin--2ki-24-6",
+      "toPersonId": "shealtiel--1ch-3-17",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:jehoiachin--2ki-24-6->shealtiel--1ch-3-17:father",
+        "kind": "parent",
+        "from": "jehoiachin--2ki-24-6",
+        "to": "shealtiel--1ch-3-17",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-12-1->matthew-1-12-2",
+      "sequenceId": "matthew",
+      "position": 30,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-12-1",
+        "toOccurrenceId": "matthew-1-12-2",
+        "fromRef": "Мф 1:12",
+        "toRef": "Мф 1:12"
+      },
+      "fromPersonId": "shealtiel--1ch-3-17",
+      "toPersonId": "zerubbabel--1ch-3-19",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:shealtiel--1ch-3-17->zerubbabel--1ch-3-19:father",
+        "kind": "parent",
+        "from": "shealtiel--1ch-3-17",
+        "to": "zerubbabel--1ch-3-19",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-12-2->matthew-1-13-1",
+      "sequenceId": "matthew",
+      "position": 31,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-12-2",
+        "toOccurrenceId": "matthew-1-13-1",
+        "fromRef": "Мф 1:12",
+        "toRef": "Мф 1:13"
+      },
+      "fromPersonId": "zerubbabel--1ch-3-19",
+      "toPersonId": "abihud--1ch-8-3",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:zerubbabel--1ch-3-19->abihud--1ch-8-3:father",
+        "kind": "parent",
+        "from": "zerubbabel--1ch-3-19",
+        "to": "abihud--1ch-8-3",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-13-1->matthew-1-13-2",
+      "sequenceId": "matthew",
+      "position": 32,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-13-1",
+        "toOccurrenceId": "matthew-1-13-2",
+        "fromRef": "Мф 1:13",
+        "toRef": "Мф 1:13"
+      },
+      "fromPersonId": "abihud--1ch-8-3",
+      "toPersonId": "eliakim--mat-1-13",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:abihud--1ch-8-3->eliakim--mat-1-13:father",
+        "kind": "parent",
+        "from": "abihud--1ch-8-3",
+        "to": "eliakim--mat-1-13",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-13-2->matthew-1-13-3",
+      "sequenceId": "matthew",
+      "position": 33,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-13-2",
+        "toOccurrenceId": "matthew-1-13-3",
+        "fromRef": "Мф 1:13",
+        "toRef": "Мф 1:13"
+      },
+      "fromPersonId": "eliakim--mat-1-13",
+      "toPersonId": "azor--mat-1-13",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:eliakim--mat-1-13->azor--mat-1-13:father",
+        "kind": "parent",
+        "from": "eliakim--mat-1-13",
+        "to": "azor--mat-1-13",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-13-3->matthew-1-14-1",
+      "sequenceId": "matthew",
+      "position": 34,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-13-3",
+        "toOccurrenceId": "matthew-1-14-1",
+        "fromRef": "Мф 1:13",
+        "toRef": "Мф 1:14"
+      },
+      "fromPersonId": "azor--mat-1-13",
+      "toPersonId": "zadok--mat-1-14",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:azor--mat-1-13->zadok--mat-1-14:father",
+        "kind": "parent",
+        "from": "azor--mat-1-13",
+        "to": "zadok--mat-1-14",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-14-1->matthew-1-14-2",
+      "sequenceId": "matthew",
+      "position": 35,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-14-1",
+        "toOccurrenceId": "matthew-1-14-2",
+        "fromRef": "Мф 1:14",
+        "toRef": "Мф 1:14"
+      },
+      "fromPersonId": "zadok--mat-1-14",
+      "toPersonId": "achim--mat-1-14",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:zadok--mat-1-14->achim--mat-1-14:father",
+        "kind": "parent",
+        "from": "zadok--mat-1-14",
+        "to": "achim--mat-1-14",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-14-2->matthew-1-14-3",
+      "sequenceId": "matthew",
+      "position": 36,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-14-2",
+        "toOccurrenceId": "matthew-1-14-3",
+        "fromRef": "Мф 1:14",
+        "toRef": "Мф 1:14"
+      },
+      "fromPersonId": "achim--mat-1-14",
+      "toPersonId": "eliud--mat-1-14",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:achim--mat-1-14->eliud--mat-1-14:father",
+        "kind": "parent",
+        "from": "achim--mat-1-14",
+        "to": "eliud--mat-1-14",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-14-3->matthew-1-15-1",
+      "sequenceId": "matthew",
+      "position": 37,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-14-3",
+        "toOccurrenceId": "matthew-1-15-1",
+        "fromRef": "Мф 1:14",
+        "toRef": "Мф 1:15"
+      },
+      "fromPersonId": "eliud--mat-1-14",
+      "toPersonId": "eleazar--mat-1-15",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:eliud--mat-1-14->eleazar--mat-1-15:father",
+        "kind": "parent",
+        "from": "eliud--mat-1-14",
+        "to": "eleazar--mat-1-15",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-15-1->matthew-1-15-2",
+      "sequenceId": "matthew",
+      "position": 38,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-15-1",
+        "toOccurrenceId": "matthew-1-15-2",
+        "fromRef": "Мф 1:15",
+        "toRef": "Мф 1:15"
+      },
+      "fromPersonId": "eleazar--mat-1-15",
+      "toPersonId": "matthan--mat-1-15",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:eleazar--mat-1-15->matthan--mat-1-15:father",
+        "kind": "parent",
+        "from": "eleazar--mat-1-15",
+        "to": "matthan--mat-1-15",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-15-2->matthew-1-15-3",
+      "sequenceId": "matthew",
+      "position": 39,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-15-2",
+        "toOccurrenceId": "matthew-1-15-3",
+        "fromRef": "Мф 1:15",
+        "toRef": "Мф 1:15"
+      },
+      "fromPersonId": "matthan--mat-1-15",
+      "toPersonId": "jacob--mat-1-15",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:matthan--mat-1-15->jacob--mat-1-15:father",
+        "kind": "parent",
+        "from": "matthan--mat-1-15",
+        "to": "jacob--mat-1-15",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-15-3->matthew-1-16-1",
+      "sequenceId": "matthew",
+      "position": 40,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-15-3",
+        "toOccurrenceId": "matthew-1-16-1",
+        "fromRef": "Мф 1:15",
+        "toRef": "Мф 1:16"
+      },
+      "fromPersonId": "jacob--mat-1-15",
+      "toPersonId": "joseph--mat-1-16",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:jacob--mat-1-15->joseph--mat-1-16:father",
+        "kind": "parent",
+        "from": "jacob--mat-1-15",
+        "to": "joseph--mat-1-16",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "matthew:matthew-1-16-1->matthew-1-16-2",
+      "sequenceId": "matthew",
+      "position": 41,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "matthew-1-16-1",
+        "toOccurrenceId": "matthew-1-16-2",
+        "fromRef": "Мф 1:16",
+        "toRef": "Мф 1:16"
+      },
+      "fromPersonId": "joseph--mat-1-16",
+      "toPersonId": "jesus--isa-7-14",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "legal-parent:joseph--mat-1-16->jesus--isa-7-14:legal-father",
+        "kind": "legal-parent",
+        "from": "joseph--mat-1-16",
+        "to": "jesus--isa-7-14",
+        "role": "legal-father",
+        "authority": "explicit-qualified-textual-annotation",
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
+      }
+    },
+    {
+      "id": "luke:luke-3-23-1->luke-3-23-2",
+      "sequenceId": "luke",
+      "position": 1,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-23-1",
+        "toOccurrenceId": "luke-3-23-2",
+        "fromRef": "Лк 3:23",
+        "toRef": "Лк 3:23"
+      },
+      "fromPersonId": "jesus--isa-7-14",
+      "toPersonId": "joseph--mat-1-16",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "legal-parent:joseph--mat-1-16->jesus--isa-7-14:legal-father",
+        "kind": "legal-parent",
+        "from": "joseph--mat-1-16",
+        "to": "jesus--isa-7-14",
+        "role": "legal-father",
+        "authority": "explicit-qualified-textual-annotation",
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
+      }
+    },
+    {
+      "id": "luke:luke-3-23-2->luke-3-23-3",
+      "sequenceId": "luke",
+      "position": 2,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-23-2",
+        "toOccurrenceId": "luke-3-23-3",
+        "fromRef": "Лк 3:23",
+        "toRef": "Лк 3:23"
+      },
+      "fromPersonId": "joseph--mat-1-16",
+      "toPersonId": "heli--luk-3-23",
+      "relationCrosswalk": {
+        "status": "no-publishable-relation",
+        "relationKey": null,
+        "kind": null,
+        "from": null,
+        "to": null,
+        "role": null,
+        "authority": null,
+        "evidenceStatus": null,
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-23-3->luke-3-24-1",
+      "sequenceId": "luke",
+      "position": 3,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-23-3",
+        "toOccurrenceId": "luke-3-24-1",
+        "fromRef": "Лк 3:23",
+        "toRef": "Лк 3:24"
+      },
+      "fromPersonId": "heli--luk-3-23",
+      "toPersonId": "matthat--luk-3-24",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:matthat--luk-3-24->heli--luk-3-23:father",
+        "kind": "parent",
+        "from": "matthat--luk-3-24",
+        "to": "heli--luk-3-23",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-24-1->luke-3-24-2",
+      "sequenceId": "luke",
+      "position": 4,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-24-1",
+        "toOccurrenceId": "luke-3-24-2",
+        "fromRef": "Лк 3:24",
+        "toRef": "Лк 3:24"
+      },
+      "fromPersonId": "matthat--luk-3-24",
+      "toPersonId": "levi--luk-3-24",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:levi--luk-3-24->matthat--luk-3-24:father",
+        "kind": "parent",
+        "from": "levi--luk-3-24",
+        "to": "matthat--luk-3-24",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-24-2->luke-3-24-3",
+      "sequenceId": "luke",
+      "position": 5,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-24-2",
+        "toOccurrenceId": "luke-3-24-3",
+        "fromRef": "Лк 3:24",
+        "toRef": "Лк 3:24"
+      },
+      "fromPersonId": "levi--luk-3-24",
+      "toPersonId": "melchi--luk-3-24",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:melchi--luk-3-24->levi--luk-3-24:father",
+        "kind": "parent",
+        "from": "melchi--luk-3-24",
+        "to": "levi--luk-3-24",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-24-3->luke-3-24-4",
+      "sequenceId": "luke",
+      "position": 6,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-24-3",
+        "toOccurrenceId": "luke-3-24-4",
+        "fromRef": "Лк 3:24",
+        "toRef": "Лк 3:24"
+      },
+      "fromPersonId": "melchi--luk-3-24",
+      "toPersonId": "jannai--luk-3-24",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:jannai--luk-3-24->melchi--luk-3-24:father",
+        "kind": "parent",
+        "from": "jannai--luk-3-24",
+        "to": "melchi--luk-3-24",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-24-4->luke-3-24-5",
+      "sequenceId": "luke",
+      "position": 7,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-24-4",
+        "toOccurrenceId": "luke-3-24-5",
+        "fromRef": "Лк 3:24",
+        "toRef": "Лк 3:24"
+      },
+      "fromPersonId": "jannai--luk-3-24",
+      "toPersonId": "joseph--luk-3-24",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:joseph--luk-3-24->jannai--luk-3-24:father",
+        "kind": "parent",
+        "from": "joseph--luk-3-24",
+        "to": "jannai--luk-3-24",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-24-5->luke-3-25-1",
+      "sequenceId": "luke",
+      "position": 8,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-24-5",
+        "toOccurrenceId": "luke-3-25-1",
+        "fromRef": "Лк 3:24",
+        "toRef": "Лк 3:25"
+      },
+      "fromPersonId": "joseph--luk-3-24",
+      "toPersonId": "mattathias--luk-3-25",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:mattathias--luk-3-25->joseph--luk-3-24:father",
+        "kind": "parent",
+        "from": "mattathias--luk-3-25",
+        "to": "joseph--luk-3-24",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-25-1->luke-3-25-2",
+      "sequenceId": "luke",
+      "position": 9,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-25-1",
+        "toOccurrenceId": "luke-3-25-2",
+        "fromRef": "Лк 3:25",
+        "toRef": "Лк 3:25"
+      },
+      "fromPersonId": "mattathias--luk-3-25",
+      "toPersonId": "amos--luk-3-25",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:amos--luk-3-25->mattathias--luk-3-25:father",
+        "kind": "parent",
+        "from": "amos--luk-3-25",
+        "to": "mattathias--luk-3-25",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-25-2->luke-3-25-3",
+      "sequenceId": "luke",
+      "position": 10,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-25-2",
+        "toOccurrenceId": "luke-3-25-3",
+        "fromRef": "Лк 3:25",
+        "toRef": "Лк 3:25"
+      },
+      "fromPersonId": "amos--luk-3-25",
+      "toPersonId": "nahum--luk-3-25",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:nahum--luk-3-25->amos--luk-3-25:father",
+        "kind": "parent",
+        "from": "nahum--luk-3-25",
+        "to": "amos--luk-3-25",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-25-3->luke-3-25-4",
+      "sequenceId": "luke",
+      "position": 11,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-25-3",
+        "toOccurrenceId": "luke-3-25-4",
+        "fromRef": "Лк 3:25",
+        "toRef": "Лк 3:25"
+      },
+      "fromPersonId": "nahum--luk-3-25",
+      "toPersonId": "esli--luk-3-25",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:esli--luk-3-25->nahum--luk-3-25:father",
+        "kind": "parent",
+        "from": "esli--luk-3-25",
+        "to": "nahum--luk-3-25",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-25-4->luke-3-25-5",
+      "sequenceId": "luke",
+      "position": 12,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-25-4",
+        "toOccurrenceId": "luke-3-25-5",
+        "fromRef": "Лк 3:25",
+        "toRef": "Лк 3:25"
+      },
+      "fromPersonId": "esli--luk-3-25",
+      "toPersonId": "naggai--luk-3-25",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:naggai--luk-3-25->esli--luk-3-25:father",
+        "kind": "parent",
+        "from": "naggai--luk-3-25",
+        "to": "esli--luk-3-25",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-25-5->luke-3-26-1",
+      "sequenceId": "luke",
+      "position": 13,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-25-5",
+        "toOccurrenceId": "luke-3-26-1",
+        "fromRef": "Лк 3:25",
+        "toRef": "Лк 3:26"
+      },
+      "fromPersonId": "naggai--luk-3-25",
+      "toPersonId": "maath--luk-3-26",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:maath--luk-3-26->naggai--luk-3-25:father",
+        "kind": "parent",
+        "from": "maath--luk-3-26",
+        "to": "naggai--luk-3-25",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-26-1->luke-3-26-2",
+      "sequenceId": "luke",
+      "position": 14,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-26-1",
+        "toOccurrenceId": "luke-3-26-2",
+        "fromRef": "Лк 3:26",
+        "toRef": "Лк 3:26"
+      },
+      "fromPersonId": "maath--luk-3-26",
+      "toPersonId": "mattathias--luk-3-26",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:mattathias--luk-3-26->maath--luk-3-26:father",
+        "kind": "parent",
+        "from": "mattathias--luk-3-26",
+        "to": "maath--luk-3-26",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-26-2->luke-3-26-3",
+      "sequenceId": "luke",
+      "position": 15,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-26-2",
+        "toOccurrenceId": "luke-3-26-3",
+        "fromRef": "Лк 3:26",
+        "toRef": "Лк 3:26"
+      },
+      "fromPersonId": "mattathias--luk-3-26",
+      "toPersonId": "semein--luk-3-26",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:semein--luk-3-26->mattathias--luk-3-26:father",
+        "kind": "parent",
+        "from": "semein--luk-3-26",
+        "to": "mattathias--luk-3-26",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-26-3->luke-3-26-4",
+      "sequenceId": "luke",
+      "position": 16,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-26-3",
+        "toOccurrenceId": "luke-3-26-4",
+        "fromRef": "Лк 3:26",
+        "toRef": "Лк 3:26"
+      },
+      "fromPersonId": "semein--luk-3-26",
+      "toPersonId": "josech--luk-3-26",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:josech--luk-3-26->semein--luk-3-26:father",
+        "kind": "parent",
+        "from": "josech--luk-3-26",
+        "to": "semein--luk-3-26",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-26-4->luke-3-26-5",
+      "sequenceId": "luke",
+      "position": 17,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-26-4",
+        "toOccurrenceId": "luke-3-26-5",
+        "fromRef": "Лк 3:26",
+        "toRef": "Лк 3:26"
+      },
+      "fromPersonId": "josech--luk-3-26",
+      "toPersonId": "joda--luk-3-26",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:joda--luk-3-26->josech--luk-3-26:father",
+        "kind": "parent",
+        "from": "joda--luk-3-26",
+        "to": "josech--luk-3-26",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-26-5->luke-3-27-1",
+      "sequenceId": "luke",
+      "position": 18,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-26-5",
+        "toOccurrenceId": "luke-3-27-1",
+        "fromRef": "Лк 3:26",
+        "toRef": "Лк 3:27"
+      },
+      "fromPersonId": "joda--luk-3-26",
+      "toPersonId": "joanan--luk-3-27",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:joanan--luk-3-27->joda--luk-3-26:father",
+        "kind": "parent",
+        "from": "joanan--luk-3-27",
+        "to": "joda--luk-3-26",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-27-1->luke-3-27-2",
+      "sequenceId": "luke",
+      "position": 19,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-27-1",
+        "toOccurrenceId": "luke-3-27-2",
+        "fromRef": "Лк 3:27",
+        "toRef": "Лк 3:27"
+      },
+      "fromPersonId": "joanan--luk-3-27",
+      "toPersonId": "rhesa--luk-3-27",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:rhesa--luk-3-27->joanan--luk-3-27:father",
+        "kind": "parent",
+        "from": "rhesa--luk-3-27",
+        "to": "joanan--luk-3-27",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-27-2->luke-3-27-3",
+      "sequenceId": "luke",
+      "position": 20,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-27-2",
+        "toOccurrenceId": "luke-3-27-3",
+        "fromRef": "Лк 3:27",
+        "toRef": "Лк 3:27"
+      },
+      "fromPersonId": "rhesa--luk-3-27",
+      "toPersonId": "zerubbabel--luk-3-27",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:zerubbabel--luk-3-27->rhesa--luk-3-27:father",
+        "kind": "parent",
+        "from": "zerubbabel--luk-3-27",
+        "to": "rhesa--luk-3-27",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-27-3->luke-3-27-4",
+      "sequenceId": "luke",
+      "position": 21,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-27-3",
+        "toOccurrenceId": "luke-3-27-4",
+        "fromRef": "Лк 3:27",
+        "toRef": "Лк 3:27"
+      },
+      "fromPersonId": "zerubbabel--luk-3-27",
+      "toPersonId": "shealtiel--luk-3-27",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:shealtiel--luk-3-27->zerubbabel--luk-3-27:father",
+        "kind": "parent",
+        "from": "shealtiel--luk-3-27",
+        "to": "zerubbabel--luk-3-27",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-27-4->luke-3-27-5",
+      "sequenceId": "luke",
+      "position": 22,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-27-4",
+        "toOccurrenceId": "luke-3-27-5",
+        "fromRef": "Лк 3:27",
+        "toRef": "Лк 3:27"
+      },
+      "fromPersonId": "shealtiel--luk-3-27",
+      "toPersonId": "neri--luk-3-27",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:neri--luk-3-27->shealtiel--luk-3-27:father",
+        "kind": "parent",
+        "from": "neri--luk-3-27",
+        "to": "shealtiel--luk-3-27",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-27-5->luke-3-28-1",
+      "sequenceId": "luke",
+      "position": 23,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-27-5",
+        "toOccurrenceId": "luke-3-28-1",
+        "fromRef": "Лк 3:27",
+        "toRef": "Лк 3:28"
+      },
+      "fromPersonId": "neri--luk-3-27",
+      "toPersonId": "melchi--luk-3-28",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:melchi--luk-3-28->neri--luk-3-27:father",
+        "kind": "parent",
+        "from": "melchi--luk-3-28",
+        "to": "neri--luk-3-27",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-28-1->luke-3-28-2",
+      "sequenceId": "luke",
+      "position": 24,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-28-1",
+        "toOccurrenceId": "luke-3-28-2",
+        "fromRef": "Лк 3:28",
+        "toRef": "Лк 3:28"
+      },
+      "fromPersonId": "melchi--luk-3-28",
+      "toPersonId": "addi--luk-3-28",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:addi--luk-3-28->melchi--luk-3-28:father",
+        "kind": "parent",
+        "from": "addi--luk-3-28",
+        "to": "melchi--luk-3-28",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-28-2->luke-3-28-3",
+      "sequenceId": "luke",
+      "position": 25,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-28-2",
+        "toOccurrenceId": "luke-3-28-3",
+        "fromRef": "Лк 3:28",
+        "toRef": "Лк 3:28"
+      },
+      "fromPersonId": "addi--luk-3-28",
+      "toPersonId": "cosam--luk-3-28",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:cosam--luk-3-28->addi--luk-3-28:father",
+        "kind": "parent",
+        "from": "cosam--luk-3-28",
+        "to": "addi--luk-3-28",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-28-3->luke-3-28-4",
+      "sequenceId": "luke",
+      "position": 26,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-28-3",
+        "toOccurrenceId": "luke-3-28-4",
+        "fromRef": "Лк 3:28",
+        "toRef": "Лк 3:28"
+      },
+      "fromPersonId": "cosam--luk-3-28",
+      "toPersonId": "elmadam--luk-3-28",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:elmadam--luk-3-28->cosam--luk-3-28:father",
+        "kind": "parent",
+        "from": "elmadam--luk-3-28",
+        "to": "cosam--luk-3-28",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-28-4->luke-3-28-5",
+      "sequenceId": "luke",
+      "position": 27,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-28-4",
+        "toOccurrenceId": "luke-3-28-5",
+        "fromRef": "Лк 3:28",
+        "toRef": "Лк 3:28"
+      },
+      "fromPersonId": "elmadam--luk-3-28",
+      "toPersonId": "er--luk-3-28",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:er--luk-3-28->elmadam--luk-3-28:father",
+        "kind": "parent",
+        "from": "er--luk-3-28",
+        "to": "elmadam--luk-3-28",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-28-5->luke-3-29-1",
+      "sequenceId": "luke",
+      "position": 28,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-28-5",
+        "toOccurrenceId": "luke-3-29-1",
+        "fromRef": "Лк 3:28",
+        "toRef": "Лк 3:29"
+      },
+      "fromPersonId": "er--luk-3-28",
+      "toPersonId": "joshua--luk-3-29",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:joshua--luk-3-29->er--luk-3-28:father",
+        "kind": "parent",
+        "from": "joshua--luk-3-29",
+        "to": "er--luk-3-28",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-29-1->luke-3-29-2",
+      "sequenceId": "luke",
+      "position": 29,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-29-1",
+        "toOccurrenceId": "luke-3-29-2",
+        "fromRef": "Лк 3:29",
+        "toRef": "Лк 3:29"
+      },
+      "fromPersonId": "joshua--luk-3-29",
+      "toPersonId": "eliezer--luk-3-29",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:eliezer--luk-3-29->joshua--luk-3-29:father",
+        "kind": "parent",
+        "from": "eliezer--luk-3-29",
+        "to": "joshua--luk-3-29",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-29-2->luke-3-29-3",
+      "sequenceId": "luke",
+      "position": 30,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-29-2",
+        "toOccurrenceId": "luke-3-29-3",
+        "fromRef": "Лк 3:29",
+        "toRef": "Лк 3:29"
+      },
+      "fromPersonId": "eliezer--luk-3-29",
+      "toPersonId": "jorim--luk-3-29",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:jorim--luk-3-29->eliezer--luk-3-29:father",
+        "kind": "parent",
+        "from": "jorim--luk-3-29",
+        "to": "eliezer--luk-3-29",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-29-3->luke-3-29-4",
+      "sequenceId": "luke",
+      "position": 31,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-29-3",
+        "toOccurrenceId": "luke-3-29-4",
+        "fromRef": "Лк 3:29",
+        "toRef": "Лк 3:29"
+      },
+      "fromPersonId": "jorim--luk-3-29",
+      "toPersonId": "matthat--luk-3-29",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:matthat--luk-3-29->jorim--luk-3-29:father",
+        "kind": "parent",
+        "from": "matthat--luk-3-29",
+        "to": "jorim--luk-3-29",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-29-4->luke-3-29-5",
+      "sequenceId": "luke",
+      "position": 32,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-29-4",
+        "toOccurrenceId": "luke-3-29-5",
+        "fromRef": "Лк 3:29",
+        "toRef": "Лк 3:29"
+      },
+      "fromPersonId": "matthat--luk-3-29",
+      "toPersonId": "levi--luk-3-29",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:levi--luk-3-29->matthat--luk-3-29:father",
+        "kind": "parent",
+        "from": "levi--luk-3-29",
+        "to": "matthat--luk-3-29",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-29-5->luke-3-30-1",
+      "sequenceId": "luke",
+      "position": 33,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-29-5",
+        "toOccurrenceId": "luke-3-30-1",
+        "fromRef": "Лк 3:29",
+        "toRef": "Лк 3:30"
+      },
+      "fromPersonId": "levi--luk-3-29",
+      "toPersonId": "simeon--luk-3-30",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:simeon--luk-3-30->levi--luk-3-29:father",
+        "kind": "parent",
+        "from": "simeon--luk-3-30",
+        "to": "levi--luk-3-29",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-30-1->luke-3-30-2",
+      "sequenceId": "luke",
+      "position": 34,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-30-1",
+        "toOccurrenceId": "luke-3-30-2",
+        "fromRef": "Лк 3:30",
+        "toRef": "Лк 3:30"
+      },
+      "fromPersonId": "simeon--luk-3-30",
+      "toPersonId": "judah--luk-3-30",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:judah--luk-3-30->simeon--luk-3-30:father",
+        "kind": "parent",
+        "from": "judah--luk-3-30",
+        "to": "simeon--luk-3-30",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-30-2->luke-3-30-3",
+      "sequenceId": "luke",
+      "position": 35,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-30-2",
+        "toOccurrenceId": "luke-3-30-3",
+        "fromRef": "Лк 3:30",
+        "toRef": "Лк 3:30"
+      },
+      "fromPersonId": "judah--luk-3-30",
+      "toPersonId": "joseph--luk-3-30",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:joseph--luk-3-30->judah--luk-3-30:father",
+        "kind": "parent",
+        "from": "joseph--luk-3-30",
+        "to": "judah--luk-3-30",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-30-3->luke-3-30-4",
+      "sequenceId": "luke",
+      "position": 36,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-30-3",
+        "toOccurrenceId": "luke-3-30-4",
+        "fromRef": "Лк 3:30",
+        "toRef": "Лк 3:30"
+      },
+      "fromPersonId": "joseph--luk-3-30",
+      "toPersonId": "jonam--luk-3-30",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:jonam--luk-3-30->joseph--luk-3-30:father",
+        "kind": "parent",
+        "from": "jonam--luk-3-30",
+        "to": "joseph--luk-3-30",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-30-4->luke-3-30-5",
+      "sequenceId": "luke",
+      "position": 37,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-30-4",
+        "toOccurrenceId": "luke-3-30-5",
+        "fromRef": "Лк 3:30",
+        "toRef": "Лк 3:30"
+      },
+      "fromPersonId": "jonam--luk-3-30",
+      "toPersonId": "eliakim--luk-3-30",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:eliakim--luk-3-30->jonam--luk-3-30:father",
+        "kind": "parent",
+        "from": "eliakim--luk-3-30",
+        "to": "jonam--luk-3-30",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-30-5->luke-3-31-1",
+      "sequenceId": "luke",
+      "position": 38,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-30-5",
+        "toOccurrenceId": "luke-3-31-1",
+        "fromRef": "Лк 3:30",
+        "toRef": "Лк 3:31"
+      },
+      "fromPersonId": "eliakim--luk-3-30",
+      "toPersonId": "melea--luk-3-31",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:melea--luk-3-31->eliakim--luk-3-30:father",
+        "kind": "parent",
+        "from": "melea--luk-3-31",
+        "to": "eliakim--luk-3-30",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-31-1->luke-3-31-2",
+      "sequenceId": "luke",
+      "position": 39,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-31-1",
+        "toOccurrenceId": "luke-3-31-2",
+        "fromRef": "Лк 3:31",
+        "toRef": "Лк 3:31"
+      },
+      "fromPersonId": "melea--luk-3-31",
+      "toPersonId": "menna--luk-3-31",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:menna--luk-3-31->melea--luk-3-31:father",
+        "kind": "parent",
+        "from": "menna--luk-3-31",
+        "to": "melea--luk-3-31",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-31-2->luke-3-31-3",
+      "sequenceId": "luke",
+      "position": 40,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-31-2",
+        "toOccurrenceId": "luke-3-31-3",
+        "fromRef": "Лк 3:31",
+        "toRef": "Лк 3:31"
+      },
+      "fromPersonId": "menna--luk-3-31",
+      "toPersonId": "mattatha--luk-3-31",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:mattatha--luk-3-31->menna--luk-3-31:father",
+        "kind": "parent",
+        "from": "mattatha--luk-3-31",
+        "to": "menna--luk-3-31",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-31-3->luke-3-31-4",
+      "sequenceId": "luke",
+      "position": 41,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-31-3",
+        "toOccurrenceId": "luke-3-31-4",
+        "fromRef": "Лк 3:31",
+        "toRef": "Лк 3:31"
+      },
+      "fromPersonId": "mattatha--luk-3-31",
+      "toPersonId": "nathan--2sa-5-14",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:nathan--2sa-5-14->mattatha--luk-3-31:father",
+        "kind": "parent",
+        "from": "nathan--2sa-5-14",
+        "to": "mattatha--luk-3-31",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-31-4->luke-3-31-5",
+      "sequenceId": "luke",
+      "position": 42,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-31-4",
+        "toOccurrenceId": "luke-3-31-5",
+        "fromRef": "Лк 3:31",
+        "toRef": "Лк 3:31"
+      },
+      "fromPersonId": "nathan--2sa-5-14",
+      "toPersonId": "david--rut-4-17",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:david--rut-4-17->nathan--2sa-5-14:father",
+        "kind": "parent",
+        "from": "david--rut-4-17",
+        "to": "nathan--2sa-5-14",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-31-5->luke-3-32-1",
+      "sequenceId": "luke",
+      "position": 43,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-31-5",
+        "toOccurrenceId": "luke-3-32-1",
+        "fromRef": "Лк 3:31",
+        "toRef": "Лк 3:32"
+      },
+      "fromPersonId": "david--rut-4-17",
+      "toPersonId": "jesse--rut-4-17",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:jesse--rut-4-17->david--rut-4-17:father",
+        "kind": "parent",
+        "from": "jesse--rut-4-17",
+        "to": "david--rut-4-17",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-32-1->luke-3-32-2",
+      "sequenceId": "luke",
+      "position": 44,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-32-1",
+        "toOccurrenceId": "luke-3-32-2",
+        "fromRef": "Лк 3:32",
+        "toRef": "Лк 3:32"
+      },
+      "fromPersonId": "jesse--rut-4-17",
+      "toPersonId": "obed--rut-4-17",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:obed--rut-4-17->jesse--rut-4-17:father",
+        "kind": "parent",
+        "from": "obed--rut-4-17",
+        "to": "jesse--rut-4-17",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-32-2->luke-3-32-3",
+      "sequenceId": "luke",
+      "position": 45,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-32-2",
+        "toOccurrenceId": "luke-3-32-3",
+        "fromRef": "Лк 3:32",
+        "toRef": "Лк 3:32"
+      },
+      "fromPersonId": "obed--rut-4-17",
+      "toPersonId": "boaz--rut-2-1",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:boaz--rut-2-1->obed--rut-4-17:father",
+        "kind": "parent",
+        "from": "boaz--rut-2-1",
+        "to": "obed--rut-4-17",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-32-3->luke-3-32-4",
+      "sequenceId": "luke",
+      "position": 46,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-32-3",
+        "toOccurrenceId": "luke-3-32-4",
+        "fromRef": "Лк 3:32",
+        "toRef": "Лк 3:32"
+      },
+      "fromPersonId": "boaz--rut-2-1",
+      "toPersonId": "salmon--rut-4-20",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:salmon--rut-4-20->boaz--rut-2-1:father",
+        "kind": "parent",
+        "from": "salmon--rut-4-20",
+        "to": "boaz--rut-2-1",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-32-4->luke-3-32-5",
+      "sequenceId": "luke",
+      "position": 47,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-32-4",
+        "toOccurrenceId": "luke-3-32-5",
+        "fromRef": "Лк 3:32",
+        "toRef": "Лк 3:32"
+      },
+      "fromPersonId": "salmon--rut-4-20",
+      "toPersonId": "nahshon--exo-6-23",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:nahshon--exo-6-23->salmon--rut-4-20:father",
+        "kind": "parent",
+        "from": "nahshon--exo-6-23",
+        "to": "salmon--rut-4-20",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-32-5->luke-3-33-1",
+      "sequenceId": "luke",
+      "position": 48,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-32-5",
+        "toOccurrenceId": "luke-3-33-1",
+        "fromRef": "Лк 3:32",
+        "toRef": "Лк 3:33"
+      },
+      "fromPersonId": "nahshon--exo-6-23",
+      "toPersonId": "amminadab--exo-6-23",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:amminadab--exo-6-23->nahshon--exo-6-23:father",
+        "kind": "parent",
+        "from": "amminadab--exo-6-23",
+        "to": "nahshon--exo-6-23",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-33-1->luke-3-33-2",
+      "sequenceId": "luke",
+      "position": 49,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-33-1",
+        "toOccurrenceId": "luke-3-33-2",
+        "fromRef": "Лк 3:33",
+        "toRef": "Лк 3:33"
+      },
+      "fromPersonId": "amminadab--exo-6-23",
+      "toPersonId": "ram--rut-4-19",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:ram--rut-4-19->amminadab--exo-6-23:father",
+        "kind": "parent",
+        "from": "ram--rut-4-19",
+        "to": "amminadab--exo-6-23",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-33-2->luke-3-33-3",
+      "sequenceId": "luke",
+      "position": 50,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-33-2",
+        "toOccurrenceId": "luke-3-33-3",
+        "fromRef": "Лк 3:33",
+        "toRef": "Лк 3:33"
+      },
+      "fromPersonId": "ram--rut-4-19",
+      "toPersonId": "hezron--gen-46-12",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:hezron--gen-46-12->ram--rut-4-19:father",
+        "kind": "parent",
+        "from": "hezron--gen-46-12",
+        "to": "ram--rut-4-19",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-33-3->luke-3-33-4",
+      "sequenceId": "luke",
+      "position": 51,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-33-3",
+        "toOccurrenceId": "luke-3-33-4",
+        "fromRef": "Лк 3:33",
+        "toRef": "Лк 3:33"
+      },
+      "fromPersonId": "hezron--gen-46-12",
+      "toPersonId": "perez--gen-38-29",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:perez--gen-38-29->hezron--gen-46-12:father",
+        "kind": "parent",
+        "from": "perez--gen-38-29",
+        "to": "hezron--gen-46-12",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-33-4->luke-3-33-5",
+      "sequenceId": "luke",
+      "position": 52,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-33-4",
+        "toOccurrenceId": "luke-3-33-5",
+        "fromRef": "Лк 3:33",
+        "toRef": "Лк 3:33"
+      },
+      "fromPersonId": "perez--gen-38-29",
+      "toPersonId": "judah--gen-29-35",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:judah--gen-29-35->perez--gen-38-29:father",
+        "kind": "parent",
+        "from": "judah--gen-29-35",
+        "to": "perez--gen-38-29",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-33-5->luke-3-34-1",
+      "sequenceId": "luke",
+      "position": 53,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-33-5",
+        "toOccurrenceId": "luke-3-34-1",
+        "fromRef": "Лк 3:33",
+        "toRef": "Лк 3:34"
+      },
+      "fromPersonId": "judah--gen-29-35",
+      "toPersonId": "israel--gen-25-26",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:israel--gen-25-26->judah--gen-29-35:father",
+        "kind": "parent",
+        "from": "israel--gen-25-26",
+        "to": "judah--gen-29-35",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-34-1->luke-3-34-2",
+      "sequenceId": "luke",
+      "position": 54,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-34-1",
+        "toOccurrenceId": "luke-3-34-2",
+        "fromRef": "Лк 3:34",
+        "toRef": "Лк 3:34"
+      },
+      "fromPersonId": "israel--gen-25-26",
+      "toPersonId": "isaac--gen-17-19",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:isaac--gen-17-19->israel--gen-25-26:father",
+        "kind": "parent",
+        "from": "isaac--gen-17-19",
+        "to": "israel--gen-25-26",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-34-2->luke-3-34-3",
+      "sequenceId": "luke",
+      "position": 55,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-34-2",
+        "toOccurrenceId": "luke-3-34-3",
+        "fromRef": "Лк 3:34",
+        "toRef": "Лк 3:34"
+      },
+      "fromPersonId": "isaac--gen-17-19",
+      "toPersonId": "abraham--gen-11-26",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:abraham--gen-11-26->isaac--gen-17-19:father",
+        "kind": "parent",
+        "from": "abraham--gen-11-26",
+        "to": "isaac--gen-17-19",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-34-3->luke-3-34-4",
+      "sequenceId": "luke",
+      "position": 56,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-34-3",
+        "toOccurrenceId": "luke-3-34-4",
+        "fromRef": "Лк 3:34",
+        "toRef": "Лк 3:34"
+      },
+      "fromPersonId": "abraham--gen-11-26",
+      "toPersonId": "terah--gen-11-24",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:terah--gen-11-24->abraham--gen-11-26:father",
+        "kind": "parent",
+        "from": "terah--gen-11-24",
+        "to": "abraham--gen-11-26",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-34-4->luke-3-34-5",
+      "sequenceId": "luke",
+      "position": 57,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-34-4",
+        "toOccurrenceId": "luke-3-34-5",
+        "fromRef": "Лк 3:34",
+        "toRef": "Лк 3:34"
+      },
+      "fromPersonId": "terah--gen-11-24",
+      "toPersonId": "nahor--gen-11-22",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:nahor--gen-11-22->terah--gen-11-24:father",
+        "kind": "parent",
+        "from": "nahor--gen-11-22",
+        "to": "terah--gen-11-24",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-34-5->luke-3-35-1",
+      "sequenceId": "luke",
+      "position": 58,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-34-5",
+        "toOccurrenceId": "luke-3-35-1",
+        "fromRef": "Лк 3:34",
+        "toRef": "Лк 3:35"
+      },
+      "fromPersonId": "nahor--gen-11-22",
+      "toPersonId": "serug--gen-11-20",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:serug--gen-11-20->nahor--gen-11-22:father",
+        "kind": "parent",
+        "from": "serug--gen-11-20",
+        "to": "nahor--gen-11-22",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-35-1->luke-3-35-2",
+      "sequenceId": "luke",
+      "position": 59,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-35-1",
+        "toOccurrenceId": "luke-3-35-2",
+        "fromRef": "Лк 3:35",
+        "toRef": "Лк 3:35"
+      },
+      "fromPersonId": "serug--gen-11-20",
+      "toPersonId": "reu--gen-11-18",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:reu--gen-11-18->serug--gen-11-20:father",
+        "kind": "parent",
+        "from": "reu--gen-11-18",
+        "to": "serug--gen-11-20",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-35-2->luke-3-35-3",
+      "sequenceId": "luke",
+      "position": 60,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-35-2",
+        "toOccurrenceId": "luke-3-35-3",
+        "fromRef": "Лк 3:35",
+        "toRef": "Лк 3:35"
+      },
+      "fromPersonId": "reu--gen-11-18",
+      "toPersonId": "peleg--gen-10-25",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:peleg--gen-10-25->reu--gen-11-18:father",
+        "kind": "parent",
+        "from": "peleg--gen-10-25",
+        "to": "reu--gen-11-18",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-35-3->luke-3-35-4",
+      "sequenceId": "luke",
+      "position": 61,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-35-3",
+        "toOccurrenceId": "luke-3-35-4",
+        "fromRef": "Лк 3:35",
+        "toRef": "Лк 3:35"
+      },
+      "fromPersonId": "peleg--gen-10-25",
+      "toPersonId": "eber--gen-10-21",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:eber--gen-10-21->peleg--gen-10-25:father",
+        "kind": "parent",
+        "from": "eber--gen-10-21",
+        "to": "peleg--gen-10-25",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-35-4->luke-3-35-5",
+      "sequenceId": "luke",
+      "position": 62,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-35-4",
+        "toOccurrenceId": "luke-3-35-5",
+        "fromRef": "Лк 3:35",
+        "toRef": "Лк 3:35"
+      },
+      "fromPersonId": "eber--gen-10-21",
+      "toPersonId": "shelah--gen-10-24",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:shelah--gen-10-24->eber--gen-10-21:father",
+        "kind": "parent",
+        "from": "shelah--gen-10-24",
+        "to": "eber--gen-10-21",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-35-5->luke-3-36-1",
+      "sequenceId": "luke",
+      "position": 63,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-35-5",
+        "toOccurrenceId": "luke-3-36-1",
+        "fromRef": "Лк 3:35",
+        "toRef": "Лк 3:36"
+      },
+      "fromPersonId": "shelah--gen-10-24",
+      "toPersonId": "cainan--luk-3-36",
+      "relationCrosswalk": {
+        "status": "no-publishable-relation",
+        "relationKey": null,
+        "kind": null,
+        "from": null,
+        "to": null,
+        "role": null,
+        "authority": null,
+        "evidenceStatus": null,
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-36-1->luke-3-36-2",
+      "sequenceId": "luke",
+      "position": 64,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-36-1",
+        "toOccurrenceId": "luke-3-36-2",
+        "fromRef": "Лк 3:36",
+        "toRef": "Лк 3:36"
+      },
+      "fromPersonId": "cainan--luk-3-36",
+      "toPersonId": "arpachshad--gen-10-22",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:arpachshad--gen-10-22->cainan--luk-3-36:father",
+        "kind": "parent",
+        "from": "arpachshad--gen-10-22",
+        "to": "cainan--luk-3-36",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-36-2->luke-3-36-3",
+      "sequenceId": "luke",
+      "position": 65,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-36-2",
+        "toOccurrenceId": "luke-3-36-3",
+        "fromRef": "Лк 3:36",
+        "toRef": "Лк 3:36"
+      },
+      "fromPersonId": "arpachshad--gen-10-22",
+      "toPersonId": "shem--gen-5-32",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:shem--gen-5-32->arpachshad--gen-10-22:father",
+        "kind": "parent",
+        "from": "shem--gen-5-32",
+        "to": "arpachshad--gen-10-22",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-36-3->luke-3-36-4",
+      "sequenceId": "luke",
+      "position": 66,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-36-3",
+        "toOccurrenceId": "luke-3-36-4",
+        "fromRef": "Лк 3:36",
+        "toRef": "Лк 3:36"
+      },
+      "fromPersonId": "shem--gen-5-32",
+      "toPersonId": "noah--gen-5-29",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:noah--gen-5-29->shem--gen-5-32:father",
+        "kind": "parent",
+        "from": "noah--gen-5-29",
+        "to": "shem--gen-5-32",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-36-4->luke-3-36-5",
+      "sequenceId": "luke",
+      "position": 67,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-36-4",
+        "toOccurrenceId": "luke-3-36-5",
+        "fromRef": "Лк 3:36",
+        "toRef": "Лк 3:36"
+      },
+      "fromPersonId": "noah--gen-5-29",
+      "toPersonId": "lamech--gen-5-25",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:lamech--gen-5-25->noah--gen-5-29:father",
+        "kind": "parent",
+        "from": "lamech--gen-5-25",
+        "to": "noah--gen-5-29",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-36-5->luke-3-37-1",
+      "sequenceId": "luke",
+      "position": 68,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-36-5",
+        "toOccurrenceId": "luke-3-37-1",
+        "fromRef": "Лк 3:36",
+        "toRef": "Лк 3:37"
+      },
+      "fromPersonId": "lamech--gen-5-25",
+      "toPersonId": "methuselah--gen-5-21",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:methuselah--gen-5-21->lamech--gen-5-25:father",
+        "kind": "parent",
+        "from": "methuselah--gen-5-21",
+        "to": "lamech--gen-5-25",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-37-1->luke-3-37-2",
+      "sequenceId": "luke",
+      "position": 69,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-37-1",
+        "toOccurrenceId": "luke-3-37-2",
+        "fromRef": "Лк 3:37",
+        "toRef": "Лк 3:37"
+      },
+      "fromPersonId": "methuselah--gen-5-21",
+      "toPersonId": "enoch--gen-5-18",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:enoch--gen-5-18->methuselah--gen-5-21:father",
+        "kind": "parent",
+        "from": "enoch--gen-5-18",
+        "to": "methuselah--gen-5-21",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-37-2->luke-3-37-3",
+      "sequenceId": "luke",
+      "position": 70,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-37-2",
+        "toOccurrenceId": "luke-3-37-3",
+        "fromRef": "Лк 3:37",
+        "toRef": "Лк 3:37"
+      },
+      "fromPersonId": "enoch--gen-5-18",
+      "toPersonId": "jared--gen-5-15",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:jared--gen-5-15->enoch--gen-5-18:father",
+        "kind": "parent",
+        "from": "jared--gen-5-15",
+        "to": "enoch--gen-5-18",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-37-3->luke-3-37-4",
+      "sequenceId": "luke",
+      "position": 71,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-37-3",
+        "toOccurrenceId": "luke-3-37-4",
+        "fromRef": "Лк 3:37",
+        "toRef": "Лк 3:37"
+      },
+      "fromPersonId": "jared--gen-5-15",
+      "toPersonId": "mahalalel--gen-5-12",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:mahalalel--gen-5-12->jared--gen-5-15:father",
+        "kind": "parent",
+        "from": "mahalalel--gen-5-12",
+        "to": "jared--gen-5-15",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-37-4->luke-3-37-5",
+      "sequenceId": "luke",
+      "position": 72,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-37-4",
+        "toOccurrenceId": "luke-3-37-5",
+        "fromRef": "Лк 3:37",
+        "toRef": "Лк 3:37"
+      },
+      "fromPersonId": "mahalalel--gen-5-12",
+      "toPersonId": "kenan--gen-5-9",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:kenan--gen-5-9->mahalalel--gen-5-12:father",
+        "kind": "parent",
+        "from": "kenan--gen-5-9",
+        "to": "mahalalel--gen-5-12",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-37-5->luke-3-38-1",
+      "sequenceId": "luke",
+      "position": 73,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-37-5",
+        "toOccurrenceId": "luke-3-38-1",
+        "fromRef": "Лк 3:37",
+        "toRef": "Лк 3:38"
+      },
+      "fromPersonId": "kenan--gen-5-9",
+      "toPersonId": "enosh--gen-4-26",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:enosh--gen-4-26->kenan--gen-5-9:father",
+        "kind": "parent",
+        "from": "enosh--gen-4-26",
+        "to": "kenan--gen-5-9",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-38-1->luke-3-38-2",
+      "sequenceId": "luke",
+      "position": 74,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-38-1",
+        "toOccurrenceId": "luke-3-38-2",
+        "fromRef": "Лк 3:38",
+        "toRef": "Лк 3:38"
+      },
+      "fromPersonId": "enosh--gen-4-26",
+      "toPersonId": "seth--gen-4-25",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:seth--gen-4-25->enosh--gen-4-26:father",
+        "kind": "parent",
+        "from": "seth--gen-4-25",
+        "to": "enosh--gen-4-26",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    },
+    {
+      "id": "luke:luke-3-38-2->luke-3-38-3",
+      "sequenceId": "luke",
+      "position": 75,
+      "assertion": "textual-genealogy-adjacency",
+      "familyInference": "none",
+      "source": {
+        "fromOccurrenceId": "luke-3-38-2",
+        "toOccurrenceId": "luke-3-38-3",
+        "fromRef": "Лк 3:38",
+        "toRef": "Лк 3:38"
+      },
+      "fromPersonId": "seth--gen-4-25",
+      "toPersonId": "adam--gen-2-19",
+      "relationCrosswalk": {
+        "status": "matched-publishable-relation",
+        "relationKey": "parent:adam--gen-2-19->seth--gen-4-25:father",
+        "kind": "parent",
+        "from": "adam--gen-2-19",
+        "to": "seth--gen-4-25",
+        "role": "father",
+        "authority": "curated-v1-explicit-field",
+        "evidenceStatus": "relation-level-review-pending",
+        "directScripture": null
+      }
+    }
+  ]
+}

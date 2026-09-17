@@ -129,7 +129,7 @@ assert.strictEqual(browser.attrs.get('data-reader-measure'), 'wide');
 assert.strictEqual(browser.classes.has('dark'), false);
 assert.strictEqual(browser.styles.get('--gb-reader-font-scale'), '1.1');
 assert.strictEqual(browser.styles.get('--gb-reader-line-height'), '1.85');
-assert.strictEqual(browser.styles.get('--gb-reader-measure'), '46rem');
+assert.strictEqual(browser.styles.get('--gb-reader-measure'), '58rem');
 assert.strictEqual(browser.window.__GB_READER_PREFS_BOOTSTRAP__.theme, 'sepia');
 
 browser.run('js/reader-preferences.js');
@@ -149,7 +149,7 @@ assert.deepStrictEqual(
   { theme: 'light', lineHeight: 'compact', measure: 'narrow', fontScale: 1.25 },
 );
 assert.strictEqual(browser.styles.get('--gb-reader-line-height'), '1.45');
-assert.strictEqual(browser.styles.get('--gb-reader-measure'), '36rem');
+assert.strictEqual(browser.styles.get('--gb-reader-measure'), '42rem');
 assert.strictEqual(browser.classes.has('dark'), false);
 
 // Canonical state always wins over conflicting legacy values.

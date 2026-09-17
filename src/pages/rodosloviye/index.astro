@@ -11,12 +11,31 @@ import RodosloviyeStyles from '@/components/rodosloviye/RodosloviyeStyles.astro'
 import RodosloviyeBody from '@/components/rodosloviye/RodosloviyeBody.astro';
 import GenealogyTree from '@/components/genealogy/GenealogyTree.tsx';
 import type { Person, Era } from '@/components/genealogy/types';
-import genealogyData from '../../../data/genealogy/genealogy.json';
+import { ERA_META } from '@/components/genealogy/theme';
+import {
+  adaptPublishableGenealogy,
+  adaptPublishableRelationEvidence,
+} from '@/components/genealogy/publishableAdapter.mjs';
+import publishablePersons from '../../../data/genealogy/v2/publishable/persons.json';
+import publishableRelations from '../../../data/genealogy/v2/publishable/relations.json';
+import publishableTextualAssertions from '../../../data/genealogy/v2/publishable/textual-assertions.json';
 import MobileChromePage from '@/components/article-pilots/_shared/MobileChromePage.astro';
 import { mobileChromeFor } from '@/components/article-pilots/_shared/mobileChromeRegistry';
 
-const persons = genealogyData.persons as unknown as Person[];
-const eras = genealogyData.eras as unknown as Era[];
+const persons = adaptPublishableGenealogy({
+  persons: publishablePersons,
+  relations: publishableRelations,
+}) as Person[];
+const relationEvidence = adaptPublishableRelationEvidence({
+  persons: publishablePersons,
+  relations: publishableRelations,
+  textualAssertions: publishableTextualAssertions,
+});
+const eras = Object.entries(ERA_META).map(([id, meta]) => ({
+  id,
+  name: meta.label,
+  color: meta.color,
+})) as Era[];
 
 // Мобильная обвязка выбирается registry (движок «page»: Back·Home·Поиск сверху).
 const mobileChrome = mobileChromeFor('/rodosloviye/');
@@ -33,8 +52,82 @@ const mobileChrome = mobileChromeFor('/rodosloviye/');
       <MobileChromePage backHref={mobileChrome.backHref ?? '/'} homeHref="../" />
     )}
     <RodosloviyeBody />
-    <div id="genealogy-tree" class="genealogy-interactive-wrap" style="width: 100%; height: 100dvh; min-height: 760px; border-top: 1px solid var(--border-color, #e2e8f0); margin-top: 2rem; position: relative;">
-      <GenealogyTree client:only="react" persons={persons} eras={eras} />
+    <div id="genealogy-tree" class="genealogy-interactive-wrap">
+      <GenealogyTree client:only="react" persons={persons} eras={eras} relations={relationEvidence}>
+        <section
+          slot="fallback"
+          class="genealogy-island-fallback"
+          role="status"
+          aria-live="polite"
+          aria-label="Загрузка интерактивного атласа"
+        >
+          <div class="genealogy-island-fallback__content">
+            <h2>Загружаем интерактивный атлас</h2>
+            <p>
+              Основной раздел и методология уже доступны. Интерактивное древо появится здесь после загрузки клиентского модуля.
+            </p>
+            <a href="#genealogy-methodology">Как читать связи</a>
+          </div>
+        </section>
+      </GenealogyTree>
     </div>
+
+    <style>
+      .genealogy-interactive-wrap {
+        width: 100%;
+        height: 100dvh;
+        min-height: 760px;
+        margin-top: 2rem;
+        position: relative;
+        border-top: 1px solid var(--border-color, #e2e8f0);
+      }
+
+      .genealogy-island-fallback {
+        min-height: 760px;
+        height: 100%;
+        display: grid;
+        place-items: center;
+        padding: 32px 20px;
+        color: var(--color-text);
+        background:
+          radial-gradient(
+            ellipse at 50% 0%,
+            color-mix(in srgb, var(--color-accent) 10%, transparent),
+            transparent 48%
+          ),
+          var(--color-canvas);
+        text-align: center;
+      }
+
+      .genealogy-island-fallback__content {
+        width: min(560px, 100%);
+        padding: clamp(22px, 4vw, 34px);
+        border: 1px solid color-mix(in srgb, var(--color-text) 13%, transparent);
+        border-radius: 18px;
+        background: color-mix(in srgb, var(--color-canvas) 96%, var(--color-text) 4%);
+      }
+
+      .genealogy-island-fallback h2 {
+        margin: 0 0 12px;
+        color: var(--color-text);
+        font-size: clamp(1.25rem, 3vw, 1.75rem);
+        line-height: 1.2;
+      }
+
+      .genealogy-island-fallback p {
+        margin: 0 0 16px;
+        color: var(--color-text-muted);
+        line-height: 1.65;
+      }
+
+      .genealogy-island-fallback a {
+        display: inline-flex;
+        min-height: 44px;
+        align-items: center;
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-weight: 700;
+      }
+    </style>
   </body>
 </html>

@@ -1,3 +1,5 @@
+import { buildTextualAssertions } from './textual-assertions.mjs';
+
 /**
  * Build a closed, publication-safe projection from the curated v1 genealogy
  * and the richer v2 identity graph.
@@ -12,6 +14,10 @@ function invariant(condition, message) {
 
 function stableObject(value) {
   return value == null ? null : value;
+}
+
+function compareText(left, right) {
+  return left < right ? -1 : left > right ? 1 : 0;
 }
 
 function relationKey(kind, from, to, role = '') {
@@ -32,13 +38,27 @@ function curatedRelationEvidence() {
   };
 }
 
-function qualifiedRelationEvidence(set = {}) {
+function validateQualifiedRelationSet(set = {}, context = 'Qualified relation evidence') {
   invariant(typeof set.directScripture === 'boolean',
-    'Qualified relation evidence requires explicit directScripture boolean');
-  invariant(typeof set.assertion === 'string' && set.assertion.length > 0,
-    'Qualified relation evidence requires assertion classification');
-  invariant(Array.isArray(set.refs) && set.refs.length > 0,
-    'Qualified relation evidence requires reviewed refs');
+    `${context} requires explicit directScripture boolean`);
+  invariant(typeof set.assertion === 'string' && set.assertion.trim().length > 0,
+    `${context} requires assertion classification`);
+  invariant(typeof set.confidence === 'string' && set.confidence.trim().length > 0,
+    `${context} requires confidence classification`);
+  invariant(typeof set.editorialPosition === 'string' && set.editorialPosition.trim().length > 0,
+    `${context} requires editorialPosition classification`);
+  invariant(Array.isArray(set.refs) && set.refs.length > 0 &&
+    set.refs.every(ref => typeof ref === 'string' && ref.trim().length > 0),
+  `${context} requires reviewed non-empty refs`);
+
+  if (set.assertion === 'editorial-harmonization') {
+    invariant(set.directScripture === false,
+      `${context} editorial-harmonization must use directScripture=false`);
+  }
+}
+
+function qualifiedRelationEvidence(set = {}) {
+  validateQualifiedRelationSet(set);
   return {
     provenanceClass: set.directScripture === true
       ? 'direct-scripture-qualified'
@@ -47,6 +67,49 @@ function qualifiedRelationEvidence(set = {}) {
     ...set,
     refs: [...set.refs],
   };
+}
+
+export function validateEdgeAnnotations(edgeAnnotations) {
+  invariant(edgeAnnotations && typeof edgeAnnotations === 'object',
+    'Edge annotations object is required');
+  invariant(Array.isArray(edgeAnnotations.annotations),
+    'Edge annotations must contain annotations[]');
+
+  const seen = new Set();
+  for (const [index, annotation] of edgeAnnotations.annotations.entries()) {
+    const context = `Edge annotation #${index + 1}`;
+    invariant(annotation && typeof annotation === 'object',
+      `${context} must be an object`);
+    invariant(typeof annotation.from === 'string' && annotation.from.length > 0,
+      `${context} requires from`);
+    invariant(typeof annotation.to === 'string' && annotation.to.length > 0,
+      `${context} requires to`);
+    invariant(annotation.from !== annotation.to,
+      `${context} cannot target the same identity`);
+    invariant(typeof annotation.kind === 'string' && annotation.kind.length > 0,
+      `${context} requires kind`);
+    invariant(annotation.set && typeof annotation.set === 'object' && !Array.isArray(annotation.set),
+      `${context} requires set object`);
+
+    const key = `${annotation.kind}:${annotation.from}->${annotation.to}`;
+    invariant(!seen.has(key),
+      `Duplicate edge annotation target: ${key}`);
+    seen.add(key);
+
+    validateQualifiedRelationSet(annotation.set, context);
+
+    if (annotation.set.legal === true) {
+      invariant(annotation.kind === 'parent',
+        `${context} legal relation must annotate parent kind`);
+      invariant(annotation.set.biology === 'non-biological',
+        `${context} legal relation requires biology=non-biological`);
+      invariant(typeof annotation.set.legalAssertion === 'string' &&
+        annotation.set.legalAssertion.trim().length > 0,
+      `${context} legal relation requires legalAssertion`);
+    }
+  }
+
+  return { annotations: edgeAnnotations.annotations.length };
 }
 
 export function buildPublishableProjection({
@@ -60,6 +123,7 @@ export function buildPublishableProjection({
   invariant(Array.isArray(v1?.persons) && v1.persons.length > 0, 'Curated v1 persons are required');
   invariant(Array.isArray(persons) && persons.length > 0, 'v2 persons are required');
   invariant(Array.isArray(gospelSequences?.sequences), 'Resolved v2 Gospel sequences are required');
+  validateEdgeAnnotations(edgeAnnotations);
 
   const v1ById = new Map(v1.persons.map(person => [person.id, person]));
   invariant(v1ById.size === v1.persons.length, 'Duplicate ids in curated v1');
@@ -90,6 +154,8 @@ export function buildPublishableProjection({
         en: person.en,
         he: source.name?.he ?? person.skeleton?.he ?? null,
         greek: source.name?.greek ?? null,
+        ...(source.name?.birthName ? { birthName: source.name.birthName } : {}),
+        ...(source.name?.altName ? { altName: source.name.altName } : {}),
       },
       gender: source.gender ?? person.gender,
       ref: source.ref ?? null,
@@ -242,7 +308,7 @@ export function buildPublishableProjection({
 
   // Editorial truth-model annotations may qualify an existing relation or add
   // a distinct non-biological/legal relation. They never rewrite biology.
-  for (const annotation of edgeAnnotations?.annotations ?? []) {
+  for (const annotation of edgeAnnotations.annotations) {
     if (!selectedIds.has(annotation.from) || !selectedIds.has(annotation.to)) {
       diagnostics.orphanAnnotations.push({
         from: annotation.from,
@@ -307,11 +373,17 @@ export function buildPublishableProjection({
     'Luke textual sequence must not insert Mary');
 
   const relationList = [...relations.values()].sort((a, b) =>
-    a.kind.localeCompare(b.kind) ||
-    a.from.localeCompare(b.from) ||
-    a.to.localeCompare(b.to) ||
-    String(a.role ?? '').localeCompare(String(b.role ?? ''))
+    compareText(a.kind, b.kind) ||
+    compareText(a.from, b.from) ||
+    compareText(a.to, b.to) ||
+    compareText(String(a.role ?? ''), String(b.role ?? ''))
   );
+
+  const textualAssertions = buildTextualAssertions({
+    gospelSequences: projectedGospels,
+    relations: relationList,
+  });
+  const textualAssertionList = textualAssertions.assertions;
 
   const meta = {
     schemaVersion: 1,
@@ -332,6 +404,7 @@ export function buildPublishableProjection({
       spouses: 'reciprocal curated v1 assertions only',
       annotations: 'qualify projected relations; legal/non-biological relation remains distinct from biological parent',
       relationEvidence: 'curated topology remains source-derived with directScripture=null until relation-level refs are editorially reviewed',
+      textualAssertions: 'Gospel occurrence adjacency is text-only; it never creates or upgrades a family relation',
       rawGraph: 'TIPNR-only persons and raw TIPNR-only edges are excluded',
     },
     counts: {
@@ -345,6 +418,13 @@ export function buildPublishableProjection({
       directScriptureRelations: relationList.filter(relation => relation.evidence?.directScripture === true).length,
       gospelSequences: projectedGospels.sequences.length,
       gospelOccurrences: projectedGospels.sequences.reduce((sum, sequence) => sum + sequence.occurrences.length, 0),
+      textualAssertions: textualAssertionList.length,
+      textualAssertionsMatchedRelations: textualAssertionList.filter(assertion =>
+        assertion.relationCrosswalk.status === 'matched-publishable-relation').length,
+      textualAssertionsWithoutRelations: textualAssertionList.filter(assertion =>
+        assertion.relationCrosswalk.status === 'no-publishable-relation').length,
+      textualAssertionsReviewedCrosswalks: textualAssertionList.filter(assertion =>
+        assertion.relationCrosswalk.evidenceStatus === 'editorially-reviewed').length,
     },
     sourceHashes,
     diagnostics,
@@ -355,5 +435,6 @@ export function buildPublishableProjection({
     persons: selected,
     relations: relationList,
     gospelSequences: projectedGospels,
+    textualAssertions,
   };
 }

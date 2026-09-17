@@ -43,6 +43,7 @@ await Promise.all([
   writeFile(path.join(OUT, 'persons.json'), stableJson(projection.persons)),
   writeFile(path.join(OUT, 'relations.json'), stableJson(projection.relations)),
   writeFile(path.join(OUT, 'gospel-sequences.json'), stableJson(projection.gospelSequences)),
+  writeFile(path.join(OUT, 'textual-assertions.json'), stableJson(projection.textualAssertions)),
 ]);
 
 console.log(JSON.stringify({
