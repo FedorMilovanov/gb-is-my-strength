@@ -177,6 +177,10 @@
   opacity: 0.5;
   transform: scale(1);
 }
+
+/* B18 hardening: interactive targets use real layout boxes.
+   Do not extend adjacent controls with overlapping pseudo-elements. */
+[data-gill-v16] .mobile-font-btn { position: relative; }
 .gb-icon:focus-visible {
   outline: 2px solid var(--color-accent, #7a2e2e);
   outline-offset: 4px;
@@ -517,6 +521,12 @@ html.dark .gb-ember {
   stroke-linecap: round;
   stroke-linejoin: round;
   color: var(--color-accent-gold-bright, #d8aa6d);
+}
+
+/* B15: keep the toast above fixed mobile bottom bars (Gill/HM/Нагорная) —
+   same 88px clearance as .kbd-hint-toast. Desktop keeps the base 28px. */
+@media (max-width: 1199px) {
+  .gb-fc-toast { bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* =========================================================
@@ -3294,11 +3304,12 @@ html.dark [data-gill-v16] .mobile-top-bar {
     overflow: visible;
     isolation: isolate;
   }
-  [data-gill-v16] .mobile-top-bar .gb-icon {
+  [data-gill-v16] .mobile-top-bar .gb-icon,
+  [data-gill-v16] .mobile-top-bar .gb-save {
     width: 44px;
     height: 44px;
     min-width: 44px;
-    min-height: 40px;
+    min-height: 44px;
     border-radius: 999px;
     background: transparent;
     color: var(--gill-mobile-bar-ink);
@@ -3353,8 +3364,9 @@ html.dark [data-gill-v16] .mobile-top-bar {
   [data-gill-v16] .mobile-playwrap {
     position: relative;
     flex-shrink: 0;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    gap: 2px;
   }
   /* color НЕ переопределён нарочно (тот же баг только что найден и
      исправлен на десктопном .gbs-rail-ember выше): canon .gb-ember рисует
@@ -3471,8 +3483,8 @@ html.dark [data-gill-v16] .mobile-top-bar {
     flex: 0 0 auto;
     width: 44px;
     height: 44px;
-    min-width: 38px;
-    min-height: 38px;
+    min-width: 44px;
+    min-height: 44px;
     border-radius: 999px;
     background: transparent;
     color: var(--gill-mobile-bar-muted);
@@ -3483,8 +3495,10 @@ html.dark [data-gill-v16] .mobile-top-bar {
 
   [data-gill-v16] .mobile-font-btn {
     flex: 0 0 auto;
-    width: 30px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
     border: 0;
     border-radius: 8px;
     background: transparent;
@@ -3550,18 +3564,28 @@ html.dark [data-gill-v16] .mobile-top-bar {
   }
   [data-gill-v16] .mobile-top-bar .gb-icon,
   [data-gill-v16] .mobile-playwrap .mobile-top-ember {
-    width: 40px !important;
-    height: 40px !important;
-    min-width: 40px !important;
-    min-height: 40px !important;
-    --ember-size: 40px !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    --ember-size: 36px !important;
   }
   [data-gill-v16] .mobile-btoc-section__main,
   [data-gill-v16] #gbs2MobSec { font-size: 12.5px !important; }
   [data-gill-v16] .bar-progress.dual-progress,
   [data-gill-v16] .bar-progress.dual-progress svg { width: 34px !important; height: 34px !important; }
   [data-gill-v16] .mobile-bottom-bar > .gb-icon,
-  [data-gill-v16] .mobile-font-btn { width: 40px !important; min-width: 40px !important; }
+  [data-gill-v16] .mobile-font-btn { width: 44px !important; min-width: 44px !important; }
+}
+
+/* B17: 320px (iPhone SE-1, Fold) — the Learning trigger goes icon-only and
+   gaps tighten; the bottom bar already flex-squeezes its context. */
+@media (max-width: 360px) {
+  [data-gill-v16] .mobile-top-bar { gap: 4px !important; }
+  [data-gill-v16] .mobile-learning-trigger span { display: none !important; }
+  [data-gill-v16] .mobile-learning-trigger { min-width: 36px; min-height: 44px; }
+  [data-gill-v16] .mobile-btoc-section { min-height: 44px; }
+  [data-gill-v16] .mobile-bottom-bar { gap: 2px !important; }
 }
 
 /* Gill header watermark removed (giant faint "ВВЕДЕНИЕ"/roman numeral behind
@@ -3844,12 +3868,12 @@ html.dark [data-gill-v16] .mobile-top-bar {
 
   /* ---- Persistent speed badge on the Play ember (inline-rail mode) ---- */
   [data-gill-v16] .mobile-spdbadge {
-    position: absolute;
-    right: -2px;
-    bottom: -2px;
+    position: static;
+    right: auto;
+    bottom: auto;
     z-index: 3;
-    min-width: 20px;
-    height: 16px;
+    min-width: 24px;
+    height: 24px;
     padding: 2px 4px 0; /* оптическое центрирование «1×» (порт 1249e56) */
     display: grid;
     place-items: center;
