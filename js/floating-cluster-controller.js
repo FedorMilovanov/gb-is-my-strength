@@ -219,8 +219,9 @@
       }
     });
     updateEmberAriaLabel(state);
-    // Broadcast so non-ember Play surfaces (SpeedBloom goo control) can mirror
-    // play/pause + progress without being a .gb-ember themselves.
+    // B4: DEAD broadcast — no listener for 'gb:tts-state' exists in src/js
+    // or dist (verified same-turn); SpeedBloom mirroring never landed.
+    // v2 emits 'gb:reader-tts-state' instead.
     try {
       window.dispatchEvent(new CustomEvent('gb:tts-state', {
         detail: { state: state, progress: progress },
@@ -282,6 +283,9 @@
   // the alphacephei.com CORS outage went unnoticed in production for days
   // until a user manually checked DevTools. Same ym() reachGoal pattern as
   // js/enhancements.js's quiz tracking.
+  // B4: legacy-only reporters — callers are the pre-module legacy chain
+  // (this one + reportTtsOutcome below); live sessions are reported by
+  // v2's mirror in reader-tts.js (same counter/goal names).
   function reportTtsIssue(reason) {
     try {
       window.ym && window.ym(108353327, 'reachGoal', 'vosk_tts_failed', { reason: reason });
@@ -736,6 +740,8 @@
     if (pct >= 0.99) setEmberState('complete');
   }
 
+  // B4: legacy-only chain link — callers are the dead rate-change handler
+  // (guarded by ttsState.utterance, always null post-facade) and startTts.
   function speakNextChunk() {
     var runId = ttsState.runId;
     if (ttsState.chunkIdx >= ttsState.chunks.length) {
@@ -798,6 +804,8 @@
     window.speechSynthesis.speak(u);
   }
 
+  // B4: legacy-only — sole caller is handlePlayClick's pre-module fallback
+  // (the speed-chip path that used to speak through here now delegates to v2).
   function startTts() {
     if (!ttsAvailable()) {
       showToast('Браузер не поддерживает озвучку', false);
@@ -841,7 +849,15 @@
     });
   }
 
+  // B1 FACADE: pause through v2 (owns playback) and return — the legacy
+  // body below would cancel v2's shared speechSynthesis voice and fork
+  // ember state. Live via MediaSession on the 3 layouts where this script
+  // installs handlers after the v2 module (kod-da-vinchi, lot, hermenevtika).
   function pauseTts() {
+    if (window.GBReaderTTS && typeof window.GBReaderTTS.pause === 'function') {
+      try { window.GBReaderTTS.pause(); } catch (_) {}
+      return;
+    }
     if (!ttsAvailable()) return;
     // Cancel-based pause (no real pause/resume in either engine).
     // Mark paused/suppress BEFORE cancel: some engines synchronously fire onend.
@@ -854,6 +870,7 @@
     setEmberState('paused');
   }
 
+  // B4: legacy-only — sole caller is handlePlayClick's pre-module fallback.
   function resumeTts() {
     if (!ttsAvailable()) return;
     ttsState.paused = false;
@@ -867,7 +884,17 @@
     speakNextChunk();
   }
 
+  // B1: double-ownership RESOLVED by the facade inside — stop routes through
+  // v2 first (owns playback/ember/MediaSession); the legacy reset after it
+  // writes the same idle values and stays as the pre-module fallback.
+  // Pause/seek siblings (pauseTts/skipChunk) delegate the same way.
   function stopTts() {
+    // B1 FACADE: stop through v2 first — it owns playback, ember state and
+    // MediaSession. The legacy reset below stays as belt-and-braces (same
+    // idle values v2 writes) and as the only path pre-module.
+    if (window.GBReaderTTS && typeof window.GBReaderTTS.stop === 'function') {
+      try { window.GBReaderTTS.stop(); } catch (_) {}
+    }
     if (!ttsAvailable()) return;
     ttsState.runId += 1;
     ttsState.suppressEnd = true;
@@ -931,7 +958,16 @@
     return msAnchor;
   }
 
+  // B1 FACADE: seek through v2. NOT dead: on the 3 layouts where this
+  // script's tag follows the v2 module tag (kod-da-vinchi, lot,
+  // hermenevtika article), the engine installs MediaSession handlers last
+  // and these seek actions are live. Early return keeps legacy chunk state
+  // from forking; legacy body stays as the pre-module fallback.
   function skipChunk(delta) {
+    if (window.GBReaderTTS && typeof window.GBReaderTTS.skip === 'function') {
+      try { window.GBReaderTTS.skip(delta); } catch (_) {}
+      return;
+    }
     if (!ttsState.chunks.length) return;
     var next = Math.max(0, Math.min(ttsState.chunks.length - 1, ttsState.chunkIdx + delta));
     ttsState.runId += 1;
@@ -1005,14 +1041,16 @@
   }
 
   function handlePlayClick(clickedEmber) {
-    var state = currentTtsUiState(clickedEmber);
-
-    // Внешний движок имеет приоритет
-    if (window.GBAudio && typeof window.GBAudio.toggle === 'function') {
-      window.GBAudio.toggle();
+    // B1 FACADE: TTS v2 (reader-tts) owns all playback on engine pages —
+    // ember clicks already reach it via capture, and this direct-call path
+    // (speed chips, MediaSession) must not drive the legacy state machine.
+    // GBAudio priority is preserved inside v2's toggle(). The legacy branch
+    // below runs only when the v2 module hasn't executed yet.
+    if (window.GBReaderTTS && typeof window.GBReaderTTS.toggle === 'function') {
+      try { window.GBReaderTTS.toggle(); } catch (_) {}
       return;
     }
-
+    var state = currentTtsUiState(clickedEmber);
     // Vosk TTS (нейросеть) с автооткатом на Web Speech API
     if (ttsAvailable()) {
       if (state === 'playing')      { pauseTts();  return; }
@@ -1052,9 +1090,14 @@
     if (span) span.textContent = message;
     if (svg) svg.style.display = showCheck ? '' : 'none';
     toast.classList.add('is-open');
+    // Shared ownership token: reader-actions.js notify() shows on the same
+    // element with its own timer — a stale timeout must not hide a fresh
+    // message from the other module.
     clearTimeout(toastTimer);
+    window.__gbFcToastToken = (window.__gbFcToastToken || 0) + 1;
+    var shownToken = window.__gbFcToastToken;
     toastTimer = setTimeout(function () {
-      toast.classList.remove('is-open');
+      if (window.__gbFcToastToken === shownToken) toast.classList.remove('is-open');
     }, 2200);
   }
 
@@ -1758,11 +1801,17 @@
       });
     }
     // Share button
+    // B14: DEAD on all engine pages — reader-actions.js capture-intercepts
+    // [data-action="share"] (Web Share + clipboard fallback + toast) with
+    // stopImmediatePropagation before this bubble listener runs. Kept for
+    // documentation; extend share() in reader-actions.js, not here.
     qsa('[data-action="share"]').forEach(function(btn) {
       addCleanListener(btn, 'click', function() {
         if (navigator.share) navigator.share({ title: document.title, url: location.href });
       });
     });
+    // B14: DEAD — same capture shadow as share above; the print engine lives
+    // in reader-actions.js (preparePrint/print). Extend there, not here.
     // Print button
     qsa('[data-action="print"]').forEach(function(btn) {
       addCleanListener(btn, 'click', function() { window.print(); });
@@ -2309,11 +2358,15 @@
     });
 
     // --- Share ---
+    // Single live carrier: baptisty-rossii index (the only [data-gbs2-share]
+    // button in dist). This target-phase listener + stopPropagation shadows
+    // the delegated legacy copy in enhancements.js — behaviour is equivalent
+    // (Web Share + clipboard fallback), so the winner doesn't matter.
     qsa('[data-gbs2-share]').forEach(function(btn) {
       addCleanListener(btn, 'click', function(e) {
         e.stopPropagation();
         if (navigator.share) {
-          navigator.share({ title: document.title, url: location.href });
+          navigator.share({ title: document.title, url: location.href }).catch(function () {});
         } else {
           // Fallback: copy URL
           try {
@@ -2407,6 +2460,10 @@
         '<button type="button" class="gbs2-resume-go">Продолжить</button>' +
         '<button type="button" class="gbs2-resume-x" aria-label="Скрыть">×</button>';
       document.body.appendChild(toast);
+      // B13: acknowledge on SHOW, not only in hide() — BookmarkEngine's
+      // #bookmarkToast (900ms delay) shares this flag; whoever shows first
+      // must win, or both prompts can appear on one page.
+      if (readerState.markResumeAcknowledged) readerState.markResumeAcknowledged();
       var hideT = null;
       function hide(mute) {
         toast.classList.remove('gbs2-on');
@@ -2607,4 +2664,307 @@
     if (readerState) setTimeout(maybeOfferResume, 0);
   }
 
+})();
+
+/* =====================================================
+   GB round-2 (B12 + gestures): keyboard & sheet swipe-down.
+   Article pages never load js/site.js, so T/D/B, arrows and
+   swipe-to-close live here, next to the engine that owns these
+   surfaces. Additive IIFE — the controller above is untouched.
+   Letters use e.code (KeyT/KeyD/KeyB), so shortcuts work in both
+   Latin and Cyrillic layouts. Нагорная btoc is covered too — its
+   template contract (#btocOverlay.open/.btoc-panel/.btoc-close) is
+   stable enough to hook without touching its renderer.
+   ===================================================== */
+(function () {
+  'use strict';
+
+  function inField() {
+    var t = (document.activeElement || {}).tagName || '';
+    if (t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT') return true;
+    return Boolean(document.activeElement && document.activeElement.isContentEditable);
+  }
+  function modalsOpen() {
+    return Boolean(document.querySelector('#share-dialog-overlay.is-open,.cp-backdrop.is-open,#gb-hl-backdrop.is-open'));
+  }
+  function sheetsOpen() {
+    return Boolean(document.querySelector('.toc-overlay.is-open,.hmsheet.is-open,#btocOverlay.open,#toc-panel.open'));
+  }
+  function hint(key, label) {
+    var el = document.querySelector('.kbd-hint-toast');
+    if (!el) { el = document.createElement('div'); el.className = 'kbd-hint-toast'; document.body.appendChild(el); }
+    el.innerHTML = '<kbd>' + key + '</kbd> ' + label;
+    el.classList.add('visible');
+    clearTimeout(hint._t);
+    hint._t = setTimeout(function () { el.classList.remove('visible'); }, 1400);
+  }
+
+  /* --- prev/next resolution: a[rel] (Нагорная) or the Gill card pair
+     (the card whose eyebrow says «Дальше» is next, the other is prev). --- */
+  function resolveSeriesLink(dir) {
+    var link = document.querySelector('a[rel="' + dir + '"]');
+    if (link && link.getAttribute('href')) return link;
+    var cards = Array.prototype.slice.call(document.querySelectorAll('.gbs2-next-card[href]'));
+    var i, isNext;
+    for (i = 0; i < cards.length; i++) {
+      isNext = /дальше/i.test(cards[i].textContent || '');
+      if ((dir === 'next') === isNext) return cards[i];
+    }
+    return null;
+  }
+
+  function toggleToc() {
+    var gill = document.querySelector('.toc-overlay.is-open');
+    if (gill) {
+      var handle = gill.querySelector('[data-overlay-close], .toc-sheet__handle');
+      if (handle) { handle.click(); return true; }
+    }
+    var hm = document.querySelector('.hmsheet.is-open');
+    if (hm) {
+      var hmClose = hm.querySelector('.hmsheet-close');
+      if (hmClose) { hmClose.click(); return true; }
+    }
+    var btoc = document.getElementById('btocOverlay');
+    if (btoc) {
+      if (btoc.classList.contains('open')) {
+        if (window.SiteBTOC) window.SiteBTOC.close();
+        else { btoc.classList.remove('open'); if (window.SiteUtils) window.SiteUtils.unlockScroll('btoc'); }
+      } else if (window.SiteBTOC) window.SiteBTOC.open();
+      else { var barBtn = document.getElementById('barSectionBtn'); if (barBtn) barBtn.click(); }
+      return true;
+    }
+    var panel = document.getElementById('toc-panel');
+    if (panel) {
+      if (panel.classList.contains('open')) { var tocClose = document.getElementById('toc-close'); if (tocClose) tocClose.click(); }
+      else { var tocToggle = document.getElementById('toc-toggle'); if (tocToggle) tocToggle.click(); }
+      return true;
+    }
+    var trigger = document.querySelector('#mobPartTocBtn, #hmSectionBtn, #hmBottomBtn, #barSectionBtn');
+    if (trigger) { trigger.click(); return true; }
+    return false;
+  }
+
+  // Pages that also load site.js (baptisty-rossii) get its own T/D/B
+  // dispatcher, registered first with the same targets — see the guard below.
+  var siteJsOwnsKeys = !!document.querySelector('script[src*="js/site.js"]');
+
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey || inField()) return;
+    var key = e.key || '';
+    if (key === 'ArrowLeft' || key === 'ArrowRight') {
+      if (e.shiftKey || modalsOpen() || sheetsOpen()) return;
+      var dir = key === 'ArrowRight' ? 'next' : 'prev';
+      var link = resolveSeriesLink(dir);
+      if (!link) return;
+      e.preventDefault();
+      hint(key === 'ArrowRight' ? '→' : '←', dir === 'next' ? 'Дальше' : 'Назад');
+      link.click();
+      return;
+    }
+    var code = e.code || '';
+    // Double-fire guard: site.js runs first on its pages and already toggles
+    // the same T/D/B targets — a second toggle here would cancel it out
+    // (dead T/D keys on baptisty-rossii). Yield; arrows stay ours.
+    if ((code === 'KeyT' || code === 'KeyD' || code === 'KeyB') && siteJsOwnsKeys) return;
+    if (code === 'KeyT') {
+      if (modalsOpen()) return;
+      e.preventDefault();
+      if (toggleToc()) hint('T', 'Оглавление');
+      return;
+    }
+    if (modalsOpen() || sheetsOpen()) return;
+    if (code === 'KeyD') {
+      var themeBtn = document.querySelector('.gb-theme-toggle, [data-fc-action="theme"], #themeToggle, #hThemeBtn, .gb-fc-theme');
+      if (!themeBtn) return;
+      e.preventDefault();
+      hint('D', 'Тема');
+      themeBtn.click();
+      return;
+    }
+    if (code === 'KeyB') {
+      e.preventDefault();
+      hint('B', 'Наверх');
+      try { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+      catch (_) { window.scrollTo(0, 0); }
+    }
+  });
+
+  /* --- swipe-down-to-close for Gill (.toc-sheet), HM (.hmsheet-panel) and
+     Нагорная (.btoc-panel). Port of the highlights-panel gesture: drag only
+     when the inner list is at its top, close past 80px through the real
+     close button (keeps focus-restore and scroll-unlock paths intact). --- */
+  (function initSheetSwipe() {
+    var SCROLL_SELS = '.toc-sheet__list, .toc-sheet__body, .hmsheet-list, .btoc-nav';
+    var startY = 0, panel = null, active = false;
+
+    function findPanel(target) {
+      if (!target || !target.closest) return null;
+      return target.closest('.toc-overlay.is-open .toc-sheet, .hmsheet.is-open .hmsheet-panel, #btocOverlay.open .btoc-panel');
+    }
+    function scrollerBlocked(p, target) {
+      var sc = target.closest ? target.closest(SCROLL_SELS) : null;
+      if (sc && p.contains(sc)) return sc.scrollTop > 0;
+      var regions = p.querySelectorAll(SCROLL_SELS);
+      for (var i = 0; i < regions.length; i++) {
+        if (regions[i].scrollTop > 0) return true;
+      }
+      return false;
+    }
+    function reset() {
+      if (panel) { panel.style.transform = ''; panel.style.transition = ''; }
+      active = false; panel = null;
+    }
+    document.addEventListener('touchstart', function (e) {
+      reset();
+      if (!e.touches || e.touches.length !== 1) return;
+      var p = findPanel(e.target);
+      if (!p || scrollerBlocked(p, e.target)) return;
+      panel = p; startY = e.touches[0].clientY; active = true;
+    }, { passive: true });
+    document.addEventListener('touchmove', function (e) {
+      if (!active || !panel || !e.touches || e.touches.length !== 1) return;
+      var dy = e.touches[0].clientY - startY;
+      if (dy <= 0) { panel.style.transform = ''; return; }
+      e.preventDefault();
+      panel.style.transition = 'none';
+      panel.style.transform = 'translateY(' + dy + 'px)';
+    }, { passive: false });
+    document.addEventListener('touchend', function (e) {
+      if (!active || !panel) return;
+      var dy = (e.changedTouches && e.changedTouches[0].clientY - startY) || 0;
+      var p = panel;
+      reset();
+      if (dy > 80) {
+        var closer = p.querySelector('[data-overlay-close], .toc-sheet__handle, .hmsheet-close, .btoc-close');
+        if (closer) closer.click();
+      }
+    }, { passive: true });
+    document.addEventListener('touchcancel', reset, { passive: true });
+  })();
+
+  /* --- swipe-to-navigate: a horizontal swipe on article content goes to the
+     neighbouring series part (B5 resurrection). Deliberately NOT edge-based:
+     screen edges belong to OS back/forward gestures — the root conflict that
+     killed the legacy edge-swipe. A strict-angle article swipe can't fight
+     the OS. Reuses the .gbs2-peek / .gbs2-swipetip CSS that was never deleted. --- */
+  (function initSwipeNav() {
+    if (!window.matchMedia || !window.matchMedia('(pointer: coarse)').matches) return;
+    var TRIG = 90, COMMIT = 14, VMAX = 60, TMAX = 1200, TIP_KEY = 'gb:swipe-nav-tip-seen';
+    var sx = 0, sy = 0, t0 = 0, dir = null, dirData = null, peek = null, dead = false;
+
+    function linkData(link) {
+      if (!link || !link.href) return null;
+      var titleEl = link.querySelector('.gbs2-next-title');
+      var coverEl = link.querySelector('.gbs2-next-cover');
+      var img = '';
+      if (coverEl && coverEl.style && coverEl.style.backgroundImage) {
+        var m = /url\(["']?([^"')]+)["']?\)/.exec(coverEl.style.backgroundImage);
+        if (m) img = m[1];
+      }
+      var title = titleEl ? titleEl.textContent : link.textContent;
+      return { href: link.href, title: String(title || '').replace(/\s+/g, ' ').trim(), img: img };
+    }
+    function targets() {
+      return { next: linkData(resolveSeriesLink('next')), prev: linkData(resolveSeriesLink('prev')) };
+    }
+    function inContent(target) {
+      return Boolean(target && target.closest && target.closest('article, main, [data-pagefind-body]'));
+    }
+    function wantsHijack(target, wantLeft) {
+      // Never steal a swipe from a region that scrolls horizontally itself
+      // (tables, code blocks, rails).
+      var el = target;
+      while (el && el !== document.body) {
+        if (el.scrollWidth && el.clientWidth && el.scrollWidth - el.clientWidth > 2) {
+          var max = el.scrollWidth - el.clientWidth;
+          if (wantLeft ? el.scrollLeft < max - 2 : el.scrollLeft > 2) return true;
+        }
+        el = el.parentElement;
+      }
+      return false;
+    }
+    function killPeek() {
+      if (!peek) return;
+      var p = peek; peek = null;
+      p.classList.remove('gbs2-on');
+      setTimeout(function () { if (p.parentNode) p.parentNode.removeChild(p); }, 250);
+    }
+    function resetVisualState() { dir = null; dirData = null; killPeek(); }
+    function reset() { dead = false; resetVisualState(); }
+    function cancelGesture() { dead = true; resetVisualState(); }
+
+    document.addEventListener('touchstart', function (e) {
+      reset();
+      if (!e.touches || e.touches.length !== 1) return;
+      if (inField() || modalsOpen() || sheetsOpen() || !inContent(e.target)) { dead = true; return; }
+      sx = e.touches[0].clientX; sy = e.touches[0].clientY; t0 = Date.now();
+    }, { passive: true });
+    document.addEventListener('touchmove', function (e) {
+      if (dead || !e.touches || e.touches.length !== 1) return;
+      if (Date.now() - t0 > TMAX) { cancelGesture(); return; }
+      var dx = e.touches[0].clientX - sx, dy = e.touches[0].clientY - sy;
+      if (!dir) {
+        if (Math.abs(dy) > VMAX) { dead = true; return; } // vertical scroll wins
+        if (Math.abs(dx) < COMMIT || Math.abs(dx) < Math.abs(dy) * 1.4) return; // angle gate
+        var wantLeft = dx < 0;
+        if (wantsHijack(e.target, wantLeft)) { dead = true; return; }
+        var ds = targets();
+        dirData = wantLeft ? ds.next : ds.prev;
+        if (!dirData) { dead = true; return; }
+        dir = wantLeft ? 'next' : 'prev';
+        var el = document.createElement('aside');
+        el.className = 'gbs2-peek gbs2-peek-' + dir;
+        el.setAttribute('aria-hidden', 'true');
+        // Quote the cover URL (spaces would break an unquoted url()) and strip
+        // any quotes the source serialization left behind.
+        var peekImg = dirData.img ? String(dirData.img).replace(/"/g, '') : '';
+        el.innerHTML = '<span class="gbs2-peek-img"' + (peekImg ? ' style="background-image:url("' + peekImg + '")"' : '') + '></span>' +
+          '<span class="gbs2-peek-b"><small>' + (dir === 'next' ? 'Дальше' : 'Назад') + '</small><b></b><i>Отпустите, чтобы перейти</i></span>';
+        el.querySelector('b').textContent = dirData.title;
+        document.body.appendChild(el);
+        peek = el;
+      }
+      e.preventDefault(); // committed: suppress link-click and scroll
+      var amt = dir === 'next' ? Math.max(0, -dx) : Math.max(0, dx);
+      peek.style.setProperty('--gbs2-peek', Math.min(210, amt) + 'px');
+      peek.classList.add('gbs2-on');
+    }, { passive: false });
+    function finish(e) {
+      if (dead || !dir || !dirData) { reset(); return; }
+      var t = e.changedTouches && e.changedTouches[0];
+      var dx = t ? t.clientX - sx : 0;
+      var amt = dir === 'next' ? -dx : dx;
+      var href = dirData.href;
+      var slow = Date.now() - t0 > TMAX;
+      reset();
+      if (!slow && amt > TRIG && href) {
+        if (document.startViewTransition) {
+          try { document.startViewTransition(function () { location.href = href; }); }
+          catch (_) { location.href = href; }
+        } else location.href = href;
+      }
+    }
+    document.addEventListener('touchend', finish, { passive: true });
+    document.addEventListener('touchcancel', reset, { passive: true });
+
+    try {
+      var ds0 = targets();
+      if (!window.localStorage.getItem(TIP_KEY) && (ds0.next || ds0.prev)) {
+        setTimeout(function () {
+          if (sheetsOpen() || modalsOpen()) return;
+          var tip = document.createElement('div');
+          tip.className = 'gbs2-swipetip';
+          tip.setAttribute('role', 'status');
+          tip.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 7l-5 5 5 5"/></svg>Свайп по статье — соседняя часть серии';
+          document.body.appendChild(tip);
+          requestAnimationFrame(function () { tip.classList.add('gbs2-on'); });
+          setTimeout(function () {
+            tip.classList.remove('gbs2-on');
+            setTimeout(function () { if (tip.parentNode) tip.parentNode.removeChild(tip); }, 450);
+          }, 5200);
+          try { window.localStorage.setItem(TIP_KEY, '1'); } catch (_) {}
+        }, 2400);
+      }
+    } catch (_) {}
+  })();
 })();
