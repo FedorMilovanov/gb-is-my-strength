@@ -3868,9 +3868,9 @@ html.dark [data-gill-v16] .mobile-top-bar {
 
   /* ---- Persistent speed badge on the Play ember (inline-rail mode) ---- */
   [data-gill-v16] .mobile-spdbadge {
-    position: static;
-    right: auto;
-    bottom: auto;
+    position: absolute;
+    right: -4px;
+    bottom: -4px;
     z-index: 3;
     min-width: 24px;
     height: 24px;
