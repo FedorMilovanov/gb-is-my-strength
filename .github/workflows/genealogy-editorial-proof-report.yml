@@ -1,0 +1,68 @@
+name: Genealogy Editorial Proof Report
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/genealogy-editorial-proof-report.yml'
+      - 'scripts/genealogy-editorial-proof-report.mjs'
+      - 'scripts/genealogy-build/**'
+      - 'data/genealogy/v2/persons.json'
+      - 'data/genealogy/v2/publishable/relations.json'
+      - 'data/genealogy/v2/publishable/textual-assertions.json'
+      - 'data/genealogy/gospel-sequences.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  proof-report:
+    name: Build deterministic editorial proof report
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Prove exact source
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+
+      - name: Check proof script syntax
+        run: node --check scripts/genealogy-editorial-proof-report.mjs
+
+      - name: Fetch pinned genealogy sources
+        run: node scripts/genealogy-build/build.mjs fetch
+
+      - name: Build editorial proof report
+        run: node scripts/genealogy-editorial-proof-report.mjs
+
+      - name: Record first report digests
+        run: sha256sum reports/genealogy-editorial-proof/*.json > /tmp/editorial-proof-first.sha256
+
+      - name: Rebuild and require deterministic bytes
+        run: |
+          rm -rf reports/genealogy-editorial-proof
+          node scripts/genealogy-editorial-proof-report.mjs
+          sha256sum -c /tmp/editorial-proof-first.sha256
+
+      - name: Require source data to remain read-only
+        run: git diff --exit-code -- data/genealogy
+
+      - name: Upload editorial proof evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: genealogy-editorial-proof-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/genealogy-editorial-proof/
+          if-no-files-found: error
+          retention-days: 30
