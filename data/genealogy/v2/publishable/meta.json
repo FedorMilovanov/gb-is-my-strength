@@ -26,22 +26,22 @@
     "parentRelations": 171,
     "spouseRelations": 9,
     "legalParentRelations": 1,
-    "relationEvidenceReviewed": 2,
-    "relationEvidencePending": 179,
-    "directScriptureRelations": 1,
+    "relationEvidenceReviewed": 42,
+    "relationEvidencePending": 139,
+    "directScriptureRelations": 41,
     "gospelSequences": 2,
     "gospelOccurrences": 118,
     "textualAssertions": 116,
     "textualAssertionsMatchedRelations": 114,
     "textualAssertionsWithoutRelations": 2,
-    "textualAssertionsReviewedCrosswalks": 2
+    "textualAssertionsReviewedCrosswalks": 55
   },
   "sourceHashes": {
     "curatedV1": "b66da575abe6a34189d8ae192b30e4e4934210c5cd51c046c12c5c28de9e1d85",
-    "v2Persons": "b24cc8252592a5cd13a6c617d65a9d83bfa799ab42d87b9c97f7446fd3dc59dc",
+    "v2Persons": "d558c38a5657ecc10a3d654df618021e208461c42b3b725a5c03e202ea475757",
     "v2GospelSequences": "f9f65044a77bdb01dabc7059379aa4c75a8ea1c223be15455d542ca697bdfd91",
-    "v2EdgeAnnotations": "1facaeea2a5ddafe11b7019763b6a8482fc714d83b9d61d369d1e699d722a54d",
-    "v2Meta": "9ca808477decc57d7cb3a1526a39ff540978e3800076d5b1e392869ec5fbb551"
+    "v2EdgeAnnotations": "69f248c289c26823bbc29be275e0a8d1022f0ad4438985beb5a0dd5093540005",
+    "v2Meta": "be4d956352aebba2b6833c2316e43075a55d9646ae7537114e112b62b7cbddb6"
   },
   "diagnostics": {
     "externalRefs": [
