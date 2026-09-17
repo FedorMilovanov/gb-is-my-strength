@@ -57,8 +57,8 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
         </div>
       </div>
       <!-- Ширина статьи — единая настройка всех reader surfaces. Значение
-           «Шире» намеренно ограничено 46rem: заметно просторнее обычного, но
-           сохраняет безопасный коридор для desktop speed-morph. -->
+           «Шире» использует общую reader-шкалу 58rem; Gill adapter обязан
+           повторять GBReaderPreferences, а не держать отдельную ширину. -->
       <div class="setting-group setting-group--measure">
         <span class="setting-label">Ширина статьи</span>
         <div class="setting-segment" id="gillMeasureGroup">
@@ -73,7 +73,7 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
 
 <script>
   const LINE_VALUES: Record<string, string> = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
-  const MEASURE_VALUES: Record<string, string> = { narrow: '36rem', normal: '43rem', wide: '46rem' };
+  const MEASURE_VALUES: Record<string, string> = { narrow: '42rem', normal: '50rem', wide: '58rem' };
 
   function initGillReaderSettings() {
     const overlay = document.getElementById('gillSettingsOverlay');
@@ -100,7 +100,7 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
       if (gillRoot) {
         gillRoot.style.setProperty('--gbs2-article-line', LINE_VALUES[line] || LINE_VALUES.normal);
         const measureValue = MEASURE_VALUES[measure] || MEASURE_VALUES.normal;
-        gillRoot.style.setProperty('--gbs2-article-measure', `min(${measureValue}, var(--gb-measure, ${measureValue}))`);
+        gillRoot.style.setProperty('--gbs2-article-measure', measureValue); // audit 2026-09-15: plain value, same as js/reader-preferences.js (min() fought the shared --gb-reader-measure)
         if (preferences.theme === 'sepia') gillRoot.setAttribute('data-gill-reader-theme', 'sepia');
         else gillRoot.removeAttribute('data-gill-reader-theme');
       }

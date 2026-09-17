@@ -152,24 +152,172 @@ async function exerciseHeadingAnchor(page, label) {
   assert.equal(await anchor.getAttribute('aria-label'), 'Скопировать ссылку на раздел', `${label}: heading anchor accessibility label drift`);
 
   const expectedUrl = await page.evaluate((fragment) => new URL(fragment, window.location.href).toString(), href);
-  await page.evaluate(() => {
-    const toast = document.getElementById('anchor-copy-toast');
-    window.__gbAnchorFeedbackSeen = toast?.classList.contains('is-visible') === true;
-    if (!toast || window.__gbAnchorFeedbackSeen) return;
-    const observer = new MutationObserver(() => {
-      if (!toast.classList.contains('is-visible')) return;
-      window.__gbAnchorFeedbackSeen = true;
-      observer.disconnect();
-    });
-    observer.observe(toast, { attributes: true, attributeFilter: ['class'] });
-  });
-  await anchor.click();
-  await page.waitForFunction(() => window.__gbAnchorFeedbackSeen === true);
+  const hitTestBeforeClick = await anchor.evaluate(async (node) => {
+    const describe = (target) => {
+      if (!(target instanceof Element)) {
+        return {
+          nodeName: target?.nodeName || '',
+          nodeType: target?.nodeType || null,
+        };
+      }
+      return {
+        tag: target.tagName,
+        id: target.id || '',
+        className: typeof target.className === 'string' ? target.className : (target.className?.baseVal || ''),
+        closestAnchorHref: target.closest('.heading-anchor')?.getAttribute('href') || '',
+      };
+    };
+    const sample = () => {
+      const rect = node.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      const hit = document.elementFromPoint(x, y);
+      return {
+        rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+        center: { x, y },
+        pointerEvents: getComputedStyle(node).pointerEvents,
+        opacity: getComputedStyle(node).opacity,
+        hit: describe(hit),
+        ownedHit: hit instanceof Element
+          && hit.closest('.heading-anchor[data-gb-heading-anchor-owner="native-v1"]') === node,
+      };
+    };
+    const stable = (left, right) => left && right
+      && Math.abs(left.rect.x - right.rect.x) <= 0.25
+      && Math.abs(left.rect.y - right.rect.y) <= 0.25
+      && Math.abs(left.rect.width - right.rect.width) <= 0.25
+      && Math.abs(left.rect.height - right.rect.height) <= 0.25;
 
-  const feedback = await page.evaluate(() => ({
-    toastSeen: window.__gbAnchorFeedbackSeen === true,
-    hash: window.location.hash,
-  }));
+    let previous = null;
+    let stableFrames = 0;
+    for (let frame = 0; frame < 120; frame += 1) {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      const next = sample();
+      stableFrames = stable(previous, next) && next.ownedHit ? stableFrames + 1 : 0;
+      previous = next;
+      if (stableFrames >= 3) return { ...next, stableFrames };
+    }
+    return { ...sample(), stableFrames };
+  });
+  assert.equal(hitTestBeforeClick.ownedHit, true, `${label}: heading-anchor center is not a stable native hit target; ${JSON.stringify(hitTestBeforeClick)}`);
+  assert.ok(hitTestBeforeClick.stableFrames >= 3, `${label}: heading-anchor geometry did not settle before pointer activation; ${JSON.stringify(hitTestBeforeClick)}`);
+  await page.evaluate(() => {
+    window.__gbAnchorFeedbackSeen = false;
+    const markFeedback = () => {
+      const toast = document.getElementById('anchor-copy-toast');
+      if (toast?.classList.contains('is-visible')) window.__gbAnchorFeedbackSeen = true;
+    };
+    markFeedback();
+    const observer = new MutationObserver(markFeedback);
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+    window.__gbAnchorFeedbackObserver = observer;
+
+    const describeTarget = (target) => {
+      if (!(target instanceof Element)) {
+        return {
+          nodeName: target?.nodeName || '',
+          nodeType: target?.nodeType || null,
+        };
+      }
+      return {
+        tag: target.tagName,
+        id: target.id || '',
+        className: typeof target.className === 'string' ? target.className : (target.className?.baseVal || ''),
+        closestAnchorHref: target.closest('.heading-anchor')?.getAttribute('href') || '',
+      };
+    };
+    const matchesAnchor = (event) => event.target instanceof Element
+      && Boolean(event.target.closest('.heading-anchor[data-gb-heading-anchor-owner="native-v1"]'));
+    window.__gbAnchorClickTrace = {
+      windowCapture: 0,
+      documentCapture: 0,
+      documentBubble: 0,
+      windowDefaultPrevented: null,
+      documentCaptureDefaultPrevented: null,
+      documentBubbleDefaultPrevented: null,
+      windowTarget: null,
+      windowPath: [],
+    };
+    const windowCapture = (event) => {
+      window.__gbAnchorClickTrace.windowCapture += 1;
+      window.__gbAnchorClickTrace.windowDefaultPrevented = event.defaultPrevented;
+      window.__gbAnchorClickTrace.windowTarget = describeTarget(event.target);
+      window.__gbAnchorClickTrace.windowPath = event.composedPath().slice(0, 8).map(describeTarget);
+    };
+    const capture = (event) => {
+      if (!matchesAnchor(event)) return;
+      window.__gbAnchorClickTrace.documentCapture += 1;
+      window.__gbAnchorClickTrace.documentCaptureDefaultPrevented = event.defaultPrevented;
+    };
+    const bubble = (event) => {
+      if (!matchesAnchor(event)) return;
+      window.__gbAnchorClickTrace.documentBubble += 1;
+      window.__gbAnchorClickTrace.documentBubbleDefaultPrevented = event.defaultPrevented;
+    };
+    window.addEventListener('click', windowCapture, true);
+    document.addEventListener('click', capture, true);
+    document.addEventListener('click', bubble);
+    window.__gbAnchorWindowProbe = windowCapture;
+    window.__gbAnchorCaptureProbe = capture;
+    window.__gbAnchorBubbleProbe = bubble;
+  });
+  await page.mouse.click(hitTestBeforeClick.center.x, hitTestBeforeClick.center.y);
+  try {
+    await page.waitForFunction(
+      () => document.getElementById('anchor-copy-toast')?.classList.contains('is-visible') === true
+        || window.__gbAnchorFeedbackSeen === true,
+      null,
+      { timeout: 5000 },
+    );
+  } catch (error) {
+    const diagnostics = await page.evaluate(() => {
+      const toast = document.getElementById('anchor-copy-toast');
+      const owned = document.querySelector('.heading-anchor[data-gb-heading-anchor-owner="native-v1"]');
+      const snapshot = {
+        trace: window.__gbAnchorClickTrace || null,
+        toastExists: Boolean(toast),
+        toastConnected: toast?.isConnected === true,
+        toastClass: toast?.className || '',
+        toastText: toast?.textContent || '',
+        hash: window.location.hash,
+        anchorConnected: owned?.isConnected === true,
+        anchorCopied: owned?.classList.contains('copied') === true,
+        anchorHref: owned?.getAttribute('href') || '',
+        anchorsReady: document.documentElement.dataset.gbHeadingAnchorsReady || '',
+        interactionVersion: window.GBArticleInteractions?.version || null,
+        headingAnchors: window.GBArticleInteractions?.headingAnchors || null,
+      };
+      window.__gbAnchorFeedbackObserver?.disconnect();
+      if (window.__gbAnchorWindowProbe) window.removeEventListener('click', window.__gbAnchorWindowProbe, true);
+      if (window.__gbAnchorCaptureProbe) document.removeEventListener('click', window.__gbAnchorCaptureProbe, true);
+      if (window.__gbAnchorBubbleProbe) document.removeEventListener('click', window.__gbAnchorBubbleProbe);
+      return snapshot;
+    });
+    throw new Error(`${label}: heading-anchor feedback timeout: ${JSON.stringify({ hitTestBeforeClick, diagnostics })}; ${String(error?.message || error)}`);
+  }
+
+  const feedback = await page.evaluate(() => {
+    const toast = document.getElementById('anchor-copy-toast');
+    const toastSeen = toast?.classList.contains('is-visible') === true || window.__gbAnchorFeedbackSeen === true;
+    window.__gbAnchorFeedbackObserver?.disconnect();
+    delete window.__gbAnchorFeedbackObserver;
+    if (window.__gbAnchorWindowProbe) window.removeEventListener('click', window.__gbAnchorWindowProbe, true);
+    if (window.__gbAnchorCaptureProbe) document.removeEventListener('click', window.__gbAnchorCaptureProbe, true);
+    if (window.__gbAnchorBubbleProbe) document.removeEventListener('click', window.__gbAnchorBubbleProbe);
+    delete window.__gbAnchorWindowProbe;
+    delete window.__gbAnchorCaptureProbe;
+    delete window.__gbAnchorBubbleProbe;
+    return {
+      toastSeen,
+      toastConnected: toast?.isConnected === true,
+      hash: window.location.hash,
+    };
+  });
   assert.equal(feedback.toastSeen, true, `${label}: heading-anchor activation produced no user feedback`);
 
   const clipboard = await page.evaluate(async () => {

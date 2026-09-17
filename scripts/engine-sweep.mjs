@@ -210,8 +210,8 @@ for (const [id, url] of SERIES) {
       visible: getComputedStyle(button.closest('.setting-group')).display !== 'none'
     };
   });
-  R(id, 'desk: настройка «Шире» доступна и ограничена 46rem',
-    !!measure && measure.visible && measure.rootMeasure === 'wide' && measure.cssMeasure === '46rem' &&
+  R(id, 'desk: настройка «Шире» доступна и ограничена 58rem',
+    !!measure && measure.visible && measure.rootMeasure === 'wide' && measure.cssMeasure === '58rem' &&
       (id !== 'gill3' || measure.delta >= 24),
     JSON.stringify(measure));
   if (ARTIFACT_DIR && id === 'gill3') {
@@ -433,7 +433,7 @@ for (const [id, url] of SINGLES) {
   await page.emulateMedia({ media: 'print' });
   await page.waitForTimeout(250);
   const printLayout = await page.evaluate(() => {
-    const known = ['.gbs-rail','.gbs-theme-corner','.mobile-top-bar','.mobile-bottom-bar','.toc-overlay','.gb-floater','.hrail'];
+    const known = ['.gbs-rail','.gbs-theme-corner','.mobile-top-bar','.mobile-bottom-bar','.toc-overlay','.gb-floater','.hrail','.gbs2-vignette','.gbs2-next'];
     const visibleChrome = known.filter((selector) => {
       const node = document.querySelector(selector);
       if (!node) return false;
@@ -441,12 +441,16 @@ for (const [id, url] of SINGLES) {
       return style.display !== 'none' && style.visibility !== 'hidden';
     });
     const body = document.querySelector('.article-body');
+    const pageWrap = document.querySelector('.page-wrap');
     const hero = document.querySelector('.gbs2-hero img, .article-hero img, .article-figure img');
     const bs = body ? getComputedStyle(body) : null;
+    const ps = pageWrap ? getComputedStyle(pageWrap) : null;
     const hs = hero ? getComputedStyle(hero) : null;
     return {
       visibleChrome,
       bodyOpacity: bs?.opacity, bodyColor: bs?.color,
+      bodyPaddingTop: bs?.paddingTop, bodyPaddingBottom: bs?.paddingBottom,
+      pageWrapPaddingTop: ps?.paddingTop, pageWrapPaddingBottom: ps?.paddingBottom,
       heroPosition: hs?.position, heroTransform: hs?.transform,
       heroBefore: getComputedStyle(document.querySelector('.gbs2-hero'), '::before').display,
       heroAfter: getComputedStyle(document.querySelector('.gbs2-hero'), '::after').display,
@@ -458,7 +462,9 @@ for (const [id, url] of SINGLES) {
   R('print', 'A4 media hides chrome and restores readable normal flow',
     !!printLayout && printLayout.visibleChrome.length === 0 && Number(printLayout.bodyOpacity) === 1 &&
     printLayout.heroPosition !== 'fixed' && printLayout.heroBefore === 'none' && printLayout.heroAfter === 'none' &&
-    printLayout.heroPaddingTop === '0px' && printLayout.heroCapDisplay === 'none' && printLayout.worldDisplay === 'block',
+    printLayout.heroPaddingTop === '0px' && printLayout.heroCapDisplay === 'none' && printLayout.worldDisplay === 'block' &&
+    printLayout.bodyPaddingTop === '0px' && printLayout.bodyPaddingBottom === '0px' &&
+    printLayout.pageWrapPaddingTop === '0px' && printLayout.pageWrapPaddingBottom === '0px',
     JSON.stringify(printLayout));
   if (ARTIFACT_DIR) {
     await page.screenshot({ path: join(ARTIFACT_DIR, 'reader-print-preview.png'), fullPage: false });

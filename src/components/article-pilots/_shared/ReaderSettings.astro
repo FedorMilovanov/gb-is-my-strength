@@ -161,9 +161,9 @@
 
     /* Compatibility selector for existing standalone article CSS. The canonical
        Sepia state is global; GBReaderPreferences mirrors it onto this root. */
-    :global([data-reader-root][data-hm-reader-theme="sepia"]),
-    :global([data-reader-root][data-hm-reader-theme="sepia"] .article-main),
-    :global([data-reader-root][data-hm-reader-theme="sepia"] .article-body) { background: #ece0c6 !important; }
+    /* Audit 2026-09-15: the #ece0c6 !important paper overrides were removed —
+       canonical sepia (#eee3c8 etc.) comes from the global tokens in
+       css/reader-preferences.css keyed on html[data-reader-theme="sepia"]. */
     :global([data-reader-root][data-hm-reader-theme="sepia"] .article-body),
     :global([data-reader-root][data-hm-reader-theme="sepia"] .article-body p),
     :global([data-reader-root][data-hm-reader-theme="sepia"] .article-body li),
@@ -185,7 +185,6 @@
     :global([data-reader-root][data-hm-reader-theme="sepia"] .summary-card__item + .summary-card__item) {
       border-color: rgba(74,56,32,.14) !important;
     }
-    :global(html:has([data-reader-root][data-hm-reader-theme="sepia"]) body) { background: #ece0c6; }
   }
 
   /* A padded page-wrap can be the ReaderRail shell itself. On desktop the rail

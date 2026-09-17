@@ -83,6 +83,16 @@ assert.ok(krajne.includes('heart-flip-card'), 'Krajne retained reversible-card c
 const headingAnchorOwner = read('src/runtime/article-heading-anchors.js');
 assert.match(headingAnchorOwner, /const CLIPBOARD_TIMEOUT_MS = \d+;/, 'heading-anchor clipboard timeout guard disappeared');
 assert.match(headingAnchorOwner, /clipboard write timed out/, 'heading-anchor stalled clipboard fallback disappeared');
+assert.match(
+  headingAnchorOwner,
+  /document\.addEventListener\('click', handleHeadingAnchorClick, true\)/,
+  'heading-anchor delegated capture owner disappeared',
+);
+assert.equal(
+  headingAnchorOwner.includes("anchor.addEventListener('click'"),
+  false,
+  'heading-anchor must not regress to per-node click binding',
+);
 
 const legacyEnhancements = read('js/enhancements.js');
 const legacySite = read('js/site.js');
