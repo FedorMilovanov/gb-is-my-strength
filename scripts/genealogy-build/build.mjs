@@ -16,6 +16,7 @@ import { PATHS, SOURCES, PIPELINE_VERSION, HARD_INVARIANTS } from './config.mjs'
 import { SynodalText, refToRu, parseRef } from './lib/refs.mjs';
 import { parseTipnr, resolveRelations, parseUnifiedRef, parseRelField } from './lib/tipnr-parser.mjs';
 import { extractRuName, translitEnRu, similarity, normalizeRuCandidate, structuralRuLabel } from './lib/ru-extract.mjs';
+import { directSynodalRussianNameProof } from './lib/ru-review-proof.mjs';
 import { computeClusters, nationsLayer } from './lib/clusters.mjs';
 import { traceSpine } from './lib/spine.mjs';
 import { buildLayoutL0 } from './lib/layout-l0.mjs';
@@ -150,7 +151,7 @@ async function runAll() {
   catch { /* первого прогона может не быть */ }
 
   // 5. Русские имена
-  const ruStats = { override: 0, seed: 0, pattern: 0, candidate: 0, translit: 0, none: 0, review: 0 };
+  const ruStats = { override: 0, seed: 0, pattern: 0, candidate: 0, translit: 0, none: 0, review: 0, proven: 0 };
   const outPersons = [];
   for (const rec of [...persons.values()].sort((a, b) => cmpRef(a.ref, b.ref) || a.name.localeCompare(b.name))) {
     const id = personId(rec);
@@ -212,6 +213,18 @@ async function runAll() {
   }
 
   // 6. Рёбра
+  // Deterministic Russian-name certification from the pinned Synodal text.
+  // Fail closed: direct same-verse evidence only; no cross-person lexeme propagation.
+  for (const person of outPersons) {
+    const proof = directSynodalRussianNameProof(person, synodal);
+    if (!proof) continue;
+    person.ru.review = false;
+    person.ru.reviewProof = proof.proof;
+    ruStats.proven += 1;
+  }
+  ruStats.review = outPersons.filter(person => person.ru?.review === true).length;
+  log(`ru-review: direct Synodal proof ${ruStats.proven}; pending ${ruStats.review}`);
+
   const keyToId = new Map([...persons.values()].map(r => [r.key, personId(r)]));
   const edges = [];
   const spouseSeen = new Set();
@@ -705,6 +718,33 @@ async function runTests() {
   const ru = extractRuName('Peleg', fakeVerses);
   assert(ru?.name === 'Пелег' && ru.source === 'translit' && ru.review === true,
     `слабое Peleg↔Фалек сходство fail-closed уходит в review fallback (получили ${JSON.stringify(ru)})`);
+
+  const proofSynodal = {
+    verse: ref => ({
+      'Gen.1.1': '\u0418\u0440\u0430\u0434',
+      'Gen.1.2': '\u0418\u0430\u0432\u0430\u043b\u0430',
+      'Gen.1.3': '\u0424\u0430\u043b\u0435\u043a',
+    })[ref] ?? null,
+  };
+  const exactProof = directSynodalRussianNameProof({
+    en: 'Irad',
+    ru: { name: '\u0418\u0440\u0430\u0434', source: 'candidate', review: true, verseRef: 'Gen.1.1' },
+  }, proofSynodal);
+  assert(exactProof?.proof === 'synodal-local-exact',
+    'Russian review proof accepts an exact pinned-verse token');
+  const normalizedProof = directSynodalRussianNameProof({
+    en: 'Jabal',
+    ru: { name: '\u0418\u0430\u0432\u0430\u043b', source: 'pattern', review: true,
+      verseRef: 'Gen.1.2', verseForm: '\u0418\u0430\u0432\u0430\u043b\u0430' },
+  }, proofSynodal);
+  assert(normalizedProof?.proof === 'synodal-local-normalized',
+    'Russian review proof accepts a validated local inflection normalization');
+  const rejectedProof = directSynodalRussianNameProof({
+    en: 'Peleg',
+    ru: { name: '\u041f\u0435\u043b\u0435\u0433', source: 'candidate', review: true, verseRef: 'Gen.1.3' },
+  }, proofSynodal);
+  assert(rejectedProof === null,
+    'Russian review proof fails closed when the stored label is absent from the pinned verse');
 
   assert(normalizeRuCandidate('Elnathan', 'Елнафана') === 'Елнафан', 'нормализация вин. падежа (Елнафана→Елнафан)');
   assert(normalizeRuCandidate('Melchi', 'Мелхиев') === 'Мелхий', 'нормализация притяжательного (Мелхиев→Мелхий)');

@@ -34,7 +34,7 @@
 | candidate (стих+транслит) | 2142 |
 | translit (fallback) | 615 |
 | none | 0 |
-| **review-очередь** | **2825** |
+| **review-очередь** | **1217** |
 
 ## TIPNR-парсер
 

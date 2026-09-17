@@ -150,12 +150,25 @@ assert(heliMary.textualAssertions.length === 0,
 
 const abrahamIsaac = runtimeRelations.find(relation =>
   relation.kind === 'parent' && relation.from === 'abram' && relation.to === 'isaac');
-assert(abrahamIsaac, 'Abraham→Isaac runtime relation evidence missing');
-assert(abrahamIsaac.evidence.refsStatus === 'relation-level-review-pending' &&
-  abrahamIsaac.evidence.directScripture === null,
-'Pending Abraham→Isaac evidence was over-promoted');
+assert(abrahamIsaac, 'Abraham->Isaac runtime relation evidence missing');
+assert(abrahamIsaac.evidence.refsStatus === 'editorially-reviewed' &&
+  abrahamIsaac.evidence.directScripture === true &&
+  abrahamIsaac.evidence.assertion === 'explicit-genealogical-text',
+'Abraham->Isaac must expose the certified Matthew genealogical-text evidence');
 assert(abrahamIsaac.textualAssertions.length >= 1,
-  'Abraham→Isaac should expose Gospel textual adjacency context');
+  'Abraham->Isaac should expose Gospel textual adjacency context');
+
+// Keep a real pending relation as the fail-closed runtime witness. Adam->Seth
+// has Gospel adjacency context, but no relation-level annotation has qualified
+// that adjacency as direct family evidence.
+const adamSeth = runtimeRelations.find(relation =>
+  relation.kind === 'parent' && relation.from === 'adam' && relation.to === 'seth');
+assert(adamSeth, 'Adam->Seth runtime relation evidence missing');
+assert(adamSeth.evidence.refsStatus === 'relation-level-review-pending' &&
+  adamSeth.evidence.directScripture === null,
+'Pending Adam->Seth evidence was over-promoted');
+assert(adamSeth.textualAssertions.length >= 1,
+  'Adam->Seth should retain Gospel textual adjacency context without treating adjacency as proof');
 
 console.log(JSON.stringify({
   status: 'genealogy-publishable-runtime-parity-ok',
@@ -167,4 +180,5 @@ console.log(JSON.stringify({
   runtimeRelationEvidence: runtimeRelations.length,
   josephJesusTextualAssertions: josephJesus.textualAssertions.length,
   abrahamIsaacTextualAssertions: abrahamIsaac.textualAssertions.length,
+  adamSethTextualAssertions: adamSeth.textualAssertions.length,
 }, null, 2));
