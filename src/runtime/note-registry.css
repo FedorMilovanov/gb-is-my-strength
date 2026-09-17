@@ -25,10 +25,10 @@
    * GBPrintPagination terminal sealing hides generic DOM followers after the
    * authored article. NoteRegistry publication endnotes intentionally live
    * outside that article, so their explicit print-policy opt-in must outrank
-   * the generic follower mask without making floating tooltip UI printable.
+   * the generic follower mask without making unrelated reader chrome printable.
    */
   html body [data-print-policy="include"][data-print-terminal-follower],
-  html body [data-print-policy="include"] [data-print-terminal-follower] {
+  html body .gb-note-endnotes[data-print-policy="include"] [data-print-terminal-follower] {
     display: revert !important;
   }
   .gb-note-endnotes,
