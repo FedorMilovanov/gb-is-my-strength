@@ -273,6 +273,12 @@ const { title, backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC } = Astro.p
   .hmbar-btn,.hmtop .hm-icon,.hmbar-progress,.hmbar-font{
     width:44px;height:44px;min-width:44px;min-height:44px
   }
+  /* highlights-runtime.css intentionally resets docked FAB dimensions to auto.
+     In the Hermenevtika bar the saved-quotes FAB is a peer of Share, so it
+     must retain the same native 44×44 geometry after docking. */
+  #gb-hl-fab.gb-hl-fab--docked.hmbar-btn{
+    width:44px;height:44px;min-width:44px;min-height:44px
+  }
   .hmbar-font{position:relative}
   .hmsheet-close{position:relative;width:44px;height:44px;min-width:44px;min-height:44px}
 
