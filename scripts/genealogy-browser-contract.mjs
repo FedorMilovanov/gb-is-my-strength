@@ -730,7 +730,7 @@ async function assertLegalRelationInteractions(page) {
       document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-search-person') === 'joseph_nt');
     await waitForViewportStable(page);
     await page.locator('.react-flow__node[data-id="joseph_nt"]').click();
-  
+
     const josephDetails = page.getByRole('complementary', { name: 'Детали: Иосиф (Обручник)' });
     await josephDetails.waitFor({ state: 'visible' });
     const legalRelation = josephDetails.getByRole('button', {
@@ -746,7 +746,7 @@ async function assertLegalRelationInteractions(page) {
       'Person relation evidence control is smaller than the 44px touch target');
     if ((page.viewportSize()?.width ?? 999) <= 430) await legalRelation.tap();
     else await legalRelation.click();
-  
+
     const legalPanel = page.getByRole('complementary', {
       name: 'Основание связи: Иосиф (Обручник) — Иисус Христос',
     });
@@ -759,13 +759,13 @@ async function assertLegalRelationInteractions(page) {
     await legalPanel.waitFor({ state: 'detached' });
     assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'joseph_nt',
       'Legal-parent inspector did not restore focus to Joseph');
-  
+
     await personSearch.fill('Иисус Христос');
     await page.waitForFunction(() =>
       document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-search-person') === 'jesus');
     await waitForViewportStable(page);
     await page.locator('.react-flow__node[data-id="jesus"]').click();
-  
+
     const jesusDetails = page.getByRole('complementary', { name: 'Детали: Иисус Христос' });
     await jesusDetails.waitFor({ state: 'visible' });
     const childSideLegalRelation = jesusDetails.getByRole('button', {
@@ -776,7 +776,7 @@ async function assertLegalRelationInteractions(page) {
       'Jesus detail drawer did not expose the reverse side of legal parentage');
     if ((page.viewportSize()?.width ?? 999) <= 430) await childSideLegalRelation.tap();
     else await childSideLegalRelation.click();
-  
+
     const childSidePanel = page.getByRole('complementary', {
       name: 'Основание связи: Иосиф (Обручник) — Иисус Христос',
     });
