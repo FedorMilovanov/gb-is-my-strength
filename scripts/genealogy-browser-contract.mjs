@@ -955,7 +955,40 @@ async function assertHydrationFallback(browserName, browser, baseUrl) {
   }
 }
 
-async function runViewport(browserName, browser, baseUrl, viewport) {
+async function runFocusInteractionsInFreshBrowser(browserName, browserType, baseUrl, viewport) {
+  const touch = viewport.width <= 430;
+  const browser = await browserType.launch({ headless: true });
+  const context = await browser.newContext({
+    viewport,
+    hasTouch: touch,
+    isMobile: touch && browserName !== 'firefox',
+    colorScheme: 'light',
+    reducedMotion: process.env.GENEALOGY_REDUCED_MOTION === '1' ? 'reduce' : 'no-preference',
+  });
+  const page = await context.newPage();
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(`[focus-and-controls] ${String(error?.stack || error)}`));
+
+  try {
+    const response = await page.goto(`${baseUrl}/rodosloviye/`, { waitUntil: 'networkidle' });
+    assert.ok(response?.ok(),
+      `${browserName} ${viewport.width}x${viewport.height}: isolated focus witness did not load successfully`);
+    await page.locator('.react-flow__node .genealogy-node').first().waitFor({ state: 'attached' });
+    await waitForViewportStable(page);
+    await assertFocusInteractions(page);
+
+    const browserDiagnostics = pageErrors.filter(error =>
+      browserName === 'webkit' && error.includes(KNOWN_WEBKIT_RESIZE_DIAGNOSTIC));
+    const actionablePageErrors = pageErrors.filter(error => !browserDiagnostics.includes(error));
+    assert.deepEqual(actionablePageErrors, [],
+      `${browserName} ${viewport.width}x${viewport.height}: isolated focus witness has uncaught page errors`);
+  } finally {
+    await context.close().catch(() => undefined);
+    await browser.close().catch(() => undefined);
+  }
+}
+
+async function runViewport(browserName, browser, baseUrl, viewport, { skipFocus = false } = {}) {
   const touch = viewport.width <= 430;
   const context = await browser.newContext({
     viewport,
@@ -1138,8 +1171,10 @@ async function runViewport(browserName, browser, baseUrl, viewport) {
     }
     phase = 'split-view';
     await assertSplitLifecycle(page, touch);
-    phase = 'focus-and-controls';
-    await assertFocusInteractions(page);
+    if (!skipFocus) {
+      phase = 'focus-and-controls';
+      await assertFocusInteractions(page);
+    }
     phase = 'final';
     const browserDiagnostics = pageErrors.filter(error => browserName === 'webkit' && error.includes(KNOWN_WEBKIT_RESIZE_DIAGNOSTIC));
     const actionablePageErrors = pageErrors.filter(error => !browserDiagnostics.includes(error));
@@ -1190,15 +1225,31 @@ async function main() {
         }
       }
 
+      // Keep the WebKit focus/control witness strict, but give it a fresh
+      // browser process after the long navigation/search/split lifecycle.
+      // This is phase isolation, not a retry: either phase still fails the worker.
+      const isolateWebKitFocus = browserName === 'webkit';
       const browser = await browserType.launch({ headless: true });
       try {
         for (const viewport of VIEWPORTS) {
-          const result = await runViewport(browserName, browser, server.baseUrl, viewport);
+          const result = await runViewport(
+            browserName,
+            browser,
+            server.baseUrl,
+            viewport,
+            { skipFocus: isolateWebKitFocus },
+          );
           results.push(result);
           console.log(`[genealogy] ${browserName} ${viewport.width}x${viewport.height}: expected=${EXPECTED_PERSON_NODES}, initial=${result.initial.visiblePersonCards}, fit=${result.afterFit.visiblePersonCards}, search=${result.afterSearch.visiblePersonCards}`);
         }
       } finally {
         await browser.close();
+      }
+
+      if (isolateWebKitFocus) {
+        for (const viewport of VIEWPORTS) {
+          await runFocusInteractionsInFreshBrowser(browserName, browserType, server.baseUrl, viewport);
+        }
       }
     }
   } finally {
