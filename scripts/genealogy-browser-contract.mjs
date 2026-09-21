@@ -720,67 +720,71 @@ async function assertFocusInteractions(page) {
   assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'abram',
     'Relationship inspector did not restore focus to the source genealogy node');
 
-  const personSearch = page.getByRole('combobox', { name: 'Поиск по имени' });
-  await personSearch.fill('Иосиф (Обручник)');
-  await page.waitForFunction(() =>
-    document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-search-person') === 'joseph_nt');
-  await waitForViewportStable(page);
-  await page.locator('.react-flow__node[data-id="joseph_nt"]').click();
 
-  const josephDetails = page.getByRole('complementary', { name: 'Детали: Иосиф (Обручник)' });
-  await josephDetails.waitFor({ state: 'visible' });
-  const legalRelation = josephDetails.getByRole('button', {
-    name: 'Открыть основание связи: Иосиф (Обручник) — Иисус Христос',
-  });
-  await legalRelation.waitFor({ state: 'visible' });
-  assert.equal(await legalRelation.getByText('Юридический родитель', { exact: true }).isVisible(), true,
-    'Joseph detail drawer did not expose the legal-parent relation');
-  assert.equal(await legalRelation.getByText('прямой текст', { exact: true }).isVisible(), true,
-    'Joseph legal-parent relation lost its evidence status');
-  const legalRelationBox = await legalRelation.boundingBox();
-  assert.ok(legalRelationBox && legalRelationBox.height >= MIN_TOUCH_TARGET,
-    'Person relation evidence control is smaller than the 44px touch target');
-  if ((page.viewportSize()?.width ?? 999) <= 430) await legalRelation.tap();
-  else await legalRelation.click();
+}
 
-  const legalPanel = page.getByRole('complementary', {
-    name: 'Основание связи: Иосиф (Обручник) — Иисус Христос',
-  });
-  await legalPanel.waitFor({ state: 'visible' });
-  assert.equal(await legalPanel.getByText('Связь квалифицирована как юридическая / небиологическая.', { exact: true }).isVisible(), true,
-    'Legal-parent inspector did not expose non-biological qualification');
-  assert.equal(await legalPanel.getByText('Мф 1:18–25', { exact: true }).isVisible(), true,
-    'Legal-parent inspector omitted reviewed virgin-birth evidence');
-  await page.keyboard.press('Escape');
-  await legalPanel.waitFor({ state: 'detached' });
-  assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'joseph_nt',
-    'Legal-parent inspector did not restore focus to Joseph');
-
-  await personSearch.fill('Иисус Христос');
-  await page.waitForFunction(() =>
-    document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-search-person') === 'jesus');
-  await waitForViewportStable(page);
-  await page.locator('.react-flow__node[data-id="jesus"]').click();
-
-  const jesusDetails = page.getByRole('complementary', { name: 'Детали: Иисус Христос' });
-  await jesusDetails.waitFor({ state: 'visible' });
-  const childSideLegalRelation = jesusDetails.getByRole('button', {
-    name: 'Открыть основание связи: Иисус Христос — Иосиф (Обручник)',
-  });
-  await childSideLegalRelation.waitFor({ state: 'visible' });
-  assert.equal(await childSideLegalRelation.getByText('Юридический ребёнок', { exact: true }).isVisible(), true,
-    'Jesus detail drawer did not expose the reverse side of legal parentage');
-  if ((page.viewportSize()?.width ?? 999) <= 430) await childSideLegalRelation.tap();
-  else await childSideLegalRelation.click();
-
-  const childSidePanel = page.getByRole('complementary', {
-    name: 'Основание связи: Иосиф (Обручник) — Иисус Христос',
-  });
-  await childSidePanel.waitFor({ state: 'visible' });
-  await page.keyboard.press('Escape');
-  await childSidePanel.waitFor({ state: 'detached' });
-  assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'jesus',
-    'Relation inspector returned focus to relation.from instead of the person who opened it');
+async function assertLegalRelationInteractions(page) {
+    const personSearch = page.getByRole('combobox', { name: 'Поиск по имени' });
+    await personSearch.fill('Иосиф (Обручник)');
+    await page.waitForFunction(() =>
+      document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-search-person') === 'joseph_nt');
+    await waitForViewportStable(page);
+    await page.locator('.react-flow__node[data-id="joseph_nt"]').click();
+  
+    const josephDetails = page.getByRole('complementary', { name: 'Детали: Иосиф (Обручник)' });
+    await josephDetails.waitFor({ state: 'visible' });
+    const legalRelation = josephDetails.getByRole('button', {
+      name: 'Открыть основание связи: Иосиф (Обручник) — Иисус Христос',
+    });
+    await legalRelation.waitFor({ state: 'visible' });
+    assert.equal(await legalRelation.getByText('Юридический родитель', { exact: true }).isVisible(), true,
+      'Joseph detail drawer did not expose the legal-parent relation');
+    assert.equal(await legalRelation.getByText('прямой текст', { exact: true }).isVisible(), true,
+      'Joseph legal-parent relation lost its evidence status');
+    const legalRelationBox = await legalRelation.boundingBox();
+    assert.ok(legalRelationBox && legalRelationBox.height >= MIN_TOUCH_TARGET,
+      'Person relation evidence control is smaller than the 44px touch target');
+    if ((page.viewportSize()?.width ?? 999) <= 430) await legalRelation.tap();
+    else await legalRelation.click();
+  
+    const legalPanel = page.getByRole('complementary', {
+      name: 'Основание связи: Иосиф (Обручник) — Иисус Христос',
+    });
+    await legalPanel.waitFor({ state: 'visible' });
+    assert.equal(await legalPanel.getByText('Связь квалифицирована как юридическая / небиологическая.', { exact: true }).isVisible(), true,
+      'Legal-parent inspector did not expose non-biological qualification');
+    assert.equal(await legalPanel.getByText('Мф 1:18–25', { exact: true }).isVisible(), true,
+      'Legal-parent inspector omitted reviewed virgin-birth evidence');
+    await page.keyboard.press('Escape');
+    await legalPanel.waitFor({ state: 'detached' });
+    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'joseph_nt',
+      'Legal-parent inspector did not restore focus to Joseph');
+  
+    await personSearch.fill('Иисус Христос');
+    await page.waitForFunction(() =>
+      document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-search-person') === 'jesus');
+    await waitForViewportStable(page);
+    await page.locator('.react-flow__node[data-id="jesus"]').click();
+  
+    const jesusDetails = page.getByRole('complementary', { name: 'Детали: Иисус Христос' });
+    await jesusDetails.waitFor({ state: 'visible' });
+    const childSideLegalRelation = jesusDetails.getByRole('button', {
+      name: 'Открыть основание связи: Иисус Христос — Иосиф (Обручник)',
+    });
+    await childSideLegalRelation.waitFor({ state: 'visible' });
+    assert.equal(await childSideLegalRelation.getByText('Юридический ребёнок', { exact: true }).isVisible(), true,
+      'Jesus detail drawer did not expose the reverse side of legal parentage');
+    if ((page.viewportSize()?.width ?? 999) <= 430) await childSideLegalRelation.tap();
+    else await childSideLegalRelation.click();
+  
+    const childSidePanel = page.getByRole('complementary', {
+      name: 'Основание связи: Иосиф (Обручник) — Иисус Христос',
+    });
+    await childSidePanel.waitFor({ state: 'visible' });
+    await page.keyboard.press('Escape');
+    await childSidePanel.waitFor({ state: 'detached' });
+    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'jesus',
+      'Relation inspector returned focus to relation.from instead of the person who opened it');
 }
 
 
@@ -955,7 +959,7 @@ async function assertHydrationFallback(browserName, browser, baseUrl) {
   }
 }
 
-async function runFocusInteractionsInFreshBrowser(browserName, browserType, baseUrl, viewport) {
+async function runIsolatedInteractionPhase(browserName, browserType, baseUrl, viewport, phaseName, assertion) {
   const touch = viewport.width <= 430;
   const browser = await browserType.launch({ headless: true });
   const context = await browser.newContext({
@@ -967,25 +971,44 @@ async function runFocusInteractionsInFreshBrowser(browserName, browserType, base
   });
   const page = await context.newPage();
   const pageErrors = [];
-  page.on('pageerror', (error) => pageErrors.push(`[focus-and-controls] ${String(error?.stack || error)}`));
+  page.on('pageerror', (error) => pageErrors.push(`[${phaseName}] ${String(error?.stack || error)}`));
 
   try {
     const response = await page.goto(`${baseUrl}/rodosloviye/`, { waitUntil: 'networkidle' });
     assert.ok(response?.ok(),
-      `${browserName} ${viewport.width}x${viewport.height}: isolated focus witness did not load successfully`);
+      `${browserName} ${viewport.width}x${viewport.height}: isolated ${phaseName} witness did not load successfully`);
     await page.locator('.react-flow__node .genealogy-node').first().waitFor({ state: 'attached' });
     await waitForViewportStable(page);
-    await assertFocusInteractions(page);
+    await assertion(page);
 
     const browserDiagnostics = pageErrors.filter(error =>
       browserName === 'webkit' && error.includes(KNOWN_WEBKIT_RESIZE_DIAGNOSTIC));
     const actionablePageErrors = pageErrors.filter(error => !browserDiagnostics.includes(error));
     assert.deepEqual(actionablePageErrors, [],
-      `${browserName} ${viewport.width}x${viewport.height}: isolated focus witness has uncaught page errors`);
+      `${browserName} ${viewport.width}x${viewport.height}: isolated ${phaseName} witness has uncaught page errors`);
   } finally {
     await context.close().catch(() => undefined);
     await browser.close().catch(() => undefined);
   }
+}
+
+async function runFocusInteractionsInFreshBrowser(browserName, browserType, baseUrl, viewport) {
+  await runIsolatedInteractionPhase(
+    browserName,
+    browserType,
+    baseUrl,
+    viewport,
+    'focus-and-controls',
+    assertFocusInteractions,
+  );
+  await runIsolatedInteractionPhase(
+    browserName,
+    browserType,
+    baseUrl,
+    viewport,
+    'legal-relations',
+    assertLegalRelationInteractions,
+  );
 }
 
 async function runViewport(browserName, browser, baseUrl, viewport, { skipFocus = false } = {}) {
