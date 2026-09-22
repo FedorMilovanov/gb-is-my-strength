@@ -18,6 +18,11 @@ const publishablePersons = readJson('data/genealogy/v2/publishable/persons.json'
 const relations = readJson('data/genealogy/v2/publishable/relations.json');
 const textualAssertions = readJson('data/genealogy/v2/publishable/textual-assertions.json');
 
+assert(publishablePersons.find(person => person.v1Id === 'joram')?.id === 'jehoram--1ki-22-50',
+  'Published Matthew Joram must identify the king of Judah, not the king of Israel');
+assert(publishablePersons.find(person => person.v1Id === 'abihud_mt')?.id === 'abiud--mat-1-13',
+  'Published Matthew Abiud must not identify the Benjaminite Abihud');
+
 const adapted = adaptPublishableGenealogy({
   persons: publishablePersons,
   relations,

@@ -337,7 +337,15 @@
   "kind": "parent",
   "from": "zerubbabel--1ch-3-19",
   "to": "abiud--mat-1-13",
-  "role": "father"
+  "role": "father",
+  "assertion": "explicit-genealogical-text",
+  "confidence": "certain-textual-genealogy",
+  "directScripture": true,
+  "editorialPosition": "text",
+  "refs": [
+   "Мф 1:12",
+   "Мф 1:13"
+  ]
  },
  {
   "kind": "parent",
@@ -3031,7 +3039,14 @@
   "kind": "parent",
   "from": "abiud--mat-1-13",
   "to": "eliakim--mat-1-13",
-  "role": "father"
+  "role": "father",
+  "assertion": "explicit-genealogical-text",
+  "confidence": "certain-textual-genealogy",
+  "directScripture": true,
+  "editorialPosition": "text",
+  "refs": [
+   "Мф 1:13"
+  ]
  },
  {
   "kind": "parent",
@@ -5812,7 +5827,14 @@
   "kind": "parent",
   "from": "jehoshaphat--1ki-15-24",
   "to": "jehoram--1ki-22-50",
-  "role": "father"
+  "role": "father",
+  "assertion": "explicit-genealogical-text",
+  "confidence": "certain-textual-genealogy",
+  "directScripture": true,
+  "editorialPosition": "text",
+  "refs": [
+   "Мф 1:8"
+  ]
  },
  {
   "kind": "parent",

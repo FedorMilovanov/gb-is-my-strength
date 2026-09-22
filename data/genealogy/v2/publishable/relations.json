@@ -45,29 +45,6 @@
   },
   {
     "kind": "parent",
-    "from": "abihud--1ch-8-3",
-    "to": "eliakim--mat-1-13",
-    "role": "father",
-    "authority": "curated-v1-explicit-field",
-    "source": {
-      "childV1Id": "eliakim_mt",
-      "field": "father"
-    },
-    "evidence": {
-      "provenanceClass": "direct-scripture-qualified",
-      "refsStatus": "editorially-reviewed",
-      "assertion": "explicit-genealogical-text",
-      "confidence": "certain-textual-genealogy",
-      "directScripture": true,
-      "editorialPosition": "text",
-      "refs": [
-        "Мф 1:13"
-      ]
-    },
-    "note": "Matthew 1 directly states this genealogy step with 'begat'. This qualifies the textual genealogy assertion; it does not independently prove biological immediacy where Matthew compresses generations."
-  },
-  {
-    "kind": "parent",
     "from": "abijah--1ki-14-31",
     "to": "asa--1ki-15-8",
     "role": "father",
@@ -85,6 +62,29 @@
       "editorialPosition": "text",
       "refs": [
         "Мф 1:7"
+      ]
+    },
+    "note": "Matthew 1 directly states this genealogy step with 'begat'. This qualifies the textual genealogy assertion; it does not independently prove biological immediacy where Matthew compresses generations."
+  },
+  {
+    "kind": "parent",
+    "from": "abiud--mat-1-13",
+    "to": "eliakim--mat-1-13",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "eliakim_mt",
+      "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "direct-scripture-qualified",
+      "refsStatus": "editorially-reviewed",
+      "assertion": "explicit-genealogical-text",
+      "confidence": "certain-textual-genealogy",
+      "directScripture": true,
+      "editorialPosition": "text",
+      "refs": [
+        "Мф 1:13"
       ]
     },
     "note": "Matthew 1 directly states this genealogy step with 'begat'. This qualifies the textual genealogy assertion; it does not independently prove biological immediacy where Matthew compresses generations."
@@ -1531,8 +1531,31 @@
   },
   {
     "kind": "parent",
+    "from": "jehoram--1ki-22-50",
+    "to": "uzziah--2ki-14-21",
+    "role": "father",
+    "authority": "curated-v1-explicit-field",
+    "source": {
+      "childV1Id": "uzziah",
+      "field": "father"
+    },
+    "evidence": {
+      "provenanceClass": "direct-scripture-qualified",
+      "refsStatus": "editorially-reviewed",
+      "assertion": "explicit-genealogical-text",
+      "confidence": "certain-textual-genealogy",
+      "directScripture": true,
+      "editorialPosition": "text",
+      "refs": [
+        "Мф 1:8"
+      ]
+    },
+    "note": "Matthew 1 directly states this genealogy step with 'begat'. This qualifies the textual genealogy assertion; it does not independently prove biological immediacy where Matthew compresses generations."
+  },
+  {
+    "kind": "parent",
     "from": "jehoshaphat--1ki-15-24",
-    "to": "joram--2ki-1-17",
+    "to": "jehoram--1ki-22-50",
     "role": "father",
     "authority": "curated-v1-explicit-field",
     "source": {
@@ -1701,29 +1724,6 @@
       "refsStatus": "relation-level-review-pending",
       "refs": []
     }
-  },
-  {
-    "kind": "parent",
-    "from": "joram--2ki-1-17",
-    "to": "uzziah--2ki-14-21",
-    "role": "father",
-    "authority": "curated-v1-explicit-field",
-    "source": {
-      "childV1Id": "uzziah",
-      "field": "father"
-    },
-    "evidence": {
-      "provenanceClass": "direct-scripture-qualified",
-      "refsStatus": "editorially-reviewed",
-      "assertion": "explicit-genealogical-text",
-      "confidence": "certain-textual-genealogy",
-      "directScripture": true,
-      "editorialPosition": "text",
-      "refs": [
-        "Мф 1:8"
-      ]
-    },
-    "note": "Matthew 1 directly states this genealogy step with 'begat'. This qualifies the textual genealogy assertion; it does not independently prove biological immediacy where Matthew compresses generations."
   },
   {
     "kind": "parent",
@@ -3285,7 +3285,7 @@
   {
     "kind": "parent",
     "from": "zerubbabel--1ch-3-19",
-    "to": "abihud--1ch-8-3",
+    "to": "abiud--mat-1-13",
     "role": "father",
     "authority": "curated-v1-explicit-field",
     "source": {

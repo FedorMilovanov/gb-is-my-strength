@@ -25,6 +25,10 @@ export const V1_EXCEPTIONS = Object.freeze({
   amminadab: 'Amminadab@Exo.6.23',
   abijah: 'Abijah@1Ki.14.31',
   jehoshaphat: 'Jehoshaphat@1Ki.15.24',
+  // Mat.1.8: son of Jehoshaphat (TIPNR includes Greek G2496), not Ahab's son.
+  joram: 'Jehoram@1Ki.22.50',
+  // Mat.1.13: son of Zerubbabel (G0010), not Bela's son in 1Ch.8.3 (H0031).
+  abihud_mt: 'Abiud@Mat.1.13',
   josiah: 'Josiah@1Ki.13.2',
   shelah: 'Shelah@Gen.10.24',
   mizraim: 'Egypt@Gen.10.6',

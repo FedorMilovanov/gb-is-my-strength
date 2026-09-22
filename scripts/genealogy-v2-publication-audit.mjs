@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto';
 import { PIPELINE_VERSION } from './genealogy-build/config.mjs';
 import { emittedPersonsAsTipnrMap, matchSkeleton } from './genealogy-build/lib/skeleton-matcher.mjs';
 import { buildMatthewLuke } from './genealogy-build/lib/layout-l1-lineages.mjs';
+import { assertRussianNameReviewState } from './genealogy-build/lib/ru-extract.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const V1 = path.join(ROOT, 'data', 'genealogy', 'genealogy.json');
@@ -26,6 +27,7 @@ const gospelSourceRaw = fs.readFileSync(GOSPEL_SOURCE, 'utf8');
 const gospelSourceSha256 = createHash('sha256').update(gospelSourceRaw).digest('hex');
 const gospelSource = JSON.parse(gospelSourceRaw);
 const persons = readJson(path.join(V2, 'persons.json'));
+assertRussianNameReviewState(persons);
 const edges = readJson(path.join(V2, 'edges.json'));
 const groups = readJson(path.join(V2, 'groups.json'));
 const views = readJson(path.join(V2, 'views.json'));

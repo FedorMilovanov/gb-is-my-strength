@@ -27,14 +27,14 @@
 
 | source | персон |
 |---|---:|
-| override (курировано) | 31 |
-| seed (v1-скелет) | 148 |
+| override (курировано) | 32 |
+| seed (v1-скелет) | 147 |
 | structural (безымянные узлы) | 52 |
-| pattern (стих) | 68 |
-| candidate (стих+транслит) | 2142 |
+| pattern (стих) | 67 |
+| candidate (стих+транслит) | 2143 |
 | translit (fallback) | 615 |
 | none | 0 |
-| **review-очередь** | **1217** |
+| **review-очередь** | **2825** |
 
 ## TIPNR-парсер
 
@@ -80,11 +80,11 @@
 
 ## v1-скелет: методы принятых mappings
 
-- exact-name: 82
+- exact-name: 81
 - source-verse: 26
-- explicit-exception: 27
+- explicit-exception: 29
 - source-chapter: 4
-- source-book: 15
+- source-book: 14
 
 ## v1-скелет: коллизии мэппинга (два v1-id → один TIPNR-ключ) — 0
 - нет

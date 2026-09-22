@@ -11,6 +11,16 @@
  * confidence; всё, кроме override/seed, подлежит редакторской сверке (review-очередь).
  */
 
+/** Heuristic token evidence is not independent person identity review. */
+export function assertRussianNameReviewState(persons) {
+  for (const person of persons) {
+    if (['candidate', 'pattern', 'translit', 'none'].includes(person.ru?.source) &&
+        person.ru.review !== true) {
+      throw new Error(`Unreviewed Russian-name extraction cannot be certified: ${person.id}`);
+    }
+  }
+}
+
 /** Слова с заглавной, которые именами не являются (частотный шум стихов). */
 const STOPWORDS = new Set([
   'И', 'А', 'Но', 'Не', 'Ни', 'Он', 'Она', 'Они', 'Оно', 'Их', 'Его', 'Ему', 'Ей',

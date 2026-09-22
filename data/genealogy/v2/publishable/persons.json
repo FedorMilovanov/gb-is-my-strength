@@ -2812,20 +2812,20 @@
     }
   },
   {
-    "id": "joram--2ki-1-17",
-    "key": "Joram@2Ki.1.17",
+    "id": "jehoram--1ki-22-50",
+    "key": "Jehoram@1Ki.22.50",
     "v1Id": "joram",
     "names": {
       "ru": "Иорам",
-      "en": "Joram",
+      "en": "Jehoram",
       "he": "יְהוֹרָם",
       "greek": null
     },
     "gender": "m",
     "ref": "4Цар 8; Мф 1:8",
     "firstRef": {
-      "osis": "2Ki.1.17",
-      "ru": "4Цар 1:17"
+      "osis": "1Ki.22.50",
+      "ru": "3Цар 22:50"
     },
     "lineage": "messianic-matthew",
     "role": "king",
@@ -2836,7 +2836,7 @@
     "identity": {
       "authority": "curated-v1-to-tipnr",
       "v1Id": "joram",
-      "tipnrKey": "Joram@2Ki.1.17",
+      "tipnrKey": "Jehoram@1Ki.22.50",
       "russianLabelReview": false
     }
   },
@@ -4218,20 +4218,20 @@
     }
   },
   {
-    "id": "abihud--1ch-8-3",
-    "key": "Abihud@1Ch.8.3",
+    "id": "abiud--mat-1-13",
+    "key": "Abiud@Mat.1.13",
     "v1Id": "abihud_mt",
     "names": {
       "ru": "Авиуд (Мф)",
-      "en": "Abihud",
+      "en": "Abiud",
       "he": null,
       "greek": null
     },
     "gender": "m",
     "ref": "Мф 1:13",
     "firstRef": {
-      "osis": "1Ch.8.3",
-      "ru": "1Пар 8:3"
+      "osis": "Mat.1.13",
+      "ru": "Мф 1:13"
     },
     "lineage": "messianic-matthew",
     "role": "person",
@@ -4242,7 +4242,7 @@
     "identity": {
       "authority": "curated-v1-to-tipnr",
       "v1Id": "abihud_mt",
-      "tipnrKey": "Abihud@1Ch.8.3",
+      "tipnrKey": "Abiud@Mat.1.13",
       "russianLabelReview": false
     }
   },
