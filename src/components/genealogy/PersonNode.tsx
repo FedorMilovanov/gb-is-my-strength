@@ -48,7 +48,9 @@ export function PersonCardContent({ data }: { data: any }) {
         overflow: 'hidden',
         opacity,
         filter,
-        transition: 'var(--genealogy-person-transition, opacity .3s ease, filter .3s ease, box-shadow .3s ease, border-color .3s ease, transform .15s ease)',
+        // Preserve grayscale, but switch it atomically: animating the filter
+        // across search/focus layer changes can crash WebKit's page process.
+        transition: 'var(--genealogy-person-transition, opacity .3s ease, box-shadow .3s ease, border-color .3s ease, transform .15s ease)',
         transform: data.highlighted ? 'scale(1.08)' : 'scale(1)',
         zIndex: focused ? 100 : 1,
       }}
