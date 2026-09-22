@@ -116,6 +116,10 @@ const VIEWPORTS = String(process.env.GENEALOGY_VIEWPORTS || '390x844,1440x1000')
   return { width: Number(match[1]), height: Number(match[2]) };
 });
 const MATRIX_WORKER = process.env.GENEALOGY_MATRIX_WORKER === '1';
+const MUTATION = process.env.GENEALOGY_CONTRACT_MUTATION || '';
+assert.ok(!MUTATION || MUTATION === 'legal-relation-touch-target',
+  `Unknown genealogy contract mutation: ${MUTATION}`);
+assert.ok(!MUTATION || MATRIX_WORKER, 'Mutations must run in a dedicated negative-witness worker');
 const SKIP_HYDRATION_FALLBACK = process.env.GENEALOGY_SKIP_HYDRATION_FALLBACK === '1';
 const WEBKIT_PROCESS_CHUNK_SIZE = Math.max(
   1,
@@ -124,6 +128,52 @@ const WEBKIT_PROCESS_CHUNK_SIZE = Math.max(
 
 function viewportToken(viewport) {
   return `${viewport.width}x${viewport.height}`;
+}
+
+async function installMutationFixture(page) {
+  if (!MUTATION) return;
+  // Test-only browser state: no source/dist file is changed. Keep the relation
+  // text visible so the existing touch-target assertion is the failing guard.
+  await page.addStyleTag({ content: `.genealogy-app .genealogy-person-relation {
+    min-height: 20px !important; height: 20px !important; max-height: 20px !important;
+    padding: 0 !important; box-sizing: border-box !important; overflow: visible !important;
+  }` });
+}
+
+function runNegativeWitnesses() {
+  const witnesses = [];
+  for (const browserName of browserNames) {
+    const workerDir = path.join(REPORT_DIR, 'negative-workers', browserName);
+    fs.rmSync(workerDir, { recursive: true, force: true });
+    const child = spawnSync(process.execPath, [process.argv[1]], {
+      cwd: ROOT,
+      env: {
+        ...process.env,
+        GENEALOGY_MATRIX_WORKER: '1',
+        GENEALOGY_CONTRACT_MUTATION: 'legal-relation-touch-target',
+        GENEALOGY_BROWSERS: browserName,
+        GENEALOGY_VIEWPORTS: viewportToken(VIEWPORTS[0]),
+        GENEALOGY_REPORT_DIR: workerDir,
+      },
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+    });
+    const reportPath = path.join(workerDir, 'result.json');
+    assert.ok(fs.existsSync(reportPath),
+      `${browserName}: negative witness produced no report; ${child.error || child.stderr}`);
+    const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+    // A browser crash, timeout, missing executable or earlier assertion failure
+    // must not count as proof that this particular guard rejected the mutation.
+    assert.equal(child.status, 1, `${browserName}: legal-relation mutation was not rejected`);
+    assert.equal(report.conclusion, 'failure');
+    assert.match(report.error, /Person relation evidence control is smaller than the 44px touch target/,
+      `${browserName}: negative witness failed for the wrong reason`);
+    witnesses.push({ browser: browserName, viewport: VIEWPORTS[0],
+      mutation: 'legal-relation-touch-target', conclusion: 'expected-rejection',
+      report: path.relative(REPORT_DIR, reportPath) });
+    console.log(`[genealogy] ${browserName}: legal-relation touch-target mutation rejected`);
+  }
+  return witnesses;
 }
 
 function copyWorkerArtifacts(workerDir) {
@@ -188,6 +238,13 @@ function runIsolatedWebKitMatrix() {
       `Isolated worker unexpectedly changed browser scope for ${chunkLabel}`);
     assert.equal(workerResult.results.length, chunk.length,
       `Isolated WebKit worker lost viewport results for ${chunkLabel}`);
+    for (const [index, result] of workerResult.results.entries()) {
+      assert.equal(result.browser, 'webkit');
+      assert.deepEqual(result.viewport, chunk[index], 'WebKit worker changed its requested viewport');
+      assert.deepEqual(result.interactionPhases?.map(phase => phase.phase),
+        ['focus-and-controls', 'legal-relations'],
+        `Isolated WebKit worker lost interaction phases for ${viewportToken(chunk[index])}`);
+    }
 
     hydrationFallbackResults.push(...(workerResult.hydrationFallbackResults || []));
     results.push(...workerResult.results);
@@ -981,6 +1038,7 @@ async function runIsolatedInteractionPhase(browserName, browserType, baseUrl, vi
     const response = await page.goto(`${baseUrl}/rodosloviye/`, { waitUntil: 'networkidle' });
     assert.ok(response?.ok(),
       `${browserName} ${viewport.width}x${viewport.height}: isolated ${phaseName} witness did not load successfully`);
+    await installMutationFixture(page);
     await page.locator('.react-flow__node .genealogy-node').first().waitFor({ state: 'attached' });
     await waitForViewportStable(page);
     await assertion(page);
@@ -1045,6 +1103,7 @@ async function runViewport(browserName, browser, baseUrl, viewport, { skipFocus 
   try {
     const response = await page.goto(`${baseUrl}/rodosloviye/`, { waitUntil: 'networkidle' });
     assert.ok(response?.ok(), `${browserName} ${viewport.width}x${viewport.height}: /rodosloviye/ did not load successfully`);
+    await installMutationFixture(page);
 
     phase = 'department-shell';
     await assertDepartmentShell(page, browserName, viewport);
@@ -1313,6 +1372,7 @@ async function main() {
     viewports: VIEWPORTS,
     hydrationFallbackResults,
     results,
+    negativeWitnesses: MATRIX_WORKER ? [] : runNegativeWitnesses(),
   };
   fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify(report, null, 2)}\n`);
   console.log('Genealogy browser contract: PASS');
