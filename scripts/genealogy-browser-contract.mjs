@@ -971,6 +971,10 @@ async function runIsolatedInteractionPhase(browserName, browserType, baseUrl, vi
   });
   const page = await context.newPage();
   const pageErrors = [];
+  const lifecycle = [];
+  page.on('crash', () => lifecycle.push('page-crash'));
+  page.on('close', () => lifecycle.push('page-close'));
+  browser.on('disconnected', () => lifecycle.push('browser-disconnected'));
   page.on('pageerror', (error) => pageErrors.push(`[${phaseName}] ${String(error?.stack || error)}`));
 
   try {
@@ -986,6 +990,18 @@ async function runIsolatedInteractionPhase(browserName, browserType, baseUrl, vi
     const actionablePageErrors = pageErrors.filter(error => !browserDiagnostics.includes(error));
     assert.deepEqual(actionablePageErrors, [],
       `${browserName} ${viewport.width}x${viewport.height}: isolated ${phaseName} witness has uncaught page errors`);
+    return { phase: phaseName, pageErrors, browserDiagnostics };
+  } catch (error) {
+    const diagnosticPath = path.join(REPORT_DIR,
+      `${browserName}-${viewportToken(viewport)}-${phaseName}-failure.json`);
+    const diagnostic = {
+      phase: phaseName, viewport, browser: browserName,
+      error: String(error?.stack || error), pageErrors,
+      lifecycle: [...lifecycle], pageClosed: page.isClosed(), browserConnected: browser.isConnected(),
+    };
+    fs.writeFileSync(diagnosticPath, `${JSON.stringify(diagnostic, null, 2)}\n`);
+    console.error(`[genealogy] ${phaseName} failure lifecycle: ${JSON.stringify(diagnostic)}`);
+    throw error;
   } finally {
     await context.close().catch(() => undefined);
     await browser.close().catch(() => undefined);
@@ -993,7 +1009,7 @@ async function runIsolatedInteractionPhase(browserName, browserType, baseUrl, vi
 }
 
 async function runFocusInteractionsInFreshBrowser(browserName, browserType, baseUrl, viewport) {
-  await runIsolatedInteractionPhase(
+  const focus = await runIsolatedInteractionPhase(
     browserName,
     browserType,
     baseUrl,
@@ -1001,7 +1017,7 @@ async function runFocusInteractionsInFreshBrowser(browserName, browserType, base
     'focus-and-controls',
     assertFocusInteractions,
   );
-  await runIsolatedInteractionPhase(
+  const legalRelations = await runIsolatedInteractionPhase(
     browserName,
     browserType,
     baseUrl,
@@ -1009,6 +1025,7 @@ async function runFocusInteractionsInFreshBrowser(browserName, browserType, base
     'legal-relations',
     assertLegalRelationInteractions,
   );
+  return [focus, legalRelations];
 }
 
 async function runViewport(browserName, browser, baseUrl, viewport, { skipFocus = false } = {}) {
@@ -1197,6 +1214,8 @@ async function runViewport(browserName, browser, baseUrl, viewport, { skipFocus 
     if (!skipFocus) {
       phase = 'focus-and-controls';
       await assertFocusInteractions(page);
+      phase = 'legal-relations';
+      await assertLegalRelationInteractions(page);
     }
     phase = 'final';
     const browserDiagnostics = pageErrors.filter(error => browserName === 'webkit' && error.includes(KNOWN_WEBKIT_RESIZE_DIAGNOSTIC));
@@ -1271,7 +1290,11 @@ async function main() {
 
       if (isolateWebKitFocus) {
         for (const viewport of VIEWPORTS) {
-          await runFocusInteractionsInFreshBrowser(browserName, browserType, server.baseUrl, viewport);
+          const interactionPhases = await runFocusInteractionsInFreshBrowser(browserName, browserType, server.baseUrl, viewport);
+          const result = results.find(item => item.browser === browserName &&
+            item.viewport.width === viewport.width && item.viewport.height === viewport.height);
+          assert.ok(result, `Missing core result for isolated ${browserName} ${viewportToken(viewport)}`);
+          result.interactionPhases = interactionPhases;
         }
       }
     }
