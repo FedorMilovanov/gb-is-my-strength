@@ -27,14 +27,14 @@
 
 | source | персон |
 |---|---:|
-| override (курировано) | 32 |
+| override (курировано) | 43 |
 | seed (v1-скелет) | 147 |
 | structural (безымянные узлы) | 52 |
-| pattern (стих) | 67 |
+| pattern (стих) | 56 |
 | candidate (стих+транслит) | 2143 |
 | translit (fallback) | 615 |
 | none | 0 |
-| **review-очередь** | **2825** |
+| **review-очередь** | **2814** |
 
 ## TIPNR-парсер
 
