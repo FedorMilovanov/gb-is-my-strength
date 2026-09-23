@@ -22,6 +22,19 @@
     '.footnote-popup', '[aria-hidden="true"]', '[data-no-speech]',
   ].join(',');
 
+  // TTS outcome telemetry (Metrika): mirrors the legacy reportTtsOutcome /
+  // reportTtsIssue pair. v2 owns all playback, so the legacy pings went
+  // silent and the Vosk-vs-WebSpeech split went blind again — the exact
+  // outage-invisibility the legacy comments warn about. Same counter,
+  // same goal names, fire-and-forget.
+  const TTS_YM_ID = 108353327;
+  function reportTtsOutcome(engine) {
+    try { window.ym && window.ym(TTS_YM_ID, 'reachGoal', 'tts_engine_selected', { engine }); } catch {}
+  }
+  function reportTtsIssue(reason) {
+    try { window.ym && window.ym(TTS_YM_ID, 'reachGoal', 'vosk_tts_failed', { reason }); } catch {}
+  }
+
   const state = {
     phase: 'idle',
     parts: [],
@@ -45,6 +58,7 @@
     engineScriptPromise: null,
     warmPromise: null,
     lastError: null,
+    outcomeReported: false,
   };
 
   function clamp(value, min, max) {
@@ -279,7 +293,10 @@
         });
       })
       .catch((error) => {
-        if (!error?.userCancelled) console.warn('[GBReaderTTS] Vosk warm-up failed; system voice remains available', error);
+        if (!error?.userCancelled) {
+          console.warn('[GBReaderTTS] Vosk warm-up failed; system voice remains available', error);
+          reportTtsIssue('warmup: ' + (error?.message || error));
+        }
         return null;
       })
       .finally(() => { state.warmPromise = null; });
@@ -313,6 +330,10 @@
       const audio = findVoskAudio();
       if (audio && /^blob:/.test(audio.currentSrc || audio.src || '')) {
         state.voskAudio = audio;
+        if (!state.outcomeReported) {
+          state.outcomeReported = true;
+          reportTtsOutcome('vosk');
+        }
         if (state.pausedDuringStart || state.phase === 'paused') {
           try { audio.pause(); } catch {}
           setPhase('paused');
@@ -370,12 +391,13 @@
     clearProgressLoop();
     state.lastError = error instanceof Error ? error.message : String(error || 'unknown error');
     console.error('[GBReaderTTS] playback failed', error);
+    if (state.engine === 'vosk') reportTtsIssue('chunk_playback: ' + state.lastError);
     if (state.engine === 'vosk' && window.speechSynthesis && window.SpeechSynthesisUtterance) {
       state.engine = 'webspeech';
       state.voskHandle = null;
       state.voskAudio = null;
       state.voskSynthesisProgress = 0;
-      speakCurrent();
+      speakCurrent('webspeech');
       return;
     }
     setPhase('error');
@@ -387,6 +409,11 @@
     utterance.rate = state.rate;
     utterance.pitch = 1;
     if (state.voice) utterance.voice = state.voice;
+    utterance.onstart = () => {
+      if (operation !== state.token || state.outcomeReported) return;
+      state.outcomeReported = true;
+      reportTtsOutcome('webspeech');
+    };
     utterance.onboundary = (event) => {
       if (operation !== state.token) return;
       const charIndex = Number(event.charIndex);
@@ -443,7 +470,7 @@
     watchVoskProgress(operation);
   }
 
-  function speakCurrent() {
+  function speakCurrent(engineOverride) {
     if (state.phase === 'paused') return;
     const part = currentPart();
     if (!part) {
@@ -459,7 +486,7 @@
     const operation = ++state.token;
     const baseOffset = part.text.length - text.length;
     state.offset = baseOffset;
-    state.engine = selectEngine();
+    state.engine = engineOverride || selectEngine();
     if (state.engine === 'webspeech') speakWeb(operation, text, baseOffset);
     else speakVosk(operation, text);
   }
@@ -472,6 +499,7 @@
     state.completedChars = 0;
     state.totalChars = 0;
     state.lastError = null;
+    state.outcomeReported = false;
     state.pausedDuringStart = false;
     state.voskSynthesisProgress = 0;
     setProgress(0);
@@ -572,6 +600,8 @@
   }
 
   function toggle() {
+    // Dead branch: nothing in dist defines window.GBAudio — kept for a
+    // hypothetical external engine; the legacy caller agrees (same check).
     if (window.GBAudio?.toggle) {
       window.GBAudio.toggle();
       return;

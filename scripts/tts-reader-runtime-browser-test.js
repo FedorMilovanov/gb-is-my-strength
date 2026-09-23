@@ -41,12 +41,18 @@ function startServer() {
 async function installWebSpeech(context) {
   await context.addInitScript(() => {
     window.__speechProbe = { speaks: [], cancels: 0, pauses: 0, resumes: 0, active: null };
+    window.__ymProbe = [];
+    window.ym = (id, method, goal, payload) => window.__ymProbe.push({ id, method, goal, payload });
     class Utterance {
       constructor(text) { this.text = String(text); this.rate = 1; this.lang = ''; this.onboundary = null; this.onend = null; this.onerror = null; }
     }
     const speech = {
       getVoices: () => [{ name: 'Fixture Russian', lang: 'ru-RU', localService: true }],
-      speak: (utterance) => { window.__speechProbe.active = utterance; window.__speechProbe.speaks.push({ text: utterance.text, rate: utterance.rate }); },
+      speak: (utterance) => {
+        window.__speechProbe.active = utterance;
+        window.__speechProbe.speaks.push({ text: utterance.text, rate: utterance.rate });
+        queueMicrotask(() => utterance.onstart?.());
+      },
       cancel: () => { window.__speechProbe.cancels += 1; window.__speechProbe.active = null; },
       pause: () => { window.__speechProbe.pauses += 1; },
       resume: () => { window.__speechProbe.resumes += 1; },
@@ -182,6 +188,43 @@ async function newWebPage(browser, origin, viewport = { width: 1280, height: 760
         assert.ok(progress > 0, 'worker synthesis progress did not reach the PLAY ring');
         await page.evaluate(() => dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true })));
         assert.equal(await page.evaluate(() => window.__voskProbe.cancels), 1, 'pagehide did not cancel the active worker job');
+      } finally { await context.close(); }
+    }
+
+    {
+      const context = await browser.newContext({ viewport: { width: 1280, height: 760 } });
+      await installWebSpeech(context);
+      await context.addInitScript(() => {
+        window.VoskTTSEngine = {
+          version: 2,
+          isSupported: () => true,
+          isReady: () => true,
+          ensureLoaded: () => Promise.resolve(),
+          retryLoading: () => Promise.resolve(),
+          speak: (_text, _rate, _speaker, _onEnd, onError) => {
+            const handle = { engine: 'vosk', id: 991, cancelled: false };
+            setTimeout(() => onError(new Error('fixture Vosk failure before audio')), 0);
+            return handle;
+          },
+          cancel: () => {},
+        };
+      });
+      const page = await context.newPage();
+      try {
+        await page.goto(origin, { waitUntil: 'domcontentloaded' });
+        await page.waitForFunction(() => window.GBReaderTTS?.version === 2);
+        await page.locator('[data-fc-action="play"]').click();
+        await page.waitForFunction(() => window.__speechProbe.speaks.length === 1);
+        await page.waitForTimeout(30);
+        const telemetry = await page.evaluate(() => window.__ymProbe.slice());
+        const engines = telemetry
+          .filter((row) => row.goal === 'tts_engine_selected')
+          .map((row) => row.payload?.engine);
+        assert.deepEqual(engines, ['webspeech'], 'failed Vosk attempt was incorrectly reported as selected engine');
+        assert.ok(
+          telemetry.some((row) => row.goal === 'vosk_tts_failed' && String(row.payload?.reason || '').includes('chunk_playback')),
+          'Vosk failure telemetry missing before WebSpeech fallback'
+        );
       } finally { await context.close(); }
     }
 
