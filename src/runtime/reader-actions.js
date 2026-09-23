@@ -103,6 +103,36 @@
     area.remove();
   }
 
+  let toastTimer = 0;
+
+  // B15: visible feedback for share/copy. Reuses the .gb-fc-toast surface
+  // contract (same markup the engine's getToast() creates), so whichever
+  // module shows first owns the element and the other reuses it.
+  function notify(message, showCheck) {
+    let toast = document.querySelector('.gb-fc-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'gb-fc-toast';
+      toast.setAttribute('aria-live', 'polite');
+      toast.setAttribute('aria-atomic', 'true');
+      toast.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span></span>';
+      document.body.appendChild(toast);
+    }
+    const label = toast.querySelector('span');
+    if (label) label.textContent = message;
+    const icon = toast.querySelector('svg');
+    if (icon) icon.style.display = showCheck ? '' : 'none';
+    toast.classList.add('is-open');
+    // Same shared token as the engine's showToast() — a stale timeout must
+    // not hide the other module's fresh message.
+    window.clearTimeout(toastTimer);
+    window.__gbFcToastToken = (window.__gbFcToastToken || 0) + 1;
+    const shownToken = window.__gbFcToastToken;
+    toastTimer = window.setTimeout(function () {
+      if (window.__gbFcToastToken === shownToken) toast.classList.remove('is-open');
+    }, 2200);
+  }
+
   async function share(trigger) {
     const payload = getSharePayload();
     try {
@@ -112,10 +142,12 @@
       } else {
         await copyText(payload.url);
         trigger.dataset.shareStatus = 'copied';
+        notify('Ссылка скопирована', true);
       }
     } catch (error) {
       if (error?.name !== 'AbortError') {
         trigger.dataset.shareStatus = 'failed';
+        notify('Не удалось поделиться', false);
         console.error('[GBReaderActions] share failed', error);
       }
     }

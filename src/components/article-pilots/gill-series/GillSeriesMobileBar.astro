@@ -267,6 +267,9 @@ const page = config.pages[pageId];
     initGillMobileTopBarAutoHide();
 
     const backBtn = document.getElementById('mobBackBtn');
+    // B14: DEAD — reader-actions.js capture-handles [data-home-href] (goBack:
+    // same-origin history.back(), else the fallback href) before this bubble
+    // listener runs. Kept for documentation; extend goBack() there, not here.
     if (backBtn) backBtn.addEventListener('click', () => {
       const href = (backBtn as HTMLElement).dataset.homeHref;
       if (href) window.location.href = href;

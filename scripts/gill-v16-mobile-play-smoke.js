@@ -496,6 +496,81 @@ async function testPlayState(browser, mobile) {
   await ctx.close();
 }
 
+async function testMobileTargetGeometry(browser) {
+  const controllerSource = fs.readFileSync(path.join(ROOT, 'js', 'floating-cluster-controller.js'), 'utf8');
+  assert(
+    controllerSource.includes('function cancelGesture() { dead = true; resetVisualState(); }'),
+    'swipe FSM: timeout has a terminal cancelled state'
+  );
+  assert(
+    !controllerSource.includes('dead = true; reset(); return;'),
+    'swipe FSM: timeout never resets dead=false in the same move'
+  );
+
+  const ctx = await browser.newContext({
+    viewport: { width: 320, height: 740 },
+    deviceScaleFactor: 1,
+    isMobile: true,
+    hasTouch: true,
+  });
+  const page = await ctx.newPage();
+  try {
+    await page.goto(BASE + INTRO, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(700);
+    const geometry = await page.evaluate(() => {
+      const selectors = [
+        '#mobBackBtn',
+        '#mobHomeBtn',
+        '.mobile-top-bar [data-fc-action="play"]',
+        '.mobile-top-bar [data-fc-action="save"]',
+        '#mobLearningBtn',
+        '#mobPartTocBtn',
+        '.mobile-bottom-bar [data-fc-action="theme"]',
+        '#mobSettingsBtn',
+        '.mobile-bottom-bar [data-action="share"]',
+      ];
+      const rows = selectors.map((selector) => {
+        const el = document.querySelector(selector);
+        if (!el) return { selector, missing: true };
+        const r = el.getBoundingClientRect();
+        const cs = getComputedStyle(el);
+        return {
+          selector,
+          missing: false,
+          width: r.width,
+          height: r.height,
+          left: r.left,
+          right: r.right,
+          top: r.top,
+          bottom: r.bottom,
+          visible: cs.display !== 'none' && cs.visibility !== 'hidden' && cs.pointerEvents !== 'none',
+        };
+      }).filter((row) => row.missing || row.visible);
+      const overlaps = [];
+      for (let i = 0; i < rows.length; i += 1) {
+        for (let j = i + 1; j < rows.length; j += 1) {
+          const a = rows[i], b = rows[j];
+          if (a.missing || b.missing) continue;
+          const w = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+          const h = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+          if (w > 0.5 && h > 0.5) overlaps.push({ a: a.selector, b: b.selector, area: w * h });
+        }
+      }
+      return { rows, overlaps, xOverflow: document.documentElement.scrollWidth - innerWidth };
+    });
+    assert(geometry.rows.every((row) => !row.missing), 'mobile 320: canonical controls are present', JSON.stringify(geometry.rows));
+    assert(
+      geometry.rows.filter((row) => !row.missing).every((row) => row.width >= 43.5 && row.height >= 43.5),
+      'mobile 320: primary interactive targets are physical 44px boxes',
+      JSON.stringify(geometry.rows)
+    );
+    assert(geometry.overlaps.length === 0, 'mobile 320: primary hit boxes do not overlap', JSON.stringify(geometry.overlaps));
+    assert(geometry.xOverflow <= 1, 'mobile 320: target hardening creates no horizontal overflow', String(geometry.xOverflow));
+  } finally {
+    await ctx.close();
+  }
+}
+
 function writeReport() {
   fs.writeFileSync(path.join(OUT, 'summary.json'), JSON.stringify(proof, null, 2));
   const shotList = proof.mobileOverlays.flatMap(p => p.screenshots.map(s => `- ${path.relative(ROOT, s)}`)).join('\n');
@@ -520,6 +595,7 @@ function writeReport() {
     await testSeriesModel(browser);
     await testMobileOverlays(browser);
     await testMobPartTocBtn(browser);
+    await testMobileTargetGeometry(browser);
     await testPlayState(browser, false);
     await testPlayState(browser, true);
   } finally {
