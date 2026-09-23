@@ -766,8 +766,10 @@ async function assertFocusInteractions(page) {
   const relationCloseBox = await relationPanel.getByRole('button', { name: 'Закрыть сведения о связи' }).boundingBox();
   assert.ok(relationCloseBox && relationCloseBox.width >= MIN_TOUCH_TARGET && relationCloseBox.height >= MIN_TOUCH_TARGET,
     'Relationship inspector close control is too small');
-  assert.equal(await relationPanel.getByText('Ссылки к самой связи ещё не проверены', { exact: true }).isVisible(), true,
-    'Pending relation-level review status is not visible to the user');
+  assert.equal(await relationPanel.getByText('Редакторски проверено · прямой текст', { exact: true }).isVisible(), true,
+    'Reviewed Matthew relation status is not visible to the user');
+  assert.equal(await relationPanel.getByText('Мф 1:2', { exact: true }).isVisible(), true,
+    'Reviewed Abraham–Isaac relation omitted its exact source');
   assert.ok((await relationPanel.locator('text=Матфей').count()) + (await relationPanel.locator('text=Лука').count()) > 0,
     'Relationship inspector omitted Gospel textual adjacency context');
   assert.equal(await relationPanel.evaluate(node => node.scrollWidth <= node.clientWidth), true,
@@ -777,6 +779,29 @@ async function assertFocusInteractions(page) {
   assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'abram',
     'Relationship inspector did not restore focus to the source genealogy node');
 
+  // Preserve the pending-status browser witness after Abraham–Isaac is reviewed.
+  // Gospel adjacency alone does not certify the Adam–Seth family relation.
+  await page.getByRole('combobox', { name: 'Поиск по имени' }).fill('Сиф');
+  await page.waitForFunction(() =>
+    document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-search-person') === 'seth');
+  await waitForViewportStable(page);
+  const adamSethEdge = page.locator('[data-testid="rf__edge-adam->seth"] .react-flow__edge-interaction');
+  await adamSethEdge.waitFor({ state: 'visible' });
+  await adamSethEdge.click();
+  const pendingPanel = page.getByRole('complementary', { name: 'Основание связи: Адам — Сиф' });
+  await pendingPanel.waitFor({ state: 'visible' });
+  assert.equal(await pendingPanel.getByText('Ссылки к самой связи ещё не проверены', { exact: true }).isVisible(), true,
+    'Pending relation-level review status is not visible to the user');
+  assert.ok((await pendingPanel.locator('text=Лука').count()) > 0,
+    'Pending relation omitted its Gospel textual adjacency context');
+  assert.equal(await pendingPanel.getByText('Редакторски проверено · прямой текст', { exact: true }).count(), 0,
+    'Pending relation falsely claims reviewed direct-text evidence');
+  assert.equal(await pendingPanel.evaluate(node => node.scrollWidth <= node.clientWidth), true,
+    'Pending relationship inspector overflows horizontally');
+  await page.keyboard.press('Escape');
+  await pendingPanel.waitFor({ state: 'detached' });
+  assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'adam',
+    'Pending relation inspector did not restore focus to its source person');
 
 }
 

@@ -27457,6 +27457,18 @@
    "yahPrefix": true,
    "source": "auto-skeleton",
    "review": true
+  },
+  "skeleton": {
+   "v1Id": "joram",
+   "sourceRef": "4Цар 8; Мф 1:8",
+   "sourceGender": "m",
+   "lineage": "messianic-matthew",
+   "era": "kings",
+   "role": "king",
+   "significance": "Царь Иудеи. Мф 1 пропускает 3 царей (Ахазия, Иоас, Амасия).",
+   "chronology": null,
+   "disputed": null,
+   "he": "יְהוֹרָם"
   }
  },
  {
@@ -27492,10 +27504,10 @@
   "en": "Joram",
   "ru": {
    "name": "Иорам",
-   "source": "seed",
+   "source": "candidate",
    "confidence": 1,
-   "review": false,
-   "verseRef": null
+   "review": true,
+   "verseRef": "2Ki.1.17"
   },
   "gender": "m",
   "firstRef": {
@@ -27517,19 +27529,7 @@
     "original": "יְהוֹרָם",
     "en": "Jehoram; Joram"
    }
-  ],
-  "skeleton": {
-   "v1Id": "joram",
-   "sourceRef": "4Цар 8; Мф 1:8",
-   "sourceGender": "m",
-   "lineage": "messianic-matthew",
-   "era": "kings",
-   "role": "king",
-   "significance": "Царь Иудеи. Мф 1 пропускает 3 царей (Ахазия, Иоас, Амасия).",
-   "chronology": null,
-   "disputed": null,
-   "he": "יְהוֹרָם"
-  }
+  ]
  },
  {
   "id": "mesha--2ki-3-4",
@@ -35862,11 +35862,11 @@
   "key": "Hepher@1Ch.4.6",
   "en": "Hepher",
   "ru": {
-   "name": "Езер",
-   "source": "candidate",
-   "confidence": 0.69,
-   "review": true,
-   "verseRef": "1Ch.4.4"
+   "name": "Хефер",
+   "source": "override",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -44465,11 +44465,11 @@
   "key": "Abihud@1Ch.8.3",
   "en": "Abihud",
   "ru": {
-   "name": "Авиуд (Мф)",
-   "source": "seed",
+   "name": "Авиуд",
+   "source": "candidate",
    "confidence": 1,
-   "review": false,
-   "verseRef": null
+   "review": true,
+   "verseRef": "1Ch.8.3"
   },
   "gender": "m",
   "firstRef": {
@@ -44485,19 +44485,7 @@
     "original": "אֲבִיהוּד",
     "en": "Abihud"
    }
-  ],
-  "skeleton": {
-   "v1Id": "abihud_mt",
-   "sourceRef": "Мф 1:13",
-   "sourceGender": "m",
-   "lineage": "messianic-matthew",
-   "era": "exile",
-   "role": "person",
-   "significance": "В Матфеевой линии.",
-   "chronology": null,
-   "disputed": null,
-   "he": null
-  }
+  ]
  },
  {
   "id": "addar--1ch-8-3",
@@ -84246,12 +84234,11 @@
   "key": "Abiud@Mat.1.13",
   "en": "Abiud",
   "ru": {
-   "name": "Авиуд",
-   "source": "pattern",
+   "name": "Авиуд (Мф)",
+   "source": "seed",
    "confidence": 1,
-   "review": true,
-   "verseRef": "Mat.1.13",
-   "verseForm": "Авиуда"
+   "review": false,
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -84267,7 +84254,19 @@
     "original": "Ἀβιούδ",
     "en": "Abiud"
    }
-  ]
+  ],
+  "skeleton": {
+   "v1Id": "abihud_mt",
+   "sourceRef": "Мф 1:13",
+   "sourceGender": "m",
+   "lineage": "messianic-matthew",
+   "era": "exile",
+   "role": "person",
+   "significance": "В Матфеевой линии.",
+   "chronology": null,
+   "disputed": null,
+   "he": null
+  }
  },
  {
   "id": "azor--mat-1-13",

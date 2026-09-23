@@ -191,8 +191,8 @@
     },
     {
      "occurrenceId": "matthew-1-8-2",
-     "personId": "joram--2ki-1-17",
-     "personKey": "Joram@2Ki.1.17",
+     "personId": "jehoram--1ki-22-50",
+     "personKey": "Jehoram@1Ki.22.50",
      "sourcePersonId": "joram",
      "name": "Иорам",
      "sourceForm": "Иорама",
@@ -299,8 +299,8 @@
     },
     {
      "occurrenceId": "matthew-1-13-1",
-     "personId": "abihud--1ch-8-3",
-     "personKey": "Abihud@1Ch.8.3",
+     "personId": "abiud--mat-1-13",
+     "personKey": "Abiud@Mat.1.13",
      "sourcePersonId": "abihud_mt",
      "name": "Авиуд",
      "sourceForm": "Авиуда",

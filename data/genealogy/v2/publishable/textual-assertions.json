@@ -29,8 +29,8 @@
         "to": "isaac--gen-17-19",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -55,8 +55,8 @@
         "to": "israel--gen-25-26",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -81,8 +81,8 @@
         "to": "judah--gen-29-35",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -107,8 +107,8 @@
         "to": "perez--gen-38-29",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -133,8 +133,8 @@
         "to": "hezron--gen-46-12",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -159,8 +159,8 @@
         "to": "ram--rut-4-19",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -185,8 +185,8 @@
         "to": "amminadab--exo-6-23",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -211,8 +211,8 @@
         "to": "nahshon--exo-6-23",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -237,8 +237,8 @@
         "to": "salmon--rut-4-20",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -263,8 +263,8 @@
         "to": "boaz--rut-2-1",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -289,8 +289,8 @@
         "to": "obed--rut-4-17",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -315,8 +315,8 @@
         "to": "jesse--rut-4-17",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -341,8 +341,8 @@
         "to": "david--rut-4-17",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -367,8 +367,8 @@
         "to": "solomon--2sa-5-14",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -393,8 +393,8 @@
         "to": "rehoboam--1ki-11-43",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -419,8 +419,8 @@
         "to": "abijah--1ki-14-31",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -445,8 +445,8 @@
         "to": "asa--1ki-15-8",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -471,8 +471,8 @@
         "to": "jehoshaphat--1ki-15-24",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -488,17 +488,17 @@
         "toRef": "Мф 1:8"
       },
       "fromPersonId": "jehoshaphat--1ki-15-24",
-      "toPersonId": "joram--2ki-1-17",
+      "toPersonId": "jehoram--1ki-22-50",
       "relationCrosswalk": {
         "status": "matched-publishable-relation",
-        "relationKey": "parent:jehoshaphat--1ki-15-24->joram--2ki-1-17:father",
+        "relationKey": "parent:jehoshaphat--1ki-15-24->jehoram--1ki-22-50:father",
         "kind": "parent",
         "from": "jehoshaphat--1ki-15-24",
-        "to": "joram--2ki-1-17",
+        "to": "jehoram--1ki-22-50",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -513,18 +513,18 @@
         "fromRef": "Мф 1:8",
         "toRef": "Мф 1:8"
       },
-      "fromPersonId": "joram--2ki-1-17",
+      "fromPersonId": "jehoram--1ki-22-50",
       "toPersonId": "uzziah--2ki-14-21",
       "relationCrosswalk": {
         "status": "matched-publishable-relation",
-        "relationKey": "parent:joram--2ki-1-17->uzziah--2ki-14-21:father",
+        "relationKey": "parent:jehoram--1ki-22-50->uzziah--2ki-14-21:father",
         "kind": "parent",
-        "from": "joram--2ki-1-17",
+        "from": "jehoram--1ki-22-50",
         "to": "uzziah--2ki-14-21",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -549,8 +549,8 @@
         "to": "jotham--2ki-15-5",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -575,8 +575,8 @@
         "to": "ahaz--2ki-15-38",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -601,8 +601,8 @@
         "to": "hezekiah--2ki-16-20",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -627,8 +627,8 @@
         "to": "manasseh--2ki-20-21",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -653,8 +653,8 @@
         "to": "amon--2ki-21-18",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -679,8 +679,8 @@
         "to": "josiah--1ki-13-2",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -705,8 +705,8 @@
         "to": "jehoiakim--2ki-23-34",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -731,8 +731,8 @@
         "to": "jehoiachin--2ki-24-6",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -757,8 +757,8 @@
         "to": "shealtiel--1ch-3-17",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -783,8 +783,8 @@
         "to": "zerubbabel--1ch-3-19",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -800,17 +800,17 @@
         "toRef": "Мф 1:13"
       },
       "fromPersonId": "zerubbabel--1ch-3-19",
-      "toPersonId": "abihud--1ch-8-3",
+      "toPersonId": "abiud--mat-1-13",
       "relationCrosswalk": {
         "status": "matched-publishable-relation",
-        "relationKey": "parent:zerubbabel--1ch-3-19->abihud--1ch-8-3:father",
+        "relationKey": "parent:zerubbabel--1ch-3-19->abiud--mat-1-13:father",
         "kind": "parent",
         "from": "zerubbabel--1ch-3-19",
-        "to": "abihud--1ch-8-3",
+        "to": "abiud--mat-1-13",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -825,18 +825,18 @@
         "fromRef": "Мф 1:13",
         "toRef": "Мф 1:13"
       },
-      "fromPersonId": "abihud--1ch-8-3",
+      "fromPersonId": "abiud--mat-1-13",
       "toPersonId": "eliakim--mat-1-13",
       "relationCrosswalk": {
         "status": "matched-publishable-relation",
-        "relationKey": "parent:abihud--1ch-8-3->eliakim--mat-1-13:father",
+        "relationKey": "parent:abiud--mat-1-13->eliakim--mat-1-13:father",
         "kind": "parent",
-        "from": "abihud--1ch-8-3",
+        "from": "abiud--mat-1-13",
         "to": "eliakim--mat-1-13",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -861,8 +861,8 @@
         "to": "azor--mat-1-13",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -887,8 +887,8 @@
         "to": "zadok--mat-1-14",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -913,8 +913,8 @@
         "to": "achim--mat-1-14",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -939,8 +939,8 @@
         "to": "eliud--mat-1-14",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -965,8 +965,8 @@
         "to": "eleazar--mat-1-15",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -991,8 +991,8 @@
         "to": "matthan--mat-1-15",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -1017,8 +1017,8 @@
         "to": "jacob--mat-1-15",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -1043,8 +1043,8 @@
         "to": "joseph--mat-1-16",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -2187,8 +2187,8 @@
         "to": "david--rut-4-17",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -2213,8 +2213,8 @@
         "to": "jesse--rut-4-17",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -2239,8 +2239,8 @@
         "to": "obed--rut-4-17",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -2265,8 +2265,8 @@
         "to": "boaz--rut-2-1",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -2291,8 +2291,8 @@
         "to": "salmon--rut-4-20",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -2317,8 +2317,8 @@
         "to": "nahshon--exo-6-23",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -2343,8 +2343,8 @@
         "to": "amminadab--exo-6-23",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -2369,8 +2369,8 @@
         "to": "ram--rut-4-19",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -2395,8 +2395,8 @@
         "to": "hezron--gen-46-12",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -2421,8 +2421,8 @@
         "to": "perez--gen-38-29",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -2447,8 +2447,8 @@
         "to": "judah--gen-29-35",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -2473,8 +2473,8 @@
         "to": "israel--gen-25-26",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {
@@ -2499,8 +2499,8 @@
         "to": "isaac--gen-17-19",
         "role": "father",
         "authority": "curated-v1-explicit-field",
-        "evidenceStatus": "relation-level-review-pending",
-        "directScripture": null
+        "evidenceStatus": "editorially-reviewed",
+        "directScripture": true
       }
     },
     {

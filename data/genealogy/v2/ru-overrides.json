@@ -32,6 +32,17 @@
     "jehoram--1ki-22-50": "Иорам",
     "joash--2ki-11-2": "Иоас",
     "jehoiachin--2ki-24-6": "Иехония",
-    "pedaiah--1ch-3-18": "Федаия"
+    "pedaiah--1ch-3-18": "Федаия",
+    "hepher--1ch-4-6": "Хефер"
+  },
+  "_evidence": {
+    "hepher--1ch-4-6": {
+      "identity": "Hepher@1Ch.4.6",
+      "source": "pinned Synodal 1Ch.4.6",
+      "sourceSha256": "ac900cd6675e524f728edcf965646bbd9cf791506a67e24e78bb8c7ff4d7c923",
+      "verseForm": "Хефера",
+      "reviewedCanonical": "Хефер",
+      "note": "Son of Naarah in 1Ch.4.6; Езер in 1Ch.4.4 is a different person. Reviewed 2026-09-22."
+    }
   }
 }

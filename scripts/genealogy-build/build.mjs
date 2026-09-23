@@ -15,7 +15,7 @@ import path from 'node:path';
 import { PATHS, SOURCES, PIPELINE_VERSION, HARD_INVARIANTS } from './config.mjs';
 import { SynodalText, refToRu, parseRef } from './lib/refs.mjs';
 import { parseTipnr, resolveRelations, parseUnifiedRef, parseRelField } from './lib/tipnr-parser.mjs';
-import { extractRuName, translitEnRu, similarity, normalizeRuCandidate, structuralRuLabel } from './lib/ru-extract.mjs';
+import { extractRuName, translitEnRu, similarity, normalizeRuCandidate, structuralRuLabel, assertRussianNameReviewState } from './lib/ru-extract.mjs';
 import { computeClusters, nationsLayer } from './lib/clusters.mjs';
 import { traceSpine } from './lib/spine.mjs';
 import { buildLayoutL0 } from './lib/layout-l0.mjs';
@@ -210,6 +210,8 @@ async function runAll() {
       } : undefined,
     });
   }
+
+  assertRussianNameReviewState(outPersons);
 
   // 6. Рёбра
   const keyToId = new Map([...persons.values()].map(r => [r.key, personId(r)]));
@@ -744,6 +746,47 @@ async function runTests() {
   ]);
   assert(autoReviewed?.review === true && (autoReviewed?.confidence ?? 0) <= 1,
     'auto-extracted имя остаётся в editorial review и confidence ограничен 1');
+
+  // Real counterexample from pinned Synodal 1Ch.4.4/6: a nearby token can
+  // look plausible while naming another person. Never turn this into approval.
+  const hepherCandidate = extractRuName('Hepher', [
+    { ref: '1Ch.4.6', offset: 0, text: 'И родила ему Наара Ахузама, Хефера, Фимни и Ахашфари; это сыновьяНаары.' },
+    { ref: '1Ch.4.4', offset: -2, text: 'Пенуел, отец Гедора, и Езер, отец Хуша. Вот сыновья Хура, первенца Ефрафы, отца Вифлеема.' },
+  ]);
+  assert(hepherCandidate?.review === true, 'Hepher extraction must remain pending');
+  const wrongHepher = { id: 'hepher--1ch-4-6', ru: {
+    name: 'Езер', source: 'candidate', review: false, verseRef: '1Ch.4.4',
+    reviewProof: 'synodal-local-exact',
+  } };
+  let rejectedHepher = false;
+  try { assertRussianNameReviewState([wrongHepher]); }
+  catch (error) { rejectedHepher = /Unreviewed Russian-name extraction/.test(error.message); }
+  assert(rejectedHepher, 'Wrong-person token proof must fail the corpus admission guard');
+  assertRussianNameReviewState([
+    { ...wrongHepher, ru: { ...wrongHepher.ru, review: true } },
+    { id: wrongHepher.id, ru: { name: 'Хефер', source: 'override', review: false } },
+  ]);
+
+  const identityFixture = new Map([
+    ['Joram@2Ki.1.17', { key: 'Joram@2Ki.1.17', name: 'Joram', ref: '2Ki.1.17', type: 'Male' }],
+    ['Jehoram@1Ki.22.50', { key: 'Jehoram@1Ki.22.50', name: 'Jehoram', ref: '1Ki.22.50', type: 'Male' }],
+    ['Abihud@1Ch.8.3', { key: 'Abihud@1Ch.8.3', name: 'Abihud', ref: '1Ch.8.3', type: 'Male' }],
+    ['Abiud@Mat.1.13', { key: 'Abiud@Mat.1.13', name: 'Abiud', ref: 'Mat.1.13', type: 'Male' }],
+  ]);
+  const identitySeeds = [
+    { id: 'joram', name: { ru: 'Иорам' }, ref: '4Цар 8; Мф 1:8', gender: 'm' },
+    { id: 'abihud_mt', name: { ru: 'Авиуд (Мф)' }, ref: 'Мф 1:13', gender: 'm' },
+  ];
+  const identityMatches = matchSkeleton(identitySeeds, identityFixture);
+  assert(identityMatches.matches.get('joram') === 'Jehoram@1Ki.22.50',
+    'Matthew Joram must identify Jehoshaphat\'s son, not Ahab\'s son');
+  assert(identityMatches.matches.get('abihud_mt') === 'Abiud@Mat.1.13',
+    'Matthew Abiud must not identify Benjamin\'s Abihud');
+  identityFixture.delete('Jehoram@1Ki.22.50');
+  identityFixture.delete('Abiud@Mat.1.13');
+  const missingIdentities = matchSkeleton(identitySeeds, identityFixture);
+  assert(missingIdentities.matches.size === 0 && missingIdentities.unmatched.length === 2,
+    'Missing reviewed identities must fail closed instead of matching the remaining namesakes');
 
 
   const broadGenesisScope = v1PrimaryRefScope({ ref: 'Быт 29-30, 49' });

@@ -508,8 +508,8 @@
         },
         {
           "id": "joram",
-          "target": "Joram@2Ki.1.17",
-          "method": "source-book"
+          "target": "Jehoram@1Ki.22.50",
+          "method": "explicit-exception"
         },
         {
           "id": "uzziah",
@@ -748,8 +748,8 @@
         },
         {
           "id": "abihud_mt",
-          "target": "Abihud@1Ch.8.3",
-          "method": "exact-name"
+          "target": "Abiud@Mat.1.13",
+          "method": "explicit-exception"
         },
         {
           "id": "eliakim_mt",
