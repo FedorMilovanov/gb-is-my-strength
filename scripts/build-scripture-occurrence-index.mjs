@@ -244,6 +244,11 @@ export function nearestExplicitAnchor(source, offset, extension) {
   let match;
   let last = null;
   while ((match = tagPattern.exec(prefix))) {
+    // Only native HTML tags can guarantee a literal DOM id. A component's
+    // `id` prop (for example <LawsonSourceRef id="LAW-18" />) is a registry
+    // key, is not forwarded to the document, and may repeat many times per
+    // page, so it must never be projected as a dist anchor.
+    if (/^<[A-Z]/.test(match[0])) continue;
     const attribute = literalIdAttribute(match[0]);
     if (!attribute) continue;
     const value = attribute.value;

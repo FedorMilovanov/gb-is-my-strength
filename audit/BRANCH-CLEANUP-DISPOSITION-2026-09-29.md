@@ -523,3 +523,15 @@ git worktree add /tmp/wt-<branch> archive/stale-2026-09-30/<branch>   # либо
 Контроль на базовом коммите `d586aa6` (отдельный worktree): `build-scripture-occurrence-index --check` → «index is current», `rss-feed-normalizer --check` → «feed.xml exactly matches», `sitemap-policy-normalizer --check` → pass. То есть до моих изменений все три проекции были согласованы, а рассинхрон вносился именно новым маршрутом — и устранён штатными писателями.
 
 **Локально воспроизведены обе упавшие CI-цепочки целиком** (`search-manifest-policy` job → rss/sitemap `--check`; `route-registry-validators` job → surface:registry:check/test, sitemap/RSS/SEO/search-policy/audit-pro-source-corpus контракты, `audit-pro`) — все ✅, `audit-pro` 166/0.
+
+## Дополнение 2 к аддендуму 8 (scripture-якоря: генератор vs пропы компонентов)
+
+Dist-проверка scripture-контракта (`scripture-occurrence-index-contract.mjs --dist=dist`) после индексации Lawson вскрыла третий класс дефекта: индекс записывал якоря `LAW-08/18/19/24`, которых нет в собранной странице (`dist anchor missing`).
+
+**Причина:** `nearestExplicitAnchor()` (build-scripture-occurrence-index.mjs) считал якорем любой литеральный `id` в исходнике — включая **проп компонента** `<LawsonSourceRef id="LAW-18" />`. Но `LawsonSourceRef.astro` выводит `source.id` лишь текстом в поповере (и один id повторяется в статье до 6 раз), поэтому DOM-якоря не возникает. Проброс `id` в DOM был бы неверен: дубли id (LAW-19 ×6).
+
+**Проверка гипотезы по всему индексу:** из 419 уникальных якорей «компонентными» были ровно эти 4 (`^[A-Z]`); остальные 415 — реальные DOM-id (секции/заголовки), в т.ч. camelCase-ids из astro-источников.
+
+**Фикс (системный, `scripts/build-scripture-occurrence-index.mjs`):** теги компонентов (имя с заглавной буквы) пропускаются при вычислении якоря — проп не гарантирует DOM-id; нативные теги работают как раньше. Эмпирический контроль после фикса: уникальных якорей 419→415 (ушли ровно LAW-08/18/19/24), `references`/`occurrences` не изменились (1218/3057), легитимный секционный якорь `self-deception` сохранён.
+
+**Результат:** `--check` → current; source-контракт → pass; **dist-контракт → pass (77 маршрутов)**. Ссылки Писания статьи Lawson (напр. `1 Паралипоменон 28:3`, `Римлянам 2`) теперь находятся через scripture-поиск и не ломают якорный контракт.
