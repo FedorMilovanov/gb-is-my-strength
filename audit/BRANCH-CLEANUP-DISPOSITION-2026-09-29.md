@@ -229,3 +229,56 @@ genealogy: #2076 #2080 #2092 #2102 #2103 #2111 #2121 #2129 #2130 #2132 #2137 · 
 - quote-HOLD Делякова + provenance snapshot (из `fix/baptisty-source-provenance-polish-20260911`, superset `fix/baptisty-kura-delyakov-quote-hold-20260911`) — применено 3-way на current main;
 - AA-контраст самиздат-темы (из `fix/baptisty-samizdat-contrast-20260911`) + canonical cache-bust (`?v=9e2de1d7`, check exit 0);
 - heart-series metadata supplements ×4 (из закрытых metadata-reconcile lane'ов #1881/#1889/#1890/#1892), strict-контракт зелёный.
+
+---
+
+# Addendum 2026-09-30 — C-verify верификация и финализация
+
+**PR с recovery-юнитами:** #2146 (`arena/01a0ef9a-gb-is-my-strength`), base синхронизирован с `main@5e76c6e` (merge `d5742b1e`).
+
+## C-verify: 9 веток верифицированы по маркерному методу (added-строки дельты ↔ текущий main)
+
+| Ветка | Вердикт | Evidence |
+|---|---|---|
+| `refactor/map-engine-route-bootstrap` | **УДАЛЕНО** | маркеры 4/4 в main (волна #2053/#2064/#2067) |
+| `repair/engine-contracts-current-20260819` | **УДАЛЕНО** | 4/4; `check-engine-contracts.js` в main и эволюционировал |
+| `tmp-noop` | **УДАЛЕНО** | TMSJ-документы и audit-скрипт в main (2 файла patch-equivalent) |
+| `fix/map-engine-capability-runtime-v1` | **УДАЛЕНО** | 7/8 (1 miss — generic test helper) |
+| `repair/restore-failure-notifier-contract-20260819` | **УДАЛЕНО** | интент заменён владельческим решением: read-only CI Failure Diagnostics, issue-мутации запрещены (задокументировано в шапке `notify-on-failure.yml`) |
+| `repair/retired-notifier-policy-20260819` | **УДАЛЕНО** | 7/8 маркеров в main (1 — переформулированный console.log) |
+| `lane/metadata-reconcile-diotrophes-wave12-20260908` | **УДАЛЕНО** | канонический `diotrophes-wave12.json` в main (даты идентичны, provenance новее) |
+| `fix/baptisty-visible-date-semantics-20260911` | **RECOVERED → удалить после merge #2146** | byline «Обновлено» (каноничный паттерн `PeterburgskayaLiniya`) приземлён на 4 страницы с `modified>published`; скрипт не переносился (main имеет собственную эволюционировавшую версию) |
+| `fix/genealogy-relation-confidence-localization` | **СОХРАНЕНА (finding)** | локализация `CONFIDENCE_LABELS` не приземлилась: main рендерит сырой `evidence.confidence` (RelationshipInspector.tsx:78). Owner-sensitive UI → кандидат small LANE по решению владельца |
+
+## Recovery юнит 5 (PR #2146)
+
+`fix(baptisty): land visible updated-dates on four pages with modified>published metadata` — noch-na-kure / dva-sezda-1884 / goneniya-i-sovest / yuzhnaya-shtunda: `pub=2026-06-0x`, `mod=2026-06-13` по `data/editorial-metadata*`; видимый byline теперь отражает реальную свежесть (OWNER-INVARIANTS §2.2).
+
+## Деletable-after-merge (7 веток — их дельта полностью/надмножеством в PR #2146)
+
+Удалять ТОЛЬКО после merge #2146 (до тех пор ветки — вторая копия контента):
+
+- `fix/baptisty-samizdat-contrast-20260911` (FULL file-equivalence)
+- `lane/metadata-reconcile-heart-bookends-20260908` (FULL)
+- `lane/metadata-reconcile-novoe-serdce-20260908` (FULL)
+- `lane/metadata-reconcile-serdce-i-duh-20260908` (FULL)
+- `fix/baptisty-kura-delyakov-quote-hold-20260911` (superset: + visible-date)
+- `fix/baptisty-source-provenance-polish-20260911` (superset: + visible-date)
+- `fix/baptisty-visible-date-semantics-20260911` (recovered; script-часть superseded эволюцией main)
+
+## Оставшийся D-остаток (не удалять; evidence сохранён на ветках)
+
+`agent/*` ×4, `arena/*` ×3 (pastor/reader аудиты), `audit/baptisty-total-production-audit-20260911`, `book/ch07-mazaev-prokhanov-research-v2`, `codex/baptisty-spravochnik-evidence-language`, `fix/genealogy-relation-confidence-localization`, `fix/npm-non-major-security-20260907`, `fix/series-taxonomy-projection-20260911`, `lane/baptisty-book-production-status-20260906`, `lane/metadata-reconcile-tma-pr518-20260908` (base-registry правка требует owner-сверки), `lane/metadata-review-decision-rimlyanam7-20260908`, `lane/metadata-standalone-three-reconciliation-20260908`, `lane/teen-core-content-clearance-20260908`, `reconcile/baptisty-book-status-20260911`, `reconcile/baptisty-media-recovery-20260911`, `repair/antisovetov-title-suffix-20260906`, `repair/source-surface-audit-completeness-20260906`.
+
+## HOLD (связаны с открытыми PR)
+
+- `reconcile/ch01-pre-baptist-origins-research-20260911` — ждёт #2142
+- `deps/npm-non-major-20260906-r2` — ждёт #2144
+
+## Вне scope (активная работа владельца 2026-09-30, не трогать)
+
+`fix/lawson-premium-polish-20260930`, `fix/serdce-i-duh-mdx-em-20260930`, `noop`, `noop2`, `publication/lawson-release-hardening-20260930` (#2150), `publication/steven-lawson-final-20260930`, `publication/steven-lawson-final-20260930-tmp`.
+
+## CI-статус (WORK_MODES §5, честная фиксация)
+
+24 проверки PR #2146 упали; **тот же ядро-набор (Deploy Candidate, Native Source, Production-like, Print Paper, pixel-diff, Dateline, Source Authority и др.) падает и на свежем владельческом PR #2150** (2026-09-30) — систематика уровня репозитория/среды, не дифф #2146. Локально на final head пройдены применимые к диффу контракты: `migration:metadata:check:strict`, `mdx:structure:audit` (64 файла), `data:consistency`, `cache-bust` (read-only, exit 0), lane-collision guard (25 файлов, коллизий нет), Shared-Files contract tests, `git diff --check`. Browser-матрица в sandbox не воспроизводима; логи CI недоступны из среды (results-receiver EOF).
