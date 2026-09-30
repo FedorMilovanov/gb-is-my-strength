@@ -305,3 +305,41 @@ node scripts/guard-shared-files.js --base <merge-base> --head e34f85c4a… --bra
 ## Оставшиеся фоновые фейлы (вне диффа)
 
 `Deploy Candidate Contract`, `Search Modal Contract` — падают идентично на владельческом PR #2150; `git diff` PR #2146 после устранения юнита-4 — 21 файл, без workflow/package поверхностей.
+
+---
+
+# Addendum 4 (2026-09-30, финал) — контрольный эксперимент: `main` не собирается, все build-фейлы фоновые
+
+**Метод:** контрольная production-сборка чистого `origin/main@5e76c6e` в отдельном worktree (тот же lockfile, `npm ci`, `npm run strangler:build:production-like`) → **идентичный фейл**:
+
+```
+[ERROR] [vite] ✗ Build failed
+mdx-jsx:unexpected-character — Unexpected character `!` …
+(to create a comment in MDX, use `{/* text */}`)
+```
+
+**Root cause:** HTML-комментарии `<!-- … -->` в MDX не поддерживаются текущим компилятором. Остаточные файлы на `main` (владелец уже чинит серией `fix(mdx): normalize Gill metadata comment syntax` 30.09, но 6 вхождений осталось):
+
+- `src/content/articles/dzhon-gill-chast-1-chelovek.mdx:31`
+- `src/content/articles/dzhon-gill-chast-2-uchenyi.mdx:31`
+- `src/content/articles/dzhon-gill-chast-3-nasledie.mdx:31`
+- `src/content/articles/dzhon-gill-chast-4-ekzeget.mdx:32`
+- `src/content/articles/dzhon-gill-istoricheskiy-kontekst.mdx:31`
+- `src/content/articles/dzhon-gill-spravochnik.mdx:29`
+
+Файлы не менялись с 2026-07-24 (`1ac957299`) — дифф PR #2146 их не касается. Вмешательство в активный владельческий lane (LANE_LOCK §3.4) не производится; находка передаётся владельцу.
+
+**Классификация CI-фейлов PR #2146 (head `602632ff`) по упавшим шагам (Jobs API `steps[]`):**
+
+| Workflow | Упавший шаг | Класс |
+|---|---|---|
+| Metadata & IndexNow Readiness | Validate source metadata… | **МОЙ → ИСПРАВЛЕН** (юнит 8); на `602632ff` — ✅ success |
+| Shared Files Guard | Guard actual shared/system diff | platform: non-canonical branch prefix `arena/*` (Addendum 3) |
+| TTS Download Consent | Build production-like routes | фон: сломанный build main |
+| Avraam Reference Baseline | Build production-like site | фон: сломанный build main |
+| Search Scripture Occurrence Runtime | Build production-like publication | фон: сломанный build main |
+| Deploy Candidate Contract | Static publication source gates | фон: `validate:all`→audit-pro требует собранный dist; единственная ошибка — отсутствующий Lawson-route владельца в упавшем dist |
+| Search Modal Contract | Validate source contracts | фон: цепочка завершается `audit-pro.js` + `astro:check` (тот же комплекс); синтакс/контракты самого search — локально зелёные (113/113, self-test PASS) |
+| Metadata SSOT Closure, Editorial Dateline, Bible App Deep и др. | — | фон: падают на `main`/владельческих ветках (фиксации в Addendum 1–3) |
+
+**Собственный дифф PR #2146 (21 файл) локально на финальном head:** registry --check ✅, headline ✅, antisovetov-wave8 ✅, cache-bust ✅, `git diff --exit-code` ✅, strict ✅, data:consistency ✅, mdx (64) ✅, workflow-contract ✅, lane-collision guard ✅, search modal syntax/self-tests ✅.
