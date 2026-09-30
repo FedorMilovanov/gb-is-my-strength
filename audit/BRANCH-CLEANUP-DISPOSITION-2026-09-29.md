@@ -377,3 +377,7 @@ Auto-merge включён (squash). После пересчёта чеков н�
 **Разблокировка инфраструктуры:** `main` собрался впервые после поломки MDX-компилятором комментариев; контрольная локальная сборка объединения — exit 0; на push `0adb8c364` запущен «Deploy to GitHub Pages» (мониторинг в этом же аддендуме ниже при завершении).
 
 **Опыт для процесса (не норма, а наблюдение):** платформенная сессия Arena публикуется через `arena/*` — теперь канонический префикс; авто-удаление head-веток при squash включено в репо — session-ветка восстанавливается пушом локальной копии при необходимости.
+
+## Исход деплоя main@0adb8c364 (факт, не claim)
+
+✅ Shared Files Guard, Metadata SSOT Closure, Metadata & IndexNow Readiness, Glossary, Vosk, TTS SharedWorker — success. ❌ Deploy to GitHub Pages / Source Link Audit / Search Modal — failure; корень по evidence — гейт audit-pro «missing canonical indexable production route: /articles/steven-lawson-samoobman-i-publichnyy-golos/» (Lawson, владелец, активный #2150). **Production не заявляется**; сборка и контракты восстановлены, деплой разблокируется устранением Lawson-маршрута владельцем.
