@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "sourceCommit": "20aa11acef1f1ce518ffb7cd75d3757e2da7a2dc",
+  "records": {
+    "/articles/steven-lawson-samoobman-i-publichnyy-golos/": {
+      "route": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+      "canonical": "https://gospod-bog.ru/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+      "title": "Стивен Лоусон: самообман, падение и публичный голос | Господь Бог — Сила Моя",
+      "metadataSource": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-09-29T21:00:00.000Z",
+      "editorialModifiedAt": "2026-09-29T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "approved",
+      "provenance": "lawson-v6-publication-decision-20260930",
+      "observations": {}
+    }
+  }
+}

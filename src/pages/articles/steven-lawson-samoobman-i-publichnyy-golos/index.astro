@@ -1,0 +1,20 @@
+---
+import { getCollection } from 'astro:content';
+import Content from '@/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx';
+import ArticleLayout from '@/layouts/ArticleLayout.astro';
+import { SITE } from '@/data/site';
+
+const slug = 'steven-lawson-samoobman-i-publichnyy-golos';
+const entries = await getCollection('articles');
+const entry = entries.find(({ data }) => data.slug === slug);
+
+if (!entry) {
+  throw new Error(`Missing article content entry: ${slug}`);
+}
+
+const canonical = `${SITE.url}/articles/${slug}/`;
+---
+
+<ArticleLayout entry={entry} canonical={canonical}>
+  <Content />
+</ArticleLayout>

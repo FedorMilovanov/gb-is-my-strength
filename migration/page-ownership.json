@@ -51,6 +51,7 @@
     "/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/": {"owner":"astro","source":"src/pages/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/index.astro","risk":2,"status":"production-dist"},
     "/articles/sovest-vnutrenniy-sud/": {"owner":"astro","source":"src/pages/articles/sovest-vnutrenniy-sud/index.astro","risk":2,"status":"production-dist"},
     "/articles/starye-dorozhki-serdca/": {"owner":"astro","source":"src/pages/articles/starye-dorozhki-serdca/index.astro","risk":2,"status":"production-dist"},
+    "/articles/steven-lawson-samoobman-i-publichnyy-golos/": {"owner":"astro","source":"src/pages/articles/steven-lawson-samoobman-i-publichnyy-golos/index.astro","risk":2,"status":"production-dist"},
     "/articles/strah-bozhij-rabskij-ili-synovnij/": {"owner":"astro","source":"src/pages/articles/strah-bozhij-rabskij-ili-synovnij/index.astro","risk":2,"status":"production-dist"},
     "/articles/svoboda-vo-hriste/": {"owner":"astro","source":"src/pages/articles/svoboda-vo-hriste/index.astro","risk":2,"status":"production-dist"},
     "/articles/tma-na-serdce/": {"owner":"astro","source":"src/pages/articles/tma-na-serdce/index.astro","risk":2,"status":"production-dist"},
