@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-09T21:00:00Z",
+  "generatedAt": "2026-09-29T21:00:00Z",
   "project": {
     "name": "Господь Бог — Сила Моя",
     "url": "https://gospod-bog.ru/",
@@ -1808,6 +1808,23 @@
       "publishedTime": "2026-09-09T00:00:00+03:00",
       "modifiedTime": "2026-09-09T00:00:00+03:00",
       "readTime": 8
+    },
+    {
+      "id": "steven-lawson-samoobman-i-publichnyy-golos",
+      "type": "article",
+      "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+      "title": "Стивен Лоусон: самообман, падение и публичный голос",
+      "description": "Документированное исследование падения Стивена Лоусона, его прежних предупреждений о совести и самообмане, книги Mercy in the Wilderness и вопроса о том, чем должна подтверждаться новая публичная духовная достоверность.",
+      "section": "Служение",
+      "author": "Фёдор Милованов",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-preview-1200x630.webp",
+      "tags": [],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-09-29T21:00:00.000Z",
+      "modifiedTime": "2026-09-29T21:00:00.000Z",
+      "readTime": 39
     }
   ]
 }

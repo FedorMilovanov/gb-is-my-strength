@@ -86,6 +86,24 @@ if (data.series && SERIES_ORDER[data.series]) {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
+    // Site graph parity with every pilot layout: these @id nodes are
+    // referenced below (publisher/isPartOf) and by the registry SEO audit,
+    // so the native layout must define them, not only point at them.
+    {
+      '@type': 'Organization',
+      '@id': SITE.orgId,
+      name: SITE.name,
+      url: `${SITE.url}/`,
+      logo: { '@type': 'ImageObject', url: `${SITE.url}/icons/icon-512.png`, width: 512, height: 512 },
+    },
+    {
+      '@type': 'WebSite',
+      '@id': SITE.websiteId,
+      name: SITE.name,
+      url: `${SITE.url}/`,
+      inLanguage: SITE.locale,
+      publisher: { '@id': SITE.orgId },
+    },
     {
       '@type': isTranslation ? 'ScholarlyArticle' : 'Article',
       '@id': `${articleCanonical}#article`,
@@ -104,6 +122,11 @@ const jsonLd = {
       translator: isTranslation
         ? { '@id': `${SITE.url}/about/#person`, '@type': 'Person', name: SITE.authorName, url: `${SITE.url}/about/` }
         : undefined,
+      // Editor authority mirrors the visible byline (editorialRole/editorialName)
+      // and legacy pilot structured data: owner-authored originals are
+      // 'Автор-редактор', translations are owner-edited. Catalog attribution
+      // and new manifest rows read this node, so it must not be implicit.
+      editor: { '@id': `${SITE.url}/about/#person`, '@type': 'Person', name: SITE.authorName, url: `${SITE.url}/about/` },
       publisher: { '@id': SITE.orgId },
       mainEntityOfPage: { '@type': 'WebPage', '@id': articleCanonical },
       image: ogImage ? { '@type': 'ImageObject', url: ogImage, width: 1200, height: 630 } : undefined,

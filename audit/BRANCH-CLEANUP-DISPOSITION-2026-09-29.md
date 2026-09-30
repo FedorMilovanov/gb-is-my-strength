@@ -480,3 +480,35 @@ git worktree add /tmp/wt-<branch> archive/stale-2026-09-30/<branch>   # либо
 - HOLD: `reconcile/ch01-pre-baptist-origins-research-20260911` (#2142, OPEN, MERGEABLE/BEHIND) и `deps/npm-non-major-20260906-r2` (#2144, OPEN, MERGEABLE/BEHIND) — ждут решения владельца, не трогались.
 - Прочие открытые PR: #2143 (draft), #2145 — BEHIND; к D-набору не относятся.
 - Локальный клон shallow (`git rev-parse --is-shallow-repository` → `true`): merge-base между main и PR-ветками локально не вычисляется (артефакт «unrelated histories»); PR-факты брались из GitHub API.
+
+---
+
+# Addendum 8 (2026-10-01) — деплой-гейт: выполненный фикс-чейн (реализация, а не рекомендация)
+
+Продолжение аддендума 7: диагностика доведена до полного устранения; фикс проверен на точном CI-шаге.
+
+## Изменения (5 файлов, +71/−3)
+
+| Файл | Класс | Суть |
+|---|---|---|
+| `scripts/search-manifest-policy-normalizer-core.js` | SYSTEM | `readingTime(html)` принимает оба канонических носителя: inline-литерал `readingTime: N` (legacy/pilot) **и** pagefind-проекцию `data-pagefind-meta="readTime[content]"` (native `ArticleLayout`). Раньше native-страницы не могли получить строку манифеста вовсе. |
+| `src/layouts/ArticleLayout.astro` | SYSTEM (structured data) | (1) Узел `editor` — зеркало видимого байлайна (`editorialRole`/`editorialName`): «Автор-редактор» / «Редактор»; новый контракт ролей запрещает выводить editor из author, поэтому он обязан быть в JSON-LD. (2) Узлы `Organization` и `WebSite` — layout ссылался на `SITE.orgId`/`websiteId` (publisher/isPartOf) и на них ссылается registry SEO audit, но не определял их; паритет с каждым pilot-layout. `ArticleLayout` используется ровно одной страницей (Lawson) — правка точечная. |
+| `data/route-search-policy.json` | проекция (route data) | Policy-запись маршрута Lawson (include-политики, `contentKind: article`). Классификация (`librarySection: "Служение"`, `topicCategory: "Стивен Лоусон"`) — поле решения владельца. |
+| `data/search-manifest.json` | производная проекция | Регенерировано каноническим писателем: строка Lawson (94→95): `author`+`editor` = Фёдор Милованов, `readTime: 39`, `priority: 0.6`, `image: /images/og-preview-1200x630.webp` (файл существует), `generatedAt` = editorial instant `2026-09-29T21:00:00Z`. |
+| `sitemap.xml` | производная проекция | Регенерировано `sitemap-policy-normalizer --write`: запись маршрута Lawson (lastmod = editorial instant). |
+
+**Blast radius:** 3 проекции воспроизводятся штатными писателями; нерегенерируемая часть — 2 узла JSON-LD и носитель readTime в скрипте. `data/search-manifest.json` — protected-файл, публикация через канонический префикс `arena/*` (юнит 10, addendum 5).
+
+## Верификация (точные прогоны, локально)
+
+- `npm run validate:static-publication` → **FULL_EXIT=0** — тот самый шаг, что падает в CI (run `36772631762` на `d586aa63f` и в PR #2150). Внутри — `validate:strict`, `seo-audit`, visual-parity ×17, `audit-pro` (**✅ 166 passed · ❌ 0**, «AUDIT PASSED — ready for deploy», 95/95 маршрутов), `content:guard`, `astro:audit:article-mdx:strict` (со сборкой из исходников — ранее падала на каталоге), `mdx:structure:audit`, `sw:dist:audit`.
+- `node scripts/dist-jsonld-audit.js --root dist` → **✅ 0 errors** (шаг `deploy.yml:193`); до фикса — 2 ошибки `JSON-LD @graph lacks #organization/#website node` у Lawson.
+- **Идемпотентность:** `search-manifest-policy-normalizer --dist dist` → 0 candidates / 0 drift; `sitemap-policy-normalizer --check` → pass, диагностик по Lawson нет.
+- **Целевые контракты:** `search-manifest-policy-normalizer-test` ✅, `search-manifest-new-row-role-authority-test` ✅, `sitemap-route-contract-test` ✅ (95 indexable routes), `cache-bust` read-only ✅ (репозиторий не изменён).
+
+## Взаимодействие с #2150 и границы
+
+- `catalogAttribution` в #2150 идентичен main (fail-closed сохранён). Теперь строка манифеста несёт `author`+`editor`, поэтому каталог рендерит «Автор-редактор: Фёдор Милованов» через строку, а не через fallback. #2150 остаётся полезным обобщением (проекция native-статей, ещё не попавших в манифест), но **для разблокировки деплоя больше не требуется**.
+- Владельцу остаётся: подтвердить/изменить классификацию (`librarySection`, `topicCategory`), выбор fallback-`og:image`, и решение о самом факте публикации маршрута (`currentStatus: production-dist`); #2150 — по желанию.
+- **Честная граница:** browser-матрица и часть CI-гейтов в песочнице не воспроизводимы; шаги `deploy.yml` после `dist:jsonld:audit` локально не верифицировались.
+- **Rollback:** откат этого коммита возвращает красный деплой на `main` (состояние аддендума 7); проекции при откате пересобираются штатными писателями.
