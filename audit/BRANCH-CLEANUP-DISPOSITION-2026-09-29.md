@@ -365,3 +365,15 @@ mdx-jsx:unexpected-character — Unexpected character `!` …
 ## Порядок автозавершения
 
 Auto-merge включён (squash). После пересчёта чеков на новом merge-ref: guard ✅ (юнит 10), build ✅ (6/6), metadata ✅ → PR сольётся сам. Затем удаляются 7 deletable-after-merge веток (дельты в main), реестр закрывается.
+
+---
+
+# Addendum 6 — CLOSURE (2026-09-30): PR #2146 merged, цикл завершён
+
+**Merge:** squash `0adb8c364f85ef8742d4db4bceba526cb66deb68` → `main` (10 units: реестр диспозиций, quote-HOLD Делякова, provenance snapshot, samizdat AA + cache-bust `?v=9e2de1d7`, Gill MDX ×5, `arena/*` canonical prefix в guard, docs-аддендумы). Supplementary: #2151 владельца (6-й Gill-файл) → main `78af031d1`.
+
+**Итог по веткам:** удалено суммарно **169** remote-веток (162 owner-approved базовый батч + 7 deletable-after-merge, replacement `0adb8c364`). Осталось 36 refs: `main`, активные PR-head (#2142 #2143 #2144 #2145 #2150), свежие владельческие (lawson set, noop/noop2, serdce-i-duh-leftover), D-evidence набор (~18, сохранены с SHA в реестре), 2 HOLD (#2142/#2144).
+
+**Разблокировка инфраструктуры:** `main` собрался впервые после поломки MDX-компилятором комментариев; контрольная локальная сборка объединения — exit 0; на push `0adb8c364` запущен «Deploy to GitHub Pages» (мониторинг в этом же аддендуме ниже при завершении).
+
+**Опыт для процесса (не норма, а наблюдение):** платформенная сессия Arena публикуется через `arena/*` — теперь канонический префикс; авто-удаление head-веток при squash включено в репо — session-ветка восстанавливается пушом локальной копии при необходимости.
