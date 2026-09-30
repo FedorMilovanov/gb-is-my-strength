@@ -1,0 +1,99 @@
+---
+import { LAWSON_EVIDENCE_LABEL, lawsonSource } from './sourceRegistry';
+
+interface Props {
+  id: string;
+}
+
+const { id } = Astro.props as Props;
+const source = lawsonSource(id);
+---
+<details class="lawson-source-ref">
+  <summary aria-label={`Источник ${source.n}: ${source.label}`}>{source.n}</summary>
+  <span class="lawson-source-popover" role="note">
+    <span class="lawson-source-meta">{source.id} · {LAWSON_EVIDENCE_LABEL[source.evidenceClass]}</span>
+    <strong>{source.label}</strong>
+    <span>{source.proves}</span>
+    {source.boundary && <span class="lawson-source-boundary"><b>Граница:</b> {source.boundary}</span>}
+    <a href={source.href} rel="noopener noreferrer">Открыть источник ↗</a>
+  </span>
+</details>
+
+<style>
+  .lawson-source-ref {
+    position: relative;
+    display: inline-block;
+    margin-inline: .08em;
+    vertical-align: super;
+    line-height: 1;
+  }
+  .lawson-source-ref summary {
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.42rem;
+    height: 1.42rem;
+    padding: 0 .25rem;
+    border: 1px solid color-mix(in srgb, var(--accent, #7a2e2e) 42%, var(--border, #ddd));
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent, #7a2e2e) 7%, var(--bg, #fff));
+    color: var(--accent, #7a2e2e);
+    font: 700 .67rem/1 var(--font-body, Inter, system-ui, sans-serif);
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+  }
+  .lawson-source-ref summary::-webkit-details-marker { display: none; }
+  .lawson-source-ref summary:focus-visible {
+    outline: 2px solid var(--accent, #7a2e2e);
+    outline-offset: 2px;
+  }
+  .lawson-source-popover {
+    position: absolute;
+    z-index: 80;
+    left: 50%;
+    bottom: calc(100% + .55rem);
+    width: min(22rem, calc(100vw - 2rem));
+    transform: translateX(-50%);
+    display: none;
+    gap: .48rem;
+    padding: .85rem .9rem;
+    border: 1px solid var(--border, #dedbd4);
+    border-radius: .8rem;
+    background: color-mix(in srgb, var(--bg, #fff) 96%, var(--accent, #7a2e2e) 4%);
+    color: var(--text, #211f1c);
+    box-shadow: 0 14px 38px rgb(0 0 0 / .16);
+    font: 400 .84rem/1.45 var(--font-body, Inter, system-ui, sans-serif);
+    text-align: left;
+  }
+  .lawson-source-ref[open] .lawson-source-popover { display: grid; }
+  .lawson-source-popover strong { font-weight: 700; }
+  .lawson-source-meta {
+    color: var(--muted, #6b6862);
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  .lawson-source-boundary {
+    padding-top: .4rem;
+    border-top: 1px solid var(--border, #dedbd4);
+    color: var(--muted, #6b6862);
+  }
+  .lawson-source-popover a {
+    width: fit-content;
+    color: var(--accent, #7a2e2e);
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .lawson-source-popover a:hover { text-decoration: underline; }
+  @media (max-width: 680px) {
+    .lawson-source-popover { position: fixed; left: 1rem; right: 1rem; bottom: 1rem; width: auto; transform: none; }
+  }
+  @media print {
+    .lawson-source-ref { vertical-align: baseline; }
+    .lawson-source-ref summary { border: 0; background: transparent; min-width: 0; height: auto; padding: 0; }
+    .lawson-source-ref summary::before { content: '['; }
+    .lawson-source-ref summary::after { content: ']'; }
+    .lawson-source-popover { display: none !important; }
+  }
+</style>
