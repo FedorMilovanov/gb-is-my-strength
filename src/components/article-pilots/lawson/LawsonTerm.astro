@@ -1,0 +1,49 @@
+---
+interface Props {
+  label: string;
+  definition: string;
+}
+const { label, definition } = Astro.props as Props;
+---
+<span class="lawson-term" tabindex="0">
+  <span class="lawson-term-label"><slot>{label}</slot></span>
+  <span class="lawson-term-popover" role="note"><strong>{label}</strong><span>{definition}</span></span>
+</span>
+
+<style>
+  .lawson-term { position: relative; display: inline; outline: none; }
+  .lawson-term-label {
+    border-bottom: 1px dotted color-mix(in srgb, var(--accent, #7a2e2e) 70%, transparent);
+    cursor: help;
+  }
+  .lawson-term-popover {
+    position: absolute;
+    z-index: 70;
+    left: 50%;
+    bottom: calc(100% + .55rem);
+    width: min(20rem, calc(100vw - 2rem));
+    transform: translateX(-50%);
+    display: none;
+    gap: .35rem;
+    padding: .72rem .8rem;
+    border: 1px solid var(--border, #dedbd4);
+    border-radius: .75rem;
+    background: color-mix(in srgb, var(--bg, #fff) 97%, var(--accent, #7a2e2e) 3%);
+    color: var(--text, #211f1c);
+    box-shadow: 0 12px 32px rgb(0 0 0 / .14);
+    font: 400 .84rem/1.45 var(--font-body, Inter, system-ui, sans-serif);
+    text-align: left;
+  }
+  .lawson-term:hover .lawson-term-popover,
+  .lawson-term:focus .lawson-term-popover,
+  .lawson-term:focus-within .lawson-term-popover { display: grid; }
+  .lawson-term:focus-visible .lawson-term-label {
+    outline: 2px solid var(--accent, #7a2e2e);
+    outline-offset: 2px;
+    border-radius: .15rem;
+  }
+  @media (max-width: 680px) {
+    .lawson-term-popover { position: fixed; left: 1rem; right: 1rem; bottom: 1rem; width: auto; transform: none; }
+  }
+  @media print { .lawson-term-popover { display: none !important; } }
+</style>
