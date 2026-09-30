@@ -54,6 +54,11 @@ const CANONICAL_BRANCH_PREFIXES = [
   'hotfix/',
   'release/',
   'dependabot/',
+  // Arena.ai Agent Mode sessions publish through a platform-fixed per-session
+  // branch (`arena/<session-id>-gb-is-my-strength`). The branch name cannot be
+  // renamed to a canonical prefix, and AGENT_PUSH_MODEL grandfathers existing
+  // in-flight session branches. One session branch carries exactly one PR lane.
+  'arena/',
 ];
 
 function runGit(args) {
