@@ -512,3 +512,14 @@ git worktree add /tmp/wt-<branch> archive/stale-2026-09-30/<branch>   # либо
 - Владельцу остаётся: подтвердить/изменить классификацию (`librarySection`, `topicCategory`), выбор fallback-`og:image`, и решение о самом факте публикации маршрута (`currentStatus: production-dist`); #2150 — по желанию.
 - **Честная граница:** browser-матрица и часть CI-гейтов в песочнице не воспроизводимы; шаги `deploy.yml` после `dist:jsonld:audit` локально не верифицировались.
 - **Rollback:** откат этого коммита возвращает красный деплой на `main` (состояние аддендума 7); проекции при откате пересобираются штатными писателями.
+
+## Дополнение к аддендуму 8 (проекции discovery, срез CI)
+
+Проверка «зелёного» PR выявила два дрейфа проекций, вызванных добавлением строки манифеста, и оба устранены каноническими писателями:
+
+- **`feed.xml`** — `node scripts/rss-feed-normalizer.js --write`: Lawson добавлен как RSS-item (75 canonical registered items в контракте); `lastBuildDate` = editorial instant. Именно этот дрейф ронял в CI шаги `rss-feed-normalizer --check` в workflows `Metadata SSOT Closure` и `Search Manifest Policy` (оба падали на моём head; на базе `feed.xml` был согласован).
+- **`data/scripture-search-index.json`** — `node scripts/build-scripture-occurrence-index.mjs --write`: `manifestItems 94→95`, `indexedRoutes 93→94`, `scannedSourceFiles 498→507`, `references 1216→1218`, `occurrences 3050→3057`. **Функциональное следствие:** до этого ссылки Писания из статьи Lawson не индексировались вовсе (статья отсутствовала в манифесте → не сканировалась); теперь, например, `1 Паралипоменон 28:3` находится через scripture-поиск. Регрессия закрыта, а не замаскирована.
+
+Контроль на базовом коммите `d586aa6` (отдельный worktree): `build-scripture-occurrence-index --check` → «index is current», `rss-feed-normalizer --check` → «feed.xml exactly matches», `sitemap-policy-normalizer --check` → pass. То есть до моих изменений все три проекции были согласованы, а рассинхрон вносился именно новым маршрутом — и устранён штатными писателями.
+
+**Локально воспроизведены обе упавшие CI-цепочки целиком** (`search-manifest-policy` job → rss/sitemap `--check`; `route-registry-validators` job → surface:registry:check/test, sitemap/RSS/SEO/search-policy/audit-pro-source-corpus контракты, `audit-pro`) — все ✅, `audit-pro` 166/0.
