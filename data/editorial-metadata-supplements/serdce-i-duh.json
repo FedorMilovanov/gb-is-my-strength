@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "id": "serdce-i-duh-publication-and-editorial-update-reconciliation-2026-09-08",
+  "records": {
+    "/articles/serdce-i-duh/": {
+      "route": "/articles/serdce-i-duh/",
+      "canonical": "https://gospod-bog.ru/articles/serdce-i-duh/",
+      "title": "Сердце и Дух: как Бог живёт в том, что Сам оживил | Господь Бог — Сила Моя",
+      "metadataSource": "src/components/article-pilots/serdce-iduh/SerdceIDuhPageHead.astro",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-07-10T21:00:00.000Z",
+      "editorialModifiedAt": "2026-07-11T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "approved",
+      "provenance": "verified-publication-17aec0f8c5d34e499485a69a8cafa59b625f34dc-and-editorial-update-540e17bea92c6dc668c8891dc51184840f2539ef-owner-approved-2026-09-08",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-07-10T21:00:00.000Z",
+        "metaModifiedAt": "2026-07-11T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-07-10T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-07-11T21:00:00.000Z",
+        "searchPublishedAt": "2026-07-10T21:00:00.000Z",
+        "searchModifiedAt": "2026-07-11T21:00:00.000Z",
+        "sitemapLastmod": "2026-07-14T18:00:00.000Z",
+        "rssPublishedAt": "2026-07-11T21:00:00.000Z"
+      }
+    }
+  }
+}
