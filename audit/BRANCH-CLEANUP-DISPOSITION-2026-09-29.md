@@ -282,3 +282,26 @@ genealogy: #2076 #2080 #2092 #2102 #2103 #2111 #2121 #2129 #2130 #2132 #2137 · 
 ## CI-статус (WORK_MODES §5, честная фиксация)
 
 24 проверки PR #2146 упали; **тот же ядро-набор (Deploy Candidate, Native Source, Production-like, Print Paper, pixel-diff, Dateline, Source Authority и др.) падает и на свежем владельческом PR #2150** (2026-09-30) — систематика уровня репозитория/среды, не дифф #2146. Локально на final head пройдены применимые к диффу контракты: `migration:metadata:check:strict`, `mdx:structure:audit` (64 файла), `data:consistency`, `cache-bust` (read-only, exit 0), lane-collision guard (25 файлов, коллизий нет), Shared-Files contract tests, `git diff --check`. Browser-матрица в sandbox не воспроизводима; логи CI недоступны из среды (results-receiver EOF).
+
+---
+
+# Addendum 3 (2026-09-30, вечер) — CI-диагностика до корня
+
+## `Metadata & IndexNow Readiness` — воспроизведён локально, дефект устранён
+
+`node scripts/editorial-metadata-registry.js --check` падал: recovered-файл `heart-bookends.json` создавал **duplicate editorial metadata ownership** для `/articles/chto-bibliya-nazyvaet-serdcem/`. Проверка всех 4 восстановленных supplements показала: **все их routes уже поглощены base-registry** (`data/editorial-metadata.json`) на текущем main — с идентичными моментами времени (`2026-07-11T21:00Z` ≡ `2026-07-12T00:00+03:00`) и теми же source/canonical/title. Юнит 4 (metadata recovery) признаётся **superseded поглощением base-registry metadata SSOT closure**: 4 файла удалены из PR. Единственное содержательное расхождение — base держит `reviewStatus: inconsistent-needs-review`, supplements несли `approved` с verified-provenance; изменение reviewStatus — owner-sensitive редакционное решение, требующее отдельной сверки (совместно с tma-base-registry кейсом). Локальная батарея после устранения: registry --check ✅, headline ✅, antisovetov-wave8 ✅, cache-bust ✅, `git diff --exit-code` ✅, strict ✅, data:consistency ✅, mdx (64) ✅, workflow-contract ✅.
+
+## `Shared Files Guard` — воспроизведён локально, причина: платформенный префикс ветки
+
+```
+node scripts/guard-shared-files.js --base <merge-base> --head e34f85c4a… --branch arena/01a0ef9a-gb-is-my-strength
+→ Protected files changed on non-canonical branch 'arena/01a0ef9a-gb-is-my-strength'.
+  Use one of: lane/, agent/, fix/, hotfix/, release/, dependabot/
+→ exit 1 (protected: sw.js, css/series-samizdat.css)
+```
+
+Каноническая практика репо для protected-файлов — публикация через ветку `lane|agent|fix|hotfix|release|dependabot/**` (прецеденты: #2134→#2136, #2062→#2064). Session-ветка Arena зафиксирована платформой (`arena/01a0ef9a-gb-is-my-strength`) и переименованию не подлежит, поэтому единственный способ пройти guard — перенос коммитов на каноническую ветку вне сессии или owner-merge с осознанием данного допуска. Все содержательные шаги guard-workflow, применимые к диффу, локально зелёные (collision guard, cache-bust, contract tests).
+
+## Оставшиеся фоновые фейлы (вне диффа)
+
+`Deploy Candidate Contract`, `Search Modal Contract` — падают идентично на владельческом PR #2150; `git diff` PR #2146 после устранения юнита-4 — 21 файл, без workflow/package поверхностей.
