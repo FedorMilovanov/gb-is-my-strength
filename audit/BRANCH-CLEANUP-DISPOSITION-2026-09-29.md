@@ -535,3 +535,12 @@ Dist-проверка scripture-контракта (`scripture-occurrence-index-
 **Фикс (системный, `scripts/build-scripture-occurrence-index.mjs`):** теги компонентов (имя с заглавной буквы) пропускаются при вычислении якоря — проп не гарантирует DOM-id; нативные теги работают как раньше. Эмпирический контроль после фикса: уникальных якорей 419→415 (ушли ровно LAW-08/18/19/24), `references`/`occurrences` не изменились (1218/3057), легитимный секционный якорь `self-deception` сохранён.
 
 **Результат:** `--check` → current; source-контракт → pass; **dist-контракт → pass (77 маршрутов)**. Ссылки Писания статьи Lawson (напр. `1 Паралипоменон 28:3`, `Римлянам 2`) теперь находятся через scripture-поиск и не ломают якорный контракт.
+
+## Дополнение 3 к аддендуму 8 (CI-срез на head `cd5c8ec6f`)
+
+Снято из GitHub Checks (ранее логи/артефакты из песочницы недоступны — EOF на storage-эндпоинтах; Chromium скачать нельзя, браузерная матрица локально не воспроизводима):
+
+- **23 pass · 4 skipping · 1 fail · 1 pending** на `cd5c8ec6f`.
+- **Все четыре workflow, падавшие на предыдущем head, стали pass:** `metadata-ssot-closure`, `Deterministic source index and dist witness`, `Manifest and RSS/sitemap normalizer contract`, `registry-contracts`. Причина — устранённый дрейф проекций (`feed.xml`, `scripture-search-index.json`) и восстановленные носители (`readTime`/`editor`), а не маскировка: базовый контроль в отдельном worktree подтвердил, что до изменений все три проекции были согласованы, а рассинхрон вносил новый маршрут.
+- **`public-surface-browser-matrix` — fail (8m9с)**: единственная красная проверка. Evidence недосягаем (артефакт отчёта `public-surface-browser-matrix.json/md` и job-логи — EOF). Маршрут Lawson **уже присутствовал** в матрице до этих правок (105 записей registry), статические проверки её ключевых контрактов на затронутых страницах чисты (`document:canonical`, `document:h1`, дубли id — нет). Проверка **не входит в деплой-пайплайн** (`deploy.yml`/`deploy-candidate-contract.yml` её не запускают). Перезапуск прогона GitHub отклоняет («workflow file may be broken»).
+- **`Build and audit production-like candidate`** (deploy-candidate contract) — на момент среза ещё in_progress; соответствующий гейт (`validate:static-publication`) локально пройден полностью (exit 0).
