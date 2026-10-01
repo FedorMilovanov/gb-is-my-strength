@@ -175,9 +175,10 @@ const routeStylesheets = legacyStylesheets.map(versionedStylesheet);
     {routeStylesheets.map((href) => <link rel="stylesheet" href={href} />)}
   </head>
   <body class={bodyClass}>
+    <a class="astro-skip-link" href="#main-content">Перейти к основному содержимому</a>
     <div class="astro-shell">
       {!hideHeader && <Header badge={technicalBadge} />}
-      <main class={mainClass}>
+      <main id="main-content" class={mainClass} tabindex="-1">
         <slot />
       </main>
       {!hideFooter && <Footer note={footerNote} />}
@@ -202,3 +203,28 @@ const routeStylesheets = legacyStylesheets.map(versionedStylesheet);
     )}
   </body>
 </html>
+
+<style>
+  .astro-skip-link {
+    position: fixed;
+    inset-block-start: .75rem;
+    inset-inline-start: 50%;
+    z-index: 10000;
+    transform: translate(-50%, calc(-100% - 1.5rem));
+    padding: .7rem 1rem;
+    border: 2px solid var(--astro-color-gold, #b8944b);
+    border-radius: .75rem;
+    background: var(--astro-color-bg, #111);
+    color: var(--astro-color-text, #fff);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .astro-skip-link:focus,
+  .astro-skip-link:focus-visible {
+    transform: translate(-50%, 0);
+    outline: 3px solid var(--astro-color-gold, #b8944b);
+    outline-offset: 3px;
+  }
+</style>
