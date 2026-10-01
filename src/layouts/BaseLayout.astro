@@ -175,10 +175,9 @@ const routeStylesheets = legacyStylesheets.map(versionedStylesheet);
     {routeStylesheets.map((href) => <link rel="stylesheet" href={href} />)}
   </head>
   <body class={bodyClass}>
-    <a class="skip-link" href="#main-content">Перейти к содержимому</a>
     <div class="astro-shell">
       {!hideHeader && <Header badge={technicalBadge} />}
-      <main id="main-content" class={mainClass}>
+      <main class={mainClass}>
         <slot />
       </main>
       {!hideFooter && <Footer note={footerNote} />}
@@ -195,10 +194,9 @@ const routeStylesheets = legacyStylesheets.map(versionedStylesheet);
         </script>
         {runtimeScripts.map((src) => <script is:inline defer src={src}></script>)}
         {!includeLegacySiteScript && <ReaderActionsRuntime />}
-        {/* Lazy search: keep search.js off the initial path, but make both the
-            first trigger click and Ctrl/Cmd+K explicit owners of opening it. */}
+        {/* Lazy search: ~31KB saved on initial pageload. search.js loads on first Ctrl+K / click. */}
         <script is:inline define:vars={{ __gbSearchSrc: searchSrc }}>
-          {`!function(){if(window.__gbSearchLazyBound)return;window.__gbSearchLazyBound=1;var src=__gbSearchSrc;function load(open){if(window.GBSearch&&window.GBSearch.open&&window.GBSearch.__ready){open&&window.GBSearch.open();return}if(open)window.__gbSearchOpenAfterLoad=true;if(window.__gbSearchLoading)return;window.__gbSearchLoading=true;window.__gbSearchBootRequested=true;var s=document.createElement("script");s.defer=true;s.src=src;s.onload=function(){window.__gbSearchLoading=false;if(open&&window.GBSearch&&window.GBSearch.open)window.GBSearch.open()};s.onerror=function(){window.__gbSearchLoading=false};document.head.appendChild(s)}function target(e){return e&&e.closest&&e.closest("#gbSearchBtn,[data-gbs2-search],[data-fc-action='search'],.gb-nav-search-icon,.gb-search-btn")}function click(e){if(target(e.target)){e.preventDefault();load(true)}}function key(e){if((e.ctrlKey||e.metaKey)&&!e.altKey&&String(e.key||"").toLowerCase()==="k"){e.preventDefault();load(true)}}document.addEventListener("click",click,true);document.addEventListener("keydown",key,true);window.addEventListener("gb:openSearch",function(){load(true)})}();`}
+          {`!function(){function u(o){if(window.GBSearch&&window.GBSearch.open&&window.GBSearch.__ready){o&&window.GBSearch.open();return}if(o)window.__gbSearchOpenAfterLoad=true;if(window.__gbSearchLoading)return;window.__gbSearchLoading=true,window.__gbSearchBootRequested=true;var t=document.createElement("script");t.defer=true,t.src=__gbSearchSrc,t.onload=function(){window.__gbSearchLoading=false,o&&window.GBSearch&&window.GBSearch.open&&window.GBSearch.open()},t.onerror=function(){window.__gbSearchLoading=false},document.head.appendChild(t)}function d(){document.removeEventListener("click",c),document.removeEventListener("touchstart",c)}function c(){d(),u(false)}document.addEventListener("click",c),document.addEventListener("touchstart",c),window.addEventListener("gb:openSearch",function(){d(),u(true)})}();`}
         </script>
       </>
     )}
