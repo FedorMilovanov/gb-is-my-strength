@@ -21,7 +21,7 @@ export const LAWSON_SOURCES: LawsonSource[] = [
   },
   {
     id: 'LAW-02', n: 2,
-    label: 'Banner of Truth — “When a Christian Leader Falls” (27 Sep 2024)',
+    label: 'Banner of Truth — Warren Peel, “When a Christian Leader Falls” (14 Oct 2024)',
     href: 'https://banneroftruth.org/us/resources/announcements/2024/when-a-christian-leader-falls/',
     evidenceClass: 'near-primary',
     proves: 'Современный событиям источник, сохраняющий формулировки Trinity Bible Church и OnePassion об отстранении и отставке Лоусона после раскрытия неподобающих отношений.',
@@ -68,7 +68,7 @@ export const LAWSON_SOURCES: LawsonSource[] = [
   },
   {
     id: 'LAW-08', n: 8,
-    label: 'Reformation21 — “Reflections on Steve Lawson’s Latest Book” (28 Sep 2026)',
+    label: 'Reformation21 — Mark Jones, “Reflections on Steve Lawson’s Latest Book” (28 Sep 2026)',
     href: 'https://reformation21.org/reflections-on-steve-lawsons-latest-book/',
     evidenceClass: 'secondary',
     proves: 'Независимая критическая реакция на книгу и её богословско-пастырскую рамку.',
