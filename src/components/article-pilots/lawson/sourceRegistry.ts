@@ -45,7 +45,7 @@ export const LAWSON_SOURCES: LawsonSource[] = [
   },
   {
     id: 'LAW-05', n: 5,
-    label: 'Clint Archer / The Cripplegate — “Restoring a Fallen Pastor” (30 Jan 2025)',
+    label: 'Clint Archer / The Cripplegate — “Restoring a Fallen Pastor?” (30 Jan 2025)',
     href: 'https://thecripplegate.com/restoring-a-fallen-pastor/',
     evidenceClass: 'primary',
     proves: 'Пастырское различение между прощением, духовным восстановлением и возвращением к пасторской должности или публичной функции.',
@@ -113,14 +113,14 @@ export const LAWSON_SOURCES: LawsonSource[] = [
   },
   {
     id: 'LAW-14', n: 14,
-    label: 'Homiletix — “Steven Lawson: How I Preach” (2016)',
+    label: 'Homiletix — “Steven Lawson: How I Preach” (19 Sep 2016)',
     href: 'https://homiletix.com/steven-lawson-how-i-preach/',
     evidenceClass: 'primary',
     proves: 'Прямое интервью: Лоусон говорит о начале проповеди в колледже, влиянии Адриана Роджерса и примерно тридцати четырёх годах пасторского служения.',
   },
   {
     id: 'LAW-15', n: 15,
-    label: 'The Cripplegate — Steven Lawson, “Three Lessons from the Example of Billy Graham” (2018)',
+    label: 'The Cripplegate — Steven Lawson, “Three Lessons from the Extraordinary Life of Billy Graham” (2018)',
     href: 'https://thecripplegate.com/three-lessons-from-the-example-of-billy-graham/',
     evidenceClass: 'primary',
     proves: 'Лоусон от первого лица описывает свою роль в евангелизационной кампании Билли Грэма в Литл-Роке в 1989 году.',
