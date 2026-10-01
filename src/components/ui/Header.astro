@@ -38,6 +38,21 @@ const hardTextsLabel = SECTION_META['hard-texts'].label;
   </div>
 </header>
 
+<script is:inline>
+  // BaseLayout keeps search.js lazy. Its generic first-interaction loader does
+  // not know that a click on this button intends to open Search immediately.
+  // Bridge only that first button activation into the canonical gb:openSearch
+  // transport. Once search.js loads it renames this same node to #gbSearchBtn
+  // and installs the permanent click owner; Ctrl/Cmd+K remains owned solely by
+  // SiteUtils and arrives through the same event transport.
+  const searchBootstrap = document.getElementById('hCpBtnNav');
+  searchBootstrap?.addEventListener('click', (event) => {
+    if (window.GBSearch?.__ready) return;
+    event.preventDefault();
+    window.dispatchEvent(new CustomEvent('gb:openSearch'));
+  }, { once: true });
+</script>
+
 <style>
     .gb-nav-action-icon { display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; color: var(--color-text-muted, #6b7280); border:1px solid var(--color-border, rgba(0,0,0,.10)); border-radius:10px; background: var(--color-surface, #fffdf8); text-decoration:none; transition: color .15s, border-color .15s; }
     .gb-nav-action-icon:hover { color: var(--color-accent, #8a5a2b); border-color: var(--color-accent, #8a5a2b); }
