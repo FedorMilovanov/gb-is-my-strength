@@ -71,7 +71,7 @@ function buildQuiz(placeholder, config) {
     description.textContent = result.desc || '';
     const again = document.createElement('button');
     again.type = 'button';
-    again.className = 'quiz-next';
+    again.className = 'gb-quiz-next';
     again.textContent = 'Пройти ещё раз';
     again.addEventListener('click', () => {
       index = 0;
@@ -149,7 +149,7 @@ function buildQuiz(placeholder, config) {
         }
         const next = document.createElement('button');
         next.type = 'button';
-        next.className = 'quiz-next';
+        next.className = 'gb-quiz-next';
         next.textContent = index + 1 < questions.length ? 'Следующий вопрос' : 'Показать результат';
         next.addEventListener('click', () => {
           index += 1;
