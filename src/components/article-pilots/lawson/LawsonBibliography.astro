@@ -4,9 +4,9 @@ import { LAWSON_EVIDENCE_LABEL, LAWSON_SOURCES } from './sourceRegistry';
 <section class="lawson-bibliography" id="sources" aria-labelledby="lawson-sources-heading">
   <h2 id="lawson-sources-heading">Источники и границы проверки</h2>
   <p class="lawson-bibliography__intro">
-    Номера в тексте ведут к конкретным объектам. Метка показывает статус источника: первичный,
-    близкий к первичному, вторичный или исследовательская сверка. Последняя не заменяет оригинал,
-    а фиксирует происхождение, сопоставление и границы утверждения.
+    Номера в тексте ведут к публично доступным источникам. Метка показывает роль источника:
+    первичный, близкий к первичному или вторичный. Для спорных утверждений рядом указано,
+    что именно источник подтверждает и где проходит граница допустимого вывода.
   </p>
   <ol>
     {LAWSON_SOURCES.map((source) => (
@@ -15,7 +15,7 @@ import { LAWSON_EVIDENCE_LABEL, LAWSON_SOURCES } from './sourceRegistry';
           <span class="lawson-bibliography__num">{source.n}</span>
           <div>
             <a href={source.href} rel="noopener noreferrer">{source.label}</a>
-            <span class="lawson-bibliography__class">{source.id} · {LAWSON_EVIDENCE_LABEL[source.evidenceClass]}</span>
+            <span class="lawson-bibliography__class">{LAWSON_EVIDENCE_LABEL[source.evidenceClass]}</span>
           </div>
         </div>
         <p><strong>Подтверждает:</strong> {source.proves}</p>
