@@ -2,12 +2,14 @@
 /**
  * ArticlesLibrarySection.astro — exhaustive /articles/ projection.
  *
- * Derived from existing publication authorities rather than a second
- * hand-maintained catalog. Search manifest owns reader-facing metadata;
- * page-ownership decides whether the destination is current production output.
+ * Legacy reader-facing metadata stays in search-manifest. Strict-native Astro
+ * articles are projected directly from the content collection when a manifest
+ * row has not been created yet. page-ownership remains the final publication
+ * gate for both sources, so draft/unowned routes never leak into the catalog.
  * Scripture occurrences remain owned by their source graph and generated index,
  * never by another hand-maintained catalog inventory.
  */
+import { getCollection } from 'astro:content';
 import searchManifest from '../../../data/search-manifest.json';
 import pageOwnership from '../../../migration/page-ownership.json';
 
@@ -103,10 +105,36 @@ const byEditorialOrder = (a: CatalogItem, b: CatalogItem) => {
   return String(a.title || '').localeCompare(String(b.title || ''), 'ru');
 };
 
+const manifestRoutes = new Set(manifestItems.map((item) => String(item.url || '').split('#')[0]));
+const nativeArticles = await getCollection('articles', ({ data }) => !data.draft && !data.noindex);
+const nativeFallbackItems: CatalogItem[] = nativeArticles
+  .map(({ data }) => {
+    const url = `/${data.section}/${data.slug}/`;
+    const isTranslation = data.author === 'abner-chou';
+    const modified = data.updatedAt instanceof Date ? data.updatedAt.toISOString() : String(data.updatedAt || data.publishedAt || '');
+    return {
+      id: data.slug,
+      type: 'article',
+      url,
+      title: data.h1 || data.title,
+      description: data.description,
+      section: 'Статьи',
+      author: isTranslation ? 'Абнер Чау' : OWNER_NAME,
+      editor: OWNER_NAME,
+      translator: isTranslation ? OWNER_NAME : undefined,
+      readTime: Number(data.readingTime || 0) || undefined,
+      image: data.ogImage || undefined,
+      priority: 0.6,
+      modifiedTime: modified,
+    };
+  })
+  .filter((item) => routeIsPublished(item.url) && !manifestRoutes.has(item.url));
+
+const catalogItems = [...manifestItems, ...nativeFallbackItems];
 const series = manifestItems
   .filter((item) => item.type === 'series' && routeIsPublished(item.url))
   .sort(byEditorialOrder);
-const items = manifestItems
+const items = catalogItems
   .filter((item) => item.type === 'article' && routeIsPublished(item.url))
   .sort(byEditorialOrder);
 ---
@@ -115,7 +143,7 @@ const items = manifestItems
   class="h-section"
   id="publikacii"
   aria-labelledby="hLibraryLabel"
-  data-catalog-source="search-manifest+page-ownership"
+  data-catalog-source="search-manifest+astro-content+page-ownership"
 >
   <p class="h-section-label" id="hLibraryLabel">Все статьи</p>
   <div class="h-section-accent" aria-hidden="true"></div>
