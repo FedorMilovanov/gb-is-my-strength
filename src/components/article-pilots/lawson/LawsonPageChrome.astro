@@ -1,0 +1,27 @@
+---
+import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.astro';
+import ReaderRail from '@/components/article-pilots/_shared/ReaderRail.astro';
+import HermenevtikaMobileBar from '@/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro';
+import ReaderSettings from '@/components/article-pilots/_shared/ReaderSettings.astro';
+import { LAWSON_TOC } from './lawsonToc';
+
+// Статья о Лоусоне потребляет канонических владельцев одиночной читательской
+// поверхности (рельс, угловой кластер, мобильная панель, лист настроек) и не
+// форкает их рантайм — так же, как lot-i-sodom и kod-da-vinchi.
+const railTitle = 'Стивен Лоусон: самообман и публичный голос';
+---
+
+<FloatingCluster mode="single" variant="hermeneutics" audioState="none" />
+<ReaderRail
+  eyebrow="Библиотека проекта · Разбор"
+  title={railTitle}
+  backHref="../../"
+  toc={LAWSON_TOC}
+/>
+<HermenevtikaMobileBar
+  title={railTitle}
+  backHref="../../"
+  readingMinutes={42}
+  toc={LAWSON_TOC}
+/>
+<ReaderSettings />

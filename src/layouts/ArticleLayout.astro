@@ -12,9 +12,17 @@ interface Props {
   robots?: string;
   pilot?: boolean;
   intendedCanonical?: string;
+  /** Проброс в BaseLayout: маршруту с каноническим читательским рельсом нужен
+   *  data-reader-rail-main на <main>, иначе на десктопе текст не отступает
+   *  от фиксированного рельса. */
+  mainAttrs?: Record<string, string | boolean>;
+  /** Класс <main>. Модификатор article-main--hrail даёт отступы под
+   *  фиксированные мобильные панели; намеренно без класса article-main,
+   *  чтобы не тянуть его ширину и паддинги из site.css. */
+  mainClass?: string;
 }
 
-const { entry, canonical, robots, pilot = false, intendedCanonical } = Astro.props;
+const { entry, canonical, robots, pilot = false, intendedCanonical, mainAttrs, mainClass } = Astro.props;
 const data = entry.data;
 const isTranslation = data.author === 'abner-chou';
 const articleAuthorName = isTranslation ? 'Абнер Чау' : SITE.authorName;
@@ -168,7 +176,15 @@ const jsonLd = {
   jsonLd={jsonLd}
   technicalBadge={pilot ? 'MDX content pilot · noindex' : undefined}
   footerNote={pilot ? 'Build-only article pipeline preview' : undefined}
+  mainAttrs={mainAttrs}
+  mainClass={mainClass}
 >
+  {/* Читательский хром одиночной статьи (рельс, угловой кластер, мобильная
+      панель, лист настроек) монтируется до <article>: он управляет страницей,
+      а не является частью текста, поэтому внутри data-pagefind-body ему не
+      место. Слот именованный и пустой по умолчанию — маршрут без хрома
+      рендерится ровно как раньше. */}
+  <slot name="chrome" />
   <article class="astro-article" data-article-slug={data.slug} data-pagefind-body>
     <span data-pagefind-meta="author" hidden>{articleAuthorName}</span>
     {data.readingTime && <span data-pagefind-meta="readTime" hidden>{data.readingTime}</span>}
