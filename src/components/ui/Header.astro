@@ -28,7 +28,7 @@ const hardTextsLabel = SECTION_META['hard-texts'].label;
     <a href="/izbrannoe/" class="gb-nav-action-icon gb-nav-fav-icon" aria-label="Избранное" title="Избранное">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
     </a>
-    <button id="hCpBtnNav" class="gb-nav-search-icon" type="button" aria-label="Поиск (Ctrl+K)" title="Поиск Ctrl+K" data-search-shortcut data-search-shortcut-label="Поиск по всему сайту">
+    <button id="hCpBtnNav" class="gb-nav-search-icon" type="button" aria-label="Поиск (Ctrl+K)" aria-keyshortcuts="Control+K Meta+K" title="Поиск Ctrl+K" data-search-shortcut data-search-shortcut-label="Поиск по всему сайту">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
     </button>
     <button id="themeToggle" class="theme-toggle" type="button" aria-label="Переключить тему" title="Тема">
@@ -54,6 +54,12 @@ const hardTextsLabel = SECTION_META['hard-texts'].label;
 </script>
 
 <style>
+    .astro-header__brand {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
     .gb-nav-action-icon { display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; color: var(--color-text-muted, #6b7280); border:1px solid var(--color-border, rgba(0,0,0,.10)); border-radius:10px; background: var(--color-surface, #fffdf8); text-decoration:none; transition: color .15s, border-color .15s; }
     .gb-nav-action-icon:hover { color: var(--color-accent, #8a5a2b); border-color: var(--color-accent, #8a5a2b); }
 
@@ -66,6 +72,7 @@ const hardTextsLabel = SECTION_META['hard-texts'].label;
       margin-left: auto;
       flex: 0 0 auto;
       min-width: max-content;
+      overflow: visible !important;
     }
     .astro-header__controls.mobile-controls .gb-nav-search-icon,
     .astro-header__controls.mobile-controls .theme-toggle {
@@ -81,18 +88,28 @@ const hardTextsLabel = SECTION_META['hard-texts'].label;
       flex: 0 0 44px;
     }
     .astro-header__controls.mobile-controls .gb-nav-search-icon:focus-visible,
-    .astro-header__controls.mobile-controls .theme-toggle:focus-visible {
+    .astro-header__controls.mobile-controls .theme-toggle:focus-visible,
+    .astro-header__controls.mobile-controls .gb-nav-action-icon:focus-visible {
       outline: 2px solid var(--color-accent, #8a5a2b) !important;
       outline-offset: 2px !important;
       border-radius: 10px !important;
     }
 
-    @media (max-width: 48rem) {
-      .astro-header__brand {
+    @media (max-width: 900px) {
+      .astro-header {
+        flex-wrap: wrap;
+        gap: .5rem;
+        padding-block: .6rem;
+      }
+      .astro-header__nav {
+        order: 3;
+        width: 100%;
         min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+      }
+      .astro-header__controls.mobile-controls {
+        margin-left: auto;
       }
     }
     @media (pointer: coarse) {
