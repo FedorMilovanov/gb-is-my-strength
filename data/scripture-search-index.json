@@ -10,13 +10,13 @@
     "kartyHubInventory": "src/lib/karty-hub-inventory.cjs"
   },
   "stats": {
-    "manifestItems": 94,
-    "indexedRoutes": 93,
-    "scannedSourceFiles": 498,
-    "references": 1216,
-    "occurrences": 3050,
+    "manifestItems": 95,
+    "indexedRoutes": 94,
+    "scannedSourceFiles": 508,
+    "references": 1218,
+    "occurrences": 3058,
     "canonicalTextRecords": 148,
-    "referencesWithoutCanonicalText": 1068,
+    "referencesWithoutCanonicalText": 1070,
     "chapterRanges": 31,
     "manifestOccurrences": 32,
     "kartyHubOccurrences": 1
@@ -8026,6 +8026,30 @@
             "Служение"
           ],
           "sourceOwner": "src/content/articles/teksty-pisaniya-kotorymi-manipuliruyut.mdx",
+          "sourceKind": "mdx-source"
+        }
+      ]
+    },
+    {
+      "id": "1paralipomenon:28:3",
+      "bookId": "1paralipomenon",
+      "testament": "OT",
+      "key": "28:3",
+      "kind": "verse",
+      "label": "1 Паралипоменон 28:3",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "именно делает соответствующий текст. И критика книги тоже должна подчиняться Писанию. Например, нельзя связывать запрет Давиду строить храм именно с его сексуальным грехом, если 1 Пар. 28:3 объясняет это пролитой кровью и войнами. Даже справедливо критикуя Лоусона, нельзя позволять риторике стать сильнее текста Библии. Прощение, должность, доверие и публи…",
+          "anchor": null,
+          "raw": "1 Пар. 28:3",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
           "sourceKind": "mdx-source"
         }
       ]
@@ -30295,6 +30319,18 @@
           "sourceKind": "astro-source"
         },
         {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "Этот вопрос ведёт прямо к доскандальному Лоусону. Лоусон сам учил о самообмане и совести На Shepherds’ Conference 2017 Лоусон завершал проповедь из Иоанна 10 обращением к пасторам. Смысл его предупреждения был неудобным: можно проповедовать о Христе, указывать другим на Христа, находиться совсем рядом с христианской истиной — и всё же вопрос собственной д…",
+          "anchor": "self-deception",
+          "raw": "Иоанна 10",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
+          "sourceKind": "mdx-source"
+        },
+        {
           "url": "/articles/teksty-pisaniya-kotorymi-manipuliruyut/",
           "title": "Тексты Писания, которыми манипулируют",
           "context": "обличает использование стада ради себя, пренебрежение слабыми и разрушение порученного народа. Новозаветное пастырское служение сознательно принимает тот же образ стада и пастыря (Ин. 10; 1 Пет. 5), поэтому текст даёт серьёзный канонический фон для оценки пастырской власти. Но нельзя всякое непопулярное решение автоматически превращать в исполнение Иез. 3…",
@@ -33052,6 +33088,66 @@
           ],
           "sourceOwner": "src/components/article-pilots/skrytye-idoly/SkrytyeIdolyBody.astro",
           "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
+      "id": "rimlyanam:2",
+      "bookId": "rimlyanam",
+      "testament": "NT",
+      "key": "2",
+      "kind": "chapter",
+      "label": "Римлянам 2",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "2. Игнорирование предупреждающих знаков очень сильный внутренний контраст Доскандальный разбор Римлянам 2 описывал совесть как предупреждающую систему и нравственные тормоза, которые можно притупить повторяющимся непослушанием. Поздняя самодиагностика книги помещает сопротивление Писанию и со",
+          "anchor": null,
+          "raw": "Римлянам 2",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
+          "sourceKind": "mdx-source"
+        },
+        {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "мообман и совесть В проповеди на Shepherds’ Conference он предупреждает пасторов, что публичная близость к истине не удостоверяет внутреннюю духовную реальность; в разборе Римлянам 2 описывает совесть как предупреждающую систему, которую можно притупить. 2019 Ответ о сексуальной чистоте Лоусон говорит",
+          "anchor": null,
+          "raw": "Римлянам 2",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
+          "sourceKind": "mdx-source"
+        },
+        {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "оит аргумента на точных цитатах из этого разговора. Но из нравственного падения не следует, что истинная экзегеза автоматически становится ложной. Римлянам 2 не меняет смысла потому, что проповедник нарушил собственное учение о совести. Иногда старый текст после падения звучит даже страшнее — не как оправдание автора, а как свидетельство истины, которой о…",
+          "anchor": null,
+          "raw": "Римлянам 2",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
+          "sourceKind": "mdx-source"
+        },
+        {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "кодом. Но можно вывести другое: он публично знал категорию, в которой правильная религиозная речь не удостоверяет внутреннюю реальность говорящего. То же видно в его разборе Римлянам 2. Сохранившаяся расшифровка передаёт целую систему образов: совесть как сигнал тревоги, Божьи нравственные «стоп-знаки», тормоза, которые можно износить повторяющимся наруше…",
+          "anchor": "self-deception",
+          "raw": "Римлянам 2",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
+          "sourceKind": "mdx-source"
         }
       ]
     },
@@ -49355,6 +49451,18 @@
           "sourceKind": "mdx-source"
         },
         {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "убличный грешник должен сначала многолетней тишиной заработать возможность быть прощённым Богом. Но пасторская должность — не право всякого прощённого христианина Требования 1 Тимофею 3 и Титу 1 описывают не только способность произнести ортодоксальную проповедь. Они включают репутацию, самообладание, верность, проверяемую жизнь и отношение к дому. Поэтом…",
+          "anchor": "platform",
+          "raw": "1 Тимофею 3",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
+          "sourceKind": "mdx-source"
+        },
+        {
           "url": "/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo/",
           "title": "Верные и неизвестные: здоровое пастырство",
           "context": "сту. Главные квалификации служителя в 1 Тим. 3 и Тит. 1 — не платформа, масштаб и харизма, а проверенный характер. Способность проповедовать необходима; способность жить под проповедуемым Словом — не менее необходима.",
@@ -51492,6 +51600,18 @@
             "Служение"
           ],
           "sourceOwner": "src/content/articles/sem-tipov-razlichenie-uchiteley.mdx",
+          "sourceKind": "mdx-source"
+        },
+        {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "ик должен сначала многолетней тишиной заработать возможность быть прощённым Богом. Но пасторская должность — не право всякого прощённого христианина Требования 1 Тимофею 3 и Титу 1 описывают не только способность произнести ортодоксальную проповедь. Они включают репутацию, самообладание, верность, проверяемую жизнь и отношение к дому. Поэтому формула «про…",
+          "anchor": "platform",
+          "raw": "Титу 1",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
           "sourceKind": "mdx-source"
         },
         {

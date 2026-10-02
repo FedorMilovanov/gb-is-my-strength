@@ -32,6 +32,11 @@ interface Props {
   footerNote?: string;
   bodyClass?: string;
   mainClass?: string;
+  /** Дополнительные атрибуты для <main>. Нужно маршрутам, которые монтируют
+   *  канонический читательский рельс: его геометрия на десктопе включается
+   *  селектором [data-reader-rail-main], а не классом. Аддитивно и по
+   *  умолчанию пусто — остальные маршруты рендерятся байт-в-байт как раньше. */
+  mainAttrs?: Record<string, string | boolean>;
   hideHeader?: boolean;
   hideFooter?: boolean;
   legacyStylesheets?: string[];
@@ -61,6 +66,7 @@ const {
   footerNote,
   bodyClass = '',
   mainClass = 'astro-main',
+  mainAttrs = {},
   hideHeader = false,
   hideFooter = false,
   legacyStylesheets = [],
@@ -177,7 +183,7 @@ const routeStylesheets = legacyStylesheets.map(versionedStylesheet);
   <body class={bodyClass}>
     <div class="astro-shell">
       {!hideHeader && <Header badge={technicalBadge} />}
-      <main class={mainClass}>
+      <main class={mainClass} {...mainAttrs}>
         <slot />
       </main>
       {!hideFooter && <Footer note={footerNote} />}

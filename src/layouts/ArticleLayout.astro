@@ -12,9 +12,17 @@ interface Props {
   robots?: string;
   pilot?: boolean;
   intendedCanonical?: string;
+  /** Проброс в BaseLayout: маршруту с каноническим читательским рельсом нужен
+   *  data-reader-rail-main на <main>, иначе на десктопе текст не отступает
+   *  от фиксированного рельса. */
+  mainAttrs?: Record<string, string | boolean>;
+  /** Класс <main>. Модификатор article-main--hrail даёт отступы под
+   *  фиксированные мобильные панели; намеренно без класса article-main,
+   *  чтобы не тянуть его ширину и паддинги из site.css. */
+  mainClass?: string;
 }
 
-const { entry, canonical, robots, pilot = false, intendedCanonical } = Astro.props;
+const { entry, canonical, robots, pilot = false, intendedCanonical, mainAttrs, mainClass } = Astro.props;
 const data = entry.data;
 const isTranslation = data.author === 'abner-chou';
 const articleAuthorName = isTranslation ? 'Абнер Чау' : SITE.authorName;
@@ -86,6 +94,24 @@ if (data.series && SERIES_ORDER[data.series]) {
 const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
+    // Site graph parity with every pilot layout: these @id nodes are
+    // referenced below (publisher/isPartOf) and by the registry SEO audit,
+    // so the native layout must define them, not only point at them.
+    {
+      '@type': 'Organization',
+      '@id': SITE.orgId,
+      name: SITE.name,
+      url: `${SITE.url}/`,
+      logo: { '@type': 'ImageObject', url: `${SITE.url}/icons/icon-512.png`, width: 512, height: 512 },
+    },
+    {
+      '@type': 'WebSite',
+      '@id': SITE.websiteId,
+      name: SITE.name,
+      url: `${SITE.url}/`,
+      inLanguage: SITE.locale,
+      publisher: { '@id': SITE.orgId },
+    },
     {
       '@type': isTranslation ? 'ScholarlyArticle' : 'Article',
       '@id': `${articleCanonical}#article`,
@@ -104,6 +130,11 @@ const jsonLd = {
       translator: isTranslation
         ? { '@id': `${SITE.url}/about/#person`, '@type': 'Person', name: SITE.authorName, url: `${SITE.url}/about/` }
         : undefined,
+      // Editor authority mirrors the visible byline (editorialRole/editorialName)
+      // and legacy pilot structured data: owner-authored originals are
+      // 'Автор-редактор', translations are owner-edited. Catalog attribution
+      // and new manifest rows read this node, so it must not be implicit.
+      editor: { '@id': `${SITE.url}/about/#person`, '@type': 'Person', name: SITE.authorName, url: `${SITE.url}/about/` },
       publisher: { '@id': SITE.orgId },
       mainEntityOfPage: { '@type': 'WebPage', '@id': articleCanonical },
       image: ogImage ? { '@type': 'ImageObject', url: ogImage, width: 1200, height: 630 } : undefined,
@@ -145,7 +176,15 @@ const jsonLd = {
   jsonLd={jsonLd}
   technicalBadge={pilot ? 'MDX content pilot · noindex' : undefined}
   footerNote={pilot ? 'Build-only article pipeline preview' : undefined}
+  mainAttrs={mainAttrs}
+  mainClass={mainClass}
 >
+  {/* Читательский хром одиночной статьи (рельс, угловой кластер, мобильная
+      панель, лист настроек) монтируется до <article>: он управляет страницей,
+      а не является частью текста, поэтому внутри data-pagefind-body ему не
+      место. Слот именованный и пустой по умолчанию — маршрут без хрома
+      рендерится ровно как раньше. */}
+  <slot name="chrome" />
   <article class="astro-article" data-article-slug={data.slug} data-pagefind-body>
     <span data-pagefind-meta="author" hidden>{articleAuthorName}</span>
     {data.readingTime && <span data-pagefind-meta="readTime" hidden>{data.readingTime}</span>}

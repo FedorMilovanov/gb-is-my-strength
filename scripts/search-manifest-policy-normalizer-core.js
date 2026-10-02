@@ -197,7 +197,13 @@ function normalizeImage(value, siteUrl = 'https://gospod-bog.ru') {
 }
 
 function readingTime(html) {
-  const match = String(html || '').match(/\breadingTime\s*:\s*(\d+)/);
+  const text = String(html || '');
+  // Legacy/pilot pages expose an inline data literal (`readingTime: N`).
+  // Strict-native ArticleLayout pages expose the same value through the
+  // pagefind/reader meta projection (`data-pagefind-meta="readTime[content]"`),
+  // so both canonical carriers are accepted here.
+  const match = text.match(/\breadingTime\s*:\s*(\d+)/)
+    || text.match(/data-pagefind-meta="readTime\[content\]"[^>]*\bcontent="(\d+)"/);
   return match ? Number(match[1]) : null;
 }
 

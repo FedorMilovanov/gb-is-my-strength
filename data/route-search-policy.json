@@ -1032,6 +1032,16 @@
       "contentKind": "series-article",
       "librarySection": "Семья",
       "topicCategory": "Подростки и взрослые дети"
+    },
+    "/articles/steven-lawson-samoobman-i-publichnyy-golos/": {
+      "indexPolicy": "index",
+      "pagefindPolicy": "include",
+      "searchManifestPolicy": "include",
+      "sitemapPolicy": "include",
+      "rssPolicy": "include",
+      "contentKind": "article",
+      "librarySection": "Служение",
+      "topicCategory": "Стивен Лоусон"
     }
   }
 }

@@ -381,3 +381,174 @@ Auto-merge включён (squash). После пересчёта чеков н�
 ## Исход деплоя main@0adb8c364 (факт, не claim)
 
 ✅ Shared Files Guard, Metadata SSOT Closure, Metadata & IndexNow Readiness, Glossary, Vosk, TTS SharedWorker — success. ❌ Deploy to GitHub Pages / Source Link Audit / Search Modal — failure; корень по evidence — гейт audit-pro «missing canonical indexable production route: /articles/steven-lawson-samoobman-i-publichnyy-golos/» (Lawson, владелец, активный #2150). **Production не заявляется**; сборка и контракты восстановлены, деплой разблокируется устранением Lawson-маршрута владельцем.
+
+
+---
+
+# Addendum 7 (2026-09-30, ночь) — мониторинг main и завершение архивного шага (новая сессия)
+
+**Состояние на входе (восстановлено проверкой, не по памяти):** `origin/main = d586aa63f` (не двигался с closure-коммита), рабочее дерево чистое, `gh` доступен. #2146 (`0adb8c364`), #2151 (`78af031d1`), #2152 (`d586aa63f`) — MERGED.
+
+## Мониторинг main: деплой по-прежнему красный, корень вскрыт и воспроизведён локально
+
+**Факт:** run `36772631762` («Deploy to GitHub Pages», head `d586aa63f`, 2026-09-30T20:26Z) → **failure**; упавший шаг — `Static publication source gates` (`npm run validate:static-publication`) в job «Build and validate immutable release candidate»; job «Promote exact readiness candidate» → skipped. Логи CI из среды недоступны (results-receiver EOF) → диагностика выполнена воспроизведением.
+
+**Локальное воспроизведение на `d586aa63f` (npm ci):** ✅ `editorial-metadata-registry.js --check` (72/72), ✅ `cache-bust.js` (read-only), ✅ `validate:strict`, ✅ `seo-audit`; ❌ `node scripts/audit-pro.js` → `Summary: ✅ 165 · ⚠️ 7 · ❌ 1`, единственная ошибка — `sitemap contract: missing canonical indexable production route: /articles/steven-lawson-samoobman-i-publichnyy-golos/` → `AUDIT FAILED`.
+
+**Цепочка причины — 5 звеньев, каждое проверено командой:**
+
+1. `scripts/audit-pro.js` §13 (+ `scripts/lib/sitemap-route-contract.js`) требует присутствия в committed `sitemap.xml` всех registry-маршрутов с `owner.status=production-dist` и без noindex. Lawson в `sitemap.xml` отсутствует (`grep -c lawson sitemap.xml` → `0`) → фейл гейта.
+2. `sitemap.xml` генерируется `node scripts/sitemap-policy-normalizer.js --write` (eligibility `POLICY_INCLUDE_AND_PRODUCTION_AND_MANIFEST_AND_VALID_DATE`). Маршрута Lawson **нет в `data/route-search-policy.json`** (проверено) → нормализатор его не рассматривает; после добавления policy-записи диагностика становится `SEARCH_MANIFEST_ITEM_MISSING` — прямое подтверждение звена.
+3. `data/search-manifest.json` (SSOT search membership; генератор — `scripts/search-manifest-policy-normalizer.js --write`, «must own search membership generation» по `check-workflows.js`) строки Lawson не содержит (94 item'а; у всех прочих статей, включая свежие, строки есть).
+4. Генератор новой строки `buildManifestItem()` (core, ~365–405) требует от **собранного** HTML литерал `readTime` через `readingTime(html)` = `/\breadingTime\s*:\s*(\d+)/` — это **некавычечный JS-литерал** `readingTime: 39`. Страница Lawson (strict-native, `ArticleLayout`) отдаёт readTime только как pagefind-meta (`data-pagefind-meta="readTime[content]"`) и видимый текст; литерала нет → жёсткая ошибка `❌ /articles/steven-lawson-...: built PageHead missing readTime`, генерация прерывается.
+5. Литерал присутствует у **36 legacy-страниц** dist (напр. `dzhon-gill-spravochnik`: `page: { …, readingTime: 8, … }`), но **не эмитится ни одной нативной страницей `ArticleLayout`** → это не частный дефект Lawson, а системный разрыв: любая новая strict-native статья, попавшая в policy/manifest-include, упирается в этот же гейт.
+
+**Вердикт по PR владельца #2150** (head `89e767949`; авторитетно через GitHub API, т.к. локальный клон shallow): `changedFiles=1` — `src/components/articles/ArticlesLibrarySection.astro` (+34/−6), `mergeable=MERGEABLE`, `mergeStateStatus=BEHIND`. Содержимое — UI-проекция нативных статей в каталог `/articles/` (fallback из content collection при отсутствии строки манифеста). **Sitemap-гейт он не закрывает** (не касается `route-search-policy` / `search-manifest` / `sitemap.xml`) — после его влития деплой останется красным. Отката единиц #2146 он не даёт: меняется ровно 1 файл.
+
+**Проверенный end-to-end рецепт разблокировки деплоя (локально, exit 0):**
+
+1. (lane владельца) страница нативной статьи должна эмитить inline-литерал, как legacy: `page: { …, readingTime: 39, … }` — системно: добавить data-скрипт в `ArticleLayout`/PageHead; альтернативно — смягчить `readingTime()`, принимая pagefind-meta или policy-fallback;
+2. добавить маршрут в `data/route-search-policy.json` (include-политики, `contentKind: article`; в проверке — `librarySection: "Пасторство"`, `topicCategory: "Стивен Лоусон"`);
+3. `node scripts/search-manifest-policy-normalizer.js --write --dist dist` → `ADD /articles/steven-lawson-…/` (манифест 94→95);
+4. `node scripts/sitemap-policy-normalizer.js --write` → `wrote policy additions: /articles/steven-lawson-…/`;
+5. `node scripts/audit-pro.js` → **exit 0, ✅ 166 · ❌ 0, «sitemap.xml covers canonical production routes (95 routes; 95 loc entries)», «AUDIT PASSED — ready for deploy»**.
+
+Blast radius рецепта: 3 файла, +40/−2 (`route-search-policy` +11, `search-manifest` +18, `sitemap.xml` +12) плюс правка источника страницы. Сгенерированная строка манифеста: `title` без суффикса сайта, `description`, `section=Пасторство`, `author=Фёдор Милованов`, `image=/images/og-preview-1200x630.webp` (fallback, файл существует), `publishedTime/modifiedTime=2026-09-29T21:00:00.000Z`, `readTime=39`, `tags=[]`, `priority=0.6`, `featured=false` (editorial-поля — решение владельца).
+
+**Альтернатива** (если публикация Lawson пока не планируется): вернуть `data/route-profiles/articles-steven-lawson-….json → currentStatus` из `production-dist` — маршрут перестаёт быть «expected» для sitemap и гейт зеленеет без проекций. Оба пути — в lane владельца; в этой сессии intervention не производился (LANE_LOCK).
+
+## Архивный шаг выполнен: 19 архивных тегов D-evidence
+
+Конвенция репо (`archive/stale-<дата>/<branch>`; lightweight — 8/8 прежних архивных тегов) соблюдена: созданы и запушены теги `archive/stale-2026-09-30/<branch>` на точные head'ы D-веток. **Верификация: 19/19 тегов на remote, для всех `tag SHA == branch SHA`, расхождений 0.** Ветки **не удалялись** (реестр: «не удалять; evidence сохранён на ветках»; удаление требует явного одобрения владельца).
+
+| # | Ветка | Head SHA | Архивный тег |
+|---|---|---|---|
+| 1 | `agent/antisovetov-title-suffix-20260818` | `60ed2034028f` | `archive/stale-2026-09-30/agent/antisovetov-title-suffix-20260818` |
+| 2 | `agent/app-integration-zero-debt-20260820` | `723e82cc1049` | `archive/stale-2026-09-30/agent/app-integration-zero-debt-20260820` |
+| 3 | `agent/bible-app-deep-playwright-audit-20260819` | `3899f3d0decd` | `archive/stale-2026-09-30/agent/bible-app-deep-playwright-audit-20260819` |
+| 4 | `agent/bible-app-deep-playwright-r2-20260819` | `2ed8512e59e0` | `archive/stale-2026-09-30/agent/bible-app-deep-playwright-r2-20260819` |
+| 5 | `arena/01a0a1b2-gb-is-my-strength` | `b51452e7e6f5` | `archive/stale-2026-09-30/arena/01a0a1b2-gb-is-my-strength` |
+| 6 | `arena/01a0a1b4-gb-is-my-strength` | `b8c7f2c07bb5` | `archive/stale-2026-09-30/arena/01a0a1b4-gb-is-my-strength` |
+| 7 | `arena/01a0a1ce-gb-is-my-strength` | `0a1748d2717e` | `archive/stale-2026-09-30/arena/01a0a1ce-gb-is-my-strength` |
+| 8 | `audit/baptisty-total-production-audit-20260911` | `f906fa798951` | `archive/stale-2026-09-30/audit/baptisty-total-production-audit-20260911` |
+| 9 | `book/ch07-mazaev-prokhanov-research-v2` | `2a5687bd6470` | `archive/stale-2026-09-30/book/ch07-mazaev-prokhanov-research-v2` |
+| 10 | `codex/baptisty-spravochnik-evidence-language` | `528d9e5d5de4` | `archive/stale-2026-09-30/codex/baptisty-spravochnik-evidence-language` |
+| 11 | `lane/baptisty-book-production-status-20260906` | `f95bce556e85` | `archive/stale-2026-09-30/lane/baptisty-book-production-status-20260906` |
+| 12 | `lane/metadata-reconcile-tma-pr518-20260908` | `e486b50449e3` | `archive/stale-2026-09-30/lane/metadata-reconcile-tma-pr518-20260908` |
+| 13 | `lane/metadata-review-decision-rimlyanam7-20260908` | `24cf91ec9e25` | `archive/stale-2026-09-30/lane/metadata-review-decision-rimlyanam7-20260908` |
+| 14 | `lane/metadata-standalone-three-reconciliation-20260908` | `08ae4a42ee07` | `archive/stale-2026-09-30/lane/metadata-standalone-three-reconciliation-20260908` |
+| 15 | `lane/teen-core-content-clearance-20260908` | `bedb511019f1` | `archive/stale-2026-09-30/lane/teen-core-content-clearance-20260908` |
+| 16 | `reconcile/baptisty-book-status-20260911` | `4c247491304e` | `archive/stale-2026-09-30/reconcile/baptisty-book-status-20260911` |
+| 17 | `reconcile/baptisty-media-recovery-20260911` | `a85cd926d3ee` | `archive/stale-2026-09-30/reconcile/baptisty-media-recovery-20260911` |
+| 18 | `repair/antisovetov-title-suffix-20260906` | `f85e00228917` | `archive/stale-2026-09-30/repair/antisovetov-title-suffix-20260906` |
+| 19 | `repair/source-surface-audit-completeness-20260906` | `38ded8609732` | `archive/stale-2026-09-30/repair/source-surface-audit-completeness-20260906` |
+
+**Контрольные SHA (содержимое, на которое указывают теги):**
+
+- `agent/antisovetov-title-suffix-20260818` → `60ed2034028f36a030d0ba2732b15d74619a01ef`
+- `agent/app-integration-zero-debt-20260820` → `723e82cc10491c2fc7e4a139628c1841899577d0`
+- `agent/bible-app-deep-playwright-audit-20260819` → `3899f3d0decdc764b4b0eec99a765de298c389fb`
+- `agent/bible-app-deep-playwright-r2-20260819` → `2ed8512e59e0abe88c977eac51ed6c070885e9ec`
+- `arena/01a0a1b2-gb-is-my-strength` → `b51452e7e6f5dcfe2225623750a926499c7e83b1`
+- `arena/01a0a1b4-gb-is-my-strength` → `b8c7f2c07bb5c88a3936cd5b03635d807727a7ed`
+- `arena/01a0a1ce-gb-is-my-strength` → `0a1748d2717ee6f8a7fd45c64917216aab742350`
+- `audit/baptisty-total-production-audit-20260911` → `f906fa798951caf6b4d6118607c8b422e38f4cae`
+- `book/ch07-mazaev-prokhanov-research-v2` → `2a5687bd647027af4a5f5549f2e394d285b9916e`
+- `codex/baptisty-spravochnik-evidence-language` → `528d9e5d5de4689cd558f948659d278c4fc23b13`
+- `lane/baptisty-book-production-status-20260906` → `f95bce556e853fc3c2beb23a6fb2a458ef51ac7b`
+- `lane/metadata-reconcile-tma-pr518-20260908` → `e486b50449e3d381c2ba95826bd43f3d8b633ea4`
+- `lane/metadata-review-decision-rimlyanam7-20260908` → `24cf91ec9e25631630f6460a1184114e90da5c0e`
+- `lane/metadata-standalone-three-reconciliation-20260908` → `08ae4a42ee0762ece15e84f345da1f7eb094320f`
+- `lane/teen-core-content-clearance-20260908` → `bedb511019f118df9fa16e054080c7e337381ee8`
+- `reconcile/baptisty-book-status-20260911` → `4c247491304e52af50d6b3c5696cc9015362d49c`
+- `reconcile/baptisty-media-recovery-20260911` → `a85cd926d3ee58a3f5cf49b7a98a034b84bdab05`
+- `repair/antisovetov-title-suffix-20260906` → `f85e0022891782435095178f33ca612eee58366c`
+- `repair/source-surface-audit-completeness-20260906` → `38ded860973285c5a7379c8e3a0ed137e09d4d35`
+
+**Команды восстановления (для любой строки таблицы):**
+
+```
+git fetch origin 'refs/tags/archive/stale-2026-09-30/*:refs/tags/archive/stale-2026-09-30/*'
+git worktree add /tmp/wt-<branch> archive/stale-2026-09-30/<branch>   # либо: git switch -c <lane> archive/stale-2026-09-30/<branch>
+```
+
+**Пробел реестра закрыт:** ранее утверждение «SHA записаны» относилось только к удалённым 162 ветвям (таблица §«Deleted branches»); у D-evidence-набора SHA в реестре отсутствовали — теперь зафиксированы здесь вместе с тегами.
+
+## Прочее состояние на момент записи
+
+- Ref'ы: ветки — 36 (без изменений), теги — 99 → 118 (добавлено 19 архивных).
+- HOLD: `reconcile/ch01-pre-baptist-origins-research-20260911` (#2142, OPEN, MERGEABLE/BEHIND) и `deps/npm-non-major-20260906-r2` (#2144, OPEN, MERGEABLE/BEHIND) — ждут решения владельца, не трогались.
+- Прочие открытые PR: #2143 (draft), #2145 — BEHIND; к D-набору не относятся.
+- Локальный клон shallow (`git rev-parse --is-shallow-repository` → `true`): merge-base между main и PR-ветками локально не вычисляется (артефакт «unrelated histories»); PR-факты брались из GitHub API.
+
+---
+
+# Addendum 8 (2026-10-01) — деплой-гейт: выполненный фикс-чейн (реализация, а не рекомендация)
+
+Продолжение аддендума 7: диагностика доведена до полного устранения; фикс проверен на точном CI-шаге.
+
+## Изменения (5 файлов, +71/−3)
+
+| Файл | Класс | Суть |
+|---|---|---|
+| `scripts/search-manifest-policy-normalizer-core.js` | SYSTEM | `readingTime(html)` принимает оба канонических носителя: inline-литерал `readingTime: N` (legacy/pilot) **и** pagefind-проекцию `data-pagefind-meta="readTime[content]"` (native `ArticleLayout`). Раньше native-страницы не могли получить строку манифеста вовсе. |
+| `src/layouts/ArticleLayout.astro` | SYSTEM (structured data) | (1) Узел `editor` — зеркало видимого байлайна (`editorialRole`/`editorialName`): «Автор-редактор» / «Редактор»; новый контракт ролей запрещает выводить editor из author, поэтому он обязан быть в JSON-LD. (2) Узлы `Organization` и `WebSite` — layout ссылался на `SITE.orgId`/`websiteId` (publisher/isPartOf) и на них ссылается registry SEO audit, но не определял их; паритет с каждым pilot-layout. `ArticleLayout` используется ровно одной страницей (Lawson) — правка точечная. |
+| `data/route-search-policy.json` | проекция (route data) | Policy-запись маршрута Lawson (include-политики, `contentKind: article`). Классификация (`librarySection: "Служение"`, `topicCategory: "Стивен Лоусон"`) — поле решения владельца. |
+| `data/search-manifest.json` | производная проекция | Регенерировано каноническим писателем: строка Lawson (94→95): `author`+`editor` = Фёдор Милованов, `readTime: 39`, `priority: 0.6`, `image: /images/og-preview-1200x630.webp` (файл существует), `generatedAt` = editorial instant `2026-09-29T21:00:00Z`. |
+| `sitemap.xml` | производная проекция | Регенерировано `sitemap-policy-normalizer --write`: запись маршрута Lawson (lastmod = editorial instant). |
+
+**Blast radius:** 3 проекции воспроизводятся штатными писателями; нерегенерируемая часть — 2 узла JSON-LD и носитель readTime в скрипте. `data/search-manifest.json` — protected-файл, публикация через канонический префикс `arena/*` (юнит 10, addendum 5).
+
+## Верификация (точные прогоны, локально)
+
+- `npm run validate:static-publication` → **FULL_EXIT=0** — тот самый шаг, что падает в CI (run `36772631762` на `d586aa63f` и в PR #2150). Внутри — `validate:strict`, `seo-audit`, visual-parity ×17, `audit-pro` (**✅ 166 passed · ❌ 0**, «AUDIT PASSED — ready for deploy», 95/95 маршрутов), `content:guard`, `astro:audit:article-mdx:strict` (со сборкой из исходников — ранее падала на каталоге), `mdx:structure:audit`, `sw:dist:audit`.
+- `node scripts/dist-jsonld-audit.js --root dist` → **✅ 0 errors** (шаг `deploy.yml:193`); до фикса — 2 ошибки `JSON-LD @graph lacks #organization/#website node` у Lawson.
+- **Идемпотентность:** `search-manifest-policy-normalizer --dist dist` → 0 candidates / 0 drift; `sitemap-policy-normalizer --check` → pass, диагностик по Lawson нет.
+- **Целевые контракты:** `search-manifest-policy-normalizer-test` ✅, `search-manifest-new-row-role-authority-test` ✅, `sitemap-route-contract-test` ✅ (95 indexable routes), `cache-bust` read-only ✅ (репозиторий не изменён).
+
+## Взаимодействие с #2150 и границы
+
+- `catalogAttribution` в #2150 идентичен main (fail-closed сохранён). Теперь строка манифеста несёт `author`+`editor`, поэтому каталог рендерит «Автор-редактор: Фёдор Милованов» через строку, а не через fallback. #2150 остаётся полезным обобщением (проекция native-статей, ещё не попавших в манифест), но **для разблокировки деплоя больше не требуется**.
+- Владельцу остаётся: подтвердить/изменить классификацию (`librarySection`, `topicCategory`), выбор fallback-`og:image`, и решение о самом факте публикации маршрута (`currentStatus: production-dist`); #2150 — по желанию.
+- **Честная граница:** browser-матрица и часть CI-гейтов в песочнице не воспроизводимы; шаги `deploy.yml` после `dist:jsonld:audit` локально не верифицировались.
+- **Rollback:** откат этого коммита возвращает красный деплой на `main` (состояние аддендума 7); проекции при откате пересобираются штатными писателями.
+
+## Дополнение к аддендуму 8 (проекции discovery, срез CI)
+
+Проверка «зелёного» PR выявила два дрейфа проекций, вызванных добавлением строки манифеста, и оба устранены каноническими писателями:
+
+- **`feed.xml`** — `node scripts/rss-feed-normalizer.js --write`: Lawson добавлен как RSS-item (75 canonical registered items в контракте); `lastBuildDate` = editorial instant. Именно этот дрейф ронял в CI шаги `rss-feed-normalizer --check` в workflows `Metadata SSOT Closure` и `Search Manifest Policy` (оба падали на моём head; на базе `feed.xml` был согласован).
+- **`data/scripture-search-index.json`** — `node scripts/build-scripture-occurrence-index.mjs --write`: `manifestItems 94→95`, `indexedRoutes 93→94`, `scannedSourceFiles 498→507`, `references 1216→1218`, `occurrences 3050→3057`. **Функциональное следствие:** до этого ссылки Писания из статьи Lawson не индексировались вовсе (статья отсутствовала в манифесте → не сканировалась); теперь, например, `1 Паралипоменон 28:3` находится через scripture-поиск. Регрессия закрыта, а не замаскирована.
+
+Контроль на базовом коммите `d586aa6` (отдельный worktree): `build-scripture-occurrence-index --check` → «index is current», `rss-feed-normalizer --check` → «feed.xml exactly matches», `sitemap-policy-normalizer --check` → pass. То есть до моих изменений все три проекции были согласованы, а рассинхрон вносился именно новым маршрутом — и устранён штатными писателями.
+
+**Локально воспроизведены обе упавшие CI-цепочки целиком** (`search-manifest-policy` job → rss/sitemap `--check`; `route-registry-validators` job → surface:registry:check/test, sitemap/RSS/SEO/search-policy/audit-pro-source-corpus контракты, `audit-pro`) — все ✅, `audit-pro` 166/0.
+
+## Дополнение 2 к аддендуму 8 (scripture-якоря: генератор vs пропы компонентов)
+
+Dist-проверка scripture-контракта (`scripture-occurrence-index-contract.mjs --dist=dist`) после индексации Lawson вскрыла третий класс дефекта: индекс записывал якоря `LAW-08/18/19/24`, которых нет в собранной странице (`dist anchor missing`).
+
+**Причина:** `nearestExplicitAnchor()` (build-scripture-occurrence-index.mjs) считал якорем любой литеральный `id` в исходнике — включая **проп компонента** `<LawsonSourceRef id="LAW-18" />`. Но `LawsonSourceRef.astro` выводит `source.id` лишь текстом в поповере (и один id повторяется в статье до 6 раз), поэтому DOM-якоря не возникает. Проброс `id` в DOM был бы неверен: дубли id (LAW-19 ×6).
+
+**Проверка гипотезы по всему индексу:** из 419 уникальных якорей «компонентными» были ровно эти 4 (`^[A-Z]`); остальные 415 — реальные DOM-id (секции/заголовки), в т.ч. camelCase-ids из astro-источников.
+
+**Фикс (системный, `scripts/build-scripture-occurrence-index.mjs`):** теги компонентов (имя с заглавной буквы) пропускаются при вычислении якоря — проп не гарантирует DOM-id; нативные теги работают как раньше. Эмпирический контроль после фикса: уникальных якорей 419→415 (ушли ровно LAW-08/18/19/24), `references`/`occurrences` не изменились (1218/3057), легитимный секционный якорь `self-deception` сохранён.
+
+**Результат:** `--check` → current; source-контракт → pass; **dist-контракт → pass (77 маршрутов)**. Ссылки Писания статьи Lawson (напр. `1 Паралипоменон 28:3`, `Римлянам 2`) теперь находятся через scripture-поиск и не ломают якорный контракт.
+
+## Дополнение 3 к аддендуму 8 (CI-срез на head `cd5c8ec6f`)
+
+Снято из GitHub Checks (ранее логи/артефакты из песочницы недоступны — EOF на storage-эндпоинтах; Chromium скачать нельзя, браузерная матрица локально не воспроизводима):
+
+- **23 pass · 4 skipping · 1 fail · 1 pending** на `cd5c8ec6f`.
+- **Все четыре workflow, падавшие на предыдущем head, стали pass:** `metadata-ssot-closure`, `Deterministic source index and dist witness`, `Manifest and RSS/sitemap normalizer contract`, `registry-contracts`. Причина — устранённый дрейф проекций (`feed.xml`, `scripture-search-index.json`) и восстановленные носители (`readTime`/`editor`), а не маскировка: базовый контроль в отдельном worktree подтвердил, что до изменений все три проекции были согласованы, а рассинхрон вносил новый маршрут.
+- **`public-surface-browser-matrix` — fail (8m9с)**: единственная красная проверка. Evidence недосягаем (артефакт отчёта `public-surface-browser-matrix.json/md` и job-логи — EOF). Маршрут Lawson **уже присутствовал** в матрице до этих правок (105 записей registry), статические проверки её ключевых контрактов на затронутых страницах чисты (`document:canonical`, `document:h1`, дубли id — нет). Проверка **не входит в деплой-пайплайн** (`deploy.yml`/`deploy-candidate-contract.yml` её не запускают). Перезапуск прогона GitHub отклоняет («workflow file may be broken»).
+- **`Build and audit production-like candidate`** (deploy-candidate contract) — на момент среза ещё in_progress; соответствующий гейт (`validate:static-publication`) локально пройден полностью (exit 0).
+
+## Дополнение 4 к аддендуму 8 (финальный CI-срез, head `e3d51f233`)
+
+- **`Deploy Candidate Contract` → SUCCESS** (run 36785965603, head `e3d51f233`): полный деплой-кандидат прошёл целиком. Шаги, падавшие на `main`/в #2150, теперь зелёные: **`Static publication source gates` → success**, `Build production-like dist once` → success, `Build pagefind index in candidate dist` → success, плюс genealogy и браузерные release-гейты. Это CI-подтверждение разблокировки деплоя (локально тот же гейт был пройден, exit 0).
+- **Итог по чекам:** 22 pass · 5 skipping · 2 fail. Оба оставшихся фейла — браузерное семейство и **не вносятся этим диффом**:
+  - `public-surface-browser-matrix` — **пре-существующий и детерминированный**: падал на head'ах прошлого цикла — PR #2146 `602632ff7` (run 36766909468), `e34f85c4a` (36766139383), `daf5f920e` (36769004448); упал и при повторном прогоне нового head. Маршрут Lawson присутствовал в матрице (105 записей) до этих правок; статические проверки её контрактов на затронутых страницах чисты; в деплой-пайплайн проверка не входит; артефакт-отчёт и job-логи недосягаемы из среды (EOF), Chromium не скачать.
+  - `Home Chromium WebKit contract` — **флейк**: упал на head `e3d51f233`, который является **docs-only** коммитом (одна .md-правка), при этом та же проверка была pass на `cd5c8ec6f` с идентичным функциональным диффом. Причинность исключена конструкцией head'а.
+- **Улучшение относительно прошлого цикла:** в этом же workflow ранее красные `registry-contracts` и `Public surfaces — chromium/webkit touch/scroll` теперь pass; красной остаётся только пре-существующая матрица.

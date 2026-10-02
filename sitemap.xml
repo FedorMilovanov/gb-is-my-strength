@@ -757,4 +757,16 @@
       <image:title>G3: рост, кризис и завершение операций</image:title>
     </image:image>
   </url>
+
+  <!-- Canonical policy-generated additions -->
+  <url>
+    <loc>https://gospod-bog.ru/articles/steven-lawson-samoobman-i-publichnyy-golos/</loc>
+    <lastmod>2026-09-29T21:00:00.000Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://gospod-bog.ru/images/articles/steven-lawson-samoobman-i-publichnyy-golos.webp</image:loc>
+      <image:title>Стивен Лоусон: самообман, падение и публичный голос</image:title>
+    </image:image>
+  </url>
 </urlset>

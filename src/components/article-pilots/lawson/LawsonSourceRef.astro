@@ -11,7 +11,7 @@ const source = lawsonSource(id);
 <details class="lawson-source-ref">
   <summary aria-label={`Источник ${source.n}: ${source.label}`}>{source.n}</summary>
   <span class="lawson-source-popover" role="note">
-    <span class="lawson-source-meta">{source.id} · {LAWSON_EVIDENCE_LABEL[source.evidenceClass]}</span>
+    <span class="lawson-source-meta">{LAWSON_EVIDENCE_LABEL[source.evidenceClass]}</span>
     <strong>{source.label}</strong>
     <span>{source.proves}</span>
     {source.boundary && <span class="lawson-source-boundary"><b>Граница:</b> {source.boundary}</span>}

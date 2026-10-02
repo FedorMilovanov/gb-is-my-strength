@@ -115,6 +115,29 @@
   font-size: .92rem;
 }
 
+.lawson-statement {
+  margin: 1.4rem 0;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border);
+  border-left: 4px solid color-mix(in srgb, var(--accent) 55%, var(--border));
+  border-radius: .8rem;
+  background: color-mix(in srgb, var(--bg) 98%, var(--accent) 2%);
+}
+.lawson-statement__source {
+  margin: 0 0 .6rem;
+  color: var(--muted);
+  font: 700 .72rem/1.3 var(--font-body, Inter, sans-serif);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.lawson-statement blockquote { margin: 0; padding: 0; border: 0; }
+.lawson-statement blockquote p {
+  margin: 0;
+  font-family: var(--font-serif, Lora, Georgia, serif);
+  font-size: 1.04rem;
+  line-height: 1.62;
+}
+
 .lawson-glossary-card p { margin: 0; }
 
 .lawson-bibliography { margin-top: 3rem; }

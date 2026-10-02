@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import Content from '@/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx';
 import ArticleLayout from '@/layouts/ArticleLayout.astro';
+import LawsonPageChrome from '@/components/article-pilots/lawson/LawsonPageChrome.astro';
 import { SITE } from '@/data/site';
 
 const slug = 'steven-lawson-samoobman-i-publichnyy-golos';
@@ -15,6 +16,12 @@ if (!entry) {
 const canonical = `${SITE.url}/articles/${slug}/`;
 ---
 
-<ArticleLayout entry={entry} canonical={canonical}>
+<ArticleLayout
+  entry={entry}
+  canonical={canonical}
+  mainClass="astro-main article-main--hrail"
+  mainAttrs={{ 'data-reader-rail-main': true }}
+>
+  <LawsonPageChrome slot="chrome" />
   <Content />
 </ArticleLayout>
