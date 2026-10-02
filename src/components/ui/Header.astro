@@ -55,13 +55,6 @@ const hardTextsLabel = SECTION_META['hard-texts'].label;
       event.preventDefault();
       requestSearchOpen();
     }, true);
-
-    document.addEventListener('keydown', (event) => {
-      if (window.GBSearch?.__ready || event.defaultPrevented || event.altKey) return;
-      if (!(event.ctrlKey || event.metaKey) || String(event.key).toLowerCase() !== 'k') return;
-      event.preventDefault();
-      requestSearchOpen();
-    });
   })();
 </script>
 
