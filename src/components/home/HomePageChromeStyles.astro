@@ -105,11 +105,45 @@
     outline-offset: 2px;
   }
 
-  @media (min-width: 761px) {
-    body.home-page .h-navbar #hMobileMenuBtn {
-      display: none;
-    }
+  @media (min-width: 901px) {
+  body.home-page .h-navbar #hMobileMenuBtn {
+    display: none;
   }
+}
+
+/* Home carries seven desktop destinations. At tablet widths the full
+   row cannot coexist with the fixed 44px search/theme controls, so
+   hand navigation to the already-canonical mobile menu before the
+   controls can leave the viewport. */
+@media (min-width: 761px) and (max-width: 900px) {
+  body.home-page .h-navbar .h-nav-links {
+    display: none;
+  }
+
+  body.home-page .h-navbar #hMobileMenuBtn {
+    display: flex;
+  }
+
+  body.home-page .h-mobile-backdrop {
+    display: block;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .25s ease, visibility 0s .25s;
+  }
+
+  body.home-page .h-mobile-backdrop.open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity .25s ease, visibility 0s 0s;
+  }
+
+  body.home-page .h-mobile-nav {
+    top: 70px;
+    max-height: calc(100dvh - 70px);
+  }
+}
 
   /* The shared search engine remains the data owner. Home only supplies a
      route-scoped visual skin and an explicit close affordance. Card planes stay

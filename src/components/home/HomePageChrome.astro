@@ -206,7 +206,7 @@ window.SITE_CONFIG = {
       panel.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')
     ).filter((control) => control.getAttribute('aria-hidden') !== 'true');
     const isOpen = () => trigger.getAttribute('aria-expanded') === 'true' && panel.classList.contains('open');
-    const desktopMedia = window.matchMedia('(min-width: 761px)');
+    const desktopMedia = window.matchMedia('(min-width: 901px)');
     const desktopFocusTarget = document.querySelector('.h-nav-links a');
     const inertRoots = [
       document.querySelector('.home-v20'),
