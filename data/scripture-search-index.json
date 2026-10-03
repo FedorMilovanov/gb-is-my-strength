@@ -14,7 +14,7 @@
     "indexedRoutes": 94,
     "scannedSourceFiles": 508,
     "references": 1220,
-    "occurrences": 3065,
+    "occurrences": 3066,
     "canonicalTextRecords": 148,
     "referencesWithoutCanonicalText": 1072,
     "chapterRanges": 31,
@@ -45388,6 +45388,18 @@
           ],
           "sourceOwner": "src/components/article-pilots/ne-v-odinochku/NeVOdinochkuBody.astro",
           "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "ерующий, включая меня, мог быть запутан в грехе. Сам того не понимая, я учил тому, что я называю позицией гиперлордшипа». Рядом стоит и признание о Галатам 6:1: «мне стыдно признаться, что прежде я не оставлял места борющемуся христианину, застигнутому грехом… я стал осудительным ко всякому, кто не дотягивал до библейских стандартов святости». А",
+          "anchor": null,
+          "raw": "Галатам 6:1",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
+          "sourceKind": "mdx-source"
         },
         {
           "url": "/articles/teksty-pisaniya-kotorymi-manipuliruyut/",

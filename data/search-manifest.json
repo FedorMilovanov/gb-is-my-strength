@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-03T19:31:57.000Z",
+  "generatedAt": "2026-10-03T21:27:28.000Z",
   "project": {
     "name": "Господь Бог — Сила Моя",
     "url": "https://gospod-bog.ru/",
@@ -1823,8 +1823,8 @@
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-09-29T21:00:00.000Z",
-      "modifiedTime": "2026-10-03T19:31:57.000Z",
-      "readTime": 72
+      "modifiedTime": "2026-10-03T21:27:28.000Z",
+      "readTime": 74
     }
   ]
 }
