@@ -14,7 +14,7 @@ Research authority:
 
 Publication layer:
 - content MDX with explicit claim-boundary prose;
-- 41-entry Lawson source registry with evidence tiers and per-source boundaries (23 at first publication, extended 2026-10-03);
+- 44-entry Lawson source registry with evidence tiers and per-source boundaries (23 at first publication, extended 2026-10-03);
 - keyboard/focus accessible source references and glossary terms;
 - rendered bibliography;
 - explicit canonical Astro route through the standard `ArticleLayout`;
