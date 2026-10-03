@@ -10,6 +10,9 @@ export interface LawsonTocItem {
  * Список зеркалит блок «Содержание» внутри самой статьи
  * (`#lawson-toc-heading`), поэтому рельс и внутритекстовое оглавление не могут
  * разъехаться: оба перечисляют одни и те же якоря в одном порядке.
+ * Пункт `#sources` не имеет <h2> внутри MDX: раздел рендерит
+ * LawsonBibliography.astro, поэтому его подпись берётся из заголовка того
+ * компонента (`#lawson-sources-heading`) и не может разъехаться с ним.
  */
 export const LAWSON_TOC: LawsonTocItem[] = [
   { href: '#ramka', label: "Что установлено — и где нужно остановиться", level: 2 },
@@ -37,5 +40,5 @@ export const LAWSON_TOC: LawsonTocItem[] = [
   { href: '#pastoral', label: "Почему эта история касается не только Лоусона", level: 2 },
   { href: '#verdict', label: "Вывод: что теперь должно говорить громче слов", level: 2 },
   { href: '#glossary', label: "Краткий словарь", level: 2 },
-  { href: '#sources', label: "Источники", level: 2 },
+  { href: '#sources', label: "Источники и границы проверки", level: 2 },
 ];
