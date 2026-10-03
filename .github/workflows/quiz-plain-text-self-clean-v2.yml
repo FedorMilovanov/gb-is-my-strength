@@ -1,0 +1,360 @@
+name: Quiz plain-text self-clean repair v2
+
+on:
+  push:
+    branches:
+      - fix/quiz-plain-text-payload-20261003
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/quiz-plain-text-payload-20261003
+          fetch-depth: 0
+
+      - name: Rebuild branch as source cleanup plus permanent contracts
+        shell: bash
+        env:
+          BASE_SHA: 69d3aa13361063a6aaa6272553c4874866829fa0
+          BRANCH: fix/quiz-plain-text-payload-20261003
+          EXPECTED_REMOTE_HEAD: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "$BASE_SHA"
+          git reset --hard "$BASE_SHA"
+
+          python3 <<'PY'
+          from pathlib import Path
+          import json
+          import re
+
+          root = Path('src')
+          exts = {'.astro', '.js', '.mjs', '.ts', '.tsx', '.jsx'}
+          tag_re = re.compile(r'</?(?:em|span)(?:\s[^>]*)?>', re.I)
+          quiz_key_re = re.compile(r'["\']quiz["\']\s*:')
+
+          def object_span(text, marker_at):
+              eq = text.find('=', marker_at)
+              if eq < 0:
+                  raise RuntimeError('SITE_CONFIG assignment has no =')
+              start = text.find('{', eq)
+              if start < 0:
+                  raise RuntimeError('SITE_CONFIG assignment has no object')
+              depth = 0
+              quote = None
+              escaped = False
+              for i in range(start, len(text)):
+                  ch = text[i]
+                  if quote is not None:
+                      if escaped:
+                          escaped = False
+                      elif ch == '\\':
+                          escaped = True
+                      elif ch == quote:
+                          quote = None
+                      continue
+                  if ch in ('"', "'"):
+                      quote = ch
+                      continue
+                  if ch == '{':
+                      depth += 1
+                  elif ch == '}':
+                      depth -= 1
+                      if depth == 0:
+                          return start, i + 1
+              raise RuntimeError('unterminated SITE_CONFIG object')
+
+          def quiz_tag_count(value):
+              if isinstance(value, str):
+                  return len(tag_re.findall(value))
+              if isinstance(value, list):
+                  return sum(quiz_tag_count(v) for v in value)
+              if isinstance(value, dict):
+                  return sum(quiz_tag_count(v) for v in value.values())
+              return 0
+
+          modified = []
+          total = 0
+          quiz_configs = 0
+          for path in sorted(p for p in root.rglob('*') if p.is_file() and p.suffix in exts):
+              text = path.read_text(encoding='utf-8')
+              marker = 'window.SITE_CONFIG'
+              cursor = 0
+              edits = []
+              file_count = 0
+              while True:
+                  at = text.find(marker, cursor)
+                  if at < 0:
+                      break
+                  start, end = object_span(text, at)
+                  raw = text[start:end]
+                  cursor = end
+                  if not quiz_key_re.search(raw):
+                      continue
+                  try:
+                      config = json.loads(raw)
+                  except json.JSONDecodeError as exc:
+                      raise RuntimeError(f'{path}: quiz-bearing SITE_CONFIG is not static JSON: {exc}') from exc
+                  quiz = config.get('quiz') if isinstance(config, dict) else None
+                  if not isinstance(quiz, dict):
+                      continue
+                  quiz_configs += 1
+                  qcount = quiz_tag_count(quiz)
+                  if not qcount:
+                      continue
+                  all_count = len(tag_re.findall(raw))
+                  if all_count != qcount:
+                      raise RuntimeError(f'{path}: found {all_count} em/span tags in SITE_CONFIG but only {qcount} belong to quiz; refusing broad replacement')
+                  cleaned = tag_re.sub('', raw)
+                  edits.append((start, end, cleaned))
+                  file_count += qcount
+              if edits:
+                  for start, end, replacement in reversed(edits):
+                      text = text[:start] + replacement + text[end:]
+                  path.write_text(text, encoding='utf-8', newline='')
+                  modified.append((path.as_posix(), file_count))
+                  total += file_count
+
+          print(f'quiz-bearing static SITE_CONFIG objects scanned: {quiz_configs}')
+          print('quiz payload cleanup source files:')
+          for name, count in modified:
+              print(f'  {count:3d}  {name}')
+          print(f'total removed tags: {total}')
+
+          if len(modified) != 10:
+              raise SystemExit(f'expected exactly 10 quiz payload source files, got {len(modified)}: {modified}')
+          if total != 194:
+              raise SystemExit(f'expected exactly 194 literal em/span tags, got {total}: {modified}')
+          PY
+
+          cat > scripts/quiz-plain-text-contract.mjs <<'EOF'
+          #!/usr/bin/env node
+          import fs from 'node:fs';
+          import path from 'node:path';
+
+          const ROOT = path.resolve('src');
+          const EXTENSIONS = new Set(['.astro', '.js', '.mjs', '.ts', '.tsx', '.jsx']);
+          const MARKER = 'window.SITE_CONFIG';
+          const QUIZ_KEY = /["']quiz["']\s*:/;
+          const LITERAL_TAG = /<\/?(?:em|span)(?:\s[^>]*)?>/gi;
+
+          function walk(dir) {
+            const out = [];
+            for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+              const full = path.join(dir, entry.name);
+              if (entry.isDirectory()) out.push(...walk(full));
+              else if (entry.isFile() && EXTENSIONS.has(path.extname(entry.name))) out.push(full);
+            }
+            return out;
+          }
+
+          function objectSpan(text, markerAt) {
+            const eq = text.indexOf('=', markerAt);
+            if (eq < 0) throw new Error('SITE_CONFIG assignment has no =');
+            const start = text.indexOf('{', eq);
+            if (start < 0) throw new Error('SITE_CONFIG assignment has no object');
+            let depth = 0;
+            let quote = null;
+            let escaped = false;
+            for (let i = start; i < text.length; i += 1) {
+              const ch = text[i];
+              if (quote !== null) {
+                if (escaped) escaped = false;
+                else if (ch === '\\') escaped = true;
+                else if (ch === quote) quote = null;
+                continue;
+              }
+              if (ch === '"' || ch === "'") {
+                quote = ch;
+                continue;
+              }
+              if (ch === '{') depth += 1;
+              else if (ch === '}') {
+                depth -= 1;
+                if (depth === 0) return [start, i + 1];
+              }
+            }
+            throw new Error('unterminated SITE_CONFIG object');
+          }
+
+          function visitStrings(value, trail, issues) {
+            if (typeof value === 'string') {
+              LITERAL_TAG.lastIndex = 0;
+              for (const match of value.matchAll(LITERAL_TAG)) issues.push({ trail, tag: match[0] });
+              return;
+            }
+            if (Array.isArray(value)) {
+              value.forEach((item, index) => visitStrings(item, `${trail}[${index}]`, issues));
+              return;
+            }
+            if (value && typeof value === 'object') {
+              Object.entries(value).forEach(([key, item]) => visitStrings(item, `${trail}.${key}`, issues));
+            }
+          }
+
+          const issues = [];
+          let quizConfigs = 0;
+          const quizFiles = new Set();
+
+          for (const file of walk(ROOT)) {
+            const text = fs.readFileSync(file, 'utf8');
+            let cursor = 0;
+            while (true) {
+              const markerAt = text.indexOf(MARKER, cursor);
+              if (markerAt < 0) break;
+              const [start, end] = objectSpan(text, markerAt);
+              const raw = text.slice(start, end);
+              cursor = end;
+              if (!QUIZ_KEY.test(raw)) continue;
+              let config;
+              try {
+                config = JSON.parse(raw);
+              } catch (error) {
+                throw new Error(`${path.relative(process.cwd(), file)}: quiz-bearing SITE_CONFIG must remain static JSON: ${error.message}`);
+              }
+              if (!config?.quiz || typeof config.quiz !== 'object') continue;
+              quizConfigs += 1;
+              quizFiles.add(path.relative(process.cwd(), file));
+              const before = issues.length;
+              visitStrings(config.quiz, 'quiz', issues);
+              for (let i = before; i < issues.length; i += 1) issues[i].file = path.relative(process.cwd(), file);
+            }
+          }
+
+          if (quizConfigs === 0) throw new Error('no SITE_CONFIG.quiz payloads found; contract would be vacuous');
+          if (issues.length) {
+            console.error(`QUIZ PLAIN-TEXT CONTRACT: FAIL (${issues.length} literal em/span tags)`);
+            for (const issue of issues) console.error(`- ${issue.file} :: ${issue.trail} :: ${issue.tag}`);
+            process.exit(1);
+          }
+
+          console.log(`QUIZ PLAIN-TEXT CONTRACT: PASS (${quizConfigs} quiz configs across ${quizFiles.size} source files)`);
+          EOF
+
+          cat > scripts/quiz-plain-text-browser-contract.mjs <<'EOF'
+          #!/usr/bin/env node
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import { chromium } from 'playwright';
+
+          const base = String(process.env.AUDIT_BASE || 'http://127.0.0.1:8080').replace(/\/$/, '');
+          const routes = [
+            '/nagornaya/chast-2/',
+            '/articles/dzhon-gill-chast-2-uchenyy/',
+            '/articles/kod-da-vinchi/',
+          ];
+          const literal = /<\/?(?:em|span)(?:\s[^>]*)?>/i;
+          const reportDir = path.resolve('reports/interactive-audit');
+          fs.mkdirSync(reportDir, { recursive: true });
+
+          function payloadIssues(value, trail = 'quiz', out = []) {
+            if (typeof value === 'string') {
+              if (literal.test(value)) out.push({ trail, value });
+              return out;
+            }
+            if (Array.isArray(value)) {
+              value.forEach((item, index) => payloadIssues(item, `${trail}[${index}]`, out));
+              return out;
+            }
+            if (value && typeof value === 'object') {
+              Object.entries(value).forEach(([key, item]) => payloadIssues(item, `${trail}.${key}`, out));
+            }
+            return out;
+          }
+
+          const browser = await chromium.launch({ headless: true });
+          const evidence = [];
+          try {
+            for (const route of routes) {
+              const context = await browser.newContext({ viewport: { width: 1024, height: 900 } });
+              const page = await context.newPage();
+              const response = await page.goto(`${base}${route}`, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+              assert.ok(response && response.status() < 400, `${route}: HTTP ${response?.status() ?? 'no response'}`);
+              const payload = await page.evaluate(() => window.SITE_CONFIG?.quiz ?? null);
+              assert.ok(payload && typeof payload === 'object', `${route}: SITE_CONFIG.quiz missing`);
+              assert.deepEqual(payloadIssues(payload), [], `${route}: literal em/span tags remain in browser payload`);
+
+              const launch = page.locator('#quizLaunch');
+              await launch.waitFor({ state: 'visible', timeout: 20_000 });
+              await launch.click();
+              const panel = page.locator('.quiz-wrapper');
+              await panel.waitFor({ state: 'visible', timeout: 10_000 });
+              assert.equal(literal.test((await panel.textContent()) || ''), false, `${route}: literal tag text painted before answer`);
+              const firstOption = page.locator('.quiz-option').first();
+              await firstOption.waitFor({ state: 'visible', timeout: 10_000 });
+              await firstOption.click();
+              await page.locator('.quiz-feedback').waitFor({ state: 'visible', timeout: 10_000 });
+              assert.equal(literal.test((await panel.textContent()) || ''), false, `${route}: literal tag text painted after answer`);
+              evidence.push({ route, payloadIssues: 0, initialPaintLiteralTags: 0, answeredPaintLiteralTags: 0 });
+              await context.close();
+            }
+          } finally {
+            await browser.close();
+          }
+          fs.writeFileSync(path.join(reportDir, 'quiz-plain-text-browser-contract.json'), `${JSON.stringify({
+            schemaVersion: 1,
+            source: 'production-like dist + real Chromium',
+            routes,
+            assertion: 'SITE_CONFIG.quiz and painted native quiz panel contain no literal <em>/<span> text',
+            evidence,
+          }, null, 2)}\n`);
+          console.log(`QUIZ PLAIN-TEXT BROWSER CONTRACT: PASS (${routes.length} routes)`);
+          EOF
+
+          python3 <<'PY'
+          from pathlib import Path
+
+          package = Path('package.json')
+          text = package.read_text(encoding='utf-8')
+          old = '    "article:qa": "node scripts/article-qa.js",'
+          new = old + '\n    "quiz:plain-text:check": "node scripts/quiz-plain-text-contract.mjs",'
+          if text.count(old) != 1:
+              raise SystemExit(f'package script anchor count != 1: {text.count(old)}')
+          text = text.replace(old, new)
+          old_chain = '&& npm run article:qa && npm run readable-audit'
+          new_chain = '&& npm run article:qa && npm run quiz:plain-text:check && npm run readable-audit'
+          if text.count(old_chain) != 1:
+              raise SystemExit(f'validate chain anchor count != 1: {text.count(old_chain)}')
+          text = text.replace(old_chain, new_chain)
+          package.write_text(text, encoding='utf-8', newline='')
+
+          workflow = Path('.github/workflows/interactive-audit.yml')
+          text = workflow.read_text(encoding='utf-8')
+          anchor = "      - 'scripts/interactive-audit-runner.js'\n"
+          if text.count(anchor) != 2:
+              raise SystemExit(f'workflow path anchor count != 2: {text.count(anchor)}')
+          text = text.replace(anchor, anchor + "      - 'scripts/quiz-plain-text-contract.mjs'\n      - 'scripts/quiz-plain-text-browser-contract.mjs'\n")
+          runtime_anchor = 'scripts/interactive-audit-runner\\.js|'
+          if text.count(runtime_anchor) != 1:
+              raise SystemExit(f'runtime pattern anchor count != 1: {text.count(runtime_anchor)}')
+          text = text.replace(runtime_anchor, runtime_anchor + 'scripts/quiz-plain-text-contract\\.mjs|scripts/quiz-plain-text-browser-contract\\.mjs|')
+          install_anchor = "      - name: Install dependencies\n        if: steps.audit-scope.outputs.run == 'true'\n        run: npm ci\n\n      - name: Install Chromium and WebKit for Playwright"
+          if text.count(install_anchor) != 1:
+              raise SystemExit(f'interactive install anchor count != 1: {text.count(install_anchor)}')
+          text = text.replace(install_anchor, "      - name: Install dependencies\n        if: steps.audit-scope.outputs.run == 'true'\n        run: npm ci\n\n      - name: Validate quiz plain-text source contract\n        if: steps.audit-scope.outputs.run == 'true'\n        run: node scripts/quiz-plain-text-contract.mjs\n\n      - name: Install Chromium and WebKit for Playwright")
+          audit_anchor = "      - name: Runtime interactive audit with durable evidence"
+          if text.count(audit_anchor) != 1:
+              raise SystemExit(f'runtime audit anchor count != 1: {text.count(audit_anchor)}')
+          text = text.replace(audit_anchor, "      - name: Verify quiz plain-text browser projection\n        if: steps.audit-scope.outputs.run == 'true'\n        env:\n          AUDIT_BASE: http://127.0.0.1:8080\n        run: node scripts/quiz-plain-text-browser-contract.mjs\n\n" + audit_anchor)
+          workflow.write_text(text, encoding='utf-8', newline='')
+          PY
+
+          node --check scripts/quiz-plain-text-contract.mjs
+          node --check scripts/quiz-plain-text-browser-contract.mjs
+          node scripts/quiz-plain-text-contract.mjs
+          git diff --check
+          test ! -e .github/workflows/quiz-plain-text-self-clean.yml
+          test ! -e .github/workflows/quiz-plain-text-self-clean-v2.yml
+          git add src scripts/quiz-plain-text-contract.mjs scripts/quiz-plain-text-browser-contract.mjs package.json .github/workflows/interactive-audit.yml
+          git commit -m "fix(quiz): enforce plain-text quiz payloads"
+          changed_count="$(git diff --name-only "$BASE_SHA"...HEAD | wc -l | tr -d ' ')"
+          test "$changed_count" -ge 14
+          git diff --name-only "$BASE_SHA"...HEAD
+          git push --force-with-lease="refs/heads/$BRANCH:$EXPECTED_REMOTE_HEAD" origin "HEAD:refs/heads/$BRANCH"
