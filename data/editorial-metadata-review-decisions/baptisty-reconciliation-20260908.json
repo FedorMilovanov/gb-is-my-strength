@@ -122,10 +122,10 @@
         "provenance": "production-like-dist-migration-freeze"
       },
       "to": {
-        "editorialPublishedAt": "2026-06-10T00:00:00+03:00",
+        "editorialPublishedAt": "2026-06-14T00:00:00+03:00",
         "editorialModifiedAt": "2026-08-20T11:04:03.000Z",
         "reviewStatus": "approved",
-        "provenance": "owner-editorial-publication-sequence-7e295e44f6f759184c477c8143ab74d315f3fcea-and-latest-substantive-baptisty-3a6b2fc510ba5acc90df571fb921403633dcaa11-owner-approved-2026-09-08"
+        "provenance": "reference-guide-publication-b051fd76-2026-06-14-and-owner-decision-keep-visible-14-june-2026-10-01"
       }
     }
   }
