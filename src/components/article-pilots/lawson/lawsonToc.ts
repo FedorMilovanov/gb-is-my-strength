@@ -33,6 +33,7 @@ export const LAWSON_TOC: LawsonTocItem[] = [
   { href: '#comment', label: "Октябрь 2026: комментарий, который был отредактирован", level: 2 },
   { href: '#objections', label: "Сильнейшие возражения против этой статьи", level: 2 },
   { href: '#versions', label: "Недоказанные версии: что говорят и чего это не доказывает", level: 2 },
+  { href: '#signals', label: "Закономерности, которые стоит заметить", level: 2 },
   { href: '#pastoral', label: "Почему эта история касается не только Лоусона", level: 2 },
   { href: '#verdict', label: "Вывод: что теперь должно говорить громче слов", level: 2 },
   { href: '#glossary', label: "Краткий словарь", level: 2 },
