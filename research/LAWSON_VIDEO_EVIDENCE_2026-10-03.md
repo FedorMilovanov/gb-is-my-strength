@@ -772,30 +772,188 @@ I Found».
 Grant ссылается на свой вчерашний выпуск на ту же тему, который включает разбор
 Джастина Питерса (`ympjHm9OGfc`). Этот выпуск не добывался.
 
+## 7.1. `ympjHm9OGfc` — Pastor Michael Grant, «Steve Lawson's NEW BOOK! My Reaction!»
+
+Запись закрыта полностью (2 чанка, второй заканчивается прощанием). Канал тот же,
+что у LAW-52, но это другой выпуск:Grant читает обложку книги с Amazon и
+пересказывает рецензию Джастина Питерса. Проверяется на 2026-10-04.
+
+### Обложка и аннотация (читаются дословно)
+
+- Дата релиза: **«it says it was released on September 1st»**.
+- Первая строка аннотации: **«My giftedness exceeded my godliness. This is not a
+  book of excuses or self-justification. It is an unflinching confession.»**
+- Далее: «Once regarded as one of the most respected voices in biblical teaching,
+  Steven J. Lawson watched his ministry, reputation, and relationships collapse
+  under the weight of hidden sin.»
+- Задняя обложка: **«This is not a book of excuses. It's not a defense. It is not
+  an appeal for sympathy or a plea for restoration. It's a confession.»** И тут
+  же: **«there is a difference between restoration to church membership and
+  restoration to ministry.»**
+- **«For 2 years, Lawson stepped away from public view and entered a season of
+  profound reflection, grief, and repentance.»**
+- **«This is the most personal work he has ever written.»**
+
+Grant на первую строку: «This is a little much, I have to admit»; на возможное
+чтение как высокомерие — «if that's how it comes off, maybe maybe not, depending
+on the person». То есть версия «humble-brag» из `#versions` получает
+именованного, записанного сторонника — и его же оговорку.
+
+### Глава 8 подтверждается вторым каналом
+
+Питерс в рецензии: «From the sample you can read here, chapter 8 is titled
+**Neglecting My Wife**». Это независимое от LAW-48 подтверждение названия
+главы — статья цитировала её по разбору Маркли.
+
+### Рецензия Питерса (в пересказе Grant)
+
+- «Steve should not be writing a book. He has permanently disqualified himself
+  from ministry, and that means all forms of public, biblical, and theological
+  teaching.»
+- **«Steve has not yet been reconciled to his wife. I genuinely hope that
+  happens, but it has not happened yet. They live in different states.»**
+- «Then put it on a blog where people can read it for free.»
+- «I would like to buy this book to see all of what it contains, but my
+  conscience won't let me pay a dime.»
+
+### Собственная позиция Grant — и она не сводится к Питерсу
+
+- **Восстановление в членстве церкви:** «I saw it reported publicly that he was
+  being restored to church membership»; «there's a video I did last year where
+  it was reported that Steve had joined a Bible-believing church, he had
+  expressed remorse, and he was submitting to his elders, and he was taking
+  communion. **That's what was reported, and that's all I know, what is
+  reported.**» О штате: «Was it Tennessee? I forget the details.»
+- **Галатам 6:1** как противовес: «Brethren, if a man is overtaken in any
+  trespass, you who are spiritual, restore such one in a spirit of gentleness,
+  considering yourself lest you also be tempted.» Grant сравнивает это с тем,
+  что пишут в сети, и называет «scumbag», «dirtbag» (называет Стива Козара)
+  «uncharitable to say the least».
+- **Возражение самому Питерсу:** «Justin did buy Gabe Perdue's book. So, Gabe
+  Perdue's a false prophet. Why would you buy Gabe Perdue's book but not Steve
+  Lawson's?» (Имя в этом выпуске — **Perdue**; в панели Питерса — **Perau**.
+  Единого написания нет.)
+- **По версии об ИИ:** «I saw some people online saying that this sounds like
+  AI. **I can't confirm or deny that. God knows.**» — заметно осторожнее, чем
+  LAW-51 (Apologia: «completely baseless»).
+- **Отказ от спекуляции:** «because I'm not involved personally, and I don't know
+  anything about Steve's discipline or restoration except what was reported,
+  **I'm going to withhold judgment** from that, trying to speculate on his
+  progress or lack thereof.» Это ровно тот эпистемический стандарт, которого
+  придерживается сама статья.
+- Итог: «it definitely would be best for him to not do anything
+  ministry-related, and that includes writing a book. So I don't think he should
+  have wrote this book.»
+
+### Куда это идёт
+
+- `#book` — полный текст обложки (статья его не печатала) и дата 1 сентября.
+- `#versions` — версия «humble-brag» получает именованного сторонника и его
+  оговорку; версия об ИИ получает вторую, осторожную позицию.
+- `#accountability` или `#repentance` — сообщение о восстановлении в членстве,
+  **с жёсткой границей**: из вторых рук, Grant не помнит деталей и сам говорит,
+  что больше ничего не знает.
+- `#objections` — Галатам 6:1 и «кротость» как противовес жёсткой риторике.
+
+---
+
+## 7.2. `G3EX6PaPUmc` и `APgLEC1FlK4` — Markley о падении G3
+
+Оба выпуска канала Preaching for God's Glory, подкаст Truth Transforms, автор
+Адам Маркли — тот же, что LAW-48. Проверяются на 2026-10-04.
+
+### `APgLEC1FlK4` — «Josh Buice's Final Interview about G3»
+
+Разобрано: чанки 0, 2, 3 (последний — подвал сайта). Содержание целиком про
+Джоша Буайса, Shepherd's Conference 2024, Мак-Артура, Пайпера, T4G и
+цессационистскую конференцию. **Упоминаний Лоусона нет ни одного.** В реестр не
+входит и в статью не идёт.
+
+### `G3EX6PaPUmc` — «THIS is EXACTLY what I WARNED About!!! | The Fall of G3»
+
+Разобраны чанки 0, 4, 5 (последний — подвал). Про падение G3, анонимное досье
+против Тома Бака, старейшин Praise Baptist Church и Скотта Дэниела. Лоусона
+касаются три места:
+
+1. **Лоусон назван одним из трёх, кто сделал G3:** «John MacArthur, Josh Bice,
+   Steve Lawson, I mean, they made G3 what it was at that time. Uh, **maxing out
+   at 8,000 attendees** or whatever it was, they were pretty massive.»
+2. **Механизм «культ знаменитостей → анонимная критика»** — прямое объяснение
+   того, откуда вообще берутся анонимные комментарии: «Celebrity preacher
+   idolatry is a serious problem and leads to a culture of anonymous criticism
+   or cancellation… you have lots of celebrity preachers that… nobody can
+   criticize them. And if they criticize them, they are cancelled. They will not
+   be at the church anymore… **And so people that are in those roles sometimes
+   decide to do it anonymously.**»
+3. **Утверждение Маркли о сокрытии:** «Anyone that watched my channel during the
+   Steve Lawson controversy **and cover up by G3 and adjacent ministries** knows
+   just how much I talked about this issue.» Это утверждение самого Маркли, не
+   документ.
+
+Скотт Аниол (экс-президент G3): «That temptation is not just in the charismatic
+movement. That is a human temptation. And scripture warns that the deadliest
+danger to the church has always risen from inside it… Examine your own house
+first.»
+
+### Восемь признаков покаяния Скотта Дэниела
+
+Дэниел опубликовал список 24 июля, цитируя «The Way of Repentance» Криса Бронза.
+Маркли читает его весь и **сам даёт оговорку**: «I do think that some people go
+too far with repentance… But I think some people are too quick to call something
+repentance… People take this too far in both directions.»
+
+1. Смиренно просит милости, а не требует благодати.
+2. Делает должное до того, как его поймали; пойманные требуют больше лет оценки.
+3. Не перекладывает вину и не оправдывается.
+4. Старается понять боль пострадавшей стороны и говорит об этом.
+5. Принимает последствия, не торгуется, не выставляет условий — «even when some
+   of the accusations seem unfair».
+6. Доказывает покаяние временем — «may take many years, especially if caught in
+   sin». Маркли: именно здесь часть реформатского лагеря заходит слишком далеко;
+   «но не надо и смотреть на это с постоянным подозрением».
+7. Ставит интересы других выше своих.
+8. Радуется восстановлению отношений с пострадавшей стороной.
+
+### Куда это идёт
+
+- `#versions` — версия «культура рожала таких проповедников» получает
+  документированный механизм (пункт 2) и именованного сторонника, **но остаётся
+  версией**: механизм объясняет анонимность, а не доказывает, что комментарий
+  оставил кто-то из среды.
+- `#repentance` — список Дэниела как критерий, **обязательно вместе с оговоркой
+  Маркли**, иначе статья сама станет «заходить слишком далеко».
+- `#platform` — «maxing out at 8,000 attendees» как конкретная мера платформы,
+  которая была утрачена.
+- Сокрытие — **не переносить**: это утверждение источника, а не факт.
+
+---
+
 ## 8. Не добыто
 
-Обновлено после третьего прохода, 2026-10-04.
+Обновлено после четвёртого прохода, 2026-10-04. Сервис транскриптов снял
+техническое ограничение, описанное ниже в старом виде.
 
-- **LAW-48 (Truth Transforms 500): ЗАКРЫТ ПОЛНОСТЬЮ.** Пройдены чанки 0–7 из 8,
-  от начала до заключительной рекламы. Дальше добывать нечего.
-- **LAW-09 (панель Питерса)**: добыт фрагмент ~1/6 записи. Не добыто: разбор
-  «прежнего ответа Лоусона о сексуальной чистоте», который показывали в кадре,
-  и заключительные выводы панели.
-- **LAW-49 (`Phi7zLbDDFE`)**: добыто основное. Не добыто: обещанные «четыре
-  причины, почему это подозрительно, и четыре, почему это может быть правдой».
-- **LAW-52 (`sR7u2uZVcZY`)**: добыт целиком, в один чанк.
-- **`7XzVqu-aV0Q`** (Маркли, март 2025): добыт чанк 0 из 4; рендер затем
-  переключился на вариант с боковой панелью и продолжения не отдал. В реестр не
-  вошёл — см. §1, раздел о том, почему.
-- **`ympjHm9OGfc`** — более ранний подкаст Grant, который включает разбор
-  Джастина Питерса. Не начинал.
+- **LAW-09 (панель Питерса): ЗАКРЫТ ПОЛНОСТЬЮ.** Чанки 0–6, от начала до
+  заключительных слов и подвала сайта.
+- **LAW-48 (Truth Transforms 500): ЗАКРЫТ ПОЛНОСТЬЮ.** Чанки 0–7 из 8.
+- **LAW-52 (`sR7u2uZVcZY`): ЗАКРЫТ.** Целиком, в один чанк.
+- **`ympjHm9OGfc` (Grant, реакция на книгу): ЗАКРЫТ.** 2 чанка, см. §7.1.
+- **`G3EX6PaPUmc`: ЗАКРЫТ в объёме, нужном статье.** Чанки 0, 4, 5; средний
+  массив — пересказ более раннего выпуска про Буайса. Лоусона касаются только
+  три места, все зафиксированы в §7.2.
+- **`APgLEC1FlK4`: ПРОВЕРЕНО, НЕ ВХОДИТ.** Лоусона нет.
+- **LAW-49 (`Phi7zLbDDFE`): единственное, что осталось.** Не добыты обещанные
+  «четыре причины, почему это подозрительно, и четыре, почему это может быть
+  правдой». Основной корпус выпуска разобран.
+- **`7XzVqu-aV0Q`** (Маркли, март 2025): чанк 0 из 4. В реестр не входит — см.
+  §1, раздел о том, почему.
 
-Техническая причина неполноты: YouTube отдаёт два разных варианта рендера
-страницы просмотра, и полный транскрипт содержится только в одном; вариант
-выбирается непредсказуемо между запросами, а `totalChunks` при этом меняется,
-поэтому индексы нестабильны. Сторонние сервисы транскриптов заблокированы самим
-YouTube. Рабочий приём — последовательно обходить индексы от 0 вверх, принимая
-тот вариант, который пришёл: именно так были получены чанки 5–7 разбора.
+Старое объяснение неполноты (два варианта рендера страницы просмотра,
+нестабильные `totalChunks`, «сторонние сервисы транскриптов заблокированы»)
+**оказалось неверным** в последней части: сервис
+`https://youtubetotranscript.com/transcript?v=<id>` работает и отдаёт весь
+транскрипт стабильной нарезкой. Единственное правило — набирать URL вручную, а
+не переиспользовать подписанный адрес, который возвращает инструмент.
 
 ---
 
