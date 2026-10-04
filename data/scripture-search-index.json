@@ -13,11 +13,11 @@
     "manifestItems": 95,
     "indexedRoutes": 94,
     "scannedSourceFiles": 508,
-    "references": 1218,
-    "occurrences": 3058,
+    "references": 1221,
+    "occurrences": 3069,
     "canonicalTextRecords": 148,
-    "referencesWithoutCanonicalText": 1070,
-    "chapterRanges": 31,
+    "referencesWithoutCanonicalText": 1073,
+    "chapterRanges": 32,
     "manifestOccurrences": 32,
     "kartyHubOccurrences": 1
   },
@@ -8043,7 +8043,7 @@
         {
           "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
           "title": "Стивен Лоусон: самообман, падение и публичный голос",
-          "context": "именно делает соответствующий текст. И критика книги тоже должна подчиняться Писанию. Например, нельзя связывать запрет Давиду строить храм именно с его сексуальным грехом, если 1 Пар. 28:3 объясняет это пролитой кровью и войнами. Даже справедливо критикуя Лоусона, нельзя позволять риторике стать сильнее текста Библии. Прощение, должность, доверие и публи…",
+          "context": "именно делает соответствующий текст. И критика книги тоже должна подчиняться Писанию. Например, нельзя связывать запрет Давиду строить храм именно с его сексуальным грехом, если 1 Пар. 28:3 объясняет это пролитой кровью и войнами. Даже справедливо критикуя Лоусона, нельзя позволять риторике стать сильнее текста Библии. Экономика книги: цена, тираж и «долг…",
           "anchor": null,
           "raw": "1 Пар. 28:3",
           "topics": [
@@ -26859,6 +26859,42 @@
       ]
     },
     {
+      "id": "luki:3",
+      "bookId": "luki",
+      "testament": "NT",
+      "key": "3",
+      "kind": "chapter",
+      "label": "Луки 3",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "нему должен содержать себя; значительная часть его жизни прошла в писательстве, и запретить ему это ремесло неспособно никакое объективное правило. Автор этой позиции ссылается на Луки 3: мытарям Иоанн не запретил профессию, а потребовал честности внутри неё. Наиболее точным здесь выглядит различение, которое делает третью позицию несовместимой со в",
+          "anchor": null,
+          "raw": "Луки 3",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
+          "sourceKind": "mdx-source"
+        },
+        {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "экономическое возражение Потеряв прежние источники дохода, Лоусон по-прежнему обязан содержать себя, и писательство — его ремесло. Мытарям в Луки 3 Иоанн не запретил профессию, а потребовал честности внутри неё. Требование «не публикуй» в этом чтении есть требование перестать работать.",
+          "anchor": "objections",
+          "raw": "Луки 3",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
+          "sourceKind": "mdx-source"
+        }
+      ]
+    },
+    {
       "id": "luki:3:23–38",
       "bookId": "luki",
       "testament": "NT",
@@ -31220,6 +31256,54 @@
             "Служение"
           ],
           "sourceOwner": "src/content/articles/sem-tipov-razlichenie-uchiteley.mdx",
+          "sourceKind": "mdx-source"
+        },
+        {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "вое поручение» была для Лоусона не абстракцией, а проработанным текстом , и он примерял её на себя публично за девять лет до катастрофы. Вторая, более неприятная: в его изложении Иоанна 21 завершается повторным поручением . Именно тот шаг, который в его собственной истории остаётся под вопросом, в его экзегезе выглядел естественным завершением восстановле…",
+          "anchor": null,
+          "raw": "Иоанна 21",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
+          "sourceKind": "mdx-source"
+        },
+        {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "ого проповедника лежат под его публичным служением. дек. 2015 «От неудачи к верности» Заключительная сессия по Иоанна 21 о восстановлении и повторном поручении Петру; Лоусон применяет текст к себе. 2017 Самообман и совесть В проповеди на Sh",
+          "anchor": null,
+          "raw": "Иоанна 21",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
+          "sourceKind": "mdx-source"
+        },
+        {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "оскандальных материалов Лоусона относится не к учению о совести, а к восстановлению падшего. 17 декабря 2015 года, на конференции Foundations, он произнёс заключительную сессию по Иоанна 21 — о возвращении Петра. Проповедь называется «От неудачи к верности». В сохранённом клипе он применяет текст к себе: в жизни каждого должен быть свой Иоанн 21, и в его…",
+          "anchor": null,
+          "raw": "Иоанна 21",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
+          "sourceKind": "mdx-source"
+        },
+        {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "узнаёт её в себе — но создаёт внутреннюю систему исключений, в которой обличающая истина останавливается перед последней дверью. «От неудачи к верности»: сессия 2015 года по Иоанна 21 Самый сильный из доскандальных материалов Лоусона относится не к учению о совести, а к восстановлению падшего. 17 декабря 2015 года, на конференции Foundations, он произнёс…",
+          "anchor": null,
+          "raw": "Иоанна 21",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
           "sourceKind": "mdx-source"
         }
       ]
@@ -45306,6 +45390,42 @@
           "sourceKind": "astro-source"
         },
         {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "5. Писание предписывает кротость, а не разоблачение возражение против тона Галатам 6:1: «Братия! если и впадёт человек в какое согрешение, вы, духовные, исправляйте такового в духе кротости, наблюдая каждый за собою, чтобы не быть искушённым». На этом основании часть критиков самой критики указывает, что",
+          "anchor": null,
+          "raw": "Галатам 6:1",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
+          "sourceKind": "mdx-source"
+        },
+        {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "ерующий, включая меня, мог быть запутан в грехе. Сам того не понимая, я учил тому, что я называю позицией гиперлордшипа». Рядом стоит и признание о Галатам 6:1: «мне стыдно признаться, что прежде я не оставлял места борющемуся христианину, застигнутому грехом… я стал осудительным ко всякому, кто не дотягивал до библейских стандартов святости». А",
+          "anchor": null,
+          "raw": "Галатам 6:1",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
+          "sourceKind": "mdx-source"
+        },
+        {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "нт, в целом согласный с тем, что книгу писать не следовало, называет оскорбительные выпады в сети «недоброжелательными, мягко говоря» и добавляет, что «это непопулярное мнение, но Галатам 6:1 — это то, что говорит Библия». Возражение справедливо и касается формы, а не существа. Ничто в разборе не требует ни оскорблений, ни предположений о мотивах. Но крот…",
+          "anchor": null,
+          "raw": "Галатам 6:1",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
+          "sourceKind": "mdx-source"
+        },
+        {
           "url": "/articles/teksty-pisaniya-kotorymi-manipuliruyut/",
           "title": "Тексты Писания, которыми манипулируют",
           "context": "ch=Hebrews%2013%3A17&version=SBLGNT%3BNIV 1 Тим. 5:19–21, и ближайший контекст: https://www.biblegateway.com/passage/?search=1%20Timothy%205%3A19-21&version=SBLGNT Гал. 6:1, / : https://www.biblegateway.com/passage/?search=Galatians%206%3A1&version=SBLGNT Иак. 5:16, взаимность : https://www.biblegateway.com/passage/?search=James%205%3A16&version=SBLGNT",
@@ -46680,6 +46800,30 @@
       ]
     },
     {
+      "id": "efesyanam:5–6",
+      "bookId": "efesyanam",
+      "testament": "NT",
+      "key": "5–6",
+      "kind": "chapter-range",
+      "label": "Ефесянам 5–6",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "Стив Леблан добавляет к «может ли» и «где» третье измерение — «чему бы он учил?». Свидетельство, по его мнению, было бы уместно; проповедь по Ефесянам 5–6 — нет: «ты можешь быть квалифицирован и можешь быть дисквалифицирован, и это может быть пожизненно»; «он никогда не узнает ничего о верности одной жене на протяжении одной жизни». Это не",
+          "anchor": null,
+          "raw": "Ефесянам 5–6",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
+          "sourceKind": "mdx-source"
+        }
+      ]
+    },
+    {
       "id": "efesyanam:5:1–2",
       "bookId": "efesyanam",
       "testament": "NT",
@@ -47165,6 +47309,30 @@
             "Семья"
           ],
           "sourceOwner": "src/content/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie.mdx",
+          "sourceKind": "mdx-source"
+        }
+      ]
+    },
+    {
+      "id": "filippiytsam:1",
+      "bookId": "filippiytsam",
+      "testament": "NT",
+      "key": "1",
+      "kind": "chapter",
+      "label": "Филиппийцам 1",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "Есть и пятое возражение, которое приходит не от защитников Лоусона, а из самого Писания: даже если мотивы человека небезупречны, Христос возвещается — и Павел в Филиппийцам 1 радовался этому, несмотря на корысть проповедовавших. Это сильный аргумент, и статья не считает его пустым. Но он отвечает на вопрос «полезна ли книга кому-то?», а не на вопрос «восс…",
+          "anchor": null,
+          "raw": "Филиппийцам 1",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
           "sourceKind": "mdx-source"
         }
       ]
