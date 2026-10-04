@@ -181,7 +181,7 @@ const routeStylesheets = legacyStylesheets.map(versionedStylesheet);
     {routeStylesheets.map((href) => <link rel="stylesheet" href={href} />)}
   </head>
   <body class={bodyClass}>
-    <a class="astro-skip-link" href="#main-content">Перейти к основному содержимому</a>
+    <a class="astro-skip-link" data-map-skip-link href="#main-content">Перейти к основному содержимому</a>
     <div class="astro-shell">
       {!hideHeader && <Header badge={technicalBadge} />}
       <main class={mainClass} {...mainAttrs} id="main-content" tabindex="-1">
