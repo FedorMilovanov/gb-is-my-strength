@@ -4060,7 +4060,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
   [data-gill-v16] .quiz-option.is-wrong { border-color: #9c3939; background: color-mix(in srgb, #9c3939 10%, transparent); }
   [data-gill-v16] .quiz-explanation { margin-top: 12px; padding: 11px 12px; border-radius: 11px; background: var(--gb-surface-muted); font-size: 13px; line-height: 1.5; }
   [data-gill-v16] .quiz-source { display: block; margin-top: 10px; font-size: 12.5px; font-weight: 700; color: var(--gb-accent); text-decoration: none; }
-  [data-gill-v16] .quiz-next {
+  [data-gill-v16] #glsQuizNext {
     display: none; margin-top: 12px; width: 100%; height: 44px;
     border: 1px solid var(--gb-accent);
     border-radius: 11px;
@@ -4069,7 +4069,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
     font-weight: 800;
     cursor: pointer;
   }
-  [data-gill-v16] .quiz-next.is-visible { display: block; }
+  [data-gill-v16] #glsQuizNext.is-visible { display: block; }
 
   /* ===== Certainty-Based Marking (CBM): calibration meter + confidence + verdict ===== */
   [data-gill-v16] .quiz-calib { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; }
