@@ -125,26 +125,48 @@ async function interactionCase(browser, base, contextSpec) {
     });
 
     const focusEvidence = [];
-    for (const dark of [false, true]) {
-      await page.evaluate((enabled) => document.documentElement.classList.toggle('dark', enabled), dark);
-      for (const selector of ['#hCpBtnNav', '#themeToggle']) {
-        const control = page.locator(selector);
-        await control.focus();
-        const style = await control.evaluate((node) => {
-          const computed = getComputedStyle(node);
-          return {
-            outlineStyle: computed.outlineStyle,
-            outlineWidth: computed.outlineWidth,
-            outlineOffset: computed.outlineOffset,
-            borderRadius: computed.borderRadius,
-          };
-        });
-        assert.notEqual(style.outlineStyle, 'none', `${contextSpec.id}:${selector}:${dark ? 'dark' : 'light'} focus outline missing`);
-        assert.ok(Number.parseFloat(style.outlineWidth) >= 2, `${contextSpec.id}:${selector} focus outline too thin`);
-        focusEvidence.push({ dark, selector, style });
+    const collectFocusEvidence = async (target, label, selectors) => {
+      for (const dark of [false, true]) {
+        await target.evaluate((enabled) => document.documentElement.classList.toggle('dark', enabled), dark);
+        for (const selector of selectors) {
+          const control = target.locator(selector);
+          if ((await control.count()) === 0) continue;
+          await control.focus();
+          // Sample the rendered focus state instead of the frame the focus was
+          // set in: a focus ring that only appears part-way through a
+          // transition is still reported at its real (thin) width, because two
+          // frames cover ~32ms of the 300ms the legacy sheet would animate.
+          await target.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+          const style = await control.evaluate((node) => {
+            const computed = getComputedStyle(node);
+            return {
+              outlineStyle: computed.outlineStyle,
+              outlineWidth: computed.outlineWidth,
+              outlineOffset: computed.outlineOffset,
+              borderRadius: computed.borderRadius,
+            };
+          });
+          assert.notEqual(style.outlineStyle, 'none', `${label}:${selector}:${dark ? 'dark' : 'light'} focus outline missing`);
+          assert.ok(Number.parseFloat(style.outlineWidth) >= 2, `${label}:${selector}:${dark ? 'dark' : 'light'} focus outline too thin (${style.outlineWidth})`);
+          focusEvidence.push({ label, dark, selector, style });
+        }
       }
+      await target.evaluate(() => document.documentElement.classList.remove('dark'));
+    };
+
+    await collectFocusEvidence(page, `${contextSpec.id}:/izbrannoe/`, ['#hCpBtnNav', '#themeToggle']);
+
+    // Home renders its own control cluster (HomePageChrome.astro). The theme
+    // toggle focus indicator was reported missing site-wide, so the same
+    // requirement is measured against the home cluster too — on its own page,
+    // so the non-home activation flow below keeps its loaded state.
+    const homePage = await context.newPage();
+    try {
+      await homePage.goto(`${base}/`, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+      await collectFocusEvidence(homePage, `${contextSpec.id}:/`, ['#gbSearchBtn', '#themeToggle']);
+    } finally {
+      await homePage.close();
     }
-    await page.evaluate(() => document.documentElement.classList.remove('dark'));
 
     await page.locator('#hCpBtnNav').click();
     await page.waitForFunction(() => window.GBSearch?.__ready === true && document.querySelectorAll('.cp-backdrop.is-open[role="dialog"]').length === 1, null, { timeout: 30_000 });
@@ -203,6 +225,7 @@ const report = {
     centreHitTest: true,
     zeroSearchThemeOverlap: true,
     focusVisibleLightDark: true,
+    homeClusterFocusVisibleLightDark: true,
     firstClickOpensExactlyOnce: true,
     ctrlKOpensExactlyOnce: true,
   },

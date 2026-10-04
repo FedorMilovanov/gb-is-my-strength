@@ -74,12 +74,21 @@ const hardTextsLabel = SECTION_META['hard-texts'].label;
       min-width: max-content;
       overflow: visible !important;
     }
+    /* `relative`, not `static`: the legacy sheet centres this cluster's theme
+       icon with `.theme-toggle svg{position:absolute;left:50%;top:50%;
+       transform:translate(-50%,-50%)}`. With the control static that icon
+       resolved against a far ancestor and drifted over its neighbour, so the
+       search target's centre hit the theme glyph. Keeping the control as the
+       positioning context restores the intended stacking; `inset:auto` still
+       cancels the legacy absolute offsets the button itself carries. */
     .astro-header__controls.mobile-controls .gb-nav-search-icon,
     .astro-header__controls.mobile-controls .theme-toggle {
-      position: static !important;
+      position: relative !important;
       inset: auto !important;
       top: auto !important;
       right: auto !important;
+      left: auto !important;
+      bottom: auto !important;
       margin: 0 !important;
       width: 44px !important;
       min-width: 44px !important;
@@ -93,6 +102,16 @@ const hardTextsLabel = SECTION_META['hard-texts'].label;
       outline: 2px solid var(--color-accent, #8a5a2b) !important;
       outline-offset: 2px !important;
       border-radius: 10px !important;
+    }
+
+    /* Legacy `.mobile-controls button{transition:all .3s}` (css/mobile-hotfix.css)
+       animates the outline itself, so keyboard focus faded the indicator from
+       0px to 2px over 300ms. A focus ring has to be there when focus arrives;
+       keep the legacy motion for the properties that carry it visually. */
+    .astro-header__controls.mobile-controls .gb-nav-search-icon,
+    .astro-header__controls.mobile-controls .theme-toggle,
+    .astro-header__controls.mobile-controls .gb-nav-action-icon {
+      transition: opacity .18s ease, transform .18s ease, color .18s ease !important;
     }
 
     @media (max-width: 900px) {

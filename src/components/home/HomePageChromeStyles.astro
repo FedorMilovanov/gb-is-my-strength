@@ -109,9 +109,16 @@
     transform: translateY(-1px);
   }
 
+  /* `css/mobile-hotfix.css` zeroes this cluster's outline with `!important`
+     (`.gb-nav-search-icon,.h-cp-btn,.theme-toggle{outline:0!important}` and the
+     `:focus`/`:hover` variant). A 1px declaration without `!important` never
+     applied, so Home shipped no visible focus indicator on its search and theme
+     controls. Home owns this cluster, so it states the indicator here with the
+     weight the contract requires. */
   body.home-page .h-navbar .mobile-controls > button:focus-visible {
-    outline: 1px solid var(--h-accent);
-    outline-offset: 2px;
+    outline: 2px solid var(--h-accent) !important;
+    outline-offset: 2px !important;
+    border-radius: 10px;
   }
 
   /* The accepted home native contract pins the mobile/desktop boundary at
