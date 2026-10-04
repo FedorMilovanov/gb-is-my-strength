@@ -73,6 +73,15 @@
     transition: color .24s ease, transform .32s cubic-bezier(.16, 1, .3, 1);
   }
 
+  /* The shared legacy sheet still pulls this control 12px over its neighbour
+     (`css/mobile-hotfix.css`: `.mobile-controls .gb-nav-search-icon{margin-right:-12px!important}`).
+     Home owns this cluster's geometry, so the borrowed offset is neutralized
+     inside the home chrome scope instead of editing a shared sheet that other
+     route chromes still rely on. */
+  body.home-page .h-navbar .mobile-controls .gb-nav-search-icon {
+    margin-right: 0 !important;
+  }
+
   body.home-page .h-navbar .mobile-controls > button svg,
   body.home-page .h-navbar #themeToggle .icon-moon,
   body.home-page .h-navbar #themeToggle .icon-sun {
@@ -100,14 +109,59 @@
     transform: translateY(-1px);
   }
 
+  /* `css/mobile-hotfix.css` zeroes this cluster's outline with `!important`
+     (`.gb-nav-search-icon,.h-cp-btn,.theme-toggle{outline:0!important}` and the
+     `:focus`/`:hover` variant). A 1px declaration without `!important` never
+     applied, so Home shipped no visible focus indicator on its search and theme
+     controls. Home owns this cluster, so it states the indicator here with the
+     weight the contract requires. */
   body.home-page .h-navbar .mobile-controls > button:focus-visible {
-    outline: 1px solid var(--h-accent);
-    outline-offset: 2px;
+    outline: 2px solid var(--h-accent) !important;
+    outline-offset: 2px !important;
+    border-radius: 10px;
   }
 
+  /* The accepted home native contract pins the mobile/desktop boundary at
+     761px: HomePageChrome.astro drives the same media query and
+     scripts/home-visual-parity-audit.js asserts that exact literal. From that
+     width up the desktop destinations stay the navigation and the burger
+     stays hidden. */
   @media (min-width: 761px) {
     body.home-page .h-navbar #hMobileMenuBtn {
       display: none;
+    }
+  }
+
+  /* Home carries seven desktop destinations. Between the accepted 761px
+     boundary and the shared header's 900px tablet range one row cannot hold
+     brand + destinations + the fixed 44px search/theme controls, so the
+     navigation takes its own row instead of moving the boundary or letting
+     the controls leave the viewport. */
+  @media (min-width: 761px) and (max-width: 900px) {
+    body.home-page .h-navbar {
+      height: auto;
+      min-height: 70px;
+    }
+
+    body.home-page .h-navbar__inner {
+      flex-wrap: wrap;
+      row-gap: 4px;
+    }
+
+    body.home-page .h-navbar .h-nav-links {
+      order: 3;
+      flex-basis: 100%;
+      overflow-x: auto;
+      overscroll-behavior-inline: contain;
+    }
+  }
+
+  /* The wrapped row makes the fixed navbar taller than its 70px single-row
+     height, so below the shared 768px hero padding step the hero keeps the
+     same clearance it has with the single-row header. */
+  @media (min-width: 761px) and (max-width: 767.98px) {
+    body.home-page .h-hero {
+      padding-top: 108px;
     }
   }
 

@@ -28,7 +28,7 @@ const hardTextsLabel = SECTION_META['hard-texts'].label;
     <a href="/izbrannoe/" class="gb-nav-action-icon gb-nav-fav-icon" aria-label="Избранное" title="Избранное">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
     </a>
-    <button id="hCpBtnNav" class="gb-nav-search-icon" type="button" aria-label="Поиск (Ctrl+K)" title="Поиск Ctrl+K">
+    <button id="hCpBtnNav" class="gb-nav-search-icon" type="button" aria-label="Поиск (Ctrl+K)" aria-keyshortcuts="Control+K Meta+K" title="Поиск Ctrl+K" data-search-shortcut data-search-shortcut-label="Поиск по всему сайту">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
     </button>
     <button id="themeToggle" class="theme-toggle" type="button" aria-label="Переключить тему" title="Тема">
@@ -38,9 +38,99 @@ const hardTextsLabel = SECTION_META['hard-texts'].label;
   </div>
 </header>
 
+<script is:inline>
+  // BaseLayout keeps search.js lazy. Its generic first-interaction loader does
+  // not know that a click on this button intends to open Search immediately.
+  // Bridge only that first button activation into the canonical gb:openSearch
+  // transport. Once search.js loads it renames this same node to #gbSearchBtn
+  // and installs the permanent click owner; Ctrl/Cmd+K remains owned solely by
+  // SiteUtils and arrives through the same event transport.
+  const searchBootstrap = document.getElementById('hCpBtnNav');
+  searchBootstrap?.addEventListener('click', (event) => {
+    if (window.GBSearch?.__ready) return;
+    event.preventDefault();
+    window.dispatchEvent(new CustomEvent('gb:openSearch'));
+  }, { once: true });
+</script>
+
 <style>
+    .astro-header__brand {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
     .gb-nav-action-icon { display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; color: var(--color-text-muted, #6b7280); border:1px solid var(--color-border, rgba(0,0,0,.10)); border-radius:10px; background: var(--color-surface, #fffdf8); text-decoration:none; transition: color .15s, border-color .15s; }
     .gb-nav-action-icon:hover { color: var(--color-accent, #8a5a2b); border-color: var(--color-accent, #8a5a2b); }
+
+    /* The Astro header owns this control cluster. Legacy .theme-toggle geometry
+       is page-level/absolute and must not pull the nested button out of flex. */
+    .astro-header__controls.mobile-controls {
+      display: flex;
+      align-items: center;
+      gap: 0 !important;
+      margin-left: auto;
+      flex: 0 0 auto;
+      min-width: max-content;
+      overflow: visible !important;
+    }
+    /* `relative`, not `static`: the legacy sheet centres this cluster's theme
+       icon with `.theme-toggle svg{position:absolute;left:50%;top:50%;
+       transform:translate(-50%,-50%)}`. With the control static that icon
+       resolved against a far ancestor and drifted over its neighbour, so the
+       search target's centre hit the theme glyph. Keeping the control as the
+       positioning context restores the intended stacking; `inset:auto` still
+       cancels the legacy absolute offsets the button itself carries. */
+    .astro-header__controls.mobile-controls .gb-nav-search-icon,
+    .astro-header__controls.mobile-controls .theme-toggle {
+      position: relative !important;
+      inset: auto !important;
+      top: auto !important;
+      right: auto !important;
+      left: auto !important;
+      bottom: auto !important;
+      margin: 0 !important;
+      width: 44px !important;
+      min-width: 44px !important;
+      height: 44px !important;
+      min-height: 44px !important;
+      flex: 0 0 44px;
+    }
+    .astro-header__controls.mobile-controls .gb-nav-search-icon:focus-visible,
+    .astro-header__controls.mobile-controls .theme-toggle:focus-visible,
+    .astro-header__controls.mobile-controls .gb-nav-action-icon:focus-visible {
+      outline: 2px solid var(--color-accent, #8a5a2b) !important;
+      outline-offset: 2px !important;
+      border-radius: 10px !important;
+    }
+
+    /* Legacy `.mobile-controls button{transition:all .3s}` (css/mobile-hotfix.css)
+       animates the outline itself, so keyboard focus faded the indicator from
+       0px to 2px over 300ms. A focus ring has to be there when focus arrives;
+       keep the legacy motion for the properties that carry it visually. */
+    .astro-header__controls.mobile-controls .gb-nav-search-icon,
+    .astro-header__controls.mobile-controls .theme-toggle,
+    .astro-header__controls.mobile-controls .gb-nav-action-icon {
+      transition: opacity .18s ease, transform .18s ease, color .18s ease !important;
+    }
+
+    @media (max-width: 900px) {
+      .astro-header {
+        flex-wrap: wrap;
+        gap: .5rem;
+        padding-block: .6rem;
+      }
+      .astro-header__nav {
+        order: 3;
+        width: 100%;
+        min-width: 0;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+      }
+      .astro-header__controls.mobile-controls {
+        margin-left: auto;
+      }
+    }
     @media (pointer: coarse) {
       .gb-nav-action-icon { width:44px; min-width:44px; height:44px; min-height:44px; }
     }
