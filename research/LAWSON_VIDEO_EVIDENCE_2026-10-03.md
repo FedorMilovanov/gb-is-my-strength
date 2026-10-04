@@ -18,14 +18,34 @@
 | `t4eGiYDrMpI` | Didaché — Steve Lawson's New Book: Should It Have Been Written? | Justin Peters Ministries | 48:37 | 191K | ~9 дн. | **LAW-09** |
 | `POiR3d76VCE` | Truth Transforms 500 — Steve Lawson Book Review: Chapter-by-Chapter | Preaching for God's Glory | 1:11:06 | 3 154 | 2 окт. | **LAW-48** |
 | `-MpT_RPhv_I` | You WON'T BELIEVE what Steve Lawson commented on my video! | Preaching for God's Glory | 10:10 | 7 600 | 2 окт. | **LAW-39** |
-| `VFUU4FvfIXM` | MASSIVE BOMBSHELL!!! Steve Lawson contacted me!!! | Preaching for God's Glory | 10:06 | 14K | ~10 дн. | нет |
-| `Phi7zLbDDFE` | You WON'T BELIEVE what Steve Lawson did NOW!!! | Preaching for God's Glory | 26:00 | 16K | ~11 дн. | нет |
-| `yb0gQJDEukk` | Addressing the Steve Lawson Controversy | Apologia Studios | 12:59 | 47K | ~2 мес. | нет |
-| `sR7u2uZVcZY` | The Book Was FAKE? Steven Lawson — Mercy In The Wilderness | Pastor Michael Grant | 5:38 | 26K | ~11 дн. | нет |
-| `7XzVqu-aV0Q` | Steve Lawson breaks his silence! (asks for prayer) | Preaching for God's Glory | 33:18 | 55K | ~1 г. | нет |
+| `VFUU4FvfIXM` | MASSIVE BOMBSHELL!!! Steve Lawson contacted me!!! | Preaching for God's Glory | 10:06 | 14K | ~10 дн. | **LAW-50** |
+| `Phi7zLbDDFE` | You WON'T BELIEVE what Steve Lawson did NOW!!! | Preaching for God's Glory | 26:00 | 16K | ~11 дн. | **LAW-49** |
+| `yb0gQJDEukk` | Addressing the Steve Lawson Controversy | Apologia Studios | 12:59 | 47K | ~2 мес. | **LAW-51** |
+| `sR7u2uZVcZY` | The Book Was FAKE? Steven Lawson — Mercy In The Wilderness | Pastor Michael Grant | 5:38 | 26K | ~11 дн. | **LAW-52** |
+| `7XzVqu-aV0Q` | Steve Lawson breaks his silence! (asks for prayer) | Preaching for God's Glory | 33:18 | 55K | ~1 г. | проверено, не вошло |
 
 Примечание: три выпуска Маркли подряд (22, 23 сентября и 2 октября) — это серия,
 а не разовые реакции. Это само по себе наблюдаемая закономерность.
+
+### Почему `7XzVqu-aV0Q` проверено, но не вошло в реестр
+
+Добыт первый чанк из четырёх; рендер затем переключился на вариант с боковой
+панелью и продолжения транскрипта не отдал. Добытого, однако, достаточно для
+решения. Выпуск от 13 марта 2025 года целиком посвящён заявлению Лоусона от
+12 марта 2025 года, опубликованному в X в 14:56 по центральному времени, и
+зачитывает его вслух. Статья этот текст уже приводит полностью — раздел
+`#repentance` даёт его с пометкой источника, потому что полный текст заявления
+публично доступен. Дублировать его через пересказ Маркли означало бы заменить
+первичный источник вторичным.
+
+Что в выпуске есть сверх текста и почему этого мало: точное время публикации
+(несущественно); позиция самого Маркли — «я больше не выделяю Стива Лоусона, я
+больше не выделяю Алистера Бегга» (это о решении канала, а не о Лоусоне);
+упоминание неопубликованных записей, которых никто не видел и которые поэтому
+нельзя ни подтвердить, ни опровергнуть; и его собственная характеристика —
+«много лицемерия… годы лжи». Последнее статья сознательно не перенимает: это
+оценка, а не установленное обстоятельство, и статья держится правила не
+переносить чужие формулировки вины в свой текст как факт.
 
 ---
 
