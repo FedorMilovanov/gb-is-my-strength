@@ -13,11 +13,11 @@
     "manifestItems": 95,
     "indexedRoutes": 94,
     "scannedSourceFiles": 508,
-    "references": 1220,
-    "occurrences": 3066,
+    "references": 1221,
+    "occurrences": 3067,
     "canonicalTextRecords": 148,
-    "referencesWithoutCanonicalText": 1072,
-    "chapterRanges": 31,
+    "referencesWithoutCanonicalText": 1073,
+    "chapterRanges": 32,
     "manifestOccurrences": 32,
     "kartyHubOccurrences": 1
   },
@@ -46771,6 +46771,30 @@
             "Семья"
           ],
           "sourceOwner": "src/content/articles/podrostok-za-kadrom-dvoynaya-zhizn.mdx",
+          "sourceKind": "mdx-source"
+        }
+      ]
+    },
+    {
+      "id": "efesyanam:5–6",
+      "bookId": "efesyanam",
+      "testament": "NT",
+      "key": "5–6",
+      "kind": "chapter-range",
+      "label": "Ефесянам 5–6",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Стивен Лоусон: самообман, падение и публичный голос",
+          "context": "Стив Леблан добавляет к «может ли» и «где» третье измерение — «чему бы он учил?». Свидетельство, по его мнению, было бы уместно; проповедь по Ефесянам 5–6 — нет: «ты можешь быть квалифицирован и можешь быть дисквалифицирован, и это может быть пожизненно»; «он никогда не узнает ничего о верности одной жене на протяжении одной жизни». Это не",
+          "anchor": null,
+          "raw": "Ефесянам 5–6",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
           "sourceKind": "mdx-source"
         }
       ]
