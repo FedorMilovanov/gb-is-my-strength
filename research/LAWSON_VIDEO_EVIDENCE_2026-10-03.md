@@ -1024,3 +1024,55 @@ repentance… People take this too far in both directions.»
 **Не вошло:** `APgLEC1FlK4` (нет Лоусона); `7XzVqu-aV0Q` (заявление уже приведено полностью); сообщение Гранта о восстановлении в членстве (слабее имеющегося в `#accountability`); цена Walmart; полемика Питерса о харизматической модели.
 
 Реестр: 45 → 51. Ссылок в тексте: 292. Статья: 17 333 слова / 87 мин.
+
+---
+
+## 10. Как в этой среде всё-таки запускается браузер (2026-10-04)
+
+Раньше считалось, что браузер здесь не поставить. Это неверно. Рабочий рецепт:
+
+**Что закрыто:** `cdn.playwright.dev`, `cdn.npmmirror.com`,
+`storage.googleapis.com`, `playwright.azureedge.net`, `objects.githubusercontent.com`,
+`conda.anaconda.org`, все зеркала Debian/Ubuntu — `000`. Поэтому
+`npx playwright install chromium` не работает, а `apt-get` не может доставить
+системные библиотеки.
+
+**Что открыто:** `registry.npmjs.org`, `pypi.org` и `files.pythonhosted.org`,
+`github.com`, `codeload.github.com`.
+
+**Сборка из трёх частей:**
+
+1. Бинарник Chromium — из npm-тарбола, который возит его внутри себя:
+   `npm i @sparticuz/chromium puppeteer-core` (в отдельный каталог, не в репозиторий).
+2. Системные библиотеки NSS/NSPR — тоже из npm: пакет `@achingbrain/nss`
+   содержит `package/linux/*.so`, включая `libnspr4.so`, `libnss3.so`,
+   `libnssutil3.so` и весь остальной стек.
+3. Поставленный NSS — версии 3.26, а Chromium требует версионный символ
+   `NSS_3.30` ради одной функции `PK11_HasAttributeSet`. Обходится двумя шагами:
+   - в `.gnu.version_r` бинарника имя `NSS_3.30` заменяется на `NSS_3.22`
+     **и вместе с ним правится `vna_hash`** на ELF-хеш нового имени — иначе
+     загрузчик всё равно拒绝: версия сопоставляется по хешу, не по строке;
+   - `PK11_HasAttributeSet` предоставляется заглушкой через `LD_PRELOAD`
+     (в headless-рендере локального файла не вызывается).
+
+**Запуск:**
+
+```
+LD_PRELOAD=/tmp/nsslibs/libpk11stub.so \
+LD_LIBRARY_PATH=/tmp/nsslibs \
+node script.mjs
+```
+
+с `puppeteer.launch({ executablePath: '/tmp/chromium', headless: true,
+args: ['--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--no-zygote','--single-process'] })`.
+
+Проверено: HeadlessChrome/153.0.8010.0, работают `getComputedStyle`,
+`CSS.getMatchedStylesForNode` через CDP, установка viewport.
+
+**Два подводных камня при измерениях:**
+
+- Chrome сериализует результат `color-mix()` как `oklab(...)`. Наивный разбор
+  `rgb()` даёт мусор и выглядит как провал контраста там, где его нет — в первой
+  версии замера я так получил ложные 1.2:1 на карточках.
+- Геометрия дочерних узлов SVG (`<circle>`) отдаётся в user units, поэтому они
+  «вылезали» за правый край при отсутствии горизонтального скролла.
