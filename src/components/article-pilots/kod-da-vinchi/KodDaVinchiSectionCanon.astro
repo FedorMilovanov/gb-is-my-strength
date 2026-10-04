@@ -19,7 +19,7 @@
 
 <div aria-label="Хронология формирования канона" class="ctw" id="canonTimeline">
 <div class="ctw-head">
-<h3 class="ctw-title">Хронология формирования канона</h3>
+<h3 class="ctw-title" id="canon-timeline-title">Хронология формирования канона</h3>
 <p class="ctw-sub">Канон сложился <em>до</em> Никеи — независимо и постепенно</p>
 </div>
 <div class="ctw-legend">
@@ -28,7 +28,7 @@
 </span><span class="ctw-leg"><span class="ctw-dot" style="background:#c62828"></span>Гностические тексты
 </span><span class="ctw-leg"><span class="ctw-dot" style="background:#bf6e2a"></span>Никея
 </span></div>
-<div class="ctw-body">
+<div class="ctw-body" role="region" aria-labelledby="canon-timeline-title" tabindex="0">
 <div class="ctw-track">
 <div class="ctw-axis-row">
 <div class="ctw-spacer"></div>
@@ -134,3 +134,43 @@
       </figcaption>
 </figure>
 <!-- КУМРАН И НАГ-ХАММАДИ -->
+
+<style>
+  /* WCAG 2.1.1: the canon timeline is a horizontally scrollable region with no
+     focusable descendants, so the scroll port itself owns the tab stop. */
+  .ctw-body:focus-visible {
+    outline: 2px solid var(--color-accent, #8a5a2b);
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
+  :global(html.dark) .ctw-body:focus-visible {
+    outline-color: var(--color-accent-strong, #e8b878);
+  }
+</style>
+
+<script>
+  const canonTimeline = document.querySelector('.ctw-body');
+  if (canonTimeline instanceof HTMLElement) {
+    canonTimeline.addEventListener('keydown', (event) => {
+      if (
+        event.target !== canonTimeline
+        || event.altKey
+        || event.ctrlKey
+        || event.metaKey
+        || event.shiftKey
+        || (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')
+      ) return;
+
+      const maxScroll = canonTimeline.scrollWidth - canonTimeline.clientWidth;
+      const step = Math.max(1, Math.floor(canonTimeline.clientWidth * 0.1));
+      const nextScroll = Math.max(
+        0,
+        Math.min(maxScroll, canonTimeline.scrollLeft + (event.key === 'ArrowRight' ? step : -step)),
+      );
+      if (nextScroll === canonTimeline.scrollLeft) return;
+
+      event.preventDefault();
+      canonTimeline.scrollLeft = nextScroll;
+    });
+  }
+</script>
