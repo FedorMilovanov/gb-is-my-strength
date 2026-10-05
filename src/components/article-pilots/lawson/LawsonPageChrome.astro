@@ -8,10 +8,17 @@ import { LAWSON_TOC } from './lawsonToc';
 // Статья о Лоусоне потребляет канонических владельцев одиночной читательской
 // поверхности (рельс, угловой кластер, мобильная панель, лист настроек) и не
 // форкает их рантайм — так же, как lot-i-sodom и kod-da-vinchi.
-const railTitle = 'Стивен Лоусон: самообман и публичный голос';
+const railTitle = 'Падение Стивена Лоусона: что должно говорить громче слов';
 ---
 
-<FloatingCluster mode="single" variant="hermeneutics" audioState="none" />
+<div class="lawson-cluster-scope">
+  <FloatingCluster mode="single" variant="hermeneutics" audioState="none" />
+</div>
+<style is:global>
+  @media (max-width: 1199px) {
+    .lawson-cluster-scope { display: none !important; }
+  }
+</style>
 <ReaderRail
   eyebrow="Библиотека проекта · Разбор"
   title={railTitle}
