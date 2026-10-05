@@ -95,8 +95,21 @@ a {
 .astro-main h1 {
   margin: 0 0 1rem;
   font-family: var(--astro-font-serif);
-  font-size: clamp(2rem, 6vw, 3.25rem);
-  line-height: 1.05;
+  font-size: clamp(1.75rem, 5vw, 3rem);
+  line-height: 1.18;
+  max-width: 22ch;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  scroll-margin-top: calc(64px + env(safe-area-inset-top, 0px));
+  text-wrap: balance;
+}
+
+@media (max-width: 480px) {
+  .astro-main h1 {
+    font-size: clamp(1.6rem, 7vw, 2.1rem);
+    line-height: 1.2;
+  }
 }
 
 .astro-main p {

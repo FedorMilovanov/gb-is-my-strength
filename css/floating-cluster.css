@@ -3121,7 +3121,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
 
 @media screen and (max-width: 960px) {
   :root {
-    --gill-mobile-bar-h: 78px;
+    --gill-mobile-bar-h: 56px;
     --gill-mobile-bar-bg: rgba(253, 251, 246, .99);
     --gill-mobile-bar-border: rgba(118, 96, 66, .30);
     --gill-mobile-bar-shadow: 0 -10px 30px rgba(45, 35, 24, .13), 0 1px 0 rgba(255,255,255,.78) inset;
@@ -3866,7 +3866,8 @@ html.dark [data-gill-v16] .mobile-top-bar {
   }
   html.dark [data-gill-v16] .mobile-speed[aria-checked="true"] { color: #0e1116; }
 
-  /* ---- Persistent speed badge on the Play ember (inline-rail mode) ---- */
+  /* ---- Persistent speed badge on the Play ember (inline-rail mode) ----
+     Canonical non-center-intercepting corner geometry — Play-owned. */
   [data-gill-v16] .mobile-spdbadge {
     position: absolute;
     right: -4px;
@@ -3874,16 +3875,16 @@ html.dark [data-gill-v16] .mobile-top-bar {
     z-index: 3;
     min-width: 24px;
     height: 24px;
-    padding: 2px 4px 0; /* оптическое центрирование «1×» (порт 1249e56) */
+    padding: 0 5px;
     display: grid;
     place-items: center;
     border-radius: 999px;
     border: 1.5px solid var(--gill-mobile-bar-bg);
     background: var(--gill-mobile-bar-ink);
     color: var(--gill-mobile-bar-bg);
-    font: 900 8.5px/1 var(--gb-font-sans, system-ui, sans-serif);
+    font: 700 10px/1 var(--gb-font-sans, system-ui, sans-serif);
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, .22);
+    box-shadow: 0 1px 4px rgba(0,0,0,.18);
   }
   html.dark [data-gill-v16] .mobile-spdbadge {
     background: linear-gradient(135deg, var(--color-accent-gold, #b8936a), #eed093);

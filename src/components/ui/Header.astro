@@ -121,14 +121,20 @@ const hardTextsLabel = SECTION_META['hard-texts'].label;
         padding-block: .6rem;
       }
       .astro-header__nav {
-        order: 3;
-        width: 100%;
-        min-width: 0;
-        overflow-x: auto;
-        overscroll-behavior-inline: contain;
+        display: none !important;
       }
       .astro-header__controls.mobile-controls {
         margin-left: auto;
+      }
+    }
+    /* Mobile article chrome owns the top surface — hide the desktop header
+       whenever a mobile reader bar exists to avoid double chrome and ghost
+       “Господь Бог — Сила Моя” overlap. */
+    @media (max-width: 1199px) {
+      body:has(.hmtop) .astro-header,
+      body:has(.mobile-top-bar) .astro-header,
+      body:has(.mcp-top) .astro-header {
+        display: none !important;
       }
     }
     @media (pointer: coarse) {
