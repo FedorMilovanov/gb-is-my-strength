@@ -13,4 +13,5 @@
 
 if (!process.argv.includes('--articles-only')) process.argv.push('--articles-only');
 console.log('ℹ️ astro:audit:article-mdx now runs the effective strict-native standalone article contract audit.');
+require('./article-theme-coherence-audit');
 require('./article-native-effective-contract-audit');
