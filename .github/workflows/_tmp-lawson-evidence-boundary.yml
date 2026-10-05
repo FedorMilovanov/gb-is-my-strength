@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   patch:
-    if: github.event.head_commit.message == 'chore(tmp): trigger Lawson evidence boundary patch'
+    if: ${{ github.event.head_commit.message == 'chore(tmp): repair Lawson patch workflow' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
@@ -20,8 +20,10 @@ jobs:
           fetch-depth: 0
 
       - name: Apply exact evidence-boundary correction
-        shell: python
+        shell: bash
         run: |
+          set -euo pipefail
+          python - <<'PY'
           from pathlib import Path
           path = Path('src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx')
           text = path.read_text(encoding='utf-8')
@@ -31,6 +33,7 @@ jobs:
           if count != 1:
               raise SystemExit(f'expected exactly one match, found {count}')
           path.write_text(text.replace(old, new), encoding='utf-8')
+          PY
 
       - name: Prove surgical diff
         shell: bash
