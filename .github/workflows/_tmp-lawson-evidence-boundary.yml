@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   patch:
-    if: ${{ github.event.head_commit.message == 'chore(tmp): repair Lawson patch workflow' }}
+    if: "${{ github.event.head_commit.message == 'chore(tmp): repair Lawson patch workflow v3' }}"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
