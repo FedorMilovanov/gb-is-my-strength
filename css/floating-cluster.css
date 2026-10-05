@@ -3366,7 +3366,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 2px;
   }
   /* color НЕ переопределён нарочно (тот же баг только что найден и
      исправлен на десктопном .gbs-rail-ember выше): canon .gb-ember рисует
@@ -3867,22 +3867,22 @@ html.dark [data-gill-v16] .mobile-top-bar {
   html.dark [data-gill-v16] .mobile-speed[aria-checked="true"] { color: #0e1116; }
 
   /* ---- Persistent speed badge on the Play ember (inline-rail mode) ----
-     Refactored to be part of compact playback UI, not a random floating pill. */
+     Canonical non-center-intercepting corner geometry — Play-owned. */
   [data-gill-v16] .mobile-spdbadge {
-    position: relative;
-    right: auto;
-    bottom: auto;
-    z-index: auto;
-    min-width: 36px;
-    height: 28px;
-    padding: 0 8px;
-    display: inline-grid;
+    position: absolute;
+    right: -4px;
+    bottom: -4px;
+    z-index: 3;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 5px;
+    display: grid;
     place-items: center;
     border-radius: 999px;
     border: 1.5px solid var(--gill-mobile-bar-bg);
     background: var(--gill-mobile-bar-ink);
     color: var(--gill-mobile-bar-bg);
-    font: 700 11px/26px var(--gb-font-sans, system-ui, sans-serif);
+    font: 700 10px/1 var(--gb-font-sans, system-ui, sans-serif);
     cursor: pointer;
     box-shadow: 0 1px 4px rgba(0,0,0,.18);
   }
