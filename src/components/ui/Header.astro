@@ -127,13 +127,20 @@ const hardTextsLabel = SECTION_META['hard-texts'].label;
         margin-left: auto;
       }
     }
-    /* Mobile article chrome owns the top surface — hide the desktop header
-       whenever a mobile reader bar exists to avoid double chrome and ghost
-       “Господь Бог — Сила Моя” overlap. */
+    /* Mobile article chrome owns the top surface while its alternate reader
+       bar is active. The lightweight `.mcp-top` stays in the DOM while
+       translated offscreen, so only suppress the shared header after that bar
+       is actually shown; otherwise the global search has no visible owner. */
     @media (max-width: 1199px) {
       body:has(.hmtop) .astro-header,
-      body:has(.mobile-top-bar) .astro-header,
-      body:has(.mcp-top) .astro-header {
+      body:has(.mobile-top-bar) .astro-header {
+        display: none !important;
+      }
+    }
+    /* Match MobileChromePage's own breakpoint: at wider widths its `.mcp-top`
+       is display:none even though its scroll state can still become is-shown. */
+    @media (max-width: 63.99em) {
+      body:has(.mobile-chrome.is-shown .mcp-top) .astro-header {
         display: none !important;
       }
     }
