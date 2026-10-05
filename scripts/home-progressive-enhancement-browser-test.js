@@ -137,6 +137,17 @@ async function warmScroll(page) {
   await page.waitForTimeout(250);
 }
 
+async function settleRevealAnimations(page) {
+  await page.evaluate(async () => {
+    const reveals = Array.from(document.querySelectorAll('.h-reveal'));
+    const animations = reveals.flatMap((element) => (
+      typeof element.getAnimations === 'function' ? element.getAnimations() : []
+    ));
+    await Promise.all(animations.map((animation) => animation.finished.catch(() => undefined)));
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  });
+}
+
 function isExternalTelemetryNetworkNoise(text) {
   const value = String(text || '');
   const yandexTelemetryHost = /(?:https?|wss):\/\/(?:(?:[^/\s'"]+\.)?mc\.yandex\.(?:com|ru)|(?:hdrc|mdd)\.yandex\.net)(?:[/:]|$)/i.test(value);
@@ -212,6 +223,7 @@ async function runNormal(browser, origin, report) {
   monitorRuntime(page, runtimeErrors);
   await page.goto(`${origin}/`, { waitUntil: 'networkidle' });
   await warmScroll(page);
+  await settleRevealAnimations(page);
   const reveals = await revealSnapshot(page);
   const health = await collectPageHealth(page);
   const screenshot = path.join(REPORT_DIR, 'normal-mobile-full.png');
