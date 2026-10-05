@@ -368,6 +368,11 @@ async function inspectKodDaVinchiTimeline(page, entry, viewport) {
   if (box && box.width > 0 && box.height > 0) {
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.wheel(120, 0);
+    await page.waitForFunction(
+      () => (document.querySelector('#canonTimeline .ctw-body')?.scrollLeft || 0) > 0,
+      null,
+      { polling: 'raf', timeout: 1000 },
+    ).catch(() => {});
   }
   const afterWheel = await region.evaluate((node) => node.scrollLeft);
   record(entry, viewport, 'timeline:desktop-pointer-wheel-scroll', Boolean(box && afterWheel > 0), JSON.stringify({ box, afterWheel }));
