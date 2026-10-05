@@ -1,0 +1,52 @@
+name: Temporary Lawson evidence boundary patch
+
+on:
+  push:
+    branches:
+      - audit/lawson-evidence-boundary
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.event.head_commit.message == 'chore(tmp): trigger Lawson evidence boundary patch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: audit/lawson-evidence-boundary
+          fetch-depth: 0
+
+      - name: Apply exact evidence-boundary correction
+        shell: python
+        run: |
+          from pathlib import Path
+          path = Path('src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx')
+          text = path.read_text(encoding='utf-8')
+          old = 'Во-первых, **церковное заявление и свидетельство очевидца расходятся по одному пункту**: по тому, было ли признание добровольным.'
+          new = 'Во-первых, **церковное заявление и публичный пересказ Джонсона расходятся по одному пункту**: по тому, было ли признание добровольным.'
+          count = text.count(old)
+          if count != 1:
+              raise SystemExit(f'expected exactly one match, found {count}')
+          path.write_text(text.replace(old, new), encoding='utf-8')
+
+      - name: Prove surgical diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git diff --name-only | wc -l)" -eq 1
+          test "$(git diff --name-only)" = "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx"
+          git diff --check
+          git diff -- src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx
+
+      - name: Commit exact correction
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx
+          git commit -m 'fix(lawson): correct Johnson evidence characterization'
+          git push origin HEAD:audit/lawson-evidence-boundary
