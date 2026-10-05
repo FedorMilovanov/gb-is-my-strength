@@ -2,15 +2,13 @@ name: Temporary Lawson evidence boundary patch
 
 on:
   push:
-    branches:
-      - audit/lawson-evidence-boundary
 
 permissions:
   contents: write
 
 jobs:
   patch:
-    if: "${{ github.event.head_commit.message == 'chore(tmp): repair Lawson patch workflow v3' }}"
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
@@ -42,7 +40,6 @@ jobs:
           test "$(git diff --name-only | wc -l)" -eq 1
           test "$(git diff --name-only)" = "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx"
           git diff --check
-          git diff -- src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx
 
       - name: Commit exact correction
         shell: bash
