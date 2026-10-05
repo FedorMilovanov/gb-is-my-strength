@@ -6,7 +6,12 @@ const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
 const ARTICLES_DIR = path.join(ROOT, 'src', 'content', 'articles');
+const PAGES_DIR = path.join(ROOT, 'src', 'pages');
 const STYLES_DIR = path.join(ROOT, 'src', 'styles');
+const ARTICLE_LAYOUTS = [
+  'src/layouts/ArticleLayout.astro',
+  'src/layouts/SeriesArticleLayout.astro',
+];
 
 function fail(message) {
   console.error(`❌ ARTICLE THEME COHERENCE: ${message}`);
@@ -17,26 +22,60 @@ function read(relativePath) {
   return fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
 }
 
+function assertPatterns(source, requirements, prefix) {
+  for (const [pattern, label] of requirements) {
+    if (!pattern.test(source)) fail(`${prefix} lost ${label}`);
+  }
+}
+
 function assertSharedReaderBridge() {
   const readerHead = read('js/reader-preferences-head.js');
-  const required = [
-    [/dataset\.readerEffectiveTheme\s*=\s*effectiveTheme/, 'reader effective theme dataset bridge'],
-    [/classList\.toggle\(\s*['"]dark['"]\s*,\s*effectiveTheme\s*===\s*['"]dark['"]\s*\)/, 'reader effective theme -> html.dark bridge'],
-    [/style\.colorScheme\s*=\s*effectiveTheme/, 'reader effective theme -> color-scheme bridge'],
-  ];
-  for (const [pattern, label] of required) {
-    if (!pattern.test(readerHead)) fail(`shared runtime lost ${label}`);
-  }
+  assertPatterns(readerHead, [
+    [/root\.setAttribute\(\s*['"]data-reader-theme['"]\s*,\s*state\.theme\s*\)/, 'first-paint data-reader-theme bridge'],
+    [/root\.classList\.toggle\(\s*['"]dark['"]\s*,\s*state\.theme\s*===\s*['"]dark['"]\s*\)/, 'first-paint html.dark bridge'],
+    [/root\.style\.setProperty\(\s*['"]--gb-reader-theme-ready['"]\s*,\s*['"]1['"]\s*\)/, 'first-paint theme-ready marker'],
+  ], 'shared reader bootstrap');
+
+  const readerRuntime = read('js/reader-preferences.js');
+  assertPatterns(readerRuntime, [
+    [/['"]\[data-gbs2-theme\]['"]/, 'series theme control registration'],
+    [/root\.setAttribute\(\s*['"]data-reader-theme['"]\s*,\s*state\.theme\s*\)/, 'runtime data-reader-theme bridge'],
+    [/root\.classList\.toggle\(\s*['"]dark['"]\s*,\s*state\.theme\s*===\s*['"]dark['"]\s*\)/, 'runtime html.dark bridge'],
+    [/root\.style\.setProperty\(\s*['"]--gb-reader-theme-ready['"]\s*,\s*['"]1['"]\s*\)/, 'runtime theme-ready marker'],
+  ], 'shared reader runtime');
 
   const globalCss = read('src/styles/global.css');
-  const surfaceContract = [
+  assertPatterns(globalCss, [
     [/\.astro-main\s*\{[\s\S]*?background\s*:\s*var\(--astro-color-surface\)/, '.astro-main semantic surface'],
     [/\.astro-main\s+h1\s*\{[\s\S]*?font-family\s*:\s*var\(--astro-font-serif\)/, '.astro-main typography contract'],
     [/\.astro-article__body\s+h2\s*\{[\s\S]*?color\s*:\s*var\(--astro-color-text\)/, 'article body semantic text'],
-  ];
-  for (const [pattern, label] of surfaceContract) {
-    if (!pattern.test(globalCss)) fail(`shared article layer lost ${label}`);
-  }
+  ], 'shared article layer');
+}
+
+function assertArticleStacks() {
+  const standaloneLayout = read('src/layouts/ArticleLayout.astro');
+  assertPatterns(standaloneLayout, [
+    [/<BaseLayout[\s\S]*?ogType=['"]article['"]/, 'BaseLayout article ownership'],
+    [/<slot\s+name=['"]chrome['"]\s*\/>/, 'reader chrome slot'],
+    [/<article\s+class=['"]astro-article['"][^>]*data-pagefind-body/, 'semantic standalone article root'],
+  ], 'ArticleLayout');
+
+  const seriesLayout = read('src/layouts/SeriesArticleLayout.astro');
+  assertPatterns(seriesLayout, [
+    [/<BaseLayout[\s\S]*?ogType=['"]article['"][\s\S]*?bodyClass=['"]gbs-world['"]/, 'series BaseLayout theme scope'],
+    [/<aside\s+class=['"]gbs2-rail['"]/, 'desktop series rail'],
+    [/data-gbs2-theme/, 'series theme controls'],
+    [/class=['"]gbs2-sheet-panel['"]/, 'mobile series sheet'],
+    [/data-gbs2-pane=['"]toc['"]/, 'mobile series TOC pane'],
+  ], 'SeriesArticleLayout');
+
+  const siteCss = read('css/site.css');
+  assertPatterns(siteCss, [
+    [/\.gbs2-sheet-panel\s*\{[^}]*background\s*:\s*var\(--color-surface\)/, 'mobile sheet semantic surface'],
+    [/\.gbs2-sheet-close\s*\{[^}]*background\s*:\s*var\(--color-surface\)[^}]*color\s*:\s*var\(--color-text\)/, 'mobile sheet close semantic colors'],
+    [/\.gbs2-sheet-toclink\s*\{[^}]*color\s*:\s*var\(--color-text\)/, 'mobile TOC semantic text'],
+    [/html\.dark\s+\.gbs2-mobile-head\s*\{[^}]*background\s*:/, 'mobile header dark-theme counterpart'],
+  ], 'series reader CSS');
 }
 
 function importedArticleStyles(source) {
@@ -56,7 +95,7 @@ function literalColor(value) {
 }
 
 function semanticValue(value) {
-  return /var\(\s*--(?:astro-color|color|reading)-/i.test(value);
+  return /var\(\s*--(?:astro-color|color|reading|gbs2|gb-reader)-/i.test(value);
 }
 
 function isThemeScopedSelector(selector) {
@@ -64,7 +103,7 @@ function isThemeScopedSelector(selector) {
 }
 
 function isPageRootSelector(selector) {
-  return /(?:^|[\s,>+~])(?:html|body|:root|\.astro-main|\.article-main|\.astro-article|\.astro-article__body)(?=$|[\s,.#:[>+~])/i.test(selector.trim());
+  return /(?:^|[\s,>+~])(?:html|body|:root|\.astro-main|\.article-main|\.astro-article|\.astro-article__body|\.toc-sidebar|\.hrail|\.mobile-top-bar|\.mobile-bottom-bar|\.toc-overlay|\.btoc-panel|\.gbs2-world|\.gbs2-rail|\.gbs2-mobile-head|\.gbs2-bbar|\.gbs2-sheet-panel|\.gbs2-sheet-body|\.gbs2-sheet-pane|\.gbs2-tocscroll)(?=$|[\s,.#:[>+~])/i.test(selector.trim());
 }
 
 function foundationalCustomProperty(property) {
@@ -99,20 +138,47 @@ function auditCss(css, label) {
   return violations;
 }
 
+function walkFiles(dir, extension) {
+  if (!fs.existsSync(dir)) return [];
+  const found = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) found.push(...walkFiles(full, extension));
+    else if (entry.isFile() && entry.name.endsWith(extension)) found.push(full);
+  }
+  return found.sort();
+}
+
+function collectStyleOwner(styleOwners, style, owner) {
+  const owners = styleOwners.get(style) || [];
+  if (!owners.includes(owner)) owners.push(owner);
+  styleOwners.set(style, owners);
+}
+
 function auditArticles() {
   const articleFiles = fs.readdirSync(ARTICLES_DIR)
     .filter((name) => name.endsWith('.mdx'))
     .sort();
   const styleOwners = new Map();
   const violations = [];
+  const routeOwners = [];
 
   for (const file of articleFiles) {
     const source = fs.readFileSync(path.join(ARTICLES_DIR, file), 'utf8');
-    for (const style of importedArticleStyles(source)) {
-      const owners = styleOwners.get(style) || [];
-      owners.push(file);
-      styleOwners.set(style, owners);
-    }
+    for (const style of importedArticleStyles(source)) collectStyleOwner(styleOwners, style, `content/articles/${file}`);
+  }
+
+  for (const relativePath of ARTICLE_LAYOUTS) {
+    const source = read(relativePath);
+    for (const style of importedArticleStyles(source)) collectStyleOwner(styleOwners, style, relativePath);
+  }
+
+  for (const fullPath of walkFiles(PAGES_DIR, '.astro')) {
+    const source = fs.readFileSync(fullPath, 'utf8');
+    if (!/(?:ArticleLayout|SeriesArticleLayout)/.test(source)) continue;
+    const owner = path.relative(ROOT, fullPath).replaceAll(path.sep, '/');
+    routeOwners.push(owner);
+    for (const style of importedArticleStyles(source)) collectStyleOwner(styleOwners, style, owner);
   }
 
   for (const [style, owners] of styleOwners) {
@@ -129,10 +195,11 @@ function auditArticles() {
     for (const violation of violations) fail(`local article stylesheet can force a theme island: ${violation}`);
   }
 
-  console.log(`✅ ARTICLE THEME COHERENCE: scanned ${articleFiles.length} standalone article MDX files; ${styleOwners.size} direct local stylesheet(s); no unscoped literal page-surface overrides.`);
-  return { articleFiles, styleOwners };
+  console.log(`✅ ARTICLE THEME COHERENCE: scanned ${articleFiles.length} article MDX files, ${ARTICLE_LAYOUTS.length} article layouts and ${routeOwners.length} Astro article route owners; ${styleOwners.size} direct local stylesheet(s); no unscoped literal page/TOC surface overrides.`);
+  return { articleFiles, routeOwners, styleOwners };
 }
 
 assertSharedReaderBridge();
+assertArticleStacks();
 auditArticles();
 if (process.exitCode) process.exit(process.exitCode);
