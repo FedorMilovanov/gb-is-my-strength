@@ -1,0 +1,211 @@
+name: Temporary Lawson theme and editorial hardening
+
+on:
+  push:
+    branches:
+      - audit/lawson-theme-editorial-hardening
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, 'fix(lawson): unify theme and harden editorial voice') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/lawson-theme-editorial-hardening
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply exact audited replacements
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          article_path = Path('src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx')
+          css_path = Path('src/styles/lawson-article.css')
+          runtime_path = Path('src/runtime/reader-actions.js')
+
+          def replace_once(text, old, new, label):
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected exactly 1 occurrence, got {count}')
+              return text.replace(old, new, 1)
+
+          article = article_path.read_text(encoding='utf-8')
+          replacements = [
+              (
+                  '<li><strong>Это не доказывает, что прежние проповеди были сознательной ложью, и не даёт права объявлять Лоусона необращённым.</strong> Но делает центральной проблему самообмана: человек может правильно формулировать истину и всё же не позволять ей управлять собственной жизнью.</li>',
+                  '<li><strong>Прежние проповеди не решают вопрос о его обращении; они обнажают проблему самообмана.</strong> Человек может правильно формулировать истину и всё же не позволять ей управлять собственной жизнью.</li>',
+                  'summary self-deception framing',
+              ),
+              (
+                  '<li><strong>Октябрь 2026 года добавил эпизод, который статья передаёт с максимально жёсткой границей.</strong>',
+                  '<li><strong>Октябрь 2026 года добавил эпизод с ограниченной доказательной базой.</strong>',
+                  'summary October framing',
+              ),
+              (
+                  'Каждая закономерность разложена на факт, чтение и границу, и ни одна не доведена до вменения намерения.',
+                  'Здесь принципиально различать наблюдаемую закономерность и приписывание мотива: первое документируется, второе требует доказательств.',
+                  'summary patterns framing',
+              ),
+              (
+                  'Это не оценка проповеди Лоусона и не суждение о его вечном состоянии. Это суждение о **праве занимать место**. Именно его чаще всего и путают с оценкой содержания служения — и именно его труднее всего восстановить.',
+                  'МакАртур говорит здесь о **праве занимать место**, а не о качестве проповедей. Именно этот вопрос чаще всего путают с оценкой содержания служения — и именно его труднее всего восстановить.',
+                  'MacArthur scope',
+              ),
+              (
+                  'Из этого нельзя вывести: «следовательно, сам Лоусон был необращён». Он обращался к пасторам вообще, а не исповедовался скрытым кодом.\n\nНо можно вывести другое: **он публично знал категорию, в которой правильная религиозная речь не удостоверяет внутреннюю реальность говорящего.**',
+                  'Это не скрытая исповедь Лоусона: он обращался к пасторам вообще. Но смысл для его собственной истории очевиден: **он публично знал категорию, в которой правильная религиозная речь не удостоверяет внутреннюю реальность говорящего.**',
+                  'self-deception defensive cadence',
+              ),
+              (
+                  'Это не обвинение в обмане. Ни один источник не утверждает, что Лоусон выбрал такую конфигурацию намеренно. Переезд объясняется просьбой жены, членство брата — естественная причина выбрать именно эту общину. Всё это могло сложиться само.\n\nНо структура подотчётности оценивается не по намерениям, а по тому, **кто в принципе может сказать человеку «нет»**.',
+                  'Намерение здесь не установлено. Переезд объясняется просьбой жены, членство брата — естественная причина выбрать именно эту общину; конфигурация могла сложиться без расчёта. Для оценки подотчётности важнее другое: **кто в принципе может сказать человеку «нет»**.',
+                  'accountability motive framing',
+              ),
+              (
+                  'Статья не делает из этого вывода о нечестности: взгляды пересматривать законно, и пересмотр не обязательно лицемерен. Фиксируется другое — предупреждение о том, что подотчётность обходят, было произнесено им самим, заранее и в тех же выражениях, в каких потом описывали его собственный случай.',
+                  'Пересмотр взглядов сам по себе не лицемерие. Существенно другое: предупреждение о том, что подотчётность обходят, было произнесено им самим заранее — почти в тех же выражениях, в каких потом описывали его собственный случай.',
+                  'accountability revision framing',
+              ),
+              (
+                  'Статья не требует публичного раскрытия и не называет имён — но отсутствие в исповедании слова о том, кому именно был причинён вред, остаётся самой заметной незаполненной строкой всей этой истории.',
+                  'Имя женщины здесь ничего не добавит. Существенно другое: отсутствие в публичном исповедании слова о том, кому именно был причинён вред, остаётся самой заметной незаполненной строкой всей этой истории.',
+                  'woman paragraph framing',
+              ),
+              (
+                  'Статья не делает из этого вывода о чьей-либо вине и не знает, знал ли кто-либо в этом учебном заведении о происходившем. Но она фиксирует, что институциональная связь существовала — и что публичная запись несколько месяцев опиралась на утверждение, которое позже было исправлено тем, кто его сделал.',
+                  'Институциональная связь сама по себе не доказывает, что кто-либо в университете знал о происходившем. Она доказывает более узкое: публичная запись несколько месяцев опиралась на утверждение об отсутствии такой связи, а затем была исправлена самим Джонсоном.',
+                  'TMU connection framing',
+              ),
+              (
+                  '<strong>Граница этого раздела.</strong> Носитель один. Независимого подтверждения эпизода нет: ни одно издание не сообщило о комментарии, и сама платформа не позволяет проверить авторство аккаунта. Автор выпуска сам говорит, что личность комментатора нельзя верифицировать полностью, и ограничивается мнением. Статья не утверждает, что комментатор — Лоусон. Она не утверждает и обратного. Всё, что здесь можно утверждать, — что такой комментарий был, что он был отредактирован и что он распространялся одинаково на нескольких каналах.',
+                  '<strong>Граница доказательств.</strong> Носитель один; независимого подтверждения нет, а платформа не позволяет установить личность автора аккаунта. Поэтому доказано только существование, последующее редактирование и одинаковое распространение комментария на нескольких каналах. Авторство остаётся открытым вопросом.',
+                  'October evidence boundary',
+              ),
+              (
+                  'Правка не является доказательством злого умысла: люди уточняют формулировки постоянно. Но в истории, центральный вопрос которой состоит в разрыве между публичной речью и тем, что за ней стоит, факт редактирования публичной речи постфактум нельзя просто не заметить.',
+                  'Сам факт правки не раскрывает мотива. Но в истории, центральный вопрос которой состоит в разрыве между публичной речью и тем, что за ней стоит, редактирование публичной речи постфактум нельзя просто не заметить.',
+                  'comment edit framing',
+              ),
+              (
+                  'Статья не присоединяется к слову «богохульный», но считает сам вопрос законным — и отмечает, что это единственный из публичных разборов, который разбирает не решение издать книгу, а её богословие.',
+                  'Слово «богохульный» остаётся оценкой Джонса. Но богословский вопрос за этой оценкой реален: это единственный из публичных разборов, который разбирает не решение издать книгу, а её богословие.',
+                  'wilderness framing',
+              ),
+              (
+                  'Есть и пятое возражение, которое приходит не от защитников Лоусона, а из самого Писания:',
+                  'Есть ещё одно возражение, которое приходит не от защитников Лоусона, а из самого Писания:',
+                  'objection count duplicate',
+              ),
+              (
+                  'Четыре возражения — и ни одно из них не опровергает утверждение этой статьи, потому что все четыре атакуют более сильный тезис, чем тот, который здесь защищается.\n\nСтатья не утверждает, что книгу не следовало писать. Не утверждает, что Лоусон необращён. Не утверждает, что он обязан молчать всю оставшуюся жизнь. Не утверждает, что его прежние проповеди следует удалить.\n\nОна утверждает одно: **книга не может логически удостоверить восстановленную достоверность своего автора**. Каждое из пяти возражений совместимо с этим утверждением.',
+                  'Все эти возражения спорят с более сильной позицией, чем та, которую защищает статья. Книга может быть полезной; Лоусон может быть подлинно кающимся; он не обязан молчать всю жизнь; истинные старые проповеди не становятся ложными. **Но книга не может сама удостоверить восстановленную публичную духовную достоверность своего автора.** Именно это — центральный тезис раздела.',
+                  'objections thesis and count',
+              ),
+              (
+                  'Статья не считает их мусором: часть из них может оказаться верной, и выбросить их — значит потерять информацию. Но и повышать их до факта нельзя. Поэтому они собраны здесь явно, с указанием, кто их высказывает, что в их пользу и что против.',
+                  'Игнорировать их нельзя: часть может оказаться верной. Но повышать их до факта без доказательств тоже нельзя. Поэтому они собраны здесь явно, с указанием, кто их высказывает, что в их пользу и что против.',
+                  'versions intro',
+              ),
+              (
+                  '<strong>Редакционная граница.</strong> Статья не объявляет Стивена Лоусона необращённым, не идентифицирует женщину, с которой были связаны его греховные отношения, не утверждает развод или завершённое примирение без прямого источника, не выдаёт непрозрачность процесса за доказательство отсутствия процесса и не превращает пастырские рекомендации о длительной тихой верности в новый библейский числовой закон. Эпизод октября 2026 года передан по единственному носителю, и статья не утверждает, что автор комментария — Лоусон. Пересказ удалённых публикаций Фила Джонсона используется для подтверждения факта его заявления, а не для установления обстоятельств отношений. Читательские оценки книги приводятся как оценки, а не как сведения о её содержании. Разделы о недоказанных версиях и о закономерностях существуют именно для того, чтобы не потерять публично звучащие утверждения и странные действия, — и каждый такой пункт несёт собственную границу: версия не повышена до факта, а замеченная закономерность не превращена в утверждение о намерении.',
+                  '<strong>Редакционная граница.</strong> Где источник не устанавливает факт, статья не подменяет его догадкой. Это относится прежде всего к состоянию брака, личности автора октябрьского комментария, мотивам публикации книги и внутреннему состоянию Лоусона. Всё остальное оценивается настолько жёстко, насколько позволяют документированные факты.',
+                  'final editorial boundary',
+              ),
+          ]
+          for old, new, label in replacements:
+              article = replace_once(article, old, new, label)
+          article_path.write_text(article, encoding='utf-8')
+
+          css = css_path.read_text(encoding='utf-8')
+          start_marker = '/*\n * ПАЛИТРА СТРАНИЦЫ.'
+          end_marker = '/*\n * ХРОМ СТРАНИЦЫ'
+          if css.count(start_marker) != 1 or css.count(end_marker) != 1:
+              raise SystemExit('lawson CSS palette markers drifted')
+          start = css.index(start_marker)
+          end = css.index(end_marker)
+          new_palette = '''/*
+           * ПАЛИТРА СТРАНИЦЫ.
+           *
+           * Lawson следует единому reader-theme contract сайта. Светлая, тёмная и
+           * sepia-темы приходят из site.css / reader-preferences.css; локального
+           * принудительного dark override здесь больше нет. Astro-хром и статья
+           * получают одни и те же семантические токены, поэтому rail, оглавление,
+           * карточки и основной текст не могут оказаться в разных темах.
+           */
+          .astro-shell,
+          .astro-main {
+            --astro-color-bg: var(--color-canvas);
+            --astro-color-surface: var(--color-surface);
+            --astro-color-text: var(--color-text);
+            --astro-color-muted: var(--color-text-muted);
+            --astro-color-gold: var(--color-accent);
+            --astro-color-border: var(--color-border);
+            --astro-color-card: var(--color-surface);
+          }
+          .astro-main {
+            --bg: var(--color-surface);
+            --bg-elevated: var(--color-surface-2);
+            --bg-alt: var(--color-surface-alt);
+            --text: var(--color-text);
+            --muted: var(--color-text-muted);
+            --accent: var(--color-accent);
+            --accent-soft: var(--color-accent-soft);
+            --border: var(--color-border);
+            color: var(--text);
+          }
+          /* global.css загружен вместе с Astro-layout, но site.css владеет темой.
+             Явно синхронизируем фон оболочки с тем же canvas-токеном. */
+          body { background-color: var(--color-canvas); color: var(--color-text); }
+          .astro-main .lawson-toc a { color: var(--text); }
+          .astro-main .lawson-toc a:hover { color: var(--accent); }
+
+          '''
+          css = css[:start] + new_palette + css[end:]
+          css = replace_once(css, '.astro-main { --astro-color-card: #1a1f28; }\n', '', 'remove hard-coded author-card theme')
+          css_path.write_text(css, encoding='utf-8')
+
+          runtime = runtime_path.read_text(encoding='utf-8')
+          runtime = replace_once(
+              runtime,
+              '  let report = null;\n  let preparationCount = 0;\n  let printing = false;\n',
+              '  let report = null;\n  let preparationCount = 0;\n  let printing = false;\n  const THEME_TRIGGER_SELECTOR = [\n    \'[data-fc-action="theme"]\',\n    \'[data-gbs2-theme]\',\n    \'.gb-theme-toggle\',\n    \'.gb-fc-theme\',\n    \'#barThemeBtn\',\n    \'#themeToggle\',\n    \'.theme-toggle\',\n    \'.nag-sidebar-theme-btn\',\n  ].join(\',\');\n',
+              'native theme selector',
+          )
+          runtime = replace_once(
+              runtime,
+              '  function onClick(event) {\n    const trigger = event.target instanceof Element\n      ? event.target.closest(\'[data-action="print"],[data-action="share"],[data-home-href]\')\n      : null;\n    if (!trigger) return;\n\n    if (trigger.matches(\'[data-action="print"]\')) {',
+              '  function toggleTheme() {\n    const preferences = window.GBReaderPreferences;\n    if (!preferences || typeof preferences.get !== \'function\' || typeof preferences.setTheme !== \'function\') return false;\n    const current = preferences.get();\n    const nextTheme = current.theme === \'dark\' ? \'light\' : \'dark\';\n    preferences.setTheme(nextTheme, { source: \'native-reader-action\' });\n    return true;\n  }\n\n  function onClick(event) {\n    const trigger = event.target instanceof Element\n      ? event.target.closest(`[data-action="print"],[data-action="share"],[data-home-href],${THEME_TRIGGER_SELECTOR}`)\n      : null;\n    if (!trigger) return;\n\n    if (trigger.matches(THEME_TRIGGER_SELECTOR)) {\n      claimAction(event);\n      toggleTheme();\n      return;\n    }\n\n    if (trigger.matches(\'[data-action="print"]\')) {',
+              'native theme ownership',
+          )
+          runtime_path.write_text(runtime, encoding='utf-8')
+
+          print(f'Applied {len(replacements)} editorial replacements plus theme/runtime fixes')
+          PY
+      - name: Verify patch invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          grep -F 'Все эти возражения спорят с более сильной позицией' src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx
+          ! grep -F 'Четыре возражения' src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx
+          ! grep -F 'Статья не утверждает, что книгу не следовало писать' src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx
+          grep -F 'THEME_TRIGGER_SELECTOR' src/runtime/reader-actions.js
+          grep -F -- '--astro-color-surface: var(--color-surface);' src/styles/lawson-article.css
+          ! grep -F -- '--astro-color-card: #1a1f28' src/styles/lawson-article.css
+      - name: Commit audited patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx src/styles/lawson-article.css src/runtime/reader-actions.js
+          git diff --cached --quiet && exit 0
+          git commit -m 'fix(lawson): unify theme and harden editorial voice'
+          git push origin HEAD:audit/lawson-theme-editorial-hardening
