@@ -301,15 +301,39 @@ async function inspectKodDaVinchiTimeline(page, entry, viewport) {
   record(entry, viewport, 'timeline:desktop-overflow-scrollable', actuallyScrollable, JSON.stringify(state));
 
   const region = page.locator('#canonTimeline .ctw-body');
+  await region.evaluate((node) => node.scrollIntoView({ block: 'center', behavior: 'instant' }));
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => resolve())));
+
+  const tabPreparation = await region.evaluate((node) => {
+    const selector = 'a[href],area[href],button,input,select,textarea,iframe,object,embed,summary,[contenteditable="true"],[tabindex],audio[controls],video[controls]';
+    const stops = [...document.querySelectorAll(selector)]
+      .map((element, order) => ({ element, order, tabIndex: element.tabIndex }))
+      .filter(({ element, tabIndex }) => {
+        if (tabIndex < 0 || element.disabled || element.closest('[inert]')) return false;
+        const style = getComputedStyle(element);
+        return style.display !== 'none' && style.visibility !== 'hidden' && style.visibility !== 'collapse';
+      })
+      .sort((a, b) => {
+        const aOrder = a.tabIndex > 0 ? a.tabIndex : Number.MAX_SAFE_INTEGER;
+        const bOrder = b.tabIndex > 0 ? b.tabIndex : Number.MAX_SAFE_INTEGER;
+        return aOrder - bOrder || a.order - b.order;
+      });
+    const index = stops.findIndex(({ element }) => element === node);
+    const previous = stops[index - 1];
+    if (previous) previous.element.focus({ preventScroll: true });
+    return {
+      index,
+      count: stops.length,
+      prepared: index >= 0 && (index === 0 || document.activeElement === previous?.element),
+      previous: previous ? `${previous.element.tagName.toLowerCase()}#${previous.element.id || '-'}` : null,
+    };
+  });
   let reachedByTab = false;
-  for (let index = 0; index < 200; index += 1) {
+  if (tabPreparation.prepared) {
     await page.keyboard.press('Tab');
-    if (await region.evaluate((node) => document.activeElement === node)) {
-      reachedByTab = true;
-      break;
-    }
+    reachedByTab = await region.evaluate((node) => document.activeElement === node);
   }
-  record(entry, viewport, 'timeline:desktop-region-reachable-by-tab', reachedByTab);
+  record(entry, viewport, 'timeline:desktop-region-reachable-by-tab', reachedByTab, JSON.stringify(tabPreparation));
 
   const focusStyle = await region.evaluate((node) => {
     const style = getComputedStyle(node);
@@ -335,8 +359,11 @@ async function inspectKodDaVinchiTimeline(page, entry, viewport) {
   const keyboardScrolls = reachedByTab && afterArrowRight > 0 && afterArrowLeft < afterArrowRight;
   record(entry, viewport, 'timeline:desktop-arrow-keys-scroll', keyboardScrolls, JSON.stringify({ afterArrowRight, afterArrowLeft }));
 
-  await region.evaluate((node) => { node.scrollLeft = 0; });
-  await region.scrollIntoViewIfNeeded();
+  await region.evaluate((node) => {
+    node.scrollLeft = 0;
+    node.scrollIntoView({ block: 'center', behavior: 'instant' });
+  });
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => resolve())));
   const box = await region.boundingBox();
   if (box && box.width > 0 && box.height > 0) {
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
