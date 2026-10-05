@@ -556,6 +556,13 @@ const md = [
   '',
 ];
 await writeFile(join(REPORTS, 'public-surface-browser-matrix.md'), `${md.join('\n')}\n`);
-for (const item of failures) console.error(`FAIL [${item.viewport}] ${item.route} ${item.contract} :: ${item.detail}`);
+for (const item of failures) {
+  const detail = `${item.route} @ ${item.viewport}: ${item.contract} — ${item.detail || 'failed'}`;
+  console.error(`FAIL [${item.viewport}] ${item.route} ${item.contract} :: ${item.detail}`);
+  if (process.env.GITHUB_ACTIONS === 'true') {
+    const annotation = detail.slice(0, 4000).replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A');
+    console.log(`::error file=scripts/public-surface-browser-matrix.mjs,line=1,title=Public browser matrix assertion::${annotation}`);
+  }
+}
 console.log(`PUBLIC SURFACE BROWSER MATRIX: ${passed}/${results.length} PASS (${completedCases}/${scheduledCases} cases; ${entries.length} routes)`);
 if (failures.length) process.exitCode = 1;
