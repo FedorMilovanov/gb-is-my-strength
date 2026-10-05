@@ -465,14 +465,13 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC } = Astro.props as
       document.dispatchEvent(new CustomEvent('hm:open-settings'));
     });
 
-    // ---- Auto-hide top bar (like Gill) ----
+    // ---- Auto-hide top bar (like Gill) — no scroll owner per reader-state contract ----
+    // Uses IntersectionObserver sentinel instead of window scroll listener.
     if (topbar) {
       const ember = topbar.querySelector('.hm-ember') as HTMLElement | null;
       const worldEl = document.querySelector('.gbs-paper') || document.body;
-      let lastY = window.scrollY || 0;
       let hidden = false;
       let ttsActive = false;
-      let ticking = false;
 
       function hasOpenSheet(){ return (sheet as HTMLElement).classList.contains('is-open'); }
       function speedRailOpen(){ return (topbar as HTMLElement).classList.contains('speed-open'); }
@@ -484,29 +483,33 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC } = Astro.props as
         (topbar as HTMLElement).classList.toggle('is-hidden', shouldHide);
         if (worldEl) worldEl.classList.toggle('hm-tbhidden', shouldHide);
       }
-      function onScroll(){
-        if (ticking) return;
-        ticking = true;
-        requestAnimationFrame(() => {
-          const y = window.scrollY || 0;
-          (topbar as HTMLElement).classList.toggle('is-top', y <= 4);
-          if (!canAutoHide()){
-            hidden = false;
-            lastY = y;
-            applyHidden();
-            ticking = false;
-            return;
-          }
-          const delta = y - lastY;
-          if (Math.abs(delta) > 6){
-            hidden = y >= 80 && delta > 0;
-            lastY = y;
-            applyHidden();
-          }
-          ticking = false;
-        });
+
+      // Sentinel at 80px: when not intersecting, user scrolled past 80px → hide if allowed
+      let sentinel = document.getElementById('hmTopSentinel') as HTMLElement | null;
+      if (!sentinel) {
+        sentinel = document.createElement('div');
+        sentinel.id = 'hmTopSentinel';
+        sentinel.setAttribute('aria-hidden','true');
+        sentinel.style.cssText = 'position:absolute;top:80px;left:0;width:1px;height:1px;pointer-events:none;';
+        document.body.prepend(sentinel);
       }
-      window.addEventListener('scroll', onScroll, { passive: true });
+
+      const io = new IntersectionObserver((entries)=>{
+        const entry = entries[0];
+        const y = window.scrollY || 0;
+        (topbar as HTMLElement).classList.toggle('is-top', y <= 4);
+        if (!canAutoHide()){
+          hidden = false;
+          applyHidden();
+          return;
+        }
+        // entry.isIntersecting means sentinel visible → near top (≤80px)
+        hidden = !entry.isIntersecting && y >= 80;
+        applyHidden();
+      }, { rootMargin: '0px', threshold: 0 });
+      io.observe(sentinel);
+
+      // Seed is-top
       (topbar as HTMLElement).classList.toggle('is-top', (window.scrollY || 0) <= 4);
 
       if (ember){
