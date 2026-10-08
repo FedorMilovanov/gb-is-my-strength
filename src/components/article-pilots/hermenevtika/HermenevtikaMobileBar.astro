@@ -20,9 +20,8 @@
  *   FloatingCluster on <1200px (kdv-cluster-scope pattern).
  * - Ghost text / leaked nav fixed at Header.astro level (nav display:none,
  *   astro-header hidden when .hmtop exists).
- * - "Коротко" evaluation: summary is in-article .lawson-summary / summary-card,
- *   not in sticky chrome. No "Коротко" button in chrome — justified as
- *   in-article card only, not permanent chrome.
+ * - Lawson's opening is prose, not a sticky-chrome digest. The mobile chrome
+ *   keeps its navigation and reading controls separate from article content.
  */
 import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
 import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
@@ -38,12 +37,14 @@ interface Props {
   backHref: string;
   readingMinutes?: number;
   toc?: GenericTocItem[] | typeof HERMENEVTIKA_TOC;
+  palette?: 'default' | 'ink-gold';
 }
-const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC } = Astro.props as Props;
+const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'default' } = Astro.props as Props;
 ---
 <ReaderActionsRuntime />
 <MobileChromeShell
   engine="article"
+  rootClass={palette === 'ink-gold' ? 'mobile-chrome--ink-gold' : ''}
   topClass="hmtop"
   bottomClass="hmbar"
   topAttrs={{ 'data-fc-root': true, 'data-fc-variant': 'single', 'data-fc-mode': 'single', 'data-gb-speed-custom': true }}
@@ -337,6 +338,108 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC } = Astro.props as
   .hmsheet-action-btn.gb-save.is-saved{color:#b8724f;background:rgba(184,114,79,.10);border-color:rgba(184,114,79,.3)}
   .hmsheet-action-btn.gb-save.is-saved svg{fill:#b8724f;stroke:#b8724f}
   html.dark .hmsheet-action-btn.gb-save.is-saved{color:#e0a89c;background:rgba(224,168,156,.12);border-color:rgba(224,168,156,.32)}
+
+  /* Optional Lawson-only palette; the canonical Hermenevtika chrome remains unchanged by default. */
+  .mobile-chrome--ink-gold{
+    --lawson-chrome-surface:#faf8f2;
+    --lawson-chrome-surface-raised:#f0ece2;
+    --lawson-chrome-text:#29281f;
+    --lawson-chrome-muted:#716e63;
+    --lawson-chrome-accent:#795c2b;
+    --lawson-chrome-accent-ink:#fffdf8;
+    --lawson-chrome-border:rgba(121,92,43,.23);
+    --lawson-chrome-track:rgba(121,92,43,.18);
+    --lawson-chrome-soft:rgba(121,92,43,.07);
+    --lawson-chrome-shadow:rgba(29,27,21,.14);
+  }
+  html.dark .mobile-chrome--ink-gold{
+    --lawson-chrome-surface:#151a1b;
+    --lawson-chrome-surface-raised:#1b2020;
+    --lawson-chrome-text:#e9e5d9;
+    --lawson-chrome-muted:#b1ab99;
+    --lawson-chrome-accent:#d0b97a;
+    --lawson-chrome-accent-ink:#211e15;
+    --lawson-chrome-border:rgba(208,185,122,.23);
+    --lawson-chrome-track:rgba(208,185,122,.22);
+    --lawson-chrome-soft:rgba(208,185,122,.09);
+    --lawson-chrome-shadow:rgba(0,0,0,.48);
+  }
+  html[data-reader-theme="sepia"] .mobile-chrome--ink-gold{
+    --lawson-chrome-surface:#f3ead4;
+    --lawson-chrome-surface-raised:#e9dcc0;
+    --lawson-chrome-text:#352e22;
+    --lawson-chrome-muted:#73664e;
+    --lawson-chrome-accent:#765726;
+    --lawson-chrome-accent-ink:#fffdf8;
+    --lawson-chrome-border:rgba(118,87,38,.24);
+    --lawson-chrome-track:rgba(118,87,38,.2);
+    --lawson-chrome-soft:rgba(118,87,38,.08);
+    --lawson-chrome-shadow:rgba(75,57,29,.2);
+  }
+  div.mobile-chrome--ink-gold .hmtop{
+    background:color-mix(in srgb,var(--lawson-chrome-surface) 92%,transparent);
+    border-bottom-color:var(--lawson-chrome-border);
+  }
+  div.mobile-chrome--ink-gold .hmtop.is-top{background:color-mix(in srgb,var(--lawson-chrome-surface) 96%,transparent);border-bottom-color:transparent}
+  div.mobile-chrome--ink-gold .hmbar{
+    background:linear-gradient(180deg,var(--lawson-chrome-surface),var(--lawson-chrome-surface-raised));
+    border-top-color:var(--lawson-chrome-border);
+    box-shadow:0 -8px 24px -12px var(--lawson-chrome-shadow);
+  }
+  div.mobile-chrome--ink-gold .hm-icon,
+  div.mobile-chrome--ink-gold .hmbar-btn{color:var(--lawson-chrome-accent)}
+  div.mobile-chrome--ink-gold .hm-icon.gb-save.is-saved{color:var(--lawson-chrome-accent)}
+  div.mobile-chrome--ink-gold .hm-icon.gb-save.is-saved svg{fill:var(--lawson-chrome-accent);stroke:var(--lawson-chrome-accent)}
+  div.mobile-chrome--ink-gold .hm-spd{border-color:var(--lawson-chrome-border);color:var(--lawson-chrome-accent)}
+  div.mobile-chrome--ink-gold .hm-spd[aria-checked="true"],
+  div.mobile-chrome--ink-gold .hm-spdbadge{
+    background:var(--lawson-chrome-accent);border-color:var(--lawson-chrome-accent);color:var(--lawson-chrome-accent-ink);
+  }
+  div.mobile-chrome--ink-gold .hmbar-progress-track{stroke:var(--lawson-chrome-track)}
+  div.mobile-chrome--ink-gold .hmbar-progress-fill{stroke:var(--lawson-chrome-accent)}
+  div.mobile-chrome--ink-gold .hmbar-progress-text{color:var(--lawson-chrome-accent)}
+  div.mobile-chrome--ink-gold .hmbar-section-label{color:var(--lawson-chrome-muted)}
+  div.mobile-chrome--ink-gold .hmbar-section-name{color:var(--lawson-chrome-text)}
+  div.mobile-chrome--ink-gold .hmbar-divider{background:var(--lawson-chrome-border)}
+
+  div.mobile-chrome--ink-gold .hmsheet-backdrop{background:rgba(24,22,17,.42)}
+  div.mobile-chrome--ink-gold .hmsheet-panel{
+    background:linear-gradient(180deg,var(--lawson-chrome-surface),var(--lawson-chrome-surface-raised));
+    box-shadow:0 -20px 50px -10px var(--lawson-chrome-shadow);
+  }
+  div.mobile-chrome--ink-gold .hmsheet-handle{background:var(--lawson-chrome-border)}
+  div.mobile-chrome--ink-gold .hmsheet-title{color:var(--lawson-chrome-text)}
+  div.mobile-chrome--ink-gold .hmsheet-subtitle,
+  div.mobile-chrome--ink-gold .hmsheet-time,
+  div.mobile-chrome--ink-gold .hmsheet-empty{color:var(--lawson-chrome-muted)}
+  div.mobile-chrome--ink-gold .hmsheet-close{
+    background:var(--lawson-chrome-soft);color:var(--lawson-chrome-accent);
+  }
+  div.mobile-chrome--ink-gold .hmsheet-progress-wrap{background:var(--lawson-chrome-track)}
+  div.mobile-chrome--ink-gold .hmsheet-progress-fill{background:var(--lawson-chrome-accent)}
+  div.mobile-chrome--ink-gold .hmsheet-progress-pct{color:var(--lawson-chrome-accent)}
+  div.mobile-chrome--ink-gold .hmsheet-search{
+    background:var(--lawson-chrome-soft);border-color:var(--lawson-chrome-border);
+  }
+  div.mobile-chrome--ink-gold .hmsheet-search svg{stroke:var(--lawson-chrome-muted)}
+  div.mobile-chrome--ink-gold .hmsheet-search input{color:var(--lawson-chrome-text);caret-color:var(--lawson-chrome-accent)}
+  div.mobile-chrome--ink-gold .hmsheet-search input::placeholder{color:var(--lawson-chrome-muted)}
+  div.mobile-chrome--ink-gold .hmsheet-link{
+    color:var(--lawson-chrome-text);border-bottom-color:var(--lawson-chrome-border);
+  }
+  div.mobile-chrome--ink-gold .hmsheet-sub .hmsheet-link{color:var(--lawson-chrome-muted)}
+  div.mobile-chrome--ink-gold li[data-idx].hm-current .hmsheet-link{color:var(--lawson-chrome-accent)}
+  div.mobile-chrome--ink-gold .hmsheet-actions{border-top-color:var(--lawson-chrome-border)}
+  div.mobile-chrome--ink-gold .hmsheet-action-btn{
+    color:var(--lawson-chrome-accent);background:var(--lawson-chrome-soft);border-color:var(--lawson-chrome-border);
+  }
+  div.mobile-chrome--ink-gold .hmsheet-action-btn.gb-save.is-saved{
+    color:var(--lawson-chrome-accent);background:var(--lawson-chrome-soft);border-color:var(--lawson-chrome-border);
+  }
+  div.mobile-chrome--ink-gold .hmsheet-action-btn.gb-save.is-saved svg{fill:var(--lawson-chrome-accent);stroke:var(--lawson-chrome-accent)}
+  div.mobile-chrome--ink-gold :is(.hm-icon,.hm-spd,.hm-spdbadge,.hmbar-progress,.hmbar-section,.hmbar-btn,.hmsheet-close,.hmsheet-link,.hmsheet-action-btn):focus-visible{
+    outline:2px solid var(--lawson-chrome-accent);outline-offset:2px;
+  }
 
   @media(min-width:1200px){ .hmsheet:not(.hmsettings){display:none !important} }
   @media(prefers-reduced-motion:reduce){
