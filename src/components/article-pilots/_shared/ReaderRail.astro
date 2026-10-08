@@ -13,15 +13,17 @@ interface Props {
   title: string;
   backHref: string;
   toc: ReaderRailTocItem[];
+  /** Optional route-scoped premium ink/gold treatment; the default shared rail is unchanged. */
+  palette?: 'default' | 'ink-gold';
   /** 'hm' → CustomEvent('hm:open-settings') (ReaderSettings);
    *  'gill' → data-gill-settings-open (GillReaderSettingsSheet). */
   settingsTrigger?: 'hm' | 'gill';
   tocLabel?: string;
 }
-const { eyebrow, title, backHref, toc, settingsTrigger = 'hm', tocLabel = 'Оглавление статьи' } = Astro.props;
+const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'hm', tocLabel = 'Оглавление статьи' } = Astro.props;
 ---
 <SiteSectionsMenu />
-<aside class="hrail" aria-label={title} data-fc-root data-fc-variant="single" data-fc-mode="single">
+<aside class:list={{ hrail: true, 'hrail--ink-gold': palette === 'ink-gold' }} aria-label={title} data-fc-root data-fc-variant="single" data-fc-mode="single">
   <!-- Верх рейла: только назад — Поиск/PLAY/Сохранить уехали в угловой
        кластер справа сверху, как у Гилла (owner: "должно быть как в Гилле,
        справа сверху PLAY, а не в левом меню... стандарт Гилла с адаптацией
@@ -78,44 +80,44 @@ const { eyebrow, title, backHref, toc, settingsTrigger = 'hm', tocLabel = 'Ог�
   /* ===== ReaderRail — day (warm cream + maroon) / night (dark wine + dusty rose) ===== */
   .hrail{
     position:fixed; left:clamp(16px,2.4vw,40px); top:24px; bottom:24px; width:270px;
-    background:linear-gradient(180deg,#fbf3ea,#f3e6d8);
-    border:1px solid #e8d9c8; border-radius:28px;
-    box-shadow:0 24px 60px -20px rgba(122,46,46,.18);
+    background:linear-gradient(180deg,var(--rail-surface,#fbf3ea),var(--rail-surface-raised,#f3e6d8));
+    border:1px solid var(--rail-border,#e8d9c8); border-radius:28px;
+    box-shadow:0 24px 60px -20px var(--rail-shadow,rgba(122,46,46,.18));
     display:flex; flex-direction:column; padding:20px 16px 14px; overflow:hidden;
     z-index:var(--z-sticky,1000);
   }
   html.dark .hrail{
-    background:radial-gradient(130% 50% at 24% 0%, rgba(160,50,60,.10), transparent 55%),linear-gradient(180deg,#2b1219,#1c0b10 60%,#130709);
-    border-color:rgba(212,140,150,.16);
-    box-shadow:0 34px 100px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.04);
+    background:radial-gradient(130% 50% at 24% 0%,var(--rail-glow,rgba(160,50,60,.10)),transparent 55%),linear-gradient(180deg,var(--rail-surface,#2b1219),var(--rail-surface-raised,#1c0b10) 60%,var(--rail-surface-deep,#130709));
+    border-color:var(--rail-border,rgba(212,140,150,.16));
+    box-shadow:0 34px 100px var(--rail-shadow-dark,rgba(0,0,0,.5)),inset 0 1px 0 rgba(255,255,255,.04);
   }
   /* ---- top bar: back only — Search/Play/Save moved to the corner cluster
      (SingleArticleCluster.astro, top-right, Gill's standard). ---- */
   .hrail-top{display:flex;align-items:center;gap:6px;margin:0 0 12px;position:relative}
-  .hrail-back{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#7a2e2e;opacity:.85;
+  .hrail-back{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--rail-accent,#7a2e2e);opacity:.85;
     transition:transform .3s,color .3s;cursor:pointer;background:none;border:0;padding:0;font:inherit}
-  html.dark .hrail-back{color:#e0a89c}
+  html.dark .hrail-back{color:var(--rail-accent,#e0a89c)}
   .hrail-back svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8}
   @media(hover:hover) and (pointer:fine){
-    .hrail-back:hover{transform:translateX(-3px);color:#5f2323}
-    html.dark .hrail-back:hover{color:#f2c4b6}
+    .hrail-back:hover{transform:translateX(-3px);color:var(--rail-accent-strong,#5f2323)}
+    html.dark .hrail-back:hover{color:var(--rail-accent-strong,#f2c4b6)}
   }
 
   .hrail-meta{padding:2px 4px 14px}
-  .hrail-meta__eyebrow{font-size:9.5px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:#7a2e2e}
-  html.dark .hrail-meta__eyebrow{color:#d68a7a}
-  .hrail-meta__title{font-family:var(--f-serif,Lora,Georgia,serif);font-size:17px;font-weight:700;line-height:1.28;color:#2a1814;margin:6px 0 0}
-  html.dark .hrail-meta__title{color:#f2e9e6}
+  .hrail-meta__eyebrow{font-size:9.5px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;color:var(--rail-accent,#7a2e2e)}
+  html.dark .hrail-meta__eyebrow{color:var(--rail-accent,#d68a7a)}
+  .hrail-meta__title{font-family:var(--f-serif,Lora,Georgia,serif);font-size:17px;font-weight:700;line-height:1.28;color:var(--rail-text,#2a1814);margin:6px 0 0}
+  html.dark .hrail-meta__title{color:var(--rail-text,#f2e9e6)}
 
-  .hrail-toch{display:flex;align-items:center;gap:8px;padding:12px 2px 8px;font-size:9.5px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:rgba(42,24,20,.5);border-top:1px solid rgba(0,0,0,.08)}
-  html.dark .hrail-toch{color:rgba(255,255,255,.5);border-top-color:rgba(255,255,255,.07)}
-  .hrail-toch b{margin-left:auto;background:rgba(122,46,46,.08);border:1px solid rgba(122,46,46,.22);border-radius:99px;padding:2px 9px;font-size:10px;color:#7a2e2e;font-variant-numeric:tabular-nums}
-  html.dark .hrail-toch b{background:rgba(212,168,87,.08);border-color:rgba(224,160,150,.24);color:#e0a89c}
+  .hrail-toch{display:flex;align-items:center;gap:8px;padding:12px 2px 8px;font-size:9.5px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--rail-muted,rgba(42,24,20,.5));border-top:1px solid var(--rail-line,rgba(0,0,0,.08))}
+  html.dark .hrail-toch{color:var(--rail-muted,rgba(255,255,255,.5));border-top-color:var(--rail-line,rgba(255,255,255,.07))}
+  .hrail-toch b{margin-left:auto;background:var(--rail-soft,rgba(122,46,46,.08));border:1px solid var(--rail-border,rgba(122,46,46,.22));border-radius:99px;padding:2px 9px;font-size:10px;color:var(--rail-accent,#7a2e2e);font-variant-numeric:tabular-nums}
+  html.dark .hrail-toch b{background:var(--rail-soft,rgba(212,168,87,.08));border-color:var(--rail-border,rgba(224,160,150,.24));color:var(--rail-accent,#e0a89c)}
   .hrail-scroll{flex:1 1 auto; overflow-y:auto; margin-right:-8px; padding-right:8px}
   .hrail-toc{position:relative;list-style:none;margin:6px 0 0;padding:2px 12px 14px 0;--toc-axis-x:22px;--toc-sub-in:16px}
   .hrail-track{position:absolute;left:calc(var(--toc-axis-x) - 1px);width:2px;border-radius:9px;overflow:hidden;
-    top:14px;bottom:22px;background:rgba(0,0,0,.08)}
-  html.dark .hrail-track{background:rgba(255,255,255,.08)}
+    top:14px;bottom:22px;background:var(--rail-line,rgba(0,0,0,.08))}
+  html.dark .hrail-track{background:var(--rail-line,rgba(255,255,255,.08))}
   .hrail-track i{position:absolute;left:0;top:0;width:100%;height:100%;border-radius:9px;overflow:hidden;
     transform-origin:50% 0;transform:scaleY(var(--track-progress,0));
     /* 120ms, not the old 460ms: progress now updates continuously every
@@ -123,30 +125,30 @@ const { eyebrow, title, backHref, toc, settingsTrigger = 'hm', tocLabel = 'Ог�
        a long transition would fight that and permanently lag behind the
        real scroll position instead of tracking it. */
     transition:transform 120ms linear;
-    background:linear-gradient(180deg,#c4694c 0%,#a94847 48%,#7a2e2e 100%)}
+    background:var(--rail-track-fill,linear-gradient(180deg,#c4694c 0%,#a94847 48%,#7a2e2e 100%))}
   .hrail-toc li{position:relative;margin:1px 0;padding-left:38px}
-  .hrail-toc a{display:block;padding:6px 10px;border-radius:9px;color:rgba(42,24,20,.68);text-decoration:none;
+  .hrail-toc a{display:block;padding:6px 10px;border-radius:9px;color:var(--rail-muted,rgba(42,24,20,.68));text-decoration:none;
     font-family:var(--f-serif,Lora,Georgia,serif);font-size:12.5px;line-height:1.3;transition:color .2s,background-color .2s}
-  html.dark .hrail-toc a{color:rgba(255,255,255,.62)}
+  html.dark .hrail-toc a{color:var(--rail-muted,rgba(255,255,255,.62))}
   .hrail-dot{position:absolute;left:calc(var(--toc-axis-x) - 4.5px);top:50%;width:9px;height:9px;margin-top:-4.5px;border-radius:50%;
-    border:2px solid rgba(42,24,20,.22);background:#fff;box-shadow:0 0 0 3px #f3e6d8;z-index:1;transition:.2s}
-  html.dark .hrail-dot{border-color:rgba(255,255,255,.18);background:#1c0e10;box-shadow:0 0 0 3px #170b0c}
-  .hrail-toc li.hrail-passed .hrail-dot{background:#b85c3e;border-color:#b85c3e}
+    border:2px solid var(--rail-dot-border,rgba(42,24,20,.22));background:var(--rail-dot-surface,#fff);box-shadow:0 0 0 3px var(--rail-dot-halo,#f3e6d8);z-index:1;transition:.2s}
+  html.dark .hrail-dot{border-color:var(--rail-dot-border,rgba(255,255,255,.18));background:var(--rail-dot-surface,#1c0e10);box-shadow:0 0 0 3px var(--rail-dot-halo,#170b0c)}
+  .hrail-toc li.hrail-passed .hrail-dot{background:var(--rail-accent,#b85c3e);border-color:var(--rail-accent,#b85c3e)}
   /* Sub-items: pushed further right (no dot of their own — the track/dots
      mark only the article's main sections, matching "пункты и подпункты, а
      не просто список" — subs read as nested text, not extra stops). */
   .hrail-toc li.hrail-sub{padding-left:calc(38px + var(--toc-sub-in))}
   .hrail-toc li.hrail-sub a{font-size:11px}
-  .hrail-toc li.hrail-sub:not(.hrail-act):not(.hrail-passed) a{color:rgba(42,24,20,.5)}
-  html.dark .hrail-toc li.hrail-sub:not(.hrail-act):not(.hrail-passed) a{color:rgba(255,255,255,.46)}
-  .hrail-toc li.hrail-act a{background:linear-gradient(90deg,rgba(122,46,46,.14),rgba(122,46,46,.045) 72%,transparent);
-    color:#2a1814;font-weight:700;box-shadow:inset 0 0 0 1px rgba(122,46,46,.22)}
-  html.dark .hrail-toc li.hrail-act a{background:linear-gradient(90deg,rgba(122,46,46,.44),rgba(122,46,46,.16) 72%,rgba(122,46,46,.05));
-    color:#f6efe9;box-shadow:inset 0 0 0 1px rgba(224,160,150,.16)}
-  .hrail-toc li.hrail-act .hrail-dot{background:#dd7c5d;border-color:#dd7c5d;transform:scale(1.11)}
+  .hrail-toc li.hrail-sub:not(.hrail-act):not(.hrail-passed) a{color:var(--rail-subtle,rgba(42,24,20,.5))}
+  html.dark .hrail-toc li.hrail-sub:not(.hrail-act):not(.hrail-passed) a{color:var(--rail-subtle,rgba(255,255,255,.46))}
+  .hrail-toc li.hrail-act a{background:linear-gradient(90deg,var(--rail-soft,rgba(122,46,46,.14)),color-mix(in srgb,var(--rail-soft,rgba(122,46,46,.14)) 35%,transparent) 72%,transparent);
+    color:var(--rail-text,#2a1814);font-weight:700;box-shadow:inset 0 0 0 1px var(--rail-border,rgba(122,46,46,.22))}
+  html.dark .hrail-toc li.hrail-act a{background:linear-gradient(90deg,var(--rail-active,rgba(122,46,46,.44)),color-mix(in srgb,var(--rail-active,rgba(122,46,46,.44)) 36%,transparent) 72%,color-mix(in srgb,var(--rail-active,rgba(122,46,46,.44)) 12%,transparent));
+    color:var(--rail-text,#f6efe9);box-shadow:inset 0 0 0 1px var(--rail-border,rgba(224,160,150,.16))}
+  .hrail-toc li.hrail-act .hrail-dot{background:var(--rail-accent,#dd7c5d);border-color:var(--rail-accent,#dd7c5d);transform:scale(1.11)}
   @media(hover:hover) and (pointer:fine){
-    .hrail-toc li:not(.hrail-act) a:hover{color:#2a1814;background:rgba(122,46,46,.05)}
-    html.dark .hrail-toc li:not(.hrail-act) a:hover{color:#f6efe9;background:rgba(255,255,255,.03)}
+    .hrail-toc li:not(.hrail-act) a:hover{color:var(--rail-text,#2a1814);background:var(--rail-soft,rgba(122,46,46,.05))}
+    html.dark .hrail-toc li:not(.hrail-act) a:hover{color:var(--rail-text,#f6efe9);background:var(--rail-hover,rgba(255,255,255,.03))}
   }
 
   /* Bottom row: site menu / share / print / font-size — plain SVG icon
@@ -154,20 +156,113 @@ const { eyebrow, title, backHref, toc, settingsTrigger = 'hm', tocLabel = 'Ог�
      громоздко", "нужны минималистичные SVG"). Halo-on-hover only, matching
      canon .gb-icon. The "≡" opens the sitewide command palette (real search
      + navigation), not a dead link — owner: "проработай меню умнее, полнее". */
-  .hrail-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding:10px 4px 0;border-top:1px solid rgba(0,0,0,.08)}
-  html.dark .hrail-bottom{border-top-color:rgba(255,255,255,.07)}
-  .hrail-bottom-btn{position:relative;width:31px;height:31px;border-radius:50%;display:grid;place-items:center;color:#8a5a4a;cursor:pointer;
+  .hrail-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding:10px 4px 0;border-top:1px solid var(--rail-line,rgba(0,0,0,.08))}
+  html.dark .hrail-bottom{border-top-color:var(--rail-line,rgba(255,255,255,.07))}
+  .hrail-bottom-btn{position:relative;width:31px;height:31px;border-radius:50%;display:grid;place-items:center;color:var(--rail-accent,#8a5a4a);cursor:pointer;
     transition:color .25s,transform .25s cubic-bezier(.34,1.56,.64,1);background:none;border:0;padding:0;font:inherit;text-decoration:none}
   .hrail-bottom-btn::before{content:'';position:absolute;inset:2px;border-radius:50%;border:1px solid currentColor;
     opacity:0;transform:scale(.7);transition:opacity .25s,transform .3s cubic-bezier(.34,1.56,.64,1)}
-  html.dark .hrail-bottom-btn{color:#caa1a0}
+  html.dark .hrail-bottom-btn{color:var(--rail-accent,#caa1a0)}
   @media(hover:hover) and (pointer:fine){
-    .hrail-bottom-btn:hover{color:#7a2e2e;transform:translateY(-1px)}
+    .hrail-bottom-btn:hover{color:var(--rail-accent-strong,#7a2e2e);transform:translateY(-1px)}
     .hrail-bottom-btn:hover::before{opacity:.3;transform:scale(1)}
-    html.dark .hrail-bottom-btn:hover{color:#f2c9c9}
+    html.dark .hrail-bottom-btn:hover{color:var(--rail-accent-strong,#f2c9c9)}
   }
   .hrail-bottom-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
   .hrail-bottom-btn--text{font-family:var(--f-serif,Lora,Georgia,serif);font-size:12px;font-weight:700}
+
+  /* Optional Lawson-only ink/gold palette. Default readers keep the shared rail unchanged. */
+  .hrail--ink-gold{
+    --rail-surface:#faf8f2;
+    --rail-surface-raised:#f0ece2;
+    --rail-surface-deep:#e7dfd0;
+    --rail-text:#29281f;
+    --rail-muted:#716e63;
+    --rail-subtle:#918a7a;
+    --rail-accent:#795c2b;
+    --rail-accent-strong:#5d451f;
+    --rail-border:rgba(121,92,43,.22);
+    --rail-line:rgba(121,92,43,.15);
+    --rail-soft:rgba(121,92,43,.08);
+    --rail-active:rgba(121,92,43,.15);
+    --rail-hover:rgba(121,92,43,.05);
+    --rail-glow:rgba(121,92,43,.05);
+    --rail-dot-border:rgba(121,92,43,.25);
+    --rail-dot-surface:#faf8f2;
+    --rail-dot-halo:#faf8f2;
+    --rail-shadow:rgba(29,27,21,.14);
+    --rail-track-fill:linear-gradient(180deg,#b19055 0%,#93753f 48%,#795c2b 100%);
+  }
+  html.dark .hrail--ink-gold{
+    --rail-surface:#151a1b;
+    --rail-surface-raised:#1b2020;
+    --rail-surface-deep:#111617;
+    --rail-text:#e9e5d9;
+    --rail-muted:#b1ab99;
+    --rail-subtle:#918a79;
+    --rail-accent:#d0b97a;
+    --rail-accent-strong:#e4d3a2;
+    --rail-border:rgba(208,185,122,.2);
+    --rail-line:rgba(208,185,122,.15);
+    --rail-soft:rgba(208,185,122,.08);
+    --rail-active:rgba(208,185,122,.14);
+    --rail-hover:rgba(208,185,122,.05);
+    --rail-glow:rgba(208,185,122,.04);
+    --rail-dot-border:rgba(208,185,122,.24);
+    --rail-dot-surface:#151a1b;
+    --rail-dot-halo:#151a1b;
+    --rail-shadow:rgba(0,0,0,.48);
+    --rail-shadow-dark:rgba(0,0,0,.48);
+    --rail-track-fill:linear-gradient(180deg,#e2cc91 0%,#d0b97a 48%,#aa9058 100%);
+  }
+  html[data-reader-theme="sepia"] .hrail--ink-gold{
+    --rail-surface:#f3ead4;
+    --rail-surface-raised:#e9dcc0;
+    --rail-surface-deep:#e1d2b1;
+    --rail-text:#352e22;
+    --rail-muted:#73664e;
+    --rail-subtle:#96876b;
+    --rail-accent:#765726;
+    --rail-accent-strong:#594019;
+    --rail-border:rgba(118,87,38,.22);
+    --rail-line:rgba(118,87,38,.15);
+    --rail-soft:rgba(118,87,38,.08);
+    --rail-active:rgba(118,87,38,.14);
+    --rail-hover:rgba(118,87,38,.05);
+    --rail-glow:rgba(118,87,38,.05);
+    --rail-dot-border:rgba(118,87,38,.24);
+    --rail-dot-surface:#f3ead4;
+    --rail-dot-halo:#f3ead4;
+    --rail-shadow:rgba(75,57,29,.18);
+    --rail-shadow-dark:rgba(75,57,29,.18);
+    --rail-track-fill:linear-gradient(180deg,#a78247 0%,#8d6b34 48%,#765726 100%);
+  }
+  .hrail.hrail--ink-gold{
+    background:linear-gradient(180deg,var(--rail-surface),var(--rail-surface-raised));
+    border-color:var(--rail-border);
+    box-shadow:0 24px 60px -20px var(--rail-shadow);
+    color:var(--rail-text);
+  }
+  .hrail--ink-gold .hrail-back,
+  .hrail--ink-gold .hrail-meta__eyebrow{color:var(--rail-accent)}
+  .hrail--ink-gold .hrail-meta__title{color:var(--rail-text)}
+  .hrail--ink-gold .hrail-toch{color:var(--rail-muted);border-top-color:var(--rail-border)}
+  .hrail--ink-gold .hrail-toch b{background:var(--rail-soft);border-color:var(--rail-border);color:var(--rail-accent)}
+  .hrail--ink-gold .hrail-track{background:var(--rail-line)}
+  .hrail--ink-gold .hrail-track i{background:var(--rail-track-fill)}
+  .hrail--ink-gold .hrail-toc a{color:var(--rail-muted)}
+  .hrail--ink-gold .hrail-toc li.hrail-sub:not(.hrail-act):not(.hrail-passed) a{color:color-mix(in srgb,var(--rail-muted) 82%,var(--rail-surface))}
+  .hrail--ink-gold .hrail-dot{border-color:var(--rail-border);background:var(--rail-surface);box-shadow:0 0 0 3px var(--rail-surface)}
+  .hrail--ink-gold .hrail-toc li.hrail-passed .hrail-dot,
+  .hrail--ink-gold .hrail-toc li.hrail-act .hrail-dot{background:var(--rail-accent);border-color:var(--rail-accent)}
+  .hrail--ink-gold .hrail-toc li.hrail-act a{background:linear-gradient(90deg,var(--rail-soft),color-mix(in srgb,var(--rail-soft) 48%,transparent) 72%,transparent);color:var(--rail-text);box-shadow:inset 0 0 0 1px var(--rail-border)}
+  .hrail--ink-gold .hrail-bottom{border-top-color:var(--rail-border)}
+  .hrail--ink-gold .hrail-bottom-btn{color:var(--rail-accent)}
+  @media(hover:hover) and (pointer:fine){
+    .hrail--ink-gold .hrail-back:hover{color:var(--rail-accent-strong)}
+    .hrail--ink-gold .hrail-toc li:not(.hrail-act) a:hover{color:var(--rail-text);background:var(--rail-soft)}
+    .hrail--ink-gold .hrail-bottom-btn:hover{color:var(--rail-accent-strong)}
+  }
 
   @media(max-width:1199px){ .hrail{display:none} }
 
