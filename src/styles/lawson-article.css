@@ -53,6 +53,11 @@ html[data-reader-theme] {
 .astro-main .hrail-toch b { color: var(--accent); }
 .astro-main .hrail-meta__eyebrow { color: var(--accent); }
 .astro-main .astro-author-card__icon { color: var(--color-canvas); }
+/* Links inside running copy must remain distinguishable without colour. */
+.astro-main .astro-author-card__desc a {
+  text-decoration: underline;
+  text-underline-offset: .18em;
+}
 
 .lawson-deck {
   max-width: 70ch;
@@ -62,6 +67,10 @@ html[data-reader-theme] {
   font-size: 1.03rem;
   line-height: 1.76;
 }
+/* global.css paints every .astro-main p as secondary copy; the essay itself
+   needs primary ink while captions and source notes retain their own hierarchy. */
+.astro-main .astro-article__body > p,
+.astro-main .lawson-deck p { color: var(--text); }
 .lawson-deck p { margin: .85rem 0; }
 .lawson-deck p:first-child {
   margin-top: 0;
@@ -387,6 +396,10 @@ html[data-reader-theme] {
   .lawson-toc > nav { border-top: 1px solid #999; }
   .lawson-root-card, .lawson-glossary-card, .lawson-bibliography li { break-inside: avoid; box-shadow: none; }
 }
+
+/* The SEO description is repeated by the fuller essay opening immediately below.
+   Keep its metadata owner intact, but do not force a second deck before the story. */
+.astro-main .astro-article__lead { display: none; }
 
 /* Lawson opens as an essay, not a dashboard of metadata cards. Dates and
    reading time remain visible; redundant topic chips live in article metadata. */
