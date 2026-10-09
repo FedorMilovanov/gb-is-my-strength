@@ -54,6 +54,22 @@ const hardTextsLabel = SECTION_META['hard-texts'].label;
 </script>
 
 <style>
+    /* BaseLayout's navigation must not fall back to a bulleted block when a
+       route does not load the legacy home header sheet. */
+    .astro-header__nav { min-width: 0; }
+    .astro-header__nav .h-nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: .35rem 1rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .astro-header__nav a { text-decoration: none; }
+    .astro-header__nav a:hover,
+    .astro-header__nav a:focus-visible { text-decoration: underline; text-underline-offset: .2em; }
     .astro-header__brand {
       min-width: 0;
       overflow: hidden;

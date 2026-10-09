@@ -397,6 +397,13 @@ html[data-reader-theme] {
   .lawson-root-card, .lawson-glossary-card, .lawson-bibliography li { break-inside: avoid; box-shadow: none; }
 }
 
+/* The route omits the generic site header: the rail/mobile bar owns navigation.
+   On narrow screens the hidden eyebrow's line box reserves safe top-bar space. */
+@media (max-width: 1199px) {
+  /* Keep its line box as safe space under the fixed top reader bar. */
+  .astro-main .astro-article__eyebrow { visibility: hidden; }
+}
+
 /* The SEO description is repeated by the fuller essay opening immediately below.
    Keep its metadata owner intact, but do not force a second deck before the story. */
 .astro-main .astro-article__lead { display: none; }
