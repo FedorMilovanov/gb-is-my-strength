@@ -387,3 +387,23 @@ html[data-reader-theme] {
   .lawson-toc > nav { border-top: 1px solid #999; }
   .lawson-root-card, .lawson-glossary-card, .lawson-bibliography li { break-inside: avoid; box-shadow: none; }
 }
+
+/* Lawson opens as an essay, not a dashboard of metadata cards. Dates and
+   reading time remain visible; redundant topic chips live in article metadata. */
+.astro-main .astro-article__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem .85rem;
+  margin-top: .65rem;
+}
+.astro-main .astro-article__meta div {
+  display: flex;
+  gap: .25rem;
+  align-items: baseline;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.astro-main .astro-article__meta dd { margin: 0; }
+.astro-main .astro-article__tags { display: none; }
+.astro-main .astro-article__body { margin-top: 1rem; padding-top: 1rem; }
