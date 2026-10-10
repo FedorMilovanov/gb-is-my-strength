@@ -60,30 +60,59 @@ const { label, definition } = Astro.props as Props;
 <script>
   function closeTerm(term: HTMLElement) {
     term.removeAttribute('data-open');
+    term.removeAttribute('data-hover-open');
     const note = term.querySelector<HTMLElement>('.lawson-term-popover');
     if (note) note.hidden = true;
     term.querySelector('button')?.setAttribute('aria-expanded', 'false');
   }
-  document.addEventListener('click', (event) => {
-    if (!(event.target instanceof Element)) return;
-    const term = event.target.closest<HTMLElement>('.lawson-term');
-    const trigger = event.target.closest<HTMLButtonElement>('.lawson-term > button');
-    const wasOpen = term?.hasAttribute('data-open');
-    document.querySelectorAll<HTMLElement>('.lawson-term[data-open]').forEach((open) => {
-      if (open !== term || trigger) closeTerm(open);
-    });
-    if (!term || !trigger || wasOpen) return;
+  function openTerm(term: HTMLElement, hover = false) {
+    document.querySelectorAll<HTMLElement>('.lawson-term[data-open]').forEach(closeTerm);
     const note = term.querySelector<HTMLElement>('.lawson-term-popover');
     if (!note) return;
     term.setAttribute('data-open', '');
+    if (hover) term.setAttribute('data-hover-open', '');
     note.hidden = false;
-    trigger.setAttribute('aria-expanded', 'true');
+    term.querySelector('button')?.setAttribute('aria-expanded', 'true');
+  }
+  // Hover is a preview on fine pointers; clicking pins it open. Touch never
+  // relies on :hover, whose state can stick after a mobile tap.
+  const canHover = window.matchMedia('(hover: hover) and (pointer: fine)');
+  document.addEventListener('pointerover', (event) => {
+    if (!canHover.matches || event.pointerType !== 'mouse' || !(event.target instanceof Element)) return;
+    const trigger = event.target.closest<HTMLButtonElement>('.lawson-term > button');
+    const term = trigger?.closest<HTMLElement>('.lawson-term');
+    if (term && !term.hasAttribute('data-open') && !term.hasAttribute('data-suppress-hover')) openTerm(term, true);
+  });
+  document.addEventListener('pointerout', (event) => {
+    if (!canHover.matches || event.pointerType !== 'mouse' || !(event.target instanceof Element)) return;
+    const term = event.target.closest<HTMLElement>('.lawson-term');
+    if (!term || (event.relatedTarget instanceof Node && term.contains(event.relatedTarget))) return;
+    if (term.hasAttribute('data-hover-open')) closeTerm(term);
+    term.removeAttribute('data-suppress-hover');
+  });
+  document.addEventListener('click', (event) => {
+    if (!(event.target instanceof Element)) return;
+    const trigger = event.target.closest<HTMLButtonElement>('.lawson-term > button');
+    const term = trigger?.closest<HTMLElement>('.lawson-term');
+    document.querySelectorAll<HTMLElement>('.lawson-term[data-open]').forEach((open) => {
+      if (open !== term) closeTerm(open);
+    });
+    if (!term) return;
+    if (term.hasAttribute('data-hover-open')) {
+      term.removeAttribute('data-hover-open'); // pin the preview
+    } else if (term.hasAttribute('data-open')) {
+      closeTerm(term);
+      term.setAttribute('data-suppress-hover', '');
+    } else {
+      openTerm(term);
+    }
   });
   document.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape') return;
     const open = document.querySelector<HTMLElement>('.lawson-term[data-open]');
     if (!open) return;
     closeTerm(open);
+    open.setAttribute('data-suppress-hover', '');
     open.querySelector('button')?.focus();
   });
 </script>
