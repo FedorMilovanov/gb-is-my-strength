@@ -22,9 +22,10 @@ interface Props {
   mainClass?: string;
   /** Route-owned reader chrome can replace the generic site header. */
   hideHeader?: boolean;
+  extraFontPreloads?: string[];
 }
 
-const { entry, canonical, robots, pilot = false, intendedCanonical, mainAttrs, mainClass, hideHeader = false } = Astro.props;
+const { entry, canonical, robots, pilot = false, intendedCanonical, mainAttrs, mainClass, hideHeader = false, extraFontPreloads = [] } = Astro.props;
 const data = entry.data;
 const isTranslation = data.author === 'abner-chou';
 const articleAuthorName = isTranslation ? 'Абнер Чау' : SITE.authorName;
@@ -181,6 +182,7 @@ const jsonLd = {
   mainAttrs={mainAttrs}
   mainClass={mainClass}
   hideHeader={hideHeader}
+  extraFontPreloads={extraFontPreloads}
 >
   {/* Читательский хром одиночной статьи (рельс, угловой кластер, мобильная
       панель, лист настроек) монтируется до <article>: он управляет страницей,
