@@ -19,7 +19,7 @@
 
 <div aria-label="Хронология формирования канона" class="ctw" id="canonTimeline">
 <div class="ctw-head">
-<h3 class="ctw-title">Хронология формирования канона</h3>
+<h3 class="ctw-title" id="canon-timeline-title"><span id="canon-timeline-region-label">Хронология формирования канона</span></h3>
 <p class="ctw-sub">Канон сложился <em>до</em> Никеи — независимо и постепенно</p>
 </div>
 <div class="ctw-legend">
@@ -28,7 +28,7 @@
 </span><span class="ctw-leg"><span class="ctw-dot" style="background:#c62828"></span>Гностические тексты
 </span><span class="ctw-leg"><span class="ctw-dot" style="background:#bf6e2a"></span>Никея
 </span></div>
-<div class="ctw-body">
+<div class="ctw-body" role="region" aria-labelledby="canon-timeline-region-label" tabindex="0">
 <div class="ctw-track">
 <div class="ctw-axis-row">
 <div class="ctw-spacer"></div>
@@ -91,7 +91,7 @@
 <div class="ctw-row ctw-pin-row">
 <div class="ctw-rlabel">Первый Никейский собор</div>
 <div class="ctw-bwrap">
-<div class="ctw-pin" style="left:73.75%" title="325 г. — арианский спор, не канон">
+<div class="ctw-pin ctw-pin--responsive" style="--ctw-pin-left:73.75%" title="325 г. — арианский спор, не канон">
 <div class="ctw-pin-line"></div>
 <div class="ctw-pin-yr">325</div>
 <div class="ctw-pin-lbl">Никея — НЕ обсуждала канон</div>
@@ -103,7 +103,7 @@
 <div class="ctw-rlabel">39-е послание Афанасия</div>
 <div class="ctw-bwrap">
 <div class="ctw-bar" style="left:84.25%;width:1.5%;background:#1565c0" title="367 г. — первый полный список 27 книг"></div>
-<span class="ctw-bout" style="left:calc(84.25% + 1.5% + 6px)">367 г.
+<span class="ctw-bout ctw-bout--anchored ctw-bout--edge" style="--ctw-label-left:calc(84.25% + 1.5% + 6px)">367 г.
 </span></div>
 </div>
 <!-- Соборы в Гиппоне и Карфагене: 393–397 → left=90.75%, width=1% — узкий, метка снаружи -->
@@ -111,7 +111,7 @@
 <div class="ctw-rlabel">Соборы в Гиппоне и Карфагене</div>
 <div class="ctw-bwrap">
 <div class="ctw-bar" style="left:90.75%;width:1%;background:#1565c0" title="393–397 г. — подтверждение консенсуса"></div>
-<span class="ctw-bout" style="left:calc(90.75% + 1% + 6px)">393–397 г.
+<span class="ctw-bout ctw-bout--anchored ctw-bout--edge" style="--ctw-label-left:calc(90.75% + 1% + 6px)">393–397 г.
 </span></div>
 </div>
 </div>
@@ -134,3 +134,97 @@
       </figcaption>
 </figure>
 <!-- КУМРАН И НАГ-ХАММАДИ -->
+
+<style>
+  /* WCAG 2.1.1: the canon timeline is a horizontally scrollable region with no
+     focusable descendants, so the scroll port itself owns the tab stop. */
+  .ctw-body:focus-visible {
+    outline: 2px solid var(--color-accent, #8a5a2b);
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
+  :global(html.dark) .ctw-body:focus-visible {
+    outline-color: var(--color-accent-strong, #e8b878);
+  }
+
+  #canonTimeline .ctw-bout--anchored {
+    left: var(--ctw-label-left);
+  }
+
+  #canonTimeline .ctw-pin--responsive {
+    left: var(--ctw-pin-left);
+  }
+
+  @media (max-width: 640px) {
+    #canonTimeline .ctw-bout--edge {
+      left: auto;
+      right: 0;
+    }
+
+    #canonTimeline .ctw-pin-row {
+      min-height: 72px;
+    }
+
+    #canonTimeline .ctw-pin-row .ctw-pin--responsive {
+      left: 0;
+      right: 0;
+      width: 100%;
+      height: 72px;
+      transform: none;
+      align-items: initial;
+    }
+
+    #canonTimeline .ctw-pin-row .ctw-pin--responsive .ctw-pin-line,
+    #canonTimeline .ctw-pin-row .ctw-pin--responsive .ctw-pin-yr {
+      position: absolute;
+      left: var(--ctw-pin-left);
+      transform: translateX(-50%);
+    }
+
+    #canonTimeline .ctw-pin-row .ctw-pin--responsive .ctw-pin-line {
+      top: 0;
+    }
+
+    #canonTimeline .ctw-pin-row .ctw-pin--responsive .ctw-pin-yr {
+      top: 20px;
+    }
+
+    #canonTimeline .ctw-pin-row .ctw-pin--responsive .ctw-pin-lbl {
+      position: absolute;
+      top: 34px;
+      left: 0;
+      right: 0;
+      max-width: 100%;
+      white-space: normal;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+  }
+</style>
+
+<script>
+  const canonTimeline = document.querySelector('.ctw-body');
+  if (canonTimeline instanceof HTMLElement) {
+    canonTimeline.addEventListener('keydown', (event) => {
+      if (
+        event.target !== canonTimeline
+        || event.altKey
+        || event.ctrlKey
+        || event.metaKey
+        || event.shiftKey
+        || (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')
+      ) return;
+
+      const maxScroll = canonTimeline.scrollWidth - canonTimeline.clientWidth;
+      const step = Math.max(1, Math.floor(canonTimeline.clientWidth * 0.1));
+      const nextScroll = Math.max(
+        0,
+        Math.min(maxScroll, canonTimeline.scrollLeft + (event.key === 'ArrowRight' ? step : -step)),
+      );
+      if (nextScroll === canonTimeline.scrollLeft) return;
+
+      event.preventDefault();
+      canonTimeline.scrollLeft = nextScroll;
+    });
+  }
+</script>
