@@ -54,8 +54,7 @@ const hardTextsLabel = SECTION_META['hard-texts'].label;
 </script>
 
 <style>
-    /* BaseLayout's navigation must not fall back to a bulleted block when a
-       route does not load the legacy home header sheet. */
+    /* Native routes without the legacy header sheet still need a list reset. */
     .astro-header__nav { min-width: 0; }
     .astro-header__nav .h-nav-links {
       display: flex;
@@ -143,13 +142,16 @@ const hardTextsLabel = SECTION_META['hard-texts'].label;
         margin-left: auto;
       }
     }
-    /* Mobile article chrome owns the top surface — hide the desktop header
-       whenever a mobile reader bar exists to avoid double chrome and ghost
-       “Господь Бог — Сила Моя” overlap. */
+    /* Hide the shared header only while the mobile reader bar is shown.
+       The Genesis 6 bar exists offscreen before it becomes active. */
     @media (max-width: 1199px) {
       body:has(.hmtop) .astro-header,
-      body:has(.mobile-top-bar) .astro-header,
-      body:has(.mcp-top) .astro-header {
+      body:has(.mobile-top-bar) .astro-header {
+        display: none !important;
+      }
+    }
+    @media (max-width: 63.99em) {
+      body:has(.mobile-chrome.is-shown .mcp-top) .astro-header {
         display: none !important;
       }
     }
