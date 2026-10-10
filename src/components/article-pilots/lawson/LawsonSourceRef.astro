@@ -50,10 +50,12 @@ const source = lawsonSource(id);
   .lawson-source-popover {
     position: absolute;
     z-index: 80;
-    left: 50%;
+    left: 0;
     bottom: calc(100% + .55rem);
     width: min(22rem, calc(100vw - 2rem));
-    transform: translateX(-50%);
+    max-height: min(32rem, calc(100dvh - 6rem));
+    overflow-y: auto;
+    overscroll-behavior: contain;
     display: none;
     gap: .48rem;
     padding: .85rem .9rem;
@@ -80,14 +82,27 @@ const source = lawsonSource(id);
     color: var(--muted, #6b6862);
   }
   .lawson-source-popover a {
+    position: sticky;
+    bottom: 0;
     width: fit-content;
+    padding: .35rem .55rem;
+    border-radius: .4rem;
+    background: var(--bg, #fff);
     color: var(--accent, #7a2e2e);
     font-weight: 700;
-    text-decoration: none;
+    text-decoration: underline;
+    text-underline-offset: .2em;
   }
   .lawson-source-popover a:hover { text-decoration: underline; }
-  @media (max-width: 680px) {
-    .lawson-source-popover { position: fixed; left: 1rem; right: 1rem; bottom: 1rem; width: auto; transform: none; }
+  @media (max-width: 1199px) {
+    .lawson-source-popover {
+      position: fixed;
+      left: 1rem;
+      right: 1rem;
+      bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+      width: auto;
+      max-height: calc(100dvh - 6rem - env(safe-area-inset-bottom, 0px));
+    }
   }
   @media print {
     .lawson-source-ref { vertical-align: baseline; }
@@ -97,3 +112,32 @@ const source = lawsonSource(id);
     .lawson-source-popover { display: none !important; }
   }
 </style>
+
+<script>
+  // Keep the desktop card inside the viewport even when its marker is at the
+  // right end of a line. The mobile card uses a fixed position above the bar.
+  function placeSourceCard(ref: HTMLDetailsElement) {
+    if (!ref.open) return;
+    const card = ref.querySelector<HTMLElement>('.lawson-source-popover');
+    if (!card) return;
+    if (!matchMedia('(min-width: 1200px)').matches) {
+      card.style.removeProperty('left');
+      card.style.translate = '';
+      return;
+    }
+    card.style.translate = '';
+    const marker = ref.getBoundingClientRect();
+    card.style.left = `${Math.min(0, innerWidth - 16 - marker.left - card.offsetWidth)}px`;
+    const bounds = card.getBoundingClientRect();
+    const verticalShift = Math.max(16 - bounds.top, Math.min(0, innerHeight - 16 - bounds.bottom));
+    card.style.translate = `0 ${verticalShift}px`;
+  }
+  document.addEventListener('toggle', (event) => {
+    if (event.target instanceof HTMLDetailsElement && event.target.classList.contains('lawson-source-ref')) {
+      placeSourceCard(event.target);
+    }
+  }, true);
+  window.addEventListener('resize', () => {
+    document.querySelectorAll<HTMLDetailsElement>('.lawson-source-ref[open]').forEach(placeSourceCard);
+  }, { passive: true });
+</script>
