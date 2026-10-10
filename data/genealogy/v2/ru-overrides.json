@@ -33,7 +33,18 @@
     "joash--2ki-11-2": "Иоас",
     "jehoiachin--2ki-24-6": "Иехония",
     "pedaiah--1ch-3-18": "Федаия",
-    "hepher--1ch-4-6": "Хефер"
+    "hepher--1ch-4-6": "Хефер",
+    "jezreel--hos-1-4": "Изреель",
+    "lo-ruhamah--hos-1-6": "Лорухама",
+    "lo-ammi--hos-1-9": "Лоамми",
+    "eldad--num-11-26": "Елдад",
+    "medad--num-11-26": "Модад",
+    "shiphrah--exo-1-15": "Шифра",
+    "joktan--gen-10-25": "Иоктан",
+    "dinah--gen-30-21": "Дина",
+    "onan--gen-38-4": "Онан",
+    "shelah--gen-38-5": "Шела",
+    "mehetabel--gen-36-39": "Мегетавеель"
   },
   "_evidence": {
     "hepher--1ch-4-6": {
@@ -43,6 +54,116 @@
       "verseForm": "Хефера",
       "reviewedCanonical": "Хефер",
       "note": "Son of Naarah in 1Ch.4.6; Езер in 1Ch.4.4 is a different person. Reviewed 2026-09-22."
+    },
+    "jezreel--hos-1-4": {
+      "identity": "Jezreel@Hos.1.4",
+      "source": "pinned Synodal Hos.1.4",
+      "sourceSha256": "ac900cd6675e524f728edcf965646bbd9cf791506a67e24e78bb8c7ff4d7c923",
+      "verseForm": "Изреель",
+      "reviewedCanonical": "Изреель",
+      "externalCheckUrl": "https://bible.by/verse-syn/28/1/4/",
+      "reviewedAt": "2026-09-24",
+      "note": "Verse directly says «нареки ему имя Изреель». Exact-reference manual review; no neighbouring-token inference."
+    },
+    "lo-ruhamah--hos-1-6": {
+      "identity": "Lo-ruhamah@Hos.1.6",
+      "source": "pinned Synodal Hos.1.6",
+      "sourceSha256": "ac900cd6675e524f728edcf965646bbd9cf791506a67e24e78bb8c7ff4d7c923",
+      "verseForm": "Лорухама",
+      "reviewedCanonical": "Лорухама",
+      "externalCheckUrl": "https://bible.by/verse-syn/28/1/6/",
+      "reviewedAt": "2026-09-24",
+      "note": "Verse directly says «нареки ей имя Лорухама». Exact-reference manual review; no neighbouring-token inference."
+    },
+    "lo-ammi--hos-1-9": {
+      "identity": "Lo-ammi@Hos.1.9",
+      "source": "pinned Synodal Hos.1.9",
+      "sourceSha256": "ac900cd6675e524f728edcf965646bbd9cf791506a67e24e78bb8c7ff4d7c923",
+      "verseForm": "Лоамми",
+      "reviewedCanonical": "Лоамми",
+      "externalCheckUrl": "https://bible.by/verse-syn/28/1/9/",
+      "reviewedAt": "2026-09-24",
+      "note": "Verse directly says «нареки ему имя Лоамми». Exact-reference manual review; no neighbouring-token inference."
+    },
+    "eldad--num-11-26": {
+      "identity": "Eldad@Num.11.26",
+      "source": "pinned Synodal Num.11.26",
+      "sourceSha256": "ac900cd6675e524f728edcf965646bbd9cf791506a67e24e78bb8c7ff4d7c923",
+      "verseForm": "Елдад",
+      "reviewedCanonical": "Елдад",
+      "externalCheckUrl": "https://bible.by/verse-syn/4/11/26/",
+      "reviewedAt": "2026-09-24",
+      "note": "Verse directly says «одному имя Елдад». Exact-reference manual review; no neighbouring-token inference."
+    },
+    "medad--num-11-26": {
+      "identity": "Medad@Num.11.26",
+      "source": "pinned Synodal Num.11.26",
+      "sourceSha256": "ac900cd6675e524f728edcf965646bbd9cf791506a67e24e78bb8c7ff4d7c923",
+      "verseForm": "Модад",
+      "reviewedCanonical": "Модад",
+      "externalCheckUrl": "https://bible.by/verse-syn/4/11/26/",
+      "reviewedAt": "2026-09-24",
+      "note": "Verse directly says «другому имя Модад». Exact-reference manual review; no neighbouring-token inference."
+    },
+    "shiphrah--exo-1-15": {
+      "identity": "Shiphrah@Exo.1.15",
+      "source": "pinned Synodal Exo.1.15",
+      "sourceSha256": "ac900cd6675e524f728edcf965646bbd9cf791506a67e24e78bb8c7ff4d7c923",
+      "verseForm": "Шифра",
+      "reviewedCanonical": "Шифра",
+      "externalCheckUrl": "https://bible.by/verse-syn/2/1/15/",
+      "reviewedAt": "2026-09-24",
+      "note": "Verse directly says «одной имя Шифра». Exact-reference manual review; no neighbouring-token inference."
+    },
+    "joktan--gen-10-25": {
+      "identity": "Joktan@Gen.10.25",
+      "source": "pinned Synodal Gen.10.25",
+      "sourceSha256": "ac900cd6675e524f728edcf965646bbd9cf791506a67e24e78bb8c7ff4d7c923",
+      "verseForm": "Иоктан",
+      "reviewedCanonical": "Иоктан",
+      "externalCheckUrl": "https://bible.by/verse-syn/1/10/25/",
+      "reviewedAt": "2026-09-24",
+      "note": "Verse directly says «имя брату его: Иоктан». Exact-reference manual review; no neighbouring-token inference."
+    },
+    "dinah--gen-30-21": {
+      "identity": "Dinah@Gen.30.21",
+      "source": "pinned Synodal Gen.30.21",
+      "sourceSha256": "ac900cd6675e524f728edcf965646bbd9cf791506a67e24e78bb8c7ff4d7c923",
+      "verseForm": "Дина",
+      "reviewedCanonical": "Дина",
+      "externalCheckUrl": "https://bible.by/verse-syn/1/30/21/",
+      "reviewedAt": "2026-09-24",
+      "note": "Verse directly says «нарекла ей имя: Дина». Exact-reference manual review; no neighbouring-token inference."
+    },
+    "onan--gen-38-4": {
+      "identity": "Onan@Gen.38.4",
+      "source": "pinned Synodal Gen.38.4",
+      "sourceSha256": "ac900cd6675e524f728edcf965646bbd9cf791506a67e24e78bb8c7ff4d7c923",
+      "verseForm": "Онан",
+      "reviewedCanonical": "Онан",
+      "externalCheckUrl": "https://bible.by/verse-syn/1/38/4/",
+      "reviewedAt": "2026-09-24",
+      "note": "Verse directly says «нарекла ему имя: Онан». Exact-reference manual review; no neighbouring-token inference."
+    },
+    "shelah--gen-38-5": {
+      "identity": "Shelah@Gen.38.5",
+      "source": "pinned Synodal Gen.38.5",
+      "sourceSha256": "ac900cd6675e524f728edcf965646bbd9cf791506a67e24e78bb8c7ff4d7c923",
+      "verseForm": "Шела",
+      "reviewedCanonical": "Шела",
+      "externalCheckUrl": "https://bible.by/verse-syn/1/38/5/",
+      "reviewedAt": "2026-09-24",
+      "note": "Verse directly says «нарекла ему имя: Шела». Exact-reference manual review; no neighbouring-token inference."
+    },
+    "mehetabel--gen-36-39": {
+      "identity": "Mehetabel@Gen.36.39",
+      "source": "pinned Synodal Gen.36.39",
+      "sourceSha256": "ac900cd6675e524f728edcf965646bbd9cf791506a67e24e78bb8c7ff4d7c923",
+      "verseForm": "Мегетавеель",
+      "reviewedCanonical": "Мегетавеель",
+      "externalCheckUrl": "https://bible.by/verse-syn/1/36/39/",
+      "reviewedAt": "2026-09-24",
+      "note": "Verse directly says «имя жене его Мегетавеель». Exact-reference manual review; no neighbouring-token inference."
     }
   }
 }
