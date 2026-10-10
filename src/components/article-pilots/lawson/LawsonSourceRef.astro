@@ -8,18 +8,20 @@ interface Props {
 const { id } = Astro.props as Props;
 const source = lawsonSource(id);
 ---
-<details class="lawson-source-ref">
-  <summary aria-label={`Источник ${source.n}: ${source.label}`}>{source.n}</summary>
-  <span class="lawson-source-popover" role="note">
+<span class="lawson-source-ref">
+  <button type="button" aria-expanded="false" aria-label={`Источник ${source.n}: ${source.label}`}>{source.n}</button>
+  <span class="lawson-source-popover" role="note" hidden>
     <span class="lawson-source-meta">{LAWSON_EVIDENCE_LABEL[source.evidenceClass]}</span>
     <strong>{source.label}</strong>
     <span>{source.proves}</span>
     {source.boundary && <span class="lawson-source-boundary"><b>Граница:</b> {source.boundary}</span>}
     <a href={source.href} rel="noopener noreferrer">Открыть источник ↗</a>
   </span>
-</details>
+</span>
 
 <style>
+  /* A source marker must be phrasing content: <details> inside a paragraph
+     made the HTML parser close that paragraph and create 164 empty ones. */
   .lawson-source-ref {
     position: relative;
     display: inline-block;
@@ -27,7 +29,7 @@ const source = lawsonSource(id);
     vertical-align: super;
     line-height: 1;
   }
-  .lawson-source-ref summary {
+  .lawson-source-ref > button {
     display: inline-grid;
     place-items: center;
     min-width: 1.42rem;
@@ -39,11 +41,8 @@ const source = lawsonSource(id);
     color: var(--accent, #7a2e2e);
     font: 700 .67rem/1 var(--font-body, Inter, system-ui, sans-serif);
     cursor: pointer;
-    list-style: none;
-    user-select: none;
   }
-  .lawson-source-ref summary::-webkit-details-marker { display: none; }
-  .lawson-source-ref summary:focus-visible {
+  .lawson-source-ref > button:focus-visible {
     outline: 2px solid var(--accent, #7a2e2e);
     outline-offset: 2px;
   }
@@ -56,7 +55,7 @@ const source = lawsonSource(id);
     max-height: min(32rem, calc(100dvh - 6rem));
     overflow-y: auto;
     overscroll-behavior: contain;
-    display: none;
+    display: grid;
     gap: .48rem;
     padding: .85rem .9rem;
     border: 1px solid var(--border, #dedbd4);
@@ -67,7 +66,7 @@ const source = lawsonSource(id);
     font: 400 .84rem/1.45 var(--font-body, Inter, system-ui, sans-serif);
     text-align: left;
   }
-  .lawson-source-ref[open] .lawson-source-popover { display: grid; }
+  .lawson-source-popover[hidden] { display: none; }
   .lawson-source-popover strong { font-weight: 700; }
   .lawson-source-meta {
     color: var(--muted, #6b6862);
@@ -93,7 +92,6 @@ const source = lawsonSource(id);
     text-decoration: underline;
     text-underline-offset: .2em;
   }
-  .lawson-source-popover a:hover { text-decoration: underline; }
   @media (max-width: 1199px) {
     .lawson-source-popover {
       position: fixed;
@@ -106,18 +104,16 @@ const source = lawsonSource(id);
   }
   @media print {
     .lawson-source-ref { vertical-align: baseline; }
-    .lawson-source-ref summary { border: 0; background: transparent; min-width: 0; height: auto; padding: 0; }
-    .lawson-source-ref summary::before { content: '['; }
-    .lawson-source-ref summary::after { content: ']'; }
+    .lawson-source-ref > button { border: 0; background: transparent; min-width: 0; height: auto; padding: 0; color: inherit; }
+    .lawson-source-ref > button::before { content: '['; }
+    .lawson-source-ref > button::after { content: ']'; }
     .lawson-source-popover { display: none !important; }
   }
 </style>
 
 <script>
-  // Keep the desktop card inside the viewport even when its marker is at the
-  // right end of a line. The mobile card uses a fixed position above the bar.
-  function placeSourceCard(ref: HTMLDetailsElement) {
-    if (!ref.open) return;
+  function placeSourceCard(ref: HTMLElement) {
+    if (!ref.hasAttribute('data-open')) return;
     const card = ref.querySelector<HTMLElement>('.lawson-source-popover');
     if (!card) return;
     if (!matchMedia('(min-width: 1200px)').matches) {
@@ -132,12 +128,36 @@ const source = lawsonSource(id);
     const verticalShift = Math.max(16 - bounds.top, Math.min(0, innerHeight - 16 - bounds.bottom));
     card.style.translate = `0 ${verticalShift}px`;
   }
-  document.addEventListener('toggle', (event) => {
-    if (event.target instanceof HTMLDetailsElement && event.target.classList.contains('lawson-source-ref')) {
-      placeSourceCard(event.target);
-    }
-  }, true);
+  function closeSource(ref: HTMLElement) {
+    ref.removeAttribute('data-open');
+    const card = ref.querySelector<HTMLElement>('.lawson-source-popover');
+    if (card) card.hidden = true;
+    ref.querySelector('button')?.setAttribute('aria-expanded', 'false');
+  }
+  document.addEventListener('click', (event) => {
+    if (!(event.target instanceof Element)) return;
+    const marker = event.target.closest<HTMLElement>('.lawson-source-ref');
+    const trigger = event.target.closest<HTMLButtonElement>('.lawson-source-ref > button');
+    const wasOpen = marker?.hasAttribute('data-open');
+    document.querySelectorAll<HTMLElement>('.lawson-source-ref[data-open]').forEach((ref) => {
+      if (ref !== marker || trigger) closeSource(ref);
+    });
+    if (!trigger || !marker || wasOpen) return;
+    const card = marker.querySelector<HTMLElement>('.lawson-source-popover');
+    if (!card) return;
+    marker.setAttribute('data-open', '');
+    card.hidden = false;
+    trigger.setAttribute('aria-expanded', 'true');
+    placeSourceCard(marker);
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    const open = document.querySelector<HTMLElement>('.lawson-source-ref[data-open]');
+    if (!open) return;
+    closeSource(open);
+    open.querySelector('button')?.focus();
+  });
   window.addEventListener('resize', () => {
-    document.querySelectorAll<HTMLDetailsElement>('.lawson-source-ref[open]').forEach(placeSourceCard);
+    document.querySelectorAll<HTMLElement>('.lawson-source-ref[data-open]').forEach(placeSourceCard);
   }, { passive: true });
 </script>
