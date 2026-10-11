@@ -110,7 +110,8 @@ const structuredData = {
       }
 
       * { box-sizing: border-box; }
-      html { scroll-behavior: smooth; background: var(--app-bg-deep); }
+      html { background: var(--app-bg-deep); }
+      @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
       body {
         margin: 0;
         min-width: 320px;

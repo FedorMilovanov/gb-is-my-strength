@@ -17,7 +17,7 @@ a:focus-visible,button:focus-visible{outline:2px solid rgb(245 158 11);outline-o
 .skip-link:focus{top:0;}
 
 /* 5. Smooth scroll */
-html{scroll-behavior:smooth;}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth;}}
 
 /* 6. Read progress bar — already in each page <style>, added here as canonical */
 #read-progress{position:fixed;top:0;left:0;width:0%;height:3px;background:linear-gradient(90deg,#d97706,#f59e0b);z-index:99999;transition:width .1s linear;pointer-events:none;}

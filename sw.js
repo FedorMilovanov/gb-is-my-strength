@@ -17,7 +17,7 @@ const EXPECTED_CACHES = new Set([
 ]);
 const OFFLINE_FALLBACK = '/404.html';
 const PRECACHE_ASSETS = [
-  '/css/site.css?v=233791bf',
+  '/css/site.css?v=06849619',
   '/css/home.css?v=a4c21e0e',
   '/css/command-palette.css?v=3b88813f',
   '/css/mobile-hotfix.css?v=a6a3187a',
@@ -29,7 +29,7 @@ const PRECACHE_ASSETS = [
   '/css/highlights-runtime.css?v=9f42844a',
   '/css/sw-toast.css?v=2e540077',
   '/fonts/fonts.css?v=864cc57a',
-  '/nagornaya/tw.min.css?v=2670414e',
+  '/nagornaya/tw.min.css?v=bee34e73',
   '/js/nagornaya-bar-extras.js?v=3c7e0bdd',
   '/js/site.js?v=c6b5ccf7',
   '/js/site-utils.js?v=661c6cc1',

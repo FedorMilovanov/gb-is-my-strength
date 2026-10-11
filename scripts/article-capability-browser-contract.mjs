@@ -84,6 +84,41 @@ async function exerciseFaq(page, label) {
   assert.equal(restored.itemOpen, restored.expanded === 'true', `${label}: FAQ restored visual/open state diverges from aria-expanded`);
 }
 
+async function waitForPageMotionToSettle(page, label) {
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  try {
+    await page.waitForFunction(
+      () => document.getAnimations().every((animation) => {
+        if (animation.playState !== 'running' && animation.playState !== 'pending') return true;
+        // Scroll/view-driven animations follow scroll position, which is fixed here; they do not drift.
+        if (animation.timeline !== document.timeline) return true;
+        // Endless decorative loops (e.g. image shimmer) never finish and must not block the check.
+        return animation.effect?.getComputedTiming?.().iterations === Infinity;
+      }),
+      null,
+      { timeout: 10000, polling: 50 },
+    );
+  } catch (error) {
+    const running = await page.evaluate(() => document.getAnimations()
+      .filter((animation) => (animation.playState === 'running' || animation.playState === 'pending') && animation.timeline === document.timeline)
+      .slice(0, 6)
+      .map((animation) => {
+        const timing = animation.effect?.getComputedTiming?.() || {};
+        const target = animation.effect?.target;
+        return {
+          type: animation.transitionProperty ? `transition:${animation.transitionProperty}` : `animation:${animation.animationName || ''}`,
+          target: target instanceof Element ? `${target.tagName}.${typeof target.className === 'string' ? target.className : ''}` : '',
+          iterations: timing.iterations,
+          duration: timing.duration,
+          delay: timing.delay,
+          endTime: timing.endTime,
+          playState: animation.playState,
+        };
+      }));
+    throw new Error(`${label}: page motion did not settle before heading-anchor hit-test: ${JSON.stringify(running)}`);
+  }
+}
+
 async function exerciseHeadingAnchor(page, label) {
   const anchors = page.locator('.heading-anchor[data-gb-heading-anchor-owner="native-v1"]');
   const count = await anchors.count();
@@ -152,6 +187,11 @@ async function exerciseHeadingAnchor(page, label) {
   assert.equal(await anchor.getAttribute('aria-label'), 'Скопировать ссылку на раздел', `${label}: heading anchor accessibility label drift`);
 
   const expectedUrl = await page.evaluate((fragment) => new URL(fragment, window.location.href).toString(), href);
+  // Hover first: the heading hover rule (h2:hover .heading-anchor) runs a 0.2s transform/opacity
+  // transition, which moves the icon under a pointer that was sampled before hover (WebKit, 390 px).
+  // Then wait for finite time-based motion (reveal, hover transition) and sample the settled target.
+  await anchor.hover();
+  await waitForPageMotionToSettle(page, label);
   const hitTestBeforeClick = await anchor.evaluate(async (node) => {
     const describe = (target) => {
       if (!(target instanceof Element)) {
@@ -406,6 +446,9 @@ async function runCase(browser, browserName, baseUrl, route, viewport, { clipboa
     });
   }, clipboardMode);
   const page = await context.newPage();
+  // Hermetic run: only the local contract server is reachable. Third-party analytics and embeds
+  // (e.g. mc.yandex.ru) can stall 'networkidle' on shared runners; they are not part of this contract.
+  await page.route((url) => !url.toString().startsWith(baseUrl), (route) => route.abort('blockedbyclient'));
   const pageErrors = [];
   const legacyRequests = [];
   page.on('pageerror', (error) => pageErrors.push(String(error?.stack || error)));
@@ -499,7 +542,20 @@ async function main() {
   console.log(`Article capability browser contract: PASS (${results.length} cases, including bounded hanging-clipboard fallback)`);
 }
 
+// Short failure summary for the GitHub run page. Full raw logs can be truncated by the
+// Actions UI when a Playwright call log is very large; this keeps the root cause readable.
+function writeStepSummary(error) {
+  const target = process.env.GITHUB_STEP_SUMMARY;
+  if (!target) return;
+  const lines = String(error?.message || error).split('\n');
+  const callLogAt = lines.findIndex((line) => line.startsWith('Call log:'));
+  const head = (callLogAt === -1 ? lines : lines.slice(0, callLogAt)).slice(0, 40).join('\n').slice(0, 4000);
+  const tail = callLogAt === -1 ? '' : lines.slice(callLogAt, callLogAt + 15).join('\n').slice(0, 2000);
+  fs.appendFileSync(target, `### Article capability browser contract failed\n\n\`\`\`\n${head}\n${tail}\n\`\`\`\n`);
+}
+
 main().catch((error) => {
+  writeStepSummary(error);
   fs.mkdirSync(REPORT_DIR, { recursive: true });
   fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify({ schemaVersion: 1, conclusion: 'failure', error: String(error?.stack || error) }, null, 2)}\n`);
   console.error(error);

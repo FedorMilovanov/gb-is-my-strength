@@ -15,7 +15,7 @@ export interface LawsonTocItem {
  * компонента (`#lawson-sources-heading`) и не может разъехаться с ним.
  */
 export const LAWSON_TOC: LawsonTocItem[] = [
-  { href: '#ramka', label: "Как читать эту историю: факты, оценки и неизвестное", level: 2 },
+  { href: '#ramka', label: "Как читать эту историю", level: 2 },
   { href: '#long-arc', label: "Доверие складывалось годами", level: 2 },
   { href: '#statements', label: "Что именно заявили церковь и служение", level: 2 },
   { href: '#discovery', label: "Как это было обнаружено: две версии одного события", level: 2 },
@@ -35,10 +35,10 @@ export const LAWSON_TOC: LawsonTocItem[] = [
   { href: '#old-sermons', label: "Что делать с прежними проповедями Лоусона", level: 2 },
   { href: '#comment', label: "Октябрь 2026: комментарий, который был отредактирован", level: 2 },
   { href: '#objections', label: "Сильнейшие возражения против этой статьи", level: 2 },
-  { href: '#versions', label: "Недоказанные версии: что говорят и чего это не доказывает", level: 2 },
-  { href: '#signals', label: "Закономерности, которые стоит заметить", level: 2 },
+  { href: '#versions', label: "Недоказанные версии: что выдерживает проверку", level: 2 },
+  { href: '#signals', label: "Закономерности в действиях и публикациях", level: 2 },
   { href: '#pastoral', label: "Почему эта история касается не только Лоусона", level: 2 },
   { href: '#verdict', label: "Вывод: что теперь должно говорить громче слов", level: 2 },
   { href: '#glossary', label: "Краткий словарь", level: 2 },
-  { href: '#sources', label: "Источники и границы проверки", level: 2 },
+  { href: '#sources', label: "Источники и пределы выводов", level: 2 },
 ];
