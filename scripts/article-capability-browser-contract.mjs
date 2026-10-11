@@ -84,6 +84,41 @@ async function exerciseFaq(page, label) {
   assert.equal(restored.itemOpen, restored.expanded === 'true', `${label}: FAQ restored visual/open state diverges from aria-expanded`);
 }
 
+async function waitForPageMotionToSettle(page, label) {
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  try {
+    await page.waitForFunction(
+      () => document.getAnimations().every((animation) => {
+        if (animation.playState !== 'running' && animation.playState !== 'pending') return true;
+        // Scroll/view-driven animations follow scroll position, which is fixed here; they do not drift.
+        if (animation.timeline !== document.timeline) return true;
+        // Endless decorative loops (e.g. image shimmer) never finish and must not block the check.
+        return animation.effect?.getComputedTiming?.().iterations === Infinity;
+      }),
+      null,
+      { timeout: 10000, polling: 50 },
+    );
+  } catch (error) {
+    const running = await page.evaluate(() => document.getAnimations()
+      .filter((animation) => (animation.playState === 'running' || animation.playState === 'pending') && animation.timeline === document.timeline)
+      .slice(0, 6)
+      .map((animation) => {
+        const timing = animation.effect?.getComputedTiming?.() || {};
+        const target = animation.effect?.target;
+        return {
+          type: animation.transitionProperty ? `transition:${animation.transitionProperty}` : `animation:${animation.animationName || ''}`,
+          target: target instanceof Element ? `${target.tagName}.${typeof target.className === 'string' ? target.className : ''}` : '',
+          iterations: timing.iterations,
+          duration: timing.duration,
+          delay: timing.delay,
+          endTime: timing.endTime,
+          playState: animation.playState,
+        };
+      }));
+    throw new Error(`${label}: page motion did not settle before heading-anchor hit-test: ${JSON.stringify(running)}`);
+  }
+}
+
 async function exerciseHeadingAnchor(page, label) {
   const anchors = page.locator('.heading-anchor[data-gb-heading-anchor-owner="native-v1"]');
   const count = await anchors.count();
@@ -152,6 +187,9 @@ async function exerciseHeadingAnchor(page, label) {
   assert.equal(await anchor.getAttribute('aria-label'), 'Скопировать ссылку на раздел', `${label}: heading anchor accessibility label drift`);
 
   const expectedUrl = await page.evaluate((fragment) => new URL(fragment, window.location.href).toString(), href);
+  // Scroll-triggered reveal transitions on neighbouring figures can still be running after three
+  // stable frames; a figure can then cover the anchor at click time (WebKit, 390 px). Wait for finite motion.
+  await waitForPageMotionToSettle(page, label);
   const hitTestBeforeClick = await anchor.evaluate(async (node) => {
     const describe = (target) => {
       if (!(target instanceof Element)) {
