@@ -13,7 +13,7 @@ export const ASSET_VERSIONS = {
   'css/reader-preferences.css': 'b740c21f',
   'css/series-manuscript.css': 'fc3a55ce',
   'css/series-samizdat.css': '9e2de1d7',
-  'css/site.css': '233791bf',
+  'css/site.css': '06849619',
   'css/sw-toast.css': '2e540077',
   'css/tts-download-notice.css': 'b9ef192f',
   'fonts/fonts.css': '864cc57a',
@@ -34,7 +34,7 @@ export const ASSET_VERSIONS = {
   'js/sw-register.js': '921dd6a2',
   'js/vosk-tts-engine.js': 'd1c35564',
   'js/vosk-tts-worker.js': 'ccc621c4',
-  'nagornaya/tw.min.css': '2670414e',
+  'nagornaya/tw.min.css': 'bee34e73',
 };
 
 export function assetUrl(path) {
