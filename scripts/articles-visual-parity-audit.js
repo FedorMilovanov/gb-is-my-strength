@@ -147,13 +147,13 @@ const projected = (searchManifest.items || []).filter((item) => {
   if (!['article', 'series'].includes(item.type)) return false;
   return productionRoutes[publicRoute(item.url)]?.status === 'production-dist';
 });
-const projectedUrls = projected.map((item) => publicRoute(item.url));
-const manifestRouteSet = new Set((searchManifest.items || []).map((item) => publicRoute(item.url)));
+const projectedUrls = projected.map((item) => String(item.url || ''));
+const manifestRouteSet = new Set((searchManifest.items || []).map((item) => String(item.url || '').split('#')[0]));
 const nativeFallbackUrls = Object.entries(productionRoutes)
   .filter(([url, route]) => url.startsWith('/articles/') &&
     route?.status === 'production-dist' &&
-    !manifestRouteSet.has(publicRoute(url)))
-  .map(([url]) => publicRoute(url));
+    !manifestRouteSet.has(String(url || '').split('#')[0]))
+  .map(([url]) => String(url || '').split('#')[0]);
 const expectedCatalogUrls = [...projectedUrls, ...nativeFallbackUrls];
 if (new Set(expectedCatalogUrls).size === expectedCatalogUrls.length) {
   ok(`derived catalog routes are unique: ${expectedCatalogUrls.length} (manifest ${projectedUrls.length} + native fallback ${nativeFallbackUrls.length})`);
