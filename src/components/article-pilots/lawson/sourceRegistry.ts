@@ -4,7 +4,11 @@ export interface LawsonSource {
   id: string;
   n: number;
   label: string;
+  /** Основной носитель, на который ведёт ссылка сноски. */
   href: string;
+  /** Исходная запись, когда она доступна отдельно от текстового носителя. */
+  videoHref?: string;
+  videoLabel?: string;
   evidenceClass: LawsonEvidenceClass;
   proves: string;
   boundary?: string;
@@ -128,11 +132,13 @@ export const LAWSON_SOURCES: LawsonSource[] = [
   },
   {
     id: 'LAW-12', n: 13,
-    label: 'Ligonier — страница события «Ask Ligonier with Steven Lawson» (28 июля 2020)',
-    href: 'https://www.ligonier.org/posts/ask-ligonier-steven-lawson-july-28',
-    evidenceClass: 'primary',
-    proves: 'Официальная страница Ligonier подтверждает, что 28 июля 2020 года Лоусон участвовал в прямом эфире Ask Ligonier и отвечал на вопросы аудитории.',
-    boundary: 'Страница не содержит текста ответов, поэтому содержание эфира в статье не пересказывается. Автоматическая расшифровка субтитров Filmot не получена (страница отдала проверку «Verify You’re Human») и не сверена с записью; ею статья не пользуется. Видео на YouTube (watch?v=Fouczzg3yhg) при проверке 2 октября 2026 года помечено как private. Адрес выведен из поискового индекса (копия stage.ligonier.org); прямой переход из песочницы не удался, поэтому адрес подтверждён только индексом.',
+    label: 'Ручная английская расшифровка — «Ask Ligonier with Steven Lawson» (28 июля 2020)',
+    href: 'https://drive.google.com/file/d/1Ve5XG16VYBGWfo0B1SNvXnlG3rbZTA4g/view?usp=drivesdk',
+    videoHref: 'https://www.youtube.com/watch?v=Fouczzg3yhg',
+    videoLabel: 'Исходный выпуск на YouTube (сейчас private)',
+    evidenceClass: 'near-primary',
+    proves: 'Ручной английский трек с репликами спикеров и временными отметками. В ответе о своих ошибках Лоусон говорит: «I should’ve prayed more»; называет себя «such a driven person in work ethic» и добавляет, что должен был взять больше отпуска и больше отдыхать (00:04:52–00:05:16). Об Энн он говорит: «my wife is the finest Christian I know», отмечает её обратную связь о проповедях и то, что она «freed me up» для призвания; о себе добавляет: «I’m still in the process of learning to be a better husband to my wife» (00:50:05–00:52:06).',
+    boundary: 'Носитель — ручная, не автоматическая расшифровка: файл «Lawson 2020 Q&A.txt» (78 708 байт), предоставленный редакции владельцем через Google Drive 11 октября 2026 года. Расшифровка точно передаёт приведённые слова и таймкоды, но не заменяет доступ к видеозаписи; сам выпуск на YouTube указан как private, а прежняя страница Ligonier отдаёт 404. Filmot упоминается только как вторичный носитель: его страница side-by-side ранее требовала проверку человека и для этих утверждений не используется. Текст не говорит о последующих отношениях, состоянии брака или причинах падения, поэтому таких выводов по нему не делается.',
   },
   {
     id: 'LAW-13', n: 14,
