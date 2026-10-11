@@ -21,6 +21,7 @@ import { LAWSON_EVIDENCE_LABEL, LAWSON_SOURCES } from './sourceRegistry';
           <span class="lawson-bibliography__num">{source.n}</span>
           <div>
             <a href={source.href} rel="noopener noreferrer">{source.label}</a>
+            {source.videoHref && <span> · <a href={source.videoHref} rel="noopener noreferrer">{source.videoLabel ?? 'Исходная запись'}</a></span>}
             <span class="lawson-bibliography__class">{LAWSON_EVIDENCE_LABEL[source.evidenceClass]}</span>
           </div>
         </div>
