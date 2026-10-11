@@ -502,7 +502,20 @@ async function main() {
   console.log(`Article capability browser contract: PASS (${results.length} cases, including bounded hanging-clipboard fallback)`);
 }
 
+// Short failure summary for the GitHub run page. Full raw logs can be truncated by the
+// Actions UI when a Playwright call log is very large; this keeps the root cause readable.
+function writeStepSummary(error) {
+  const target = process.env.GITHUB_STEP_SUMMARY;
+  if (!target) return;
+  const lines = String(error?.message || error).split('\n');
+  const callLogAt = lines.findIndex((line) => line.startsWith('Call log:'));
+  const head = (callLogAt === -1 ? lines : lines.slice(0, callLogAt)).slice(0, 40).join('\n').slice(0, 4000);
+  const tail = callLogAt === -1 ? '' : lines.slice(callLogAt, callLogAt + 15).join('\n').slice(0, 2000);
+  fs.appendFileSync(target, `### Article capability browser contract failed\n\n\`\`\`\n${head}\n${tail}\n\`\`\`\n`);
+}
+
 main().catch((error) => {
+  writeStepSummary(error);
   fs.mkdirSync(REPORT_DIR, { recursive: true });
   fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify({ schemaVersion: 1, conclusion: 'failure', error: String(error?.stack || error) }, null, 2)}\n`);
   console.error(error);
