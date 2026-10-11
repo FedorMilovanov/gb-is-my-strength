@@ -14,7 +14,7 @@ const source = lawsonSource(id);
     <span class="lawson-source-meta">{LAWSON_EVIDENCE_LABEL[source.evidenceClass]}</span>
     <strong>{source.label}</strong>
     <span>{source.proves}</span>
-    {source.boundary && <span class="lawson-source-boundary"><b>Граница:</b> {source.boundary}</span>}
+    {source.boundary && <span class="lawson-source-boundary"><b>Предел вывода:</b> {source.boundary}</span>}
     <a href={source.href} rel="noopener noreferrer">Открыть источник ↗</a>
   </span>
 </span>

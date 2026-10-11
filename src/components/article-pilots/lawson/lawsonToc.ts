@@ -40,5 +40,5 @@ export const LAWSON_TOC: LawsonTocItem[] = [
   { href: '#pastoral', label: "Почему эта история касается не только Лоусона", level: 2 },
   { href: '#verdict', label: "Вывод: что теперь должно говорить громче слов", level: 2 },
   { href: '#glossary', label: "Краткий словарь", level: 2 },
-  { href: '#sources', label: "Источники и границы проверки", level: 2 },
+  { href: '#sources', label: "Источники и пределы выводов", level: 2 },
 ];
