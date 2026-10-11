@@ -3,10 +3,11 @@
  * Guard /articles/ native Astro catalog contract.
  *
  * The exhaustive library is derived from existing publication authorities:
- * data/search-manifest.json owns reader-facing metadata (including covers) and
- * migration/page-ownership.json owns current production disposition. The old
- * hand-maintained ArticlesPublicationsSection must not return as a second
- * catalog authority.
+ * data/search-manifest.json owns reader-facing metadata (including covers),
+ * Astro's articles collection supplies only missing native-article rows, and
+ * migration/page-ownership.json is the final production-disposition gate.
+ * The old hand-maintained ArticlesPublicationsSection must not return as a
+ * second catalog authority.
  */
 'use strict';
 const fs = require('fs');
@@ -95,7 +96,13 @@ for (const [content, marker, label] of [
   [library, "item.type === 'article'", 'ArticlesLibrarySection derives article membership'],
   [library, "item.type === 'series'", 'ArticlesLibrarySection derives series membership'],
   [library, "status === 'production-dist'", 'ArticlesLibrarySection filters current production routes'],
-  [library, 'data-catalog-source="search-manifest+page-ownership"', 'ArticlesLibrarySection records projection authority'],
+  [library, 'data-catalog-source="search-manifest+astro-content+page-ownership"', 'ArticlesLibrarySection records manifest/native projection authority'],
+  [library, "import { getCollection } from 'astro:content';", 'ArticlesLibrarySection uses Astro native content collection'],
+  [library, 'const manifestRoutes = new Set(', 'ArticlesLibrarySection prevents native/manifest duplicates'],
+  [library, "await getCollection('articles'", 'ArticlesLibrarySection reads native article collection'],
+  [library, '!data.draft && !data.noindex', 'ArticlesLibrarySection excludes drafts and noindex native articles'],
+  [library, 'routeIsPublished(item.url) && !manifestRoutes.has(item.url)', 'ArticlesLibrarySection fail-closes native fallback by publication ownership'],
+  [library, 'const catalogItems = [...manifestItems, ...nativeFallbackItems];', 'ArticlesLibrarySection combines canonical manifest and missing native articles'],
   [library, 'id="publikacii"', 'ArticlesLibrarySection preserves publications anchor'],
   [library, 'data-catalog-route={item.url}', 'ArticlesLibrarySection renders canonical article routes'],
   [library, 'data-catalog-series={item.url}', 'ArticlesLibrarySection renders canonical series routes'],
@@ -140,9 +147,19 @@ const projected = (searchManifest.items || []).filter((item) => {
   if (!['article', 'series'].includes(item.type)) return false;
   return productionRoutes[publicRoute(item.url)]?.status === 'production-dist';
 });
-const projectedUrls = projected.map((item) => String(item.url || ''));
-if (new Set(projectedUrls).size === projectedUrls.length) ok(`derived catalog routes are unique: ${projectedUrls.length}`);
-else bad('derived catalog would render duplicate article/series URLs');
+const projectedUrls = projected.map((item) => publicRoute(item.url));
+const manifestRouteSet = new Set((searchManifest.items || []).map((item) => publicRoute(item.url)));
+const nativeFallbackUrls = Object.entries(productionRoutes)
+  .filter(([url, route]) => url.startsWith('/articles/') &&
+    route?.status === 'production-dist' &&
+    !manifestRouteSet.has(publicRoute(url)))
+  .map(([url]) => publicRoute(url));
+const expectedCatalogUrls = [...projectedUrls, ...nativeFallbackUrls];
+if (new Set(expectedCatalogUrls).size === expectedCatalogUrls.length) {
+  ok(`derived catalog routes are unique: ${expectedCatalogUrls.length} (manifest ${projectedUrls.length} + native fallback ${nativeFallbackUrls.length})`);
+} else {
+  bad('derived catalog would render duplicate article/series/native-article URLs');
+}
 
 for (const item of projected) {
   const label = item.id || item.url || '<unknown>';
@@ -167,13 +184,13 @@ if (REQUIRE_DIST) {
     mustNot(dist, 'astro-card-grid', 'dist /articles/ generic regression marker absent');
     const renderedCatalogUrls = [...dist.matchAll(/data-catalog-(?:route|series)=["']([^"']+)["']/g)].map((match) => match[1]);
     const renderedCatalogUnique = [...new Set(renderedCatalogUrls)].sort();
-    const projectedUnique = [...new Set(projectedUrls)].sort();
+    const expectedUnique = [...new Set(expectedCatalogUrls)].sort();
     if (renderedCatalogUrls.length !== renderedCatalogUnique.length) {
       bad(`dist catalog contains duplicate rendered routes: ${renderedCatalogUrls.length} entries / ${renderedCatalogUnique.length} unique`);
-    } else if (JSON.stringify(renderedCatalogUnique) !== JSON.stringify(projectedUnique)) {
-      bad(`dist catalog route set differs from projected authority: rendered=${renderedCatalogUnique.length}, projected=${projectedUnique.length}`);
+    } else if (JSON.stringify(renderedCatalogUnique) !== JSON.stringify(expectedUnique)) {
+      bad(`dist catalog route set differs from manifest + native production authority: rendered=${renderedCatalogUnique.length}, expected=${expectedUnique.length} (manifest=${projectedUrls.length}, native=${nativeFallbackUrls.length})`);
     } else {
-      ok(`dist catalog route set exactly matches projected authority: ${renderedCatalogUnique.length}/${projectedUnique.length}`);
+      ok(`dist catalog route set exactly matches manifest + native production authority: ${renderedCatalogUnique.length}/${expectedUnique.length}`);
     }
     const renderedThumbs = (dist.match(/class=["'][^"']*\bh-article-thumb\b[^"']*["']/g) || []).length;
     if (renderedThumbs >= renderedCatalogUrls.length) ok(`dist thumbnail shells cover every catalog entry: ${renderedThumbs} shells / ${renderedCatalogUrls.length} catalog entries`);
