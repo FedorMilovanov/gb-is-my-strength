@@ -18,7 +18,7 @@ const ROUTES = [
   {
     id: 'herm',
     route: '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/',
-    slot: { root: '.hmtop', rail: '.hm-speedrail', badge: '.hm-spdbadge', alternate: '.hm-slot-search', chip: '.hm-spd' },
+    slot: { root: '.hmtop', rail: '.hm-speedrail', badge: '.hm-spdbadge', alternate: null, chip: '.hm-spd' },
     mobileSurfaces: [
       { id: 'toc', trigger: '#hmSectionBtn', target: '#hmSheet', popup: 'dialog' },
       { id: 'settings', trigger: '#hmSettingsBtn', target: '#hmSettings', popup: 'dialog' },
@@ -106,7 +106,7 @@ async function slotSnapshot(page, selectors) {
     const root = document.querySelector(sel.root);
     const rail = document.querySelector(sel.rail);
     const badge = document.querySelector(sel.badge);
-    const alternate = document.querySelector(sel.alternate);
+    const alternate = sel.alternate ? document.querySelector(sel.alternate) : null;
     const chips = Array.from(document.querySelectorAll(sel.chip));
     const visible = (node) => {
       if (!node) return false;
@@ -141,14 +141,14 @@ async function auditSlot(page, routeId, selectors, checks) {
   await page.waitForTimeout(80);
 
   const closed = await slotSnapshot(page, selectors);
-  record(checks, `${prefix}-01`, 'slot owners exist', closed.rootExists && closed.railExists && closed.badgeExists && closed.alternateExists, closed);
+  record(checks, `${prefix}-01`, 'declared slot owners exist', closed.rootExists && closed.railExists && closed.badgeExists && (selectors.alternate ? closed.alternateExists : !closed.alternateExists), closed);
   record(checks, `${prefix}-02`, 'closed rail is aria-hidden', closed.railAriaHidden === 'true', closed);
   record(checks, `${prefix}-03`, 'closed rail is inert', closed.railInert, closed);
   record(checks, `${prefix}-04`, 'closed rail has zero Tab stops', closed.tabStops === 0, closed);
   record(checks, `${prefix}-05`, 'exactly one radio remains selected', closed.checked.length === 1, closed);
   record(checks, `${prefix}-06`, 'badge owns existing rail', Boolean(closed.badgeControls && closed.controlledExists), closed);
   record(checks, `${prefix}-07`, 'badge reports collapsed state', closed.badgeExpanded === 'false', closed);
-  record(checks, `${prefix}-08`, 'alternate layer is exposed while closed', closed.alternateAriaHidden !== 'true' && !closed.alternateInert, closed);
+  record(checks, `${prefix}-08`, 'declared alternate is exposed while closed (or absent by design)', selectors.alternate ? closed.alternateExists && closed.alternateAriaHidden !== 'true' && !closed.alternateInert : !closed.alternateExists, closed);
 
   await page.locator(selectors.badge).click();
   await page.waitForTimeout(120);
@@ -157,7 +157,7 @@ async function auditSlot(page, routeId, selectors, checks) {
   record(checks, `${prefix}-10`, 'open rail is exposed to AT', opened.railAriaHidden === 'false' && !opened.railInert, opened);
   record(checks, `${prefix}-11`, 'open rail has one roving Tab stop', opened.tabStops === 1, opened);
   record(checks, `${prefix}-12`, 'badge reports expanded state', opened.badgeExpanded === 'true', opened);
-  record(checks, `${prefix}-13`, 'alternate layer is hidden and inert while open', opened.alternateAriaHidden === 'true' && opened.alternateInert, opened);
+  record(checks, `${prefix}-13`, 'declared alternate is hidden and inert while open (or absent by design)', selectors.alternate ? opened.alternateExists && opened.alternateAriaHidden === 'true' && opened.alternateInert : !opened.alternateExists, opened);
 
   const selected = page.locator(`${selectors.chip}[aria-checked="true"]`).first();
   await selected.focus();

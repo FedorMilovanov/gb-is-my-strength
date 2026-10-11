@@ -86,6 +86,13 @@ const focusableSelector = [
   '.cp-backdrop.is-open a[href]',
   '.cp-backdrop.is-open [tabindex]:not([tabindex="-1"]):not([role="option"])',
 ].join(',');
+// Search is the subject of this contract; third-party analytics availability is not.
+// Fulfill its script locally so browser console assertions remain deterministic.
+function isolateAnalytics(page) {
+  return page.route('https://mc.yandex.ru/**', (route) => route.fulfill({
+    status: 200, contentType: 'application/javascript', body: '',
+  }));
+}
 const WEBKIT_LOCAL_CERT_DIAGNOSTIC = 'Failed to load resource: SSL peer certificate or SSH remote key was not OK';
 function isExpectedWebKitLocalCertificateDiagnostic(browserName, text) {
   return browserName === 'webkit' && text === WEBKIT_LOCAL_CERT_DIAGNOSTIC;
@@ -94,6 +101,7 @@ function isExpectedWebKitLocalCertificateDiagnostic(browserName, text) {
 async function runCase(browserType, browserName, viewport, port, ordinal) {
   const browser = await browserType.launch({ headless: true });
   const page = await browser.newPage({ viewportSize: viewport });
+  await isolateAnalytics(page);
   const consoleErrors = [];
   const engineWarnings = [];
   const pageErrors = [];
@@ -418,6 +426,7 @@ async function runContinuationContract(browserType, browserName, port, viewport)
   async function openFixture(configure, viewport = { width: 960, height: 760 }) {
     const context = await browser.newContext({ viewport, serviceWorkers: 'block' });
     const page = await context.newPage();
+    await isolateAnalytics(page);
     assert.deepEqual(page.viewportSize(), viewport, 'continuation fixture must use requested viewport');
     activePage = page;
     consoleErrors = [];
