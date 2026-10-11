@@ -9,16 +9,23 @@
  * оставался тёмным. Здесь Astro-токены мостятся к тем же семантическим токенам,
  * которыми управляет reader-preferences: light, dark и sepia меняются атомарно.
  */
+:root { --lawson-article-accent: #795c2b; }
+html.dark { --lawson-article-accent: #d0b97a; }
+html[data-reader-theme="sepia"] { --lawson-article-accent: #765726; }
+
 html[data-reader-theme] {
   --astro-color-bg: var(--color-canvas);
   --astro-color-surface: var(--color-surface);
   --astro-color-text: var(--color-text);
   --astro-color-muted: var(--color-text-muted);
-  --astro-color-gold: var(--color-accent);
+  --astro-color-gold: var(--lawson-article-accent, var(--color-accent));
   --astro-color-border: var(--color-border);
 }
 
 .astro-main {
+  --color-accent: var(--lawson-article-accent, var(--color-accent));
+  --color-accent-strong: color-mix(in srgb, var(--color-accent) 78%, var(--color-text));
+  --color-accent-soft: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
   --bg: var(--color-surface);
   --bg-elevated: var(--color-surface-2, var(--color-surface));
   --bg-alt: var(--color-surface-alt);
@@ -27,6 +34,7 @@ html[data-reader-theme] {
   --accent: var(--color-accent);
   --accent-soft: var(--color-accent-soft);
   --border: var(--color-border);
+  --astro-color-gold: var(--color-accent);
   --astro-color-card: var(--color-surface);
   color: var(--text);
 }
@@ -45,78 +53,122 @@ html[data-reader-theme] {
 .astro-main .hrail-toch b { color: var(--accent); }
 .astro-main .hrail-meta__eyebrow { color: var(--accent); }
 .astro-main .astro-author-card__icon { color: var(--color-canvas); }
+/* Links inside running copy must remain distinguishable without colour. */
+.astro-main .astro-author-card__desc a {
+  text-decoration: underline;
+  text-underline-offset: .18em;
+}
 
 .lawson-deck {
+  max-width: 70ch;
   margin: 0 0 2rem;
-  padding: 1.15rem 1.25rem;
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--accent);
-  border-radius: 1rem;
-  background: color-mix(in srgb, var(--accent) 5%, var(--bg));
+  color: var(--text);
+  font-family: var(--font-serif, Lora, Georgia, serif);
+  font-size: 1.03rem;
+  line-height: 1.76;
 }
-.lawson-deck strong { color: var(--text); }
+/* global.css paints every .astro-main p as secondary copy; the essay itself
+   needs primary ink while captions and source notes retain their own hierarchy. */
+.astro-main .astro-article__body > p,
+.astro-main .lawson-deck p { color: var(--text); }
+.lawson-deck p { margin: .85rem 0; }
+.lawson-deck p:first-child {
+  margin-top: 0;
+  font-size: clamp(1.12rem, 2vw, 1.24rem);
+  line-height: 1.66;
+}
+.lawson-deck p:last-child { margin-bottom: 0; }
 
 .lawson-toc {
   margin: 2rem 0 2.5rem;
-  padding: 1.2rem 1.25rem;
+  padding: 0;
+  overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: color-mix(in srgb, var(--bg) 94%, var(--accent) 6%);
+  border-radius: .9rem;
+  background: color-mix(in srgb, var(--bg) 96%, var(--accent) 4%);
 }
-.lawson-toc h2 { margin: 0 0 .8rem; font-size: 1.05rem; }
-.lawson-toc ol { margin: 0; columns: 2; column-gap: 2rem; }
+.lawson-toc > summary {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  min-height: 3.2rem;
+  padding: .8rem 1.05rem;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.lawson-toc > summary::-webkit-details-marker { display: none; }
+.lawson-toc > summary::marker { content: ''; }
+.lawson-toc > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+.lawson-toc__title { font-weight: 700; }
+.lawson-toc__meta { margin-left: auto; color: var(--muted); font: 600 .75rem/1.3 var(--font-body, Inter, sans-serif); }
+.lawson-toc__chevron { width: 1.15rem; height: 1.15rem; flex: 0 0 auto; color: var(--accent); transition: transform .2s ease; }
+.lawson-toc[open] .lawson-toc__chevron { transform: rotate(180deg); }
+.lawson-toc nav { padding: .9rem 1.05rem 1.05rem; border-top: 1px solid var(--border); }
+.lawson-toc ol { margin: 0; padding-left: 1.3rem; columns: 2; column-gap: 2rem; }
 .lawson-toc li { break-inside: avoid; margin: .38rem 0; }
 .lawson-toc a { color: var(--text); text-decoration-thickness: 1px; text-underline-offset: .2em; }
+.lawson-toc a:hover { color: var(--accent); }
 
-.lawson-summary,
 .lawson-methodology,
-.lawson-distinction,
 .lawson-verdict {
   margin: 2rem 0;
   padding: 1.2rem 1.3rem;
-  border-radius: 1rem;
   border: 1px solid var(--border);
+  border-radius: 1rem;
   background: color-mix(in srgb, var(--bg) 96%, var(--accent) 4%);
 }
-.lawson-summary h2,
+.lawson-methodology {
+  padding: 1.1rem 0;
+  border: 0;
+  border-block: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+}
 .lawson-methodology h2,
 .lawson-verdict h2 { margin-top: 0; }
-.lawson-summary ol { list-style: none; padding: 0; margin: 0; counter-reset: lawson-summary; }
-.lawson-summary li {
-  counter-increment: lawson-summary;
-  position: relative;
-  padding: .8rem 0 .8rem 2.8rem;
-  border-top: 1px solid var(--border);
-}
-.lawson-summary li:first-child { border-top: 0; }
-.lawson-summary li::before {
-  content: counter(lawson-summary, decimal-leading-zero);
-  position: absolute; left: 0; top: .8rem;
-  color: var(--accent); font: 700 .78rem/1 var(--font-body, Inter, sans-serif); letter-spacing: .08em;
-}
 
-.lawson-fact-grid,
-.lawson-root-grid,
+.lawson-root-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  margin: 1.5rem 0 2.25rem;
+}
 .lawson-glossary-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
   margin: 1.5rem 0 2.25rem;
 }
-.lawson-fact-card,
-.lawson-root-card,
+.lawson-root-card {
+  min-width: 0;
+  margin: 0;
+  padding: 1.1rem 0 1.3rem;
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+}
+.lawson-root-card:last-child { border-bottom: 1px solid var(--border); }
 .lawson-glossary-card {
+  min-width: 0;
   padding: 1rem 1.05rem;
   border: 1px solid var(--border);
   border-radius: .9rem;
   background: var(--bg);
 }
-.lawson-fact-card h3,
 .lawson-root-card h3,
 .lawson-glossary-card h3 { margin: 0 0 .55rem; font-size: 1rem; }
-.lawson-fact-card ul { margin: 0; padding-left: 1.2rem; }
-.lawson-fact-card--known { border-top: 3px solid #35835c; }
-.lawson-fact-card--unknown { border-top: 3px solid #b17732; }
+.lawson-root-card .lawson-strength {
+  display: inline-block;
+  margin: .15rem 0 .45rem;
+  padding: .14rem .42rem;
+  border-left: 2px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, var(--bg));
+  color: color-mix(in srgb, var(--muted) 75%, var(--text));
+  font: 700 .72rem/1.4 var(--font-body, Inter, sans-serif);
+  letter-spacing: .01em;
+}
 
 .lawson-timeline {
   list-style: none;
@@ -124,24 +176,121 @@ html[data-reader-theme] {
   padding: 0 0 0 1.25rem;
   border-left: 2px solid color-mix(in srgb, var(--accent) 35%, var(--border));
 }
-.lawson-timeline li { position: relative; padding: 0 0 1.35rem 1.1rem; }
-.lawson-timeline li::before {
-  content: '';
-  position: absolute; left: -1.69rem; top: .42rem;
-  width: .72rem; height: .72rem; border-radius: 50%;
-  background: var(--accent); box-shadow: 0 0 0 4px var(--bg);
+.lawson-timeline > li {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(6rem, 7.2rem) minmax(0, 1fr);
+  grid-template-areas: "date title" ". body";
+  column-gap: 1rem;
+  row-gap: .18rem;
+  padding: 0 0 1.35rem 1.1rem;
 }
-.lawson-timeline time { display: block; margin-bottom: .2rem; color: var(--accent); font: 700 .78rem/1.3 var(--font-body, Inter, sans-serif); letter-spacing: .05em; text-transform: uppercase; }
-.lawson-timeline strong { display: block; margin-bottom: .2rem; }
+.lawson-timeline > li:last-child { padding-bottom: 0; }
+.lawson-timeline > li::before {
+  content: '';
+  position: absolute;
+  left: -1.69rem;
+  top: .32rem;
+  width: .72rem;
+  height: .72rem;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: var(--bg);
+  box-shadow: 0 0 0 3px var(--bg);
+}
+.lawson-timeline time {
+  grid-area: date;
+  align-self: start;
+  margin: .05rem 0 0;
+  color: var(--accent);
+  font: 700 .7rem/1.4 var(--font-body, Inter, sans-serif);
+  font-variant-numeric: tabular-nums;
+}
+.lawson-timeline__title { grid-area: title; margin: 0; font-size: 1rem; line-height: 1.4; }
+.lawson-timeline__body { grid-area: body; color: var(--text); font-size: .94rem; line-height: 1.65; }
 
-.lawson-root-card { border-left: 3px solid color-mix(in srgb, var(--accent) 72%, var(--border)); }
-.lawson-root-card .lawson-strength { display: inline-block; margin: .2rem 0 .55rem; padding: .2rem .45rem; border-radius: 999px; background: color-mix(in srgb, var(--accent) 8%, var(--bg)); color: var(--accent); font: 700 .7rem/1.3 var(--font-body, Inter, sans-serif); text-transform: uppercase; letter-spacing: .05em; }
+.lawson-timeline-overview {
+  position: relative;
+  margin: 1.6rem 0 2.2rem;
+  padding: 1rem 1.1rem 1.05rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 5%, var(--bg)), var(--bg) 72%);
+}
+.lawson-timeline-overview figcaption {
+  margin: 0;
+  color: var(--muted);
+  font: 700 .68rem/1.35 var(--font-body, Inter, sans-serif);
+  letter-spacing: .075em;
+  text-transform: uppercase;
+}
+.lawson-timeline-overview__track { display: block; width: 100%; color: var(--accent); }
+.lawson-timeline-overview__track--desktop { height: 2.4rem; margin: .45rem 0 .15rem; }
+.lawson-timeline-overview__track--mobile { display: none; }
+.lawson-timeline-overview__items {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: .65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lawson-timeline-overview__items li { display: flex; min-width: 0; flex-direction: column; gap: .2rem; text-align: center; }
+.lawson-timeline-overview__items time { color: var(--accent); font: 700 .67rem/1.3 var(--font-body, Inter, sans-serif); font-variant-numeric: tabular-nums; }
+.lawson-timeline-overview__items span { color: var(--text); font-size: .8rem; line-height: 1.4; text-wrap: balance; }
+
+.lawson-findings {
+  margin: 1.4rem 0 2.5rem;
+  padding: 0;
+  border-top: 1px solid var(--border);
+  list-style: none;
+}
+.lawson-findings > li {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: .85rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.lawson-finding-index { padding-top: .12rem; color: var(--accent); font: 700 .76rem/1.4 var(--font-body, Inter, sans-serif); font-variant-numeric: tabular-nums; }
+.lawson-finding-content > strong { display: block; margin-bottom: .3rem; }
+.lawson-finding-content p { margin: 0; }
+
+.lawson-catalog-status {
+  margin: 1.4rem 0 2.4rem;
+  padding: 0;
+  border-top: 1px solid var(--border);
+  list-style: none;
+}
+.lawson-catalog-status > li {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, 6.5rem) minmax(0, 1fr);
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.lawson-catalog-status__state {
+  align-self: start;
+  padding-top: .12rem;
+  color: var(--accent);
+  font: 700 .68rem/1.4 var(--font-body, Inter, sans-serif);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.lawson-catalog-status__content > strong { display: block; margin-bottom: .25rem; }
+.lawson-catalog-status__content p { margin: 0; }
 
 .lawson-distinction {
-  border-left: 4px solid var(--accent);
-  font-size: 1.04rem;
+  margin: 2rem 0;
+  padding: .2rem 0 .2rem 1rem;
+  border: 0;
+  border-left: 2px solid color-mix(in srgb, var(--accent) 70%, var(--border));
+  border-radius: 0;
+  background: transparent;
+  font-size: 1.02rem;
 }
-.lawson-distinction p { margin: .35rem 0; }
+.lawson-distinction p { margin: .5rem 0; }
 
 .lawson-pullquote {
   margin: 2.2rem auto;
@@ -198,18 +347,83 @@ html[data-reader-theme] {
 .lawson-bibliography li p { margin: .55rem 0 0 2.7rem; font-size: .9rem; line-height: 1.5; }
 .lawson-bibliography__boundary { color: var(--muted); }
 
-.lawson-status-line {
-  display: flex; flex-wrap: wrap; gap: .45rem; margin: .5rem 0 1.5rem;
-}
-.lawson-status-line span { padding: .28rem .55rem; border: 1px solid var(--border); border-radius: 999px; color: var(--muted); font: 700 .7rem/1.2 var(--font-body, Inter, sans-serif); }
-
 @media (max-width: 720px) {
   .lawson-toc ol { columns: 1; }
-  .lawson-fact-grid, .lawson-root-grid, .lawson-glossary-grid { grid-template-columns: 1fr; }
+  .lawson-glossary-grid { grid-template-columns: 1fr; }
   .lawson-bibliography li p { margin-left: 0; }
+  .lawson-timeline > li {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "date" "title" "body";
+    row-gap: .16rem;
+    padding-left: .85rem;
+  }
+  .lawson-timeline-overview { padding: .9rem .9rem 1rem; }
+  .lawson-timeline-overview__track--desktop { display: none; }
+  .lawson-timeline-overview__track--mobile {
+    position: absolute;
+    top: 2.4rem;
+    left: .55rem;
+    display: block;
+    width: 2.25rem;
+    height: 22rem;
+  }
+  .lawson-timeline-overview__items {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    margin-top: .55rem;
+    padding-left: 2.25rem;
+  }
+  .lawson-timeline-overview__items li {
+    min-height: 4.375rem;
+    justify-content: center;
+    align-items: flex-start;
+    gap: .16rem;
+    padding: .3rem 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--accent) 12%, var(--border));
+    text-align: left;
+  }
+  .lawson-timeline-overview__items li:last-child { border-bottom: 0; }
+  .lawson-timeline-overview__items span { max-width: 34ch; font-size: .82rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lawson-toc__chevron { transition: none; }
 }
 
 @media print {
   .lawson-toc { break-inside: avoid; }
-  .lawson-fact-card, .lawson-root-card, .lawson-bibliography li { break-inside: avoid; box-shadow: none; }
+  .lawson-toc:not([open]) > nav { display: block; }
+  .lawson-toc > nav { border-top: 1px solid #999; }
+  .lawson-root-card, .lawson-glossary-card, .lawson-bibliography li { break-inside: avoid; box-shadow: none; }
 }
+
+/* The route omits the generic site header: the rail/mobile bar owns navigation.
+   On narrow screens the hidden eyebrow's line box reserves safe top-bar space. */
+@media (max-width: 1199px) {
+  /* Keep its line box as safe space under the fixed top reader bar. */
+  .astro-main .astro-article__eyebrow { visibility: hidden; }
+}
+
+/* The SEO description is repeated by the fuller essay opening immediately below.
+   Keep its metadata owner intact, but do not force a second deck before the story. */
+.astro-main .astro-article__lead { display: none; }
+
+/* Lawson opens as an essay, not a dashboard of metadata cards. Dates and
+   reading time remain visible; redundant topic chips live in article metadata. */
+.astro-main .astro-article__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem .85rem;
+  margin-top: .65rem;
+}
+.astro-main .astro-article__meta div {
+  display: flex;
+  gap: .25rem;
+  align-items: baseline;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.astro-main .astro-article__meta dd { margin: 0; }
+.astro-main .astro-article__tags { display: none; }
+.astro-main .astro-article__body { margin-top: 1rem; padding-top: 1rem; }

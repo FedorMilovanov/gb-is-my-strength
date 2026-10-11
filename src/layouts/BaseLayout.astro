@@ -40,6 +40,8 @@ interface Props {
   hideHeader?: boolean;
   hideFooter?: boolean;
   legacyStylesheets?: string[];
+  /** Additional same-origin font subsets required before the first article paint. */
+  extraFontPreloads?: string[];
   includeLegacyRuntime?: boolean;
   includeLegacySiteScript?: boolean;
 }
@@ -70,6 +72,7 @@ const {
   hideHeader = false,
   hideFooter = false,
   legacyStylesheets = [],
+  extraFontPreloads = [],
   includeLegacyRuntime = true,
   includeLegacySiteScript = ogType !== 'article',
 } = Astro.props;
@@ -178,6 +181,7 @@ const routeStylesheets = legacyStylesheets.map(versionedStylesheet);
     <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin />
     <link rel="preload" as="font" type="font/woff2" href="/fonts/Inter/inter-cyrillic-600.woff2" crossorigin />
     <link rel="preload" as="font" type="font/woff2" href="/fonts/PlayfairDisplay/playfairdisplay-cyrillic-700.woff2" crossorigin />
+    {extraFontPreloads.map((href) => <link rel="preload" as="font" type="font/woff2" href={href} crossorigin />)}
     {coreStylesheets.map((href) => <link rel="stylesheet" href={href} />)}
     {routeStylesheets.map((href) => <link rel="stylesheet" href={href} />)}
   </head>

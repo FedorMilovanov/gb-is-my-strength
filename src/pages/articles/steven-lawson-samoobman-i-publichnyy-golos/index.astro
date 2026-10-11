@@ -21,6 +21,12 @@ const canonical = `${SITE.url}/articles/${slug}/`;
   canonical={canonical}
   mainClass="astro-main article-main--hrail"
   mainAttrs={{ 'data-reader-rail-main': true }}
+  hideHeader
+  extraFontPreloads={[
+    '/fonts/Lora/lora-latin-400.woff2',
+    '/fonts/Lora/lora-cyrillic-600.woff2',
+    '/fonts/Lora/lora-latin-600.woff2',
+  ]}
 >
   <LawsonPageChrome slot="chrome" />
   <Content />

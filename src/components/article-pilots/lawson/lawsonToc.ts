@@ -15,8 +15,8 @@ export interface LawsonTocItem {
  * компонента (`#lawson-sources-heading`) и не может разъехаться с ним.
  */
 export const LAWSON_TOC: LawsonTocItem[] = [
-  { href: '#ramka', label: "Что установлено — и где нужно остановиться", level: 2 },
-  { href: '#long-arc', label: "Почему здесь важен длинный путь доверия", level: 2 },
+  { href: '#ramka', label: "Как читать эту историю: факты, оценки и неизвестное", level: 2 },
+  { href: '#long-arc', label: "Доверие складывалось годами", level: 2 },
   { href: '#statements', label: "Что именно заявили церковь и служение", level: 2 },
   { href: '#discovery', label: "Как это было обнаружено: две версии одного события", level: 2 },
   { href: '#macarthur', label: "МакАртур: здравое богословие и нравственная квалификация", level: 2 },

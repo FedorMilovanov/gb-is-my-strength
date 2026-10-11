@@ -54,6 +54,21 @@ const hardTextsLabel = SECTION_META['hard-texts'].label;
 </script>
 
 <style>
+    /* Native routes without the legacy header sheet still need a list reset. */
+    .astro-header__nav { min-width: 0; }
+    .astro-header__nav .h-nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: .35rem 1rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .astro-header__nav a { text-decoration: none; }
+    .astro-header__nav a:hover,
+    .astro-header__nav a:focus-visible { text-decoration: underline; text-underline-offset: .2em; }
     .astro-header__brand {
       min-width: 0;
       overflow: hidden;
@@ -127,13 +142,16 @@ const hardTextsLabel = SECTION_META['hard-texts'].label;
         margin-left: auto;
       }
     }
-    /* Mobile article chrome owns the top surface — hide the desktop header
-       whenever a mobile reader bar exists to avoid double chrome and ghost
-       “Господь Бог — Сила Моя” overlap. */
+    /* Hide the shared header only while the mobile reader bar is shown.
+       The Genesis 6 bar exists offscreen before it becomes active. */
     @media (max-width: 1199px) {
       body:has(.hmtop) .astro-header,
-      body:has(.mobile-top-bar) .astro-header,
-      body:has(.mcp-top) .astro-header {
+      body:has(.mobile-top-bar) .astro-header {
+        display: none !important;
+      }
+    }
+    @media (max-width: 63.99em) {
+      body:has(.mobile-chrome.is-shown .mcp-top) .astro-header {
         display: none !important;
       }
     }
