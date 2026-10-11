@@ -406,6 +406,9 @@ async function runCase(browser, browserName, baseUrl, route, viewport, { clipboa
     });
   }, clipboardMode);
   const page = await context.newPage();
+  // Hermetic run: only the local contract server is reachable. Third-party analytics and embeds
+  // (e.g. mc.yandex.ru) can stall 'networkidle' on shared runners; they are not part of this contract.
+  await page.route((url) => !url.toString().startsWith(baseUrl), (route) => route.abort('blockedbyclient'));
   const pageErrors = [];
   const legacyRequests = [];
   page.on('pageerror', (error) => pageErrors.push(String(error?.stack || error)));
