@@ -187,8 +187,10 @@ async function exerciseHeadingAnchor(page, label) {
   assert.equal(await anchor.getAttribute('aria-label'), 'Скопировать ссылку на раздел', `${label}: heading anchor accessibility label drift`);
 
   const expectedUrl = await page.evaluate((fragment) => new URL(fragment, window.location.href).toString(), href);
-  // Scroll-triggered reveal transitions on neighbouring figures can still be running after three
-  // stable frames; a figure can then cover the anchor at click time (WebKit, 390 px). Wait for finite motion.
+  // Hover first: the heading hover rule (h2:hover .heading-anchor) runs a 0.2s transform/opacity
+  // transition, which moves the icon under a pointer that was sampled before hover (WebKit, 390 px).
+  // Then wait for finite time-based motion (reveal, hover transition) and sample the settled target.
+  await anchor.hover();
   await waitForPageMotionToSettle(page, label);
   const hitTestBeforeClick = await anchor.evaluate(async (node) => {
     const describe = (target) => {
