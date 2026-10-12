@@ -130,7 +130,7 @@
 | `reconcile/ch01-pre-baptist-origins-research-20260911` | `a22513308d` | дельта = 1 файл, blob `d3272f65e707` идентичен ветке PR #2142 | удалить сразу после merge #2142 (или раньше — по подтверждению владельца) |
 | `fix/quiz-runtime-namespace-20261003` | `f0eceafea6` | `css/floating-cluster.css` + `sw.js` байт-в-байт в ветке PR #2168 | удалить после merge #2168 — до этого ref остаётся страховкой |
 | `agent/antisovetov-title-suffix-20260818` | `60ed203402` | правка одной строки `AntisovetovPageHead.astro`, идентична `repair/antisovetov-title-suffix-20260906` (PR #1813 закрыт без merge) | свести пару к одному ref (рекомендуется оставить `repair/…` — он новее) |
-| `agent/bible-app-deep-playwright-audit-20260819` | `3899f3d0de` | `scripts/bible-app-browser-contract.mjs` идентичен `agent/bible-app-deep-playwright-r2-20260819` | **сначала сверить журналы коммитов** (6 против 2): если r2 их покрывает — оставить r2, первый удалить |
+| `agent/bible-app-deep-playwright-audit-20260819` | `3899f3d0de` | содержимое контракта идентично r2 (`scripts/bible-app-browser-contract.mjs` = blob `0b2173921a` в обеих; то же для `bible-app-browser-contract.yml`), но **журнал не покрыт**: 6 коммитов истории контракта (2026-08-19) есть только на этой ветке, у r2 — 2 своих коммита | оставить r2 как рабочую, удалять первую только если владелец признаёт историю контракта незначимой — иначе обе остаются |
 
 `fix/npm-non-major-security-20260907` (`77fa9fc1e7`) по байт-сравнению тоже целиком повторяется на
 других ветках, но это npm-дифф ⇒ решение ждёт ветку зависимостей (#2144).
