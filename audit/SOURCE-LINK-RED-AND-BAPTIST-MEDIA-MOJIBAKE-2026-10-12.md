@@ -196,18 +196,32 @@ page is instead proven by the Commons API calls above (`imageinfo&iiprop=sha1|si
 
 ## 6. Remaining backlog and recommended dispositions
 
-### 6.1 Nine CI hard errors that survive this lane — owner decision required
+### 6.1 Nine CI hard errors that survive this lane — verified live status, owner decision required
 
-| URL (rendered page) | CI result | Recommended disposition |
-|---|---|---|
-| `amazon.com/…/dp/B0HKZ7JDV9` (Lawson) | 404 | replace with an available sales/catalogue page or drop the link; the book itself is cited elsewhere |
-| `ecfa.org/Content/ECFA-Terminates-RZIM-s-Membership` (Diotrophes) | 404 | replace with ECFA press archive/Wayback snapshot of the same statement |
-| `pravenc.ru/text/{155550,1681015,186873,2564076,389599}.html` (5 Baptist chapters) | `CERT_HAS_EXPIRED` | site-side TLS defect: either cite a stable HTTPS archive snapshot or keep the citation without a link |
-| `sedmitza.ru/lib/text/7697292/` (sovetskaya-noch, spravochnik) | `CERT_HAS_EXPIRED` | same as pravenc |
-| `tennessean.com/…/82500864007/` (Lawson) | HTTP 402 | paywalled: replace with an accessible report of the same fact |
+Re-checked **live on 2026-10-12** through the sandbox browser-egress path (which can reach these
+hosts even though `bash` cannot), so the table below is evidence, not guesswork:
+
+| URL (rendered page) | CI result | What is true today (2026-10-12) | Recommended disposition |
+|---|---|---|---|
+| `pravdenc.ru/text/{155550,1681015,186873,2564076,389599}.html` (5 Baptist chapters) | `CERT_HAS_EXPIRED` ×5 | `text/155550.html` renders the full article (checked); CertSpotter shows `*.pravenc.ru` issued **2026-09-10T20:01Z**, valid to **2026-12-09**, `revoked:false` — i.e. a current, unexpired certificate | **No edit needed; re-run CI first.** The five URLs share one host and one certificate (four of five not individually re-fetched). If the error repeats after 2026-12-09, re-check the certificate before touching citations |
+| `sedmitza.ru/lib/text/7697292/` (sovetskaya-noch, spravochnik) | `CERT_HAS_EXPIRED` | Article renders (checked); `*.sedmitza.ru` issued **2026-09-10T20:02Z**, valid to **2026-12-09**, `revoked:false` | same as pravenc |
+| `ecfa.org/Content/ECFA-Terminates-RZIM-s-Membership` (Diotrophes, `FW10-RZI-01`) | 404 | Confirmed 404 on the redesigned ECFA site. The statement itself is archived: 18 Wayback captures 2021-02-15 → 2025-11-10; the first `200` is **`https://web.archive.org/web/20210215202400/https://www.ecfa.org/Content/ECFA-Terminates-RZIM-s-Membership`** and it renders the full press release (verified verbatim, incl. the Michael Martin quote) | One-line swap in `data/diotrophes-wave11-faithful-witness-sources.json` (same document, archived copy). `scripts/diotrophes-wave11-faithful-witness-contract.mjs` does not pin this URL (it pins only `FW10-BIC-01/02`, `FW10-MAH-02`), and `https`/uniqueness/`A3`-count checks remain satisfied |
+| `amazon.com/…/dp/B0HKZ7JDV9` (Lawson, `LAW-47`) | 404 | Confirmed dead: Amazon answers with its “Sorry! We couldn't find that page” fallback (`plpRedirect=mhFallback`). **Wayback has zero captures of it.** Separately, the *real* book card (`B0HHSR7SFM`, ISBN 9798996167302, $14.99) is live | The copy-cat card can no longer be shown to a reader at all. Either drop `LAW-47`, or re-anchor the entry to a live trace of the book story (`https://roysreport.com/lawson-releases-book-on-his-ministry-fall-two-years-after-dallas-church-removed-him/`, verified live, or the live Amazon card). The entry’s `boundary` must change with it — this is editorial, not mechanical |
+| `tennessean.com/…/82500864007/` (Lawson, `LAW-30`) | HTTP 402 | The article is **live** for a browser (full text indexed and readable); 402/anti-bot is how the site answers datacenter clients. `LAW-30.boundary` already records that the body was verified via the Yahoo reprint | Swap the href to that reprint — **`https://www.yahoo.com/news/prominent-texas-pastor-finds-refuge-161615366.html`** (verified live; carries the exact passages quoted in `proves`) — or keep the Tennessean URL and treat 402 as an accepted, documented access limit |
 
 These are editorial-source decisions (the July precedent for issue #806 was to replace dead
-archival links with institutional authorities), so they are reported, not changed here.
+archival links with institutional authorities), so they are reported, not changed here. Two
+reasons to keep them out of this PR rather than “just fix them”:
+
+1. **The `Source Link Audit` workflow cannot run on this PR** (its triggers are listed in §1.1) —
+   any citation swap shipped here would go to `main` unverified, which is exactly what the
+   protocol for pre-existing red forbids.
+2. Two of the entries carry `evidenceClass` (`near-primary`, `secondary`) and `boundary` text
+   written around the *citation of record*. Swapping a URL silently would make those fields lie.
+
+**The bright line this lane applies:** corrupted content is repaired (it is damage, provably
+recoverable); rotted citations are reported (they are choices, and the replacement changes what
+the reader is being asked to trust).
 
 ### 6.2 Mojibake restoration — recovery path
 
@@ -242,6 +256,20 @@ over 48 non-default branches on 2026-10-12:
   `reconcile/baptisty-media-recovery-20260911` and
   `audit/baptisty-total-production-audit-20260911` overlap this lane's surface and should be
   checked before deletion.
+* **Ancestry verification pass (`git cherry origin/main <branch>`)** — run 2026-10-12 on all 16
+  no-PR branches that are ahead of `main`: **every one carries commits that are not
+  patch-equivalent to `main`**, so none of them can be removed on ancestry grounds; the eight
+  zero-commit refs stay the only zero-loss deletions. Two of the 16 overlap this lane's surface
+  and are single-document drops dated 2026-09-11: `audit/baptisty-total-production-audit-20260911`
+  (`baptisty-rossii/research/147-total-production-audit-2026-09-11.md`, +251: product + Research
+  + Drive total audit) and `reconcile/baptisty-media-recovery-20260911`
+  (`baptisty-rossii/research/147-media-container-recovery-status-2026-09-11.md`, +103: “source
+  containers unavailable / production bytes hold”). Both are numbered 147 while `main`'s numbered
+  series stops at 99 → they are unlanded research records, not duplicates. The media one's premise
+  is already superseded by today's state (15 archived originals in
+  `baptisty-rossii/research/raw-media/commons/` + a passing
+  `baptisty:authentic-media:audit`, 16 items) → propose `SUPERSEDED_VERIFIED`; owner decides
+  whether to land the record or archive the ref.
 * **Two abandoned draft repairs verified as still current on `main`** (checked, not delivered
   here — separate clusters, they must not ride in this PR):
   * #2161 `GBS-AVRAAM-MAP-HEADING-LOST-ON-READY` — `src/pages/karty/avraam/index.astro`
@@ -331,9 +359,11 @@ over 48 non-default branches on 2026-10-12:
    `Source Link Audit`**, or wait for the Monday 03:00 schedule — the six URLs cannot be probed
    from the PR itself (§1.1.2). `0 hard errors` + `systemicTransportFailure:false` from that run
    closes the link half of the red audit.
-2. Decide the nine remaining hard errors individually (§6): three expired TLS `pravenc.ru` +
-   one `sedmitza.ru` (re-point or archive), `amazon B0HKZ7JDV9`, `tennessean` HTTP 402,
-   `ecfa.org` RZIM page (dead upstream).
+2. Decide the nine remaining hard errors from the verified table in §6.1. In practice: re-run
+   CI for the six `pravenc.ru`/`sedmitza.ru` certificate entries (current, unexpired certificates
+   proven), and make two editorial swaps — the ECFA statement to its verified Wayback snapshot,
+   the Tennessean citation to the Yahoo reprint already named in `LAW-30.boundary` — plus one
+   decision on the dead Amazon copy-cat card (`LAW-47`), which no archive preserves.
 3. Approve the next cleanup batch (eight zero-commit branches, §7) or ask for classification of
    the other 16 no-PR branches first.
 4. Decide on the 161 mojibake prose/alt lines — recovery path in §6.2, but the text needs the
