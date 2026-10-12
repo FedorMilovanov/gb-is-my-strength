@@ -44,6 +44,30 @@ Failed job `source-links` (job id `114767661072`), step 6 “Source link audit
 `sanitizeUrlForEvidence()` masks the failing Commons path with `?redacted=1`, so the CI log
 alone cannot name the broken file — see §2 for identifications.
 
+### 1.1 Two CI mechanics that decide whether this repair can be seen to work
+
+Discovered while driving PR #2183 through the checks:
+
+1. **`production-like-contract` and `metadata-ssot-closure` both start with
+   `git diff --check "$BASE_SHA" "$HEAD_SHA"`** (step “Verify exact changed diff hygiene”). Any
+   trailing whitespace or *blank line at EOF* in a changed file fails two required checks before
+   a single project gate runs. This lane hit it once: `git diff --check d14da74… b31b765…` →
+   `audit/SOURCE-LINK-RED-AND-BAPTIST-MEDIA-MOJIBAKE-2026-10-12.md:313: new blank line at EOF.`
+   Fixed in `c9b27b1`; from now on every report/source edit in this repo must end with exactly one
+   newline. **Recorded so the next session does not lose a CI cycle to it.**
+2. **The `Source Link Audit` workflow never runs on a PR for the files changed here.** The
+   workflow triggers are: `workflow_dispatch`, the weekly Monday 03:00 schedule, a push to `main`
+   touching a fixed path list (`source-links.yml`, `antisovetov/AntisovetovBody.astro`,
+   `diotrophes/DiotrophesDraft.astro`, `KodDaVinchiSectionSummaryTitleAuto.astro`,
+   `BaptistyRossiiNochNaKureBody.astro`, `BaptistyRossiiYuzhnayaShtundaBody.astro`,
+   `data/diotrophes-wave11-faithful-witness-sources.json`), and a PR-only `contract` job that
+   touches only the audit scripts. **`BaptistyRossii{IniciativnayaGruppa,PeterburgskayaLiniya,
+   PodpolnayaPechat,Vsehib1944}Body.astro` are not in that list**, so this PR cannot turn
+   `source-links` green by itself and CI cannot exercise the six repaired URLs on this branch.
+   The upstream verdict therefore arrives only on the next scheduled run or an explicit
+   `workflow_dispatch` on `main` — which is exactly why §5 leans on the Commons byte-identity
+   proof instead.
+
 ## 2. Root cause of the six Commons 404s (and of a wider reader-facing defect)
 
 The affected `sourceUrl` values contain **literal `?` characters instead of Cyrillic**:
@@ -292,17 +316,21 @@ over 48 non-default branches on 2026-10-12:
 
 **6. ВЕТКА / SHA / PR / CI**
 
-* Branch `arena/fbf6f1fd-gb-is-my-strength` @ `d14da74cfe9f45e9b03e383e8e622695b01f8e16`
-  (base/rollback = same SHA, untouched `main`).
-* PR: this session's PR (no prior PR existed on the branch), body = this section.
+* Branch `arena/fbf6f1fd-gb-is-my-strength`: `b31b76545` (repair + this report) and `c9b27b15e`
+  (drop blank line at EOF, §1.1); base/rollback = `d14da74cfe9f45e9b03e383e8e622695b01f8e16`
+  (untouched `main`).
+* PR **#2183** (draft, `arena/fbf6f1fd-gb-is-my-strength` → `main`), body = this section.
+  Draft on purpose: the agent does not merge or close its own PR.
 * CI at report time: `source-links` red since run 34693183399 (2026-09-12), last green
   34098490942 (2026-09-07 @ `99a7b9a7d6`); recovery criterion `0 hard errors` +
   `systemicTransportFailure:false`.
 
 **7. ЧТО ДЕЛАТЬ МНЕ (owner)**
 
-1. Let this PR's CI run and check the six Commons URLs pass — that closes the link half of the
-   red audit.
+1. Merge/allow PR #2183, then trigger the upstream verdict: **`workflow_dispatch` on
+   `Source Link Audit`**, or wait for the Monday 03:00 schedule — the six URLs cannot be probed
+   from the PR itself (§1.1.2). `0 hard errors` + `systemicTransportFailure:false` from that run
+   closes the link half of the red audit.
 2. Decide the nine remaining hard errors individually (§6): three expired TLS `pravenc.ru` +
    one `sedmitza.ru` (re-point or archive), `amazon B0HKZ7JDV9`, `tennessean` HTTP 402,
    `ecfa.org` RZIM page (dead upstream).
