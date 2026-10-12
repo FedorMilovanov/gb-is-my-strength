@@ -310,4 +310,3 @@ over 48 non-default branches on 2026-10-12:
    the other 16 no-PR branches first.
 4. Decide on the 161 mojibake prose/alt lines — recovery path in §6.2, but the text needs the
    original wording (author).
-
