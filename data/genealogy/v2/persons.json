@@ -2468,10 +2468,10 @@
   "en": "Joktan",
   "ru": {
    "name": "Иоктан",
-   "source": "pattern",
+   "source": "override",
    "confidence": 1,
-   "review": true,
-   "verseRef": "Gen.10.25"
+   "review": false,
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -6454,10 +6454,10 @@
   "en": "Dinah",
   "ru": {
    "name": "Дина",
-   "source": "pattern",
+   "source": "override",
    "confidence": 1,
-   "review": true,
-   "verseRef": "Gen.30.21"
+   "review": false,
+   "verseRef": null
   },
   "gender": "f",
   "firstRef": {
@@ -8334,10 +8334,10 @@
   "en": "Mehetabel",
   "ru": {
    "name": "Мегетавеель",
-   "source": "pattern",
-   "confidence": 0.977,
-   "review": true,
-   "verseRef": "Gen.36.39"
+   "source": "override",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null
   },
   "gender": "f",
   "firstRef": {
@@ -8756,10 +8756,10 @@
   "en": "Onan",
   "ru": {
    "name": "Онан",
-   "source": "pattern",
+   "source": "override",
    "confidence": 1,
-   "review": true,
-   "verseRef": "Gen.38.4"
+   "review": false,
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -8783,10 +8783,10 @@
   "en": "Shelah",
   "ru": {
    "name": "Шела",
-   "source": "pattern",
+   "source": "override",
    "confidence": 1,
-   "review": true,
-   "verseRef": "Gen.38.5"
+   "review": false,
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -11037,10 +11037,10 @@
   "en": "Shiphrah",
   "ru": {
    "name": "Шифра",
-   "source": "pattern",
+   "source": "override",
    "confidence": 1,
-   "review": true,
-   "verseRef": "Exo.1.15"
+   "review": false,
+   "verseRef": null
   },
   "gender": "f",
   "firstRef": {
@@ -13413,10 +13413,10 @@
   "en": "Eldad",
   "ru": {
    "name": "Елдад",
-   "source": "pattern",
+   "source": "override",
    "confidence": 1,
-   "review": true,
-   "verseRef": "Num.11.26"
+   "review": false,
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -13445,10 +13445,10 @@
   "en": "Medad",
   "ru": {
    "name": "Модад",
-   "source": "pattern",
+   "source": "override",
    "confidence": 1,
-   "review": true,
-   "verseRef": "Num.11.26"
+   "review": false,
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -83492,10 +83492,10 @@
   "en": "Jezreel",
   "ru": {
    "name": "Изреель",
-   "source": "pattern",
-   "confidence": 0.964,
-   "review": true,
-   "verseRef": "Hos.1.4"
+   "source": "override",
+   "confidence": 1,
+   "review": false,
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
@@ -83524,10 +83524,10 @@
   "en": "Lo-ruhamah",
   "ru": {
    "name": "Лорухама",
-   "source": "pattern",
+   "source": "override",
    "confidence": 1,
-   "review": true,
-   "verseRef": "Hos.1.6"
+   "review": false,
+   "verseRef": null
   },
   "gender": "f",
   "firstRef": {
@@ -83551,10 +83551,10 @@
   "en": "Lo-ammi",
   "ru": {
    "name": "Лоамми",
-   "source": "pattern",
+   "source": "override",
    "confidence": 1,
-   "review": true,
-   "verseRef": "Hos.1.9"
+   "review": false,
+   "verseRef": null
   },
   "gender": "m",
   "firstRef": {
