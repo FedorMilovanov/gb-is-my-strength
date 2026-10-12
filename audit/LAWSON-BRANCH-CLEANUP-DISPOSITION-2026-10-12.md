@@ -1,6 +1,6 @@
 # Lawson branch cleanup disposition — 2026-10-12
 
-**Status:** deletion-authority record; remote cleanup pending at this commit.  
+**Status:** complete; all eight authorized remote refs deleted and post-cleanup inventory verified at `2026-10-12T08:42:37Z`.
 **Mode:** SYSTEM.  
 **Owner:** FedorMilovanov; execution lane `arena/a14f49e3-gb-is-my-strength`.  
 **Bounded scope:** only the eight remote branches named below. Map work and issue #2180 are outside scope.  
@@ -98,15 +98,41 @@ The #2150/#2177 code is therefore intentionally rejected rather than lost.
   - screenshots and JSON are in gitignored `reports/lawson-branch-cleanup-browser/`.
 - `git diff --check` and tracked working-tree status were clean before this record.
 
-## Authorized cleanup transaction
+## Completed cleanup transaction
 
-The owner's current instruction authorizes deletion after the content review.
-Deletion must use the exact heads above, in two small batches:
+The owner's current instruction authorized deletion after the content review.
+Every ref was reread from GitHub immediately before deletion and matched the
+recorded SHA. The cleanup ran in two bounded batches; no mismatch occurred.
 
-1. ancestry batch: the evidence-hardening branch and both identical final-publication refs;
-2. verified-disposition batch: temporary writer, #2154, premium polish, #2150, and #2177.
+### Batch 1 — ancestry
 
-Before each deletion, the live remote SHA must still equal this record. After
-each batch, rerun the Lawson ref inventory. Any mismatch stops the transaction.
-This document will receive the exact deletion receipts and post-cleanup count in
-a follow-up commit; no PR is to be merged or closed by this session.
+- deleted `audit/lawson-evidence-hardening-2026-10-05` at `05a4549142cf5047138142ea2cd9ce79d55eb13a`;
+- deleted `publication/steven-lawson-final-20260930-tmp` at `f7d617d0c8b864e79475f7545c842c5f6c3b93f4`;
+- deleted `publication/steven-lawson-final-20260930` at `f7d617d0c8b864e79475f7545c842c5f6c3b93f4`.
+
+The intermediate `git ls-remote` returned exactly the five expected Lawson
+refs from batch 2.
+
+### Batch 2 — verified dispositions
+
+- deleted `audit/lawson-theme-editorial-hardening` at `d771902aac67aff7689eb696c21ddf2f7a33bcb2`;
+- deleted `content/lawson-editorial-cover-20261001` at `870beb89845dd0ebd032270d75a1d20e77112fa8`;
+- deleted `fix/lawson-premium-polish-20260930` at `46eb698f44ffe75bca408f74c1d9c05f2c282e11`;
+- deleted `publication/lawson-release-hardening-20260930` at `acb25c61b222d7c8b4f632d97a5cb8cad2c939d4`;
+- deleted `publication/lawson-catalog-projection-20261012` at `8fa3492b24388d5651211ddf30330d8cb73ae5fd`.
+
+### Post-cleanup witness
+
+- `git ls-remote --heads origin '*lawson*'`: 0 refs;
+- GitHub GraphQL `refs(refPrefix: "refs/heads/", query: "lawson")`: `totalCount = 0`;
+- fresh read-only hygiene inventory at `2026-10-12T08:42:37Z`: 49
+  non-default branches, Lawson count = 0;
+- the 49 total is consistent with 56 pre-cleanup refs + the newly published
+  session PR branch − 8 deleted Lawson refs;
+- #2147, #2150, #2154, and #2177 remain closed without merge; no PR was merged
+  or closed during cleanup;
+- audit PR #2182 remains open as a draft on the session branch.
+
+Result: the remote Lawson branch contour is zero. Historical PRs, merge commits,
+accepted source, and this exact-head disposition retain the necessary provenance;
+no separate forensic archive ref or selective-recovery lane is required.
