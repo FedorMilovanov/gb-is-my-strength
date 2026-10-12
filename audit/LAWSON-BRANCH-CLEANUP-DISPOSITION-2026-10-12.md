@@ -1,10 +1,10 @@
 # Lawson branch cleanup disposition — 2026-10-12
 
 **Status:** complete; all eight authorized remote refs deleted and post-cleanup inventory verified at `2026-10-12T08:42:37Z`.
-**Mode:** SYSTEM.  
-**Owner:** FedorMilovanov; execution lane `arena/a14f49e3-gb-is-my-strength`.  
-**Bounded scope:** only the eight remote branches named below. Map work and issue #2180 are outside scope.  
-**Base / rollback SHA:** `c3f2f754c867707741bd3f17fe791b5963e1eded` (`main`).  
+**Mode:** SYSTEM.
+**Owner:** FedorMilovanov; execution lane `arena/a14f49e3-gb-is-my-strength`.
+**Bounded scope:** only the eight remote branches named below. Map work and issue #2180 are outside scope.
+**Base / rollback SHA:** `c3f2f754c867707741bd3f17fe791b5963e1eded` (`main`).
 **Authority:** current `main`, exact branch heads, GitHub PR history, `docs/BRANCH_LIFECYCLE_V4.md`, and the owner's explicit cleanup instruction.
 
 ## Pre-cleanup inventory
