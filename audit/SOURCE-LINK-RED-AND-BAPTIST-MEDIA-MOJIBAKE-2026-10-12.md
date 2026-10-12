@@ -235,7 +235,16 @@ the reader is being asked to trust).
 4. Re-run `npm run baptisty:authentic-media:audit` (SHA-256 + usage contract) and the
    production-like `strangler:audit:production-like` before publishing.
 
-## 7. Unfinished work inventory (read-only; no ref was changed, closed or deleted)
+## 7. Unfinished work inventory
+
+> **Update (2026-10-13):** the inventory below was the read-only snapshot taken on 2026-10-12.
+> The owner then asked for the cleanup itself, so it was re-derived from scratch with two extra
+> checks and executed: see `audit/BRANCH-CLEANUP-DISPOSITION-2026-10-13.md`. Summary of the delta:
+> 49 non-default refs → **41** (8 refs with zero commits over `main` deleted, each with its head
+> SHA and a one-line restore command recorded); of the rest, **7** are complete byte-for-byte
+> duplicates of another live ref, **1** is a 2026-09-29 `HOLD` (waiting for #2142), **12** are
+> active (open PRs / dependency lanes) and **24** carry content that exists nowhere else — none of
+> those was touched. The 2026-10-12 snapshot below is kept for provenance.
 
 `gh pr list --state all` × `git rev-list --left-right --count origin/main...origin/<branch>`
 over 48 non-default branches on 2026-10-12:
@@ -298,8 +307,11 @@ over 48 non-default branches on 2026-10-12:
   match our archived bytes (`sha1` + `size`), and the emitted HTML carries exactly those six
   canonical URLs.
 * **Not done:** the 161 prose/metadata lines still carrying `?`/backtick (author's text
-  required); the nine remaining CI hard errors (owner editorial decision); no branch was
-  deleted, merged or closed.
+  required); the nine remaining CI hard errors (owner editorial decision); no PR was merged or
+  closed. Branches: the 8 zero-work refs (`FULLY_REPRESENTED_BY_ANCESTRY`) were deleted on
+  2026-10-13 with head SHAs and restore commands recorded in
+  `audit/BRANCH-CLEANUP-DISPOSITION-2026-10-13.md`; every branch carrying content was kept, and
+  the proven-but-unexecuted second batch (4 refs) is listed there for the owner.
 
 ## 9. Session disposition (7-part format)
 
