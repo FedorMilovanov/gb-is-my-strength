@@ -131,8 +131,32 @@ refs from batch 2.
   session PR branch − 8 deleted Lawson refs;
 - #2147, #2150, #2154, and #2177 remain closed without merge; no PR was merged
   or closed during cleanup;
-- audit PR #2182 remains open as a draft on the session branch.
+- audit PR #2182 remains open and ready for review on the session branch.
 
 Result: the remote Lawson branch contour is zero. Historical PRs, merge commits,
 accepted source, and this exact-head disposition retain the necessary provenance;
 no separate forensic archive ref or selective-recovery lane is required.
+
+## Remaining-contour recheck
+
+A second repository-wide recheck found no open Lawson issue. The only open PR
+whose title or head is Lawson work is this audit PR #2182. Open PRs #2161, #2162
+and #2168 mention Lawson only as an old non-overlap/control anchor; their diffs
+are limited to Avraam or `kod-da-vinchi` surfaces and are not Lawson residue.
+
+Previously unavailable evidence is now closed from GitHub and live witnesses:
+
+- PR #2176 exact head `c0235e901608e78996f677927e5403d2a0d6d1c4`
+  passed `Native owners + Chromium WebKit` in Actions run `38178168510`;
+- its product tree is unchanged in merge `1fe3cf340d64603503347599c1181a36527388d3`
+  and from that merge to current base `c3f2f754c` (the only later change is this
+  Lawson control-review document);
+- deployment `7003050525` binds exact source `c3f2f754c` to `github-pages` and
+  reached `success` at `2026-10-11T23:00:11Z`;
+- deploy run `38181319385` passed immutable-candidate identity, production-like
+  publication audit, generic live release contract and Pages promotion;
+- a fresh live fetch returned the canonical Lawson title and all 26 TOC entries.
+
+Thus WebKit and exact deployed-source evidence are no longer open boundaries.
+The sole intentionally open transaction is #2182 itself: this session must not
+merge or close its own PR under the owner protocol.
