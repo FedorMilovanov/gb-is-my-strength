@@ -285,10 +285,18 @@ over 48 non-default branches on 2026-10-12:
 * **Done and verified:** root cause of the red audit; identification and repair of the six
   reader-facing Commons 404s in components *and* ledger; rendered-dist witness in §5; gates
   listed in §4.
-* **Not verified (and not verifiable from here):** the CI HTTP verdict on the six URLs. CI's
-  runner is the only place that can both reach `commons.wikimedia.org` *and* freshly fetch
-  `dist/`. Strongest local substitute executed: Commons `imageinfo`s match our archived bytes
-  (`sha1` + `size`), and the emitted HTML carries exactly those six canonical URLs.
+* **CI on this branch: all green.** `gh pr checks 2183` → **14 pass, 3 skipped, 0 fail** on
+  `53f27f686` (`production-like-contract`, `metadata-ssot-closure`, `pixel-diff`, `Browser
+  contract`, `Chromium + WebKit full-site menu contract`, `Deterministic source index and dist
+  witness`, `Search combobox, modal and touch contract`, `a4-paper`, `guard`, `contract`,
+  `native-source-contract`, `Source contract`, `Validate source metadata without building dist`,
+  `Build and audit production-like candidate`; the three “skipping” entries are autofix jobs that
+  only run on their own trigger). The branch was `MERGEABLE` at that moment.
+* **Not verified (and not verifiable from here):** the CI HTTP verdict on the six repaired URLs —
+  `Source Link Audit` does not run on this branch (§1.1), so its next verdict arrives after merge
+  (dispatch or the Monday schedule). Strongest local substitute executed: Commons `imageinfo`s
+  match our archived bytes (`sha1` + `size`), and the emitted HTML carries exactly those six
+  canonical URLs.
 * **Not done:** the 161 prose/metadata lines still carrying `?`/backtick (author's text
   required); the nine remaining CI hard errors (owner editorial decision); no branch was
   deleted, merged or closed.
@@ -349,9 +357,10 @@ over 48 non-default branches on 2026-10-12:
   (untouched `main`).
 * PR **#2183** (draft, `arena/fbf6f1fd-gb-is-my-strength` → `main`), body = this section.
   Draft on purpose: the agent does not merge or close its own PR.
-* CI at report time: `source-links` red since run 34693183399 (2026-09-12), last green
-  34098490942 (2026-09-07 @ `99a7b9a7d6`); recovery criterion `0 hard errors` +
-  `systemicTransportFailure:false`.
+* CI on this PR: **14 pass / 3 skipped / 0 fail** on `53f27f686` (all required checks green,
+  `MERGEABLE`). Upstream `source-links` is still red since run 34693183399 (2026-09-12), last
+  green 34098490942 (2026-09-07 @ `99a7b9a7d6`); its recovery criterion is `0 hard errors` +
+  `systemicTransportFailure:false` from the first run after this merge.
 
 **7. ЧТО ДЕЛАТЬ МНЕ (owner)**
 
