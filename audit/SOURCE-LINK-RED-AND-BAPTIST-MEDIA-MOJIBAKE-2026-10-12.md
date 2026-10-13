@@ -208,7 +208,7 @@ hosts even though `bash` cannot), so the table below is evidence, not guesswork:
 |---|---|---|---|
 | `pravdenc.ru/text/{155550,1681015,186873,2564076,389599}.html` (5 Baptist chapters) | `CERT_HAS_EXPIRED` ×5 | `text/155550.html` renders the full article (checked); CertSpotter shows `*.pravenc.ru` issued **2026-09-10T20:01Z**, valid to **2026-12-09**, `revoked:false` — i.e. a current, unexpired certificate | **No edit needed; re-run CI first.** The five URLs share one host and one certificate (four of five not individually re-fetched). If the error repeats after 2026-12-09, re-check the certificate before touching citations |
 | `sedmitza.ru/lib/text/7697292/` (sovetskaya-noch, spravochnik) | `CERT_HAS_EXPIRED` | Article renders (checked); `*.sedmitza.ru` issued **2026-09-10T20:02Z**, valid to **2026-12-09**, `revoked:false` | same as pravenc |
-| `ecfa.org/Content/ECFA-Terminates-RZIM-s-Membership` (Diotrophes, `FW10-RZI-01`) | 404 | Confirmed 404 on the redesigned ECFA site. The statement itself is archived: 18 Wayback captures 2021-02-15 → 2025-11-10; the first `200` is **`https://web.archive.org/web/20210215202400/https://www.ecfa.org/Content/ECFA-Terminates-RZIM-s-Membership`** and it renders the full press release (verified verbatim, incl. the Michael Martin quote) | **Repair prepared, must ship alone.** The one-line swap + label disclosure (“архивная копия 2021-02-15”) + adding the dead URL to `staleRegistryUrls` in `scripts/diotrophes-wave11-faithful-witness-contract.mjs` (the same guard the repo already uses for five previous stale URLs) all pass the Wave 11 contract — but `.github/workflows/diotrophes-wave11-faithful-witness.yml` **enforces a bounded Wave 11 diff**: when any Wave 11-owned file changes, every other changed file in that PR fails the job (`Unexpected Wave 11 files`). It therefore needs its own Wave-11-only PR; it cannot ride in a mixed PR, this one included |
+| `ecfa.org/Content/ECFA-Terminates-RZIM-s-Membership` (Diotrophes, `FW10-RZI-01`) | 404 | Confirmed 404 on the redesigned ECFA site. The statement itself is archived: 18 Wayback captures 2021-02-15 → 2025-11-10; the first `200` is **`https://web.archive.org/web/20210215202400/https://www.ecfa.org/Content/ECFA-Terminates-RZIM-s-Membership`** and it renders the full press release (verified verbatim, incl. the Michael Martin quote). It is not only a CI line: the built page `dist/articles/diotrefy-nashego-vremeni/index.html` still carries this dead href, so a reader on the live route is sent to a 404 | **Repair prepared and locally verified — must ship alone.** Trial patch (swap `href` → the archived URL, label disclosure «(архивная копия 2021-02-15)») ran `node scripts/diotrophes-wave11-faithful-witness-contract.mjs` → **exit 0**; the same holds with a prefixed guard entry `"href": "https://www.ecfa.org/…"` added to `staleRegistryUrls`. One trap found by the trial: adding the **bare** dead URL to `staleRegistryUrls` **fails** the contract (`stale registry URL retained`), because that guard is a raw substring test and the Wayback URL contains the dead URL. Two independent reasons it cannot ride in this PR: the Wave 11 workflow enforces a bounded Wave 11 diff (`Unexpected Wave 11 files` for any extra file), and this PR mixes that file with others. Note for whoever opens the dedicated PR: `diotrophes-wave12-release.yml` also triggers on `data/diotrophes-wave11-faithful-witness-*.json`, so the Wave 12 lane will run too (its browser/transaction contracts do not pin this URL — checked). |
 | `amazon.com/…/dp/B0HKZ7JDV9` (Lawson, `LAW-47`) | 404 | Confirmed dead: Amazon answers with its “Sorry! We couldn't find that page” fallback (`plpRedirect=mhFallback`). **Wayback has zero captures of it.** Separately, the *real* book card (`B0HHSR7SFM`, ISBN 9798996167302, $14.99) is live | The copy-cat card can no longer be shown to a reader at all. **Dropping the entry is not an option**: the same control review pins the registry invariant “51 источник, `n` = 1…51 без пропусков”, so `LAW-47` must be re-anchored, not removed — and its `proves` text states a fact about a page that no longer exists (what Amazon showed on 2026-10-03). That is an editorial rewrite for the owner |
 | `tennessean.com/…/82500864007/` (Lawson, `LAW-30`) | HTTP 402 | The article is **live** for a browser (full text indexed and readable); 402/anti-bot is how the site answers datacenter clients. `LAW-30.boundary` already records that the body was verified via the Yahoo reprint | **Do not change without the owner.** `docs/LAWSON-2174-CONTROL-REVIEW-2026-10-11.md` is the decision of record: “**LAW-30** (Tennessean, 20 марта 2025) остаётся `near-primary`… тело статьи сверено по перепечатке Yahoo… понижение отменено”, and its known-limits list repeats “тело статьи Tennessean проверено по перепечатке Yahoo, не по каноническому сайту”. Swapping the citation to the reprint would reverse a documented editorial decision; the alternative is to accept 402 as a known access limit and treat that one line as permanently red |
 
@@ -300,7 +300,9 @@ over 48 non-default branches on 2026-10-12:
 * **Two governance constraints discovered while trying to close the remaining errors** (both are
   the reason the two “easiest-looking” fixes were *not* shipped here): the Wave 11 workflow fails
   any PR that mixes a Wave 11-owned file with other files (bounded-diff rule), and the audit’s
-  push path list is pinned by a contract test. Details in §6.1.
+  push path list is pinned by a contract test. The ECFA repair behind the first constraint was
+  nevertheless verified here by running the Wave 11 contract locally on a trial patch (exit 0,
+  two variants — and one failing variant that exposed a substring-guard trap). Details in §6.1.
 * **CI on this branch: all green.** `gh pr checks 2183` → **14 pass, 3 skipped, 0 fail** on
   `53f27f686` (`production-like-contract`, `metadata-ssot-closure`, `pixel-diff`, `Browser
   contract`, `Chromium + WebKit full-site menu contract`, `Deterministic source index and dist
@@ -325,74 +327,87 @@ over 48 non-default branches on 2026-10-12:
 **1. СДЕЛАНО**
 
 * Repaired the six dead `sourceUrl`s (four `.astro` components) + the same six cells in
-  `baptisty-rossii/research/media-ledger.md`; each URL rebuilt from the archived file's SHA-1
-  via the Commons API and proven byte-identical (`imageinfo&iiprop=sha1|size`).
-* This report: 48-branch inventory, red-CI timeline, root cause, repair table, backlog
-  dispositions, recovery path for the remaining 161 corrupted lines.
-* Rendered-dist witness executed (§5): 0 corrupted `File:` links remain in
-  `dist/baptisty-rossii/**`.
+  `baptisty-rossii/research/media-ledger.md`; each URL rebuilt from the archived file's SHA-1 via
+  the Commons API and proven byte-identical (`imageinfo&iiprop=sha1|size`).
+* This report: red-CI timeline, root cause, repair table, §6.1 verified live status of the nine
+  remaining hard errors, recovery path for the 161 corrupted lines.
+* Branch cleanup (owner task 2026-10-13): all 49 non-default refs re-derived with four read-only
+  checks; **8 refs carrying zero commits over `main` deleted**, each with head SHA + one-line
+  restore command (`audit/BRANCH-CLEANUP-DISPOSITION-2026-10-13.md`); post-batch remote heads
+  50 → 42, remote ↔ local tracking refs 0 discrepancies.
+* Per-file digest of the 24 content-bearing branches — what exactly exists nowhere else (§6 of
+  the disposition file).
 
 **2. ПРОВЕРЕНО (numbers, diff vs baseline)**
 
-* Baseline `d14da74` → now: 5 files, **+12/−12 lines** (no other file touched; `git diff --stat`).
-* Gates: `workflows:check`, `validate:strict`, `seo-audit`, `page-ownership:check`,
+* Baseline `d14da74` → head `0bef59b27`: **7 files, +621/−12** (`git diff --stat`); no file
+  outside the audit scope touched.
+* Gates (all PASS): `workflows:check`, `validate:strict`, `seo-audit`, `page-ownership:check`,
   `content:guard`, `data:consistency`, `editorial:lint`, `sources:hygiene`, `article:qa`,
   `baptisty:roadmap:audit`, `baptisty:authentic-media:audit` (16/16 items),
-  `astro:audit:baptisty-series:no-build` — all PASS (§4).
-* `strangler:build:production-like` exit 0; `grep -c 'File:?' dist/baptisty-rossii/*/index.html`
-  → 0 everywhere; six canonical Commons URLs present in the emitted HTML (§5).
-* Commons proof of identity for all six: `size`/`sha1`/`pageid` equal to the archived originals
-  (§3).
+  `astro:audit:baptisty-series:no-build`; `git diff --check d14da74..HEAD` rc=0.
+* Rendered witness: `strangler:build:production-like` exit 0; `File:?` count in
+  `dist/baptisty-rossii/**` = 0; the six canonical Commons URLs present in the emitted HTML.
+* Branch batch: `git ls-remote --heads` 50 → 42 heads; 0 missing / stale / SHA-mismatched
+  tracking refs.
+* ECFA repair validated by running the Wave 11 contract locally on a trial patch → exit 0
+  (two variants); the bare-URL `staleRegistryUrls` variant fails (substring guard) — recorded so
+  the next session does not repeat it.
+* Reader-visible proof of the ECFA breakage: `dist/articles/diotrefy-nashego-vremeni/index.html`
+  carries the dead href.
 
 **3. НЕ ПРОВЕРЕНО**
 
-* Live HTTP status of the six repaired URLs is not verified — sandbox egress returns
-  `ECONNRESET` for every non-allowlisted host, so the local link audit reproduces only the
-  transport class, not the 404 class. The Commons `imageinfo` byte-identity check is the
-  strongest available substitute.
-* The CI `source-links` job result for this branch: no run existed at report time.
+* Live HTTP verdict on the six repaired Commons URLs: `Source Link Audit` does not run on a PR
+  branch (§1.1) and the sandbox cannot reach those hosts — Commons `imageinfo` byte-identity is
+  the strongest available substitute.
+* The dedicated ECFA PR's full CI: such a PR would run the Wave 11 workflow **and** the Wave 12
+  release workflow (`diotrophes-wave12-release.yml` triggers on the same file); only the Wave 11
+  contract was executed locally.
+* CI on the final head: required checks were still in flight when this section was written.
+* The 161 prose/alt mojibake lines — needs the author's wording (§6.2).
 
 **4. СРЕДА**
 
-* 2 vCPU / 3 GB RAM; general outbound internet from bash is blocked (Commons API reachable only
-  through the fetch-page tool); `gh` works for GitHub; `node_modules` restored with `npm ci`.
-* Baseline cleanliness honoured: the 15 pre-existing CI hard errors and the 161 remaining
-  corrupted lines are reported, not silently patched.
+* 2 vCPU / 3 GB RAM; `node_modules` restored with `npm ci`; general outbound internet from bash is
+  blocked (Commons and Web through the fetch tool); `gh` works for GitHub.
+* Baseline cleanliness honoured: the 15 pre-existing CI hard errors and the 161 corrupted lines
+  are reported, not silently patched; `main`, `.github/`, dependencies untouched.
 
 **5. РЕШЕНИЯ САМ (judgement calls, no confirmation asked)**
 
-* Repaired only the six `sourceUrl`/ledger cells — the only part of the 167-line corruption
-  that is *mechanically provable* (SHA-1 → exact Commons title). Prose/alt text (161 lines)
-  needs the author's words, so it is documented as a backlog rather than invented.
-* Did not touch `.github/`, dependencies, `main`, and did not delete/merge/close any branch
-  or PR (§7 lists the proposed cleanup of the eight zero-commit branches for the owner).
-* Kept #2161/#2162-#2168 out of this PR although both were verified as still current on
-  `main`: separate clusters ⇒ separate lanes.
+* Repaired only the mechanically provable part of the corruption (six URLs + six ledger cells);
+  prose/alt text was not invented.
+* Executed the branch deletion batch: each of the eight refs was proven to carry zero commits over
+  `main` (`docs/BRANCH_LIFECYCLE_V4.md` §10), with head SHA and restore command recorded; three
+  refs an earlier registry had marked “не трогать” were released explicitly after proving their
+  fix had landed through PR #2149.
+* Did **not** ship three possible edits, and escalated them instead: the ECFA swap (bounded-diff
+  rule → needs its own Wave-11-only PR), the Tennessean swap (`LAW-30` is the owner's decision of
+  record in `docs/LAWSON-2174-CONTROL-REVIEW-2026-10-11.md`), the dead Amazon card (the registry
+  invariant `n` = 1…51 forbids dropping an entry; re-anchoring is editorial).
+* Kept the PR a draft; no merge/close, no force-push, no `main` mutation.
 
 **6. ВЕТКА / SHA / PR / CI**
 
-* Branch `arena/fbf6f1fd-gb-is-my-strength`: `b31b76545` (repair + this report) and `c9b27b15e`
-  (drop blank line at EOF, §1.1); base/rollback = `d14da74cfe9f45e9b03e383e8e622695b01f8e16`
-  (untouched `main`).
-* PR **#2183** (draft, `arena/fbf6f1fd-gb-is-my-strength` → `main`), body = this section.
-  Draft on purpose: the agent does not merge or close its own PR.
-* CI on this PR: **14 pass / 3 skipped / 0 fail** on `53f27f686` (all required checks green,
-  `MERGEABLE`). Upstream `source-links` is still red since run 34693183399 (2026-09-12), last
-  green 34098490942 (2026-09-07 @ `99a7b9a7d6`); its recovery criterion is `0 hard errors` +
-  `systemicTransportFailure:false` from the first run after this merge.
+* Branch `arena/fbf6f1fd-gb-is-my-strength`: head `0bef59b27`, 8 commits over base/rollback
+  `d14da74cfe9f45e9b03e383e8e622695b01f8e16` (untouched `main`).
+* PR **#2183** (draft); its body is kept in sync with the disposition file.
+* CI: last complete green set = **14 pass / 3 skipped / 0 fail** on `6771b8ec9`; on `0bef59b27`
+  the required checks were still running at report time.
+* Upstream `source-links` is red since run 34693183399 (2026-09-12), last green 34098490942
+  (2026-09-07 @ `99a7b9a7d6`); recovery criterion unchanged: `0 hard errors` +
+  `systemicTransportFailure:false` from the first run after merge.
 
 **7. ЧТО ДЕЛАТЬ МНЕ (owner)**
 
-1. Merge/allow PR #2183, then trigger the upstream verdict: **`workflow_dispatch` on
-   `Source Link Audit`**, or wait for the Monday 03:00 schedule — the six URLs cannot be probed
-   from the PR itself (§1.1.2). `0 hard errors` + `systemicTransportFailure:false` from that run
-   closes the link half of the red audit.
-2. Decide the nine remaining hard errors from the verified table in §6.1. In practice: re-run
-   CI for the six `pravenc.ru`/`sedmitza.ru` certificate entries (current, unexpired certificates
-   proven), and make two editorial swaps — the ECFA statement to its verified Wayback snapshot,
-   the Tennessean citation to the Yahoo reprint already named in `LAW-30.boundary` — plus one
-   decision on the dead Amazon copy-cat card (`LAW-47`), which no archive preserves.
-3. Approve the next cleanup batch (eight zero-commit branches, §7) or ask for classification of
-   the other 16 no-PR branches first.
-4. Decide on the 161 mojibake prose/alt lines — recovery path in §6.2, but the text needs the
-   original wording (author).
+1. Read PR #2183; merge or request changes. After merge, trigger the upstream verdict:
+   **`workflow_dispatch` on `Source Link Audit`** or wait for the Monday 03:00 schedule — the six
+   URLs cannot be probed from the PR itself (§1.1.2).
+2. Decide the nine remaining hard errors (§6.1): six need only a CI re-run (certificates verified
+   current); the ECFA statement needs a **Wave-11-only PR** with the verified patch; `LAW-30`
+   (Tennessean) and `LAW-47` (dead Amazon card) are editorial decisions.
+3. Approve the branch second batch (4 byte-twin refs) — §5 of the disposition file.
+4. Decide per-branch on the 24 content-bearing branches, now with exact file names
+   (§6.1–6.3): “land / archive-ref / drop”.
+5. Decide on the 161 mojibake prose/alt lines (§6.2) — needs the original wording (author).
