@@ -22,11 +22,14 @@ import HomeArticleEndBlock from '@/components/home/HomeArticleEndBlock.astro';
     <HomePageChrome>
       <HomePageChromeStyles />
       <HomeResponsiveContracts />
-      <HomeMain />
+      <HomeMain>
+        {/* Заключительный Soli Deo Gloria — часть основного содержимого:
+            вне main он остаётся «содержимым вне ориентиров» (axe: region). */}
+        <HomeArticleEndBlock />
+      </HomeMain>
       <HomeVisualAuditFixes />
       <HomeAmbientInteraction />
       <HomeSearchA11yGuard />
-      <HomeArticleEndBlock />
       <HomePageFooter />
     </HomePageChrome>
 

@@ -112,13 +112,20 @@ must(page, '<body class="home-page">', 'Astro / preserves home body class');
 for (const forbidden of ['loadLegacyFullDocument', 'set:html', '?raw', '_legacy/', 'import BaseLayout', '<BaseLayout', 'HomeSacredFlipContract']) {
   mustNot(page, forbidden, `Astro / ${forbidden}`);
 }
-const chromeStylesPos = page.indexOf('<HomePageChromeStyles />');
-const mainPos = page.indexOf('<HomeMain />');
-const endPos = page.indexOf('<HomeArticleEndBlock />');
-const footerPos = page.indexOf('<HomePageFooter />');
+const chromeStylesPos = page.indexOf('<HomePageChromeStyles ');
+const mainPos = page.indexOf('<HomeMain');
+const mainClose = page.indexOf('</HomeMain>');
+const endPos = page.indexOf('<HomeArticleEndBlock ');
+const footerPos = page.indexOf('<HomePageFooter ');
 chromeStylesPos !== -1 && mainPos > chromeStylesPos && endPos > mainPos && footerPos > endPos
   ? ok('Astro / preserves chrome styles → main → Soli Deo Gloria → footer order')
   : bad('Astro / homepage landmark/style owner order is invalid');
+// SDG-блок — часть основного содержимого: он передаётся в слот HomeMain и живёт
+// внутри <main id="main-content">, иначе документ получает содержимое вне
+// ориентиров (axe rule: region).
+endPos > mainPos && mainClose > 0 && endPos < mainClose
+  ? ok('Soli Deo Gloria is nested inside HomeMain <main> landmark')
+  : bad('Soli Deo Gloria must be passed into the HomeMain slot');
 
 const head = read('src/components/home/HomePageHead.astro');
 for (const marker of [
