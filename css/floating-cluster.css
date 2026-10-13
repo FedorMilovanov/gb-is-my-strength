@@ -3450,7 +3450,6 @@ html.dark [data-gill-v16] .mobile-top-bar {
     text-transform: uppercase;
     line-height: 1;
     color: var(--gill-mobile-bar-muted);
-    opacity: .75;
   }
   [data-gill-v16] .mobile-btoc-section__main,
   [data-gill-v16] #gbs2MobSec {
