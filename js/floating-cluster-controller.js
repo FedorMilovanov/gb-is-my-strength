@@ -631,7 +631,8 @@
       // Пропускаем: метаданные, сноски, tooltips, notice (copyright/source),
       // и целые англоязычные блоки (оригиналы цитат/карточек, [lang="en"]).
       if (el.closest('.summary-card, .gtip, .fn-marker, .tooltip, .notice, ' +
-                     '.original-author-card, .footnote, aside, .sources-block, ' +
+                     '.original-author-card, .author-card, .gb-accuracy-block, ' +
+                     '.note-box, .footnote, aside, .sources-block, ' +
                      '.reading-list-section, [hidden], [data-pagefind-ignore], ' +
                      '[lang="en"], [lang^="en-"]')) return;
       var t = readableRuText(el);
@@ -1379,6 +1380,7 @@
     stripIds(clone);
     clone.classList.add('gb-mobile-fallback-controls');
     clone.setAttribute('data-fc-mobile-fallback', 'true');
+    clone.setAttribute('role', 'region');
     clone.setAttribute('aria-label', 'Быстрые действия чтения');
     document.body.appendChild(clone);
   }
