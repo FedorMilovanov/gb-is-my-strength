@@ -146,8 +146,33 @@ try {
   fs.rmSync(dist, { recursive: true, force: true });
 }
 
-const schema = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'note-registry.schema.json'), 'utf8'));
-assert.equal(schema.properties.interactionOwner.const, 'SiteUtils.makeTooltipController');
+const manuscriptNumbering = collectAndProjectHtml(`<!doctype html><html><head></head><body><main data-pagefind-body>
+<h2 id="manuscript">Manuscript numbering</h2>
+<p>First <span class="fn-marker">Перев.<span class="tooltip">Translation note.</span></span> then <span class="fn-marker">27<span class="tooltip">Second note.</span></span> and <span class="fn-marker">36<span class="tooltip">Third note.</span></span></p>
+</main></body></html>`, route, { cssHref: '/css/note-registry.css?v=1234abcd' });
+assert.deepEqual(manuscriptNumbering.errors, []);
+assert.deepEqual(
+  manuscriptNumbering.renumbered.map((entry) => [entry.ordinal, entry.authored]),
+  [[2, 27], [3, 36]],
+  'manuscript digits that drift from the registry ordinal must be reported'
+);
+assert.deepEqual(
+  [...manuscriptNumbering.html.matchAll(/class="fn-marker"[^>]*>(\d+)<span class="tooltip"/g)].map((match) => match[1]),
+  ['2', '3'],
+  'printed ordinals must equal the generated endnote list (WCAG 2.5.3 Label in Name)'
+);
+assert.deepEqual(
+  collectAndProjectHtml(manuscriptNumbering.html, route, { cssHref: '/css/note-registry.css?v=1234abcd' }).renumbered,
+  [],
+  'canonical ordinals must stay stable across repeated projections'
+);
+assert.deepEqual(
+  manuscriptNumbering.notes.map((note) => [note.visibleOrdinal, note.authoredVisibleOrdinal]),
+  [[1, null], [2, 27], [3, 36]],
+  'registry must keep the manuscript number on record while publishing the canonical ordinal'
+);
+
+const schema = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'note-registry.schema.json'), 'utf8'));assert.equal(schema.properties.interactionOwner.const, 'SiteUtils.makeTooltipController');
 assert.equal(schema.properties.identityStrategy.const, 'authored-data-note-id-or-route-note-heading-hash');
 assert.match(schema.properties.stylesheet.pattern, /note-registry/);
 const moduleSource = fs.readFileSync(path.join(ROOT, 'scripts', 'lib', 'note-registry.mjs'), 'utf8');
