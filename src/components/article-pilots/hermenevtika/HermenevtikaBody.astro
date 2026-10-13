@@ -214,7 +214,7 @@ const __gbSearchSrc = assetUrl('js/search.js');
 </div>
 <h2 id="sec-quiz" style="font-size: clamp(1.6rem, 3.5vw, 2rem); border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; margin-top: 3.5rem; margin-bottom: 1.5rem; font-family: var(--font-heading, 'Lora', Georgia, serif); font-weight: 700;">Проверь себя</h2>
 <div id="quizPlaceholder"></div>
-<div aria-hidden="true" class="gbs2-vignette"></div><aside class="author-card">
+<div aria-hidden="true" class="gbs2-vignette"></div><section class="author-card">
 <div aria-hidden="true" class="author-card-icon">ФМ</div>
 <div class="author-card-body">
 <div class="author-card-label">Редактор</div>
@@ -228,9 +228,9 @@ const __gbSearchSrc = assetUrl('js/search.js');
  <a href="../../about/">Об авторе →</a>
 </p>
 </div>
-</aside>
+</section>
 </article>
-<aside aria-label="Обратная связь" class="gb-accuracy-block">
+<section aria-label="Обратная связь" class="gb-accuracy-block">
 <div class="gb-accuracy-inner">
 <h2 class="gb-accuracy-title">Нашли неточность?</h2>
 <p class="gb-accuracy-desc">
@@ -253,7 +253,7 @@ const __gbSearchSrc = assetUrl('js/search.js');
 </a>
 </div>
 </div>
-</aside>
+</section>
 <section aria-label="Читайте также" class="related-articles">
 <h2 class="related-articles__heading">Читайте также</h2>
 <ul class="related-articles__list">
@@ -305,4 +305,4 @@ const __gbSearchSrc = assetUrl('js/search.js');
 <script is:inline define:vars={{ __gbSearchSrc }}>!function(){if(window.__gbSearchLazyBound)return;window.__gbSearchLazyBound=1;var src=__gbSearchSrc;function load(open){if(window.GBSearch&&window.GBSearch.open&&window.GBSearch.__ready){open&&window.GBSearch.open();return}if(open)window.__gbSearchOpenAfterLoad=true;if(window.__gbSearchLoading)return;window.__gbSearchLoading=true;window.__gbSearchBootRequested=true;var s=document.createElement("script");s.defer=true;s.src=src;s.onload=function(){window.__gbSearchLoading=false;if(open&&window.GBSearch&&window.GBSearch.open)window.GBSearch.open()};s.onerror=function(){window.__gbSearchLoading=false};document.head.appendChild(s)}function click(e){var sel="#gbSearchBtn,[data-gbs2-search],["+"data-fc-"+"action='search'],.gb-nav-search-icon,.gb-search-btn",t=e.target&&e.target.closest&&e.target.closest(sel);if(t){e.preventDefault();load(true)}}document.addEventListener("click",click,true);window.addEventListener("gb:openSearch",function(){load(true)})}();</script>
 <script is:inline defer="" src="../../js/highlights.js?v=c223155c"></script>
 <script is:inline defer="" src="../../js/enhancements.js?v=1b5392b1"></script>
-<script is:inline defer="" src="../../js/floating-cluster-controller.js?v=ffa6eb55"></script>
+<script is:inline defer="" src="../../js/floating-cluster-controller.js?v=3493e083"></script>
