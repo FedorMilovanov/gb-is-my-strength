@@ -5090,3 +5090,11 @@ html.dark .gb-floater .gbs-rail-spdbadge {
     display: flex !important;
   }
 }
+
+/* a11y D-2b (browser audit 2026-10-13): the 9px/800 «Сейчас читаете» label composites to
+   3.75:1 in dark mode (muted token rgba(245,234,215,.74) × opacity .75) — axe serious, the
+   label must reach 4.5:1. Dropping the compound alpha keeps the token colour and the token
+   itself passes (measured 4.6:1). Light mode is untouched: it passes at the current opacity. */
+@media screen and (max-width: 960px) {
+  html.dark [data-gill-v16] .mobile-btoc-section__label { opacity: 1; }
+}

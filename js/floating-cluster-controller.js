@@ -1498,7 +1498,9 @@
       partBtn.className = 'mobile-btoc-section';
       partBtn.id = 'mobPartTocBtn';
       var sectionText = (oldSection.textContent || 'Оглавление части').replace(/\s+/g, ' ').trim();
-      partBtn.setAttribute('aria-label', 'Оглавление текущей части: ' + sectionText);
+      // a11y D-3b (browser audit 2026-10-13): no static aria-label here — the visible
+      // «{section}» + «Оглавление части» pair below is the authoritative label, and a
+      // hand-written name cannot satisfy WCAG 2.5.3 once the section text changes.
 
       var main = document.createElement('span');
       main.className = 'mobile-btoc-section__main';

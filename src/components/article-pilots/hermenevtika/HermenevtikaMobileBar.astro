@@ -68,16 +68,23 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   </span>
   <SaveButton class="hm-icon" tip="Сохранить" slot="top-trailing" />
 
-  <button class="hmbar-progress" id="hmBottomBtn" type="button" aria-label="Открыть оглавление статьи" slot="bottom-progress">
+  <!-- a11y D-3c (browser audit 2026-10-13): the visible «0%» inside this button is not part
+       of a static aria-label, which trips WCAG 2.5.3; the action hint is a hidden suffix. -->
+  <button class="hmbar-progress" id="hmBottomBtn" type="button" slot="bottom-progress">
     <svg aria-hidden="true" viewBox="0 0 36 36">
       <circle class="hmbar-progress-track" cx="18" cy="18" r="15.5" />
       <circle class="hmbar-progress-fill" id="hmProgressFill" cx="18" cy="18" r="15.5" stroke-dasharray="97.4" stroke-dashoffset="97.4" />
     </svg>
     <span class="hmbar-progress-text" id="hmProgressText">0%</span>
+    <span class="sr-only">— открыть оглавление статьи</span>
   </button>
-  <button class="hmbar-section" id="hmSectionBtn" type="button" aria-label="Открыть оглавление статьи" slot="bottom-context">
+  <!-- a11y D-3b (browser audit 2026-10-13): same WCAG 2.5.3 pattern as the series bar —
+       the section name is swapped at runtime, so the accessible name is taken from the
+       content (visible «Сейчас читаете» + section) and the action is a hidden suffix. -->
+  <button class="hmbar-section" id="hmSectionBtn" type="button" slot="bottom-context">
     <span class="hmbar-section-label">Сейчас читаете</span>
     <span class="hmbar-section-name" id="hmSectionName">{toc[0]?.label}</span>
+    <span class="sr-only">— открыть оглавление статьи</span>
   </button>
   <Fragment slot="bottom-actions">
   <span class="hmbar-divider"></span>
