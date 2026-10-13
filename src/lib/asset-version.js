@@ -29,7 +29,7 @@ export const ASSET_VERSIONS = {
   'js/reader-state.js': 'b3deb501',
   'js/scroll-perf.js': '454d6f7b',
   'js/search.js': '106d65f6',
-  'js/site-utils.js': '661c6cc1',
+  'js/site-utils.js': '559035db',
   'js/site.js': 'c6b5ccf7',
   'js/sw-register.js': '921dd6a2',
   'js/vosk-tts-engine.js': 'd1c35564',
