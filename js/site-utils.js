@@ -339,18 +339,29 @@
   // re-asserting the opener for a bounded window, but only while focus is
   // genuinely lost (body/document/inside the closing overlay), so a deliberate
   // user focus is never stolen. A reopen bumps the generation and cancels it.
-  function restoreOverlayOpener(opener, closingElement, generation) {
+  function focusInsideClosing(active, closingElement, panelFocus) {
+    if (!active) return false;
+    if (panelFocus && active === panelFocus) return true;
+    return Boolean(closingElement && typeof closingElement.contains === 'function' && closingElement.contains(active));
+  }
+
+  function restoreOverlayOpener(opener, closingElement, panelFocus, generation) {
     var attempts = 0;
     var attempt = function () {
       if (generation !== overlayRestoreGeneration) return;
       attempts += 1;
       var active = document.activeElement;
-      var lost = !active || active === document.body || active === document.documentElement
-        || Boolean(closingElement && closingElement.contains && closingElement.contains(active));
-      if (lost) overlayFocus(opener);
-      if (attempts < 8) window.setTimeout(attempt, 60);
+      // The first pass is the historical contract: a closing overlay always hands
+      // focus back to its opener. Later passes only re-assert it when focus was
+      // genuinely dropped (engine fixup to <body>, or still on the closing panel),
+      // so a deliberate user focus move is never stolen.
+      var first = attempts === 1;
+      var lost = first || !active || active === document.body || active === document.documentElement
+        || focusInsideClosing(active, closingElement, panelFocus);
+      if (lost && active !== opener) overlayFocus(opener);
+      if (attempts < 8) setTimeout(attempt, 60);
     };
-    attempt();
+    setTimeout(attempt, 0);
   }
 
   function firstOverlayFocus(record) {
@@ -498,8 +509,9 @@
     var restore = options.restoreFocus !== false && record.restoreFocus && !/^(?:pagehide|beforeunload|force)$/.test(reason || '');
     var opener = record.opener;
     var closingElement = record.element;
+    var panelFocus = firstOverlayFocus(record);
     record.opener = null;
-    if (restore && opener) restoreOverlayOpener(opener, closingElement, overlayRestoreGeneration);
+    if (restore && opener) restoreOverlayOpener(opener, closingElement, panelFocus, overlayRestoreGeneration);
     return true;
   }
 
