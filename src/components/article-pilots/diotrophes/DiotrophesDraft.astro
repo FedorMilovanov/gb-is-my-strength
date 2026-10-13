@@ -237,7 +237,6 @@ const quiz: QuizItem[] = [
 const grouped = (section: SectionId) => caseCards.filter((item) => item.section === section);
 ---
 
-<main id="main-content">
   <article
     class="article-body"
     data-wave10-draft={publicationMode ? undefined : 'true'}
@@ -428,5 +427,4 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
     </section>
   </article>
   <AboutAccuracyBlock />
-  <slot name="after-article" />
 </main>

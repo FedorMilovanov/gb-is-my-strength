@@ -9,6 +9,10 @@ interface Props {
 const { publicationMode = false } = Astro.props;
 ---
 
-<DiotrophesDraft publicationMode={publicationMode}>
-  <FaithfulWitnessSupplement slot="after-article" />
-</DiotrophesDraft>
+{/* Дополнение Wave 11 — часть той же статьи: оно должно стоять внутри
+    главной земли страницы, а не после </main>. Поэтому <main> держит оболочка,
+    а не контентный компонент. */}
+<main id="main-content">
+  <DiotrophesDraft publicationMode={publicationMode} />
+  <FaithfulWitnessSupplement />
+</main>
