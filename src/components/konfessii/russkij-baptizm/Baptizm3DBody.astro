@@ -3,14 +3,15 @@ import AppSearchSurface from '@/components/search/AppSearchSurface.astro';
 ---
 
 <a class="skip" href="#appframe">Перейти к интерактивной карте</a>
-<h1 class="sr-only">Карта Русского Баптизма — интерактивная 3D-история движения от истоков к современности</h1>
+
 <header class="bar">
   <a class="back" href="/konfessii/"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Конфессии и Деноминации</a>
   <a class="back" href="/baptisty-rossii/">Серия «Баптисты России»</a>
   <div class="crumb"><a href="/">Главная</a> · <a href="/konfessii/">Конфессии</a> · <a href="/baptisty-rossii/">Серия</a> · Карта Русского Баптизма</div>
   <AppSearchSurface mode="baptizm" />
 </header>
-<div class="stage">
+<main id="main-content" class="stage">
+  <h1 class="sr-only">Карта Русского Баптизма — интерактивная 3D-история движения от истоков к современности</h1>
   <div id="loader"><div class="lring" aria-hidden="true"></div><div class="lt">Загрузка интерактивной 3D-карты…</div></div>
   <iframe id="appframe" src="./_app/index.html" title="Интерактивная 3D-карта истории русского баптизма: узлы-планеты с орбитами над картой Российской империи, режимы «граф» и «карта», маршруты, инспектор узлов" allow="fullscreen" loading="eager" referrerpolicy="no-referrer"></iframe>
   <noscript>
@@ -33,7 +34,7 @@ import AppSearchSurface from '@/components/search/AppSearchSurface.astro';
       </section>
     </div>
   </noscript>
-</div>
+</main>
 <script is:inline>
 (function(){
   var f=document.getElementById('appframe'),l=document.getElementById('loader');
