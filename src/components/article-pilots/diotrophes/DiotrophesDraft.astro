@@ -422,10 +422,11 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
       ))}
     </section>
 
-    <aside class="author-card">
+    <section class="author-card">
       <h2>Об авторе-редакторе</h2>
       <p><strong>Фёдор Милованов</strong> — автор-редактор проекта «Господь Бог — Сила Моя». Материал подготовлен как богословско-редакционное исследование с отдельной проверкой первичных документов, юридических статусов и границ допустимой формулировки.</p>
-    </aside>
+    </section>
   </article>
   <AboutAccuracyBlock />
+  <slot name="after-article" />
 </main>
