@@ -23,13 +23,15 @@ const { chapter, variant = 'full' } = Astro.props as Props;
 const { startParam, href, roman, articleLabel } = CHAPTER_LAUNCH[chapter];
 ---
 
-<aside
+{/* CTA рендерится на странице дважды (compact и full) для одной главы, поэтому
+    это не <aside>: две complementary-земли с одинаковым именем нарушали
+    landmark-unique. Это промо-блок внутри статьи, а не самостоятельная земля. */}
+<section
   class:list={['genesis6-app-cta', variant === 'compact' && 'genesis6-app-cta--compact']}
   data-pagefind-ignore
   data-bible-app-chapter={chapter}
   data-bible-app-start-param={startParam}
   data-bible-app-variant={variant}
-  aria-label={`Библейский тренажёр по 1 Петра, глава ${chapter}`}
 >
   <div class="genesis6-app-cta__chapter" aria-hidden="true">
     <span>{roman}</span>
@@ -61,7 +63,7 @@ const { startParam, href, roman, articleLabel } = CHAPTER_LAUNCH[chapter];
     </a>
     <span class="genesis6-app-cta__note">Откроется сразу нужная глава · Telegram Mini App</span>
   </div>
-</aside>
+</section>
 
 <style>
   .genesis6-app-cta {
