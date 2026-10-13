@@ -416,7 +416,10 @@ over 48 non-default branches on 2026-10-12:
    **`workflow_dispatch` on `Source Link Audit`** or wait for the Monday 03:00 schedule — the six
    URLs cannot be probed from the PR itself (§1.1.2).
 2. Decide the nine remaining hard errors (§6.1): six need only a CI re-run (certificates verified
-   current); the ECFA statement needs a **Wave-11-only PR** with the verified patch; `LAW-30`
+   current); the ECFA statement needs a **Wave-11-only PR** — the ready-to-apply patch is
+   `audit/patches/ECFA-FW10-RZI-01-archive-repair.patch`, and
+   `audit/OPEN-PR-TRIAGE-2026-10-13.md` shows which of the other nine open PRs are blocked and why;
+   `LAW-30`
    (Tennessean) and `LAW-47` (dead Amazon card) are editorial decisions.
 3. Approve the branch second batch (4 byte-twin refs) — §5 of the disposition file.
 4. Decide per-branch on the 24 content-bearing branches, now with exact file names
