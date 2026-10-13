@@ -73,9 +73,9 @@ const hasBottom = Astro.slots.has('bottom-progress') || Astro.slots.has('bottom-
     </header>
   )}
 
+  {/* Нижняя панель — не <footer>: он даёт contentinfo и дублирует настоящий
+      подвал страницы. Именованный <section> — это именно регион управления. */}
   {hasBottom && (
-    {/* Не <footer>: он даёт contentinfo и дублирует настоящий подвал страницы.
-        Именованный <section> — это именно регион управления чтением. */}
     <section
       class={bottomClass}
       aria-label={bottomLabel}
