@@ -19,6 +19,11 @@
  *  - Корневой .mobile-chrome нейтрализуется display:contents в
  *    css/floating-cluster.css — новых CSS-файлов не создаём (protected
  *    contract), лейаут-дерево баров идентично долегаси-разметке.
+ *  - Корень — <section>, а не <div>: sectioning-элемент скрывает у вложенного
+ *    <header> implicit-роль banner (HTML-AAM). Верхний бар обвязки не является
+ *    шапкой страницы, иначе на мобильной ширине документ получает два баннера
+ *    (axe: landmark-no-duplicate-banner / landmark-unique). Имя региона
+ *    оставляет содержимое обвязки внутри ориентира (axe rule: region).
  *  - Контрактные атрибуты панелей (data-fc-root, data-fc-variant,
  *    data-gill-mobile-bar, data-fc-speed-mode…) адаптер передаёт через
  *    topAttrs/bottomAttrs — делегирование кластера живёт на самой панели.
@@ -58,9 +63,10 @@ const hasTop = Astro.slots.has('top-leading') || Astro.slots.has('top-primary')
 const hasBottom = Astro.slots.has('bottom-progress') || Astro.slots.has('bottom-context')
   || Astro.slots.has('bottom-actions');
 ---
-<div
+<section
   id={id}
   class:list={['mobile-chrome', rootClass]}
+  aria-label="Мобильная навигация страницы"
   data-mobile-chrome
   data-mobile-chrome-engine={engine}
 >
@@ -89,7 +95,7 @@ const hasBottom = Astro.slots.has('bottom-progress') || Astro.slots.has('bottom-
   )}
 
   <slot name="overlays" />
-</div>
+</section>
 
 <style is:global>
   /* Server/pre-hydration contract: a rail announced as hidden must have no
