@@ -310,11 +310,14 @@ over 48 non-default branches on 2026-10-12:
   `native-source-contract`, `Source contract`, `Validate source metadata without building dist`,
   `Build and audit production-like candidate`; the three “skipping” entries are autofix jobs that
   only run on their own trigger). The branch was `MERGEABLE` at that moment.
-* **Not verified (and not verifiable from here):** the CI HTTP verdict on the six repaired URLs —
-  `Source Link Audit` does not run on this branch (§1.1), so its next verdict arrives after merge
-  (dispatch or the Monday schedule). Strongest local substitute executed: Commons `imageinfo`s
-  match our archived bytes (`sha1` + `size`), and the emitted HTML carries exactly those six
-  canonical URLs.
+* **Partially closed on 2026-10-13:** the *destination* class "the Commons page is dead" is now
+  excluded by a **direct live API response** — `action=query&prop=imageinfo&iiprop=size|sha1` over
+  all **16** Commons URLs present in the built `dist/baptisty-rossii/**` returned **no `missing`**,
+  and the six repaired ones matched the ledger rows exactly (`size` / `sha1` / `pageid`; table in
+  `audit/BAPTISTY-AND-SERIES-BROWSER-AUDIT-2026-10-13.md` §6).
+* **Still not verified:** the CI HTTP verdict — `Source Link Audit` does not run on this branch
+  (§1.1), so its next verdict arrives after merge (dispatch or the Monday schedule). Nor were the
+  URLs opened in a real browser on the public internet (sandbox egress limitation).
 * **Not done:** the 161 prose/metadata lines still carrying `?`/backtick (author's text
   required); the nine remaining CI hard errors (owner editorial decision); no PR was merged or
   closed. Branches: the 8 zero-work refs (`FULLY_REPRESENTED_BY_ANCESTRY`) were deleted on
@@ -360,9 +363,14 @@ over 48 non-default branches on 2026-10-12:
 
 **3. НЕ ПРОВЕРЕНО**
 
-* Live HTTP verdict on the six repaired Commons URLs: `Source Link Audit` does not run on a PR
-  branch (§1.1) and the sandbox cannot reach those hosts — Commons `imageinfo` byte-identity is
-  the strongest available substitute.
+* Live status of the *destination* pages: **closed for all 16 Commons URLs** by a direct live
+  Commons API response (no `missing`; six repaired rows match the ledger by `size`/`sha1`/`pageid`).
+  What remains open is the CI *verdict* — `Source Link Audit` does not run on a PR branch (§1.1),
+  so the first classification after merge is still pending.
+* Browser-level: the four repaired pages were rendered and audited in a real Chromium
+  (`audit/BAPTISTY-AND-SERIES-BROWSER-AUDIT-2026-10-13.md`, 10 runs, 0 broken images, 0 `File:?`,
+  CLS ≤ 0.016); that audit also found four pre-existing product defects (hero caption collision,
+  author-icon contrast, `#mobPartTocBtn` name mismatch, `region`), none of them introduced here.
 * The dedicated ECFA PR's full CI: such a PR would run the Wave 11 workflow **and** the Wave 12
   release workflow (`diotrophes-wave12-release.yml` triggers on the same file); only the Wave 11
   contract was executed locally.
@@ -414,3 +422,8 @@ over 48 non-default branches on 2026-10-12:
 4. Decide per-branch on the 24 content-bearing branches, now with exact file names
    (§6.1–6.3): “land / archive-ref / drop”.
 5. Decide on the 161 mojibake prose/alt lines (§6.2) — needs the original wording (author).
+6. Rule on the four defects the browser audit found in the series theme
+   (`audit/BAPTISTY-AND-SERIES-BROWSER-AUDIT-2026-10-13.md`): the hero caption collision on all
+   9 parts needs a product choice (drop the baked caption from the 11 cover SVGs, or move it out
+   of the cropped band); the author-icon contrast (2.22:1), the `#mobPartTocBtn` accessible-name
+   mismatch and the `region` nodes are one-file CSS/markup fixes.
