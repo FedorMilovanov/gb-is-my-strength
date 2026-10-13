@@ -270,6 +270,7 @@
 
   var overlayRecords = new Map();
   var overlayStack = [];
+  var overlayRestoreGeneration = 0;
   var inertClaims = new Map();
   var overlaySequence = 0;
   var overlayRecovering = false;
@@ -330,6 +331,26 @@
     if (!canOverlayFocus(element)) return false;
     try { element.focus({ preventScroll: true }); return true; }
     catch (_) { try { element.focus(); return true; } catch (_) { return false; } }
+  }
+
+  // WebKit moves focus to <body> asynchronously when an ancestor turns inert,
+  // i.e. *after* the deferred opener restore below has already run, and a browser
+  // may also drop focus while the closing panel is still transitioned out. Keep
+  // re-asserting the opener for a bounded window, but only while focus is
+  // genuinely lost (body/document/inside the closing overlay), so a deliberate
+  // user focus is never stolen. A reopen bumps the generation and cancels it.
+  function restoreOverlayOpener(opener, closingElement, generation) {
+    var attempts = 0;
+    var attempt = function () {
+      if (generation !== overlayRestoreGeneration) return;
+      attempts += 1;
+      var active = document.activeElement;
+      var lost = !active || active === document.body || active === document.documentElement
+        || Boolean(closingElement && closingElement.contains && closingElement.contains(active));
+      if (lost) overlayFocus(opener);
+      if (attempts < 8) window.setTimeout(attempt, 60);
+    };
+    attempt();
   }
 
   function firstOverlayFocus(record) {
@@ -437,6 +458,7 @@
     }
     overlayStack = overlayStack.filter(function (stackId) { return stackId !== record.ownerId; });
     overlayStack.push(record.ownerId);
+    overlayRestoreGeneration += 1;
     record.open = true;
     record.sequence = ++overlaySequence;
     if (record.element) {
@@ -475,8 +497,9 @@
     overlayEvent('gb:overlay-close', record, reason || 'close');
     var restore = options.restoreFocus !== false && record.restoreFocus && !/^(?:pagehide|beforeunload|force)$/.test(reason || '');
     var opener = record.opener;
+    var closingElement = record.element;
     record.opener = null;
-    if (restore && opener) setTimeout(function () { overlayFocus(opener); }, 0);
+    if (restore && opener) restoreOverlayOpener(opener, closingElement, overlayRestoreGeneration);
     return true;
   }
 
