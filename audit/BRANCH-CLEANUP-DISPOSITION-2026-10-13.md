@@ -6,7 +6,7 @@
 **Предыдущие реестры:** `audit/BRANCH-CLEANUP-DISPOSITION-2026-09-29.md`,
 `audit/LAWSON-BRANCH-CLEANUP-DISPOSITION-2026-10-12.md`.
 **База:** `main = d14da74cfe9f45e9b03e383e8e622695b01f8e16`; сессионная ветка
-`arena/fbf6f1fd-gb-is-my-strength` (PR #2183) = `6771b8ec95`.
+`arena/fbf6f1fd-gb-is-my-strength` (PR #2183) = `2d1f6b0cb` (инвентарь §3 — срез на `6771b8ec95`).
 **Область:** только remote refs; ни один PR не закрывался и не мержился, `main` не менялся.
 
 ## 1. Методика — четыре независимые проверки, все read-only
@@ -137,23 +137,58 @@
 
 ## 6. Что осталось решить по 24 веткам с уникальным содержимым
 
-* **Baptisty-исследования (5 refs, все — одиночные документы):** `audit/baptisty-total-production-audit-20260911`
-  (`147-total-production-audit`, +251), `reconcile/baptisty-media-recovery-20260911`
-  (`147-media-container-recovery`, +103), `reconcile/baptisty-book-status-20260911`
-  (`148-book-production-reconciliation`, +165), `lane/baptisty-book-production-status-20260906`
-  (`84-book-production-status-and-marathon-plan`), `book/ch07-mazaev-prokhanov-research-v2`
-  (2 документа гл. 7). В `main` нумерованный ряд обрывается на 99 — это не дубли, а неслитые
-  записи. Решение: land (небольшим отдельным PR) или archive-ref.
-* **Прошлые сессионные ветки с широкой дельтой:** `arena/01a0a1ce` (149 уникальных файлов —
-  reader-audit), `arena/01a0a1b2` (31 — pastor-series аудиты), `arena/01a0a1b4` (8),
-  `arena/01a0f415` (5 — quiz-данные), `arena/header-cluster-*` (Header.astro, два разных
-  варианта). Это кандидаты на `SELECTIVE_RECOVERY`: переносить нужное с свежего `main`, а не
-  мержить целиком.
-* **Метаданные/контент:** 3 ветки `lane/metadata-*` (решения ревью), `lane/teen-core-content-clearance`,
-  `content/apostasy-bible-study`, `fix/series-taxonomy-projection`, `fix/quiz-plain-text-payload`,
-  `system/fix-article-quiz-next-ownership`, `fix/genealogy-relation-confidence-localization`,
-  `codex/baptisty-spravochnik-evidence-language`, `repair/source-surface-audit-completeness`,
-  `agent/app-integration-zero-debt`.
+Пофайловый дайджест ниже воспроизводится одной проверкой: для каждого пути из
+`git diff --name-only <merge-base>..<ветка>` blob сравнивается с `main` **и** со всеми 41 живой
+веткой; «уникальный» — тот, чей blob не встречается больше нигде. Ветки с открытыми PR сюда не
+входят (они в §4); здесь ровно 24 refs класса `UNIQUE_EVIDENCE`.
+
+### 6.1 Baptisty-исследования (5 refs) — по одному-двум документам
+
+Нумерация продолжает ряд `main` (в `main` ряд обрывается на 99) — это не дубли, а неслитые записи.
+
+| Ветка | Уникальный файл |
+|---|---|
+| `audit/baptisty-total-production-audit-20260911` | `baptisty-rossii/research/147-total-production-audit-2026-09-11.md` |
+| `reconcile/baptisty-media-recovery-20260911` | `baptisty-rossii/research/147-media-container-recovery-status-2026-09-11.md` |
+| `reconcile/baptisty-book-status-20260911` | `baptisty-rossii/research/148-book-production-reconciliation-status-2026-09-11.md` |
+| `lane/baptisty-book-production-status-20260906` | `baptisty-rossii/research/84-book-production-status-and-marathon-plan-2026-09-06.md` |
+| `book/ch07-mazaev-prokhanov-research-v2` | `baptisty-rossii/research/ch07-mazaev-prokhanov-source-to-claim-2026-09-06.md`, `…-visual-dossier-2026-09-06.md` |
+
+Решение для всех пяти: land отдельным маленьким PR (только документы) или `archive-ref`.
+
+### 6.2 Широкие дельты (7 refs) — кандидаты на `SELECTIVE_RECOVERY`
+
+| Ветка | Уникальных | Что именно (крупными группами) |
+|---|---:|---|
+| `arena/01a0a1ce-gb-is-my-strength` | 149 | 70 `reports/arena-reader-audit/*`; 72 `src/components/*`; `css/site.css`; `css/floating-cluster.css`; `js/floating-cluster-controller.js`; `404.html` |
+| `arena/01a0a1b2-gb-is-my-strength` | 31 | аудиты `audit/PASTOR-SERIES-*`; `research/pastor-series/*` (2); 5 компонентов; 3 `data/editorial-metadata-supplements/*`; `articles/20-antisovetov-pastoru` |
+| `arena/01a0a1b4-gb-is-my-strength` | 8 | 4 документа `research/pastor-series/*` + `audit/PASTOR-SERIES-PRODUCT-AUDIT-2026-09-15.md`; 2 MDX (`sem-tipov-razlichenie-uchiteley`, `teksty-pisaniya-kotorymi-manipuliruyut`); `pastorSeriesConfig.ts`; `PastorSeriesArticlePage.astro` |
+| `fix/series-taxonomy-projection-20260911` | 7 | `Seo.astro`; 3 `*SeriesArticlePage.astro`; 2 нормализатора `search-manifest` + сам `data/search-manifest.json` |
+| `agent/app-integration-zero-debt-20260820` | 6 | `AppSiteChrome.astro`; `SiteSectionsMenu.astro`; `site-sections.ts`; `src/pages/app/index.astro`; `bible-app-browser-contract.mjs` + его workflow |
+| `arena/01a0f415-gb-is-my-strength` | 5 | `data/route-search-policy.json`; `data/scripture-search-index.json`; `data/search-manifest.json`; `sitemap.xml`; `ArticleLayout.astro` — всё производное, сперва пробовать перегенерировать из `main` |
+| `arena/header-cluster-audit-20261002` | 4 | `Header.astro`; `HomePageChrome.astro`; `HomePageChromeStyles.astro`; `scripts/header-cluster-browser-contract.mjs` |
+
+### 6.3 Одиночные файлы (12 refs) — одно решение «land / archive / drop» на каждую
+
+| Ветка | Уникальное |
+|---|---|
+| `agent/bible-app-deep-playwright-r2-20260819` | `src/pages/index.astro` (укрупнение мобильной цели навигации в app) |
+| `arena/header-cluster-repair-20261002` | `src/components/ui/Header.astro` (другой вариант, чем у `header-cluster-audit`) |
+| `codex/baptisty-spravochnik-evidence-language` | `audit/BAPTISTY-ROSSII-EVIDENCE-LANGUAGE-HANDOFF-2026-08-20.md`; `data/search-manifest.json`; `feed.xml` (последние два — производные) |
+| `content/apostasy-bible-study` | `src/content/articles/otstuplenie-ot-very-iuda-evreyam-6.mdx` |
+| `fix/genealogy-relation-confidence-localization` | `src/components/genealogy/RelationshipInspector.tsx` |
+| `fix/quiz-plain-text-payload-20261003` | `.github/workflows/quiz-plain-text-self-clean-v2.yml` |
+| `lane/metadata-reconcile-tma-pr518-20260908` | `data/editorial-metadata.json` |
+| `lane/metadata-review-decision-rimlyanam7-20260908` | `data/editorial-metadata-review-decisions/rimlyanam7-reconciliation-20260908.json` |
+| `lane/metadata-standalone-three-reconciliation-20260908` | `data/editorial-metadata-review-decisions/standalone-three-reconciliation-20260908.json` |
+| `lane/teen-core-content-clearance-20260908` | `research/teen-double-life/CORE-TRILOGY-CONTENT-CLEARANCE-2026-09-08.md` |
+| `repair/source-surface-audit-completeness-20260906` | `scripts/cache-bust-assets.js`; `scripts/lib/product-source-surfaces.js` |
+| `system/fix-article-quiz-next-ownership` | `src/runtime/article-quiz.js`; `src/runtime/article-interactions.css` |
+
+Ни одну из этих веток нельзя удалять «как старую»: каждая несёт содержимое, которого нет ни в
+`main`, ни на других живых ветках. Три из них (`lane/metadata-*`, `system/…`,
+`fix/quiz-plain-text-payload`) — это закрытые PR без merge, то есть готовые решения, которым
+нужно только решение владельца «принять» или «отклонить».
 
 ## 7. Проверка после батча (policy §10.6)
 
