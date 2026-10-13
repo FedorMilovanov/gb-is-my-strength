@@ -355,6 +355,8 @@ over 48 non-default branches on 2026-10-12:
   the next session does not repeat it.
 * Reader-visible proof of the ECFA breakage: `dist/articles/diotrefy-nashego-vremeni/index.html`
   carries the dead href.
+* CI on the head `f47dc7b9a`: **14 pass / 3 skipped / 0 fail** (`gh pr checks 2183`),
+  `mergeStateStatus = CLEAN`; the following commit is a docs-only note and does not change code.
 
 **3. НЕ ПРОВЕРЕНО**
 
@@ -364,7 +366,8 @@ over 48 non-default branches on 2026-10-12:
 * The dedicated ECFA PR's full CI: such a PR would run the Wave 11 workflow **and** the Wave 12
   release workflow (`diotrophes-wave12-release.yml` triggers on the same file); only the Wave 11
   contract was executed locally.
-* CI on the final head: required checks were still in flight when this section was written.
+* CI on the *note* commit that carries this line (docs-only; the recorded verdict above is for
+  `f47dc7b9a`, its parent).
 * The 161 prose/alt mojibake lines — needs the author's wording (§6.2).
 
 **4. СРЕДА**
@@ -393,8 +396,8 @@ over 48 non-default branches on 2026-10-12:
 * Branch `arena/fbf6f1fd-gb-is-my-strength`: head `0bef59b27`, 8 commits over base/rollback
   `d14da74cfe9f45e9b03e383e8e622695b01f8e16` (untouched `main`).
 * PR **#2183** (draft); its body is kept in sync with the disposition file.
-* CI: last complete green set = **14 pass / 3 skipped / 0 fail** on `6771b8ec9`; on `0bef59b27`
-  the required checks were still running at report time.
+* CI: **14 pass / 3 skipped / 0 fail, `CLEAN`** on `f47dc7b9a` (`gh pr checks 2183`); earlier
+  complete green set was 14/3/0 on `6771b8ec9`.
 * Upstream `source-links` is red since run 34693183399 (2026-09-12), last green 34098490942
   (2026-09-07 @ `99a7b9a7d6`); recovery criterion unchanged: `0 hard errors` +
   `systemicTransportFailure:false` from the first run after merge.

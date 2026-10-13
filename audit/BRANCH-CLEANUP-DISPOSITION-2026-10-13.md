@@ -6,7 +6,7 @@
 **Предыдущие реестры:** `audit/BRANCH-CLEANUP-DISPOSITION-2026-09-29.md`,
 `audit/LAWSON-BRANCH-CLEANUP-DISPOSITION-2026-10-12.md`.
 **База:** `main = d14da74cfe9f45e9b03e383e8e622695b01f8e16`; сессионная ветка
-`arena/fbf6f1fd-gb-is-my-strength` (PR #2183) = `2d1f6b0cb` (инвентарь §3 — срез на `6771b8ec95`).
+`arena/fbf6f1fd-gb-is-my-strength` (PR #2183); инвентарь §3 — срез на `6771b8ec95`, текущие head и CI — в отчёте §9.
 **Область:** только remote refs; ни один PR не закрывался и не мержился, `main` не менялся.
 
 ## 1. Методика — четыре независимые проверки, все read-only
