@@ -35,6 +35,8 @@ interface Props {
   topAttrs?: Record<string, string | boolean>;
   /** Дополнительные атрибуты нижней панели. */
   bottomAttrs?: Record<string, string | boolean>;
+  /** Доступное имя нижней панели (она — регион управления, а не contentinfo). */
+  bottomLabel?: string;
 }
 
 const {
@@ -45,6 +47,7 @@ const {
   bottomClass = 'mobile-bottom-bar',
   topAttrs = {},
   bottomAttrs = {},
+  bottomLabel = 'Панель чтения',
 } = Astro.props as Props;
 
 // Панель рендерится только если адаптер дал ей контент: у page-движка нижнего
@@ -71,11 +74,18 @@ const hasBottom = Astro.slots.has('bottom-progress') || Astro.slots.has('bottom-
   )}
 
   {hasBottom && (
-    <footer class={bottomClass} data-mobile-bottombar {...bottomAttrs}>
+    {/* Не <footer>: он даёт contentinfo и дублирует настоящий подвал страницы.
+        Именованный <section> — это именно регион управления чтением. */}
+    <section
+      class={bottomClass}
+      aria-label={bottomLabel}
+      data-mobile-bottombar
+      {...bottomAttrs}
+    >
       <slot name="bottom-progress" />
       <slot name="bottom-context" />
       <slot name="bottom-actions" />
-    </footer>
+    </section>
   )}
 
   <slot name="overlays" />
