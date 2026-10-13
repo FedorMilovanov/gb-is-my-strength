@@ -30,7 +30,7 @@ export const ASSET_VERSIONS = {
   'js/scroll-perf.js': '454d6f7b',
   'js/search.js': '106d65f6',
   'js/site-utils.js': '4d09f681',
-  'js/site.js': 'c6b5ccf7',
+  'js/site.js': '08b452a3',
   'js/sw-register.js': '921dd6a2',
   'js/vosk-tts-engine.js': 'd1c35564',
   'js/vosk-tts-worker.js': 'ccc621c4',
