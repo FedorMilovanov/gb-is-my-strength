@@ -138,13 +138,15 @@ body[data-series-theme="samizdat"] .mobile-bottom-bar{ position:relative; z-inde
    контур, чтобы не спорить с текстом и читаться как оттиск. */
 [data-series-theme="samizdat"] .gbs2-kinetic{
   font-family:'Playfair Display',Georgia,serif; font-weight:900;
-  color:rgba(91,58,134,.15);
-  -webkit-text-stroke:1px rgba(122,92,172,.42);
+  color:#5b3a86;
+  -webkit-text-fill-color:transparent;
+  -webkit-text-stroke:1px #5b3a86;
   text-shadow:none;
 }
 html.dark [data-series-theme="samizdat"] .gbs2-kinetic{
-  color:rgba(184,155,232,.13);
-  -webkit-text-stroke:1px rgba(184,155,232,.36);
+  color:#b39be0;
+  -webkit-text-fill-color:transparent;
+  -webkit-text-stroke:1px #b39be0;
 }
 [data-series-theme="samizdat"] .gbs2-head h1{
   font-family:'Playfair Display',Georgia,serif;

@@ -16,11 +16,15 @@ body[data-series-theme="manuscript"],
   --manuscript-shadow: rgba(49, 31, 17, .18);
   /* Текст на золотой CTA: на светлом золоте нужен светлый, на тёмном — тёмный. */
   --manuscript-cta-ink: #fffaf0;
+  /* Чернила золотого текста: сам --manuscript-gold (#9a6a2f) на бумаге 4.24:1,
+     для строк/подписей нужен плотнее — иначе axe color-contrast не проходит. */
+  --manuscript-gold-ink: #7d5220;
 }
 
 body[data-series-theme="manuscript"] {
   --gbs2-accent: var(--manuscript-gold);
   --gbs2-accent2: var(--manuscript-red);
+  --gb-accent-gold-ink: var(--manuscript-gold-ink);
   --gbs2-soft: rgba(154, 106, 47, .11);
   --gbs2-rail: #17120e;
   --gbs2-rail2: #211911;
@@ -55,6 +59,7 @@ html.dark .genesis6-hub-page {
   --manuscript-gold: #d0a45f;
   --manuscript-gold-bright: #e7c37d;
   --manuscript-red: #c87561;
+  --manuscript-gold-ink: #d0a45f;
   --manuscript-paper: #19140f;
   --manuscript-paper-deep: #241b13;
   --manuscript-line: rgba(218, 178, 109, .18);
@@ -119,7 +124,7 @@ body[data-series-theme="manuscript"] .mobile-bottom-bar,
 
 [data-series-theme="manuscript"] .gbs2-head .section-label,
 [data-series-theme="manuscript"] .gbs2-hero-cap {
-  color: var(--gbs2-accent);
+  color: var(--manuscript-gold-ink);
   font-family: "Inter", system-ui, sans-serif;
   font-weight: 700;
   letter-spacing: .16em;
@@ -151,16 +156,20 @@ body[data-series-theme="manuscript"] .mobile-bottom-bar,
   font-family: "Playfair Display", Georgia, serif;
 }
 
+/* Водяной знак: контурный (заливка прозрачная) — так он читается как оттиск,
+   а контур держит 5.5–6.1:1 на обеих бумагах серии. */
 [data-series-theme="manuscript"] .gbs2-kinetic {
-  color: rgba(142, 91, 36, .09);
-  -webkit-text-stroke: 1px rgba(142, 91, 36, .32);
+  color: var(--manuscript-gold-ink);
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1px var(--manuscript-gold-ink);
   font-family: "Playfair Display", Georgia, serif;
   text-shadow: none;
 }
 
 html.dark [data-series-theme="manuscript"] .gbs2-kinetic {
-  color: rgba(220, 177, 102, .08);
-  -webkit-text-stroke-color: rgba(220, 177, 102, .28);
+  color: #d0a45f;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke-color: #d0a45f;
 }
 
 [data-series-theme="manuscript"] .genesis6-hero {
