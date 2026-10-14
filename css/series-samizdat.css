@@ -46,7 +46,7 @@ body[data-series-theme="samizdat"]{
   /* Верхний мобильный бар — газетный, с фиолетовой краской. */
   --gill-mobile-bar-bg:rgba(239,231,215,.86);
   --gill-mobile-bar-ink:#2a2233;
-  --gill-mobile-bar-muted:#6f6480;
+  --gill-mobile-bar-muted:#5f5470;
   --gill-mobile-bar-gold:#5b3a86;
   --gill-mobile-bar-accent:#5b3a86;
   --gill-mobile-bar-border:rgba(91,58,134,.22);
