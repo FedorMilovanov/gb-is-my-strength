@@ -71,48 +71,50 @@ body.nagornaya-page .bar-icon-btn{position:relative;width:44px;height:44px;min-w
    Страницы собраны из Tailwind-утилит, где 500-е и 600-е оттенки не проходили
    порог 4.5:1 на светлой бумаге (#f5f5f4 = 4.40, #f0ebe1 = 4.04, #fff1f2 = 4.36
    для stone-500), а белые подписи на 600-х чипах — в тёмной теме (там
-   .text-white переопределён в кремовый --color-text-primary: 2.44–4.12:1).
-   Ниже — те же оттенки на ступень плотнее; визуальная иерархия сохранена.
+   .text-white переопределён в кремовый --color-text-primary: 2.44–4.12:1   Правила специально не добавляют пометок приоритета: селекторы плотнее утилит
+   Tailwind (body.nagornaya-page …), а счётчик таких пометок стережёт ratchet
+   в validate:static-publication.
 --------------------------------------------------------------------------- */
 html:not(.dark) body.nagornaya-page .text-stone-500,
 html:not(.dark) body.nagornaya-page .text-stone-600 {
-  color: #6b645e !important;
+  color: #6b645e; /* 4.9–5.33:1 на бумаге серии */
 }
-html:not(.dark) body.nagornaya-page .text-amber-600 { color: #b45309 !important; }
-html:not(.dark) body.nagornaya-page .text-rose-600 { color: #be123c !important; }
+html:not(.dark) body.nagornaya-page .text-amber-600 { color: #b45309; /* 4.86:1 */ }
+html:not(.dark) body.nagornaya-page .text-rose-600 { color: #be123c; /* 6.02:1 */ }
 
-body.nagornaya-page .bg-blue-600 { background-color: #1d4ed8 !important; }
-body.nagornaya-page .bg-emerald-600 { background-color: #047857 !important; }
-/* Янтарный чип: подпись внутри него — светло-жёлтая (.text-amber-200), поэтому
-   фон берём на ступень плотнее (amber-800): #fde68a = 5.69:1, белый = 7.09:1,
-   кремовый текст тёмной темы = 5.44:1. На amber-700 эти подписи давали 4.03:1. */
-body.nagornaya-page .bg-amber-600 { background-color: #92400e !important; }
-body.nagornaya-page .bg-rose-600 { background-color: #be123c !important; }
-body.nagornaya-page .bg-purple-600 { background-color: #7e22ce !important; }
+/* Чипы-бейджи: 600-е оттенки Tailwind не тянут ни белый текст светлой темы
+   (3.18–4.12:1), ни кремовый текст тёмной (2.44–4.12:1). Берём ступень плотнее —
+   проходит и то, и другое: белый 6.29–8.02:1, кремовый 4.82–6.15:1. */
+body.nagornaya-page .bg-blue-600 { background-color: #1d4ed8; }
+body.nagornaya-page .bg-emerald-600 { background-color: #065f46; }
+body.nagornaya-page .bg-amber-600 { background-color: #92400e; }
+body.nagornaya-page .bg-rose-600 { background-color: #9f1239; }
+body.nagornaya-page .bg-purple-600 { background-color: #7e22ce; }
 
-/* Текст внутри чипов: белый на плотных оттенках проходит везде, поэтому
-   кремовая подстановка тёмной темы здесь не нужна, а opacity .8 у подписи
-   (10px) срезала контраст до 2.3–3.9:1 — подпись печатается сплошным цветом. */
-body.nagornaya-page .bg-blue-700.text-white,
-body.nagornaya-page .bg-emerald-700.text-white,
-body.nagornaya-page .bg-amber-800.text-white,
-body.nagornaya-page .bg-rose-700.text-white,
-body.nagornaya-page .bg-purple-700.text-white,
-body.nagornaya-page .bg-blue-700 > .text-white,
-body.nagornaya-page .bg-emerald-700 > .text-white,
-body.nagornaya-page .bg-amber-800 > .text-white,
-body.nagornaya-page .bg-rose-700 > .text-white,
-body.nagornaya-page .bg-purple-700 > .text-white {
-  color: #ffffff !important;
-}
-body.nagornaya-page .bg-blue-700 .opacity-80,
-body.nagornaya-page .bg-emerald-700 .opacity-80,
-body.nagornaya-page .bg-amber-800 .opacity-80,
-body.nagornaya-page .bg-rose-700 .opacity-80,
-body.nagornaya-page .bg-purple-700 .opacity-80 {
-  opacity: 1 !important;
+/* Подписи 10px внутри чипов: opacity .8 срезала контраст до 2.3–3.9:1. */
+body.nagornaya-page .bg-blue-600 .opacity-80,
+body.nagornaya-page .bg-emerald-600 .opacity-80,
+body.nagornaya-page .bg-amber-600 .opacity-80,
+body.nagornaya-page .bg-rose-600 .opacity-80,
+body.nagornaya-page .bg-purple-600 .opacity-80 {
+  opacity: 1;
 }
 
 /* Кнопки размера шрифта в нижней панели: #6a6a6a на серо-голубой кнопке
    (#cec9c1) давало 3.28:1. */
-html:not(.dark) body.nagornaya-page .nag-fontsize-btn { color: #4a423c !important; }
+html:not(.dark) body.nagornaya-page .nag-fontsize-btn { color: #4a423c; }
+
+/* Бейджи-«молнии» (amber-500) на белой карточке: #f59e0b = 2.14:1. */
+html:not(.dark) body.nagornaya-page .text-amber-500 { color: #b45309; /* 5.02:1 на белой карточке */ }
+
+/* Тёмная тема: чипы и панели держали светлые плашки/чернила от светлой
+   палитры Tailwind — на #92400e/#151922 это 2.4–4.4:1. */
+html.dark body.nagornaya-page .text-amber-200 { color: #fde68a; /* 5.69:1 на #92400e */ }
+html.dark body.nagornaya-page .text-orange-800 { color: #fdba74; /* 10.4:1 на #151922 */ }
+html.dark body.nagornaya-page .bg-emerald-600,
+html.dark body.nagornaya-page .bg-emerald-700 { background-color: #064e3b; }
+html.dark body.nagornaya-page .bg-emerald-600 .text-stone-300,
+html.dark body.nagornaya-page .bg-emerald-700 .text-stone-300 { color: #d1fae5; }
+
+/* Подпись кнопки-раздела в нижней панели: 10px/800 на #f4f2ed. */
+html:not(.dark) body.nagornaya-page .bar-section-label { color: #5f5850; /* 5.6:1 */ }
