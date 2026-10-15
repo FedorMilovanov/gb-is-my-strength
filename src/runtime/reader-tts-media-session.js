@@ -22,7 +22,11 @@
     const source = document.querySelector('meta[property="og:image"]')?.content;
     if (!source) return [];
     try {
-      return [{ src: new URL(source, location.href).href }];
+      const url = new URL(source, location.href);
+      // Чужой источник (прод-домен в og:image) грузится браузером как обложка медиасессии
+      // и упирается в CSP img-src — берём тот же путь с текущего хоста.
+      const src = url.origin === location.origin ? url.href : url.pathname + url.search;
+      return [{ src }];
     } catch {
       return [];
     }

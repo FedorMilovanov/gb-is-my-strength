@@ -992,7 +992,16 @@
       var album = (seriesLab && seriesLab.textContent.trim()) || 'Господь Бог — Сила Моя';
       var art = [{ src: '/images/tts-artwork.svg', sizes: 'any', type: 'image/svg+xml' }];
       var og = qs('meta[property="og:image"]');
-      if (og && og.content) art.unshift({ src: og.content, sizes: '1200x630', type: 'image/webp' });
+      if (og && og.content) {
+        // og:image задан абсолютным прод-адресом; для MediaSession нужен этот же файл
+        // с текущего хоста, иначе CSP img-src блокирует загрузку обложки.
+        var ogSrc = og.content;
+        try {
+          var ogUrl = new URL(ogSrc, location.href);
+          if (ogUrl.origin !== location.origin) ogSrc = ogUrl.pathname + ogUrl.search;
+        } catch (e) { /* оставляем как есть */ }
+        art.unshift({ src: ogSrc, sizes: '1200x630', type: 'image/webp' });
+      }
       navigator.mediaSession.metadata = new MediaMetadata({
         title: title, artist: 'Господь Бог — Сила Моя', album: album, artwork: art,
       });
