@@ -153,15 +153,16 @@ html.dark body.nagornaya-page .bg-emerald-800 { background-color: #064e3b; }
 .ng-lib-head { font-family: monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #6f6255; margin-bottom: 1rem; }
 html.dark .ng-lib-head { color: #c3bdb4; }
 
-/* Служебная подпись на тёмной цветной плашке. Общая тёмная тема задаёт
-   .text-stone-300{color:var(--color-text-muted)!important} (#9ca3af): на #064e3b это
-   3.8:1, на #78350f — 4.15:1, то есть ниже 4.5:1. Для этих подложек ink выбирается
-   по плашке, а не по общей палитре. */
-html.dark body.nagornaya-page .bg-emerald-600 .text-stone-300,
-html.dark body.nagornaya-page .bg-emerald-700 .text-stone-300,
-html.dark body.nagornaya-page .bg-emerald-800 .text-stone-300,
-html.dark body.nagornaya-page .bg-emerald-900 .text-stone-300 { color: #d1fae5 !important; /* 8.57:1 на #064e3b */ }
-html.dark body.nagornaya-page .bg-amber-600 .text-stone-300,
-html.dark body.nagornaya-page .bg-amber-700 .text-stone-300,
-html.dark body.nagornaya-page .bg-amber-800 .text-stone-300,
-html.dark body.nagornaya-page .bg-amber-900 .text-stone-300 { color: #fde68a !important; /* 7.3:1 на #78350f */ }
+/* Служебная подпись на тёмной цветной плашке. Общая тёмная тема назначает
+   .text-stone-300/.text-stone-400/.text-stone-500 цвет токена --color-text-muted
+   (#9ca3af): на #064e3b это 3.8:1, на #78350f — 4.15:1, то есть ниже 4.5:1.
+   Здесь переопределяется сам токен на подложке, поэтому правило темы
+   разрешается в чернила по плашке — без гонки приоритетов. */
+html.dark body.nagornaya-page .bg-emerald-600,
+html.dark body.nagornaya-page .bg-emerald-700,
+html.dark body.nagornaya-page .bg-emerald-800,
+html.dark body.nagornaya-page .bg-emerald-900 { --color-text-muted: #d1fae5; /* 8.57:1 на #064e3b */ }
+html.dark body.nagornaya-page .bg-amber-600,
+html.dark body.nagornaya-page .bg-amber-700,
+html.dark body.nagornaya-page .bg-amber-800,
+html.dark body.nagornaya-page .bg-amber-900 { --color-text-muted: #fde68a; /* 7.3:1 на #78350f */ }
