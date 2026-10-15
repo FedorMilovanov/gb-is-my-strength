@@ -365,7 +365,9 @@
 
     function truncate(value, length) {
       var valueText = text(value);
-      return valueText.length > length ? valueText.slice(0, length - 1).trimEnd() + '…' : valueText;
+      // Без «…»: подпись узла должна быть префиксом доступного имени, иначе axe
+      // видит текст подписи, которого нет в имени (label-content-name-mismatch).
+      return valueText.length > length ? valueText.slice(0, length).trimEnd() : valueText;
     }
 
     function orderedGroups() {
