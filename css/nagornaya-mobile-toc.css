@@ -113,8 +113,7 @@ html.dark body.nagornaya-page .text-amber-200 { color: #fde68a; /* 5.69:1 на #
 html.dark body.nagornaya-page .text-orange-800 { color: #fdba74; /* 10.4:1 на #151922 */ }
 html.dark body.nagornaya-page .bg-emerald-600,
 html.dark body.nagornaya-page .bg-emerald-700 { background-color: #064e3b; }
-html.dark body.nagornaya-page .bg-emerald-600 .text-stone-300,
-html.dark body.nagornaya-page .bg-emerald-700 .text-stone-300 { color: #d1fae5; }
+
 
 /* Подпись кнопки-раздела в нижней панели: 10px/800 на #f4f2ed. */
 html:not(.dark) body.nagornaya-page .bar-section-label { color: #5f5850; /* 5.6:1 */ }
@@ -148,8 +147,21 @@ html:not(.dark) body.nagornaya-page .bg-emerald-700 { background-color: #065f46;
 /* emerald-800 в тёмной теме: кремовые чернила дают 4.45:1 — плотнее плашка
    и светлее служебный текст внутри неё. */
 html.dark body.nagornaya-page .bg-emerald-800 { background-color: #064e3b; }
-html.dark body.nagornaya-page .bg-emerald-800 .text-stone-300 { color: #d1fae5; }
+
 
 /* Заголовок «Из библиотеки» (карточки /nagornaya/nakhodki/): цвет был инлайновым. */
 .ng-lib-head { font-family: monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #6f6255; margin-bottom: 1rem; }
 html.dark .ng-lib-head { color: #c3bdb4; }
+
+/* Служебная подпись на тёмной цветной плашке. Общая тёмная тема задаёт
+   .text-stone-300{color:var(--color-text-muted)!important} (#9ca3af): на #064e3b это
+   3.8:1, на #78350f — 4.15:1, то есть ниже 4.5:1. Для этих подложек ink выбирается
+   по плашке, а не по общей палитре. */
+html.dark body.nagornaya-page .bg-emerald-600 .text-stone-300,
+html.dark body.nagornaya-page .bg-emerald-700 .text-stone-300,
+html.dark body.nagornaya-page .bg-emerald-800 .text-stone-300,
+html.dark body.nagornaya-page .bg-emerald-900 .text-stone-300 { color: #d1fae5 !important; /* 8.57:1 на #064e3b */ }
+html.dark body.nagornaya-page .bg-amber-600 .text-stone-300,
+html.dark body.nagornaya-page .bg-amber-700 .text-stone-300,
+html.dark body.nagornaya-page .bg-amber-800 .text-stone-300,
+html.dark body.nagornaya-page .bg-amber-900 .text-stone-300 { color: #fde68a !important; /* 7.3:1 на #78350f */ }
