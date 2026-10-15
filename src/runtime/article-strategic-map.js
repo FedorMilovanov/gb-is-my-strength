@@ -139,7 +139,13 @@ export function installArticleStrategicMap() {
     trigger.setAttribute('aria-expanded', 'false');
     if (!trigger.hasAttribute('role')) trigger.setAttribute('role', 'button');
     if (!trigger.hasAttribute('tabindex')) trigger.setAttribute('tabindex', '0');
-    if (!trigger.hasAttribute('aria-label')) trigger.setAttribute('aria-label', `Открыть пояснение ${key}`);
+    if (!trigger.hasAttribute('aria-label')) {
+      // Видимый текст триггера должен входить в доступное имя (axe:
+      // label-content-name-mismatch). Для маркеров-глифов видимого текста нет —
+      // им остаётся короткое «Открыть пояснение N».
+      const visibleText = (trigger.textContent || '').replace(/\s+/g, ' ').trim();
+      trigger.setAttribute('aria-label', visibleText ? `${visibleText} — открыть пояснение ${key}` : `Открыть пояснение ${key}`);
+    }
     if (!(key in records)) trigger.dataset.gbStrategicMapInvalid = 'missing-record';
 
     if (trigger.dataset.gbStrategicMapBound === OWNER) continue;
