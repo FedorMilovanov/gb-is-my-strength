@@ -325,14 +325,18 @@
     if (!element || typeof element.focus !== 'function' || element.isConnected === false || element.disabled) return false;
     if (element.getAttribute && element.getAttribute('aria-hidden') === 'true') return false;
     if (element === document.activeElement) return true;
+    if (element.offsetParent !== null) return true;
     // `offsetParent` is null for a `position: fixed` opener and for elements whose
     // ancestor chain sits in a skipped `content-visibility` subtree, even though
-    // they are plainly rendered and focusable. Judge by the platform visibility
-    // API (with a layout-rect fallback) so every engine answers the same way.
+    // they are plainly rendered and focusable. Ask the platform visibility API
+    // (with layout rects as the fallback) so every engine agrees on those cases,
+    // while minimal DOM implementations that lay nothing out keep the judgement
+    // they had before.
     if (typeof element.checkVisibility === 'function') {
       return element.checkVisibility({ checkOpacity: false, checkVisibilityCSS: true });
     }
-    return element.getClientRects().length > 0;
+    if (typeof element.getClientRects === 'function') return element.getClientRects().length > 0;
+    return false;
   }
 
   function overlayFocus(element) {
