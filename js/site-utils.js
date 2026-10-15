@@ -324,7 +324,15 @@
   function canOverlayFocus(element) {
     if (!element || typeof element.focus !== 'function' || element.isConnected === false || element.disabled) return false;
     if (element.getAttribute && element.getAttribute('aria-hidden') === 'true') return false;
-    return element.offsetParent !== null || element === document.activeElement;
+    if (element === document.activeElement) return true;
+    // `offsetParent` is null for a `position: fixed` opener and for elements whose
+    // ancestor chain sits in a skipped `content-visibility` subtree, even though
+    // they are plainly rendered and focusable. Judge by the platform visibility
+    // API (with a layout-rect fallback) so every engine answers the same way.
+    if (typeof element.checkVisibility === 'function') {
+      return element.checkVisibility({ checkOpacity: false, checkVisibilityCSS: true });
+    }
+    return element.getClientRects().length > 0;
   }
 
   function overlayFocus(element) {
@@ -496,6 +504,18 @@
     options = options || {};
     record.open = false;
     overlayStack = overlayStack.filter(function (id) { return id !== record.ownerId; });
+    var restore = options.restoreFocus !== false && record.restoreFocus && !/^(?:pagehide|beforeunload|force)$/.test(reason || '');
+    var opener = record.opener;
+    var closingElement = record.element;
+    var panelFocus = firstOverlayFocus(record);
+    record.opener = null;
+    // Hand focus back while the overlay is still interactive. Marking an element
+    // inert makes engines move focus off it asynchronously, and that fixup can
+    // land after the deferred restore below (WebKit then leaves focus on <body>),
+    // while a throttled timer can delay the deferred restore past the point a
+    // keyboard user notices. The synchronous hand-off removes both races; the
+    // bounded re-assertion below stays as the safety net for late fixups.
+    if (restore && opener && focusInsideClosing(document.activeElement, closingElement, panelFocus)) overlayFocus(opener);
     if (record.element) {
       record.element.setAttribute('aria-hidden', 'true');
       record.element.setAttribute('inert', '');
@@ -506,11 +526,6 @@
     if (record.lockScroll) unlockScroll('overlay:' + record.ownerId);
     syncOverlayDiagnostics();
     overlayEvent('gb:overlay-close', record, reason || 'close');
-    var restore = options.restoreFocus !== false && record.restoreFocus && !/^(?:pagehide|beforeunload|force)$/.test(reason || '');
-    var opener = record.opener;
-    var closingElement = record.element;
-    var panelFocus = firstOverlayFocus(record);
-    record.opener = null;
     if (restore && opener) restoreOverlayOpener(opener, closingElement, panelFocus, overlayRestoreGeneration);
     return true;
   }
