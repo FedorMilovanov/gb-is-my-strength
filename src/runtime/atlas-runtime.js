@@ -365,9 +365,14 @@
 
     function truncate(value, length) {
       var valueText = text(value);
-      // Без «…»: подпись узла должна быть префиксом доступного имени, иначе axe
-      // видит текст подписи, которого нет в имени (label-content-name-mismatch).
-      return valueText.length > length ? valueText.slice(0, length).trimEnd() : valueText;
+      // Обрезка по границе слова и без «…»: каждый видимый токен подписи должен
+      // встречаться в доступном имени узла (полный заголовок + группа), иначе axe
+      // сообщает label-content-name-mismatch на обрывке слова или многоточии.
+      if (valueText.length <= length) return valueText;
+      var cut = valueText.slice(0, length);
+      var lastSpace = cut.lastIndexOf(' ');
+      if (lastSpace > 0) cut = cut.slice(0, lastSpace);
+      return cut.replace(/[\s,;:.!?—–-]+$/, '');
     }
 
     function orderedGroups() {
