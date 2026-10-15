@@ -137,3 +137,19 @@ html:not(.dark) body.nagornaya-page .text-red-600 { color: #b91c1c; /* 5.9:1 */ 
 /* Тёмная тема: чип-«молния» держит кремовые чернила из hotfix-блока, поэтому
    плотнее делаем саму плашку: #dac2af на #78350f = 5.32:1 (было 4.15:1). */
 html.dark body.nagornaya-page .bg-amber-600 { background-color: #78350f; }
+
+/* Золотая «молния» .text-amber-500 внутри тёмной панели на светлой странице
+   (bg-stone-900: #b45309 на #1c1917 = 3.48:1) — там нужен светлый оттенок. */
+html:not(.dark) body.nagornaya-page .bg-stone-900 .text-amber-500 { color: #fcd34d; /* 12.1:1 */ }
+
+/* emerald-700 в светлой теме: #a7f3d0 на #047857 = 4.27:1 → ступень плотнее. */
+html:not(.dark) body.nagornaya-page .bg-emerald-700 { background-color: #065f46; }
+
+/* emerald-800 в тёмной теме: кремовые чернила дают 4.45:1 — плотнее плашка
+   и светлее служебный текст внутри неё. */
+html.dark body.nagornaya-page .bg-emerald-800 { background-color: #064e3b; }
+html.dark body.nagornaya-page .bg-emerald-800 .text-stone-300 { color: #d1fae5; }
+
+/* Заголовок «Из библиотеки» (карточки /nagornaya/nakhodki/): цвет был инлайновым. */
+.ng-lib-head { font-family: monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #6f6255; margin-bottom: 1rem; }
+html.dark .ng-lib-head { color: #c3bdb4; }
