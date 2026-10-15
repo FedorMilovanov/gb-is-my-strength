@@ -371,11 +371,13 @@ if (REQUIRE_DIST) {
       'h-drop-cap__letter',
       '<span class="sr-only">Это</span>',
     ]) mustNot(dist, retired, `dist / retired duplicated About drop-cap markup: ${retired}`);
+    // SDG-блок живёт внутри <main id="main-content"> (a11y: содержимое не вне ориентира),
+    // поэтому порядок в собранной странице — main → SDG → </main> → footer.
     const distMainClose = dist.indexOf('</main>');
-    const distSoli = dist.indexOf('class="article-end-sdg"', distMainClose);
-    const distFooter = dist.indexOf('<footer', distSoli);
-    distMainClose !== -1 && distSoli > distMainClose && distFooter > distSoli
-      ? ok('dist / preserves main → Soli Deo Gloria → footer order')
+    const distSoli = dist.indexOf('class="article-end-sdg"');
+    const distFooter = dist.indexOf('<footer', distMainClose);
+    distMainClose !== -1 && distSoli !== -1 && distSoli < distMainClose && distFooter > distMainClose
+      ? ok('dist / preserves main → Soli Deo Gloria → footer order (SDG внутри main)')
       : bad('dist / landmark order is invalid');
     for (const forbidden of ['h-brand-lion', 'AudioContext', 'class="astro-shell"', '_legacy/']) {
       mustNot(dist, forbidden, `dist / ${forbidden}`);
