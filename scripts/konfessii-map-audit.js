@@ -57,7 +57,12 @@ function withoutNoscript(source) {
 
 function isExternalTelemetryNetworkNoise(text) {
   const value = String(text || '');
-  const yandexTelemetryHost = /(?:https?|wss):\/\/(?:[^/\s'"]+\.)?mc\.yandex\.(?:com|ru)(?:[/:]|$)/i.test(value);
+  // Семейство хостов телеметрии Яндекса, а не только mc.yandex.*: тег Метрики
+  // сам ходит на свои служебные поддомены (mdd.yandex.net, hdrc.yandex.net и
+  // т.п.). В разметке сайта их нет, а CSP страницы разрешает в connect-src лишь
+  // *.yandex.ru и *.yandex.com, поэтому падение такого запроса — шум внешней
+  // сети, а не дефект страницы. Прочие внешние хосты по-прежнему фатальны.
+  const yandexTelemetryHost = /(?:https?|wss):\/\/(?:[^/\s'"]+\.)?yandex\.(?:com|ru|net|by|kz|ua)(?:[/:]|$)/i.test(value);
   const networkFailure = /(?:WebSocket connection|Failed to load resource|net::ERR_|handshake|response code:\s*[45]\d\d|status(?: code)?[=:]?\s*[45]\d\d|HTTP\s+[45]\d\d|REQUEST\s+)/i.test(value);
   return yandexTelemetryHost && networkFailure;
 }
@@ -133,6 +138,16 @@ assert(
   !isExternalTelemetryNetworkNoise('HTTP 500 script http://127.0.0.1:4321/js/app.js'),
   'I1 audit policy: same-origin HTTP failures remain fatal',
   'I1 audit policy: same-origin HTTP failure was incorrectly suppressed',
+);
+assert(
+  isExternalTelemetryNetworkNoise('REQUEST net::ERR_CERT_AUTHORITY_INVALID xhr https://mdd.yandex.net/'),
+  'I1 audit policy: Yandex telemetry service subdomains are classified as noise',
+  'I1 audit policy: Yandex service subdomain network failure classification is missing',
+);
+assert(
+  !isExternalTelemetryNetworkNoise('REQUEST net::ERR_CERT_AUTHORITY_INVALID xhr https://cdn.example.com/lib.js'),
+  'I1 audit policy: third-party failures outside the telemetry family remain fatal',
+  'I1 audit policy: unrelated third-party network failure was incorrectly suppressed',
 );
 assert(
   !isExternalTelemetryNetworkNoise("Uncaught TypeError: application crashed at https://mc.yandex.com/runtime.js"),
