@@ -534,6 +534,10 @@
           x: 0,
           y: position.r + (profile.id === 'compact' ? 15 : 19),
           'text-anchor': 'middle',
+          // Подпись — визуальное сокращение (truncate + «…»), доступное имя узла
+          // задаётся полным заголовком ниже: иначе axe видит текст подписи, которого
+          // нет в имени (label-content-name-mismatch).
+          'aria-hidden': 'true',
         });
         label.textContent = truncate(node.title, position.hub ? (profile.id === 'compact' ? 26 : 42) : (profile.id === 'compact' ? 20 : 30));
         nodeGroup.appendChild(label);
