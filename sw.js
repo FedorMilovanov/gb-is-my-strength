@@ -40,7 +40,7 @@ const PRECACHE_ASSETS = [
   '/js/sw-register.js?v=921dd6a2',
   '/js/nagornaya-mobile-toc.js?v=dca61a7a',
   '/js/floating-cluster-controller.js?v=434bab98',
-  '/js/reader-preferences-head.js?v=78fb2ef8',
+  '/js/reader-preferences-head.js?v=567605d2',
   '/js/reader-preferences.js?v=e26f05a8',
   '/js/reader-state.js?v=b3deb501',
   '/pagefind/pagefind.js',
