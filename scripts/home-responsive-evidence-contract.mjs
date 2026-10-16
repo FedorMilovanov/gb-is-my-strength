@@ -4,6 +4,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
+import browserRuntimeNoise from './lib/browser-runtime-noise.js';
+
+const { monitorRuntime } = browserRuntimeNoise;
+
 const ROOT = path.resolve(process.cwd());
 const REPORT_DIR = path.join(ROOT, 'reports', 'home-browser-contract');
 
@@ -573,13 +577,17 @@ export async function runResponsiveEvidence(browserName, browserType, baseUrl) {
   });
   const page = await context.newPage();
   const runtimeErrors = [];
-  page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`));
-  page.on('console', (message) => {
-    if (message.type() !== 'error') return;
-    const text = message.text();
-    const knownWebKitDiagnostic = browserName === 'webkit'
-      && text === 'Viewport argument key "interactive-widget" not recognized and ignored.';
-    if (!knownWebKitDiagnostic) runtimeErrors.push(`console: ${text}`);
+  const clientAborts = [];
+  // Общий классификатор шума (scripts/lib/browser-runtime-noise.js). Раньше здесь был
+  // свой коллектор, и анонимное «Failed to load resource» из egress-фильтра CI (Метрика)
+  // валило контракт: у такого сообщения в тексте нет URL, судить по тексту нельзя. Теперь
+  // его разбирают структурные события response/requestfailed, отсеивается только внешняя
+  // телеметрия, а same-origin и ошибки приложения остаются фатальными.
+  monitorRuntime(page, runtimeErrors, {
+    isIgnoredConsole: (text, message) => message.type() !== 'error'
+      || (browserName === 'webkit'
+        && text === 'Viewport argument key "interactive-widget" not recognized and ignored.'),
+    clientAborts,
   });
 
   try {
@@ -601,6 +609,7 @@ export async function runResponsiveEvidence(browserName, browserType, baseUrl) {
     await assertSearchLifecycle(page, browserName);
     const compactEvidence = await captureCompactEvidence(page, browserName);
     const evidence = [...await captureEvidence(page, browserName), ...compactEvidence];
+    if (clientAborts.length) console.log(`ℹ ${browserName}: отменено клиентом ${clientAborts.length} запрос(ов): ${clientAborts.join(' | ')}`);
     assert.deepEqual(runtimeErrors, [], `responsive evidence runtime errors: ${runtimeErrors.join(' | ')}`);
     return { browser: `${browserName}-responsive-evidence`, result: 'PASS', evidence };
   } finally {
