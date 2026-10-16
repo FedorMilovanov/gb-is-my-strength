@@ -55,6 +55,10 @@ function withoutNoscript(source) {
   return source.replace(/<noscript\b[^>]*>[\s\S]*?<\/noscript>/gi, '');
 }
 
+function withoutPrintProjection(source) {
+  return source.replace(/<div[^>]*baptizm-print-projection[\s\S]*?<\/div>\s*<noscript/gi, '<noscript');
+}
+
 function isExternalTelemetryNetworkNoise(text) {
   const value = String(text || '');
   // Семейство хостов телеметрии Яндекса, а не только mc.yandex.*: тег Метрики
@@ -178,13 +182,15 @@ assert(/<iframe[^>]+id="appframe"[^>]+src="\.\/_app\/index\.html"/.test(wrap), '
 
 // SEO fallback must never become a visible flex sibling when JS is enabled.
 for (const [label, source] of [['legacy', wrap], ['native', nativeBody]]) {
+  // The fallback text may be inline (legacy, GitHub-Pages wrapper) or rendered
+  // from Baptizm3DStaticProjection (native). Both count as "inside noscript".
   assert(
-    /<noscript\b[^>]*>[\s\S]*?Три истока русского баптизма[\s\S]*?<\/noscript>/i.test(source),
+    /<noscript\b[^>]*>[\s\S]*?(Три истока русского баптизма|<Baptizm3DStaticProjection\s*\/>)[\s\S]*?<\/noscript>/i.test(source),
     `I15 ${label}: SEO fallback находится внутри noscript`,
     `I15 ${label}: SEO fallback отсутствует внутри noscript`,
   );
   assert(
-    !/Три истока русского баптизма/.test(withoutNoscript(source)),
+    !/Три истока русского баптизма/.test(withoutNoscript(withoutPrintProjection(source))),
     `I15 ${label}: SEO prose не участвует в JS-layout`,
     `I15 ${label}: SEO prose остался видимым flex-соседом`,
   );
@@ -194,6 +200,38 @@ for (const [label, source] of [['legacy', wrap], ['native', nativeBody]]) {
     `I15 ${label}: остались светлые hardcoded-карточки`,
   );
 }
+// The print projection is the only way the 17 history sections reach paper, because
+// Chromium never paginates <iframe> content. It must stay invisible on screen, out
+// of the search index, and exist exactly once next to the noscript fallback.
+const projectionSrc = read(path.join('src', 'components', 'konfessii', 'russkij-baptizm', 'Baptizm3DStaticProjection.astro'));
+assert(
+  /Три истока русского баптизма/.test(projectionSrc) &&
+  (projectionSrc.match(/Три истока русского баптизма/g) || []).length === 1,
+  'I15 projection: тексты фолбэка хранятся в одном месте',
+  'I15 projection: текст фолбэка размножен или потерян',
+);
+assert(
+  (nativeBody.match(/<Baptizm3DStaticProjection\s*\/>/g) || []).length === 2,
+  'I15 projection: фолбэк подключён дважды (noscript + печать)',
+  `I15 projection: подключений фолбэка = ${(nativeBody.match(/<Baptizm3DStaticProjection\s*\/>/g) || []).length}`,
+);
+assert(
+  /<div[^>]*class="baptizm-print-projection"[^>]*data-print-static-projection[^>]*data-pagefind-ignore/.test(nativeBody),
+  'I15 projection: печатная проекция помечена data-print-static-projection + data-pagefind-ignore',
+  'I15 projection: печатная проекция без print/pagefind-маркеров',
+);
+assert(
+  /\.baptizm-print-projection\{display:none\}/.test(nativeStyles) &&
+  /html\.app-live \.baptizm-print-projection\{display:block/.test(nativeStyles),
+  'I15 projection: видна только на печати у живой страницы',
+  'I15 projection: нет контракта скрытия/раскрытия проекции',
+);
+assert(
+  /document\.documentElement\.classList\.add\('app-live'\)/.test(nativeBody),
+  'I15 projection: живое состояние страницы помечено app-live',
+  'I15 projection: нет маркера живого состояния app-live',
+);
+
 assert(
   /flex:\s*1\s+1\s+0/.test(nativeStyles) &&
   /\.stage\{[^}]*min-width:\s*0[^}]*min-height:\s*0[^}]*overflow:\s*hidden/.test(nativeStyles),
