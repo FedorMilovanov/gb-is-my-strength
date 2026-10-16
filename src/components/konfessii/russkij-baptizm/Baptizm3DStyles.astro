@@ -32,4 +32,25 @@ body{height:100%;min-width:0;min-height:0;background:var(--bg);color:var(--txt);
 .seo-fallback a{color:var(--gold);text-underline-offset:3px}
 @media (prefers-reduced-motion:reduce){.lring{animation:none}}
 @media(max-width:600px){.crumb{display:none}.bar .back:nth-of-type(2){display:none}.bar{justify-content:flex-start}.back{max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis}.noscript-fallback{padding:24px 18px}}
+.baptizm-print-projection{display:none}
+@media print{
+  /* Печать 3D-карты: контент живёт в <iframe>, а Chromium не пагинирует
+     содержимое фреймов, поэтому без проекции на бумагу уходил только hero
+     (1 стр./486 симв. вместо 17 разделов истории). Снимаем фиксированную
+     высоту оболочки и печатаем текстовый фолбэк обычным потоком документа.
+     Проекция раскрывается только у живой страницы (html.app-live): без JS
+     тот же текст печатает noscript-фолбэк, дублирования нет. */
+  html,body{height:auto!important;min-height:0!important;overflow:visible!important;display:block!important}
+  .skip,.bar,#appframe,#loader{display:none!important}
+  .stage{position:static!important;height:auto!important;min-height:0!important;overflow:visible!important;flex:none!important}
+  .baptizm-print-projection,.noscript-fallback{position:static!important;inset:auto!important;overflow:visible!important;height:auto!important;padding:0!important;background:#fff!important;color:#111!important;font-size:11pt!important;line-height:1.55!important}
+  html.app-live .baptizm-print-projection{display:block!important}
+  .baptizm-print-projection .seo-fallback,.noscript-fallback .seo-fallback{max-width:none;margin:0}
+  .baptizm-print-projection h2,.noscript-fallback h2{font-size:15pt!important;color:#111!important}
+  .baptizm-print-projection p,.noscript-fallback p,
+  .baptizm-print-projection strong,.noscript-fallback strong{color:#111!important}
+  .baptizm-print-projection .seo-fallback__card,.noscript-fallback .seo-fallback__card{background:#fff!important;border:1px solid #7a7a7a!important;color:#111!important;break-inside:avoid-page}
+  .baptizm-print-projection .seo-fallback__source,.noscript-fallback .seo-fallback__source{color:#333!important}
+  .baptizm-print-projection a,.noscript-fallback a{color:#111!important;text-decoration:underline}
+}
 </style>
