@@ -261,6 +261,7 @@ PR #2028) заменил каждый не-ASCII символ в 10 файлах
 | `scripts/baptisty-mojibake-visual-probe.mjs` | замер читательского ущерба по отрендеренным страницам |
 | `audit/BAPTISTY-MOJIBAKE-WORKSHEET-2026-10-16.md` | рабочий лист: маска и длины утраченных слов по каждой строке |
 | `scripts/audit-pro.js` G115 | храповик вызывается из аудита, который уже бежит в CI — регресс ловится без правок `.github` |
+| вызов | `node scripts/baptisty-mojibake-ratchet.mjs [--check\|--report\|--write]` |
 
 **Замер читательского ущерба** (`node scripts/baptisty-mojibake-visual-probe.mjs`,
 11 маршрутов серии, Chromium 153.0.8010.0):
@@ -298,11 +299,27 @@ Wieler 551334/`1aac4a52`, Initiative letter 219731/`ffbdde39`, VSEHB 1945
 устаревания нет. Эти значения — основание для авторского восстановления строк
 реестра (формулировки — авторские, и потому не подставляются агентом).
 
-### 9.4. Что это даёт PR
+### 9.4. Почему гейт не получил npm-алиаса
+
+`package.json` в этом PR не меняется сознательно: файл держит более ранний
+активный PR (dependabot #2144, бамп npm-зависимостей), и lane-collision-guard
+(`scripts/lane-collision-guard.mjs`, шаг «Guard active lane collisions» в
+`shared-files-guard.yml`) блокирует второй PR, который трогает тот же
+эксклюзивный файл. Гейт от этого не слабеет: храповик вызывается из
+`scripts/audit-pro.js` (G115), а этот аудит CI уже выполняет. Вызов напрямую:
+`node scripts/baptisty-mojibake-ratchet.mjs --check`.
+
+Тот же PR #2144 — правильное место и для 7 moderate-советов `npm audit`
+(undici, fast-uri, smol-toml и другие транзитивные dev-зависимости): workflow
+`Dependency Security` запускается по изменению `package.json`, то есть на этом
+PR он появлялся именно из-за правки файла, а не из-за дефекта самой ветки.
+Советы не скрываются: они перечислены здесь и остаются зоной dependabot-линии.
+
+### 9.5. Что это даёт PR
 
 * `scripts/audit-pro.js` — **PASS** (167 passed / 7 warnings / 0 errors), в том
   числе новый G115.
-* `npm run baptisty:mojibake:check` — PASS; `--report` — рабочий лист.
+* `node scripts/baptisty-mojibake-ratchet.mjs --check` — PASS; `--report` — рабочий лист.
 * Печать: сплошной прогон по-прежнему `PRINT-AUDIT routes=104 ok=104 failed=0`;
   метрика `sourceMasked` теперь документирует *инвентарь дефекта исходника*, а не
   потерю печати (см. §8).

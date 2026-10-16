@@ -161,9 +161,7 @@
     "nagornaya:bar-asset:contract": "node scripts/nagornaya-bar-asset-contract-test.js",
     "nagornaya:bar-asset:browser:test": "node scripts/nagornaya-bar-asset-browser-test.js",
     "visual:pixelmatch:contract": "node scripts/pixelmatch7-contract.mjs",
-    "astro:7:satteri:contract": "node scripts/astro7-satteri-contract.mjs",
-    "baptisty:mojibake:check": "node scripts/baptisty-mojibake-ratchet.mjs --check",
-    "baptisty:mojibake:report": "node scripts/baptisty-mojibake-ratchet.mjs --report"
+    "astro:7:satteri:contract": "node scripts/astro7-satteri-contract.mjs"
   },
   "engines": {
     "node": ">=22.12.0"

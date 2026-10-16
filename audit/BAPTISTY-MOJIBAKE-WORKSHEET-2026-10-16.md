@@ -29,7 +29,7 @@
 1. Взять строку из списка ниже, восстановить текст по маске (длины слов) и
    источнику строки: в реестре медиа это `Source URL` той же строки (живые
    метаданные Commons — «Описание» и «Credit»), в компонентах — авторский текст.
-2. Проверить: `npm run baptisty:mojibake:check` — храповик скажет, если маска
+2. Проверить: `node scripts/baptisty-mojibake-ratchet.mjs --check` — храповик скажет, если маска
    изменилась или исчезла (для восстановленных строк запустить
    `node scripts/baptisty-mojibake-ratchet.mjs --write` и закоммитить инвентарь).
 3. Приёмка: `npm run baptisty:authentic-media:audit`, `npm run astro:audit:baptisty-series:no-build`,
