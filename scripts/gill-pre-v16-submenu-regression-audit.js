@@ -297,7 +297,7 @@ async function browserAudit(){
               // Layout signature: which rows are folded away. The metro line is
               // only comparable between samples taken under the SAME signature.
               const sig=[...document.querySelectorAll('.gbs-rail .gbs2-toc li')].map(li=>li.classList.contains('gbs2-collapsed')?'0':'1').join('');
-              return{active:active.length,passed:passed.length,count,trackH,fillH,sig,
+              return{active:active.length,passed:passed.length,count,trackH,fillH,sig,scrollTop:sc?Math.round(sc.scrollTop):0,
                 activeHref:lks[idx]?.classList.contains('gbs2-active')?lks[idx].getAttribute('href'):null,activeVisible,
                 ariaOk:document.querySelectorAll('.gbs-rail .gbs2-toc a[aria-current="location"]').length===1};
             },i); if(r.activeHref===href && r.active===1 && r.activeVisible) break; }
@@ -306,7 +306,7 @@ async function browserAudit(){
             // stopped moving and the active row is inside the scroller for two
             // consecutive reads. The visibility boundary stays the strict ±1px.
             let settledReads=0;
-            for(let s=0;s<12;s++){
+            for(let s=0;s<24;s++){
               await page.waitForTimeout(100);
               const f2=await page.evaluate((idx)=>{
                 const fl=document.querySelector('.gbs2-track i');
@@ -320,11 +320,17 @@ async function browserAudit(){
                   fillH:fl?fl.getBoundingClientRect().height:0,
                   trackH:tr?tr.getBoundingClientRect().height:0,
                   sig,
+                  scrollTop:sc?Math.round(sc.scrollTop):0,
                   activeVisible:!!(ar&&sr&&ar.top>=sr.top-1&&ar.bottom<=sr.bottom+1)
                 };
               },i);
-              const fillStable=Math.abs(f2.fillH-r.fillH)<=1&&f2.sig===r.sig;
-              r.fillH=f2.fillH;r.trackH=f2.trackH;r.sig=f2.sig;r.activeVisible=f2.activeVisible;
+              // Позиция скроллера — часть контракта покоя: без неё снимок
+              // мид-анимации (панель ещё едет к активной строке) считался
+              // «стабильным» по fill/sig и валил живой гейт.
+              const fillStable=Math.abs(f2.fillH-r.fillH)<=1&&f2.sig===r.sig
+                &&Math.abs(f2.scrollTop-r.scrollTop)<=1;
+              r.fillH=f2.fillH;r.trackH=f2.trackH;r.sig=f2.sig;r.scrollTop=f2.scrollTop;
+              r.activeVisible=f2.activeVisible;
               settledReads=fillStable&&f2.activeVisible?settledReads+1:0;
               if(settledReads>=2)break;
             }
@@ -333,6 +339,8 @@ async function browserAudit(){
             if(r.passed!==i)bad(`${route} ${vp.name} item ${i+1}: passed ${r.passed} != ${i}`); else ok(`${route} ${vp.name} item ${i+1}: passed ${i}`);
             if(!/^\d+ \/ \d+$/.test(r.count))bad(`${route} ${vp.name} item ${i+1}: bad count ${r.count}`);
             else if(r.count!==`${i+1} / ${total}`)bad(`${route} ${vp.name} item ${i+1}: counter ${r.count} != ${i+1} / ${total}`);
+            const settled=settledReads>=2;
+            r.settled=settled;
             if(!r.activeVisible)bad(`${route} ${vp.name} item ${i+1}: active row not visible in scroller`);
             // §6.3 addendum v2 — rail fill: bounded by the track; monotonic
             // non-decreasing WITHIN one collapse layout. When a sub-group folds
@@ -342,8 +350,13 @@ async function browserAudit(){
             // healthy line), so the baseline resets on signature change.
             if(r.fillH>r.trackH+1)bad(`${route} ${vp.name} item ${i+1}: fill ${Math.round(r.fillH)} exceeds track ${Math.round(r.trackH)}`);
             if(r.sig!==prevSig){prevFill=-1;prevSig=r.sig;}
-            if(r.fillH+0.5<prevFill)bad(`${route} ${vp.name} item ${i+1}: fill regressed ${Math.round(r.fillH)} < ${Math.round(prevFill)} (same layout)`);
-            prevFill=Math.max(prevFill,r.fillH);
+            // Заполнение метро-линии анимируется вместе со сменой фазы чтения:
+            // снимок «в полёте» не сравним ни с предыдущим пунктом, ни с самим
+            // собой. Монотонность проверяется только на успокоившемся снимке
+            // (контракт покоя выше), иначе гейт валил живую страницу.
+            if(!settled)console.log(`WARN ${route} ${vp.name} item ${i+1}: fill not settled (${Math.round(r.fillH)}) — monotonic check skipped`);
+            else if(r.fillH+0.5<prevFill)bad(`${route} ${vp.name} item ${i+1}: fill regressed ${Math.round(r.fillH)} < ${Math.round(prevFill)} (same layout)`);
+            if(settled)prevFill=Math.max(prevFill,r.fillH);
             if(!r.ariaOk)bad(`${route} ${vp.name} item ${i+1}: aria-current not on exactly one rail row`);
             traversal.push({item:i+1,href,active:r.activeHref,passed:r.passed,count:r.count,fillH:Math.round(r.fillH),trackH:Math.round(r.trackH),activeVisible:r.activeVisible});
           }

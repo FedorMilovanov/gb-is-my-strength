@@ -2619,13 +2619,37 @@
 
         var activeRow = activeIdx >= 0 ? represented[activeIdx] : null;
         var scroller = qs('.gbs2-tocscroll');
+        function railFollowTarget() {
+          // .gbs2-tocscroll is the scroll container, .gbs2-toc is the offsetParent of a
+          // row: offsetTop is therefore measured from the list box, i.e. 2px padding of
+          // the scroller are not part of it. Compensate so the target really centres the
+          // row inside the visible box instead of leaving it on the edge.
+          var box = scroller.getBoundingClientRect();
+          var list = activeRow.a.offsetParent && scroller.contains(activeRow.a.offsetParent)
+            ? activeRow.a.offsetParent.getBoundingClientRect() : null;
+          var listOffset = list ? (list.top - box.top + scroller.scrollTop) : 0;
+          return Math.max(0, listOffset + activeRow.a.offsetTop
+            - scroller.clientHeight / 2 + activeRow.a.offsetHeight / 2);
+        }
         function keepActiveRowVisible(behavior) {
           if (!activeRow || !scroller) return;
           var ar = activeRow.a.getBoundingClientRect();
           var sr = scroller.getBoundingClientRect();
           if (ar.top < sr.top + 18 || ar.bottom > sr.bottom - 18) {
-            var desired = activeRow.a.offsetTop - scroller.clientHeight / 2 + activeRow.a.offsetHeight / 2;
-            scroller.scrollTo({ top: Math.max(0, desired), behavior: behavior || 'auto' });
+            scroller.scrollTo({ top: railFollowTarget(), behavior: behavior || 'auto' });
+            // Анимация smooth может не доехать: прерывание, пере-скролл другим
+            // обработчиком или голодание rAF под нагрузкой. Тогда активная строка
+            // залипает наполовину скрытой за кромкой скроллера — читатель теряет
+            // место в оглавлении. Доводим позицию детерминированно, если строка
+            // всё ещё вне видимой области.
+            window.setTimeout(function () {
+              if (!activeRow.a.classList.contains('gbs2-active')) return;
+              var ar2 = activeRow.a.getBoundingClientRect();
+              var sr2 = scroller.getBoundingClientRect();
+              if (ar2.top < sr2.top || ar2.bottom > sr2.bottom) {
+                scroller.scrollTo({ top: railFollowTarget(), behavior: 'auto' });
+              }
+            }, 420);
           }
         }
         if (activeRow && scroller) {
