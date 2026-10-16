@@ -2704,9 +2704,14 @@ html.dark .gb-roman {
      paper — so print switches it to ink and drops the chip spacing. Numeral
      chips that live in navigation chrome are already removed with their
      containers by the site print rules. */
-  .gb-roman {
-    display: inline !important;
-    color: #111 !important;
+  /* Specificity instead of the ratchet token: the governed budget for this file
+     is exactly 524 declarations and the plain selectors below already beat both
+     the base rule (.gb-roman) and the dark-theme colour rule
+     (html.dark .gb-roman), so no override keyword is needed. */
+  html body .gb-roman,
+  html.dark body .gb-roman {
+    display: inline;
+    color: #111;
     margin-right: 0.25em;
   }
 }
