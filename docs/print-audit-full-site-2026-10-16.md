@@ -109,3 +109,22 @@ node reports/print-fix-screen-check.mjs
 Пробники лежат в `reports/` (каталог вне git): `print-audit.mjs`,
 `print-loss-explain.mjs`, `print-triage.mjs`, `app-flow-geom.mjs`,
 `why-hidden.mjs`, `terminal-seal-probe.mjs`, `konf-screen-check.mjs`.
+
+## 7. Follow-up: красные CI, вскрытые этим раундом
+
+Сплошной прогон печати не единственная проверка, которая смотрит на эти файлы.
+После правок CI дал три новых красных (на предыдущем tip их не было) — все три
+разобраны и закрыты, потому что «зелёный печатный прогон при красном CI» — это не
+готовый результат.
+
+| Проверка | Что случилось | Корневая причина | Исправление |
+| --- | --- | --- | --- |
+| Route Registry Validators → `public-surface-browser-matrix` | `I15 native: SEO fallback отсутствует внутри noscript` | инвариант искал текст фолбэка **литералом внутри `<noscript>`**, а текст переехал в `Baptizm3DStaticProjection.astro` (рендерится дважды: noscript + печатная проекция) | инвариант проверяет компонент и оба его подключения, плюс новые утверждения о печатной проекции: один источник текста, `data-print-static-projection` + `data-pagefind-ignore`, `display:none` на экране и раскрытие только у `html.app-live`. Проверка стала строже, а не мягче: `npm run konfessii:audit` с `REQUIRE_DIST=1 REQUIRE_BROWSER=1` проходит локально, включая браузерную матрицу |
+| Scripture Occurrence Index Contract | `generated index is stale or nondeterministic` | новый файл фолбэка вошёл в корпус: `scannedSourceFiles` 509 → 510, а `data/scripture-search-index.json` коммитится и сверяется байт-в-байт | индекс пересобран `--write`; ссылок и вхождений не прибавилось (1222 / 3071) |
+| Search Scripture Occurrence Runtime | падал на шаге `build-scripture-occurrence-index.mjs --check` в «Validate source contracts» | тот же stale-индекс | тот же |
+
+Замечание по процессу: коммит с расширением инварианта I15 (`fba6d52`) получил
+испорченное сообщение — heredoc в одной команде съел текст второго сообщения,
+а коммит уже был отправлен; перезапись истории (force push) запрещена правилами
+сессии, поэтому содержание коммита описано здесь и в PR. Содержимое коммита —
+только `scripts/konfessii-map-audit.js` и корректно.
