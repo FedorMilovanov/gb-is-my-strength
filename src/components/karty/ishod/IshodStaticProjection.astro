@@ -1,0 +1,226 @@
+---
+/**
+ * IshodStaticProjection — текстовая версия интерактивной карты Исхода.
+ *
+ * Зачем: содержимое `/karty/ishod/` живёт внутри карты (движок рисует подписи
+ * на сцене), поэтому печать отдавала одну страницу с подписями карты, а
+ * читатель без JavaScript — короткий аварийный блок. Печать и no-JS обязаны
+ * получать авторский текст маршрута, причём ровно тот, что показывает карта.
+ *
+ * Источники — `karty/ishod/route.json` (авторский текст маршрута) и
+ * `karty/ishod/pihahiroth-authority.json` (маршрутный authority Пи-Гахирофа).
+ * Компонент повторяет то, что inline-скрипт `IshodMap.astro` делает в рантайме:
+ *
+ *   1. накладывает authority-панель на историческую запись `pihahiroth`
+ *      (имя, иврит, врезка, сюжет, археология, спор) — иначе печать воскресила
+ *      бы снятые утверждения;
+ *   2. заменяет исторические варианты локализации Пи-Гахирофа коридорами
+ *      неопределённости из authority;
+ *   3. снимает с маршрута точку `wp-suez` и не печатает `signature` —
+ *      рантайм делает то же самое.
+ *
+ * Дополнительно: authority запрещает на этой странице ряд утверждений
+ * (`forbiddenRuntimeClaims`). Живая страница выполняет запрет потому, что её
+ * текст живёт только в панели карты; печатная версия выводит текст на бумагу,
+ * поэтому тот же список применяется здесь: поле, несущее запрещённое
+ * утверждение, не печатается, а читатель не получает подменённый текст — он
+ * получает указание на интерактивную панель. Ничего не досочиняется: вся проза
+ * — поля `route.json` и `pihahiroth-authority.json`, приведённые к тексту.
+ */
+import route from '../../../../karty/ishod/route.json';
+import authority from '../../../../karty/ishod/pihahiroth-authority.json';
+
+// Проза маршрута написана фрагментами HTML (для панели движка). В печатном
+// тексте любой тег — граница слова: в этом файле теги стоят только на границах
+// слов (проверено по данным: ни один тег не разрывает слово), а склейка тега с
+// текстом без пробела давала «…мужчин».ИСХОД 12:37 вместо ссылки отдельным
+// фрагментом. Поэтому тег заменяется пробелом, а не удаляется.
+const toText = (value: unknown) =>
+  String(value ?? '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&laquo;/g, '«')
+    .replace(/&raquo;/g, '»')
+    .replace(/&mdash;/g, '—')
+    .replace(/&ndash;/g, '–')
+    .replace(/&hellip;/g, '…')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const FORBIDDEN: string[] = Array.isArray((authority as { forbiddenRuntimeClaims?: string[] }).forbiddenRuntimeClaims)
+  ? ((authority as { forbiddenRuntimeClaims?: string[] }).forbiddenRuntimeClaims as string[])
+  : [];
+
+/** Всё, что authority запрещает печатать, остаётся в интерактивной карте. */
+const withheld: string[] = [];
+const sanctioned = (value: unknown, where: string): string => {
+  const text = toText(value);
+  if (!text) return '';
+  const hit = FORBIDDEN.find((term) => text.includes(term));
+  if (hit) {
+    withheld.push(where);
+    return '';
+  }
+  return text;
+};
+
+const meta = route.meta ?? {};
+const stats = meta.stats ?? {};
+const stories = Array.isArray(route.stories) ? route.stories : [];
+const stages = Array.isArray(route.stages) ? route.stages : [];
+const timeline = Array.isArray(route.timeline) ? route.timeline : [];
+// Рантайм (IshodMap.astro) снимает с маршрута точку wp-suez: authority её не
+// подтверждает. Печать обязана показывать тот же маршрут, что и карта.
+const waypoints = (Array.isArray(route.verified_waypoints) ? route.verified_waypoints : [])
+  .filter((waypoint) => waypoint && waypoint.id !== 'wp-suez');
+
+const PLACE_OVERRIDDEN = 'pihahiroth';
+const panel: Record<string, unknown> = (authority.panel ?? {}) as Record<string, unknown>;
+// Дословно строка, которую рантайм подставляет в `place.bible_extra`
+// (IshodMap.astro, inline-скрипт). Совпадение проверяет
+// `npm run astro:audit:ishod` — правка одного места без другого валит гейт.
+const AUTHORITY_BIBLE_EXTRA =
+  '<p class="bib-note"><b>Граница карты:</b> событие перехода исповедуется как реальное Божье избавление; точная современная координата в этой публикации не утверждается.</p>';
+/** Эффективный маршрут: та же подмена, что делает рантайм карты. */
+const places = (Array.isArray(route.places) ? route.places : []).map((place) =>
+  place.id === PLACE_OVERRIDDEN
+    ? {
+        ...place,
+        ...panel,
+        bible_extra: AUTHORITY_BIBLE_EXTRA,
+        stage: null,
+        authorityId: authority.authorityId,
+        coordinateStatus: authority.exactCoordinateStatus,
+      }
+    : place);
+
+const STATUS_RU: Record<string, string> = { ALTERNATIVE: 'альтернатива', CANDIDATE: 'кандидат' };
+const CONFIDENCE_RU: Record<string, string> = {
+  LOW: 'низкая',
+  MODERATE_LOW: 'умеренно низкая',
+  MODERATE: 'умеренная',
+  HIGH: 'высокая',
+};
+const corridors = (Array.isArray(authority.corridors) ? authority.corridors : []).map((corridor) => ({
+  label: toText(corridor.label),
+  status: STATUS_RU[corridor.status] ?? toText(corridor.status),
+  confidence: CONFIDENCE_RU[corridor.confidence] ?? toText(corridor.confidence),
+}));
+
+const variantGroups = Object.entries(route.scientific_variants ?? {})
+  .map(([key, entries]) => ({
+    key,
+    items: key === PLACE_OVERRIDDEN
+      ? corridors.map((corridor) => ({ title: corridor.label, detail: '', status: corridor.status, confidence: corridor.confidence }))
+      : (Array.isArray(entries) ? entries : []).map((entry) => ({
+          title: toText(entry.title),
+          detail: sanctioned(entry.detail, `${key}.detail`),
+          status: toText(entry.status),
+          confidence: '',
+        })),
+  }))
+  .filter((group) => group.items.length > 0);
+
+const facts = [
+  stats.places ? `${stats.places} мест` : null,
+  stats.stages ? `${stats.stages} этапов` : null,
+  stats.verses ? `${stats.verses} стихов` : null,
+  waypoints.length ? `${waypoints.length} верифицированных точек` : null,
+  corridors.length ? `${corridors.length} коридора неопределённости Пи-Гахирофа` : null,
+  stats.years ? `горизонт повествования — ${stats.years} лет` : null,
+].filter(Boolean).join(' · ');
+---
+
+<h2>{meta.title}: маршрут Исхода, этапы и историко-археологический контекст</h2>
+<p class="map-static-facts"><strong>Состав карты:</strong> {facts}.</p>
+<p>{toText(meta.subtitle)}. Текст составлен по данным самой карты (<code>route.json</code>) и её authority-документа: этапы, сюжеты, места с библейскими ссылками, археологическим контекстом и разбором спорных локализаций.</p>
+
+<h3>Этапы маршрута</h3>
+<ol>
+  {stages.map((stage) => (
+    <li>
+      <b>Этап {toText(stage.n)}. {toText(stage.t)}</b>
+      {toText(stage.r) ? ` — ${toText(stage.r)}` : ''}
+      {toText(stage.km) ? ` · ${toText(stage.km)}` : ''}
+      {toText(stage.age) ? ` · ${toText(stage.age)}` : ''}
+    </li>
+  ))}
+</ol>
+
+<h3>Сюжеты карты</h3>
+<ul>
+  {stories.map((story) => (
+    <li><b>{toText(story.label)}</b>{toText(story.description) ? ` — ${toText(story.description)}` : ''}</li>
+  ))}
+</ul>
+
+<h3>Места маршрута</h3>
+{places.map((place) => (
+  <>
+    <h3>{toText(place.name)}</h3>
+    {toText(place.he) || (toText(place.tr) && toText(place.tr) !== toText(place.name)) ? (
+      <p class="map-static-original">
+        <b>Оригинал:</b> {toText(place.he)}
+        {toText(place.he) && toText(place.tr) && toText(place.tr) !== toText(place.name) ? ` · ${toText(place.tr)}` : ''}
+      </p>
+    ) : null}
+    {sanctioned(place.kick, `${place.id}.kick`) ? <p>{sanctioned(place.kick, `${place.id}.kick`)}</p> : null}
+    {sanctioned(place.story, `${place.id}.story`) ? <p>{sanctioned(place.story, `${place.id}.story`)}</p> : null}
+    {toText(place.bible) ? <p>{toText(place.bible)}</p> : null}
+    {toText(place.ep1) ? <p><b>Библейские ссылки:</b> {toText(place.ep1)}{toText(place.ep2) ? ` — ${toText(place.ep2)}` : ''}</p> : null}
+    {toText(place.id1) ? <p><b>Идентификация:</b> {toText(place.id1)}{toText(place.id2) ? ` · ${toText(place.id2)}` : ''}</p> : null}
+    {sanctioned(place.bible_extra, `${place.id}.bible_extra`) ? <p>{sanctioned(place.bible_extra, `${place.id}.bible_extra`)}</p> : null}
+    {sanctioned(place.arch, `${place.id}.arch`) ? <p>{sanctioned(place.arch, `${place.id}.arch`)}</p> : null}
+    {sanctioned(place.dispute, `${place.id}.dispute`) ? <p>{sanctioned(place.dispute, `${place.id}.dispute`)}</p> : null}
+  </>
+))}
+
+<h3>Спорные локализации: что говорят варианты</h3>
+{corridors.length ? (
+  <>
+    <p>{toText(authority.readerLabel)} {toText(authority.palaeowaterDisclaimer)}</p>
+    <ol>
+      {corridors.map((corridor) => (
+        <li><b>{corridor.label}</b> — статус: {corridor.status}, уверенность: {corridor.confidence}</li>
+      ))}
+    </ol>
+  </>
+) : null}
+<ul>
+  {variantGroups.map((group) =>
+    group.items.map((item) => (
+      <li>
+        <b>{item.title}</b>
+        {item.detail ? ` — ${item.detail}` : ''}
+        {item.status ? ` (статус: ${item.status})` : ''}
+        {item.confidence ? ` · уверенность: ${item.confidence}` : ''}
+      </li>
+    ))
+  )}
+</ul>
+
+{timeline.length ? (
+  <>
+    <h3>Хронологическая шкала</h3>
+    <ol>
+      {timeline.map((entry) => (
+        <li>
+          <b>{toText(entry.label)}</b>
+          {toText(entry.era) ? ` — ${toText(entry.era)}` : ''}
+          {toText(entry.stage) ? ` · этап ${toText(entry.stage)}` : ''}
+        </li>
+      ))}
+    </ol>
+  </>
+) : null}
+
+{withheld.length ? (
+  <p class="map-static-withheld">
+    <strong>Что не печатается:</strong> часть прозы этого маршрута содержит утверждения, которых маршрутный
+    authority-документ <code>pihahiroth-authority.json</code> не публикует. Эти фрагменты остаются в
+    интерактивной карте: откройте панель соответствующего места.
+  </p>
+) : null}
