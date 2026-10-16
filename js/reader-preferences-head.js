@@ -165,6 +165,14 @@
       '  html body [data-print-flow="splittable"] { break-inside: auto !important; page-break-inside: auto !important; }',
       '  html body [data-print-keep-next] { break-after: avoid-page !important; page-break-after: avoid !important; }',
       '  html body [data-print-row] { break-inside: avoid-page !important; page-break-inside: avoid !important; }',
+      // Headings must not break across pages. Measured on
+      // /hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/: the second
+      // line of «Послание Еноха: человеческая вина и нравственная серьёзность»
+      // started the next sheet, so a printed reader met a bare continuation line.
+      // Wide rule (h1-h4), not a per-route exception: any heading that fits on a
+      // page may not be sliced, and a heading taller than a page is rare enough
+      // that the normal flow is still the right fallback.
+      '  html body h1, html body h2, html body h3, html body h4 { break-inside: avoid-page !important; page-break-inside: avoid !important; }',
       '  html body table thead { display: table-header-group !important; }',
       '  html body table tfoot { display: table-footer-group !important; }',
       '  html body [data-print-flow="atomic"].table-scroll { overflow: visible !important; max-height: none !important; }',
