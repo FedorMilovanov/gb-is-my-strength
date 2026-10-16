@@ -165,6 +165,14 @@
       '  html body [data-print-flow="splittable"] { break-inside: auto !important; page-break-inside: auto !important; }',
       '  html body [data-print-keep-next] { break-after: avoid-page !important; page-break-after: avoid !important; }',
       '  html body [data-print-row] { break-inside: avoid-page !important; page-break-inside: avoid !important; }',
+      // Headings must not break across pages. Measured on
+      // /hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/: the second
+      // line of «Послание Еноха: человеческая вина и нравственная серьёзность»
+      // started the next sheet, so a printed reader met a bare continuation line.
+      // Wide rule (h1-h4), not a per-route exception: any heading that fits on a
+      // page may not be sliced, and a heading taller than a page is rare enough
+      // that the normal flow is still the right fallback.
+      '  html body h1, html body h2, html body h3, html body h4 { break-inside: avoid-page !important; page-break-inside: avoid !important; }',
       '  html body table thead { display: table-header-group !important; }',
       '  html body table tfoot { display: table-footer-group !important; }',
       '  html body [data-print-flow="atomic"].table-scroll { overflow: visible !important; max-height: none !important; }',
@@ -188,11 +196,35 @@
     document.head.appendChild(style);
   }
 
+  // GB_PRINT_READER_ROOT_DOMINANCE_V1
+  // The reader range is the container the print terminal seal measures. Generic
+  // selectors (`main article`, `article`) also match *cards*: on the app landing
+  // page the first `<article>` is one step of a four-step list, and on the
+  // journal / genesis-6 / rodosloviye pages they are content cards. Sealing from
+  // a card hides everything the reader still has to read after it (measured:
+  // /app/ lost 3 of 4 steps, /hard-texts/genesis-6/ lost 4 245 characters).
+  // A generic match may only serve as the reader range when it is the only one
+  // and it actually holds the page's text.
+  var AMBIGUOUS_ROOT_SELECTORS = ['#main-content article', 'main article', 'article'];
+
+  function isDominantReaderRoot(node, selector) {
+    if (AMBIGUOUS_ROOT_SELECTORS.indexOf(selector) === -1) return true;
+    var matches = [];
+    try { matches = document.querySelectorAll(selector); } catch (_) { return false; }
+    if (matches.length !== 1) return false;
+    var reference = document.querySelector('main') || document.body;
+    if (!reference) return false;
+    var own = String(node.textContent || '').replace(/\s+/g, ' ').trim().length;
+    var page = String(reference.textContent || '').replace(/\s+/g, ' ').trim().length;
+    if (!page) return false;
+    return own / page >= 0.5;
+  }
+
   function resolveRoot() {
     for (var i = 0; i < ROOT_SELECTORS.length; i++) {
       try {
         var node = document.querySelector(ROOT_SELECTORS[i]);
-        if (node) return node;
+        if (node && isDominantReaderRoot(node, ROOT_SELECTORS[i])) return node;
       } catch (_) {}
     }
     return null;
@@ -391,6 +423,14 @@
     try { nodes = Array.prototype.slice.call((scope || document).querySelectorAll('*')); } catch (_) {}
     for (var i = 0; i < nodes.length; i++) {
       if (!precedes(anchor, nodes[i])) continue;
+      // GB_PRINT_POLICY_OPT_IN_WINS_V1
+      // An explicit print-policy opt-in outranks the generic follower mask: the
+      // publication endnotes (`.gb-note-endnotes`, `data-print-policy="include"`)
+      // live after the article on purpose, and note-registry.css already declares
+      // that they must stay printable. Masking them here lost the whole
+      // «Примечания» section on paper (measured: /articles/kod-da-vinchi/ hid
+      // 5 007 characters of endnotes, everything a reader cannot look up offline).
+      if (nodes[i].closest && nodes[i].closest('[data-print-policy="include"]')) continue;
       mark(nodes[i], 'data-print-terminal-flow', '1');
       mark(nodes[i], 'data-print-terminal-follower', '1');
       result.flow += 1;

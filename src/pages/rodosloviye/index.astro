@@ -48,10 +48,20 @@ const mobileChrome = mobileChromeFor('/rodosloviye/');
     <RodosloviyeStyles />
   </head>
   <body class="site-page">
+    {/* Skip-link — первый интерактивный элемент документа: только тогда он
+        остаётся «пропуском к содержимому» и для axe (role/skip-link),
+        и для клавиатуры. Mobile-обвязка ниже, потому что её ссылки иначе
+        становятся первой ссылкой страницы. */}
+    <a class="skip-link" href="#main-content">Перейти к содержанию</a>
     {mobileChrome?.enabled && mobileChrome.mount === 'registry' && mobileChrome.engine === 'page' && (
       <MobileChromePage backHref={mobileChrome.backHref ?? '/'} homeHref="../" />
     )}
     <RodosloviyeBody />
+    {/* Атлас — отдельный регион страницы: он живёт во всю ширину вьюпорта
+        (100dvh-канвас), поэтому не может быть вложен в width-контейнер main.
+        Именованный <section> даёт ориентир, внутри которого лежат панели
+        атласа (toolbar/navigation/status), — иначе axe: region. */}
+    <section aria-label="Интерактивный атлас родословия">
     <div id="genealogy-tree" class="genealogy-interactive-wrap">
       <GenealogyTree client:only="react" persons={persons} eras={eras} relations={relationEvidence}>
         <section
@@ -71,6 +81,7 @@ const mobileChrome = mobileChromeFor('/rodosloviye/');
         </section>
       </GenealogyTree>
     </div>
+    </section>
 
     <style>
       .genealogy-interactive-wrap {

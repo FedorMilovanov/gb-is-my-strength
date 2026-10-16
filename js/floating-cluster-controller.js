@@ -631,7 +631,8 @@
       // Пропускаем: метаданные, сноски, tooltips, notice (copyright/source),
       // и целые англоязычные блоки (оригиналы цитат/карточек, [lang="en"]).
       if (el.closest('.summary-card, .gtip, .fn-marker, .tooltip, .notice, ' +
-                     '.original-author-card, .footnote, aside, .sources-block, ' +
+                     '.original-author-card, .author-card, .gb-accuracy-block, ' +
+                     '.note-box, .footnote, aside, .sources-block, ' +
                      '.reading-list-section, [hidden], [data-pagefind-ignore], ' +
                      '[lang="en"], [lang^="en-"]')) return;
       var t = readableRuText(el);
@@ -991,7 +992,16 @@
       var album = (seriesLab && seriesLab.textContent.trim()) || 'Господь Бог — Сила Моя';
       var art = [{ src: '/images/tts-artwork.svg', sizes: 'any', type: 'image/svg+xml' }];
       var og = qs('meta[property="og:image"]');
-      if (og && og.content) art.unshift({ src: og.content, sizes: '1200x630', type: 'image/webp' });
+      if (og && og.content) {
+        // og:image задан абсолютным прод-адресом; для MediaSession нужен этот же файл
+        // с текущего хоста, иначе CSP img-src блокирует загрузку обложки.
+        var ogSrc = og.content;
+        try {
+          var ogUrl = new URL(ogSrc, location.href);
+          if (ogUrl.origin !== location.origin) ogSrc = ogUrl.pathname + ogUrl.search;
+        } catch (e) { /* оставляем как есть */ }
+        art.unshift({ src: ogSrc, sizes: '1200x630', type: 'image/webp' });
+      }
       navigator.mediaSession.metadata = new MediaMetadata({
         title: title, artist: 'Господь Бог — Сила Моя', album: album, artwork: art,
       });
@@ -1379,6 +1389,7 @@
     stripIds(clone);
     clone.classList.add('gb-mobile-fallback-controls');
     clone.setAttribute('data-fc-mobile-fallback', 'true');
+    clone.setAttribute('role', 'region');
     clone.setAttribute('aria-label', 'Быстрые действия чтения');
     document.body.appendChild(clone);
   }
@@ -1498,7 +1509,9 @@
       partBtn.className = 'mobile-btoc-section';
       partBtn.id = 'mobPartTocBtn';
       var sectionText = (oldSection.textContent || 'Оглавление части').replace(/\s+/g, ' ').trim();
-      partBtn.setAttribute('aria-label', 'Оглавление текущей части: ' + sectionText);
+      // a11y D-3b (browser audit 2026-10-13): no static aria-label here — the visible
+      // «{section}» + «Оглавление части» pair below is the authoritative label, and a
+      // hand-written name cannot satisfy WCAG 2.5.3 once the section text changes.
 
       var main = document.createElement('span');
       main.className = 'mobile-btoc-section__main';
@@ -2606,13 +2619,37 @@
 
         var activeRow = activeIdx >= 0 ? represented[activeIdx] : null;
         var scroller = qs('.gbs2-tocscroll');
+        function railFollowTarget() {
+          // .gbs2-tocscroll is the scroll container, .gbs2-toc is the offsetParent of a
+          // row: offsetTop is therefore measured from the list box, i.e. 2px padding of
+          // the scroller are not part of it. Compensate so the target really centres the
+          // row inside the visible box instead of leaving it on the edge.
+          var box = scroller.getBoundingClientRect();
+          var list = activeRow.a.offsetParent && scroller.contains(activeRow.a.offsetParent)
+            ? activeRow.a.offsetParent.getBoundingClientRect() : null;
+          var listOffset = list ? (list.top - box.top + scroller.scrollTop) : 0;
+          return Math.max(0, listOffset + activeRow.a.offsetTop
+            - scroller.clientHeight / 2 + activeRow.a.offsetHeight / 2);
+        }
         function keepActiveRowVisible(behavior) {
           if (!activeRow || !scroller) return;
           var ar = activeRow.a.getBoundingClientRect();
           var sr = scroller.getBoundingClientRect();
           if (ar.top < sr.top + 18 || ar.bottom > sr.bottom - 18) {
-            var desired = activeRow.a.offsetTop - scroller.clientHeight / 2 + activeRow.a.offsetHeight / 2;
-            scroller.scrollTo({ top: Math.max(0, desired), behavior: behavior || 'auto' });
+            scroller.scrollTo({ top: railFollowTarget(), behavior: behavior || 'auto' });
+            // Анимация smooth может не доехать: прерывание, пере-скролл другим
+            // обработчиком или голодание rAF под нагрузкой. Тогда активная строка
+            // залипает наполовину скрытой за кромкой скроллера — читатель теряет
+            // место в оглавлении. Доводим позицию детерминированно, если строка
+            // всё ещё вне видимой области.
+            window.setTimeout(function () {
+              if (!activeRow.a.classList.contains('gbs2-active')) return;
+              var ar2 = activeRow.a.getBoundingClientRect();
+              var sr2 = scroller.getBoundingClientRect();
+              if (ar2.top < sr2.top || ar2.bottom > sr2.bottom) {
+                scroller.scrollTo({ top: railFollowTarget(), behavior: 'auto' });
+              }
+            }, 420);
           }
         }
         if (activeRow && scroller) {

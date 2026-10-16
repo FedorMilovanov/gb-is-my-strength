@@ -5,7 +5,10 @@ import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
 import { chromium, webkit } from 'playwright';
+import browserRuntimeNoise from './lib/browser-runtime-noise.js';
 import { runResponsiveEvidence, runResponsiveNoJavaScript } from './home-responsive-evidence-contract.mjs';
+
+const { monitorRuntime } = browserRuntimeNoise;
 
 const ROOT = path.resolve(process.cwd());
 const DIST = path.join(ROOT, 'dist');
@@ -61,6 +64,14 @@ async function startServer() {
         return;
       }
       response.setHeader('Content-Type', contentType(filePath));
+      // js/search.js проверяет доступность Pagefind запросом HEAD к
+      // /pagefind/pagefind.js: тело у HEAD быть не должно, иначе живой проз
+      // перестаёт соответствовать реальному хостингу.
+      if (request.method === 'HEAD') {
+        response.setHeader('Content-Length', fs.statSync(filePath).size);
+        response.end();
+        return;
+      }
       fs.createReadStream(filePath).pipe(response);
     } catch (error) {
       response.statusCode = 400;
@@ -134,11 +145,14 @@ async function runInteractiveBrowser(browserName, browserType, baseUrl) {
   });
   const page = await context.newPage();
   const runtimeErrors = [];
-  page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`));
-  page.on('console', (message) => {
-    if (message.type() !== 'error') return;
-    const text = message.text();
-    if (!isKnownBrowserDiagnostic(browserName, text)) runtimeErrors.push(`console: ${text}`);
+  const clientAborts = [];
+  // Общий классификатор шума (scripts/lib/browser-runtime-noise.js): анонимные
+  // «Failed to load resource» передаются структурным событиям, где виден URL, и
+  // отсеивается только внешняя телеметрия (Метрика) — именно её egress-фильтр
+  // раннера CI ломал этот гейт. Same-origin и ошибки приложения фатальны.
+  monitorRuntime(page, runtimeErrors, {
+    isIgnoredConsole: (text, message) => message.type() !== 'error' || isKnownBrowserDiagnostic(browserName, text),
+    clientAborts,
   });
 
   try {
@@ -301,6 +315,7 @@ async function runInteractiveBrowser(browserName, browserType, baseUrl) {
     await scrollTop.click();
     await page.waitForFunction(() => Math.round(window.scrollY) === 0);
 
+    if (clientAborts.length) console.log(`ℹ ${browserName}: отменено клиентом ${clientAborts.length} запрос(ов): ${clientAborts.join(' | ')}`);
     assert.deepEqual(runtimeErrors, [], `runtime errors: ${runtimeErrors.join(' | ')}`);
     return { browser: browserName, result: 'PASS' };
   } catch (error) {

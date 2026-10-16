@@ -52,10 +52,10 @@ const landingToc = [
 ];
 ---
 
-<script is:inline defer src="../../js/floating-cluster-controller.js?v=76bd3f0c"></script>
+<script is:inline defer src="../../js/floating-cluster-controller.js?v=e1bd9403"></script>
 <a class="skip-link" href="#main-content">Перейти к содержимому</a>
 
-<div class="gbs2-mobile-head">
+<header class="gbs2-mobile-head">
   <img alt="" height="315" src="../images/baptisty-rossii/cover-landing.webp" width="600" />
   <div class="gbs2-mobile-title">
     <span>Книга · История ЕХБ</span>
@@ -68,7 +68,7 @@ const landingToc = [
     <button aria-label="Переключить тему" class="gbs2-mctl" data-gbs2-theme type="button">◐</button>
     <button aria-label="Поиск" class="gbs2-mctl" data-gbs2-search type="button">⌕</button>
   </div>
-</div>
+</header>
 
 <div class="gbs2-world">
   <aside class="gbs2-rail" aria-label={`Книга «${BAPTIST_BOOK_META.title}»`}>
@@ -152,8 +152,8 @@ const landingToc = [
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M10 17h4"/></svg>
       </a>
       <button class="gbs2-ctl" type="button" data-gbs2-theme aria-label="Переключить тему">◐</button>
-      <button class="gbs2-ctl" type="button" data-gbs2-font="down" aria-label="Уменьшить шрифт">A−</button>
-      <button class="gbs2-ctl" type="button" data-gbs2-font="up" aria-label="Увеличить шрифт">A+</button>
+      <button class="gbs2-ctl" type="button" data-gbs2-font="down" title="Уменьшить шрифт"><span aria-hidden="true">A−</span><span class="sr-only">Уменьшить шрифт</span></button>
+      <button class="gbs2-ctl" type="button" data-gbs2-font="up" title="Увеличить шрифт"><span aria-hidden="true">A+</span><span class="sr-only">Увеличить шрифт</span></button>
       <button class="gbs2-ctl" type="button" data-gbs2-share aria-label="Поделиться">↗</button>
       <button class="gbs2-ctl" type="button" data-gbs2-search aria-label="Поиск">⌕</button>
       <button type="button" class="gb-ember gbs2-ctl" data-state="idle" style="--p:0;--ember-size:32px;--ring-color:var(--color-accent-gold-bright,#d8aa6d)" data-fc-action="play" aria-label="Озвучка">
@@ -308,9 +308,9 @@ const landingToc = [
   </section>
 </div>
 
-<script is:inline defer src="../js/site-utils.js?v=661c6cc1"></script>
+<script is:inline defer src="../js/site-utils.js?v=2f156a6d"></script>
 <script is:inline defer src="../js/scroll-perf.js?v=454d6f7b"></script>
-<script is:inline defer src="../js/site.js?v=c6b5ccf7"></script>
+<script is:inline defer src="../js/site.js?v=6b0443ea"></script>
 <script is:inline defer src="../js/glossary.js?v=c7f8b6e9"></script>
 <script is:inline defer src="../js/sw-register.js?v=921dd6a2"></script>
 <script is:inline>!function(){if(window.__gbSearchLazyBound)return;window.__gbSearchLazyBound=1;var src="../js/search.js?v=106d65f6";function load(open){if(window.GBSearch&&window.GBSearch.open&&window.GBSearch.__ready){open&&window.GBSearch.open();return}if(open)window.__gbSearchOpenAfterLoad=true;if(window.__gbSearchLoading)return;window.__gbSearchLoading=true;window.__gbSearchBootRequested=true;var s=document.createElement("script");s.defer=true;s.src=src;s.onload=function(){window.__gbSearchLoading=false;if(open&&window.GBSearch&&window.GBSearch.open)window.GBSearch.open()};s.onerror=function(){window.__gbSearchLoading=false};document.head.appendChild(s)}function click(e){var sel="#gbSearchBtn,[data-gbs2-search],["+"data-fc-"+"action='search'],.gb-nav-search-icon,.gb-search-btn",t=e.target&&e.target.closest&&e.target.closest(sel);if(t){e.preventDefault();load(true)}}document.addEventListener("click",click,true);window.addEventListener("gb:openSearch",function(){load(true)})}();</script>

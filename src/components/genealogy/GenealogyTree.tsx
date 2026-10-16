@@ -219,7 +219,11 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
         ...n,
         hidden: false,
         focusable: !semanticHidden,
-        ariaLabel: `${d.name}: открыть сведения и семью`,
+        // React Flow v12 ставит role="group" только focusable-узлам; у скрытых
+        // семантическим зумом узлов роли нет, и aria-label на <div> без роли
+        // запрещён (axe aria-prohibited-attr) — имя экспонируем только там,
+        // где элемент действительно доступен.
+        ariaLabel: semanticHidden ? undefined : `${d.name}: открыть сведения и семью`,
         // Keep ReactFlow's measured node box stable across semantic zoom. The
         // compact card is centred inside it and may overflow visually, which
         // prevents the 154-node ResizeObserver set from thrashing on zoom.
@@ -567,7 +571,7 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
             )}
           </div>
           <button ref={splitOpener} type="button" onClick={() => setShowSplit(true)} title="Сравнить Мф/Лк">Мф / Лк</button>
-          <button type="button" onClick={startTour} title="Тур" aria-label="Пройти мессианскую нить">Тур</button>
+          <button type="button" onClick={startTour} title="Тур" aria-label="Тур: пройти мессианскую нить">Тур</button>
         </div>
         <div className="genealogy-filter-tools" role="group" aria-label="Линии и эпохи">
           {LINEAGE_FILTERS.map(l => <button type="button" key={l.id} onClick={() => changeLineage(l.id)}

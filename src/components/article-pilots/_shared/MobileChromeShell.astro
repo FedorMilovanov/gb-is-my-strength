@@ -19,6 +19,11 @@
  *  - Корневой .mobile-chrome нейтрализуется display:contents в
  *    css/floating-cluster.css — новых CSS-файлов не создаём (protected
  *    contract), лейаут-дерево баров идентично долегаси-разметке.
+ *  - Корень — <section>, а не <div>: sectioning-элемент скрывает у вложенного
+ *    <header> implicit-роль banner (HTML-AAM). Верхний бар обвязки не является
+ *    шапкой страницы, иначе на мобильной ширине документ получает два баннера
+ *    (axe: landmark-no-duplicate-banner / landmark-unique). Имя региона
+ *    оставляет содержимое обвязки внутри ориентира (axe rule: region).
  *  - Контрактные атрибуты панелей (data-fc-root, data-fc-variant,
  *    data-gill-mobile-bar, data-fc-speed-mode…) адаптер передаёт через
  *    topAttrs/bottomAttrs — делегирование кластера живёт на самой панели.
@@ -35,6 +40,8 @@ interface Props {
   topAttrs?: Record<string, string | boolean>;
   /** Дополнительные атрибуты нижней панели. */
   bottomAttrs?: Record<string, string | boolean>;
+  /** Доступное имя нижней панели (она — регион управления, а не contentinfo). */
+  bottomLabel?: string;
 }
 
 const {
@@ -45,6 +52,7 @@ const {
   bottomClass = 'mobile-bottom-bar',
   topAttrs = {},
   bottomAttrs = {},
+  bottomLabel = 'Панель чтения',
 } = Astro.props as Props;
 
 // Панель рендерится только если адаптер дал ей контент: у page-движка нижнего
@@ -55,9 +63,10 @@ const hasTop = Astro.slots.has('top-leading') || Astro.slots.has('top-primary')
 const hasBottom = Astro.slots.has('bottom-progress') || Astro.slots.has('bottom-context')
   || Astro.slots.has('bottom-actions');
 ---
-<div
+<section
   id={id}
   class:list={['mobile-chrome', rootClass]}
+  aria-label="Мобильная навигация страницы"
   data-mobile-chrome
   data-mobile-chrome-engine={engine}
 >
@@ -70,16 +79,23 @@ const hasBottom = Astro.slots.has('bottom-progress') || Astro.slots.has('bottom-
     </header>
   )}
 
+  {/* Нижняя панель — не <footer>: он даёт contentinfo и дублирует настоящий
+      подвал страницы. Именованный <section> — это именно регион управления. */}
   {hasBottom && (
-    <footer class={bottomClass} data-mobile-bottombar {...bottomAttrs}>
+    <section
+      class={bottomClass}
+      aria-label={bottomLabel}
+      data-mobile-bottombar
+      {...bottomAttrs}
+    >
       <slot name="bottom-progress" />
       <slot name="bottom-context" />
       <slot name="bottom-actions" />
-    </footer>
+    </section>
   )}
 
   <slot name="overlays" />
-</div>
+</section>
 
 <style is:global>
   /* Server/pre-hydration contract: a rail announced as hidden must have no

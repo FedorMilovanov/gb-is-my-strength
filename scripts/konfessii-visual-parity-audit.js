@@ -21,8 +21,12 @@ must(page, 'KonfessiiMain', 'Astro /konfessii/ uses native main');
 for (const token of ['loadLegacyFullDocument','headHtml','bodyHtml','bodyAttributes','?raw','set:html','_legacy']) { mustNot([page,head,chrome,main].join('\n'), token, `forbidden native konfessii marker: ${token}`); }
 for (const marker of ['Карта Русского Баптизма','Пятидесятничество в России','Древо протестантских течений','ОТКРЫТЬ 3D-КАРТУ','СКОРО']) must(legacy, marker, `legacy main baseline marker: ${marker}`);
 for (const marker of ['rel="canonical"','application/ld+json','mc.yandex.ru']) must(head, marker, `KonfessiiPageHead marker: ${marker}`);
-for (const marker of ['<slot />','class="wrap"','class="hero"','article-end-sdg-wrap','footer class="k"']) must(chrome, marker, `KonfessiiPageChrome marker: ${marker}`);
-for (const marker of ['<main class="grid h-reveal">','KonfessiiRusskijBaptizmCard','KonfessiiPentecostalCard','KonfessiiOverviewCard']) must(main, marker, `KonfessiiMain marker: ${marker}`);
+for (const marker of ['<slot />','class="wrap"','class="hero"','article-end-sdg-wrap','footer class="k"','<main id="main-content" class="konfessii-main">']) must(chrome, marker, `KonfessiiPageChrome marker: ${marker}`);
+for (const marker of ['<div class="grid h-reveal">','KonfessiiRusskijBaptizmCard','KonfessiiPentecostalCard','KonfessiiOverviewCard']) must(main, marker, `KonfessiiMain marker: ${marker}`);
+// Landmark owner contract: единственный <main> страницы живёт в chrome (он владеет
+// hero/intro/сеткой/SDG-блоком), а grid-компонент остаётся секцией — иначе
+// документ получил бы вложенные main (axe landmark-no-duplicate-main).
+mustNot(main, '<main class="grid h-reveal">', 'KonfessiiMain must not own a nested <main>');
 
 // Motion-policy contract: CSS and JS must share the same reduced-motion authority.
 must(head, '@media(prefers-reduced-motion:reduce)', 'Konfessii CSS owns a reduced-motion branch');

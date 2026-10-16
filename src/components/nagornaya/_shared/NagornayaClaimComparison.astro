@@ -122,11 +122,11 @@ const headingId = `${blockId}-title`;
   .ng-claim-card__claim{margin:.7rem 0 0;color:#57534e;line-height:1.65}
   .ng-claim-card__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem;margin-top:1rem}
   .ng-claim-card__grid>section{min-width:0;padding:.9rem;border:1px solid #e7e5e4;border-radius:.8rem;background:#fafaf9}
-  .ng-claim-card h5{margin:0 0 .45rem;color:#78716c;font-size:.69rem;font-weight:850;letter-spacing:.055em;text-transform:uppercase}
+  .ng-claim-card h5{margin:0 0 .45rem;color:#6b645e;font-size:.69rem;font-weight:850;letter-spacing:.055em;text-transform:uppercase}
   .ng-claim-card p,.ng-claim-card li{color:#57534e;font-size:.86rem;line-height:1.58;overflow-wrap:anywhere}
   .ng-claim-card ul{margin:0;padding-left:1.05rem}.ng-claim-card li+li{margin-top:.35rem}
   .ng-claim-card a{color:#7c2d12;font-weight:700;text-decoration-thickness:.08em;text-underline-offset:.18em}
-  .ng-claim-card small{display:block;margin-top:.15rem;color:#78716c}
+  .ng-claim-card small{display:block;margin-top:.15rem;color:#6b645e}
   .ng-claim-card__series-position{margin-top:.85rem;padding:1rem;border:1px solid #d6d3d1;border-left:4px solid #a8a29e;border-radius:.8rem;background:#f5f5f4}
   .ng-claim-card__series-position p{margin:0}
   .ng-claim-card__revision{margin-top:.8rem;border-top:1px solid #e7e5e4;padding-top:.75rem}.ng-claim-card__revision summary{cursor:pointer;color:#57534e;font-size:.82rem;font-weight:750}.ng-claim-card__revision p{margin:.55rem 0 0}
@@ -138,5 +138,16 @@ const headingId = `${blockId}-title`;
   :global(html.dark) .ng-claim-comparison__list,:global(html[data-theme='dark']) .ng-claim-comparison__list{background:#57534e}
   :global(html.dark) .ng-claim-card,:global(html[data-theme='dark']) .ng-claim-card{background:#1c1917}
   :global(html.dark) .ng-claim-card__grid>section,:global(html.dark) .ng-claim-card__series-position,:global(html[data-theme='dark']) .ng-claim-card__grid>section,:global(html[data-theme='dark']) .ng-claim-card__series-position{border-color:#57534e;background:#292524}
+  /* Тёмная тема: заголовки-рубрики, подписи, ссылки и «Что может изменить вывод»
+     оставались на светлых оттенках (#78716c/#57534e/#7c2d12) — на #1c1917/#292524
+     это 2.3–3.6:1. Ниже — светлые эквиваленты той же шкалы. */
+  :global(html.dark) .ng-claim-card h5,:global(html[data-theme='dark']) .ng-claim-card h5{color:#a8a29e}
+  :global(html.dark) .ng-claim-card small,:global(html[data-theme='dark']) .ng-claim-card small{color:#a8a29e}
+  :global(html.dark) .ng-claim-card__meta,:global(html[data-theme='dark']) .ng-claim-card__meta{color:#c3bdb4}
+  :global(html.dark) .ng-claim-comparison__eyebrow,:global(html[data-theme='dark']) .ng-claim-comparison__eyebrow{color:#fcd34d}
+  :global(html.dark) .ng-claim-card a,:global(html[data-theme='dark']) .ng-claim-card a{color:#f0b27a}
+  :global(html.dark) .ng-claim-card__revision summary,:global(html[data-theme='dark']) .ng-claim-card__revision summary{color:#c3bdb4}
+  :global(html.dark) .ng-claim-card__revision,:global(html[data-theme='dark']) .ng-claim-card__revision{border-color:#44403c}
+  :global(html.dark) .ng-claim-card__meta span,:global(html[data-theme='dark']) .ng-claim-card__meta span{background:#292524;border-color:#57534e}
   @media(prefers-reduced-motion:reduce){.ng-claim-card__revision summary{scroll-behavior:auto}}
 </style>

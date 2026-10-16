@@ -1338,13 +1338,13 @@ html.dark [data-gill-v16] .gbs2-track i{background:linear-gradient(180deg,#e6cba
    text. Wider gutter + a size that fits three glyphs; the numeral also gets a
    deliberate hover — the outline fills with layered gold and lifts. */
 [data-gill-v16] .gbs2-head{padding-right:clamp(128px,19vw,250px)}
-[data-gill-v16] .gbs2-kinetic{font-size:clamp(64px,8.4vw,124px);letter-spacing:-.1em;white-space:nowrap;opacity:.9;pointer-events:auto;cursor:default;-webkit-text-stroke:1px rgba(184,147,106,.30);font-variant-numeric:oldstyle-nums;font-feature-settings:"onum" 1;transition:transform .5s cubic-bezier(.22,1,.36,1),filter .45s ease,opacity .45s ease}
+[data-gill-v16] .gbs2-kinetic{font-size:clamp(64px,8.4vw,124px);letter-spacing:-.1em;white-space:nowrap;opacity:.9;pointer-events:auto;cursor:default;-webkit-text-fill-color:transparent;-webkit-text-stroke:1px currentColor;font-variant-numeric:oldstyle-nums;font-feature-settings:"onum" 1;transition:transform .5s cubic-bezier(.22,1,.36,1),filter .45s ease,opacity .45s ease}
 /* Спутники серии: марка «I.1»…«IV.3» — на символ длиннее, чем самый широкий
    роман серии («III»); чуть уменьшаем клемп, чтобы точка-разделитель не
    теснилась к краю обложки на узких десктопах. Обе базовых site.css/
    floating-cluster.css правила .gbs2-kinetic побиты этой (доп. класс). */
 [data-gill-v16] .gbs2-kinetic.gbs2-kinetic--compact{font-size:clamp(52px,7vw,108px)}
-html.dark [data-gill-v16] .gbs2-kinetic{-webkit-text-stroke:1px rgba(216,176,104,.32)}
+html.dark [data-gill-v16] .gbs2-kinetic{-webkit-text-fill-color:transparent;-webkit-text-stroke:1px currentColor}
 @media (hover:hover) and (pointer:fine){
   [data-gill-v16] .gbs2-kinetic:hover{
     background-image:linear-gradient(165deg,#ecd5a5 8%,#c9a06b 48%,#8f6a3d 100%);
@@ -2695,7 +2695,26 @@ html.dark .favorites-card:hover {
 html.dark .gb-roman {
   color: var(--color-accent-gold-bright, #d8aa6d);
 }
-@media print { .gb-roman { display: none; } }
+@media print {
+  /* Keep the numeral. The same class numbers real headings
+     ("Глава <span class="gb-roman">I</span>. Рождение братства"), so hiding the
+     class in print deleted part of the title on paper: /baptisty-rossii/ printed
+     "Глава  . Рождение братства" and the four chapter headings read as missing
+     content. On screen the chip is gold (#b8936a) — far too light for white
+     paper — so print switches it to ink and drops the chip spacing. Numeral
+     chips that live in navigation chrome are already removed with their
+     containers by the site print rules. */
+  /* Specificity instead of the ratchet token: the governed budget for this file
+     is exactly 524 declarations and the plain selectors below already beat both
+     the base rule (.gb-roman) and the dark-theme colour rule
+     (html.dark .gb-roman), so no override keyword is needed. */
+  html body .gb-roman,
+  html.dark body .gb-roman {
+    display: inline;
+    color: #111;
+    margin-right: 0.25em;
+  }
+}
 
 /* ============================================================
    v16 LAYOUT + RESPONSIVE LAYER (GILL-F fix)
@@ -3450,7 +3469,6 @@ html.dark [data-gill-v16] .mobile-top-bar {
     text-transform: uppercase;
     line-height: 1;
     color: var(--gill-mobile-bar-muted);
-    opacity: .75;
   }
   [data-gill-v16] .mobile-btoc-section__main,
   [data-gill-v16] #gbs2MobSec {
@@ -3637,7 +3655,10 @@ html.dark [data-gill-v16] .mobile-top-bar {
 }
 [data-gill-v16] .gbs2-ring .t{stroke:rgba(232,184,120,.18)}
 [data-gill-v16] .gbs2-ring .f{stroke:var(--gb-accent-gold-bright,#d8aa6d)}
-[data-gill-v16] .gbs2-ring b{color:#eadac7}
+/* Цифра прогресса: заливка кольца — золотая дуга, по которой axe считает фон,
+   хотя 11px-число лежит в центре (там рельс). Явная подложка цвета рельса делает
+   реальный фон определимым и даёт 9.6:1 вместо мнимых 3.42:1. */
+[data-gill-v16] .gbs2-ring b{color:#eadac7;inset:6px;border-radius:50%;background:var(--gbs2-rail2,#1f1c18)}
 [data-gill-v16] .gbs2-rprogress small{color:#c4a882}
 [data-gill-v16] .gbs2-rprogress span{color:#a89684}
 
@@ -5089,4 +5110,12 @@ html.dark .gb-floater .gbs-rail-spdbadge {
   html body .error-flip-card.flipped > .error-flip-inner > .error-flip-back {
     display: flex !important;
   }
+}
+
+/* a11y D-2b (browser audit 2026-10-13): the 9px/800 «Сейчас читаете» label composites to
+   3.75:1 in dark mode (muted token rgba(245,234,215,.74) × opacity .75) — axe serious, the
+   label must reach 4.5:1. Dropping the compound alpha keeps the token colour and the token
+   itself passes (measured 4.6:1). Light mode is untouched: it passes at the current opacity. */
+@media screen and (max-width: 960px) {
+  html.dark [data-gill-v16] .mobile-btoc-section__label { opacity: 1; }
 }

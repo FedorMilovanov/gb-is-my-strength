@@ -14,7 +14,7 @@ const mobileChrome = mobileChromeFor('/konfessii/');
     <KonfessiiPageHead />
   </head>
   <body>
-    <div class="sr-only" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
+    <div class="sr-only" aria-hidden="true" data-pagefind-body style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap">
       Конфессии и Деноминации. История церковных движений, русский баптизм, первоисточники, карты, документы, биографии, статистика и богословские различия.
     </div>
     {mobileChrome?.enabled && mobileChrome.mount === 'registry' && mobileChrome.engine === 'page' && (
