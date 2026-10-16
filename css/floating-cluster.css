@@ -2695,7 +2695,21 @@ html.dark .favorites-card:hover {
 html.dark .gb-roman {
   color: var(--color-accent-gold-bright, #d8aa6d);
 }
-@media print { .gb-roman { display: none; } }
+@media print {
+  /* Keep the numeral. The same class numbers real headings
+     ("Глава <span class="gb-roman">I</span>. Рождение братства"), so hiding the
+     class in print deleted part of the title on paper: /baptisty-rossii/ printed
+     "Глава  . Рождение братства" and the four chapter headings read as missing
+     content. On screen the chip is gold (#b8936a) — far too light for white
+     paper — so print switches it to ink and drops the chip spacing. Numeral
+     chips that live in navigation chrome are already removed with their
+     containers by the site print rules. */
+  .gb-roman {
+    display: inline !important;
+    color: #111 !important;
+    margin-right: 0.25em;
+  }
+}
 
 /* ============================================================
    v16 LAYOUT + RESPONSIVE LAYER (GILL-F fix)
