@@ -4540,6 +4540,34 @@ const JS_SIZE_FLOORS = {
   }
 })();
 
+// G115. Храповик масок серии «Баптисты России».
+//   Инцидент 2026-09-13 (коммит 059b3024): импорт исторических медиа заменил
+//   каждый не-ASCII символ в 10 файлах серии одним символом маски (`?` в
+//   компонентах, `` ` `` в реестре медиа). Донора текста нет — восстановление
+//   авторское (audit/BAPTISTY-MOJIBAKE-RECOVERY-PACK-2026-10-13.md).
+//   Guard: инвентарь data/baptisty-mojibake-inventory.json должен совпадать с
+//   источником. Новый фрагмент — провал; восстановленный без отметки — тоже
+//   провал (инвентарь обязан отражать реальность). Рабочий лист:
+//   node scripts/baptisty-mojibake-ratchet.mjs --report
+(function baptistyMojibakeRatchet() {
+  const script = 'scripts/baptisty-mojibake-ratchet.mjs';
+  if (!exists(script)) {
+    R.err(`${script} отсутствует — храповик масок не работает`);
+    return;
+  }
+  const res = spawnSync(process.execPath, [path.join(ROOT, script), '--check'], {
+    cwd: ROOT, encoding: 'utf8', timeout: 60_000,
+  });
+  if (res.status === 0) {
+    R.ok((res.stdout.split('\n')[0] || 'MOJIBAKE РАТЧЕТ пройден').replace('✅ ', ''));
+    return;
+  }
+  const details = (res.stderr || res.stdout || '').split('\n').filter((line) => line.trim().startsWith('-'))
+    .map((line) => line.trim().replace(/^-\s*/, ''));
+  if (!details.length) R.err(`MOJIBAKE РАТЧЕТ упал без деталей (код ${res.status})`);
+  for (const detail of details) R.err(`MOJIBAKE: ${detail}`);
+})();
+
 const duration = ((Date.now() - R.start) / 1000).toFixed(2);
 const sep = '═'.repeat(78);
 console.log(`\n${sep}\nGB-IS-MY-STRENGTH — PROFESSIONAL AUDIT\n${new Date().toISOString()} · ${duration}s\n${sep}\n`);
