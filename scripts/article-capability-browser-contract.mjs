@@ -269,10 +269,13 @@ async function exerciseHeadingAnchor(page, label) {
         id: target.id || '',
         className: typeof target.className === 'string' ? target.className : (target.className?.baseVal || ''),
         closestAnchorHref: target.closest('.heading-anchor')?.getAttribute('href') || '',
+        closestOwnedAnchorHref: target.closest('.heading-anchor[data-gb-heading-anchor-owner="native-v1"]')?.getAttribute('href') || '',
       };
     };
-    const matchesAnchor = (event) => event.target instanceof Element
-      && Boolean(event.target.closest('.heading-anchor[data-gb-heading-anchor-owner="native-v1"]'));
+    // Earlier document-capture owners can synchronously replace the anchor SVG after handling
+    // the click. event.target may then be detached; composedPath() preserves the dispatch path.
+    const matchesAnchor = (event) => event.composedPath().some((target) => target instanceof Element
+      && target.matches('.heading-anchor[data-gb-heading-anchor-owner="native-v1"]'));
     window.__gbAnchorClickTrace = {
       windowCapture: 0,
       documentCapture: 0,
@@ -306,7 +309,21 @@ async function exerciseHeadingAnchor(page, label) {
     window.__gbAnchorCaptureProbe = capture;
     window.__gbAnchorBubbleProbe = bubble;
   });
-  await page.mouse.click(hitTestBeforeClick.center.x, hitTestBeforeClick.center.y);
+  // Do not dispatch at a cached point: WebKit can finish a page/toolbar transition between
+  // the geometry probe and the mouse action. A locator click rechecks visibility, stability and
+  // the actual hit target immediately before dispatch, while still producing a real pointer click.
+  await anchor.click({ timeout: 5000 });
+  const activationTrace = await page.evaluate(() => window.__gbAnchorClickTrace);
+  assert.equal(
+    activationTrace?.documentCapture,
+    1,
+    `${label}: pointer activation did not reach the owned heading-anchor handler: ${JSON.stringify(activationTrace)}`,
+  );
+  assert.equal(
+    activationTrace?.windowTarget?.closestOwnedAnchorHref,
+    href,
+    `${label}: pointer activation landed on a different target: ${JSON.stringify(activationTrace)}`,
+  );
   try {
     await page.waitForFunction(
       () => document.getElementById('anchor-copy-toast')?.classList.contains('is-visible') === true
