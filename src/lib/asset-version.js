@@ -8,7 +8,7 @@ export const ASSET_VERSIONS = {
   'css/floating-cluster.css': '89332585',
   'css/highlights-runtime.css': '9f42844a',
   'css/home.css': 'ee5bb66d',
-  'css/mobile-hotfix.css': 'a6a3187a',
+  'css/mobile-hotfix.css': '087ca4ee',
   'css/nagornaya-mobile-toc.css': '3806ac1a',
   'css/reader-preferences.css': 'b740c21f',
   'css/series-manuscript.css': 'f8c681e2',
