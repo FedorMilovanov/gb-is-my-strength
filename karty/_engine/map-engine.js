@@ -136,6 +136,16 @@ const MapEngine = (function() {
 
   function clamp(n,a,b){return Math.min(Math.max(n,a),b)}
   function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+  // Русская плюрализация счётчиков: 1 место / 2 места / 5 мест / 11 мест / 21 место /
+  // 22 места. Своего плюрализатора у движка нет, а window.SiteUtils.pluralRu зависит от
+  // порядка загрузки, поэтому функция локальная и без зависимостей. Без неё доступные
+  // строки маршрута звучали как «22 мест» и «4 сюжетов».
+  function pluralRu(n, one, few, many){
+    const mod10 = Number(n) % 10, mod100 = Number(n) % 100;
+    if (mod10 === 1 && mod100 !== 11) return one;
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
+    return many;
+  }
 
   // ── v0.2 DATA LAYER (preserved) ──
 
@@ -1330,6 +1340,37 @@ const MapEngine = (function() {
     // exported 2x/3x PNG previews.
     svg.setAttribute('text-rendering','optimizeLegibility');
     svg.setAttribute('shape-rendering','geometricPrecision');
+    // GBS-KARTY-SVG-UNNAMED: корень карты не имел ни роли, ни доступного имени, поэтому
+    // AT входила в безымянную графику 1440x900, содержащую десятки контролов
+    // «Открыть досье: …». Внутрипродуктовый эталон /map/ (src/components/map/
+    // AtlasBody.astro:90) объявляет role="application" с aria-label, называющим
+    // поверхность и способ управления; здесь тот же приём и имя называет МАРШРУТ.
+    //
+    // Имя задано через aria-label, а НЕ через <title>: браузеры показывают SVG <title>
+    // как нативный тултип при наведении, и корневой <title> дал бы всплывающую подпись
+    // на всю площадь карты. Нативный тултип рисуется слоем ОС, в headless-снимке его не
+    // видно, то есть проверить такой побочный эффект инструментом нельзя — поэтому он
+    // не вносится вовсе. <desc> тултип не порождает и оставлен для развёрнутого
+    // описания через aria-describedby.
+    //
+    // Идентификатор привязан к mapInstanceToken, как остальные id движка
+    // (me-tab-…, me-tabpanel-…), поэтому перерисовки не плодят дубли.
+    const svgDescId=`me-svg-desc-${mapInstanceToken}`;
+    const routeTitle=String(route.meta?.title||'').trim()||'Интерактивная карта';
+    const placesCount=Number((route.places||[]).length);
+    const storiesCount=Number((route.stories||[]).length);
+    svg.setAttribute('role','application');
+    svg.setAttribute('aria-label',`Интерактивная карта: ${routeTitle}. Tab — переход по местам, Enter или пробел — досье места, Escape — закрыть.`);
+    svg.setAttribute('aria-describedby',svgDescId);
+    const svgDescEl=document.createElementNS('http://www.w3.org/2000/svg','desc');
+    svgDescEl.id=svgDescId;
+    svgDescEl.textContent=`${routeTitle}. Маршрут содержит ${placesCount} `
+      +`${pluralRu(placesCount,'место','места','мест')} и ${storiesCount} `
+      +`${pluralRu(storiesCount,'сюжет','сюжета','сюжетов')}. Интерактивные места — в отдельном`
+      +` слое и доступны клавиатурой: Tab переходит по местам, Enter или пробел открывает`
+      +` досье места, Escape закрывает его. Географическая основа карты — отдельный`
+      +` неинтерактивный слой.`;
+    svg.appendChild(svgDescEl);
     function semanticZoomBucket(width=view.w){
       // Authored map width remains the primary semantic contract. Rendered
       // density only resolves narrow portrait canvases where raw width lies.
@@ -1358,6 +1399,8 @@ const MapEngine = (function() {
     const bgRect=document.createElementNS('http://www.w3.org/2000/svg','rect');
     bgRect.setAttribute('x','-400');bgRect.setAttribute('y','-400');bgRect.setAttribute('width','2700');bgRect.setAttribute('height','2230');
     bgRect.setAttribute('class','me-map-bg');bgRect.setAttribute('fill','#0d1d2e');bgRect.setAttribute('opacity','0.4');
+    // Декоративная подложка: информации не несёт, поэтому явно выведена из AT.
+    bgRect.setAttribute('aria-hidden','true');
     svg.appendChild(bgRect);
 
     // SVG defs — glow filters, gradients
@@ -1398,11 +1441,27 @@ const MapEngine = (function() {
     });
     svg.appendChild(defs);
 
-    const pathsG=document.createElementNS('http://www.w3.org/2000/svg','g');pathsG.id='me-paths';svg.appendChild(pathsG);
+    const pathsG=document.createElementNS('http://www.w3.org/2000/svg','g');pathsG.id='me-paths';
+    // Базовая карта — отдельный именованный слой, чтобы AT отличала её от
+    // интерактивных мест. Не aria-hidden: подписи путей авторские (IshodMap.astro
+    // задаёт path[aria-label] для коридоров с уровнем уверенности).
+    pathsG.setAttribute('role','group');
+    // Имя слоя не должно почти совпадать с авторским aria-label группы коридоров
+    // Пи-Гахирота на Исходе («Географическая основа карты Исхода»): две группы с
+    // почти одинаковым доступным именем на одной поверхности путают AT.
+    pathsG.setAttribute('aria-label','Линии маршрута и географическая подложка');
+    svg.appendChild(pathsG);
     const waypointsG=document.createElementNS('http://www.w3.org/2000/svg','g');waypointsG.id='me-waypoints';svg.appendChild(waypointsG);
     let signatureG=document.createElementNS('http://www.w3.org/2000/svg','g');signatureG.id='me-signature';signatureG.setAttribute('data-layer','signature');signatureG.setAttribute('data-layer-all','signature');svg.appendChild(signatureG);
     const storyFocusG=document.createElementNS('http://www.w3.org/2000/svg','g');storyFocusG.id='me-story-focus';svg.appendChild(storyFocusG);
-    const markersG=document.createElementNS('http://www.w3.org/2000/svg','g');markersG.id='me-markers';svg.appendChild(markersG);
+    const markersG=document.createElementNS('http://www.w3.org/2000/svg','g');markersG.id='me-markers';
+    // Интерактивный слой: именно здесь живут g[role=button][tabindex=0] с
+    // aria-label «Открыть досье: …». Имя слоя не содержит числа, потому что
+    // фактически отрисованное количество мест зависит от semantic-zoom и
+    // деклаттера — счётчик в имени врал бы на части зумов.
+    markersG.setAttribute('role','group');
+    markersG.setAttribute('aria-label','Интерактивные места карты: Tab — переход по местам, Enter или пробел — досье места');
+    svg.appendChild(markersG);
     const ctxG=document.createElementNS('http://www.w3.org/2000/svg','g');ctxG.id='me-ctx';svg.appendChild(ctxG);
     canvas.appendChild(svg);
     container.appendChild(canvas);
@@ -3773,8 +3832,8 @@ container.appendChild(panel);
           ${route.meta?.title_he ? `<p class="me-intro__he" lang="he" dir="rtl">${esc(route.meta.title_he)}</p>` : ''}
           ${route.meta?.subtitle ? `<p class="me-intro__sub">${esc(route.meta.subtitle)}</p>` : ''}
           <div class="me-intro__stats">
-            ${(route.places||[]).length ? `<span>${route.places.length} мест</span>` : ''}
-            ${(route.stories||[]).length ? `<span>${route.stories.length} сюжетов</span>` : ''}
+            ${(route.places||[]).length ? `<span>${route.places.length} ${pluralRu(route.places.length,'место','места','мест')}</span>` : ''}
+            ${(route.stories||[]).length ? `<span>${route.stories.length} ${pluralRu(route.stories.length,'сюжет','сюжета','сюжетов')}</span>` : ''}
           </div>
           <button class="me-intro__btn">Начать изучение</button>
         </div>`;
