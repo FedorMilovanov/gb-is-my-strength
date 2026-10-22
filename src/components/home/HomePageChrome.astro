@@ -442,9 +442,39 @@ window.SITE_CONFIG = {
       (wrapBackward ? last : first).focus({ preventScroll: true });
     };
 
-    const addCloseControl = () => {
+    /* GBS-HOME-SEARCH-DUPLICATE-CLOSE-CONTROLS: общая палитра (js/search.js)
+       всегда содержит .cp-close с доступным именем «Закрыть поиск» и с
+       обработчиком закрытия. Home добавлял ВТОРУЮ кнопку .cp-home-close с тем же
+       именем и тем же действием, поэтому в открытой палитре стояли два видимых
+       фокусируемых контрола и две соседние остановки Tab с одинаковым именем —
+       плюс два одинаковых крестика подряд, то есть ровно тот визуальный порок,
+       от которого Home уже избавлялся, делая .cp-clear узнаваемым «⌫».
+
+       Вторая кнопка больше не создаётся: Home помечает существующую общим
+       классом, и оформление Home (44px, прозрачный фон, акцентный hover и
+       фокусное кольцо) применяется к ней же. Один контрол — одно имя, одно
+       действие, одна остановка Tab.
+
+       Именно класс, а не новый узел: на .cp-home-close завязаны репозиторные
+       контракты и самоаудит Home — scripts/home-responsive-evidence-contract.mjs
+       требует его видимым и не меньше 44px и кликает его (в том числе в циклах
+       переоткрытия), scripts/home-design-audit-pro.mjs закрывает им поиск, а
+       HomeVisualAuditFixes.astro проверяет .cp-home-close svg. Все они
+       продолжают работать без правки guard'ов. */
+    const adoptSharedCloseControl = () => {
       const inputWrap = overlay?.querySelector('.cp-input-wrap');
-      if (!inputWrap || inputWrap.querySelector('.cp-home-close')) return;
+      if (!inputWrap) return;
+
+      const shared = inputWrap.querySelector('.cp-close');
+      if (shared) {
+        shared.classList.add('cp-home-close');
+        return;
+      }
+
+      // Запасной путь: если общая палитра пришла вовсе без контрола закрытия,
+      // Home создаёт его сам. Условие — именно отсутствие закрывающего контрола,
+      // поэтому дубль появиться не может.
+      if (inputWrap.querySelector('.cp-home-close')) return;
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'cp-home-close';
@@ -489,7 +519,7 @@ window.SITE_CONFIG = {
     const attachOverlay = (candidate) => {
       if (!(candidate instanceof HTMLElement) || !candidate.matches('.cp-backdrop')) return;
       overlay = candidate;
-      addCloseControl();
+      adoptSharedCloseControl();
       new MutationObserver(syncOverlay).observe(overlay, {
         attributes: true,
         attributeFilter: ['class'],
