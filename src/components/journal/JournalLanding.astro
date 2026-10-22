@@ -1,6 +1,11 @@
 ---
 import MobileChromePage from '@/components/article-pilots/_shared/MobileChromePage.astro';
 ---
+<!-- Bypass-ссылка: первый узел body, поэтому первая Tab-остановка на любой ширине.
+     Класс .skip-link и цель #main-content — общесайтовый идиом (About/Articles/Home/
+     HardTexts, css/site.css), вне фокуса ссылка увезена за верхний край. -->
+<a href="#main-content" class="skip-link">Перейти к содержимому</a>
+
 <MobileChromePage backHref="/" homeHref="/" searchLabel="Поиск по сайту…" />
 
 <header class="journal-topbar" aria-label="Навигация журнала">
@@ -11,7 +16,7 @@ import MobileChromePage from '@/components/article-pilots/_shared/MobileChromePa
   </nav>
 </header>
 
-<main class="journal-landing">
+<main class="journal-landing" id="main-content" tabindex="-1">
   <section class="journal-hero" aria-labelledby="journal-title">
     <p class="journal-kicker">Документальный журнал · новости · расследования · документы</p>
     <h1 id="journal-title">Журнал</h1>
