@@ -1485,9 +1485,10 @@ html.dark .author-card-icon{color:#0e1116}
    the theme already uses for ::selection (≈8.5:1). */
 html.dark #quizLaunch,html.dark .quiz-launch{color:#0e1116}
 
-/* a11y D-6 (browser audit 2026-10-13): the diotrefy quiz panel keeps a 92%-white card
-   background in dark mode (measured rgba(255,253,248,.92)) while its text inherited the
-   dark theme ink #e6e1d7 → 1.08:1, effectively unreadable. The card is light, so its text
-   must be ink; children that set their own colour are unaffected. Root cause of the light
-   background is not yet identified — tracked as an open question in the audit report. */
-html.dark #quiz.quiz-wrapper{color:#1a1a18}
+/* a11y D-6 (browser audit 2026-10-13) closed at the root cause: the light 92% card in dark
+   mode came from the runtime owner's fallback (src/runtime/article-interactions.css,
+   .quiz-wrapper background var(--surface, var(--card-bg, rgb(255 253 248 / 92%)))). The owner
+   now ships a theme-aware dark surface, so the panel and ALL its children read the theme ink.
+   The former workaround (force #1a1a18 ink on the light card) is removed: with a dark surface
+   it would itself be unreadable, and it never reached the children that set their own colour
+   (measured 1.08:1 on .quiz-option even with the workaround in place). */

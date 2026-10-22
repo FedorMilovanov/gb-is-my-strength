@@ -17,7 +17,7 @@ const EXPECTED_CACHES = new Set([
 ]);
 const OFFLINE_FALLBACK = '/404.html';
 const PRECACHE_ASSETS = [
-  '/css/site.css?v=613c5402',
+  '/css/site.css?v=5732e71e',
   '/css/home.css?v=ee5bb66d',
   '/css/command-palette.css?v=3b88813f',
   '/css/mobile-hotfix.css?v=087ca4ee',

@@ -109,6 +109,22 @@
   box-shadow: 0 14px 40px rgb(0 0 0 / 8%);
 }
 
+/* GBS-QUIZ-DARK-SURFACE-LOW-CONTRAST: белый 92%-fallback выше годится только светлой теме.
+   В тёмной панель обязана быть тёмной поверхностью с той же прозрачностью, чтобы темовый
+   чернила-текст (--color-text) читался на ней; цепочка переменных сохранена — внешние
+   --surface/--card-bg по-прежнему имеют приоритет. */
+html.dark .quiz-wrapper {
+  background: var(--surface, var(--card-bg, rgb(22 26 33 / 92%)));
+}
+
+/* Та же пара темы, что сайт уже использует для ::selection и для #quizLaunch (ink по золоту,
+   ≈8.4:1): белый текст на тёммовом --accent #d4a574 даёт 2.22:1 (axe color-contrast на
+   «Пройти ещё раз» / «Следующий вопрос» в тёмной теме). */
+html.dark .quiz-launch,
+html.dark .quiz-next {
+  color: #0e1116;
+}
+
 .quiz-wrapper[hidden] {
   display: none;
 }
