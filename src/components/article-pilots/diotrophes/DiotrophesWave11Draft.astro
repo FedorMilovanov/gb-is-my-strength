@@ -9,5 +9,11 @@ interface Props {
 const { publicationMode = false } = Astro.props;
 ---
 
+{/* Дополнение Wave 11 — часть той же статьи. Земля страницы (`<main>`) остаётся
+    у контентного компонента: пока оболочка растягивала <main> на дополнение,
+    печатная проекция Chromium теряла всю секцию (проверено на
+    scripts/diotrophes-wave12-browser-contract.mjs: 20 страниц вместо 44).
+    Собственная ориентирная роль дополнения обеспечена aria-labelledby на его
+    <section>, поэтому правило axe «region» выполняется и без растянутого <main>. */}
 <DiotrophesDraft publicationMode={publicationMode} />
 <FaithfulWitnessSupplement />

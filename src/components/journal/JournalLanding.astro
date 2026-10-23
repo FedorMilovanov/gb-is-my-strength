@@ -141,6 +141,12 @@ import MobileChromePage from '@/components/article-pilots/_shared/MobileChromePa
   .direction-grid, .method-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
   .direction-grid article, .method-grid > div { padding: 28px; border: 1px solid var(--border, #ddd7cf); border-radius: 16px; }
   .direction-index { margin: 0 0 28px; font: 700 12px/1 ui-monospace, monospace; color: #7a2e2e; }
+
+  /* Тёмная тема: кикеры/индексы на светло-красном #7a2e2e давали 2:1 на
+     #0e1116 и #131217. Осветлённый тон сохраняет акцент и даёт ≥ 8:1. */
+  :global(html.dark) .journal-kicker, :global(html.dark) .eyebrow,
+  :global(html.dark) .lead-label, :global(html.dark) .read-link,
+  :global(html.dark) .direction-index { color: #e8a0a0; }
   .direction-grid h3 { margin: 0 0 10px; font-size: 25px; }
   .direction-grid article > p:last-child, .no-placeholder-note { color: var(--muted, #665f57); line-height: 1.6; }
   .no-placeholder-note { margin: 20px 0 0; font-size: 14px; }

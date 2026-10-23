@@ -198,8 +198,18 @@ function prepareGlossaryTip(tip) {
   });
 }
 
+function setTipInert(tip, inert) {
+  if (!tip) return;
+  if (inert) tip.setAttribute('inert', '');
+  else tip.removeAttribute('inert');
+}
+
 function prepareTip(tip) {
   prepareGlossaryTip(tip);
+  // A closed tip is a hidden panel: its links/buttons must not stay in the tab
+  // order, otherwise its focusable descendants sit inside the marker's own
+  // focusable control (axe nested-interactive). Open tips are un-inert below.
+  setTipInert(tip, true);
   return tip;
 }
 
@@ -327,6 +337,7 @@ function restore(record) {
   const { tip, placeholder } = record;
   stopGeometry(record);
   resetGlossaryTip(tip);
+  setTipInert(tip, true);
   tip.classList.remove('gb-floating-tip', 'is-open');
   clearAuthoritativeGeometry(tip);
   tip.style.removeProperty('position');
@@ -367,6 +378,7 @@ function openTooltip(anchor, reason = 'open') {
       settleHover(active);
     }
     setImportant(tip.style, 'pointer-events', 'auto');
+    setTipInert(tip, false);
     position(tip, anchor, true);
     return;
   }
@@ -377,6 +389,7 @@ function openTooltip(anchor, reason = 'open') {
   tip.parentNode?.insertBefore(placeholder, tip);
   document.body.appendChild(tip);
   tip.classList.add('gb-floating-tip', 'is-open');
+  setTipInert(tip, false);
   setImportant(tip.style, 'pointer-events', 'auto');
   anchor.classList.add('is-open');
   anchor.setAttribute('aria-expanded', 'true');

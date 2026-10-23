@@ -175,6 +175,24 @@ function accessibleMarkerLabel(marker, ordinal) {
   return `Показать сноску ${ordinal}`;
 }
 
+// Locate the first digit run that lives in text (not inside a tag) of a raw
+// HTML fragment. The marker's printed ordinal is the only text between the
+// marker open tag and its .tooltip child, so this stays conservative.
+function firstTextDigitRun(region) {
+  let cursor = 0;
+  while (cursor < region.length) {
+    const tagStart = region.indexOf('<', cursor);
+    const textEnd = tagStart < 0 ? region.length : tagStart;
+    const match = /\d+/.exec(region.slice(cursor, textEnd));
+    if (match) return { index: cursor + match.index, value: match[0] };
+    if (tagStart < 0) return null;
+    const tagEnd = region.indexOf('>', tagStart);
+    if (tagEnd < 0) return null;
+    cursor = tagEnd + 1;
+  }
+  return null;
+}
+
 function setAttributes(openTag, additions) {
   let next = openTag;
   for (const [name, rawValue] of Object.entries(additions)) {
@@ -256,6 +274,7 @@ export function collectAndProjectHtml(inputHtml, route, options = {}) {
   const notes = [];
   const ids = new Map();
   const patches = [];
+  const renumbered = [];
   const routeSlug = stableRouteSlug(route);
 
   markers.forEach((marker, index) => {
@@ -296,11 +315,32 @@ export function collectAndProjectHtml(inputHtml, route, options = {}) {
     const tipId = tip.attrs.id || `note-tip-${id}`;
     const endnoteId = `note-end-${id}`;
     const markerLabel = accessibleMarkerLabel(marker, ordinal);
+    // WCAG 2.5.3 (Label in Name): the printed ordinal *is* the marker's visible
+    // label, so it has to agree with the accessible name and with the generated
+    // endnote list. Manuscript digits are a book artefact - the same chapter can
+    // print 1, 27, 36, 2, ... or skip numbers consumed by translation notes - so
+    // the projection canonicalises the printed ordinal instead of trusting it.
+    const visibleRegion = html.slice(marker.openEnd, tip.start);
+    const authoredVisible = /^\s*(\d+)\s*$/u.exec(stripTags(visibleRegion));
+    const visibleRun = authoredVisible ? firstTextDigitRun(visibleRegion) : null;
+    const renumberedFrom = authoredVisible && visibleRun && authoredVisible[1] !== String(ordinal)
+      ? Number(authoredVisible[1])
+      : null;
+    if (renumberedFrom !== null) {
+      patches.push({
+        start: marker.openEnd + visibleRun.index,
+        end: marker.openEnd + visibleRun.index + visibleRun.value.length,
+        value: String(ordinal),
+      });
+      renumbered.push({ id, route: normalizeRoute(route), ordinal, authored: renumberedFrom });
+    }
     notes.push({
       id,
       route: normalizeRoute(route),
       ordinal,
-      visibleOrdinal: numericLabel(markerText),
+      visibleOrdinal: ordinal,
+      authoredVisibleOrdinal: numericLabel(markerText),
+      renumberedFrom,
       markerText,
       text: noteText,
       html: noteHtml,
@@ -347,7 +387,7 @@ export function collectAndProjectHtml(inputHtml, route, options = {}) {
     });
   });
 
-  if (errors.length) return { html, notes, errors, changed: false };
+  if (errors.length) return { html, notes, renumbered, errors, changed: false };
 
   if (notes.length) {
     const containsAllMarkers = (node) => markers.every((marker) => marker.start >= node.openEnd && marker.end <= node.endStart);
@@ -364,14 +404,14 @@ export function collectAndProjectHtml(inputHtml, route, options = {}) {
     else patches.push({ start: insertion, end: insertion, value: `\n${buildEndnotes(route, notes)}\n` });
   }
 
-  if (errors.length) return { html, notes, errors, changed: false };
+  if (errors.length) return { html, notes, renumbered, errors, changed: false };
 
   let projected = html;
   for (const patch of patches.sort((left, right) => right.start - left.start)) {
     projected = `${projected.slice(0, patch.start)}${patch.value}${projected.slice(patch.end)}`;
   }
   if (notes.length) projected = injectStylesheet(projected, cssHref);
-  return { html: projected, notes, errors, changed: projected !== inputHtml };
+  return { html: projected, notes, renumbered, errors, changed: projected !== inputHtml };
 }
 
 function walkHtml(root, output = []) {
@@ -405,7 +445,7 @@ function stableRegistry(notes, sourceCommit, stylesheet) {
   };
 }
 
-function markdownReport(registry, filesChanged, errors) {
+function markdownReport(registry, filesChanged, errors, renumbered = []) {
   const lines = [
     '# A03 NoteRegistry projection',
     '',
@@ -413,6 +453,7 @@ function markdownReport(registry, filesChanged, errors) {
     `- Notes: **${registry.noteCount}**`,
     `- HTML files changed: **${filesChanged}**`,
     `- Errors: **${errors.length}**`,
+    `- Printed ordinals canonicalised: **${renumbered.length}**`,
     `- Interaction owner: \`${registry.interactionOwner}\``,
     `- Stylesheet: \`${registry.stylesheet}\``,
     '',
@@ -420,6 +461,18 @@ function markdownReport(registry, filesChanged, errors) {
     '|---|---:|',
   ];
   for (const [route, value] of Object.entries(registry.routes)) lines.push(`| \`${route}\` | ${value.count} |`);
+  if (renumbered.length) {
+    lines.push(
+      '',
+      '## Printed ordinals canonicalised',
+      '',
+      'Manuscript digits drifted from the registry ordinal (WCAG 2.5.3 Label in Name + endnote-list parity).',
+      '',
+      '| Route | Ordinal | Manuscript digit |',
+      '|---|---:|---:|',
+    );
+    for (const entry of renumbered) lines.push(`| \`${entry.route}\` | ${entry.ordinal} | ${entry.authored} |`);
+  }
   if (errors.length) lines.push('', '## Errors', '', ...errors.map((error) => `- ${error}`));
   return `${lines.join('\n')}\n`;
 }
@@ -439,6 +492,7 @@ export function projectNoteRegistry(options = {}) {
   const stylesheet = `/css/note-registry.css?v=${styleHash}`;
   const files = walkHtml(distRoot).sort();
   const allNotes = [];
+  const allRenumbered = [];
   const errors = [];
   let filesChanged = 0;
 
@@ -449,6 +503,7 @@ export function projectNoteRegistry(options = {}) {
     const result = collectAndProjectHtml(source, route, { cssHref: stylesheet });
     errors.push(...result.errors);
     allNotes.push(...result.notes);
+    allRenumbered.push(...(result.renumbered || []));
     if (result.changed) {
       filesChanged += 1;
       if (!dryRun) fs.writeFileSync(file, result.html, 'utf8');
@@ -463,7 +518,15 @@ export function projectNoteRegistry(options = {}) {
   }
 
   const registry = stableRegistry(allNotes, options.sourceCommit, stylesheet);
-  const report = { registry, filesScanned: files.length, filesChanged, errors, dryRun };
+  const report = {
+    registry,
+    filesScanned: files.length,
+    filesChanged,
+    renumberedCount: allRenumbered.length,
+    renumbered: allRenumbered,
+    errors,
+    dryRun,
+  };
   if (errors.length) throw new Error(`NoteRegistry projection failed:\n- ${errors.join('\n- ')}`);
 
   if (!dryRun) {
@@ -475,7 +538,7 @@ export function projectNoteRegistry(options = {}) {
     fs.writeFileSync(cssTarget, styleBytes);
     fs.writeFileSync(path.join(dataDir, 'note-registry.json'), `${JSON.stringify(registry, null, 2)}\n`, 'utf8');
     fs.writeFileSync(path.join(reportDir, 'a03-note-registry.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf8');
-    fs.writeFileSync(path.join(reportDir, 'a03-note-registry.md'), markdownReport(registry, filesChanged, errors), 'utf8');
+    fs.writeFileSync(path.join(reportDir, 'a03-note-registry.md'), markdownReport(registry, filesChanged, errors, allRenumbered), 'utf8');
   }
   return report;
 }

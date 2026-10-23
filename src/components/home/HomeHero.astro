@@ -67,13 +67,14 @@ import HomeAmbientPhrases from './HomeAmbientPhrases.astro';
   <p class="h-hero-desc">Экзегеза, богословие, апологетика, переводы и история Церкви — в единой библиотеке для медленного чтения и честного исследования.</p>
 
   <div class="h-hero-search-wrap" role="search" aria-label="Поиск по материалам сайта">
-    <a class="h-hero-search" id="heroSearchBar" href="/articles/" aria-label="Открыть поиск по материалам сайта" data-action="open-search">
+    <a class="h-hero-search" id="heroSearchBar" href="/articles/" data-action="open-search">
       <svg class="h-hero-search__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
       <span class="h-hero-search__placeholder">Что вы хотите изучить?</span>
       <span class="h-hero-search__action" aria-hidden="true">Найти</span>
       <span class="h-hero-search__kbd" aria-hidden="true"><kbd data-search-shortcut-modifier>Ctrl</kbd><kbd>K</kbd></span>
+      <span class="sr-only"> — открыть поиск по материалам сайта</span>
     </a>
   </div>
 

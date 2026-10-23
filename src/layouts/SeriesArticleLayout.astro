@@ -105,14 +105,14 @@ const editorialName = SITE.authorName;
   bodyClass="gbs-world"
 >
   <!-- Mobile header (simplified) -->
-  <div class="gbs2-mobile-head">
+  <header class="gbs2-mobile-head">
     <img src={coverImg(data.slug)} alt="" width="600" height="315" />
     <div class="gbs2-mobile-title"><span>{seriesTitle}</span><b>{currentPos} · {h1}</b></div>
     <div class="gbs2-mobile-actions">
       <button class="gbs2-mctl" type="button" data-gbs2-theme aria-label="Переключить тему">◐</button>
       <button class="gbs2-mctl" type="button" data-gbs2-search aria-label="Поиск">⌕</button>
     </div>
-  </div>
+  </header>
 
   <div class="gbs2-world">
     <!-- Sidebar rail -->
@@ -154,8 +154,8 @@ const editorialName = SITE.authorName;
 
       <div class="gbs2-rfoot">
         <button class="gbs2-ctl" type="button" data-gbs2-theme aria-label="Переключить тему">◐</button>
-        <button class="gbs2-ctl" type="button" data-gbs2-font="down" aria-label="Уменьшить шрифт">A−</button>
-        <button class="gbs2-ctl" type="button" data-gbs2-font="up" aria-label="Увеличить шрифт">A+</button>
+        <button class="gbs2-ctl" type="button" data-gbs2-font="down" title="Уменьшить шрифт"><span aria-hidden="true">A−</span><span class="sr-only">Уменьшить шрифт</span></button>
+        <button class="gbs2-ctl" type="button" data-gbs2-font="up" title="Увеличить шрифт"><span aria-hidden="true">A+</span><span class="sr-only">Увеличить шрифт</span></button>
         <button class="gbs2-ctl" type="button" data-gbs2-share aria-label="Поделиться">↗</button>
         {series3dLink && <a class="gbs2-home" href={series3dLink}>3D-карта</a>}
       </div>
@@ -235,14 +235,14 @@ const editorialName = SITE.authorName;
         </section>
 
         <!-- Author card -->
-        <aside class="author-card">
+        <section class="author-card">
           <div class="author-card-icon" aria-hidden="true">ФМ</div>
           <div class="author-card-body">
             <div class="author-card-label">Редакционный принцип</div>
             <div class="author-card-name">Живая исследовательская серия</div>
             <p class="author-card-desc">Каждая статья сверяется с исследовательским досье. Если факт спорный, он помечается уровнем источника и не превращается в уверенное утверждение без проверки. <a href="/about/">Об авторе →</a></p>
           </div>
-        </aside>
+        </section>
 
         <div class="article-end-block article-end-sdg-wrap">
           <div class="article-end-sdg"><span class="sdg">Soli Deo Gloria</span></div>

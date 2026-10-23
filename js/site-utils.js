@@ -270,6 +270,7 @@
 
   var overlayRecords = new Map();
   var overlayStack = [];
+  var overlayRestoreGeneration = 0;
   var inertClaims = new Map();
   var overlaySequence = 0;
   var overlayRecovering = false;
@@ -323,13 +324,56 @@
   function canOverlayFocus(element) {
     if (!element || typeof element.focus !== 'function' || element.isConnected === false || element.disabled) return false;
     if (element.getAttribute && element.getAttribute('aria-hidden') === 'true') return false;
-    return element.offsetParent !== null || element === document.activeElement;
+    if (element === document.activeElement) return true;
+    if (element.offsetParent !== null) return true;
+    // `offsetParent` is null for a `position: fixed` opener and for elements whose
+    // ancestor chain sits in a skipped `content-visibility` subtree, even though
+    // they are plainly rendered and focusable. Ask the platform visibility API
+    // (with layout rects as the fallback) so every engine agrees on those cases,
+    // while minimal DOM implementations that lay nothing out keep the judgement
+    // they had before.
+    if (typeof element.checkVisibility === 'function') {
+      return element.checkVisibility({ checkOpacity: false, checkVisibilityCSS: true });
+    }
+    if (typeof element.getClientRects === 'function') return element.getClientRects().length > 0;
+    return false;
   }
 
   function overlayFocus(element) {
     if (!canOverlayFocus(element)) return false;
     try { element.focus({ preventScroll: true }); return true; }
     catch (_) { try { element.focus(); return true; } catch (_) { return false; } }
+  }
+
+  // WebKit moves focus to <body> asynchronously when an ancestor turns inert,
+  // i.e. *after* the deferred opener restore below has already run, and a browser
+  // may also drop focus while the closing panel is still transitioned out. Keep
+  // re-asserting the opener for a bounded window, but only while focus is
+  // genuinely lost (body/document/inside the closing overlay), so a deliberate
+  // user focus is never stolen. A reopen bumps the generation and cancels it.
+  function focusInsideClosing(active, closingElement, panelFocus) {
+    if (!active) return false;
+    if (panelFocus && active === panelFocus) return true;
+    return Boolean(closingElement && typeof closingElement.contains === 'function' && closingElement.contains(active));
+  }
+
+  function restoreOverlayOpener(opener, closingElement, panelFocus, generation) {
+    var attempts = 0;
+    var attempt = function () {
+      if (generation !== overlayRestoreGeneration) return;
+      attempts += 1;
+      var active = document.activeElement;
+      // The first pass is the historical contract: a closing overlay always hands
+      // focus back to its opener. Later passes only re-assert it when focus was
+      // genuinely dropped (engine fixup to <body>, or still on the closing panel),
+      // so a deliberate user focus move is never stolen.
+      var first = attempts === 1;
+      var lost = first || !active || active === document.body || active === document.documentElement
+        || focusInsideClosing(active, closingElement, panelFocus);
+      if (lost && active !== opener) overlayFocus(opener);
+      if (attempts < 8) setTimeout(attempt, 60);
+    };
+    setTimeout(attempt, 0);
   }
 
   function firstOverlayFocus(record) {
@@ -437,6 +481,7 @@
     }
     overlayStack = overlayStack.filter(function (stackId) { return stackId !== record.ownerId; });
     overlayStack.push(record.ownerId);
+    overlayRestoreGeneration += 1;
     record.open = true;
     record.sequence = ++overlaySequence;
     if (record.element) {
@@ -463,6 +508,18 @@
     options = options || {};
     record.open = false;
     overlayStack = overlayStack.filter(function (id) { return id !== record.ownerId; });
+    var restore = options.restoreFocus !== false && record.restoreFocus && !/^(?:pagehide|beforeunload|force)$/.test(reason || '');
+    var opener = record.opener;
+    var closingElement = record.element;
+    var panelFocus = firstOverlayFocus(record);
+    record.opener = null;
+    // Hand focus back while the overlay is still interactive. Marking an element
+    // inert makes engines move focus off it asynchronously, and that fixup can
+    // land after the deferred restore below (WebKit then leaves focus on <body>),
+    // while a throttled timer can delay the deferred restore past the point a
+    // keyboard user notices. The synchronous hand-off removes both races; the
+    // bounded re-assertion below stays as the safety net for late fixups.
+    if (restore && opener && focusInsideClosing(document.activeElement, closingElement, panelFocus)) overlayFocus(opener);
     if (record.element) {
       record.element.setAttribute('aria-hidden', 'true');
       record.element.setAttribute('inert', '');
@@ -473,10 +530,7 @@
     if (record.lockScroll) unlockScroll('overlay:' + record.ownerId);
     syncOverlayDiagnostics();
     overlayEvent('gb:overlay-close', record, reason || 'close');
-    var restore = options.restoreFocus !== false && record.restoreFocus && !/^(?:pagehide|beforeunload|force)$/.test(reason || '');
-    var opener = record.opener;
-    record.opener = null;
-    if (restore && opener) setTimeout(function () { overlayFocus(opener); }, 0);
+    if (restore && opener) restoreOverlayOpener(opener, closingElement, panelFocus, overlayRestoreGeneration);
     return true;
   }
 

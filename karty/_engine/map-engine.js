@@ -3437,7 +3437,27 @@ container.appendChild(panel);
     photoModal.className = 'me-photo-modal';
     photoModal.setAttribute('aria-hidden','true');
     photoModal.setAttribute('inert','');
-    photoModal.innerHTML = '<div class="me-photo-modal__backdrop"></div><button class="me-photo-modal__close" aria-label="Закрыть">×</button><img class="me-photo-modal__img" alt=""><div class="me-photo-modal__caption"></div>';
+    photoModal.innerHTML = '<div class="me-photo-modal__backdrop"></div><button class="me-photo-modal__close" aria-label="Закрыть">×</button><div class="me-photo-modal__caption"></div>';
+    // Изображение модалки живёт только вместе с источником: <img> без src
+    // браузер разрешает в адрес самого документа, поэтому такое «пустое»
+    // изображение уходит в сеть и считается битым.
+    let photoImgEl = null;
+    function setPhotoImage(src) {
+      const clean = typeof src === 'string' ? src.trim() : '';
+      if (!clean) {
+        if (photoImgEl) { photoImgEl.removeAttribute('src'); photoImgEl.hidden = true; }
+        return;
+      }
+      if (!photoImgEl) {
+        photoImgEl = document.createElement('img');
+        photoImgEl.className = 'me-photo-modal__img';
+        photoImgEl.alt = '';
+        photoImgEl.hidden = true;
+        photoModal.insertBefore(photoImgEl, photoModal.querySelector('.me-photo-modal__caption'));
+      }
+      photoImgEl.hidden = false;
+      photoImgEl.src = clean;
+    };
     container.appendChild(photoModal);
     // Photo swipe
     let photoSwipeStartX = 0;
@@ -3455,7 +3475,7 @@ container.appendChild(panel);
       if (newIdx !== photoCurrentIdx) {
         photoCurrentIdx = newIdx;
         const ph = photos[newIdx];
-        photoModal.querySelector('.me-photo-modal__img').src = ph.src || ph.thumb || '';
+        setPhotoImage(ph.src || ph.thumb);
         photoModal.querySelector('.me-photo-modal__caption').innerHTML = (ph.label||'') + (ph.credit ? ' · <span class="me-photo-modal__credit">' + ph.credit + '</span>' : '');
         haptic(10);
       }
@@ -3472,7 +3492,7 @@ container.appendChild(panel);
     function openPhoto(src, caption, credit, place, idx) {
       const opener = document.activeElement;
       if (place) { photoCurrentPlace = place; photoCurrentIdx = idx || 0; }
-      photoModal.querySelector('.me-photo-modal__img').src = src;
+      setPhotoImage(src);
       photoModal.querySelector('.me-photo-modal__caption').innerHTML = caption ? caption + (credit ? ' · <span class="me-photo-modal__credit">' + credit + '</span>' : '') : '';
       photoModal.classList.add('me-photo-modal--open');
       openSpecialOverlay(photoOverlayOwner, {

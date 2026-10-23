@@ -2,6 +2,13 @@ const OWNER = 'native-v1';
 const SELECTOR = '.flip-card, .error-flip-card, .heart-flip-card';
 const FRONT_SELECTOR = '.flip-card-front, .error-flip-front, .heart-flip-front';
 const BACK_SELECTOR = '.flip-card-back, .error-flip-back, .heart-flip-back';
+const HINT_CLASS = 'gb-reversible-card-hint';
+const HINT_TEXT = 'Перевернуть карточку';
+// Instruction-only labels that never contained the card's own text. WCAG 2.5.3
+// requires the accessible name to contain the visible label, so a card that
+// shows real content (a poem, a claim, a fact) cannot be named by a generic
+// caption: the name has to come from the content plus this sr-only hint.
+const GENERIC_LABEL = /^(?:Нажмите, чтобы перевернуть|Перевернуть карточку|Раскрыть термин)/iu;
 
 function feature() {
   return window.SITE_CONFIG?.features?.flipCards || {};
@@ -17,14 +24,22 @@ function syncState(card) {
   back?.setAttribute('aria-hidden', String(!flipped));
 }
 
+function ensureHint(card) {
+  const existing = [...card.children].find((child) => child.classList.contains(HINT_CLASS));
+  if (existing) return existing;
+  const hint = document.createElement('span');
+  hint.className = `sr-only ${HINT_CLASS}`;
+  hint.textContent = HINT_TEXT;
+  card.appendChild(hint);
+  return hint;
+}
+
 function ensureSemantics(card) {
   if (!card.hasAttribute('role')) card.setAttribute('role', 'button');
   if (!card.hasAttribute('tabindex')) card.setAttribute('tabindex', '0');
-  if (!card.hasAttribute('aria-label')) {
-    const labelNode = card.querySelector(`${FRONT_SELECTOR} h3, ${FRONT_SELECTOR}`);
-    const label = (labelNode?.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 80);
-    card.setAttribute('aria-label', label ? `Перевернуть карточку: ${label}` : 'Перевернуть карточку');
-  }
+  const authored = (card.getAttribute('aria-label') || '').trim();
+  if (authored && GENERIC_LABEL.test(authored)) card.removeAttribute('aria-label');
+  ensureHint(card);
   syncState(card);
 }
 

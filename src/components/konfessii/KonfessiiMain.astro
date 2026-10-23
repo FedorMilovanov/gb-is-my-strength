@@ -1,6 +1,9 @@
 ---
 /**
- * KonfessiiMain.astro — <main class="grid h-reveal"> of /konfessii/.
+ * KonfessiiMain.astro — <div class="grid h-reveal"> of /konfessii/.
+ *
+ * Единственный <main id="main-content"> страницы принадлежит KonfessiiPageChrome:
+ * он владеет hero/intro/сеткой/SDG-блоком. Здесь остаётся сам grid.
  *
  * Refactoring 6.0 parallel pilot: the route no longer proxies one monolithic
  * legacy main block. Instead, the standalone grid is composed from
@@ -17,8 +20,8 @@ import KonfessiiOverviewCard from './KonfessiiOverviewCard.astro';
 <nav aria-label="Библейские инструменты">
   <a class="back" href="/app/">🚀 Приложение</a>
 </nav>
-<main class="grid h-reveal">
+<div class="grid h-reveal">
   <KonfessiiRusskijBaptizmCard />
   <KonfessiiPentecostalCard />
   <KonfessiiOverviewCard />
-</main>
+</div>

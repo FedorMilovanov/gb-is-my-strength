@@ -15,6 +15,7 @@ const DIST_ROUTE = 'karty/ishod/index.html';
 const URL = 'https://gospod-bog.ru/karty/ishod/';
 const COMPONENT = 'src/components/karty/ishod/IshodMap.astro';
 const FALLBACK = 'src/components/karty/_shared/MapRuntimeFallback.astro';
+const PROJECTION = 'src/components/karty/ishod/IshodStaticProjection.astro';
 const ENGINE = 'karty/_engine/map-engine.js';
 
 const problems = [];
@@ -87,16 +88,19 @@ function main() {
   const distPath = path.join(DIST, DIST_ROUTE);
   const componentPath = path.join(ROOT, COMPONENT);
   const fallbackPath = path.join(ROOT, FALLBACK);
+  const projectionPath = path.join(ROOT, PROJECTION);
   const enginePath = path.join(ROOT, ENGINE);
   if (!fs.existsSync(distPath)) return bad(`dist route missing: ${DIST_ROUTE}`);
   if (!fs.existsSync(componentPath)) return bad(`Ishod component missing: ${COMPONENT}`);
   if (!fs.existsSync(fallbackPath)) return bad(`shared map fallback missing: ${FALLBACK}`);
+  if (!fs.existsSync(projectionPath)) return bad(`ishod static print projection missing: ${PROJECTION}`);
   if (!fs.existsSync(enginePath)) return bad(`shared MapEngine missing: ${ENGINE}`);
 
   const legacy = read(referencePath);
   const astro = read(distPath);
   const component = read(componentPath);
   const fallback = read(fallbackPath);
+  const projection = read(projectionPath);
   const engine = read(enginePath);
 
   mustEqual('ishod canonical', canonical(astro), URL);
@@ -114,6 +118,15 @@ function main() {
   if (!/class="sr-only"/.test(astro)) bad('ishod must have sr-only h1 for SEO/a11y');
   else ok('ishod has sr-only h1 for SEO/a11y');
 
+  mustContain('ishod ships a static text projection for print/no-JS', astro, 'data-map-static-projection');
+  mustContain('ishod print projection is inside a sr-only text fallback', astro, 'class="sr-only map-text-fallback"');
+  mustContain('ishod print projection is a pagefind body', astro, '<section class="sr-only map-text-fallback" data-map-static-projection data-pagefind-body');
+  mustContain('ishod component mounts the static projection', component, 'IshodStaticProjection');
+  mustContain('ishod print projection carries the route title', projection, 'маршрут Исхода');
+  const runtimeNote = component.match(/place\.bible_extra = '(<p class="bib-note">[\s\S]*?)';/);
+  if (!runtimeNote) bad('adapter authority note for pihahiroth.bible_extra not found');
+  else if (!projection.includes(runtimeNote[1])) bad('print projection diverges from the runtime authority note for pihahiroth.bible_extra');
+  else ok('print projection reuses the runtime authority note verbatim');
   mustContain('ishod imports shared fallback', component, 'MapRuntimeFallback');
   mustContain('ishod stage owns runtime state', component, 'data-map-state="loading"');
   mustContain('ishod stage exposes busy state', component, 'aria-busy="true"');

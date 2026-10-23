@@ -112,13 +112,20 @@ must(page, '<body class="home-page">', 'Astro / preserves home body class');
 for (const forbidden of ['loadLegacyFullDocument', 'set:html', '?raw', '_legacy/', 'import BaseLayout', '<BaseLayout', 'HomeSacredFlipContract']) {
   mustNot(page, forbidden, `Astro / ${forbidden}`);
 }
-const chromeStylesPos = page.indexOf('<HomePageChromeStyles />');
-const mainPos = page.indexOf('<HomeMain />');
-const endPos = page.indexOf('<HomeArticleEndBlock />');
-const footerPos = page.indexOf('<HomePageFooter />');
+const chromeStylesPos = page.indexOf('<HomePageChromeStyles ');
+const mainPos = page.indexOf('<HomeMain');
+const mainClose = page.indexOf('</HomeMain>');
+const endPos = page.indexOf('<HomeArticleEndBlock ');
+const footerPos = page.indexOf('<HomePageFooter ');
 chromeStylesPos !== -1 && mainPos > chromeStylesPos && endPos > mainPos && footerPos > endPos
   ? ok('Astro / preserves chrome styles → main → Soli Deo Gloria → footer order')
   : bad('Astro / homepage landmark/style owner order is invalid');
+// SDG-блок — часть основного содержимого: он передаётся в слот HomeMain и живёт
+// внутри <main id="main-content">, иначе документ получает содержимое вне
+// ориентиров (axe rule: region).
+endPos > mainPos && mainClose > 0 && endPos < mainClose
+  ? ok('Soli Deo Gloria is nested inside HomeMain <main> landmark')
+  : bad('Soli Deo Gloria must be passed into the HomeMain slot');
 
 const head = read('src/components/home/HomePageHead.astro');
 for (const marker of [
@@ -364,11 +371,13 @@ if (REQUIRE_DIST) {
       'h-drop-cap__letter',
       '<span class="sr-only">Это</span>',
     ]) mustNot(dist, retired, `dist / retired duplicated About drop-cap markup: ${retired}`);
+    // SDG-блок живёт внутри <main id="main-content"> (a11y: содержимое не вне ориентира),
+    // поэтому порядок в собранной странице — main → SDG → </main> → footer.
     const distMainClose = dist.indexOf('</main>');
-    const distSoli = dist.indexOf('class="article-end-sdg"', distMainClose);
-    const distFooter = dist.indexOf('<footer', distSoli);
-    distMainClose !== -1 && distSoli > distMainClose && distFooter > distSoli
-      ? ok('dist / preserves main → Soli Deo Gloria → footer order')
+    const distSoli = dist.indexOf('class="article-end-sdg"');
+    const distFooter = dist.indexOf('<footer', distMainClose);
+    distMainClose !== -1 && distSoli !== -1 && distSoli < distMainClose && distFooter > distMainClose
+      ? ok('dist / preserves main → Soli Deo Gloria → footer order (SDG внутри main)')
       : bad('dist / landmark order is invalid');
     for (const forbidden of ['h-brand-lion', 'AudioContext', 'class="astro-shell"', '_legacy/']) {
       mustNot(dist, forbidden, `dist / ${forbidden}`);

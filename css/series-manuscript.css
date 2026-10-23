@@ -14,11 +14,17 @@ body[data-series-theme="manuscript"],
   --manuscript-paper-deep: #dfcda9;
   --manuscript-line: rgba(112, 78, 39, .24);
   --manuscript-shadow: rgba(49, 31, 17, .18);
+  /* Текст на золотой CTA: на светлом золоте нужен светлый, на тёмном — тёмный. */
+  --manuscript-cta-ink: #fffaf0;
+  /* Чернила золотого текста: сам --manuscript-gold (#9a6a2f) на бумаге 4.24:1,
+     для строк/подписей нужен плотнее — иначе axe color-contrast не проходит. */
+  --manuscript-gold-ink: #7d5220;
 }
 
 body[data-series-theme="manuscript"] {
   --gbs2-accent: var(--manuscript-gold);
   --gbs2-accent2: var(--manuscript-red);
+  --gb-accent-gold-ink: var(--manuscript-gold-ink);
   --gbs2-soft: rgba(154, 106, 47, .11);
   --gbs2-rail: #17120e;
   --gbs2-rail2: #211911;
@@ -38,7 +44,8 @@ body[data-series-theme="manuscript"] {
   --gill-mobile-hairline: rgba(75, 53, 36, .13);
 }
 
-html.dark body[data-series-theme="manuscript"] {
+html.dark body[data-series-theme="manuscript"],
+html.dark .genesis6-hub-page {
   --gbs2-accent: #d0a45f;
   --gbs2-accent2: #c87561;
   --gbs2-soft: rgba(208, 164, 95, .13);
@@ -52,10 +59,12 @@ html.dark body[data-series-theme="manuscript"] {
   --manuscript-gold: #d0a45f;
   --manuscript-gold-bright: #e7c37d;
   --manuscript-red: #c87561;
+  --manuscript-gold-ink: #d0a45f;
   --manuscript-paper: #19140f;
   --manuscript-paper-deep: #241b13;
   --manuscript-line: rgba(218, 178, 109, .18);
   --manuscript-shadow: rgba(0, 0, 0, .38);
+  --manuscript-cta-ink: #16100b;
   --gill-mobile-bar-bg: rgba(21, 17, 13, .9);
   --gill-mobile-bar-ink: #f1e5d1;
   --gill-mobile-bar-muted: #aa9980;
@@ -115,7 +124,7 @@ body[data-series-theme="manuscript"] .mobile-bottom-bar,
 
 [data-series-theme="manuscript"] .gbs2-head .section-label,
 [data-series-theme="manuscript"] .gbs2-hero-cap {
-  color: var(--gbs2-accent);
+  color: var(--manuscript-gold-ink);
   font-family: "Inter", system-ui, sans-serif;
   font-weight: 700;
   letter-spacing: .16em;
@@ -147,16 +156,20 @@ body[data-series-theme="manuscript"] .mobile-bottom-bar,
   font-family: "Playfair Display", Georgia, serif;
 }
 
+/* Водяной знак: контурный (заливка прозрачная) — так он читается как оттиск,
+   а контур держит 5.5–6.1:1 на обеих бумагах серии. */
 [data-series-theme="manuscript"] .gbs2-kinetic {
-  color: rgba(142, 91, 36, .09);
-  -webkit-text-stroke: 1px rgba(142, 91, 36, .32);
+  color: var(--manuscript-gold-ink);
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1px var(--manuscript-gold-ink);
   font-family: "Playfair Display", Georgia, serif;
   text-shadow: none;
 }
 
 html.dark [data-series-theme="manuscript"] .gbs2-kinetic {
-  color: rgba(220, 177, 102, .08);
-  -webkit-text-stroke-color: rgba(220, 177, 102, .28);
+  color: #d0a45f;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke-color: #d0a45f;
 }
 
 [data-series-theme="manuscript"] .genesis6-hero {
@@ -448,11 +461,18 @@ html.dark .genesis6-hub__status span {
   border: 1px solid var(--manuscript-gold);
   border-radius: 6px;
   background: var(--manuscript-gold);
-  color: #fffaf0;
+  color: var(--manuscript-cta-ink, #fffaf0);
   font-weight: 700;
   text-decoration: none;
   box-shadow: 0 10px 24px rgba(111, 72, 28, .18);
   transition: transform .2s ease, box-shadow .2s ease;
+}
+
+/* Глобальное html.dark a{color:#d4a574} (site.css) перебивало цвет кнопки:
+   золотой фон в тёмной теме получал почти такой же по светлоте текст (1.03:1).
+   Явный селектор тёмной темы возвращает контраст 8:1. */
+html.dark .genesis6-hub__start {
+  color: var(--manuscript-cta-ink, #16100b);
 }
 
 .genesis6-hub__start:hover {
@@ -593,8 +613,18 @@ html.dark .genesis6-card {
   outline-offset: 4px;
 }
 
+/* Состояние «планируется» раньше выражалось прозрачностью всей карточки
+   (opacity .72). Прозрачность контейнера приглушает и текст: вычисленные цвета
+   уезжали в 1.4–2.7:1 (axe color-contrast), а в тёмной теме карточка получала
+   смешанные грязные оттенки. Теперь состояние выражено явно: пунктирная рамка,
+   приглушённые подписи токеном и обесцвеченная обложка — без потери читаемости. */
 .genesis6-card--planned {
-  opacity: .72;
+  border-style: dashed;
+}
+
+.genesis6-card--planned h3,
+.genesis6-card--planned .genesis6-card__copy > p:not(.genesis6-card__state) {
+  color: var(--manuscript-ink-soft);
 }
 
 .genesis6-card__picture,

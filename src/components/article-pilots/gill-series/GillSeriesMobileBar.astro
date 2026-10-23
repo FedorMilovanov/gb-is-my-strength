@@ -92,15 +92,15 @@ const page = config.pages[pageId];
     </div>
   </Fragment>
 
-  <button
-    type="button"
-    class="mobile-btoc-section"
-    id="mobPartTocBtn"
-    aria-label={`Открыть оглавление части: ${page.mobileSection}`}
-    slot="bottom-context"
-  >
+  <!-- a11y D-3 (browser audit 2026-10-13): WCAG 2.5.3 — the accessible name must contain
+       the visible label text. The visible pair («Сейчас читаете» + the section title) is
+       swapped at runtime by js/enhancements.js (mobSec.textContent = current heading), so a
+       static aria-label can never stay in sync; the name is therefore computed FROM the
+       content and the action hint is appended as a visually hidden suffix. -->
+  <button type="button" class="mobile-btoc-section" id="mobPartTocBtn" slot="bottom-context">
     <span class="mobile-btoc-section__label">Сейчас читаете</span>
     <span class="mobile-btoc-section__main" id="gbs2MobSec">{page.mobileSection}</span>
+    <span class="sr-only">— открыть оглавление части</span>
   </button>
 
   <Fragment slot="bottom-actions">

@@ -129,8 +129,29 @@ const { title, description, archaeologyMapId } = Astro.props;
       color: #111 !important;
     }
 
-    [data-map-stage],
-    .me-map,
+    /* The engines open their detail panel on boot and that panel locks the page
+       scroll through SiteUtils.lockScroll(), which pins the body inline:
+       position fixed + inset 0 + overflow hidden + width 100%. A pinned body is
+       exactly one viewport tall, so the printed document stopped after a single
+       page no matter how long the text projection was — /karty/avraam/ printed
+       1 page / 2 547 characters while carrying 11 218 characters of text.
+       Height and overflow resets alone cannot fix that: the pin is inline, so
+       position/inset have to be released with !important for paper only. */
+    body {
+      position: static !important;
+      inset: auto !important;
+      top: auto !important;
+      width: auto !important;
+      overscroll-behavior: auto !important;
+    }
+
+    /* Only a route that ships a static text projection may drop the live stage:
+       a live map route without one would otherwise print a blank sheet
+       (/karty/ishod/ measured 1 page / 0 characters). Where there is no text
+       version to print instead, the map itself is the only content worth
+       keeping on paper. */
+    body:has(.map-text-fallback.sr-only) [data-map-stage],
+    body:has(.map-text-fallback.sr-only) .me-map,
     .map-runtime-noscript,
     .astro-header__controls,
     [data-app-search-trigger] {

@@ -10,11 +10,23 @@
  * failures receive a visible recovery surface rather than an opaque stage.
  */
 import MapRuntimeFallback from '@/components/karty/_shared/MapRuntimeFallback.astro';
+import IshodStaticProjection from '@/components/karty/ishod/IshodStaticProjection.astro';
 ---
 <!-- Landmarks: page content (document heading, recovery surface and the map
      stage) lives inside <main>; the engine owns only #stage inner markup. -->
 <main class="map-document">
   <h1 class="sr-only" data-pagefind-body>Исход из Египта — интерактивная карта. Маршрут странствий народа Израиля от Раамсеса до Ханаана: 11 мест, 6 этапов, 40 лет, Синайский завет, Числа 33.</h1>
+
+<!-- Текстовая версия карты: sr-only на экране, печатается и читается без JS.
+     Источник — karty/ishod/route.json (см. IshodStaticProjection.astro). -->
+<section
+  class="sr-only map-text-fallback"
+  data-map-static-projection
+  data-pagefind-body
+  aria-label="Исход из Египта — текстовая версия карты с источниками"
+>
+  <IshodStaticProjection />
+</section>
 
 <MapRuntimeFallback
   title="Карта Исхода доступна в текстовом режиме"

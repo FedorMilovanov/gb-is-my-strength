@@ -229,14 +229,14 @@ const siteConfig = {
             <slot />
           </div>
           {bibleAppChapter && <Genesis6BibleAppChapterCta chapter={bibleAppChapter} variant="full" />}
-          <aside class="author-card genesis6-author">
+          <section class="author-card genesis6-author">
             <div class="author-card-icon" aria-hidden="true">ФМ</div>
             <div class="author-card-body">
               <div class="author-card-label genesis6-author__eyebrow">Редакционный принцип</div>
               <div class="author-card-name">Текст, источник и степень уверенности</div>
               <p class="author-card-desc">Канонический текст, рукописные данные, реконструкция и богословский вывод различаются явно, без подмены одного уровня другим.</p>
             </div>
-          </aside>
+          </section>
           {next && (
             <nav class="gbs2-next" aria-label="Следующая часть серии">
               <a class="gbs2-next-card" href={`/hard-texts/${next.slug}/`}>
