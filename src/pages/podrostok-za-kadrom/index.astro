@@ -10,7 +10,7 @@ const canonical = `${SITE.url}/podrostok-za-kadrom/`;
 const ogImagePath = TEEN_SERIES_MEDIA.series.hero;
 const ogImage = `${SITE.url}${ogImagePath}`;
 const title = 'Подросток за кадром: двойная жизнь, семья и взросление | Господь Бог — Сила Моя';
-const description = 'Семь больших материалов о скрытой жизни подростка, реакции родителей и церкви, взрослении, границах, деньгах, возвращении и браке — с Писанием как главным ориентиром.';
+const description = 'Семь материалов о скрытой жизни подростка, реакции родителей и церкви, взрослении, границах и возвращении — с Писанием как главным ориентиром.';
 const items = TEEN_DOUBLE_LIFE_SERIES.items;
 const cards = items.map((item) => ({ ...item, media: teenSeriesMediaFor(item.id) }));
 const totalMinutes = items.reduce((sum, item) => sum + Number.parseInt(item.readingTime, 10), 0);
