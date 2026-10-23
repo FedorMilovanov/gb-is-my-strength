@@ -108,21 +108,14 @@ assert(!/const first=\(route\.places\|\|\[\]\)\[0\];[\s\S]{0,120}flyTo\(first\.x
 assert(source.includes('const url=buildMapStateUrl(location,st);'), 'Share must use the same URL builder as runtime state sync');
 
 const avraamPage = fs.readFileSync(path.join(root, 'src/pages/karty/avraam/index.astro'), 'utf8');
+const avraamMap = fs.readFileSync(path.join(root, 'src/components/karty/avraam/AvraamMap.astro'), 'utf8');
 assert(
-  avraamPage.includes("document.querySelector('h1.sr-only[data-pagefind-body]')"),
-  'Avraam route must target the no-JS fallback heading explicitly'
+  !/fallbackHeading|removeFallbackHeadingWhenReady/.test(avraamPage),
+  'Avraam route must never remove the document heading: the AvraamMap sr-only h1 is the ONLY h1 on the page (the engine owns only #stage inner markup and renders no heading), so removal left the ready page with zero headings (GBS-AVRAAM-MAP-HEADING-LOST-ON-READY, verified in browser 2026-10-23)'
 );
 assert(
-  /data-map-state'\)\s*!==\s*'ready'[\s\S]*?fallbackHeading\.remove\(\)/.test(avraamPage),
-  'fallback heading must be removed only after MapEngine reaches ready state'
-);
-assert(
-  /new MutationObserver[\s\S]*?attributeFilter:\s*\['data-map-state'\]/.test(avraamPage),
-  'Avraam route must observe the exact runtime readiness attribute'
-);
-assert(
-  !/fallbackHeading\.(?:remove|setAttribute)\([^)]*\)[\s\S]*?data-map-state'\)\s*!==\s*'ready'/.test(avraamPage),
-  'fallback heading must remain available before success and on runtime failure'
+  avraamMap.includes('<h1 class="sr-only" data-pagefind-body>'),
+  'AvraamMap must keep the static sr-only document h1 (single-heading contract, persists across all runtime states)'
 );
 
 console.log('✅ map initial-state/deep-link/Avraam heading lifecycle regression guard passed');
