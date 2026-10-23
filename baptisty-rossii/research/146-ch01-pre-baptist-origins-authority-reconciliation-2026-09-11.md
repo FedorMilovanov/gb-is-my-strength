@@ -1,8 +1,8 @@
 # 146. Chapter 1 — «До баптистов: поиск Писания» — authority reconciliation
 
-**Дата:** 2026-09-11  
-**Статус:** `NARRATIVE / EVIDENCE DRAFT-READY`; `NOT BOOK-READY`; `NO PUBLIC ROUTE`.  
-**Research authority:** `FedorMilovanov/Research@94f05457c2cfb03560c41414cb6a44cc1fdd4a98`.  
+**Дата:** 2026-09-11\
+**Статус:** `NARRATIVE / EVIDENCE DRAFT-READY`; `NOT BOOK-READY`; `NO PUBLIC ROUTE`.\
+**Research authority:** `FedorMilovanov/Research@94f05457c2cfb03560c41414cb6a44cc1fdd4a98`.
 **Назначение:** свести старый Product pre-1867 dossier с более новым acquisition/proof authority из Research, не повышая text-layer до facsimile/quote-ready без визуальной проверки.
 
 ## 1. Что этот pass исправляет
@@ -37,7 +37,7 @@ Research `RUSSIAN_BAPTISTS_ARCHIVE/00_CURRENT_AUTHORITY_2026-08-02.md` фикс�
 - canonical acquisition зарегистрирован;
 - **current status:** `CANONICAL_DRIVE_REGISTERED / TEXT_LAYER_PRESENT / VISUAL_PENDING / NOT_QUOTE_READY`.
 
-Следовательно, прежний Product blocker «файл/текст не получен» закрыт **историческим immutable acquisition receipt**.  
+Следовательно, прежний Product blocker «файл/текст не получен» закрыт **историческим immutable acquisition receipt**.
 Не закрыты: визуальный page-card pass, source-chain pass и право использовать exact wording как финальную первичную цитату.
 
 ### Live Drive recheck — 2026-09-11
@@ -153,7 +153,7 @@ Chapter 1 должен отвечать не на вопрос «были ли �
 
 ## 8. Решение
 
-**Chapter 1 больше нельзя считать “research missing”.**  
+**Chapter 1 больше нельзя считать “research missing”.**\
 Правильный статус после reconciliation:
 
 `NARRATIVE / EVIDENCE DRAFT-READY; PRIMARY VISUAL/PROVENANCE GATES OPEN; NOT BOOK-READY`.
