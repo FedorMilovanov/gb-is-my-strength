@@ -186,6 +186,13 @@
     }
     var result = store.toggle({ path: location.pathname }, { source: 'floating-cluster' });
     if (typeof store.syncButtons === 'function') store.syncButtons();
+    if (result && result.error) {
+      // GBS-FAVORITES-WRITE-FAILURE-IGNORED: отказ записи (напр. QuotaExceededError)
+      // не является ни «Добавлено», ни «Убрано». syncButtons уже вернул aria-pressed
+      // из фактического хранилища, поэтому здесь достаточно честного сообщения.
+      showToast('Избранное: не удалось записать — хранилище браузера переполнено или недоступно', false);
+      return;
+    }
     showToast(result && result.saved ? 'Добавлено в Избранное' : 'Убрано из Избранного', !!(result && result.saved));
   }
 

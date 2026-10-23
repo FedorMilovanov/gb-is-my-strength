@@ -91,7 +91,13 @@ function assertBounded(snapshot, label, { requireScroll = false } = {}) {
     assert(rect.top >= -1, `${label}: ${name} is outside viewport`, snapshot);
   }
 
-  assert(close && close.width >= 44 && close.height >= 44, `${label}: close target is smaller than 44px`, snapshot);
+  // Подпиксельный допуск 1e-3 px: на дробных смещениях панели getBoundingClientRect
+  // возвращает 43.99999237060547 вместо 44 (замерено на ishod/iphone-320/rameses), из-за чего
+  // контракт падал стохастически (2 провала из 5 локальных прогонов на одном и том же head).
+  // Реально заниженный контрол (43.9 px и меньше) проваливается и с этим допуском, а соседние
+  // геометрические assert'ы выше уже работают с допуском ±1 px.
+  const PX_EPS = 0.001;
+  assert(close && close.width >= 44 - PX_EPS && close.height >= 44 - PX_EPS, `${label}: close target is smaller than 44px`, snapshot);
   if (requireScroll) {
     assert(snapshot.scrollHeight > snapshot.clientHeight + 20, `${label}: long content did not overflow internally`, snapshot);
     assert(snapshot.scrollTop > 0, `${label}: internal content did not scroll`, snapshot);

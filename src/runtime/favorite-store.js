@@ -16,6 +16,9 @@
 
   const subscribers = new Set();
   let lastSerialized = '';
+  // GBS-FAVORITES-WRITE-FAILURE-IGNORED: имя последней ошибки записи (QuotaExceededError
+  // и т.п.). Сбрасывается при каждом успешном commit, читается сразу после неудачного.
+  let lastPersistError = null;
 
   function clone(value) {
     return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -181,10 +184,16 @@
     try {
       localStorage.setItem(STORAGE_KEY, serialized);
       lastSerialized = serialized;
+      lastPersistError = null;
       return true;
-    } catch {
+    } catch (error) {
+      lastPersistError = (error && error.name) || 'Error';
       return false;
     }
+  }
+
+  function persistError() {
+    return lastPersistError || 'storage-write-failed';
   }
 
   function list(options = {}) {
@@ -232,7 +241,7 @@
     return count;
   }
 
-  function publish(action, path, item = null, source = 'api') {
+  function publish(action, path, item = null, source = 'api', error = null) {
     const items = list({ persistMigration: false });
     syncButtons();
     const detail = Object.freeze({
@@ -243,6 +252,7 @@
       item: clone(item),
       items,
       source,
+      error,
     });
     subscribers.forEach((subscriber) => {
       try { subscriber(detail); } catch (error) { console.error('[GBFavoriteStore] subscriber failed', error); }
@@ -253,21 +263,34 @@
 
   function add(input = {}, options = {}) {
     const item = metadataFromPage(input);
-    if (!item.path) return { saved: false, item: null, path: '' };
+    if (!item.path) return { saved: false, item: null, path: '', error: null };
     const items = list().filter((entry) => entry.path !== item.path);
     items.unshift(item);
-    persist(items);
+    if (!persist(items)) {
+      // Отказ записи не является сохранением: caller обязан показать ошибку,
+      // а не «Добавлено». syncButtons внутри publish вернёт aria-pressed
+      // из фактического хранилища.
+      const error = persistError();
+      publish(options.action || 'add', item.path, null, options.source || 'api', error);
+      return { saved: false, item: null, path: item.path, error };
+    }
     publish(options.action || 'add', item.path, item, options.source || 'api');
-    return { saved: true, item: clone(item), path: item.path };
+    return { saved: true, item: clone(item), path: item.path, error: null };
   }
 
   function remove(path = location.pathname, options = {}) {
     const normalized = normalizePath(path);
-    if (!normalized) return { saved: false, item: null, path: '' };
+    if (!normalized) return { saved: false, item: null, path: '', error: null };
     const existing = get(normalized);
-    persist(list().filter((entry) => entry.path !== normalized));
+    if (!persist(list().filter((entry) => entry.path !== normalized))) {
+      // Запись отклонена — запись фактически всё ещё сохранена (saved: true),
+      // иначе caller показал бы ложное «Убрано».
+      const error = persistError();
+      publish(options.action || 'remove', normalized, existing, options.source || 'api', error);
+      return { saved: true, item: clone(existing), path: normalized, error };
+    }
     publish(options.action || 'remove', normalized, existing, options.source || 'api');
-    return { saved: false, item: clone(existing), path: normalized };
+    return { saved: false, item: clone(existing), path: normalized, error: null };
   }
 
   function toggle(input = {}, options = {}) {
@@ -277,7 +300,12 @@
   }
 
   function clear(options = {}) {
-    persist([]);
+    if (!persist([])) {
+      // Отказ записи: возвращаем фактический список, а не ложную пустоту.
+      const error = persistError();
+      publish('clear', '', null, options.source || 'api', error);
+      return list({ persistMigration: false });
+    }
     publish('clear', '', null, options.source || 'api');
     return [];
   }
@@ -295,8 +323,13 @@
     let legacySaved = false;
     try { legacySaved = Boolean(localStorage.getItem(key)); } catch {}
     if (!legacySaved) return;
-    add(meta, { action: 'legacy-flag-migrate', source: 'migration' });
-    try { localStorage.removeItem(key); } catch {}
+    const result = add(meta, { action: 'legacy-flag-migrate', source: 'migration' });
+    // GBS-FAVORITES-WRITE-FAILURE-IGNORED: легитимный флаг удаляется ТОЛЬКО после
+    // подтверждённого commit новой записи. При отказе записи (квота) флаг остаётся —
+    // после освобождения места следующая загрузка повторит миграцию, данные не теряются.
+    if (result.saved) {
+      try { localStorage.removeItem(key); } catch {}
+    }
   }
 
   const api = Object.freeze({

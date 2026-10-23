@@ -110,6 +110,22 @@ const jsonLd = {
         const imageLink = document.createElement('a');
         imageLink.className = 'izbrannoe-card__link';
         imageLink.href = href;
+        // GBS-FAVORITES-COVER-LINK-UNNAMED: ссылка-обложка содержала только div с
+        // CSS-фоном, то есть не имела ни текста, ни aria-label — axe link-name и
+        // нативное AX-дерево Chrome давали role=link, name="", ignored=false.
+        // Соседняя ссылка-заголовок её не именует: это отдельный контрол.
+        //
+        // Имя берётся из названия материала — того же, что показывает видимый
+        // заголовок карточки, поэтому пользователь голосового управления может
+        // назвать видимый текст и попасть в обе ссылки (WCAG 2.5.3), а в списке
+        // ссылок скринридера обложка отличается от заголовка глаголом.
+        // Кнопка «Убрать из избранного» остаётся ВНЕ этого anchor: вложить её
+        // внутрь значило бы создать вложенный интерактив.
+        const coverTitle = String(favorite.title || '').trim();
+        imageLink.setAttribute(
+          'aria-label',
+          coverTitle ? `Открыть материал: ${coverTitle}` : 'Открыть сохранённый материал',
+        );
         const image = document.createElement('div');
         image.className = 'izbrannoe-card__img';
         if (favorite.image) {
