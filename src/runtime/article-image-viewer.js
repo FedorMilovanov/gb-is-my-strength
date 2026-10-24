@@ -69,12 +69,39 @@ function openImageViewer(source) {
   }
 }
 
+/* SYS-ARTICLE-IMAGE-VIEWER-OPENER-SEMANTICS: bare images were pointer-only
+   openers (outside tab order), and the modal's restoreFocus returned focus to
+   that same non-focusable image, dropping it to <body>. Make every opener a
+   real keyboard target: tabindex + role + name + Enter/Space activation. The
+   focusable opener also fixes the restore path, because OverlayRuntime can
+   now hand focus back to it. */
+function makeOpenerAccessible(image) {
+  if (!image || image.dataset.gbImgOpener === OWNER) return;
+  image.dataset.gbImgOpener = OWNER;
+  image.setAttribute('tabindex', '0');
+  if (!image.getAttribute('role')) image.setAttribute('role', 'button');
+  if (!image.getAttribute('aria-label')) {
+    const alt = (image.getAttribute('alt') || '').trim();
+    image.setAttribute('aria-label', alt ? `${alt} — открыть просмотр` : 'Открыть просмотр изображения');
+  }
+}
+
 export function installArticleImageViewer() {
   if (window.GBArticleImageViewer?.version === VERSION) return window.GBArticleImageViewer;
+  document.querySelectorAll(SELECTOR).forEach(makeOpenerAccessible);
   document.addEventListener('click', (event) => {
     const image = event.target instanceof Element ? event.target.closest(SELECTOR) : null;
     if (!image || event.defaultPrevented || event.button > 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    makeOpenerAccessible(image);
     event.preventDefault();
+    openImageViewer(image);
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ' && event.key !== 'Spacebar') return;
+    const image = event.target instanceof Element ? event.target.closest(SELECTOR) : null;
+    if (!image || event.defaultPrevented) return;
+    event.preventDefault();
+    makeOpenerAccessible(image);
     openImageViewer(image);
   });
   window.GBArticleImageViewer = Object.freeze({ version: VERSION, close: closeImageViewer });
