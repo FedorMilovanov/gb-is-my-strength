@@ -2,6 +2,8 @@ const OWNER = 'native-v1';
 const SELECTOR = '.flip-card, .error-flip-card, .heart-flip-card';
 const FRONT_SELECTOR = '.flip-card-front, .error-flip-front, .heart-flip-front';
 const BACK_SELECTOR = '.flip-card-back, .error-flip-back, .heart-flip-back';
+/* Interactive descendants that keep their own activation semantics. */
+const INTERACTIVE_SELECTOR = 'a[href], button, input, select, textarea, summary, [role="link"], [role="button"], [tabindex]:not([tabindex="-1"])';
 const HINT_CLASS = 'gb-reversible-card-hint';
 const HINT_TEXT = 'Перевернуть карточку';
 // Instruction-only labels that never contained the card's own text. WCAG 2.5.3
@@ -97,7 +99,16 @@ export function installArticleReversibleCards() {
     if (card.dataset.gbReversibleCardBound === OWNER) continue;
     card.dataset.gbReversibleCardBound = OWNER;
 
-    card.addEventListener('click', () => {
+    card.addEventListener('click', (event) => {
+      // SYS-REVERSIBLE-CARD-DESCENDANT-ACTIVATION-COLLISION: card faces can
+      // carry their own interactive descendants (projected heading anchors,
+      // citation links). Whole-card flip must only answer events that did
+      // not originate in a descendant, otherwise activating the descendant
+      // also flips the card (and pointer activation did both at once).
+      const activated = event.target instanceof Element
+        ? event.target.closest(INTERACTIVE_SELECTOR)
+        : null;
+      if (activated && activated !== card) return;
       card.classList.toggle('flipped');
       syncState(card);
     });
@@ -105,6 +116,9 @@ export function installArticleReversibleCards() {
     if (config.keyboard !== false) {
       card.addEventListener('keydown', (event) => {
         if (event.key !== 'Enter' && event.key !== ' ') return;
+        // A focused descendant owns its Enter/Space (link activation, button
+        // press); the capture-phase card handler must not swallow it.
+        if (event.target !== card) return;
         event.preventDefault();
         event.stopImmediatePropagation();
         card.click();
