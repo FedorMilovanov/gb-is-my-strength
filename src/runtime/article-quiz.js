@@ -30,6 +30,26 @@ export function normalizeQuizExplanation(explanationData) {
   return { short, full };
 }
 
+/* GBS-QUIZ-LITERAL-MARKUP: quiz data embeds typographic markup (<em>,
+   <span>), but the runtime assigned it via textContent, so readers saw the
+   literal tags. Render through an escape-first allowlist: everything is
+   escaped first, then ONLY attribute-free em/strong/b/i/u/span tags are
+   re-allowed; every other tag stays escaped text. No raw innerHTML of
+   unescaped source ever happens. */
+const QUIZ_RICH_TAGS = ['em', 'strong', 'b', 'i', 'u', 'span'];
+
+export function renderQuizRich(el, raw) {
+  const escaped = String(raw)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  el.innerHTML = escaped.replace(/&lt;(\/?)([a-zA-Z]+)([^&]*?)&gt;/g, (match, slash, tag) => {
+    const name = tag.toLowerCase();
+    if (!QUIZ_RICH_TAGS.includes(name)) return match;
+    return slash ? `</${name}>` : `<${name}>`;
+  });
+}
+
 function buildQuiz(placeholder, config) {
   if (placeholder.dataset.gbQuizReady === '1') return;
   const questions = Array.isArray(config?.questions)
@@ -65,10 +85,10 @@ function buildQuiz(placeholder, config) {
     progress.textContent = `Результат: ${score} из ${questions.length}`;
     const title = document.createElement('h3');
     title.id = 'quizQuestion';
-    title.textContent = result.title || `${score} из ${questions.length}`;
+    renderQuizRich(title, result.title || `${score} из ${questions.length}`);
     const description = document.createElement('p');
     description.className = 'quiz-result-copy';
-    description.textContent = result.desc || '';
+    renderQuizRich(description, result.desc || '');
     const again = document.createElement('button');
     again.type = 'button';
     again.className = 'quiz-next';
@@ -100,7 +120,7 @@ function buildQuiz(placeholder, config) {
     progress.textContent = `Вопрос ${index + 1} из ${questions.length}`;
     const title = document.createElement('h3');
     title.id = 'quizQuestion';
-    title.textContent = String(question.question || 'Вопрос');
+    renderQuizRich(title, question.question || 'Вопрос');
     const options = document.createElement('div');
     options.className = 'quiz-options';
     options.setAttribute('role', 'group');
@@ -111,7 +131,7 @@ function buildQuiz(placeholder, config) {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'quiz-option';
-      button.textContent = String(option);
+      renderQuizRich(button, option);
       button.addEventListener('click', () => {
         const correctIndex = Number(question.correct);
         const correct = optionIndex === correctIndex;
@@ -131,13 +151,13 @@ function buildQuiz(placeholder, config) {
         if (explanation.short) {
           const shortExplanation = document.createElement('p');
           shortExplanation.className = 'quiz-explanation quiz-explanation--short quiz-explanation-short';
-          shortExplanation.textContent = explanation.short;
+          renderQuizRich(shortExplanation, explanation.short);
           feedback.appendChild(shortExplanation);
         }
         if (explanation.full) {
           const fullExplanation = document.createElement('p');
           fullExplanation.className = 'quiz-explanation quiz-explanation--full quiz-explanation-full';
-          fullExplanation.textContent = explanation.full;
+          renderQuizRich(fullExplanation, explanation.full);
           feedback.appendChild(fullExplanation);
         }
 
