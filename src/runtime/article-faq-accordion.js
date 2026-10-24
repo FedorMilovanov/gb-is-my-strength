@@ -15,10 +15,22 @@ function innerHeight(body) {
   return Math.ceil((inner || body).scrollHeight);
 }
 
+/* SYS-FAQ-COLLAPSED-FOCUS-EXPOSURE: a closed answer is clipped with
+   max-height:0/overflow only — its links stayed focusable and exposed to AT.
+   Mirror the visual state with inert so collapsed content leaves the tab
+   order and the accessibility tree; opening lifts it again. */
+function setInert(body, on) {
+  if (!body) return;
+  try { body.inert = on; } catch (_) { /* very old engines: attribute only */ }
+  if (on) body.setAttribute('inert', '');
+  else body.removeAttribute('inert');
+}
+
 function setOpen(button, item, body, open, { animate = true } = {}) {
   button.setAttribute('aria-expanded', String(open));
   item.classList.toggle('is-open', open);
   item.classList.toggle('open', open);
+  setInert(body, !open);
 
   if (!animate) {
     body.style.maxHeight = open ? 'none' : '0px';

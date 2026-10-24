@@ -265,4 +265,9 @@ const kidsLabel = currentItem?.tier === 'chapter' ? 'В этой главе' : '
     <span class="gbs-rail-spdbadge" id="gbsRailSpdBadge" aria-hidden="true">1×</span>
   </span>
   <SaveButton tip="Сохранить" />
+  <!-- «Наверх» — cluster-правила (floating-cluster.css «Скрытие старых
+       controls») прячут legacy #back-to-top, когда кластер активен, поэтому
+       scroll-top обязан жить в самом кластере. Контроллер уже диспетчерит
+       data-fc-action="scroll-top" → scrollTop(). -->
+  <button class="gb-icon" data-fc-action="scroll-top" aria-label="Наверх" data-tip="Наверх"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5" /><polyline points="5 12 12 5 19 12" /></svg></button>
 </div>
