@@ -101,7 +101,7 @@ html.dark .border-\[\#2e2c27\]{border-color:#2e2c27}
 .gill-card--active{border-color:var(--color-accent);opacity:1}
 .gill-card__kicker{font-weight:700;font-size:.7rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
 .gill-card__kicker--current{color:var(--color-accent)}
-.gill-card__title{font-weight:700;font-size:1rem;margin-bottom:4px;color:var(--color-text-primary)}
+.gill-card__title{font-weight:700;font-size:1rem;margin:0 0 4px;color:var(--color-text-primary)}.article-figure img:focus-visible,.article-img img:focus-visible,.nagornaya-hero-img:focus-visible{outline:3px solid var(--color-accent);outline-offset:3px;border-radius:4px}
 .gill-card__desc{font-size:.8rem;color:var(--color-text-secondary);margin:0;flex-grow:1}
 .gill-card__time{margin-top:10px;padding-top:10px;border-top:1px dashed var(--color-border);font-size:.7rem;color:var(--color-text-muted)}
 .gill-card__cta{display:block;margin-top:8px;font-size:.75rem;color:var(--color-accent);text-decoration:none;font-weight:600}

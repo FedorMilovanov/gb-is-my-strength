@@ -104,12 +104,15 @@ export function installArticleStrategicMap() {
 
   function close({ restoreFocus = false } = {}) {
     if (popover.hidden) return;
+    const focusWasInside = popover.contains(document.activeElement);
     popover.hidden = true;
     popover.classList.remove('active');
     if (activeTrigger) activeTrigger.setAttribute('aria-expanded', 'false');
     const previous = activeTrigger;
     activeTrigger = null;
-    if (restoreFocus && previous?.focus) previous.focus({ preventScroll: true });
+    // Hiding the popover while focus sits inside it would drop focus to
+    // <body>; return it to the trigger whenever the dialog owned focus.
+    if ((restoreFocus || focusWasInside) && previous?.focus) previous.focus({ preventScroll: true });
   }
 
   function open(trigger) {
@@ -129,6 +132,11 @@ export function installArticleStrategicMap() {
       positionPopover(popover, trigger);
       popover.classList.add('active');
     });
+    // SYS-STRATEGIC-MAP-DIALOG-FOCUS-ENTRY: opening never moved focus, so
+    // keyboard users stayed on the trigger while the dialog content appeared
+    // elsewhere in the DOM. Non-modal dialog pattern: move focus into the
+    // dialog (its close button is the first focusable) on open.
+    if (closeButton?.focus) closeButton.focus({ preventScroll: true });
   }
 
   for (const trigger of triggers) {
