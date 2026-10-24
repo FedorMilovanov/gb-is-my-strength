@@ -17,6 +17,7 @@ interface Frontmatter {
   publishedAt: string;
   updatedAt: string;
   readingTime: number;
+  tags?: string[];
   draft?: boolean;
   noindex?: boolean;
   canonicalOverride?: string;
@@ -39,6 +40,12 @@ function assertFrontmatter(value: unknown): asserts value is Frontmatter {
   }
   if (typeof record.readingTime !== 'number' || !Number.isFinite(record.readingTime) || record.readingTime <= 0) {
     throw new Error('Teen-series frontmatter readingTime must be a positive number');
+  }
+  if (record.tags != null) {
+    const tags = record.tags;
+    if (!Array.isArray(tags) || tags.some((tag) => typeof tag !== 'string' || !tag.trim())) {
+      throw new Error('Teen-series frontmatter tags must be an array of non-empty strings');
+    }
   }
 }
 
@@ -152,6 +159,7 @@ const siteConfig = {
       articlePublishedTime={frontmatter.publishedAt}
       articleModifiedTime={frontmatter.updatedAt}
       articleAuthor="Фёдор Милованов"
+      articleTags={frontmatter.tags}
       jsonLd={jsonLd}
     />
     <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin />

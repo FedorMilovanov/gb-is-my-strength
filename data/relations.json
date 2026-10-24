@@ -198,6 +198,51 @@
       "weight": 88,
       "rationale": "Методологический разбор помогает удержать спорный текст 1 Кор. 7:36–38 в рамках грамматико-исторической экзегезы и не превращать традиционное чтение в новый закон.",
       "editorialStatus": "verified"
+    },
+    {
+      "id": "teen-part-ii-expands-part-i",
+      "source": "series-teen-double-life-podrostok-za-kadrom-roditelyam-posle-razoblacheniya",
+      "target": "series-teen-double-life-podrostok-za-kadrom-dvoynaya-zhizn",
+      "kind": "expands",
+      "weight": 76,
+      "rationale": "Вторая часть прямо опирается на первую: её текст начинается с указания «В первой части мы разбирали, как вообще может появиться двойная жизнь», после чего проблема разворачивается со стороны родителей.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "teen-part-ii-recommends-part-iii",
+      "source": "series-teen-double-life-podrostok-za-kadrom-roditelyam-posle-razoblacheniya",
+      "target": "series-teen-double-life-podrostok-za-kadrom-chto-delat-tserkvi",
+      "kind": "recommended-next",
+      "weight": 90,
+      "rationale": "Вторая часть завершается прямой отсылкой к следующему материалу: «Это тема третьей части», где церковная реакция на сознательный грех подростка разбирается отдельно.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "teen-companion-a-same-topic-b",
+      "source": "series-teen-double-life-vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie",
+      "target": "series-teen-double-life-vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya",
+      "kind": "same-topic",
+      "weight": 44,
+      "rationale": "Обе статьи — компаньоны серии о взрослых детях: контакт с ушедшим ребёнком в статье A продолжается правилами совместной жизни, деньгами и помощью в статье B.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "teen-companion-b-same-topic-c",
+      "source": "series-teen-double-life-vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya",
+      "target": "series-teen-double-life-sovershennoletie-roditelskaya-vlast-chto-menyaetsya",
+      "kind": "same-topic",
+      "weight": 44,
+      "rationale": "Статьи B и C образуют один контур компаньонов серии: дом, деньги и помощь во взрослом возрасте переходят в рамку совершеннолетия, статуса и пределов родительской власти.",
+      "editorialStatus": "verified"
+    },
+    {
+      "id": "teen-companion-c-same-topic-d",
+      "source": "series-teen-double-life-sovershennoletie-roditelskaya-vlast-chto-menyaetsya",
+      "target": "series-teen-double-life-vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti",
+      "kind": "same-topic",
+      "weight": 44,
+      "rationale": "Статьи C и D продолжают линию компаньонов о взрослых детях: границы родительской власти после совершеннолетия в статье C соединяются с согласием на брак и отцовским советом в статье D.",
+      "editorialStatus": "verified"
     }
   ]
 }
