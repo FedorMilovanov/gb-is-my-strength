@@ -716,6 +716,10 @@ img.parentNode.replaceChild(wrap,img);
     document.querySelectorAll('.faq-accordion__item:not(.open):not(.is-open)').forEach(function (node) {
       expandedNodes.push(node);
       node.classList.add('is-open');
+      // SYS-FAQ-COLLAPDED-FOCUS-EXPOSURE: print expansion must also lift the
+      // focus/AX inertness that the collapsed-state fix applies.
+      var body = node.querySelector('.faq-accordion__body');
+      if (body) { try { body.inert = false; } catch (_) {} body.removeAttribute('inert'); }
     });
   }
 
