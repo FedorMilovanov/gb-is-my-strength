@@ -210,10 +210,18 @@ assert(
   'I15 projection: тексты фолбэка хранятся в одном месте',
   'I15 projection: текст фолбэка размножен или потерян',
 );
+// GBS-3D-NO-WEBGL-FALLBACK (W19) добавил третье размещение: скрытый
+// #nowebgl-fallback раскрывается только когда WebGL недоступен. Контракт:
+// ровно три подключения, каждое в своём проверяемом контексте — дубли и
+// потеря любого из фолбэков одинаково недопустимы.
+const projectionWires = (nativeBody.match(/<Baptizm3DStaticProjection\s*\/>/g) || []).length;
 assert(
-  (nativeBody.match(/<Baptizm3DStaticProjection\s*\/>/g) || []).length === 2,
-  'I15 projection: фолбэк подключён дважды (noscript + печать)',
-  `I15 projection: подключений фолбэка = ${(nativeBody.match(/<Baptizm3DStaticProjection\s*\/>/g) || []).length}`,
+  projectionWires === 3 &&
+  /<div id="nowebgl-fallback"[^>]*hidden[^>]*data-pagefind-ignore>[\s\S]*?<Baptizm3DStaticProjection\s*\/>/.test(nativeBody) &&
+  /<div[^>]*class="baptizm-print-projection"[^>]*>[\s\S]*?<Baptizm3DStaticProjection\s*\/>/.test(nativeBody) &&
+  /<noscript>[\s\S]*?<Baptizm3DStaticProjection\s*\/>[\s\S]*?<\/noscript>/.test(nativeBody),
+  'I15 projection: фолбэк подключён трижды (no-WebGL + печать + noscript), каждый в своём контексте',
+  `I15 projection: подключений фолбэка = ${projectionWires} (ожидаются nowebgl-fallback, baptizm-print-projection, noscript)`,
 );
 assert(
   /<div[^>]*class="baptizm-print-projection"[^>]*data-print-static-projection[^>]*data-pagefind-ignore/.test(nativeBody),
