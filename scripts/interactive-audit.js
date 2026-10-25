@@ -235,6 +235,30 @@ async function checkQuiz(browser) {
         options: document.querySelectorAll('.quiz-option').length,
       }));
       if (!state.question || state.options < 2) push('quiz-question-options-not-rendered', url, state);
+      /* GBS-QUIZ-LITERAL-MARKUP enforcement: the escape-first allowlist in
+         src/runtime/article-quiz.js must paint data markup as real elements
+         and must never leak literal tags into visible text — before and after
+         answering, on every quiz route, on every run. */
+      const scan = () => page.evaluate(() => {
+        const LITERAL = /<(em|strong|b|i|u|span)\b/i;
+        const nodes = [document.querySelector('#quizQuestion'), ...document.querySelectorAll('.quiz-option'),
+          ...document.querySelectorAll('.quiz-feedback, .quiz-explanation, .quiz-explanation-full')];
+        const literal = nodes.filter((n) => n && LITERAL.test(n.textContent || '')).map((n) => (n.textContent || '').slice(0, 80));
+        const payload = window.SITE_CONFIG && window.SITE_CONFIG.quiz ? window.SITE_CONFIG.quiz.questions || [] : [];
+        const wantsRich = payload.some((q) => [q && q.question, ...((q && q.options) || [])].some((f) => typeof f === 'string' && LITERAL.test(f)));
+        const paintedRich = nodes.some((n) => n && n.querySelector('em, strong, b, i, u, span'));
+        return { literal, wantsRich, paintedRich };
+      });
+      const before = await scan();
+      if (before.literal.length) push('quiz-literal-markup-rendered', url, before.literal);
+      const firstOption = page.locator('.quiz-option').first();
+      if (await firstOption.count()) {
+        await firstOption.click({ timeout: 5000 });
+        await page.waitForTimeout(400);
+        const after = await scan();
+        if (after.literal.length) push('quiz-literal-markup-after-answer', url, after.literal);
+        if (after.wantsRich && !after.paintedRich) push('quiz-rich-markup-lost', url, after);
+      }
     }
     stats.quizzes++;
     await page.close();
@@ -693,7 +717,11 @@ async function checkMediaViewerAndShare(browser) {
 }
 
 (async () => {
-  const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'] });
+  /* Локальная песочница: разрешаем явный бинарник (sparticuz и т.п.),
+     потому что CDN Playwright может быть недоступен; CI использует
+     дефолтный установленный chromium и эту переменную не задаёт. */
+  const execOverride = process.env.GB_PLAYWRIGHT_CHROMIUM_EXECUTABLE || '';
+  const browser = await chromium.launch({ headless: true, executablePath: execOverride || undefined, args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'] });
   try {
     await checkSeries(browser);
     await checkQuiz(browser);
