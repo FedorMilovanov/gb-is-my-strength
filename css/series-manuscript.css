@@ -407,7 +407,11 @@ html.dark .genesis6-hub__hero {
 .genesis6-catalog__head > div > p,
 .genesis6-card__state {
   margin: 0 0 12px;
-  color: var(--manuscript-gold);
+  /* GBS-TEXT-CONTRAST-RESIDUAL-BATCH: these 12px/750 uppercase labels sit on
+     dark manuscript surfaces in both themes; --manuscript-gold measured
+     4.1:1 there. Light gold restores 8.9:1; the light-theme parchment card
+     wash gets its own dark bronze below. */
+  color: #d8aa6d;
   font-family: "Inter", system-ui, sans-serif;
   font-size: 12px;
   font-weight: 750;
@@ -820,3 +824,15 @@ html.dark .genesis6-card {
     transform: none;
   }
 }
+
+/* GBS-TEXT-CONTRAST-RESIDUAL-BATCH: .genesis6-card__state sits on the light
+   parchment wash (rgba(247,239,222,.62)) in the light theme, where the shared
+   manuscript gold measured 4.1:1 at 12px/750. Dark bronze for that surface;
+   the dark hero and dark theme keep the gold (8.4:1 on rgb(30,23,17)). */
+html:not(.dark) .genesis6-card__state { color: #33261a; }
+
+/* GBS-TEXT-CONTRAST-RESIDUAL-BATCH (pixel-truth): the hub hero keeps a light
+   parchment wash in the light theme — the element screenshot proved the light
+   gold unreadable there. Dark bronze on that scope; dark sections and dark
+   theme keep the light gold. */
+html:not(.dark) .genesis6-hub__kicker { color: #7a5220; }
