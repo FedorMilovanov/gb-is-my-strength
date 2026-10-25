@@ -1584,3 +1584,13 @@ body.home-page .h-mobile-hero-hub{display:none!important}
   body.home-page .h-lion-label,
   body.home-page .h-hero-cues{display:none}
 }
+
+/* W25: редакционная опорная полка над лентой «Новые публикации» */
+.h-evergreen-shelf{margin:36px 0 6px}
+.h-evergreen-label{opacity:.85}
+
+/* W25: явные размеры тамбов полок публикаций (специфичность выше сбросов,
+   правила в конце файла — каскадные сюрпризы исключены) */
+.h-article-list .h-article-thumb,.h-evergreen-shelf .h-article-thumb{flex-shrink:0;width:160px;height:108px;border-radius:10px;overflow:hidden;background:var(--h-surface)}
+.h-article-list .h-article-thumb picture,.h-article-list .h-article-thumb>img,.h-evergreen-shelf .h-article-thumb picture,.h-evergreen-shelf .h-article-thumb>img{width:100%;height:100%;object-fit:cover;display:block}
+@media (max-width:440px){.h-article-list .h-article-thumb,.h-evergreen-shelf .h-article-thumb{width:100%;height:160px;flex-shrink:1}}

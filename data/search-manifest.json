@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-04T17:24:00.000Z",
+  "generatedAt": "2026-10-25T12:37:48Z",
   "project": {
     "name": "Господь Бог — Сила Моя",
     "url": "https://gospod-bog.ru/",
@@ -1900,7 +1900,8 @@
         "экзегеза"
       ],
       "readTime": 3,
-      "modifiedTime": "2026-10-25T00:00:00+03:00"
+      "modifiedTime": "2026-10-25T00:00:00+03:00",
+      "image": "/images/articles/genesis6/00-series-guide.webp"
     }
   ]
 }

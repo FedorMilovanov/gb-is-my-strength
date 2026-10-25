@@ -1502,3 +1502,8 @@ html.dark #quizLaunch,html.dark .quiz-launch{color:#0e1116}
    header surface in both themes, but the shared toggle glyph inherits the
    light-theme text colour (measured 1.06:1). Light glyph on that scope. */
 .genesis6-hub-page .theme-toggle svg{color:#f2ece1;stroke:#f2ece1}
+
+/* W25: изображения тамбов карточек обязаны заполнять бокс: сброс img{height:auto}
+   выше по каскаду, чем layer-правила полок (home.css @layer components проигрывает
+   unlayered-сбросу), из-за чего тамбы писались letterbox-ом. */
+.h-article-thumb picture,.h-article-thumb>img{width:100%;height:100%;object-fit:cover;display:block}

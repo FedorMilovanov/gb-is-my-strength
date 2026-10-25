@@ -14,7 +14,7 @@
     "indexedRoutes": 95,
     "scannedSourceFiles": 513,
     "references": 1222,
-    "occurrences": 3073,
+    "occurrences": 3074,
     "canonicalTextRecords": 148,
     "referencesWithoutCanonicalText": 1074,
     "chapterRanges": 32,
@@ -16039,6 +16039,21 @@
       "canonicalText": null,
       "canonicalSource": null,
       "occurrences": [
+        {
+          "url": "/",
+          "title": "Господь Бог — Сила Моя — Материалы для изучения Писания",
+          "context": "Иеремия 17:9–10 Крайне ли испорчено сердце верующего? Редактор: Фёдор Милованов",
+          "anchor": null,
+          "raw": "Иеремия 17:9–10",
+          "topics": [
+            "библиотека",
+            "главная",
+            "Главная",
+            "навигация"
+          ],
+          "sourceOwner": "src/components/home/HomeSections/Publications.astro",
+          "sourceKind": "astro-source"
+        },
         {
           "url": "/articles/krajne-li-isporcheno-serdce/",
           "title": "Крайне ли испорчено сердце верующего?",
