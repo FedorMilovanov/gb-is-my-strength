@@ -248,22 +248,26 @@ const languageCode = (type: AmbientPhrase['type']) => type === 'hebrew' ? 'he' :
     50% { opacity: 1; }
   }
 
+  /* 2026-10-25 (GBS-PRINT-MEDIA-CONTRAST-COLLAPSE): the ambient layer is
+     aria-hidden decorative ink at ~9% alpha floating over the hero photo.
+     On paper it measured 2.14:1 against the image-backed surface and adds
+     nothing to the printed document — hide it. Placed BEFORE the
+     reduced-motion contract block and without priority flags: the home
+     native contract guard forbids cascade overrides and any display:none
+     after the reduced-motion block. No competing display declaration
+     targets .h-ambient-native, so the plain print rule wins by media. */
+  @media print {
+    body.home-page .h-ambient-native {
+      display: none;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     body.home-page .h-ambient-word__text,
     body.home-page .h-ambient-word__tooltip,
     body.home-page .h-ambient-word__source {
       animation: none;
       transition: none;
-    }
-  }
-
-  /* 2026-10-25 (GBS-PRINT-MEDIA-CONTRAST-COLLAPSE): the ambient layer is
-     aria-hidden decorative ink at ~9% alpha floating over the hero photo.
-     On paper it measured 2.14:1 against the image-backed surface and adds
-     nothing to the printed document — hide it. */
-  @media print {
-    body.home-page .h-ambient-native {
-      display: none !important;
     }
   }
 </style>
