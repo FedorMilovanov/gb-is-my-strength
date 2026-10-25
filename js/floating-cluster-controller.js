@@ -1297,37 +1297,15 @@
     function applyTocCollapsed(on) {
       if (current) current.classList.toggle('toc-collapsed', on);
       var tocRegion = qs('.gbs2-tocscroll', current || rail);
-      gbs2Fold(tocRegion, on, tocToggle);
+      if (tocRegion) {
+        if (window.gbSetFolded) window.gbSetFolded(tocRegion, on, tocToggle);
+        else if (on) tocRegion.setAttribute('inert', '');
+        else tocRegion.removeAttribute('inert');
+      }
       if (tocToggle) {
         tocToggle.setAttribute('aria-expanded', on ? 'false' : 'true');
         tocToggle.setAttribute('aria-label', on ? 'Развернуть оглавление части' : 'Свернуть оглавление части');
       }
-    }
-
-    /* SYS-GILL-NAV-COLLAPSED-FOCUS-EXPOSURE: folded regions must leave Tab/AX.
-       The shared primitive lives in site-utils.js (loaded later in document
-       order); until it exists we degrade to the plain inert toggle — focus
-       evacuation only matters at interaction time, when it is always loaded. */
-    function gbs2Fold(region, folded, controller) {
-      if (!region) return;
-      if (window.gbSetFolded) { window.gbSetFolded(region, folded, controller); return; }
-      if (folded) region.setAttribute('inert', '');
-      else region.removeAttribute('inert');
-    }
-
-    /* Stable parent for a folded scrollspy subgroup: the level-2 anchor that
-       introduces the group (fallback: first TOC anchor). */
-    function gbs2GroupHeader(li) {
-      var el = li ? li.previousElementSibling : null;
-      while (el) {
-        if (el.tagName === 'LI' && !el.classList.contains('gbs2-sub')) {
-          var a = el.querySelector('a');
-          if (a) return a;
-        }
-        el = el.previousElementSibling;
-      }
-      var toc = li ? li.closest('.gbs2-toc') : null;
-      return toc ? toc.querySelector('a') : null;
     }
 
     // Apply persisted state with transitions suppressed for one frame (no
@@ -2433,6 +2411,32 @@
     // spine + fill follow the expand/collapse animation frame-by-frame.
     var _gbs2ActiveGrp = null, _railKickUntil = 0, _railKicking = false;
     function _nowMs() { return (window.performance && performance.now) ? performance.now() : Date.now(); }
+
+    /* SYS-GILL-NAV-COLLAPSED-FOCUS-EXPOSURE: folded regions must leave Tab/AX.
+       The shared primitive lives in site-utils.js (loaded later in document
+       order); until it exists we degrade to the plain inert toggle — focus
+       evacuation only matters at interaction time, when it is always loaded. */
+    function gbs2Fold(region, folded, controller) {
+      if (!region) return;
+      if (window.gbSetFolded) { window.gbSetFolded(region, folded, controller); return; }
+      if (folded) region.setAttribute('inert', '');
+      else region.removeAttribute('inert');
+    }
+
+    /* Stable parent for a folded scrollspy subgroup: the level-2 anchor that
+       introduces the group (fallback: first TOC anchor). */
+    function gbs2GroupHeader(li) {
+      var el = li ? li.previousElementSibling : null;
+      while (el) {
+        if (el.tagName === 'LI' && !el.classList.contains('gbs2-sub')) {
+          var a = el.querySelector('a');
+          if (a) return a;
+        }
+        el = el.previousElementSibling;
+      }
+      var toc = li ? li.closest('.gbs2-toc') : null;
+      return toc ? toc.querySelector('a') : null;
+    }
     function computeRailFill() {
       var toc = qs('.gbs2-toc'), track = qs('.gbs2-track');
       var fill = track && qs('i', track);
