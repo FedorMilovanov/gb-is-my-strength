@@ -22,6 +22,13 @@ body{height:100%;min-width:0;min-height:0;background:var(--bg);color:var(--txt);
 @keyframes spin{to{transform:rotate(360deg)}}
 #loader .lt{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-soft)}
 .noscript-fallback{position:absolute;inset:0;display:block;overflow:auto;padding:clamp(24px,5vw,48px);color:var(--txt);background:var(--bg);font-size:14px;line-height:1.7;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.nowebgl-fallback{position:absolute;inset:0;overflow:auto;padding:clamp(24px,5vw,48px);color:var(--txt);background:var(--bg);font-size:14px;line-height:1.7;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;z-index:6}
+.nowebgl-fallback[hidden]{display:none}
+html.nowebgl #appframe{display:none}
+.nowebgl-notice{max-width:900px;margin:0 auto 24px;padding:16px 18px;background:var(--panel);border:1px solid rgba(232,200,121,.35);border-radius:10px}
+.nowebgl-notice h2{font-size:clamp(1.1rem,3.5vw,1.4rem);color:var(--gold);margin-bottom:8px}
+.nowebgl-notice p{color:#b8b1a3;line-height:1.7}
+.nowebgl-notice a{color:var(--gold);text-underline-offset:3px}
 .seo-fallback{max-width:900px;margin:0 auto 40px}
 .seo-fallback h2{font-size:clamp(1.25rem,4vw,1.65rem);font-weight:700;color:var(--txt);margin-bottom:12px}
 .seo-fallback p{color:#b8b1a3;line-height:1.75;margin-bottom:14px}
@@ -44,6 +51,13 @@ body{height:100%;min-width:0;min-height:0;background:var(--bg);color:var(--txt);
   .skip,.bar,#appframe,#loader{display:none!important}
   .stage{position:static!important;height:auto!important;min-height:0!important;overflow:visible!important;flex:none!important}
   .baptizm-print-projection,.noscript-fallback{position:static!important;inset:auto!important;overflow:visible!important;height:auto!important;padding:0!important;background:#fff!important;color:#111!important;font-size:11pt!important;line-height:1.55!important}
+  /* Без WebGL печатаем nowebgl-проекцию и гасим app-live-проекцию, чтобы текст не задвоился */
+  html.nowebgl .baptizm-print-projection{display:none!important}
+  html.nowebgl .nowebgl-fallback{position:static!important;inset:auto!important;overflow:visible!important;height:auto!important;display:block!important;background:#fff!important;color:#111!important;z-index:auto!important}
+  html.nowebgl .nowebgl-fallback .nowebgl-notice{background:#fff!important;border-color:#7a7a7a!important}
+  html.nowebgl .nowebgl-fallback h2{color:#111!important}
+  html.nowebgl .nowebgl-fallback p,html.nowebgl .nowebgl-fallback strong{color:#111!important}
+  html.nowebgl .nowebgl-fallback a{color:#111!important;text-decoration:underline}
   html.app-live .baptizm-print-projection{display:block!important}
   .baptizm-print-projection .seo-fallback,.noscript-fallback .seo-fallback{max-width:none;margin:0}
   .baptizm-print-projection h2,.noscript-fallback h2{font-size:15pt!important;color:#111!important}
