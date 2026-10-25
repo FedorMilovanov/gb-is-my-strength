@@ -1,7 +1,43 @@
 ---
 /**
  * Publications.astro — featured shelves + publication cards for /.
+ *
+ * GBS-HOME-OFFER-FROZEN: the «Новые публикации» shelf used to be a frozen
+ * hand-picked quintet (newest card dated 2026-07-09 while the catalogue held
+ * 40 fresher articles). The shelf is now rendered at build time from the
+ * search manifest: the five most recently modified /articles/ entries that
+ * carry a cover image, so the «new» promise stays true as the library grows.
  */
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
+interface ManifestItem {
+  type?: string;
+  url?: string;
+  image?: string;
+  title?: string;
+  section?: string;
+  editor?: string;
+  readTime?: number | string;
+  modifiedTime?: string;
+  publishedTime?: string;
+}
+interface ManifestFile {
+  items: ManifestItem[];
+}
+
+const manifest: ManifestFile = JSON.parse(
+  readFileSync(path.join(process.cwd(), 'data', 'search-manifest.json'), 'utf8'),
+);
+const stamp = (item: ManifestItem): number =>
+  new Date(item.modifiedTime || item.publishedTime || 0).getTime();
+const freshArticles: ManifestItem[] = manifest.items
+  .filter((item: ManifestItem) => item?.type === 'article'
+    && String(item?.url || '').startsWith('/articles/')
+    && String(item?.image || '').startsWith('/')
+    && (item?.modifiedTime || item?.publishedTime))
+  .sort((a: ManifestItem, b: ManifestItem) => stamp(b) - stamp(a))
+  .slice(0, 5);
 ---
 <section class="h-section h-reveal h-scroll-target" id="publikacii" aria-labelledby="hPublicationsLabel" data-pagefind-ignore>
   <header class="h-home-section-head h-home-section-head--editorial">
@@ -82,139 +118,64 @@
     </a>
   </div>
 
+  <!-- Редакторская опорная полка: флагман книги «Тайны человеческого сердца»
+       остаётся на главной независимо от ленты свежести (контракт home-visual-parity
+       требует постоянную точку входа в разбор Иеремии 17:9). -->
+  <div class="h-evergreen-shelf">
+    <p class="h-section-label h-evergreen-label">Опорное исследование книги «Тайны человеческого сердца»</p>
+    <div class="h-articles-group">
+    <ul class="h-article-list">
+      <li>
+        <a href="/articles/krajne-li-isporcheno-serdce/" class="h-article-card h-article-card--evergreen">
+          <div class="h-article-thumb">
+            <picture>
+              <source srcset="images/og-krajne-isporcheno-600w.webp 600w" type="image/webp">
+              <img src="images/og-krajne-isporcheno.webp" alt="" decoding="async" loading="lazy" width="160" height="108">
+            </picture>
+          </div>
+          <div class="h-article-body">
+            <div class="h-article-kicker" style="color:var(--h-accent, var(--color-accent-strong)); font-weight:700;">Иеремия 17:9–10</div>
+            <h3 class="h-article-title">Крайне ли испорчено сердце верующего?</h3>
+            <div class="h-article-meta">
+              <span class="h-meta-author">Редактор: Фёдор Милованов</span>
+              <span class="h-meta-sep" aria-hidden="true">·</span>
+              <span class="h-meta-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>41 мин</span>
+            </div>
+          </div>
+        </a>
+      </li>
+    </ul>
+    </div>
+  </div>
+
   <p class="h-section-label h-publications-label">Новые публикации</p>
   <div class="h-section-accent" aria-hidden="true"></div>
 
   <div class="h-articles-group" style="margin-top: 40px;">
     <ul class="h-article-list">
-      <!-- Джон Гилл (Часть 1) -->
-      <li>
-        <a href="articles/dzhon-gill-chast-1-chelovek/" class="h-article-card h-article-card--biography">
-          <div class="h-article-thumb">
-            <picture>
-              <source srcset="images/gill-study-portrait-600w.webp 600w, images/gill-study-portrait-900w.webp 900w" type="image/webp">
-              <img src="images/gill-study-portrait.webp" alt="" decoding="async" loading="lazy" width="160" height="108">
-            </picture>
-          </div>
-          <div class="h-article-body">
-            <div class="h-article-kicker" style="color:var(--h-accent, var(--color-accent-strong)); font-weight:700;">Серия · Часть I</div>
-            <h3 class="h-article-title">Джон Гилл (1697–1771). Часть I: Человек — детство, призвание, семья</h3>
-            <div class="h-article-meta">
-              <span class="h-meta-author">Редактор: Фёдор Милованов</span>
-              <span class="h-meta-sep" aria-hidden="true">·</span>
-              <span class="h-meta-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>32 мин</span>
-            </div>
-          </div>
-        </a>
-      </li>
-
-      <!-- Джон Гилл (Часть 2) -->
-      <li>
-        <a href="articles/dzhon-gill-chast-2-uchenyi/" class="h-article-card h-article-card--biography">
-          <div class="h-article-thumb">
-            <picture>
-              <source srcset="images/og-dzhon-gill-chast-2-uchenyi-600w.webp" type="image/webp">
-              <img src="images/og-dzhon-gill-chast-2-uchenyi.jpg" alt="" decoding="async" loading="lazy" width="160" height="108">
-            </picture>
-          </div>
-          <div class="h-article-body">
-            <div class="h-article-kicker" style="color:var(--h-accent, var(--color-accent-strong)); font-weight:700;">Серия · Часть II</div>
-            <h3 class="h-article-title">Джон Гилл (1697–1771). Часть II: Учёный — экзегеза, система, иврит</h3>
-            <div class="h-article-meta">
-              <span class="h-meta-author">Редактор: Фёдор Милованов</span>
-              <span class="h-meta-sep" aria-hidden="true">·</span>
-              <span class="h-meta-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>39 мин</span>
-            </div>
-          </div>
-        </a>
-      </li>
-
-      <!-- Джон Гилл (Часть 3: Экзегет; historical slug retains "4") -->
-      <li>
-        <a href="articles/dzhon-gill-chast-4-ekzeget/" class="h-article-card h-article-card--biography">
-          <div class="h-article-thumb">
-            <picture>
-              <source srcset="images/og-dzhon-gill-chast-4-ekzeget-600w.webp" type="image/webp">
-              <img src="images/og-dzhon-gill-chast-4-ekzeget.webp" alt="" decoding="async" loading="lazy" width="160" height="108">
-            </picture>
-          </div>
-          <div class="h-article-body">
-            <div class="h-article-kicker" style="color:var(--h-accent, var(--color-accent-strong)); font-weight:700;">Серия · Часть III</div>
-            <h3 class="h-article-title">Джон Гилл (1697–1771). Часть III: Экзегет — текст, метод, толкование</h3>
-            <div class="h-article-meta">
-              <span class="h-meta-author">Редактор: Фёдор Милованов</span>
-              <span class="h-meta-sep" aria-hidden="true">·</span>
-              <span class="h-meta-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>71 мин</span>
-            </div>
-          </div>
-        </a>
-      </li>
-
-      <!-- Джон Гилл (Часть 4: Наследие; historical slug retains "3") -->
-      <li>
-        <a href="articles/dzhon-gill-chast-3-nasledie/" class="h-article-card h-article-card--biography">
-          <div class="h-article-thumb">
-            <picture>
-              <source srcset="images/og-dzhon-gill-chast-3-nasledie-600w.webp" type="image/webp">
-              <img src="images/og-dzhon-gill-chast-3-nasledie.jpg" alt="" decoding="async" loading="lazy" width="160" height="108">
-            </picture>
-          </div>
-          <div class="h-article-body">
-            <div class="h-article-kicker" style="color:var(--h-accent, var(--color-accent-strong)); font-weight:700;">Серия · Часть IV</div>
-            <h3 class="h-article-title">Джон Гилл (1697–1771). Часть IV: Наследие — полемика, память, наука</h3>
-            <div class="h-article-meta">
-              <span class="h-meta-author">Редактор: Фёдор Милованов</span>
-              <span class="h-meta-sep" aria-hidden="true">·</span>
-              <span class="h-meta-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>54 мин</span>
-            </div>
-          </div>
-        </a>
-      </li>
-
-      <!-- Герменевтика (перевод) -->
-      <li>
-        <a href="articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/" class="h-article-card h-article-card--translation">
-          <div class="h-article-thumb">
-            <img src="images/hermenevtika-preview.webp" alt="" decoding="async" loading="lazy" width="160" height="108">
-          </div>
-          <div class="h-article-body">
-            <div class="h-article-kicker">Перевод с английского</div>
-            <h3 class="h-article-title">Герменевтическая оценка христоцентричной герменевтики</h3>
-            <div class="h-article-meta">
-              <span class="h-meta-author">Абнер Чау</span>
-              <span class="h-meta-sep" aria-hidden="true">·</span>
-              <span class="h-meta-author" style="opacity:.7;">Редактор: Фёдор Милованов</span>
-              <span class="h-meta-sep" aria-hidden="true">·</span>
-              <span class="h-meta-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>50 мин</span>
-              <span class="h-meta-tag">Герменевтика</span>
-            </div>
-            <p class="h-article-abstract">Грамматико-исторический метод оправдан Писанием и более чем достаточен для раскрытия славы Христа — без обходных путей христоцентризма.</p>
-          </div>
-        </a>
-      </li>
-
-      <!-- Иеремия -->
-      <li>
-        <a href="/articles/krajne-li-isporcheno-serdce/" class="h-article-card">
-          <div class="h-article-thumb">
-            <picture>
-              <source srcset="images/og-krajne-isporcheno.webp" type="image/webp">
-              <img src="images/og-krajne-isporcheno.jpg" alt="" decoding="async" loading="lazy" width="160" height="108">
-            </picture>
-          </div>
-          <div class="h-article-body">
-            <h3 class="h-article-title">Крайне ли испорчено моё сердце — если я уже верующий?</h3>
-            <div class="h-article-meta">
-              <span class="h-meta-author">Редактор: Фёдор Милованов</span>
-              <span class="h-meta-sep" aria-hidden="true">·</span>
-              <span class="h-meta-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>41 мин</span>
-              <span class="h-meta-tag h-meta-tag--neutral">Авторская статья</span>
-              <span class="h-meta-tag">Экзегеза</span>
-            </div>
-            <p class="h-article-abstract">Разбор Иеремии 17:9–10: что значит «сердце обманчиво более всего» — и относится ли это к верующему? Экзегеза, богословский синтез и пастырское применение.</p>
-          </div>
-        </a>
-      </li>
+      {freshArticles.map((item) => {
+        const href = String(item.url || '/').slice(1);
+        const cover = String(item.image || '').slice(1);
+        const minutes = Number(item.readTime) > 0 ? `${item.readTime} мин` : 'Статья';
+        return (
+          <li>
+            <a href={href} class="h-article-card">
+              <div class="h-article-thumb">
+                <img src={cover} alt="" decoding="async" loading="lazy" width="160" height="108">
+              </div>
+              <div class="h-article-body">
+                <div class="h-article-kicker" style="color:var(--h-accent, var(--color-accent-strong)); font-weight:700;">{item.section || 'Публикация'}</div>
+                <h3 class="h-article-title">{item.title}</h3>
+                <div class="h-article-meta">
+                  <span class="h-meta-author">Редактор: {item.editor || 'Фёдор Милованов'}</span>
+                  <span class="h-meta-sep" aria-hidden="true">·</span>
+                  <span class="h-meta-time"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>{minutes}</span>
+                </div>
+              </div>
+            </a>
+          </li>
+        );
+      })}
     </ul>
   </div>
 

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-04T17:24:00.000Z",
+  "generatedAt": "2026-10-25T12:37:48Z",
   "project": {
     "name": "Господь Бог — Сила Моя",
     "url": "https://gospod-bog.ru/",
@@ -914,7 +914,8 @@
       ],
       "readTime": 2,
       "scripture": "Иер 17:9, Рим 7:14–25",
-      "image": "/images/og-series-heart.webp"
+      "image": "/images/og-series-heart.webp",
+      "modifiedTime": "2026-10-15T08:21:37Z"
     },
     {
       "id": "karty",
@@ -929,7 +930,8 @@
         "археология"
       ],
       "readTime": 1,
-      "image": "/images/og-karty-1200x630.webp"
+      "image": "/images/og-karty-1200x630.webp",
+      "modifiedTime": "2026-09-14T22:05:38Z"
     },
     {
       "id": "karty-avraam",
@@ -945,7 +947,8 @@
         "археология"
       ],
       "readTime": 5,
-      "image": "/images/og-karty-avraam.webp"
+      "image": "/images/og-karty-avraam.webp",
+      "modifiedTime": "2026-09-15T10:15:55Z"
     },
     {
       "id": "map-svyazi",
@@ -959,7 +962,8 @@
         "карта"
       ],
       "readTime": 1,
-      "image": "/images/og-map-connections.webp"
+      "image": "/images/og-map-connections.webp",
+      "modifiedTime": "2026-07-28T01:29:42Z"
     },
     {
       "id": "skrytye-idoly-serdca",
@@ -1881,6 +1885,23 @@
       "publishedTime": "2026-09-29T21:00:00.000Z",
       "modifiedTime": "2026-10-04T17:24:00.000Z",
       "readTime": 87
+    },
+    {
+      "id": "hard-texts-genesis-6",
+      "url": "/hard-texts/genesis-6/",
+      "title": "Бытие 6, Енох, Иуда и Пётр — исследовательская серия",
+      "description": "Исследовательская серия о сынах Божиих, нефилимах, 1 Енохе, Иуд. 6 и 14–15, 2 Пет. 2 и 1 Пет. 3–4: опубликованные разборы, рукописи и канонический аудит.",
+      "type": "series",
+      "section": "Богословие",
+      "tags": [
+        "Бытие 6",
+        "сыны Божии",
+        "Енох",
+        "экзегеза"
+      ],
+      "readTime": 3,
+      "modifiedTime": "2026-10-25T00:00:00+03:00",
+      "image": "/images/articles/genesis6/00-series-guide.webp"
     }
   ]
 }

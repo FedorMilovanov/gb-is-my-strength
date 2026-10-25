@@ -15,6 +15,13 @@ import Baptizm3DStaticProjection from '@/components/konfessii/russkij-baptizm/Ba
   <h1 class="sr-only">Карта Русского Баптизма — интерактивная 3D-история движения от истоков к современности</h1>
   <div id="loader"><div class="lring" aria-hidden="true"></div><div class="lt">Загрузка интерактивной 3D-карты…</div></div>
   <iframe id="appframe" src="./_app/index.html" title="Интерактивная 3D-карта истории русского баптизма: узлы-планеты с орбитами над картой Российской империи, режимы «граф» и «карта», маршруты, инспектор узлов" allow="fullscreen" loading="eager" referrerpolicy="no-referrer"></iframe>
+  <div id="nowebgl-fallback" class="nowebgl-fallback" hidden data-pagefind-ignore>
+    <div class="nowebgl-notice">
+      <h2>WebGL недоступен — показана текстовая версия карты</h2>
+      <p>Интерактивная 3D-карта требует WebGL; этот браузер его не поддерживает (или аппаратное ускорение отключено). Ниже — полная текстовая проекция экспозиции. Можно также <a href="./_app/index.html" rel="noopener">попробовать открыть 3D-версию в новой вкладке</a>.</p>
+    </div>
+    <Baptizm3DStaticProjection />
+  </div>
   <div class="baptizm-print-projection" data-print-static-projection data-pagefind-ignore aria-hidden="true">
     <Baptizm3DStaticProjection />
   </div>
@@ -31,6 +38,27 @@ import Baptizm3DStaticProjection from '@/components/konfessii/russkij-baptizm/Ba
      печатает noscript-фолбэк, и один и тот же текст не должен попасть в PDF дважды. */
   document.documentElement.classList.add('app-live');
   function hide(){if(l){l.classList.add('hidden');setTimeout(function(){l.style.display='none';},600);}}
+
+  /* GBS-3D-NO-WEBGL-FALLBACK: без WebGL бандл Three.js внутри iframe падал
+     неперехваченным «Error creating WebGL context» на пустом экране.
+     Проверяем поддержку ДО загрузки приложения: без неё iframe уходит на
+     about:blank (бандл не исполняется, ошибки нет), а читатель получает
+     видимую текстовую проекцию с честным объяснением и ссылкой на 3D. */
+  function hasWebGL(){
+    try{
+      var c=document.createElement('canvas');
+      return !!(window.WebGLRenderingContext&&(c.getContext('webgl2')||c.getContext('webgl')||c.getContext('experimental-webgl')));
+    }catch(e){return false;}
+  }
+  if(!hasWebGL()){
+    document.documentElement.classList.add('nowebgl');
+    if(f){f.src='about:blank';}
+    var nw=document.getElementById('nowebgl-fallback');
+    if(nw){nw.hidden=false;}
+    hide();
+    return;
+  }
+
   if(f){f.addEventListener('load',hide);}
   setTimeout(hide,6000);
 })();

@@ -149,6 +149,13 @@ function createScriptureTip(anchor) {
   return tip;
 }
 
+let tipIdSeq = 0;
+function nextTipId() {
+  tipIdSeq += 1;
+  const id = `gb-tip-${tipIdSeq}`;
+  return document.getElementById(id) ? nextTipId() : id;
+}
+
 function inlineTip(anchor) {
   if (anchor.matches('.gterm')) return anchor.querySelector('.gtip');
   if (anchor.matches('.fn-marker')) return anchor.querySelector('.tooltip');
@@ -369,6 +376,9 @@ export function closeTooltip(reason = 'close') {
   active = null;
   record.anchor.classList.remove('is-open');
   record.anchor.setAttribute('aria-expanded', 'false');
+  // A closed tip is inert — drop the relation so AT never resolves a
+  // describedby reference into an excluded subtree.
+  record.anchor.removeAttribute('aria-describedby');
   if (record.mobile) {
     if (overlayRuntime()) overlayRuntime().close(OWNER, reason);
     else window.SiteUtils?.unlockScroll?.(`overlay:${OWNER}`);
@@ -406,6 +416,12 @@ function openTooltip(anchor, reason = 'open') {
   setImportant(tip.style, 'pointer-events', 'auto');
   anchor.classList.add('is-open');
   anchor.setAttribute('aria-expanded', 'true');
+  // GBS-INLINE-TOOLTIP-DEFINITION-ASSOCIATION: the opened definition must be
+  // exposed to AT as the trigger's description — the tip gets a stable id and
+  // tooltip role, and the anchor points at it via aria-describedby while open.
+  if (!tip.getAttribute('role')) tip.setAttribute('role', 'tooltip');
+  if (!tip.id) tip.id = nextTipId();
+  anchor.setAttribute('aria-describedby', tip.id);
 
   active = {
     anchor,

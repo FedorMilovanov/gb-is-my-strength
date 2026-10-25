@@ -166,3 +166,12 @@ html.dark body.nagornaya-page .bg-amber-600,
 html.dark body.nagornaya-page .bg-amber-700,
 html.dark body.nagornaya-page .bg-amber-800,
 html.dark body.nagornaya-page .bg-amber-900 { --color-text-muted: #fde68a; /* 7.3:1 на #78350f */ }
+
+/* GBS-NAGORNAYA-MENU-ICON-MISSING-FORCED-COLORS: forced-colors mode removes
+   the only painted affordance from the icon-only burger (all three bars are
+   CSS backgrounds). Render them from the system text colour and give the
+   button a border fallback so the control never loses its shape. */
+@media (forced-colors: active) {
+  #menuBtn .bar { background: CanvasText; }
+  #menuBtn { border: 1px solid CanvasText; }
+}

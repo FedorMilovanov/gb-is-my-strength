@@ -86,12 +86,12 @@
 
   async function copyText(value) {
     if (window.SiteUtils?.copyText) {
-      await window.SiteUtils.copyText(value);
-      return;
+      const delegated = await window.SiteUtils.copyText(value);
+      return delegated !== false;
     }
     if (navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(value);
-      return;
+      return true;
     }
     const area = document.createElement('textarea');
     area.value = value;
@@ -99,8 +99,12 @@
     area.style.cssText = 'position:fixed;inset:0 auto auto 0;opacity:0;pointer-events:none';
     document.body.appendChild(area);
     area.select();
-    document.execCommand('copy');
+    // SYS-READER-SHARE-COPY-OUTCOME-CONTRACT: the legacy path must report its
+    // real outcome — a refused execCommand('copy') is a failed copy, not a
+    // silent success the caller then celebrates.
+    const copied = document.execCommand('copy');
     area.remove();
+    return copied;
   }
 
   let toastTimer = 0;
@@ -140,9 +144,14 @@
         await navigator.share(payload);
         trigger.dataset.shareStatus = 'shared';
       } else {
-        await copyText(payload.url);
-        trigger.dataset.shareStatus = 'copied';
-        notify('Ссылка скопирована', true);
+        const copied = await copyText(payload.url);
+        if (copied) {
+          trigger.dataset.shareStatus = 'copied';
+          notify('Ссылка скопирована', true);
+        } else {
+          trigger.dataset.shareStatus = 'failed';
+          notify('Не удалось скопировать ссылку', false);
+        }
       }
     } catch (error) {
       if (error?.name !== 'AbortError') {

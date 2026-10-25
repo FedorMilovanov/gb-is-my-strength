@@ -566,7 +566,7 @@
     "/hard-texts/genesis-6/": {
       "indexPolicy": "index",
       "pagefindPolicy": "include",
-      "searchManifestPolicy": "exclude",
+      "searchManifestPolicy": "include",
       "sitemapPolicy": "include",
       "rssPolicy": "exclude",
       "contentKind": "landing",
