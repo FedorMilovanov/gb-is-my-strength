@@ -10,11 +10,11 @@
     "kartyHubInventory": "src/lib/karty-hub-inventory.cjs"
   },
   "stats": {
-    "manifestItems": 95,
-    "indexedRoutes": 94,
-    "scannedSourceFiles": 511,
+    "manifestItems": 96,
+    "indexedRoutes": 95,
+    "scannedSourceFiles": 513,
     "references": 1222,
-    "occurrences": 3071,
+    "occurrences": 3073,
     "canonicalTextRecords": 148,
     "referencesWithoutCanonicalText": 1074,
     "chapterRanges": 32,
@@ -1262,6 +1262,38 @@
             "Богословие"
           ],
           "sourceOwner": "src/components/article-pilots/genesis6/Genesis6ArticlePage.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/hard-texts/genesis-6/",
+          "title": "Бытие 6 — сыны Божии и дочери человеческие",
+          "context": "Главная / Трудные тексты / Бытие 6 Исследовательская серия · девять частей и два экскурса Бытие 6, Енох, Иуда и Пётр",
+          "anchor": null,
+          "raw": "Бытие 6",
+          "topics": [
+            "Богословие",
+            "Бытие 6",
+            "Енох",
+            "сыны Божии",
+            "экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/genesis6/Genesis6Hub.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/hard-texts/genesis-6/",
+          "title": "Бытие 6 — сыны Божии и дочери человеческие",
+          "context": "Исследовательская серия · девять частей и два экскурса Бытие 6, Енох, Иуда и Пётр Путеводитель по одному из самых трудных узлов библейской интерпретации: сыны Божии, нефилимы, Енохова традиция и тексты Нового Завета.",
+          "anchor": "genesis6-title",
+          "raw": "Бытие 6",
+          "topics": [
+            "Богословие",
+            "Бытие 6",
+            "Енох",
+            "сыны Божии",
+            "экзегеза"
+          ],
+          "sourceOwner": "src/components/article-pilots/genesis6/Genesis6Hub.astro",
           "sourceKind": "astro-source"
         },
         {
