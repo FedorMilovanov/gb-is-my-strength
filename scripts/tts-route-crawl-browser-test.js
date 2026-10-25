@@ -199,6 +199,117 @@ async function runViewport(browser, origin, routes, viewportName, viewport) {
   return results;
 }
 
+// The intercepted owner affects the shared series chrome owners: desktop
+// rail, bottom neighbours, series cards and part TOC. A generic a[href]
+// census overloads the harness with unrelated heavy documents, so the
+// four canonical owners are enumerated explicitly.
+const SERIES_LINK_SELECTOR = [
+  'a.gbs-rail-card[href]', 'a.gbs2-next-card[href]', 'a.gill-card__cta[href]', 'a.toc-item[href]',
+  'a.gbs2-part[href]', 'a.gb-relations-panel__item[href]', 'a[href^="/nagornaya/chast-"]',
+].join(', ');
+
+function seriesTargetExists(targetPathname) {
+  const relative = targetPathname.replace(/^\/+/, '');
+  return fs.existsSync(path.join(DIST, relative, 'index.html'));
+}
+
+// SYS-READER-DOCUMENT-NAVIGATION-INTERCEPTION: a URL commit alone is never
+// success. Every cross-document series activation must issue a real document
+// request and render the destination's own H1/body.
+async function runDocumentIdentityWitness(browser, origin, routes) {
+  const cases = [];
+  for (const route of routes) {
+    cases.push({ route, mode: 'series-pointer', viewport: { width: 1440, height: 900 }, selector: SERIES_LINK_SELECTOR, action: 'click' });
+  }
+  const representative = routes.filter((route) => /dzhon-gill-chast-1-chelovek|nagornaya\/chast-2|podrostok-za-kadrom|krajne-li-isporcheno-serdce/.test(route)).slice(0, 4);
+  for (const route of representative) {
+    cases.push({ route, mode: 'neighbour-enter', viewport: { width: 1440, height: 900 }, selector: 'a.gbs2-next-card[href], a.gbs-rail-card[href]', action: 'enter' });
+    cases.push({ route, mode: 'mobile-touch', viewport: { width: 390, height: 844 }, selector: 'a.gbs2-next-card[href], a.gill-card__cta[href], a.gbs-rail-card[href], a[href^="/nagornaya/chast-"]', action: 'tap' });
+  }
+
+  const results = [];
+  const contexts = new Map();
+  for (const item of cases) {
+    const contextKey = String(item.viewport.width);
+    if (!contexts.has(contextKey)) {
+      contexts.set(contextKey, await browser.newContext({
+        viewport: item.viewport,
+        isMobile: item.viewport.width <= 430,
+        hasTouch: item.viewport.width <= 430,
+        // Several dozen native navigations share these contexts; blocking
+        // service-worker registrations keeps the witness deterministic.
+        serviceWorkers: 'block',
+      }));
+    }
+    const context = contexts.get(contextKey);
+    const page = await context.newPage();
+    const navigationRequests = [];
+    const onRequest = (request) => {
+      if (request.isNavigationRequest()) navigationRequests.push(new URL(request.url()).pathname);
+    };
+    const result = { ...item, status: 'unknown' };
+    try {
+      await page.goto(origin + item.route, { waitUntil: 'domcontentloaded', timeout: 60000 });
+      const source = await page.evaluate((selector) => {
+        const here = location.pathname;
+        const pick = [...document.querySelectorAll(selector)].find((anchor) => {
+          const url = new URL(anchor.getAttribute('href'), location.href);
+          const rect = anchor.getBoundingClientRect();
+          return url.origin === location.origin && url.pathname !== here && url.pathname.endsWith('/')
+            && rect.width > 0 && rect.height > 0 && !anchor.closest('[inert]');
+        });
+        if (pick) pick.setAttribute('data-doc-nav-witness', '1');
+        return {
+          h1: document.querySelector('h1')?.textContent.trim() || '',
+          href: pick ? new URL(pick.getAttribute('href'), location.href).pathname : null,
+        };
+      }, item.selector);
+      result.sourceH1 = source.h1;
+      result.target = source.href;
+      if (!source.href || !seriesTargetExists(source.href)) {
+        result.status = 'no-cross-document-link';
+        continue;
+      }
+      page.on('request', onRequest);
+      const link = page.locator('[data-doc-nav-witness="1"]').first();
+      await link.scrollIntoViewIfNeeded();
+      if (item.action === 'enter') {
+        await link.focus();
+        await link.press('Enter');
+      } else if (item.action === 'tap') {
+        await link.tap();
+      } else {
+        await link.click();
+      }
+      // A URL-only commit also changes location.pathname, so the assertions
+      // below (target document request + destination H1) remain decisive.
+      await page.waitForFunction((target) => location.pathname === target, source.href, { timeout: 20000 });
+      await page.waitForLoadState('domcontentloaded');
+      const destination = await page.evaluate(() => ({
+        pathname: location.pathname,
+        h1: document.querySelector('h1')?.textContent.trim() || '',
+      }));
+      result.destinationH1 = destination.h1;
+      result.documentRequests = navigationRequests.filter((p) => p === source.href).length;
+      const problems = [];
+      if (destination.pathname !== source.href) problems.push('url-not-committed');
+      if (!result.documentRequests) problems.push('no-target-document-request');
+      if (!destination.h1 || destination.h1 === source.h1) problems.push('source-document-retained');
+      result.problems = problems;
+      result.status = problems.length ? 'product-finding' : 'pass';
+    } catch (error) {
+      result.status = 'harness-or-route-error';
+      result.error = error.message;
+    } finally {
+      page.off('request', onRequest);
+      results.push(result);
+      await page.close();
+    }
+  }
+  for (const context of contexts.values()) await context.close();
+  return results;
+}
+
 (async () => {
   const routes = discoverCandidateRoutes();
   assert.ok(routes.length > 0, 'no TTS candidate routes were discovered in production-like dist');
@@ -207,6 +318,11 @@ async function runViewport(browser, origin, routes, viewportName, viewport) {
   try {
     const desktop = await runViewport(browser, origin, routes, 'desktop-1440', { width: 1440, height: 900 });
     const mobile = await runViewport(browser, origin, routes, 'mobile-390', { width: 390, height: 844 });
+    const documentIdentity = await runDocumentIdentityWitness(browser, origin, routes);
+    fs.writeFileSync(path.join(REPORTS, 'series-document-navigation.json'), JSON.stringify(documentIdentity, null, 2));
+    const identityFailures = documentIdentity.filter((item) => item.status !== 'pass' && item.status !== 'no-cross-document-link');
+    assert.equal(identityFailures.length, 0, 'series document-navigation identity failures: ' + JSON.stringify(identityFailures.slice(0, 8)));
+    assert.ok(documentIdentity.some((item) => item.status === 'pass'), 'no native series document activations were witnessed');
     const report = { routes, desktop, mobile };
     fs.writeFileSync(path.join(REPORTS, 'tts-route-crawl.json'), JSON.stringify(report, null, 2));
 
@@ -221,6 +337,9 @@ async function runViewport(browser, origin, routes, viewportName, viewport) {
       pagehideFailures: all.filter((item) => (item.problems || []).includes('pagehide-not-cancelled')).length,
       consoleErrorChecks: all.filter((item) => item.consoleErrors && item.consoleErrors.length).length,
       pageErrorChecks: all.filter((item) => item.pageErrors && item.pageErrors.length).length,
+      documentIdentityCases: documentIdentity.length,
+      documentIdentityPass: documentIdentity.filter((item) => item.status === 'pass').length,
+      documentIdentityNoLink: documentIdentity.filter((item) => item.status === 'no-cross-document-link').length,
     };
     assert.ok(all.some((item) => item.afterStart && item.afterStart.speaks > 0), 'crawler did not start speech on any route');
     console.log('[TTS-ROUTE-CRAWL-SUMMARY]', JSON.stringify(summary));

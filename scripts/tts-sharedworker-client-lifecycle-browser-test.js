@@ -135,19 +135,71 @@ async function warm(page) {
   return status;
 }
 
+// SYS-READER-DOCUMENT-NAVIGATION-INTERCEPTION: an intentionally regressed
+// lifecycle that intercepts cross-document navigations. The strengthened
+// identity assertions below must reject the state this mutant produces.
+const MUTANT_LIFECYCLE = `(() => {
+  'use strict';
+  if (window.navigation && typeof window.navigation.addEventListener === 'function') {
+    window.navigation.addEventListener('navigate', (event) => {
+      if (event?.destination?.sameDocument) return;
+      if (event?.canIntercept && typeof event.intercept === 'function') {
+        event.intercept({ handler: () => Promise.resolve(true) });
+      }
+    });
+  }
+})();`;
+
+function documentHtml(title, lifecyclePath) {
+  return '<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>' + title + '</title></head><body><main><h1 id="doc-title">' + title + '</h1><p id="doc-body">' + title + ' body marker</p><a id="leave-document" href="/departed">Leave document</a></main><script src="/js/vosk-tts-engine.js"></script><script src="' + lifecyclePath + '"></script></body></html>';
+}
+
+const DOCUMENT_TITLES = {
+  '/owner': 'Owner document',
+  '/departing': 'Departing document',
+  '/probe': 'Probe document',
+  '/departed': 'Departed document',
+  '/mutant': 'Mutant source document',
+};
+
 async function clickAway(page) {
-  await Promise.all([
+  const [response] = await Promise.all([
     page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
     page.click('#leave-document'),
   ]);
+  return response;
+}
+
+async function assertDocumentIdentity(page, expectedPathname, expectedTitle, documentRequests) {
+  const state = await page.evaluate(() => ({
+    pathname: location.pathname,
+    title: document.querySelector('#doc-title')?.textContent.trim() || '',
+    body: document.querySelector('#doc-body')?.textContent.trim() || '',
+  }));
+  assert.equal(state.pathname, expectedPathname, 'navigation did not commit the destination URL');
+  assert.equal(state.title, expectedTitle, 'the destination document was not rendered');
+  assert.equal(state.body, expectedTitle + ' body marker', 'the source DOM survived the navigation');
+  assert.ok(
+    documentRequests.includes(expectedPathname),
+    'no document request was sent for ' + expectedPathname + ' (URL-only commit)',
+  );
+  return state;
 }
 
 (async () => {
   const retired = [];
+  const documentRequests = [];
   let workerRequests = 0;
-  const html = '<!doctype html><html lang="ru"><head><meta charset="utf-8"></head><body><main>Lifecycle fixture</main><a id="leave-document" href="/departed">Leave document</a><script src="/js/vosk-tts-engine.js"></script><script src="/src/runtime/reader-tts-lifecycle.js"></script></body></html>';
   const { server, origin } = await listen((req, res) => {
     const url = new URL(req.url || '/', 'http://127.0.0.1');
+    if (req.headers['sec-fetch-dest'] === 'document' || (req.headers.accept || '').includes('text/html')) {
+      documentRequests.push(url.pathname);
+    }
+    if (url.pathname === '/mutant-lifecycle.js') {
+      res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'no-store' });
+      res.end(MUTANT_LIFECYCLE);
+      return;
+    }
     if (url.pathname === '/js/vosk-tts-engine.js') {
       res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'no-store' });
       res.end(ENGINE);
@@ -178,8 +230,12 @@ async function clickAway(page) {
       res.end();
       return;
     }
+    const title = DOCUMENT_TITLES[url.pathname] || 'Fallback document';
+    const lifecyclePath = url.pathname === '/mutant'
+      ? '/mutant-lifecycle.js'
+      : '/src/runtime/reader-tts-lifecycle.js';
     res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
-    res.end(html);
+    res.end(documentHtml(title, lifecyclePath));
   });
 
   const browser = await chromium.launch({ headless: true });
@@ -204,6 +260,12 @@ async function clickAway(page) {
     }));
     assert.equal(report.navigationApi.available, true, 'Chromium Navigation API unavailable');
     assert.equal(report.navigationApi.intercept, true, 'Chromium NavigateEvent.intercept unavailable');
+    // The Navigation API is available; the lifecycle owner must nevertheless
+    // never intercept a cross-document navigation.
+    assert.ok(
+      !/\.intercept\s*\(/.test(LIFECYCLE),
+      'reader-tts-lifecycle.js must not intercept cross-document navigations',
+    );
 
     report.ownerInitial = await warm(owner);
     report.departingInitial = await warm(departing);
@@ -219,7 +281,9 @@ async function clickAway(page) {
     await probe.close();
 
     await departing.evaluate(() => window.VoskTTSEngine.speak('Уходящая страница', 1, 3, () => {}, () => {}));
-    await clickAway(departing);
+    const firstResponse = await clickAway(departing);
+    assert.equal(firstResponse.status(), 200, 'destination document was not served');
+    report.firstDocument = await assertDocumentIdentity(departing, '/departed', 'Departed document', documentRequests);
     await waitForRetirement(retired, 2, departing, 'first-document-navigation');
     const firstRetirement = retired[1];
     assert.ok(firstRetirement.clientId, 'ACK-backed document navigation did not retire the client');
@@ -236,12 +300,15 @@ async function clickAway(page) {
     assert.ok(report.ownerAfterPeerRetire.played >= 1, 'surviving page could not synthesize after peer retirement');
 
     await departing.goBack({ waitUntil: 'domcontentloaded' });
+    report.backDocument = await assertDocumentIdentity(departing, '/departing', 'Departing document', documentRequests);
     report.firstRestore = await warm(departing);
     assert.equal(report.firstRestore.workerMode, 'shared', 'restored peer did not reconnect to SharedWorker');
     assert.equal(report.firstRestore.ready, true, 'restored peer did not regain ready SharedWorker state');
 
     await departing.evaluate(() => window.VoskTTSEngine.speak('Уходящая страница снова', 1, 3, () => {}, () => {}));
-    await clickAway(departing);
+    const secondResponse = await clickAway(departing);
+    assert.equal(secondResponse.status(), 200, 'second destination document was not served');
+    report.secondDocument = await assertDocumentIdentity(departing, '/departed', 'Departed document', documentRequests);
     await waitForRetirement(retired, 3, departing, 'second-document-navigation');
     const secondRetirement = retired[2];
     assert.ok(secondRetirement.clientId, 'restored peer did not perform second authoritative retirement');
@@ -263,6 +330,33 @@ async function clickAway(page) {
     report.workerRequests = workerRequests;
     assert.ok(report.retiredConnectionCount >= 3, 'browser lifecycle did not retire distinct SharedWorker port generations');
     assert.equal(workerRequests, 1, 'SharedWorker script was re-instantiated while a live owner remained');
+
+    // Negative witness: a lifecycle that still intercepts cross-document
+    // navigations must fail the new identity assertions. Without this control
+    // a URL-only commit could pass the whole contract again.
+    const mutantContext = await browser.newContext();
+    try {
+      const mutant = await mutantContext.newPage();
+      await mutant.goto(`${origin}/mutant`, { waitUntil: 'domcontentloaded' });
+      const mutantRequestsBefore = documentRequests.length;
+      await mutant.click('#leave-document');
+      await mutant.waitForTimeout(400);
+      const mutantState = await mutant.evaluate(() => ({
+        pathname: location.pathname,
+        title: document.querySelector('#doc-title')?.textContent.trim() || '',
+      }));
+      report.mutantWitness = {
+        ...mutantState,
+        destinationRequests: documentRequests.slice(mutantRequestsBefore).filter((p) => p === '/departed').length,
+      };
+      await assert.rejects(
+        () => assertDocumentIdentity(mutant, '/departed', 'Departed document', documentRequests.slice(0, mutantRequestsBefore)),
+        'regressed intercept lifecycle was not rejected by the document-identity assertions',
+      );
+      assert.equal(mutantState.title, 'Mutant source document', 'negative witness did not reproduce the URL-only commit');
+    } finally {
+      await mutantContext.close();
+    }
 
     fs.writeFileSync(path.join(REPORTS, 'tts-sharedworker-client-lifecycle-browser.json'), `${JSON.stringify(report, null, 2)}\n`);
     console.log('[TTS-SHAREDWORKER-LIFECYCLE-BROWSER]', JSON.stringify(report));
