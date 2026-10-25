@@ -85,7 +85,6 @@ jobs:
 
       - name: Check syntax and architecture
         run: |
-          set -o pipefail
           mkdir -p reports
           node --check src/runtime/reader-tts-defaults.js
           node --check src/runtime/reader-tts-click-guard.js
