@@ -172,6 +172,7 @@ const kidsLabel = currentItem?.tier === 'chapter' ? 'В этой главе' : '
             <li
               class:list={{ 'gbs2-sub': item.level === 3, 'gbs2-collapsed': item.level === 3 && item.grp !== currentGrp }}
               data-gbs2-grp={String(item.grp)}
+              inert={item.level === 3 && item.grp !== currentGrp ? true : undefined}
             ><a href={item.href} class:list={{ 'gbs2-active': item.current }}><span aria-hidden="true" class="gbs2-dot"></span>{sectionLabel(config, item.label)}</a></li>
           ))}
         </ul>

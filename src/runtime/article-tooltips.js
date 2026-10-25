@@ -198,6 +198,19 @@ function prepareGlossaryTip(tip) {
   });
 }
 
+/* GBS-FOOTNOTE-RICH-TOOLTIP-FOCUS-MODEL: rich popups (payloads retaining
+   source links) get a deliberate focus contract — Tab from the opener
+   enters the popup, Shift+Tab from its first control returns to the
+   opener, Escape/outside-focus close restores the opener exactly, and a
+   locked mobile sheet never leaves focus on body. */
+let escapeSuppress = null;
+const TIP_FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+function tipFocusables(tip) {
+  if (!tip) return [];
+  return Array.from(tip.querySelectorAll(TIP_FOCUSABLE))
+    .filter((el) => !el.disabled && !el.hasAttribute('inert') && !el.closest('[inert]'));
+}
+
 function setTipInert(tip, inert) {
   if (!tip) return;
   if (inert) tip.setAttribute('inert', '');
@@ -473,8 +486,20 @@ function initializeAnchor(anchor) {
   anchor.addEventListener('mouseenter', openHover);
   anchor.addEventListener('pointerleave', leaveHover);
   anchor.addEventListener('mouseleave', leaveHover);
-  anchor.addEventListener('focus', () => openTooltip(anchor, 'focus'));
-  anchor.addEventListener('blur', () => scheduleClose(120));
+  anchor.addEventListener('focus', () => {
+    // An Escape close that restored focus to this opener must not be
+    // undone by the focus-open listener (popup contract: Escape wins).
+    if (escapeSuppress === anchor) { escapeSuppress = null; return; }
+    openTooltip(anchor, 'focus');
+  });
+  anchor.addEventListener('blur', (event) => {
+    // Focus travelling into our own open popup is not abandonment.
+    if (active?.anchor === anchor && event.relatedTarget && active.tip.contains(event.relatedTarget)) {
+      cancelClose();
+      return;
+    }
+    scheduleClose(120);
+  });
   anchor.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -491,6 +516,15 @@ function initializeAnchor(anchor) {
     }
   });
   anchor.addEventListener('keydown', (event) => {
+    if (event.key === 'Tab' && !event.shiftKey && active?.anchor === anchor) {
+      const first = tipFocusables(active.tip)[0];
+      if (first) {
+        event.preventDefault();
+        cancelClose();
+        first.focus();
+        return;
+      }
+    }
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
     cancelClose();
@@ -567,7 +601,46 @@ export function installArticleTooltips() {
     closeTooltip('outside');
   }, true);
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && active && !active.mobile) closeTooltip('escape');
+    if (event.key === 'Escape' && active && !active.mobile) {
+      const opener = active.anchor;
+      const hadFocusInside = active.tip.contains(document.activeElement);
+      closeTooltip('escape');
+      if (hadFocusInside && opener && opener.isConnected) {
+        escapeSuppress = opener;
+        opener.focus();
+        window.setTimeout(() => { if (escapeSuppress === opener) escapeSuppress = null; }, 0);
+      }
+      return;
+    }
+    if (event.key !== 'Tab' || !active) return;
+    const tip = active.tip;
+    if (!tip.contains(document.activeElement)) return;
+    const items = tipFocusables(tip);
+    if (!items.length) return;
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      cancelClose();
+      active.anchor.focus();
+      return;
+    }
+    if (!event.shiftKey && document.activeElement === last) {
+      // Locked mobile sheet: cycle inside the popup so focus never lands
+      // on body. Desktop: let Tab continue naturally; focusout closes.
+      if (active.mobile) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+  }, true);
+  document.addEventListener('focusin', (event) => {
+    if (!active) return;
+    if (active.tip.contains(event.target) || event.target === active.anchor) {
+      cancelClose();
+      return;
+    }
+    if (active.reason === 'focus' || active.reason === 'keyboard') scheduleClose(120);
   }, true);
   window.addEventListener('resize', handleViewportChange, { passive: true });
   window.visualViewport?.addEventListener('resize', handleViewportChange, { passive: true });
