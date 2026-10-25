@@ -2418,17 +2418,44 @@
     // button in dist). This target-phase listener + stopPropagation shadows
     // the delegated legacy copy in enhancements.js — behaviour is equivalent
     // (Web Share + clipboard fallback), so the winner doesn't matter.
+    /* Honest copy outcome: clipboard API failure degrades to the legacy
+       execCommand path, and the toast reports what actually happened. */
+    function shareCopyFallback(url) {
+      function legacyCopy(value) {
+        var area = document.createElement('textarea');
+        area.value = value;
+        area.setAttribute('readonly', '');
+        area.style.cssText = 'position:fixed;inset:0 auto auto 0;opacity:0;pointer-events:none';
+        document.body.appendChild(area);
+        area.select();
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch(_) { ok = false; }
+        area.remove();
+        return ok;
+      }
+      function report(ok) {
+        showToast(ok ? 'Ссылка скопирована' : 'Не удалось скопировать ссылку', ok);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function () { report(true); },
+          function () { report(legacyCopy(url)); });
+      } else {
+        report(legacyCopy(url));
+      }
+    }
+
     qsa('[data-gbs2-share]').forEach(function(btn) {
       addCleanListener(btn, 'click', function(e) {
         e.stopPropagation();
         if (navigator.share) {
-          navigator.share({ title: document.title, url: location.href }).catch(function () {});
+          navigator.share({ title: document.title, url: location.href }).catch(function (err) {
+            // SYS-READER-SHARE-COPY-OUTCOME-CONTRACT: a refused share is not
+            // silence — only the user's own cancel stays quiet.
+            if (err && err.name === 'AbortError') return;
+            shareCopyFallback(location.href);
+          });
         } else {
-          // Fallback: copy URL
-          try {
-            navigator.clipboard.writeText(location.href);
-            showToast('Ссылка скопирована', true);
-          } catch(_) {}
+          shareCopyFallback(location.href);
         }
       });
     });

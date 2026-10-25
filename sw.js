@@ -17,7 +17,7 @@ const EXPECTED_CACHES = new Set([
 ]);
 const OFFLINE_FALLBACK = '/404.html';
 const PRECACHE_ASSETS = [
-  '/css/site.css?v=b9a64ae1',
+  '/css/site.css?v=a9d7e061',
   '/css/home.css?v=ee5bb66d',
   '/css/command-palette.css?v=3b88813f',
   '/css/mobile-hotfix.css?v=ef31d1e1',
@@ -39,7 +39,7 @@ const PRECACHE_ASSETS = [
   '/js/highlights.js?v=c223155c',
   '/js/sw-register.js?v=921dd6a2',
   '/js/nagornaya-mobile-toc.js?v=dca61a7a',
-  '/js/floating-cluster-controller.js?v=db9d2088',
+  '/js/floating-cluster-controller.js?v=e0f8d2f0',
   '/js/reader-preferences-head.js?v=194541e8',
   '/js/reader-preferences.js?v=e26f05a8',
   '/js/reader-state.js?v=b3deb501',
