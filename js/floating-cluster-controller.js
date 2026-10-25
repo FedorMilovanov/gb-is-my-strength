@@ -1911,9 +1911,25 @@
       wrap.appendChild(ember);
       wrap.appendChild(panel);
 
+      /* SYS-READER-SPEED-KEYBOARD-MODEL: a collapsed speed panel must leave
+         Tab/AX (opacity-zero controls are not a focus contract); unfolding
+         reversibly restores authored semantics, and a close that swallowed
+         live focus returns it to the ember opener via the shared primitive. */
+      var foldEvacuationAt = 0;
+      function speedPanelFold(folded) {
+        var willEvacuate = folded && panel.contains(document.activeElement);
+        // Stamp BEFORE folding: gbSetFolded evacuates focus synchronously, and
+        // the ember's focus listener must already see the suppression window.
+        if (willEvacuate) foldEvacuationAt = Date.now();
+        if (window.gbSetFolded) window.gbSetFolded(panel, folded, ember);
+        else if (folded) panel.setAttribute('inert', '');
+        else panel.removeAttribute('inert');
+      }
+
       function openPanel() {
         panel.classList.add('is-open');
         ember.setAttribute('aria-expanded', 'true');
+        speedPanelFold(false);
         // Runtime viewport guard: после reflow проверяем,
         // не вылез ли pill за край экрана. Если да — сдвигаем
         // через translate. Дополнительная страховка к CSS max-width.
@@ -1938,7 +1954,10 @@
         panel.classList.remove('is-open');
         ember.setAttribute('aria-expanded', 'false');
         panel.style.removeProperty('--gb-ember-shift');
+        speedPanelFold(true);
       }
+
+      speedPanelFold(true);
 
       addCleanListener(ember, 'pointerdown', function() {
         clearTimeout(pressTimer);
@@ -2036,12 +2055,23 @@
           leaveTimer = setTimeout(closePanel, 260);
         });
         // Keyboard a11y: focusing the ember opens the pill; blur (out of wrap) closes.
-        addCleanListener(ember, 'focus', openPanel);
+        addCleanListener(ember, 'focus', function() {
+          // An Escape-driven close evacuates focus onto the ember; that
+          // restore must not immediately re-open the panel it just closed.
+          if (Date.now() - foldEvacuationAt < 400) { foldEvacuationAt = 0; return; }
+          openPanel();
+        });
         addCleanListener(wrap, 'focusout', function(e) {
           if (!wrap.contains(e.relatedTarget)) {
             clearTimeout(leaveTimer);
             leaveTimer = setTimeout(closePanel, 120);
           }
+        });
+        // Focus re-entry cancels a pending close: a transient blur during
+        // speed selection (relatedTarget momentarily null) must not fold a
+        // pill that immediately regains focus.
+        addCleanListener(wrap, 'focusin', function() {
+          clearTimeout(leaveTimer);
         });
       }
       addCleanListener(document, 'click', function(e) {
@@ -2053,21 +2083,21 @@
         if (!panel.classList.contains('is-open')) return;
         if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
           e.preventDefault();
-          var btns = Array.prototype.slice.call(panel.querySelectorAll('.gb-ember-expand__btn'));
+          // Radios only: the stop chip is an action, not a speed — arrows must
+          // never land on it (it stays reachable by Tab as the last stop).
+          var btns = Array.prototype.slice.call(panel.querySelectorAll('.gb-ember-expand__btn[data-speed]'));
           if (!btns.length) return;
           var cur = btns.findIndex(function(b) { return b.classList.contains('is-active'); });
           var next = e.key === 'ArrowRight' ? Math.min(cur + 1, btns.length - 1) : Math.max(cur - 1, 0);
           btns[next].focus();
           btns[next].click();
+          // The click may start playback from idle and fold the panel; if it
+          // stayed open, keep focus on the newly selected radio.
+          if (panel.classList.contains('is-open') && !panel.hasAttribute('inert')) btns[next].focus();
         }
-        // Tab trap inside speed panel
-        if (e.key === 'Tab') {
-          var focusable = Array.prototype.slice.call(panel.querySelectorAll('button'));
-          if (!focusable.length) return;
-          var first = focusable[0], last = focusable[focusable.length - 1];
-          if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-          else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-        }
+        // Non-modal radiogroup: Tab/Shift+Tab leave the panel naturally in
+        // both directions (the focusout owner closes it afterwards); arrows
+        // keep roving between speeds. No wrap, no trap.
       });
     });
   }
