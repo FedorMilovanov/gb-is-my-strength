@@ -211,6 +211,17 @@ const paletteCss = assetUrl('css/command-palette.css');
     window.addEventListener('scroll', () => {
       if (!ticking) { ticking = true; requestAnimationFrame(sync); }
     }, { passive: true });
+    /* GBS-MOBILE-CHROME-NAVBAR-SYNC-LAG: синхронизация по scroll-событию
+       отставала на кадр от переключения .nav-hidden в site.js — один wheel
+       прятал navbar, а бар движка выезжал только после следующего скролла.
+       Наблюдаем сам класс navbar: состояние изменилось → синхронизируем
+       немедленно, без ожидания следующего scroll-события. */
+    if (navbar && typeof MutationObserver !== 'undefined') {
+      new MutationObserver(() => sync()).observe(navbar, {
+        attributes: true,
+        attributeFilter: ['class'],
+      });
+    }
     sync();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initMobileChromePage, { once: true });
