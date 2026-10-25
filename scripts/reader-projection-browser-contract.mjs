@@ -15,7 +15,14 @@ assert.ok(fs.existsSync(DIST), 'production-like dist is required');
 const ROUTES = [
   { id: 'herm', route: '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/', expectSummary: true, expectSchema: true },
   { id: 'gill', route: '/articles/dzhon-gill-chast-1-chelovek/' },
-  { id: 'antisovetov', route: '/articles/20-antisovetov-pastoru/' },
+  // SYS-READER-PROJECTION-SPEAKABLE-AUTHORITY-OVERWRITE: route-authored
+  // speakable selectors are the authority. Antisovetov keeps its in-root
+  // '.series-overview' (the zero-match '.article-lead' is pruned); Diotrefy
+  // loses the bare '.summary-card' because every match is outside the
+  // reader root or policy-excluded (the outside-root same-class aside is
+  // the negative fixture), keeping 'h1' + '#pastoral-conclusion'.
+  { id: 'antisovetov', route: '/articles/20-antisovetov-pastoru/', expectAuthored: ['h1', '.series-overview', '[data-speakable]'] },
+  { id: 'diotrefy', route: '/articles/diotrefy-nashego-vremeni/', expectAuthored: ['h1', '#pastoral-conclusion'] },
 ];
 const VIEWPORTS = [
   { id: 'desktop', width: 1440, height: 900 },
@@ -128,6 +135,31 @@ async function snapshot(page) {
       controlsOwner: window.GBReaderControlsA11y?.version || null,
       selectors,
       schemaSelectors,
+      effectiveSelectors: api?.getEffectiveSpeakableSelectors?.() || [],
+      authoredStamped: (() => {
+        const stamped = document.querySelector('script[data-gb-authored-speakable]')?.getAttribute('data-gb-authored-speakable');
+        try { return stamped ? JSON.parse(stamped) : null; } catch { return null; }
+      })(),
+      // Parity is resolved through the projection filter, not raw document
+      // matching: canonical document-wide selectors legitimately also match
+      // nodes the root/exclusion filter owns, so equality means (a) every
+      // canonical speakable node is covered by an emitted selector and
+      // (b) every emitted selector is canonical or route-authored — the
+      // runtime may never substitute a foreign list of its own.
+      speakableTargetsEqual: (() => {
+        if (!api?.getSpeakableNodes) return false;
+        const flat = schemaSelectors.flat();
+        const canon = ['h1', '.article-lead', '.summary-card', '[data-speakable]'];
+        const authoredStamped = (() => {
+          const stamped = document.querySelector('script[data-gb-authored-speakable]')?.getAttribute('data-gb-authored-speakable');
+          try { return stamped ? JSON.parse(stamped) : []; } catch { return []; }
+        })();
+        const legal = flat.every((selector) => canon.includes(selector) || authoredStamped.includes(selector));
+        const covered = api.getSpeakableNodes().every((node) => flat.some((selector) => {
+          try { return node.matches(selector); } catch { return false; }
+        }));
+        return legal && covered;
+      })(),
       section,
       ledger,
       ttsFirst: api?.getTtsSegments?.()[0]?.text || '',
@@ -180,6 +212,11 @@ async function runRouteCase(browser, origin, route, viewport, checks) {
     record(checks, `${prefix}-21`, 'speakable', 'JSON-LD speakable uses canonical selectors', exact, state.schemaSelectors);
   } else {
     record(checks, `${prefix}-21`, 'speakable', 'schema absence does not invent selectors', state.schemaSelectors.every(Array.isArray), state.schemaSelectors);
+  }
+  if (route.expectAuthored) {
+    const preserved = state.schemaSelectors.some((selectors) => JSON.stringify(selectors) === JSON.stringify(route.expectAuthored));
+    record(checks, `${prefix}-22`, 'speakable', 'authored speakable selectors survive runtime sync (no silent replacement)', preserved, state.schemaSelectors);
+    record(checks, `${prefix}-23`, 'speakable', 'emitted selectors target exactly the canonical speakable nodes', state.speakableTargetsEqual === true, { effective: state.effectiveSelectors, schema: state.schemaSelectors });
   }
 
   await page.screenshot({ path: path.join(REPORTS, `reader-projection-${prefix}.png`), fullPage: false });
