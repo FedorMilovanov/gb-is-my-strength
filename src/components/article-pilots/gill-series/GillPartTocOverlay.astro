@@ -69,7 +69,7 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
               <span class="gbat-min">{item.readingTime}</span>
               <span class="gbat-chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6" /></svg></span>
             </button>
-            <div class="gbat-subs" id={partRegionId}><div><div class="gbat-pad">
+            <div class="gbat-subs" id={partRegionId} inert={!isCurrent ? true : undefined}><div><div class="gbat-pad">
               <span class="gbat-rail" aria-hidden="true"></span>
               {!isCurrent && !isChapter && <a class="gbat-sub gbat-go" href={item.href}><span class="gbat-dot"></span><span>Перейти к части</span></a>}
               {/* Трёхуровневая книга (референс GBS 2026-07-15 §2.2): глава →
@@ -93,7 +93,7 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
                         </button>
                       )}
                     </div>
-                    <div class="gbat-artsecs" id={artRegionId}><div>
+                    <div class="gbat-artsecs" id={artRegionId} inert={!isHere ? true : undefined}><div>
                       {artSecs.map((row) => (
                         <a class={['gbat-sub', 'h3', isHere && row.current && 'active'].filter(Boolean).join(' ')}
                            href={isHere ? row.href : art.href + row.href}>
@@ -151,6 +151,14 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
   var ov = document.getElementById('partTocOverlay');
   if (!ov || ov.dataset.gbatBound) return;
   ov.dataset.gbatBound = '1';
+  /* Shared fold primitive (site-utils.js); degrade to plain inert until it
+     lands — the primitive only adds focus evacuation on top. */
+  function gbatFold(region, folded, controller) {
+    if (!region) return;
+    if (window.gbSetFolded) { window.gbSetFolded(region, folded, controller); return; }
+    if (folded) region.setAttribute('inert', '');
+    else region.removeAttribute('inert');
+  }
   function closeOverlay() {
     var h = ov.querySelector('.toc-sheet__handle');
     if (h) h.click();
@@ -161,6 +169,7 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
       var part = hd.closest('.gbat-part');
       var open = part.classList.toggle('open');
       hd.setAttribute('aria-expanded', open ? 'true' : 'false');
+      gbatFold(document.getElementById(hd.getAttribute('aria-controls')), !open, hd);
     });
   });
   /* Якорные ссылки текущей части: закрыть лист, дать браузеру доскроллить. */
@@ -180,9 +189,11 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
         o.classList.remove('open');
         var oc = o.querySelector('.gbat-art-chev');
         if (oc) oc.setAttribute('aria-expanded', 'false');
+        gbatFold(document.getElementById(oc ? oc.getAttribute('aria-controls') : ''), true, oc);
       });
       var open = art.classList.toggle('open');
       ch.setAttribute('aria-expanded', open ? 'true' : 'false');
+      gbatFold(document.getElementById(ch.getAttribute('aria-controls')), !open, ch);
     });
   });
   /* ▶ Слушать часть: жмём реальный PLAY ember (мобильный бар / десктоп-угол). */

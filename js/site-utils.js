@@ -776,6 +776,29 @@
   window.addEventListener('pagehide', stopEmergencyTimer);
   window.addEventListener('beforeunload', stopEmergencyTimer);
 
+  /* GB disclosure-fold primitive (SYS-GILL-NAV-COLLAPSED-FOCUS-EXPOSURE).
+     One reusable contract for every folded Gill region (scrollspy subgroups,
+     whole-TOC collapse, mobile part/article accordions): a folded region
+     leaves Tab order and the accessibility tree via `inert`, an unfolded
+     region reversibly regains its authored semantics, and a fold that
+     swallowed the live focus returns it to the exact controller (or the
+     stable parent passed by the caller). Geometry/animation owners stay
+     untouched — this primitive only owns descendant Tab/AX/focus state. */
+  function gbSetFolded(region, folded, controller) {
+    if (!region || !region.setAttribute) return;
+    var hadFocus = region.contains(document.activeElement);
+    if (folded) {
+      if (!region.hasAttribute('inert')) region.setAttribute('inert', '');
+      if (hadFocus && controller && document.contains(controller) && controller.focus) {
+        try { controller.focus({ preventScroll: true }); }
+        catch (_) { controller.focus(); }
+      }
+    } else if (region.hasAttribute('inert')) {
+      region.removeAttribute('inert');
+    }
+  }
+  window.gbSetFolded = gbSetFolded;
+
   window.GBRuntimeIntegrity = {
     dedupeHighlights: dedupeHighlights,
     quoteKey: function (item) { return canonicalPage(item && item.url) + '\n' + normalizeQuoteText(item && item.text); },
