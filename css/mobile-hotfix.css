@@ -189,3 +189,18 @@ html.dark body.nagornaya-page .btoc-link-num { color: #f59e0b; }
     bottom: calc(100% + 10px);
   }
 }
+
+/* 2026-10-25 (GBS-PRINT-MEDIA-CONTRAST-COLLAPSE): nagornaya light-theme
+   utilities keep light ink (#fff / stone-300) for on-screen dark panels, but
+   the print reset strips those panel surfaces — measured 1.06-1.4:1 on paper.
+   On print the panels go white and the ink follows to paper black. */
+@media print{
+html:not(.dark) body.nagornaya-page main .bg-stone-900.text-white{background:#fff!important;color:#000!important;border:1px solid #a8a29e}
+html:not(.dark) body.nagornaya-page .text-white{color:#000!important}
+html:not(.dark) body.nagornaya-page main .bg-stone-900.text-white .text-stone-300,
+html:not(.dark) body.nagornaya-page main .bg-emerald-800.text-white .text-stone-300,
+html:not(.dark) body.nagornaya-page main .bg-purple-800.text-white .text-stone-300,
+html:not(.dark) body.nagornaya-page .bg-gradient-to-br.from-stone-800.to-stone-900 .text-stone-300{color:#000!important}
+html:not(.dark) body.nagornaya-page .bg-gradient-to-br.from-stone-800.to-stone-900 .text-stone-400{color:#000!important}
+html:not(.dark) body.nagornaya-page .text-stone-300{color:#000!important}
+}

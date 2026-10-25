@@ -256,4 +256,14 @@ const languageCode = (type: AmbientPhrase['type']) => type === 'hebrew' ? 'he' :
       transition: none;
     }
   }
+
+  /* 2026-10-25 (GBS-PRINT-MEDIA-CONTRAST-COLLAPSE): the ambient layer is
+     aria-hidden decorative ink at ~9% alpha floating over the hero photo.
+     On paper it measured 2.14:1 against the image-backed surface and adds
+     nothing to the printed document — hide it. */
+  @media print {
+    body.home-page .h-ambient-native {
+      display: none !important;
+    }
+  }
 </style>

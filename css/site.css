@@ -201,9 +201,14 @@ html.dark body:not(.nagornaya-page) .article-body>.summary-card .summary-card__t
 
 @media print {
   /* --- 1. Top Tier Reset --- */
+  /* 2026-10-25 (GBS-PRINT-MEDIA-CONTRAST-COLLAPSE): the reset must WIN on paper.
+     Component sheets (home.css, scoped Astro styles) previously outranked the
+     bare `*` reset: dark card surfaces survived while text was forced to #000,
+     producing measured 1.09-1.53:1 print pairs. `!important` here is the
+     contract: print ink/surface derive from this single source of truth. */
   *, *::before, *::after {
-    background: transparent;
-    color: #000;
+    background: transparent !important;
+    color: #000 !important;
     box-shadow: none;
     text-shadow: none;
     transition: none;

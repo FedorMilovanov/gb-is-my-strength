@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v198-root-generation-authority-20260907';
+const CACHE_VERSION = 'gb-v199-print-contrast-authority-20261025';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -17,10 +17,10 @@ const EXPECTED_CACHES = new Set([
 ]);
 const OFFLINE_FALLBACK = '/404.html';
 const PRECACHE_ASSETS = [
-  '/css/site.css?v=f830106e',
+  '/css/site.css?v=8dd1384d',
   '/css/home.css?v=ee5bb66d',
   '/css/command-palette.css?v=3b88813f',
-  '/css/mobile-hotfix.css?v=087ca4ee',
+  '/css/mobile-hotfix.css?v=72b8a8d1',
   '/css/nagornaya-mobile-toc.css?v=3806ac1a',
   '/css/floating-cluster.css?v=89332585',
   '/css/series-samizdat.css?v=7c8ba23f',
