@@ -3673,10 +3673,18 @@ const JS_SIZE_FLOORS = {
   const txt = fs.readFileSync(p, 'utf8');
   const urls = [...txt.matchAll(/https:\/\/gospod-bog\.ru(\/[^)\s]*)/g)].map(m => m[1].replace(/\)$/, ''));
   const problems = [];
+  // SYS-AUDIT-PRO-LLMS-ROOT-RESOLUTION: legacy shadow pages live at the repo
+  // root while Astro-native routes only exist in the build output, so the
+  // guard must resolve against dist/ first and keep the root as fallback.
+  // Resolving root-only made healthy native routes warn forever and hid
+  // genuine removals inside that noise.
+  const DIST_ROOT = path.join(ROOT, 'dist');
+  const resolutionRoots = fs.existsSync(DIST_ROOT) ? [DIST_ROOT, ROOT] : [ROOT];
   for (const u of urls) {
-    const local = u.endsWith('/') ? path.join(ROOT, u.replace(/^\//, ''), 'index.html') : path.join(ROOT, u.replace(/^\//, ''));
-    if (!fs.existsSync(local)) {
-      problems.push(`llms.txt → ${u} (file not on disk)`);
+    const relFile = u.endsWith('/') ? path.join(u.replace(/^\/+/, ''), 'index.html') : u.replace(/^\/+/, '');
+    const local = resolutionRoots.map((r) => path.join(r, relFile)).find((candidate) => fs.existsSync(candidate));
+    if (!local) {
+      problems.push(`llms.txt → ${u} (file not on disk in ${resolutionRoots.map((r) => path.relative(ROOT, r) || 'root').join(' or ')})`);
       continue;
     }
     // also check it's not noindex
