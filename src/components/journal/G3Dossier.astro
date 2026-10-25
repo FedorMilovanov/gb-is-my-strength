@@ -6,6 +6,7 @@ import {
   researchSnapshotShort,
   type G3PublicationClaimId,
 } from '@/data/journal/g3PublicationHandoff';
+import { G3_SOURCE_BIBLIOGRAPHY, G3_SOURCE_LEDGER_URL } from '@/data/journal/g3SourceBibliography';
 
 const projectedClaims: G3PublicationClaimId[] = [
   'G3-PUB-001', 'G3-PUB-002', 'G3-PUB-003', 'G3-PUB-004',
@@ -76,6 +77,7 @@ const snapshot = researchSnapshotShort();
     <a href="#buck">Tom Buck</a>
     <a href="#wind-down">Завершение</a>
     <a href="#unknowns">Неизвестное</a>
+    <a href="#bibliography">Библиография</a>
     <a href="#corrections">Исправления</a>
   </nav>
 
@@ -94,7 +96,7 @@ const snapshot = researchSnapshotShort();
         «Операции прекращаются» не означает автоматически «юридическое лицо ликвидировано».
         По официальной записи Georgia Secretary of State на 8 сентября 2026 года корпорация оставалась
         <em>Active/Compliance</em>. Это датированное состояние, которое может измениться позднее.
-        <span class="claim-ref">G3-PUB-001</span>
+        <a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-001</a>
       </aside>
     </div>
   </section>
@@ -107,27 +109,27 @@ const snapshot = researchSnapshotShort();
     <ol class="timeline">
       <li>
         <time datetime="2019-06-06">6 июня 2019</time>
-        <div><h3>Юридическое оформление</h3><p>G3 Ministries for the Church, Inc. оформлена как domestic nonprofit corporation в Georgia.</p><span class="claim-ref">G3-PUB-001 · G3-S001</span></div>
+        <div><h3>Юридическое оформление</h3><p>G3 Ministries for the Church, Inc. оформлена как domestic nonprofit corporation в Georgia.</p><span class="claim-ref"><a href={handoffUrl} rel="noopener">G3-PUB-001</a> · <a href="#src-G3-S001">G3-S001</a></span></div>
       </li>
       <li>
         <time datetime="2025-05-08">8–12 мая 2025</time>
-        <div><h3>Кризис Josh Buice</h3><p>По заявлению G3, отставка Buice с поста президента была принята 8 мая; 12 мая организация публично сообщила о confrontation, confession, resignation и анонимных аккаунтах/каналах. Конференция 2025 года была отменена.</p><span class="claim-ref">G3-PUB-005 · G3-PUB-006</span></div>
+        <div><h3>Кризис Josh Buice</h3><p>По заявлению G3, отставка Buice с поста президента была принята 8 мая; 12 мая организация публично сообщила о confrontation, confession, resignation и анонимных аккаунтах/каналах. Конференция 2025 года была отменена.</p><span class="claim-ref"><a href={handoffUrl} rel="noopener">G3-PUB-005</a> · <a href={handoffUrl} rel="noopener">G3-PUB-006</a></span></div>
       </li>
       <li>
         <time datetime="2025-07-09">9 июля 2025</time>
-        <div><h3>Scott Aniol становится президентом</h3><p>Официальное объявление G3 устанавливает effective date назначения Aniol на 9 июля 2025 года.</p><span class="claim-ref">G3-PUB-006</span></div>
+        <div><h3>Scott Aniol становится президентом</h3><p>Официальное объявление G3 устанавливает effective date назначения Aniol на 9 июля 2025 года.</p><a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-006</a></div>
       </li>
       <li>
         <time datetime="2026-07-21">21 июля 2026</time>
-        <div><h3>Последний primary-verified состав совета в публичном архиве</h3><p>Архивный снимок официальной страницы «Who We Are» перечисляет Buck Braswell, Matt Broome, Jon Norton, Matt Sikes, Dylan Joyner и Ron Mooney как Board of Directors.</p><span class="claim-ref">G3-PUB-008 · G3-S096</span></div>
+        <div><h3>Последний primary-verified состав совета в публичном архиве</h3><p>Архивный снимок официальной страницы «Who We Are» перечисляет Buck Braswell, Matt Broome, Jon Norton, Matt Sikes, Dylan Joyner и Ron Mooney как Board of Directors.</p><span class="claim-ref"><a href={handoffUrl} rel="noopener">G3-PUB-008</a> · <a href="#src-G3-S096">G3-S096</a></span></div>
       </li>
       <li>
         <time datetime="2026-08">август 2026</time>
-        <div><h3>Новый конфликт и признание процессуальных ошибок</h3><p>Сохранённый текст заявления четырёх пасторов признаёт неправильное вмешательство в автономный дисциплинарный процесс другой церкви, недостаточно информированную характеристику этого процесса и анонимную рассылку материалов третьим лицам.</p><span class="claim-ref">G3-PUB-011</span></div>
+        <div><h3>Новый конфликт и признание процессуальных ошибок</h3><p>Сохранённый текст заявления четырёх пасторов признаёт неправильное вмешательство в автономный дисциплинарный процесс другой церкви, недостаточно информированную характеристику этого процесса и анонимную рассылку материалов третьим лицам.</p><a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-011</a></div>
       </li>
       <li>
         <time datetime="2026-09">сентябрь 2026</time>
-        <div><h3>Прекращение операций — но не один юридический «рубильник»</h3><p>Публично сообщалось о завершении Church Network и broader G3 operations; G3-контролируемый регистрационный маршрут будущей конференции указывал, что мероприятие 27–29 мая 2027 года отменено, регистрации отменяются/возвращаются.</p><span class="claim-ref">G3-PUB-012</span></div>
+        <div><h3>Прекращение операций — но не один юридический «рубильник»</h3><p>Публично сообщалось о завершении Church Network и broader G3 operations; G3-контролируемый регистрационный маршрут будущей конференции указывал, что мероприятие 27–29 мая 2027 года отменено, регистрации отменяются/возвращаются.</p><a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-012</a></div>
       </li>
     </ol>
   </section>
@@ -141,7 +143,7 @@ const snapshot = researchSnapshotShort();
         на <strong>$1,061,800</strong> относительно FY2022; расходы на conferences/meetings выросли на
         <strong>$817,283</strong>, advertising — на <strong>$246,511</strong>. В FY2023 функциональные
         расходы были отражены как 100% program services, при $0 management/general и $0 fundraising.
-        <span class="claim-ref">G3-PUB-002</span>
+        <a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-002</a>
       </p>
       <p>
         Эти строки — классификации самой налоговой формы. Они не доказывают мошенничество, вывод средств,
@@ -152,13 +154,13 @@ const snapshot = researchSnapshotShort();
           <p class="fact-label">FY2024 filing</p>
           <strong>«No material diversion» — self-reported</strong>
           <p>Form 990 также сообщала о conflict-of-interest policy и отсутствии whistleblower/document-retention policy.</p>
-          <span class="claim-ref">G3-PUB-003</span>
+          <a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-003</a>
         </article>
         <article>
           <p class="fact-label">Schedule L</p>
           <strong>$30,409 → $31,880</strong>
           <p>Компенсация Karis L Buice, описанной формой как «Daughter of Board Member», в FY2024 и FY2025 соответственно.</p>
-          <span class="claim-ref">G3-PUB-004</span>
+          <a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-004</a>
         </article>
       </div>
       <aside class="boundary-box" role="note">
@@ -177,12 +179,12 @@ const snapshot = researchSnapshotShort();
         пасторы PMBC одновременно фигурируют в G3 как преподаватели, участники network-активности и,
         для части лиц, члены совета. Это подтверждает организационное пересечение ролей, но не доказывает
         denominational jurisdiction, полный корпоративный контроль или общий заговор.
-        <span class="claim-ref">G3-PUB-009</span>
+        <a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-009</a>
       </p>
       <p>
         Последний доступный primary-verified roster — архивный официальный снимок 21 июля 2026 года.
         Мы не интерполируем его автоматически на поздний август: точная continuity в момент кризиса остаётся открытым вопросом.
-        <span class="claim-ref">G3-PUB-008 · G3-PUB-016</span>
+        <span class="claim-ref"><a href={handoffUrl} rel="noopener">G3-PUB-008</a> · <a href={handoffUrl} rel="noopener">G3-PUB-016</a></span>
       </p>
     </div>
   </section>
@@ -196,13 +198,13 @@ const snapshot = researchSnapshotShort();
         email-адресами и Substack-каналами, был confronted, confessed и resigned. Формулировка здесь
         намеренно атрибутирована организации: публичный материал не превращает институциональное заявление
         в независимый внешний forensic finding.
-        <span class="claim-ref">G3-PUB-005</span>
+        <a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-005</a>
       </p>
       <p>
         После кризиса G3 публично продвигала renewed vision, кадровый переход и Pastor-Theologian/local-church emphasis.
         Это позволяет говорить о <strong>попытке институционального перезапуска</strong>, но не доказывает её эффективность
         или внутреннюю искренность.
-        <span class="claim-ref">G3-PUB-007</span>
+        <a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-007</a>
       </p>
     </div>
   </section>
@@ -220,22 +222,22 @@ const snapshot = researchSnapshotShort();
         <div class="matrix-row confirmed">
           <span class="matrix-state">Подтверждено</span>
           <p>Независимый/участнический review обнаруживал реальные фрагменты недостаточно атрибутированного commentary wording.</p>
-          <span class="claim-ref">G3-PUB-010</span>
+          <a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-010</a>
         </div>
         <div class="matrix-row refuted">
           <span class="matrix-state">Не поддержано имеющимися данными</span>
           <p>Более сильная формула, будто Buck систематически проповедовал целые готовые sermons других авторов, не выдерживает приобретённого evidence set.</p>
-          <span class="claim-ref">G3-PUB-010</span>
+          <a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-010</a>
         </div>
         <div class="matrix-row confirmed">
           <span class="matrix-state">Подтверждено с оговоркой</span>
           <p>FBC Lindale проводила процесс рассмотрения и коррекции; это не равнозначно утверждению, что каждый спорный эпизод был правильно решён.</p>
-          <span class="claim-ref">G3-PUB-010</span>
+          <a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-010</a>
         </div>
         <div class="matrix-row disputed">
           <span class="matrix-state">HOLD</span>
           <p>Поэпизодный финальный verdict требует человеческого прослушивания original audio, exact source edition и attribution context.</p>
-          <span class="claim-ref">G3-PUB-016</span>
+          <a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-016</a>
         </div>
       </div>
       <aside class="warning-box" role="note">
@@ -248,7 +250,7 @@ const snapshot = researchSnapshotShort();
         атрибутированно пересказать признанные ими процессуальные ошибки: вмешательство в автономный процесс другой церкви,
         характеристику этого процесса без всех деталей и анонимную отправку материалов людям из окружения Buck.
         Оно не решает спор о том, были ли все четыре последующие отставки добровольными или требуемыми.
-        <span class="claim-ref">G3-PUB-011</span>
+        <a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-011</a>
       </p>
     </div>
   </section>
@@ -258,23 +260,23 @@ const snapshot = researchSnapshotShort();
     <div class="prose">
       <h2>Пять состояний вместо одного слова «закрылось»</h2>
       <div class="state-stack">
-        <article><span>Church Network</span><strong>Объявлен завершённым</strong><p>Отдельный институциональный слой.</p><span class="claim-ref">G3-PUB-012</span></article>
-        <article><span>National Conference 2027</span><strong>Отменена, регистрации отменяются/возвращаются</strong><p>Подтверждено G3-контролируемым registration route.</p><span class="claim-ref">G3-PUB-012</span></article>
-        <article><span>Operations</span><strong>Объявлено о завершении</strong><p>Операционное состояние не тождественно corporate dissolution.</p><span class="claim-ref">G3-PUB-012</span></article>
-        <article><span>Georgia corporation</span><strong>Active/Compliance на 08.09.2026</strong><p>Датированный primary registry state; может измениться после публикации.</p><span class="claim-ref">G3-PUB-001</span></article>
-        <article><span>G3+ / G3 Press</span><strong>Aftermath частично открыт</strong><p>App/storefront state виден, но transferee, closing, terms, rights и inventory не выводятся из метаданных платформ.</p><span class="claim-ref">G3-PUB-013 · G3-PUB-014</span></article>
+        <article><span>Church Network</span><strong>Объявлен завершённым</strong><p>Отдельный институциональный слой.</p><a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-012</a></article>
+        <article><span>National Conference 2027</span><strong>Отменена, регистрации отменяются/возвращаются</strong><p>Подтверждено G3-контролируемым registration route.</p><a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-012</a></article>
+        <article><span>Operations</span><strong>Объявлено о завершении</strong><p>Операционное состояние не тождественно corporate dissolution.</p><a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-012</a></article>
+        <article><span>Georgia corporation</span><strong>Active/Compliance на 08.09.2026</strong><p>Датированный primary registry state; может измениться после публикации.</p><a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-001</a></article>
+        <article><span>G3+ / G3 Press</span><strong>Aftermath частично открыт</strong><p>App/storefront state виден, но transferee, closing, terms, rights и inventory не выводятся из метаданных платформ.</p><span class="claim-ref"><a href={handoffUrl} rel="noopener">G3-PUB-013</a> · <a href={handoffUrl} rel="noopener">G3-PUB-014</a></span></article>
       </div>
       <p>
         После wind-down app-store surfaces всё ещё показывали G3-linked developer/seller/support identity для G3+,
         а G3 Press storefront оставался видимым. Это доказывает только датированное состояние платформы/витрины,
         но не beneficial ownership или юридическое завершение передачи.
-        <span class="claim-ref">G3-PUB-013 · G3-PUB-014</span>
+        <span class="claim-ref"><a href={handoffUrl} rel="noopener">G3-PUB-013</a> · <a href={handoffUrl} rel="noopener">G3-PUB-014</a></span>
       </p>
       <p>
         Отдельно наблюдается post-G3 presence книги Dave Jenkins <em>The Word Matters</em> в его нынешней
         Servants of Grace / Theology for Life ecosystem. Один title-level факт не позволяет вывести общий контрактный
         механизм возврата прав для всего каталога G3 Press.
-        <span class="claim-ref">G3-PUB-015</span>
+        <a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-015</a>
       </p>
     </div>
   </section>
@@ -287,7 +289,7 @@ const snapshot = researchSnapshotShort();
         Публичный evidence route по этим вопросам исчерпан до появления нового первичного объекта,
         авторизованного доступа или человеческой проверки original media. Они не считаются «недоделанной статьёй»
         и не заполняются предположением.
-        <span class="claim-ref">G3-PUB-016</span>
+        <a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-016</a>
       </p>
       <ul class="unknown-list">
         {G3_PUBLICATION_HANDOFF.knownOpenQuestions.map((question) => <li>{question}</li>)}
@@ -304,12 +306,40 @@ const snapshot = researchSnapshotShort();
     <div class="prose">
       <h2>Ключевые классы источников</h2>
       <div class="document-grid">
-        <article><span class="source-badge primary">Первичный документ</span><h3>Georgia Secretary of State</h3><p>Корпоративное образование и датированный legal status.</p><p class="claim-ref">G3-S001</p></article>
-        <article><span class="source-badge primary">Первичный документ</span><h3>IRS Form 990 / TEOS raw XML</h3><p>Финансы, governance disclosures, Schedule L, FY2025 program history.</p><p class="claim-ref">G3-S002 · G3-S028</p></article>
-        <article><span class="source-badge official">Официальное заявление</span><h3>G3 statements and event routes</h3><p>Buice crisis, Aniol appointment, reform attempt, conference cancellation.</p><p class="claim-ref">G3-S008 · S009 · S010 · S011 · S023 · S024</p></article>
-        <article><span class="source-badge archive">Архивный источник</span><h3>Official G3 “Who We Are” capture</h3><p>Датированный Board of Directors roster на 21 июля 2026.</p><p class="claim-ref">G3-S096</p></article>
-        <article><span class="source-badge corroboration">Независимое подтверждение</span><h3>Phil Johnson / Protestia review</h3><p>Ограниченный Buck attribution/process finding; не item-count verdict.</p><p class="claim-ref">G3-S012 · G3-S035</p></article>
-        <article><span class="source-badge participant">Заявление участника</span><h3>Four-pastor statement lineage</h3><p>Используется только как attributed paraphrase; републикации не считаются независимыми witnesses.</p><p class="claim-ref">G3-S015 · G3-S042</p></article>
+        <article><span class="source-badge primary">Первичный документ</span><h3>Georgia Secretary of State</h3><p>Корпоративное образование и датированный legal status.</p><p class="claim-ref"><a href="#src-G3-S001">G3-S001</a></p></article>
+        <article><span class="source-badge primary">Первичный документ</span><h3>IRS Form 990 / TEOS raw XML</h3><p>Финансы, governance disclosures, Schedule L, FY2025 program history.</p><p class="claim-ref"><a href="#src-G3-S002">G3-S002</a> · <a href="#src-G3-S028">G3-S028</a></p></article>
+        <article><span class="source-badge official">Официальное заявление</span><h3>G3 statements and event routes</h3><p>Buice crisis, Aniol appointment, reform attempt, conference cancellation.</p><p class="claim-ref"><a href="#src-G3-S008">G3-S008</a> · <a href="#src-G3-S009">G3-S009</a> · <a href="#src-G3-S010">G3-S010</a> · <a href="#src-G3-S011">G3-S011</a> · <a href="#src-G3-S023">G3-S023</a> · <a href="#src-G3-S024">G3-S024</a></p></article>
+        <article><span class="source-badge archive">Архивный источник</span><h3>Official G3 “Who We Are” capture</h3><p>Датированный Board of Directors roster на 21 июля 2026.</p><p class="claim-ref"><a href="#src-G3-S096">G3-S096</a></p></article>
+        <article><span class="source-badge corroboration">Независимое подтверждение</span><h3>Phil Johnson / Protestia review</h3><p>Ограниченный Buck attribution/process finding; не item-count verdict.</p><p class="claim-ref"><a href="#src-G3-S012">G3-S012</a> · <a href="#src-G3-S035">G3-S035</a></p></article>
+        <article><span class="source-badge participant">Заявление участника</span><h3>Four-pastor statement lineage</h3><p>Используется только как attributed paraphrase; републикации не считаются независимыми witnesses.</p><p class="claim-ref"><a href="#src-G3-S015">G3-S015</a> · <a href="#src-G3-S042">G3-S042</a></p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="bibliography" class="module">
+    <div class="module-label">Библиография · источники</div>
+    <div class="prose">
+      <h2>Библиографические записи использованных источников</h2>
+      <p class="biblio-intro">
+        Служебные ID источников досье разрешаются в читательские записи: объект, датировка, tier,
+        локатор и публикационный статус по immutable Research-регистру
+        (<a href={G3_SOURCE_LEDGER_URL} rel="noopener">SOURCE_LEDGER.md</a>, seal 298d00dd).
+        Публичная ссылка дана только там, где объект заведомо публичен; остальные записи остаются
+        REFERENCE: метаданные не означают право воспроизводить тело источника.
+      </p>
+      <div class="biblio-grid">
+        {G3_SOURCE_BIBLIOGRAPHY.map((entry) => (
+          <article class="biblio-entry" id={`src-${entry.id}`}>
+            <h3><code>{entry.id}</code> · {entry.title}</h3>
+            <p class="biblio-meta">{entry.period} · tier {entry.tier} · {entry.eligibility}</p>
+            <p class="biblio-locator">{entry.locator}</p>
+            <p class="biblio-links">
+              {entry.publicUrl ? <a href={entry.publicUrl} rel="noopener">Публичный объект</a> : <span>Без внешнего URL (REFERENCE)</span>}
+              <span aria-hidden="true">·</span>
+              <a href={G3_SOURCE_LEDGER_URL} rel="noopener">Запись регистра</a>
+            </p>
+          </article>
+        ))}
       </div>
     </div>
   </section>
@@ -447,4 +477,18 @@ const snapshot = researchSnapshotShort();
     .state-stack article { grid-template-columns: 1fr; gap: 6px; }
     .state-stack article > span:first-child { grid-row: auto; }
   }
+
+a.claim-ref{color:inherit;text-decoration:underline dotted;text-underline-offset:3px}
+a.claim-ref:hover{text-decoration-style:solid}
+.biblio-intro{color:var(--journal-muted,#6b6459);font-size:.95rem;line-height:1.6}
+.biblio-grid{display:grid;gap:14px;margin-top:18px}
+.biblio-entry{padding:14px 16px;border:1px solid var(--journal-border,#e2ddd2);border-radius:10px;background:var(--journal-surface,#fffdf8)}
+.biblio-entry h3{font-size:1rem;line-height:1.45;margin:0 0 6px}
+.biblio-entry h3 code{font-size:.85em;background:rgba(122,46,46,.08);padding:1px 6px;border-radius:6px}
+.biblio-meta{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--journal-muted,#6b6459);margin:0 0 6px}
+.biblio-locator{font-size:.9rem;line-height:1.55;margin:0 0 8px}
+.biblio-links{display:flex;gap:8px;align-items:center;font-size:.85rem;margin:0}
+.biblio-links a{color:var(--journal-accent,#7a2e2e);text-underline-offset:3px}
+html.dark .biblio-entry{background:var(--journal-surface-dark,#171411);border-color:var(--journal-border-dark,#2e2923)}
+html.dark .biblio-intro,html.dark .biblio-meta{color:var(--journal-muted-dark,#a8a29e)}
 </style>
