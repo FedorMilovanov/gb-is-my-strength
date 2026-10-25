@@ -315,8 +315,13 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
     setSelectedRelation(null);
     setRelationReturnFocusId(null);
     if (detailLevel < 2) { focusPerson(node.id, 1, 0); setSelected(null); return; }
-    // Toggle: if clicking same node, deactivate focus
-    if (activeId === node.id) {
+    // The details panel, not the lineage highlight, owns the toggle.
+    // Closing the panel (button/Escape) intentionally keeps activeId so
+    // the focused lineage stays highlighted; keying the toggle on
+    // activeId made the first re-click after a close silently clear the
+    // highlight instead of reopening the panel (GBS-GENEALOGY-POINTER-
+    // PANEL-STATE-DESYNC). One re-click must reopen the details.
+    if (selected?.id === node.id) {
       setActiveId(null);
       setSelected(null);
       return;
@@ -324,7 +329,7 @@ function GenealogyTreeContent({ persons, eras, relations = [] }: GenealogyTreePr
     setActiveId(node.id);
     const p = persons.find(pp => pp.id === node.id);
     if (p) setSelected(p);
-  }, [persons, activeId, detailLevel, focusPerson]);
+  }, [persons, selected, detailLevel, focusPerson]);
 
   // Click on empty canvas → clear focus
   const onPaneClick = useCallback(() => {

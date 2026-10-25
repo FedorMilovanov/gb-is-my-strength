@@ -208,6 +208,26 @@
   }
 
   function collectParts() {
+    // ReaderProjection is the semantic owner of root selection, block
+    // inventory, exclusion and text normalization (ReaderActionsRuntime
+    // contract); TTS only chunks the canonical segments for speech
+    // (SYS-READER-PROJECTION-CONSUMER-BYPASS). The legacy extraction below
+    // remains as an explicit bounded fallback for pages where the
+    // projection is absent or yields nothing — never as a competing
+    // state machine on projection-owned routes.
+    const projection = window.GBReaderProjection;
+    if (projection?.getTtsSegments) {
+      try {
+        const segments = projection.getTtsSegments(document);
+        if (segments.length) {
+          const parts = [];
+          for (const segment of segments) {
+            splitText(segment.text).forEach((chunk) => parts.push({ text: chunk, element: segment.element }));
+          }
+          if (parts.length) return parts;
+        }
+      } catch { /* fall through to the bounded legacy fallback */ }
+    }
     const root = document.querySelector('article.article-body, article[data-pagefind-body], main[data-pagefind-body], article, main#main-content, main');
     if (!root) return [];
     const elements = Array.from(root.querySelectorAll('h1,h2,h3,h4,p,li,blockquote,figcaption,dt,dd'));

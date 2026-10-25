@@ -161,16 +161,78 @@
     return root ? blockElements(root, 'print') : [];
   }
 
+  function speakableNodeAllowed(node, root) {
+    if (!(node instanceof Element) || !root) return false;
+    const isPageLead = node.matches('h1,.article-lead');
+    if (!root.contains(node) && !isPageLead) return false;
+    return !isExcluded(node, 'speakable');
+  }
+
+  // Authored-first speakable authority (SYS-READER-PROJECTION-SPEAKABLE-
+  // AUTHORITY-OVERWRITE). The route-authored SpeakableSpecification is the
+  // schema owner's intent: the runtime must never blanket-replace it with
+  // the global default list. A route delegates to the defaults by authoring
+  // the canonical list verbatim; any other authored list is preserved, and
+  // only selectors that resolve to zero canonical in-scope nodes (stale
+  // classes, selectors whose every match is outside the reader root or
+  // policy-excluded) are pruned, so the emitted selectors always target
+  // exactly the nodes getSpeakableNodes() returns. The pre-sync authored
+  // list is stamped on the script element, so later refreshes keep
+  // validating the original intent instead of their own output.
+  function authoredSpeakableSelectors() {
+    let found = null;
+    document.querySelectorAll('script[type="application/ld+json"]').forEach((script) => {
+      if (found) return;
+      let list = null;
+      try {
+        const stamped = script.getAttribute('data-gb-authored-speakable');
+        if (stamped) list = JSON.parse(stamped);
+      } catch { list = null; }
+      if (!Array.isArray(list)) {
+        let payload;
+        try { payload = JSON.parse(script.textContent || 'null'); } catch { return; }
+        const visit = (value) => {
+          if (list || !value || typeof value !== 'object') return;
+          if (value.speakable && typeof value.speakable === 'object' && value.speakable.cssSelector != null) {
+            const raw = value.speakable.cssSelector;
+            list = (Array.isArray(raw) ? raw : [raw]).filter((item) => typeof item === 'string' && item.trim());
+            return;
+          }
+          Object.values(value).forEach(visit);
+        };
+        visit(payload);
+        if (Array.isArray(list) && list.length) {
+          try { script.setAttribute('data-gb-authored-speakable', JSON.stringify(list)); } catch {}
+        }
+      }
+      if (Array.isArray(list) && list.length) found = list;
+    });
+    return found;
+  }
+
+  function effectiveSpeakableSelectors(scope = document) {
+    const root = readerRoot(scope);
+    const authored = authoredSpeakableSelectors();
+    if (!authored) return [...SPEAKABLE_SELECTORS];
+    if (JSON.stringify(authored) === JSON.stringify(SPEAKABLE_SELECTORS)) return [...SPEAKABLE_SELECTORS];
+    if (!root) return [...authored];
+    const kept = authored.filter((selector) => {
+      let matches;
+      try { matches = document.querySelectorAll(selector); } catch { return false; }
+      return Array.from(matches).some((node) => speakableNodeAllowed(node, root));
+    });
+    return kept.length ? kept : [...authored];
+  }
+
   function getSpeakableNodes(scope = document) {
     const root = readerRoot(scope);
     if (!root) return [];
     const owner = projectionOwner(root);
     const seen = new Set();
     const nodes = [];
-    for (const selector of SPEAKABLE_SELECTORS) {
+    for (const selector of effectiveSpeakableSelectors(scope)) {
       owner.querySelectorAll(selector).forEach((node) => {
-        const isPageLead = node.matches('h1,.article-lead');
-        if ((!root.contains(node) && !isPageLead) || seen.has(node) || isExcluded(node, 'speakable')) return;
+        if (!speakableNodeAllowed(node, root) || seen.has(node)) return;
         seen.add(node);
         nodes.push(node);
       });
@@ -231,6 +293,12 @@
   }
 
   function synchronizeSpeakableJsonLd() {
+    // No reader root — no projection authority on this page; the authored
+    // schema is left exactly as published.
+    const root = readerRoot(document);
+    if (!root) return 0;
+    const effective = effectiveSpeakableSelectors(document);
+    if (!effective.length) return 0;
     let updated = 0;
     document.querySelectorAll('script[type="application/ld+json"]').forEach((script) => {
       let payload;
@@ -240,9 +308,13 @@
         if (!value || typeof value !== 'object') return;
         if (value.speakable && typeof value.speakable === 'object') {
           const current = value.speakable.cssSelector;
-          const next = [...SPEAKABLE_SELECTORS];
-          if (JSON.stringify(current) !== JSON.stringify(next)) {
-            value.speakable.cssSelector = next;
+          const normalized = (Array.isArray(current) ? current : [current])
+            .filter((item) => typeof item === 'string' && item.trim());
+          // Preserve the authored list whenever it already equals the
+          // validated effective list; never substitute the global defaults
+          // for a route-specific list that resolves in scope.
+          if (JSON.stringify(normalized) !== JSON.stringify(effective)) {
+            value.speakable.cssSelector = [...effective];
             changed = true;
           }
         }
@@ -369,6 +441,7 @@
     getRoot: readerRoot,
     getTtsSegments,
     getSpeakableSelectors: () => [...SPEAKABLE_SELECTORS],
+    getEffectiveSpeakableSelectors: (scope = document) => effectiveSpeakableSelectors(scope),
     getSpeakableNodes,
     getSearchText,
     getPrintNodes,
