@@ -55,10 +55,11 @@ function manifestRouteMap(manifest) {
  * - represented by a canonical search-manifest item;
  * - backed by a valid publication/modification timestamp.
  *
- * Historical partial records remain visible through `skipped` diagnostics and
- * continue to be governed by the dedicated search-policy audit. They must not
- * prevent deterministic projection of canonically complete routes.
- */
+ * Routes the normalizer cannot own (no manifest item or no valid date) are
+ * reported through `skipped` diagnostics, and `--check` now FAILS on them:
+ * a sitemap entry nobody owns is a stale-lastmod entry (GBS-SITEMAP-LASTMOD-UNOWNED).
+ * Owned routes also get their `<lastmod>` reconciled from the manifest date on
+ * every `--write`, so hand-maintained timestamps can no longer fossilize.*/
 function canonicalIncludedRoutes({ policyRegistry, manifest, productionRecords }) {
   const policies = normalizePolicyRoutes(policyRegistry);
   const manifestRoutes = manifestRouteMap(manifest);
@@ -97,18 +98,27 @@ function canonicalIncludedRoutes({ policyRegistry, manifest, productionRecords }
 function parseExistingUrls(xml, siteUrl = DEFAULT_SITE_URL) {
   const base = String(siteUrl).replace(/\/+$/, '');
   const routes = new Set();
-  for (const match of String(xml).matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)) {
-    const value = match[1]
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/&apos;/g, "'");
+  const lastmod = new Map();
+  for (const block of String(xml).matchAll(/<url>[\s\S]*?<\/url>/g)) {
+    const loc = /<loc>\s*([^<]+?)\s*<\/loc>/.exec(block[0]);
+    if (!loc) continue;
+    const value = decodeXml(loc[1]);
     if (!value.startsWith(base + '/')) continue;
-    const pathname = new URL(value).pathname;
-    routes.add(normalizeRoute(pathname));
+    const route = normalizeRoute(new URL(value).pathname);
+    routes.add(route);
+    const mod = /<lastmod>\s*([^<]+?)\s*<\/lastmod>/.exec(block[0]);
+    if (mod) lastmod.set(route, mod[1]);
   }
-  return routes;
+  return { routes, lastmod };
+}
+
+function decodeXml(value) {
+  return String(value)
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'");
 }
 
 function priorityFor(item = {}) {
@@ -143,12 +153,40 @@ function normalizeSitemap({ current, policyRegistry, manifest, productionRecords
   const base = String(siteUrl || manifest?.project?.url || DEFAULT_SITE_URL).replace(/\/+$/, '');
   const existing = parseExistingUrls(current, base);
   const { entries: required, skipped } = canonicalIncludedRoutes({ policyRegistry, manifest, productionRecords });
-  const missing = required.filter((entry) => !existing.has(entry.route));
-  if (!missing.length) return { xml: current, missing: [], skipped };
+  const missing = required.filter((entry) => !existing.routes.has(entry.route));
+  /* GBS-SITEMAP-LASTMOD-UNOWNED: владеющие маршруты получают lastmod из
+     манифеста, а не навеки застыают в рукописном значении. Дрейф видим сразу. */
+  const stale = required.filter((entry) => {
+    if (!existing.routes.has(entry.route)) return false;
+    const raw = existing.lastmod.get(entry.route);
+    const current = raw ? new Date(raw) : null;
+    if (!current || Number.isNaN(current.getTime())) return true;
+    return current.getTime() !== entry.date.getTime();
+  });
 
-  const blocks = missing.map((entry) => renderUrlBlock(entry, base)).join('\n');
-  const normalized = String(current).replace(/\s*<\/urlset>\s*$/, `\n\n  <!-- Canonical policy-generated additions -->\n${blocks}\n</urlset>\n`);
-  return { xml: normalized, missing: missing.map((entry) => entry.route), skipped };
+  let xml = String(current);
+  for (const entry of stale) {
+    const loc = xmlEscape(base + entry.route);
+    const needle = '<loc>' + loc + '</loc>';
+    const at = xml.indexOf(needle);
+    if (at === -1) continue;
+    const open = xml.lastIndexOf('<url>', at);
+    if (open === -1 || xml.slice(open + 5, at).trim() !== '') continue;
+    const closeMod = xml.indexOf('</lastmod>', at);
+    const openMod = xml.lastIndexOf('<lastmod>', closeMod);
+    if (closeMod === -1 || openMod === -1 || openMod < open || closeMod - at > 400) continue;
+    xml = xml.slice(0, openMod + '<lastmod>'.length) + entry.date.toISOString() + xml.slice(closeMod);
+  }
+  if (missing.length) {
+    const blocks = missing.map((entry) => renderUrlBlock(entry, base)).join('\n');
+    xml = xml.replace(/\s*<\/urlset>\s*$/, `\n\n  <!-- Canonical policy-generated additions -->\n${blocks}\n</urlset>\n`);
+  }
+  return {
+    xml,
+    missing: missing.map((entry) => entry.route),
+    stale: stale.map((entry) => ({ route: entry.route, lastmod: entry.date.toISOString() })),
+    skipped,
+  };
 }
 
 function skippedSummary(skipped = []) {
@@ -172,26 +210,42 @@ function main() {
 
   if (options.write) {
     if (result.xml === current) {
-      console.log(`Sitemap normalizer v${NORMALIZER_VERSION}: every canonically eligible policy route is already present.`);
+      console.log(`Sitemap normalizer v${NORMALIZER_VERSION}: every canonically eligible policy route is already present with canonical lastmod.`);
       console.log(`Sitemap normalizer eligibility: ${CANONICAL_ELIGIBILITY_RULE}`);
       console.log(`Sitemap normalizer skipped diagnostics: ${skippedSummary(result.skipped)}`);
       return;
     }
     fs.writeFileSync(sitemapFile, result.xml, 'utf8');
-    console.log(`Sitemap normalizer v${NORMALIZER_VERSION}: wrote policy additions: ${result.missing.join(', ')}`);
+    if (result.missing.length) {
+      console.log(`Sitemap normalizer v${NORMALIZER_VERSION}: wrote policy additions: ${result.missing.join(', ')}`);
+    }
+    if (result.stale.length) {
+      console.log(`Sitemap normalizer v${NORMALIZER_VERSION}: refreshed owned lastmod: ${result.stale.map((entry) => entry.route).join(', ')}`);
+    }
     console.log(`Sitemap normalizer eligibility: ${CANONICAL_ELIGIBILITY_RULE}`);
     console.log(`Sitemap normalizer skipped diagnostics: ${skippedSummary(result.skipped)}`);
     return;
   }
 
   if (result.xml !== current) {
-    console.error(`❌ sitemap.xml misses canonically eligible policy routes: ${result.missing.join(', ')}`);
+    if (result.missing.length) {
+      console.error(`❌ sitemap.xml misses canonically eligible policy routes: ${result.missing.join(', ')}`);
+    }
+    if (result.stale.length) {
+      console.error(`❌ sitemap.xml lastmod drift on owned routes: ${result.stale.map((entry) => `${entry.route}→${entry.lastmod}`).join(', ')}`);
+    }
     console.error(`Eligibility rule: ${CANONICAL_ELIGIBILITY_RULE}`);
-    console.error(`Skipped historical diagnostics: ${skippedSummary(result.skipped)}`);
+    console.error(`Skipped diagnostics: ${skippedSummary(result.skipped)}`);
     console.error('Run: node scripts/sitemap-policy-normalizer.js --write');
     process.exit(1);
   }
-  console.log(`✅ Sitemap normalizer v${NORMALIZER_VERSION}: sitemap.xml contains every canonically eligible policy route`);
+  if (result.skipped.length) {
+    console.error(`❌ sitemap normalizer refuses to own policy routes: ${skippedSummary(result.skipped)}`);
+    console.error(`Eligibility rule: ${CANONICAL_ELIGIBILITY_RULE}`);
+    console.error('Every included production route must have a manifest item with a valid date; fix the manifest or the policy.');
+    process.exit(1);
+  }
+  console.log(`✅ Sitemap normalizer v${NORMALIZER_VERSION}: sitemap.xml contains every canonically eligible policy route with canonical lastmod`);
   console.log(`Sitemap normalizer eligibility: ${CANONICAL_ELIGIBILITY_RULE}`);
   console.log(`Sitemap normalizer skipped diagnostics: ${skippedSummary(result.skipped)}`);
 }
