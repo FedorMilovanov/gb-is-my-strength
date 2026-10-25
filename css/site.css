@@ -1497,3 +1497,8 @@ html.dark #quizLaunch,html.dark .quiz-launch{color:#0e1116}
    The former workaround (force #1a1a18 ink on the light card) is removed: with a dark surface
    it would itself be unreadable, and it never reached the children that set their own colour
    (measured 1.08:1 on .quiz-option even with the workaround in place). */
+
+/* GBS-GENESIS6-THEME-TOGGLE-LOW-CONTRAST: the genesis hub paints a dark
+   header surface in both themes, but the shared toggle glyph inherits the
+   light-theme text colour (measured 1.06:1). Light glyph on that scope. */
+.genesis6-hub-page .theme-toggle svg{color:#f2ece1;stroke:#f2ece1}
