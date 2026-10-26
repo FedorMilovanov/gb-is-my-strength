@@ -111,6 +111,11 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
   seriesTitle: 'Подросток за кадром',
   seriesTitleFull: 'Подросток за кадром: двойная жизнь, семья и взросление',
   railBackHref: '/podrostok-za-kadrom/',
+  // GBS-TEEN-SERIES-CORE-STEP-PROGRESS: все семь материалов — равноправные
+  // first-class шаги. Лендинг уже обещает «Шаг N из 7»; рельс и мобильная
+  // шапка статьи обязаны показывать ту же позицию, а не «Часть 3 из 3» и
+  // голые буквы A–D. Марки I–III/A–D сохраняются без перенумерации.
+  coreSequence: { stepLabel: 'Шаг' },
   quiz: [],
   breadcrumbParent: { label: 'Подросток за кадром', href: '/podrostok-za-kadrom/' },
   items: [

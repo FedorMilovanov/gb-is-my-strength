@@ -4,7 +4,7 @@ import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
 import SeriesMark from './SeriesMark.astro';
 import GillLeatherDefs from './GillLeatherDefs.astro';
 import GillLeatherRibbon from './GillLeatherRibbon.astro';
-import { GILL_SERIES, satellitesOf, chapterArticles, topLevelItems, sectionLabel, type SeriesConfig } from '../_shared/series/seriesConfig';
+import { GILL_SERIES, satellitesOf, chapterArticles, topLevelItems, sectionLabel, coreStepMeta, type SeriesConfig } from '../_shared/series/seriesConfig';
 
 // Leather bookmark treatment for the two label rows (kind: 'label'):
 //   «Введение» → lily ornament, warm leather;  «Справочник» → book ornament,
@@ -76,9 +76,14 @@ const romanIdx = romanItems.findIndex((item) => item.id === parentId);
 const partNumber = romanIdx >= 0 ? romanIdx + 1 : 1;
 // Книжная серия: римские пункты — ГЛАВЫ, счёт читается «Глава N из M».
 const countWord = currentItem?.tier === 'chapter' ? 'Глава' : 'Часть';
-const seriesMeta = currentItem && currentItem.mark.kind === 'label'
-  ? currentItem.mark.value
-  : `${countWord} ${partNumber} из ${romanItems.length}`;
+// Явная core-последовательность имеет приоритет над «римскими частями»:
+// буквенные марки A–D в такой серии — полноценные шаги, а не форзацы.
+const coreStep = coreStepMeta(config, parentId);
+const seriesMeta = coreStep
+  ? coreStep.text
+  : currentItem && currentItem.mark.kind === 'label'
+    ? currentItem.mark.value
+    : `${countWord} ${partNumber} из ${romanItems.length}`;
 
 // Owner (2026-07-15): подпункты читаются ПРЯМО В РЕЙЛЕ, без всплывающего окна —
 // «в рейле нужно все сделать, там все подпункты пускай раскрываются в пункте».

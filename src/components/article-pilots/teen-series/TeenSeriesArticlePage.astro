@@ -4,7 +4,7 @@ import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreference
 import SeriesReaderChrome from '@/components/article-pilots/_shared/series/SeriesReaderChrome.astro';
 import { TEEN_DOUBLE_LIFE_SERIES } from '@/components/article-pilots/_shared/series/teenSeriesConfig';
 import { teenSeriesMediaFor } from '@/components/article-pilots/_shared/series/teenSeriesMedia';
-import { seriesItem } from '@/components/article-pilots/_shared/series/seriesConfig';
+import { seriesItem, coreStepMeta } from '@/components/article-pilots/_shared/series/seriesConfig';
 import TeenSeriesCorrectionBoundary from '@/components/article-pilots/teen-series/TeenSeriesCorrectionBoundary.astro';
 import { SITE } from '@/data/site';
 import { assetUrl } from '@/lib/asset-version';
@@ -67,6 +67,9 @@ const breadcrumbsId = `${canonical}#breadcrumbs`;
 const articleId = `${canonical}#article`;
 const markText = String(item.mark.value);
 const partLabel = item.mark.kind === 'roman' ? `Часть ${markText}` : `Раздел ${markText}`;
+// Та же семишаговая позиция, что и на лендинге/в desktop-рельсе. Шапка
+// статьи видна и на desktop, и на mobile, поэтому закрывает обе поверхности.
+const coreStep = coreStepMeta(TEEN_DOUBLE_LIFE_SERIES, pageId);
 const dateRu = (value: string) => new Intl.DateTimeFormat('ru-RU', {
   day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Moscow',
 }).format(new Date(value));
@@ -190,7 +193,7 @@ const siteConfig = {
           )}
           <header class="article-header gbs2-head">
             <span aria-hidden="true" class="gbs2-kinetic">{markText}</span>
-            <p class="section-label">Подросток за кадром · {partLabel}</p>
+            <p class="section-label">Подросток за кадром · {partLabel}{coreStep ? ` · ${coreStep.text}` : ''}</p>
             <h1>{frontmatter.h1}</h1>
             <p class="article-byline">
               <span class="article-byline__strong">Автор-редактор: Фёдор Милованов</span>

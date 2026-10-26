@@ -109,6 +109,15 @@ for (const rel of ['images/teen-series/series-hero.svg', 'images/teen-series/ser
 }
 
 if (!config.includes("seriesId: 'teen-double-life'")) fail('teen config seriesId drift');
+// GBS-TEEN-SERIES-CORE-STEP-PROGRESS: seven first-class core steps must be
+// declared once in the typed config, not patched per route. The rail and the
+// article header both consume coreStepMeta(), so this single declaration is
+// the owner of «Шаг N из 7» on desktop and mobile.
+if (!config.includes("coreSequence: { stepLabel: 'Шаг' }")) fail('teen config lost its explicit seven-step coreSequence');
+if (!read('src/components/article-pilots/gill-series/GillSeriesRail.astro').includes('coreStepMeta(config, parentId)')) {
+  fail('shared rail no longer consumes the typed core sequence progress');
+}
+if (!wrapper.includes('coreStep.text')) fail('teen article header lost its visible core step position');
 if (!config.includes("railBackHref: '/podrostok-za-kadrom/'")) fail('teen config landing href drift');
 if (!config.includes("teenSeriesMediaFor")) fail('teen config must use route-specific media authority');
 if (/PREPUBLICATION_RAIL_COVER|icons\/icon-512\.png|TEEN_SERIES_RAIL_COVER/.test(config)) fail('legacy/prepublication rail cover leaked into release config');
@@ -245,11 +254,17 @@ if (fs.existsSync(DIST)) {
     if (canonical(html) !== expectedCanonical) fail(`${route}: canonical mismatch`);
     if (/\bnoindex\b/i.test(meta(html, 'robots'))) fail(`${route}: live candidate remains noindex`);
     if (!html.includes('data-pagefind-body')) fail(`${route}: data-pagefind-body missing`);
-    const row = route === LANDING
-      ? null
-      : ITEMS.find(([, , slug]) => route === `/articles/${slug}/`);
+    const rowIndex = route === LANDING
+      ? -1
+      : ITEMS.findIndex(([, , slug]) => route === `/articles/${slug}/`);
+    const row = rowIndex >= 0 ? ITEMS[rowIndex] : null;
     const expectedOg = route === LANDING ? SERIES_OG : `/images/teen-series/${row?.[5] || ''}`;
     if (!html.includes(expectedOg)) fail(`${route}: route-specific raster social metadata missing (${expectedOg})`);
+    if (route !== LANDING && rowIndex >= 0) {
+      const stepText = `Шаг ${rowIndex + 1} из ${ITEMS.length}`;
+      if (!html.includes(stepText)) fail(`${route}: owner-approved core step position «${stepText}» missing from built HTML`);
+      if (/Часть \d+ из 3/.test(html)) fail(`${route}: legacy roman-only «Часть N из 3» progress still shipped`);
+    }
     if (route === LANDING) {
       if (!html.includes(SERIES_RAIL)) fail(`${route}: responsive series-cover derivative missing`);
       for (const [, , , , , heroFile] of ITEMS) {
