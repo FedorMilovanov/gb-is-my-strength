@@ -300,6 +300,11 @@ async function auditGillTableKeyboardScroll(page, engine, origin, { theme, reduc
   }));
   check(engine, 'mobile', route, `keyboard focus has a visible indicator (${theme}/${reducedMotion})`,
     outline.visible && outline.style !== 'none' && outline.width !== '0px', outline);
+  const visualMode = reducedMotion === 'reduce' ? 'reduced-motion' : 'motion';
+  const screenshotPath = path.join(REPORTS, `reader-controls-a11y-gill-table-${engine}-${theme}-${visualMode}.png`);
+  await page.screenshot({ path: screenshotPath, fullPage: false });
+  check(engine, 'mobile', route, `focused table screenshot captured (${theme}/${reducedMotion})`,
+    fs.existsSync(screenshotPath) && fs.statSync(screenshotPath).size > 0, screenshotPath);
 
   await page.keyboard.press('ArrowRight');
   await page.waitForFunction(() =>
