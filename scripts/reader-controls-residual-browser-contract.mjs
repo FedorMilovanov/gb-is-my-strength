@@ -343,8 +343,13 @@ async function auditGillTableKeyboardScroll(page, engine, origin, { theme, reduc
   await page.keyboard.press('ArrowRight');
   await page.waitForFunction(() => location.pathname === '/articles/dzhon-gill-chast-2-uchenyi/', { timeout: 4000 });
   const outsideRegion = await page.evaluate(() => ({ pathname: location.pathname, active: document.activeElement?.className }));
-  check(engine, 'mobile', route, `series shortcut remains active outside scroll regions (${theme}/${reducedMotion})`,
+  check(engine, 'mobile', route, `series ArrowRight remains active outside scroll regions (${theme}/${reducedMotion})`,
     outsideRegion.pathname === '/articles/dzhon-gill-chast-2-uchenyi/', outsideRegion);
+  await page.locator('.skip-link').focus();
+  await page.keyboard.press('ArrowLeft');
+  await page.waitForFunction(() => location.pathname === '/articles/dzhon-gill-chast-1-chelovek/', { timeout: 4000 });
+  check(engine, 'mobile', route, `series ArrowLeft remains active outside scroll regions (${theme}/${reducedMotion})`,
+    await page.evaluate(() => location.pathname) === route);
 }
 
 async function auditStandaloneMobile(page, engine, origin, route) {
