@@ -7,8 +7,7 @@
  * by the slot (PastorSeriesMain).
  */
 import SiteSectionsMenu from '@/components/article-pilots/_shared/SiteSectionsMenu.astro'
-import { assetUrl } from '@/lib/asset-version';;
-const __gbSearchSrc = assetUrl('js/search.js');
+;
 ---
 <a href="#main-content" class="skip-link">Перейти к содержимому</a>
 
@@ -109,9 +108,9 @@ const __gbSearchSrc = assetUrl('js/search.js');
       <a href="mailto:viktorcoy2012@gmail.com?subject=Неточность%20в%20статье&body=Здравствуйте%2C%0A%0AЯ%20нашёл%20неточность%20в%20материале.%0A%0AОписание%3A%20"
          class="gb-accuracy-btn gb-accuracy-btn--email"
          aria-label="Написать на Email">
-        <svg class="gb-accuracy-btn__icon" 
-             width="18" height="18" viewBox="0 0 24 24" 
-             fill="none" stroke="currentColor" 
+        <svg class="gb-accuracy-btn__icon"
+             width="18" height="18" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor"
              stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
              aria-hidden="true" focusable="false">
           <rect x="2" y="4" width="20" height="16" rx="3"/>
@@ -119,12 +118,12 @@ const __gbSearchSrc = assetUrl('js/search.js');
         </svg>
         <span class="gb-accuracy-btn__label">Email</span>
       </a>
-      <a href="https://t.me/fedormilovanov" 
+      <a href="https://t.me/fedormilovanov"
          class="gb-accuracy-btn gb-accuracy-btn--tg"
          target="_blank" rel="noopener noreferrer"
          aria-label="Написать в Telegram (откроется в новой вкладке)">
         <svg class="gb-accuracy-btn__icon"
-             width="18" height="18" viewBox="0 0 24 24" 
+             width="18" height="18" viewBox="0 0 24 24"
              fill="none" stroke="currentColor"
              stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
              aria-hidden="true" focusable="false">
@@ -162,4 +161,3 @@ const __gbSearchSrc = assetUrl('js/search.js');
 <script is:inline src="../js/highlights.js?v=c223155c" defer></script>
 <script is:inline src="../js/enhancements.js?v=15476429" defer></script>
 <script is:inline src="../js/sw-register.js?v=921dd6a2" defer></script>
-<script is:inline define:vars={{ __gbSearchSrc }}>!function(){if(window.__gbSearchLazyBound)return;window.__gbSearchLazyBound=1;var src=__gbSearchSrc;function load(open){if(window.GBSearch&&window.GBSearch.open&&window.GBSearch.__ready){open&&window.GBSearch.open();return}if(open)window.__gbSearchOpenAfterLoad=true;if(window.__gbSearchLoading)return;window.__gbSearchLoading=true;window.__gbSearchBootRequested=true;var s=document.createElement("script");s.defer=true;s.src=src;s.onload=function(){window.__gbSearchLoading=false;if(open&&window.GBSearch&&window.GBSearch.open)window.GBSearch.open()};s.onerror=function(){window.__gbSearchLoading=false};document.head.appendChild(s)}function click(e){var sel="#gbSearchBtn,[data-gbs2-search],["+"data-fc-"+"action='search'],.gb-nav-search-icon,.gb-search-btn",t=e.target&&e.target.closest&&e.target.closest(sel);if(t){e.preventDefault();load(true)}}document.addEventListener("click",click,true);window.addEventListener("gb:openSearch",function(){load(true)})}();</script>

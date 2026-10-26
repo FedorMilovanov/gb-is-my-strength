@@ -10,19 +10,22 @@ import { assetUrl } from '@/lib/asset-version';
 const bootstrapSrc = assetUrl('js/reader-preferences-head.js');
 const runtimeSrc = assetUrl('js/reader-preferences.js');
 const readerStateSrc = assetUrl('js/reader-state.js');
+const searchBootstrapSrc = assetUrl('js/search-bootstrap.js');
+const searchRuntimeSrc = assetUrl('js/search.js');
 const preferencesCss = assetUrl('css/reader-preferences.css');
 const searchOpenerRoutes = new Set(['/articles/', '/biografii/', '/pastor-series/']);
 const needsSearchOpener = searchOpenerRoutes.has(Astro.url.pathname);
 ---
 <script is:inline src={bootstrapSrc}></script>
+<script is:inline defer src={searchBootstrapSrc} data-gb-search-bootstrap data-search-src={searchRuntimeSrc}></script>
 <link rel="stylesheet" href={preferencesCss} />
 <script is:inline defer src={runtimeSrc}></script>
 <script is:inline defer src={readerStateSrc}></script>
 {needsSearchOpener && (
   <script is:inline>
     (() => {
-      if (window.__gbSearchColdBootstrapBound) return;
-      window.__gbSearchColdBootstrapBound = true;
+      if (window.__gbSearchOpenerBound) return;
+      window.__gbSearchOpenerBound = true;
 
       function searchIcon() {
         return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';

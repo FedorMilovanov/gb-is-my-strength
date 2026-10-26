@@ -37,6 +37,7 @@ const ASSETS = [
   'js/enhancements.js',
   'js/highlights.js',
   'js/search.js',
+  'js/search-bootstrap.js',
   'js/sw-register.js',
   'js/nagornaya-mobile-toc.js',
   'js/nagornaya-bar-extras.js',

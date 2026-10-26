@@ -291,101 +291,10 @@ window.SITE_CONFIG = {
 <noscript><div><img decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute;left:-9999px;" alt=""></div></noscript>
 <script is:inline src="./js/sw-register.js?v=921dd6a2" defer></script>
 <script is:inline>
-  (() => {
-    if (window.__gbSearchLazyBound) return;
-    window.__gbSearchLazyBound = true;
-    const src = './js/search.js?v=75df3eab';
-
-    const isMobileNavOpen = () => {
-      const trigger = document.getElementById('hMobileMenuBtn');
-      const panel = document.getElementById('hMobileNav');
-      return Boolean(
-        trigger?.getAttribute('aria-expanded') === 'true'
-        && panel?.classList.contains('open')
-      );
-    };
-
-    const stableOpener = (candidate) => {
-      if (candidate?.matches?.('[data-action="open-search"]')) {
-        return document.getElementById('hMobileMenuBtn');
-      }
-      if (candidate instanceof HTMLElement && candidate !== document.body && candidate.isConnected) {
-        return candidate;
-      }
-      return document.getElementById('gbSearchBtn');
-    };
-
-    const load = (open) => {
-      if (window.GBSearch?.__ready) {
-        if (open) window.GBSearch.open();
-        return;
-      }
-      if (open) window.__gbSearchOpenAfterLoad = true;
-      if (window.__gbSearchLoading) return;
-      window.__gbSearchLoading = true;
-      window.__gbSearchBootRequested = true;
-      const script = document.createElement('script');
-      script.defer = true;
-      script.src = src;
-      script.onload = () => {
-        window.__gbSearchLoading = false;
-        /* search.js consumes __gbSearchOpenAfterLoad itself. Only open here if
-           a compatible future loader leaves the request pending. */
-        if (open && window.__gbSearchOpenAfterLoad && window.GBSearch?.open) {
-          window.__gbSearchOpenAfterLoad = false;
-          window.GBSearch.open();
-        }
-      };
-      script.onerror = () => {
-        window.__gbSearchLoading = false;
-        window.__gbSearchOpenAfterLoad = false;
-      };
-      document.head.appendChild(script);
-    };
-
-    const openSearch = (candidate) => {
-      const opener = stableOpener(candidate);
-      if (!isMobileNavOpen()) {
-        window.__gbHomeSearchOpener = opener;
-        load(true);
-        return;
-      }
-
-      /* Release the menu's modal/focus/scroll state first. Opening the search
-         while the menu still owns the scroll lock can leave the palette with a
-         hidden opener and an unlocked page behind it. */
-      window.closeMobileNav?.();
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        window.__gbHomeSearchOpener = document.getElementById('hMobileMenuBtn');
-        load(true);
-      }));
-    };
-
-    const onSearchClick = (event) => {
-      const selector = [
-        '#gbSearchBtn',
-        '[data-gbs2-search]',
-        '[data-fc-action="search"]',
-        '.gb-nav-search-icon',
-        '.gb-search-btn',
-        '[data-action="open-search"]',
-      ].join(',');
-      const target = event.target?.closest?.(selector);
-      if (!target) return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      openSearch(target);
-    };
-
-    const onCloseNavClick = (event) => {
-      const target = event.target?.closest?.('[data-close-nav]');
-      if (target && !target.matches('[data-action="open-search"]')) window.closeMobileNav?.();
-    };
-
-    document.addEventListener('click', onSearchClick, true);
-    document.addEventListener('click', onCloseNavClick, true);
-    window.addEventListener('gb:openSearch', () => openSearch(document.activeElement));
-  })();
+  document.addEventListener('click', (event) => {
+    const target = event.target?.closest?.('[data-close-nav]');
+    if (target && !target.matches('[data-action="open-search"]')) window.closeMobileNav?.();
+  }, true);
 </script>
 <script is:inline>
   (() => {

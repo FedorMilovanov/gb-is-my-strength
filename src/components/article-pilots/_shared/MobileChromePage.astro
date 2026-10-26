@@ -142,62 +142,7 @@ const paletteCss = assetUrl('css/command-palette.css');
       }
     });
 
-    const search = root.querySelector('.mcp-search') as HTMLElement | null;
-    search?.addEventListener('click', (e) => {
-      e.preventDefault();
-      const w = window as unknown as {
-        GBSearch?: { open?: () => void };
-        __gbSearchLoading?: boolean;
-        __gbSearchBootRequested?: boolean;
-        __gbSearchOpenAfterLoad?: boolean;
-        __gbSearchLoadState?: 'idle' | 'loading' | 'ready' | 'failed';
-      };
-      w.__gbSearchLoadState ||= 'idle';
-      const pcss = search.dataset.paletteCss;
-      if (pcss && !document.querySelector('link[data-mcp-palette-css]')) {
-        const href = pcss.split('?')[0];
-        const present = [...document.querySelectorAll('link[rel=stylesheet]')]
-          .some((l) => (l as HTMLLinkElement).href.split('?')[0].endsWith(href));
-        if (!present) {
-          const link = document.createElement('link');
-          link.rel = 'stylesheet';
-          link.href = pcss;
-          link.setAttribute('data-mcp-palette-css', '');
-          document.head.appendChild(link);
-        }
-      }
-      if (w.GBSearch && typeof w.GBSearch.open === 'function') {
-        w.__gbSearchLoadState = 'ready';
-        w.GBSearch.open();
-        return;
-      }
-      w.__gbSearchOpenAfterLoad = true;
-      if (w.__gbSearchLoading || w.__gbSearchBootRequested) return;
-      w.__gbSearchLoading = true;
-      w.__gbSearchBootRequested = true;
-      w.__gbSearchLoadState = 'loading';
-      const s = document.createElement('script');
-      s.defer = true;
-      s.src = search.dataset.searchSrc || '/js/search.js';
-      s.onload = () => {
-        w.__gbSearchLoading = false;
-        if (w.GBSearch && typeof w.GBSearch.open === 'function') {
-          w.__gbSearchLoadState = 'ready';
-          w.GBSearch.open();
-          return;
-        }
-        w.__gbSearchLoadState = 'failed';
-        w.__gbSearchBootRequested = false;
-        s.remove();
-      };
-      s.onerror = () => {
-        w.__gbSearchLoading = false;
-        w.__gbSearchBootRequested = false;
-        w.__gbSearchLoadState = 'failed';
-        s.remove();
-      };
-      document.head.appendChild(s);
-    });
+
 
     const navbar = document.getElementById('hNavbar');
     let ticking = false;
