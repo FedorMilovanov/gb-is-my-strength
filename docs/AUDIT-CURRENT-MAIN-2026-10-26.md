@@ -357,6 +357,28 @@ residual contract local Chromium: **749/749 PASS**. Gill claims
 surface и series consistency contracts PASS. Production-like build PASS;
 cache-bust READ-ONLY PASS.
 
+### Exact-head CI: successor `74678f7`
+
+Full CI finished with **41 success, 5 skipped, 3 cancelled, 1 failure** across
+50 check runs. The four non-green jobs were all blocked before their test steps:
+
+- `Chromium + WebKit reader controls accessibility contract`: dependency/browser
+  install cancelled after 25m18s; source/build/browser test steps skipped.
+- `Source and Chromium lifecycle contracts`: dependency + Chromium install
+  cancelled; source and lifecycle tests skipped.
+- `Real Vosk cache, audio and UI responsiveness`: dependency install cancelled;
+  reader-model contract skipped.
+- `Home Chromium WebKit contract`: Chromium/WebKit installation failed;
+  build and all Home/genealogy tests skipped.
+
+The broad production-like candidate passed, including its corrected dist runtime
+smoke; public-surface Chromium and WebKit touch/scroll passed; separate reader
+menu and semantic-projection browser contracts passed. These green checks do not
+replace the cancelled reader-controls test on this exact SHA. Merge remains
+blocked by the owner’s exact-head green-CI rule. The next checkpoint push is this
+evidence update, not a retry command; it will produce a fresh exact head for the
+install-blocked jobs to run again.
+
 **Текущий backlog после W47 (до owner reverify):**
 
 | Класс | После W43–W46 | После W47 |
