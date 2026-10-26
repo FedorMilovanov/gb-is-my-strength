@@ -14,6 +14,7 @@
 'use strict';
 
 const path = require('path');
+const fs = require('fs');
 process.env.PLAYWRIGHT_BROWSERS_PATH =
   process.env.PLAYWRIGHT_BROWSERS_PATH ||
   path.join(process.env.HOME || process.cwd(), '.cache', 'ms-playwright');
@@ -68,12 +69,70 @@ const HERMENEUTIKA_URL = '/articles/hermenevticheskaya-otsenka-hristotsentrichno
 const HERMENEUTIKA_STATIC_FOOTNOTES = ['40', '41', '42', '43', '72', '75', '77', '82', '83', '107'];
 
 const issues = [];
-const stats = { pages: 0, series: 0, quizzes: 0, glossary: 0, footnotes: 0, theme: 0, search: 0, media: 0 };
+const stats = { pages: 0, series: 0, quizzes: 0, glossary: 0, footnotes: 0, theme: 0, search: 0, media: 0, chromeLabels: 0 };
 
 function isNoise(text) {
   return /Content Security Policy directive.*https:\/\/gospod-bog\.ru\/(?:favicon|apple-touch-icon|icons|images)|favicon\.ico|mc\.yandex/i.test(text);
 }
 function push(kind, url, detail) { issues.push({ kind, url, detail }); }
+
+/* GBS-CHROME-LABEL-IN-NAME-MISMATCH — class-level source guard.
+   A chrome control with visible text must carry that text in its accessible
+   name. The shared .h-nav-logo previously hid its painted em dash with
+   aria-hidden, so the visible string was not a substring of aria-label.
+   This guard is source-only (no browser needed) and owns every current copy
+   of the header component, not individual routes. */
+function chromeLabelProblems(source) {
+  const problems = [];
+  const linkRe = /<a\b([^>]*\bclass=["'][^"']*\bh-nav-logo\b[^"']*["'][^>]*)>([\s\S]*?)<\/a>/g;
+  let match;
+  let links = 0;
+  while ((match = linkRe.exec(source)) !== null) {
+    links += 1;
+    const attrs = match[1];
+    const inner = match[2];
+    const label = (attrs.match(/\baria-label=["']([^"']+)["']/) || [])[1] || '';
+    const main = (inner.match(/class=["'][^"']*\bh-nav-logo-main\b[^"']*["'][^>]*>([^<]+)</) || [])[1] || '';
+    const accent = (inner.match(/class=["'][^"']*\bh-nav-logo-accent\b[^"']*["'][^>]*>([^<]+)</) || [])[1] || '';
+    const dash = inner.match(/<span\b([^>]*\bh-nav-logo-dash\b[^>]*)>/);
+    if (!label) problems.push('missing-aria-label');
+    for (const visible of [main.trim(), accent.trim()]) {
+      if (visible && !label.includes(visible)) problems.push(`visible-text-not-in-label:${visible}`);
+    }
+    if (!dash) problems.push('missing-dash');
+    else if (/\baria-hidden\b/.test(dash[1])) problems.push('painted-dash-aria-hidden');
+  }
+  return { links, problems };
+}
+
+function assertChromeLabelNameSource() {
+  const roots = ['src/components', 'src/pages'];
+  const files = [];
+  function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.name.endsWith('.astro')) files.push(full);
+    }
+  }
+  for (const root of roots) if (fs.existsSync(root)) walk(root);
+  let links = 0;
+  for (const file of files) {
+    const source = fs.readFileSync(file, 'utf8');
+    if (!source.includes('h-nav-logo"')) continue;
+    const result = chromeLabelProblems(source);
+    links += result.links;
+    for (const problem of result.problems) push('chrome-label-name-source', file, problem);
+  }
+  if (!links) push('chrome-label-name-source', 'src', 'no .h-nav-logo links found — guard lost its universe');
+
+  // Negative fixture: the guard must reject the exact regression it prevents.
+  const mutant = '<a href="/" class="h-nav-logo" aria-label="Господь Бог — Сила Моя — на главную"><span class="h-nav-logo-main">Господь Бог</span><span class="h-nav-logo-dash" aria-hidden="true">&nbsp;—&nbsp;</span><span class="h-nav-logo-accent">Сила Моя</span></a>';
+  if (!chromeLabelProblems(mutant).problems.includes('painted-dash-aria-hidden')) {
+    push('chrome-label-name-source', 'negative-fixture', 'guard did not reject aria-hidden painted dash');
+  }
+  stats.chromeLabels = links;
+}
 
 async function openPage(browser, urlPath, viewport = { width: 1200, height: 800 }) {
   const page = await browser.newPage({ viewport, deviceScaleFactor: 1 });
@@ -720,6 +779,7 @@ async function checkMediaViewerAndShare(browser) {
   /* Локальная песочница: разрешаем явный бинарник (sparticuz и т.п.),
      потому что CDN Playwright может быть недоступен; CI использует
      дефолтный установленный chromium и эту переменную не задаёт. */
+  assertChromeLabelNameSource();
   const execOverride = process.env.GB_PLAYWRIGHT_CHROMIUM_EXECUTABLE || '';
   const browser = await chromium.launch({ headless: true, executablePath: execOverride || undefined, args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'] });
   try {
@@ -734,7 +794,7 @@ async function checkMediaViewerAndShare(browser) {
     await browser.close();
   }
   console.log('\nGB INTERACTIVE AUDIT');
-  console.log(`Pages: ${stats.pages} · series: ${stats.series} · quizzes: ${stats.quizzes} · glossary: ${stats.glossary} · footnotes: ${stats.footnotes} · theme: ${stats.theme} · search: ${stats.search} · media: ${stats.media}`);
+  console.log(`Pages: ${stats.pages} · series: ${stats.series} · quizzes: ${stats.quizzes} · glossary: ${stats.glossary} · footnotes: ${stats.footnotes} · theme: ${stats.theme} · search: ${stats.search} · media: ${stats.media} · chrome labels: ${stats.chromeLabels}`);
   if (issues.length) {
     console.log(`❌ ${issues.length} issue(s):`);
     issues.forEach(i => console.log(`- ${i.kind} ${i.url}: ${JSON.stringify(i.detail)}`));

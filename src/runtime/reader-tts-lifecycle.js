@@ -23,18 +23,17 @@
 
   if (window.navigation && typeof window.navigation.addEventListener === 'function') {
     window.navigation.addEventListener('navigate', (event) => {
+      // Same-document fragments/history are not document exits.
       if (event?.destination?.sameDocument) return;
 
-      const retire = () => retireForDocumentNavigation();
-      if (event?.canIntercept && typeof event.intercept === 'function') {
-        try {
-          event.intercept({ handler: retire });
-          return;
-        } catch (_) {
-          // Fall through to best-effort retirement; pagehide is the final fallback.
-        }
-      }
-      void retire();
+      // A cross-document navigation MUST stay native. Intercepting it only to
+      // retire the TTS client converts the navigation into a same-document
+      // URL/history commit: the destination is never fetched or rendered, so
+      // every series rail/overlay/neighbour link changed the address bar while
+      // keeping the source H1/body. Retirement is best-effort here and is
+      // repeated on pagehide by the engine itself; neither path may own the
+      // navigation lifecycle.
+      void retireForDocumentNavigation();
     });
   }
 })();
