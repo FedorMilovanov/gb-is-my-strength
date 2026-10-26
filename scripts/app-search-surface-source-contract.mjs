@@ -94,7 +94,10 @@ check(files.search.includes('we(),ie())'), 'Search open path must only warm Page
 check(!files.search.includes('ie(function(){E.value.trim()&&xe(E.value.trim())})'), 'Search open path must not re-run the current query');
 check(!files.baseLayout.includes('ctrlKey') && !files.baseLayout.includes('metaKey'), 'BaseLayout raw shortcut parser survived');
 check(files.readerHead.includes('data-gb-search-bootstrap'), 'shared lazy search bootstrap include missing from ReaderPreferencesHead');
+check(/document\.addEventListener\('click',[\s\S]*?event\.preventDefault\(\);\s*event\.stopImmediatePropagation\(\);/.test(files.readerHead), 'shared bootstrap must stop the handled opener click before lazy script handlers attach');
 check(files.readerHead.includes("window.addEventListener('gb:openSearch'"), 'shared bootstrap gb:openSearch transport missing');
+check(files.readerHead.includes("menuButton?.getAttribute('aria-expanded') === 'true' && menu?.classList.contains('open')"), 'shared warm shortcut must detect an open mobile menu');
+check(files.readerHead.includes('event.stopImmediatePropagation?.();'), 'shared mobile-menu shortcut handoff must prevent the runtime from opening before menu close');
 check(files.readerHead.includes("document.addEventListener('DOMContentLoaded', installFirstInteractionPreloader"), 'head bootstrap must defer declarative preload lookup until body is parsed');
 check(files.readerHead.includes('function observeClosedPaletteFocus()'), 'closed-palette focus cleanup owner missing');
 check(files.readerHead.includes('if (input && document.activeElement === input) input.blur();'), 'closed-palette cleanup must release focus from its hidden input');

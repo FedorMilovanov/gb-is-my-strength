@@ -157,13 +157,27 @@ const needsSearchOpener = searchOpenerRoutes.has(Astro.url.pathname);
   document.addEventListener('click', (event) => {
     const trigger = event.target?.closest?.(triggers);
     if (!trigger) return;
-    if (!trigger.matches('.mcp-search, [data-action="open-search"]') && runtimeReady()) return;
     event.preventDefault();
+    event.stopImmediatePropagation();
     addPaletteStylesheet(trigger);
     activateFromTrigger(trigger);
   }, true);
 
   window.addEventListener('gb:openSearch', (event) => {
+    const menu = document.getElementById('hMobileNav');
+    const menuButton = document.getElementById('hMobileMenuBtn');
+    const menuOpen = menuButton?.getAttribute('aria-expanded') === 'true' && menu?.classList.contains('open');
+    if (menuOpen) {
+      event.preventDefault?.();
+      event.stopImmediatePropagation?.();
+      window.closeMobileNav?.();
+      window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+        const stable = menuButton?.isConnected ? menuButton : document.activeElement;
+        if (stable?.focus) stable.focus({ preventScroll: true });
+        open(undefined, stable);
+      }));
+      return;
+    }
     if (runtimeReady()) return;
     event.preventDefault?.();
     open(undefined, document.activeElement);
