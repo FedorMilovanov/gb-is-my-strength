@@ -15,6 +15,16 @@ const browserNames = String(process.env.SEARCH_BOOTSTRAP_BROWSERS || 'chromium,w
 const routes = ['/', '/articles/', '/biografii/', '/pastor-series/', '/hard-texts/'];
 const viewports = [{ width: 390, height: 844 }, { width: 1366, height: 900 }];
 const writerPattern = /window\.__gbSearch(?:Loading|BootRequested|OpenAfterLoad|LoadState)\s*(?:=|\|\|=)/;
+let currentCase = 'source setup';
+const completedResults = [];
+
+function emitGithubFailureAnnotation(error) {
+  if (process.env.GITHUB_ACTIONS !== 'true') return;
+  const detail = [currentCase, error?.name || 'Error', error?.message || String(error),
+    ...String(error?.stack || '').split('\n').slice(1, 5)].join(' | ').slice(0, 5000);
+  const escaped = detail.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+  process.stderr.write(`::error title=Search cold-bootstrap failure::${escaped}\n`);
+}
 
 function assertSingleWriterBoundary() {
   const roots = ['src/components', 'src/layouts', 'src/pages'];
@@ -439,10 +449,11 @@ async function runFailureRetryCase(browser, browserName, baseUrl) {
 
 async function main() {
   fs.mkdirSync(REPORT_DIR, { recursive: true });
+  currentCase = 'negative single-writer guard';
   assertSingleWriterBoundary();
+  currentCase = 'production dist availability';
   assert.ok(fs.existsSync(DIST), 'dist missing; build production-like output first');
   const server = await startServer();
-  const results = [];
   try {
     for (const browserName of browserNames) {
       const browserType = BROWSERS[browserName];
@@ -451,25 +462,40 @@ async function main() {
       if (browserName === 'chromium' && process.env.SEARCH_BOOTSTRAP_CHROMIUM_EXECUTABLE) {
         launchOptions.executablePath = process.env.SEARCH_BOOTSTRAP_CHROMIUM_EXECUTABLE;
       }
+      currentCase = `${browserName}: browser launch`;
       const browser = await browserType.launch(launchOptions);
       try {
         for (const viewport of viewports) {
-          for (const route of routes) results.push(await runColdAndWarmCase(browser, browserName, server.baseUrl, route, viewport));
+          for (const route of routes) {
+            currentCase = `${browserName}: cold/warm ${route} ${viewport.width}x${viewport.height}`;
+            completedResults.push(await runColdAndWarmCase(browser, browserName, server.baseUrl, route, viewport));
+          }
         }
-        results.push(await runTouchPreloadRace(browser, browserName, server.baseUrl));
-        results.push(await runHomeMenuSearchCase(browser, browserName, server.baseUrl));
-        results.push(await runFailureRetryCase(browser, browserName, server.baseUrl));
+        currentCase = `${browserName}: HardTexts first-touch preload race`;
+        completedResults.push(await runTouchPreloadRace(browser, browserName, server.baseUrl));
+        currentCase = `${browserName}: Home mobile menu Search`;
+        completedResults.push(await runHomeMenuSearchCase(browser, browserName, server.baseUrl));
+        currentCase = `${browserName}: failure and retry`;
+        completedResults.push(await runFailureRetryCase(browser, browserName, server.baseUrl));
       } finally { await browser.close(); }
     }
   } finally { await server.close(); }
 
-  fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify({ schemaVersion: 2, conclusion: 'success', sha: process.env.SOURCE_SHA || '', browsers: browserNames, routes, viewports, results }, null, 2)}\n`);
-  console.log(`Search cold-bootstrap browser contract: PASS (${results.length} cases)`);
+  fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify({ schemaVersion: 2, conclusion: 'success', sha: process.env.SOURCE_SHA || '', browsers: browserNames, routes, viewports, results: completedResults }, null, 2)}\n`);
+  console.log(`Search cold-bootstrap browser contract: PASS (${completedResults.length} cases)`);
 }
 
 main().catch((error) => {
   fs.mkdirSync(REPORT_DIR, { recursive: true });
-  fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify({ schemaVersion: 2, conclusion: 'failure', error: String(error?.stack || error) }, null, 2)}\n`);
+  emitGithubFailureAnnotation(error);
+  fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify({
+    schemaVersion: 2,
+    conclusion: 'failure',
+    sha: process.env.SOURCE_SHA || '',
+    failedCase: currentCase,
+    completedResults,
+    error: String(error?.stack || error),
+  }, null, 2)}\n`);
   console.error(error);
   process.exitCode = 1;
 });
