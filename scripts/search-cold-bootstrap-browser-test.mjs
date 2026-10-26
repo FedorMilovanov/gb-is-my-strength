@@ -12,8 +12,28 @@ const REPORT_DIR = path.join(ROOT, 'reports', 'search-cold-bootstrap');
 const BROWSERS = { chromium, webkit };
 const browserNames = String(process.env.SEARCH_BOOTSTRAP_BROWSERS || 'chromium,webkit')
   .split(',').map((value) => value.trim()).filter(Boolean);
-const routes = ['/articles/', '/biografii/', '/pastor-series/'];
+const routes = ['/', '/articles/', '/biografii/', '/pastor-series/', '/hard-texts/'];
 const viewports = [{ width: 390, height: 844 }, { width: 1366, height: 900 }];
+const writerPattern = /window\.__gbSearch(?:Loading|BootRequested|OpenAfterLoad|LoadState)\s*(?:=|\|\|=)/;
+
+function assertSingleWriterBoundary() {
+  const roots = ['src/components', 'src/layouts', 'src/pages'];
+  const offenders = [];
+  for (const root of roots) {
+    const pending = [path.join(ROOT, root)];
+    while (pending.length) {
+      const current = pending.pop();
+      for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+        const target = path.join(current, entry.name);
+        if (entry.isDirectory()) pending.push(target);
+        else if (/\.(?:astro|js|ts|mjs)$/.test(entry.name) && writerPattern.test(fs.readFileSync(target, 'utf8'))) {
+          offenders.push(path.relative(ROOT, target));
+        }
+      }
+    }
+  }
+  assert.deepEqual(offenders, [], `search bootstrap state has non-owner writers: ${offenders.join(', ')}`);
+}
 
 function contentType(filePath) {
   return {
@@ -47,8 +67,8 @@ async function startServer() {
         return;
       }
       const filePath = resolveRequestPath(request.url);
-      response.setHeader('Cache-Control', 'no-store');
       if (!filePath) { response.statusCode = 404; response.end('Not found'); return; }
+      response.setHeader('Cache-Control', path.extname(filePath) === '.html' ? 'no-store' : 'public, max-age=3600');
       response.setHeader('Content-Type', contentType(filePath));
       fs.createReadStream(filePath).pipe(response);
     } catch (error) {
@@ -60,12 +80,45 @@ async function startServer() {
   return { baseUrl: `http://127.0.0.1:${server.address().port}`, close: () => new Promise((resolve) => server.close(resolve)) };
 }
 
-async function runCase(browser, browserName, baseUrl, route, viewport) {
-  const context = await browser.newContext({ viewport });
+async function auditAxe(page) {
+  const axePath = process.env.SEARCH_BOOTSTRAP_AXE_PATH;
+  if (!axePath) return { skipped: true, reason: 'SEARCH_BOOTSTRAP_AXE_PATH is unset' };
+  await page.addScriptTag({ path: axePath });
+  const result = await page.evaluate(async () => window.axe.run(document, {
+    runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+  }));
+  return {
+    violations: result.violations.map((item) => ({
+      id: item.id,
+      impact: item.impact,
+      nodes: item.nodes.length,
+      help: item.help,
+    })),
+    passes: result.passes.length,
+    incomplete: result.incomplete.length,
+  };
+}
+
+function contextOptions(viewport, options = {}) {
+  const mobile = viewport.width < 500;
+  return {
+    viewport,
+    colorScheme: options.colorScheme || 'light',
+    reducedMotion: options.reducedMotion || 'no-preference',
+    ...(mobile ? { isMobile: true, hasTouch: true } : {}),
+  };
+}
+
+async function runColdAndWarmCase(browser, browserName, baseUrl, route, viewport) {
+  const context = await browser.newContext(contextOptions(viewport));
   const page = await context.newPage();
   const pageErrors = [];
+  const consoleErrors = [];
+  const failedResponses = [];
   const searchRequests = [];
   page.on('pageerror', (error) => pageErrors.push(String(error?.stack || error)));
+  page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push({ text: message.text(), url: message.location().url || '' }); });
+  page.on('response', (response) => { if (response.status() >= 400) failedResponses.push({ status: response.status(), url: response.url() }); });
   page.on('request', (request) => {
     if (/\/js\/search\.js(?:\?|$)/.test(request.url())) searchRequests.push(request.url());
   });
@@ -74,15 +127,18 @@ async function runCase(browser, browserName, baseUrl, route, viewport) {
     const response = await page.goto(`${baseUrl}${route}`, { waitUntil: 'networkidle' });
     assert.ok(response?.ok(), `${browserName} ${route} ${viewport.width}: route did not load`);
 
-    const trigger = page.locator('#gbSearchBtn');
-    await trigger.waitFor({ state: 'visible' });
-    const cold = await page.evaluate(() => ({
-      bound: window.__gbSearchColdBootstrapBound === true,
+    const triggerSelector = route === '/hard-texts/' ? '.mcp-search' : '#gbSearchBtn';
+    const trigger = page.locator(triggerSelector);
+    await trigger.waitFor({ state: route === '/hard-texts/' ? 'attached' : 'visible' });
+    const cold = await page.evaluate((selector) => ({
+      triggerFocusable: document.querySelector(selector)?.tabIndex === 0,
+      bootstrapPhase: window.GBSearchBootstrap?.getState().phase,
+      bootstrapCopies: document.querySelectorAll('script[data-gb-search-bootstrap]').length,
       ready: window.GBSearch?.__ready === true,
       paletteExists: Boolean(document.querySelector('.cp-backdrop')),
-      triggerFocusable: document.getElementById('gbSearchBtn')?.tabIndex === 0,
-    }));
-    assert.equal(cold.bound, true, `${browserName} ${route}: route-scoped cold bootstrap missing`);
+    }), triggerSelector);
+    assert.equal(cold.bootstrapPhase, 'idle', `${browserName} ${route}: shared bootstrap should be idle before interaction`);
+    assert.equal(cold.bootstrapCopies, 1, `${browserName} ${route}: shared bootstrap must have one DOM owner`);
     assert.equal(cold.ready, false, `${browserName} ${route}: full search runtime was eagerly ready before interaction`);
     assert.equal(cold.paletteExists, false, `${browserName} ${route}: palette existed before cold interaction`);
     assert.equal(cold.triggerFocusable, true, `${browserName} ${route}: search opener is not keyboard-focusable`);
@@ -91,14 +147,188 @@ async function runCase(browser, browserName, baseUrl, route, viewport) {
     await page.keyboard.press('Control+K');
     await page.locator('.cp-backdrop.is-open').waitFor({ state: 'visible' });
     await page.waitForFunction(() => window.GBSearch?.__ready === true);
-    const opened = await page.evaluate(() => ({ activeClass: document.activeElement?.className || '' }));
+    const opened = await page.evaluate(() => ({
+      phase: window.GBSearchBootstrap?.getState().phase,
+      pendingOpen: window.GBSearchBootstrap?.getState().pendingOpen,
+      activeClass: document.activeElement?.className || '',
+    }));
+    assert.equal(opened.phase, 'ready', `${browserName} ${route}: shortcut did not settle shared loader state`);
+    assert.equal(opened.pendingOpen, false, `${browserName} ${route}: open request remained pending after readiness`);
     assert.ok(String(opened.activeClass).includes('cp-input'), `${browserName} ${route}: Ctrl+K did not focus search input`);
-    assert.ok(searchRequests.length >= 1, `${browserName} ${route}: cold shortcut did not request search runtime`);
+    assert.equal(searchRequests.length, 1, `${browserName} ${route}: cold shortcut should request search runtime once`);
 
     await page.keyboard.press('Escape');
     await page.waitForFunction(() => !document.querySelector('.cp-backdrop')?.classList.contains('is-open'));
+    await page.evaluate(() => window.GBSearchBootstrap.open());
+    await page.locator('.cp-backdrop.is-open').waitFor({ state: 'visible' });
+    assert.equal(searchRequests.length, 1, `${browserName} ${route}: warm reopen fetched search runtime again`);
     assert.deepEqual(pageErrors, [], `${browserName} ${route}: uncaught page errors`);
-    return { browser: browserName, route, viewport, cold, opened, searchRequestCount: searchRequests.length, pageErrors };
+    return { browser: browserName, route, viewport, cold, opened, searchRequestCount: searchRequests.length, pageErrors, consoleErrors, failedResponses };
+  } finally {
+    await context.close();
+  }
+}
+
+async function runTouchPreloadRace(browser, browserName, baseUrl) {
+  const viewport = { width: 390, height: 844 };
+  const context = await browser.newContext(contextOptions(viewport, { colorScheme: 'dark', reducedMotion: 'reduce' }));
+  const page = await context.newPage();
+  const pageErrors = [];
+  const consoleErrors = [];
+  const failedResponses = [];
+  const searchRequests = [];
+  page.on('pageerror', (error) => pageErrors.push(String(error?.stack || error)));
+  page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push({ text: message.text(), url: message.location().url || '' }); });
+  page.on('response', (response) => { if (response.status() >= 400) failedResponses.push({ status: response.status(), url: response.url() }); });
+  page.on('request', (request) => {
+    if (/\/js\/search\.js(?:\?|$)/.test(request.url())) searchRequests.push(request.url());
+  });
+
+  try {
+    const response = await page.goto(`${baseUrl}/hard-texts/`, { waitUntil: 'networkidle' });
+    assert.ok(response?.ok(), `${browserName} /hard-texts/: route did not load`);
+    assert.equal(searchRequests.length, 0, `${browserName} /hard-texts/: bootstrap ran before interaction`);
+    assert.equal(await page.locator('[data-gb-search-preload-on-interaction]').count(), 1,
+      `${browserName} /hard-texts/: declarative first-interaction preloader missing`);
+
+    await page.mouse.wheel(0, 420);
+    const trigger = page.locator('.mcp-search');
+    await trigger.waitFor({ state: 'visible' });
+    await page.evaluate(() => {
+      document.addEventListener('touchstart', () => {
+        window.__gbSearchTouchSnapshot = {
+          phase: window.GBSearchBootstrap?.getState().phase,
+          ready: window.GBSearch?.__ready === true,
+          preloadLinks: document.querySelectorAll('link[data-gb-search-preload]').length,
+          runtimeScripts: document.querySelectorAll('script[src*="/js/search.js"]').length,
+        };
+      }, { capture: true, once: true });
+    });
+    await trigger.tap();
+    await page.locator('.cp-backdrop.is-open').waitFor({ state: 'visible', timeout: 15000 });
+    await page.waitForFunction(() => window.GBSearch?.__ready === true);
+
+    const firstTap = await page.evaluate(() => ({
+      preloadInterleaving: window.__gbSearchTouchSnapshot || null,
+      phase: window.GBSearchBootstrap?.getState().phase,
+      pendingOpen: window.GBSearchBootstrap?.getState().pendingOpen,
+      paletteOpen: document.querySelector('.cp-backdrop')?.classList.contains('is-open') === true,
+      activeClass: document.activeElement?.className || '',
+      preloadLinks: document.querySelectorAll('link[data-gb-search-preload]').length,
+    }));
+    assert.equal(firstTap.preloadInterleaving?.phase, 'idle', `${browserName} /hard-texts/: preload executed runtime before the click`);
+    assert.equal(firstTap.preloadInterleaving?.ready, false, `${browserName} /hard-texts/: runtime became ready during preload phase`);
+    assert.equal(firstTap.preloadInterleaving?.preloadLinks, 1, `${browserName} /hard-texts/: network-only preload was not observed`);
+    assert.equal(firstTap.preloadInterleaving?.runtimeScripts, 0, `${browserName} /hard-texts/: preload inserted executable runtime`);
+    assert.equal(firstTap.phase, 'ready', `${browserName} /hard-texts/: first tap did not settle bootstrap`);
+    assert.equal(firstTap.pendingOpen, false, `${browserName} /hard-texts/: first tap was stranded pending`);
+    assert.equal(firstTap.paletteOpen, true, `${browserName} /hard-texts/: first trusted tap did not open the palette`);
+    assert.ok(String(firstTap.activeClass).includes('cp-input'), `${browserName} /hard-texts/: palette input did not receive focus`);
+    assert.equal(searchRequests.length, 1, `${browserName} /hard-texts/: preload/open interleaving must execute one search request`);
+    const axe = await auditAxe(page);
+    await page.screenshot({ path: path.join(REPORT_DIR, 'hard-texts-first-touch-open.png'), fullPage: false });
+
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(() => !document.querySelector('.cp-backdrop')?.classList.contains('is-open'));
+    await trigger.tap();
+    await page.locator('.cp-backdrop.is-open').waitFor({ state: 'visible' });
+    assert.equal(searchRequests.length, 1, `${browserName} /hard-texts/: warm touch should reuse the loaded runtime`);
+    assert.deepEqual(pageErrors, [], `${browserName} /hard-texts/: uncaught page errors`);
+    return { browser: browserName, route: '/hard-texts/', viewport, theme: 'dark', reducedMotion: 'reduce', firstTap, axe, searchRequestCount: searchRequests.length, pageErrors, consoleErrors, failedResponses };
+  } finally {
+    await context.close();
+  }
+}
+
+async function runHomeMenuSearchCase(browser, browserName, baseUrl) {
+  const viewport = { width: 390, height: 844 };
+  const context = await browser.newContext(contextOptions(viewport, { colorScheme: 'dark', reducedMotion: 'reduce' }));
+  const page = await context.newPage();
+  const pageErrors = [];
+  const consoleErrors = [];
+  const failedResponses = [];
+  const searchRequests = [];
+  page.on('pageerror', (error) => pageErrors.push(String(error?.stack || error)));
+  page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push({ text: message.text(), url: message.location().url || '' }); });
+  page.on('response', (response) => { if (response.status() >= 400) failedResponses.push({ status: response.status(), url: response.url() }); });
+  page.on('request', (request) => {
+    if (/\/js\/search\.js(?:\?|$)/.test(request.url())) searchRequests.push(request.url());
+  });
+
+  try {
+    const response = await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+    assert.ok(response?.ok(), `${browserName} home: route did not load`);
+    await page.locator('#hMobileMenuBtn').click();
+    await page.locator('#hMobileNav.open').waitFor({ state: 'visible' });
+    const searchAction = page.locator('#hMobileNav [data-action="open-search"]');
+    await searchAction.click();
+    await page.locator('.cp-backdrop.is-open').waitFor({ state: 'visible', timeout: 15000 });
+    await page.waitForFunction(() => window.GBSearch?.__ready === true);
+    const axe = await auditAxe(page);
+    const result = await page.evaluate(() => ({
+      menuOpen: document.getElementById('hMobileNav')?.classList.contains('open') === true,
+      menuExpanded: document.getElementById('hMobileMenuBtn')?.getAttribute('aria-expanded'),
+      activeClass: document.activeElement?.className || '',
+      paletteOpen: document.querySelector('.cp-backdrop')?.classList.contains('is-open') === true,
+      phase: window.GBSearchBootstrap?.getState().phase,
+    }));
+    assert.equal(result.menuOpen, false, `${browserName} home: mobile nav stayed open behind search`);
+    assert.equal(result.menuExpanded, 'false', `${browserName} home: menu trigger did not settle closed`);
+    assert.ok(String(result.activeClass).includes('cp-input'), `${browserName} home: search input did not receive focus`);
+    assert.equal(result.paletteOpen, true, `${browserName} home: search did not open from mobile nav`);
+    assert.equal(result.phase, 'ready', `${browserName} home: shared bootstrap did not become ready`);
+    assert.equal(searchRequests.length, 1, `${browserName} home: mobile-nav open should request search once`);
+    assert.deepEqual(pageErrors, [], `${browserName} home: uncaught page errors`);
+    return { browser: browserName, route: '/', viewport, theme: 'dark', reducedMotion: 'reduce', result, axe, searchRequestCount: searchRequests.length, pageErrors, consoleErrors, failedResponses };
+  } finally {
+    await context.close();
+  }
+}
+
+async function runFailureRetryCase(browser, browserName, baseUrl) {
+  const viewport = { width: 1366, height: 900 };
+  const context = await browser.newContext(contextOptions(viewport, { colorScheme: 'dark', reducedMotion: 'reduce' }));
+  const page = await context.newPage();
+  const pageErrors = [];
+  const failedResponses = [];
+  let attempts = 0;
+  page.on('pageerror', (error) => pageErrors.push(String(error?.stack || error)));
+  page.on('response', (response) => { if (response.status() >= 400) failedResponses.push({ status: response.status(), url: response.url() }); });
+  await page.route('**/js/search.js**', async (route) => {
+    attempts += 1;
+    if (attempts === 1) await route.abort('failed');
+    else await route.continue();
+  });
+
+  try {
+    const response = await page.goto(`${baseUrl}/articles/`, { waitUntil: 'networkidle' });
+    assert.ok(response?.ok(), `${browserName} retry route did not load`);
+    const trigger = page.locator('#gbSearchBtn');
+    await trigger.click();
+    await page.waitForFunction(() => window.GBSearchBootstrap?.getState().phase === 'failed');
+    const failed = await page.evaluate(() => ({
+      phase: window.GBSearchBootstrap?.getState().phase,
+      pendingOpen: window.GBSearchBootstrap?.getState().pendingOpen,
+      bootRequested: window.__gbSearchBootRequested === true,
+      paletteOpen: document.querySelector('.cp-backdrop')?.classList.contains('is-open') === true,
+    }));
+    assert.equal(failed.pendingOpen, false, `${browserName}: failed load left open request pending`);
+    assert.equal(failed.bootRequested, false, `${browserName}: failed load left boot latch set`);
+    assert.equal(failed.paletteOpen, false, `${browserName}: failed load opened a non-ready palette`);
+    assert.equal(attempts, 1, `${browserName}: first request did not fail exactly once`);
+
+    await trigger.click();
+    await page.locator('.cp-backdrop.is-open').waitFor({ state: 'visible', timeout: 15000 });
+    await page.waitForFunction(() => window.GBSearch?.__ready === true);
+    const recovered = await page.evaluate(() => ({
+      phase: window.GBSearchBootstrap?.getState().phase,
+      pendingOpen: window.GBSearchBootstrap?.getState().pendingOpen,
+    }));
+    assert.equal(recovered.phase, 'ready', `${browserName}: retry did not reach ready state`);
+    assert.equal(recovered.pendingOpen, false, `${browserName}: retry left pending open set`);
+    assert.equal(attempts, 2, `${browserName}: failed bootstrap did not retry once`);
+    assert.deepEqual(pageErrors, [], `${browserName}: failed/retry path raised an uncaught error`);
+    return { browser: browserName, route: '/articles/', viewport, theme: 'dark', reducedMotion: 'reduce', failed, recovered, attempts, pageErrors, failedResponses };
   } finally {
     await context.close();
   }
@@ -106,6 +336,7 @@ async function runCase(browser, browserName, baseUrl, route, viewport) {
 
 async function main() {
   fs.mkdirSync(REPORT_DIR, { recursive: true });
+  assertSingleWriterBoundary();
   assert.ok(fs.existsSync(DIST), 'dist missing; build production-like output first');
   const server = await startServer();
   const results = [];
@@ -113,20 +344,29 @@ async function main() {
     for (const browserName of browserNames) {
       const browserType = BROWSERS[browserName];
       assert.ok(browserType, `unsupported browser: ${browserName}`);
-      const browser = await browserType.launch({ headless: true });
+      const launchOptions = { headless: true };
+      if (browserName === 'chromium' && process.env.SEARCH_BOOTSTRAP_CHROMIUM_EXECUTABLE) {
+        launchOptions.executablePath = process.env.SEARCH_BOOTSTRAP_CHROMIUM_EXECUTABLE;
+      }
+      const browser = await browserType.launch(launchOptions);
       try {
-        for (const viewport of viewports) for (const route of routes) results.push(await runCase(browser, browserName, server.baseUrl, route, viewport));
+        for (const viewport of viewports) {
+          for (const route of routes) results.push(await runColdAndWarmCase(browser, browserName, server.baseUrl, route, viewport));
+        }
+        results.push(await runTouchPreloadRace(browser, browserName, server.baseUrl));
+        results.push(await runHomeMenuSearchCase(browser, browserName, server.baseUrl));
+        results.push(await runFailureRetryCase(browser, browserName, server.baseUrl));
       } finally { await browser.close(); }
     }
   } finally { await server.close(); }
 
-  fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify({ schemaVersion: 1, conclusion: 'success', sha: process.env.SOURCE_SHA || '', browsers: browserNames, routes, viewports, results }, null, 2)}\n`);
+  fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify({ schemaVersion: 2, conclusion: 'success', sha: process.env.SOURCE_SHA || '', browsers: browserNames, routes, viewports, results }, null, 2)}\n`);
   console.log(`Search cold-bootstrap browser contract: PASS (${results.length} cases)`);
 }
 
 main().catch((error) => {
   fs.mkdirSync(REPORT_DIR, { recursive: true });
-  fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify({ schemaVersion: 1, conclusion: 'failure', error: String(error?.stack || error) }, null, 2)}\n`);
+  fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify({ schemaVersion: 2, conclusion: 'failure', error: String(error?.stack || error) }, null, 2)}\n`);
   console.error(error);
   process.exitCode = 1;
 });
