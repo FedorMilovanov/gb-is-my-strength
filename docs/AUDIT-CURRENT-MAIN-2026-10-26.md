@@ -333,18 +333,21 @@ region; вне такой области обычная клавиатурная
 неизменной. Существующий `reader-controls-residual-browser-contract.mjs`
 дополнен mobile light + dark/reduced-motion пробами, проверками accessible
 name, Tab-фокуса, visible focus, реального scroll delta, стабильного URL и
-обоих краёв без случайной навигации; локальный browser selector позволяет
-запускать Chromium-only, но CI default остаётся Chromium + WebKit.
+обоих краёв без случайной навигации; добавлен отрицательный контроль — вне
+scroll region стрелочная навигация серии обязана продолжать работать. Локальный
+browser selector позволяет запускать Chromium-only, CI default остаётся
+Chromium + WebKit.
 
 AFTER: Chromium 153, 390 px — `tabIndex 0`, `:focus-visible` с 2px outline,
 ArrowRight перемещает `scrollLeft` 0 → 27, URL остаётся Part I; при правом и
-левом краях повторные стрелки сохраняют Part I. Светлая и тёмная тема с
-reduced motion: axe **0 violations / 48 passes**. Desktop 1440 px: таблица не
-переполняет viewport (750/750), keyboard focus доступен. Screenshots и сырой
-axe вывод локально `/tmp/w47-light.png`, `/tmp/w47-dark-reduced.png`,
-`/tmp/w47-desktop.png`, `/tmp/w47-visual-axe.log` (не коммитятся).
-Console: только `ERR_CONNECTION_CLOSED` для внешнего ресурса в sandbox; pageerror
-нет. Existing residual contract local Chromium: **743/743 PASS**. Gill claims
+левом краях повторные стрелки сохраняют Part I; вне таблицы ArrowRight ведёт
+Part I → Part II. Светлая и тёмная тема с reduced motion: axe **0 violations /
+48 passes**. Desktop 1440 px: таблица не переполняет viewport (750/750), keyboard
+focus доступен. Screenshots и сырой axe вывод локально `/tmp/w47-light.png`,
+`/tmp/w47-dark-reduced.png`, `/tmp/w47-desktop.png`, `/tmp/w47-visual-axe.log`
+(не коммитятся). Console: только `ERR_CONNECTION_CLOSED` для внешнего ресурса в
+sandbox; pageerror нет. Existing residual contract local Chromium:
+**745/745 PASS**. Gill claims
 surface и series consistency contracts PASS. Production-like build PASS;
 cache-bust READ-ONLY PASS.
 

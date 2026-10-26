@@ -312,16 +312,34 @@ async function auditGillTableKeyboardScroll(page, engine, origin, { theme, reduc
   // At both scroll boundaries, the same arrows must remain inside this region
   // rather than becoming the reader's previous/next-series shortcuts.
   await table.evaluate((node) => { node.scrollLeft = node.scrollWidth; });
+  await page.waitForFunction(() => {
+    const node = document.querySelector('.manuscript-table--keyboard-scroll');
+    return node && node.scrollLeft >= node.scrollWidth - node.clientWidth - 1;
+  }, { timeout: 1200 });
   for (let index = 0; index < 3; index += 1) await page.keyboard.press('ArrowRight');
-  const rightBoundary = await page.evaluate(() => ({ pathname: location.pathname, scrollLeft: document.querySelector('.manuscript-table--keyboard-scroll')?.scrollLeft }));
+  await page.waitForTimeout(150);
+  const rightBoundary = await page.evaluate(() => ({ pathname: location.pathname, scrollLeft: document.querySelector('.manuscript-table--keyboard-scroll')?.scrollLeft, max: (document.querySelector('.manuscript-table--keyboard-scroll')?.scrollWidth || 0) - (document.querySelector('.manuscript-table--keyboard-scroll')?.clientWidth || 0) }));
   check(engine, 'mobile', route, `right boundary does not navigate away (${theme}/${reducedMotion})`,
-    rightBoundary.pathname === route && rightBoundary.scrollLeft > 0, rightBoundary);
+    rightBoundary.pathname === route && rightBoundary.scrollLeft >= rightBoundary.max - 1, rightBoundary);
 
   await table.evaluate((node) => { node.scrollLeft = 0; });
+  await page.waitForFunction(() => (document.querySelector('.manuscript-table--keyboard-scroll')?.scrollLeft || 0) <= 1,
+    { timeout: 1200 });
   for (let index = 0; index < 3; index += 1) await page.keyboard.press('ArrowLeft');
+  await page.waitForTimeout(150);
   const leftBoundary = await page.evaluate(() => ({ pathname: location.pathname, scrollLeft: document.querySelector('.manuscript-table--keyboard-scroll')?.scrollLeft }));
   check(engine, 'mobile', route, `left boundary does not navigate away (${theme}/${reducedMotion})`,
     leftBoundary.pathname === route && leftBoundary.scrollLeft === 0, leftBoundary);
+
+  // Negative control: the reader's previous/next shortcut remains active
+  // outside a scrollable region. A regression that globally disables arrows
+  // would make the keyboard affordance disappear for ordinary article focus.
+  await page.locator('.skip-link').focus();
+  await page.keyboard.press('ArrowRight');
+  await page.waitForFunction(() => location.pathname === '/articles/dzhon-gill-chast-2-uchenyi/', { timeout: 4000 });
+  const outsideRegion = await page.evaluate(() => ({ pathname: location.pathname, active: document.activeElement?.className }));
+  check(engine, 'mobile', route, `series shortcut remains active outside scroll regions (${theme}/${reducedMotion})`,
+    outsideRegion.pathname === '/articles/dzhon-gill-chast-2-uchenyi/', outsideRegion);
 }
 
 async function auditStandaloneMobile(page, engine, origin, route) {
