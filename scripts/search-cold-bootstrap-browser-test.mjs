@@ -178,6 +178,48 @@ async function runColdAndWarmCase(browser, browserName, baseUrl, route, viewport
       className: document.activeElement?.className || '',
     }));
     assert.ok(!String(afterEscape.className).includes('cp-input'), `${browserName} ${route}: Escape left focus inside the closed palette`);
+
+    if (route === '/hard-texts/' && viewport.width < 500) {
+      await page.mouse.wheel(0, 420);
+      await trigger.waitFor({ state: 'visible' });
+    }
+    let enterOpen;
+    if (await trigger.isVisible()) {
+      await trigger.focus();
+      assert.equal(await trigger.evaluate((element) => element === document.activeElement), true,
+        `${browserName} ${route}: visible search trigger could not receive focus before Enter`);
+      await page.keyboard.press('Enter');
+      try {
+        await page.locator('.cp-backdrop.is-open').waitFor({ state: 'visible', timeout: 5000 });
+        await page.waitForFunction(() => document.activeElement?.classList.contains('cp-input'), null, { timeout: 5000 });
+      } catch (error) {
+        const failure = await page.evaluate(() => ({
+          activeTag: document.activeElement?.tagName,
+          activeId: document.activeElement?.id,
+          activeClass: document.activeElement?.className || '',
+          bootstrap: window.GBSearchBootstrap?.getState(),
+          ready: window.GBSearch?.__ready === true,
+          open: document.querySelector('.cp-backdrop')?.classList.contains('is-open') === true,
+        }));
+        throw new Error(`${browserName} ${route} ${viewport.width}: Enter activation failed ${JSON.stringify(failure)}: ${error.message}`);
+      }
+      enterOpen = await page.evaluate(() => ({
+        phase: window.GBSearchBootstrap?.getState().phase,
+        pendingOpen: window.GBSearchBootstrap?.getState().pendingOpen,
+        activeClass: document.activeElement?.className || '',
+      }));
+      assert.equal(enterOpen.phase, 'ready', `${browserName} ${route}: Enter did not reuse the ready bootstrap`);
+      assert.equal(enterOpen.pendingOpen, false, `${browserName} ${route}: Enter left an open request pending`);
+      assert.ok(String(enterOpen.activeClass).includes('cp-input'), `${browserName} ${route}: Enter did not focus search input`);
+      assert.equal(searchRequests.length, 1, `${browserName} ${route}: Enter fetched search runtime again`);
+      await page.keyboard.press('Escape');
+      await page.waitForFunction(() => !document.querySelector('.cp-backdrop')?.classList.contains('is-open'));
+    } else {
+      assert.equal(route, '/hard-texts/', `${browserName} ${route}: unexpectedly missing a visible opener for Enter coverage`);
+      assert.ok(viewport.width >= 500, `${browserName} /hard-texts/: mobile Search opener must remain visible for Enter coverage`);
+      enterOpen = { skipped: 'HardTexts has no visible Search trigger at desktop width' };
+    }
+
     await page.keyboard.press('Control+K');
     try {
       await page.locator('.cp-backdrop.is-open').waitFor({ state: 'visible', timeout: 5000 });
@@ -209,7 +251,7 @@ async function runColdAndWarmCase(browser, browserName, baseUrl, route, viewport
     assert.equal(searchRequests.length, 1, `${browserName} ${route}: warm API reopen fetched search runtime again`);
     assert.deepEqual(pageErrors, [], `${browserName} ${route}: uncaught page errors`);
     assertCleanBrowserDiagnostics(browserName, route, consoleErrors, failedResponses);
-    return { browser: browserName, route, viewport, cold, opened, afterEscape, warmShortcut, searchRequestCount: searchRequests.length, pageErrors, consoleErrors, failedResponses };
+    return { browser: browserName, route, viewport, cold, opened, afterEscape, enterOpen, warmShortcut, searchRequestCount: searchRequests.length, pageErrors, consoleErrors, failedResponses };
   } finally {
     await context.close();
   }
