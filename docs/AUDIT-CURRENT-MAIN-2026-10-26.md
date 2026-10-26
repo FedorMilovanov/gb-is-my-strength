@@ -199,3 +199,101 @@ Axe experimental sweep 64 загрузки (16 маршрутов × 1440/390 ×
 5. **Архитектурные (SYSTEM scope):** `SYS-HEAD-ASSET-PROJECTION-PROLIFERATION`, `SYS-CSS-CASCADE-GOVERNANCE-NONENFORCING`, `SYS-CONTENT-AUTHORING-PUBLICATION-CONTRACT`.
 6. **После #2179:** `SYS-DEPENDENCY-ADVISORY-LIFECYCLE` + остаток `SYS-TTS-ORT-PATH-CONTRACT-FALSE-RED`.
 7. **Владелец:** note-number authority, Baptist originals, Windows HCM witness, note-number policy, AuditRepo#489 rename/close.
+
+---
+
+## 9. Продолжение 2026-10-26 — волны W43–W46 (Product `ccc7982` → этот PR)
+
+Перепроверка после PR #2195. Новый точный якорь — merge `ccc7982`; среда
+восстановлена с нуля (`npm ci`, Sparticuz Chromium 153 + AL2023 NSS,
+production-like build exit 0).
+
+### W43 — `GBS-TEEN-SERIES-CORE-STEP-PROGRESS` (код)
+
+BEFORE: desktop rail на семи маршрутах показывал `Часть 1/2/3 из 3` для I–III
+и голые `A/B/C/D` без позиции; мобильная шапка — «Часть III» / «Раздел D».
+Лендинг при этом обещал «Шаг N из 7».
+
+Fix: в `SeriesConfig` добавлен типизированный `coreSequence?: {stepLabel}`,
+валидатор запрещает смешивать его с книгой/спутниками/главами/статьями и
+требует реальный `pages[...]` для каждого шага; `coreStepMeta()` — единственный
+владелец позиции. `GillSeriesRail.astro` и шапка `TeenSeriesArticlePage.astro`
+потребляют его; `teen-series-release-contract.mjs` проверяет исходник и все
+семь собранных HTML.
+
+AFTER (Chromium 153, 7 маршрутов × desktop 1440 / mobile 390):
+`Шаг 1 из 7 … Шаг 7 из 7` и в `#gbs2Meta`, и в `.section-label`; марки
+I, II, III, A, B, C, D сохранены; горизонтального переполнения нет.
+Контракт: `✅ Teen series release contract PASS`.
+
+### W44 — `GBS-GENEALOGY-RELATION-LABEL-DIRECTION` (код)
+
+BEFORE: карточка Каина «Ребёнок / Адам» (роль выбранного человека рядом с
+именем соседа); Адам «Отец / Авель»; Иосиф «Юридический родитель / Иисус».
+
+Fix: `DetailPanel.tsx` печатает явное направление `from → to` (имена),
+`data-relation-direction` и расширенный `aria-label`; короткая роль осталась
+ролью выбранного человека, но перестала быть единственным указателем.
+Инспектор связей уже использовал `from → to` — теперь обе поверхности
+согласованы. `genealogy-browser-contract.mjs` получил проверки направления
+с обоих концов legal-parent, плюс Каин с двух родителей.
+
+AFTER: `Ребёнок / Адам → Каин`, `Отец / Адам → Авель`,
+`Юридический родитель / Иосиф (Обручник) → Иисус Христос`,
+`Юридический ребёнок / Иосиф (Обручник) → Иисус Христос`,
+`Супруги / Адам → Ева`. Локальный полный контракт (Chromium 1440×1000)
+`Genealogy browser contract: PASS`, включая negative witness.
+
+### W45 — `SYS-INJECTED-HEADER-CONTROL-HOST` (код)
+
+BEFORE: `ReaderPreferencesHead` вставлял поиск в первый `.mobile-controls`;
+`margin-right:-12px!important` заставлял два 44px тач-таргета перекрываться
+на 12 px; на 768 Controls уходили за viewport на 55 px (правый край 823).
+
+Fix: явный host `data-gb-search-host="chrome"` (7 копий) и `"native"` у
+здорового shared `Header.astro`; инжектор требует `="chrome"` и помечает
+свою кнопку `data-gb-search-injected`; -12px костыль удалён; правила
+ёмкости/containment перенесены в `css/home.css` (её грузит и `/biografii/`),
+на 761–900 px объявленный host переключает navbar на штатное мобильное меню.
+`scripts/interactive-audit.js` получил source-guard (все контейнеры обязаны
+объявить host; negative fixture на возврат -12px) и browser-guard:
+3 маршрута × 320/390/768/1440 + negative control главной.
+
+AFTER: перекрытие **0 px** и правый край ≤ viewport на всех 20 профилях;
+на 768/900 мобильное меню открывается (6 ссылок + backdrop), на 1440
+десктопные ссылки сохранены, главная со своим нативным поиском не
+переключается. Guard рапортует `header hosts: 7`; 42 оставшихся issue
+локального interactive-audit — исключительно `ERR_CONNECTION_CLOSED` egress.
+
+### W46 — `GBS-TEXT-CONTRAST-RESIDUAL-BATCH` (перепроверка, кода нет)
+
+Первичный axe-прогон с ожиданием 200–250 мс давал 6 «contrast»-узлов
+(`.h-title-accent`, `.gbs-rail-spdbadge`, 2 `.related-articles__link`,
+`.lt`, `.h-title-static`). Повторная проба с ожиданием **1.3 с** (завершение
+`h-fade-up` и CSS-транзишенов) показала, что это **артефакт измерения
+промежуточной анимации**: финальные painted-цвета — `#7c2d2d` на `#f8f5f0`,
+`#0e1116` на золотом бейдже, `#d4a574` на `#0e1116`, а `#loader .lt` имеет
+родителя с `opacity:0`.
+
+Итоговый settled sweep: **64 загрузки** (16 маршрутов × 1440/390 × light/dark),
+0 harness-ошибок, 0 pageerror, **0 `color-contrast`**, 0
+`label-content-name-mismatch`, 0 `aria-prohibited-attr`, 0 `nested-interactive`.
+Остаются только 2 низкоприоритетных класса вне матрицы (`link-in-text-block`
+×6 на `/konfessii/russkij-baptizm/`) и живой `scrollable-region-focusable`
+×2 на gill-1 mobile — это и есть `SYS-READING-TABLE-KEYBOARD-SCROLL`.
+
+### Обновлённая арифметика
+
+| Класс | Было (§1) | Стало |
+|---|---:|---:|
+| A. Исправлено в Product / нужен owner-reverify | 32 | **37** |
+| B. Реально открыто, нужен код | 14 | **9** |
+| C. Владелец / evidence boundary | 4 | **4** |
+
+Оставшиеся 9 кодовых лейнов: `SYS-HEAD-ASSET-PROJECTION-PROLIFERATION`,
+`SYS-TTS-RECOVERY-STATUS-OWNERSHIP`, `SYS-EDITORIAL-DATELINE-SLOT-SEMANTICS`,
+`SYS-SERIES-DISCOVERY-CURRENT-AUTHORITY`, `SYS-DEPENDENCY-ADVISORY-LIFECYCLE`,
+`SYS-CSS-CASCADE-GOVERNANCE-NONENFORCING`,
+`SYS-CONTENT-AUTHORING-PUBLICATION-CONTRACT`,
+`SYS-READING-TABLE-KEYBOARD-SCROLL`, `SYS-SEARCH-LAZY-BOOTSTRAP-OWNERSHIP`.
+Блокировщик первых workflow-правок прежний — открытый PR #2179.

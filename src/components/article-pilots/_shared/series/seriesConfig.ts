@@ -114,6 +114,13 @@ export interface SeriesConfig {
    *  Поле не дублирует данные — делает ветвление декларативным и проверяемым:
    *  валидатор не даст объявить главы в плоской серии и наоборот. */
   shape?: 'flat' | 'book';
+  /** Явная линейная core-последовательность. Обычно `label`-марки означают
+   *  форзацы (Введение/Справочник) и не входят в счёт частей. Но серия может
+   *  объявить КАЖДЫЙ верхнеуровневый материал равноправным шагом: тогда
+   *  `label` остаётся буквенной маркой, а прогресс считается по всем items
+   *  подряд («Шаг 4 из 7»), а не только по римским. Валидатор запрещает
+   *  смешивать этот режим с книгой, спутниками и вложенными статьями. */
+  coreSequence?: { stepLabel: string };
   /** Необязательный визуальный «характер» серии. Ставится как
    *  data-series-theme на .gbs2-world и body; CSS-тема (напр.
    *  css/series-samizdat.css) переопределяет токены движка и добавляет
@@ -199,6 +206,19 @@ export function defineSeriesConfig(cfg: SeriesConfig): SeriesConfig {
     }
     if (it.mark.kind === 'arabic' && !cfg.pages[it.id]) fail(`статья главы «${it.id}»: нет pages["${it.id}"] (partToc обязателен)`);
   }
+  // Явная core-последовательность: все материалы — равноправные шаги.
+  // Иначе «Шаг N из M» можно было бы получить из серии с форзацами,
+  // спутниками или главами, где такой счёт был бы ложью.
+  if (cfg.coreSequence) {
+    if (!cfg.coreSequence.stepLabel?.trim()) fail('coreSequence.stepLabel пуст');
+    if (cfg.shape === 'book') fail('coreSequence несовместим с shape: book');
+    if (cfg.items.some((x) => x.parent || x.tier === 'satellite' || x.tier === 'chapter' || x.mark.kind === 'arabic')) {
+      fail('coreSequence требует плоского списка самостоятельных материалов без parent/спутников/глав/статей');
+    }
+    for (const it of cfg.items) {
+      if (!cfg.pages[it.id]) fail(`coreSequence: шаг «${it.id}» не имеет pages[...] — позиция не может указывать на реальный маршрут`);
+    }
+  }
   // shape ↔ данные: книга обязана иметь главы, плоская — не иметь.
   const hasChapters = cfg.items.some((x) => x.tier === 'chapter');
   if (cfg.shape === 'book' && !hasChapters) fail(`shape: 'book', но глав (tier 'chapter') нет`);
@@ -223,6 +243,21 @@ export function satellitesOf(cfg: SeriesConfig, parentId: string): SeriesItem[] 
 /** Ядро серии (без спутников): рельс, лист «Части серии», prev/next. */
 export function coreItems(cfg: SeriesConfig): SeriesItem[] {
   return cfg.items.filter((it) => it.tier !== 'satellite');
+}
+
+/** Позиция материала в ЯВНО объявленной линейной core-последовательности.
+ *  Возвращает null для обычных серий (там считаются только римские части).
+ *  Вложенные статьи/спутники сводятся к родителю: валидатор coreSequence
+ *  таких материалов не допускает, но публичный помощник остаётся безопасным. */
+export function coreStepMeta(cfg: SeriesConfig, pageId: string): { position: number; total: number; label: string; text: string } | null {
+  if (!cfg.coreSequence) return null;
+  const item = cfg.items.find((it) => it.id === pageId);
+  const anchorId = item?.parent ?? pageId;
+  const steps = cfg.items.filter((it) => !it.parent && it.tier !== 'satellite');
+  const index = steps.findIndex((it) => it.id === anchorId);
+  if (index < 0) return null;
+  const label = cfg.coreSequence.stepLabel;
+  return { position: index + 1, total: steps.length, label, text: `${label} ${index + 1} из ${steps.length}` };
 }
 
 /** Книжная ли серия (валидатор гарантирует shape ↔ наличие глав). */

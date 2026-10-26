@@ -819,6 +819,13 @@ async function assertLegalRelationInteractions(page) {
       name: 'Открыть основание связи: Иосиф (Обручник) — Иисус Христос',
     });
     await legalRelation.waitFor({ state: 'visible' });
+    // GBS-GENEALOGY-RELATION-LABEL-DIRECTION: the short role belongs to the
+    // SELECTED person, so the peer's name alone was ambiguous. Require the
+    // explicit data direction on both ends of the same relation.
+    assert.equal(await legalRelation.getAttribute('data-relation-direction'), 'Иосиф (Обручник) → Иисус Христос',
+      'Joseph relation lost its explicit subject → object direction');
+    assert.equal(await legalRelation.getByText('Иосиф (Обручник) → Иисус Христос', { exact: true }).isVisible(), true,
+      'Joseph relation direction is not visible to the reader');
     assert.equal(await legalRelation.getByText('Юридический родитель', { exact: true }).isVisible(), true,
       'Joseph detail drawer did not expose the legal-parent relation');
     assert.equal(await legalRelation.getByText('прямой текст', { exact: true }).isVisible(), true,
@@ -854,6 +861,10 @@ async function assertLegalRelationInteractions(page) {
       name: 'Открыть основание связи: Иисус Христос — Иосиф (Обручник)',
     });
     await childSideLegalRelation.waitFor({ state: 'visible' });
+    assert.equal(await childSideLegalRelation.getAttribute('data-relation-direction'), 'Иосиф (Обручник) → Иисус Христос',
+      'Reverse-side relation must keep the same canonical data direction');
+    assert.equal(await childSideLegalRelation.getByText('Иосиф (Обручник) → Иисус Христос', { exact: true }).isVisible(), true,
+      'Reverse-side relation direction is not visible to the reader');
     assert.equal(await childSideLegalRelation.getByText('Юридический ребёнок', { exact: true }).isVisible(), true,
       'Jesus detail drawer did not expose the reverse side of legal parentage');
     if ((page.viewportSize()?.width ?? 999) <= 430) await childSideLegalRelation.tap();
@@ -867,6 +878,30 @@ async function assertLegalRelationInteractions(page) {
     await childSidePanel.waitFor({ state: 'detached' });
     assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-id')), 'jesus',
       'Relation inspector returned focus to relation.from instead of the person who opened it');
+
+    // Father/mother/spouse directions must be equally explicit from the
+    // child-side card: Cain used to read «Ребёнок / Адам», implying Adam was
+    // the child. The direction line now removes that misreading.
+    await personSearch.fill('Каин');
+    await page.waitForFunction(() =>
+      document.querySelector('[data-genealogy-app]')?.getAttribute('data-genealogy-search-person') === 'cain');
+    await waitForViewportStable(page);
+    await page.locator('.react-flow__node[data-id="cain"]').click();
+    const cainDetails = page.getByRole('complementary', { name: 'Детали: Каин' });
+    await cainDetails.waitFor({ state: 'visible' });
+    const adamRelation = cainDetails.getByRole('button', {
+      name: 'Открыть основание связи: Каин — Адам',
+    });
+    await adamRelation.waitFor({ state: 'visible' });
+    assert.equal(await adamRelation.getAttribute('data-relation-direction'), 'Адам → Каин',
+      'Cain/Adam relation lost its explicit father → child direction');
+    assert.equal(await adamRelation.getByText('Адам → Каин', { exact: true }).isVisible(), true,
+      'Cain/Adam relation direction is not visible to the reader');
+    const eveRelation = cainDetails.getByRole('button', {
+      name: 'Открыть основание связи: Каин — Ева',
+    });
+    assert.equal(await eveRelation.getAttribute('data-relation-direction'), 'Ева → Каин',
+      'Cain/Eve relation lost its explicit mother → child direction');
 }
 
 

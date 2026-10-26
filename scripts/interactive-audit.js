@@ -69,7 +69,7 @@ const HERMENEUTIKA_URL = '/articles/hermenevticheskaya-otsenka-hristotsentrichno
 const HERMENEUTIKA_STATIC_FOOTNOTES = ['40', '41', '42', '43', '72', '75', '77', '82', '83', '107'];
 
 const issues = [];
-const stats = { pages: 0, series: 0, quizzes: 0, glossary: 0, footnotes: 0, theme: 0, search: 0, media: 0, chromeLabels: 0 };
+const stats = { pages: 0, series: 0, quizzes: 0, glossary: 0, footnotes: 0, theme: 0, search: 0, media: 0, chromeLabels: 0, headerHosts: 0 };
 
 function isNoise(text) {
   return /Content Security Policy directive.*https:\/\/gospod-bog\.ru\/(?:favicon|apple-touch-icon|icons|images)|favicon\.ico|mc\.yandex/i.test(text);
@@ -132,6 +132,56 @@ function assertChromeLabelNameSource() {
     push('chrome-label-name-source', 'negative-fixture', 'guard did not reject aria-hidden painted dash');
   }
   stats.chromeLabels = links;
+}
+
+/* SYS-INJECTED-HEADER-CONTROL-HOST — the runtime may add the search opener
+   only into an explicitly named host, and every authored host must declare
+   it. A first-`.mobile-controls` mutation has no capacity contract. */
+function headerHostProblems(source) {
+  const problems = [];
+  const hosts = [...source.matchAll(/<div\b([^>]*\bclass=["'][^"']*\bmobile-controls\b[^"']*["'][^>]*)>/g)];
+  let themed = 0;
+  for (const host of hosts) {
+    const declared = host[1].match(/data-gb-search-host=["']([^"']+)["']/);
+    if (!declared) { problems.push('themed-controls-without-named-host'); continue; }
+    if (declared[1] !== 'chrome' && declared[1] !== 'native') problems.push(`unknown-host-kind:${declared[1]}`);
+    if (declared[1] === 'chrome') themed += 1;
+  }
+  return { themed, problems };
+}
+
+function assertHeaderHostSource() {
+  const roots = ['src/components', 'src/pages'];
+  const files = [];
+  function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.name.endsWith('.astro')) files.push(full);
+    }
+  }
+  for (const root of roots) if (fs.existsSync(root)) walk(root);
+  let themed = 0;
+  for (const file of files) {
+    const source = fs.readFileSync(file, 'utf8');
+    if (!source.includes('mobile-controls')) continue;
+    const result = headerHostProblems(source);
+    themed += result.themed;
+    for (const problem of result.problems) push('header-host-source', file, problem);
+  }
+  if (!themed) push('header-host-source', 'src', 'no named search hosts found — guard lost its universe');
+  const injector = fs.readFileSync('src/components/reader-platform/ReaderPreferencesHead.astro', 'utf8');
+  if (!injector.includes('.mobile-controls[data-gb-search-host="chrome"]')) {
+    push('header-host-source', 'ReaderPreferencesHead.astro', 'injector no longer requires the chrome host');
+  }
+  if (!injector.includes("'data-gb-search-injected'")) {
+    push('header-host-source', 'ReaderPreferencesHead.astro', 'injected opener is not distinguishable from the native one');
+  }
+  if (fs.readFileSync('css/mobile-hotfix.css', 'utf8').includes('margin-right:-12px')) {
+    // Negative fixture: reintroducing the overlap crutch must be rejected.
+    push('header-host-source', 'css/mobile-hotfix.css', 'the -12px overlap crutch is back');
+  }
+  stats.headerHosts = themed;
 }
 
 async function openPage(browser, urlPath, viewport = { width: 1200, height: 800 }) {
@@ -644,6 +694,72 @@ async function visibleThemeHandle(page) {
   });
 }
 
+/* Browser proof for SYS-INJECTED-HEADER-CONTROL-HOST: capacity, order,
+   focus targets and viewport containment on every allowlist consumer. */
+async function checkInjectedHeaderHost(browser) {
+  const routes = ['/articles/', '/biografii/', '/pastor-series/'];
+  const viewports = [
+    { width: 320, height: 780 }, { width: 390, height: 844 },
+    { width: 768, height: 820 }, { width: 1440, height: 900 },
+  ];
+  for (const viewport of viewports) {
+    for (const url of routes) {
+      const page = await browser.newPage({ viewport, deviceScaleFactor: 1 });
+      try {
+        const resp = await page.goto(BASE + url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        await page.waitForTimeout(260);
+        stats.pages++;
+        if (!resp || !resp.ok()) { push('header-host-page-status', url, resp ? resp.status() : 'null'); continue; }
+        const state = await page.evaluate(() => {
+          const search = document.querySelector('#gbSearchBtn');
+          const theme = document.querySelector('#themeToggle');
+          const links = document.querySelector('.h-nav-links');
+          const menu = document.querySelector('.h-mobile-menu-btn');
+          const rect = (el) => el ? el.getBoundingClientRect() : null;
+          const a = rect(search), t = rect(theme);
+          const overlap = a && t ? Math.max(0, Math.min(a.right, t.right) - Math.max(a.left, t.left)) : null;
+          return {
+            injected: !!search?.hasAttribute('data-gb-search-injected'),
+            namedHost: !!document.querySelector('.mobile-controls[data-gb-search-host="chrome"]'),
+            overlap,
+            themeRight: t ? Math.round(t.right) : null,
+            viewportWidth: innerWidth,
+            linksDisplay: links ? getComputedStyle(links).display : null,
+            menuDisplay: menu ? getComputedStyle(menu).display : null,
+          };
+        });
+        const label = `${url}@${viewport.width}`;
+        if (!state.injected || !state.namedHost) push('header-host-injected-missing', label, state);
+        if (state.overlap === null || state.overlap > 0) push('header-host-target-overlap', label, state.overlap);
+        if (state.themeRight === null || state.themeRight > state.viewportWidth) push('header-host-offscreen', label, state);
+        if (viewport.width >= 1100 && state.linksDisplay === 'none') push('header-host-desktop-nav-lost', label, state);
+        if (viewport.width >= 761 && viewport.width <= 900 && state.menuDisplay === 'none') {
+          push('header-host-tablet-menu-missing', label, state);
+        }
+      } catch (error) {
+        push('header-host-harness', `${url}@${viewport.width}`, error.message);
+      } finally {
+        await page.close();
+      }
+    }
+  }
+  // Negative control: the home page ships a NATIVE opener and must keep its
+  // desktop navigation at tablet width (the :has() rule must not match it).
+  const control = await browser.newPage({ viewport: { width: 768, height: 820 } });
+  try {
+    await control.goto(BASE + '/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await control.waitForTimeout(260);
+    stats.pages++;
+    const home = await control.evaluate(() => ({
+      injected: !!document.querySelector('#gbSearchBtn')?.hasAttribute('data-gb-search-injected'),
+      linksDisplay: document.querySelector('.h-nav-links') ? getComputedStyle(document.querySelector('.h-nav-links')).display : null,
+    }));
+    if (home.injected || home.linksDisplay === 'none') push('header-host-native-control-regression', '/@768', home);
+  } finally {
+    await control.close();
+  }
+}
+
 async function checkMobileTheme(browser) {
   for (const url of THEME_URLS) {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
@@ -780,9 +896,11 @@ async function checkMediaViewerAndShare(browser) {
      потому что CDN Playwright может быть недоступен; CI использует
      дефолтный установленный chromium и эту переменную не задаёт. */
   assertChromeLabelNameSource();
+  assertHeaderHostSource();
   const execOverride = process.env.GB_PLAYWRIGHT_CHROMIUM_EXECUTABLE || '';
   const browser = await chromium.launch({ headless: true, executablePath: execOverride || undefined, args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'] });
   try {
+    await checkInjectedHeaderHost(browser);
     await checkSeries(browser);
     await checkQuiz(browser);
     await checkGlossary(browser);
@@ -794,7 +912,7 @@ async function checkMediaViewerAndShare(browser) {
     await browser.close();
   }
   console.log('\nGB INTERACTIVE AUDIT');
-  console.log(`Pages: ${stats.pages} · series: ${stats.series} · quizzes: ${stats.quizzes} · glossary: ${stats.glossary} · footnotes: ${stats.footnotes} · theme: ${stats.theme} · search: ${stats.search} · media: ${stats.media} · chrome labels: ${stats.chromeLabels}`);
+  console.log(`Pages: ${stats.pages} · series: ${stats.series} · quizzes: ${stats.quizzes} · glossary: ${stats.glossary} · footnotes: ${stats.footnotes} · theme: ${stats.theme} · search: ${stats.search} · media: ${stats.media} · chrome labels: ${stats.chromeLabels} · header hosts: ${stats.headerHosts}`);
   if (issues.length) {
     console.log(`❌ ${issues.length} issue(s):`);
     issues.forEach(i => console.log(`- ${i.kind} ${i.url}: ${JSON.stringify(i.detail)}`));

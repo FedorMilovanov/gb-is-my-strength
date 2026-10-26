@@ -1594,3 +1594,27 @@ body.home-page .h-mobile-hero-hub{display:none!important}
 .h-article-list .h-article-thumb,.h-evergreen-shelf .h-article-thumb{flex-shrink:0;width:160px;height:108px;border-radius:10px;overflow:hidden;background:var(--h-surface)}
 .h-article-list .h-article-thumb picture,.h-article-list .h-article-thumb>img,.h-evergreen-shelf .h-article-thumb picture,.h-evergreen-shelf .h-article-thumb>img{width:100%;height:100%;object-fit:cover;display:block}
 @media (max-width:440px){.h-article-list .h-article-thumb,.h-evergreen-shelf .h-article-thumb{width:100%;height:160px;flex-shrink:1}}
+
+/* SYS-INJECTED-HEADER-CONTROL-HOST — named host owns capacity, order and
+   viewport containment. Lives in home.css because /biografii/ does not load
+   mobile-hotfix.css. Replaces the removed -12px overlap crutch: two 44px
+   touch targets must never share 12px of their hit area. Only the runtime-
+   injected opener (data-gb-search-injected) triggers the tablet switch; the
+   home page's native opener keeps its healthy desktop nav. */
+.mobile-controls[data-gb-search-host="chrome"]{gap:0;flex:0 0 auto}
+.mobile-controls[data-gb-search-host="chrome"] > .gb-nav-search-icon{margin-right:0}
+@media (max-width:760px){
+  .mobile-controls[data-gb-search-host="chrome"]{max-width:none;overflow:visible}
+  .h-navbar:has([data-gb-search-host="chrome"] [data-gb-search-injected]) .h-navbar__inner{gap:6px;padding-inline:12px}
+  .h-navbar:has([data-gb-search-host="chrome"] [data-gb-search-injected]) .h-nav-logo-main,
+  .h-navbar:has([data-gb-search-host="chrome"] [data-gb-search-injected]) .h-nav-logo-dash,
+  .h-navbar:has([data-gb-search-host="chrome"] [data-gb-search-injected]) .h-nav-logo-accent{font-size:14px}
+}
+@media (min-width:761px) and (max-width:900px){
+  /* Wide logo + full nav links + injected 44px opener cannot fit. The
+     declared host switches the navbar to its authored mobile menu instead
+     of pushing both controls outside the viewport. */
+  .h-navbar:has([data-gb-search-host="chrome"] [data-gb-search-injected]) .h-nav-links{display:none}
+  .h-navbar:has([data-gb-search-host="chrome"] [data-gb-search-injected]) .h-mobile-menu-btn{display:flex}
+  body:has(.h-navbar [data-gb-search-host="chrome"] [data-gb-search-injected]) .h-mobile-backdrop.open{display:block}
+}

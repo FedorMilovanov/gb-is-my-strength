@@ -239,17 +239,26 @@ function DetailPanelComponent({ person, relations = [], persons = [], onInspectR
             {personRelations.map(relation => {
               const peerId = relation.from === person.id ? relation.to : relation.from;
               const peerName = personById.get(peerId)?.name.ru ?? peerId;
+              // GBS-GENEALOGY-RELATION-LABEL-DIRECTION: короткая роль
+              // описывает ВЫБРАННОГО человека («Ребёнок» у Каина), но раньше
+              // печаталась рядом с именем соседа — читалось как роль соседа.
+              // Явное направление «субъект → объект» снимает неоднозначность
+              // и согласует карточку с инспектором (там уже from → to).
+              const fromName = personById.get(relation.from)?.name.ru ?? relation.from;
+              const toName = personById.get(relation.to)?.name.ru ?? relation.to;
+              const direction = `${fromName} → ${toName}`;
               return (
                 <button
                   key={relation.id}
                   type="button"
                   className="genealogy-person-relation"
+                  data-relation-direction={direction}
                   onClick={() => onInspectRelation?.(relation)}
-                  aria-label={`Открыть основание связи: ${person.name.ru} — ${peerName}`}
+                  aria-label={`Открыть основание связи: ${person.name.ru} — ${peerName}; ${direction}`}
                 >
                   <span className="genealogy-person-relation__main">
                     <strong>{relationshipKindLabel(relation, person.id)}</strong>
-                    <span>{peerName}</span>
+                    <span>{direction}</span>
                   </span>
                   <span className="genealogy-person-relation__status">
                     {relationshipEvidenceLabel(relation)}
