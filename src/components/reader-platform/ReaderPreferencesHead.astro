@@ -30,13 +30,20 @@ const needsSearchOpener = searchOpenerRoutes.has(Astro.url.pathname);
 
       function ensureTrigger() {
         if (document.getElementById('gbSearchBtn')) return;
-        const controls = document.querySelector('.mobile-controls');
+        // SYS-INJECTED-HEADER-CONTROL-HOST: only an explicitly named host may
+        // receive the injected opener. The old first-`.mobile-controls`
+        // mutation had no capacity/order contract and pushed both 44px
+        // targets outside the viewport at tablet widths.
+        const controls = document.querySelector('.mobile-controls[data-gb-search-host="chrome"]');
         const theme = document.getElementById('themeToggle');
         const navLinks = document.querySelector('.h-nav-links');
         const button = document.createElement('button');
         button.type = 'button';
         button.id = 'gbSearchBtn';
         button.className = 'gb-nav-search-icon';
+        // Marks ONLY the runtime-injected opener. The home page ships its own
+        // native #gbSearchBtn and must keep the healthy desktop navigation.
+        button.setAttribute('data-gb-search-injected', 'true');
         button.setAttribute('data-search-shortcut', '');
         button.setAttribute('data-search-shortcut-label', 'Поиск по всему сайту');
         button.setAttribute('aria-label', 'Поиск по всему сайту');
@@ -47,8 +54,9 @@ const needsSearchOpener = searchOpenerRoutes.has(Astro.url.pathname);
           window.dispatchEvent(new CustomEvent('gb:openSearch', { detail: { source: 'opener' } }));
         });
 
-        if (controls && theme && controls.contains(theme)) controls.insertBefore(button, theme);
-        else if (navLinks) {
+        if (controls && theme && controls.contains(theme)) {
+          controls.insertBefore(button, theme);
+        } else if (navLinks) {
           const item = document.createElement('li');
           item.appendChild(button);
           navLinks.appendChild(item);
