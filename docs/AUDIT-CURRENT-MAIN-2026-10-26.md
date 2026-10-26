@@ -325,8 +325,9 @@ BEFORE на точном `b126de1`: axe `scrollable-region-focusable` для
 была одновременно отсутствием доступного focus target и слишком широким
 reader shortcut handler.
 
-Fix: эта таблица получает native `tabindex="0"`, описательное имя
-`aria-label` и видимый `:focus-visible` outline. В shared
+Fix: эта таблица получает native `tabindex="0"`, описательный `<caption`
+с существующим `.sr-only` визуальным скрытием и видимый `:focus-visible`
+outline; accessible name теперь следует нативной таблицовой семантике. В shared
 `floating-cluster-controller.js` left/right shortcut отступает, когда event
 идёт из элемента внутри горизонтально переполняющегося `overflow-x:auto|scroll`
 region; вне такой области обычная клавиатурная навигация серии остаётся
