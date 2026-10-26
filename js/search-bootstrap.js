@@ -132,7 +132,9 @@
 
   document.addEventListener('keydown', (event) => {
     if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey || event.key.toLowerCase() !== 'k') return;
-    if (event.target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="textbox"]')) return;
+    const editableTarget = event.target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="textbox"]');
+    const closedPaletteInput = event.target?.matches?.('.cp-input') && !event.target.closest('.cp-backdrop.is-open');
+    if (editableTarget && !closedPaletteInput) return;
     event.preventDefault();
     event.stopImmediatePropagation();
     open(undefined, document.activeElement);

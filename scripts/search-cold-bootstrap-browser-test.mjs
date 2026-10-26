@@ -159,11 +159,42 @@ async function runColdAndWarmCase(browser, browserName, baseUrl, route, viewport
 
     await page.keyboard.press('Escape');
     await page.waitForFunction(() => !document.querySelector('.cp-backdrop')?.classList.contains('is-open'));
+    const afterEscape = await page.evaluate(() => ({
+      tag: document.activeElement?.tagName,
+      id: document.activeElement?.id,
+      className: document.activeElement?.className || '',
+    }));
+    await page.keyboard.press('Control+K');
+    try {
+      await page.locator('.cp-backdrop.is-open').waitFor({ state: 'visible', timeout: 5000 });
+      await page.waitForFunction(() => document.activeElement?.classList.contains('cp-input'), null, { timeout: 5000 });
+    } catch (error) {
+      const failure = await page.evaluate(() => ({
+        activeTag: document.activeElement?.tagName,
+        activeId: document.activeElement?.id,
+        activeClass: document.activeElement?.className || '',
+        open: document.querySelector('.cp-backdrop')?.classList.contains('is-open') === true,
+        bootstrap: window.GBSearchBootstrap?.getState(),
+        ready: window.GBSearch?.__ready === true,
+      }));
+      throw new Error(`${browserName} ${route} ${viewport.width}: warm Ctrl+K failed after Escape ${JSON.stringify({ afterEscape, failure })}: ${error.message}`);
+    }
+    const warmShortcut = await page.evaluate(() => ({
+      phase: window.GBSearchBootstrap?.getState().phase,
+      pendingOpen: window.GBSearchBootstrap?.getState().pendingOpen,
+      activeClass: document.activeElement?.className || '',
+    }));
+    assert.equal(warmShortcut.phase, 'ready', `${browserName} ${route}: warm shortcut did not retain ready state`);
+    assert.equal(warmShortcut.pendingOpen, false, `${browserName} ${route}: warm shortcut left an open request pending`);
+    assert.ok(String(warmShortcut.activeClass).includes('cp-input'), `${browserName} ${route}: warm Ctrl+K did not focus search input`);
+    assert.equal(searchRequests.length, 1, `${browserName} ${route}: warm shortcut fetched search runtime again`);
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(() => !document.querySelector('.cp-backdrop')?.classList.contains('is-open'));
     await page.evaluate(() => window.GBSearchBootstrap.open());
     await page.locator('.cp-backdrop.is-open').waitFor({ state: 'visible' });
-    assert.equal(searchRequests.length, 1, `${browserName} ${route}: warm reopen fetched search runtime again`);
+    assert.equal(searchRequests.length, 1, `${browserName} ${route}: warm API reopen fetched search runtime again`);
     assert.deepEqual(pageErrors, [], `${browserName} ${route}: uncaught page errors`);
-    return { browser: browserName, route, viewport, cold, opened, searchRequestCount: searchRequests.length, pageErrors, consoleErrors, failedResponses };
+    return { browser: browserName, route, viewport, cold, opened, afterEscape, warmShortcut, searchRequestCount: searchRequests.length, pageErrors, consoleErrors, failedResponses };
   } finally {
     await context.close();
   }
