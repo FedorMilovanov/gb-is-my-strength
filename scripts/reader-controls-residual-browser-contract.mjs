@@ -14,6 +14,8 @@ const DIST = path.join(ROOT, 'dist');
 const REPORTS = path.join(ROOT, 'reports');
 const MOBILE = { width: 390, height: 844 };
 const DESKTOP = { width: 1440, height: 900 };
+const BROWSER_MATRIX = String(process.env.READER_CONTROLS_BROWSERS || 'chromium,webkit')
+  .split(',').map((value) => value.trim()).filter(Boolean);
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.json': 'application/json', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.png': 'image/png',
@@ -267,6 +269,61 @@ async function auditStandaloneDesktop(page, engine, origin, route) {
   check(engine, 'desktop', route, 'Escape closes Menu and synchronizes trigger', closed.expanded === 'false' && closed.hidden === 'true' && !closed.open, closed);
 }
 
+async function auditGillTableKeyboardScroll(page, engine, origin, { theme, reducedMotion }) {
+  const route = '/articles/dzhon-gill-chast-1-chelovek/';
+  const accessibleName = 'Дети Джона и Элизабет Гилл: судьба и примечания';
+  await page.emulateMedia({ colorScheme: theme, reducedMotion });
+  await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
+  await waitForReader(page);
+  await page.evaluate((isDark) => document.documentElement.classList.toggle('dark', isDark), theme === 'dark');
+
+  const table = page.getByRole('table', { name: accessibleName, exact: true });
+  check(engine, 'mobile', route, `scrolling table has a named keyboard target (${theme}/${reducedMotion})`,
+    await table.count() === 1 && await table.getAttribute('tabindex') === '0',
+    await table.count() ? { label: await table.getAttribute('aria-label'), tabindex: await table.getAttribute('tabindex') } : null);
+  const dimensions = await table.evaluate((node) => ({
+    scrollWidth: node.scrollWidth,
+    clientWidth: node.clientWidth,
+    scrollLeft: node.scrollLeft,
+    pathname: location.pathname,
+  }));
+  check(engine, 'mobile', route, `table overflow is real (${theme}/${reducedMotion})`,
+    dimensions.scrollWidth > dimensions.clientWidth + 1, dimensions);
+
+  await table.focus();
+  check(engine, 'mobile', route, `table enters keyboard focus (${theme}/${reducedMotion})`,
+    await table.evaluate((node) => document.activeElement === node));
+  const outline = await table.evaluate((node) => ({
+    visible: node.matches(':focus-visible'),
+    style: getComputedStyle(node).outlineStyle,
+    width: getComputedStyle(node).outlineWidth,
+  }));
+  check(engine, 'mobile', route, `keyboard focus has a visible indicator (${theme}/${reducedMotion})`,
+    outline.visible && outline.style !== 'none' && outline.width !== '0px', outline);
+
+  await page.keyboard.press('ArrowRight');
+  await page.waitForFunction(() =>
+    (document.querySelector('.manuscript-table--keyboard-scroll')?.scrollLeft || 0) > 0,
+  { timeout: 1200 });
+  const moved = await table.evaluate((node) => ({ scrollLeft: node.scrollLeft, focused: document.activeElement === node, pathname: location.pathname }));
+  check(engine, 'mobile', route, `ArrowRight scrolls the table, not the series (${theme}/${reducedMotion})`,
+    moved.scrollLeft > 0 && moved.focused && moved.pathname === route, moved);
+
+  // At both scroll boundaries, the same arrows must remain inside this region
+  // rather than becoming the reader's previous/next-series shortcuts.
+  await table.evaluate((node) => { node.scrollLeft = node.scrollWidth; });
+  for (let index = 0; index < 3; index += 1) await page.keyboard.press('ArrowRight');
+  const rightBoundary = await page.evaluate(() => ({ pathname: location.pathname, scrollLeft: document.querySelector('.manuscript-table--keyboard-scroll')?.scrollLeft }));
+  check(engine, 'mobile', route, `right boundary does not navigate away (${theme}/${reducedMotion})`,
+    rightBoundary.pathname === route && rightBoundary.scrollLeft > 0, rightBoundary);
+
+  await table.evaluate((node) => { node.scrollLeft = 0; });
+  for (let index = 0; index < 3; index += 1) await page.keyboard.press('ArrowLeft');
+  const leftBoundary = await page.evaluate(() => ({ pathname: location.pathname, scrollLeft: document.querySelector('.manuscript-table--keyboard-scroll')?.scrollLeft }));
+  check(engine, 'mobile', route, `left boundary does not navigate away (${theme}/${reducedMotion})`,
+    leftBoundary.pathname === route && leftBoundary.scrollLeft === 0, leftBoundary);
+}
+
 async function auditStandaloneMobile(page, engine, origin, route) {
   await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
   await waitForReader(page);
@@ -350,7 +407,11 @@ async function auditSeries(page, engine, origin, entry, viewport) {
 
 const { server, origin } = await startServer();
 try {
-  for (const [engine, launcher] of [['chromium', chromium], ['webkit', webkit]]) {
+  const browserLaunchers = { chromium, webkit };
+  assert.ok(BROWSER_MATRIX.length > 0 && BROWSER_MATRIX.every((engine) => browserLaunchers[engine]),
+    `Invalid READER_CONTROLS_BROWSERS: ${BROWSER_MATRIX.join(',')}`);
+  for (const engine of BROWSER_MATRIX) {
+    const launcher = browserLaunchers[engine];
     const browser = await launcher.launch({ headless: true });
     try {
       const menuContext = await browser.newContext({ viewport: MOBILE, serviceWorkers: 'block' });
@@ -375,6 +436,8 @@ try {
       for (const route of articleRoutes) await auditStandaloneMobile(mobilePage, engine, origin, route);
       await auditSeries(mobilePage, engine, origin, flatSeries, 'mobile');
       await auditSeries(mobilePage, engine, origin, bookSeries, 'mobile');
+      await auditGillTableKeyboardScroll(mobilePage, engine, origin, { theme: 'light', reducedMotion: 'no-preference' });
+      await auditGillTableKeyboardScroll(mobilePage, engine, origin, { theme: 'dark', reducedMotion: 'reduce' });
       await mobile.close();
     } finally {
       await browser.close();
@@ -387,6 +450,7 @@ try {
 const report = {
   sha: process.env.GITHUB_SHA || null,
   routeAuthority: 'scripts/lib/public-surface-registry.js#buildPublicSurfaceRegistry',
+  browsers: BROWSER_MATRIX,
   articleRoutes,
   flatSeries: flatSeries.route,
   bookSeries: bookSeries.route,
@@ -401,6 +465,7 @@ fs.writeFileSync(path.join(REPORTS, 'reader-controls-residual-browser-contract.m
   '# Reader controls residual browser contract', '',
   `- SHA: ${report.sha || 'local'}`,
   `- Route authority: ${report.routeAuthority}`,
+  `- Browsers: ${report.browsers.join(', ')}`,
   `- Standalone reading routes: ${articleRoutes.length}`,
   `- Flat series representative: ${flatSeries.route}`,
   `- Book series representative: ${bookSeries.route}`,
@@ -409,4 +474,4 @@ fs.writeFileSync(path.join(REPORTS, 'reader-controls-residual-browser-contract.m
   `- Checks: ${report.passed}/${checks.length} PASS`,
   `- Failures: ${report.failed}`,
 ].join('\n') + '\n');
-console.log(`Reader controls residual browser contract: PASS (${report.passed}/${checks.length}; Chromium + WebKit; mobile + desktop)`);
+console.log(`Reader controls residual browser contract: PASS (${report.passed}/${checks.length}; ${report.browsers.join(' + ')}; mobile + desktop)`);
