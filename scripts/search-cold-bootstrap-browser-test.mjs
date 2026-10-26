@@ -18,7 +18,9 @@ const writerPattern = /window\.__gbSearch(?:Loading|BootRequested|OpenAfterLoad|
 
 function assertSingleWriterBoundary() {
   const roots = ['src/components', 'src/layouts', 'src/pages'];
+  const canonicalOwner = 'src/components/reader-platform/ReaderPreferencesHead.astro';
   const offenders = [];
+  const owners = [];
   for (const root of roots) {
     const pending = [path.join(ROOT, root)];
     while (pending.length) {
@@ -27,12 +29,15 @@ function assertSingleWriterBoundary() {
         const target = path.join(current, entry.name);
         if (entry.isDirectory()) pending.push(target);
         else if (/\.(?:astro|js|ts|mjs)$/.test(entry.name) && writerPattern.test(fs.readFileSync(target, 'utf8'))) {
-          offenders.push(path.relative(ROOT, target));
+          const relative = path.relative(ROOT, target).replace(/\\/g, '/');
+          if (relative === canonicalOwner) owners.push(relative);
+          else offenders.push(relative);
         }
       }
     }
   }
   assert.deepEqual(offenders, [], `search bootstrap state has non-owner writers: ${offenders.join(', ')}`);
+  assert.deepEqual(owners, [canonicalOwner], 'ReaderPreferencesHead must remain the sole shared bootstrap state owner');
 }
 
 function contentType(filePath) {
@@ -91,12 +96,20 @@ async function auditAxe(page) {
     violations: result.violations.map((item) => ({
       id: item.id,
       impact: item.impact,
-      nodes: item.nodes.length,
+      nodes: item.nodes.map((node) => ({ target: node.target, failureSummary: node.failureSummary })),
       help: item.help,
     })),
     passes: result.passes.length,
     incomplete: result.incomplete.length,
   };
+}
+
+function assertCleanBrowserDiagnostics(browserName, route, consoleErrors, failedResponses) {
+  const unexpectedConsoleErrors = consoleErrors.filter(({ text, url }) => !(
+    url === 'https://mc.yandex.ru/metrika/tag.js?id=108353327' && /net::ERR_CONNECTION_CLOSED/.test(text)
+  ));
+  assert.deepEqual(unexpectedConsoleErrors, [], `${browserName} ${route}: unexpected browser console errors`);
+  assert.deepEqual(failedResponses, [], `${browserName} ${route}: failed local or reachable HTTP responses`);
 }
 
 function contextOptions(viewport, options = {}) {
@@ -164,6 +177,7 @@ async function runColdAndWarmCase(browser, browserName, baseUrl, route, viewport
       id: document.activeElement?.id,
       className: document.activeElement?.className || '',
     }));
+    assert.ok(!String(afterEscape.className).includes('cp-input'), `${browserName} ${route}: Escape left focus inside the closed palette`);
     await page.keyboard.press('Control+K');
     try {
       await page.locator('.cp-backdrop.is-open').waitFor({ state: 'visible', timeout: 5000 });
@@ -194,6 +208,7 @@ async function runColdAndWarmCase(browser, browserName, baseUrl, route, viewport
     await page.locator('.cp-backdrop.is-open').waitFor({ state: 'visible' });
     assert.equal(searchRequests.length, 1, `${browserName} ${route}: warm API reopen fetched search runtime again`);
     assert.deepEqual(pageErrors, [], `${browserName} ${route}: uncaught page errors`);
+    assertCleanBrowserDiagnostics(browserName, route, consoleErrors, failedResponses);
     return { browser: browserName, route, viewport, cold, opened, afterEscape, warmShortcut, searchRequestCount: searchRequests.length, pageErrors, consoleErrors, failedResponses };
   } finally {
     await context.close();
@@ -226,14 +241,22 @@ async function runTouchPreloadRace(browser, browserName, baseUrl) {
     const trigger = page.locator('.mcp-search');
     await trigger.waitFor({ state: 'visible' });
     await page.evaluate(() => {
-      document.addEventListener('touchstart', () => {
-        window.__gbSearchTouchSnapshot = {
-          phase: window.GBSearchBootstrap?.getState().phase,
-          ready: window.GBSearch?.__ready === true,
-          preloadLinks: document.querySelectorAll('link[data-gb-search-preload]').length,
-          runtimeScripts: document.querySelectorAll('script[src*="/js/search.js"]').length,
-        };
-      }, { capture: true, once: true });
+      let captured = false;
+      const snapshotAfterFirstInput = () => {
+        if (captured) return;
+        captured = true;
+        queueMicrotask(() => {
+          window.__gbSearchTouchSnapshot = {
+            phase: window.GBSearchBootstrap?.getState().phase,
+            ready: window.GBSearch?.__ready === true,
+            preloadLinks: document.querySelectorAll('link[data-gb-search-preload]').length,
+            runtimeScripts: document.querySelectorAll('script[src*="/js/search.js"]').length,
+          };
+        });
+      };
+      for (const eventName of ['pointerdown', 'touchstart']) {
+        document.addEventListener(eventName, snapshotAfterFirstInput, { capture: true, once: true });
+      }
     });
     await trigger.tap();
     await page.locator('.cp-backdrop.is-open').waitFor({ state: 'visible', timeout: 15000 });
@@ -265,6 +288,7 @@ async function runTouchPreloadRace(browser, browserName, baseUrl) {
     await page.locator('.cp-backdrop.is-open').waitFor({ state: 'visible' });
     assert.equal(searchRequests.length, 1, `${browserName} /hard-texts/: warm touch should reuse the loaded runtime`);
     assert.deepEqual(pageErrors, [], `${browserName} /hard-texts/: uncaught page errors`);
+    assertCleanBrowserDiagnostics(browserName, '/hard-texts/', consoleErrors, failedResponses);
     return { browser: browserName, route: '/hard-texts/', viewport, theme: 'dark', reducedMotion: 'reduce', firstTap, axe, searchRequestCount: searchRequests.length, pageErrors, consoleErrors, failedResponses };
   } finally {
     await context.close();
@@ -295,6 +319,7 @@ async function runHomeMenuSearchCase(browser, browserName, baseUrl) {
     await searchAction.click();
     await page.locator('.cp-backdrop.is-open').waitFor({ state: 'visible', timeout: 15000 });
     await page.waitForFunction(() => window.GBSearch?.__ready === true);
+    await page.screenshot({ path: path.join(REPORT_DIR, 'home-menu-search-open-dark-reduced-mobile.png'), fullPage: false });
     const axe = await auditAxe(page);
     const result = await page.evaluate(() => ({
       menuOpen: document.getElementById('hMobileNav')?.classList.contains('open') === true,
@@ -310,6 +335,7 @@ async function runHomeMenuSearchCase(browser, browserName, baseUrl) {
     assert.equal(result.phase, 'ready', `${browserName} home: shared bootstrap did not become ready`);
     assert.equal(searchRequests.length, 1, `${browserName} home: mobile-nav open should request search once`);
     assert.deepEqual(pageErrors, [], `${browserName} home: uncaught page errors`);
+    assertCleanBrowserDiagnostics(browserName, '/', consoleErrors, failedResponses);
     return { browser: browserName, route: '/', viewport, theme: 'dark', reducedMotion: 'reduce', result, axe, searchRequestCount: searchRequests.length, pageErrors, consoleErrors, failedResponses };
   } finally {
     await context.close();
@@ -318,14 +344,15 @@ async function runHomeMenuSearchCase(browser, browserName, baseUrl) {
 
 async function runFailureRetryCase(browser, browserName, baseUrl) {
   const viewport = { width: 1366, height: 900 };
-  const context = await browser.newContext(contextOptions(viewport, { colorScheme: 'dark', reducedMotion: 'reduce' }));
+  const context = await browser.newContext({ ...contextOptions(viewport, { colorScheme: 'dark', reducedMotion: 'reduce' }), serviceWorkers: 'block' });
   const page = await context.newPage();
   const pageErrors = [];
   const failedResponses = [];
   let attempts = 0;
   page.on('pageerror', (error) => pageErrors.push(String(error?.stack || error)));
   page.on('response', (response) => { if (response.status() >= 400) failedResponses.push({ status: response.status(), url: response.url() }); });
-  await page.route('**/js/search.js**', async (route) => {
+  await page.route('**/*', async (route) => {
+    if (!/\/js\/search\.js(?:\?|$)/.test(route.request().url())) return route.continue();
     attempts += 1;
     if (attempts === 1) await route.abort('failed');
     else await route.continue();
@@ -336,7 +363,10 @@ async function runFailureRetryCase(browser, browserName, baseUrl) {
     assert.ok(response?.ok(), `${browserName} retry route did not load`);
     const trigger = page.locator('#gbSearchBtn');
     await trigger.click();
-    await page.waitForFunction(() => window.GBSearchBootstrap?.getState().phase === 'failed');
+    await page.waitForFunction(() => window.GBSearchBootstrap?.getState().phase === 'failed', null, { timeout: 8000 }).catch(async (error) => {
+      const diagnostic = await page.evaluate(() => ({ bootstrap: window.GBSearchBootstrap?.getState(), bootRequested: window.__gbSearchBootRequested, ready: window.GBSearch?.__ready === true }));
+      throw new Error(`${browserName}: failed state was not reached after first open: ${JSON.stringify({ attempts, diagnostic })}; ${error.message}`);
+    });
     const failed = await page.evaluate(() => ({
       phase: window.GBSearchBootstrap?.getState().phase,
       pendingOpen: window.GBSearchBootstrap?.getState().pendingOpen,
@@ -346,7 +376,7 @@ async function runFailureRetryCase(browser, browserName, baseUrl) {
     assert.equal(failed.pendingOpen, false, `${browserName}: failed load left open request pending`);
     assert.equal(failed.bootRequested, false, `${browserName}: failed load left boot latch set`);
     assert.equal(failed.paletteOpen, false, `${browserName}: failed load opened a non-ready palette`);
-    assert.equal(attempts, 1, `${browserName}: first request did not fail exactly once`);
+    assert.equal(attempts, 1, `${browserName}: first runtime request should fail exactly once`);
 
     await trigger.click();
     await page.locator('.cp-backdrop.is-open').waitFor({ state: 'visible', timeout: 15000 });

@@ -12,6 +12,7 @@ const files = {
   siteUtils: read('js/site-utils.js'),
   commandPalette: read('css/command-palette.css'),
   baseLayout: read('src/layouts/BaseLayout.astro'),
+  readerHead: read('src/components/reader-platform/ReaderPreferencesHead.astro'),
   home: read('src/components/home/HomePageChrome.astro'),
   homeProgressive: read('src/components/home/HomeProgressiveEnhancementHead.astro'),
   notFound: read('404.html'),
@@ -92,9 +93,13 @@ check(files.search.includes('window.addEventListener("gb:openSearch",function(){
 check(files.search.includes('we(),ie())'), 'Search open path must only warm Pagefind');
 check(!files.search.includes('ie(function(){E.value.trim()&&xe(E.value.trim())})'), 'Search open path must not re-run the current query');
 check(!files.baseLayout.includes('ctrlKey') && !files.baseLayout.includes('metaKey'), 'BaseLayout raw shortcut parser survived');
-check(files.baseLayout.includes('window.addEventListener("gb:openSearch"'), 'BaseLayout gb:openSearch loader missing');
+check(files.readerHead.includes('data-gb-search-bootstrap'), 'shared lazy search bootstrap include missing from ReaderPreferencesHead');
+check(files.readerHead.includes("window.addEventListener('gb:openSearch'"), 'shared bootstrap gb:openSearch transport missing');
+check(files.readerHead.includes("document.addEventListener('DOMContentLoaded', installFirstInteractionPreloader"), 'head bootstrap must defer declarative preload lookup until body is parsed');
+check(files.readerHead.includes('function observeClosedPaletteFocus()'), 'closed-palette focus cleanup owner missing');
+check(files.readerHead.includes('if (input && document.activeElement === input) input.blur();'), 'closed-palette cleanup must release focus from its hidden input');
 check(!files.home.includes('const onShortcut'), 'Home route-local shortcut parser survived');
-check(files.home.includes("window.addEventListener('gb:openSearch'"), 'Home gb:openSearch orchestration missing');
+check(!files.home.includes("window.addEventListener('gb:openSearch'"), 'Home route-local gb:openSearch orchestration survived');
 check(!files.homeProgressive.includes('stopImmediatePropagation'), 'Home progressive shortcut capture gate survived');
 check(!files.notFound.includes('function key(e)') && files.notFound.includes('gb:openSearch'), '404 raw keyboard owner survived');
 check(files.rodosloviye.includes('/js/site-utils.js') && files.rodosloviye.indexOf('/js/site-utils.js') < files.rodosloviye.indexOf('/js/site.js'), 'Rodosloviye shared runtime order missing');
@@ -123,7 +128,8 @@ const ownerCandidates = [
 ];
 const rawOwners = ownerCandidates.filter((file) => hasRawSearchShortcut(fs.readFileSync(file, 'utf8')))
   .map((file) => path.relative(process.cwd(), file).replace(/\\/g, '/')).sort();
-check(JSON.stringify(rawOwners) === JSON.stringify(['js/site-utils.js']), `sole raw Search keyboard owner drifted: ${rawOwners.join(', ')}`);
+check(JSON.stringify(rawOwners) === JSON.stringify(['js/site-utils.js']),
+  `sole raw Search keyboard owner drifted: ${rawOwners.join(', ')}`);
 check(files.auditPro.includes('raw Ctrl/Meta+K owner'), 'audit-pro G112 semantic owner guard missing');
 
 check(files.home.includes('data-search-shortcut-label="Поиск по всему сайту"'), 'Home shared label metadata missing');
