@@ -139,6 +139,9 @@ check(files.home.includes('data-search-shortcut-label="Поиск по всем�
 check(files.home.includes('aria-label="Поиск по всему сайту"'), 'Home neutral initial aria label missing');
 check(files.home.includes('title="Поиск по всему сайту"'), 'Home neutral initial title missing');
 check(!files.home.includes("const platform = navigator.userAgentData?.platform"), 'Home duplicate platform helper survived');
+check(!files.home.includes('home-command-palette'), 'Home duplicate Search OverlayRuntime owner survived');
+check(!files.home.includes('window.OverlayRuntime?.register'), 'Home must not register a second Search overlay owner');
+check(!files.home.includes('const trapSearchFocus'), 'Home duplicate Search focus-trap owner survived');
 
 for (const marker of [
   "platform: 'Win32'",

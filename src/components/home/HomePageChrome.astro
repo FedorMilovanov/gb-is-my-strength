@@ -299,18 +299,7 @@ window.SITE_CONFIG = {
 <script is:inline>
   (() => {
     const SEARCH_ID = 'gbCommandPalette';
-    const OWNER_ID = 'home-command-palette';
-    const FOCUSABLE_SELECTOR = [
-      'a[href]',
-      'button:not([disabled])',
-      'input:not([disabled])',
-      'select:not([disabled])',
-      'textarea:not([disabled])',
-      '[tabindex]:not([tabindex="-1"])',
-    ].join(',');
     let overlay = null;
-    let overlayController = null;
-    let overlayOpen = false;
 
     const searchTriggers = () => Array.from(document.querySelectorAll(
       '#gbSearchBtn, [data-action="open-search"]'
@@ -321,34 +310,6 @@ window.SITE_CONFIG = {
         trigger.setAttribute('aria-controls', SEARCH_ID);
         trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
       });
-    };
-
-    const focusableControls = () => {
-      if (!overlay) return [];
-      return Array.from(overlay.querySelectorAll(FOCUSABLE_SELECTOR)).filter((control) => (
-        !control.hidden
-        && control.getAttribute('aria-hidden') !== 'true'
-        && control.offsetParent !== null
-      ));
-    };
-
-    /* The shared search runtime predates OverlayRuntime and contains an
-       input-local Tab handler. Home owns only the two modal edge wraps at the
-       earliest capture phase, so exactly one handler acts at those boundaries
-       while normal Tab movement remains native. */
-    const trapSearchFocus = (event) => {
-      if (event.key !== 'Tab' || !overlay?.classList.contains('is-open')) return;
-      const controls = focusableControls();
-      if (!controls.length) return;
-      const first = controls[0];
-      const last = controls[controls.length - 1];
-      const active = document.activeElement;
-      const wrapBackward = event.shiftKey && (active === first || !overlay.contains(active));
-      const wrapForward = !event.shiftKey && (active === last || !overlay.contains(active));
-      if (!wrapBackward && !wrapForward) return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      (wrapBackward ? last : first).focus({ preventScroll: true });
     };
 
     /* GBS-HOME-SEARCH-DUPLICATE-CLOSE-CONTROLS: общая палитра (js/search.js)
@@ -393,36 +354,13 @@ window.SITE_CONFIG = {
       inputWrap.appendChild(button);
     };
 
-    const registerOverlay = () => {
-      if (!overlay || overlayController || !window.OverlayRuntime?.register) return;
-      overlayController = window.OverlayRuntime.register(OWNER_ID, {
-        element: overlay,
-        focusTarget: () => overlay.querySelector('.cp-input'),
-        inertTargets: ['.h-navbar', '.home-v20', '#hScrollTop'],
-        onRequestClose: () => window.GBSearch?.close?.(),
-        closeOnEscape: false,
-        trapFocus: false,
-        restoreFocus: true,
-        lockScroll: false,
-      });
-    };
-
+    // Search runtime owns overlay lifecycle, focus restoration, scroll locking and Tab; Home only adds its stable dialog id and mirrors opener state.
     const syncOverlay = () => {
       if (!overlay) return;
       const open = overlay.classList.contains('is-open');
       overlay.id = SEARCH_ID;
       overlay.setAttribute('aria-hidden', open ? 'false' : 'true');
       syncTriggerState(open);
-      registerOverlay();
-
-      if (open && !overlayOpen) {
-        overlayController?.open({
-          opener: window.__gbHomeSearchOpener || document.getElementById('gbSearchBtn'),
-          restoreFocus: true,
-        });
-      }
-      if (!open && overlayOpen) overlayController?.close('search-closed');
-      overlayOpen = open;
     };
 
     const attachOverlay = (candidate) => {
@@ -435,8 +373,6 @@ window.SITE_CONFIG = {
       });
       syncOverlay();
     };
-
-    window.addEventListener('keydown', trapSearchFocus, true);
 
     const existing = document.querySelector('.cp-backdrop');
     if (existing) attachOverlay(existing);
