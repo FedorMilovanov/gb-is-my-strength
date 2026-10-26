@@ -300,7 +300,9 @@ AFTER: перекрытие **0 px** и правый край ≤ viewport на 
 
 ---
 
-## 10. Продолжение W47 — `SYS-READING-TABLE-KEYBOARD-SCROLL` (Product `b126de1` → следующий PR)
+## 10. Продолжение W47 — `SYS-READING-TABLE-KEYBOARD-SCROLL` (Product `b126de1` → successor PR)
+
+**Текущий main после контрольного изменения:** PR #2201 merged at `21dcfdd` (`fix(audit): scope Yandex smoke exception to confirmed request`). Это только release-smoke harness; disposition находок AuditRepo и product backlog не изменились. До W47 merge `main` по-прежнему отражает **37/9/4**, а приведённые ниже **38/8/4** — verified projected counts после W47. W47 evidence сохраняет exact product anchor `b126de1`; successor lane основан на текущем `main@21dcfdd`.
 
 **Mode: SYSTEM** (Gill owner-sensitive surface + shared reader keyboard dispatcher).
 **Bounded scope:** один горизонтально переполняющийся Gill I table; общий
