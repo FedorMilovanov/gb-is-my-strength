@@ -69,15 +69,35 @@ function createServer() {
 }
 function ignoreLocalNoise(text) {
   return (/violates the following Content Security Policy directive/i.test(text) && /https:\/\/gospod-bog\.ru\//i.test(text))
-    || /Failed to load resource.*mc\.yandex/i.test(text)
     || /favicon/i.test(text);
+}
+function isExpectedTrackerDisconnect(request, errorText) {
+  if (errorText !== 'net::ERR_CONNECTION_CLOSED') return false;
+  try {
+    const url = new URL(request.url());
+    return url.protocol === 'https:'
+      && url.hostname === 'mc.yandex.ru'
+      && url.pathname === '/metrika/tag.js'
+      && url.searchParams.get('id') === '108353327';
+  } catch (_) {
+    return false;
+  }
 }
 function safeName(routePath) {
   return routePath === '/' ? 'root' : routePath.replace(/^\//, '').replace(/\/$/, '').replace(/[^a-z0-9_-]+/gi, '-');
 }
 async function inspect(page, route, viewportName) {
   const seenErrors = [];
+  let expectedTrackerDisconnects = 0;
   page.on('pageerror', e => { if (!ignoreLocalNoise(e.message)) seenErrors.push(e.message); });
+  page.on('requestfailed', request => {
+    const errorText = request.failure()?.errorText || 'unknown network error';
+    if (isExpectedTrackerDisconnect(request, errorText)) {
+      expectedTrackerDisconnects += 1;
+      return;
+    }
+    seenErrors.push(`resource request failed: ${request.url()} (${errorText})`);
+  });
   page.on('console', m => {
     const text = m.text();
     if (m.type() === 'error' && !ignoreLocalNoise(text)) seenErrors.push(text.slice(0, 180));
@@ -98,7 +118,20 @@ async function inspect(page, route, viewportName) {
     fs.mkdirSync(path.join(ROOT, 'reports'), { recursive: true });
     await page.screenshot({ path: path.join(ROOT, 'reports', `dist-${viewportName}-${safeName(route.path)}.png`), fullPage: false });
   }
-  return { status: response ? response.status() : 0, errors: seenErrors, ...data };
+  let remainingExpectedConsoleErrors = expectedTrackerDisconnects;
+  const errors = seenErrors.filter(error => {
+    if (remainingExpectedConsoleErrors > 0 && /^Failed to load resource: net::ERR_CONNECTION_CLOSED$/i.test(error.trim())) {
+      remainingExpectedConsoleErrors -= 1;
+      return false;
+    }
+    return true;
+  });
+  return {
+    status: response ? response.status() : 0,
+    errors,
+    expectedTrackerDisconnects,
+    ...data,
+  };
 }
 
 (async () => {
@@ -125,13 +158,15 @@ async function inspect(page, route, viewportName) {
     { name: 'mobile', options: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true } },
   ];
   const problems = [];
+  let recognizedTrackerDisconnects = 0;
   try {
     for (const vp of viewports) {
       const context = await browser.newContext(vp.options);
       for (const route of ROUTES) {
         const page = await context.newPage();
-        const r = await inspect(page, route, vp.name).catch(e => ({ status: 0, errors: [e.message], title: '', canonical: '', h1: [], text: '', overflow: 0, iframeCount: 0, canvasCount: 0, robots: '' }));
+        const r = await inspect(page, route, vp.name).catch(e => ({ status: 0, errors: [e.message], expectedTrackerDisconnects: 0, title: '', canonical: '', h1: [], text: '', overflow: 0, iframeCount: 0, canvasCount: 0, robots: '' }));
         await page.close();
+        recognizedTrackerDisconnects += r.expectedTrackerDisconnects || 0;
         const label = `[${vp.name}] ${route.path}`;
         if (r.status !== 200) problems.push(`${label}: status ${r.status}`);
         if (route.canonical && r.canonical !== route.canonical) problems.push(`${label}: canonical ${JSON.stringify(r.canonical)} != ${route.canonical}`);
@@ -151,6 +186,9 @@ async function inspect(page, route, viewportName) {
     server.close();
   }
   console.log('');
+  if (recognizedTrackerDisconnects > 0) {
+    console.log(`ℹ Recognized ${recognizedTrackerDisconnects} confirmed mc.yandex.ru/metrika/tag.js connection-closed request(s); all other failed requests remain errors.`);
+  }
   if (problems.length) {
     console.error(`❌ dist smoke failed: ${problems.length} issue(s)`);
     problems.slice(0, 40).forEach(p => console.error('  - ' + p));
