@@ -26,6 +26,31 @@ const needsSearchOpener = searchOpenerRoutes.has(Astro.url.pathname);
   const ownerScript = document.currentScript || document.querySelector('script[data-gb-search-bootstrap]');
   const defaultSource = ownerScript?.dataset.searchSrc || '/js/search.js';
   const state = { phase: 'idle', promise: null, pendingOpen: false, opener: null };
+  const searchShortcut = () => /Mac|iPhone|iPad|iPod/i.test(String(
+    navigator.userAgentData?.platform || navigator.platform || navigator.userAgent || '',
+  )) ? '⌘+K' : 'Ctrl+K';
+
+  function syncSearchTriggerLabels(root = document) {
+    const selector = '[data-search-shortcut]';
+    const triggers = [];
+    if (root instanceof window.Element && root.matches(selector)) triggers.push(root);
+    if (root?.querySelectorAll) triggers.push(...root.querySelectorAll(selector));
+    const shortcut = searchShortcut();
+    triggers.forEach((trigger) => {
+      const label = trigger.getAttribute('data-search-shortcut-label') || 'Поиск по всему сайту';
+      trigger.setAttribute('aria-label', `${label} (${shortcut})`);
+      trigger.setAttribute('title', `${label} ${shortcut}`);
+      trigger.setAttribute('data-search-label-ready', shortcut);
+      trigger.querySelectorAll('[data-search-shortcut-value], .kb').forEach((node) => { node.textContent = shortcut; });
+    });
+    return shortcut;
+  }
+
+  const initializeSearchTriggerLabels = () => syncSearchTriggerLabels(document);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeSearchTriggerLabels, { once: true });
+  } else initializeSearchTriggerLabels();
+  window.addEventListener('pageshow', initializeSearchTriggerLabels);
   const preloads = new Set();
   const observedPalettes = new WeakSet();
   const triggers = [
@@ -199,6 +224,7 @@ const needsSearchOpener = searchOpenerRoutes.has(Astro.url.pathname);
     version: VERSION,
     open,
     preload,
+    syncTriggerLabels: syncSearchTriggerLabels,
     getState: () => ({ phase: runtimeReady() ? 'ready' : state.phase, pendingOpen: state.pendingOpen }),
   };
 })(window, document);
@@ -249,6 +275,7 @@ const needsSearchOpener = searchOpenerRoutes.has(Astro.url.pathname);
           item.appendChild(button);
           navLinks.appendChild(item);
         }
+        window.GBSearchBootstrap?.syncTriggerLabels(button);
       }
 
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensureTrigger, { once: true });

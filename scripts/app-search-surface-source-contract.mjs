@@ -39,11 +39,11 @@ const assetHash = (text) => crypto.createHash('md5').update(text).digest('hex').
 
 const commandPaletteHash = assetHash(files.commandPalette);
 check(files.head.includes(`/css/command-palette.css?v=${commandPaletteHash}`), 'current command-palette revision missing');
-const searchHash = assetHash(files.search);
-check(files.head.includes(`/js/search.js?v=${searchHash}`), 'current search revision missing');
+check(files.readerHead.includes("assetUrl('js/search.js')") && files.readerHead.includes('data-search-src={searchRuntimeSrc}'), 'current search revision missing from the sole lazy bootstrap');
+check(!files.head.includes('/js/search.js'), 'AppSearchHead must not enqueue a second Search bootstrap path');
 const siteUtilsHash = assetHash(files.siteUtils);
 check(files.head.includes(`/js/site-utils.js?v=${siteUtilsHash}`), 'current SiteUtils revision missing');
-check(files.head.indexOf('/js/site-utils.js') < files.head.indexOf('/js/search.js'), 'SiteUtils must load before Search');
+check(files.head.includes('/js/site-utils.js'), 'SiteUtils runtime missing from strict-native Search surface');
 check(files.head.includes('defer'), 'search bootstrap must remain deferred');
 check(files.surface.includes('id="gbSearchBtn"'), 'canonical trigger id missing');
 check(files.surface.includes('aria-haspopup="dialog"'), 'dialog semantics missing');
@@ -94,6 +94,9 @@ check(files.search.includes('we(),ie())'), 'Search open path must only warm Page
 check(!files.search.includes('ie(function(){E.value.trim()&&xe(E.value.trim())})'), 'Search open path must not re-run the current query');
 check(!files.baseLayout.includes('ctrlKey') && !files.baseLayout.includes('metaKey'), 'BaseLayout raw shortcut parser survived');
 check(files.readerHead.includes('data-gb-search-bootstrap'), 'shared lazy search bootstrap include missing from ReaderPreferencesHead');
+check(files.readerHead.includes('function syncSearchTriggerLabels(root = document)'), 'shared bootstrap must own first-paint search shortcut labels');
+check(files.readerHead.includes('syncTriggerLabels: syncSearchTriggerLabels'), 'shared bootstrap label sync API missing');
+check(files.readerHead.includes('window.GBSearchBootstrap?.syncTriggerLabels(button)'), 'dynamically injected opener must receive shared labels');
 check(/document\.addEventListener\('click',[\s\S]*?event\.preventDefault\(\);\s*event\.stopImmediatePropagation\(\);/.test(files.readerHead), 'shared bootstrap must stop the handled opener click before lazy script handlers attach');
 check(files.readerHead.includes("window.addEventListener('gb:openSearch'"), 'shared bootstrap gb:openSearch transport missing');
 check(files.readerHead.includes("menuButton?.getAttribute('aria-expanded') === 'true' && menu?.classList.contains('open')"), 'shared warm shortcut must detect an open mobile menu');
