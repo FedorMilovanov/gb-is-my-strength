@@ -345,9 +345,11 @@ Part I → Part II. Светлая и тёмная тема с reduced motion: a
 48 passes**. Desktop 1440 px: таблица не переполняет viewport (750/750), keyboard
 focus доступен. Screenshots и сырой axe вывод локально `/tmp/w47-light.png`,
 `/tmp/w47-dark-reduced.png`, `/tmp/w47-desktop.png`, `/tmp/w47-visual-axe.log`
-(не коммитятся). Console: только `ERR_CONNECTION_CLOSED` для внешнего ресурса в
-sandbox; pageerror нет. Existing residual contract local Chromium:
-**745/745 PASS**. Gill claims
+(не коммитятся). Existing reader-controls contract дополнительно сохраняет
+focused-table light + dark/reduced-motion screenshots в свой artifact glob
+`reports/reader-controls-a11y-*.png`. Console: только `ERR_CONNECTION_CLOSED`
+для внешнего ресурса в sandbox; pageerror нет. Existing residual contract local
+Chromium: **747/747 PASS**. Gill claims
 surface и series consistency contracts PASS. Production-like build PASS;
 cache-bust READ-ONLY PASS.
 
