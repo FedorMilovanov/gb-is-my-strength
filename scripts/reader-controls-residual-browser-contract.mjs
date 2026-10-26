@@ -278,9 +278,16 @@ async function auditGillTableKeyboardScroll(page, engine, origin, { theme, reduc
   await page.evaluate((isDark) => document.documentElement.classList.toggle('dark', isDark), theme === 'dark');
 
   const table = page.getByRole('table', { name: accessibleName, exact: true });
-  check(engine, 'mobile', route, `scrolling table has a named keyboard target (${theme}/${reducedMotion})`,
-    await table.count() === 1 && await table.getAttribute('tabindex') === '0',
-    await table.count() ? { label: await table.getAttribute('aria-label'), tabindex: await table.getAttribute('tabindex') } : null);
+  const tableCount = await table.count();
+  const tableSemantics = tableCount === 1 ? await table.evaluate((node) => ({
+    caption: node.querySelector('caption')?.textContent.trim() || '',
+    captionClass: node.querySelector('caption')?.className || '',
+    tabindex: node.getAttribute('tabindex'),
+  })) : null;
+  check(engine, 'mobile', route, `scrolling table has a native named keyboard target (${theme}/${reducedMotion})`,
+    tableCount === 1 && tableSemantics.tabindex === '0' &&
+      tableSemantics.caption === accessibleName && tableSemantics.captionClass.split(/\s+/).includes('sr-only'),
+    tableSemantics);
   const dimensions = await table.evaluate((node) => ({
     scrollWidth: node.scrollWidth,
     clientWidth: node.clientWidth,
