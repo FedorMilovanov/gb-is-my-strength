@@ -19,7 +19,7 @@ function emitGithubFailureAnnotation(error) {
   const detail = [currentBrowserCase, error?.name || 'Error', error?.message || String(error),
     ...String(error?.stack || '').split('\n').slice(1, 5)].join(' | ').slice(0, 5000);
   const escaped = detail.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
-  process.stderr.write(`::error title=Search modal browser failure::${escaped}\n`);
+  process.stdout.write(`::error title=Search modal browser failure::${escaped}\n`);
 }
 
 const jsSource = fs.readFileSync(path.resolve('js/search.js'), 'utf8');
