@@ -297,3 +297,69 @@ AFTER: перекрытие **0 px** и правый край ≤ viewport на 
 `SYS-CONTENT-AUTHORING-PUBLICATION-CONTRACT`,
 `SYS-READING-TABLE-KEYBOARD-SCROLL`, `SYS-SEARCH-LAZY-BOOTSTRAP-OWNERSHIP`.
 Блокировщик первых workflow-правок прежний — открытый PR #2179.
+
+---
+
+## 10. Продолжение W47 — `SYS-READING-TABLE-KEYBOARD-SCROLL` (Product `b126de1` → следующий PR)
+
+**Mode: SYSTEM** (Gill owner-sensitive surface + shared reader keyboard dispatcher).
+**Bounded scope:** один горизонтально переполняющийся Gill I table; общий
+`floating-cluster-controller.js` только перестаёт глушить стрелки, когда фокус
+находится внутри реально горизонтально прокручиваемой области; один existing
+reader controls browser contract. Никакой смены контента/данных/иерархии таблицы.
+**Источник:** strict-native route ownership
+`migration/page-ownership.json` →
+`src/pages/articles/dzhon-gill-chast-1-chelovek/index.astro` →
+`GillPart1SectionIllnessFamily.astro`; route profile
+`data/route-profiles/articles-dzhon-gill-chast-1-chelovek.json`.
+**Смежные PR:** открытые PR #2196/#2197/#2198 (dependency), #2179 (workflows),
+#2164 (MDX articles), #2143 (genealogy data) — file/surface overlap отсутствует.
+
+### Before → root → fix
+
+BEFORE на точном `b126de1`: axe `scrollable-region-focusable` для
+`table:nth-child(49)` / `.manuscript-table`; mobile 390 px, `scrollWidth 356`,
+`clientWidth 309`, `tabIndex -1`. Прямая клавиатурная проба: `ArrowRight`
+срабатывал как reader «следующая часть» и уходил на Part II, а не прокручивал
+таблицу. CSS уже делал сам `table` горизонтальным scroller, так что проблема
+была одновременно отсутствием доступного focus target и слишком широким
+reader shortcut handler.
+
+Fix: эта таблица получает native `tabindex="0"`, описательное имя
+`aria-label` и видимый `:focus-visible` outline. В shared
+`floating-cluster-controller.js` left/right shortcut отступает, когда event
+идёт из элемента внутри горизонтально переполняющегося `overflow-x:auto|scroll`
+region; вне такой области обычная клавиатурная навигация серии остаётся
+неизменной. Существующий `reader-controls-residual-browser-contract.mjs`
+дополнен mobile light + dark/reduced-motion пробами, проверками accessible
+name, Tab-фокуса, visible focus, реального scroll delta, стабильного URL и
+обоих краёв без случайной навигации; локальный browser selector позволяет
+запускать Chromium-only, но CI default остаётся Chromium + WebKit.
+
+AFTER: Chromium 153, 390 px — `tabIndex 0`, `:focus-visible` с 2px outline,
+ArrowRight перемещает `scrollLeft` 0 → 27, URL остаётся Part I; при правом и
+левом краях повторные стрелки сохраняют Part I. Светлая и тёмная тема с
+reduced motion: axe **0 violations / 48 passes**. Desktop 1440 px: таблица не
+переполняет viewport (750/750), keyboard focus доступен. Screenshots и сырой
+axe вывод локально `/tmp/w47-light.png`, `/tmp/w47-dark-reduced.png`,
+`/tmp/w47-desktop.png`, `/tmp/w47-visual-axe.log` (не коммитятся).
+Console: только `ERR_CONNECTION_CLOSED` для внешнего ресурса в sandbox; pageerror
+нет. Existing residual contract local Chromium: **743/743 PASS**. Gill claims
+surface и series consistency contracts PASS. Production-like build PASS;
+cache-bust READ-ONLY PASS.
+
+**Текущий backlog после W47 (до owner reverify):**
+
+| Класс | После W43–W46 | После W47 |
+|---|---:|---:|
+| Исправлено в Product / нужен owner-reverify | 37 | **38** |
+| Подтверждённые живые кодовые lane | 9 | **8** |
+| Владелец / evidence boundary | 4 | **4** |
+
+8 живых кодовых лейнов: `SYS-HEAD-ASSET-PROJECTION-PROLIFERATION`,
+`SYS-TTS-RECOVERY-STATUS-OWNERSHIP`, `SYS-EDITORIAL-DATELINE-SLOT-SEMANTICS`,
+`SYS-SERIES-DISCOVERY-CURRENT-AUTHORITY`, `SYS-DEPENDENCY-ADVISORY-LIFECYCLE`,
+`SYS-CSS-CASCADE-GOVERNANCE-NONENFORCING`,
+`SYS-CONTENT-AUTHORING-PUBLICATION-CONTRACT`,
+`SYS-SEARCH-LAZY-BOOTSTRAP-OWNERSHIP`. Первые workflow/dependency изменения
+по-прежнему блокируются disposition PR #2179.
