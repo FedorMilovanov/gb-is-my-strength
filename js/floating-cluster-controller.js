@@ -2819,6 +2819,16 @@
     if (t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT') return true;
     return Boolean(document.activeElement && document.activeElement.isContentEditable);
   }
+  function isHorizontallyScrollableTarget(target) {
+    var node = target && target.nodeType === 1 ? target : target && target.parentElement;
+    while (node && node !== document.body) {
+      var style = window.getComputedStyle(node);
+      if ((style.overflowX === 'auto' || style.overflowX === 'scroll') &&
+          node.scrollWidth > node.clientWidth + 1) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
   function modalsOpen() {
     return Boolean(document.querySelector('#share-dialog-overlay.is-open,.cp-backdrop.is-open,#gb-hl-backdrop.is-open'));
   }
@@ -2886,6 +2896,7 @@
   document.addEventListener('keydown', function (e) {
     if (e.ctrlKey || e.metaKey || e.altKey || inField()) return;
     var key = e.key || '';
+    if ((key === 'ArrowLeft' || key === 'ArrowRight') && isHorizontallyScrollableTarget(e.target)) return;
     if (key === 'ArrowLeft' || key === 'ArrowRight') {
       if (e.shiftKey || modalsOpen() || sheetsOpen()) return;
       var dir = key === 'ArrowRight' ? 'next' : 'prev';
