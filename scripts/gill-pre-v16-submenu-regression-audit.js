@@ -187,7 +187,9 @@ async function browserAudit(){
       for(const vp of VIEWPORTS){
         const page=await browser.newPage({viewport:{width:vp.width,height:vp.height}});
         const errs=[]; page.on('pageerror',e=>errs.push(e.message));
-        await page.goto(base+route,{waitUntil:'networkidle',timeout:30000});
+        await page.goto(base+route,{waitUntil:'domcontentloaded',timeout:30000});
+        await page.locator('[data-gill-v16] .gbs-rail').waitFor({state:'attached',timeout:30000});
+        await page.locator('[data-gill-v16] .gbs2-tocscroll').waitFor({state:'attached',timeout:30000});
         await page.evaluate(()=>{document.documentElement.style.scrollBehavior='auto';});
         if(vp.dark)await page.evaluate(()=>document.documentElement.classList.add('dark'));
         await page.waitForTimeout(300);
@@ -197,7 +199,7 @@ async function browserAudit(){
           const toc=document.querySelector('.gbs2-tocscroll');
           const footer=document.querySelector('.gbs-rail-foot');
           const article=document.querySelector('article')||document.querySelector('main');
-          return{noRail:false,posFixed:cs.position==='fixed',width:rr.width,
+          return{noRail:false,compact:!window.matchMedia('(min-width:85em)').matches,railDisplay:cs.display,mobileTopVisible:(()=>{const e=document.querySelector('[data-gill-v16] .mobile-top-bar');return !!(e&&getComputedStyle(e).display!=='none'&&e.getClientRects().length);})(),mobileBottomVisible:(()=>{const e=document.querySelector('[data-gill-v16] .mobile-bottom-bar');return !!(e&&getComputedStyle(e).display!=='none'&&e.getClientRects().length);})(),posFixed:cs.position==='fixed',width:rr.width,
             radius:parseFloat(cs.borderTopLeftRadius)||0, railSW:rail.scrollWidth,railCW:rail.clientWidth,
             tocSW:toc?toc.scrollWidth:0,tocCW:toc?toc.clientWidth:0, docSW:document.documentElement.scrollWidth,winW:window.innerWidth,
             footerBottom:footer?footer.getBoundingClientRect().bottom:0,railBottom:rr.bottom,
@@ -218,23 +220,26 @@ async function browserAudit(){
             inFlowOverflow:(function(){var m=0;rail.querySelectorAll('*').forEach(function(el){var p=getComputedStyle(el).position;if(p==='absolute'||p==='fixed')return;if(el.closest('.gb-ember-expand'))return;if(el.closest('.gbmini-bloom'))return;var rb=el.getBoundingClientRect();if(rb.right>m)m=rb.right;});return Math.max(0,m-rr.right);})()};
         });
         if(g.noRail){bad(`${route} ${vp.name} no .gbs-rail frame`);await page.close();continue;}
-        g.posFixed?ok(`${route} ${vp.name} rail fixed`):bad(`${route} ${vp.name} rail not fixed (${g.posFixed})`);
-        const wantW=vp.width>=1280?304:272;
-        (g.width>=wantW-2)?ok(`${route} ${vp.name} rail width ${Math.round(g.width)}`):bad(`${route} ${vp.name} rail width ${Math.round(g.width)} < ${wantW}`);
-        (g.radius>=18)?ok(`${route} ${vp.name} rail radius ${g.radius}`):bad(`${route} ${vp.name} rail radius ${g.radius} < 18`);
-        (g.inFlowOverflow<=1)?ok(`${route} ${vp.name} rail no horizontal overflow`):bad(`${route} ${vp.name} rail horizontal overflow ${g.inFlowOverflow}`);
-        (g.tocSW<=g.tocCW+1)?ok(`${route} ${vp.name} tocscroll no horizontal overflow`):bad(`${route} ${vp.name} tocscroll overflow ${g.tocSW-g.tocCW}`);
+        if(g.compact){
+          (g.railDisplay==='none')?ok(`${route} ${vp.name} compact rail hidden`):bad(`${route} ${vp.name} compact rail display ${g.railDisplay}`);
+          g.mobileTopVisible?ok(`${route} ${vp.name} mobile top bar visible`):bad(`${route} ${vp.name} mobile top bar hidden`);
+          g.mobileBottomVisible?ok(`${route} ${vp.name} mobile bottom bar visible`):bad(`${route} ${vp.name} mobile bottom bar hidden`);
+        } else {
+          g.posFixed?ok(`${route} ${vp.name} rail fixed`):bad(`${route} ${vp.name} rail not fixed (${g.posFixed})`);
+          const wantW=vp.width>=1280?304:272;
+          (g.width>=wantW-2)?ok(`${route} ${vp.name} rail width ${Math.round(g.width)}`):bad(`${route} ${vp.name} rail width ${Math.round(g.width)} < ${wantW}`);
+          (g.radius>=18)?ok(`${route} ${vp.name} rail radius ${g.radius}`):bad(`${route} ${vp.name} rail radius ${g.radius} < 18`);
+          (g.inFlowOverflow<=1)?ok(`${route} ${vp.name} rail no horizontal overflow`):bad(`${route} ${vp.name} rail horizontal overflow ${g.inFlowOverflow}`);
+          (g.tocSW<=g.tocCW+1)?ok(`${route} ${vp.name} tocscroll no horizontal overflow`):bad(`${route} ${vp.name} tocscroll overflow ${g.tocSW-g.tocCW}`);
+          if(g.footerBottom&&g.railBottom)(g.footerBottom<=g.railBottom+1)?ok(`${route} ${vp.name} footer inside frame`):bad(`${route} ${vp.name} footer outside frame`);
+          if(g.articleLeft&&g.railRight)(g.articleLeft>=g.railRight+20)?ok(`${route} ${vp.name} article gap ok`):bad(`${route} ${vp.name} article overlaps rail`);
+          (Math.abs(g.railTop-16)<=2)?ok(`${route} ${vp.name} rail top gap ${Math.round(g.railTop)}`):bad(`${route} ${vp.name} rail top gap ${Math.round(g.railTop)} != 16±2`);
+          (Math.abs(g.railBottomGap-16)<=2)?ok(`${route} ${vp.name} rail bottom gap ${Math.round(g.railBottomGap)}`):bad(`${route} ${vp.name} rail bottom gap ${Math.round(g.railBottomGap)} != 16±2`);
+          (Math.abs(g.railHeight-(g.winH-32))<=4)?ok(`${route} ${vp.name} rail full height`):bad(`${route} ${vp.name} rail height ${Math.round(g.railHeight)} != vh-32`);
+          if(g.dotAlign==null)bad(`${route} ${vp.name} no .gbs2-track for dot alignment`);
+          else (g.dotAlign<=4)?ok(`${route} ${vp.name} dot alignment ${g.dotAlign.toFixed(1)}px`):bad(`${route} ${vp.name} dot misaligned ${g.dotAlign.toFixed(1)}px > 4px`);
+        }
         (g.docSW<=g.winW+1)?ok(`${route} ${vp.name} document no horizontal overflow`):bad(`${route} ${vp.name} document overflow ${g.docSW-g.winW}`);
-        if(g.footerBottom&&g.railBottom)(g.footerBottom<=g.railBottom+1)?ok(`${route} ${vp.name} footer inside frame`):bad(`${route} ${vp.name} footer outside frame`);
-        if(g.articleLeft&&g.railRight)(g.articleLeft>=g.railRight+20)?ok(`${route} ${vp.name} article gap ok`):bad(`${route} ${vp.name} article overlaps rail`);
-        // §6.4/§7.2 — full-height contract: top≈16, bottom≈16, height≈vh-32.
-        (Math.abs(g.railTop-16)<=2)?ok(`${route} ${vp.name} rail top gap ${Math.round(g.railTop)}`):bad(`${route} ${vp.name} rail top gap ${Math.round(g.railTop)} != 16±2`);
-        (Math.abs(g.railBottomGap-16)<=2)?ok(`${route} ${vp.name} rail bottom gap ${Math.round(g.railBottomGap)}`):bad(`${route} ${vp.name} rail bottom gap ${Math.round(g.railBottomGap)} != 16±2`);
-        (Math.abs(g.railHeight-(g.winH-32))<=4)?ok(`${route} ${vp.name} rail full height`):bad(`${route} ${vp.name} rail height ${Math.round(g.railHeight)} != vh-32`);
-        // §8 — dot alignment ≤4px (spec maximum; preferred ≤2px).
-        if(g.dotAlign==null)bad(`${route} ${vp.name} no .gbs2-track for dot alignment`);
-        else (g.dotAlign<=4)?ok(`${route} ${vp.name} dot alignment ${g.dotAlign.toFixed(1)}px`):bad(`${route} ${vp.name} dot misaligned ${g.dotAlign.toFixed(1)}px > 4px`);
-        // §9.5 — document-order monotonicity of submenu targets.
         g.monotonic.length?bad(`${route} ${vp.name} submenu order not monotonic at: ${g.monotonic.join(', ')}`):ok(`${route} ${vp.name} submenu targets monotonic in document order`);
         // §9.4 — exactly one rail row carries aria-current="location", none carry "false".
         (g.ariaCurrent===1&&g.ariaFalse===0)?ok(`${route} ${vp.name} aria-current location on active rail row`):bad(`${route} ${vp.name} aria-current: location=${g.ariaCurrent} false=${g.ariaFalse}`);
