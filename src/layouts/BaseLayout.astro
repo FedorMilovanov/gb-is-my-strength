@@ -130,7 +130,6 @@ const runtimeScripts = [
   ...(includeLegacySiteScript ? [assetUrl('js/site.js')] : []),
   assetUrl('js/sw-register.js'),
 ];
-const searchSrc = assetUrl('js/search.js');
 const coreStylesheets = [
   assetUrl('fonts/fonts.css'),
   assetUrl('css/site.css'),
@@ -145,7 +144,7 @@ const routeStylesheets = legacyStylesheets.map(versionedStylesheet);
   <head>
 
     <meta charset="utf-8" />
-  <ReaderPreferencesHead />
+    <ReaderPreferencesHead />
 
 
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -206,10 +205,6 @@ const routeStylesheets = legacyStylesheets.map(versionedStylesheet);
         </script>
         {runtimeScripts.map((src) => <script is:inline defer src={src}></script>)}
         {!includeLegacySiteScript && <ReaderActionsRuntime />}
-        {/* Lazy search: ~31KB saved on initial pageload. search.js loads on first Ctrl+K / click. */}
-        <script is:inline define:vars={{ __gbSearchSrc: searchSrc }}>
-          !function(){function u(o){if(window.GBSearch&&window.GBSearch.open&&window.GBSearch.__ready){o&&window.GBSearch.open();return}if(o)window.__gbSearchOpenAfterLoad=true;if(window.__gbSearchLoading)return;window.__gbSearchLoading=true,window.__gbSearchBootRequested=true;var t=document.createElement("script");t.defer=true,t.src=__gbSearchSrc,t.onload=function(){window.__gbSearchLoading=false,o&&window.GBSearch&&window.GBSearch.open&&window.GBSearch.open()},t.onerror=function(){window.__gbSearchLoading=false},document.head.appendChild(t)}function d(){document.removeEventListener("click",c),document.removeEventListener("touchstart",c)}function c(){d(),u(false)}document.addEventListener("click",c),document.addEventListener("touchstart",c),window.addEventListener("gb:openSearch",function(){d(),u(true)})}();
-        </script>
       </>
     )}
   </body>

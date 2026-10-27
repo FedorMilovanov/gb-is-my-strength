@@ -4,50 +4,48 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const ownerPath = path.resolve(
-  process.cwd(),
-  'src/components/article-pilots/_shared/MobileChromePage.astro',
-);
+const ownerPath = path.resolve(process.cwd(), 'src/components/reader-platform/ReaderPreferencesHead.astro');
 const source = fs.readFileSync(ownerPath, 'utf8');
 
 assert.match(
   source,
-  /__gbSearchLoadState\?: 'idle' \| 'loading' \| 'ready' \| 'failed';/,
-  'mobile search owner must expose explicit lazy-load terminal state',
+  /const state = \{ phase: 'idle', promise: null, pendingOpen: false, opener: null \};/,
+  'shared search owner must expose one explicit lazy-load state',
 );
 assert.match(
   source,
-  /if \(w\.__gbSearchLoading \|\| w\.__gbSearchBootRequested\) return;/,
-  'mobile search owner must deduplicate an in-flight bootstrap',
+  /if \(state\.phase === 'loading' && state\.promise\) return state\.promise;/,
+  'shared search owner must deduplicate an in-flight bootstrap',
 );
 assert.match(
   source,
-  /w\.__gbSearchBootRequested = true;[\s\S]*?w\.__gbSearchLoadState = 'loading';/,
-  'mobile search owner must enter the loading state before script acquisition',
+  /state\.phase = 'loading';[\s\S]*?window\.__gbSearchBootRequested = true;/,
+  'shared owner must enter loading and set the boot latch before script acquisition',
 );
 
-const onloadStart = source.indexOf('s.onload = () => {');
-const onerrorStart = source.indexOf('s.onerror = () => {', onloadStart);
-const appendStart = source.indexOf('document.head.appendChild(s);', onerrorStart);
-assert.ok(onloadStart >= 0 && onerrorStart > onloadStart && appendStart > onerrorStart, 'mobile search script terminal handlers missing');
+const failStart = source.indexOf('const fail = (error) => {');
+const loadStart = source.indexOf('script.onload = () => {', failStart);
+const errorStart = source.indexOf('script.onerror = () => fail(new Error(', failStart);
+const appendStart = source.indexOf('document.head.appendChild(script);', failStart);
+assert.ok(failStart >= 0 && loadStart > failStart && errorStart > loadStart && appendStart > errorStart,
+  'shared owner must install load/error terminal handlers before appending its script');
 
-const onloadBody = source.slice(onloadStart, onerrorStart);
-const onerrorBody = source.slice(onerrorStart, appendStart);
+const failureBody = source.slice(failStart, loadStart);
+for (const [pattern, message] of [
+  [/script\.remove\(\);/, 'failed script node must be removed before retry'],
+  [/state\.phase = 'failed';/, 'failed load must reach a terminal failed phase'],
+  [/state\.promise = null;/, 'failed load must release the shared promise'],
+  [/state\.pendingOpen = false;/, 'failed load must clear pending open state'],
+  [/state\.opener = null;/, 'failed load must release its opener'],
+  [/window\.__gbSearchBootRequested = false;/, 'failed load must release the retry latch'],
+]) assert.match(failureBody, pattern, message);
 
-for (const [label, body] of [
-  ['loaded-without-GBSearch', onloadBody],
-  ['network-error', onerrorBody],
-]) {
-  assert.match(body, /w\.__gbSearchLoading = false;/, `${label}: loading flag must be released`);
-  assert.match(body, /w\.__gbSearchBootRequested = false;/, `${label}: retry lock must be released`);
-  assert.match(body, /w\.__gbSearchLoadState = 'failed';/, `${label}: terminal state must be failed`);
-  assert.match(body, /s\.remove\(\);/, `${label}: failed script node must be removed before retry`);
-}
+const loadBody = source.slice(loadStart, errorStart);
+assert.match(loadBody, /if \(!runtimeReady\(\)\) return fail\(/,
+  'script load without a ready runtime must use the same failure cleanup');
+assert.match(loadBody, /state\.phase = 'ready';[\s\S]*?state\.promise = null;[\s\S]*?resolve\(true\);/,
+  'successful acquisition must settle ready state and release the shared promise');
+assert.match(source.slice(errorStart, appendStart), /script\.onerror = \(\) => fail\(new Error\(/,
+  'network error must use the shared failure cleanup');
 
-assert.match(
-  onloadBody,
-  /if \(w\.GBSearch && typeof w\.GBSearch\.open === 'function'\) \{[\s\S]*?w\.__gbSearchLoadState = 'ready';[\s\S]*?w\.GBSearch\.open\(\);[\s\S]*?return;/,
-  'successful acquisition must remain ready/open and must not fall through to failure reset',
-);
-
-console.log('Mobile search retry source contract: PASS');
+console.log('Shared search bootstrap retry source contract: PASS');

@@ -12,6 +12,16 @@ const options = Object.fromEntries(process.argv.slice(2).map((argument) => {
 }));
 const dist = path.resolve(String(options.dist || 'dist'));
 const reportDir = path.resolve(String(options.report || 'reports/search-modal-contract'));
+let currentBrowserCase = 'source validation';
+
+function emitGithubFailureAnnotation(error) {
+  if (process.env.GITHUB_ACTIONS !== 'true') return;
+  const detail = [currentBrowserCase, error?.name || 'Error', error?.message || String(error),
+    ...String(error?.stack || '').split('\n').slice(1, 5)].join(' | ').slice(0, 5000);
+  const escaped = detail.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+  process.stdout.write(`::error title=Search modal browser failure::${escaped}\n`);
+}
+
 const jsSource = fs.readFileSync(path.resolve('js/search.js'), 'utf8');
 const cssSource = fs.readFileSync(path.resolve('css/command-palette.css'), 'utf8');
 
@@ -100,7 +110,7 @@ function isExpectedWebKitLocalCertificateDiagnostic(browserName, text) {
 
 async function runCase(browserType, browserName, viewport, port, ordinal) {
   const browser = await browserType.launch({ headless: true });
-  const page = await browser.newPage({ viewportSize: viewport });
+  const page = await browser.newPage({ viewport });
   await isolateAnalytics(page);
   const consoleErrors = [];
   const engineWarnings = [];
@@ -123,6 +133,7 @@ async function runCase(browserType, browserName, viewport, port, ordinal) {
   page.on('pageerror', (error) => pageErrors.push(String(error)));
 
   try {
+    assert.deepEqual(page.viewportSize(), viewport, `${browserName} viewport must match the contract case`);
     await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: 'domcontentloaded', timeout: 60_000 });
     await page.evaluate(() => {
       document.getElementById('search-modal-contract-trigger')?.remove();
@@ -312,6 +323,9 @@ async function runCase(browserType, browserName, viewport, port, ordinal) {
     assert.equal(layer.modalTopmost, true);
     await page.evaluate(() => document.getElementById('search-modal-contract-high-layer')?.remove());
 
+    fs.mkdirSync(reportDir, { recursive: true });
+    await page.screenshot({ path: path.join(reportDir, `${ordinal}-${browserName}-${viewport.width}x${viewport.height}.png`) });
+
     const close = page.locator('.cp-close');
     await close.focus();
     const closeFocus = await close.evaluate((node) => {
@@ -338,9 +352,6 @@ async function runCase(browserType, browserName, viewport, port, ordinal) {
 
     assert.deepEqual(pageErrors, [], `${browserName} page errors`);
     assert.deepEqual(consoleErrors, [], `${browserName} console errors`);
-
-    fs.mkdirSync(reportDir, { recursive: true });
-    await page.screenshot({ path: path.join(reportDir, `${ordinal}-${browserName}-${viewport.width}x${viewport.height}.png`), fullPage: true });
 
     return { browser: browserName, viewport, aria, focusableCount, geometry, layer, engineWarnings };
   } catch (error) {
@@ -663,21 +674,37 @@ async function runContinuationContract(browserType, browserName, port, viewport)
   }
 }
 
+const supportedBrowserNames = new Set(['chromium', 'webkit']);
+const requestedBrowserNames = String(process.env.SEARCH_MODAL_BROWSERS || 'chromium,webkit')
+  .split(',').map((value) => value.trim()).filter(Boolean);
+assert.ok(requestedBrowserNames.length > 0, 'SEARCH_MODAL_BROWSERS must select at least one browser');
+assert.deepEqual(
+  requestedBrowserNames.filter((name) => !supportedBrowserNames.has(name)),
+  [],
+  'SEARCH_MODAL_BROWSERS contains an unsupported browser',
+);
 const matrix = [
   [chromium, 'chromium', { width: 1440, height: 900 }],
   [chromium, 'chromium', { width: 390, height: 844 }],
   [webkit, 'webkit', { width: 1440, height: 900 }],
   [webkit, 'webkit', { width: 390, height: 844 }],
-];
+].filter(([, browserName]) => requestedBrowserNames.includes(browserName));
+const testedBrowsers = [...new Set(matrix.map(([, browserName]) => browserName))];
+const testedViewports = [...new Map(matrix.map(([, , viewport]) => [`${viewport.width}x${viewport.height}`, viewport])).values()];
 const results = [];
 try {
   for (let index = 0; index < matrix.length; index += 1) {
     const [browserType, browserName, viewport] = matrix[index];
+    currentBrowserCase = `${browserName} ${viewport.width}x${viewport.height}: modal/focus contract`;
     results.push(await runCase(browserType, browserName, viewport, port, index + 1));
   }
   for (const [browserType, browserName, viewport] of matrix) {
+    currentBrowserCase = `${browserName} ${viewport.width}x${viewport.height}: continuation/runtime contract`;
     results.push(await runContinuationContract(browserType, browserName, port, viewport));
   }
+} catch (error) {
+  emitGithubFailureAnnotation(error);
+  throw error;
 } finally {
   await new Promise((resolve) => server.close(resolve));
 }
@@ -685,6 +712,8 @@ try {
 const report = {
   schemaVersion: 1,
   source: { js: 'js/search.js', css: 'css/command-palette.css' },
+  browsers: testedBrowsers,
+  viewports: testedViewports,
   assertions: {
     comboboxListbox: true,
     stableActiveDescendant: true,
@@ -693,7 +722,7 @@ const report = {
     topLayerAboveKnownFloatingLayers: true,
     touchTargets44px: true,
     focusVisible: true,
-    chromiumWebkitDesktopMobile: true,
+    chromiumWebkitDesktopMobile: testedBrowsers.includes('chromium') && testedBrowsers.includes('webkit') && testedViewports.length === 2,
     truthfulContinuation: true,
     continuationMultiStep: true,
     continuationDesktopMobile: true,
@@ -708,8 +737,8 @@ fs.writeFileSync(path.join(reportDir, 'report.md'), [
   '# Search modal contract',
   '',
   `- Cases: ${results.length}`,
-  '- Engines: Chromium, WebKit',
-  '- Viewports: 1440x900, 390x844',
+  `- Engines: ${testedBrowsers.join(', ')}`,
+  `- Viewports: ${testedViewports.map(({ width, height }) => `${width}x${height}`).join(', ')}`,
   '- Result: PASS',
   '- Coverage: combobox/listbox ARIA, active descendant, close control, full modal Tab trap, top-layer ordering, 44px targets, focus-visible, focus restoration, Escape/backdrop closure, truthful multi-step continuation, desktop/mobile continuation, stale async/interactive invalidation and bounded Pagefind hydration.',
   '',

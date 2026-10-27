@@ -10,19 +10,233 @@ import { assetUrl } from '@/lib/asset-version';
 const bootstrapSrc = assetUrl('js/reader-preferences-head.js');
 const runtimeSrc = assetUrl('js/reader-preferences.js');
 const readerStateSrc = assetUrl('js/reader-state.js');
+const searchRuntimeSrc = assetUrl('js/search.js');
 const preferencesCss = assetUrl('css/reader-preferences.css');
 const searchOpenerRoutes = new Set(['/articles/', '/biografii/', '/pastor-series/']);
 const needsSearchOpener = searchOpenerRoutes.has(Astro.url.pathname);
 ---
 <script is:inline src={bootstrapSrc}></script>
+<script is:inline data-gb-search-bootstrap data-search-src={searchRuntimeSrc}>
+(function (window, document) {
+  'use strict';
+
+  const VERSION = 1;
+  if (window.GBSearchBootstrap?.version === VERSION) return;
+
+  const ownerScript = document.currentScript || document.querySelector('script[data-gb-search-bootstrap]');
+  const defaultSource = ownerScript?.dataset.searchSrc || '/js/search.js';
+  const state = { phase: 'idle', promise: null, pendingOpen: false, opener: null };
+  const searchShortcut = () => /Mac|iPhone|iPad|iPod/i.test(String(
+    navigator.userAgentData?.platform || navigator.platform || navigator.userAgent || '',
+  )) ? '⌘+K' : 'Ctrl+K';
+
+  function syncSearchTriggerLabels(root = document) {
+    const selector = '[data-search-shortcut]';
+    const triggers = [];
+    if (root instanceof window.Element && root.matches(selector)) triggers.push(root);
+    if (root?.querySelectorAll) triggers.push(...root.querySelectorAll(selector));
+    const shortcut = searchShortcut();
+    triggers.forEach((trigger) => {
+      const label = trigger.getAttribute('data-search-shortcut-label') || 'Поиск по всему сайту';
+      trigger.setAttribute('aria-label', `${label} (${shortcut})`);
+      trigger.setAttribute('title', `${label} ${shortcut}`);
+      trigger.setAttribute('data-search-label-ready', shortcut);
+      trigger.querySelectorAll('[data-search-shortcut-value], .kb').forEach((node) => { node.textContent = shortcut; });
+    });
+    return shortcut;
+  }
+
+  const initializeSearchTriggerLabels = () => syncSearchTriggerLabels(document);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeSearchTriggerLabels, { once: true });
+  } else initializeSearchTriggerLabels();
+  window.addEventListener('pageshow', initializeSearchTriggerLabels);
+  const preloads = new Set();
+  const observedPalettes = new WeakSet();
+  const triggers = [
+    '#gbSearchBtn', '[data-gbs2-search]', '[data-fc-action="search"]',
+    '.gb-nav-search-icon', '.gb-search-btn', '.mcp-search', '[data-action="open-search"]',
+  ].join(',');
+
+  const sourceUrl = (source) => new URL(source || defaultSource, document.baseURI).href;
+  const runtimeReady = () => Boolean(window.GBSearch?.__ready && typeof window.GBSearch.open === 'function');
+
+  function preload(source) {
+    if (runtimeReady() || state.phase === 'loading') return false;
+    const href = sourceUrl(source);
+    if (preloads.has(href)) return true;
+    const existing = [...document.querySelectorAll('link[rel="preload"][as="script"]')]
+      .some((link) => link.href === href);
+    if (existing) { preloads.add(href); return true; }
+
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'script';
+    link.href = href;
+    link.dataset.gbSearchPreload = '';
+    link.setAttribute('fetchpriority', 'low');
+    link.addEventListener('error', () => preloads.delete(href), { once: true });
+    preloads.add(href);
+    document.head.appendChild(link);
+    return true;
+  }
+
+  function observeClosedPaletteFocus() {
+    const backdrop = document.querySelector('.cp-backdrop');
+    if (!backdrop || observedPalettes.has(backdrop)) return;
+    observedPalettes.add(backdrop);
+    const observer = new MutationObserver(() => {
+      if (backdrop.classList.contains('is-open')) return;
+      const input = backdrop.querySelector('.cp-input');
+      if (input && document.activeElement === input) input.blur();
+    });
+    observer.observe(backdrop, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  function ensureRuntime(source) {
+    if (runtimeReady()) { state.phase = 'ready'; return Promise.resolve(true); }
+    if (state.phase === 'loading' && state.promise) return state.promise;
+
+    const href = sourceUrl(source);
+    state.phase = 'loading';
+    window.__gbSearchBootRequested = true;
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = href;
+    state.promise = new Promise((resolve, reject) => {
+      const fail = (error) => {
+        script.remove();
+        state.phase = 'failed';
+        state.promise = null;
+        state.pendingOpen = false;
+        state.opener = null;
+        window.__gbSearchBootRequested = false;
+        reject(error);
+      };
+      script.onload = () => {
+        if (!runtimeReady()) return fail(new Error('search.js loaded without a ready GBSearch runtime'));
+        observeClosedPaletteFocus();
+        state.phase = 'ready';
+        state.promise = null;
+        resolve(true);
+      };
+      script.onerror = () => fail(new Error(`Unable to load search runtime: ${href}`));
+      document.head.appendChild(script);
+    });
+    return state.promise;
+  }
+
+  function openReady() {
+    if (!runtimeReady()) return false;
+    const opener = state.opener;
+    state.pendingOpen = false;
+    state.opener = null;
+    state.phase = 'ready';
+    if (opener?.isConnected && document.activeElement !== opener) opener.focus({ preventScroll: true });
+    window.GBSearch.open();
+    return true;
+  }
+
+  function stableOpener(candidate) {
+    if (candidate?.matches?.('[data-action="open-search"]')) return document.getElementById('hMobileMenuBtn') || candidate;
+    if (candidate instanceof window.HTMLElement && candidate !== document.body && candidate.isConnected) return candidate;
+    return document.getElementById('gbSearchBtn') || candidate || document.activeElement;
+  }
+
+  function open(source, opener) {
+    state.opener = stableOpener(opener || document.activeElement);
+    if (runtimeReady()) { state.phase = 'ready'; return Promise.resolve(openReady()); }
+    state.pendingOpen = true;
+    return ensureRuntime(source).then(() => state.pendingOpen ? openReady() : false).catch(() => false);
+  }
+
+  function activateFromTrigger(trigger) {
+    const opener = stableOpener(trigger);
+    const menu = document.getElementById('hMobileNav');
+    const menuButton = document.getElementById('hMobileMenuBtn');
+    const menuOpen = menuButton?.getAttribute('aria-expanded') === 'true' && menu?.classList.contains('open');
+    if (!menuOpen) { open(trigger.dataset.searchSrc, opener); return; }
+
+    window.closeMobileNav?.();
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+      const stable = menuButton?.isConnected ? menuButton : opener;
+      if (stable?.focus) stable.focus({ preventScroll: true });
+      open(trigger.dataset.searchSrc, stable);
+    }));
+  }
+
+  function addPaletteStylesheet(trigger) {
+    const href = trigger.dataset.paletteCss;
+    if (!href || document.querySelector('link[data-gb-search-palette-css]')) return;
+    const clean = href.split('?')[0];
+    const present = [...document.querySelectorAll('link[rel="stylesheet"]')]
+      .some((link) => link.href.split('?')[0].endsWith(clean));
+    if (present) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    link.dataset.gbSearchPaletteCss = '';
+    document.head.appendChild(link);
+  }
+
+  document.addEventListener('click', (event) => {
+    const trigger = event.target?.closest?.(triggers);
+    if (!trigger) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    addPaletteStylesheet(trigger);
+    activateFromTrigger(trigger);
+  }, true);
+
+  window.addEventListener('gb:openSearch', (event) => {
+    const menu = document.getElementById('hMobileNav');
+    const menuButton = document.getElementById('hMobileMenuBtn');
+    const menuOpen = menuButton?.getAttribute('aria-expanded') === 'true' && menu?.classList.contains('open');
+    if (menuOpen) {
+      event.preventDefault?.();
+      event.stopImmediatePropagation?.();
+      window.closeMobileNav?.();
+      window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+        const stable = menuButton?.isConnected ? menuButton : document.activeElement;
+        if (stable?.focus) stable.focus({ preventScroll: true });
+        open(undefined, stable);
+      }));
+      return;
+    }
+    if (runtimeReady()) return;
+    event.preventDefault?.();
+    open(undefined, document.activeElement);
+  });
+
+  function installFirstInteractionPreloader() {
+    if (!document.querySelector('[data-gb-search-preload-on-interaction]')) return;
+    const events = ['pointerdown', 'touchstart', 'click', 'keydown'];
+    const firstInteraction = () => {
+      events.forEach((name) => document.removeEventListener(name, firstInteraction, true));
+      preload();
+    };
+    events.forEach((name) => document.addEventListener(name, firstInteraction, { capture: true, passive: true, once: true }));
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', installFirstInteractionPreloader, { once: true });
+  else installFirstInteractionPreloader();
+
+  window.GBSearchBootstrap = {
+    version: VERSION,
+    open,
+    preload,
+    syncTriggerLabels: syncSearchTriggerLabels,
+    getState: () => ({ phase: runtimeReady() ? 'ready' : state.phase, pendingOpen: state.pendingOpen }),
+  };
+})(window, document);
+</script>
 <link rel="stylesheet" href={preferencesCss} />
 <script is:inline defer src={runtimeSrc}></script>
 <script is:inline defer src={readerStateSrc}></script>
 {needsSearchOpener && (
   <script is:inline>
     (() => {
-      if (window.__gbSearchColdBootstrapBound) return;
-      window.__gbSearchColdBootstrapBound = true;
+      if (window.__gbSearchOpenerBound) return;
+      window.__gbSearchOpenerBound = true;
 
       function searchIcon() {
         return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
@@ -61,6 +275,7 @@ const needsSearchOpener = searchOpenerRoutes.has(Astro.url.pathname);
           item.appendChild(button);
           navLinks.appendChild(item);
         }
+        window.GBSearchBootstrap?.syncTriggerLabels(button);
       }
 
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensureTrigger, { once: true });

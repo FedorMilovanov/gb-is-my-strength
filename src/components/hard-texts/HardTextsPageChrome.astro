@@ -28,13 +28,12 @@
  */
 import { assetUrl } from '@/lib/asset-version';
 import SiteSectionsMenu from '@/components/article-pilots/_shared/SiteSectionsMenu.astro';
-const __gbSearchSrc = assetUrl('js/search.js');
 ---
 <a href="#main-content" class="skip-link">Перейти к содержимому</a>
 
 <div class="h-reading-progress" id="hReadingProgress" aria-hidden="true"></div>
 
-<nav class="h-navbar" id="hNavbar" role="navigation" aria-label="Основная навигация">
+<nav class="h-navbar" id="hNavbar" role="navigation" aria-label="Основная навигация" data-gb-search-preload-on-interaction>
   <div class="h-navbar__inner">
     <a href="../" class="h-nav-logo" aria-label="Господь Бог — Сила Моя — на главную">
       <span class="h-nav-logo-main">Господь Бог</span>
@@ -136,4 +135,3 @@ const __gbSearchSrc = assetUrl('js/search.js');
 <script is:inline src={assetUrl('js/highlights.js')} defer></script>
 <script is:inline src={assetUrl('js/enhancements.js')} defer></script>
 <script is:inline src={assetUrl('js/sw-register.js')} defer></script>
-<script is:inline define:vars={{ __gbSearchSrc }}>!function(){if(window.__gbSearchLazyBound)return;window.__gbSearchLazyBound=1;var src=__gbSearchSrc;function load(o){if(window.GBSearch&&window.GBSearch.open&&window.GBSearch.__ready){o&&window.GBSearch.open();return}if(o)window.__gbSearchOpenAfterLoad=true;if(window.__gbSearchLoading)return;window.__gbSearchLoading=true;var t=document.createElement("script");t.defer=true,t.src=src,t.onload=function(){window.__gbSearchLoading=false,o&&window.GBSearch&&window.GBSearch.open&&window.GBSearch.open()},t.onerror=function(){window.__gbSearchLoading=false},document.head.appendChild(t)}function d(){document.removeEventListener("click",c),document.removeEventListener("touchstart",c)}function c(){d(),load(false)}document.addEventListener("click",c),document.addEventListener("touchstart",c),window.addEventListener("gb:openSearch",function(){d(),load(true)})}();</script>

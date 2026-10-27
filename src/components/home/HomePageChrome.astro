@@ -291,117 +291,15 @@ window.SITE_CONFIG = {
 <noscript><div><img decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute;left:-9999px;" alt=""></div></noscript>
 <script is:inline src="./js/sw-register.js?v=921dd6a2" defer></script>
 <script is:inline>
-  (() => {
-    if (window.__gbSearchLazyBound) return;
-    window.__gbSearchLazyBound = true;
-    const src = './js/search.js?v=75df3eab';
-
-    const isMobileNavOpen = () => {
-      const trigger = document.getElementById('hMobileMenuBtn');
-      const panel = document.getElementById('hMobileNav');
-      return Boolean(
-        trigger?.getAttribute('aria-expanded') === 'true'
-        && panel?.classList.contains('open')
-      );
-    };
-
-    const stableOpener = (candidate) => {
-      if (candidate?.matches?.('[data-action="open-search"]')) {
-        return document.getElementById('hMobileMenuBtn');
-      }
-      if (candidate instanceof HTMLElement && candidate !== document.body && candidate.isConnected) {
-        return candidate;
-      }
-      return document.getElementById('gbSearchBtn');
-    };
-
-    const load = (open) => {
-      if (window.GBSearch?.__ready) {
-        if (open) window.GBSearch.open();
-        return;
-      }
-      if (open) window.__gbSearchOpenAfterLoad = true;
-      if (window.__gbSearchLoading) return;
-      window.__gbSearchLoading = true;
-      window.__gbSearchBootRequested = true;
-      const script = document.createElement('script');
-      script.defer = true;
-      script.src = src;
-      script.onload = () => {
-        window.__gbSearchLoading = false;
-        /* search.js consumes __gbSearchOpenAfterLoad itself. Only open here if
-           a compatible future loader leaves the request pending. */
-        if (open && window.__gbSearchOpenAfterLoad && window.GBSearch?.open) {
-          window.__gbSearchOpenAfterLoad = false;
-          window.GBSearch.open();
-        }
-      };
-      script.onerror = () => {
-        window.__gbSearchLoading = false;
-        window.__gbSearchOpenAfterLoad = false;
-      };
-      document.head.appendChild(script);
-    };
-
-    const openSearch = (candidate) => {
-      const opener = stableOpener(candidate);
-      if (!isMobileNavOpen()) {
-        window.__gbHomeSearchOpener = opener;
-        load(true);
-        return;
-      }
-
-      /* Release the menu's modal/focus/scroll state first. Opening the search
-         while the menu still owns the scroll lock can leave the palette with a
-         hidden opener and an unlocked page behind it. */
-      window.closeMobileNav?.();
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        window.__gbHomeSearchOpener = document.getElementById('hMobileMenuBtn');
-        load(true);
-      }));
-    };
-
-    const onSearchClick = (event) => {
-      const selector = [
-        '#gbSearchBtn',
-        '[data-gbs2-search]',
-        '[data-fc-action="search"]',
-        '.gb-nav-search-icon',
-        '.gb-search-btn',
-        '[data-action="open-search"]',
-      ].join(',');
-      const target = event.target?.closest?.(selector);
-      if (!target) return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      openSearch(target);
-    };
-
-    const onCloseNavClick = (event) => {
-      const target = event.target?.closest?.('[data-close-nav]');
-      if (target && !target.matches('[data-action="open-search"]')) window.closeMobileNav?.();
-    };
-
-    document.addEventListener('click', onSearchClick, true);
-    document.addEventListener('click', onCloseNavClick, true);
-    window.addEventListener('gb:openSearch', () => openSearch(document.activeElement));
-  })();
+  document.addEventListener('click', (event) => {
+    const target = event.target?.closest?.('[data-close-nav]');
+    if (target && !target.matches('[data-action="open-search"]')) window.closeMobileNav?.();
+  }, true);
 </script>
 <script is:inline>
   (() => {
     const SEARCH_ID = 'gbCommandPalette';
-    const OWNER_ID = 'home-command-palette';
-    const FOCUSABLE_SELECTOR = [
-      'a[href]',
-      'button:not([disabled])',
-      'input:not([disabled])',
-      'select:not([disabled])',
-      'textarea:not([disabled])',
-      '[tabindex]:not([tabindex="-1"])',
-    ].join(',');
     let overlay = null;
-    let overlayController = null;
-    let overlayOpen = false;
 
     const searchTriggers = () => Array.from(document.querySelectorAll(
       '#gbSearchBtn, [data-action="open-search"]'
@@ -412,34 +310,6 @@ window.SITE_CONFIG = {
         trigger.setAttribute('aria-controls', SEARCH_ID);
         trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
       });
-    };
-
-    const focusableControls = () => {
-      if (!overlay) return [];
-      return Array.from(overlay.querySelectorAll(FOCUSABLE_SELECTOR)).filter((control) => (
-        !control.hidden
-        && control.getAttribute('aria-hidden') !== 'true'
-        && control.offsetParent !== null
-      ));
-    };
-
-    /* The shared search runtime predates OverlayRuntime and contains an
-       input-local Tab handler. Home owns only the two modal edge wraps at the
-       earliest capture phase, so exactly one handler acts at those boundaries
-       while normal Tab movement remains native. */
-    const trapSearchFocus = (event) => {
-      if (event.key !== 'Tab' || !overlay?.classList.contains('is-open')) return;
-      const controls = focusableControls();
-      if (!controls.length) return;
-      const first = controls[0];
-      const last = controls[controls.length - 1];
-      const active = document.activeElement;
-      const wrapBackward = event.shiftKey && (active === first || !overlay.contains(active));
-      const wrapForward = !event.shiftKey && (active === last || !overlay.contains(active));
-      if (!wrapBackward && !wrapForward) return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      (wrapBackward ? last : first).focus({ preventScroll: true });
     };
 
     /* GBS-HOME-SEARCH-DUPLICATE-CLOSE-CONTROLS: общая палитра (js/search.js)
@@ -484,36 +354,13 @@ window.SITE_CONFIG = {
       inputWrap.appendChild(button);
     };
 
-    const registerOverlay = () => {
-      if (!overlay || overlayController || !window.OverlayRuntime?.register) return;
-      overlayController = window.OverlayRuntime.register(OWNER_ID, {
-        element: overlay,
-        focusTarget: () => overlay.querySelector('.cp-input'),
-        inertTargets: ['.h-navbar', '.home-v20', '#hScrollTop'],
-        onRequestClose: () => window.GBSearch?.close?.(),
-        closeOnEscape: false,
-        trapFocus: false,
-        restoreFocus: true,
-        lockScroll: false,
-      });
-    };
-
+    // Search runtime owns overlay lifecycle, focus restoration, scroll locking and Tab; Home only adds its stable dialog id and mirrors opener state.
     const syncOverlay = () => {
       if (!overlay) return;
       const open = overlay.classList.contains('is-open');
       overlay.id = SEARCH_ID;
       overlay.setAttribute('aria-hidden', open ? 'false' : 'true');
       syncTriggerState(open);
-      registerOverlay();
-
-      if (open && !overlayOpen) {
-        overlayController?.open({
-          opener: window.__gbHomeSearchOpener || document.getElementById('gbSearchBtn'),
-          restoreFocus: true,
-        });
-      }
-      if (!open && overlayOpen) overlayController?.close('search-closed');
-      overlayOpen = open;
     };
 
     const attachOverlay = (candidate) => {
@@ -526,8 +373,6 @@ window.SITE_CONFIG = {
       });
       syncOverlay();
     };
-
-    window.addEventListener('keydown', trapSearchFocus, true);
 
     const existing = document.querySelector('.cp-backdrop');
     if (existing) attachOverlay(existing);

@@ -12,6 +12,7 @@ const files = {
   siteUtils: read('js/site-utils.js'),
   commandPalette: read('css/command-palette.css'),
   baseLayout: read('src/layouts/BaseLayout.astro'),
+  readerHead: read('src/components/reader-platform/ReaderPreferencesHead.astro'),
   home: read('src/components/home/HomePageChrome.astro'),
   homeProgressive: read('src/components/home/HomeProgressiveEnhancementHead.astro'),
   notFound: read('404.html'),
@@ -38,11 +39,11 @@ const assetHash = (text) => crypto.createHash('md5').update(text).digest('hex').
 
 const commandPaletteHash = assetHash(files.commandPalette);
 check(files.head.includes(`/css/command-palette.css?v=${commandPaletteHash}`), 'current command-palette revision missing');
-const searchHash = assetHash(files.search);
-check(files.head.includes(`/js/search.js?v=${searchHash}`), 'current search revision missing');
+check(files.readerHead.includes("assetUrl('js/search.js')") && files.readerHead.includes('data-search-src={searchRuntimeSrc}'), 'current search revision missing from the sole lazy bootstrap');
+check(!files.head.includes('/js/search.js'), 'AppSearchHead must not enqueue a second Search bootstrap path');
 const siteUtilsHash = assetHash(files.siteUtils);
 check(files.head.includes(`/js/site-utils.js?v=${siteUtilsHash}`), 'current SiteUtils revision missing');
-check(files.head.indexOf('/js/site-utils.js') < files.head.indexOf('/js/search.js'), 'SiteUtils must load before Search');
+check(files.head.includes('/js/site-utils.js'), 'SiteUtils runtime missing from strict-native Search surface');
 check(files.head.includes('defer'), 'search bootstrap must remain deferred');
 check(files.surface.includes('id="gbSearchBtn"'), 'canonical trigger id missing');
 check(files.surface.includes('aria-haspopup="dialog"'), 'dialog semantics missing');
@@ -92,9 +93,19 @@ check(files.search.includes('window.addEventListener("gb:openSearch",function(){
 check(files.search.includes('we(),ie())'), 'Search open path must only warm Pagefind');
 check(!files.search.includes('ie(function(){E.value.trim()&&xe(E.value.trim())})'), 'Search open path must not re-run the current query');
 check(!files.baseLayout.includes('ctrlKey') && !files.baseLayout.includes('metaKey'), 'BaseLayout raw shortcut parser survived');
-check(files.baseLayout.includes('window.addEventListener("gb:openSearch"'), 'BaseLayout gb:openSearch loader missing');
+check(files.readerHead.includes('data-gb-search-bootstrap'), 'shared lazy search bootstrap include missing from ReaderPreferencesHead');
+check(files.readerHead.includes('function syncSearchTriggerLabels(root = document)'), 'shared bootstrap must own first-paint search shortcut labels');
+check(files.readerHead.includes('syncTriggerLabels: syncSearchTriggerLabels'), 'shared bootstrap label sync API missing');
+check(files.readerHead.includes('window.GBSearchBootstrap?.syncTriggerLabels(button)'), 'dynamically injected opener must receive shared labels');
+check(/document\.addEventListener\('click',[\s\S]*?event\.preventDefault\(\);\s*event\.stopImmediatePropagation\(\);/.test(files.readerHead), 'shared bootstrap must stop the handled opener click before lazy script handlers attach');
+check(files.readerHead.includes("window.addEventListener('gb:openSearch'"), 'shared bootstrap gb:openSearch transport missing');
+check(files.readerHead.includes("menuButton?.getAttribute('aria-expanded') === 'true' && menu?.classList.contains('open')"), 'shared warm shortcut must detect an open mobile menu');
+check(files.readerHead.includes('event.stopImmediatePropagation?.();'), 'shared mobile-menu shortcut handoff must prevent the runtime from opening before menu close');
+check(files.readerHead.includes("document.addEventListener('DOMContentLoaded', installFirstInteractionPreloader"), 'head bootstrap must defer declarative preload lookup until body is parsed');
+check(files.readerHead.includes('function observeClosedPaletteFocus()'), 'closed-palette focus cleanup owner missing');
+check(files.readerHead.includes('if (input && document.activeElement === input) input.blur();'), 'closed-palette cleanup must release focus from its hidden input');
 check(!files.home.includes('const onShortcut'), 'Home route-local shortcut parser survived');
-check(files.home.includes("window.addEventListener('gb:openSearch'"), 'Home gb:openSearch orchestration missing');
+check(!files.home.includes("window.addEventListener('gb:openSearch'"), 'Home route-local gb:openSearch orchestration survived');
 check(!files.homeProgressive.includes('stopImmediatePropagation'), 'Home progressive shortcut capture gate survived');
 check(!files.notFound.includes('function key(e)') && files.notFound.includes('gb:openSearch'), '404 raw keyboard owner survived');
 check(files.rodosloviye.includes('/js/site-utils.js') && files.rodosloviye.indexOf('/js/site-utils.js') < files.rodosloviye.indexOf('/js/site.js'), 'Rodosloviye shared runtime order missing');
@@ -123,13 +134,17 @@ const ownerCandidates = [
 ];
 const rawOwners = ownerCandidates.filter((file) => hasRawSearchShortcut(fs.readFileSync(file, 'utf8')))
   .map((file) => path.relative(process.cwd(), file).replace(/\\/g, '/')).sort();
-check(JSON.stringify(rawOwners) === JSON.stringify(['js/site-utils.js']), `sole raw Search keyboard owner drifted: ${rawOwners.join(', ')}`);
+check(JSON.stringify(rawOwners) === JSON.stringify(['js/site-utils.js']),
+  `sole raw Search keyboard owner drifted: ${rawOwners.join(', ')}`);
 check(files.auditPro.includes('raw Ctrl/Meta+K owner'), 'audit-pro G112 semantic owner guard missing');
 
 check(files.home.includes('data-search-shortcut-label="Поиск по всему сайту"'), 'Home shared label metadata missing');
 check(files.home.includes('aria-label="Поиск по всему сайту"'), 'Home neutral initial aria label missing');
 check(files.home.includes('title="Поиск по всему сайту"'), 'Home neutral initial title missing');
 check(!files.home.includes("const platform = navigator.userAgentData?.platform"), 'Home duplicate platform helper survived');
+check(!files.home.includes('home-command-palette'), 'Home duplicate Search OverlayRuntime owner survived');
+check(!files.home.includes('window.OverlayRuntime?.register'), 'Home must not register a second Search overlay owner');
+check(!files.home.includes('const trapSearchFocus'), 'Home duplicate Search focus-trap owner survived');
 
 for (const marker of [
   "platform: 'Win32'",
