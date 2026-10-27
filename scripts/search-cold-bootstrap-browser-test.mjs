@@ -115,11 +115,16 @@ async function auditAxe(page) {
 }
 
 function assertCleanBrowserDiagnostics(browserName, route, consoleErrors, failedResponses) {
-  const unexpectedConsoleErrors = consoleErrors.filter(({ text, url }) => !(
-    url === 'https://mc.yandex.ru/metrika/tag.js?id=108353327' && /net::ERR_CONNECTION_CLOSED/.test(text)
+  const isExpectedWebKitViewportWarning = ({ text }) => (
+    browserName === 'webkit' && text === 'Viewport argument key "interactive-widget" not recognized and ignored.'
+  );
+  const engineWarnings = consoleErrors.filter(isExpectedWebKitViewportWarning);
+  const unexpectedConsoleErrors = consoleErrors.filter((entry) => !isExpectedWebKitViewportWarning(entry) && !(
+    entry.url === 'https://mc.yandex.ru/metrika/tag.js?id=108353327' && /net::ERR_CONNECTION_CLOSED/.test(entry.text)
   ));
   assert.deepEqual(unexpectedConsoleErrors, [], `${browserName} ${route}: unexpected browser console errors`);
   assert.deepEqual(failedResponses, [], `${browserName} ${route}: failed local or reachable HTTP responses`);
+  return { consoleErrors: unexpectedConsoleErrors, engineWarnings };
 }
 
 function contextOptions(viewport, options = {}) {
@@ -260,8 +265,8 @@ async function runColdAndWarmCase(browser, browserName, baseUrl, route, viewport
     await page.locator('.cp-backdrop.is-open').waitFor({ state: 'visible' });
     assert.equal(searchRequests.length, 1, `${browserName} ${route}: warm API reopen fetched search runtime again`);
     assert.deepEqual(pageErrors, [], `${browserName} ${route}: uncaught page errors`);
-    assertCleanBrowserDiagnostics(browserName, route, consoleErrors, failedResponses);
-    return { browser: browserName, route, viewport, cold, opened, afterEscape, enterOpen, warmShortcut, searchRequestCount: searchRequests.length, pageErrors, consoleErrors, failedResponses };
+    const browserDiagnostics = assertCleanBrowserDiagnostics(browserName, route, consoleErrors, failedResponses);
+    return { browser: browserName, route, viewport, cold, opened, afterEscape, enterOpen, warmShortcut, searchRequestCount: searchRequests.length, pageErrors, ...browserDiagnostics, failedResponses };
   } finally {
     await context.close();
   }
@@ -340,8 +345,8 @@ async function runTouchPreloadRace(browser, browserName, baseUrl) {
     await page.locator('.cp-backdrop.is-open').waitFor({ state: 'visible' });
     assert.equal(searchRequests.length, 1, `${browserName} /hard-texts/: warm touch should reuse the loaded runtime`);
     assert.deepEqual(pageErrors, [], `${browserName} /hard-texts/: uncaught page errors`);
-    assertCleanBrowserDiagnostics(browserName, '/hard-texts/', consoleErrors, failedResponses);
-    return { browser: browserName, route: '/hard-texts/', viewport, theme: 'dark', reducedMotion: 'reduce', firstTap, axe, searchRequestCount: searchRequests.length, pageErrors, consoleErrors, failedResponses };
+    const browserDiagnostics = assertCleanBrowserDiagnostics(browserName, '/hard-texts/', consoleErrors, failedResponses);
+    return { browser: browserName, route: '/hard-texts/', viewport, theme: 'dark', reducedMotion: 'reduce', firstTap, axe, searchRequestCount: searchRequests.length, pageErrors, ...browserDiagnostics, failedResponses };
   } finally {
     await context.close();
   }
@@ -387,8 +392,8 @@ async function runHomeMenuSearchCase(browser, browserName, baseUrl) {
     assert.equal(result.phase, 'ready', `${browserName} home: shared bootstrap did not become ready`);
     assert.equal(searchRequests.length, 1, `${browserName} home: mobile-nav open should request search once`);
     assert.deepEqual(pageErrors, [], `${browserName} home: uncaught page errors`);
-    assertCleanBrowserDiagnostics(browserName, '/', consoleErrors, failedResponses);
-    return { browser: browserName, route: '/', viewport, theme: 'dark', reducedMotion: 'reduce', result, axe, searchRequestCount: searchRequests.length, pageErrors, consoleErrors, failedResponses };
+    const browserDiagnostics = assertCleanBrowserDiagnostics(browserName, '/', consoleErrors, failedResponses);
+    return { browser: browserName, route: '/', viewport, theme: 'dark', reducedMotion: 'reduce', result, axe, searchRequestCount: searchRequests.length, pageErrors, ...browserDiagnostics, failedResponses };
   } finally {
     await context.close();
   }
