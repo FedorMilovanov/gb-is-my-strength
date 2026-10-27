@@ -19,6 +19,12 @@ const SEQUENCE_LABELS: Record<string, string> = {
   luke: 'Лука',
 };
 
+const CONFIDENCE_LABELS: Record<string, string> = {
+  certain: 'высокая',
+  disputed: 'оспариваемая',
+  'certain-textual-genealogy': 'подтверждена текстовой родословной',
+};
+
 function relationLabel(relation: RuntimeGenealogyRelation) {
   if (relation.kind === 'legal-parent') return 'Юридическая родительская связь';
   if (relation.kind === 'spouse') return 'Супружеская связь';
@@ -75,7 +81,11 @@ function RelationshipInspectorComponent({ relation, persons, onClose }: Relation
         <span data-relation-status={isPending ? 'pending' : isInterpretive ? 'interpretive' : 'reviewed'}>
           {evidenceLabel(relation)}
         </span>
-        {evidence.confidence && <span>Уверенность: {evidence.confidence}</span>}
+        {evidence.confidence && (
+          <span>
+            Редакторская уверенность: {CONFIDENCE_LABELS[evidence.confidence] ?? evidence.confidence}
+          </span>
+        )}
       </div>
 
       <section>
