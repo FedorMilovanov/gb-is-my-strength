@@ -263,16 +263,15 @@ async function assertSearchClosed(page, label) {
       visible: style.display !== 'none' && overlay.getClientRects().length > 0,
     };
   });
-  assert.equal(state.visible, false, label + ': search overlay should be closed; state=' + JSON.stringify(state));
+  assert.equal(state.openClass, false, label + ': search overlay retained is-open; state=' + JSON.stringify(state));
+  assert.equal(state.visible, false, label + ': search overlay should be hidden; state=' + JSON.stringify(state));
 }
 
 async function closeSearch(page) {
   await page.keyboard.press('Escape');
   await page.waitForFunction(() => {
     const overlay = document.querySelector('.cp-backdrop');
-    if (!overlay) return true;
-    const style = getComputedStyle(overlay);
-    return !overlay.classList.contains('is-open') || style.display === 'none';
+    return !overlay || !overlay.classList.contains('is-open');
   });
   await assertSearchClosed(page, 'after Escape');
 }
@@ -480,10 +479,10 @@ async function assertEditableShortcutIsolation(page) {
   ]) {
     const field = page.locator(selector);
     await field.focus();
-    // The shared OverlayRuntime has a bounded delayed focus-recovery window.
-    // Wait through it to prove that a deliberate move into an editable target
-    // is not stolen back by the palette opener.
-    await page.waitForTimeout(90);
+    // OverlayRuntime makes up to eight retries 60 ms apart (last at ~420 ms).
+    // Wait beyond that entire bounded recovery window before testing the chord;
+    // a deliberate focus move must not be stolen by any delayed retry.
+    await page.waitForTimeout(500);
     const focusState = await field.evaluate((element) => {
       const ancestors = [];
       for (let node = element; node; node = node.parentElement) {
