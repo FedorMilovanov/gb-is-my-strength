@@ -304,7 +304,7 @@ async function assertCanonicalShortcut(page, chord, label, baseUrl, pagefindStat
   pagefindState.bootstrapActive = true;
   try {
     await page.locator('body').click({ position: { x: 1, y: 1 } });
-    await page.keyboard.press(chord);
+    await page.keyboard.press(shortcutChord);
     const searchInput = page.locator('.cp-input');
     await searchInput.waitFor({ state: 'visible' });
     assert.equal(await searchInput.evaluate((element) => element === document.activeElement), true, `${label}: search input did not receive focus`);
@@ -471,23 +471,64 @@ async function assertEditableShortcutIsolation(page) {
     });
   });
 
-  for (const [selector, chord, label] of [
-    ['#home-contract-input', 'Control+K', 'input Ctrl+K'],
-    ['#home-contract-textarea', 'Meta+K', 'textarea Meta+K'],
-    ['#home-contract-role-textbox', 'Control+K', 'role=textbox Ctrl+K'],
+  const shortcutChord = process.platform === 'darwin' ? 'Meta+K' : 'Control+K';
+  const shortcutLabel = process.platform === 'darwin' ? 'Meta+K' : 'Ctrl+K';
+  for (const [selector, label] of [
+    ['#home-contract-input', 'input ' + shortcutLabel],
+    ['#home-contract-textarea', 'textarea ' + shortcutLabel],
+    ['#home-contract-role-textbox', 'role=textbox ' + shortcutLabel],
   ]) {
     const field = page.locator(selector);
     await field.focus();
-    const focusState = await field.evaluate((element) => ({
-      focused: document.activeElement === element,
-      activeElementId: document.activeElement?.id || null,
-      activeElementTag: document.activeElement?.tagName || null,
-    }));
+    // The shared OverlayRuntime has a bounded delayed focus-recovery window.
+    // Wait through it to prove that a deliberate move into an editable target
+    // is not stolen back by the palette opener.
+    await page.waitForTimeout(90);
+    const focusState = await field.evaluate((element) => {
+      const ancestors = [];
+      for (let node = element; node; node = node.parentElement) {
+        ancestors.push({
+          tag: node.tagName,
+          id: node.id || null,
+          inert: Boolean(node.inert || node.hasAttribute('inert')),
+          ariaHidden: node.getAttribute('aria-hidden'),
+          contentVisibility: getComputedStyle(node).contentVisibility,
+          display: getComputedStyle(node).display,
+        });
+      }
+      const overlay = document.querySelector('.cp-backdrop');
+      const runtime = window.OverlayRuntime || window.SiteUtils?.OverlayRuntime;
+      return {
+        focused: document.activeElement === element,
+        activeElementId: document.activeElement?.id || null,
+        activeElementTag: document.activeElement?.tagName || null,
+        target: {
+          connected: element.isConnected,
+          disabled: element.disabled,
+          tabIndex: element.tabIndex,
+          rects: element.getClientRects().length,
+          visible: element.checkVisibility ? element.checkVisibility({ checkOpacity: false, checkVisibilityCSS: true }) : null,
+        },
+        inertAncestors: ancestors.filter((node) => node.inert),
+        ancestors,
+        overlay: overlay ? {
+          classes: overlay.className,
+          display: getComputedStyle(overlay).display,
+          inert: Boolean(overlay.inert || overlay.hasAttribute('inert')),
+          ariaHidden: overlay.getAttribute('aria-hidden'),
+        } : null,
+        overlayRuntime: runtime ? {
+          count: runtime.size?.(),
+          top: runtime.topLayer?.()?.ownerId || null,
+          snapshot: runtime.snapshot?.() || null,
+        } : null,
+      };
+    });
     assert.equal(focusState.focused, true, label + ': editable target did not receive focus; state=' + JSON.stringify(focusState));
     await assertSearchClosed(page, label + ' precondition');
 
     const beforeEvents = await page.evaluate(() => (window.__homeContractSearchOpenEvents || []).length);
-    await page.keyboard.press(chord);
+    await page.keyboard.press(shortcutChord);
     await page.waitForTimeout(80);
 
     const eventState = await page.evaluate(() => ({
@@ -496,6 +537,15 @@ async function assertEditableShortcutIsolation(page) {
       activeElementTag: document.activeElement?.tagName || null,
       overlayOpen: Boolean(document.querySelector('.cp-backdrop.is-open')),
     }));
+    assert.equal(
+      eventState.activeElementId,
+      selector.slice(1),
+      label + ': focus was stolen after the shortcut; state=' + JSON.stringify({
+        activeElementId: eventState.activeElementId,
+        activeElementTag: eventState.activeElementTag,
+        overlayOpen: eventState.overlayOpen,
+      }),
+    );
     assert.equal(
       eventState.events.length,
       beforeEvents,
