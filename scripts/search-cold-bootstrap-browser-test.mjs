@@ -305,7 +305,8 @@ async function runTouchPreloadRace(browser, browserName, baseUrl) {
     assert.equal(await page.locator('[data-gb-search-preload-on-interaction]').count(), 1,
       `${browserName} /hard-texts/: declarative first-interaction preloader missing`);
 
-    await page.mouse.wheel(0, 420);
+    await page.evaluate(() => window.scrollTo(0, 420));
+    await page.waitForFunction(() => document.getElementById('mobileChromePage')?.classList.contains('is-shown') === true, null, { timeout: 5000 });
     const trigger = page.locator('.mcp-search');
     await trigger.waitFor({ state: 'visible' });
     await page.evaluate(() => {
