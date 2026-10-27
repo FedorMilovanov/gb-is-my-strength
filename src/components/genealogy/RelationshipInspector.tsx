@@ -21,7 +21,7 @@ const SEQUENCE_LABELS: Record<string, string> = {
 
 const CONFIDENCE_LABELS: Record<string, string> = {
   certain: 'высокая',
-  disputed: 'спорная',
+  disputed: 'оспариваемая',
   'certain-textual-genealogy': 'подтверждена текстовой родословной',
 };
 
@@ -83,7 +83,7 @@ function RelationshipInspectorComponent({ relation, persons, onClose }: Relation
         </span>
         {evidence.confidence && (
           <span>
-            Редакторская оценка: {CONFIDENCE_LABELS[evidence.confidence] ?? evidence.confidence}
+            Редакторская уверенность: {CONFIDENCE_LABELS[evidence.confidence] ?? evidence.confidence}
           </span>
         )}
       </div>
