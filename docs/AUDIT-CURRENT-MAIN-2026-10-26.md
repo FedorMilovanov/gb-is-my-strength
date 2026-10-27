@@ -297,3 +297,129 @@ AFTER: перекрытие **0 px** и правый край ≤ viewport на 
 `SYS-CONTENT-AUTHORING-PUBLICATION-CONTRACT`,
 `SYS-READING-TABLE-KEYBOARD-SCROLL`, `SYS-SEARCH-LAZY-BOOTSTRAP-OWNERSHIP`.
 Блокировщик первых workflow-правок прежний — открытый PR #2179.
+
+---
+
+## 10. Продолжение W47 — `SYS-READING-TABLE-KEYBOARD-SCROLL` (Product `b126de1` → successor PR)
+
+**Текущий main после контрольного изменения:** PR #2201 merged at `21dcfdd` (`fix(audit): scope Yandex smoke exception to confirmed request`). Это только release-smoke harness; disposition находок AuditRepo и product backlog не изменились. До W47 merge `main` по-прежнему отражает **37/9/4**, а приведённые ниже **38/8/4** — verified projected counts после W47. W47 evidence сохраняет exact product anchor `b126de1`; successor lane основан на текущем `main@21dcfdd`.
+
+**Mode: SYSTEM** (Gill owner-sensitive surface + shared reader keyboard dispatcher).
+**Bounded scope:** один горизонтально переполняющийся Gill I table; общий
+`floating-cluster-controller.js` только перестаёт глушить стрелки, когда фокус
+находится внутри реально горизонтально прокручиваемой области; один existing
+reader controls browser contract. Никакой смены контента/данных/иерархии таблицы.
+**Источник:** strict-native route ownership
+`migration/page-ownership.json` →
+`src/pages/articles/dzhon-gill-chast-1-chelovek/index.astro` →
+`GillPart1SectionIllnessFamily.astro`; route profile
+`data/route-profiles/articles-dzhon-gill-chast-1-chelovek.json`.
+**Смежные PR:** открытые PR #2196/#2197/#2198 (dependency), #2179 (workflows),
+#2164 (MDX articles), #2143 (genealogy data) — file/surface overlap отсутствует.
+
+### Before → root → fix
+
+BEFORE на точном `b126de1`: axe `scrollable-region-focusable` для
+`table:nth-child(49)` / `.manuscript-table`; mobile 390 px, `scrollWidth 356`,
+`clientWidth 309`, `tabIndex -1`. Прямая клавиатурная проба: `ArrowRight`
+срабатывал как reader «следующая часть» и уходил на Part II, а не прокручивал
+таблицу. CSS уже делал сам `table` горизонтальным scroller, так что проблема
+была одновременно отсутствием доступного focus target и слишком широким
+reader shortcut handler.
+
+Fix: эта таблица получает native `tabindex="0"`, описательный `<caption`
+с существующим `.sr-only` визуальным скрытием и видимый `:focus-visible`
+outline; accessible name теперь следует нативной таблицовой семантике. В shared
+`floating-cluster-controller.js` left/right shortcut отступает, когда event
+идёт из элемента внутри горизонтально переполняющегося `overflow-x:auto|scroll`
+region; вне такой области обычная клавиатурная навигация серии остаётся
+неизменной. Существующий `reader-controls-residual-browser-contract.mjs`
+дополнен mobile light + dark/reduced-motion пробами, проверками accessible
+name, Tab-фокуса, visible focus, реального scroll delta, стабильного URL и
+обоих краёв без случайной навигации; добавлен отрицательный контроль — вне
+scroll region стрелочная навигация серии обязана продолжать работать. Локальный
+browser selector позволяет запускать Chromium-only, CI default остаётся
+Chromium + WebKit.
+
+AFTER: Chromium 153, 390 px — `tabIndex 0`, `:focus-visible` с 2px outline,
+ArrowRight перемещает `scrollLeft` 0 → 27, URL остаётся Part I; при правом и
+левом краях повторные стрелки сохраняют Part I; вне таблицы ArrowRight ведёт
+Part I → Part II. Светлая и тёмная тема с reduced motion: axe **0 violations /
+48 passes**. Desktop 1440 px: таблица не переполняет viewport (750/750), keyboard
+focus доступен. Screenshots и сырой axe вывод локально `/tmp/w47-light.png`,
+`/tmp/w47-dark-reduced.png`, `/tmp/w47-desktop.png`, `/tmp/w47-visual-axe.log`
+(не коммитятся). Existing reader-controls contract дополнительно сохраняет
+focused-table light + dark/reduced-motion screenshots в свой artifact glob
+`reports/reader-controls-a11y-*.png`; проверены обе стороны off-region reader
+shortcut (ArrowRight Part I→II, ArrowLeft Part II→I). Console: только
+`ERR_CONNECTION_CLOSED` для внешнего ресурса в sandbox; pageerror нет. Existing
+residual contract local Chromium: **749/749 PASS**. Gill claims
+surface и series consistency contracts PASS. Production-like build PASS;
+cache-bust READ-ONLY PASS.
+
+### Exact-head CI: successor `74678f7`
+
+Full CI finished with **41 success, 5 skipped, 3 cancelled, 1 failure** across
+50 check runs. The four non-green jobs were all blocked before their test steps:
+
+- `Chromium + WebKit reader controls accessibility contract`: dependency/browser
+  install cancelled after 25m18s; source/build/browser test steps skipped.
+- `Source and Chromium lifecycle contracts`: dependency + Chromium install
+  cancelled; source and lifecycle tests skipped.
+- `Real Vosk cache, audio and UI responsiveness`: dependency install cancelled;
+  reader-model contract skipped.
+- `Home Chromium WebKit contract`: Chromium/WebKit installation failed;
+  build and all Home/genealogy tests skipped.
+
+The reader-controls browser test therefore had local Chromium evidence and a
+pass on superseded `f59e61b`, but not an exact-head CI pass on `74678f7`. The
+status/evidence note in `3cfa73e` triggered a fresh run; its result is recorded
+next.
+
+### Exact-head CI: evidence head `3cfa73e`
+
+The second full matrix finished **45 success / 4 skipped / 1 cancelled / 1
+failure** (51 check runs). The W47 `Chromium + WebKit reader controls
+accessibility contract` passed on this exact SHA; the broad production-like
+candidate and corrected dist smoke passed as well. Public-surface Chromium and
+WebKit, Home Chromium/WebKit, Bible App deep-click browsers, consent/TTS route
+crawl, lifecycle, Vosk, and separate semantic/reader checks passed.
+
+The remaining failure was `Chromium WebKit reader semantic projection`, but
+its job-step record shows the failure occurred in **Install exact dependencies
+and browsers**: exit 124; syntax, build, and semantic browser-test steps were
+skipped. This is an install/egress blocker, not a test assertion. The cancelled
+duplicate `guard` check had every substantive step succeed and another `guard`
+check passed, but the cancelled conclusion is still recorded. Merge remains
+blocked until an exact head has fully green CI. This checkpoint records the
+step evidence before another push; the next exact head will rerun the
+install-blocked job.
+
+**Текущий backlog после W47 (до owner reverify):**
+
+| Класс | После W43–W46 | После W47 |
+|---|---:|---:|
+| Исправлено в Product / нужен owner-reverify | 37 | **38** |
+| Подтверждённые живые кодовые lane | 9 | **8** |
+| Владелец / evidence boundary | 4 | **4** |
+
+8 живых кодовых лейнов: `SYS-HEAD-ASSET-PROJECTION-PROLIFERATION`,
+`SYS-TTS-RECOVERY-STATUS-OWNERSHIP`, `SYS-EDITORIAL-DATELINE-SLOT-SEMANTICS`,
+`SYS-SERIES-DISCOVERY-CURRENT-AUTHORITY`, `SYS-DEPENDENCY-ADVISORY-LIFECYCLE`,
+`SYS-CSS-CASCADE-GOVERNANCE-NONENFORCING`,
+`SYS-CONTENT-AUTHORING-PUBLICATION-CONTRACT`,
+`SYS-SEARCH-LAZY-BOOTSTRAP-OWNERSHIP`. Первые workflow/dependency изменения
+по-прежнему блокируются disposition PR #2179.
+
+
+### Exact-head CI: evidence head `bda68ad` (third W47 matrix)
+
+The PR head was `bda68adf1bda66951fe633311c53a4410e2841d3`, based on `main@21dcfdd9f9018607a708c5118383e287ec1a3fed`. The exact-head matrix finished **43 success / 3 failure / 4 skipped / 1 cancelled** (51 check runs). Step-level evidence for the three failures:
+
+- **Build and audit production-like candidate** (run `40357787559`, job `121694780261`): candidate build, dependency install and browser install completed; `Genealogy full browser release gate` did start. Chromium and WebKit viewport cases passed. Firefox at `320x760` timed out after 30 seconds in `page.waitForFunction`, at `scripts/genealogy-browser-contract.mjs:971` (`assertAtlasNavigation`). This is a genealogy browser-contract failure, not a Gill reader assertion.
+- **Chromium WebKit reader semantic projection** (run `40357787630`, job `121694780880`): `Install exact dependencies and browsers` exited 124 while apt/browser dependencies were being installed. Syntax, build, Pagefind and semantic browser-test steps were skipped; the test did not start.
+- **interactive-audit** (job `121701826253`): `Runtime interactive audit with durable evidence` started. Home Design Audit Pro reported `338 total / 337 passed / 1 failed`; the sole failure was `images-decoded` in Chromium at `mobile-boundary-760:light`, for four images with `naturalWidth: 0`. No `pageerror` was reported.
+
+The PR's required reader-controls Chromium + WebKit contract passed **1498/1498** on this exact head. Comparing `3cfa73e` with `bda68ad` reports only `docs/AUDIT-CURRENT-MAIN-2026-10-26.md` as changed, so product-code and test bytes are identical across those heads.
+
+**Disposition:** no product-code, test, workflow or package change is justified or permitted by this evidence. This record is a documentation-only checkpoint to trigger a fresh exact-head matrix. Classify every result from job steps; if the genealogy `waitForFunction` timeout or `images-decoded` failure repeats, stop and report both runs rather than repairing this lane.\n
