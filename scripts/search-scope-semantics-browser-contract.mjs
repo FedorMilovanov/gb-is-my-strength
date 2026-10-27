@@ -13,12 +13,19 @@ const OVERLAY_ROUTE = '/karty/avraam/';
 const SEARCH_OVERLAY_OWNER = 'search:command-palette';
 const EXPECTED_SCOPES = ['all', 'articles', 'scripture', 'authors'];
 const EXPECTED_LABELS = ['Все', 'Статьи', 'Ссылки', 'Авторы'];
+const supportedBrowsers = new Set(['chromium', 'webkit']);
+const requestedBrowsers = String(process.env.SEARCH_MODAL_BROWSERS || 'chromium,webkit')
+  .split(',').map((value) => value.trim()).filter(Boolean);
+assert.ok(requestedBrowsers.length > 0, 'SEARCH_MODAL_BROWSERS must select at least one browser');
+assert.deepEqual(requestedBrowsers.filter((name) => !supportedBrowsers.has(name)), [], 'SEARCH_MODAL_BROWSERS contains an unsupported browser');
 const CASES = [
   ['chromium', chromium, { width: 1366, height: 900 }],
   ['chromium-mobile', chromium, { width: 390, height: 844 }],
   ['webkit', webkit, { width: 1366, height: 900 }],
   ['webkit-mobile', webkit, { width: 390, height: 844 }],
-];
+].filter(([name]) => requestedBrowsers.includes(name.startsWith('webkit') ? 'webkit' : 'chromium'));
+const testedBrowsers = [...new Set(CASES.map(([name]) => name.startsWith('webkit') ? 'webkit' : 'chromium'))];
+let currentCase = 'source setup';
 
 function contentType(file) {
   return {
@@ -271,9 +278,11 @@ async function main() {
   const overlayResults = [];
   try {
     for (const [name, browserType, viewport] of CASES) {
+      currentCase = `${name}: search scope semantics`;
       scopeResults.push(await runScopeCase(name, browserType, viewport, server.baseUrl));
     }
     for (const [name, browserType, viewport] of CASES) {
+      currentCase = `${name}: stacked overlay composition`;
       overlayResults.push(await runOverlayCase(name, browserType, viewport, server.baseUrl));
     }
   } finally {
@@ -282,6 +291,7 @@ async function main() {
   const report = {
     schemaVersion: 2,
     conclusion: 'success',
+    browsers: testedBrowsers,
     scopeRoute: SCOPE_ROUTE,
     overlayRoute: OVERLAY_ROUTE,
     scopeResults,
@@ -293,7 +303,19 @@ async function main() {
 
 main().catch((error) => {
   fs.mkdirSync(REPORT_DIR, { recursive: true });
-  fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify({ schemaVersion: 2, conclusion: 'failure', error: String(error?.stack || error) }, null, 2)}\n`);
+  if (process.env.GITHUB_ACTIONS === 'true') {
+    const detail = [currentCase, error?.name || 'Error', error?.message || String(error),
+      ...String(error?.stack || '').split('\n').slice(1, 5)].join(' | ').slice(0, 5000);
+    const escaped = detail.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+    process.stdout.write(`::error title=Search scope/overlay failure::${escaped}\n`);
+  }
+  fs.writeFileSync(path.join(REPORT_DIR, 'result.json'), `${JSON.stringify({
+    schemaVersion: 2,
+    conclusion: 'failure',
+    browsers: testedBrowsers,
+    failedCase: currentCase,
+    error: String(error?.stack || error),
+  }, null, 2)}\n`);
   console.error(error);
   process.exitCode = 1;
 });

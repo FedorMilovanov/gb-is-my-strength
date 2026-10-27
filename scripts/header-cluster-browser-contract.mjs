@@ -170,7 +170,13 @@ async function interactionCase(browser, base, contextSpec) {
 
     await page.locator('#hCpBtnNav').click();
     await page.waitForFunction(() => window.GBSearch?.__ready === true && document.querySelectorAll('.cp-backdrop.is-open[role="dialog"]').length === 1, null, { timeout: 30_000 });
-    assert.equal(await page.evaluate(() => window.__gbHeaderOpenEvents), 1, `${contextSpec.id}: first click dispatched search more than once`);
+    // The shared document-capture owner may open directly before this button's
+    // fallback gb:openSearch bridge runs. Require one usable modal and at most
+    // one transport event, without requiring a particular transport path.
+    const clickOpenEvents = await page.evaluate(() => window.__gbHeaderOpenEvents);
+    assert.ok(clickOpenEvents <= 1, `${contextSpec.id}: first click dispatched search more than once`);
+    assert.equal(await page.evaluate(() => window.GBSearchBootstrap?.getState().phase), 'ready', `${contextSpec.id}: first click did not settle the bootstrap`);
+    assert.equal(await page.evaluate(() => window.GBSearchBootstrap?.getState().pendingOpen), false, `${contextSpec.id}: first click left an open request pending`);
     assert.equal(await page.locator('.cp-backdrop.is-open[role="dialog"]').count(), 1, `${contextSpec.id}: first click opened duplicate dialogs`);
     await page.locator('.cp-close').click();
     await page.waitForFunction(() => document.querySelectorAll('.cp-backdrop.is-open').length === 0);
@@ -181,7 +187,7 @@ async function interactionCase(browser, base, contextSpec) {
     assert.equal(await page.evaluate(() => window.__gbHeaderOpenEvents), 1, `${contextSpec.id}: Ctrl+K dispatched search more than once`);
     assert.equal(await page.locator('.cp-backdrop.is-open[role="dialog"]').count(), 1, `${contextSpec.id}: Ctrl+K opened duplicate dialogs`);
 
-    return { context: contextSpec.id, clickOpenEvents: 1, shortcutOpenEvents: 1, focusEvidence };
+    return { context: contextSpec.id, clickOpenEvents, shortcutOpenEvents: 1, focusEvidence };
   } finally {
     await context.close();
   }

@@ -12,6 +12,13 @@ const options = Object.fromEntries(process.argv.slice(2).map((argument) => {
 }));
 const dist = path.resolve(String(options.dist || 'dist'));
 const reportDir = path.resolve(String(options.report || 'reports/search-modal-contract/app-surfaces'));
+const supportedBrowsers = new Set(['chromium', 'webkit']);
+const requestedBrowsers = String(process.env.SEARCH_MODAL_BROWSERS || 'chromium,webkit')
+  .split(',').map((value) => value.trim()).filter(Boolean);
+assert.ok(requestedBrowsers.length > 0, 'SEARCH_MODAL_BROWSERS must select at least one browser');
+assert.deepEqual(requestedBrowsers.filter((name) => !supportedBrowsers.has(name)), [], 'SEARCH_MODAL_BROWSERS contains an unsupported browser');
+const testedBrowsers = requestedBrowsers;
+let currentCase = 'source setup';
 
 const routes = [
   { path: '/karty/avraam/', local: '.me-search', avoid: ['.me-search', '.me-theme-btn', '.me-share-btn'], family: 'map' },
@@ -249,12 +256,24 @@ const port = server.address().port;
 const results = [];
 try {
   for (const [browserName, browserType] of [['chromium', chromium], ['webkit', webkit]]) {
+    if (!requestedBrowsers.includes(browserName)) continue;
     for (const viewport of viewports) {
-      for (const route of routes) results.push(await runCase(browserType, browserName, route, viewport, port));
+      for (const route of routes) {
+        currentCase = `${browserName} ${viewport.name} ${route.path}`;
+        results.push(await runCase(browserType, browserName, route, viewport, port));
+      }
     }
   }
+} catch (error) {
+  if (process.env.GITHUB_ACTIONS === 'true') {
+    const detail = [currentCase, error?.name || 'Error', error?.message || String(error),
+      ...String(error?.stack || '').split('\n').slice(1, 5)].join(' | ').slice(0, 5000);
+    const escaped = detail.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+    process.stdout.write(`::error title=App Search surface failure::${escaped}\n`);
+  }
+  throw error;
 } finally {
   await new Promise((resolve) => server.close(resolve));
 }
-fs.writeFileSync(path.join(reportDir, 'report.json'), JSON.stringify({ schemaVersion: 1, results }, null, 2));
+fs.writeFileSync(path.join(reportDir, 'report.json'), JSON.stringify({ schemaVersion: 1, browsers: testedBrowsers, results }, null, 2));
 console.log(`APP SEARCH SURFACE BROWSER CONTRACT: ${results.length}/${results.length} PASS`);

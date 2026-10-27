@@ -9,6 +9,7 @@ import { chromium, webkit } from 'playwright';
 const ROOT = path.resolve(process.cwd());
 const DIST = path.join(ROOT, 'dist');
 const REPORT_DIR = path.join(ROOT, 'reports', 'search-cold-bootstrap');
+const PRODUCTION_MANIFEST_URL = 'https://gospod-bog.ru/manifest.json';
 const BROWSERS = { chromium, webkit };
 const browserNames = String(process.env.SEARCH_BOOTSTRAP_BROWSERS || 'chromium,webkit')
   .split(',').map((value) => value.trim()).filter(Boolean);
@@ -85,6 +86,13 @@ async function startServer() {
       if (!filePath) { response.statusCode = 404; response.end('Not found'); return; }
       response.setHeader('Cache-Control', path.extname(filePath) === '.html' ? 'no-store' : 'public, max-age=3600');
       response.setHeader('Content-Type', contentType(filePath));
+      if (path.extname(filePath).toLowerCase() === '.html') {
+        // The built site points at the production-origin manifest. Keep that
+        // same-origin relationship inside this localhost browser harness.
+        const html = fs.readFileSync(filePath, 'utf8').replaceAll(PRODUCTION_MANIFEST_URL, '/manifest.json');
+        response.end(html);
+        return;
+      }
       fs.createReadStream(filePath).pipe(response);
     } catch (error) {
       response.statusCode = 400;
