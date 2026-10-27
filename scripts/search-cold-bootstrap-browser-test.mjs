@@ -203,7 +203,10 @@ async function runColdAndWarmCase(browser, browserName, baseUrl, route, viewport
     assert.ok(!String(afterEscape.className).includes('cp-input'), `${browserName} ${route}: Escape left focus inside the closed palette`);
 
     if (route === '/hard-texts/' && viewport.width < 500) {
-      await page.mouse.wheel(0, 420);
+      // The mobile shell reveals this opener after the document scrolls; set
+      // that browser state without using mouse.wheel, which mobile WebKit lacks.
+      await page.evaluate(() => window.scrollTo(0, 420));
+      await page.waitForFunction(() => document.getElementById('mobileChromePage')?.classList.contains('is-shown') === true, null, { timeout: 5000 });
       await trigger.waitFor({ state: 'visible' });
     }
     let enterOpen;
