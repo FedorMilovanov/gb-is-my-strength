@@ -410,3 +410,16 @@ install-blocked job.
 `SYS-CONTENT-AUTHORING-PUBLICATION-CONTRACT`,
 `SYS-SEARCH-LAZY-BOOTSTRAP-OWNERSHIP`. Первые workflow/dependency изменения
 по-прежнему блокируются disposition PR #2179.
+
+
+### Exact-head CI: evidence head `bda68ad` (third W47 matrix)
+
+The PR head was `bda68adf1bda66951fe633311c53a4410e2841d3`, based on `main@21dcfdd9f9018607a708c5118383e287ec1a3fed`. The exact-head matrix finished **43 success / 3 failure / 4 skipped / 1 cancelled** (51 check runs). Step-level evidence for the three failures:
+
+- **Build and audit production-like candidate** (run `40357787559`, job `121694780261`): candidate build, dependency install and browser install completed; `Genealogy full browser release gate` did start. Chromium and WebKit viewport cases passed. Firefox at `320x760` timed out after 30 seconds in `page.waitForFunction`, at `scripts/genealogy-browser-contract.mjs:971` (`assertAtlasNavigation`). This is a genealogy browser-contract failure, not a Gill reader assertion.
+- **Chromium WebKit reader semantic projection** (run `40357787630`, job `121694780880`): `Install exact dependencies and browsers` exited 124 while apt/browser dependencies were being installed. Syntax, build, Pagefind and semantic browser-test steps were skipped; the test did not start.
+- **interactive-audit** (job `121701826253`): `Runtime interactive audit with durable evidence` started. Home Design Audit Pro reported `338 total / 337 passed / 1 failed`; the sole failure was `images-decoded` in Chromium at `mobile-boundary-760:light`, for four images with `naturalWidth: 0`. No `pageerror` was reported.
+
+The PR's required reader-controls Chromium + WebKit contract passed **1498/1498** on this exact head. Comparing `3cfa73e` with `bda68ad` reports only `docs/AUDIT-CURRENT-MAIN-2026-10-26.md` as changed, so product-code and test bytes are identical across those heads.
+
+**Disposition:** no product-code, test, workflow or package change is justified or permitted by this evidence. This record is a documentation-only checkpoint to trigger a fresh exact-head matrix. Classify every result from job steps; if the genealogy `waitForFunction` timeout or `images-decoded` failure repeats, stop and report both runs rather than repairing this lane.\n
