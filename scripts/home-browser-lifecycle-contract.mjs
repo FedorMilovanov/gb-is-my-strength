@@ -252,18 +252,30 @@ async function assertScrollUnlocked(page, label) {
 }
 
 async function assertSearchClosed(page, label) {
-  const visible = await page.locator('.cp-backdrop').isVisible().catch(() => false);
-  assert.equal(visible, false, `${label}: search overlay opened unexpectedly`);
+  const state = await page.evaluate(() => {
+    const overlay = document.querySelector('.cp-backdrop');
+    if (!overlay) return { exists: false, openClass: false, display: 'absent', visible: false };
+    const style = getComputedStyle(overlay);
+    return {
+      exists: true,
+      openClass: overlay.classList.contains('is-open'),
+      display: style.display,
+      visible: style.display !== 'none' && overlay.getClientRects().length > 0,
+    };
+  });
+  assert.equal(state.visible, false, label + ': search overlay should be closed; state=' + JSON.stringify(state));
 }
 
 async function closeSearch(page) {
   await page.keyboard.press('Escape');
   await page.waitForFunction(() => {
     const overlay = document.querySelector('.cp-backdrop');
-    return !overlay || getComputedStyle(overlay).display === 'none' || !overlay.classList.contains('open');
+    if (!overlay) return true;
+    const style = getComputedStyle(overlay);
+    return !overlay.classList.contains('is-open') || style.display === 'none';
   });
+  await assertSearchClosed(page, 'after Escape');
 }
-
 async function assertCanonicalShortcut(page, chord, label, baseUrl, pagefindState) {
   const observeHeadResponse = (response) => {
     const request = response.request();
@@ -448,6 +460,15 @@ async function assertEditableShortcutIsolation(page) {
       '<div id="home-contract-role-textbox" role="textbox" tabindex="0" contenteditable="true">role textbox</div>',
     ].join('');
     document.body.appendChild(host);
+    window.__homeContractSearchOpenEvents = [];
+    window.addEventListener('gb:openSearch', (event) => {
+      window.__homeContractSearchOpenEvents.push({
+        source: event.detail?.source || null,
+        activeElementId: document.activeElement?.id || null,
+        activeElementTag: document.activeElement?.tagName || null,
+        overlayOpen: Boolean(document.querySelector('.cp-backdrop.is-open')),
+      });
+    });
   });
 
   for (const [selector, chord, label] of [
@@ -455,18 +476,53 @@ async function assertEditableShortcutIsolation(page) {
     ['#home-contract-textarea', 'Meta+K', 'textarea Meta+K'],
     ['#home-contract-role-textbox', 'Control+K', 'role=textbox Ctrl+K'],
   ]) {
-    await page.locator(selector).focus();
+    const field = page.locator(selector);
+    await field.focus();
+    const focusState = await field.evaluate((element) => ({
+      focused: document.activeElement === element,
+      activeElementId: document.activeElement?.id || null,
+      activeElementTag: document.activeElement?.tagName || null,
+    }));
+    assert.equal(focusState.focused, true, label + ': editable target did not receive focus; state=' + JSON.stringify(focusState));
+    await assertSearchClosed(page, label + ' precondition');
+
+    const beforeEvents = await page.evaluate(() => (window.__homeContractSearchOpenEvents || []).length);
     await page.keyboard.press(chord);
     await page.waitForTimeout(80);
+
+    const eventState = await page.evaluate(() => ({
+      events: window.__homeContractSearchOpenEvents || [],
+      activeElementId: document.activeElement?.id || null,
+      activeElementTag: document.activeElement?.tagName || null,
+      overlayOpen: Boolean(document.querySelector('.cp-backdrop.is-open')),
+    }));
+    assert.equal(
+      eventState.events.length,
+      beforeEvents,
+      label + ': editable shortcut dispatched gb:openSearch; state=' + JSON.stringify({
+        recentEvents: eventState.events.slice(beforeEvents),
+        activeElementId: eventState.activeElementId,
+        activeElementTag: eventState.activeElementTag,
+        overlayOpen: eventState.overlayOpen,
+      }),
+    );
     await assertSearchClosed(page, label);
   }
 
   const input = page.locator('#home-contract-input');
   await input.fill('');
   await input.focus();
+  assert.equal(
+    await input.evaluate((element) => element === document.activeElement),
+    true,
+    'plain K fixture input did not receive focus',
+  );
+  await assertSearchClosed(page, 'plain K precondition');
   await page.keyboard.press('k');
   assert.equal(await input.inputValue(), 'k', 'plain unmodified K was intercepted before reaching an ordinary input');
+  await assertSearchClosed(page, 'plain K');
 
+  const beforeImeEvents = await page.evaluate(() => (window.__homeContractSearchOpenEvents || []).length);
   const ime = await page.evaluate(() => {
     const target = document.getElementById('home-contract-input');
     const event = new KeyboardEvent('keydown', {
@@ -482,11 +538,14 @@ async function assertEditableShortcutIsolation(page) {
     return { isComposing: event.isComposing, defaultPrevented: event.defaultPrevented };
   });
   assert.equal(ime.isComposing, true, 'IME fixture did not create a composing keyboard event');
-  await page.waitForTimeout(80);
+  assert.equal(
+    await page.evaluate(() => (window.__homeContractSearchOpenEvents || []).length),
+    beforeImeEvents,
+    'IME Ctrl+K dispatched gb:openSearch',
+  );
   await assertSearchClosed(page, 'IME Ctrl+K');
   await page.evaluate(() => document.getElementById('home-contract-editable-host')?.remove());
 }
-
 async function assertBackToTopThreshold(page) {
   const control = page.locator('#hScrollTop');
   const inactive = () => page.evaluate(() => {
