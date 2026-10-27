@@ -33,7 +33,6 @@
   var TEXT_MODES = ['rich', 'plain'];
   var MOTIONS = ['system', 'reduced'];
   var LINE_VALUES = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
-  var MEASURE_VALUES = { narrow: '42rem', normal: '50rem', wide: '58rem' };
   var DEFAULTS = Object.freeze({
     version: 1,
     theme: 'light',
@@ -150,18 +149,15 @@
   function applyReaderRoots(state) {
     var sepia = state.theme === 'sepia';
     var line = LINE_VALUES[state.lineHeight];
-    var measure = MEASURE_VALUES[state.measure];
     document.querySelectorAll('[data-gill-v16]').forEach(function (element) {
       if (sepia) element.setAttribute('data-gill-reader-theme', 'sepia');
       else element.removeAttribute('data-gill-reader-theme');
       element.style.setProperty('--gbs2-article-line', line);
-      element.style.setProperty('--gbs2-article-measure', measure);
     });
     document.querySelectorAll('[data-reader-root]').forEach(function (element) {
       if (sepia) element.setAttribute('data-hm-reader-theme', 'sepia');
       else element.removeAttribute('data-hm-reader-theme');
       element.style.setProperty('--hm-article-line', line);
-      element.style.setProperty('--hm-article-measure', measure);
     });
   }
 
@@ -174,7 +170,6 @@
     root.classList.toggle('dark', state.theme === 'dark');
     root.style.setProperty('--gb-reader-font-scale', String(state.fontScale));
     root.style.setProperty('--gb-reader-line-height', LINE_VALUES[state.lineHeight]);
-    root.style.setProperty('--gb-reader-measure', MEASURE_VALUES[state.measure]);
     root.style.setProperty('--gb-reader-theme-ready', '1');
     applyReaderRoots(state);
     return state;

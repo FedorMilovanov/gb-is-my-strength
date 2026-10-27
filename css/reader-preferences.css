@@ -1,8 +1,14 @@
 /*
  * Universal Reader Preferences — semantic token bridge.
- * Loaded before route CSS; attribute selectors intentionally outrank :root
- * defaults while allowing route themes to keep their geometry and artwork.
+ * Loaded before route CSS; reader-measure values are defined here once.
+ * The synchronous head bootstrap sets data-reader-measure before first paint;
+ * every reader adapter inherits the same token instead of re-mapping widths in JS.
  */
+
+:root { --gb-reader-measure: 43rem; }
+:root[data-reader-measure="narrow"] { --gb-reader-measure: 36rem; }
+:root[data-reader-measure="normal"] { --gb-reader-measure: 43rem; }
+:root[data-reader-measure="wide"] { --gb-reader-measure: 44.5rem; }
 
 html[data-reader-theme="light"] {
   color-scheme: light;

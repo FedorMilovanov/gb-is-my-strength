@@ -295,7 +295,7 @@ html.dark .gb-theme-toggle .theme-icon-moon { opacity: 1; transform: rotate(0) s
    Диска/заливки нет, только рамка — мобильная кнопка остаётся лёгкой.
    Было добавлено (dc092f1), затем случайно откачено ревертом d3b4dde без
    причины и не дошло до main. Возвращено по прямой просьбе владельца. */
-@media (max-width: 63.99em) {
+@media (max-width: 84.999em) {
   /* Владелец 2026-07-17: «рамка вокруг PLAY будто уменьшенная» — контур покоя
      наследовал inset:6px халo-геометрию (24px круг в 36px кнопке), а SVG-кольцо
      прогресса рисует r=45/100 (=inset 5%). Совмещаем контур с кольцом. */
@@ -1521,7 +1521,7 @@ html.dark [data-gill-v16] .toc-sheet{background:var(--gb-surface);border-color:v
    1440px+, если лист остался открыт при пересечении брейкпоинта. Найдено
    2026-07-15 по скринам владельца). .gill-settings-overlay ИСКЛЮЧЁН —
    у него уже свой (более узкий, 320px) поповер чуть выше в файле. */
-@media (min-width:64em){
+@media (min-width:85em){
   [data-gill-v16] .toc-overlay:not(.gill-settings-overlay){
     background:transparent;
     -webkit-backdrop-filter:none;backdrop-filter:none;
@@ -2728,14 +2728,16 @@ html.dark .gb-roman {
    ============================================================ */
 
 /* ---- Desktop: 2-column grid (rail + content) ---- */
-@media (min-width:64em){
+@media (min-width:85em){
   .gbs2-world[data-gill-v16]{
     /* rail is position:fixed (out of flow); article is a single centred column.
        --gb-rail-reserve = the left space the fixed rail occupies (its left
        margin + width + a breathing gap) — used as the minimum left margin so
        the article clears the rail on narrower desktops. */
     --gb-rail-reserve:calc(clamp(16px,2.4vw,40px) + clamp(272px,24vw,304px) + clamp(24px,3vw,48px));
-    --gb-measure:min(var(--gb-reader-measure, 43rem), 760px, calc(100vw - 48px));
+    /* The shared token is already the preferred reading width; 760px remains
+       a hard safety ceiling, and the full-bleed canvas supplies the viewport cap. */
+    --gb-measure:min(calc(var(--gb-reader-measure, 43rem) + 48px), 760px, calc(100vw - 48px));
     display:block;
     min-height:auto;
   }
@@ -2851,8 +2853,8 @@ html.dark .gb-roman {
   [data-gill-v16] .gbs-rail .gbs2-rmid{transition:none}
 }
 
-/* ---- Mobile/tablet (<64em): hide rail, show fixed bottom bar ---- */
-@media screen and (max-width:63.99em){
+/* ---- Compact/tablet (<85em): hide rail, show fixed top/bottom bars ---- */
+@media screen and (max-width:84.999em){
   .gbs2-world[data-gill-v16]{display:block;min-height:0}
   [data-gill-v16] .gbs-rail{display:none}
   /* Owner + референс (gill-mobile-bars-v2.9: крошек нет): на мобиле у
@@ -3627,7 +3629,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
 [data-gill-v16] .gbs-theme-corner{
   display:none;
 }
-@media (min-width:64em){
+@media (min-width:85em){
   [data-gill-v16] .gbs-theme-corner{
     display:flex;
     flex-direction:column;
@@ -3672,7 +3674,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
    it, dressed in the same premium card treatment as the rest of the rail
    (canon .gb-ember-expand pattern: blur + hairline border + soft shadow).
    ============================================================ */
-@media (min-width:64em){
+@media (min-width:85em){
   body:has([data-gill-v16]) #hMobileNav{
     top:auto;bottom:78px;left:26px;right:auto;
     width:230px;
@@ -3789,10 +3791,10 @@ html.dark [data-gill-v16] .mobile-top-bar {
 /* =====================================================
    GILL MOBILE READER v5 — Learning + Settings sheets,
    inline speed rail, scoped sepia, top-bar Home/Learning slot.
-   All rules scoped to [data-gill-v16] under <64em; nothing here
+   All rules scoped to [data-gill-v16] under <85em; nothing here
    touches desktop Gill or any other route.
    ===================================================== */
-@media (max-width: 63.99em) {
+@media (max-width: 84.999em) {
   /* ---- Top bar: Learning trigger / inline speed rail slot-swap ---- */
   [data-gill-v16] .mobile-top-slot {
     position: relative;
@@ -3891,7 +3893,9 @@ html.dark [data-gill-v16] .mobile-top-bar {
      Canonical non-center-intercepting corner geometry — Play-owned. */
   [data-gill-v16] .mobile-spdbadge {
     position: absolute;
-    right: -4px;
+    /* This persistent speed chip must stay inside the viewport at tablet
+       widths; its old -4px offset caused a 4px body overflow after reload. */
+    right: 0;
     bottom: -4px;
     z-index: 3;
     min-width: 24px;
@@ -4209,7 +4213,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
     line-height: var(--gbs2-article-line, 1.6);
   }
   [data-gill-v16] .page-wrap {
-    max-width: var(--gbs2-article-measure, none);
+    max-width: min(calc(var(--gb-reader-measure, 43rem) + 48px), 760px);
     margin-left: auto;
     margin-right: auto;
   }
@@ -4226,7 +4230,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
 /* ================= Gill mobile polish overrides (additive, surgical) =================
    Scoped to [data-gill-v16] + mobile only. Placed after the main Gill mobile
    block so these later rules win the cascade without editing the originals. */
-@media (max-width: 63.99em) {
+@media (max-width: 84.999em) {
   /* Fix 1 — learning-sheet tabs must fit all 4 within the sheet (>=360px)
      instead of overflowing/clipping "Тест". Let the 4 tabs share the row
      equally; scroll remains a harmless fallback below ~340px. */
@@ -4606,10 +4610,10 @@ html.dark [data-gill-v16] .mobile-top-bar {
    duplicate for exactly the desktop entry point (.gill-settings-overlay) —
    same declarations, so opening «Настройки» from the rail-foot gear isn't a
    bare unstyled dump of buttons. The anchored-popover POSITIONING for this
-   overlay lives in the min-width:64em block ported from 8f5b87a earlier;
+   overlay lives in the min-width:85em block ported from 8f5b87a earlier;
    this adds the INNER content styling that was still missing. Ширина текста
    stays mobile-only (owner) — hidden below, JS-guarded separately. */
-@media (min-width: 64em) {
+@media (min-width: 85em) {
   /* Шапка листа на десктопе: компактный вид (лейбл-капс + 18px сериф + × в
      кружке справа). Мобильная шапка стилизуется мобильным блоком; без этого
      дубликата на десктопе <h3> наследовал крупный статейный сериф, а ×
@@ -4676,7 +4680,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
 }
 /* rail-foot gear shows only on desktop (mobile bar has its own gear, hidden on
    desktop via .mobile-*-bar display:none in the same breakpoint). */
-@media (max-width: 63.99em) {
+@media (max-width: 84.999em) {
   [data-gill-v16] #railSettingsBtn { display: none; }
 }
 
@@ -4953,7 +4957,7 @@ html.dark .gb-floater .gbs-rail-spdbadge {
 
 /* Гилл, десктоп: лист настроек — поповер от триггера (низ-лево rail),
    не центр-модалка с гашением экрана (порт 8f5b87a). */
-@media (min-width: 64em) {
+@media (min-width: 85em) {
   [data-gill-v16] .gill-settings-overlay {
     background: transparent;
     -webkit-backdrop-filter: none;
@@ -5003,7 +5007,7 @@ html.dark .gb-floater .gbs-rail-spdbadge {
 /* Selected-rate echo: anchor at the corner and offset by its OWN dimensions.
    Long values (1.25×/1.75×) therefore grow outward instead of back across the
    PLAY glyph. 'translate' composes with the existing transform:scale bounce. */
-@media (min-width: 64em) {
+@media (min-width: 85em) {
   .gbs-theme-corner .gbs-rail-spdbadge,
   .gb-floater .gbs-rail-spdbadge {
     right: 0;
@@ -5021,19 +5025,12 @@ html.dark .gb-floater .gbs-rail-spdbadge {
    READER UI FOLLOW-UP 2026-07-24
    Evidence-driven compact-desktop safety.
    ========================================================= */
-@media (min-width: 64em) and (max-width: 99.99em) {
-  /* At 1024–1599px the fixed rail and horizontal speed row compete for the
-     same lane. Reserve a real control corridor and clamp the page itself, not
-     individual paragraphs, so figures/headings cannot recreate overflow. */
-  .gbs2-world[data-gill-v16] {
-    --gb-measure: min(
-      var(--gb-reader-measure, 43rem),
-      calc(100vw - var(--gb-rail-reserve) - 204px)
-    );
-  }
-
-  /* Compact desktop: same speed choices and controller, responsive geometry
-     only. A slim vertical rail remains beside PLAY instead of crossing prose. */
+@media (min-width: 64em) and (max-width: 101.99em) {
+  /* Keep compact/tablet chrome until the fixed rail and the right-hand tools
+     fit together. Reader width stays owned by --gb-reader-measure; subtracting
+     a magic control corridor here made all three choices collapse at 1024px. */
+  /* Compact desktop through 1631px: keep the slim vertical speed rail
+      beside PLAY until the horizontal pill has a real non-overlapping corridor. */
   .gbs-theme-corner .gb-ember-expand,
   .gb-floater .gb-ember-expand {
     right: calc(100% + 9px);

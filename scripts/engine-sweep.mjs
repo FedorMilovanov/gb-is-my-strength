@@ -210,8 +210,8 @@ for (const [id, url] of SERIES) {
       visible: getComputedStyle(button.closest('.setting-group')).display !== 'none'
     };
   });
-  R(id, 'desk: настройка «Шире» доступна и ограничена 58rem',
-    !!measure && measure.visible && measure.rootMeasure === 'wide' && measure.cssMeasure === '58rem' &&
+  R(id, 'desk: настройка «Шире» доступна и ограничена 44.5rem',
+    !!measure && measure.visible && measure.rootMeasure === 'wide' && measure.cssMeasure === '44.5rem' &&
       (id !== 'gill3' || measure.delta >= 24),
     JSON.stringify(measure));
   if (ARTIFACT_DIR && id === 'gill3') {
@@ -262,10 +262,10 @@ for (const [id, url] of SERIES) {
     };
   });
 
-  R(id, 'compact-1024: desktop rail active / mobile bars off',
-    !!compact && compact.rail !== 'none' && compact.rail !== 'absent' &&
-      (compact.top === 'none' || compact.top === 'absent') &&
-      (compact.bottom === 'none' || compact.bottom === 'absent'),
+  R(id, 'compact-1024: compact bars active / desktop rail off',
+    !!compact && (compact.rail === 'none' || compact.rail === 'absent') &&
+      compact.top !== 'none' && compact.top !== 'absent' &&
+      compact.bottom !== 'none' && compact.bottom !== 'absent',
     JSON.stringify(compact));
   R(id, 'compact-1024: no horizontal overflow',
     !!compact && compact.scrollWidth <= compact.viewport + 1,
@@ -385,9 +385,100 @@ for (const [id, url] of SINGLES) {
   await ctx.close();
 }
 
-/* ============ READER WIDTH + PDF/PRINT — СИСТЕМНЫЙ КОНТРАКТ ============ */
+/* ============ COMPACT-DESKTOP READER CHROME — NO RAIL COLLISION WORKAROUND ============ */
 {
   const { ctx, page } = await newPage({ width: 1035, height: 851 });
+  await page.goto(base + '/articles/dzhon-gill-chast-1-chelovek/', { waitUntil: 'networkidle' });
+  await page.evaluate(() => {
+    const current = window.GBReaderPreferences?.get?.() || {};
+    window.GBReaderPreferences?.set?.({ ...current, measure: 'wide' }, { source: 'engine-sweep-compact' });
+  });
+  await page.waitForTimeout(250);
+  await page.evaluate(() => {
+    const paragraph = [...document.querySelectorAll('[data-gill-v16] .article-body p')]
+      .find((node) => (node.textContent || '').trim().length > 180);
+    if (paragraph) scrollTo(0, Math.max(0, paragraph.getBoundingClientRect().top + scrollY - 110));
+  });
+  await page.waitForTimeout(250);
+  await page.click('#mobSpdBadge');
+  await page.waitForFunction(() => {
+    const root = document.querySelector('[data-gill-v16]');
+    const rail = root?.querySelector('#mobileSpeedrail');
+    return root?.querySelector('.mobile-top-bar')?.classList.contains('speed-open') &&
+      rail && !rail.hidden && rail.getAttribute('aria-hidden') === 'false';
+  }, null, { timeout: 4000 });
+  const safe = await page.evaluate(() => {
+    const root = document.querySelector('[data-gill-v16]');
+    const rail = root?.querySelector('#mobileSpeedrail');
+    const topbar = root?.querySelector('.mobile-top-bar');
+    const paragraph = [...root.querySelectorAll('.article-body p')].find((node) => {
+      const r = node.getBoundingClientRect();
+      return (node.textContent || '').trim().length > 180 && r.bottom > 0 && r.top < innerHeight;
+    });
+    const rr = rail?.getBoundingClientRect();
+    const pr = paragraph?.getBoundingClientRect();
+    const shell = root.querySelector('.page-wrap')?.getBoundingClientRect();
+    return rr && pr && shell ? {
+      open: topbar?.classList.contains('speed-open'),
+      ariaHidden: rail.getAttribute('aria-hidden'),
+      token: getComputedStyle(document.documentElement).getPropertyValue('--gb-reader-measure').trim(),
+      rail: { top: Math.round(rr.top), bottom: Math.round(rr.bottom), left: Math.round(rr.left), right: Math.round(rr.right), width: Math.round(rr.width), height: Math.round(rr.height) },
+      paragraph: { top: Math.round(pr.top), bottom: Math.round(pr.bottom), left: Math.round(pr.left), right: Math.round(pr.right) },
+      shell: { left: Math.round(shell.left), right: Math.round(shell.right), width: Math.round(shell.width) },
+      viewport: innerWidth,
+      scrollWidth: document.documentElement.scrollWidth
+    } : null;
+  });
+  R('reader-width', '1035px: compact speed rail stays above the text and page has no horizontal overflow',
+    !!safe && safe.open && safe.ariaHidden === 'false' && safe.token === '44.5rem' &&
+      safe.rail.bottom + 8 <= safe.paragraph.top && safe.scrollWidth <= safe.viewport + 1,
+    JSON.stringify(safe));
+  if (ARTIFACT_DIR) await page.screenshot({ path: join(ARTIFACT_DIR, 'reader-wide-speed-compact-1035.png'), fullPage: false });
+  await ctx.close();
+}
+
+/* ============ WIDE DESKTOP SPEED PILL — CONTENT CLEARANCE ============ */
+{
+  const { ctx, page } = await newPage({ width: 1680, height: 851 });
+  await page.goto(base + '/articles/dzhon-gill-chast-1-chelovek/', { waitUntil: 'networkidle' });
+  await page.evaluate(() => {
+    const current = window.GBReaderPreferences?.get?.() || {};
+    window.GBReaderPreferences?.set?.({ ...current, measure: 'wide' }, { source: 'engine-sweep-wide-speed' });
+  });
+  await page.waitForTimeout(250);
+  await page.evaluate(() => {
+    const paragraph = [...document.querySelectorAll('[data-gill-v16] .article-body p')]
+      .find((node) => (node.textContent || '').trim().length > 180);
+    if (paragraph) scrollTo(0, Math.max(0, paragraph.getBoundingClientRect().top + scrollY - 110));
+  });
+  await page.waitForTimeout(250);
+  await page.hover('.gbs-theme-corner .gbs-rail-playwrap');
+  await page.waitForTimeout(400);
+  const safe = await page.evaluate(() => {
+    const panel = document.querySelector('.gbs-theme-corner .gb-ember-expand');
+    const paragraph = [...document.querySelectorAll('[data-gill-v16] .article-body p')]
+      .find((node) => { const r = node.getBoundingClientRect(); return (node.textContent || '').trim().length > 180 && r.bottom > 0 && r.top < innerHeight; });
+    if (panel) panel.classList.add('is-open');
+    const pr = panel?.getBoundingClientRect();
+    const ar = paragraph?.getBoundingClientRect();
+    return pr && ar ? {
+      articleRight: Math.round(ar.right), panelLeft: Math.round(pr.left),
+      panelWidth: Math.round(pr.width), panelHeight: Math.round(pr.height),
+      open: panel.classList.contains('is-open'),
+      scrollWidth: document.documentElement.scrollWidth, viewport: innerWidth
+    } : null;
+  });
+  R('reader-width', '1680px: horizontal wide speed pill clears text and stays in viewport',
+    !!safe && safe.open && safe.panelWidth > safe.panelHeight * 2 &&
+      safe.articleRight <= safe.panelLeft - 12 && safe.scrollWidth <= safe.viewport + 1,
+    JSON.stringify(safe));
+  if (ARTIFACT_DIR) await page.screenshot({ path: join(ARTIFACT_DIR, 'reader-wide-speed-1680.png'), fullPage: false });
+  await ctx.close();
+}
+
+/* ============ READER WIDTH + PDF/PRINT — СИСТЕМНЫЙ КОНТРАКТ ============ */
+{
+  const { ctx, page } = await newPage({ width: 1440, height: 851 });
   await page.goto(base + '/articles/dzhon-gill-chast-1-chelovek/', { waitUntil: 'networkidle' });
   await page.evaluate(() => {
     const current = window.GBReaderPreferences?.get?.() || {};
@@ -417,11 +508,11 @@ for (const [id, url] of SINGLES) {
       scrollWidth: document.documentElement.scrollWidth, viewport: innerWidth
     } : null;
   });
-  R('reader-width', '1035px: «Шире» сохраняет коридор у speed-rail',
+  R('reader-width', '1440px: compact vertical speed-rail preserves the prose corridor',
     !!safe && safe.open && safe.panelHeight > safe.panelWidth * 2 &&
       safe.articleRight <= safe.panelLeft - 12 && safe.scrollWidth <= safe.viewport + 1,
     JSON.stringify(safe));
-  if (ARTIFACT_DIR) await page.screenshot({ path: join(ARTIFACT_DIR, 'reader-wide-speed-1035.png'), fullPage: false });
+  if (ARTIFACT_DIR) await page.screenshot({ path: join(ARTIFACT_DIR, 'reader-wide-speed-1440.png'), fullPage: false });
 
   await page.evaluate(() => { window.print = () => { window.__printCalls = (window.__printCalls || 0) + 1; }; });
   const printHit = await clickVisibleCenter(page, '.gbs-rail-foot [data-action="print"]');
@@ -829,9 +920,13 @@ for (const [id, url, satelliteUrl] of [
   const { ctx, page } = await newPage({ width: 1440, height: 900 });
   await page.goto(base + url, { waitUntil: 'networkidle' });
   await page.waitForTimeout(400);
+  // Hydration may replace the legacy TOC shell; wait for the actual owner
+  // before mutating it so a transient lookup cannot crash the whole sweep.
+  await page.locator('#partTocOverlay').waitFor({ state: 'attached', timeout: 5000 });
 
   await page.evaluate(() => {
     const ov = document.getElementById('partTocOverlay');
+    if (!ov) throw new Error('partTocOverlay was absent after its attached precondition');
     ov.classList.add('is-open');
     ov.setAttribute('aria-hidden', 'false');
   });

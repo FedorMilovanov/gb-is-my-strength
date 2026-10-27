@@ -158,7 +158,7 @@
        figures and settings modes cannot acquire independent horizontal axes. */
     :global([data-reader-root]) {
       --hm-article-line: 1.6;
-      --hm-article-measure: 50rem;
+      --hm-article-measure: var(--gb-reader-measure, 43rem);
       --hm-article-shell: calc(var(--hm-article-measure) + 6rem);
     }
     :global([data-reader-root] .article-body) { line-height: var(--hm-article-line); }
@@ -235,9 +235,6 @@
 
 <script>
   const LINE_VALUES: Record<string, string> = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
-  // B6: intentional — standalone maps narrow/normal/wide to 42/50/58rem;
-  // Gill maps the same keys to 36/43/46rem (its sheet + head bootstrap).
-  const MEASURE_VALUES: Record<string, string> = { narrow: '42rem', normal: '50rem', wide: '58rem' };
 
   function readerPreferences() {
     return (window as any).GBReaderPreferences || null;
@@ -320,7 +317,6 @@
       if (theme === 'sepia') content?.setAttribute('data-hm-reader-theme', 'sepia');
       else content?.removeAttribute('data-hm-reader-theme');
       content?.style.setProperty('--hm-article-line', LINE_VALUES[state.lineHeight] || LINE_VALUES.normal);
-      content?.style.setProperty('--hm-article-measure', MEASURE_VALUES[state.measure] || MEASURE_VALUES.normal);
     }
 
     function syncDots(scale: number) {

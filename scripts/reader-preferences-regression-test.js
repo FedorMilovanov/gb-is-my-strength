@@ -129,7 +129,7 @@ assert.strictEqual(browser.attrs.get('data-reader-measure'), 'wide');
 assert.strictEqual(browser.classes.has('dark'), false);
 assert.strictEqual(browser.styles.get('--gb-reader-font-scale'), '1.1');
 assert.strictEqual(browser.styles.get('--gb-reader-line-height'), '1.85');
-assert.strictEqual(browser.styles.get('--gb-reader-measure'), '58rem');
+assert.strictEqual(browser.styles.has('--gb-reader-measure'), false, 'measure width is CSS-owned, not copied into inline styles');
 assert.strictEqual(browser.window.__GB_READER_PREFS_BOOTSTRAP__.theme, 'sepia');
 
 browser.run('js/reader-preferences.js');
@@ -149,7 +149,7 @@ assert.deepStrictEqual(
   { theme: 'light', lineHeight: 'compact', measure: 'narrow', fontScale: 1.25 },
 );
 assert.strictEqual(browser.styles.get('--gb-reader-line-height'), '1.45');
-assert.strictEqual(browser.styles.get('--gb-reader-measure'), '42rem');
+assert.strictEqual(browser.styles.has('--gb-reader-measure'), false, 'changing measure updates the root attribute, not a second width map');
 assert.strictEqual(browser.classes.has('dark'), false);
 
 // Canonical state always wins over conflicting legacy values.
@@ -293,6 +293,15 @@ for (const file of walk(ROOT, '.html', new Set(['node_modules', 'dist', 'out', '
   if (csp) assert(preferenceIndex > csp.index + csp[0].length - 1, `${path.relative(ROOT, file)} preferences must follow CSP`);
 }
 assert(legacyTargets.length >= 50, `expected broad legacy coverage, got ${legacyTargets.length}`);
+
+const measureCss = read('css/reader-preferences.css');
+assert(measureCss.includes(':root[data-reader-measure="narrow"] { --gb-reader-measure: 36rem; }'));
+assert(measureCss.includes(':root[data-reader-measure="normal"] { --gb-reader-measure: 43rem; }'));
+assert(measureCss.includes(':root[data-reader-measure="wide"] { --gb-reader-measure: 44.5rem; }'));
+assert(!read('js/reader-preferences-head.js').includes('measureValues'), 'first-paint bootstrap must not duplicate measure values');
+assert(!read('js/reader-preferences.js').includes('MEASURE_VALUES'), 'reader store must not duplicate measure values');
+assert(!read('src/components/article-pilots/gill-series/GillReaderSettingsSheet.astro').includes('MEASURE_VALUES'));
+assert(!read('src/components/article-pilots/_shared/ReaderSettings.astro').includes('MEASURE_VALUES'));
 
 const siteRuntime = read('js/site.js');
 assert(siteRuntime.includes('window.GBReaderPreferences.setTheme'), 'legacy theme bridge must call canonical API');

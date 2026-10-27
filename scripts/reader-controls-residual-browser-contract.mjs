@@ -349,6 +349,9 @@ async function auditGillTableKeyboardScroll(page, engine, origin, { theme, reduc
   await page.locator('.skip-link').focus();
   await page.keyboard.press('ArrowRight');
   await page.waitForFunction(() => location.pathname === '/articles/dzhon-gill-chast-2-uchenyi/', { timeout: 4000 });
+  // The pathname changes before the next route's deferred keyboard owner is
+  // guaranteed to be ready; wait for the same reader settle used after goto.
+  await waitForReader(page);
   const outsideRegion = await page.evaluate(() => ({ pathname: location.pathname, active: document.activeElement?.className }));
   check(engine, 'mobile', route, `series ArrowRight remains active outside scroll regions (${theme}/${reducedMotion})`,
     outsideRegion.pathname === '/articles/dzhon-gill-chast-2-uchenyi/', outsideRegion);
@@ -440,6 +443,121 @@ async function auditSeries(page, engine, origin, entry, viewport) {
   }
 }
 
+async function auditReaderMeasureCapacity(page, engine, origin, route) {
+  const widths = [1024, 1280, 1359, 1360, 1440, 1599, 1600, 1920];
+  const modes = [['narrow', 36], ['normal', 43], ['wide', 44.5]];
+
+  for (const width of widths) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
+    await waitForReader(page);
+
+    const mode = width < 1360 ? 'compact/tablet' : 'full rail';
+    const triggerSelector = width < 1360 ? '#mobSettingsBtn' : '#railSettingsBtn';
+    const trigger = page.locator(triggerSelector);
+    const triggerVisible = await trigger.isVisible().catch(() => false);
+    check(engine, `${width}px`, route, `${mode} settings trigger is visible`, triggerVisible, { triggerSelector, triggerVisible });
+    await trigger.click();
+    await page.waitForFunction(() => {
+      const overlay = document.getElementById('gillSettingsOverlay');
+      return overlay && overlay.getAttribute('aria-hidden') === 'false';
+    }, null, { timeout: 5000 });
+
+    const measured = {};
+    let lastMetrics = null;
+    for (const [measure, rem] of modes) {
+      await page.locator(`#gillSettingsOverlay #gillMeasureGroup [data-measure="${measure}"]`).click();
+      await page.waitForFunction((expected) => {
+        const state = window.GBReaderPreferences?.get?.();
+        let stored = null;
+        try { stored = JSON.parse(localStorage.getItem('gb:reader-preferences:v1') || 'null'); } catch {}
+        return document.documentElement.getAttribute('data-reader-measure') === expected
+          && state?.measure === expected && stored?.measure === expected;
+      }, measure, { timeout: 5000 });
+      await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+
+      const metrics = await page.evaluate(() => {
+        const root = document.documentElement;
+        const world = document.querySelector('.gbs2-world[data-gill-v16]');
+        const shell = world?.querySelector(':scope > .page-wrap');
+        const prose = world?.querySelector('.article-body') || world?.querySelector('main.article-main');
+        const rail = world?.querySelector('.gbs-rail');
+        const bar = world?.querySelector('.mobile-bottom-bar');
+        const rect = (element) => {
+          if (!(element instanceof Element)) return null;
+          const box = element.getBoundingClientRect();
+          const style = getComputedStyle(element);
+          return {
+            left: box.left, right: box.right, width: box.width, height: box.height,
+            visible: style.display !== 'none' && style.visibility !== 'hidden' && box.width > 0 && box.height > 0,
+          };
+        };
+        let stored = null;
+        try { stored = JSON.parse(localStorage.getItem('gb:reader-preferences:v1') || 'null'); } catch {}
+        return {
+          measure: root.getAttribute('data-reader-measure'),
+          measureToken: getComputedStyle(root).getPropertyValue('--gb-reader-measure').trim(),
+          rootFont: Number.parseFloat(getComputedStyle(root).fontSize) || 16,
+          shell: rect(shell), prose: rect(prose), rail: rect(rail), mobileBar: rect(bar),
+          overflow: Math.max(root.scrollWidth, document.body?.scrollWidth || 0) - root.clientWidth,
+          storedMeasure: stored?.measure || null,
+          clientWidth: root.clientWidth,
+        };
+      });
+      const expectedReadable = rem * metrics.rootFont;
+      const expectedShell = Math.min(expectedReadable + 48, 760, metrics.clientWidth - 48);
+      measured[measure] = metrics.prose?.width || 0;
+      check(engine, `${width}px`, route, `${measure} uses the canonical ${rem}rem CSS token`,
+        metrics.measureToken === `${rem}rem` && metrics.measure === measure,
+        { rem, metrics });
+      check(engine, `${width}px`, route, `${measure} shell matches the selected measure without a second cap`,
+        Boolean(metrics.shell?.visible && Math.abs(metrics.shell.width - expectedShell) <= 2),
+        { expectedShell, metrics });
+      check(engine, `${width}px`, route, `${measure} prose equals the canonical readable width (shell inset is separate)`,
+        Boolean(metrics.prose?.visible && Math.abs(metrics.prose.width - Math.min(expectedReadable, expectedShell - 48)) <= 2),
+        { expectedReadable, expectedShell, metrics });
+      check(engine, `${width}px`, route, `${measure} preference introduces no page-level horizontal overflow`,
+        metrics.overflow <= 1 && Boolean(metrics.shell && metrics.shell.left >= -1 && metrics.shell.right <= metrics.clientWidth + 1),
+        metrics);
+      const desktop = width >= 1360;
+      check(engine, `${width}px`, route, `reader chrome owner is correct at the 1360px capacity boundary`,
+        Boolean(metrics.rail?.visible) === desktop && Boolean(metrics.mobileBar?.visible) === !desktop,
+        { desktop, rail: metrics.rail, mobileBar: metrics.mobileBar });
+      if (desktop) {
+        check(engine, `${width}px`, route, `${measure} shell clears the rail with a real gutter`,
+          Boolean(metrics.rail?.visible && metrics.shell.left >= metrics.rail.right + 16),
+          { shell: metrics.shell, rail: metrics.rail });
+      }
+      lastMetrics = metrics;
+    }
+
+    check(engine, `${width}px`, route, 'all three measure modes remain strictly ordered and observably distinct',
+      measured.narrow + 24 < measured.normal && measured.normal + 16 < measured.wide,
+      { measured });
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await waitForReader(page);
+    const persisted = await page.evaluate(() => {
+      const root = document.documentElement;
+      const shell = document.querySelector('.gbs2-world[data-gill-v16] > .page-wrap')?.getBoundingClientRect();
+      const prose = (document.querySelector('.gbs2-world[data-gill-v16] .article-body') || document.querySelector('.gbs2-world[data-gill-v16] main.article-main'))?.getBoundingClientRect();
+      let stored = null;
+      try { stored = JSON.parse(localStorage.getItem('gb:reader-preferences:v1') || 'null'); } catch {}
+      return {
+        measure: root.getAttribute('data-reader-measure'), storedMeasure: stored?.measure || null,
+        token: getComputedStyle(root).getPropertyValue('--gb-reader-measure').trim(),
+        shellWidth: shell?.width || 0, proseWidth: prose?.width || 0,
+        overflow: Math.max(root.scrollWidth, document.body?.scrollWidth || 0) - root.clientWidth,
+      };
+    });
+    check(engine, `${width}px`, route, 'wide choice survives real reload with the same geometry',
+      persisted.measure === 'wide' && persisted.storedMeasure === 'wide' && persisted.token === '44.5rem'
+        && Math.abs(persisted.shellWidth - lastMetrics.shell.width) <= 2
+        && Math.abs(persisted.proseWidth - lastMetrics.prose.width) <= 2 && persisted.overflow <= 1,
+      { beforeReload: lastMetrics, persisted });
+  }
+}
+
 const { server, origin } = await startServer();
 try {
   const browserLaunchers = { chromium, webkit };
@@ -464,6 +582,14 @@ try {
       for (const route of articleRoutes) await auditStandaloneDesktop(desktopPage, engine, origin, route);
       await auditSeries(desktopPage, engine, origin, flatSeries, 'desktop');
       await auditSeries(desktopPage, engine, origin, bookSeries, 'desktop');
+      for (const route of [
+        '/articles/dzhon-gill-chast-1-chelovek/',
+        '/articles/podrostok-za-kadrom-dvoynaya-zhizn/',
+        flatSeries.route,
+        bookSeries.route,
+      ].filter((route, index, all) => route && all.indexOf(route) === index)) {
+        await auditReaderMeasureCapacity(desktopPage, engine, origin, route);
+      }
       await desktop.close();
 
       const mobile = await browser.newContext({ viewport: MOBILE, isMobile: true, hasTouch: true, serviceWorkers: 'block' });

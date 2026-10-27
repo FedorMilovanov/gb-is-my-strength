@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v199-print-contrast-authority-20261025';
+const CACHE_VERSION = 'gb-v200-reader-measure-capacity-20261027';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -22,9 +22,9 @@ const PRECACHE_ASSETS = [
   '/css/command-palette.css?v=3b88813f',
   '/css/mobile-hotfix.css?v=9cfd6aee',
   '/css/nagornaya-mobile-toc.css?v=83750b6a',
-  '/css/floating-cluster.css?v=89332585',
+  '/css/floating-cluster.css?v=f06bb3b5',
   '/css/series-samizdat.css?v=7c8ba23f',
-  '/css/reader-preferences.css?v=b740c21f',
+  '/css/reader-preferences.css?v=2e779e2f',
   '/css/enhancements-runtime.css?v=d195a91d',
   '/css/highlights-runtime.css?v=9f42844a',
   '/css/sw-toast.css?v=2e540077',
@@ -40,8 +40,8 @@ const PRECACHE_ASSETS = [
   '/js/sw-register.js?v=921dd6a2',
   '/js/nagornaya-mobile-toc.js?v=a0b23b1c',
   '/js/floating-cluster-controller.js?v=de5c7437',
-  '/js/reader-preferences-head.js?v=194541e8',
-  '/js/reader-preferences.js?v=e26f05a8',
+  '/js/reader-preferences-head.js?v=77c85821',
+  '/js/reader-preferences.js?v=266587ba',
   '/js/reader-state.js?v=b3deb501',
   '/pagefind/pagefind.js',
   '/favicon.ico',

@@ -9,7 +9,6 @@
   var lines = ['compact', 'normal', 'relaxed'];
   var measures = ['narrow', 'normal', 'wide'];
   var lineValues = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
-  var measureValues = { narrow: '42rem', normal: '50rem', wide: '58rem' };
 
   function get(key) {
     try { return w.localStorage && w.localStorage.getItem(key); }
@@ -67,7 +66,6 @@
   root.classList.toggle('dark', state.theme === 'dark');
   root.style.setProperty('--gb-reader-font-scale', String(state.fontScale));
   root.style.setProperty('--gb-reader-line-height', lineValues[state.lineHeight]);
-  root.style.setProperty('--gb-reader-measure', measureValues[state.measure]);
   root.style.setProperty('--gb-reader-theme-ready', '1');
   w.__GB_READER_PREFS_BOOTSTRAP__ = state;
 })(window, document);

@@ -256,13 +256,14 @@ const siteConfig = {
    * overflow-x hiding masks an article/prose rectangle that extends off-screen
    * at the exact 1024px desktop breakpoint.
    */
-  @media (min-width: 64rem) {
+  @media (min-width: 85rem) {
     body[data-gbs2-series="teen-double-life"] [data-gill-v16] .page-wrap {
       box-sizing: border-box;
-      /* audit 2026-09-15: 100vw includes the classic scrollbar (15px) and pushed
-         the wrap past clientWidth at 1024; 100% resolves against .gbs2-world. */
-      width: min(820px, calc(100% - var(--gb-rail-reserve)));
-      max-width: calc(100% - var(--gb-rail-reserve));
+      /* The Teen surface uses the exact same reader-measure token as Gill.
+         The rail reserve is a safety bound only; it must never replace the
+         user's selected width with a separate 820px policy. */
+      width: min(calc(var(--gb-reader-measure, 43rem) + 48px), 760px, calc(100% - var(--gb-rail-reserve)));
+      max-width: min(calc(var(--gb-reader-measure, 43rem) + 48px), 760px, calc(100% - var(--gb-rail-reserve)));
     }
 
     body[data-gbs2-series="teen-double-life"] [data-gill-v16] .page-wrap > main.article-main {
