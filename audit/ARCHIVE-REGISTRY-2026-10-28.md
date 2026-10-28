@@ -62,7 +62,7 @@ git branch <original-branch> <archive-tag>
 | `archive/stale-2026-10-28/arena/header-cluster-repair-20261002` | `7ad067a` | #2160 CLOSED | Морозить: остаток — решение владельца. |
 | `archive/stale-2026-10-28/arena/kod-da-vinchi-timeline-keyboard-20261002` | `45a3ee7` | #2162 CLOSED | Морозить: линия доехала в main другим путём (#2188). |
 | `archive/stale-2026-10-28/content/apostasy-bible-study` | `994b873` | #2145 CLOSED | **Сохранять**: готовая мега-статья 78 КБ. См. APOSTASY-RECOVERY-PLAN. |
-| `archive/stale-2026-10-28/content/apostasy-five-part-series-20261003` | `a956975` | #2164 CLOSED | **Сохранять**: 5 частей серии, 187 КБ, draft-кандидаты. См. план. |
+| `archive/stale-2026-10-28/content/apostasy-five-part-series-20261003` | `a956975` | #2164 CLOSED | **ЗАКРЫТО 2026-10-28**: серия восстановлена байт-в-байт PR #2210 (merge `d056a19`), все 5 частей в main как `draft:true/noindex:true`. Публикация — отдельный owner-этап. Тег сохранять как provenance. |
 | `archive/stale-2026-10-28/dependabot/*` (5 тегов) | `8dfc5b6`, `630d016`, `69a7ed4`, `a112751`, `5690d18` | #2179/#2198/#2196/#2144/#2197 CLOSED | Мусор с предохранителем: dependabot перегенерирует. Хоронить можно, ценности нет. |
 | `archive/stale-2026-10-28/deps/npm-non-major-20260906-r2` | `7131246` | #1827 CLOSED | Предок `fix/npm-non-major-security` — уникального нет. |
 | `archive/stale-2026-10-28/fix/genealogy-relation-confidence-localization` | `24b9ff5` | без PR | Содержимое влито через #2204. Дубль — хоронить можно. |
@@ -72,14 +72,14 @@ git branch <original-branch> <archive-tag>
 | `archive/stale-2026-10-28/fix/quiz-plain-text-payload-20261003` | `39aecaf` | без PR | Морозить: временный CI-workflow, ценности как продукт нет. |
 | `archive/stale-2026-10-28/fix/quiz-runtime-namespace-20261003` | `f0eceaf` | #2165 CLOSED | **Решение владельца**: стратегия `#glsQuizNext` против `.gb-quiz-next` (#2157). |
 | `archive/stale-2026-10-28/fix/series-taxonomy-projection-20260911` | `6163135` | без PR | Морозить: не влито, нужен продуктовый разбор. |
-| `archive/stale-2026-10-28/genealogy/editorial-direct-name-batch-20260924` | `acd4ace` | #2143 CLOSED | **Сохранять**: зелёный draft, ждёт owner review контента. |
+| `archive/stale-2026-10-28/genealogy/editorial-direct-name-batch-20260924` | `acd4ace` | #2143 CLOSED | **ЗАКРЫТО 2026-10-28**: пакет из 11 имён принят PR #2211 (merge `4b0cc8a`) после независимой сверки форм с Синодальным текстом; по ходу закрыта и поломка пина источника (commit-pin в `scripts/genealogy-build/config.mjs`, upstream переименовал файл 2026-09-24). Тег сохранять как provenance. |
 | `archive/stale-2026-10-28/reconcile/baptist-ch01-authority-salvage-20260924` | `71a4f52` | #2142 CLOSED | Морозить: 100% строк уже в main (textual). |
 | `archive/stale-2026-10-28/reconcile/ch01-pre-baptist-origins-research-20260911` | `a225133` | без PR | Морозить: fallback к #2142. |
 | `archive/stale-2026-10-28/system/fix-article-quiz-next-ownership` | `3120d0f` | #2157 CLOSED | **Решение владельца** (см. quiz-runtime пара). |
 
 ## Очередь решений владельца (не удалять до слова владельца)
 
-1. **Контент**: apostasy (мега и/или серия), #2143 genealogy, ch07 research, pastor-кластер.
+1. **Контент**: apostasy мега-статья #2145 (серия уже в main черновиками, PR #2210), ch07 research, pastor-кластер. (#2143 genealogy закрыт PR #2211.)
 2. **Продуктовые развилки**: Antisovetov title (1 строка, дважды), quiz-namespace (2 стратегии).
 3. **Можно хоронить без потерь** (после записи в этом файле): класс A (`01a108e4`, `avraam`, `karty-holding`), genealogy-дубль #2204, dependabot-теги, `deps/r2`.
 
