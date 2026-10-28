@@ -1039,6 +1039,30 @@
         "sitemapLastmod": "2026-07-03T20:58:24.000Z",
         "rssPublishedAt": "2026-07-11T21:00:00.000Z"
       }
+    },
+    "/hard-texts/otstuplenie-ot-very-iuda-evreyam-6/": {
+      "route": "/hard-texts/otstuplenie-ot-very-iuda-evreyam-6/",
+      "canonical": "https://gospod-bog.ru/hard-texts/otstuplenie-ot-very-iuda-evreyam-6/",
+      "title": "Отступление от веры: Иуда, Евреям 6 и предупреждения всей Библии | Господь Бог — Сила Моя",
+      "metadataSource": "src/content/articles/otstuplenie-ot-very-iuda-evreyam-6.mdx",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-10-27T21:00:00.000Z",
+      "editorialModifiedAt": "2026-10-27T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "migration-freeze-unverified",
+      "provenance": "production-like-dist-migration-freeze",
+      "observations": {
+        "visiblePublishedAt": null,
+        "visibleModifiedAt": null,
+        "metaPublishedAt": "2026-10-27T21:00:00.000Z",
+        "metaModifiedAt": "2026-10-27T21:00:00.000Z",
+        "jsonLdPublishedAt": "2026-10-27T21:00:00.000Z",
+        "jsonLdModifiedAt": "2026-10-27T21:00:00.000Z",
+        "searchPublishedAt": null,
+        "searchModifiedAt": null,
+        "sitemapLastmod": null,
+        "rssPublishedAt": null
+      }
     }
   }
 }
