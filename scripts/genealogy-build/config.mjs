@@ -27,7 +27,11 @@ export const SOURCES = {
   },
   synodal: {
     file: 'ru_synodal.json',
-    url: 'https://raw.githubusercontent.com/thiagobodruk/bible/master/json/ru_synodal.json',
+    // Commit-pinned (не master): 2026-09-24 upstream переименовал файл в
+    // ru_synod.json и сменил содержимое (64 книги вместо 66), отчего fetch по
+    // master стал возвращать 404. Этот коммит — последний, где файл имеет
+    // запиненный ниже SHA256.
+    url: 'https://raw.githubusercontent.com/thiagobodruk/bible/13225a15fa5e3e3043495b0c82df56c3fdfeb7f4/json/ru_synodal.json',
     sha256: 'ac900cd6675e524f728edcf965646bbd9cf791506a67e24e78bb8c7ff4d7c923',
     license: 'Синодальный перевод — public domain (1876); JSON-подача: github.com/thiagobodruk/bible',
     attribution: 'Русский текст: Синодальный перевод (public domain)',
