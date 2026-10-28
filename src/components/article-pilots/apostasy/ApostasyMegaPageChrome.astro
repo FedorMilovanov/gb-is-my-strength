@@ -1,0 +1,36 @@
+---
+import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.astro';
+import ReaderRail from '@/components/article-pilots/_shared/ReaderRail.astro';
+import HermenevtikaMobileBar from '@/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro';
+import ReaderSettings from '@/components/article-pilots/_shared/ReaderSettings.astro';
+import { APOSTASY_MEGA_TOC } from './apostasyMegaToc';
+
+// Одиночная статья раздела «Трудные тексты» потребляет канонических владельцев
+// одиночной читательской поверхности (рельс, угловой кластер, мобильная панель,
+// лист настроек) и не форкает их рантайм — так же, как steven-lawson и kod-da-vinchi.
+const railTitle = 'Отступление от веры: Иуда, Евреям 6 и предупреждения всей Библии';
+---
+
+<div class="apostasy-mega-cluster-scope">
+  <FloatingCluster mode="single" variant="hermeneutics" audioState="none" />
+</div>
+<style is:global>
+  @media (max-width: 1199px) {
+    .apostasy-mega-cluster-scope { display: none !important; }
+  }
+</style>
+<ReaderRail
+  eyebrow="Трудные тексты · Разбор"
+  title={railTitle}
+  backHref="/hard-texts/"
+  toc={APOSTASY_MEGA_TOC}
+  palette="ink-gold"
+/>
+<HermenevtikaMobileBar
+  title={railTitle}
+  backHref="/hard-texts/"
+  readingMinutes={42}
+  toc={APOSTASY_MEGA_TOC}
+  palette="ink-gold"
+/>
+<ReaderSettings />
