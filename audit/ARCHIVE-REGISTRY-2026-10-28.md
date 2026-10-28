@@ -86,6 +86,11 @@ git branch <original-branch> <archive-tag>
 
 | Тег | SHA | Диспозиция |
 |---|---|---|
+| `archive/stale-2026-10-28/dependabot/github_actions/github-actions-c673fd7efc` | `8dfc5b630` | Dependabot-PR, закрыт по красному CI; обновление перегенерируется dependabot. Provenance. |
+| `archive/stale-2026-10-28/dependabot/npm_and_yarn/astrojs/react-7.1.1` | `630d016f9` | Dependabot-PR, закрыт по красному CI; обновление перегенерируется dependabot. Provenance. |
+| `archive/stale-2026-10-28/dependabot/npm_and_yarn/npm-non-major-69a9df4a08` | `69a7ed448` | Dependabot-PR, закрыт по красному CI; обновление перегенерируется dependabot. Provenance. |
+| `archive/stale-2026-10-28/dependabot/npm_and_yarn/npm-non-major-92ac384687` | `a1127516d` | Dependabot-PR, закрыт по красному CI; обновление перегенерируется dependabot. Provenance. |
+| `archive/stale-2026-10-28/dependabot/npm_and_yarn/pixelmatch-8.0.0` | `5690d18b7` | Dependabot-PR, закрыт по красному CI; обновление перегенерируется dependabot. Provenance. |
 | `archive/stale-2026-06-28/lane/system-premiumcontrols-asset-hash-truth-2026-06-27` | `bce706eaa` | Июньский SYSTEM-lane premiumcontrols; закрыт сверкой в docs/refactor-2026/lanes/system-premiumcontrols-*. Provenance. |
 | `archive/stale-2026-06-28/lane/system-premiumcontrols-css-sanitation-2026-06-27` | `3a0939dac` | Июньский SYSTEM-lane premiumcontrols; закрыт сверкой в docs/refactor-2026/lanes/system-premiumcontrols-*. Provenance. |
 | `archive/stale-2026-06-28/lane/system-premiumcontrols-dist-gate-wiring-2026-06-27` | `dfedc0d50` | Июньский SYSTEM-lane premiumcontrols; закрыт сверкой в docs/refactor-2026/lanes/system-premiumcontrols-*. Provenance. |
