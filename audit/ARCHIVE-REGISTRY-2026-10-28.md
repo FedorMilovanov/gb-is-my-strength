@@ -77,9 +77,116 @@ git branch <original-branch> <archive-tag>
 | `archive/stale-2026-10-28/reconcile/ch01-pre-baptist-origins-research-20260911` | `a225133` | без PR | Морозить: fallback к #2142. |
 | `archive/stale-2026-10-28/system/fix-article-quiz-next-ownership` | `3120d0f` | #2157 CLOSED | **Решение владельца** (см. quiz-runtime пара). |
 
+## Приложение: остальные классы тегов (97) — учтены 2026-10-28
+
+Полная сверка всех 143 тегов репозитория с документацией: перечисленные ниже теги не являются
+открытой работой. Это снапшоты безопасности мая 2026, baseline-снапшоты и provenance-истории
+июльских чисток веток (2026-07-30) и июньских SYSTEM-lane. Содержательных недоделов за ними нет;
+теги не удаляются (правило §20 выше), действий не требуется.
+
+| Тег | SHA | Диспозиция |
+|---|---|---|
+| `archive/stale-2026-06-28/lane/system-premiumcontrols-asset-hash-truth-2026-06-27` | `bce706eaa` | Июньский SYSTEM-lane premiumcontrols; закрыт сверкой в docs/refactor-2026/lanes/system-premiumcontrols-*. Provenance. |
+| `archive/stale-2026-06-28/lane/system-premiumcontrols-css-sanitation-2026-06-27` | `3a0939dac` | Июньский SYSTEM-lane premiumcontrols; закрыт сверкой в docs/refactor-2026/lanes/system-premiumcontrols-*. Provenance. |
+| `archive/stale-2026-06-28/lane/system-premiumcontrols-dist-gate-wiring-2026-06-27` | `dfedc0d50` | Июньский SYSTEM-lane premiumcontrols; закрыт сверкой в docs/refactor-2026/lanes/system-premiumcontrols-*. Provenance. |
+| `archive/stale-2026-06-28/lane/system-premiumcontrols-gill-mobile-toc-2026-06-27` | `03b0c5bce` | Июньский SYSTEM-lane premiumcontrols; закрыт сверкой в docs/refactor-2026/lanes/system-premiumcontrols-*. Provenance. |
+| `archive/stale-2026-06-28/lane/system-premiumcontrols-gill-roman-numeral-2026-06-27` | `f1e012237` | Июньский SYSTEM-lane premiumcontrols; закрыт сверкой в docs/refactor-2026/lanes/system-premiumcontrols-*. Provenance. |
+| `archive/stale-2026-06-28/lane/system-premiumcontrols-truth-reconciliation-2026-06-27` | `f2bb858e6` | Июньский SYSTEM-lane premiumcontrols; закрыт сверкой в docs/refactor-2026/lanes/system-premiumcontrols-*. Provenance. |
+| `before-gb-is-my-strength-2026-05-11_06-11-32` | `fcd72cf56` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-11_06-38-51` | `b323c71dd` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-11_06-52-15` | `5f97f4278` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-11_14-12-15` | `23f7d9ed3` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-11_21-18-38` | `aae5ffc4e` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-11_21-42-55` | `a24abb9ae` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-12_00-36-27` | `3fcac9951` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-12_19-52-53` | `40fdd8a02` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-13_00-49-06` | `bd5c1c48d` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-13_15-09-01` | `af220e116` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-13_18-48-14` | `27fba4638` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-13_19-21-13` | `2b9eba090` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-13_20-16-56` | `846ab4c6b` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-13_21-00-27` | `d725a8eb4` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-13_21-12-21` | `11d4d36a8` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-13_22-23-58` | `19f9fca26` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-14_04-51-26` | `2c7c775ec` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-15_01-53-02` | `5f8cf8360` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-15_03-27-26` | `84cf1c15c` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-15_03-55-03` | `59005af5b` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-15_04-23-22` | `b6bf7c3ad` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-16_18-39-44` | `476034823` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `before-gb-is-my-strength-2026-05-16_18-59-23` | `5c907cbee` | Снапшот безопасности (май 2026, до-агентная эпоха). Provenance, содержательной работы нет. |
+| `forensic/branch-cleanup-20260730/archive/forensic-gill-readerstate-submenu-histories-20260728` | `cf2280e85` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `forensic/branch-cleanup-20260730/archive/forensic-gill-readerstate-submenu-materializers-20260724` | `10a8160bd` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `forensic/branch-cleanup-20260730/archive/forensic-home-browser-process-isolation-pr402-20260726` | `dec8fa137` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `forensic/branch-cleanup-20260730/archive/forensic-home-lifecycle-bfcache-histories-20260728` | `023a61662` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `forensic/branch-cleanup-20260730/archive/forensic-home-pagefind-request-proof-pr388-20260726` | `ed6d645b5` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `forensic/branch-cleanup-20260730/archive/forensic-live-print-timing-witness-pr288-20260725` | `9139130b3` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `forensic/branch-cleanup-20260730/archive/forensic-pr-52-gill-image-polish-2026-07-24` | `7e1460080` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `forensic/branch-cleanup-20260730/archive/forensic-pr-66-submenu-prototypes-2026-07-24` | `1ec622f39` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `forensic/branch-cleanup-20260730/archive/forensic-pr-79-gill-witness-2026-07-24` | `e9a7ccb42` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `forensic/branch-cleanup-20260730/archive/forensic-print-decoration-pagination-pr280-20260725` | `d03124a58` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `forensic/branch-cleanup-20260730/archive/forensic-print-pdf-histories-20260728` | `2d0386d92` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `forensic/branch-cleanup-20260730/archive/forensic-reader-platform-r1-r6-histories-20260728` | `ae82dcb7c` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `forensic/branch-cleanup-20260730/archive/forensic-special-overlay-production-smoke-20260721` | `36eef7680` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `forensic/branch-cleanup-20260730/archive/forensic-tooltip-priority-free-intent-20260725` | `1c36d8b92` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `forensic/branch-cleanup-20260730/archive/forensic-webkit-bfcache-control-pr404-20260726` | `f879bec4f` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `forensic/branch-cleanup-20260730/archive/pr233-stale-archaeology-7765a4c` | `90bb7e5d5` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `forensic/branch-cleanup-20260730/archive/pr370-pre-rebase-6371393-20260726` | `7e4448e35` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `forensic/branch-cleanup-20260730/archive/pr374-pre-rebase-8e55ebd-20260726` | `74d2922f1` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `forensic/genesis6-enoch-divergent-histories-20260728` | `42123da6d` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `forensic/genesis6-footnote-carrier-20260727` | `1b5771221` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `forensic/genesis6-original-visual-set-20260724` | `6e766de74` | Forensic-история июльской чистки веток (2026-07-30). Provenance, содержательной работы нет. |
+| `pre-astro-refactor-baseline-2026-06-14` | `13db67f98` | Baseline-снапшот перед рефактором. Provenance, содержательной работы нет. |
+| `pre-ba62a41f-live-owner-review-2026-06-23` | `4a075acf6` | Baseline-снапшот перед рефактором. Provenance, содержательной работы нет. |
+| `retired/branch-cleanup-20260730/agent/ci-failure-lifecycle-20260725` | `cf23f7adf` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/agent/editorial-baseline-refresh-2026-07-24` | `2114b6a78` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/agent/gill-context-source-authority-2026-07-24` | `ba904a0ab` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/agent/glossary-tooltip-runtime-20260727` | `39413359e` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/agent/map-archaeology-coverage-provenance-v2` | `6da748adc` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/agent/map-archaeology-v2` | `6da748adc` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/agent/nagornaya-bar-asset-contract-2026-07-22` | `43128ef76` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/agent/nagornaya-neutral-comparison-ui-2026-07-22` | `a66fc50f4` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/agent/notifier-ledger-coverage` | `2fa2c73f9` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/agent/notifier-ledger-coverage-v2` | `36d2d0201` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/agent/prod-witness-850fd6b-2026-07-24` | `bd45b3471` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/agent/reconcile-editorial-freeze-2026-07-24` | `56ea9b2d7` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/agent/seo-dist-registry-contract` | `4492f8b3c` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/agent/universal-glossary-contract` | `82fcf3bb2` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/audit/series-capability-trigger-20260725` | `f89a5e6a7` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/backup/font-assets-deterministic-pre-clean-20260725` | `6c1f59da4` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/backup/pr336-pre-clean-20260725` | `3915e9360` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/cleanup/pages-deploy-witness-2026-07-21` | `61c253f8b` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/cleanup/pages-deploy-witness-2026-07-22` | `15cceeb60` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/diagnostic/final-pages-witness-2026-07-22` | `d05683cca` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/diagnostic/gill-mobile-layout-2026-07-22` | `8559c05bb` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/diagnostic/gill-mobile-play-smoke-2026-07-21` | `545fc524a` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/feat/bible-reference-contract-final-2026-07-24` | `4730534e7` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/feat/universal-glossary-final-2026-07-23` | `7561f2026` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/feat/universal-glossary-final-v2-2026-07-24` | `fe2fd3f86` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/fix/_temp-font-face-candidate-integrity-20260725` | `44cfa35cb` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/fix/ci-lifecycle-monotonic-ordering-20260725` | `3fdc3a616` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/fix/content-coverage-source-truth-2026-07-24` | `4757e3c90` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/fix/deployment-witness-concurrency-20260725` | `264e16941` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/fix/highlights-runtime-hardening-clean-2026-07-22` | `0a3dfd1c7` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/fix/nagornaya-pastoral-safety-2026-07-22` | `238e7b92c` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/lane/control-plane-warning-zero-2026-07-24` | `0820d159a` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/lane/exact-production-boundary-observer-2026-07-24` | `8d44272e3` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/lane/highlights-runtime-hardening-2026-07-21` | `6f6a352cd` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/lane/nagornaya-320-grid-conclusion-2026-07-24` | `e2c242256` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/lane/public-surface-webkit-mobile-2026-07-24` | `46ff8c5bb` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/lane/system-editorial-freeze-transaction-2026-07-24` | `2c6841513` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/branch-cleanup-20260730/temp/production-evidence-f5e29998-20260725` | `567201279` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/final-seven-20260730/agent/deployment-provenance-2026-07-25` | `b13e264ec` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/final-seven-20260730/agent/governance-v4-worktree-lifecycle-2026-07-28` | `755906903` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/final-seven-20260730/agent/map-archaeology-native-p0` | `5cacc36a6` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/final-seven-20260730/agent/stateful-ci-notifier-2026-07-25` | `efe3ad52e` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/final-seven-20260730/lane/control-plane-forensic-integrity-2026-07-24` | `70499bc99` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/final-seven-20260730/lane/forensic-governance-doc-truth-2026-07-24` | `1552cf2b1` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+| `retired/final-seven-20260730/lane/nagornaya-webkit-320-overflow-2026-07-24` | `d59282427` | Выведенная из обращения ветка июльской чистки (2026-07-30), закрыта upstream. Provenance. |
+
 ## Очередь решений владельца (не удалять до слова владельца)
 
-1. **Контент**: apostasy мега-статья #2145 (серия уже в main черновиками, PR #2210), ch07 research, pastor-кластер. (#2143 genealogy закрыт PR #2211.)
+1. **Контент**: ch07 research, pastor-кластер. (Апостasy закрыта полностью: серия — PR #2210, мега-статья — PR #2213, обе в main черновиками; #2143 genealogy закрыт PR #2211.)
 2. **Продуктовые развилки**: Antisovetov title (1 строка, дважды), quiz-namespace (2 стратегии).
 3. **Можно хоронить без потерь** (после записи в этом файле): класс A (`01a108e4`, `avraam`, `karty-holding`), genealogy-дубль #2204, dependabot-теги, `deps/r2`.
 
