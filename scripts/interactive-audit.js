@@ -71,8 +71,17 @@ const HERMENEUTIKA_STATIC_FOOTNOTES = ['40', '41', '42', '43', '72', '75', '77',
 const issues = [];
 const stats = { pages: 0, series: 0, quizzes: 0, glossary: 0, footnotes: 0, theme: 0, search: 0, media: 0, chromeLabels: 0, headerHosts: 0 };
 
-function isNoise(text) {
+function isNoise(text, locationUrl = '') {
+  // Playwright puts the failing resource URL in msg.location(), not in
+  // msg.text() — a resource-load failure reads only "Failed to load
+  // resource: ...". Test both, so the declared third-party analytics
+  // exemption (mc.yandex) actually applies to its load failures while
+  // first-party resource failures still fail the audit.
+  if (/^https?:\/\/mc\.yandex\.(?:ru|com)\//i.test(locationUrl)) return true;
   return /Content Security Policy directive.*https:\/\/gospod-bog\.ru\/(?:favicon|apple-touch-icon|icons|images)|favicon\.ico|mc\.yandex/i.test(text);
+}
+function consoleLocation(msg) {
+  try { return (msg.location() || {}).url || ''; } catch (_) { return ''; }
 }
 function push(kind, url, detail) { issues.push({ kind, url, detail }); }
 
@@ -187,7 +196,7 @@ function assertHeaderHostSource() {
 async function openPage(browser, urlPath, viewport = { width: 1200, height: 800 }) {
   const page = await browser.newPage({ viewport, deviceScaleFactor: 1 });
   const consoleErrors = [];
-  page.on('console', msg => { if (msg.type() === 'error' && !isNoise(msg.text())) consoleErrors.push(msg.text()); });
+  page.on('console', msg => { if (msg.type() === 'error' && !isNoise(msg.text(), consoleLocation(msg))) consoleErrors.push(msg.text()); });
   page.on('pageerror', err => consoleErrors.push('PAGE_ERROR: ' + err.message));
   const resp = await page.goto(BASE + urlPath, { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForTimeout(900);
@@ -763,7 +772,7 @@ async function checkInjectedHeaderHost(browser) {
 async function checkMobileTheme(browser) {
   for (const url of THEME_URLS) {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
-    page.on('console', msg => { if (msg.type() === 'error' && !isNoise(msg.text())) push('mobile-theme-console-error', url, msg.text()); });
+    page.on('console', msg => { if (msg.type() === 'error' && !isNoise(msg.text(), consoleLocation(msg))) push('mobile-theme-console-error', url, msg.text()); });
     page.on('pageerror', err => push('mobile-theme-page-error', url, err.message));
     const resp = await page.goto(BASE + url, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.waitForTimeout(900);
