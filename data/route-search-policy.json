@@ -533,6 +533,16 @@
       "librarySection": "Богословие",
       "topicCategory": "Бытие 6"
     },
+    "/hard-texts/otstuplenie-ot-very-iuda-evreyam-6/": {
+      "indexPolicy": "index",
+      "pagefindPolicy": "include",
+      "searchManifestPolicy": "include",
+      "sitemapPolicy": "include",
+      "rssPolicy": "include",
+      "contentKind": "article",
+      "librarySection": "Богословие",
+      "topicCategory": "Отступление от веры"
+    },
     "/hard-texts/blagovestie-mertvym-1-petra-4-5-6/": {
       "indexPolicy": "index",
       "pagefindPolicy": "include",

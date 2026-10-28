@@ -1,0 +1,33 @@
+---
+import { getCollection } from 'astro:content';
+import Content from '@/content/articles/otstuplenie-ot-very-iuda-evreyam-6.mdx';
+import ArticleLayout from '@/layouts/ArticleLayout.astro';
+import ApostasyMegaPageChrome from '@/components/article-pilots/apostasy/ApostasyMegaPageChrome.astro';
+import { SITE } from '@/data/site';
+
+const slug = 'otstuplenie-ot-very-iuda-evreyam-6';
+const entries = await getCollection('articles');
+const entry = entries.find(({ data }) => data.slug === slug);
+
+if (!entry) {
+  throw new Error(`Missing article content entry: ${slug}`);
+}
+
+const canonical = `${SITE.url}/hard-texts/${slug}/`;
+---
+
+<ArticleLayout
+  entry={entry}
+  canonical={canonical}
+  mainClass="astro-main article-main--hrail"
+  mainAttrs={{ 'data-reader-rail-main': true }}
+  hideHeader
+  extraFontPreloads={[
+    '/fonts/Lora/lora-latin-400.woff2',
+    '/fonts/Lora/lora-cyrillic-600.woff2',
+    '/fonts/Lora/lora-latin-600.woff2',
+  ]}
+>
+  <ApostasyMegaPageChrome slot="chrome" />
+  <Content />
+</ArticleLayout>
