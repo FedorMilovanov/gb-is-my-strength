@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "contract": "A07-honest-offline-pwa",
   "decision": "REBUILD_CURRENT_MAIN",
-  "cacheVersion": "gb-v199-print-contrast-authority-20261025",
+  "cacheVersion": "gb-v200-reader-measure-capacity-20261027",
   "sourceOwners": {
     "runtime": "sw.js",
     "registrationUi": "js/sw-register.js",

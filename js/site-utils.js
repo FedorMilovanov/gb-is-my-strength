@@ -363,12 +363,10 @@
       if (generation !== overlayRestoreGeneration) return;
       attempts += 1;
       var active = document.activeElement;
-      // The first pass is the historical contract: a closing overlay always hands
-      // focus back to its opener. Later passes only re-assert it when focus was
-      // genuinely dropped (engine fixup to <body>, or still on the closing panel),
-      // so a deliberate user focus move is never stolen.
-      var first = attempts === 1;
-      var lost = first || !active || active === document.body || active === document.documentElement
+      // closeOverlayOwner already hands focus back synchronously before the
+      // closing layer becomes inert. This bounded retry only repairs a late
+      // browser focus fixup; never steal focus after the user moves elsewhere.
+      var lost = !active || active === document.body || active === document.documentElement
         || focusInsideClosing(active, closingElement, panelFocus);
       if (lost && active !== opener) overlayFocus(opener);
       if (attempts < 8) setTimeout(attempt, 60);

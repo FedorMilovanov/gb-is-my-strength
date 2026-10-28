@@ -49,6 +49,7 @@ class Element {
     this.disabled = false;
     this.offsetParent = {};
     this.focusables = [];
+    this.parentElement = null;
     this.focusCount = 0;
   }
   setAttribute(key, value) { this.attrs[key] = String(value); if (key === 'inert') this.inert = true; }
@@ -57,6 +58,10 @@ class Element {
   getAttribute(key) { return this.attrs[key] ?? null; }
   querySelector() { return this.focusables[0] || null; }
   querySelectorAll() { return this.focusables.slice(); }
+  contains(candidate) {
+    for (let node = candidate; node; node = node.parentElement) if (node === this) return true;
+    return false;
+  }
   focus() { this.focusCount += 1; document.activeElement = this; }
 }
 
@@ -184,6 +189,9 @@ const openerA = new Element('opener-a');
 const openerB = new Element('opener-b');
 overlayA.focusables = [focusA];
 overlayB.focusables = [focusB];
+focusA.parentElement = overlayA;
+focusB.parentElement = overlayB;
+openerB.parentElement = overlayA;
 const requested = [];
 
 function openOverlay(owner, element, opener, focus) {
