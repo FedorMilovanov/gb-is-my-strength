@@ -133,6 +133,18 @@ async function revealPage(page) {
   await page.waitForTimeout(40);
 }
 
+async function waitForImagesSettled(page) {
+  // Lazy images are triggered during revealPage, but fetch/decode finishes
+  // asynchronously. Judge the decoded state only once the browser reports
+  // every image complete; on timeout fall through so judgeViewport records
+  // the offending images as evidence instead of masking them.
+  await page.waitForFunction(
+    () => [...document.images].every((image) => image.complete),
+    null,
+    { timeout: 10000 },
+  ).catch(() => {});
+}
+
 async function readViewportState(page) {
   return page.evaluate(() => {
     const rect = (node) => {
@@ -538,6 +550,14 @@ async function interactionAudit(page) {
   await menu.click();
   await page.waitForFunction(() => document.getElementById('hMobileNav')?.classList.contains('open'));
   record(`${ENGINE}:mobile-menu-opens`, await menu.getAttribute('aria-expanded') === 'true');
+  // Focus is moved into the dialog asynchronously (observer + rAF); wait for
+  // the contract to hold, then assert the same end state. On timeout the
+  // assertion below still records the failure with a false value.
+  await page.waitForFunction(
+    () => document.getElementById('hMobileNav')?.contains(document.activeElement),
+    null,
+    { timeout: 5000 },
+  ).catch(() => {});
   record(`${ENGINE}:mobile-menu-focus-inside`, await page.evaluate(() => document.getElementById('hMobileNav')?.contains(document.activeElement)));
   if (ENGINE === 'chromium') await page.screenshot({ path: path.join(OUT, 'mobile-menu-open.png') });
   await page.keyboard.press('Escape');
@@ -609,6 +629,12 @@ try {
   page.on('console', (message) => {
     if (message.type() !== 'error') return;
     const text = message.text();
+    // Third-party analytics (Yandex Metrika) reachability is not product
+    // behaviour; Playwright reports its load failures with the resource URL
+    // only in location(), never in text(). Exempt exactly that origin and
+    // keep every first-party console error failing.
+    const locationUrl = (message.location() || {}).url || '';
+    if (/^https?:\/\/mc\.yandex\.(?:ru|com)\//i.test(locationUrl)) return;
     if (ENGINE === 'webkit' && text === 'Viewport argument key "interactive-widget" not recognized and ignored.') return;
     runtimeErrors.push(`console: ${text}`);
   });
@@ -626,9 +652,11 @@ try {
   for (const [name, width, height] of selected) {
     await page.setViewportSize({ width, height });
     await setTheme(page, false);
+    await waitForImagesSettled(page);
     judgeViewport(name, await readViewportState(page), 'light');
     if (darkScenes.has(name)) {
       await setTheme(page, true);
+      await waitForImagesSettled(page);
       judgeViewport(name, await readViewportState(page), 'dark');
     }
   }

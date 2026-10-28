@@ -93,6 +93,12 @@ async function runEngine(name, browserType) {
     page.on('console', (message) => {
       if (message.type() !== 'error') return;
       const text = message.text();
+  // Third-party analytics (Yandex Metrika) reachability is not product
+  // behaviour; Playwright reports its load failures with the resource URL
+  // only in location(), never in text(). Exempt exactly that origin and
+  // keep every first-party console error failing.
+      const locationUrl = (message.location() || {}).url || '';
+      if (/^https?:\/\/mc\.yandex\.(?:ru|com)\//i.test(locationUrl)) return;
       if (name === 'webkit' && WEBKIT_IGNORED_CONSOLE_ERRORS.has(text)) return;
       runtimeErrors.push(`console:${text}`);
     });
