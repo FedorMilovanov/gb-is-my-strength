@@ -66,7 +66,7 @@ git branch <original-branch> <archive-tag>
 | `archive/stale-2026-10-28/dependabot/*` (5 тегов) | `8dfc5b6`, `630d016`, `69a7ed4`, `a112751`, `5690d18` | #2179/#2198/#2196/#2144/#2197 CLOSED | Мусор с предохранителем: dependabot перегенерирует. Хоронить можно, ценности нет. |
 | `archive/stale-2026-10-28/deps/npm-non-major-20260906-r2` | `7131246` | #1827 CLOSED | Предок `fix/npm-non-major-security` — уникального нет. |
 | `archive/stale-2026-10-28/fix/genealogy-relation-confidence-localization` | `24b9ff5` | без PR | Содержимое влито через #2204. Дубль — хоронить можно. |
-| `archive/stale-2026-10-28/fix/home-lifecycle-shortcut-test-sync-20261027` | `838fb97` | #2205 CLOSED | **Сохранять до разбора**: tree отличается от main, фикс Ctrl+K не влит в этом виде. |
+| `archive/stale-2026-10-28/fix/home-lifecycle-shortcut-test-sync-20261027` | `838fb97` | #2205 CLOSED | **ЗАКРЫТО 2026-10-28 (superseded, разобран)**: `js/site-utils.js` тега байт-идентичен main (blob совпал); тест `scripts/home-browser-lifecycle-contract.mjs` в main равен финальной версии #2205 (`waitForTimeout(500)`, `retained is-open`, recovery window) и новее на 1 строку (платформенный `shortcutChord` successor-правки). Уникального остатка нет; cache-bust коммит поглощён собственными ревизиями main. Восстанавливать нечего. |
 | `archive/stale-2026-10-28/fix/karty-holding-mobile-overflow-2180` | `0f2cb8a` | #2181 CLOSED | Эквивалент main (класс A). |
 | `archive/stale-2026-10-28/fix/npm-non-major-security-20260907` | `77fa9fc` | без PR | Морозить (deps-линия сентября; lock перегенерирован). |
 | `archive/stale-2026-10-28/fix/quiz-plain-text-payload-20261003` | `39aecaf` | без PR | Морозить: временный CI-workflow, ценности как продукт нет. |
