@@ -61,7 +61,7 @@ git branch <original-branch> <archive-tag>
 | `archive/stale-2026-10-28/arena/header-cluster-audit-20261002` | `339bf2e` | #2158 CLOSED | Морозить: ~89% в main; поверхность занята #2203-линией. |
 | `archive/stale-2026-10-28/arena/header-cluster-repair-20261002` | `7ad067a` | #2160 CLOSED | Морозить: остаток — решение владельца. |
 | `archive/stale-2026-10-28/arena/kod-da-vinchi-timeline-keyboard-20261002` | `45a3ee7` | #2162 CLOSED | Морозить: линия доехала в main другим путём (#2188). |
-| `archive/stale-2026-10-28/content/apostasy-bible-study` | `994b873` | #2145 CLOSED | **В РАБОТЕ 2026-10-28**: мега-статья возвращена draft-кандидатом PR #2213 (может быть частью VI серии и/или одиночной публикацией — решает владелец при публикации). Тег сохранять как provenance. |
+| `archive/stale-2026-10-28/content/apostasy-bible-study` | `994b873` | #2145 CLOSED | **ЗАКРЫТО 2026-10-28**: мега-статья опубликована одиночным пилларом `/hard-texts/otstuplenie-ot-very-iuda-evreyam-6/` (PR #2215, решение владельца «пиллар + серия-кластер»). Тег сохранять как provenance. |
 | `archive/stale-2026-10-28/content/apostasy-five-part-series-20261003` | `a956975` | #2164 CLOSED | **ЗАКРЫТО 2026-10-28**: серия восстановлена байт-в-байт PR #2210 (merge `d056a19`), все 5 частей в main как `draft:true/noindex:true`. Публикация — отдельный owner-этап. Тег сохранять как provenance. |
 | `archive/stale-2026-10-28/dependabot/*` (5 тегов) | `8dfc5b6`, `630d016`, `69a7ed4`, `a112751`, `5690d18` | #2179/#2198/#2196/#2144/#2197 CLOSED | Мусор с предохранителем: dependabot перегенерирует. Хоронить можно, ценности нет. |
 | `archive/stale-2026-10-28/deps/npm-non-major-20260906-r2` | `7131246` | #1827 CLOSED | Предок `fix/npm-non-major-security` — уникального нет. |
