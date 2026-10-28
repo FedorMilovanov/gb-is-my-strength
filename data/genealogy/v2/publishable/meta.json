@@ -38,10 +38,10 @@
   },
   "sourceHashes": {
     "curatedV1": "b66da575abe6a34189d8ae192b30e4e4934210c5cd51c046c12c5c28de9e1d85",
-    "v2Persons": "533af21405fc9fcc710df5a30df309f90613f8fa8b8695b925cd60c72fea74ff",
+    "v2Persons": "5254508988f62034796e5f18722c607eca079cc0abe9d50c590f52238f4a1499",
     "v2GospelSequences": "b8b829223018e437f5f57efa8d4962f9d74c53132041fd6a3e66903f57b43a83",
     "v2EdgeAnnotations": "f863fa3608a4f4c3afebc380471ffba2cb55c9c799da1af6fff1834771ef72ca",
-    "v2Meta": "de48da03296d294214c9971e1e989e88ec76f7dc096deffd16bd4b72581c5adc"
+    "v2Meta": "b0d74607d3d3f6c0313f2531629a39fb36734643e74e8c8e7a68da5b4dc96f71"
   },
   "diagnostics": {
     "externalRefs": [
