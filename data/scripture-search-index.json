@@ -14,7 +14,7 @@
     "indexedRoutes": 102,
     "scannedSourceFiles": 529,
     "references": 1368,
-    "occurrences": 3468,
+    "occurrences": 3474,
     "canonicalTextRecords": 149,
     "referencesWithoutCanonicalText": 1219,
     "chapterRanges": 46,
@@ -61196,6 +61196,96 @@
       "canonicalText": null,
       "canonicalSource": null,
       "occurrences": [
+        {
+          "url": "/",
+          "title": "Господь Бог — Сила Моя — Материалы для изучения Писания",
+          "context": "Евреям 6 · Трудные тексты Отступление от веры: Иуда, Евреям 6 и предупреждения всей Библии Ред",
+          "anchor": null,
+          "raw": "Евреям 6",
+          "topics": [
+            "библиотека",
+            "главная",
+            "Главная",
+            "навигация"
+          ],
+          "sourceOwner": "src/components/home/HomeSections/Publications.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/",
+          "title": "Господь Бог — Сила Моя — Материалы для изучения Писания",
+          "context": "Евреям 6 · Трудные тексты Отступление от веры: Иуда, Евреям 6 и предупреждения всей Библии Редактор: Фёдор Милованов ·",
+          "anchor": null,
+          "raw": "Евреям 6",
+          "topics": [
+            "библиотека",
+            "главная",
+            "Главная",
+            "навигация"
+          ],
+          "sourceOwner": "src/components/home/HomeSections/Publications.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/",
+          "title": "Господь Бог — Сила Моя — Материалы для изучения Писания",
+          "context": "о такое отступление, кого оно касается и есть ли путь назад. Евреям 6 Иуда и Пётр Lapsi и Киприан Стойкость святых",
+          "anchor": null,
+          "raw": "Евреям 6",
+          "topics": [
+            "библиотека",
+            "главная",
+            "Главная",
+            "навигация"
+          ],
+          "sourceOwner": "src/components/home/HomeSections/Publications.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/",
+          "title": "Господь Бог — Сила Моя — Материалы для изучения Писания",
+          "context": "Отдельная большая статья · Евреям 6",
+          "anchor": null,
+          "raw": "Евреям 6",
+          "topics": [
+            "библиотека",
+            "главная",
+            "Главная",
+            "навигация"
+          ],
+          "sourceOwner": "src/components/home/HomeSections/Publications.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/",
+          "title": "Господь Бог — Сила Моя — Материалы для изучения Писания",
+          "context": "Трудные тексты · Евреям 6 Отступление от веры: Иуда, Евреям 6 и предупреждения всей Библии Редактор: Фёдор Мило",
+          "anchor": null,
+          "raw": "Евреям 6",
+          "topics": [
+            "библиотека",
+            "главная",
+            "Главная",
+            "навигация"
+          ],
+          "sourceOwner": "src/components/home/HomeSections/Refutations.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/",
+          "title": "Господь Бог — Сила Моя — Материалы для изучения Писания",
+          "context": "Трудные тексты · Евреям 6 Отступление от веры: Иуда, Евреям 6 и предупреждения всей Библии Редактор: Фёдор Милованов ·",
+          "anchor": null,
+          "raw": "Евреям 6",
+          "topics": [
+            "библиотека",
+            "главная",
+            "Главная",
+            "навигация"
+          ],
+          "sourceOwner": "src/components/home/HomeSections/Refutations.astro",
+          "sourceKind": "astro-source"
+        },
         {
           "url": "/articles/otstuplenie-chto-govorit-bibliya/",
           "title": "Отступничество: что Библия на самом деле называет отпадением от веры",
