@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v200-reader-measure-capacity-20261027';
+const CACHE_VERSION = 'gb-v201-reader-measure-premium-20261029';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -22,9 +22,9 @@ const PRECACHE_ASSETS = [
   '/css/command-palette.css?v=3b88813f',
   '/css/mobile-hotfix.css?v=9cfd6aee',
   '/css/nagornaya-mobile-toc.css?v=83750b6a',
-  '/css/floating-cluster.css?v=f06bb3b5',
+  '/css/floating-cluster.css?v=f9fbc903',
   '/css/series-samizdat.css?v=7c8ba23f',
-  '/css/reader-preferences.css?v=2e779e2f',
+  '/css/reader-preferences.css?v=9570f3e2',
   '/css/enhancements-runtime.css?v=d195a91d',
   '/css/highlights-runtime.css?v=9f42844a',
   '/css/sw-toast.css?v=2e540077',
