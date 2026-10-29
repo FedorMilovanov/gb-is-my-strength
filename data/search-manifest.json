@@ -1919,6 +1919,141 @@
       "publishedTime": "2026-10-27T21:00:00.000Z",
       "modifiedTime": "2026-10-27T21:00:00.000Z",
       "readTime": 42
+    },
+    {
+      "id": "otstuplenie-chto-govorit-bibliya",
+      "type": "article",
+      "url": "/articles/otstuplenie-chto-govorit-bibliya/",
+      "title": "Отступничество: что Библия на самом деле называет отпадением от веры",
+      "description": "Пётр, Иуда, временная вера, тяжёлое падение, ожесточение и предупреждения Евреям: почему Библия не сводит всякий уход к одной категории.",
+      "section": "Богословие",
+      "author": "Фёдор Милованов",
+      "editor": "Фёдор Милованов",
+      "image": "/images/articles/otstuplenie-chto-govorit-bibliya.webp",
+      "tags": [
+        "отступничество",
+        "стойкость святых",
+        "предупреждения",
+        "временная вера",
+        "покаяние"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-10-29T00:00:00+03:00",
+      "modifiedTime": "2026-10-29T00:00:00+03:00",
+      "readTime": 18
+    },
+    {
+      "id": "otstupniki-biblii-iuda-saul-ierovoam-dimas",
+      "type": "article",
+      "url": "/articles/otstupniki-biblii-iuda-saul-ierovoam-dimas/",
+      "title": "Отступники Библии: Иуда, Саул, Иеровоам, Димас и разные траектории ухода от Бога",
+      "description": "Иуда, Саул, Иеровоам, Соломон, Димас, Именей и лжеучители: разные библейские траектории ухода от Бога и разные степени уверенности в финале.",
+      "section": "Богословие",
+      "author": "Фёдор Милованов",
+      "editor": "Фёдор Милованов",
+      "image": "/images/articles/otstupniki-biblii-iuda-saul-ierovoam-dimas.webp",
+      "tags": [
+        "отступничество",
+        "Иуда Искариот",
+        "Саул",
+        "Иеровоам",
+        "Димас"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-10-29T00:00:00+03:00",
+      "modifiedTime": "2026-10-29T00:00:00+03:00",
+      "readTime": 15
+    },
+    {
+      "id": "petr-i-iuda-padenie-ili-otstuplenie",
+      "type": "article",
+      "url": "/articles/petr-i-iuda-padenie-ili-otstuplenie/",
+      "title": "Пётр и Иуда: падение или отступничество?",
+      "description": "Пётр отрёкся и был восстановлен. Иуда предал и погиб. Что их истории учат о падении, покаянии, отступничестве, предупреждении и Божьем сохранении.",
+      "section": "Богословие",
+      "author": "Фёдор Милованов",
+      "editor": "Фёдор Милованов",
+      "image": "/images/articles/petr-i-iuda-padenie-ili-otstuplenie.webp",
+      "tags": [
+        "Пётр",
+        "Иуда Искариот",
+        "отречение",
+        "покаяние",
+        "отступничество"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-10-29T00:00:00+03:00",
+      "modifiedTime": "2026-10-29T00:00:00+03:00",
+      "readTime": 17
+    },
+    {
+      "id": "otreklis-ot-hrista-istoriya-cerkvi",
+      "type": "article",
+      "url": "/articles/otreklis-ot-hrista-istoriya-cerkvi/",
+      "title": "Отреклись от Христа: падение, возвращение и отступничество в истории Церкви",
+      "description": "Плиний, мученики, дециевы lapsi, Киприан, Юлиан, Кранмер и Спира: что история Церкви показывает о публичном отречении, покаянии и восстановлении.",
+      "section": "Богословие",
+      "author": "Фёдор Милованов",
+      "editor": "Фёдор Милованов",
+      "image": "/images/articles/otreklis-ot-hrista-istoriya-cerkvi.webp",
+      "tags": [
+        "история Церкви",
+        "гонения",
+        "отречение",
+        "покаяние",
+        "восстановление"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-10-29T00:00:00+03:00",
+      "modifiedTime": "2026-10-29T00:00:00+03:00",
+      "readTime": 13
+    },
+    {
+      "id": "kogda-chelovek-uhodit-ot-very",
+      "type": "article",
+      "url": "/articles/kogda-chelovek-uhodit-ot-very/",
+      "title": "Когда человек уходит от веры: как предупреждать, исправлять, возвращать и не давать ложной надежды",
+      "description": "Что делать церкви, семье и пастырю, когда человек отходит от веры: предупреждение, кроткое исправление, дисциплина, восстановление, assurance и perseverance.",
+      "section": "Богословие",
+      "author": "Фёдор Милованов",
+      "editor": "Фёдор Милованов",
+      "image": "/images/articles/kogda-chelovek-uhodit-ot-very.webp",
+      "tags": [
+        "пастырство",
+        "отступничество",
+        "церковная дисциплина",
+        "покаяние",
+        "стойкость святых"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-10-29T00:00:00+03:00",
+      "modifiedTime": "2026-10-29T00:00:00+03:00",
+      "readTime": 16
+    },
+    {
+      "id": "otstupniki",
+      "type": "series",
+      "url": "/otstupniki/",
+      "title": "Отступники: отступничество, падение и возвращение",
+      "description": "Пять частей о том, что Библия на самом деле называет отпадением от веры: временная вера, тяжёлое падение, ожесточение, отречение и возвращение — в Писании, истории Церкви и пастырской практике.",
+      "section": "Богословие",
+      "editor": "Фёдор Милованов",
+      "readTime": 79,
+      "image": "/images/articles/otstuplenie-chto-govorit-bibliya.webp",
+      "tags": [
+        "серия",
+        "Отступники",
+        "Отступничество и стойкость"
+      ],
+      "featured": false,
+      "priority": 0.6,
+      "publishedTime": "2026-10-29T00:00:00+03:00",
+      "modifiedTime": "2026-10-29T00:00:00+03:00"
     }
   ]
 }

@@ -1052,6 +1052,66 @@
       "contentKind": "article",
       "librarySection": "Служение",
       "topicCategory": "Стивен Лоусон"
+    },
+    "/articles/otstuplenie-chto-govorit-bibliya/": {
+      "indexPolicy": "index",
+      "pagefindPolicy": "include",
+      "searchManifestPolicy": "include",
+      "sitemapPolicy": "include",
+      "rssPolicy": "include",
+      "contentKind": "series-article",
+      "librarySection": "Богословие",
+      "topicCategory": "Отступничество и стойкость"
+    },
+    "/articles/otstupniki-biblii-iuda-saul-ierovoam-dimas/": {
+      "indexPolicy": "index",
+      "pagefindPolicy": "include",
+      "searchManifestPolicy": "include",
+      "sitemapPolicy": "include",
+      "rssPolicy": "include",
+      "contentKind": "series-article",
+      "librarySection": "Богословие",
+      "topicCategory": "Отступничество и стойкость"
+    },
+    "/articles/petr-i-iuda-padenie-ili-otstuplenie/": {
+      "indexPolicy": "index",
+      "pagefindPolicy": "include",
+      "searchManifestPolicy": "include",
+      "sitemapPolicy": "include",
+      "rssPolicy": "include",
+      "contentKind": "series-article",
+      "librarySection": "Богословие",
+      "topicCategory": "Отступничество и стойкость"
+    },
+    "/articles/otreklis-ot-hrista-istoriya-cerkvi/": {
+      "indexPolicy": "index",
+      "pagefindPolicy": "include",
+      "searchManifestPolicy": "include",
+      "sitemapPolicy": "include",
+      "rssPolicy": "include",
+      "contentKind": "series-article",
+      "librarySection": "Богословие",
+      "topicCategory": "Отступничество и стойкость"
+    },
+    "/articles/kogda-chelovek-uhodit-ot-very/": {
+      "indexPolicy": "index",
+      "pagefindPolicy": "include",
+      "searchManifestPolicy": "include",
+      "sitemapPolicy": "include",
+      "rssPolicy": "include",
+      "contentKind": "series-article",
+      "librarySection": "Богословие",
+      "topicCategory": "Отступничество и стойкость"
+    },
+    "/otstupniki/": {
+      "indexPolicy": "index",
+      "pagefindPolicy": "include",
+      "searchManifestPolicy": "include",
+      "sitemapPolicy": "include",
+      "rssPolicy": "exclude",
+      "contentKind": "landing",
+      "librarySection": "Богословие",
+      "topicCategory": "Отступничество и стойкость"
     }
   }
 }
