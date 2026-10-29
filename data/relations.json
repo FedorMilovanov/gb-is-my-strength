@@ -243,33 +243,6 @@
       "weight": 44,
       "rationale": "Статьи C и D продолжают линию компаньонов о взрослых детях: границы родительской власти после совершеннолетия в статье C соединяются с согласием на брак и отцовским советом в статье D.",
       "editorialStatus": "verified"
-    },
-    {
-      "id": "apostasy-part-i-hebrews6-mega",
-      "source": "series-apostasy-series-otstuplenie-chto-govorit-bibliya",
-      "target": "otstuplenie-ot-very-iuda-evreyam-6",
-      "kind": "expands",
-      "weight": 90,
-      "rationale": "Главный разбор Евреям 6 углубляет самый трудный текст карты отступничества из части I.",
-      "editorialStatus": "verified"
-    },
-    {
-      "id": "apostasy-part-iii-hebrews6-mega",
-      "source": "series-apostasy-series-petr-i-iuda-padenie-ili-otstuplenie",
-      "target": "otstuplenie-ot-very-iuda-evreyam-6",
-      "kind": "expands",
-      "weight": 84,
-      "rationale": "Разбор Иуды и Евреям 6 продолжает сравнение Петра и Иуды экзегезой предупреждения.",
-      "editorialStatus": "verified"
-    },
-    {
-      "id": "apostasy-mega-pastoral-part-v",
-      "source": "otstuplenie-ot-very-iuda-evreyam-6",
-      "target": "kogda-chelovek-uhodit-ot-very",
-      "kind": "recommended-next",
-      "weight": 78,
-      "rationale": "После разбора Евреям 6 читателю нужен пастырский ответ: как предупреждать, исправлять и возвращать уходящего.",
-      "editorialStatus": "verified"
     }
   ]
 }
