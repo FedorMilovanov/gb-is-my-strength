@@ -9,7 +9,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REPORT_DIR = path.join(ROOT, 'reports', 'standalone-reader-layout-guards');
 const BASE = String(process.env.AUDIT_BASE || '').trim().replace(/\/$/, '');
 const VIEWPORTS = [390, 768, 1199, 1200, 1280, 1366, 1440, 1920];
-const MEASURES = { narrow: 36, normal: 43, wide: 44.5 };
+const MEASURES = { narrow: 36, normal: 46, wide: 52 };
 const ROUTES = [
   {
     key: 'HM',
@@ -61,10 +61,10 @@ function sourceContracts() {
     ['SRL-S05', 'ReaderRail clamps the shell only after subtracting readable content inset', lane.includes('--hrail-safe-shell-left') && lane.includes('margin-left:max(var(--hrail-centered-left),var(--hrail-safe-shell-left))') && lane.includes('margin-right:auto')],
     ['SRL-S06', 'ReaderRail geometry uses no positional transform trick', !/(?:^|\n)\s*(?:position|left|transform)\s*:/.test(lane)],
     ['SRL-S07', 'ReaderRail shell width uses containing-block percentage, not viewport units', lane.includes('calc(100% -') && !lane.includes('100vw') && !lane.includes('100dvw')],
-    ['SRL-S08', 'ReaderSettings inherits the single normal 43rem measure token', settings.includes('--hm-article-measure: var(--gb-reader-measure, 43rem)')],
+    ['SRL-S08', 'ReaderSettings inherits the single normal 46rem measure token', settings.includes('--hm-article-measure: var(--gb-reader-measure, 46rem)')],
     ['SRL-S09', 'ReaderSettings derives shell from measure plus 6rem', settings.includes('--hm-article-shell: calc(var(--hm-article-measure) + 6rem)')],
     ['SRL-S10', 'every direct article block shares the ReaderSettings measure owner', settings.includes('[data-reader-root] .article-body > *') && settings.includes('max-width: var(--hm-article-measure)')],
-    ['SRL-S11', 'reader measures are centrally defined as 36rem, 43rem and 44.5rem', readerPrefsCss.includes(':root[data-reader-measure="narrow"] { --gb-reader-measure: 36rem; }') && readerPrefsCss.includes(':root[data-reader-measure="normal"] { --gb-reader-measure: 43rem; }') && readerPrefsCss.includes(':root[data-reader-measure="wide"] { --gb-reader-measure: 44.5rem; }')],
+    ['SRL-S11', 'reader measures are centrally defined as 36rem, 46rem and 52rem', readerPrefsCss.includes(':root[data-reader-measure="narrow"] { --gb-reader-measure: 36rem; }') && readerPrefsCss.includes(':root[data-reader-measure="normal"] { --gb-reader-measure: 46rem; }') && readerPrefsCss.includes(':root[data-reader-measure="wide"] { --gb-reader-measure: 52rem; }')],
     ['SRL-S12', 'ReaderSettings explicitly owns summary inline centring', summaryOwner.includes('margin-left: auto') && summaryOwner.includes('margin-right: auto')],
     ['SRL-S13', 'summary centring uses normal cascade ownership, not important compensation', summaryOwner.length > 0 && !summaryOwner.includes('!important')],
     ['SRL-S14', 'Kod Da Vinci route declares one outer page-wrap as both reader root and rail shell', /<div[^>]*class="page-wrap"[^>]*data-reader-root[^>]*data-reader-rail-main[^>]*>/.test(kdvRoute)],
@@ -166,8 +166,8 @@ function recordLayout(route, width, state) {
   }
   record(`${id}-06`, `${route.label} ${width}px readable summary and prose clear rail plus declared gap`, Boolean(state.safeReadableLeft != null && state.prose && state.summary && state.prose.left >= state.safeReadableLeft - 2 && state.summary.left >= state.safeReadableLeft - 2), state, 'layout');
   record(`${id}-07`, `${route.label} ${width}px readable content uses only the minimum rail collision shift`, Boolean(state.prose && state.expectedReadableLeft != null && Math.abs(state.prose.left - state.expectedReadableLeft) <= 3), state, 'layout');
-  // The normal reader measure is 43rem; allow 8px for box-model rounding, not an obsolete 760px target.
-  const minimum = 43 * state.rootFont - 8;
+  // The normal reader measure is 46rem; allow 8px for box-model rounding, not an obsolete 760px target.
+  const minimum = 46 * state.rootFont - 8;
   record(`${id}-08`, `${route.label} ${width}px normal prose is not pathologically narrow`, Boolean(state.prose && state.prose.width >= minimum), { minimum, state }, 'layout');
   const centeringSafe = state.centeredReadableLeft != null && state.safeReadableLeft != null && state.centeredReadableLeft >= state.safeReadableLeft - 1;
   record(`${id}-09`, `${route.label} ${width}px readable content returns to layout centre whenever rail clearance allows it`, Boolean(!centeringSafe || (state.prose && state.summary && Math.abs(state.prose.centerX - state.layoutCenter) <= 3 && Math.abs(state.summary.centerX - state.layoutCenter) <= 3)), { centeringSafe, state }, 'layout');

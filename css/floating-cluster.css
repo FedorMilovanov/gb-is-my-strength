@@ -2735,9 +2735,10 @@ html.dark .gb-roman {
        margin + width + a breathing gap) — used as the minimum left margin so
        the article clears the rail on narrower desktops. */
     --gb-rail-reserve:calc(clamp(16px,2.4vw,40px) + clamp(272px,24vw,304px) + clamp(24px,3vw,48px));
-    /* The shared token is already the preferred reading width; 760px remains
-       a hard safety ceiling, and the full-bleed canvas supplies the viewport cap. */
-    --gb-measure:min(calc(var(--gb-reader-measure, 43rem) + 48px), 760px, calc(100vw - 48px));
+    /* The shared token is already the preferred reading width; 900px remains
+       a hard safety ceiling above the widest token shell (52rem + 48px = 880px),
+       and the full-bleed canvas supplies the viewport cap. */
+    --gb-measure:min(calc(var(--gb-reader-measure, 46rem) + 48px), 900px, calc(100vw - 48px));
     display:block;
     min-height:auto;
   }
@@ -3637,7 +3638,12 @@ html.dark [data-gill-v16] .mobile-top-bar {
     gap:10px;
     position:fixed;
     top:calc(clamp(24px, 3.5vw, 44px) - 4px);
-    right:max(8.5vw, env(safe-area-inset-right, 0px));
+    /* right: 5vw (not the .theme-toggle canon 8.5vw): since the wide reader
+       measure (52rem, 880px shell) the 8.5vw anchor pushed the blooming
+       speed pill over the prose corridor at 1440/1680px. 5vw keeps the
+       pill fully clear of the text (engine-sweep reader-width contract)
+       while the corner stays in the viewport margin. */
+    right:max(5vw, env(safe-area-inset-right, 0px));
     z-index:var(--z-toast,9800);
   }
 }
@@ -4213,7 +4219,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
     line-height: var(--gbs2-article-line, 1.6);
   }
   [data-gill-v16] .page-wrap {
-    max-width: min(calc(var(--gb-reader-measure, 43rem) + 48px), 760px);
+    max-width: min(calc(var(--gb-reader-measure, 46rem) + 48px), 900px);
     margin-left: auto;
     margin-right: auto;
   }
