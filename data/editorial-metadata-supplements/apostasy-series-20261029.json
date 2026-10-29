@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "sourceCommit": "54877be73a590b1e29f4d701724b39ed41c17e14",
+  "records": {
+    "/articles/otstuplenie-chto-govorit-bibliya/": {
+      "route": "/articles/otstuplenie-chto-govorit-bibliya/",
+      "canonical": "https://gospod-bog.ru/articles/otstuplenie-chto-govorit-bibliya/",
+      "title": "Отступничество: что Библия на самом деле называет отпадением от веры | Господь Бог — Сила Моя",
+      "metadataSource": "src/content/articles/otstuplenie-chto-govorit-bibliya.mdx",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-10-28T21:00:00.000Z",
+      "editorialModifiedAt": "2026-10-28T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "approved",
+      "provenance": "apostasy-series-editorial-publication-decision-20261029",
+      "observations": {}
+    },
+    "/articles/otstupniki-biblii-iuda-saul-ierovoam-dimas/": {
+      "route": "/articles/otstupniki-biblii-iuda-saul-ierovoam-dimas/",
+      "canonical": "https://gospod-bog.ru/articles/otstupniki-biblii-iuda-saul-ierovoam-dimas/",
+      "title": "Отступники Библии: Иуда, Саул, Иеровоам, Димас и разные траектории ухода от Бога | Господь Бог — Сила Моя",
+      "metadataSource": "src/content/articles/otstupniki-biblii-iuda-saul-ierovoam-dimas.mdx",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-10-28T21:00:00.000Z",
+      "editorialModifiedAt": "2026-10-28T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "approved",
+      "provenance": "apostasy-series-editorial-publication-decision-20261029",
+      "observations": {}
+    },
+    "/articles/petr-i-iuda-padenie-ili-otstuplenie/": {
+      "route": "/articles/petr-i-iuda-padenie-ili-otstuplenie/",
+      "canonical": "https://gospod-bog.ru/articles/petr-i-iuda-padenie-ili-otstuplenie/",
+      "title": "Пётр и Иуда: падение или отступничество? | Господь Бог — Сила Моя",
+      "metadataSource": "src/content/articles/petr-i-iuda-padenie-ili-otstuplenie.mdx",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-10-28T21:00:00.000Z",
+      "editorialModifiedAt": "2026-10-28T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "approved",
+      "provenance": "apostasy-series-editorial-publication-decision-20261029",
+      "observations": {}
+    },
+    "/articles/otreklis-ot-hrista-istoriya-cerkvi/": {
+      "route": "/articles/otreklis-ot-hrista-istoriya-cerkvi/",
+      "canonical": "https://gospod-bog.ru/articles/otreklis-ot-hrista-istoriya-cerkvi/",
+      "title": "Отреклись от Христа: падение, возвращение и отступничество в истории Церкви | Господь Бог — Сила Моя",
+      "metadataSource": "src/content/articles/otreklis-ot-hrista-istoriya-cerkvi.mdx",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-10-28T21:00:00.000Z",
+      "editorialModifiedAt": "2026-10-28T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "approved",
+      "provenance": "apostasy-series-editorial-publication-decision-20261029",
+      "observations": {}
+    },
+    "/articles/kogda-chelovek-uhodit-ot-very/": {
+      "route": "/articles/kogda-chelovek-uhodit-ot-very/",
+      "canonical": "https://gospod-bog.ru/articles/kogda-chelovek-uhodit-ot-very/",
+      "title": "Когда человек уходит от веры: как предупреждать, исправлять, возвращать и не давать ложной надежды | Господь Бог — Сила Моя",
+      "metadataSource": "src/content/articles/kogda-chelovek-uhodit-ot-very.mdx",
+      "contentType": "article",
+      "editorialPublishedAt": "2026-10-28T21:00:00.000Z",
+      "editorialModifiedAt": "2026-10-28T21:00:00.000Z",
+      "originalWorkPublishedAt": null,
+      "reviewStatus": "approved",
+      "provenance": "apostasy-series-editorial-publication-decision-20261029",
+      "observations": {}
+    }
+  }
+}

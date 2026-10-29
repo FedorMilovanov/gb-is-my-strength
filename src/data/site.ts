@@ -86,4 +86,11 @@ export const SERIES_ORDER: Record<string, string[]> = {
     'sovershennoletie-roditelskaya-vlast-chto-menyaetsya',
     'vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti',
   ],
+  'apostasy-series': [
+    'otstuplenie-chto-govorit-bibliya',
+    'otstupniki-biblii-iuda-saul-ierovoam-dimas',
+    'petr-i-iuda-padenie-ili-otstuplenie',
+    'otreklis-ot-hrista-istoriya-cerkvi',
+    'kogda-chelovek-uhodit-ot-very',
+  ],
 };

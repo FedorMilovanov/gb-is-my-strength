@@ -8,7 +8,7 @@
     <link>https://gospod-bog.ru/</link>
     <description><![CDATA[Богословские разборы, переводы и исследования Писания на русском языке.]]></description>
     <language>ru</language>
-    <lastBuildDate>Tue, 27 Oct 2026 21:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 28 Oct 2026 21:00:00 GMT</lastBuildDate>
     <ttl>1440</ttl>
     <image>
       <url>https://gospod-bog.ru/images/og-preview-1200x630.webp</url>
@@ -16,6 +16,56 @@
       <link>https://gospod-bog.ru/</link>
     </image>
     <atom:link href="https://gospod-bog.ru/feed.xml" rel="self" type="application/rss+xml"/>
+
+    <item>
+      <title>Когда человек уходит от веры: как предупреждать, исправлять и возвращать</title>
+      <link>https://gospod-bog.ru/articles/kogda-chelovek-uhodit-ot-very/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/kogda-chelovek-uhodit-ot-very/</guid>
+      <pubDate>Wed, 28 Oct 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Богословие</category>
+      <description><![CDATA[Что делать церкви, семье и пастырю, когда человек отходит от веры: предупреждение, кроткое исправление, дисциплина, восстановление, assurance и perseverance.]]></description>
+    </item>
+
+    <item>
+      <title>Отреклись от Христа: падение, возвращение и отступничество в истории Церкви</title>
+      <link>https://gospod-bog.ru/articles/otreklis-ot-hrista-istoriya-cerkvi/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/otreklis-ot-hrista-istoriya-cerkvi/</guid>
+      <pubDate>Wed, 28 Oct 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Богословие</category>
+      <description><![CDATA[Плиний, мученики, дециевы lapsi, Киприан, Юлиан, Кранмер и Спира: что история Церкви показывает о публичном отречении, покаянии и восстановлении.]]></description>
+    </item>
+
+    <item>
+      <title>Отступничество: что Библия на самом деле называет отпадением от веры</title>
+      <link>https://gospod-bog.ru/articles/otstuplenie-chto-govorit-bibliya/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/otstuplenie-chto-govorit-bibliya/</guid>
+      <pubDate>Wed, 28 Oct 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Богословие</category>
+      <description><![CDATA[Пётр, Иуда, временная вера, тяжёлое падение, ожесточение и предупреждения Евреям: почему Библия не сводит всякий уход к одной категории.]]></description>
+    </item>
+
+    <item>
+      <title>Отступники Библии: Иуда, Саул, Иеровоам, Димас и разные траектории ухода от Бога</title>
+      <link>https://gospod-bog.ru/articles/otstupniki-biblii-iuda-saul-ierovoam-dimas/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/otstupniki-biblii-iuda-saul-ierovoam-dimas/</guid>
+      <pubDate>Wed, 28 Oct 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Богословие</category>
+      <description><![CDATA[Иуда, Саул, Иеровоам, Соломон, Димас, Именей и лжеучители: разные библейские траектории ухода от Бога и разные степени уверенности в финале.]]></description>
+    </item>
+
+    <item>
+      <title>Пётр и Иуда: падение или отступничество?</title>
+      <link>https://gospod-bog.ru/articles/petr-i-iuda-padenie-ili-otstuplenie/</link>
+      <guid isPermaLink="true">https://gospod-bog.ru/articles/petr-i-iuda-padenie-ili-otstuplenie/</guid>
+      <pubDate>Wed, 28 Oct 2026 21:00:00 GMT</pubDate>
+      <dc:creator>Фёдор Милованов</dc:creator>
+      <category>Богословие</category>
+      <description><![CDATA[Пётр отрёкся и был восстановлен. Иуда предал и погиб. Что их истории учат о падении, покаянии, отступничестве, предупреждении и Божьем сохранении.]]></description>
+    </item>
 
     <item>
       <title>Отступление от веры: Иуда, Евреям 6 и предупреждения всей Библии</title>

@@ -1,0 +1,29 @@
+{
+  "route": "/articles/otstupniki-biblii-iuda-saul-ierovoam-dimas/",
+  "profiledAt": "2026-10-29",
+  "migrationLane": "content",
+  "routeType": "series-article",
+  "surfaceContractVersion": 1,
+  "surface": "series",
+  "seriesShape": "flat",
+  "section": "articles",
+  "slug": "otstupniki-biblii-iuda-saul-ierovoam-dimas",
+  "currentStatus": "production-dist",
+  "source": "src/pages/articles/otstupniki-biblii-iuda-saul-ierovoam-dimas/index.astro",
+  "risk": 2,
+  "sourceContractVersion": 1,
+  "contentSourceMode": "mdx-native",
+  "renderSource": "src/pages/articles/otstupniki-biblii-iuda-saul-ierovoam-dimas/index.astro",
+  "metadataSourceMode": "content-frontmatter",
+  "hasMDX": true,
+  "mdxStatus": "canonical",
+  "mdxPath": "src/content/articles/otstupniki-biblii-iuda-saul-ierovoam-dimas.mdx",
+  "legacyStatus": "absent",
+  "legacyPath": null,
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": "css/series-manuscript.css",
+  "migrationMode": "strict-native"
+}

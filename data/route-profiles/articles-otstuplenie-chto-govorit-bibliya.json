@@ -1,0 +1,29 @@
+{
+  "route": "/articles/otstuplenie-chto-govorit-bibliya/",
+  "profiledAt": "2026-10-29",
+  "migrationLane": "content",
+  "routeType": "series-article",
+  "surfaceContractVersion": 1,
+  "surface": "series",
+  "seriesShape": "flat",
+  "section": "articles",
+  "slug": "otstuplenie-chto-govorit-bibliya",
+  "currentStatus": "production-dist",
+  "source": "src/pages/articles/otstuplenie-chto-govorit-bibliya/index.astro",
+  "risk": 2,
+  "sourceContractVersion": 1,
+  "contentSourceMode": "mdx-native",
+  "renderSource": "src/pages/articles/otstuplenie-chto-govorit-bibliya/index.astro",
+  "metadataSourceMode": "content-frontmatter",
+  "hasMDX": true,
+  "mdxStatus": "canonical",
+  "mdxPath": "src/content/articles/otstuplenie-chto-govorit-bibliya.mdx",
+  "legacyStatus": "absent",
+  "legacyPath": null,
+  "visualParity": {
+    "desktop": 0,
+    "mobile": 0
+  },
+  "cssPilot": "css/series-manuscript.css",
+  "migrationMode": "strict-native"
+}

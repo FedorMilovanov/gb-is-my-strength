@@ -1,0 +1,181 @@
+---
+import Seo from '@/components/seo/Seo.astro';
+import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
+import { APOSTASY_SERIES } from '@/components/article-pilots/_shared/series/apostasySeriesConfig';
+import { APOSTASY_SERIES_MEDIA, apostasySeriesMediaFor } from '@/components/article-pilots/_shared/series/apostasySeriesMedia';
+import { SITE } from '@/data/site';
+import { assetUrl } from '@/lib/asset-version';
+
+const canonical = `${SITE.url}/otstupniki/`;
+const ogImagePath = APOSTASY_SERIES_MEDIA.series.hero;
+const ogImage = `${SITE.url}${ogImagePath}`;
+const title = 'Отступники: отступничество, падение и возвращение | Господь Бог — Сила Моя';
+const description = 'Пять частей о том, что Библия на самом деле называет отпадением от веры: временная вера, тяжёлое падение, ожесточение, отречение и возвращение — в Писании, истории Церкви и пастырской практике.';
+const items = APOSTASY_SERIES.items;
+const cards = items.map((item) => ({ ...item, media: apostasySeriesMediaFor(item.id) }));
+const totalMinutes = items.reduce((sum, item) => sum + Number.parseInt(item.readingTime, 10), 0);
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': SITE.orgId,
+      name: SITE.name,
+      url: `${SITE.url}/`,
+      logo: { '@type': 'ImageObject', url: `${SITE.url}/icons/icon-512.png`, width: 512, height: 512 },
+    },
+    {
+      '@type': 'WebSite',
+      '@id': SITE.websiteId,
+      name: SITE.name,
+      url: `${SITE.url}/`,
+      inLanguage: SITE.locale,
+      publisher: { '@id': SITE.orgId },
+    },
+    {
+      '@type': 'CollectionPage',
+      '@id': canonical,
+      url: canonical,
+      name: APOSTASY_SERIES.seriesTitleFull,
+      description,
+      inLanguage: 'ru',
+      isPartOf: { '@id': SITE.websiteId },
+      publisher: { '@id': SITE.orgId },
+      primaryImageOfPage: { '@type': 'ImageObject', url: ogImage, width: 1200, height: 630 },
+      hasPart: items.map((item) => ({
+        '@type': 'Article',
+        name: item.title,
+        url: `${SITE.url}${item.href}`,
+      })),
+    },
+    {
+      '@type': 'BreadcrumbList',
+      '@id': `${canonical}#breadcrumbs`,
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Главная', item: `${SITE.url}/` },
+        { '@type': 'ListItem', position: 2, name: 'Отступники', item: canonical },
+      ],
+    },
+  ],
+};
+---
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <ReaderPreferencesHead />
+    <Seo
+      title={title}
+      description={description}
+      canonical={canonical}
+      robots="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+      ogImage={ogImage}
+      ogImageAlt={APOSTASY_SERIES_MEDIA.series.alt}
+      ogImageWidth="1200"
+      ogImageHeight="630"
+      ogType="website"
+      jsonLd={jsonLd}
+    />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin />
+    <link rel="stylesheet" href={assetUrl('fonts/fonts.css')} />
+    <link rel="stylesheet" href={assetUrl('css/site.css')} />
+    <link rel="stylesheet" href={assetUrl('css/home.css')} />
+    <link rel="stylesheet" href={assetUrl('css/command-palette.css')} />
+    <link rel="stylesheet" href={assetUrl('css/mobile-hotfix.css')} />
+    <link rel="stylesheet" href={assetUrl('css/floating-cluster.css')} />
+  </head>
+  <body class="apostasy-series-hub-page">
+    <a href="#main-content" class="skip-link">Перейти к содержимому</a>
+    <main id="main-content" class="article-main" data-pagefind-body>
+      <article>
+        <span data-pagefind-meta="image" hidden>{ogImagePath}</span>
+        <span data-pagefind-meta="author" hidden>Фёдор Милованов</span>
+        <span data-pagefind-meta="readTime" hidden>{totalMinutes}</span>
+        <span data-pagefind-meta="category" hidden>Отступничество и стойкость</span>
+
+        <header class="article-header gbs2-head">
+          <nav aria-label="Хлебные крошки" style="margin-bottom:.75rem">
+            <a href="/" class="gb-text-link">← Главная</a>
+          </nav>
+          <p class="section-label">Серия · 5 частей · {totalMinutes} мин</p>
+          <h1>Отступники</h1>
+          <p class="article-byline"><span class="article-byline__strong">Отступничество, падение и возвращение в Библии и истории Церкви</span></p>
+          <p>{description}</p>
+        </header>
+
+        <figure class="apostasy-series-hero">
+          <img
+            src={APOSTASY_SERIES_MEDIA.series.hero}
+            srcset={`${APOSTASY_SERIES_MEDIA.series.rail} 600w, ${APOSTASY_SERIES_MEDIA.series.hero} 1200w`}
+            sizes="(max-width: 48rem) 100vw, 820px"
+            width="1200"
+            height="630"
+            alt={APOSTASY_SERIES_MEDIA.series.alt}
+            loading="eager"
+            decoding="async"
+            fetchpriority="high"
+          />
+        </figure>
+
+        <section aria-labelledby="series-order">
+          <h2 id="series-order">Читать по порядку</h2>
+          <div class="apostasy-series-grid">
+            {cards.map((item, index) => (
+              <a class="apostasy-series-card" href={item.href}>
+                <img
+                  class="apostasy-series-card__image"
+                  src={item.media.rail}
+                  srcset={`${item.media.rail} 600w, ${item.media.hero} 1200w`}
+                  sizes="(max-width: 47.499rem) 100vw, 410px"
+                  width="600"
+                  height="315"
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="apostasy-series-card__content">
+                  <span class="apostasy-series-card__mark" aria-hidden="true">{item.mark.value}</span>
+                  <span class="apostasy-series-card__body">
+                    <span class="apostasy-series-card__eyebrow">Часть {index + 1} из {cards.length} · {item.readingTime}</span>
+                    <strong>{item.title}</strong>
+                    <span>{item.shortTitle}</span>
+                  </span>
+                </span>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        <section aria-labelledby="how-to-use">
+          <h2 id="how-to-use">Как устроена серия</h2>
+          <p>Первая часть разбирает библейский язык темы: временная вера, тяжёлое падение, ожесточение и окончательное отступничество — не одна категория, и смешивать их значит искажать часть Писания. Вторая проходит по людям Библии — от Иуды и Саула до Димаса и лжеучителей. Третья сравнивает Петра и Иуду и учит отличать падение от отступничества. Четвёртая смотрит на отречения в истории Церкви: дециевы lapsi, Киприан, Кранмер. Пятая — пастырская: что делать церкви, семье и самому уходящему человеку.</p>
+          <p>Отдельный главный разбор самого трудного текста темы — <a href="/hard-texts/otstuplenie-ot-very-iuda-evreyam-6/">Евреям 6 и Иуда: можно ли потерять спасение</a>. Серия даёт карту всей темы; тот разбор уходит в глубину одного предупреждения.</p>
+        </section>
+
+        <section class="author-card">
+          <div class="author-card-icon" aria-hidden="true">ФМ</div>
+          <div class="author-card-body">
+            <div class="author-card-label">Редакционный принцип серии</div>
+            <div class="author-card-name">Предупреждение без жестокости, милость без самообмана</div>
+            <p class="author-card-desc">Не давать ложной надежды тому, кто хочет Христа отвергнуть, — и не закрывать дверь перед тем, кто хочет к Нему вернуться. Стойкость святых в этой серии — не повод для пассивности церкви, а основание её активности.</p>
+          </div>
+        </section>
+      </article>
+    </main>
+    <script is:inline src={assetUrl('js/sw-register.js')} defer></script>
+    <style>
+      .apostasy-series-hero{margin:2rem 0 2.5rem}.apostasy-series-hero img{display:block;width:100%;height:auto;aspect-ratio:1200/630;object-fit:cover;border-radius:1.5rem}
+      .apostasy-series-grid{display:grid;gap:1rem;margin:1.25rem 0 2.5rem}
+      .apostasy-series-card{display:grid;grid-template-rows:auto 1fr;overflow:hidden;border:1px solid color-mix(in srgb,currentColor 18%,transparent);border-radius:1rem;text-decoration:none;color:inherit;background:color-mix(in srgb,Canvas 94%,currentColor 6%)}
+      .apostasy-series-card:hover,.apostasy-series-card:focus-visible{border-color:currentColor;transform:translateY(-2px)}
+      .apostasy-series-card__image{display:block;width:100%;height:auto;aspect-ratio:600/315;object-fit:cover;background:color-mix(in srgb,Canvas 88%,currentColor 12%)}
+      .apostasy-series-card__content{display:flex;gap:.85rem;align-items:flex-start;padding:1rem 1.05rem 1.1rem}
+      .apostasy-series-card__mark{display:grid;place-items:center;flex:0 0 2.7rem;width:2.7rem;height:2.7rem;border-radius:999px;background:var(--color-text);color:var(--color-canvas);font-weight:800}
+      .apostasy-series-card__body{display:grid;gap:.25rem;min-width:0}.apostasy-series-card__eyebrow{font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;opacity:.72}.apostasy-series-card strong{font-size:1.05rem;line-height:1.35}.apostasy-series-card__body>span:last-child{opacity:.78}
+      @media (min-width:760px){.apostasy-series-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+      @media (prefers-reduced-motion:no-preference){.apostasy-series-card{transition:transform .16s ease,border-color .16s ease}}
+    </style>
+  </body>
+</html>

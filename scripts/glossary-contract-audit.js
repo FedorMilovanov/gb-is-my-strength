@@ -83,6 +83,30 @@ function dictionaryIndex(dictionary) {
       fail(`data/glossary.json: "${canonical}" has no brief definition`);
     }
 
+    const category =
+      typeof entry.category === "string"
+        ? entry.category
+        : typeof nested.category === "string"
+          ? nested.category
+          : "";
+    const categorySlug =
+      typeof entry.categorySlug === "string"
+        ? entry.categorySlug
+        : typeof entry.category_slug === "string"
+          ? entry.category_slug
+          : typeof nested.categorySlug === "string"
+            ? nested.categorySlug
+            : typeof nested.category_slug === "string"
+              ? nested.category_slug
+              : "";
+
+    if (!category.trim()) {
+      fail(`data/glossary.json: "${canonical}" has no category`);
+    }
+    if (!categorySlug.trim()) {
+      fail(`data/glossary.json: "${canonical}" has no categorySlug`);
+    }
+
     const forms = Array.isArray(entry.aliases)
       ? entry.aliases.slice()
       : Array.isArray(nested.aliases)
