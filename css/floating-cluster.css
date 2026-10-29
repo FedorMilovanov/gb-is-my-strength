@@ -2735,9 +2735,10 @@ html.dark .gb-roman {
        margin + width + a breathing gap) — used as the minimum left margin so
        the article clears the rail on narrower desktops. */
     --gb-rail-reserve:calc(clamp(16px,2.4vw,40px) + clamp(272px,24vw,304px) + clamp(24px,3vw,48px));
-    /* The shared token is already the preferred reading width; 760px remains
-       a hard safety ceiling, and the full-bleed canvas supplies the viewport cap. */
-    --gb-measure:min(calc(var(--gb-reader-measure, 43rem) + 48px), 760px, calc(100vw - 48px));
+    /* The shared token is already the preferred reading width; 900px remains
+       a hard safety ceiling above the widest token shell (52rem + 48px = 880px),
+       and the full-bleed canvas supplies the viewport cap. */
+    --gb-measure:min(calc(var(--gb-reader-measure, 46rem) + 48px), 900px, calc(100vw - 48px));
     display:block;
     min-height:auto;
   }
@@ -4213,7 +4214,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
     line-height: var(--gbs2-article-line, 1.6);
   }
   [data-gill-v16] .page-wrap {
-    max-width: min(calc(var(--gb-reader-measure, 43rem) + 48px), 760px);
+    max-width: min(calc(var(--gb-reader-measure, 46rem) + 48px), 900px);
     margin-left: auto;
     margin-right: auto;
   }

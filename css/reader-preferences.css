@@ -3,12 +3,22 @@
  * Loaded before route CSS; reader-measure values are defined here once.
  * The synchronous head bootstrap sets data-reader-measure before first paint;
  * every reader adapter inherits the same token instead of re-mapping widths in JS.
+ *
+ * Measure scale (2026-10-29 premium-measure audit; sources: Bringhurst 45–75 CPL,
+ * ideal 66; Dyson & Haselgrove 2001 — 55 CPL best comprehension, 100 CPL worst;
+ * WCAG 1.4.8 AAA ceiling 80; USWDS prose 68ex; GOV.UK ≤75; Medium/Substack
+ * 620–740px at 18–21px type; Cyrillic needs ≈66–84 CPL at its 6.36-char average
+ * word vs 5.1 in English — Typophile). At the site's 17–18px Lora body this scale
+ * lands at ≈62–68 / 74–78 / 87–92 characters per line. The old 43→44.5rem step
+ * (+24px measured) made «Широко» indistinguishable from the default; the default
+ * itself sat below the premium long-form band on rail shells (≈593px prose).
+ * narrow stays 36rem as the focused short-measure mode; normal is the default.
  */
 
-:root { --gb-reader-measure: 43rem; }
+:root { --gb-reader-measure: 46rem; }
 :root[data-reader-measure="narrow"] { --gb-reader-measure: 36rem; }
-:root[data-reader-measure="normal"] { --gb-reader-measure: 43rem; }
-:root[data-reader-measure="wide"] { --gb-reader-measure: 44.5rem; }
+:root[data-reader-measure="normal"] { --gb-reader-measure: 46rem; }
+:root[data-reader-measure="wide"] { --gb-reader-measure: 52rem; }
 
 html[data-reader-theme="light"] {
   color-scheme: light;
@@ -130,7 +140,7 @@ html[data-reader-theme="sepia"] .info-box {
 [data-reader-root] .article-body > *,
 [data-gill-v16] .article-body > *,
 [data-gill-v16] .page-wrap > main.article-main > article > * {
-  max-width: var(--gb-reader-measure, 43rem);
+  max-width: var(--gb-reader-measure, 46rem);
   margin-inline: auto;
 }
 
