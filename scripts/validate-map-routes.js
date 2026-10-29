@@ -448,24 +448,35 @@ function checkAstroHub(files) {
 const PROTECTED_MAP_NAME_FIXTURES = [
   { wrong: 'Аварон', right: 'Аарон', why: 'canonical Synodal Russian for Aaron' },
 ];
-function collectLiveMapJson(dir, out = []) {
+function collectMapCopyFiles(dir, exts, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (entry.name.startsWith('.')) continue;
     const p = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       if (entry.name.startsWith('_')) continue;
-      collectLiveMapJson(p, out);
-    } else if (entry.name.endsWith('.json')) {
+      collectMapCopyFiles(p, exts, out);
+    } else if (exts.some((ext) => entry.name.endsWith(ext))) {
       out.push(p);
     }
   }
   return out;
 }
 function checkProtectedMapNames() {
-  const jsonFiles = collectLiveMapJson(ROUTES_ROOT).sort();
-  if (!jsonFiles.length) { bad('protected map name fixture: no live karty JSON files found'); return; }
+  // Live map copy = route/hub JSON+HTML under karty/ plus authored Astro map
+  // components/pages; built dist and frozen research snapshots are out of scope.
+  const roots = [
+    { dir: ROUTES_ROOT, exts: ['.json', '.html'] },
+    { dir: path.join(ROOT, 'src', 'components', 'karty'), exts: ['.astro', '.mdx'] },
+    { dir: path.join(ROOT, 'src', 'pages', 'karty'), exts: ['.astro', '.mdx'] },
+  ];
+  const copyFiles = [];
+  for (const r of roots) {
+    if (fs.existsSync(r.dir)) collectMapCopyFiles(r.dir, r.exts, copyFiles);
+  }
+  copyFiles.sort();
+  if (!copyFiles.length) { bad('protected map name fixture: no live map copy files found'); return; }
   let hits = 0;
-  for (const f of jsonFiles) {
+  for (const f of copyFiles) {
     const text = fs.readFileSync(f, 'utf8');
     const lines = text.split('\n');
     for (const fx of PROTECTED_MAP_NAME_FIXTURES) {
@@ -477,7 +488,7 @@ function checkProtectedMapNames() {
       });
     }
   }
-  if (!hits) ok(`protected map name fixture clean (${PROTECTED_MAP_NAME_FIXTURES.length} pair(s), ${jsonFiles.length} live karty JSON file(s))`);
+  if (!hits) ok(`protected map name fixture clean (${PROTECTED_MAP_NAME_FIXTURES.length} pair(s), ${copyFiles.length} live map copy file(s))`);
 }
 
 function main() {
