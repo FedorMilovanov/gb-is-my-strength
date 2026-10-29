@@ -296,8 +296,8 @@ assert(legacyTargets.length >= 50, `expected broad legacy coverage, got ${legacy
 
 const measureCss = read('css/reader-preferences.css');
 assert(measureCss.includes(':root[data-reader-measure="narrow"] { --gb-reader-measure: 36rem; }'));
-assert(measureCss.includes(':root[data-reader-measure="normal"] { --gb-reader-measure: 43rem; }'));
-assert(measureCss.includes(':root[data-reader-measure="wide"] { --gb-reader-measure: 44.5rem; }'));
+assert(measureCss.includes(':root[data-reader-measure="normal"] { --gb-reader-measure: 46rem; }'));
+assert(measureCss.includes(':root[data-reader-measure="wide"] { --gb-reader-measure: 52rem; }'));
 assert(!read('js/reader-preferences-head.js').includes('measureValues'), 'first-paint bootstrap must not duplicate measure values');
 assert(!read('js/reader-preferences.js').includes('MEASURE_VALUES'), 'reader store must not duplicate measure values');
 assert(!read('src/components/article-pilots/gill-series/GillReaderSettingsSheet.astro').includes('MEASURE_VALUES'));
