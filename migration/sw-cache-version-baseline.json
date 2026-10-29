@@ -1,9 +1,9 @@
 {
-  "version": 15,
-  "captured": "2026-10-29",
+  "version": 16,
+  "captured": "2026-10-30",
   "preSwitchProductionCacheVersion": "gb-v171-r62-maps-archaeology-20260612",
   "lastReviewedDistProductionCacheVersion": "gb-v198-root-generation-authority-20260907",
-  "currentDistProductionCacheVersion": "gb-v200-reader-measure-capacity-20261027",
+  "currentDistProductionCacheVersion": "gb-v201-reader-measure-premium-20261029",
   "currentExpectedCacheVersion": "gb-v201-reader-measure-premium-20261029",
-  "purpose": "Service Worker cache version baseline. currentExpectedCacheVersion MUST equal sw.js CACHE_VERSION at all times. v201 raises the reader measure scale (narrow 36rem / normal 46rem / wide 52rem, shell cap 900px) and its exact revisioned CSS precache entries from v200 until the new worker installs successfully. currentDistProductionCacheVersion remains v200 until a production witness confirms deployment; source merge is not a production deployment."
+  "purpose": "Service Worker cache version baseline. currentExpectedCacheVersion MUST equal sw.js CACHE_VERSION at all times. v201 raises the reader measure scale (narrow 36rem / normal 46rem / wide 52rem, shell cap 900px); production witness accepted it into prod on 2026-10-29 (GitHub release-candidate witness comment on PR #2218 + live service-worker identity check against gospod-bog.ru)."
 }
