@@ -17,12 +17,31 @@ import IshodStaticProjection from '@/components/karty/ishod/IshodStaticProjectio
 <main class="map-document">
   <h1 class="sr-only" data-pagefind-body>Исход из Египта — интерактивная карта. Маршрут странствий народа Израиля от Раамсеса до Ханаана: 11 мест, 6 этапов, 40 лет, Синайский завет, Числа 33.</h1>
 
+<noscript>
+  <!-- Единственный компактный no-JS владелец неопределённости: живёт в
+       естественном потоке (никакого fixed-слоя) и ведёт оперативной ссылкой
+       к полной текстовой версии карты сразу под карточкой. -->
+  <section class="pihahiroth-noscript" data-pihahiroth-noscript aria-labelledby="pihahiroth-noscript-title">
+    <h2 id="pihahiroth-noscript-title">Пи-Гахироф: точное место не установлено</h2>
+    <p>Показаны исследовательские коридоры, а не найденная точка. Современные канал, озёра и береговые линии нельзя автоматически переносить во время Исхода.</p>
+    <ol>
+      <li>Северный прибрежный / Сирбонисский коридор — низкая уверенность.</li>
+      <li>Озёра Баллах / север Суэцкого перешейка — умеренно низкая уверенность.</li>
+      <li>Озеро Тимсах / Горькие озёра — умеренно низкая уверенность.</li>
+    </ol>
+    <p class="pihahiroth-noscript__actions">
+      <a href="#ishod-text-version">Полная текстовая версия карты</a>
+    </p>
+  </section>
+</noscript>
+
 <!-- Текстовая версия карты: sr-only на экране, печатается и читается без JS.
      Источник — karty/ishod/route.json (см. IshodStaticProjection.astro). -->
 <section
   class="sr-only map-text-fallback"
   data-map-static-projection
   data-pagefind-body
+  id="ishod-text-version"
   aria-label="Исход из Египта — текстовая версия карты с источниками"
 >
   <IshodStaticProjection />
@@ -33,17 +52,6 @@ import IshodStaticProjection from '@/components/karty/ishod/IshodStaticProjectio
   description="Для интерактивного маршрута нужен JavaScript. Основные сведения о карте доступны в заголовке страницы; можно вернуться к разделу карт и выбрать другой материал."
   archaeologyMapId="ishod"
 />
-<noscript>
-  <section class="pihahiroth-noscript" data-pihahiroth-noscript aria-labelledby="pihahiroth-noscript-title">
-    <h2 id="pihahiroth-noscript-title">Пи-Гахироф: точное место не установлено</h2>
-    <p>Показаны исследовательские коридоры, а не найденная точка. Современные канал, озёра и береговые линии нельзя автоматически переносить во время Исхода.</p>
-    <ol>
-      <li>Северный прибрежный / Сирбонисский коридор — низкая уверенность.</li>
-      <li>Озёра Баллах / север Суэцкого перешейка — умеренно низкая уверенность.</li>
-      <li>Озеро Тимсах / Горькие озёра — умеренно низкая уверенность.</li>
-    </ol>
-  </section>
-</noscript>
 <section
   id="stage"
   data-map-stage
@@ -91,8 +99,10 @@ import IshodStaticProjection from '@/components/karty/ishod/IshodStaticProjectio
     stroke:#07101a;
     stroke-width:3px;
   }
-  .pihahiroth-noscript{margin:1rem;padding:1rem;border:1px solid #8f7a45;border-radius:12px;background:#101722;color:#f4eedd}
+  .pihahiroth-noscript{box-sizing:border-box;width:min(620px,calc(100% - 32px));margin:24px auto;padding:clamp(22px,5vw,38px);border:1px solid #8f7a45;border-radius:22px;background:#101722;color:#f4eedd}
   .pihahiroth-noscript h2{margin:0 0 .6rem;color:#e8c879}
+  .pihahiroth-noscript__actions{margin:1rem 0 0}
+  .pihahiroth-noscript__actions a{display:inline-flex;min-width:44px;min-height:44px;align-items:center;justify-content:center;padding:10px 16px;border:1px solid rgba(232,200,121,.6);border-radius:12px;color:#111820;background:#e8c879;font:750 16px/1.2 system-ui,-apple-system,"Segoe UI",sans-serif;text-decoration:none}
 </style>
 <script is:inline src="../_engine/map-engine.js"></script>
 <script is:inline>
