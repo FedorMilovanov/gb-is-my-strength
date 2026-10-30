@@ -14,6 +14,7 @@ const SCRIPTURE_TOOLTIP_PROJECTION_GUARD = path.join(__dirname, 'scripture-toolt
 const LOT_PUBLICATION_BROWSER_GUARD = path.join(__dirname, 'lot-publication-browser-contract.mjs');
 const STANDALONE_READER_LAYOUT_GUARD = path.join(__dirname, 'standalone-reader-layout-guard.mjs');
 const HOME_RESUME_BROWSER_GUARD = path.join(__dirname, 'homepage-resume-browser-contract.mjs');
+const SERIES_QUIZ_SOURCE_HANDOFF_GUARD = path.join(__dirname, 'series-quiz-source-handoff-browser-contract.mjs');
 const HOME_DESIGN_AUDIT = path.join(__dirname, 'home-design-audit-pro.mjs');
 const HOME_DESIGN_REPORT = path.join(ROOT, 'reports', 'home-design-audit-pro');
 const INTERACTIVE_REPORT = path.join(ROOT, 'reports', 'interactive-audit');
@@ -134,6 +135,13 @@ function runLotPublicationBrowserGuard(baseUrl) {
   return runNodeScript(LOT_PUBLICATION_BROWSER_GUARD, [], { AUDIT_BASE: baseUrl });
 }
 
+function runSeriesQuizSourceHandoffGuard(baseUrl) {
+  if (!fs.existsSync(SERIES_QUIZ_SOURCE_HANDOFF_GUARD)) {
+    throw new Error(`Series quiz source handoff guard is missing at ${SERIES_QUIZ_SOURCE_HANDOFF_GUARD}`);
+  }
+  return runNodeScript(SERIES_QUIZ_SOURCE_HANDOFF_GUARD, [], { AUDIT_BASE: baseUrl });
+}
+
 function runStandaloneReaderLayoutGuard(baseUrl) {
   if (!fs.existsSync(STANDALONE_READER_LAYOUT_GUARD)) {
     throw new Error(`Standalone reader layout guard is missing at ${STANDALONE_READER_LAYOUT_GUARD}`);
@@ -225,6 +233,8 @@ async function runInteractiveContracts(baseUrl) {
   if (resumeCode !== 0) return resumeCode;
   const quizCode = await runNativeQuizParityGuard(baseUrl);
   if (quizCode !== 0) return quizCode;
+  const sourceHandoffCode = await runSeriesQuizSourceHandoffGuard(baseUrl);
+  if (sourceHandoffCode !== 0) return sourceHandoffCode;
   const tooltipCode = await runHermenevtikaRegressionGuard(baseUrl);
   if (tooltipCode !== 0) return tooltipCode;
   const scriptureCode = await runScriptureTooltipProjectionGuard(baseUrl);
