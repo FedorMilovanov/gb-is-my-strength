@@ -440,6 +440,57 @@ function checkAstroHub(files) {
   else ok('karty hub has no disabled/soon cards for live maps');
 }
 
+// --- Protected biblical-name fixture (MASTER: GBS-ISHOD-AARON-NAME-MISSPELLING) ---
+// Narrow exact-token fixture for live map copy only: a reviewable wrong→canonical
+// pair per known defect, never a generic transliteration/spellcheck authority.
+// Byte-frozen forensic snapshots (research/PIHAHIROTH_HISTORICAL_ROUTE_*.json and
+// other pinned provenance) are intentionally out of this scan scope.
+const PROTECTED_MAP_NAME_FIXTURES = [
+  { wrong: 'Аварон', right: 'Аарон', why: 'canonical Synodal Russian for Aaron' },
+];
+function collectMapCopyFiles(dir, exts, out = []) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name.startsWith('.')) continue;
+    const p = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name.startsWith('_')) continue;
+      collectMapCopyFiles(p, exts, out);
+    } else if (exts.some((ext) => entry.name.endsWith(ext))) {
+      out.push(p);
+    }
+  }
+  return out;
+}
+function checkProtectedMapNames() {
+  // Live map copy = route/hub JSON+HTML under karty/ plus authored Astro map
+  // components/pages; built dist and frozen research snapshots are out of scope.
+  const roots = [
+    { dir: ROUTES_ROOT, exts: ['.json', '.html'] },
+    { dir: path.join(ROOT, 'src', 'components', 'karty'), exts: ['.astro', '.mdx'] },
+    { dir: path.join(ROOT, 'src', 'pages', 'karty'), exts: ['.astro', '.mdx'] },
+  ];
+  const copyFiles = [];
+  for (const r of roots) {
+    if (fs.existsSync(r.dir)) collectMapCopyFiles(r.dir, r.exts, copyFiles);
+  }
+  copyFiles.sort();
+  if (!copyFiles.length) { bad('protected map name fixture: no live map copy files found'); return; }
+  let hits = 0;
+  for (const f of copyFiles) {
+    const text = fs.readFileSync(f, 'utf8');
+    const lines = text.split('\n');
+    for (const fx of PROTECTED_MAP_NAME_FIXTURES) {
+      lines.forEach((line, idx) => {
+        if (line.includes(fx.wrong)) {
+          bad(`protected map name fixture: ${rel(f)}:${idx + 1} contains «${fx.wrong}» — canonical form is «${fx.right}» (${fx.why})`);
+          hits++;
+        }
+      });
+    }
+  }
+  if (!hits) ok(`protected map name fixture clean (${PROTECTED_MAP_NAME_FIXTURES.length} pair(s), ${copyFiles.length} live map copy file(s))`);
+}
+
 function main() {
   if (!fs.existsSync(schemaPath)) bad('karty/_shared/route.schema.json missing');
   else ok('route schema present');
@@ -451,6 +502,7 @@ function main() {
   }
   if (!files.length) bad('No karty/*/route.json files found');
   files.sort().forEach(validateRoute);
+  checkProtectedMapNames();
   const hubRouteFiles = files.filter(f => {
     try {
       return !isAtlasSheetDraft(JSON.parse(fs.readFileSync(f, 'utf8')));
