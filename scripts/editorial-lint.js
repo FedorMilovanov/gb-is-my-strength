@@ -56,6 +56,15 @@ const banned = [
   { kind:'pastoral-forensic-overphrase', rx:/духовный газлайтинг|отлаженного механизма самосохранения|манипулятор тут же вытаскивает/i },
   { kind:'home-brand-spacing', rx:/Господь Бог—Сила Моя/ },
   { kind:'typo-eto', rx:/\bЭ то\b/ },
+  // Exact negative fixtures for the five known malformed forms
+  // (GBS-READER-MALFORMED-RUSSIAN-WORDS-BATCH): narrow, reviewable, each rx
+  // matches ONLY the malformed token, never its correct counterpart — no
+  // generic spellchecker, specialist corpus stays outside this list.
+  { kind:'malformed-obespechreditelnye', rx:/обеспечредительн/ },
+  { kind:'malformed-obespechreditelnaya', rx:/обеспредительн/ },
+  { kind:'malformed-samosuverennost', rx:/самосуверенност/ },
+  { kind:'malformed-ustanovlenno-vinovnym', rx:/установленно\s+виновным/ },
+  { kind:'malformed-telogii', rx:/телологии/ },
 ];
 for (const f of files) {
   const text = fs.readFileSync(f,'utf8');
