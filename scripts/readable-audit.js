@@ -196,6 +196,15 @@ const fatalPatterns = [
   ['fatal-application-salvation-glue', /Применение\s+спасение/i],
   ['fatal-abbreviated-research-finding', /исследоват\.\s*находк/i],
   ['fatal-cyrillic-latin-glue', /[А-Яа-яЁё][A-Za-z]{3,}|[A-Za-z]{3,}[А-Яа-яЁё]/],
+  // Exact negative fixtures for the five known malformed forms
+  // (GBS-READER-MALFORMED-RUSSIAN-WORDS-BATCH): each matches ONLY the bad
+  // token — «обеспечительные»/«самоуверенности»/«установленным»/«телеологии»
+  // must keep passing.
+  ['fatal-malformed-obespechreditelnye', /обеспечредительн/],
+  ['fatal-malformed-obespechreditelnaya', /обеспредительн/],
+  ['fatal-malformed-samosuverennost', /самосуверенност/],
+  ['fatal-malformed-ustanovlenno-vinovnym', /установленно\s+виновным/],
+  ['fatal-malformed-telogii', /телологии/],
 ];
 for (const f of htmlFiles) {
   const text = readableText(fs.readFileSync(f, 'utf8'));
