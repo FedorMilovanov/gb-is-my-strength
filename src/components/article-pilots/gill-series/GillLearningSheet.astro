@@ -541,6 +541,62 @@ const hasQuiz = quizItems.length > 0;
       });
     }
 
+    // ---- Quiz source handoff: one shared full-URL-aware route to the source
+    // (GBS-GILL-QUIZ-SOURCE-LINK-MOBILE-NOOP). The native anchor only moved
+    // location.hash while the open sheet kept the article covered and the
+    // body scroll-locked. Same-document sources close + unlock the sheet
+    // FIRST, then place the fragment, scroll the target into view with the
+    // reduced-motion policy and hand stable focus to the target element.
+    // Cross-document sources keep the browser's normal navigation (no
+    // preventDefault), and a missing fragment never fakes a hash-only
+    // "success": the reader stays put with an explicit console warning.
+    function handoffQuizSource(rawHref: string): boolean {
+      if (!rawHref) return false;
+      let url: URL;
+      try {
+        url = new URL(rawHref, window.location.href);
+      } catch (_) {
+        return false;
+      }
+      const sameDocument =
+        url.origin === window.location.origin &&
+        url.pathname === window.location.pathname &&
+        url.search === window.location.search;
+      if (!sameDocument) return false;
+      const fragment = url.hash.replace(/^#/, '');
+      let target: HTMLElement | null = null;
+      if (fragment) {
+        try {
+          target = document.getElementById(decodeURIComponent(fragment));
+        } catch (_) {
+          target = null;
+        }
+      }
+      if (!target) {
+        console.warn('[gill-learning] quiz source fragment not found:', rawHref);
+        return true; // suppress the default: no silent hash-only navigation
+      }
+      closeSheet();
+      if (window.location.hash !== url.hash) history.pushState(null, '', url.hash);
+      target.scrollIntoView({
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        block: 'center',
+      });
+      if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+      target.focus({ preventScroll: true });
+      const targetEl = target;
+      targetEl.classList.add('is-search-target');
+      window.setTimeout(() => targetEl.classList.remove('is-search-target'), 1600);
+      return true;
+    }
+    const quizSourceLink = document.getElementById('glsQuizSource') as HTMLAnchorElement | null;
+    if (quizSourceLink) {
+      quizSourceLink.addEventListener('click', (e) => {
+        const raw = quizSourceLink.getAttribute('href') || '';
+        if (handoffQuizSource(raw)) e.preventDefault();
+      });
+    }
+
     // Outline cards close the sheet and jump like search results.
     overlay.querySelectorAll('[data-outline-link]').forEach((a) => {
       a.addEventListener('click', (e) => {
