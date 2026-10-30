@@ -225,33 +225,134 @@ async function inspectInteractive(browser, base, profile) {
   }
 }
 
-async function inspectNoJs(browser, base) {
+async function inspectNoJs(browser, base, profile) {
+  const id = profile.id;
   const context = await browser.newContext({
+    viewport: profile.viewport,
+    colorScheme: profile.colorScheme,
+    isMobile: profile.mobile,
+    hasTouch: profile.mobile,
+    deviceScaleFactor: profile.mobile ? 2 : 1,
     javaScriptEnabled: false,
-    viewport: { width: 390, height: 844 },
-    isMobile: true,
-    hasTouch: true,
-    deviceScaleFactor: 2,
   });
   const page = await context.newPage();
+  const consoleErrors = [];
   try {
+    page.on('console', (message) => {
+      if (message.type() === 'error' && !/yandex|Failed to load resource|ERR_FAILED/i.test(message.text())) consoleErrors.push(message.text());
+    });
+    page.on('pageerror', (error) => consoleErrors.push(error.message));
     await blockExternal(page, base);
-    await page.goto(base + ROUTE, { waitUntil: 'domcontentloaded' });
+    await page.goto(base + ROUTE, { waitUntil: 'load' });
+
+    // Concise authority fallback: present, visible, and in natural flow —
+    // never a fixed duplicate layer over the full text projection.
     const fallback = page.locator('[data-pihahiroth-noscript]');
-    check('no-js-mobile', 'fallback:present', await fallback.count() === 1);
-    check('no-js-mobile', 'fallback:visible', await fallback.isVisible());
+    check(id, 'fallback:present', await fallback.count() === 1);
+    check(id, 'fallback:visible', await fallback.isVisible());
     const box = await fallback.boundingBox();
-    check('no-js-mobile', 'fallback:viewport', Boolean(box && box.width > 250 && box.height > 200 && box.x >= 0 && box.y >= 0), JSON.stringify(box));
-    const text = await fallback.innerText();
-    check('no-js-mobile', 'fallback:uncertainty', text.includes('точное место не установлено') && text.includes('не найденная точка'));
-    check('no-js-mobile', 'fallback:corridors', ['Северный прибрежный', 'Озёра Баллах', 'Озеро Тимсах'].every((label) => text.includes(label)), text);
-    for (const forbidden of FORBIDDEN) check('no-js-mobile', `fallback:forbidden:${forbidden}`, !text.includes(forbidden));
-    await page.screenshot({ path: join(REPORTS, 'no-js-mobile.png'), fullPage: false });
+    check(id, 'fallback:viewport', Boolean(box && box.width > 250 && box.height > 200 && box.x >= 0 && box.y >= 0), JSON.stringify(box));
+
+    const state = await page.evaluate(() => {
+      const card = document.querySelector('[data-pihahiroth-noscript]');
+      const projection = document.querySelector('[data-map-static-projection]');
+      const stage = document.querySelector('[data-map-stage]');
+      const cardCs = card ? getComputedStyle(card) : null;
+      const pr = projection ? projection.getBoundingClientRect() : null;
+      const fixedMaxLayer = [...document.querySelectorAll('body *')].some((el) => {
+        const cs = getComputedStyle(el);
+        return (cs.position === 'fixed' || cs.position === 'absolute')
+          && Number(cs.zIndex) >= 1000
+          && el.getClientRects().length > 0
+          && el.matches('[data-pihahiroth-noscript]');
+      });
+      const bodyText = document.body.textContent || '';
+      return {
+        cardPosition: cardCs ? cardCs.position : null,
+        cardZ: cardCs ? cardCs.zIndex : null,
+        fixedMaxLayer,
+        projectionPosition: projection ? getComputedStyle(projection).position : null,
+        projectionH: pr ? Math.round(pr.height) : 0,
+        stageDisplay: stage ? getComputedStyle(stage).display : null,
+        authority: bodyText.includes('точное место не установлено') && bodyText.includes('не найденная точка'),
+        corridors: ['Северный прибрежный', 'Озёра Баллах', 'Озеро Тимсах'].every((label) => bodyText.includes(label)),
+        routeAnchor: Boolean(card && card.querySelector('a[href="#ishod-text-version"]') && document.getElementById('ishod-text-version')),
+        backPresent: Boolean(document.querySelector('.map-runtime-noscript a[href="/karty/"]')),
+        docH: document.documentElement.scrollHeight,
+      };
+    });
+    check(id, 'fallback:card-in-flow', ['static', 'relative'].includes(state.cardPosition), JSON.stringify({ position: state.cardPosition, z: state.cardZ }));
+    check(id, 'fallback:no-fixed-duplicate-layer', !state.fixedMaxLayer && state.cardPosition !== 'fixed', JSON.stringify(state));
+    check(id, 'fallback:projection-revealed', state.projectionPosition === 'static' && state.projectionH > 2000, JSON.stringify({ position: state.projectionPosition, h: state.projectionH }));
+    check(id, 'fallback:stage-residue-hidden', state.stageDisplay === 'none', String(state.stageDisplay));
+    check(id, 'fallback:authority-copy', state.authority);
+    check(id, 'fallback:corridors', state.corridors);
+    check(id, 'fallback:full-text-route', state.routeAnchor);
+    check(id, 'fallback:back-nav-present', state.backPresent);
+    const cardText = await fallback.innerText();
+    check(id, 'fallback:uncertainty', cardText.includes('точное место не установлено') && cardText.includes('не найденная точка'), cardText);
+    for (const forbidden of FORBIDDEN) check(id, `fallback:forbidden:${forbidden}`, !cardText.includes(forbidden));
+
+    // Painted beginning/middle/end of the route with centre hit-testing:
+    // every position must resolve to in-flow content (projection or the
+    // concise card), never under a fixed overlay.
+    const positions = {
+      beginning: 0,
+      middle: Math.max(0, Math.round((state.docH - profile.viewport.height) / 2)),
+      end: Math.max(0, state.docH - profile.viewport.height),
+    };
+    const seen = [];
+    for (const [name, y] of Object.entries(positions)) {
+      await page.evaluate((yy) => window.scrollTo(0, yy), y);
+      await page.waitForTimeout(200);
+      const hit = await page.evaluate(() => {
+        const el = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2);
+        let underFixed = false;
+        for (let n = el; n; n = n.parentElement) {
+          const cs = getComputedStyle(n);
+          if (cs.position === 'fixed' && Number(cs.zIndex) >= 1000 && n.getClientRects().length > 0) { underFixed = true; break; }
+        }
+        return {
+          tag: el ? el.tagName.toLowerCase() : null,
+          inProjection: Boolean(el && el.closest('[data-map-static-projection]')),
+          inCard: Boolean(el && el.closest('[data-pihahiroth-noscript]')),
+          underFixed,
+        };
+      });
+      const scrollY = await page.evaluate(() => window.scrollY);
+      seen.push({ name, scrollY, ...hit });
+      check(id, `hit-test:${name}`, !hit.underFixed && (hit.inProjection || hit.inCard || Boolean(hit.tag)), JSON.stringify(hit));
+      await page.screenshot({ path: join(REPORTS, `no-js-${id}-${name}.png`), fullPage: false });
+    }
+    check(id, 'hit-test:middle-paints-projection', seen[1].inProjection, JSON.stringify(seen[1]));
+    check(id, 'scroll:begin-middle-end', seen[0].scrollY < seen[1].scrollY && seen[1].scrollY < seen[2].scrollY && seen[2].scrollY > 500, JSON.stringify(seen.map((item) => item.scrollY)));
+
+    // Operative route from the concise card to the visible full text.
+    await page.evaluate(() => window.scrollTo(0, 0));
+    const routeLink = page.locator('[data-pihahiroth-noscript] a[href="#ishod-text-version"]');
+    await routeLink.click();
+    await page.waitForTimeout(250);
+    const jump = await page.evaluate(() => {
+      const target = document.getElementById('ishod-text-version');
+      const rect = target ? target.getBoundingClientRect() : null;
+      return { scrollY: window.scrollY, top: rect ? Math.round(rect.top) : null, hash: location.hash };
+    });
+    check(id, 'full-text-route:jumps-to-projection', jump.hash === '#ishod-text-version' && jump.scrollY > 0 && jump.top !== null && jump.top < profile.viewport.height, JSON.stringify(jump));
+
+    // Reachable back navigation to the maps hub.
+    const back = page.locator('.map-runtime-noscript a[href="/karty/"]');
+    await Promise.all([
+      page.waitForURL('**/karty/', { timeout: 10_000 }),
+      back.click(),
+    ]);
+    const hubHeading = (await page.locator('h1').first().innerText()).trim();
+    check(id, 'back-navigation:reachable', hubHeading.includes('Карты') || hubHeading.includes('карты'), hubHeading);
+    check(id, 'no-console-errors', consoleErrors.length === 0, consoleErrors.join(' | '));
   } catch (error) {
     try {
-      await page.screenshot({ path: join(REPORTS, 'no-js-mobile-failure.png'), fullPage: false });
+      await page.screenshot({ path: join(REPORTS, `no-js-${id}-failure.png`), fullPage: false });
     } catch {}
-    throw error;
+    check(id, 'execution:completed', false, errorDetail(error));
   } finally {
     await context.close();
   }
@@ -274,7 +375,10 @@ try {
       id: 'mobile-390',
       run: () => inspectInteractive(browser, base, { id: 'mobile-390', viewport: { width: 390, height: 844 }, mobile: true }),
     },
-    { id: 'no-js-mobile', run: () => inspectNoJs(browser, base) },
+    { id: 'no-js-desktop-light', run: () => inspectNoJs(browser, base, { id: 'no-js-desktop-light', viewport: { width: 1440, height: 900 }, colorScheme: 'light', mobile: false }) },
+    { id: 'no-js-desktop-dark', run: () => inspectNoJs(browser, base, { id: 'no-js-desktop-dark', viewport: { width: 1440, height: 900 }, colorScheme: 'dark', mobile: false }) },
+    { id: 'no-js-mobile-light', run: () => inspectNoJs(browser, base, { id: 'no-js-mobile-light', viewport: { width: 390, height: 844 }, colorScheme: 'light', mobile: true }) },
+    { id: 'no-js-mobile-dark', run: () => inspectNoJs(browser, base, { id: 'no-js-mobile-dark', viewport: { width: 390, height: 844 }, colorScheme: 'dark', mobile: true }) },
   ];
   for (const profile of profiles) {
     try {
@@ -304,4 +408,4 @@ if (failures.length) {
   for (const failure of failures) console.error(`  - ${failure.profile} :: ${failure.contract} :: ${failure.detail}`);
   process.exit(1);
 }
-console.log(`✅ Pihahiroth browser contract passed (${results.length} checks; desktop, mobile, no-JS)`);
+console.log(`✅ Pihahiroth browser contract passed (${results.length} checks; desktop, mobile, no-JS desktop/mobile × Light/Dark)`);
