@@ -205,6 +205,12 @@ const fatalPatterns = [
   ['fatal-malformed-samosuverennost', /самосуверенност/],
   ['fatal-malformed-ustanovlenno-vinovnym', /установленно\s+виновным/],
   ['fatal-malformed-telogii', /телологии/],
+  // Exact negative fixtures for the three Gill Part I malformed constructions
+  // (GBS-GILL-PART1-RUSSIAN-COPY-QUALITY): form1 spares the prescribed «в
+  // возрасте около двенадцати лет»; form3 never touches valid «иметь в виду».
+  ['fatal-malformed-gill-age-duration-hears', /(?<!возрасте\s)около\s+[а-яё]+\s+лет\s+(Гилл\s+)?услышал/i],
+  ['fatal-malformed-gill-prodolzhitelnost-mezhdu', /Продолжительность\s+между/i],
+  ['fatal-malformed-gill-v-vidu-zritelej', /в\s+виду\s+многих\s+зрителей/i],
 ];
 for (const f of htmlFiles) {
   const text = readableText(fs.readFileSync(f, 'utf8'));

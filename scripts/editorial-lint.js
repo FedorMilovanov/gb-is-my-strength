@@ -65,6 +65,14 @@ const banned = [
   { kind:'malformed-samosuverennost', rx:/самосуверенност/ },
   { kind:'malformed-ustanovlenno-vinovnym', rx:/установленно\s+виновным/ },
   { kind:'malformed-telogii', rx:/телологии/ },
+  // Exact negative fixtures for the three Gill Part I malformed constructions
+  // (GBS-GILL-PART1-RUSSIAN-COPY-QUALITY): narrow, reviewable; form1 uses a
+  // fixed-width lookbehind so the prescribed age construction «в возрасте
+  // около двенадцати лет» keeps passing, and form3 never touches valid
+  // «иметь в виду»/«имел в виду».
+  { kind:'malformed-gill-age-duration-hears', rx:/(?<!возрасте\s)около\s+[а-яё]+\s+лет\s+(Гилл\s+)?услышал/i },
+  { kind:'malformed-gill-prodolzhitelnost-mezhdu', rx:/Продолжительность\s+между/i },
+  { kind:'malformed-gill-v-vidu-zritelej', rx:/в\s+виду\s+многих\s+зрителей/i },
 ];
 for (const f of files) {
   const text = fs.readFileSync(f,'utf8');
