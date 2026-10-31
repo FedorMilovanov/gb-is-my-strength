@@ -73,6 +73,17 @@ const banned = [
   { kind:'malformed-gill-age-duration-hears', rx:/(?<!возрасте\s)около\s+[а-яё]+\s+лет\s+(Гилл\s+)?услышал/i },
   { kind:'malformed-gill-prodolzhitelnost-mezhdu', rx:/Продолжительность\s+между/i },
   { kind:'malformed-gill-v-vidu-zritelej', rx:/в\s+виду\s+многих\s+зрителей/i },
+  // Exact negative fixtures for the Hermenevtika translation/copy-quality row
+  // (GBS-HERMENEUTIKA-TRANSLATION-AND-COPY-QUALITY): narrow, reviewable; each
+  // rx matches only the malformed calque/mixed-script token, never the
+  // corrected form and never legitimate specialist Latin/Greek citations.
+  { kind:'malformed-hermenevtika-plotno-sootvetstvuyut', rx:/не\s+плотно\s+соответств/i },
+  { kind:'malformed-hermenevtika-dvoynoe-avtorstvo-operiruet', rx:/двойное\s+авторство\s+оперирует/i },
+  { kind:'malformed-hermenevtika-ogovorki-na-formulu', rx:/оговорки\s+на\s+формулу/i },
+  { kind:'malformed-hermenevtika-recapituliruyutsya', rx:/рекапитулируются/i },
+  { kind:'malformed-hermenevtika-geroy-nebom-zemley', rx:/кульминационный\s+герой\s+небом\s+и\s+землей/i },
+  { kind:'malformed-hermenevtika-proizvesti-istschennuyu', rx:/произвести\s+истощенную\s+Христологию/i },
+  { kind:'mixed-script-academicheskuyu', rx:/academическую/ },
 ];
 for (const f of files) {
   const text = fs.readFileSync(f,'utf8');
