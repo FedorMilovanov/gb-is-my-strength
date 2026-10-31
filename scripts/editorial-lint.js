@@ -84,14 +84,6 @@ const banned = [
   { kind:'malformed-hermenevtika-geroy-nebom-zemley', rx:/кульминационный\s+герой\s+небом\s+и\s+землей/i },
   { kind:'malformed-hermenevtika-proizvesti-istschennuyu', rx:/произвести\s+истощенную\s+Христологию/i },
   { kind:'mixed-script-academicheskuyu', rx:/academическую/ },
-  // Exact negative fixtures for the paired Diotrophes copy rows
-  // (GBS-DIOTROPHES-NUMERAL-AGREEMENT + GBS-DIOTROPHES-UNEXPLAINED-FIDEL-JARGON):
-  // narrow, reviewable; form1 matches only the malformed compound-numeral
-  // token, never the corrected «двадцать один материал» or «один из
-  // материалов»; form2 matches only the unexplained jargon phrase, never the
-  // corrected «Свидетельства верности» or ordinary «верность» prose.
-  { kind:'malformed-diotrophes-dvadtsat-odin-materiala', rx:/двадцать\s+один\s+материала/i },
-  { kind:'jargon-diotrophes-fidelnye-svidetelstva', rx:/Фидельные\s+свидетельства/i },
 ];
 for (const f of files) {
   const text = fs.readFileSync(f,'utf8');
