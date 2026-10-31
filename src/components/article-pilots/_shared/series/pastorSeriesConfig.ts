@@ -354,7 +354,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
         { href: '#pastoral-conclusion', label: 'Пастырский вывод', level: 2, summary: 'Не ярлык, а проверяемый механизм: различения для пастора.' },
         { href: '#sources', label: 'Источники Wave 10', level: 2, summary: 'Источники и границы проверки: что подтверждено и чем подписано.' },
         { href: '#quiz', label: 'Проверь различения', level: 2, summary: 'Квиз: где проверенный вывод, а где ярлык.' },
-        { href: '#faithful-witness-under-pressure', label: 'Верность под давлением', level: 2, summary: 'Фидельные свидетельства: как сохраняли верность Богу, не превращая послушание лидеру в молчание.' },
+        { href: '#faithful-witness-under-pressure', label: 'Верность под давлением', level: 2, summary: 'Свидетельства верности: как сохраняли верность Богу, не превращая послушание лидеру в молчание.' },
         { href: '#fifteen-faithful-pathways', label: '15 реальных путей', level: 2, summary: 'Пятнадцать документированных сценариев зрелого верного ответа.' },
         { href: '#positive-board-comparator', label: 'Совет, который действует', level: 2, summary: 'Контрпример: когда совет старейшин действительно работает.' },
         { href: '#twenty-faithful-responses', label: '20 верных ответов', level: 2, summary: 'Двадцать проверенных ответов на типовые ситуации давления.' },
