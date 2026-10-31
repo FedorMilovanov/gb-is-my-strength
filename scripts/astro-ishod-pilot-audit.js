@@ -73,6 +73,165 @@ function mustMatch(label, value, pattern) {
   else bad(`${label}: pattern ${pattern} missing`);
 }
 
+// GBS-ISHOD-STATIC-PROJECTION-RICH-BLOCK-FLATTENING: source → печатная
+// проекция parity для rich-dispute + доказательство отказа unsafe markup.
+function auditRichDisputes({ astro, component, projection }) {
+  const route = require('../karty/ishod/route.json');
+  const authority = require('../karty/ishod/pihahiroth-authority.json');
+  const {
+    parseDisputeProjection,
+    tryParseDisputeProjection,
+    decodeEntities,
+    FLATTENING_ARTIFACTS,
+  } = require('../src/lib/ishod-dispute-projection.mjs');
+  const forbiddenClaims = Array.isArray(authority.forbiddenRuntimeClaims)
+    ? authority.forbiddenRuntimeClaims
+    : [];
+  const isForbidden = (raw) => {
+    const flat = decodeEntities(String(raw).replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ');
+    return forbiddenClaims.find((term) => flat.includes(term)) ?? '';
+  };
+
+  // 1) Парсер: позитив inline-режима + негативы unsafe/foreign markup.
+  const inlineSample = tryParseDisputeProjection('Проза <b>без</b> блоков.');
+  if (inlineSample?.mode === 'inline' && inlineSample.text === 'Проза без блоков.') {
+    ok('rich-dispute parser accepts boundary-free inline prose');
+  } else {
+    bad('rich-dispute parser must accept boundary-free inline prose');
+  }
+  const negFixtures = {
+    'script injection': '<div class="dispute-block"><div class="dispute-title">T<script>alert(1)</script></div><div class="dispute-pos cons"><b>L</b>: D</div></div>',
+    'foreign child div': '<div class="dispute-block"><div class="evil">x</div></div>',
+    'unclosed root': '<div class="dispute-block"><div class="dispute-title">T</div>',
+    'img onerror': '<div class="dispute-block"><div class="dispute-title">T<img src=x onerror=alert(1)></div><div class="dispute-pos cons"><b>L</b>: D</div></div>',
+    'event-handler span': '<div class="dispute-block"><div class="dispute-title">T</div><div class="dispute-pos cons"><b>L</b>: D <span onmouseover="x">c</span></div></div>',
+    'content before title': '<div class="dispute-block">junk<div class="dispute-title">T</div><div class="dispute-pos cons"><b>L</b>: D</div></div>',
+    'note before positions': '<div class="dispute-block"><div class="dispute-title">T</div><div class="dispute-note">N</div><div class="dispute-pos cons"><b>L</b>: D</div></div>',
+    'missing pos label': '<div class="dispute-block"><div class="dispute-title">T</div><div class="dispute-pos cons">no label</div></div>',
+    'foreign paragraph': '<p>just a paragraph</p>',
+    'foreign inline anchor': 'проза <a href="#">ссылка</a>',
+  };
+  const accepted = Object.entries(negFixtures)
+    .filter(([, html]) => tryParseDisputeProjection(html) !== null)
+    .map(([label]) => label);
+  if (accepted.length) bad(`rich-dispute parser accepted unsafe payloads: ${accepted.join(', ')}`);
+  else ok(`rich-dispute parser rejects unsafe markup (${Object.keys(negFixtures).length} fixtures)`);
+
+  // 2) Source side: каждый эффективный payload разбирается в типизированные блоки;
+  // поле с forbidden-утверждением печатать нельзя (authority withhold), но парсер
+  // обязан покрывать его источник (panel/route parity).
+  const effective = [];
+  const withheldPlaces = [];
+  for (const place of Array.isArray(route.places) ? route.places : []) {
+    if (!place.dispute) continue;
+    const isOverridden = place.id === 'pihahiroth';
+    const raw = isOverridden ? authority.panel?.dispute : place.dispute;
+    let parsed;
+    try {
+      parsed = parseDisputeProjection(raw);
+    } catch (error) {
+      bad(`${place.id}: effective dispute payload does not parse: ${error.message}`);
+      continue;
+    }
+    if (parsed.mode !== 'structured') {
+      bad(`${place.id}: rich dispute must parse to structured blocks`);
+      continue;
+    }
+    const forbidden = isForbidden(raw);
+    if (forbidden) withheldPlaces.push({ id: place.id, forbidden });
+    else effective.push({ id: place.id, isOverridden, parsed });
+  }
+  if (effective.length + withheldPlaces.length >= 4) {
+    ok(`rich-dispute source payloads parse to typed blocks (${effective.length} print, ${withheldPlaces.length} authority-withheld)`);
+  } else {
+    bad(`expected at least 4 structured dispute payloads, got ${effective.length + withheldPlaces.length}`);
+  }
+
+  // 3) Dist: печатная проекция — отдельные семантические элементы в порядке source.
+  const sectionMarker = '<section class="sr-only map-text-fallback"';
+  const sectionStart = astro.indexOf(sectionMarker);
+  if (sectionStart < 0) {
+    bad('rich-dispute: static projection section missing from dist');
+    return;
+  }
+  const sectionEnd = astro.indexOf('</section>', sectionStart);
+  const section = astro.slice(sectionStart, sectionEnd < 0 ? astro.length : sectionEnd);
+
+  let cursor = 0;
+  let orderProblems = 0;
+  for (const { id, parsed } of effective) {
+    const needles = [
+      parsed.title,
+      ...parsed.positions.flatMap((pos) => [pos.label, pos.detail].filter(Boolean)),
+      ...(parsed.note ? [parsed.note] : []),
+    ];
+    let local = cursor;
+    for (const needle of needles) {
+      const idx = section.indexOf(needle, local);
+      if (idx < 0) {
+        bad(`${id}: projection is missing ordered block text: ${needle.slice(0, 60)}…`);
+        orderProblems += 1;
+        break;
+      }
+      local = idx + needle.length;
+    }
+    cursor = Math.max(cursor, local);
+  }
+  if (!orderProblems) ok('rich-dispute print projection preserves source order and boundaries for every printed place');
+
+  // Authority-withheld поля: в печати отсутствуют целиком, notice присутствует.
+  for (const { id, forbidden } of withheldPlaces) {
+    const place = (Array.isArray(route.places) ? route.places : []).find((item) => item.id === id);
+    const raw = id === 'pihahiroth' ? authority.panel?.dispute : place?.dispute;
+    const leaked = tryParseDisputeProjection(raw);
+    if (leaked && leaked.mode === 'structured' && section.includes(leaked.title)) {
+      bad(`${id}: authority-withheld dispute title leaked into projection (${forbidden})`);
+    } else {
+      ok(`${id}: authority-withheld dispute stays out of the projection (${forbidden})`);
+    }
+  }
+  if (withheldPlaces.length) {
+    mustContain('withheld disputes announce themselves in the projection', section, 'map-static-withheld');
+  }
+
+  if (section.includes('<p class="map-static-dispute-title">')
+      && section.includes('map-static-dispute-pos--cons')
+      && section.includes('map-static-dispute-pos--alt')
+      && section.includes('map-static-dispute-note')) {
+    ok('rich-dispute print projection renders typed semantic elements');
+  } else {
+    bad('rich-dispute print projection must render typed semantic elements (title/pos cons|alt/note)');
+  }
+
+  const rawAuthorMarkup = ['class="dispute-block"', 'class="dispute-title"', 'class="dispute-pos', 'class="conf-med"', 'class="conf-hi"', 'class="conf-lo"'];
+  const leaked = rawAuthorMarkup.filter((needle) => section.includes(needle));
+  if (leaked.length) bad(`rich-dispute projection raw-injects author markup: ${leaked.join(', ')}`);
+  else ok('rich-dispute projection never raw-injects route HTML (author classes absent)');
+
+  // 4) Pihahiroth authority override: спор authority печатается, исторический — нет.
+  const authorityTitle = parseDisputeProjection(authority.panel?.dispute).title;
+  if (section.includes(authorityTitle)) ok('pihahiroth authority dispute title present in projection');
+  else bad('pihahiroth authority dispute title missing from projection');
+  const routePihahiroth = (Array.isArray(route.places) ? route.places : []).find((place) => place.id === 'pihahiroth');
+  const historicalTitle = routePihahiroth?.dispute ? String(routePihahiroth.dispute).match(/class="dispute-title">([^<]+)</)?.[1] : '';
+  if (historicalTitle && section.includes(historicalTitle)) {
+    bad(`pihahiroth historical dispute leaked into projection: ${historicalTitle}`);
+  } else {
+    ok('pihahiroth historical dispute stays out of the projection (authority override)');
+  }
+
+  // 5) Смежные flatten-артефакты отсутствуют во всём файле маршрута.
+  const presentArtifacts = FLATTENING_ARTIFACTS.filter((artifact) => astro.includes(artifact));
+  if (presentArtifacts.length) bad(`flatten adjacency artifacts present in final HTML: ${presentArtifacts.join(', ')}`);
+  else ok(`flatten adjacency artifacts absent from final HTML (${FLATTENING_ARTIFACTS.length} strings)`);
+
+  // 6) Wiring: компонент обязан использовать строгий парсер и типизированные классы;
+  //    рантайм-карта — переопределение спора Пи-Гахирофа authority-панелью.
+  mustContain('projection wires the strict dispute parser', projection, 'tryParseDisputeProjection');
+  mustContain('projection renders typed dispute classes', projection, 'map-static-dispute-pos--');
+  mustContain('interactive runtime overrides pihahiroth dispute with authority panel', component, 'place.dispute = panel.dispute');
+}
+
 function main() {
   console.log(`ASTRO ISHOD SHADOW AUDIT (${NO_BUILD ? 'no-build' : 'build'})`);
   runBuild();
@@ -150,6 +309,8 @@ function main() {
   mustMatch('fallback avoids unsafe HTML injection', fallback, /node\.textContent = String/);
   if (/innerHTML\s*=/.test(fallback)) bad('shared map fallback must not use innerHTML');
   else ok('shared map fallback avoids innerHTML');
+
+  auditRichDisputes({ astro, component, projection });
 
   console.log('');
   if (problems.length) {

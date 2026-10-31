@@ -29,6 +29,7 @@
  */
 import route from '../../../../karty/ishod/route.json';
 import authority from '../../../../karty/ishod/pihahiroth-authority.json';
+import { tryParseDisputeProjection } from '../../../lib/ishod-dispute-projection.mjs';
 
 // Проза маршрута написана фрагментами HTML (для панели движка). В печатном
 // тексте любой тег — граница слова: в этом файле теги стоят только на границах
@@ -77,6 +78,41 @@ const timeline = Array.isArray(route.timeline) ? route.timeline : [];
 const waypoints = (Array.isArray(route.verified_waypoints) ? route.verified_waypoints : [])
   .filter((waypoint) => waypoint && waypoint.id !== 'wp-suez');
 
+// Проекция rich-dispute: каждый блок (title / позиции / confidence / note)
+// печатается отдельным семантическим элементом через строгий парсер safe
+// subset'а (GBS-ISHOD-STATIC-PROJECTION-RICH-BLOCK-FLATTENING). Raw-инъекция
+// route HTML запрещена; непарсируемый payload скрывается тем же
+// withholding-механизмом, что и запрещённые authority-утверждения.
+type ProjectedDispute =
+  | { kind: 'omit' }
+  | { kind: 'withheld' }
+  | { kind: 'inline'; text: string }
+  | {
+      kind: 'blocks';
+      title: string;
+      positions: Array<{ kind: 'cons' | 'alt'; label: string; detail: string; confidence: string }>;
+      note: string;
+    };
+
+const projectDispute = (id: string, raw: unknown): ProjectedDispute => {
+  const value = String(raw ?? '');
+  if (!value) return { kind: 'omit' };
+  const flat = toText(value);
+  if (!flat) return { kind: 'omit' };
+  if (FORBIDDEN.some((term) => flat.includes(term))) {
+    withheld.push(`${id}.dispute`);
+    return { kind: 'withheld' };
+  }
+  const parsed = tryParseDisputeProjection(value);
+  if (!parsed) {
+    withheld.push(`${id}.dispute`);
+    return { kind: 'withheld' };
+  }
+  return parsed.mode === 'structured'
+    ? { kind: 'blocks', title: parsed.title, positions: parsed.positions, note: parsed.note }
+    : { kind: 'inline', text: parsed.text };
+};
+
 const PLACE_OVERRIDDEN = 'pihahiroth';
 const panel: Record<string, unknown> = (authority.panel ?? {}) as Record<string, unknown>;
 // Дословно строка, которую рантайм подставляет в `place.bible_extra`
@@ -85,17 +121,20 @@ const panel: Record<string, unknown> = (authority.panel ?? {}) as Record<string,
 const AUTHORITY_BIBLE_EXTRA =
   '<p class="bib-note"><b>Граница карты:</b> событие перехода исповедуется как реальное Божье избавление; точная современная координата в этой публикации не утверждается.</p>';
 /** Эффективный маршрут: та же подмена, что делает рантайм карты. */
-const places = (Array.isArray(route.places) ? route.places : []).map((place) =>
-  place.id === PLACE_OVERRIDDEN
-    ? {
-        ...place,
-        ...panel,
-        bible_extra: AUTHORITY_BIBLE_EXTRA,
-        stage: null,
-        authorityId: authority.authorityId,
-        coordinateStatus: authority.exactCoordinateStatus,
-      }
-    : place);
+const places = (Array.isArray(route.places) ? route.places : []).map((place) => {
+  const effective =
+    place.id === PLACE_OVERRIDDEN
+      ? {
+          ...place,
+          ...panel,
+          bible_extra: AUTHORITY_BIBLE_EXTRA,
+          stage: null,
+          authorityId: authority.authorityId,
+          coordinateStatus: authority.exactCoordinateStatus,
+        }
+      : place;
+  return { ...effective, projectedDispute: projectDispute(String(effective.id), effective.dispute) };
+});
 
 const STATUS_RU: Record<string, string> = { ALTERNATIVE: 'альтернатива', CANDIDATE: 'кандидат' };
 const CONFIDENCE_RU: Record<string, string> = {
@@ -174,7 +213,20 @@ const facts = [
     {toText(place.id1) ? <p><b>Идентификация:</b> {toText(place.id1)}{toText(place.id2) ? ` · ${toText(place.id2)}` : ''}</p> : null}
     {sanctioned(place.bible_extra, `${place.id}.bible_extra`) ? <p>{sanctioned(place.bible_extra, `${place.id}.bible_extra`)}</p> : null}
     {sanctioned(place.arch, `${place.id}.arch`) ? <p>{sanctioned(place.arch, `${place.id}.arch`)}</p> : null}
-    {sanctioned(place.dispute, `${place.id}.dispute`) ? <p>{sanctioned(place.dispute, `${place.id}.dispute`)}</p> : null}
+    {place.projectedDispute.kind === 'blocks' ? (
+      <div class="map-static-dispute">
+        <p class="map-static-dispute-title"><b>{place.projectedDispute.title}</b></p>
+        {place.projectedDispute.positions.map((pos) => (
+          <p class={`map-static-dispute-pos map-static-dispute-pos--${pos.kind}`}>
+            <b>{pos.label}</b>{pos.detail ? `: ${pos.detail}` : ''}
+            {pos.confidence ? <span class="map-static-dispute-conf">{` ${pos.confidence}`}</span> : null}
+          </p>
+        ))}
+        {place.projectedDispute.note ? <p class="map-static-dispute-note">{place.projectedDispute.note}</p> : null}
+      </div>
+    ) : place.projectedDispute.kind === 'inline' ? (
+      <p>{place.projectedDispute.text}</p>
+    ) : null}
   </>
 ))}
 
