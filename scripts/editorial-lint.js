@@ -84,6 +84,12 @@ const banned = [
   { kind:'malformed-hermenevtika-geroy-nebom-zemley', rx:/кульминационный\s+герой\s+небом\s+и\s+землей/i },
   { kind:'malformed-hermenevtika-proizvesti-istschennuyu', rx:/произвести\s+истощенную\s+Христологию/i },
   { kind:'mixed-script-academicheskuyu', rx:/academическую/ },
+  // Exact negative fixture for the Diotrophes unexplained-jargon row
+  // (GBS-DIOTROPHES-UNEXPLAINED-FIDEL-JARGON): narrow, reviewable; matches
+  // only the unexplained jargon phrase, never the corrected «Свидетельства
+  // верности» or ordinary «верность» prose — a review token, not a
+  // rare-word spellcheck.
+  { kind:'jargon-diotrophes-fidelnye-svidetelstva', rx:/Фидельные\s+свидетельства/i },
 ];
 for (const f of files) {
   const text = fs.readFileSync(f,'utf8');
