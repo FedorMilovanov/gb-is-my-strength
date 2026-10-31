@@ -26,6 +26,14 @@ requireValue(manifest.productPageCreated === false, 'Wave 10 snapshot must not c
 requireValue(manifest.indexingApproved === false, 'Wave 10 snapshot indexing field must remain false');
 requireValue(manifest.newDirectQuotesApproved === false, 'new direct quotations must remain blocked');
 
+// Narrow copy fixture for the owner-family numeral-agreement row
+// (GBS-DIOTROPHES-NUMERAL-AGREEMENT): the contract already reads the draft
+// text, so assert only the exact malformed token's absence plus the corrected
+// phrase's presence — a review token for this owner family, never a broad
+// Russian grammar regex.
+requireValue(!/двадцать\s+один\s+материала/i.test(draft), 'malformed compound numeral «двадцать один материала» present in draft');
+requireValue(draft.includes('Все двадцать один материал различаются'), 'corrected compound numeral phrase missing from draft');
+
 let successorRelease = null;
 if (existsSync(releasePath)) {
   successorRelease = JSON.parse(readFileSync(releasePath, 'utf8'));
