@@ -492,9 +492,18 @@ async function main() {
   const links = extractLinks();
   const results = [];
   await runPool(links, async (item) => {
-    const result = item.invalid
+    let result = item.invalid
       ? { source: sanitizeUrlForEvidence(item.url), hops: [], result: 'hard', reason: 'invalid URL' }
       : await auditUrl(item.url);
+    // Bounded DNS-transient retry: a live domain can miss a single resolver
+    // pass (observed ENOTFOUND for a host that resolves and serves 200 from
+    // two independent networks). One full re-audit after a short pause
+    // discriminates a resolver blip from a genuinely dead domain, which
+    // fails the same way twice and stays hard.
+    if (!item.invalid && result.result === 'hard' && /ENOTFOUND|EAI_AGAIN/.test(String(result.reason || ''))) {
+      await new Promise((resolve) => { setTimeout(resolve, 1200); });
+      result = await auditUrl(item.url);
+    }
     results.push({ ...result, files: item.files });
   });
   if (results.length !== links.length) {
