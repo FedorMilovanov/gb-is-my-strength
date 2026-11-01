@@ -90,11 +90,28 @@ const banned = [
   // верности» or ordinary «верность» prose — a review token, not a
   // rare-word spellcheck.
   { kind:'jargon-diotrophes-fidelnye-svidetelstva', rx:/Фидельные\s+свидетельства/i },
+  // Exact negative fixtures for the LBCF reference punctuation row
+  // (GBS-LBCF-REFERENCE-PUNCTUATION-SPACING): whitespace directly before
+  // ,.;:!? after a Markdown-link close or a bare URL — the two source
+  // shapes that produced the eight painted pre-punctuation spaces.
+  // Ordinary inter-word spacing after links stays legal (only punctuation
+  // class is matched); em-dash spacing is intentionally not covered.
+  { kind:'punct-space-after-md-link', rx:/\]\([^)]*\)\s+[,.;:!?]/ },
+  { kind:'punct-space-after-bare-url', rx:/https?:\/\/[^\s)]+\s+[,.;:!?]/ },
+  // Compiled-prose Markdown-marker leak (GBS-SEM-TIPOV-LITERAL-MARKDOWN-PREFIX):
+  // HTML-only rule — MDX sources legitimately contain `**X**` inside JSX
+  // children (gtip tooltips, list items) which the compiler turns into
+  // <strong>. The rule fires on the compiled shape: a visible text node
+  // starting with 1–3 asterisks (e.g. `<p>**<em>Серия`). Verified against
+  // tracked build shadows (0 `gtip">**`, `<li><strong>` present) and the
+  // full rebuilt dist corpus; synthetic leak fixture self-tested.
+  { kind:'md-marker-leak-text-node', only:'html', rx:/>[*]{1,3}(?=[<«А-Яа-яЁё])/ },
 ];
 for (const f of files) {
   const text = fs.readFileSync(f,'utf8');
   text.split(/\n/).forEach((line,idx)=>{
     for (const b of banned) {
+      if (b.only === 'html' && !f.endsWith('.html')) continue;
       if (b.rx.test(line)) fail(b.kind, rel(f), idx+1, line.trim().slice(0,220));
     }
   });
