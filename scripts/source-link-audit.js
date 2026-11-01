@@ -397,7 +397,7 @@ async function auditUrl(source, {
 
     const status = Number(response.status || 0);
     if (status === 404 || status === 410) return { ...evidence, final: sanitizeUrlForEvidence(policy.url), status, reason: `HTTP ${status}` };
-    if ([401, 403, 405, 418, 429].includes(status) || status >= 500) {
+    if ([401, 402, 403, 405, 418, 429].includes(status) || status >= 500) {
       return { ...evidence, result: 'warn', final: sanitizeUrlForEvidence(policy.url), status, reason: `HTTP ${status}` };
     }
     if (status < 200 || status >= 400) return { ...evidence, final: sanitizeUrlForEvidence(policy.url), status, reason: `unusable HTTP ${status}` };
