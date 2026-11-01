@@ -106,6 +106,14 @@ const banned = [
   // tracked build shadows (0 `gtip">**`, `<li><strong>` present) and the
   // full rebuilt dist corpus; synthetic leak fixture self-tested.
   { kind:'md-marker-leak-text-node', only:'html', rx:/>[*]{1,3}(?=[<«А-Яа-яЁё])/ },
+  // Exact known malformed phrase (GBS-LAWSON-QUOTE-RUSSIAN-CALQUE): the
+  // calqued impersonal «неизвестно для меня» fused to the nominative
+  // clause «эта площадка лепила …» inside the secondary-source quote.
+  // The closure calls for the exact known defect — not a ban on
+  // «неизвестно для меня» at large, and not the corrected indirect
+  // rendering (the phrase must not come back in reader MDX or in the
+  // registry prose that projects into dist HTML text nodes).
+  { kind:'lawson-calque-exact-phrase', rx:/неизвестно для меня,?\s+эта площадка лепила/i },
 ];
 for (const f of files) {
   const text = fs.readFileSync(f,'utf8');
