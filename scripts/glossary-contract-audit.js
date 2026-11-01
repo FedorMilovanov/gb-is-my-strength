@@ -24,6 +24,26 @@ const extensions = new Set([".astro", ".html", ".md", ".mdx", ".jsx", ".tsx"]);
 const errors = [];
 const warnings = [];
 
+// Exact negative fixture for the confession-lineage row
+// (GBS-GLOSSARY-1689-CONFESSION-LINEAGE-MISSTATEMENT): the Second London
+// confession (text of 1677, adopted 1689) must never be described again as a
+// "revision of the London Confession of 1644". The regex is deliberately
+// narrow — it fires only on the revision-of-1644 lineage claim itself, so
+// accurate discussion of either confession keeps passing: mentions of the
+// First London Confession 1644/1646 without the revision claim, and the
+// Westminster record's accurate "переработали его [Вестминстерское]" (the
+// antecedent there is Westminster, not the 1644 London text).
+const CONFESSION_LINEAGE_RX = /переработ[а-яё]*(?:\s+[а-яё]+){0,2}\s+Лондонского\s+исповедания\s+1644/i;
+
+function reportLineageClaim(label, text) {
+  if (typeof text === "string" && CONFESSION_LINEAGE_RX.test(text)) {
+    fail(
+      `${label}: confession lineage claim — the 1677/1689 text is not a revision ` +
+        "of the 1644 First London confession (see BaptistSymbolics/1689Confession@6d1e08ab)"
+    );
+  }
+}
+
 const fail = (message) => errors.push(message);
 const warn = (message) => warnings.push(message);
 const rel = (file) => path.relative(ROOT, file).replaceAll(path.sep, "/");
@@ -81,6 +101,13 @@ function dictionaryIndex(dictionary) {
 
     if (!definition.trim()) {
       fail(`data/glossary.json: "${canonical}" has no brief definition`);
+    }
+    reportLineageClaim(`data/glossary.json: "${canonical}".definition`, definition);
+    if (typeof entry.detail === "string") {
+      reportLineageClaim(`data/glossary.json: "${canonical}".detail`, entry.detail);
+    }
+    if (typeof nested.detail === "string") {
+      reportLineageClaim(`data/glossary.json: "${canonical}".detail`, nested.detail);
     }
 
     const category =
@@ -234,6 +261,13 @@ function dataTermFromTag(tag) {
 
 function auditSource(file, policy, aliases) {
   const source = fs.readFileSync(file, "utf8");
+
+  const lineageIndex = source.search(CONFESSION_LINEAGE_RX);
+  if (lineageIndex !== -1) {
+    const line = source.slice(0, lineageIndex).split("\n").length;
+    reportLineageClaim(`${rel(file)}:${line}`, source.slice(lineageIndex, lineageIndex + 160));
+  }
+
   const stack = [];
   const tags = /<\/?([A-Za-z][\w:-]*)([^>]*)>/g;
   let match;
