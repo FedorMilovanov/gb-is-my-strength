@@ -77,7 +77,24 @@ jobs:
       - name: Source link audit (production-like dist)
         run: |
           mkdir -p reports/source-links
-          node scripts/source-link-audit.js --root dist --json-out reports/source-links/report.json
+          status=0
+          node scripts/source-link-audit.js --root dist --json-out reports/source-links/report.json || status=$?
+          if [ "$status" -ne 0 ] && [ -f reports/source-links/report.json ]; then
+            node <<'NODE'
+          const fs = require('fs');
+          const report = JSON.parse(fs.readFileSync('reports/source-links/report.json', 'utf8'));
+          const hard = (report.results || []).filter((entry) => entry.result === 'hard');
+          for (const entry of hard.slice(0, 80)) {
+            const files = (entry.files || []).slice(0, 3).join(', ');
+            console.log(`::error title=source-link hard error::${entry.reason} — ${entry.source} (${files})`);
+          }
+          if (report.systemicTransportFailure) {
+            console.log('::error title=source-links systemic transport failure::every external link failed before an HTTP response');
+          }
+          console.log(`source-links report: checked=${report.checked} warnings=${report.warnings} hard=${report.hardErrors}`);
+          NODE
+          fi
+          exit "$status"
       - name: Upload source-link chain evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
