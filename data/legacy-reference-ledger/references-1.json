@@ -185,10 +185,10 @@
       "classification": "migration-reference-only",
       "decisionSource": "data/route-profiles/articles-krajne-li-isporcheno-serdce.json:legacyStatus",
       "sourceCommit": "a1d2e7dc9ed932541b3e9a50a22da1862557100e",
-      "gitBlobSha1": "06568b494235aec1fe01605e89e8b3a2b036726e",
-      "byteSha256": "26108d228ccffb58b2d186ba882f6d7e66bb1788a0cdef8a93a607e911dc2a56",
+      "gitBlobSha1": "271bcca8ba7a9cfd886c87a71e20dc992c4b75de",
+      "byteSha256": "19d878eeafd8173d7cdd025aed31a7fca306d588644f94c51fe350052539e03d",
       "normalizedTextSha256": "3f335df173a550b3e2c652bf04989edcb7964d13bc58fd3e4c85b9841a6801a9",
-      "bytes": 227357,
+      "bytes": 227364,
       "wordCount": 9876,
       "h1Count": 1,
       "h2Count": 19
