@@ -265,6 +265,15 @@ async function main() {
     assert.equal(server.result, 'warn');
     assert.equal(server.status, 500);
 
+    const paywallProbe = await auditUrl('https://allowed.example/paywall', {
+      requestImpl: scripted({
+        'HEAD https://allowed.example/paywall': response({ status: 402 }),
+      }),
+      lookupImpl: publicLookup,
+    });
+    assert.equal(paywallProbe.result, 'warn');
+    assert.equal(paywallProbe.status, 402);
+
     const botBlock = await auditUrl('https://allowed.example/bot', {
       requestImpl: scripted({
         'HEAD https://allowed.example/bot': response({ status: 418 }),
