@@ -11,6 +11,7 @@ const {
   validateRecord,
 } = require('./lib/route-source-contract');
 const { resolveDeclaredLegacyReference } = require('./lib/legacy-source-authority');
+const { scanBlockStructure } = require('./lib/block-structure-guard');
 
 const DIST = path.join(ROOT, 'dist');
 const BASELINE_FILE = path.join(ROOT, 'data/public-content-baseline.json');
@@ -257,6 +258,13 @@ function auditArticle(record, baselineByUrl) {
   }
 
   const html = fs.readFileSync(distPath, 'utf8');
+  // GBS-KRAJNE-FIGURE-PARAGRAPH-ORPHAN-TEXT render guard: built article HTML
+  // must keep block figures out of paragraphs and the reader root free of
+  // substantive direct text nodes (the parser-orphaned sentence class).
+  const structure = scanBlockStructure(html);
+  if (structure.figureInP) bad(`${label}: block <figure> nested inside <p> in built HTML (${structure.figureInP})`);
+  else if (structure.directText) bad(`${label}: substantive direct text nodes inside article[data-pagefind-body] (${structure.directText})`);
+  else ok(`${label}: block structure clean (figure outside p, no orphaned direct text)`);
   if (route === HERMENEUTIKA_ROUTE) assertHermenevtikaFootnotes('hermenevtika dist', html);
   const pageCanonical = canonical(html);
   const title = textOf(html, 'title');

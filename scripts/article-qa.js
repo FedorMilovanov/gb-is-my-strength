@@ -32,6 +32,7 @@ const path = require('path');
 const {
   runAcceptedSemanticManifestAudit,
 } = require('./lib/accepted-semantic-manifest');
+const { scanBlockStructure } = require('./lib/block-structure-guard');
 const ROOT = path.resolve(__dirname, '..');
 const STRICT = process.argv.includes('--strict');
 
@@ -88,6 +89,17 @@ for (const rel of files) {
   }
   const cjk = text.match(/[㐀-鿿豈-﫿]/g);
   if (cjk) err(rel, `иероглиф(ы) в русском тексте: ${[...new Set(cjk)].join(' ')}`);
+
+  // ── 5. Block structure (GBS-KRAJNE-FIGURE-PARAGRAPH-ORPHAN-TEXT):
+  //      block <figure> inside an open <p> makes the HTML parser orphan the
+  //      following sentence as a direct text child of the article root;
+  //      substantive direct text in <article data-pagefind-body> is the
+  //      rendered symptom of that class of nesting mistakes. ──
+  const structure = scanBlockStructure(raw);
+  if (structure.figureInP)
+    err(rel, `block <figure> вложен в незакрытый <p> (${structure.figureInP} шт.)`);
+  if (structure.directText)
+    err(rel, `substantive direct text без элемента-родителя в article[data-pagefind-body] (${structure.directText} шт.)`);
 }
 
 // ── 4. Positive semantic preservation for selected high-value owners ──
