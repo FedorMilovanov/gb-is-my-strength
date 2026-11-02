@@ -445,7 +445,7 @@ async function auditSeries(page, engine, origin, entry, viewport) {
 
 async function auditReaderMeasureCapacity(page, engine, origin, route) {
   const widths = [1024, 1280, 1359, 1360, 1440, 1599, 1600, 1920];
-  const modes = [['narrow', 36], ['normal', 46], ['wide', 52]];
+  const modes = [['narrow', 36], ['normal', 46], ['wide', 56]];
 
   for (const width of widths) {
     await page.setViewportSize({ width, height: 900 });
@@ -551,7 +551,7 @@ async function auditReaderMeasureCapacity(page, engine, origin, route) {
       };
     });
     check(engine, `${width}px`, route, 'wide choice survives real reload with the same geometry',
-      persisted.measure === 'wide' && persisted.storedMeasure === 'wide' && persisted.token === '52rem'
+      persisted.measure === 'wide' && persisted.storedMeasure === 'wide' && persisted.token === '56rem'
         && Math.abs(persisted.shellWidth - lastMetrics.shell.width) <= 2
         && Math.abs(persisted.proseWidth - lastMetrics.prose.width) <= 2 && persisted.overflow <= 1,
       { beforeReload: lastMetrics, persisted });

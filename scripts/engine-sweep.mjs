@@ -210,8 +210,8 @@ for (const [id, url] of SERIES) {
       visible: getComputedStyle(button.closest('.setting-group')).display !== 'none'
     };
   });
-  R(id, 'desk: настройка «Шире» доступна и ограничена 52rem',
-    !!measure && measure.visible && measure.rootMeasure === 'wide' && measure.cssMeasure === '52rem' &&
+  R(id, 'desk: настройка «Шире» доступна и ограничена 56rem',
+    !!measure && measure.visible && measure.rootMeasure === 'wide' && measure.cssMeasure === '56rem' &&
       (id !== 'gill3' || measure.delta >= 24),
     JSON.stringify(measure));
   if (ARTIFACT_DIR && id === 'gill3') {
@@ -430,7 +430,7 @@ for (const [id, url] of SINGLES) {
     } : null;
   });
   R('reader-width', '1035px: compact speed rail stays above the text and page has no horizontal overflow',
-    !!safe && safe.open && safe.ariaHidden === 'false' && safe.token === '52rem' &&
+    !!safe && safe.open && safe.ariaHidden === 'false' && safe.token === '56rem' &&
       safe.rail.bottom + 8 <= safe.paragraph.top && safe.scrollWidth <= safe.viewport + 1,
     JSON.stringify(safe));
   if (ARTIFACT_DIR) await page.screenshot({ path: join(ARTIFACT_DIR, 'reader-wide-speed-compact-1035.png'), fullPage: false });
