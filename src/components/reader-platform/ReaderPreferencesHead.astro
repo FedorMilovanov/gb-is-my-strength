@@ -138,7 +138,19 @@ const needsSearchOpener = searchOpenerRoutes.has(Astro.url.pathname);
   }
 
   function stableOpener(candidate) {
-    if (candidate?.matches?.('[data-action="open-search"]')) return document.getElementById('hMobileMenuBtn') || candidate;
+    if (candidate?.matches?.('[data-action="open-search"]')) {
+      /* GBS-HOME-SEARCH-FOCUS-RESTORE: only search opened FROM the mobile nav
+         needs the nav trigger as its stable anchor — that button survives the
+         nav closing (activateFromTrigger already prefers it when the menu was
+         open). Any other open-search trigger is itself the truthful return
+         target: mapping it to #hMobileMenuBtn made every mobile close path
+         (Escape / close button / backdrop) restore focus to the menu button
+         instead of the clicked opener. Desktop masked the mapping because the
+         hidden menu button silently refuses focus(). */
+      const insideNav = candidate.closest?.('#hMobileNav');
+      if (insideNav) return document.getElementById('hMobileMenuBtn') || candidate;
+      return candidate;
+    }
     if (candidate instanceof window.HTMLElement && candidate !== document.body && candidate.isConnected) return candidate;
     return document.getElementById('gbSearchBtn') || candidate || document.activeElement;
   }
