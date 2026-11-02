@@ -12,8 +12,8 @@
   const MAX_CHUNK = 520;
   const EXCLUDED_BLOCK = [
     'nav', 'aside', 'footer', '[hidden]', '[aria-hidden="true"]',
-    '[data-pagefind-ignore]', '[data-no-speech]', '.breadcrumb', '.article-byline',
-    '.footnote', '.footnotes', '.sources-block', '.reading-list-section',
+    '[data-pagefind-ignore]', '[data-no-speech]', '[data-tts-policy="exclude"]',
+    '.breadcrumb', '.article-byline', '.msjline', '.footnote', '.footnotes', '.sources-block', '.reading-list-section',
     '.series-navigation', '.gb-tts-download-notice', '.gb-fc-toast',
   ].join(',');
   const STRIP_INLINE = [

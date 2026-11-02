@@ -85,6 +85,7 @@ check('RP-TTS-03', 'tts-bridge', 'Canonical TTS retains nested list guard', has(
 check('RP-TTS-04', 'tts-bridge', 'Canonical TTS retains nested quote guard', has(text.tts, "element.matches('blockquote') && element.querySelector(':scope > p')"), 'quote parity');
 check('RP-TTS-05', 'tts-bridge', 'Canonical TTS remains versioned', has(text.tts, 'window.GBReaderTTS = Object.freeze'), 'TTS owner');
 check('RP-TTS-07', 'tts-bridge', 'Canonical TTS consumes projection segments before chunking', has(text.tts, 'projection.getTtsSegments(document)'), 'projection consumption');
+check('RP-TTS-08', 'tts-bridge', 'TTS skips journal imprint lines while print and search keep them', has(text.projection, 'const TTS_EXCLUDE_SELECTOR = \'.msjline, [data-tts-policy="exclude"]\';') && has(text.projection, '.filter((element) => !element.closest(TTS_EXCLUDE_SELECTOR))'), 'msjline speech exclusion');
 check('RP-TTS-06', 'tts-bridge', 'Projection marks explicit exclusions as data-no-speech', has(text.projection, "root.querySelectorAll('[data-reader-exclude],[data-speakable-policy=\"exclude\"]')"), 'marker materialization');
 
 check('RP-SPEAK-01', 'speakable', 'Hermenevtika schema publishes SpeakableSpecification', has(text.hermHead, 'SpeakableSpecification'), 'schema');
