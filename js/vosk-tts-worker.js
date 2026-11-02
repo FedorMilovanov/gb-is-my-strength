@@ -160,6 +160,20 @@ transaction.onabort = transaction.onerror = function () { try { db.close(); } ca
 });
 });
 }
+// Presence check only: resolves true when the archive key exists, without
+// reading the multi-hundred-megabyte value or touching the network.
+function idbHas(key) {
+return idbOpen().then(function (db) {
+return new Promise(function (resolve) {
+var transaction = db.transaction('files', 'readonly');
+var request = transaction.objectStore('files').count(key);
+request.onsuccess = function () { resolve((request.result || 0) > 0); };
+request.onerror = function () { resolve(false); };
+transaction.oncomplete = function () { try { db.close(); } catch (_) {} };
+transaction.onabort = transaction.onerror = function () { try { db.close(); } catch (_) {} };
+});
+}).catch(function () { return false; });
+}
 function idbSet(key, value) {
 return idbOpen().then(function (db) {
 return new Promise(function (resolve, reject) {
@@ -534,6 +548,12 @@ return;
 }
 if (message.type === 'cancel') {
 state.cancelledJobs.add(messageJobKey(port, message));
+return;
+}
+if (message.type === 'cache-status') {
+idbHas(MODEL_URL).then(function (cached) {
+send(port, 'cache-status', { id: message.id, cached: cached });
+});
 return;
 }
 if (message.type === 'cancel-load') {
