@@ -447,7 +447,23 @@ try {
           toggled
         };
       });
-      return { runtime, atomic, keepers, printBranding, progressChrome, flipCards };
+      function terminalMasked(node) {
+        let cursor = node;
+        while (cursor) {
+          if (cursor.hasAttribute && cursor.hasAttribute('data-print-terminal-follower')) return true;
+          cursor = cursor.parentElement;
+        }
+        return false;
+      }
+      const publicationTrailing = [
+        ...document.querySelectorAll('.gb-accuracy-block, section.related-articles, cite, nav.breadcrumb')
+      ].map((node) => ({
+        selector: node.tagName.toLowerCase() + '.' + String(node.className || '').split(/\s+/).filter(Boolean).slice(0, 2).join('.'),
+        text: String(node.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 90),
+        follower: node.hasAttribute('data-print-terminal-follower'),
+        masked: terminalMasked(node)
+      }));
+      return { runtime, atomic, keepers, printBranding, progressChrome, flipCards, publicationTrailing };
     }, routeIndex);
 
     if (setup.error) {
@@ -467,6 +483,12 @@ try {
     }
     const visibleProgress = (setup.progressChrome || []).filter((item) => item.display !== 'none' && item.visibility !== 'hidden' && item.opacity !== '0' && item.width > 0 && item.height > 0);
     if (visibleProgress.length) report.failures.push(`${id}: screen progress chrome remains printable: ${JSON.stringify(visibleProgress)}`);
+    // GBS-PRINT-TERMINAL-REGION-HIDES-CONTENT: publication trailing blocks
+    // (accuracy contact, related reading, epigraph cite, app breadcrumb) must
+    // never be sealed by the terminal follower mask — they are reader content
+    // on paper (the /about/ real-PDF witness of the 2026-10-29 refresh).
+    const maskedPublication = (setup.publicationTrailing || []).filter((item) => item.masked || item.follower);
+    if (maskedPublication.length) report.failures.push(`${id}: publication trailing block hidden by terminal mask: ${JSON.stringify(maskedPublication.slice(0, 6))}`);
     if (id === 'gill-part1' && !(setup.flipCards || []).length) report.failures.push(`${id}: reversible-card fixture missing`);
     const badCards = (setup.flipCards || []).filter((item) => {
       const modes = [item.initial, item.toggled];

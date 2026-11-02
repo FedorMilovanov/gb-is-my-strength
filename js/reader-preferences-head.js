@@ -429,6 +429,22 @@
       // «Примечания» section on paper (measured: /articles/kod-da-vinchi/ hid
       // 5 007 characters of endnotes, everything a reader cannot look up offline).
       if (nodes[i].closest && nodes[i].closest('[data-print-policy="include"]')) continue;
+      // GB_PRINT_PUBLICATION_TRAILING_STAYS_VISIBLE_V1
+      // The follower mask must only seal generic DOM chrome after the authored
+      // article; publication trailing blocks are reader content on paper too.
+      // The terminal closing group anchors before them (they sit between the
+      // last flow node and the SDG tail), so without this skip the mask hid,
+      // measured at b92a455: `.gb-accuracy-block` + `section.related-articles`
+      // on 35+ routes, the /about/ epigraph `cite` «Аввакум 3:19» and its
+      // `nav.breadcrumb` — a real PDF witness (2/2 Light/Dark, refresh §4 of
+      // the 2026-10-29 alternative-media receipt) showed those texts absent
+      // from the paper. Share/print actions, site footers, research-atlas
+      // panels and scripts intentionally stay behind the mask — no print
+      // preservation evidence exists for them, and printing «Поделиться
+      // статьёй» buttons is noise.
+      if (nodes[i].closest && nodes[i].closest(
+        '[data-print-policy="include"],.gb-accuracy-block,section.related-articles,cite,nav.breadcrumb'
+      )) continue;
       mark(nodes[i], 'data-print-terminal-flow', '1');
       mark(nodes[i], 'data-print-terminal-follower', '1');
       result.flow += 1;
