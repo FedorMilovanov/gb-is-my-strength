@@ -23,6 +23,8 @@ cacheRequests: new Map(),
 cacheSequence: 0,
 cacheProbe: null,
 disconnectRequests: new Map(),
+workerTimeline: [],
+clientTimeline: [],
 retirementPromise: null,
 audio: null,
 audioHandleId: null,
@@ -64,6 +66,13 @@ return createError({ name: 'AbortError', message: message || 'enhanced voice can
 function normalizeContextText(value) {
 return String(value || '').replace(/(^|[^А-Яа-яЁё])Господа(?=$|[^А-Яа-яЁё])/g, '$1Г+оспода');
 }
+// Bounded, timestamped breadcrumbs: a red real-model run can otherwise only say
+// "it took 29 s", never which side of the port the delay came from.
+function markTimeline(list, entry) {
+if (list.length >= 60) list.shift();
+list.push(entry);
+return list;
+}
 function dispatchStatus(phase, detail) {
 var next = Object.assign({
 phase: phase,
@@ -73,6 +82,7 @@ optedOut: modelDownloadOptedOut(),
 workerMode: state.workerMode
 }, detail || {});
 state.status = next;
+markTimeline(state.clientTimeline, { at: Math.round(performance.now()), phase: phase, ready: next.ready, loading: next.loading });
 try { window.dispatchEvent(new CustomEvent('gb:vosk-status', { detail: next })); } catch (_) {}
 return next;
 }
@@ -83,7 +93,9 @@ loading: !!state.loading,
 optedOut: modelDownloadOptedOut(),
 workerMode: state.workerMode,
 workerClients: typeof state.workerClients === 'number' ? state.workerClients : null,
-workerEpoch: typeof state.workerEpoch === 'number' ? state.workerEpoch : null
+workerEpoch: typeof state.workerEpoch === 'number' ? state.workerEpoch : null,
+workerTimeline: state.workerTimeline.slice(-30),
+clientTimeline: state.clientTimeline.slice(-30)
 });
 }
 function ensureNoticeStyles() {
@@ -417,6 +429,13 @@ if (type === 'status') {
 if (message.phase === 'ready') state.ready = true;
 if (typeof message.clients === 'number') state.workerClients = message.clients;
 if (typeof message.epoch === 'number') state.workerEpoch = message.epoch;
+markTimeline(state.workerTimeline, {
+at: Math.round(performance.now()),
+phase: message.phase || null,
+ready: message.ready === true,
+clients: typeof message.clients === 'number' ? message.clients : null,
+reason: message.reason || null
+});
 if (!anyQuietLoad()) {
 showStatus(message.phase || 'preparing', {
 reason: message.reason || null,
