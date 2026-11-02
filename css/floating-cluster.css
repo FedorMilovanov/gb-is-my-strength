@@ -2735,12 +2735,12 @@ html.dark .gb-roman {
        margin + width + a breathing gap) — used as the minimum left margin so
        the article clears the rail on narrower desktops. */
     --gb-rail-reserve:calc(clamp(16px,2.4vw,40px) + clamp(272px,24vw,304px) + clamp(24px,3vw,48px));
-    /* The shared token is already the preferred reading width; the 1000px
-       ceiling sits above the widest token shell (56rem + 48px = 944px) so the
-       «Шире» setting stays a real, measurable token here instead of being
-       clamped into a different width, and the full-bleed canvas supplies the
-       viewport cap. */
-    --gb-measure:min(calc(var(--gb-reader-measure, 46rem) + 48px), 1000px, calc(100vw - 48px));
+    /* The shared token is already the preferred reading width; 900px remains
+       the hard ceiling of this canvas, and the widest token (53rem + 48px =
+       896px) still fits under it, so «Шире» stays a real, measurable token here
+       instead of being clamped into a different width. The full-bleed canvas
+       supplies the viewport cap. */
+    --gb-measure:min(calc(var(--gb-reader-measure, 46rem) + 48px), 900px, calc(100vw - 48px));
     display:block;
     min-height:auto;
   }
@@ -3641,7 +3641,7 @@ html.dark [data-gill-v16] .mobile-top-bar {
     position:fixed;
     top:calc(clamp(24px, 3.5vw, 44px) - 4px);
     /* right: 5vw (not the .theme-toggle canon 8.5vw): since the wide reader
-       measure reached a ~944px shell the 8.5vw anchor pushed the blooming
+       measure reached a ~896px shell the 8.5vw anchor pushed the blooming
        speed pill over the prose corridor at 1440/1680px. 5vw keeps the
        pill fully clear of the text (engine-sweep reader-width contract)
        while the corner stays in the viewport margin. */
