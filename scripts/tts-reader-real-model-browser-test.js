@@ -168,6 +168,8 @@ async function warm(page, label, metrics) {
     modelRequests: metrics ? metrics().modelRequests : null,
     phases: result.statuses.map((item) => (item.detail && item.detail.phase) || null),
     workerPhase: result.status.phase,
+    workerClients: result.status.workerClients,
+    workerEpoch: result.status.workerEpoch,
     readerPhase: result.reader && result.reader.phase,
     readerEngine: result.reader && result.reader.engine,
   })}`);
@@ -238,6 +240,10 @@ async function synthesize(page, label) {
     await follower.goto(`${origin}/navigated`, { waitUntil: 'domcontentloaded' });
     await follower.waitForFunction(() => window.GBReaderTTS?.version === 2);
     report.navigation = await warm(follower, 'shared-navigation', metrics);
+    // Who lost whom: the owner still holds a client seat, so its live status
+    // tells whether the shared worker itself was restarted by the navigation.
+    report.ownerAfterNavigation = await owner.evaluate(() => (window.VoskTTSEngine?.getStatus?.() || null));
+    console.log(`::notice::owner-after-navigation ${JSON.stringify(report.ownerAfterNavigation)}`);
     assert.equal(report.navigation.status.workerMode, 'shared');
     assert.ok(report.navigation.elapsedMs < 2000, `ready sessions did not survive navigation with an active owner (${report.navigation.elapsedMs} ms)`);
     assert.equal(metrics().modelRequests, 1, 'navigation requested the model again');

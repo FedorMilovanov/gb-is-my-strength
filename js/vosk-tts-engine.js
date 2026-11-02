@@ -1,7 +1,7 @@
 (function () {
 'use strict';
 var VERSION = 2;
-var WORKER_SRC = '/js/vosk-tts-worker.js?v=73b9bde1';
+var WORKER_SRC = '/js/vosk-tts-worker.js?v=73198bae';
 var NOTICE_CSS_URL = '/css/tts-download-notice.css?v=b9ef192f';
 var MODEL_DOWNLOAD_OPTOUT_KEY = 'gbx-vosk-warmup';
 var CLIENT_ID = (window.crypto && typeof window.crypto.randomUUID === 'function')
@@ -81,7 +81,9 @@ return Object.assign({}, state.status, {
 ready: !!state.ready,
 loading: !!state.loading,
 optedOut: modelDownloadOptedOut(),
-workerMode: state.workerMode
+workerMode: state.workerMode,
+workerClients: typeof state.workerClients === 'number' ? state.workerClients : null,
+workerEpoch: typeof state.workerEpoch === 'number' ? state.workerEpoch : null
 });
 }
 function ensureNoticeStyles() {
@@ -413,6 +415,8 @@ return;
 }
 if (type === 'status') {
 if (message.phase === 'ready') state.ready = true;
+if (typeof message.clients === 'number') state.workerClients = message.clients;
+if (typeof message.epoch === 'number') state.workerEpoch = message.epoch;
 if (!anyQuietLoad()) {
 showStatus(message.phase || 'preparing', {
 reason: message.reason || null,

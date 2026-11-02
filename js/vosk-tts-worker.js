@@ -15,6 +15,9 @@ var IS_SHARED_SCOPE = 'onconnect' in self;
 var clients = new Map();
 var clientSequence = 0;
 var CLIENT_TTL_MS = 120000;
+// Instance identity: lets a client tell a freshly started shared worker from the
+// one that already holds parsed sessions (navigation must reuse the latter).
+var WORKER_EPOCH = Date.now();
 var state = {
 dependencies: null,
 loading: null,
@@ -103,7 +106,9 @@ port.onmessageerror = function () { dropPort(port); };
 if (typeof port.start === 'function') port.start();
 send(port, 'status', Object.assign({
 phase: state.phase === 'idle' ? 'connected' : state.phase,
-ready: state.ready
+ready: state.ready,
+clients: clients.size,
+epoch: WORKER_EPOCH
 }, state.statusDetail));
 }
 function messageJobKey(port, message) {
