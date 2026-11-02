@@ -75,8 +75,13 @@ function startServer() {
         res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
         res.end(html());
       } catch (error) {
+        // A failed upstream fetch must be legible in the run log and as a PR
+        // annotation: the model host can throttle, gate or move the artefact,
+        // and an opaque 502 makes that indistinguishable from a code defect.
+        const message = `model asset proxy ${pathname}: ${error && error.message ? error.message : String(error)}`;
+        console.error(`::error::${message}`);
         res.writeHead(502, { 'content-type': 'text/plain; charset=utf-8' });
-        res.end(error.stack || String(error));
+        res.end(message);
       }
     });
     server.listen(0, '127.0.0.1', () => resolve({
@@ -252,6 +257,7 @@ async function synthesize(page, label) {
   () => process.exit(0),
   (error) => {
     console.error(error);
+    console.error(`::error::real-model contract: ${error && error.message ? error.message : String(error)}`);
     process.exit(1);
   },
 );
