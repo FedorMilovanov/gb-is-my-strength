@@ -1,7 +1,12 @@
 (function () {
 'use strict';
 var VERSION = 2;
-var WORKER_SRC = '/js/vosk-tts-worker.js?v=73198bae';
+var WORKER_SRC = '/js/vosk-tts-worker.js?v=a29d96a7';
+// A shared worker cannot answer a new client while it is inside one inference.
+// Documents therefore read the worker's "sessions parsed and live" flag from
+// IndexedDB instead of waiting for the worker's event loop.
+var READY_MARKER_URL = '/__gb-vosk-sessions-ready';
+var READY_MARKER_TTL_MS = 600000;
 var NOTICE_CSS_URL = '/css/tts-download-notice.css?v=b9ef192f';
 var MODEL_DOWNLOAD_OPTOUT_KEY = 'gbx-vosk-warmup';
 var CLIENT_ID = (window.crypto && typeof window.crypto.randomUUID === 'function')
@@ -31,7 +36,8 @@ audioHandleId: null,
 objectUrl: null,
 notice: null,
 noticeTimer: 0,
-status: { phase: 'idle', ready: false, loading: false, optedOut: false, workerMode: null }
+status: { phase: 'idle', ready: false, loading: false, optedOut: false, workerMode: null },
+readySource: null
 };
 function modelDownloadOptedOut() {
 try { return localStorage.getItem(MODEL_DOWNLOAD_OPTOUT_KEY) === 'off'; }
@@ -92,6 +98,7 @@ ready: !!state.ready,
 loading: !!state.loading,
 optedOut: modelDownloadOptedOut(),
 workerMode: state.workerMode,
+readySource: state.readySource || null,
 workerClients: typeof state.workerClients === 'number' ? state.workerClients : null,
 workerEpoch: typeof state.workerEpoch === 'number' ? state.workerEpoch : null,
 workerTimeline: state.workerTimeline.slice(-30),
@@ -453,6 +460,8 @@ return;
 }
 if (type === 'load-error') {
 var loadError = createError(message, 'Vosk model failed to load');
+state.ready = false;
+state.readySource = null;
 var quietError = anyQuietLoad();
 settleLoad(message.id, loadError);
 if (quietError) return;
@@ -567,6 +576,38 @@ var quiet = false;
 state.loadRequests.forEach(function (entry) { if (entry.quiet) quiet = true; });
 return quiet;
 }
+function readReadyMarker() {
+// Cache Storage, not IndexedDB: the model store is owned by the worker, and the
+// main thread must never open it (see the engine status contract).
+if (typeof caches === 'undefined' || typeof caches.match !== 'function') return Promise.resolve(false);
+return new Promise(function (resolve) {
+var settled = false;
+var timer = setTimeout(function () { finish(false); }, 800);
+function finish(value) {
+if (settled) return;
+settled = true;
+clearTimeout(timer);
+resolve(value === true);
+}
+try {
+caches.match(READY_MARKER_URL).then(function (response) {
+if (!response) { finish(false); return null; }
+return response.json().then(function (value) {
+finish(!!value && value.ready === true && typeof value.at === 'number' && Date.now() - value.at < READY_MARKER_TTL_MS);
+}, function () { finish(false); });
+}).catch(function () { finish(false); });
+} catch (_) { finish(false); }
+});
+}
+function adoptReadyMarker(id, quiet) {
+readReadyMarker().then(function (ready) {
+if (!ready || state.ready) return;
+state.ready = true;
+state.readySource = 'marker';
+settleLoad(id);
+if (!quiet && !anyQuietLoad()) finishStatus('ready');
+}).catch(function () {});
+}
 function ensureLoaded(options) {
 options = options || {};
 var quiet = options.quiet === true;
@@ -588,6 +629,7 @@ reject(error);
 }).finally(function () {
 state.loading = null;
 });
+if (state.workerMode === 'shared') adoptReadyMarker(id, quiet);
 return state.loading;
 }
 function clearModelDownloadOptOut() {

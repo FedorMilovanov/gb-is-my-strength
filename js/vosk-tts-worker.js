@@ -18,6 +18,13 @@ var CLIENT_TTL_MS = 120000;
 // Instance identity: lets a client tell a freshly started shared worker from the
 // one that already holds parsed sessions (navigation must reuse the latter).
 var WORKER_EPOCH = Date.now();
+// Readiness handshake for a page that opens while this worker is mid-inference:
+// the worker's event loop cannot answer a new client until the current
+// inference returns, so the fact "sessions are parsed and live" is published in
+// IndexedDB, where any document can read it without touching this thread.
+var READY_MARKER_CACHE = 'gb-vosk-ready';
+var READY_MARKER_URL = '/__gb-vosk-sessions-ready';
+var READY_MARKER_TTL_MS = 600000;
 var state = {
 dependencies: null,
 loading: null,
@@ -179,6 +186,23 @@ transaction.onabort = transaction.onerror = function () { try { db.close(); } ca
 });
 }).catch(function () { return false; });
 }
+function publishReadyState(ready) {
+// Cache Storage is readable by every document of the origin without touching
+// this worker's event loop, which is exactly what a busy worker needs.
+if (!self.caches || typeof self.caches.open !== 'function') return Promise.resolve();
+var payload = JSON.stringify({
+epoch: WORKER_EPOCH,
+at: Date.now(),
+model: MODEL_URL,
+ttl: READY_MARKER_TTL_MS,
+ready: ready === true
+});
+return self.caches.open(READY_MARKER_CACHE).then(function (cache) {
+return cache.put(new Request(READY_MARKER_URL), new Response(payload, {
+headers: { 'content-type': 'application/json' }
+}));
+}).catch(function () {});
+}
 function idbSet(key, value) {
 return idbOpen().then(function (db) {
 return new Promise(function (resolve, reject) {
@@ -309,10 +333,12 @@ state.bertSess = sessions[1];
 state.tok = state.bertSess ? new self.VoskTTSCore.WordPieceTokenizer(decoder.decode(files['bert/vocab.txt'])) : null;
 state.ready = true;
 status('ready');
+void publishReadyState(true);
 return true;
 });
 }).catch(function (error) {
 state.ready = false;
+void publishReadyState(false);
 status(error && error.name === 'AbortError' ? 'cancelled' : 'error', errorPayload(error));
 throw error;
 }).finally(function () {
@@ -612,6 +638,9 @@ state.loadClients.delete(key);
 abortLoadIfUnowned();
 }
 }
+// A brand-new instance holds no parsed sessions, so any marker left behind by a
+// terminated worker must not be trusted by the documents that attach next.
+void publishReadyState(false);
 if (IS_SHARED_SCOPE) {
 setInterval(pruneClients, 60000);
 self.onconnect = function (event) {
