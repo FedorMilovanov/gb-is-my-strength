@@ -519,7 +519,14 @@ return name ? before + name : whole;
 function expandSiteAbbreviations(text) {
 var output = expandScriptureBooks(String(text).replace(/\u00A0/g, ' '));
 for (var index = 0; index < SITE_ABBREVIATIONS.length; index += 1) {
-output = output.split(SITE_ABBREVIATIONS[index][0]).join(SITE_ABBREVIATIONS[index][1]);
+// Word-boundary replacement, not a plain split/join: "ок." is an abbreviation,
+// but "порядок." and "ошибок." are ordinary words that happen to end with the
+// same letters. A bare split turned them into "порядоколо"/"ошибоколо".
+var abbreviation = SITE_ABBREVIATIONS[index][0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+var pattern = new RegExp('(^|[^\\p{L}\\p{N}])' + abbreviation + '(?![\\p{L}\\p{N}])', 'gu');
+output = output.replace(pattern, function (whole, before) {
+return before + SITE_ABBREVIATIONS[index][1];
+});
 }
 output = output.replace(/\b([IVXLCDM]{1,7})(\s+)(век[а-яё]*)/g, function (whole, roman, spacing, form) {
 var number = romanToArabic(roman);

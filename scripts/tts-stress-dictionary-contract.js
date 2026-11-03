@@ -261,6 +261,23 @@ function validateVocabulary(workerSource, termMap, files) {
   }
 
   // Domain terminology must never fall through to the unstressed G2P fallback.
+  // Site abbreviations must be replaced at word boundaries. A plain split/join
+  // corrupted ordinary words that merely end with the same letters: «порядок.»
+  // became «порядоколо» in 84 places across the corpus.
+  if (expand) {
+    const boundaryCases = [
+      ['Это порядок.', 'Это порядок.'],
+      ['без ошибок.', 'без ошибок.'],
+      ['срок.', 'срок.'],
+      ['ок. 1950 года', 'около 1950 года'],
+      ['т.е. так', 'то есть так'],
+    ];
+    for (const [input, expected] of boundaryCases) {
+      const actual = expand(input);
+      if (actual !== expected) issues.push(`site abbreviation boundary: "${input}" reads as "${actual}", expected "${expected}"`);
+    }
+  }
+
   const uncovered = new Map();
   for (const file of files) {
     const text = fs.readFileSync(file, 'utf8');
@@ -383,6 +400,7 @@ const mutationProblems = [
   ['citation unit loses its accusative form', validateVocabulary(worker.replace("['гл.', 'глава', 'главы', 'главе', 'главу', 'главой', 'главе']", "['гл.', 'глава', 'главы', 'главе', 'глава', 'главой', 'главе']"), terms, contentFiles)],
   ['citation pattern drops roman numerals', validateVocabulary(worker.replace(String.raw`(?=\\s*(?:\\d|[IVXLCDM]+\\b))`, String.raw`(?=\\s*\\d)`), terms, contentFiles)],
   ['custom stress contradicts the marker dictionary', validateVocabulary(worker, { ...terms, коринфянам: 'коринф+янам' }, contentFiles)],
+  ['site abbreviations fall back to plain split/join', validateVocabulary(worker.replace(/output = output\.replace\(pattern, function \(whole, before\) \{[\s\S]*?\}\);/, "output = output.split(SITE_ABBREVIATIONS[index][0]).join(SITE_ABBREVIATIONS[index][1]);"), terms, contentFiles)],
 ];
 for (const [name, issues] of mutationProblems) {
   assert.ok(issues.length > 0, `${name}: vocabulary mutation must be rejected`);
