@@ -16,6 +16,7 @@ const STANDALONE_READER_LAYOUT_GUARD = path.join(__dirname, 'standalone-reader-l
 const HOME_RESUME_BROWSER_GUARD = path.join(__dirname, 'homepage-resume-browser-contract.mjs');
 const SERIES_QUIZ_SOURCE_HANDOFF_GUARD = path.join(__dirname, 'series-quiz-source-handoff-browser-contract.mjs');
 const CHROME_LABEL_FOCUS_GUARD = path.join(__dirname, 'chrome-label-focus-traversal-contract.mjs');
+const HOME_AMBIENT_CLS_GUARD = path.join(__dirname, 'home-ambient-cls-contract.mjs');
 const HOME_DESIGN_AUDIT = path.join(__dirname, 'home-design-audit-pro.mjs');
 const HOME_DESIGN_REPORT = path.join(ROOT, 'reports', 'home-design-audit-pro');
 const INTERACTIVE_REPORT = path.join(ROOT, 'reports', 'interactive-audit');
@@ -171,6 +172,13 @@ function runChromeLabelFocusGuard(baseUrl) {
   return runNodeScript(CHROME_LABEL_FOCUS_GUARD, [], { AUDIT_BASE: baseUrl });
 }
 
+function runHomeAmbientClsGuard(baseUrl) {
+  if (!fs.existsSync(HOME_AMBIENT_CLS_GUARD)) {
+    throw new Error(`Home ambient CLS guard is missing at ${HOME_AMBIENT_CLS_GUARD}`);
+  }
+  return runNodeScript(HOME_AMBIENT_CLS_GUARD, [], { AUDIT_BASE: baseUrl });
+}
+
 function runStandaloneReaderLayoutGuard(baseUrl) {
   if (!fs.existsSync(STANDALONE_READER_LAYOUT_GUARD)) {
     throw new Error(`Standalone reader layout guard is missing at ${STANDALONE_READER_LAYOUT_GUARD}`);
@@ -272,6 +280,8 @@ async function runInteractiveContracts(baseUrl) {
   if (lotPublicationCode !== 0) return lotPublicationCode;
   const chromeLabelCode = await runChromeLabelFocusGuard(baseUrl);
   if (chromeLabelCode !== 0) return chromeLabelCode;
+  const ambientClsCode = await runHomeAmbientClsGuard(baseUrl);
+  if (ambientClsCode !== 0) return ambientClsCode;
   return runStandaloneReaderLayoutGuard(baseUrl);
 }
 
