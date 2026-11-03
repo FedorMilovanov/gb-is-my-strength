@@ -1,0 +1,61 @@
+name: TTS Citation Dates
+
+on:
+  pull_request:
+    paths:
+      - "js/vosk-tts-worker.js"
+      - "scripts/tts-citation-dates-contract.js"
+      - ".github/workflows/tts-citation-dates.yml"
+  push:
+    branches: [main]
+    paths:
+      - "js/vosk-tts-worker.js"
+      - "scripts/tts-citation-dates-contract.js"
+      - ".github/workflows/tts-citation-dates.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tts-citation-dates-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  citation-dates:
+    name: Spoken years and centuries
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node 22.23.1
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.23.1"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check sources
+        run: |
+          node --check js/vosk-tts-worker.js
+          node --check scripts/tts-citation-dates-contract.js
+
+      - name: Run citation dates contract
+        run: |
+          mkdir -p reports
+          set -o pipefail
+          node scripts/tts-citation-dates-contract.js 2>&1 | tee reports/tts-citation-dates-contract.log
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: tts-citation-dates-${{ github.run_id }}
+          path: reports/tts-citation-dates-contract.log
+          if-no-files-found: warn
+          retention-days: 14
