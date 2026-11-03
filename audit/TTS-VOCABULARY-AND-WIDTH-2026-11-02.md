@@ -532,3 +532,13 @@ Chromium 153 (Sparticuz), production-like `dist`, 66 реальных стран
 TTS citation dates contract: PASS (26 spoken forms, 6 protected forms, 166 year and
 39 century citations across 543 files expanded with no leftovers, 5 mutations rejected).
 ```
+
+#### Перепроверка в браузере (Chromium 153, production-like dist)
+
+| проверка | результат |
+| --- | --- |
+| `standalone-reader-layout-guard.mjs` | **184/184** |
+| `reader-controls-residual-browser-contract.mjs` (chromium) | **1448/1448** |
+| `engine-sweep.mjs` | **223/223** |
+| текст 66 страниц (2 005 119 символов) | 72 годовых и 13 вековых сокращений, **0 остатков** |
+| выборочно со страниц | «170–200 **годов нашей эры**», «125 **года до нашей эры**», «в 1697 **году**», «после 1689 **года**» |
