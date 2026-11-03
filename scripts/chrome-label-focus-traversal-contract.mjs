@@ -16,7 +16,9 @@
  * native method and needs no extra runtime dependency.
  *
  * Self-serves production-like dist/ unless AUDIT_BASE is provided (runner).
- * Chromium only; webkit stays in CI (sandbox egress policy).
+ * Chromium only; webkit stays in CI (sandbox egress policy). The CI settle
+ * path is load + fonts + quiet window: `networkidle` never fires there while
+ * analytics hold connections open (annotation-captured TimeoutError on /).
  */
 import fs from 'node:fs';
 import path from 'node:path';
