@@ -222,7 +222,11 @@ fs.writeFileSync(path.join(REPORT_DIR, 'report.json'), JSON.stringify({ summary,
 fs.writeFileSync(path.join(REPORT_DIR, 'report.md'), ['# Standalone reader layout guards', '', `- SHA: \`${summary.sha || 'local'}\``, `- Checks: **${summary.checks}**`, `- Passed: **${summary.passed}**`, `- Failed: **${summary.failed}**`, '', '| ID | Result | Description |', '|---|---|---|', ...checks.map((item) => `| ${item.id} | ${item.pass ? 'PASS' : 'FAIL'} | ${item.description.replace(/\|/g, '\\|')} |`)].join('\n'));
 checks.forEach((item) => {
   console.log(`[STANDALONE-READER-LAYOUT] ${item.pass ? 'PASS' : 'FAIL'} ${item.id} :: ${item.description}`);
-  if (!item.pass) console.log(`[STANDALONE-READER-LAYOUT-EVIDENCE] ${item.id} :: ${JSON.stringify(item.evidence)}`);
+  if (!item.pass) {
+    console.log(`[STANDALONE-READER-LAYOUT-EVIDENCE] ${item.id} :: ${JSON.stringify(item.evidence)}`);
+    // The run log is not always reachable; the annotation is.
+    console.error(`::error::${item.id} ${item.description} :: ${JSON.stringify(item.evidence).slice(0, 900)}`);
+  }
 });
 console.log('[STANDALONE-READER-LAYOUT-SUMMARY]', JSON.stringify(summary));
 assert.equal(failed.length, 0, `Standalone reader layout guards failed: ${failed.map((item) => item.id).join(', ')}`);
