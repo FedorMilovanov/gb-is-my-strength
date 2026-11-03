@@ -249,6 +249,39 @@ function validateVocabulary(workerSource, termMap, files) {
   for (const word of [...uncovered.keys()].sort()) {
     issues.push(`${word}: domain term without a stress source`);
   }
+
+  // Corpus-level residue. Hand-written cases only prove what someone thought of;
+  // the published text proves what actually reaches the synthesizer. A known
+  // abbreviation that survives expansion in front of a number is read aloud as a
+  // fragment ("гэ-эл три"), whatever the table says.
+  const corpusExpander = buildExpander(workerSource);
+  if (corpusExpander) {
+    const siteTable = parseWordTable(workerSource, 'SITE_ABBREVIATIONS') || [];
+    const surfaces = [...new Set([...table.map((row) => row[0]), ...siteTable.map((row) => row[0])])];
+    const escapeSurface = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const patterns = surfaces.map((surface) => [
+      surface,
+      new RegExp(`(^|[^А-Яа-яЁёA-Za-z])${escapeSurface(surface)}(?=\\s*\\d)`, 'g'),
+    ]);
+    const residue = new Map();
+    for (const file of files) {
+      const text = fs
+        .readFileSync(file, 'utf8')
+        .replace(/<script[\s\S]*?<\/script>/g, ' ')
+        .replace(/<style[\s\S]*?<\/style>/g, ' ')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/\s+/g, ' ');
+      const expanded = corpusExpander(text);
+      for (const [surface, pattern] of patterns) {
+        if (pattern.test(expanded)) residue.set(surface, (residue.get(surface) || 0) + 1);
+        pattern.lastIndex = 0;
+      }
+    }
+    for (const [surface, count] of [...residue.entries()].sort((a, b) => b[1] - a[1])) {
+      issues.push(`${surface}: ${count} published citation(s) still carry the abbreviation before a number`);
+    }
+  }
   return issues;
 }
 
