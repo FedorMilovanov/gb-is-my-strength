@@ -220,6 +220,10 @@
     t = t.replace(/[—–]/g, '-');
     t = t.replace(/…/g, '...');
     t = t.replace(/№/g, 'номер ');
+    // A slash between digits ("JETS 53/4", "pp. 587/586", "1959/1960") is a
+    // separator, not a word. Left alone it reaches the model as two numbers run
+    // together ("пятьдесят три четыре"); a comma keeps them apart as a pause.
+    t = t.replace(/(\d)\s*\/\s*(\d)/g, '$1, $2');
     t = t.replace(/(\d)[.,](\d)/g, '$1 целых $2'); // decimals: "3,5" -> "3 целых 5" (still rough — no "десятых/сотых" magnitude — but reads as a number, not two unrelated digits joined by "и")
     t = t.replace(/\d+/g, function (m) { return ' ' + numberToWords(m) + ' '; });
     // drop words containing no Cyrillic at all (latin/tech tokens the model can't say)

@@ -432,7 +432,7 @@ var labels = SCRIPTURE_BOOKS.map(function (pair) { return pair[0]; })
 .concat(CITATION_UNITS.map(function (row) { return row[0]; }))
 .sort(function (a, b) { return b.length - a.length; });
 var escaped = labels.map(function (label) { return label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); });
-return new RegExp('(^|[^А-Яа-яЁёA-Za-z])(' + escaped.join('|') + ')(?=\\s*\\d)', 'g');
+return new RegExp('(^|[^А-Яа-яЁёA-Za-z])(' + escaped.join('|') + ')(?=\\s*(?:\\d|[IVXLCDM]+\\b))', 'g');
 }());
 var SCRIPTURE_BOOK_NAMES = new Map(SCRIPTURE_BOOKS.concat(CITATION_UNITS.map(function (row) { return [row[0], row[1]]; })));
 var SITE_ABBREVIATIONS = [
