@@ -331,6 +331,23 @@ for (const [input, expected] of expansionCases) {
   assert.equal(actual, expected, `citation expansion drifted for "${input}"`);
 }
 
+// Spoken normalization of numeric slashes. "JETS 53/4" and "pp. 587/586" used to
+// reach the model as two numbers run together; a slash between digits is a
+// separator and has to survive as a pause, not as an invisible character.
+const core = require(path.join(ROOT, 'js/vosk-tts-core.js'));
+const spokenCases = [
+  ['53/4', 'пятьдесят три , четыре'],
+  ['1959/1960', 'тысяча девятьсот пятьдесят девять , тысяча девятьсот шестьдесят'],
+  ['3,5', 'три целых пять'],
+];
+for (const [input, expected] of spokenCases) {
+  assert.equal(core.normalizeText(input), expected, `spoken normalization drifted for "${input}"`);
+}
+assert.ok(
+  !/\d\s*\/\s*\d/.test(core.normalizeText('13/1')),
+  'numeric slash must not survive into the synthesizer input',
+);
+
 const mutationProblems = [
   ['book abbreviation dropped', validateVocabulary(worker.replace("['Мф.', 'Матфея'], ", ''), terms, contentFiles)],
   ['lettered book removed', validateVocabulary(worker.replace("['1 Кор.', 'первое послание Коринфянам'], ", ''), terms, contentFiles)],
