@@ -7,9 +7,13 @@
  * G2P fallback (which otherwise leaves such words completely unstressed).
  *
  * Layers, checked in order (first match wins):
- *   1. Custom site terminology  (data/custom-terms.json)      — highest priority
- *   2. russian-stress-marker    (data/russian-stress-marker.bin, MIT)
+ *   1. Custom site terminology  (js/vosk-custom-terms.json)       — highest priority
+ *   2. russian-stress-marker    (js/vosk-stress-marker.bin, MIT)
  *   (a Wiktionary/kaikki.org layer can be added the same way later)
+ *
+ * Both layers are fetched by the worker itself
+ * (see CUSTOM_TERMS_URL / STRESS_MARKER_URL in js/vosk-tts-worker.js); this
+ * module only decodes what it is handed, so paths live in one place.
  *
  * russian-stress-marker's dictionary is a compact minimal acyclic FSA
  * (MIT, https://github.com/zdarsch/russian-stress-marker) recognizing
