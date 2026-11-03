@@ -80,11 +80,10 @@ const markerOnlyLookup = new StressLookup({
 // the reason is written down here. Empty today: every shared word agrees.
 const STRESS_OVERRIDES = new Map();
 
-const STRESS_PENDING = new Map([
-  ['авдия', 'Авдий/Авдия — традиция двоится'],
-  ['захарии', 'Захария/Захария — традиция двоится'],
-  ['малахии', 'Малахия/Малахия — традиция двоится'],
-]);
+// Empty on purpose since 2026-11-03: the owner settled the three names that used
+// to live here (Зах+ария, Мал+ахия, +Авдия), so they are ordinary dictionary
+// entries now and the contract demands coverage for them like for any other book.
+const STRESS_PENDING = new Map();
 
 const DOMAIN_STEMS = [
   'христоцентрич', 'христоцентризм', 'христологич', 'христотелич',
