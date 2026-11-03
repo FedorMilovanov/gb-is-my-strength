@@ -53,7 +53,7 @@ const checkEngineFloor = (pkg, required = false) => {
 const manifest = readJson(path.join(root, 'package.json'));
 const lock = readJson(path.join(root, 'package-lock.json'));
 const config = fs.readFileSync(path.join(root, 'astro.config.mjs'), 'utf8');
-const tracked = ['astro', '@astrojs/mdx', '@astrojs/react', '@astrojs/rss', '@astrojs/sitemap', '@astrojs/check'];
+const tracked = ['astro', '@astrojs/mdx', '@astrojs/react', '@astrojs/rss', '@astrojs/sitemap', '@astrojs/check', 'parse5'];
 
 if (lock.lockfileVersion !== 3) fail('npm lockfile v3 is required');
 for (const name of tracked) {
