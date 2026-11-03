@@ -9,7 +9,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REPORT_DIR = path.join(ROOT, 'reports', 'standalone-reader-layout-guards');
 const BASE = String(process.env.AUDIT_BASE || '').trim().replace(/\/$/, '');
 const VIEWPORTS = [390, 768, 1199, 1200, 1280, 1366, 1440, 1920];
-const MEASURES = { narrow: 36, normal: 46, wide: 52 };
+const MEASURES = { narrow: 36, normal: 46, wide: 53 };
 const ROUTES = [
   {
     key: 'HM',
