@@ -1,7 +1,7 @@
 'use strict';
 var CORE_SRC = '/js/vosk-tts-core.js';
 var STRESS_LOOKUP_SRC = '/js/vosk-stress-lookup.js';
-var CUSTOM_TERMS_URL = '/js/vosk-custom-terms.json?v=13dc055c';
+var CUSTOM_TERMS_URL = '/js/vosk-custom-terms.json?v=edaeea59';
 var STRESS_MARKER_URL = '/js/vosk-stress-marker.bin?v=3ae166fc';
 var ORT_DIST = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/';
 var ORT_SRC = ORT_DIST + 'ort.min.js';
