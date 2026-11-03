@@ -1,7 +1,7 @@
 (function () {
 'use strict';
 var VERSION = 2;
-var WORKER_SRC = '/js/vosk-tts-worker.js?v=f7e2d49f';
+var WORKER_SRC = '/js/vosk-tts-worker.js?v=e8b91475';
 // A shared worker cannot answer a new client while it is inside one inference.
 // Documents therefore read the worker's "sessions parsed and live" flag from
 // IndexedDB instead of waiting for the worker's event loop.
