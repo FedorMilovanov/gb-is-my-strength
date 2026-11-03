@@ -319,7 +319,7 @@
   }
 
   var _voskEngineScriptPromise = null;
-  var VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=530028c6';
+  var VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=a4096f5c';
   var TTS_NOTICE_CSS_SRC = '/css/tts-download-notice.css?v=b9ef192f';
   var fallbackTtsNoticeTimer = null;
 

@@ -181,6 +181,7 @@ function validateVocabulary(workerSource, termMap, files) {
       [`${abbreviation} 3`, `${nominative} 3`, 'bare reference stays nominative'],
       [`в ${abbreviation} 3`, `в ${expectedPrepositional} 3`, 'preposition "в" takes the prepositional case'],
       [`см. ${abbreviation} 3`, `смотри ${expectedAccusative} 3`, 'reference verb "см." takes the accusative case'],
+      [`в ${abbreviation} XIV`, `в ${expectedPrepositional} 14`, 'roman-numeral reference keeps the case form'],
     ];
     for (const [input, expected, label] of checks) {
       const actual = expand(input);
@@ -284,6 +285,13 @@ const expansionCases = [
   ['т.е. так', 'то есть так'],
   ['Иуд. предал', 'Иуд. предал'],
   ['гл. обр.', 'гл. обр.'],
+  // Roman-numeral citations: the numeral is the chapter/verse number, so the unit
+  // must still expand and the numeral must survive to the arabic pass.
+  ['(гл. XIV)', '(глава 14)'],
+  ['в гл. XIV сказано', 'в главе 14 сказано'],
+  ['см. гл. III', 'смотри главу 3'],
+  ['по ст. V', 'по стиху 5'],
+  ['гл. III/IV', 'глава 3/4'],
 ];
 for (const [input, expected] of expansionCases) {
   const actual = expander(input);
@@ -299,6 +307,7 @@ const mutationProblems = [
   ['citation case cues removed', validateVocabulary(worker.replace(/var CITATION_CUE_CASES = \{[\s\S]*?\};/, 'var CITATION_CUE_CASES = {};'), terms, contentFiles)],
   ['citation unit loses its prepositional form', validateVocabulary(worker.replace("['гл.', 'глава', 'главы', 'главе', 'главу', 'главой', 'главе']", "['гл.', 'глава', 'главы', 'главе', 'главу', 'главой', 'глава']"), terms, contentFiles)],
   ['citation unit loses its accusative form', validateVocabulary(worker.replace("['гл.', 'глава', 'главы', 'главе', 'главу', 'главой', 'главе']", "['гл.', 'глава', 'главы', 'главе', 'глава', 'главой', 'главе']"), terms, contentFiles)],
+  ['citation pattern drops roman numerals', validateVocabulary(worker.replace(String.raw`(?=\\s*(?:\\d|[IVXLCDM]+\\b))`, String.raw`(?=\\s*\\d)`), terms, contentFiles)],
 ];
 for (const [name, issues] of mutationProblems) {
   assert.ok(issues.length > 0, `${name}: vocabulary mutation must be rejected`);
