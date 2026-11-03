@@ -43,6 +43,11 @@ const ASSETS = [
   'js/glossary.js',
   'js/vosk-tts-engine.js',
   'js/vosk-tts-worker.js',
+  // Spoken-vocabulary data is fetched by the TTS worker itself; without a
+  // revision the worker's force-cache fetch would keep an old stress dictionary
+  // alive forever after a dictionary update ships.
+  'js/vosk-custom-terms.json',
+  'js/vosk-stress-marker.bin',
   'js/floating-cluster-controller.js',
 ];
 
@@ -57,6 +62,8 @@ const LAZY_NO_PRECACHE = Object.freeze([
   'css/series-manuscript.css',
   'js/vosk-tts-engine.js',
   'js/vosk-tts-worker.js',
+  'js/vosk-custom-terms.json',
+  'js/vosk-stress-marker.bin',
   'manifest.json',
   'data/search-manifest.json',
 ]);

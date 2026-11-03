@@ -87,33 +87,37 @@ function runNodeScript(script, args = [], extraEnv = {}) {
     const child = spawn(process.execPath, [script, ...args], {
       cwd: ROOT,
       env: { ...process.env, ...extraEnv },
-      stdio: ['inherit', 'pipe', 'pipe'],
+      stdio: ['ignore', 'pipe', 'pipe'],
     });
-    const captured = [];
-    for (const stream of [child.stdout, child.stderr]) {
-      stream.on('data', (chunk) => {
-        captured.push(String(chunk));
-        process[stream === child.stdout ? 'stdout' : 'stderr'].write(chunk);
-      });
-    }
+    // Keep the tail of the child's output so a red run can name the guard and
+    // quote the failing expectation as a PR annotation — the workflow log is
+    // not always reachable, and "exit code 1" alone is not diagnosable.
+    const tail = [];
+    const absorb = (chunk, stream) => {
+      const text = chunk.toString();
+      stream.write(text);
+      for (const line of text.split('\n')) {
+        if (!line.trim()) continue;
+        tail.push(line.trim());
+        if (tail.length > 60) tail.shift();
+      }
+    };
+    child.stdout.on('data', (chunk) => absorb(chunk, process.stdout));
+    child.stderr.on('data', (chunk) => absorb(chunk, process.stderr));
     child.once('error', reject);
     child.once('exit', (code, signal) => {
+      const failed = Boolean(signal) || (code != null && code !== 0);
+      if (failed) {
+        console.error(`::error::${path.basename(script)} failed (${signal ? `signal ${signal}` : `exit ${code}`})`);
+        const quote = tail.slice(-8).join(' ⏎ ').slice(0, 1200).replace(/[\r\n]+/g, ' ');
+        if (quote) console.error(`::error::${path.basename(script)} last output: ${quote}`);
+      }
       if (signal) {
         console.error(`${path.basename(script)} terminated by signal ${signal}`);
         resolve(1);
         return;
       }
-      const finalCode = code == null ? 1 : code;
-      if (finalCode !== 0) {
-        // Surface the failing guard's tail as a workflow annotation: the raw
-        // job log is not readable from the sandbox (egress), the annotation is.
-        const tail = captured.join('').split('\n').filter((line) => line.trim()).slice(-12)
-          .join(' | ')
-          .replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A')
-          .slice(0, 1400);
-        console.error(`::error title=${path.basename(script)} exited with code ${finalCode}::${tail}`);
-      }
-      resolve(finalCode);
+      resolve(code == null ? 1 : code);
     });
   });
 }
