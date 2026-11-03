@@ -132,8 +132,13 @@ try {
       if (message.text().startsWith('Failed to load resource') && location.url && !location.url.startsWith(base)) return;
       pageErrors.push(message.text().slice(0, 160));
     });
-    await page.goto(base + surface.url, { waitUntil: 'networkidle', timeout: 60000 });
-    await page.waitForTimeout(400);
+    // CI runs with real egress: analytics keep the connection busy, so
+    // `networkidle` never settles there (measured TimeoutError on /).
+    // Settle deterministically instead: load + fonts + a fixed quiet window.
+    await page.goto(base + surface.url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await page.waitForLoadState('load', { timeout: 15000 }).catch(() => {});
+    await page.evaluate(() => (document.fonts ? document.fonts.ready : Promise.resolve())).catch(() => {});
+    await page.waitForTimeout(800);
     const tabProblems = await page.evaluate(TAB_TRAVERSAL);
     await context.close();
     const entry = { id: surface.id, tab: tabProblems.length, pageErrors: pageErrors.length };
