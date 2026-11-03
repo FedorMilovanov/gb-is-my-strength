@@ -438,7 +438,7 @@ var SCRIPTURE_BOOK_NAMES = new Map(SCRIPTURE_BOOKS.concat(CITATION_UNITS.map(fun
 var SITE_ABBREVIATIONS = [
 ['т.е.', 'то есть'], ['Т.е.', 'То есть'], ['т.д.', 'так далее'], ['Т.д.', 'Так далее'],
 ['т.п.', 'тому подобное'], ['Т.п.', 'Тому подобное'], ['т. н.', 'так называемый'], ['Т. н.', 'Так называемый'],
-['н. э.', 'нашей эры'], ['Н. э.', 'нашей эры'],
+['н. э.', 'нашей эры'], ['Н. э.', 'нашей эры'], ['н.э.', 'нашей эры'], ['Н.э.', 'нашей эры'],
 ['ок.', 'около'], ['Ок.', 'Около'], ['напр.', 'например'], ['Напр.', 'Например'],
 ['др.', 'другие'], ['Др.', 'Другие'], ['ср.', 'сравни'], ['Ср.', 'Сравни'],
 ['см.', 'смотри'], ['См.', 'Смотри']
@@ -516,8 +516,104 @@ var name = SCRIPTURE_BOOK_NAMES.get(abbreviation);
 return name ? before + name : whole;
 });
 }
+// Years and centuries are cited in prose ("в 1956 г.", "170–200 гг.", "XVIII в.")
+// and spoken through a preposition or a date, so the noun must be declined:
+// "в 1956 г." is "в 1956 году", never "в 1956 г". The pattern is anchored on a
+// numeral, because "Петербург." and "книг." end with the same letter and are
+// ordinary words, not abbreviations.
+// Columns: nom, gen, dat, acc, ins, pre.
+var YEAR_FORMS = [
+['год', 'года', 'году', 'год', 'годом', 'году'],
+['годы', 'годов', 'годам', 'годы', 'годами', 'годах']
+];
+var CENTURY_FORMS = [
+['век', 'века', 'веку', 'век', 'веком', 'веке'],
+['века', 'веков', 'векам', 'века', 'веками', 'веках']
+];
+var DATE_CASE_COLUMNS = { nom: 0, gen: 1, dat: 2, acc: 3, ins: 4, pre: 5 };
+// The word right before the numeral decides the case, exactly like citations.
+// A year with no cue stays genitive: "исповедание 1689 г." is "1689 года",
+// "около 170–200 гг." is "около 170–200 годов". Nominative would be right only
+// in a heading, and there the year is not preceded by a noun or a preposition.
+var DATE_CUE_CASES = {
+'в': 'pre', 'во': 'pre', 'о': 'pre', 'об': 'pre', 'при': 'pre', 'на': 'pre',
+'с': 'gen', 'со': 'gen', 'до': 'gen', 'от': 'gen', 'из': 'gen', 'после': 'gen',
+'около': 'gen', 'ранее': 'gen', 'позднее': 'gen', 'примерно': 'gen',
+'к': 'dat', 'ко': 'dat',
+'по': 'acc', 'за': 'acc', 'через': 'acc', 'см': 'acc', 'смотри': 'acc', 'сравни': 'acc'
+};
+var NUMBER_TOKEN_PATTERN = /^[\d/:.,–—-]+$/;
+// "587/586 г." and "170–200 гг." put numerals between the cue and the unit, so
+// the cue lookup looks past them but stops at the first real word.
+function dateCueCase(head) {
+var tokens = String(head).split(/\s+/).filter(Boolean);
+for (var index = tokens.length - 1; index >= 0 && index >= tokens.length - 3; index -= 1) {
+var token = tokens[index].replace(/^[«»"„“(\[]+/, '').replace(/[.,;:!?«»"„“)\]]+$/, '');
+if (!token) continue;
+if (NUMBER_TOKEN_PATTERN.test(token)) continue;
+return DATE_CUE_CASES[token.toLowerCase()] || null;
+}
+return null;
+}
+function dateWord(window, column, plural) {
+var table = plural ? window[1] : window[0];
+return table[DATE_CASE_COLUMNS[column]] || table[0];
+}
+function expandYearCitations(text) {
+return text.replace(/(^|[^\p{L}\p{N}])(\d{1,4}(?:\s*[–—-]\s*\d{1,4})?(?:[-–][хxе])?)\s*(гг?)\./gu,
+function (whole, before, numeral, unit, offset, source) {
+var head = String(source).slice(Math.max(0, offset - 40), offset + before.length);
+// "44–96 г." covers several years, so the noun is plural even though the
+// abbreviation itself is singular.
+var plural = unit === 'гг' || /[–—-]\s*\d{1,4}$/.test(numeral);
+// A date ("1 ноября 1716 г.") needs no special rule: the month is the nearest
+// word, it is not a cue, and the default is the genitive a date requires.
+var column = dateCueCase(head);
+if (!column) column = /[-–][хx]$/.test(numeral) ? 'gen' : (/[-–]е$/.test(numeral) ? 'nom' : 'gen');
+return before + numeral + ' ' + dateWord(YEAR_FORMS, column, plural);
+});
+}
+function expandCenturyCitations(text) {
+return text.replace(/(^|[^\p{L}\p{N}])([IVXLCDM]{1,7})((?:\s*[–—-]\s*[IVXLCDM]{1,7})?)\s*(вв?)\./gu,
+function (whole, before, roman, range, unit, offset, source) {
+var numbers = (range ? roman + range : roman).split(/[–—-]/).map(function (part) {
+return romanToArabic(part.trim());
+});
+if (!numbers.length || numbers.some(function (number) { return !number || number > 99; })) return whole;
+var ordinals = numbers.map(function (number) { return ordinalNominative(number); });
+if (ordinals.some(function (ordinal) { return !ordinal; })) return whole;
+var plural = unit === 'вв';
+var head = String(source).slice(Math.max(0, offset - 40), offset + before.length);
+var column = dateCueCase(head);
+if (!column) {
+// "базилика V в." is "базилика пятого века" (a noun governs the genitive),
+// while a bare "(II в.)" or a "· XVIII в. ·" listing is the nominative.
+column = /\p{L}\s*$/u.test(head) ? (plural && /(?:^|\s)(?:все|эти|те|оба|обе)$/.test(head.trim()) ? 'nom' : 'gen') : (plural ? 'gen' : 'nom');
+}
+// declineOrdinal speaks the gen/dat/instr/prep codes and leaves nominative as is;
+// the accusative of an inanimate "век" is the nominative form.
+var declined = ordinals.map(function (ordinal) {
+var form = column === 'acc' || column === 'nom' ? 'nom' : (column === 'pre' ? 'prep' : column);
+return declineOrdinal(ordinal, form);
+});
+return before + declined.join('–') + ' ' + dateWord(CENTURY_FORMS, column, plural);
+});
+}
 function expandSiteAbbreviations(text) {
-var output = expandScriptureBooks(String(text).replace(/\u00A0/g, ' '));
+var output = expandCenturyCitations(expandScriptureBooks(String(text).replace(/\u00A0/g, ' ')));
+output = expandYearCitations(output);
+// "в втором веке" is not Russian: a preposition drops its vowel before "вт-".
+output = output.replace(/(^|[^А-Яа-яЁё])([вВ]) (?=втор)/g, function (whole, before, cue) {
+return before + (cue === 'В' ? 'Во ' : 'во ');
+});
+// Some articles glue a footnote marker to the abbreviation ("н.э.12"): split it
+// first, so the abbreviation still expands and the number stays a number.
+for (var glued = 0; glued < SITE_ABBREVIATIONS.length; glued += 1) {
+var gluedSurface = SITE_ABBREVIATIONS[glued][0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+output = output.replace(new RegExp('(^|[^\\p{L}\\p{N}])(' + gluedSurface + ')(?=\\d)', 'gu'), function (whole, before, abbreviation) {
+return before + abbreviation + ' ';
+});
+}
 for (var index = 0; index < SITE_ABBREVIATIONS.length; index += 1) {
 // Word-boundary replacement, not a plain split/join: "ок." is an abbreviation,
 // but "порядок." and "ошибок." are ordinary words that happen to end with the
