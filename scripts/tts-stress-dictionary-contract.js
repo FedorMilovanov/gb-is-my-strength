@@ -76,11 +76,14 @@ const markerOnlyLookup = new StressLookup({
 // Stress of these book names is disputed in Russian usage, so an unstressed
 // form is deliberately preferred over a wrong one. Remove an entry from this
 // list only together with a source that settles the stress.
-const STRESS_PENDING = new Map([
-  ['авдия', 'Авдий/Авдия — традиция двоится'],
-  ['захарии', 'Захария/Захария — традиция двоится'],
-  ['малахии', 'Малахия/Малахия — традиция двоится'],
-]);
+// Site terminology is allowed to disagree with the general dictionary only when
+// the reason is written down here. Empty today: every shared word agrees.
+const STRESS_OVERRIDES = new Map();
+
+// Empty on purpose since 2026-11-03: the owner settled the three names that used
+// to live here (Зах+ария, Мал+ахия, +Авдия), so they are ordinary dictionary
+// entries now and the contract demands coverage for them like for any other book.
+const STRESS_PENDING = new Map();
 
 const DOMAIN_STEMS = [
   'христоцентрич', 'христоцентризм', 'христологич', 'христотелич',
@@ -89,6 +92,12 @@ const DOMAIN_STEMS = [
 
 function vowelCount(word) {
   return (word.match(/[аеёиоуыэюя]/g) || []).length;
+}
+
+// Index of the stressed vowel inside the bare word. A "marked" spelling only
+// inserts "+" before the vowel, so the position of "+" is the vowel position.
+function stressVowelIndex(marked) {
+  return String(marked).indexOf('+');
 }
 
 // Spoken forms that the corpus actually needs, checked against real Russian
@@ -141,6 +150,20 @@ function collectContentFiles(directory, out) {
 
 function validateVocabulary(workerSource, termMap, files) {
   const issues = [];
+
+  // Two independent sources must not contradict each other. Where the general
+  // russian-stress-marker dictionary also knows a word, its stress is a second
+  // opinion on our entry: either we have a typo, or the override is deliberate
+  // and therefore named in STRESS_OVERRIDES with a reason.
+  for (const [word, marked] of Object.entries(termMap)) {
+    if (STRESS_OVERRIDES.has(word)) continue;
+    const reference = markerOnlyLookup.getPlusForm(word);
+    if (!reference) continue;
+    if (stressVowelIndex(marked) !== stressVowelIndex(reference)) {
+      issues.push(`${word}: stress "${marked}" contradicts russian-stress-marker "${reference}"`);
+    }
+  }
+
   const books = parseWordTable(workerSource, 'SCRIPTURE_BOOKS');
   const units = parseWordTable(workerSource, 'CITATION_UNITS');
   if (!books || !books.length) {
@@ -237,6 +260,23 @@ function validateVocabulary(workerSource, termMap, files) {
   }
 
   // Domain terminology must never fall through to the unstressed G2P fallback.
+  // Site abbreviations must be replaced at word boundaries. A plain split/join
+  // corrupted ordinary words that merely end with the same letters: «порядок.»
+  // became «порядоколо» in 84 places across the corpus.
+  if (expand) {
+    const boundaryCases = [
+      ['Это порядок.', 'Это порядок.'],
+      ['без ошибок.', 'без ошибок.'],
+      ['срок.', 'срок.'],
+      ['ок. 1950 года', 'около 1950 года'],
+      ['т.е. так', 'то есть так'],
+    ];
+    for (const [input, expected] of boundaryCases) {
+      const actual = expand(input);
+      if (actual !== expected) issues.push(`site abbreviation boundary: "${input}" reads as "${actual}", expected "${expected}"`);
+    }
+  }
+
   const uncovered = new Map();
   for (const file of files) {
     const text = fs.readFileSync(file, 'utf8');
@@ -358,6 +398,8 @@ const mutationProblems = [
   ['citation unit loses its prepositional form', validateVocabulary(worker.replace("['гл.', 'глава', 'главы', 'главе', 'главу', 'главой', 'главе']", "['гл.', 'глава', 'главы', 'главе', 'главу', 'главой', 'глава']"), terms, contentFiles)],
   ['citation unit loses its accusative form', validateVocabulary(worker.replace("['гл.', 'глава', 'главы', 'главе', 'главу', 'главой', 'главе']", "['гл.', 'глава', 'главы', 'главе', 'глава', 'главой', 'главе']"), terms, contentFiles)],
   ['citation pattern drops roman numerals', validateVocabulary(worker.replace(String.raw`(?=\\s*(?:\\d|[IVXLCDM]+\\b))`, String.raw`(?=\\s*\\d)`), terms, contentFiles)],
+  ['custom stress contradicts the marker dictionary', validateVocabulary(worker, { ...terms, коринфянам: 'коринф+янам' }, contentFiles)],
+  ['site abbreviations fall back to plain split/join', validateVocabulary(worker.replace(/output = output\.replace\(pattern, function \(whole, before\) \{[\s\S]*?\}\);/, "output = output.split(SITE_ABBREVIATIONS[index][0]).join(SITE_ABBREVIATIONS[index][1]);"), terms, contentFiles)],
 ];
 for (const [name, issues] of mutationProblems) {
   assert.ok(issues.length > 0, `${name}: vocabulary mutation must be rejected`);
