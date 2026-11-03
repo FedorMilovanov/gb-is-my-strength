@@ -49,6 +49,17 @@ const phrases: AmbientPhrase[] = [
 const languageCode = (type: AmbientPhrase['type']) => type === 'hebrew' ? 'he' : type === 'greek' ? 'grc' : 'la';
 ---
 
+<script is:inline>
+  /* GBS-HOME-AMBIENT-FIRST-PAINT-CLS: percentage-positioned marginalia must
+     not paint against the still-streaming .home-content — the parser keeps
+     growing the container after first paint (measured1089 → 9254px while
+     readyState was still "loading"), which moved every phrase hundreds of
+     pixels and produced CLS 0.748×3 (0.258×3 with fonts blocked). Pending
+     is added before the words are parsed, so JS visitors never paint them
+     early; without JS the class is never added and the decorative layer
+     keeps its historical behaviour. */
+  document.documentElement.classList.add('ambient-pending');
+</script>
 <div class="h-ambient-native" aria-hidden="true" data-pagefind-ignore>
   {phrases.map((phrase) => (
     <span
@@ -64,6 +75,30 @@ const languageCode = (type: AmbientPhrase['type']) => type === 'hebrew' ? 'he' :
     </span>
   ))}
 </div>
+<script is:inline>
+  /* Deterministic readiness, no timeouts: reveal only after the parser is
+     done (DOMContentLoaded), webfonts are settled (document.fonts.ready —
+     resolves on success AND on blocked/failed loads) and all subresources
+     are in (load). Two animation frames then flush any synchronous layout
+     that follows those signals, so the phrases appear at their final
+     viewport positions. Opacity-only reveal does not generate layout
+     shifts; print forces the layer visible in case a print starts early. */
+  (() => {
+    const done = [];
+    done.push(document.readyState !== 'loading'
+      ? Promise.resolve()
+      : new Promise((resolve) => document.addEventListener('DOMContentLoaded', () => resolve(), { once: true })));
+    done.push(document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve());
+    done.push(document.readyState === 'complete'
+      ? Promise.resolve()
+      : new Promise((resolve) => window.addEventListener('load', () => resolve(), { once: true })));
+    Promise.all(done).then(() => {
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        document.documentElement.classList.remove('ambient-pending');
+      }));
+    });
+  })();
+</script>
 
 <style is:global>
   body.home-page .h-ambient-native {
@@ -72,6 +107,14 @@ const languageCode = (type: AmbientPhrase['type']) => type === 'hebrew' ? 'he' :
     z-index: 0;
     overflow: hidden;
     pointer-events: none;
+  }
+
+  /* GBS-HOME-AMBIENT-FIRST-PAINT-CLS: hidden until the deterministic
+     readiness script clears .ambient-pending (see the inline contract
+     above). No-JS visitors never receive the class and see the layer
+     exactly as before. */
+  html.ambient-pending .h-ambient-word {
+    opacity: 0;
   }
 
   body.home-page .h-ambient-word {
