@@ -1,7 +1,7 @@
 'use strict';
 var CORE_SRC = '/js/vosk-tts-core.js';
 var STRESS_LOOKUP_SRC = '/js/vosk-stress-lookup.js';
-var CUSTOM_TERMS_URL = '/js/vosk-custom-terms.json?v=16fb831e';
+var CUSTOM_TERMS_URL = '/js/vosk-custom-terms.json?v=13dc055c';
 var STRESS_MARKER_URL = '/js/vosk-stress-marker.bin?v=3ae166fc';
 var ORT_DIST = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/';
 var ORT_SRC = ORT_DIST + 'ort.min.js';
@@ -406,17 +406,35 @@ var SCRIPTURE_BOOKS = [
 ];
 // Chapter/verse units inside a citation ("гл. 3", "ст. 8"), anchored on a
 // following number so prose like "гл. обр." (главным образом) is left alone.
+// Every unit carries all six Russian case forms: a reference is spoken through
+// a preposition ("в гл. 3", "из ст. 5") or a reference verb ("см. гл. 3"), and
+// reciting the nominative there produces "в глава 3".
+// Columns: [abbreviation, nom, gen, dat, acc, ins, pre].
 var CITATION_UNITS = [
-['гл.', 'глава'], ['Гл.', 'Глава'], ['ст.', 'стих'], ['Ст.', 'Стих']
+['гл.', 'глава', 'главы', 'главе', 'главу', 'главой', 'главе'],
+['Гл.', 'Глава', 'главы', 'главе', 'главу', 'главой', 'главе'],
+['ст.', 'стих', 'стиха', 'стиху', 'стих', 'стихом', 'стихе'],
+['Ст.', 'Стих', 'стиха', 'стиху', 'стих', 'стихом', 'стихе']
 ];
+var CITATION_UNIT_COLUMNS = { nom: 1, gen: 2, dat: 3, acc: 4, ins: 5, pre: 6 };
+// The word right before the unit decides the case: "в гл. 3" -> "в главе 3",
+// "см. гл. 3" -> "смотри главу 3", "со ст. 5" -> "со стиха 5".
+var CITATION_CUE_CASES = {
+'в': 'pre', 'во': 'pre', 'о': 'pre', 'об': 'pre', 'при': 'pre',
+'из': 'gen', 'от': 'gen', 'с': 'gen', 'со': 'gen', 'до': 'gen', 'после': 'gen',
+'к': 'dat', 'ко': 'dat', 'по': 'dat',
+'см': 'acc', 'смотри': 'acc', 'ср': 'acc', 'сравни': 'acc'
+};
 // Multi-word and numbered forms must be tried before their bare counterparts,
 // otherwise "1 Кор." would leave a stray "1" behind.
 var SCRIPTURE_BOOK_PATTERN = (function () {
-var pairs = SCRIPTURE_BOOKS.concat(CITATION_UNITS).sort(function (a, b) { return b[0].length - a[0].length; });
-var escaped = pairs.map(function (pair) { return pair[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); });
+var labels = SCRIPTURE_BOOKS.map(function (pair) { return pair[0]; })
+.concat(CITATION_UNITS.map(function (row) { return row[0]; }))
+.sort(function (a, b) { return b.length - a.length; });
+var escaped = labels.map(function (label) { return label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); });
 return new RegExp('(^|[^А-Яа-яЁёA-Za-z])(' + escaped.join('|') + ')(?=\\s*\\d)', 'g');
 }());
-var SCRIPTURE_BOOK_NAMES = new Map(SCRIPTURE_BOOKS.concat(CITATION_UNITS));
+var SCRIPTURE_BOOK_NAMES = new Map(SCRIPTURE_BOOKS.concat(CITATION_UNITS.map(function (row) { return [row[0], row[1]]; })));
 var SITE_ABBREVIATIONS = [
 ['т.е.', 'то есть'], ['Т.е.', 'То есть'], ['т.д.', 'так далее'], ['Т.д.', 'Так далее'],
 ['т.п.', 'тому подобное'], ['Т.п.', 'Тому подобное'], ['т. н.', 'так называемый'], ['Т. н.', 'Так называемый'],
@@ -476,8 +494,24 @@ else last = last.slice(0, -2) + ({ gen: 'ого', dat: 'ому', instr: 'ым', 
 parts[parts.length - 1] = last;
 return parts.join(' ');
 }
+function citationCaseFor(head) {
+var match = /(^|[^А-Яа-яЁёA-Za-z])([А-Яа-яЁёA-Za-z]+\.?)\s*$/.exec(head);
+if (!match) return 'nom';
+var cue = match[2].toLowerCase().replace(/\.$/, '');
+return CITATION_CUE_CASES[cue] || 'nom';
+}
+function expandCitationUnit(abbreviation, head) {
+for (var index = 0; index < CITATION_UNITS.length; index += 1) {
+if (CITATION_UNITS[index][0] !== abbreviation) continue;
+var column = CITATION_UNIT_COLUMNS[citationCaseFor(head)];
+return CITATION_UNITS[index][column] || CITATION_UNITS[index][1];
+}
+return null;
+}
 function expandScriptureBooks(text) {
-return text.replace(SCRIPTURE_BOOK_PATTERN, function (whole, before, abbreviation) {
+return text.replace(SCRIPTURE_BOOK_PATTERN, function (whole, before, abbreviation, offset, source) {
+var unit = expandCitationUnit(abbreviation, String(source).slice(Math.max(0, offset - 32), offset));
+if (unit) return before + unit;
 var name = SCRIPTURE_BOOK_NAMES.get(abbreviation);
 return name ? before + name : whole;
 });

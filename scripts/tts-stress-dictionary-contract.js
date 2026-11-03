@@ -91,13 +91,27 @@ function vowelCount(word) {
   return (word.match(/[аеёиоуыэюя]/g) || []).length;
 }
 
-function parseWordTable(source, name) {
+// Spoken forms that the corpus actually needs, checked against real Russian
+// rather than against whatever the worker table happens to say.
+const KNOWN_CITATION_FORMS = {
+  'гл.': { prep: 'главе', acc: 'главу' },
+  'ст.': { prep: 'стихе', acc: 'стих' },
+};
+
+function parseWordRows(source, name) {
   const start = source.indexOf(`var ${name} = [`);
   if (start < 0) return null;
   const end = source.indexOf('];', start);
   if (end < 0) return null;
   const block = source.slice(start, end);
-  return [...block.matchAll(/\['([^']+)',\s*'([^']+)'\]/g)].map((match) => [match[1], match[2]]);
+  return [...block.matchAll(/\[([^\]]*)\]/g)]
+    .map((match) => [...match[1].matchAll(/'([^']*)'/g)].map((cell) => cell[1]))
+    .filter((row) => row.length > 1);
+}
+
+function parseWordTable(source, name) {
+  const rows = parseWordRows(source, name);
+  return rows ? rows.map((row) => [row[0], row[1]]) : null;
 }
 
 function buildExpander(source) {
@@ -135,6 +149,45 @@ function validateVocabulary(workerSource, termMap, files) {
   }
   if (!units || !units.length) issues.push('worker: CITATION_UNITS table is missing');
 
+  // Citation units are spoken through a preposition or a reference verb, so the
+  // table must carry all six case forms and the cue table must select them.
+  const unitRows = parseWordRows(workerSource, 'CITATION_UNITS') || [];
+  const expand = buildExpander(workerSource);
+  for (const row of unitRows) {
+    const [abbreviation, ...forms] = row;
+    if (forms.length !== 6) {
+      issues.push(`${abbreviation}: citation unit needs six case forms (nom, gen, dat, acc, ins, pre), got ${forms.length}`);
+      continue;
+    }
+    const [nominative, , , accusative, , prepositional] = forms;
+    const stem = nominative.toLowerCase().slice(0, 3);
+    for (const form of forms) {
+      if (!/^[А-ЯЁа-яё]+$/.test(form)) issues.push(`${abbreviation}: case form "${form}" must be a single spoken word`);
+      if (!form.toLowerCase().startsWith(stem)) issues.push(`${abbreviation}: case form "${form}" diverges from stem "${stem}"`);
+    }
+    const capitalised = /^[А-ЯЁ]/.test(abbreviation);
+    if (capitalised && !/^[А-ЯЁ]/.test(nominative)) issues.push(`${abbreviation}: sentence-initial unit must keep a capitalised nominative`);
+    if (!capitalised && /^[А-ЯЁ]/.test(nominative)) issues.push(`${abbreviation}: lower-case unit must not carry a capitalised nominative`);
+    for (const form of forms.slice(1)) {
+      if (/^[А-ЯЁ]/.test(form)) issues.push(`${abbreviation}: oblique form "${form}" must stay lower-case`);
+    }
+    if (!expand) continue;
+    // Known-correct Russian for the units that occur in the corpus: the gate must
+    // not accept a table that merely agrees with itself.
+    const spoken = KNOWN_CITATION_FORMS[abbreviation] || {};
+    const expectedPrepositional = spoken.prep || prepositional;
+    const expectedAccusative = spoken.acc || accusative;
+    const checks = [
+      [`${abbreviation} 3`, `${nominative} 3`, 'bare reference stays nominative'],
+      [`в ${abbreviation} 3`, `в ${expectedPrepositional} 3`, 'preposition "в" takes the prepositional case'],
+      [`см. ${abbreviation} 3`, `смотри ${expectedAccusative} 3`, 'reference verb "см." takes the accusative case'],
+    ];
+    for (const [input, expected, label] of checks) {
+      const actual = expand(input);
+      if (actual !== expected) issues.push(`${abbreviation}: ${label} — "${input}" reads as "${actual}", expected "${expected}"`);
+    }
+  }
+
   const table = [...(books || []), ...(units || [])];
   const seen = new Set();
   for (const [abbreviation, expansion] of table) {
@@ -167,6 +220,19 @@ function validateVocabulary(workerSource, termMap, files) {
   }
   for (const [label, count] of [...unmapped.entries()].sort((a, b) => b[1] - a[1])) {
     issues.push(`${label}: ${count} citation(s) expand to nothing — add it to SCRIPTURE_BOOKS`);
+  }
+
+  // No dotted abbreviation may ever reach the synthesizer: if it survives
+  // expansion the voice spells a fragment ("деян", "притч", "матф") instead of
+  // a book name. Every table row is driven through a real citation.
+  const expanderForLeaks = buildExpander(workerSource);
+  if (expanderForLeaks) {
+    for (const [abbreviation] of table) {
+      const spoken = expanderForLeaks(`${abbreviation} 1:1`);
+      if (spoken.toLowerCase().includes(abbreviation.toLowerCase())) {
+        issues.push(`${abbreviation}: abbreviation survives expansion ("${spoken}") and would be spoken as a fragment`);
+      }
+    }
   }
 
   // Domain terminology must never fall through to the unstressed G2P fallback.
@@ -203,6 +269,18 @@ const expansionCases = [
   ['Ис. 53:5', 'Исаии 53:5'],
   ['гл. 3', 'глава 3'],
   ['ст. 8', 'стих 8'],
+  ['в гл. 3', 'в главе 3'],
+  ['в ст. 5', 'в стихе 5'],
+  ['со ст. 5', 'со стиха 5'],
+  ['из гл. 2', 'из главы 2'],
+  ['к гл. 4', 'к главе 4'],
+  ['по ст. 7', 'по стиху 7'],
+  ['см. гл. 3', 'смотри главу 3'],
+  ['ср. ст. 8', 'сравни стих 8'],
+  ['См. гл. 3', 'Смотри главу 3'],
+  ['(гл. 3)', '(глава 3)'],
+  ['Гл. 3 начинается', 'Глава 3 начинается'],
+  ['см. Рим. 5:12', 'смотри Римлянам 5:12'],
   ['т.е. так', 'то есть так'],
   ['Иуд. предал', 'Иуд. предал'],
   ['гл. обр.', 'гл. обр.'],
@@ -218,6 +296,9 @@ const mutationProblems = [
   ['book name loses its stress', validateVocabulary(worker, { ...terms, фессалоникийцам: undefined }, contentFiles)],
   ['domain term loses its stress', validateVocabulary(worker, { ...terms, христоцентричной: undefined }, contentFiles)],
   ['citation units removed', validateVocabulary(worker.replace(/var CITATION_UNITS = \[[\s\S]*?\];/, 'var CITATION_UNITS = [];'), terms, contentFiles)],
+  ['citation case cues removed', validateVocabulary(worker.replace(/var CITATION_CUE_CASES = \{[\s\S]*?\};/, 'var CITATION_CUE_CASES = {};'), terms, contentFiles)],
+  ['citation unit loses its prepositional form', validateVocabulary(worker.replace("['гл.', 'глава', 'главы', 'главе', 'главу', 'главой', 'главе']", "['гл.', 'глава', 'главы', 'главе', 'главу', 'главой', 'глава']"), terms, contentFiles)],
+  ['citation unit loses its accusative form', validateVocabulary(worker.replace("['гл.', 'глава', 'главы', 'главе', 'главу', 'главой', 'главе']", "['гл.', 'глава', 'главы', 'главе', 'глава', 'главой', 'главе']"), terms, contentFiles)],
 ];
 for (const [name, issues] of mutationProblems) {
   assert.ok(issues.length > 0, `${name}: vocabulary mutation must be rejected`);
