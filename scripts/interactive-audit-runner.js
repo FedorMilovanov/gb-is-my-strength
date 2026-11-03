@@ -87,8 +87,15 @@ function runNodeScript(script, args = [], extraEnv = {}) {
     const child = spawn(process.execPath, [script, ...args], {
       cwd: ROOT,
       env: { ...process.env, ...extraEnv },
-      stdio: 'inherit',
+      stdio: ['inherit', 'pipe', 'pipe'],
     });
+    const captured = [];
+    for (const stream of [child.stdout, child.stderr]) {
+      stream.on('data', (chunk) => {
+        captured.push(String(chunk));
+        process[stream === child.stdout ? 'stdout' : 'stderr'].write(chunk);
+      });
+    }
     child.once('error', reject);
     child.once('exit', (code, signal) => {
       if (signal) {
@@ -96,7 +103,17 @@ function runNodeScript(script, args = [], extraEnv = {}) {
         resolve(1);
         return;
       }
-      resolve(code == null ? 1 : code);
+      const finalCode = code == null ? 1 : code;
+      if (finalCode !== 0) {
+        // Surface the failing guard's tail as a workflow annotation: the raw
+        // job log is not readable from the sandbox (egress), the annotation is.
+        const tail = captured.join('').split('\n').filter((line) => line.trim()).slice(-12)
+          .join(' | ')
+          .replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A')
+          .slice(0, 1400);
+        console.error(`::error title=${path.basename(script)} exited with code ${finalCode}::${tail}`);
+      }
+      resolve(finalCode);
     });
   });
 }
@@ -249,7 +266,8 @@ async function runInteractiveContracts(baseUrl) {
   if (scriptureCode !== 0) return scriptureCode;
   const lotPublicationCode = await runLotPublicationBrowserGuard(baseUrl);
   if (lotPublicationCode !== 0) return lotPublicationCode;
-  // DIAGNOSTIC: chrome-label guard invocation temporarily disabled to isolate CI failure.
+  const chromeLabelCode = await runChromeLabelFocusGuard(baseUrl);
+  if (chromeLabelCode !== 0) return chromeLabelCode;
   return runStandaloneReaderLayoutGuard(baseUrl);
 }
 
