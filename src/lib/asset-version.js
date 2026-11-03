@@ -13,7 +13,7 @@ export const ASSET_VERSIONS = {
   'css/reader-preferences.css': 'cffee152',
   'css/series-manuscript.css': 'bd1cd86d',
   'css/series-samizdat.css': '7c8ba23f',
-  'css/site.css': '2ab9d8af',
+  'css/site.css': 'f6ee3488',
   'css/sw-toast.css': '2e540077',
   'css/tts-download-notice.css': 'b9ef192f',
   'fonts/fonts.css': '864cc57a',

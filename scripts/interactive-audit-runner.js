@@ -17,6 +17,7 @@ const HOME_RESUME_BROWSER_GUARD = path.join(__dirname, 'homepage-resume-browser-
 const SERIES_QUIZ_SOURCE_HANDOFF_GUARD = path.join(__dirname, 'series-quiz-source-handoff-browser-contract.mjs');
 const CHROME_LABEL_FOCUS_GUARD = path.join(__dirname, 'chrome-label-focus-traversal-contract.mjs');
 const HOME_AMBIENT_CLS_GUARD = path.join(__dirname, 'home-ambient-cls-contract.mjs');
+const NAGORNAYA_JUSTIFICATION_GUARD = path.join(__dirname, 'nagornaya-justification-contract.mjs');
 const HOME_DESIGN_AUDIT = path.join(__dirname, 'home-design-audit-pro.mjs');
 const HOME_DESIGN_REPORT = path.join(ROOT, 'reports', 'home-design-audit-pro');
 const INTERACTIVE_REPORT = path.join(ROOT, 'reports', 'interactive-audit');
@@ -179,6 +180,13 @@ function runHomeAmbientClsGuard(baseUrl) {
   return runNodeScript(HOME_AMBIENT_CLS_GUARD, [], { AUDIT_BASE: baseUrl });
 }
 
+function runNagornayaJustificationGuard(baseUrl) {
+  if (!fs.existsSync(NAGORNAYA_JUSTIFICATION_GUARD)) {
+    throw new Error(`Nagornaya justification guard is missing at ${NAGORNAYA_JUSTIFICATION_GUARD}`);
+  }
+  return runNodeScript(NAGORNAYA_JUSTIFICATION_GUARD, [], { AUDIT_BASE: baseUrl });
+}
+
 function runStandaloneReaderLayoutGuard(baseUrl) {
   if (!fs.existsSync(STANDALONE_READER_LAYOUT_GUARD)) {
     throw new Error(`Standalone reader layout guard is missing at ${STANDALONE_READER_LAYOUT_GUARD}`);
@@ -282,6 +290,8 @@ async function runInteractiveContracts(baseUrl) {
   if (chromeLabelCode !== 0) return chromeLabelCode;
   const ambientClsCode = await runHomeAmbientClsGuard(baseUrl);
   if (ambientClsCode !== 0) return ambientClsCode;
+  const justificationCode = await runNagornayaJustificationGuard(baseUrl);
+  if (justificationCode !== 0) return justificationCode;
   return runStandaloneReaderLayoutGuard(baseUrl);
 }
 
