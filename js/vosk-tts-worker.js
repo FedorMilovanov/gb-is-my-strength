@@ -1,8 +1,8 @@
 'use strict';
 var CORE_SRC = '/js/vosk-tts-core.js';
 var STRESS_LOOKUP_SRC = '/js/vosk-stress-lookup.js';
-var CUSTOM_TERMS_URL = '/js/vosk-custom-terms.json';
-var STRESS_MARKER_URL = '/js/vosk-stress-marker.bin';
+var CUSTOM_TERMS_URL = '/js/vosk-custom-terms.json?v=16fb831e';
+var STRESS_MARKER_URL = '/js/vosk-stress-marker.bin?v=3ae166fc';
 var ORT_DIST = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/';
 var ORT_SRC = ORT_DIST + 'ort.min.js';
 var FFLATE_SRC = 'https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js';
@@ -15,6 +15,16 @@ var IS_SHARED_SCOPE = 'onconnect' in self;
 var clients = new Map();
 var clientSequence = 0;
 var CLIENT_TTL_MS = 120000;
+// Instance identity: lets a client tell a freshly started shared worker from the
+// one that already holds parsed sessions (navigation must reuse the latter).
+var WORKER_EPOCH = Date.now();
+// Readiness handshake for a page that opens while this worker is mid-inference:
+// the worker's event loop cannot answer a new client until the current
+// inference returns, so the fact "sessions are parsed and live" is published in
+// IndexedDB, where any document can read it without touching this thread.
+var READY_MARKER_CACHE = 'gb-vosk-ready';
+var READY_MARKER_URL = '/__gb-vosk-sessions-ready';
+var READY_MARKER_TTL_MS = 600000;
 var state = {
 dependencies: null,
 loading: null,
@@ -103,7 +113,9 @@ port.onmessageerror = function () { dropPort(port); };
 if (typeof port.start === 'function') port.start();
 send(port, 'status', Object.assign({
 phase: state.phase === 'idle' ? 'connected' : state.phase,
-ready: state.ready
+ready: state.ready,
+clients: clients.size,
+epoch: WORKER_EPOCH
 }, state.statusDetail));
 }
 function messageJobKey(port, message) {
@@ -159,6 +171,37 @@ transaction.oncomplete = function () { db.close(); };
 transaction.onabort = transaction.onerror = function () { try { db.close(); } catch (_) {} };
 });
 });
+}
+// Presence check only: resolves true when the archive key exists, without
+// reading the multi-hundred-megabyte value or touching the network.
+function idbHas(key) {
+return idbOpen().then(function (db) {
+return new Promise(function (resolve) {
+var transaction = db.transaction('files', 'readonly');
+var request = transaction.objectStore('files').count(key);
+request.onsuccess = function () { resolve((request.result || 0) > 0); };
+request.onerror = function () { resolve(false); };
+transaction.oncomplete = function () { try { db.close(); } catch (_) {} };
+transaction.onabort = transaction.onerror = function () { try { db.close(); } catch (_) {} };
+});
+}).catch(function () { return false; });
+}
+function publishReadyState(ready) {
+// Cache Storage is readable by every document of the origin without touching
+// this worker's event loop, which is exactly what a busy worker needs.
+if (!self.caches || typeof self.caches.open !== 'function') return Promise.resolve();
+var payload = JSON.stringify({
+epoch: WORKER_EPOCH,
+at: Date.now(),
+model: MODEL_URL,
+ttl: READY_MARKER_TTL_MS,
+ready: ready === true
+});
+return self.caches.open(READY_MARKER_CACHE).then(function (cache) {
+return cache.put(new Request(READY_MARKER_URL), new Response(payload, {
+headers: { 'content-type': 'application/json' }
+}));
+}).catch(function () {});
 }
 function idbSet(key, value) {
 return idbOpen().then(function (db) {
@@ -290,10 +333,12 @@ state.bertSess = sessions[1];
 state.tok = state.bertSess ? new self.VoskTTSCore.WordPieceTokenizer(decoder.decode(files['bert/vocab.txt'])) : null;
 state.ready = true;
 status('ready');
+void publishReadyState(true);
 return true;
 });
 }).catch(function (error) {
 state.ready = false;
+void publishReadyState(false);
 status(error && error.name === 'AbortError' ? 'cancelled' : 'error', errorPayload(error));
 throw error;
 }).finally(function () {
@@ -331,14 +376,54 @@ rows.push(tensor.data.subarray(start, start + hidden));
 return { rows: rows, hidden: hidden };
 });
 }
+// Scripture references dominate the site text: thousands of citations such as
+// "Рим. 5:12" or "1 Кор. 13:4". Read literally, a bare "Рим." reaches the model
+// as the nonsense token "рим", so every book abbreviation is expanded into the
+// spoken Russian name of the book before synthesis. Matching is anchored on a
+// following chapter number, which keeps prose like "Иуд." or "Ис." untouched.
+var SCRIPTURE_BOOKS = [
+['1 Цар.', 'первая книга Царств'], ['2 Цар.', 'вторая книга Царств'], ['3 Цар.', 'третья книга Царств'], ['Цар.', 'Царств'],
+['1 Пар.', 'первая книга Паралипоменон'], ['2 Пар.', 'вторая книга Паралипоменон'], ['Пар.', 'Паралипоменон'],
+['1 Мак.', 'первая Маккавейская'], ['2 Мак.', 'вторая Маккавейская'], ['3 Мак.', 'третья Маккавейская'],
+['1 Пет.', 'первое послание Петра'], ['2 Пет.', 'второе послание Петра'], ['Пет.', 'Петра'],
+['1 Ин.', 'первое послание Иоанна'], ['2 Ин.', 'второе послание Иоанна'], ['3 Ин.', 'третье послание Иоанна'],
+['1 Кор.', 'первое послание Коринфянам'], ['2 Кор.', 'второе послание Коринфянам'], ['Кор.', 'Коринфянам'],
+['1 Фес.', 'первое послание Фессалоникийцам'], ['2 Фес.', 'второе послание Фессалоникийцам'], ['Фес.', 'Фессалоникийцам'],
+['1 Тим.', 'первое послание Тимофею'], ['2 Тим.', 'второе послание Тимофею'], ['Тим.', 'Тимофею'],
+['Быт.', 'Бытие'], ['Исх.', 'Исход'], ['Лев.', 'Левит'], ['Числ.', 'Чисел'], ['Чис.', 'Чисел'],
+['Втор.', 'Второзаконие'], ['Нав.', 'Навина'], ['Суд.', 'Судей'], ['Руф.', 'Руфи'],
+['Езд.', 'Ездры'], ['Неем.', 'Неемии'], ['Есф.', 'Есфири'], ['Иов.', 'Иова'], ['Пс.', 'Псалом'],
+['Притч.', 'Притчей'], ['Прит.', 'Притчей'], ['Еккл.', 'Екклесиаста'], ['Песн.', 'Песни Песней'],
+['Ис.', 'Исаии'], ['Иер.', 'Иеремии'], ['Плач.', 'Плач Иеремии'], ['Иез.', 'Иезекииля'], ['Дан.', 'Даниила'],
+['Ос.', 'Осии'], ['Иоил.', 'Иоиля'], ['Ам.', 'Амоса'], ['Авд.', 'Авдия'], ['Ион.', 'Ионы'],
+['Мих.', 'Михея'], ['Наум.', 'Наума'], ['Авв.', 'Аввакума'], ['Соф.', 'Софонии'], ['Агг.', 'Аггея'],
+['Зах.', 'Захарии'], ['Мал.', 'Малахии'],
+['Мф.', 'Матфея'], ['Матф.', 'Матфея'], ['Мк.', 'Марка'], ['Мар.', 'Марка'], ['Лк.', 'Луки'],
+['Ин.', 'Иоанна'], ['Иоан.', 'Иоанна'], ['Деян.', 'Деяний'], ['Иак.', 'Иакова'], ['Иуд.', 'Иуды'],
+['Рим.', 'Римлянам'], ['Гал.', 'Галатам'], ['Еф.', 'Ефесянам'], ['Флп.', 'Филиппийцам'],
+['Кол.', 'Колоссянам'], ['Тит.', 'Титу'], ['Тт.', 'Титу'], ['Флм.', 'Филимону'], ['Евр.', 'Евреям'],
+['Откр.', 'Откровение'], ['Отк.', 'Откровение']
+];
+// Chapter/verse units inside a citation ("гл. 3", "ст. 8"), anchored on a
+// following number so prose like "гл. обр." (главным образом) is left alone.
+var CITATION_UNITS = [
+['гл.', 'глава'], ['Гл.', 'Глава'], ['ст.', 'стих'], ['Ст.', 'Стих']
+];
+// Multi-word and numbered forms must be tried before their bare counterparts,
+// otherwise "1 Кор." would leave a stray "1" behind.
+var SCRIPTURE_BOOK_PATTERN = (function () {
+var pairs = SCRIPTURE_BOOKS.concat(CITATION_UNITS).sort(function (a, b) { return b[0].length - a[0].length; });
+var escaped = pairs.map(function (pair) { return pair[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); });
+return new RegExp('(^|[^А-Яа-яЁёA-Za-z])(' + escaped.join('|') + ')(?=\\s*\\d)', 'g');
+}());
+var SCRIPTURE_BOOK_NAMES = new Map(SCRIPTURE_BOOKS.concat(CITATION_UNITS));
 var SITE_ABBREVIATIONS = [
-['1 Цар.', 'первая книга Царств'], ['1 Пет.', 'первое послание Петра'],
-['Быт.', 'Бытие'], ['Исх.', 'Исход'], ['Лев.', 'Левит'], ['Втор.', 'Второзаконие'],
-['Суд.', 'Судей'], ['Пс.', 'Псалом'], ['Ис.', 'Исаии'], ['Иер.', 'Иеремии'],
-['Иез.', 'Иезекииля'], ['Мал.', 'Малахии'], ['Лк.', 'Луки'], ['Ин.', 'Иоанна'],
-['Рим.', 'Римлянам'], ['Откр.', 'Откровение'],
 ['т.е.', 'то есть'], ['Т.е.', 'То есть'], ['т.д.', 'так далее'], ['Т.д.', 'Так далее'],
-['т.п.', 'тому подобное'], ['Т.п.', 'Тому подобное'], ['см.', 'смотри'], ['См.', 'Смотри']
+['т.п.', 'тому подобное'], ['Т.п.', 'Тому подобное'], ['т. н.', 'так называемый'], ['Т. н.', 'Так называемый'],
+['н. э.', 'нашей эры'], ['Н. э.', 'нашей эры'],
+['ок.', 'около'], ['Ок.', 'Около'], ['напр.', 'например'], ['Напр.', 'Например'],
+['др.', 'другие'], ['Др.', 'Другие'], ['ср.', 'сравни'], ['Ср.', 'Сравни'],
+['см.', 'смотри'], ['См.', 'Смотри']
 ];
 var ROMAN_ORDER = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I'];
 var ROMAN_VALUES = { M: 1000, CM: 900, D: 500, CD: 400, C: 100, XC: 90, L: 50, XL: 40, X: 10, IX: 9, V: 5, IV: 4, I: 1 };
@@ -391,8 +476,14 @@ else last = last.slice(0, -2) + ({ gen: 'ого', dat: 'ому', instr: 'ым', 
 parts[parts.length - 1] = last;
 return parts.join(' ');
 }
+function expandScriptureBooks(text) {
+return text.replace(SCRIPTURE_BOOK_PATTERN, function (whole, before, abbreviation) {
+var name = SCRIPTURE_BOOK_NAMES.get(abbreviation);
+return name ? before + name : whole;
+});
+}
 function expandSiteAbbreviations(text) {
-var output = text;
+var output = expandScriptureBooks(String(text).replace(/\u00A0/g, ' '));
 for (var index = 0; index < SITE_ABBREVIATIONS.length; index += 1) {
 output = output.split(SITE_ABBREVIATIONS[index][0]).join(SITE_ABBREVIATIONS[index][1]);
 }
@@ -536,11 +627,20 @@ if (message.type === 'cancel') {
 state.cancelledJobs.add(messageJobKey(port, message));
 return;
 }
+if (message.type === 'cache-status') {
+idbHas(MODEL_URL).then(function (cached) {
+send(port, 'cache-status', { id: message.id, cached: cached });
+});
+return;
+}
 if (message.type === 'cancel-load') {
 state.loadClients.delete(key);
 abortLoadIfUnowned();
 }
 }
+// A brand-new instance holds no parsed sessions, so any marker left behind by a
+// terminated worker must not be trusted by the documents that attach next.
+void publishReadyState(false);
 if (IS_SHARED_SCOPE) {
 setInterval(pruneClients, 60000);
 self.onconnect = function (event) {

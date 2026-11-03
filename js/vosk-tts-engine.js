@@ -1,7 +1,12 @@
 (function () {
 'use strict';
 var VERSION = 2;
-var WORKER_SRC = '/js/vosk-tts-worker.js?v=ccc621c4';
+var WORKER_SRC = '/js/vosk-tts-worker.js?v=a29d96a7';
+// A shared worker cannot answer a new client while it is inside one inference.
+// Documents therefore read the worker's "sessions parsed and live" flag from
+// IndexedDB instead of waiting for the worker's event loop.
+var READY_MARKER_URL = '/__gb-vosk-sessions-ready';
+var READY_MARKER_TTL_MS = 600000;
 var NOTICE_CSS_URL = '/css/tts-download-notice.css?v=b9ef192f';
 var MODEL_DOWNLOAD_OPTOUT_KEY = 'gbx-vosk-warmup';
 var CLIENT_ID = (window.crypto && typeof window.crypto.randomUUID === 'function')
@@ -19,14 +24,20 @@ speakSequence: 0,
 disconnectSequence: 0,
 loadRequests: new Map(),
 speakRequests: new Map(),
+cacheRequests: new Map(),
+cacheSequence: 0,
+cacheProbe: null,
 disconnectRequests: new Map(),
+workerTimeline: [],
+clientTimeline: [],
 retirementPromise: null,
 audio: null,
 audioHandleId: null,
 objectUrl: null,
 notice: null,
 noticeTimer: 0,
-status: { phase: 'idle', ready: false, loading: false, optedOut: false, workerMode: null }
+status: { phase: 'idle', ready: false, loading: false, optedOut: false, workerMode: null },
+readySource: null
 };
 function modelDownloadOptedOut() {
 try { return localStorage.getItem(MODEL_DOWNLOAD_OPTOUT_KEY) === 'off'; }
@@ -61,6 +72,13 @@ return createError({ name: 'AbortError', message: message || 'enhanced voice can
 function normalizeContextText(value) {
 return String(value || '').replace(/(^|[^А-Яа-яЁё])Господа(?=$|[^А-Яа-яЁё])/g, '$1Г+оспода');
 }
+// Bounded, timestamped breadcrumbs: a red real-model run can otherwise only say
+// "it took 29 s", never which side of the port the delay came from.
+function markTimeline(list, entry) {
+if (list.length >= 60) list.shift();
+list.push(entry);
+return list;
+}
 function dispatchStatus(phase, detail) {
 var next = Object.assign({
 phase: phase,
@@ -70,6 +88,7 @@ optedOut: modelDownloadOptedOut(),
 workerMode: state.workerMode
 }, detail || {});
 state.status = next;
+markTimeline(state.clientTimeline, { at: Math.round(performance.now()), phase: phase, ready: next.ready, loading: next.loading });
 try { window.dispatchEvent(new CustomEvent('gb:vosk-status', { detail: next })); } catch (_) {}
 return next;
 }
@@ -78,7 +97,12 @@ return Object.assign({}, state.status, {
 ready: !!state.ready,
 loading: !!state.loading,
 optedOut: modelDownloadOptedOut(),
-workerMode: state.workerMode
+workerMode: state.workerMode,
+readySource: state.readySource || null,
+workerClients: typeof state.workerClients === 'number' ? state.workerClients : null,
+workerEpoch: typeof state.workerEpoch === 'number' ? state.workerEpoch : null,
+workerTimeline: state.workerTimeline.slice(-30),
+clientTimeline: state.clientTimeline.slice(-30)
 });
 }
 function ensureNoticeStyles() {
@@ -300,6 +324,10 @@ function failSpeak(id, error) {
 var entry = state.speakRequests.get(id);
 if (!entry) return;
 state.speakRequests.delete(id);
+if (entry.blobUrl) {
+try { URL.revokeObjectURL(entry.blobUrl); } catch (_) {}
+entry.blobUrl = null;
+}
 if (!entry.handle.cancelled && typeof entry.onerror === 'function') entry.onerror(error);
 }
 function failAllSpeaks(error) {
@@ -371,6 +399,32 @@ return state.retirementPromise;
 function retireDocumentClient() {
 void retireWorker('document lifetime ended');
 }
+function startEntryPlayback(id, entry) {
+if (!entry || entry.handle.cancelled || !entry.blobUrl) return;
+stopAudio();
+var audio = getAudio();
+state.audioHandleId = id;
+state.objectUrl = entry.blobUrl;
+entry.blobUrl = null;
+audio.src = state.objectUrl;
+audio.playbackRate = 1;
+audio.onended = function () {
+var current = state.speakRequests.get(id);
+state.speakRequests.delete(id);
+state.audioHandleId = null;
+revokeObjectUrl();
+if (current && !current.handle.cancelled && typeof current.onend === 'function') current.onend();
+};
+audio.onerror = function (event) {
+failSpeak(id, event instanceof Error ? event : new Error('Vosk audio playback failed'));
+};
+try {
+var playback = audio.play();
+if (playback && playback.catch) playback.catch(function (error) { failSpeak(id, error); });
+} catch (error) {
+failSpeak(id, error);
+}
+}
 function handleWorkerMessage(message) {
 var type = message.type;
 if (type === 'disconnected') {
@@ -380,23 +434,46 @@ return;
 }
 if (type === 'status') {
 if (message.phase === 'ready') state.ready = true;
+if (typeof message.clients === 'number') state.workerClients = message.clients;
+if (typeof message.epoch === 'number') state.workerEpoch = message.epoch;
+markTimeline(state.workerTimeline, {
+at: Math.round(performance.now()),
+phase: message.phase || null,
+ready: message.ready === true,
+clients: typeof message.clients === 'number' ? message.clients : null,
+reason: message.reason || null
+});
+if (!anyQuietLoad()) {
 showStatus(message.phase || 'preparing', {
 reason: message.reason || null,
 meta: message.message || undefined
 });
+}
 return;
 }
 if (type === 'ready') {
+var quietReady = anyQuietLoad();
 state.ready = true;
 settleLoad(message.id);
-finishStatus('ready');
+if (!quietReady) finishStatus('ready');
 return;
 }
 if (type === 'load-error') {
 var loadError = createError(message, 'Vosk model failed to load');
+state.ready = false;
+state.readySource = null;
+var quietError = anyQuietLoad();
 settleLoad(message.id, loadError);
+if (quietError) return;
 if (loadError.name === 'AbortError') finishStatus('cancelled');
 else showStatus('error', { reason: loadError.message });
+return;
+}
+if (type === 'cache-status') {
+var cacheResolve = state.cacheRequests.get(message.id);
+if (!cacheResolve) return;
+state.cacheRequests.delete(message.id);
+cacheResolve(!!message.cached);
 return;
 }
 if (type === 'synth-progress') {
@@ -410,28 +487,15 @@ return;
 if (type === 'audio') {
 var entry = state.speakRequests.get(message.id);
 if (!entry || entry.handle.cancelled) return;
-stopAudio();
-var audio = getAudio();
-state.audioHandleId = message.id;
-state.objectUrl = URL.createObjectURL(new Blob([message.wav], { type: 'audio/wav' }));
-audio.src = state.objectUrl;
-audio.playbackRate = 1;
-audio.onended = function () {
-var current = state.speakRequests.get(message.id);
-state.speakRequests.delete(message.id);
-state.audioHandleId = null;
-revokeObjectUrl();
-if (current && !current.handle.cancelled && typeof current.onend === 'function') current.onend();
-};
-audio.onerror = function (event) {
-failSpeak(message.id, event instanceof Error ? event : new Error('Vosk audio playback failed'));
-};
-try {
-var playback = audio.play();
-if (playback && playback.catch) playback.catch(function (error) { failSpeak(message.id, error); });
-} catch (error) {
-failSpeak(message.id, error);
+if (entry.blobUrl) {
+try { URL.revokeObjectURL(entry.blobUrl); } catch (_) {}
 }
+entry.blobUrl = URL.createObjectURL(new Blob([message.wav], { type: 'audio/wav' }));
+entry.ready = true;
+// A prefetched fragment is synthesized ahead of time but must never interrupt
+// the fragment that is already audible. It waits for an explicit play(handle).
+if (!entry.playRequested) return;
+startEntryPlayback(message.id, entry);
 return;
 }
 if (type === 'synth-error') {
@@ -507,17 +571,56 @@ function send(message) {
 message.clientId = CLIENT_ID;
 ensureWorker().postMessage(message);
 }
-function ensureLoaded() {
+function anyQuietLoad() {
+var quiet = false;
+state.loadRequests.forEach(function (entry) { if (entry.quiet) quiet = true; });
+return quiet;
+}
+function readReadyMarker() {
+// Cache Storage, not IndexedDB: the model store is owned by the worker, and the
+// main thread must never open it (see the engine status contract).
+if (typeof caches === 'undefined' || typeof caches.match !== 'function') return Promise.resolve(false);
+return new Promise(function (resolve) {
+var settled = false;
+var timer = setTimeout(function () { finish(false); }, 800);
+function finish(value) {
+if (settled) return;
+settled = true;
+clearTimeout(timer);
+resolve(value === true);
+}
+try {
+caches.match(READY_MARKER_URL).then(function (response) {
+if (!response) { finish(false); return null; }
+return response.json().then(function (value) {
+finish(!!value && value.ready === true && typeof value.at === 'number' && Date.now() - value.at < READY_MARKER_TTL_MS);
+}, function () { finish(false); });
+}).catch(function () { finish(false); });
+} catch (_) { finish(false); }
+});
+}
+function adoptReadyMarker(id, quiet) {
+readReadyMarker().then(function (ready) {
+if (!ready || state.ready) return;
+state.ready = true;
+state.readySource = 'marker';
+settleLoad(id);
+if (!quiet && !anyQuietLoad()) finishStatus('ready');
+}).catch(function () {});
+}
+function ensureLoaded(options) {
+options = options || {};
+var quiet = options.quiet === true;
 if (state.ready) return Promise.resolve(true);
 if (modelDownloadOptedOut()) {
-showStatus('disabled', { reason: 'optout' });
+if (!quiet) showStatus('disabled', { reason: 'optout' });
 return Promise.reject(createCancelledError('enhanced voice download disabled by user'));
 }
 if (state.loading) return state.loading;
 var id = ++state.loadSequence;
-showStatus('preparing');
+if (!quiet) showStatus('preparing');
 state.loading = new Promise(function (resolve, reject) {
-state.loadRequests.set(id, { resolve: resolve, reject: reject });
+state.loadRequests.set(id, { resolve: resolve, reject: reject, quiet: quiet });
 try { send({ type: 'ensure', id: id }); }
 catch (error) {
 state.loadRequests.delete(id);
@@ -526,6 +629,7 @@ reject(error);
 }).finally(function () {
 state.loading = null;
 });
+if (state.workerMode === 'shared') adoptReadyMarker(id, quiet);
 return state.loading;
 }
 function clearModelDownloadOptOut() {
@@ -536,7 +640,7 @@ function retryLoading(options) {
 options = options || {};
 if (options.clearOptOut !== false) clearModelDownloadOptOut();
 if (!state.worker && state.loading) state.loading = null;
-return ensureLoaded();
+return ensureLoaded({ quiet: options.quiet === true });
 }
 function cancelLoading(options) {
 var persist = !options || options.persist !== false;
@@ -550,10 +654,20 @@ finishStatus('cancelled');
 try { window.dispatchEvent(new CustomEvent('gb:vosk-model-download-cancelled')); } catch (_) {}
 return true;
 }
-function speak(text, rate, speakerId, onend, onerror) {
+function speak(text, rate, speakerId, onend, onerror, options) {
+options = options || {};
 var id = ++state.speakSequence;
-var handle = { engine: 'vosk', id: id, cancelled: false };
-state.speakRequests.set(id, { handle: handle, onend: onend, onerror: onerror });
+var deferred = options.defer === true;
+var handle = { engine: 'vosk', id: id, cancelled: false, deferred: deferred };
+state.speakRequests.set(id, {
+handle: handle,
+onend: onend,
+onerror: onerror,
+deferred: deferred,
+playRequested: !deferred,
+ready: false,
+blobUrl: null
+});
 try {
 send({
 type: 'speak',
@@ -567,14 +681,61 @@ failSpeak(id, error);
 }
 return handle;
 }
+// Starts (or schedules) playback of a fragment produced by speak(..., {defer:true}).
+// If synthesis is still running, playback begins as soon as the worker delivers
+// the audio, with these callbacks. Returns false when the handle is unknown.
+function play(handle, onend, onerror) {
+var id = handle && handle.id;
+var entry = id ? state.speakRequests.get(id) : null;
+if (!entry || entry.handle.cancelled) return false;
+if (typeof onend === 'function') entry.onend = onend;
+if (typeof onerror === 'function') entry.onerror = onerror;
+entry.playRequested = true;
+if (entry.ready) startEntryPlayback(id, entry);
+return true;
+}
+function isPrepared(handle) {
+var id = handle && handle.id;
+var entry = id ? state.speakRequests.get(id) : null;
+return !!(entry && entry.ready && !entry.handle.cancelled);
+}
 function cancel(handle) {
 if (handle) handle.cancelled = true;
 var id = handle && handle.id;
 if (id && state.worker) {
 try { send({ type: 'cancel', id: id }); } catch (_) {}
 }
-if (id) state.speakRequests.delete(id);
+if (id) {
+var entry = state.speakRequests.get(id);
+if (entry && entry.blobUrl) {
+try { URL.revokeObjectURL(entry.blobUrl); } catch (_) {}
+}
+state.speakRequests.delete(id);
+}
 if (!id || state.audioHandleId === id) stopAudio();
+}
+// Cheap cache probe: the Worker owns the IndexedDB model store, so ask it
+// whether the archive key exists without reading the ~280 MB value or
+// triggering a download. Used to warm a model that is already on disk without
+// touching the network.
+function hasCachedModel() {
+if (state.ready) return Promise.resolve(true);
+if (state.cacheProbe) return state.cacheProbe;
+state.cacheProbe = new Promise(function (resolve) {
+var id = ++state.cacheSequence;
+var settled = false;
+function finish(value) {
+if (settled) return;
+settled = true;
+state.cacheRequests.delete(id);
+resolve(value);
+}
+state.cacheRequests.set(id, finish);
+try { send({ type: 'cache-status', id: id }); }
+catch (_) { finish(false); return; }
+setTimeout(function () { finish(false); }, 5000);
+}).finally(function () { state.cacheProbe = null; });
+return state.cacheProbe;
 }
 window.addEventListener('pagehide', retireDocumentClient);
 window.VoskTTSEngine = Object.freeze({
@@ -588,7 +749,10 @@ retryLoading: retryLoading,
 clearModelDownloadOptOut: clearModelDownloadOptOut,
 cancelLoading: cancelLoading,
 retire: retireWorker,
+hasCachedModel: hasCachedModel,
 speak: speak,
+play: play,
+isPrepared: isPrepared,
 cancel: cancel
 });
 })();

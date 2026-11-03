@@ -9,7 +9,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const REPORT_DIR = path.join(ROOT, 'reports', 'standalone-reader-layout-guards');
 const BASE = String(process.env.AUDIT_BASE || '').trim().replace(/\/$/, '');
 const VIEWPORTS = [390, 768, 1199, 1200, 1280, 1366, 1440, 1920];
-const MEASURES = { narrow: 36, normal: 46, wide: 52 };
+const MEASURES = { narrow: 36, normal: 46, wide: 53 };
 const ROUTES = [
   {
     key: 'HM',
@@ -64,7 +64,7 @@ function sourceContracts() {
     ['SRL-S08', 'ReaderSettings inherits the single normal 46rem measure token', settings.includes('--hm-article-measure: var(--gb-reader-measure, 46rem)')],
     ['SRL-S09', 'ReaderSettings derives shell from measure plus 6rem', settings.includes('--hm-article-shell: calc(var(--hm-article-measure) + 6rem)')],
     ['SRL-S10', 'every direct article block shares the ReaderSettings measure owner', settings.includes('[data-reader-root] .article-body > *') && settings.includes('max-width: var(--hm-article-measure)')],
-    ['SRL-S11', 'reader measures are centrally defined as 36rem, 46rem and 52rem', readerPrefsCss.includes(':root[data-reader-measure="narrow"] { --gb-reader-measure: 36rem; }') && readerPrefsCss.includes(':root[data-reader-measure="normal"] { --gb-reader-measure: 46rem; }') && readerPrefsCss.includes(':root[data-reader-measure="wide"] { --gb-reader-measure: 52rem; }')],
+    ['SRL-S11', 'reader measures are centrally defined as 36rem, 46rem and 53rem', readerPrefsCss.includes(':root[data-reader-measure="narrow"] { --gb-reader-measure: 36rem; }') && readerPrefsCss.includes(':root[data-reader-measure="normal"] { --gb-reader-measure: 46rem; }') && readerPrefsCss.includes(':root[data-reader-measure="wide"] { --gb-reader-measure: 53rem; }')],
     ['SRL-S12', 'ReaderSettings explicitly owns summary inline centring', summaryOwner.includes('margin-left: auto') && summaryOwner.includes('margin-right: auto')],
     ['SRL-S13', 'summary centring uses normal cascade ownership, not important compensation', summaryOwner.length > 0 && !summaryOwner.includes('!important')],
     ['SRL-S14', 'Kod Da Vinci route declares one outer page-wrap as both reader root and rail shell', /<div[^>]*class="page-wrap"[^>]*data-reader-root[^>]*data-reader-rail-main[^>]*>/.test(kdvRoute)],
@@ -222,7 +222,11 @@ fs.writeFileSync(path.join(REPORT_DIR, 'report.json'), JSON.stringify({ summary,
 fs.writeFileSync(path.join(REPORT_DIR, 'report.md'), ['# Standalone reader layout guards', '', `- SHA: \`${summary.sha || 'local'}\``, `- Checks: **${summary.checks}**`, `- Passed: **${summary.passed}**`, `- Failed: **${summary.failed}**`, '', '| ID | Result | Description |', '|---|---|---|', ...checks.map((item) => `| ${item.id} | ${item.pass ? 'PASS' : 'FAIL'} | ${item.description.replace(/\|/g, '\\|')} |`)].join('\n'));
 checks.forEach((item) => {
   console.log(`[STANDALONE-READER-LAYOUT] ${item.pass ? 'PASS' : 'FAIL'} ${item.id} :: ${item.description}`);
-  if (!item.pass) console.log(`[STANDALONE-READER-LAYOUT-EVIDENCE] ${item.id} :: ${JSON.stringify(item.evidence)}`);
+  if (!item.pass) {
+    console.log(`[STANDALONE-READER-LAYOUT-EVIDENCE] ${item.id} :: ${JSON.stringify(item.evidence)}`);
+    // The run log is not always reachable; the annotation is.
+    console.error(`::error::${item.id} ${item.description} :: ${JSON.stringify(item.evidence).slice(0, 900)}`);
+  }
 });
 console.log('[STANDALONE-READER-LAYOUT-SUMMARY]', JSON.stringify(summary));
 assert.equal(failed.length, 0, `Standalone reader layout guards failed: ${failed.map((item) => item.id).join(', ')}`);

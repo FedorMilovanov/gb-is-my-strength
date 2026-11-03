@@ -189,7 +189,79 @@ const sources = {
   liveContract: read('scripts/tts-live-deployment-contract.mjs'),
   deployWorkflow: read('.github/workflows/deploy.yml'),
   distAudit: read('scripts/dist-publication-audit.js'),
+  reader: read('src/runtime/reader-tts.js'),
 };
+
+
+// Delivery pipeline (owner report 2026-11-02): the enhanced voice must attach
+// without a consent card, survive a reload, take over mid-narration and must not
+// stall between segments. These checks freeze that contract in source.
+function validateDelivery(input) {
+  const { engine, worker, reader } = input;
+  const problems = [];
+  const requireText = (label, source, value) => { if (!source.includes(value)) problems.push(label); };
+
+  for (const [label, value] of [
+    ['engine: quiet load is an explicit option', 'var quiet = options.quiet === true;'],
+    ['engine: quiet load suppresses the preparing card', 'if (!quiet) showStatus(\'preparing\');'],
+    ['engine: quiet failure stays silent', 'if (quietError) return;'],
+    ['engine: quiet ready stays silent', 'if (!quietReady) finishStatus(\'ready\');'],
+    ['engine: prefetched fragment is not auto-played', 'if (!entry.playRequested) return;'],
+    ['engine: deferred playback entry point', 'function play(handle, onend, onerror) {'],
+    ['engine: prepared probe', 'function isPrepared(handle) {'],
+    ['engine: cache probe without download', "send({ type: 'cache-status', id: id });"],
+    ['engine: prepared blob released on cancel', 'if (entry && entry.blobUrl) {'],
+    ['worker: presence-only cache probe', 'function idbHas(key)'],
+    ['worker: cache probe never reads the archive', 'transaction.objectStore(\'files\').count(key)'],
+    ['worker: cache-status answer', "send(port, 'cache-status', { id: message.id, cached: cached });"],
+    ['reader: lookahead synthesis', '{ defer: true }'],
+    ['reader: lookahead hand-off', 'function playHandle(handle, rate) {'],
+    ['reader: silent attachment', 'function handOverToVosk(engine) {'],
+    ['reader: handover waits for the prepared fragment', 'if (typeof engine.isPrepared === \'function\' && engine.isPrepared(handle)) {'],
+    ['reader: system voice stopped only at hand-over', 'function applyHandover(engine, handle) {'],
+    ['reader: cached model remembered across reloads', "const MODEL_CACHED_KEY = 'gbx-vosk-model-cached';"],
+    ['reader: boot probe for an existing model', 'function bootPrewarm() {'],
+    ['reader: boot probe asks the cache first', 'return engine.hasCachedModel().then((cached) => (cached ? warmVosk({ quiet: true }) : null));'],
+    ['reader: implicit warm-up is quiet', 'function warmVosk({ retry = false, quiet = true } = {}) {'],
+    ['reader: cap on a lost job instead of a hang', 'function armStallWatchdog(operation) {'],
+    ['reader: failed job cancelled before fallback', 'window.VoskTTSEngine.cancel(state.voskHandle)'],
+  ]) requireText(label, label.startsWith('worker:') ? worker : label.startsWith('engine:') ? engine : reader, value);
+
+  if (/if \(type === 'audio'\) \{[\s\S]{0,400}?audio\.play\(\)/.test(engine)) {
+    problems.push('engine: arriving audio still auto-plays and can cut the audible fragment');
+  }
+  if (!reader.includes("state.prefetch = { index: state.index + 1")) {
+    problems.push('reader: lookahead is not bound to the next segment');
+  }
+  if (!reader.includes('cancelHandover();')) problems.push('reader: pending hand-over is never cancelled');
+  if (/engine\.speak\(\s*text,\s*state\.rate,\s*state\.speaker,\s*\(\) => advance\(operation\),\s*\(error\) => fail\(operation, error\),\s*\{ defer: true \}/.test(reader)) {
+    problems.push('reader: the audible fragment was made deferred — it would never start');
+  }
+  return problems;
+}
+
+const deliveryProblems = validateDelivery(sources);
+assert.deepEqual(deliveryProblems, [], deliveryProblems.join('\n'));
+
+const deliveryMutations = [
+  ['quiet load becomes loud', { engine: sources.engine.replace("if (!quiet) showStatus('preparing');", "showStatus('preparing');") }],
+  ['prefetched fragment auto-plays', { engine: sources.engine.replace('if (!entry.playRequested) return;', '') }],
+  ['cache probe removed', { engine: sources.engine.replace("send({ type: 'cache-status', id: id });", '') }],
+  ['worker reads the whole archive to probe', { worker: sources.worker.replace("transaction.objectStore('files').count(key)", "transaction.objectStore('files').get(key)") }],
+  ['reload forgets the cached model', { reader: sources.reader.replace("const MODEL_CACHED_KEY = 'gbx-vosk-model-cached';", "const MODEL_CACHED_KEY = 'unused';") }],
+  ['boot probe downloads instead of probing', { reader: sources.reader.replace('return engine.hasCachedModel().then((cached) => (cached ? warmVosk({ quiet: true }) : null));', 'return warmVosk();') }],
+  ['implicit warm-up asks again', { reader: sources.reader.replace('function warmVosk({ retry = false, quiet = true } = {}) {', 'function warmVosk({ retry = false, quiet = false } = {}) {') }],
+  ['lookahead disabled', { reader: sources.reader.replaceAll('{ defer: true }', '{ defer: false }') }],
+  ['hand-over disabled', { reader: sources.reader.replace('function handOverToVosk(engine) {', 'function handOverToVoskDisabled(engine) {') }],
+  ['hand-over restarts instead of continuing', { reader: sources.reader.replace('if (typeof engine.isPrepared === \'function\' && engine.isPrepared(handle)) {', 'if (false) {') }],
+  ['lost job hangs forever', { reader: sources.reader.replace('function armStallWatchdog(operation) {', 'function armStallWatchdogDisabled(operation) {') }],
+  ['failed job keeps synthesizing under the system voice', { reader: sources.reader.replaceAll('window.VoskTTSEngine.cancel(state.voskHandle)', 'void 0') }],
+];
+
+for (const [name, changes] of deliveryMutations) {
+  const problems = validateDelivery({ ...sources, ...changes });
+  assert.ok(problems.length > 0, `${name}: delivery mutation must be rejected`);
+}
 
 const baseline = validate(sources);
 assert.deepEqual(baseline, [], baseline.join('\n'));
@@ -218,4 +290,4 @@ for (const [name, changes] of mutations) {
   assert.ok(problems.length > 0, `${name}: mutation must be rejected`);
 }
 
-console.log(`TTS SharedWorker architecture contract: PASS (${mutations.length} adversarial mutations rejected).`);
+console.log(`TTS SharedWorker architecture contract: PASS (${mutations.length} + ${deliveryMutations.length} adversarial mutations rejected).`);

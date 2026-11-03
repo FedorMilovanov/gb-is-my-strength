@@ -10,10 +10,16 @@
   const ENGINE_SRC = '/js/vosk-tts-engine.js';
   const LOCK_NAME = 'gb-vosk-model-init-v2';
   const MAX_CHUNK = 520;
+  // Lookahead chunks are synthesized while the previous one is audible; the
+  // watchdog measures "not a single progress event", with a longer window for
+  // the first chunk of a session (cold ONNX session init).
+  const VOSK_STALL_MS = 45000;
+  const VOSK_COLD_STALL_MS = 90000;
+  const MODEL_CACHED_KEY = 'gbx-vosk-model-cached';
   const EXCLUDED_BLOCK = [
     'nav', 'aside', 'footer', '[hidden]', '[aria-hidden="true"]',
-    '[data-pagefind-ignore]', '[data-no-speech]', '.breadcrumb', '.article-byline',
-    '.footnote', '.footnotes', '.sources-block', '.reading-list-section',
+    '[data-pagefind-ignore]', '[data-no-speech]', '[data-tts-policy="exclude"]',
+    '.breadcrumb', '.article-byline', '.msjline', '.footnote', '.footnotes', '.sources-block', '.reading-list-section',
     '.series-navigation', '.gb-tts-download-notice', '.gb-fc-toast',
   ].join(',');
   const STRIP_INLINE = [
@@ -57,6 +63,12 @@
     followElement: null,
     engineScriptPromise: null,
     warmPromise: null,
+    warmAttached: false,
+    bootPrewarm: false,
+    prefetch: null,
+    handover: null,
+    stallTimer: 0,
+    voskChunks: 0,
     lastError: null,
     outcomeReported: false,
   };
@@ -299,7 +311,22 @@
     return navigator.locks.request(LOCK_NAME, { mode: 'exclusive' }, callback);
   }
 
-  function warmVosk({ retry = false } = {}) {
+  function markModelCached() {
+    try { localStorage.setItem(MODEL_CACHED_KEY, '1'); } catch {}
+  }
+
+  function modelMayBeCached() {
+    try { return localStorage.getItem(MODEL_CACHED_KEY) === '1'; } catch { return false; }
+  }
+
+  function modelOptedOut() {
+    try { return localStorage.getItem('gbx-vosk-warmup') === 'off'; } catch { return false; }
+  }
+
+  // quiet: the enhanced voice attaches on its own — no download/consent card.
+  // The owner asked for silent delivery: the better voice appears as soon as it
+  // is usable and simply takes over, so every implicit warm path is quiet.
+  function warmVosk({ retry = false, quiet = true } = {}) {
     if (state.warmPromise) return state.warmPromise;
     state.warmPromise = ensureVoskScript()
       .then((engine) => {
@@ -307,10 +334,14 @@
         if (engine.isReady?.()) return engine;
         return withModelLock(async () => {
           if (engine.isReady?.()) return engine;
-          if (retry && engine.retryLoading) await engine.retryLoading({ clearOptOut: true });
-          else await engine.ensureLoaded();
+          if (retry && engine.retryLoading) await engine.retryLoading({ clearOptOut: true, quiet });
+          else await engine.ensureLoaded(quiet ? { quiet: true } : undefined);
           return engine;
         });
+      })
+      .then((engine) => {
+        if (engine?.isReady?.()) markModelCached();
+        return engine;
       })
       .catch((error) => {
         if (!error?.userCancelled) {
@@ -323,10 +354,103 @@
     return state.warmPromise;
   }
 
+  // The better voice is prepared in the background. When it becomes ready
+  // mid-narration the system voice keeps talking until the enhanced fragment is
+  // synthesized, then the switch happens at the last spoken word boundary — no
+  // prompt, no restart and no silence.
+  const HANDOVER_TIMEOUT_MS = 30000;
+
+  function handOverToVosk(engine) {
+    if (!engine?.isReady?.()) return false;
+    if (state.engine !== 'webspeech' || !currentPart()) return false;
+    if (!['playing', 'paused', 'starting'].includes(state.phase)) return false;
+    if (state.handover) return false;
+    const part = currentPart();
+    const text = (part?.text || '').slice(state.offset).replace(/^\s+/, '');
+    if (text && prefetchSupported(engine) && state.phase !== 'paused') {
+      let handle = null;
+      try {
+        handle = engine.speak(text, state.rate, state.speaker, null, null, { defer: true });
+      } catch (error) {
+        handle = null;
+      }
+      if (handle) {
+        const deadline = Date.now() + HANDOVER_TIMEOUT_MS;
+        state.handover = { handle, timer: 0 };
+        const poll = () => {
+          if (state.handover?.handle !== handle) return;
+          if (state.engine !== 'webspeech' || !engine.isReady?.() || !currentPart()) {
+            cancelHandover();
+            return;
+          }
+          if (typeof engine.isPrepared === 'function' && engine.isPrepared(handle)) {
+            applyHandover(engine, handle);
+            return;
+          }
+          if (Date.now() > deadline) {
+            cancelHandover();
+            return;
+          }
+          state.handover.timer = setTimeout(poll, 100);
+        };
+        poll();
+        return true;
+      }
+    }
+    return applyHandover(engine, null);
+  }
+
+  function cancelHandover() {
+    const pending = state.handover;
+    state.handover = null;
+    if (pending?.timer) clearTimeout(pending.timer);
+    if (pending?.handle && window.VoskTTSEngine?.cancel) {
+      try { window.VoskTTSEngine.cancel(pending.handle); } catch {}
+    }
+  }
+
+  function applyHandover(engine, handle) {
+    const pending = state.handover;
+    state.handover = null;
+    if (pending?.timer) clearTimeout(pending.timer);
+    if (state.engine !== 'webspeech' || !currentPart()) {
+      if (handle && engine?.cancel) {
+        try { engine.cancel(handle); } catch {}
+      }
+      return false;
+    }
+    const wasPaused = state.phase === 'paused' || state.pausedDuringStart;
+    state.token += 1;
+    try { window.speechSynthesis?.cancel(); } catch {}
+    state.utterance = null;
+    state.engine = 'vosk';
+    state.pausedDuringStart = wasPaused;
+    if (wasPaused) {
+      if (handle && engine?.cancel) {
+        try { engine.cancel(handle); } catch {}
+      }
+      setPhase('paused');
+      return true;
+    }
+    setPhase('starting');
+    if (handle) {
+      playHandle(handle, state.rate);
+      return true;
+    }
+    speakCurrent('vosk');
+    return true;
+  }
+
   function selectEngine() {
     if (window.VoskTTSEngine?.isReady?.()) return 'vosk';
     if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
-      void warmVosk();
+      if (!state.warmAttached) {
+        state.warmAttached = true;
+        void warmVosk().then((engine) => {
+          state.warmAttached = false;
+          handOverToVosk(engine);
+        });
+      }
       return 'webspeech';
     }
     return 'vosk';
@@ -349,6 +473,8 @@
       if (operation !== state.token || state.engine !== 'vosk' || ['idle', 'complete', 'error'].includes(state.phase)) return;
       const audio = findVoskAudio();
       if (audio && /^blob:/.test(audio.currentSrc || audio.src || '')) {
+        // Audio is on the wire: the stall window is only about waiting for it.
+        clearStallWatchdog();
         state.voskAudio = audio;
         if (!state.outcomeReported) {
           state.outcomeReported = true;
@@ -389,8 +515,12 @@
   function advance(operation) {
     if (operation !== state.token) return;
     clearProgressLoop();
+    clearStallWatchdog();
+    cancelHandover();
     const part = currentPart();
     if (part) state.completedChars += part.text.length;
+    const pending = state.prefetch;
+    state.prefetch = null;
     state.index += 1;
     state.offset = 0;
     state.utterance = null;
@@ -399,8 +529,15 @@
     state.voskSynthesisProgress = 0;
     state.pausedDuringStart = false;
     if (state.index >= state.parts.length) {
+      if (pending?.handle && window.VoskTTSEngine?.cancel) {
+        try { window.VoskTTSEngine.cancel(pending.handle); } catch {}
+      }
       setProgress(1);
       setPhase('complete');
+      return;
+    }
+    if (pending && pending.index === state.index && typeof window.VoskTTSEngine?.play === 'function') {
+      playPrefetched(pending);
       return;
     }
     speakCurrent();
@@ -409,10 +546,20 @@
   function fail(operation, error) {
     if (operation !== state.token) return;
     clearProgressLoop();
+    clearStallWatchdog();
+    dropPrefetch();
+    cancelHandover();
     state.lastError = error instanceof Error ? error.message : String(error || 'unknown error');
     console.error('[GBReaderTTS] playback failed', error);
     if (state.engine === 'vosk') reportTtsIssue('chunk_playback: ' + state.lastError);
     if (state.engine === 'vosk' && window.speechSynthesis && window.SpeechSynthesisUtterance) {
+      // The failed job must not speak over the system voice later.
+      if (state.voskHandle && window.VoskTTSEngine?.cancel) {
+        try { window.VoskTTSEngine.cancel(state.voskHandle); } catch {}
+      }
+      if (state.voskAudio) {
+        try { state.voskAudio.pause(); } catch {}
+      }
       state.engine = 'webspeech';
       state.voskHandle = null;
       state.voskAudio = null;
@@ -480,6 +627,7 @@
     state.voskSynthesisProgress = 0;
     setPhase(state.pausedDuringStart ? 'paused' : 'starting');
     followCurrentElement();
+    state.voskChunks += 1;
     state.voskHandle = engine.speak(
       text,
       state.rate,
@@ -488,6 +636,114 @@
       (error) => fail(operation, error),
     );
     watchVoskProgress(operation);
+    armStallWatchdog(operation);
+    schedulePrefetch();
+  }
+
+  // Kill the multi-second silence between numbered list items: the next chunk
+  // is synthesized while the current one is still audible and only starts when
+  // the reader explicitly asks for it.
+  function prefetchSupported(engine) {
+    return !!engine && typeof engine.play === 'function' && typeof engine.isPrepared === 'function';
+  }
+
+  function dropPrefetch() {
+    const pending = state.prefetch;
+    state.prefetch = null;
+    if (pending?.handle && window.VoskTTSEngine?.cancel) {
+      try { window.VoskTTSEngine.cancel(pending.handle); } catch {}
+    }
+  }
+
+  function schedulePrefetch() {
+    dropPrefetch();
+    const engine = window.VoskTTSEngine;
+    if (!prefetchSupported(engine) || !engine.isReady?.()) return;
+    if (state.phase === 'paused' || state.phase === 'idle') return;
+    const next = state.parts[state.index + 1];
+    const text = (next?.text || '').replace(/^\s+/, '');
+    if (!text) return;
+    let handle = null;
+    try {
+      handle = engine.speak(
+        text,
+        state.rate,
+        state.speaker,
+        null,
+        (error) => {
+          if (state.prefetch?.handle !== handle) return;
+          state.prefetch = null;
+          // A failed lookahead must never break playback: the segment is simply
+          // synthesized on demand when its turn comes.
+          console.warn('[GBReaderTTS] lookahead synthesis failed', error);
+        },
+        { defer: true },
+      );
+    } catch (error) {
+      console.warn('[GBReaderTTS] lookahead synthesis failed', error);
+      return;
+    }
+    if (!handle) return;
+    state.prefetch = { index: state.index + 1, rate: state.rate, speaker: state.speaker, handle };
+  }
+
+  function playHandle(handle, rate) {
+    const engine = window.VoskTTSEngine;
+    const operation = ++state.token;
+    state.engine = 'vosk';
+    state.generatedRate = rate;
+    state.voskHandle = handle;
+    state.voskAudio = null;
+    state.voskSynthesisProgress = 0;
+    state.voskChunks += 1;
+    setPhase(state.pausedDuringStart ? 'paused' : 'starting');
+    followCurrentElement();
+    let accepted = false;
+    try {
+      accepted = engine.play(
+        handle,
+        () => advance(operation),
+        (error) => fail(operation, error),
+      );
+    } catch (error) {
+      accepted = false;
+      console.warn('[GBReaderTTS] prepared chunk hand-off failed', error);
+    }
+    if (!accepted) {
+      speakCurrent('vosk');
+      return false;
+    }
+    watchVoskProgress(operation);
+    armStallWatchdog(operation);
+    schedulePrefetch();
+    return true;
+  }
+
+  function playPrefetched(pending) {
+    playHandle(pending.handle, pending.rate);
+  }
+
+  function clearStallWatchdog() {
+    if (state.stallTimer) clearTimeout(state.stallTimer);
+    state.stallTimer = 0;
+  }
+
+  // The worker announces every stage it starts (5% → 18% → 42% → 52%), so a job
+  // that produced *no* progress at all is not slow — it is lost. That is the
+  // "clicked, PLAY stayed lit, nothing plays" failure: instead of hanging the
+  // reader reports it and keeps narrating with the system voice. A chunk that
+  // reported progress is never interrupted: inference may simply be long.
+  function armStallWatchdog(operation) {
+    clearStallWatchdog();
+    const stallWindowMs = state.voskChunks <= 1 ? VOSK_COLD_STALL_MS : VOSK_STALL_MS;
+    state.stallTimer = setTimeout(() => {
+      state.stallTimer = 0;
+      if (operation !== state.token || state.engine !== 'vosk') return;
+      if (state.phase !== 'playing' && state.phase !== 'starting') return;
+      if (state.voskSynthesisProgress > 0) return;
+      reportTtsIssue('synth_stall: ' + stallWindowMs + 'ms without audio');
+      fail(operation, new Error('Улучшенный голос не выдал звук'));
+    }, stallWindowMs);
   }
 
   function speakCurrent(engineOverride) {
@@ -539,6 +795,9 @@
 
   function cancelActive({ invalidate = true } = {}) {
     clearProgressLoop();
+    clearStallWatchdog();
+    dropPrefetch();
+    cancelHandover();
     if (invalidate) state.token += 1;
     if (state.utterance && window.speechSynthesis) {
       try { window.speechSynthesis.cancel(); } catch {}
@@ -556,6 +815,7 @@
   }
 
   function pause() {
+    clearStallWatchdog();
     if (state.phase === 'starting') {
       state.pausedDuringStart = true;
       setPhase('paused');
@@ -639,6 +899,7 @@
       if (audio) {
         state.voskAudio = audio;
         audio.playbackRate = clamp(state.rate / Math.max(0.1, state.generatedRate), 0.5, 4);
+        schedulePrefetch();
       }
       return;
     }
@@ -657,7 +918,7 @@
 
   function switchToVosk(event) {
     if (event?.detail) event.detail.handled = true;
-    warmVosk({ retry: true }).then((engine) => {
+    warmVosk({ retry: true, quiet: false }).then((engine) => {
       if (!engine?.isReady?.() || state.engine !== 'webspeech' || !currentPart()) return;
       const wasPaused = state.phase === 'paused';
       state.token += 1;
@@ -674,7 +935,7 @@
 
   function retryVosk(event) {
     if (event?.detail) event.detail.handled = true;
-    void warmVosk({ retry: true });
+    void warmVosk({ retry: true, quiet: false });
   }
 
   function skip(delta) {
@@ -735,6 +996,28 @@
     const id = event?.detail?.id;
     if (!state.voskHandle || id !== state.voskHandle.id) return;
     state.voskSynthesisProgress = clamp(Number(event.detail.value) || 0, 0, 1);
+    // The job is alive and working: a long inference is not a hang.
+    if (state.voskSynthesisProgress > 0) clearStallWatchdog();
+  }
+
+  // A model that is already on disk must survive a reload: probe the cache
+  // quietly while the page settles and start it without any card or prompt.
+  function bootPrewarm() {
+    if (state.bootPrewarm) return;
+    state.bootPrewarm = true;
+    if (modelOptedOut() || !modelMayBeCached()) return;
+    if (navigator.connection?.saveData) return;
+    const start = () => {
+      ensureVoskScript()
+        .then((engine) => {
+          if (!engine?.isSupported?.() || engine.isReady?.()) return null;
+          if (typeof engine.hasCachedModel !== 'function') return null;
+          return engine.hasCachedModel().then((cached) => (cached ? warmVosk({ quiet: true }) : null));
+        })
+        .catch((error) => { console.warn('[GBReaderTTS] silent warm-up skipped', error); });
+    };
+    if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(start, { timeout: 4000 });
+    else setTimeout(start, 1500);
   }
 
   state.voice = pickRussianVoice();
@@ -753,6 +1036,7 @@
   window.addEventListener('pagehide', () => stop({ silent: true }));
   window.addEventListener('beforeunload', () => stop({ silent: true }));
   installMediaSession();
+  bootPrewarm();
 
   window.GBReaderTTS = Object.freeze({
     version: VERSION,

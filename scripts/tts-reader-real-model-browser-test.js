@@ -75,8 +75,13 @@ function startServer() {
         res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
         res.end(html());
       } catch (error) {
+        // A failed upstream fetch must be legible in the run log and as a PR
+        // annotation: the model host can throttle, gate or move the artefact,
+        // and an opaque 502 makes that indistinguishable from a code defect.
+        const message = `model asset proxy ${pathname}: ${error && error.message ? error.message : String(error)}`;
+        console.error(`::error::${message}`);
         res.writeHead(502, { 'content-type': 'text/plain; charset=utf-8' });
-        res.end(error.stack || String(error));
+        res.end(message);
       }
     });
     server.listen(0, '127.0.0.1', () => resolve({
@@ -138,7 +143,7 @@ async function preparePage(context, origin, route, disableShared = false) {
   return page;
 }
 
-async function warm(page, label) {
+async function warm(page, label, metrics) {
   await page.evaluate(() => { window.__resetPhase(); window.__warmStarted = performance.now(); });
   await Promise.race([
     page.evaluate(() => window.GBReaderTTS.warmVosk({ retry: true })),
@@ -153,6 +158,23 @@ async function warm(page, label) {
     statuses: window.__phase.statuses,
   }));
   console.log(`[real-model:${label}] warm=${result.elapsedMs.toFixed(1)}ms mode=${result.status.workerMode} gap=${result.maxGapMs.toFixed(1)}ms`);
+  // PR annotations are the only channel that survives a red job without the
+  // log artifact, so the readiness timeline is published there too.
+  console.log(`::notice::${label} ${JSON.stringify({
+    mode: result.status.workerMode,
+    ready: result.status.ready,
+    elapsedMs: Math.round(result.elapsedMs),
+    maxGapMs: Math.round(result.maxGapMs),
+    modelRequests: metrics ? metrics().modelRequests : null,
+    phases: result.statuses.map((item) => (item.detail && item.detail.phase) || null),
+    workerPhase: result.status.phase,
+    workerClients: result.status.workerClients,
+    workerEpoch: result.status.workerEpoch,
+    workerTimeline: (result.status.workerTimeline || []).slice(-12),
+    clientTimeline: (result.status.clientTimeline || []).slice(-12),
+    readerPhase: result.reader && result.reader.phase,
+    readerEngine: result.reader && result.reader.engine,
+  })}`);
   return result;
 }
 
@@ -202,14 +224,14 @@ async function synthesize(page, label) {
     await blank.close();
 
     const owner = await preparePage(context, origin, 'owner');
-    report.cold = await warm(owner, 'cold-shared-owner');
+    report.cold = await warm(owner, 'cold-shared-owner', metrics);
     assert.equal(report.cold.status.workerMode, 'shared', 'cold run did not prefer SharedWorker');
     assert.equal(report.cold.status.ready, true, 'cold SharedWorker did not become ready');
     assert.ok(report.cold.maxGapMs < 1000, `cold preparation blocked UI for ${report.cold.maxGapMs} ms`);
     assert.equal(metrics().modelRequests, 1, 'cold run did not request the model exactly once');
 
     const follower = await preparePage(context, origin, 'follower');
-    report.shared = await warm(follower, 'shared-follower');
+    report.shared = await warm(follower, 'shared-follower', metrics);
     assert.equal(report.shared.status.workerMode, 'shared', 'follower did not attach to SharedWorker');
     assert.equal(report.shared.status.ready, true, 'follower did not observe ready sessions');
     assert.ok(report.shared.elapsedMs < 2000, `ready ONNX sessions were not reused (${report.shared.elapsedMs} ms)`);
@@ -219,7 +241,14 @@ async function synthesize(page, label) {
 
     await follower.goto(`${origin}/navigated`, { waitUntil: 'domcontentloaded' });
     await follower.waitForFunction(() => window.GBReaderTTS?.version === 2);
-    report.navigation = await warm(follower, 'shared-navigation');
+    report.navigation = await warm(follower, 'shared-navigation', metrics);
+    // Who lost whom: the owner still holds a client seat, so its live status
+    // tells whether the shared worker itself was restarted by the navigation.
+    report.ownerAfterNavigation = await owner.evaluate(() => (window.VoskTTSEngine?.getStatus?.() || null));
+    console.log(`::notice::owner-after-navigation ${JSON.stringify({
+      ...report.ownerAfterNavigation,
+      workerTimeline: (report.ownerAfterNavigation?.workerTimeline || []).slice(-8),
+    })}`);
     assert.equal(report.navigation.status.workerMode, 'shared');
     assert.ok(report.navigation.elapsedMs < 2000, `ready sessions did not survive navigation with an active owner (${report.navigation.elapsedMs} ms)`);
     assert.equal(metrics().modelRequests, 1, 'navigation requested the model again');
@@ -228,7 +257,7 @@ async function synthesize(page, label) {
     await owner.close();
 
     const cached = await preparePage(context, origin, 'cached-dedicated', true);
-    report.cached = await warm(cached, 'cached-dedicated');
+    report.cached = await warm(cached, 'cached-dedicated', metrics);
     assert.equal(report.cached.status.workerMode, 'dedicated', 'fresh cached run did not exercise Dedicated Worker fallback');
     assert.equal(report.cached.status.ready, true, 'cached Dedicated Worker did not become ready');
     assert.ok(report.cached.maxGapMs < 1000, `cached preparation blocked UI for ${report.cached.maxGapMs} ms`);
@@ -252,6 +281,7 @@ async function synthesize(page, label) {
   () => process.exit(0),
   (error) => {
     console.error(error);
+    console.error(`::error::real-model contract: ${error && error.message ? error.message : String(error)}`);
     process.exit(1);
   },
 );

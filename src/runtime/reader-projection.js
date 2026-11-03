@@ -27,6 +27,12 @@
     '.footnote-popup', '[aria-hidden="true"]', '[data-reader-exclude]', '[data-no-speech]',
   ].join(',');
   const NOTE_SELECTOR = '.footnote,.footnotes,.fn-marker,.tooltip,.footnote-popup,[data-reader-note-policy="exclude"]';
+  // Speech-only exclusion. The journal imprint line (.msjline: «MSJ 27/2
+  // (Fall 2016) 113–139») is visible and printable bibliographic metadata, but
+  // a Russian TTS voice must not read the English citation as body prose.
+  // Authoring can also opt a block out explicitly with data-tts-policy="exclude";
+  // neither marker affects search, print or speakable projections.
+  const TTS_EXCLUDE_SELECTOR = '.msjline, [data-tts-policy="exclude"]';
   const PROJECTABLE_ADDITION_SELECTOR = [
     BLOCK_SELECTOR,
     '.article-lead',
@@ -138,17 +144,19 @@
   function getTtsSegments(scope = document) {
     const root = readerRoot(scope);
     if (!root) return [];
-    return blockElements(root, 'reader').map((element, index) => {
-      const section = sectionFor(element, root);
-      return {
-        index,
-        text: readableText(element),
-        element,
-        kind: blockKind(element),
-        sectionId: section.id,
-        sectionLabel: section.label,
-      };
-    });
+    return blockElements(root, 'reader')
+      .filter((element) => !element.closest(TTS_EXCLUDE_SELECTOR))
+      .map((element, index) => {
+        const section = sectionFor(element, root);
+        return {
+          index,
+          text: readableText(element),
+          element,
+          kind: blockKind(element),
+          sectionId: section.id,
+          sectionLabel: section.label,
+        };
+      });
   }
 
   function getSearchText(scope = document) {
