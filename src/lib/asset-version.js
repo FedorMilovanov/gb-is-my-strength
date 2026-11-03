@@ -19,7 +19,7 @@ export const ASSET_VERSIONS = {
   'fonts/fonts.css': '864cc57a',
   'js/bookmark-engine.js': 'e2ccecf3',
   'js/enhancements.js': '15476429',
-  'js/floating-cluster-controller.js': 'f9d3d6ca',
+  'js/floating-cluster-controller.js': '269fd86c',
   'js/glossary.js': 'c7f8b6e9',
   'js/highlights.js': 'febe48a8',
   'js/nagornaya-bar-extras.js': '3c7e0bdd',
@@ -34,8 +34,8 @@ export const ASSET_VERSIONS = {
   'js/sw-register.js': '921dd6a2',
   'js/vosk-custom-terms.json': '51f71fcc',
   'js/vosk-stress-marker.bin': '3ae166fc',
-  'js/vosk-tts-engine.js': '89a6ab89',
-  'js/vosk-tts-worker.js': '97ebc4f9',
+  'js/vosk-tts-engine.js': '170aca16',
+  'js/vosk-tts-worker.js': 'fd24d222',
   'nagornaya/tw.min.css': 'bee34e73',
 };
 
