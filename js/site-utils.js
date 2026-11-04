@@ -11,6 +11,10 @@
   var restoring = false;
   var highlightObserver = null;
   var HIGHLIGHTS_KEY = 'gb-highlights-v1';
+  // The native print flow temporarily suspends, never destroys, known
+  // OverlayRuntime-owned body locks. Native afterprint restores only owners
+  // that are still open, preserving user focus and the screen-side overlay.
+  var printScrollSuspension = null;
 
   function normalizeSource(source) {
     return typeof source === 'string' && source.trim() ? source.trim() : '__anonymous__';
@@ -205,6 +209,52 @@
     stopEmergencyTimer();
   }
 
+  function suspendScrollForPrint() {
+    if (printScrollSuspension) return { ok: true, state: 'already-suspended' };
+    // Never discard unrelated or legacy scroll owners to manufacture print
+    // success. The caller must refuse native button printing on this outcome.
+    if (legacyLockActive) return { ok: false, reason: 'legacy-scroll-owner' };
+    var owners = Array.from(globalSources);
+    for (var i = 0; i < owners.length; i += 1) {
+      var source = owners[i];
+      if (source.indexOf('overlay:') !== 0) return { ok: false, reason: 'unknown-scroll-owner', owner: source };
+      var record = overlayRecords.get(source.slice('overlay:'.length));
+      if (!record || !record.open || !record.lockScroll) {
+        return { ok: false, reason: 'untracked-overlay-owner', owner: source };
+      }
+    }
+    if (owners.length === 0) {
+      var root = document.documentElement;
+      if (root.getAttribute('data-scroll-locked') === '1') {
+        return { ok: false, reason: 'orphaned-scroll-lock' };
+      }
+      return { ok: true, state: 'unlocked' };
+    }
+    printScrollSuspension = { owners: owners };
+    owners.forEach(unlockScroll);
+    if (effectiveLocked() || document.documentElement.getAttribute('data-scroll-locked') === '1') {
+      resumeScrollAfterPrint();
+      return { ok: false, reason: 'scroll-lock-not-released' };
+    }
+    return { ok: true, state: 'suspended', ownerCount: owners.length };
+  }
+
+  function resumeScrollAfterPrint() {
+    var snapshot = printScrollSuspension;
+    printScrollSuspension = null;
+    if (!snapshot) return { restored: 0 };
+    var restored = 0;
+    snapshot.owners.forEach(function (source) {
+      var record = overlayRecords.get(source.slice('overlay:'.length));
+      // Closing an overlay while the print dialog is active must not reopen
+      // it or resurrect a stale lock when the user returns to the page.
+      if (!record || !record.open || !record.lockScroll) return;
+      if (!globalSources.has(source)) lockScroll(source);
+      restored += 1;
+    });
+    return { restored: restored };
+  }
+
   // site.js has a private SiteUtils object. It calls these two global hooks only
   // when its private lock set changes 0→1 / 1→0, which lets us coordinate both
   // implementations without editing the large minified bundle.
@@ -267,6 +317,13 @@
   protectedMethod('forceUnlockEmergency', forceUnlock);
   protectedMethod('_startEmergencyTimer', noteLegacyLockStart);
   protectedMethod('_stopEmergencyTimer', noteLegacyLockStop);
+  protectedMethod('suspendScrollForPrint', suspendScrollForPrint);
+  protectedMethod('resumeScrollAfterPrint', resumeScrollAfterPrint);
+  window.addEventListener('beforeprint', function () {
+    var outcome = suspendScrollForPrint();
+    if (!outcome.ok) console.error('[SiteUtils] Print scroll lock preflight failed:', outcome.reason, outcome.owner || '');
+  });
+  window.addEventListener('afterprint', resumeScrollAfterPrint);
 
   var overlayRecords = new Map();
   var overlayStack = [];
