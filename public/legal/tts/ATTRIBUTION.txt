@@ -1,0 +1,54 @@
+THIRD-PARTY TTS ATTRIBUTION AND MODIFICATION RECORD
+gospod-bog.ru — 2026-11-04
+This document is served with the browser-side TTS integration. It is not a
+claim of authorship or ownership of upstream speech technology.
+
+1. ALPHACEP / VOSK TTS — APACHE LICENSE 2.0
+   Upstream source: https://github.com/alphacep/vosk-tts
+   Original Python text-processing components:
+     vosk_tts/g2p.py, vosk_tts/model.py, vosk_tts/synth.py
+   Local browser-served adaptation:
+     /js/vosk-tts-core.js (SPDX-License-Identifier: Apache-2.0)
+   Original authors: Alpha Cephei and contributors.
+   Modification notice: adapted to JavaScript for rule-based phonemization,
+   dictionary handling, BERT token/stream preparation and browser execution;
+   includes project-specific normalization and fixes to input splitting.
+   Original algorithm and phoneme mapping tables are not newly authored here.
+   Complete original Apache-2.0 license text:
+     /legal/tts/vosk-tts-APACHE-2.0.txt
+
+2. ZDARSCH / RUSSIAN-STRESS-MARKER — MIT
+   Upstream: https://github.com/zdarsch/russian-stress-marker
+   Original copyright: Copyright (c) 2024 zdarsch
+   Original components: ru_stress_marker/content.js, dictionary
+   Local browser-served adaptation:
+     /js/vosk-stress-lookup.js (SPDX-License-Identifier: MIT)
+     /js/vosk-stress-marker.bin (vendored dictionary, original Git blob
+       90405393b518f31b36220fcdf9abb6b89db58e9b)
+   Modification notice: the FSA decoder and mappings were adapted for
+   layered lookup and Vosk's +before-vowel stress convention.
+   The original upstream dictionary is not an original site dataset.
+   Complete original MIT permission/copyright notice:
+     /legal/tts/russian-stress-marker-MIT.txt
+
+3. EXTERNAL SPEECH MODEL, HOSTED OUTSIDE THIS WEBSITE
+   Model family: vosk-model-tts-ru-0.9-multi (upstream Vosk).
+   Runtime host: https://huggingface.co/CurtMil/gb-vosk-tts-model
+   Browser download: model-quant.zip (not stored in this Git repository).
+   The external model card declares apache-2.0. The browser distribution
+   describes dynamic INT8 quantization of the BERT submodel, with the VITS
+   synthesis submodel retained in its original form; this is an adaptation,
+   NOT evidence of a model developed or trained by this website's maintainer.
+   Upstream model release equivalence, quantization reproduction and full
+   model-specific NOTICE/redistribution rights remain a separate verification
+   task at the external hosting location; they are not certified here.
+
+4. THIRD-PARTY RUNTIME PACKAGES
+   onnxruntime-web and fflate are downloaded separately from their
+   published distribution hosts. They have their own upstream licensing
+   and are not claimed to be site-authored.
+
+This notice supplements rather than replaces the original license texts.
+An integration or translation does not remove original source attribution.
+Project source and licensing ledger:
+https://github.com/FedorMilovanov/gb-vosk-tts/blob/main/LICENSING.md

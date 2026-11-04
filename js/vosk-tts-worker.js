@@ -1,6 +1,6 @@
 'use strict';
-var CORE_SRC = '/js/vosk-tts-core.js';
-var STRESS_LOOKUP_SRC = '/js/vosk-stress-lookup.js';
+var CORE_SRC = '/js/vosk-tts-core.js?v=431034cc';
+var STRESS_LOOKUP_SRC = '/js/vosk-stress-lookup.js?v=2c33f2e9';
 var CUSTOM_TERMS_URL = '/js/vosk-custom-terms.json?v=ca9a51cc';
 var STRESS_MARKER_URL = '/js/vosk-stress-marker.bin?v=3ae166fc';
 var ORT_DIST = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/';
