@@ -46,6 +46,7 @@ const normative = {
   марии: 'мар+ии',
   бенджамин: 'б+енджамин',
   бенджамина: 'б+енджамина',
+  маркли: 'м+аркли', // owner-confirmed first-syllable stress, Adam Markley
 };
 for (const [word, expected] of Object.entries(normative)) {
   if (terms[word] !== expected) problems.push(`${word}: expected ${expected}, got ${terms[word] || '<missing>'}`);
