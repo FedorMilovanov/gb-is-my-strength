@@ -14,7 +14,7 @@ const OUTPUT = path.join(ROOT, 'reports', 'live-mobile-print-pdf');
 const CORPUS = require('./fixtures/mobile-print-lock-wave49-routes.json');
 const HOST = 'https://gospod-bog.ru';
 const SHA = String(process.env.GB_EXPECTED_RELEASE_SHA || '').trim();
-const SOURCE_SHA = String(process.env.GITHUB_SHA || '').trim();
+const SOURCE_SHA = String(process.env.GB_SOURCE_SHA || process.env.GITHUB_SHA || '').trim();
 const A4 = { format: 'A4', printBackground: true };
 const representative = new Set([
   '/articles/dzhon-gill-istoricheskiy-kontekst/',
