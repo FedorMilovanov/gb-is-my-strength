@@ -233,4 +233,11 @@ const routeStylesheets = legacyStylesheets.map(versionedStylesheet);
     outline: 3px solid var(--astro-color-gold, #b8944b);
     outline-offset: 3px;
   }
+  /* Keyboard navigation is screen chrome; a global paper reset can
+     neutralize its off-screen transform and repeat it on every A4 sheet. */
+  @media print {
+    .astro-skip-link {
+      display: none;
+    }
+  }
 </style>
