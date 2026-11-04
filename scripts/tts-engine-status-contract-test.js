@@ -26,7 +26,8 @@ function countWorkflowPath(workflow, value) {
 
 function validate(input) {
   const {
-    engine, worker, controller, canonical, css, assetVersions, cacheAssets,
+    engine, worker, core, stressLookup, licenseNotice, apacheLicense, mitLicense,
+    controller, canonical, css, assetVersions, cacheAssets,
     workflow, readerWorkflow, releaseLibrary, liveContract, deployWorkflow, distAudit,
   } = input;
   const problems = [];
@@ -36,6 +37,15 @@ function validate(input) {
   const engineRevision = md5(engine);
   const workerRevision = md5(worker);
   const controllerRevision = md5(controller);
+  const coreRevision = md5(core);
+  const stressRevision = md5(stressLookup);
+  requireText('core: Apache-2.0 origin', core, 'SPDX-License-Identifier: Apache-2.0');
+  requireText('stress: MIT origin', stressLookup, 'SPDX-License-Identifier: MIT');
+  requireText('legal: original Apache license', apacheLicense, 'Apache License');
+  requireText('legal: zdarsch copyright', mitLicense, 'Copyright (c) 2024 zdarsch');
+  for (const p of ['vosk-tts-APACHE-2.0.txt', 'russian-stress-marker-MIT.txt', 'alphacep/vosk-tts', 'zdarsch/russian-stress-marker']) {
+    requireText(`legal notice: ${p}`, licenseNotice, p);
+  }
 
   for (const [label, value] of [
     ['engine: version 2', 'var VERSION = 2;'],
@@ -69,6 +79,8 @@ function validate(input) {
 
   for (const [label, value] of [
     ['worker: dependencies off main thread', 'importScripts(CORE_SRC, STRESS_LOOKUP_SRC, FFLATE_SRC, ORT_SRC);'],
+    ['worker: exact core revision', `/js/vosk-tts-core.js?v=${coreRevision}`],
+    ['worker: exact stress decoder revision', `/js/vosk-stress-lookup.js?v=${stressRevision}`],
     ['worker: pinned ORT path', 'self.ort.env.wasm.wasmPaths = ORT_DIST;'],
     ['worker: SharedWorker scope', "var IS_SHARED_SCOPE = 'onconnect' in self;"],
     ['worker: MessagePort registry', 'var clients = new Map();'],
@@ -122,10 +134,12 @@ function validate(input) {
     ['css/tts-download-notice.css', cssRevision],
     ['js/vosk-tts-engine.js', engineRevision],
     ['js/vosk-tts-worker.js', workerRevision],
+    ['js/vosk-tts-core.js', coreRevision],
+    ['js/vosk-stress-lookup.js', stressRevision],
     ['js/floating-cluster-controller.js', controllerRevision],
   ]) requireText(`asset-version: ${asset}`, assetVersions, `'${asset}': '${rev}'`);
 
-  for (const asset of ['css/tts-download-notice.css', 'js/vosk-tts-engine.js', 'js/vosk-tts-worker.js']) {
+  for (const asset of ['css/tts-download-notice.css', 'js/vosk-tts-engine.js', 'js/vosk-tts-worker.js', 'js/vosk-tts-core.js', 'js/vosk-stress-lookup.js']) {
     requireText(`cache registry: ${asset}`, cacheAssets, `'${asset}'`);
     const lazy = cacheAssets.match(/const LAZY_NO_PRECACHE = Object\.freeze\(\[([\s\S]*?)\]\);/)?.[1] || '';
     requireText(`lazy policy: ${asset}`, lazy, `'${asset}'`);
@@ -178,6 +192,11 @@ function validate(input) {
 const sources = {
   engine: read('js/vosk-tts-engine.js'),
   worker: read('js/vosk-tts-worker.js'),
+  core: read('js/vosk-tts-core.js'),
+  stressLookup: read('js/vosk-stress-lookup.js'),
+  licenseNotice: read('public/legal/tts/ATTRIBUTION.txt'),
+  apacheLicense: read('public/legal/tts/vosk-tts-APACHE-2.0.txt'),
+  mitLicense: read('public/legal/tts/russian-stress-marker-MIT.txt'),
   controller: read('js/floating-cluster-controller.js'),
   canonical: read('src/components/reader-platform/ReaderActionsRuntime.astro'),
   css: read('css/tts-download-notice.css'),

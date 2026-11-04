@@ -1,3 +1,11 @@
+/* SPDX-License-Identifier: MIT
+ * Adaptation of zdarsch/russian-stress-marker (Copyright (c) 2024 zdarsch),
+ * including dictionary decoding and FSA mapping tables, changed for Vosk's
+ * +before-vowel stress notation and layered local word lookup.
+ * Full upstream MIT notice and provenance:
+ * https://gospod-bog.ru/legal/tts/ATTRIBUTION.txt
+ * https://gospod-bog.ru/legal/tts/russian-stress-marker-MIT.txt
+ */
 /**
  * stress-lookup.js
  *
