@@ -2,10 +2,11 @@
   "schemaVersion": 1,
   "provenance": {
     "repository": "FedorMilovanov/AuditRepo",
-    "path": "projects/gb-is-my-strength/reverify/evidence/2026-11-03-mobile-print-lock-wave49.jsonl",
+    "path": "reverify/evidence/2026-11-03-mobile-print-lock-wave49.jsonl",
     "auditAnchor": "9a68fe214ef592b6bfb99a041d00153fd438f22a",
     "defect": "SYS-READER-MOBILE-PRINT-LOCK-CLIPS-DOCUMENT",
-    "captureDate": "2026-11-03"
+    "captureDate": "2026-11-03",
+    "scope": "AuditRepo project: Господь Бог"
   },
   "expectedRoutes": 73,
   "entries": [
