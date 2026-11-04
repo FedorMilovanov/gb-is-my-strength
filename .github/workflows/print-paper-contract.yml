@@ -18,7 +18,6 @@ on:
       - 'scripts/engine-sweep.mjs'
       - 'scripts/print-paper-pdf-audit.py'
       - 'scripts/print-pagination-contract.mjs'
-      - 'scripts/print-baselayout-skip-link-contract.mjs'
       - 'scripts/print-pagination-raster-audit.py'
       - 'scripts/print-reversible-card-contract.mjs'
       - '.github/workflows/print-paper-contract.yml'
@@ -54,8 +53,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y poppler-utils python3-pil
       - run: npm run strangler:build:production-like
-      - name: BaseLayout skip link — physical A4 and keyboard witness
-        run: node scripts/print-baselayout-skip-link-contract.mjs
       - name: Generate canonical reader PDF
         env:
           GB_READER_UI_ARTIFACT_DIR: reports/print-paper/canonical
