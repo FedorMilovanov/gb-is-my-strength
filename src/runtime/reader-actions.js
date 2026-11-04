@@ -98,13 +98,16 @@
     area.setAttribute('readonly', '');
     area.style.cssText = 'position:fixed;inset:0 auto auto 0;opacity:0;pointer-events:none';
     document.body.appendChild(area);
-    area.select();
-    // SYS-READER-SHARE-COPY-OUTCOME-CONTRACT: the legacy path must report its
-    // real outcome — a refused execCommand('copy') is a failed copy, not a
-    // silent success the caller then celebrates.
-    const copied = document.execCommand('copy');
-    area.remove();
-    return copied;
+    try {
+      area.select();
+      // SYS-READER-SHARE-COPY-OUTCOME-CONTRACT: return the real copy result;
+      // a refusal or exception must never be reported as a successful copy.
+      return document.execCommand('copy');
+    } finally {
+      // Even if selection or execCommand throws, the temporary node must not
+      // survive in the reader DOM. The caller owns the failed-share status.
+      area.remove();
+    }
   }
 
   let toastTimer = 0;
