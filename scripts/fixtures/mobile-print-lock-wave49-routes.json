@@ -1,0 +1,379 @@
+{
+  "schemaVersion": 1,
+  "provenance": {
+    "repository": "FedorMilovanov/AuditRepo",
+    "path": "reverify/evidence/2026-11-03-mobile-print-lock-wave49.jsonl",
+    "auditAnchor": "9a68fe214ef592b6bfb99a041d00153fd438f22a",
+    "defect": "SYS-READER-MOBILE-PRINT-LOCK-CLIPS-DOCUMENT",
+    "captureDate": "2026-11-03",
+    "scope": "AuditRepo project: Господь Бог"
+  },
+  "expectedRoutes": 73,
+  "entries": [
+    {
+      "path": "/articles/20-antisovetov-pastoru/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/anatomiya-padeniya-pyat-stadiy/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/cerkovnaya-disciplina-vlast-granicy-zashchita/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/chto-bibliya-nazyvaet-serdcem/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/diotrefy-nashego-vremeni/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/dzhon-gill-chast-1-chelovek/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/dzhon-gill-chast-2-uchenyi/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/dzhon-gill-chast-3-nasledie/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/dzhon-gill-chast-4-ekzeget/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/dzhon-gill-istoricheskiy-kontekst/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/dzhon-gill-spravochnik/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/",
+      "opener": "#hmBottomBtn",
+      "owner": "hermenevtika-toc"
+    },
+    {
+      "path": "/articles/kak-hranit-serdce/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/kak-menyaetsya-serdce/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/kod-da-vinchi/",
+      "opener": "#hmBottomBtn",
+      "owner": "hermenevtika-toc"
+    },
+    {
+      "path": "/articles/kogda-chelovek-uhodit-ot-very/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/kogda-uhodit-kogda-ostavatsya/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/krajne-li-isporcheno-serdce/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/lot-i-sodom/",
+      "opener": "#hmBottomBtn",
+      "owner": "hermenevtika-toc"
+    },
+    {
+      "path": "/articles/myslennaya-zhizn-serdca/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/nesovershennyy-chelovek-v-nesovershennoy-cerkvi/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/novoe-serdce/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/osvobozhdennoe-serdce/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/otreklis-ot-hrista-istoriya-cerkvi/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/otstuplenie-chto-govorit-bibliya/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/otstupniki-biblii-iuda-saul-ierovoam-dimas/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/petr-i-iuda-padenie-ili-otstuplenie/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/podrostok-za-kadrom-chto-delat-tserkvi/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/podrostok-za-kadrom-dvoynaya-zhizn/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/priznaki-zdorovoy-cerkvi/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/religioznoe-serdce/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/rimlyanam-7-veruyushchiy-ili-neveruyushchiy/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/sem-tipov-razlichenie-uchiteley/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/serdce-hrista-k-nemoshchnym/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/serdce-i-duh/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/serdce-i-iskushenie/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/serdce-i-sokrovishche/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/serdce-i-telo/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/serdce-i-yazyk/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/serdce-ne-v-odinochku/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/serdce-pod-skorbyu/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/serdce-spravochnik/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/skrytye-idoly-serdca/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/sovest-vnutrenniy-sud/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/starye-dorozhki-serdca/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+      "opener": "#hmBottomBtn",
+      "owner": "hermenevtika-toc"
+    },
+    {
+      "path": "/articles/strah-bozhij-rabskij-ili-synovnij/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/svoboda-vo-hriste/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/teksty-pisaniya-kotorymi-manipuliruyut/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/tma-na-serdce/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/vernye-i-neizvestnye-zdorovoe-pastyrstvo/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/baptisty-rossii/dva-sezda-1884/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/baptisty-rossii/goneniya-i-sovest/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/baptisty-rossii/iniciativnaya-gruppa/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/baptisty-rossii/noch-na-kure/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/baptisty-rossii/peterburgskaya-liniya/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/baptisty-rossii/podpolnaya-pechat/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/baptisty-rossii/sovetskaya-noch/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/baptisty-rossii/spravochnik/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/baptisty-rossii/vsehib-1944/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/baptisty-rossii/yuzhnaya-shtunda/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/hard-texts/angely-pod-mrakom-iuda-6-7-2-petra-2/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/hard-texts/blagovestie-mertvym-1-petra-4-5-6/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/hard-texts/duhi-v-temnice-noi-kreshchenie-pobeda/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/hard-texts/enoh-prorochestvoval-iuda-14-15-4q204/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/hard-texts/kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/",
+      "opener": "#mobPartTocBtn",
+      "owner": "gill-part-toc"
+    },
+    {
+      "path": "/hard-texts/otstuplenie-ot-very-iuda-evreyam-6/",
+      "opener": "#hmBottomBtn",
+      "owner": "hermenevtika-toc"
+    }
+  ]
+}

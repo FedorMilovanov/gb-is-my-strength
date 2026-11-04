@@ -1,0 +1,112 @@
+name: Live Mobile PDF Print Witness
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/live-mobile-print-pdf-witness.cjs'
+      - 'scripts/fixtures/mobile-print-lock-wave49-routes.json'
+      - '.github/workflows/live-mobile-print-pdf-witness.yml'
+  workflow_run:
+    workflows: ['Deploy to GitHub Pages']
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      expected_release_sha:
+        description: 'Exact 40-character production release SHA'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-mobile-print-${{ github.event.workflow_run.head_sha || github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  source-guard:
+    name: Validate mobile PDF witness and 73-route corpus
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    outputs:
+      run_pdf: ${{ steps.scope.outputs.run_pdf }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Validate syntax and original AuditRepo corpus
+        run: |
+          node --check scripts/live-mobile-print-pdf-witness.cjs
+          node - <<'NODE'
+          const assert = require('node:assert/strict');
+          const dataset = require('./scripts/fixtures/mobile-print-lock-wave49-routes.json');
+          assert.equal(dataset.expectedRoutes,73);
+          assert.equal(dataset.entries.length,73);
+          assert.equal(new Set(dataset.entries.map(x=>x.path)).size,73);
+          assert.equal(dataset.entries.filter(x=>x.opener==='#mobPartTocBtn').length,68);
+          assert.equal(dataset.entries.filter(x=>x.opener==='#hmBottomBtn').length,5);
+          assert(dataset.entries.every(x=>x.path.startsWith('/')&&x.path.endsWith('/')&&
+            ['gill-part-toc','hermenevtika-toc'].includes(x.owner)));
+          console.log('Live mobile PDF source and AuditRepo 73-route matrix PASS');
+          NODE
+      - name: Run expensive live witness only for print-owner changes
+        id: scope
+        shell: bash
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != 'workflow_run' ]; then
+            echo 'run_pdf=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git diff --name-only HEAD^ HEAD > /tmp/live-print-changed-paths.txt
+          if grep -Eq '^(\.github/workflows/live-mobile-print-pdf-witness\.yml|scripts/live-mobile-print-pdf-witness\.cjs|scripts/fixtures/mobile-print-lock-wave49-routes\.json|js/site-utils\.js|js/site\.js|src/runtime/reader-actions\.js|src/runtime/print-pagination-geometry\.js|src/layouts/BaseLayout\.astro|css/.*print.*)$' /tmp/live-print-changed-paths.txt; then
+            echo 'run_pdf=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'run_pdf=false' >> "$GITHUB_OUTPUT"
+            echo 'No relevant print-owner change; live 82-PDF scan not needed.'
+          fi
+
+  live-a4:
+    name: Exact production SHA, 73 mobile PDFs and 9 theme/motion cases
+    if: >-
+      ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+        github.event_name == 'workflow_run') &&
+      needs.source-guard.outputs.run_pdf == 'true'
+    needs: [source-guard]
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Install native PDF text extractor
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils
+      - name: Verify exact live SHA, A4 pagination, terminal text and scroll owners
+        env:
+          GB_EXPECTED_RELEASE_SHA: ${{ github.event.workflow_run.head_sha || inputs.expected_release_sha }}
+          GB_SOURCE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: node scripts/live-mobile-print-pdf-witness.cjs
+      - name: Preserve result report without large PDF binaries
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: live-mobile-print-pdf-${{ github.event.workflow_run.head_sha || github.sha }}-${{ github.run_id }}
+          path: reports/live-mobile-print-pdf
+          if-no-files-found: warn
+          retention-days: 14
