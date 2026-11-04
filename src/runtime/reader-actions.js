@@ -68,10 +68,39 @@
 
   function print(source = 'api') {
     if (printing) return copyReport(report);
+    // A reader overlay can hold body{position:fixed} while printing. Use the
+    // canonical named-owner transaction before pagination; unknown owners
+    // fail closed instead of silently producing a truncated one-page PDF.
+    const prepareLocks = window.SiteUtils?.suspendScrollForPrint;
+    const lockState = typeof prepareLocks === 'function'
+      ? prepareLocks()
+      : document.documentElement.getAttribute('data-scroll-locked') === '1'
+        ? { ok: false, reason: 'scroll-owner-unavailable' }
+        : { ok: true };
+    if (!lockState.ok) {
+      report = {
+        version: PRINT_ENGINE_VERSION,
+        prepared: false,
+        source: String(source || 'api'),
+        status: 'blocked',
+        reason: lockState.reason,
+      };
+      notify('Закройте открытое меню перед печатью', false);
+      console.error('[GBReaderActions] print blocked by active scroll owner:', lockState.reason);
+      return copyReport(report);
+    }
     printing = true;
     preparePrint(source);
-    window.print();
-    return copyReport(report);
+    try {
+      window.print();
+      return copyReport(report);
+    } catch (error) {
+      window.SiteUtils?.resumeScrollAfterPrint?.();
+      resetPrint();
+      notify('Не удалось подготовить печать', false);
+      console.error('[GBReaderActions] native print failed', error);
+      return { version: PRINT_ENGINE_VERSION, status: 'failed', reason: errorMessage(error) };
+    }
   }
 
   function getSharePayload() {
