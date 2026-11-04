@@ -9,6 +9,7 @@ const { spawn } = require('child_process');
 const ROOT = path.resolve(__dirname, '..');
 const DIST = process.env.DIST_ROOT || path.join(ROOT, 'dist');
 const AUDIT = path.join(__dirname, 'interactive-audit.js');
+const READER_SHARE_COPY_OUTCOME_GUARD = path.join(__dirname, 'reader-share-copy-outcome-contract.cjs');
 const HERMENEVTIKA_REGRESSION_GUARD = path.join(__dirname, 'hermenevtika-regression-guard.mjs');
 const SCRIPTURE_TOOLTIP_PROJECTION_GUARD = path.join(__dirname, 'scripture-tooltip-projection-browser-test.mjs');
 const LOT_PUBLICATION_BROWSER_GUARD = path.join(__dirname, 'lot-publication-browser-contract.mjs');
@@ -272,6 +273,10 @@ async function runNativeQuizParityGuard(baseUrl) {
 }
 
 async function runInteractiveContracts(baseUrl) {
+  // Guard the real reader action runtime before running the slower browser
+  // matrix: copy fallback must not claim success or leak temporary DOM nodes.
+  const shareCode = await runNodeScript(READER_SHARE_COPY_OUTCOME_GUARD);
+  if (shareCode !== 0) return shareCode;
   const auditCode = await runAudit(baseUrl);
   if (auditCode !== 0) return auditCode;
   const resumeCode = await runHomepageResumeBrowserGuard(baseUrl);
