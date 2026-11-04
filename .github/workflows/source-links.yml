@@ -12,6 +12,7 @@ on:
       - '.github/workflows/source-links.yml'
       - 'src/components/article-pilots/antisovetov/AntisovetovBody.astro'
       - 'src/components/article-pilots/diotrophes/DiotrophesDraft.astro'
+      - 'src/components/article-pilots/gill-context/GillContextSectionSourcesAndSeriesTail.astro'
       - 'src/components/article-pilots/kod-da-vinchi/KodDaVinchiSectionSummaryTitleAuto.astro'
       - 'src/components/baptisty-rossii/BaptistyRossiiNochNaKureBody.astro'
       - 'src/components/baptisty-rossii/BaptistyRossiiYuzhnayaShtundaBody.astro'
