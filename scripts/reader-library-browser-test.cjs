@@ -28,6 +28,9 @@ const html = [
   '<script src="/js/highlights.js"></script>',
   '</body></html>',
 ].join('');
+const gbsHtml = html.replace('</head>',
+  '<style>.hmbar{display:none!important}.gbs2-bbar{position:fixed;bottom:12px;left:12px;right:12px;min-height:62px;padding:10px 12px;background:#fff4e9;z-index:2000;border:1px solid #a77d67;border-radius:22px;display:block}.gb-mobile-fallback-controls{position:fixed!important;left:50%!important;bottom:90px!important;z-index:2102!important;display:flex!important;align-items:center!important;gap:4px!important;transform:translateX(-50%)!important;min-height:44px;padding:4px 8px;background:#f7f0e9;border-radius:999px}@media(min-width:900px){.gb-mobile-fallback-controls{display:none!important}}@media(min-width:1200px){.gbs2-bbar{display:none}}</style></head>')
+  .replace('</body>', '<button type="button" id="gbs2Bbar" class="gbs2-bbar">Оглавление серии</button><div class="gb-mobile-fallback-controls" data-fc-root role="region" aria-label="Быстрые действия чтения"><button type="button" class="gb-ember" aria-label="Слушать">▶</button><button type="button" class="gb-save" aria-label="Сохранить">☆</button></div></body>');
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://127.0.0.1');
@@ -38,7 +41,7 @@ const server = http.createServer((req, res) => {
     res.end(fs.readFileSync(file));
   } else {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.end(html);
+    res.end(url.pathname === '/baptisty-rossii/' ? gbsHtml : html);
   }
 });
 const longQuote = 'Длинная выдержка из первой статьи для исследования, '.repeat(16);
@@ -158,6 +161,49 @@ async function check(browserName, driver, url, width) {
   await browser.close();
 }
 
+async function checkGbs2(name, driver, url) {
+  const browser = await driver.launch({ headless: true });
+  const context = await browser.newContext({ viewport: { width: 320, height: 720 } });
+  const page = await context.newPage();
+  try {
+    await page.goto(url, { waitUntil: 'load' });
+    await page.locator('#gb-hl-fab').waitFor({ state: 'visible' });
+    for (const width of [320, 390, 1440, 390]) {
+      await page.setViewportSize({ width, height: 720 });
+      await page.waitForTimeout(80);
+      const geometry = await page.evaluate(() => {
+        const fab = document.getElementById('gb-hl-fab');
+        const bar = document.getElementById('gbs2Bbar');
+        const f = fab.getBoundingClientRect(), b = bar.getBoundingClientRect();
+        const top = document.elementFromPoint(f.left + f.width / 2, f.top + f.height / 2);
+        return {
+          docked: fab.classList.contains('gb-hl-fab--docked'),
+          barVisible: bar.getClientRects().length > 0,
+          gap: b.top - f.bottom,
+          hittable: top === fab || fab.contains(top),
+          width: f.width,
+          topElement: top && (top.id || top.className || top.tagName),
+          fabBottom: getComputedStyle(fab).bottom,
+        };
+      });
+      assert.equal(geometry.hittable, true, 'book must receive a real pointer hit at ' + width + ': ' + JSON.stringify(geometry));
+      assert(geometry.width >= 43.5, 'GBS2 book hit box must be at least 44px');
+      if (width < 900) {
+        assert.equal(geometry.docked, true, 'book must join existing GBS2 reader control cluster');
+        assert.equal(geometry.barVisible, true);
+      } else {
+        assert.equal(geometry.docked, false, 'book uses a floating desktop action');
+      }
+      await page.locator('#gb-hl-fab').click();
+      await page.locator('#gb-hl-panel').waitFor({ state: 'visible' });
+      await page.locator('#gb-hl-close').click();
+    }
+    console.log('PASS', name, 'GBS2 footer clearance 320/390/1440/390, real pointer hit');
+  } finally {
+    await browser.close();
+  }
+}
+
 (async () => {
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
@@ -165,6 +211,7 @@ async function check(browserName, driver, url, width) {
   try {
     for (const [name, browser] of [['chromium', chromium], ['firefox', firefox], ['webkit', webkit]]) {
       for (const width of [320, 390]) await check(name, browser, url, width);
+      await checkGbs2(name, browser, url.replace('/articles/sample/', '/baptisty-rossii/'));
     }
     console.log('✅ Reader Library browser integration: 6 end-to-end passes');
   } finally { server.close(); }

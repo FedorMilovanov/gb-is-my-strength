@@ -132,7 +132,7 @@
   const stylesheet = document.createElement('link');
   stylesheet.id = 'gbHlRuntimeCss';
   stylesheet.rel = 'stylesheet';
-  stylesheet.href = '/css/highlights-runtime.css?v=aef2b37f';
+  stylesheet.href = '/css/highlights-runtime.css?v=dfeb4d0a';
   if (!document.getElementById(stylesheet.id)) document.head.appendChild(stylesheet);
 
   function button(action, label, text) {
@@ -227,6 +227,7 @@
     window.addEventListener('gb:favorite-store-ready', sync);
     window.addEventListener('storage', (e) => { if ([QUOTES_KEY, NOTES_KEY, FAVORITES_KEY].includes(e.key)) sync(); });
     document.addEventListener('astro:page-load', () => { dock(); sync(); attachSelection(); });
+    document.addEventListener('gb:mobile-fallback-ready', dock);
     window.addEventListener('resize', dock, { passive: true });
     attachSelection();
     dock();
@@ -281,11 +282,14 @@
     const gill = document.querySelector('.mobile-bottom-bar');
     const herm = document.querySelector('.hmbar');
     const legacy = document.querySelector('.bottom-bar-inner');
+    const fallback = document.querySelector('.gb-mobile-fallback-controls');
     let host = null, before = null, cls = '';
     if (visible(herm)) { host = herm; before = document.getElementById('hmShareBtn'); cls = 'hmbar-btn'; }
     else if (visible(gill)) { host = gill.querySelector('.mobile-icon-row') || gill; before = host.querySelector('[data-action="share"],[data-fc-action="share"]'); cls = 'gb-icon'; }
     else if (visible(legacy)) { host = legacy; before = document.getElementById('barShareBtn'); cls = 'bar-icon-btn'; }
+    else if (visible(fallback)) { host = fallback; cls = 'gb-icon'; }
     fab.classList.remove('gb-hl-fab--docked', 'hmbar-btn', 'gb-icon', 'bar-icon-btn');
+    fab.style.bottom = '';
     if (!host) { document.body.append(fab); return; }
     fab.classList.add('gb-hl-fab--docked', cls);
     if (before && before.parentNode === host) host.insertBefore(fab, before);

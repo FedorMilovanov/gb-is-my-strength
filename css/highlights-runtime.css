@@ -73,6 +73,7 @@
   color: inherit;
   transform: none;
 }
+.gb-mobile-fallback-controls #gb-hl-fab.gb-hl-fab--docked { width:44px; min-width:44px; height:44px; flex-basis:44px; }
 #gb-hl-fab.gb-hl-fab--docked:hover { transform: none; box-shadow: none; }
 #gb-hl-fab.gb-hl-fab--docked #gb-hl-fab-count { top: 6px; right: 5px; box-shadow: 0 0 0 2px var(--color-canvas, #281c20); }
 @media (max-width: 360px) {
