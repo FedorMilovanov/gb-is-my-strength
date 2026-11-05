@@ -27,9 +27,23 @@ async function check(name,driver,width,base){
    const icons=['#hmSettingsBtn','#gb-hl-fab','#hmShareBtn','.hmbar-btn.gb-theme-toggle'];
    const measured=icons.map(q=>{const el=document.querySelector(q),r=el.getBoundingClientRect(),svg=el.querySelector('svg'),s=getComputedStyle(svg);return{q,x:r.x,y:r.y,w:r.width,h:r.height,svgW:parseFloat(s.width),stroke:s.strokeWidth,color:getComputedStyle(el).color}});
    const play=document.querySelector('.hm-ember').getBoundingClientRect(),rate=document.querySelector('#hmSpdBadge').getBoundingClientRect();
-   return{innerWidth,overflow:document.documentElement.scrollWidth-innerWidth,measured,rateDistanceX:rate.x-play.x,rateDistanceY:rate.y-play.y};
+   const top=document.querySelector('.hmtop').getBoundingClientRect();
+   const bottom=document.querySelector('.hmbar').getBoundingClientRect();
+   const section=document.querySelector('#hmSectionBtn').getBoundingClientRect();
+   const name=document.querySelector('#hmSectionName').getBoundingClientRect();
+   const search=document.querySelector('#hmSearchTrigger').getBoundingClientRect();
+   return{innerWidth,overflow:document.documentElement.scrollWidth-innerWidth,measured,
+     topHeight:top.height,bottomHeight:bottom.height,sectionHeight:section.height,sectionTextBottom:name.bottom,bottomEdge:bottom.bottom,
+     sectionLabelVisible:getComputedStyle(document.querySelector('.hmbar-section-label')).display!=='none',searchHeight:search.height,
+     readingViewport:innerHeight-top.height-bottom.height,rateDistanceX:rate.x-play.x,rateDistanceY:rate.y-play.y};
  });
  assert(layout.overflow<=1,JSON.stringify(layout));
+ assert(layout.topHeight>=44&&layout.topHeight<=52,'Top bar must fit compact chrome budget: '+JSON.stringify(layout));
+ assert(layout.bottomHeight>=44&&layout.bottomHeight<=52,'Bottom bar must fit compact chrome budget: '+JSON.stringify(layout));
+ assert(layout.searchHeight>=43.5&&layout.sectionHeight>=43.5,'Search/context tap areas must stay >=44px');
+ assert(layout.sectionTextBottom<=layout.bottomEdge-1,'Chapter title clipped by compact bottom bar: '+JSON.stringify(layout));
+ assert.equal(layout.sectionLabelVisible,width>360,'Redundant context label must only disappear on very narrow screens');
+ assert(layout.readingViewport>=740,'Reader viewport gained insufficient vertical space');
  assert(layout.measured.every(x=>x.w>=43.5&&x.h>=43.5),'hit box too small '+JSON.stringify(layout));
  assert(layout.measured.every(x=>x.svgW>=18&&x.svgW<=21),'inconsistent svg size '+JSON.stringify(layout));
  const colors=new Set(layout.measured.map(x=>x.color));assert(colors.size===1,'different colors in footer '+JSON.stringify(layout));
@@ -48,6 +62,21 @@ async function check(name,driver,width,base){
  assert.equal(await p.evaluate(()=>localStorage.getItem('gb:audio:rate')),'1.5');
  await p.locator('#hmSettingsBtn').click();
  await p.locator('#hmSettings.is-open .hmsheet-panel').waitFor({state:'visible'});
+ const settingsGeometry=await p.evaluate(()=>{
+   const sheet=document.querySelector('#hmSettings .hmsheet-panel');
+   const header=document.querySelector('#hmSettings .hmsheet-head');
+   const footer=document.querySelector('#hmSettings .hmset-footer');
+   const group=document.querySelector('#hmSettings .hmset-group');
+   const button=document.querySelector('#hmSettings .hmset-btn');
+   return{sheetHeight:sheet.getBoundingClientRect().height,headerHeight:header.getBoundingClientRect().height,
+     footerHeight:footer.getBoundingClientRect().height,groupPadding:getComputedStyle(group).paddingTop,
+     buttonHeight:button.getBoundingClientRect().height,overflow:document.documentElement.scrollWidth-innerWidth};
+ });
+ assert(settingsGeometry.overflow<=1,'Settings horizontal overflow '+JSON.stringify(settingsGeometry));
+ assert(settingsGeometry.headerHeight<=84,'Settings header too tall '+JSON.stringify(settingsGeometry));
+ assert(settingsGeometry.footerHeight<=70,'Settings footer too tall '+JSON.stringify(settingsGeometry));
+ assert(parseFloat(settingsGeometry.groupPadding)<=9,'Settings group spacing exceeded compact design token');
+ assert(settingsGeometry.buttonHeight>=43.5,'Settings segmented controls must retain 44px targets');
  await p.locator('[data-hm-theme="sepia"]').click();
  assert.equal(await p.evaluate(()=>document.documentElement.getAttribute('data-reader-theme')),'sepia');
  await p.locator('[data-hm-measure="narrow"]').click();
@@ -57,6 +86,19 @@ async function check(name,driver,width,base){
  await p.waitForFunction(()=>!document.querySelector('#hmSettings')?.classList.contains('is-open'));
  await p.locator('#gb-hl-fab').click();
  await p.locator('#gb-hl-panel').waitFor({state:'visible'});
+ const libraryGeometry=await p.evaluate(()=>{
+   const rect=(q)=>document.querySelector(q)?.getBoundingClientRect();
+   const row=document.querySelector('.gb-hl-item');
+   return{headerHeight:rect('#gb-hl-header').height,tabsHeight:rect('#gb-hl-tabs').height,
+      tabHeight:rect('#gb-hl-tabs button').height,searchHeight:rect('#gb-hl-search').height,
+      sourceHeight:rect('#gb-hl-source').height,closeHeight:rect('#gb-hl-close').height,
+      itemPad:row?getComputedStyle(row).paddingTop:null,overflow:document.documentElement.scrollWidth-innerWidth};
+ });
+ assert(libraryGeometry.headerHeight<=64,'Library header too tall '+JSON.stringify(libraryGeometry));
+ for(const key of ['tabHeight','searchHeight','sourceHeight','closeHeight'])
+   assert(libraryGeometry[key]>=43.5,'Library tap target '+key+' below 44px: '+JSON.stringify(libraryGeometry));
+ if(libraryGeometry.itemPad)assert(parseFloat(libraryGeometry.itemPad)<=10,'Library card padding too large');
+ assert(libraryGeometry.overflow<=1,'Library horizontal overflow '+JSON.stringify(libraryGeometry));
  await p.locator('#gb-hl-close').click();
  assert.deepEqual(errors,[],'page errors '+errors);
  console.log('PASS '+name+' '+width+' v4 top search, six speeds, themed settings, legacy theme toggle, normalized library icon, hitbox');

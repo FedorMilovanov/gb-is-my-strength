@@ -158,9 +158,9 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   .hmtop, .hmbar{display:none}
   @media(max-width:1199px){
     .hmtop{
-      display:flex; align-items:center; gap:6px; position:fixed; left:0; right:0; top:0;
-      z-index:var(--z-sticky,1000); min-height:52px;
-      padding:calc(env(safe-area-inset-top,0px) + 6px) 10px 6px;
+      display:flex; align-items:center; gap:4px; position:fixed; left:0; right:0; top:0;
+      z-index:var(--z-sticky,1000); min-height:44px;
+      padding:calc(env(safe-area-inset-top,0px) + 2px) 8px 2px;
       background:var(--color-canvas,#fdfcf9); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
       border-bottom:1px solid var(--color-border,#e5e2dc);
       transition:transform .28s cubic-bezier(.22,1,.36,1), opacity .2s ease, background .2s ease, border-color .2s ease;
@@ -173,9 +173,9 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
     html[data-reader-theme="sepia"] .hmtop{background:color-mix(in srgb, #f3ead4 92%, transparent); border-bottom-color:#d8c9a8}
     html[data-reader-theme="sepia"] .hmtop.is-top{background:var(--color-canvas,#f3ead4); border-bottom-color:transparent}
     .hmbar{
-      display:flex; align-items:center; gap:8px; position:fixed; left:0; right:0; bottom:0;
-      z-index:var(--z-bottom-bar,2000); min-height:52px;
-      padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px));
+      display:flex; align-items:center; gap:2px; position:fixed; left:0; right:0; bottom:0;
+      z-index:var(--z-bottom-bar,2000); min-height:44px;
+      padding:2px 8px calc(2px + env(safe-area-inset-bottom,0px));
       background:var(--color-canvas,#fdfcf9);color:var(--color-text-muted,#6a6a6a); border-top:1px solid var(--color-border,#e5e2dc);
       box-shadow:0 -7px 22px -14px rgba(46,34,32,.10);
     }
@@ -187,7 +187,7 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
       background:linear-gradient(180deg,#f3ead4,#e9dcc0); border-top-color:#d8c9a8;
       box-shadow:0 -8px 24px -12px rgba(122,90,48,.20);
     }
-    .article-main--hrail{ padding-top:calc(52px + env(safe-area-inset-top,0px)); padding-bottom: calc(56px + env(safe-area-inset-bottom,0px)); }
+    .article-main--hrail{ padding-top:calc(50px + env(safe-area-inset-top,0px)); padding-bottom: calc(50px + env(safe-area-inset-bottom,0px)); }
     body.hm-tbhidden .article-main--hrail{ padding-top:calc(12px + env(safe-area-inset-top,0px)); }
     /* Hide desktop header when this bar exists — prevents ghost text + double chrome */
     .astro-header{display:none !important}
@@ -195,14 +195,16 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
     .gb-mobile-fallback-controls, .gb-floater{display:none !important}
   }
   @media(max-width:360px){
-    .hmtop{gap:4px;padding-left:8px;padding-right:8px}
+    .hmtop{gap:2px;padding-left:8px;padding-right:8px}
     .hmbar{gap:2px;padding-left:8px;padding-right:8px}
+    .hmbar-section{justify-content:center}
+    .hmbar-section-label{display:none}
     .hmbar-divider{display:none}
   }
   @media(min-width:1200px){ .hmtop, .hmbar{display:none !important} }
 
   /* ---- top bar: icons, compact playback UI ---- */
-  .hm-icon{width:38px;height:38px;flex-shrink:0;border-radius:50%;position:relative;display:grid;place-items:center;
+  .hm-icon{width:44px;height:44px;min-width:44px;min-height:44px;flex-shrink:0;border-radius:50%;position:relative;display:grid;place-items:center;
     color:#8a5a4a;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
   html.dark .hm-icon{color:#caa1a0}
   .hm-icon::before{content:'';position:absolute;inset:0;border-radius:50%;background:currentColor;opacity:0;transform:scale(.6);
@@ -215,8 +217,8 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   html.dark .hm-icon.gb-save.is-saved{color:#e0a89c}
   html.dark .hm-icon.gb-save.is-saved svg{fill:#e0a89c;stroke:#e0a89c}
 
-  .hm-slot{position:relative;flex:1;min-width:0;height:40px;display:flex;align-items:center}
-  .hm-search-trigger{display:flex;align-items:center;gap:9px;width:100%;height:38px;min-width:0;padding:0 11px;
+  .hm-slot{position:relative;flex:1;min-width:0;height:44px;display:flex;align-items:center}
+  .hm-search-trigger{display:flex;align-items:center;gap:7px;width:100%;height:44px;min-width:0;padding:0 10px;
     border:1px solid var(--color-border,#e5e2dc);border-radius:999px;background:var(--color-surface-muted,#f4f2ed);
     color:var(--color-text-muted,#6a6a6a);font:400 12.5px/1 "Source Sans 3",system-ui,sans-serif;
     cursor:pointer;transition:opacity .22s ease,transform .22s ease}
@@ -224,7 +226,7 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   .hm-search-trigger span{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
   .hmtop.speed-open .hm-search-trigger{opacity:0;transform:translateX(-8px);pointer-events:none}
   @media(max-width:360px){.hm-search-trigger{padding:0 8px;gap:5px;font-size:11px}}
-  .hm-speedrail{position:absolute;inset:0;display:flex;align-items:center;gap:3px;
+  .hm-speedrail{position:absolute;inset:0;display:flex;align-items:center;gap:2px;
     opacity:0;transform:translateX(8px);pointer-events:none;transition:opacity .25s ease,transform .25s cubic-bezier(.3,1.2,.4,1);
     overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;
     scroll-snap-type:x proximity;cursor:grab}
@@ -232,7 +234,7 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   .hm-speedrail.is-dragging{cursor:grabbing;scroll-snap-type:none}
   .hmtop.speed-open .hm-speedrail{opacity:1;transform:translateX(0);pointer-events:auto}
   .hm-spd{flex:0 0 auto;font:700 10.5px/1 var(--f-ui,"Source Sans 3",system-ui,sans-serif);
-    border:1px solid rgba(122,46,46,.22);background:transparent;color:#8a5a4a;padding:6px 8px;border-radius:8px;
+    border:1px solid rgba(122,46,46,.22);background:transparent;color:#8a5a4a;min-height:44px;padding:0 7px;border-radius:8px;
     cursor:pointer;white-space:nowrap;position:relative;transition:background .15s,color .15s,border-color .15s,transform .12s;
     scroll-snap-align:center;-webkit-tap-highlight-color:transparent}
   html.dark .hm-spd{border-color:rgba(224,160,150,.24);color:#caa1a0}
@@ -261,7 +263,7 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   @keyframes hm-spdbadge-bump{0%{transform:scale(1)}50%{transform:scale(1.12)}100%{transform:scale(1)}}
 
   /* ---- bottom bar: progress ring + section + theme/font/share ---- */
-  .hmbar-progress{position:relative;width:32px;height:32px;flex-shrink:0;border:0;background:none;cursor:pointer;padding:0;display:grid;place-items:center}
+  .hmbar-progress{position:relative;width:44px;height:44px;min-width:44px;min-height:44px;flex-shrink:0;border:0;background:none;cursor:pointer;padding:0;display:grid;place-items:center}
   .hmbar-progress svg{transform:rotate(-90deg);width:32px;height:32px}
   .hmbar-progress-track{fill:none;stroke:rgba(122,46,46,.15);stroke-width:3}
   html.dark .hmbar-progress-track{stroke:rgba(224,160,150,.18)}
@@ -270,27 +272,23 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   .hmbar-progress-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     font:700 8px "Source Sans 3",system-ui,sans-serif;color:#7a2e2e;pointer-events:none;font-variant-numeric:tabular-nums}
   html.dark .hmbar-progress-text{color:#e0a89c}
-  .hmbar-section{flex:1;min-width:0;background:none;border:0;cursor:pointer;padding:4px 4px;text-align:left;
+  .hmbar-section{flex:1;min-width:0;min-height:44px;background:none;border:0;cursor:pointer;padding:1px 2px;text-align:left;
     display:flex;flex-direction:column;gap:1px;overflow:hidden;font:inherit}
-  .hmbar-section-label{font:700 8.5px "Source Sans 3",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;
+  .hmbar-section-label{font:700 8px "Source Sans 3",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;
     color:rgba(42,24,20,.55);opacity:.8}
   html.dark .hmbar-section-label{color:rgba(255,255,255,.55)}
-  .hmbar-section-name{font:600 12.5px "Source Sans 3",system-ui,sans-serif;color:#2a1814;
+  .hmbar-section-name{font:600 12px "Source Sans 3",system-ui,sans-serif;color:#2a1814;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
   html.dark .hmbar-section-name{color:#f2e9e6}
   .hmbar-divider{width:1px;height:20px;background:rgba(0,0,0,.08);flex-shrink:0}
   html.dark .hmbar-divider{background:rgba(255,255,255,.08)}
-  .hmbar-btn{position:relative;width:44px;height:44px;border:0;background:none;cursor:pointer;border-radius:50%;
+  .hmbar-btn{position:relative;width:44px;height:44px;min-width:44px;min-height:44px;border:0;background:none;cursor:pointer;border-radius:50%;
     display:grid;place-items:center;color:var(--color-text-muted,#6a6a6a);flex-shrink:0}
   html.dark .hmbar-btn{color:#caa1a0}
   .hmbar-btn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-  /* Ensure 44px tap targets despite 32px visual */
-  .hmbar-btn,.hmtop .hm-icon,.hmbar-progress{
-    width:44px;height:44px;min-width:44px;min-height:44px
-  }
-  .hmbar-btn svg{width:19px;height:19px}
+  /* 44px hit targets are owned directly by the corresponding controls;
+     their SVG glyphs intentionally stay smaller. */
   .hmbar-progress svg{width:32px;height:32px}
-  .hmtop .hm-icon svg{width:18px;height:18px}
   #gb-hl-fab.gb-hl-fab--docked.hmbar-btn{
     width:44px;height:44px;min-width:44px;min-height:44px
   }
@@ -318,17 +316,17 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
     background:rgba(122,46,46,.08);color:#7a2e2e;cursor:pointer;flex-shrink:0}
   html.dark .hmsheet-close{background:rgba(224,160,150,.1);color:#e0a89c}
   .hmsheet-close svg{width:15px;height:15px}
-  .hmsheet-progress-row{display:flex;align-items:center;gap:10px;padding-bottom:8px}
+  .hmsheet-progress-row{display:flex;align-items:center;gap:7px;padding-bottom:4px}
   .hmsheet-progress-wrap{flex:1;height:4px;background:rgba(0,0,0,.08);border-radius:2px;overflow:hidden}
   html.dark .hmsheet-progress-wrap{background:rgba(255,255,255,.1)}
   .hmsheet-progress-fill{height:100%;background:#7a2e2e;border-radius:2px;transition:width .15s linear}
   html.dark .hmsheet-progress-fill{background:#e0a89c}
   .hmsheet-progress-pct{font:700 11px "Source Sans 3",system-ui,sans-serif;color:#7a2e2e;min-width:30px;text-align:right}
   html.dark .hmsheet-progress-pct{color:#e0a89c}
-  .hmsheet-time{display:flex;justify-content:space-between;font-size:11px;color:rgba(42,24,20,.55);padding-bottom:10px}
+  .hmsheet-time{display:flex;justify-content:space-between;font-size:11px;color:rgba(42,24,20,.55);padding-bottom:6px}
   html.dark .hmsheet-time{color:rgba(255,255,255,.5)}
   .hmsheet-search{display:flex;align-items:center;gap:8px;height:38px;background:rgba(122,46,46,.05);
-    border:1px solid rgba(122,46,46,.14);border-radius:999px;padding:0 12px;margin-bottom:8px;flex-shrink:0}
+    border:1px solid rgba(122,46,46,.14);border-radius:999px;padding:0 10px;margin-bottom:5px;flex-shrink:0}
   html.dark .hmsheet-search{background:rgba(224,160,150,.06);border-color:rgba(224,160,150,.16)}
   .hmsheet-search svg{width:15px;height:15px;stroke:rgba(42,24,20,.5);fill:none;stroke-width:2;stroke-linecap:round;flex-shrink:0}
   html.dark .hmsheet-search svg{stroke:rgba(255,255,255,.5)}
@@ -336,7 +334,7 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   html.dark .hmsheet-search input{color:#f2e9e6}
   .hmsheet-list{list-style:none;margin:0;padding:0 0 4px;overflow-y:auto;flex:1;min-height:0}
   .hmsheet-list li{margin:0}
-  .hmsheet-link{display:block;padding:9px 4px;color:rgba(42,24,20,.72);text-decoration:none;
+   .hmsheet-link{display:flex;align-items:center;min-height:44px;padding:6px 4px;color:rgba(42,24,20,.72);text-decoration:none;
     font-family:var(--f-serif,Lora,Georgia,serif);font-size:14px;border-bottom:1px solid rgba(0,0,0,.05)}
   html.dark .hmsheet-link{color:rgba(255,255,255,.68);border-bottom-color:rgba(255,255,255,.06)}
   .hmsheet-sub .hmsheet-link{padding-left:18px;font-size:13px;color:rgba(42,24,20,.55)}
@@ -346,9 +344,9 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   li[hidden]{display:none}
   .hmsheet-empty{padding:24px 4px;text-align:center;color:rgba(42,24,20,.5);font-size:13px}
   html.dark .hmsheet-empty{color:rgba(255,255,255,.5)}
-  .hmsheet-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding-top:10px;border-top:1px solid rgba(0,0,0,.08);flex-shrink:0}
+  .hmsheet-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding-top:6px;border-top:1px solid rgba(0,0,0,.08);flex-shrink:0}
   html.dark .hmsheet-actions{border-top-color:rgba(255,255,255,.08)}
-  .hmsheet-action-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 4px;border-radius:12px;
+  .hmsheet-action-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:44px;gap:2px;padding:4px 3px;border-radius:12px;
     color:#8a5a4a;background:rgba(122,46,46,.05);border:1px solid rgba(122,46,46,.12);cursor:pointer;font:inherit}
   html.dark .hmsheet-action-btn{color:#caa1a0;background:rgba(224,160,150,.05);border-color:rgba(224,160,150,.14)}
   .hmsheet-action-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
