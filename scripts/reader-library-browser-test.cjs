@@ -129,6 +129,8 @@ async function check(browserName, driver, url, width) {
   await page.locator('#ss-save').click();
   const length = await page.evaluate(() => JSON.parse(localStorage.getItem('gb-highlights-v1')).length);
   assert.equal(length, 2, 'selection saved under existing quote key');
+  assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('gb-highlights-v1'))[0].url.includes('#more:~:text=')), true,
+    'saved quote source points to native text fragment at its section anchor');
   await page.locator('#ss-note').click();
   assert.equal(await page.locator('#gb-hl-editor').isVisible(), true);
   await page.locator('#gb-hl-note-text').fill('Заметка к новой цитате');

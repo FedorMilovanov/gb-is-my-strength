@@ -111,7 +111,7 @@
   }
   function sourceUrl(selected) {
     return location.origin + location.pathname + '#' +
-      (selected.anchor ? encodeURIComponent(selected.anchor) + ':' : '') + '~:' + fragment(selected.text);
+      (selected.anchor ? encodeURIComponent(selected.anchor) : '') + ':~:' + fragment(selected.text);
   }
   function uid(prefix) { return prefix + Date.now() + Math.random().toString(36).slice(2, 7); }
   function savedDate(timestamp) {
@@ -125,7 +125,7 @@
   const stylesheet = document.createElement('link');
   stylesheet.id = 'gbHlRuntimeCss';
   stylesheet.rel = 'stylesheet';
-  stylesheet.href = '/css/highlights-runtime.css?v=' + (window.SITE_CONFIG && window.SITE_CONFIG.version || '');
+  stylesheet.href = '/css/highlights-runtime.css?v=aef2b37f';
   if (!document.getElementById(stylesheet.id)) document.head.appendChild(stylesheet);
 
   function button(action, label, text) {
