@@ -15,6 +15,7 @@ const html = [
   'main{max-width:640px;margin:60px auto;padding:20px}article p{max-width:100%}',
   '.hmbar{position:fixed;bottom:0;left:0;right:0;background:#24171b;color:#e9cfbd;display:flex;align-items:center;justify-content:end;gap:5px;height:52px;padding:0 12px}',
   '.hmbar button{width:36px;height:36px;color:inherit;background:none;border:0}',
+  '@media(min-width:1200px){.hmbar{display:none}}',
   '#selection-share-popup{position:fixed;top:15px;left:12px;background:#342229;color:white;display:flex;z-index:900;padding:5px;border-radius:9px}',
   '</style></head><body>',
   '<main><article data-pagefind-body><h1>Статья для теста</h1><p id="demo">Размышление о богословском тексте и изучении Писания.</p>',
@@ -141,6 +142,17 @@ async function check(browserName, driver, url, width) {
   assert.equal(linked, true, 'notes can attach to selected quotes');
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('#gb-hl-backdrop').getAttribute('aria-hidden'), 'true');
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.waitForFunction(() => !document.getElementById('gb-hl-fab').classList.contains('gb-hl-fab--docked'));
+  assert.equal(await page.locator('#gb-hl-fab').isVisible(), true, 'desktop fallback remains visible while mobile bar is hidden');
+  assert.equal(await page.locator('#gb-hl-fab').evaluate((el) => el.parentElement === document.body), true, 'desktop book belongs to body, not hidden chrome');
+  await page.locator('#gb-hl-fab').click();
+  assert.equal(await page.locator('#gb-hl-panel').isVisible(), true, 'desktop floating book opens the same unified library');
+  await page.locator('#gb-hl-close').click();
+  await page.setViewportSize({ width, height: 720 });
+  await page.waitForFunction(() => document.getElementById('gb-hl-fab').classList.contains('gb-hl-fab--docked'));
+  assert.equal(await page.locator('#gb-hl-fab').isVisible(), true, 'book returns to mobile bar after resize');
   assert.deepEqual(errors, [], 'no client-side JS errors');
   console.log('PASS', browserName, width, 'legacy quote/favorite data, notes, expand, search, export, selection, accessibility');
   await browser.close();

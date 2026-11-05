@@ -277,13 +277,14 @@
   function sync() { if (fab) { fab.classList.add('visible'); fab.querySelector('#gb-hl-fab-count').hidden = all().length === 0; fab.setAttribute('aria-label', 'Моя библиотека — сохранено ' + all().length); } if (isOpen()) render(); }
   function dock() {
     if (!fab) return;
+    const visible = (node) => node && node.getClientRects().length > 0 && getComputedStyle(node).visibility !== 'hidden';
     const gill = document.querySelector('.mobile-bottom-bar');
     const herm = document.querySelector('.hmbar');
     const legacy = document.querySelector('.bottom-bar-inner');
     let host = null, before = null, cls = '';
-    if (herm) { host = herm; before = document.getElementById('hmShareBtn'); cls = 'hmbar-btn'; }
-    else if (gill) { host = gill.querySelector('.mobile-icon-row') || gill; before = host.querySelector('[data-action="share"],[data-fc-action="share"]'); cls = 'gb-icon'; }
-    else if (legacy) { host = legacy; before = document.getElementById('barShareBtn'); cls = 'bar-icon-btn'; }
+    if (visible(herm)) { host = herm; before = document.getElementById('hmShareBtn'); cls = 'hmbar-btn'; }
+    else if (visible(gill)) { host = gill.querySelector('.mobile-icon-row') || gill; before = host.querySelector('[data-action="share"],[data-fc-action="share"]'); cls = 'gb-icon'; }
+    else if (visible(legacy)) { host = legacy; before = document.getElementById('barShareBtn'); cls = 'bar-icon-btn'; }
     fab.classList.remove('gb-hl-fab--docked', 'hmbar-btn', 'gb-icon', 'bar-icon-btn');
     if (!host) { document.body.append(fab); return; }
     fab.classList.add('gb-hl-fab--docked', cls);
