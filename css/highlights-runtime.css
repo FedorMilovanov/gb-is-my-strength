@@ -1,301 +1,442 @@
-/* Auto-extracted from js/highlights.js — P2-HIGHLIGHTS-CSS fix */
+/* Reader Library v2: one responsive surface for quotes, notes and favorites.
+ * Owned by js/highlights.js. Article SaveButton remains independent.
+ */
+#ss-save,
+#ss-note {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 7px 9px;
+  white-space: nowrap;
+  border-radius: 8px;
+}
+#ss-save svg,
+#ss-note svg { width: 15px; height: 15px; }
+#ss-save:hover,
+#ss-note:hover { background: rgba(128, 80, 65, .12); }
+#ss-save:focus-visible,
+#ss-note:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+#selection-share-popup.gb-hl-selection-saved #ss-save { color: #b1d7aa; animation: gbLibrarySaved .4s cubic-bezier(.2,.8,.2,1); }
+@keyframes gbLibrarySaved { 50% { transform: scale(1.065); } }
 
-    /* Save quote button in selection popup */
-    #ss-save {
-      display: flex; align-items: center; gap: 5px;
-      background: none; border: none; cursor: pointer;
-      padding: 5px 8px; color: inherit; font-size: inherit;
-      font-family: inherit; white-space: nowrap;
-    }
-    #ss-save:hover { opacity: .75; }
+#gb-hl-fab {
+  position: fixed;
+  z-index: var(--z-sticky, 1000);
+  right: 14px;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  color: #f5e8dc;
+  background: linear-gradient(145deg, #302329, #191418);
+  box-shadow: 0 8px 24px rgba(22, 13, 16, .18);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .2s ease, transform .24s cubic-bezier(.22,1,.36,1), box-shadow .24s ease;
+}
+#gb-hl-fab.visible { opacity: 1; }
+#gb-hl-fab:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(22, 13, 16, .24); }
+#gb-hl-fab:active { transform: scale(.94); }
+#gb-hl-fab > svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+#gb-hl-fab-count {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #c79b77;
+  box-shadow: 0 0 0 2px #25191e;
+}
+#gb-hl-fab-count[hidden] { display: none; }
+#gb-hl-fab.gb-hl-fab--docked {
+  position: relative;
+  inset: auto;
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  color: inherit;
+  transform: none;
+}
+#gb-hl-fab.gb-hl-fab--docked:hover { transform: none; box-shadow: none; }
+#gb-hl-fab.gb-hl-fab--docked #gb-hl-fab-count { top: 6px; right: 5px; box-shadow: 0 0 0 2px var(--color-canvas, #281c20); }
+@media (max-width: 360px) {
+  #gb-hl-fab.gb-hl-fab--docked { width: 33px; min-width: 33px; flex-basis: 33px; }
+}
 
-    /* Highlights panel.
-       z-index: the Gill v16 mobile top/bottom bars use an escape-hatch value
-       of 2147483000 (see css/floating-cluster.css) so they always sit above
-       ordinary page chrome; without matching that, this modal rendered
-       underneath those bars instead of over them. Same fix as
-       .toc-overlay.is-open (bar value + 100) — offset differently (+200) so
-       the two modals don't collide if both ever end up in the DOM at once. */
-    #gb-hl-backdrop {
-      display: none;
-      position: fixed; inset: 0;
-      background: rgba(20,16,11,.5);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      z-index: 2147483200;
-      align-items: flex-end;
-      justify-content: center;
-    }
-    #gb-hl-backdrop.is-open { display: flex; }
+#gb-hl-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 2147483200;
+  background: rgba(17, 12, 16, .54);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  align-items: flex-end;
+  justify-content: center;
+}
+#gb-hl-backdrop.is-open { display: flex; }
+#gb-hl-panel {
+  --library-paper: var(--paper, #fcf9f3);
+  --library-ink: var(--ink, #312926);
+  --library-muted: var(--ink-3, #8d776a);
+  --library-edge: rgba(90, 65, 54, .13);
+  --library-accent: var(--color-accent, #7d4940);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(640px, 100vw);
+  max-height: min(86dvh, 840px);
+  color: var(--library-ink);
+  background: var(--library-paper);
+  border: 1px solid var(--library-edge);
+  border-bottom: 0;
+  border-radius: 23px 23px 0 0;
+  box-shadow: 0 -14px 55px rgba(20,13,12,.2);
+  overflow: clip;
+  animation: gbLibraryOpen .27s cubic-bezier(.22,1,.36,1) both;
+  touch-action: pan-y;
+}
+@keyframes gbLibraryOpen {
+  from { opacity: .78; transform: translateY(32px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+#gb-hl-handle {
+  width: 34px;
+  height: 4px;
+  border-radius: 10px;
+  background: var(--library-muted);
+  opacity: .35;
+  align-self: center;
+  margin: 9px auto 2px;
+  flex: 0 0 auto;
+}
+#gb-hl-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 19px 14px;
+  border-bottom: 1px solid var(--library-edge);
+  flex: 0 0 auto;
+}
+.gb-hl-heading { flex: 1; min-width: 0; }
+.gb-hl-eyebrow {
+  display: block;
+  color: var(--library-accent);
+  font: 700 10px/1.4 var(--sans, "Source Sans 3", system-ui, sans-serif);
+  letter-spacing: .13em;
+  margin-bottom: 5px;
+}
+#gb-hl-title {
+  font: 500 clamp(20px, 4.7vw, 25px)/1.15 var(--serif, Georgia, serif);
+  letter-spacing: -.025em;
+  color: var(--library-ink);
+  margin: 0;
+}
+#gb-hl-count { font: 500 13px var(--sans, system-ui, sans-serif); color: var(--library-muted); white-space: nowrap; }
+#gb-hl-export {
+  border: 1px solid var(--library-edge);
+  background: transparent;
+  color: var(--library-muted);
+  padding: 7px 10px;
+  border-radius: 9px;
+  font: 600 11px var(--sans, system-ui, sans-serif);
+  cursor: pointer;
+  white-space: nowrap;
+}
+#gb-hl-close {
+  border: 0;
+  border-radius: 50%;
+  background: var(--paper-2, #f0e8df);
+  color: var(--library-muted);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+}
+#gb-hl-close svg { width: 17px; height: 17px; }
+#gb-hl-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap: 4px;
+  padding: 4px;
+  margin: 12px 17px 10px;
+  background: var(--paper-2, #efe6dc);
+  border: 1px solid var(--library-edge);
+  border-radius: 12px;
+  flex: 0 0 auto;
+}
+#gb-hl-tabs button {
+  min-height: 39px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--library-muted);
+  padding: 8px 2px;
+  cursor: pointer;
+  font: 650 12px var(--sans, system-ui, sans-serif);
+  transition: color .16s ease, background .16s ease, box-shadow .16s ease;
+}
+#gb-hl-tabs button[aria-pressed="true"] {
+  color: var(--library-accent);
+  background: var(--library-paper);
+  border-color: var(--library-edge);
+  box-shadow: 0 2px 8px rgba(35, 20, 18, .07);
+}
+#gb-hl-tools {
+  display: flex;
+  align-items: stretch;
+  gap: 7px;
+  padding: 0 17px 10px;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+#gb-hl-searchwrap {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--library-edge);
+  border-radius: 11px;
+  padding: 0 11px;
+  color: var(--library-muted);
+}
+#gb-hl-searchwrap svg { width: 17px; height: 17px; flex: 0 0 17px; }
+#gb-hl-search {
+  min-width: 0;
+  width: 100%;
+  min-height: 42px;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  color: var(--library-ink);
+  font: 400 13px var(--sans, system-ui, sans-serif);
+}
+#gb-hl-search::placeholder { color: var(--library-muted); }
+#gb-hl-source {
+  max-width: 150px;
+  min-width: 91px;
+  width: 35%;
+  padding: 0 8px;
+  color: var(--library-muted);
+  background: var(--library-paper);
+  border: 1px solid var(--library-edge);
+  border-radius: 11px;
+  font: 600 12px var(--sans, system-ui, sans-serif);
+}
+#gb-hl-list {
+  flex: 1;
+  min-height: 105px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 17px 10px;
+}
+.gb-hl-item {
+  padding: 16px 2px;
+  border-bottom: 1px solid var(--library-edge);
+  animation: gbLibraryItem .24s ease both;
+}
+@keyframes gbLibraryItem {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.gb-hl-type {
+  color: var(--library-accent);
+  font: 700 10px/1.4 var(--sans, system-ui, sans-serif);
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.gb-hl-quote {
+  margin: 8px 0 5px;
+  color: var(--library-ink);
+  font: italic 16px/1.65 var(--serif, Georgia, serif);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.gb-hl-quote.is-collapsed {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.gb-hl-quote.gb-hl-note {
+  font: 400 14px/1.65 var(--sans, system-ui, sans-serif);
+}
+.gb-hl-quote.gb-hl-favorite {
+  color: var(--library-muted);
+  font: 400 13px/1.55 var(--sans, system-ui, sans-serif);
+}
+.gb-hl-related {
+  margin-top: 8px;
+  font: italic 12px/1.55 var(--serif, Georgia, serif);
+  color: var(--library-muted);
+  max-height: 4.65em;
+  overflow: hidden;
+}
+.gb-hl-expand {
+  display: inline-flex;
+  border: 0;
+  background: transparent;
+  color: var(--library-accent);
+  padding: 6px 0;
+  cursor: pointer;
+  font: 650 12px var(--sans, system-ui, sans-serif);
+}
+.gb-hl-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
+.gb-hl-meta a {
+  flex: 1;
+  min-width: 85px;
+  color: var(--library-accent);
+  font: 600 12px/1.4 var(--sans, system-ui, sans-serif);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.gb-hl-meta a:hover { text-decoration: underline; }
+.gb-hl-meta button {
+  border: 1px solid var(--library-edge);
+  border-radius: 8px;
+  background: transparent;
+  padding: 6px 7px;
+  color: var(--library-muted);
+  font: 500 11px var(--sans, system-ui, sans-serif);
+  cursor: pointer;
+}
+.gb-hl-meta button:hover,
+#gb-hl-export:hover,
+#gb-hl-close:hover { color: var(--library-accent); background: var(--paper-2, #efe6dc); }
+.gb-hl-more {
+  width: 100%;
+  padding: 13px 10px;
+  border: 1px solid var(--library-edge);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--library-accent);
+  font: 650 13px var(--sans, system-ui, sans-serif);
+  cursor: pointer;
+  margin: 15px 0 10px;
+}
+.gb-hl-empty {
+  padding: 45px 16px;
+  color: var(--library-muted);
+  text-align: center;
+  font: 13px/1.6 var(--sans, system-ui, sans-serif);
+}
+#gb-hl-status {
+  display: none;
+  position: absolute;
+  bottom: 67px;
+  left: 16px;
+  right: 16px;
+  z-index: 3;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #30242a;
+  color: #fff1e8;
+  border-radius: 11px;
+  padding: 11px;
+  box-shadow: 0 6px 22px rgba(20,12,16,.26);
+  font: 12px var(--sans, system-ui, sans-serif);
+}
+#gb-hl-status.is-visible { display: flex; }
+#gb-hl-status.is-error { background: #793d3f; }
+#gb-hl-status button { border: 0; color: #f3c4a7; background: transparent; cursor: pointer; }
+#gb-hl-foot { border-top: 1px solid var(--library-edge); padding: 12px 17px calc(12px + env(safe-area-inset-bottom,0px)); flex: 0 0 auto; }
+#gb-hl-new-note {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 9px 16px;
+  color: #fffaf3;
+  background: var(--library-accent);
+  border: 0;
+  border-radius: 11px;
+  font: 650 13px var(--sans, system-ui, sans-serif);
+  cursor: pointer;
+  transition: transform .17s ease, box-shadow .17s ease;
+}
+#gb-hl-new-note svg { width: 16px; height: 16px; }
+#gb-hl-new-note:hover { box-shadow: 0 4px 12px rgba(84,38,36,.18); }
+#gb-hl-new-note:active { transform: scale(.97); }
+#gb-hl-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 15px 17px;
+  border-top: 1px solid var(--library-edge);
+}
+#gb-hl-editor[hidden] { display: none; }
+#gb-hl-panel.is-editing #gb-hl-tabs,
+#gb-hl-panel.is-editing #gb-hl-tools,
+#gb-hl-panel.is-editing #gb-hl-list { display: none; }
+#gb-hl-panel.is-editing #gb-hl-editor { min-height: 210px; max-height: 60dvh; overflow-y: auto; flex: 1; }
+#gb-hl-editor label { font: 700 13px var(--sans, system-ui, sans-serif); }
+#gb-hl-note-context { color: var(--library-muted); font: italic 12px/1.5 var(--serif, Georgia, serif); }
+#gb-hl-note-text {
+  width: 100%;
+  min-height: 100px;
+  max-height: 30vh;
+  resize: vertical;
+  border: 1px solid var(--library-edge);
+  border-radius: 11px;
+  color: var(--library-ink);
+  background: var(--library-paper);
+  padding: 12px;
+  font: 14px/1.5 var(--sans, system-ui, sans-serif);
+}
+.gb-hl-editor-actions { display: flex; justify-content: end; gap: 8px; }
+.gb-hl-editor-actions button { border: 1px solid var(--library-edge); border-radius: 10px; background: transparent; color: var(--library-muted); min-height: 39px; padding: 8px 12px; cursor: pointer; }
+.gb-hl-editor-actions button[type="submit"] { border-color: var(--library-accent); background: var(--library-accent); color: #fff8ef; }
+#gb-hl-backdrop button:focus-visible,
+#gb-hl-backdrop select:focus-visible,
+#gb-hl-backdrop input:focus-visible,
+#gb-hl-backdrop textarea:focus-visible,
+#gb-hl-fab:focus-visible { outline: 2px solid var(--color-accent-gold, #bc916e); outline-offset: 2px; }
 
-    #gb-hl-panel {
-      position: relative;
-      background: var(--paper, #faf8f4);
-      border-radius: 12px 12px 0 0;
-      width: min(640px, 100vw);
-      max-height: 80vh;
-      display: flex; flex-direction: column;
-      box-shadow: 0 -8px 40px rgba(20,16,11,.18);
-      animation: hlPanelIn .2s ease;
-      touch-action: pan-y;
-    }
-    @keyframes hlPanelIn {
-      from { transform: translateY(40px); opacity: 0; }
-      to   { transform: translateY(0);    opacity: 1; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      #gb-hl-panel { animation: none; }
-    }
-
-    #gb-hl-handle {
-      width: 36px; height: 4px;
-      background: rgba(20,16,11,.18);
-      border-radius: 2px;
-      margin: 12px auto 0;
-      flex-shrink: 0;
-      cursor: grab;
-    }
-
-    #gb-hl-header {
-      display: flex; align-items: center;
-      padding: 14px 18px 10px;
-      border-bottom: 1px solid rgba(20,16,11,.08);
-      gap: 10px; flex-shrink: 0;
-    }
-    #gb-hl-title {
-      font-family: var(--serif, Georgia, serif);
-      font-style: italic;
-      font-size: 1.15rem;
-      flex: 1;
-      color: var(--ink, #14100b);
-    }
-    #gb-hl-count {
-      font-family: var(--mono, monospace);
-      font-size: 10px; letter-spacing: .08em;
-      color: var(--ink-3, #8a7968);
-      background: var(--paper-2, #f3efe8);
-      padding: 2px 7px; border-radius: 2px;
-    }
-    #gb-hl-export {
-      font-family: var(--mono, monospace);
-      font-size: 10px; letter-spacing: .08em;
-      border: 1px solid rgba(20,16,11,.16);
-      background: none; border-radius: 3px;
-      padding: 4px 10px; cursor: pointer;
-      color: var(--ink-2, #4a3f35);
-      transition: background .1s;
-    }
-    #gb-hl-export:hover { background: var(--paper-2, #f3efe8); }
-    #gb-hl-close {
-      background: none; border: none; cursor: pointer;
-      color: var(--ink-3, #8a7968); font-size: 1.1rem;
-      padding: 4px 6px; border-radius: 3px;
-    }
-    #gb-hl-close:hover { background: var(--paper-2, #f3efe8); }
-
-    /* Search — only shown past a handful of saved quotes (see render() in
-       highlights.js); below that threshold it's just clutter. */
-    #gb-hl-searchwrap {
-      display: none; align-items: center; gap: 8px;
-      margin: 0 18px 8px; padding: 7px 10px;
-      border: 1px solid rgba(20,16,11,.14);
-      border-radius: 8px;
-      color: var(--ink-3, #8a7968);
-      flex-shrink: 0;
-    }
-    #gb-hl-searchwrap svg { flex-shrink: 0; }
-    #gb-hl-search {
-      border: none; background: none; outline: none;
-      font-family: var(--sans, 'Source Sans 3', system-ui, sans-serif);
-      font-size: .85rem; color: var(--ink, #14100b);
-      width: 100%;
-    }
-    #gb-hl-search::placeholder { color: var(--ink-3, #8a7968); }
-    html.dark #gb-hl-searchwrap { border-color: rgba(255,255,255,.14); }
-
-    #gb-hl-list {
-      overflow-y: auto; flex: 1; padding: 8px 0;
-      overscroll-behavior: contain;
-    }
-
-    /* Delete-with-undo snackbar, replacing a jarring window.confirm(). */
-    .gb-hl-undo {
-      position: absolute; left: 50%; bottom: 14px;
-      transform: translateX(-50%);
-      display: flex; align-items: center; gap: 12px;
-      background: var(--ink, #14100b); color: #f5f0e8;
-      padding: 10px 16px; border-radius: 999px;
-      font-size: .82rem; white-space: nowrap;
-      box-shadow: 0 6px 20px rgba(20,16,11,.3);
-      animation: gbHlUndoIn .2s ease;
-      z-index: 2;
-    }
-    .gb-hl-undo button {
-      background: none; border: none; color: #dfb173;
-      font-weight: 700; cursor: pointer; padding: 2px 4px;
-      font-size: inherit; font-family: inherit;
-    }
-    @keyframes gbHlUndoIn {
-      from { opacity: 0; transform: translate(-50%, 8px); }
-      to   { opacity: 1; transform: translate(-50%, 0); }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .gb-hl-undo { animation: none; }
-    }
-
-    .gb-hl-item {
-      padding: 14px 18px;
-      border-bottom: 1px solid rgba(20,16,11,.06);
-      position: relative;
-    }
-    .gb-hl-item:last-child { border-bottom: none; }
-
-    .gb-hl-quote {
-      font-family: var(--serif, Georgia, serif);
-      font-style: italic;
-      font-size: .92rem;
-      color: var(--ink, #14100b);
-      line-height: 1.6;
-      margin-bottom: 6px;
-    }
-    .gb-hl-quote::before { content: '«'; }
-    .gb-hl-quote::after  { content: '»'; }
-
-    .gb-hl-meta {
-      display: flex; align-items: center; gap: 8px;
-      font-size: .75rem;
-      color: var(--ink-3, #8a7968);
-      font-family: var(--mono, monospace);
-    }
-    .gb-hl-meta a {
-      color: var(--gold-2, #7c5c18); text-decoration: none;
-    }
-    .gb-hl-meta a:hover { text-decoration: underline; }
-
-    .gb-hl-card, .gb-hl-del {
-      background: none; border: none; cursor: pointer;
-      color: var(--ink-3, #8a7968); font-size: .8rem;
-      padding: 2px 5px; border-radius: 3px;
-      opacity: .6;
-    }
-    .gb-hl-card { margin-left: auto; }
-    .gb-hl-card:hover { opacity: 1; background: var(--paper-2, #f3efe8); color: var(--gold-2, #7c5c18); }
-    .gb-hl-del:hover { opacity: 1; background: var(--red-soft, #f8e8e8); color: var(--red, #9b2d2d); }
-
-    /* "Jump back to passage": the saved-quote link carries a native Text
-       Fragment directive (#:~:text=…, see highlights.js buildTextFragment())
-       so the browser itself finds, scrolls to, and highlights the exact
-       saved sentence on arrival — restyled here from the UA default yellow
-       to the site's own gold, site-wide (this isn't scoped to quotes; any
-       text-fragment link landing anywhere on the site gets it). */
-    ::target-text {
-      background: rgba(219,177,115,.42);
-      color: inherit;
-    }
-    html.dark ::target-text {
-      background: rgba(238,208,147,.32);
-    }
-
-    .gb-hl-empty {
-      padding: 40px 18px; text-align: center;
-      color: var(--ink-3, #8a7968); font-size: .9rem;
-      line-height: 1.7;
-    }
-    .gb-hl-empty strong {
-      display: block; font-size: 1.05rem;
-      color: var(--ink-2, #4a3f35); margin-bottom: 6px;
-      font-family: var(--serif, Georgia, serif); font-style: italic;
-    }
-
-    /* Floating button — a small icon-only circle with a corner count badge,
-       not a wide always-solid pill: it needs to sit over article copy on
-       every page (there's no single header layout to dock it into site-wide),
-       so keeping its footprint tiny and letting it fade during active
-       scrolling (see .is-idle-faded) is what keeps it from feeling intrusive.
-       Position is set by JS (--gb-hl-fab-bottom, highlights.js
-       updateFabOffset()), which measures whatever bottom bar actually exists
-       on the page instead of a guessed pixel offset — the fallback below
-       only applies before that first measurement or if no bar is found. */
-    #gb-hl-fab {
-      position: fixed;
-      right: 14px;
-      bottom: var(--gb-hl-fab-bottom, calc(20px + env(safe-area-inset-bottom, 0px)));
-      width: 44px; height: 44px;
-      background: linear-gradient(160deg, #241d15, #14100b);
-      color: #f5f0e8;
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 999px;
-      display: none; align-items: center; justify-content: center;
-      cursor: pointer; z-index: var(--z-sticky, 1000);
-      box-shadow: 0 6px 22px rgba(20,16,11,.3), inset 0 1px 0 rgba(255,255,255,.06);
-      transition: opacity .25s ease, transform .2s ease, bottom .2s ease;
-    }
-    /* Владелец 2026-07-15: прежний вид (залитые кавычки + жёлтый цифровой
-       бейдж) читался как чужеродная нашлёпка. Редизайн: штриховая закладка
-       в языке иконок баров (stroke 1.7, как у Share/Скачать), вместо
-       цифрового бейджа — крошечная точка-индикатор «есть сохранённое».
-       Число сохранённого видно внутри панели «Мои цитаты». */
-    #gb-hl-fab.visible { display: flex; }
-    #gb-hl-fab.is-idle-faded { opacity: .46; }
-    #gb-hl-fab:hover, #gb-hl-fab:focus-visible { opacity: 1; transform: translateY(-2px); }
-    #gb-hl-fab:active { transform: scale(.94); }
-
-    #gb-hl-fab-count {
-      position: absolute; top: 9px; right: 9px;
-      width: 6px; height: 6px; padding: 0;
-      border-radius: 999px;
-      background: var(--gold-2, #b08a3e);
-      color: transparent;
-      font-size: 0; line-height: 0;
-      overflow: hidden;
-      text-align: center;
-      box-shadow: 0 0 0 2px #14100b;
-    }
-
-    @keyframes gbHlFabBump {
-      0%   { transform: scale(1); }
-      40%  { transform: scale(1.16); }
-      100% { transform: scale(1); }
-    }
-    #gb-hl-fab.is-bump { animation: gbHlFabBump .34s cubic-bezier(.34,1.56,.64,1); }
-
-    @media (prefers-reduced-motion: reduce) {
-      #gb-hl-fab { transition: none; }
-      #gb-hl-fab.is-bump { animation: none; }
-    }
-
-    /* Docked variant — when a page has an actual bottom bar (Gill's
-       .mobile-bottom-bar, Hermenevtika's .hmbar, or the legacy
-       .bottom-bar-inner), highlights.js moves the button INTO that bar's
-       own icon row (see dockFab()) instead of floating it above the page.
-       It then also carries .gb-icon / .hmbar-btn / .bar-icon-btn, which
-       supplies the actual circle size/hover halo — this variant only
-       strips the FAB's own fixed-position styling so the two don't fight. */
-    #gb-hl-fab.gb-hl-fab--docked {
-      position: static;
-      width: auto; height: auto;
-      background: none; border: none; box-shadow: none;
-      color: inherit;
-      transform: none;
-    }
-    #gb-hl-fab.gb-hl-fab--docked:hover,
-    #gb-hl-fab.gb-hl-fab--docked:focus-visible { transform: none; }
-    #gb-hl-fab.gb-hl-fab--docked { position: relative; }
-    #gb-hl-fab.gb-hl-fab--docked #gb-hl-fab-count {
-      top: 7px; right: 7px;
-      width: 5px; height: 5px;
-      box-shadow: 0 0 0 2px var(--color-canvas, #fdfcf9);
-    }
-    html.dark #gb-hl-fab.gb-hl-fab--docked #gb-hl-fab-count {
-      box-shadow: 0 0 0 2px var(--gill-mobile-bar-bg, #0d1117);
-    }
-
-    html.dark #gb-hl-panel { background: #1a1612; }
-    html.dark #gb-hl-export { color: #a09080; border-color: rgba(255,255,255,.14); }
-    html.dark #gb-hl-export:hover { background: rgba(255,255,255,.07); }
-    html.dark #gb-hl-close:hover { background: rgba(255,255,255,.07); }
-    html.dark .gb-hl-item { border-color: rgba(255,255,255,.06); }
-    html.dark .gb-hl-del:hover { background: rgba(155,45,45,.25); }
-    html.dark #gb-hl-fab { background: linear-gradient(160deg, #2a2119, #1a1410); border-color: rgba(255,255,255,.1); }
-    html.dark #gb-hl-fab-count { background: #caa15a; box-shadow: 0 0 0 2px #1a1410; }
-  
+html.dark #gb-hl-panel {
+  --library-paper: #211b1b;
+  --library-ink: #f3e7d7;
+  --library-muted: #b8a59a;
+  --library-edge: rgba(232,204,180,.14);
+  --library-accent: #d9a98e;
+}
+html.dark #gb-hl-tabs { background: #302627; }
+html.dark #gb-hl-close,
+html.dark #gb-hl-source { background: #302727; color: var(--library-muted); }
+html.theme-sepia #gb-hl-panel { --library-paper: #f7efdf; --library-ink: #44342b; --library-muted: #8b6d5d; --library-accent: #855942; }
+@media (max-width: 480px) {
+  #gb-hl-header { padding: 12px 13px 13px; }
+  #gb-hl-export { font-size: 10px; padding: 7px 8px; }
+  #gb-hl-tools { padding-inline: 12px; }
+  #gb-hl-tabs { margin-inline: 12px; }
+  #gb-hl-tabs button { font-size: 11px; }
+  #gb-hl-list { padding-inline: 13px; }
+  #gb-hl-panel { max-height: min(89dvh, 820px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #gb-hl-panel, .gb-hl-item { animation: none; }
+  #gb-hl-fab, #gb-hl-new-note, #gb-hl-tabs button { transition: none; }
+}
+@media print {
+  #gb-hl-fab, #gb-hl-backdrop { display: none; }
+}
