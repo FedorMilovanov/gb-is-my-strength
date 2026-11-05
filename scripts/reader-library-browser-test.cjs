@@ -31,7 +31,7 @@ const html = [
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://127.0.0.1');
   if (url.pathname === '/js/highlights.js' || url.pathname === '/css/highlights-runtime.css' ||
-      url.pathname === '/src/runtime/favorite-store.js') {
+      url.pathname === '/src/runtime/favorite-store.js' || url.pathname === '/js/reader-library-presenter.js') {
     const file = path.join(root, url.pathname.replace(/^\//, ''));
     res.setHeader('Content-Type', file.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/javascript; charset=utf-8');
     res.end(fs.readFileSync(file));
@@ -67,6 +67,7 @@ async function check(browserName, driver, url, width) {
   assert.equal(await page.locator('#gb-hl-fab').isVisible(), true, 'library remains visible with existing data');
 
   await page.locator('#gb-hl-fab').click();
+  await page.locator('.gb-hl-item').first().waitFor();
   assert.equal(await page.locator('#gb-hl-backdrop').getAttribute('aria-hidden'), 'false');
   assert.equal(await page.locator('#gb-hl-item').count(), 0, 'no competing legacy item container');
   assert.equal(await page.locator('.gb-hl-item').count(), 3, 'legacy quotes, notes and favorites are united');
@@ -104,6 +105,7 @@ async function check(browserName, driver, url, width) {
   const result = await page.evaluate(() => window.GBFavoriteStore.add({ path: '/articles/third', title: 'Третий материал' }));
   assert.equal(result.saved, true);
   await page.locator('#gb-hl-fab').click();
+  await page.locator('.gb-hl-item').first().waitFor();
   await page.locator('[data-library-tab="favorite"]').click();
   assert.equal(await page.locator('.gb-hl-item').count(), 2, 'favorite store additions are live');
   await page.locator('[data-library-tab="all"]').click();

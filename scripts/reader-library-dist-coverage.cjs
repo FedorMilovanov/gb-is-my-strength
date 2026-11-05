@@ -16,4 +16,17 @@ for(const name of ['articles','hardTexts']){
   const missing=family[name].filter((x)=>(x.hasArticle||x.hasMobile)&&!x.highlight);
   assert.equal(missing.length,0,'Reader Library missing from published '+name+' routes: '+missing.map(x=>x.path).join(', '));
 }
+const crypto = require('crypto');
+const presenterPath = path.join(root, 'js/reader-library-presenter.js');
+const highlightsPath = path.join(root, 'js/highlights.js');
+const swPath = path.join(root, 'sw.js');
+assert(fs.existsSync(presenterPath), 'lazy presenter must be published in dist');
+assert(fs.existsSync(highlightsPath), 'highlight storage bootstrap must be published');
+assert(fs.existsSync(swPath), 'service worker must be published');
+const version = crypto.createHash('md5').update(fs.readFileSync(presenterPath)).digest('hex').slice(0,8);
+assert(fs.readFileSync(highlightsPath, 'utf8').includes('reader-library-presenter.js?v=' + version),
+  'lazy importer must reference exact published presenter bytes');
+assert(fs.readFileSync(swPath, 'utf8').includes('reader-library-presenter.js?v=' + version),
+  'offline service worker must precache exact presenter revision');
+console.log('lazy presenter asset revision and offline precache PASS');
 console.log('allPages',pages.length,'reader article coverage PASS');

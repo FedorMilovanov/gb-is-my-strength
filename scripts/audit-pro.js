@@ -64,6 +64,7 @@ const ALLOWED_JS = new Set([
   'js/search.js',
   'js/enhancements.js',
   'js/highlights.js',
+  'js/reader-library-presenter.js',
   'js/glossary.js',
   'js/bookmark-engine.js',
   'js/nagornaya-mobile-toc.js',
