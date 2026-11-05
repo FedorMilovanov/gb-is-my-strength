@@ -3601,14 +3601,15 @@ html.dark [data-gill-v16] .mobile-top-bar {
   [data-gill-v16] .mobile-font-btn { width: 44px !important; min-width: 44px !important; }
 }
 
-/* B17: 320px (iPhone SE-1, Fold) — the Learning trigger goes icon-only and
-   gaps tighten; the bottom bar already flex-squeezes its context. */
+/* B17: 320px (iPhone SE-1, Fold) — Learning goes icon-only.
+   Seven bottom-bar slots require a 44px TOC hit target and 1px gaps to fit
+   between the existing 8px side paddings without overflow or overlap. */
 @media (max-width: 360px) {
   [data-gill-v16] .mobile-top-bar { gap: 4px !important; }
   [data-gill-v16] .mobile-learning-trigger span { display: none; }
   [data-gill-v16] .mobile-learning-trigger { min-width: 36px; min-height: 44px; }
-  [data-gill-v16] .mobile-btoc-section { min-height: 44px; }
-  [data-gill-v16] .mobile-bottom-bar { gap: 2px !important; }
+  [data-gill-v16] .mobile-btoc-section { min-width: 44px; min-height: 44px; }
+  [data-gill-v16] .mobile-bottom-bar { gap: 1px !important; }
 }
 
 /* Gill header watermark removed (giant faint "ВВЕДЕНИЕ"/roman numeral behind

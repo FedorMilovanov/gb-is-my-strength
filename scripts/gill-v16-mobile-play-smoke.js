@@ -527,6 +527,7 @@ async function testMobileTargetGeometry(browser) {
         '#mobPartTocBtn',
         '.mobile-bottom-bar [data-fc-action="theme"]',
         '#mobSettingsBtn',
+        '#gb-hl-fab',
         '.mobile-bottom-bar [data-action="share"]',
       ];
       const rows = selectors.map((selector) => {
