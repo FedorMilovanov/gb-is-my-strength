@@ -1,6 +1,6 @@
 # Grok desktop reader — Stage 2 Hermeneutics pilot (2026-11-07)
 
-**Status: draft / opt-in OFF. Not merged, not released.** This file describes the bounded visual pilot developed on exact Stage 1 PR #2284 head `ae93e229c3aca79500a4dad8f6f94158484c0c68`. The stable production baseline remains Library V3 `717efc54772edf4224f44254651c102e2af24129`.
+**Status: draft / opt-in OFF. Not merged, not released.** This bounded visual pilot is now based on merged Stage 1 PR #2284, Product main `354222d8b6e20538ca275cb4e84cb0dad84adf27`. The last independently witnessed live release before this stage-1 merge was Library V3 `717efc54772edf4224f44254651c102e2af24129`; deployment of the newer main SHA must be independently verified.
 
 ## Scope and ownership
 
@@ -21,11 +21,12 @@
 - `node scripts/grok-rail-pilot-browser-test.mjs`: **195/195 PASS**, Chromium/Firefox/WebKit across 390, 1199, 1200, 1440×300 and 1440×900. Explicit checks cover 10 canonical anchor targets, mobile rail nonvisibility, right-side cluster, horizontal overflow, focus-safe inert disclosure, reopen, reduced-motion, short-height navigability, and computed `text-decoration-line:none`.
 - Initial 1440×300 rail viewport had only 76px of available TOC; reduced header wrapping to regain usable height. This was caught by metric-based test rather than screenshots alone.
 - Additional reproducible browser coverage: H3 permalink, browser Back/Forward with empty-hash restoration, direct H3 load, and seven rapid disclosure reversals across all three engines (27 added checks, included in 195/195).
+- Scripture occurrence index: adding `GrokReaderTree.astro` increases scanned source files **529 → 530**. Deterministically refreshed `data/scripture-search-index.json` (only this counter changed): **1368 references, 3474 occurrences, 102 routes** unchanged; both index check and occurrence contract pass locally.
 - Screenshots and machine report are generated into `reports/grok-stage2/` and are intentionally untracked build witnesses, not publishable page assets.
 - `node scripts/reader-controls-a11y-browser-contract.mjs`: 141/141 PASS, including retained Gill/Hermeneutics controls, Escape/focus and Play.
 - `node scripts/hermenevtika-mobile-chrome-visual-contract.mjs`: 84/84 PASS (Chromium/WebKit); mobile navigation unchanged.
 - `node scripts/reader-library-premium-browser-contract.cjs`: 8/8 PASS (real Library V3 browser contract).
-- Aggregate local browser checks in this candidate: 195 + 141 + 84 + 8 = **428/428 PASS**. This is local opt-in evidence, not a claim that Stage 2 CI or production release is certified.
+- Local flag-ON browser evidence: **195/195**; flag-OFF: **120/120** (Chromium/Firefox/WebKit). Reader Controls **141/141**, mobile **84/84**, Library V3 **8/8**; aggregate **548/548 PASS**. These are local candidate checks, not CI or live certification.
 
 ## Reproduction
 
@@ -38,16 +39,21 @@ node scripts/grok-rail-pilot-browser-test.mjs
 node scripts/reader-controls-a11y-browser-contract.mjs
 node scripts/hermenevtika-mobile-chrome-visual-contract.mjs
 node scripts/reader-library-premium-browser-contract.cjs
+
+# Separate flag-OFF build, after clearing the opt-in environment variable:
+Remove-Item Env:PUBLIC_GB_GROK_HERMENEUTICS_PILOT -ErrorAction SilentlyContinue
+npm.cmd run strangler:build:production-like
+node scripts/grok-rail-pilot-browser-test.mjs --flag-off
 ```
 
-Default build (without the flag) must show the original Hermeneutics rail and untouched mobile readers. The CSS-only removal of TOC underlines remains an intentional reader-rail improvement in both modes.
+Default build without the flag passed `node scripts/grok-rail-pilot-browser-test.mjs --flag-off`: **120/120** checks (3 engines × 5 viewports × 8 cases). It renders the flat TOC with 10 canonical links, no Grok DOM elements, unchanged responsive controls and no JS errors. Rebuild with the flag unset before running this. The scoped removal of TOC underlines remains an intentional rail improvement in both modes.
 
 ## Remaining gates and stop-ship
 
-1. Stage 1 PR #2284 must reach final CI green at the **exact** PR head; Route Registry WebKit installation/check was still in progress during this audit. Do not merge PR #2284 on partially complete CI.
+1. Stage 1 PR #2284 **MERGED** after exact-head CI success on its second WebKit run (first timed out installing Ubuntu packages). Require full **Stage 2 PR #2285 exact-head CI green** before Stage 2 merge.
 2. Capture same-state on/off screenshots, actual reader-axis rectangles and per-series theme tokens; compare screen widths and responsive breakpoints with production.
 3. Validate URL Back/Forward, direct deep links into previously collapsed descendants, rapid animation reversals (0/90/180/350/650ms), keyboard arrows and focus restoration, Day/Sepia/Night themes, 130% font, A4 print and actual Library V3 save/status/reload/backup.
-4. Verify exact CSS/DOM diff with the route flag **off**. Run the canonical release guard on the final staged PR head.
+4. Flag-OFF DOM parity passed 120/120; review intentional TOC underline removal in visual comparison and run canonical release guard at the final Stage 2 head.
 5. No Stage 2 merge or live flag until all checks are green and reviewed. No Gill/Baptists rollout yet. Rollback is exclusively a flag-off build, never a revert of Library V3.
 
 Current local development was isolated in `C:\Users\Fedor\AppData\Local\Temp\gb-grok-pr2284-stage2-20261106`. The existing main workspace and dirty AuditRepo workspace were deliberately not edited.

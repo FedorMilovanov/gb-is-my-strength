@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Exclusive flag-on contract: run ONLY after building a fresh candidate with
-// PUBLIC_GB_GROK_HERMENEUTICS_PILOT=1. Never serves the published website.
+// Flag-on and flag-off contracts for a fresh local candidate build.
+// No published website is modified or served by this test.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import http from 'node:http';
@@ -13,8 +13,12 @@ const DIST = path.join(ROOT, 'dist');
 const ROUTE = '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
 const TARGET = path.join(DIST, ROUTE.replace(/^\/+|\/+$/g, ''), 'index.html');
 assert.ok(fs.existsSync(TARGET), 'fresh production-like Hermeneutics dist is required');
-assert.match(fs.readFileSync(TARGET, 'utf8'), /hrail--grok/,
-  'flag-on candidate was not built; do not test stale dist');
+const flagOff = process.argv.includes('--flag-off');
+const htmlCandidate = fs.readFileSync(TARGET,'utf8');
+// A stylesheet may still contain a Grok selector in a flag-off build.
+// Only the DOM itself is the feature flag's truthful witness.
+assert.match(htmlCandidate, flagOff ? /<aside\s+class="hrail"/ : /<aside\s+class="hrail hrail--grok"/,
+  'candidate build does not have the requested route-flag state');
 const MIME = { '.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8',
   '.css':'text/css; charset=utf-8', '.svg':'image/svg+xml', '.png':'image/png',
   '.webp':'image/webp', '.woff2':'font/woff2', '.json':'application/json' };
@@ -66,6 +70,34 @@ try {
         try {
           await page.goto(origin + ROUTE, {waitUntil:'domcontentloaded'});
           await page.waitForTimeout(500);
+          if (flagOff) {
+            const fallback = await page.evaluate(() => {
+              const rail=document.querySelector('.hrail');
+              const list=document.getElementById('hrailToc');
+              const links=Array.from(list?.querySelectorAll(':scope > li:not(.hrail-track-slot) a[href]') || []);
+              return {
+                rail:!!rail, optIn:!!document.querySelector('.hrail--grok, .grok-toc'),
+                oldFlatToc:!!list && list.classList.contains('hrail-toc'),
+                links:links.length, allTargetsExist:links.every(a=>!!document.getElementById(decodeURIComponent(a.hash.slice(1)))),
+                visible:rail && getComputedStyle(rail).display!=='none',
+                mobileControls:!!document.querySelector('.hmbar') && !!document.querySelector('.hmtop'),
+                floating:!!document.getElementById('gbFloatingControls'),
+                content:!!document.querySelector('[data-hm-reader]'),
+                overflow:document.documentElement.scrollWidth-innerWidth,
+                decoration:links.length?getComputedStyle(links[0]).textDecorationLine:null
+              };
+            });
+            check(name,viewport.id,'flag-off original rail renders',fallback.rail && fallback.oldFlatToc,fallback);
+            check(name,viewport.id,'flag-off no Grok DOM elements',!fallback.optIn,fallback);
+            check(name,viewport.id,'flag-off original canonical hrefs',fallback.links===10 && fallback.allTargetsExist,fallback);
+            check(name,viewport.id,'flag-off mobile and desktop boundaries',
+              viewport.width < 1200 ? !fallback.visible && fallback.mobileControls : fallback.visible && fallback.floating,fallback);
+            check(name,viewport.id,'flag-off published text remains',fallback.content,fallback);
+            check(name,viewport.id,'flag-off no horizontal overflow',fallback.overflow <= 2,fallback.overflow);
+            check(name,viewport.id,'flag-off TOC links not underlined',fallback.decoration==='none',fallback.decoration);
+            check(name,viewport.id,'flag-off no JavaScript errors',errors.length===0,errors);
+            continue;
+          }
           const snapshot = await page.evaluate(() => {
             const rail = document.querySelector('.hrail--grok');
             const menu = document.querySelector('#hrailToc');
@@ -185,5 +217,5 @@ try {
     } finally { await browser.close(); }
   }
 } finally { await new Promise(resolve => server.close(resolve)); }
-fs.writeFileSync(path.join(reports,'results.json'),JSON.stringify({checks,passed:checks.length},null,2));
-console.log('GROK STAGE 2 BROWSER CONTRACT: '+checks.length+'/'+checks.length+' PASS (Chromium/Firefox/WebKit)');
+fs.writeFileSync(path.join(reports,flagOff?'results-off.json':'results.json'),JSON.stringify({flagOff,checks,passed:checks.length},null,2));
+console.log('GROK STAGE 2 '+(flagOff?'FLAG OFF':'FLAG ON')+' BROWSER CONTRACT: '+checks.length+'/'+checks.length+' PASS (Chromium/Firefox/WebKit)');
