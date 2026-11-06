@@ -96,11 +96,15 @@ check('actual Baptist book: four chapters plus the existing reference endpaper',
 check('book section labels reuse original SeriesConfig roman-prefix policy', () => {
   const cfg = BAPTIST_SERIES;
   const id = 'sovetskaya-noch';
-  const source = cfg.pages[id].partToc.find((row) => /^[IVXLC]+\.\s+/.test(row.label));
-  assert.ok(source, 'book should contain a historical roman H2 prefix');
-  const after = flatten(projectSeriesReaderToc(cfg, id).nodes).find((node) => node.href.endsWith(source.href));
-  assert.equal(after.label, source.label.replace(/^[IVXLC]+\.\s+/, ''));
-  assert.equal(cfg.pages[id].partToc.find((row) => row.href === source.href).label, source.label);
+  const source = cfg.pages[id].partToc[0];
+  // Synthetic fixture: this published article has no roman H2 prefix today.
+  const injected = { ...source, label: 'IV. ' + source.label };
+  const fixture = { ...cfg, pages: {
+    ...cfg.pages, [id]: { ...cfg.pages[id], partToc: [injected, ...cfg.pages[id].partToc.slice(1)] },
+  } };
+  const after = flatten(projectSeriesReaderToc(fixture, id).nodes).find((node) => node.href.endsWith(source.href));
+  assert.equal(after.label, source.label);
+  assert.equal(cfg.pages[id].partToc[0].label, source.label);
 });
 
 check('DOM reconciliation admits nested H4-H6 without changing canonical H2/H3', () => {
