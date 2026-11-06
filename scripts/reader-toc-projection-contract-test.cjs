@@ -35,6 +35,16 @@ const { GILL_SERIES } =
   require(path.join(root, 'src/components/article-pilots/_shared/series/seriesConfig.ts'));
 const { BAPTIST_SERIES } =
   require(path.join(root, 'src/components/article-pilots/_shared/series/baptistSeriesConfig.ts'));
+const { GENESIS6_SERIES } =
+  require(path.join(root, 'src/components/article-pilots/_shared/series/genesis6SeriesConfig.ts'));
+const { HARD_TEXTS_SERIES } =
+  require(path.join(root, 'src/components/article-pilots/_shared/series/hardTextsSeriesConfig.ts'));
+const { PASTOR_SERIES } =
+  require(path.join(root, 'src/components/article-pilots/_shared/series/pastorSeriesConfig.ts'));
+const { APOSTASY_SERIES } =
+  require(path.join(root, 'src/components/article-pilots/_shared/series/apostasySeriesConfig.ts'));
+const { TEEN_DOUBLE_LIFE_SERIES } =
+  require(path.join(root, 'src/components/article-pilots/_shared/series/teenSeriesConfig.ts'));
 
 let checks = 0;
 function check(label, run) {
@@ -189,6 +199,34 @@ check('satellite rows are not accidentally added to desktop top-level rail', () 
   const result = projectSeriesReaderToc(clone, 'context');
   assert.equal(result.nodes.length, 6);
   assert.equal(flatten(result.nodes).filter((row) => row.href === satellite.href).length, 0);
+});
+
+check('all seven real series families project every published page', () => {
+  const series = [
+    GILL_SERIES, BAPTIST_SERIES, GENESIS6_SERIES, HARD_TEXTS_SERIES,
+    PASTOR_SERIES, APOSTASY_SERIES, TEEN_DOUBLE_LIFE_SERIES,
+  ];
+  for (const cfg of series) {
+    for (const id of Object.keys(cfg.pages)) {
+      const result = projectSeriesReaderToc(cfg, id);
+      assert.equal(result.actualPageId, id);
+      assert.ok(result.activePath.length >= 1);
+      assert.ok(flatten(result.nodes).some((node) => node.key === result.currentPageKey));
+    }
+  }
+});
+
+check('actual Genesis 6 satellite pages retain parent ownership, not duplicate rail items', () => {
+  const satellites = GENESIS6_SERIES.items.filter((item) => item.tier === 'satellite');
+  assert.equal(satellites.length, 2);
+  for (const item of satellites) {
+    const result = projectSeriesReaderToc(GENESIS6_SERIES, item.id);
+    assert.equal(result.satellitePageId, item.id);
+    assert.equal(result.currentPageKey, 'series:' + GENESIS6_SERIES.seriesId + ':page:' + item.parent);
+    assert.equal(result.activePath[result.activePath.length - 1], result.currentPageKey);
+    assert.equal(flatten(result.nodes).filter((node) => node.kind === 'heading').length, 0);
+    assert.ok(!flatten(result.nodes).some((node) => node.href === item.href), 'satellite kept in own part accordion');
+  }
 });
 
 check('series data and published routes remained byte-identical', () => {
