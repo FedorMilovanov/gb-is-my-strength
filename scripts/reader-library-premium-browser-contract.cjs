@@ -37,7 +37,14 @@ async function check(engine,driver,width,height,base,advanced){
   await page.locator('#gb-hl-fab').waitFor({state:'visible'});
   await page.locator('#gb-hl-fab').click();
   await page.locator('.gb-hl-item').first().waitFor();
-  await page.waitForTimeout(440);await page.evaluate(()=>document.fonts.ready);
+  // Wait for the actual final painted frame, not a wall-clock delay:
+  // WebKit on CI can schedule the first animation frame after a busy build.
+  await page.waitForFunction(() => {
+    const panel = document.querySelector('#gb-hl-panel');
+    return panel && getComputedStyle(panel).opacity === '1' &&
+      !panel.getAnimations().some((animation) => animation.playState === 'running');
+  }, null, { timeout: 7000 });
+  await page.evaluate(() => document.fonts.ready);
   const g=await page.evaluate(()=>{
    const rect=s=>{const r=document.querySelector(s).getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height,bottom:r.bottom}};
    const panel=document.querySelector('#gb-hl-panel'),list=document.querySelector('#gb-hl-list');
