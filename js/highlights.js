@@ -1,7 +1,4 @@
-/* Unified reader library. Existing quote/favorite keys remain authoritative.
- * Saved article buttons and GBFavoriteStore keep their original owners.
- * Library owns only the combined read UI, quotations, and personal notes.
- */
+/* Unified reader library: GBFavoriteStore remains the owner of favorites. */
 (function () {
   'use strict';
   if (window.GBHighlights && window.GBHighlights.libraryVersion === 2) return;
@@ -123,7 +120,7 @@
   function loadPresenter() {
     if (presenter) return Promise.resolve(presenter);
     if (!presenterPromise) {
-      presenterPromise = import('/js/reader-library-presenter.js?v=bb173671')
+      presenterPromise = import('/js/reader-library-presenter.js?v=b15b0690')
         .then((module) => { presenter = module; return module; })
         .catch((error) => { presenterPromise = null; throw error; });
     }
@@ -319,6 +316,7 @@
       b.textContent = full ? 'Свернуть' : 'Читать полностью';
     }
     if (action === 'delete') deleteItem(item);
+    if (action === 'remove-favorite') { clearUndo(); presenter.removeFavorite(item, statusMessage); }
     if (action === 'edit-note') showEditor(null, item);
     if (action === 'note-for-quote') showEditor({ quoteText: item.text, title: item.title, url: item.url });
     if (action === 'card') presenter.exportQuoteCard(item, statusMessage);

@@ -56,9 +56,40 @@ function button(action, label, text) {
       meta.append(button('card', 'Сохранить цитату как открытку', 'Открытка'));
     }
     if (item.type === 'note') meta.append(button('edit-note', 'Изменить заметку', 'Изменить'));
-    if (item.type !== 'favorite') meta.append(button('delete', 'Удалить запись', 'Удалить'));
+    if (item.type === 'favorite') meta.append(button('remove-favorite', 'Убрать статью из избранного', 'Убрать'));
+    else meta.append(button('delete', 'Удалить запись', 'Удалить'));
     card.append(meta);
     return card;
+  }
+
+  let favoriteUndoTimer = null;
+  function removeFavorite(item, statusMessage) {
+    const store = window.GBFavoriteStore;
+    if (!store?.remove || !store?.add || !store?.get) {
+      statusMessage('Хранилище избранного недоступно. Повторите попытку.', true); return;
+    }
+    const previous = store.get(item.id);
+    if (!previous) { statusMessage('Статья уже отсутствует в избранном.'); return; }
+    const result = store.remove(item.id, { source: 'reader-library' });
+    if (result.saved || result.error) {
+      statusMessage('Не удалось убрать статью. Сохранённые данные не изменены.', true); return;
+    }
+    clearTimeout(favoriteUndoTimer);
+    statusMessage('Статья убрана из избранного.');
+    const host = document.querySelector('#gb-hl-status');
+    const undo = button('undo-favorite', 'Восстановить статью в избранном', 'Отменить');
+    host.append(undo);
+    undo.focus({ preventScroll: true });
+    undo.addEventListener('click', () => {
+      const restored = store.add(previous, { source: 'reader-library-undo' });
+      if (!restored.saved || restored.error) {
+        statusMessage('Не удалось восстановить статью.', true); return;
+      }
+      clearTimeout(favoriteUndoTimer); favoriteUndoTimer = null;
+      statusMessage('Статья восстановлена.');
+      document.querySelector('#gb-hl-list')?.focus({ preventScroll: true });
+    });
+    favoriteUndoTimer = setTimeout(() => host.classList.remove('is-visible'), 5000);
   }
 
   function exportMarkdown(items, statusMessage) {
@@ -94,20 +125,48 @@ function button(action, label, text) {
     let current = '';
     const lines = [];
     for (const word of normalizeText(item.text).split(' ')) {
-      const next = current ? current + ' ' + word : word;
-      if (ctx.measureText(next).width > 875 && current) { lines.push(current); current = word; }
-      else current = next;
+      let rest = word;
+      while (rest && ctx.measureText(rest).width > 875) {
+        if (current) { lines.push(current); current = ''; }
+        let piece = '';
+        for (const character of rest) {
+          if (piece && ctx.measureText(piece + character).width > 875) break;
+          piece += character;
+        }
+        lines.push(piece);
+        rest = rest.slice(piece.length);
+      }
+      if (!rest) continue;
+      const next = current ? current + ' ' + rest : rest;
+      if (current && ctx.measureText(next).width > 875) {
+        lines.push(current); current = rest;
+      } else current = next;
     }
     if (current) lines.push(current);
-    const visible = lines.slice(0, 18);
-    const top = Math.max(260, (1190 - visible.length * size * 1.42) / 2);
-    visible.forEach((line, index) => ctx.fillText(line, 98, top + index * size * 1.42));
+    const lineHeight = size * 1.42, maxLines = Math.floor((1110 - 170) / lineHeight);
+    const visible = lines.slice(0, maxLines);
+    const shortened = lines.length > maxLines;
+    if (shortened) {
+      let tail = visible[visible.length - 1];
+      while (tail && ctx.measureText(tail + '…').width > 875) tail = tail.slice(0, -1);
+      visible[visible.length - 1] = tail + '…';
+    }
+    const top = Math.max(180, 630 - (visible.length - 1) * lineHeight / 2);
+    visible.forEach((line, index) => ctx.fillText(line, 98, top + index * lineHeight));
+    if (shortened) {
+      ctx.font = '22px Georgia, serif';
+      ctx.fillStyle = dark ? '#caa87e' : '#7c5c3b';
+      ctx.fillText('Фрагмент цитаты · полный текст в библиотеке', 98, 1155);
+      statusMessage('На карточке — фрагмент. Полная цитата сохранена в библиотеке.');
+    }
     ctx.font = '30px Georgia, serif';
     ctx.fillStyle = dark ? '#caa87e' : '#7c5c3b';
-    ctx.fillText(item.title.slice(0, 48), 98, 1210);
+    let caption = item.title;
+    while (caption.length > 1 && ctx.measureText(caption).width > 875) caption = caption.slice(0, -2) + '…';
+    ctx.fillText(caption, 98, 1210);
     ctx.fillText('Господь Бог — Сила Моя', 98, 1290);
     canvas.toBlob((blob) => {
-      if (!blob) return;
+      if (!blob) { statusMessage('Не удалось создать PNG-карточку.', true); return; }
       const url = URL.createObjectURL(blob), a = document.createElement('a');
       a.href = url; a.download = 'gb-citata.png';
       document.body.append(a); a.click(); a.remove();
@@ -147,4 +206,4 @@ function button(action, label, text) {
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus({ preventScroll: true }); }
   }
 
-export { renderList, renderItem, exportMarkdown, exportQuoteCard, trapTab };
+export { renderList, renderItem, exportMarkdown, exportQuoteCard, removeFavorite, trapTab };

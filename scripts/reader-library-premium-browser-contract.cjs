@@ -66,6 +66,27 @@ async function check(engine,driver,width,height,base,advanced){
    assert.equal(await page.locator('.gb-hl-item').count(),count,tab+' filter');
    if(engine==='chromium' && advanced)await page.screenshot({path:path.join(out,engine+'-'+width+'-'+tab+'.png'),animations:'disabled'});
   }
+  // Favorite mutations must go through the canonical store, including undo.
+  await page.locator('[data-library-tab="favorite"]').click();
+  assert.equal(await page.locator('[data-library-action="remove-favorite"]').count(),1,'favorite remove action');
+  assert.equal(await page.evaluate(()=>window.GBFavoriteStore.has('/articles/kod-da-vinchi/')),true,'favorite seeded');
+  await page.evaluate(()=>{
+    window.__originalFavoriteWrite=Storage.prototype.setItem;
+    Storage.prototype.setItem=function(key,value){
+      if(key==='gb-favorites')throw new DOMException('Storage full','QuotaExceededError');
+      return window.__originalFavoriteWrite.call(this,key,value);
+    };
+  });
+  await page.locator('[data-library-action="remove-favorite"]').click();
+  assert.equal(await page.evaluate(()=>window.GBFavoriteStore.has('/articles/kod-da-vinchi/')),true,'failed write preserves favorite');
+  assert.equal(await page.locator('#gb-hl-status').evaluate(el=>el.classList.contains('is-error')),true,'failed write shows error');
+  await page.evaluate(()=>{Storage.prototype.setItem=window.__originalFavoriteWrite;delete window.__originalFavoriteWrite});
+  await page.locator('[data-library-action="remove-favorite"]').click();
+  assert.equal(await page.evaluate(()=>window.GBFavoriteStore.has('/articles/kod-da-vinchi/')),false,'favorite removed from canonical store');
+  assert.equal(await page.locator('.gb-hl-item').count(),0,'favorite removed from list');
+  await page.locator('#gb-hl-status [data-library-action="undo-favorite"]').click();
+  assert.equal(await page.evaluate(()=>window.GBFavoriteStore.has('/articles/kod-da-vinchi/')),true,'favorite undo restored');
+  assert.equal(await page.locator('.gb-hl-item').count(),1,'favorite restored in list');
   await page.locator('[data-library-tab="quote"]').click();
   const search=page.locator('#gb-hl-search');
   await search.fill('Богословское рассуждение');
@@ -74,6 +95,27 @@ async function check(engine,driver,width,height,base,advanced){
   const cardDownload=page.waitForEvent('download');
   await page.locator('[data-library-action="card"]').first().click();
   assert((await cardDownload).suggestedFilename().endsWith('.png'),'quote-card PNG download');
+  await page.evaluate(()=>{
+    window.__quoteCardPaint=[];
+    const proto=CanvasRenderingContext2D.prototype,original=proto.fillText;
+    proto.fillText=function(text,x,y){
+      window.__quoteCardPaint.push({text:String(text),x,y,width:this.measureText(String(text)).width});
+      return original.apply(this,arguments);
+    };
+    const q=JSON.parse(localStorage.getItem('gb-highlights-v1'));
+    q.find(item=>item.id==='qa').text='ОченьДлинноеСловоБезПробелов'.repeat(180);
+    q.find(item=>item.id==='qa').articleTitle='СВЕРХДЛИННЫЙЗАГОЛОВОКБЕЗПРОБЕЛОВ'.repeat(20);
+    localStorage.setItem('gb-highlights-v1',JSON.stringify(q));
+    window.dispatchEvent(new StorageEvent('storage',{key:'gb-highlights-v1'}));
+  });
+  const longCardDownload=page.waitForEvent('download');
+  await page.locator('.gb-hl-item[data-id="qa"] [data-library-action="card"]').click();
+  assert((await longCardDownload).suggestedFilename().endsWith('.png'),'long quote PNG export');
+  const strokes=await page.evaluate(()=>window.__quoteCardPaint);
+  assert(strokes.some(line=>line.text.includes('Фрагмент цитаты')),'long quote is explicitly an excerpt');
+  assert(strokes.some(line=>line.text.endsWith('…')),'long quote ends with ellipsis');
+  assert(strokes.filter(line=>line.x===98).every(line=>line.x+line.width<=1040),'card text inside border');
+  assert((await page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')).find(q=>q.id==='qa').text.length))>4000,'full quote persisted');
   await page.locator('[data-library-action="expand"]').first().click();
   assert.equal(await page.locator('[data-library-action="expand"]').first().getAttribute('aria-expanded'),'true');
   await page.locator('[data-library-action="note-for-quote"]').first().click();
