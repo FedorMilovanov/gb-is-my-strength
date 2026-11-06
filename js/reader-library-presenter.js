@@ -174,7 +174,7 @@ function button(action, label, text) {
     }, 'image/png');
   }
 
-  function renderList({ list, items, titleCount, sourceSelect, overlay, tab, filter, searchTerm, shown, expanded }) {
+  function renderList({ list, items, titleCount, sourceSelect, overlay, tab, filter, searchTerm, shown, expanded, research }) {
     titleCount.textContent = '· ' + items.length;
     const labels = [...new Set(items.map((x) => x.title))].sort((a, b) => a.localeCompare(b, 'ru'));
     if (filter !== 'all' && !labels.includes(filter)) filter = 'all';
@@ -184,17 +184,35 @@ function button(action, label, text) {
     overlay.querySelectorAll('[data-library-tab]').forEach((b) =>
       b.setAttribute('aria-pressed', String(b.dataset.libraryTab === tab)));
     const filtered = items.filter((x) =>
-      (tab === 'all' || tab === x.type) && (filter === 'all' || filter === x.title) &&
-      (!searchTerm || (x.text + ' ' + x.quoteText + ' ' + x.title).toLocaleLowerCase().includes(searchTerm)));
+      (tab === 'all' || tab === 'source' || tab === x.type) &&
+      (filter === 'all' || filter === x.title) &&
+      (research ? research.itemMatches(x, searchTerm) :
+        (!searchTerm || (x.text + ' ' + x.quoteText + ' ' + x.title).toLocaleLowerCase().includes(searchTerm))));
+    const ordered = research ? research.orderItems(filtered) : filtered;
     list.replaceChildren();
     if (!filtered.length) {
-      list.append(element('div', 'gb-hl-empty', items.length
-        ? 'По вашему запросу ничего не найдено.'
-        : 'Пока пусто. Сохраните цитату или статью либо создайте заметку.'));
+      const empty = element('div', 'gb-hl-empty');
+      empty.append(element('strong', 'gb-hl-empty-title', items.length
+        ? 'Пока ничего не найдено' : 'Ваша библиотека ждёт первую запись'));
+      empty.append(element('p', '', items.length
+        ? 'Попробуйте другую тему или сбросьте фильтры.'
+        : 'Выделите цитату, сохраните статью или создайте заметку.'));
+      if (items.length) empty.append(button('clear-filters', 'Очистить поиск и фильтры', 'Сбросить фильтры'));
+      list.append(empty);
+      research?.decorateList(list, items, tab, searchTerm);
       return filter;
     }
-    for (const item of filtered.slice(0, shown)) list.append(renderItem(item, expanded));
-    if (filtered.length > shown) list.append(button('more', 'Загрузить ещё записи', 'Показать ещё · ' + (filtered.length - shown)));
+    if (tab === 'source' && research) {
+      list.append(research.renderGroups(ordered.slice(0, shown), searchTerm));
+    } else {
+      for (const item of ordered.slice(0, shown)) {
+        const card = renderItem(item, expanded);
+        research?.decorate(card, item, searchTerm);
+        list.append(card);
+      }
+    }
+    if (ordered.length > shown) list.append(button('more', 'Загрузить ещё записи', 'Показать ещё · ' + (ordered.length - shown)));
+    research?.decorateList(list, items, tab, searchTerm);
     return filter;
   }
 

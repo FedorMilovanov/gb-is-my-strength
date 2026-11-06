@@ -74,7 +74,7 @@
     return '';
   }
   function all() {
-    const q = quotes().map((x) => ({ id: String(x.id), type: 'quote', text: String(x.text || ''), title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0 }));
+    const q = quotes().map((x) => ({ id: String(x.id), type: 'quote', text: String(x.text || ''), before: String(x.before || ''), after: String(x.after || ''), title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0 }));
     const n = notes().map((x) => ({ id: String(x.id), type: 'note', text: String(x.text || ''), quoteText: String(x.quoteText || ''), title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0 }));
     const f = favorites().map((x) => ({ id: String(x.path || x.url || ''), type: 'favorite', text: String(x.description || ''), title: String(x.title || 'Статья'), url: localUrl(x.path || x.url), savedAt: Number(x.addedAt || x.savedAt) || 0 }));
     return q.concat(n, f).sort((a, b) => b.savedAt - a.savedAt);
@@ -98,7 +98,8 @@
         if (e.nodeType === 1 && e.id) { anchor = e.id; break; }
       }
     } catch {}
-    lastSelection = { text, anchor, url: location.href };
+    const { before, after } = contextFromSelection(selection, text);
+    lastSelection = { text, anchor, url: location.href, before, after };
     window.__ssLastText__ = text;
     window.__ssLastTextUrl__ = location.href;
   }
@@ -116,12 +117,20 @@
   let overlay, panel, list, fab, titleCount, search, sourceSelect, status, editor, textArea;
   let tab = 'all', filter = 'all', searchTerm = '', shown = BATCH_SIZE, opener = null;
   let expanded = new Set(), draft = null, pendingUndo = null;
-  let presenter = null, presenterPromise = null;
+  let presenter = null, presenterPromise = null, research = null;
   function loadPresenter() {
     if (presenter) return Promise.resolve(presenter);
     if (!presenterPromise) {
-      presenterPromise = import('/js/reader-library-presenter.js?v=b15b0690')
-        .then((module) => { presenter = module; return module; })
+      presenterPromise = import('/js/reader-library-presenter.js?v=cef6e2a5')
+        .then(async (module) => {
+          presenter = module;
+          const researchModule = await import('/js/reader-library-v3.js?v=e036d5a6');
+          if (!research) research = researchModule.createLibraryResearch({
+            overlay, getItems: all, notify: statusMessage, refresh: render, isOpen,
+            renderItem: module.renderItem,
+          });
+          return module;
+        })
         .catch((error) => { presenterPromise = null; throw error; });
     }
     return presenterPromise;
@@ -129,7 +138,7 @@
   const stylesheet = document.createElement('link');
   stylesheet.id = 'gbHlRuntimeCss';
   stylesheet.rel = 'stylesheet';
-  stylesheet.href = '/css/highlights-runtime.css?v=9d5367a9';
+  stylesheet.href = '/css/highlights-runtime.css?v=8aae232c';
   if (!document.getElementById(stylesheet.id)) document.head.appendChild(stylesheet);
 
   function button(action, label, text) {
@@ -170,6 +179,7 @@
       '<button type="button" id="gb-hl-close" aria-label="Закрыть библиотеку">' + closeSvg + '</button></header>',
       '<nav id="gb-hl-tabs" aria-label="Тип сохранений">',
       '<button type="button" data-library-tab="all" aria-pressed="true">Все</button>',
+      '<button type="button" data-library-tab="source" aria-pressed="false">Источники</button>',
       '<button type="button" data-library-tab="quote" aria-pressed="false">Цитаты</button>',
       '<button type="button" data-library-tab="note" aria-pressed="false">Заметки</button>',
       '<button type="button" data-library-tab="favorite" aria-pressed="false">Статьи</button></nav>',
@@ -232,7 +242,11 @@
   }
   function keydown(e) {
     if (!isOpen()) return;
-    if (e.key === 'Escape') { e.preventDefault(); if (editor.hidden) close(); else hideEditor(); }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      if (!editor.hidden) hideEditor();
+      else if (!research?.handleEscape()) close();
+    }
     else if (e.key === 'Tab' && presenter) presenter.trapTab(e, overlay);
   }
   function open(trigger) {
@@ -263,6 +277,7 @@
     if (!isOpen()) return;
     hideEditor(false);
     clearUndo();
+    research?.resetMenu();
     overlay.classList.remove('is-open');
     overlay.setAttribute('aria-hidden', 'true');
     overlay.setAttribute('inert', '');
@@ -273,30 +288,18 @@
     opener = null;
   }
   function sync() { if (fab) { fab.classList.add('visible'); fab.querySelector('#gb-hl-fab-count').hidden = all().length === 0; fab.setAttribute('aria-label', 'Моя библиотека — сохранено ' + all().length); } if (isOpen()) render(); }
+  let dockImpl, dockLoad, contextFromSelection = () => ({ before: '', after: '' });
   function dock() {
     if (!fab) return;
-    const visible = (node) => node && node.getClientRects().length > 0 && getComputedStyle(node).visibility !== 'hidden';
-    const gill = document.querySelector('.mobile-bottom-bar');
-    const herm = document.querySelector('.hmbar');
-    const legacy = document.querySelector('.bottom-bar-inner');
-    const fallback = document.querySelector('.gb-mobile-fallback-controls');
-    let host = null, before = null, cls = '';
-    if (visible(herm)) { host = herm.querySelector('.hmbar-actions') || herm; before = document.getElementById('hmShareBtn'); cls = 'hmbar-btn'; }
-    else if (visible(gill)) { host = gill.querySelector('.mobile-icon-row') || gill; before = host.querySelector('[data-action="share"],[data-fc-action="share"]'); cls = 'gb-icon'; }
-    else if (visible(legacy)) { host = legacy; before = document.getElementById('barShareBtn'); cls = 'bar-icon-btn'; }
-    else if (visible(fallback)) { host = fallback; cls = 'gb-icon'; }
-    fab.classList.remove('gb-hl-fab--docked', 'hmbar-btn', 'gb-icon', 'bar-icon-btn');
-    fab.style.bottom = '';
-    if (!host) host = document.body;
-    else fab.classList.add('gb-hl-fab--docked', cls);
-    if (before?.parentNode === host) {
-      if (fab.nextElementSibling !== before) host.insertBefore(fab, before);
-    } else if (fab.parentNode !== host || fab.nextElementSibling) host.append(fab);
+    if (dockImpl) return dockImpl(fab);
+    dockLoad ||= import('/js/reader-library-dock.js?v=68cc0bfe')
+      .then(m => { dockImpl = m.dockLibraryFab; contextFromSelection = m.contextFromSelection; dockImpl(fab); if (m.shouldWarmReading()) loadPresenter(); })
+      .catch(() => { dockLoad = null; });
   }
   function render() {
     if (!list || !presenter) return;
     filter = presenter.renderList({
-      list, items: all(), titleCount, sourceSelect, overlay, tab, filter, searchTerm, shown, expanded,
+      list, items: all(), titleCount, sourceSelect, overlay, tab, filter, searchTerm, shown, expanded, research,
     });
   }
   function listClick(e) {
@@ -304,6 +307,7 @@
     if (!b) return;
     const action = b.dataset.libraryAction;
     if (action === 'more') { shown += BATCH_SIZE; render(); return; }
+    if (action === 'clear-filters') { searchTerm = ''; search.value = ''; filter = 'all'; research?.resetFilters(); shown = BATCH_SIZE; render(); return; }
     const card = b.closest('.gb-hl-item');
     if (!card) return;
     const item = all().find((x) => x.id === card.dataset.id && x.type === card.dataset.type);
@@ -396,7 +400,7 @@
     if (selected.text.length < 8) { statusMessage('Сначала выделите текст.', true); return false; }
     const old = quotes(), record = {
       id: uid('quote'), text: selected.text, articleTitle: currentTitle(),
-      url: sourceUrl(selected), savedAt: Date.now(),
+      url: sourceUrl(selected), before: selected.before, after: selected.after, savedAt: Date.now(),
     };
     if (old.length >= LIMIT_QUOTES && !old.some((x) => gbHighlightKey(x) === gbHighlightKey(record))) {
       statusMessage('Сохранено 200 цитат — достигнут прежний лимит. Экспортируйте библиотеку перед удалением старых записей.', true);

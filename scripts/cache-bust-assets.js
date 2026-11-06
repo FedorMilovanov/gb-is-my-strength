@@ -37,6 +37,8 @@ const ASSETS = [
   'js/enhancements.js',
   'js/highlights.js',
   'js/reader-library-presenter.js',
+  'js/reader-library-v3.js',
+  'js/reader-library-dock.js',
   'js/search.js',
   'js/sw-register.js',
   'js/nagornaya-mobile-toc.js',
