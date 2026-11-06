@@ -18,13 +18,14 @@
 - `node scripts/check-engine-contracts.js` and `node scripts/series-reader-facade-regression-test.js`: PASS.
 - `npm.cmd run astro:check`: 0 errors / 0 warnings / 7 unrelated preexisting hints (first source check).
 - Candidate built via canonical `strangler:build:production-like` after fixing an initially missing JSX closing brace; subsequent production-like build completed with all postbuild passes.
-- `node scripts/grok-rail-pilot-browser-test.mjs`: **168/168 PASS**, Chromium/Firefox/WebKit across 390, 1199, 1200, 1440×300 and 1440×900. Explicit checks cover 10 canonical anchor targets, mobile rail nonvisibility, right-side cluster, horizontal overflow, focus-safe inert disclosure, reopen, reduced-motion, short-height navigability, and computed `text-decoration-line:none`.
+- `node scripts/grok-rail-pilot-browser-test.mjs`: **195/195 PASS**, Chromium/Firefox/WebKit across 390, 1199, 1200, 1440×300 and 1440×900. Explicit checks cover 10 canonical anchor targets, mobile rail nonvisibility, right-side cluster, horizontal overflow, focus-safe inert disclosure, reopen, reduced-motion, short-height navigability, and computed `text-decoration-line:none`.
 - Initial 1440×300 rail viewport had only 76px of available TOC; reduced header wrapping to regain usable height. This was caught by metric-based test rather than screenshots alone.
+- Additional reproducible browser coverage: H3 permalink, browser Back/Forward with empty-hash restoration, direct H3 load, and seven rapid disclosure reversals across all three engines (27 added checks, included in 195/195).
 - Screenshots and machine report are generated into `reports/grok-stage2/` and are intentionally untracked build witnesses, not publishable page assets.
 - `node scripts/reader-controls-a11y-browser-contract.mjs`: 141/141 PASS, including retained Gill/Hermeneutics controls, Escape/focus and Play.
 - `node scripts/hermenevtika-mobile-chrome-visual-contract.mjs`: 84/84 PASS (Chromium/WebKit); mobile navigation unchanged.
 - `node scripts/reader-library-premium-browser-contract.cjs`: 8/8 PASS (real Library V3 browser contract).
-- Aggregate local browser checks in this candidate: 168 + 141 + 84 + 8 = **401/401 PASS**. This is local opt-in evidence, not a claim that Stage 2 CI or production release is certified.
+- Aggregate local browser checks in this candidate: 195 + 141 + 84 + 8 = **428/428 PASS**. This is local opt-in evidence, not a claim that Stage 2 CI or production release is certified.
 
 ## Reproduction
 

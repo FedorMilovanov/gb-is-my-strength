@@ -131,6 +131,53 @@ try {
             if (viewport.id==='desktop-wide' || viewport.id==='desktop-short') {
               await page.screenshot({path:path.join(reports, name+'-'+viewport.id+'.png'),fullPage:false});
             }
+            // Navigation remains owned by ReaderState. A hash jump may
+            // legitimately highlight the preceding H2 until the reading
+            // line crosses H3; test the real location/visibility contract.
+            if (viewport.id === 'desktop-wide') {
+              const deepHref = await page.locator('.grok-child-list a').first().getAttribute('href');
+              await page.locator('.grok-child-list a').first().click();
+              await page.waitForFunction(h => location.hash === h, deepHref, { timeout:8000 });
+              check(name,viewport.id,'nested H3 navigation updates canonical hash',true,deepHref);
+              const targetRect = await page.locator('#'+deepHref.slice(1)).evaluate(el => el.getBoundingClientRect().toJSON());
+              check(name,viewport.id,'nested H3 visible after navigation',
+                targetRect.top >= -5 && targetRect.top < viewport.height - 25,targetRect);
+              await page.goBack();
+              await page.waitForFunction(() => location.hash === '', null, {timeout:8000});
+              check(name,viewport.id,'Back restores empty hash',true);
+              await page.waitForTimeout(400);
+              const backY = await page.evaluate(() => window.scrollY);
+              check(name,viewport.id,'Back restores original reading position',backY < 150,backY);
+              await page.goForward();
+              await page.waitForFunction(h => location.hash === h, deepHref, {timeout:8000});
+              check(name,viewport.id,'Forward restores H3 hash',true);
+              const forwardRect = await page.locator('#'+deepHref.slice(1)).evaluate(el=>el.getBoundingClientRect().toJSON());
+              check(name,viewport.id,'Forward restores H3 visibility',
+                forwardRect.top >= -5 && forwardRect.top < viewport.height-25,forwardRect);
+              const fresh = await browser.newPage({viewport:{width:1440,height:900}});
+              fresh.on('pageerror',e => errors.push(e.message));
+              try {
+                await fresh.goto(origin+ROUTE+deepHref,{waitUntil:'domcontentloaded'});
+                await fresh.waitForFunction(h=>{const r=document.getElementById(h.slice(1))?.getBoundingClientRect();return r&&r.top>=-5&&r.top<innerHeight-25;},deepHref,{timeout:8000});
+                const directRect = await fresh.locator('#'+deepHref.slice(1)).evaluate(el=>el.getBoundingClientRect().toJSON());
+                check(name,viewport.id,'direct H3 permalink is visible',
+                  directRect.top>=-5 && directRect.top < viewport.height-25,directRect);
+                await fresh.goto(origin+ROUTE,{waitUntil:'domcontentloaded'});
+                const rapid = fresh.locator('.grok-row--branch > .grok-entry [data-grok-toggle]').first();
+                for(let n=0;n<7;n++){await rapid.evaluate(button => button.click());await fresh.waitForTimeout(25);}
+                const rapidState = await rapid.evaluate(button => ({
+                  expanded:button.getAttribute('aria-expanded'),
+                  inert:button.closest('.grok-row')?.querySelector('.grok-child-list')?.hasAttribute('inert'),
+                  collapsed:button.closest('.grok-row')?.hasAttribute('data-grok-collapsed')
+                }));
+                check(name,viewport.id,'seven rapid toggles end collapsed and inert',
+                  rapidState.expanded==='false' && rapidState.inert && rapidState.collapsed,rapidState);
+                await fresh.waitForTimeout(750);
+                const collapsedHeight = await rapid.locator('xpath=../following-sibling::*').first().evaluate(el=>el.getBoundingClientRect().height);
+                check(name,viewport.id,'interrupted collapse settles to zero height',
+                  collapsedHeight < 1.5,collapsedHeight);
+              } finally {await fresh.close();}
+            }
           }
           check(name,viewport.id,'no uncaught JavaScript errors',errors.length===0,errors);
         } finally { await page.close(); }
