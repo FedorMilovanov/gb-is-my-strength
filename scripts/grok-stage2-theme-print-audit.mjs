@@ -51,6 +51,8 @@ try{
    for(const theme of ['light','sepia','dark']){
     await page.locator('[data-hm-theme="'+theme+'"]').click();
     await page.waitForFunction(value=>document.documentElement.getAttribute('data-reader-theme')===value,theme);
+    // The canonical link color has a 200ms CSS transition; assert settled contrast.
+    await page.waitForTimeout(280);
     const snapshot=await page.evaluate(()=>{
      const rail=document.querySelector('.hrail--grok');
      const heading=rail.querySelector('.grok-row--h2 > .grok-entry a');
@@ -58,7 +60,22 @@ try{
      const link=getComputedStyle(heading),css=getComputedStyle(rail),html=document.documentElement;
      const selected=Array.from(document.querySelectorAll('[data-hm-theme]'))
        .filter(n=>n.getAttribute('aria-pressed')==='true').map(n=>n.getAttribute('data-hm-theme'));
-     return {theme:html.getAttribute('data-reader-theme'),
+     const colorTriplet=(value)=>{
+       const raw=String(value||'').trim();
+       const hex=raw.match(/^#([0-9a-f]{6})$/i);
+       if(hex) return [0,2,4].map(n=>parseInt(hex[1].slice(n,n+2),16));
+       const rgb=raw.match(/^rgba?\(([^)]+)\)$/i);
+       return rgb ? rgb[1].split(/[, ]+/).slice(0,3).map(Number) : [];
+     };
+     const luminance=(parts)=>parts.length===3 ? parts
+       .map(n=>n/255).map(n=>n<=0.04045?n/12.92:((n+0.055)/1.055)**2.4)
+       .reduce((sum,n,i)=>sum+n*[.2126,.7152,.0722][i],0) : NaN;
+     const colorLuminance=luminance(colorTriplet(link.color));
+     const backgrounds=['--rail-surface','--rail-surface-raised']
+       .map(token=>luminance(colorTriplet(css.getPropertyValue(token))));
+     const contrast=Math.min(...backgrounds.map(bg=>
+       (Math.max(bg,colorLuminance)+0.05)/(Math.min(bg,colorLuminance)+0.05)));
+     return {contrast,theme:html.getAttribute('data-reader-theme'),
        dark:html.classList.contains('dark'),sepia:root?.getAttribute('data-hm-reader-theme'),
        selected,railBg:css.backgroundColor,railImage:css.backgroundImage,
        linkColor:link.color,decoration:link.textDecorationLine,
@@ -70,6 +87,7 @@ try{
     check(engine,'theme '+theme+' selected',snapshot.selected.length===1&&snapshot.selected[0]===theme,snapshot);
     check(engine,'theme '+theme+' original tools and geometry',snapshot.visible&&snapshot.originalSvg&&snapshot.overflow<=2,snapshot);
     check(engine,'theme '+theme+' TOC links not underlined',snapshot.decoration==='none',snapshot);
+    check(engine,'theme '+theme+' WCAG AA small navigation text contrast',snapshot.contrast>=4.5,snapshot);
    }
    check(engine,'sepia actually changes computed styling',
     surfaces[1].railBg!==surfaces[0].railBg||surfaces[1].railImage!==surfaces[0].railImage,surfaces);

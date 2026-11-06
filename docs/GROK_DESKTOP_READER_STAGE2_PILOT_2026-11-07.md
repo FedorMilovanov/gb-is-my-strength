@@ -27,7 +27,7 @@
 - `node scripts/hermenevtika-mobile-chrome-visual-contract.mjs`: 84/84 PASS (Chromium/WebKit); mobile navigation unchanged.
 - `node scripts/reader-library-premium-browser-contract.cjs`: 8/8 PASS (real Library V3 browser contract).
 - Local flag-ON browser evidence: **195/195**; flag-OFF: **120/120** (Chromium/Firefox/WebKit). Reader Controls **141/141**, mobile **84/84**, Library V3 **8/8**; aggregate **548/548 PASS**. These are local candidate checks, not CI or live certification.
-- The Night palette initially rendered Grok TOC text dark on dark, while Sepia retained the Light rail surface. Scoped reader-theme tokens in GrokReaderTree.astro fix both without creating another theme engine. The extra grok-stage2-theme-print-audit.mjs verifies settings, three themes, canonical 125% font and print CSS: **54/54 PASS** in Chromium/Firefox/WebKit. Total local browser checks: **602/602 PASS** (not full CI or A4 pagination certification).
+- The Night palette initially rendered Grok TOC text dark on dark, while Sepia retained the Light rail surface. Scoped reader-theme tokens in GrokReaderTree.astro fix both without creating another theme engine. The extra grok-stage2-theme-print-audit.mjs verifies settings, three themes, canonical 125% font and print CSS: **63/63 PASS** in Chromium/Firefox/WebKit. Total local browser checks: **611/611 PASS** (not full CI or A4 pagination certification).
 
 ## Reproduction
 
