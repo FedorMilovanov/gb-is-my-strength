@@ -27,6 +27,7 @@
 - `node scripts/hermenevtika-mobile-chrome-visual-contract.mjs`: 84/84 PASS (Chromium/WebKit); mobile navigation unchanged.
 - `node scripts/reader-library-premium-browser-contract.cjs`: 8/8 PASS (real Library V3 browser contract).
 - Local flag-ON browser evidence: **195/195**; flag-OFF: **120/120** (Chromium/Firefox/WebKit). Reader Controls **141/141**, mobile **84/84**, Library V3 **8/8**; aggregate **548/548 PASS**. These are local candidate checks, not CI or live certification.
+- The Night palette initially rendered Grok TOC text dark on dark, while Sepia retained the Light rail surface. Scoped reader-theme tokens in GrokReaderTree.astro fix both without creating another theme engine. The extra grok-stage2-theme-print-audit.mjs verifies settings, three themes, canonical 125% font and print CSS: **54/54 PASS** in Chromium/Firefox/WebKit. Total local browser checks: **602/602 PASS** (not full CI or A4 pagination certification).
 
 ## Reproduction
 
@@ -39,6 +40,7 @@ node scripts/grok-rail-pilot-browser-test.mjs
 node scripts/reader-controls-a11y-browser-contract.mjs
 node scripts/hermenevtika-mobile-chrome-visual-contract.mjs
 node scripts/reader-library-premium-browser-contract.cjs
+node scripts/grok-stage2-theme-print-audit.mjs
 
 # Separate flag-OFF build, after clearing the opt-in environment variable:
 Remove-Item Env:PUBLIC_GB_GROK_HERMENEUTICS_PILOT -ErrorAction SilentlyContinue
@@ -52,7 +54,7 @@ Default build without the flag passed `node scripts/grok-rail-pilot-browser-test
 
 1. Stage 1 PR #2284 **MERGED** after exact-head CI success on its second WebKit run (first timed out installing Ubuntu packages). Require full **Stage 2 PR #2285 exact-head CI green** before Stage 2 merge.
 2. Capture same-state on/off screenshots, actual reader-axis rectangles and per-series theme tokens; compare screen widths and responsive breakpoints with production.
-3. Validate URL Back/Forward, direct deep links into previously collapsed descendants, rapid animation reversals (0/90/180/350/650ms), keyboard arrows and focus restoration, Day/Sepia/Night themes, 130% font, A4 print and actual Library V3 save/status/reload/backup.
+3. Validate URL Back/Forward, direct deep links into previously collapsed descendants, rapid animation reversals (0/90/180/350/650ms), keyboard arrows and focus restoration, Day/Sepia/Night theme interactions (54/54 additional browser checks now pass), canonical maximum **125%** font and print CSS (both checked). The shared reader preferences API clamps fontScale at 1.25, so 130% is currently unsupported; do not silently broaden this global contract for the pilot. Actual A4 pagination, Day/Sepia/Night cross-route visual parity, and Library V3 save/status/reload/backup still require independent witnesses.
 4. Flag-OFF DOM parity passed 120/120; review intentional TOC underline removal in visual comparison and run canonical release guard at the final Stage 2 head.
 5. No Stage 2 merge or live flag until all checks are green and reviewed. No Gill/Baptists rollout yet. Rollback is exclusively a flag-off build, never a revert of Library V3.
 
