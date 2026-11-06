@@ -1405,6 +1405,7 @@
     clone.setAttribute('role', 'region');
     clone.setAttribute('aria-label', 'Быстрые действия чтения');
     document.body.appendChild(clone);
+    document.dispatchEvent(new Event('gb:mobile-fallback-ready'));
   }
 
   /* =====================================================

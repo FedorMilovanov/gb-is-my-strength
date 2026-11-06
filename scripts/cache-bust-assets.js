@@ -36,6 +36,7 @@ const ASSETS = [
   'js/bookmark-engine.js',
   'js/enhancements.js',
   'js/highlights.js',
+  'js/reader-library-presenter.js',
   'js/search.js',
   'js/sw-register.js',
   'js/nagornaya-mobile-toc.js',

@@ -113,6 +113,7 @@ async function snapshot(page) {
     const fab = document.getElementById('gb-hl-fab');
     const fabStyle = fab ? getComputedStyle(fab) : null;
     const share = document.getElementById('hmShareBtn');
+    const actions = bottom?.querySelector('.hmbar-actions');
     return {
       viewport: { width: innerWidth, height: innerHeight },
       scrollWidth: document.documentElement.scrollWidth,
@@ -120,11 +121,17 @@ async function snapshot(page) {
       top: { visible: visible(top), rect: rectOf(top) },
       bottom: { visible: visible(bottom), rect: rectOf(bottom) },
       rail: { visible: visible(rail), rect: rectOf(rail) },
+      actions: {
+        exists: Boolean(actions), parentIsBottom: actions?.parentElement === bottom,
+        gap: actions ? getComputedStyle(actions).gap : null,
+        controls: Array.from(actions?.children || []).map((el) => el.id || el.getAttribute('data-fc-action')),
+        rect: rectOf(actions),
+      },
       fab: {
         exists: Boolean(fab), visible: visible(fab), rect: rectOf(fab),
         docked: Boolean(fab?.classList.contains('gb-hl-fab--docked')),
         hostClass: Boolean(fab?.classList.contains('hmbar-btn')),
-        parentIsBottom: fab?.parentElement === bottom,
+        parentIsActions: fab?.parentElement === actions,
         nextIsShare: fab?.nextElementSibling === share,
         animationName: fabStyle?.animationName || null,
         transform: fabStyle?.transform || null,
@@ -148,7 +155,10 @@ async function assertHighlightsGeometry(page, engine, viewport, route) {
   const geometryOk = state.fab.visible
     && state.fab.docked
     && state.fab.hostClass
-    && state.fab.parentIsBottom
+    && state.fab.parentIsActions
+    && state.actions.parentIsBottom
+    && state.actions.gap === '0px'
+    && JSON.stringify(state.actions.controls) === JSON.stringify(['theme','hmSettingsBtn','gb-hl-fab','hmShareBtn'])
     && state.fab.nextIsShare
     && state.fab.animationName === 'none'
     && state.fab.transform === 'none'

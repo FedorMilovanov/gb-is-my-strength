@@ -1,46 +1,475 @@
-(function(){"use strict";var T="gb-highlights-v1",U=!1;function gbHighlightPath(e){var t=e&&e.url?String(e.url):"";try{var i=new URL(t,window.location.origin).pathname;return i=i.replace(/\/+$/,""),i||"/"}catch(r){return t.split("#")[0].split("?")[0].replace(/^https?:\/\/[^/]+/i,"").replace(/\/+$/,"" )||"/"}}function gbHighlightText(e){return String(e&&e.text||"").replace(/\s+/g," ").trim().toLocaleLowerCase()}function gbHighlightKey(e){var t=gbHighlightText(e);return t?gbHighlightPath(e)+"\n"+t:""}function gbDedupeHighlights(e){var t=[],i=new Set;return(Array.isArray(e)?e:[]).forEach(function(e,r){var n=gbHighlightKey(e),a=n||"__invalid__:"+(e&&e.id||r);i.has(a)||(i.add(a),t.push(e))}),t}function gbAddHighlight(e,t){var i=gbDedupeHighlights(e),r=gbHighlightKey(t);return r&&i.some(function(e){return gbHighlightKey(e)===r})?i:(i.unshift(t),i.slice(0,200))}function f(){try{var e=JSON.parse(localStorage.getItem(T)||"[]"),t=Array.isArray(e)?e:[],i=gbDedupeHighlights(t);return i.length!==t.length&&C(i),i}catch(e){return[]}}function C(e){try{return localStorage.setItem(T,JSON.stringify(e)),!0}catch(t){if(!U){U=!0;try{console.warn("[highlights] localStorage write failed:",t&&(t.name||t.message))}catch(i){}}if(t&&(t.name==="QuotaExceededError"||t.name==="NS_ERROR_DOM_QUOTA_REACHED"||t.code===22||t.code===1014))try{return localStorage.setItem(T,JSON.stringify(e.slice(0,50))),!0}catch(i){}return!1}}function h(e){return String(e).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}var M='<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 4.5h11v15l-5.5-3.6-5.5 3.6z"/></svg>',G='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',Q='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>',S=document.createElement("link");S.rel="stylesheet",S.href="/css/highlights-runtime.css?v="+(window.SITE_CONFIG&&window.SITE_CONFIG.version||""),document.getElementById("gbHlRuntimeCss")||(S.id="gbHlRuntimeCss",document.head.appendChild(S));var l=document.createElement("div");l.id="gb-hl-backdrop",l.setAttribute("role","dialog"),l.setAttribute("aria-modal","true"),l.setAttribute("aria-hidden","true"),l.setAttribute("aria-label","\u041C\u043E\u0438 \u0446\u0438\u0442\u0430\u0442\u044B"),l.innerHTML=`
-    <div id="gb-hl-panel">
-      <div id="gb-hl-handle"></div>
-      <div id="gb-hl-header">
-        <span id="gb-hl-title">\u041C\u043E\u0438 \u0446\u0438\u0442\u0430\u0442\u044B</span>
-        <span id="gb-hl-count">0</span>
-        <button id="gb-hl-export" title="\u042D\u043A\u0441\u043F\u043E\u0440\u0442 \u0432 Markdown">\u2193 Markdown</button>
-        <button id="gb-hl-close" aria-label="\u0417\u0430\u043A\u0440\u044B\u0442\u044C"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-1px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-      </div>
-      <label id="gb-hl-searchwrap">
-        `+Q+`
-        <input id="gb-hl-search" type="text" placeholder="\u041D\u0430\u0439\u0442\u0438 \u0432 \u0446\u0438\u0442\u0430\u0442\u0430\u0445\u2026" autocomplete="off" />
-      </label>
-      <div id="gb-hl-list"></div>
-    </div>
-  `,document.body.appendChild(l);var s=document.createElement("button");s.id="gb-hl-fab",s.setAttribute("aria-label","Открыть мои цитаты — сохранено: 0"),s.innerHTML=`
-    `+M+`
-    <span id="gb-hl-fab-count">0</span>
-  `;var D=0,_="";function z(e,t){if(!t)return!0;var i=(e.text+" "+(e.articleTitle||"")).toLowerCase();return i.indexOf(t)>-1}function J(e){var t=new Date(e);return isNaN(t.getTime())?"\u2014":t.toLocaleDateString("ru-RU",{day:"numeric",month:"long"})}function V(e){return'<div class="gb-hl-item" data-id="'+h(e.id)+`">
-        <div class="gb-hl-quote">`+h(e.text)+`</div>
-        <div class="gb-hl-meta">
-          <a href="`+h(e.url)+'">'+h(e.articleTitle||"\u0421\u0442\u0430\u0442\u044C\u044F")+`</a>
-          <span>\xB7</span>
-          <span>`+J(e.savedAt)+`</span>
-          <button class="gb-hl-card" data-id="`+h(e.id)+'" aria-label="\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C \u043A\u0430\u043A \u043E\u0442\u043A\u0440\u044B\u0442\u043A\u0443" title="\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C \u043A\u0430\u043A \u043E\u0442\u043A\u0440\u044B\u0442\u043A\u0443">'+G+`</button>
-          <button class="gb-hl-del" data-id="`+h(e.id)+`" aria-label="\u0423\u0434\u0430\u043B\u0438\u0442\u044C \u0446\u0438\u0442\u0430\u0442\u0443"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-1px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-        </div>
-      </div>`}var m=null;function H(){m&&(clearTimeout(m.timer),m=null);var e=l.querySelector(".gb-hl-undo");e&&e.remove()}function K(e){for(var t=f(),i=-1,r=0;r<t.length;r++)if(t[r].id===e){i=r;break}if(i!==-1){var n=t[i];t.splice(i,1),C(t),H(),v(),Z(n,i)}}function Z(e,t){var i=document.getElementById("gb-hl-list");if(i){var r=document.createElement("div");r.className="gb-hl-undo",r.innerHTML='<span>\u0426\u0438\u0442\u0430\u0442\u0430 \u0443\u0434\u0430\u043B\u0435\u043D\u0430</span><button type="button">\u041E\u0442\u043C\u0435\u043D\u0438\u0442\u044C</button>',i.parentNode.insertBefore(r,i.nextSibling);var n=setTimeout(function(){r.remove(),m=null},5e3);m={item:e,index:t,timer:n},r.querySelector("button").addEventListener("click",function(){clearTimeout(n);var a=f();a.splice(Math.min(t,a.length),0,e),C(a),m=null,r.remove(),v()})}}function v(){var e=f(),t=_.trim().toLowerCase(),i=t?e.filter(function(d){return z(d,t)}):e,r=document.getElementById("gb-hl-list"),n=document.getElementById("gb-hl-count"),a=document.getElementById("gb-hl-fab-count");n&&(n.textContent=e.length),a&&(a.textContent=e.length),s.setAttribute("aria-label","Мои цитаты — сохранено: "+e.length),e.length>0?s.classList.add("visible"):s.classList.remove("visible"),e.length>D&&(s.classList.remove("is-bump"),s.offsetWidth,s.classList.add("is-bump")),D=e.length;var o=document.getElementById("gb-hl-searchwrap");if(o&&(o.style.display=e.length>4?"flex":"none"),!!r){if(e.length===0){r.innerHTML=`<div class="gb-hl-empty">
-        <strong>\u041F\u043E\u043A\u0430 \u043F\u0443\u0441\u0442\u043E</strong>
-        \u0412\u044B\u0434\u0435\u043B\u0438\u0442\u0435 \u0442\u0435\u043A\u0441\u0442 \u0432 \u0441\u0442\u0430\u0442\u044C\u0435 \u0438 \u043D\u0430\u0436\u043C\u0438\u0442\u0435 \xAB\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C \u0446\u0438\u0442\u0430\u0442\u0443\xBB
-      </div>`;return}if(i.length===0){r.innerHTML='<div class="gb-hl-empty">\u041D\u0438\u0447\u0435\u0433\u043E \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u043E \u043F\u043E \u0437\u0430\u043F\u0440\u043E\u0441\u0443 \xAB'+h(_.trim())+"\xBB</div>";return}r.innerHTML=i.map(V).join(""),r.querySelectorAll(".gb-hl-del").forEach(function(d){d.addEventListener("click",function(){K(d.getAttribute("data-id"))})}),r.querySelectorAll(".gb-hl-card").forEach(function(d){d.addEventListener("click",function(){var g=d.getAttribute("data-id"),c=f().filter(function(x){return x.id===g})[0];c&&X(c)})})}}function $(e,t,i){for(var r=t.split(/\s+/),n=[],a="",o=0;o<r.length;o++){var d=a?a+" "+r[o]:r[o];e.measureText(d).width>i&&a?(n.push(a),a=r[o]):a=d}return a&&n.push(a),n}function X(e){var t=1080,i=1350,r=document.createElement("canvas");r.width=t,r.height=i;var n=r.getContext("2d"),a=document.documentElement.classList.contains("dark"),o=n.createLinearGradient(0,0,0,i);a?(o.addColorStop(0,"#1c1712"),o.addColorStop(1,"#0f0c09")):(o.addColorStop(0,"#fffdf8"),o.addColorStop(1,"#f1e6d0")),n.fillStyle=o,n.fillRect(0,0,t,i),n.strokeStyle=a?"rgba(238,208,147,.35)":"rgba(122,90,48,.35)",n.lineWidth=2,n.strokeRect(48,48,t-96,i-96),n.fillStyle=a?"#eed093":"#9c6b2e",n.font="italic 700 160px Georgia, serif",n.fillText("\u201C",96,260),n.fillStyle=a?"#f5ead7":"#241b15";var d=e.text.length>260?42:e.text.length>140?50:58;n.font="italic "+d+"px Georgia, serif";var g=$(n,e.text,t-200),c=d*1.42,x=g.length*c,P=Math.max(360,(i-x)/2);g.slice(0,14).forEach(function(w,k){n.fillText(w,100,P+k*c)});var R=Math.min(i-140,P+g.length*c+70);n.strokeStyle=a?"rgba(238,208,147,.4)":"rgba(122,90,48,.4)",n.lineWidth=2,n.beginPath(),n.moveTo(100,R),n.lineTo(220,R),n.stroke(),n.fillStyle=a?"#caa87e":"#7c5c18",n.font="600 30px 'Source Sans 3', system-ui, sans-serif",n.fillText(e.articleTitle||"\u0421\u0442\u0430\u0442\u044C\u044F",100,R+52),n.fillStyle=a?"rgba(245,234,215,.55)":"rgba(74,63,53,.6)",n.font="26px 'Source Sans 3', system-ui, sans-serif",n.fillText("\u0413\u043E\u0441\u043F\u043E\u0434\u044C \u0411\u043E\u0433 \u2014 \u0421\u0438\u043B\u0430 \u041C\u043E\u044F",100,i-90),r.toBlob(function(w){if(w){var k=new File([w],"gb-citata.png",{type:"image/png"});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[k]})){navigator.share({files:[k],title:e.articleTitle||"\u0426\u0438\u0442\u0430\u0442\u0430"}).catch(function(){});return}var W=URL.createObjectURL(w),y=document.createElement("a");y.href=W,y.download="gb-citata-"+Date.now()+".png",document.body.appendChild(y),y.click(),y.remove(),setTimeout(function(){URL.revokeObjectURL(W)},4e3)}},"image/png")}function ee(e){for(var t=e.nodeType===1?e:e.parentElement,i=document.querySelector("article, main, [data-pagefind-body]")||document.body;t&&t!==i.parentElement;){if(t.id)return t.id;t=t.parentElement}return""}function te(e){var t=e.trim().split(/\s+/);return t.length<=14?"text="+encodeURIComponent(e.trim()):"text="+encodeURIComponent(t.slice(0,6).join(" "))+","+encodeURIComponent(t.slice(-6).join(" "))}function ne(){var e=document.querySelector(".mobile-bottom-bar[data-gill-mobile-bar]");if(e)return{bar:e,before:e.querySelector('[data-action="share"]'),cls:"gb-icon"};var t=document.querySelector(".hmbar");if(t)return{bar:t,before:document.getElementById("hmShareBtn"),cls:"hmbar-btn"};var i=document.querySelector(".bottom-bar-inner");return i?{bar:i,before:document.getElementById("barShareBtn"),cls:"bar-icon-btn"}:null}var E=!1;function O(){if(E)return!0;var e=ne();return e?(s.classList.add("gb-hl-fab--docked",e.cls),s.style.removeProperty("--gb-hl-fab-bottom"),e.before?e.bar.insertBefore(s,e.before):e.bar.appendChild(s),E=!0,!0):!1}function ie(){O()||document.body.appendChild(s)}var q;function B(){E||(clearTimeout(q),q=setTimeout(O,1200))}var re=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches,N;function ae(){E||(s.classList.add("is-idle-faded"),clearTimeout(N),N=setTimeout(function(){s.classList.remove("is-idle-faded")},550))}var p=null;function j(){return Array.prototype.slice.call(l.querySelectorAll('a[href],button:not([disabled]),input,[tabindex]:not([tabindex="-1"])'))}function I(e){if(e.key==="Tab"){var t=j();if(t.length){var i=t[0],r=t[t.length-1];e.shiftKey?document.activeElement===i&&(e.preventDefault(),r.focus()):document.activeElement===r&&(e.preventDefault(),i.focus())}}}var A=0,L=!1,u=null;function oe(){u=document.getElementById("gb-hl-panel"),u&&(u.addEventListener("touchstart",function(e){A=e.touches[0].clientY,L=!0},{passive:!0}),u.addEventListener("touchmove",function(e){if(L){var t=e.touches[0].clientY-A,i=u.querySelector("#gb-hl-list"),r=!i||i.scrollTop===0;t>0&&r&&(e.preventDefault(),u.style.transform="translateY("+t+"px)",u.style.transition="none")}},{passive:!1}),u.addEventListener("touchend",function(e){if(L){L=!1;var t=e.changedTouches[0].clientY-A;u.style.transform="",u.style.transition="",t>80&&b()}},{passive:!0}))}function F(e){l.classList.contains("is-open")||(p=e&&e.currentTarget===s?s:document.activeElement,v(),l.classList.add("is-open"),l.setAttribute("aria-hidden","false"),window.SiteUtils&&typeof window.SiteUtils.lockScroll=="function"?window.SiteUtils.lockScroll("highlights"):document.body.classList.add("no-scroll"),requestAnimationFrame(function(){var e=j()[0];e&&e.focus()}),l.removeEventListener("keydown",I),l.addEventListener("keydown",I))}function b(){H(),l.classList.remove("is-open"),l.setAttribute("aria-hidden","true"),l.removeEventListener("keydown",I),window.SiteUtils&&typeof window.SiteUtils.unlockScroll=="function"?window.SiteUtils.unlockScroll("highlights"):document.body.classList.remove("no-scroll"),p&&p.focus&&p.focus(),p=null}function le(){var e=document.getElementById("selection-share-popup");if(!(!e||document.getElementById("ss-save"))){var t=document.createElement("div");t.className="ss-sep";var i=document.createElement("button");i.id="ss-save",i.setAttribute("aria-label","\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C \u0446\u0438\u0442\u0430\u0442\u0443"),i.innerHTML=`
-      `+M.replace('width="18" height="18"','width="13" height="13"')+`
-      <span>\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C</span>`,e.appendChild(t),e.appendChild(i),i.addEventListener("click",function(){var r=window.getSelection?window.getSelection():null,n="",a="";if(r&&!r.isCollapsed){n=r.toString().trim();try{a=ee(r.getRangeAt(0).commonAncestorContainer)}catch(x){}}!n&&window.__ssLastText__&&window.__ssLastTextUrl__===window.location.href&&(n=window.__ssLastText__);var o=i.querySelector("span");if(!n||n.length<8){var d=o.textContent;o.textContent="\u2717 \u041D\u0435\u0442 \u0442\u0435\u043A\u0441\u0442\u0430",setTimeout(function(){o.textContent=d},1800);return}var g=window.location.origin+window.location.pathname+"#"+a+":~:"+te(n),c=f();c=gbAddHighlight(c,{id:Date.now()+"-"+Math.random().toString(36).slice(2,7),text:n,articleTitle:document.title.replace(/\s*[·—|].*$/,"").trim(),url:g,savedAt:Date.now()}),C(c),v(),o.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-top:-1px"><polyline points="20 6 9 17 4 12"/></svg> \u0421\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u043E',setTimeout(function(){o.textContent="\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C"},2e3),e.classList.remove("ss-visible"),e.setAttribute("aria-hidden","true")})}}l.addEventListener("click",function(e){e.target===l&&b()}),document.getElementById("gb-hl-close").addEventListener("click",b),s.addEventListener("click",F),document.addEventListener("keydown",function(e){e.key==="Escape"&&l.classList.contains("is-open")&&b()}),document.getElementById("gb-hl-export").addEventListener("click",function(){var e=f();if(e.length){var t=`# \u041C\u043E\u0438 \u0446\u0438\u0442\u0430\u0442\u044B \u2014 \u0413\u043E\u0441\u043F\u043E\u0434\u044C \u0411\u043E\u0433 \u2014 \u0421\u0438\u043B\u0430 \u041C\u043E\u044F
+/* Unified reader library. Existing quote/favorite keys remain authoritative.
+ * Saved article buttons and GBFavoriteStore keep their original owners.
+ * Library owns only the combined read UI, quotations, and personal notes.
+ */
+(function () {
+  'use strict';
+  if (window.GBHighlights && window.GBHighlights.libraryVersion === 2) return;
 
-`;t+="_\u042D\u043A\u0441\u043F\u043E\u0440\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u043E: "+new Date().toLocaleDateString("ru-RU")+`_
+  const QUOTES_KEY = 'gb-highlights-v1';
+  const NOTES_KEY = 'gb-reader-notes-v1';
+  const FAVORITES_KEY = 'gb-favorites';
+  const LIMIT_QUOTES = 200;
+  const LIMIT_NOTES = 500;
+  const BATCH_SIZE = 30;
+  const quoteSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v16l-6-4-6 4V4z"/></svg>';
+  const bookSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6c-2.5-2-5.5-2.5-9-1.5v14c3.5-1 6.5-.5 9 1.5 2.5-2 5.5-2.5 9-1.5v-14c-3.5-1-6.5-.5-9 1.5Z"/><path d="M12 6v14"/></svg>';
+  const penSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 20 4-1 11-11a2 2 0 0 0-3-3L5 16l-1 4Z"/><path d="m14 7 3 3"/></svg>';
+  const closeSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5 19 19M19 5 5 19"/></svg>';
+  const searchSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>';
 
----
+  function normalizeText(value) { return String(value == null ? '' : value).replace(/\s+/g, ' ').trim(); }
+  function gbHighlightPath(item) {
+    const raw = String(item && item.url || '');
+    try { return new URL(raw, location.origin).pathname.replace(/\/+$/, '') || '/'; }
+    catch { return raw.split('#')[0].split('?')[0].replace(/^https?:\/\/[^/]+/, '').replace(/\/+$/, '') || '/'; }
+  }
+  function gbHighlightText(item) { return normalizeText(item && item.text).toLocaleLowerCase(); }
+  function gbHighlightKey(item) {
+    const text = gbHighlightText(item);
+    return text ? gbHighlightPath(item) + '\n' + text : '';
+  }
+  function gbDedupeHighlights(items) {
+    const seen = new Set();
+    const result = [];
+    (Array.isArray(items) ? items : []).forEach((item, index) => {
+      const key = gbHighlightKey(item) || '__invalid__:' + (item && item.id || index);
+      if (seen.has(key)) return;
+      seen.add(key);
+      result.push(item);
+    });
+    return result;
+  }
+  function gbAddHighlight(items, item) {
+    const existing = gbDedupeHighlights(items);
+    const key = gbHighlightKey(item);
+    return key && !existing.some((entry) => gbHighlightKey(entry) === key)
+      ? [item].concat(existing).slice(0, LIMIT_QUOTES) : existing;
+  }
+  function read(key) {
+    try {
+      const value = JSON.parse(localStorage.getItem(key) || '[]');
+      if (Array.isArray(value)) return value;
+      if (key === FAVORITES_KEY && Array.isArray(value && value.items)) return value.items;
+    } catch {}
+    return [];
+  }
+  function write(key, items) {
+    try { localStorage.setItem(key, JSON.stringify(items)); return true; }
+    catch { return false; }
+  }
+  function quotes() {
+    const existing = read(QUOTES_KEY);
+    const compact = gbDedupeHighlights(existing);
+    if (existing.length !== compact.length) write(QUOTES_KEY, compact);
+    return compact;
+  }
+  function notes() { return read(NOTES_KEY).filter((n) => n && typeof n.text === 'string' && n.id); }
+  function favorites() {
+    const store = window.GBFavoriteStore;
+    return store && typeof store.list === 'function' ? store.list({ persistMigration: false }) : read(FAVORITES_KEY);
+  }
+  function localUrl(value) {
+    try {
+      const url = new URL(value || '', location.origin);
+      if (url.origin === location.origin && /^https?:$/.test(url.protocol)) return url.pathname + url.search + url.hash;
+    } catch {}
+    return '';
+  }
+  function all() {
+    const q = quotes().map((x) => ({ id: String(x.id), type: 'quote', text: String(x.text || ''), title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0 }));
+    const n = notes().map((x) => ({ id: String(x.id), type: 'note', text: String(x.text || ''), quoteText: String(x.quoteText || ''), title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0 }));
+    const f = favorites().map((x) => ({ id: String(x.path || x.url || ''), type: 'favorite', text: String(x.description || ''), title: String(x.title || 'Статья'), url: localUrl(x.path || x.url), savedAt: Number(x.addedAt || x.savedAt) || 0 }));
+    return q.concat(n, f).sort((a, b) => b.savedAt - a.savedAt);
+  }
+  function currentTitle() { return normalizeText(document.title.replace(/\s*[·—|].*$/, '')) || 'Статья'; }
+  function fragment(text) {
+    const words = normalizeText(text).split(/\s+/);
+    return words.length <= 14 ? 'text=' + encodeURIComponent(text)
+      : 'text=' + encodeURIComponent(words.slice(0, 6).join(' ')) + ',' + encodeURIComponent(words.slice(-6).join(' '));
+  }
+  let lastSelection = { text: '', anchor: '', url: '' };
+  function rememberSelection() {
+    const selection = window.getSelection && window.getSelection();
+    if (!selection || selection.isCollapsed) return;
+    const text = normalizeText(selection.toString());
+    if (text.length < 8) return;
+    let anchor = '';
+    try {
+      const root = document.querySelector('article,main,[data-pagefind-body]') || document.body;
+      for (let e = selection.getRangeAt(0).commonAncestorContainer; e && e !== root.parentElement; e = e.parentElement) {
+        if (e.nodeType === 1 && e.id) { anchor = e.id; break; }
+      }
+    } catch {}
+    lastSelection = { text, anchor, url: location.href };
+    window.__ssLastText__ = text;
+    window.__ssLastTextUrl__ = location.href;
+  }
+  function selection() {
+    rememberSelection();
+    return lastSelection.url === location.href ? lastSelection : { text: '', anchor: '', url: '' };
+  }
+  function sourceUrl(selected) {
+    return location.origin + location.pathname + '#' +
+      (selected.anchor ? encodeURIComponent(selected.anchor) : '') + ':~:' + fragment(selected.text);
+  }
+  function uid(prefix) { return prefix + Date.now() + Math.random().toString(36).slice(2, 7); }
 
-`,e.forEach(function(a){t+="> "+a.text+`
 
-`,t+="\u2014 ["+(a.articleTitle||"\u0421\u0442\u0430\u0442\u044C\u044F")+"]("+a.url+`)  
-_`+new Date(a.savedAt).toLocaleDateString("ru-RU")+`_
+  let overlay, panel, list, fab, titleCount, search, sourceSelect, status, editor, textArea;
+  let tab = 'all', filter = 'all', searchTerm = '', shown = BATCH_SIZE, opener = null;
+  let expanded = new Set(), draft = null, pendingUndo = null;
+  let presenter = null, presenterPromise = null;
+  function loadPresenter() {
+    if (presenter) return Promise.resolve(presenter);
+    if (!presenterPromise) {
+      presenterPromise = import('/js/reader-library-presenter.js?v=bb173671')
+        .then((module) => { presenter = module; return module; })
+        .catch((error) => { presenterPromise = null; throw error; });
+    }
+    return presenterPromise;
+  }
+  const stylesheet = document.createElement('link');
+  stylesheet.id = 'gbHlRuntimeCss';
+  stylesheet.rel = 'stylesheet';
+  stylesheet.href = '/css/highlights-runtime.css?v=9d5367a9';
+  if (!document.getElementById(stylesheet.id)) document.head.appendChild(stylesheet);
 
----
+  function button(action, label, text) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.dataset.libraryAction = action;
+    b.setAttribute('aria-label', label);
+    b.textContent = text;
+    return b;
+  }
+  function element(tag, cls, value) {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (value != null) node.textContent = value;
+    return node;
+  }
+  function isOpen() { return Boolean(overlay && overlay.classList.contains('is-open')); }
+  function statusMessage(message, error) {
+    if (!status) return;
+    status.replaceChildren(element('span', '', message));
+    status.classList.add('is-visible');
+    status.classList.toggle('is-error', Boolean(error));
+    clearTimeout(statusMessage.timer);
+    statusMessage.timer = setTimeout(() => { if (!pendingUndo) status.classList.remove('is-visible'); }, 5000);
+  }
+  function create() {
+    if (!document.body || document.getElementById('gb-hl-backdrop')) return;
+    overlay = document.createElement('div');
+    overlay.id = 'gb-hl-backdrop';
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.setAttribute('inert', '');
+    overlay.innerHTML = [
+      '<section id="gb-hl-panel" role="dialog" aria-modal="true" aria-labelledby="gb-hl-title" tabindex="-1">',
+      '<div id="gb-hl-handle" aria-hidden="true"></div>',
+      '<header id="gb-hl-header"><div class="gb-hl-heading"><span class="gb-hl-eyebrow">ЛИЧНОЕ СОБРАНИЕ <span id="gb-hl-count"></span></span>',
+      '<h2 id="gb-hl-title">Моя библиотека</h2></div>',
+      '<button type="button" id="gb-hl-export" aria-label="Экспорт библиотеки в Markdown">↓ Markdown</button>',
+      '<button type="button" id="gb-hl-close" aria-label="Закрыть библиотеку">' + closeSvg + '</button></header>',
+      '<nav id="gb-hl-tabs" aria-label="Тип сохранений">',
+      '<button type="button" data-library-tab="all" aria-pressed="true">Все</button>',
+      '<button type="button" data-library-tab="quote" aria-pressed="false">Цитаты</button>',
+      '<button type="button" data-library-tab="note" aria-pressed="false">Заметки</button>',
+      '<button type="button" data-library-tab="favorite" aria-pressed="false">Статьи</button></nav>',
+      '<div id="gb-hl-tools"><label id="gb-hl-searchwrap">' + searchSvg,
+      '<input id="gb-hl-search" type="search" placeholder="Найти в сохранениях…" aria-label="Поиск по сохранениям" autocomplete="off"></label>',
+      '<select id="gb-hl-source" aria-label="Фильтр по исходной статье"><option value="all">Все статьи</option></select></div>',
+      '<div id="gb-hl-list" tabindex="0" aria-label="Сохранённые материалы"></div>',
+      '<div id="gb-hl-status" role="status" aria-live="polite"></div>',
+      '<form id="gb-hl-editor" hidden><label for="gb-hl-note-text">Личная заметка</label>',
+      '<div id="gb-hl-note-context"></div><textarea id="gb-hl-note-text" rows="4" maxlength="16000" placeholder="Что вы хотите запомнить?"></textarea>',
+      '<div class="gb-hl-editor-actions"><button type="button" id="gb-hl-note-cancel">Отмена</button>',
+      '<button type="submit">Сохранить заметку</button></div></form>',
+      '<footer id="gb-hl-foot"><button type="button" id="gb-hl-new-note">' + penSvg + ' Новая заметка</button></footer>',
+      '</section>',
+    ].join('');
+    document.body.append(overlay);
+    panel = overlay.querySelector('#gb-hl-panel');
+    list = overlay.querySelector('#gb-hl-list');
+    titleCount = overlay.querySelector('#gb-hl-count');
+    search = overlay.querySelector('#gb-hl-search');
+    sourceSelect = overlay.querySelector('#gb-hl-source');
+    status = overlay.querySelector('#gb-hl-status');
+    editor = overlay.querySelector('#gb-hl-editor');
+    textArea = overlay.querySelector('#gb-hl-note-text');
+    fab = document.createElement('button');
+    fab.id = 'gb-hl-fab';
+    fab.type = 'button';
+    fab.setAttribute('aria-label', 'Моя библиотека');
+    fab.setAttribute('aria-haspopup', 'dialog');
+    fab.setAttribute('aria-controls', 'gb-hl-panel');
+    fab.setAttribute('aria-expanded', 'false');
+    fab.innerHTML = bookSvg + '<span id="gb-hl-fab-count" aria-hidden="true"></span>';
+    document.body.append(fab);
+    fab.classList.add('visible');
+    fab.addEventListener('click', () => open(fab));
+    overlay.querySelector('#gb-hl-close').addEventListener('click', close);
+    overlay.querySelector('#gb-hl-export').addEventListener('click', () => presenter.exportMarkdown(all(), statusMessage));
+    overlay.querySelector('#gb-hl-new-note').addEventListener('click', () => showEditor());
+    overlay.querySelector('#gb-hl-note-cancel').addEventListener('click', hideEditor);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    overlay.querySelector('#gb-hl-tabs').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-library-tab]');
+      if (!b) return;
+      tab = b.dataset.libraryTab; shown = BATCH_SIZE; render();
+    });
+    search.addEventListener('input', () => { searchTerm = normalizeText(search.value).toLocaleLowerCase(); shown = BATCH_SIZE; render(); });
+    sourceSelect.addEventListener('change', () => { filter = sourceSelect.value; shown = BATCH_SIZE; render(); });
+    list.addEventListener('click', listClick);
+    editor.addEventListener('submit', saveNote);
+    document.addEventListener('keydown', keydown);
+    window.addEventListener('gb:favorites-changed', sync);
+    window.addEventListener('gb:favorite-store-ready', sync);
+    window.addEventListener('storage', (e) => { if ([QUOTES_KEY, NOTES_KEY, FAVORITES_KEY].includes(e.key)) sync(); });
+    document.addEventListener('astro:page-load', () => { dock(); sync(); attachSelection(); });
+    document.addEventListener('gb:mobile-fallback-ready', dock);
+    window.addEventListener('resize', dock, { passive: true });
+    attachSelection();
+    dock();
+    sync();
+  }
+  function keydown(e) {
+    if (!isOpen()) return;
+    if (e.key === 'Escape') { e.preventDefault(); if (editor.hidden) close(); else hideEditor(); }
+    else if (e.key === 'Tab' && presenter) presenter.trapTab(e, overlay);
+  }
+  function open(trigger) {
+    if (!overlay) create();
+    if (!overlay) return Promise.resolve(false);
+    if (isOpen()) return Promise.resolve(true);
+    opener = trigger || document.activeElement;
+    tab = 'all'; filter = 'all'; searchTerm = ''; shown = BATCH_SIZE;
+    search.value = '';
+    list.replaceChildren(element('div', 'gb-hl-empty', 'Открываем библиотеку…'));
+    overlay.removeAttribute('inert');
+    overlay.classList.add('is-open');
+    overlay.setAttribute('aria-hidden', 'false');
+    fab.setAttribute('aria-expanded', 'true');
+    if (window.SiteUtils && window.SiteUtils.lockScroll) window.SiteUtils.lockScroll('highlights');
+    else document.body.classList.add('no-scroll');
+    overlay.querySelector('#gb-hl-close').focus({ preventScroll: true });
+    return loadPresenter().then(() => {
+      if (isOpen()) render();
+      return isOpen();
+    }).catch(() => {
+      if (isOpen()) list.replaceChildren(element('div', 'gb-hl-empty',
+        'Не удалось открыть библиотеку. Проверьте подключение и попробуйте ещё раз.'));
+      return false;
+    });
+  }
+  function close() {
+    if (!isOpen()) return;
+    hideEditor(false);
+    clearUndo();
+    overlay.classList.remove('is-open');
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.setAttribute('inert', '');
+    fab.setAttribute('aria-expanded', 'false');
+    if (window.SiteUtils && window.SiteUtils.unlockScroll) window.SiteUtils.unlockScroll('highlights');
+    else document.body.classList.remove('no-scroll');
+    if (opener && opener.isConnected && opener.focus) opener.focus({ preventScroll: true });
+    opener = null;
+  }
+  function sync() { if (fab) { fab.classList.add('visible'); fab.querySelector('#gb-hl-fab-count').hidden = all().length === 0; fab.setAttribute('aria-label', 'Моя библиотека — сохранено ' + all().length); } if (isOpen()) render(); }
+  function dock() {
+    if (!fab) return;
+    const visible = (node) => node && node.getClientRects().length > 0 && getComputedStyle(node).visibility !== 'hidden';
+    const gill = document.querySelector('.mobile-bottom-bar');
+    const herm = document.querySelector('.hmbar');
+    const legacy = document.querySelector('.bottom-bar-inner');
+    const fallback = document.querySelector('.gb-mobile-fallback-controls');
+    let host = null, before = null, cls = '';
+    if (visible(herm)) { host = herm.querySelector('.hmbar-actions') || herm; before = document.getElementById('hmShareBtn'); cls = 'hmbar-btn'; }
+    else if (visible(gill)) { host = gill.querySelector('.mobile-icon-row') || gill; before = host.querySelector('[data-action="share"],[data-fc-action="share"]'); cls = 'gb-icon'; }
+    else if (visible(legacy)) { host = legacy; before = document.getElementById('barShareBtn'); cls = 'bar-icon-btn'; }
+    else if (visible(fallback)) { host = fallback; cls = 'gb-icon'; }
+    fab.classList.remove('gb-hl-fab--docked', 'hmbar-btn', 'gb-icon', 'bar-icon-btn');
+    fab.style.bottom = '';
+    if (!host) host = document.body;
+    else fab.classList.add('gb-hl-fab--docked', cls);
+    if (before?.parentNode === host) {
+      if (fab.nextElementSibling !== before) host.insertBefore(fab, before);
+    } else if (fab.parentNode !== host || fab.nextElementSibling) host.append(fab);
+  }
+  function render() {
+    if (!list || !presenter) return;
+    filter = presenter.renderList({
+      list, items: all(), titleCount, sourceSelect, overlay, tab, filter, searchTerm, shown, expanded,
+    });
+  }
+  function listClick(e) {
+    const b = e.target.closest('[data-library-action]');
+    if (!b) return;
+    const action = b.dataset.libraryAction;
+    if (action === 'more') { shown += BATCH_SIZE; render(); return; }
+    const card = b.closest('.gb-hl-item');
+    if (!card) return;
+    const item = all().find((x) => x.id === card.dataset.id && x.type === card.dataset.type);
+    if (!item) return;
+    if (action === 'expand') {
+      const key = item.type + ':' + item.id, full = !expanded.has(key);
+      if (full) expanded.add(key); else expanded.delete(key);
+      card.querySelector('.gb-hl-quote').classList.toggle('is-collapsed', !full);
+      b.setAttribute('aria-expanded', String(full));
+      b.textContent = full ? 'Свернуть' : 'Читать полностью';
+    }
+    if (action === 'delete') deleteItem(item);
+    if (action === 'edit-note') showEditor(null, item);
+    if (action === 'note-for-quote') showEditor({ quoteText: item.text, title: item.title, url: item.url });
+    if (action === 'card') presenter.exportQuoteCard(item, statusMessage);
+  }
+  function showEditor(context = null, editing = null) {
+    draft = { context, editing };
+    editor.hidden = false;
+    panel.classList.add('is-editing');
+    textArea.value = editing ? editing.text : '';
+    overlay.querySelector('#gb-hl-note-context').textContent = context && context.quoteText
+      ? 'К цитате: «' + context.quoteText.slice(0, 180) + '»'
+      : editing && editing.quoteText ? 'К цитате: «' + editing.quoteText.slice(0, 180) + '»'
+      : 'Мысли во время чтения';
+    textArea.focus({ preventScroll: true });
+  }
+  function hideEditor(focus = true) {
+    if (!editor) return;
+    editor.hidden = true; draft = null;
+    panel.classList.remove('is-editing');
+    if (focus) overlay.querySelector('#gb-hl-new-note').focus({ preventScroll: true });
+  }
+  function saveNote(e) {
+    e.preventDefault();
+    const text = textArea.value.trim();
+    if (!text) { statusMessage('Сначала напишите заметку.', true); return; }
+    const old = notes(), context = draft && draft.context, editing = draft && draft.editing;
+    if (!editing && old.length >= LIMIT_NOTES) {
+      statusMessage('Достигнут лимит заметок. Экспортируйте библиотеку перед удалением старых записей.', true);
+      return;
+    }
+    const next = editing
+      ? old.map((x) => x.id === editing.id ? Object.assign({}, x, { text }) : x)
+      : [{
+          id: uid('note'), text, quoteText: context && context.quoteText || '',
+          articleTitle: context && context.title || currentTitle(),
+          url: context && context.url || location.origin + location.pathname,
+          savedAt: Date.now(),
+        }].concat(old);
+    if (!write(NOTES_KEY, next)) {
+      statusMessage('Не удалось сохранить заметку. Проверьте доступное место в браузере.', true); return;
+    }
+    hideEditor(false);
+    tab = 'note'; filter = 'all'; shown = BATCH_SIZE;
+    render(); sync();
+    statusMessage(editing ? 'Заметка обновлена.' : 'Заметка сохранена.');
+  }
+  function clearUndo() {
+    if (pendingUndo) clearTimeout(pendingUndo.timer);
+    pendingUndo = null;
+    if (status) { status.replaceChildren(); status.classList.remove('is-visible'); }
+  }
+  function deleteItem(item) {
+    const key = item.type === 'note' ? NOTES_KEY : QUOTES_KEY;
+    const old = item.type === 'note' ? notes() : quotes();
+    const index = old.findIndex((x) => String(x.id) === item.id);
+    if (index < 0) return;
+    if (!write(key, old.filter((x) => String(x.id) !== item.id))) {
+      statusMessage('Не удалось удалить запись.', true); return;
+    }
+    clearUndo();
+    pendingUndo = { key, entry: old[index], index };
+    render(); sync();
+    const undoButton = button('undo', 'Отменить удаление', 'Отменить');
+    status.replaceChildren(element('span', '', 'Запись удалена'), undoButton);
+    status.classList.add('is-visible');
+    undoButton.addEventListener('click', () => {
+      if (!pendingUndo) return;
+      const u = pendingUndo, items = read(u.key);
+      items.splice(Math.min(u.index, items.length), 0, u.entry);
+      if (!write(u.key, items)) { statusMessage('Не удалось восстановить запись.', true); return; }
+      clearUndo(); render(); sync(); statusMessage('Запись восстановлена.');
+    });
+    pendingUndo.timer = setTimeout(clearUndo, 6000);
+  }
+  function saveSelectedQuote() {
+    const selected = selection();
+    if (selected.text.length < 8) { statusMessage('Сначала выделите текст.', true); return false; }
+    const old = quotes(), record = {
+      id: uid('quote'), text: selected.text, articleTitle: currentTitle(),
+      url: sourceUrl(selected), savedAt: Date.now(),
+    };
+    if (old.length >= LIMIT_QUOTES && !old.some((x) => gbHighlightKey(x) === gbHighlightKey(record))) {
+      statusMessage('Сохранено 200 цитат — достигнут прежний лимит. Экспортируйте библиотеку перед удалением старых записей.', true);
+      return false;
+    }
+    const next = gbAddHighlight(old, record);
+    if (next.length === old.length && next.every((x, i) => x === old[i])) {
+      statusMessage('Такая цитата уже сохранена.'); return true;
+    }
+    if (!write(QUOTES_KEY, next)) {
+      statusMessage('Не удалось сохранить цитату. Хранилище недоступно или заполнено.', true);
+      return false;
+    }
+    sync(); statusMessage('Цитата сохранена вместе с источником.');
+    return true;
+  }
+  function bindSelectionButton(id, label, icon, handler, popup) {
+    if (popup.querySelector('#' + id)) return;
+    const b = document.createElement('button');
+    b.id = id; b.type = 'button';
+    b.setAttribute('aria-label', label);
+    b.innerHTML = icon + '<span>' + (id === 'ss-save' ? 'Сохранить' : 'Заметка') + '</span>';
+    popup.append(b);
+    b.addEventListener('click', handler);
+  }
+  function attachSelection() {
+    const popup = document.getElementById('selection-share-popup');
+    if (!popup || popup.querySelector('#ss-save')) return;
+    popup.append(element('span', 'ss-sep'));
+    bindSelectionButton('ss-save', 'Сохранить выделенный текст как цитату', quoteSvg, () => {
+      if (saveSelectedQuote()) {
+        const label = popup.querySelector('#ss-save span');
+        if (label) label.textContent = 'Сохранено';
+        popup.classList.add('gb-hl-selection-saved');
+        setTimeout(() => {
+          if (label && label.isConnected) label.textContent = 'Сохранить';
+          popup.classList.remove('gb-hl-selection-saved', 'ss-visible');
+          popup.setAttribute('aria-hidden', 'true');
+        }, 660);
+      }
+    }, popup);
+    bindSelectionButton('ss-note', 'Добавить заметку к выделенному тексту', penSvg, () => {
+      const s = selection();
+      const context = s.text.length >= 8
+        ? { quoteText: s.text, url: sourceUrl(s), title: currentTitle() } : null;
+      popup.classList.remove('ss-visible');
+      popup.setAttribute('aria-hidden', 'true');
+      open(document.getElementById('ss-note')).then((opened) => { if (opened) showEditor(context); });
+    }, popup);
+  }
+  document.addEventListener('mouseup', () => setTimeout(rememberSelection, 25));
+  document.addEventListener('touchend', () => setTimeout(rememberSelection, 60), { passive: true });
+  document.addEventListener('selectionchange', rememberSelection);
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#selection-share-popup')) attachSelection();
+  });
 
-`});var i=new Blob([t],{type:"text/markdown;charset=utf-8"}),r=URL.createObjectURL(i),n=document.createElement("a");n.href=r,n.download="gb-citaty-"+new Date().toISOString().slice(0,10)+".md",document.body.appendChild(n),n.click(),n.remove(),setTimeout(function(){URL.revokeObjectURL(r)},3e3)}}),document.getElementById("gb-hl-search").addEventListener("input",function(e){_=e.target.value,v()}),document.addEventListener("mouseup",function(){setTimeout(function(){var e=window.getSelection?window.getSelection():null;if(e&&!e.isCollapsed){var t=e.toString().trim();t.length>=12&&(window.__ssLastText__=t,window.__ssLastTextUrl__=window.location.href)}else window.__ssLastText__="",window.__ssLastTextUrl__=""},25)}),re||window.addEventListener("scroll",ae,{passive:!0}),window.addEventListener("resize",B,{passive:!0}),window.addEventListener("orientationchange",B,{passive:!0});function Y(){setTimeout(le,500),oe(),ie(),B()}document.readyState==="loading"?document.addEventListener("DOMContentLoaded",Y):Y(),document.readyState==="loading"?document.addEventListener("DOMContentLoaded",function(){setTimeout(v,200)}):setTimeout(v,200),window.GBHighlights={open:F,close:b,getAll:f}})();
+  const api = Object.freeze({
+    libraryVersion: 2, open, close, getAll: quotes,
+    getNotes: notes, getLibrary: all,
+    highlightPath: gbHighlightPath, highlightText: gbHighlightText,
+    highlightKey: gbHighlightKey, dedupe: gbDedupeHighlights, addHighlight: gbAddHighlight,
+  });
+  window.GBHighlights = api;
+  window.GBReaderLibrary = api;
+
+  function init() {
+    create();
+    setTimeout(attachSelection, 500);
+    setTimeout(dock, 1200);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
+  else init();
+})();
