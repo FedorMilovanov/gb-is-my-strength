@@ -1,0 +1,93 @@
+---
+/**
+ * Presentation-only tree. Historical hrefs and labels arrive exclusively from
+ * readerTocProjection. ReaderRail remains the ReaderState/scroll owner.
+ */
+import type { ReaderTocNode } from './series/readerTocProjection';
+interface Props { nodes: readonly ReaderTocNode[]; root?: boolean; }
+const { nodes, root = false } = Astro.props;
+---
+<ul class={root ? 'hrail-toc grok-toc' : 'grok-child-list'} id={root ? 'hrailToc' : undefined}>
+  {root && <li class="hrail-track-slot" role="presentation" aria-hidden="true" style="display:contents"><span class="hrail-track"><i></i></span></li>}
+  {nodes.map((node) => {
+    const isHeading = node.kind === 'heading';
+    const isH2 = isHeading && node.depth === 0;
+    // All projected heading descendants belong to this current page; keep
+    // their original in-document #fragments for the canonical ReaderState.
+    const href = isHeading ? node.href.slice(node.href.indexOf('#')) : node.href;
+    const childrenId = 'grok-subtree-' + encodeURIComponent(node.key);
+    return (
+      <li class:list={{ 'grok-row': true, 'grok-row--h2': isH2, 'grok-row--sub': !isH2, 'grok-row--branch': node.children.length > 0 }}
+        data-grok-heading={isHeading ? '' : undefined} data-grok-key={node.key}>
+        <div class="grok-entry">
+          {isH2 && <span class="hrail-dot" aria-hidden="true"></span>}
+          <a href={href} title={node.label}>{node.label}</a>
+          {node.children.length > 0 && (
+            <button type="button" class="grok-disclosure" data-grok-toggle aria-label={'Свернуть или раскрыть: ' + node.label}
+              aria-expanded="true" aria-controls={childrenId}>
+              <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="m6 8 4 4 4-4"/></svg>
+            </button>
+          )}
+        </div>
+        {node.children.length > 0 && (
+          <div class="grok-child-motion">
+            <div class="grok-child-clip" id={childrenId}>
+              <Astro.self nodes={node.children} />
+            </div>
+          </div>
+        )}
+      </li>
+    );
+  })}
+</ul>
+<style is:global>
+  /* Strictly route-flagged: no other readers or breakpoints are restyled. */
+  .hrail--grok .grok-toc { --toc-axis-x:15px; margin-top:3px; padding-right:3px; }
+  .hrail--grok .grok-toc li.grok-row { padding:0; margin:2px 0; position:relative; }
+  .hrail--grok .grok-entry { display:flex; align-items:flex-start; position:relative; min-height:31px; padding-left:31px; }
+  .hrail--grok .grok-entry > a { flex:1 1 auto; min-width:0; padding:6px 6px 6px 9px; border-radius:8px;
+    font-size:12px; line-height:1.36; text-decoration:none; }
+  .hrail--grok .grok-entry > a:hover { text-decoration:none; }
+  .hrail--grok .grok-entry > .hrail-dot { left:11px; top:16px; margin-top:-4px; width:8px; height:8px; border:0;
+    background:var(--rail-line,rgba(0,0,0,.2)); box-shadow:none; }
+  /* The legacy descendant selector must not paint every nested link active
+     just because an H2 ancestor is active. Only the exact current row wins. */
+  .hrail--grok .grok-row.hrail-act .grok-child-list a {
+    color:var(--rail-muted,rgba(42,24,20,.68)); font-weight:normal; background:transparent; box-shadow:none;
+  }
+  .hrail--grok .grok-row.hrail-act > .grok-entry > a {
+    color:var(--rail-text,#2a1814); font-weight:700; box-shadow:none;
+  }
+  .hrail--grok .grok-row.hrail-act > .grok-entry::before { content:""; position:absolute; left:28px; top:5px; bottom:5px;
+    width:2px; border-radius:2px; background:var(--rail-accent,#7a2e2e); }
+  .hrail--grok .grok-row.hrail-act > .grok-entry > .hrail-dot { background:var(--rail-accent,#7a2e2e); }
+  .hrail--grok .grok-row--sub > .grok-entry { padding-left:32px; }
+  .hrail--grok .grok-row--sub > .grok-entry > a { font-size:11.25px; }
+  .hrail--grok .grok-child-list { list-style:none; margin:0 0 0 19px; padding:0; }
+  .hrail--grok .grok-toc > .hrail-track-slot > .hrail-track { left:14px; top:14px; bottom:22px; width:1px; }
+  .hrail--grok .grok-disclosure { display:none; flex:0 0 27px; width:27px; height:27px; margin:2px 0 0; padding:0;
+    border:0; border-radius:8px; background:transparent; color:var(--rail-accent,#7a2e2e); cursor:pointer; }
+  .hrail--grok.grok-ready .grok-disclosure { display:grid; place-items:center; }
+  .hrail--grok .grok-disclosure svg { width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:1.75;
+    stroke-linecap:round; stroke-linejoin:round; transition:transform .45s cubic-bezier(.22,1,.36,1); }
+  .hrail--grok .grok-disclosure:focus-visible { outline:2px solid var(--rail-accent,#7a2e2e); outline-offset:1px; }
+  .hrail--grok .grok-row[data-grok-collapsed] > .grok-entry .grok-disclosure svg { transform:rotate(-90deg); }
+  .hrail--grok .grok-child-motion { display:grid; grid-template-rows:minmax(0,1fr);
+    transition:grid-template-rows .65s cubic-bezier(.22,1,.36,1), opacity .4s ease; opacity:1; }
+  .hrail--grok .grok-row[data-grok-collapsed] > .grok-child-motion { grid-template-rows:minmax(0,0fr); opacity:0; }
+  .hrail--grok .grok-child-clip { min-height:0; overflow:hidden; }
+  /* Keep genuine focusable content inaccessible after collapse, even while
+     the visible height transitions. Inert is applied by the existing rail. */
+  @media (max-height:420px) and (min-width:1200px) {
+    .hrail--grok { top:8px; bottom:8px; padding-top:8px; padding-bottom:7px; }
+    .hrail--grok .hrail-top { margin-bottom:2px; }
+    .hrail--grok .hrail-meta { padding-bottom:3px; }
+    .hrail--grok .hrail-meta__eyebrow { display:none; }
+    .hrail--grok .hrail-meta__title { font-size:12px; line-height:1.15; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .hrail--grok .hrail-toch { padding-top:4px; padding-bottom:4px; }
+    .hrail--grok .hrail-bottom { margin-top:3px; padding-top:4px; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    .hrail--grok .grok-child-motion, .hrail--grok .grok-disclosure svg { transition:none; }
+  }
+</style>
