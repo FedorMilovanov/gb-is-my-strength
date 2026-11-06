@@ -19,7 +19,7 @@ This is an **additive, read-only data projection**, not a new reader engine and 
 
 Data-only output includes immutable hierarchical nodes, unchanged historical hrefs, mark/short-title metadata and the active-page ancestor path. Book: chapter → article → H2/H3; Gill/flat: part/endpaper → H2/H3; standalone: H2/H3. An **optional strict DOM inventory** allows H4–H6 and rejects missing, duplicated or reordered canonical anchors. Do not silently build unseen sections from unrelated page bodies.
 
-The projection deliberately excludes `tier:'satellite'` from desktop top-level navigation; the existing part accordion remains its owner. Only the active article's sections are projected in a book, avoiding eager assembly of every article's contents. Book H2 display labels call the canonical `sectionLabel()` helper rather than implementing a new title-normalization rule.
+The projection deliberately excludes `tier:'satellite'` from desktop top-level navigation; the existing part accordion remains its owner. For an active satellite (real Genesis 6 `corpus`/`audit`), the visible selection maps to the owning parent core part while `actualPageId` / `satellitePageId` preserve the genuine satellite route; no parent article headings are falsely hydrated. Only the active article's sections are projected in a book, avoiding eager assembly of every article's contents. Book H2 display labels call the canonical `sectionLabel()` helper rather than implementing a new title-normalization rule.
 
 **Not owned here:** active heading scrollspy, URL/history listeners, keyboard controls, visual animations, localStorage, element positions and responsive breakpoints. Those will be integrated through existing readers during a separate guarded pilot.
 
@@ -27,12 +27,12 @@ The projection deliberately excludes `tier:'satellite'` from desktop top-level n
 
 The source-level contract test `node scripts/reader-toc-projection-contract-test.cjs` bundles the real TypeScript instances in memory and checks:
 
-- all six current Gill pages and ten published Baptist page configurations;
+- all **seven current registered series families / 68 published page configurations**, including all six Gill pages, ten Baptist pages and two Genesis 6 satellites;
 - Gill historic `#sec-gill-last-pages` anchor, introduction/reference marks and actual order;
 - all four Baptist chapters and correct active-article ancestor paths;
 - immutable original route/data arrays and one-article-only section hydration;
 - H4–H6, duplicates, missing anchors, reorder, bad fragment encodings and invalid hierarchy fail-closed;
-- satellite ownership and `sectionLabel()` policy on **synthetic fixtures**, without pretending those titles exist in current articles.
+- actual Genesis 6 satellite ownership and the `sectionLabel()` policy on **synthetic Roman-prefix fixtures**, without pretending those titles exist in current articles.
 
 Additional gates run in the isolated source checkout: strict TypeScript compile, `node scripts/check-engine-contracts.js`, `node scripts/series-reader-facade-regression-test.js`. The Gill pre-v16 audit and Reader Library premium browser contract require an actual production-like `dist`; do **not** misclassify their missing-dist failures as regressions.
 
