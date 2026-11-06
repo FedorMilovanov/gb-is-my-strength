@@ -256,7 +256,8 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
     transition:transform .18s cubic-bezier(.34,1.56,.64,1),background .15s;
   }
   html.dark .hm-spdbadge{background:#d4a574;border-color:var(--color-canvas,#0e1116);color:#1a1713}
-  .hm-spdbadge::before{content:'';position:absolute;inset:-9px -5px}
+  /* Keep the speed badge tappable without capturing the Play button's centre. */
+  .hm-spdbadge::before{content:'';position:absolute;inset:-3px 0}
   .hm-spdbadge:active{transform:scale(.94)}
   .hm-spdbadge.is-bump{animation:hm-spdbadge-bump .3s cubic-bezier(.34,1.56,.64,1)}
   @keyframes hm-spdbadge-bump{0%{transform:scale(1)}50%{transform:scale(1.12)}100%{transform:scale(1)}}

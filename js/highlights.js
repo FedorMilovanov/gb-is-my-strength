@@ -132,7 +132,7 @@
   const stylesheet = document.createElement('link');
   stylesheet.id = 'gbHlRuntimeCss';
   stylesheet.rel = 'stylesheet';
-  stylesheet.href = '/css/highlights-runtime.css?v=7a465a64';
+  stylesheet.href = '/css/highlights-runtime.css?v=9d5367a9';
   if (!document.getElementById(stylesheet.id)) document.head.appendChild(stylesheet);
 
   function button(action, label, text) {
@@ -167,8 +167,8 @@
     overlay.innerHTML = [
       '<section id="gb-hl-panel" role="dialog" aria-modal="true" aria-labelledby="gb-hl-title" tabindex="-1">',
       '<div id="gb-hl-handle" aria-hidden="true"></div>',
-      '<header id="gb-hl-header"><div class="gb-hl-heading"><span class="gb-hl-eyebrow">ЛИЧНОЕ СОБРАНИЕ</span>',
-      '<h2 id="gb-hl-title">Моя библиотека <span id="gb-hl-count"></span></h2></div>',
+      '<header id="gb-hl-header"><div class="gb-hl-heading"><span class="gb-hl-eyebrow">ЛИЧНОЕ СОБРАНИЕ <span id="gb-hl-count"></span></span>',
+      '<h2 id="gb-hl-title">Моя библиотека</h2></div>',
       '<button type="button" id="gb-hl-export" aria-label="Экспорт библиотеки в Markdown">↓ Markdown</button>',
       '<button type="button" id="gb-hl-close" aria-label="Закрыть библиотеку">' + closeSvg + '</button></header>',
       '<nav id="gb-hl-tabs" aria-label="Тип сохранений">',

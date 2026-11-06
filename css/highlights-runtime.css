@@ -153,8 +153,9 @@
   color: var(--library-ink);
   margin: 0;
 }
-#gb-hl-count { font: 500 13px var(--sans, system-ui, sans-serif); color: var(--library-muted); white-space: nowrap; }
+#gb-hl-count { font: 600 10px var(--sans, system-ui, sans-serif); color: var(--library-muted); letter-spacing: .04em; white-space: nowrap; }
 #gb-hl-export {
+  min-height: 44px;
   border: 1px solid var(--library-edge);
   background: transparent;
   color: var(--library-muted);
@@ -172,9 +173,9 @@
   cursor: pointer;
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  flex: 0 0 36px;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
 }
 #gb-hl-close svg { width: 17px; height: 17px; }
 #gb-hl-tabs {
@@ -189,7 +190,7 @@
   flex: 0 0 auto;
 }
 #gb-hl-tabs button {
-  min-height: 39px;
+  min-height: 44px;
   border: 1px solid transparent;
   border-radius: 9px;
   background: transparent;
@@ -228,7 +229,7 @@
 #gb-hl-search {
   min-width: 0;
   width: 100%;
-  min-height: 42px;
+  min-height: 44px;
   background: transparent;
   border: 0;
   outline: 0;
@@ -237,6 +238,7 @@
 }
 #gb-hl-search::placeholder { color: var(--library-muted); }
 #gb-hl-source {
+  min-height: 44px;
   max-width: 150px;
   min-width: 91px;
   width: 35%;
@@ -306,7 +308,7 @@
   font: 650 12px var(--sans, system-ui, sans-serif);
 }
 .gb-hl-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
-.gb-hl-meta a {
+#gb-hl-panel .gb-hl-meta a {
   flex: 1;
   min-width: 85px;
   color: var(--library-accent);
@@ -316,6 +318,7 @@
 }
 .gb-hl-meta a:hover { text-decoration: underline; }
 .gb-hl-meta button {
+  min-height: 44px;
   border: 1px solid var(--library-edge);
   border-radius: 8px;
   background: transparent;
@@ -370,7 +373,7 @@
   align-items: center;
   justify-content: center;
   gap: 9px;
-  min-height: 42px;
+  min-height: 44px;
   padding: 9px 16px;
   color: #fffaf3;
   background: var(--library-accent);
@@ -393,7 +396,8 @@
 #gb-hl-editor[hidden] { display: none; }
 #gb-hl-panel.is-editing #gb-hl-tabs,
 #gb-hl-panel.is-editing #gb-hl-tools,
-#gb-hl-panel.is-editing #gb-hl-list { display: none; }
+#gb-hl-panel.is-editing #gb-hl-list,
+#gb-hl-panel.is-editing #gb-hl-foot { display: none; }
 #gb-hl-panel.is-editing #gb-hl-editor { min-height: 210px; max-height: 60dvh; overflow-y: auto; flex: 1; }
 #gb-hl-editor label { font: 700 13px var(--sans, system-ui, sans-serif); }
 #gb-hl-note-context { color: var(--library-muted); font: italic 12px/1.5 var(--serif, Georgia, serif); }
@@ -410,7 +414,7 @@
   font: 14px/1.5 var(--sans, system-ui, sans-serif);
 }
 .gb-hl-editor-actions { display: flex; justify-content: end; gap: 8px; }
-.gb-hl-editor-actions button { border: 1px solid var(--library-edge); border-radius: 10px; background: transparent; color: var(--library-muted); min-height: 39px; padding: 8px 12px; cursor: pointer; }
+.gb-hl-editor-actions button { border: 1px solid var(--library-edge); border-radius: 10px; background: transparent; color: var(--library-muted); min-height: 44px; padding: 8px 12px; cursor: pointer; }
 .gb-hl-editor-actions button[type="submit"] { border-color: var(--library-accent); background: var(--library-accent); color: #fff8ef; }
 #gb-hl-backdrop button:focus-visible,
 #gb-hl-backdrop select:focus-visible,
@@ -428,7 +432,25 @@ html.dark #gb-hl-panel {
 html.dark #gb-hl-tabs { background: #302627; }
 html.dark #gb-hl-close,
 html.dark #gb-hl-source { background: #302727; color: var(--library-muted); }
-html.theme-sepia #gb-hl-panel { --library-paper: #f7efdf; --library-ink: #44342b; --library-muted: #8b6d5d; --library-accent: #855942; }
+html.theme-sepia #gb-hl-panel, html[data-reader-theme="sepia"] #gb-hl-panel { --library-paper: #f7efdf; --library-ink: #44342b; --library-muted: #8b6d5d; --library-accent: #855942; }
+/* Personal library: a centered reading workspace on desktop, bottom sheet on phones. */
+@media (min-width: 768px) {
+  #gb-hl-backdrop { align-items: center; padding: 24px; }
+  #gb-hl-panel {
+    width: min(744px, calc(100vw - 48px));
+    height: min(82dvh, 800px);
+    max-height: calc(100dvh - 48px);
+    border: 1px solid var(--library-edge);
+    border-radius: 22px;
+    box-shadow: 0 24px 90px rgba(20, 13, 12, .32);
+  }
+  #gb-hl-handle { display: none; }
+  #gb-hl-header { padding: 20px 25px 18px; }
+  #gb-hl-tabs { margin: 16px 24px 12px; }
+  #gb-hl-tools { padding: 0 24px 14px; }
+  #gb-hl-list { padding: 0 24px 14px; }
+  #gb-hl-foot { padding: 15px 24px; }
+}
 @media (max-width: 480px) {
   #gb-hl-header { padding: 12px 13px 13px; }
   #gb-hl-export { font-size: 10px; padding: 7px 8px; }

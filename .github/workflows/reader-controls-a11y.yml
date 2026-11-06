@@ -71,6 +71,7 @@ jobs:
           node --check scripts/reader-controls-a11y-browser-contract.mjs
           node --check scripts/reader-controls-residual-browser-contract.mjs
           node --check scripts/reader-speedrail-ssr-focus-browser-test.mjs
+          node --check scripts/reader-library-premium-browser-contract.cjs
           grep -F "import '../../runtime/reader-controls-a11y.js';" src/components/reader-platform/ReaderActionsRuntime.astro
           ! grep -q "GBReaderProjection\|FavoriteStore" src/runtime/reader-controls-a11y.js
 
@@ -86,6 +87,7 @@ jobs:
           GITHUB_SHA="$(git rev-parse HEAD)" node scripts/reader-controls-a11y-browser-contract.mjs 2>&1 | tee reports/reader-controls-a11y-browser-contract.log
           GITHUB_SHA="$(git rev-parse HEAD)" node scripts/reader-controls-residual-browser-contract.mjs 2>&1 | tee reports/reader-controls-residual-browser-contract.log
           SOURCE_SHA="$(git rev-parse HEAD)" node scripts/reader-speedrail-ssr-focus-browser-test.mjs 2>&1 | tee reports/reader-speedrail-ssr-focus.log
+          node scripts/reader-library-premium-browser-contract.cjs 2>&1 | tee reports/reader-library-premium-browser-contract.log
 
       - name: Upload exact evidence
         if: always()
@@ -103,5 +105,7 @@ jobs:
             reports/reader-controls-residual-browser-contract.md
             reports/reader-speedrail-ssr-focus.log
             reports/reader-speedrail-ssr-focus/**
+            reports/reader-library-premium-browser-contract.log
+            reports/reader-library-premium/*.png
           if-no-files-found: warn
           retention-days: 14

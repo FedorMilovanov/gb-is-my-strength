@@ -50,6 +50,7 @@ async function check(name,driver,width,base){
  await p.locator('#hmSheet.is-open .hmsheet-panel').waitFor({state:'visible'});
  await p.waitForFunction(()=>document.activeElement?.id==='hmSheetSearch');
  await p.locator('#hmSheetClose').click();
+ await p.locator('.hm-ember[data-fc-action="play"]').click({trial:true});
  await p.locator('#hmSpdBadge').click();
  await p.locator('.hmtop.speed-open').waitFor();
  assert.equal(await p.locator('.hm-spd').count(),6,'v4 has six rates');
