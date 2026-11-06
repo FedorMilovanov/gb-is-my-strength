@@ -34,8 +34,10 @@ concurrency:
 jobs:
   browser-contract:
     name: Chromium WebKit reader semantic projection
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
+    # Pin the OS: ubuntu-latest may advance to a new release with very slow apt mirrors.
+    # Browser system packages must finish before the actual semantic test starts.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
     steps:
       - name: Checkout exact tested commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -55,7 +57,7 @@ jobs:
       - name: Install exact dependencies and browsers
         run: |
           npm ci
-          timeout 12m npx playwright install --with-deps chromium webkit
+          npx playwright install --with-deps chromium webkit
       - name: Syntax check semantic projection guards
         run: |
           node --check scripts/astro-cache-bust-postbuild.js
