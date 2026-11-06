@@ -18,6 +18,8 @@ for(const name of ['articles','hardTexts']){
 }
 const crypto = require('crypto');
 const presenterPath = path.join(root, 'js/reader-library-presenter.js');
+const researchPath = path.join(root, 'js/reader-library-v3.js');
+const dockPath = path.join(root, 'js/reader-library-dock.js');
 const highlightsPath = path.join(root, 'js/highlights.js');
 const swPath = path.join(root, 'sw.js');
 assert(fs.existsSync(presenterPath), 'lazy presenter must be published in dist');
@@ -28,5 +30,17 @@ assert(fs.readFileSync(highlightsPath, 'utf8').includes('reader-library-presente
   'lazy importer must reference exact published presenter bytes');
 assert(fs.readFileSync(swPath, 'utf8').includes('reader-library-presenter.js?v=' + version),
   'offline service worker must precache exact presenter revision');
-console.log('lazy presenter asset revision and offline precache PASS');
+assert(fs.existsSync(researchPath), 'lazy research companion must be in published dist');
+const researchVersion = crypto.createHash('md5').update(fs.readFileSync(researchPath)).digest('hex').slice(0,8);
+assert(fs.readFileSync(highlightsPath, 'utf8').includes('reader-library-v3.js?v=' + researchVersion),
+  'library owner must import exact research companion bytes');
+assert(fs.readFileSync(swPath, 'utf8').includes('reader-library-v3.js?v=' + researchVersion),
+  'offline service worker must precache research companion revision');
+assert(fs.existsSync(dockPath), 'lightweight docking module must be in dist');
+const dockVersion = crypto.createHash('md5').update(fs.readFileSync(dockPath)).digest('hex').slice(0,8);
+assert(fs.readFileSync(highlightsPath,'utf8').includes('reader-library-dock.js?v=' + dockVersion),
+  'bootstrap must import correct dock revision');
+assert(fs.readFileSync(swPath,'utf8').includes('reader-library-dock.js?v=' + dockVersion),
+  'SW must precache dock revision');
+console.log('lazy presenter + research + dock exact versions and offline precache PASS');
 console.log('allPages',pages.length,'reader article coverage PASS');

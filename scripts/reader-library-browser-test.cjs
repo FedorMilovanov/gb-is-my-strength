@@ -35,7 +35,8 @@ const gbsHtml = html.replace('</head>',
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://127.0.0.1');
   if (url.pathname === '/js/highlights.js' || url.pathname === '/css/highlights-runtime.css' ||
-      url.pathname === '/src/runtime/favorite-store.js' || url.pathname === '/js/reader-library-presenter.js') {
+      url.pathname === '/src/runtime/favorite-store.js' || url.pathname === '/js/reader-library-presenter.js' ||
+      url.pathname === '/js/reader-library-v3.js' || url.pathname === '/js/reader-library-dock.js') {
     const file = path.join(root, url.pathname.replace(/^\//, ''));
     res.setHeader('Content-Type', file.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/javascript; charset=utf-8');
     res.end(fs.readFileSync(file));

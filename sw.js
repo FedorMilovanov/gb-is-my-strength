@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v201-reader-measure-premium-20261029';
+const CACHE_VERSION = 'gb-v202-library-v3-local-20261106';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -26,7 +26,7 @@ const PRECACHE_ASSETS = [
   '/css/series-samizdat.css?v=7c8ba23f',
   '/css/reader-preferences.css?v=cffee152',
   '/css/enhancements-runtime.css?v=d195a91d',
-  '/css/highlights-runtime.css?v=9d5367a9',
+  '/css/highlights-runtime.css?v=8aae232c',
   '/css/sw-toast.css?v=2e540077',
   '/fonts/fonts.css?v=864cc57a',
   '/nagornaya/tw.min.css?v=bee34e73',
@@ -36,8 +36,10 @@ const PRECACHE_ASSETS = [
   '/js/scroll-perf.js?v=454d6f7b',
   '/js/bookmark-engine.js?v=e2ccecf3',
   '/js/enhancements.js?v=15476429',
-  '/js/highlights.js?v=66b782ba',
-  '/js/reader-library-presenter.js?v=b15b0690',
+  '/js/highlights.js?v=ab571a7e',
+  '/js/reader-library-presenter.js?v=cef6e2a5',
+  '/js/reader-library-v3.js?v=e036d5a6',
+  '/js/reader-library-dock.js?v=68cc0bfe',
   '/js/sw-register.js?v=921dd6a2',
   '/js/nagornaya-mobile-toc.js?v=a0b23b1c',
   '/js/floating-cluster-controller.js?v=ea946ba0',
