@@ -28,12 +28,19 @@ async function check(name,driver,width,base){
    const measured=icons.map(q=>{const el=document.querySelector(q),r=el.getBoundingClientRect(),svg=el.querySelector('svg'),s=getComputedStyle(svg);return{q,x:r.x,y:r.y,w:r.width,h:r.height,svgW:parseFloat(s.width),stroke:s.strokeWidth,color:getComputedStyle(el).color}});
    const play=document.querySelector('.hm-ember').getBoundingClientRect(),rate=document.querySelector('#hmSpdBadge').getBoundingClientRect();
    const lower=['#hmBottomBtn','#hmSectionBtn','.hmbar-btn.gb-theme-toggle','#hmSettingsBtn','#gb-hl-fab','#hmShareBtn'].map(q=>{const r=document.querySelector(q).getBoundingClientRect();return{q,x:r.x,w:r.width,h:r.height};});
-   return{innerWidth,overflow:document.documentElement.scrollWidth-innerWidth,measured,lower,topHeight:document.querySelector('.hmtop').getBoundingClientRect().height,bottomHeight:document.querySelector('.hmbar').getBoundingClientRect().height,rateDistanceX:rate.x-play.x,rateDistanceY:rate.y-play.y};
+   const group=document.querySelector('.hmbar-actions'), groupControls=Array.from(group?.children||[]).map(el=>el.id||el.getAttribute('data-fc-action'));
+   const bar=document.querySelector('.hmbar'),section=document.querySelector('#hmSectionBtn'),label=section.querySelector('.hmbar-section-label');
+   return{innerWidth,overflow:document.documentElement.scrollWidth-innerWidth,measured,lower,groupControls,groupGap:getComputedStyle(group).gap,barGap:getComputedStyle(bar).gap,sectionPadding:getComputedStyle(section).padding,labelVisible:label.getBoundingClientRect().height>0,topHeight:document.querySelector('.hmtop').getBoundingClientRect().height,bottomHeight:bar.getBoundingClientRect().height,rateDistanceX:rate.x-play.x,rateDistanceY:rate.y-play.y};
  });
  assert(layout.overflow<=1,JSON.stringify(layout));
  assert(layout.topHeight>=55,'upper v4 chrome was changed outside lower-bar scope '+JSON.stringify(layout));
- assert(layout.bottomHeight<=52,'lower bar is no longer compact '+JSON.stringify(layout));
- assert(layout.lower.every(x=>x.w>=43.5&&x.h>=43.5),'lower tap target too small '+JSON.stringify(layout));
+ assert(layout.bottomHeight>=56&&layout.bottomHeight<=65,'left side bar geometry should be restored to original v4 '+JSON.stringify(layout));
+ assert.deepEqual(layout.groupControls,['theme','hmSettingsBtn','gb-hl-fab','hmShareBtn'],'only the four actions must be grouped');
+ assert(layout.groupGap==='0px','right action cluster must be compact '+JSON.stringify(layout));
+ assert(layout.barGap===(width<=360?'2px':'8px'),'global bar gap must be preserved '+JSON.stringify(layout));
+ assert(layout.labelVisible,'original now-reading label must be visible on narrow screens');
+ assert(layout.lower.filter(x=>x.q!=='#hmSectionBtn').every(x=>x.w>=43.5&&x.h>=43.5),'progress or right action tap target too small '+JSON.stringify(layout));
+ assert(layout.lower.find(x=>x.q==='#hmSectionBtn').h>=34,'original now-reading control unexpectedly contracted '+JSON.stringify(layout));
  assert(layout.lower.slice(1).every((x,i)=>x.x>=layout.lower[i].x+layout.lower[i].w-.5),'overlapping lower controls '+JSON.stringify(layout));
  assert(layout.measured.every(x=>x.w>=43.5&&x.h>=43.5),'hit box too small '+JSON.stringify(layout));
  assert(layout.measured.every(x=>x.svgW>=18&&x.svgW<=21),'inconsistent svg size '+JSON.stringify(layout));
@@ -63,6 +70,9 @@ async function check(name,driver,width,base){
  await p.locator('#gb-hl-fab').click();
  await p.locator('#gb-hl-panel').waitFor({state:'visible'});
  await p.locator('#gb-hl-close').click();
+ await p.locator('#gb-hl-fab').focus();
+ await p.evaluate(()=>window.dispatchEvent(new Event('resize')));
+ assert.equal(await p.evaluate(()=>document.activeElement?.id),'gb-hl-fab','resize docking must preserve library opener focus');
  assert.deepEqual(errors,[],'page errors '+errors);
  console.log('PASS '+name+' '+width+' v4 top search, six speeds, themed settings, legacy theme toggle, normalized library icon, hitbox');
  }finally{await ctx.close();}

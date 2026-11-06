@@ -284,16 +284,17 @@
     const legacy = document.querySelector('.bottom-bar-inner');
     const fallback = document.querySelector('.gb-mobile-fallback-controls');
     let host = null, before = null, cls = '';
-    if (visible(herm)) { host = herm; before = document.getElementById('hmShareBtn'); cls = 'hmbar-btn'; }
+    if (visible(herm)) { host = herm.querySelector('.hmbar-actions') || herm; before = document.getElementById('hmShareBtn'); cls = 'hmbar-btn'; }
     else if (visible(gill)) { host = gill.querySelector('.mobile-icon-row') || gill; before = host.querySelector('[data-action="share"],[data-fc-action="share"]'); cls = 'gb-icon'; }
     else if (visible(legacy)) { host = legacy; before = document.getElementById('barShareBtn'); cls = 'bar-icon-btn'; }
     else if (visible(fallback)) { host = fallback; cls = 'gb-icon'; }
     fab.classList.remove('gb-hl-fab--docked', 'hmbar-btn', 'gb-icon', 'bar-icon-btn');
     fab.style.bottom = '';
-    if (!host) { document.body.append(fab); return; }
-    fab.classList.add('gb-hl-fab--docked', cls);
-    if (before && before.parentNode === host) host.insertBefore(fab, before);
-    else host.append(fab);
+    if (!host) host = document.body;
+    else fab.classList.add('gb-hl-fab--docked', cls);
+    if (before?.parentNode === host) {
+      if (fab.nextElementSibling !== before) host.insertBefore(fab, before);
+    } else if (fab.parentNode !== host || fab.nextElementSibling) host.append(fab);
   }
   function render() {
     if (!list || !presenter) return;

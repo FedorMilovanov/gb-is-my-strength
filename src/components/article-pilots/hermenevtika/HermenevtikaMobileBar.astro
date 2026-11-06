@@ -92,7 +92,8 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
     <span class="sr-only">— открыть оглавление статьи</span>
   </button>
   <Fragment slot="bottom-actions">
-  <span class="hmbar-divider"></span>
+  <span class="hmbar-divider" aria-hidden="true"></span>
+  <div class="hmbar-actions" role="group" aria-label="Действия с текстом">
   <button class="hmbar-btn gb-theme-toggle" data-fc-action="theme" aria-label="Тема">
     <span class="theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg></span>
     <span class="theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg></span>
@@ -100,10 +101,10 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   <button class="hmbar-btn" id="hmSettingsBtn" type="button" aria-label="Настройки чтения">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>
   </button>
-  <span class="hmbar-divider"></span>
   <button class="hmbar-btn" id="hmShareBtn" data-action="share" type="button" aria-label="Поделиться">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" /></svg>
   </button>
+  </div>
   </Fragment>
 
   <div class="hmsheet" id="hmSheet" aria-hidden="true" data-reading-minutes={readingMinutes} slot="overlays">
@@ -173,9 +174,9 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
     html[data-reader-theme="sepia"] .hmtop{background:color-mix(in srgb, #f3ead4 92%, transparent); border-bottom-color:#d8c9a8}
     html[data-reader-theme="sepia"] .hmtop.is-top{background:var(--color-canvas,#f3ead4); border-bottom-color:transparent}
     .hmbar{
-      display:flex; align-items:center; gap:2px; position:fixed; left:0; right:0; bottom:0;
-      z-index:var(--z-bottom-bar,2000); min-height:44px;
-      padding:2px 8px calc(2px + env(safe-area-inset-bottom,0px));
+      display:flex; align-items:center; gap:8px; position:fixed; left:0; right:0; bottom:0;
+      z-index:var(--z-bottom-bar,2000); min-height:52px;
+      padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px));
       background:var(--color-canvas,#fdfcf9);color:var(--color-text-muted,#6a6a6a); border-top:1px solid var(--color-border,#e5e2dc);
       box-shadow:0 -7px 22px -14px rgba(46,34,32,.10);
     }
@@ -187,7 +188,7 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
       background:linear-gradient(180deg,#f3ead4,#e9dcc0); border-top-color:#d8c9a8;
       box-shadow:0 -8px 24px -12px rgba(122,90,48,.20);
     }
-    .article-main--hrail{ padding-top:calc(52px + env(safe-area-inset-top,0px)); padding-bottom: calc(50px + env(safe-area-inset-bottom,0px)); }
+    .article-main--hrail{ padding-top:calc(52px + env(safe-area-inset-top,0px)); padding-bottom: calc(56px + env(safe-area-inset-bottom,0px)); }
     body.hm-tbhidden .article-main--hrail{ padding-top:calc(12px + env(safe-area-inset-top,0px)); }
     /* Hide desktop header when this bar exists — prevents ghost text + double chrome */
     .astro-header{display:none !important}
@@ -197,7 +198,6 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   @media(max-width:360px){
     .hmtop{gap:4px;padding-left:8px;padding-right:8px}
     .hmbar{gap:2px;padding-left:8px;padding-right:8px}
-    .hmbar-section-label{display:none}
     .hmbar-divider{display:none}
   }
   @media(min-width:1200px){ .hmtop, .hmbar{display:none !important} }
@@ -271,7 +271,7 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   .hmbar-progress-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     font:700 8px "Source Sans 3",system-ui,sans-serif;color:#7a2e2e;pointer-events:none;font-variant-numeric:tabular-nums}
   html.dark .hmbar-progress-text{color:#e0a89c}
-  .hmbar-section{flex:1;min-width:0;min-height:44px;background:none;border:0;cursor:pointer;padding:1px 2px;text-align:left;
+  .hmbar-section{flex:1;min-width:0;background:none;border:0;cursor:pointer;padding:4px 4px;text-align:left;
     display:flex;flex-direction:column;gap:1px;overflow:hidden;font:inherit}
   .hmbar-section-label{font:700 8.5px "Source Sans 3",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;
     color:rgba(42,24,20,.55);opacity:.8}
@@ -281,6 +281,9 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   html.dark .hmbar-section-name{color:#f2e9e6}
   .hmbar-divider{width:1px;height:20px;background:rgba(0,0,0,.08);flex-shrink:0}
   html.dark .hmbar-divider{background:rgba(255,255,255,.08)}
+  /* Only the four right-side actions form a compact cluster; left-side chrome
+     retains its original layout, outer gaps and 44px touch targets. */
+  .hmbar-actions{display:flex;align-items:center;gap:0;flex:0 0 auto}
   .hmbar-btn{position:relative;width:44px;height:44px;border:0;background:none;cursor:pointer;border-radius:50%;
     display:grid;place-items:center;color:var(--color-text-muted,#6a6a6a);flex-shrink:0}
   html.dark .hmbar-btn{color:#caa1a0}
