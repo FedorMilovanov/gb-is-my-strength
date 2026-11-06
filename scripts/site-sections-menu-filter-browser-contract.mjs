@@ -97,8 +97,10 @@ try {
         pass(await visibleLinks.count(), 6, 'mobile preserves six original links');
         pass(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true, 'mobile no overflow');
         await page.keyboard.press('Escape');
-        await page.setViewportSize({width:1024,height:300});
-        await page.locator('#hMobileMenuBtn').click();
+        await page.setViewportSize({width:1440,height:300});
+        const shortTriggerVisible = await page.locator('#hMobileMenuBtn').isVisible();
+        assert.ok(shortTriggerVisible, browserType.name + '/' + route + ': short-desktop menu trigger unavailable');
+        await page.locator('#hMobileMenuBtn').click({timeout:5000});
         const geometry = await page.locator('#hMobileNav').evaluate((panel) => {
           const r=panel.getBoundingClientRect(), f=panel.querySelector('[data-gb-menu-filter]').getBoundingClientRect();
           return {inside:r.top >= -1 && r.bottom <= innerHeight+1, filterVisible:f.height>0, usable:panel.clientHeight>=100};

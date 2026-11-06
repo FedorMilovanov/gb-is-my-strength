@@ -21,7 +21,7 @@
       return;
     }
 
-    const desktopMenu = () => Boolean(window.matchMedia?.('(min-width: 64em)').matches);
+    const desktopMenu = () => Boolean(window.matchMedia?.('(min-width: 85em)').matches);
     const firstAction = (panel) => (
       (desktopMenu() && panel.querySelector('[data-gb-menu-filter]'))
       || panel.querySelector('a[href]:not([hidden]),button:not([disabled]):not([hidden]),[tabindex]:not([tabindex="-1"])')
@@ -62,7 +62,7 @@
       const empty = panel.querySelector('[data-gb-menu-empty]');
       const entries = [...panel.querySelectorAll('a[data-gb-menu-section]')];
       const groupTitles = [...panel.querySelectorAll('[data-gb-menu-group-title]')];
-      const desktopQuery = window.matchMedia?.('(min-width: 64em)');
+      const desktopQuery = window.matchMedia?.('(min-width: 85em)');
       const normalize = (value) => String(value || '').toLocaleLowerCase('ru-RU')
         .normalize('NFKC').replace(/ё/g, 'е').replace(/\s+/g, ' ').trim();
       const firstVisible = () => entries.find((node) => !node.hidden);
