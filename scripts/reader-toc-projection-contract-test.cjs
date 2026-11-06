@@ -8,26 +8,33 @@
  */
 const assert = require('node:assert/strict');
 const path = require('node:path');
-const Module = require('node:module');
-const esbuild = require('esbuild');
+const fs = require('node:fs');
+const ts = require('typescript');
 
 const root = path.resolve(__dirname, '..');
-const input = [
-  "import { projectSeriesReaderToc, projectStandaloneReaderToc } from './src/components/article-pilots/_shared/series/readerTocProjection';",
-  "import { GILL_SERIES } from './src/components/article-pilots/_shared/series/seriesConfig';",
-  "import { BAPTIST_SERIES } from './src/components/article-pilots/_shared/series/baptistSeriesConfig';",
-  'export { projectSeriesReaderToc, projectStandaloneReaderToc, GILL_SERIES, BAPTIST_SERIES };',
-].join('\n');
-const output = esbuild.buildSync({
-  stdin: { contents: input, sourcefile: 'reader-toc-contract-entry.ts', resolveDir: root, loader: 'ts' },
-  bundle: true, platform: 'node', format: 'cjs', target: 'node22',
-  logLevel: 'silent', write: false,
-}).outputFiles[0].text;
-const bundled = new Module(path.join(root, '__reader_toc_contract__.cjs'), module);
-bundled.filename = path.join(root, '__reader_toc_contract__.cjs');
-bundled.paths = Module._nodeModulePaths(root);
-bundled._compile(output, bundled.filename);
-const { projectSeriesReaderToc, projectStandaloneReaderToc, GILL_SERIES, BAPTIST_SERIES } = bundled.exports;
+// TypeScript is a DIRECT declared devDependency. Do not rely on a transitive
+// bundler just to exercise the real SeriesConfig module graph in this test.
+require.extensions['.ts'] = (mod, filename) => {
+  const source = fs.readFileSync(filename, 'utf8');
+  const result = ts.transpileModule(source, {
+    fileName: filename,
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+    reportDiagnostics: true,
+  });
+  const errors = (result.diagnostics || []).filter((d) => d.category === ts.DiagnosticCategory.Error);
+  if (errors.length) throw new Error(ts.formatDiagnosticsWithColorAndContext(errors, {
+    getCanonicalFileName: (file) => file,
+    getCurrentDirectory: () => root,
+    getNewLine: () => '\n',
+  }));
+  mod._compile(result.outputText, filename);
+};
+const { projectSeriesReaderToc, projectStandaloneReaderToc } =
+  require(path.join(root, 'src/components/article-pilots/_shared/series/readerTocProjection.ts'));
+const { GILL_SERIES } =
+  require(path.join(root, 'src/components/article-pilots/_shared/series/seriesConfig.ts'));
+const { BAPTIST_SERIES } =
+  require(path.join(root, 'src/components/article-pilots/_shared/series/baptistSeriesConfig.ts'));
 
 let checks = 0;
 function check(label, run) {
