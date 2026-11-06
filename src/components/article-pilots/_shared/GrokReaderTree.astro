@@ -42,6 +42,42 @@ const { nodes, root = false } = Astro.props;
 </ul>
 <style is:global>
   /* Strictly route-flagged: no other readers or breakpoints are restyled. */
+  /* The preview must use its own reader-theme surface and text tokens.
+     Shared/global --rail-muted is a light color on Night and was unreadable.
+     Reuse the site's established palette proportions; no second theme engine. */
+  .hrail.hrail--grok {
+    --rail-surface:#fbf3ea;
+    --rail-surface-raised:#f3e6d8;
+    --rail-text:#2a1814;
+    --rail-muted:#725e52;
+    --rail-subtle:#8a766b;
+  }
+  html[data-reader-theme="sepia"] .hrail.hrail--grok {
+    --rail-surface:#f3ead4;
+    --rail-surface-raised:#e9dcc0;
+    --rail-surface-deep:#e1d2b1;
+    --rail-text:#352e22;
+    --rail-muted:#6f5a3f;
+    --rail-subtle:#73664e;
+    --rail-accent:#765726;
+    --rail-border:rgba(118,87,38,.22);
+    --rail-line:rgba(118,87,38,.15);
+    --rail-soft:rgba(118,87,38,.08);
+    --rail-active:rgba(118,87,38,.14);
+  }
+  html[data-reader-theme="dark"] .hrail.hrail--grok {
+    --rail-surface:#2b1219;
+    --rail-surface-raised:#1c0b10;
+    --rail-surface-deep:#130709;
+    --rail-text:#f6efe9;
+    --rail-muted:#decacd;
+    --rail-subtle:#b8a6a9;
+    --rail-accent:#e0a89c;
+    --rail-border:rgba(224,160,150,.24);
+    --rail-line:rgba(255,255,255,.16);
+    --rail-soft:rgba(224,160,150,.15);
+    --rail-active:rgba(224,160,150,.18);
+  }
   .hrail--grok .grok-toc { --toc-axis-x:15px; margin-top:3px; padding-right:3px; }
   .hrail--grok .grok-toc li.grok-row { padding:0; margin:2px 0; position:relative; }
   .hrail--grok .grok-entry { display:flex; align-items:flex-start; position:relative; min-height:31px; padding-left:31px; }
