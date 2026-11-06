@@ -36,7 +36,12 @@ export interface ReaderTocProjection {
   readonly nodes: readonly ReaderTocNode[];
   /** Ordered outer-to-inner keys: the reader renderer may open this path. */
   readonly activePath: readonly string[];
+  /** Visible core-page row; for a satellite this is its parent part. */
   readonly currentPageKey: string;
+  /** Actual published route owner (not necessarily a visible core row). */
+  readonly actualPageId: string;
+  /** Present only when the active route is a satellite-owned article. */
+  readonly satellitePageId?: string;
 }
 
 /**
@@ -221,6 +226,13 @@ export function projectSeriesReaderToc(
   if (!active || active.tier === 'chapter' || !cfg.pages[activePageId]) {
     bad('active page is not a published series article: ' + activePageId);
   }
+  const parentPageId = active.tier === 'satellite' ? active.parent : activePageId;
+  if (!parentPageId || !cfg.items.some((item) => item.id === parentPageId && item.tier !== 'satellite' && item.tier !== 'chapter')) {
+    bad('satellite has no visible parent part: ' + activePageId);
+  }
+  // Satellite part-TOCs have their own legacy accordion. A desktop projection
+  // indicates the owning core part WITHOUT hydrating the wrong page headings.
+  const headingsPageId = active.tier === 'satellite' ? '' : activePageId;
   const roots: DraftNode[] = [];
   const chapters = new Map<string, DraftNode>();
   for (const item of cfg.items) {
@@ -245,16 +257,20 @@ export function projectSeriesReaderToc(
     if (item.parent) {
       const chapter = chapters.get(item.parent);
       if (!chapter || item.mark.kind !== 'arabic') bad('article parent missing or unordered: ' + item.id);
-      chapter.children.push(pageNode(cfg, item, activePageId, opts, 1));
+      chapter.children.push(pageNode(cfg, item, headingsPageId, opts, 1));
     } else {
-      roots.push(pageNode(cfg, item, activePageId, opts, 0));
+      roots.push(pageNode(cfg, item, headingsPageId, opts, 0));
     }
   }
   const nodes = freezeNodes(roots);
-  const currentPageKey = 'series:' + cfg.seriesId + ':page:' + activePageId;
+  const currentPageKey = 'series:' + cfg.seriesId + ':page:' + parentPageId;
   const activePath = findPath(nodes, currentPageKey);
-  if (!activePath) bad('active page is absent from visible core tree: ' + activePageId);
-  return Object.freeze({ nodes, activePath: Object.freeze([...activePath]), currentPageKey });
+  if (!activePath) bad('active page or satellite parent is absent from visible core tree: ' + activePageId);
+  return Object.freeze({
+    nodes, activePath: Object.freeze([...activePath]), currentPageKey,
+    actualPageId: activePageId,
+    satellitePageId: active.tier === 'satellite' ? activePageId : undefined,
+  });
 }
 
 /** Standalone H2-H6 documents use the same heading projection, no SeriesConfig. */
