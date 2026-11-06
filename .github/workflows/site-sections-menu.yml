@@ -28,6 +28,7 @@ on:
       - 'src/runtime/reader-controls-a11y.js'
       - 'scripts/reader-controls-residual-browser-contract.mjs'
       - 'scripts/site-sections-menu-visual-contract.mjs'
+      - 'scripts/site-sections-menu-filter-browser-contract.mjs'
       - 'scripts/lib/public-surface-registry.js'
       - 'src/lib/asset-version.js'
       - '.github/workflows/site-sections-menu.yml'
@@ -59,6 +60,7 @@ on:
       - 'src/runtime/reader-controls-a11y.js'
       - 'scripts/reader-controls-residual-browser-contract.mjs'
       - 'scripts/site-sections-menu-visual-contract.mjs'
+      - 'scripts/site-sections-menu-filter-browser-contract.mjs'
       - 'scripts/lib/public-surface-registry.js'
       - 'src/lib/asset-version.js'
       - '.github/workflows/site-sections-menu.yml'
@@ -106,6 +108,7 @@ jobs:
           node --check src/runtime/reader-controls-a11y.js
           node --check scripts/reader-controls-residual-browser-contract.mjs
           node --check scripts/site-sections-menu-visual-contract.mjs
+          node --check scripts/site-sections-menu-filter-browser-contract.mjs
           node scripts/cache-bust.js
           node - <<'NODE'
           const fs = require('fs');
@@ -188,6 +191,13 @@ jobs:
           set -o pipefail
           node scripts/site-sections-menu-visual-contract.mjs 2>&1 | tee reports/site-sections-menu-visual.log
 
+      - name: Verify desktop filter against built real routes
+        env:
+          GITHUB_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -o pipefail
+          node scripts/site-sections-menu-filter-browser-contract.mjs 2>&1 | tee reports/site-sections-menu-filter.log
+
       - name: Upload exact-head proof and screenshots
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -197,6 +207,7 @@ jobs:
             reports/site-sections-menu-build.log
             reports/site-sections-menu-browser.log
             reports/site-sections-menu-visual.log
+            reports/site-sections-menu-filter.log
             reports/reader-controls-residual-browser-contract.json
             reports/reader-controls-residual-browser-contract.md
             reports/site-sections-menu-visual-contract.json
