@@ -106,8 +106,17 @@
         filter?.focus({ preventScroll: true });
       };
       const onDesktopChange = () => {
+        // A focused desktop search field disappears at the responsive boundary.
+        // Keep keyboard focus inside the open canonical menu rather than losing
+        // it to <body> when the browser hides that field.
+        const active = document.activeElement;
+        const focusLost = active === filter || active === document.body
+          || (active && !active.getClientRects().length);
         if (!desktopMenu() && filter) filter.value = '';
         renderFilter();
+        if (!panel.hidden && focusLost) {
+          (desktopMenu() ? filter : firstVisible())?.focus({ preventScroll: true });
+        }
       };
       filter?.addEventListener('input', onFilterInput);
       filter?.addEventListener('keydown', onFilterKeydown);

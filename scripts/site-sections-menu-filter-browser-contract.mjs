@@ -95,6 +95,12 @@ try {
         await page.setViewportSize({width:390,height:844});
         pass(await input.isVisible(), false, 'mobile has NO filter');
         pass(await visibleLinks.count(), 6, 'mobile preserves six original links');
+        await page.waitForFunction(
+          () => document.activeElement?.matches('#hMobileNav a[data-gb-menu-section]'),
+          null, { timeout: 3000 }
+        );
+        pass(await page.locator('#hMobileNav a[data-gb-menu-section]:focus').count(), 1,
+          'desktop-to-mobile resize preserves focus on a visible menu link');
         pass(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true, 'mobile no overflow');
         await page.keyboard.press('Escape');
         await page.setViewportSize({width:1440,height:300});
