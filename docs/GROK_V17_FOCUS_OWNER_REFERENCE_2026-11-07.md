@@ -37,3 +37,16 @@
 - Обязательная приёмка реального Product: Chromium/Firefox/WebKit, раскрытый и свёрнутый режим, короткое окно 1440×300, light/dark, click → выбор скорости → TTS, keyboard/Escape, отсутствие pageerror/overflow. Сравнивать настоящие скриншоты, не макеты.
 
 Код продолжается в Product PR #2292. Проверки после исправления: Grok browser 318/318 PASS; PlayEmber speed geometry/click 46/46 PASS в Chromium и WebKit; Speedrail focus 68 маршрутов × 2 браузера PASS; TTS-runtime PASS; keyboard 252/252 PASS. Эти проверки не означают слияние/публикацию без визуальной приёмки.
+
+
+## Reader popup lifecycle + fold icon first-choice acceptance (2026-11-07)
+
+Owner screenshot reproduced simultaneously open “Настройки чтения” and “Разделы сайта” panels; desktop site menu had no functional outside-click dismissal because its backdrop exists only in the mobile breakpoint. Requirement: first GPT-image icon variant, a larger simple arrow (23px rendering with wider chevron; no heavy button box), and one open reader popover at a time.
+
+- Preserve single OverlayRuntime stack, SiteSectionsMenuRuntime and ReaderSettings as canonical owners. Opening one closes the other through OverlayRuntime.requestClose so nested windows never visually overlap; no duplicate state or ad-hoc z-index overriding.
+- A desktop site menu is an anchored, nonmodal popover. Clicking outside must dismiss it; clicking the trigger should toggle it, Escape returns focus, reopening remains reliable. The mobile menu continues to use its native backdrop owner.
+- Desktop settings already close via the full-sheet backdrop, close button, “Готово” and Escape; repeated hm:open-settings must also toggle closed. Closing restores focus and releases the canonical scroll lock.
+- Acceptance must run real Product on 1200/1440/1920 and collapsed 68px rail, Chromium/WebKit/Firefox, verify OverlayRuntime.snapshot().length <= 1 for settings/menu, no horizontal overflow and no pageerrors. Do not accept artificial stacked screenshot states.
+- Persistent CI: scripts/grok-reader-overlay-lifecycle-browser-test.mjs in Grok Hermeneutics Product Pilot workflow, including explicit browser selection and exact built Product HTML.
+
+No merge/deploy until owner visually approves and complete exact-SHA CI is green.

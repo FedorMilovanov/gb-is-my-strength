@@ -312,7 +312,15 @@
     };
 
     const open = () => {
+      // Repeated click on the same rail action closes its own sheet.
+      if (sheet.classList.contains('is-open')) {
+        close('toggle', true);
+        return;
+      }
       const runtime = overlayRuntime();
+      if (runtime?.isOpen?.('site-sections-menu')) {
+        runtime.requestClose('site-sections-menu', 'switch');
+      }
       const toc = document.getElementById('hmSheet');
       if (runtime?.isOpen?.('hermenevtika-toc')) runtime.requestClose('hermenevtika-toc', 'switch');
       else if (toc?.classList.contains('is-open')) {
