@@ -44,6 +44,24 @@ function serve() {
     server.listen(0,'127.0.0.1',() => resolve({server, origin:'http://127.0.0.1:' + server.address().port}));
   });
 }
+// This is an offline Product contract. Yandex analytics is a third-party owner:
+// the CI runner may deny its watch beacons; that must not masquerade as a
+// ReaderRail exception. Do not filter or suppress first-party pageerror.
+async function isolateAnalytics(page) {
+  await page.route('**/*', (route) => {
+    const url = new URL(route.request().url());
+    if (!/(^|\.)(?:yandex\.(?:ru|com)|yastatic\.net)$/i.test(url.hostname)) {
+      return route.continue();
+    }
+    return route.fulfill({
+      status: 200,
+      contentType: route.request().resourceType() === 'script'
+        ? 'application/javascript; charset=utf-8' : 'text/plain; charset=utf-8',
+      body: '',
+    });
+  });
+}
+
 const checks = [];
 function check(engine, viewport, name, ok, evidence = null) {
   checks.push({engine, viewport, name, pass:Boolean(ok), evidence});
@@ -65,6 +83,7 @@ try {
     try {
       for (const viewport of viewports) {
         const page = await browser.newPage({viewport:{width:viewport.width,height:viewport.height}});
+        await isolateAnalytics(page);
         const errors = [];
         page.on('pageerror',e => errors.push(e.message));
         try {
@@ -187,6 +206,7 @@ try {
               check(name,viewport.id,'Forward restores H3 visibility',
                 forwardRect.top >= -5 && forwardRect.top < viewport.height-25,forwardRect);
               const fresh = await browser.newPage({viewport:{width:1440,height:900}});
+              await isolateAnalytics(fresh);
               fresh.on('pageerror',e => errors.push(e.message));
               try {
                 await fresh.goto(origin+ROUTE+deepHref,{waitUntil:'domcontentloaded'});
