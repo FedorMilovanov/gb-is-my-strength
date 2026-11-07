@@ -197,7 +197,18 @@ try {
             check(name,viewport.id,'Grok layout toggle ready',
               integrated.toggleReady,integrated);
             const articleBefore=await page.locator('main.article-main--hrail')
-              .evaluate(el => el.getBoundingClientRect().left);
+              .evaluate(el => ({left:el.getBoundingClientRect().left,width:el.getBoundingClientRect().width}));
+            const axis=await page.evaluate(()=>{
+              const toc=document.querySelector('.grok-toc'),track=toc?.querySelector('.hrail-track');
+              const dots=Array.from(toc?.querySelectorAll(':scope > li.grok-row--h2 > .grok-entry > .hrail-dot')??[]);
+              if(!track||dots.length<2)return null;
+              const t=track.getBoundingClientRect();
+              const ys=dots.map(el=>{const r=el.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2};});
+              return {x:t.left+t.width/2,top:t.top,bottom:t.bottom,first:ys[0],last:ys[ys.length-1]};
+            });
+            check(name,viewport.id,'V17 optical H2 track anchored to real dot centres',
+              !!axis && Math.abs(axis.x-axis.first.x)<.6 && Math.abs(axis.x-axis.last.x)<.6 &&
+              Math.abs(axis.top-axis.first.y)<1 && Math.abs(axis.bottom-axis.last.y)<1,axis);
             const readingScrollBefore=await page.evaluate(() => Math.round(scrollY));
             await page.locator('#hrailLayoutToggle').click();
             await page.waitForFunction(() => Math.round(document.querySelector('.hrail--grok')?.getBoundingClientRect().width ?? 0) === 68, {timeout:1600});
@@ -210,10 +221,36 @@ try {
             check(name,viewport.id,'real 68px compact rail with keyboard-inert TOC',
               compact.width===68 && compact.mode && compact.aria==='false' && compact.inert,compact);
             const articleAfter=await page.locator('main.article-main--hrail')
-              .evaluate(el => el.getBoundingClientRect().left);
+              .evaluate(el => ({left:el.getBoundingClientRect().left,width:el.getBoundingClientRect().width}));
+            const focusTools=await page.evaluate(()=>{
+              const tools=document.querySelector('#grokCompactTools');
+              const original=document.querySelector('#gbFloatingControls');
+              return {parent:original?.parentElement?.id,instances:document.querySelectorAll('#gbFloatingControls').length,
+                hasTheme:!!tools?.querySelector('#gbFcTheme'),hasSearch:!!tools?.querySelector('#gbFcSearch'),
+                hasPlayer:!!tools?.querySelector('.gb-ember'),hasSave:!!tools?.querySelector('.gb-save')};
+            });
+            check(name,viewport.id,'compact retains exact native four controls in left rail',
+              focusTools.parent==='grokCompactTools'&&focusTools.instances===1&&focusTools.hasTheme&&
+              focusTools.hasSearch&&focusTools.hasPlayer&&focusTools.hasSave,focusTools);
+            // The original floating-cluster controller is delegated from BOTH
+            // the floater and rail. A moved subtree must trigger exactly one
+            // theme transition, not two toggles back to the original state.
+            const themeBefore=await page.locator('html').getAttribute('data-reader-theme');
+            await page.locator('#grokCompactTools #gbFcTheme').click();
+            const themeAfter=await page.locator('html').getAttribute('data-reader-theme');
+            check(name,viewport.id,'native theme fires once in compact rail',
+              !!themeAfter && themeAfter!==themeBefore,
+              {before:themeBefore,after:themeAfter});
+            await page.locator('#grokCompactTools #gbFcTheme').click();
+            const themeRestored=await page.locator('html').getAttribute('data-reader-theme');
+            check(name,viewport.id,'compact theme action reversible',
+              themeRestored===themeBefore,
+              {before:themeBefore,restored:themeRestored});
             const readingScrollAfter=await page.evaluate(() => Math.round(scrollY));
             check(name,viewport.id,'compact rail rebalances actual article position',
-              articleAfter+40<=articleBefore && readingScrollAfter===readingScrollBefore,
+              articleAfter.left+40<=articleBefore.left &&
+              articleAfter.width>=articleBefore.width+50 &&
+              readingScrollAfter===readingScrollBefore,
               {before:articleBefore,after:articleAfter,scrollBefore:readingScrollBefore,scrollAfter:readingScrollAfter});
             await page.locator('#hrailLayoutToggle').click();
             await page.waitForFunction(() => Math.round(document.querySelector('.hrail--grok')?.getBoundingClientRect().width ?? 0) >= 280, {timeout:1600});
@@ -225,6 +262,12 @@ try {
             });
             check(name,viewport.id,'rail reopens without leaving inert descendants',
               reopened.expanded==='true' && reopened.width>=280 && !reopened.inert,reopened);
+            const nativeRestored=await page.evaluate(()=>({
+              parent:document.querySelector('#gbFloatingControls')?.parentElement?.id,
+              duplicates:document.querySelectorAll('#gbFloatingControls').length
+            }));
+            check(name,viewport.id,'real right controls restore to original host',
+              nativeRestored.parent!=='grokCompactTools' && nativeRestored.duplicates===1,nativeRestored);
             if(viewport.height <= 420) {
               check(name,viewport.id,'usable short viewport',snapshot.scrollHeight >= 80,snapshot.scrollHeight);
             }

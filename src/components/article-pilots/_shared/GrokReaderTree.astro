@@ -138,4 +138,59 @@ const { nodes, root = false } = Astro.props;
   @media (prefers-reduced-motion:reduce) {
     .hrail--grok .grok-child-motion, .hrail--grok .grok-disclosure svg { transition:none; }
   }
+
+  /* Reuses V17's optical connector logic: a single measured vertical axis.
+     Root H2 dots, progress line and active pin all share the same x token;
+     nested headings do not draw a second competing line. */
+  .hrail--grok .grok-toc {
+    --grok-axis-x:15px;
+    --grok-track-top:16px;
+    --grok-track-height:0px;
+  }
+  .hrail--grok .grok-toc > .hrail-track-slot > .hrail-track {
+    left:calc(var(--grok-axis-x) - .5px);
+    top:var(--grok-track-top);
+    bottom:auto;height:var(--grok-track-height);
+    width:1px;pointer-events:none;
+    background:var(--rail-line,rgba(42,24,20,.16));
+  }
+  .hrail--grok .grok-row--h2 > .grok-entry > .hrail-dot {
+    left:calc(var(--grok-axis-x) - 4px);
+    top:16px;width:8px;height:8px;margin-top:-4px;
+    border:0;box-shadow:none;
+    background:var(--rail-line,rgba(42,24,20,.2));
+  }
+  .hrail--grok .grok-row--h2.hrail-passed > .grok-entry > .hrail-dot {
+    background:var(--rail-accent,#7a2e2e);opacity:.72;
+  }
+  .hrail--grok .grok-row--h2.hrail-act > .grok-entry > .hrail-dot {
+    background:var(--rail-accent,#7a2e2e);
+    box-shadow:0 0 0 3px var(--rail-soft,rgba(122,46,46,.1));
+  }
+  .hrail--grok .grok-entry{
+    border-radius:9px;
+    transition:background-color .22s cubic-bezier(.32,.72,0,1);
+  }
+  .hrail--grok .grok-row:not(.hrail-act) > .grok-entry:hover {
+    background:var(--rail-soft,rgba(122,46,46,.07));
+  }
+  .hrail--grok .grok-row.hrail-act > .grok-entry {
+    background:linear-gradient(90deg,
+      var(--rail-soft,rgba(122,46,46,.12)),
+      color-mix(in srgb,var(--rail-soft,rgba(122,46,46,.12)) 50%,transparent) 75%,
+      transparent);
+  }
+  .hrail--grok .grok-row.hrail-act > .grok-entry::before {content:none;}
+  .hrail--grok .grok-row.hrail-act > .grok-entry > a {
+    box-shadow:none;font-weight:660;color:var(--rail-text,#2a1814);
+  }
+  .hrail--grok .grok-row:has(> .grok-child-motion .grok-row.hrail-act):not(.hrail-act)
+    > .grok-entry > a {font-weight:580;color:var(--rail-text,#2a1814);}
+  .hrail--grok .grok-row--sub > .grok-entry > a {
+    line-height:1.44;text-wrap:pretty;hyphens:auto;
+  }
+  @media(prefers-reduced-motion:reduce){
+    .hrail--grok .grok-entry{transition:none;}
+  }
+
 </style>

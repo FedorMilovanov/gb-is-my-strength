@@ -43,8 +43,8 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
         aria-label="Свернуть оглавление" aria-controls="hrailToc" aria-expanded="true"
         title="Свернуть или развернуть оглавление">
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <rect x="3" y="4" width="18" height="16" rx="2"/>
-          <path d="M9 4v16m6-12-4 4 4 4"/>
+          <path d="M8 4.5v15" />
+          <path d="m15 8.5-3.5 3.5 3.5 3.5" />
         </svg>
       </button>
     )}
@@ -72,6 +72,9 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
     )}
   </div>
   <div class="hrail-bottom">
+    {grokPilot && !!grokNodes?.length && (
+      <div class="grok-compact-tools" id="grokCompactTools" aria-label="Инструменты чтения" />
+    )}
     <button class="hrail-bottom-btn" id="hMobileMenuBtn" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="hMobileNav" data-tip="Меню сайта">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
     </button>
@@ -473,6 +476,114 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
     .hrail.hrail--grok {transition:none;}
   }
 
+
+  /* Grok V17 owner reference: quiet editorial focus mode. Route-scoped only.
+     The existing four controls are physically moved, never duplicated. */
+  @media (min-width:1200px) {
+    .hrail--grok .hrail-layout-toggle {
+      width:34px;height:34px;flex-basis:34px;
+      border:1px solid transparent;border-radius:10px;
+      background:transparent;color:var(--rail-muted,#725e52);
+      transition:color .17s ease,background-color .22s ease,
+        transform .22s cubic-bezier(.32,.72,0,1);
+    }
+    .hrail--grok .hrail-layout-toggle svg {
+      width:19px;height:19px;stroke-width:1.5;
+      transition:transform .34s cubic-bezier(.32,.72,0,1);
+    }
+    .hrail--grok .hrail-layout-toggle:hover {
+      background:var(--rail-soft,rgba(122,46,46,.08));
+      color:var(--rail-accent,#7a2e2e);
+    }
+    .hrail--grok .hrail-layout-toggle:active{transform:scale(.96);}
+    .hrail--grok.hrail--compact .hrail-layout-toggle {background:transparent;border-color:transparent;}
+    /* Recover real article measure instead of simply moving a fixed narrow
+       column. V17 reference widens prose by 92px; here Product's measure grows
+       from 46rem to 51rem without inventing a second Reader state. */
+    body:has(.hrail--grok) :is(.article-main.article-main--hrail,[data-reader-rail-main]) {
+      transition:width .52s cubic-bezier(.32,.72,0,1),
+        margin-left .52s cubic-bezier(.32,.72,0,1);
+    }
+    body.grok-rail-compact:has(.hrail--grok) :is(.article-main.article-main--hrail,[data-reader-rail-main]) {
+      --hm-article-shell:61rem;
+      --hm-article-measure:51rem;
+      --hrail-centered-left:calc((100% - var(--hrail-shell-width)) / 2 - clamp(18px,2.5vw,46px));
+    }
+    /* Interactive Scripture tips remain above prose but below the reader's
+       permanent chrome. Otherwise an open tip can block the collapse button. */
+    body:has(.hrail--grok) :is(.gtip.gb-floating-tip,.btip.gb-floating-tip) {
+      z-index:calc(var(--z-sticky,1000) - 1);
+    }
+    .hrail--grok .grok-compact-tools {display:none;}
+    .hrail--grok.hrail--compact .hrail-bottom {
+      flex:1 1 auto;min-height:0;
+      margin-top:0;padding-top:5px;
+      overflow-y:auto;overflow-x:hidden;
+      overscroll-behavior:contain;scrollbar-width:none;
+      justify-content:flex-start;gap:5px;
+    }
+    .hrail--grok.hrail--compact #hMobileMenuBtn {margin-top:auto;}
+    .hrail--grok.hrail--compact .hrail-bottom::-webkit-scrollbar{display:none;}
+    .hrail--grok.hrail--compact .grok-compact-tools {
+      display:flex;flex:0 0 auto;
+      flex-direction:column;align-items:center;
+      gap:4px;width:100%;
+      padding:4px 0 9px;margin-bottom:3px;
+      border-bottom:1px solid var(--rail-line,rgba(0,0,0,.1));
+    }
+    .hrail--grok.hrail--compact .grok-compact-tools > #gbFloatingControls {
+      position:static;inset:auto;z-index:auto;
+      display:flex;flex-direction:column;align-items:center;
+      gap:5px;width:100%;margin:0;padding:0;
+      border:0;border-radius:0;background:transparent;
+      box-shadow:none;backdrop-filter:none;transform:none;
+      pointer-events:auto;
+      animation:grokCompactToolEntrance .3s cubic-bezier(.32,.72,0,1) both;
+    }
+    .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls > *{pointer-events:auto;max-width:100%;}
+    .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-icon,
+    .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember {
+      width:36px;height:36px;min-width:36px;
+      border:1px solid transparent;border-radius:10px;
+      color:var(--rail-muted,#725e52);
+      background:transparent;box-shadow:none;backdrop-filter:none;
+    }
+    .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-icon:hover,
+    .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember:hover {
+      background:var(--rail-soft,rgba(122,46,46,.08));color:var(--rail-accent,#7a2e2e);
+    }
+    /* PlayEmber keeps its official controller and speed strip. The compact
+       strip anchors outside the 68px scroller rather than being clipped. */
+    .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember-expand {
+      position:fixed;left:78px;right:auto;top:clamp(68px,25vh,210px);
+      transform:none;z-index:10000;padding:5px 9px;
+      clip-path:inset(0 100% 0 0 round 999px);
+    }
+    .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember-expand.is-open {
+      clip-path:inset(0 0 0 0 round 999px);
+    }
+    @keyframes grokCompactToolEntrance{
+      from{opacity:0;transform:translateY(-7px);}
+      to{opacity:1;transform:none;}
+    }
+    @media(max-height:420px){
+      .hrail--grok.hrail--compact .hrail-bottom{gap:2px;}
+      .hrail--grok.hrail--compact .grok-compact-tools{gap:0;padding:2px 0 4px;}
+      .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls{gap:1px;}
+      .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-icon,
+      .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember{
+        width:30px;min-width:30px;height:30px;
+      }
+    }
+  }
+  @media(prefers-reduced-motion:reduce){
+    .hrail--grok .hrail-layout-toggle,.hrail--grok .hrail-layout-toggle svg,
+    body:has(.hrail--grok) :is(.article-main.article-main--hrail,[data-reader-rail-main]){
+      transition:none;
+    }
+    .hrail--grok.hrail--compact .grok-compact-tools > #gbFloatingControls{animation:none;}
+  }
+
 </style>
 
 <script>
@@ -497,9 +608,28 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       const toggle = rail?.querySelector<HTMLButtonElement>('#hrailLayoutToggle');
       const content = rail?.querySelectorAll<HTMLElement>('.hrail-meta,.hrail-toch,.hrail-scroll');
       if (rail && toggle && content) {
+        // Native theme/search/PlayEmber/bookmark controls: reparent existing
+        // DOM subtree, never clone buttons or create a second runtime.
+        const compactTools = rail.querySelector<HTMLElement>('#grokCompactTools');
+        const floatingControls = document.getElementById('gbFloatingControls');
+        const floatingHome = floatingControls?.parentNode || null;
+        const floatingNext = floatingControls?.nextSibling || null;
+        // Both the rail and the floating subtree carry the canonical
+        // data-fc-root controller. In compact nesting, bubbling to the rail
+        // would execute THE SAME theme/save action twice and cancel itself.
+        // Stop only that parent bubble; preserve the original root listener.
+        floatingControls?.addEventListener('click', (event) => {
+          if (compactTools?.contains(floatingControls)) event.stopPropagation();
+        });
         const setCompact = (compact: boolean) => {
           if (compact && rail.contains(document.activeElement) && document.activeElement !== toggle) {
             toggle.focus({ preventScroll:true });
+          }
+          if (floatingControls && floatingHome && compactTools) {
+            if (compact) compactTools.appendChild(floatingControls);
+            else if (floatingNext?.parentNode === floatingHome)
+              floatingHome.insertBefore(floatingControls, floatingNext);
+            else floatingHome.appendChild(floatingControls);
           }
           rail.classList.toggle('hrail--compact', compact);
           document.body.classList.toggle('grok-rail-compact', compact);
@@ -522,6 +652,35 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       : li.querySelector<HTMLAnchorElement>('a'));
     const track = toc.querySelector('.hrail-track') as HTMLElement | null;
     const trackFill = track ? track.querySelector('i') as HTMLElement | null : null;
+    if (isGrok && track) {
+      // V17 reference: use measured real H2 dot centres, not a guessed
+      // top/bottom pixel pair. ResizeObserver follows subtree fold motion.
+      let scheduled = false;
+      const measureAxis = () => {
+        scheduled = false;
+        if (!toc.isConnected) return;
+        const dots = Array.from(toc.querySelectorAll<HTMLElement>(
+          ':scope > li.grok-row--h2 > .grok-entry > .hrail-dot'));
+        if (!dots.length) return;
+        const bounds = toc.getBoundingClientRect();
+        const first = dots[0].getBoundingClientRect();
+        const last = dots[dots.length - 1].getBoundingClientRect();
+        const start = first.top + first.height / 2 - bounds.top;
+        const end = last.top + last.height / 2 - bounds.top;
+        toc.style.setProperty('--grok-track-top', Math.max(0,start).toFixed(2) + 'px');
+        toc.style.setProperty('--grok-track-height', Math.max(0,end-start).toFixed(2) + 'px');
+      };
+      const updateAxis = () => {
+        if (scheduled) return;
+        scheduled = true;
+        requestAnimationFrame(measureAxis);
+      };
+      updateAxis();
+      const observer = new ResizeObserver(updateAxis);
+      observer.observe(toc);
+      toc.addEventListener('transitionend', updateAxis);
+      window.addEventListener('resize', updateAxis, {passive:true});
+    }
 
     // Presentation-only disclosure. ReaderState is still the sole scroll,
     // history and active-heading owner. The fallback rail is unchanged.
