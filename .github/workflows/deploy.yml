@@ -40,7 +40,10 @@ env:
 jobs:
   readiness:
     name: Build and validate immutable release candidate
-    runs-on: ubuntu-latest
+    # Reproducible runner baseline. On ubuntu-latest (resolute) apt mirrors
+    # exhausted the entire 55-minute immutable-release gate before tests began
+    # (run 42300368012, install WebKit/Firefox). Keep all release checks.
+    runs-on: ubuntu-24.04
     timeout-minutes: 55
     permissions:
       contents: read
