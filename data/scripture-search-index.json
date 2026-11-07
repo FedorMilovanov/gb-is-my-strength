@@ -58648,22 +58648,6 @@
         {
           "url": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/",
           "title": "Оценка христоцентричной герменевтики",
-          "context": "Чау 50 Герменевтика 2 Тим 3:16 MSJ 27/2 (Fall 2016) 113–139 Оценка христоцентричной герменевтики Абнер",
-          "anchor": null,
-          "raw": "2 Тим 3:16",
-          "topics": [
-            "герменевтика",
-            "перевод",
-            "Переводы",
-            "реформатское",
-            "Чау"
-          ],
-          "sourceOwner": "src/components/article-pilots/hermenevtika/HermenevtikaBody.astro",
-          "sourceKind": "astro-source"
-        },
-        {
-          "url": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/",
-          "title": "Оценка христоцентричной герменевтики",
           "context": "говорит пророк» ( Деян. 7:48 ), и само общение Бога ( 2 Тим. 3:16 ). Библия утверждает свое значение, а не то, что желает читатель, что навязывает сообщество или что текст мог бы означать. Скорее, это то, что сказал автор, авторский замысел. Этот замысел выражен через язык (гр",
           "anchor": null,
           "raw": "2 Тим. 3:16",
@@ -58699,6 +58683,22 @@
           "context": "яет говорить непосредственно о Нём Самом. Более того, апостолы следуют Его примеру, заявляя, что Ветхий Завет полезен ( 2 Тим. 3:16 ), служит для нас образцом ( 1 Кор. 10:6 ) и дает нам наставление и надежду ( Рим",
           "anchor": null,
           "raw": "2 Тим. 3:16",
+          "topics": [
+            "герменевтика",
+            "перевод",
+            "Переводы",
+            "реформатское",
+            "Чау"
+          ],
+          "sourceOwner": "src/components/article-pilots/hermenevtika/HermenevtikaBody.astro",
+          "sourceKind": "astro-source"
+        },
+        {
+          "url": "/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/",
+          "title": "Оценка христоцентричной герменевтики",
+          "context": "Чау 50 Герменевтика 2 Тим 3:16 MSJ 27/2 (Fall 2016) 113–139 Оценка христоцентричной герменевтики Абнер",
+          "anchor": "content",
+          "raw": "2 Тим 3:16",
           "topics": [
             "герменевтика",
             "перевод",
