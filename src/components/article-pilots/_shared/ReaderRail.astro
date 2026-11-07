@@ -6,6 +6,8 @@
  * те же. Герменевтика рендерит его через тонкую обёртку (байт-в-байт).
  */
 import SiteSectionsMenu from './SiteSectionsMenu.astro';
+import GrokReaderTree from './GrokReaderTree.astro';
+import type { ReaderTocNode } from './series/readerTocProjection';
 
 export interface ReaderRailTocItem { href: string; label: string; level: number; }
 interface Props {
@@ -13,6 +15,9 @@ interface Props {
   title: string;
   backHref: string;
   toc: ReaderRailTocItem[];
+  /** Narrow, build-time disabled-by-default desktop visual pilot. */
+  grokPilot?: boolean;
+  grokNodes?: readonly ReaderTocNode[];
   /** Optional route-scoped premium ink/gold treatment; the default shared rail is unchanged. */
   palette?: 'default' | 'ink-gold';
   /** 'hm' → CustomEvent('hm:open-settings') (ReaderSettings);
@@ -20,10 +25,10 @@ interface Props {
   settingsTrigger?: 'hm' | 'gill';
   tocLabel?: string;
 }
-const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'hm', tocLabel = 'Оглавление статьи' } = Astro.props;
+const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'hm', tocLabel = 'Оглавление статьи', grokPilot = false, grokNodes } = Astro.props;
 ---
 <SiteSectionsMenu />
-<aside class:list={{ hrail: true, 'hrail--ink-gold': palette === 'ink-gold' }} aria-label={title} data-fc-root data-fc-variant="single" data-fc-mode="single">
+<aside class:list={{ hrail: true, 'hrail--ink-gold': palette === 'ink-gold', 'hrail--grok': grokPilot && !!grokNodes?.length }} aria-label={title} data-fc-root data-fc-variant="single" data-fc-mode="single">
   <!-- Верх рейла: только назад — Поиск/PLAY/Сохранить уехали в угловой
        кластер справа сверху, как у Гилла (owner: "должно быть как в Гилле,
        справа сверху PLAY, а не в левом меню... стандарт Гилла с адаптацией
@@ -43,14 +48,18 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
     <b id="hrailCount">1 / {toc.length}</b>
   </div>
   <div class="hrail-scroll">
-    <ul class="hrail-toc" id="hrailToc">
-      <li class="hrail-track-slot" role="presentation" aria-hidden="true" style="display:contents"><span class="hrail-track"><i></i></span></li>
-      {toc.map((item) => (
-        <li class:list={{ 'hrail-sub': item.level === 3 }}>
-          <a href={item.href}>{item.level !== 3 && <span class="hrail-dot" aria-hidden="true"></span>}{item.label}</a>
-        </li>
-      ))}
-    </ul>
+    {grokPilot && grokNodes?.length ? (
+      <GrokReaderTree nodes={grokNodes} root />
+    ) : (
+      <ul class="hrail-toc" id="hrailToc">
+        <li class="hrail-track-slot" role="presentation" aria-hidden="true" style="display:contents"><span class="hrail-track"><i></i></span></li>
+        {toc.map((item) => (
+          <li class:list={{ 'hrail-sub': item.level === 3 }}>
+            <a href={item.href}>{item.level !== 3 && <span class="hrail-dot" aria-hidden="true"></span>}{item.label}</a>
+          </li>
+        ))}
+      </ul>
+    )}
   </div>
   <div class="hrail-bottom">
     <button class="hrail-bottom-btn" id="hMobileMenuBtn" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="hMobileNav" data-tip="Меню сайта">
@@ -127,6 +136,10 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
     transition:transform 120ms linear;
     background:var(--rail-track-fill,linear-gradient(180deg,#c4694c 0%,#a94847 48%,#7a2e2e 100%))}
   .hrail-toc li{position:relative;margin:1px 0;padding-left:38px}
+  /* The site's article prose underline selector also matches unclassed
+     navigation links (li a[href]:not([class])). Explicitly distinguish
+     TOC navigation from prose in both legacy and opt-in reader rails. */
+  .hrail .hrail-toc li a[href]:not([class]){text-decoration:none}
   .hrail-toc a{display:block;padding:6px 10px;border-radius:9px;color:var(--rail-muted,rgba(42,24,20,.68));text-decoration:none;
     font-family:var(--f-serif,Lora,Georgia,serif);font-size:12.5px;line-height:1.3;transition:color .2s,background-color .2s}
   html.dark .hrail-toc a{color:var(--rail-muted,rgba(255,255,255,.62))}
@@ -321,12 +334,58 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
     const toc = document.getElementById('hrailToc');
     const countEl = document.getElementById('hrailCount');
     if(!toc) return;
-    const rows = Array.from(toc.querySelectorAll(':scope > li:not(.hrail-track-slot)'));
-    const links = rows.map((li) => li.querySelector('a'));
+    const isGrok = toc.classList.contains('grok-toc');
+    const rows = Array.from(isGrok
+      ? toc.querySelectorAll<HTMLLIElement>('li[data-grok-heading]')
+      : toc.querySelectorAll<HTMLLIElement>(':scope > li:not(.hrail-track-slot)'));
+    const links = rows.map((li) => isGrok
+      ? li.querySelector<HTMLAnchorElement>(':scope > .grok-entry > a')
+      : li.querySelector<HTMLAnchorElement>('a'));
     const track = toc.querySelector('.hrail-track') as HTMLElement | null;
     const trackFill = track ? track.querySelector('i') as HTMLElement | null : null;
 
+    // Presentation-only disclosure. ReaderState is still the sole scroll,
+    // history and active-heading owner. The fallback rail is unchanged.
+    function setDisclosure(button: HTMLButtonElement, collapsed: boolean) {
+      const row = button.closest<HTMLLIElement>('li.grok-row');
+      if (!row) return;
+      const childList = row.querySelector<HTMLElement>(
+        ':scope > .grok-child-motion > .grok-child-clip > .grok-child-list');
+      if (!childList) return;
+      if (collapsed && childList.contains(document.activeElement)) {
+        button.focus({ preventScroll: true });
+      }
+      button.setAttribute('aria-expanded', String(!collapsed));
+      row.toggleAttribute('data-grok-collapsed', collapsed);
+      childList.toggleAttribute('inert', collapsed);
+      if (collapsed) childList.setAttribute('aria-hidden', 'true');
+      else childList.removeAttribute('aria-hidden');
+    }
+
+    if (isGrok) {
+      toc.closest('.hrail')?.classList.add('grok-ready');
+      toc.addEventListener('click', (event) => {
+        if (!(event.target instanceof Element)) return;
+        const button = event.target.closest<HTMLButtonElement>('[data-grok-toggle]');
+        if (button && toc.contains(button)) {
+          setDisclosure(button, button.getAttribute('aria-expanded') === 'true');
+        }
+      });
+    }
+    function revealAncestorForActive(row: HTMLLIElement) {
+      let ancestor = row.parentElement?.closest<HTMLLIElement>('li.grok-row') ?? null;
+      while (ancestor) {
+        const toggle = ancestor.querySelector<HTMLButtonElement>(
+          ':scope > .grok-entry > [data-grok-toggle]');
+        if (toggle && toggle.getAttribute('aria-expanded') === 'false') {
+          setDisclosure(toggle, false);
+        }
+        ancestor = ancestor.parentElement?.closest<HTMLLIElement>('li.grok-row') ?? null;
+      }
+    }
+
     function setActive(idx: number, phase = 'active-section'){
+      if (isGrok && idx >= 0) revealAncestorForActive(rows[idx]);
       rows.forEach((li, i) => {
         const active = i === idx;
         li.classList.toggle('hrail-act', active);
