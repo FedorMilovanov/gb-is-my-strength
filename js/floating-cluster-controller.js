@@ -1221,6 +1221,12 @@
     if (root._gbClusterInit) return; // P1-8: prevent double init
     root._gbClusterInit = true;
     addCleanListener(root, 'click', function (e) {
+      // A reparented canonical control subtree can live inside another
+      // data-fc-root (Grok focus rail). A click belongs to its NEAREST root,
+      // not every ancestor root. Preserve normal document bubbling so other
+      // owners can dismiss outside-click popovers without stopPropagation.
+      var nearestRoot = e.target && e.target.closest && e.target.closest('[data-fc-root]');
+      if (nearestRoot && nearestRoot !== root) return;
       // Также обрабатываем GBS2-style theme buttons (data-gbs2-theme)
       if (e.target.closest('[data-gbs2-theme]')) { toggleTheme(); return; }
       if (e.target.closest('[data-gbs2-search]')) { openSearch(e.target.closest('[data-gbs2-search]')); return; }

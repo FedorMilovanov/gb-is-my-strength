@@ -41,7 +41,7 @@
 
 ## Reader popup lifecycle + fold icon first-choice acceptance (2026-11-07)
 
-Owner screenshot reproduced simultaneously open “Настройки чтения” and “Разделы сайта” panels; desktop site menu had no functional outside-click dismissal because its backdrop exists only in the mobile breakpoint. Requirement: first GPT-image icon variant, a larger simple arrow (23px rendering with wider chevron; no heavy button box), and one open reader popover at a time.
+Owner screenshot reproduced simultaneously open “Настройки чтения” and “Разделы сайта” panels; desktop site menu had no functional outside-click dismissal because its backdrop exists only in the mobile breakpoint. Requirement: first GPT-image icon variant, a larger simple arrow (22px rendering with compact first-choice chevron; no heavy button box), and one open reader popover at a time.
 
 - Preserve single OverlayRuntime stack, SiteSectionsMenuRuntime and ReaderSettings as canonical owners. Opening one closes the other through OverlayRuntime.requestClose so nested windows never visually overlap; no duplicate state or ad-hoc z-index overriding.
 - A desktop site menu is an anchored, nonmodal popover. Clicking outside must dismiss it; clicking the trigger should toggle it, Escape returns focus, reopening remains reliable. The mobile menu continues to use its native backdrop owner.
@@ -50,3 +50,20 @@ Owner screenshot reproduced simultaneously open “Настройки чтени
 - Persistent CI: scripts/grok-reader-overlay-lifecycle-browser-test.mjs in Grok Hermeneutics Product Pilot workflow, including explicit browser selection and exact built Product HTML.
 
 No merge/deploy until owner visually approves and complete exact-SHA CI is green.
+
+
+## Owner final polishing / parity and release gate (2026-11-07)
+
+Current owner request after 23px icon: reduce its apparent check-mark size slightly; reduce the Play circle radius a little; improve smoothness instead of instant text disappearance; audit references, event ownership and realistic production parity.
+
+**Exact implementation in Product Astro only (same PR #2292):**
+- Owner's FIRST GPT design remains the source, now a fixed 22px icon with a 4.3-unit chevron and one SVG containing two mirrored opacity states. No distorted scaleX or 180-degree rotating bounding box at mid-transition.
+- Single genuine PlayEmber 34px button, inner progress SVG 30px (30px button on ultra-short rail); keep original rate selector, five rates, canonical TTS engine, start/pause semantics and unchanged non-Grok pages.
+- V17 520ms rail and article geometry with cubic-bezier(.32,.72,0,1). The former instant display:none of TOC blocks and the 280ms/520ms conflicting tempos are eliminated. Hide actual authored TOC by opacity/clip/visibility while removing it from compact flex layout; keep inert/aria-hidden immediately. Firefox 153 does not animate display:none transitions consistently, therefore do not depend on allow-discrete display for premium fade. Reduced motion disables animations.
+- Correct nested-root event ownership in the one canonical floating-cluster controller: nearest data-fc-root handles its own actions, ancestor root skips. Remove the former child stopPropagation workaround; keep document click events available to OverlayRuntime. Cache versions must use LF Git-blob hash (Windows CRLF mismatch previously failed CI).
+- Do not equate raw scrollY with reading position after article width changes: WebKit may adjust scrollY by 68px while keeping the SAME paragraph at the SAME on-screen y coordinate. Avoid forced scrollTo hacks.
+- Full Product source vs Grok Focus V17 React/Vite reference: transfer visual contract and authored interactions only. No second React Reader, second library, duplicate Play, duplicate settings, mock data or shadow scroll owner.
+
+**Parity/ship discipline:** 1:1 screenshot-level fidelity is feasible with Astro for agreed 1200/1440/1920 and mobile 320/390 breakpoints, but cannot honestly be guaranteed by local previews or CI alone. Owner accepts true browser frames of the exact Product commit. Then merge to main (without drift), GitHub Pages publishes that exact main SHA with PUBLIC_GB_GROK_HERMENEUTICS_PILOT enabled; verify public deployments/current.json releaseSha AND controlPlaneSha, cache/service-worker revisions, cold Chromium/WebKit frames compared at identical viewport/theme/font and a final real-live clickthrough. Any mismatch blocks closure and triggers rollback/investigation. Do not silently deploy a flag-off build or call local screenshots production.
+
+Other known gate: 2026-11-07 Product PR CI included a failing Bible App WebKit test (third-party Yandex beacon/pageerrors and non-Grok popup checks). Treat as a separate real red check requiring independent resolution; never weaken required checks or label the full PR CI green until the exact-head checks are green.

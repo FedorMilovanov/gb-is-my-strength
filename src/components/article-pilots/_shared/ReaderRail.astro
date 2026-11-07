@@ -43,8 +43,14 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
         aria-label="Свернуть оглавление" aria-controls="hrailToc" aria-expanded="true"
         title="Свернуть или развернуть оглавление">
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path d="M7.75 5.5v13" />
-          <path d="m16.75 6.75-5.25 5.25 5.25 5.25" />
+          <g class="hrail-fold-collapse">
+            <path d="M7.75 6v12" />
+            <path d="m16.1 7.7-4.3 4.3 4.3 4.3" />
+          </g>
+          <g class="hrail-fold-expand" opacity="0">
+            <path d="M16.25 6v12" />
+            <path d="m7.9 7.7 4.3 4.3-4.3 4.3" />
+          </g>
         </svg>
       </button>
     )}
@@ -344,7 +350,7 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       border-radius:0;
       box-shadow:none;
       background:var(--rail-surface,#fbf3ea);
-      transition:width .28s cubic-bezier(.2,.8,.2,1), padding .28s cubic-bezier(.2,.8,.2,1);
+      transition:width .52s cubic-bezier(.32,.72,0,1), padding .52s cubic-bezier(.32,.72,0,1);
     }
     html.dark .hrail.hrail--grok {
       background:var(--rail-surface,#2b1219);
@@ -434,10 +440,29 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       gap:10px;
       margin-bottom:10px;
     }
-    .hrail--grok.hrail--compact .hrail-meta,
-    .hrail--grok.hrail--compact .hrail-toch,
-    .hrail--grok.hrail--compact .hrail-scroll {
-      display:none;
+    /* One native TOC, removed from the compact rail's layout but not
+       unmounted. Visibility/opacity/clip transitions work in Firefox as well
+       as Chromium/WebKit; display:none transition did not (FF 153).
+       The collapsed subtree becomes inert/aria-hidden in the existing owner. */
+    .hrail--grok :is(.hrail-meta,.hrail-toch,.hrail-scroll) {
+      opacity:1;
+      visibility:visible;
+      clip-path:inset(0 0 0 0);
+      transform:translateX(0);
+      transition:opacity .26s cubic-bezier(.32,.72,0,1),
+        clip-path .38s cubic-bezier(.32,.72,0,1),
+        transform .38s cubic-bezier(.32,.72,0,1),
+        visibility .38s;
+    }
+    .hrail--grok.hrail--compact :is(.hrail-meta,.hrail-toch,.hrail-scroll) {
+      position:absolute;
+      left:17px;
+      width:calc(clamp(292px,22vw,328px) - 34px);
+      opacity:0;
+      visibility:hidden;
+      clip-path:inset(0 100% 0 0);
+      transform:translateX(-8px);
+      pointer-events:none;
     }
     .hrail--grok.hrail--compact .hrail-bottom {
       margin-top:auto;
@@ -447,9 +472,15 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       align-items:center;
       gap:8px;
     }
-    .hrail--grok.hrail--compact .hrail-layout-toggle svg {
-      transform:scaleX(-1);
+    /* Two states within ONE icon: crossfade, never rotate the whole SVG.
+       A 180deg turn enlarged the glyph's axis-aligned bounds mid-flight. */
+    .hrail--grok .hrail-layout-toggle svg > g {
+      transition:opacity .20s cubic-bezier(.32,.72,0,1);
     }
+    .hrail--grok .hrail-layout-toggle .hrail-fold-collapse {opacity:1;}
+    .hrail--grok .hrail-layout-toggle .hrail-fold-expand {opacity:0;}
+    .hrail--grok.hrail--compact .hrail-layout-toggle .hrail-fold-collapse {opacity:0;}
+    .hrail--grok.hrail--compact .hrail-layout-toggle .hrail-fold-expand {opacity:1;}
     body.grok-rail-compact:has(.hrail--grok) :is(.article-main.article-main--hrail,[data-reader-rail-main]) {
       --hrail-width:68px;
       /* The collapsed rail returns usable canvas; the article keeps its
@@ -488,8 +519,8 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
         transform .22s cubic-bezier(.32,.72,0,1);
     }
     .hrail--grok .hrail-layout-toggle svg {
-      width:23px;height:23px;stroke-width:1.65;
-      transition:transform .34s cubic-bezier(.32,.72,0,1);
+      width:22px;height:22px;stroke-width:1.6;
+      transition:none;
     }
     .hrail--grok .hrail-layout-toggle:hover {
       background:var(--rail-soft,rgba(122,46,46,.08));
@@ -560,7 +591,7 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       isolation:isolate;
     }
     body:has(.hrail--grok) #gbFloatingControls .gb-ember {
-      width:36px;height:36px;min-width:36px;
+      width:34px;height:34px;min-width:34px;
       border:1px solid color-mix(in srgb,var(--rail-accent,#7a2e2e) 30%,transparent);
       border-radius:50%;
       background:color-mix(in srgb,var(--rail-surface,#fbf3ea) 35%,transparent);
@@ -578,6 +609,10 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       border-color:color-mix(in srgb,var(--rail-accent,#7a2e2e) 65%,transparent);
     }
     body:has(.hrail--grok) #gbFloatingControls .gb-ember__ring-svg {
+      /* Slightly smaller progress ring, while preserving original SVG. */
+      inset:1px;
+      width:calc(100% - 2px);
+      height:calc(100% - 2px);
       opacity:0;
     }
     body:has(.hrail--grok) #gbFloatingControls .gb-ember[data-state="playing"],
@@ -656,6 +691,7 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       background:var(--rail-accent-strong,#f2c4b6);
     }
     .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember {
+      width:34px;height:34px;min-width:34px;
       border-radius:50%;
       border-color:color-mix(in srgb,var(--rail-accent,#7a2e2e) 30%,transparent);
       background:transparent;
@@ -710,6 +746,8 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
   }
   @media(prefers-reduced-motion:reduce){
     .hrail--grok .hrail-layout-toggle,.hrail--grok .hrail-layout-toggle svg,
+    .hrail--grok .hrail-layout-toggle svg > g,
+    .hrail--grok :is(.hrail-meta,.hrail-toch,.hrail-scroll),
     body:has(.hrail--grok) :is(.article-main.article-main--hrail,[data-reader-rail-main]){
       transition:none;
     }
@@ -746,13 +784,9 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
         const floatingControls = document.getElementById('gbFloatingControls');
         const floatingHome = floatingControls?.parentNode || null;
         const floatingNext = floatingControls?.nextSibling || null;
-        // Both the rail and the floating subtree carry the canonical
-        // data-fc-root controller. In compact nesting, bubbling to the rail
-        // would execute THE SAME theme/save action twice and cancel itself.
-        // Stop only that parent bubble; preserve the original root listener.
-        floatingControls?.addEventListener('click', (event) => {
-          if (compactTools?.contains(floatingControls)) event.stopPropagation();
-        });
+        // Each nested data-fc-root handles its own actions in the canonical
+        // floating-cluster controller; document-level outside clicks remain
+        // available to OverlayRuntime and other existing UI owners.
         const setCompact = (compact: boolean) => {
           if (compact && rail.contains(document.activeElement) && document.activeElement !== toggle) {
             toggle.focus({ preventScroll:true });

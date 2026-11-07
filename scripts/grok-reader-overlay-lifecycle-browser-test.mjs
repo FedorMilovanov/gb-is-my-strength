@@ -46,6 +46,9 @@ async function state(page){
       focus:document.activeElement?.id,railW:rail?.getBoundingClientRect().width,
       iconW:icon?.getBoundingClientRect().width,
       iconParts:icon?.querySelectorAll('path').length,
+      iconGroups:icon?.querySelectorAll('g').length,
+      iconCollapsedOpacity:icon?getComputedStyle(icon.querySelector('.hrail-fold-collapse')).opacity:null,
+      iconExpandedOpacity:icon?getComputedStyle(icon.querySelector('.hrail-fold-expand')).opacity:null,
       overflow:document.documentElement.scrollWidth-innerWidth
     };
   });
@@ -89,6 +92,25 @@ try{
           await page.keyboard.press('Escape');
           x=await state(page);check(name,width,'Escape closes site menu and returns focus',!x.menu&&x.layers.length===0&&x.focus==='hMobileMenuBtn',x);
           await page.locator('#hrailLayoutToggle').click();
+          // The real floating controls are nested under the outer rail root
+          // in compact mode. Verify one event dispatch AND normal bubbling
+          // to document: no local stopPropagation workaround may be needed.
+          const themeBefore=await page.locator('html').getAttribute('data-reader-theme');
+          await page.evaluate(()=>{
+            window.__grokThemeDocumentClicks=0;
+            document.addEventListener('click',e=>{
+              if(e.target?.closest?.('#gbFcTheme'))window.__grokThemeDocumentClicks++;
+            });
+          });
+          await page.locator('#grokCompactTools #gbFcTheme').click();
+          const themeSingle=await page.evaluate(()=>({
+            theme:document.documentElement.getAttribute('data-reader-theme'),
+            documentClicks:window.__grokThemeDocumentClicks,
+            uniqueControls:document.querySelectorAll('#gbFloatingControls').length
+          }));
+          check(name,width,'nested canonical click handled once and still bubbles',
+            themeSingle.theme!==themeBefore&&themeSingle.documentClicks===1&&
+            themeSingle.uniqueControls===1,themeSingle);
           await page.locator('#hMobileMenuBtn').click();
           x=await state(page);check(name,width,'compact mode menu opens',x.menu&&x.layers.length===1&&Math.abs(x.railW-68)<1,x);
           await page.mouse.click(width-50,420);
@@ -96,7 +118,9 @@ try{
           await page.locator('#hrailSettingsBtn').click();
           await page.locator('#hmSettingsClose').click();
           x=await state(page);check(name,width,'settings close button works',!x.settings&&x.layers.length===0,x);
-          check(name,width,'selected first icon visually enlarged',x.iconW>=22&&x.iconParts===2,x);
+          check(name,width,'selected first icon resized with two nonrotating states',
+            x.iconW===22&&x.iconParts===4&&x.iconGroups===2&&
+            x.iconCollapsedOpacity==='0'&&x.iconExpandedOpacity==='1',x);
           check(name,width,'no overflow',x.overflow<=1,x.overflow);
           check(name,width,'no first-party page errors',errors.length===0,errors);
         }finally{await ctx.close();}
