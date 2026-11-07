@@ -292,7 +292,7 @@
   function dock() {
     if (!fab) return;
     if (dockImpl) return dockImpl(fab);
-    dockLoad ||= import('/js/reader-library-dock.js?v=68cc0bfe')
+    dockLoad ||= import('/js/reader-library-dock.js?v=315d5992')
       .then(m => { dockImpl = m.dockLibraryFab; contextFromSelection = m.contextFromSelection; dockImpl(fab); if (m.shouldWarmReading()) loadPresenter(); })
       .catch(() => { dockLoad = null; });
   }
