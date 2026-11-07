@@ -437,8 +437,8 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
     .hrail--grok.hrail--compact .hrail-top {
       flex-direction:column-reverse;
       justify-content:flex-end;
-      gap:10px;
-      margin-bottom:10px;
+      gap:3px;
+      margin-bottom:5px;
     }
     /* One native TOC, removed from the compact rail's layout but not
        unmounted. Visibility/opacity/clip transitions work in Firefox as well
@@ -784,6 +784,12 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
         const floatingControls = document.getElementById('gbFloatingControls');
         const floatingHome = floatingControls?.parentNode || null;
         const floatingNext = floatingControls?.nextSibling || null;
+        // Play must lead the compact utility rail. At 1200px the original
+        // third-row placement opened its horizontal speed strip across the
+        // article headline. Reorder the existing native slot, including DOM
+        // focus order, and put it back on expansion; no CSS visual-order hack.
+        const playSlot = floatingControls?.querySelector<HTMLElement>(':scope > .gb-ember-playwrap');
+        const playReturnAnchor = playSlot?.nextSibling || null;
         // Each nested data-fc-root handles its own actions in the canonical
         // floating-cluster controller; document-level outside clicks remain
         // available to OverlayRuntime and other existing UI owners.
@@ -792,10 +798,17 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
             toggle.focus({ preventScroll:true });
           }
           if (floatingControls && floatingHome && compactTools) {
-            if (compact) compactTools.appendChild(floatingControls);
-            else if (floatingNext?.parentNode === floatingHome)
-              floatingHome.insertBefore(floatingControls, floatingNext);
-            else floatingHome.appendChild(floatingControls);
+            if (compact) {
+              compactTools.appendChild(floatingControls);
+              if (playSlot?.parentNode === floatingControls)
+                floatingControls.insertBefore(playSlot, floatingControls.firstChild);
+            } else {
+              if (playSlot?.parentNode === floatingControls && playReturnAnchor?.parentNode === floatingControls)
+                floatingControls.insertBefore(playSlot, playReturnAnchor);
+              if (floatingNext?.parentNode === floatingHome)
+                floatingHome.insertBefore(floatingControls, floatingNext);
+              else floatingHome.appendChild(floatingControls);
+            }
           }
           rail.classList.toggle('hrail--compact', compact);
           document.body.classList.toggle('grok-rail-compact', compact);

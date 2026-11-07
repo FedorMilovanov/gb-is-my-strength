@@ -227,11 +227,12 @@ try {
               const original=document.querySelector('#gbFloatingControls');
               return {parent:original?.parentElement?.id,instances:document.querySelectorAll('#gbFloatingControls').length,
                 hasTheme:!!tools?.querySelector('#gbFcTheme'),hasSearch:!!tools?.querySelector('#gbFcSearch'),
-                hasPlayer:!!tools?.querySelector('.gb-ember'),hasSave:!!tools?.querySelector('.gb-save')};
+                hasPlayer:!!tools?.querySelector('.gb-ember'),hasSave:!!tools?.querySelector('.gb-save'),
+                playFirst:original?.firstElementChild?.classList.contains('gb-ember-playwrap')};
             });
             check(name,viewport.id,'compact retains exact native four controls in left rail',
               focusTools.parent==='grokCompactTools'&&focusTools.instances===1&&focusTools.hasTheme&&
-              focusTools.hasSearch&&focusTools.hasPlayer&&focusTools.hasSave,focusTools);
+              focusTools.hasSearch&&focusTools.hasPlayer&&focusTools.hasSave&&focusTools.playFirst,focusTools);
             // The original floating-cluster controller is delegated from BOTH
             // the floater and rail. A moved subtree must trigger exactly one
             // theme transition, not two toggles back to the original state.
@@ -258,13 +259,22 @@ try {
               const panel=root?.querySelector('.gb-ember-expand');
               if(!ember||!panel)return null;
               const p=panel.getBoundingClientRect(),b=ember.getBoundingClientRect();
+              // Element bounds include non-painted line-box leading. Compare
+              // the actual headline text fragments, not the padded H1 box.
+              const heading=document.querySelector('article h1');
+              const range=document.createRange();
+              if(heading)range.selectNodeContents(heading);
+              const textRects=heading?Array.from(range.getClientRects()):[];
+              const headingOverlap=textRects.some(r=>p.left<r.right&&p.right>r.left&&
+                p.top<r.bottom&&p.bottom>r.top);
               return {
                 choices:panel.querySelectorAll('[data-speed]').length,
                 horizontal:getComputedStyle(panel).flexDirection==='row',
                 visible:panel.classList.contains('is-open')&&getComputedStyle(panel).opacity==='1',
                 gap:p.x-b.right,
                 width:p.width,height:p.height,
-                panelEnd:p.right,viewport:innerWidth,
+                panelEnd:p.right,viewport:innerWidth,headingOverlap,
+                panelY:[p.top,p.bottom],headlineY:textRects.slice(0,3).map(r=>[r.top,r.bottom,r.left,r.right]),
                 extraBadge:getComputedStyle(root.querySelector('.gbs-rail-spdbadge')).display,
                 idleHalo:getComputedStyle(ember,'::before').display,
                 overflow:document.documentElement.scrollWidth-innerWidth
@@ -273,7 +283,7 @@ try {
             check(name,viewport.id,'compact PlayEmber has clean horizontal five-speed bloom',
               !!focusRates&&focusRates.choices===5&&focusRates.horizontal&&focusRates.visible&&
               focusRates.gap>=12&&focusRates.width>=175&&focusRates.height<=56&&
-              focusRates.panelEnd<=focusRates.viewport&&focusRates.overflow<=1&&
+              focusRates.panelEnd<=focusRates.viewport&&!focusRates.headingOverlap&&focusRates.overflow<=1&&
               focusRates.extraBadge==='none'&&focusRates.idleHalo==='none',focusRates);
             if(viewport.id==='desktop-wide'){
               await speedTrigger.click();
@@ -308,10 +318,12 @@ try {
               reopened.expanded==='true' && reopened.width>=280 && !reopened.inert,reopened);
             const nativeRestored=await page.evaluate(()=>({
               parent:document.querySelector('#gbFloatingControls')?.parentElement?.id,
-              duplicates:document.querySelectorAll('#gbFloatingControls').length
+              duplicates:document.querySelectorAll('#gbFloatingControls').length,
+              originalOrder:document.querySelector('#gbFloatingControls')?.firstElementChild?.id==='gbFcTheme'
             }));
             check(name,viewport.id,'real right controls restore to original host',
-              nativeRestored.parent!=='grokCompactTools' && nativeRestored.duplicates===1,nativeRestored);
+              nativeRestored.parent!=='grokCompactTools' && nativeRestored.duplicates===1 &&
+              nativeRestored.originalOrder,nativeRestored);
             if(viewport.height <= 420) {
               check(name,viewport.id,'usable short viewport',snapshot.scrollHeight >= 80,snapshot.scrollHeight);
             }
