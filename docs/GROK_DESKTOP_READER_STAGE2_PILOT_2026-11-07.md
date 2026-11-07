@@ -1,6 +1,6 @@
 # Grok desktop reader — Stage 2 Hermeneutics pilot (2026-11-07)
 
-**Status: draft / opt-in OFF. Not merged, not released.** This bounded visual pilot is now based on merged Stage 1 PR #2284, Product main `354222d8b6e20538ca275cb4e84cb0dad84adf27`. The last independently witnessed live release before this stage-1 merge was Library V3 `717efc54772edf4224f44254651c102e2af24129`; deployment of the newer main SHA must be independently verified.
+**Original Stage 2 status: route flag OFF. Updated release plan is documented in the addendum below.** This bounded visual pilot is now based on merged Stage 1 PR #2284, Product main `354222d8b6e20538ca275cb4e84cb0dad84adf27`. The last independently witnessed live release before this stage-1 merge was Library V3 `717efc54772edf4224f44254651c102e2af24129`; deployment of the newer main SHA must be independently verified.
 
 ## Scope and ownership
 
@@ -60,3 +60,13 @@ Default build without the flag passed `node scripts/grok-rail-pilot-browser-test
 5. No Stage 2 merge or live flag until all checks are green and reviewed. No Gill/Baptists rollout yet. Rollback is exclusively a flag-off build, never a revert of Library V3.
 
 Current local development was isolated in `C:\Users\Fedor\AppData\Local\Temp\gb-grok-pr2284-stage2-20261106`. The existing main workspace and dirty AuditRepo workspace were deliberately not edited.
+
+## Product release integration — 7 November 2026
+
+Product PR #2286 introduced the canonical desktop menu and release hardening and was merged into main as `ca25cb4815ac172100ab84b24379a50286a419a5`. Stage 2 merged that main before preparing release. Both changes coexist without source conflicts.
+
+**Pilot scope:** only `/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/`. The normal Pages readiness build sets `PUBLIC_GB_GROK_HERMENEUTICS_PILOT=1`; this compiles the actual Astro article with the Grok TOC and preserves the canonical ReaderState, TTS, search, bookmarks and anchors. Other routes, mobile UI, and normal local builds are unaffected. Explicit manual historical-SHA recovery forces the pilot flag OFF, preserving a controlled rollback.
+
+The source contract `scripts/grok-stage2-release-route-proof.mjs` checks the built Product HTML: exactly Hermeneutics has the Grok tree; both Gill examples, Baptists and another standalone remain original. A dedicated CI workflow `.github/workflows/grok-hermeneutics-pilot.yml` tests the same exact commit built both ON and OFF, covering Chromium/Firefox/WebKit, canonical heading links, responsive transitions, themes, the 125% cap, print CSS and real Library V3 export/reimport. The normal Pages release retains all immutable SHA/digest, No-JS, publication, source and browser gates.
+
+**Do not claim live from PR or local results.** Merge only after exact-head complete GitHub checks. Then witness Pages promotion, verify `/deployments/current.json` releaseSha equals the actual merged main commit and inspect the public route with a browser. The prior #2286 release must not be skipped or conflated with this independent pilot.

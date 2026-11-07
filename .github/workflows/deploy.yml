@@ -159,7 +159,21 @@ jobs:
           node scripts/genealogy-geometry-contract.mjs
 
       - name: Build production-like dist once
+        # Opt in only the real Hermeneutics route at build time.
+        # A manual historical-SHA recovery turns this pilot OFF; it does not
+        # mutate the immutable historical release or require any new secrets.
+        env:
+          PUBLIC_GB_GROK_HERMENEUTICS_PILOT: ${{ github.event_name == 'workflow_dispatch' && inputs.release_sha != '' && '0' || '1' }}
         run: npm run strangler:build:production-like
+
+      - name: Prove live candidate enables only the Hermeneutics pilot
+        if: ${{ env.RELEASE_SHA == env.CONTROL_PLANE_SHA }}
+        run: |
+          # Before this pilot existed, historical release sources had no such
+          # contract. Their rollback path remains independently supported.
+          if test -f scripts/grok-stage2-release-route-proof.mjs; then
+            node scripts/grok-stage2-release-route-proof.mjs
+          fi
 
       - name: Verify page ownership in candidate dist
         run: npm run page-ownership:dist:production-like

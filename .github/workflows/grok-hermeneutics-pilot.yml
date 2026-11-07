@@ -1,0 +1,116 @@
+name: Grok Hermeneutics Product Pilot
+
+on:
+  pull_request:
+    paths:
+      - 'src/components/article-pilots/**'
+      - 'src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki.astro'
+      - 'scripts/grok-rail-pilot-browser-test.mjs'
+      - 'scripts/grok-stage2-*.mjs'
+      - 'scripts/site-sections-menu-filter-browser-contract.mjs'
+      - 'scripts/reader-library-premium-browser-contract.cjs'
+      - '.github/workflows/deploy.yml'
+      - '.github/workflows/grok-hermeneutics-pilot.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/components/article-pilots/**'
+      - 'src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki.astro'
+      - 'scripts/grok-rail-pilot-browser-test.mjs'
+      - 'scripts/grok-stage2-*.mjs'
+      - 'scripts/site-sections-menu-filter-browser-contract.mjs'
+      - '.github/workflows/deploy.yml'
+      - '.github/workflows/grok-hermeneutics-pilot.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: grok-hermeneutics-pilot-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  exact-head:
+    name: Grok flag-ON and flag-OFF real Product browser contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Checkout exact tested source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Assert exact head
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Set up pinned Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+
+      - name: Immutable dependencies and source syntax
+        run: |
+          npm ci
+          node --check scripts/grok-rail-pilot-browser-test.mjs
+          node --check scripts/grok-stage2-release-route-proof.mjs
+          node --check scripts/grok-stage2-theme-print-audit.mjs
+          node --check scripts/grok-stage2-library-route-audit.mjs
+          node --check scripts/site-sections-menu-filter-browser-contract.mjs
+
+      - name: Build the exact Product pilot as it will appear on GitHub Pages
+        env:
+          PUBLIC_GB_GROK_HERMENEUTICS_PILOT: '1'
+        run: npm run strangler:build:production-like
+
+      - name: Prove route-scoped flag on real candidate HTML
+        run: node scripts/grok-stage2-release-route-proof.mjs
+
+      - name: Install Chromium Firefox WebKit on pinned Ubuntu
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Browser proof — canonical headings, focus, URLs and compact rail
+        env:
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/grok-rail-pilot-browser-test.mjs
+
+      - name: Browser proof — themes, 125 percent and print
+        run: node scripts/grok-stage2-theme-print-audit.mjs
+
+      - name: Browser proof — real Library V3 backup and restore
+        run: node scripts/grok-stage2-library-route-audit.mjs
+
+      - name: Browser proof — mobile chrome, core controls and bookmarks
+        run: |
+          node scripts/hermenevtika-mobile-chrome-visual-contract.mjs
+          node scripts/reader-controls-a11y-browser-contract.mjs
+          node scripts/reader-library-premium-browser-contract.cjs
+
+      - name: Browser proof — existing real site menu works alongside pilot
+        run: node scripts/site-sections-menu-filter-browser-contract.mjs
+
+      - name: Build flag OFF from the same source for deterministic rollback
+        run: npm run strangler:build:production-like
+
+      - name: Browser proof — flag OFF keeps the original TOC
+        run: node scripts/grok-rail-pilot-browser-test.mjs --flag-off
+
+      - name: Verify all checks left tracked source clean
+        run: git diff --exit-code
+
+      - name: Upload candidate and rollback witnesses
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: grok-product-pilot-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            reports/grok-stage2/
+            reports/reader-controls-a11y-browser-contract.*
+            reports/hermenevtika-mobile-chrome/
+            reports/site-sections-menu-filter*
+          if-no-files-found: warn
+          retention-days: 14
