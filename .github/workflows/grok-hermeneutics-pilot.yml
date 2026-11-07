@@ -8,6 +8,7 @@ on:
       - 'scripts/grok-rail-pilot-browser-test.mjs'
       - 'scripts/grok-reader-overlay-lifecycle-browser-test.mjs'
       - 'scripts/grok-toc-keyboard-browser-contract.mjs'
+      - 'scripts/grok-reader-typography-browser-contract.mjs'
       - 'scripts/grok-stage2-*.mjs'
       - 'scripts/site-sections-menu-filter-browser-contract.mjs'
       - 'scripts/reader-library-premium-browser-contract.cjs'
@@ -21,6 +22,7 @@ on:
       - 'scripts/grok-rail-pilot-browser-test.mjs'
       - 'scripts/grok-reader-overlay-lifecycle-browser-test.mjs'
       - 'scripts/grok-toc-keyboard-browser-contract.mjs'
+      - 'scripts/grok-reader-typography-browser-contract.mjs'
       - 'scripts/grok-stage2-*.mjs'
       - 'scripts/site-sections-menu-filter-browser-contract.mjs'
       - '.github/workflows/deploy.yml'
@@ -63,6 +65,7 @@ jobs:
           node --check scripts/grok-rail-pilot-browser-test.mjs
           node --check scripts/grok-reader-overlay-lifecycle-browser-test.mjs
           node --check scripts/grok-toc-keyboard-browser-contract.mjs
+          node --check scripts/grok-reader-typography-browser-contract.mjs
           node --check scripts/grok-stage2-release-route-proof.mjs
           node --check scripts/grok-stage2-theme-print-audit.mjs
           node --check scripts/grok-stage2-library-route-audit.mjs
@@ -83,6 +86,9 @@ jobs:
         env:
           SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/grok-rail-pilot-browser-test.mjs
+
+      - name: Browser proof — typography, label/link spacing, clipping across 3 engines
+        run: node scripts/grok-reader-typography-browser-contract.mjs
 
       - name: Browser proof — themes, 125 percent and print
         env:
@@ -123,6 +129,7 @@ jobs:
           name: grok-product-pilot-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             reports/grok-stage2/
+            reports/grok-typography/
             reports/grok-keyboard/
             reports/reader-controls-a11y-browser-contract.*
             reports/hermenevtika-mobile-chrome/
