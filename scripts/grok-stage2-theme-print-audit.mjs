@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import { chromium, firefox, webkit } from 'playwright';
 
+const sourceSha=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+if (process.env.SOURCE_SHA) assert.equal(sourceSha,process.env.SOURCE_SHA,'Theme audit must use the exact tested head');
 const DIST=path.resolve('dist');
 const ROUTE='/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
 const HTML=path.join(DIST,ROUTE.replace(/^\/+|\/+$/g,''),'index.html');
@@ -101,13 +104,13 @@ try{
     const rail=document.querySelector('.hrail--grok'),toc=document.querySelector('.hrail-scroll');
     return {scale:window.GBReaderPreferences.get().fontScale,
       size:parseFloat(getComputedStyle(p).fontSize),
-      bodyWidth:document.documentElement.scrollWidth-innerWidth,
+      horizontalOverflowPx:document.documentElement.scrollWidth-innerWidth,
       railHeight:rail.getBoundingClientRect().height,
       tocHeight:toc.clientHeight,
       controls:!!document.querySelector('.hrail-bottom')};
    });
    check(engine,'125 percent canonical maximum increases paragraph size',font.size>before*1.18,{before,font});
-   check(engine,'125 percent canonical maximum keeps reader usable',font.bodyWidth<=2&&font.tocHeight>=80&&font.controls,font);
+   check(engine,'125 percent canonical maximum keeps reader usable',font.horizontalOverflowPx<=2&&font.tocHeight>=80&&font.controls,font);
    await page.locator('#hmSettingsDone').click();
    await page.waitForFunction(()=>document.querySelector('#hmSettings')?.getAttribute('aria-hidden')==='true');
    await page.emulateMedia({media:'print'});
@@ -128,5 +131,5 @@ try{
 }finally{await new Promise(resolve=>server.close(resolve));}
 const target=path.resolve('reports/grok-stage2/theme-print-audit.json');
 fs.mkdirSync(path.dirname(target),{recursive:true});
-fs.writeFileSync(target,JSON.stringify({sha:'8fbd07e5ec97124c9fa0f66b1b549d08c9a0ccc9',results},null,2));
+fs.writeFileSync(target,JSON.stringify({sha:sourceSha,results},null,2));
 console.log('GROK THEME/FONT/PRINT AUDIT: '+results.length+'/'+results.length+' PASS');

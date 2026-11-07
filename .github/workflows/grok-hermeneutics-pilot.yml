@@ -82,6 +82,8 @@ jobs:
         run: node scripts/grok-rail-pilot-browser-test.mjs
 
       - name: Browser proof — themes, 125 percent and print
+        env:
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/grok-stage2-theme-print-audit.mjs
 
       - name: Browser proof - keyboard navigation through visible Grok TOC headings
