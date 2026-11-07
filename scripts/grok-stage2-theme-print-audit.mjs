@@ -81,7 +81,8 @@ try{
      return {contrast,theme:html.getAttribute('data-reader-theme'),
        dark:html.classList.contains('dark'),sepia:root?.getAttribute('data-hm-reader-theme'),
        selected,railBg:css.backgroundColor,railImage:css.backgroundImage,
-       linkColor:link.color,decoration:link.textDecorationLine,
+       linkColor:link.color,railMuted:css.getPropertyValue('--rail-muted').trim(),
+        colorTransition:link.transitionProperty,decoration:link.textDecorationLine,
        overflow:document.documentElement.scrollWidth-innerWidth,
        visible:css.display!=='none',
        originalSvg:!!document.getElementById('gbFloatingControls')};
@@ -90,6 +91,10 @@ try{
     check(engine,'theme '+theme+' selected',snapshot.selected.length===1&&snapshot.selected[0]===theme,snapshot);
     check(engine,'theme '+theme+' original tools and geometry',snapshot.visible&&snapshot.originalSvg&&snapshot.overflow<=2,snapshot);
     check(engine,'theme '+theme+' TOC links not underlined',snapshot.decoration==='none',snapshot);
+     // The reader's text palette must change atomically with the background:
+     // an animated color can temporarily be unreadable on Linux WebKit.
+     check(engine,'theme '+theme+' text color is not animated',
+       !snapshot.colorTransition.split(',').map(s=>s.trim()).some(s=>s==='all'||s==='color'),snapshot);
     check(engine,'theme '+theme+' WCAG AA small navigation text contrast',snapshot.contrast>=4.5,snapshot);
    }
    check(engine,'sepia actually changes computed styling',
