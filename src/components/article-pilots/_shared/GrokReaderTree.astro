@@ -80,7 +80,7 @@ const { nodes, root = false } = Astro.props;
   }
   .hrail--grok .grok-toc { --toc-axis-x:15px; margin-top:3px; padding-right:3px; }
   .hrail--grok .grok-toc li.grok-row { padding:0; margin:2px 0; position:relative; }
-  .hrail--grok .grok-entry { display:flex; align-items:flex-start; position:relative; min-height:36px; padding-left:31px; }
+  .hrail--grok .grok-entry { display:flex; align-items:center; position:relative; min-height:36px; padding-left:31px; }
   .hrail--grok .grok-entry > a { flex:1 1 auto; min-width:0; padding:8px 6px 8px 9px; border-radius:8px;
     font-size:13.5px; line-height:1.43; text-decoration:none; color:var(--rail-muted,#725e52);
     /* The base rail animates color for 200ms. During theme switches this
@@ -96,7 +96,7 @@ const { nodes, root = false } = Astro.props;
     outline-offset:-2px;
     background:var(--rail-active,rgba(122,46,46,.12));
   }
-  .hrail--grok .grok-entry > .hrail-dot { left:11px; top:16px; margin-top:-4px; width:8px; height:8px; border:0;
+  .hrail--grok .grok-entry > .hrail-dot { left:11px; top:50%; margin-top:0; transform:translateY(-50%); width:8px; height:8px; border:0;
     background:var(--rail-line,rgba(0,0,0,.2)); box-shadow:none; }
   /* The legacy descendant selector must not paint every nested link active
      just because an H2 ancestor is active. Only the exact current row wins. */
@@ -113,7 +113,7 @@ const { nodes, root = false } = Astro.props;
   .hrail--grok .grok-row--sub > .grok-entry > a { font-size:12.6px; }
   .hrail--grok .grok-child-list { list-style:none; margin:0 0 0 19px; padding:0; }
   .hrail--grok .grok-toc > .hrail-track-slot > .hrail-track { left:14px; top:14px; bottom:22px; width:1px; }
-  .hrail--grok .grok-disclosure { display:none; flex:0 0 27px; width:27px; height:27px; margin:2px 0 0; padding:0;
+  .hrail--grok .grok-disclosure { display:none; flex:0 0 27px; width:27px; height:27px; margin:0; align-self:center; padding:0;
     border:0; border-radius:8px; background:transparent; color:var(--rail-accent,#7a2e2e); cursor:pointer; }
   .hrail--grok.grok-ready .grok-disclosure { display:grid; place-items:center; }
   .hrail--grok .grok-disclosure svg { width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:1.75;
@@ -156,7 +156,7 @@ const { nodes, root = false } = Astro.props;
   }
   .hrail--grok .grok-row--h2 > .grok-entry > .hrail-dot {
     left:calc(var(--grok-axis-x) - 4px);
-    top:16px;width:8px;height:8px;margin-top:-4px;
+    top:50%;width:8px;height:8px;margin-top:0;transform:translateY(-50%);
     border:0;box-shadow:none;
     background:var(--rail-line,rgba(42,24,20,.2));
   }
@@ -182,7 +182,7 @@ const { nodes, root = false } = Astro.props;
   }
   .hrail--grok .grok-row.hrail-act > .grok-entry::before {content:none;}
   .hrail--grok .grok-row.hrail-act > .grok-entry > a {
-    box-shadow:none;font-weight:660;color:var(--rail-text,#2a1814);
+    background:transparent;box-shadow:none;font-weight:660;color:var(--rail-text,#2a1814);
   }
   .hrail--grok .grok-row:has(> .grok-child-motion .grok-row.hrail-act):not(.hrail-act)
     > .grok-entry > a {font-weight:580;color:var(--rail-text,#2a1814);}

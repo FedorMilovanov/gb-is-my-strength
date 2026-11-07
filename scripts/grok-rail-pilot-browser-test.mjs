@@ -209,6 +209,56 @@ try {
             check(name,viewport.id,'V17 optical H2 track anchored to real dot centres',
               !!axis && Math.abs(axis.x-axis.first.x)<.6 && Math.abs(axis.x-axis.last.x)<.6 &&
               Math.abs(axis.top-axis.first.y)<1 && Math.abs(axis.bottom-axis.last.y)<1,axis);
+            // A hovered non-active Grok link must never inherit the old
+            // flat TOC's own hover chip: the whole .grok-entry paints hover.
+            const multiLineHover=page.locator('.grok-toc > li.grok-row--h2')
+              .filter({hasText:'Объяснение христоцентричной герменевтики'})
+              .first().locator(':scope > .grok-entry > a');
+            await multiLineHover.hover();
+            await page.waitForTimeout(250);
+            const hoverLinkPaint=await multiLineHover.evaluate(link=>{
+              const s=getComputedStyle(link);
+              return {image:s.backgroundImage,color:s.backgroundColor};
+            });
+            check(name,viewport.id,'no legacy inner hover highlight in Grok',
+              hoverLinkPaint.image==='none'&&
+              ['transparent','rgba(0, 0, 0, 0)'].includes(hoverLinkPaint.color),hoverLinkPaint);
+            // Visual bug witness: root H2 pins and disclosure arrows must
+            // centre on the WHOLE multi-line row, not its first text line.
+            // The selected row paints only ONE surface, never a nested chip.
+            const rowOptics=await page.evaluate(()=>{
+              const rows=Array.from(document.querySelectorAll('.grok-toc > li.grok-row--h2'));
+              const centre=el=>{const r=el.getBoundingClientRect();return r.top+r.height/2;};
+              const diffs=rows.map(row=>{
+                const entry=row.querySelector(':scope > .grok-entry');
+                const pin=entry?.querySelector(':scope > .hrail-dot');
+                const arrow=entry?.querySelector(':scope > .grok-disclosure');
+                const link=entry?.querySelector(':scope > a');
+                return {pin:pin?Math.abs(centre(pin)-centre(entry)):null,
+                  arrow:arrow?Math.abs(centre(arrow)-centre(entry)):null,
+                  multiLine:(link?.getBoundingClientRect().height??0)>43};
+              });
+              const row=rows.find(r=>r.querySelector(':scope > .grok-entry > a')?.getBoundingClientRect().height>43)||rows[0];
+              const original=row?.classList.contains('hrail-act')??false;
+              row?.classList.add('hrail-act');
+              const entry=row?.querySelector(':scope > .grok-entry');
+              const link=entry?.querySelector(':scope > a');
+              const outer=getComputedStyle(entry).backgroundImage;
+              const inner=getComputedStyle(link);
+              const singlePaint=outer!=='none'&&inner.backgroundImage==='none'&&
+                (inner.backgroundColor==='transparent'||inner.backgroundColor==='rgba(0, 0, 0, 0)');
+              row?.classList.toggle('hrail-act',original);
+              return {rows:rows.length,multiLines:diffs.filter(x=>x.multiLine).length,
+                maxPinOffset:Math.max(...diffs.map(x=>x.pin??0)),
+                maxArrowOffset:Math.max(...diffs.map(x=>x.arrow??0)),
+                singlePaint,outer,innerBackground:inner.backgroundImage,
+                innerColor:inner.backgroundColor};
+            });
+            check(name,viewport.id,'one active highlight without nested paint',
+              rowOptics.singlePaint,rowOptics);
+            check(name,viewport.id,'multi-line H2 pins and chevrons optically centered',
+              rowOptics.rows>=2&&rowOptics.multiLines>=1&&
+              rowOptics.maxPinOffset<1&&rowOptics.maxArrowOffset<1,rowOptics);
             const readingScrollBefore=await page.evaluate(() => Math.round(scrollY));
             await page.locator('#hrailLayoutToggle').click();
             await page.waitForFunction(() => Math.round(document.querySelector('.hrail--grok')?.getBoundingClientRect().width ?? 0) === 68, {timeout:1600});
@@ -274,6 +324,7 @@ try {
                 gap:p.x-b.right,
                 width:p.width,height:p.height,
                 panelEnd:p.right,viewport:innerWidth,headingOverlap,
+                playSize:b.width,ringSize:ember.querySelector('.gb-ember__ring-svg')?.getBoundingClientRect().width,
                 panelY:[p.top,p.bottom],headlineY:textRects.slice(0,3).map(r=>[r.top,r.bottom,r.left,r.right]),
                 extraBadge:getComputedStyle(root.querySelector('.gbs-rail-spdbadge')).display,
                 idleHalo:getComputedStyle(ember,'::before').display,
@@ -284,7 +335,9 @@ try {
               !!focusRates&&focusRates.choices===5&&focusRates.horizontal&&focusRates.visible&&
               focusRates.gap>=12&&focusRates.width>=175&&focusRates.height<=56&&
               focusRates.panelEnd<=focusRates.viewport&&!focusRates.headingOverlap&&focusRates.overflow<=1&&
-              focusRates.extraBadge==='none'&&focusRates.idleHalo==='none',focusRates);
+              focusRates.extraBadge==='none'&&focusRates.idleHalo==='none'&&
+              focusRates.playSize<=(viewport.height<=420?30:32)&&
+              focusRates.ringSize<=focusRates.playSize-3.5,focusRates);
             if(viewport.id==='desktop-wide'){
               await speedTrigger.click();
               const idleChoice=await page.evaluate(()=>{

@@ -173,14 +173,14 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
   .hrail-toc li.hrail-sub a{font-size:11px}
   .hrail-toc li.hrail-sub:not(.hrail-act):not(.hrail-passed) a{color:var(--rail-subtle,rgba(42,24,20,.5))}
   html.dark .hrail-toc li.hrail-sub:not(.hrail-act):not(.hrail-passed) a{color:var(--rail-subtle,rgba(255,255,255,.46))}
-  .hrail-toc li.hrail-act a{background:linear-gradient(90deg,var(--rail-soft,rgba(122,46,46,.14)),color-mix(in srgb,var(--rail-soft,rgba(122,46,46,.14)) 35%,transparent) 72%,transparent);
+  .hrail:not(.hrail--grok) .hrail-toc li.hrail-act a{background:linear-gradient(90deg,var(--rail-soft,rgba(122,46,46,.14)),color-mix(in srgb,var(--rail-soft,rgba(122,46,46,.14)) 35%,transparent) 72%,transparent);
     color:var(--rail-text,#2a1814);font-weight:700;box-shadow:inset 0 0 0 1px var(--rail-border,rgba(122,46,46,.22))}
-  html.dark .hrail-toc li.hrail-act a{background:linear-gradient(90deg,var(--rail-active,rgba(122,46,46,.44)),color-mix(in srgb,var(--rail-active,rgba(122,46,46,.44)) 36%,transparent) 72%,color-mix(in srgb,var(--rail-active,rgba(122,46,46,.44)) 12%,transparent));
+  html.dark .hrail:not(.hrail--grok) .hrail-toc li.hrail-act a{background:linear-gradient(90deg,var(--rail-active,rgba(122,46,46,.44)),color-mix(in srgb,var(--rail-active,rgba(122,46,46,.44)) 36%,transparent) 72%,color-mix(in srgb,var(--rail-active,rgba(122,46,46,.44)) 12%,transparent));
     color:var(--rail-text,#f6efe9);box-shadow:inset 0 0 0 1px var(--rail-border,rgba(224,160,150,.16))}
-  .hrail-toc li.hrail-act .hrail-dot{background:var(--rail-accent,#dd7c5d);border-color:var(--rail-accent,#dd7c5d);transform:scale(1.11)}
+  .hrail:not(.hrail--grok) .hrail-toc li.hrail-act .hrail-dot{background:var(--rail-accent,#dd7c5d);border-color:var(--rail-accent,#dd7c5d);transform:scale(1.11)}
   @media(hover:hover) and (pointer:fine){
-    .hrail-toc li:not(.hrail-act) a:hover{color:var(--rail-text,#2a1814);background:var(--rail-soft,rgba(122,46,46,.05))}
-    html.dark .hrail-toc li:not(.hrail-act) a:hover{color:var(--rail-text,#f6efe9);background:var(--rail-hover,rgba(255,255,255,.03))}
+    .hrail:not(.hrail--grok) .hrail-toc li:not(.hrail-act) a:hover{color:var(--rail-text,#2a1814);background:var(--rail-soft,rgba(122,46,46,.05))}
+    html.dark .hrail:not(.hrail--grok) .hrail-toc li:not(.hrail-act) a:hover{color:var(--rail-text,#f6efe9);background:var(--rail-hover,rgba(255,255,255,.03))}
   }
 
   /* Bottom row: site menu / share / print / font-size — plain SVG icon
@@ -591,7 +591,7 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       isolation:isolate;
     }
     body:has(.hrail--grok) #gbFloatingControls .gb-ember {
-      width:34px;height:34px;min-width:34px;
+      width:32px;height:32px;min-width:32px;
       border:1px solid color-mix(in srgb,var(--rail-accent,#7a2e2e) 30%,transparent);
       border-radius:50%;
       background:color-mix(in srgb,var(--rail-surface,#fbf3ea) 35%,transparent);
@@ -609,10 +609,10 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       border-color:color-mix(in srgb,var(--rail-accent,#7a2e2e) 65%,transparent);
     }
     body:has(.hrail--grok) #gbFloatingControls .gb-ember__ring-svg {
-      /* Slightly smaller progress ring, while preserving original SVG. */
-      inset:1px;
-      width:calc(100% - 2px);
-      height:calc(100% - 2px);
+      /* One fine 28px progress circle inside the quiet 32px Play. */
+      inset:2px;
+      width:calc(100% - 4px);
+      height:calc(100% - 4px);
       opacity:0;
     }
     body:has(.hrail--grok) #gbFloatingControls .gb-ember[data-state="playing"],
@@ -691,7 +691,7 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       background:var(--rail-accent-strong,#f2c4b6);
     }
     .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember {
-      width:34px;height:34px;min-width:34px;
+      width:32px;height:32px;min-width:32px;
       border-radius:50%;
       border-color:color-mix(in srgb,var(--rail-accent,#7a2e2e) 30%,transparent);
       background:transparent;
