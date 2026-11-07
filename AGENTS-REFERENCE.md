@@ -43,6 +43,7 @@ The complete pre-split reference remains byte-preserved for provenance. Do not u
 | Maps | current route profile + current map source/registries/guards; dated architecture/design docs are intent/evidence only unless current authority explicitly delegates to them |
 | Genealogy / `/rodosloviye/` | current route profile + current `src/**` implementation + applicable guards; old design-before-code engine documents do not override the shipped implementation |
 | Reader state/preferences/runtime | current `src/**`/`js/**` ownership and applicable reader guards; do not infer ownership from an old global JS inventory |
+| **Grok Reader owner visual acceptance** | **`docs/GROK_V27_PRODUCT_RELEASE_GATE_2026-11-07.md` § Owner override**, plus linked AuditRepo V26 prototype and current owner acceptance. A successful deployed V27/CI is **not** visual signoff; require integrated collapsible rail, correctly placed Library and owner-reviewed before/after live screenshots |
 | Service worker / publication assets | current source + build/publication contracts and applicable guards |
 
 ## 3. Route and runtime ownership
