@@ -552,15 +552,143 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
     .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember:hover {
       background:var(--rail-soft,rgba(122,46,46,.08));color:var(--rail-accent,#7a2e2e);
     }
-    /* PlayEmber keeps its official controller and speed strip. The compact
-       strip anchors outside the 68px scroller rather than being clipped. */
+    /* Grok PlayEmber: retain the canonical sliding-speed widget, but give it
+       one deliberate optical system. It is the SAME PlayEmber + rate-controller
+       as the right toolbar; none of these selectors affect Gill or other routes.
+       Horizontal bloom starts next to (never through) the play circle. */
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember-wrap {
+      isolation:isolate;
+    }
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember {
+      width:36px;height:36px;min-width:36px;
+      border:1px solid color-mix(in srgb,var(--rail-accent,#7a2e2e) 30%,transparent);
+      border-radius:50%;
+      background:color-mix(in srgb,var(--rail-surface,#fbf3ea) 35%,transparent);
+      box-shadow:none;
+      transform:none;
+      transition:background-color .19s ease,border-color .19s ease,color .19s ease;
+    }
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember::before {display:none;}
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember-wrap:hover > .gb-ember,
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember-wrap:focus-within > .gb-ember {
+      transform:none;
+    }
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember:hover {
+      background:var(--rail-soft,rgba(122,46,46,.09));
+      border-color:color-mix(in srgb,var(--rail-accent,#7a2e2e) 65%,transparent);
+    }
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember__ring-svg {
+      opacity:0;
+    }
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember[data-state="playing"],
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember[data-state="paused"],
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember[data-state="complete"] {
+      border-color:transparent;
+    }
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember[data-state="playing"] .gb-ember__ring-svg,
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember[data-state="paused"] .gb-ember__ring-svg,
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember[data-state="complete"] .gb-ember__ring-svg {
+      opacity:1;
+    }
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember__ring-track {opacity:.26;}
+    /* The old floating 1x badge crossed the ring at a second centre.
+       Selection remains obvious inside the five-rate strip itself. */
+    body:has(.hrail--grok) #gbFloatingControls .gbs-rail-spdbadge {display:none;}
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand {
+      position:absolute;
+      right:calc(100% + 8px);left:auto;top:50%;bottom:auto;
+      display:flex;flex-direction:row;align-items:center;
+      gap:3px;width:max-content;height:46px;
+      max-width:calc(100vw - 100px);
+      padding:6px 7px;box-sizing:border-box;
+      border:1px solid color-mix(in srgb,var(--rail-accent,#7a2e2e) 19%,var(--rail-border,#e8d9c8));
+      border-radius:16px;
+      background:var(--rail-surface,#fbf3ea);
+      box-shadow:0 9px 30px rgba(37,25,20,.09),0 2px 6px rgba(37,25,20,.035);
+      backdrop-filter:none;-webkit-backdrop-filter:none;
+      transform:translateY(-50%) translateX(var(--gb-ember-shift,0px));
+      clip-path:inset(0 0 0 100% round 16px);
+      opacity:0;pointer-events:none;z-index:6;
+      white-space:nowrap;
+      transition:clip-path .34s cubic-bezier(.32,.72,0,1),
+        opacity .18s ease,box-shadow .22s ease;
+    }
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand::before {display:none;}
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand.is-open {
+      clip-path:inset(0 0 0 0 round 16px);
+      opacity:1;pointer-events:auto;
+    }
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand:not(.is-open) {
+      clip-path:inset(0 0 0 100% round 16px);
+      opacity:0;pointer-events:none;
+    }
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand__btn {
+      flex:none;min-width:40px;height:32px;
+      padding:0 8px;margin:0;
+      border:0;border-radius:10px;
+      background:transparent;
+      color:var(--rail-muted,#725e52);
+      font-size:12.5px;line-height:1;font-weight:650;
+      letter-spacing:-.015em;
+      box-shadow:none;text-shadow:none;
+      opacity:1;transform:none;
+      transition:background-color .19s ease,color .19s ease,
+        box-shadow .19s ease,transform .18s ease;
+    }
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand__btn:hover {
+      background:var(--rail-soft,rgba(122,46,46,.08));
+      color:var(--rail-text,#2a1814);
+    }
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand__btn.is-active {
+      background:color-mix(in srgb,var(--rail-accent,#7a2e2e) 88%,var(--rail-surface,#fbf3ea));
+      border:0;
+      color:#fff;
+      font-weight:750;
+      box-shadow:none;
+    }
+    html.dark body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand {
+      border-color:var(--rail-border,rgba(212,140,150,.18));
+      background:var(--rail-surface,#2b1219);
+      box-shadow:0 12px 32px rgba(0,0,0,.28);
+    }
+    html.dark body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand__btn.is-active {
+      color:var(--rail-surface,#2b1219);
+      background:var(--rail-accent-strong,#f2c4b6);
+    }
+    .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember {
+      border-radius:50%;
+      border-color:color-mix(in srgb,var(--rail-accent,#7a2e2e) 30%,transparent);
+      background:transparent;
+    }
+    /* The SVG alone paints the ACTIVE progress circle; do not leave the
+       idle button border under it as a second concentric ring. */
+    .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls
+      .gb-ember:is([data-state="playing"],[data-state="paused"],[data-state="complete"]) {
+      border-color:transparent;
+    }
+    /* Outward bloom from the same live Play circle. The anchor y is measured
+       by the canonical controller on every opening, never hard-coded. */
     .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember-expand {
-      position:fixed;left:78px;right:auto;top:clamp(68px,25vh,210px);
-      transform:none;z-index:10000;padding:5px 9px;
-      clip-path:inset(0 100% 0 0 round 999px);
+      position:fixed;
+      left:73px;right:auto;
+      top:var(--gb-ember-anchor-y,220px);bottom:auto;
+      height:42px;
+      gap:2px;padding:5px 5px;
+      transform:translateY(-50%);
+      clip-path:inset(0 100% 0 0 round 16px);
+      z-index:10000;
+    }
+    /* Keep the focus popover entirely within the slim toolbar corridor;
+       it should not cut across the first letters of the article headline. */
+    .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember-expand__btn {
+      min-width:33px;height:30px;
+      padding:0 4px;font-size:11.5px;
+    }
+    .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember-expand:not(.is-open) {
+      clip-path:inset(0 100% 0 0 round 16px);
     }
     .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember-expand.is-open {
-      clip-path:inset(0 0 0 0 round 999px);
+      clip-path:inset(0 0 0 0 round 16px);
     }
     @keyframes grokCompactToolEntrance{
       from{opacity:0;transform:translateY(-7px);}

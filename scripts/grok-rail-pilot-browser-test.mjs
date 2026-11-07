@@ -246,6 +246,50 @@ try {
             check(name,viewport.id,'compact theme action reversible',
               themeRestored===themeBefore,
               {before:themeBefore,restored:themeRestored});
+            // Owner's speed-control acceptance: the original PlayEmber must
+            // expose ONE aligned horizontal rate strip in the focus rail,
+            // without concentric idle rings or a detached 1x badge.
+            const speedTrigger=page.locator('#grokCompactTools .gb-ember');
+            await speedTrigger.hover();
+            await page.waitForTimeout(360); // observe completed native bloom animation
+            const focusRates=await page.evaluate(()=>{
+              const root=document.querySelector('#grokCompactTools');
+              const ember=root?.querySelector('.gb-ember');
+              const panel=root?.querySelector('.gb-ember-expand');
+              if(!ember||!panel)return null;
+              const p=panel.getBoundingClientRect(),b=ember.getBoundingClientRect();
+              return {
+                choices:panel.querySelectorAll('[data-speed]').length,
+                horizontal:getComputedStyle(panel).flexDirection==='row',
+                visible:panel.classList.contains('is-open')&&getComputedStyle(panel).opacity==='1',
+                gap:p.x-b.right,
+                width:p.width,height:p.height,
+                panelEnd:p.right,viewport:innerWidth,
+                extraBadge:getComputedStyle(root.querySelector('.gbs-rail-spdbadge')).display,
+                idleHalo:getComputedStyle(ember,'::before').display,
+                overflow:document.documentElement.scrollWidth-innerWidth
+              };
+            });
+            check(name,viewport.id,'compact PlayEmber has clean horizontal five-speed bloom',
+              !!focusRates&&focusRates.choices===5&&focusRates.horizontal&&focusRates.visible&&
+              focusRates.gap>=12&&focusRates.width>=175&&focusRates.height<=56&&
+              focusRates.panelEnd<=focusRates.viewport&&focusRates.overflow<=1&&
+              focusRates.extraBadge==='none'&&focusRates.idleHalo==='none',focusRates);
+            if(viewport.id==='desktop-wide'){
+              await speedTrigger.click();
+              const idleChoice=await page.evaluate(()=>{
+                const button=document.querySelector('#grokCompactTools .gb-ember');
+                return {
+                  panelOpen:!!document.querySelector('#grokCompactTools .gb-ember-expand.is-open'),
+                  state:button?.dataset.state,
+                  aria:button?.getAttribute('aria-expanded')
+                };
+              });
+              check(name,viewport.id,'compact Play click offers speed before starting speech',
+                idleChoice.panelOpen&&idleChoice.aria==='true'&&idleChoice.state==='idle',
+                idleChoice);
+              await page.keyboard.press('Escape');
+            }
             const readingScrollAfter=await page.evaluate(() => Math.round(scrollY));
             check(name,viewport.id,'compact rail rebalances actual article position',
               articleAfter.left+40<=articleBefore.left &&

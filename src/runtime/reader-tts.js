@@ -979,6 +979,15 @@
   function onClick(event) {
     const button = event.target instanceof Element ? event.target.closest(PLAY_SELECTOR) : null;
     if (!button) return;
+    // The official Grok focus rail offers speed choice on its first idle
+    // Play click. Let the existing PlayEmber's bubble handler open its own
+    // accessible rate panel; do NOT start speech during this interaction.
+    // Once playing/paused, GBReaderTTS retains exclusive click ownership.
+    // Other article routes and expanded Grok are unchanged.
+    if (button.closest('#grokCompactTools') &&
+        (state.phase === 'idle' || state.phase === 'complete' || state.phase === 'error')) {
+      return;
+    }
     claim(event);
     toggle();
   }

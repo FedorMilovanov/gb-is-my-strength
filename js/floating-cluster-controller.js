@@ -1928,6 +1928,15 @@
       }
 
       function openPanel() {
+        // For a relocated Grok focus rail, anchor the SAME speed panel to the
+        // live Play control rather than to a hard-coded viewport position.
+        // This survives viewport resize and a scrolled 68px utility rail.
+        if (ember.closest('#grokCompactTools')) {
+          var anchor = ember.getBoundingClientRect();
+          panel.style.setProperty('--gb-ember-anchor-y', (anchor.top + anchor.height / 2).toFixed(1) + 'px');
+        } else {
+          panel.style.removeProperty('--gb-ember-anchor-y');
+        }
         panel.classList.add('is-open');
         ember.setAttribute('aria-expanded', 'true');
         speedPanelFold(false);
@@ -1979,11 +1988,16 @@
           suppressNextEmberClick = false;
           return;
         }
-        // Click = PLAY/PAUSE only. The speed pill is hover-driven on desktop
-        // (see mouseenter below) and tap-driven on touch (handled by the
-        // data-state observer below). Keeping click=play/pause means the
-        // user can always pause; previously click only toggled the pill so
-        // playback got stuck.
+        // Grok's 68px focus rail has no independent speed control in its
+        // closed state. An idle click first opens THIS existing five-rate
+        // bloom panel; selecting a rate starts playback via the owner below.
+        // While playing or paused, the same button still means pause/resume.
+        // Other Reader, Gill and mobile embers keep their original behavior.
+        if (ember.closest('#grokCompactTools') &&
+            (currentTtsUiState(ember) === 'idle' || currentTtsUiState(ember) === 'complete')) {
+          openPanel();
+          return;
+        }
         handlePlayClick(ember);
       });
       // On touch devices (no hover) reveal the pill once playback actually
