@@ -11,7 +11,7 @@
   (() => {
     'use strict';
 
-    const VERSION = 5;
+    const VERSION = 6;
     const OWNER_ID = 'site-sections-menu';
     const API_KEY = 'GBSiteSectionsMenu';
     const CONTROLLER_KEY = '__gbSiteSectionsMenuController';
@@ -21,8 +21,10 @@
       return;
     }
 
-    const firstAction = (panel) => panel.querySelector(
-      'a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])'
+    const desktopMenu = () => Boolean(window.matchMedia?.('(min-width: 85em)').matches);
+    const firstAction = (panel) => (
+      (desktopMenu() && panel.querySelector('[data-gb-menu-filter]'))
+      || panel.querySelector('a[href]:not([hidden]),button:not([disabled]):not([hidden]),[tabindex]:not([tabindex="-1"])')
     );
 
     function init() {
@@ -52,6 +54,77 @@
 
       let controller;
       let nativeHideTimer = 0;
+      // This is only a local view over six server-rendered menu destinations.
+      // GBSearch still exclusively owns search; OverlayRuntime owns the overlay.
+      const filter = panel.querySelector('[data-gb-menu-filter]');
+      const clearFilter = panel.querySelector('[data-gb-menu-clear]');
+      const status = panel.querySelector('[data-gb-menu-status]');
+      const empty = panel.querySelector('[data-gb-menu-empty]');
+      const entries = [...panel.querySelectorAll('a[data-gb-menu-section]')];
+      const groupTitles = [...panel.querySelectorAll('[data-gb-menu-group-title]')];
+      const desktopQuery = window.matchMedia?.('(min-width: 85em)');
+      const normalize = (value) => String(value || '').toLocaleLowerCase('ru-RU')
+        .normalize('NFKC').replace(/ё/g, 'е').replace(/\s+/g, ' ').trim();
+      const firstVisible = () => entries.find((node) => !node.hidden);
+      const renderFilter = () => {
+        if (!filter) return;
+        const term = desktopMenu() ? normalize(filter.value) : '';
+        const words = term ? term.split(' ') : [];
+        let visible = 0;
+        for (const link of entries) {
+          const match = words.every((word) => normalize(link.textContent).includes(word));
+          link.hidden = !match;
+          if (match) visible++;
+        }
+        for (const heading of groupTitles) {
+          const group = heading.getAttribute('data-gb-menu-group-title');
+          heading.hidden = !entries.some((link) => !link.hidden && link.getAttribute('data-gb-menu-group') === group);
+        }
+        if (clearFilter) clearFilter.hidden = !filter.value;
+        if (empty) empty.hidden = visible !== 0;
+        if (status) status.textContent = term
+          ? (visible ? 'Найдено разделов: ' + visible : 'Совпадений нет')
+          : 'Всего разделов: ' + visible;
+      };
+      const onFilterInput = () => renderFilter();
+      const onFilterKeydown = (event) => {
+        if (!desktopMenu() || (event.key !== 'ArrowDown' && event.key !== 'Enter')) return;
+        const link = firstVisible();
+        if (!link) return;
+        event.preventDefault();
+        link.focus({ preventScroll: false });
+      };
+      const onFilterClear = () => {
+        if (!filter) return;
+        filter.value = '';
+        renderFilter();
+        filter.focus({ preventScroll: true });
+      };
+      const onPanelKeydown = (event) => {
+        if (!desktopMenu() || event.key !== 'ArrowUp' || event.target !== firstVisible()) return;
+        event.preventDefault();
+        filter?.focus({ preventScroll: true });
+      };
+      const onDesktopChange = () => {
+        // A focused desktop search field disappears at the responsive boundary.
+        // Keep keyboard focus inside the open canonical menu rather than losing
+        // it to <body> when the browser hides that field.
+        const active = document.activeElement;
+        const focusLost = active === filter || active === document.body
+          || (active && !active.getClientRects().length);
+        if (!desktopMenu() && filter) filter.value = '';
+        renderFilter();
+        if (!panel.hidden && focusLost) {
+          (desktopMenu() ? filter : firstVisible())?.focus({ preventScroll: true });
+        }
+      };
+      filter?.addEventListener('input', onFilterInput);
+      filter?.addEventListener('keydown', onFilterKeydown);
+      clearFilter?.addEventListener('click', onFilterClear);
+      panel.addEventListener('keydown', onPanelKeydown);
+      desktopQuery?.addEventListener?.('change', onDesktopChange);
+      renderFilter();
+
       const hasExitTransition = () => {
         if (!panel.isConnected) return false;
         if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return false;
@@ -118,6 +191,7 @@
 
       const open = (reason = 'trigger') => {
         if (layer.isOpen()) return true;
+        if (filter) { filter.value = ''; renderFilter(); }
         syncVisual(true);
         layer.open({
           element: panel,
@@ -185,6 +259,11 @@
         destroy: () => {
           window.clearTimeout(nativeHideTimer);
           nativeHideTimer = 0;
+          filter?.removeEventListener('input', onFilterInput);
+          filter?.removeEventListener('keydown', onFilterKeydown);
+          clearFilter?.removeEventListener('click', onFilterClear);
+          panel.removeEventListener('keydown', onPanelKeydown);
+          desktopQuery?.removeEventListener?.('change', onDesktopChange);
           trigger.removeEventListener('click', onTrigger);
           panel.removeEventListener('click', onPanelClick);
           panel.removeEventListener('transitionend', onPanelTransitionSettled);
