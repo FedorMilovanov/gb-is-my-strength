@@ -6,6 +6,7 @@ on:
       - 'src/components/article-pilots/**'
       - 'src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki.astro'
       - 'scripts/grok-rail-pilot-browser-test.mjs'
+      - 'scripts/grok-toc-keyboard-browser-contract.mjs'
       - 'scripts/grok-stage2-*.mjs'
       - 'scripts/site-sections-menu-filter-browser-contract.mjs'
       - 'scripts/reader-library-premium-browser-contract.cjs'
@@ -17,6 +18,7 @@ on:
       - 'src/components/article-pilots/**'
       - 'src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki.astro'
       - 'scripts/grok-rail-pilot-browser-test.mjs'
+      - 'scripts/grok-toc-keyboard-browser-contract.mjs'
       - 'scripts/grok-stage2-*.mjs'
       - 'scripts/site-sections-menu-filter-browser-contract.mjs'
       - '.github/workflows/deploy.yml'
@@ -57,6 +59,7 @@ jobs:
         run: |
           npm ci
           node --check scripts/grok-rail-pilot-browser-test.mjs
+          node --check scripts/grok-toc-keyboard-browser-contract.mjs
           node --check scripts/grok-stage2-release-route-proof.mjs
           node --check scripts/grok-stage2-theme-print-audit.mjs
           node --check scripts/grok-stage2-library-route-audit.mjs
@@ -80,6 +83,9 @@ jobs:
 
       - name: Browser proof — themes, 125 percent and print
         run: node scripts/grok-stage2-theme-print-audit.mjs
+
+      - name: Browser proof - keyboard navigation through visible Grok TOC headings
+        run: node scripts/grok-toc-keyboard-browser-contract.mjs
 
       - name: Browser proof — real Library V3 backup and restore
         run: node scripts/grok-stage2-library-route-audit.mjs
@@ -109,6 +115,7 @@ jobs:
           name: grok-product-pilot-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             reports/grok-stage2/
+            reports/grok-keyboard/
             reports/reader-controls-a11y-browser-contract.*
             reports/hermenevtika-mobile-chrome/
             reports/site-sections-menu-filter*
