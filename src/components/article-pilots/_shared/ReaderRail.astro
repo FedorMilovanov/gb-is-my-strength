@@ -690,9 +690,13 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
     .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember-expand.is-open {
       clip-path:inset(0 0 0 0 round 16px);
     }
+    /* The five-rate strip uses viewport-relative anchoring. Never animate
+       transform on its ancestor: a transient transform creates a containing
+       block for position:fixed and makes the speed strip jump while folding.
+       A pure opacity entrance keeps the premium fade without changing axis. */
     @keyframes grokCompactToolEntrance{
-      from{opacity:0;transform:translateY(-7px);}
-      to{opacity:1;transform:none;}
+      from{opacity:0;}
+      to{opacity:1;}
     }
     @media(max-height:420px){
       .hrail--grok.hrail--compact .hrail-bottom{gap:2px;}
