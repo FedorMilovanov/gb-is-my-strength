@@ -82,8 +82,20 @@ const { nodes, root = false } = Astro.props;
   .hrail--grok .grok-toc li.grok-row { padding:0; margin:2px 0; position:relative; }
   .hrail--grok .grok-entry { display:flex; align-items:flex-start; position:relative; min-height:31px; padding-left:31px; }
   .hrail--grok .grok-entry > a { flex:1 1 auto; min-width:0; padding:6px 6px 6px 9px; border-radius:8px;
-    font-size:12px; line-height:1.36; text-decoration:none; }
+    font-size:12px; line-height:1.36; text-decoration:none; color:var(--rail-muted,#725e52);
+    /* The base rail animates color for 200ms. During theme switches this
+       exposes a previous low-contrast palette in Linux WebKit. Theme text
+       colors must update atomically; only background may animate. */
+    transition:background-color .2s; }
+  /* WebKit/Linux could inherit a low-contrast purple visited link in Night.
+     The same reader-theme token must govern both link states, never UA history. */
+  .hrail--grok .grok-entry > a:visited { color:var(--rail-muted,#725e52); }
   .hrail--grok .grok-entry > a:hover { text-decoration:none; }
+  .hrail--grok .grok-entry > a:focus-visible {
+    outline:2px solid var(--rail-accent,#7a2e2e);
+    outline-offset:-2px;
+    background:var(--rail-active,rgba(122,46,46,.12));
+  }
   .hrail--grok .grok-entry > .hrail-dot { left:11px; top:16px; margin-top:-4px; width:8px; height:8px; border:0;
     background:var(--rail-line,rgba(0,0,0,.2)); box-shadow:none; }
   /* The legacy descendant selector must not paint every nested link active

@@ -371,6 +371,90 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
           setDisclosure(button, button.getAttribute('aria-expanded') === 'true');
         }
       });
+
+      // Progressive keyboard traversal of the existing nested list, not a
+      // second ARIA tree or a new scroll/URL owner. Tab and Enter retain their
+      // native link/button behavior; arrow keys only work inside this TOC.
+      const rowLink = (row: HTMLLIElement) =>
+        row.querySelector<HTMLAnchorElement>(':scope > .grok-entry > a');
+      const rowToggle = (row: HTMLLIElement) =>
+        row.querySelector<HTMLButtonElement>(':scope > .grok-entry > [data-grok-toggle]');
+      const parentRow = (row: HTMLLIElement) =>
+        row.parentElement?.closest<HTMLLIElement>('li.grok-row') ?? null;
+      const visibleRows = () =>
+        Array.from(toc.querySelectorAll<HTMLLIElement>('li.grok-row')).filter((row) => {
+          if (!rowLink(row)) return false;
+          let parent = parentRow(row);
+          while (parent && toc.contains(parent)) {
+            if (parent.hasAttribute('data-grok-collapsed')) return false;
+            parent = parentRow(parent);
+          }
+          return true;
+        });
+      const focusRow = (row?: HTMLLIElement | null) => {
+        const link = row && rowLink(row);
+        if (!link) return;
+        // Focus naturally scrolls the rail's own scroller without changing the
+        // article fragment or initiating a ReaderState navigation.
+        link.focus();
+      };
+      toc.addEventListener('keydown', (event) => {
+        if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+        if (!(event.target instanceof HTMLAnchorElement ||
+              event.target instanceof HTMLButtonElement)) return;
+        const entry = event.target.closest<HTMLElement>('.grok-entry');
+        const row = entry?.parentElement;
+        if (!(row instanceof HTMLLIElement) || !row.matches('li.grok-row') ||
+            !toc.contains(row)) return;
+
+        const navigable = visibleRows();
+        const index = navigable.indexOf(row);
+        if (index < 0) return;
+        let next: HTMLLIElement | null = null;
+        switch (event.key) {
+          case 'ArrowDown':
+            next = navigable[Math.min(index + 1, navigable.length - 1)] ?? null;
+            break;
+          case 'ArrowUp':
+            next = navigable[Math.max(0, index - 1)] ?? null;
+            break;
+          case 'Home':
+            next = navigable[0] ?? null;
+            break;
+          case 'End':
+            next = navigable[navigable.length - 1] ?? null;
+            break;
+          case 'ArrowRight': {
+            const toggle = rowToggle(row);
+            if (!toggle) return;
+            if (toggle.getAttribute('aria-expanded') === 'false') {
+              setDisclosure(toggle, false);
+              event.preventDefault();
+              return;
+            }
+            const child = row.querySelector<HTMLLIElement>(
+              ':scope > .grok-child-motion > .grok-child-clip > .grok-child-list > li.grok-row');
+            if (!child) return;
+            next = child;
+            break;
+          }
+          case 'ArrowLeft': {
+            const toggle = rowToggle(row);
+            if (toggle?.getAttribute('aria-expanded') === 'true') {
+              setDisclosure(toggle, true);
+              next = row;
+            } else {
+              next = parentRow(row);
+              if (!next) return;
+            }
+            break;
+          }
+          default:
+            return;
+        }
+        event.preventDefault();
+        focusRow(next);
+      });
     }
     function revealAncestorForActive(row: HTMLLIElement) {
       let ancestor = row.parentElement?.closest<HTMLLIElement>('li.grok-row') ?? null;

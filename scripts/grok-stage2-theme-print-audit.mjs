@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import { chromium, firefox, webkit } from 'playwright';
 
+const sourceSha=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+if (process.env.SOURCE_SHA) assert.equal(sourceSha,process.env.SOURCE_SHA,'Theme audit must use the exact tested head');
 const DIST=path.resolve('dist');
 const ROUTE='/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/';
 const HTML=path.join(DIST,ROUTE.replace(/^\/+|\/+$/g,''),'index.html');
@@ -78,7 +81,8 @@ try{
      return {contrast,theme:html.getAttribute('data-reader-theme'),
        dark:html.classList.contains('dark'),sepia:root?.getAttribute('data-hm-reader-theme'),
        selected,railBg:css.backgroundColor,railImage:css.backgroundImage,
-       linkColor:link.color,decoration:link.textDecorationLine,
+       linkColor:link.color,railMuted:css.getPropertyValue('--rail-muted').trim(),
+        colorTransition:link.transitionProperty,decoration:link.textDecorationLine,
        overflow:document.documentElement.scrollWidth-innerWidth,
        visible:css.display!=='none',
        originalSvg:!!document.getElementById('gbFloatingControls')};
@@ -87,6 +91,10 @@ try{
     check(engine,'theme '+theme+' selected',snapshot.selected.length===1&&snapshot.selected[0]===theme,snapshot);
     check(engine,'theme '+theme+' original tools and geometry',snapshot.visible&&snapshot.originalSvg&&snapshot.overflow<=2,snapshot);
     check(engine,'theme '+theme+' TOC links not underlined',snapshot.decoration==='none',snapshot);
+     // The reader's text palette must change atomically with the background:
+     // an animated color can temporarily be unreadable on Linux WebKit.
+     check(engine,'theme '+theme+' text color is not animated',
+       !snapshot.colorTransition.split(',').map(s=>s.trim()).some(s=>s==='all'||s==='color'),snapshot);
     check(engine,'theme '+theme+' WCAG AA small navigation text contrast',snapshot.contrast>=4.5,snapshot);
    }
    check(engine,'sepia actually changes computed styling',
@@ -101,13 +109,13 @@ try{
     const rail=document.querySelector('.hrail--grok'),toc=document.querySelector('.hrail-scroll');
     return {scale:window.GBReaderPreferences.get().fontScale,
       size:parseFloat(getComputedStyle(p).fontSize),
-      bodyWidth:document.documentElement.scrollWidth-innerWidth,
+      horizontalOverflowPx:document.documentElement.scrollWidth-innerWidth,
       railHeight:rail.getBoundingClientRect().height,
       tocHeight:toc.clientHeight,
       controls:!!document.querySelector('.hrail-bottom')};
    });
    check(engine,'125 percent canonical maximum increases paragraph size',font.size>before*1.18,{before,font});
-   check(engine,'125 percent canonical maximum keeps reader usable',font.bodyWidth<=2&&font.tocHeight>=80&&font.controls,font);
+   check(engine,'125 percent canonical maximum keeps reader usable',font.horizontalOverflowPx<=2&&font.tocHeight>=80&&font.controls,font);
    await page.locator('#hmSettingsDone').click();
    await page.waitForFunction(()=>document.querySelector('#hmSettings')?.getAttribute('aria-hidden')==='true');
    await page.emulateMedia({media:'print'});
@@ -128,5 +136,5 @@ try{
 }finally{await new Promise(resolve=>server.close(resolve));}
 const target=path.resolve('reports/grok-stage2/theme-print-audit.json');
 fs.mkdirSync(path.dirname(target),{recursive:true});
-fs.writeFileSync(target,JSON.stringify({sha:'8fbd07e5ec97124c9fa0f66b1b549d08c9a0ccc9',results},null,2));
+fs.writeFileSync(target,JSON.stringify({sha:sourceSha,results},null,2));
 console.log('GROK THEME/FONT/PRINT AUDIT: '+results.length+'/'+results.length+' PASS');
