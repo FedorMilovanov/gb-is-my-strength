@@ -11,12 +11,12 @@ interface Props {
 
 const { current, variant = 'rich' } = Astro.props;
 const links = [
-  { id: 'publications', href: '/#publikacii', label: 'Публикации' },
-  { id: 'refutations', href: '/#razbor', label: 'Разбор заблуждений' },
-  { id: 'biografii', href: '/biografii/', label: 'Биографии' },
-  { id: 'articles', href: '/articles/', label: 'Все статьи' },
-  { id: 'app', href: '/app/', label: 'Приложение' },
-  { id: 'about', href: '/about/', label: 'О проекте' },
+  { id: 'publications', href: '/#publikacii', label: 'Публикации', description: 'Книги, циклы и исследования', group: 'reading' },
+  { id: 'refutations', href: '/#razbor', label: 'Разбор заблуждений', description: 'Богословские разборы', group: 'reading' },
+  { id: 'biografii', href: '/biografii/', label: 'Биографии', description: 'Жизнь и наследие христиан', group: 'reading' },
+  { id: 'articles', href: '/articles/', label: 'Все статьи', description: 'Каталог отдельных материалов', group: 'reading' },
+  { id: 'app', href: '/app/', label: 'Приложение', description: 'Инструменты для чтения', group: 'project' },
+  { id: 'about', href: '/about/', label: 'О проекте', description: 'Информация о библиотеке', group: 'project' },
 ] as const;
 ---
 <!-- Canonical static projection of the site-sections menu. Runtime lifecycle is
@@ -44,11 +44,32 @@ const links = [
   data-gb-site-menu-variant={variant}
 >
   {variant === 'rich' && <span class="gbs-menu-label" aria-hidden="true">Разделы сайта</span>}
-  {links.map((link) => (
-    <a href={link.href} data-close-nav aria-current={current === link.id ? 'page' : undefined}>
+  {variant === 'rich' && (
+    <div class="gbs-menu-desktop-filter" data-gb-menu-filter-wrap>
+      <label for="gbSiteMenuFilter">Быстро найти раздел</label>
+      <div class="gbs-menu-filter-field">
+        <input id="gbSiteMenuFilter" type="search" data-gb-menu-filter
+          autocomplete="off" spellcheck="false" placeholder="Например, биографии"
+          aria-describedby="gbSiteMenuFilterStatus" />
+        <button type="button" data-gb-menu-clear aria-label="Очистить фильтр разделов" hidden>×</button>
+      </div>
+      <p data-gb-menu-status id="gbSiteMenuFilterStatus" role="status" aria-live="polite" aria-atomic="true">Всего разделов: 6</p>
+    </div>
+  )}
+  {links.map((link, index) => (
+    <>
+      {variant === 'rich' && (index === 0 || index === 4) && (
+        <span class="gbs-menu-group-heading" data-gb-menu-group-title={link.group} aria-hidden="true">
+          {index === 0 ? 'Читать и исследовать' : 'Проект'}
+        </span>
+      )}
+      <a href={link.href} data-close-nav
+        data-gb-menu-section={variant === 'rich' ? '' : undefined}
+        data-gb-menu-group={variant === 'rich' ? link.group : undefined}
+        aria-current={current === link.id ? 'page' : undefined}>
       {variant === 'rich' ? (
         <>
-          <span>{link.label}</span>
+          <span class="gbs-menu-entry-copy"><span>{link.label}</span><small class="gbs-menu-description">{link.description}</small></span>
           <svg
             class="gbs-menu-chevron"
             viewBox="0 0 24 24"
@@ -64,8 +85,10 @@ const links = [
           ><path d="M9 18l6-6-6-6" /></svg>
         </>
       ) : link.label}
-    </a>
+      </a>
+    </>
   ))}
+  {variant === 'rich' && <p class="gbs-menu-no-matches" data-gb-menu-empty hidden>Совпадений нет. Уточните запрос или очистите фильтр.</p>}
 </div>
 
 <noscript>
@@ -257,5 +280,126 @@ const links = [
     #hMobileNav.gb-site-menu--rich .gbs-menu-chevron {
       transition: none !important;
     }
+  }
+  /* Desktop-only progressive enhancement. Mobile and no-JS remain the same
+     six canonical links, with one OverlayRuntime owner for open/close. */
+  #hMobileNav.gb-site-menu--rich .gbs-menu-desktop-filter,
+  #hMobileNav.gb-site-menu--rich .gbs-menu-group-heading,
+  #hMobileNav.gb-site-menu--rich .gbs-menu-description { display: none; }
+  #hMobileNav.gb-site-menu--rich a[data-gb-menu-section][hidden],
+  #hMobileNav.gb-site-menu--rich [data-gb-menu-group-title][hidden],
+  #hMobileNav.gb-site-menu--rich [data-gb-menu-empty][hidden] { display: none; }
+  @media (min-width: 85em) {
+    #hMobileNav.gb-site-menu--rich {
+      width: 300px;
+      max-height: min(520px, calc(100dvh - 100px));
+      overflow-x: hidden;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      overscroll-behavior: contain;
+    }
+    #hMobileNav.gb-site-menu--rich .gbs-menu-desktop-filter {
+      display: block;
+      position: sticky;
+      z-index: 1;
+      top: -8px;
+      padding: 10px 12px 8px;
+      background: var(--color-surface, #fff);
+      border-bottom: 1px solid var(--color-border, #e5e2dc);
+    }
+    html.dark #hMobileNav.gb-site-menu--rich .gbs-menu-desktop-filter {
+      background: var(--color-surface, #161a21);
+    }
+    #hMobileNav.gb-site-menu--rich .gbs-menu-desktop-filter > label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--color-text-muted, #6a6a6a);
+      font: 700 10px/1.3 var(--gb-font-sans, system-ui, sans-serif);
+    }
+    #hMobileNav.gb-site-menu--rich .gbs-menu-filter-field {
+      display: flex;
+      align-items: center;
+      min-height: 36px;
+      gap: 5px;
+      padding: 0 6px 0 10px;
+      border: 1px solid var(--color-border, #e5e2dc);
+      border-radius: 9px;
+      background: var(--color-surface, #fff);
+    }
+    #hMobileNav.gb-site-menu--rich .gbs-menu-filter-field:focus-within {
+      border-color: var(--color-accent, #7a2e2e);
+      outline: 2px solid color-mix(in srgb, var(--color-accent, #7a2e2e) 20%, transparent);
+      outline-offset: 1px;
+    }
+    #hMobileNav.gb-site-menu--rich [data-gb-menu-filter] {
+      flex: 1;
+      min-width: 0;
+      width: 100%;
+      padding: 8px 0;
+      border: 0;
+      outline: 0;
+      color: var(--color-text, #1a1a1a);
+      background: transparent;
+      font: 500 12px/1.4 var(--gb-font-sans, system-ui, sans-serif);
+    }
+    #hMobileNav.gb-site-menu--rich [data-gb-menu-clear] {
+      flex: 0 0 27px;
+      width: 27px;
+      height: 27px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--color-text-muted, #6a6a6a);
+      font-size: 18px;
+      cursor: pointer;
+    }
+    #hMobileNav.gb-site-menu--rich [data-gb-menu-clear][hidden] { display: none; }
+    #hMobileNav.gb-site-menu--rich [data-gb-menu-clear]:hover {
+      background: color-mix(in srgb, var(--color-accent-gold, #b8936a) 12%, transparent);
+    }
+    #hMobileNav.gb-site-menu--rich [data-gb-menu-status] {
+      margin: 5px 0 0;
+      color: var(--color-text-muted, #6a6a6a);
+      font: 500 10px/1.35 var(--gb-font-sans, system-ui, sans-serif);
+    }
+    #hMobileNav.gb-site-menu--rich .gbs-menu-group-heading {
+      display: block;
+      padding: 12px 12px 4px;
+      color: var(--color-text-muted, #6a6a6a);
+      font: 750 9px/1.35 var(--gb-font-sans, system-ui, sans-serif);
+      letter-spacing: .11em;
+      text-transform: uppercase;
+    }
+    #hMobileNav.gb-site-menu--rich .gbs-menu-entry-copy {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    #hMobileNav.gb-site-menu--rich .gbs-menu-description {
+      display: block;
+      margin-top: 2px;
+      color: var(--color-text-muted, #6a6a6a);
+      font: 400 10.5px/1.4 var(--gb-font-sans, system-ui, sans-serif);
+    }
+    #hMobileNav.gb-site-menu--rich a[data-gb-menu-section] {
+      min-height: 45px;
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+    #hMobileNav.gb-site-menu--rich .gbs-menu-no-matches {
+      margin: 10px 7px;
+      padding: 12px;
+      border: 1px dashed var(--color-border, #e5e2dc);
+      border-radius: 9px;
+      color: var(--color-text-muted, #6a6a6a);
+      font: 500 12px/1.5 var(--gb-font-sans, system-ui, sans-serif);
+    }
+  }
+  @media (min-width: 85em) and (max-height: 360px) {
+    #hMobileNav.gb-site-menu--rich { max-height: calc(100dvh - 90px); }
+    #hMobileNav.gb-site-menu--rich .gbs-menu-label { padding-top: 3px; padding-bottom: 5px; }
+    #hMobileNav.gb-site-menu--rich .gbs-menu-desktop-filter { padding-top: 5px; padding-bottom: 3px; }
+    #hMobileNav.gb-site-menu--rich .gbs-menu-desktop-filter > label { margin-bottom: 2px; }
+    #hMobileNav.gb-site-menu--rich .gbs-menu-group-heading { padding-top: 5px; }
   }
 </style>
