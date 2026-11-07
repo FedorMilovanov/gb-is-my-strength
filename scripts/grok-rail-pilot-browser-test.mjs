@@ -144,9 +144,87 @@ try {
           if(viewport.width < 1200) {
             check(name,viewport.id,'mobile controls retained',
               await page.locator('.hmbar').count()>0 && await page.locator('.hmtop').count()>0);
+            const mobileDocument = await page.evaluate(() => {
+              const heading=document.querySelector('article h1');
+              const notice=document.querySelector('aside.notice');
+              const link=document.querySelector('.hmsheet-sub .hmsheet-link');
+              return {
+                titleTop:Math.round(heading?.getBoundingClientRect().top ?? -1),
+                noticeAfterTitle:!!heading && !!notice &&
+                  !!(heading.compareDocumentPosition(notice)&Node.DOCUMENT_POSITION_FOLLOWING),
+                licenseLinks:notice?.querySelectorAll('a').length,
+                nestedLink:!!link
+              };
+            });
+            check(name,viewport.id,'article headline before rights in mobile first screen',
+              mobileDocument.titleTop>=0 && mobileDocument.titleTop<viewport.height-100 &&
+              mobileDocument.noticeAfterTitle && mobileDocument.licenseLinks===3,mobileDocument);
+            const mobileTrigger=page.locator('#hmBottomBtn');
+            await mobileTrigger.click();
+            const nestedContrast=await page.locator('.hmsheet-sub .hmsheet-link').first().evaluate(el=>{
+              const foreground=getComputedStyle(el).color;
+              const background=getComputedStyle(el.closest('.hmsheet-panel')).backgroundColor;
+              const read=c=>(c.match(/[\d.]+/g)||[]).map(Number);
+              const fg=read(foreground),bg=read(background);
+              const alpha=fg[3]??1;
+              const color=fg.slice(0,3).map((x,i)=>x*alpha+bg[i]*(1-alpha));
+              const luminance=rgb=>rgb.map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;})
+                .reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
+              const a=luminance(color),b=luminance(bg);
+              return (Math.max(a,b)+.05)/(Math.min(a,b)+.05);
+            });
+            check(name,viewport.id,'mobile nested TOC meets WCAG AA contrast',
+              nestedContrast>=4.5,Number(nestedContrast.toFixed(2)));
+            await page.locator('#hmSheetClose').click();
           } else {
             check(name,viewport.id,'existing right cluster retained',snapshot.right);
             check(name,viewport.id,'disclosure initialized',snapshot.ready);
+            const integrated=await page.evaluate(()=>{
+              const rail=document.querySelector('.hrail--grok'),r=rail.getBoundingClientRect(),style=getComputedStyle(rail);
+              const library=document.querySelector('#gb-hl-fab');
+              const toggle=document.querySelector('#hrailLayoutToggle');
+              return {left:Math.round(r.left),top:Math.round(r.top),radius:style.borderRadius,
+                shadow:style.boxShadow,width:Math.round(r.width),
+                libraryDocked:library?.parentElement?.classList.contains('hrail-bottom'),
+                toggleReady:toggle?.getAttribute('aria-expanded')==='true'};
+            });
+            check(name,viewport.id,'V26 integrated rail rather than floating rounded card',
+              integrated.left===0 && integrated.top===0 &&
+              integrated.radius==='0px' && integrated.shadow==='none' &&
+              integrated.width>=280,integrated);
+            check(name,viewport.id,'canonical Library V3 docked in Grok rail',
+              integrated.libraryDocked,integrated);
+            check(name,viewport.id,'Grok layout toggle ready',
+              integrated.toggleReady,integrated);
+            const articleBefore=await page.locator('main.article-main--hrail')
+              .evaluate(el => el.getBoundingClientRect().left);
+            const readingScrollBefore=await page.evaluate(() => Math.round(scrollY));
+            await page.locator('#hrailLayoutToggle').click();
+            await page.waitForFunction(() => Math.round(document.querySelector('.hrail--grok')?.getBoundingClientRect().width ?? 0) === 68, {timeout:1600});
+            const compact=await page.evaluate(()=>{
+              const rail=document.querySelector('.hrail--grok'),r=rail.getBoundingClientRect();
+              return {width:Math.round(r.width),mode:document.body.classList.contains('grok-rail-compact'),
+                aria:document.querySelector('#hrailLayoutToggle')?.getAttribute('aria-expanded'),
+                inert:document.querySelector('.hrail-scroll')?.hasAttribute('inert')};
+            });
+            check(name,viewport.id,'real 68px compact rail with keyboard-inert TOC',
+              compact.width===68 && compact.mode && compact.aria==='false' && compact.inert,compact);
+            const articleAfter=await page.locator('main.article-main--hrail')
+              .evaluate(el => el.getBoundingClientRect().left);
+            const readingScrollAfter=await page.evaluate(() => Math.round(scrollY));
+            check(name,viewport.id,'compact rail rebalances actual article position',
+              articleAfter+40<=articleBefore && readingScrollAfter===readingScrollBefore,
+              {before:articleBefore,after:articleAfter,scrollBefore:readingScrollBefore,scrollAfter:readingScrollAfter});
+            await page.locator('#hrailLayoutToggle').click();
+            await page.waitForFunction(() => Math.round(document.querySelector('.hrail--grok')?.getBoundingClientRect().width ?? 0) >= 280, {timeout:1600});
+            const reopened=await page.evaluate(()=>{
+              const rail=document.querySelector('.hrail--grok');
+              return {expanded:document.querySelector('#hrailLayoutToggle')?.getAttribute('aria-expanded'),
+                width:Math.round(rail.getBoundingClientRect().width),
+                inert:document.querySelector('.hrail-scroll')?.hasAttribute('inert')};
+            });
+            check(name,viewport.id,'rail reopens without leaving inert descendants',
+              reopened.expanded==='true' && reopened.width>=280 && !reopened.inert,reopened);
             if(viewport.height <= 420) {
               check(name,viewport.id,'usable short viewport',snapshot.scrollHeight >= 80,snapshot.scrollHeight);
             }
