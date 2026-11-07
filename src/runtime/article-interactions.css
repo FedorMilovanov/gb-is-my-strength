@@ -1,5 +1,7 @@
-.bref > .btip[data-generated-scripture-tip="1"] {
-  display: none;
+/* Browser-created Scripture cards are inert siblings of their trigger.
+   On open the canonical controller portals one card to <body>. */
+.btip[data-generated-scripture-tip="1"]:not(.gb-floating-tip) {
+  display: none !important;
 }
 
 .gb-floating-tip {
@@ -74,6 +76,29 @@
   font-size: .82rem;
   letter-spacing: .04em;
   text-transform: uppercase;
+}
+
+.gb-floating-tip .btip__external {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  margin-top: .65rem;
+  padding: .45rem .7rem;
+  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  border-radius: 9px;
+  color: inherit;
+  background: color-mix(in srgb, currentColor 5%, transparent);
+  font: 600 .8rem/1.35 var(--font-sans, system-ui, sans-serif);
+  text-decoration: none;
+}
+.gb-floating-tip .btip__external:hover,
+.gb-floating-tip .btip__external:focus-visible {
+  background: color-mix(in srgb, currentColor 11%, transparent);
+  text-decoration: underline;
+}
+.gb-floating-tip .btip__external:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
 }
 
 .gterm[aria-expanded="true"],

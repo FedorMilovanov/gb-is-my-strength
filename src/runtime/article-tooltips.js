@@ -14,6 +14,9 @@ let closeTimer = 0;
 let pointerEpoch = 0;
 let pointerX = null;
 let pointerY = null;
+// Generated Scripture cards live beside their trigger until portaled to body;
+// never nest a navigable <a> inside the <button.bref>.
+const scriptureTips = new WeakMap();
 
 function overlayRuntime() {
   return window.OverlayRuntime || window.SiteUtils?.OverlayRuntime || null;
@@ -133,8 +136,36 @@ function configuredScripture(reference) {
   return '';
 }
 
+// Reference-only fallback: a real external passage, not a dead placeholder.
+ // The displayed site's corpus may be held under a publication-rights gate.
+ // Link to a separate Russian Synodal edition; NEVER copy a held translation.
+function scriptureExternalUrl(reference) {
+  const value = String(reference || '').replace(/\u00a0/g, ' ').replace(/[‐‑‒–—−]/g, '-')
+    .replace(/\s+/g, ' ').trim();
+  const match = value.match(/^([1-4]?\s*[А-ЯЁа-яё.\s-]+?)\s+(\d{1,3})(?::(\d{1,3}[а-яa-z]?)(?:-(\d{1,3}[а-яa-z]?))?)?$/iu);
+  if (!match || value.length > 100) return '';
+  const chapter = Number(match[2]), first = match[3] ? Number.parseInt(match[3], 10) : 0;
+  const last = match[4] ? Number.parseInt(match[4], 10) : 0;
+  if (chapter < 1 || chapter > 150 || first > 176 || (match[3] && first < 1) ||
+      last > 176 || (match[4] && (last < first || last < 1))) return '';
+  const book = match[1].trim().replace(/\.+$/,'');
+  const aliases = {
+    'Луки':'От Луки','Лк':'От Луки','Матфея':'От Матфея','Мф':'От Матфея',
+    'Марка':'От Марка','Мк':'От Марка','Иоанна':'От Иоанна','Ин':'От Иоанна',
+    'Ефесянам':'К Ефесянам','Еф':'К Ефесянам',
+  };
+  const title = aliases[book] || book;
+  const verse = match[3] ? ':' + first + (match[4] ? '-' + last : '') : '';
+  const url = new URL('https://www.biblegateway.com/passage/');
+  url.searchParams.set('search', title + ' ' + match[2] + verse);
+  url.searchParams.set('version', 'RUSV');
+  return url.href;
+}
+
 function createScriptureTip(anchor) {
   const reference = String(anchor.dataset.ref || anchor.textContent || '').trim();
+  const permittedText = configuredScripture(reference);
+  const externalUrl = scriptureExternalUrl(reference);
   const tip = document.createElement('span');
   tip.className = 'btip';
   tip.dataset.generatedScriptureTip = '1';
@@ -143,9 +174,25 @@ function createScriptureTip(anchor) {
   label.textContent = reference;
   const body = document.createElement('span');
   body.className = 'btip__text';
-  body.textContent = configuredScripture(reference) || 'Ссылка на указанное место Священного Писания.';
+  body.textContent = permittedText || (externalUrl
+    ? 'Текст этого перевода на сайте не опубликован.'
+    : 'Ссылка на указанное место Священного Писания.');
   tip.append(label, document.createTextNode(' '), body);
-  anchor.appendChild(tip);
+  if (externalUrl) {
+    // Navigable content is a non-modal dialog, not a tooltip role with a
+    // focusable child. The opener remains the single keyboard entry point.
+    tip.setAttribute('role', 'dialog');
+    tip.setAttribute('aria-label', 'Место Писания: ' + reference);
+    const link = document.createElement('a');
+    link.className = 'btip__external';
+    link.href = externalUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = 'Открыть в Библии · Синодальный перевод ↗';
+    tip.appendChild(link);
+  }
+  anchor.insertAdjacentElement('afterend', tip);
+  scriptureTips.set(anchor, tip);
   return tip;
 }
 
@@ -159,7 +206,7 @@ function nextTipId() {
 function inlineTip(anchor) {
   if (anchor.matches('.gterm')) return anchor.querySelector('.gtip');
   if (anchor.matches('.fn-marker')) return anchor.querySelector('.tooltip');
-  if (anchor.matches('.bref[data-ref]')) return anchor.querySelector('.btip') || createScriptureTip(anchor);
+  if (anchor.matches('.bref[data-ref]')) return anchor.querySelector('.btip') || scriptureTips.get(anchor) || createScriptureTip(anchor);
   return null;
 }
 
@@ -211,6 +258,8 @@ function prepareGlossaryTip(tip) {
    opener, Escape/outside-focus close restores the opener exactly, and a
    locked mobile sheet never leaves focus on body. */
 let escapeSuppress = null;
+let mobileDismissedAnchor = null;
+let mobileDismissedUntil = 0;
 const TIP_FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 function tipFocusables(tip) {
   if (!tip) return [];
@@ -380,13 +429,25 @@ export function closeTooltip(reason = 'close') {
   // describedby reference into an excluded subtree.
   record.anchor.removeAttribute('aria-describedby');
   if (record.mobile) {
+    // OverlayRuntime restores focus to the reference opener on mobile.
+    // Without suppressing that restoration, its focus listener re-opens
+    // the sheet immediately after Escape or an outside tap.
+    const opener = record.anchor;
+    // SiteUtils may retry focus restoration for up to eight 60ms ticks.
+    // A one-shot focus suppression is insufficient and causes ghost reopen.
+    mobileDismissedAnchor = opener;
+    mobileDismissedUntil = window.performance.now() + 650;
+    escapeSuppress = opener;
     if (overlayRuntime()) overlayRuntime().close(OWNER, reason);
     else window.SiteUtils?.unlockScroll?.(`overlay:${OWNER}`);
+    window.setTimeout(() => { if (escapeSuppress === opener) escapeSuppress = null; }, 250);
   }
   restore(record);
 }
 
 function openTooltip(anchor, reason = 'open') {
+  if ((reason === 'focus' || reason === 'hover') && anchor === mobileDismissedAnchor &&
+      window.performance.now() < mobileDismissedUntil) return;
   if (reason === 'hover' && active && active.anchor !== anchor && active.reason !== 'hover'
     && pointerEpoch === active.pointerBaseline) return;
   cancelClose();
@@ -472,6 +533,11 @@ function openTooltip(anchor, reason = 'open') {
         reason,
       });
     } else window.SiteUtils?.lockScroll?.(`overlay:${OWNER}`);
+    // Mobile scroll locking fixes <body> and offsets it by the prior scrollY.
+    // WebKit can retain the pre-lock geometry for one frame, displaying the
+    // popup thousands of pixels below the viewport in long articles.
+    // Reposition after the lock mutation, before the next paint.
+    if (active?.tip === tip) positionMobile(tip);
   }
 }
 
@@ -506,6 +572,9 @@ function initializeAnchor(anchor) {
     // An Escape close that restored focus to this opener must not be
     // undone by the focus-open listener (popup contract: Escape wins).
     if (escapeSuppress === anchor) { escapeSuppress = null; return; }
+    // A mobile second tap refocuses the opener from the portal link before
+    // the click. Do not overwrite the existing click reason or it won't close.
+    if (active?.anchor === anchor) { cancelClose(); return; }
     openTooltip(anchor, 'focus');
   });
   anchor.addEventListener('blur', (event) => {

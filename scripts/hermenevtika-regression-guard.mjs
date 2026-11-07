@@ -176,7 +176,8 @@ async function keyboardFocusState(page, selector) {
 async function restoredTooltipState(page) {
   return page.evaluate(() => {
     const anchor = document.querySelector('.bref[data-ref]');
-    const tip = anchor?.querySelector('.btip');
+    const tip = anchor?.nextElementSibling?.matches('.btip')
+      ? anchor.nextElementSibling : anchor?.querySelector('.btip');
     const staleProperties = tip instanceof HTMLElement
       ? ['left', 'top', 'right', 'bottom', 'max-height', 'overflow-y', 'position', 'pointer-events', '--gb-tip-arrow-x'].filter((property) => tip.style.getPropertyValue(property))
       : ['missing-inline-tip'];

@@ -19,6 +19,7 @@ const HELD_CORPUS_PATH = '/data/bible/kassian/2timofeyu.json';
 const MISSING_REFERENCE = '__scripture_projection_missing__';
 const STALE_REFERENCE = '__stale_scripture_projection_probe__';
 const GENERIC_FALLBACK = 'Ссылка на указанное место Священного Писания.';
+const REFERENCE_FALLBACK = 'Текст этого перевода на сайте не опубликован.';
 const TOOLTIP_OWNER = 'article-inline-tooltip';
 const TOOLTIP_VERSION = 20;
 const LOCAL_TEST_HOSTS = new Set(['127.0.0.1', 'localhost', '::1']);
@@ -240,6 +241,8 @@ try {
   assert.equal(Object.values(projectionSnapshot.scriptureData).includes(HELD_TEXT), false,
     'held Cassian verbatim text must not leak through another projection key');
 
+  assert.equal(await page.locator('.bref a[href]').count(), 0,
+    'generated external passage links must not become nested interactive controls inside reference buttons');
   const heldTrigger = page.locator(`.bref[data-ref="${HELD_REFERENCE}"]`).first();
   assert.equal(await heldTrigger.count(), 1, `real route must expose reference label ${HELD_REFERENCE}`);
   await heldTrigger.focus();
@@ -247,11 +250,37 @@ try {
   await heldTip.waitFor({ state: 'visible' });
   assert.equal((await heldTip.locator('.btip__reference').textContent())?.trim(), HELD_REFERENCE);
   const heldTooltipText = (await heldTip.locator('.btip__text').textContent())?.trim();
-  assert.equal(heldTooltipText, GENERIC_FALLBACK,
-    'known but publication-blocked Scripture must use the existing generic fallback');
+  assert.equal(heldTooltipText, REFERENCE_FALLBACK,
+    'known but publication-blocked Scripture must disclose missing publication rights without a dead placeholder');
+  const heldExternal = heldTip.locator('.btip__external');
+  assert.equal(await heldExternal.count(), 1, 'publication-blocked reference needs one genuine external passage link');
+  const heldHref = new URL(await heldExternal.getAttribute('href'));
+  assert.equal(heldHref.origin, 'https://www.biblegateway.com');
+  assert.equal(heldHref.pathname, '/passage/');
+  assert.equal(heldHref.searchParams.get('version'), 'RUSV');
+  assert.equal(heldHref.searchParams.get('search'), '2 Тимофею 2:14-15');
+  assert.equal(await heldExternal.getAttribute('target'), '_blank');
+  assert.match(await heldExternal.getAttribute('rel'), /noopener/);
   assert.notEqual(heldTooltipText, HELD_TEXT,
     'publication-blocked Cassian verbatim text must not reach the reader tooltip');
   await page.keyboard.press('Escape');
+
+  const lukeTrigger = page.locator('.bref[data-ref="Луки 24:27"]').first();
+  await lukeTrigger.focus();
+  const lukeTip = page.locator('.btip.is-open').last();
+  await lukeTip.waitFor({ state: 'visible' });
+  const lukeLink = new URL(await lukeTip.locator('.btip__external').getAttribute('href'));
+  assert.equal(lukeLink.searchParams.get('search'), 'От Луки 24:27',
+    'real user screenshot Luke 24:27 must link to the verified Synodal passage');
+  assert.equal(lukeLink.searchParams.get('version'), 'RUSV');
+  assert.equal((await lukeTip.locator('.btip__text').textContent())?.trim(), REFERENCE_FALLBACK);
+  // Tab leaves the native reference button into the one real external link.
+  await page.keyboard.press('Tab');
+  assert.equal(await lukeTip.locator('.btip__external').evaluate((link) => document.activeElement === link), true,
+    'scripture external source must be keyboard reachable');
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('.btip.is-open').count(), 0,
+    'Escape closes the link-bearing Scripture card without a stale overlay');
 
   await page.evaluate((missingReference) => {
     const host = document.querySelector('article') || document.querySelector('main') || document.body;
@@ -269,8 +298,58 @@ try {
   assert.equal((await missingTip.locator('.btip__reference').textContent())?.trim(), MISSING_REFERENCE);
   assert.equal((await missingTip.locator('.btip__text').textContent())?.trim(), GENERIC_FALLBACK,
     'intentionally missing reference must preserve the existing generic fallback');
+  assert.equal(await missingTip.locator('.btip__external').count(), 0,
+    'invalid non-Bible references must not invent an external passage URL');
   assert.equal(await page.evaluate((reference) => Object.hasOwn(window.SCRIPTURE_DATA || {}, reference), MISSING_REFERENCE), false,
     'missing probe must not be synthesized into the canonical projection');
+
+  // Deep-scroll mobile regression: the fixed-body scroll lock must not move
+  // the Scripture card outside the visible viewport; second tap, Escape
+  // and outside tap must each close one owner without reopening it.
+  const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  try {
+    const mobileErrors = [];
+    mobile.on('pageerror', (error) => mobileErrors.push(String(error.message || error)));
+    await mobile.goto(`${BASE}${ROUTE}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await mobile.waitForFunction(() => window.GBArticleTooltips?.owner === 'article-inline-tooltip');
+    const mobileLuke = mobile.locator('.bref[data-ref="Луки 24:27"]').first();
+    await mobileLuke.scrollIntoViewIfNeeded();
+    const beforeY = await mobile.evaluate(() => window.scrollY);
+    assert(beforeY > 1000, 'deep-scroll mobile witness must start well below the first fold');
+    const mobileTip = mobile.locator('.btip.is-open');
+    const checkMobileCard = async () => {
+      await mobileTip.waitFor({ state: 'visible' });
+      const box = await mobileTip.boundingBox();
+      assert(box && box.x >= -1 && box.y >= -1 && box.x + box.width <= 391 && box.y + box.height <= 845,
+        'mobile Scripture card moved outside viewport after scroll lock');
+      assert.equal(await mobileTip.locator('.btip__external').count(), 1);
+      assert.equal(await mobile.locator('.bref a[href]').count(), 0,
+        'mobile generated links must not be nested inside a reference button');
+    };
+    await mobileLuke.click();
+    await checkMobileCard();
+    await mobileLuke.click();
+    await mobile.waitForFunction(() => document.querySelectorAll('.btip.is-open').length === 0);
+    await mobileLuke.click();
+    await checkMobileCard();
+    await mobile.keyboard.press('Escape');
+    await mobile.waitForFunction(() => document.querySelectorAll('.btip.is-open').length === 0);
+    await mobileLuke.click();
+    await checkMobileCard();
+    await mobile.mouse.click(380, 75);
+    await mobile.waitForFunction(() => document.querySelectorAll('.btip.is-open').length === 0);
+    // The shared overlay's delayed focus-restoration retries must not
+    // resurrect a dismissed mobile popup during the following half-second.
+    await mobile.waitForTimeout(550);
+    assert.equal(await mobileTip.count(), 0, 'outside-click dismissal must remain stable after focus restoration');
+    const afterY = await mobile.evaluate(() => window.scrollY);
+    assert(Math.abs(afterY - beforeY) < 80, 'closing mobile Scripture card must restore the previous reading position');
+    assert.equal(await mobile.evaluate(() => window.SiteUtils?._scrollLockCount), 0,
+      'mobile Scripture card must fully release the shared scroll lock');
+    assert.deepEqual(mobileErrors, [], 'deep-scroll mobile Scripture interactions must not throw');
+  } finally {
+    await mobile.close();
+  }
 
   assert.deepEqual(pageErrors, [], `unexpected page errors: ${pageErrors.join(' | ')}`);
   assert.deepEqual(consoleErrors, [], `unexpected console errors: ${consoleErrors.join(' | ')}`);
