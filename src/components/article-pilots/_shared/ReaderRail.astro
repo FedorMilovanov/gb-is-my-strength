@@ -823,7 +823,7 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
           ? 'Введение'
           : phase === 'after-content'
             ? 'Готово'
-            : `${idx + 1} / ${rows.length}`;
+            : (isGrok && idx < 0 ? 'Введение' : `${idx + 1} / ${rows.length}`);
       }
     }
 
