@@ -290,7 +290,7 @@
   if (!global || (global.GBSummaryDisclosure && global.GBSummaryDisclosure.version === 1)) return;
   var sequence = 0;
   function hashTarget() {
-    if (!global.location.hash || global.location.hash.length < 2) return null;
+    if (!global.location || !global.location.hash || global.location.hash.length < 2) return null;
     try { return document.getElementById(decodeURIComponent(global.location.hash.slice(1))); }
     catch (_) { return null; }
   }

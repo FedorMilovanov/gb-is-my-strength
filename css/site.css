@@ -1627,15 +1627,15 @@ body.nagornaya-page main .text-2xl{font-size:calc(24px*var(--gb-reader-font-scal
    because the on-screen default is folded. */
 @media print {
   .summary-card[data-gb-summary-owner="1"] .gb-summary-motion {
-    grid-template-rows: 1fr !important;
-    opacity: 1 !important;
-    overflow: visible !important;
+    grid-template-rows: 1fr;
+    opacity: 1;
+    overflow: visible;
   }
   .summary-card[data-gb-summary-owner="1"] .gb-summary-motion > .summary-card__body {
-    overflow: visible !important;
+    overflow: visible;
   }
   .summary-card[data-gb-summary-owner="1"] .gb-summary-toggle__chevron {
-    display: none !important;
+    display: none;
   }
 }
 
@@ -1664,6 +1664,6 @@ body .article-body .article-header > .original-author-card + .article-byline {
 }
 @media print {
   .summary-card[data-gb-summary-owner="1"] .gb-summary-motion {
-    transition: none !important;
+    transition: none;
   }
 }
