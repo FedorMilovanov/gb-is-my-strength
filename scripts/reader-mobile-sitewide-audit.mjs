@@ -45,14 +45,25 @@ for(const [engine,driver] of Object.entries({chromium,webkit,firefox})){
         const canvas=root?.querySelector('.page-wrap');
         if(!canvas)return null;
         const px=e=>parseFloat(getComputedStyle(e).paddingTop)||0;
-        const owner=px(canvas);
+        const bottom=e=>parseFloat(getComputedStyle(e).paddingBottom)||0;
+        const owner=px(canvas),bottomOwner=bottom(canvas);
         const nested=[...canvas.querySelectorAll('main,article')].filter(e=>getComputedStyle(e).display!=='none')
-          .map(e=>({tag:e.tagName,cl:String(e.className).slice(0,45),top:Math.round(px(e))}));
+          .map(e=>({tag:e.tagName,cl:String(e.className).slice(0,45),top:Math.round(px(e)),bottom:Math.round(bottom(e))}));
         const hero=canvas.querySelector('#gbs2Hero');
-        return {owner,nested,heroY:hero?.getBoundingClientRect().top??null};
+        return {
+          owner,bottomOwner,nested,
+          bodyBottom:bottom(document.body),rootBottom:bottom(root),
+          heroY:hero?.getBoundingClientRect().top??null
+        };
       });
       if(!row.canvasInset||row.canvasInset.owner<50||row.canvasInset.nested.some(e=>Math.abs(e.top-row.canvasInset.owner)<1))
         row.fail.push('nested mobile reader duplicates outer toolbar top inset');
+      // The fixed lower bar also requires one reserved inset, never one per
+      // nested article, main, root and body (formerly 330-468px wasted).
+      const b=row.canvasInset;
+      if(b&&(b.bottomOwner<90||b.bodyBottom>2||b.rootBottom>2||
+        b.nested.some(e=>Math.abs(e.bottom-b.bottomOwner)<1)))
+        row.fail.push('nested reader duplicates bottom-bar clearance');
     }
     if(name==='gill'||name==='pastor'||name==='baptist-chapter'){
       // Real fixed chrome, not merely a rendered button: the manuscript

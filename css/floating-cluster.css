@@ -3182,7 +3182,9 @@ html.dark [data-gill-v16] .mobile-top-bar {
     html:has([data-gill-v16]) body,
     body:has([data-gill-v16]) {
       overflow-x: clip !important;
-      padding-bottom: calc(var(--gill-mobile-bar-h) + env(safe-area-inset-bottom, 0px) + 54px) !important;
+      /* The nested page canvas owns the bottom clearance; do not add
+         another full-height reserve after it at the body boundary. */
+      padding-bottom: 0 !important;
     }
     /* scroll-padding-bottom: ensures hash-anchor navigation stops above the fixed bar */
     html:has([data-gill-v16]) {
@@ -3224,6 +3226,13 @@ html.dark [data-gill-v16] .mobile-top-bar {
     }
   }
 
+  /* Reserve space for the fixed bottom controls exactly once on the outer
+     page canvas. The earlier recursive selector repeated 110px on body,
+     engine root and nested reading surfaces, leaving 330–468px of dead
+     scroll after long articles. Keep viewport-width safeguards intact. */
+  [data-gill-v16] .page-wrap {
+    padding-bottom: calc(var(--gill-mobile-bar-h) + env(safe-area-inset-bottom, 0px) + 54px) !important;
+  }
   [data-gill-v16],
   [data-gill-v16] .page-wrap,
   [data-gill-v16] main,
@@ -3231,7 +3240,6 @@ html.dark [data-gill-v16] .mobile-top-bar {
   [data-gill-v16] .article-body,
   [data-gill-v16] .gbs2-content,
   [data-gill-v16] .gbs2-main {
-    padding-bottom: calc(var(--gill-mobile-bar-h) + env(safe-area-inset-bottom, 0px) + 54px) !important;
     max-width: 100vw !important;
   }
 
