@@ -10,10 +10,9 @@
  * - Search consolidated into TOC sheet: top bar no longer hosts a wide
  *   search input that duplicated the sheet's filter and bloated the top.
  *   The top slot now only hosts the speed rail when TTS starts.
- * - Play + rate badge redesigned as compact playback UI: badge is no longer
- *   an absolute pill at right:-3 bottom:-2 floating randomly, but a static
- *   inline pill next to Play (part of .hm-playwrap flex), with proper 44px
- *   tap target handling via ::before and clear label.
+ * - Play and rate are separate 44px touch targets: the rate indicator
+ *   remains a compact pill inside its own button, never over the Play ring.
+ *   The decorative pseudo-element cannot intercept either tap target.
  * - Bottom bar reduced to ≤52-56px + safe-area: progress ring 32px (was 44),
  *   padding 6px, min-height 52px, safe-area-inset-bottom respected.
  * - Second floating row conflict fixed: LawsonPageChrome now hides
@@ -58,7 +57,7 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
       <span>Поиск по разделам</span>
     </button>
-    <div class="hm-speedrail" id="hmSpeedrail" role="radiogroup" aria-label="Скорость озвучки">
+    <div class="hm-speedrail" id="hmSpeedrail" role="radiogroup" inert aria-hidden="true" aria-label="Скорость озвучки">
       <button class="hm-spd" type="button" role="radio" data-speed="0.75" aria-checked="false">0.75×</button>
       <button class="hm-spd" type="button" role="radio" data-speed="1" aria-checked="true">1×</button>
       <button class="hm-spd" type="button" role="radio" data-speed="1.25" aria-checked="false">1.25×</button>
@@ -69,7 +68,7 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   </div>
   <span class="hm-playwrap" slot="top-playback">
     <PlayEmber audioState="none" class="hm-ember" tip="Озвучка" />
-    <button class="hm-spdbadge" id="hmSpdBadge" type="button" aria-label="Выбрать скорость, сейчас 1×">1×</button>
+    <button class="hm-spdbadge" id="hmSpdBadge" type="button" aria-controls="hmSpeedrail" aria-expanded="false" aria-label="Выбрать скорость, сейчас 1×">1×</button>
   </span>
   <SaveButton class="hm-icon" tip="Сохранить" slot="top-trailing" />
 
@@ -189,7 +188,6 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
       box-shadow:0 -8px 24px -12px rgba(122,90,48,.20);
     }
     .article-main--hrail{ padding-top:calc(52px + env(safe-area-inset-top,0px)); padding-bottom: calc(72px + env(safe-area-inset-bottom,0px)); }
-    body.hm-tbhidden .article-main--hrail{ padding-top:calc(12px + env(safe-area-inset-top,0px)); }
     /* Hide desktop header when this bar exists — prevents ghost text + double chrome */
     .astro-header{display:none !important}
     /* Hide generic fallback pills that create second floating row */
@@ -216,7 +214,7 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   html.dark .hm-icon.gb-save.is-saved{color:#e0a89c}
   html.dark .hm-icon.gb-save.is-saved svg{fill:#e0a89c;stroke:#e0a89c}
 
-  .hm-slot{position:relative;flex:1;min-width:0;height:40px;display:flex;align-items:center}
+  .hm-slot{position:relative;flex:1;min-width:0;height:44px;display:flex;align-items:center}
   .hm-search-trigger{display:flex;align-items:center;gap:9px;width:100%;height:38px;min-width:0;padding:0 11px;
     border:1px solid var(--color-border,#e5e2dc);border-radius:999px;background:var(--color-surface-muted,#f4f2ed);
     color:var(--color-text-muted,#6a6a6a);font:400 12.5px/1 "Source Sans 3",system-ui,sans-serif;
@@ -232,32 +230,38 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   .hm-speedrail::-webkit-scrollbar{display:none}
   .hm-speedrail.is-dragging{cursor:grabbing;scroll-snap-type:none}
   .hmtop.speed-open .hm-speedrail{opacity:1;transform:translateX(0);pointer-events:auto}
-  .hm-spd{flex:0 0 auto;font:700 10.5px/1 var(--f-ui,"Source Sans 3",system-ui,sans-serif);
-    border:1px solid rgba(122,46,46,.22);background:transparent;color:#8a5a4a;padding:6px 8px;border-radius:8px;
+  .hm-spd{flex:0 0 auto;min-width:44px;min-height:44px;font:700 10.5px/1 var(--f-ui,"Source Sans 3",system-ui,sans-serif);
+    border:1px solid rgba(122,46,46,.22);background:transparent;color:#8a5a4a;padding:10px 8px;border-radius:8px;
     cursor:pointer;white-space:nowrap;position:relative;transition:background .15s,color .15s,border-color .15s,transform .12s;
     scroll-snap-align:center;-webkit-tap-highlight-color:transparent}
   html.dark .hm-spd{border-color:rgba(224,160,150,.24);color:#caa1a0}
-  .hm-spd::before{content:'';position:absolute;inset:-7px -1px}
   .hm-spd:active{transform:scale(.92);transition-duration:.08s}
   .hm-spd[aria-checked="true"]{background:#7a2e2e;color:#fff;border-color:transparent}
   html.dark .hm-spd[aria-checked="true"]{background:#e0a89c;color:#2a1814}
   .hm-speedrail.is-dragging .hm-spd{transition:none}
 
-  /* Compact playback UI: Play + rate as one control surface */
-  .hm-playwrap{position:relative;flex:0 0 44px;width:44px;height:44px;display:grid;place-items:center;overflow:visible}
-  .hm-playwrap .hm-ember{--ember-size:40px}
+  /* Play and speed are independent 44px touch targets. Keep the speed
+     indicator visually compact, but never place a hit target over Play. */
+  .hm-playwrap{position:relative;flex:0 0 88px;width:88px;height:44px;display:flex;align-items:center;justify-content:space-between;gap:4px;overflow:visible}
+  .hm-playwrap .hm-ember{--ember-size:40px;flex-shrink:0}
   .hm-spdbadge{
-    position:absolute;right:-2px;bottom:-3px;z-index:2;
-    width:auto;min-width:28px;height:20px;padding:0 4px;border-radius:999px;
-    border:1px solid var(--color-canvas,#fdfcf9);background:var(--color-accent,#7a2e2e);color:#fff;
-    font:700 10px/18px "Source Sans 3",system-ui,sans-serif;letter-spacing:0;
+    position:relative;isolation:isolate;flex:0 0 44px;
+    width:44px;height:44px;padding:0;border:0;border-radius:12px;
+    background:transparent;color:#fff;
+    font:700 11px/1 "Source Sans 3",system-ui,sans-serif;letter-spacing:0;
     display:inline-grid;place-items:center;cursor:pointer;
-    box-shadow:0 1px 3px rgba(0,0,0,.15);
-    transition:transform .18s cubic-bezier(.34,1.56,.64,1),background .15s;
+    -webkit-tap-highlight-color:transparent;
+    transition:transform .18s cubic-bezier(.34,1.56,.64,1);
   }
-  html.dark .hm-spdbadge{background:#d4a574;border-color:var(--color-canvas,#0e1116);color:#1a1713}
-  /* Keep the speed badge tappable without capturing the Play button's centre. */
-  .hm-spdbadge::before{content:'';position:absolute;inset:-2px 0}
+  /* The pseudo-element is decoration; the entire button remains clickable. */
+  .hm-spdbadge::before{
+    content:'';position:absolute;z-index:-1;inset:9px 4px;
+    border:1px solid var(--color-canvas,#fdfcf9);
+    border-radius:999px;background:var(--color-accent,#7a2e2e);
+    box-shadow:0 1px 3px rgba(0,0,0,.15);pointer-events:none;
+  }
+  html.dark .hm-spdbadge{color:#1a1713}
+  html.dark .hm-spdbadge::before{background:#d4a574;border-color:var(--color-canvas,#0e1116)}
   .hm-spdbadge:focus-visible{outline:2px solid var(--color-text);outline-offset:3px}
   .hm-spdbadge:active{transform:scale(.94)}
   .hm-spdbadge.is-bump{animation:hm-spdbadge-bump .3s cubic-bezier(.34,1.56,.64,1)}
@@ -417,9 +421,12 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   div.mobile-chrome--ink-gold .hm-icon.gb-save.is-saved{color:var(--lawson-chrome-accent)}
   div.mobile-chrome--ink-gold .hm-icon.gb-save.is-saved svg{fill:var(--lawson-chrome-accent);stroke:var(--lawson-chrome-accent)}
   div.mobile-chrome--ink-gold .hm-spd{border-color:var(--lawson-chrome-border);color:var(--lawson-chrome-accent)}
-  div.mobile-chrome--ink-gold .hm-spd[aria-checked="true"],
-  div.mobile-chrome--ink-gold .hm-spdbadge{
+  div.mobile-chrome--ink-gold .hm-spd[aria-checked="true"]{
     background:var(--lawson-chrome-accent);border-color:var(--lawson-chrome-accent);color:var(--lawson-chrome-accent-ink);
+  }
+  div.mobile-chrome--ink-gold .hm-spdbadge{color:var(--lawson-chrome-accent-ink)}
+  div.mobile-chrome--ink-gold .hm-spdbadge::before{
+    background:var(--lawson-chrome-accent);border-color:var(--lawson-chrome-accent);
   }
   div.mobile-chrome--ink-gold .hmbar-progress-track{stroke:var(--lawson-chrome-track)}
   div.mobile-chrome--ink-gold .hmbar-progress-fill{stroke:var(--lawson-chrome-accent)}

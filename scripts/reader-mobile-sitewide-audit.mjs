@@ -146,6 +146,29 @@ for(const [engine,driver] of Object.entries({chromium,webkit,firefox})){
         row.fail.push('top-bar hide modifies article padding and shifts touch targets');
     }
     if(name==='grok'&&width===390){
+      // The mobile toolbar may slide out, but hiding it must not move the
+      // reading surface. Moving article padding loses in-flight touch targets.
+      row.grokChromeGeometry=await page.evaluate(async()=>{
+        const root=document.body,main=document.querySelector('main.article-main--hrail');
+        if(!main)return null;
+        const old=root.classList.contains('hm-tbhidden');
+        const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
+        const measure=()=>({
+          padding:parseFloat(getComputedStyle(main).paddingTop)||0,
+          y:main.getBoundingClientRect().y
+        });
+        root.classList.remove('hm-tbhidden');
+        await frame();await frame();const shown=measure();
+        root.classList.add('hm-tbhidden');
+        await frame();await frame();const hidden=measure();
+        root.classList.toggle('hm-tbhidden',old);
+        return {shown,hidden};
+      });
+      const c=row.grokChromeGeometry;
+      if(c&&(Math.abs(c.shown.padding-c.hidden.padding)>.5||Math.abs(c.shown.y-c.hidden.y)>.5))
+        row.fail.push('Grok toolbar hide shifts article reading geometry');
+    }
+    if(name==='grok'&&width===390){
       const legal=await page.evaluate(()=>{
         const n=document.querySelector('.article-header > .notice');
         const details=n?.querySelector('.notice__details'),pdf=n?.querySelector('a[href*="TMSJ-Volume"]');
@@ -171,15 +194,42 @@ for(const [engine,driver] of Object.entries({chromium,webkit,firefox})){
         const bounds=await badge.boundingBox();
         const play=await page.locator('.hm-playwrap .hm-ember').boundingBox();
         row.speed={badge:bounds,play};
-        if(!bounds||bounds.width<24||bounds.height<20)row.fail.push('speed badge too small');
+        row.speed.initial=await page.locator('#hmSpeedrail').evaluate(e=>({inert:e.inert,hidden:e.getAttribute('aria-hidden')}));
+        if(!row.speed.initial.inert||row.speed.initial.hidden!=='true')
+          row.fail.push('closed speed rail is keyboard accessible');
+        if(!bounds||bounds.width<44||bounds.height<44)
+          row.fail.push('speed target smaller than 44x44');
+        if(!play||play.width<40||play.height<40)
+          row.fail.push('Play control smaller than 40x40');
+        row.speed.hits=await page.evaluate(()=>{
+          const badge=document.querySelector('#hmSpdBadge');
+          const play=document.querySelector('.hm-playwrap .hm-ember');
+          const hit=el=>{
+            if(!el)return false;
+            const r=el.getBoundingClientRect();
+            const target=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);
+            return target===el||el.contains(target);
+          };
+          const a=badge?.getBoundingClientRect(),b=play?.getBoundingClientRect();
+          const overlap=a&&b&&Math.max(a.left,b.left)<Math.min(a.right,b.right)
+            &&Math.max(a.top,b.top)<Math.min(a.bottom,b.bottom);
+          return {badge:hit(badge),play:hit(play),overlap:!!overlap};
+        });
+        if(!row.speed.hits.badge||!row.speed.hits.play||row.speed.hits.overlap)
+          row.fail.push('Play and speed are not independent hit targets');
         await badge.tap();
         const expanded=await page.locator('.hmtop').evaluate(e=>e.classList.contains('speed-open'));
-        if(!expanded)row.fail.push('speed badge failed to open rate selector');
+        row.speed.open=await page.locator('#hmSpeedrail').evaluate(e=>({inert:e.inert,hidden:e.getAttribute('aria-hidden')}));
+        if(!expanded||row.speed.open.inert||row.speed.open.hidden==='true')
+          row.fail.push('speed badge failed to open accessible rate selector');
         else{
           await page.locator('#hmSpeedrail [data-speed="1.25"]').tap();
           const selected=await badge.innerText();
           const checked=await page.locator('#hmSpeedrail [data-speed="1.25"]').getAttribute('aria-checked');
           if(!selected.includes('1.25')||checked!=='true')row.fail.push('speech rate choice not synchronized');
+          await page.waitForFunction(()=>document.querySelector('#hmSpeedrail')?.inert===true,null,{timeout:3000});
+          row.speed.closed=await badge.getAttribute('aria-expanded');
+          if(row.speed.closed!=='false')row.fail.push('speed disclosure does not close accessibly');
         }
       }
     }
@@ -197,9 +247,28 @@ for(const [engine,driver] of Object.entries({chromium,webkit,firefox})){
       }
     }
     if(width===390&&['grok','heart','sermon','baptists'].includes(name)){
-      await page.goto(origin+route,{waitUntil:'domcontentloaded'});await page.screenshot({path:path.join(OUT,engine+'-'+width+'-'+name+'-top.png')});
-      await page.evaluate(()=>window.scrollTo(0,Math.max(0,document.documentElement.scrollHeight-innerHeight)));await page.waitForTimeout(100);
-      await page.screenshot({path:path.join(OUT,engine+'-'+width+'-'+name+'-end.png')});
+      // Visual evidence is only valid after font/layout settlement. The site
+      // has smooth scrolling, so scrollTo(x,y) can capture a mid-animation
+      // frame rather than the article's actual end.
+      await page.goto(origin+route,{waitUntil:'networkidle',timeout:20000});
+      await page.evaluate(async()=>{
+        await document.fonts.ready;
+        window.scrollTo({top:0,behavior:'instant'});
+        await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+      });
+      await page.screenshot({path:path.join(OUT,engine+'-'+width+'-'+name+'-top.png'),animations:'disabled'});
+      await page.evaluate(()=>window.scrollTo({top:document.documentElement.scrollHeight,behavior:'instant'}));
+      await page.waitForFunction(()=>{
+        const end=Math.max(0,document.documentElement.scrollHeight-innerHeight);
+        return Math.abs(scrollY-end)<=2;
+      },null,{timeout:5000});
+      await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+      row.endScreenshot=await page.evaluate(()=>({
+        scrollY,expected:Math.max(0,document.documentElement.scrollHeight-innerHeight)
+      }));
+      if(Math.abs(row.endScreenshot.scrollY-row.endScreenshot.expected)>2)
+        row.fail.push('end screenshot is not at document end');
+      await page.screenshot({path:path.join(OUT,engine+'-'+width+'-'+name+'-end.png'),animations:'disabled'});
     }
    }catch(e){row.fail.push('execution '+String(e).slice(0,220));}
    result.push(row);await context.close();

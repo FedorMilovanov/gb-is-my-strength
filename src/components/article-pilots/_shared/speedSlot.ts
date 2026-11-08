@@ -31,6 +31,9 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
   const speedrail = topbar.querySelector(sel.speedrail) as HTMLElement | null;
   const badge = topbar.querySelector(sel.badge) as HTMLElement | null;
   if (!ember || !speedrail || !badge) return;
+  // Capture narrowed, non-null references for the async event handlers below.
+  const rail = speedrail;
+  const rateTrigger = badge;
   const chips = Array.prototype.slice.call(speedrail.querySelectorAll(sel.chip)) as HTMLElement[];
   let offeredThisSession = false;
   let closeTimer: number | undefined;
@@ -51,9 +54,18 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
     (badge as HTMLElement).setAttribute('aria-label', 'Выбрать скорость, сейчас ' + fmt(rate));
   }
   syncActive(readRate());
+  // Opacity alone does not remove speed buttons from keyboard navigation.
+  // Keep the closed rail out of both the tab order and accessibility tree.
+  speedrail.inert = true;
+  speedrail.setAttribute('aria-hidden', 'true');
+  badge.setAttribute('aria-expanded', 'false');
+  if (speedrail.id) badge.setAttribute('aria-controls', speedrail.id);
 
   function open(autoClose: boolean) {
     clearTimeout(closeTimer);
+    rail.inert = false;
+    rail.removeAttribute('aria-hidden');
+    rateTrigger.setAttribute('aria-expanded', 'true');
     topbar.classList.add('speed-open');
     const active = (speedrail as HTMLElement).querySelector(sel.chip + '[aria-checked="true"]') as HTMLElement | null;
     if (active) setTimeout(() => { active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'auto' }); }, 20);
@@ -61,7 +73,12 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
   }
   function close() {
     clearTimeout(closeTimer);
+    // Keyboard focus must not remain on an element about to become inert.
+    if (rail.contains(document.activeElement)) rateTrigger.focus({ preventScroll: true });
     topbar.classList.remove('speed-open');
+    rail.inert = true;
+    rail.setAttribute('aria-hidden', 'true');
+    rateTrigger.setAttribute('aria-expanded', 'false');
   }
 
   let prevState = ember.dataset.state || 'idle';
