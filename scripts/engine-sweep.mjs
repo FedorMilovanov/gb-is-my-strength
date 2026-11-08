@@ -294,11 +294,30 @@ for (const [id, url] of SERIES) {
     !!document.querySelector('.mobile-top-bar') && !!document.querySelector('.mobile-bottom-bar')));
 
   const mb = await page.evaluate(() => {
-    const e = document.querySelector('.mobile-top-bar .gb-ember')?.getBoundingClientRect();
-    const b = document.querySelector('.mobile-top-bar .mobile-spdbadge, .mobile-top-bar .gbs-rail-spdbadge')?.getBoundingClientRect();
-    return e && b ? { br: Math.round(b.right - e.right), bb: Math.round(b.bottom - e.bottom) } : null;
+    const play = document.querySelector('.mobile-top-bar .gb-ember');
+    const badge = document.querySelector('.mobile-top-bar .mobile-spdbadge, .mobile-top-bar .gbs-rail-spdbadge');
+    const e = play?.getBoundingClientRect();
+    const b = badge?.getBoundingClientRect();
+    if (!e || !b) return null;
+    const hitAt = (rect) => document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    const playCenter = hitAt(e);
+    const badgeCenter = hitAt(b);
+    return {
+      br: Math.round(b.right - e.right),
+      bb: Math.round(b.bottom - e.bottom),
+      playHit: playCenter === play || play.contains(playCenter),
+      badgeHit: badgeCenter === badge || badge.contains(badgeCenter),
+      badgeWithinViewport: b.left >= -1 && b.right <= innerWidth + 1,
+      badgeRadius: getComputedStyle(badge).borderRadius,
+    };
   });
-  R(id, 'mob: «1×» в круге', !!mb && mb.br <= 4 && mb.bb <= 4, JSON.stringify(mb));
+  // A deliberate 8px outward badge offset prevents covering Play's center.
+  // Assert the measured corner geometry AND independent real hit targets,
+  // rather than requiring the obsolete 4px offset.
+  R(id, 'mob: «1×» в круге', !!mb &&
+    Math.abs(mb.br) <= 2 && mb.bb >= 6 && mb.bb <= 10 &&
+    mb.playHit && mb.badgeHit && mb.badgeWithinViewport &&
+    parseFloat(mb.badgeRadius) >= 10, JSON.stringify(mb));
 
   const gear = await page.$('#mobSettingsBtn');
   if (gear) {
@@ -338,15 +357,40 @@ for (const [id, url] of SINGLES) {
   await page.goto(base + url, { waitUntil: 'networkidle' });
   await page.waitForTimeout(500);
   R(id, 'desk: ReaderRail', !!(await page.$('.hrail')));
-  const singleBadge = await page.evaluate(() => {
+  // Exercise the actual rate selector, never fabricate a badge label in DOM.
+  // Grok intentionally removes the duplicate badge to preserve the fine Play
+  // ring; its five-rate horizontal strip remains the canonical choice.
+  await page.locator('.gb-floater .gb-ember-playwrap').hover();
+  await page.waitForFunction(() => {
+    const panel = document.querySelector('.gb-floater .gb-ember-expand');
+    if (!panel) return false;
+    const style = getComputedStyle(panel);
+    return panel.classList.contains('is-open') &&
+      style.pointerEvents === 'auto' && Number(style.opacity) > .95;
+  }, null, { timeout: 5000 });
+  await page.locator('.gb-floater .gb-ember-expand [data-speed="1.75"]').click({ timeout: 5000 });
+  const singleSpeed = await page.evaluate(() => {
     const wrap = document.querySelector('.gb-floater .gb-ember-playwrap');
     const badge = document.querySelector('.gb-floater .gbs-rail-spdbadge');
-    if (!wrap || !badge) return null;
-    badge.textContent = '1.75×';
+    const chosen = document.querySelector('.gb-floater .gb-ember-expand [data-speed="1.75"]');
+    if (!wrap || !badge || !chosen) return null;
     const e = wrap.getBoundingClientRect(), b = badge.getBoundingClientRect();
-    return { dx: Math.round((b.left+b.width/2)-(e.left+e.width/2)), dy: Math.round((b.top+b.height/2)-(e.top+e.height/2)) };
+    const grok = !!document.querySelector('.hrail--grok');
+    return {
+      grok, selected: chosen.getAttribute('aria-checked') === 'true',
+      rateCount: document.querySelectorAll('.gb-floater .gb-ember-expand [data-speed]').length,
+      playInViewport: e.width > 0 && e.height > 0 && e.left >= 0 && e.right <= innerWidth,
+      badgeHidden: getComputedStyle(badge).display === 'none',
+      dx: Math.round((b.left+b.width/2)-(e.left+e.width/2)),
+      dy: Math.round((b.top+b.height/2)-(e.top+e.height/2)),
+    };
   });
-  R(id, 'desk: standalone «1.75×» справа-снизу', !!singleBadge && singleBadge.dx >= 8 && singleBadge.dy >= 8, JSON.stringify(singleBadge));
+  R(id, 'desk: выбранная 1.75× доступна и не перекрывает Play',
+    !!singleSpeed && singleSpeed.selected && singleSpeed.rateCount === 5 &&
+      singleSpeed.playInViewport && (singleSpeed.grok
+        ? singleSpeed.badgeHidden
+        : !singleSpeed.badgeHidden && singleSpeed.dx >= 8 && singleSpeed.dy >= 8),
+    JSON.stringify(singleSpeed));
   await page.evaluate(() => document.querySelector('.hrail [data-hm-settings], .hrail button[aria-label*="астрой"]')?.click());
   await page.waitForTimeout(450);
   const hs = await page.evaluate(() => {
@@ -611,14 +655,21 @@ for (const [id, url] of [
     const titleStyle = title ? getComputedStyle(title) : null;
     const hero = root.querySelector('.biography-hero');
     const rootRect = root.getBoundingClientRect();
-    const overflowNodes = [...root.querySelectorAll('*')].map((node) => {
+    // Closed native <details> summaries and print-hidden annotations still
+    // exist in the DOM but have zero painted area. Chromium on Windows may
+    // return negative coordinates for these 0x0 boxes. They cannot overflow
+    // a printed page; keep rejecting every actually painted overflow.
+    const overflowNodes = [...root.querySelectorAll('*')].flatMap((node) => {
       const rect = node.getBoundingClientRect();
-      return {
+      const style = getComputedStyle(node);
+      if (rect.width < 1 || rect.height < 1 ||
+          style.display === 'none' || style.visibility !== 'visible') return [];
+      return [{
         cls: String(node.className || node.tagName).slice(0, 90),
         left: Math.round(rect.left - rootRect.left),
         right: Math.round(rect.right - rootRect.right),
         width: Math.round(rect.width),
-      };
+      }];
     }).filter((item) => item.left < -1 || item.right > 1).slice(0, 12);
     const headings = [...root.querySelectorAll('h2, h3, h4')].slice(0, 20).map((node) => ({
       text: (node.textContent || '').trim().slice(0, 60),
