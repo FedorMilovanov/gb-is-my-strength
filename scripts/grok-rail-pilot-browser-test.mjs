@@ -301,7 +301,20 @@ try {
             // expose ONE aligned horizontal rate strip in the focus rail,
             // without concentric idle rings or a detached 1x badge.
             const speedTrigger=page.locator('#grokCompactTools .gb-ember');
-            await speedTrigger.hover();
+            // The native controller uses hover only for a hover/fine pointer.
+            // Linux WebKit headless may report no hover despite Playwright's
+            // ability to synthesize mouse movement. Test the actual device
+            // contract: hover when advertised; click to reveal on no-hover.
+            const pointerProfile=await page.evaluate(()=>({
+              hoverFine:matchMedia('(hover: hover) and (pointer: fine)').matches,
+              hover:matchMedia('(hover: hover)').matches,
+              pointerFine:matchMedia('(pointer: fine)').matches,
+              touchPoints:navigator.maxTouchPoints
+            }));
+            if(viewport.id==='desktop-1200')
+              console.log('GROK SPEED POINTER PROFILE:',name,JSON.stringify(pointerProfile));
+            if(pointerProfile.hoverFine) await speedTrigger.hover();
+            else await speedTrigger.click();
             await page.waitForTimeout(360); // observe completed native bloom animation
             const focusRates=await page.evaluate(()=>{
               const root=document.querySelector('#grokCompactTools');
@@ -321,6 +334,11 @@ try {
                 choices:panel.querySelectorAll('[data-speed]').length,
                 horizontal:getComputedStyle(panel).flexDirection==='row',
                 visible:panel.classList.contains('is-open')&&getComputedStyle(panel).opacity==='1',
+                panelClassOpen:panel.classList.contains('is-open'),
+                computedOpacity:getComputedStyle(panel).opacity,
+                ariaExpanded:ember.getAttribute('aria-expanded'),
+                panelInert:panel.inert,
+                wrapHover:ember.closest('.gb-ember-wrap')?.matches(':hover'),
                 gap:p.x-b.right,
                 width:p.width,height:p.height,
                 panelEnd:p.right,viewport:innerWidth,headingOverlap,
@@ -337,7 +355,7 @@ try {
               focusRates.panelEnd<=focusRates.viewport&&!focusRates.headingOverlap&&focusRates.overflow<=1&&
               focusRates.extraBadge==='none'&&focusRates.idleHalo==='none'&&
               focusRates.playSize<=(viewport.height<=420?30:32)&&
-              focusRates.ringSize<=focusRates.playSize-3.5,focusRates);
+              focusRates.ringSize<=focusRates.playSize-3.5,{...focusRates,pointerProfile});
             if(viewport.id==='desktop-1200'){
               // Real mouse travel must not traverse a dead hover gap from
               // Play to the displaced five-speed strip. Older code fired
