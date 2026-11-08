@@ -36,6 +36,27 @@ for(const [engine,driver] of Object.entries({chromium,webkit,firefox})){
     });
     if(row.measure.scrollWidth>row.measure.clientWidth+2)row.fail.push('horizontal overflow '+(row.measure.scrollWidth-row.measure.clientWidth));
     if(row.measure.smallControls.length)row.warnings.push('tiny controls '+row.measure.smallControls.map(x=>x.id||x.cl).join(','));
+    if(name==='gill'||name==='pastor'){
+      // Real fixed chrome, not merely a rendered button: the manuscript
+      // texture once overrode Play's position to relative and placed the
+      // top bar AFTER a very long article while the bottom bar stayed fixed.
+      row.seriesChrome=await page.evaluate(()=>{
+        const root=document.querySelector('.gbs2-world[data-gill-v16]');
+        const top=root?.querySelector('.mobile-top-bar[data-gill-mobile-bar]');
+        const bottom=root?.querySelector('.mobile-bottom-bar[data-gill-mobile-bar]');
+        const box=e=>{if(!e)return null;const r=e.getBoundingClientRect(),s=getComputedStyle(e);
+          return {position:s.position,top:r.top,bottom:r.bottom,display:s.display,opacity:s.opacity};};
+        const play=top?.querySelector('.gb-ember'),pr=play?.getBoundingClientRect();
+        const hit=pr&&document.elementFromPoint(pr.x+pr.width/2,pr.y+pr.height/2);
+        return {scrollY,top:box(top),bottom:box(bottom),
+          playHit:!!(play&&(play===hit||play.contains(hit)))};
+      });
+      const c=row.seriesChrome;
+      if(!c.top||c.top.position!=='fixed'||Math.abs(c.top.top)>4||!c.playHit)
+        row.fail.push('series mobile Play toolbar is not fixed and hit-testable');
+      if(!c.bottom||c.bottom.position!=='fixed'||Math.abs(c.bottom.bottom-height)>4)
+        row.fail.push('series mobile bottom toolbar is not fixed to viewport');
+    }
     if((name==='heart'||name==='pastor')&&width===390){
       const anchor=page.locator('.heading-anchor[data-gb-heading-anchor-owner="native-v1"]').first();
       if(await anchor.count()){
