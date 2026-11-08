@@ -702,11 +702,16 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       .gb-ember:is([data-state="playing"],[data-state="paused"],[data-state="complete"]) {
       border-color:transparent;
     }
+    /* Shared panel offset for both the fixed speed strip and its hover
+       corridor; no competing independent coordinates. */
+    .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember-wrap {
+      --gb-grok-speed-panel-left:73px;
+    }
     /* Outward bloom from the same live Play circle. The anchor y is measured
        by the canonical controller on every opening, never hard-coded. */
     .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember-expand {
       position:fixed;
-      left:73px;right:auto;
+      left:var(--gb-grok-speed-panel-left);right:auto;
       top:var(--gb-ember-anchor-y,220px);bottom:auto;
       height:42px;
       gap:2px;padding:5px 5px;
@@ -725,6 +730,27 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
     }
     .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember-expand.is-open {
       clip-path:inset(0 0 0 0 round 16px);
+    }
+    /* Keep the REAL pointer hover corridor continuous between Play and the
+       horizontally displaced speed strip. A 24–38px empty gap previously
+       fired mouseleave while travelling toward a speed chip; the controller
+       then folded the pill before the click (reproduced in WebKit/Chromium).
+       This transparent, open-state-only bridge belongs to the same wrapper,
+       and the actual panel retains higher stacking priority for clicks. */
+    .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls
+      .gb-ember-wrap:has(> .gb-ember-expand.is-open)::after {
+      content:"";
+      /* position:fixed escapes the rail's overflow:hidden; an absolute
+         bridge would still lose hover for the final 5px at the rail edge. */
+      position:fixed;
+      left:calc(var(--gb-ember-bridge-right,50px) - 2px);
+      top:var(--gb-ember-bridge-y,130px);
+      transform:translateY(-50%);
+      width:max(0px,calc(var(--gb-grok-speed-panel-left) - var(--gb-ember-bridge-right,50px) + 2px));
+      height:44px;
+      background:transparent;
+      pointer-events:auto;
+      z-index:1;
     }
     /* The five-rate strip uses viewport-relative anchoring. Never animate
        transform on its ancestor: a transient transform creates a containing

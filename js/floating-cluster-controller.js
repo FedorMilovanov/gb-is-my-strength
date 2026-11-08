@@ -1939,7 +1939,12 @@
         // This survives viewport resize and a scrolled 68px utility rail.
         if (ember.closest('#grokCompactTools')) {
           var anchor = ember.getBoundingClientRect();
-          panel.style.setProperty('--gb-ember-anchor-y', (anchor.top + anchor.height / 2).toFixed(1) + 'px');
+          var anchorY = (anchor.top + anchor.height / 2).toFixed(1) + 'px';
+          panel.style.setProperty('--gb-ember-anchor-y', anchorY);
+          // The open-state hover corridor shares this true button geometry.
+          // It prevents a mouseleave in the gap before reaching the speed chips.
+          wrap.style.setProperty('--gb-ember-bridge-right', anchor.right.toFixed(1) + 'px');
+          wrap.style.setProperty('--gb-ember-bridge-y', anchorY);
         } else {
           panel.style.removeProperty('--gb-ember-anchor-y');
         }

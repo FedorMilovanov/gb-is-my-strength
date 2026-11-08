@@ -338,6 +338,30 @@ try {
               focusRates.extraBadge==='none'&&focusRates.idleHalo==='none'&&
               focusRates.playSize<=(viewport.height<=420?30:32)&&
               focusRates.ringSize<=focusRates.playSize-3.5,focusRates);
+            if(viewport.id==='desktop-1200'){
+              // Real mouse travel must not traverse a dead hover gap from
+              // Play to the displaced five-speed strip. Older code fired
+              // mouseleave in the 24–38px corridor and folded after 260ms.
+              const playBox=await speedTrigger.boundingBox();
+              const stripBox=await page.locator('#grokCompactTools .gb-ember-expand').boundingBox();
+              const from={x:playBox.x+playBox.width/2,y:playBox.y+playBox.height/2};
+              const to={x:stripBox.x+20,y:stripBox.y+stripBox.height/2};
+              for(let step=1;step<=10;step++){
+                const ratio=step/10;
+                await page.mouse.move(from.x+(to.x-from.x)*ratio,from.y+(to.y-from.y)*ratio);
+                await page.waitForTimeout(80);
+              }
+              const corridor=await page.evaluate(()=>{
+                const panel=document.querySelector('#grokCompactTools .gb-ember-expand');
+                return {open:panel?.classList.contains('is-open'),
+                  opacity:panel?getComputedStyle(panel).opacity:null,
+                  wrapperHover:document.querySelector('#grokCompactTools .gb-ember-wrap')?.matches(':hover'),
+                  canClick:panel && !panel.inert};
+              });
+              check(name,viewport.id,'slow mouse travel from Play to speed chip preserves bloom',
+                corridor.open&&corridor.opacity==='1'&&corridor.wrapperHover&&corridor.canClick,corridor);
+              await speedTrigger.hover();
+            }
             if(viewport.id==='desktop-wide'){
               await speedTrigger.click();
               const idleChoice=await page.evaluate(()=>{
