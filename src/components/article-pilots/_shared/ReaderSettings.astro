@@ -30,8 +30,8 @@
 
     <div class="hmset-scroll">
     <div class="hmset-group">
-      <span class="hmset-label">Оформление <small>Цвет бумаги</small></span>
-      <div class="hmset-segment" id="hmThemeGroup">
+      <span class="hmset-label" id="hmThemeLabel">Оформление <small>Цвет бумаги</small></span>
+      <div class="hmset-segment" id="hmThemeGroup" role="group" aria-labelledby="hmThemeLabel">
         <button type="button" class="hmset-btn" data-hm-theme="light" aria-pressed="true">День</button>
         <button type="button" class="hmset-btn" data-hm-theme="sepia" aria-pressed="false">Сепия</button>
         <button type="button" class="hmset-btn" data-hm-theme="dark" aria-pressed="false">Ночь</button>
@@ -39,8 +39,8 @@
     </div>
 
     <div class="hmset-group">
-      <span class="hmset-label">Размер текста <output id="hmFontPercent" aria-live="polite">100%</output></span>
-      <div class="hmset-fonttrack">
+      <span class="hmset-label" id="hmFontLabel">Размер текста <output id="hmFontPercent" aria-live="polite">100%</output></span>
+      <div class="hmset-fonttrack" role="group" aria-labelledby="hmFontLabel">
         <button type="button" class="hmset-font hmset-font--sm" data-fc-action="font-down" aria-label="Уменьшить текст">А−</button>
         <div class="hmset-font-preview"><span>ПРЕДПРОСМОТР</span><strong>Aa — Слово истины</strong></div>
         <div class="hmset-dots" id="hmFontDots" aria-hidden="true" hidden><span class="hmset-dot"></span><span class="hmset-dot"></span><span class="hmset-dot"></span><span class="hmset-dot"></span><span class="hmset-dot"></span></div>
@@ -49,8 +49,8 @@
     </div>
 
     <div class="hmset-group">
-      <span class="hmset-label">Ширина статьи</span>
-      <div class="hmset-segment" id="hmMeasureGroup">
+      <span class="hmset-label" id="hmMeasureLabel">Ширина статьи</span>
+      <div class="hmset-segment" id="hmMeasureGroup" role="group" aria-labelledby="hmMeasureLabel">
         <button type="button" class="hmset-btn" data-hm-measure="narrow" aria-pressed="false">Узкая</button>
         <button type="button" class="hmset-btn" data-hm-measure="normal" aria-pressed="true">Обычная</button>
         <button type="button" class="hmset-btn" data-hm-measure="wide" aria-pressed="false">Широкая</button>
@@ -58,8 +58,8 @@
     </div>
 
     <div class="hmset-group">
-      <span class="hmset-label">Межстрочный интервал</span>
-      <div class="hmset-segment" id="hmLineGroup">
+      <span class="hmset-label" id="hmLineLabel">Межстрочный интервал</span>
+      <div class="hmset-segment" id="hmLineGroup" role="group" aria-labelledby="hmLineLabel">
         <button type="button" class="hmset-btn" data-hm-line="compact" aria-pressed="false">Плотный</button>
         <button type="button" class="hmset-btn" data-hm-line="normal" aria-pressed="true">Обычный</button>
         <button type="button" class="hmset-btn" data-hm-line="relaxed" aria-pressed="false">Свободный</button>
@@ -67,16 +67,16 @@
     </div>
 
     <div class="hmset-group hmset-advanced">
-      <span class="hmset-label">Оформление текста</span>
-      <div class="hmset-segment" id="hmTextModeGroup">
+      <span class="hmset-label" id="hmTextModeLabel">Оформление текста</span>
+      <div class="hmset-segment" id="hmTextModeGroup" role="group" aria-labelledby="hmTextModeLabel">
         <button type="button" class="hmset-btn" data-hm-text-mode="rich" aria-pressed="true">Полное</button>
         <button type="button" class="hmset-btn" data-hm-text-mode="plain" aria-pressed="false">Простое</button>
       </div>
     </div>
 
     <div class="hmset-group hmset-advanced">
-      <span class="hmset-label">Анимация</span>
-      <div class="hmset-segment" id="hmMotionGroup">
+      <span class="hmset-label" id="hmMotionLabel">Анимация</span>
+      <div class="hmset-segment" id="hmMotionGroup" role="group" aria-labelledby="hmMotionLabel">
         <button type="button" class="hmset-btn" data-hm-motion="system" aria-pressed="true">Обычная</button>
         <button type="button" class="hmset-btn" data-hm-motion="reduced" aria-pressed="false">Спокойная</button>
       </div>
@@ -110,8 +110,8 @@
   .hmsheet-head{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:8px}
   .hmsheet-title{font-family:var(--f-serif,Lora,Georgia,serif);font-weight:700;font-size:16px;color:#2a1814}
   :global(html.dark) .hmsheet-title{color:#f2e9e6}
-  .hmsheet-subtitle{font-size:11px;color:rgba(42,24,20,.55);margin-top:2px}
-  :global(html.dark) .hmsheet-subtitle{color:rgba(255,255,255,.5)}
+  .hmsheet-subtitle{font-size:11px;color:rgba(42,24,20,.78);margin-top:2px}
+  :global(html.dark) .hmsheet-subtitle{color:rgba(255,255,255,.78)}
   .hmsheet-close{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;border:0;
     background:rgba(122,46,46,.08);color:#7a2e2e;cursor:pointer;flex-shrink:0}
   :global(html.dark) .hmsheet-close{background:rgba(224,160,150,.1);color:#e0a89c}
@@ -137,9 +137,9 @@
     .hmset-label {
       display: block; margin-bottom: 8px;
       font: 700 11px/1 "Source Sans 3", system-ui, sans-serif;
-      letter-spacing: .08em; text-transform: uppercase; color: rgba(42,24,20,.55);
+      letter-spacing: .08em; text-transform: uppercase; color: rgba(42,24,20,.78);
     }
-    html.dark .hmset-label { color: rgba(255,255,255,.5); }
+    html.dark .hmset-label { color: rgba(255,255,255,.78); }
 
     .hmset-segment { display: flex; gap: 4px; padding: 3px; border-radius: 11px;
       background: rgba(122,46,46,.05); border: 1px solid rgba(122,46,46,.14); }

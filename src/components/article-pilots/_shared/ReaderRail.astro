@@ -535,17 +535,19 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
     }
     .hrail--grok .hrail-layout-toggle:active{transform:scale(.96);}
     .hrail--grok.hrail--compact .hrail-layout-toggle {background:transparent;border-color:transparent;}
-    /* Recover real article measure instead of simply moving a fixed narrow
-       column. V17 reference widens prose by 92px; here Product's measure grows
-       from 46rem to 51rem without inventing a second Reader state. */
+    /* All opted-in focus readers inherit the canonical shared measure.
+       Keep the user's narrow/wide choice, and center prose in the canvas to
+       the right of the 68px utility rail rather than creating a false empty
+       corridor on the far right. No duplicate toolbar or ReaderState owner. */
     body:has(.hrail--grok) :is(.article-main.article-main--hrail,[data-reader-rail-main]) {
       transition:width .52s cubic-bezier(.32,.72,0,1),
         margin-left .52s cubic-bezier(.32,.72,0,1);
     }
     body.grok-rail-compact:has(.hrail--grok) :is(.article-main.article-main--hrail,[data-reader-rail-main]) {
-      --hm-article-shell:61rem;
-      --hm-article-measure:51rem;
-      --hrail-centered-left:calc((100% - var(--hrail-shell-width)) / 2 - clamp(18px,2.5vw,46px));
+      --hm-article-measure:var(--gb-reader-focus-measure,49rem);
+      --hm-article-shell:calc(var(--hm-article-measure) + 10rem);
+      /* 34px is half the collapsed 68px rail: center remaining canvas. */
+      --hrail-centered-left:calc((100% - var(--hrail-shell-width)) / 2 + 34px);
     }
     /* Interactive Scripture tips remain above prose but below the reader's
        permanent chrome. Otherwise an open tip can block the collapse button. */

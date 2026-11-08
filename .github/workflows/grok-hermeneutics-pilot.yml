@@ -12,7 +12,9 @@ on:
       - 'scripts/grok-reader-typography-browser-contract.mjs'
       - 'scripts/grok-summary-rail-browser-contract.mjs'
       - 'js/reader-preferences.js'
+      - 'css/reader-preferences.css'
       - 'css/site.css'
+      - 'scripts/reader-focus-sitewide-browser-contract.mjs'
       - 'scripts/grok-stage2-*.mjs'
       - 'scripts/site-sections-menu-filter-browser-contract.mjs'
       - 'scripts/reader-library-premium-browser-contract.cjs'
@@ -30,7 +32,9 @@ on:
       - 'scripts/grok-reader-typography-browser-contract.mjs'
       - 'scripts/grok-summary-rail-browser-contract.mjs'
       - 'js/reader-preferences.js'
+      - 'css/reader-preferences.css'
       - 'css/site.css'
+      - 'scripts/reader-focus-sitewide-browser-contract.mjs'
       - 'scripts/grok-stage2-*.mjs'
       - 'scripts/site-sections-menu-filter-browser-contract.mjs'
       - '.github/workflows/deploy.yml'
@@ -73,6 +77,7 @@ jobs:
           node --check scripts/grok-rail-pilot-browser-test.mjs
           node --check scripts/grok-reader-overlay-lifecycle-browser-test.mjs
           node --check scripts/grok-menu-motion-layout-browser-contract.mjs
+          node --check scripts/reader-focus-sitewide-browser-contract.mjs
           node --check scripts/grok-toc-keyboard-browser-contract.mjs
           node --check scripts/grok-reader-typography-browser-contract.mjs
           node --check scripts/grok-summary-rail-browser-contract.mjs
@@ -129,6 +134,9 @@ jobs:
       - name: Browser proof - stable article geometry and smooth menu/settings motion
         run: node scripts/grok-menu-motion-layout-browser-contract.mjs
 
+      - name: Browser proof — sitewide reading widths and balanced focus canvas
+        run: node scripts/reader-focus-sitewide-browser-contract.mjs
+
       - name: Build flag OFF from the same source for deterministic rollback
         run: npm run strangler:build:production-like
 
@@ -148,6 +156,7 @@ jobs:
             reports/grok-typography/
             reports/grok-summary-motion/
             reports/grok-menu-motion/
+            reports/reader-focus-sitewide/
             reports/grok-keyboard/
             reports/reader-controls-a11y-browser-contract.*
             reports/hermenevtika-mobile-chrome/

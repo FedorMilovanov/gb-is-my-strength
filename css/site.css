@@ -1655,8 +1655,13 @@ body .article-body > .summary-card[data-gb-summary-owner="1"] > .summary-card__h
 body .article-body > .summary-card[data-gb-summary-owner="1"] .summary-card__text {
   text-align: start;
 }
-.summary-card[data-gb-summary-owner="1"] .gb-summary-toggle:hover {
-  background-color: transparent;
+/* Ancillary notices are reference material, not justified book prose:
+   prevent rivers of whitespace in citations, copyright and PDF information. */
+.article-body .notice,
+.article-body .notice :is(p, li),
+.article-body .article-byline {
+  text-align: start;
+  overflow-wrap: anywhere;
 }
 body .article-body .article-header > .original-author-card + .article-byline {
   margin-top: 16px;

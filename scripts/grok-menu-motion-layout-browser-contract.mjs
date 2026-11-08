@@ -42,6 +42,19 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
    await p.evaluate(()=>{document.documentElement.style.scrollBehavior='auto';document.body.style.scrollBehavior='auto';window.scrollTo({top:550,behavior:'instant'});});
    await p.waitForFunction(()=>Math.abs(window.scrollY-550)<2,{timeout:2500});
    await p.waitForTimeout(50);
+   // Capture actual CSS transition events INSIDE the browser process.
+   // Playwright .click() may return after a complete 260ms opacity tween
+   // on a heavily loaded Linux/WebKit runner, making sampled "start"=1
+   // despite a real animation. Do not mistake that scheduling for a UI bug.
+   // The gate still requires a genuine nonzero-duration opacity transition.
+   await p.evaluate(() => {
+     window.__gbSettingsOpacityMotion=[];
+     const panel=document.querySelector('#hmSettings .hmsheet-panel');
+     for(const type of ['transitionrun','transitionend']) panel?.addEventListener(type,event=>{
+       if(event.target!==panel||event.propertyName!=='opacity')return;
+       window.__gbSettingsOpacityMotion.push({type,time:performance.now(),opacity:Number(getComputedStyle(panel).opacity)});
+     });
+   });
    row.states.base=await p.evaluate(measure);
    await p.locator('#hMobileMenuBtn').click();
    row.states.menuStart=await p.evaluate(measure);
@@ -62,7 +75,13 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
    await p.waitForTimeout(330);row.states.settingsEnd=await p.evaluate(measure);
    const s0=row.states.settingsStart,s1=row.states.settingsMid,s2=row.states.settingsEnd;
    test('stable article while reader settings opens',closeEnough(base.article,s2.article)&&closeEnough(base.p,s2.p),{base:base.p,end:s2.p});
-   test('animated settings entry',s0.sheet.open&&s0.sheet.opacity<.85&&s1.sheet.opacity>s0.sheet.opacity&&s2.sheet.opacity>.99,{start:s0.sheet,mid:s1.sheet,end:s2.sheet});
+   row.states.settingsOpacityMotion=await p.evaluate(()=>window.__gbSettingsOpacityMotion || []);
+   const motionStart=row.states.settingsOpacityMotion.find(e=>e.type==='transitionrun');
+   const motionEnd=row.states.settingsOpacityMotion.find(e=>e.type==='transitionend');
+   const observedTween=!!(motionStart&&motionEnd&&motionEnd.time-motionStart.time>=120);
+   const sampledTween=s0.sheet.opacity<.85&&s1.sheet.opacity>s0.sheet.opacity;
+   test('animated settings entry',s0.sheet.open&&s2.sheet.opacity>.99&&(sampledTween||observedTween),
+     {start:s0.sheet,mid:s1.sheet,end:s2.sheet,motion:row.states.settingsOpacityMotion,sampledTween,observedTween});
    await p.mouse.click(width-50,430);
    row.states.settingsCloseStart=await p.evaluate(measure);
    await p.waitForTimeout(140);row.states.settingsCloseMid=await p.evaluate(measure);

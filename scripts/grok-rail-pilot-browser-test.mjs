@@ -396,9 +396,14 @@ try {
               await page.keyboard.press('Escape');
             }
             const readingScrollAfter=await page.evaluate(() => Math.round(scrollY));
-            check(name,viewport.id,'compact rail rebalances actual article position',
-              articleAfter.left+40<=articleBefore.left &&
+            // Compact focus now centers prose in the usable canvas to the
+            // right of its 68px utility rail, instead of forcing a 40px left
+            // jump. The separate sitewide reader contract checks that exact
+            // geometric balance at narrow/normal/wide preferences.
+            check(name,viewport.id,'compact rail grows the real article without clipping or scroll jump',
               articleAfter.width>=articleBefore.width+50 &&
+              articleAfter.left>=0 &&
+              articleAfter.left+articleAfter.width<=page.viewportSize().width+1 &&
               readingScrollAfter===readingScrollBefore,
               {before:articleBefore,after:articleAfter,scrollBefore:readingScrollBefore,scrollAfter:readingScrollAfter});
             await page.locator('#hrailLayoutToggle').click();
