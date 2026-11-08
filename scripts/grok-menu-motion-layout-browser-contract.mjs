@@ -99,12 +99,23 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
    const sampledTween=s0.sheet.opacity<.85&&s1.sheet.opacity>s0.sheet.opacity;
    test('animated settings entry',s0.sheet.open&&s2.sheet.opacity>.99&&(sampledTween||observedTween),
      {start:s0.sheet,mid:s1.sheet,end:s2.sheet,motion:row.states.settingsOpacityMotion,sampledTween,observedTween});
+   await p.evaluate(()=>{window.__gbSettingsExitMotionOffset=(window.__gbSettingsOpacityMotion||[]).length;});
    await p.mouse.click(width-50,430);
    row.states.settingsCloseStart=await p.evaluate(measure);
    await p.waitForTimeout(140);row.states.settingsCloseMid=await p.evaluate(measure);
    await p.waitForTimeout(350);row.states.settingsCloseEnd=await p.evaluate(measure);
    const c0=row.states.settingsCloseStart,c1=row.states.settingsCloseMid,c2=row.states.settingsCloseEnd;
-   test('visible settings during exit',!c0.sheet.open&&c0.sheet.closing&&c0.sheet.display!=='none'&&c1.sheet.display!=='none'&&c1.sheet.opacity<c0.sheet.opacity,{start:c0.sheet,mid:c1.sheet});
+   // A WebKit runner may deliver the mid-frame snapshot after the complete
+   // 260ms transition. Record native opacity events rather than requiring a
+   // particular wall-clock sample to remain visible after a delayed click.
+   row.states.settingsExitOpacityMotion=await p.evaluate(()=>
+     (window.__gbSettingsOpacityMotion||[]).slice(window.__gbSettingsExitMotionOffset||0));
+   const exitRun=row.states.settingsExitOpacityMotion.find(e=>e.type==='transitionrun');
+   const exitEnd=row.states.settingsExitOpacityMotion.find(e=>e.type==='transitionend'&&(!exitRun||e.time>exitRun.time));
+   const observedExit=!!(exitRun&&exitEnd&&exitEnd.time-exitRun.time>=120);
+   const sampledExit=c1.sheet.display!=='none'&&c1.sheet.opacity<c0.sheet.opacity;
+   test('visible settings during exit',!c0.sheet.open&&c0.sheet.closing&&c0.sheet.display!=='none'&&(sampledExit||observedExit),
+     {start:c0.sheet,mid:c1.sheet,events:row.states.settingsExitOpacityMotion,sampledExit,observedExit});
    test('settings fully hidden after exit',c2.sheet.display==='none'&&!c2.sheet.closing,{end:c2.sheet});
    test('scroll restored',Math.abs(row.states.settingsCloseEnd.scrollY-base.scrollY)<2,{base:base.scrollY,after:row.states.settingsCloseEnd.scrollY});
    await p.locator('#hrailSettingsBtn').click();await p.waitForTimeout(380);
