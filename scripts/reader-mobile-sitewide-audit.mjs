@@ -2,7 +2,7 @@ import {chromium,firefox,webkit} from 'playwright';
 import fs from 'node:fs';import path from 'node:path';import http from 'node:http';import {fileURLToPath} from 'node:url';
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),DIST=path.join(ROOT,'dist');
 const OUT=path.join(ROOT,'reports','reader-mobile-sitewide-audit');fs.mkdirSync(OUT,{recursive:true});
-const ROUTES=[['grok','/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/'],['gill','/articles/dzhon-gill-chast-1-chelovek/'],['sermon','/nagornaya/chast-1/'],['heart','/articles/krajne-li-isporcheno-serdce/'],['pastor','/articles/20-antisovetov-pastoru/'],['baptists','/baptisty-rossii/']];
+const ROUTES=[['grok','/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/'],['gill','/articles/dzhon-gill-chast-1-chelovek/'],['sermon','/nagornaya/chast-1/'],['heart','/articles/krajne-li-isporcheno-serdce/'],['pastor','/articles/20-antisovetov-pastoru/'],['baptist-chapter','/baptisty-rossii/goneniya-i-sovest/'],['baptists','/baptisty-rossii/']];
 const MIME={'.html':'text/html;charset=utf-8','.css':'text/css;charset=utf-8','.js':'application/javascript;charset=utf-8','.woff2':'font/woff2','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg'};
 const srv=http.createServer((req,res)=>{
  const url=decodeURIComponent((req.url||'/').split('?')[0]),file=path.resolve(DIST,'.'+(url.endsWith('/')?url+'index.html':url)),rel=path.relative(DIST,file);
@@ -36,7 +36,7 @@ for(const [engine,driver] of Object.entries({chromium,webkit,firefox})){
     });
     if(row.measure.scrollWidth>row.measure.clientWidth+2)row.fail.push('horizontal overflow '+(row.measure.scrollWidth-row.measure.clientWidth));
     if(row.measure.smallControls.length)row.warnings.push('tiny controls '+row.measure.smallControls.map(x=>x.id||x.cl).join(','));
-    if(name==='gill'||name==='pastor'){
+    if(name==='gill'||name==='pastor'||name==='baptist-chapter'){
       // Real fixed chrome, not merely a rendered button: the manuscript
       // texture once overrode Play's position to relative and placed the
       // top bar AFTER a very long article while the bottom bar stayed fixed.
