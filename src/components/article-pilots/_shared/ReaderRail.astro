@@ -744,6 +744,44 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       }
     }
   }
+  /* Fixed viewport coordinates for the SAME fold button provide one
+     continuously interpolated path on every engine. Its former flex-parent
+     relocation caused a 100-200px WebKit jump despite FLIP transforms. */
+  @media(min-width:1200px){
+    .hrail--grok .hrail-layout-toggle {
+      position:fixed;
+      top:25px;
+      left:calc(clamp(292px,22vw,328px) - 52px);
+      z-index:3;
+      transition:left .62s cubic-bezier(.45,0,.55,1),
+        top .62s cubic-bezier(.45,0,.55,1),
+        color .17s ease,background-color .22s ease;
+    }
+    .hrail--grok.hrail--compact .hrail-layout-toggle {
+      left:17px;
+      top:23px;
+    }
+    .hrail--grok.hrail--compact .hrail-top {
+      min-height:76px;
+      padding-top:39px;
+    }
+  }
+  /* A single two-stage crossfade masks the genuine DOM relocation of the
+     canonical floating controls. The rail width still slides normally; no
+     cloned buttons or competing controller are introduced. */
+  @media(min-width:1200px){
+    .hrail--grok.grok-rail-switching :is(.hrail-meta,.hrail-toch,.hrail-scroll) {
+      opacity:0;
+      pointer-events:none;
+    }
+    .hrail--grok .hrail-bottom {
+      transition:opacity .19s cubic-bezier(.32,.72,0,1);
+    }
+    .hrail--grok.grok-rail-switching .hrail-bottom {
+      opacity:0;
+      pointer-events:none;
+    }
+  }
   @media(prefers-reduced-motion:reduce){
     .hrail--grok .hrail-layout-toggle,.hrail--grok .hrail-layout-toggle svg,
     .hrail--grok .hrail-layout-toggle svg > g,
@@ -820,7 +858,37 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
             else item.removeAttribute('aria-hidden');
           }
         };
-        toggle.addEventListener('click', () => setCompact(!rail.classList.contains('hrail--compact')));
+        let desiredCompact = rail.classList.contains('hrail--compact');
+        let prepareTimer = 0;
+        let settleTimer = 0;
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion:reduce)');
+        // The same fold toggle has its own fixed CSS left transition.
+        // No FLIP animation: it doubles motion with the rail width in WebKit.
+        // The original controls still move only once, behind a crossfade.
+        const moveRail = (compact: boolean) => setCompact(compact);
+        toggle.addEventListener('click', () => {
+          desiredCompact = !desiredCompact;
+          window.clearTimeout(prepareTimer);
+          window.clearTimeout(settleTimer);
+          if (reducedMotion.matches) {
+            rail.classList.remove('grok-rail-switching');
+            moveRail(desiredCompact);
+            return;
+          }
+          const currentCompact = rail.classList.contains('hrail--compact');
+          rail.classList.add('grok-rail-switching');
+          const commit = () => {
+            moveRail(desiredCompact);
+            settleTimer = window.setTimeout(() => {
+              rail.classList.remove('grok-rail-switching');
+            }, currentCompact === desiredCompact ? 180 : 540);
+          };
+          if (desiredCompact && !currentCompact) {
+            prepareTimer = window.setTimeout(commit, 190);
+          } else {
+            commit();
+          }
+        });
       }
     }
     const rows = Array.from(isGrok

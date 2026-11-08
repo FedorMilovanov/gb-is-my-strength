@@ -276,3 +276,95 @@
     }
   });
 })(typeof window !== 'undefined' ? window : null);
+
+
+/*
+ * Site-wide Summary Disclosure v1.
+ * Shared reader preferences is loaded by both legacy and Astro articles.
+ * Only "Коротко" cards are folded; other editorial summary cards stay intact.
+ * This owns one native toggle; the older length-based mobile expander sees a
+ * compact card and does not duplicate the button.
+ */
+(function initSiteSummaryDisclosure(global) {
+  'use strict';
+  if (!global || (global.GBSummaryDisclosure && global.GBSummaryDisclosure.version === 1)) return;
+  var sequence = 0;
+  function hashTarget() {
+    if (!global.location.hash || global.location.hash.length < 2) return null;
+    try { return document.getElementById(decodeURIComponent(global.location.hash.slice(1))); }
+    catch (_) { return null; }
+  }
+  function revealLinkedSummary() {
+    var target = hashTarget();
+    var card = target && target.closest('.summary-card[data-gb-summary-owner="1"]');
+    if (!card) return;
+    var button = card.querySelector('.gb-summary-toggle');
+    if (!button) return;
+    // Fragment IDs on legacy pages can be created during hydration.
+    // Opening the panel is not enough: the browser could not scroll to
+    // an ID that did not yet exist during its native fragment navigation.
+    if (button.getAttribute('aria-expanded') === 'true') {
+      global.requestAnimationFrame(function() {
+        if (hashTarget() === target) target.scrollIntoView({block:'start', behavior:'auto'});
+      });
+      return;
+    }
+    var panel = card.querySelector('.gb-summary-motion');
+    var onDone = function(event) {
+      if (event.target !== panel || event.propertyName !== 'grid-template-rows') return;
+      panel.removeEventListener('transitionend', onDone);
+      if (hashTarget() === target) target.scrollIntoView({block:'start', behavior:'auto'});
+    };
+    if (panel && !global.matchMedia('(prefers-reduced-motion: reduce)').matches)
+      panel.addEventListener('transitionend', onDone);
+    button.click();
+    if (!panel || global.matchMedia('(prefers-reduced-motion: reduce)').matches)
+      global.requestAnimationFrame(function() { target.scrollIntoView({block:'start', behavior:'auto'}); });
+  }
+  function initialize(root) {
+    var cards = (root || document).querySelectorAll('.summary-card');
+    Array.prototype.forEach.call(cards, function(card) {
+      if (card.dataset.gbSummaryOwner === '1') return;
+      var heading = card.querySelector(':scope > .summary-card__head');
+      var list = card.querySelector(':scope > .summary-card__body');
+      if (!heading || !list || heading.textContent.trim().toLocaleLowerCase('ru') !== 'коротко') return;
+      if (heading.querySelector('button') || list.closest('.gb-summary-motion')) return;
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'gb-summary-toggle';
+      var label = document.createElement('span');
+      label.className = 'gb-summary-toggle__label';
+      while (heading.firstChild) label.appendChild(heading.firstChild);
+      var chevron = document.createElement('span');
+      chevron.className = 'gb-summary-toggle__chevron';
+      chevron.setAttribute('aria-hidden', 'true');
+      chevron.innerHTML = '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="m6 8 4 4 4-4"/></svg>';
+      button.append(label, chevron);
+      heading.appendChild(button);
+      var panel = document.createElement('div');
+      panel.className = 'gb-summary-motion';
+      list.before(panel);
+      panel.appendChild(list);
+      var bodyId = list.id || 'gb-summary-body-' + (++sequence);
+      list.id = bodyId;
+      button.setAttribute('aria-controls', bodyId);
+      card.dataset.gbSummaryOwner = '1';
+      function setOpen(open) {
+        if (!open && panel.contains(document.activeElement)) button.focus({preventScroll:true});
+        card.dataset.gbSummaryOpen = open ? 'true' : 'false';
+        button.setAttribute('aria-expanded', String(open));
+        button.setAttribute('aria-label', open ? 'Свернуть раздел «Коротко»' : 'Развернуть раздел «Коротко»');
+        panel.inert = !open;
+        panel.setAttribute('aria-hidden', String(!open));
+      }
+      setOpen(Boolean(hashTarget() && list.contains(hashTarget())));
+      button.addEventListener('click', function() { setOpen(button.getAttribute('aria-expanded') !== 'true'); });
+    });
+  }
+  global.GBSummaryDisclosure = {version:1, initialize:initialize};
+  function boot() { initialize(); revealLinkedSummary(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, {once:true});
+  else boot();
+  global.addEventListener('hashchange', revealLinkedSummary);
+  global.addEventListener('pageshow', boot);
+})(typeof window !== 'undefined' ? window : null);
