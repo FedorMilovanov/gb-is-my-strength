@@ -99,7 +99,7 @@
     max-height:80vh;display:flex;flex-direction:column;border-radius:20px 20px 0 0;
     padding:8px 18px calc(14px + env(safe-area-inset-bottom,0px));
     background:#fbf3ea;box-shadow:0 -20px 50px -10px rgba(0,0,0,.35);
-    transform:translateY(100%);transition:transform .3s cubic-bezier(.22,1,.36,1)}
+    transform:translateY(100%);transition:transform .38s cubic-bezier(.22,1,.36,1)}
   .hmsheet.is-open .hmsheet-panel{transform:translateY(0)}
   :global(html.dark) .hmsheet-panel{background:#1c0e14;box-shadow:0 -20px 50px -10px rgba(0,0,0,.6)}
   /* B16: сепия скелета листа — дублирует глобал бара, т.к. лист самодостаточен
@@ -124,8 +124,13 @@
      лист есть, входа нет). Обёртка снята (@media all), лист всё равно скрыт до
      .is-open, поэтому сайтвайд ничего не течёт. */
   .hmsettings { display: none; position:fixed; inset:0; z-index:var(--z-overlay-high,3000); }
+  /* Preserve the real sheet in the render tree during entry and exit.
+     display:none on .is-open removal previously killed the closing motion. */
+  .hmsettings.is-entering,.hmsettings.is-open,.hmsettings.is-closing { display:block; }
+  .hmsettings.is-closing { pointer-events:none; }
+  .hmsettings .hmsheet-backdrop {opacity:0;transition:opacity .30s ease;}
+  .hmsettings.is-open .hmsheet-backdrop {opacity:1;}
   @media all {
-    .hmsettings.is-open { display: block; }
 
     .hmset-group + .hmset-group { border-top: 1px solid rgba(42,24,20,.08); }
     html.dark .hmset-group + .hmset-group { border-top-color: rgba(255,255,255,.08); }
@@ -191,7 +196,7 @@
     .hmset-done{background:var(--color-accent,#7a2e2e);color:white;border-color:transparent}
     .hmset-advanced{padding:9px 0}
     @media(min-width:1200px){.hmsettings .hmsheet-panel{max-height:75dvh;border-radius:18px}.hmsettings .hmsheet-head{padding:12px}.hmset-scroll{padding:4px 14px}.hmset-footer{padding:10px 14px}}
-    @media(prefers-reduced-motion:reduce){.hmset-btn,.hmsettings .hmsheet-panel{transition:none}}
+    @media(prefers-reduced-motion:reduce){.hmset-btn,.hmsettings .hmsheet-panel,.hmsettings .hmsheet-backdrop{transition:none}}
 
 
     /* ReaderSettings owns one measure for every direct article block. The
@@ -269,7 +274,11 @@
       width: 300px; max-height: 78vh; border-radius: 18px;
       box-shadow: 0 24px 60px -14px rgba(122,46,46,.34), 0 2px 10px rgba(42,24,20,.14);
       transform-origin: bottom left;
+      transform:translate3d(0,18px,0) scale(.985);
+      opacity:0;
+      transition:transform .36s cubic-bezier(.22,1,.36,1),opacity .26s ease;
     }
+    .hmsettings.is-open .hmsheet-panel {transform:translate3d(0,0,0) scale(1);opacity:1;}
     .hmsettings .hmsheet-handle { display: none; }
   }
 </style>
@@ -298,14 +307,31 @@
     const content = document.querySelector('[data-reader-root]') as HTMLElement | null;
     const backdrop = document.getElementById('hmSettingsBackdrop');
     const closeBtn = document.getElementById('hmSettingsClose');
+    const panel = sheet.querySelector('.hmsheet-panel') as HTMLElement | null;
+    let closingTimer = 0;
+    const finishClosing = () => {
+      window.clearTimeout(closingTimer);
+      closingTimer = 0;
+      if (!sheet.classList.contains('is-open')) sheet.classList.remove('is-closing');
+    };
+    panel?.addEventListener('transitionend', (event: TransitionEvent) => {
+      if (event.target === panel && event.propertyName === 'transform' && !sheet.classList.contains('is-open')) finishClosing();
+    });
 
     const OVERLAY_OWNER = 'reader-settings';
     const overlayRuntime = () => (window as any).OverlayRuntime || null;
     const fallbackUtils = () => (window as any).SiteUtils || null;
 
     const close = (reason = 'programmatic', restoreFocus = true) => {
-      sheet.classList.remove('is-open');
+      window.clearTimeout(closingTimer);
+      const animate = sheet.classList.contains('is-open')
+        && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      sheet.classList.toggle('is-closing', animate);
+      sheet.classList.remove('is-open', 'is-entering');
       sheet.setAttribute('aria-hidden', 'true');
+      sheet.inert = true;
+      if (animate) closingTimer = window.setTimeout(finishClosing, 440);
+      else finishClosing();
       const runtime = overlayRuntime();
       if (runtime?.close) runtime.close(OVERLAY_OWNER, reason, { restoreFocus });
       else fallbackUtils()?.unlockScroll?.(OVERLAY_OWNER);
@@ -328,7 +354,15 @@
         toc.setAttribute('aria-hidden', 'true');
         fallbackUtils()?.unlockScroll?.('hermenevtika-toc');
       }
+      window.clearTimeout(closingTimer);
+      sheet.classList.remove('is-closing');
+      sheet.classList.add('is-entering');
+      sheet.inert = false;
+      // Paint the same sheet in its closed pose first; opening from display:none
+      // and setting is-open in one style update would otherwise skip the tween.
+      if (panel) void panel.offsetWidth;
       sheet.classList.add('is-open');
+      sheet.classList.remove('is-entering');
       sheet.setAttribute('aria-hidden', 'false');
       if (runtime?.open) runtime.open(OVERLAY_OWNER, {
         element: sheet,

@@ -105,6 +105,13 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
 </aside>
 
 <style is:global>
+  /* Reserve the reader's vertical scrollbar corridor on real desktop browsers.
+     OverlayRuntime temporarily fixes the body while a menu is open; without
+     a stable root gutter the 15px scrollbar disappearance changes the page's
+     containing block and can make article lines visually reflow or jump. */
+  @media (min-width: 64em) {
+    html:has(.hrail--grok) { scrollbar-gutter: stable; }
+  }
   /* ===== ReaderRail — day (warm cream + maroon) / night (dark wine + dusty rose) ===== */
   .hrail{
     position:fixed; left:clamp(16px,2.4vw,40px); top:24px; bottom:24px; width:270px;

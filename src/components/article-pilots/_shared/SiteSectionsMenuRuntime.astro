@@ -145,6 +145,10 @@
       };
       const onPanelTransitionSettled = (event) => {
         if (event.target !== panel || panel.classList.contains('open')) return;
+        // Opacity settles before the longer transform; hiding on the first
+        // transitionend clipped the final part of the close animation.
+        // The timeout below remains a fallback when a transition is canceled.
+        if (event.type !== 'transitionend' || event.propertyName !== 'transform') return;
         hideNatively();
       };
       const syncVisual = (open) => {
@@ -152,8 +156,13 @@
         nativeHideTimer = 0;
 
         if (open) {
+          const wasHidden = panel.hidden;
           panel.hidden = false;
           if (backdrop) backdrop.hidden = false;
+          // Establish the same panel's closed visual state before opening.
+          // Otherwise hidden=false and .open in one task skip the transition
+          // on Chromium/WebKit and the whole card appears in one frame.
+          if (wasHidden) void panel.offsetWidth;
         }
 
         panel.classList.toggle('open', open);
@@ -171,7 +180,7 @@
 
         if (!open) {
           if (!hasExitTransition()) hideNatively();
-          else nativeHideTimer = window.setTimeout(hideNatively, 260);
+          else nativeHideTimer = window.setTimeout(hideNatively, 350);
         }
       };
 

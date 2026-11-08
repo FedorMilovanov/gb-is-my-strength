@@ -7,6 +7,7 @@ on:
       - 'src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki.astro'
       - 'scripts/grok-rail-pilot-browser-test.mjs'
       - 'scripts/grok-reader-overlay-lifecycle-browser-test.mjs'
+      - 'scripts/grok-menu-motion-layout-browser-contract.mjs'
       - 'scripts/grok-toc-keyboard-browser-contract.mjs'
       - 'scripts/grok-reader-typography-browser-contract.mjs'
       - 'scripts/grok-summary-rail-browser-contract.mjs'
@@ -24,6 +25,7 @@ on:
       - 'src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki.astro'
       - 'scripts/grok-rail-pilot-browser-test.mjs'
       - 'scripts/grok-reader-overlay-lifecycle-browser-test.mjs'
+      - 'scripts/grok-menu-motion-layout-browser-contract.mjs'
       - 'scripts/grok-toc-keyboard-browser-contract.mjs'
       - 'scripts/grok-reader-typography-browser-contract.mjs'
       - 'scripts/grok-summary-rail-browser-contract.mjs'
@@ -70,6 +72,7 @@ jobs:
           npm ci
           node --check scripts/grok-rail-pilot-browser-test.mjs
           node --check scripts/grok-reader-overlay-lifecycle-browser-test.mjs
+          node --check scripts/grok-menu-motion-layout-browser-contract.mjs
           node --check scripts/grok-toc-keyboard-browser-contract.mjs
           node --check scripts/grok-reader-typography-browser-contract.mjs
           node --check scripts/grok-summary-rail-browser-contract.mjs
@@ -123,6 +126,9 @@ jobs:
       - name: Browser proof - owner overlay dismissal, exclusive cards, larger fold icon
         run: node scripts/grok-reader-overlay-lifecycle-browser-test.mjs
 
+      - name: Browser proof - stable article geometry and smooth menu/settings motion
+        run: node scripts/grok-menu-motion-layout-browser-contract.mjs
+
       - name: Build flag OFF from the same source for deterministic rollback
         run: npm run strangler:build:production-like
 
@@ -141,6 +147,7 @@ jobs:
             reports/grok-stage2/
             reports/grok-typography/
             reports/grok-summary-motion/
+            reports/grok-menu-motion/
             reports/grok-keyboard/
             reports/reader-controls-a11y-browser-contract.*
             reports/hermenevtika-mobile-chrome/
