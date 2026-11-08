@@ -12,7 +12,7 @@ export const ASSET_VERSIONS = {
   'css/nagornaya-mobile-toc.css': '4fdfd43b',
   'css/reader-preferences.css': 'b22c42bb',
   'css/series-manuscript.css': '77915032',
-  'css/series-samizdat.css': '7c8ba23f',
+  'css/series-samizdat.css': 'f12011c0',
   'css/site.css': '8a85071a',
   'css/sw-toast.css': '2e540077',
   'css/tts-download-notice.css': 'b9ef192f',
