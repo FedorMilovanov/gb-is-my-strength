@@ -1032,6 +1032,9 @@ if (!process.exitCode) {
   const { spawnSync } = require('node:child_process');
   const layout = spawnSync(process.execPath, [join(ROOT, 'scripts', 'series-layout-browser-contract.mjs')], {
     cwd: ROOT, stdio: 'inherit', windowsHide: true,
+    // Existing print-paper and route-registry CI jobs install only Chromium.
+    // WebKit is enforced by the three-engine sitewide mobile audit instead.
+    env: { ...process.env, GB_LAYOUT_ENGINES: 'chromium' },
   });
   if (layout.error) throw layout.error;
   if (layout.status !== 0) process.exitCode = layout.status || 1;

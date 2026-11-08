@@ -309,3 +309,17 @@ await new Promise(r=>srv.close(r));fs.writeFileSync(path.join(OUT,'checks.json')
 console.log(JSON.stringify({cases:result.length,failed:result.filter(x=>x.fail.length).map(x=>({engine:x.engine,width:x.width,name:x.name,fail:x.fail,anchor:x.anchor})),warnings:result.filter(x=>x.warnings.length).map(x=>({engine:x.engine,width:x.width,name:x.name,warnings:x.warnings}))},null,2));
 
 if(result.some(row=>row.fail.length)) process.exitCode=1;
+
+// The existing three-browser mobile CI is the WebKit owner for the same
+// cross-book contract that engine:sweep checks in Chromium-only CI jobs.
+// A filtered local witness must remain narrow, so do not expand it to 126
+// unrelated cases when GB_MOBILE_AUDIT_ONLY selects one scenario.
+if (!process.exitCode && !process.env.GB_MOBILE_AUDIT_ONLY) {
+  const { spawnSync } = await import('node:child_process');
+  const layout = spawnSync(process.execPath, [path.join(ROOT, 'scripts', 'series-layout-browser-contract.mjs')], {
+    cwd: ROOT, stdio: 'inherit', windowsHide: true,
+    env: { ...process.env, GB_LAYOUT_ENGINES: 'chromium,webkit' },
+  });
+  if (layout.error) throw layout.error;
+  if (layout.status !== 0) process.exitCode = layout.status || 1;
+}

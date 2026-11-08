@@ -65,10 +65,15 @@ const server = http.createServer((req, res) => {
 });
 await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
 const origin = 'http://127.0.0.1:' + server.address().port;
+const drivers = { chromium, webkit };
+const selectedEngines = (process.env.GB_LAYOUT_ENGINES || 'chromium,webkit').split(',').map((name) => name.trim());
+assert.ok(selectedEngines.length > 0 && selectedEngines.every((name) => name in drivers),
+  'GB_LAYOUT_ENGINES must list chromium and/or webkit');
 let passed = 0, covers = 0;
 const failures = [];
 try {
-  for (const [engine, driver] of Object.entries({ chromium, webkit })) {
+  for (const engine of selectedEngines) {
+    const driver = drivers[engine];
     const browser = await driver.launch({ headless: true });
     try {
       for (const width of [320, 390, 768, 1024, 1359, 1360, 1440]) {
