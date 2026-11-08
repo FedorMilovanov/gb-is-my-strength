@@ -645,13 +645,19 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       clip-path:inset(0 0 0 100% round 16px);
       opacity:0;pointer-events:none;z-index:6;
       white-space:nowrap;
+      /* The clip-path owns the visible bloom. Delaying opacity only on CLOSE
+         prevents Linux/WebKit compositing stalls at 0 while is-open is true.
+         On open, opacity becomes 1 immediately; on close it is hidden only
+         after the 340ms retract, without an extra fading circle. */
       transition:clip-path .34s cubic-bezier(.32,.72,0,1),
-        opacity .18s ease,box-shadow .22s ease;
+        opacity 0s linear .34s,box-shadow .22s ease;
     }
     body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand::before {display:none;}
     body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand.is-open {
       clip-path:inset(0 0 0 0 round 16px);
       opacity:1;pointer-events:auto;
+      transition:clip-path .34s cubic-bezier(.32,.72,0,1),
+        opacity 0s linear,box-shadow .22s ease;
     }
     body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand:not(.is-open) {
       clip-path:inset(0 0 0 100% round 16px);
