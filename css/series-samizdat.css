@@ -116,10 +116,9 @@ html.dark body[data-series-theme="samizdat"]::before{
     radial-gradient(120% 90% at 50% 0%, transparent 55%, rgba(0,0,0,.35) 100%);
   mix-blend-mode:screen;
 }
-/* Контент — поверх текстуры */
-body[data-series-theme="samizdat"] .gbs2-world,
-body[data-series-theme="samizdat"] .mobile-top-bar,
-body[data-series-theme="samizdat"] .mobile-bottom-bar{ position:relative; z-index:1; }
+/* The article canvas sits above the texture. Fixed reader chrome keeps
+   its canonical viewport positioning, never joins content stacking rules. */
+body[data-series-theme="samizdat"] .gbs2-world { position:relative; z-index:1; }
 
 /* ---- 3. ГАЗЕТНАЯ МАЧТА В СТАТЬЕ: hero + кинетический номер ---- */
 [data-series-theme="samizdat"] .gbs2-hero-cap{
