@@ -1,0 +1,4 @@
+# Exact historical false positive: a CSS width assertion ('49rem') in a browser contract.
+# Rule generic-api-key matched the English test label "token"; no credential is present.
+# Keep security scanning enabled for the entire remainder of the repository and history.
+40c415469df2c4e90f70fe6f4088f266fbf8a297:scripts/reader-focus-sitewide-browser-contract.mjs:generic-api-key:62

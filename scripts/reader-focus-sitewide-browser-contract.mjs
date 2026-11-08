@@ -59,7 +59,7 @@ for(const [engine,browserType] of Object.entries({chromium,firefox,webkit})){
     });
     row.proof.initial=initial;
     check('no horizontal overflow',initial.overflow<=2,initial);
-    check('sitewide focus measure token',initial.focusMeasure==='49rem',initial);
+    check('sitewide focus width',initial.focusMeasure==='49rem',initial);
     if(slug==='grok'&&width===1440){
       await page.locator('.hrail--grok.grok-ready').waitFor();
       const original=await page.locator('.article-body > p').first().boundingBox();
