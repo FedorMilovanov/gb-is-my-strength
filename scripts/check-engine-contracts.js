@@ -163,15 +163,33 @@ const gillMobileBar = read('src/components/article-pilots/gill-series/GillSeries
 const mobilePlayStart = gillMobileBar.indexOf('<span class="mobile-playwrap"');
 const mobilePlayEnd = mobilePlayStart === -1 ? -1 : gillMobileBar.indexOf('</span>', mobilePlayStart);
 const mobilePlayBlock = mobilePlayEnd === -1 ? '' : gillMobileBar.slice(mobilePlayStart, mobilePlayEnd);
-check('Gill mobile: speed badge remains Play-owned with canonical non-center-intercepting corner geometry',
+// The old overlapping 24px corner badge is retired. Guard the structural
+// contract in source (CSS/ARIA/controller); the browser matrix separately
+// proves actual Play/rate hit geometry in Chromium and WebKit for all series.
+const speedBadgeRule = css.match(/\[data-reader-engine="series"\] \.mobile-spdbadge\s*\{([^}]*)\}/)?.[1] || '';
+const speedPopoverRule = css.match(/\[data-reader-engine="series"\] \.mobile-speedrail\s*\{([^}]*)\}/)?.[1] || '';
+const rateController = read('js/floating-cluster-controller.js');
+const rateBrowserContract = read('scripts/series-layout-browser-contract.mjs');
+check('Series mobile: independent 44px Play/rate targets, accessible opaque popover and real browser overlap witness',
   mobilePlayBlock.includes('class="mobile-spdbadge"')
-    && /\[data-gill-v16\] \.mobile-playwrap\s*\{[^}]*position:\s*relative;[^}]*display:\s*flex;[^}]*gap:\s*2px/.test(css)
-    // At 40px Play size the 24px badge must start below Play's 20px
-    // center: bottom:-8px places its top at 24px (a 4px clearance).
-    // The actual Chromium/WebKit/Firefox hit surface is also checked in
-    // reader-mobile-sitewide-audit.mjs, so CSS syntax alone cannot pass.
-    && /\[data-gill-v16\] \.mobile-spdbadge\s*\{[^}]*position:\s*absolute;[^}]*right:\s*0;[^}]*bottom:\s*-8px;[^}]*min-width:\s*24px;[^}]*height:\s*24px/.test(css)
-    && /\[data-gill-v16\] \.mobile-top-bar \.gb-icon,[\s\S]*?\[data-gill-v16\] \.mobile-playwrap \.mobile-top-ember\s*\{[^}]*width:\s*44px !important;[^}]*height:\s*44px !important;[^}]*min-width:\s*44px !important;[^}]*min-height:\s*44px !important/.test(css));
+    && mobilePlayBlock.includes('aria-controls="mobileSpeedrail"')
+    && mobilePlayBlock.includes('aria-expanded="false"')
+    && gillMobileBar.includes("'data-fc-speed-layout': 'popover'")
+    && read('src/runtime/reader-controls-a11y.js').includes("root.dataset.fcSpeedLayout === 'popover'")
+    && /position:\s*relative/.test(speedBadgeRule)
+    && /flex:\s*0 0 44px/.test(speedBadgeRule)
+    && /min-width:\s*44px/.test(speedBadgeRule)
+    && /height:\s*44px/.test(speedBadgeRule)
+    && /position:\s*fixed/.test(speedPopoverRule)
+    && /grid-template-columns:\s*repeat\(6,\s*minmax\(0,\s*1fr\)\)/.test(speedPopoverRule)
+    && /background:\s*var\(--gill-mobile-speed-bg/.test(speedPopoverRule)
+    && /\[data-reader-engine="series"\] \.mobile-playwrap \.mobile-top-ember\s*\{[^}]*width:\s*44px;[^}]*height:\s*44px/.test(css)
+    && /@media \(max-width:\s*359px\)\s*\{\s*\[data-reader-engine="series"\] \.mobile-speedrail\s*\{[^}]*repeat\(3,\s*minmax\(0,\s*1fr\)\)/.test(css)
+    && rateController.includes("badge.setAttribute('aria-expanded', open ? 'true' : 'false')")
+    && rateController.includes("if (e.key === 'Escape') { setOpen(false); if (badge) badge.focus(); return; }")
+    && rateBrowserContract.includes('speed target overlaps Play')
+    && rateBrowserContract.includes('speed popover must have opaque theme background')
+    && rateBrowserContract.includes('dark speed popover must be opaque'));
 
 const controller = read('js/floating-cluster-controller.js');
 check('Reader: follow-scroll contract', controller.includes('function buildFollowMap') && controller.includes('function followReading') && controller.includes('followReading(ttsState.spokenChars)'));

@@ -57,6 +57,7 @@
     root.setAttribute(BOUND_ATTR, config.kind);
     const railId = ensureId(rail, `${config.kind}-speedrail`);
     const initialRailInlineDisplay = rail.style.display;
+    const keepAlternateVisible = root.dataset.fcSpeedLayout === 'popover';
     const alternateState = alternate instanceof HTMLElement ? {
       ariaHidden: alternate.getAttribute('aria-hidden'),
       inert: alternate.hasAttribute('inert') || Boolean(alternate.inert),
@@ -104,7 +105,7 @@
       setAttr(badge, 'aria-controls', railId);
       setAttr(badge, 'aria-expanded', open ? 'true' : 'false');
 
-      if (alternate instanceof HTMLElement && alternateState) {
+      if (!keepAlternateVisible && alternate instanceof HTMLElement && alternateState) {
         if (open) {
           setAttr(alternate, 'aria-hidden', 'true');
           setInert(alternate, true);

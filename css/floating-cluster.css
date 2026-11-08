@@ -3795,26 +3795,25 @@ html.dark [data-gill-v16] .mobile-top-bar {
 }
 
 /* =====================================================
-   GILL MOBILE READER v5 — Learning + Settings sheets,
-   inline speed rail, scoped sepia, top-bar Home/Learning slot.
+   SHARED SERIES MOBILE v6 — Learning + Settings sheets,
+   responsive speed popover, scoped sepia, top-bar Home/Learning slot.
    All rules scoped to [data-gill-v16] under <85em; nothing here
    touches desktop Gill or any other route.
    ===================================================== */
 @media (max-width: 84.999em) {
-  /* ---- Top bar: Learning trigger / inline speed rail slot-swap ---- */
-  [data-gill-v16] .mobile-top-slot {
+  /* ---- Shared series mobile controls: independent Play/Speed touch targets.
+     The chooser is a real popover below the bar, not a squeezed swap of
+     Learning's inline slot. All series share data-reader-engine=series. ---- */
+  [data-reader-engine="series"] .mobile-top-slot {
     position: relative;
     height: 40px;
     min-width: 0;
     flex: 1 1 auto;
   }
-  [data-gill-v16] .mobile-learning-trigger,
-  [data-gill-v16] .mobile-speedrail {
-    position: absolute;
-    inset: 0;
-  }
-  [data-gill-v16] .mobile-learning-trigger {
+  [data-reader-engine="series"] .mobile-learning-trigger {
     display: flex;
+    width: 100%;
+    min-height: 40px;
     align-items: center;
     justify-content: center;
     gap: 6px;
@@ -3826,102 +3825,125 @@ html.dark [data-gill-v16] .mobile-top-bar {
     font-size: 12.5px;
     font-weight: 800;
     cursor: pointer;
-    transition: opacity .2s ease, transform .24s var(--gb-ease-out), color .2s ease;
   }
-  [data-gill-v16] .mobile-learning-trigger svg {
+  [data-reader-engine="series"] .mobile-learning-trigger svg {
     width: 16px; height: 16px;
     fill: none; stroke: currentColor; stroke-width: 1.8;
     stroke-linecap: round; stroke-linejoin: round;
     flex-shrink: 0;
   }
-  [data-gill-v16] .mobile-speedrail {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    /* RC-04: 44px tall so the speed pills' touch-target ::before has vertical
-       room inside the rail box (it clips to this height, not the 32px pill).
-       Fits inside the 58px top bar → no layout jump when the rail opens. */
-    min-height: 44px;
-    overflow-x: auto;
-    scrollbar-width: none;
+  /* Grid-based popover is readable at 320px and never steals room from the
+     Learning button or overlaps Play. Six columns fit from 360px; narrow
+     devices use two rows of three full-size choices. */
+  [data-reader-engine="series"] .mobile-speedrail {
+    position: fixed;
+    inset: auto;
+    top: calc(var(--gill-mobile-topbar-h) + env(safe-area-inset-top, 0px) + 10px);
+    left: 50%;
+    width: min(420px, calc(100vw - 20px));
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 6px;
+    padding: 10px;
+    border: 1px solid var(--gill-mobile-bar-border);
+    border-radius: 18px;
+    /* The top bar is translucent by design; a floating picker must be opaque.
+       Per-theme solid tokens preserve its palette without see-through text. */
+    background: var(--gill-mobile-speed-bg, #fdfbf6);
+    color: var(--gill-mobile-bar-ink);
+    box-shadow: var(--gill-mobile-bar-shadow), 0 12px 36px rgba(0,0,0,.18);
+    z-index: 4;
+    overflow: visible;
     opacity: 0;
-    transform: translateX(8px);
+    transform: translate(-50%, -6px);
     pointer-events: none;
-    transition: opacity .2s ease, transform .24s var(--gb-ease-out);
+    transition: opacity .18s ease, transform .18s ease;
   }
-  /* SSR / no-JS contract: aria-hidden must remove the rail from both layout
-     and sequential focus before the inline-speed controller hydrates. */
-  .mobile-speedrail[aria-hidden="true"] {
-    display: none !important;
+  html.dark [data-reader-engine="series"] .mobile-speedrail {
+    background: var(--gill-mobile-speed-bg, #0d1117);
   }
-  [data-gill-v16] .mobile-speedrail::-webkit-scrollbar { display: none; }
-  [data-gill-v16] .mobile-top-bar.speed-open .mobile-learning-trigger {
-    opacity: 0;
-    transform: translateX(-8px);
-    pointer-events: none;
-  }
-  [data-gill-v16] .mobile-top-bar.speed-open .mobile-speedrail {
+  /* Closed speed choices must never enter sequential focus before hydration. */
+  .mobile-speedrail[aria-hidden="true"] { display: none !important; }
+  [data-reader-engine="series"] .mobile-top-bar.speed-open .mobile-speedrail {
     opacity: 1;
-    transform: none;
+    transform: translate(-50%, 0);
     pointer-events: auto;
   }
-  [data-gill-v16] .mobile-speed {
-    position: relative;
-    flex: 0 0 auto;
-    height: 32px;
-    min-width: 38px;
-    padding: 0 8px;
+  [data-reader-engine="series"] .mobile-speed {
+    min-width: 0;
+    height: 44px;
+    padding: 0 3px;
     border: 1px solid var(--gill-mobile-bar-border);
-    border-radius: 10px;
+    border-radius: 11px;
     background: transparent;
     color: var(--gill-mobile-bar-muted);
+    white-space: nowrap;
     font-family: var(--gb-font-sans, system-ui, sans-serif);
     font-size: 11.5px;
     font-weight: 800;
     cursor: pointer;
     transition: background .16s ease, border-color .16s ease, color .16s ease;
   }
-  /* RC-04: touch target expands to the rail's full 44px height without growing
-     the visual pill (absolute ::before, clipped to the 44px rail box). */
-  [data-gill-v16] .mobile-speed::before {
-    content: '';
-    position: absolute;
-    inset: -6px -2px;
-  }
-  [data-gill-v16] .mobile-speed[aria-checked="true"] {
+  [data-reader-engine="series"] .mobile-speed[aria-checked="true"] {
     background: var(--gill-mobile-bar-gold);
     border-color: var(--gill-mobile-bar-gold);
     color: var(--gb-surface, #fff);
   }
-  html.dark [data-gill-v16] .mobile-speed[aria-checked="true"] { color: #0e1116; }
-
-  /* ---- Persistent speed badge on the Play ember (inline-rail mode) ----
-     Canonical non-center-intercepting corner geometry — Play-owned. */
-  [data-gill-v16] .mobile-spdbadge {
-    position: absolute;
-    /* This persistent speed chip must stay inside the viewport at tablet
-       widths; its old -4px offset caused a 4px body overflow after reload. */
-    right: 0;
-    /* The 24px badge overlapped the 40px Play center at 430–480px.
-       Keep both Play and the corner speed badge independently tappable. */
-    bottom: -8px;
-    z-index: 3;
-    min-width: 24px;
-    height: 24px;
-    padding: 0 5px;
+  html.dark [data-reader-engine="series"] .mobile-speed[aria-checked="true"] { color: #0e1116; }
+  @media (max-width: 359px) {
+    [data-reader-engine="series"] .mobile-speedrail {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  /* Make the rate trigger and Play peers in the flex row, not overlapping
+     layers. The badge's SMALL painted pill lives inside a 44x44 button. */
+  [data-reader-engine="series"] .mobile-playwrap .mobile-top-ember {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  [data-reader-engine="series"] .mobile-spdbadge {
+    position: relative;
+    inset: auto;
+    flex: 0 0 44px;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    padding: 0;
     display: grid;
     place-items: center;
+    border: 0;
     border-radius: 999px;
-    border: 1.5px solid var(--gill-mobile-bar-bg);
-    background: var(--gill-mobile-bar-ink);
+    background: transparent;
     color: var(--gill-mobile-bar-bg);
     font: 700 10px/1 var(--gb-font-sans, system-ui, sans-serif);
     cursor: pointer;
-    box-shadow: 0 1px 4px rgba(0,0,0,.18);
+    isolation: isolate;
+    z-index: 3;
   }
-  html.dark [data-gill-v16] .mobile-spdbadge {
-    background: linear-gradient(135deg, var(--color-accent-gold, #b8936a), #eed093);
+  [data-reader-engine="series"] .mobile-spdbadge::before {
+    content: '';
+    position: absolute;
+    width: 31px;
+    height: 26px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 999px;
+    border: 1.5px solid var(--gill-mobile-bar-bg);
+    background: var(--gill-mobile-bar-ink);
+    box-shadow: 0 1px 4px rgba(0,0,0,.18);
+    z-index: -1;
+    pointer-events: none;
+  }
+  html.dark [data-reader-engine="series"] .mobile-spdbadge {
+    background: transparent;
     color: #0e1116;
+  }
+  html.dark [data-reader-engine="series"] .mobile-spdbadge::before {
+    background: linear-gradient(135deg, var(--color-accent-gold, #b8936a), #eed093);
   }
 
   /* ---- Bottom bar: theme cycle glyph ---- */

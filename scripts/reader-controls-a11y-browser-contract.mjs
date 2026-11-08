@@ -30,7 +30,7 @@ const ROUTES = [
   {
     id: 'gill',
     route: '/articles/dzhon-gill-chast-1-chelovek/',
-    slot: { root: '[data-fc-speed-mode="inline"]', rail: '.mobile-speedrail', badge: '.mobile-spdbadge', alternate: '.mobile-learning-trigger', chip: '.mobile-speed' },
+    slot: { root: '[data-fc-speed-mode="inline"]', rail: '.mobile-speedrail', badge: '.mobile-spdbadge', alternate: '.mobile-learning-trigger', keepAlternateVisible: true, chip: '.mobile-speed' },
     mobileSurfaces: [
       { id: 'part-toc', trigger: '#mobPartTocBtn', target: '#partTocOverlay', popup: 'dialog' },
       { id: 'settings', trigger: '#mobSettingsBtn', target: '#gillSettingsOverlay', popup: 'dialog' },
@@ -157,7 +157,10 @@ async function auditSlot(page, routeId, selectors, checks) {
   record(checks, `${prefix}-10`, 'open rail is exposed to AT', opened.railAriaHidden === 'false' && !opened.railInert, opened);
   record(checks, `${prefix}-11`, 'open rail has one roving Tab stop', opened.tabStops === 1, opened);
   record(checks, `${prefix}-12`, 'badge reports expanded state', opened.badgeExpanded === 'true', opened);
-  record(checks, `${prefix}-13`, 'declared alternate is hidden and inert while open (or absent by design)', selectors.alternate ? opened.alternateExists && opened.alternateAriaHidden === 'true' && opened.alternateInert : !opened.alternateExists, opened);
+  record(checks, `${prefix}-13`, 'alternate visibility follows the declared speed layout', selectors.alternate ?
+    opened.alternateExists && (selectors.keepAlternateVisible ?
+      opened.alternateAriaHidden !== 'true' && !opened.alternateInert :
+      opened.alternateAriaHidden === 'true' && opened.alternateInert) : !opened.alternateExists, opened);
 
   const selected = page.locator(`${selectors.chip}[aria-checked="true"]`).first();
   await selected.focus();

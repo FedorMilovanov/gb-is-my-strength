@@ -1,9 +1,9 @@
 ---
 /**
- * GillSeriesMobileBar — mobile (<64em) control surface, v5.
+ * GillSeriesMobileBar — shared series mobile (<85em) control surface, v6.
  *
  *   TOP bar: Back(→config.railBackHref) → Home(→«/») → Learning trigger
- *     /inline speed rail slot-swap (data-fc-speed-mode="inline" opts the
+ *     /responsive speed picker popover (data-fc-speed-mode="inline" opts the
  *     ember OUT of the canonical bloom-pill in floating-cluster-controller.js
  *     — see initGillInlineSpeedRail()) → Play+badge → Save. Auto-hides on
  *     scroll-down, reveals on scroll-up, stays pinned while any Gill sheet
@@ -42,7 +42,7 @@ const page = config.pages[pageId];
 ---
 <MobileChromeShell
   engine="series"
-  topAttrs={{ 'data-fc-root': true, 'data-fc-variant': 'gill', 'data-gill-mobile-bar': true, 'data-fc-speed-mode': 'inline' }}
+  topAttrs={{ 'data-fc-root': true, 'data-fc-variant': 'gill', 'data-gill-mobile-bar': true, 'data-fc-speed-mode': 'inline', 'data-fc-speed-layout': 'popover' }}
   bottomAttrs={{ 'data-fc-root': true, 'data-fc-variant': 'gill', 'data-gill-mobile-bar': true }}
 >
   <Fragment slot="top-leading">
@@ -71,7 +71,7 @@ const page = config.pages[pageId];
 
   <span class="mobile-playwrap" slot="top-playback">
     <PlayEmber audioState="none" class="mobile-top-ember" tip="Озвучка" />
-    <button type="button" class="mobile-spdbadge" id="mobSpdBadge" aria-label="Скорость озвучки 1×">1×</button>
+    <button type="button" class="mobile-spdbadge" id="mobSpdBadge" aria-controls="mobileSpeedrail" aria-expanded="false" aria-label="Скорость озвучки 1×">1×</button>
   </span>
 
   <SaveButton class="mobile-top-save" tip="Сохранить" slot="top-trailing" />

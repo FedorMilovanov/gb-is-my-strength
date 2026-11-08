@@ -295,28 +295,32 @@ for (const [id, url] of SERIES) {
 
   const mb = await page.evaluate(() => {
     const play = document.querySelector('.mobile-top-bar .gb-ember');
-    const badge = document.querySelector('.mobile-top-bar .mobile-spdbadge, .mobile-top-bar .gbs-rail-spdbadge');
-    const e = play?.getBoundingClientRect();
-    const b = badge?.getBoundingClientRect();
-    if (!e || !b) return null;
-    const hitAt = (rect) => document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
-    const playCenter = hitAt(e);
-    const badgeCenter = hitAt(b);
+    const badge = document.querySelector('.mobile-top-bar .mobile-spdbadge');
+    const p = play?.getBoundingClientRect(), b = badge?.getBoundingClientRect();
+    if (!p || !b) return null;
+    const targetAt = (r) => document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+    const playTarget = targetAt(p), badgeTarget = targetAt(b);
+    const overlap = Math.max(0, Math.min(p.right, b.right) - Math.max(p.left, b.left)) *
+      Math.max(0, Math.min(p.bottom, b.bottom) - Math.max(p.top, b.top));
     return {
-      br: Math.round(b.right - e.right),
-      bb: Math.round(b.bottom - e.bottom),
-      playHit: playCenter === play || play.contains(playCenter),
-      badgeHit: badgeCenter === badge || badge.contains(badgeCenter),
+      playWidth: p.width, playHeight: p.height,
+      badgeWidth: b.width, badgeHeight: b.height,
+      overlap,
+      playHit: playTarget === play || play.contains(playTarget),
+      badgeHit: badgeTarget === badge || badge.contains(badgeTarget),
       badgeWithinViewport: b.left >= -1 && b.right <= innerWidth + 1,
       badgeRadius: getComputedStyle(badge).borderRadius,
+      badgeControls: badge.getAttribute('aria-controls'),
     };
   });
-  // A deliberate 8px outward badge offset prevents covering Play's center.
-  // Assert the measured corner geometry AND independent real hit targets,
-  // rather than requiring the obsolete 4px offset.
-  R(id, 'mob: «1×» в круге', !!mb &&
-    Math.abs(mb.br) <= 2 && mb.bb >= 6 && mb.bb <= 10 &&
-    mb.playHit && mb.badgeHit && mb.badgeWithinViewport &&
+  // Shared series v6: Play and speed are peer-sized buttons, never
+  // overlapping layers. The full Chromium/WebKit responsive picker/ARIA
+  // contract is also checked by series-layout-browser-contract.mjs.
+  R(id, 'mob: Play / скорость — независимые сенсорные зоны', !!mb &&
+    mb.playWidth >= 43 && mb.playHeight >= 43 &&
+    mb.badgeWidth >= 43 && mb.badgeHeight >= 43 &&
+    mb.overlap <= .5 && mb.playHit && mb.badgeHit &&
+    mb.badgeWithinViewport && mb.badgeControls === 'mobileSpeedrail' &&
     parseFloat(mb.badgeRadius) >= 10, JSON.stringify(mb));
 
   const gear = await page.$('#mobSettingsBtn');

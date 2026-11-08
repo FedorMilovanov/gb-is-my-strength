@@ -45,6 +45,7 @@ body[data-series-theme="samizdat"]{
 
   /* Верхний мобильный бар — газетный, с фиолетовой краской. */
   --gill-mobile-bar-bg:rgba(239,231,215,.86);
+  --gill-mobile-speed-bg:#efe7d7;
   --gill-mobile-bar-ink:#2a2233;
   --gill-mobile-bar-muted:#5f5470;
   --gill-mobile-bar-gold:#5b3a86;
@@ -69,6 +70,7 @@ html.dark body[data-series-theme="samizdat"]{
   --smz-ink:#cdb8ec;
   --smz-ink-strong:#e3d6f7;
   --gill-mobile-bar-bg:rgba(20,17,27,.82);
+  --gill-mobile-speed-bg:#14111b;
   --gill-mobile-bar-ink:#e9e2f2;
   --gill-mobile-bar-muted:#948aa6;
   --gill-mobile-bar-gold:#c1a7e6;

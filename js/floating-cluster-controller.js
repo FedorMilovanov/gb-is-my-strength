@@ -2179,7 +2179,7 @@
   }
 
   /* =====================================================
-     GILL MOBILE v5 — inline speed rail
+     SHARED SERIES MOBILE v6 — responsive speed picker
      -----------------------------------------------------
      The Gill mobile top bar has no free edge for the bloom-pill (Play sits
      mid-row between Home and Save), so instead of .gb-ember-expand it
@@ -2224,8 +2224,9 @@
       root.classList.toggle('speed-open', open);
       rail.setAttribute('aria-hidden', open ? 'false' : 'true');
       rail.hidden = !open;
-      if (learningBtn) learningBtn.tabIndex = open ? -1 : 0;
+      if (badge) badge.setAttribute('aria-expanded', open ? 'true' : 'false');
       speedButtons.forEach(function(btn) { btn.tabIndex = open ? 0 : -1; });
+      if (!open && rail.contains(document.activeElement) && badge) badge.focus();
       if (open) { try { document.dispatchEvent(new CustomEvent('gb:gill-sheet-open')); } catch(_) {} }
     }
     setOpen(false);
@@ -2254,11 +2255,11 @@
       closeTimer = setTimeout(function() { setOpen(false); }, 150);
     });
     addCleanListener(document, 'click', function(e) {
-      if (open && !slot.contains(e.target)) setOpen(false);
+      if (open && !rail.contains(e.target) && !(badge && badge.contains(e.target))) setOpen(false);
     });
     addCleanListener(document, 'keydown', function(e) {
       if (!open) return;
-      if (e.key === 'Escape') { setOpen(false); return; }
+      if (e.key === 'Escape') { setOpen(false); if (badge) badge.focus(); return; }
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
         e.preventDefault();
         var idx = speedButtons.indexOf(document.activeElement);
