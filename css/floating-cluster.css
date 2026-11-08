@@ -3200,19 +3200,12 @@ html.dark [data-gill-v16] .mobile-top-bar {
   [data-gill-v16] main,
   [data-gill-v16] article {
     padding-top: calc(var(--gill-mobile-topbar-h) + env(safe-area-inset-top, 0px) + 14px) !important;
-    transition: padding-top .32s cubic-bezier(.3,.8,.4,1);
   }
 
-  /* Smart auto-hide top bar (owner: "чтобы ты 1 на 1 с текстом… а верхняя
-     как-то умно убирается и появляется"): GillSeriesMobileBar's script
-     toggles .gbs2-tbhidden on this root on scroll-down/scroll-up, EXCEPT
-     while TTS is playing — then it stays pinned so the Play control (and
-     its progress ring) is never lost mid-listen (owner: "если PLAY нажали,
-     то пускай фиксируется"). The reserved top padding shrinks/grows in
-     lockstep with the bar, so the text visibly slides up when it leaves and
-     back down when it returns — same --gill-mobile-topbar-h reservation
-     this page already used as a static constant, just made dynamic. Bottom
-     bar is untouched — always visible per owner spec. */
+  /* Fixed mobile toolbar slides out via transform only. Reserve stable
+     content padding in BOTH toolbar states: animating padding-top shifted
+     article headings under a real touch, causing scroll anchoring and a
+     missed native click in WebKit. The bottom bar remains unchanged. */
   [data-gill-v16] .mobile-top-bar {
     transition: transform .32s cubic-bezier(.3,.8,.4,1), opacity .26s ease;
   }
@@ -3220,11 +3213,6 @@ html.dark [data-gill-v16] .mobile-top-bar {
     transform: translateY(calc(-100% - 24px));
     opacity: 0;
     pointer-events: none;
-  }
-  [data-gill-v16].gbs2-tbhidden .page-wrap,
-  [data-gill-v16].gbs2-tbhidden main,
-  [data-gill-v16].gbs2-tbhidden article {
-    padding-top: calc(env(safe-area-inset-top, 0px) + 14px) !important;
   }
   @media (prefers-reduced-motion: reduce) {
     [data-gill-v16] .mobile-top-bar,

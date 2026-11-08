@@ -1678,3 +1678,49 @@ body .article-body .article-header > .original-author-card + .article-byline {
     transition: none;
   }
 }
+
+/* Mobile reading front matter: keep copyright, publication authority and
+   source PDF directly visible. Collapse only supplementary notes with native
+   <details>; no script, duplicated legal copy or smaller text. */
+.article-body .notice__details { margin-block-start: 8px; }
+.article-body .notice__details > summary {
+  min-block-size: 44px;
+  box-sizing: border-box;
+  padding-block: 11px;
+  cursor: pointer;
+  color: var(--color-text);
+  font-weight: 600;
+}
+.article-body .notice__details > summary:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+.article-body .notice__details-content { padding-block: 4px 8px; }
+@media (max-width: 600px) {
+  .article-body .article-header > .notice {
+    padding-block: 14px;
+    margin-block-end: 20px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .article-body .article-header > .notice p { margin-block: 0 6px; }
+  .article-body .article-header > .notice p:last-child { margin-block-end: 0; }
+  .article-body .article-header > .original-author-card { padding-block: 10px; }
+  body .article-body .article-header > .original-author-card + .article-byline {
+    margin-block: 10px;
+  }
+}
+
+/* Print the full editorial apparatus even if its native disclosure was
+   closed on screen. This is a print-only style, not a JS dependency. */
+@media print {
+  .article-body .notice__details > summary { display: none; }
+  .article-body .notice__details:not([open])::details-content {
+    content-visibility: visible;
+  }
+  .article-body .notice__details:not([open]) > .notice__details-content {
+    display: block;
+    content-visibility: visible;
+  }
+}

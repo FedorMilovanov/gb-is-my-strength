@@ -188,7 +188,7 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
       background:linear-gradient(180deg,#f3ead4,#e9dcc0); border-top-color:#d8c9a8;
       box-shadow:0 -8px 24px -12px rgba(122,90,48,.20);
     }
-    .article-main--hrail{ padding-top:calc(52px + env(safe-area-inset-top,0px)); padding-bottom: calc(56px + env(safe-area-inset-bottom,0px)); }
+    .article-main--hrail{ padding-top:calc(52px + env(safe-area-inset-top,0px)); padding-bottom: calc(72px + env(safe-area-inset-bottom,0px)); }
     body.hm-tbhidden .article-main--hrail{ padding-top:calc(12px + env(safe-area-inset-top,0px)); }
     /* Hide desktop header when this bar exists — prevents ghost text + double chrome */
     .astro-header{display:none !important}
@@ -248,16 +248,17 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   .hm-playwrap .hm-ember{--ember-size:40px}
   .hm-spdbadge{
     position:absolute;right:-2px;bottom:-3px;z-index:2;
-    width:auto;min-width:26px;height:18px;padding:0 4px;border-radius:999px;
+    width:auto;min-width:28px;height:20px;padding:0 4px;border-radius:999px;
     border:1px solid var(--color-canvas,#fdfcf9);background:var(--color-accent,#7a2e2e);color:#fff;
-    font:700 9px/16px "Source Sans 3",system-ui,sans-serif;letter-spacing:0;
+    font:700 10px/18px "Source Sans 3",system-ui,sans-serif;letter-spacing:0;
     display:inline-grid;place-items:center;cursor:pointer;
     box-shadow:0 1px 3px rgba(0,0,0,.15);
     transition:transform .18s cubic-bezier(.34,1.56,.64,1),background .15s;
   }
   html.dark .hm-spdbadge{background:#d4a574;border-color:var(--color-canvas,#0e1116);color:#1a1713}
   /* Keep the speed badge tappable without capturing the Play button's centre. */
-  .hm-spdbadge::before{content:'';position:absolute;inset:-3px 0}
+  .hm-spdbadge::before{content:'';position:absolute;inset:-2px 0}
+  .hm-spdbadge:focus-visible{outline:2px solid var(--color-text);outline-offset:3px}
   .hm-spdbadge:active{transform:scale(.94)}
   .hm-spdbadge.is-bump{animation:hm-spdbadge-bump .3s cubic-bezier(.34,1.56,.64,1)}
   @keyframes hm-spdbadge-bump{0%{transform:scale(1)}50%{transform:scale(1.12)}100%{transform:scale(1)}}

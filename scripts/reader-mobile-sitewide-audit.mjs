@@ -15,12 +15,17 @@ for(const [engine,driver] of Object.entries({chromium,webkit,firefox})){
  for(const width of [320,375,390,430,480]){
   const height=width===320?640:844;
   for(const [name,route] of ROUTES){
+   if(process.env.GB_MOBILE_AUDIT_ONLY && process.env.GB_MOBILE_AUDIT_ONLY !== [engine,width,name].join(':'))continue;
    const context=await browser.newContext({viewport:{width,height},hasTouch:true,isMobile:engine!=='firefox',deviceScaleFactor:2,serviceWorkers:'block'});
    const page=await context.newPage();page.setDefaultTimeout(6000);
+   // Only the local built Product belongs to this hermetic browser contract.
+   // Wait until its styles/assets settle before testing precise tap geometry;
+   // the separate first-paint suite owns intentionally early loading states.
+   await page.route(url=>!url.toString().startsWith(origin),route=>route.abort('blockedbyclient'));
    const row={engine,width,height,name,route,fail:[],warnings:[],measure:null,anchor:null,settings:null,errors:[]};
    page.on('pageerror',err=>row.errors.push(String(err).slice(0,180)));
    try{
-    const response=await page.goto(origin+route,{waitUntil:'domcontentloaded',timeout:15000});if(response.status()!==200)row.fail.push('HTTP '+response.status());
+    const response=await page.goto(origin+route,{waitUntil:'networkidle',timeout:20000});if(response.status()!==200)row.fail.push('HTTP '+response.status());
     await page.waitForTimeout(150);
     row.measure=await page.evaluate(()=>{
      const h=document.documentElement;
@@ -34,10 +39,122 @@ for(const [engine,driver] of Object.entries({chromium,webkit,firefox})){
     if((name==='heart'||name==='pastor')&&width===390){
       const anchor=page.locator('.heading-anchor[data-gb-heading-anchor-owner="native-v1"]').first();
       if(await anchor.count()){
-       await anchor.scrollIntoViewIfNeeded().catch(()=>{});await page.waitForTimeout(240);
+       // A loaded DOM is not yet a stable touch surface: WebKit/Linux may
+       // still apply font-driven layout and browser scroll correction.
+       await page.evaluate(async()=>{await document.fonts.ready;});
+       await page.waitForFunction(()=>document.documentElement.dataset.gbArticleInteractionsReady==='1');
+       // Use exactly one native scroll operation. Stacking Playwright's
+       // scrollIntoViewIfNeeded with another explicit scroll leaves competing
+       // scroll restorations in WebKit and changes the target under the tap.
+       await anchor.evaluate(e=>{
+         const r=e.getBoundingClientRect();
+         window.scrollTo({top:window.scrollY+r.top+r.height/2-innerHeight/2,behavior:'instant'});
+       });
+       // A scroll action can finish while asynchronously populated content
+       // is still changing height. Require stable scroll + anchor geometry
+       // over consecutive painted frames before the native touchscreen tap.
+       await anchor.evaluate(async e=>{
+         let prev=null,stable=0;
+         for(let frame=0;frame<200;frame++){
+           await new Promise(resolve=>requestAnimationFrame(resolve));
+           const r=e.getBoundingClientRect();
+           const next=[r.x,r.y,r.width,r.height,scrollX,scrollY,document.documentElement.scrollHeight];
+           const same=prev&&next.every((x,i)=>Math.abs(x-prev[i])<.3);
+           stable=same?stable+1:0;
+           if(stable>=15)return;
+           prev=next;
+         }
+         throw new Error('anchor/scroll geometry not settled after 200 frames');
+       });
        row.anchor=await anchor.evaluate(e=>{const r=e.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2,hit=document.elementFromPoint(x,y);return {x,y,w:r.width,h:r.height,inside:y>=0&&y<innerHeight,hit:hit?.outerHTML.slice(0,100),correct:hit===e||e.contains(hit)}});
        if(!row.anchor.inside||!row.anchor.correct)row.fail.push('heading anchor center is not a hit target');
-       else try{await anchor.tap({timeout:3000});await page.waitForTimeout(60);row.anchor.after=await page.evaluate(()=>({hash:location.hash,toast:document.getElementById('anchor-copy-toast')?.classList.contains('is-visible')}));}catch(e){row.fail.push('heading anchor tap '+String(e).slice(0,140));}
+       else try{
+        // We have just verified the actual visible hit target. Deliver an
+        // exact touchscreen gesture at a fresh center instead of asking the
+        // desktop-centric locator actionability loop to keep scrolling.
+        const touch=await anchor.evaluate(e=>{
+          const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;
+          const hit=document.elementFromPoint(x,y);
+          return {x,y,owned:hit===e||e.contains(hit),scrollY,anchorTop:r.top,innerHeight,visualTop:visualViewport?.offsetTop,visualScale:visualViewport?.scale};
+        });
+        if(!touch.owned)throw new Error('heading anchor center changed before native touch');
+        row.anchor.beforeTouch=touch;
+        await page.evaluate(()=>{
+          window.__gbMobileAnchorTrace=[];
+          ['pointerdown','pointerup','touchstart','touchend','click'].forEach(type=>
+            window.addEventListener(type,event=>{
+              const el=document.querySelector('.heading-anchor[data-gb-heading-anchor-owner="native-v1"]');
+              window.__gbMobileAnchorTrace.push({
+                type,target:event.target?.tagName||'',
+                anchorTop:el?.getBoundingClientRect().top,
+                scrollY,owned:!!event.target?.closest?.('.heading-anchor')
+              });
+            },{capture:true}));
+        });
+        await page.touchscreen.tap(touch.x,touch.y);
+        await page.waitForTimeout(90);
+        row.anchor.events=await page.evaluate(()=>window.__gbMobileAnchorTrace||[]);
+        row.anchor.after=await page.evaluate(()=>({hash:location.hash,toast:document.getElementById('anchor-copy-toast')?.classList.contains('is-visible')}));
+        if(!row.anchor.after.hash&&!row.anchor.after.toast)row.fail.push('heading anchor tap produced no feedback or fragment');
+       }catch(e){row.fail.push('heading anchor tap '+String(e).slice(0,500));}
+      }
+    }
+    if((name==='heart'||name==='pastor')&&width===390){
+      // The toolbar can translate out, but article padding must never
+      // animate when gbs2-tbhidden toggles: a real finger otherwise lands
+      // on a different heading after scroll anchoring.
+      row.chromeGeometry=await page.evaluate(async()=>{
+        const root=document.querySelector('[data-gill-v16]'),main=root?.querySelector('main.article-main');
+        if(!root||!main)return null;
+        const wasHidden=root.classList.contains('gbs2-tbhidden');
+        const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
+        const read=()=>({topPadding:parseFloat(getComputedStyle(main).paddingTop)||0});
+        root.classList.remove('gbs2-tbhidden');
+        await frame();await frame();const visible=read();
+        root.classList.add('gbs2-tbhidden');
+        await frame();await frame();const hidden=read();
+        root.classList.toggle('gbs2-tbhidden',wasHidden);
+        return {visible,hidden};
+      });
+      if(row.chromeGeometry&&Math.abs(row.chromeGeometry.visible.topPadding-row.chromeGeometry.hidden.topPadding)>.5)
+        row.fail.push('top-bar hide modifies article padding and shifts touch targets');
+    }
+    if(name==='grok'&&width===390){
+      const legal=await page.evaluate(()=>{
+        const n=document.querySelector('.article-header > .notice');
+        const details=n?.querySelector('.notice__details'),pdf=n?.querySelector('a[href*="TMSJ-Volume"]');
+        const all=n?.textContent||'';
+        return {exists:!!n,rights:all.includes('Разрешение относится к данной публикации'),
+          source:all.includes('Abner Chou'),pdf:!!pdf,
+          extra:!!details,collapsed:details?.open===false,
+          noticeHeight:Math.round(n?.getBoundingClientRect().height||0)};
+      });
+      row.legal=legal;
+      if(!(legal.exists&&legal.rights&&legal.source&&legal.pdf&&legal.extra&&legal.collapsed))
+        row.fail.push('licensed source/PDF or native disclosure unavailable');
+      const summary=page.locator('.notice__details > summary');
+      if(await summary.count()){
+        await summary.tap();
+        if(!(await page.locator('.notice__details').evaluate(e=>e.open)))row.fail.push('native source notes do not expand');
+        if(!(await page.locator('.notice__details-content').innerText()).includes('fedormilovanov@yandex.ru'))
+          row.fail.push('editorial contact vanished from native disclosure');
+        await summary.tap();
+      }
+      const badge=page.locator('#hmSpdBadge');
+      if(await badge.isVisible()){
+        const bounds=await badge.boundingBox();
+        const play=await page.locator('.hm-playwrap .hm-ember').boundingBox();
+        row.speed={badge:bounds,play};
+        if(!bounds||bounds.width<24||bounds.height<20)row.fail.push('speed badge too small');
+        await badge.tap();
+        const expanded=await page.locator('.hmtop').evaluate(e=>e.classList.contains('speed-open'));
+        if(!expanded)row.fail.push('speed badge failed to open rate selector');
+        else{
+          await page.locator('#hmSpeedrail [data-speed="1.25"]').tap();
+          const selected=await badge.innerText();
+          const checked=await page.locator('#hmSpeedrail [data-speed="1.25"]').getAttribute('aria-checked');
+          if(!selected.includes('1.25')||checked!=='true')row.fail.push('speech rate choice not synchronized');
+        }
       }
     }
     if(name==='grok'&&width===390){
