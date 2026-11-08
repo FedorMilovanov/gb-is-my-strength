@@ -192,6 +192,12 @@ async function exerciseHeadingAnchor(page, label) {
   // Then wait for finite time-based motion (reveal, hover transition) and sample the settled target.
   await anchor.hover();
   await waitForPageMotionToSettle(page, label);
+  // Re-align AFTER any hover/scroll-driven animation has settled.
+  // WebKit 390px can reposition the heading icon by the time the pointer
+  // action runs. The first scroll during candidate selection is not final.
+  await anchor.scrollIntoViewIfNeeded({ timeout: 4000 });
+  await page.evaluate(() => new Promise(resolve =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve))));
   const hitTestBeforeClick = await anchor.evaluate(async (node) => {
     const describe = (target) => {
       if (!(target instanceof Element)) {

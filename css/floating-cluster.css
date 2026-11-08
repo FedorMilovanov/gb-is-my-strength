@@ -831,7 +831,7 @@ body.nagornaya-page:has(#bottomBar .gb-ember-expand.is-open) #bottomBar .bottom-
    screenshot). Shrink the icon row and floor the section button's width
    instead of letting it disappear; if it's still tight the bar scrolls
    horizontally (nowrap + overflow-x) rather than breaking layout. */
-@media (max-width: 420px) {
+@media (max-width: 480px) {
   /* !important throughout: nagornaya-mobile-toc.css's OWN unconditional
      .bar-section-btn{min-width:0;flex:1 1 auto} rule has identical
      selector specificity to this one, and that stylesheet's <link> loads

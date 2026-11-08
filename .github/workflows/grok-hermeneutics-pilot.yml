@@ -15,7 +15,9 @@ on:
       - 'js/reader-preferences.js'
       - 'css/reader-preferences.css'
       - 'css/site.css'
+      - 'css/floating-cluster.css'
       - 'scripts/reader-focus-sitewide-browser-contract.mjs'
+      - 'scripts/reader-mobile-sitewide-audit.mjs'
       - 'scripts/grok-stage2-*.mjs'
       - 'scripts/site-sections-menu-filter-browser-contract.mjs'
       - 'scripts/reader-library-premium-browser-contract.cjs'
@@ -36,7 +38,9 @@ on:
       - 'js/reader-preferences.js'
       - 'css/reader-preferences.css'
       - 'css/site.css'
+      - 'css/floating-cluster.css'
       - 'scripts/reader-focus-sitewide-browser-contract.mjs'
+      - 'scripts/reader-mobile-sitewide-audit.mjs'
       - 'scripts/grok-stage2-*.mjs'
       - 'scripts/site-sections-menu-filter-browser-contract.mjs'
       - '.github/workflows/deploy.yml'
@@ -80,6 +84,7 @@ jobs:
           node --check scripts/grok-reader-overlay-lifecycle-browser-test.mjs
           node --check scripts/grok-menu-motion-layout-browser-contract.mjs
           node --check scripts/reader-focus-sitewide-browser-contract.mjs
+          node --check scripts/reader-mobile-sitewide-audit.mjs
           node --check scripts/grok-toc-keyboard-browser-contract.mjs
           node --check scripts/grok-reader-typography-browser-contract.mjs
           node --check scripts/grok-summary-rail-browser-contract.mjs
@@ -131,6 +136,9 @@ jobs:
           node scripts/reader-controls-a11y-browser-contract.mjs
           node scripts/reader-library-premium-browser-contract.cjs
 
+      - name: Browser proof — 6 mobile route families across three engines and five widths
+        run: node scripts/reader-mobile-sitewide-audit.mjs
+
       - name: Browser proof — existing real site menu works alongside pilot
         run: node scripts/site-sections-menu-filter-browser-contract.mjs
 
@@ -164,6 +172,7 @@ jobs:
             reports/reader-summary-first-paint/
             reports/grok-menu-motion/
             reports/reader-focus-sitewide/
+            reports/reader-mobile-sitewide-audit/
             reports/grok-keyboard/
             reports/reader-controls-a11y-browser-contract.*
             reports/hermenevtika-mobile-chrome/

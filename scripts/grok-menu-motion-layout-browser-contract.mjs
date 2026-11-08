@@ -55,6 +55,17 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
        window.__gbSettingsOpacityMotion.push({type,time:performance.now(),opacity:Number(getComputedStyle(panel).opacity)});
      });
    });
+   // Observe actual CSS events in the browser, not only delayed Playwright
+   // snapshots: on overloaded WebKit runners click() may return after the
+   // first opacity sample and report 1 -> .92 -> 1 despite a real tween.
+   await p.evaluate(() => {
+     window.__gbMenuOpacityEvents=[];
+     const menu=document.querySelector('#hMobileNav');
+     for(const type of ['transitionrun','transitionend']) menu?.addEventListener(type,event=>{
+       if(event.target!==menu || event.propertyName!=='opacity') return;
+       window.__gbMenuOpacityEvents.push({type,time:performance.now(),opacity:Number(getComputedStyle(menu).opacity)});
+     });
+   });
    row.states.base=await p.evaluate(measure);
    await p.locator('#hMobileMenuBtn').click();
    row.states.menuStart=await p.evaluate(measure);
@@ -63,7 +74,13 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
    const base=row.states.base,early=row.states.menuStart,mid=row.states.menuMid,end=row.states.menuEnd;
    test('stable article while site menu opens',closeEnough(base.article,end.article)&&closeEnough(base.p,end.p),{base:base.p,end:end.p});
    test('stable root gutter',base.htmlGutter==='stable'&&end.htmlGutter==='stable',{base:base.htmlGutter,end:end.htmlGutter});
-   test('animated site-menu entry',early.menu.open&&early.menu.opacity<.995&&mid.menu.opacity>=early.menu.opacity&&mid.menu.opacity<=1&&end.menu.opacity>.99,{early:early.menu,mid:mid.menu,end:end.menu});
+   row.states.menuOpacityEvents=await p.evaluate(()=>window.__gbMenuOpacityEvents||[]);
+   const menuRun=row.states.menuOpacityEvents.find(e=>e.type==='transitionrun');
+   const menuEnd=row.states.menuOpacityEvents.find(e=>e.type==='transitionend');
+   const menuEventTween=!!(menuRun&&menuEnd&&menuEnd.time-menuRun.time>=100);
+   const menuSampleTween=early.menu.opacity<.995&&mid.menu.opacity>=early.menu.opacity&&mid.menu.opacity<=1;
+   test('animated site-menu entry',early.menu.open&&end.menu.opacity>.99&&(menuEventTween||menuSampleTween),
+     {early:early.menu,mid:mid.menu,end:end.menu,events:row.states.menuOpacityEvents,menuEventTween,menuSampleTween});
    await p.mouse.click(width-50,430);
    row.states.menuCloseStart=await p.evaluate(measure);
    await p.waitForTimeout(130);row.states.menuCloseMid=await p.evaluate(measure);
