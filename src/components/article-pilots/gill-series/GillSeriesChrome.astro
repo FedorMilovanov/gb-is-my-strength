@@ -36,7 +36,7 @@ const page = config.pages[pageId];
 
 <SiteSectionsMenu />
 
-<div class="gbs2-world" data-gill-v16={pageId} data-series-theme={config.theme}>
+<div class="gbs2-world" data-reader-engine="series" data-reader-shape={config.shape ?? 'flat'} data-gill-v16={pageId} data-series-theme={config.theme}>
   <GillSeriesRail pageId={pageId} config={config} />
 
   <div class="page-wrap" id="content">
