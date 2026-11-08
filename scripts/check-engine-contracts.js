@@ -166,7 +166,11 @@ const mobilePlayBlock = mobilePlayEnd === -1 ? '' : gillMobileBar.slice(mobilePl
 check('Gill mobile: speed badge remains Play-owned with canonical non-center-intercepting corner geometry',
   mobilePlayBlock.includes('class="mobile-spdbadge"')
     && /\[data-gill-v16\] \.mobile-playwrap\s*\{[^}]*position:\s*relative;[^}]*display:\s*flex;[^}]*gap:\s*2px/.test(css)
-    && /\[data-gill-v16\] \.mobile-spdbadge\s*\{[^}]*position:\s*absolute;[^}]*right:\s*0;[^}]*bottom:\s*-4px;[^}]*min-width:\s*24px;[^}]*height:\s*24px/.test(css)
+    // At 40px Play size the 24px badge must start below Play's 20px
+    // center: bottom:-8px places its top at 24px (a 4px clearance).
+    // The actual Chromium/WebKit/Firefox hit surface is also checked in
+    // reader-mobile-sitewide-audit.mjs, so CSS syntax alone cannot pass.
+    && /\[data-gill-v16\] \.mobile-spdbadge\s*\{[^}]*position:\s*absolute;[^}]*right:\s*0;[^}]*bottom:\s*-8px;[^}]*min-width:\s*24px;[^}]*height:\s*24px/.test(css)
     && /\[data-gill-v16\] \.mobile-top-bar \.gb-icon,[\s\S]*?\[data-gill-v16\] \.mobile-playwrap \.mobile-top-ember\s*\{[^}]*width:\s*44px !important;[^}]*height:\s*44px !important;[^}]*min-width:\s*44px !important;[^}]*min-height:\s*44px !important/.test(css));
 
 const controller = read('js/floating-cluster-controller.js');
