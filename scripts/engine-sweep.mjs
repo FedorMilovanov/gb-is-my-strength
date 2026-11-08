@@ -1024,3 +1024,15 @@ for (const [id, url, satelliteUrl] of [
   if (browser) await browser.close().catch(() => {});
   await new Promise((resolve) => srv.close(resolve));
 }
+
+// Shared layout is part of the existing engine sweep, not another package
+// script owner. Run it only after the main interactive witnesses are green.
+// This keeps the lane independent from concurrent dependency upgrades.
+if (!process.exitCode) {
+  const { spawnSync } = require('node:child_process');
+  const layout = spawnSync(process.execPath, [join(ROOT, 'scripts', 'series-layout-browser-contract.mjs')], {
+    cwd: ROOT, stdio: 'inherit', windowsHide: true,
+  });
+  if (layout.error) throw layout.error;
+  if (layout.status !== 0) process.exitCode = layout.status || 1;
+}
