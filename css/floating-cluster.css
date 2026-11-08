@@ -3194,11 +3194,12 @@ html.dark [data-gill-v16] .mobile-top-bar {
     }
   }
 
-  /* The new fixed top bar (back/search/Play/Save) also needs the article
-     content pushed down so the H1/lead don't render underneath it. */
-  [data-gill-v16] .page-wrap,
-  [data-gill-v16] main,
-  [data-gill-v16] article {
+  /* Reserve the mobile top-bar inset exactly once, at the page canvas.
+     Previous broad main/article selectors repeated this 72px inset at every
+     nested reading container (up to three times on Heart articles), pushing
+     the hero and title far below the first fold. Every v16 article has a
+     .page-wrap: nested reading sections must not own toolbar clearance. */
+  [data-gill-v16] .page-wrap {
     padding-top: calc(var(--gill-mobile-topbar-h) + env(safe-area-inset-top, 0px) + 14px) !important;
   }
 

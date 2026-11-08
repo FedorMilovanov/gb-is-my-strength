@@ -36,6 +36,24 @@ for(const [engine,driver] of Object.entries({chromium,webkit,firefox})){
     });
     if(row.measure.scrollWidth>row.measure.clientWidth+2)row.fail.push('horizontal overflow '+(row.measure.scrollWidth-row.measure.clientWidth));
     if(row.measure.smallControls.length)row.warnings.push('tiny controls '+row.measure.smallControls.map(x=>x.id||x.cl).join(','));
+    if(['gill','heart','pastor','baptist-chapter'].includes(name)){
+      // The fixed mobile top bar needs one inset on the outer canvas only.
+      // A former descendant selector repeated the 72px inset on main and
+      // article, creating a 216px blank lead on Heart pages.
+      row.canvasInset=await page.evaluate(()=>{
+        const root=document.querySelector('[data-gill-v16]');
+        const canvas=root?.querySelector('.page-wrap');
+        if(!canvas)return null;
+        const px=e=>parseFloat(getComputedStyle(e).paddingTop)||0;
+        const owner=px(canvas);
+        const nested=[...canvas.querySelectorAll('main,article')].filter(e=>getComputedStyle(e).display!=='none')
+          .map(e=>({tag:e.tagName,cl:String(e.className).slice(0,45),top:Math.round(px(e))}));
+        const hero=canvas.querySelector('#gbs2Hero');
+        return {owner,nested,heroY:hero?.getBoundingClientRect().top??null};
+      });
+      if(!row.canvasInset||row.canvasInset.owner<50||row.canvasInset.nested.some(e=>Math.abs(e.top-row.canvasInset.owner)<1))
+        row.fail.push('nested mobile reader duplicates outer toolbar top inset');
+    }
     if(name==='gill'||name==='pastor'||name==='baptist-chapter'){
       // Real fixed chrome, not merely a rendered button: the manuscript
       // texture once overrode Play's position to relative and placed the
