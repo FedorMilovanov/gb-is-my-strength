@@ -68,6 +68,49 @@
   root.style.setProperty('--gb-reader-line-height', lineValues[state.lineHeight]);
   root.style.setProperty('--gb-reader-theme-ready', '1');
   w.__GB_READER_PREFS_BOOTSTRAP__ = state;
+
+  // Site-wide first-paint guard for exactly titled "Коротко" cards.
+  // The deferred reader-preferences runtime normally folds them at
+  // DOMContentLoaded; under a slow connection their entire body used to
+  // flash visibly for hundreds of milliseconds. Observe the parser before
+  // first paint, mark ONLY matching cards, and let the shared runtime own
+  // final disclosure. No JavaScript => no marker => the full content remains.
+  // If the deferred script fails, unhide on DOMContentLoaded (fails open).
+  if (!w.__gbSummaryFirstPaintGuard && w.MutationObserver) {
+    w.__gbSummaryFirstPaintGuard = true;
+    var pending = [];
+    function markSummary(card) {
+      if (!card || card.dataset.gbSummaryOwner === '1' ||
+          card.dataset.gbSummaryPending === '1') return;
+      var heading = card.querySelector(':scope > .summary-card__head');
+      var body = card.querySelector(':scope > .summary-card__body');
+      if (!heading || !body || heading.textContent.trim().toLocaleLowerCase('ru') !== 'коротко') return;
+      card.dataset.gbSummaryPending = '1';
+      pending.push(card);
+    }
+    function scanNode(node, checkDescendants) {
+      if (!node || node.nodeType !== 1) return;
+      var card = node.matches('.summary-card') ? node : node.closest('.summary-card');
+      if (card) markSummary(card);
+      if (checkDescendants && node.querySelectorAll) {
+        var nested = node.querySelectorAll('.summary-card');
+        for (var i = 0; i < nested.length; i++) markSummary(nested[i]);
+      }
+    }
+    var observer = new w.MutationObserver(function (records) {
+      for (var i = 0; i < records.length; i++) {
+        scanNode(records[i].target, false);
+        var added = records[i].addedNodes;
+        for (var j = 0; j < added.length; j++) scanNode(added[j], true);
+      }
+    });
+    observer.observe(root, { childList: true, subtree: true });
+    d.addEventListener('DOMContentLoaded', function () {
+      observer.disconnect();
+      for (var i = 0; i < pending.length; i++)
+        if (pending[i].dataset.gbSummaryOwner !== '1') delete pending[i].dataset.gbSummaryPending;
+    }, { once: true });
+  }
 })(window, document);
 
 /**

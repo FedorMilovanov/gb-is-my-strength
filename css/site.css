@@ -1534,7 +1534,13 @@ body.nagornaya-page main .text-2xl{font-size:calc(24px*var(--gb-reader-font-scal
 
 /* GB Summary Disclosure v1 — shared article-reader presentation.
    Only cards claimed by the reader-preferences runtime are folded.
-   No heavy panel, duplicate mobile expander, or content removal. */
+   No heavy panel, duplicate mobile expander, or content removal.
+   Before DOMContentLoaded, the synchronous head bootstrap marks exactly
+   titled "Коротко" cards, preventing visible fully-expanded first paint.
+   If JavaScript is absent or the deferred runtime fails, content is visible. */
+.summary-card[data-gb-summary-pending="1"]:not([data-gb-summary-owner="1"]) > .summary-card__body {
+  display: none;
+}
 .summary-card[data-gb-summary-owner="1"] {
   margin-block: 18px 22px;
 }

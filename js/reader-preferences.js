@@ -358,6 +358,9 @@
         panel.setAttribute('aria-hidden', String(!open));
       }
       setOpen(Boolean(hashTarget() && list.contains(hashTarget())));
+      // The first-paint parser guard is no longer needed: this canonical
+      // disclosure owns the body, including deep links and print.
+      delete card.dataset.gbSummaryPending;
       button.addEventListener('click', function() { setOpen(button.getAttribute('aria-expanded') !== 'true'); });
     });
   }

@@ -11,6 +11,7 @@ on:
       - 'scripts/grok-toc-keyboard-browser-contract.mjs'
       - 'scripts/grok-reader-typography-browser-contract.mjs'
       - 'scripts/grok-summary-rail-browser-contract.mjs'
+      - 'scripts/reader-summary-first-paint-browser-contract.mjs'
       - 'js/reader-preferences.js'
       - 'css/reader-preferences.css'
       - 'css/site.css'
@@ -31,6 +32,7 @@ on:
       - 'scripts/grok-toc-keyboard-browser-contract.mjs'
       - 'scripts/grok-reader-typography-browser-contract.mjs'
       - 'scripts/grok-summary-rail-browser-contract.mjs'
+      - 'scripts/reader-summary-first-paint-browser-contract.mjs'
       - 'js/reader-preferences.js'
       - 'css/reader-preferences.css'
       - 'css/site.css'
@@ -81,6 +83,7 @@ jobs:
           node --check scripts/grok-toc-keyboard-browser-contract.mjs
           node --check scripts/grok-reader-typography-browser-contract.mjs
           node --check scripts/grok-summary-rail-browser-contract.mjs
+          node --check scripts/reader-summary-first-paint-browser-contract.mjs
           node --check scripts/grok-stage2-release-route-proof.mjs
           node --check scripts/grok-stage2-theme-print-audit.mjs
           node --check scripts/grok-stage2-library-route-audit.mjs
@@ -107,6 +110,9 @@ jobs:
 
       - name: Browser proof — site-wide closed-by-default summaries and soft rail motion
         run: node scripts/grok-summary-rail-browser-contract.mjs
+
+      - name: Browser proof — summary first paint and no-JS fallback
+        run: node scripts/reader-summary-first-paint-browser-contract.mjs
 
       - name: Browser proof — themes, 125 percent and print
         env:
@@ -155,6 +161,7 @@ jobs:
             reports/grok-stage2/
             reports/grok-typography/
             reports/grok-summary-motion/
+            reports/reader-summary-first-paint/
             reports/grok-menu-motion/
             reports/reader-focus-sitewide/
             reports/grok-keyboard/
