@@ -3893,7 +3893,9 @@ html.dark [data-gill-v16] .mobile-top-bar {
     /* This persistent speed chip must stay inside the viewport at tablet
        widths; its old -4px offset caused a 4px body overflow after reload. */
     right: 0;
-    bottom: -4px;
+    /* The 24px badge overlapped the 40px Play center at 430–480px.
+       Keep both Play and the corner speed badge independently tappable. */
+    bottom: -8px;
     z-index: 3;
     min-width: 24px;
     height: 24px;

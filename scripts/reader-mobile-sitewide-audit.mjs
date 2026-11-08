@@ -48,8 +48,13 @@ for(const [engine,driver] of Object.entries({chromium,webkit,firefox})){
           return {position:s.position,top:r.top,bottom:r.bottom,display:s.display,opacity:s.opacity};};
         const play=top?.querySelector('.gb-ember'),pr=play?.getBoundingClientRect();
         const hit=pr&&document.elementFromPoint(pr.x+pr.width/2,pr.y+pr.height/2);
+        const badge=top?.querySelector('.mobile-spdbadge'),br=badge?.getBoundingClientRect();
+        const badgeHit=br&&document.elementFromPoint(br.x+br.width/2,br.y+br.height/2);
         return {scrollY,top:box(top),bottom:box(bottom),
-          playHit:!!(play&&(play===hit||play.contains(hit)))};
+          playHit:!!(play&&(play===hit||play.contains(hit))),
+          playCenter:pr&&{x:pr.x+pr.width/2,y:pr.y+pr.height/2},
+          blockedBy:hit?.getAttribute('class')||hit?.tagName||null,
+          badgeHit:!!(badge&&(badge===badgeHit||badge.contains(badgeHit)))};
       });
       const c=row.seriesChrome;
       if(!c.top||c.top.position!=='fixed'||Math.abs(c.top.top)>4||!c.playHit)
