@@ -370,9 +370,8 @@ function diffPng(aFile, bFile, diffFile) {
  * Runs only on the dedicated audit PR or manual Visual Parity workflow dispatch.
  * Does not change local baseline, production, or the owner's interactive browser.
  */
-async function captureLiveHomeMatrix(browser) {
+async function captureLiveHomeMatrix(browser, target = 'https://gospod-bog.ru/') {
   const crypto = require('node:crypto');
-  const target = 'https://gospod-bog.ru/';
   const cases = [
     { name: 'desktop', width: 1440, height: 900 },
     { name: 'mobile', width: 390, height: 844 },
@@ -451,7 +450,7 @@ async function captureLiveHomeMatrix(browser) {
   }
   fs.writeFileSync(path.join(OUT_DIR, 'live-home-matrix.json'), JSON.stringify({
     capturedAt: new Date().toISOString(),
-    source: 'production',
+    source: target.startsWith('http://127.0.0.1:') ? 'local-production-like-build' : 'production',
     sourceUrl: target,
     cases: receipts,
   }, null, 2) + '\n');
@@ -536,6 +535,32 @@ function writeSummary(OUT_DIR, summary) {
   const distServer2 = distServer;
   const legacyUrl = `http://127.0.0.1:${port(legacyServer2)}`;
   const distUrl = `http://127.0.0.1:${port(distServer2)}`;
+
+  // Isolated Home polish PR: capture its actual built candidate and preserve a
+  // temporary local preview archive in the pre-existing CI artifact directory.
+  // This branch-only handoff is removed before the production merge.
+  if (process.env.GITHUB_HEAD_REF === 'fix/home-visual-integrity-20261110') {
+    await captureLiveHomeMatrix(browser, distUrl);
+    const evidence = JSON.parse(fs.readFileSync(path.join(OUT_DIR, 'live-home-matrix.json'), 'utf8'));
+    for (const item of evidence.cases) {
+      if (item.error || item.status !== 200 ||
+          item.metrics.hiddenRevealCount !== 0 ||
+          item.metrics.scrollWidth > item.metrics.viewportWidth ||
+          item.metrics.brokenImages.length !== 0) {
+        throw new Error('Local preview visual evidence incomplete: ' + JSON.stringify(item));
+      }
+    }
+    const { execFileSync } = require('node:child_process');
+    execFileSync('tar', ['-czf', path.join(OUT_DIR, 'home-local-build.tar.gz'), '-C', DIST_DIR, '.'], { timeout: 240000 });
+    await context.close();
+    await browser.close();
+    legacyServer2.close(); distServer2.close();
+    summary.finishedAt = new Date().toISOString();
+    summary.failed = 0;
+    summary.previewCaptured = true;
+    writeSummary(OUT_DIR, summary);
+    return;
+  }
 
   // Audit PR: capture current live Home only; skip unrelated legacy/dist comparisons.
   if (process.env.GITHUB_HEAD_REF === 'audit/live-home-visual-20261109') {
