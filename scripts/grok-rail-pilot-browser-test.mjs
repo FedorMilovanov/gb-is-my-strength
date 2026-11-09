@@ -442,7 +442,12 @@ try {
                 playSize:b.width,ringSize:ember.querySelector('.gb-ember__ring-svg')?.getBoundingClientRect().width,
                 panelY:[p.top,p.bottom],headlineY:textRects.slice(0,3).map(r=>[r.top,r.bottom,r.left,r.right]),
                 extraBadge:getComputedStyle(root.querySelector('.gbs-rail-spdbadge')).display,
-                idleHalo:getComputedStyle(ember,'::before').display,
+                innerLight:{
+                   display:getComputedStyle(ember,'::before').display,
+                   width:parseFloat(getComputedStyle(ember,'::before').width),
+                   border:getComputedStyle(ember,'::before').borderTopWidth,
+                   background:getComputedStyle(ember,'::before').backgroundImage
+                 },
                 overflow:document.documentElement.scrollWidth-innerWidth
               };
             });
@@ -450,7 +455,11 @@ try {
               !!focusRates&&focusRates.choices===5&&focusRates.horizontal&&focusRates.visible&&
               focusRates.gap>=12&&focusRates.width>=175&&focusRates.height<=56&&
               focusRates.panelEnd<=focusRates.viewport&&!focusRates.headingOverlap&&focusRates.overflow<=1&&
-              focusRates.extraBadge==='none'&&focusRates.idleHalo==='none'&&
+              focusRates.extraBadge==='none'&&
+               focusRates.innerLight.display==='block'&&
+               focusRates.innerLight.border==='0px'&&
+               focusRates.innerLight.background.startsWith('radial-gradient(')&&
+               focusRates.innerLight.width<=focusRates.ringSize-4&&
               focusRates.playSize<=(viewport.height<=420?30:32)&&
               focusRates.ringSize<=focusRates.playSize-3.5,{...focusRates,pointerProfile});
             if(viewport.id==='desktop-1200'){
