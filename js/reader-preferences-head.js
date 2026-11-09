@@ -84,7 +84,7 @@
           card.dataset.gbSummaryPending === '1') return;
       var heading = card.querySelector(':scope > .summary-card__head');
       var body = card.querySelector(':scope > .summary-card__body');
-      if (!heading || !body || heading.textContent.trim().toLocaleLowerCase('ru') !== 'коротко') return;
+      if (!heading || !body || !['коротко', 'краткое содержание'].includes(heading.textContent.trim().toLocaleLowerCase('ru'))) return;
       card.dataset.gbSummaryPending = '1';
       pending.push(card);
     }

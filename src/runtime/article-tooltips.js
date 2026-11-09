@@ -126,7 +126,10 @@ function scheduleClose(delay = 220) {
 }
 
 function configuredScripture(reference) {
-  const sources = [window.SITE_CONFIG?.scripture, window.SITE_CONFIG?.bible, window.BIBLE_VERSES, window.SCRIPTURE_DATA];
+  const ownedProjection = window.SCRIPTURE_DATA;
+  const sources = ownedProjection && Object.isFrozen(ownedProjection)
+    ? [ownedProjection]
+    : [ownedProjection, window.SITE_CONFIG?.scripture, window.SITE_CONFIG?.bible, window.BIBLE_VERSES];
   for (const source of sources) {
     if (!source || typeof source !== 'object') continue;
     const value = source[reference];
@@ -136,60 +139,30 @@ function configuredScripture(reference) {
   return '';
 }
 
-// Reference-only fallback: a real external passage, not a dead placeholder.
- // The displayed site's corpus may be held under a publication-rights gate.
- // Link to a separate Russian Synodal edition; NEVER copy a held translation.
-function scriptureExternalUrl(reference) {
-  const value = String(reference || '').replace(/\u00a0/g, ' ').replace(/[‐‑‒–—−]/g, '-')
-    .replace(/\s+/g, ' ').trim();
-  const match = value.match(/^([1-4]?\s*[А-ЯЁа-яё.\s-]+?)\s+(\d{1,3})(?::(\d{1,3}[а-яa-z]?)(?:-(\d{1,3}[а-яa-z]?))?)?$/iu);
-  if (!match || value.length > 100) return '';
-  const chapter = Number(match[2]), first = match[3] ? Number.parseInt(match[3], 10) : 0;
-  const last = match[4] ? Number.parseInt(match[4], 10) : 0;
-  if (chapter < 1 || chapter > 150 || first > 176 || (match[3] && first < 1) ||
-      last > 176 || (match[4] && (last < first || last < 1))) return '';
-  const book = match[1].trim().replace(/\.+$/,'');
-  const aliases = {
-    'Луки':'От Луки','Лк':'От Луки','Матфея':'От Матфея','Мф':'От Матфея',
-    'Марка':'От Марка','Мк':'От Марка','Иоанна':'От Иоанна','Ин':'От Иоанна',
-    'Ефесянам':'К Ефесянам','Еф':'К Ефесянам',
-  };
-  const title = aliases[book] || book;
-  const verse = match[3] ? ':' + first + (match[4] ? '-' + last : '') : '';
-  const url = new URL('https://www.biblegateway.com/passage/');
-  url.searchParams.set('search', title + ' ' + match[2] + verse);
-  url.searchParams.set('version', 'RUSV');
-  return url.href;
-}
-
+// A verified, bundled public-domain edition is projected per route by
+// ScriptureDataProjection. Do not send the reader to a third-party website
+// just because a legacy rights-held edition is not publishable.
 function createScriptureTip(anchor) {
   const reference = String(anchor.dataset.ref || anchor.textContent || '').trim();
-  const permittedText = configuredScripture(reference);
-  const externalUrl = scriptureExternalUrl(reference);
+  const publishedText = configuredScripture(reference);
+  const source = window.SCRIPTURE_SOURCE_BY_REF?.[reference] || '';
   const tip = document.createElement('span');
   tip.className = 'btip';
   tip.dataset.generatedScriptureTip = '1';
+  tip.setAttribute('role', 'tooltip');
   const label = document.createElement('strong');
   label.className = 'btip__reference';
   label.textContent = reference;
   const body = document.createElement('span');
   body.className = 'btip__text';
-  body.textContent = permittedText || (externalUrl
-    ? 'Текст этого перевода на сайте не опубликован.'
-    : 'Ссылка на указанное место Священного Писания.');
+  body.textContent = publishedText ||
+    'Для этой ссылки не найден проверенный текст в Синодальном переводе. Проверьте адрес книги и главы.';
   tip.append(label, document.createTextNode(' '), body);
-  if (externalUrl) {
-    // Navigable content is a non-modal dialog, not a tooltip role with a
-    // focusable child. The opener remains the single keyboard entry point.
-    tip.setAttribute('role', 'dialog');
-    tip.setAttribute('aria-label', 'Место Писания: ' + reference);
-    const link = document.createElement('a');
-    link.className = 'btip__external';
-    link.href = externalUrl;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    link.textContent = 'Открыть в Библии · Синодальный перевод ↗';
-    tip.appendChild(link);
+  if (publishedText) {
+    const credit = document.createElement('span');
+    credit.className = 'btip__source';
+    credit.textContent = source || 'Синодальный перевод (1876)';
+    tip.appendChild(credit);
   }
   anchor.insertAdjacentElement('afterend', tip);
   scriptureTips.set(anchor, tip);

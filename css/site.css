@@ -1815,3 +1815,44 @@ body .article-body .article-header > .original-author-card + .article-byline {
     content-visibility: visible;
   }
 }
+
+/* The paper edition is always white and ink-black regardless of stored reader
+   theme. A dark color-scheme with transparent backgrounds produced black PDF
+   pages in Chromium and made the article appear to vanish. */
+@media print {
+  :root, html, html.dark, html[data-reader-theme],
+  body, html.dark body {
+    color-scheme: light !important;
+    background: #fff !important;
+    background-color: #fff !important;
+    color: #111 !important;
+  }
+  html.dark :is(main, article, .article-main, .article-body, .article-header, .summary-card),
+  html[data-reader-theme] :is(main, article, .article-main, .article-body, .article-header, .summary-card) {
+    color-scheme: light !important;
+    background: transparent !important;
+    background-image: none !important;
+    color: #111 !important;
+    box-shadow: none !important;
+    filter: none !important;
+    overflow: visible !important;
+  }
+  .gb-tts-download-notice, .gb-floating-tip, .btip, .gtip,
+  .grok-compact-tools, .gb-ember-expand, [data-portal-overlay],
+  [data-print-policy="exclude"] {
+    display: none !important;
+  }
+  .summary-card[data-gb-summary-owner="1"] .gb-summary-motion {
+    display: block !important;
+    height: auto !important;
+    grid-template-rows: 1fr !important;
+    opacity: 1 !important;
+    overflow: visible !important;
+  }
+  .summary-card[data-gb-summary-owner="1"] .gb-summary-motion > .summary-card__body {
+    display: flex !important;
+    visibility: visible !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+}

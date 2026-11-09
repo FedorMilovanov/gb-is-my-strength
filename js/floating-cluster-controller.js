@@ -319,8 +319,8 @@
   }
 
   var _voskEngineScriptPromise = null;
-  var VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=1fdd3fb5';
-  var TTS_NOTICE_CSS_SRC = '/css/tts-download-notice.css?v=b9ef192f';
+  var VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=8a878744';
+  var TTS_NOTICE_CSS_SRC = '/css/tts-download-notice.css?v=a72ba924';
   var fallbackTtsNoticeTimer = null;
 
   function ensureFallbackTtsNoticeStyles() {
@@ -348,6 +348,22 @@
         '</span>' +
         '<button class="gb-tts-download-notice__action" type="button" hidden></button>';
       document.body.appendChild(el);
+    }
+    var dismiss = el.querySelector('.gb-tts-download-notice__dismiss');
+    if (!dismiss) {
+      dismiss = document.createElement('button');
+      dismiss.className = 'gb-tts-download-notice__dismiss';
+      dismiss.type = 'button';
+      dismiss.setAttribute('aria-label', 'Закрыть уведомление');
+      dismiss.textContent = '×';
+      el.appendChild(dismiss);
+    }
+    if (dismiss.dataset.gbDismissBound !== '1') {
+      dismiss.dataset.gbDismissBound = '1';
+      dismiss.addEventListener('click', function () {
+        clearTimeout(fallbackTtsNoticeTimer);
+        el.classList.remove('is-visible');
+      });
     }
     var action = el.querySelector('.gb-tts-download-notice__action');
     if (action && action.getAttribute('data-gb-tts-action-bound') !== 'true') {
@@ -380,7 +396,8 @@
       disabled: ['Улучшенный голос отключён', 'Сейчас используется системный голос', 'enable', 'Включить'],
       'save-data': ['Включена экономия трафика', 'Системный голос работает · модель около 280 МБ', 'manual', 'Загрузить'],
       error: ['Улучшенный голос не запустился', 'Системный голос продолжает работать', 'retry', 'Повторить'],
-      selected: ['Работает улучшенный голос', 'Локальная модель · текст никуда не отправляется', null, '']
+      selected: ['Работает улучшенный голос', 'Локальная модель · текст никуда не отправляется', null, ''],
+      ready: ['Улучшенный голос готов', 'Можно включить его сейчас или позже через PLAY', 'switch', 'Включить сейчас']
     };
     var row = map[stateName] || map.error;
     el.setAttribute('data-state', stateName);
@@ -398,8 +415,16 @@
     // WebKit may defer requestAnimationFrame while the page is settling; queuing
     // visibility there lets later states overwrite the still-hidden browser notice.
     el.classList.add('is-visible');
-    if (options.autoHide) {
-      fallbackTtsNoticeTimer = setTimeout(function () { el.classList.remove('is-visible'); }, options.autoHide);
+    var autoHide = options.autoHide || (stateName === 'ready' ? 8500
+      : (stateName === 'error' || stateName === 'disabled' || stateName === 'save-data') ? 9000 : 0);
+    if (autoHide) {
+      fallbackTtsNoticeTimer = setTimeout(function hideFallbackNotice() {
+        if (el.matches(':hover') || el.contains(document.activeElement)) {
+          fallbackTtsNoticeTimer = setTimeout(hideFallbackNotice, 1600);
+          return;
+        }
+        el.classList.remove('is-visible');
+      }, autoHide);
     }
     return el;
   }

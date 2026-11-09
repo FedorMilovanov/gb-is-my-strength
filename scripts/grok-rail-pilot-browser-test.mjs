@@ -396,7 +396,7 @@ try {
                 emberSkin.background==='rgba(0, 0, 0, 0)'&&
                 emberSkin.innerBorder==='0px'&&emberSkin.lightOpacity>.75&&
                 emberSkin.innerBackground.startsWith('radial-gradient(')&&
-                emberSkin.innerWidth<=emberSkin.ringWidth-4,emberSkin);
+                emberSkin.innerWidth>=emberSkin.ringWidth-4&&emberSkin.innerWidth<=emberSkin.ringWidth-1,emberSkin);
             }
             // The native controller uses hover only for a hover/fine pointer.
             // Linux WebKit headless may report no hover despite Playwright's
@@ -459,7 +459,7 @@ try {
                focusRates.innerLight.display==='block'&&
                focusRates.innerLight.border==='0px'&&
                focusRates.innerLight.background.startsWith('radial-gradient(')&&
-               focusRates.innerLight.width<=focusRates.ringSize-4&&
+               focusRates.innerLight.width>=focusRates.ringSize-4&&focusRates.innerLight.width<=focusRates.ringSize-1&&
               focusRates.playSize<=(viewport.height<=420?30:32)&&
               focusRates.ringSize<=focusRates.playSize-3.5,{...focusRates,pointerProfile});
             if(viewport.id==='desktop-1200'){

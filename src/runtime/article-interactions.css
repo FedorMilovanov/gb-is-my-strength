@@ -77,6 +77,14 @@
   letter-spacing: .04em;
   text-transform: uppercase;
 }
+.gb-floating-tip .btip__source {
+  display: block;
+  margin-top: .75rem;
+  padding-top: .5rem;
+  border-top: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  opacity: .72;
+  font: 500 .74rem/1.45 var(--font-sans, system-ui, sans-serif);
+}
 
 .gb-floating-tip .btip__external {
   display: inline-flex;

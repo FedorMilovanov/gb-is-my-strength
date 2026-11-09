@@ -578,7 +578,7 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       border:0;border-radius:0;background:transparent;
       box-shadow:none;backdrop-filter:none;transform:none;
       pointer-events:auto;
-      animation:grokCompactToolEntrance .3s cubic-bezier(.32,.72,0,1) both;
+      animation:none;
     }
     .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls > *{pointer-events:auto;max-width:100%;}
     /* Keep the original gb-icon hover owner when controls move into the
@@ -776,14 +776,8 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       pointer-events:auto;
       z-index:1;
     }
-    /* The five-rate strip uses viewport-relative anchoring. Never animate
-       transform on its ancestor: a transient transform creates a containing
-       block for position:fixed and makes the speed strip jump while folding.
-       A pure opacity entrance keeps the premium fade without changing axis. */
-    @keyframes grokCompactToolEntrance{
-      from{opacity:0;}
-      to{opacity:1;}
-    }
+    /* Controls appear immediately when the width transition settles.
+       No second stagger, delayed entrance or transform containing block. */
     @media(max-height:420px){
       .hrail--grok.hrail--compact .hrail-bottom{gap:2px;}
       .hrail--grok.hrail--compact .grok-compact-tools{gap:0;padding:2px 0 4px;}
@@ -836,7 +830,7 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       pointer-events:none;
     }
     .hrail--grok .hrail-bottom {
-      transition:opacity .19s cubic-bezier(.32,.72,0,1);
+      transition:none;
     }
     .hrail--grok.grok-rail-switching .hrail-bottom {
       opacity:0;
@@ -920,35 +914,31 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
           }
         };
         let desiredCompact = rail.classList.contains('hrail--compact');
-        let prepareTimer = 0;
         let settleTimer = 0;
         const reducedMotion = window.matchMedia('(prefers-reduced-motion:reduce)');
-        // The same fold toggle has its own fixed CSS left transition.
-        // No FLIP animation: it doubles motion with the rail width in WebKit.
-        // The original controls still move only once, behind a crossfade.
-        const moveRail = (compact: boolean) => setCompact(compact);
+        // The native controls relocate once, at the start of the rail's width
+        // transition. Reveal them on its actual transitionend, not after a
+        // second delayed 190+540ms gate and a 300ms entrance animation.
+        const settle = () => {
+          window.clearTimeout(settleTimer);
+          settleTimer = 0;
+          rail.classList.remove('grok-rail-switching');
+        };
+        rail.addEventListener('transitionend', (event) => {
+          if (event.target === rail && event.propertyName === 'width') settle();
+        });
         toggle.addEventListener('click', () => {
           desiredCompact = !desiredCompact;
-          window.clearTimeout(prepareTimer);
           window.clearTimeout(settleTimer);
           if (reducedMotion.matches) {
-            rail.classList.remove('grok-rail-switching');
-            moveRail(desiredCompact);
+            setCompact(desiredCompact);
+            settle();
             return;
           }
-          const currentCompact = rail.classList.contains('hrail--compact');
           rail.classList.add('grok-rail-switching');
-          const commit = () => {
-            moveRail(desiredCompact);
-            settleTimer = window.setTimeout(() => {
-              rail.classList.remove('grok-rail-switching');
-            }, currentCompact === desiredCompact ? 180 : 540);
-          };
-          if (desiredCompact && !currentCompact) {
-            prepareTimer = window.setTimeout(commit, 190);
-          } else {
-            commit();
-          }
+          setCompact(desiredCompact);
+          // One safety bound for browsers that cancel width transitions.
+          settleTimer = window.setTimeout(settle, 550);
         });
       }
     }

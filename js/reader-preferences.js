@@ -327,7 +327,7 @@
       if (card.dataset.gbSummaryOwner === '1') return;
       var heading = card.querySelector(':scope > .summary-card__head');
       var list = card.querySelector(':scope > .summary-card__body');
-      if (!heading || !list || heading.textContent.trim().toLocaleLowerCase('ru') !== 'коротко') return;
+      if (!heading || !list || !['коротко', 'краткое содержание'].includes(heading.textContent.trim().toLocaleLowerCase('ru'))) return;
       if (heading.querySelector('button') || list.closest('.gb-summary-motion')) return;
       var button = document.createElement('button');
       button.type = 'button';
@@ -335,6 +335,7 @@
       var label = document.createElement('span');
       label.className = 'gb-summary-toggle__label';
       while (heading.firstChild) label.appendChild(heading.firstChild);
+      label.textContent = 'Краткое содержание';
       var chevron = document.createElement('span');
       chevron.className = 'gb-summary-toggle__chevron';
       chevron.setAttribute('aria-hidden', 'true');
@@ -353,7 +354,7 @@
         if (!open && panel.contains(document.activeElement)) button.focus({preventScroll:true});
         card.dataset.gbSummaryOpen = open ? 'true' : 'false';
         button.setAttribute('aria-expanded', String(open));
-        button.setAttribute('aria-label', open ? 'Свернуть раздел «Коротко»' : 'Развернуть раздел «Коротко»');
+        button.setAttribute('aria-label', open ? 'Свернуть раздел «Краткое содержание»' : 'Развернуть раздел «Краткое содержание»');
         panel.inert = !open;
         panel.setAttribute('aria-hidden', String(!open));
       }

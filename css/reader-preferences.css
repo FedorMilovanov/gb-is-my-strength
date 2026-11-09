@@ -185,10 +185,12 @@ html[data-reader-motion="reduced"] *::after {
 }
 
 @media print {
-  html[data-reader-theme] {
-    color-scheme: light;
+  html[data-reader-theme],
+  html.dark[data-reader-theme] {
+    color-scheme: light !important;
+    background: #fff !important;
     --color-canvas: #fff;
     --color-surface: #fff;
-    --color-text: #000;
+    --color-text: #111;
   }
 }

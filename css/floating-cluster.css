@@ -272,10 +272,10 @@ html.dark .gb-theme-toggle .theme-icon-moon { opacity: 1; transform: rotate(0) s
 .gb-ember::before {
   content: '';
   position: absolute;
-  inset: 18%;
+  inset: 10%;
   border: 0;
   border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--ring-color) 22%, transparent) 0%, color-mix(in srgb, var(--ring-color) 8%, transparent) 55%, transparent 100%);
+  background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--ring-color) 34%, transparent) 0%, color-mix(in srgb, var(--ring-color) 22%, transparent) 63%, color-mix(in srgb, var(--ring-color) 11%, transparent) 100%);
   opacity: 0;
   transform: none;
   transition: opacity .24s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1));
@@ -299,13 +299,8 @@ html.dark .gb-theme-toggle .theme-icon-moon { opacity: 1; transform: rotate(0) s
   /* Владелец 2026-07-17: «рамка вокруг PLAY будто уменьшенная» — контур покоя
      наследовал inset:6px халo-геометрию (24px круг в 36px кнопке), а SVG-кольцо
      прогресса рисует r=45/100 (=inset 5%). Совмещаем контур с кольцом. */
-  .mobile-top-ember::before {
-    inset: 2px;
-    border: 1px solid var(--ring-color);
-    background: transparent;
-    opacity: .38;
-    transform: none;
-  }
+  /* The mobile PLAY inherits the same single interior glow; no extra ring.
+     The progress circle remains the only outline at every viewport. */
 }
 
 /* SVG progress ring */
