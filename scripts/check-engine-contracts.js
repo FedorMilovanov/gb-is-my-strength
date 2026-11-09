@@ -160,6 +160,18 @@ const desktopBadgeRules = [
 ];
 check('CSS: desktop speed badges anchored inside PLAY', desktopBadgeRules.every((rule) => rule.test(css)));
 const gillMobileBar = read('src/components/article-pilots/gill-series/GillSeriesMobileBar.astro');
+const standaloneMobileBar = read('src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro');
+const speedOptions = read('src/components/article-pilots/_shared/ReaderSpeedOptions.astro');
+check('Reader mobile: one semantic speed-choice component for series and standalone articles',
+  gillMobileBar.includes("import ReaderSpeedOptions from '../_shared/ReaderSpeedOptions.astro'")
+    && standaloneMobileBar.includes("import ReaderSpeedOptions from '../_shared/ReaderSpeedOptions.astro'")
+    && gillMobileBar.includes('<ReaderSpeedOptions id="mobileSpeedrail"')
+    && standaloneMobileBar.includes('<ReaderSpeedOptions id="hmSpeedrail"')
+    && speedOptions.includes('role="radiogroup"')
+    && speedOptions.includes('role="radio"')
+    && speedOptions.includes("aria-checked={rate === 1 ? 'true' : 'false'}")
+    && !/<button[^>]*class="mobile-speed"/.test(gillMobileBar)
+    && !/<button[^>]*class="hm-spd"/.test(standaloneMobileBar));
 const mobilePlayStart = gillMobileBar.indexOf('<span class="mobile-playwrap"');
 const mobilePlayEnd = mobilePlayStart === -1 ? -1 : gillMobileBar.indexOf('</span>', mobilePlayStart);
 const mobilePlayBlock = mobilePlayEnd === -1 ? '' : gillMobileBar.slice(mobilePlayStart, mobilePlayEnd);

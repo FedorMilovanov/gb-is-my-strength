@@ -152,7 +152,7 @@ try {
                 assert.ok(hit.play && hit.badge && hit.learning, 'missing shared speed/Play/Learning controls');
                 assert.ok(hit.play.w >= 43 && hit.play.h >= 43 && hit.play.hit, 'Play hit target lost');
                 assert.ok(hit.badge.w >= 43 && hit.badge.h >= 43 && hit.badge.hit, 'speed hit target too small');
-                assert.ok(hit.learning.w >= 35 && hit.learning.h >= 39, 'Learning slot collapsed');
+                assert.ok(hit.learning.w >= 43.5 && hit.learning.h >= 43.5, 'Learning/Help touch target is below 44px');
                 assert.ok(hit.overlap <= .5, 'speed target overlaps Play by ' + hit.overlap + 'px²');
                 await page.locator('#mobSpdBadge').tap();
                 await page.waitForTimeout(80);

@@ -3806,14 +3806,14 @@ html.dark [data-gill-v16] .mobile-top-bar {
      Learning's inline slot. All series share data-reader-engine=series. ---- */
   [data-reader-engine="series"] .mobile-top-slot {
     position: relative;
-    height: 40px;
+    height: 44px;
     min-width: 0;
     flex: 1 1 auto;
   }
   [data-reader-engine="series"] .mobile-learning-trigger {
     display: flex;
     width: 100%;
-    min-height: 40px;
+    min-height: 44px;
     align-items: center;
     justify-content: center;
     gap: 6px;

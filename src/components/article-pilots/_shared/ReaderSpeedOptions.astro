@@ -1,0 +1,40 @@
+---
+/**
+ * ReaderSpeedOptions — one semantic speed-choice UI for article and series.
+ *
+ * Both readers retain their existing interaction owners and CSS class hooks.
+ * This component owns only the accessible radiogroup and its options:
+ * no storage, TTS listeners, route inspection or rendering engine.
+ */
+interface Props {
+  id: string;
+  railClass: string;
+  chipClass: string;
+  rates: readonly number[];
+  initiallyHidden?: boolean;
+  initiallyInert?: boolean;
+}
+
+const {
+  id, railClass, chipClass, rates,
+  initiallyHidden = false, initiallyInert = false,
+} = Astro.props;
+if (!id || !railClass || !chipClass) {
+  throw new Error('[reader-speed-options] Missing rail identity or CSS hooks');
+}
+if (!rates.length || !rates.includes(1) ||
+    new Set(rates).size !== rates.length ||
+    !rates.every((rate, index) => Number.isFinite(rate) && rate > 0 &&
+      rate <= 2 && (index === 0 || rate > rates[index - 1]))) {
+  throw new Error('[reader-speed-options] Expected ascending, unique speeds including 1×');
+}
+---
+<div class={railClass} id={id} role="radiogroup" aria-label="Скорость воспроизведения"
+  aria-hidden="true" hidden={initiallyHidden} inert={initiallyInert}>
+  {rates.map((rate) => (
+    <button type="button" class={chipClass} role="radio"
+      data-speed={String(rate)} aria-checked={rate === 1 ? 'true' : 'false'}>
+      {rate}×
+    </button>
+  ))}
+</div>
