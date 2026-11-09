@@ -266,29 +266,29 @@ html.dark .gb-theme-toggle .theme-icon-moon { opacity: 1; transform: rotate(0) s
   transform-origin: center;
 }
 
-/* Halo ring */
+/* Canonical PlayEmber optical layer: a soft radial light contained INSIDE the
+   existing progress circle. The SVG is the sole visible outer ring. No halo,
+   scale expansion, outer box-shadow or second outline on hover. */
 .gb-ember::before {
   content: '';
   position: absolute;
-  inset: 6px;
+  inset: 18%;
+  border: 0;
   border-radius: 50%;
-  border: 1px solid var(--ring-color);
+  background: radial-gradient(circle, color-mix(in srgb, var(--ring-color) 22%, transparent) 0%, color-mix(in srgb, var(--ring-color) 8%, transparent) 55%, transparent 100%);
   opacity: 0;
-  transform: scale(.7);
-  transition:
-    opacity .28s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1)),
-    transform .32s var(--gb-ease-spring, cubic-bezier(.34,1.56,.64,1));
+  transform: none;
+  transition: opacity .24s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1));
   pointer-events: none;
 }
-
 @media (hover: hover) and (pointer: fine) {
-  .gb-ember:hover { transform: scale(1.12); }
-  .gb-ember:hover::before { opacity: 0.4; transform: scale(1); }
+  .gb-ember:hover { transform: scale(1.025); }
+  .gb-ember:hover::before { opacity: 1; }
 }
-.gb-ember:active { transform: scale(.88); transition: transform .12s cubic-bezier(.4,0,.2,1); }
-.gb-ember:active::before { opacity: 0.55; transform: scale(1); }
+.gb-ember:active { transform: scale(.97); transition: transform .12s cubic-bezier(.4,0,.2,1); }
+.gb-ember:active::before { opacity: .7; }
 .gb-ember:focus-visible { outline: 2px solid var(--color-accent, #7a2e2e); outline-offset: 4px; border-radius: 50%; }
-.gb-ember:focus-visible::before { opacity: 0.55; transform: scale(1); }
+.gb-ember:focus-visible::before { opacity: 1; }
 
 /* Owner (восстановлено): тонкий круговой ободок вокруг PLAY на мобиле, видимый
    В ПОКОЕ — не только на hover/focus, которых на тач-устройствах не бывает.
@@ -299,7 +299,13 @@ html.dark .gb-theme-toggle .theme-icon-moon { opacity: 1; transform: rotate(0) s
   /* Владелец 2026-07-17: «рамка вокруг PLAY будто уменьшенная» — контур покоя
      наследовал inset:6px халo-геометрию (24px круг в 36px кнопке), а SVG-кольцо
      прогресса рисует r=45/100 (=inset 5%). Совмещаем контур с кольцом. */
-  .mobile-top-ember::before { inset: 2px; opacity: .38; transform: scale(1); }
+  .mobile-top-ember::before {
+    inset: 2px;
+    border: 1px solid var(--ring-color);
+    background: transparent;
+    opacity: .38;
+    transform: none;
+  }
 }
 
 /* SVG progress ring */
@@ -413,11 +419,11 @@ html.dark .gb-theme-toggle .theme-icon-moon { opacity: 1; transform: rotate(0) s
   50%      { opacity: 0.5; }
 }
 
-/* Dark mode glow */
+/* One dark-theme accent; glow stays within ::before and the SVG progress ring. */
 html.dark .gb-ember {
   --ring-color: #eed093;
   color: #eed093;
-  box-shadow: 0 0 14px rgba(216, 176, 104, 0.22);
+  box-shadow: none;
 }
 
 /* =========================================================
@@ -1854,14 +1860,7 @@ html.dark [data-gill-v16] .toc-sheet__actions{background:color-mix(in srgb,var(-
 /* ============================================================
    v16 OWNER FEEDBACK FIXES (Dark Theme Glow + Grid TOC Head & Actions)
    ============================================================ */
-html.dark [data-gill-v16] .gb-ember {
-  --ring-color: #eed093 !important;
-  color: #eed093 !important;
-  box-shadow: 0 0 16px rgba(245, 197, 66, 0.35), inset 0 0 12px rgba(245, 197, 66, 0.15) !important;
-}
-html.dark [data-gill-v16] .gb-ember::after {
-  filter: drop-shadow(0 0 4px #f5c542);
-}
+/* Gill inherits the same inner-only PlayEmber lighting owner as all readers. */
 html.dark [data-gill-v16] .toc-part-item.is-current .toc-part-item__progress i {
   background: linear-gradient(90deg, #eed093, #c59b58) !important;
   box-shadow: 0 0 8px rgba(216, 176, 104, 0.38) !important;
@@ -2057,11 +2056,7 @@ html.dark [data-gill-v16] .toc-part-item.is-current .toc-part-item__num {
 }
 
 /* 4. Яркий сияющий PLAY и треки в ночной теме */
-html.dark [data-gill-v16] .gb-ember {
-  --ring-color: #eed093 !important;
-  color: #eed093 !important;
-  box-shadow: 0 0 14px rgba(216, 176, 104, 0.22) !important;
-}
+/* Gill uses the canonical inner-only PlayEmber light; no second dark glow. */
 
 /* 5. Усмирённый масштаб Лупы в кластере */
 

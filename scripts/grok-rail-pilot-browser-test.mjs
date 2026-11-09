@@ -378,6 +378,26 @@ try {
             // expose ONE aligned horizontal rate strip in the focus rail,
             // without concentric idle rings or a detached 1x badge.
             const speedTrigger=page.locator('#grokCompactTools .gb-ember');
+            // PLAY has one SVG progress ring; the new inner radial glow must
+            // stay inside that ring, never spill as an outer box-shadow/halo.
+            if(hoverFine){
+              await speedTrigger.hover();
+              await page.waitForTimeout(340);
+              const emberSkin=await speedTrigger.evaluate(button=>{
+                const css=getComputedStyle(button),light=getComputedStyle(button,'::before');
+                const ring=button.querySelector('.gb-ember__ring-svg').getBoundingClientRect();
+                return {shadow:css.boxShadow,filter:css.filter,background:css.backgroundColor,
+                  innerWidth:parseFloat(light.width),ringWidth:ring.width,
+                  innerBorder:light.borderTopWidth,lightOpacity:parseFloat(light.opacity),
+                  innerBackground:light.backgroundImage,buttonWidth:button.getBoundingClientRect().width};
+              });
+              check(name,viewport.id,'Play hover light remains strictly within a single progress ring',
+                emberSkin.shadow==='none'&&emberSkin.filter==='none'&&
+                emberSkin.background==='rgba(0, 0, 0, 0)'&&
+                emberSkin.innerBorder==='0px'&&emberSkin.lightOpacity>.75&&
+                emberSkin.innerBackground.startsWith('radial-gradient(')&&
+                emberSkin.innerWidth<=emberSkin.ringWidth-4,emberSkin);
+            }
             // The native controller uses hover only for a hover/fine pointer.
             // Linux WebKit headless may report no hover despite Playwright's
             // ability to synthesize mouse movement. Test the actual device

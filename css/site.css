@@ -1544,62 +1544,107 @@ body.nagornaya-page main .text-2xl{font-size:calc(24px*var(--gb-reader-font-scal
 @media (min-width:768px){body.nagornaya-page main .md\:text-3xl{font-size:calc(30px*var(--gb-reader-font-scale,1))}}
 
 
-/* GB Summary Disclosure v1 — shared article-reader presentation.
-   Only cards claimed by the reader-preferences runtime are folded.
-   No heavy panel, duplicate mobile expander, or content removal.
-   Before DOMContentLoaded, the synchronous head bootstrap marks exactly
-   titled "Коротко" cards, preventing visible fully-expanded first paint.
-   If JavaScript is absent or the deferred runtime fails, content is visible. */
+/* GB Summary Disclosure v2: one editorial surface, not an inner rectangular
+   hover panel. The canonical JS owner handles the disclosure, ARIA and deep
+   links; the content remains in static HTML for TTS, print and no-JS readers.
+   Article-specific palettes feed these shared semantic surface tokens. */
 .summary-card[data-gb-summary-pending="1"]:not([data-gb-summary-owner="1"]) > .summary-card__body {
   display: none;
 }
 .summary-card[data-gb-summary-owner="1"] {
-  margin-block: 18px 22px;
+  --gb-summary-accent: var(--color-accent-strong, #7a2e2e);
+  --gb-summary-border: color-mix(in srgb, var(--color-border-strong, #bda78b) 50%, transparent);
+  --gb-summary-border-hover: color-mix(in srgb, var(--gb-summary-accent) 42%, var(--gb-summary-border));
+  --gb-summary-rule: color-mix(in srgb, var(--gb-summary-accent) 16%, transparent);
+  --gb-summary-surface: var(--color-surface-quote, #fffaf5);
+  margin-block: 18px 24px;
+  position: relative;
+  isolation: isolate;
+  border: 1px solid var(--gb-summary-border);
+  border-radius: 18px;
+  background: var(--gb-summary-surface);
+  box-shadow: 0 14px 34px -29px rgba(38, 28, 20, .25), inset 0 1px 0 rgba(255, 255, 255, .18);
+  transition: border-color .26s ease, box-shadow .26s ease;
+}
+html.dark .summary-card[data-gb-summary-owner="1"] {
+  --gb-summary-accent: #e8b878;
+  --gb-summary-border: rgba(232, 184, 120, .16);
+  --gb-summary-border-hover: rgba(232, 184, 120, .38);
+  --gb-summary-rule: rgba(232, 184, 120, .18);
+  --gb-summary-surface: color-mix(in srgb, var(--color-surface-quote, #171a1e) 92%, #0b0e12 8%);
+  box-shadow: 0 16px 34px -28px rgba(0, 0, 0, .52), inset 0 1px 0 rgba(255, 255, 255, .035);
+}
+html[data-reader-theme="sepia"] .summary-card[data-gb-summary-owner="1"] {
+  --gb-summary-accent: #79552e;
+  --gb-summary-border-hover: #b79a6d;
+  --gb-summary-rule: rgba(121, 85, 46, .2);
+}
+.summary-card[data-gb-summary-owner="1"][data-gb-summary-open="true"] {
+  border-color: var(--gb-summary-border-hover);
 }
 .summary-card[data-gb-summary-owner="1"] > .summary-card__head {
   display: block;
   margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 .summary-card[data-gb-summary-owner="1"] .gb-summary-toggle {
   appearance: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 18px;
   width: 100%;
-  min-height: 44px;
-  padding: 9px 2px;
+  min-height: 48px;
+  padding: 8px 2px 10px;
   margin: 0;
   border: 0;
-  border-radius: 8px;
+  border-radius: 10px;
   background: transparent;
-  color: inherit;
-  font: inherit;
+  color: var(--gb-summary-accent);
+  font-family: "Source Sans 3", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 750;
   line-height: 1.35;
+  letter-spacing: .19em;
   text-align: left;
-  letter-spacing: inherit;
-  text-transform: inherit;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: color .22s ease, background-color .22s ease;
+  transition: color .24s ease;
 }
 .summary-card[data-gb-summary-owner="1"] .gb-summary-toggle:hover {
-  color: var(--color-accent-strong, #7a2e2e);
-  background-color: color-mix(in srgb, currentColor 3%, transparent);
+  background: transparent;
+  color: var(--gb-summary-accent);
+}
+@media (hover: hover) and (pointer: fine) {
+  .summary-card[data-gb-summary-owner="1"]:has(> .summary-card__head > .gb-summary-toggle:hover) {
+    border-color: var(--gb-summary-border-hover);
+    box-shadow: 0 16px 35px -29px rgba(26, 23, 20, .3), inset 0 1px 0 color-mix(in srgb, var(--gb-summary-accent) 11%, transparent);
+  }
 }
 .summary-card[data-gb-summary-owner="1"] .gb-summary-toggle:focus-visible {
-  outline: 2px solid var(--color-accent-strong, currentColor);
-  outline-offset: 3px;
+  outline: 2px solid var(--gb-summary-accent);
+  outline-offset: -2px;
 }
 .summary-card[data-gb-summary-owner="1"] .gb-summary-toggle__chevron {
   display: grid;
   place-items: center;
-  flex: 0 0 24px;
-  width: 24px;
-  height: 24px;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--gb-summary-rule);
   border-radius: 50%;
-  opacity: .65;
+  background: transparent;
+  color: var(--gb-summary-accent);
+  opacity: .72;
   transform: rotate(0);
-  transition: transform .36s cubic-bezier(.32,.72,0,1), opacity .2s ease;
+  transition: transform .38s cubic-bezier(.32,.72,0,1), opacity .22s ease, background-color .24s ease, border-color .24s ease;
+}
+.summary-card[data-gb-summary-owner="1"] .gb-summary-toggle:is(:hover,:focus-visible) .gb-summary-toggle__chevron {
+  opacity: 1;
+  border-color: var(--gb-summary-border-hover);
+  background: color-mix(in srgb, var(--gb-summary-accent) 9%, transparent);
 }
 .summary-card[data-gb-summary-owner="1"][data-gb-summary-open="true"] .gb-summary-toggle__chevron {
   transform: rotate(180deg);
@@ -1610,7 +1655,7 @@ body.nagornaya-page main .text-2xl{font-size:calc(24px*var(--gb-reader-font-scal
   grid-template-rows: 0fr;
   min-height: 0;
   opacity: 0;
-  transition: grid-template-rows .4s cubic-bezier(.32,.72,0,1), opacity .26s ease;
+  transition: grid-template-rows .42s cubic-bezier(.32,.72,0,1), opacity .25s ease;
 }
 .summary-card[data-gb-summary-owner="1"][data-gb-summary-open="true"] .gb-summary-motion {
   grid-template-rows: 1fr;
@@ -1621,14 +1666,22 @@ body.nagornaya-page main .text-2xl{font-size:calc(24px*var(--gb-reader-font-scal
   overflow: hidden;
   margin: 0;
   padding: 0;
+  border-top: 1px solid transparent;
+  transition: padding-top .4s cubic-bezier(.32,.72,0,1), border-color .3s ease;
+}
+.summary-card[data-gb-summary-owner="1"][data-gb-summary-open="true"] .gb-summary-motion > .summary-card__body {
+  padding-top: 17px;
+  border-top-color: var(--gb-summary-rule);
 }
 .summary-card[data-gb-summary-owner="1"] .gb-summary-motion > .summary-card__body::after {
   content: "";
   display: block;
-  min-height: 4px;
+  min-height: 5px;
 }
 @media (prefers-reduced-motion:reduce) {
+  .summary-card[data-gb-summary-owner="1"],
   .summary-card[data-gb-summary-owner="1"] .gb-summary-motion,
+  .summary-card[data-gb-summary-owner="1"] .gb-summary-motion > .summary-card__body,
   .summary-card[data-gb-summary-owner="1"] .gb-summary-toggle,
   .summary-card[data-gb-summary-owner="1"] .gb-summary-toggle__chevron {
     transition: none;
@@ -1657,12 +1710,32 @@ body.nagornaya-page main .text-2xl{font-size:calc(24px*var(--gb-reader-font-scal
   }
 }
 
-/* Typography polish for the full-width native article cards: the legacy
-   heading's extra 12px margin and border created a second empty strip when
-   content was folded. Keep one clear editorial surface. */
+/* One premium card across legacy and Astro articles. Both open and folded
+   states share this surface; hover lights only the border and chevron, never
+   a second rectangular header within the outer frame. */
 body .article-body > .summary-card[data-gb-summary-owner="1"] {
-  padding: 12px 16px;
-  border-radius: 15px;
+  padding: 11px 18px 13px;
+  border: 1px solid var(--gb-summary-border);
+  border-radius: 19px;
+  background: var(--gb-summary-surface);
+  box-shadow: 0 14px 34px -29px rgba(38, 28, 20, .25), inset 0 1px 0 rgba(255, 255, 255, .18);
+}
+html.dark body .article-body > .summary-card[data-gb-summary-owner="1"] {
+  background: var(--gb-summary-surface);
+  border-color: var(--gb-summary-border);
+  box-shadow: 0 16px 34px -28px rgba(0, 0, 0, .52), inset 0 1px 0 rgba(255, 255, 255, .035);
+}
+body .article-body > .summary-card[data-gb-summary-owner="1"][data-gb-summary-open="true"] {
+  border-color: var(--gb-summary-border-hover);
+}
+@media (hover:hover) and (pointer:fine) {
+  body .article-body > .summary-card[data-gb-summary-owner="1"]:has(> .summary-card__head > .gb-summary-toggle:hover) {
+    border-color: var(--gb-summary-border-hover);
+    box-shadow: 0 16px 35px -29px rgba(26, 23, 20, .3), inset 0 1px 0 color-mix(in srgb, var(--gb-summary-accent) 11%, transparent);
+  }
+  html.dark body .article-body > .summary-card[data-gb-summary-owner="1"]:has(> .summary-card__head > .gb-summary-toggle:hover) {
+    box-shadow: 0 17px 34px -28px rgba(0, 0, 0, .58), inset 0 1px 0 rgba(232, 184, 120, .095);
+  }
 }
 body .article-body > .summary-card[data-gb-summary-owner="1"] > .summary-card__head {
   margin: 0;
@@ -1672,6 +1745,12 @@ body .article-body > .summary-card[data-gb-summary-owner="1"] > .summary-card__h
 }
 body .article-body > .summary-card[data-gb-summary-owner="1"] .summary-card__text {
   text-align: start;
+}
+@media (max-width:560px) {
+  body .article-body > .summary-card[data-gb-summary-owner="1"] {
+    padding: 10px 14px 12px;
+    border-radius: 17px;
+  }
 }
 /* Ancillary notices are reference material, not justified book prose:
    prevent rivers of whitespace in citations, copyright and PDF information. */

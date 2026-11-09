@@ -32,9 +32,42 @@ async function visit(type,engine,route,size,full){
     overflow:document.documentElement.scrollWidth-innerWidth
   }));
   add(engine,route,'default closed, accessible, no duplicate',initial.open==='false'&&initial.toggle==='false'&&initial.inert&&initial.bodyHeight<=2&&!initial.duplicate&&initial.bodyCount===1&&initial.overflow<=2,initial);
+  // Premium disclosure acceptance: no nested rectangular hover paint. The
+  // single card edge and the small circular chevron carry the interaction.
+  const idleSkin=await card.evaluate(el=>({
+    edge:getComputedStyle(el).borderTopColor,
+    labelSize:parseFloat(getComputedStyle(el.querySelector('.gb-summary-toggle')).fontSize)
+  }));
+  await btn.hover();await p.waitForTimeout(320);
+  const hoverSkin=await card.evaluate(el=>{
+    const button=el.querySelector('.gb-summary-toggle');
+    const chevron=el.querySelector('.gb-summary-toggle__chevron');
+    const skin=getComputedStyle(button);
+    return {edge:getComputedStyle(el).borderTopColor,buttonBg:skin.backgroundColor,
+      buttonBgImage:skin.backgroundImage,chevronBg:getComputedStyle(chevron).backgroundColor,
+      chevronShape:getComputedStyle(chevron).borderRadius,
+      chevronWidth:chevron.getBoundingClientRect().width};
+  });
+  add(engine,route,'premium summary hover lights only card edge and round chevron',
+    idleSkin.labelSize>=10.5 && hoverSkin.edge!==idleSkin.edge &&
+    ['transparent','rgba(0, 0, 0, 0)'].includes(hoverSkin.buttonBg) &&
+    hoverSkin.buttonBgImage==='none'&&
+    hoverSkin.chevronShape==='50%'&&hoverSkin.chevronWidth>=28&&
+    !['transparent','rgba(0, 0, 0, 0)'].includes(hoverSkin.chevronBg),{idleSkin,hoverSkin});
   await btn.click();await p.waitForTimeout(460);
   const expanded=await card.evaluate(el=>({open:el.dataset.gbSummaryOpen,aria:el.querySelector('button')?.getAttribute('aria-expanded'),h:el.querySelector('.gb-summary-motion')?.getBoundingClientRect().height,inert:el.querySelector('.gb-summary-motion')?.inert,body:el.querySelector('.summary-card__body')?.textContent?.trim().length}));
   add(engine,route,'real content opens',expanded.open==='true'&&expanded.aria==='true'&&!expanded.inert&&expanded.h>30&&expanded.body>20,expanded);
+  const openedSkin=await card.evaluate(el=>{
+    const body=el.querySelector('.gb-summary-motion > .summary-card__body'),css=getComputedStyle(body);
+    const chevron=getComputedStyle(el.querySelector('.gb-summary-toggle__chevron'));
+    return {padding:parseFloat(css.paddingTop),rule:css.borderTopColor,ruleWidth:css.borderTopWidth,
+      chevronTransform:chevron.transform,buttonBg:getComputedStyle(el.querySelector('.gb-summary-toggle')).backgroundColor};
+  });
+  add(engine,route,'expanded summary has a quiet editorial divider, no header flood fill',
+    openedSkin.padding>=14&&openedSkin.ruleWidth==='1px'&&
+    !['transparent','rgba(0, 0, 0, 0)'].includes(openedSkin.rule)&&
+    openedSkin.chevronTransform!=='none'&&
+    ['transparent','rgba(0, 0, 0, 0)'].includes(openedSkin.buttonBg),openedSkin);
   if(full && /hermenevticheskaya|dzhon-gill-chast-1|nagornaya\/chast-1/.test(route)){
     await card.screenshot({path:path.join(out,engine+'-'+route.replaceAll('/','_')+'-open.png')});
   }
@@ -63,10 +96,23 @@ async function visit(type,engine,route,size,full){
       const state=()=>{const tr=b.getBoundingClientRect();return{t:performance.now(),x:tr.left,y:tr.top,width:r.getBoundingClientRect().width,metaOpacity:Number(getComputedStyle(meta).opacity),bottomOpacity:Number(getComputedStyle(bottom).opacity),phase:r.classList.contains('grok-rail-switching'),scroll:scrollY};};
       const frames=[state()];for(let i=0;i<55;i++){await new Promise(resolve=>requestAnimationFrame(resolve));frames.push(state());}return frames;
     });
-    const maxStep=Math.max(...trace.slice(1).map((f,i)=>Math.abs(f.x-trace[i].x)));
-    const maxVelocity=Math.max(...trace.slice(1).map((f,i)=>Math.abs(f.x-trace[i].x)/Math.max(1,f.t-trace[i].t)));
+    const steps=trace.slice(1).map((f,i)=>({dx:f.x-trace[i].x,dt:Math.max(1,f.t-trace[i].t)}));
+    const maxStep=Math.max(...steps.map(s=>Math.abs(s.dx)));
+    const maxVelocity=Math.max(...steps.map(s=>Math.abs(s.dx)/s.dt));
+    // The rail edge and its ONLY fixed toggle share a 520ms easing and must
+    // stay optically locked, not merely below an arbitrary px/ms threshold.
+    // Firefox can produce >2.1 px/ms legitimate easing peaks and WebKit batches
+    // 40-50ms frames. True teleport breaks this 52px geometric invariant or
+    // jumps implausibly fast; ordinary easing cannot.
+    const maxEdgeDrift=Math.max(...trace.map(f=>Math.abs((f.width-f.x)-52)));
+    const movingFrames=steps.filter(s=>s.dx < -0.5).length;
+    const reverseFrames=steps.filter(s=>s.dx > 1).length;
+    const travel=trace[0].x-trace[trace.length-1].x;
     const compact=await rail.evaluate(e=>({mode:e.classList.contains('hrail--compact'),switching:e.classList.contains('grok-rail-switching'),width:e.getBoundingClientRect().width,controls:e.querySelectorAll('#gbFloatingControls').length}));
-    add(engine,route,'rail collapses with no teleport and settles',compact.mode&&!compact.switching&&Math.abs(compact.width-68)<1&&maxVelocity<2.1,{maxStep,maxVelocity,compact});
+    add(engine,route,'rail collapses with no teleport and settles',
+      compact.mode&&!compact.switching&&Math.abs(compact.width-68)<1&&
+      travel>200&&maxEdgeDrift<=2&&reverseFrames===0&&
+      maxVelocity<5,{maxStep,maxVelocity,maxEdgeDrift,movingFrames,reverseFrames,travel,compact});
     await rail.screenshot({path:path.join(out,engine+'-compact.png')});
     await toggle.click();await p.waitForTimeout(820);
     const restored=await rail.evaluate(e=>({compact:e.classList.contains('hrail--compact'),switching:e.classList.contains('grok-rail-switching'),width:e.getBoundingClientRect().width,controls:document.querySelectorAll('#gbFloatingControls').length}));

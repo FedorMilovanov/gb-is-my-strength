@@ -600,7 +600,7 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       background:transparent;box-shadow:none;backdrop-filter:none;
     }
     .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember:hover {
-      background:var(--rail-soft,rgba(122,46,46,.08));color:var(--rail-accent,#7a2e2e);
+      color:var(--rail-accent,#7a2e2e);
     }
     /* Grok PlayEmber: retain the canonical sliding-speed widget, but give it
        one deliberate optical system. It is the SAME PlayEmber + rate-controller
@@ -613,18 +613,17 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       width:32px;height:32px;min-width:32px;
       border:1px solid color-mix(in srgb,var(--rail-accent,#7a2e2e) 30%,transparent);
       border-radius:50%;
-      background:color-mix(in srgb,var(--rail-surface,#fbf3ea) 35%,transparent);
+      background:transparent;
       box-shadow:none;
       transform:none;
       transition:background-color .19s ease,border-color .19s ease,color .19s ease;
     }
-    body:has(.hrail--grok) #gbFloatingControls .gb-ember::before {display:none;}
+    /* One canonical PlayEmber ::before lights the INSIDE; no competing halo. */
     body:has(.hrail--grok) #gbFloatingControls .gb-ember-wrap:hover > .gb-ember,
     body:has(.hrail--grok) #gbFloatingControls .gb-ember-wrap:focus-within > .gb-ember {
       transform:none;
     }
     body:has(.hrail--grok) #gbFloatingControls .gb-ember:hover {
-      background:var(--rail-soft,rgba(122,46,46,.09));
       border-color:color-mix(in srgb,var(--rail-accent,#7a2e2e) 65%,transparent);
     }
     body:has(.hrail--grok) #gbFloatingControls .gb-ember__ring-svg {
