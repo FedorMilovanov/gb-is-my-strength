@@ -211,7 +211,7 @@ check('Reader: shared settings selector', controller.includes('[data-gill-settin
 
 const readerActions = read('src/runtime/reader-actions.js');
 const readerActionsRuntime = read('src/components/reader-platform/ReaderActionsRuntime.astro');
-const gillChrome = read('src/components/article-pilots/gill-series/GillSeriesChrome.astro');
+const gillChrome = read('src/components/article-pilots/_shared/series/SeriesReaderChrome.astro');
 const gillResponsive = read('src/components/article-pilots/gill-series/GillSeriesResponsiveStyles.astro');
 const nagornayaRuntime = read('src/components/nagornaya/_shared/NagornayaPageFooterRuntime.astro');
 check('Reader actions: print engine is a dedicated singleton',

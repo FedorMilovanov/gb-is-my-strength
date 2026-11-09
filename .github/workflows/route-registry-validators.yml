@@ -19,7 +19,6 @@ on:
       - "src/components/article-pilots/**"
       - "src/components/article-pilots/_shared/mobileChromeRegistry.ts"
       - "src/components/article-pilots/_shared/series/SeriesReaderChrome.astro"
-      - "src/components/article-pilots/gill-series/GillSeriesChrome.astro"
       - "src/components/konfessii/russkij-baptizm/**"
       - "src/components/nagornaya/**"
       - "src/components/map/**"

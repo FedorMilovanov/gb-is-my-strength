@@ -315,3 +315,12 @@ guards, book/flat/standalone route tests, 320/390/480 mobile touch targets,
 desktop, accessibility, persistent preferences, focus/scroll lifecycle,
 and browser visual parity. A previous SHA or local success cannot attest
 the current CI status.
+
+## Source composition consolidation - 2026-11-09 (PR #2292)
+
+SeriesReaderChrome is now the actual series/book composition owner; the
+unused historical GillSeriesChrome implementation was retired rather than
+retained as a second component. Existing presentation adapters, article routes,
+markup, theme tokens, TTS and reader runtime retain their original behavior.
+This does not mean standalone articles and series settings are fully converged.
+CI, browser parity and owner visual acceptance remain mandatory before release.
