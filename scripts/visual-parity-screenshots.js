@@ -364,6 +364,102 @@ function diffPng(aFile, bFile, diffFile) {
   };
 }
 
+
+/**
+ * Read-only production home snapshots for visual review.
+ * Runs only on the dedicated audit PR or manual Visual Parity workflow dispatch.
+ * Does not change local baseline, production, or the owner's interactive browser.
+ */
+async function captureLiveHomeMatrix(browser) {
+  const crypto = require('node:crypto');
+  const target = 'https://gospod-bog.ru/';
+  const cases = [
+    { name: 'desktop', width: 1440, height: 900 },
+    { name: 'mobile', width: 390, height: 844 },
+  ];
+  const receipts = [];
+  for (const viewport of cases) {
+    for (const theme of ['light', 'dark']) {
+      const ctx = await browser.newContext({
+        viewport: { width: viewport.width, height: viewport.height },
+        colorScheme: theme,
+        reducedMotion: 'reduce',
+        locale: 'ru-RU',
+        serviceWorkers: 'block',
+      });
+      const page = await ctx.newPage();
+      const errors = [];
+      page.on('pageerror', (e) => errors.push(String(e.message || e)));
+      const file = path.join(OUT_DIR, 'live-home-' + viewport.name + '-' + theme + '.png');
+      const receipt = { target, viewport, theme, file: path.basename(file), errors };
+      try {
+        const response = await page.goto(target, { waitUntil: 'domcontentloaded', timeout: 45000 });
+        receipt.status = response ? response.status() : null;
+        if (!response || response.status() >= 400) throw new Error('HTTP ' + receipt.status);
+        const toggle = page.locator('#themeToggle');
+        await toggle.waitFor({ state: 'visible', timeout: 12000 });
+        let isDark = await page.evaluate(() => document.documentElement.classList.contains('dark'));
+        if (isDark !== (theme === 'dark')) {
+          await toggle.click();
+          await page.waitForFunction(
+            (wantDark) => document.documentElement.classList.contains('dark') === wantDark,
+            theme === 'dark',
+            { timeout: 10000 },
+          );
+          isDark = await page.evaluate(() => document.documentElement.classList.contains('dark'));
+        }
+        if (isDark !== (theme === 'dark')) throw new Error('Theme mismatch');
+        receipt.metrics = await page.evaluate(async () => {
+          await document.fonts.ready;
+          const height = document.documentElement.scrollHeight;
+          // Trigger real IntersectionObserver reveals/lazy media by progressive scrolling.
+          for (let y = 0; y <= height; y += 500) {
+            window.scrollTo(0, y);
+            await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+          }
+          window.scrollTo(0, 0);
+          await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+          const images = [...document.images];
+          await Promise.allSettled(images.map((img) => img.decode()));
+          return {
+            documentHeight: document.documentElement.scrollHeight,
+            scrollWidth: document.documentElement.scrollWidth,
+            viewportWidth: document.documentElement.clientWidth,
+            imageCount: images.length,
+            brokenImages: images.filter((img) => !img.complete || img.naturalWidth === 0).map((img) => img.currentSrc || img.src),
+            h1: [...document.querySelectorAll('h1')].map((el) => el.innerText.trim()),
+            hiddenRevealCount: [...document.querySelectorAll('.h-reveal, [data-reveal]')]
+              .filter((el) => {
+                const s = getComputedStyle(el);
+                const r = el.getBoundingClientRect();
+                return s.display === 'none' || s.visibility === 'hidden' || Number(s.opacity) < 0.98 || r.width === 0 || r.height === 0;
+              }).length,
+            dark: document.documentElement.classList.contains('dark'),
+          };
+        });
+        await page.screenshot({ path: file, fullPage: true, animations: 'disabled', timeout: 60000 });
+        receipt.sha256 = crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+        console.log('[live-home] ' + receipt.file + ': ' + receipt.metrics.viewportWidth + 'x' + receipt.metrics.documentHeight + ' ' + receipt.sha256.slice(0, 12));
+      } catch (error) {
+        receipt.error = String(error.message || error);
+        console.error('[live-home] FAIL ' + receipt.file + ': ' + receipt.error);
+      } finally {
+        receipts.push(receipt);
+        await ctx.close();
+      }
+    }
+  }
+  fs.writeFileSync(path.join(OUT_DIR, 'live-home-matrix.json'), JSON.stringify({
+    capturedAt: new Date().toISOString(),
+    source: 'production',
+    sourceUrl: target,
+    cases: receipts,
+  }, null, 2) + '\n');
+  if (receipts.some((item) => item.error)) {
+    throw new Error('Live home capture incomplete: see live-home-matrix.json');
+  }
+}
+
 // ---------- ensure summary written even on fatal ----------
 function writeSummary(OUT_DIR, summary) {
   try {
@@ -482,6 +578,12 @@ function writeSummary(OUT_DIR, summary) {
       routeResult.viewports[vp.name] = { pass, ...best };
     }
     summary.routes.push(routeResult);
+  }
+
+  // GitHub-hosted CI only. Manual dispatch remains opt-in; regular PRs do no live capture.
+  if (process.env.GITHUB_HEAD_REF === 'audit/live-home-visual-20261109' ||
+      (process.env.GITHUB_EVENT_NAME === 'workflow_dispatch' && process.env.GITHUB_REF === 'refs/heads/main')) {
+    await captureLiveHomeMatrix(browser);
   }
 
   await browser.close().catch(() => {});
