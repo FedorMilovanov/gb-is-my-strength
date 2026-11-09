@@ -122,10 +122,20 @@
 <style is:global>
   /* Reader-facing labels on the light apologist cards need text contrast,
      independently of the brighter decorative accent. */
-  html:not(.dark) body.home-page #main-content #razbor .h-refutation-card .h-article-kicker,
-  html:not(.dark) body.home-page #main-content #razbor .h-refutation-card .h-meta-tag,
+  html:not(.dark) body.home-page #main-content #razbor .h-articles-group .h-article-kicker,
+  html:not(.dark) body.home-page #main-content #razbor .h-articles-group .h-meta-tag,
   html:not(.dark) body.home-page #main-content #razbor .h-mobile-shelf-head__kicker {
     color: #126477;
+  }
+
+  /* The abstract is reader content, not a decorative translucent caption.
+     These ink values are set once at the apologist section owner. */
+  html:not(.dark) body.home-page #main-content #razbor .h-articles-group .h-article-abstract {
+    color: #405458;
+  }
+
+  html.dark body.home-page #main-content #razbor .h-articles-group .h-article-abstract {
+    color: #bbc8ca;
   }
 
   body.home-page #main-content #razbor .h-refutations-deck {
