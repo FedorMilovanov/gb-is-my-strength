@@ -283,6 +283,62 @@ try {
             check(name,viewport.id,'compact retains exact native four controls in left rail',
               focusTools.parent==='grokCompactTools'&&focusTools.instances===1&&focusTools.hasTheme&&
               focusTools.hasSearch&&focusTools.hasPlayer&&focusTools.hasSave&&focusTools.playFirst,focusTools);
+            const compactBack=await page.evaluate(()=>{
+              const back=document.querySelector('.hrail--grok .hrail-back');
+              const fold=document.querySelector('#hrailLayoutToggle');
+              return {display:back&&getComputedStyle(back).display,
+                foldVisible:!!fold&&getComputedStyle(fold).display!=='none'};
+            });
+            check(name,viewport.id,'compact hides Back but retains the fold control',
+              compactBack.display==='none'&&compactBack.foldVisible,compactBack);
+            // Inspect the SAME native gb-icon search trigger in the rail; do
+            // not replace its hover behavior with a second square backdrop.
+            const hoverFine=await page.evaluate(()=>
+              matchMedia('(hover: hover) and (pointer: fine)').matches);
+            if(hoverFine){
+              await page.locator('#grokCompactTools #gbFcSearch').hover();
+              await page.waitForTimeout(360);
+              const searchRing=await page.evaluate(()=>{
+                const button=document.querySelector('#grokCompactTools #gbFcSearch');
+                const css=getComputedStyle(button);
+                const ring=getComputedStyle(button,'::before');
+                const svg=button.querySelector('svg').getBoundingClientRect();
+                return {shape:css.borderRadius,background:css.backgroundColor,
+                  borderWidth:css.borderTopWidth,shadow:css.boxShadow,
+                  ringWidth:parseFloat(ring.width),ringColor:ring.borderTopColor,
+                  ringOpacity:parseFloat(ring.opacity),ringShadow:ring.boxShadow,
+                  iconWidth:svg.width,short:innerHeight<=420};
+              });
+              check(name,viewport.id,'compact search hover uses one clear round outline, no square halo',
+                searchRing.shape==='50%'&&
+                ['transparent','rgba(0, 0, 0, 0)'].includes(searchRing.background)&&
+                searchRing.borderWidth==='0px'&&searchRing.shadow==='none'&&
+                searchRing.ringShadow==='none'&&
+                searchRing.ringWidth>=(searchRing.short?25:32)&&
+                searchRing.ringWidth-searchRing.iconWidth>=9&&
+                searchRing.ringOpacity>0,searchRing);
+              // CSS color is animated by the original .gb-icon owner. Read
+              // after the native transition completes, not in its first frame.
+              const initiallyDark=await page.evaluate(()=>document.documentElement.classList.contains('dark'));
+              await page.evaluate(()=>document.documentElement.classList.add('dark'));
+              await page.waitForTimeout(420);
+              const darkRing=await page.evaluate(()=>{
+                const button=document.querySelector('#grokCompactTools #gbFcSearch');
+                const token=document.createElement('span');
+                token.style.color='var(--color-accent-strong,#e8b878)';
+                document.body.appendChild(token);
+                const expectedGold=getComputedStyle(token).color;
+                token.remove();
+                return {hover:getComputedStyle(button).color,
+                  ring:getComputedStyle(button,'::before').borderTopColor,
+                  expectedGold};
+              });
+              check(name,viewport.id,'compact search retains native golden dark hover and ring',
+                darkRing.hover===darkRing.expectedGold&&
+                darkRing.ring===darkRing.expectedGold,darkRing);
+              await page.evaluate(wasDark=>document.documentElement.classList.toggle('dark',wasDark),initiallyDark);
+              await page.waitForTimeout(320);
+            }
             // The original floating-cluster controller is delegated from BOTH
             // the floater and rail. A moved subtree must trigger exactly one
             // theme transition, not two toggles back to the original state.

@@ -581,14 +581,24 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       animation:grokCompactToolEntrance .3s cubic-bezier(.32,.72,0,1) both;
     }
     .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls > *{pointer-events:auto;max-width:100%;}
-    .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-icon,
+    /* Keep the original gb-icon hover owner when controls move into the
+       compact rail. Its circular outline and day/night accent are native;
+       only the rail's available hit area and ring clearance change here. */
+    .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-icon {
+      width:40px;height:40px;min-width:40px;
+      border:0;border-radius:50%;
+      background:transparent;box-shadow:none;backdrop-filter:none;
+    }
+    .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-icon::before {
+      inset:3px;
+      border-color:currentColor;
+    }
     .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember {
       width:36px;height:36px;min-width:36px;
       border:1px solid transparent;border-radius:10px;
       color:var(--rail-muted,#725e52);
       background:transparent;box-shadow:none;backdrop-filter:none;
     }
-    .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-icon:hover,
     .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember:hover {
       background:var(--rail-soft,rgba(122,46,46,.08));color:var(--rail-accent,#7a2e2e);
     }
@@ -779,7 +789,12 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       .hrail--grok.hrail--compact .hrail-bottom{gap:2px;}
       .hrail--grok.hrail--compact .grok-compact-tools{gap:0;padding:2px 0 4px;}
       .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls{gap:1px;}
-      .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-icon,
+      .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-icon{
+        width:34px;min-width:34px;height:34px;
+      }
+      .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-icon svg{
+        width:16px;height:16px;
+      }
       .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember{
         width:30px;min-width:30px;height:30px;
       }
@@ -803,8 +818,13 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       top:23px;
     }
     .hrail--grok.hrail--compact .hrail-top {
-      min-height:76px;
-      padding-top:39px;
+      min-height:38px;
+      padding-top:0;
+    }
+    /* Back remains on the expanded reader; compact mode has only the
+       fixed fold control and never leaves a ghost Back target behind. */
+    .hrail--grok.hrail--compact .hrail-back {
+      display:none;
     }
   }
   /* A single two-stage crossfade masks the genuine DOM relocation of the
