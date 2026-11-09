@@ -45,7 +45,7 @@ const freshArticles: ManifestItem[] = manifest.items
       <p class="h-section-label">Редакторский выбор</p>
       <h2 id="hPublicationsLabel">Исследования, с которых стоит начать</h2>
     </div>
-    <p>Два больших проекта показывают характер библиотеки: внимательность к личности и истории, а также последовательную работу с самим текстом Писания.</p>
+    <p>Биографии, исследование Нагорной проповеди и трудных вопросов веры раскрывают подход библиотеки: внимание к истории, источникам и самому тексту Писания.</p>
   </header>
 
   <div class="h-featured-shelf h-featured-shelf--lead">
@@ -341,6 +341,53 @@ const freshArticles: ManifestItem[] = manifest.items
 </section>
 
 <style is:global>
+  /* Featured cards paint a dark surface in both themes: readable editorial
+     descriptions and metadata belong to this component, not global CSS. */
+  body.home-page #publikacii .h-featured-series .h-featured-abstract {
+    color: rgba(255, 255, 255, .82);
+  }
+
+  body.home-page #publikacii .h-featured-series .h-featured-author,
+  body.home-page #publikacii .h-featured-series .h-featured-time {
+    color: rgba(255, 255, 255, .74);
+  }
+
+  body.home-page #publikacii .h-featured-series .h-featured-parts {
+    color: rgba(255, 255, 255, .78);
+  }
+
+  html:not(.dark) body.home-page #publikacii .h-home-section-head .h-section-label,
+  html:not(.dark) body.home-page #publikacii .h-articles-group .h-article-kicker,
+  html:not(.dark) body.home-page #publikacii .h-articles-group .h-meta-tag {
+    color: #126477;
+  }
+
+  /* The third editorial feature spans the full row and reads as a deliberate
+     horizontal feature, rather than an orphaned half-width card. */
+  @media (min-width: 761px) {
+    body.home-page #publikacii .h-featured-shelf--lead > .h-featured-series:last-child:nth-child(odd),
+    body.home-page #publikacii .h-mobile-lab-shelf > .h-featured-series:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+      height: auto;
+      min-height: 260px;
+    }
+
+    body.home-page #publikacii .h-featured-shelf--lead > .h-featured-series:last-child:nth-child(odd) .h-featured-img-wrap,
+    body.home-page #publikacii .h-mobile-lab-shelf > .h-featured-series:last-child:nth-child(odd) .h-featured-img-wrap {
+      width: 100%;
+      height: 100%;
+      min-height: 260px;
+    }
+
+    body.home-page #publikacii .h-featured-shelf--lead > .h-featured-series:last-child:nth-child(odd) .h-featured-body,
+    body.home-page #publikacii .h-mobile-lab-shelf > .h-featured-series:last-child:nth-child(odd) .h-featured-body {
+      height: auto;
+      justify-content: center;
+    }
+  }
+
   @media (max-width: 760px) {
     body.home-page #publikacii .h-featured-shelf--lead {
       gap: 12px;
@@ -393,19 +440,19 @@ const freshArticles: ManifestItem[] = manifest.items
       margin-bottom: 7px;
       font-size: 14.5px;
       line-height: 1.25;
-      -webkit-line-clamp: 2;
+      -webkit-line-clamp: 3;
     }
 
     body.home-page #publikacii .h-articles-group > .h-article-list .h-article-meta {
       gap: 4px 6px;
       margin-bottom: 0;
-      font-size: 9.5px;
+      font-size: 11px;
       line-height: 1.2;
     }
 
     body.home-page #publikacii .h-articles-group > .h-article-list .h-meta-author,
     body.home-page #publikacii .h-articles-group > .h-article-list .h-meta-time {
-      font-size: 9.5px;
+      font-size: 11px;
     }
 
     body.home-page #publikacii .h-articles-group > .h-article-list .h-meta-tag {
@@ -423,7 +470,7 @@ const freshArticles: ManifestItem[] = manifest.items
     }
 
     body.home-page #publikacii .h-mobile-lab-shelf .h-featured-series {
-      min-height: 158px;
+      min-height: 176px;
       display: grid;
       grid-template-columns: 106px minmax(0, 1fr);
       border-radius: 15px;
@@ -432,7 +479,7 @@ const freshArticles: ManifestItem[] = manifest.items
     body.home-page #publikacii .h-mobile-lab-shelf .h-featured-img-wrap {
       width: 106px;
       height: 100%;
-      min-height: 158px;
+      min-height: 176px;
     }
 
     body.home-page #publikacii .h-mobile-lab-shelf .h-featured-img-wrap img {
@@ -454,21 +501,23 @@ const freshArticles: ManifestItem[] = manifest.items
     }
 
     body.home-page #publikacii .h-mobile-lab-shelf .h-featured-series-badge {
-      padding: 2px 7px;
-      font-size: 8px;
+      padding: 3px 8px;
+      font-size: 10px;
     }
 
     body.home-page #publikacii .h-mobile-lab-shelf .h-featured-parts {
-      font-size: 9px;
+      font-size: 11px;
     }
 
     body.home-page #publikacii .h-mobile-lab-shelf .h-featured-title {
       margin-bottom: 7px;
       font-size: 17px;
-      line-height: 1.14;
+      line-height: 1.18;
+      hyphens: none;
+      overflow-wrap: normal;
       display: -webkit-box;
       -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
+      -webkit-line-clamp: 3;
       overflow: hidden;
     }
 
@@ -488,7 +537,7 @@ const freshArticles: ManifestItem[] = manifest.items
     }
 
     body.home-page #publikacii .h-mobile-lab-shelf .h-featured-time {
-      font-size: 9px;
+      font-size: 11px;
     }
   }
 
