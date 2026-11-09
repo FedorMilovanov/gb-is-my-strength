@@ -110,8 +110,14 @@ async function inspectViewport(browser, origin, viewport) {
     const cardStyle = getComputedStyle(card);
     const cardRect = card.getBoundingClientRect();
     const shellRect = shell?.getBoundingClientRect() || null;
+    const abstract = card.querySelector('.h-article-abstract');
+    const abstractRect = abstract?.getBoundingClientRect() || null;
     return {
       href: card.getAttribute('href'),
+      abstractDisplay: abstract ? getComputedStyle(abstract).display : 'missing',
+      abstractText: abstract?.textContent?.trim() || '',
+      abstractHeight: abstractRect?.height ?? 0,
+      abstractBottomInset: abstractRect ? cardRect.bottom - abstractRect.bottom : null,
       boxSizing: cardStyle.boxSizing,
       display: cardStyle.display,
       visibility: cardStyle.visibility,
@@ -125,12 +131,22 @@ async function inspectViewport(browser, origin, viewport) {
   const pageGeometry = await page.evaluate(() => ({
     viewportWidth: window.innerWidth,
     scrollWidth: document.documentElement.scrollWidth,
+    featuredCount: document.querySelectorAll('#publikacii .h-featured-shelf--lead > .h-featured-series').length,
+    featuredIntro: document.querySelector('#publikacii .h-home-section-head > p')?.textContent?.trim() || '',
+    editorialCardWidths: [...document.querySelectorAll('#publikacii .h-featured-shelf--lead > .h-featured-series')]
+      .map((element) => Math.round(element.getBoundingClientRect().width)),
   }));
   const screenshot = path.join(REPORT_DIR, `${viewport.name}.png`);
   await page.screenshot({ path: screenshot, fullPage: true });
   await context.close();
 
   assert.ok(cards.length >= 2, `${viewport.name}: expected at least two canonical Refutations cards, got ${cards.length}`);
+  assert.equal(pageGeometry.featuredCount, 3, `${viewport.name}: expected three published editorial projects`);
+  assert.doesNotMatch(pageGeometry.featuredIntro, /Два больших проекта/, `${viewport.name}: stale editorial project count`);
+  if (viewport.width >= 761) {
+    assert.ok(pageGeometry.editorialCardWidths[2] > pageGeometry.editorialCardWidths[0] * 1.5,
+      `${viewport.name}: last editorial card did not use the full row`);
+  }
   assert.deepEqual(pageErrors, [], `${viewport.name}: page errors: ${pageErrors.join('\n')}`);
   assert.ok(pageGeometry.scrollWidth <= pageGeometry.viewportWidth, `${viewport.name}: horizontal overflow ${pageGeometry.scrollWidth} > ${pageGeometry.viewportWidth}`);
   for (const card of cards) {
@@ -141,6 +157,10 @@ async function inspectViewport(browser, origin, viewport) {
     assert.ok(card.cardWidth > 0 && card.cardHeight > 0, `${viewport.name}: ${card.href} has zero geometry`);
     assert.ok(Math.abs(card.cardWidth - card.shellWidth) <= 1, `${viewport.name}: ${card.href} width ${card.cardWidth} differs from shell ${card.shellWidth}`);
     assert.ok(Math.abs(card.cardHeight - card.shellHeight) <= 1, `${viewport.name}: ${card.href} height ${card.cardHeight} differs from shell ${card.shellHeight}`);
+    assert.ok(card.abstractText.length > 50, `${viewport.name}: ${card.href} lost its meaningful abstract`);
+    assert.notEqual(card.abstractDisplay, 'none', `${viewport.name}: ${card.href} abstract is hidden`);
+    assert.ok(card.abstractHeight > 14, `${viewport.name}: ${card.href} abstract has no painted height`);
+    assert.ok(card.abstractBottomInset >= 5, `${viewport.name}: ${card.href} abstract approaches or clips card bottom (${card.abstractBottomInset}px)`);
   }
 
   return {
@@ -166,6 +186,7 @@ async function inspectViewport(browser, origin, viewport) {
     for (const viewport of [
       { name: 'desktop-1440', width: 1440, height: 1000, mobile: false },
       { name: 'mobile-390', width: 390, height: 844, mobile: true },
+      { name: 'mobile-320', width: 320, height: 720, mobile: true },
     ]) {
       report.viewports.push(await inspectViewport(browser, origin, viewport));
     }
