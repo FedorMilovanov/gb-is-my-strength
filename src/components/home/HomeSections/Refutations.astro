@@ -134,7 +134,7 @@
   body.home-page #main-content #razbor .h-refutation-slot {
     position: relative;
     min-width: 0;
-    min-height: 184px;
+    min-height: 204px;
     z-index: 2;
   }
 
@@ -237,7 +237,7 @@
     display: block;
     width: 100%;
     height: 100%;
-    min-height: 184px;
+    min-height: 204px;
     padding: 14px 15px 15px;
     overflow: hidden;
     isolation: isolate;
@@ -584,18 +584,36 @@
       perspective: none;
     }
 
+    /* Mobile: the shell participates in normal document flow so the card
+       grows with its content instead of clipping it inside a fixed hit slot. */
     body.home-page #main-content #razbor .h-refutation-slot {
-      min-height: 188px;
+      min-height: 0;
     }
 
     body.home-page #main-content #razbor .h-refutation-shell {
-      position: absolute;
+      position: relative;
+      inset: auto;
     }
 
     body.home-page #main-content #razbor .h-refutation-slot--left .h-refutation-card,
     body.home-page #main-content #razbor .h-refutation-slot--right .h-refutation-card {
-      min-height: 188px;
+      height: auto;
+      min-height: 0;
       border-radius: 15px;
+    }
+
+    body.home-page #main-content #razbor .h-refutation-inner {
+      min-height: 0;
+    }
+
+    body.home-page #main-content #razbor .h-refutation-card .h-article-abstract {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      overflow: hidden;
+      margin-top: 10px;
+      font-size: 13.5px;
+      line-height: 1.5;
     }
 
     body.home-page #main-content #razbor .h-refutation-shell::before,
@@ -615,11 +633,6 @@
   }
 
   @media (max-width: 460px) {
-    body.home-page #main-content #razbor .h-refutation-slot,
-    body.home-page #main-content #razbor .h-refutation-card {
-      min-height: 224px;
-    }
-
     body.home-page #main-content #razbor .h-refutation-card {
       padding: 13px;
     }
