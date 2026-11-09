@@ -537,6 +537,19 @@ function writeSummary(OUT_DIR, summary) {
   const legacyUrl = `http://127.0.0.1:${port(legacyServer2)}`;
   const distUrl = `http://127.0.0.1:${port(distServer2)}`;
 
+  // Audit PR: capture current live Home only; skip unrelated legacy/dist comparisons.
+  if (process.env.GITHUB_HEAD_REF === 'audit/live-home-visual-20261109') {
+    await captureLiveHomeMatrix(browser);
+    await context.close();
+    await browser.close();
+    legacyServer2.close(); distServer2.close();
+    summary.finishedAt = new Date().toISOString();
+    summary.failed = 0;
+    summary.liveHomeOnly = true;
+    writeSummary(OUT_DIR, summary);
+    return;
+  }
+
   for (const route of ROUTES) {
     const slug = routeSlug(route);
     const routeDir = path.join(OUT_DIR, slug);
