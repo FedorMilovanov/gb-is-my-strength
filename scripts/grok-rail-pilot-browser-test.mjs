@@ -260,7 +260,28 @@ try {
               rowOptics.rows>=2&&rowOptics.multiLines>=1&&
               rowOptics.maxPinOffset<1&&rowOptics.maxArrowOffset<1,rowOptics);
             const readingScrollBefore=await page.evaluate(() => Math.round(scrollY));
-            await page.locator('#hrailLayoutToggle').click();
+            // Owner screenshot: with mismatched 620ms / 520ms fold easing the
+            // toggle's chevron escaped 163px into article whitespace. Sample
+            // real animation frames, not just the final (correct) position.
+            const foldMotion=await page.evaluate(()=>new Promise(resolve=>{
+              const rail=document.querySelector('.hrail--grok');
+              const toggle=document.querySelector('#hrailLayoutToggle');
+              const start=performance.now();
+              let maxOutside=-Infinity,frames=0;
+              toggle.click();
+              const sample=(now)=>{
+                const railEdge=rail.getBoundingClientRect().right;
+                const toggleEdge=toggle.getBoundingClientRect().right;
+                maxOutside=Math.max(maxOutside,toggleEdge-railEdge);
+                frames++;
+                if(now-start>=720)resolve({maxOutside,frames,
+                  railRight:railEdge,toggleRight:toggleEdge});
+                else requestAnimationFrame(sample);
+              };
+              requestAnimationFrame(sample);
+            }));
+            check(name,viewport.id,'fold chevron stays inside the moving rail on every frame',
+              foldMotion.frames>=5&&foldMotion.maxOutside<=2,foldMotion);
             await page.waitForFunction(() => Math.round(document.querySelector('.hrail--grok')?.getBoundingClientRect().width ?? 0) === 68, {timeout:1600});
             const compact=await page.evaluate(()=>{
               const rail=document.querySelector('.hrail--grok'),r=rail.getBoundingClientRect();

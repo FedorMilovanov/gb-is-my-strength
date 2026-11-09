@@ -800,17 +800,18 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       }
     }
   }
-  /* Fixed viewport coordinates for the SAME fold button provide one
-     continuously interpolated path on every engine. Its former flex-parent
-     relocation caused a 100-200px WebKit jump despite FLIP transforms. */
+  /* One fold button, fixed to the viewport but tracking the rail's actual
+     moving edge. Its left/top transition MUST share the rail width's 520ms
+     easing: a slower 620ms toggle left a stray chevron up to 163px outside
+     the collapsed rail in Chromium/WebKit. No clone, forced frame or delay. */
   @media(min-width:1200px){
     .hrail--grok .hrail-layout-toggle {
       position:fixed;
       top:25px;
       left:calc(clamp(292px,22vw,328px) - 52px);
       z-index:3;
-      transition:left .62s cubic-bezier(.45,0,.55,1),
-        top .62s cubic-bezier(.45,0,.55,1),
+      transition:left .52s cubic-bezier(.32,.72,0,1),
+        top .52s cubic-bezier(.32,.72,0,1),
         color .17s ease,background-color .22s ease;
     }
     .hrail--grok.hrail--compact .hrail-layout-toggle {
