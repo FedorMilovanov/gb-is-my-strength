@@ -7,6 +7,10 @@ html[data-gb-article-tooltips-owner="article-inline-tooltip"] .gb-floating-tip {
 }
 
 html[data-gb-article-tooltips-owner="article-inline-tooltip"] .gtip.gb-floating-tip {
+  /* A two-word glossary must not inherit the legacy fixed 380px paper.
+     Rich content can still wrap inside the bounded owner-managed viewport. */
+  width: max-content !important;
+  max-width: min(34rem, calc(100vw - 32px)) !important;
   border-radius: 24px;
 }
 

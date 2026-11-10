@@ -549,6 +549,16 @@ try {
             if(viewport.height <= 420) {
               check(name,viewport.id,'usable short viewport',snapshot.scrollHeight >= 80,snapshot.scrollHeight);
             }
+            // The genuine width animation can finish before the switching
+            // visibility rule has been released. Focus tests must target the
+            // settled, interactable rail rather than a hidden in-flight one.
+            await page.waitForFunction(() => {
+              const rail = document.querySelector('.hrail--grok');
+              const scroll = rail?.querySelector('.hrail-scroll');
+              return rail && !rail.classList.contains('grok-rail-switching') &&
+                scroll && getComputedStyle(scroll).visibility === 'visible' &&
+                !scroll.hasAttribute('inert');
+            }, null, { timeout: 1800 });
             const branch = page.locator('.grok-row--branch').first();
             const button = branch.locator(':scope > .grok-entry [data-grok-toggle]');
             const child = branch.locator('.grok-child-list').first();

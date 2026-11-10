@@ -90,29 +90,48 @@ async function visit(type,engine,route,size,full){
     const rail=p.locator('.hrail--grok');await rail.waitFor();
     const toggle=p.locator('#hrailLayoutToggle');
     await p.evaluate(()=>window.scrollTo(0,2500));
-    await toggle.click();
-    const trace=await p.evaluate(async()=>{
-      const r=document.querySelector('.hrail--grok'),b=document.querySelector('#hrailLayoutToggle'),meta=document.querySelector('.hrail-meta'),bottom=document.querySelector('.hrail-bottom');
-      const state=()=>{const tr=b.getBoundingClientRect();return{t:performance.now(),x:tr.left,y:tr.top,width:r.getBoundingClientRect().width,metaOpacity:Number(getComputedStyle(meta).opacity),bottomOpacity:Number(getComputedStyle(bottom).opacity),phase:r.classList.contains('grok-rail-switching'),scroll:scrollY};};
-      const frames=[state()];for(let i=0;i<55;i++){await new Promise(resolve=>requestAnimationFrame(resolve));frames.push(state());}return frames;
+    // Interrogate the exact CSS transition at deterministic timeline points.
+    // Headless WebKit coalesces requestAnimationFrame callbacks, which made
+    // frame-distance/velocity sampling dependent on machine load. Drive the
+    // canonical CSSTransition objects at known times without replacing
+    // production behavior, then resume and verify a fully settled DOM.
+    const trace=await p.evaluate(()=>{
+      const r=document.querySelector('.hrail--grok'),b=document.querySelector('#hrailLayoutToggle'),meta=document.querySelector('.hrail-meta');
+      const sample=t=>{const tr=b.getBoundingClientRect(),box=r.getBoundingClientRect(),style=getComputedStyle(meta);
+        return {t,x:tr.left,width:box.width,metaOpacity:Number(style.opacity),metaVisibility:style.visibility,
+          switching:r.classList.contains('grok-rail-switching')};};
+      const before=sample(0);
+      b.click();
+      const railAnims=r.getAnimations(),toggleAnims=b.getAnimations();
+      const widthAnim=railAnims.find(a=>a.transitionProperty==='width');
+      const leftAnim=toggleAnims.find(a=>a.transitionProperty==='left');
+      if(!widthAnim||!leftAnim)return {before,missingAnimation:true,frames:[]};
+      const both=[...railAnims,...toggleAnims];
+      for(const a of both)a.pause();
+      const frames=[];
+      for(const t of [0,55,125,250,375,475,520]){
+        for(const a of both)a.currentTime=t;
+        frames.push(sample(t));
+      }
+      // Continue the real CSS animation and preserve the existing controller.
+      for(const a of both){a.currentTime=0;a.play();}
+      return {before,missingAnimation:false,duration:widthAnim.effect.getTiming().duration,frames};
     });
-    const steps=trace.slice(1).map((f,i)=>({dx:f.x-trace[i].x,dt:Math.max(1,f.t-trace[i].t)}));
-    const maxStep=Math.max(...steps.map(s=>Math.abs(s.dx)));
-    const maxVelocity=Math.max(...steps.map(s=>Math.abs(s.dx)/s.dt));
-    // The rail edge and its ONLY fixed toggle share a 520ms easing and must
-    // stay optically locked, not merely below an arbitrary px/ms threshold.
-    // Firefox can produce >2.1 px/ms legitimate easing peaks and WebKit batches
-    // 40-50ms frames. True teleport breaks this 52px geometric invariant or
-    // jumps implausibly fast; ordinary easing cannot.
-    const maxEdgeDrift=Math.max(...trace.map(f=>Math.abs((f.width-f.x)-52)));
-    const movingFrames=steps.filter(s=>s.dx < -0.5).length;
-    const reverseFrames=steps.filter(s=>s.dx > 1).length;
-    const travel=trace[0].x-trace[trace.length-1].x;
+    await p.waitForTimeout(700);
+    const frames=trace.frames||[];
+    const maxEdgeDrift=frames.length?Math.max(...frames.map(f=>Math.abs((f.width-f.x)-52))):Infinity;
+    const monotonic=frames.length===7&&frames.every((f,i)=>!i||
+      (f.width<=frames[i-1].width+.2&&f.x<=frames[i-1].x+.2));
+    const intermediate=frames.filter(f=>f.width>69&&f.width<trace.before.width-1).length;
+    const invisible=frames.length===7&&frames.every(f=>f.switching&&
+      f.metaOpacity<.01&&f.metaVisibility==='hidden');
+    const travel=frames.length?frames[0].width-frames.at(-1).width:0;
     const compact=await rail.evaluate(e=>({mode:e.classList.contains('hrail--compact'),switching:e.classList.contains('grok-rail-switching'),width:e.getBoundingClientRect().width,controls:e.querySelectorAll('#gbFloatingControls').length}));
     add(engine,route,'rail collapses with no teleport and settles',
+      !trace.missingAnimation&&Number(trace.duration)>=500&&
       compact.mode&&!compact.switching&&Math.abs(compact.width-68)<1&&
-      travel>200&&maxEdgeDrift<=2&&reverseFrames===0&&
-      maxVelocity<5,{maxStep,maxVelocity,maxEdgeDrift,movingFrames,reverseFrames,travel,compact});
+      travel>200&&maxEdgeDrift<=2&&monotonic&&intermediate>=4&&invisible,
+      {duration:trace.duration,maxEdgeDrift,monotonic,intermediate,invisible,travel,compact,frames});
     await rail.screenshot({path:path.join(out,engine+'-compact.png')});
     await toggle.click();await p.waitForTimeout(820);
     const restored=await rail.evaluate(e=>({compact:e.classList.contains('hrail--compact'),switching:e.classList.contains('grok-rail-switching'),width:e.getBoundingClientRect().width,controls:document.querySelectorAll('#gbFloatingControls').length}));
@@ -127,13 +146,16 @@ async function visit(type,engine,route,size,full){
  finally{await p.close();}
 }
 for(const [engine,type] of Object.entries({chromium,firefox,webkit})){
+ if(process.env.GB_SUMMARY_ONLY_ENGINE && process.env.GB_SUMMARY_ONLY_ENGINE!==engine)continue;
  const reps=engine==='chromium'?routes:[
   '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/',
   '/articles/dzhon-gill-chast-1-chelovek/',
   '/nagornaya/chast-1/',
  ].filter(x=>routes.includes(x));
  const browser=await type.launch({headless:true});
- for(const route of reps)await visit(browser,engine,route,{width:1440,height:900},reps.length<=3||route.includes('hermenevticheskaya'));
+ const selected=process.env.GB_SUMMARY_ONLY_ROUTE?reps.filter(x=>x.includes(process.env.GB_SUMMARY_ONLY_ROUTE)):reps;
+ for(const route of selected)await visit(browser,engine,route,{width:1440,height:900},selected.length<=3||route.includes('hermenevticheskaya'));
+ if(process.env.GB_SUMMARY_ONLY_ROUTE){await browser.close();continue;}
  await visit(browser,engine,'/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/',{width:390,height:844},false);
  // A search result can link directly to an item inside a closed summary.
  // Initial fragment and subsequent hashchange must expose the target.
@@ -169,4 +191,4 @@ for(const [engine,type] of Object.entries({chromium,firefox,webkit})){
 await new Promise(resolve=>s.close(resolve));
 fs.writeFileSync(path.join(out,'checks.json'),JSON.stringify({routes,checks},null,2),'utf8');
 console.log(JSON.stringify({eligibleRoutes:routes.length,checks:checks.length,passed:checks.filter(x=>x.pass).length,failed:checks.filter(x=>!x.pass).slice(0,15)},null,2));
-if(checks.some(x=>!x.pass))process.exitCode=1;
+if(!checks.length||checks.some(x=>!x.pass))process.exitCode=1;

@@ -826,7 +826,11 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
      cloned buttons or competing controller are introduced. */
   @media(min-width:1200px){
     .hrail--grok.grok-rail-switching :is(.hrail-meta,.hrail-toch,.hrail-scroll) {
+      /* The transition may start on the next painted frame. Suppress the
+         previous text immediately, without fading clipped glyph fragments. */
       opacity:0;
+      visibility:hidden;
+      transition:none;
       pointer-events:none;
     }
     .hrail--grok .hrail-bottom {
