@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - 'src/components/article-pilots/**'
-      - 'src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki.astro'
+      - 'src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/**'
       - 'scripts/grok-rail-pilot-browser-test.mjs'
       - 'scripts/grok-reader-overlay-lifecycle-browser-test.mjs'
       - 'scripts/grok-menu-motion-layout-browser-contract.mjs'
@@ -24,13 +24,16 @@ on:
       - 'scripts/reader-ux-stability-browser-contract.mjs'
       - 'css/highlights-runtime.css'
       - 'src/runtime/article-tooltips.css'
+      - 'src/runtime/article-tooltips.js'
+      - 'scripts/hermenevtika-regression-guard.mjs'
+      - 'scripts/article-tooltip-pointer-ownership-browser-contract.cjs'
       - '.github/workflows/deploy.yml'
       - '.github/workflows/grok-hermeneutics-pilot.yml'
   push:
     branches: [main]
     paths:
       - 'src/components/article-pilots/**'
-      - 'src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki.astro'
+      - 'src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/**'
       - 'scripts/grok-rail-pilot-browser-test.mjs'
       - 'scripts/grok-reader-overlay-lifecycle-browser-test.mjs'
       - 'scripts/grok-menu-motion-layout-browser-contract.mjs'
@@ -49,6 +52,9 @@ on:
       - 'scripts/reader-ux-stability-browser-contract.mjs'
       - 'css/highlights-runtime.css'
       - 'src/runtime/article-tooltips.css'
+      - 'src/runtime/article-tooltips.js'
+      - 'scripts/hermenevtika-regression-guard.mjs'
+      - 'scripts/article-tooltip-pointer-ownership-browser-contract.cjs'
       - '.github/workflows/deploy.yml'
       - '.github/workflows/grok-hermeneutics-pilot.yml'
   workflow_dispatch:
@@ -95,6 +101,8 @@ jobs:
           node --check scripts/grok-reader-typography-browser-contract.mjs
           node --check scripts/grok-summary-rail-browser-contract.mjs
           node --check scripts/reader-ux-stability-browser-contract.mjs
+          node --check scripts/hermenevtika-regression-guard.mjs
+          node --check scripts/article-tooltip-pointer-ownership-browser-contract.cjs
           node --check scripts/reader-summary-first-paint-browser-contract.mjs
           node --check scripts/grok-stage2-release-route-proof.mjs
           node --check scripts/grok-stage2-theme-print-audit.mjs
@@ -146,6 +154,9 @@ jobs:
       - name: Browser proof — one ReaderState, compact fold, intrinsic tips and stable Library tabs
         run: node scripts/reader-ux-stability-browser-contract.mjs
 
+      - name: Browser proof — real pointer hover versus reflow ghosts in three engines
+        run: node scripts/article-tooltip-pointer-ownership-browser-contract.cjs
+
       - name: Browser proof — 6 mobile route families across three engines and five widths
         run: node scripts/reader-mobile-sitewide-audit.mjs
 
@@ -180,6 +191,7 @@ jobs:
             reports/grok-typography/
             reports/grok-summary-motion/
             reports/reader-ux-stability/
+            reports/article-tooltip-pointer-ownership/
             reports/reader-summary-first-paint/
             reports/grok-menu-motion/
             reports/reader-focus-sitewide/

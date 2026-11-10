@@ -79,6 +79,7 @@ function sourceContracts() {
     ['HGT-S33', 'desktop overflow budget may shrink below the historical 96px floor', runtime.includes('const height = Math.max(1, Math.floor(maxHeight));') && runtime.includes('applyOverflow(tip, Math.min(available, viewportMax))') && !runtime.includes('Math.min(Math.max(MIN_SCROLL_HEIGHT, available), viewportMax)')],
     ['HGT-S34', 'popup geometry transport stays focus-owned instead of locator-click actionability', popupHelper.includes('await page.mouse.move(1, 1);') && popupHelper.includes('await trigger.blur();') && popupHelper.includes('await trigger.focus();') && !popupHelper.includes('trigger.click()')],
     ['HGT-S35', 'non-scrolling evidence follows computed overflow ownership instead of raw box-metric slack', guard.includes("const scrollingEnabled = (state) => Boolean(state) && ['auto', 'scroll'].includes(state.overflowY);") && guard.includes('!scrollingEnabled(mediumMobile)') && guard.includes('!scrollingEnabled(expandedFlip)')],
+    ['HGT-S36', 'real pointermove owns hover; pointerenter cannot trigger ghost', runtime.includes("anchor.addEventListener('pointermove', openHover)") && !runtime.includes("anchor.addEventListener('pointerenter', openHover)")],
   ];
   assertions.forEach(([id, description, pass]) => record(id, description, pass, null, 'source'));
 }
@@ -322,6 +323,7 @@ async function popupContracts(page) {
   await waitForOwner(page);
   await twoFrames(page);
 
+
   const ownerState = await page.evaluate((owned) => ({
     globalVersion: window.GBArticleTooltips?.version || 0,
     globalOwner: window.GBArticleTooltips?.owner || null,
@@ -461,6 +463,14 @@ async function popupContracts(page) {
     element.style.setProperty('z-index', '2147483000', 'important');
   }, targetTop);
   await twoFrames(page);
+  const flipHit = await glossary.evaluate(element => {
+    const rect = element.getBoundingClientRect();
+    const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+    return { targetHit: hit === element || element.contains(hit),
+      unrelatedTips: [...document.querySelectorAll('.gb-floating-tip.is-open')].map(t => t.className) };
+  });
+  record('HGT-T34', 'viewport reflow does not activate unrelated Scripture tooltip over glossary',
+    flipHit.targetHit && flipHit.unrelatedTips.length === 0, flipHit, 'tooltip');
   await glossary.click();
   await page.waitForSelector('.gtip.gb-floating-tip.is-open', { state: 'visible', timeout: 3000 });
   await twoFrames(page);
@@ -514,6 +524,14 @@ async function popupContracts(page) {
     return { requestedBudget: budget, anchorTop: rect.top, anchorBottom: rect.bottom, anchorHeight: rect.height, viewportHeight: window.innerHeight };
   }, { top: 16 + 10 + tinyBudget, budget: tinyBudget });
   await twoFrames(page);
+  const tinyHit = await glossary.evaluate(element => {
+    const rect = element.getBoundingClientRect();
+    const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+    return { targetHit: hit === element || element.contains(hit),
+      unrelatedTips: [...document.querySelectorAll('.gb-floating-tip.is-open')].map(t => t.className) };
+  });
+  record('HGT-T35', 'tiny viewport does not produce a ghost tooltip intercepting glossary',
+    tinyHit.targetHit && tinyHit.unrelatedTips.length === 0, tinyHit, 'tooltip');
   await glossary.click();
   await page.waitForSelector('.gtip.gb-floating-tip.is-open', { state: 'visible', timeout: 3000 });
   await twoFrames(page);
@@ -558,6 +576,21 @@ async function popupContracts(page) {
   });
   await page.setViewportSize({ width: 1366, height: 900 });
   await twoFrames(page);
+
+  // A physical mouse move (unlike layout-induced pointerenter) must still
+  // open the tooltip. Moving away must dismiss it normally.
+  await page.mouse.move(1, 1);
+  const hoveredScripture = page.locator('.bref[data-ref]').first();
+  await hoveredScripture.hover();
+  await page.waitForSelector('.btip.gb-floating-tip.is-open', { state: 'visible', timeout: 3500 });
+  const activeHover = await page.evaluate(() => ({
+    open: document.querySelectorAll('.btip.gb-floating-tip.is-open').length,
+    owner: document.documentElement.dataset.gbArticleTooltipsOwner,
+  }));
+  record('HGT-T36', 'actual mouse movement still opens one Scripture tooltip', activeHover.open === 1 && activeHover.owner === OWNER, activeHover, 'tooltip');
+  await page.mouse.move(1, 1);
+  await page.waitForFunction(() => !document.querySelector('.gb-floating-tip.is-open'), null, { timeout: 2400 });
+  record('HGT-T37', 'moving mouse away dismisses hover popup without sticky ghost', true, null, 'tooltip');
 }
 
 sourceContracts();

@@ -11,6 +11,9 @@ const MIN_SCROLL_HEIGHT = 96;
 let active = null;
 let closeTimer = 0;
 let pointerEpoch = 0;
+// pointerenter can be emitted by scrolling/reflow without physical movement.
+// Only an actual document pointermove may activate a hover popup.
+let lastActualPointerMoveEvent = null;
 let pointerX = null;
 let pointerY = null;
 // Generated Scripture cards live beside their trigger until portaled to body;
@@ -86,7 +89,10 @@ function recordPointerMovement(event) {
     pointerX = x;
     pointerY = y;
   }
-  if (moved) pointerEpoch += 1;
+  if (moved) {
+    pointerEpoch += 1;
+    lastActualPointerMoveEvent = event;
+  }
   return moved;
 }
 
@@ -523,6 +529,12 @@ function initializeAnchor(anchor) {
 
   const openHover = (event) => {
     if (event.pointerType === 'touch' || mobileMode()) return;
+    // A stationary cursor under a resized/scrolled anchor produces trusted
+    // pointerenter + mouseenter with movementX/Y = 0. The global capture
+    // listener records real pointermove before this target handler runs.
+    // Never activate a ghost popup from an element moving under the cursor.
+    if (lastActualPointerMoveEvent !== event) return;
+    if (active?.anchor === anchor) return;
     openTooltip(anchor, 'hover');
   };
   const leaveHover = (event) => {
@@ -535,8 +547,12 @@ function initializeAnchor(anchor) {
     scheduleClose();
   };
 
-  anchor.addEventListener('pointerenter', openHover);
-  anchor.addEventListener('mouseenter', openHover);
+  anchor.addEventListener('pointermove', openHover);
+  if (!window.PointerEvent) {
+    anchor.addEventListener('mousemove', (event) => {
+      if (!mobileMode() && (event.movementX || event.movementY)) openTooltip(anchor, 'hover');
+    });
+  }
   anchor.addEventListener('pointerleave', leaveHover);
   anchor.addEventListener('mouseleave', leaveHover);
   anchor.addEventListener('focus', () => {
