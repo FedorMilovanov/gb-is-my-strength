@@ -21,6 +21,9 @@ on:
       - 'scripts/grok-stage2-*.mjs'
       - 'scripts/site-sections-menu-filter-browser-contract.mjs'
       - 'scripts/reader-library-premium-browser-contract.cjs'
+      - 'scripts/reader-ux-stability-browser-contract.mjs'
+      - 'css/highlights-runtime.css'
+      - 'src/runtime/article-tooltips.css'
       - '.github/workflows/deploy.yml'
       - '.github/workflows/grok-hermeneutics-pilot.yml'
   push:
@@ -43,6 +46,9 @@ on:
       - 'scripts/reader-mobile-sitewide-audit.mjs'
       - 'scripts/grok-stage2-*.mjs'
       - 'scripts/site-sections-menu-filter-browser-contract.mjs'
+      - 'scripts/reader-ux-stability-browser-contract.mjs'
+      - 'css/highlights-runtime.css'
+      - 'src/runtime/article-tooltips.css'
       - '.github/workflows/deploy.yml'
       - '.github/workflows/grok-hermeneutics-pilot.yml'
   workflow_dispatch:
@@ -88,6 +94,7 @@ jobs:
           node --check scripts/grok-toc-keyboard-browser-contract.mjs
           node --check scripts/grok-reader-typography-browser-contract.mjs
           node --check scripts/grok-summary-rail-browser-contract.mjs
+          node --check scripts/reader-ux-stability-browser-contract.mjs
           node --check scripts/reader-summary-first-paint-browser-contract.mjs
           node --check scripts/grok-stage2-release-route-proof.mjs
           node --check scripts/grok-stage2-theme-print-audit.mjs
@@ -136,6 +143,9 @@ jobs:
           node scripts/reader-controls-a11y-browser-contract.mjs
           node scripts/reader-library-premium-browser-contract.cjs
 
+      - name: Browser proof — one ReaderState, compact fold, intrinsic tips and stable Library tabs
+        run: node scripts/reader-ux-stability-browser-contract.mjs
+
       - name: Browser proof — 6 mobile route families across three engines and five widths
         run: node scripts/reader-mobile-sitewide-audit.mjs
 
@@ -169,6 +179,7 @@ jobs:
             reports/grok-stage2/
             reports/grok-typography/
             reports/grok-summary-motion/
+            reports/reader-ux-stability/
             reports/reader-summary-first-paint/
             reports/grok-menu-motion/
             reports/reader-focus-sitewide/
