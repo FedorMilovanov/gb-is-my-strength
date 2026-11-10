@@ -23,15 +23,28 @@ function collect(dir){
  }
  return all;
 }
-const srcFiles=collect(path.join(ROOT,'src')).filter(p=>/\.(?:astro|ts|tsx|js|mjs|json)$/.test(p));
+const srcFiles=collect(path.join(ROOT,'src')).filter(p=>/\.(?:astro|mdx|ts|tsx|js|mjs|json)$/.test(p));
+/* Current publication shadows are deployed HTML, not archival audit snapshots. */
+const publishedSources=['baptisty-rossii','_build-tools/konfessii-baptizm','sitemap.xml'];
+const publishedFiles=publishedSources.flatMap(rel=>{
+ const p=path.join(ROOT,rel);
+ if(!fs.existsSync(p))return [];
+ return fs.statSync(p).isDirectory()?collect(p).filter(f=>/\.(?:html|xml|tsx|ts|json)$/.test(f)):[p];
+});
 const forbiddenBaptist=/baptisty-rossii\/cover-(?:landing|\d\d-[a-z-]+)\.(?:svg|webp)/;
 const forbiddenHeart=/og-chto-bibliya-nazyvaet-serdcem(?:-600w)?\.(?:jpg|webp)/;
 let heroSvgInspected=0;
-for(const p of srcFiles){
+for(const p of srcFiles.concat(publishedFiles)){
  const txt=fs.readFileSync(p,'utf8');
  const rel=path.relative(ROOT,p);
  if(forbiddenBaptist.test(txt))errors.push(rel+': retired Baptist title-card artwork');
  if(forbiddenHeart.test(txt))errors.push(rel+': retired heart text-card artwork');
+ // Published HTML and image-bearing components may not silently replace Cyrillic with '?'.
+ for(const tag of txt.matchAll(/<img\b[^>]{0,2400}>/gs)){
+   if(/baptisty-rossii\/archival-/.test(tag[0])&&/\balt="[^"]*\?{3,}[^"]*"/.test(tag[0])){
+     errors.push(rel+': archival alt text is corrupt');
+   }
+ }
  if(p.endsWith('.astro') && p.includes('baptisty-rossii')){
    for(const image of txt.matchAll(/<img\b[^>]*archival-[^>]*>/g)){
      const alt=image[0].match(/\balt="([^"]*)"/);
