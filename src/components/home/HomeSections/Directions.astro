@@ -716,43 +716,151 @@ const routes = [
     }
   }
 
+  /* At touch and narrow-tablet widths this is a navigation list, not a
+     carousel. A single route owner controls geometry, label measure, artwork
+     and the focus/hover treatment. Every destination is fully visible. */
   @media (max-width: 900px) {
     body.home-page #main-content .h-home-routes {
-      display: flex;
-      min-height: 420px;
-      overflow-x: auto;
-      overflow-y: hidden;
-      scroll-snap-type: x mandatory;
-      scroll-padding-inline: 0;
-      overscroll-behavior-inline: contain;
-      scrollbar-width: thin;
-      scrollbar-color: color-mix(in srgb, var(--h-gold) 48%, var(--h-border)) transparent;
-      touch-action: pan-x;
-    }
-
-    body.home-page #main-content .h-home-routes::-webkit-scrollbar {
-      height: 4px;
-    }
-
-    body.home-page #main-content .h-home-routes::-webkit-scrollbar-track {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 10px;
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
       background: transparent;
+      box-shadow: none;
+      overflow: visible;
+      scroll-snap-type: none;
+      touch-action: auto;
     }
 
-    body.home-page #main-content .h-home-routes::-webkit-scrollbar-thumb {
-      border-radius: 999px;
-      background: color-mix(in srgb, var(--h-gold) 44%, var(--h-border));
+    html.dark body.home-page #main-content .h-home-routes {
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    body.home-page #main-content .h-home-route__divider {
+      display: none;
     }
 
     body.home-page #main-content .h-home-route {
-      flex: 0 0 min(82vw, 284px);
-      min-height: 420px;
-      grid-template-rows: auto minmax(176px, 1fr) auto auto;
-      scroll-snap-align: start;
-      scroll-snap-stop: always;
+      display: grid;
+      grid-template-columns: 78px minmax(0, 1fr) 23px;
+      grid-template-rows: minmax(0, 1fr);
+      align-items: center;
+      gap: 12px;
+      min-height: 112px;
+      padding: 14px 15px;
+      border: 1px solid var(--h-border-strong);
+      border-radius: 17px;
+      background: var(--h-surface-solid);
+      box-shadow: 0 12px 34px -31px rgba(38, 32, 23, .32);
+      overflow: hidden;
+      scroll-snap-align: none;
+      filter: none;
+    }
+
+    html.dark body.home-page #main-content .h-home-route {
+      border-color: color-mix(in srgb, var(--h-gold) 21%, var(--h-border));
+      background: linear-gradient(138deg, rgba(20, 39, 39, .96), rgba(10, 25, 27, .98));
+      box-shadow: 0 14px 36px -32px rgba(0, 0, 0, .9);
+    }
+
+    body.home-page #main-content .h-home-route > .h-home-route__index {
+      position: absolute;
+      top: 10px;
+      right: 13px;
+      font-size: 9px;
+      opacity: .52;
     }
 
     body.home-page #main-content .h-home-route__glyph {
-      min-height: 176px;
+      grid-column: 1;
+      grid-row: 1;
+      width: 78px;
+      min-height: 78px;
+      height: 78px;
+      margin: 0;
+      justify-self: center;
+      align-self: center;
+    }
+
+    body.home-page #main-content .h-route-object {
+      width: 100%;
+      max-width: 78px;
+      max-height: 78px;
+      object-fit: contain;
+    }
+
+    body.home-page #main-content .h-home-route__copy {
+      grid-column: 2;
+      grid-row: 1;
+      min-width: 0;
+      padding: 0;
+      align-self: center;
+    }
+
+    body.home-page #main-content .h-home-route__eyebrow {
+      margin-bottom: 5px;
+      font-size: 10px;
+      letter-spacing: .1em;
+      line-height: 1.2;
+      white-space: normal;
+      overflow-wrap: normal;
+      word-break: normal;
+      hyphens: none;
+    }
+
+    body.home-page #main-content .h-home-route__copy strong {
+      margin-bottom: 5px;
+      font-size: 19px;
+      line-height: 1.13;
+      white-space: normal;
+      overflow-wrap: normal;
+      word-break: normal;
+      hyphens: none;
+    }
+
+    body.home-page #main-content .h-home-route__copy > span:last-child {
+      max-width: none;
+      font-size: 13px;
+      line-height: 1.38;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    body.home-page #main-content .h-home-route__arrow {
+      grid-column: 3;
+      grid-row: 1;
+      position: relative;
+      justify-self: center;
+      align-self: center;
+      margin: 14px 0 0;
+      font-size: 18px;
+      opacity: .75;
+    }
+
+    body.home-page #main-content .h-home-route:focus-visible {
+      outline: 2px solid var(--h-accent);
+      outline-offset: 3px;
+    }
+
+    body.home-page #main-content .h-home-route:focus-visible .h-home-route__surface {
+      box-shadow: inset 0 0 0 2px var(--h-accent);
+    }
+
+    body.home-page #main-content .h-home-route[data-home-route="articles"],
+    body.home-page #main-content .h-home-route[data-home-route="series"],
+    body.home-page #main-content .h-home-route[data-home-route="biographies"],
+    body.home-page #main-content .h-home-route[data-home-route="maps"],
+    body.home-page #main-content .h-home-route[data-home-route="confessions"] {
+      --route-object-y: 0px;
+      --route-object-scale: 1;
+      --route-object-hover-scale: 1.025;
     }
   }
 
@@ -780,155 +888,69 @@ const routes = [
       display: none;
     }
 
-    /* Mobile showcase shelf: one compact vertical card per snap. The archival
-       object leads, copy sits below it, and a narrow next-card peek preserves
-       discoverability without clipping neighbouring text. */
-    body.home-page #main-content .h-home-routes {
-      min-height: 0;
-      border-radius: 18px;
-      padding: 8px;
-      gap: 0;
-      scroll-padding-inline: 8px;
-    }
-
-    /* Keep the canonical 1px dividers measurable on mobile while treating
-       them as quiet shelf seams. The 4px side margins replace flex gap so the
-       next card can still peek without exposing clipped copy. */
-    body.home-page #main-content .h-home-route__divider {
-      display: block;
-      flex: 0 0 1px;
-      width: 1px;
-      min-width: 1px;
-      margin-inline: 4px;
-      align-self: stretch;
-      opacity: .45;
-    }
-
     body.home-page #main-content .h-home-route {
-      flex: 0 0 calc(100% - 26px);
-      min-height: 236px;
-      grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: auto 124px auto auto;
-      align-content: start;
-      padding: 14px 18px 16px;
-      border-radius: 14px;
-      scroll-snap-align: start;
-      scroll-snap-stop: always;
+      grid-template-columns: 70px minmax(0, 1fr) 20px;
+      gap: 10px;
+      min-height: 106px;
+      padding: 12px 13px;
     }
 
     body.home-page #main-content .h-home-route__glyph {
-      width: 178px;
-      min-height: 124px;
-      height: 124px;
-      justify-self: center;
-      margin: 0 auto 8px;
+      width: 70px;
+      height: 72px;
+      min-height: 72px;
     }
 
     body.home-page #main-content .h-route-object {
-      width: 178px;
-      max-width: 178px;
-      max-height: 124px;
-    }
-
-    /* Mobile-only optical compensation for transparent PNG margins. */
-    body.home-page #main-content .h-home-route[data-home-route="articles"] {
-      --route-object-scale: 1.30;
-      --route-object-hover-scale: 1.306;
-      --route-object-y: 0px;
-    }
-
-    body.home-page #main-content .h-home-route[data-home-route="series"] {
-      --route-object-scale: .96;
-      --route-object-hover-scale: .966;
-      --route-object-y: 0px;
-    }
-
-    body.home-page #main-content .h-home-route[data-home-route="biographies"] {
-      --route-object-scale: .98;
-      --route-object-hover-scale: .986;
-      --route-object-y: 0px;
-    }
-
-    body.home-page #main-content .h-home-route[data-home-route="maps"] {
-      --route-object-scale: 1.05;
-      --route-object-hover-scale: 1.056;
-      --route-object-y: 0px;
-    }
-
-    body.home-page #main-content .h-home-route[data-home-route="confessions"] {
-      --route-object-scale: .94;
-      --route-object-hover-scale: .946;
-      --route-object-y: 0px;
-    }
-
-    body.home-page #main-content .h-home-route__index {
-      font-size: 8px;
-      letter-spacing: .22em;
-    }
-
-    body.home-page #main-content .h-home-route__eyebrow {
-      margin-bottom: 6px;
-      font-size: 8px;
-      letter-spacing: .16em;
+      max-width: 70px;
+      max-height: 72px;
     }
 
     body.home-page #main-content .h-home-route__copy strong {
-      margin-bottom: 6px;
-      font-size: 1rem;
-      line-height: 1.12;
+      font-size: 17px;
     }
 
-    body.home-page #main-content .h-home-route__copy > span:last-child {
-      max-width: 100%;
-      font-size: 12px;
-      line-height: 1.45;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    body.home-page #main-content .h-home-route__arrow {
-      margin-top: 8px;
-      font-size: 16px;
-    }
-
-    /* CTA sits close under the shelf, not in a separate desert. */
     body.home-page #main-content .h-home-gateway__footer {
       justify-content: flex-end;
       gap: 12px;
-      padding-top: 12px;
-      font-size: 8px;
+      padding-top: 14px;
+      font-size: 10px;
     }
 
     body.home-page #main-content .h-home-gateway__footer > span {
       display: none;
     }
-
-    html.dark body.home-page #main-content .h-home-routes {
-      background:
-        radial-gradient(130% 65% at 50% -18%, rgba(75, 187, 198, .05), transparent 68%),
-        linear-gradient(180deg, rgba(15, 29, 29, .92), rgba(8, 19, 19, .96));
-    }
-
-    html.dark body.home-page #main-content .h-route-object {
-      filter:
-        saturate(.98)
-        brightness(.94)
-        contrast(1.025)
-        drop-shadow(0 12px 15px rgba(0, 0, 0, .22))
-        drop-shadow(0 3px 4px rgba(0, 0, 0, .17));
-    }
   }
 
   @media (max-width: 340px) {
-    body.home-page #main-content .h-home-routes {
-      border-radius: 16px;
+    body.home-page #main-content .h-home-route {
+      grid-template-columns: 56px minmax(0, 1fr) 18px;
+      gap: 8px;
+      min-height: 104px;
+      padding: 11px;
     }
 
-    body.home-page #main-content .h-home-route {
-      flex-basis: calc(100% - 24px);
-      padding-inline: 15px;
+    body.home-page #main-content .h-home-route__glyph {
+      width: 56px;
+      height: 64px;
+      min-height: 64px;
+    }
+
+    body.home-page #main-content .h-route-object {
+      max-width: 56px;
+      max-height: 64px;
+    }
+
+    body.home-page #main-content .h-home-route__eyebrow {
+      font-size: 9.5px;
+    }
+
+    body.home-page #main-content .h-home-route__copy strong {
+      font-size: 16px;
+    }
+
+    body.home-page #main-content .h-home-route__copy > span:last-child {
+      font-size: 12px;
     }
   }
 

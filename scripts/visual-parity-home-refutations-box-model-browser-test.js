@@ -101,6 +101,17 @@ async function inspectViewport(browser, origin, viewport) {
   });
 
   await page.goto(`${origin}/`, { waitUntil: 'networkidle' });
+  if (viewport.dark) {
+    await page.locator('#themeToggle').click();
+    assert.equal(await page.evaluate(() => document.documentElement.classList.contains('dark')), true,
+      `${viewport.name}: dark-theme toggle failed`);
+  }
+  // All four native Home surfaces must actually paint, including lazy-loaded
+  // series art and the five directions in their compact navigation mode.
+  await page.locator('#issledovat').scrollIntoViewIfNeeded();
+  for (const card of await page.locator('#publikacii .h-mobile-lab-shelf .h-featured-series').all()) {
+    await card.scrollIntoViewIfNeeded();
+  }
   const section = page.locator('#razbor');
   await section.scrollIntoViewIfNeeded();
   await page.waitForTimeout(250);
@@ -110,8 +121,14 @@ async function inspectViewport(browser, origin, viewport) {
     const cardStyle = getComputedStyle(card);
     const cardRect = card.getBoundingClientRect();
     const shellRect = shell?.getBoundingClientRect() || null;
+    const abstract = card.querySelector('.h-article-abstract');
+    const abstractRect = abstract?.getBoundingClientRect() || null;
     return {
       href: card.getAttribute('href'),
+      abstractDisplay: abstract ? getComputedStyle(abstract).display : 'missing',
+      abstractText: abstract?.textContent?.trim() || '',
+      abstractHeight: abstractRect?.height ?? 0,
+      abstractBottomInset: abstractRect ? cardRect.bottom - abstractRect.bottom : null,
       boxSizing: cardStyle.boxSizing,
       display: cardStyle.display,
       visibility: cardStyle.visibility,
@@ -125,12 +142,97 @@ async function inspectViewport(browser, origin, viewport) {
   const pageGeometry = await page.evaluate(() => ({
     viewportWidth: window.innerWidth,
     scrollWidth: document.documentElement.scrollWidth,
+    featuredCount: document.querySelectorAll('#publikacii .h-featured-shelf--lead > .h-featured-series').length,
+    featuredIntro: document.querySelector('#publikacii .h-home-section-head > p')?.textContent?.trim() || '',
+    editorialCardWidths: [...document.querySelectorAll('#publikacii .h-featured-shelf--lead > .h-featured-series')]
+      .map((element) => Math.round(element.getBoundingClientRect().width)),
   }));
+  const homeSurfaces = await page.evaluate(() => {
+    const routes = document.querySelector('#issledovat .h-home-routes');
+    const routeCards = [...(routes?.querySelectorAll('.h-home-route') || [])];
+    const rect = (element) => element?.getBoundingClientRect();
+    const series = [...document.querySelectorAll('#publikacii .h-mobile-lab-shelf .h-featured-series')];
+    const leadLast = document.querySelector('#publikacii .h-featured-shelf--lead > .h-featured-series:last-child');
+    const getImageCoverage = (card) => {
+      const wrap = card?.querySelector('.h-featured-img-wrap');
+      const img = wrap?.querySelector('img');
+      const box = rect(wrap);
+      const art = rect(img);
+      return {
+        wrapWidth: box?.width || 0,
+        wrapHeight: box?.height || 0,
+        imageWidth: art?.width || 0,
+        imageHeight: art?.height || 0,
+        loaded: Boolean(img?.complete && img?.naturalWidth),
+      };
+    };
+    return {
+      routesDisplay: routes ? getComputedStyle(routes).display : 'missing',
+      routesClientWidth: routes?.clientWidth || 0,
+      routesScrollWidth: routes?.scrollWidth || 0,
+      directions: routeCards.map((card) => {
+        const label = card.querySelector('.h-home-route__eyebrow');
+        const title = card.querySelector('.h-home-route__copy strong');
+        const box = rect(card);
+        const copy = rect(card.querySelector('.h-home-route__copy'));
+        return {
+          href: card.getAttribute('href'),
+          width: box?.width || 0,
+          height: box?.height || 0,
+          left: box?.left || 0,
+          right: box?.right || 0,
+          copyRight: copy?.right || 0,
+          eyebrowFontSize: label ? parseFloat(getComputedStyle(label).fontSize) : 0,
+          titleFontSize: title ? parseFloat(getComputedStyle(title).fontSize) : 0,
+        };
+      }),
+      futureSeries: series.map(getImageCoverage),
+      leadLastArt: getImageCoverage(leadLast),
+    };
+  });
   const screenshot = path.join(REPORT_DIR, `${viewport.name}.png`);
   await page.screenshot({ path: screenshot, fullPage: true });
   await context.close();
 
   assert.ok(cards.length >= 2, `${viewport.name}: expected at least two canonical Refutations cards, got ${cards.length}`);
+  assert.equal(pageGeometry.featuredCount, 3, `${viewport.name}: expected three published editorial projects`);
+  assert.doesNotMatch(pageGeometry.featuredIntro, /Два больших проекта/, `${viewport.name}: stale editorial project count`);
+  if (viewport.width >= 761) {
+    assert.ok(pageGeometry.editorialCardWidths[2] > pageGeometry.editorialCardWidths[0] * 1.5,
+      `${viewport.name}: last editorial card did not use the full row`);
+  }
+  assert.equal(homeSurfaces.directions.length, 5, `${viewport.name}: five library directions required`);
+  assert.equal(homeSurfaces.futureSeries.length, 3, `${viewport.name}: three future series required`);
+  if (viewport.width <= 900) {
+    assert.equal(homeSurfaces.routesDisplay, 'grid', `${viewport.name}: mobile directions must use one stable list, not a carousel`);
+    assert.ok(homeSurfaces.routesScrollWidth <= homeSurfaces.routesClientWidth + 1,
+      `${viewport.name}: directions have hidden horizontal scrolling`);
+    for (const item of homeSurfaces.directions) {
+      assert.ok(item.height >= 88 && item.height <= 165,
+        `${viewport.name}: ${item.href} has disproportionate list height ${item.height}`);
+      assert.ok(item.eyebrowFontSize >= 9.4 && item.titleFontSize >= 15.5,
+        `${viewport.name}: ${item.href} has unreadable typography ${item.eyebrowFontSize}/${item.titleFontSize}`);
+      assert.ok(item.width <= viewport.width && item.copyRight <= item.right + 1,
+        `${viewport.name}: ${item.href} text clips beyond its card`);
+    }
+    for (let index = 1; index < homeSurfaces.directions.length; index++) {
+      assert.ok(homeSurfaces.directions[index].left >= homeSurfaces.directions[index - 1].left - 1,
+        `${viewport.name}: directions are not full-width stacked entries`);
+    }
+  }
+  for (const [index, art] of homeSurfaces.futureSeries.entries()) {
+    assert.ok(art.loaded && art.wrapWidth > 70 && art.wrapHeight > 100,
+      `${viewport.name}: future-series ${index} image failed to load/size`);
+    if (viewport.width <= 760) {
+      assert.ok(art.imageHeight >= art.wrapHeight - 2,
+        `${viewport.name}: future-series ${index} image left an empty strip (${art.imageHeight}/${art.wrapHeight})`);
+    }
+  }
+  if (viewport.width >= 761) {
+    assert.ok(homeSurfaces.leadLastArt.loaded
+      && homeSurfaces.leadLastArt.imageHeight >= homeSurfaces.leadLastArt.wrapHeight - 2,
+      `${viewport.name}: full-row editorial photo does not fill its image track`);
+  }
   assert.deepEqual(pageErrors, [], `${viewport.name}: page errors: ${pageErrors.join('\n')}`);
   assert.ok(pageGeometry.scrollWidth <= pageGeometry.viewportWidth, `${viewport.name}: horizontal overflow ${pageGeometry.scrollWidth} > ${pageGeometry.viewportWidth}`);
   for (const card of cards) {
@@ -141,12 +243,17 @@ async function inspectViewport(browser, origin, viewport) {
     assert.ok(card.cardWidth > 0 && card.cardHeight > 0, `${viewport.name}: ${card.href} has zero geometry`);
     assert.ok(Math.abs(card.cardWidth - card.shellWidth) <= 1, `${viewport.name}: ${card.href} width ${card.cardWidth} differs from shell ${card.shellWidth}`);
     assert.ok(Math.abs(card.cardHeight - card.shellHeight) <= 1, `${viewport.name}: ${card.href} height ${card.cardHeight} differs from shell ${card.shellHeight}`);
+    assert.ok(card.abstractText.length > 50, `${viewport.name}: ${card.href} lost its meaningful abstract`);
+    assert.notEqual(card.abstractDisplay, 'none', `${viewport.name}: ${card.href} abstract is hidden`);
+    assert.ok(card.abstractHeight > 14, `${viewport.name}: ${card.href} abstract has no painted height`);
+    assert.ok(card.abstractBottomInset >= 5, `${viewport.name}: ${card.href} abstract approaches or clips card bottom (${card.abstractBottomInset}px)`);
   }
 
   return {
     viewport,
     cards,
     pageGeometry,
+    homeSurfaces,
     pageErrors,
     consoleErrors,
     screenshot: path.relative(ROOT, screenshot),
@@ -165,7 +272,11 @@ async function inspectViewport(browser, origin, viewport) {
   try {
     for (const viewport of [
       { name: 'desktop-1440', width: 1440, height: 1000, mobile: false },
+      { name: 'desktop-1440-dark', width: 1440, height: 1000, mobile: false, dark: true },
+      { name: 'tablet-768', width: 768, height: 960, mobile: true },
       { name: 'mobile-390', width: 390, height: 844, mobile: true },
+      { name: 'mobile-390-dark', width: 390, height: 844, mobile: true, dark: true },
+      { name: 'mobile-320', width: 320, height: 720, mobile: true },
     ]) {
       report.viewports.push(await inspectViewport(browser, origin, viewport));
     }
