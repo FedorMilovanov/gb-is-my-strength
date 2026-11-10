@@ -376,9 +376,28 @@ const freshArticles: ManifestItem[] = manifest.items
 
     body.home-page #publikacii .h-featured-shelf--lead > .h-featured-series:last-child:nth-child(odd) .h-featured-img-wrap,
     body.home-page #publikacii .h-mobile-lab-shelf > .h-featured-series:last-child:nth-child(odd) .h-featured-img-wrap {
+      position: relative;
       width: 100%;
       height: 100%;
       min-height: 260px;
+    }
+
+    /* The editorial art must cover its entire grid track, not retain the
+       source file's horizontal intrinsic ratio inside a tall image column. */
+    body.home-page #publikacii .h-featured-shelf--lead > .h-featured-series:last-child:nth-child(odd) .h-featured-img-wrap picture,
+    body.home-page #publikacii .h-mobile-lab-shelf > .h-featured-series:last-child:nth-child(odd) .h-featured-img-wrap picture,
+    body.home-page #publikacii .h-featured-shelf--lead > .h-featured-series:last-child:nth-child(odd) .h-featured-img-wrap img,
+    body.home-page #publikacii .h-mobile-lab-shelf > .h-featured-series:last-child:nth-child(odd) .h-featured-img-wrap img {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    body.home-page #publikacii .h-featured-shelf--lead > .h-featured-series:last-child:nth-child(odd) .h-featured-img-wrap img,
+    body.home-page #publikacii .h-mobile-lab-shelf > .h-featured-series:last-child:nth-child(odd) .h-featured-img-wrap img {
+      object-fit: cover;
     }
 
     body.home-page #publikacii .h-featured-shelf--lead > .h-featured-series:last-child:nth-child(odd) .h-featured-body,
@@ -470,19 +489,33 @@ const freshArticles: ManifestItem[] = manifest.items
     }
 
     body.home-page #publikacii .h-mobile-lab-shelf .h-featured-series {
-      min-height: 176px;
+      min-height: 178px;
       display: grid;
-      grid-template-columns: 106px minmax(0, 1fr);
+      grid-template-columns: 114px minmax(0, 1fr);
+      align-items: stretch;
       border-radius: 15px;
     }
 
+    /* The source art is 16:9. A cropped portrait strip must be an intentionally
+       full-bleed image track, not a 16:9 intrinsic-height fragment above empty ink. */
     body.home-page #publikacii .h-mobile-lab-shelf .h-featured-img-wrap {
-      width: 106px;
+      position: relative;
+      width: 114px;
       height: 100%;
-      min-height: 176px;
+      min-height: 178px;
     }
 
-    body.home-page #publikacii .h-mobile-lab-shelf .h-featured-img-wrap img {
+    body.home-page #publikacii .h-mobile-lab-shelf .h-featured-img-wrap picture,
+    body.home-page #publikacii .h-mobile-lab-shelf .h-featured-img-wrap picture img {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    body.home-page #publikacii .h-mobile-lab-shelf .h-featured-img-wrap picture img {
+      object-fit: cover;
       object-position: center;
     }
 
@@ -543,11 +576,11 @@ const freshArticles: ManifestItem[] = manifest.items
 
   @media (max-width: 360px) {
     body.home-page #publikacii .h-mobile-lab-shelf .h-featured-series {
-      grid-template-columns: 94px minmax(0, 1fr);
+      grid-template-columns: 98px minmax(0, 1fr);
     }
 
     body.home-page #publikacii .h-mobile-lab-shelf .h-featured-img-wrap {
-      width: 94px;
+      width: 98px;
     }
   }
 </style>
