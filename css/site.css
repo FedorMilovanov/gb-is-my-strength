@@ -1824,37 +1824,45 @@ body .article-body .article-header > .original-author-card + .article-byline {
 @media print {
   :root, html, html.dark, html[data-reader-theme],
   body, html.dark body {
-    color-scheme: light !important;
-    background: #fff !important;
-    background-color: #fff !important;
-    color: #111 !important;
+    color-scheme: light;
+    background: #fff;
+    background-color: #fff;
+    color: #111;
   }
   html.dark :is(main, article, .article-main, .article-body, .article-header, .summary-card),
   html[data-reader-theme] :is(main, article, .article-main, .article-body, .article-header, .summary-card) {
-    color-scheme: light !important;
-    background: transparent !important;
-    background-image: none !important;
-    color: #111 !important;
-    box-shadow: none !important;
-    filter: none !important;
-    overflow: visible !important;
+    color-scheme: light;
+    background: transparent;
+    background-image: none;
+    color: #111;
+    box-shadow: none;
+    filter: none;
+    overflow: visible;
   }
   .gb-tts-download-notice, .gb-floating-tip, .btip, .gtip,
   .grok-compact-tools, .gb-ember-expand, [data-portal-overlay],
   [data-print-policy="exclude"] {
-    display: none !important;
+    display: none;
   }
   .summary-card[data-gb-summary-owner="1"] .gb-summary-motion {
-    display: block !important;
-    height: auto !important;
-    grid-template-rows: 1fr !important;
-    opacity: 1 !important;
-    overflow: visible !important;
+    display: block;
+    height: auto;
+    grid-template-rows: 1fr;
+    opacity: 1;
+    overflow: visible;
   }
   .summary-card[data-gb-summary-owner="1"] .gb-summary-motion > .summary-card__body {
-    display: flex !important;
-    visibility: visible !important;
-    height: auto !important;
-    overflow: visible !important;
+    display: flex;
+    visibility: visible;
+    height: auto;
+    overflow: visible;
+  }
+
+  /* Keep dark-theme summary elevation out of printed paper without adding priority overrides. */
+  html body .summary-card,
+  html.dark body .summary-card,
+  html[data-reader-theme] body .summary-card,
+  :is(html, html.dark, html[data-reader-theme]) body .summary-card[data-gb-summary-owner="1"] {
+    box-shadow: none;
   }
 }
