@@ -75,14 +75,15 @@ export function createPublicSynodalResolver(registry, edition) {
         return collect(code, 1, start, 1, end);
       }
     }
-    // A reference may traverse a chapter boundary: Matthew 4:23-5.
-    const crossChapter = source.match(/^(.+?)\s+(\d{1,3}):(\d{1,3})-(\d{1,3})$/u);
-    if (crossChapter) {
-      const id = aliases.get(normalizeBookAlias(crossChapter[1]));
+    // Explicit chapter-boundary notation is unambiguous: Matthew 4:23-5:1.
+    // The shortened 4:23-5 form is considered only AFTER ordinary verse parsing.
+    const explicitCrossChapter = source.match(/^(.+?)\s+(\d{1,3}):(\d{1,3})-(\d{1,3}):(\d{1,3})$/u);
+    if (explicitCrossChapter) {
+      const id = aliases.get(normalizeBookAlias(explicitCrossChapter[1]));
       const code = bookCodeById.get(id);
-      const ch = Number(crossChapter[2]), start = Number(crossChapter[3]), last = Number(crossChapter[4]);
-      if (code && last > ch && validChapter(books[code], last))
-        return collect(code, ch, start, last, Infinity);
+      if (!code) return null;
+      return collect(code, Number(explicitCrossChapter[2]), Number(explicitCrossChapter[3]),
+        Number(explicitCrossChapter[4]), Number(explicitCrossChapter[5]));
     }
     const parsed = parseBibleReference(source, parserRegistry);
     if (parsed.ok) {
@@ -90,7 +91,21 @@ export function createPublicSynodalResolver(registry, edition) {
       const startVerse = parsed.start ? Number.parseInt(parsed.start, 10) : 1;
       const endVerse = parsed.end ? Number.parseInt(parsed.end, 10) : parsed.start ? startVerse : Infinity;
       if (!code || !Number.isFinite(startVerse) || (!Number.isFinite(endVerse) && endVerse !== Infinity)) return null;
-      return collect(code, parsed.chapter, startVerse, parsed.chapter, endVerse);
+      const sameChapter = collect(code, parsed.chapter, startVerse, parsed.chapter, endVerse);
+      if (sameChapter) return sameChapter;
+    }
+    // Backward-compatible shorthand: Matthew 4:23-5 may mean through chapter 5.
+    // Only a descending verse number can be read this way; otherwise an
+    // invalid verse end (e.g. Matthew 3:1-28) must remain invalid.
+    const compactCrossChapter = source.match(/^(.+?)\s+(\d{1,3}):(\d{1,3})-(\d{1,3})$/u);
+    if (compactCrossChapter) {
+      const id = aliases.get(normalizeBookAlias(compactCrossChapter[1]));
+      const code = bookCodeById.get(id);
+      const ch = Number(compactCrossChapter[2]);
+      const start = Number(compactCrossChapter[3]);
+      const last = Number(compactCrossChapter[4]);
+      if (code && last > ch && last < start && validChapter(books[code], last))
+        return collect(code, ch, start, last, Infinity);
     }
     const chapterRange = source.match(/^(.+?)\s+(\d{1,3})-(\d{1,3})$/u);
     if (chapterRange) {
