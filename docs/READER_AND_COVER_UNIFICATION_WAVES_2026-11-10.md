@@ -65,3 +65,45 @@ The cross-tooltip regression is now represented by two complementary tests:
 **Failure mode eliminated:** browser-synthesized trusted `pointerenter` after scroll/viewport relayout is *not* a pointer movement. The global capture listener records the actual `pointermove` event; only that same event can trigger hover activation in the shared tooltip owner. Focus and click remain independent accessible activation routes. No forced clicks, disabled overlays, inflated timeouts, or lowered acceptance thresholds.
 
 **Remaining release gates (not closed by the P0 fix):** exact-HEAD terminal CI (including prior cancelled Shared Files Guard), whole-site reader-family visual signoff, rights/provenance for new archival Baptists covers, and release SHA reconciliation. No production deployment and no Git reset/stash/clean against agent worktrees.
+### 2026-11-11 professional wave: NoteRegistry and deterministic hover leave
+
+**Trigger:** exact-head GitHub Actions on `ffc3b878afe888dd985fbc7b07c9f2c45827f80b`
+exposed two additional browser regressions that were not visible in the earlier
+local Grok/Hermenevtika contracts:
+
+1. `NoteRegistry Core`: Chromium 13/13 PASS, Firefox and WebKit 11/13 FAIL.
+   Captured DOM events in both failing engines show a *real first*
+   `pointermove` delivered to `.fn-marker` with `movementX=0` and
+   `movementY=0`. The legacy code required nonzero `movementX/Y` when
+   no pointer baseline existed, so it dropped an authentic mouse move.
+   **Fix:** initialize the baseline from that genuine `pointermove`
+   (not `pointerenter`). Subsequent moves still require changed
+   pointer coordinates to avoid layout-generated ghost hover.
+   **Recheck:** canonical `scripts/note-registry-browser-contract.mjs`
+   now passes **13/13 × Chromium/Firefox/WebKit = 39/39**.
+
+2. `Grok Hermeneutics Product Pilot`: the 399/399 product suite and 352/352
+   sitewide summary suite succeeded on Linux, but `Reader UX` failed
+   Firefox's `popup dismisses quickly after pointer leaves` at a hard
+   `230ms` sleep, versus the actual `220ms` owner close timer.
+   **Fix:** assert real dismissal by `waitForFunction` with a strict
+   `650ms` upper bound; record measured latency rather than a
+   scheduler-sensitive single snapshot. No browser forced click,
+   disabled tooltip, changed animation, or increased UI timer.
+   **Recheck:** `Reader UX` **43/43 PASS** in three consecutive local
+   executions; observed actual close latency was approximately
+   **244–304ms**, well below 650ms.
+
+3. **Cross-system regression proof after the above fix:**
+   Hermenevtika popup guard **97/97 PASS**, pointer ownership **3/3**
+   cross-browser PASS, Grok stage2 **399/399 PASS**, and exact
+   production-like build PASS. Each browser retains real physical
+   hover, keyboard focus, pointer leave, Scripture-to-glossary
+   handoff, and no reflow-induced phantom overlay.
+
+**Do not mark RELEASE GO from local results.** Recheck exact new GitHub
+HEAD for NoteRegistry, Grok and Runtime Interactive Audit, and get
+the cancelled/restarted Shared Files Guard to terminal success. The
+remaining editorial archival rights and visual Reader-family signoff
+are independently open. The source agent's dirty worktrees must remain
+untouched.

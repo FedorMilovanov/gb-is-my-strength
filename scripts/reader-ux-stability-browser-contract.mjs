@@ -129,14 +129,22 @@ async function tocAndTooltip(driver,name,origin){
     }));
     check(name,'pointer moves immediately to next popup',
       handoff.old==='false'&&handoff.next==='true'&&handoff.portals===1,handoff);
+    // The owner uses a 220ms leave timer with a brief hover-transit grace.
+    // A hard 230ms sleep races Firefox/Linux scheduling. Assert the actual
+    // observable dismissal within a strict 650ms interaction budget instead.
+    const leaveStarted=await p.evaluate(()=>performance.now());
     await p.mouse.move(1330,820);
-    await p.waitForTimeout(230);
-    const abandoned=await p.evaluate(()=>({
+    await p.waitForFunction(()=>(
+      document.querySelectorAll('body > .gb-floating-tip.is-open').length===0 &&
+      document.querySelector('#gb-ux-tip-two')?.getAttribute('aria-expanded')==='false'
+    ),null,{timeout:650});
+    const abandoned=await p.evaluate(started=>({
       visible:document.querySelectorAll('body > .gb-floating-tip.is-open').length,
-      expanded:document.querySelector('#gb-ux-tip-two')?.getAttribute('aria-expanded')
-    }));
+      expanded:document.querySelector('#gb-ux-tip-two')?.getAttribute('aria-expanded'),
+      elapsedMs:performance.now()-started
+    }),leaveStarted);
     check(name,'popup dismisses quickly after pointer leaves',
-      abandoned.visible===0&&abandoned.expanded==='false',abandoned);
+      abandoned.visible===0&&abandoned.expanded==='false'&&abandoned.elapsedMs<=650,abandoned);
     await two.focus();
     await p.waitForFunction(()=>document.querySelector('#gb-ux-tip-two')?.getAttribute('aria-expanded')==='true');
     await p.keyboard.press('Escape');

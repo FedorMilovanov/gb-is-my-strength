@@ -82,9 +82,14 @@ function recordPointerMovement(event) {
   const x = Number(event.clientX);
   const y = Number(event.clientY);
   const hasCoordinates = Number.isFinite(x) && Number.isFinite(y);
-  const moved = pointerX == null || pointerY == null
-    ? Math.abs(Number(event.movementX) || 0) > 0 || Math.abs(Number(event.movementY) || 0) > 0
-    : hasCoordinates && (Math.abs(x - pointerX) > 0.5 || Math.abs(y - pointerY) > 0.5);
+  // A real pointermove has already been dispatched. Firefox and WebKit can
+  // report movementX/Y=0 on its first move into the document; Chromium may
+  // retain a previous cursor baseline. Initialize from that actual event,
+  // never from pointerenter (which can be synthesized by layout reflow).
+  const moved = hasCoordinates && (
+    pointerX == null || pointerY == null ||
+    Math.abs(x - pointerX) > 0.5 || Math.abs(y - pointerY) > 0.5
+  );
   if (hasCoordinates) {
     pointerX = x;
     pointerY = y;
