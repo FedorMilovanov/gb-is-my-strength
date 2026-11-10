@@ -126,103 +126,11 @@
     }
   }
 
-  /* The compact palette already has an explicit close control. Desktop keyboard
-     hints do not belong at the bottom of a touch-only 390px layout. */
+  /* Touch search does not display desktop keyboard shortcuts. Direction
+     geometry and legibility are now owned by Directions.astro alone. */
   @media (max-width: 760px) {
     body.home-page .cp-footer {
       display: none;
-    }
-
-    /* Give words the width instead of spending half of every small card on the
-       decorative object. This removes the screenshot-confirmed Биогра/фии and
-       ПРОСТРАН/СТВО breaks while preserving the two-column gateway. */
-    body.home-page .home-v20 #main-content #issledovat .h-home-route {
-      grid-template-columns: 56px minmax(0, 1fr);
-      gap: 4px 7px;
-      padding: 13px 11px 12px;
-    }
-
-    body.home-page .home-v20 #main-content #issledovat .h-home-route__glyph,
-    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child .h-home-route__glyph {
-      width: 56px;
-      height: 64px;
-      min-height: 64px;
-    }
-
-    body.home-page .home-v20 #main-content #issledovat .h-route-object {
-      max-height: 68px;
-    }
-
-    body.home-page .home-v20 #main-content #issledovat .h-home-route__copy {
-      padding-right: 2px;
-    }
-
-    body.home-page .home-v20 #main-content #issledovat .h-home-route__eyebrow {
-      margin-bottom: 5px;
-      font-size: 6.7px;
-      letter-spacing: .075em;
-      white-space: nowrap;
-      overflow-wrap: normal;
-      word-break: normal;
-      hyphens: none;
-    }
-
-    body.home-page .home-v20 #main-content #issledovat .h-home-route__copy strong {
-      font-size: clamp(13px, 3.7vw, 15px);
-      line-height: 1.08;
-      white-space: nowrap;
-      overflow-wrap: normal;
-      word-break: normal;
-      hyphens: none;
-    }
-
-    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child,
-    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child:nth-child(odd) {
-      grid-template-columns: 64px minmax(0, 1fr);
-    }
-
-    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child .h-home-route__glyph {
-      width: 64px;
-      height: 70px;
-      min-height: 70px;
-    }
-  }
-
-  @media (max-width: 340px) {
-    body.home-page .home-v20 #main-content #issledovat .h-home-route {
-      grid-template-columns: 44px minmax(0, 1fr);
-      gap: 3px 5px;
-      padding: 11px 9px 10px;
-    }
-
-    body.home-page .home-v20 #main-content #issledovat .h-home-route__glyph {
-      width: 44px;
-      height: 52px;
-      min-height: 52px;
-    }
-
-    body.home-page .home-v20 #main-content #issledovat .h-route-object {
-      max-height: 56px;
-    }
-
-    body.home-page .home-v20 #main-content #issledovat .h-home-route__eyebrow {
-      font-size: 5.7px;
-      letter-spacing: .04em;
-    }
-
-    body.home-page .home-v20 #main-content #issledovat .h-home-route__copy strong {
-      font-size: 11.5px;
-    }
-
-    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child,
-    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child:nth-child(odd) {
-      grid-template-columns: 52px minmax(0, 1fr);
-    }
-
-    body.home-page .home-v20 #main-content #issledovat .h-home-route:last-child .h-home-route__glyph {
-      width: 52px;
-      height: 58px;
-      min-height: 58px;
     }
   }
 
