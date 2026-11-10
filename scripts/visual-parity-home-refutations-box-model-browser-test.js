@@ -101,6 +101,11 @@ async function inspectViewport(browser, origin, viewport) {
   });
 
   await page.goto(`${origin}/`, { waitUntil: 'networkidle' });
+  if (viewport.dark) {
+    await page.locator('#themeToggle').click();
+    assert.equal(await page.evaluate(() => document.documentElement.classList.contains('dark')), true,
+      `${viewport.name}: dark-theme toggle failed`);
+  }
   // All four native Home surfaces must actually paint, including lazy-loaded
   // series art and the five directions in their compact navigation mode.
   await page.locator('#issledovat').scrollIntoViewIfNeeded();
@@ -267,8 +272,10 @@ async function inspectViewport(browser, origin, viewport) {
   try {
     for (const viewport of [
       { name: 'desktop-1440', width: 1440, height: 1000, mobile: false },
+      { name: 'desktop-1440-dark', width: 1440, height: 1000, mobile: false, dark: true },
       { name: 'tablet-768', width: 768, height: 960, mobile: true },
       { name: 'mobile-390', width: 390, height: 844, mobile: true },
+      { name: 'mobile-390-dark', width: 390, height: 844, mobile: true, dark: true },
       { name: 'mobile-320', width: 320, height: 720, mobile: true },
     ]) {
       report.viewports.push(await inspectViewport(browser, origin, viewport));
