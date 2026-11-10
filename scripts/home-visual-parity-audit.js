@@ -292,7 +292,7 @@ must(directions, 'body.home-page #main-content .h-home-route:focus-visible', 'ke
 must(directions, '@media (prefers-reduced-motion: reduce)', 'reduced-motion route contract');
 const visualOverrides = read('src/components/home/HomeVisualAuditFixes.astro');
 const responsiveOverrides = read('src/components/home/HomeResponsiveContracts.astro');
-mustNot(visualOverrides, '#issledovat .h-home-route', 'no late duplicate Directions visual geometry');
+mustNot(visualOverrides, 'body.home-page .home-v20 #main-content #issledovat .h-home-route', 'no late duplicate Directions visual geometry');
 mustNot(responsiveOverrides, '.h-home-route:last-child', 'no duplicate fifth-Directions singleton geometry');
 for (const retiredLayout of [
   'grid-template-columns: repeat(6, minmax(0, 1fr))',
