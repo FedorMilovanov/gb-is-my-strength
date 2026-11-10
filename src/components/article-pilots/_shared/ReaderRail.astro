@@ -29,7 +29,7 @@ interface Props {
 const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'hm', tocLabel = 'Оглавление статьи', grokPilot = false, grokNodes } = Astro.props;
 ---
 <SiteSectionsMenu />
-<aside class:list={{ hrail: true, 'hrail--ink-gold': palette === 'ink-gold', 'hrail--grok': grokPilot && !!grokNodes?.length }} aria-label={title} data-fc-root data-fc-variant="single" data-fc-mode="single">
+<aside class:list={{ hrail: true, 'hrail--ink-gold': palette === 'ink-gold', 'hrail--grok': grokPilot && !!grokNodes?.length }} aria-label={title} data-fc-root data-fc-variant="single" data-fc-mode="single" data-reader-state-heading-selector={toc.some((item) => item.level >= 4) ? "h2[id], h3[id], h4[id]" : "h2[id], h3[id]"}>
   <!-- Верх рейла: только назад — Поиск/PLAY/Сохранить уехали в угловой
        кластер справа сверху, как у Гилла (owner: "должно быть как в Гилле,
        справа сверху PLAY, а не в левом меню... стандарт Гилла с адаптацией
@@ -68,8 +68,8 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       <ul class="hrail-toc" id="hrailToc">
         <li class="hrail-track-slot" role="presentation" aria-hidden="true" style="display:contents"><span class="hrail-track"><i></i></span></li>
         {toc.map((item) => (
-          <li class:list={{ 'hrail-sub': item.level === 3 }}>
-            <a href={item.href}>{item.level !== 3 && <span class="hrail-dot" aria-hidden="true"></span>}{item.label}</a>
+          <li class:list={{ 'hrail-sub': item.level >= 3, 'hrail-deep': item.level >= 4 }}>
+            <a href={item.href}>{item.level === 2 && <span class="hrail-dot" aria-hidden="true"></span>}{item.label}</a>
           </li>
         ))}
       </ul>
@@ -176,6 +176,8 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
      не просто список" — subs read as nested text, not extra stops). */
   .hrail-toc li.hrail-sub{padding-left:calc(38px + var(--toc-sub-in))}
   .hrail-toc li.hrail-sub a{font-size:11px}
+  .hrail-toc li.hrail-deep{padding-left:calc(38px + var(--toc-sub-in) * 2)}
+  .hrail-toc li.hrail-deep a{font-size:10.6px;line-height:1.42}
   .hrail-toc li.hrail-sub:not(.hrail-act):not(.hrail-passed) a{color:var(--rail-subtle,rgba(42,24,20,.5))}
   html.dark .hrail-toc li.hrail-sub:not(.hrail-act):not(.hrail-passed) a{color:var(--rail-subtle,rgba(255,255,255,.46))}
   .hrail:not(.hrail--grok) .hrail-toc li.hrail-act a{background:linear-gradient(90deg,var(--rail-soft,rgba(122,46,46,.14)),color-mix(in srgb,var(--rail-soft,rgba(122,46,46,.14)) 35%,transparent) 72%,transparent);
@@ -1125,7 +1127,11 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
 
     const readerState = (window as any).GBReaderState || (window as any).ReaderState;
     if (readerState?.configure && readerState?.subscribe) {
-      readerState.configure({ headingSelector: 'h2[id], h3[id]' }).init();
+      // The rail declares the authoritative heading levels in markup.
+      // Other integrations (including BookmarkEngine) must not replace them.
+      const headingSelector = toc.closest<HTMLElement>('.hrail')?.getAttribute('data-reader-state-heading-selector')
+        || 'h2[id], h3[id]';
+      readerState.configure({ headingSelector }).init();
       readerState.subscribe((reader: any) => {
         const sectionId = String(reader?.sectionId || '');
         const idx = links.findIndex((link) => !!link && (link.getAttribute('href') || '').replace(/^#/, '') === sectionId);

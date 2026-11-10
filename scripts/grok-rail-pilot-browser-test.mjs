@@ -74,6 +74,14 @@ const viewports = [
   {id:'desktop-short', width:1440, height:300},
   {id:'desktop-wide', width:1440, height:900},
 ];
+// Exact canonical content outline, including the three H4 sections that were
+// missing from the old 10-item table. Check both pilot and flag-off rails.
+const EXPECTED_HERMENEVTIKA_FRAGMENTS = [
+  '#sec-definitions', '#sec-explanation', '#sec-what-is', '#sec-how-achieves',
+  '#sec-why', '#sec-assessment', '#sec-question-posed',
+  '#sec-exceptions-passages', '#sec-exceptions-theological',
+  '#sec-consequences', '#sec-sufficiency', '#sec-conclusion', '#spravka',
+];
 const reports = path.join(ROOT, 'reports', 'grok-stage2');
 fs.mkdirSync(reports, {recursive:true});
 const {server,origin} = await serve();
@@ -97,7 +105,7 @@ try {
               return {
                 rail:!!rail, optIn:!!document.querySelector('.hrail--grok, .grok-toc'),
                 oldFlatToc:!!list && list.classList.contains('hrail-toc'),
-                links:links.length, allTargetsExist:links.every(a=>!!document.getElementById(decodeURIComponent(a.hash.slice(1)))),
+                links:links.map(a=>a.hash), allTargetsExist:links.every(a=>!!document.getElementById(decodeURIComponent(a.hash.slice(1)))),
                 visible:rail && getComputedStyle(rail).display!=='none',
                 mobileControls:!!document.querySelector('.hmbar') && !!document.querySelector('.hmtop'),
                 floating:!!document.getElementById('gbFloatingControls'),
@@ -108,7 +116,7 @@ try {
             });
             check(name,viewport.id,'flag-off original rail renders',fallback.rail && fallback.oldFlatToc,fallback);
             check(name,viewport.id,'flag-off no Grok DOM elements',!fallback.optIn,fallback);
-            check(name,viewport.id,'flag-off original canonical hrefs',fallback.links===10 && fallback.allTargetsExist,fallback);
+            check(name,viewport.id,'flag-off original canonical hrefs',JSON.stringify(fallback.links)===JSON.stringify(EXPECTED_HERMENEVTIKA_FRAGMENTS) && fallback.allTargetsExist,fallback);
             check(name,viewport.id,'flag-off mobile and desktop boundaries',
               viewport.width < 1200 ? !fallback.visible && fallback.mobileControls : fallback.visible && fallback.floating,fallback);
             check(name,viewport.id,'flag-off published text remains',fallback.content,fallback);
@@ -134,7 +142,7 @@ try {
               content:!!document.querySelector('[data-hm-reader]'),
               rect:rect && {x:rect.x,width:rect.width,height:rect.height}};
           });
-          check(name,viewport.id,'route-flag and canonical menu',snapshot.rail && snapshot.menu && snapshot.links.length===10,snapshot);
+          check(name,viewport.id,'route-flag and canonical menu',snapshot.rail && snapshot.menu && JSON.stringify(snapshot.links)===JSON.stringify(EXPECTED_HERMENEVTIKA_FRAGMENTS),snapshot);
           check(name,viewport.id,'canonical anchor targets',snapshot.actualHeadingIds.every(Boolean),snapshot.actualHeadingIds);
           check(name,viewport.id,'TOC links are never underlined',snapshot.decoration==='none',snapshot.decoration);
           check(name,viewport.id,'no horizontal overflow',snapshot.overflow <= 2,snapshot.overflow);
@@ -620,6 +628,26 @@ try {
                 check(name,viewport.id,'interrupted collapse settles to zero height',
                   collapsedHeight < 1.5,collapsedHeight);
               } finally {await fresh.close();}
+              // The three real H4 headings are authored underneath the
+              // assessment H3. Clicking one must update the one canonical
+              // ReaderState and exactly one aria-current row, not only hash.
+              const h4Href = '#sec-exceptions-passages';
+              const deep = page.locator('.grok-toc a[href="' + h4Href + '"]');
+              const h4Ancestor = await deep.evaluate(link => {
+                const row = link.closest('li.grok-row');
+                return row?.parentElement?.closest('li.grok-row')
+                  ?.querySelector(':scope > .grok-entry > a')?.getAttribute('href') || '';
+              });
+              check(name,viewport.id,'H4 is nested under canonical H3 assessment',
+                h4Ancestor === '#sec-assessment',h4Ancestor);
+              await deep.click();
+              await page.waitForFunction(href =>
+                location.hash === href &&
+                window.GBReaderState?.getSnapshot?.()?.sectionId === href.slice(1) &&
+                document.querySelectorAll('.grok-toc a[aria-current="location"]').length === 1 &&
+                document.querySelector('.grok-toc a[href="' + href + '"]')?.getAttribute('aria-current') === 'location',
+              h4Href,{timeout:8000});
+              check(name,viewport.id,'H4 canonical hash, ReaderState and single active row',true,h4Href);
             }
           }
           check(name,viewport.id,'no uncaught JavaScript errors',errors.length===0,errors);

@@ -127,7 +127,7 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
     </label>
     <ul class="hmsheet-list" id="hmSheetList">
       {(toc as GenericTocItem[]).map((item, i) => (
-        <li class:list={{ 'hmsheet-sub': item.level === 3 }} data-idx={i}>
+        <li class:list={{ 'hmsheet-sub': item.level >= 3, 'hmsheet-deep': item.level >= 4 }} data-idx={i}>
           <a href={item.href} class="hmsheet-link" data-name={item.label}>{item.label}</a>
         </li>
       ))}
@@ -344,6 +344,7 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
     font-family:var(--f-serif,Lora,Georgia,serif);font-size:14px;border-bottom:1px solid rgba(0,0,0,.05)}
   html.dark .hmsheet-link{color:rgba(255,255,255,.68);border-bottom-color:rgba(255,255,255,.06)}
   .hmsheet-sub .hmsheet-link{padding-left:18px;font-size:13px;color:rgba(42,24,20,.72)}
+  .hmsheet-deep .hmsheet-link{padding-left:34px;font-size:12px;line-height:1.46}
   html.dark .hmsheet-sub .hmsheet-link{color:rgba(255,255,255,.78)}
   li[data-idx].hm-current .hmsheet-link{color:#7a2e2e;font-weight:700}
   html.dark li[data-idx].hm-current .hmsheet-link{color:#e0a89c}
