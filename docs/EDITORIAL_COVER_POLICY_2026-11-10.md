@@ -4,6 +4,8 @@
 
 **Historical series:** The Russian Baptist chapters, reference section and book landing now use archival image compositions with source file inventory in `data/baptist-editorial-cover-sources.json`. Their imagery is contextual, **not** a photograph of the exact event in the article. Never invent a source date, person, masthead or legal rights. Each asset's original rights and historical attribution require independent verification before production.
 
+**Legacy archive preservation:** The 22 retired title-card asset files remain available only to intact, reference-only historical HTML snapshots. They are forbidden as artwork in current Astro articles, cards, reader navigation and search. Never silently rewrite archival snapshot contents to make a live-page audit pass.
+
 **Automated gate:** `node scripts/editorial-cover-contract.cjs` validates Baptist source manifests, bans the 11 retired synthetic title card names in published source, detects the retired baked-title heart poster, and rejects SVG hero artwork containing printed text. This gate is invoked via the canonical `scripts/check-engine-contracts.js`. It cannot visually classify all rasterized photographs; every new raster hero also needs human screenshot review across article, thumbnail and social image surfaces.
 
 **Reader architecture:** use the registered `SeriesReaderChrome` facade and current `ReaderRail` ownership contracts. A chapter/part TOC should read as part of the rail, not as a nested decorated card. Do not duplicate scrollspy, search, TTS, library, bookmarks, focus/overlay controllers or storage owners. Preserve original anchors and mobile behavior. Any future HTML refactor must be separately browser-tested in Chromium, Firefox and WebKit before release.

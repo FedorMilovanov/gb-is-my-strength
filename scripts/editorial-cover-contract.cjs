@@ -6,8 +6,6 @@ const ROOT=path.resolve(__dirname,'..');
 const manifest=JSON.parse(fs.readFileSync(path.join(ROOT,'data/baptist-editorial-cover-sources.json'),'utf8'));
 const errors=[];
 const entries=Object.entries(manifest.covers);
-const retired=fs.readdirSync(path.join(ROOT,'images/baptisty-rossii')).filter(n=>/^cover-(?:landing|\d\d-[a-z-]+)\.(?:svg|webp)$/.test(n));
-if(retired.length)errors.push('Retired synthetic image still shipped: '+retired.join(','));
 if(entries.length!==11)errors.push('Expected 11 documented Russian Baptist covers, got '+entries.length);
 for(const [key,item] of entries) {
   const target=path.join(ROOT,item.output);
@@ -34,6 +32,18 @@ for(const p of srcFiles){
  const rel=path.relative(ROOT,p);
  if(forbiddenBaptist.test(txt))errors.push(rel+': retired Baptist title-card artwork');
  if(forbiddenHeart.test(txt))errors.push(rel+': retired heart text-card artwork');
+ if(p.endsWith('.astro') && p.includes('baptisty-rossii')){
+   for(const image of txt.matchAll(/<img\b[^>]*archival-[^>]*>/g)){
+     const alt=image[0].match(/\balt="([^"]*)"/);
+     if(alt && /\?{3}/.test(alt[1]))errors.push(rel+': corrupt UTF-8 archive image alt');
+     if(/(?:Body|BookLanding)\.astro$/.test(p) && /<figure\b[^>]*class="[^"]*hero/.test(txt)){
+       const hero=txt.match(/<figure\b[^>]*class="[^"]*hero[^"]*"[^>]*>[\s\S]{0,1300}?<img\b[^>]*archival-[^>]*>/);
+       if(hero && !/\balt="[^"]+"/.test(hero[0]))errors.push(rel+': archive hero missing meaningful alt');
+     }
+
+   }
+ }
+
  if(!p.endsWith('.astro'))continue;
  for(const match of txt.matchAll(/<figure\b[^>]*\bclass="[^"]*(?:hero|cover)[^"]*"[^>]*>[\s\S]*?<\/figure>/g)){
   for(const img of match[0].matchAll(/<img\b[^>]*\bsrc="([^"]+\.svg)"[^>]*>/g)){
