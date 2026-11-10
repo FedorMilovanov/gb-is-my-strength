@@ -6,20 +6,22 @@
     "pageOwnership": "migration/page-ownership.json",
     "bibleRegistry": "data/bible/books.json",
     "bibleResolver": "src/lib/bible-reference-core.mjs",
+    "publicVerseBounds": "data/bible/public-domain-russyn.json",
     "routeSourceContract": "scripts/lib/route-source-contract.js",
     "kartyHubInventory": "src/lib/karty-hub-inventory.cjs"
   },
   "stats": {
     "manifestItems": 103,
     "indexedRoutes": 102,
-    "scannedSourceFiles": 530,
-    "references": 1368,
-    "occurrences": 3474,
+    "scannedSourceFiles": 531,
+    "references": 1366,
+    "occurrences": 3472,
     "canonicalTextRecords": 149,
-    "referencesWithoutCanonicalText": 1219,
-    "chapterRanges": 46,
+    "referencesWithoutCanonicalText": 1217,
+    "chapterRanges": 45,
     "manifestOccurrences": 32,
-    "kartyHubOccurrences": 1
+    "kartyHubOccurrences": 1,
+    "nonBiblicalLookalikesExcluded": 2
   },
   "references": [
     {
@@ -14379,30 +14381,6 @@
       ]
     },
     {
-      "id": "pritchi:37–71",
-      "bookId": "pritchi",
-      "testament": "OT",
-      "key": "37–71",
-      "kind": "chapter-range",
-      "label": "Притчи 37–71",
-      "canonicalText": null,
-      "canonicalSource": null,
-      "occurrences": [
-        {
-          "url": "/hard-texts/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit/",
-          "title": "Можно ли доверять 1 Еноху: канонический аудит его богословия",
-          "context": "; отождествление каждого Енохова места с конкретным новозаветным термином — . Книга Притчей: Господь духов и небесный Судья Притчи 37–71 содержат величественное богословие суда: Господь духов царствует; земные правители не избегнут приговора; праведные будут оправданы; Избранный связан с престолом и судом; Сын человеческий получает эсхатологич",
-          "anchor": null,
-          "raw": "Притчи 37–71",
-          "topics": [
-            "Богословие"
-          ],
-          "sourceOwner": "src/content/articles/mozhno-li-doveryat-1-enohu-kanonicheskiy-audit.mdx",
-          "sourceKind": "mdx-source"
-        }
-      ]
-    },
-    {
       "id": "ekklesiast:1:2",
       "bookId": "ekklesiast",
       "testament": "OT",
@@ -28633,32 +28611,6 @@
             "TMS"
           ],
           "sourceOwner": "src/components/nagornaya/seriya/NagornayaSeriyaBody.astro",
-          "sourceKind": "astro-source"
-        }
-      ]
-    },
-    {
-      "id": "matfeya:30",
-      "bookId": "matfeya",
-      "testament": "NT",
-      "key": "30",
-      "kind": "chapter",
-      "label": "Матфея 30",
-      "canonicalText": null,
-      "canonicalSource": null,
-      "occurrences": [
-        {
-          "url": "/nagornaya/",
-          "title": "Нагорная проповедь — полная серия",
-          "context": "107 стихов Мф 30 стихов Лк",
-          "anchor": null,
-          "raw": "Мф 30",
-          "topics": [
-            "Лука 6",
-            "Матфей 5",
-            "Нагорная проповедь"
-          ],
-          "sourceOwner": "src/components/nagornaya/index/NagornayaIndexMain.astro",
           "sourceKind": "astro-source"
         }
       ]

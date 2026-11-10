@@ -23,7 +23,8 @@ function collect(dir){
  }
  return all;
 }
-const srcFiles=collect(path.join(ROOT,'src')).filter(p=>/\.(?:astro|mdx|ts|tsx|js|mjs|json)$/.test(p));
+const srcFiles=collect(path.join(ROOT,'src')).filter(p=>/\.(?:astro|mdx|ts|tsx|js|mjs|json|css)$/.test(p));
+const styleFiles=collect(path.join(ROOT,'css')).filter(p=>p.endsWith('.css'));
 /* Current publication shadows are deployed HTML, not archival audit snapshots. */
 // Legacy HTML snapshots are hash-locked and exempt from modern cover scans.
 const publishedSources=['_build-tools/konfessii-baptizm','sitemap.xml'];
@@ -32,10 +33,10 @@ const publishedFiles=publishedSources.flatMap(rel=>{
  if(!fs.existsSync(p))return [];
  return fs.statSync(p).isDirectory()?collect(p).filter(f=>/\.(?:html|xml|tsx|ts|json)$/.test(f)):[p];
 });
-const forbiddenBaptist=/baptisty-rossii\/cover-(?:landing|\d\d-[a-z-]+)\.(?:svg|webp)/;
+const forbiddenBaptist=/baptisty-rossii\/cover-(?:landing|\d\d-[a-z0-9-]+)\.(?:svg|webp)/;
 const forbiddenHeart=/og-chto-bibliya-nazyvaet-serdcem(?:-600w)?\.(?:jpg|webp)/;
 let heroSvgInspected=0;
-for(const p of srcFiles.concat(publishedFiles)){
+for(const p of srcFiles.concat(styleFiles,publishedFiles)){
  const txt=fs.readFileSync(p,'utf8');
  const rel=path.relative(ROOT,p);
  if(forbiddenBaptist.test(txt))errors.push(rel+': retired Baptist title-card artwork');
@@ -61,9 +62,13 @@ for(const p of srcFiles.concat(publishedFiles)){
  if(!p.endsWith('.astro'))continue;
  for(const match of txt.matchAll(/<figure\b[^>]*\bclass="[^"]*(?:hero|cover)[^"]*"[^>]*>[\s\S]*?<\/figure>/g)){
   for(const img of match[0].matchAll(/<img\b[^>]*\bsrc="([^"]+\.svg)"[^>]*>/g)){
-   const src=img[1].startsWith('/') ? '.'+img[1] : img[1];
-   const abs=path.resolve(path.dirname(p),src);
-   if(!abs.startsWith(ROOT+path.sep)||!fs.existsSync(abs))continue;
+   const src=img[1].split(/[?#]/)[0];
+   const asset=src.match(/(?:^|\/)(images\/[A-Za-z0-9_./-]+\.svg)$/);
+   const abs=asset?path.resolve(ROOT,asset[1]):path.resolve(path.dirname(p),src);
+   if(!abs.startsWith(ROOT+path.sep)||!fs.existsSync(abs)){
+     errors.push(rel+': unresolved SVG hero '+src);
+     continue;
+   }
    heroSvgInspected++;
    if(/<text(?:\s|>)/i.test(fs.readFileSync(abs,'utf8')))errors.push(rel+': SVG text-rendered hero '+src);
   }

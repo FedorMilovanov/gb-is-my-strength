@@ -7,7 +7,6 @@ const HOVER_TRANSIT_PADDING = 12;
 const VIEWPORT_MARGIN = 16;
 const TIP_GAP = 10;
 const MIN_SCROLL_HEIGHT = 96;
-const MOBILE_MAX_VIEWPORT_RATIO = 0.85;
 
 let active = null;
 let closeTimer = 0;
@@ -282,22 +281,6 @@ function applyOverflow(tip, maxHeight) {
   return needsScroll;
 }
 
-function mobileSheetBudget(viewport) {
-  const ratioBudget = Math.floor(viewport.height * MOBILE_MAX_VIEWPORT_RATIO);
-  const visualBudget = Math.floor(viewport.height - VIEWPORT_MARGIN);
-  return Math.max(MIN_SCROLL_HEIGHT, Math.min(ratioBudget, visualBudget));
-}
-
-function positionMobile(tip) {
-  const viewport = viewportBounds();
-  clearAuthoritativeGeometry(tip);
-  setImportant(tip.style, 'left', '0px');
-  setImportant(tip.style, 'right', '0px');
-  setImportant(tip.style, 'top', 'auto');
-  setImportant(tip.style, 'bottom', '0px');
-  applyOverflow(tip, mobileSheetBudget(viewport));
-}
-
 function preferredPlacement(naturalHeight, availableAbove, availableBelow, previousPlacement, preservePlacement) {
   const fitsAbove = naturalHeight <= availableAbove;
   const fitsBelow = naturalHeight <= availableBelow;
@@ -344,12 +327,27 @@ function positionDesktop(tip, anchor, preservePlacement = false) {
   tip.dataset.placement = placement;
   setImportant(tip.style, 'left', `${Math.round(left)}px`);
   setImportant(tip.style, 'top', `${Math.round(top)}px`);
+  // The final fixed left/top position can change the rendered height after
+  // wrapping (notably WebKit's rich glossary card). Verify the *settled*
+  // rectangle rather than trusting its pre-positioning measurement. The
+  // opener must remain outside the interactive popover.
+  const settled = tip.getBoundingClientRect();
+  const requiredTop = placement === 'top'
+    ? top - Math.max(0, settled.bottom + TIP_GAP - anchorRect.top)
+    : top + Math.max(0, anchorRect.bottom + TIP_GAP - settled.top);
+  if (Math.abs(requiredTop - top) > 0.5) {
+    const minTop = viewport.top + VIEWPORT_MARGIN;
+    const maxTop = viewport.bottom - VIEWPORT_MARGIN - settled.height;
+    top = Math.max(minTop, Math.min(requiredTop, Math.max(minTop, maxTop)));
+    setImportant(tip.style, 'top', `${Math.round(top)}px`);
+  }
   tip.style.setProperty('--gb-tip-arrow-x', `${Math.round(anchorRect.left + anchorRect.width / 2 - left)}px`);
 }
 
+// One anchor-aware geometry owner on desktop and mobile. The old bottom
+// sheet covered its own marker, making the second tap impossible.
 function position(tip, anchor, preservePlacement = false) {
-  if (mobileMode()) positionMobile(tip);
-  else positionDesktop(tip, anchor, preservePlacement);
+  positionDesktop(tip, anchor, preservePlacement);
 }
 
 function stopGeometry(record) {
@@ -361,7 +359,7 @@ function stopGeometry(record) {
 }
 
 function scheduleGeometry(record, preservePlacement = true) {
-  if (!record || active !== record || record.mobile || record.geometryFrame) return;
+  if (!record || active !== record || record.geometryFrame) return;
   record.geometryFrame = window.requestAnimationFrame(() => {
     record.geometryFrame = 0;
     if (active !== record || !record.anchor.isConnected || !record.tip.isConnected) return;
@@ -370,7 +368,7 @@ function scheduleGeometry(record, preservePlacement = true) {
 }
 
 function observeGeometry(record) {
-  if (!record || record.mobile || typeof ResizeObserver !== 'function') return;
+  if (!record || typeof ResizeObserver !== 'function') return;
   record.geometryObserver = new ResizeObserver(() => scheduleGeometry(record, true));
   record.geometryObserver.observe(record.tip);
 }
@@ -510,7 +508,7 @@ function openTooltip(anchor, reason = 'open') {
     // WebKit can retain the pre-lock geometry for one frame, displaying the
     // popup thousands of pixels below the viewport in long articles.
     // Reposition after the lock mutation, before the next paint.
-    if (active?.tip === tip) positionMobile(tip);
+    if (active?.tip === tip) position(tip, anchor, true);
   }
 }
 
@@ -548,6 +546,10 @@ function initializeAnchor(anchor) {
     // A mobile second tap refocuses the opener from the portal link before
     // the click. Do not overwrite the existing click reason or it won't close.
     if (active?.anchor === anchor) { cancelClose(); return; }
+    // On mobile, a pointer click focuses the marker before its click handler.
+    // Opening the bottom sheet on that focus blocks the very click that owns it.
+    // Keyboard focus still opens the tooltip through :focus-visible.
+    if (mobileMode() && !anchor.matches(':focus-visible')) return;
     openTooltip(anchor, 'focus');
   });
   anchor.addEventListener('blur', (event) => {

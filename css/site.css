@@ -496,7 +496,10 @@ html.dark .gbs2-resume-go{color:#1c1208}
 
 .gbs2-next a.gbs2-next-card,.gbs2-next a.gbs2-next-card:hover,.gbs2-next a.gbs2-next-card:visited,.gbs2-next a.gbs2-next-card:active,.gbs2-next a.gbs2-next-card:focus-visible,.gbs2-next a.gbs2-next-card *, .gbs2-next a.gbs2-next-card *:hover,.gbs2-next a.gbs2-next-card *:visited,.gbs2-next a.gbs2-next-card *:active,.gbs2-next a.gbs2-next-card *:focus-visible{text-decoration:none;border-bottom:none}
 
-.gb-floating-tip::after{content:"";position:absolute;left:0;right:0;height:22px;background:transparent;pointer-events:auto}.gb-floating-tip[data-placement=top]::after{bottom:-22px}.gb-floating-tip[data-placement=bottom]::after{top:-22px}
+/* The transparent hover-transit bridge is useful only for fine-pointer desktop.
+   On a mobile/narrow viewport it spans over the opener and blocks a repeat tap. */
+.gb-floating-tip::after{content:"";position:absolute;left:0;right:0;height:22px;background:transparent;pointer-events:none}.gb-floating-tip[data-placement=top]::after{bottom:-22px}.gb-floating-tip[data-placement=bottom]::after{top:-22px}
+@media(min-width:769px) and (hover:hover) and (pointer:fine){.gb-floating-tip::after{pointer-events:auto}}
 
 .gtip.gb-floating-tip{position:fixed;display:block;width:min(380px,calc(100vw - 40px));padding:16px 18px;border-radius:24px;background:rgba(255,253,250,.985);color:#1a150f;border:1px solid rgba(0,0,0,.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.62);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);font-family:'Source Sans 3',system-ui,sans-serif;font-size:14px;line-height:1.58;font-weight:400;text-align:left;opacity:1;pointer-events:auto;transform:translateY(0) scale(1);transform-origin:50% 100%;z-index:var(--z-panel);top:-9999px;left:-9999px;visibility:visible}
 
