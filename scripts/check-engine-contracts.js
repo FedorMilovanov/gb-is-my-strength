@@ -10,6 +10,8 @@ function check(name, ok, hint = '') {
   if (ok) console.log('✅ ' + name);
   else { fails += 1; console.error('❌ ' + name + (hint ? '\n   → ' + hint : '')); }
 }
+const coverGuard = spawnSync(process.execPath, [path.join(ROOT, 'scripts/editorial-cover-contract.cjs')], { encoding: 'utf8' });
+check('Editorial hero art: historical sources and no fabricated headline posters', coverGuard.status === 0, (coverGuard.stderr || coverGuard.stdout || '').trim());
 function syntaxCheck(file) {
   const result = spawnSync(process.execPath, ['--check', path.join(ROOT, file)], { encoding: 'utf8' });
   check('JS syntax: ' + file, result.status === 0, (result.stderr || result.stdout || '').trim());

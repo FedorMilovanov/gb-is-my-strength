@@ -17,12 +17,12 @@ const EXPECTED_CACHES = new Set([
 ]);
 const OFFLINE_FALLBACK = '/404.html';
 const PRECACHE_ASSETS = [
-  '/css/site.css?v=4c11ca0e',
+  '/css/site.css?v=5155f291',
   '/css/home.css?v=a88bfa00',
   '/css/command-palette.css?v=3b88813f',
   '/css/mobile-hotfix.css?v=9cfd6aee',
   '/css/nagornaya-mobile-toc.css?v=bded2f86',
-  '/css/floating-cluster.css?v=a16f973c',
+  '/css/floating-cluster.css?v=1ddf1043',
   '/css/series-samizdat.css?v=6d9658bd',
   '/css/reader-preferences.css?v=f424e5ed',
   '/css/enhancements-runtime.css?v=d195a91d',

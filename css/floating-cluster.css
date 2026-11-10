@@ -1257,13 +1257,13 @@ html.dark [data-gill-v16] .gbs-rail-spdbadge{
    "Сейчас читаете" card (owner screenshot). Sizing to content instead;
    any true leftover space now sits below the next-parts list, not inside
    the card. */
-[data-gill-v16] .gbs2-current{flex:0 1 auto;min-height:0;margin:2px 2px 4px;border:1px solid rgba(232,184,120,.20);border-radius:16px;background:rgba(255,255,255,.045);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 10px 28px -14px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05)}
+[data-gill-v16] .gbs2-current{flex:0 1 auto;min-height:0;margin:2px 2px 4px;border:0;border-radius:0;background:transparent;overflow:visible;display:flex;flex-direction:column;box-shadow:none}
 [data-gill-v16] .gbs2-current-cover{flex:0 0 auto;height:78px;background-image:linear-gradient(180deg,rgba(25,22,20,0),#16130f),var(--gbs2-cover,linear-gradient(135deg,var(--gbs2-accent),#2b1b13));background-size:cover;background-position:center;opacity:.62}
 [data-gill-v16] .gbs2-current-body{padding:12px 14px 0}[data-gill-v16] .gbs2-current-label{font-size:9px;font-weight:800;letter-spacing:.17em;text-transform:uppercase;color:var(--gbs2-accent2)}
 [data-gill-v16] .gbs2-current-title{margin:5px 0 0;font-family:var(--f-body,Lora,Georgia,serif);font-size:17px;font-weight:700;line-height:1.2;color:#fff}
 [data-gill-v16] .gbs2-curbar{height:3px;margin-top:12px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden}
 [data-gill-v16] .gbs2-curbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gbs2-accent),var(--gbs2-accent2));transition:width .25s}
-[data-gill-v16] .gbs2-toch{display:flex;align-items:center;gap:8px;padding:10px 14px 7px;color:rgba(255,255,255,.68)}
+[data-gill-v16] .gbs2-toch{display:flex;align-items:center;gap:8px;margin-top:8px;padding:12px 6px 7px;border-top:1px solid rgba(255,255,255,.13);color:rgba(255,255,255,.68)}
 [data-gill-v16] .gbs2-toch span:first-child{flex:1;font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
 [data-gill-v16] .gbs2-count{font-size:10px;font-weight:800;font-variant-numeric:tabular-nums;background:rgba(255,255,255,.08);border-radius:99px;padding:2px 8px}
 /* .gbs2-current is flex:1 1 auto so the rail always fills exactly
@@ -1274,7 +1274,7 @@ html.dark [data-gill-v16] .gbs-rail-spdbadge{
    centers a short list in that leftover room instead; "safe" falls back to
    start-alignment so a long list (Часть III) still scrolls normally from the
    top rather than opening centred/cut-off. */
-[data-gill-v16] .gbs2-tocscroll{position:relative;flex:1 1 auto;min-height:96px;min-width:0;display:flex;flex-direction:column;justify-content:safe center;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable;padding:2px 8px 11px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.28) transparent;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%)}
+[data-gill-v16] .gbs2-tocscroll{position:relative;flex:1 1 auto;min-height:0;min-width:0;display:flex;flex-direction:column;justify-content:flex-start;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable;padding:2px 8px 11px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.28) transparent;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%)}
 [data-gill-v16] .gbs2-tocscroll::-webkit-scrollbar{width:5px}[data-gill-v16] .gbs2-tocscroll::-webkit-scrollbar-thumb{border-radius:999px;background:rgba(255,255,255,.24)}
 [data-gill-v16] .gbs2-toc{position:relative;list-style:none;margin:0;padding:0 0 0 22px}[data-gill-v16] .gbs2-toc>li{list-style:none;margin:0;padding:0}
 [data-gill-v16] .gbs2-track{position:absolute;left:9px;top:var(--gbs2-track-top,14px);width:2px;height:var(--gbs2-track-height,calc(100% - 28px));background:rgba(255,255,255,.12);border-radius:9px;overflow:hidden}

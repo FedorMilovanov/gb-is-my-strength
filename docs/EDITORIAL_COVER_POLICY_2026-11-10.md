@@ -1,0 +1,9 @@
+# Editorial cover and reading-rail policy (2026-11-10)
+
+**Sitewide standard:** An article image must not be an artificial headline poster, a fabricated historical newspaper cover, or a graphic with the article title embedded. Historical material uses authentic photographs or facsimiles, with truthful local source references. Printed wording within genuine historic source documents is allowed. Editorial headings remain HTML outside images.
+
+**Historical series:** The Russian Baptist chapters, reference section and book landing now use archival image compositions with source file inventory in `data/baptist-editorial-cover-sources.json`. Their imagery is contextual, **not** a photograph of the exact event in the article. Never invent a source date, person, masthead or legal rights. Each asset's original rights and historical attribution require independent verification before production.
+
+**Automated gate:** `node scripts/editorial-cover-contract.cjs` validates Baptist source manifests, bans the 11 retired synthetic title card names in published source, detects the retired baked-title heart poster, and rejects SVG hero artwork containing printed text. This gate is invoked via the canonical `scripts/check-engine-contracts.js`. It cannot visually classify all rasterized photographs; every new raster hero also needs human screenshot review across article, thumbnail and social image surfaces.
+
+**Reader architecture:** use the registered `SeriesReaderChrome` facade and current `ReaderRail` ownership contracts. A chapter/part TOC should read as part of the rail, not as a nested decorated card. Do not duplicate scrollspy, search, TTS, library, bookmarks, focus/overlay controllers or storage owners. Preserve original anchors and mobile behavior. Any future HTML refactor must be separately browser-tested in Chromium, Firefox and WebKit before release.
