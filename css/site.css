@@ -8,7 +8,9 @@ a{color:#1f4ea3;text-decoration:none}
 /* WCAG 1.4.1: ссылка внутри сплошного текста должна отличаться не только цветом.
    Глобальный сброс убирает подчёркивание — возвращаем его там, где ссылка стоит
    внутри абзаца, списка или строки литературы (без собственных классов-кнопок). */
-p a[href]:not([class]), li a[href]:not([class]), dd a[href]:not([class]),
+/* Reader/navigation lists are not prose: they use active-state, focus and
+   dot/track affordances instead of link underlines, shared sitewide. */
+p a[href]:not([class]), li a[href]:not([class]):not(:where(nav a, [role="navigation"] a, .gbs2-toc a)), dd a[href]:not([class]),
 blockquote a[href]:not([class]), figcaption a[href]:not([class]),
 td a[href]:not([class]), .flex-1 a[href]:not([class]) { text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px }
 html.dark a{color:#d4a574}
