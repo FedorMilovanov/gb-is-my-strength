@@ -114,4 +114,24 @@ if (REQUIRE_DIST) {
   strictFragmentSummary = `strict fragment audit passed: ${report.totals.pages} page(s), ${report.totals.uniqueFragments} unique target(s)`;
 }
 
+
+/*
+ * Both rail families must use the same presentational TOC heading,
+ * with historically stable IDs and the series-collapse native button.
+ * This is a composition contract, not a second reader/scroll owner.
+ */
+const TOC_HEADING = path.join(ROOT, 'src/components/article-pilots/_shared/ReaderTocHeading.astro');
+const SINGLE_RAIL = path.join(ROOT, 'src/components/article-pilots/_shared/ReaderRail.astro');
+const SERIES_RAIL = path.join(ROOT, 'src/components/article-pilots/gill-series/GillSeriesRail.astro');
+const tocHeadingSource = fs.readFileSync(TOC_HEADING, 'utf8');
+const singleRailSource = fs.readFileSync(SINGLE_RAIL, 'utf8');
+const seriesRailSource = fs.readFileSync(SERIES_RAIL, 'utf8');
+assert.match(singleRailSource, /<ReaderTocHeading variant="single"/, 'standalone reader must reuse canonical TOC heading');
+assert.match(seriesRailSource, /<ReaderTocHeading variant="series"/, 'series reader must reuse canonical TOC heading');
+assert.match(tocHeadingSource, /id="hrailCount"/, 'standalone count ID is stable');
+assert.match(tocHeadingSource, /id="gbs2Count"/, 'series count ID is stable');
+assert.match(tocHeadingSource, /<slot\s*\/>/, 'series rail native collapse trigger must pass through unchanged');
+assert.match(seriesRailSource, /id="gbsTocToggle"/, 'series TOC collapse button remains the native controller target');
+assert.match(seriesRailSource, /aria-controls="gbsTocScroll"/, 'series TOC scroll target is preserved');
+
 console.log(`✅ series-reader-facade: ${facadeImports} consumers; canonical composition directly owned; historical implementation retired; content-layer rendering uses Astro render(entry); heart progress fail-closed; mobile Back config-owned; no-quiz Learning panel relation guarded; Learning search has persistent accessible name; ${strictFragmentSummary}`);

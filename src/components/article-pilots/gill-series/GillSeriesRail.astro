@@ -2,6 +2,7 @@
 import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
 import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
 import SeriesMark from './SeriesMark.astro';
+import ReaderTocHeading from '../_shared/ReaderTocHeading.astro';
 import GillLeatherDefs from './GillLeatherDefs.astro';
 import GillLeatherRibbon from './GillLeatherRibbon.astro';
 import { GILL_SERIES, satellitesOf, chapterArticles, topLevelItems, sectionLabel, coreStepMeta, type SeriesConfig } from '../_shared/series/seriesConfig';
@@ -155,16 +156,14 @@ const kidsLabel = currentItem?.tier === 'chapter' ? 'В этой главе' : '
         <p class="gbs2-current-title">{page.railNowTitle}</p>
         <div class="gbs2-curbar"><i id="gbs2Curbar"></i></div>
       </div>
-      <div class="gbs2-toch">
-        <span>{currentItem?.tier === 'chapter' ? 'Оглавление статьи' : 'Оглавление части'}</span>
-        <span class="gbs2-count" id="gbs2Count">1 / {page.partToc.length}</span>
+      <ReaderTocHeading variant="series" label={currentItem?.tier === 'chapter' ? 'Оглавление статьи' : 'Оглавление части'} total={page.partToc.length}>
         <!-- Mechanism 3: раскрытие/сворачивание оглавления части. Персист в
              localStorage gb:rail:toc-collapsed; класс toc-collapsed на
              .gbs2-current. Шеврон вниз (раскрыто) → вправо (свёрнуто). -->
         <button class="gbs2-toch-toggle" id="gbsTocToggle" type="button" aria-expanded="true" aria-controls="gbsTocScroll" aria-label="Свернуть оглавление части">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6" /></svg>
         </button>
-      </div>
+      </ReaderTocHeading>
       <div class="gbs2-tocscroll" id="gbsTocScroll">
         {/* Historical placement (witness bcf6389f): the track lives INSIDE the ul —
             .gbs2-track{left:9px} resolves against .gbs2-toc, putting the line exactly

@@ -7,6 +7,7 @@
  */
 import SiteSectionsMenu from './SiteSectionsMenu.astro';
 import GrokReaderTree from './GrokReaderTree.astro';
+import ReaderTocHeading from './ReaderTocHeading.astro';
 import type { ReaderTocNode } from './series/readerTocProjection';
 
 export interface ReaderRailTocItem { href: string; label: string; level: number; }
@@ -59,10 +60,7 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
     <div class="hrail-meta__eyebrow">{eyebrow}</div>
     <p class="hrail-meta__title">{title}</p>
   </div>
-  <div class="hrail-toch">
-    {tocLabel}
-    <b id="hrailCount">1 / {toc.length}</b>
-  </div>
+  <ReaderTocHeading variant="single" label={tocLabel} total={toc.length} />
   <div class="hrail-scroll">
     {grokPilot && grokNodes?.length ? (
       <GrokReaderTree nodes={grokNodes} root />

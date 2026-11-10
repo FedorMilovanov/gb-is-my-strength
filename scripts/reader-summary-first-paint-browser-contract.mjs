@@ -25,12 +25,26 @@ const server=http.createServer((req,res)=>{
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const origin='http://127.0.0.1:'+server.address().port;
 const checks=[];
-const snapshot=()=>{const card=Array.from(document.querySelectorAll('.summary-card')).find(
- el=>el.querySelector(':scope > .summary-card__head')?.textContent?.trim().toLowerCase()==='коротко');
- const list=card?.querySelector('.summary-card__body'),style=list?getComputedStyle(list):null;
+// The native disclosure changes the heading from "Коротко" to
+// "Краткое содержание" and moves the list into .gb-summary-motion.
+// Observe the SAME card before and after hydration; a direct-child-only
+// selector would falsely report that the genuine card disappeared.
+const snapshot=()=>{
+ const card=Array.from(document.querySelectorAll('.summary-card')).find(el=>{
+   const title=el.querySelector(':scope > .summary-card__head')?.textContent?.trim().toLocaleLowerCase('ru');
+   return title==='коротко'||title==='краткое содержание';
+ });
+ const list=card?.querySelector('.summary-card__body');
+ const panel=card?.querySelector('.gb-summary-motion');
+ const toggle=card?.querySelector('.gb-summary-toggle');
+ const style=list?getComputedStyle(list):null;
  return {exists:!!card,owner:card?.dataset.gbSummaryOwner||null,
- pending:card?.dataset.gbSummaryPending||null,display:style?.display||null,
- height:list?.getBoundingClientRect().height||0,open:card?.dataset.gbSummaryOpen||null};
+   pending:card?.dataset.gbSummaryPending||null,display:style?.display||null,
+   height:(panel||list)?.getBoundingClientRect().height||0,
+   open:card?.dataset.gbSummaryOpen||null,
+   collapsedInert:panel?panel.inert:null,
+   ariaExpanded:toggle?.getAttribute('aria-expanded')||null,
+   structure:panel?'hydrated':'original'};
 };
 const check=(engine,route,mode,pass,details)=>{
  checks.push({engine,route,mode,pass:Boolean(pass),details});
@@ -49,7 +63,7 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
    check(engine,route,'delayed runtime: original list never flashes',before.exists&&before.owner===null&&before.pending==='1'&&before.display==='none'&&before.height===0,before);
    await page.waitForTimeout(1150);
    const after=await page.evaluate(snapshot);
-   check(engine,route,'runtime assumes owner, closes, removes temporary guard',after.owner==='1'&&after.pending===null&&after.open==='false'&&after.height<=2,after);
+   check(engine,route,'runtime assumes owner, closes, removes temporary guard',after.owner==='1'&&after.pending===null&&after.open==='false'&&after.height<=2&&after.collapsedInert===true&&after.ariaExpanded==='false'&&after.structure==='hydrated',after);
   }catch(e){check(engine,route,'delayed runtime exception',false,String(e));}
   await page.close();
   const disabled=await browser.newPage({viewport:{width:1440,height:900},javaScriptEnabled:false,serviceWorkers:'block'});
