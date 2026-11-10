@@ -595,7 +595,10 @@
       0 12px 30px -26px rgba(0, 0, 0, .92);
   }
 
-  @media (max-width: 760px) {
+  /* Two fixed crossed-card hit slots are too narrow through small-tablet
+     widths; allow content-owned height through 900px, preserving V3 motion only
+     where the paired desktop composition has adequate text measure. */
+  @media (max-width: 900px) {
     body.home-page #main-content #razbor .h-refutations-deck {
       grid-template-columns: 1fr;
       gap: 12px;
