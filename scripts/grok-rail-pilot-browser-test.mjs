@@ -382,7 +382,15 @@ try {
             // stay inside that ring, never spill as an outer box-shadow/halo.
             if(hoverFine){
               await speedTrigger.hover();
-              await page.waitForTimeout(340);
+              // CI WebKit can start the native opacity transition later than
+              // the synthetic pointer move. Wait for the actual rendered
+              // state, not an assumed 340ms wall-clock interval. The visual
+              // assertion below remains unchanged and still fails closed.
+              await page.waitForFunction(()=>{
+                const trigger=document.querySelector('#grokCompactTools .gb-ember');
+                return !!trigger && trigger.matches(':hover') &&
+                  parseFloat(getComputedStyle(trigger,'::before').opacity)>.75;
+              },null,{timeout:3500});
               const emberSkin=await speedTrigger.evaluate(button=>{
                 const css=getComputedStyle(button),light=getComputedStyle(button,'::before');
                 const ring=button.querySelector('.gb-ember__ring-svg').getBoundingClientRect();
