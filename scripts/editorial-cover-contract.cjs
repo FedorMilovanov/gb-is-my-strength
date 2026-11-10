@@ -25,7 +25,8 @@ function collect(dir){
 }
 const srcFiles=collect(path.join(ROOT,'src')).filter(p=>/\.(?:astro|mdx|ts|tsx|js|mjs|json)$/.test(p));
 /* Current publication shadows are deployed HTML, not archival audit snapshots. */
-const publishedSources=['baptisty-rossii','_build-tools/konfessii-baptizm','sitemap.xml'];
+// Legacy HTML snapshots are hash-locked and exempt from modern cover scans.
+const publishedSources=['_build-tools/konfessii-baptizm','sitemap.xml'];
 const publishedFiles=publishedSources.flatMap(rel=>{
  const p=path.join(ROOT,rel);
  if(!fs.existsSync(p))return [];
