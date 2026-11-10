@@ -188,6 +188,17 @@ async function inspectViewport(browser, origin, viewport) {
       }),
       futureSeries: series.map(getImageCoverage),
       leadLastArt: getImageCoverage(leadLast),
+      featuredPalette: [...document.querySelectorAll('#publikacii .h-featured-series')].map((card) => {
+        const title = card.querySelector('.h-featured-title');
+        const description = card.querySelector('.h-featured-abstract');
+        const panel = card.querySelector('.h-featured-body');
+        return {
+          background: getComputedStyle(card).backgroundColor,
+          titleColor: title ? getComputedStyle(title).color : '',
+          abstractColor: description ? getComputedStyle(description).color : '',
+          panelBackground: panel ? getComputedStyle(panel).backgroundImage : '',
+        };
+      }),
     };
   });
   const screenshot = path.join(REPORT_DIR, `${viewport.name}.png`);
@@ -203,6 +214,27 @@ async function inspectViewport(browser, origin, viewport) {
   }
   assert.equal(homeSurfaces.directions.length, 5, `${viewport.name}: five library directions required`);
   assert.equal(homeSurfaces.futureSeries.length, 3, `${viewport.name}: three future series required`);
+  assert.equal(homeSurfaces.featuredPalette.length, 6,
+    `${viewport.name}: all six editorial cards must share the theme palette`);
+  const colorChannels = (value) => {
+    const match = value.match(/^rgba?\(([^)]+)\)$/);
+    assert.ok(match, `${viewport.name}: unexpected computed color ${value}`);
+    return match[1].split(',').slice(0, 3).map((channel) => Number.parseFloat(channel));
+  };
+  for (const [index, palette] of homeSurfaces.featuredPalette.entries()) {
+    const background = colorChannels(palette.background);
+    const title = colorChannels(palette.titleColor);
+    const abstract = colorChannels(palette.abstractColor);
+    if (viewport.dark) {
+      assert.ok(Math.max(...background) < 65 && Math.min(...title) > 210 && Math.min(...abstract) > 180,
+        `${viewport.name}: editorial card ${index} lost dark-theme ink contrast`);
+    } else {
+      assert.ok(Math.min(...background) > 220 && Math.max(...title) < 100 && Math.max(...abstract) < 115,
+        `${viewport.name}: editorial card ${index} retained the night palette in daylight mode`);
+      assert.ok(palette.panelBackground.includes('rgb(255, 253, 250)'),
+        `${viewport.name}: editorial card ${index} still paints a dark content panel`);
+    }
+  }
   if (viewport.width <= 900) {
     assert.equal(homeSurfaces.routesDisplay, 'grid', `${viewport.name}: mobile directions must use one stable list, not a carousel`);
     assert.ok(homeSurfaces.routesScrollWidth <= homeSurfaces.routesClientWidth + 1,
