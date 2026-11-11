@@ -30,7 +30,7 @@ const ROUTES = [
   {
     id: 'gill',
     route: '/articles/dzhon-gill-chast-1-chelovek/',
-    slot: { root: '[data-fc-speed-mode="inline"]', rail: '.mobile-speedrail', badge: '.mobile-spdbadge', alternate: '.mobile-learning-trigger', keepAlternateVisible: true, chip: '.mobile-speed' },
+    slot: { root: '[data-fc-speed-mode="inline"]', rail: '.mobile-speedrail', badge: '.mobile-spdbadge', alternate: '.mobile-learning-trigger', keepAlternateVisible: false, chip: '.mobile-speed' },
     mobileSurfaces: [
       { id: 'part-toc', trigger: '#mobPartTocBtn', target: '#partTocOverlay', popup: 'dialog' },
       { id: 'settings', trigger: '#mobSettingsBtn', target: '#gillSettingsOverlay', popup: 'dialog' },
@@ -185,7 +185,16 @@ async function auditSlot(page, routeId, selectors, checks) {
   record(checks, `${prefix}-20`, 'Home moves to first radio', home.focused === 0 && home.checked[0] === 0, home);
 
   await page.keyboard.press('Enter');
-  await page.waitForTimeout(360);
+  // Gill's one-line rail takes 380ms to fold. Assert the settled keyboard/AT
+  // state instead of a transient frame in its reversible exit animation.
+  await page.waitForFunction(({ rail, badge, alternate }) => {
+    const r = document.querySelector(rail);
+    const b = document.querySelector(badge);
+    const a = alternate ? document.querySelector(alternate) : null;
+    return !!r && r.hidden && r.getAttribute('aria-hidden') === 'true' &&
+      b?.getAttribute('aria-expanded') === 'false' &&
+      (!a || (!a.inert && a.getAttribute('aria-hidden') !== 'true'));
+  }, { rail: selectors.rail, badge: selectors.badge, alternate: selectors.alternate }, { timeout: 2000 });
   const afterEnter = await slotSnapshot(page, selectors);
   record(checks, `${prefix}-21`, 'Enter closes rail after activation', afterEnter.railAriaHidden === 'true' && !afterEnter.railVisible, afterEnter);
   record(checks, `${prefix}-22`, 'closed rail again has zero Tab stops', afterEnter.tabStops === 0, afterEnter);

@@ -474,12 +474,12 @@ try {
                 overflow:document.documentElement.scrollWidth-innerWidth
               };
             });
-            check(name,viewport.id,'compact PlayEmber has clean horizontal five-speed bloom',
-              !!focusRates&&focusRates.choices===5&&focusRates.horizontal&&focusRates.visible&&
+            check(name,viewport.id,'compact PlayEmber has clean horizontal six-speed bloom',
+              !!focusRates&&focusRates.choices===6&&focusRates.horizontal&&focusRates.visible&&
               focusRates.gap>=12&&focusRates.width>=175&&focusRates.height<=56&&
               focusRates.panelEnd<=focusRates.viewport&&!focusRates.headingOverlap&&focusRates.overflow<=1&&
               focusRates.speedBadge?.display==='grid'&&focusRates.speedBadge.visible&&
-              /^(?:1|1\.25|1\.5|1\.75|2)×$/.test(focusRates.speedBadge.text)&&
+              /^(?:0\.75|1|1\.25|1\.5|1\.75|2)×$/.test(focusRates.speedBadge.text)&&
               focusRates.speedBadge.left>=0&&focusRates.speedBadge.right<=focusRates.viewport&&
                focusRates.innerLight.display==='block'&&
                focusRates.innerLight.border==='0px'&&
@@ -489,7 +489,7 @@ try {
               focusRates.ringSize<=focusRates.playSize-3.5,{...focusRates,pointerProfile});
             if(viewport.id==='desktop-1200'){
               // Real mouse travel must not traverse a dead hover gap from
-              // Play to the displaced five-speed strip. Older code fired
+              // Play to the displaced six-speed strip. Older code fired
               // mouseleave in the 24–38px corridor and folded after 260ms.
               const playBox=await speedTrigger.boundingBox();
               const stripBox=await page.locator('#grokCompactTools .gb-ember-expand').boundingBox();

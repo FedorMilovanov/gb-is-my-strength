@@ -103,6 +103,9 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
 </aside>
 
 <style is:global>
+  /* Compact Grok Play owns a single radial glow INSIDE its SVG progress ring.
+     Do not inherit the shared external Play halo on this smaller surface. */
+  #grokCompactTools .gb-ember-wrap > .gb-ember { filter: none; }
   /* Reserve the reader's vertical scrollbar corridor on real desktop browsers.
      OverlayRuntime temporarily fixes the body while a menu is open; without
      a stable root gutter the 15px scrollbar disappearance changes the page's
