@@ -71,9 +71,28 @@ async function visit(type,engine,route,size,full){
   if(full && /hermenevticheskaya|dzhon-gill-chast-1|nagornaya\/chast-1/.test(route)){
     await card.screenshot({path:path.join(out,engine+'-'+route.replaceAll('/','_')+'-open.png')});
   }
-  await btn.click();await p.waitForTimeout(460);
-  const closed=await card.evaluate(el=>({open:el.dataset.gbSummaryOpen,h:el.querySelector('.gb-summary-motion')?.getBoundingClientRect().height,inert:el.querySelector('.gb-summary-motion')?.inert}));
-  add(engine,route,'closes smoothly',closed.open==='false'&&closed.inert&&closed.h<=2,closed);
+  // The production grid-row transition is 420ms. Under Linux WebKit the
+  // animation clock may start a frame after the click. A 460ms snapshot can
+  // therefore sample the still-expanded first frame even though aria/inert
+  // are already closed. Observe the completed real CSS transition instead,
+  // while enforcing a finite UX budget and the original 2px geometry gate.
+  const closeStart=Date.now();
+  await btn.click();
+  await p.waitForFunction(cardEl=>{
+    const panel=cardEl.querySelector('.gb-summary-motion');
+    return cardEl.dataset.gbSummaryOpen==='false' && panel?.inert &&
+      panel.getBoundingClientRect().height<=2 &&
+      !panel.getAnimations().some(a=>a.playState==='running' &&
+        a.transitionProperty==='grid-template-rows');
+  },await card.elementHandle(),{timeout:1400});
+  const closed=await card.evaluate(el=>({open:el.dataset.gbSummaryOpen,
+    h:el.querySelector('.gb-summary-motion')?.getBoundingClientRect().height,
+    inert:el.querySelector('.gb-summary-motion')?.inert,
+    runningGridTransitions:el.querySelector('.gb-summary-motion')?.getAnimations()
+      .filter(a=>a.playState==='running'&&a.transitionProperty==='grid-template-rows').length}));
+  closed.elapsedMs=Date.now()-closeStart;
+  add(engine,route,'closes smoothly',closed.open==='false'&&closed.inert&&
+    closed.h<=2&&closed.runningGridTransitions===0&&closed.elapsedMs<=1400,closed);
   if(full&&/hermenevticheskaya|dzhon-gill-chast-1|nagornaya\/chast-1/.test(route))await card.screenshot({path:path.join(out,engine+'-'+route.replaceAll('/','_')+'-closed.png')});
   if(full){
    await btn.focus();await p.keyboard.press('Enter');add(engine,route,'keyboard Enter opens',await btn.getAttribute('aria-expanded')==='true');
