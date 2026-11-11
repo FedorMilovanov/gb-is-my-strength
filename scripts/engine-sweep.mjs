@@ -392,7 +392,7 @@ for (const [id, url] of SINGLES) {
     };
   });
   R(id, 'desk: выбранная 1.75× доступна и не перекрывает Play',
-    !!singleSpeed && singleSpeed.selected && singleSpeed.rateCount === 5 &&
+    !!singleSpeed && singleSpeed.selected && singleSpeed.rateCount === 6 &&
       singleSpeed.playInViewport && singleSpeed.badgeVisible && singleSpeed.badgeInViewport &&
       singleSpeed.badgeText === '1.75×' &&
       singleSpeed.dx >= (singleSpeed.grok ? 3 : 8) &&

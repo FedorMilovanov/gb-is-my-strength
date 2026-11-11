@@ -3,7 +3,7 @@
  * GillSeriesMobileBar — shared series mobile (<85em) control surface, v6.
  *
  *   TOP bar: Back(→config.railBackHref) → Home(→«/») → Learning trigger
- *     /responsive speed picker popover (data-fc-speed-mode="inline" opts the
+ *     /inline horizontally scrolling speed rail (data-fc-speed-mode="inline" opts the
  *     ember OUT of the canonical bloom-pill in floating-cluster-controller.js
  *     — see initGillInlineSpeedRail()) → Play+badge → Save. Auto-hides on
  *     scroll-down, reveals on scroll-up, stays pinned while any Gill sheet
@@ -43,7 +43,7 @@ const page = config.pages[pageId];
 ---
 <MobileChromeShell
   engine="series"
-  topAttrs={{ 'data-fc-root': true, 'data-fc-variant': 'gill', 'data-gill-mobile-bar': true, 'data-fc-speed-mode': 'inline', 'data-fc-speed-layout': 'popover' }}
+  topAttrs={{ 'data-fc-root': true, 'data-fc-variant': 'gill', 'data-gill-mobile-bar': true, 'data-fc-speed-mode': 'inline', 'data-fc-speed-layout': 'inline' }}
   bottomAttrs={{ 'data-fc-root': true, 'data-fc-variant': 'gill', 'data-gill-mobile-bar': true }}
 >
   <Fragment slot="top-leading">
@@ -60,7 +60,7 @@ const page = config.pages[pageId];
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M9.4 9.3a2.6 2.6 0 1 1 3.7 2.4c-.9.4-1.5 1.1-1.5 2v.3" /><path d="M11.6 17h.01" /></svg>
       <span>Справка</span>
     </button>
-    <ReaderSpeedOptions id="mobileSpeedrail" railClass="mobile-speedrail" chipClass="mobile-speed" rates={[0.8, 1, 1.25, 1.5, 1.75, 2]} initiallyHidden />
+    <ReaderSpeedOptions id="mobileSpeedrail" railClass="mobile-speedrail" chipClass="mobile-speed" rates={[0.75, 1, 1.25, 1.5, 1.75, 2]} initiallyHidden />
   </div>
 
   <span class="mobile-playwrap" slot="top-playback">

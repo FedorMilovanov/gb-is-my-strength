@@ -92,7 +92,7 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
     <span class="theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg></span>
   </button>
   <button class="hmbar-btn" id="hmSettingsBtn" type="button" aria-label="Настройки чтения">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 0 1-4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   </button>
   <button class="hmbar-btn" id="hmShareBtn" data-action="share" type="button" aria-label="Поделиться">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" /></svg>
@@ -224,14 +224,19 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   .hm-speedrail::-webkit-scrollbar{display:none}
   .hm-speedrail.is-dragging{cursor:grabbing;scroll-snap-type:none}
   .hmtop.speed-open .hm-speedrail{opacity:1;transform:translateX(0);pointer-events:auto}
-  .hm-spd{flex:0 0 auto;min-width:44px;min-height:44px;font:700 10.5px/1 var(--f-ui,"Source Sans 3",system-ui,sans-serif);
-    border:1px solid rgba(122,46,46,.22);background:transparent;color:#8a5a4a;padding:10px 8px;border-radius:8px;
+  .hm-spd{flex:0 0 auto;min-width:44px;min-height:44px;font:750 12px/1 var(--f-ui,"Source Sans 3",system-ui,sans-serif);
+    border:0;background:transparent;color:#8a5a4a;padding:10px 8px;border-radius:0;
     cursor:pointer;white-space:nowrap;position:relative;transition:background .15s,color .15s,border-color .15s,transform .12s;
     scroll-snap-align:center;-webkit-tap-highlight-color:transparent}
   html.dark .hm-spd{border-color:rgba(224,160,150,.24);color:#caa1a0}
   .hm-spd:active{transform:scale(.92);transition-duration:.08s}
-  .hm-spd[aria-checked="true"]{background:#7a2e2e;color:#fff;border-color:transparent}
-  html.dark .hm-spd[aria-checked="true"]{background:#e0a89c;color:#2a1814}
+  .hm-spd::after{content:'';position:absolute;left:24%;right:24%;bottom:5px;height:2px;
+    border-radius:2px;background:#7a2e2e;opacity:0;transform:scaleX(.6);
+    transition:opacity .18s ease,transform .22s ease}
+  html.dark .hm-spd::after{background:#e0a89c}
+  .hm-spd[aria-checked="true"]{background:transparent;color:#7a2e2e}
+  html.dark .hm-spd[aria-checked="true"]{background:transparent;color:#e0a89c}
+  .hm-spd[aria-checked="true"]::after{opacity:1;transform:scaleX(1)}
   .hm-speedrail.is-dragging .hm-spd{transition:none}
 
   /* Play and speed are independent 44px touch targets. Keep the speed
@@ -268,8 +273,9 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   html.dark .hmbar-progress-track{stroke:rgba(224,160,150,.18)}
   .hmbar-progress-fill{fill:none;stroke:#7a2e2e;stroke-width:3;stroke-linecap:round;transition:stroke-dashoffset .15s linear}
   html.dark .hmbar-progress-fill{stroke:#e0a89c}
-  .hmbar-progress-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    font:700 8px "Source Sans 3",system-ui,sans-serif;color:#7a2e2e;pointer-events:none;font-variant-numeric:tabular-nums}
+  .hmbar-progress-text{position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+    overflow:hidden;clip-path:inset(50%);white-space:nowrap;pointer-events:none;
+    font:700 8px "Source Sans 3",system-ui,sans-serif;color:#7a2e2e;font-variant-numeric:tabular-nums}
   html.dark .hmbar-progress-text{color:#e0a89c}
   .hmbar-section{flex:1;min-width:0;background:none;border:0;cursor:pointer;padding:4px 4px;text-align:left;
     display:flex;flex-direction:column;gap:1px;overflow:hidden;font:inherit}
@@ -415,9 +421,10 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   div.mobile-chrome--ink-gold .hmbar-btn{color:var(--lawson-chrome-accent)}
   div.mobile-chrome--ink-gold .hm-icon.gb-save.is-saved{color:var(--lawson-chrome-accent)}
   div.mobile-chrome--ink-gold .hm-icon.gb-save.is-saved svg{fill:var(--lawson-chrome-accent);stroke:var(--lawson-chrome-accent)}
-  div.mobile-chrome--ink-gold .hm-spd{border-color:var(--lawson-chrome-border);color:var(--lawson-chrome-accent)}
+  div.mobile-chrome--ink-gold .hm-spd{border-color:transparent;color:var(--lawson-chrome-text)}
+  div.mobile-chrome--ink-gold .hm-spd::after{background:var(--lawson-chrome-accent)}
   div.mobile-chrome--ink-gold .hm-spd[aria-checked="true"]{
-    background:var(--lawson-chrome-accent);border-color:var(--lawson-chrome-accent);color:var(--lawson-chrome-accent-ink);
+    background:transparent;border-color:transparent;color:var(--lawson-chrome-accent);
   }
   div.mobile-chrome--ink-gold .hm-spdbadge{color:var(--lawson-chrome-accent-ink)}
   div.mobile-chrome--ink-gold .hm-spdbadge::before{

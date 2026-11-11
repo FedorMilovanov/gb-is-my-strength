@@ -35,6 +35,10 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
   const rail = speedrail;
   const rateTrigger = badge;
   const chips = Array.prototype.slice.call(speedrail.querySelectorAll(sel.chip)) as HTMLElement[];
+  // The displaced search/Learning control must leave keyboard and AX while
+  // its transparent state is replaced by the speed rail in the same slot.
+  const displaced = Array.from(speedrail.parentElement?.children || [])
+    .filter((element): element is HTMLElement => element !== speedrail && element instanceof HTMLElement);
   let offeredThisSession = false;
   let closeTimer: number | undefined;
 
@@ -42,7 +46,8 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
   function readRate(): number {
     try {
       const r = parseFloat(localStorage.getItem('gb:audio:rate') || localStorage.getItem('gbx-tts-rate') || '1');
-      return (!isNaN(r) && r > 0) ? r : 1;
+      // Legacy Gill saved 0.8×; the approved sitewide scale starts at 0.75×.
+      return (!isNaN(r) && r > 0) ? (r === 0.8 ? 0.75 : r) : 1;
     } catch (_) { return 1; }
   }
   function syncActive(rate: number) {
@@ -63,6 +68,10 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
 
   function open(autoClose: boolean) {
     clearTimeout(closeTimer);
+    if (displaced.some((element) => element.contains(document.activeElement))) {
+      rateTrigger.focus({ preventScroll: true });
+    }
+    displaced.forEach((element) => { element.inert = true; });
     rail.inert = false;
     rail.removeAttribute('aria-hidden');
     rateTrigger.setAttribute('aria-expanded', 'true');
@@ -76,6 +85,7 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
     // Keyboard focus must not remain on an element about to become inert.
     if (rail.contains(document.activeElement)) rateTrigger.focus({ preventScroll: true });
     topbar.classList.remove('speed-open');
+    displaced.forEach((element) => { element.inert = false; });
     rail.inert = true;
     rail.setAttribute('aria-hidden', 'true');
     rateTrigger.setAttribute('aria-expanded', 'false');
@@ -102,6 +112,11 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
       const rate = parseFloat(chip.dataset.speed || '1');
       syncActive(rate);
       badge.classList.remove('is-bump'); void badge.offsetWidth; badge.classList.add('is-bump');
+      // C3: keep live playback uninterrupted; only non-playing states wait
+      // for Play. The canonical rate event updates the active TTS engine.
+      const activeReading = ember.dataset.state === 'playing' || ember.dataset.state === 'starting';
+      if (activeReading) delete ember.dataset.speedConfirm;
+      else ember.dataset.speedConfirm = 'true';
       try {
         localStorage.setItem('gb:audio:rate', String(rate));
         localStorage.setItem('gbx-tts-rate', String(rate));
@@ -110,6 +125,10 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
       setTimeout(close, 220);
     });
   });
+
+  new MutationObserver(() => {
+    if (ember.dataset.state === 'playing') delete ember.dataset.speedConfirm;
+  }).observe(ember, { attributes: true, attributeFilter: ['data-state'] });
 
   window.addEventListener('gb:tts-rate-change', ((ev: CustomEvent) => {
     const r = ev && ev.detail && ev.detail.rate;

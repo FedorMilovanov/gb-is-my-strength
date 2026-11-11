@@ -1902,9 +1902,10 @@
       // to a horizontal .mobile-speedrail instead — see initGillInlineSpeedRail().
       if (ember.closest('[data-fc-speed-mode="inline"]')) return;
 
-      var speeds = [1, 1.25, 1.5, 1.75, 2];
+      var speeds = [0.75, 1, 1.25, 1.5, 1.75, 2];
       var currentRate = 1;
       try { currentRate = parseFloat(localStorage.getItem('gb:audio:rate') || localStorage.getItem('gbx-tts-rate')) || 1; } catch(_){}
+      if (currentRate === 0.8) currentRate = 0.75;
       var pressTimer = null;
       var suppressNextEmberClick = false;
 
@@ -2013,6 +2014,11 @@
       }
 
       speedPanelFold(true);
+      new MutationObserver(function() {
+        if (ember.dataset.state === 'playing' || ember.dataset.state === 'complete') {
+          ember.removeAttribute('data-speed-confirm');
+        }
+      }).observe(ember, { attributes: true, attributeFilter: ['data-state'] });
 
       // Custom mobile rails and other controls share the same TTS rate.
       // Keep this badge and radiogroup synchronized when they select it.
@@ -2091,16 +2097,16 @@
             b.classList.toggle('is-active', isThis);
             b.setAttribute('aria-checked', isThis ? 'true' : 'false');
           });
-          // Live rate change — TTS подхватывает новую скорость со следующего chunk
+          // C3: live speed change is immediate while reading; never pause or
+          // require Play to confirm it. Only idle/paused selection waits for Play.
+          var activeRateChange = currentTtsUiState(ember) === 'playing' || currentTtsUiState(ember) === 'starting';
+          if (activeRateChange) ember.removeAttribute('data-speed-confirm');
+          else ember.setAttribute('data-speed-confirm', 'true');
           try {
             window.dispatchEvent(new CustomEvent('gb:tts-rate-change', {
               detail: { rate: speed }
             }));
           } catch(_) {}
-          // Click on a speed = select instantly AND start playback from idle
-          // (owner spec: "на клик мышки бы уже сразу 1.75 и т.п.").
-          var _st = currentTtsUiState(ember);
-          if (_st === 'idle' || !_st || _st === 'complete') { handlePlayClick(ember); }
           // Blur the clicked chip: it just received focus from the click,
           // and :focus-within (the keyboard-a11y keep-open rule) would
           // otherwise hold the panel open indefinitely even after the
@@ -2249,6 +2255,8 @@
 
     var currentRate = 1;
     try { currentRate = parseFloat(localStorage.getItem('gb:audio:rate') || localStorage.getItem('gbx-tts-rate')) || 1; } catch(_){}
+    // Retire the older Gill-only 0.8× rate when loading a saved preference.
+    if (currentRate === 0.8) currentRate = 0.75;
     var speedButtons = Array.prototype.slice.call(rail.querySelectorAll('[data-speed]'));
 
     function syncButtons() {
@@ -2267,14 +2275,36 @@
     var open = false;
     var offeredOnce = false;
     var closeTimer = null;
+    var foldTimer = null;
+    // The inline rail temporarily replaces the leading navigation in the
+    // same 44px-high top bar; never leave faded controls keyboard-focusable.
+    var leadingControls = Array.prototype.slice.call(
+      root.querySelectorAll('#mobBackBtn, #mobHomeBtn, .mobile-learning-trigger')
+    );
     function setOpen(next) {
+      clearTimeout(foldTimer);
+      if (!next && rail.contains(document.activeElement) && badge) badge.focus({ preventScroll: true });
       open = next;
+      if (open) {
+        rail.hidden = false;
+        rail.inert = false;
+        rail.setAttribute('aria-hidden', 'false');
+        // Commit the hidden starting geometry before translating into place.
+        void rail.offsetWidth;
+      } else {
+        rail.inert = true;
+      }
       root.classList.toggle('speed-open', open);
-      rail.setAttribute('aria-hidden', open ? 'false' : 'true');
-      rail.hidden = !open;
+      leadingControls.forEach(function(control) { control.inert = open; });
+      if (!open) {
+        foldTimer = setTimeout(function() {
+          if (open) return;
+          rail.setAttribute('aria-hidden', 'true');
+          rail.hidden = true;
+        }, 380);
+      }
       if (badge) badge.setAttribute('aria-expanded', open ? 'true' : 'false');
       speedButtons.forEach(function(btn) { btn.tabIndex = open ? 0 : -1; });
-      if (!open && rail.contains(document.activeElement) && badge) badge.focus();
       if (open) { try { document.dispatchEvent(new CustomEvent('gb:gill-sheet-open')); } catch(_) {} }
     }
     setOpen(false);
@@ -2296,15 +2326,27 @@
       currentRate = parseFloat(btn.getAttribute('data-speed'));
       try { localStorage.setItem('gb:audio:rate', currentRate); try{localStorage.setItem('gbx-tts-rate', currentRate)}catch(_){}; } catch(_){}
       syncButtons();
+      // C3: an active reader adopts a new rate immediately without pausing;
+      // paused/idle/complete readers retain their state until Play is pressed.
+      var activeRateChange = currentTtsUiState(ember) === 'playing' || currentTtsUiState(ember) === 'starting';
+      if (activeRateChange) ember.removeAttribute('data-speed-confirm');
+      else ember.setAttribute('data-speed-confirm', 'true');
       try { window.dispatchEvent(new CustomEvent('gb:tts-rate-change', { detail: { rate: currentRate } })); } catch(_) {}
-      var st = currentTtsUiState(ember);
-      if (st === 'idle' || !st || st === 'complete') { handlePlayClick(ember); }
       clearTimeout(closeTimer);
       closeTimer = setTimeout(function() { setOpen(false); }, 150);
     });
     addCleanListener(document, 'click', function(e) {
       if (open && !rail.contains(e.target) && !(badge && badge.contains(e.target))) setOpen(false);
     });
+    addCleanListener(window, 'gb:tts-rate-change', function(event) {
+      var rate = Number(event && event.detail && event.detail.rate);
+      if (!Number.isFinite(rate) || rate <= 0) return;
+      currentRate = rate;
+      syncButtons();
+    });
+    new MutationObserver(function() {
+      if (ember.dataset.state === 'playing') ember.removeAttribute('data-speed-confirm');
+    }).observe(ember, { attributes: true, attributeFilter: ['data-state'] });
     addCleanListener(document, 'keydown', function(e) {
       if (!open) return;
       if (e.key === 'Escape') { setOpen(false); if (badge) badge.focus(); return; }

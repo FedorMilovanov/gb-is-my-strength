@@ -2360,13 +2360,11 @@ html.dark .gb-ember-expand.is-open {
   .gb-ember-wrap:focus-within > .gb-ember-expand .gb-ember-expand__btn:nth-child(5) { transition-delay:.125s,.125s,0s,0s,0s; }
   .gb-ember-wrap:hover > .gb-ember-expand .gb-ember-expand__btn:nth-child(6),
   .gb-ember-wrap:focus-within > .gb-ember-expand .gb-ember-expand__btn:nth-child(6) { transition-delay:.15s,.15s,0s,0s,0s; }
-  /* Play circle drifts slightly to the RIGHT as the pill blooms from it
-     (single-article reference geometry — Play "comes out of the circle").
-     Gill's rail now blooms LEFT too (same as everywhere else), so it gets
-     the same drift — no Gill-specific override left here. */
+  /* Canonical Play stays centered while the speed rail opens. Only a
+     centered micro-scale on hover remains; no sideways movement. */
   .gb-ember-wrap:hover > .gb-ember,
   .gb-ember-wrap:focus-within > .gb-ember {
-    transform: translateX(4px) scale(1.04);
+    transform: scale(1.02);
   }
 }
 /* Deeper rubbery morph timing for the bloom */
@@ -2472,6 +2470,9 @@ html.dark .gb-ember-expand__btn.is-active {
    красивые глубокие цифры с тень") is the pill's look: no pill background,
    no chip borders — just numbers with a shadow. */
 [data-gill-v16] .gbs-theme-corner .gb-ember-expand {
+  /* Six rates must clear the wide reader column without shifting Play. */
+  padding-left: 0;
+  gap: 1px;
   background: transparent;
   border: none;
   box-shadow: none;
@@ -3422,11 +3423,17 @@ html.dark [data-gill-v16] .mobile-top-bar {
   [data-gill-v16] .bar-progress-track { stroke: var(--gill-mobile-track); stroke-width: 2.6; opacity: .85; }
   [data-gill-v16] .bar-progress-fill { stroke: var(--gill-ring-article); stroke-width: 2.8; stroke-linecap: round; transition: stroke-dashoffset .15s linear; }
   [data-gill-v16] .bar-progress-text {
+    /* Preserve accessible progress text without displaying duplicate numerals. */
     position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    inset: auto;
+    display: block;
     font-family: var(--gb-font-sans, system-ui, sans-serif);
     font-size: 9px;
     font-weight: 800;
@@ -3822,71 +3829,115 @@ html.dark [data-gill-v16] .mobile-top-bar {
     stroke-linecap: round; stroke-linejoin: round;
     flex-shrink: 0;
   }
-  /* Grid-based popover is readable at 320px and never steals room from the
-     Learning button or overlaps Play. Six columns fit from 360px; narrow
-     devices use two rows of three full-size choices. */
+  /* Canonical mobile S1: six text choices slide into the existing TOP
+     slot. No dropdown, floating card or second row; Play never moves.
+     The horizontally scrollable strip extends over the vacated Back/Home
+     positions on narrow screens, preserving 44px pointer targets. */
   [data-reader-engine="series"] .mobile-speedrail {
-    position: fixed;
-    inset: auto;
-    top: calc(var(--gill-mobile-topbar-h) + env(safe-area-inset-top, 0px) + 10px);
-    left: 50%;
-    width: min(420px, calc(100vw - 20px));
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: auto;
     box-sizing: border-box;
-    display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 6px;
-    padding: 10px;
-    border: 1px solid var(--gill-mobile-bar-border);
-    border-radius: 18px;
-    /* The top bar is translucent by design; a floating picker must be opaque.
-       Per-theme solid tokens preserve its palette without see-through text. */
-    background: var(--gill-mobile-speed-bg, #fdfbf6);
-    color: var(--gill-mobile-bar-ink);
-    box-shadow: var(--gill-mobile-bar-shadow), 0 12px 36px rgba(0,0,0,.18);
+    width: calc(100vw - 163px - env(safe-area-inset-left, 0px));
+    height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 2px;
+    border: 0;
+    border-radius: 0;
+    /* A solid undercoat keeps semi-transparent themed bar colors from
+       revealing displaced navigation under the inline speed picker. */
+    background: linear-gradient(var(--gill-mobile-bar-bg), var(--gill-mobile-bar-bg)), #f5eddf;
+    box-shadow: none;
     z-index: 4;
-    overflow: visible;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
     opacity: 0;
-    transform: translate(-50%, -6px);
+    transform: translateX(12px);
     pointer-events: none;
-    transition: opacity .18s ease, transform .18s ease;
+    transition: opacity .25s ease, transform .36s cubic-bezier(.22,1,.36,1);
   }
-  html.dark [data-reader-engine="series"] .mobile-speedrail {
-    background: var(--gill-mobile-speed-bg, #0d1117);
-  }
-  /* Closed speed choices must never enter sequential focus before hydration. */
+  html.dark [data-reader-engine="series"] .mobile-speedrail { background-color: #17191c; }
+  [data-reader-engine="series"] .mobile-speedrail::-webkit-scrollbar { display: none; }
+  [data-reader-engine="series"] .mobile-speedrail.is-dragging { scroll-snap-type: none; }
   .mobile-speedrail[aria-hidden="true"] { display: none !important; }
+  [data-reader-engine="series"] .mobile-top-bar > :is(#mobBackBtn, #mobHomeBtn) {
+    transition: opacity .24s ease, transform .36s cubic-bezier(.22,1,.36,1);
+  }
+  [data-reader-engine="series"] .mobile-learning-trigger {
+    transition: opacity .24s ease, transform .36s cubic-bezier(.22,1,.36,1);
+  }
+  [data-reader-engine="series"] .mobile-top-bar.speed-open > :is(#mobBackBtn, #mobHomeBtn) {
+    opacity: 0;
+    transform: translateX(-18px);
+    pointer-events: none;
+  }
+  [data-reader-engine="series"] .mobile-top-bar.speed-open .mobile-learning-trigger {
+    opacity: 0;
+    transform: translateX(-12px);
+    pointer-events: none;
+  }
   [data-reader-engine="series"] .mobile-top-bar.speed-open .mobile-speedrail {
     opacity: 1;
-    transform: translate(-50%, 0);
+    transform: translateX(0);
     pointer-events: auto;
   }
   [data-reader-engine="series"] .mobile-speed {
-    min-width: 0;
+    position: relative;
+    flex: 0 0 44px;
+    min-width: 44px;
+    width: 44px;
     height: 44px;
-    padding: 0 3px;
-    border: 1px solid var(--gill-mobile-bar-border);
-    border-radius: 11px;
+    padding: 0 1px;
+    border: 0;
+    border-radius: 0;
     background: transparent;
-    color: var(--gill-mobile-bar-muted);
+    color: var(--gill-mobile-bar-ink);
     white-space: nowrap;
+    scroll-snap-align: center;
     font-family: var(--gb-font-sans, system-ui, sans-serif);
-    font-size: 11.5px;
-    font-weight: 800;
+    font-size: 12px;
+    font-weight: 750;
     cursor: pointer;
-    transition: background .16s ease, border-color .16s ease, color .16s ease;
+    transition: color .18s ease;
+  }
+  [data-reader-engine="series"] .mobile-speed::after {
+    content: '';
+    position: absolute;
+    left: 24%;
+    right: 24%;
+    bottom: 6px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--gill-mobile-bar-gold);
+    opacity: 0;
+    transform: scaleX(.6);
+    transition: opacity .18s ease, transform .22s ease;
   }
   [data-reader-engine="series"] .mobile-speed[aria-checked="true"] {
-    background: var(--gill-mobile-bar-gold);
-    border-color: var(--gill-mobile-bar-gold);
-    color: var(--gb-surface, #fff);
+    color: var(--gill-mobile-bar-gold);
+    background: transparent;
   }
-  html.dark [data-reader-engine="series"] .mobile-speed[aria-checked="true"] { color: #0e1116; }
-  @media (max-width: 359px) {
-    [data-reader-engine="series"] .mobile-speedrail {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
+  [data-reader-engine="series"] .mobile-speed[aria-checked="true"]::after {
+    opacity: 1;
+    transform: scaleX(1);
   }
-  /* Make the rate trigger and Play peers in the flex row, not overlapping
+  [data-reader-engine="series"] .mobile-speed:focus-visible {
+    outline: 2px solid var(--gill-mobile-bar-gold);
+    outline-offset: -3px;
+    border-radius: 8px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-reader-engine="series"] .mobile-speedrail,
+    [data-reader-engine="series"] .mobile-top-bar > :is(#mobBackBtn, #mobHomeBtn),
+    [data-reader-engine="series"] .mobile-learning-trigger { transition: none; }
+  }  /* Make the rate trigger and Play peers in the flex row, not overlapping
      layers. The badge's SMALL painted pill lives inside a 44x44 button. */
   [data-reader-engine="series"] .mobile-playwrap .mobile-top-ember {
     width: 44px;
@@ -5172,6 +5223,7 @@ html.dark .gb-ember-wrap > .gb-ember-speed-echo {
 /* Reserve the luminous emphasis for a real interactive state, not idle. */
 .gb-ember-wrap > .gb-ember[data-state="playing"],
 .gb-ember-wrap > .gb-ember[data-state="paused"],
+.gb-ember-wrap > .gb-ember[data-speed-confirm="true"],
 .gb-ember-wrap:has(> .gb-ember-expand.is-open) > .gb-ember {
   filter: drop-shadow(0 0 7px color-mix(in srgb, var(--color-accent-gold-bright, #d8aa6d) 42%, transparent));
 }
@@ -5185,10 +5237,10 @@ html.dark .gb-ember-wrap > .gb-ember-speed-echo {
   .gb-ember-wrap > .gb-ember-speed-echo { transition: none; }
 }
 
-/* Custom Gill/Hermenevtika speed slots use the same warm Play emphasis even
-   though their picker is an inline/popover rail rather than a bloom pill. */
+/* Custom Gill/Hermenevtika speed slots use the same warm Play emphasis,
+   retaining their inline slot-swaps rather than a bloom pill. */
 :where([data-gb-speed-custom], [data-fc-speed-mode="inline"])
-  .gb-ember:is([data-state="playing"], [data-state="paused"]) {
+  .gb-ember:is([data-state="playing"], [data-state="paused"], [data-speed-confirm="true"]) {
   filter: drop-shadow(0 0 7px color-mix(in srgb, var(--color-accent-gold-bright, #d8aa6d) 42%, transparent));
 }
 :where([data-gb-speed-custom], [data-fc-speed-mode="inline"]).speed-open .gb-ember {

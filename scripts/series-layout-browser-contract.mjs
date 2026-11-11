@@ -171,6 +171,10 @@ try {
                     hidden: rail?.hidden, ariaHidden: rail?.getAttribute('aria-hidden'),
                     panel: rect ? { x: rect.x, right: rect.right, y: rect.y, width: rect.width } : null,
                     headerBottom: header?.bottom,
+                    headerTop: header?.top,
+                    horizontalScroll: rail?.scrollWidth > rail?.clientWidth,
+                    railScrollWidth: rail?.scrollWidth,
+                    railClientWidth: rail?.clientWidth,
                     learningAccessible: (() => {
                       const el = document.querySelector('.mobile-learning-trigger');
                       return Boolean(el && el.getAttribute('aria-hidden') !== 'true' && !el.inert);
@@ -182,10 +186,12 @@ try {
                 assert.equal(chooser.controls, 'mobileSpeedrail', 'speed trigger has no owned picker');
                 assert.equal(chooser.hidden, false, 'speed picker remains hidden');
                 assert.equal(chooser.ariaHidden, 'false', 'speed picker remains inert to a11y');
-                assert.equal(chooser.learningAccessible, true, 'visible Learning control became inert while speed is open');
+                assert.equal(chooser.learningAccessible, false,
+                  'displaced Learning button must become inert while inline speed choices occupy its slot');
                 assert.ok(chooser.panel && chooser.panel.x >= 0 &&
-                  chooser.panel.right <= width + 1 && chooser.panel.y >= chooser.headerBottom + 4,
-                  'speed picker outside viewport or overlaps top bar');
+                  chooser.panel.right <= width + 1 &&
+                  chooser.panel.y >= chooser.headerTop - 1 && chooser.panel.y + 44 <= chooser.headerBottom + 2,
+                  'canonical speed picker must remain inside the same 44px mobile top bar');
                 const bgAlpha = /rgba\([^)]*,\s*([.\d]+)\)$/.exec(chooser.background)?.[1];
                 assert.ok(!bgAlpha || Number(bgAlpha) >= .98,
                   'speed popover must have opaque theme background: ' + chooser.background);
@@ -200,12 +206,20 @@ try {
                 assert.ok(!darkAlpha || Number(darkAlpha) >= .98,
                   'dark speed popover must be opaque: ' + darkSurface);
                 assert.equal(chooser.choices.length, 6, 'speed choices lost');
-                assert.ok(chooser.choices.every((x) => x.w >= 43 && x.h >= 43 &&
-                  x.x >= 0 && x.right <= width + 1), 'speed choice hit target too narrow');
+                assert.ok(chooser.choices.every((x) => x.w >= 43 && x.h >= 43),
+                  'inline speed choices lost their 44px touch targets');
+                assert.ok(chooser.railScrollWidth >= chooser.railClientWidth &&
+                  (width > 430 || chooser.horizontalScroll),
+                  'narrow inline rail should scroll horizontally when six choices do not fit');
                 const uniqueY = new Set(chooser.choices.map((x) => Math.round(x.y)));
-                assert.equal(uniqueY.size, width === 320 ? 2 : 1,
-                  'speed choices do not use the correct adaptive row count');
+                assert.equal(uniqueY.size, 1,
+                  'all six canonical speed choices must remain on one line');
                 await page.keyboard.press('Escape');
+                await page.waitForFunction(() => {
+                  const rail = document.getElementById('mobileSpeedrail');
+                  const learning = document.querySelector('.mobile-learning-trigger');
+                  return !!rail && rail.hidden && !!learning && !learning.inert;
+                }, null, { timeout: 1800 });
                 const escaped = await page.evaluate(() => ({
                   expanded: document.getElementById('mobSpdBadge')?.getAttribute('aria-expanded'),
                   hidden: document.getElementById('mobileSpeedrail')?.hidden,
