@@ -11,6 +11,8 @@ interface Props {
   canonical: string;
   robots?: string;
   pilot?: boolean;
+  /** Omit all Pagefind markers for an explicitly noindex draft. Defaults to existing behavior. */
+  pagefindEnabled?: boolean;
   intendedCanonical?: string;
   /** Проброс в BaseLayout: маршруту с каноническим читательским рельсом нужен
    *  data-reader-rail-main на <main>, иначе на десктопе текст не отступает
@@ -25,7 +27,7 @@ interface Props {
   extraFontPreloads?: string[];
 }
 
-const { entry, canonical, robots, pilot = false, intendedCanonical, mainAttrs, mainClass, hideHeader = false, extraFontPreloads = [] } = Astro.props;
+const { entry, canonical, robots, pilot = false, pagefindEnabled = true, intendedCanonical, mainAttrs, mainClass, hideHeader = false, extraFontPreloads = [] } = Astro.props;
 const data = entry.data;
 const isTranslation = data.author === 'abner-chou';
 const articleAuthorName = isTranslation ? 'Абнер Чау' : SITE.authorName;
@@ -190,11 +192,11 @@ const jsonLd = {
       место. Слот именованный и пустой по умолчанию — маршрут без хрома
       рендерится ровно как раньше. */}
   <slot name="chrome" />
-  <article class="astro-article" data-article-slug={data.slug} data-pagefind-body>
-    <span data-pagefind-meta="author" hidden>{articleAuthorName}</span>
-    {data.readingTime && <span data-pagefind-meta="readTime" hidden>{data.readingTime}</span>}
-    <span data-pagefind-meta="category" hidden>{articleSectionName}</span>
-    {ogImage && <span data-pagefind-meta="image" hidden>{ogImage.replace(SITE.url, '')}</span>}
+  <article class="astro-article" data-article-slug={data.slug} data-pagefind-body={pagefindEnabled ? true : undefined}>
+    {pagefindEnabled && <span data-pagefind-meta="author" hidden>{articleAuthorName}</span>}
+    {pagefindEnabled && data.readingTime && <span data-pagefind-meta="readTime" hidden>{data.readingTime}</span>}
+    {pagefindEnabled && <span data-pagefind-meta="category" hidden>{articleSectionName}</span>}
+    {pagefindEnabled && ogImage && <span data-pagefind-meta="image" hidden>{ogImage.replace(SITE.url, '')}</span>}
 
     {pilot && (
       <aside class="astro-pilot-note" aria-label="Статус MDX-пилота">

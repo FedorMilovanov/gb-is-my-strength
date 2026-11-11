@@ -59,6 +59,12 @@ assert.deepEqual(explicitNoindexRoutes, [
 for (const route of explicitNoindexRoutes) {
   assert.ok(!expectedRoutes.includes(route), `${route}: explicit noindex route must stay out of sitemap obligations`);
 }
+const declaredPolicies = require('../data/route-search-policy.json').routes;
+for (const [route, policy] of Object.entries(declaredPolicies)) {
+  if (policy.sitemapPolicy === 'exclude') {
+    assert.ok(!expectedRoutes.includes(route), route + ': explicit sitemapPolicy=exclude must not become a sitemap obligation');
+  }
+}
 assert.deepEqual(contractProblems(baseline), [], contractProblems(baseline).join('\n'));
 assert.equal(
   baseline.localRoutes.length,
