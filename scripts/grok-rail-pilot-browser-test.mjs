@@ -457,7 +457,14 @@ try {
                 panelEnd:p.right,viewport:innerWidth,headingOverlap,
                 playSize:b.width,ringSize:ember.querySelector('.gb-ember__ring-svg')?.getBoundingClientRect().width,
                 panelY:[p.top,p.bottom],headlineY:textRects.slice(0,3).map(r=>[r.top,r.bottom,r.left,r.right]),
-                extraBadge:getComputedStyle(root.querySelector('.gbs-rail-spdbadge')).display,
+                speedBadge:(()=>{
+                  const el=root.querySelector('.gbs-rail-spdbadge');
+                  if(!el)return null;
+                  const box=el.getBoundingClientRect();
+                  return {display:getComputedStyle(el).display,text:el.textContent.trim(),
+                    left:box.left,right:box.right,bottom:box.bottom,width:box.width,
+                    visible:box.width>0&&box.height>0};
+                })(),
                 innerLight:{
                    display:getComputedStyle(ember,'::before').display,
                    width:parseFloat(getComputedStyle(ember,'::before').width),
@@ -471,7 +478,9 @@ try {
               !!focusRates&&focusRates.choices===5&&focusRates.horizontal&&focusRates.visible&&
               focusRates.gap>=12&&focusRates.width>=175&&focusRates.height<=56&&
               focusRates.panelEnd<=focusRates.viewport&&!focusRates.headingOverlap&&focusRates.overflow<=1&&
-              focusRates.extraBadge==='none'&&
+              focusRates.speedBadge?.display==='grid'&&focusRates.speedBadge.visible&&
+              /^(?:1|1\.25|1\.5|1\.75|2)×$/.test(focusRates.speedBadge.text)&&
+              focusRates.speedBadge.left>=0&&focusRates.speedBadge.right<=focusRates.viewport&&
                focusRates.innerLight.display==='block'&&
                focusRates.innerLight.border==='0px'&&
                focusRates.innerLight.background.startsWith('radial-gradient(')&&

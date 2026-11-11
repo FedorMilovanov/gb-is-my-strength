@@ -644,9 +644,33 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       opacity:1;
     }
     body:has(.hrail--grok) #gbFloatingControls .gb-ember__ring-track {opacity:.26;}
-    /* The old floating 1x badge crossed the ring at a second centre.
-       Selection remains obvious inside the five-rate strip itself. */
-    body:has(.hrail--grok) #gbFloatingControls .gbs-rail-spdbadge {display:none;}
+    /* The selected rate must remain visible after the speed strip closes.
+       A compact caption sits at the OUTER lower edge of the Play circle:
+       never over the play/pause glyph or the concentric progress ring.
+       Same one controller and existing .gbs-rail-spdbadge DOM as Gill. */
+    body:has(.hrail--grok) #gbFloatingControls .gbs-rail-spdbadge {
+      display:grid;
+      right:-6px;bottom:-7px;
+      z-index:8;
+      width:max-content;min-width:22px;height:15px;
+      padding:1px 4px 0;
+      box-sizing:border-box;
+      border:1px solid var(--rail-surface,#fbf3ea);
+      border-radius:999px;
+      background:var(--rail-accent,#7a2e2e);
+      color:#fff;
+      box-shadow:0 2px 7px rgba(37,25,20,.18);
+      font:750 8px/1 "Source Sans 3",system-ui,sans-serif;
+      font-variant-numeric:tabular-nums;
+      letter-spacing:-.025em;
+      pointer-events:none;
+    }
+    html.dark body:has(.hrail--grok) #gbFloatingControls .gbs-rail-spdbadge {
+      background:var(--rail-accent-strong,#f2c4b6);
+      color:var(--rail-surface,#2b1219);
+      border-color:var(--rail-surface,#2b1219);
+      box-shadow:0 2px 8px rgba(0,0,0,.35);
+    }
     body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand {
       position:absolute;
       right:calc(100% + 8px);left:auto;top:50%;bottom:auto;
