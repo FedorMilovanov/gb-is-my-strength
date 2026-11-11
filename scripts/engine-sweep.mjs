@@ -362,8 +362,8 @@ for (const [id, url] of SINGLES) {
   await page.waitForTimeout(500);
   R(id, 'desk: ReaderRail', !!(await page.$('.hrail')));
   // Exercise the actual rate selector, never fabricate a badge label in DOM.
-  // Grok intentionally removes the duplicate badge to preserve the fine Play
-  // ring; its five-rate horizontal strip remains the canonical choice.
+  // Both Grok and classic readers must keep the selected speech rate visible
+  // beside Play after the horizontal speed strip closes.
   await page.locator('.gb-floater .gb-ember-playwrap').hover();
   await page.waitForFunction(() => {
     const panel = document.querySelector('.gb-floater .gb-ember-expand');
@@ -384,17 +384,32 @@ for (const [id, url] of SINGLES) {
       grok, selected: chosen.getAttribute('aria-checked') === 'true',
       rateCount: document.querySelectorAll('.gb-floater .gb-ember-expand [data-speed]').length,
       playInViewport: e.width > 0 && e.height > 0 && e.left >= 0 && e.right <= innerWidth,
-      badgeHidden: getComputedStyle(badge).display === 'none',
+      badgeVisible: getComputedStyle(badge).display !== 'none' && b.width >= 16 && b.height >= 12,
+      badgeText: (badge.textContent || '').trim(),
+      badgeInViewport: b.left >= 0 && b.right <= innerWidth && b.bottom <= innerHeight,
       dx: Math.round((b.left+b.width/2)-(e.left+e.width/2)),
       dy: Math.round((b.top+b.height/2)-(e.top+e.height/2)),
     };
   });
   R(id, 'desk: выбранная 1.75× доступна и не перекрывает Play',
     !!singleSpeed && singleSpeed.selected && singleSpeed.rateCount === 5 &&
-      singleSpeed.playInViewport && (singleSpeed.grok
-        ? singleSpeed.badgeHidden
-        : !singleSpeed.badgeHidden && singleSpeed.dx >= 8 && singleSpeed.dy >= 8),
+      singleSpeed.playInViewport && singleSpeed.badgeVisible && singleSpeed.badgeInViewport &&
+      singleSpeed.badgeText === '1.75×' &&
+      singleSpeed.dx >= (singleSpeed.grok ? 3 : 8) &&
+      singleSpeed.dy >= (singleSpeed.grok ? 3 : 8),
     JSON.stringify(singleSpeed));
+  await page.reload({ waitUntil: 'networkidle' });
+  const retainedSpeed = await page.evaluate(() => {
+    const badge = document.querySelector('.gb-floater .gbs-rail-spdbadge');
+    return {
+      storedRate: localStorage.getItem('gb:audio:rate'),
+      badgeText: badge?.textContent?.trim(),
+      badgeVisible: !!badge && getComputedStyle(badge).display !== 'none' && badge.getBoundingClientRect().width > 0,
+    };
+  });
+  R(id, 'desk: 1.75× сохраняется и остаётся видимой после перезагрузки',
+    retainedSpeed.storedRate === '1.75' && retainedSpeed.badgeText === '1.75×' && retainedSpeed.badgeVisible,
+    JSON.stringify(retainedSpeed));
   await page.evaluate(() => document.querySelector('.hrail [data-hm-settings], .hrail button[aria-label*="астрой"]')?.click());
   await page.waitForTimeout(450);
   const hs = await page.evaluate(() => {
