@@ -106,4 +106,18 @@ const rssDrift = audit(
 );
 assert.ok(rssDrift.problems.some((problem) => problem.includes('rssPolicy=include')));
 
+// Astro-generated sitemap URLs must honor the same noindex and build-only policy.
+const { shouldIncludeSitemapUrl } = require('./astro-sitemap-policy.cjs');
+const routePolicies = require('../data/route-search-policy.json').routes;
+for (const [path, entry] of Object.entries(routePolicies)) {
+  assert.equal(
+    shouldIncludeSitemapUrl('https://gospod-bog.ru' + path),
+    entry.sitemapPolicy === 'include',
+    'Astro sitemap drift for ' + path,
+  );
+}
+assert.equal(shouldIncludeSitemapUrl('https://gospod-bog.ru/unknown-article/'), false);
+assert.equal(shouldIncludeSitemapUrl('https://elsewhere.test/'), false);
+assert.equal(shouldIncludeSitemapUrl('not-a-url'), false);
+
 console.log('✅ search/index policy mutation contract');

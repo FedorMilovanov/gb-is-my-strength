@@ -223,6 +223,16 @@
       "librarySection": "Богословие",
       "topicCategory": "Сердце"
     },
+    "/articles/rabstvo-svobody/": {
+      "indexPolicy": "noindex",
+      "pagefindPolicy": "exclude",
+      "searchManifestPolicy": "exclude",
+      "sitemapPolicy": "exclude",
+      "rssPolicy": "exclude",
+      "contentKind": "article",
+      "librarySection": "Богословие",
+      "topicCategory": "??????????"
+    },
     "/articles/religioznoe-serdce/": {
       "indexPolicy": "index",
       "pagefindPolicy": "include",
