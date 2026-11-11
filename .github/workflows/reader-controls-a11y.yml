@@ -14,6 +14,10 @@ on:
       - "scripts/reader-controls-a11y-browser-contract.mjs"
       - "scripts/reader-controls-residual-browser-contract.mjs"
       - "scripts/reader-speedrail-ssr-focus-browser-test.mjs"
+      - "scripts/shared-play-and-series-number-browser-contract.cjs"
+      - "js/floating-cluster-controller.js"
+      - "css/floating-cluster.css"
+      - "css/site.css"
       - ".github/workflows/reader-controls-a11y.yml"
   push:
     branches: [main]
@@ -28,6 +32,10 @@ on:
       - "scripts/reader-controls-a11y-browser-contract.mjs"
       - "scripts/reader-controls-residual-browser-contract.mjs"
       - "scripts/reader-speedrail-ssr-focus-browser-test.mjs"
+      - "scripts/shared-play-and-series-number-browser-contract.cjs"
+      - "js/floating-cluster-controller.js"
+      - "css/floating-cluster.css"
+      - "css/site.css"
       - ".github/workflows/reader-controls-a11y.yml"
 
 permissions:
@@ -72,6 +80,8 @@ jobs:
           node --check scripts/reader-controls-residual-browser-contract.mjs
           node --check scripts/reader-speedrail-ssr-focus-browser-test.mjs
           node --check scripts/reader-library-premium-browser-contract.cjs
+          node --check scripts/shared-play-and-series-number-browser-contract.cjs
+          node --check js/floating-cluster-controller.js
           grep -F "import '../../runtime/reader-controls-a11y.js';" src/components/reader-platform/ReaderActionsRuntime.astro
           ! grep -q "GBReaderProjection\|FavoriteStore" src/runtime/reader-controls-a11y.js
 
@@ -88,6 +98,7 @@ jobs:
           GITHUB_SHA="$(git rev-parse HEAD)" node scripts/reader-controls-residual-browser-contract.mjs 2>&1 | tee reports/reader-controls-residual-browser-contract.log
           SOURCE_SHA="$(git rev-parse HEAD)" node scripts/reader-speedrail-ssr-focus-browser-test.mjs 2>&1 | tee reports/reader-speedrail-ssr-focus.log
           node scripts/reader-library-premium-browser-contract.cjs 2>&1 | tee reports/reader-library-premium-browser-contract.log
+          node scripts/shared-play-and-series-number-browser-contract.cjs 2>&1 | tee reports/shared-play-and-series-number-browser-contract.log
 
       - name: Upload exact evidence
         if: always()
@@ -106,6 +117,7 @@ jobs:
             reports/reader-speedrail-ssr-focus.log
             reports/reader-speedrail-ssr-focus/**
             reports/reader-library-premium-browser-contract.log
+            reports/shared-play-and-series-number-browser-contract.log
             reports/reader-library-premium/*.png
           if-no-files-found: warn
           retention-days: 14

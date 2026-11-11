@@ -5136,3 +5136,61 @@ html.dark .gb-floater .gbs-rail-spdbadge {
 @media screen and (max-width: 960px) {
   html.dark [data-gill-v16] .mobile-btoc-section__label { opacity: 1; }
 }
+
+/* SHARED-PLAY-SPEED-2026-11-11: the canonical rate echo and Play highlight
+   apply to all dynamically enhanced embers. Custom rails retain their own
+   placement but share the existing TTS rate state and selected-chip sheen. */
+.gb-ember-wrap {
+  position: relative;
+}
+.gb-ember-wrap > .gb-ember-speed-echo {
+  position: absolute;
+  right: -3px;
+  bottom: -4px;
+  z-index: 3;
+  pointer-events: none;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  min-width: 23px;
+  height: 16px;
+  padding: 1px 4px 0;
+  border: 1px solid color-mix(in srgb, var(--color-surface, #fff) 28%, transparent);
+  border-radius: 999px;
+  background: var(--color-text, #222);
+  color: var(--color-surface, #fff);
+  font: 800 9px/1 "Source Sans 3", system-ui, sans-serif;
+  white-space: nowrap;
+  box-shadow: 0 2px 7px rgba(0,0,0,.18);
+}
+html.dark .gb-ember-wrap > .gb-ember-speed-echo {
+  background: linear-gradient(135deg, var(--color-accent-gold, #b8936a), #eed093);
+  border-color: rgba(255,255,255,.16);
+  color: #0e1116;
+  box-shadow: 0 2px 8px rgba(216,176,104,.27);
+}
+/* Reserve the luminous emphasis for a real interactive state, not idle. */
+.gb-ember-wrap > .gb-ember[data-state="playing"],
+.gb-ember-wrap > .gb-ember[data-state="paused"],
+.gb-ember-wrap:has(> .gb-ember-expand.is-open) > .gb-ember {
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--color-accent-gold-bright, #d8aa6d) 42%, transparent));
+}
+:where(.gb-ember-expand__btn.is-active,
+       .mobile-speed[aria-checked="true"],
+       .hm-speed[aria-checked="true"]) {
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--color-accent-gold, #b8936a) 25%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .gb-ember-wrap > .gb-ember { transition: none; }
+  .gb-ember-wrap > .gb-ember-speed-echo { transition: none; }
+}
+
+/* Custom Gill/Hermenevtika speed slots use the same warm Play emphasis even
+   though their picker is an inline/popover rail rather than a bloom pill. */
+:where([data-gb-speed-custom], [data-fc-speed-mode="inline"])
+  .gb-ember:is([data-state="playing"], [data-state="paused"]) {
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--color-accent-gold-bright, #d8aa6d) 42%, transparent));
+}
+:where([data-gb-speed-custom], [data-fc-speed-mode="inline"]).speed-open .gb-ember {
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--color-accent-gold-bright, #d8aa6d) 42%, transparent));
+}

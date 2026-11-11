@@ -1942,6 +1942,15 @@
       parent.insertBefore(wrap, ember);
       wrap.appendChild(ember);
       wrap.appendChild(panel);
+      // The chosen rate should be legible on every shared PlayEmber,
+      // not just on Gill's bespoke rail. Reuse an authored badge if present.
+      if (!spdBadge) {
+        spdBadge = document.createElement('span');
+        spdBadge.className = 'gb-ember-speed-echo';
+        spdBadge.setAttribute('aria-hidden', 'true');
+        wrap.appendChild(spdBadge);
+      }
+      spdBadge.textContent = currentRate + '\u00d7';
 
       /* SYS-READER-SPEED-KEYBOARD-MODEL: a collapsed speed panel must leave
          Tab/AX (opacity-zero controls are not a focus contract); unfolding
@@ -2004,6 +2013,20 @@
       }
 
       speedPanelFold(true);
+
+      // Custom mobile rails and other controls share the same TTS rate.
+      // Keep this badge and radiogroup synchronized when they select it.
+      addCleanListener(window, 'gb:tts-rate-change', function(event) {
+        var rate = Number(event && event.detail && event.detail.rate);
+        if (!Number.isFinite(rate) || rate <= 0) return;
+        currentRate = rate;
+        if (spdBadge) spdBadge.textContent = rate + '\u00d7';
+        panel.querySelectorAll('.gb-ember-expand__btn[data-speed]').forEach(function(chip) {
+          var selected = Number(chip.getAttribute('data-speed')) === rate;
+          chip.classList.toggle('is-active', selected);
+          chip.setAttribute('aria-checked', selected ? 'true' : 'false');
+        });
+      });
 
       addCleanListener(ember, 'pointerdown', function() {
         clearTimeout(pressTimer);

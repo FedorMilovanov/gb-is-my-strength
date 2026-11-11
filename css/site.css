@@ -1869,3 +1869,33 @@ body .article-body .article-header > .original-author-card + .article-byline {
     box-shadow: none;
   }
 }
+
+/* SERIES-NUMERAL-ISOLATION 2026-11-11: Baptist chapter numerals live in a
+   real grid column, never behind the H1 or synopsis text. At <=84.999em
+   the existing responsive rule hides the ornament and keeps the normal flow. */
+@media (min-width: 85em) {
+  body[data-gbs2-series="russian-baptism"] .gbs2-head:has(> .gbs2-kinetic) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(110px, 18%, 150px);
+    column-gap: clamp(12px, 2vw, 24px);
+    align-items: start;
+    padding-right: 0;
+  }
+  body[data-gbs2-series="russian-baptism"] .gbs2-head > :not(.gbs2-kinetic) {
+    grid-column: 1;
+    min-width: 0;
+    max-width: 100%;
+  }
+  body[data-gbs2-series="russian-baptism"] .gbs2-head > .gbs2-kinetic {
+    position: relative;
+    grid-column: 2;
+    grid-row: 1 / span 4;
+    align-self: center;
+    justify-self: center;
+    top: auto;
+    right: auto;
+    transform: none;
+    max-width: 100%;
+    white-space: nowrap;
+  }
+}
