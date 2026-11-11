@@ -2481,7 +2481,9 @@ html.dark .gb-ember-expand__btn.is-active {
 }
 [data-gill-v16] .gbs-theme-corner .gb-ember-expand::before { display: none; }
 [data-gill-v16] .gbs-theme-corner .gb-ember-expand__btn {
+  /* Text-only premium line must clear article even with wider Linux fonts. */
   min-width: 26px;
+  padding: 0 2px;
   border: none;
   background: none !important;
   font-size: 15px;

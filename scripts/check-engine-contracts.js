@@ -184,25 +184,30 @@ const speedBadgeRule = css.match(/\[data-reader-engine="series"\] \.mobile-spdba
 const speedPopoverRule = css.match(/\[data-reader-engine="series"\] \.mobile-speedrail\s*\{([^}]*)\}/)?.[1] || '';
 const rateController = read('js/floating-cluster-controller.js');
 const rateBrowserContract = read('scripts/series-layout-browser-contract.mjs');
-check('Series mobile: independent 44px Play/rate targets, accessible opaque popover and real browser overlap witness',
+check('Series mobile: 44px Play/rate targets, one-line inline speed slot and cross-browser hit/contrast witness',
   mobilePlayBlock.includes('class="mobile-spdbadge"')
     && mobilePlayBlock.includes('aria-controls="mobileSpeedrail"')
     && mobilePlayBlock.includes('aria-expanded="false"')
-    && gillMobileBar.includes("'data-fc-speed-layout': 'popover'")
-    && read('src/runtime/reader-controls-a11y.js').includes("root.dataset.fcSpeedLayout === 'popover'")
+    && gillMobileBar.includes("'data-fc-speed-layout': 'inline'")
+    && read('src/runtime/reader-controls-a11y.js').includes('[data-fc-speed-mode="inline"]')
     && /position:\s*relative/.test(speedBadgeRule)
     && /flex:\s*0 0 44px/.test(speedBadgeRule)
     && /min-width:\s*44px/.test(speedBadgeRule)
     && /height:\s*44px/.test(speedBadgeRule)
-    && /position:\s*fixed/.test(speedPopoverRule)
-    && /grid-template-columns:\s*repeat\(6,\s*minmax\(0,\s*1fr\)\)/.test(speedPopoverRule)
-    && /background:\s*var\(--gill-mobile-speed-bg/.test(speedPopoverRule)
+    && /position:\s*absolute/.test(speedPopoverRule)
+    && /height:\s*44px/.test(speedPopoverRule)
+    && /display:\s*flex/.test(speedPopoverRule)
+    && /overflow-x:\s*auto/.test(speedPopoverRule)
+    && /background:\s*linear-gradient\(var\(--gill-mobile-bar-bg\)/.test(speedPopoverRule)
+    && /#[a-f0-9]{6}/i.test(speedPopoverRule)
+    && /\[data-reader-engine="series"\] \.mobile-speed\s*\{[^}]*flex:\s*0 0 44px/.test(css)
     && /\[data-reader-engine="series"\] \.mobile-playwrap \.mobile-top-ember\s*\{[^}]*width:\s*44px;[^}]*height:\s*44px/.test(css)
-    && /@media \(max-width:\s*359px\)\s*\{\s*\[data-reader-engine="series"\] \.mobile-speedrail\s*\{[^}]*repeat\(3,\s*minmax\(0,\s*1fr\)\)/.test(css)
     && rateController.includes("badge.setAttribute('aria-expanded', open ? 'true' : 'false')")
+    && rateController.includes("leadingControls.forEach(function(control) { control.inert = open; });")
     && rateController.includes("if (e.key === 'Escape') { setOpen(false); if (badge) badge.focus(); return; }")
     && rateBrowserContract.includes('speed target overlaps Play')
-    && rateBrowserContract.includes('speed popover must have opaque theme background')
+    && rateBrowserContract.includes('displaced Learning button must become inert')
+    && rateBrowserContract.includes('all six canonical speed choices must remain on one line')
     && rateBrowserContract.includes('dark speed popover must be opaque'));
 
 const controller = read('js/floating-cluster-controller.js');
