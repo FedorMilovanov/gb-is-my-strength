@@ -6,6 +6,8 @@
  * This component owns only the accessible radiogroup and its options:
  * no storage, TTS listeners, route inspection or rendering engine.
  */
+import '@/styles/reader-mobile-canonical.css';
+
 interface Props {
   id: string;
   railClass: string;
@@ -29,12 +31,41 @@ if (!rates.length || !rates.includes(1) ||
   throw new Error('[reader-speed-options] Expected ascending, unique speeds including 1×');
 }
 ---
-<div class={railClass} id={id} role="radiogroup" aria-label="Скорость воспроизведения"
+<div class:list={[railClass,"reader-mobile-speedrail"]} id={id} role="radiogroup" aria-label="Скорость воспроизведения"
   aria-hidden="true" hidden={initiallyHidden} inert={initiallyInert}>
   {rates.map((rate) => (
-    <button type="button" class={chipClass} role="radio"
+    <button type="button" class:list={[chipClass,"reader-mobile-speed-rate"]} role="radio"
       data-speed={String(rate)} aria-checked={rate === 1 ? 'true' : 'false'}>
       {rate}×
     </button>
   ))}
 </div>
+
+<script>
+  import { initSpeedSlot } from './speedSlot';
+
+  /** The single mobile speed controller for all Reader series and articles.
+   * Both bar variants expose the same semantic selectors; route-specific
+   * Gill and Hermenevtika state machines are no longer involved.
+   */
+  function initCanonicalMobileSpeed() {
+    document.querySelectorAll<HTMLElement>('[data-reader-mobile-speed]').forEach(bar => {
+      if (bar.dataset.readerSpeedBound === '1') return;
+      if (!bar.querySelector('.reader-mobile-speedrail')) return;
+      bar.dataset.readerSpeedBound = '1';
+      initSpeedSlot(bar, {
+        ember: '.gb-ember',
+        speedrail: '.reader-mobile-speedrail',
+        badge: '.reader-mobile-speed-badge',
+        chip: '.reader-mobile-speed-rate',
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCanonicalMobileSpeed, { once:true });
+  } else {
+    initCanonicalMobileSpeed();
+  }
+  document.addEventListener('astro:page-load', initCanonicalMobileSpeed);
+</script>

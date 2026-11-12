@@ -1,0 +1,37 @@
+---
+/** One historical hamburger/TOC trigger for every Reader mobile bar.
+ * Icon is taken from ReaderRail.astro (#hMobileMenuBtn), not redesigned.
+ * Runtime forwards to the corresponding canonical TOC button.
+ */
+interface Props { targetId: string; }
+const { targetId }=Astro.props as Props;
+---
+<button
+  class="reader-mobile-menu-trigger"
+  type="button"
+  data-reader-mobile-menu-target={targetId}
+  aria-label="Открыть оглавление и поиск"
+  aria-haspopup="dialog"
+>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+    <path d="M4 7h16M4 12h16M4 17h16" />
+  </svg>
+  <span>Оглавление</span>
+</button>
+<script>
+  function bindReaderMobileMenuTriggers() {
+    document.querySelectorAll<HTMLButtonElement>('[data-reader-mobile-menu-target]').forEach(btn=>{
+      if(btn.dataset.readerMobileMenuBound==='1')return;
+      btn.dataset.readerMobileMenuBound='1';
+      btn.addEventListener('click',()=>{
+        const id=btn.dataset.readerMobileMenuTarget;
+        const target=id&&document.getElementById(id);
+        if(target instanceof HTMLElement)target.click();
+      });
+    });
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',bindReaderMobileMenuTriggers,{once:true});
+  }else{bindReaderMobileMenuTriggers();}
+  document.addEventListener('astro:page-load',bindReaderMobileMenuTriggers);
+</script>

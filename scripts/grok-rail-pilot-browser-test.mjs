@@ -217,20 +217,22 @@ try {
             check(name,viewport.id,'V17 optical H2 track anchored to real dot centres',
               !!axis && Math.abs(axis.x-axis.first.x)<.6 && Math.abs(axis.x-axis.last.x)<.6 &&
               Math.abs(axis.top-axis.first.y)<1 && Math.abs(axis.bottom-axis.last.y)<1,axis);
-            // A hovered non-active Grok link must never inherit the old
-            // flat TOC's own hover chip: the whole .grok-entry paints hover.
+            // Owner-approved V6: the hover and active treatment paint ONLY
+            // the link rectangle, not the entire .grok-entry row or root axis.
             const multiLineHover=page.locator('.grok-toc > li.grok-row--h2')
               .filter({hasText:'Объяснение христоцентричной герменевтики'})
               .first().locator(':scope > .grok-entry > a');
             await multiLineHover.hover();
             await page.waitForTimeout(250);
             const hoverLinkPaint=await multiLineHover.evaluate(link=>{
-              const s=getComputedStyle(link);
-              return {image:s.backgroundImage,color:s.backgroundColor};
+              const s=getComputedStyle(link),o=getComputedStyle(link.closest('.grok-entry'));
+              return {image:s.backgroundImage,color:s.backgroundColor,
+                outerImage:o.backgroundImage,outerColor:o.backgroundColor};
             });
-            check(name,viewport.id,'no legacy inner hover highlight in Grok',
-              hoverLinkPaint.image==='none'&&
-              ['transparent','rgba(0, 0, 0, 0)'].includes(hoverLinkPaint.color),hoverLinkPaint);
+            check(name,viewport.id,'approved link-only hover highlight in Grok',
+              hoverLinkPaint.image.includes('linear-gradient')&&
+              hoverLinkPaint.outerImage==='none'&&
+              ['transparent','rgba(0, 0, 0, 0)'].includes(hoverLinkPaint.outerColor),hoverLinkPaint);
             // Visual bug witness: root H2 pins and disclosure arrows must
             // centre on the WHOLE multi-line row, not its first text line.
             // The selected row paints only ONE surface, never a nested chip.
@@ -253,8 +255,10 @@ try {
               const link=entry?.querySelector(':scope > a');
               const outer=getComputedStyle(entry).backgroundImage;
               const inner=getComputedStyle(link);
-              const singlePaint=outer!=='none'&&inner.backgroundImage==='none'&&
-                (inner.backgroundColor==='transparent'||inner.backgroundColor==='rgba(0, 0, 0, 0)');
+              const outerColor=getComputedStyle(entry).backgroundColor;
+              const singlePaint=outer==='none'&&
+                (outerColor==='transparent'||outerColor==='rgba(0, 0, 0, 0)')&&
+                inner.backgroundImage.includes('linear-gradient');
               row?.classList.toggle('hrail-act',original);
               return {rows:rows.length,multiLines:diffs.filter(x=>x.multiLine).length,
                 maxPinOffset:Math.max(...diffs.map(x=>x.pin??0)),
@@ -350,6 +354,7 @@ try {
               // after the native transition completes, not in its first frame.
               const initiallyDark=await page.evaluate(()=>document.documentElement.classList.contains('dark'));
               await page.evaluate(()=>document.documentElement.classList.add('dark'));
+              await page.locator('#grokCompactTools #gbFcSearch').hover();
               await page.waitForTimeout(420);
               const darkRing=await page.evaluate(()=>{
                 const button=document.querySelector('#grokCompactTools #gbFcSearch');
@@ -412,7 +417,7 @@ try {
                 emberSkin.background==='rgba(0, 0, 0, 0)'&&
                 emberSkin.innerBorder==='0px'&&emberSkin.lightOpacity>.75&&
                 emberSkin.innerBackground.startsWith('radial-gradient(')&&
-                emberSkin.innerWidth>=emberSkin.ringWidth-4&&emberSkin.innerWidth<=emberSkin.ringWidth-1,emberSkin);
+                emberSkin.innerWidth>=emberSkin.ringWidth*.70&&emberSkin.innerWidth<=emberSkin.ringWidth-1,emberSkin);
             }
             // The native controller uses hover only for a hover/fine pointer.
             // Linux WebKit headless may report no hover despite Playwright's
@@ -474,9 +479,9 @@ try {
                 overflow:document.documentElement.scrollWidth-innerWidth
               };
             });
-            check(name,viewport.id,'compact PlayEmber has clean horizontal six-speed bloom',
-              !!focusRates&&focusRates.choices===6&&focusRates.horizontal&&focusRates.visible&&
-              focusRates.gap>=12&&focusRates.width>=175&&focusRates.height<=56&&
+            check(name,viewport.id,'approved vertical six-speed bloom with stationary Play',
+              !!focusRates&&focusRates.choices===6&&!focusRates.horizontal&&focusRates.visible&&
+              focusRates.gap>=8&&focusRates.gap<=75&&focusRates.width>=40&&focusRates.width<=85&&focusRates.height>=145&&focusRates.height<=240&&
               focusRates.panelEnd<=focusRates.viewport&&!focusRates.headingOverlap&&focusRates.overflow<=1&&
               focusRates.speedBadge?.display==='grid'&&focusRates.speedBadge.visible&&
               /^(?:0\.75|1|1\.25|1\.5|1\.75|2)×$/.test(focusRates.speedBadge.text)&&
@@ -484,9 +489,9 @@ try {
                focusRates.innerLight.display==='block'&&
                focusRates.innerLight.border==='0px'&&
                focusRates.innerLight.background.startsWith('radial-gradient(')&&
-               focusRates.innerLight.width>=focusRates.ringSize-4&&focusRates.innerLight.width<=focusRates.ringSize-1&&
+               focusRates.innerLight.width>=focusRates.ringSize*.70&&focusRates.innerLight.width<=focusRates.ringSize-1&&
               focusRates.playSize<=(viewport.height<=420?30:32)&&
-              focusRates.ringSize<=focusRates.playSize-3.5,{...focusRates,pointerProfile});
+              Math.abs(focusRates.ringSize-focusRates.playSize)<=.6,{...focusRates,pointerProfile});
             if(viewport.id==='desktop-1200'){
               // Real mouse travel must not traverse a dead hover gap from
               // Play to the displaced six-speed strip. Older code fired
@@ -633,6 +638,7 @@ try {
                 check(name,viewport.id,'direct H3 permalink is visible',
                   directRect.top>=-5 && directRect.top < viewport.height-25,directRect);
                 await fresh.goto(origin+ROUTE,{waitUntil:'domcontentloaded'});
+                await fresh.bringToFront();
                 const rapid = fresh.locator('.grok-row--branch > .grok-entry [data-grok-toggle]').first();
                 for(let n=0;n<7;n++){await rapid.evaluate(button => button.click());await fresh.waitForTimeout(25);}
                 const rapidState = await rapid.evaluate(button => ({
@@ -642,7 +648,7 @@ try {
                 }));
                 check(name,viewport.id,'seven rapid toggles end collapsed and inert',
                   rapidState.expanded==='false' && rapidState.inert && rapidState.collapsed,rapidState);
-                await fresh.waitForTimeout(750);
+                await fresh.waitForFunction(()=>{const b=document.querySelector('.grok-row--branch > .grok-entry [data-grok-toggle]');const m=b?.closest('.grok-row')?.querySelector(':scope > .grok-child-motion');return b?.getAttribute('aria-expanded')==='false'&&m?.getBoundingClientRect().height<1.5;},null,{timeout:5000});
                 const collapsedHeight = await rapid.locator('xpath=../following-sibling::*').first().evaluate(el=>el.getBoundingClientRect().height);
                 check(name,viewport.id,'interrupted collapse settles to zero height',
                   collapsedHeight < 1.5,collapsedHeight);

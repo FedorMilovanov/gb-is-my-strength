@@ -1899,3 +1899,6 @@ body .article-body .article-header > .original-author-card + .article-byline {
     white-space: nowrap;
   }
 }
+
+/* Reader Platform — keep an authored Scripture reference with its opening bracket. */
+.article-body .reader-atomic-citation,.article-main .reader-atomic-citation{white-space:nowrap}

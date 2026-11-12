@@ -1,115 +1,88 @@
-/* Reader mobile canonical interaction and hierarchical-navigation contract.
- * Tests the generated dist in Chromium and WebKit; no live server required. */
-const fs = require('node:fs');
-const path = require('node:path');
-const http = require('node:http');
-const { chromium, webkit } = require('playwright');
-const dist = path.resolve(__dirname, '../dist');
-const mimes = { '.html':'text/html; charset=utf-8', '.js':'text/javascript', '.css':'text/css', '.json':'application/json', '.woff2':'font/woff2', '.svg':'image/svg+xml' };
-const server = http.createServer((req,res) => {
-  try {
-    const url = new URL(req.url || '/', 'http://localhost');
-    let file = path.resolve(dist, decodeURIComponent(url.pathname).slice(1));
-    if (!path.extname(file)) file = path.join(file, 'index.html');
-    const rel = path.relative(dist, file);
-    if (rel.startsWith('..') || path.isAbsolute(rel) || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
-      res.writeHead(404); return void res.end();
-    }
-    res.writeHead(200, {'content-type':mimes[path.extname(file)]||'application/octet-stream'});
-    fs.createReadStream(file).pipe(res);
-  } catch { res.writeHead(400); res.end(); }
-});
-let cases=0, passes=0;
-const failures=[];
-function check(test,label,data) {
-  cases++; if (test) passes++; else failures.push({label,data});
-}
-async function run() {
-  if (!fs.existsSync(path.join(dist,'index.html'))) throw new Error('Missing production-like dist');
-  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-  const origin='http://127.0.0.1:'+server.address().port;
-  for (const [name,engine] of [['Chromium',chromium],['WebKit',webkit]]) {
-    const browser=await engine.launch({headless:true});
-    try {
-      for (const width of [320,390,430]) {
-        const page=await browser.newPage({viewport:{width,height:760},serviceWorkers:'block',reducedMotion:'reduce'});
-        const errors=[];
-        page.on('pageerror',e=>errors.push(e.message));
-        await page.addInitScript(()=>{try{localStorage.setItem('gb:audio:rate','1.5');localStorage.setItem('gbx-tts-rate','1.5')}catch{}});
-        const tag=name+' '+width+'px';
-
-        await page.goto(origin+'/baptisty-rossii/noch-na-kure/',{waitUntil:'domcontentloaded'});
-        const badge=page.locator('#mobSpdBadge'),ember=page.locator('.mobile-top-ember');
-        await badge.waitFor({state:'visible'});
-        const before=await ember.boundingBox();
-        await badge.click();
-        await page.waitForTimeout(100);
-        const gill=await page.evaluate(()=>{
-          const bar=document.querySelector('.mobile-top-bar');
-          const rail=document.querySelector('#mobileSpeedrail');
-          const play=document.querySelector('.mobile-top-ember');
-          const a=rail.getBoundingClientRect(),b=bar.getBoundingClientRect(),p=play.getBoundingClientRect();
-          return {
-            open:bar.classList.contains('speed-open'),
-            rates:[...rail.querySelectorAll('[data-speed]')].map(x=>x.dataset.speed),
-            railTop:a.top,railBottom:a.bottom,barBottom:b.bottom,railRight:a.right,playLeft:p.left,
-            display:getComputedStyle(rail).display,railPosition:getComputedStyle(rail).position,
-            nav:[...bar.querySelectorAll('#mobBackBtn,#mobHomeBtn,.mobile-learning-trigger')].map(x=>x.inert),
-            ring:!!document.querySelector('#gbs2MobSeriesRing')&&!!document.querySelector('#gbs2MobArticleRing'),
-            visiblePct: (()=>{const x=document.querySelector('#gbs2MobPct');return x?.getBoundingClientRect().width>3})()
-          };
-        });
-        const during=await ember.boundingBox();
-        check(gill.open&&gill.display==='flex'&&gill.railPosition==='absolute'&&gill.railBottom<=gill.barBottom+2&&gill.railRight<=gill.playLeft+2,tag+' Gill inline geometry',gill);
-        check(gill.rates.join(',')==='0.75,1,1.25,1.5,1.75,2'&&gill.nav.every(Boolean),tag+' canonical six rates + hidden nav',gill);
-        check(Math.abs((before.x+before.width/2)-(during.x+during.width/2))<.6,tag+' stationary Play', {before,during});
-        check(gill.ring&&!gill.visiblePct,tag+' dual ring without visible digits',gill);
-        await page.locator('#mobileSpeedrail [data-speed="1.75"]').click();
-        // Existing UI motion accessibility owner releases inert only after
-        // the 380ms visual fold plus its own bounded transition; assert the
-        // final, interactive state, never a mid-transition frame.
-        await page.waitForFunction(() => {
-          const bar = document.querySelector('.mobile-top-bar');
-          const nav = [...document.querySelectorAll('#mobBackBtn,#mobHomeBtn,.mobile-learning-trigger')];
-          return !!bar && !bar.classList.contains('speed-open') && nav.length === 3 && nav.every(x => !x.inert);
-        }, null, { timeout: 1800 });
-        const chosen=await page.evaluate(()=>({
-          rate:localStorage.getItem('gb:audio:rate'),
-          badge:document.querySelector('#mobSpdBadge')?.textContent?.trim(),
-          folded:!document.querySelector('.mobile-top-bar')?.classList.contains('speed-open'),
-          nav:[...document.querySelectorAll('#mobBackBtn,#mobHomeBtn,.mobile-learning-trigger')].map(x=>x.inert),
-          pending:document.querySelector('.mobile-top-ember')?.dataset.speedConfirm
-        }));
-        check(chosen.rate==='1.75'&&chosen.badge==='1.75×'&&chosen.folded&&chosen.nav.every(x=>!x)&&chosen.pending==='true',tag+' choose-and-confirm without auto-start',chosen);
-        check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),tag+' no page x overflow',null);
-        check(!!await page.locator('#mobPartTocBtn').count(),tag+' series TOC retained',null);
-
-        await page.goto(origin+'/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/',{waitUntil:'domcontentloaded'});
-        await page.locator('#hmSpdBadge').click();
-        await page.waitForTimeout(100);
-        const herm=await page.evaluate(()=>{
-          const bar=document.querySelector('.hmtop'),rail=document.querySelector('#hmSpeedrail');
-          const r=rail.getBoundingClientRect(),b=bar.getBoundingClientRect();
-          return {
-            rates:[...rail.querySelectorAll('[data-speed]')].map(x=>x.dataset.speed),
-            inline:r.bottom<=b.bottom+2,
-            checked:[...rail.querySelectorAll('[aria-checked="true"]')].map(x=>x.dataset.speed),
-            singleRing:!!document.querySelector('#hmProgressFill'),
-            visiblePct:document.querySelector('#hmProgressText')?.getBoundingClientRect().width>3,
-            toc:!!document.querySelector('#hmSectionBtn')&&!!document.querySelector('.hmsheet-list')
-          };
-        });
-        check(herm.inline&&herm.rates.join(',')==='0.75,1,1.25,1.5,1.75,2',tag+' Hermenevtika inline rates',herm);
-        check(herm.singleRing&&!herm.visiblePct&&herm.toc,tag+' article ring and TOC retained',herm);
-        await page.locator('#hmSpeedrail [data-speed="0.75"]').click();
-        await page.waitForTimeout(300);
-        check(await page.locator('#hmSpdBadge').textContent().then(s=>s.trim()==='0.75×'),tag+' Hermenevtika badge',null);
-        check(errors.length===0,tag+' no uncaught page errors',errors.slice(0,5));
-        await page.close();
-      }
-    } finally { await browser.close(); }
-  }
-  console.log(JSON.stringify({cases,passes,failed:cases-passes,failures:failures.slice(0,30)},null,2));
-  if(failures.length)process.exitCode=1;
-}
-run().catch(e=>{console.error(e);process.exitCode=1}).finally(()=>server.close());
+const fs=require('fs'),path=require('path'),http=require('http');
+const {chromium,firefox,webkit}=require('playwright');
+const root=path.resolve(__dirname,'../dist'),results=[],errors=[];
+const mime={'.html':'text/html','.css':'text/css','.js':'application/javascript','.svg':'image/svg+xml','.webp':'image/webp','.png':'image/png','.woff2':'font/woff2'};
+const out=path.join(process.env.USERPROFILE,'Downloads','GB_READER_V12_REAL_BROWSER_20261112');fs.mkdirSync(out,{recursive:true});
+const server=http.createServer((req,res)=>{try{const u=new URL(req.url,'http://localhost');let file=path.resolve(root,decodeURIComponent(u.pathname).slice(1));if(!path.extname(file))file=path.join(file,'index.html');if(path.relative(root,file).startsWith('..')||!fs.existsSync(file)){res.writeHead(404);return res.end('missing');}res.writeHead(200,{'content-type':mime[path.extname(file)]||'application/octet-stream'});fs.createReadStream(file).pipe(res);}catch(e){res.writeHead(500);res.end(String(e));}});
+const routes=[
+ ['baptists','/baptisty-rossii/noch-na-kure/'],
+ ['heart','/articles/chto-bibliya-nazyvaet-serdcem/'],
+ ['gill','/articles/dzhon-gill-chast-1-chelovek/'],
+ ['herm','/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/'],
+ ['apostasy','/hard-texts/otstuplenie-ot-very-iuda-evreyam-6/'],
+ ['lawson','/articles/steven-lawson-samoobman-i-publichnyy-golos/']
+];
+(async()=>{
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ const url='http://127.0.0.1:'+server.address().port;
+ for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
+  const browser=await engine.launch({headless:true});
+  try{
+   for(const [slug,route] of routes)for(const width of [320,390,430,1440]){
+    const page=await browser.newPage({viewport:{width,height:width===1440?900:844},colorScheme:'light',reducedMotion:'reduce',serviceWorkers:'block'});
+    const row={engine:engineName,slug,width},pageErrors=[];page.on('pageerror',e=>pageErrors.push(e.message));
+    try{
+     const resp=await page.goto(url+route,{waitUntil:'domcontentloaded',timeout:25000});await page.waitForTimeout(250);row.http=resp.status();
+     if(width<1200){
+      const bar=page.locator('[data-reader-mobile-speed]');
+      if(await bar.count()!==1)throw Error('missing shared mobile speed owner');
+      const play=bar.locator('.reader-mobile-play');
+      const before=await play.boundingBox();
+      const badge=bar.locator('.reader-mobile-speed-badge');
+      const menuBtn=bar.locator('[data-reader-mobile-menu-target]');
+      const settings=page.locator('.reader-mobile-action[aria-label^="Настройки чтения"]');
+      if(await play.count()!==1||await badge.count()!==1||await menuBtn.count()!==1||await settings.count()!==1)throw Error('canonical controls missing or duplicate');
+      const nav=await menuBtn.locator('svg path').getAttribute('d');
+      if(nav!=='M4 7h16M4 12h16M4 17h16')throw Error('noncanonical hamburger');
+      if(before.width>44)throw Error('oversized Play='+before.width);
+      if(await page.locator('[data-fc-action="scroll-top"]:visible').count())throw Error('unwanted back-to-top arrow');
+      if(await page.locator('.mobile-bottom-bar .gb-theme-toggle:visible,.hmbar .gb-theme-toggle:visible').count())throw Error('theme still occupies toolbar');
+      await badge.click();await page.waitForTimeout(100);
+      const state=await page.evaluate(()=>{
+        const b=document.querySelector('[data-reader-mobile-speed]'),rail=b.querySelector('.reader-mobile-speedrail'),m=b.querySelector('.reader-mobile-menu-trigger'),play=b.querySelector('.reader-mobile-play'),badge=b.querySelector('.reader-mobile-speed-badge');
+        const rates=[...rail.querySelectorAll('[data-speed]')].map(x=>{const r=x.getBoundingClientRect(),s=getComputedStyle(x);return{x:r.x,y:r.y,w:r.width,h:r.height,color:s.color,active:x.getAttribute('aria-checked')}});
+        const a=rail.getBoundingClientRect(),p=play.getBoundingClientRect();
+        return{open:b.classList.contains('speed-open'),rateCount:rates.length,rates,rail:{x:a.x,y:a.y,w:a.width,h:a.height,right:a.right},play:{x:p.x,y:p.y,w:p.width,h:p.height,left:p.left},menuInert:m.inert,menuVisible:getComputedStyle(m).opacity,scrollWidth:document.documentElement.scrollWidth,viewWidth:innerWidth,badgeWidth:badge.getBoundingClientRect().width};
+      });
+      row.state=state;
+      if(!state.open||state.rateCount!==6)throw Error('speed rail did not open with 6 rates');
+      if(state.rates.some((c,i)=>i>0&&(c.x<=state.rates[i-1].x||Math.abs(c.y-state.rates[0].y)>3)))throw Error('not sideways/horizontal');
+      if(state.rail.right>state.play.left+2)throw Error('rail overlaps Play');
+      if(state.scrollWidth>state.viewWidth+2)throw Error('page overflow');
+      if(!state.menuInert)throw Error('hidden menu not inert');
+      const after=await play.boundingBox();
+      if(Math.abs(after.x-before.x)>1||Math.abs(after.y-before.y)>1)throw Error('Play moved opening speed');
+      if(engineName==='chromium'&&['baptists','heart','herm'].includes(slug)&&width===390)await page.screenshot({path:path.join(out,slug+'-mobile-v12-speed-open.png'),animations:'disabled'});
+      await bar.locator('.reader-mobile-speed-rate[data-speed="1.75"]').click();
+      await page.waitForTimeout(300);
+      const stored=await page.evaluate(()=>localStorage.getItem('gb:audio:rate'));
+      if(stored!=='1.75')throw Error('rate not persisted');
+      row.rate=stored;
+      // Existing settings sheets (both engines) must offer all 3 canonical themes.
+      await settings.click({timeout:4000});
+      await page.waitForTimeout(160);
+      const count=await page.locator('[data-hm-theme]:visible,[data-gill-theme-btn]:visible').count();
+      row.settingsThemeChoices=count;
+      if(count!==3)throw Error('three themes not inside settings: '+count);
+      if(engineName==='chromium'&&slug==='herm'&&width===390)await page.screenshot({path:path.join(out,'herm-mobile-v12-settings.png'),animations:'disabled'});
+     }else{
+      const play=page.locator('.gb-ember:visible').first();
+      await play.hover();await page.waitForTimeout(180);
+      const menu=play.locator('xpath=..').locator('.gb-ember-expand.is-open');
+      if(!await menu.count())throw Error('desktop historic speed popover absent');
+      const state=await menu.evaluate(node=>{const s=getComputedStyle(node);return{direction:s.flexDirection,rates:[...node.querySelectorAll('[data-speed]')].map(x=>({x:x.getBoundingClientRect().x,y:x.getBoundingClientRect().y})),choices:node.querySelectorAll('[data-speed]').length}});
+      row.state=state;
+      if(state.choices!==6||state.direction!=='column'||state.rates.some((x,i)=>i>0&&x.y<=state.rates[i-1].y))throw Error('desktop original vertical rate regression');
+     }
+     if(pageErrors.length)throw Error('browser page exception '+pageErrors.slice(0,3).join(';'));
+     row.pass=true;
+    }catch(e){row.pass=false;row.error=String(e).slice(0,950);errors.push(row);}
+    finally{results.push(row);await page.close()}
+   }
+  }finally{await browser.close()}
+ }
+ const output={cases:results.length,passes:results.length-errors.length,failures:errors,results};
+ fs.writeFileSync(path.join(out,'V12_CANONICAL_BROWSER.json'),JSON.stringify(output,null,2));
+ console.log(JSON.stringify({cases:output.cases,passes:output.passes,failures:errors.slice(0,22).map(x=>({engine:x.engine,slug:x.slug,width:x.width,error:x.error}))},null,2));
+ if(errors.length)process.exitCode=1;
+})().catch(e=>{console.error(e);process.exitCode=2}).finally(()=>server.close());

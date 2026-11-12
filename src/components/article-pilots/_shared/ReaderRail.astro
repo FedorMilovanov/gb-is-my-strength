@@ -7,6 +7,7 @@
  */
 import SiteSectionsMenu from './SiteSectionsMenu.astro';
 import GrokReaderTree from './GrokReaderTree.astro';
+import ReaderPdfIcon from './ReaderPdfIcon.astro';
 import ReaderTocHeading from './ReaderTocHeading.astro';
 import type { ReaderTocNode } from './series/readerTocProjection';
 
@@ -95,7 +96,7 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6" /><circle cx="6" cy="12" r="2.6" /><circle cx="18" cy="19" r="2.6" /><path d="M8.3 10.7l7.4-4.2M8.3 13.3l7.4 4.2" /></svg>
     </button>
     <button class="hrail-bottom-btn" data-action="print" type="button" aria-label="Скачать PDF">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12" /><polyline points="7 10 12 15 17 10" /><path d="M5 21h14" /></svg>
+      <ReaderPdfIcon />
     </button>
     <!-- A−/A+ убраны (владелец 2026-07-17: «настройки в отдельном значке»):
          размер текста живёт в листе настроек, открываемом ⚙ выше. -->
@@ -597,8 +598,8 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       border-color:currentColor;
     }
     .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember {
-      width:36px;height:36px;min-width:36px;
-      border:1px solid transparent;border-radius:10px;
+      width:32px;height:32px;min-width:32px;
+      border:1px solid transparent;border-radius:50%;
       color:var(--rail-muted,#725e52);
       background:transparent;box-shadow:none;backdrop-filter:none;
     }
@@ -614,7 +615,7 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
     }
     body:has(.hrail--grok) #gbFloatingControls .gb-ember {
       width:32px;height:32px;min-width:32px;
-      border:1px solid color-mix(in srgb,var(--rail-accent,#7a2e2e) 30%,transparent);
+      border:0;
       border-radius:50%;
       background:transparent;
       box-shadow:none;
@@ -627,14 +628,14 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       transform:none;
     }
     body:has(.hrail--grok) #gbFloatingControls .gb-ember:hover {
-      border-color:color-mix(in srgb,var(--rail-accent,#7a2e2e) 65%,transparent);
+      color:var(--rail-accent,#7a2e2e);
     }
     body:has(.hrail--grok) #gbFloatingControls .gb-ember__ring-svg {
-      /* One fine 28px progress circle inside the quiet 32px Play. */
-      inset:2px;
-      width:calc(100% - 4px);
-      height:calc(100% - 4px);
-      opacity:0;
+      /* Native Baptists geometry: 32px SVG/r=45, continuously visible. */
+      inset:0;
+      width:100%;
+      height:100%;
+      opacity:1;
     }
     body:has(.hrail--grok) #gbFloatingControls .gb-ember[data-state="playing"],
     body:has(.hrail--grok) #gbFloatingControls .gb-ember[data-state="paused"],
@@ -646,24 +647,29 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
     body:has(.hrail--grok) #gbFloatingControls .gb-ember[data-state="complete"] .gb-ember__ring-svg {
       opacity:1;
     }
-    body:has(.hrail--grok) #gbFloatingControls .gb-ember__ring-track {opacity:.26;}
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember__ring-track {
+      stroke:var(--rail-text,#2a1814);opacity:.55;
+    }
+    body:has(.hrail--grok) #gbFloatingControls .gb-ember__ring-progress {
+      stroke:var(--rail-accent,#7a2e2e);stroke-width:1.5;
+    }
     /* The selected rate must remain visible after the speed strip closes.
        A compact caption sits at the OUTER lower edge of the Play circle:
        never over the play/pause glyph or the concentric progress ring.
        Same one controller and existing .gbs-rail-spdbadge DOM as Gill. */
     body:has(.hrail--grok) #gbFloatingControls .gbs-rail-spdbadge {
       display:grid;
-      right:-6px;bottom:-7px;
+      right:-2px;bottom:-2px;
       z-index:8;
-      width:max-content;min-width:22px;height:15px;
-      padding:1px 4px 0;
+      width:max-content;min-width:18px;height:14px;
+      padding:2.2px 3px 0;
       box-sizing:border-box;
-      border:1px solid var(--rail-surface,#fbf3ea);
+      border:0;
       border-radius:999px;
-      background:var(--rail-accent,#7a2e2e);
-      color:#fff;
-      box-shadow:0 2px 7px rgba(37,25,20,.18);
-      font:750 8px/1 "Source Sans 3",system-ui,sans-serif;
+      background:var(--rail-text,#2a1814);
+      color:var(--rail-surface,#fbf3ea);
+      box-shadow:0 2px 6px rgba(0,0,0,.28);
+      font:800 8px/1 "Source Sans 3",system-ui,sans-serif;
       font-variant-numeric:tabular-nums;
       letter-spacing:-.025em;
       pointer-events:none;
@@ -674,77 +680,58 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
       border-color:var(--rail-surface,#2b1219);
       box-shadow:0 2px 8px rgba(0,0,0,.35);
     }
+    /* Baptists' six-tier vertical rate control, reusing the SAME player and
+       controller; only the opening direction mirrors at the left rail. */
     body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand {
       position:absolute;
       right:calc(100% + 8px);left:auto;top:50%;bottom:auto;
-      display:flex;flex-direction:row;align-items:center;
-      gap:3px;width:max-content;height:46px;
-      max-width:calc(100vw - 100px);
-      padding:6px 7px;box-sizing:border-box;
-      border:1px solid color-mix(in srgb,var(--rail-accent,#7a2e2e) 19%,var(--rail-border,#e8d9c8));
-      border-radius:16px;
-      background:var(--rail-surface,#fbf3ea);
-      box-shadow:0 9px 30px rgba(37,25,20,.09),0 2px 6px rgba(37,25,20,.035);
+      display:flex;flex-direction:column;align-items:center;
+      gap:1px;width:max-content;height:auto;max-width:none;
+      padding:5px 4px 5px 0;box-sizing:border-box;
+      border:0;border-radius:14px;
+      background:transparent;box-shadow:none;
       backdrop-filter:none;-webkit-backdrop-filter:none;
-      transform:translateY(-50%) translateX(var(--gb-ember-shift,0px));
-      clip-path:inset(0 0 0 100% round 16px);
-      opacity:0;pointer-events:none;z-index:6;
-      white-space:nowrap;
-      /* The clip-path owns the visible bloom. Delaying opacity only on CLOSE
-         prevents Linux/WebKit compositing stalls at 0 while is-open is true.
-         On open, opacity becomes 1 immediately; on close it is hidden only
-         after the 340ms retract, without an extra fading circle. */
-      transition:clip-path .34s cubic-bezier(.32,.72,0,1),
-        opacity 0s linear .34s,box-shadow .22s ease;
+      transform:translateY(-50%);
+      clip-path:circle(16px at 100% 50%);
+      opacity:0;pointer-events:none;z-index:6;white-space:nowrap;
+      transition:clip-path .26s cubic-bezier(.2,.8,.2,1),opacity .22s ease;
     }
     body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand::before {display:none;}
     body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand.is-open {
-      clip-path:inset(0 0 0 0 round 16px);
+      clip-path:inset(0 0 0 0 round 14px);
       opacity:1;pointer-events:auto;
-      transition:clip-path .34s cubic-bezier(.32,.72,0,1),
-        opacity 0s linear,box-shadow .22s ease;
-    }
-    body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand:not(.is-open) {
-      clip-path:inset(0 0 0 100% round 16px);
-      opacity:0;pointer-events:none;
     }
     body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand__btn {
-      flex:none;min-width:40px;height:32px;
-      padding:0 8px;margin:0;
-      border:0;border-radius:10px;
-      background:transparent;
-      color:var(--rail-muted,#725e52);
-      font-size:12.5px;line-height:1;font-weight:650;
-      letter-spacing:-.015em;
-      box-shadow:none;text-shadow:none;
+      flex:none;min-width:46px;height:26px;
+      padding:0 2px;margin:0;border:0;border-radius:12px;
+      background:transparent!important;
+      color:var(--rail-text,#2a1814);
+      font:800 15px/1 Inter,system-ui,sans-serif;
+      text-shadow:0 2px 6px rgba(0,0,0,.18);
+      box-shadow:none;
       opacity:1;transform:none;
-      transition:background-color .19s ease,color .19s ease,
-        box-shadow .19s ease,transform .18s ease;
+      transition:color .18s ease,text-shadow .18s ease,transform .18s ease;
     }
     body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand__btn:hover {
-      background:var(--rail-soft,rgba(122,46,46,.08));
-      color:var(--rail-text,#2a1814);
+      background:transparent!important;color:var(--rail-accent,#7a2e2e);
     }
     body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand__btn.is-active {
-      background:color-mix(in srgb,var(--rail-accent,#7a2e2e) 88%,var(--rail-surface,#fbf3ea));
-      border:0;
-      color:#fff;
-      font-weight:750;
+      background:transparent!important;color:var(--rail-accent,#7a2e2e);
+      font-weight:800;
+      text-shadow:0 2px 8px color-mix(in srgb,var(--rail-accent,#7a2e2e) 35%,transparent);
       box-shadow:none;
     }
-    html.dark body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand {
-      border-color:var(--rail-border,rgba(212,140,150,.18));
-      background:var(--rail-surface,#2b1219);
-      box-shadow:0 12px 32px rgba(0,0,0,.28);
+    html.dark body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand__btn {
+      color:var(--rail-text,#f6efe9);
+      text-shadow:0 2px 8px rgba(0,0,0,.5);
     }
     html.dark body:has(.hrail--grok) #gbFloatingControls .gb-ember-expand__btn.is-active {
-      color:var(--rail-surface,#2b1219);
-      background:var(--rail-accent-strong,#f2c4b6);
+      color:var(--rail-accent,#e0a89c);
     }
     .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember {
       width:32px;height:32px;min-width:32px;
       border-radius:50%;
-      border-color:color-mix(in srgb,var(--rail-accent,#7a2e2e) 30%,transparent);
+      border:0;
       background:transparent;
     }
     /* The SVG alone paints the ACTIVE progress circle; do not leave the
@@ -756,31 +743,32 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
     /* Shared panel offset for both the fixed speed strip and its hover
        corridor; no competing independent coordinates. */
     .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember-wrap {
-      --gb-grok-speed-panel-left:73px;
+      /* The shared controller measures the Play anchor on every opening. */
     }
     /* Outward bloom from the same live Play circle. The anchor y is measured
        by the canonical controller on every opening, never hard-coded. */
     .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember-expand {
       position:fixed;
-      left:var(--gb-grok-speed-panel-left);right:auto;
+      left:var(--gb-grok-speed-panel-left,72px);right:auto;
       top:var(--gb-ember-anchor-y,220px);bottom:auto;
-      height:42px;
-      gap:2px;padding:5px 5px;
+      height:auto;
+      max-height:calc(100dvh - 16px);overflow-y:auto;scrollbar-width:none;
+      gap:1px;padding:5px 4px 5px 0;
       transform:translateY(-50%);
-      clip-path:inset(0 100% 0 0 round 16px);
+      clip-path:circle(16px at 0% 50%);
       z-index:10000;
     }
     /* Keep the focus popover entirely within the slim toolbar corridor;
        it should not cut across the first letters of the article headline. */
     .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember-expand__btn {
-      min-width:33px;height:30px;
-      padding:0 4px;font-size:11.5px;
+      min-width:46px;height:26px;
+      padding:0 2px;font-size:15px;
     }
     .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember-expand:not(.is-open) {
-      clip-path:inset(0 100% 0 0 round 16px);
+      clip-path:circle(16px at 0% 50%);
     }
     .hrail--grok.hrail--compact .grok-compact-tools #gbFloatingControls .gb-ember-expand.is-open {
-      clip-path:inset(0 0 0 0 round 16px);
+      clip-path:inset(0 0 0 0 round 14px);
     }
     /* Keep the REAL pointer hover corridor continuous between Play and the
        horizontally displaced speed strip. A 24–38px empty gap previously
@@ -1167,7 +1155,49 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
         const sectionId = String(reader?.sectionId || '');
         const idx = links.findIndex((link) => !!link && (link.getAttribute('href') || '').replace(/^#/, '') === sectionId);
         setActive(idx, String(reader?.phase || 'before-content'));
-        if(trackFill) trackFill.style.setProperty('--track-progress', String(Math.max(0, Math.min(1, Number(reader?.progressRatio) || 0))));
+        if (trackFill) {
+          let progress = Math.max(0, Math.min(1, Number(reader?.progressRatio) || 0));
+          if (isGrok) {
+            const roots = Array.from(toc.querySelectorAll<HTMLLIElement>(
+              ':scope > li.grok-row--h2'));
+            const dotRows = roots.map((row) => {
+              const dot = row.querySelector<HTMLElement>(':scope > .grok-entry > .hrail-dot');
+              const link = row.querySelector<HTMLAnchorElement>(':scope > .grok-entry > a');
+              const heading = link ? document.getElementById(decodeURIComponent(
+                (link.getAttribute('href') || '').replace(/^#/, ''))) : null;
+              if (!dot || !heading) return null;
+              const dotRect = dot.getBoundingClientRect();
+              return { row, y:dotRect.top + dotRect.height / 2,
+                documentY:heading.getBoundingClientRect().top + window.scrollY };
+            }).filter((item): item is NonNullable<typeof item> => item !== null);
+            if (dotRows.length >= 2) {
+              const first = dotRows[0];
+              const last = dotRows[dotRows.length - 1];
+              // ReaderState marks headings around the reader's 160px eye-line.
+              const eye = window.scrollY + 160;
+              let position = first.y;
+              if (eye >= last.documentY) position = last.y;
+              else for (let i = 0; i < dotRows.length - 1; i++) {
+                const current = dotRows[i], next = dotRows[i + 1];
+                if (eye < next.documentY) {
+                  const span = Math.max(1, next.documentY - current.documentY);
+                  const fraction = Math.max(0, Math.min(1, (eye - current.documentY) / span));
+                  position = current.y + fraction * (next.y - current.y);
+                  break;
+                }
+              }
+              // An active root heading must never show progress below its dot.
+              const selectedRow = idx >= 0 ? rows[idx] : null;
+              const activeRoot = selectedRow?.matches('.grok-row--h2')
+                ? selectedRow : selectedRow?.parentElement?.closest('.grok-row--h2');
+              const activeMark = dotRows.find((item) => item.row === activeRoot);
+              if (activeMark) position = Math.max(position, activeMark.y);
+              progress = Math.max(0, Math.min(1,
+                (position - first.y) / Math.max(1, last.y - first.y)));
+            }
+          }
+          trackFill.style.setProperty('--track-progress', String(progress));
+        }
       });
     }
 

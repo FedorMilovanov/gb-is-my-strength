@@ -1968,24 +1968,60 @@
         else panel.removeAttribute('inert');
       }
 
+      // Restore the November-08 historical pointer bridge, generalized to
+      // the original vertical gb-ember-expand. Geometry derives exclusively
+      // from real Play and menu rects: no route-specific x/y magic numbers.
+      function updateHoverBridge() {
+        var e=ember.getBoundingClientRect(), p=panel.getBoundingClientRect();
+        if (!e.width || !p.width) return;
+        var left, right;
+        if (p.right <= e.left) {
+          left=p.right-2; right=e.left+2;
+        } else if (p.left >= e.right) {
+          left=e.right-2; right=p.left+2;
+        } else {
+          left=0;right=0;
+        }
+        var top=Math.min(e.top,p.top)-2;
+        var bottom=Math.max(e.bottom,p.bottom)+2;
+        wrap.style.setProperty('--gb-speed-bridge-x', Math.round(left)+'px');
+        wrap.style.setProperty('--gb-speed-bridge-y', Math.round(top)+'px');
+        wrap.style.setProperty('--gb-speed-bridge-w', Math.round(Math.max(0,right-left))+'px');
+        wrap.style.setProperty('--gb-speed-bridge-h', Math.round(Math.max(0,bottom-top))+'px');
+      }
       function openPanel() {
         // For a relocated Grok focus rail, anchor the SAME speed panel to the
         // live Play control rather than to a hard-coded viewport position.
         // This survives viewport resize and a scrolled 68px utility rail.
         if (ember.closest('#grokCompactTools')) {
           var anchor = ember.getBoundingClientRect();
-          var anchorY = (anchor.top + anchor.height / 2).toFixed(1) + 'px';
+          var centerY = anchor.top + anchor.height / 2;
+          var panelHeight = panel.getBoundingClientRect().height;
+          var safeTop = panelHeight / 2 + 8;
+          var safeBottom = window.innerHeight - panelHeight / 2 - 8;
+          // Keep the panel inside short viewports without shifting Play.
+          var safeCenterY = safeBottom >= safeTop
+            ? Math.max(safeTop, Math.min(centerY, safeBottom))
+            : window.innerHeight / 2;
+          var anchorY = safeCenterY.toFixed(1) + 'px';
+          // Place the existing speed rail beside the measured Play instead
+          // of a stale fixed x=73px that misaligns compact controls.
+          var compactRail = ember.closest('.hrail--grok');
+          var railRight = compactRail ? compactRail.getBoundingClientRect().right : anchor.right;
+          wrap.style.setProperty('--gb-grok-speed-panel-left', Math.round(Math.max(anchor.right + 10, railRight + 8)) + 'px');
           panel.style.setProperty('--gb-ember-anchor-y', anchorY);
           // The open-state hover corridor shares this true button geometry.
           // It prevents a mouseleave in the gap before reaching the speed chips.
           wrap.style.setProperty('--gb-ember-bridge-right', anchor.right.toFixed(1) + 'px');
-          wrap.style.setProperty('--gb-ember-bridge-y', anchorY);
+          wrap.style.setProperty('--gb-ember-bridge-y', centerY.toFixed(1) + 'px');
         } else {
           panel.style.removeProperty('--gb-ember-anchor-y');
         }
         panel.classList.add('is-open');
         ember.setAttribute('aria-expanded', 'true');
         speedPanelFold(false);
+        // Allow the historical clip-path to open, then bridge the live gap.
+        requestAnimationFrame(function() { requestAnimationFrame(updateHoverBridge); });
         // Runtime viewport guard: после reflow проверяем,
         // не вылез ли pill за край экрана. Если да — сдвигаем
         // через translate. Дополнительная страховка к CSS max-width.
@@ -2054,12 +2090,13 @@
           return;
         }
         // Grok's 68px focus rail has no independent speed control in its
-        // closed state. An idle click first opens THIS existing five-rate
-        // bloom panel; selecting a rate starts playback via the owner below.
+        // closed state. An idle click first opens THIS existing six-rate
+        // bloom panel; choosing a rate saves it without auto-starting playback.
         // While playing or paused, the same button still means pause/resume.
         // Other Reader, Gill and mobile embers keep their original behavior.
         if (ember.closest('#grokCompactTools') &&
-            (currentTtsUiState(ember) === 'idle' || currentTtsUiState(ember) === 'complete')) {
+            (currentTtsUiState(ember) === 'idle' || currentTtsUiState(ember) === 'complete') &&
+            !ember.hasAttribute('data-speed-confirm')) {
           openPanel();
           return;
         }
@@ -2115,7 +2152,7 @@
           // existing mouseleave timer (below) closes it once the pointer
           // actually leaves; on touch there's no hover, so force-close here.
           try { btn.blur(); } catch (_) {}
-          if (!HOVER_CAPABLE) setTimeout(closePanel, 220);
+          setTimeout(closePanel, HOVER_CAPABLE ? 160 : 220);
           return;
         }
       });
@@ -2744,10 +2781,10 @@
       var mobSec = qs('#gbs2MobSec');
       if (mobSec) mobSec.textContent = reader.sectionTitle || (phase === 'after-content' ? 'Завершено' : 'Введение');
 
-      // Historical kinetic visuals remain renderers of the shared scroll snapshot.
+      // Cover media now uses intrinsic image geometry across reader series.
+      // Only the decorative numeral remains kinetic; moving the image could
+      // expose a colored frame on long reads and distort archival compositions.
       var scrollY = Number(reader.scrollY) || 0;
-      var heroImgEl = qs('.gbs2-hero img');
-      if (heroImgEl) heroImgEl.style.setProperty('--gbs2-par', String(Math.round(scrollY * 0.035)));
       var kineticEl = qs('.gbs2-kinetic');
       if (kineticEl) kineticEl.style.setProperty('--gbs2-kin-y', Math.round(scrollY * -0.018) + 'px');
 

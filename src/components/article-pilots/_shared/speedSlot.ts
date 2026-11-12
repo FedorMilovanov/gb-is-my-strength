@@ -24,6 +24,8 @@ export interface SpeedSlotSelectors {
   chip: string;
   /** Optional TOC-search input in the same slot; focusing it closes the rail. */
   searchInput?: string;
+  /** Navigation controls visually covered by the speed rail. */
+  coveredControls?: string;
 }
 
 export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): void {
@@ -39,8 +41,12 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
   // its transparent state is replaced by the speed rail in the same slot.
   const displaced = Array.from(speedrail.parentElement?.children || [])
     .filter((element): element is HTMLElement => element !== speedrail && element instanceof HTMLElement);
+  const covered = sel.coveredControls ? Array.from(topbar.querySelectorAll<HTMLElement>(sel.coveredControls)) : [];
+  const suspended = Array.from(new Set([...displaced, ...covered]));
+  const previousInert = new Map<HTMLElement, boolean>();
   let offeredThisSession = false;
   let closeTimer: number | undefined;
+  let choiceCloseTimer: number | undefined;
 
   function fmt(r: number): string { return String(r).replace(/\.0$/, '') + '×'; }
   function readRate(): number {
@@ -68,10 +74,14 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
 
   function open(autoClose: boolean) {
     clearTimeout(closeTimer);
-    if (displaced.some((element) => element.contains(document.activeElement))) {
+    clearTimeout(choiceCloseTimer);
+    if (suspended.some((element) => element.contains(document.activeElement))) {
       rateTrigger.focus({ preventScroll: true });
     }
-    displaced.forEach((element) => { element.inert = true; });
+    suspended.forEach((element) => {
+      if (!previousInert.has(element)) previousInert.set(element, element.inert);
+      element.inert = true;
+    });
     rail.inert = false;
     rail.removeAttribute('aria-hidden');
     rateTrigger.setAttribute('aria-expanded', 'true');
@@ -82,10 +92,12 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
   }
   function close() {
     clearTimeout(closeTimer);
+    clearTimeout(choiceCloseTimer);
     // Keyboard focus must not remain on an element about to become inert.
     if (rail.contains(document.activeElement)) rateTrigger.focus({ preventScroll: true });
     topbar.classList.remove('speed-open');
-    displaced.forEach((element) => { element.inert = false; });
+    previousInert.forEach((wasInert, element) => { element.inert = wasInert; });
+    previousInert.clear();
     rail.inert = true;
     rail.setAttribute('aria-hidden', 'true');
     rateTrigger.setAttribute('aria-expanded', 'false');
@@ -100,6 +112,12 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
     }
     prevState = state;
   }).observe(ember, { attributes: true, attributeFilter: ['data-state'] });
+
+  topbar.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && topbar.classList.contains('speed-open')) {
+      e.preventDefault(); close(); rateTrigger.focus({ preventScroll: true });
+    }
+  });
 
   badge.addEventListener('click', (e: MouseEvent) => {
     e.preventDefault(); e.stopPropagation();
@@ -122,7 +140,7 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
         localStorage.setItem('gbx-tts-rate', String(rate));
       } catch (_) {}
       window.dispatchEvent(new CustomEvent('gb:tts-rate-change', { detail: { rate: rate } }));
-      setTimeout(close, 220);
+      choiceCloseTimer = window.setTimeout(close, 220);
     });
   });
 

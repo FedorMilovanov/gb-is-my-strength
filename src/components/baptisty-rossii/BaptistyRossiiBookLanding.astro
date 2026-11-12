@@ -1,5 +1,7 @@
 ---
+import ReaderFloatingControlsRuntime from '@/components/reader-platform/ReaderFloatingControlsRuntime.astro';
 import RomanNumeral from '@/components/ui/floating-cluster/RomanNumeral.astro';
+import ReaderIntegratedRailToggle from '@/components/article-pilots/_shared/ReaderIntegratedRailToggle.astro';
 import {
   BAPTIST_BOOK_CHAPTERS,
   BAPTIST_BOOK_META,
@@ -52,7 +54,7 @@ const landingToc = [
 ];
 ---
 
-<script is:inline defer src="../../js/floating-cluster-controller.js?v=35b029c8"></script>
+<ReaderFloatingControlsRuntime />
 <a class="skip-link" href="#main-content">Перейти к содержимому</a>
 
 <header class="gbs2-mobile-head">
@@ -71,12 +73,13 @@ const landingToc = [
 </header>
 
 <div class="gbs2-world">
-  <aside class="gbs2-rail" aria-label={`Книга «${BAPTIST_BOOK_META.title}»`}>
+  <aside class="gbs2-rail" data-reader-integrated-rail="series" aria-label={`Книга «${BAPTIST_BOOK_META.title}»`}>
     <div class="gbs2-rhead">
-      <div class="gbs2-kicker">Книга · История ЕХБ</div>
-      <p class="gbs2-rtitle">{BAPTIST_BOOK_META.title}</p>
-      <div class="gbs2-rsub">{BAPTIST_BOOK_META.publishedLabel}</div>
-      <div class="gbs2-rprogress">
+      <ReaderIntegratedRailToggle controls="gbsBookRailMid" />
+      <div class="gbs2-kicker" data-reader-fold-content>Книга · История ЕХБ</div>
+      <p class="gbs2-rtitle" data-reader-fold-content>{BAPTIST_BOOK_META.title}</p>
+      <div class="gbs2-rsub" data-reader-fold-content>{BAPTIST_BOOK_META.publishedLabel}</div>
+      <div class="gbs2-rprogress" data-reader-fold-content>
         <div class="gbs2-ring" aria-hidden="true">
           <svg width="44" height="44" viewBox="0 0 44 44">
             <circle class="t" cx="22" cy="22" r="18"></circle>
@@ -88,7 +91,7 @@ const landingToc = [
       </div>
     </div>
 
-    <div class="gbs2-rmid">
+    <div class="gbs2-rmid" id="gbsBookRailMid" data-reader-fold-content>
       <nav class="gbs2-parts" aria-label="Главы и статьи книги">
         {chapters.map((chapter) => (
           <>
@@ -165,7 +168,7 @@ const landingToc = [
       <button type="button" class="gb-save gbs2-ctl" data-fc-action="save" aria-label="Сохранить" aria-pressed="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
       </button>
-      <a class="gbs2-home" href="../konfessii/russkij-baptizm/">3D-карта</a>
+      <a class="gbs2-home" data-reader-fold-content href="../konfessii/russkij-baptizm/">3D-карта</a>
     </div>
   </aside>
 
@@ -312,5 +315,5 @@ const landingToc = [
 <script is:inline defer src="../js/glossary.js?v=c7f8b6e9"></script>
 <script is:inline defer src="../js/sw-register.js?v=921dd6a2"></script>
 
-<script is:inline defer src="../js/highlights.js?v=3c7d5b5d"></script>
+<script is:inline defer src="../js/highlights.js?v=e3e21e86"></script>
 <script is:inline defer src="../js/enhancements.js?v=15476429"></script>

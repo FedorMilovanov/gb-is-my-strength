@@ -38,14 +38,8 @@
   display: block;
 }
 
-.gb-floating-tip .gtip-detail-wrap[aria-hidden="true"] {
-  display: none;
-}
-
-.gb-floating-tip .gtip-detail-wrap[aria-hidden="false"] {
-  display: block;
-  margin-top: .7rem;
-}
+/* Rich glossary detail keeps the canonical 0fr -> 1fr grid animation
+   in site.css. It must not be switched to display:none/block here. */
 
 .gb-floating-tip [data-gtip-expand] {
   display: inline-flex;

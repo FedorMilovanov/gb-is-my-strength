@@ -200,7 +200,10 @@ function setGlossaryExpanded(tip, frame, expand, detail, expanded) {
   frame.classList.remove('is-expanded');
   const text = expand.querySelector('.gtip-expand-txt');
   if (text) text.textContent = expanded ? 'Кратко' : 'Подробнее';
-  if (detail) detail.setAttribute('aria-hidden', expanded ? 'false' : 'true');
+  if (detail) {
+    detail.setAttribute('aria-hidden', expanded ? 'false' : 'true');
+    detail.inert = !expanded;
+  }
 }
 
 function resetGlossaryTip(tip) {
@@ -295,8 +298,11 @@ function applyOverflow(tip, maxHeight) {
 function preferredPlacement(naturalHeight, availableAbove, availableBelow, previousPlacement, preservePlacement) {
   const fitsAbove = naturalHeight <= availableAbove;
   const fitsBelow = naturalHeight <= availableBelow;
-  if (preservePlacement && previousPlacement === 'top' && fitsAbove) return 'top';
-  if (preservePlacement && previousPlacement === 'bottom' && fitsBelow) return 'bottom';
+  // Keep the side chosen on opening while rich content grows. Otherwise a
+  // click on 'Подробнее' flips the popover across its trigger mid-animation.
+  // The existing viewport cap provides scrolling on the chosen side.
+  if (preservePlacement && previousPlacement === 'top' && availableAbove >= MIN_SCROLL_HEIGHT) return 'top';
+  if (preservePlacement && previousPlacement === 'bottom' && availableBelow >= MIN_SCROLL_HEIGHT) return 'bottom';
   if (fitsAbove && fitsBelow) return previousPlacement === 'bottom' ? 'bottom' : 'top';
   if (fitsAbove) return 'top';
   if (fitsBelow) return 'bottom';
@@ -316,7 +322,16 @@ function positionDesktop(tip, anchor, preservePlacement = false) {
   let tipRect = tip.getBoundingClientRect();
   const width = Math.min(tipRect.width, Math.max(0, viewport.width - VIEWPORT_MARGIN * 2));
   let left = anchorRect.left + anchorRect.width / 2 - width / 2;
-  left = Math.max(viewport.left + VIEWPORT_MARGIN, Math.min(left, viewport.right - VIEWPORT_MARGIN - width));
+  // Desktop Grok rail is persistent, and article terms may open close to it.
+  // Keep the entire definition visible in the reading canvas rather than
+  // centering half of it behind the higher-z-index navigation rail.
+  const grokRail = document.querySelector('.hrail--grok');
+  const railRect = grokRail?.getBoundingClientRect();
+  const railClearance = window.innerWidth >= 1200 && railRect?.width > 0
+    ? Math.min(railRect.right + 12, viewport.right - VIEWPORT_MARGIN - width)
+    : viewport.left + VIEWPORT_MARGIN;
+  left = Math.max(viewport.left + VIEWPORT_MARGIN, railClearance,
+    Math.min(left, viewport.right - VIEWPORT_MARGIN - width));
 
   const viewportMax = Math.max(MIN_SCROLL_HEIGHT, viewport.height - VIEWPORT_MARGIN * 2);
   const availableAbove = Math.max(0, anchorRect.top - viewport.top - VIEWPORT_MARGIN - TIP_GAP);
@@ -325,31 +340,29 @@ function positionDesktop(tip, anchor, preservePlacement = false) {
   const placement = preferredPlacement(naturalHeight, availableAbove, availableBelow, previousPlacement, preservePlacement);
   const available = placement === 'top' ? availableAbove : availableBelow;
 
-  if (naturalHeight > available) applyOverflow(tip, Math.min(available, viewportMax));
+  // Rich glossary expands inside an anchor-bound viewport: cap its height
+  // *before* the 0fr -> 1fr transition starts, not after a resize observer
+  // notices overflow. The unchanged content can scroll within that surface.
+  if (tip.classList.contains('gtip')) {
+    applyOverflow(tip, Math.min(available, viewportMax));
+    setImportant(tip.style, 'overflow-y', 'auto');
+  } else if (naturalHeight > available) applyOverflow(tip, Math.min(available, viewportMax));
   else setImportant(tip.style, 'overflow-y', 'visible');
-
-  tipRect = tip.getBoundingClientRect();
-  const renderedHeight = Math.min(tipRect.height, viewportMax);
-  let top = placement === 'top'
-    ? anchorRect.top - renderedHeight - TIP_GAP
-    : anchorRect.bottom + TIP_GAP;
-  top = Math.max(viewport.top + VIEWPORT_MARGIN, Math.min(top, viewport.bottom - VIEWPORT_MARGIN - renderedHeight));
 
   tip.dataset.placement = placement;
   setImportant(tip.style, 'left', `${Math.round(left)}px`);
-  setImportant(tip.style, 'top', `${Math.round(top)}px`);
-  // The final fixed left/top position can change the rendered height after
-  // wrapping (notably WebKit's rich glossary card). Verify the *settled*
-  // rectangle rather than trusting its pre-positioning measurement. The
-  // opener must remain outside the interactive popover.
-  const settled = tip.getBoundingClientRect();
-  const requiredTop = placement === 'top'
-    ? top - Math.max(0, settled.bottom + TIP_GAP - anchorRect.top)
-    : top + Math.max(0, anchorRect.bottom + TIP_GAP - settled.top);
-  if (Math.abs(requiredTop - top) > 0.5) {
-    const minTop = viewport.top + VIEWPORT_MARGIN;
-    const maxTop = viewport.bottom - VIEWPORT_MARGIN - settled.height;
-    top = Math.max(minTop, Math.min(requiredTop, Math.max(minTop, maxTop)));
+  if (placement === 'top') {
+    // Fixed bottom is geometrically tethered to the trigger. The panel grows
+    // UP, without JS remapping top on each animation frame. This removes the
+    // WebKit mid-transition jump across its own opener.
+    setImportant(tip.style, 'top', 'auto');
+    setImportant(tip.style, 'bottom',
+      `${Math.round(window.innerHeight - anchorRect.top + TIP_GAP)}px`);
+  } else {
+    const renderedHeight = Math.min(tip.getBoundingClientRect().height, viewportMax);
+    const top = Math.max(viewport.top + VIEWPORT_MARGIN,
+      Math.min(anchorRect.bottom + TIP_GAP, viewport.bottom - VIEWPORT_MARGIN - renderedHeight));
+    setImportant(tip.style, 'bottom', 'auto');
     setImportant(tip.style, 'top', `${Math.round(top)}px`);
   }
   tip.style.setProperty('--gb-tip-arrow-x', `${Math.round(anchorRect.left + anchorRect.width / 2 - left)}px`);

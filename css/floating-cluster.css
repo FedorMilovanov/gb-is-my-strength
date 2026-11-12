@@ -2,7 +2,7 @@
    floating-cluster.css — v16 Floating Cluster Component Styles
    Источник истины: Astro-компоненты (src/components/ui/floating-cluster/)
    Этот файл — единый CSS для legacy root HTML, где Astro build не применяется.
-   Авто-генерация: копия стилей из <style is:global> компонентов.
+   Авто-генерация: копия стилей из \3c style is:global> компонентов.
 
    Канонические классы: gb-* (единая система, fc-* упразднены).
    =================================================================== */
@@ -243,9 +243,15 @@ html.dark .gb-theme-toggle .theme-icon-moon { opacity: 1; transform: rotate(0) s
    gb-ember — play/pause с SVG progress ring
    (PlayEmber.astro — стили в SingleArticleCluster.astro)
    ========================================================= */
+/* Reader Platform: one geometric contract across all book and article
+   families. Palette and progression rings remain series-specific. */
+:root {
+  --reader-play-size-desktop: 32px;
+  --reader-play-size-mobile: 44px;
+}
 .gb-ember {
   --p: 0;
-  --ember-size: 36px;
+  --ember-size: var(--reader-play-size-desktop);
   --ring-color: var(--color-accent, #7a2e2e);
   appearance: none;
   border: 0;
@@ -282,10 +288,8 @@ html.dark .gb-theme-toggle .theme-icon-moon { opacity: 1; transform: rotate(0) s
   pointer-events: none;
 }
 @media (hover: hover) and (pointer: fine) {
-  .gb-ember:hover { transform: scale(1.025); }
   .gb-ember:hover::before { opacity: 1; }
 }
-.gb-ember:active { transform: scale(.97); transition: transform .12s cubic-bezier(.4,0,.2,1); }
 .gb-ember:active::before { opacity: .7; }
 .gb-ember:focus-visible { outline: 2px solid var(--color-accent, #7a2e2e); outline-offset: 4px; border-radius: 50%; }
 .gb-ember:focus-visible::before { opacity: 1; }
@@ -776,7 +780,7 @@ body.nagornaya-page #themeToggle {
      body.gb-cluster-single-active/fc-single-active #bottomBar hide rules
      above (same single-class+id specificity as this rule at first, which
      lost the cascade tie in testing despite later source order — some
-     other stylesheet or dynamically-inserted <style> was re-asserting
+     other stylesheet or dynamically-inserted \3c style> was re-asserting
      display:none after this file loads). Don't rely on source order here.
      (js/nagornaya-bar-extras.js also forces this inline as a backstop.) */
   body.nagornaya-page.has-bottom-bar #bottomBar,
@@ -2360,12 +2364,9 @@ html.dark .gb-ember-expand.is-open {
   .gb-ember-wrap:focus-within > .gb-ember-expand .gb-ember-expand__btn:nth-child(5) { transition-delay:.125s,.125s,0s,0s,0s; }
   .gb-ember-wrap:hover > .gb-ember-expand .gb-ember-expand__btn:nth-child(6),
   .gb-ember-wrap:focus-within > .gb-ember-expand .gb-ember-expand__btn:nth-child(6) { transition-delay:.15s,.15s,0s,0s,0s; }
-  /* Canonical Play stays centered while the speed rail opens. Only a
-     centered micro-scale on hover remains; no sideways movement. */
-  .gb-ember-wrap:hover > .gb-ember,
-  .gb-ember-wrap:focus-within > .gb-ember {
-    transform: scale(1.02);
-  }
+  /* Canonical Play stays geometrically stationary while the speed rail
+     opens, including hover, keyboard focus and active playback. The existing
+     inner-ring illumination is the only optical feedback. */
 }
 /* Deeper rubbery morph timing for the bloom */
 .gb-ember-expand {
@@ -2469,7 +2470,7 @@ html.dark .gb-ember-expand__btn.is-active {
    What IS Gill-only (owner: "без каких-то круглых рамок… минималистичные
    красивые глубокие цифры с тень") is the pill's look: no pill background,
    no chip borders — just numbers with a shadow. */
-[data-gill-v16] .gbs-theme-corner .gb-ember-expand {
+body .gb-ember-expand {
   /* Six rates must clear the wide reader column without shifting Play. */
   padding-left: 0;
   gap: 1px;
@@ -2479,8 +2480,8 @@ html.dark .gb-ember-expand__btn.is-active {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
-[data-gill-v16] .gbs-theme-corner .gb-ember-expand::before { display: none; }
-[data-gill-v16] .gbs-theme-corner .gb-ember-expand__btn {
+body .gb-ember-expand::before { display: none; }
+body .gb-ember-expand__btn {
   /* Text-only premium line must clear article even with wider Linux fonts. */
   min-width: 26px;
   padding: 0 2px;
@@ -2492,28 +2493,23 @@ html.dark .gb-ember-expand__btn.is-active {
   text-shadow: 0 2px 6px rgba(0, 0, 0, .3);
   box-shadow: none;
 }
-html.dark [data-gill-v16] .gbs-theme-corner .gb-ember-expand__btn {
+html.dark body .gb-ember-expand__btn {
   color: #eed093;
   text-shadow: 0 2px 8px rgba(0, 0, 0, .55);
 }
 /* Active chip: wine in light mode (owner: "на светлом не нужно бежевым...
    можно винный наш"), gold kept in dark (owner: "бежевый в тёмной норм"). */
-[data-gill-v16] .gbs-theme-corner .gb-ember-expand__btn.is-active {
+body .gb-ember-expand__btn.is-active {
   color: var(--color-accent, #7a2e2e);
   text-shadow: 0 2px 8px rgba(122, 46, 46, .35);
   box-shadow: none; /* canon .is-active also sets a glow shadow — killed here
     too, not just background/border, or the chip still reads as a pill. */
 }
-html.dark [data-gill-v16] .gbs-theme-corner .gb-ember-expand__btn.is-active {
+html.dark body .gb-ember-expand__btn.is-active {
   color: var(--gb-accent-gold-bright, #d8aa6d);
   text-shadow: 0 2px 10px rgba(216, 170, 109, .45);
   box-shadow: none;
 }
-/* Reference speed pill is 6 speeds only — hide the extra Stop (■) chip on the
-   Gill rail so the pill is narrow enough to sit fully within the panel. Stop is
-   still reachable via long-press on the Play button (controller). */
-[data-gill-v16] .gb-ember-expand__stop { display: none; }
-
 /* Drop the Stop chip everywhere the pill can appear — reachable via long-press
    on Play instead. Unlayered so it beats the base btn rule. */
 .gb-floater .gb-ember-expand__stop { display: none; }
@@ -3583,10 +3579,10 @@ html.dark [data-gill-v16] .mobile-top-bar {
   }
   [data-gill-v16] .mobile-top-bar .gb-icon,
   [data-gill-v16] .mobile-playwrap .mobile-top-ember {
-    width: 44px !important;
-    height: 44px !important;
-    min-width: 44px !important;
-    min-height: 44px !important;
+    width: var(--reader-play-size-mobile) !important;
+    height: var(--reader-play-size-mobile) !important;
+    min-width: var(--reader-play-size-mobile) !important;
+    min-height: var(--reader-play-size-mobile) !important;
     --ember-size: 36px !important;
   }
   [data-gill-v16] .mobile-btoc-section__main,
@@ -3835,158 +3831,25 @@ html.dark [data-gill-v16] .mobile-top-bar {
      slot. No dropdown, floating card or second row; Play never moves.
      The horizontally scrollable strip extends over the vacated Back/Home
      positions on narrow screens, preserving 44px pointer targets. */
-  [data-reader-engine="series"] .mobile-speedrail {
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: auto;
-    box-sizing: border-box;
-    width: calc(100vw - 163px - env(safe-area-inset-left, 0px));
-    height: 44px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 0 2px;
-    border: 0;
-    border-radius: 0;
-    /* A solid undercoat keeps semi-transparent themed bar colors from
-       revealing displaced navigation under the inline speed picker. */
-    background: linear-gradient(var(--gill-mobile-bar-bg), var(--gill-mobile-bar-bg)), #f5eddf;
-    box-shadow: none;
-    z-index: 4;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x proximity;
-    opacity: 0;
-    transform: translateX(12px);
-    pointer-events: none;
-    transition: opacity .25s ease, transform .36s cubic-bezier(.22,1,.36,1);
-  }
-  html.dark [data-reader-engine="series"] .mobile-speedrail { background-color: #17191c; }
-  [data-reader-engine="series"] .mobile-speedrail::-webkit-scrollbar { display: none; }
-  [data-reader-engine="series"] .mobile-speedrail.is-dragging { scroll-snap-type: none; }
-  .mobile-speedrail[aria-hidden="true"] { display: none !important; }
   [data-reader-engine="series"] .mobile-top-bar > :is(#mobBackBtn, #mobHomeBtn) {
     transition: opacity .24s ease, transform .36s cubic-bezier(.22,1,.36,1);
   }
   [data-reader-engine="series"] .mobile-learning-trigger {
     transition: opacity .24s ease, transform .36s cubic-bezier(.22,1,.36,1);
   }
-  [data-reader-engine="series"] .mobile-top-bar.speed-open > :is(#mobBackBtn, #mobHomeBtn) {
-    opacity: 0;
-    transform: translateX(-18px);
-    pointer-events: none;
-  }
   [data-reader-engine="series"] .mobile-top-bar.speed-open .mobile-learning-trigger {
     opacity: 0;
     transform: translateX(-12px);
     pointer-events: none;
   }
-  [data-reader-engine="series"] .mobile-top-bar.speed-open .mobile-speedrail {
-    opacity: 1;
-    transform: translateX(0);
-    pointer-events: auto;
-  }
-  [data-reader-engine="series"] .mobile-speed {
-    position: relative;
-    flex: 0 0 44px;
-    min-width: 44px;
-    width: 44px;
-    height: 44px;
-    padding: 0 1px;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    color: var(--gill-mobile-bar-ink);
-    white-space: nowrap;
-    scroll-snap-align: center;
-    font-family: var(--gb-font-sans, system-ui, sans-serif);
-    font-size: 12px;
-    font-weight: 750;
-    cursor: pointer;
-    transition: color .18s ease;
-  }
-  [data-reader-engine="series"] .mobile-speed::after {
-    content: '';
-    position: absolute;
-    left: 24%;
-    right: 24%;
-    bottom: 6px;
-    height: 2px;
-    border-radius: 2px;
-    background: var(--gill-mobile-bar-gold);
-    opacity: 0;
-    transform: scaleX(.6);
-    transition: opacity .18s ease, transform .22s ease;
-  }
-  [data-reader-engine="series"] .mobile-speed[aria-checked="true"] {
-    color: var(--gill-mobile-bar-gold);
-    background: transparent;
-  }
-  [data-reader-engine="series"] .mobile-speed[aria-checked="true"]::after {
-    opacity: 1;
-    transform: scaleX(1);
-  }
-  [data-reader-engine="series"] .mobile-speed:focus-visible {
-    outline: 2px solid var(--gill-mobile-bar-gold);
-    outline-offset: -3px;
-    border-radius: 8px;
-  }
   @media (prefers-reduced-motion: reduce) {
-    [data-reader-engine="series"] .mobile-speedrail,
-    [data-reader-engine="series"] .mobile-top-bar > :is(#mobBackBtn, #mobHomeBtn),
-    [data-reader-engine="series"] .mobile-learning-trigger { transition: none; }
   }  /* Make the rate trigger and Play peers in the flex row, not overlapping
      layers. The badge's SMALL painted pill lives inside a 44x44 button. */
   [data-reader-engine="series"] .mobile-playwrap .mobile-top-ember {
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
-    min-height: 44px;
-  }
-  [data-reader-engine="series"] .mobile-spdbadge {
-    position: relative;
-    inset: auto;
-    flex: 0 0 44px;
-    width: 44px;
-    min-width: 44px;
-    height: 44px;
-    padding: 0;
-    display: grid;
-    place-items: center;
-    border: 0;
-    border-radius: 999px;
-    background: transparent;
-    color: var(--gill-mobile-bar-bg);
-    font: 700 10px/1 var(--gb-font-sans, system-ui, sans-serif);
-    cursor: pointer;
-    isolation: isolate;
-    z-index: 3;
-  }
-  [data-reader-engine="series"] .mobile-spdbadge::before {
-    content: '';
-    position: absolute;
-    width: 31px;
-    height: 26px;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 999px;
-    border: 1.5px solid var(--gill-mobile-bar-bg);
-    background: var(--gill-mobile-bar-ink);
-    box-shadow: 0 1px 4px rgba(0,0,0,.18);
-    z-index: -1;
-    pointer-events: none;
-  }
-  html.dark [data-reader-engine="series"] .mobile-spdbadge {
-    background: transparent;
-    color: #0e1116;
-  }
-  html.dark [data-reader-engine="series"] .mobile-spdbadge::before {
-    background: linear-gradient(135deg, var(--color-accent-gold, #b8936a), #eed093);
+    width: var(--reader-play-size-mobile);
+    height: var(--reader-play-size-mobile);
+    min-width: var(--reader-play-size-mobile);
+    min-height: var(--reader-play-size-mobile);
   }
 
   /* ---- Bottom bar: theme cycle glyph ---- */
@@ -4292,11 +4155,6 @@ html.dark [data-gill-v16] .mobile-top-bar {
   }
 
   @media (prefers-reduced-motion: reduce) {
-    [data-gill-v16] .mobile-learning-trigger,
-    [data-gill-v16] .mobile-speedrail,
-    [data-gill-v16] .term-card__head::after {
-      transition: none !important;
-    }
   }
 }
 
@@ -5098,14 +4956,13 @@ html.dark .gb-floater .gbs-rail-spdbadge {
    READER UI FOLLOW-UP 2026-07-24
    Evidence-driven compact-desktop safety.
    ========================================================= */
-@media (min-width: 64em) and (max-width: 101.99em) {
+@media (min-width: 1200px) {
   /* Keep compact/tablet chrome until the fixed rail and the right-hand tools
      fit together. Reader width stays owned by --gb-reader-measure; subtracting
      a magic control corridor here made all three choices collapse at 1024px. */
-  /* Compact desktop through 1631px: keep the slim vertical speed rail
-      beside PLAY until the horizontal pill has a real non-overlapping corridor. */
-  .gbs-theme-corner .gb-ember-expand,
-  .gb-floater .gb-ember-expand {
+  /* Historical July-24 vertical bloom, for all Reader desktop widths. */
+  .gb-ember-wrap > .gb-ember-expand,
+  .gb-ember-wrap > .gb-ember-expand {
     right: calc(100% + 9px);
     left: auto;
     top: 50%;
@@ -5125,8 +4982,8 @@ html.dark .gb-floater .gbs-rail-spdbadge {
   .gb-ember-wrap:focus-within > .gb-ember-expand {
     clip-path: inset(0 round 14px);
   }
-  .gbs-theme-corner .gb-ember-expand__btn,
-  .gb-floater .gb-ember-expand__btn {
+  .gb-ember-wrap .gb-ember-expand__btn,
+  .gb-ember-wrap .gb-ember-expand__btn {
     min-width: 44px;
     height: 26px;
     padding: 0 5px;

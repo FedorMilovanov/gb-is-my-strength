@@ -1,4 +1,5 @@
 ---
+import ReaderFloatingControlsRuntime from '@/components/reader-platform/ReaderFloatingControlsRuntime.astro';
 /**
  * Canonical native runtime tail for every published part of the Nagornaya
  * series. Each feature has one explicit owner; the legacy site.js monolith is
@@ -11,7 +12,7 @@ import ReaderActionsRuntime from '@/components/reader-platform/ReaderActionsRunt
 <script src="/js/glossary.js?v=c7f8b6e9" defer is:inline></script>
 <script src="/js/sw-register.js?v=921dd6a2" defer is:inline></script>
 
-<script src="/js/highlights.js?v=3c7d5b5d" defer is:inline></script>
+<script src="/js/highlights.js?v=e3e21e86" defer is:inline></script>
 <script src="/js/nagornaya-mobile-toc.js?v=a0b23b1c" defer is:inline></script>
 <script src="/js/nagornaya-bar-extras.js?v=3c7e0bdd" defer is:inline></script>
 <script src="/js/enhancements.js?v=15476429" defer is:inline></script>
@@ -19,5 +20,5 @@ import ReaderActionsRuntime from '@/components/reader-platform/ReaderActionsRunt
 <div role="region" aria-label="Прогресс чтения">
   <div id="read-progress" role="progressbar" aria-label="Прогресс чтения" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
 </div>
-<script src="/js/floating-cluster-controller.js?v=35b029c8" defer is:inline></script>
+<ReaderFloatingControlsRuntime />
 <ReaderActionsRuntime />
