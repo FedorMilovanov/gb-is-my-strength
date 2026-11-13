@@ -163,6 +163,34 @@ const variantGroups = Object.entries(route.scientific_variants ?? {})
   }))
   .filter((group) => group.items.length > 0);
 
+type ScriptSegment = {
+  lang?: 'he' | 'grc';
+  text: string;
+};
+
+const SCRIPT_RUN_RE =
+  /([\u0590-\u05FF][\u0590-\u05FF\s־·]*[\u0590-\u05FF]|[\u0590-\u05FF]+|[\u0370-\u03FF\u1F00-\u1FFF][\u0370-\u03FF\u1F00-\u1FFF\s·,.;:'ʼ]*[\u0370-\u03FF\u1F00-\u1FFF]|[\u0370-\u03FF\u1F00-\u1FFF]+)/gu;
+
+const splitScriptRuns = (input: string): ScriptSegment[] => {
+  if (!input) return [];
+  const segments: ScriptSegment[] = [];
+  let lastIndex = 0;
+  for (const match of input.matchAll(SCRIPT_RUN_RE)) {
+    const start = match.index ?? 0;
+    if (start > lastIndex) {
+      segments.push({ text: input.slice(lastIndex, start) });
+    }
+    const run = match[0];
+    const isHebrew = /[\u0590-\u05FF]/u.test(run);
+    segments.push({ lang: isHebrew ? 'he' : 'grc', text: run });
+    lastIndex = start + run.length;
+  }
+  if (lastIndex < input.length) {
+    segments.push({ text: input.slice(lastIndex) });
+  }
+  return segments;
+};
+
 const facts = [
   stats.places ? `${stats.places} мест` : null,
   stats.stages ? `${stats.stages} этапов` : null,
@@ -197,38 +225,77 @@ const facts = [
 </ul>
 
 <h3>Места маршрута</h3>
-{places.map((place) => (
-  <>
-    <h3>{toText(place.name)}</h3>
-    {toText(place.he) || (toText(place.tr) && toText(place.tr) !== toText(place.name)) ? (
-      <p class="map-static-original">
-        <b>Оригинал:</b> {toText(place.he)}
-        {toText(place.he) && toText(place.tr) && toText(place.tr) !== toText(place.name) ? ` · ${toText(place.tr)}` : ''}
-      </p>
-    ) : null}
-    {sanctioned(place.kick, `${place.id}.kick`) ? <p>{sanctioned(place.kick, `${place.id}.kick`)}</p> : null}
-    {sanctioned(place.story, `${place.id}.story`) ? <p>{sanctioned(place.story, `${place.id}.story`)}</p> : null}
-    {toText(place.bible) ? <p>{toText(place.bible)}</p> : null}
-    {toText(place.ep1) ? <p><b>Библейские ссылки:</b> {toText(place.ep1)}{toText(place.ep2) ? ` — ${toText(place.ep2)}` : ''}</p> : null}
-    {toText(place.id1) ? <p><b>Идентификация:</b> {toText(place.id1)}{toText(place.id2) ? ` · ${toText(place.id2)}` : ''}</p> : null}
-    {sanctioned(place.bible_extra, `${place.id}.bible_extra`) ? <p>{sanctioned(place.bible_extra, `${place.id}.bible_extra`)}</p> : null}
-    {sanctioned(place.arch, `${place.id}.arch`) ? <p>{sanctioned(place.arch, `${place.id}.arch`)}</p> : null}
-    {place.projectedDispute.kind === 'blocks' ? (
-      <div class="map-static-dispute">
-        <p class="map-static-dispute-title"><b>{place.projectedDispute.title}</b></p>
-        {place.projectedDispute.positions.map((pos) => (
-          <p class={`map-static-dispute-pos map-static-dispute-pos--${pos.kind}`}>
-            <b>{pos.label}</b>{pos.detail ? `: ${pos.detail}` : ''}
-            {pos.confidence ? <span class="map-static-dispute-conf">{` ${pos.confidence}`}</span> : null}
-          </p>
-        ))}
-        {place.projectedDispute.note ? <p class="map-static-dispute-note">{place.projectedDispute.note}</p> : null}
-      </div>
-    ) : place.projectedDispute.kind === 'inline' ? (
-      <p>{place.projectedDispute.text}</p>
-    ) : null}
-  </>
-))}
+{places.map((place) => {
+  const kickText = sanctioned(place.kick, `${place.id}.kick`);
+  const storyText = sanctioned(place.story, `${place.id}.story`);
+  const bibleText = toText(place.bible);
+  const bibleExtraText = sanctioned(place.bible_extra, `${place.id}.bible_extra`);
+  const archText = sanctioned(place.arch, `${place.id}.arch`);
+  return (
+    <>
+      <h3>{toText(place.name)}</h3>
+      {toText(place.he) || (toText(place.tr) && toText(place.tr) !== toText(place.name)) ? (
+        <p class="map-static-original">
+          <b>Оригинал:</b>{' '}
+          {toText(place.he) ? <span lang="he" dir="rtl">{toText(place.he)}</span> : null}
+          {toText(place.he) && toText(place.tr) && toText(place.tr) !== toText(place.name) ? ` · ${toText(place.tr)}` : ''}
+          {!toText(place.he) && toText(place.tr) && toText(place.tr) !== toText(place.name) ? toText(place.tr) : ''}
+        </p>
+      ) : null}
+      {kickText ? (
+        <p>
+          {splitScriptRuns(kickText).map((seg) =>
+            seg.lang === 'he' ? <span lang="he" dir="rtl">{seg.text}</span> : seg.lang === 'grc' ? <span lang="grc">{seg.text}</span> : seg.text,
+          )}
+        </p>
+      ) : null}
+      {storyText ? (
+        <p>
+          {splitScriptRuns(storyText).map((seg) =>
+            seg.lang === 'he' ? <span lang="he" dir="rtl">{seg.text}</span> : seg.lang === 'grc' ? <span lang="grc">{seg.text}</span> : seg.text,
+          )}
+        </p>
+      ) : null}
+      {bibleText ? (
+        <p>
+          {splitScriptRuns(bibleText).map((seg) =>
+            seg.lang === 'he' ? <span lang="he" dir="rtl">{seg.text}</span> : seg.lang === 'grc' ? <span lang="grc">{seg.text}</span> : seg.text,
+          )}
+        </p>
+      ) : null}
+      {toText(place.ep1) ? <p><b>Библейские ссылки:</b> {toText(place.ep1)}{toText(place.ep2) ? ` — ${toText(place.ep2)}` : ''}</p> : null}
+      {toText(place.id1) ? <p><b>Идентификация:</b> {toText(place.id1)}{toText(place.id2) ? ` · ${toText(place.id2)}` : ''}</p> : null}
+      {bibleExtraText ? (
+        <p>
+          {splitScriptRuns(bibleExtraText).map((seg) =>
+            seg.lang === 'he' ? <span lang="he" dir="rtl">{seg.text}</span> : seg.lang === 'grc' ? <span lang="grc">{seg.text}</span> : seg.text,
+          )}
+        </p>
+      ) : null}
+      {archText ? (
+        <p>
+          {splitScriptRuns(archText).map((seg) =>
+            seg.lang === 'he' ? <span lang="he" dir="rtl">{seg.text}</span> : seg.lang === 'grc' ? <span lang="grc">{seg.text}</span> : seg.text,
+          )}
+        </p>
+      ) : null}
+      {place.projectedDispute.kind === 'blocks' ? (
+        <div class="map-static-dispute">
+          <p class="map-static-dispute-title"><b>{place.projectedDispute.title}</b></p>
+          {place.projectedDispute.positions.map((pos) => (
+            <p class={`map-static-dispute-pos map-static-dispute-pos--${pos.kind}`}>
+              <b>{pos.label}</b>{pos.detail ? `: ${pos.detail}` : ''}
+              {pos.confidence ? <span class="map-static-dispute-conf">{` ${pos.confidence}`}</span> : null}
+            </p>
+          ))}
+          {place.projectedDispute.note ? <p class="map-static-dispute-note">{place.projectedDispute.note}</p> : null}
+        </div>
+      ) : place.projectedDispute.kind === 'inline' ? (
+        <p>{place.projectedDispute.text}</p>
+      ) : null}
+    </>
+  );
+})}
 
 <h3>Спорные локализации: что говорят варианты</h3>
 {corridors.length ? (
