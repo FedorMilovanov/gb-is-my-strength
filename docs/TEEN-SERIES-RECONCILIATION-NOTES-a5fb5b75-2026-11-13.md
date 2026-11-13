@@ -195,6 +195,59 @@ backticks, zero section signs, zero CAPS ladders in reader prose (the only
 four-letter capitals inside `#article-content` are the `EEBO` abbreviation in
 source links), and zero broken intra-page anchors.
 
+## 8b. Language-of-parts contract: one real defect found here and fixed
+
+`1d569906` added `scripts/language-of-parts-contract.mjs` with
+`scripts/lib/language-of-parts-hygiene.js` and `scripts/lib/mixed-script-guard.js`,
+and wired `projectLanguageOfPartsHtml` into `scripts/heading-name-hygiene.js`, so
+Greek and Hebrew runs are tagged in `dist/` at build time. Running that contract
+against this branch's built `dist/` found a genuine defect **on this branch**, and
+it has been fixed here rather than left to reconciliation.
+
+The defect: the route
+`articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/` is rendered
+from `src/components/article-pilots/hermenevtika/HermenevtikaBody.astro`, not from
+its MDX. The sitewide language-of-parts pass in commit `d944712` tagged 19 other
+pilot bodies (314 to 453 `lang` attributes across
+`src/components/article-pilots/`) but missed this one, because it edited the MDX
+shadow, which does not drive that page. The commit message claim of "sitewide" was
+therefore overstated by exactly one route.
+
+Six untagged Greek runs were wrapped in `<span lang="el">` in that pilot body:
+`ὀρθοτομοῦντα`, `ὀρθός`, `τέμνω`, `τὰ περὶ ἑαυτοῦ`,
+`ἀνακεφαλαιώσασθαι`, `τὰ γεγραμμένα διὰ τῶν προφητῶν`.
+Verification: `<span>` balance +6/+6, every other structural count unchanged,
+Greek character count unchanged, and the tag-stripped text byte-identical, so no
+visible reader text moved. After rebuild, a full audit of all 116 built HTML files
+reports **0 files with untagged foreign runs** (previously 1 file, 5 findings).
+
+Effect on the scripture index: two `context` strings for that one route shifted,
+because `scripts/build-scripture-occurrence-index.mjs` line 92 replaces tags with
+spaces. Reference, occurrence and route counts are unchanged at 1378 / 3499 / 102.
+This is pre-existing builder behaviour, not a new artifact class: the committed
+index already contains 493 such `( ` sequences produced by inline tags that were
+there before, including the existing `lang="el"` tags
+(`ἰὸς θανατηφόρος ( иос танатефорос , Иак.`). The rendered page itself has no
+stray space, since the span follows the opening parenthesis directly.
+
+Merge-order dependency that remains, and that is **not** a defect of this branch's
+content: check 4 of that contract asserts that `installArticleStrategicMap()`
+renders popover terms as `<span lang="grc">ὑπόκρισις</span>` and a `lang="he"`
+counterpart. That tagging lives in `1d569906`'s change to
+`src/runtime/article-strategic-map.js` (+38/-4), which this branch does not have.
+So checks 1 through 3 now pass here and check 4 fails until his runtime change is
+merged. `scripts/mixed-script-surface-contract.mjs` passes on this branch as-is.
+
+Also recorded, since it affects how any of the seven branches should be read: of
+the 36 article MDX files this branch touched, 20 do not drive a rendered page.
+Sixteen are astro-pilot-driven shadows, and four
+(`angely-pod-mrakom-iuda-6-7-2-petra-2`, `blagovestie-mertvym-1-petra-4-5-6`,
+`duhi-v-temnice-noi-kreshchenie-pobeda`,
+`enoh-prorochestvoval-iuda-14-15-4q204`) have no route file and no `dist/` output
+at all. All seven teen-series articles are MDX-driven and live, which is why every
+fragment written by this branch was confirmed visible in built HTML. A reconciler
+should not expect MDX-only edits in the shadow files to change any page.
+
 ## 9. Suggested reconciliation order
 
 1. Decide the sibling-link owner first, because it is the only requirement that
@@ -203,7 +256,13 @@ source links), and zero broken intra-page anchors.
 2. Merge content branches pairwise, resolving every hunk by keeping both sides
    where they are complementary. This branch's edits are purely additive prose
    inside existing sections and never move a heading id.
-3. Rebuild `data/scripture-search-index.json` from the final tree, never from a
+3. Merge `1d569906`'s build-time language-of-parts projection together with his
+   `src/runtime/article-strategic-map.js` change. The projection repairs `dist/`
+   without touching sources, so it fixes every branch's output at once, and his
+   contract's fourth check cannot pass without the runtime change. Never adopt his
+   contract script alone.
+4. Rebuild `data/scripture-search-index.json` from the final tree, never from a
    side.
-4. Re-run the full battery, including `8c44f067`'s tightened release contract and
-   his link and reading-time tests, before deploying.
+5. Re-run the full battery, including `8c44f067`'s tightened release contract and
+   his link and reading-time tests, and `1d569906`'s language-of-parts and
+   mixed-script contracts, before deploying.
