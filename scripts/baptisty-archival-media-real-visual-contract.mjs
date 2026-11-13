@@ -17,7 +17,7 @@ const DIST=join(ROOT,'dist'),OUT=join(ROOT,'reports','baptisty-archival-media');
 const sha=process.env.GITHUB_SHA||execFileSync('git',['rev-parse','HEAD'],{cwd:ROOT,encoding:'utf8'}).trim();
 const paths=['noch-na-kure','yuzhnaya-shtunda','dva-sezda-1884','peterburgskaya-liniya',
  'goneniya-i-sovest','sovetskaya-noch','vsehib-1944','iniciativnaya-gruppa','podpolnaya-pechat','spravochnik'];
-const widths=[390,1440],themes=['light','dark','sepia'];
+const widths=[320,390,768,1440],themes=['light','dark','sepia'];
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8',
  '.css':'text/css; charset=utf-8','.json':'application/json','.png':'image/png',
  '.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.woff2':'font/woff2'};
@@ -91,7 +91,7 @@ try{
        };
       });
       results.push({sha,engine,slug,width,theme,status:response.status(),...data});
-      if(engine==='chromium'&&width===390&&['light','dark'].includes(theme)&&data.figures.length){
+      if(engine==='chromium'&&['light','dark'].includes(theme)&&data.figures.length){
        await page.locator('[data-baptist-master-evidence]').first().scrollIntoViewIfNeeded();
        const name=[slug,theme,width,sha.slice(0,12)].join('--')+'.png';
        await page.locator('[data-baptist-master-evidence]').first().screenshot({path:join(OUT,name),timeout:14000}).catch(()=>{});

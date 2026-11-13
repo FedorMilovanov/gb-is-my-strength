@@ -206,6 +206,40 @@ async function exerciseHighlights(page, engine, viewport, route) {
     focusReturned: document.activeElement === document.getElementById('gb-hl-fab'),
   }));
   check(engine, viewport, route, 'saved-quotes close restores opener focus', !closed.open && closed.ariaHidden === 'true' && closed.focusReturned, closed);
+
+  // Keyboard route through the *visible* canonical Library button.
+  // A hidden legacy shortcut is not an acceptable sole entrypoint.
+  await fab.focus();
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => document.getElementById('gb-hl-backdrop')?.classList.contains('is-open'));
+  await page.locator('[data-library-tab="quote"]').click();
+  const quotes = await page.evaluate(() => ({
+    pressed: document.querySelector('[data-library-tab="quote"]')?.getAttribute('aria-pressed'),
+    containsSeed: document.getElementById('gb-hl-list')?.innerText.includes('Проверочная сохранённая цитата'),
+    inside: document.getElementById('gb-hl-backdrop')?.contains(document.activeElement),
+    expanded: document.getElementById('gb-hl-fab')?.getAttribute('aria-expanded'),
+  }));
+  check(engine, viewport, route, 'keyboard opener reaches saved-quote tab and seeded quote',
+    quotes.pressed === 'true' && quotes.containsSeed && quotes.inside && quotes.expanded === 'true', quotes);
+  if (engine === 'chromium') {
+    const safeRoute = route.split('/').filter(Boolean).join('-').replace(/[^a-z0-9]+/gi, '-');
+    await page.screenshot({
+      path: path.join(REPORTS, `hermenevtika-saved-quotes-open-${safeRoute}-390.png`),
+      fullPage: false,
+    });
+  }
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.getElementById('gb-hl-backdrop')?.classList.contains('is-open'));
+  const escape = await page.evaluate(() => ({
+    ariaHidden: document.getElementById('gb-hl-backdrop')?.getAttribute('aria-hidden'),
+    inert: document.getElementById('gb-hl-backdrop')?.inert,
+    expanded: document.getElementById('gb-hl-fab')?.getAttribute('aria-expanded'),
+    focusReturned: document.activeElement === document.getElementById('gb-hl-fab'),
+    unlocked: getComputedStyle(document.body).overflowY !== 'hidden',
+  }));
+  check(engine, viewport, route, 'Escape restores Library focus, semantics and page scrolling',
+    escape.ariaHidden === 'true' && escape.inert === true &&
+      escape.expanded === 'false' && escape.focusReturned && escape.unlocked, escape);
 }
 
 const { server, origin } = await startServer();

@@ -332,6 +332,25 @@ async function run() {
         rec('navigated to the source page identity', page.url().startsWith(`${base}${new URL(source.resolved).pathname}`), page.url());
         rec('fresh page renders sheet closed + body unlocked', landing.overlayClosed && landing.bodyUnlocked, JSON.stringify(landing));
 
+        // The reader must be able to return to the exact originating
+        // document using native Back, without restoring a stranded modal
+        // or leaving the reading surface scroll-locked.
+        const returned = await page.goBack({ waitUntil: 'domcontentloaded', timeout: 15000 });
+        await page.waitForFunction((original) => location.pathname === original, CROSS_DOC_PAGE, { timeout: 10000 });
+        const back = await page.evaluate(() => {
+          const overlay = document.getElementById('gillLearningOverlay');
+          return {
+            pathname: location.pathname,
+            locked: document.body.style.overflow === 'hidden'
+              || getComputedStyle(document.body).overflowY === 'hidden',
+            overlayOpen: Boolean(overlay?.classList.contains('is-open')),
+          };
+        });
+        rec('browser Back returns to originating series article',
+          Boolean(returned) && back.pathname === CROSS_DOC_PAGE, JSON.stringify(back));
+        rec('return does not strand a quiz overlay or scroll lock',
+          !back.locked && !back.overlayOpen, JSON.stringify(back));
+
         const drained = drain();
         rec('no product console/page errors', drained.product.length === 0,
           drained.product.map((e) => e.text).join(' | '));

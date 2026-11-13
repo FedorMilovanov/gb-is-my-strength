@@ -26,7 +26,7 @@ const measure=()=>{const q=s=>document.querySelector(s),rect=e=>{const r=e?.getB
   article:rect(a),p:rect(p),bodyPadding:getComputedStyle(b).paddingRight,
   bodyClientWidth:b.clientWidth,bodyGutter:getComputedStyle(b).scrollbarGutter,
   locked:h.getAttribute('data-scroll-locked'),
-  menu:{open:menu?.classList.contains('open'),hidden:menu?.hidden,opacity:menu?+getComputedStyle(menu).opacity:0,transform:menu?getComputedStyle(menu).transform:'',display:menu?getComputedStyle(menu).display:''},
+  menu:{open:menu?.classList.contains('open'),hidden:menu?.hidden,inert:menu?.inert,ariaHidden:menu?.getAttribute('aria-hidden'),pointerEvents:menu?getComputedStyle(menu).pointerEvents:'',opacity:menu?+getComputedStyle(menu).opacity:0,transform:menu?getComputedStyle(menu).transform:'',display:menu?getComputedStyle(menu).display:''},
   sheet:{open:sheet?.classList.contains('is-open'),closing:sheet?.classList.contains('is-closing'),entering:sheet?.classList.contains('is-entering'),inert:sheet?.inert,display:sheet?getComputedStyle(sheet).display:'',opacity:pop?+getComputedStyle(pop).opacity:0,transform:pop?getComputedStyle(pop).transform:'',rect:rect(pop)}};
 };
 const closeEnough=(a,b)=>a&&b&&Math.abs(a.x-b.x)<=.75&&Math.abs(a.w-b.w)<=.75;
@@ -81,11 +81,29 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
    const menuSampleTween=early.menu.opacity<.995&&mid.menu.opacity>=early.menu.opacity&&mid.menu.opacity<=1;
    test('animated site-menu entry',early.menu.open&&end.menu.opacity>.99&&(menuEventTween||menuSampleTween),
      {early:early.menu,mid:mid.menu,end:end.menu,events:row.states.menuOpacityEvents,menuEventTween,menuSampleTween});
+   await p.evaluate(()=>{window.__gbMenuExitMotionOffset=(window.__gbMenuOpacityEvents||[]).length;});
    await p.mouse.click(width-50,430);
    row.states.menuCloseStart=await p.evaluate(measure);
    await p.waitForTimeout(130);row.states.menuCloseMid=await p.evaluate(measure);
    await p.waitForTimeout(310);row.states.menuCloseEnd=await p.evaluate(measure);
-   test('animated site-menu exit and native hidden',!row.states.menuCloseStart.menu.open&&row.states.menuCloseMid.menu.opacity<1&&row.states.menuCloseEnd.menu.hidden,{start:row.states.menuCloseStart.menu,mid:row.states.menuCloseMid.menu,end:row.states.menuCloseEnd.menu});
+   // Linux WebKit may return from the real outside pointer click after the
+   // opacity tween has advanced/completed. Require evidence of genuine CSS
+   // motion, but don't confuse Playwright scheduling with product breakage.
+   row.states.menuExitOpacityEvents=await p.evaluate(()=>
+     (window.__gbMenuOpacityEvents||[]).slice(window.__gbMenuExitMotionOffset||0));
+   const menuExitRun=row.states.menuExitOpacityEvents.find(e=>e.type==='transitionrun');
+   const menuExitEnd=row.states.menuExitOpacityEvents.find(e=>e.type==='transitionend'&&(!menuExitRun||e.time>menuExitRun.time));
+   const observedMenuExit=!!(menuExitRun&&menuExitEnd&&menuExitEnd.time-menuExitRun.time>=120);
+   const sampledMenuExit=row.states.menuCloseMid.menu.opacity<row.states.menuCloseStart.menu.opacity;
+   const menuSemanticsSafe=[row.states.menuCloseStart.menu,row.states.menuCloseMid.menu].every(state=>
+     !state.open&&state.inert===true&&state.ariaHidden==='true'&&state.pointerEvents==='none');
+   test('animated site-menu exit and native hidden',
+     menuSemanticsSafe&&
+     (sampledMenuExit||observedMenuExit)&&row.states.menuCloseEnd.menu.hidden&&
+     row.states.menuCloseEnd.menu.display==='none',
+     {start:row.states.menuCloseStart.menu,mid:row.states.menuCloseMid.menu,
+      end:row.states.menuCloseEnd.menu,events:row.states.menuExitOpacityEvents,
+      observedMenuExit,sampledMenuExit,menuSemanticsSafe});
    await p.locator('#hrailSettingsBtn').click();
    row.states.settingsStart=await p.evaluate(measure);
    await p.waitForTimeout(110);row.states.settingsMid=await p.evaluate(measure);
