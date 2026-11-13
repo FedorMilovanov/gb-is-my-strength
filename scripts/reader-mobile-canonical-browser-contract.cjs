@@ -2,7 +2,10 @@ const fs=require('fs'),path=require('path'),http=require('http');
 const {chromium,firefox,webkit}=require('playwright');
 const root=path.resolve(__dirname,'../dist'),results=[],errors=[];
 const mime={'.html':'text/html','.css':'text/css','.js':'application/javascript','.svg':'image/svg+xml','.webp':'image/webp','.png':'image/png','.woff2':'font/woff2'};
-const out=path.join(process.env.USERPROFILE,'Downloads','GB_READER_V12_REAL_BROWSER_20261112');fs.mkdirSync(out,{recursive:true});
+// CI runners do not have USERPROFILE; keep screenshots beside other QA reports.
+// A caller may override the location without creating another local V-numbered copy.
+const out=process.env.GB_READER_MOBILE_QA_DIR||path.join(__dirname,'..','reports','reader-mobile-canonical');
+fs.mkdirSync(out,{recursive:true});
 const server=http.createServer((req,res)=>{try{const u=new URL(req.url,'http://localhost');let file=path.resolve(root,decodeURIComponent(u.pathname).slice(1));if(!path.extname(file))file=path.join(file,'index.html');if(path.relative(root,file).startsWith('..')||!fs.existsSync(file)){res.writeHead(404);return res.end('missing');}res.writeHead(200,{'content-type':mime[path.extname(file)]||'application/octet-stream'});fs.createReadStream(file).pipe(res);}catch(e){res.writeHead(500);res.end(String(e));}});
 const routes=[
  ['baptists','/baptisty-rossii/noch-na-kure/'],
