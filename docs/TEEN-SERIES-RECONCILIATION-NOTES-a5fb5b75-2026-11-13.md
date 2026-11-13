@@ -174,6 +174,61 @@ between the house word counters and the pinned minutes in `data/series.json`
 remains an owner-level HOLD and is being handled on `4786e4e2`, which is the only
 branch that touches `data/series.json` and `scripts/lib/reading-time-policy.js`.
 
+## 7b. Reading time must be recomputed from the final tree, like the index
+
+`4786e4e2` resolved the long-standing reading-time drift by adopting an owner
+policy module, `scripts/lib/reading-time-policy.js`, which states the rule once:
+**180 Russian words per minute, rounded up, minimum one minute**, together with a
+precise definition of what counts as reader text. He then re-pinned every surface
+consistently: MDX `readingTime` frontmatter in all seven articles,
+`teenSeriesConfig.ts` including `TOTAL_MIN` from 264 to 245, `data/series.json`
+(45 lines), `scripts/teen-series-release-contract.mjs` and
+`scripts/teen-series-foundation-contract.mjs`.
+
+That re-pinning is **correct**, and it is not a bug. Verified by running his own
+policy module over his own tree: his content computes to exactly
+29 / 41 / 34 / 31 / 30 / 33 / 47, total 245, matching what he pinned. It also
+explains the old drift, because base content computes to
+27 / 38 / 31 / 30 / 29 / 32 / 37, total 224, while base pins
+32 / 43 / 39 / 37 / 36 / 35 / 42, total 264 — the inherited numbers imply about
+129 words per minute, not 180.
+
+The consequence for reconciliation is the same as for the scripture index: these
+numbers are derived from content, and every branch has different content.
+Computed with his policy module, per article, in the order I / II / III / A / B /
+C / D:
+
+| Tree | I | II | III | A | B | C | D | Total words | Total min |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| base `9618e82` | 27 | 38 | 31 | 30 | 29 | 32 | 37 | 39991 | 224 |
+| this branch | 29 | 47 | 33 | 34 | 31 | 35 | 42 | 44693 | **251** |
+| `4786e4e2` | 29 | 41 | 34 | 31 | 30 | 33 | 47 | 43422 | 245 |
+| `5ccbaa3b` | 27 | 38 | 31 | 46 | 58 | 32 | 37 | 48095 | 269 |
+| `8c44f067` | 29 | 40 | 33 | 31 | 30 | 34 | 38 | 41675 | 235 |
+
+No two branches agree, and the spread is wide: Companion B computes to 31 minutes
+here and 58 on `5ccbaa3b`; Companion D computes to 42 here and 47 on `4786e4e2`.
+Neither the release contract nor `8c44f067`'s `checkTeenReadingTimes` can detect
+this, because both only assert that the static surfaces agree **with each other**
+— frontmatter against publication metadata against the rail against per-page
+progress against the total. Content-to-minutes drift is invisible to every gate.
+
+So merging `4786e4e2`'s pinned 245 with this branch's content would pass every
+gate while understating Part II by six minutes (41 shown, 47 actual), Companion A
+by three and Companion C by two, and overstating Companion D by five. The fix is
+not to choose a side: after the final merge, recompute all seven values and the
+total with his policy module and re-pin all four surfaces together —
+`readingTime` frontmatter, `teenSeriesConfig.ts` including `TOTAL_MIN`,
+`data/series.json`, and the two contract scripts. This branch deliberately left
+every `readingTime` value at its base number rather than guessing, because the
+policy module and the re-pinning are owned by `4786e4e2`.
+
+One further note for whoever re-pins: `5ccbaa3b` has grown Companion A to 7085
+body words and Companion B to 9135, far beyond every other branch. If that content
+is kept, B alone accounts for 58 of the total minutes, and the canonical total
+moves well past 269. The total is not a stable number to negotiate around; it is
+an output.
+
 ## 8. Gate state of this branch
 
 `npm run strangler:build:production-like` exits 0: approved/blocked 78/0, 68
@@ -263,6 +318,10 @@ should not expect MDX-only edits in the shadow files to change any page.
    contract script alone.
 4. Rebuild `data/scripture-search-index.json` from the final tree, never from a
    side.
-5. Re-run the full battery, including `8c44f067`'s tightened release contract and
+5. Recompute all seven `readingTime` values and the canonical total from the final
+   tree with `4786e4e2`'s policy module, and re-pin the four surfaces together.
+   Never take one branch's minutes, and never merge his contract numbers without
+   his frontmatter, config and `data/series.json` changes.
+6. Re-run the full battery, including `8c44f067`'s tightened release contract and
    his link and reading-time tests, and `1d569906`'s language-of-parts and
    mixed-script contracts, before deploying.
