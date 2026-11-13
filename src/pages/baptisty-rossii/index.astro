@@ -2,13 +2,14 @@
 import BaptistyRossiiPageHead from '@/components/baptisty-rossii/BaptistyRossiiPageHead.astro';
 import BaptistyRossiiBookLanding from '@/components/baptisty-rossii/BaptistyRossiiBookLanding.astro';
 import ReaderActionsRuntime from '@/components/reader-platform/ReaderActionsRuntime.astro';
+import { BAPTIST_SERIES } from '@/components/article-pilots/_shared/series/baptistSeriesConfig';
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
     <BaptistyRossiiPageHead />
   </head>
-  <body class="gbs-world" data-series-theme="samizdat" data-gbs2-series="russian-baptism" data-gbs2-done-min="0" data-gbs2-part-min="0" data-gbs2-total-min="229">
+  <body class="gbs-world" data-reader-landing={BAPTIST_SERIES.shape} data-reader-shape={BAPTIST_SERIES.shape} data-series-landing-layout="rail" data-series-theme={BAPTIST_SERIES.theme} data-gbs2-series={BAPTIST_SERIES.seriesId} data-gbs2-done-min="0" data-gbs2-part-min="0" data-gbs2-total-min="229">
     <BaptistyRossiiBookLanding />
     <ReaderActionsRuntime />
   </body>

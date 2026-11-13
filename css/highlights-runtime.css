@@ -584,13 +584,15 @@ html.theme-sepia #gb-hl-panel, html[data-reader-theme="sepia"] #gb-hl-panel { --
 .gb-hl-empty p {max-width:32em;margin:8px auto 12px;}
 .gb-hl-empty button {min-height:44px;border:1px solid var(--library-edge);border-radius:9px;
   background:var(--paper-2,#efe6dc);color:var(--library-accent);padding:8px 13px;}
-/* Dynamic rather than artificially tall desktop dialog for small collections. */
+/* One stable workspace: tab content scrolls within the same panel, so
+   switching from 24 highlights to one note cannot shift header and footer. */
 @media (min-width:768px) {
-  #gb-hl-panel { height:auto; min-height: min(400px, calc(100dvh - 48px)); max-height:min(88dvh, 850px); }
-  #gb-hl-list { flex:0 1 auto; min-height:125px; max-height: min(62dvh,630px); }
+  #gb-hl-panel { height:min(72dvh,700px); min-height:0; max-height:calc(100dvh - 48px); }
+  #gb-hl-list { flex:1 1 auto; min-height:0; max-height:none; }
 }
 @media (max-width:767px) {
-  #gb-hl-panel { max-height: min(94dvh, 910px); }
+  #gb-hl-panel { height:min(84dvh,760px); max-height:min(94dvh,910px); }
+  #gb-hl-list { flex:1 1 auto; min-height:0; }
   #gb-hl-header {flex-wrap:nowrap;}
   #gb-hl-tools {flex-wrap:wrap;}
   #gb-hl-searchwrap {flex:1 1 100%; }

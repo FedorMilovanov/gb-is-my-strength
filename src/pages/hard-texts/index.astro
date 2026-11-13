@@ -176,7 +176,7 @@ const jsonLd = JSON.stringify({
     <link rel="stylesheet" href={assetUrl('css/command-palette.css')} />
     <link rel="stylesheet" href={assetUrl('css/mobile-hotfix.css')} />
   </head>
-  <body>
+  <body data-reader-landing={HARD_TEXTS_SERIES.shape} data-reader-shape={HARD_TEXTS_SERIES.shape} data-series-landing-layout="catalog">
     <HardTextsPageChrome>
       {mobileChrome?.enabled && mobileChrome.mount === 'registry' && (
         <MobileChromePage engine={mobileChrome.engine} backHref={mobileChrome.backHref ?? '/'} homeHref="../" />

@@ -79,7 +79,8 @@ jobs:
     name: Scripture occurrence index autofix
     if: >-
       github.event_name == 'pull_request' &&
-      contains(github.event.pull_request.labels.*.name, 'autofix') &&
+      (contains(github.event.pull_request.labels.*.name, 'autofix') ||
+       contains(github.event.pull_request.labels.*.name, 'autofix-scripture-only')) &&
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 15

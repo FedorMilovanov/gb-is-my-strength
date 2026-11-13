@@ -217,4 +217,4 @@ if (issues.length) {
   for (const issue of issues) console.error('  - ' + issue);
   process.exit(1);
 }
-console.log('✅ pastor-series guards (dist): G-1 a11y, G-2 anchors, G-3 summary, G-4 empty-state, G-5 metadata, G-6 reading-time, G-7 article root, G-8 print — all passed');
+console.log('✅ pastor-series guards (dist): G-1 a11y, G-2 anchors, G-3 summary, G-4 empty-state, G-5 metadata, G-6 reading-time, G-7 article root, G-8 print, G-9 current discovery authority — all passed');

@@ -1,5 +1,7 @@
 ---
+import ReaderFloatingControlsRuntime from '@/components/reader-platform/ReaderFloatingControlsRuntime.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import '@/styles/native-article-colors.css';
 import { SECTION_META, SITE, SERIES_ORDER } from '@/data/site';
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
@@ -312,4 +314,5 @@ const jsonLd = {
       </div>
     </aside>
   </article>
+  <ReaderFloatingControlsRuntime />
 </BaseLayout>

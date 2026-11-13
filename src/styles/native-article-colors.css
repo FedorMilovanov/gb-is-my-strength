@@ -1,0 +1,15 @@
+/* Shared native ArticleLayout palette bridge.
+   BaseLayout's Astro dark tokens are neutral templates for catalogs.
+   Native Reader articles must instead inherit the canonical Reader theme
+   (light/dark/sepia) while preserving their book-specific chrome palettes.
+   One owner for all ArticleLayout pages; no route-specific override. */
+html:has(.astro-article) {
+  --astro-color-bg: var(--color-canvas, #fdfcf9);
+  --astro-color-surface: var(--color-surface, #fff);
+  --astro-color-text: var(--color-text, #1a1a1a);
+  --astro-color-muted: var(--color-text-muted, #6a6a6a);
+  --astro-color-border: var(--color-border, #e5e2dc);
+}
+html:has(.astro-article) .astro-main {
+  color: var(--color-text, #1a1a1a);
+}

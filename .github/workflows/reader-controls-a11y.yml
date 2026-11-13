@@ -8,12 +8,25 @@ on:
       - "src/runtime/reader-controls-a11y.js"
       - "src/components/article-pilots/_shared/ReaderRail.astro"
       - "src/components/article-pilots/_shared/SiteSectionsMenu.astro"
-      - "src/components/article-pilots/gill-series/GillSeriesChrome.astro"
+      - "src/components/article-pilots/_shared/series/SeriesReaderChrome.astro"
       - "src/components/article-pilots/gill-series/GillSeriesRail.astro"
       - "src/components/article-pilots/gill-series/GillPartTocOverlay.astro"
       - "scripts/reader-controls-a11y-browser-contract.mjs"
       - "scripts/reader-controls-residual-browser-contract.mjs"
       - "scripts/reader-speedrail-ssr-focus-browser-test.mjs"
+      - "scripts/shared-play-and-series-number-browser-contract.cjs"
+      - "scripts/reader-mobile-canonical-browser-contract.cjs"
+      - "src/components/article-pilots/_shared/speedSlot.ts"
+      - "src/components/article-pilots/_shared/ReaderMobileMenuTrigger.astro"
+      - "src/runtime/reader-tts-defaults.js"
+      - "src/runtime/reader-tts.js"
+      - "scripts/reader-speed-preferences-contract.cjs"
+      - "scripts/reader-speed-persistence-browser-contract.mjs"
+      - "scripts/reader-real-assets-visual-matrix.mjs"
+      - "scripts/baptisty-archival-media-real-visual-contract.mjs"
+      - "js/floating-cluster-controller.js"
+      - "css/floating-cluster.css"
+      - "css/site.css"
       - ".github/workflows/reader-controls-a11y.yml"
   push:
     branches: [main]
@@ -22,12 +35,25 @@ on:
       - "src/runtime/reader-controls-a11y.js"
       - "src/components/article-pilots/_shared/ReaderRail.astro"
       - "src/components/article-pilots/_shared/SiteSectionsMenu.astro"
-      - "src/components/article-pilots/gill-series/GillSeriesChrome.astro"
+      - "src/components/article-pilots/_shared/series/SeriesReaderChrome.astro"
       - "src/components/article-pilots/gill-series/GillSeriesRail.astro"
       - "src/components/article-pilots/gill-series/GillPartTocOverlay.astro"
       - "scripts/reader-controls-a11y-browser-contract.mjs"
       - "scripts/reader-controls-residual-browser-contract.mjs"
       - "scripts/reader-speedrail-ssr-focus-browser-test.mjs"
+      - "scripts/shared-play-and-series-number-browser-contract.cjs"
+      - "scripts/reader-mobile-canonical-browser-contract.cjs"
+      - "src/components/article-pilots/_shared/speedSlot.ts"
+      - "src/components/article-pilots/_shared/ReaderMobileMenuTrigger.astro"
+      - "src/runtime/reader-tts-defaults.js"
+      - "src/runtime/reader-tts.js"
+      - "scripts/reader-speed-preferences-contract.cjs"
+      - "scripts/reader-speed-persistence-browser-contract.mjs"
+      - "scripts/reader-real-assets-visual-matrix.mjs"
+      - "scripts/baptisty-archival-media-real-visual-contract.mjs"
+      - "js/floating-cluster-controller.js"
+      - "css/floating-cluster.css"
+      - "css/site.css"
       - ".github/workflows/reader-controls-a11y.yml"
 
 permissions:
@@ -39,7 +65,7 @@ concurrency:
 
 jobs:
   browser-contract:
-    name: Chromium + WebKit reader controls accessibility contract
+    name: Chromium + Firefox + WebKit Reader controls and real-asset contracts
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -63,7 +89,7 @@ jobs:
       - name: Install exact dependencies and browsers
         run: |
           npm ci
-          npx playwright install --with-deps chromium webkit
+          npx playwright install --with-deps chromium webkit firefox
 
       - name: Syntax and source boundary
         run: |
@@ -72,6 +98,16 @@ jobs:
           node --check scripts/reader-controls-residual-browser-contract.mjs
           node --check scripts/reader-speedrail-ssr-focus-browser-test.mjs
           node --check scripts/reader-library-premium-browser-contract.cjs
+          node --check scripts/shared-play-and-series-number-browser-contract.cjs
+          node --check scripts/reader-mobile-canonical-browser-contract.cjs
+          node --check src/runtime/reader-tts-defaults.js
+          node --check src/runtime/reader-tts.js
+          node --check scripts/reader-speed-preferences-contract.cjs
+          node --check scripts/reader-speed-persistence-browser-contract.mjs
+          node --check scripts/reader-real-assets-visual-matrix.mjs
+          node --check scripts/baptisty-archival-media-real-visual-contract.mjs
+          node scripts/reader-speed-preferences-contract.cjs
+          node --check js/floating-cluster-controller.js
           grep -F "import '../../runtime/reader-controls-a11y.js';" src/components/reader-platform/ReaderActionsRuntime.astro
           ! grep -q "GBReaderProjection\|FavoriteStore" src/runtime/reader-controls-a11y.js
 
@@ -88,6 +124,11 @@ jobs:
           GITHUB_SHA="$(git rev-parse HEAD)" node scripts/reader-controls-residual-browser-contract.mjs 2>&1 | tee reports/reader-controls-residual-browser-contract.log
           SOURCE_SHA="$(git rev-parse HEAD)" node scripts/reader-speedrail-ssr-focus-browser-test.mjs 2>&1 | tee reports/reader-speedrail-ssr-focus.log
           node scripts/reader-library-premium-browser-contract.cjs 2>&1 | tee reports/reader-library-premium-browser-contract.log
+          node scripts/shared-play-and-series-number-browser-contract.cjs 2>&1 | tee reports/shared-play-and-series-number-browser-contract.log
+          node scripts/reader-mobile-canonical-browser-contract.cjs 2>&1 | tee reports/reader-mobile-canonical-browser-contract.log
+          node scripts/reader-speed-persistence-browser-contract.mjs 2>&1 | tee reports/reader-speed-persistence-browser-contract.log
+          GB_READER_REAL_ASSETS_FAST=1 node scripts/reader-real-assets-visual-matrix.mjs 2>&1 | tee reports/reader-real-assets-visual-matrix.log
+          node scripts/baptisty-archival-media-real-visual-contract.mjs 2>&1 | tee reports/baptisty-archival-media-real-visual-contract.log
 
       - name: Upload exact evidence
         if: always()
@@ -106,6 +147,14 @@ jobs:
             reports/reader-speedrail-ssr-focus.log
             reports/reader-speedrail-ssr-focus/**
             reports/reader-library-premium-browser-contract.log
+            reports/shared-play-and-series-number-browser-contract.log
+            reports/reader-mobile-canonical-browser-contract.log
+            reports/reader-speed-persistence-browser-contract.log
+            reports/reader-real-assets-visual-matrix.log
+            reports/reader-real-assets/**
+            reports/baptisty-archival-media-real-visual-contract.log
+            reports/baptisty-archival-media/**
+            reports/reader-p1-menu-*.png
             reports/reader-library-premium/*.png
           if-no-files-found: warn
           retention-days: 14

@@ -6,11 +6,13 @@ interface Props {
   caption: string;
   width: number;
   height: number;
+  /** Cover photography may crop; lettered artwork must be fully visible. */
+  fit?: 'cover' | 'contain';
 }
 
-const { src, srcset, alt, caption, width, height } = Astro.props;
+const { src, srcset, alt, caption, width, height, fit = 'cover' } = Astro.props;
 ---
-<figure class="gbs2-hero" id="gbs2Hero">
+<figure class="gbs2-hero" id="gbs2Hero" data-reader-cover-fit={fit}>
   <picture>
     <source srcset={srcset} sizes="(max-width: 1023px) 92vw, 760px" type="image/webp" />
     <img

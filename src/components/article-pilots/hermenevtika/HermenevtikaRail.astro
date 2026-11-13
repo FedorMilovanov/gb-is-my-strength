@@ -10,8 +10,10 @@ import { HERMENEVTIKA_TOC } from './hermenevtikaToc';
 import { projectStandaloneReaderToc } from '../_shared/series/readerTocProjection';
 interface Props { eyebrow: string; title: string; backHref: string; }
 const { eyebrow, title, backHref } = Astro.props;
-// Route-scoped build flag: disabled by default. No second reader/scroll owner.
-const grokPilot = import.meta.env.PUBLIC_GB_GROK_HERMENEUTICS_PILOT === '1';
+// Integrated Reader is the default, but the real release flag must retain a
+// build-time rollback path. Both variants still use the same ReaderRail,
+// ReaderState and settings owner; no parallel navigation implementation.
+const grokPilot = import.meta.env.PUBLIC_GB_GROK_HERMENEUTICS_PILOT !== '0';
 const grokNodes = grokPilot ? projectStandaloneReaderToc(
   '/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/',
   HERMENEVTIKA_TOC.map(({ href, label, level }) => ({ id: href.slice(1), label, level })),

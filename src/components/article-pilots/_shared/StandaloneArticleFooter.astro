@@ -1,4 +1,5 @@
 ---
+import ReaderFloatingControlsRuntime from '@/components/reader-platform/ReaderFloatingControlsRuntime.astro';
 /**
  * StandaloneArticleFooter — shared residual runtime/footer shell for native standalone articles.
  *
@@ -47,12 +48,12 @@
 
 <!-- Explicit residual runtimes. Reader actions and standalone chrome no longer
      depend on the legacy site.js monolith. is:inline preserves root asset URLs. -->
-<script is:inline defer src="../../js/bookmark-engine.js?v=e2ccecf3"></script>
-<script is:inline defer src="../../js/site-utils.js?v=6afc8802"></script>
+<script is:inline defer src="../../js/bookmark-engine.js?v=e7d193e0"></script>
+<script is:inline defer src="../../js/site-utils.js?v=e80f1dfb"></script>
 <script is:inline defer src="../../js/scroll-perf.js?v=454d6f7b"></script>
 <script is:inline src="../../js/glossary.js?v=69ce2c14" defer></script>
 <script is:inline src="../../js/sw-register.js?v=921dd6a2" defer></script>
 
-<script is:inline src="../../js/highlights.js?v=ab571a7e" defer></script>
+<script is:inline src="../../js/highlights.js?v=e3e21e86" defer></script>
 <script is:inline src="../../js/enhancements.js?v=15476429" defer></script>
-<script is:inline src="../../js/floating-cluster-controller.js?v=ea946ba0" defer></script>
+<ReaderFloatingControlsRuntime />

@@ -7,6 +7,10 @@ html[data-gb-article-tooltips-owner="article-inline-tooltip"] .gb-floating-tip {
 }
 
 html[data-gb-article-tooltips-owner="article-inline-tooltip"] .gtip.gb-floating-tip {
+  /* A two-word glossary must not inherit the legacy fixed 380px paper.
+     Rich content can still wrap inside the bounded owner-managed viewport. */
+  width: max-content !important;
+  max-width: min(34rem, calc(100vw - 32px)) !important;
   border-radius: 24px;
 }
 
@@ -66,14 +70,22 @@ html[data-gb-article-tooltips-owner="article-inline-tooltip"] .bref:focus-visibl
   text-underline-offset: 3px;
 }
 
+/* Superscript reference numbers are smaller than a word, so the old
+   2px dotted underline looked like a row of oversized dots around "49".
+   Keep the active colour/soft tint; retire the dots on every article. */
 html[data-gb-article-tooltips-owner="article-inline-tooltip"] .fn-marker[aria-expanded="true"],
 html[data-gb-article-tooltips-owner="article-inline-tooltip"] .fn-marker:focus-visible {
   color: var(--color-accent-strong, var(--color-accent, #7a2e2e));
   background: color-mix(in srgb, var(--color-accent, #7a2e2e) 9%, transparent);
-  text-decoration-line: underline;
-  text-decoration-style: dotted;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 3px;
+  text-decoration: none;
+  border-bottom: 0;
+}
+/* Keyboard users still need a visible target, unlike the pointer-only
+   active appearance. A fine solid outline replaces the heavy dot pattern. */
+html[data-gb-article-tooltips-owner="article-inline-tooltip"] .fn-marker:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 html.dark[data-gb-article-tooltips-owner="article-inline-tooltip"] .gterm[aria-expanded="true"],

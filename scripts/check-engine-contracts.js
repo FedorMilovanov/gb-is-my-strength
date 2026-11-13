@@ -10,6 +10,8 @@ function check(name, ok, hint = '') {
   if (ok) console.log('✅ ' + name);
   else { fails += 1; console.error('❌ ' + name + (hint ? '\n   → ' + hint : '')); }
 }
+const coverGuard = spawnSync(process.execPath, [path.join(ROOT, 'scripts/editorial-cover-contract.cjs')], { encoding: 'utf8' });
+check('Editorial hero art: historical sources and no fabricated headline posters', coverGuard.status === 0, (coverGuard.stderr || coverGuard.stdout || '').trim());
 function syntaxCheck(file) {
   const result = spawnSync(process.execPath, ['--check', path.join(ROOT, file)], { encoding: 'utf8' });
   check('JS syntax: ' + file, result.status === 0, (result.stderr || result.stdout || '').trim());
@@ -160,14 +162,46 @@ const desktopBadgeRules = [
 ];
 check('CSS: desktop speed badges anchored inside PLAY', desktopBadgeRules.every((rule) => rule.test(css)));
 const gillMobileBar = read('src/components/article-pilots/gill-series/GillSeriesMobileBar.astro');
-const mobilePlayStart = gillMobileBar.indexOf('<span class="mobile-playwrap"');
-const mobilePlayEnd = mobilePlayStart === -1 ? -1 : gillMobileBar.indexOf('</span>', mobilePlayStart);
-const mobilePlayBlock = mobilePlayEnd === -1 ? '' : gillMobileBar.slice(mobilePlayStart, mobilePlayEnd);
-check('Gill mobile: speed badge remains Play-owned with canonical non-center-intercepting corner geometry',
-  mobilePlayBlock.includes('class="mobile-spdbadge"')
-    && /\[data-gill-v16\] \.mobile-playwrap\s*\{[^}]*position:\s*relative;[^}]*display:\s*flex;[^}]*gap:\s*2px/.test(css)
-    && /\[data-gill-v16\] \.mobile-spdbadge\s*\{[^}]*position:\s*absolute;[^}]*right:\s*0;[^}]*bottom:\s*-4px;[^}]*min-width:\s*24px;[^}]*height:\s*24px/.test(css)
-    && /\[data-gill-v16\] \.mobile-top-bar \.gb-icon,[\s\S]*?\[data-gill-v16\] \.mobile-playwrap \.mobile-top-ember\s*\{[^}]*width:\s*44px !important;[^}]*height:\s*44px !important;[^}]*min-width:\s*44px !important;[^}]*min-height:\s*44px !important/.test(css));
+const standaloneMobileBar = read('src/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro');
+const speedOptions = read('src/components/article-pilots/_shared/ReaderSpeedOptions.astro');
+check('Reader mobile: one semantic speed-choice component for series and standalone articles',
+  gillMobileBar.includes("import ReaderSpeedOptions from '../_shared/ReaderSpeedOptions.astro'")
+    && standaloneMobileBar.includes("import ReaderSpeedOptions from '../_shared/ReaderSpeedOptions.astro'")
+    && gillMobileBar.includes('<ReaderSpeedOptions id="mobileSpeedrail"')
+    && standaloneMobileBar.includes('<ReaderSpeedOptions id="hmSpeedrail"')
+    && speedOptions.includes('role="radiogroup"')
+    && speedOptions.includes('role="radio"')
+    && speedOptions.includes("aria-checked={rate === 1 ? 'true' : 'false'}")
+    && !/<button[^>]*class="mobile-speed"/.test(gillMobileBar)
+    && !/<button[^>]*class="hm-spd"/.test(standaloneMobileBar));
+// The old Gill-only inline rail and floating-cluster rate controller were
+// retired. Assert the current shared ReaderMobilePlayGroup/ReaderSpeedOptions
+// ownership and keep the real cross-browser hit/contrast witness mandatory.
+const sharedPlayGroup = read('src/components/article-pilots/_shared/ReaderMobilePlayGroup.astro');
+const sharedSpeedSlot = read('src/components/article-pilots/_shared/speedSlot.ts');
+const readerA11yOwner = read('src/runtime/reader-controls-a11y.js');
+const mobilePlaySmoke = read('scripts/gill-v16-mobile-play-smoke.js');
+const rateBrowserContract = read('scripts/series-layout-browser-contract.mjs');
+check('Series mobile: shared Play/rate slot, 44px hit targets and cross-browser witness',
+  gillMobileBar.includes('<ReaderMobilePlayGroup engine="series" slot="top-playback" />')
+    && gillMobileBar.includes("'data-reader-mobile-speed': true")
+    && gillMobileBar.includes('<ReaderSpeedOptions id="mobileSpeedrail"')
+    && sharedPlayGroup.includes("series?'mobile-spdbadge'")
+    && sharedPlayGroup.includes("series?'mobileSpeedrail'")
+    && sharedPlayGroup.includes('reader-mobile-play')
+    && sharedSpeedSlot.includes("topbar.classList.add('speed-open')")
+    && sharedSpeedSlot.includes("rail.inert = false")
+    && sharedSpeedSlot.includes("rail.setAttribute('aria-hidden', 'true')")
+    && sharedSpeedSlot.includes("rateTrigger.setAttribute('aria-expanded', 'true')")
+    && sharedSpeedSlot.includes("window.dispatchEvent(new CustomEvent('gb:tts-rate-change'")
+    && sharedSpeedSlot.includes('suspended.forEach((element) => {')
+    && readerA11yOwner.includes("return root.classList.contains('speed-open')")
+    && readerA11yOwner.includes("alternate: '.reader-mobile-menu-trigger'")
+    && mobilePlaySmoke.includes('primary interactive targets are physical 44px boxes')
+    && mobilePlaySmoke.includes('target hardening creates no horizontal overflow')
+    && rateBrowserContract.includes('speed target overlaps Play')
+    && rateBrowserContract.includes('all six canonical speed choices must remain on one line')
+    && rateBrowserContract.includes('dark speed popover must be opaque'));
 
 const controller = read('js/floating-cluster-controller.js');
 check('Reader: follow-scroll contract', controller.includes('function buildFollowMap') && controller.includes('function followReading') && controller.includes('followReading(ttsState.spokenChars)'));
@@ -177,7 +211,7 @@ check('Reader: shared settings selector', controller.includes('[data-gill-settin
 
 const readerActions = read('src/runtime/reader-actions.js');
 const readerActionsRuntime = read('src/components/reader-platform/ReaderActionsRuntime.astro');
-const gillChrome = read('src/components/article-pilots/gill-series/GillSeriesChrome.astro');
+const gillChrome = read('src/components/article-pilots/_shared/series/SeriesReaderChrome.astro');
 const gillResponsive = read('src/components/article-pilots/gill-series/GillSeriesResponsiveStyles.astro');
 const nagornayaRuntime = read('src/components/nagornaya/_shared/NagornayaPageFooterRuntime.astro');
 check('Reader actions: print engine is a dedicated singleton',
