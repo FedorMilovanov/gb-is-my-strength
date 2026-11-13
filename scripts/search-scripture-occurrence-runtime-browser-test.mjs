@@ -190,7 +190,9 @@ async function indexFailureFallsBack(origin, browser, fixture, report) {
   }, null, { timeout: 12000 });
   assert.equal(failedIndexRequests, 1, 'failure fixture must intercept exactly one Scripture occurrence index request');
   const exactGroups = await page.locator('.cp-group-hd').filter({ hasText: 'Точные вхождения' }).count();
+  const mentionGroups = await page.locator('.cp-group-hd').filter({ hasText: 'Материалы с упоминанием' }).count();
   assert.equal(exactGroups, 0, 'failed index request must not invent exact results');
+  assert.equal(mentionGroups, 0, 'failed index request must not invent scripture mention results');
   assert.equal(errors.length, 0, errors.join('\n'));
 
   report.fallback = {
@@ -210,11 +212,15 @@ async function keyboardNavigation(origin, browser, fixture, report) {
   await page.locator('.cp-group-hd').filter({ hasText: 'Точные вхождения' }).waitFor({ timeout: 3000 });
   const expected = await page.locator('#cp-read-btn').getAttribute('href');
   assert(expected, 'keyboard fixture preview target is absent');
+  assert.match(expected, /#.+/u, `first exact Scripture target must carry a non-empty fragment anchor, got ${expected}`);
   await Promise.all([
     page.waitForURL((url) => normalizeLocation(url.href) === normalizeLocation(expected), { timeout: 8000 }),
     page.locator('.cp-input').press('Enter'),
   ]);
-  report.keyboard = { reference: fixture.label, navigatedTo: normalizeLocation(page.url()) };
+  const targetId = decodeURIComponent(new URL(page.url()).hash.replace(/^#/, ''));
+  const targetExists = await page.evaluate((id) => Boolean(document.getElementById(id)), targetId);
+  assert(targetExists, `exact Scripture destination #${targetId} must exist in target DOM (${page.url()})`);
+  report.keyboard = { reference: fixture.label, navigatedTo: normalizeLocation(page.url()), targetId };
   await context.close();
 }
 
