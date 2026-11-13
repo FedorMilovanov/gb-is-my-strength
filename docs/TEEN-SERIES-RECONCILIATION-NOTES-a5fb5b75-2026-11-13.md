@@ -272,6 +272,53 @@ a mechanical correction. He left `data/series.json` alone for that reason, since
 `series-read-time-drift` compares four surfaces and changing the speed is an owner
 decision.
 
+## 7d. Bug in `5ccbaa3b`: reading-time surfaces left inconsistent, and no gate on his branch catches it
+
+`5ccbaa3b` has advanced to `22cbe14` and now carries seven commits against
+Companion B, growing that article from 4787 to 9294 body words while keeping all 26
+`<h2 id=` sections. In the course of that he re-pinned two `readingTime` values in
+MDX frontmatter — Companion A from 37 to 43 and Companion B from 36 to 68 — but
+left the other two surfaces untouched. `git diff --numstat 9618e82 22cbe14` reports
+both `data/series.json` and
+`src/components/article-pilots/_shared/series/teenSeriesConfig.ts` as unchanged
+from base.
+
+The result is measurable inconsistency:
+
+| branch | frontmatter `readingTime`, I…D | sum | `TOTAL_MIN` | agree |
+| --- | --- | ---: | ---: | --- |
+| base `9618e82` | 32/43/39/37/36/35/42 | 264 | 264 | yes |
+| this branch | 32/43/39/37/36/35/42 | 264 | 264 | yes |
+| `5ccbaa3b` | 32/43/39/**43**/**68**/35/42 | **302** | **264** | **no, off by 38** |
+| `4786e4e2` | 29/41/34/31/30/33/47 | 245 | 245 | yes |
+| `8c44f067`, `1d569906`, `7b785a3b`, `bf6e18c1` | 32/43/39/37/36/35/42 | 264 | 264 | yes |
+
+Concretely, his Companion A frontmatter says 43 while `data/series.json` still says
+37 at `/teen-double-life/parts[3]`, and his Companion B frontmatter says 68 while
+the same file still says 36 at `parts[4]`.
+
+Nothing on his own branch fails. `teen-series-release-contract.mjs`,
+`check-data-consistency.js`, `series-reader-fragment-audit.js` and
+`mdx-structure-audit.js` all exit 0 on his tree, because his copy of the release
+contract is still the base version. `8c44f067`'s tightened contract does catch it:
+run against `5ccbaa3b`'s sources it reports «A
+(vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie): frontmatter readingTime
+differs from series metadata» and the same for B, via
+`scripts/lib/teen-reading-time-contract.mjs`, which compares frontmatter with the
+series metadata row by row.
+
+Two further observations for whoever reconciles. First, his re-pinned numbers do
+not match the policy either: measured with `4786e4e2`'s
+`lib/reading-time-policy.js` (180 wpm, round up, minimum 1), his Companion A
+content computes to 46 minutes against his pinned 43, and his Companion B computes
+to 58 against his pinned 68, so B is overstated by ten minutes and A understated by
+three. Second, this is the same class of failure §7b describes — the surfaces agree
+with each other or they do not, and no gate compares any of them with the content —
+except that here the surfaces do not even agree with each other, so it is caught by
+one contract instead of none. It is reported rather than repaired, because
+`readingTime` re-pinning is `4786e4e2`'s declared lane and this branch has
+deliberately left every value at its base number.
+
 ## 8. Gate state of this branch
 
 `npm run strangler:build:production-like` exits 0: approved/blocked 78/0, 68
@@ -346,9 +393,18 @@ So checks 1 through 3 now pass here and check 4 fails until his runtime change i
 merged. `scripts/mixed-script-surface-contract.mjs` passes on this branch as-is.
 
 Also recorded, since it affects how any of the seven branches should be read: of
-the 36 article MDX files this branch touched, 16 do not drive a rendered page,
-because their routes import an astro pilot body instead of the MDX. The earlier
-draft of this note wrongly listed four more as unrouted. They are live:
+the 36 article MDX files this branch touched, **17** do not drive a rendered page,
+because their routes import a pilot component instead of the MDX, and 19 do. The
+correct test is whether the route file imports the MDX and renders `<Content />`,
+not whether a `*Body.astro` exists: sixteen of the seventeen render a `*Body.astro`,
+but `kod-da-vinchi` renders `KodDaVinchiMainShell.astro` plus per-section
+components and has no `*Body.astro` at all, so a `Body`-based census undercounts by
+one and reports 16 shadows and 20 live routes. Its MDX is invisible all the same —
+`KodDaVinchiMainShell.astro` contains no `.mdx` import and no `<Content`. An earlier
+draft of this note carried that 20/16 figure; the verified figure is 19/17.
+
+The earlier draft also wrongly listed four files as having no route file at all.
+They are live:
 `angely-pod-mrakom-iuda-6-7-2-petra-2`, `blagovestie-mertvym-1-petra-4-5-6`,
 `duhi-v-temnice-noi-kreshchenie-pobeda` and
 `enoh-prorochestvoval-iuda-14-15-4q204` are rendered from
@@ -356,10 +412,10 @@ draft of this note wrongly listed four more as unrouted. They are live:
 `import Content from '@/content/articles/<slug>.mdx'` and renders `<Content />`
 inside `Genesis6ArticlePage`. They publish under `/hard-texts/`, not
 `/articles/`, which is why a census that only looks for
-`src/pages/articles/<slug>/index.astro` misclassified them. So 20 of the 36 are
-live and 16 are shadows, and all seven teen-series articles are MDX-driven and
+`src/pages/articles/<slug>/index.astro` misclassified them. So 19 of the 36 are
+live and 17 are shadows, and all seven teen-series articles are MDX-driven and
 live, which is why every fragment written by this branch was confirmed visible in
-built HTML. A reconciler should not expect MDX-only edits in the sixteen shadow
+built HTML. A reconciler should not expect MDX-only edits in the seventeen shadow
 files to change any page, but should treat the four `/hard-texts/` routes as
 published surface.
 
@@ -596,3 +652,60 @@ as Samuel.
    his link and reading-time tests, `1d569906`'s language-of-parts and
    mixed-script contracts, and `4786e4e2`'s `reading-time-audit`, before
    deploying.
+
+## 10. Control re-verification of this note, 13 November 2026
+
+Every quantitative claim above was re-measured from scratch after a third
+environment reset, against the branch heads current at the time of writing. The
+reset had reverted the checkout to base `9618e82` with 83 dirty paths, an empty
+`node_modules` and no `dist/`; recovery was `git fetch` of the arena refs followed
+by `git reset --hard origin/arena/a5fb5b75-gb-is-my-strength`, after which both
+source fixes were confirmed present. Heads at re-verification: this branch
+`5a5f8d9`, `1d569906` `c2e8ca8`, `4786e4e2` `836d364`, `7b785a3b` `bcd4719`,
+`8c44f067` `32944ea`, `5ccbaa3b` `22cbe14`, `bf6e18c1` `fc2f30b`. Four of the six
+had advanced since the figures were first recorded.
+
+Reproduced exactly, no change needed:
+
+- body words, frontmatter and sources stripped, base 34168 to this branch 38605, a
+  gain of 4437;
+- `<h2 id=` counts unchanged in all seven articles, 16/24/22/22/26/31/40;
+- 73 pinned anchor occurrences in `teenSeriesConfig.ts`, 72 distinct because
+  `gospel-center` is legitimately pinned twice, once per article at lines 91 and
+  106 with different labels, and all of them resolve to an existing `<h2 id`;
+- the §7b minutes table, all five rows, recomputed with `4786e4e2`'s own policy
+  module: base 27/38/31/30/29/32/37 total 224 at 39991 words, this branch
+  29/47/33/34/31/35/42 total 251 at 44693 words, `4786e4e2` 29/41/34/31/30/33/47
+  total 245 at 43422 words, `5ccbaa3b` total 269 at 48095 words, `8c44f067` total
+  235 at 41675 words;
+- the §8d paragraph-cohesion table, 1994 paragraphs to 1947, average 16.8 to 19.5
+  words, under-15-word share 61.6% to 56.3%, five-word-or-fewer share 23.7% to
+  18.6%;
+- the §8c attribution, re-run with `1d569906`'s scripts at his new head `c2e8ca8`:
+  his `article-qa.js` exits 0 on his own tree and reports exactly 36 errors on this
+  branch's sources, 35 distinct strings, of which **zero** are absent from
+  `9618e82`; his `readable-audit.js` reports exactly 11
+  `fatal-cyrillic-latin-glue` findings in this branch's rebuilt `dist/`;
+- the §8e merge matrix, unchanged despite four branches moving: the Kaige line
+  conflicts against five of six, the accent lines conflict against `1d569906`,
+  `7b785a3b` and `bf6e18c1` and auto-merge against the other three, totals
+  185/133/90/73/36/24 conflicting files;
+- the §8f Solomon test, which fails on base and on this branch with `3 Цар. 11`
+  present zero times against an expected two, and passes on `8c44f067` with two;
+- `1d569906`'s copy of `enoh-prorochestvoval-iuda-14-15-4q204.mdx` at 57616 bytes
+  against a base of 23970, still true at his new head, with `καίγε` present and
+  `Lee предложил` absent, confirming a rewrite rather than a deletion;
+- `5ccbaa3b`'s «Тимоти А. Ли» transliteration, still present at `22cbe14`.
+
+One figure was wrong and is corrected in §8b: the shadow-route census. The verified
+split of the 36 touched MDX files is **19 live and 17 shadow**, not the 20 and 16
+originally written. The error came from classifying a route as a shadow only when a
+`*Body.astro` exists for it; `kod-da-vinchi` has no `*Body.astro` and renders
+`KodDaVinchiMainShell.astro` with per-section components instead, so it was counted
+as live. Its MDX is invisible all the same, since that component imports no `.mdx`
+and renders no `<Content`. The correct test is whether the route file itself imports
+the MDX and renders `<Content />`.
+
+Gate battery re-run in full at `5a5f8d9` after a clean `npm ci` and a
+`strangler:build:production-like` that exited 0 with G-1 through G-8 passing:
+14 of 14 green.
