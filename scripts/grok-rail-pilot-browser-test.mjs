@@ -74,6 +74,14 @@ const viewports = [
   {id:'desktop-short', width:1440, height:300},
   {id:'desktop-wide', width:1440, height:900},
 ];
+// Exact canonical content outline, including the three H4 sections that were
+// missing from the old 10-item table. Check both pilot and flag-off rails.
+const EXPECTED_HERMENEVTIKA_FRAGMENTS = [
+  '#sec-definitions', '#sec-explanation', '#sec-what-is', '#sec-how-achieves',
+  '#sec-why', '#sec-assessment', '#sec-question-posed',
+  '#sec-exceptions-passages', '#sec-exceptions-theological',
+  '#sec-consequences', '#sec-sufficiency', '#sec-conclusion', '#spravka',
+];
 const reports = path.join(ROOT, 'reports', 'grok-stage2');
 fs.mkdirSync(reports, {recursive:true});
 const {server,origin} = await serve();
@@ -97,7 +105,7 @@ try {
               return {
                 rail:!!rail, optIn:!!document.querySelector('.hrail--grok, .grok-toc'),
                 oldFlatToc:!!list && list.classList.contains('hrail-toc'),
-                links:links.length, allTargetsExist:links.every(a=>!!document.getElementById(decodeURIComponent(a.hash.slice(1)))),
+                links:links.map(a=>a.hash), allTargetsExist:links.every(a=>!!document.getElementById(decodeURIComponent(a.hash.slice(1)))),
                 visible:rail && getComputedStyle(rail).display!=='none',
                 mobileControls:!!document.querySelector('.hmbar') && !!document.querySelector('.hmtop'),
                 floating:!!document.getElementById('gbFloatingControls'),
@@ -108,7 +116,7 @@ try {
             });
             check(name,viewport.id,'flag-off original rail renders',fallback.rail && fallback.oldFlatToc,fallback);
             check(name,viewport.id,'flag-off no Grok DOM elements',!fallback.optIn,fallback);
-            check(name,viewport.id,'flag-off original canonical hrefs',fallback.links===10 && fallback.allTargetsExist,fallback);
+            check(name,viewport.id,'flag-off original canonical hrefs',JSON.stringify(fallback.links)===JSON.stringify(EXPECTED_HERMENEVTIKA_FRAGMENTS) && fallback.allTargetsExist,fallback);
             check(name,viewport.id,'flag-off mobile and desktop boundaries',
               viewport.width < 1200 ? !fallback.visible && fallback.mobileControls : fallback.visible && fallback.floating,fallback);
             check(name,viewport.id,'flag-off published text remains',fallback.content,fallback);
@@ -134,7 +142,7 @@ try {
               content:!!document.querySelector('[data-hm-reader]'),
               rect:rect && {x:rect.x,width:rect.width,height:rect.height}};
           });
-          check(name,viewport.id,'route-flag and canonical menu',snapshot.rail && snapshot.menu && snapshot.links.length===10,snapshot);
+          check(name,viewport.id,'route-flag and canonical menu',snapshot.rail && snapshot.menu && JSON.stringify(snapshot.links)===JSON.stringify(EXPECTED_HERMENEVTIKA_FRAGMENTS),snapshot);
           check(name,viewport.id,'canonical anchor targets',snapshot.actualHeadingIds.every(Boolean),snapshot.actualHeadingIds);
           check(name,viewport.id,'TOC links are never underlined',snapshot.decoration==='none',snapshot.decoration);
           check(name,viewport.id,'no horizontal overflow',snapshot.overflow <= 2,snapshot.overflow);
@@ -144,12 +152,447 @@ try {
           if(viewport.width < 1200) {
             check(name,viewport.id,'mobile controls retained',
               await page.locator('.hmbar').count()>0 && await page.locator('.hmtop').count()>0);
+            const mobileDocument = await page.evaluate(() => {
+              const heading=document.querySelector('article h1');
+              const notice=document.querySelector('aside.notice');
+              const link=document.querySelector('.hmsheet-sub .hmsheet-link');
+              return {
+                titleTop:Math.round(heading?.getBoundingClientRect().top ?? -1),
+                noticeAfterTitle:!!heading && !!notice &&
+                  !!(heading.compareDocumentPosition(notice)&Node.DOCUMENT_POSITION_FOLLOWING),
+                licenseLinks:notice?.querySelectorAll('a').length,
+                nestedLink:!!link
+              };
+            });
+            check(name,viewport.id,'article headline before rights in mobile first screen',
+              mobileDocument.titleTop>=0 && mobileDocument.titleTop<viewport.height-100 &&
+              mobileDocument.noticeAfterTitle && mobileDocument.licenseLinks===3,mobileDocument);
+            const mobileTrigger=page.locator('#hmBottomBtn');
+            await mobileTrigger.click();
+            const nestedContrast=await page.locator('.hmsheet-sub .hmsheet-link').first().evaluate(el=>{
+              const foreground=getComputedStyle(el).color;
+              const background=getComputedStyle(el.closest('.hmsheet-panel')).backgroundColor;
+              const read=c=>(c.match(/[\d.]+/g)||[]).map(Number);
+              const fg=read(foreground),bg=read(background);
+              const alpha=fg[3]??1;
+              const color=fg.slice(0,3).map((x,i)=>x*alpha+bg[i]*(1-alpha));
+              const luminance=rgb=>rgb.map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;})
+                .reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
+              const a=luminance(color),b=luminance(bg);
+              return (Math.max(a,b)+.05)/(Math.min(a,b)+.05);
+            });
+            check(name,viewport.id,'mobile nested TOC meets WCAG AA contrast',
+              nestedContrast>=4.5,Number(nestedContrast.toFixed(2)));
+            await page.locator('#hmSheetClose').click();
           } else {
             check(name,viewport.id,'existing right cluster retained',snapshot.right);
             check(name,viewport.id,'disclosure initialized',snapshot.ready);
+            const integrated=await page.evaluate(()=>{
+              const rail=document.querySelector('.hrail--grok'),r=rail.getBoundingClientRect(),style=getComputedStyle(rail);
+              const library=document.querySelector('#gb-hl-fab');
+              const toggle=document.querySelector('#hrailLayoutToggle');
+              return {left:Math.round(r.left),top:Math.round(r.top),radius:style.borderRadius,
+                shadow:style.boxShadow,width:Math.round(r.width),
+                libraryDocked:library?.parentElement?.classList.contains('hrail-bottom'),
+                toggleReady:toggle?.getAttribute('aria-expanded')==='true'};
+            });
+            check(name,viewport.id,'V26 integrated rail rather than floating rounded card',
+              integrated.left===0 && integrated.top===0 &&
+              integrated.radius==='0px' && integrated.shadow==='none' &&
+              integrated.width>=280,integrated);
+            check(name,viewport.id,'canonical Library V3 docked in Grok rail',
+              integrated.libraryDocked,integrated);
+            check(name,viewport.id,'Grok layout toggle ready',
+              integrated.toggleReady,integrated);
+            const articleBefore=await page.locator('main.article-main--hrail')
+              .evaluate(el => ({left:el.getBoundingClientRect().left,width:el.getBoundingClientRect().width}));
+            // The optical axis is an asynchronous measurement of real H2
+            // centres. Linux WebKit may substitute fonts after the first
+            // paint. Require final actual alignment, not elapsed milliseconds.
+            // Do not lower the <1px geometric tolerance.
+            try {
+              await page.waitForFunction(() => {
+                const toc=document.querySelector('.grok-toc');
+                const track=toc?.querySelector('.hrail-track');
+                const dots=Array.from(toc?.querySelectorAll(
+                  ':scope > li.grok-row--h2 > .grok-entry > .hrail-dot')??[]);
+                if(!track||dots.length<2)return false;
+                const tr=track.getBoundingClientRect();
+                const first=dots[0].getBoundingClientRect();
+                const last=dots[dots.length-1].getBoundingClientRect();
+                return Math.abs(tr.top-(first.top+first.height/2))<1 &&
+                  Math.abs(tr.bottom-(last.top+last.height/2))<1;
+              },null,{timeout:2500});
+            }catch{
+              // Preserve the strict geometry witness below for true regressions.
+            }
+            const axis=await page.evaluate(()=>{
+              const toc=document.querySelector('.grok-toc'),track=toc?.querySelector('.hrail-track');
+              const dots=Array.from(toc?.querySelectorAll(':scope > li.grok-row--h2 > .grok-entry > .hrail-dot')??[]);
+              if(!track||dots.length<2)return null;
+              const t=track.getBoundingClientRect();
+              const ys=dots.map(el=>{const r=el.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2};});
+              return {x:t.left+t.width/2,top:t.top,bottom:t.bottom,first:ys[0],last:ys[ys.length-1]};
+            });
+            check(name,viewport.id,'V17 optical H2 track anchored to real dot centres',
+              !!axis && Math.abs(axis.x-axis.first.x)<.6 && Math.abs(axis.x-axis.last.x)<.6 &&
+              Math.abs(axis.top-axis.first.y)<1 && Math.abs(axis.bottom-axis.last.y)<1,axis);
+            // Owner-approved V6: the hover and active treatment paint ONLY
+            // the link rectangle, not the entire .grok-entry row or root axis.
+            const multiLineHover=page.locator('.grok-toc > li.grok-row--h2')
+              .filter({hasText:'Объяснение христоцентричной герменевтики'})
+              .first().locator(':scope > .grok-entry > a');
+            await multiLineHover.hover();
+            await page.waitForTimeout(250);
+            const hoverLinkPaint=await multiLineHover.evaluate(link=>{
+              const s=getComputedStyle(link),o=getComputedStyle(link.closest('.grok-entry'));
+              return {image:s.backgroundImage,color:s.backgroundColor,
+                outerImage:o.backgroundImage,outerColor:o.backgroundColor};
+            });
+            check(name,viewport.id,'approved link-only hover highlight in Grok',
+              hoverLinkPaint.image.includes('linear-gradient')&&
+              hoverLinkPaint.outerImage==='none'&&
+              ['transparent','rgba(0, 0, 0, 0)'].includes(hoverLinkPaint.outerColor),hoverLinkPaint);
+            // Visual bug witness: root H2 pins and disclosure arrows must
+            // centre on the WHOLE multi-line row, not its first text line.
+            // The selected row paints only ONE surface, never a nested chip.
+            const rowOptics=await page.evaluate(()=>{
+              const rows=Array.from(document.querySelectorAll('.grok-toc > li.grok-row--h2'));
+              const centre=el=>{const r=el.getBoundingClientRect();return r.top+r.height/2;};
+              const diffs=rows.map(row=>{
+                const entry=row.querySelector(':scope > .grok-entry');
+                const pin=entry?.querySelector(':scope > .hrail-dot');
+                const arrow=entry?.querySelector(':scope > .grok-disclosure');
+                const link=entry?.querySelector(':scope > a');
+                return {pin:pin?Math.abs(centre(pin)-centre(entry)):null,
+                  arrow:arrow?Math.abs(centre(arrow)-centre(entry)):null,
+                  multiLine:(link?.getBoundingClientRect().height??0)>43};
+              });
+              const row=rows.find(r=>r.querySelector(':scope > .grok-entry > a')?.getBoundingClientRect().height>43)||rows[0];
+              const original=row?.classList.contains('hrail-act')??false;
+              row?.classList.add('hrail-act');
+              const entry=row?.querySelector(':scope > .grok-entry');
+              const link=entry?.querySelector(':scope > a');
+              const outer=getComputedStyle(entry).backgroundImage;
+              const inner=getComputedStyle(link);
+              const outerColor=getComputedStyle(entry).backgroundColor;
+              const singlePaint=outer==='none'&&
+                (outerColor==='transparent'||outerColor==='rgba(0, 0, 0, 0)')&&
+                inner.backgroundImage.includes('linear-gradient');
+              row?.classList.toggle('hrail-act',original);
+              return {rows:rows.length,multiLines:diffs.filter(x=>x.multiLine).length,
+                maxPinOffset:Math.max(...diffs.map(x=>x.pin??0)),
+                maxArrowOffset:Math.max(...diffs.map(x=>x.arrow??0)),
+                singlePaint,outer,innerBackground:inner.backgroundImage,
+                innerColor:inner.backgroundColor};
+            });
+            check(name,viewport.id,'one active highlight without nested paint',
+              rowOptics.singlePaint,rowOptics);
+            check(name,viewport.id,'multi-line H2 pins and chevrons optically centered',
+              rowOptics.rows>=2&&rowOptics.multiLines>=1&&
+              rowOptics.maxPinOffset<1&&rowOptics.maxArrowOffset<1,rowOptics);
+            const readingScrollBefore=await page.evaluate(() => Math.round(scrollY));
+            // Owner screenshot: with mismatched 620ms / 520ms fold easing the
+            // toggle's chevron escaped 163px into article whitespace. Sample
+            // real animation frames, not just the final (correct) position.
+            const foldMotion=await page.evaluate(()=>new Promise(resolve=>{
+              const rail=document.querySelector('.hrail--grok');
+              const toggle=document.querySelector('#hrailLayoutToggle');
+              const start=performance.now();
+              let maxOutside=-Infinity,frames=0;
+              toggle.click();
+              const sample=(now)=>{
+                const railEdge=rail.getBoundingClientRect().right;
+                const toggleEdge=toggle.getBoundingClientRect().right;
+                maxOutside=Math.max(maxOutside,toggleEdge-railEdge);
+                frames++;
+                if(now-start>=720)resolve({maxOutside,frames,
+                  railRight:railEdge,toggleRight:toggleEdge});
+                else requestAnimationFrame(sample);
+              };
+              requestAnimationFrame(sample);
+            }));
+            check(name,viewport.id,'fold chevron stays inside the moving rail on every frame',
+              foldMotion.frames>=5&&foldMotion.maxOutside<=2,foldMotion);
+            await page.waitForFunction(() => Math.round(document.querySelector('.hrail--grok')?.getBoundingClientRect().width ?? 0) === 68, {timeout:1600});
+            const compact=await page.evaluate(()=>{
+              const rail=document.querySelector('.hrail--grok'),r=rail.getBoundingClientRect();
+              return {width:Math.round(r.width),mode:document.body.classList.contains('grok-rail-compact'),
+                aria:document.querySelector('#hrailLayoutToggle')?.getAttribute('aria-expanded'),
+                inert:document.querySelector('.hrail-scroll')?.hasAttribute('inert')};
+            });
+            check(name,viewport.id,'real 68px compact rail with keyboard-inert TOC',
+              compact.width===68 && compact.mode && compact.aria==='false' && compact.inert,compact);
+            const articleAfter=await page.locator('main.article-main--hrail')
+              .evaluate(el => ({left:el.getBoundingClientRect().left,width:el.getBoundingClientRect().width}));
+            const focusTools=await page.evaluate(()=>{
+              const tools=document.querySelector('#grokCompactTools');
+              const original=document.querySelector('#gbFloatingControls');
+              return {parent:original?.parentElement?.id,instances:document.querySelectorAll('#gbFloatingControls').length,
+                hasTheme:!!tools?.querySelector('#gbFcTheme'),hasSearch:!!tools?.querySelector('#gbFcSearch'),
+                hasPlayer:!!tools?.querySelector('.gb-ember'),hasSave:!!tools?.querySelector('.gb-save'),
+                playFirst:original?.firstElementChild?.classList.contains('gb-ember-playwrap')};
+            });
+            check(name,viewport.id,'compact retains exact native four controls in left rail',
+              focusTools.parent==='grokCompactTools'&&focusTools.instances===1&&focusTools.hasTheme&&
+              focusTools.hasSearch&&focusTools.hasPlayer&&focusTools.hasSave&&focusTools.playFirst,focusTools);
+            const compactBack=await page.evaluate(()=>{
+              const back=document.querySelector('.hrail--grok .hrail-back');
+              const fold=document.querySelector('#hrailLayoutToggle');
+              return {display:back&&getComputedStyle(back).display,
+                foldVisible:!!fold&&getComputedStyle(fold).display!=='none'};
+            });
+            check(name,viewport.id,'compact hides Back but retains the fold control',
+              compactBack.display==='none'&&compactBack.foldVisible,compactBack);
+            // Inspect the SAME native gb-icon search trigger in the rail; do
+            // not replace its hover behavior with a second square backdrop.
+            const hoverFine=await page.evaluate(()=>
+              matchMedia('(hover: hover) and (pointer: fine)').matches);
+            if(hoverFine){
+              await page.locator('#grokCompactTools #gbFcSearch').hover();
+              await page.waitForTimeout(360);
+              const searchRing=await page.evaluate(()=>{
+                const button=document.querySelector('#grokCompactTools #gbFcSearch');
+                const css=getComputedStyle(button);
+                const ring=getComputedStyle(button,'::before');
+                const svg=button.querySelector('svg').getBoundingClientRect();
+                return {shape:css.borderRadius,background:css.backgroundColor,
+                  borderWidth:css.borderTopWidth,shadow:css.boxShadow,
+                  ringWidth:parseFloat(ring.width),ringColor:ring.borderTopColor,
+                  ringOpacity:parseFloat(ring.opacity),ringShadow:ring.boxShadow,
+                  iconWidth:svg.width,short:innerHeight<=420};
+              });
+              check(name,viewport.id,'compact search hover uses one clear round outline, no square halo',
+                searchRing.shape==='50%'&&
+                ['transparent','rgba(0, 0, 0, 0)'].includes(searchRing.background)&&
+                searchRing.borderWidth==='0px'&&searchRing.shadow==='none'&&
+                searchRing.ringShadow==='none'&&
+                searchRing.ringWidth>=(searchRing.short?25:32)&&
+                searchRing.ringWidth-searchRing.iconWidth>=9&&
+                searchRing.ringOpacity>0,searchRing);
+              // CSS color is animated by the original .gb-icon owner. Read
+              // after the native transition completes, not in its first frame.
+              const initiallyDark=await page.evaluate(()=>document.documentElement.classList.contains('dark'));
+              await page.evaluate(()=>document.documentElement.classList.add('dark'));
+              await page.locator('#grokCompactTools #gbFcSearch').hover();
+              await page.waitForTimeout(420);
+              const darkRing=await page.evaluate(()=>{
+                const button=document.querySelector('#grokCompactTools #gbFcSearch');
+                const token=document.createElement('span');
+                token.style.color='var(--color-accent-strong,#e8b878)';
+                document.body.appendChild(token);
+                const expectedGold=getComputedStyle(token).color;
+                token.remove();
+                return {hover:getComputedStyle(button).color,
+                  ring:getComputedStyle(button,'::before').borderTopColor,
+                  expectedGold};
+              });
+              check(name,viewport.id,'compact search retains native golden dark hover and ring',
+                darkRing.hover===darkRing.expectedGold&&
+                darkRing.ring===darkRing.expectedGold,darkRing);
+              await page.evaluate(wasDark=>document.documentElement.classList.toggle('dark',wasDark),initiallyDark);
+              await page.waitForTimeout(320);
+            }
+            // The original floating-cluster controller is delegated from BOTH
+            // the floater and rail. A moved subtree must trigger exactly one
+            // theme transition, not two toggles back to the original state.
+            const themeBefore=await page.locator('html').getAttribute('data-reader-theme');
+            await page.locator('#grokCompactTools #gbFcTheme').click();
+            const themeAfter=await page.locator('html').getAttribute('data-reader-theme');
+            check(name,viewport.id,'native theme fires once in compact rail',
+              !!themeAfter && themeAfter!==themeBefore,
+              {before:themeBefore,after:themeAfter});
+            await page.locator('#grokCompactTools #gbFcTheme').click();
+            const themeRestored=await page.locator('html').getAttribute('data-reader-theme');
+            check(name,viewport.id,'compact theme action reversible',
+              themeRestored===themeBefore,
+              {before:themeBefore,restored:themeRestored});
+            // Owner's speed-control acceptance: the original PlayEmber must
+            // expose ONE aligned horizontal rate strip in the focus rail,
+            // without concentric idle rings or a detached 1x badge.
+            const speedTrigger=page.locator('#grokCompactTools .gb-ember');
+            // PLAY has one SVG progress ring; the new inner radial glow must
+            // stay inside that ring, never spill as an outer box-shadow/halo.
+            if(hoverFine){
+              await speedTrigger.hover();
+              // CI WebKit can start the native opacity transition later than
+              // the synthetic pointer move. Wait for the actual rendered
+              // state, not an assumed 340ms wall-clock interval. The visual
+              // assertion below remains unchanged and still fails closed.
+              await page.waitForFunction(()=>{
+                const trigger=document.querySelector('#grokCompactTools .gb-ember');
+                return !!trigger && trigger.matches(':hover') &&
+                  parseFloat(getComputedStyle(trigger,'::before').opacity)>.75;
+              },null,{timeout:3500});
+              const emberSkin=await speedTrigger.evaluate(button=>{
+                const css=getComputedStyle(button),light=getComputedStyle(button,'::before');
+                const ring=button.querySelector('.gb-ember__ring-svg').getBoundingClientRect();
+                return {shadow:css.boxShadow,filter:css.filter,background:css.backgroundColor,
+                  innerWidth:parseFloat(light.width),ringWidth:ring.width,
+                  innerBorder:light.borderTopWidth,lightOpacity:parseFloat(light.opacity),
+                  innerBackground:light.backgroundImage,buttonWidth:button.getBoundingClientRect().width};
+              });
+              check(name,viewport.id,'Play hover light remains strictly within a single progress ring',
+                emberSkin.shadow==='none'&&emberSkin.filter==='none'&&
+                emberSkin.background==='rgba(0, 0, 0, 0)'&&
+                emberSkin.innerBorder==='0px'&&emberSkin.lightOpacity>.75&&
+                emberSkin.innerBackground.startsWith('radial-gradient(')&&
+                emberSkin.innerWidth>=emberSkin.ringWidth*.70&&emberSkin.innerWidth<=emberSkin.ringWidth-1,emberSkin);
+            }
+            // The native controller uses hover only for a hover/fine pointer.
+            // Linux WebKit headless may report no hover despite Playwright's
+            // ability to synthesize mouse movement. Test the actual device
+            // contract: hover when advertised; click to reveal on no-hover.
+            const pointerProfile=await page.evaluate(()=>({
+              hoverFine:matchMedia('(hover: hover) and (pointer: fine)').matches,
+              hover:matchMedia('(hover: hover)').matches,
+              pointerFine:matchMedia('(pointer: fine)').matches,
+              touchPoints:navigator.maxTouchPoints
+            }));
+            if(viewport.id==='desktop-1200')
+              console.log('GROK SPEED POINTER PROFILE:',name,JSON.stringify(pointerProfile));
+            if(pointerProfile.hoverFine) await speedTrigger.hover();
+            else await speedTrigger.click();
+            await page.waitForTimeout(360); // observe completed native bloom animation
+            const focusRates=await page.evaluate(()=>{
+              const root=document.querySelector('#grokCompactTools');
+              const ember=root?.querySelector('.gb-ember');
+              const panel=root?.querySelector('.gb-ember-expand');
+              if(!ember||!panel)return null;
+              const p=panel.getBoundingClientRect(),b=ember.getBoundingClientRect();
+              // Element bounds include non-painted line-box leading. Compare
+              // the actual headline text fragments, not the padded H1 box.
+              const heading=document.querySelector('article h1');
+              const range=document.createRange();
+              if(heading)range.selectNodeContents(heading);
+              const textRects=heading?Array.from(range.getClientRects()):[];
+              const headingOverlap=textRects.some(r=>p.left<r.right&&p.right>r.left&&
+                p.top<r.bottom&&p.bottom>r.top);
+              return {
+                choices:panel.querySelectorAll('[data-speed]').length,
+                horizontal:getComputedStyle(panel).flexDirection==='row',
+                visible:panel.classList.contains('is-open')&&getComputedStyle(panel).opacity==='1',
+                panelClassOpen:panel.classList.contains('is-open'),
+                computedOpacity:getComputedStyle(panel).opacity,
+                ariaExpanded:ember.getAttribute('aria-expanded'),
+                panelInert:panel.inert,
+                wrapHover:ember.closest('.gb-ember-wrap')?.matches(':hover'),
+                gap:p.x-b.right,
+                width:p.width,height:p.height,
+                panelEnd:p.right,viewport:innerWidth,headingOverlap,
+                playSize:b.width,ringSize:ember.querySelector('.gb-ember__ring-svg')?.getBoundingClientRect().width,
+                panelY:[p.top,p.bottom],headlineY:textRects.slice(0,3).map(r=>[r.top,r.bottom,r.left,r.right]),
+                speedBadge:(()=>{
+                  const el=root.querySelector('.gbs-rail-spdbadge');
+                  if(!el)return null;
+                  const box=el.getBoundingClientRect();
+                  return {display:getComputedStyle(el).display,text:el.textContent.trim(),
+                    left:box.left,right:box.right,bottom:box.bottom,width:box.width,
+                    visible:box.width>0&&box.height>0};
+                })(),
+                innerLight:{
+                   display:getComputedStyle(ember,'::before').display,
+                   width:parseFloat(getComputedStyle(ember,'::before').width),
+                   border:getComputedStyle(ember,'::before').borderTopWidth,
+                   background:getComputedStyle(ember,'::before').backgroundImage
+                 },
+                overflow:document.documentElement.scrollWidth-innerWidth
+              };
+            });
+            check(name,viewport.id,'approved vertical six-speed bloom with stationary Play',
+              !!focusRates&&focusRates.choices===6&&!focusRates.horizontal&&focusRates.visible&&
+              focusRates.gap>=8&&focusRates.gap<=75&&focusRates.width>=40&&focusRates.width<=85&&focusRates.height>=145&&focusRates.height<=240&&
+              focusRates.panelEnd<=focusRates.viewport&&!focusRates.headingOverlap&&focusRates.overflow<=1&&
+              focusRates.speedBadge?.display==='grid'&&focusRates.speedBadge.visible&&
+              /^(?:0\.75|1|1\.25|1\.5|1\.75|2)×$/.test(focusRates.speedBadge.text)&&
+              focusRates.speedBadge.left>=0&&focusRates.speedBadge.right<=focusRates.viewport&&
+               focusRates.innerLight.display==='block'&&
+               focusRates.innerLight.border==='0px'&&
+               focusRates.innerLight.background.startsWith('radial-gradient(')&&
+               focusRates.innerLight.width>=focusRates.ringSize*.70&&focusRates.innerLight.width<=focusRates.ringSize-1&&
+              focusRates.playSize<=(viewport.height<=420?30:32)&&
+              Math.abs(focusRates.ringSize-focusRates.playSize)<=.6,{...focusRates,pointerProfile});
+            if(viewport.id==='desktop-1200'){
+              // Real mouse travel must not traverse a dead hover gap from
+              // Play to the displaced six-speed strip. Older code fired
+              // mouseleave in the 24–38px corridor and folded after 260ms.
+              const playBox=await speedTrigger.boundingBox();
+              const stripBox=await page.locator('#grokCompactTools .gb-ember-expand').boundingBox();
+              const from={x:playBox.x+playBox.width/2,y:playBox.y+playBox.height/2};
+              const to={x:stripBox.x+20,y:stripBox.y+stripBox.height/2};
+              for(let step=1;step<=10;step++){
+                const ratio=step/10;
+                await page.mouse.move(from.x+(to.x-from.x)*ratio,from.y+(to.y-from.y)*ratio);
+                await page.waitForTimeout(80);
+              }
+              const corridor=await page.evaluate(()=>{
+                const panel=document.querySelector('#grokCompactTools .gb-ember-expand');
+                return {open:panel?.classList.contains('is-open'),
+                  opacity:panel?getComputedStyle(panel).opacity:null,
+                  wrapperHover:document.querySelector('#grokCompactTools .gb-ember-wrap')?.matches(':hover'),
+                  canClick:panel && !panel.inert};
+              });
+              check(name,viewport.id,'slow mouse travel from Play to speed chip preserves bloom',
+                corridor.open&&corridor.opacity==='1'&&corridor.wrapperHover&&corridor.canClick,corridor);
+              await speedTrigger.hover();
+            }
+            if(viewport.id==='desktop-wide'){
+              await speedTrigger.click();
+              const idleChoice=await page.evaluate(()=>{
+                const button=document.querySelector('#grokCompactTools .gb-ember');
+                return {
+                  panelOpen:!!document.querySelector('#grokCompactTools .gb-ember-expand.is-open'),
+                  state:button?.dataset.state,
+                  aria:button?.getAttribute('aria-expanded')
+                };
+              });
+              check(name,viewport.id,'compact Play click offers speed before starting speech',
+                idleChoice.panelOpen&&idleChoice.aria==='true'&&idleChoice.state==='idle',
+                idleChoice);
+              await page.keyboard.press('Escape');
+            }
+            const readingScrollAfter=await page.evaluate(() => Math.round(scrollY));
+            // Compact focus now centers prose in the usable canvas to the
+            // right of its 68px utility rail, instead of forcing a 40px left
+            // jump. The separate sitewide reader contract checks that exact
+            // geometric balance at narrow/normal/wide preferences.
+            check(name,viewport.id,'compact rail grows the real article without clipping or scroll jump',
+              articleAfter.width>=articleBefore.width+50 &&
+              articleAfter.left>=0 &&
+              articleAfter.left+articleAfter.width<=page.viewportSize().width+1 &&
+              readingScrollAfter===readingScrollBefore,
+              {before:articleBefore,after:articleAfter,scrollBefore:readingScrollBefore,scrollAfter:readingScrollAfter});
+            await page.locator('#hrailLayoutToggle').click();
+            await page.waitForFunction(() => Math.round(document.querySelector('.hrail--grok')?.getBoundingClientRect().width ?? 0) >= 280, {timeout:1600});
+            const reopened=await page.evaluate(()=>{
+              const rail=document.querySelector('.hrail--grok');
+              return {expanded:document.querySelector('#hrailLayoutToggle')?.getAttribute('aria-expanded'),
+                width:Math.round(rail.getBoundingClientRect().width),
+                inert:document.querySelector('.hrail-scroll')?.hasAttribute('inert')};
+            });
+            check(name,viewport.id,'rail reopens without leaving inert descendants',
+              reopened.expanded==='true' && reopened.width>=280 && !reopened.inert,reopened);
+            const nativeRestored=await page.evaluate(()=>({
+              parent:document.querySelector('#gbFloatingControls')?.parentElement?.id,
+              duplicates:document.querySelectorAll('#gbFloatingControls').length,
+              originalOrder:document.querySelector('#gbFloatingControls')?.firstElementChild?.id==='gbFcTheme'
+            }));
+            check(name,viewport.id,'real right controls restore to original host',
+              nativeRestored.parent!=='grokCompactTools' && nativeRestored.duplicates===1 &&
+              nativeRestored.originalOrder,nativeRestored);
             if(viewport.height <= 420) {
               check(name,viewport.id,'usable short viewport',snapshot.scrollHeight >= 80,snapshot.scrollHeight);
             }
+            // The genuine width animation can finish before the switching
+            // visibility rule has been released. Focus tests must target the
+            // settled, interactable rail rather than a hidden in-flight one.
+            await page.waitForFunction(() => {
+              const rail = document.querySelector('.hrail--grok');
+              const scroll = rail?.querySelector('.hrail-scroll');
+              return rail && !rail.classList.contains('grok-rail-switching') &&
+                scroll && getComputedStyle(scroll).visibility === 'visible' &&
+                !scroll.hasAttribute('inert');
+            }, null, { timeout: 1800 });
             const branch = page.locator('.grok-row--branch').first();
             const button = branch.locator(':scope > .grok-entry [data-grok-toggle]');
             const child = branch.locator('.grok-child-list').first();
@@ -215,6 +658,7 @@ try {
                 check(name,viewport.id,'direct H3 permalink is visible',
                   directRect.top>=-5 && directRect.top < viewport.height-25,directRect);
                 await fresh.goto(origin+ROUTE,{waitUntil:'domcontentloaded'});
+                await fresh.bringToFront();
                 const rapid = fresh.locator('.grok-row--branch > .grok-entry [data-grok-toggle]').first();
                 for(let n=0;n<7;n++){await rapid.evaluate(button => button.click());await fresh.waitForTimeout(25);}
                 const rapidState = await rapid.evaluate(button => ({
@@ -224,11 +668,31 @@ try {
                 }));
                 check(name,viewport.id,'seven rapid toggles end collapsed and inert',
                   rapidState.expanded==='false' && rapidState.inert && rapidState.collapsed,rapidState);
-                await fresh.waitForTimeout(750);
+                await fresh.waitForFunction(()=>{const b=document.querySelector('.grok-row--branch > .grok-entry [data-grok-toggle]');const m=b?.closest('.grok-row')?.querySelector(':scope > .grok-child-motion');return b?.getAttribute('aria-expanded')==='false'&&m?.getBoundingClientRect().height<1.5;},null,{timeout:5000});
                 const collapsedHeight = await rapid.locator('xpath=../following-sibling::*').first().evaluate(el=>el.getBoundingClientRect().height);
                 check(name,viewport.id,'interrupted collapse settles to zero height',
                   collapsedHeight < 1.5,collapsedHeight);
               } finally {await fresh.close();}
+              // The three real H4 headings are authored underneath the
+              // assessment H3. Clicking one must update the one canonical
+              // ReaderState and exactly one aria-current row, not only hash.
+              const h4Href = '#sec-exceptions-passages';
+              const deep = page.locator('.grok-toc a[href="' + h4Href + '"]');
+              const h4Ancestor = await deep.evaluate(link => {
+                const row = link.closest('li.grok-row');
+                return row?.parentElement?.closest('li.grok-row')
+                  ?.querySelector(':scope > .grok-entry > a')?.getAttribute('href') || '';
+              });
+              check(name,viewport.id,'H4 is nested under canonical H3 assessment',
+                h4Ancestor === '#sec-assessment',h4Ancestor);
+              await deep.click();
+              await page.waitForFunction(href =>
+                location.hash === href &&
+                window.GBReaderState?.getSnapshot?.()?.sectionId === href.slice(1) &&
+                document.querySelectorAll('.grok-toc a[aria-current="location"]').length === 1 &&
+                document.querySelector('.grok-toc a[href="' + href + '"]')?.getAttribute('aria-current') === 'location',
+              h4Href,{timeout:8000});
+              check(name,viewport.id,'H4 canonical hash, ReaderState and single active row',true,h4Href);
             }
           }
           check(name,viewport.id,'no uncaught JavaScript errors',errors.length===0,errors);

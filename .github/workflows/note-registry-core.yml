@@ -84,7 +84,9 @@ jobs:
           const registry = JSON.parse(fs.readFileSync('dist/data/note-registry.json', 'utf8'));
           if (registry.contract !== 'A03-note-registry') throw new Error('wrong contract');
           if (registry.identityStrategy !== 'authored-data-note-id-or-route-note-heading-hash') throw new Error('wrong identity strategy');
-          if (registry.interactionOwner !== 'SiteUtils.makeTooltipController') throw new Error('wrong interaction owner');
+          if (registry.schemaVersion !== 2) throw new Error('wrong NoteRegistry schema version');
+          if (registry.interactionOwner !== 'article-inline-tooltip') throw new Error('wrong live interaction owner');
+          if (registry.previousInteractionOwner !== 'SiteUtils.makeTooltipController') throw new Error('wrong legacy owner');
           if (!(registry.routeCount > 0 && registry.noteCount > 0)) throw new Error('empty registry');
           if (!/^\/css\/note-registry\.css\?v=[a-f0-9]{8}$/.test(registry.stylesheet)) throw new Error('wrong stylesheet');
           NODE

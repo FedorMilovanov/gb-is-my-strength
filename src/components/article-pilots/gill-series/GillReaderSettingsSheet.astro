@@ -28,7 +28,7 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
   <section class="toc-sheet gill-settings-sheet" role="dialog" aria-modal="true" aria-labelledby="gillSettingsTitle">
     <button type="button" class="toc-sheet__handle" data-overlay-close aria-label="Закрыть настройки"></button>
     <div class="toc-sheet__head">
-      <div class="head-copy"><div class="lab">Чтение</div><h3 id="gillSettingsTitle">Настройки</h3></div>
+      <div class="head-copy"><div class="lab">Чтение</div><h3 id="gillSettingsTitle">Настройки чтения</h3></div>
       <button type="button" class="gb-icon" data-overlay-close aria-label="Закрыть"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></svg></button>
     </div>
     <div class="toc-sheet__body">
@@ -43,9 +43,9 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
       <div class="setting-group">
         <span class="setting-label">Размер текста</span>
         <div class="font-track">
-          <button type="button" class="font-step font-step--sm" data-fc-action="font-down" aria-label="Уменьшить текст">A</button>
+          <button type="button" class="font-step font-step--sm" data-fc-action="font-down" aria-label="Уменьшить текст">A−</button>
           <div class="font-dots" id="gillFontDots" aria-hidden="true"></div>
-          <button type="button" class="font-step font-step--lg" data-fc-action="font-up" aria-label="Увеличить текст">A</button>
+          <button type="button" class="font-step font-step--lg" data-fc-action="font-up" aria-label="Увеличить текст">A+</button>
         </div>
       </div>
       <div class="setting-group">
@@ -64,7 +64,7 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
         <div class="setting-segment" id="gillMeasureGroup">
           <button type="button" class="reader-setting-btn" data-measure="narrow" aria-pressed="false">Узкая</button>
           <button type="button" class="reader-setting-btn" data-measure="normal" aria-pressed="true">Обычная</button>
-          <button type="button" class="reader-setting-btn" data-measure="wide" aria-pressed="false">Шире</button>
+          <button type="button" class="reader-setting-btn" data-measure="wide" aria-pressed="false">Широкая</button>
         </div>
       </div>
       <div class="setting-group">
@@ -80,6 +80,11 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
           <button type="button" class="reader-setting-btn" data-motion="system" aria-pressed="true">Обычная</button>
           <button type="button" class="reader-setting-btn" data-motion="reduced" aria-pressed="false">Спокойная</button>
         </div>
+      </div>
+      <div class="gill-settings-footer">
+        <button type="button" id="mobLearningBtn" class="gill-settings-learning" data-gill-learning-open aria-expanded="false" aria-controls="gillLearningOverlay">Обучение</button>
+        <button type="button" id="gillSettingsReset" class="gill-settings-reset">Сбросить настройки</button>
+        <button type="button" class="gill-settings-done" data-overlay-close>Готово</button>
       </div>
     </div>
   </section>
@@ -108,6 +113,10 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
     const textModeGroup = document.getElementById('gillTextModeGroup');
     const motionGroup = document.getElementById('gillMotionGroup');
     const dots = document.getElementById('gillFontDots');
+    document.getElementById('gillSettingsReset')?.addEventListener('click', () => {
+      const store = api();
+      if (store && typeof store.reset === 'function') sync(store.reset());
+    });
 
     function applyCompatibility(preferences: any) {
       const line = preferences.lineHeight || 'normal';
@@ -189,3 +198,38 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initGillReaderSettings, { once: true });
   else initGillReaderSettings();
 </script>
+
+<style>
+  /* Shared U3 settings vocabulary, retaining Gill's series-specific sheet. */
+  .gill-settings-footer {
+    display: flex;
+    gap: 10px;
+    padding: 14px 0 6px;
+    border-top: 1px solid color-mix(in srgb, var(--color-border, #d7d2c8) 74%, transparent);
+  }
+  .gill-settings-footer button {
+    flex: 1 1 0;
+    min-height: 44px;
+    border-radius: 11px;
+    font: 700 12.5px/1.2 var(--gb-font-sans, system-ui, sans-serif);
+    cursor: pointer;
+  }
+  .gill-settings-reset {
+    border: 1px solid color-mix(in srgb, var(--gill-mobile-bar-gold, #af875c) 30%, transparent);
+    background: transparent;
+    color: var(--color-text, #27201c);
+  }
+  .gill-settings-done {
+    border: 1px solid var(--gill-mobile-bar-gold, #af875c);
+    background: var(--gill-mobile-bar-gold, #af875c);
+    color: var(--gb-surface, #fff);
+  }
+  .gill-settings-footer button:focus-visible {
+    outline: 2px solid var(--gill-mobile-bar-gold, #af875c);
+    outline-offset: 3px;
+  }
+  :global(html.dark) .gill-settings-reset {
+    color: var(--color-text, #e9e2d7);
+  }
+  :global(html.dark) .gill-settings-done { color: #141413; }
+</style>

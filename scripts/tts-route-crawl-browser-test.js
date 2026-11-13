@@ -119,6 +119,38 @@ async function inspectRoute(page, origin, route, viewportName, screenshotBudget)
       };
     });
     Object.assign(result, inventory);
+    // A series-themed background must not override fixed reader controls.
+    // In the manuscript theme, position:relative once moved Play beneath
+    // a 100k-pixel article while leaving the fixed bottom bar functional.
+    if (viewportName === 'mobile-390') {
+      result.mobileChrome = await page.evaluate(() => {
+        const root = document.querySelector('.gbs2-world[data-gill-v16]');
+        const bar = root?.querySelector('.mobile-top-bar[data-gill-mobile-bar]');
+        if (!bar) return null;
+        const style = getComputedStyle(bar);
+        const rect = bar.getBoundingClientRect();
+        const playButton = bar.querySelector('.gb-ember');
+        const p = playButton?.getBoundingClientRect();
+        const hit = p && document.elementFromPoint(p.x + p.width / 2, p.y + p.height / 2);
+        return {
+          position: style.position, top: rect.top, height: rect.height,
+          scrollY: window.scrollY, hidden: root.classList.contains('gbs2-tbhidden'),
+          playHit: !!(playButton && (hit === playButton || playButton.contains(hit))),
+        };
+      });
+      const bar = result.mobileChrome;
+      if (bar && (bar.position !== 'fixed'
+        || (bar.scrollY < 4 && (Math.abs(bar.top) > 4 || !bar.playHit)))) {
+        result.status = 'product-finding';
+        result.problems = ['series-mobile-play-toolbar-is-not-fixed-and-hit-testable'];
+        if (screenshotBudget.remaining > 0) {
+          screenshotBudget.remaining -= 1;
+          const safe = (viewportName + '-' + route).replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').slice(0, 120);
+          await page.screenshot({ path: path.join(REPORTS, 'tts-crawl-' + safe + '.png'), fullPage: false });
+        }
+        return result;
+      }
+    }
     if (!inventory.visiblePlayCount) {
       result.status = 'no-visible-play';
       return result;

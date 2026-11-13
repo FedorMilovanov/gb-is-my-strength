@@ -348,17 +348,17 @@ import Accuracy from './HomeSections/Accuracy.astro';
   body.home-page .h-featured-series {
     border-color: var(--h-border-strong);
     border-radius: 18px;
-    background: #101a1c;
+    background: var(--h-featured-card-bg, #101a1c);
     box-shadow: var(--h-shadow);
   }
 
-  body.home-page .h-featured-body { background: linear-gradient(155deg, rgba(20, 31, 33, .96), rgba(5, 11, 13, .99)); }
+  body.home-page .h-featured-body { background: var(--h-featured-panel-bg, linear-gradient(155deg, rgba(20, 31, 33, .96), rgba(5, 11, 13, .99))); }
 
-  body.home-page .h-featured-series-badge,
+  body.home-page .h-featured-series-badge { color: var(--h-featured-badge-ink, #78d9e4); }
   body.home-page .h-article-kicker,
   body.home-page .h-meta-tag { color: #78d9e4; }
 
-  body.home-page .h-featured-series:hover .h-featured-title { color: #e4bd78; }
+  body.home-page .h-featured-series:hover .h-featured-title { color: var(--h-featured-title-hover, #e4bd78); }
 
   body.home-page .h-articles-group > .h-article-list .h-article-card {
     border-color: var(--h-border);

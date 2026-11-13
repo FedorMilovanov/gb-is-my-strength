@@ -1,5 +1,7 @@
 ---
+import ReaderFloatingControlsRuntime from '@/components/reader-platform/ReaderFloatingControlsRuntime.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import '@/styles/native-article-colors.css';
 import { SECTION_META, SITE, SERIES_ORDER } from '@/data/site';
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
@@ -349,4 +351,5 @@ const jsonLd = {
     .astro-article__updates a { color:var(--color-accent-strong,#087d91); text-underline-offset:3px; }
     .astro-article__updates a:focus-visible { outline:2px solid currentColor; outline-offset:3px; }
   </style>
+  <ReaderFloatingControlsRuntime />
 </BaseLayout>

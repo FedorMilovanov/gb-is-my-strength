@@ -4,23 +4,57 @@ on:
   pull_request:
     paths:
       - 'src/components/article-pilots/**'
-      - 'src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki.astro'
+      - 'src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/**'
       - 'scripts/grok-rail-pilot-browser-test.mjs'
+      - 'scripts/grok-reader-overlay-lifecycle-browser-test.mjs'
+      - 'scripts/grok-menu-motion-layout-browser-contract.mjs'
       - 'scripts/grok-toc-keyboard-browser-contract.mjs'
+      - 'scripts/grok-reader-typography-browser-contract.mjs'
+      - 'scripts/grok-summary-rail-browser-contract.mjs'
+      - 'scripts/reader-summary-first-paint-browser-contract.mjs'
+      - 'js/reader-preferences.js'
+      - 'css/reader-preferences.css'
+      - 'css/site.css'
+      - 'css/floating-cluster.css'
+      - 'scripts/reader-focus-sitewide-browser-contract.mjs'
+      - 'scripts/reader-mobile-sitewide-audit.mjs'
       - 'scripts/grok-stage2-*.mjs'
       - 'scripts/site-sections-menu-filter-browser-contract.mjs'
       - 'scripts/reader-library-premium-browser-contract.cjs'
+      - 'scripts/reader-ux-stability-browser-contract.mjs'
+      - 'css/highlights-runtime.css'
+      - 'src/runtime/article-tooltips.css'
+      - 'src/runtime/article-tooltips.js'
+      - 'scripts/hermenevtika-regression-guard.mjs'
+      - 'scripts/article-tooltip-pointer-ownership-browser-contract.cjs'
       - '.github/workflows/deploy.yml'
       - '.github/workflows/grok-hermeneutics-pilot.yml'
   push:
     branches: [main]
     paths:
       - 'src/components/article-pilots/**'
-      - 'src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki.astro'
+      - 'src/pages/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/**'
       - 'scripts/grok-rail-pilot-browser-test.mjs'
+      - 'scripts/grok-reader-overlay-lifecycle-browser-test.mjs'
+      - 'scripts/grok-menu-motion-layout-browser-contract.mjs'
       - 'scripts/grok-toc-keyboard-browser-contract.mjs'
+      - 'scripts/grok-reader-typography-browser-contract.mjs'
+      - 'scripts/grok-summary-rail-browser-contract.mjs'
+      - 'scripts/reader-summary-first-paint-browser-contract.mjs'
+      - 'js/reader-preferences.js'
+      - 'css/reader-preferences.css'
+      - 'css/site.css'
+      - 'css/floating-cluster.css'
+      - 'scripts/reader-focus-sitewide-browser-contract.mjs'
+      - 'scripts/reader-mobile-sitewide-audit.mjs'
       - 'scripts/grok-stage2-*.mjs'
       - 'scripts/site-sections-menu-filter-browser-contract.mjs'
+      - 'scripts/reader-ux-stability-browser-contract.mjs'
+      - 'css/highlights-runtime.css'
+      - 'src/runtime/article-tooltips.css'
+      - 'src/runtime/article-tooltips.js'
+      - 'scripts/hermenevtika-regression-guard.mjs'
+      - 'scripts/article-tooltip-pointer-ownership-browser-contract.cjs'
       - '.github/workflows/deploy.yml'
       - '.github/workflows/grok-hermeneutics-pilot.yml'
   workflow_dispatch:
@@ -59,7 +93,17 @@ jobs:
         run: |
           npm ci
           node --check scripts/grok-rail-pilot-browser-test.mjs
+          node --check scripts/grok-reader-overlay-lifecycle-browser-test.mjs
+          node --check scripts/grok-menu-motion-layout-browser-contract.mjs
+          node --check scripts/reader-focus-sitewide-browser-contract.mjs
+          node --check scripts/reader-mobile-sitewide-audit.mjs
           node --check scripts/grok-toc-keyboard-browser-contract.mjs
+          node --check scripts/grok-reader-typography-browser-contract.mjs
+          node --check scripts/grok-summary-rail-browser-contract.mjs
+          node --check scripts/reader-ux-stability-browser-contract.mjs
+          node --check scripts/hermenevtika-regression-guard.mjs
+          node --check scripts/article-tooltip-pointer-ownership-browser-contract.cjs
+          node --check scripts/reader-summary-first-paint-browser-contract.mjs
           node --check scripts/grok-stage2-release-route-proof.mjs
           node --check scripts/grok-stage2-theme-print-audit.mjs
           node --check scripts/grok-stage2-library-route-audit.mjs
@@ -81,6 +125,15 @@ jobs:
           SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/grok-rail-pilot-browser-test.mjs
 
+      - name: Browser proof — typography, label/link spacing, clipping across 3 engines
+        run: node scripts/grok-reader-typography-browser-contract.mjs
+
+      - name: Browser proof — site-wide closed-by-default summaries and soft rail motion
+        run: node scripts/grok-summary-rail-browser-contract.mjs
+
+      - name: Browser proof — summary first paint and no-JS fallback
+        run: node scripts/reader-summary-first-paint-browser-contract.mjs
+
       - name: Browser proof — themes, 125 percent and print
         env:
           SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -98,10 +151,30 @@ jobs:
           node scripts/reader-controls-a11y-browser-contract.mjs
           node scripts/reader-library-premium-browser-contract.cjs
 
+      - name: Browser proof — one ReaderState, compact fold, intrinsic tips and stable Library tabs
+        run: node scripts/reader-ux-stability-browser-contract.mjs
+
+      - name: Browser proof — real pointer hover versus reflow ghosts in three engines
+        run: node scripts/article-tooltip-pointer-ownership-browser-contract.cjs
+
+      - name: Browser proof — 6 mobile route families across three engines and five widths
+        run: node scripts/reader-mobile-sitewide-audit.mjs
+
       - name: Browser proof — existing real site menu works alongside pilot
         run: node scripts/site-sections-menu-filter-browser-contract.mjs
 
+      - name: Browser proof - owner overlay dismissal, exclusive cards, larger fold icon
+        run: node scripts/grok-reader-overlay-lifecycle-browser-test.mjs
+
+      - name: Browser proof - stable article geometry and smooth menu/settings motion
+        run: node scripts/grok-menu-motion-layout-browser-contract.mjs
+
+      - name: Browser proof — sitewide reading widths and balanced focus canvas
+        run: node scripts/reader-focus-sitewide-browser-contract.mjs
+
       - name: Build flag OFF from the same source for deterministic rollback
+        env:
+          PUBLIC_GB_GROK_HERMENEUTICS_PILOT: '0'
         run: npm run strangler:build:production-like
 
       - name: Browser proof — flag OFF keeps the original TOC
@@ -117,6 +190,14 @@ jobs:
           name: grok-product-pilot-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             reports/grok-stage2/
+            reports/grok-typography/
+            reports/grok-summary-motion/
+            reports/reader-ux-stability/
+            reports/article-tooltip-pointer-ownership/
+            reports/reader-summary-first-paint/
+            reports/grok-menu-motion/
+            reports/reader-focus-sitewide/
+            reports/reader-mobile-sitewide-audit/
             reports/grok-keyboard/
             reports/reader-controls-a11y-browser-contract.*
             reports/hermenevtika-mobile-chrome/

@@ -294,11 +294,34 @@ for (const [id, url] of SERIES) {
     !!document.querySelector('.mobile-top-bar') && !!document.querySelector('.mobile-bottom-bar')));
 
   const mb = await page.evaluate(() => {
-    const e = document.querySelector('.mobile-top-bar .gb-ember')?.getBoundingClientRect();
-    const b = document.querySelector('.mobile-top-bar .mobile-spdbadge, .mobile-top-bar .gbs-rail-spdbadge')?.getBoundingClientRect();
-    return e && b ? { br: Math.round(b.right - e.right), bb: Math.round(b.bottom - e.bottom) } : null;
+    const play = document.querySelector('.mobile-top-bar .gb-ember');
+    const badge = document.querySelector('.mobile-top-bar .mobile-spdbadge');
+    const p = play?.getBoundingClientRect(), b = badge?.getBoundingClientRect();
+    if (!p || !b) return null;
+    const targetAt = (r) => document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+    const playTarget = targetAt(p), badgeTarget = targetAt(b);
+    const overlap = Math.max(0, Math.min(p.right, b.right) - Math.max(p.left, b.left)) *
+      Math.max(0, Math.min(p.bottom, b.bottom) - Math.max(p.top, b.top));
+    return {
+      playWidth: p.width, playHeight: p.height,
+      badgeWidth: b.width, badgeHeight: b.height,
+      overlap,
+      playHit: playTarget === play || play.contains(playTarget),
+      badgeHit: badgeTarget === badge || badge.contains(badgeTarget),
+      badgeWithinViewport: b.left >= -1 && b.right <= innerWidth + 1,
+      badgeRadius: getComputedStyle(badge).borderRadius,
+      badgeControls: badge.getAttribute('aria-controls'),
+    };
   });
-  R(id, 'mob: «1×» в круге', !!mb && mb.br <= 4 && mb.bb <= 4, JSON.stringify(mb));
+  // Shared series v6: Play and speed are peer-sized buttons, never
+  // overlapping layers. The full Chromium/WebKit responsive picker/ARIA
+  // contract is also checked by series-layout-browser-contract.mjs.
+  R(id, 'mob: Play / скорость — независимые сенсорные зоны', !!mb &&
+    mb.playWidth >= 43 && mb.playHeight >= 43 &&
+    mb.badgeWidth >= 43 && mb.badgeHeight >= 43 &&
+    mb.overlap <= .5 && mb.playHit && mb.badgeHit &&
+    mb.badgeWithinViewport && mb.badgeControls === 'mobileSpeedrail' &&
+    parseFloat(mb.badgeRadius) >= 10, JSON.stringify(mb));
 
   const gear = await page.$('#mobSettingsBtn');
   if (gear) {
@@ -338,15 +361,55 @@ for (const [id, url] of SINGLES) {
   await page.goto(base + url, { waitUntil: 'networkidle' });
   await page.waitForTimeout(500);
   R(id, 'desk: ReaderRail', !!(await page.$('.hrail')));
-  const singleBadge = await page.evaluate(() => {
+  // Exercise the actual rate selector, never fabricate a badge label in DOM.
+  // Both Grok and classic readers must keep the selected speech rate visible
+  // beside Play after the horizontal speed strip closes.
+  await page.locator('.gb-floater .gb-ember-playwrap').hover();
+  await page.waitForFunction(() => {
+    const panel = document.querySelector('.gb-floater .gb-ember-expand');
+    if (!panel) return false;
+    const style = getComputedStyle(panel);
+    return panel.classList.contains('is-open') &&
+      style.pointerEvents === 'auto' && Number(style.opacity) > .95;
+  }, null, { timeout: 5000 });
+  await page.locator('.gb-floater .gb-ember-expand [data-speed="1.75"]').click({ timeout: 5000 });
+  const singleSpeed = await page.evaluate(() => {
     const wrap = document.querySelector('.gb-floater .gb-ember-playwrap');
     const badge = document.querySelector('.gb-floater .gbs-rail-spdbadge');
-    if (!wrap || !badge) return null;
-    badge.textContent = '1.75×';
+    const chosen = document.querySelector('.gb-floater .gb-ember-expand [data-speed="1.75"]');
+    if (!wrap || !badge || !chosen) return null;
     const e = wrap.getBoundingClientRect(), b = badge.getBoundingClientRect();
-    return { dx: Math.round((b.left+b.width/2)-(e.left+e.width/2)), dy: Math.round((b.top+b.height/2)-(e.top+e.height/2)) };
+    const grok = !!document.querySelector('.hrail--grok');
+    return {
+      grok, selected: chosen.getAttribute('aria-checked') === 'true',
+      rateCount: document.querySelectorAll('.gb-floater .gb-ember-expand [data-speed]').length,
+      playInViewport: e.width > 0 && e.height > 0 && e.left >= 0 && e.right <= innerWidth,
+      badgeVisible: getComputedStyle(badge).display !== 'none' && b.width >= 16 && b.height >= 12,
+      badgeText: (badge.textContent || '').trim(),
+      badgeInViewport: b.left >= 0 && b.right <= innerWidth && b.bottom <= innerHeight,
+      dx: Math.round((b.left+b.width/2)-(e.left+e.width/2)),
+      dy: Math.round((b.top+b.height/2)-(e.top+e.height/2)),
+    };
   });
-  R(id, 'desk: standalone «1.75×» справа-снизу', !!singleBadge && singleBadge.dx >= 8 && singleBadge.dy >= 8, JSON.stringify(singleBadge));
+  R(id, 'desk: выбранная 1.75× доступна и не перекрывает Play',
+    !!singleSpeed && singleSpeed.selected && singleSpeed.rateCount === 6 &&
+      singleSpeed.playInViewport && singleSpeed.badgeVisible && singleSpeed.badgeInViewport &&
+      singleSpeed.badgeText === '1.75×' &&
+      singleSpeed.dx >= (singleSpeed.grok ? 3 : 8) &&
+      singleSpeed.dy >= (singleSpeed.grok ? 3 : 8),
+    JSON.stringify(singleSpeed));
+  await page.reload({ waitUntil: 'networkidle' });
+  const retainedSpeed = await page.evaluate(() => {
+    const badge = document.querySelector('.gb-floater .gbs-rail-spdbadge');
+    return {
+      storedRate: localStorage.getItem('gb:audio:rate'),
+      badgeText: badge?.textContent?.trim(),
+      badgeVisible: !!badge && getComputedStyle(badge).display !== 'none' && badge.getBoundingClientRect().width > 0,
+    };
+  });
+  R(id, 'desk: 1.75× сохраняется и остаётся видимой после перезагрузки',
+    retainedSpeed.storedRate === '1.75' && retainedSpeed.badgeText === '1.75×' && retainedSpeed.badgeVisible,
+    JSON.stringify(retainedSpeed));
   await page.evaluate(() => document.querySelector('.hrail [data-hm-settings], .hrail button[aria-label*="астрой"]')?.click());
   await page.waitForTimeout(450);
   const hs = await page.evaluate(() => {
@@ -463,14 +526,21 @@ for (const [id, url] of SINGLES) {
     const ar = paragraph?.getBoundingClientRect();
     return pr && ar ? {
       articleRight: Math.round(ar.right), panelLeft: Math.round(pr.left),
+      panelRight: Math.round(pr.right), panelTop: Math.round(pr.top), panelBottom: Math.round(pr.bottom),
       panelWidth: Math.round(pr.width), panelHeight: Math.round(pr.height),
       open: panel.classList.contains('is-open'),
       scrollWidth: document.documentElement.scrollWidth, viewport: innerWidth
     } : null;
   });
-  R('reader-width', '1680px: horizontal wide speed pill clears text and stays in viewport',
-    !!safe && safe.open && safe.panelWidth > safe.panelHeight * 2 &&
-      safe.articleRight <= safe.panelLeft - 12 && safe.scrollWidth <= safe.viewport + 1,
+  // A fixed desktop speed control is permitted to be vertical or horizontal
+  // while the owner chooses final styling. Assert the invariant: it is useful,
+  // entirely visible and never obscures the prose column.
+  R('reader-width', '1680px: expanded speed control clears text and stays fully in viewport',
+    !!safe && safe.open && safe.panelWidth >= 44 && safe.panelHeight >= 44 &&
+      safe.articleRight <= safe.panelLeft - 12 &&
+      safe.panelLeft >= 0 && safe.panelRight <= safe.viewport - 1 &&
+      safe.panelTop >= 0 && safe.panelBottom <= 851 &&
+      safe.scrollWidth <= safe.viewport + 1,
     JSON.stringify(safe));
   if (ARTIFACT_DIR) await page.screenshot({ path: join(ARTIFACT_DIR, 'reader-wide-speed-1680.png'), fullPage: false });
   await ctx.close();
@@ -611,14 +681,21 @@ for (const [id, url] of [
     const titleStyle = title ? getComputedStyle(title) : null;
     const hero = root.querySelector('.biography-hero');
     const rootRect = root.getBoundingClientRect();
-    const overflowNodes = [...root.querySelectorAll('*')].map((node) => {
+    // Closed native <details> summaries and print-hidden annotations still
+    // exist in the DOM but have zero painted area. Chromium on Windows may
+    // return negative coordinates for these 0x0 boxes. They cannot overflow
+    // a printed page; keep rejecting every actually painted overflow.
+    const overflowNodes = [...root.querySelectorAll('*')].flatMap((node) => {
       const rect = node.getBoundingClientRect();
-      return {
+      const style = getComputedStyle(node);
+      if (rect.width < 1 || rect.height < 1 ||
+          style.display === 'none' || style.visibility !== 'visible') return [];
+      return [{
         cls: String(node.className || node.tagName).slice(0, 90),
         left: Math.round(rect.left - rootRect.left),
         right: Math.round(rect.right - rootRect.right),
         width: Math.round(rect.width),
-      };
+      }];
     }).filter((item) => item.left < -1 || item.right > 1).slice(0, 12);
     const headings = [...root.querySelectorAll('h2, h3, h4')].slice(0, 20).map((node) => ({
       text: (node.textContent || '').trim().slice(0, 60),
@@ -972,4 +1049,19 @@ for (const [id, url, satelliteUrl] of [
 } finally {
   if (browser) await browser.close().catch(() => {});
   await new Promise((resolve) => srv.close(resolve));
+}
+
+// Shared layout is part of the existing engine sweep, not another package
+// script owner. Run it only after the main interactive witnesses are green.
+// This keeps the lane independent from concurrent dependency upgrades.
+if (!process.exitCode) {
+  const { spawnSync } = require('node:child_process');
+  const layout = spawnSync(process.execPath, [join(ROOT, 'scripts', 'series-layout-browser-contract.mjs')], {
+    cwd: ROOT, stdio: 'inherit', windowsHide: true,
+    // Existing print-paper and route-registry CI jobs install only Chromium.
+    // WebKit is enforced by the three-engine sitewide mobile audit instead.
+    env: { ...process.env, GB_LAYOUT_ENGINES: 'chromium' },
+  });
+  if (layout.error) throw layout.error;
+  if (layout.status !== 0) process.exitCode = layout.status || 1;
 }

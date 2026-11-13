@@ -11,7 +11,7 @@
   (() => {
     'use strict';
 
-    const VERSION = 6;
+    const VERSION = 7;
     const OWNER_ID = 'site-sections-menu';
     const API_KEY = 'GBSiteSectionsMenu';
     const CONTROLLER_KEY = '__gbSiteSectionsMenuController';
@@ -145,15 +145,31 @@
       };
       const onPanelTransitionSettled = (event) => {
         if (event.target !== panel || panel.classList.contains('open')) return;
-        hideNatively();
+        // On mobile, the transform tween is longer than opacity and owns the
+        // final hide. On desktop the open/closed transform is identical, so
+        // that transitionend never exists: opacity is the terminal tween.
+        // Avoid clipping a delayed WebKit opacity animation with a fixed timer.
+        if (event.type !== 'transitionend') return;
+        if (event.propertyName === 'transform') {
+          hideNatively();
+        } else if (event.propertyName === 'opacity') {
+          const transformStillRunning = panel.getAnimations().some((animation) =>
+            animation.transitionProperty === 'transform' && animation.playState === 'running');
+          if (!transformStillRunning) hideNatively();
+        }
       };
       const syncVisual = (open) => {
         window.clearTimeout(nativeHideTimer);
         nativeHideTimer = 0;
 
         if (open) {
+          const wasHidden = panel.hidden;
           panel.hidden = false;
           if (backdrop) backdrop.hidden = false;
+          // Establish the same panel's closed visual state before opening.
+          // Otherwise hidden=false and .open in one task skip the transition
+          // on Chromium/WebKit and the whole card appears in one frame.
+          if (wasHidden) void panel.offsetWidth;
         }
 
         panel.classList.toggle('open', open);
@@ -171,7 +187,9 @@
 
         if (!open) {
           if (!hasExitTransition()) hideNatively();
-          else nativeHideTimer = window.setTimeout(hideNatively, 260);
+          // Recovery only: allow a delayed transition to finish on loaded
+          // Linux/WebKit before native hidden. Normal path is transitionend.
+          else nativeHideTimer = window.setTimeout(hideNatively, 800);
         }
       };
 
@@ -191,6 +209,12 @@
 
       const open = (reason = 'trigger') => {
         if (layer.isOpen()) return true;
+        // The site menu and reader settings are alternate views of the same
+        // rail. Close the canonical settings overlay before opening this one;
+        // OverlayRuntime remains the single scroll-lock/focus owner.
+        if (overlayApi.isOpen('reader-settings')) {
+          overlayApi.requestClose('reader-settings', 'switch');
+        }
         if (filter) { filter.value = ''; renderFilter(); }
         syncVisual(true);
         layer.open({
@@ -228,6 +252,16 @@
         else open('trigger');
       };
       const onBackdrop = () => close('backdrop');
+      const onDocumentPointerDown = (event) => {
+        if (!layer.isOpen() || !window.matchMedia('(min-width: 64em)').matches) return;
+        const target = event.target;
+        if (!(target instanceof Node)) return;
+        // A desktop menu is an anchored, nonmodal popover: the mobile-only
+        // backdrop has no hit area at desktop widths. Outside pointerdown
+        // closes it, while interaction with the menu or its button remains.
+        if (panel.contains(target) || trigger.contains(target)) return;
+        close('outside');
+      };
       const onPanelClick = (event) => {
         const action = event.target?.closest?.('[data-close-nav]');
         if (action) close('menu-action');
@@ -242,6 +276,7 @@
       panel.addEventListener('transitionend', onPanelTransitionSettled);
       panel.addEventListener('transitioncancel', onPanelTransitionSettled);
       backdrop?.addEventListener('click', onBackdrop);
+      document.addEventListener('pointerdown', onDocumentPointerDown);
       window.addEventListener('pageshow', onPageShow);
       window.closeMobileNav = legacyClose;
       syncVisual(false);
@@ -269,6 +304,7 @@
           panel.removeEventListener('transitionend', onPanelTransitionSettled);
           panel.removeEventListener('transitioncancel', onPanelTransitionSettled);
           backdrop?.removeEventListener('click', onBackdrop);
+          document.removeEventListener('pointerdown', onDocumentPointerDown);
           window.removeEventListener('pageshow', onPageShow);
           close('destroy', { restoreFocus: false });
           layer.destroy();

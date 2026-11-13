@@ -1,5 +1,7 @@
-.bref > .btip[data-generated-scripture-tip="1"] {
-  display: none;
+/* Browser-created Scripture cards are inert siblings of their trigger.
+   On open the canonical controller portals one card to <body>. */
+.btip[data-generated-scripture-tip="1"]:not(.gb-floating-tip) {
+  display: none !important;
 }
 
 .gb-floating-tip {
@@ -36,14 +38,8 @@
   display: block;
 }
 
-.gb-floating-tip .gtip-detail-wrap[aria-hidden="true"] {
-  display: none;
-}
-
-.gb-floating-tip .gtip-detail-wrap[aria-hidden="false"] {
-  display: block;
-  margin-top: .7rem;
-}
+/* Rich glossary detail keeps the canonical 0fr -> 1fr grid animation
+   in site.css. It must not be switched to display:none/block here. */
 
 .gb-floating-tip [data-gtip-expand] {
   display: inline-flex;
@@ -74,6 +70,37 @@
   font-size: .82rem;
   letter-spacing: .04em;
   text-transform: uppercase;
+}
+.gb-floating-tip .btip__source {
+  display: block;
+  margin-top: .75rem;
+  padding-top: .5rem;
+  border-top: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  opacity: .72;
+  font: 500 .74rem/1.45 var(--font-sans, system-ui, sans-serif);
+}
+
+.gb-floating-tip .btip__external {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  margin-top: .65rem;
+  padding: .45rem .7rem;
+  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  border-radius: 9px;
+  color: inherit;
+  background: color-mix(in srgb, currentColor 5%, transparent);
+  font: 600 .8rem/1.35 var(--font-sans, system-ui, sans-serif);
+  text-decoration: none;
+}
+.gb-floating-tip .btip__external:hover,
+.gb-floating-tip .btip__external:focus-visible {
+  background: color-mix(in srgb, currentColor 11%, transparent);
+  text-decoration: underline;
+}
+.gb-floating-tip .btip__external:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
 }
 
 .gterm[aria-expanded="true"],
@@ -261,17 +288,17 @@ html.dark .quiz-next {
 }
 
 @media (max-width: 768px) {
+  /* Mobile Scripture/glossary popovers use the same anchored geometry as
+     desktop. A full-width bottom sheet covered its own opener on repeat taps. */
   .gb-floating-tip {
-    inset: auto 0 0 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: 100%;
-    max-width: none !important;
-    max-height: min(72vh, 36rem);
-    padding: 1.15rem 1.15rem max(1.3rem, env(safe-area-inset-bottom));
-    border-width: 1px 0 0;
-    border-radius: 20px 20px 0 0;
-    box-shadow: 0 -20px 55px rgb(0 0 0 / 28%);
+    inset: auto !important;
+    width: min(34rem, calc(100vw - 32px));
+    max-width: calc(100vw - 32px) !important;
+    max-height: min(75dvh, 36rem);
+    padding: 1rem 1.1rem;
+    border-width: 1px;
+    border-radius: 14px;
+    box-shadow: 0 18px 55px rgb(0 0 0 / 24%);
   }
 
   .quiz-option,

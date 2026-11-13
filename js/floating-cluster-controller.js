@@ -319,8 +319,8 @@
   }
 
   var _voskEngineScriptPromise = null;
-  var VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=1fdd3fb5';
-  var TTS_NOTICE_CSS_SRC = '/css/tts-download-notice.css?v=b9ef192f';
+  var VOSK_ENGINE_SRC = '/js/vosk-tts-engine.js?v=8a878744';
+  var TTS_NOTICE_CSS_SRC = '/css/tts-download-notice.css?v=a72ba924';
   var fallbackTtsNoticeTimer = null;
 
   function ensureFallbackTtsNoticeStyles() {
@@ -348,6 +348,22 @@
         '</span>' +
         '<button class="gb-tts-download-notice__action" type="button" hidden></button>';
       document.body.appendChild(el);
+    }
+    var dismiss = el.querySelector('.gb-tts-download-notice__dismiss');
+    if (!dismiss) {
+      dismiss = document.createElement('button');
+      dismiss.className = 'gb-tts-download-notice__dismiss';
+      dismiss.type = 'button';
+      dismiss.setAttribute('aria-label', 'Закрыть уведомление');
+      dismiss.textContent = '×';
+      el.appendChild(dismiss);
+    }
+    if (dismiss.dataset.gbDismissBound !== '1') {
+      dismiss.dataset.gbDismissBound = '1';
+      dismiss.addEventListener('click', function () {
+        clearTimeout(fallbackTtsNoticeTimer);
+        el.classList.remove('is-visible');
+      });
     }
     var action = el.querySelector('.gb-tts-download-notice__action');
     if (action && action.getAttribute('data-gb-tts-action-bound') !== 'true') {
@@ -380,7 +396,8 @@
       disabled: ['Улучшенный голос отключён', 'Сейчас используется системный голос', 'enable', 'Включить'],
       'save-data': ['Включена экономия трафика', 'Системный голос работает · модель около 280 МБ', 'manual', 'Загрузить'],
       error: ['Улучшенный голос не запустился', 'Системный голос продолжает работать', 'retry', 'Повторить'],
-      selected: ['Работает улучшенный голос', 'Локальная модель · текст никуда не отправляется', null, '']
+      selected: ['Работает улучшенный голос', 'Локальная модель · текст никуда не отправляется', null, ''],
+      ready: ['Улучшенный голос готов', 'Можно включить его сейчас или позже через PLAY', 'switch', 'Включить сейчас']
     };
     var row = map[stateName] || map.error;
     el.setAttribute('data-state', stateName);
@@ -398,8 +415,16 @@
     // WebKit may defer requestAnimationFrame while the page is settling; queuing
     // visibility there lets later states overwrite the still-hidden browser notice.
     el.classList.add('is-visible');
-    if (options.autoHide) {
-      fallbackTtsNoticeTimer = setTimeout(function () { el.classList.remove('is-visible'); }, options.autoHide);
+    var autoHide = options.autoHide || (stateName === 'ready' ? 8500
+      : (stateName === 'error' || stateName === 'disabled' || stateName === 'save-data') ? 9000 : 0);
+    if (autoHide) {
+      fallbackTtsNoticeTimer = setTimeout(function hideFallbackNotice() {
+        if (el.matches(':hover') || el.contains(document.activeElement)) {
+          fallbackTtsNoticeTimer = setTimeout(hideFallbackNotice, 1600);
+          return;
+        }
+        el.classList.remove('is-visible');
+      }, autoHide);
     }
     return el;
   }
@@ -1221,6 +1246,12 @@
     if (root._gbClusterInit) return; // P1-8: prevent double init
     root._gbClusterInit = true;
     addCleanListener(root, 'click', function (e) {
+      // A reparented canonical control subtree can live inside another
+      // data-fc-root (Grok focus rail). A click belongs to its NEAREST root,
+      // not every ancestor root. Preserve normal document bubbling so other
+      // owners can dismiss outside-click popovers without stopPropagation.
+      var nearestRoot = e.target && e.target.closest && e.target.closest('[data-fc-root]');
+      if (nearestRoot && nearestRoot !== root) return;
       // Также обрабатываем GBS2-style theme buttons (data-gbs2-theme)
       if (e.target.closest('[data-gbs2-theme]')) { toggleTheme(); return; }
       if (e.target.closest('[data-gbs2-search]')) { openSearch(e.target.closest('[data-gbs2-search]')); return; }
@@ -1871,9 +1902,10 @@
       // to a horizontal .mobile-speedrail instead — see initGillInlineSpeedRail().
       if (ember.closest('[data-fc-speed-mode="inline"]')) return;
 
-      var speeds = [1, 1.25, 1.5, 1.75, 2];
+      var speeds = [0.75, 1, 1.25, 1.5, 1.75, 2];
       var currentRate = 1;
       try { currentRate = parseFloat(localStorage.getItem('gb:audio:rate') || localStorage.getItem('gbx-tts-rate')) || 1; } catch(_){}
+      if (currentRate === 0.8) currentRate = 0.75;
       var pressTimer = null;
       var suppressNextEmberClick = false;
 
@@ -1911,6 +1943,15 @@
       parent.insertBefore(wrap, ember);
       wrap.appendChild(ember);
       wrap.appendChild(panel);
+      // The chosen rate should be legible on every shared PlayEmber,
+      // not just on Gill's bespoke rail. Reuse an authored badge if present.
+      if (!spdBadge) {
+        spdBadge = document.createElement('span');
+        spdBadge.className = 'gb-ember-speed-echo';
+        spdBadge.setAttribute('aria-hidden', 'true');
+        wrap.appendChild(spdBadge);
+      }
+      spdBadge.textContent = currentRate + '\u00d7';
 
       /* SYS-READER-SPEED-KEYBOARD-MODEL: a collapsed speed panel must leave
          Tab/AX (opacity-zero controls are not a focus contract); unfolding
@@ -1927,10 +1968,60 @@
         else panel.removeAttribute('inert');
       }
 
+      // Restore the November-08 historical pointer bridge, generalized to
+      // the original vertical gb-ember-expand. Geometry derives exclusively
+      // from real Play and menu rects: no route-specific x/y magic numbers.
+      function updateHoverBridge() {
+        var e=ember.getBoundingClientRect(), p=panel.getBoundingClientRect();
+        if (!e.width || !p.width) return;
+        var left, right;
+        if (p.right <= e.left) {
+          left=p.right-2; right=e.left+2;
+        } else if (p.left >= e.right) {
+          left=e.right-2; right=p.left+2;
+        } else {
+          left=0;right=0;
+        }
+        var top=Math.min(e.top,p.top)-2;
+        var bottom=Math.max(e.bottom,p.bottom)+2;
+        wrap.style.setProperty('--gb-speed-bridge-x', Math.round(left)+'px');
+        wrap.style.setProperty('--gb-speed-bridge-y', Math.round(top)+'px');
+        wrap.style.setProperty('--gb-speed-bridge-w', Math.round(Math.max(0,right-left))+'px');
+        wrap.style.setProperty('--gb-speed-bridge-h', Math.round(Math.max(0,bottom-top))+'px');
+      }
       function openPanel() {
+        // For a relocated Grok focus rail, anchor the SAME speed panel to the
+        // live Play control rather than to a hard-coded viewport position.
+        // This survives viewport resize and a scrolled 68px utility rail.
+        if (ember.closest('#grokCompactTools')) {
+          var anchor = ember.getBoundingClientRect();
+          var centerY = anchor.top + anchor.height / 2;
+          var panelHeight = panel.getBoundingClientRect().height;
+          var safeTop = panelHeight / 2 + 8;
+          var safeBottom = window.innerHeight - panelHeight / 2 - 8;
+          // Keep the panel inside short viewports without shifting Play.
+          var safeCenterY = safeBottom >= safeTop
+            ? Math.max(safeTop, Math.min(centerY, safeBottom))
+            : window.innerHeight / 2;
+          var anchorY = safeCenterY.toFixed(1) + 'px';
+          // Place the existing speed rail beside the measured Play instead
+          // of a stale fixed x=73px that misaligns compact controls.
+          var compactRail = ember.closest('.hrail--grok');
+          var railRight = compactRail ? compactRail.getBoundingClientRect().right : anchor.right;
+          wrap.style.setProperty('--gb-grok-speed-panel-left', Math.round(Math.max(anchor.right + 10, railRight + 8)) + 'px');
+          panel.style.setProperty('--gb-ember-anchor-y', anchorY);
+          // The open-state hover corridor shares this true button geometry.
+          // It prevents a mouseleave in the gap before reaching the speed chips.
+          wrap.style.setProperty('--gb-ember-bridge-right', anchor.right.toFixed(1) + 'px');
+          wrap.style.setProperty('--gb-ember-bridge-y', centerY.toFixed(1) + 'px');
+        } else {
+          panel.style.removeProperty('--gb-ember-anchor-y');
+        }
         panel.classList.add('is-open');
         ember.setAttribute('aria-expanded', 'true');
         speedPanelFold(false);
+        // Allow the historical clip-path to open, then bridge the live gap.
+        requestAnimationFrame(function() { requestAnimationFrame(updateHoverBridge); });
         // Runtime viewport guard: после reflow проверяем,
         // не вылез ли pill за край экрана. Если да — сдвигаем
         // через translate. Дополнительная страховка к CSS max-width.
@@ -1959,6 +2050,25 @@
       }
 
       speedPanelFold(true);
+      new MutationObserver(function() {
+        if (ember.dataset.state === 'playing' || ember.dataset.state === 'complete') {
+          ember.removeAttribute('data-speed-confirm');
+        }
+      }).observe(ember, { attributes: true, attributeFilter: ['data-state'] });
+
+      // Custom mobile rails and other controls share the same TTS rate.
+      // Keep this badge and radiogroup synchronized when they select it.
+      addCleanListener(window, 'gb:tts-rate-change', function(event) {
+        var rate = Number(event && event.detail && event.detail.rate);
+        if (!Number.isFinite(rate) || rate <= 0) return;
+        currentRate = rate;
+        if (spdBadge) spdBadge.textContent = rate + '\u00d7';
+        panel.querySelectorAll('.gb-ember-expand__btn[data-speed]').forEach(function(chip) {
+          var selected = Number(chip.getAttribute('data-speed')) === rate;
+          chip.classList.toggle('is-active', selected);
+          chip.setAttribute('aria-checked', selected ? 'true' : 'false');
+        });
+      });
 
       addCleanListener(ember, 'pointerdown', function() {
         clearTimeout(pressTimer);
@@ -1979,11 +2089,17 @@
           suppressNextEmberClick = false;
           return;
         }
-        // Click = PLAY/PAUSE only. The speed pill is hover-driven on desktop
-        // (see mouseenter below) and tap-driven on touch (handled by the
-        // data-state observer below). Keeping click=play/pause means the
-        // user can always pause; previously click only toggled the pill so
-        // playback got stuck.
+        // Grok's 68px focus rail has no independent speed control in its
+        // closed state. An idle click first opens THIS existing six-rate
+        // bloom panel; choosing a rate saves it without auto-starting playback.
+        // While playing or paused, the same button still means pause/resume.
+        // Other Reader, Gill and mobile embers keep their original behavior.
+        if (ember.closest('#grokCompactTools') &&
+            (currentTtsUiState(ember) === 'idle' || currentTtsUiState(ember) === 'complete') &&
+            !ember.hasAttribute('data-speed-confirm')) {
+          openPanel();
+          return;
+        }
         handlePlayClick(ember);
       });
       // On touch devices (no hover) reveal the pill once playback actually
@@ -2018,16 +2134,16 @@
             b.classList.toggle('is-active', isThis);
             b.setAttribute('aria-checked', isThis ? 'true' : 'false');
           });
-          // Live rate change — TTS подхватывает новую скорость со следующего chunk
+          // C3: live speed change is immediate while reading; never pause or
+          // require Play to confirm it. Only idle/paused selection waits for Play.
+          var activeRateChange = currentTtsUiState(ember) === 'playing' || currentTtsUiState(ember) === 'starting';
+          if (activeRateChange) ember.removeAttribute('data-speed-confirm');
+          else ember.setAttribute('data-speed-confirm', 'true');
           try {
             window.dispatchEvent(new CustomEvent('gb:tts-rate-change', {
               detail: { rate: speed }
             }));
           } catch(_) {}
-          // Click on a speed = select instantly AND start playback from idle
-          // (owner spec: "на клик мышки бы уже сразу 1.75 и т.п.").
-          var _st = currentTtsUiState(ember);
-          if (_st === 'idle' || !_st || _st === 'complete') { handlePlayClick(ember); }
           // Blur the clicked chip: it just received focus from the click,
           // and :focus-within (the keyboard-a11y keep-open rule) would
           // otherwise hold the panel open indefinitely even after the
@@ -2036,7 +2152,7 @@
           // existing mouseleave timer (below) closes it once the pointer
           // actually leaves; on touch there's no hover, so force-close here.
           try { btn.blur(); } catch (_) {}
-          if (!HOVER_CAPABLE) setTimeout(closePanel, 220);
+          setTimeout(closePanel, HOVER_CAPABLE ? 160 : 220);
           return;
         }
       });
@@ -2154,7 +2270,7 @@
   }
 
   /* =====================================================
-     GILL MOBILE v5 — inline speed rail
+     SHARED SERIES MOBILE v6 — responsive speed picker
      -----------------------------------------------------
      The Gill mobile top bar has no free edge for the bloom-pill (Play sits
      mid-row between Home and Save), so instead of .gb-ember-expand it
@@ -2176,6 +2292,8 @@
 
     var currentRate = 1;
     try { currentRate = parseFloat(localStorage.getItem('gb:audio:rate') || localStorage.getItem('gbx-tts-rate')) || 1; } catch(_){}
+    // Retire the older Gill-only 0.8× rate when loading a saved preference.
+    if (currentRate === 0.8) currentRate = 0.75;
     var speedButtons = Array.prototype.slice.call(rail.querySelectorAll('[data-speed]'));
 
     function syncButtons() {
@@ -2194,12 +2312,35 @@
     var open = false;
     var offeredOnce = false;
     var closeTimer = null;
+    var foldTimer = null;
+    // The inline rail temporarily replaces the leading navigation in the
+    // same 44px-high top bar; never leave faded controls keyboard-focusable.
+    var leadingControls = Array.prototype.slice.call(
+      root.querySelectorAll('#mobBackBtn, #mobHomeBtn, .mobile-learning-trigger')
+    );
     function setOpen(next) {
+      clearTimeout(foldTimer);
+      if (!next && rail.contains(document.activeElement) && badge) badge.focus({ preventScroll: true });
       open = next;
+      if (open) {
+        rail.hidden = false;
+        rail.inert = false;
+        rail.setAttribute('aria-hidden', 'false');
+        // Commit the hidden starting geometry before translating into place.
+        void rail.offsetWidth;
+      } else {
+        rail.inert = true;
+      }
       root.classList.toggle('speed-open', open);
-      rail.setAttribute('aria-hidden', open ? 'false' : 'true');
-      rail.hidden = !open;
-      if (learningBtn) learningBtn.tabIndex = open ? -1 : 0;
+      leadingControls.forEach(function(control) { control.inert = open; });
+      if (!open) {
+        foldTimer = setTimeout(function() {
+          if (open) return;
+          rail.setAttribute('aria-hidden', 'true');
+          rail.hidden = true;
+        }, 380);
+      }
+      if (badge) badge.setAttribute('aria-expanded', open ? 'true' : 'false');
       speedButtons.forEach(function(btn) { btn.tabIndex = open ? 0 : -1; });
       if (open) { try { document.dispatchEvent(new CustomEvent('gb:gill-sheet-open')); } catch(_) {} }
     }
@@ -2222,18 +2363,30 @@
       currentRate = parseFloat(btn.getAttribute('data-speed'));
       try { localStorage.setItem('gb:audio:rate', currentRate); try{localStorage.setItem('gbx-tts-rate', currentRate)}catch(_){}; } catch(_){}
       syncButtons();
+      // C3: an active reader adopts a new rate immediately without pausing;
+      // paused/idle/complete readers retain their state until Play is pressed.
+      var activeRateChange = currentTtsUiState(ember) === 'playing' || currentTtsUiState(ember) === 'starting';
+      if (activeRateChange) ember.removeAttribute('data-speed-confirm');
+      else ember.setAttribute('data-speed-confirm', 'true');
       try { window.dispatchEvent(new CustomEvent('gb:tts-rate-change', { detail: { rate: currentRate } })); } catch(_) {}
-      var st = currentTtsUiState(ember);
-      if (st === 'idle' || !st || st === 'complete') { handlePlayClick(ember); }
       clearTimeout(closeTimer);
       closeTimer = setTimeout(function() { setOpen(false); }, 150);
     });
     addCleanListener(document, 'click', function(e) {
-      if (open && !slot.contains(e.target)) setOpen(false);
+      if (open && !rail.contains(e.target) && !(badge && badge.contains(e.target))) setOpen(false);
     });
+    addCleanListener(window, 'gb:tts-rate-change', function(event) {
+      var rate = Number(event && event.detail && event.detail.rate);
+      if (!Number.isFinite(rate) || rate <= 0) return;
+      currentRate = rate;
+      syncButtons();
+    });
+    new MutationObserver(function() {
+      if (ember.dataset.state === 'playing') ember.removeAttribute('data-speed-confirm');
+    }).observe(ember, { attributes: true, attributeFilter: ['data-state'] });
     addCleanListener(document, 'keydown', function(e) {
       if (!open) return;
-      if (e.key === 'Escape') { setOpen(false); return; }
+      if (e.key === 'Escape') { setOpen(false); if (badge) badge.focus(); return; }
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
         e.preventDefault();
         var idx = speedButtons.indexOf(document.activeElement);
@@ -2628,10 +2781,10 @@
       var mobSec = qs('#gbs2MobSec');
       if (mobSec) mobSec.textContent = reader.sectionTitle || (phase === 'after-content' ? 'Завершено' : 'Введение');
 
-      // Historical kinetic visuals remain renderers of the shared scroll snapshot.
+      // Cover media now uses intrinsic image geometry across reader series.
+      // Only the decorative numeral remains kinetic; moving the image could
+      // expose a colored frame on long reads and distort archival compositions.
       var scrollY = Number(reader.scrollY) || 0;
-      var heroImgEl = qs('.gbs2-hero img');
-      if (heroImgEl) heroImgEl.style.setProperty('--gbs2-par', String(Math.round(scrollY * 0.035)));
       var kineticEl = qs('.gbs2-kinetic');
       if (kineticEl) kineticEl.style.setProperty('--gbs2-kin-y', Math.round(scrollY * -0.018) + 'px');
 

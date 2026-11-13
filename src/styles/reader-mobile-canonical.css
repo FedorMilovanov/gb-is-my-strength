@@ -1,0 +1,187 @@
+/* Unified mobile Reader control surface, 2026-11-12.
+ * A single visual contract for the shared Astro article + series mobile bar:
+ * same Home, Contents, Play, 6 rates, Save, Reading, Settings and Share.
+ * Book colors, paper and typography remain owned by each series' palette.
+ * Mobile speeds slide sideways in the same slot as the menu, not down.
+ */
+[data-reader-mobile-speed] .reader-mobile-home {
+  display:grid;place-items:center;
+  box-sizing:border-box;
+  flex:0 0 44px;width:44px;height:44px;
+  padding:0;margin:0;border:0;background:transparent;border-radius:50%;
+  color:inherit;text-decoration:none;cursor:pointer;
+}
+[data-reader-mobile-speed] .reader-mobile-home svg {
+  width:19px;height:19px;fill:none;stroke:currentColor;
+  stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;
+}
+[data-reader-mobile-speed] .reader-mobile-menu-trigger {
+  display:flex;align-items:center;justify-content:center;
+  box-sizing:border-box;
+  gap:7px;width:100%;min-width:0;height:44px;
+  padding:0 9px;border:1px solid var(--color-border,#ddd5ca);
+  border-radius:999px;background:var(--color-surface-muted,#f5f2ed);
+  color:var(--color-text,#322a27);font:600 12px/1.2 "Source Sans 3",system-ui,sans-serif;
+  cursor:pointer;transition:opacity .18s ease,transform .21s ease,background-color .2s ease;
+}
+[data-reader-mobile-speed] .reader-mobile-menu-trigger svg {
+  display:block;flex:0 0 19px;width:19px;height:19px;
+  fill:none;stroke:currentColor;stroke-width:1.7;
+}
+[data-reader-mobile-speed] .reader-mobile-menu-trigger span {
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+}
+[data-reader-mobile-speed] .reader-mobile-menu-trigger:focus-visible,
+[data-mobile-chrome] .reader-mobile-action:focus-visible,
+[data-reader-mobile-speed] .reader-mobile-home:focus-visible,
+[data-reader-mobile-speed] .reader-mobile-speed-badge:focus-visible {
+  outline:2px solid var(--color-accent,#7a2e2e);outline-offset:2px;
+}
+[data-reader-mobile-speed].speed-open .reader-mobile-menu-trigger {
+  opacity:0;transform:translateX(-8px);pointer-events:none;
+}
+[data-reader-mobile-speed] .reader-mobile-speedrail {
+  position:absolute;inset:0;left:0;right:0;
+  z-index:4;
+  display:flex;align-items:center;gap:3px;
+  box-sizing:border-box;
+  width:100%;min-width:0;height:44px;
+  padding:0;border:0;border-radius:0;
+  background:var(--color-canvas,#fdfcf9);
+  opacity:0;transform:translateX(10px);pointer-events:none;
+  transition:opacity .23s ease,transform .27s cubic-bezier(.3,1.1,.4,1);
+  overflow-x:auto;overflow-y:hidden;
+  scroll-snap-type:x proximity;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;
+}
+[data-reader-mobile-speed] .reader-mobile-speedrail::-webkit-scrollbar{display:none}
+[data-reader-mobile-speed].speed-open .reader-mobile-speedrail {
+  opacity:1;transform:translateX(0);pointer-events:auto;
+}
+[data-reader-mobile-speed] .reader-mobile-speed-rate {
+  position:relative;box-sizing:border-box;
+  flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+  min-width:44px;min-height:44px;height:44px;padding:0 7px;
+  border:0;border-radius:0;background:transparent;
+  color:var(--reader-speed-ink,#8a5a4a);
+  font:750 12px/1 "Source Sans 3",system-ui,sans-serif;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;cursor:pointer;scroll-snap-align:center;
+  transition:color .16s ease,transform .15s ease;
+}
+[data-reader-mobile-speed] .reader-mobile-speed-rate::after {
+  content:"";position:absolute;left:26%;right:26%;bottom:6px;
+  height:2px;border-radius:2px;background:var(--reader-speed-wine,#7a2e2e);
+  opacity:0;transform:scaleX(.6);transition:opacity .18s ease,transform .2s ease;
+}
+[data-reader-mobile-speed] .reader-mobile-speed-rate[aria-checked="true"] {
+  color:var(--reader-speed-wine,#7a2e2e);
+  background:transparent;
+}
+[data-reader-mobile-speed] .reader-mobile-speed-rate[aria-checked="true"]::after {
+  opacity:1;transform:scaleX(1);
+}
+[data-reader-mobile-speed] .reader-mobile-play-group {
+  position:relative;box-sizing:border-box;
+  display:flex;align-items:center;justify-content:space-between;
+  flex:0 0 88px;width:88px;min-width:88px;height:44px;
+  padding:0;margin:0;gap:4px;overflow:visible;
+}
+[data-reader-mobile-speed] .reader-mobile-play {
+  --ember-size:40px;
+  position:relative;flex:0 0 40px;width:40px;height:40px;
+  padding:0;border:0;background:transparent;box-shadow:none;
+}
+[data-reader-mobile-speed] .reader-mobile-play[data-state="idle"] .gb-ember__ring-svg {
+  opacity:0;
+}
+[data-reader-mobile-speed] .reader-mobile-play:focus-visible {
+  outline:2px solid var(--color-accent,#7a2e2e);outline-offset:2px;
+}
+[data-reader-mobile-speed] .reader-mobile-speed-badge {
+  position:relative;isolation:isolate;
+  display:inline-grid;place-items:center;
+  flex:0 0 44px;width:44px;height:44px;
+  padding:0;margin:0;border:0;border-radius:12px;background:transparent;
+  color:#fff;font:750 11px/1 "Source Sans 3",system-ui,sans-serif;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+[data-reader-mobile-speed] .reader-mobile-speed-badge::before {
+  content:"";position:absolute;z-index:-1;inset:9px 4px;
+  border:1px solid color-mix(in srgb,var(--color-canvas,#fdfcf9) 70%,transparent);
+  border-radius:999px;background:var(--reader-speed-wine,#7a2e2e);
+  box-shadow:0 1px 3px rgba(0,0,0,.16);pointer-events:none;
+}
+[data-mobile-chrome] .reader-mobile-action-cluster {
+  display:flex;align-items:center;justify-content:flex-end;
+  flex:0 0 auto;gap:3px;min-width:0;
+}
+[data-mobile-chrome] .reader-mobile-action {
+  box-sizing:border-box;display:grid;place-items:center;
+  width:44px;height:44px;min-width:44px;min-height:44px;
+  padding:0;border:0;border-radius:50%;
+  background:transparent;color:inherit;cursor:pointer;
+}
+[data-mobile-chrome] .reader-mobile-action svg {
+  display:block;width:19px;height:19px;
+  fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round;
+}
+[data-mobile-chrome] .reader-mobile-action:hover {
+  background:color-mix(in srgb,currentColor 9%,transparent);
+}
+/* Library is docked into this same group before PDF + Share by the
+   shared reader-library-dock owner. Keep four equal 44px targets, including
+   on 320px phones. Share remains the rightmost control. */
+[data-mobile-chrome] .reader-mobile-action-cluster > #gb-hl-fab.gb-hl-fab--docked {
+  position:relative;
+  inset:auto;
+  flex:0 0 44px;
+  box-sizing:border-box;
+  width:44px;
+  min-width:44px;
+  height:44px;
+  padding:0;
+  margin:0;
+  border:0;
+  border-radius:50%;
+  background:transparent;
+  color:inherit;
+  box-shadow:none;
+}
+[data-mobile-chrome] .reader-mobile-action-cluster > #gb-hl-fab.gb-hl-fab--docked:hover {
+  background:color-mix(in srgb,currentColor 9%,transparent);
+  transform:none;
+}
+/* The PDF action uses the site's existing print/PDF pipeline. No duplicate
+   controls or route-specific CSS: page-print media already hides the footer. */
+[data-mobile-chrome] .reader-mobile-action--pdf svg {
+  width:19px;
+  height:19px;
+}
+html.dark [data-reader-mobile-speed] .reader-mobile-menu-trigger {
+  background:color-mix(in srgb,var(--color-canvas,#17151a) 72%,#28232a);
+  color:var(--color-text,#ede6e4);
+}
+html.dark [data-reader-mobile-speed] .reader-mobile-speedrail {
+  background:var(--color-canvas,#17151a);
+}
+html.dark [data-reader-mobile-speed] {
+  --reader-speed-ink:#c8a7a1;
+  --reader-speed-wine:#a74f52;
+}
+html[data-reader-theme="sepia"] [data-reader-mobile-speed] .reader-mobile-speedrail {
+  background:var(--color-canvas,#f3ead4);
+}
+@media(max-width:340px) {
+  [data-reader-mobile-speed] .reader-mobile-menu-trigger span { display:none; }
+  [data-reader-mobile-speed] .reader-mobile-menu-trigger {padding:0 4px;gap:0;}
+  [data-mobile-chrome] .reader-mobile-action-cluster {gap:0;}
+}
+@media(prefers-reduced-motion:reduce) {
+  [data-reader-mobile-speed] .reader-mobile-menu-trigger,
+  [data-reader-mobile-speed] .reader-mobile-speedrail,
+  [data-reader-mobile-speed] .reader-mobile-speed-rate {
+    transition:none;
+  }
+}
