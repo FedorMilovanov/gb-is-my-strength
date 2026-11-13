@@ -18,6 +18,7 @@ on:
       - "scripts/lib/route-source-contract.js"
       - "scripts/build-scripture-occurrence-index.mjs"
       - "scripts/scripture-occurrence-index-contract.mjs"
+      - "scripts/apostasy-solomon-reference-contract-test.mjs"
       - ".github/workflows/scripture-occurrence-index-contract.yml"
   push:
     branches: [main]
@@ -35,6 +36,7 @@ on:
       - "scripts/lib/route-source-contract.js"
       - "scripts/build-scripture-occurrence-index.mjs"
       - "scripts/scripture-occurrence-index-contract.mjs"
+      - "scripts/apostasy-solomon-reference-contract-test.mjs"
       - ".github/workflows/scripture-occurrence-index-contract.yml"
   workflow_dispatch:
 
@@ -68,6 +70,7 @@ jobs:
           node --check scripts/scripture-occurrence-index-contract.mjs
           node scripts/build-scripture-occurrence-index.mjs --check
           node scripts/scripture-occurrence-index-contract.mjs
+          node --test scripts/apostasy-solomon-reference-contract-test.mjs
       - name: Build production-like publication witness
         run: npm run strangler:build:production-like
       - name: Validate route text and anchors in dist
