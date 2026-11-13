@@ -352,7 +352,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
         { href: '#sexual-spiritual-coercion', label: 'Духовное принуждение', level: 2, summary: 'Духовный доступ, зависимость и принуждение совести.' },
         { href: '#financial-dependency', label: 'Финансовая зависимость', level: 2, summary: 'Деньги, доверие и пасторская зависимость.' },
         { href: '#pastoral-conclusion', label: 'Пастырский вывод', level: 2, summary: 'Не ярлык, а проверяемый механизм: различения для пастора.' },
-        { href: '#sources', label: 'Источники Wave 10', level: 2, summary: 'Источники и границы проверки: что подтверждено и чем подписано.' },
+        { href: '#sources', label: 'Источники и границы проверки', level: 2, summary: 'Источники и границы проверки: что подтверждено и чем подписано.' },
         { href: '#quiz', label: 'Проверь различения', level: 2, summary: 'Квиз: где проверенный вывод, а где ярлык.' },
         { href: '#faithful-witness-under-pressure', label: 'Верность под давлением', level: 2, summary: 'Свидетельства верности: как сохраняли верность Богу, не превращая послушание лидеру в молчание.' },
         { href: '#fifteen-faithful-pathways', label: '15 реальных путей', level: 2, summary: 'Пятнадцать документированных сценариев зрелого верного ответа.' },

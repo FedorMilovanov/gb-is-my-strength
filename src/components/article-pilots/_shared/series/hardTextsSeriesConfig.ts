@@ -272,10 +272,10 @@ const HEART_SATELLITE_TOC: Record<string, SeriesPartTocItem[]> = {
     { href: '#istochniki', label: 'Источники и сверка', level: 2 },
   ],
   sokrovishche: [
-    { href: '#bogatyj-bezumec', label: 'Богатый безумец: не амбары, а пустая душа', level: 2, current: true },
-    { href: '#koren-ne-dengi', label: 'Корень — не деньги, а любовь к деньгам', level: 2 },
-    { href: '#dovolstvo-vyuchennoe', label: 'Довольство — не природное, а выученное', level: 2 },
-    { href: '#osnovanie-prisutstvie', label: 'Основание довольства — присутствие, а не сумма', level: 2 },
+    { href: '#bogatyj-bezumec', label: 'Урожай, житницы и голос среди ночи', level: 2, current: true },
+    { href: '#koren-ne-dengi', label: 'Сребролюбие: что Павел называет корнем', level: 2 },
+    { href: '#dovolstvo-vyuchennoe', label: 'Довольство, которому учатся', level: 2 },
+    { href: '#osnovanie-prisutstvie', label: 'На чём держится довольство', level: 2 },
     { href: '#bednaya-i-bogataya-zhadnost', label: 'Бедная и богатая жадность', level: 2 },
     { href: '#hristos-obnishchal', label: 'Христос обнищал, чтобы мы обогатились', level: 2 },
     { href: '#tverdo-ne-dubinkoy', label: 'Твёрдо, но не дубинкой', level: 2 },
@@ -401,7 +401,7 @@ const HEART_SATELLITE_TOC: Record<string, SeriesPartTocItem[]> = {
   osvobozhdennoe: [
     { href: '#chetyre-sostoyaniya', label: 'Четыре состояния сердца', level: 2, current: true },
     { href: '#vopl-i-otvet', label: 'Вопль, на который есть ответ', level: 2 },
-    { href: '#ne-besplotnoe-parenie', label: 'Не бесплотное парение, а телесная слава', level: 2 },
+    { href: '#ne-besplotnoe-parenie', label: 'Что значит «тело духовное»', level: 2 },
     { href: '#ne-sposobno-greshit', label: 'Сердце, не способное грешить', level: 2 },
     { href: '#pobeda-nad-vragom', label: 'Победа над последним врагом', level: 2 },
     { href: '#tverdo-ne-dubinkoy', label: 'Твёрдо, но не дубинкой', level: 2 },
