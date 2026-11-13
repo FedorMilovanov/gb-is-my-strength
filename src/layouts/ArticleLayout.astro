@@ -3,6 +3,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import { SECTION_META, SITE, SERIES_ORDER } from '@/data/site';
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
+import { updatesForArticle, editorialDate, EDITORIAL_UPDATE_LABELS } from '@/lib/editorial-updates';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
@@ -32,6 +33,7 @@ const articleAuthorName = isTranslation ? 'Абнер Чау' : SITE.authorName;
 const editorialRole = isTranslation ? 'Редактор' : 'Автор-редактор';
 const editorialName = SITE.authorName;
 const h1 = data.h1 || data.title;
+const articleUpdates = updatesForArticle(`/${data.section}/${data.slug}/`);
 
 function legacyArticleMetaTime(prop: 'article:published_time' | 'article:modified_time') {
   const file = path.join(process.cwd(), data.section, data.slug, 'index.html');
@@ -236,6 +238,23 @@ const jsonLd = {
       )}
     </header>
 
+    {articleUpdates.length > 0 && (
+      <aside class="astro-article__updates" aria-labelledby="articleUpdatesTitle">
+        <div class="astro-article__updates-top">
+          <strong id="articleUpdatesTitle">Что изменилось в статье</strong>
+          <a href="/updates/">Архив обновлений</a>
+        </div>
+        {articleUpdates.slice(0, 2).map((update) => (
+          <p>
+            <time datetime={update.date}>{editorialDate(update.date)}</time>
+            <span aria-hidden="true"> · </span>
+            <span>{EDITORIAL_UPDATE_LABELS[update.kind]}: </span>
+            <a href={`#${update.anchor}`}>{update.headline}</a>
+          </p>
+        ))}
+      </aside>
+    )}
+
     <div class="astro-article__body">
       <slot />
     </div>
@@ -312,4 +331,22 @@ const jsonLd = {
       </div>
     </aside>
   </article>
+  <style>
+    .astro-article__updates {
+      border: 1px solid color-mix(in srgb, var(--color-accent-strong, #087d91) 22%, transparent);
+      border-left: 3px solid var(--color-accent-strong, #087d91);
+      border-radius: 10px;
+      padding: clamp(15px, 2vw, 22px);
+      margin: clamp(16px, 3vw, 30px) 0 clamp(26px, 4vw, 46px);
+      color: var(--color-text, inherit);
+      background: color-mix(in srgb, var(--color-accent-strong, #087d91) 5%, transparent);
+      overflow-wrap: anywhere;
+    }
+    .astro-article__updates-top { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:8px 14px; font:700 14px/1.45 var(--f-ui,system-ui,sans-serif); }
+    .astro-article__updates-top a { font-size:12px; }
+    .astro-article__updates p { margin:10px 0 0; font: 400 14px/1.65 var(--f-ui,system-ui,sans-serif); }
+    .astro-article__updates time { font-weight:600; }
+    .astro-article__updates a { color:var(--color-accent-strong,#087d91); text-underline-offset:3px; }
+    .astro-article__updates a:focus-visible { outline:2px solid currentColor; outline-offset:3px; }
+  </style>
 </BaseLayout>

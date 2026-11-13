@@ -1,0 +1,43 @@
+---
+import type { EditorialUpdate } from '@/lib/editorial-updates';
+import { editorialDate, EDITORIAL_UPDATE_LABELS } from '@/lib/editorial-updates';
+interface Props { update: EditorialUpdate; compact?: boolean; }
+const { update, compact = false } = Astro.props;
+---
+<article class:list={['editorial-update-card', { 'editorial-update-card--compact': compact }]}>
+  <div class="editorial-update-card__meta">
+    <time datetime={update.date}>{editorialDate(update.date)}</time>
+    <span aria-hidden="true">·</span>
+    <span>{EDITORIAL_UPDATE_LABELS[update.kind]}</span>
+  </div>
+  <h3><a href={update.href}>{update.headline}</a></h3>
+  <p class="editorial-update-card__article">{update.articleTitle}</p>
+  <p class="editorial-update-card__summary">{update.summary}</p>
+  <a class="editorial-update-card__read" href={update.href}>Открыть дополнение <span aria-hidden="true">↗</span></a>
+</article>
+<style>
+  .editorial-update-card {
+    min-width: 0;
+    border: 1px solid var(--ed-border, rgba(50, 80, 78, .17));
+    border-radius: 16px;
+    padding: clamp(18px, 2.2vw, 27px);
+    color: var(--ed-ink, #203038);
+    text-align: left;
+    background: var(--ed-card, #fffdf8);
+    box-shadow: 0 14px 42px -38px rgba(4, 23, 26, .5);
+    overflow-wrap: anywhere;
+  }
+  .editorial-update-card__meta {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 7px;
+    margin-bottom: 12px; color: var(--ed-accent, #086f7f);
+    font: 650 12px/1.4 var(--f-ui, system-ui, sans-serif);
+  }
+  h3 { margin: 0 0 9px; font-size: clamp(18px, 2vw, 22px); line-height: 1.32; color: var(--ed-ink, #203038); text-align:left; }
+  h3 a { color: inherit; text-decoration: none; }
+  h3 a:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .editorial-update-card__article { margin: 0 0 10px; font: 600 13px/1.55 var(--f-ui, system-ui, sans-serif); color: var(--ed-muted, #52646b); text-align:left; }
+  .editorial-update-card__summary { margin: 0 0 15px; font: 400 15px/1.68 var(--f-body, Georgia, serif); color: var(--ed-ink, #203038); text-align:left; }
+  .editorial-update-card__read { color: var(--ed-accent, #086f7f); font: 700 13px/1.55 var(--f-ui, system-ui, sans-serif); text-decoration: underline; text-underline-offset: 4px; }
+  a:focus-visible { outline: 2px solid currentColor; outline-offset: 5px; border-radius: 3px; }
+  .editorial-update-card--compact .editorial-update-card__summary { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+</style>

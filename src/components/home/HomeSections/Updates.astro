@@ -1,0 +1,41 @@
+---
+/** Meaningful changes to existing articles only; never a proxy for git commits. */
+import EditorialUpdateCard from '@/components/editorial/EditorialUpdateCard.astro';
+import { publishedEditorialUpdates } from '@/lib/editorial-updates';
+const recent = publishedEditorialUpdates.slice(0, 3);
+---
+{recent.length > 0 && (
+  <section class="h-section h-reveal h-scroll-target" id="obnovleniya-issledovaniy" aria-labelledby="hUpdatesTitle" data-pagefind-ignore>
+    <header class="h-home-section-head">
+      <div>
+        <p class="h-section-label">Редакционная хроника</p>
+        <h2 id="hUpdatesTitle">Что изменилось в исследованиях</h2>
+      </div>
+      <p>Новые документы и важные уточнения в ранее опубликованных статьях. Мы сохраняем первоначальные тексты и отдельно показываем, что изменилось.</p>
+    </header>
+    <div class="h-updates-grid">
+      {recent.map((update) => <EditorialUpdateCard update={update} compact />)}
+    </div>
+    <a class="h-updates-all" href="/updates/">Все обновления исследований <span aria-hidden="true">→</span></a>
+  </section>
+)}
+<style is:global>
+  body.home-page #obnovleniya-issledovaniy {
+    --ed-ink: #203038;
+    --ed-muted: #52646b;
+    --ed-accent: #086f7f;
+    --ed-card: #fffdf8;
+    --ed-border: rgba(50, 80, 78, .17);
+    padding-block: clamp(50px, 6vw, 80px);
+  }
+  html.dark body.home-page #obnovleniya-issledovaniy {
+    --ed-ink: #efe7d6;
+    --ed-muted: #b3bdba;
+    --ed-accent: #83d9e3;
+    --ed-card: #142428;
+    --ed-border: rgba(155, 216, 211, .18);
+  }
+  body.home-page .h-updates-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px),1fr)); gap: clamp(12px,1.6vw,22px); }
+  body.home-page .h-updates-all { display:inline-block; margin-top:22px; font:700 14px/1.5 var(--f-ui,system-ui,sans-serif); color:var(--h-accent); text-underline-offset:4px; }
+  body.home-page .h-updates-all:focus-visible { outline:2px solid currentColor; outline-offset:4px; }
+</style>

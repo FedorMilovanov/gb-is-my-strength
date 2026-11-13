@@ -10,6 +10,22 @@
   },
   "items": [
     {
+      "id": "editorial-updates",
+      "type": "landing",
+      "url": "/updates/",
+      "title": "Обновления исследований",
+      "description": "История содержательных дополнений, новых источников и исправлений опубликованных богословских исследований.",
+      "section": "Редакционная хроника",
+      "editor": "Фёдор Милованов",
+      "image": "/images/og-preview-1200x630.webp",
+      "tags": ["обновления", "источники", "исправления", "исследования"],
+      "featured": false,
+      "priority": 0.5,
+      "publishedTime": "2026-11-13T12:30:00+03:00",
+      "modifiedTime": "2026-11-13T12:30:00+03:00",
+      "readTime": 2
+    },
+    {
       "id": "home",
       "type": "landing",
       "url": "/",
@@ -1883,7 +1899,7 @@
       "featured": false,
       "priority": 0.6,
       "publishedTime": "2026-09-29T21:00:00.000Z",
-      "modifiedTime": "2026-10-04T17:24:00.000Z",
+      "modifiedTime": "2026-11-13T09:30:00.000Z",
       "readTime": 87
     },
     {

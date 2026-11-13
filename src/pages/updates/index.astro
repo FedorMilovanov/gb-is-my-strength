@@ -1,0 +1,83 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import EditorialUpdateCard from '@/components/editorial/EditorialUpdateCard.astro';
+import { publishedEditorialUpdates } from '@/lib/editorial-updates';
+import { SITE } from '@/data/site';
+const title = 'Обновления исследований | Господь Бог — Сила Моя';
+const description = 'История содержательных дополнений, новых источников и исправлений опубликованных богословских исследований.';
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={`${SITE.url}/updates/`}
+  robots="index, follow"
+  mainClass="astro-main astro-main--editorial-updates"
+>
+  <div class="editorial-updates-page">
+    <nav aria-label="Хлебные крошки"><a href="/">Главная</a><span aria-hidden="true"> / </span><span>Обновления исследований</span></nav>
+    <header>
+      <p class="editorial-updates-page__eyebrow">Редакционная хроника</p>
+      <h1>Обновления исследований</h1>
+      <p>На этой странице собраны только содержательные изменения уже опубликованных работ: новые проверяемые свидетельства, исправления фактических ошибок и пересмотр выводов. Опечатки и технические правки сюда не попадают. Первоначальные адреса статей остаются прежними.</p>
+    </header>
+    <section aria-label="Опубликованные обновления">
+      {publishedEditorialUpdates.length ? (
+        <div class="editorial-updates-page__list">
+          {publishedEditorialUpdates.map((update) => <EditorialUpdateCard update={update} />)}
+        </div>
+      ) : <p>Пока нет опубликованных содержательных обновлений.</p>}
+    </section>
+    <p class="editorial-updates-page__principle">Для каждого обновления указаны дата и ссылка на конкретное дополнение в статье. Если источник ещё не подтверждён, степень его достоверности обозначается непосредственно в исследовании.</p>
+  </div>
+</BaseLayout>
+<style is:global>
+  main.astro-main--editorial-updates {
+    --ed-ink: #203038;
+    --ed-muted: #53636a;
+    --ed-accent: #066d7d;
+    --ed-card: #fffdf8;
+    --ed-border: rgba(69, 91, 90, .18);
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    min-height: 70vh;
+    margin: 0;
+    padding: 0;
+    color: var(--ed-ink);
+    background: radial-gradient(900px 520px at 50% 0%, #fbf7ef 0%, #f4efe5 60%, #ede6d8 100%);
+    text-align: left;
+  }
+  html.dark main.astro-main--editorial-updates {
+    --ed-ink: #f0e6d3;
+    --ed-muted: #b2b8b7;
+    --ed-accent: #85d5df;
+    --ed-card: #142127;
+    --ed-border: rgba(175, 210, 205, .18);
+    background: radial-gradient(900px 550px at 50% 0%, #152529 0%, #0a1417 75%);
+  }
+  .editorial-updates-page {
+    box-sizing: border-box;
+    width: min(100%, 1160px);
+    margin-inline: auto;
+    padding: clamp(110px, 10vw, 144px) clamp(20px, 4.4vw, 58px) clamp(70px, 8vw, 110px);
+    color: var(--ed-ink);
+    text-align: left;
+  }
+  .editorial-updates-page nav { font: 600 13px/1.5 var(--f-ui,system-ui,sans-serif); margin: 0 0 clamp(44px, 5vw, 72px); color:var(--ed-muted); }
+  .editorial-updates-page nav a { color:var(--ed-accent); }
+  .editorial-updates-page__eyebrow { margin:0; font: 700 12px/1.5 var(--f-ui,system-ui,sans-serif); text-transform:uppercase; letter-spacing:.16em; color:var(--ed-accent); }
+  .editorial-updates-page h1 { margin:15px 0 20px; font-size:clamp(34px,5vw,60px); line-height:1.1; color:var(--ed-ink); text-wrap:balance; }
+  .editorial-updates-page header>p:last-child {
+    max-width:780px; margin: 0 0 clamp(32px,5vw,60px);
+    font: 400 clamp(16px,1.8vw,20px)/1.7 var(--f-body,Georgia,serif);
+    color:var(--ed-muted); text-align:left;
+  }
+  .editorial-updates-page__list { display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); align-items:stretch; gap:clamp(14px,2vw,25px); }
+  .editorial-updates-page__principle { margin:clamp(30px,4vw,50px) 0 0; font:400 14px/1.75 var(--f-ui,system-ui,sans-serif); color:var(--ed-muted); max-width:770px; text-align:left; }
+  .editorial-updates-page a:focus-visible { outline:2px solid currentColor; outline-offset:4px; }
+  @media (max-width:740px) {
+    .editorial-updates-page__list { grid-template-columns: 1fr; }
+    .editorial-updates-page nav { margin-bottom: 38px; }
+  }
+</style>
