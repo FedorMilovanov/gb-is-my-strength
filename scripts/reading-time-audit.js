@@ -927,6 +927,12 @@ console.log(
   `Записей data/series.json: ${report.seriesRows.length}; расходятся: ${seriesDrift.length}; ` +
     `без MDX (живут только в series.json): ${seriesExternal.length}; справка вне MDX: ${seriesAdvisory.length}.`
 );
+if (seriesExternal.length) {
+  console.log(
+    '  ↳ записи без MDX — нативные маршруты: их считает по собранной странице ' +
+      '`npm run reading:time:native` (см. READING-TIME-POLICY.md §10.7).'
+  );
+}
 
 const show = LIST ? actionable : actionable.slice(0, 15);
 if (show.length) {
