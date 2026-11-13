@@ -326,7 +326,9 @@ if (chromium) (async () => {
 
   let browser;
   try {
+    const executablePath = process.env.GB_PLAYWRIGHT_CHROMIUM_EXECUTABLE || undefined;
     browser = await chromium.launch({
+      ...(executablePath ? { executablePath } : {}),
       args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'],
     });
   } catch (error) {

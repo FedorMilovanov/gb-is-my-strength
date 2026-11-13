@@ -221,6 +221,19 @@ async function exerciseHighlights(page, engine, viewport, route) {
   }));
   check(engine, viewport, route, 'keyboard opener reaches saved-quote tab and seeded quote',
     quotes.pressed === 'true' && quotes.containsSeed && quotes.inside && quotes.expanded === 'true', quotes);
+  // Snapshot only after both semantics and the actual rendered quote card
+  // settle; otherwise the frame may show the prior "Все" tab and an empty
+  // panel even though the next DOM assertion observes the correct view.
+  await page.waitForFunction(() => {
+    const pressed = document.querySelector('[data-library-tab="quote"]');
+    const card = document.querySelector('#gb-hl-list > *');
+    const bounds = card?.getBoundingClientRect();
+    return pressed?.getAttribute('aria-pressed') === 'true' &&
+      !!card?.textContent?.includes('Проверочная сохранённая цитата') &&
+      !!bounds && bounds.height > 20 && bounds.top < innerHeight;
+  }, null, { timeout: 3500 });
+  await page.evaluate(() => new Promise(resolve =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve))));
   if (engine === 'chromium') {
     const safeRoute = route.split('/').filter(Boolean).join('-').replace(/[^a-z0-9]+/gi, '-');
     await page.screenshot({

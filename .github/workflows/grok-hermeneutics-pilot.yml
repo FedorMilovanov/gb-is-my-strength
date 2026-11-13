@@ -173,6 +173,8 @@ jobs:
         run: node scripts/reader-focus-sitewide-browser-contract.mjs
 
       - name: Build flag OFF from the same source for deterministic rollback
+        env:
+          PUBLIC_GB_GROK_HERMENEUTICS_PILOT: '0'
         run: npm run strangler:build:production-like
 
       - name: Browser proof — flag OFF keeps the original TOC
