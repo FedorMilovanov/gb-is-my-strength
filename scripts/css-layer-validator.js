@@ -9,8 +9,11 @@
  *   3. Re-opening an already declared named layer is allowed anywhere later
  *      (CSS Cascade Layers append rules without changing layer precedence)
  *   4. No unclosed braces
- *   5. !important count does not exceed ceiling
- *   6. Reports unlayered rules vs layered rules ratio
+ *   5. !important count does not exceed explicit per-root ceiling
+ *   6. Enforces per-root @layer coverage baseline ratchets toward the 80%
+ *      migration target and separates baseline protection from target status
+ *   7. Fails closed if an unregistered css/*.css file introduces @layer without
+ *      explicit baseline and !important ceiling governance
  *
  * Project coverage:
  *   Invoking this guard for a top-level css/*.css file validates every governed
@@ -29,9 +32,9 @@ const { spawnSync } = require('child_process');
 const LAYERED_TARGET_PCT = 80;
 const LAYER_NAME_PATTERN = '[A-Za-z_][\\w-]*(?:\\.[A-Za-z_][\\w-]*)*';
 const PROJECT_LAYER_ROOTS = new Map([
-  ['css/site.css', 200],
-  ['css/home.css', null],
-  ['css/floating-cluster.css', 524],
+  ['css/site.css', Object.freeze({ ceiling: 200, minLayeredPct: 18.8 })],
+  ['css/home.css', Object.freeze({ ceiling: 52, minLayeredPct: 35.4 })],
+  ['css/floating-cluster.css', Object.freeze({ ceiling: 524, minLayeredPct: 9.9 })],
 ]);
 
 function stripCssComments(cssText) {
@@ -90,6 +93,19 @@ function validateLayerContract(declaration, foundLayers) {
   return { errors, warnings };
 }
 
+function isValidRootPolicy(policy) {
+  return Boolean(
+    policy &&
+    typeof policy === 'object' &&
+    Number.isInteger(policy.ceiling) &&
+    policy.ceiling >= 0 &&
+    typeof policy.minLayeredPct === 'number' &&
+    Number.isFinite(policy.minLayeredPct) &&
+    policy.minLayeredPct > 0 &&
+    policy.minLayeredPct <= LAYERED_TARGET_PCT
+  );
+}
+
 function runInternalContractChecks() {
   const declaration = parseDeclaredLayers('@layer reset, base, components, utilities;');
   const expected = ['reset', 'base', 'components', 'utilities'];
@@ -145,13 +161,23 @@ function runInternalContractChecks() {
     throw new Error('internal contract: commented @layer text entered project discovery');
   }
 
+  if (PROJECT_LAYER_ROOTS.size !== 3) {
+    throw new Error('internal contract: governed project root count drifted');
+  }
+  for (const [repoPath, policy] of PROJECT_LAYER_ROOTS.entries()) {
+    if (!isValidRootPolicy(policy)) {
+      throw new Error(`internal contract: invalid root policy for ${repoPath}`);
+    }
+  }
   if (
-    PROJECT_LAYER_ROOTS.size !== 3 ||
-    PROJECT_LAYER_ROOTS.get('css/site.css') !== 200 ||
-    PROJECT_LAYER_ROOTS.get('css/home.css') !== null ||
-    PROJECT_LAYER_ROOTS.get('css/floating-cluster.css') !== 524
+    PROJECT_LAYER_ROOTS.get('css/site.css').ceiling !== 200 ||
+    PROJECT_LAYER_ROOTS.get('css/site.css').minLayeredPct !== 18.8 ||
+    PROJECT_LAYER_ROOTS.get('css/home.css').ceiling !== 52 ||
+    PROJECT_LAYER_ROOTS.get('css/home.css').minLayeredPct !== 35.4 ||
+    PROJECT_LAYER_ROOTS.get('css/floating-cluster.css').ceiling !== 524 ||
+    PROJECT_LAYER_ROOTS.get('css/floating-cluster.css').minLayeredPct !== 9.9
   ) {
-    throw new Error('internal contract: governed project roots or !important ratchets drifted');
+    throw new Error('internal contract: governed project roots, ceilings, or coverage ratchets drifted');
   }
 
   if (LAYERED_TARGET_PCT !== 80) {
@@ -169,40 +195,68 @@ try {
 const args = process.argv.slice(2);
 const cssFile = args.find(a => !a.startsWith('--'));
 const ceilingArg = args.find(a => a.startsWith('--ceiling='));
+const minLayeredArg = args.find(a => a.startsWith('--min-layered-pct='));
+const projectRootArg = args.find(a => a.startsWith('--project-root='));
 const singleFileMode = args.includes('--single');
-let ceiling = ceilingArg ? parseInt(ceilingArg.split('=')[1], 10) : null;
 
-if (!cssFile) {
-  console.error('Usage: node scripts/css-layer-validator.js <css-file> [--ceiling=N]');
+let ceiling = ceilingArg ? Number.parseInt(ceilingArg.split('=')[1], 10) : null;
+let minLayeredPct = minLayeredArg ? Number.parseFloat(minLayeredArg.split('=')[1]) : null;
+
+if (ceilingArg && (!Number.isInteger(ceiling) || ceiling < 0)) {
+  console.error(`Invalid --ceiling value: ${ceilingArg}`);
+  process.exit(2);
+}
+if (minLayeredArg && (!Number.isFinite(minLayeredPct) || minLayeredPct < 0 || minLayeredPct > 100)) {
+  console.error(`Invalid --min-layered-pct value: ${minLayeredArg}`);
   process.exit(2);
 }
 
-const cssPath = path.resolve(cssFile);
+if (!cssFile) {
+  console.error('Usage: node scripts/css-layer-validator.js <css-file> [--ceiling=N] [--min-layered-pct=N]');
+  process.exit(2);
+}
+
+const projectRoot = projectRootArg
+  ? path.resolve(projectRootArg.slice('--project-root='.length))
+  : process.cwd();
+const cssPath = path.isAbsolute(cssFile)
+  ? cssFile
+  : path.resolve(projectRoot, cssFile);
+
 if (!fs.existsSync(cssPath)) {
   console.error(`File not found: ${cssPath}`);
   process.exit(2);
 }
 
-const projectRoot = process.cwd();
 const projectCssDir = path.resolve(projectRoot, 'css');
 const inProjectCss =
   cssPath.startsWith(`${projectCssDir}${path.sep}`) &&
   path.extname(cssPath) === '.css';
+const requestedRepoPath = inProjectCss
+  ? path.relative(projectRoot, cssPath).split(path.sep).join('/')
+  : null;
+
+if (requestedRepoPath && PROJECT_LAYER_ROOTS.has(requestedRepoPath)) {
+  const governedPolicy = PROJECT_LAYER_ROOTS.get(requestedRepoPath);
+  if (ceiling !== null && ceiling !== governedPolicy.ceiling) {
+    console.error(
+      `Governed !important ceiling mismatch for ${requestedRepoPath}: ` +
+      `expected ${governedPolicy.ceiling}, got ${ceiling}`
+    );
+    process.exit(2);
+  }
+  if (minLayeredPct !== null && Math.abs(minLayeredPct - governedPolicy.minLayeredPct) > 1e-9) {
+    console.error(
+      `Governed @layer baseline mismatch for ${requestedRepoPath}: ` +
+      `expected ${governedPolicy.minLayeredPct}%, got ${minLayeredPct}%`
+    );
+    process.exit(2);
+  }
+  if (ceiling === null) ceiling = governedPolicy.ceiling;
+  if (minLayeredPct === null) minLayeredPct = governedPolicy.minLayeredPct;
+}
 
 if (!singleFileMode && inProjectCss) {
-  const requestedRepoPath = path.relative(projectRoot, cssPath).split(path.sep).join('/');
-  const governedCeiling = PROJECT_LAYER_ROOTS.get(requestedRepoPath);
-  if (governedCeiling !== undefined) {
-    if (ceiling !== null && governedCeiling !== null && ceiling !== governedCeiling) {
-      console.error(
-        `Governed !important ceiling mismatch for ${requestedRepoPath}: ` +
-        `expected ${governedCeiling}, got ${ceiling}`
-      );
-      process.exit(2);
-    }
-    if (ceiling === null) ceiling = governedCeiling;
-  }
-
   const discovered = fs.readdirSync(projectCssDir, { withFileTypes: true })
     .filter(entry => entry.isFile() && entry.name.endsWith('.css'))
     .map(entry => `css/${entry.name}`)
@@ -210,7 +264,11 @@ if (!singleFileMode && inProjectCss) {
     .sort();
 
   const coverageErrors = [];
-  for (const repoPath of PROJECT_LAYER_ROOTS.keys()) {
+  for (const [repoPath, policy] of PROJECT_LAYER_ROOTS.entries()) {
+    if (!isValidRootPolicy(policy)) {
+      coverageErrors.push(`Governed @layer root lacks valid baseline/ceiling policy: ${repoPath}`);
+      continue;
+    }
     const absolute = path.resolve(projectRoot, repoPath);
     if (!fs.existsSync(absolute)) {
       coverageErrors.push(`Governed @layer root is missing: ${repoPath}`);
@@ -219,15 +277,20 @@ if (!singleFileMode && inProjectCss) {
     }
   }
 
+  for (const repoPath of discovered) {
+    if (!PROJECT_LAYER_ROOTS.has(repoPath)) {
+      coverageErrors.push(
+        `Ungoverned @layer root discovered without explicit baseline and !important ceiling: ${repoPath}`
+      );
+    }
+  }
+
   if (coverageErrors.length > 0) {
     for (const error of coverageErrors) console.error(`❌ ${error}`);
     process.exit(1);
   }
 
-  const targets = [
-    ...PROJECT_LAYER_ROOTS.keys(),
-    ...discovered.filter(repoPath => !PROJECT_LAYER_ROOTS.has(repoPath)),
-  ];
+  const targets = [...PROJECT_LAYER_ROOTS.keys()];
 
   console.log(
     `CSS @layer project coverage: ${targets.length} file(s) — ` +
@@ -236,14 +299,14 @@ if (!singleFileMode && inProjectCss) {
 
   for (const repoPath of targets) {
     if (repoPath === requestedRepoPath) continue;
-    const targetCeiling = PROJECT_LAYER_ROOTS.get(repoPath);
+    const targetPolicy = PROJECT_LAYER_ROOTS.get(repoPath);
     const childArgs = [
       __filename,
       repoPath,
       '--single',
-      ...(targetCeiling === null || targetCeiling === undefined
-        ? []
-        : [`--ceiling=${targetCeiling}`]),
+      `--project-root=${projectRoot}`,
+      `--ceiling=${targetPolicy.ceiling}`,
+      `--min-layered-pct=${targetPolicy.minLayeredPct}`,
     ];
     const child = spawnSync(process.execPath, childArgs, {
       cwd: projectRoot,
@@ -309,13 +372,15 @@ if (!declaration) {
 // 3. !important count
 const importantCount = (css.match(/!important/g) || []).length;
 info.push(`!important count: ${importantCount}`);
-if (ceiling !== null && importantCount > ceiling) {
+if (ceiling === null) {
+  errors.push('Missing explicit !important ceiling governance for CSS @layer target');
+} else if (importantCount > ceiling) {
   errors.push(`!important count ${importantCount} exceeds ceiling ${ceiling}`);
-} else if (ceiling !== null) {
+} else {
   info.push(`!important ceiling ${ceiling}: OK (using ${importantCount})`);
 }
 
-// 4. Layered vs unlayered ratio
+// 4. Layered vs unlayered ratio & baseline ratchet
 function findMatchingBrace(cssText, start) {
   let d = 0;
   for (let i = start; i < cssText.length; i++) {
@@ -338,12 +403,34 @@ while ((m = layerBlockRe.exec(css)) !== null) {
 const totalChars = css.length;
 const unlayeredChars = totalChars - layeredChars;
 const layeredPctValue = totalChars > 0 ? layeredChars / totalChars * 100 : 0;
-const layeredPct = layeredPctValue.toFixed(1);
+const layeredPctRounded = Number(layeredPctValue.toFixed(1));
+const layeredPct = layeredPctRounded.toFixed(1);
 info.push(`Layered: ${layeredChars} chars (${layeredPct}%)`);
 info.push(`Unlayered: ${unlayeredChars} chars (${(100 - layeredPctValue).toFixed(1)}%)`);
 
-if (layeredPctValue < LAYERED_TARGET_PCT) {
-  warnings.push(`Only ${layeredPct}% of CSS is in @layer blocks (target: ≥${LAYERED_TARGET_PCT}%)`);
+if (minLayeredPct !== null) {
+  const minLabel = minLayeredPct.toFixed(1);
+  if (layeredPctRounded + 1e-9 < minLayeredPct) {
+    errors.push(
+      `Layered CSS share ${layeredPct}% regressed below governed baseline ≥${minLabel}% ` +
+      `(target: ≥${LAYERED_TARGET_PCT}%)`
+    );
+  } else {
+    info.push(
+      `Layered baseline ratchet ≥${minLabel}%: OK (current ${layeredPct}%, migration target ≥${LAYERED_TARGET_PCT}%)`
+    );
+  }
+}
+
+const reachedTarget = layeredPctRounded + 1e-9 >= LAYERED_TARGET_PCT;
+if (!reachedTarget) {
+  const baselineClause = minLayeredPct !== null
+    ? `baseline ≥${minLayeredPct.toFixed(1)}% protected; `
+    : '';
+  warnings.push(
+    `Target gap: ${layeredPct}% of CSS is in @layer blocks ` +
+    `(${baselineClause}migration target ≥${LAYERED_TARGET_PCT}% not yet reached)`
+  );
 }
 
 // 5. Report @media queries
@@ -392,7 +479,13 @@ for (const i of info) console.log(`ℹ️  ${i}`);
 if (errors.length > 0) {
   console.log(`\n❌ VALIDATION FAILED — ${errors.length} error(s)`);
   process.exit(1);
+} else if (!reachedTarget) {
+  const baselineBadge = minLayeredPct !== null ? `≥${minLayeredPct.toFixed(1)}%` : 'governed';
+  console.log(
+    `\n✅ BASELINE RATCHET PASSED (protected ${baselineBadge}; migration target ≥${LAYERED_TARGET_PCT}% pending)`
+  );
+  process.exit(0);
 } else {
-  console.log('\n✅ VALIDATION PASSED');
+  console.log(`\n✅ VALIDATION PASSED (target ≥${LAYERED_TARGET_PCT}% met)`);
   process.exit(0);
 }
