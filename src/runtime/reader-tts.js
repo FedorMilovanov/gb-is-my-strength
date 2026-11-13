@@ -79,8 +79,11 @@
 
   function readRate() {
     try {
+      if (window.GBReaderRatePolicy?.read) return window.GBReaderRatePolicy.read();
+      // Standalone TTS fixtures can omit the preference bootstrap.
       const value = Number(localStorage.getItem(RATE_KEY));
-      return Number.isFinite(value) ? clamp(value, 0.6, 2) : 1;
+      return [0.75, 1, 1.25, 1.5, 1.75, 2].includes(value)
+        ? value : value === 0.8 ? 0.75 : 1;
     } catch {
       return 1;
     }
@@ -979,6 +982,15 @@
   function onClick(event) {
     const button = event.target instanceof Element ? event.target.closest(PLAY_SELECTOR) : null;
     if (!button) return;
+    // The official Grok focus rail offers speed choice on its first idle
+    // Play click. Let the existing PlayEmber's bubble handler open its own
+    // accessible rate panel; do NOT start speech during this interaction.
+    // Once playing/paused, GBReaderTTS retains exclusive click ownership.
+    // Other article routes and expanded Grok are unchanged.
+    if (button.closest('#grokCompactTools') &&
+        (state.phase === 'idle' || state.phase === 'complete' || state.phase === 'error')) {
+      return;
+    }
     claim(event);
     toggle();
   }

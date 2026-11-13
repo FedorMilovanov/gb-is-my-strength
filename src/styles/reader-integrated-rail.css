@@ -1,0 +1,218 @@
+/*
+ * Integrated full-height Reader rail — the same geometric and fold system as
+ * Hermenevtika's existing hrail--grok, adapted to the existing series DOM.
+ * One shared toggle/controller for every SeriesReaderChrome chapter and for
+ * the native Baptist book landing. Never create another TOC or Play engine.
+ */
+.reader-rail-fold-toggle{display:none}
+.reader-rail-compact-tools{display:none}
+@media screen and (min-width:1360px) {
+  .gbs2-world[data-gill-v16] > .gbs-rail[data-reader-integrated-rail],
+  body.gbs-world .gbs2-world > .gbs2-rail[data-reader-integrated-rail]{
+    position:fixed;
+    inset:0 auto 0 0;
+    top:0;
+    bottom:0;
+    left:0;
+    width:clamp(292px,22vw,328px);
+    height:100vh;
+    height:100dvh;
+    border:0;
+    border-right:1px solid rgba(232,184,120,.17);
+    border-radius:0;
+    box-shadow:13px 0 30px -15px rgba(66,48,38,.29),3px 0 8px -3px rgba(81,58,45,.14);
+    transition:width .52s cubic-bezier(.32,.72,0,1),padding .52s cubic-bezier(.32,.72,0,1);
+    z-index:var(--z-sticky,1000);
+  }
+  .gbs2-world[data-gill-v16] > .gbs-rail[data-reader-integrated-rail]{
+    background:linear-gradient(180deg,#1f1c18,#16130f);
+    overflow:visible;
+  }
+  body.gbs-world .gbs2-world > .gbs2-rail[data-reader-integrated-rail]{
+    background:var(--gbs2-rail,#231c1b);
+    overflow:hidden;
+  }
+  .gbs2-world[data-gill-v16] > .gbs-rail[data-reader-integrated-rail].reader-integrated-rail--compact,
+  body.gbs-world .gbs2-world > .gbs2-rail[data-reader-integrated-rail].reader-integrated-rail--compact{
+    width:68px;
+  }
+  .gbs2-world[data-gill-v16] .gbs-rail[data-reader-integrated-rail] .gbs-rail-topbar{
+    justify-content:space-between;
+    min-height:54px;
+    padding:10px 12px;
+  }
+  .gbs2-world[data-gill-v16] .gbs-rail[data-reader-integrated-rail] .gbs-rail-topbar .reader-rail-fold-toggle{
+    margin-left:auto;
+  }
+  .gbs2-world .reader-rail-fold-toggle{
+    width:36px;
+    height:36px;
+    flex:0 0 36px;
+    display:grid;
+    place-items:center;
+    padding:0;
+    border:1px solid transparent;
+    border-radius:10px;
+    background:transparent;
+    color:var(--gbs2-accent2,#d6b597);
+    cursor:pointer;
+    transition:background-color .18s,color .18s;
+  }
+  .gbs2-world .reader-rail-fold-toggle:hover,
+  .gbs2-world .reader-rail-fold-toggle:focus-visible{
+    background:rgba(255,255,255,.10);
+  }
+  .gbs2-world .reader-rail-fold-toggle:focus-visible{
+    outline:2px solid var(--gbs2-accent2,#e0a89c);
+    outline-offset:2px;
+  }
+  .gbs2-world .reader-rail-fold-toggle svg{
+    width:21px;height:21px;
+    fill:none;stroke:currentColor;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    stroke-width:1.7;
+  }
+  .gbs2-world .reader-rail-fold-toggle svg > g{
+    transition:opacity .20s cubic-bezier(.32,.72,0,1);
+  }
+  .gbs2-world .reader-rail-fold-toggle .reader-rail-fold-collapse{opacity:1}
+  .gbs2-world .reader-rail-fold-toggle .reader-rail-fold-expand{opacity:0}
+  .gbs2-world .reader-integrated-rail--compact .reader-rail-fold-toggle .reader-rail-fold-collapse{opacity:0}
+  .gbs2-world .reader-integrated-rail--compact .reader-rail-fold-toggle .reader-rail-fold-expand{opacity:1}
+
+  /* The book landing has no historical top bar. Keep the existing heading,
+     progress ring and chapters, but place the SAME fold toggle above them. */
+  body.gbs-world .gbs2-rail[data-reader-integrated-rail] > .gbs2-rhead{
+    position:relative;
+    padding-top:62px;
+  }
+  body.gbs-world .gbs2-rail[data-reader-integrated-rail] .reader-rail-fold-toggle{
+    position:absolute;
+    top:12px;right:12px;
+  }
+  .gbs2-world .reader-integrated-rail--compact [data-reader-fold-content]{
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transition:opacity .24s,visibility .24s;
+  }
+  .gbs2-world .reader-integrated-rail--compact .gbs2-rmid{
+    position:absolute;
+    left:0;
+    top:60px;
+    width:calc(clamp(292px,22vw,328px) - 16px);
+    height:calc(100% - 118px);
+    overflow:hidden;
+  }
+  .gbs2-world[data-gill-v16] .gbs-rail[data-reader-integrated-rail].reader-integrated-rail--compact .gbs-rail-topbar{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:5px;
+    padding:10px 5px 7px;
+    min-height:0;
+  }
+  .gbs2-world[data-gill-v16] .reader-integrated-rail--compact .gbs-rail-topbar .reader-rail-fold-toggle{
+    order:-1;
+    margin:0;
+  }
+  .gbs2-world[data-gill-v16] .reader-integrated-rail--compact .gbs-rail-topbar .gbs-rail-back,
+  .gbs2-world[data-gill-v16] .reader-integrated-rail--compact .gbs-rail-topbar .gbs-rail-home{
+    width:36px;height:36px;
+    margin:0;
+  }
+  .gbs2-world[data-gill-v16] .reader-rail-compact-tools{
+    display:none;
+  }
+  .gbs2-world[data-gill-v16] .reader-integrated-rail--compact .reader-rail-compact-tools{
+    display:flex;
+    flex:1 1 auto;
+    min-height:0;
+    flex-direction:column;
+    align-items:center;
+    padding:12px 2px 8px;
+    gap:6px;
+  }
+  .gbs2-world[data-gill-v16] .reader-integrated-rail--compact .reader-rail-compact-tools > .gbs-theme-corner{
+    position:static;
+    inset:auto;
+    top:auto;right:auto;bottom:auto;left:auto;
+    transform:none;
+    margin:0;
+    width:100%;
+    height:auto;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    align-items:center;
+    gap:8px;
+    padding:0;
+    background:transparent;
+    border:0;
+    border-radius:0;
+    box-shadow:none;
+    backdrop-filter:none;
+    z-index:auto;
+  }
+  .gbs2-world[data-gill-v16] .reader-integrated-rail--compact .reader-rail-compact-tools .gb-icon{
+    width:40px;min-width:40px;height:40px;
+  }
+  .gbs2-world[data-gill-v16] .reader-integrated-rail--compact .reader-rail-compact-tools .gb-ember{
+    width:36px;min-width:36px;height:36px;
+  }
+  .gbs2-world[data-gill-v16] .reader-integrated-rail--compact .gbs-rail-foot{
+    margin-top:auto;
+    padding:10px 0 12px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    flex-wrap:nowrap;
+    gap:4px;
+  }
+  body.gbs-world .gbs2-rail[data-reader-integrated-rail].reader-integrated-rail--compact > .gbs2-rhead{
+    flex:0 0 64px;
+    min-height:64px;
+    padding:0;
+    border-bottom:1px solid var(--gbs2-rline,rgba(255,255,255,.12));
+  }
+  body.gbs-world .gbs2-rail[data-reader-integrated-rail].reader-integrated-rail--compact .reader-rail-fold-toggle{
+    position:static;
+    margin:14px auto 0;
+  }
+  body.gbs-world .gbs2-rail[data-reader-integrated-rail].reader-integrated-rail--compact .gbs2-rfoot{
+    display:flex;
+    margin-top:auto;
+    flex:0 0 auto;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-end;
+    gap:6px;
+    flex-wrap:nowrap;
+    padding:10px 0 18px;
+    border-top:1px solid var(--gbs2-rline,rgba(255,255,255,.12));
+  }
+  body.gbs-world .gbs2-rail[data-reader-integrated-rail].reader-integrated-rail--compact .gbs2-ctl{
+    width:39px;min-width:39px;max-width:39px;height:39px;
+    margin:0;
+    flex:0 0 39px;
+    display:grid;place-items:center;
+  }
+  body.gbs-world:has(.gbs2-world > .gbs2-rail[data-reader-integrated-rail].reader-integrated-rail--compact){
+    padding-left:68px;
+  }
+  /* The same rebalancing as Hermenevtika: text follows the usable canvas
+     without changing its reader-measure token or creating another shell. */
+  .gbs2-world[data-gill-v16].reader-integrated-world--compact > .page-wrap{
+    --gb-rail-reserve:calc(68px + clamp(24px,3vw,48px));
+    margin-left:max(calc((100vw - var(--gb-measure)) / 2 + 34px),var(--gb-rail-reserve));
+    margin-right:auto;
+  }
+}
+@media (prefers-reduced-motion:reduce){
+  .gbs2-world[data-gill-v16] > .gbs-rail[data-reader-integrated-rail],
+  body.gbs-world .gbs2-world > .gbs2-rail[data-reader-integrated-rail],
+  .gbs2-world .reader-rail-fold-toggle svg > g{
+    transition:none;
+  }
+}

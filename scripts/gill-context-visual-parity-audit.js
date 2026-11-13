@@ -14,7 +14,7 @@ const ROUTE = '/articles/dzhon-gill-istoricheskiy-kontekst/';
 const LEGACY_REL = 'articles/dzhon-gill-istoricheskiy-kontekst/index.html';
 const PAGE_REL = 'src/pages/articles/dzhon-gill-istoricheskiy-kontekst/index.astro';
 const BASE_REL = 'src/components/article-pilots/gill-context';
-const SHARED_CHROME_REL = 'src/components/article-pilots/gill-series/GillSeriesChrome.astro';
+const SHARED_CHROME_REL = 'src/components/article-pilots/_shared/series/SeriesReaderChrome.astro';
 const REQUIRED = {
   pageHead: `${BASE_REL}/GillContextPageHead.astro`,
   pageChrome: `${BASE_REL}/GillContextPageChrome.astro`,

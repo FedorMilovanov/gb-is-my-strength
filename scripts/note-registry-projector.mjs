@@ -26,6 +26,11 @@ try {
   console.log(`Routes with notes: ${report.registry.routeCount}`);
   console.log(`Notes: ${report.registry.noteCount}`);
   console.log(`HTML files scanned/changed: ${report.filesScanned}/${report.filesChanged}`);
+  // CI invokes --dry-run after every postbuild projector. Do not report PASS
+  // when another generator has changed the canonical endnote HTML.
+  if (options.dryRun && report.filesChanged !== 0) {
+    throw new Error(`A03 NoteRegistry is not idempotent after postbuild: ${report.filesChanged} HTML route(s) would change`);
+  }
   console.log(`Interaction owner: ${report.registry.interactionOwner}`);
   console.log(`Stylesheet: ${report.registry.stylesheet}`);
   console.log(options.dryRun ? 'A03 NoteRegistry dry-run passed' : 'A03 NoteRegistry projected to final dist');

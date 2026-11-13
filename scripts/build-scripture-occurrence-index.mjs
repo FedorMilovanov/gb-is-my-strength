@@ -12,6 +12,7 @@ import {
   parseBibleReference,
   resolveBibleReference,
 } from '../src/lib/bible-reference-core.mjs';
+import { createPublicSynodalResolver } from '../src/lib/public-synodal-reference.mjs';
 
 const require = createRequire(import.meta.url);
 const { loadRouteRecords } = require('./lib/route-source-contract.js');
@@ -397,6 +398,13 @@ export function buildScriptureOccurrenceIndex(root = ROOT) {
   const routeData = loadRouteRecords();
   const registry = loadBibleRegistry(ROOT);
   const { corpus } = loadBibleCorpus(registry, ROOT);
+  // A syntactically plausible reference is not necessarily a biblical passage.
+  // Validate book/chapter/verse against the complete licensed-public Synodal
+  // edition. This rejects e.g. 1 Enoch's "Притчи 37–71" and UI counters
+  // like "Мф 30" without making up verses or weakening rights boundaries.
+  const publicSynodalResolver = createPublicSynodalResolver(
+    registry, readJson(path.join(ROOT, 'data/bible/public-domain-russyn.json')),
+  );
   const referenceRegex = createReferenceRegex(registry);
   const routeMap = new Map(routeData.records.map((record) => [record.route, record]));
   const grouped = new Map();
@@ -460,7 +468,13 @@ export function buildScriptureOccurrenceIndex(root = ROOT) {
   }
 
   const bookOrder = new Map(Object.keys(registry.books || {}).map((bookId, index) => [bookId, index]));
-  const references = [...grouped.values()];
+  const parsedReferences = [...grouped.values()];
+  const references = parsedReferences.filter((reference) =>
+    Boolean(publicSynodalResolver.resolve(reference.label)?.text) ||
+    reference.occurrences.some((occurrence) =>
+      Boolean(publicSynodalResolver.resolve(occurrence.raw)?.text)),
+  );
+  const nonBiblicalLookalikesExcluded = parsedReferences.length - references.length;
   for (const reference of references) {
     delete reference._dedupe;
     reference.occurrences.sort((a, b) => compareTuples(
@@ -482,6 +496,7 @@ export function buildScriptureOccurrenceIndex(root = ROOT) {
       pageOwnership: 'migration/page-ownership.json',
       bibleRegistry: 'data/bible/books.json',
       bibleResolver: 'src/lib/bible-reference-core.mjs',
+      publicVerseBounds: 'data/bible/public-domain-russyn.json',
       routeSourceContract: 'scripts/lib/route-source-contract.js',
       kartyHubInventory: 'src/lib/karty-hub-inventory.cjs',
     },
@@ -496,6 +511,7 @@ export function buildScriptureOccurrenceIndex(root = ROOT) {
       chapterRanges,
       manifestOccurrences,
       kartyHubOccurrences,
+      nonBiblicalLookalikesExcluded,
     },
     references,
   };

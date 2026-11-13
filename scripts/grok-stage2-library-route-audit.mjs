@@ -29,6 +29,24 @@ const server=http.createServer((req,res)=>{
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const origin='http://127.0.0.1:'+server.address().port;
+// Production-like offline Library test: Yandex analytics is third-party and
+// its blocked beacon must not masquerade as a Library JavaScript exception.
+// This matches the existing canonical Grok rail browser test. First-party
+// errors are NOT suppressed or ignored.
+async function isolateAnalytics(page) {
+  await page.route('**/*',route=>{
+    const url=new URL(route.request().url());
+    if(!/(^|\.)(?:yandex\.(?:ru|com)|yastatic\.net)$/i.test(url.hostname)) {
+      return route.continue();
+    }
+    return route.fulfill({
+      status:200,
+      contentType:route.request().resourceType()==='script'
+        ? 'application/javascript; charset=utf-8' : 'text/plain; charset=utf-8',
+      body:''
+    });
+  });
+}
 let total=0;
 const result=[];
 const verify=(engine,name,cond,evidence)=>{assert.ok(cond,engine+' '+name+': '+JSON.stringify(evidence));total++;};
@@ -38,6 +56,7 @@ try {
   try{
    const context=await browser.newContext({viewport:{width:1440,height:900},locale:'ru-RU',acceptDownloads:true,serviceWorkers:'block'});
    const page=await context.newPage(),errors=[];
+   await isolateAnalytics(page);
    page.on('pageerror',e=>errors.push(e.message));
    const action=name=>page.locator('[data-research-action="'+name+'"]');
    const getStatus=()=>page.evaluate(()=>{

@@ -81,11 +81,38 @@ async function checkOne(browser, browserName, viewport, test) {
     const response = await page.goto(BASE + ARTICLE, { waitUntil: 'domcontentloaded', timeout: 30000 });
     assert.equal(response?.status(), 200, identifier + ': article HTTP');
     await page.waitForFunction(() => window.GBReaderActions?.version === 1, null, { timeout: 18000 });
-    const button = page.locator('button.gb-icon[data-action="share"]:visible').first();
+    // Keep Playwright's :visible pseudo-class out of document.querySelector.
+    const shareSelector = 'button.gb-icon[data-action="share"]';
+    const button = page.locator(shareSelector + ':visible').first();
     await button.waitFor({ state: 'visible', timeout: 12000 });
+    // Linux WebKit can try to click during first-font/layout stabilization.
+    // Prove eight consecutive frames of a real, in-viewport 44px target;
+    // never force a click or dispatch a synthetic event to turn CI green.
+    await page.evaluate(async (selector) => {
+      await document.fonts.ready;
+      await new Promise((resolve, reject) => {
+        let previous = null, stable = 0, ticks = 0;
+        const sample = () => {
+          const target = document.querySelector(selector);
+          const rect = target?.getBoundingClientRect();
+          const ready = rect && rect.width >= 40 && rect.height >= 40
+            && rect.top >= 0 && rect.bottom <= innerHeight;
+          const same = ready && previous
+            && Math.abs(rect.top - previous.top) < 0.2
+            && Math.abs(rect.left - previous.left) < 0.2
+            && Math.abs(rect.width - previous.width) < 0.2;
+          stable = same ? stable + 1 : 0;
+          previous = ready ? { top: rect.top, left: rect.left, width: rect.width } : null;
+          if (stable >= 8) return resolve();
+          if (++ticks > 300) return reject(new Error('Share target never stabilized in viewport'));
+          requestAnimationFrame(sample);
+        };
+        requestAnimationFrame(sample);
+      });
+    }, shareSelector);
     const baseline = await page.locator('textarea').count();
     await installPlatformOutcomes(page, test);
-    await button.click({ timeout: 8000 });
+    await button.click({ timeout: 12000 });
 
     if (test.status) {
       await page.waitForFunction(

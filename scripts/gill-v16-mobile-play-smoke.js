@@ -195,6 +195,23 @@ async function emberIsCustomSpeedSlot(ember) { return ember.evaluate(el => !!el.
 async function emberIsInlineSpeedMode(ember) { return ember.evaluate(el => !!el.closest('[data-fc-speed-mode="inline"]')); }
 async function allEmberStates(page) { return page.$$eval('.gb-ember', els => els.map(el => el.getAttribute('data-state') || '')); }
 async function clickSpeedNearEmber(ember, speed) {
+  // Both Gill and Hermenevtika mobile bars use the same ReaderSpeedOptions
+  // slot. Prefer that actual shared DOM contract over legacy per-engine classes.
+  const hasCanonicalSlot = await ember.evaluate(el =>
+    !!el.closest('[data-reader-mobile-speed]')?.querySelector('.reader-mobile-speedrail'));
+  if (hasCanonicalSlot) {
+    const clicked = await ember.evaluate((el, targetSpeed) => {
+      const bar = el.closest('[data-reader-mobile-speed]');
+      const badge = bar?.querySelector('.reader-mobile-speed-badge');
+      const button = bar?.querySelector(`.reader-mobile-speedrail [data-speed="${targetSpeed}"]`);
+      if (!badge || !button) return false;
+      badge.click();
+      button.click();
+      return true;
+    }, String(speed));
+    if (!clicked) throw new Error(`speed button ${speed} missing in shared ReaderSpeedOptions slot`);
+    return;
+  }
   const isCustom = await emberIsCustomSpeedSlot(ember);
   if (isCustom) {
     const clicked = await ember.evaluate((el, targetSpeed) => {
@@ -444,9 +461,30 @@ async function testPlayState(browser, mobile) {
   if (!mobile) await ember.hover();
   await clickSpeedNearEmber(ember, '1.75');
   await page.waitForTimeout(200);
-  const speedFacts = await page.evaluate(() => ({ calls: window.__ttsFake.speakCalls, rates: window.__ttsFake.spokenRates }));
-  assert(speedFacts.calls === callsBeforeSpeed + 1, `${label}: speed change while playing restarts exactly once`, JSON.stringify(speedFacts));
-  assert(speedFacts.rates.at(-1) === 1.75, `${label}: speed change uses selected 1.75×`, JSON.stringify(speedFacts.rates));
+  const speedFacts = await page.evaluate(() => ({ calls: window.__ttsFake.speakCalls, rates: window.__ttsFake.spokenRates, phase: window.GBReaderTTS?.getState?.().phase, storedRate: localStorage.getItem('gb:audio:rate') }));
+  assert(speedFacts.phase === 'playing', `${label}: C3 changes rate without pausing live reading`, JSON.stringify(speedFacts));
+  assert(speedFacts.calls === callsBeforeSpeed + 1 && speedFacts.rates.at(-1) === 1.75, `${label}: C3 live WebSpeech restarts the current fragment at 1.75×`, JSON.stringify(speedFacts));
+  assert(speedFacts.storedRate === '1.75', `${label}: C3 selected 1.75× is stored`, JSON.stringify(speedFacts));
+
+  // C3 paused case: selecting a different rate must NOT resume on its own.
+  await ember.click();
+  await page.waitForTimeout(150);
+  assert((await allEmberStates(page)).every(s => s === 'paused'), `${label}: Play enters pause after live rate change`);
+  const callsBeforePausedRate = await page.evaluate(() => window.__ttsFake.speakCalls);
+  await clickSpeedNearEmber(ember, '1.5');
+  await page.waitForTimeout(180);
+  const pausedRateFacts = await page.evaluate(() => ({
+    calls: window.__ttsFake.speakCalls,
+    phase: window.GBReaderTTS?.getState?.().phase,
+    rate: localStorage.getItem('gb:audio:rate'),
+  }));
+  assert(pausedRateFacts.phase === 'paused' && pausedRateFacts.calls === callsBeforePausedRate && pausedRateFacts.rate === '1.5',
+    `${label}: C3 rate selection while paused remains paused until Play`, JSON.stringify(pausedRateFacts));
+  await ember.click();
+  await page.waitForTimeout(180);
+  const resumedRateFacts = await page.evaluate(() => ({ calls: window.__ttsFake.speakCalls, rates: window.__ttsFake.spokenRates, phase: window.GBReaderTTS?.getState?.().phase }));
+  assert(resumedRateFacts.phase === 'playing' && resumedRateFacts.rates.at(-1) === 1.5,
+    `${label}: C3 Play resumes at selected paused rate`, JSON.stringify(resumedRateFacts));
 
   // Custom speed slots (GooPlayMini + Hermenevtika bars, [data-gb-speed-custom])
   // and the Gill mobile v5 inline speed rail ([data-fc-speed-mode="inline"])
@@ -467,9 +505,13 @@ async function testPlayState(browser, mobile) {
     await ember.hover();
     await clickSpeedNearEmber(ember, '1.25');
     await page.waitForTimeout(200);
-    const idleFacts = await page.evaluate(() => ({ calls: window.__ttsFake.speakCalls, rates: window.__ttsFake.spokenRates }));
-    assert(idleFacts.calls === beforeIdleSpeed + 1, `${label}: speed select from idle starts once`, JSON.stringify(idleFacts));
-    assert(idleFacts.rates.at(-1) === 1.25, `${label}: speed select from idle uses chosen 1.25×`, JSON.stringify(idleFacts.rates));
+    const idleFacts = await page.evaluate(() => ({ calls: window.__ttsFake.speakCalls, rates: window.__ttsFake.spokenRates, storedRate: localStorage.getItem('gb:audio:rate') }));
+    assert(idleFacts.calls === beforeIdleSpeed, `${label}: C3 selection from idle does not autoplay`, JSON.stringify(idleFacts));
+    assert(idleFacts.storedRate === '1.25', `${label}: C3 idle choice stores 1.25×`, JSON.stringify(idleFacts));
+    await ember.click();
+    await page.waitForTimeout(230);
+    const confirmIdle = await page.evaluate(() => ({ calls: window.__ttsFake.speakCalls, rates: window.__ttsFake.spokenRates }));
+    assert(confirmIdle.calls === beforeIdleSpeed + 1 && confirmIdle.rates.at(-1) === 1.25, `${label}: C3 idle choice starts on confirmed Play`, JSON.stringify(confirmIdle));
   }
 
   if (mobile) {
@@ -525,7 +567,7 @@ async function testMobileTargetGeometry(browser) {
         '.mobile-top-bar [data-fc-action="save"]',
         '#mobLearningBtn',
         '#mobPartTocBtn',
-        '.mobile-bottom-bar [data-fc-action="theme"]',
+        // Themes moved into the canonical Settings sheet; no duplicate theme button.
         '#mobSettingsBtn',
         '#gb-hl-fab',
         '.mobile-bottom-bar [data-action="share"]',
@@ -544,7 +586,7 @@ async function testMobileTargetGeometry(browser) {
           right: r.right,
           top: r.top,
           bottom: r.bottom,
-          visible: cs.display !== 'none' && cs.visibility !== 'hidden' && cs.pointerEvents !== 'none',
+          visible: cs.display !== 'none' && cs.visibility !== 'hidden' && cs.pointerEvents !== 'none' && Number(cs.opacity) > 0 && r.width > 0 && r.height > 0,
         };
       }).filter((row) => row.missing || row.visible);
       const overlaps = [];

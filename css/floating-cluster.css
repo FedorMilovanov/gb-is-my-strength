@@ -2,7 +2,7 @@
    floating-cluster.css — v16 Floating Cluster Component Styles
    Источник истины: Astro-компоненты (src/components/ui/floating-cluster/)
    Этот файл — единый CSS для legacy root HTML, где Astro build не применяется.
-   Авто-генерация: копия стилей из <style is:global> компонентов.
+   Авто-генерация: копия стилей из \3c style is:global> компонентов.
 
    Канонические классы: gb-* (единая система, fc-* упразднены).
    =================================================================== */
@@ -243,9 +243,15 @@ html.dark .gb-theme-toggle .theme-icon-moon { opacity: 1; transform: rotate(0) s
    gb-ember — play/pause с SVG progress ring
    (PlayEmber.astro — стили в SingleArticleCluster.astro)
    ========================================================= */
+/* Reader Platform: one geometric contract across all book and article
+   families. Palette and progression rings remain series-specific. */
+:root {
+  --reader-play-size-desktop: 32px;
+  --reader-play-size-mobile: 44px;
+}
 .gb-ember {
   --p: 0;
-  --ember-size: 36px;
+  --ember-size: var(--reader-play-size-desktop);
   --ring-color: var(--color-accent, #7a2e2e);
   appearance: none;
   border: 0;
@@ -266,29 +272,27 @@ html.dark .gb-theme-toggle .theme-icon-moon { opacity: 1; transform: rotate(0) s
   transform-origin: center;
 }
 
-/* Halo ring */
+/* Canonical PlayEmber optical layer: a soft radial light contained INSIDE the
+   existing progress circle. The SVG is the sole visible outer ring. No halo,
+   scale expansion, outer box-shadow or second outline on hover. */
 .gb-ember::before {
   content: '';
   position: absolute;
-  inset: 6px;
+  inset: 10%;
+  border: 0;
   border-radius: 50%;
-  border: 1px solid var(--ring-color);
+  background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--ring-color) 34%, transparent) 0%, color-mix(in srgb, var(--ring-color) 22%, transparent) 63%, color-mix(in srgb, var(--ring-color) 11%, transparent) 100%);
   opacity: 0;
-  transform: scale(.7);
-  transition:
-    opacity .28s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1)),
-    transform .32s var(--gb-ease-spring, cubic-bezier(.34,1.56,.64,1));
+  transform: none;
+  transition: opacity .24s var(--gb-ease-out, cubic-bezier(.2,.7,.2,1));
   pointer-events: none;
 }
-
 @media (hover: hover) and (pointer: fine) {
-  .gb-ember:hover { transform: scale(1.12); }
-  .gb-ember:hover::before { opacity: 0.4; transform: scale(1); }
+  .gb-ember:hover::before { opacity: 1; }
 }
-.gb-ember:active { transform: scale(.88); transition: transform .12s cubic-bezier(.4,0,.2,1); }
-.gb-ember:active::before { opacity: 0.55; transform: scale(1); }
+.gb-ember:active::before { opacity: .7; }
 .gb-ember:focus-visible { outline: 2px solid var(--color-accent, #7a2e2e); outline-offset: 4px; border-radius: 50%; }
-.gb-ember:focus-visible::before { opacity: 0.55; transform: scale(1); }
+.gb-ember:focus-visible::before { opacity: 1; }
 
 /* Owner (восстановлено): тонкий круговой ободок вокруг PLAY на мобиле, видимый
    В ПОКОЕ — не только на hover/focus, которых на тач-устройствах не бывает.
@@ -299,7 +303,8 @@ html.dark .gb-theme-toggle .theme-icon-moon { opacity: 1; transform: rotate(0) s
   /* Владелец 2026-07-17: «рамка вокруг PLAY будто уменьшенная» — контур покоя
      наследовал inset:6px халo-геометрию (24px круг в 36px кнопке), а SVG-кольцо
      прогресса рисует r=45/100 (=inset 5%). Совмещаем контур с кольцом. */
-  .mobile-top-ember::before { inset: 2px; opacity: .38; transform: scale(1); }
+  /* The mobile PLAY inherits the same single interior glow; no extra ring.
+     The progress circle remains the only outline at every viewport. */
 }
 
 /* SVG progress ring */
@@ -413,11 +418,11 @@ html.dark .gb-theme-toggle .theme-icon-moon { opacity: 1; transform: rotate(0) s
   50%      { opacity: 0.5; }
 }
 
-/* Dark mode glow */
+/* One dark-theme accent; glow stays within ::before and the SVG progress ring. */
 html.dark .gb-ember {
   --ring-color: #eed093;
   color: #eed093;
-  box-shadow: 0 0 14px rgba(216, 176, 104, 0.22);
+  box-shadow: none;
 }
 
 /* =========================================================
@@ -775,7 +780,7 @@ body.nagornaya-page #themeToggle {
      body.gb-cluster-single-active/fc-single-active #bottomBar hide rules
      above (same single-class+id specificity as this rule at first, which
      lost the cascade tie in testing despite later source order — some
-     other stylesheet or dynamically-inserted <style> was re-asserting
+     other stylesheet or dynamically-inserted \3c style> was re-asserting
      display:none after this file loads). Don't rely on source order here.
      (js/nagornaya-bar-extras.js also forces this inline as a backstop.) */
   body.nagornaya-page.has-bottom-bar #bottomBar,
@@ -831,7 +836,7 @@ body.nagornaya-page:has(#bottomBar .gb-ember-expand.is-open) #bottomBar .bottom-
    screenshot). Shrink the icon row and floor the section button's width
    instead of letting it disappear; if it's still tight the bar scrolls
    horizontally (nowrap + overflow-x) rather than breaking layout. */
-@media (max-width: 420px) {
+@media (max-width: 480px) {
   /* !important throughout: nagornaya-mobile-toc.css's OWN unconditional
      .bar-section-btn{min-width:0;flex:1 1 auto} rule has identical
      selector specificity to this one, and that stylesheet's <link> loads
@@ -1256,13 +1261,13 @@ html.dark [data-gill-v16] .gbs-rail-spdbadge{
    "Сейчас читаете" card (owner screenshot). Sizing to content instead;
    any true leftover space now sits below the next-parts list, not inside
    the card. */
-[data-gill-v16] .gbs2-current{flex:0 1 auto;min-height:0;margin:2px 2px 4px;border:1px solid rgba(232,184,120,.20);border-radius:16px;background:rgba(255,255,255,.045);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 10px 28px -14px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05)}
+[data-gill-v16] .gbs2-current{flex:0 1 auto;min-height:0;margin:2px 2px 4px;border:0;border-radius:0;background:transparent;overflow:visible;display:flex;flex-direction:column;box-shadow:none}
 [data-gill-v16] .gbs2-current-cover{flex:0 0 auto;height:78px;background-image:linear-gradient(180deg,rgba(25,22,20,0),#16130f),var(--gbs2-cover,linear-gradient(135deg,var(--gbs2-accent),#2b1b13));background-size:cover;background-position:center;opacity:.62}
 [data-gill-v16] .gbs2-current-body{padding:12px 14px 0}[data-gill-v16] .gbs2-current-label{font-size:9px;font-weight:800;letter-spacing:.17em;text-transform:uppercase;color:var(--gbs2-accent2)}
 [data-gill-v16] .gbs2-current-title{margin:5px 0 0;font-family:var(--f-body,Lora,Georgia,serif);font-size:17px;font-weight:700;line-height:1.2;color:#fff}
 [data-gill-v16] .gbs2-curbar{height:3px;margin-top:12px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden}
 [data-gill-v16] .gbs2-curbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gbs2-accent),var(--gbs2-accent2));transition:width .25s}
-[data-gill-v16] .gbs2-toch{display:flex;align-items:center;gap:8px;padding:10px 14px 7px;color:rgba(255,255,255,.68)}
+[data-gill-v16] .gbs2-toch{display:flex;align-items:center;gap:8px;margin-top:8px;padding:12px 6px 7px;border-top:1px solid rgba(255,255,255,.13);color:rgba(255,255,255,.68)}
 [data-gill-v16] .gbs2-toch span:first-child{flex:1;font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
 [data-gill-v16] .gbs2-count{font-size:10px;font-weight:800;font-variant-numeric:tabular-nums;background:rgba(255,255,255,.08);border-radius:99px;padding:2px 8px}
 /* .gbs2-current is flex:1 1 auto so the rail always fills exactly
@@ -1273,7 +1278,7 @@ html.dark [data-gill-v16] .gbs-rail-spdbadge{
    centers a short list in that leftover room instead; "safe" falls back to
    start-alignment so a long list (Часть III) still scrolls normally from the
    top rather than opening centred/cut-off. */
-[data-gill-v16] .gbs2-tocscroll{position:relative;flex:1 1 auto;min-height:96px;min-width:0;display:flex;flex-direction:column;justify-content:safe center;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable;padding:2px 8px 11px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.28) transparent;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%)}
+[data-gill-v16] .gbs2-tocscroll{position:relative;flex:1 1 auto;min-height:0;min-width:0;display:flex;flex-direction:column;justify-content:flex-start;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable;padding:2px 8px 11px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.28) transparent;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%)}
 [data-gill-v16] .gbs2-tocscroll::-webkit-scrollbar{width:5px}[data-gill-v16] .gbs2-tocscroll::-webkit-scrollbar-thumb{border-radius:999px;background:rgba(255,255,255,.24)}
 [data-gill-v16] .gbs2-toc{position:relative;list-style:none;margin:0;padding:0 0 0 22px}[data-gill-v16] .gbs2-toc>li{list-style:none;margin:0;padding:0}
 [data-gill-v16] .gbs2-track{position:absolute;left:9px;top:var(--gbs2-track-top,14px);width:2px;height:var(--gbs2-track-height,calc(100% - 28px));background:rgba(255,255,255,.12);border-radius:9px;overflow:hidden}
@@ -1854,14 +1859,7 @@ html.dark [data-gill-v16] .toc-sheet__actions{background:color-mix(in srgb,var(-
 /* ============================================================
    v16 OWNER FEEDBACK FIXES (Dark Theme Glow + Grid TOC Head & Actions)
    ============================================================ */
-html.dark [data-gill-v16] .gb-ember {
-  --ring-color: #eed093 !important;
-  color: #eed093 !important;
-  box-shadow: 0 0 16px rgba(245, 197, 66, 0.35), inset 0 0 12px rgba(245, 197, 66, 0.15) !important;
-}
-html.dark [data-gill-v16] .gb-ember::after {
-  filter: drop-shadow(0 0 4px #f5c542);
-}
+/* Gill inherits the same inner-only PlayEmber lighting owner as all readers. */
 html.dark [data-gill-v16] .toc-part-item.is-current .toc-part-item__progress i {
   background: linear-gradient(90deg, #eed093, #c59b58) !important;
   box-shadow: 0 0 8px rgba(216, 176, 104, 0.38) !important;
@@ -2057,11 +2055,7 @@ html.dark [data-gill-v16] .toc-part-item.is-current .toc-part-item__num {
 }
 
 /* 4. Яркий сияющий PLAY и треки в ночной теме */
-html.dark [data-gill-v16] .gb-ember {
-  --ring-color: #eed093 !important;
-  color: #eed093 !important;
-  box-shadow: 0 0 14px rgba(216, 176, 104, 0.22) !important;
-}
+/* Gill uses the canonical inner-only PlayEmber light; no second dark glow. */
 
 /* 5. Усмирённый масштаб Лупы в кластере */
 
@@ -2370,14 +2364,9 @@ html.dark .gb-ember-expand.is-open {
   .gb-ember-wrap:focus-within > .gb-ember-expand .gb-ember-expand__btn:nth-child(5) { transition-delay:.125s,.125s,0s,0s,0s; }
   .gb-ember-wrap:hover > .gb-ember-expand .gb-ember-expand__btn:nth-child(6),
   .gb-ember-wrap:focus-within > .gb-ember-expand .gb-ember-expand__btn:nth-child(6) { transition-delay:.15s,.15s,0s,0s,0s; }
-  /* Play circle drifts slightly to the RIGHT as the pill blooms from it
-     (single-article reference geometry — Play "comes out of the circle").
-     Gill's rail now blooms LEFT too (same as everywhere else), so it gets
-     the same drift — no Gill-specific override left here. */
-  .gb-ember-wrap:hover > .gb-ember,
-  .gb-ember-wrap:focus-within > .gb-ember {
-    transform: translateX(4px) scale(1.04);
-  }
+  /* Canonical Play stays geometrically stationary while the speed rail
+     opens, including hover, keyboard focus and active playback. The existing
+     inner-ring illumination is the only optical feedback. */
 }
 /* Deeper rubbery morph timing for the bloom */
 .gb-ember-expand {
@@ -2481,16 +2470,21 @@ html.dark .gb-ember-expand__btn.is-active {
    What IS Gill-only (owner: "без каких-то круглых рамок… минималистичные
    красивые глубокие цифры с тень") is the pill's look: no pill background,
    no chip borders — just numbers with a shadow. */
-[data-gill-v16] .gbs-theme-corner .gb-ember-expand {
+body .gb-ember-expand {
+  /* Six rates must clear the wide reader column without shifting Play. */
+  padding-left: 0;
+  gap: 1px;
   background: transparent;
   border: none;
   box-shadow: none;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
-[data-gill-v16] .gbs-theme-corner .gb-ember-expand::before { display: none; }
-[data-gill-v16] .gbs-theme-corner .gb-ember-expand__btn {
+body .gb-ember-expand::before { display: none; }
+body .gb-ember-expand__btn {
+  /* Text-only premium line must clear article even with wider Linux fonts. */
   min-width: 26px;
+  padding: 0 2px;
   border: none;
   background: none !important;
   font-size: 15px;
@@ -2499,28 +2493,23 @@ html.dark .gb-ember-expand__btn.is-active {
   text-shadow: 0 2px 6px rgba(0, 0, 0, .3);
   box-shadow: none;
 }
-html.dark [data-gill-v16] .gbs-theme-corner .gb-ember-expand__btn {
+html.dark body .gb-ember-expand__btn {
   color: #eed093;
   text-shadow: 0 2px 8px rgba(0, 0, 0, .55);
 }
 /* Active chip: wine in light mode (owner: "на светлом не нужно бежевым...
    можно винный наш"), gold kept in dark (owner: "бежевый в тёмной норм"). */
-[data-gill-v16] .gbs-theme-corner .gb-ember-expand__btn.is-active {
+body .gb-ember-expand__btn.is-active {
   color: var(--color-accent, #7a2e2e);
   text-shadow: 0 2px 8px rgba(122, 46, 46, .35);
   box-shadow: none; /* canon .is-active also sets a glow shadow — killed here
     too, not just background/border, or the chip still reads as a pill. */
 }
-html.dark [data-gill-v16] .gbs-theme-corner .gb-ember-expand__btn.is-active {
+html.dark body .gb-ember-expand__btn.is-active {
   color: var(--gb-accent-gold-bright, #d8aa6d);
   text-shadow: 0 2px 10px rgba(216, 170, 109, .45);
   box-shadow: none;
 }
-/* Reference speed pill is 6 speeds only — hide the extra Stop (■) chip on the
-   Gill rail so the pill is narrow enough to sit fully within the panel. Stop is
-   still reachable via long-press on the Play button (controller). */
-[data-gill-v16] .gb-ember-expand__stop { display: none; }
-
 /* Drop the Stop chip everywhere the pill can appear — reachable via long-press
    on Play instead. Unlayered so it beats the base btn rule. */
 .gb-floater .gb-ember-expand__stop { display: none; }
@@ -3182,7 +3171,9 @@ html.dark [data-gill-v16] .mobile-top-bar {
     html:has([data-gill-v16]) body,
     body:has([data-gill-v16]) {
       overflow-x: clip !important;
-      padding-bottom: calc(var(--gill-mobile-bar-h) + env(safe-area-inset-bottom, 0px) + 54px) !important;
+      /* The nested page canvas owns the bottom clearance; do not add
+         another full-height reserve after it at the body boundary. */
+      padding-bottom: 0 !important;
     }
     /* scroll-padding-bottom: ensures hash-anchor navigation stops above the fixed bar */
     html:has([data-gill-v16]) {
@@ -3194,25 +3185,19 @@ html.dark [data-gill-v16] .mobile-top-bar {
     }
   }
 
-  /* The new fixed top bar (back/search/Play/Save) also needs the article
-     content pushed down so the H1/lead don't render underneath it. */
-  [data-gill-v16] .page-wrap,
-  [data-gill-v16] main,
-  [data-gill-v16] article {
+  /* Reserve the mobile top-bar inset exactly once, at the page canvas.
+     Previous broad main/article selectors repeated this 72px inset at every
+     nested reading container (up to three times on Heart articles), pushing
+     the hero and title far below the first fold. Every v16 article has a
+     .page-wrap: nested reading sections must not own toolbar clearance. */
+  [data-gill-v16] .page-wrap {
     padding-top: calc(var(--gill-mobile-topbar-h) + env(safe-area-inset-top, 0px) + 14px) !important;
-    transition: padding-top .32s cubic-bezier(.3,.8,.4,1);
   }
 
-  /* Smart auto-hide top bar (owner: "чтобы ты 1 на 1 с текстом… а верхняя
-     как-то умно убирается и появляется"): GillSeriesMobileBar's script
-     toggles .gbs2-tbhidden on this root on scroll-down/scroll-up, EXCEPT
-     while TTS is playing — then it stays pinned so the Play control (and
-     its progress ring) is never lost mid-listen (owner: "если PLAY нажали,
-     то пускай фиксируется"). The reserved top padding shrinks/grows in
-     lockstep with the bar, so the text visibly slides up when it leaves and
-     back down when it returns — same --gill-mobile-topbar-h reservation
-     this page already used as a static constant, just made dynamic. Bottom
-     bar is untouched — always visible per owner spec. */
+  /* Fixed mobile toolbar slides out via transform only. Reserve stable
+     content padding in BOTH toolbar states: animating padding-top shifted
+     article headings under a real touch, causing scroll anchoring and a
+     missed native click in WebKit. The bottom bar remains unchanged. */
   [data-gill-v16] .mobile-top-bar {
     transition: transform .32s cubic-bezier(.3,.8,.4,1), opacity .26s ease;
   }
@@ -3220,11 +3205,6 @@ html.dark [data-gill-v16] .mobile-top-bar {
     transform: translateY(calc(-100% - 24px));
     opacity: 0;
     pointer-events: none;
-  }
-  [data-gill-v16].gbs2-tbhidden .page-wrap,
-  [data-gill-v16].gbs2-tbhidden main,
-  [data-gill-v16].gbs2-tbhidden article {
-    padding-top: calc(env(safe-area-inset-top, 0px) + 14px) !important;
   }
   @media (prefers-reduced-motion: reduce) {
     [data-gill-v16] .mobile-top-bar,
@@ -3235,6 +3215,13 @@ html.dark [data-gill-v16] .mobile-top-bar {
     }
   }
 
+  /* Reserve space for the fixed bottom controls exactly once on the outer
+     page canvas. The earlier recursive selector repeated 110px on body,
+     engine root and nested reading surfaces, leaving 330–468px of dead
+     scroll after long articles. Keep viewport-width safeguards intact. */
+  [data-gill-v16] .page-wrap {
+    padding-bottom: calc(var(--gill-mobile-bar-h) + env(safe-area-inset-bottom, 0px) + 54px) !important;
+  }
   [data-gill-v16],
   [data-gill-v16] .page-wrap,
   [data-gill-v16] main,
@@ -3242,7 +3229,6 @@ html.dark [data-gill-v16] .mobile-top-bar {
   [data-gill-v16] .article-body,
   [data-gill-v16] .gbs2-content,
   [data-gill-v16] .gbs2-main {
-    padding-bottom: calc(var(--gill-mobile-bar-h) + env(safe-area-inset-bottom, 0px) + 54px) !important;
     max-width: 100vw !important;
   }
 
@@ -3435,11 +3421,17 @@ html.dark [data-gill-v16] .mobile-top-bar {
   [data-gill-v16] .bar-progress-track { stroke: var(--gill-mobile-track); stroke-width: 2.6; opacity: .85; }
   [data-gill-v16] .bar-progress-fill { stroke: var(--gill-ring-article); stroke-width: 2.8; stroke-linecap: round; transition: stroke-dashoffset .15s linear; }
   [data-gill-v16] .bar-progress-text {
+    /* Preserve accessible progress text without displaying duplicate numerals. */
     position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    inset: auto;
+    display: block;
     font-family: var(--gb-font-sans, system-ui, sans-serif);
     font-size: 9px;
     font-weight: 800;
@@ -3587,10 +3579,10 @@ html.dark [data-gill-v16] .mobile-top-bar {
   }
   [data-gill-v16] .mobile-top-bar .gb-icon,
   [data-gill-v16] .mobile-playwrap .mobile-top-ember {
-    width: 44px !important;
-    height: 44px !important;
-    min-width: 44px !important;
-    min-height: 44px !important;
+    width: var(--reader-play-size-mobile) !important;
+    height: var(--reader-play-size-mobile) !important;
+    min-width: var(--reader-play-size-mobile) !important;
+    min-height: var(--reader-play-size-mobile) !important;
     --ember-size: 36px !important;
   }
   [data-gill-v16] .mobile-btoc-section__main,
@@ -3798,26 +3790,25 @@ html.dark [data-gill-v16] .mobile-top-bar {
 }
 
 /* =====================================================
-   GILL MOBILE READER v5 — Learning + Settings sheets,
-   inline speed rail, scoped sepia, top-bar Home/Learning slot.
+   SHARED SERIES MOBILE v6 — Learning + Settings sheets,
+   responsive speed popover, scoped sepia, top-bar Home/Learning slot.
    All rules scoped to [data-gill-v16] under <85em; nothing here
    touches desktop Gill or any other route.
    ===================================================== */
 @media (max-width: 84.999em) {
-  /* ---- Top bar: Learning trigger / inline speed rail slot-swap ---- */
-  [data-gill-v16] .mobile-top-slot {
+  /* ---- Shared series mobile controls: independent Play/Speed touch targets.
+     The chooser is a real popover below the bar, not a squeezed swap of
+     Learning's inline slot. All series share data-reader-engine=series. ---- */
+  [data-reader-engine="series"] .mobile-top-slot {
     position: relative;
-    height: 40px;
+    height: 44px;
     min-width: 0;
     flex: 1 1 auto;
   }
-  [data-gill-v16] .mobile-learning-trigger,
-  [data-gill-v16] .mobile-speedrail {
-    position: absolute;
-    inset: 0;
-  }
-  [data-gill-v16] .mobile-learning-trigger {
+  [data-reader-engine="series"] .mobile-learning-trigger {
     display: flex;
+    width: 100%;
+    min-height: 44px;
     align-items: center;
     justify-content: center;
     gap: 6px;
@@ -3829,100 +3820,36 @@ html.dark [data-gill-v16] .mobile-top-bar {
     font-size: 12.5px;
     font-weight: 800;
     cursor: pointer;
-    transition: opacity .2s ease, transform .24s var(--gb-ease-out), color .2s ease;
   }
-  [data-gill-v16] .mobile-learning-trigger svg {
+  [data-reader-engine="series"] .mobile-learning-trigger svg {
     width: 16px; height: 16px;
     fill: none; stroke: currentColor; stroke-width: 1.8;
     stroke-linecap: round; stroke-linejoin: round;
     flex-shrink: 0;
   }
-  [data-gill-v16] .mobile-speedrail {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    /* RC-04: 44px tall so the speed pills' touch-target ::before has vertical
-       room inside the rail box (it clips to this height, not the 32px pill).
-       Fits inside the 58px top bar → no layout jump when the rail opens. */
-    min-height: 44px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    opacity: 0;
-    transform: translateX(8px);
-    pointer-events: none;
-    transition: opacity .2s ease, transform .24s var(--gb-ease-out);
+  /* Canonical mobile S1: six text choices slide into the existing TOP
+     slot. No dropdown, floating card or second row; Play never moves.
+     The horizontally scrollable strip extends over the vacated Back/Home
+     positions on narrow screens, preserving 44px pointer targets. */
+  [data-reader-engine="series"] .mobile-top-bar > :is(#mobBackBtn, #mobHomeBtn) {
+    transition: opacity .24s ease, transform .36s cubic-bezier(.22,1,.36,1);
   }
-  /* SSR / no-JS contract: aria-hidden must remove the rail from both layout
-     and sequential focus before the inline-speed controller hydrates. */
-  .mobile-speedrail[aria-hidden="true"] {
-    display: none !important;
+  [data-reader-engine="series"] .mobile-learning-trigger {
+    transition: opacity .24s ease, transform .36s cubic-bezier(.22,1,.36,1);
   }
-  [data-gill-v16] .mobile-speedrail::-webkit-scrollbar { display: none; }
-  [data-gill-v16] .mobile-top-bar.speed-open .mobile-learning-trigger {
+  [data-reader-engine="series"] .mobile-top-bar.speed-open .mobile-learning-trigger {
     opacity: 0;
-    transform: translateX(-8px);
+    transform: translateX(-12px);
     pointer-events: none;
   }
-  [data-gill-v16] .mobile-top-bar.speed-open .mobile-speedrail {
-    opacity: 1;
-    transform: none;
-    pointer-events: auto;
-  }
-  [data-gill-v16] .mobile-speed {
-    position: relative;
-    flex: 0 0 auto;
-    height: 32px;
-    min-width: 38px;
-    padding: 0 8px;
-    border: 1px solid var(--gill-mobile-bar-border);
-    border-radius: 10px;
-    background: transparent;
-    color: var(--gill-mobile-bar-muted);
-    font-family: var(--gb-font-sans, system-ui, sans-serif);
-    font-size: 11.5px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: background .16s ease, border-color .16s ease, color .16s ease;
-  }
-  /* RC-04: touch target expands to the rail's full 44px height without growing
-     the visual pill (absolute ::before, clipped to the 44px rail box). */
-  [data-gill-v16] .mobile-speed::before {
-    content: '';
-    position: absolute;
-    inset: -6px -2px;
-  }
-  [data-gill-v16] .mobile-speed[aria-checked="true"] {
-    background: var(--gill-mobile-bar-gold);
-    border-color: var(--gill-mobile-bar-gold);
-    color: var(--gb-surface, #fff);
-  }
-  html.dark [data-gill-v16] .mobile-speed[aria-checked="true"] { color: #0e1116; }
-
-  /* ---- Persistent speed badge on the Play ember (inline-rail mode) ----
-     Canonical non-center-intercepting corner geometry — Play-owned. */
-  [data-gill-v16] .mobile-spdbadge {
-    position: absolute;
-    /* This persistent speed chip must stay inside the viewport at tablet
-       widths; its old -4px offset caused a 4px body overflow after reload. */
-    right: 0;
-    bottom: -4px;
-    z-index: 3;
-    min-width: 24px;
-    height: 24px;
-    padding: 0 5px;
-    display: grid;
-    place-items: center;
-    border-radius: 999px;
-    border: 1.5px solid var(--gill-mobile-bar-bg);
-    background: var(--gill-mobile-bar-ink);
-    color: var(--gill-mobile-bar-bg);
-    font: 700 10px/1 var(--gb-font-sans, system-ui, sans-serif);
-    cursor: pointer;
-    box-shadow: 0 1px 4px rgba(0,0,0,.18);
-  }
-  html.dark [data-gill-v16] .mobile-spdbadge {
-    background: linear-gradient(135deg, var(--color-accent-gold, #b8936a), #eed093);
-    color: #0e1116;
+  @media (prefers-reduced-motion: reduce) {
+  }  /* Make the rate trigger and Play peers in the flex row, not overlapping
+     layers. The badge's SMALL painted pill lives inside a 44x44 button. */
+  [data-reader-engine="series"] .mobile-playwrap .mobile-top-ember {
+    width: var(--reader-play-size-mobile);
+    height: var(--reader-play-size-mobile);
+    min-width: var(--reader-play-size-mobile);
+    min-height: var(--reader-play-size-mobile);
   }
 
   /* ---- Bottom bar: theme cycle glyph ---- */
@@ -4228,11 +4155,6 @@ html.dark [data-gill-v16] .mobile-top-bar {
   }
 
   @media (prefers-reduced-motion: reduce) {
-    [data-gill-v16] .mobile-learning-trigger,
-    [data-gill-v16] .mobile-speedrail,
-    [data-gill-v16] .term-card__head::after {
-      transition: none !important;
-    }
   }
 }
 
@@ -5034,14 +4956,13 @@ html.dark .gb-floater .gbs-rail-spdbadge {
    READER UI FOLLOW-UP 2026-07-24
    Evidence-driven compact-desktop safety.
    ========================================================= */
-@media (min-width: 64em) and (max-width: 101.99em) {
+@media (min-width: 1200px) {
   /* Keep compact/tablet chrome until the fixed rail and the right-hand tools
      fit together. Reader width stays owned by --gb-reader-measure; subtracting
      a magic control corridor here made all three choices collapse at 1024px. */
-  /* Compact desktop through 1631px: keep the slim vertical speed rail
-      beside PLAY until the horizontal pill has a real non-overlapping corridor. */
-  .gbs-theme-corner .gb-ember-expand,
-  .gb-floater .gb-ember-expand {
+  /* Historical July-24 vertical bloom, for all Reader desktop widths. */
+  .gb-ember-wrap > .gb-ember-expand,
+  .gb-ember-wrap > .gb-ember-expand {
     right: calc(100% + 9px);
     left: auto;
     top: 50%;
@@ -5061,8 +4982,8 @@ html.dark .gb-floater .gbs-rail-spdbadge {
   .gb-ember-wrap:focus-within > .gb-ember-expand {
     clip-path: inset(0 round 14px);
   }
-  .gbs-theme-corner .gb-ember-expand__btn,
-  .gb-floater .gb-ember-expand__btn {
+  .gb-ember-wrap .gb-ember-expand__btn,
+  .gb-ember-wrap .gb-ember-expand__btn {
     min-width: 44px;
     height: 26px;
     padding: 0 5px;
@@ -5124,4 +5045,63 @@ html.dark .gb-floater .gbs-rail-spdbadge {
    itself passes (measured 4.6:1). Light mode is untouched: it passes at the current opacity. */
 @media screen and (max-width: 960px) {
   html.dark [data-gill-v16] .mobile-btoc-section__label { opacity: 1; }
+}
+
+/* SHARED-PLAY-SPEED-2026-11-11: the canonical rate echo and Play highlight
+   apply to all dynamically enhanced embers. Custom rails retain their own
+   placement but share the existing TTS rate state and selected-chip sheen. */
+.gb-ember-wrap {
+  position: relative;
+}
+.gb-ember-wrap > .gb-ember-speed-echo {
+  position: absolute;
+  right: -3px;
+  bottom: -4px;
+  z-index: 3;
+  pointer-events: none;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  min-width: 23px;
+  height: 16px;
+  padding: 1px 4px 0;
+  border: 1px solid color-mix(in srgb, var(--color-surface, #fff) 28%, transparent);
+  border-radius: 999px;
+  background: var(--color-text, #222);
+  color: var(--color-surface, #fff);
+  font: 800 9px/1 "Source Sans 3", system-ui, sans-serif;
+  white-space: nowrap;
+  box-shadow: 0 2px 7px rgba(0,0,0,.18);
+}
+html.dark .gb-ember-wrap > .gb-ember-speed-echo {
+  background: linear-gradient(135deg, var(--color-accent-gold, #b8936a), #eed093);
+  border-color: rgba(255,255,255,.16);
+  color: #0e1116;
+  box-shadow: 0 2px 8px rgba(216,176,104,.27);
+}
+/* Reserve the luminous emphasis for a real interactive state, not idle. */
+.gb-ember-wrap > .gb-ember[data-state="playing"],
+.gb-ember-wrap > .gb-ember[data-state="paused"],
+.gb-ember-wrap > .gb-ember[data-speed-confirm="true"],
+.gb-ember-wrap:has(> .gb-ember-expand.is-open) > .gb-ember {
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--color-accent-gold-bright, #d8aa6d) 42%, transparent));
+}
+:where(.gb-ember-expand__btn.is-active,
+       .mobile-speed[aria-checked="true"],
+       .hm-speed[aria-checked="true"]) {
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--color-accent-gold, #b8936a) 25%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .gb-ember-wrap > .gb-ember { transition: none; }
+  .gb-ember-wrap > .gb-ember-speed-echo { transition: none; }
+}
+
+/* Custom Gill/Hermenevtika speed slots use the same warm Play emphasis,
+   retaining their inline slot-swaps rather than a bloom pill. */
+:where([data-gb-speed-custom], [data-fc-speed-mode="inline"])
+  .gb-ember:is([data-state="playing"], [data-state="paused"], [data-speed-confirm="true"]) {
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--color-accent-gold-bright, #d8aa6d) 42%, transparent));
+}
+:where([data-gb-speed-custom], [data-fc-speed-mode="inline"]).speed-open .gb-ember {
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--color-accent-gold-bright, #d8aa6d) 42%, transparent));
 }
