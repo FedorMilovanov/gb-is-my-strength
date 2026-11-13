@@ -244,7 +244,13 @@ function makeMiniDom() {
   return { makeNode, documentObj, windowObj };
 }
 
-// 1. Static CSS contract for mobile coarse-pointer .fn-marker--dove map triggers & no-JS FAQ fallback
+// 1. Static CSS + composer ownership contract for reading-tables, mobile .fn-marker--dove triggers & no-JS FAQ fallback
+const composerJs = fs.readFileSync(path.join(ROOT, 'src/runtime/article-interactions.js'), 'utf8');
+const readingTablesJs = fs.readFileSync(path.join(ROOT, 'src/runtime/article-reading-tables.js'), 'utf8');
+assert.equal(composerJs.split("from './article-reading-tables.js'").length - 1, 1, 'reading-tables: one native module import required');
+assert.equal(composerJs.split('installArticleReadingTables()').length - 1, 1, 'reading-tables: one install call required');
+assert.equal(readingTablesJs.split("const OWNER = 'native-v1';").length - 1, 1, 'reading-tables: explicit native owner marker required');
+
 const capabilitiesCss = fs.readFileSync(path.join(ROOT, 'src/runtime/article-capabilities.css'), 'utf8');
 assert.match(
   capabilitiesCss,

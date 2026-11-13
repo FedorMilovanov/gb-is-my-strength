@@ -44,13 +44,6 @@ const families = [
     install: 'installArticleReversibleCards()',
     selector: '.flip-card, .error-flip-card, .heart-flip-card',
   },
-  {
-    id: 'reading-tables',
-    module: 'src/runtime/article-reading-tables.js',
-    importPath: './article-reading-tables.js',
-    install: 'installArticleReadingTables()',
-    selector: 'article table, main table, .manuscript-table, .compare-table',
-  },
 ];
 
 const composer = read(COMPOSER);
