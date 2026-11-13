@@ -24,7 +24,7 @@ function publishedLabel(count: number) {
     <div class="karty-hero__copy">
       <p class="karty-kicker">Премиальная витрина карт</p>
       <h1 id="mapsTitle">Библейские карты</h1>
-      <div class="he" lang="he">מַפּוֹת</div>
+      <div class="he" lang="he" dir="rtl">מַפּוֹת</div>
       <p class="desc">Карты должны помогать видеть текст Писания в пространстве: маршруты, города, реки, пустыни, спорные точки локализации и исторический контекст. Поэтому на витрине остаётся только то, что прошло техническую проверку и обязательный ручной визуальный контроль.</p>
       <div class="karty-hero__meta" role="group" aria-label="Статус раздела" data-route-count={routeCount} data-published-count={publishedCount} data-audit-count={auditCount}>
         <div class="karty-stat"><b>{publishedCount}</b><span>{publishedLabel(publishedCount)}</span></div>
@@ -49,7 +49,7 @@ function publishedLabel(count: number) {
           >
             <div class="karty-feature__body">
               <span class="badge badge--ready">Проверенная карта</span>
-              <h2>{title} {titleHe && <span lang="he">{titleHe}</span>}</h2>
+              <h2>{title} {titleHe && <span lang="he" dir="rtl">{titleHe}</span>}</h2>
               <p>{summary}</p>
               <span class="karty-feature__cta">Открыть карту →</span>
             </div>
