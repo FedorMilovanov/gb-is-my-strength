@@ -427,3 +427,20 @@ npm run strangler:build:production-like → exit 0
 **Три технические находки.** Витрины серий парсились построчно, а ссылка и время в объекте стоят на разных строках — отсюда 15 незамеченных значений. В графе связей поле называется `readingTime`, а аудит читал `readTime` и показывал десять ложных расхождений. Две статьи (герменевтика, Лоусон) владеются legacy-зеркалами и не попадают в нормализатор манифеста — выровнены вручную; пока зеркала в обороте, это будет повторяться.
 
 **Состояние гейтов:** `reading-time-audit` — 0 расхождений по всем поверхностям, `data:consistency` зелёный, `gill:reading-time:audit`, `gill:series:data:consistency:audit`, `gill:pagefind:audit` зелёные, `validate:all` 0, `mdx:structure:audit` 0/0, `editorial:lint` 0, `article:qa` 0/0, `content:guard` 0.
+
+## Что делать при слиянии веток (короткая памятка)
+
+Политика времени чтения теперь входит в `validate:all`, поэтому любая ветка, которая меняет длину статьи, обязана пересчитать значения — иначе гейт краснеет. Порядок после слияния любой из шести параллельных веток:
+
+```bash
+node scripts/reading-time-audit.js --write          # SSOT: MDX, series.json, витрины, js/search.js
+npm run astro:build                                 # HTML, мета pagefind, структурированные данные
+node scripts/search-manifest-policy-normalizer.js --write --dist dist
+node scripts/links-graph-read-time-normalizer.js --write
+node scripts/reading-time-audit.js                  # должно быть 0 по всем поверхностям
+npm run validate:all
+```
+
+Если ветка правила только прозу, первых двух шагов достаточно. Если появились новые литералы в компонентах — `node scripts/reading-time-audit.js --write-literals` перед сборкой. Руками числа не править: именно из-за ручных правок в `5ccbaa3b` два значения уехали в противоположные стороны (151 и 192 слова в минуту при политике 180).
+
+Отдельно: две статьи (обзор герменевтики и Лоусон) ведутся legacy-зеркалами и в нормализатор не попадают — их значения после слияния надо проверить глазами в отчёте `reading-time-audit` (раздел «Производные поверхности»).
