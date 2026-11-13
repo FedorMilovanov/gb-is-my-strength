@@ -13,10 +13,10 @@
     "manifestItems": 103,
     "indexedRoutes": 102,
     "scannedSourceFiles": 530,
-    "references": 1385,
+    "references": 1386,
     "occurrences": 3513,
     "canonicalTextRecords": 149,
-    "referencesWithoutCanonicalText": 1236,
+    "referencesWithoutCanonicalText": 1237,
     "chapterRanges": 46,
     "manifestOccurrences": 32,
     "kartyHubOccurrences": 1
@@ -10124,6 +10124,31 @@
       ]
     },
     {
+      "id": "psaltir:1:1–2",
+      "bookId": "psaltir",
+      "testament": "OT",
+      "key": "1:1–2",
+      "kind": "verse-range",
+      "label": "Псалтирь 1:1–2",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/myslennaya-zhizn-serdca/",
+          "title": "Мысленная жизнь сердца: поток мыслей и библейская медитация",
+          "context": "отличается и от восточного опустошения сознания, и от общего совета «думай о хорошем». «Блажен муж… в законе Господа воля его, и о законе Его размышляет он день и ночь!» (Пс. 1:1–2). Еврейский глагол «размышляет» — הָגָה ( хага ) — в своём первичном, буквальном значении вовсе не про тихое созерцание: тот же корень описывает рычание льва над добычей (Ис. 3…",
+          "anchor": "bibleiskaya-meditatsiya",
+          "raw": "Пс. 1:1–2",
+          "topics": [
+            "Богословие",
+            "сердце"
+          ],
+          "sourceOwner": "src/components/article-pilots/myslennaya/MyslennayaBody.astro",
+          "sourceKind": "astro-source"
+        }
+      ]
+    },
+    {
       "id": "psaltir:1:1–3",
       "bookId": "psaltir",
       "testament": "OT",
@@ -10177,19 +10202,6 @@
           "context": "Автор-редактор: Фёдор Милованов 12 июля 2026 ⏱ 26 мин Богословие Пс 1:2 Эта статья продолжает диагноз из «Крайне ли испорчено сердце верующего?» и практическую сторону, начатую в «Сердце и Ду",
           "anchor": null,
           "raw": "Пс 1:2",
-          "topics": [
-            "Богословие",
-            "сердце"
-          ],
-          "sourceOwner": "src/components/article-pilots/myslennaya/MyslennayaBody.astro",
-          "sourceKind": "astro-source"
-        },
-        {
-          "url": "/articles/myslennaya-zhizn-serdca/",
-          "title": "Мысленная жизнь сердца: поток мыслей и библейская медитация",
-          "context": "отличается и от восточного опустошения сознания, и от общего совета «думай о хорошем». «Блажен муж... в законе Господа воля его, и о законе Его размышляет он день и ночь» (Пс. 1:2). Еврейский глагол «размышляет» — הָגָה ( хага ) — в своём первичном, буквальном значении вовсе не про тихое созерцание: тот же корень описывает рычание льва над добычей (Ис. 31…",
-          "anchor": "bibleiskaya-meditatsiya",
-          "raw": "Пс. 1:2",
           "topics": [
             "Богословие",
             "сердце"
