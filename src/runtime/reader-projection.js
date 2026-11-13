@@ -218,18 +218,44 @@
     return found;
   }
 
+  function sameNodeSet(left, right) {
+    if (left.length !== right.length) return false;
+    const rightSet = new Set(right);
+    return left.every((node) => rightSet.has(node));
+  }
+
+  function scopeSpeakableSelector(selector, root) {
+    let all;
+    try { all = Array.from(document.querySelectorAll(selector)); } catch { return null; }
+    const allowed = all.filter((node) => speakableNodeAllowed(node, root));
+    if (!allowed.length) return null;
+    if (allowed.length === all.length) return selector;
+
+    const candidates = [
+      `[data-reader-projection] ${selector}`,
+      `[data-reader-projection] ${selector}:not([data-reader-exclude]):not([data-speakable-policy="exclude"])`,
+      `${selector}[data-speakable-policy="include"]`,
+      `[data-reader-projection] ${selector}[data-speakable-policy="include"]`,
+    ];
+    for (const candidate of candidates) {
+      let matched;
+      try { matched = Array.from(document.querySelectorAll(candidate)); } catch { continue; }
+      if (sameNodeSet(matched, allowed)) return candidate;
+    }
+    return null;
+  }
+
   function effectiveSpeakableSelectors(scope = document) {
     const root = readerRoot(scope);
     const authored = authoredSpeakableSelectors();
-    if (!authored) return [...SPEAKABLE_SELECTORS];
-    if (JSON.stringify(authored) === JSON.stringify(SPEAKABLE_SELECTORS)) return [...SPEAKABLE_SELECTORS];
-    if (!root) return [...authored];
-    const kept = authored.filter((selector) => {
-      let matches;
-      try { matches = document.querySelectorAll(selector); } catch { return false; }
-      return Array.from(matches).some((node) => speakableNodeAllowed(node, root));
-    });
-    return kept.length ? kept : [...authored];
+    const source = authored || [...SPEAKABLE_SELECTORS];
+    if (!root) return [...source];
+    const resolved = [];
+    for (const selector of source) {
+      const scoped = scopeSpeakableSelector(selector, root);
+      if (scoped && !resolved.includes(scoped)) resolved.push(scoped);
+    }
+    return resolved.length ? resolved : [...source];
   }
 
   function getSpeakableNodes(scope = document) {
@@ -283,7 +309,19 @@
       if (!summary.hasAttribute('data-speakable-policy')) setMarker(summary, 'data-speakable-policy', 'include');
     });
 
+    const candidateSelectors = authoredSpeakableSelectors() || SPEAKABLE_SELECTORS;
+    candidateSelectors.forEach((selector) => {
+      let matches;
+      try { matches = owner.querySelectorAll(selector); } catch { return; }
+      matches.forEach((node) => {
+        if (speakableNodeAllowed(node, root) && !node.hasAttribute('data-speakable-policy')) {
+          setMarker(node, 'data-speakable-policy', 'include');
+        }
+      });
+    });
+
     root.querySelectorAll('h1,h2,h3,h4').forEach((heading, index) => {
+      if (heading.closest('.flip-card, .error-flip-card, .heart-flip-card, [data-gb-reversible-card-owner], [role="button"]')) return;
       const id = heading.id || `reader-section-${index + 1}`;
       setMarker(heading, 'data-reader-section', id);
       setMarker(heading, 'data-reader-section-label', normalizeText(heading.textContent));
