@@ -85,7 +85,9 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
    await p.mouse.click(width-50,430);
    row.states.menuCloseStart=await p.evaluate(measure);
    await p.waitForTimeout(130);row.states.menuCloseMid=await p.evaluate(measure);
-   await p.waitForTimeout(310);row.states.menuCloseEnd=await p.evaluate(measure);
+   await p.waitForFunction(()=>document.querySelector('#hMobileNav')?.hidden,
+     null,{timeout:1600});
+   row.states.menuCloseEnd=await p.evaluate(measure);
    // Linux WebKit may return from the real outside pointer click after the
    // opacity tween has advanced/completed. Require evidence of genuine CSS
    // motion, but don't confuse Playwright scheduling with product breakage.

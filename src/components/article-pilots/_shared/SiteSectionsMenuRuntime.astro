@@ -145,11 +145,18 @@
       };
       const onPanelTransitionSettled = (event) => {
         if (event.target !== panel || panel.classList.contains('open')) return;
-        // Opacity settles before the longer transform; hiding on the first
-        // transitionend clipped the final part of the close animation.
-        // The timeout below remains a fallback when a transition is canceled.
-        if (event.type !== 'transitionend' || event.propertyName !== 'transform') return;
-        hideNatively();
+        // On mobile, the transform tween is longer than opacity and owns the
+        // final hide. On desktop the open/closed transform is identical, so
+        // that transitionend never exists: opacity is the terminal tween.
+        // Avoid clipping a delayed WebKit opacity animation with a fixed timer.
+        if (event.type !== 'transitionend') return;
+        if (event.propertyName === 'transform') {
+          hideNatively();
+        } else if (event.propertyName === 'opacity') {
+          const transformStillRunning = panel.getAnimations().some((animation) =>
+            animation.transitionProperty === 'transform' && animation.playState === 'running');
+          if (!transformStillRunning) hideNatively();
+        }
       };
       const syncVisual = (open) => {
         window.clearTimeout(nativeHideTimer);
@@ -180,7 +187,9 @@
 
         if (!open) {
           if (!hasExitTransition()) hideNatively();
-          else nativeHideTimer = window.setTimeout(hideNatively, 350);
+          // Recovery only: allow a delayed transition to finish on loaded
+          // Linux/WebKit before native hidden. Normal path is transitionend.
+          else nativeHideTimer = window.setTimeout(hideNatively, 800);
         }
       };
 
