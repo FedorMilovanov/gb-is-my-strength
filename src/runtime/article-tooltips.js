@@ -298,11 +298,11 @@ function applyOverflow(tip, maxHeight) {
 function preferredPlacement(naturalHeight, availableAbove, availableBelow, previousPlacement, preservePlacement) {
   const fitsAbove = naturalHeight <= availableAbove;
   const fitsBelow = naturalHeight <= availableBelow;
-  // Keep the side chosen on opening while rich content grows. Otherwise a
-  // click on 'Подробнее' flips the popover across its trigger mid-animation.
-  // The existing viewport cap provides scrolling on the chosen side.
-  if (preservePlacement && previousPlacement === 'top' && availableAbove >= MIN_SCROLL_HEIGHT) return 'top';
-  if (preservePlacement && previousPlacement === 'bottom' && availableBelow >= MIN_SCROLL_HEIGHT) return 'bottom';
+  // Preserve a previous side only while the full natural content still fits.
+  // Expanded definitions can outgrow the opening side: prefer the other side
+  // before imposing internal scrolling on a panel that fits there intact.
+  if (preservePlacement && previousPlacement === 'top' && fitsAbove) return 'top';
+  if (preservePlacement && previousPlacement === 'bottom' && fitsBelow) return 'bottom';
   if (fitsAbove && fitsBelow) return previousPlacement === 'bottom' ? 'bottom' : 'top';
   if (fitsAbove) return 'top';
   if (fitsBelow) return 'bottom';
@@ -344,8 +344,9 @@ function positionDesktop(tip, anchor, preservePlacement = false) {
   // *before* the 0fr -> 1fr transition starts, not after a resize observer
   // notices overflow. The unchanged content can scroll within that surface.
   if (tip.classList.contains('gtip')) {
+    // 'auto' is only warranted for actual overflow. Otherwise Safari and
+    // Firefox show a redundant nested scroll owner after an upward flip.
     applyOverflow(tip, Math.min(available, viewportMax));
-    setImportant(tip.style, 'overflow-y', 'auto');
   } else if (naturalHeight > available) applyOverflow(tip, Math.min(available, viewportMax));
   else setImportant(tip.style, 'overflow-y', 'visible');
 
@@ -371,6 +372,21 @@ function positionDesktop(tip, anchor, preservePlacement = false) {
       Math.min(anchorRect.bottom + TIP_GAP, viewport.bottom - VIEWPORT_MARGIN - renderedHeight));
     setImportant(tip.style, 'bottom', 'auto');
     setImportant(tip.style, 'top', `${Math.round(top)}px`);
+  }
+  // Reconcile the *settled* painted box after intrinsic content, animation
+  // and max-height have all changed. Keep it inside the visual viewport,
+  // retaining the chosen side and the trigger's horizontal alignment.
+  const settled = tip.getBoundingClientRect();
+  const requiredTop = placement === 'top'
+    ? Math.max(viewport.top + VIEWPORT_MARGIN, anchorRect.top - TIP_GAP - settled.height)
+    : Math.max(viewport.top + VIEWPORT_MARGIN,
+      Math.min(anchorRect.bottom + TIP_GAP, viewport.bottom - VIEWPORT_MARGIN - settled.height));
+  if (settled.height > 0 && Math.abs(settled.top - requiredTop) > 1) {
+    if (placement === 'top') {
+      setImportant(tip.style, 'bottom', `${Math.round(window.innerHeight - requiredTop - settled.height)}px`);
+    } else {
+      setImportant(tip.style, 'top', `${Math.round(requiredTop)}px`);
+    }
   }
   tip.style.setProperty('--gb-tip-arrow-x', `${Math.round(anchorRect.left + anchorRect.width / 2 - left)}px`);
 }
@@ -402,6 +418,12 @@ function observeGeometry(record) {
   if (!record || typeof ResizeObserver !== 'function') return;
   record.geometryObserver = new ResizeObserver(() => scheduleGeometry(record, true));
   record.geometryObserver.observe(record.tip);
+  // A capped tip keeps the same border-box size while expanded content grows.
+  // Observe the intrinsic content as well so the whole popup can flip before
+  // its internal scrollbar becomes the only way to read the definition.
+  for (const element of record.tip.querySelectorAll(':scope > .gtip-luxury, .gtip-detail-wrap')) {
+    record.geometryObserver.observe(element);
+  }
 }
 
 function restore(record) {
