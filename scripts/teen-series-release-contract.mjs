@@ -4,6 +4,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { createRequire } from 'node:module';
 import { parse } from 'parse5';
+import { checkTeenArticleLinks } from './lib/teen-article-links.mjs';
 
 const require = createRequire(import.meta.url);
 const { readImageDimensions } = require('./lib/sitemap-image-projection');
@@ -325,6 +326,16 @@ if (fs.existsSync(DIST)) {
   }
 }
 
+if (fs.existsSync(DIST)) {
+  const prose = checkTeenArticleLinks({
+    dist: DIST,
+    routes: ITEMS.map(([, , slug]) => `/articles/${slug}/`),
+    site: SITE,
+  });
+  for (const error of prose.errors) fail(error);
+  if (!prose.checked) fail('no local links found in built teen article prose');
+}
+
 if (errors.length) {
   console.error(`❌ Teen series release contract failed (${errors.length})`);
   errors.forEach((error) => console.error(`  ❌ ${error}`));
@@ -338,4 +349,5 @@ console.log('  publication date: 2026-09-10; updatedAt stays owned by canonical 
 console.log('  media: route-specific 1200x630 WebP hero/OG + 600x315 card/rail family');
 console.log('  bibliography: canonical reader projector owns build-time data-pagefind-ignore boundary');
 console.log('  adult articles: reciprocal prose links checked in MDX and, when present, built HTML');
+console.log('  local prose links: built destinations and fragments checked when dist is present');
 console.log('  production ownership: astro/production-dist');

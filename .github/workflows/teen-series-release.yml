@@ -31,6 +31,8 @@ on:
       - "feed.xml"
       - "sitemap.xml"
       - "scripts/teen-series-release-contract.mjs"
+      - "scripts/lib/teen-article-links.mjs"
+      - "scripts/teen-article-links-contract-test.mjs"
       - "scripts/teen-series-runtime-browser-contract.mjs"
       - "scripts/teen-series-quality-browser-audit.mjs"
       - ".github/workflows/deploy.yml"
@@ -64,6 +66,9 @@ jobs:
 
       - name: Install immutable dependencies
         run: npm ci
+
+      - name: Test reader prose link contract
+        run: node --test scripts/teen-article-links-contract-test.mjs
 
       - name: Check static release contract
         run: node scripts/teen-series-release-contract.mjs
