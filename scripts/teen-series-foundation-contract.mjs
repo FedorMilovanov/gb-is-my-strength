@@ -74,6 +74,14 @@ function pageBlock(config, pageId) {
 }
 
 let total = 0;
+// Контракт описывает две фазы одной серии: «фундамент» (черновики, noindex,
+// маршрутов нет, реестр молчит) и «релиз» (маршрут есть, noindex снят, серия
+// в `data/series.json`). Раньше он требовал только первую и после публикации
+// падал на собственной устаревшей предпосылке. Фаза теперь читается из
+// `draft` каждой статьи, а инварианты порядка, марок, подписей и суммы минут
+// остаются общими для обеих.
+let publishedCount = 0;
+let draftCount = 0;
 
 for (const [slug, expectedMinutes, displayMark, mobileLabel] of SERIES) {
   const file = path.join(ROOT, 'src', 'content', 'articles', `${slug}.mdx`);
@@ -91,8 +99,13 @@ for (const [slug, expectedMinutes, displayMark, mobileLabel] of SERIES) {
   }
 
   if (scalar(fm, 'slug') !== slug) fail(`${slug}: frontmatter slug mismatch`);
-  if (bool(fm, 'draft') !== true) fail(`${slug}: draft must remain true before the atomic publication transaction`);
-  if (bool(fm, 'noindex') !== true) fail(`${slug}: noindex must remain true before the atomic publication transaction`);
+  const isDraft = bool(fm, 'draft');
+  if (isDraft === undefined) fail(`${slug}: frontmatter must declare draft: true|false`);
+  const expectNoindex = isDraft === true;
+  if (bool(fm, 'noindex') !== expectNoindex) {
+    fail(`${slug}: noindex must be ${expectNoindex} while draft=${String(isDraft)}`);
+  }
+  if (isDraft) draftCount += 1; else publishedCount += 1;
   if (bool(fm, 'sourcesRequired') !== true) fail(`${slug}: sourcesRequired must remain true`);
 
   const minutes = number(fm, 'readingTime');
@@ -102,8 +115,12 @@ for (const [slug, expectedMinutes, displayMark, mobileLabel] of SERIES) {
   total += minutes ?? 0;
 
   const routeDir = path.join(ROOT, 'src', 'pages', 'articles', slug);
-  if (fs.existsSync(routeDir)) {
+  const routeExists = fs.existsSync(routeDir);
+  if (isDraft && routeExists) {
     fail(`${slug}: production route exists during foundation phase (${path.relative(ROOT, routeDir)})`);
+  }
+  if (!isDraft && !routeExists) {
+    fail(`${slug}: published article is missing its production route (${path.relative(ROOT, routeDir)})`);
   }
 
   if (['A', 'B', 'C', 'D'].includes(displayMark) && !mobileLabel) {
@@ -112,6 +129,9 @@ for (const [slug, expectedMinutes, displayMark, mobileLabel] of SERIES) {
 }
 
 if (SERIES.length !== 7) fail(`canonical series must contain exactly 7 core items, got ${SERIES.length}`);
+if (draftCount > 0 && publishedCount > 0) {
+  fail(`series phase is mixed: ${draftCount} draft(s), ${publishedCount} published; publication is atomic`);
+}
 if (total !== 245) fail(`canonical total reading time must be 245 min, got ${total}`);
 
 const configPath = path.join(
@@ -199,8 +219,30 @@ const seriesJsonPath = path.join(ROOT, 'data', 'series.json');
 if (fs.existsSync(seriesJsonPath)) {
   const raw = fs.readFileSync(seriesJsonPath, 'utf8');
   const registry = JSON.parse(raw);
-  if (registry['teen-double-life']) {
-    fail('data/series.json already exposes teen-double-life during foundation phase; registry admission belongs to the atomic release lane');
+  const admitted = registry['teen-double-life'];
+  if (admitted && draftCount > 0) {
+    fail('data/series.json exposes teen-double-life while some parts are still drafts; registry admission belongs to the atomic release lane');
+  }
+  if (!admitted && publishedCount > 0) {
+    fail('data/series.json must admit teen-double-life once its parts are published');
+  }
+  if (admitted) {
+    const parts = Array.isArray(admitted.parts) ? admitted.parts : [];
+    if (parts.length !== SERIES.length) {
+      fail(`data/series.json: teen-double-life must list ${SERIES.length} parts, got ${parts.length}`);
+    }
+    for (const [slug, expectedMinutes] of SERIES) {
+      const part = parts.find((item) => item.slug === slug);
+      if (!part) {
+        fail(`data/series.json: teen-double-life is missing ${slug}`);
+        continue;
+      }
+      if (part.readingTime !== expectedMinutes) {
+        fail(`data/series.json: ${slug} readingTime=${String(part.readingTime)}, expected ${expectedMinutes}`);
+      }
+    }
+    const sum = parts.reduce((acc, part) => acc + (Number(part.readingTime) || 0), 0);
+    if (sum !== 245) fail(`data/series.json: teen-double-life parts sum to ${sum} min, expected 245`);
   }
 }
 
@@ -210,5 +252,9 @@ if (!process.exitCode) {
   console.log(`  articles: ${SERIES.length}`);
   console.log(`  total reading time: ${total} min`);
   console.log('  series config: exact order/progress present, quiz disabled, A-D encoded as core labels');
-  console.log('  publication: blocked (draft + noindex + no production routes)');
+  console.log(
+    publishedCount === 0
+      ? '  publication: blocked (draft + noindex + no production routes)'
+      : `  publication: released (${publishedCount} published routes, noindex off, series admitted to data/series.json)`
+  );
 }
