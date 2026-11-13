@@ -22,6 +22,8 @@ on:
       - "src/runtime/reader-tts.js"
       - "scripts/reader-speed-preferences-contract.cjs"
       - "scripts/reader-speed-persistence-browser-contract.mjs"
+      - "scripts/reader-real-assets-visual-matrix.mjs"
+      - "scripts/baptisty-archival-media-real-visual-contract.mjs"
       - "js/floating-cluster-controller.js"
       - "css/floating-cluster.css"
       - "css/site.css"
@@ -47,6 +49,8 @@ on:
       - "src/runtime/reader-tts.js"
       - "scripts/reader-speed-preferences-contract.cjs"
       - "scripts/reader-speed-persistence-browser-contract.mjs"
+      - "scripts/reader-real-assets-visual-matrix.mjs"
+      - "scripts/baptisty-archival-media-real-visual-contract.mjs"
       - "js/floating-cluster-controller.js"
       - "css/floating-cluster.css"
       - "css/site.css"
@@ -61,7 +65,7 @@ concurrency:
 
 jobs:
   browser-contract:
-    name: Chromium + WebKit reader controls accessibility contract
+    name: Chromium + Firefox + WebKit Reader controls and real-asset contracts
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -100,6 +104,8 @@ jobs:
           node --check src/runtime/reader-tts.js
           node --check scripts/reader-speed-preferences-contract.cjs
           node --check scripts/reader-speed-persistence-browser-contract.mjs
+          node --check scripts/reader-real-assets-visual-matrix.mjs
+          node --check scripts/baptisty-archival-media-real-visual-contract.mjs
           node scripts/reader-speed-preferences-contract.cjs
           node --check js/floating-cluster-controller.js
           grep -F "import '../../runtime/reader-controls-a11y.js';" src/components/reader-platform/ReaderActionsRuntime.astro
@@ -121,6 +127,8 @@ jobs:
           node scripts/shared-play-and-series-number-browser-contract.cjs 2>&1 | tee reports/shared-play-and-series-number-browser-contract.log
           node scripts/reader-mobile-canonical-browser-contract.cjs 2>&1 | tee reports/reader-mobile-canonical-browser-contract.log
           node scripts/reader-speed-persistence-browser-contract.mjs 2>&1 | tee reports/reader-speed-persistence-browser-contract.log
+          GB_READER_REAL_ASSETS_FAST=1 node scripts/reader-real-assets-visual-matrix.mjs 2>&1 | tee reports/reader-real-assets-visual-matrix.log
+          node scripts/baptisty-archival-media-real-visual-contract.mjs 2>&1 | tee reports/baptisty-archival-media-real-visual-contract.log
 
       - name: Upload exact evidence
         if: always()
@@ -142,6 +150,10 @@ jobs:
             reports/shared-play-and-series-number-browser-contract.log
             reports/reader-mobile-canonical-browser-contract.log
             reports/reader-speed-persistence-browser-contract.log
+            reports/reader-real-assets-visual-matrix.log
+            reports/reader-real-assets/**
+            reports/baptisty-archival-media-real-visual-contract.log
+            reports/baptisty-archival-media/**
             reports/reader-p1-menu-*.png
             reports/reader-library-premium/*.png
           if-no-files-found: warn
