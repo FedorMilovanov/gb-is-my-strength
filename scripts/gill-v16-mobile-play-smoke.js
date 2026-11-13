@@ -195,6 +195,23 @@ async function emberIsCustomSpeedSlot(ember) { return ember.evaluate(el => !!el.
 async function emberIsInlineSpeedMode(ember) { return ember.evaluate(el => !!el.closest('[data-fc-speed-mode="inline"]')); }
 async function allEmberStates(page) { return page.$$eval('.gb-ember', els => els.map(el => el.getAttribute('data-state') || '')); }
 async function clickSpeedNearEmber(ember, speed) {
+  // Both Gill and Hermenevtika mobile bars use the same ReaderSpeedOptions
+  // slot. Prefer that actual shared DOM contract over legacy per-engine classes.
+  const hasCanonicalSlot = await ember.evaluate(el =>
+    !!el.closest('[data-reader-mobile-speed]')?.querySelector('.reader-mobile-speedrail'));
+  if (hasCanonicalSlot) {
+    const clicked = await ember.evaluate((el, targetSpeed) => {
+      const bar = el.closest('[data-reader-mobile-speed]');
+      const badge = bar?.querySelector('.reader-mobile-speed-badge');
+      const button = bar?.querySelector(`.reader-mobile-speedrail [data-speed="${targetSpeed}"]`);
+      if (!badge || !button) return false;
+      badge.click();
+      button.click();
+      return true;
+    }, String(speed));
+    if (!clicked) throw new Error(`speed button ${speed} missing in shared ReaderSpeedOptions slot`);
+    return;
+  }
   const isCustom = await emberIsCustomSpeedSlot(ember);
   if (isCustom) {
     const clicked = await ember.evaluate((el, targetSpeed) => {
@@ -550,7 +567,7 @@ async function testMobileTargetGeometry(browser) {
         '.mobile-top-bar [data-fc-action="save"]',
         '#mobLearningBtn',
         '#mobPartTocBtn',
-        '.mobile-bottom-bar [data-fc-action="theme"]',
+        // Themes moved into the canonical Settings sheet; no duplicate theme button.
         '#mobSettingsBtn',
         '#gb-hl-fab',
         '.mobile-bottom-bar [data-action="share"]',
@@ -569,7 +586,7 @@ async function testMobileTargetGeometry(browser) {
           right: r.right,
           top: r.top,
           bottom: r.bottom,
-          visible: cs.display !== 'none' && cs.visibility !== 'hidden' && cs.pointerEvents !== 'none',
+          visible: cs.display !== 'none' && cs.visibility !== 'hidden' && cs.pointerEvents !== 'none' && Number(cs.opacity) > 0 && r.width > 0 && r.height > 0,
         };
       }).filter((row) => row.missing || row.visible);
       const overlaps = [];

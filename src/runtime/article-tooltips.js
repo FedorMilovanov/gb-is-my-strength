@@ -338,7 +338,7 @@ function positionDesktop(tip, anchor, preservePlacement = false) {
   const availableBelow = Math.max(0, viewport.bottom - VIEWPORT_MARGIN - anchorRect.bottom - TIP_GAP);
   const naturalHeight = Math.max(tip.scrollHeight || 0, tipRect.height || 0);
   const placement = preferredPlacement(naturalHeight, availableAbove, availableBelow, previousPlacement, preservePlacement);
-  const available = placement === 'top' ? availableAbove : availableBelow;
+  const available = Math.min(placement === 'top' ? availableAbove : availableBelow, viewportMax);
 
   // Rich glossary expands inside an anchor-bound viewport: cap its height
   // *before* the 0fr -> 1fr transition starts, not after a resize observer
@@ -356,8 +356,15 @@ function positionDesktop(tip, anchor, preservePlacement = false) {
     // UP, without JS remapping top on each animation frame. This removes the
     // WebKit mid-transition jump across its own opener.
     setImportant(tip.style, 'top', 'auto');
-    setImportant(tip.style, 'bottom',
-      `${Math.round(window.innerHeight - anchorRect.top + TIP_GAP)}px`);
+    // A programmatically focused marker can remain outside the viewport
+    // (e.g. within an offscreen scroll container). Fixed-position tooltips
+    // must never inherit a negative bottom or extend beyond the top edge.
+    const renderedHeight = Math.min(tip.getBoundingClientRect().height, viewportMax);
+    const desiredBottom = window.innerHeight - anchorRect.top + TIP_GAP;
+    const maxBottom = Math.max(VIEWPORT_MARGIN,
+      window.innerHeight - (viewport.top + VIEWPORT_MARGIN) - renderedHeight);
+    const bottom = Math.min(maxBottom, Math.max(VIEWPORT_MARGIN, desiredBottom));
+    setImportant(tip.style, 'bottom', `${Math.round(bottom)}px`);
   } else {
     const renderedHeight = Math.min(tip.getBoundingClientRect().height, viewportMax);
     const top = Math.max(viewport.top + VIEWPORT_MARGIN,

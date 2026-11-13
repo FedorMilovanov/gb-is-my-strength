@@ -68,8 +68,11 @@
     let keyboardCollapsed = false;
 
     function isOpen() {
-      if (config.kind === 'hermenevtika') return root.classList.contains('speed-open');
-      return rail.getAttribute('aria-hidden') === 'false';
+      // ReaderSpeedOptions owns one shared slot for both engines. Its
+      // speed-open class is canonical; during opening aria-hidden is removed,
+      // not set to the literal string "false". Reading the attribute here
+      // caused the a11y adapter to immediately hide a newly opened Gill rail.
+      return root.classList.contains('speed-open');
     }
 
     function selectedChip() {
@@ -164,14 +167,12 @@
         else if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
           event.stopPropagation();
-          if (config.kind === 'gill') {
-            selectForKeyboard(chip);
-            closeFromKeyboard();
-          } else {
-            keyboardHideRequested = true;
-            chip.click();
-            scheduleSync();
-          }
+          // Both readers now use the same ReaderSpeedOptions/SpeedSlot owner.
+          // The actual chip click applies the chosen rate and closes its rail;
+          // do not call Gill's retired __gillCloseSpeedRail controller.
+          keyboardHideRequested = true;
+          chip.click();
+          scheduleSync();
           return;
         } else return;
         event.preventDefault();
@@ -206,11 +207,11 @@
       alternate: '.hm-slot-search',
       chip: '.hm-spd',
     }));
-    document.querySelectorAll('[data-fc-speed-mode="inline"]').forEach((root) => bindSpeedSlot(root, {
+    document.querySelectorAll('[data-reader-mobile-speed][data-gill-mobile-bar]').forEach((root) => bindSpeedSlot(root, {
       kind: 'gill',
       rail: '.mobile-speedrail',
       badge: '.mobile-spdbadge',
-      alternate: '.mobile-learning-trigger',
+      alternate: '.reader-mobile-menu-trigger',
       chip: '.mobile-speed',
     }));
   }
@@ -264,7 +265,7 @@
     [
       { trigger: '#hmBottomBtn, #hmSectionBtn', target: '#hmSheet', fallbackId: 'hmSheet', popup: 'dialog' },
       { trigger: '#hmSettingsBtn, #hrailSettingsBtn, #gbFcSettings', target: '#hmSettings', fallbackId: 'hmSettings', popup: 'dialog' },
-      { trigger: '#mobPartTocBtn', target: '#partTocOverlay', fallbackId: 'partTocOverlay', popup: 'dialog' },
+      { trigger: '#mobPartTocBtn, .mobile-top-bar [data-reader-mobile-menu-target="mobPartTocBtn"]', target: '#partTocOverlay', fallbackId: 'partTocOverlay', popup: 'dialog' },
       { trigger: '#mobTocBtn', target: '#seriesTocOverlay', fallbackId: 'seriesTocOverlay', popup: 'dialog' },
       { trigger: '[data-gill-settings-open]', target: '#gillSettingsOverlay', fallbackId: 'gillSettingsOverlay', popup: 'dialog' },
       { trigger: '[data-gill-learning-open]', target: '#gillLearningOverlay', fallbackId: 'gillLearningOverlay', popup: 'dialog' },

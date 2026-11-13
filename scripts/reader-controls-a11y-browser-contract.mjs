@@ -30,11 +30,11 @@ const ROUTES = [
   {
     id: 'gill',
     route: '/articles/dzhon-gill-chast-1-chelovek/',
-    slot: { root: '[data-fc-speed-mode="inline"]', rail: '.mobile-speedrail', badge: '.mobile-spdbadge', alternate: '.mobile-learning-trigger', keepAlternateVisible: false, chip: '.mobile-speed' },
+    slot: { root: '[data-reader-mobile-speed][data-gill-mobile-bar]', rail: '.mobile-speedrail', badge: '.mobile-spdbadge', alternate: '.reader-mobile-menu-trigger', keepAlternateVisible: false, chip: '.mobile-speed' },
     mobileSurfaces: [
       { id: 'part-toc', trigger: '#mobPartTocBtn', target: '#partTocOverlay', popup: 'dialog' },
       { id: 'settings', trigger: '#mobSettingsBtn', target: '#gillSettingsOverlay', popup: 'dialog' },
-      { id: 'learning', trigger: '#mobLearningBtn', target: '#gillLearningOverlay', popup: 'dialog' },
+      { id: 'menu', trigger: '.mobile-top-bar [data-reader-mobile-menu-target="mobPartTocBtn"]', target: '#partTocOverlay', popup: 'dialog' },
     ],
     desktopSurfaces: [
       { id: 'settings', trigger: '[data-gill-settings-open]', target: '#gillSettingsOverlay', popup: 'dialog' },
@@ -191,7 +191,11 @@ async function auditSlot(page, routeId, selectors, checks) {
     const r = document.querySelector(rail);
     const b = document.querySelector(badge);
     const a = alternate ? document.querySelector(alternate) : null;
-    return !!r && r.hidden && r.getAttribute('aria-hidden') === 'true' &&
+    // The shared speed slot uses inert + aria-hidden + CSS display:none;
+    // unlike the retired Gill rail it does not set the HTML hidden property.
+    const trulyClosed = !!r && (r.hidden ||
+      (r.inert && r.getAttribute('aria-hidden') === 'true' && getComputedStyle(r).display === 'none'));
+    return trulyClosed && r.getAttribute('aria-hidden') === 'true' &&
       b?.getAttribute('aria-expanded') === 'false' &&
       (!a || (!a.inert && a.getAttribute('aria-hidden') !== 'true'));
   }, { rail: selectors.rail, badge: selectors.badge, alternate: selectors.alternate }, { timeout: 2000 });

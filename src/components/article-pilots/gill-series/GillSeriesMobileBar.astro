@@ -49,7 +49,12 @@ const page = config.pages[pageId];
   topAttrs={{ 'data-fc-root': true, 'data-fc-variant': 'gill', 'data-gill-mobile-bar': true, 'data-gb-speed-custom': true, 'data-reader-mobile-speed': true }}
   bottomAttrs={{ 'data-fc-root': true, 'data-fc-variant': 'gill', 'data-gill-mobile-bar': true }}
 >
-  <ReaderMobileHome engine="series" href="../../" slot="top-leading" />
+  <Fragment slot="top-leading">
+    <button class="gb-icon" id="mobBackBtn" type="button" aria-label="Назад" data-home-href={config.railBackHref}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+    </button>
+    <ReaderMobileHome engine="series" href="../../" />
+  </Fragment>
 
   <div class="mobile-top-slot" slot="top-primary">
     <ReaderMobileMenuTrigger targetId="mobPartTocBtn" />
