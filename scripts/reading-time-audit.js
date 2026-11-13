@@ -135,11 +135,45 @@ function lineAt(source, offset) {
   return line;
 }
 
-const CARD_START = /<li class="related-articles__item"|<div class="related-articles__body"|<a class="gbs2-next-card"|<div class="gbs2-next-card"/g;
+const CARD_START = /<li class="related-articles__item"|<div class="related-articles__body"|<a class="gbs2-next-card"|<div class="gbs2-next-card"|<a class="gb-series-link"/g;
 
 function literalSurfaces(slug) {
   const page = path.join(PAGES_DIR, 'articles', slug, 'index.astro');
   if (!fs.existsSync(page) || !fs.existsSync(COMPONENTS_DIR)) return [];
+  return scanComponentLiterals(page, { cardsOnly: false });
+}
+
+/**
+ * Страницы вне `/articles/` — серии и справки, собранные из компонентов.
+ *
+ * Их карточки «Из библиотеки» ссылаются на статьи и печатают чужое время:
+ * на четырёх частях «Нагорной проповеди» стояло одинаковое «Перевод · 50 мин»
+ * и «Под редакцией · 41 мин» при фактических 62 и 58. Своего MDX у таких
+ * страниц нет, поэтому здесь проверяются только карточки: их ожидание берётся
+ * у статьи-цели, а не у самой страницы.
+ */
+function pageLiteralSurfaces() {
+  if (!fs.existsSync(PAGES_DIR) || !fs.existsSync(COMPONENTS_DIR)) return [];
+  const out = [];
+  const walk = (dir) => {
+    for (const name of fs.readdirSync(dir, { withFileTypes: true })) {
+      const abs = path.join(dir, name.name);
+      if (name.isDirectory()) {
+        if (path.relative(PAGES_DIR, abs).split(path.sep)[0] === 'articles') continue;
+        walk(abs);
+      } else if (name.name === 'index.astro') {
+        const page = `/${path.relative(PAGES_DIR, dir).split(path.sep).join('/')}/`;
+        for (const l of scanComponentLiterals(abs, { cardsOnly: true })) {
+          out.push({ ...l, slug: page, page: true });
+        }
+      }
+    }
+  };
+  walk(PAGES_DIR);
+  return out;
+}
+
+function scanComponentLiterals(page, { cardsOnly }) {
   const dirs = new Set();
   for (const m of read(page).matchAll(/@\/components\/([^'"]+)\.astro/g)) {
     dirs.add(path.dirname(path.join(COMPONENTS_DIR, m[1])));
@@ -154,11 +188,11 @@ function literalSurfaces(slug) {
       const rel = path.relative(ROOT, file);
       const taken = [];
 
-      for (const m of source.matchAll(/⏱\s*(\d+)\s*мин/g)) {
+      if (!cardsOnly) for (const m of source.matchAll(/⏱\s*(\d+)\s*мин/g)) {
         out.push({ file: rel, line: lineAt(source, m.index), offset: m.index, kind: 'visible', value: Number(m[1]), target: null });
         taken.push([m.index, m.index + m[0].length]);
       }
-      for (const m of source.matchAll(/data-pagefind-meta="readTime"[^>]*>(\d+)</g)) {
+      if (!cardsOnly) for (const m of source.matchAll(/data-pagefind-meta="readTime"[^>]*>(\d+)</g)) {
         out.push({ file: rel, line: lineAt(source, m.index), offset: m.index, kind: 'pagefind', value: Number(m[1]), target: null });
         taken.push([m.index, m.index + m[0].length]);
       }
@@ -166,7 +200,7 @@ function literalSurfaces(slug) {
       // Структурированные данные страницы: `readingTime: 30` в объекте `page`
       // внутри PageHead. Это не видимая строка, но именно отсюда берут число
       // JSON-LD, SITE_CONFIG и мета pagefind.
-      for (const m of source.matchAll(/readingTime:\s*(\d+)(?=\s*[,}])/g)) {
+      if (!cardsOnly) for (const m of source.matchAll(/readingTime:\s*(\d+)(?=\s*[,}])/g)) {
         out.push({ file: rel, line: lineAt(source, m.index), offset: m.index, kind: 'pagemeta', value: Number(m[1]), target: null });
         taken.push([m.index, m.index + m[0].length]);
       }
@@ -260,7 +294,7 @@ function audit() {
 
   // Ожидание для литерала: у заголовка страницы — её собственный расчёт,
   // у карточки-ссылки — расчёт той статьи, на которую она ссылается.
-  const literals = rows.flatMap((r) =>
+  const articleLiterals = rows.flatMap((r) =>
     (r.literals || []).map((l) => ({
       ...l,
       slug: r.slug,
@@ -274,6 +308,13 @@ function audit() {
               : null,
     }))
   );
+
+  // Карточки на страницах вне /articles/: ожидание всегда у статьи-цели.
+  const pageLiterals = pageLiteralSurfaces().map((l) => ({
+    ...l,
+    expected: l.target ? expectedBySlug.get(l.target) ?? null : null,
+  }));
+  const literals = [...articleLiterals, ...pageLiterals];
 
   const seriesRows = [];
   if (fs.existsSync(SERIES_FILE)) {
@@ -529,8 +570,8 @@ console.log(
 );
 
 console.log(
-  `\nЖёстко вписанное время в компонентах пилота: поверхностей ${report.literals.length} ` +
-    `у ${literalSlugs.size} статей; расходятся с политикой: ${literalDrift.length}. ` +
+  `\nЖёстко вписанное время в разметке страниц: поверхностей ${report.literals.length} ` +
+    `у ${literalSlugs.size} страниц; расходятся с политикой: ${literalDrift.length}. ` +
     'Это не SSOT: у таких значений нет генератора, --write их не трогает (§8 политики).'
 );
 if (literalDrift.length) {
