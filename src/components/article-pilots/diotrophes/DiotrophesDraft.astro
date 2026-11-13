@@ -9,6 +9,11 @@ type SectionId =
   | 'sexual-spiritual-coercion'
   | 'financial-dependency';
 
+type ReaderSourceLocator = {
+  label: string;
+  href: string;
+};
+
 type CaseCard = {
   id: string;
   section: SectionId;
@@ -17,6 +22,8 @@ type CaseCard = {
   evidence: string;
   boundary: string;
   sources: string[];
+  publishedLocators: ReaderSourceLocator[];
+  draftLocators?: ReaderSourceLocator[];
 };
 
 type SourceLink = [label: string, href: string];
@@ -34,147 +41,244 @@ const caseCards: CaseCard[] = [
     mechanism: 'Концентрация власти вокруг центрального лидера',
     evidence: 'Записи Acts 29, решения совета Mars Hill, документы о перестройке управления и материалы церковной дисциплины позволяют описывать не тайные мотивы, а наблюдаемую архитектуру: полномочия сужались к центру, а несогласие могло становиться вопросом лояльности.',
     boundary: 'Поздние сообщения о Trinity Church сюда не переносятся. Карточка не утверждает, что известность или сильный стиль сами по себе доказывают злоупотребление.',
-    sources: ['DRI-01', 'DRI-04']
+    sources: ['DRI-01', 'DRI-04'],
+    publishedLocators: [
+      { label: 'формальные обвинения 21 бывшего пастора Mars Hill', href: '#fw-source-fw10-dri-01' },
+      { label: 'решение Acts 29 об исключении Mars Hill', href: '#fw-source-fw10-dri-04' }
+    ]
   },
   {
     id: 'bill-gothard', section: 'authority-capture', name: 'Bill Gothard / IBLP',
     mechanism: 'Персонализированная система авторитета',
     evidence: 'Материалы совета IBLP, внутреннего расследования и гражданского процесса показывают систему, в которой личное руководство, правила и зависимость участников трудно отделялись друг от друга. Для статьи важен именно властный механизм, а не сведение всего дела к одному виду обвинений.',
     boundary: 'Процессуальное прекращение или истечение сроков не является решением по существу и не превращается ни в признание вины, ни в полное оправдание.',
-    sources: ['GOT-01', 'GOT-03']
+    sources: ['GOT-01', 'GOT-03'],
+    publishedLocators: [
+      { label: 'заявление совета IBLP о переходном периоде', href: '#fw-source-fw10-got-01' },
+      { label: 'заявление IBLP об отставке Б. Готарда', href: '#fw-source-fw10-got-02' }
+    ]
   },
   {
     id: 'darrin-patrick', section: 'authority-capture', name: 'Darrin Patrick / The Journey',
     mechanism: 'Лидерская незаменимость и сопротивление подотчётности',
     evidence: 'Официальная история The Journey и письмо совета фиксируют повторные вмешательства, вопросы характера и единогласное отстранение. Этот материал показывает, как сильная публичная роль может сосуществовать с растущей неспособностью принимать коррекцию.',
     boundary: 'Последующая история восстановления рассматривается отдельно и не используется ни для отмены первоначальных выводов, ни для посмертного объяснения причин трагедии.',
-    sources: ['W2-PAT-01', 'W2-PAT-02']
+    sources: ['W2-PAT-01', 'W2-PAT-02'],
+    publishedLocators: [
+      { label: 'официальная хронология The Journey (№ 25)', href: '#source-25' },
+      { label: 'справка о встречах старейшин The Journey с общиной', href: '#fw-source-fw10-dpa-01' }
+    ],
+    draftLocators: [
+      { label: 'официальная хронология The Journey (№ 25)', href: '#source-25' }
+    ]
   },
   {
     id: 'james-macdonald', section: 'governance-procedure', name: 'James MacDonald / Harvest Bible Chapel',
     mechanism: 'Обезвреживание совета и финансового контроля',
     evidence: 'Церковный финансово-юридический обзор, увольнение и последующая институциональная коррекция дают основание говорить о слабой подотчётности, закрытых решениях и концентрации контроля. Здесь процедура служила не только порядку, но и сохранению центра власти.',
     boundary: 'Уголовная лексика не используется: статья говорит о церковных, финансовых и управленческих записях и отдельно учитывает ответ самого MacDonald.',
-    sources: ['MAC-01', 'MAC-04']
+    sources: ['MAC-01', 'MAC-04'],
+    publishedLocators: [
+      { label: 'сообщение старейшин Harvest об увольнении', href: '#fw-source-fw10-mac-01' },
+      { label: 'письмо бывшего старейшины Harvest о подотчётности', href: '#fw-source-fw10-mac-02' },
+      { label: 'реестр конфессиональных расследований Guidepost (№ 7)', href: '#source-07' }
+    ],
+    draftLocators: [
+      { label: 'реестр конфессиональных расследований Guidepost (№ 7)', href: '#source-07' }
+    ]
   },
   {
     id: 'cj-mahaney', section: 'governance-procedure', name: 'C. J. Mahaney / Sovereign Grace',
     mechanism: 'Процедура, возвращающая власть центру',
     evidence: 'Собственное признание попытки давления, отпуск, решение о восстановлении и документы об обращении с оппонентами позволяют исследовать, как формальный процесс может завершиться восстановлением прежнего центра без достаточной прозрачности для всей общины.',
     boundary: 'Статья не объявляет доказанной широкую теорию сокрытия и не переносит на Mahaney преступления или обвинения, относящиеся к другим людям.',
-    sources: ['MAH-01', 'MAH-04']
+    sources: ['MAH-01', 'MAH-04'],
+    publishedLocators: [
+      { label: 'официальное заявление Sovereign Grace', href: '#fw-source-fw10-mah-01' },
+      { label: 'хронология рассмотрения и восстановления в SGM', href: '#fw-source-fw10-mah-02' }
+    ]
   },
   {
     id: 'doug-wilson', section: 'governance-procedure', name: 'Doug Wilson / Christ Church / CREC',
     mechanism: 'Конфессиональная проверка с ограниченной внешней дистанцией',
     evidence: 'Материалы CREC, пресвитериальные записи, письма в суд и публичные ответы позволяют оценивать качество процедуры, степень независимости и готовность структуры пересматривать собственные решения.',
     boundary: 'Преступления других лиц не приписываются Wilson. Деноминационный обзор не называется уголовным решением, а несогласие с его выводами не подменяет доказательство.',
-    sources: ['WIL-01', 'WIL-02']
+    sources: ['WIL-01', 'WIL-02'],
+    publishedLocators: [
+      { label: 'архив пресвитерии Ансельма CREC (№ 8)', href: '#source-08' }
+    ]
   },
   {
     id: 'jerry-falwell-jr', section: 'governance-procedure', name: 'Jerry Falwell Jr. / Liberty University',
     mechanism: 'Запоздалая реакция совета на персонализированное управление',
     evidence: 'Официальные сообщения Liberty об отпуске, отставке и независимой проверке показывают, как совет может долго зависеть от фигуры руководителя, а затем вынужден восстанавливать контроль уже в условиях публичного кризиса.',
     boundary: 'Спорные сексуальные утверждения остаются атрибутированными и оспариваемыми; карточка строится на решениях совета и управленческой хронологии.',
-    sources: ['FAL-02', 'FAL-03']
+    sources: ['FAL-02', 'FAL-03'],
+    publishedLocators: [
+      { label: 'решение совета Liberty University об отставке (№ 15)', href: '#source-15' },
+      { label: 'объявление совета о независимом расследовании (№ 16)', href: '#source-16' }
+    ]
   },
   {
     id: 'sbc-systemic', section: 'information-reputation', name: 'Southern Baptist Convention / Executive Committee',
     mechanism: 'Управление информацией ради защиты институциональной репутации',
     evidence: 'Независимое расследование Guidepost и последующие официальные заявления SBC документируют сопротивление раскрытию, внутреннее управление сообщениями и последующее признание серьёзных институциональных ошибок.',
     boundary: 'Списки обращений и обвинений не превращаются в реестр установленной вины каждого упомянутого человека. Карточка относится к системной реакции органов SBC.',
-    sources: ['SBC-01', 'SBC-02']
+    sources: ['SBC-01', 'SBC-02'],
+    publishedLocators: [
+      { label: 'независимый отчёт Guidepost по ЮБК (№ 1)', href: '#source-01' },
+      { label: 'ответ исполкома SBC на отчёт рабочей группы (№ 2)', href: '#source-02' },
+      { label: 'заявление о бывшем юрисконсульте SBC (№ 3)', href: '#source-03' }
+    ]
   },
   {
     id: 'bill-hybels', section: 'information-reputation', name: 'Bill Hybels / Willow Creek',
     mechanism: 'Репутационный щит вокруг доверенного лидера',
     evidence: 'Независимая консультативная группа и собственная историческая страница Willow Creek позволяют описать задержку независимой проверки и коррекции, вызванную доверием к платформе и первоначальной защитой лидера.',
     boundary: 'Спорные эпизоды не называются уголовно установленными фактами. Анализ ограничен выводами независимой проверки и официальной институциональной реакцией.',
-    sources: ['HYB-01', 'HYB-02']
+    sources: ['HYB-01', 'HYB-02'],
+    publishedLocators: [
+      { label: 'институциональная история и признания Willow Creek (№ 4)', href: '#source-04' },
+      { label: 'документы независимой группы IAG по Willow Creek', href: '#fw-source-fw10-hyb-03' }
+    ],
+    draftLocators: [
+      { label: 'институциональная история и признания Willow Creek (№ 4)', href: '#source-04' }
+    ]
   },
   {
     id: 'brian-houston', section: 'information-reputation', name: 'Brian Houston / Hillsong',
     mechanism: 'Смешение семейной, церковной и институциональной ответственности',
     evidence: 'Королевская комиссия исследовала реакцию Hillsong и Australian Christian Churches на сообщения о Frank Houston, ведение записей и обращение с пострадавшим. Этот слой можно обсуждать независимо от позднейшего уголовного процесса против Brian Houston.',
     boundary: 'Оправдание по конкретному уголовному составу не стирает выводы комиссии об институциональной реакции; выводы комиссии, в свою очередь, не называются уголовным приговором.',
-    sources: ['HOU-01', 'HOU-03']
+    sources: ['HOU-01', 'HOU-03'],
+    publishedLocators: [
+      { label: 'Королевская комиссия Австралии, Case Study 18 (№ 5)', href: '#source-05' },
+      { label: 'официальный выпуск выводов комиссии (№ 6)', href: '#source-06' }
+    ]
   },
   {
     id: 'rzim', section: 'information-reputation', name: 'Ravi Zacharias / RZIM',
     mechanism: 'Платформа, затрудняющая проверку центральной фигуры',
     evidence: 'Независимые расследования и материалы совета позволяют говорить о репутационной защите, особом финансовом доступе и организационной культуре, в которой доверие к основателю ослабило критическую проверку.',
     boundary: 'Выводы не расширяются за пределы лиц, периодов и механизмов, исследованных отчётами. Карточка не превращает весь персонал организации в соучастников.',
-    sources: ['RZI-01', 'RZI-03']
+    sources: ['RZI-01', 'RZI-03'],
+    publishedLocators: [
+      { label: 'решение ECFA о прекращении членства RZIM', href: '#fw-source-fw10-rzi-01' },
+      { label: 'сводка независимого расследования и ответа совета RZIM', href: '#fw-source-fw10-rzi-02' },
+      { label: 'реестр конфессиональных расследований Guidepost (№ 7)', href: '#source-07' }
+    ],
+    draftLocators: [
+      { label: 'реестр конфессиональных расследований Guidepost (№ 7)', href: '#source-07' }
+    ]
   },
   {
     id: 'mike-bickle', section: 'information-reputation', name: 'Mike Bickle / IHOPKC',
     mechanism: 'Дозированное раскрытие и меняющаяся институциональная формулировка',
     evidence: 'Независимый отчёт Firefly, архив заявлений IHOPKC и последующие правовые реформы позволяют проследить, как неполные ранние формулировки и запоздалое раскрытие влияют на доверие и безопасность сообщества.',
     boundary: 'Каждое сообщение и обвинение сохраняет собственный доказательный статус. Карточка не утверждает больше, чем установлено независимым отчётом и официальными документами.',
-    sources: ['BIC-02', 'BIC-05']
+    sources: ['BIC-02', 'BIC-05'],
+    publishedLocators: [
+      { label: 'независимый отчёт Firefly по IHOPKC (№ 19)', href: '#source-19' },
+      { label: 'закон штата Миссури SB 81 (№ 20)', href: '#source-20' }
+    ]
   },
   {
     id: 'robert-morris', section: 'information-reputation', name: 'Robert Morris / Gateway Church',
     mechanism: 'Духовный статус как усилитель доверия и задержки раскрытия',
     evidence: 'Официальное уголовное дело завершилось признанием вины в октябре 2025 года. Для этой статьи центральна не сенсационная детализация преступления, а вопрос о том, как пасторский статус, доверие и институциональные заявления влияли на способность своевременно назвать зло.',
     boundary: 'Судебно установленное относится к Morris и конкретным эпизодам. Карточка не приписывает совету знание, сокрытие или соучастие без отдельного доказательства.',
-    sources: ['W2-MOR-02', 'W2-MOR-03']
+    sources: ['W2-MOR-02', 'W2-MOR-03'],
+    publishedLocators: [
+      { label: 'сообщение генпрокурора Оклахомы о признании вины (№ 21)', href: '#source-21' },
+      { label: 'протокол слушаний легислатуры Техаса (№ 22)', href: '#source-22' }
+    ]
   },
   {
     id: 'bethel-bolz-armstrong', section: 'information-reputation', name: 'Bethel Church / Shawn Bolz / Ben Armstrong',
     mechanism: 'Запоздалая коммуникация и последующее переустройство надзора',
     evidence: 'Собственные письма Bethel, ответы на вопросы и хронология обновлений руководства фиксируют институциональные признания, задержку коммуникации и объявленный переход к внешнему участию, процессу защиты уязвимых и более независимому надзору.',
     boundary: 'Продолжающиеся расследования не предрешаются. Карточка различает то, за что организация уже извинилась, и то, что ещё остаётся предметом независимой проверки.',
-    sources: ['W2-BET-01', 'W2-BET-06']
+    sources: ['W2-BET-01', 'W2-BET-06'],
+    publishedLocators: [
+      { label: 'официальное письмо руководства Bethel (№ 26)', href: '#source-26' },
+      { label: 'хронология решений руководства Bethel (№ 27)', href: '#source-27' },
+      { label: 'разъяснение объёма извинений Bethel (№ 28)', href: '#source-28' }
+    ]
   },
   {
     id: 'steve-timmis', section: 'retaliation-silencing', name: 'Steve Timmis / The Crowded House',
     mechanism: 'Маркировка несогласных и высокая цена вопроса',
     evidence: 'Независимый учебный обзор Thirtyone:eight и реакция общины описывают культуру страха, трудности с возражением и вред, возникающий, когда лидерская уверенность становится нормой оценки зрелости окружающих.',
     boundary: 'Обзор не превращается в уголовный приговор. Статья не делает выводов о каждом конфликте и не считает всякое строгое руководство подавлением.',
-    sources: ['TIM-01', 'TIM-03']
+    sources: ['TIM-01', 'TIM-03'],
+    publishedLocators: [
+      { label: 'независимый обзор Thirtyone:eight по Crowded House (№ 9)', href: '#source-09' },
+      { label: 'заявление Thirtyone:eight о завершении обзора (№ 10)', href: '#source-10' }
+    ]
   },
   {
     id: 'paige-patterson', section: 'retaliation-silencing', name: 'Paige Patterson / SWBTS',
     mechanism: 'Обесценивание сообщения и защита управленческого центра',
     evidence: 'Официальные решения попечителей и заявления SWBTS показывают противоречия в обращении с сообщениями, записями и ответственностью руководителя. Для статьи это пример того, как институт исправляет собственную первоначальную реакцию.',
     boundary: 'Прекращённые гражданские требования не считаются решением по существу ни в одну сторону. Используются только подтверждённые действия попечителей и семинарии.',
-    sources: ['PAT-03', 'PAT-04']
+    sources: ['PAT-03', 'PAT-04'],
+    publishedLocators: [
+      { label: 'заявление SWBTS о сообщениях о насилии (№ 12)', href: '#source-12' },
+      { label: 'решение попечителей SWBTS по П. Паттерсону (№ 13)', href: '#source-13' },
+      { label: 'заявление исполкома попечителей SWBTS (№ 14)', href: '#source-14' }
+    ]
   },
   {
     id: 'jonathan-fletcher', section: 'sexual-spiritual-coercion', name: 'Jonathan Fletcher / Emmanuel Wimbledon',
     mechanism: 'Духовная близость, превращённая в принуждающий доступ',
     evidence: 'Независимый обзор усвоенных уроков и процедура установления фактов позволяют различать духовный авторитет, интимный доступ, унизительные практики и институциональное знание. Властная связь здесь важнее общего ярлыка.',
     boundary: 'Процедура установления фактов не называется обычным уголовным приговором. Процессуальная пригодность и установленные факты описываются раздельно.',
-    sources: ['FLE-01', 'FLE-05']
+    sources: ['FLE-01', 'FLE-05'],
+    publishedLocators: [
+      { label: 'независимый обзор Thirtyone:eight по Дж. Флетчеру (№ 11)', href: '#source-11' }
+    ]
   },
   {
     id: 'mike-pilavachi', section: 'sexual-spiritual-coercion', name: 'Mike Pilavachi / Soul Survivor',
     mechanism: 'Духовная зависимость и контролирующее использование авторитета',
     evidence: 'Церковь Англии сообщила, что опасения о злоупотреблении властью и духовном насилии были подтверждены; последующий независимый обзор исследовал культуру, управление и защиту уязвимых. Это даёт редкий официальный материал о самом механизме власти.',
     boundary: 'Вывод проверки безопасности и дисциплинарный процесс не смешиваются с уголовным приговором. Формулировки следуют точному статусу церковных процедур.',
-    sources: ['PIL-04', 'PIL-06']
+    sources: ['PIL-04', 'PIL-06'],
+    publishedLocators: [
+      { label: 'сообщение Церкви Англии о подтверждённых выводах (№ 17)', href: '#source-17' },
+      { label: 'заявление национальной службы защиты уязвимых Церкви Англии (№ 18)', href: '#source-18' }
+    ]
   },
   {
     id: 'stanislav-moskvitin', section: 'sexual-spiritual-coercion', name: 'Stanislav Moskvitin / «Новое Творение»',
     mechanism: 'Судебно установленное принуждение внутри религиозной зависимости',
     evidence: 'Опубликованные карточки суда первой инстанции и апелляции дают юридическую основу для описания насилия и принуждающей практики в отношении участников. Здесь властный механизм подтверждён судебным, а не только журналистским материалом.',
     boundary: 'Позднейшее отдельное дело о нежелательной организации полностью исключено: оно относится к другой правовой и религиозно-свободной проблематике.',
-    sources: ['W2-MOS-01', 'W2-MOS-02']
+    sources: ['W2-MOS-01', 'W2-MOS-02'],
+    publishedLocators: [
+      { label: 'карточка дела Кировского районного суда г. Омска (№ 23)', href: '#source-23' },
+      { label: 'апелляционная карточка Омского областного суда (№ 24)', href: '#source-24' }
+    ]
   },
   {
     id: 'nikolay-kuznetsov', section: 'financial-dependency', name: 'Nikolay Kuznetsov / «Возрождение XXI век»',
     mechanism: 'Финансовая практика, усиленная духовным авторитетом',
-    evidence: 'Судебное решение и апелляция позволяют рассматривать обязательные платежи и воздействие на участников как установленное ядро дела. Карточка сохраняет правозащитные и доказательственные оговорки, отмеченные в Research.',
+    evidence: 'Судебное решение и апелляция позволяют рассматривать обязательные платежи и воздействие на участников как установленное ядро дела. Карточка сохраняет правозащитные и доказательственные оговорки, принятые для этого досье.',
     boundary: 'Журналистские выражения и спорные психологические формулы не используются как самостоятельное доказательство. Прямые цитаты запрещены до восстановления точного официального указателя.',
-    sources: ['W2-KUZ-01', 'W2-KUZ-02']
+    sources: ['W2-KUZ-01', 'W2-KUZ-02'],
+    publishedLocators: [
+      { label: 'приговор и апелляционное определение по делу «Возрождение XXI век» (архивная справка)', href: '#sources-archival-court-records' }
+    ]
   },
   {
     id: 'evgeny-shin', section: 'financial-dependency', name: 'Evgeny Shin / «Христианская миссия»',
     mechanism: 'Использование доверия общины в доказанном мошенничестве',
     evidence: 'Судебное решение фиксирует мошенническое ядро, потерпевших и установленный размер ущерба. Для темы статьи важно, что доступ к людям и доверие были связаны с церковным положением.',
     boundary: 'Медийная оценка ущерба в полмиллиарда исключена. Утверждение о сознательном сокрытии со стороны церкви также не используется без самостоятельной первичной опоры.',
-    sources: ['W2-SHI-01', 'W2-SHI-02']
+    sources: ['W2-SHI-01', 'W2-SHI-02'],
+    publishedLocators: [
+      { label: 'судебное решение о мошенничестве по делу «Христианская миссия» (архивная справка)', href: '#sources-archival-court-records' }
+    ]
   }
 ];
 
@@ -235,6 +339,15 @@ const quiz: QuizItem[] = [
 ];
 
 const grouped = (section: SectionId) => caseCards.filter((item) => item.section === section);
+const locatorsForCard = (card: CaseCard): ReaderSourceLocator[] =>
+  publicationMode
+    ? card.publishedLocators
+    : (card.draftLocators ??
+        card.publishedLocators.filter((loc) => loc.href.startsWith('#source-') || loc.href === '#sources-archival-court-records'));
+const resolveCardLocators = (card: CaseCard): ReaderSourceLocator[] => {
+  const locs = locatorsForCard(card);
+  return locs.length > 0 ? locs : [{ label: 'проверенные источники в разделе ниже', href: '#sources' }];
+};
 ---
 
 <main id="main-content">
@@ -309,7 +422,15 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
           <p><strong>Механизм:</strong> {card.mechanism}.</p>
           <p>{card.evidence}</p>
           <p class="muted"><strong>Граница:</strong> {card.boundary}</p>
-          <p class="source-ref">Записи Research: {card.sources.join(', ')}</p>
+          <p class="source-ref">
+            <strong>Опорные источники:</strong>{' '}
+            {resolveCardLocators(card).map((locator, index) => (
+              <>
+                {index > 0 && ', '}
+                <a href={locator.href}>{locator.label}</a>
+              </>
+            ))}.
+          </p>
         </section>
       ))}
     </div>
@@ -323,7 +444,15 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
           <p><strong>Механизм:</strong> {card.mechanism}.</p>
           <p>{card.evidence}</p>
           <p class="muted"><strong>Граница:</strong> {card.boundary}</p>
-          <p class="source-ref">Записи Research: {card.sources.join(', ')}</p>
+          <p class="source-ref">
+            <strong>Опорные источники:</strong>{' '}
+            {resolveCardLocators(card).map((locator, index) => (
+              <>
+                {index > 0 && ', '}
+                <a href={locator.href}>{locator.label}</a>
+              </>
+            ))}.
+          </p>
         </section>
       ))}
     </div>
@@ -337,7 +466,15 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
           <p><strong>Механизм:</strong> {card.mechanism}.</p>
           <p>{card.evidence}</p>
           <p class="muted"><strong>Граница:</strong> {card.boundary}</p>
-          <p class="source-ref">Записи Research: {card.sources.join(', ')}</p>
+          <p class="source-ref">
+            <strong>Опорные источники:</strong>{' '}
+            {resolveCardLocators(card).map((locator, index) => (
+              <>
+                {index > 0 && ', '}
+                <a href={locator.href}>{locator.label}</a>
+              </>
+            ))}.
+          </p>
         </section>
       ))}
     </div>
@@ -351,7 +488,15 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
           <p><strong>Механизм:</strong> {card.mechanism}.</p>
           <p>{card.evidence}</p>
           <p class="muted"><strong>Граница:</strong> {card.boundary}</p>
-          <p class="source-ref">Записи Research: {card.sources.join(', ')}</p>
+          <p class="source-ref">
+            <strong>Опорные источники:</strong>{' '}
+            {resolveCardLocators(card).map((locator, index) => (
+              <>
+                {index > 0 && ', '}
+                <a href={locator.href}>{locator.label}</a>
+              </>
+            ))}.
+          </p>
         </section>
       ))}
     </div>
@@ -365,7 +510,15 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
           <p><strong>Механизм:</strong> {card.mechanism}.</p>
           <p>{card.evidence}</p>
           <p class="muted"><strong>Граница:</strong> {card.boundary}</p>
-          <p class="source-ref">Записи Research: {card.sources.join(', ')}</p>
+          <p class="source-ref">
+            <strong>Опорные источники:</strong>{' '}
+            {resolveCardLocators(card).map((locator, index) => (
+              <>
+                {index > 0 && ', '}
+                <a href={locator.href}>{locator.label}</a>
+              </>
+            ))}.
+          </p>
         </section>
       ))}
     </div>
@@ -379,7 +532,15 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
           <p><strong>Механизм:</strong> {card.mechanism}.</p>
           <p>{card.evidence}</p>
           <p class="muted"><strong>Граница:</strong> {card.boundary}</p>
-          <p class="source-ref">Записи Research: {card.sources.join(', ')}</p>
+          <p class="source-ref">
+            <strong>Опорные источники:</strong>{' '}
+            {resolveCardLocators(card).map((locator, index) => (
+              <>
+                {index > 0 && ', '}
+                <a href={locator.href}>{locator.label}</a>
+              </>
+            ))}.
+          </p>
         </section>
       ))}
     </div>
@@ -400,10 +561,11 @@ const grouped = (section: SectionId) => caseCards.filter((item) => item.section 
 
     <section class="reading-list-section" id="sources" data-reader-source-links="40">
       <h2>Источники и границы проверки</h2>
-      <p>Полная Research-authority содержит 181 запись: 148 исходных записей и 33 источника дополнения Wave 11 о верных свидетелях (свой раздел — ниже). В читательский корпус вынесена отобранная рамка из 54 источников: 42 записи по конкретным делам и 12 библейских, академических и контролирующих источников по защите уязвимых. Ниже — 40 прямых читательских ссылок; раздел Wave 11 добавляет ещё 33 ссылки — 73 всего. Источники без восстановленного стабильного URL остаются внутренними точными указателями и используются только для ограниченного пересказа, без прямой цитаты.</p>
+      <p>Полный исследовательский реестр материала насчитывает 181 запись: 148 источников основной части и 33 источника раздела о верных свидетелях (приведён ниже). В читательский корпус вынесена отобранная рамка из 54 источников: 42 записи по конкретным делам и 12 библейских, академических и контролирующих источников по защите уязвимых. Ниже — 40 прямых читательских ссылок основной части; раздел о верных свидетелях добавляет ещё 33 ссылки — 73 всего.</p>
+      <p id="sources-archival-court-records" class="muted"><strong>Примечание о судебных карточках без постоянного URL.</strong> По двум российским делам — Николая Кузнецова («Возрождение XXI век»: приговор суда первой инстанции и апелляционное определение) и Евгения Шина («Христианская миссия»: вступившее в силу судебное решение о мошенничестве) — карточки региональных судов в ГАС «Правосудие» не имеют стабильной постоянной внешней ссылки, поэтому учитываются как внутренние архивные указатели и используются только для ограниченного пересказа установленного судебного ядра, без прямой цитаты.</p>
       <ol>
-        {sourceLinks.map(([label, href]) => (
-          <li><a href={href} rel="noopener noreferrer">{label}</a></li>
+        {sourceLinks.map(([label, href], index) => (
+          <li id={`source-${String(index + 1).padStart(2, '0')}`}><a href={href} rel="noopener noreferrer">{label}</a></li>
         ))}
       </ol>
     </section>

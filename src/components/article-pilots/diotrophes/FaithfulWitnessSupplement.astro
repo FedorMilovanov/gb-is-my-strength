@@ -8,6 +8,107 @@ const content = manifest;
 const pathways = caseData.casePathways;
 const responses = responseData.faithfulResponses;
 const readerSources = sourceData.readerSources;
+
+const readerSourceById = new Map(
+  readerSources.map((source, index) => [
+    source.id,
+    {
+      ...source,
+      number: index + 1,
+      anchor: `#fw-source-${source.id.toLowerCase()}`,
+    },
+  ]),
+);
+
+const BASE_CASE_LOCATORS: Record<string, Array<{ label: string; href: string }>> = {
+  'sbc-systemic': [
+    { label: 'отчёт Guidepost по ЮБК (осн. № 1)', href: '#source-01' },
+    { label: 'ответ исполкома SBC (осн. № 2)', href: '#source-02' },
+  ],
+  'bill-hybels': [
+    { label: 'институциональная хронология Willow Creek (осн. № 4)', href: '#source-04' },
+  ],
+  'mark-driscoll': [],
+  rzim: [
+    { label: 'реестр расследований Guidepost (осн. № 7)', href: '#source-07' },
+  ],
+  'bill-gothard': [],
+  'steve-timmis': [
+    { label: 'обзор Thirtyone:eight по Crowded House (осн. № 9)', href: '#source-09' },
+    { label: 'заявление о завершении обзора (осн. № 10)', href: '#source-10' },
+  ],
+  'jonathan-fletcher': [
+    { label: 'обзор Thirtyone:eight по Дж. Флетчеру (осн. № 11)', href: '#source-11' },
+  ],
+  'mike-pilavachi': [
+    { label: 'выводы расследования Церкви Англии (осн. № 17)', href: '#source-17' },
+    { label: 'заявление службы защиты уязвимых (осн. № 18)', href: '#source-18' },
+  ],
+  'mike-bickle': [
+    { label: 'независимый отчёт Firefly по IHOPKC (осн. № 19)', href: '#source-19' },
+    { label: 'закон штата Миссури SB 81 (осн. № 20)', href: '#source-20' },
+  ],
+  'paige-patterson': [
+    { label: 'заявление SWBTS о сообщениях о насилии (осн. № 12)', href: '#source-12' },
+    { label: 'решение попечителей SWBTS по П. Паттерсону (осн. № 13)', href: '#source-13' },
+    { label: 'заявление исполкома попечителей SWBTS (осн. № 14)', href: '#source-14' },
+  ],
+  'james-macdonald': [
+    { label: 'реестр расследований Guidepost (осн. № 7)', href: '#source-07' },
+  ],
+  'cj-mahaney': [],
+  'darrin-patrick': [
+    { label: 'официальная хронология The Journey (осн. № 25)', href: '#source-25' },
+  ],
+  'robert-morris': [
+    { label: 'сообщение генпрокурора Оклахомы о признании вины (осн. № 21)', href: '#source-21' },
+    { label: 'протокол слушаний легислатуры Техаса (осн. № 22)', href: '#source-22' },
+  ],
+  'brian-houston': [
+    { label: 'Королевская комиссия Австралии, Case Study 18 (осн. № 5)', href: '#source-05' },
+  ],
+};
+
+const CASE_READER_LABELS: Record<string, string> = {
+  'sbc-systemic': 'Исполком ЮБК (SBC)',
+  'bill-hybels': 'Willow Creek (Б. Хайбелс)',
+  'mark-driscoll': 'Mars Hill (М. Дрисколл)',
+  rzim: 'RZIM (Р. Захариас)',
+  'bill-gothard': 'IBLP (Б. Готард)',
+  'steve-timmis': 'The Crowded House (С. Тиммис)',
+  'jonathan-fletcher': 'Emmanuel Wimbledon (Дж. Флетчер)',
+  'mike-pilavachi': 'Soul Survivor (М. Пилавачи)',
+  'mike-bickle': 'IHOPKC (М. Бикл)',
+  'paige-patterson': 'SWBTS (П. Паттерсон)',
+  'james-macdonald': 'Harvest Bible Chapel (Дж. Макдональд)',
+  'cj-mahaney': 'Sovereign Grace (С. Дж. Махани)',
+  'darrin-patrick': 'The Journey (Д. Патрик)',
+  'robert-morris': 'Gateway Church (Р. Моррис)',
+  'brian-houston': 'Hillsong / ACC (Б. Хьюстон)',
+};
+
+const SOURCE_CLASS_LABELS: Record<string, string> = {
+  A1: 'государственный / судебный документ',
+  A2: 'независимое расследование или комиссия',
+  A3: 'официальная институциональная запись',
+  B1: 'проверяемая вторичная хронология рядом с источниками класса A',
+};
+
+const buildPathwayLocators = (pathway: (typeof pathways)[number]) => {
+  const fwLinks = pathway.sourceIds
+    .map((id) => readerSourceById.get(id))
+    .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
+    .map((entry) => ({
+      label: `${entry.label} (доп. № ${entry.number})`,
+      href: entry.anchor,
+    }));
+  const baseLinks = BASE_CASE_LOCATORS[pathway.id] ?? [];
+  return [
+    { label: 'основное досье по делу', href: `#case-${pathway.id}` },
+    ...baseLinks,
+    ...fwLinks,
+  ];
+};
 ---
 
 <section
@@ -21,7 +122,7 @@ const readerSources = sourceData.readerSources;
   data-reader-links={content.counts.totalReaderLinks}
 >
   <header class="article-header">
-    <p class="anti-kicker">Wave 11 · верные люди в трудной церковной ситуации</p>
+    <p class="anti-kicker">Вторая часть исследования · верность в трудной церковной ситуации</p>
     <h2 id="faithful-witness-heading">Как сохраняли верность Богу, не превращая послушание лидеру в молчание</h2>
     <p>
       Предыдущая часть показала механизмы власти. Здесь центр переносится на тех, кто жил
@@ -46,8 +147,7 @@ const readerSources = sourceData.readerSources;
     <ul>
       <li>люди называли конкретные решения и действия, а не ставили психологический диагноз;</li>
       <li>там, где это было безопасно, пытались говорить внутри и привлекали нескольких служителей;</li>
-      <li>сохраняли письма, даты и решения, чтобы отличить память от документа;</li>
-      <li>искали независимое подтверждение, а не собирали партию слухов;</li>
+      <li>сохраняли письма, даты и решения, чтобы отличить память от документа, и искали независимое подтверждение вместо сбора слухов;</li>
       <li>обращались к старейшинам, попечителям, сети или деноминации, способным реально ограничить лидера;</li>
       <li>при преступлении и риске для уязвимых не заменяли гражданскую власть церковной беседой;</li>
       <li>после кризиса добивались не только смены имени, но исправления устройства власти.</li>
@@ -64,19 +164,30 @@ const readerSources = sourceData.readerSources;
   </p>
 
   <div class="case-grid faithful-pathway-grid">
-    {pathways.map((pathway) => (
-      <section class="note-box evidence-card faithful-pathway" id={`faithful-${pathway.id}`} data-faithful-case={pathway.id}>
-        <h3>{pathway.name}</h3>
-        <p><strong>Кто действовал:</strong> {pathway.actors}.</p>
-        <p><strong>Напряжение верности:</strong> {pathway.loyaltyTension}</p>
-        <ol class="action-chain">
-          {pathway.steps.map((step) => <li>{step}</li>)}
-        </ol>
-        <p><strong>Урок:</strong> {pathway.lesson}</p>
-        <p class="muted"><strong>Граница:</strong> {pathway.boundary}</p>
-        <p class="source-ref">Research records: {pathway.sourceIds.join(', ')}</p>
-      </section>
-    ))}
+    {pathways.map((pathway) => {
+      const locators = buildPathwayLocators(pathway);
+      return (
+        <section class="note-box evidence-card faithful-pathway" id={`faithful-${pathway.id}`} data-faithful-case={pathway.id}>
+          <h3>{pathway.name}</h3>
+          <p><strong>Кто действовал:</strong> {pathway.actors}.</p>
+          <p><strong>Напряжение верности:</strong> {pathway.loyaltyTension}</p>
+          <ol class="action-chain">
+            {pathway.steps.map((step) => <li>{step}</li>)}
+          </ol>
+          <p><strong>Урок:</strong> {pathway.lesson}</p>
+          <p class="muted"><strong>Граница:</strong> {pathway.boundary}</p>
+          <p class="source-ref">
+            <strong>Источники и досье:</strong>{' '}
+            {locators.map((locator, index) => (
+              <>
+                {index > 0 && ' · '}
+                <a href={locator.href}>{locator.label}</a>
+              </>
+            ))}.
+          </p>
+        </section>
+      );
+    })}
   </div>
 
   <section class="note-box positive-comparator" id="positive-board-comparator">
@@ -110,7 +221,16 @@ const readerSources = sourceData.readerSources;
         <p><strong>Сложность:</strong> {item.tension}</p>
         <p><strong>Верный ответ:</strong> {item.response}</p>
         <p class="muted"><strong>Где этого недостаточно:</strong> {item.limit}</p>
-        <p class="source-ref">Кейсы: {item.caseIds.join(', ')} · Писание: {item.scriptures.join('; ')}</p>
+        <p class="source-ref">
+          <strong>Разобранные случаи:</strong>{' '}
+          {item.caseIds.map((caseId, caseIndex) => (
+            <>
+              {caseIndex > 0 && ', '}
+              <a href={`#faithful-${caseId}`}>{CASE_READER_LABELS[caseId] ?? 'разбор случая'}</a>
+            </>
+          ))}{' '}
+          · <strong>Писание:</strong> {item.scriptures.join('; ')}
+        </p>
       </section>
     ))}
   </div>
@@ -132,15 +252,15 @@ const readerSources = sourceData.readerSources;
   <section class="reading-list-section" id="faithful-witness-sources" data-new-reader-links={content.counts.newReaderLinks}>
     <h2>Новые источники Wave 11</h2>
     <p>
-      Эти 33 ссылки добавляются к прежним 40 читательским ссылкам статьи. A1/A2/A3 дают
-      государственные, независимые или институциональные документы; класс B1 используется только
+      Эти 33 ссылки добавляются к прежним 40 читательским ссылкам статьи. Категории A1–A3 дают
+      государственные, независимые или институциональные документы; категория B1 используется только
       для хронологии, воспроизведения письма или позиции участника рядом с источниками класса A.
     </p>
     <ol>
       {readerSources.map((source) => (
-        <li>
+        <li id={`fw-source-${source.id.toLowerCase()}`}>
           <a href={source.href} rel="noopener noreferrer">{source.label}</a>
-          <span class="muted"> — {source.class}</span>
+          <span class="muted"> — {source.class} ({SOURCE_CLASS_LABELS[source.class] ?? 'документальный источник'})</span>
         </li>
       ))}
     </ol>
