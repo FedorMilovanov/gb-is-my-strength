@@ -5,6 +5,7 @@ import process from 'node:process';
 import { createRequire } from 'node:module';
 import { parse } from 'parse5';
 import { checkTeenArticleLinks } from './lib/teen-article-links.mjs';
+import { checkTeenReadingTimes } from './lib/teen-reading-time-contract.mjs';
 
 const require = createRequire(import.meta.url);
 const { readImageDimensions } = require('./lib/sitemap-image-projection');
@@ -215,9 +216,11 @@ for (const [route, source] of requiredOwnership) {
   }
 }
 
-for (const [mark, pageId, slug, minutes, done, heroFile] of ITEMS) {
+const frontmatterMinutes = {};
+for (const [mark, pageId, slug, , , heroFile] of ITEMS) {
   const sourceRel = `src/content/articles/${slug}.mdx`;
   const mdx = read(sourceRel);
+  frontmatterMinutes[slug] = frontmatterScalar(mdx, 'readingTime');
   const requiredSourceFields = [
     'contentStatus: "published"',
     'draft: false',
@@ -256,10 +259,9 @@ for (const [mark, pageId, slug, minutes, done, heroFile] of ITEMS) {
   if (/publishedFrontmatter|\b(?:draft|noindex|publishedAt|updatedAt|canonicalOverride)\s*:/.test(source)) {
     fail(`${slug}: route must not shadow canonical publication frontmatter`);
   }
-  if (!config.includes(`readingProgressDoneMin: ${done}`)) fail(`${slug}: cumulative progress ${done} missing`);
-  if (!config.includes(`readingProgressPartMin: ${minutes}`)) fail(`${slug}: reading time ${minutes} missing`);
   if (['A','B','C','D'].includes(mark) && !config.includes(`mark: { kind: 'label', value: '${mark}' }`)) fail(`${slug}: ${mark} must remain core label`);
 }
+for (const error of checkTeenReadingTimes({ config, items: ITEMS, parts: registered?.parts, frontmatterMinutes })) fail(error);
 
 if (exists('data/route-search-policy.json')) {
   const policy = readJson('data/route-search-policy.json');
@@ -350,4 +352,5 @@ console.log('  media: route-specific 1200x630 WebP hero/OG + 600x315 card/rail f
 console.log('  bibliography: canonical reader projector owns build-time data-pagefind-ignore boundary');
 console.log('  adult articles: reciprocal prose links checked in MDX and, when present, built HTML');
 console.log('  local prose links: built destinations and fragments checked when dist is present');
+console.log('  reading time: frontmatter, metadata, rail, per-page progress and total agree');
 console.log('  production ownership: astro/production-dist');
