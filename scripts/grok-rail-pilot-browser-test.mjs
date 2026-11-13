@@ -206,6 +206,26 @@ try {
               integrated.toggleReady,integrated);
             const articleBefore=await page.locator('main.article-main--hrail')
               .evaluate(el => ({left:el.getBoundingClientRect().left,width:el.getBoundingClientRect().width}));
+            // The optical axis is an asynchronous measurement of real H2
+            // centres. Linux WebKit may substitute fonts after the first
+            // paint. Require final actual alignment, not elapsed milliseconds.
+            // Do not lower the <1px geometric tolerance.
+            try {
+              await page.waitForFunction(() => {
+                const toc=document.querySelector('.grok-toc');
+                const track=toc?.querySelector('.hrail-track');
+                const dots=Array.from(toc?.querySelectorAll(
+                  ':scope > li.grok-row--h2 > .grok-entry > .hrail-dot')??[]);
+                if(!track||dots.length<2)return false;
+                const tr=track.getBoundingClientRect();
+                const first=dots[0].getBoundingClientRect();
+                const last=dots[dots.length-1].getBoundingClientRect();
+                return Math.abs(tr.top-(first.top+first.height/2))<1 &&
+                  Math.abs(tr.bottom-(last.top+last.height/2))<1;
+              },null,{timeout:2500});
+            }catch{
+              // Preserve the strict geometry witness below for true regressions.
+            }
             const axis=await page.evaluate(()=>{
               const toc=document.querySelector('.grok-toc'),track=toc?.querySelector('.hrail-track');
               const dots=Array.from(toc?.querySelectorAll(':scope > li.grok-row--h2 > .grok-entry > .hrail-dot')??[]);
