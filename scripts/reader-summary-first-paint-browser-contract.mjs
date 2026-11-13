@@ -54,14 +54,22 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
  for(const route of ROUTES){
   const page=await browser.newPage({viewport:{width:1440,height:900},serviceWorkers:'block'});
   await page.route('**/js/reader-preferences.js*',async r=>{
-    await new Promise(resolve=>setTimeout(resolve,1150));await r.continue();
+    await new Promise(resolve=>setTimeout(resolve,1800));await r.continue();
   });
   try {
    await page.goto(origin+route,{waitUntil:'commit'});
-   await page.waitForTimeout(250);
+   // Linux WebKit can return from "commit" before the parser has emitted the
+   // summary card. Observe the pre-hydration DOM as soon as the real card
+   // exists rather than sampling an unfinished document at 250 ms.
+   await page.waitForFunction(() => Array.from(document.querySelectorAll('.summary-card')).some(el=>{
+     const title=el.querySelector(':scope > .summary-card__head')
+       ?.textContent?.trim().toLocaleLowerCase('ru');
+     return title==='коротко'||title==='краткое содержание';
+   }),null,{timeout:1200});
    const before=await page.evaluate(snapshot);
    check(engine,route,'delayed runtime: original list never flashes',before.exists&&before.owner===null&&before.pending==='1'&&before.display==='none'&&before.height===0,before);
-   await page.waitForTimeout(1150);
+   await page.waitForFunction(() => document.querySelector('.summary-card[data-gb-summary-owner="1"] .gb-summary-motion') !== null,
+     null,{timeout:3000});
    const after=await page.evaluate(snapshot);
    check(engine,route,'runtime assumes owner, closes, removes temporary guard',after.owner==='1'&&after.pending===null&&after.open==='false'&&after.height<=2&&after.collapsedInert===true&&after.ariaExpanded==='false'&&after.structure==='hydrated',after);
   }catch(e){check(engine,route,'delayed runtime exception',false,String(e));}
