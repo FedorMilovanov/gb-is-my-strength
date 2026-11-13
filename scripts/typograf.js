@@ -1,87 +1,156 @@
 #!/usr/bin/env node
 /**
- * §2.6 — Typograf: Russian typographic fixes for article HTML
- * Usage: node scripts/typograf.js [--dry-run]
- * Fixes: ёлочки, тире, неразрывные пробелы после коротких предлогов
- * Skips: <code>, <pre>, JSON-LD, attributes, data-* values
+ * §2.6 — Typograf: Fail-closed Russian material typography gate & helper
+ * (`SYS-MATERIAL-TYPOGRAPHY-GATE-FAILOPEN`).
+ *
+ * Authority rules:
+ * 1. Immutable `reference-only` and `built-app` HTML snapshots declared in
+ *    route profiles are NEVER mutated or flagged as mutable source targets.
+ * 2. Both `--dry-run` (`npm run typograf:dry`) and `--check` fail closed
+ *    (exit code 1) whenever any mutable HTML surface or built `dist/` HTML
+ *    page contains Russian straight ASCII quotes (`"…кириллица…"`) or spaced
+ *    ASCII hyphens between Cyrillic words (`слово - слово`) in visible prose
+ *    text nodes (parsed via `parse5`, skipping code/script/noscript/foreign
+ *    `[lang]`).
  */
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
-const glob = require('path');
+const parse5 = require('parse5');
+const { loadRouteRecords } = require('./lib/route-source-contract');
+const {
+  classifyLegacyAuthority,
+  resolveDeclaredLegacyReference,
+} = require('./lib/legacy-source-authority');
 
-const CHECK = process.argv.includes('--check');
-const DRY = CHECK || process.argv.includes('--dry-run');
+const ROOT = path.resolve(__dirname, '..');
+const SKIP_TAG_RE = /^(?:script|style|noscript|code|pre|kbd|samp|svg|math|textarea)$/i;
+const CYRILLIC_RE = /[А-Яа-яЁё]/;
+const STRAIGHT_QUOTE_RE = /"([^"\n]{1,240})"/g;
+const SPACED_HYPHEN_RE = /[А-Яа-яЁё]\s+-\s+[А-Яа-яЁё]/g;
 
-const ARTICLES_DIR = path.join(__dirname, '..', 'articles');
-const SHORT_WORDS = /\b(в|и|к|о|с|у|а|я|не|на|по|за|из|от|до|но|ни|же|ли|бы|то|во|со)\s/gi;
+function getAttr(node, name) {
+  return node.attrs ? (node.attrs.find((a) => a.name === name)?.value ?? null) : null;
+}
 
-function processText(text) {
-  let out = text;
-  // 1. Straight quotes → ёлочки (simple heuristic)
-  out = out.replace(/"([^"]{1,200})"/g, '«$1»');
-  // 2. Hyphen between words → em-dash with spaces
-  out = out.replace(/(\s)- /g, '$1— ');
-  out = out.replace(/ -(\s)/g, ' —$1');
-  // 3. Non-breaking space after short prepositions
-  out = out.replace(SHORT_WORDS, (m) => m.slice(0, -1) + '\u00A0');
-  // 4. Ellipsis
-  out = out.replace(/\.\.\./g, '…');
+function scanHtmlTypography(html) {
+  const doc = parse5.parse(String(html));
+  const issues = [];
+
+  function walk(node, ctx) {
+    const tag = node.tagName || '';
+    const skip = ctx.skip || SKIP_TAG_RE.test(tag);
+    const langAttr = getAttr(node, 'lang');
+    const foreign = langAttr ? !/^ru\b/i.test(langAttr) : ctx.foreign;
+
+    if (node.nodeName === '#text' && !skip && !foreign) {
+      const value = node.value || '';
+      for (const match of value.matchAll(STRAIGHT_QUOTE_RE)) {
+        if (CYRILLIC_RE.test(match[1])) {
+          issues.push({ kind: 'straight-quotes', sample: match[0] });
+        }
+      }
+      for (const match of value.matchAll(SPACED_HYPHEN_RE)) {
+        issues.push({ kind: 'spaced-ascii-hyphen', sample: match[0] });
+      }
+    }
+
+    if (node.childNodes) {
+      for (const child of node.childNodes) {
+        walk(child, { skip, foreign });
+      }
+    }
+  }
+
+  walk(doc, { skip: false, foreign: false });
+  return issues;
+}
+
+function collectImmutableHtmlPaths(root = ROOT) {
+  const protectedPaths = new Set();
+  const { records } = loadRouteRecords(root);
+  for (const record of records) {
+    const profile = record.profile || {};
+    const authority = classifyLegacyAuthority(profile);
+    if (record.owner?.owner === 'built-app' || authority.status === 'reference-only') {
+      const resolved = resolveDeclaredLegacyReference(profile, {
+        route: record.route,
+        mustExist: false,
+      });
+      if (resolved?.logicalPath) {
+        protectedPaths.add(path.resolve(root, resolved.logicalPath));
+      }
+    }
+  }
+  return protectedPaths;
+}
+
+function collectHtmlFiles(dir, out = []) {
+  if (!fs.existsSync(dir)) return out;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name === 'node_modules' || entry.name === '.git' || entry.name === 'pagefind') continue;
+    const abs = path.join(dir, entry.name);
+    if (entry.isDirectory()) collectHtmlFiles(abs, out);
+    else if (entry.name.endsWith('.html')) out.push(abs);
+  }
   return out;
 }
 
-function processFile(filePath) {
-  let html = fs.readFileSync(filePath, 'utf-8');
-  let changed = false;
-  
-  // Only process text content inside <p>, <li>, <figcaption>, <blockquote>
-  // Skip: <code>, <pre>, <script>, attributes, JSON-LD
-  const out = html.replace(
-    /(<(?:p|li|figcaption|blockquote|h[1-6]|td|th|dt|dd)[^>]*>)([\s\S]*?)(<\/(?:p|li|figcaption|blockquote|h[1-6]|td|th|dt|dd)>)/gi,
-    (match, open, body, close) => {
-      // Don't touch code/pre content
-      if (/<(?:code|pre|script|kbd|samp)/i.test(body)) return match;
-      
-      // Process only text nodes (not inside tags)
-      const processed = body.replace(/>([^<]+)</g, (m2, text) => {
-        const fixed = processText(text);
-        if (fixed !== text) changed = true;
-        return '>' + fixed + '<';
-      });
-      
-      // Also process text at start/end if not in a tag
-      const final = processed.replace(/^([^<]+)/, (m2, text) => {
-        const fixed = processText(text);
-        if (fixed !== text) changed = true;
-        return fixed;
-      });
-      
-      return open + final + close;
-    }
-  );
-  
-  if (changed) {
-    if (DRY) {
-      console.log(`  [dry] ${path.relative(process.cwd(), filePath)}`);
-    } else {
-      fs.writeFileSync(filePath, out, 'utf-8');
-      console.log(`  ✎  ${path.relative(process.cwd(), filePath)}`);
+function collectTargetFiles(root = ROOT) {
+  const immutable = collectImmutableHtmlPaths(root);
+  const targets = [];
+
+  const root404 = path.join(root, '404.html');
+  if (fs.existsSync(root404) && !immutable.has(path.resolve(root404))) {
+    targets.push(root404);
+  }
+
+  const articlesDir = path.join(root, 'articles');
+  for (const fp of collectHtmlFiles(articlesDir)) {
+    if (!immutable.has(path.resolve(fp))) {
+      targets.push(fp);
     }
   }
-  
-  return changed;
+
+  const distDir = path.join(root, 'dist');
+  if (fs.existsSync(distDir)) {
+    for (const fp of collectHtmlFiles(distDir)) {
+      targets.push(fp);
+    }
+  }
+
+  return targets.sort();
 }
 
-console.log(`\nGB TYPOGRAF ${DRY ? '(dry run)' : ''}`);
-let total = 0;
+function runCli(argv = process.argv.slice(2), root = ROOT) {
+  const checkMode = argv.includes('--check') || argv.includes('--dry-run') || argv.length === 0;
+  const targets = collectTargetFiles(root);
+  console.log(`\nGB TYPOGRAF ${checkMode ? '(fail-closed check)' : ''}`);
+  let failedFiles = 0;
 
-const dirs = fs.readdirSync(ARTICLES_DIR);
-for (const slug of dirs.sort()) {
-  const fp = path.join(ARTICLES_DIR, slug, 'index.html');
-  if (!fs.existsSync(fp)) continue;
-  if (processFile(fp)) total++;
+  for (const fp of targets) {
+    const html = fs.readFileSync(fp, 'utf8');
+    const issues = scanHtmlTypography(html);
+    if (issues.length > 0) {
+      failedFiles += 1;
+      const rel = path.relative(root, fp).replace(/\\/g, '/');
+      const preview = issues.slice(0, 3).map((i) => `${i.kind}: ${i.sample}`).join('; ');
+      console.log(`  [drift] ${rel} (${issues.length}): ${preview}`);
+    }
+  }
+
+  console.log(`\nScanned: ${targets.length} active/built HTML file(s) · Would change: ${failedFiles} files\n`);
+  return failedFiles > 0 ? 1 : 0;
 }
 
-console.log(`\n${DRY ? 'Would change' : 'Changed'}: ${total} files\n`);
-if (CHECK && total > 0) process.exit(1);
+module.exports = {
+  collectImmutableHtmlPaths,
+  collectTargetFiles,
+  runCli,
+  scanHtmlTypography,
+};
+
+if (require.main === module) {
+  process.exitCode = runCli();
+}
