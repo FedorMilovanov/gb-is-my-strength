@@ -52,6 +52,13 @@ const COMPONENTS_DIR = path.join(ROOT, 'src/components');
 // Ниже этого числа слов в MDX считаем, что тело статьи живёт не в MDX,
 // а в Astro-компоненте (`*ArticleBody.astro`): MDX там — только метаданные.
 const COMPONENT_BODY_MIN_MDX_WORDS = 250;
+// Во сколько раз текст компонентов должен превышать MDX, чтобы считать MDX
+// заглушкой. 1.5 отсекает обычные расхождения: у статей с реальным телом
+// в MDX отношение близко к единице.
+const COMPONENT_BODY_OVERRIDE_RATIO = 1.5;
+// Для оболочек вне `/articles/` достаточно, чтобы компоненты покрывали
+// половину MDX: там сериям свойственно дублировать текст в компоненте.
+const COMPONENT_BODY_SHELL_RATIO = 0.5;
 
 // Файлы, которые нельзя переписывать из общей волны: они в открытых PR
 // других агентов (см. docs/editorial-waves/READING-TIME-POLICY.md).
@@ -89,22 +96,72 @@ function frontmatterTime(source) {
 }
 
 /** Читательские слова тела статьи из Astro-компонента (резолв через импорты страницы). */
+/**
+ * Страница статьи может жить не под `/articles/`: серия «Баптисты России»
+ * собрана как `/baptisty-rossii/<slug>/`, а MDX хранит только метаданные
+ * (≈900 слов-заглушки). Такую страницу ищем по последнему сегменту маршрута.
+ */
+function pageShellFor(slug) {
+  const direct = path.join(PAGES_DIR, 'articles', slug, 'index.astro');
+  if (fs.existsSync(direct)) return direct;
+  let found = null;
+  const walk = (dir) => {
+    if (found) return;
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const abs = path.join(dir, e.name);
+      if (e.isDirectory()) walk(abs);
+      else if (e.name === 'index.astro' && path.basename(dir) === slug) found = abs;
+    }
+  };
+  if (fs.existsSync(PAGES_DIR)) walk(PAGES_DIR);
+  return found;
+}
+
+/**
+ * Оболочка вне `/articles/` может быть и тонкой нативной обёрткой вокруг
+ * `<Content />`: тогда компоненты содержат только хром (десятки слов) и
+ * считать по ним нельзя — иначе статья из 2500 слов превращается в минуту.
+ */
+function isComponentBackedPage(slug, comp, mdxWords) {
+  if (!Number.isFinite(comp) || comp < COMPONENT_BODY_MIN_MDX_WORDS) return false;
+  if (comp > mdxWords * COMPONENT_BODY_OVERRIDE_RATIO) return true;
+  return shellOutsideArticles(slug) && comp >= mdxWords * COMPONENT_BODY_SHELL_RATIO;
+}
+
+function shellOutsideArticles(slug) {
+  const page = pageShellFor(slug);
+  if (!page) return false;
+  return path.relative(PAGES_DIR, page).split(path.sep)[0] !== 'articles';
+}
+
 function componentBodyWords(slug) {
-  const page = path.join(PAGES_DIR, 'articles', slug, 'index.astro');
-  if (!fs.existsSync(page) || !fs.existsSync(COMPONENTS_DIR)) return null;
+  const page = pageShellFor(slug);
+  if (!page || !fs.existsSync(COMPONENTS_DIR)) return null;
   const dirs = new Set();
   for (const m of read(page).matchAll(/@\/components\/([^'"]+)\.astro/g)) {
     dirs.add(path.dirname(path.join(COMPONENTS_DIR, m[1])));
   }
   // Текст разнесён по секционным компонентам (`*Section*.astro`), поэтому
   // считаем весь каталог пилота, кроме PageHead (метаданные) и PageChrome (хром).
+  // Но если оболочка лежит вне `/articles/`, каталог общий на всю серию:
+  // там берём только то, что страница действительно импортирует.
+  const outsideArticles = path.relative(PAGES_DIR, page).split(path.sep)[0] !== 'articles';
   const bodies = new Set();
-  for (const dir of dirs) {
-    if (!fs.existsSync(dir)) continue;
-    for (const name of fs.readdirSync(dir)) {
-      if (!name.endsWith('.astro')) continue;
-      if (/(PageHead|PageChrome)\.astro$/.test(name)) continue;
-      bodies.add(path.join(dir, name));
+  if (outsideArticles) {
+    for (const m of read(page).matchAll(/@\/components\/([^'"]+)\.astro/g)) {
+      const name = path.basename(m[1]);
+      if (/(PageHead|PageChrome|PageFooter)$/.test(name)) continue;
+      const abs = path.join(COMPONENTS_DIR, `${m[1]}.astro`);
+      if (fs.existsSync(abs)) bodies.add(abs);
+    }
+  } else {
+    for (const dir of dirs) {
+      if (!fs.existsSync(dir)) continue;
+      for (const name of fs.readdirSync(dir)) {
+        if (!name.endsWith('.astro')) continue;
+        if (/(PageHead|PageChrome)\.astro$/.test(name)) continue;
+        bodies.add(path.join(dir, name));
+      }
     }
   }
   if (!bodies.size) return null;
@@ -152,6 +209,70 @@ function literalSurfaces(slug) {
  * страниц нет, поэтому здесь проверяются только карточки: их ожидание берётся
  * у статьи-цели, а не у самой страницы.
  */
+/**
+ * Атрибуты прогресса серии в оболочке страницы: `data-gbs2-part-min`,
+ * `data-gbs2-done-min`, `data-gbs2-total-min`.
+ *
+ * Их никто не пересчитывал: у «Баптистов России» после смены политики
+ * страница объявляла часть в 17 минут при фактических 15 и сумму 229 минут
+ * при фактических 160, хотя витрина рядом уже показывала 15. Порядок и
+ * минуты берутся из той же витрины серии, поэтому разойтись они не могут.
+ */
+function seriesPlans() {
+  const plans = new Map();
+  if (!fs.existsSync(SERIES_CONFIG_DIR)) return plans;
+  for (const name of fs.readdirSync(SERIES_CONFIG_DIR).filter((n) => n.endsWith('.ts'))) {
+    const entries = seriesConfigEntries(read(path.join(SERIES_CONFIG_DIR, name)));
+    if (!entries.length) continue;
+    const total = entries.reduce((sum, e) => sum + e.value, 0);
+    let done = 0;
+    for (const e of entries) {
+      plans.set(e.slug, { part: e.value, done, total });
+      done += e.value;
+    }
+  }
+  return plans;
+}
+
+function shellAttrSurfaces() {
+  const plans = seriesPlans();
+  if (!plans.size || !fs.existsSync(PAGES_DIR)) return [];
+  const out = [];
+  const walk = (dir) => {
+    for (const name of fs.readdirSync(dir, { withFileTypes: true })) {
+      const abs = path.join(dir, name.name);
+      if (name.isDirectory()) {
+        if (path.relative(PAGES_DIR, abs).split(path.sep)[0] === 'articles') continue;
+        walk(abs);
+      } else if (name.name === 'index.astro') {
+        const source = read(abs);
+        if (!source.includes('data-gbs2-part-min')) continue;
+        const plan = plans.get(path.basename(dir));
+        if (!plan) continue;
+        const rel = path.relative(ROOT, abs);
+        for (const m of source.matchAll(/data-gbs2-(part|done|total)-min="(\d+)"/g)) {
+          const expected = plan[m[1]];
+          if (!Number.isFinite(expected)) continue;
+          out.push({
+            file: rel,
+            line: lineAt(source, m.index),
+            offset: m.index,
+            kind: 'shellattr',
+            attr: m[1],
+            value: Number(m[2]),
+            target: null,
+            expected,
+            slug: `/${path.relative(PAGES_DIR, dir).split(path.sep).join('/')}/`,
+            page: true,
+          });
+        }
+      }
+    }
+  };
+  walk(PAGES_DIR);
+  return out;
+}
+
 function pageLiteralSurfaces() {
   if (!fs.existsSync(PAGES_DIR) || !fs.existsSync(COMPONENTS_DIR)) return [];
   const out = [];
@@ -243,9 +364,12 @@ function seriesConfigEntries(text) {
   const out = [];
   for (const m of text.matchAll(/readingTime:\s*'(\d+)\s*мин'/g)) {
     const back = text.slice(Math.max(0, m.index - 500), m.index);
-    const hrefs = [...back.matchAll(/href:\s*'\/?(?:articles\/)?([a-z0-9-]+)\/'/g)];
+    // Slug — последний сегмент маршрута: `/baptisty-rossii/yuzhnaya-shtunda/`
+    // ссылается на статью `yuzhnaya-shtunda`, а не на раздел. Раньше брался
+    // первый сегмент, витрина «Баптистов России» целиком выпадала из проверки.
+    const hrefs = [...back.matchAll(/href:\s*'\/?((?:[a-z0-9-]+\/)*)([a-z0-9-]+)\/'/g)];
     if (!hrefs.length) continue;
-    out.push({ slug: hrefs[hrefs.length - 1][1], offset: m.index, value: Number(m[1]) });
+    out.push({ slug: hrefs[hrefs.length - 1][2], offset: m.index, value: Number(m[1]) });
   }
   return out;
 }
@@ -256,14 +380,21 @@ function audit() {
     const source = read(file);
     let mode = 'mdx';
     let words = readerWordCount(source);
+    const comp = componentBodyWords(slug);
     if (words < COMPONENT_BODY_MIN_MDX_WORDS) {
-      const comp = componentBodyWords(slug);
       if (comp !== null) {
         mode = 'component-body';
         words = comp;
       } else {
         mode = 'no-body';
       }
+    } else if (comp !== null && isComponentBackedPage(slug, comp, words)) {
+      // MDX — заглушка с метаданными, текст живёт в компонентах. Признак не
+      // «мало слов», а «в компонентах в разы больше»: у серии «Баптисты
+      // России» в MDX ~870 слов при 2600 на странице, и политика считала
+      // статью пятиминутной, пока страница читается четверть часа.
+      mode = 'component-body';
+      words = comp;
     }
     const expected = mode === 'no-body' ? null : minutesForWords(words);
     const current = frontmatterTime(source);
@@ -310,9 +441,9 @@ function audit() {
   );
 
   // Карточки на страницах вне /articles/: ожидание всегда у статьи-цели.
-  const pageLiterals = pageLiteralSurfaces().map((l) => ({
+  const pageLiterals = [...pageLiteralSurfaces(), ...shellAttrSurfaces()].map((l) => ({
     ...l,
-    expected: l.target ? expectedBySlug.get(l.target) ?? null : null,
+    expected: l.kind === 'shellattr' ? l.expected : l.target ? expectedBySlug.get(l.target) ?? null : null,
   }));
   const literals = [...articleLiterals, ...pageLiterals];
 
@@ -439,6 +570,7 @@ function writeLiterals(report) {
       if (l.kind === 'visible') next = tail.replace(/^⏱\s*\d+\s*мин/, `⏱ ${l.expected} мин`);
       else if (l.kind === 'pagefind') next = tail.replace(/^(data-pagefind-meta="readTime"[^>]*>)\d+</, `$1${l.expected}<`);
       else if (l.kind === 'pagemeta') next = tail.replace(/^(readingTime:\s*)\d+(?=\s*[,}])/, `$1${l.expected}`);
+      else if (l.kind === 'shellattr') next = tail.replace(/^(data-gbs2-(?:part|done|total)-min=")\d+(")/, `$1${l.expected}$2`);
       else next = tail.replace(/^((?:·\s*|~))\d+(\s*мин)/, `$1${l.expected}$2`);
       if (next !== tail) {
         src = head + next;

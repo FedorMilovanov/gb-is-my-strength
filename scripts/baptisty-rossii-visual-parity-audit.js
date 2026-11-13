@@ -62,7 +62,17 @@ mustContain('route imports native head', page, 'BaptistyRossiiPageHead');
 mustContain('route imports config-derived book body', page, 'BaptistyRossiiBookLanding');
 mustNotContain('route retires flat body from production', page, 'BaptistyRossiiBody');
 mustContain('route explicit body class', page, 'class="gbs-world"');
-mustContain('route explicit total minutes', page, 'data-gbs2-total-min="229"');
+// Сумма серии объявляется из витрины (`{seriesTotalMinutes}`), а не литералом:
+// после пересчёта политики времени чтения она упала с 229 до 160 минут.
+// Константа ниже ловит тихое перебазирование — при изменении политики её
+// надо поднять вместе с `baptistSeriesConfig`.
+const CONTRACT_SERIES_TOTAL_MIN = 160;
+const seriesTotal = [...flatConfig.matchAll(/readingTime:\s*'(\d+)\s*мин'/g)]
+  .reduce((sum, m) => sum + Number(m[1]), 0);
+seriesTotal === CONTRACT_SERIES_TOTAL_MIN
+  ? ok(`series total minutes: ${seriesTotal}`)
+  : bad(`series total minutes ${seriesTotal} != contract ${CONTRACT_SERIES_TOTAL_MIN}`);
+mustContain('route explicit total minutes', page, 'data-gbs2-total-min={seriesTotalMinutes}');
 mustContain('route pagefind body marker', body, 'data-pagefind-body');
 for (const marker of ['rel="canonical"','window.SITE_CONFIG','application/ld+json','mc.yandex.ru']) mustContain('head contract', head, marker);
 for (const marker of ['gbs2-mobile-head','gbs2-rail','gbs2-hero','article-body','gbs2-bbar','gbs2-sheet']) mustContain('landing body marker', body, marker);

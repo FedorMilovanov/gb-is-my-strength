@@ -17,7 +17,7 @@ const BAPTIST_ITEMS: SeriesItem[] = [
     title: 'Часть I. Ночь на Куре',
     shortTitle: '1867 · Воронин, Кальвейт и первая община',
     href: '/baptisty-rossii/noch-na-kure/',
-    readingTime: '18 мин',
+    readingTime: '16 мин',
   },
   {
     id: 'yuzhnaya-shtunda',
@@ -25,7 +25,7 @@ const BAPTIST_ITEMS: SeriesItem[] = [
     title: 'Часть II. Южная штунда',
     shortTitle: '1867–1870 · Рябошапка, Ратушный, первые крещения',
     href: '/baptisty-rossii/yuzhnaya-shtunda/',
-    readingTime: '20 мин',
+    readingTime: '18 мин',
   },
   {
     id: 'dva-sezda-1884',
@@ -33,7 +33,7 @@ const BAPTIST_ITEMS: SeriesItem[] = [
     title: 'Часть III. Две развилки 1884',
     shortTitle: '1884 · Петербург и Ново-Васильевка',
     href: '/baptisty-rossii/dva-sezda-1884/',
-    readingTime: '17 мин',
+    readingTime: '15 мин',
   },
   {
     id: 'peterburgskaya-liniya',
@@ -49,7 +49,7 @@ const BAPTIST_ITEMS: SeriesItem[] = [
     title: 'Часть V. Свобода совести',
     shortTitle: '1919–1929 · Военный вопрос и гонения',
     href: '/baptisty-rossii/goneniya-i-sovest/',
-    readingTime: '24 мин',
+    readingTime: '18 мин',
   },
   {
     id: 'sovetskaya-noch',
@@ -57,7 +57,7 @@ const BAPTIST_ITEMS: SeriesItem[] = [
     title: 'Часть VI. Советская ночь',
     shortTitle: '1929–1937 · Закон 1929 и репрессии',
     href: '/baptisty-rossii/sovetskaya-noch/',
-    readingTime: '28 мин',
+    readingTime: '18 мин',
   },
   {
     id: 'vsehib-1944',
@@ -65,7 +65,7 @@ const BAPTIST_ITEMS: SeriesItem[] = [
     title: 'Часть VII. Один союз',
     shortTitle: '1944 · ВСЕХиБ под надзором',
     href: '/baptisty-rossii/vsehib-1944/',
-    readingTime: '26 мин',
+    readingTime: '13 мин',
   },
   {
     id: 'iniciativnaya-gruppa',
@@ -73,7 +73,7 @@ const BAPTIST_ITEMS: SeriesItem[] = [
     title: 'Часть VIII. Инициативная группа',
     shortTitle: '1960–1966 · Путь к Совету Церквей',
     href: '/baptisty-rossii/iniciativnaya-gruppa/',
-    readingTime: '25 мин',
+    readingTime: '14 мин',
   },
   {
     id: 'podpolnaya-pechat',
@@ -81,7 +81,7 @@ const BAPTIST_ITEMS: SeriesItem[] = [
     title: 'Часть IX. Подпольная печать',
     shortTitle: '1966–1971 · Вестники, «Христианин», узники',
     href: '/baptisty-rossii/podpolnaya-pechat/',
-    readingTime: '23 мин',
+    readingTime: '13 мин',
   },
   {
     id: 'spravochnik',
@@ -89,7 +89,7 @@ const BAPTIST_ITEMS: SeriesItem[] = [
     title: 'Справочник',
     shortTitle: 'Люди, даты, документы, источники',
     href: '/baptisty-rossii/spravochnik/',
-    readingTime: '27 мин', ribbon: { word: 'Справочник', ornament: 'book', variant: 'reference' },
+    readingTime: '14 мин', ribbon: { word: 'Справочник', ornament: 'book', variant: 'reference' },
   },
 ];
 

@@ -2,13 +2,24 @@
 import BaptistyRossiiPageHead from '@/components/baptisty-rossii/BaptistyRossiiPageHead.astro';
 import BaptistyRossiiBookLanding from '@/components/baptisty-rossii/BaptistyRossiiBookLanding.astro';
 import ReaderActionsRuntime from '@/components/reader-platform/ReaderActionsRuntime.astro';
+import { BAPTIST_SERIES as BAPTIST_FLAT_SERIES } from '@/components/article-pilots/_shared/series/baptistFlatSeriesConfig';
+
+// Сумма серии — из витрины, а не литералом: после пересчёта политики
+// (180 слов/мин) она изменилась с 229 до 160, и оболочка продолжала
+// объявлять старое число, пока страж не поймал расхождение.
+// Витрина (flat) перечисляет статьи, движок (book) — главы: у глав
+// `readingTime` это «2 статьи · 45 мин», сумма по ним дала бы мусор.
+const seriesTotalMinutes = BAPTIST_FLAT_SERIES.items.reduce(
+  (sum, item) => sum + Number.parseInt(item.readingTime, 10),
+  0,
+);
 ---
 <!DOCTYPE html>
 <html lang="ru">
   <head>
     <BaptistyRossiiPageHead />
   </head>
-  <body class="gbs-world" data-series-theme="samizdat" data-gbs2-series="russian-baptism" data-gbs2-done-min="0" data-gbs2-part-min="0" data-gbs2-total-min="229">
+  <body class="gbs-world" data-series-theme="samizdat" data-gbs2-series="russian-baptism" data-gbs2-done-min="0" data-gbs2-part-min="0" data-gbs2-total-min={seriesTotalMinutes}>
     <BaptistyRossiiBookLanding />
     <ReaderActionsRuntime />
   </body>

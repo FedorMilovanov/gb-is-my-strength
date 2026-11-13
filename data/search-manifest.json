@@ -598,7 +598,7 @@
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 5
+      "readTime": 15
     },
     {
       "id": "baptisty-goneniya-i-sovest",
@@ -618,7 +618,7 @@
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 12
+      "readTime": 18
     },
     {
       "id": "baptisty-iniciativnaya-gruppa",
@@ -638,7 +638,7 @@
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 13
+      "readTime": 14
     },
     {
       "id": "baptisty-noch-na-kure",
@@ -658,7 +658,7 @@
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 7
+      "readTime": 16
     },
     {
       "id": "baptisty-peterburgskaya-liniya",
@@ -678,7 +678,7 @@
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 11
+      "readTime": 21
     },
     {
       "id": "baptisty-podpolnaya-pechat",
@@ -698,7 +698,7 @@
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 14
+      "readTime": 13
     },
     {
       "id": "baptisty-sovetskaya-noch",
@@ -718,7 +718,7 @@
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 11
+      "readTime": 18
     },
     {
       "id": "baptisty-spravochnik",
@@ -738,7 +738,7 @@
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 15
+      "readTime": 14
     },
     {
       "id": "baptisty-vsehib-1944",
@@ -758,7 +758,7 @@
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 10
+      "readTime": 13
     },
     {
       "id": "baptisty-yuzhnaya-shtunda",
@@ -778,7 +778,7 @@
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 5
+      "readTime": 18
     },
     {
       "id": "nagornaya-ch4",
@@ -1125,7 +1125,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-07-30T00:00:00+03:00",
-      "readTime": 15
+      "readTime": 24
     },
     {
       "id": "serdce-pod-skorbyu",
