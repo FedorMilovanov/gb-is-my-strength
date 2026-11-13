@@ -11,7 +11,8 @@ const fs = require('fs');
 const path = require('path');
 const glob = require('path');
 
-const DRY = process.argv.includes('--dry-run');
+const CHECK = process.argv.includes('--check');
+const DRY = CHECK || process.argv.includes('--dry-run');
 
 const ARTICLES_DIR = path.join(__dirname, '..', 'articles');
 const SHORT_WORDS = /\b(в|и|к|о|с|у|а|я|не|на|по|за|из|от|до|но|ни|же|ли|бы|то|во|со)\s/gi;
@@ -83,3 +84,4 @@ for (const slug of dirs.sort()) {
 }
 
 console.log(`\n${DRY ? 'Would change' : 'Changed'}: ${total} files\n`);
+if (CHECK && total > 0) process.exit(1);

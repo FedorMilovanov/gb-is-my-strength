@@ -188,6 +188,11 @@ function readableText(html) {
     .trim();
 }
 
+const {
+  findMixedScriptTokens,
+  sanitizeMarkupForMixedScript,
+} = require('./lib/mixed-script-guard');
+
 // R8. Fatal readable/publication text defects (visible snippets, reader-mode, search).
 const fatalPatterns = [
   ['fatal-typo-truzhenika-nister', /труженикаnister/],
@@ -195,7 +200,6 @@ const fatalPatterns = [
   ['fatal-ukrainian-readtime-min', /\bмін\b/],
   ['fatal-application-salvation-glue', /Применение\s+спасение/i],
   ['fatal-abbreviated-research-finding', /исследоват\.\s*находк/i],
-  ['fatal-cyrillic-latin-glue', /[А-Яа-яЁё][A-Za-z]{3,}|[A-Za-z]{3,}[А-Яа-яЁё]/],
   // Exact negative fixtures for the five known malformed forms
   // (GBS-READER-MALFORMED-RUSSIAN-WORDS-BATCH): each matches ONLY the bad
   // token — «обеспечительные»/«самоуверенности»/«установленным»/«телеологии»
@@ -212,11 +216,27 @@ const fatalPatterns = [
   ['fatal-malformed-gill-prodolzhitelnost-mezhdu', /Продолжительность\s+между/i],
   ['fatal-malformed-gill-v-vidu-zritelej', /в\s+виду\s+многих\s+зрителей/i],
 ];
-for (const f of htmlFiles) {
-  const text = readableText(fs.readFileSync(f, 'utf8'));
+
+function walkDistHtml(dir, out = []) {
+  if (!fs.existsSync(dir)) return out;
+  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, ent.name);
+    if (ent.isDirectory()) walkDistHtml(p, out);
+    else if (ent.name.endsWith('.html')) out.push(p);
+  }
+  return out;
+}
+
+const publicationHtmlFiles = [...htmlFiles, ...walkDistHtml(path.join(ROOT, 'dist'))];
+for (const f of publicationHtmlFiles) {
+  const rawHtml = fs.readFileSync(f, 'utf8');
+  const text = readableText(rawHtml);
   for (const [kind, rx] of fatalPatterns) {
     const m = text.match(rx);
     if (m) fail(kind, rel(f), m[0]);
+  }
+  for (const hit of findMixedScriptTokens(sanitizeMarkupForMixedScript(rawHtml))) {
+    fail('fatal-cyrillic-latin-glue', rel(f), hit.token);
   }
 }
 

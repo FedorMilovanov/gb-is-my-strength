@@ -33,6 +33,11 @@ const {
   runAcceptedSemanticManifestAudit,
 } = require('./lib/accepted-semantic-manifest');
 const { scanBlockStructure } = require('./lib/block-structure-guard');
+const {
+  collectJsonStringValues,
+  findMixedScriptTokens,
+  sanitizeMarkupForMixedScript,
+} = require('./lib/mixed-script-guard');
 const ROOT = path.resolve(__dirname, '..');
 const STRICT = process.argv.includes('--strict');
 
@@ -82,10 +87,9 @@ for (const rel of files) {
   const tipForTerm = cnt(raw, /class="gterm"[^>]*data-term=/g) + cnt(raw, /class="gterm"[^>]*>[\s\S]{0,120}?class="gtip"/g);
   if (gterm && tipForTerm < gterm) warn(rel, `gterm без перевода/пояснения (${gterm} терминов, ${tipForTerm} с тултипом/глоссарием)`);
 
-  // ── 3. Mixed-script contamination (ERROR: real corruption, never legitimate) ──
-  for (const tok of text.match(/[A-Za-zА-Яа-яЁё]+/g) || []) {
-    if (/[А-Яа-яЁё]/.test(tok) && /[A-Za-z]/.test(tok))
-      err(rel, `смешанный алфавит в слове (кириллица+латиница): «${tok}»`);
+  // ── 3. Mixed-script contamination (ERROR: Unicode-aware Latin+Cyrillic guard) ──
+  for (const hit of findMixedScriptTokens(sanitizeMarkupForMixedScript(raw))) {
+    err(rel, `смешанный алфавит в слове (кириллица+латиница): «${hit.token}» (${hit.kind})`);
   }
   const cjk = text.match(/[㐀-鿿豈-﫿]/g);
   if (cjk) err(rel, `иероглиф(ы) в русском тексте: ${[...new Set(cjk)].join(' ')}`);
@@ -102,7 +106,55 @@ for (const rel of files) {
     err(rel, `substantive direct text без элемента-родителя в article[data-pagefind-body] (${structure.directText} шт.)`);
 }
 
-// ── 4. Positive semantic preservation for selected high-value owners ──
+// ── 4. Extended JSON/map/genealogy/glossary/quiz mixed-script surface coverage ──
+const JSON_SURFACES = [
+  'data/glossary.json',
+  'data/search-manifest.json',
+  ...(fs.existsSync(path.join(ROOT, 'karty'))
+    ? fs.readdirSync(path.join(ROOT, 'karty'), { withFileTypes: true })
+      .filter((e) => e.isDirectory())
+      .map((e) => path.join('karty', e.name, 'route.json'))
+      .filter((p) => fs.existsSync(path.join(ROOT, p)))
+    : []),
+  ...(fs.existsSync(path.join(ROOT, 'data/genealogy/v2/publishable'))
+    ? fs.readdirSync(path.join(ROOT, 'data/genealogy/v2/publishable'))
+      .filter((n) => n.endsWith('.json'))
+      .map((n) => path.join('data/genealogy/v2/publishable', n))
+    : []),
+];
+for (const jsonRel of JSON_SURFACES) {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(path.join(ROOT, jsonRel), 'utf8'));
+    const joined = collectJsonStringValues(parsed).join('\n');
+    for (const hit of findMixedScriptTokens(joined, { checkHyphenCompounds: false })) {
+      err(jsonRel, `смешанный алфавит в JSON-поверхности: «${hit.token}»`);
+    }
+  } catch (error) {
+    err(jsonRel, `не удалось проверить JSON-поверхность: ${error.message}`);
+  }
+}
+
+function walkPageHeads(dir, out = []) {
+  const abs = path.join(ROOT, dir);
+  if (!fs.existsSync(abs)) return out;
+  for (const e of fs.readdirSync(abs, { withFileTypes: true })) {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) walkPageHeads(p, out);
+    else if (/PageHead\.astro$/u.test(e.name)) out.push(p);
+  }
+  return out;
+}
+for (const headRel of walkPageHeads('src/components')) {
+  const raw = fs.readFileSync(path.join(ROOT, headRel), 'utf8');
+  const scriptPayloads = [...raw.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/giu)].map((m) => m[1]).join('\n');
+  const stringLiterals = [...scriptPayloads.matchAll(/"((?:\\.|[^"\\])*)"/gu)].map((m) => m[1]).join(' ');
+  const combined = `${sanitizeMarkupForMixedScript(raw)}\n${stringLiterals}`;
+  for (const hit of findMixedScriptTokens(combined, { checkHyphenCompounds: false })) {
+    err(headRel, `смешанный алфавит в метаданных/квизе: «${hit.token}»`);
+  }
+}
+
+// ── 5. Positive semantic preservation for selected high-value owners ──
 try {
   const semantic = runAcceptedSemanticManifestAudit({ requireDist: false });
   console.log(`Semantic manifest source contract: ${semantic.results.length} routes, ${semantic.mutationCasesKilled} deletion mutations killed.`);
