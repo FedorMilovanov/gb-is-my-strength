@@ -235,15 +235,15 @@ const snapshot = researchSnapshotShort();
           <a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-010</a>
         </div>
         <div class="matrix-row disputed">
-          <span class="matrix-state">HOLD</span>
-          <p>Поэпизодный финальный verdict требует человеческого прослушивания original audio, exact source edition и attribution context.</p>
+          <span class="matrix-state">Открыто (нужна сверка записей)</span>
+          <p>Поэпизодное итоговое суждение требует очного прослушивания оригинальных аудиозаписей, сверки конкретного издания источника и контекста атрибуции.</p>
           <a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-016</a>
         </div>
       </div>
       <aside class="warning-box" role="note">
         <strong>Чего здесь нет:</strong> числового счётчика подтверждённых эпизодов, утверждения о доказанном плагиате конкретного числа проповедей
-        или прямых цитат из machine transcripts. Поэпизодный verified-instance count намеренно не публикуется:
-        immutable handoff оставляет item-level Buck adjudication на HOLD до человеческой проверки audio, source edition и attribution context.
+        или прямых цитат из машинных расшифровок. Поэпизодный счётчик подтверждённых совпадений намеренно не публикуется:
+        принятый регламент сверки оставляет поэпизодную оценку выступлений Бака открытой до очной проверки аудиозаписей, изданий источников и контекста ссылок.
       </aside>
       <p>
         Отдельно сохранённое заявление Scott Aniol, Jon Norton, Dylan Joyner и Matt Sikes позволяет
@@ -350,9 +350,9 @@ const snapshot = researchSnapshotShort();
       <h2>Журнал исправлений</h2>
       {corrections.length === 0 ? (
         <p class="empty-corrections">
-          Материальных исправлений после публикации пока нет. Базовая версия привязана к Research seal
-          <code>{G3_PUBLICATION_HANDOFF.researchSealCommit}</code>. Изменение смысла любого reader-facing claim
-          требует нового Research handoff и датированной записи здесь.
+          Материальных исправлений после публикации пока нет. Базовая редакция зафиксирована на срезе источников
+          <code>{G3_PUBLICATION_HANDOFF.researchSealCommit}</code>. Любое изменение смысла опубликованного тезиса
+          вносится только после новой сверки первоисточников с датированной записью в этом журнале.
         </p>
       ) : (
         <ol>{corrections.map((item) => <li>{item.correctedAt}: {item.newMeaning}</li>)}</ol>
@@ -362,7 +362,7 @@ const snapshot = researchSnapshotShort();
 
   <footer class="dossier-footer">
     <p><strong>Автор-редактор:</strong> Фёдор Милованов</p>
-    <p><strong>Research authority:</strong> <a href={handoffUrl}>{G3_PUBLICATION_HANDOFF.researchRepo} · {snapshot}</a></p>
+    <p><strong>Свод проверенных источников:</strong> <a href={handoffUrl}>{G3_PUBLICATION_HANDOFF.researchRepo} · {snapshot}</a></p>
     <p><a href="/journal/">← Вернуться в Журнал</a></p>
   </footer>
 </main>
