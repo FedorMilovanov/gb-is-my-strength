@@ -125,7 +125,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'Часть I. Как рождается двойная жизнь',
       shortTitle: 'Двойная жизнь',
       href: '/articles/podrostok-za-kadrom-dvoynaya-zhizn/',
-      readingTime: '32 мин',
+      readingTime: '29 мин',
     },
     {
       id: 'teen-parents-after-disclosure',
@@ -133,7 +133,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'Часть II. Что делать родителям после разоблачения',
       shortTitle: 'После разоблачения',
       href: '/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/',
-      readingTime: '43 мин',
+      readingTime: '41 мин',
     },
     {
       id: 'teen-church-response',
@@ -141,7 +141,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'Часть III. Что должна делать церковь',
       shortTitle: 'Что делает церковь',
       href: '/articles/podrostok-za-kadrom-chto-delat-tserkvi/',
-      readingTime: '39 мин',
+      readingTime: '34 мин',
     },
     {
       id: 'adult-child-left-home',
@@ -149,7 +149,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'A. Взрослый ребёнок ушёл: контакт, ожидание, покаяние и возвращение',
       shortTitle: 'Ушёл из дома',
       href: '/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/',
-      readingTime: '37 мин',
+      readingTime: '31 мин',
     },
     {
       id: 'adult-child-home-money',
@@ -157,7 +157,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'B. Взрослый ребёнок дома: правила, деньги, помощь и последствия',
       shortTitle: 'Дом и деньги',
       href: '/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/',
-      readingTime: '36 мин',
+      readingTime: '30 мин',
     },
     {
       id: 'adult-child-authority',
@@ -165,7 +165,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'C. Совершеннолетие и родительская власть: что меняется, что остаётся',
       shortTitle: 'Власть после 18',
       href: '/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/',
-      readingTime: '35 мин',
+      readingTime: '33 мин',
     },
     {
       id: 'adult-daughter-marriage',
@@ -173,7 +173,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'D. Взрослая дочь, отец и брак: согласие и границы власти',
       shortTitle: 'Дочь и брак',
       href: '/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/',
-      readingTime: '42 мин',
+      readingTime: '47 мин',
     },
   ],
   pages: {

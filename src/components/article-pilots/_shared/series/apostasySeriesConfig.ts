@@ -118,11 +118,11 @@ export const APOSTASY_SERIES: SeriesConfig = defineSeriesConfig({
   quiz: APOSTASY_LEARNING_QUIZ as unknown as SeriesQuizItem[],
   breadcrumbParent: { label: 'Отступники', href: '/otstupniki/' },
   items: [
-    { id: 'otstuplenie-chto-govorit-bibliya', mark: { kind: 'roman', value: 'I' }, title: 'Часть I. Что Библия на самом деле называет отпадением от веры', shortTitle: 'Что говорит Библия', href: '/articles/otstuplenie-chto-govorit-bibliya/', readingTime: '18 мин' },
+    { id: 'otstuplenie-chto-govorit-bibliya', mark: { kind: 'roman', value: 'I' }, title: 'Часть I. Что Библия на самом деле называет отпадением от веры', shortTitle: 'Что говорит Библия', href: '/articles/otstuplenie-chto-govorit-bibliya/', readingTime: '19 мин' },
     { id: 'otstupniki-biblii-iuda-saul-ierovoam-dimas', mark: { kind: 'roman', value: 'II' }, title: 'Часть II. Отступники Библии: Иуда, Саул, Иеровоам, Димас', shortTitle: 'Отступники Библии', href: '/articles/otstupniki-biblii-iuda-saul-ierovoam-dimas/', readingTime: '15 мин' },
     { id: 'petr-i-iuda-padenie-ili-otstuplenie', mark: { kind: 'roman', value: 'III' }, title: 'Часть III. Пётр и Иуда: падение или отступничество?', shortTitle: 'Пётр и Иуда', href: '/articles/petr-i-iuda-padenie-ili-otstuplenie/', readingTime: '17 мин' },
-    { id: 'otreklis-ot-hrista-istoriya-cerkvi', mark: { kind: 'roman', value: 'IV' }, title: 'Часть IV. Отреклись от Христа: история Церкви', shortTitle: 'История Церкви', href: '/articles/otreklis-ot-hrista-istoriya-cerkvi/', readingTime: '13 мин' },
-    { id: 'kogda-chelovek-uhodit-ot-very', mark: { kind: 'roman', value: 'V' }, title: 'Часть V. Когда человек уходит от веры: предупреждать, исправлять, возвращать', shortTitle: 'Когда человек уходит', href: '/articles/kogda-chelovek-uhodit-ot-very/', readingTime: '16 мин' },
+    { id: 'otreklis-ot-hrista-istoriya-cerkvi', mark: { kind: 'roman', value: 'IV' }, title: 'Часть IV. Отреклись от Христа: история Церкви', shortTitle: 'История Церкви', href: '/articles/otreklis-ot-hrista-istoriya-cerkvi/', readingTime: '14 мин' },
+    { id: 'kogda-chelovek-uhodit-ot-very', mark: { kind: 'roman', value: 'V' }, title: 'Часть V. Когда человек уходит от веры: предупреждать, исправлять, возвращать', shortTitle: 'Когда человек уходит', href: '/articles/kogda-chelovek-uhodit-ot-very/', readingTime: '17 мин' },
   ],
   pages: {
     'otstuplenie-chto-govorit-bibliya': {

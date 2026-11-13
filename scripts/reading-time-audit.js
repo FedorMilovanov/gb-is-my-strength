@@ -198,6 +198,24 @@ function literalSurfaces(slug) {
   return out;
 }
 
+/**
+ * Записи витрин серий: `readingTime: '32 мин'` в том же объекте, что и
+ * `href: '/articles/<slug>/'`. Ссылка и время стоят на разных строках,
+ * поэтому построчный поиск их не связывал и 15 значений в pastor- и
+ * teen-витринах оставались устаревшими. Ищем время, а ссылку берём
+ * последней перед ним: в объекте-элементе она всегда идёт раньше.
+ */
+function seriesConfigEntries(text) {
+  const out = [];
+  for (const m of text.matchAll(/readingTime:\s*'(\d+)\s*мин'/g)) {
+    const back = text.slice(Math.max(0, m.index - 500), m.index);
+    const hrefs = [...back.matchAll(/href:\s*'\/?(?:articles\/)?([a-z0-9-]+)\/'/g)];
+    if (!hrefs.length) continue;
+    out.push({ slug: hrefs[hrefs.length - 1][1], offset: m.index, value: Number(m[1]) });
+  }
+  return out;
+}
+
 function audit() {
   const rows = [];
   for (const { slug, file } of mdxFiles()) {
@@ -296,7 +314,9 @@ function audit() {
       const slug = String(node.url || '').replace(/^\/articles\//, '').replace(/\/$/, '');
       const expected = expectedBySlug.get(slug);
       if (expected === undefined) continue;
-      if (node.readTime !== expected) downstream.graph.push({ slug, graph: node.readTime, expected });
+      // В графе связей поле называется `readingTime`, в манифесте — `readTime`.
+      const graphValue = Number.isFinite(node.readTime) ? node.readTime : node.readingTime;
+      if (graphValue !== expected) downstream.graph.push({ slug, graph: graphValue ?? null, expected });
     }
   }
   if (fs.existsSync(SEARCH_JS)) {
@@ -310,17 +330,12 @@ function audit() {
   if (fs.existsSync(SERIES_CONFIG_DIR)) {
     for (const name of fs.readdirSync(SERIES_CONFIG_DIR).filter((n) => n.endsWith('.ts'))) {
       const rel = path.join('src/components/article-pilots/_shared/series', name);
-      read(path.join(SERIES_CONFIG_DIR, name))
-        .split('\n')
-        .forEach((line, i) => {
-          const m = line.match(/readingTime:\s*'(\d+)\s*мин'/);
-          if (!m) return;
-          const slugMatch = line.match(/(?:href:\s*'\/articles\/([^'/]+)\/'|id:\s*'([^']+)')/);
-          const slug = slugMatch ? slugMatch[1] || slugMatch[2] : null;
-          const expected = slug ? expectedBySlug.get(slug) : undefined;
-          if (expected === undefined) return;
-          if (Number(m[1]) !== expected) downstream.configs.push({ slug, file: rel, line: i + 1, value: Number(m[1]), expected });
-        });
+      const text = read(path.join(SERIES_CONFIG_DIR, name));
+      for (const entry of seriesConfigEntries(text)) {
+        const expected = expectedBySlug.get(entry.slug);
+        if (expected === undefined || entry.value === expected) continue;
+        downstream.configs.push({ slug: entry.slug, file: rel, offset: entry.offset, value: entry.value, expected });
+      }
     }
   }
 
@@ -435,20 +450,21 @@ function writeAll(report) {
   if (fs.existsSync(SERIES_CONFIG_DIR)) {
     for (const name of fs.readdirSync(SERIES_CONFIG_DIR).filter((n) => n.endsWith('.ts'))) {
       const file = path.join(SERIES_CONFIG_DIR, name);
-      const lines = read(file).split('\n');
+      let text = read(file);
       let changed = false;
-      for (let i = 0; i < lines.length; i += 1) {
-        const m = lines[i].match(/readingTime:\s*'(\d+)\s*мин'/);
-        if (!m) continue;
-        const slugMatch = lines[i].match(/(?:href:\s*'\/articles\/([^'/]+)\/'|id:\s*'([^']+)')/);
-        const slug = slugMatch ? slugMatch[1] || slugMatch[2] : null;
-        const row = report.rows.find((r) => r.slug === slug);
-        if (!row || !writable(row) || Number(m[1]) === row.expected) continue;
-        lines[i] = lines[i].replace(/readingTime:\s*'\d+\s*мин'/, `readingTime: '${row.expected} мин'`);
-        changed = true;
-        touched += 1;
+      const entries = seriesConfigEntries(text).sort((a, b) => b.offset - a.offset);
+      for (const entry of entries) {
+        const row = report.rows.find((r) => r.slug === entry.slug);
+        if (!row || !writable(row) || entry.value === row.expected) continue;
+        const tail = text.slice(entry.offset);
+        const next = tail.replace(/^(readingTime:\s*')\d+(\s*мин')/, `$1${row.expected}$2`);
+        if (next !== tail) {
+          text = text.slice(0, entry.offset) + next;
+          changed = true;
+          touched += 1;
+        }
       }
-      if (changed) fs.writeFileSync(file, lines.join('\n'));
+      if (changed) fs.writeFileSync(file, text);
     }
   }
 
