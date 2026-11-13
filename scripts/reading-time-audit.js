@@ -227,7 +227,9 @@ function seriesPlans() {
     const total = entries.reduce((sum, e) => sum + e.value, 0);
     let done = 0;
     for (const e of entries) {
-      plans.set(e.slug, { part: e.value, done, total });
+      const plan = { part: e.value, done, total };
+      plans.set(e.slug, plan);
+      if (e.id) plans.set(e.id, plan);
       done += e.value;
     }
   }
@@ -270,6 +272,50 @@ function shellAttrSurfaces() {
     }
   };
   walk(PAGES_DIR);
+  return out;
+}
+
+/**
+ * Прогресс серии в блоке `pages` конфига: `readingProgressPartMin` и
+ * `readingProgressDoneMin`.
+ *
+ * Это девятая поверхность и самая незаметная: она не видна в витрине, но
+ * рисует полосу «прочитано N из M минут» на каждой странице серии. Массовый
+ * `--write` обновил `items[].readingTime`, а эти поля остались прежними —
+ * у «Баптистов России» полоса считала 229 минут при 160 на витрине, у
+ * подростковой серии 264 при 245, у «Отпадения» расходилась в трёх частях
+ * из пяти. Слаги берём из витрины, поэтому расходиться они не могут.
+ */
+function seriesProgressSurfaces() {
+  const plans = seriesPlans();
+  if (!plans.size || !fs.existsSync(SERIES_CONFIG_DIR)) return [];
+  const out = [];
+  for (const name of fs.readdirSync(SERIES_CONFIG_DIR).filter((n) => n.endsWith('.ts'))) {
+    const file = path.join(SERIES_CONFIG_DIR, name);
+    const source = read(file);
+    const rel = path.relative(ROOT, file);
+    if (!source.includes('readingProgressPartMin')) continue;
+    for (const m of source.matchAll(/readingProgress(Part|Done)Min:\s*(\d+)/g)) {
+      const back = source.slice(Math.max(0, m.index - 800), m.index);
+      const ids = [...back.matchAll(/id:\s*'([a-z0-9-]+)'/g)];
+      if (!ids.length) continue;
+      const plan = plans.get(ids[ids.length - 1][1]);
+      if (!plan) continue;
+      const expected = m[1] === 'Part' ? plan.part : plan.done;
+      out.push({
+        file: rel,
+        line: lineAt(source, m.index),
+        offset: m.index,
+        kind: 'seriesprogress',
+        attr: m[1],
+        value: Number(m[2]),
+        target: null,
+        expected,
+        slug: `${name}#${ids[ids.length - 1][1]}`,
+        page: true,
+      });
+    }
+  }
   return out;
 }
 
@@ -369,7 +415,15 @@ function seriesConfigEntries(text) {
     // первый сегмент, витрина «Баптистов России» целиком выпадала из проверки.
     const hrefs = [...back.matchAll(/href:\s*'\/?((?:[a-z0-9-]+\/)*)([a-z0-9-]+)\/'/g)];
     if (!hrefs.length) continue;
-    out.push({ slug: hrefs[hrefs.length - 1][2], offset: m.index, value: Number(m[1]) });
+    // `id` нужен для конфигов, где блок `pages` индексируется внутренним
+    // ключом (`teen-double-life`), а не адресом статьи.
+    const ids = [...back.matchAll(/id:\s*'([a-z0-9-]+)'/g)];
+    out.push({
+      slug: hrefs[hrefs.length - 1][2],
+      id: ids.length ? ids[ids.length - 1][1] : null,
+      offset: m.index,
+      value: Number(m[1]),
+    });
   }
   return out;
 }
@@ -441,9 +495,18 @@ function audit() {
   );
 
   // Карточки на страницах вне /articles/: ожидание всегда у статьи-цели.
-  const pageLiterals = [...pageLiteralSurfaces(), ...shellAttrSurfaces()].map((l) => ({
+  const pageLiterals = [
+    ...pageLiteralSurfaces(),
+    ...shellAttrSurfaces(),
+    ...seriesProgressSurfaces(),
+  ].map((l) => ({
     ...l,
-    expected: l.kind === 'shellattr' ? l.expected : l.target ? expectedBySlug.get(l.target) ?? null : null,
+    expected:
+      l.kind === 'shellattr' || l.kind === 'seriesprogress'
+        ? l.expected
+        : l.target
+          ? expectedBySlug.get(l.target) ?? null
+          : null,
   }));
   const literals = [...articleLiterals, ...pageLiterals];
 
@@ -571,6 +634,7 @@ function writeLiterals(report) {
       else if (l.kind === 'pagefind') next = tail.replace(/^(data-pagefind-meta="readTime"[^>]*>)\d+</, `$1${l.expected}<`);
       else if (l.kind === 'pagemeta') next = tail.replace(/^(readingTime:\s*)\d+(?=\s*[,}])/, `$1${l.expected}`);
       else if (l.kind === 'shellattr') next = tail.replace(/^(data-gbs2-(?:part|done|total)-min=")\d+(")/, `$1${l.expected}$2`);
+      else if (l.kind === 'seriesprogress') next = tail.replace(/^(readingProgress(?:Part|Done)Min:\s*)\d+/, `$1${l.expected}`);
       else next = tail.replace(/^((?:·\s*|~))\d+(\s*мин)/, `$1${l.expected}$2`);
       if (next !== tail) {
         src = head + next;

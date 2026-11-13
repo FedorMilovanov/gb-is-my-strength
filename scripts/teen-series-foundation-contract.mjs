@@ -7,13 +7,13 @@ import process from 'node:process';
 const ROOT = process.cwd();
 
 const SERIES = [
-  ['podrostok-za-kadrom-dvoynaya-zhizn', 32, 'I', 'Двойная жизнь', 'teen-double-life', 0],
-  ['podrostok-za-kadrom-roditelyam-posle-razoblacheniya', 43, 'II', 'После разоблачения', 'teen-parents-after-disclosure', 32],
-  ['podrostok-za-kadrom-chto-delat-tserkvi', 39, 'III', 'Что делает церковь', 'teen-church-response', 75],
-  ['vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie', 37, 'A', 'Ушёл из дома', 'adult-child-left-home', 114],
-  ['vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya', 36, 'B', 'Дом и деньги', 'adult-child-home-money', 151],
-  ['sovershennoletie-roditelskaya-vlast-chto-menyaetsya', 35, 'C', 'Власть после 18', 'adult-child-authority', 187],
-  ['vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti', 42, 'D', 'Дочь и брак', 'adult-daughter-marriage', 222],
+  ['podrostok-za-kadrom-dvoynaya-zhizn', 29, 'I', 'Двойная жизнь', 'teen-double-life', 0],
+  ['podrostok-za-kadrom-roditelyam-posle-razoblacheniya', 41, 'II', 'После разоблачения', 'teen-parents-after-disclosure', 29],
+  ['podrostok-za-kadrom-chto-delat-tserkvi', 34, 'III', 'Что делает церковь', 'teen-church-response', 70],
+  ['vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie', 31, 'A', 'Ушёл из дома', 'adult-child-left-home', 104],
+  ['vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya', 30, 'B', 'Дом и деньги', 'adult-child-home-money', 135],
+  ['sovershennoletie-roditelskaya-vlast-chto-menyaetsya', 33, 'C', 'Власть после 18', 'adult-child-authority', 165],
+  ['vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti', 47, 'D', 'Дочь и брак', 'adult-daughter-marriage', 198],
 ];
 
 function fail(message) {
@@ -112,7 +112,7 @@ for (const [slug, expectedMinutes, displayMark, mobileLabel] of SERIES) {
 }
 
 if (SERIES.length !== 7) fail(`canonical series must contain exactly 7 core items, got ${SERIES.length}`);
-if (total !== 264) fail(`canonical total reading time must be 264 min, got ${total}`);
+if (total !== 245) fail(`canonical total reading time must be 245 min, got ${total}`);
 
 const configPath = path.join(
   ROOT,
@@ -131,8 +131,8 @@ if (!fs.existsSync(configPath)) {
   if (!/seriesId:\s*['"]teen-double-life['"]/.test(config)) {
     fail('teenSeriesConfig.ts must declare seriesId teen-double-life');
   }
-  if (!/const TOTAL_MIN\s*=\s*264\s*;/.test(config)) {
-    fail('teenSeriesConfig.ts must keep the canonical total at 264 min');
+  if (!/const TOTAL_MIN\s*=\s*245\s*;/.test(config)) {
+    fail('teenSeriesConfig.ts must keep the canonical total at 245 min');
   }
   if (!/quiz:\s*\[\s*\]/.test(config)) {
     fail('teenSeriesConfig.ts must keep quiz disabled during initial publication');

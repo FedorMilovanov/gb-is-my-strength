@@ -16,13 +16,13 @@ const SERIES_KEY = 'teen-double-life';
 const SERIES_OG = '/images/teen-series/series-cover.webp';
 const SERIES_RAIL = '/images/teen-series/series-cover-600w.webp';
 const ITEMS = [
-  ['I', 'teen-double-life', 'podrostok-za-kadrom-dvoynaya-zhizn', 32, 0, '01-double-life.webp'],
-  ['II', 'teen-parents-after-disclosure', 'podrostok-za-kadrom-roditelyam-posle-razoblacheniya', 43, 32, '02-after-disclosure.webp'],
-  ['III', 'teen-church-response', 'podrostok-za-kadrom-chto-delat-tserkvi', 39, 75, '03-church-response.webp'],
-  ['A', 'adult-child-left-home', 'vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie', 37, 114, '04-left-home.webp'],
-  ['B', 'adult-child-home-money', 'vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya', 36, 151, '05-home-money.webp'],
-  ['C', 'adult-child-authority', 'sovershennoletie-roditelskaya-vlast-chto-menyaetsya', 35, 187, '06-adult-authority.webp'],
-  ['D', 'adult-daughter-marriage', 'vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti', 42, 222, '07-daughter-marriage.webp'],
+  ['I', 'teen-double-life', 'podrostok-za-kadrom-dvoynaya-zhizn', 29, 0, '01-double-life.webp'],
+  ['II', 'teen-parents-after-disclosure', 'podrostok-za-kadrom-roditelyam-posle-razoblacheniya', 41, 29, '02-after-disclosure.webp'],
+  ['III', 'teen-church-response', 'podrostok-za-kadrom-chto-delat-tserkvi', 34, 70, '03-church-response.webp'],
+  ['A', 'adult-child-left-home', 'vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie', 31, 104, '04-left-home.webp'],
+  ['B', 'adult-child-home-money', 'vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya', 30, 135, '05-home-money.webp'],
+  ['C', 'adult-child-authority', 'sovershennoletie-roditelskaya-vlast-chto-menyaetsya', 33, 165, '06-adult-authority.webp'],
+  ['D', 'adult-daughter-marriage', 'vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti', 47, 198, '07-daughter-marriage.webp'],
 ];
 const railFor = (heroFile) => heroFile.replace(/\.webp$/, '-600w.webp');
 

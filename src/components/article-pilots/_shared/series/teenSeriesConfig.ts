@@ -9,7 +9,7 @@
 import { SERIES_CONFIGS, type SeriesConfig, type SeriesPartTocItem, defineSeriesConfig } from './seriesConfig';
 import { teenSeriesMediaFor } from './teenSeriesMedia';
 
-const TOTAL_MIN = 264;
+const TOTAL_MIN = 245;
 const toc = (...items: SeriesPartTocItem[]): SeriesPartTocItem[] => items;
 
 const teenDoubleLifeToc = toc(
@@ -184,7 +184,7 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       mobileSection: 'Двойная жизнь',
       partLabel: 'Часть I · Содержание',
       readingProgressDoneMin: 0,
-      readingProgressPartMin: 32,
+      readingProgressPartMin: 29,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Как рождается двойная жизнь',
       railCover: teenSeriesMediaFor('teen-double-life').rail,
@@ -197,8 +197,8 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'Часть II. Что делать родителям после разоблачения',
       mobileSection: 'После разоблачения',
       partLabel: 'Часть II · Содержание',
-      readingProgressDoneMin: 32,
-      readingProgressPartMin: 43,
+      readingProgressDoneMin: 29,
+      readingProgressPartMin: 41,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Что делать родителям после разоблачения',
       railCover: teenSeriesMediaFor('teen-parents-after-disclosure').rail,
@@ -211,8 +211,8 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'Часть III. Что должна делать церковь',
       mobileSection: 'Что делает церковь',
       partLabel: 'Часть III · Содержание',
-      readingProgressDoneMin: 75,
-      readingProgressPartMin: 39,
+      readingProgressDoneMin: 70,
+      readingProgressPartMin: 34,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Что должна делать церковь',
       railCover: teenSeriesMediaFor('teen-church-response').rail,
@@ -225,8 +225,8 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'A. Взрослый ребёнок ушёл',
       mobileSection: 'Ушёл из дома',
       partLabel: 'A · Содержание',
-      readingProgressDoneMin: 114,
-      readingProgressPartMin: 37,
+      readingProgressDoneMin: 104,
+      readingProgressPartMin: 31,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Контакт, ожидание, покаяние и возвращение',
       railCover: teenSeriesMediaFor('adult-child-left-home').rail,
@@ -239,8 +239,8 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'B. Взрослый ребёнок дома',
       mobileSection: 'Дом и деньги',
       partLabel: 'B · Содержание',
-      readingProgressDoneMin: 151,
-      readingProgressPartMin: 36,
+      readingProgressDoneMin: 135,
+      readingProgressPartMin: 30,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Правила, деньги, помощь и последствия',
       railCover: teenSeriesMediaFor('adult-child-home-money').rail,
@@ -253,8 +253,8 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'C. Совершеннолетие и родительская власть',
       mobileSection: 'Власть после 18',
       partLabel: 'C · Содержание',
-      readingProgressDoneMin: 187,
-      readingProgressPartMin: 35,
+      readingProgressDoneMin: 165,
+      readingProgressPartMin: 33,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Что меняется, что остаётся',
       railCover: teenSeriesMediaFor('adult-child-authority').rail,
@@ -267,8 +267,8 @@ export const TEEN_DOUBLE_LIFE_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'D. Взрослая дочь, отец и брак',
       mobileSection: 'Дочь и брак',
       partLabel: 'D · Содержание',
-      readingProgressDoneMin: 222,
-      readingProgressPartMin: 42,
+      readingProgressDoneMin: 198,
+      readingProgressPartMin: 47,
       readingProgressTotalMin: TOTAL_MIN,
       railNowTitle: 'Согласие и границы власти',
       railCover: teenSeriesMediaFor('adult-daughter-marriage').rail,

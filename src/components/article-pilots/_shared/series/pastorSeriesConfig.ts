@@ -335,7 +335,7 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
       title: 'Досье A. Диотрефы нашего времени',
       mobileSection: 'Документальные случаи',
       partLabel: 'Досье A · Содержание',
-      readingProgressDoneMin: 0,
+      readingProgressDoneMin: 183,
       readingProgressPartMin: 15,
       readingProgressTotalMin: 15,
       railNowTitle: 'Диотрефы нашего времени',

@@ -6,7 +6,7 @@ import { SERIES_CONFIGS, type SeriesConfig, type SeriesPartTocItem, type SeriesQ
 import { APOSTASY_LEARNING_QUIZ } from '../../apostasy-series/apostasyLearningData';
 import { apostasySeriesMediaFor } from './apostasySeriesMedia';
 
-const TOTAL_MIN = 79;
+const TOTAL_MIN = 82;
 const toc = (...items: SeriesPartTocItem[]): SeriesPartTocItem[] => items;
 
 const part1Toc = toc(
@@ -126,19 +126,19 @@ export const APOSTASY_SERIES: SeriesConfig = defineSeriesConfig({
   ],
   pages: {
     'otstuplenie-chto-govorit-bibliya': {
-      id: 'otstuplenie-chto-govorit-bibliya', label: 'Что говорит Библия', title: 'Часть I. Что Библия на самом деле называет отпадением от веры', mobileSection: 'Что говорит Библия', partLabel: 'Часть I · Содержание', readingProgressDoneMin: 0, readingProgressPartMin: 18, readingProgressTotalMin: TOTAL_MIN, railNowTitle: 'Что Библия называет отпадением', railCover: apostasySeriesMediaFor('otstuplenie-chto-govorit-bibliya').rail, partDialogLabel: 'Часть I · Что говорит Библия', partToc: part1Toc,
+      id: 'otstuplenie-chto-govorit-bibliya', label: 'Что говорит Библия', title: 'Часть I. Что Библия на самом деле называет отпадением от веры', mobileSection: 'Что говорит Библия', partLabel: 'Часть I · Содержание', readingProgressDoneMin: 0, readingProgressPartMin: 19, readingProgressTotalMin: TOTAL_MIN, railNowTitle: 'Что Библия называет отпадением', railCover: apostasySeriesMediaFor('otstuplenie-chto-govorit-bibliya').rail, partDialogLabel: 'Часть I · Что говорит Библия', partToc: part1Toc,
     },
     'otstupniki-biblii-iuda-saul-ierovoam-dimas': {
-      id: 'otstupniki-biblii-iuda-saul-ierovoam-dimas', label: 'Отступники Библии', title: 'Часть II. Отступники Библии: Иуда, Саул, Иеровоам, Димас', mobileSection: 'Отступники Библии', partLabel: 'Часть II · Содержание', readingProgressDoneMin: 18, readingProgressPartMin: 15, readingProgressTotalMin: TOTAL_MIN, railNowTitle: 'Иуда, Саул, Иеровоам, Димас', railCover: apostasySeriesMediaFor('otstupniki-biblii-iuda-saul-ierovoam-dimas').rail, partDialogLabel: 'Часть II · Отступники Библии', partToc: part2Toc,
+      id: 'otstupniki-biblii-iuda-saul-ierovoam-dimas', label: 'Отступники Библии', title: 'Часть II. Отступники Библии: Иуда, Саул, Иеровоам, Димас', mobileSection: 'Отступники Библии', partLabel: 'Часть II · Содержание', readingProgressDoneMin: 19, readingProgressPartMin: 15, readingProgressTotalMin: TOTAL_MIN, railNowTitle: 'Иуда, Саул, Иеровоам, Димас', railCover: apostasySeriesMediaFor('otstupniki-biblii-iuda-saul-ierovoam-dimas').rail, partDialogLabel: 'Часть II · Отступники Библии', partToc: part2Toc,
     },
     'petr-i-iuda-padenie-ili-otstuplenie': {
-      id: 'petr-i-iuda-padenie-ili-otstuplenie', label: 'Пётр и Иуда', title: 'Часть III. Пётр и Иуда: падение или отступничество?', mobileSection: 'Пётр и Иуда', partLabel: 'Часть III · Содержание', readingProgressDoneMin: 33, readingProgressPartMin: 17, readingProgressTotalMin: TOTAL_MIN, railNowTitle: 'Падение или отступничество?', railCover: apostasySeriesMediaFor('petr-i-iuda-padenie-ili-otstuplenie').rail, partDialogLabel: 'Часть III · Пётр и Иуда', partToc: part3Toc,
+      id: 'petr-i-iuda-padenie-ili-otstuplenie', label: 'Пётр и Иуда', title: 'Часть III. Пётр и Иуда: падение или отступничество?', mobileSection: 'Пётр и Иуда', partLabel: 'Часть III · Содержание', readingProgressDoneMin: 34, readingProgressPartMin: 17, readingProgressTotalMin: TOTAL_MIN, railNowTitle: 'Падение или отступничество?', railCover: apostasySeriesMediaFor('petr-i-iuda-padenie-ili-otstuplenie').rail, partDialogLabel: 'Часть III · Пётр и Иуда', partToc: part3Toc,
     },
     'otreklis-ot-hrista-istoriya-cerkvi': {
-      id: 'otreklis-ot-hrista-istoriya-cerkvi', label: 'История Церкви', title: 'Часть IV. Отреклись от Христа: история Церкви', mobileSection: 'История Церкви', partLabel: 'Часть IV · Содержание', readingProgressDoneMin: 50, readingProgressPartMin: 13, readingProgressTotalMin: TOTAL_MIN, railNowTitle: 'Отречение и возвращение в истории', railCover: apostasySeriesMediaFor('otreklis-ot-hrista-istoriya-cerkvi').rail, partDialogLabel: 'Часть IV · История Церкви', partToc: part4Toc,
+      id: 'otreklis-ot-hrista-istoriya-cerkvi', label: 'История Церкви', title: 'Часть IV. Отреклись от Христа: история Церкви', mobileSection: 'История Церкви', partLabel: 'Часть IV · Содержание', readingProgressDoneMin: 51, readingProgressPartMin: 14, readingProgressTotalMin: TOTAL_MIN, railNowTitle: 'Отречение и возвращение в истории', railCover: apostasySeriesMediaFor('otreklis-ot-hrista-istoriya-cerkvi').rail, partDialogLabel: 'Часть IV · История Церкви', partToc: part4Toc,
     },
     'kogda-chelovek-uhodit-ot-very': {
-      id: 'kogda-chelovek-uhodit-ot-very', label: 'Когда человек уходит', title: 'Часть V. Когда человек уходит от веры', mobileSection: 'Когда человек уходит', partLabel: 'Часть V · Содержание', readingProgressDoneMin: 63, readingProgressPartMin: 16, readingProgressTotalMin: TOTAL_MIN, railNowTitle: 'Предупреждать, исправлять, возвращать', railCover: apostasySeriesMediaFor('kogda-chelovek-uhodit-ot-very').rail, partDialogLabel: 'Часть V · Когда человек уходит', partToc: part5Toc,
+      id: 'kogda-chelovek-uhodit-ot-very', label: 'Когда человек уходит', title: 'Часть V. Когда человек уходит от веры', mobileSection: 'Когда человек уходит', partLabel: 'Часть V · Содержание', readingProgressDoneMin: 65, readingProgressPartMin: 17, readingProgressTotalMin: TOTAL_MIN, railNowTitle: 'Предупреждать, исправлять, возвращать', railCover: apostasySeriesMediaFor('kogda-chelovek-uhodit-ot-very').rail, partDialogLabel: 'Часть V · Когда человек уходит', partToc: part5Toc,
     },
   },
 });
