@@ -9,6 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const { buildPublicSurfaceRegistry } = require('./lib/public-surface-registry');
 const { buildAuditProSourceCorpus, routeToRootHtml } = require('./lib/audit-pro-source-corpus');
+const { auditLanguageOfPartsHtml } = require('./lib/language-of-parts-hygiene');
 const REPO_ROOT = path.resolve(__dirname, '..');
 const QUARANTINE_ROOT = path.join(REPO_ROOT, 'migration', 'legacy-reference');
 function argValue(name, fallback) {
@@ -220,6 +221,7 @@ const fatalPatterns = [
 function walkDistHtml(dir, out = []) {
   if (!fs.existsSync(dir)) return out;
   for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (ent.name === 'pagefind') continue;
     const p = path.join(dir, ent.name);
     if (ent.isDirectory()) walkDistHtml(p, out);
     else if (ent.name.endsWith('.html')) out.push(p);
@@ -227,7 +229,9 @@ function walkDistHtml(dir, out = []) {
   return out;
 }
 
-const publicationHtmlFiles = [...htmlFiles, ...walkDistHtml(path.join(ROOT, 'dist'))];
+const builtDistFiles = ROOT === REPO_ROOT ? walkDistHtml(path.join(ROOT, 'dist')) : htmlFiles.filter(f => !rel(f).startsWith('pagefind/'));
+const builtDistSet = new Set(builtDistFiles);
+const publicationHtmlFiles = [...htmlFiles, ...(ROOT === REPO_ROOT ? builtDistFiles : [])];
 for (const f of publicationHtmlFiles) {
   const rawHtml = fs.readFileSync(f, 'utf8');
   const text = readableText(rawHtml);
@@ -237,6 +241,11 @@ for (const f of publicationHtmlFiles) {
   }
   for (const hit of findMixedScriptTokens(sanitizeMarkupForMixedScript(rawHtml))) {
     fail('fatal-cyrillic-latin-glue', rel(f), hit.token);
+  }
+  if (builtDistSet.has(f)) {
+    for (const untagged of auditLanguageOfPartsHtml(rawHtml)) {
+      fail('untagged-language-of-parts', rel(f), `<${untagged.parentTag} lang="${untagged.inheritedLang}">: ${untagged.sample}`);
+    }
   }
 }
 

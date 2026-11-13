@@ -1,5 +1,38 @@
 const OWNER = 'native-v1';
 const POPOVER_ID = 'gb-strategic-map-popover';
+const FOREIGN_SCRIPT_RUN_RE =
+  /((?:[\u0370-\u03FF\u1F00-\u1FFF][\u0300-\u036F]*)+(?:[\s·ʼ'’-]+(?:[\u0370-\u03FF\u1F00-\u1FFF][\u0300-\u036F]*)+)*)|((?:[\u0590-\u05FF\uFB1D-\uFB4F][\u0591-\u05C7]*)+(?:[\s־'-]+(?:[\u0590-\u05FF\uFB1D-\uFB4F][\u0591-\u05C7]*)+)*)/gu;
+
+function appendLanguageTaggedText(target, rawValue) {
+  const source = String(rawValue || '');
+  FOREIGN_SCRIPT_RUN_RE.lastIndex = 0;
+  if (!FOREIGN_SCRIPT_RUN_RE.test(source) || typeof document.createTextNode !== 'function') {
+    target.textContent = source;
+    return;
+  }
+  FOREIGN_SCRIPT_RUN_RE.lastIndex = 0;
+  let cursor = 0;
+  let match;
+  while ((match = FOREIGN_SCRIPT_RUN_RE.exec(source)) !== null) {
+    if (match.index > cursor) {
+      target.appendChild(document.createTextNode(source.slice(cursor, match.index)));
+    }
+    const span = document.createElement('span');
+    if (match[1]) {
+      span.lang = 'grc';
+      span.textContent = match[1];
+    } else {
+      span.lang = 'he';
+      span.dir = 'rtl';
+      span.textContent = match[2];
+    }
+    target.appendChild(span);
+    cursor = match.index + match[0].length;
+  }
+  if (cursor < source.length || source.length === 0) {
+    target.appendChild(document.createTextNode(source.slice(cursor)));
+  }
+}
 
 function isKeyboardActivation(event) {
   return event.key === 'Enter' || event.key === ' ';
@@ -63,14 +96,14 @@ function renderRecord(popover, record) {
       const badge = document.createElement('strong');
       const safeType = String(block.type || '').replace(/[^a-z0-9_-]/gi, '');
       badge.className = `popover-badge${safeType ? ` color-${safeType}` : ''}`;
-      badge.textContent = String(block.title);
+      appendLanguageTaggedText(badge, block.title);
       section.appendChild(badge);
     }
 
     if (block?.text) {
       const text = document.createElement('p');
       text.className = 'popover-text';
-      text.textContent = String(block.text);
+      appendLanguageTaggedText(text, block.text);
       section.appendChild(text);
     }
 

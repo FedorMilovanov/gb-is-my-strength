@@ -64,6 +64,7 @@
 const fs = require('fs');
 const path = require('path');
 const parse5 = require('parse5');
+const { projectLanguageOfPartsHtml, auditLanguageOfPartsHtml } = require('./lib/language-of-parts-hygiene');
 
 const ROOT = path.resolve(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
@@ -203,6 +204,27 @@ function main() {
     `✅ heading-name hygiene: ${files.length} файлов, ${filesChanged} изменено, `
     + `${labeled} заголовков получили статический aria-label (пустых ${skippedEmpty}, `
     + `с aria-labelledby ${skippedLabelledby}, уже помечено ${alreadyLabeled}, без локации ${skippedNoLoc}); постпроверка прошла`,
+  );
+
+  let langFilesChanged = 0;
+  let langRunsWrapped = 0;
+  for (const file of files) {
+    const relFile = path.relative(ROOT, file);
+    const currentHtml = fs.readFileSync(file, 'utf8');
+    const projected = projectLanguageOfPartsHtml(currentHtml, relFile);
+    if (projected.changed) {
+      fs.writeFileSync(file, projected.html);
+      langFilesChanged += 1;
+      langRunsWrapped += projected.wrappedRuns;
+    }
+    if (projected.remainingUntagged > 0) {
+      const residual = auditLanguageOfPartsHtml(projected.changed ? projected.html : currentHtml);
+      fail(`${relFile}: остались неразмеченные греческие/еврейские фрагменты (${residual.length}): ${residual[0]?.sample || ''}`);
+    }
+  }
+  console.log(
+    `✅ language-of-parts hygiene: ${files.length} файлов, ${langFilesChanged} изменено, `
+    + `${langRunsWrapped} иноязычных фрагментов получили lang="grc"/"he" (остаток 0)`,
   );
 }
 
