@@ -428,6 +428,18 @@ if (chromium) (async () => {
         ? /РУССКИЙ БАПТИЗМ/.test(text) && /Баптизма/.test(text)
         : /РУССКИЙ БАПТИЗМ/.test(text) && /3D/.test(text);
       assert(recognized, `I4 [${vp.label}] приложение загрузилось (бренд+контент)`, `I4 [${vp.label}] приложение не распознано: ${JSON.stringify(text.slice(0, 100))}`);
+      // The outer iframe may have zero overflow while the React document
+      // remains horizontally scrollable. Measure the real same-origin app
+      // after loading fonts and content, not the surrounding shell.
+      const appWidth = await frame.evaluate(async () => {
+        await document.fonts.ready;
+        return { client: document.documentElement.clientWidth,
+          body: document.body.scrollWidth,
+          html: document.documentElement.scrollWidth };
+      });
+      assert(Math.max(appWidth.body, appWidth.html) <= appWidth.client,
+        `I16 [${vp.label}] native React document has zero horizontal overflow`,
+        `I16 [${vp.label}] inner 3D app overflow=${Math.max(appWidth.body,appWidth.html)-appWidth.client}px`);
 
       if (!vp.mobile) {
         await frame.evaluate(() => [...document.querySelectorAll('button,a')].find((node) => /3D Карта|3D-карта/i.test(node.textContent))?.click());
