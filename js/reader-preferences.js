@@ -365,7 +365,10 @@
         if (!open && panel.contains(document.activeElement)) button.focus({preventScroll:true});
         card.dataset.gbSummaryOpen = open ? 'true' : 'false';
         button.setAttribute('aria-expanded', String(open));
-        button.setAttribute('aria-label', open ? 'Свернуть раздел «Коротко»' : 'Развернуть раздел «Коротко»');
+        // Native button text already names “Коротко” and the visible thesis
+        // count. aria-expanded supplies the action state to assistive tech;
+        // an overriding aria-label would conceal the count (WCAG 2.5.3).
+        button.removeAttribute('aria-label');
         panel.inert = !open;
         panel.setAttribute('aria-hidden', String(!open));
       }

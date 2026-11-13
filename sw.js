@@ -17,11 +17,11 @@ const EXPECTED_CACHES = new Set([
 ]);
 const OFFLINE_FALLBACK = '/404.html';
 const PRECACHE_ASSETS = [
-  '/css/site.css?v=ecc2a54d',
+  '/css/site.css?v=511fb678',
   '/css/home.css?v=4a2fa9a3',
   '/css/command-palette.css?v=3b88813f',
   '/css/mobile-hotfix.css?v=9cfd6aee',
-  '/css/nagornaya-mobile-toc.css?v=bded2f86',
+  '/css/nagornaya-mobile-toc.css?v=623e0845',
   '/css/floating-cluster.css?v=18742944',
   '/css/series-samizdat.css?v=6d9658bd',
   '/css/reader-preferences.css?v=f424e5ed',
@@ -44,7 +44,7 @@ const PRECACHE_ASSETS = [
   '/js/nagornaya-mobile-toc.js?v=a0b23b1c',
   '/js/floating-cluster-controller.js?v=01161dcb',
   '/js/reader-preferences-head.js?v=3ddf9706',
-  '/js/reader-preferences.js?v=28c2ed61',
+  '/js/reader-preferences.js?v=78887cf1',
   '/js/reader-state.js?v=b3deb501',
   '/pagefind/pagefind.js',
   '/favicon.ico',
