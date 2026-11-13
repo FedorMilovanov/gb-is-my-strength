@@ -127,6 +127,14 @@ function componentBodyWords(slug) {
  * генератора, поэтому --write их не переписывает: скрипт только показывает
  * их как архитектурный долг (см. §8 в docs/editorial-waves/READING-TIME-POLICY.md).
  */
+function lineAt(source, offset) {
+  let line = 1;
+  for (let i = 0; i < offset && i < source.length; i += 1) if (source[i] === '\n') line += 1;
+  return line;
+}
+
+const CARD_START = /<li class="related-articles__item"|<div class="related-articles__body"|<a class="gbs2-next-card"|<div class="gbs2-next-card"/g;
+
 function literalSurfaces(slug) {
   const page = path.join(PAGES_DIR, 'articles', slug, 'index.astro');
   if (!fs.existsSync(page) || !fs.existsSync(COMPONENTS_DIR)) return [];
@@ -140,33 +148,40 @@ function literalSurfaces(slug) {
     for (const name of fs.readdirSync(dir)) {
       if (!name.endsWith('.astro')) continue;
       const file = path.join(dir, name);
-      read(file)
-        .split('\n')
-        .forEach((line, i) => {
-          const visible = line.match(/⏱\s*(\d+)\s*мин/);
-          const pagefind = line.match(/data-pagefind-meta="readTime"[^>]*>(\d+)</);
-          if (visible || pagefind) {
-            out.push({
-              file: path.relative(ROOT, file),
-              line: i + 1,
-              kind: visible ? 'visible' : 'pagefind',
-              value: Number(visible ? visible[1] : pagefind[1]),
-              target: null,
-            });
-            return;
-          }
-          // Карточка-ссылка на другую статью: «Богословие · 41 мин», «~41 мин».
-          const card = line.match(/(?:·\s*|~)(\d+)\s*мин/);
-          const href = line.match(/href="\.\.\/([a-z0-9-]+)\/"/);
-          if (!card || !href) return;
-          out.push({
-            file: path.relative(ROOT, file),
-            line: i + 1,
-            kind: 'card',
-            value: Number(card[1]),
-            target: href[1],
-          });
+      const source = read(file);
+      const rel = path.relative(ROOT, file);
+      const taken = [];
+
+      for (const m of source.matchAll(/⏱\s*(\d+)\s*мин/g)) {
+        out.push({ file: rel, line: lineAt(source, m.index), kind: 'visible', value: Number(m[1]), target: null });
+        taken.push([m.index, m.index + m[0].length]);
+      }
+      for (const m of source.matchAll(/data-pagefind-meta="readTime"[^>]*>(\d+)</g)) {
+        out.push({ file: rel, line: lineAt(source, m.index), kind: 'pagefind', value: Number(m[1]), target: null });
+        taken.push([m.index, m.index + m[0].length]);
+      }
+
+      // Карточки: метка «Богословие · 41 мин» и анонс «К текущей части · ~41 мин».
+      // Цель — ссылка внутри той же карточки: карточки размечаются конечными
+      // маркерами, поэтому ищем href не «рядом по тексту», а в границах блока.
+      const starts = [...source.matchAll(CARD_START)].map((m) => m.index);
+      for (const m of source.matchAll(/(?:·\s*|~)(\d+)\s*мин/g)) {
+        if (taken.some(([a, b]) => m.index >= a && m.index < b)) continue;
+        const at = m.index;
+        const from = starts.filter((x) => x <= at).pop() ?? -1;
+        const to = starts.find((x) => x > at) ?? source.length;
+        const chunk = source.slice(from, to);
+        // Ссылка бывает и «../slug/», и «../../articles/slug/»: разбираем оба
+        // вида, а неизвестный slug отсеет сверка с картой ожиданий.
+        const href = chunk.match(/href="(?:\.\.\/)+(?:articles\/)?([a-z0-9-]+)\//);
+        out.push({
+          file: rel,
+          line: lineAt(source, at),
+          kind: href ? 'card' : 'card-unresolved',
+          value: Number(m[1]),
+          target: href ? href[1] : null,
         });
+      }
     }
   }
   return out;
@@ -220,7 +235,14 @@ function audit() {
     (r.literals || []).map((l) => ({
       ...l,
       slug: r.slug,
-      expected: l.target ? expectedBySlug.get(l.target) ?? null : Number.isFinite(r.expected) ? r.expected : null,
+      expected:
+        l.kind === 'card-unresolved'
+          ? null
+          : l.target
+            ? expectedBySlug.get(l.target) ?? null
+            : Number.isFinite(r.expected)
+              ? r.expected
+              : null,
     }))
   );
 
