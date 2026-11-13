@@ -194,3 +194,12 @@ npm run data:consistency
 Всё четыре места теперь выводятся из `PASTOR_SERIES` (оболочка читает `pages.antisovetov`, карточки и статистика — 183), а контрактная константа `pastor-series-visual-parity-audit` поднята до 183: её задача — ловить тихое перебазирование, а не замораживать устаревшую сумму.
 
 Та же болезнь была у витрины Gill (§8.3) и у двух статей, чьи значения ведутся legacy-зеркалами (обзор герменевтики и материал о Лоусоне): манифест и граф для них нормализатор не пересчитывает, значения выровнены вручную, и запись `wordCount` в PageHead приведена к тому же подсчёту.
+
+### 9b. Про запуск `gill:context:visual-parity:audit`
+
+Локальный `npm run gill:context:visual-parity:audit` (без флага) сравнивает собранный `dist` с legacy-зеркалом в корне репозитория и падает на `H2 drift`, потому что зеркало устарело ещё с базового коммита и самим же стражем помечено `reference-only`. Деплой и CI вызывают скрипт с `--require-dist`, и в этом режиме он зелёный. Для проверки после сборки запускать:
+
+```bash
+node scripts/gill-context-visual-parity-audit.js --require-dist
+node scripts/gill-spravochnik-visual-parity-audit.js --require-dist
+```
