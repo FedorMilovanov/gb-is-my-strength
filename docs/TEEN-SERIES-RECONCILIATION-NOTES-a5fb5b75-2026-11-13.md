@@ -373,9 +373,11 @@ count on this branch, plus a codepoint dump for the homoglyph cases.
 
 Exactly one finding was this branch's, introduced by `d944712`:
 `kaige-переводческую` in `enoh-prorochestvoval-iuda-14-15-4q204.mdx`, a Latin
-token hyphenated onto a Cyrillic adjective. The article's own footnote four
-already gives the correct form, since it cites Timothy A. Lee's «Jude's Use of a
-Kaige Edition of Enochic Scripture», and line 216 of the same file used `Kaige`
+token hyphenated onto a Cyrillic adjective. The base already carried that hybrid
+inside a backtick code span, and this branch's removal of backtick schemas exposed
+it as raw text; §8e records the full four-way collision. The article's own footnote
+four already gives the correct form, since it cites Timothy A. Lee's «Jude's Use of
+a Kaige Edition of Enochic Scripture», and line 216 of the same file used `Kaige`
 separately. The prose now reads «переводческую технику Kaige», which keeps the
 transliteration as a proper name instead of welding it into a Cyrillic word.
 
@@ -454,6 +456,112 @@ removes lines and adds words. A net-negative line count is therefore not evidenc
 of lost or ragged prose here, and any reconciler comparing branches by line count
 will reach the same wrong conclusion about this branch and about `7b785a3b`,
 whose −309…−624 lines likewise come with +481 net words.
+
+## 8e. Both fixes above collide with other branches, and one branch deviates from corpus convention
+
+Two of the strings in §8c turn out to be edited independently by other branches,
+in different ways, so they need a decision at merge time rather than an automatic
+resolution.
+
+**The Kaige sentence is a four-way collision.** The base reads
+«напоминающими \`kaige\`-переводческую технику», so the Latin token was already
+hyphenated onto a Cyrillic adjective in the base, only inside a backtick code span.
+This branch's `d944712` removed backtick schemas as a matter of house style and
+therefore exposed the hybrid as raw text, which is how the audit came to flag it
+here and not on branches that kept the backticks. Four versions now exist:
+
+| branch | form |
+| --- | --- |
+| base `9618e82`, `4786e4e2`, `7b785a3b`, `8c44f067`, `bf6e18c1` | «напоминающими \`kaige\`-переводческую технику» |
+| **this branch** | «напоминающими переводческую технику Kaige» |
+| `5ccbaa3b` | «напоминающими переводческую технику \`kaige\`» |
+| `1d569906` | rewrote the whole sentence: «переработанную в духе переводческой традиции `<span lang="grc">καίγε</span>` (*kaige*)» |
+
+`5ccbaa3b` reached the same word-order repair as this branch, which is convergence
+rather than conflict of intent, but the line will still conflict textually. This
+branch's form is preferable on two counts: it drops the backticks, which house
+style treats as a schema to remove, and it capitalizes `Kaige` as the proper name
+of a recension, matching the article's own footnote four. `1d569906`'s version is
+not a deletion — an earlier reading of his diff as «sentence absent» was wrong —
+he reworded it and added his own Greek tagging; his copy of the article grew from
+23970 to 57616 bytes.
+
+**The accent normalization exists on only two of seven branches.** This branch and
+`1d569906` both carry the Cyrillic `а` plus U+0301 in `serdce-i-duh.mdx` and
+`SerdceIDuhBody.astro`, byte-for-byte identical. `4786e4e2`, `7b785a3b`,
+`8c44f067`, `5ccbaa3b` and `bf6e18c1` all still carry the base Latin U+00E1. A
+trial merge of this branch's HEAD against each of the six, with
+`git merge-tree --write-tree`, shows what that means in practice:
+
+| branch | conflicting files | the Kaige line | the accent, both files |
+| --- | ---: | --- | --- |
+| `1d569906` | 185 | conflict | conflict, but both sides chose U+0301, so resolution is trivial |
+| `7b785a3b` | 133 | conflict | conflict, and his side keeps U+00E1 |
+| `4786e4e2` | 90 | conflict | **auto-merges, this branch's U+0301 survives** |
+| `bf6e18c1` | 73 | auto-merges | conflict, and his side keeps U+00E1 |
+| `8c44f067` | 36 | conflict | **auto-merges, this branch's U+0301 survives** |
+| `5ccbaa3b` | 24 | conflict | **auto-merges, this branch's U+0301 survives** |
+
+So the resurrection risk is narrower than it first looks but real for three
+branches. Against `4786e4e2`, `8c44f067` and `5ccbaa3b` git takes this branch's
+side automatically, because they never edited those lines. Against `7b785a3b` and
+`bf6e18c1` both sides edited the same paragraphs — `7b785a3b` joins paragraphs,
+which is why it touches so much text — and resolving towards either one silently
+restores the Latin U+00E1. That restored form passes every gate this branch
+currently runs, because only `1d569906`'s hardened audits catch it. Whoever
+reconciles should resolve both files towards the U+0301 form explicitly and then
+re-run a mixed-script audit rather than trusting a green build.
+
+The Kaige line conflicts against five of the six, which is consistent with §8e's
+table above: four different renderings of one sentence now exist across the
+branches, and only `bf6e18c1` leaves it far enough alone to auto-merge.
+
+**One deviation worth reporting back.** `5ccbaa3b` also transliterated the
+scholar's name in the same sentence, writing «Тимоти А. Ли предложил» where the
+base and every other branch write «Timothy A. Lee предложил». The corpus convention
+is clearly to keep Western scholarly names in Latin in body prose: `John Owen`
+appears 17 times, `Michael J. Kruger` 9, `John Flavel` 9, `Diane Langberg` 8,
+`Richard Baxter` 8, `Thomas R. Schreiner` 7. This branch kept the base form for
+that reason. It is a small point, but it is the kind of change that reads as a
+typographic improvement and actually breaks consistency with 459 distinct Latin
+name and title runs across the articles, so it should not be adopted silently at
+merge time.
+
+## 8f. A real citation defect in the base, already fixed by `8c44f067`
+
+`8c44f067` has advanced to `32944ea`, «Correct Solomon scripture references and
+guard numbering». He added a new test,
+`scripts/apostasy-solomon-reference-contract-test.mjs`, which did not exist in the
+base. It asserts that the `<h2 id="solomon">` section of
+`otstupniki-biblii-iuda-saul-ierovoam-dimas.mdx` contains `3 Цар. 11` exactly twice
+and contains no `1 Цар. 11` at all, while the `<h2 id="saul">` section keeps
+`1 Цар. 13` and `1 Цар. 15`.
+
+That test fails on the base and on this branch, expected 2 and actual 0, because
+the base cites Solomon's late-period fall as «1 Цар. 11». In Russian Synodal
+numbering 1 Царств is 1 Samuel, so 1 Цар. 11 is the chapter about Nahash the
+Ammonite and Jabesh-gilead, not the chapter where Solomon's wives turn his heart
+after other gods. The correct Synodal reference is 3 Цар. 11, which is 1 Kings 11.
+This is a substantive citation error, not a style preference: the article is about
+apostates, and it supports its Solomon case with a verse that says nothing about
+him. The same trap is worth remembering for the other books — 2 Царств is 2 Samuel
+and 4 Царств is 2 Kings, so only the two Kings books shift, and only by two.
+
+This branch did not repair it, deliberately. `8c44f067` owns the fix and has
+already shipped it, and a trial merge shows the two branches edit different lines
+of that file — his at 175 and 183, this branch's single hunk at 271 — so
+`merge-tree` reports «Auto-merging» with no conflict. Taking his side is therefore
+free, and duplicating the correction here would only manufacture a conflict.
+
+His commit also regenerated `data/scripture-search-index.json`, which makes him one
+more branch in the set that rewrites that derived file, and reinforces §5: the
+index must be rebuilt from the final merged tree, never taken from a side.
+
+This branch's own added references were checked against the same rule and are
+correct: `1 Цар. 2:29` and `1 Цар. 3:13` cite Eli and his sons in 1 Samuel,
+`2 Цар. 18:33–19:8` cites David's grief over Absalom in 2 Samuel, and `4 Цар. 17`
+with `4 Цар. 17:7–23` cites 2 Kings 17. None of them is a Kings passage numbered
+as Samuel.
 
 ## 9. Suggested reconciliation order
 
