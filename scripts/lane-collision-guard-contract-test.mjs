@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import {
   analyzeCollisions,
+  isCacheBustOnlyPatch,
   isDerivedProjectionPath,
   normalizeRepoPath,
   predecessorSupersededByCurrent,
@@ -119,4 +120,78 @@ assert.equal(isDerivedProjectionPath('data/legacy-reference-ledger/references-3.
 assert.throws(() => normalizeRepoPath('../escape'), /Unsafe repository path/);
 assert.throws(() => normalizeRepoPath('/absolute'), /Unsafe repository path/);
 
-console.log('Lane collision guard contract: PASS (6 collision scenarios + path boundary checks)');
+{
+  const patchA = [
+    '@@ -116,1 +116,1 @@',
+    '-<script>var src="/js/search.js?v=75df3eab";</script>',
+    '+<script>var src="/js/search.js?v=ac0b061c";</script>',
+  ].join('\n');
+  const patchB = [
+    '@@ -44,1 +44,1 @@',
+    '-  <link rel="stylesheet" href="/css/site.css?v=f6ee3488">',
+    '+  <link rel="stylesheet" href="/css/site.css?v=ecc2a54d">',
+  ].join('\n');
+  const substantivePatch = [
+    '@@ -10,1 +10,1 @@',
+    '-  <title>404 — Страница не найдена</title>',
+    '+  <title>404 — Ошибка</title>',
+  ].join('\n');
+
+  assert.equal(isCacheBustOnlyPatch(patchA), true);
+  assert.equal(isCacheBustOnlyPatch(patchB), true);
+  assert.equal(isCacheBustOnlyPatch(substantivePatch), false);
+  assert.equal(isCacheBustOnlyPatch(''), false);
+
+  const pureDerived = analyzeCollisions({
+    current,
+    currentFiles: ['404.html'],
+    currentPatches: { '404.html': patchA },
+    candidates: [{
+      number: 1055,
+      title: 'other lane cache-bust',
+      body: '',
+      baseRef: 'main',
+      headRepo: repo,
+      files: ['404.html'],
+      patches: { '404.html': patchB },
+    }],
+  });
+  assert.equal(pureDerived.blockers.length, 0);
+  assert.deepEqual(pureDerived.warnings[0].files, ['404.html']);
+
+  const asymmetricDerived = analyzeCollisions({
+    current,
+    currentFiles: ['src/components/Footer.astro'],
+    currentPatches: { 'src/components/Footer.astro': patchA },
+    candidates: [{
+      number: 1055,
+      title: 'other lane component change',
+      body: '',
+      baseRef: 'main',
+      headRepo: repo,
+      files: ['src/components/Footer.astro'],
+      patches: { 'src/components/Footer.astro': substantivePatch },
+    }],
+  });
+  assert.equal(asymmetricDerived.blockers.length, 0);
+  assert.deepEqual(asymmetricDerived.warnings[0].files, ['src/components/Footer.astro']);
+
+  const substantiveCollision = analyzeCollisions({
+    current,
+    currentFiles: ['404.html'],
+    currentPatches: { '404.html': substantivePatch },
+    candidates: [{
+      number: 1055,
+      title: 'other lane substantive edit',
+      body: '',
+      baseRef: 'main',
+      headRepo: repo,
+      files: ['404.html'],
+      patches: { '404.html': substantivePatch },
+    }],
+  });
+  assert.deepEqual(substantiveCollision.blockers.map((entry) => entry.number), [1055]);
+  assert.deepEqual(substantiveCollision.blockers[0].files, ['404.html']);
+}
+
+console.log('Lane collision guard contract: PASS (8 collision scenarios + cache-bust projection + path boundary checks)');

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,6 +14,75 @@ const DERIVED_PROJECTION_PATTERNS = Object.freeze([
   /^data\/search-manifest\.json$/,
   /^data\/route-search-policy\.json$/,
 ]);
+
+const CACHE_BUST_PROJECTION_SURFACE_RE = /\.(?:html|astro)$/;
+const CACHE_BUST_TOKEN_RE = /(\?v=)[0-9a-f]{6,12}\b/gi;
+
+function maskCacheBustTokens(line) {
+  return String(line).replace(CACHE_BUST_TOKEN_RE, '$1__CACHE_BUST_HASH__');
+}
+
+/**
+ * Returns true iff a unified diff patch modifies at least one line and every
+ * hunk consists strictly of 1:1 line replacements whose only differences are
+ * `?v=<hex>` cache-bust query tokens rewritten by `scripts/cache-bust.js`.
+ * Fails closed (`false`) on missing/truncated patches, insertions, deletions,
+ * or any markup/copy/code change.
+ */
+export function isCacheBustOnlyPatch(patch) {
+  if (typeof patch !== 'string' || patch.trim().length === 0) return false;
+  const lines = patch.split(/\r?\n/);
+  let sawHunk = false;
+  let removed = [];
+  let added = [];
+
+  const verifyBlock = () => {
+    if (removed.length === 0 && added.length === 0) return true;
+    if (removed.length === 0 || removed.length !== added.length) return false;
+    for (let i = 0; i < removed.length; i += 1) {
+      if (removed[i] === added[i]) return false;
+      if (!CACHE_BUST_TOKEN_RE.test(removed[i])) return false;
+      CACHE_BUST_TOKEN_RE.lastIndex = 0;
+      if (!CACHE_BUST_TOKEN_RE.test(added[i])) return false;
+      CACHE_BUST_TOKEN_RE.lastIndex = 0;
+      if (maskCacheBustTokens(removed[i]) !== maskCacheBustTokens(added[i])) return false;
+    }
+    removed = [];
+    added = [];
+    return true;
+  };
+
+  for (const line of lines) {
+    if (
+      line.startsWith('diff --git ')
+      || line.startsWith('index ')
+      || line.startsWith('--- ')
+      || line.startsWith('+++ ')
+    ) {
+      continue;
+    }
+    if (line.startsWith('@@ ')) {
+      if (!verifyBlock()) return false;
+      sawHunk = true;
+      continue;
+    }
+    if (!sawHunk) continue;
+    if (line.startsWith('-')) {
+      if (added.length > 0 && !verifyBlock()) return false;
+      removed.push(line.slice(1));
+    } else if (line.startsWith('+')) {
+      added.push(line.slice(1));
+    } else if (line.startsWith(' ') || line === '') {
+      if (!verifyBlock()) return false;
+    } else if (line.startsWith('\\')) {
+      continue;
+    } else {
+      return false;
+    }
+  }
+
+  return sawHunk && verifyBlock();
+}
 
 export function normalizeRepoPath(value) {
   if (typeof value !== 'string' || value.length === 0) {
@@ -52,7 +122,7 @@ function normalizeFileList(files) {
   return [...new Set(files.map((file) => normalizeRepoPath(file)))].sort();
 }
 
-export function analyzeCollisions({ current, currentFiles, candidates }) {
+export function analyzeCollisions({ current, currentFiles, currentPatches = {}, candidates }) {
   if (!current || !Number.isInteger(current.number) || current.number <= 0) {
     throw new Error('Current PR number is required');
   }
@@ -93,11 +163,18 @@ export function analyzeCollisions({ current, currentFiles, candidates }) {
     }
 
     const candidateFiles = normalizeFileList(candidate.files || []);
+    const candidatePatches = candidate.patches && typeof candidate.patches === 'object' ? candidate.patches : {};
     const overlap = candidateFiles.filter((file) => currentSet.has(file));
     if (!overlap.length) continue;
 
-    const derived = overlap.filter(isDerivedProjectionPath);
-    const exclusive = overlap.filter((file) => !isDerivedProjectionPath(file));
+    const isDerivedOverlap = (file) => {
+      if (isDerivedProjectionPath(file)) return true;
+      if (!CACHE_BUST_PROJECTION_SURFACE_RE.test(file)) return false;
+      return isCacheBustOnlyPatch(currentPatches[file]) || isCacheBustOnlyPatch(candidatePatches[file]);
+    };
+
+    const derived = overlap.filter(isDerivedOverlap);
+    const exclusive = overlap.filter((file) => !isDerivedOverlap(file));
 
     if (exclusive.length) {
       blockers.push({
@@ -155,7 +232,7 @@ function readEvent(eventPath) {
   return JSON.parse(fs.readFileSync(absolute, 'utf8'));
 }
 
-function prModel(pr, files = []) {
+function prModel(pr, files = [], patches = {}) {
   return {
     number: Number(pr.number),
     title: pr.title || '',
@@ -163,7 +240,19 @@ function prModel(pr, files = []) {
     baseRef: pr.base && pr.base.ref ? pr.base.ref : '',
     headRepo: pr.head && pr.head.repo && pr.head.repo.full_name ? pr.head.repo.full_name : '',
     files,
+    patches,
   };
+}
+
+function loadRangePatchForFile(baseSha, headSha, file) {
+  try {
+    return execFileSync('git', ['diff', '-U0', `${baseSha}..${headSha}`, '--', file], {
+      encoding: 'utf8',
+      maxBuffer: 4 * 1024 * 1024,
+    });
+  } catch {
+    return '';
+  }
 }
 
 export async function runCli(env = process.env) {
@@ -201,6 +290,13 @@ export async function runCli(env = process.env) {
   const baseQuery = encodeURIComponent(baseRef);
 
   const currentFiles = listRangeFiles(effectiveBaseSha, effectiveHeadSha);
+  const currentPatches = {};
+  for (const file of currentFiles) {
+    const normalized = normalizeRepoPath(file);
+    if (CACHE_BUST_PROJECTION_SURFACE_RE.test(normalized)) {
+      currentPatches[normalized] = loadRangePatchForFile(effectiveBaseSha, effectiveHeadSha, normalized);
+    }
+  }
 
   const openPulls = await pagedGithubArray({
     apiUrl,
@@ -226,12 +322,19 @@ export async function runCli(env = process.env) {
       route: `/repos/${encodedOwner}/${encodedName}/pulls/${pr.number}/files`,
     });
     candidate.files = filesRaw.map((entry) => entry.filename);
+    candidate.patches = {};
+    for (const entry of filesRaw) {
+      if (typeof entry.filename === 'string' && typeof entry.patch === 'string') {
+        candidate.patches[normalizeRepoPath(entry.filename)] = entry.patch;
+      }
+    }
     candidateModels.push(candidate);
   }
 
   const result = analyzeCollisions({
     current: { number: prNumber, repo, baseRef },
     currentFiles,
+    currentPatches,
     candidates: candidateModels,
   });
 
