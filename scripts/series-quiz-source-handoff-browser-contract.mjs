@@ -130,6 +130,16 @@ function attachErrorProbe(page, base, label) {
 }
 
 async function openSheetToQuiz(page) {
+  // Learning moved into the canonical Reader Settings sheet. Exercise the
+  // actual two-step mobile user journey instead of assuming a retired top-bar
+  // shortcut remains directly visible.
+  const settings = page.locator('#mobSettingsBtn');
+  await settings.waitFor({ state: 'visible', timeout: 10000 });
+  await settings.click();
+  await page.waitForFunction(() => {
+    const sheet = document.getElementById('gillSettingsOverlay');
+    return Boolean(sheet && sheet.classList.contains('is-open') && sheet.getAttribute('aria-hidden') === 'false');
+  }, null, { timeout: 10000 });
   const opener = page.locator('#mobLearningBtn');
   await opener.waitFor({ state: 'visible', timeout: 10000 });
   await opener.click();

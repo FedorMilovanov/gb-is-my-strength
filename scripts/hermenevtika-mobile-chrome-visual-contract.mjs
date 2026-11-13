@@ -113,7 +113,7 @@ async function snapshot(page) {
     const fab = document.getElementById('gb-hl-fab');
     const fabStyle = fab ? getComputedStyle(fab) : null;
     const share = document.getElementById('hmShareBtn');
-    const actions = bottom?.querySelector('.hmbar-actions');
+    const actions = bottom?.querySelector('.reader-mobile-action-cluster');
     return {
       viewport: { width: innerWidth, height: innerHeight },
       scrollWidth: document.documentElement.scrollWidth,
@@ -124,7 +124,7 @@ async function snapshot(page) {
       actions: {
         exists: Boolean(actions), parentIsBottom: actions?.parentElement === bottom,
         gap: actions ? getComputedStyle(actions).gap : null,
-        controls: Array.from(actions?.children || []).map((el) => el.id || el.getAttribute('data-fc-action')),
+        controls: Array.from(actions?.children || []).map((el) => el.id || el.getAttribute('data-action') || el.getAttribute('data-fc-action')),
         rect: rectOf(actions),
       },
       fab: {
@@ -157,9 +157,9 @@ async function assertHighlightsGeometry(page, engine, viewport, route) {
     && state.fab.hostClass
     && state.fab.parentIsActions
     && state.actions.parentIsBottom
-    && state.actions.gap === '0px'
-    && JSON.stringify(state.actions.controls) === JSON.stringify(['theme','hmSettingsBtn','gb-hl-fab','hmShareBtn'])
-    && state.fab.nextIsShare
+    && JSON.stringify(state.actions.controls) === JSON.stringify(['hmSettingsBtn','gb-hl-fab','print','hmShareBtn'])
+    // The native PDF action now separates Saved Quotes and Share; all
+    // controls remain distinct 44px targets in the shared action cluster.
     && state.fab.animationName === 'none'
     && state.fab.transform === 'none'
     && state.share.visible

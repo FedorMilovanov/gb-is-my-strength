@@ -125,12 +125,16 @@ try {
                 // Shared series hit targets must not overlap Play or shrink the
                 // choices into the narrow Learning slot at 320px. Real browser
                 // geometry + a touchscreen gesture exercise each theme/series.
-                await page.waitForFunction(() => typeof window.__gillCloseSpeedRail === 'function',
-                  null, { timeout: 8000 });
+                await page.waitForFunction(() => {
+                  const root = document.querySelector('[data-reader-mobile-speed][data-gill-mobile-bar]');
+                  const badge = document.getElementById('mobSpdBadge');
+                  const rail = document.getElementById('mobileSpeedrail');
+                  return root?.dataset.readerSpeedBound === '1' && badge?.getAttribute('aria-controls') === rail?.id;
+                }, null, { timeout: 8000 });
                 const hit = await page.evaluate(() => {
                   const play = document.querySelector('.mobile-playwrap .gb-ember');
                   const badge = document.getElementById('mobSpdBadge');
-                  const learning = document.querySelector('.mobile-learning-trigger');
+                  const learning = document.querySelector('.reader-mobile-menu-trigger');
                   const r = (el) => el?.getBoundingClientRect();
                   const isHit = (el) => {
                     const rect = r(el);
@@ -176,7 +180,7 @@ try {
                     railScrollWidth: rail?.scrollWidth,
                     railClientWidth: rail?.clientWidth,
                     learningAccessible: (() => {
-                      const el = document.querySelector('.mobile-learning-trigger');
+                      const el = document.querySelector('.reader-mobile-menu-trigger');
                       return Boolean(el && el.getAttribute('aria-hidden') !== 'true' && !el.inert);
                     })(),
                     background: getComputedStyle(rail).backgroundColor, choices,
@@ -217,15 +221,15 @@ try {
                 await page.keyboard.press('Escape');
                 await page.waitForFunction(() => {
                   const rail = document.getElementById('mobileSpeedrail');
-                  const learning = document.querySelector('.mobile-learning-trigger');
-                  return !!rail && rail.hidden && !!learning && !learning.inert;
+                  const learning = document.querySelector('.reader-mobile-menu-trigger');
+                  return !!rail && rail.inert && rail.getAttribute('aria-hidden') === 'true' && !!learning && !learning.inert;
                 }, null, { timeout: 1800 });
                 const escaped = await page.evaluate(() => ({
                   expanded: document.getElementById('mobSpdBadge')?.getAttribute('aria-expanded'),
-                  hidden: document.getElementById('mobileSpeedrail')?.hidden,
+                  ariaHidden: document.getElementById('mobileSpeedrail')?.getAttribute('aria-hidden'),
                   focus: document.activeElement?.id,
                 }));
-                assert.deepEqual(escaped, { expanded: 'false', hidden: true, focus: 'mobSpdBadge' },
+                assert.deepEqual(escaped, { expanded: 'false', ariaHidden: 'true', focus: 'mobSpdBadge' },
                   'Escape did not close speed chooser and restore trigger focus');
               }
             } else {

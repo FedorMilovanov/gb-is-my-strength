@@ -18,7 +18,7 @@
 [data-reader-mobile-speed] .reader-mobile-menu-trigger {
   display:flex;align-items:center;justify-content:center;
   box-sizing:border-box;
-  gap:7px;width:100%;min-width:0;height:40px;
+  gap:7px;width:100%;min-width:0;height:44px;
   padding:0 9px;border:1px solid var(--color-border,#ddd5ca);
   border-radius:999px;background:var(--color-surface-muted,#f5f2ed);
   color:var(--color-text,#322a27);font:600 12px/1.2 "Source Sans 3",system-ui,sans-serif;

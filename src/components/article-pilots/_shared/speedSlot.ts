@@ -113,7 +113,10 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
     prevState = state;
   }).observe(ember, { attributes: true, attributeFilter: ['data-state'] });
 
-  topbar.addEventListener('keydown', (e: KeyboardEvent) => {
+  // WebKit does not consistently focus a button after a synthetic or real
+  // touch tap. Escape must dismiss an open speed picker even when focus stays
+  // on the document body. This is the shared owner for both mobile readers.
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
     if (e.key === 'Escape' && topbar.classList.contains('speed-open')) {
       e.preventDefault(); close(); rateTrigger.focus({ preventScroll: true });
     }
