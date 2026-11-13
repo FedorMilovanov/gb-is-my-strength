@@ -16,14 +16,26 @@ function feature() {
   return window.SITE_CONFIG?.features?.flipCards || {};
 }
 
+function setFaceInert(face, hidden) {
+  if (!face) return;
+  face.setAttribute('aria-hidden', String(hidden));
+  try { face.inert = hidden; } catch (_) { /* older engines rely on attribute */ }
+  if (hidden) face.setAttribute('inert', '');
+  else face.removeAttribute('inert');
+}
+
 function syncState(card) {
   const flipped = card.classList.contains('flipped');
   card.setAttribute('aria-pressed', String(flipped));
   card.setAttribute('aria-expanded', String(flipped));
   const front = card.querySelector(FRONT_SELECTOR);
   const back = card.querySelector(BACK_SELECTOR);
-  front?.setAttribute('aria-hidden', String(flipped));
-  back?.setAttribute('aria-hidden', String(!flipped));
+  const hiddenFace = flipped ? front : back;
+  if (hiddenFace && hiddenFace.contains(document.activeElement)) {
+    card.focus({ preventScroll: true });
+  }
+  setFaceInert(front, flipped);
+  setFaceInert(back, !flipped);
 }
 
 function ensureHint(card) {

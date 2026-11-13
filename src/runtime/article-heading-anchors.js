@@ -189,11 +189,19 @@ function uniqueHeadingNameId(headingId) {
   return `${base}-${suffix}`;
 }
 
+const EXCLUDED_HEADING_HOSTS = '.summary-card, .author-card, .flip-card, .error-flip-card, .heart-flip-card, [data-gb-reversible-card-owner], [role="button"], [data-gb-no-heading-anchor]';
+
 export function installArticleHeadingAnchors() {
   if (!enabled()) return Object.freeze({ enabled: false, headings: 0 });
 
+  // SYS-REVERSIBLE-CARD-DESCENDANT-ACTIVATION-COLLISION: never leave or inject
+  // interactive heading-anchor links inside button-like reversible cards.
+  document.querySelectorAll('h2 > .heading-anchor, h3 > .heading-anchor, h4 > .heading-anchor').forEach((anchor) => {
+    if (anchor.closest(EXCLUDED_HEADING_HOSTS)) anchor.remove();
+  });
+
   const headings = [...document.querySelectorAll('h2[id], h3[id], h4[id]')]
-    .filter((heading) => !heading.closest('.summary-card, .author-card, [data-gb-no-heading-anchor]'));
+    .filter((heading) => !heading.closest(EXCLUDED_HEADING_HOSTS));
   if (!headings.length) return Object.freeze({ enabled: true, headings: 0, anchors: 0 });
 
   ensureToast();

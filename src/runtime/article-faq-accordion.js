@@ -30,6 +30,9 @@ function setOpen(button, item, body, open, { animate = true } = {}) {
   button.setAttribute('aria-expanded', String(open));
   item.classList.toggle('is-open', open);
   item.classList.toggle('open', open);
+  if (!open && body && body.contains(document.activeElement)) {
+    button.focus({ preventScroll: true });
+  }
   setInert(body, !open);
 
   if (!animate) {
