@@ -165,7 +165,8 @@
     "visual:pixelmatch:contract": "node scripts/pixelmatch7-contract.mjs",
     "astro:7:satteri:contract": "node scripts/astro7-satteri-contract.mjs",
     "reading:time:fix": "node scripts/reading-time-audit.js --write && node scripts/reading-time-audit.js --write-literals",
-    "reading:time:sync": "node scripts/search-manifest-policy-normalizer.js --write && node scripts/links-graph-read-time-normalizer.js --write && node scripts/reading-time-dist-crosscheck.js --warn && node scripts/cache-bust.js --write"
+    "reading:time:sync": "node scripts/native-route-reading-time.js --write && node scripts/search-manifest-policy-normalizer.js --write && node scripts/links-graph-read-time-normalizer.js --write && node scripts/reading-time-dist-crosscheck.js --warn && node scripts/cache-bust.js --write",
+    "reading:time:native": "node scripts/native-route-reading-time.js"
   },
   "engines": {
     "node": ">=22.12.0"

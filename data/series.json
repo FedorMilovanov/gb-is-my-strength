@@ -7,35 +7,35 @@
         "slug": "chast-1",
         "title": "Два текста, один Иисус",
         "status": "published",
-        "readingTime": 16
+        "readingTime": 19
       },
       {
         "n": 2,
         "slug": "chast-2",
         "title": "Как это записывалось",
         "status": "published",
-        "readingTime": 11
+        "readingTime": 15
       },
       {
         "n": 3,
         "slug": "chast-3",
         "title": "Кому это сказано?",
         "status": "published",
-        "readingTime": 12
+        "readingTime": 14
       },
       {
         "n": 4,
         "slug": "chast-4",
         "title": "Можно ли доверять Евангелиям?",
         "status": "published",
-        "readingTime": 25
+        "readingTime": 30
       },
       {
         "n": 5,
         "slug": "chast-5",
         "title": "Закон, Евангелие и Нагорная проповедь",
         "status": "published",
-        "readingTime": 25
+        "readingTime": 28
       }
     ],
     "baseUrl": "/nagornaya/"

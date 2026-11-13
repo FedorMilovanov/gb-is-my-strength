@@ -360,7 +360,7 @@ node scripts/reading-time-dist-crosscheck.js --tolerance 8   # строгий о
 npm ci
 npm run reading:time:fix          # audit --write + --write-literals (правит источник)
 npm run strangler:build:production-like
-npm run reading:time:sync         # search-manifest + links-graph + dist-crosscheck + cache-bust
+npm run reading:time:sync         # нативные маршруты + search-manifest + links-graph + сверка + cache-bust
 npm run validate:all              # блокирующий гейт: audit внутри
 ```
 
@@ -376,3 +376,29 @@ npm run validate:all              # блокирующий гейт: audit вн�
 - **`data:consistency` читает легаси-зеркала** (`search-manifest`, `links-graph`), поэтому любая правка минут требует полного цикла из §10.5, а не только `--write`.
 - **Две статьи вне допуска ±8** в двусторонней сверке (`steven-lawson-samoobman-i-publichnyy-golos`, `hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki`) — аппарат и списки источников; разбор в §9e, переписывать числа под них не нужно.
 - **`teen-reading-time-contract`** по-прежнему сверяет фронтматтер, метаданные и рейл, но не текст MDX — то есть ловит рассинхрон поверхностей, а не ошибку самого значения.
+
+### 10.7 «Нагорная проповедь»: минуты, которых не считал никто
+
+Пять частей `/nagornaya/chast-1…5/` — нативные маршруты без MDX и без статьи в `/articles/`. Время чтения у них жило в двух местах: `data/series.json` и JSON-LD `"readingTime": N` в PageHead. Ни одна проверка их не измеряла: аудит ходит по MDX и по статьям с телом в компонентах, а эти страницы не то и не другое. Итог — систематическое занижение, тем большее, чем длиннее часть:
+
+| часть | было | стало | видимых слов в `<main>` |
+|---|---|---|---|
+| `chast-1` | 16 | **19** | 3 265 |
+| `chast-2` | 11 | **15** | 2 541 |
+| `chast-3` | 12 | **14** | 2 406 |
+| `chast-4` | 25 | **30** | 5 378 |
+| `chast-5` | 25 | **28** | 4 922 |
+
+Посчитать их «как статьи» — обходом импортов — не получается. У маршрута нет файла с телом: текст рассыпан по `NagornayaChastNMainShell` и общим блокам `_shared/NagornayaClaimComparison` / `ModelComparison`, а решение «считать ли таблицу текстом» меняет результат на 2–4 минуты в обе стороны. Поэтому для этого класса единственный непротиворечивый источник — **собранная страница**: тот же подсчёт `<main>`, что и в двусторонней сверке.
+
+Появился `scripts/native-route-reading-time.js`:
+
+- `--check` (по умолчанию) — показывает дрейф и падает, если минуты не совпадают с `dist`;
+- `--write` — переписывает `data/series.json`, JSON-LD `"readingTime": N`, скрытую мету pagefind и видимую строку `⏱ N мин` в компонентах маршрута;
+- считает той же функцией, что и сверка: `scripts/lib/reader-main-words.cjs` вынесен из `reading-time-dist-crosscheck.js`, чтобы у проверки и записи был один квант.
+
+Заодно у хаба `/nagornaya/seriya/` впервые появился настоящий носитель суммы: скрытая мета-строка `data-pagefind-meta="readTime"` со значением, которое считается из `data/series.json` в `NagornayaSeriyaBody.astro`. До этого в `search-manifest` стояла цифра 89, не связанная ни с одной страницей; теперь это 106 — сумма пяти частей, и она пересчитывается сама. Строку fallback-индекса `js/search.js` для хабов обновляет тот же скрипт (`SERIES_LANDING`), потому что `--write` аудита правит только записи `/articles/`.
+
+Проверка после пересборки: `native-route-reading-time` — 5 маршрутов, 0 расхождений; `data:consistency` — 0 (`series-read-time-drift`, `series-search-read-time-drift`, `series-landing-total-drift`, `search-js-fallback-read-time-drift` закрыты); `nagornaya-visual-parity-audit` — 9 маршрутов, ok.
+
+Новый долг: соответствие «серия → URL хаба» теперь описано дважды — в `SERIES_LANDING` этого скрипта и в `check-data-consistency.js`. Пока это два места на восемь серий; при появлении третьего хаба с fallback-записью карту нужно вынести в `data/series.json` полем `landingUrl`.

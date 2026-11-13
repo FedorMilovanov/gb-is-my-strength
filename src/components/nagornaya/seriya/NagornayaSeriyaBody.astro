@@ -7,8 +7,17 @@
  * the wrapper before <main>, which was the source of the visual height diff.
  */
 import SiteSectionsMenu from '@/components/article-pilots/_shared/SiteSectionsMenu.astro'
+import seriesData from '../../../../data/series.json';
+// Сумма минут опубликованных частей: та же запись, из которой читают витрина
+// и `data/series.json`-проверки. Скрытая мета-строка — единственный носитель
+// времени чтения на этом хабе (см. READING-TIME-POLICY.md §10.6).
+const seriesTotalMinutes = (seriesData.nagornaya?.parts || [])
+  .filter((part) => part.status === 'published')
+  .reduce((sum, part) => sum + (Number(part.readingTime) || 0), 0);
 ;
 ---
+<span data-pagefind-meta="readTime" hidden>{seriesTotalMinutes}</span>
+
 <a href="#main-content" class="skip-link">Перейти к содержимому</a>
 
 <div class="h-reading-progress" id="hReadingProgress" aria-hidden="true"></div>
