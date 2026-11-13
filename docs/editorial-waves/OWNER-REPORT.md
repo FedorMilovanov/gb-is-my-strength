@@ -428,6 +428,10 @@ npm run strangler:build:production-like → exit 0
 
 **Состояние гейтов:** `reading-time-audit` — 0 расхождений по всем поверхностям, `data:consistency` зелёный, `gill:reading-time:audit`, `gill:series:data:consistency:audit`, `gill:pagefind:audit` зелёные, `validate:all` 0, `mdx:structure:audit` 0/0, `editorial:lint` 0, `article:qa` 0/0, `content:guard` 0.
 
+## Побочный эффект правки `js/search.js`
+
+Массовый `--write` переписал ревизию `js/search.js`, а `src/lib/asset-version.js` и `404.html` остались со старыми хешами: страж `nagornaya:bar-asset:contract` падал на «Stale files: 2». На `main` в тот же момент проверка проходила, то есть это наш след, а не чужой. Лечится документированной командой `node scripts/cache-bust.js --write` — две строки диффа, после неё контракт зелёный.
+
 ## Что делать при слиянии веток (короткая памятка)
 
 Политика времени чтения теперь входит в `validate:all`, поэтому любая ветка, которая меняет длину статьи, обязана пересчитать значения — иначе гейт краснеет. Порядок после слияния любой из шести параллельных веток:
