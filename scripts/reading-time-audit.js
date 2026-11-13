@@ -347,9 +347,13 @@ function literalDriftOf(report) {
 }
 
 function writable(row) {
-  // `advisory` — тело статьи живёт в компонентах, MDX хранит только метаданные;
-  // такое значение считается для отчёта, но не переписывается (см. §6 политики).
-  if (!row || row.status === 'no-body' || row.status === 'missing' || row.status === 'advisory') return false;
+  // `advisory` — тело статьи живёт в компонентах, MDX хранит только метаданные.
+  // Писать можно, только если ожидание посчитано по самим компонентам
+  // (`mode === 'component-body'` и слова найдены): тогда это реальный текст
+  // страницы, а не догадка по MDX. Иначе — только отчёт.
+  const componentBacked = row && row.mode === 'component-body' && row.words > 0;
+  if (!row || row.status === 'no-body' || row.status === 'missing') return false;
+  if (row.status === 'advisory' && !componentBacked) return false;
   if (WRITE_SKIP.has(row.slug)) return false;
   if (ONLY && !ONLY.includes(row.slug)) return false;
   if (EXCLUDE && EXCLUDE.includes(row.slug)) return false;
