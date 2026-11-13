@@ -82,6 +82,7 @@ function walk(directory, output = []) {
 
 function dictionaryIndex(dictionary) {
   const aliases = new Map();
+  const conceptIds = new Map();
 
   for (const [canonical, raw] of Object.entries(dictionary || {})) {
     const entry = raw || {};
@@ -162,6 +163,46 @@ function dictionaryIndex(dictionary) {
       if (entry[field] !== undefined && !Number.isFinite(Number(entry[field]))) {
         fail(`data/glossary.json: "${canonical}.${field}" must be numeric`);
       }
+    }
+
+    const conceptId = typeof entry.conceptId === "string" ? entry.conceptId.trim() : "";
+    const displayLemma = typeof entry.displayLemma === "string" ? entry.displayLemma.trim() : "";
+    if (!conceptId) {
+      fail(`data/glossary.json: "${canonical}" is missing conceptId`);
+    } else if (conceptIds.has(conceptId)) {
+      fail(`data/glossary.json: duplicate conceptId "${conceptId}" on "${conceptIds.get(conceptId)}" and "${canonical}"`);
+    } else {
+      conceptIds.set(conceptId, canonical);
+    }
+    if (!displayLemma) {
+      fail(`data/glossary.json: "${canonical}" is missing nominative displayLemma`);
+    }
+  }
+
+  // GBS-GLOSSARY-CONCEPT-IDENTITY-CONSOLIDATION: ensure bilingual synonym pairs
+  // resolve to a single canonical concept and inflected forms are not canonical keys.
+  const unifiedConceptPairs = [
+    ["regula fidei", "правило веры"],
+    ["pactum salutis", "завет искупления"],
+    ["antinomianism", "антиномианизм"],
+    ["well-meant offer", "искреннее предложение"],
+    ["free offer", "свободное предложение"],
+    ["особые баптисты", "партикулярные баптисты"],
+    ["particular baptists", "партикулярные баптисты"],
+  ];
+  for (const [left, right] of unifiedConceptPairs) {
+    const leftTarget = aliases.get(normalize(left));
+    const rightTarget = aliases.get(normalize(right));
+    if (!leftTarget || leftTarget !== rightTarget) {
+      fail(`data/glossary.json: synonym pair "${left}" / "${right}" must resolve to one canonical concept (got "${leftTarget}" vs "${rightTarget}")`);
+    }
+  }
+  for (const inflectedKey of ["Кархемише", "козьего двора"]) {
+    if (Object.prototype.hasOwnProperty.call(dictionary, inflectedKey)) {
+      fail(`data/glossary.json: inflected form "${inflectedKey}" must not be a top-level canonical key`);
+    }
+    if (!aliases.has(normalize(inflectedKey))) {
+      fail(`data/glossary.json: inflected match form "${inflectedKey}" must remain resolvable via aliases`);
     }
   }
 

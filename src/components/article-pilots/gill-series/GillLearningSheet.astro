@@ -274,13 +274,15 @@ const hasQuiz = quizItems.length > 0;
       if (!list || !article) return;
       const hydrate = (window as any).SiteUtils && (window as any).SiteUtils.hydrateGlossaryTerms;
       const render = () => {
+        list.textContent = '';
         const seen = new Set<string>();
-        const terms = Array.prototype.slice.call(article.querySelectorAll('.gterm[data-term]')) as HTMLElement[];
+        const terms = Array.prototype.slice.call(article.querySelectorAll('.gterm[data-term], .gterm[data-term-title]')) as HTMLElement[];
         terms.forEach((el) => {
           const term = el.dataset.term || (el.textContent || '').trim();
-          const key = term.trim().toLocaleLowerCase('ru');
-          if (!key || seen.has(key)) return;
-          seen.add(key);
+          const conceptKey = (el.dataset.conceptId || term).trim().toLocaleLowerCase('ru');
+          if (!conceptKey || seen.has(conceptKey)) return;
+          seen.add(conceptKey);
+          const displayLemma = (el.getAttribute('data-term-title') || term).trim();
           const brief = el.querySelector('.gtip-brief');
           const detail = el.querySelector('.gtip-detail');
           const definition = (brief && brief.textContent) || (detail && detail.textContent) || el.getAttribute('data-definition') || 'Определение раскрывается в тексте статьи.';
@@ -290,7 +292,7 @@ const hasQuiz = quizItems.length > 0;
           b.setAttribute('aria-expanded', 'false');
           const head = document.createElement('span');
           head.className = 'term-card__head';
-          head.textContent = term;
+          head.textContent = displayLemma;
           const hint = document.createElement('span');
           hint.className = 'term-card__hint';
           hint.textContent = 'коснись, чтобы раскрыть определение';
@@ -312,6 +314,7 @@ const hasQuiz = quizItems.length > 0;
           list.appendChild(empty);
         }
       };
+      document.addEventListener('gb:glossary-hydrated', render);
       if (hydrate) hydrate(article).then(render).catch(render);
       else render();
     }
