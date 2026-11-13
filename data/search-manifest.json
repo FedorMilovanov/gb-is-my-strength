@@ -103,7 +103,7 @@
       "description": "Девять частей канонического ядра о пастырской власти и подотчётности плюс документальное Досье A: диагностика искажений, границы власти, различение, здоровое пастырство и церковь.",
       "section": "Служение",
       "editor": "Фёдор Милованов",
-      "readTime": 157,
+      "readTime": 183,
       "image": "/images/pastor-series/og-hero.webp",
       "tags": [
         "серия",
@@ -216,7 +216,7 @@
       "description": "Дотошный разбор Римлянам 7:14–25: Павел как верующий, человек под законом, позиция Ллойд-Джонса, TMSJ/Jay Street и связь с Римлянам 6–8.",
       "section": "Богословие",
       "editor": "Фёдор Милованов",
-      "readTime": 45,
+      "readTime": 25,
       "image": "/images/og-rimlyanam-7.webp",
       "tags": [
         "Римлянам 7",
@@ -337,7 +337,7 @@
       "description": "Разбор Иеремии 17:9–10. Что значит «сердце обманчиво более всего» — и относится ли это к верующему? Экзегеза, богословский синтез, пастырское применение.",
       "section": "Богословие",
       "editor": "Фёдор Милованов",
-      "readTime": 41,
+      "readTime": 58,
       "image": "/images/og-krajne-isporcheno.webp",
       "tags": [
         "Иеремия",
@@ -383,7 +383,7 @@
       "section": "Переводы",
       "author": "Абнер Чау",
       "editor": "Фёдор Милованов",
-      "readTime": 50,
+      "readTime": 62,
       "image": "/images/og-hermenevtika-hristotsentrichnaya-otsenka.webp",
       "tags": [
         "герменевтика",
@@ -598,7 +598,7 @@
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 17
+      "readTime": 5
     },
     {
       "id": "baptisty-goneniya-i-sovest",
@@ -618,7 +618,7 @@
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 24
+      "readTime": 12
     },
     {
       "id": "baptisty-iniciativnaya-gruppa",
@@ -638,7 +638,7 @@
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 25
+      "readTime": 13
     },
     {
       "id": "baptisty-noch-na-kure",
@@ -658,7 +658,7 @@
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 18
+      "readTime": 7
     },
     {
       "id": "baptisty-peterburgskaya-liniya",
@@ -678,7 +678,7 @@
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 21
+      "readTime": 11
     },
     {
       "id": "baptisty-podpolnaya-pechat",
@@ -698,7 +698,7 @@
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 23
+      "readTime": 14
     },
     {
       "id": "baptisty-sovetskaya-noch",
@@ -718,7 +718,7 @@
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 28
+      "readTime": 11
     },
     {
       "id": "baptisty-spravochnik",
@@ -738,7 +738,7 @@
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 27
+      "readTime": 15
     },
     {
       "id": "baptisty-vsehib-1944",
@@ -758,7 +758,7 @@
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 26
+      "readTime": 10
     },
     {
       "id": "baptisty-yuzhnaya-shtunda",
@@ -778,7 +778,7 @@
       "priority": 74,
       "publishedTime": "2026-06-18T00:00:00+03:00",
       "modifiedTime": "2026-06-18T21:00:00+03:00",
-      "readTime": 20
+      "readTime": 5
     },
     {
       "id": "nagornaya-ch4",
@@ -1308,7 +1308,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-07-11T00:00:00+03:00",
-      "readTime": 39
+      "readTime": 23
     },
     {
       "id": "novoe-serdce",
@@ -1329,7 +1329,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-07-12T00:00:00+03:00",
-      "readTime": 38
+      "readTime": 18
     },
     {
       "id": "serdce-i-duh",
@@ -1350,7 +1350,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-07-12T00:00:00+03:00",
-      "readTime": 42
+      "readTime": 24
     },
     {
       "id": "serdce-spravochnik",
@@ -1387,7 +1387,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-29T00:00:00+03:00",
       "modifiedTime": "2026-07-29T00:00:00+03:00",
-      "readTime": 24
+      "readTime": 14
     },
     {
       "id": "blagovestie-mertvym-1-petra-4-5-6",
@@ -1403,7 +1403,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-29T00:00:00+03:00",
       "modifiedTime": "2026-07-29T00:00:00+03:00",
-      "readTime": 19
+      "readTime": 16
     },
     {
       "id": "duhi-v-temnice-noi-kreshchenie-pobeda",
@@ -1419,7 +1419,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-29T00:00:00+03:00",
       "modifiedTime": "2026-07-29T00:00:00+03:00",
-      "readTime": 28
+      "readTime": 18
     },
     {
       "id": "enoh-prorochestvoval-iuda-14-15-4q204",
@@ -1435,7 +1435,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-29T00:00:00+03:00",
       "modifiedTime": "2026-07-29T00:00:00+03:00",
-      "readTime": 19
+      "readTime": 11
     },
     {
       "id": "kniga-enoha-kotoroy-ne-bylo-kak-raznye-proizvedeniya-stali-korpusom",
@@ -1451,7 +1451,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-29T00:00:00+03:00",
       "modifiedTime": "2026-07-29T00:00:00+03:00",
-      "readTime": 38
+      "readTime": 29
     },
     {
       "id": "mozhno-li-doveryat-1-enohu-kanonicheskiy-audit",
@@ -1467,7 +1467,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-29T00:00:00+03:00",
       "modifiedTime": "2026-07-29T00:00:00+03:00",
-      "readTime": 42
+      "readTime": 27
     },
     {
       "id": "lot-i-sodom",
@@ -1521,7 +1521,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 9
+      "readTime": 13
     },
     {
       "id": "cerkovnaya-disciplina-vlast-granicy-zashchita",
@@ -1538,7 +1538,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 11
+      "readTime": 14
     },
     {
       "id": "kogda-uhodit-kogda-ostavatsya",
@@ -1555,7 +1555,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 11
+      "readTime": 13
     },
     {
       "id": "nesovershennyy-chelovek-v-nesovershennoy-cerkvi",
@@ -1572,7 +1572,7 @@
       "priority": 0.6,
       "publishedTime": "2026-09-07T00:00:00+03:00",
       "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 11
+      "readTime": 15
     },
     {
       "id": "priznaki-zdorovoy-cerkvi",
@@ -1589,7 +1589,7 @@
       "priority": 0.6,
       "publishedTime": "2026-09-07T00:00:00+03:00",
       "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 11
+      "readTime": 15
     },
     {
       "id": "sem-tipov-razlichenie-uchiteley",
@@ -1606,7 +1606,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 9
+      "readTime": 11
     },
     {
       "id": "teksty-pisaniya-kotorymi-manipuliruyut",
@@ -1623,7 +1623,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 14
+      "readTime": 17
     },
     {
       "id": "vernye-i-neizvestnye-zdorovoe-pastyrstvo",
@@ -1640,7 +1640,7 @@
       "priority": 0.6,
       "publishedTime": "2026-09-07T00:00:00+03:00",
       "modifiedTime": "2026-09-07T00:00:00+03:00",
-      "readTime": 14
+      "readTime": 18
     },
     {
       "id": "podrostok-za-kadrom",
@@ -1650,7 +1650,7 @@
       "description": "Семь материалов о скрытой жизни подростка, реакции родителей и церкви, взрослении, границах и возвращении — с Писанием как главным ориентиром.",
       "section": "Семья",
       "editor": "Фёдор Милованов",
-      "readTime": 264,
+      "readTime": 245,
       "image": "/images/teen-series/series-cover.webp",
       "tags": [
         "серия",
@@ -1685,7 +1685,7 @@
       "priority": 0.6,
       "publishedTime": "2026-09-10T00:00:00+03:00",
       "modifiedTime": "2026-09-10T00:00:00+03:00",
-      "readTime": 39
+      "readTime": 34
     },
     {
       "id": "podrostok-za-kadrom-dvoynaya-zhizn",
@@ -1710,7 +1710,7 @@
       "priority": 0.6,
       "publishedTime": "2026-09-10T00:00:00+03:00",
       "modifiedTime": "2026-09-10T00:00:00+03:00",
-      "readTime": 32
+      "readTime": 29
     },
     {
       "id": "podrostok-za-kadrom-roditelyam-posle-razoblacheniya",
@@ -1735,7 +1735,7 @@
       "priority": 0.6,
       "publishedTime": "2026-09-10T00:00:00+03:00",
       "modifiedTime": "2026-09-10T00:00:00+03:00",
-      "readTime": 43
+      "readTime": 41
     },
     {
       "id": "sovershennoletie-roditelskaya-vlast-chto-menyaetsya",
@@ -1760,7 +1760,7 @@
       "priority": 0.6,
       "publishedTime": "2026-09-10T00:00:00+03:00",
       "modifiedTime": "2026-09-10T00:00:00+03:00",
-      "readTime": 35
+      "readTime": 33
     },
     {
       "id": "vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti",
@@ -1785,7 +1785,7 @@
       "priority": 0.6,
       "publishedTime": "2026-09-10T00:00:00+03:00",
       "modifiedTime": "2026-09-10T00:00:00+03:00",
-      "readTime": 42
+      "readTime": 47
     },
     {
       "id": "vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya",
@@ -1810,7 +1810,7 @@
       "priority": 0.6,
       "publishedTime": "2026-09-10T00:00:00+03:00",
       "modifiedTime": "2026-09-10T00:00:00+03:00",
-      "readTime": 36
+      "readTime": 30
     },
     {
       "id": "vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie",
@@ -1835,7 +1835,7 @@
       "priority": 0.6,
       "publishedTime": "2026-09-10T00:00:00+03:00",
       "modifiedTime": "2026-09-10T00:00:00+03:00",
-      "readTime": 37
+      "readTime": 31
     },
     {
       "id": "journal",
@@ -1884,7 +1884,7 @@
       "priority": 0.6,
       "publishedTime": "2026-09-29T21:00:00.000Z",
       "modifiedTime": "2026-10-04T17:24:00.000Z",
-      "readTime": 87
+      "readTime": 88
     },
     {
       "id": "hard-texts-genesis-6",
@@ -1941,7 +1941,7 @@
       "priority": 0.6,
       "publishedTime": "2026-10-29T00:00:00+03:00",
       "modifiedTime": "2026-10-29T00:00:00+03:00",
-      "readTime": 18
+      "readTime": 19
     },
     {
       "id": "otstupniki-biblii-iuda-saul-ierovoam-dimas",
@@ -2010,7 +2010,7 @@
       "priority": 0.6,
       "publishedTime": "2026-10-29T00:00:00+03:00",
       "modifiedTime": "2026-10-29T00:00:00+03:00",
-      "readTime": 13
+      "readTime": 14
     },
     {
       "id": "kogda-chelovek-uhodit-ot-very",
@@ -2033,7 +2033,7 @@
       "priority": 0.6,
       "publishedTime": "2026-10-29T00:00:00+03:00",
       "modifiedTime": "2026-10-29T00:00:00+03:00",
-      "readTime": 16
+      "readTime": 17
     },
     {
       "id": "otstupniki",
@@ -2043,7 +2043,7 @@
       "description": "Пять частей о том, что Библия на самом деле называет отпадением от веры: временная вера, тяжёлое падение, ожесточение, отречение и возвращение — в Писании, истории Церкви и пастырской практике.",
       "section": "Богословие",
       "editor": "Фёдор Милованов",
-      "readTime": 79,
+      "readTime": 82,
       "image": "/images/articles/otstuplenie-chto-govorit-bibliya.webp",
       "tags": [
         "серия",
