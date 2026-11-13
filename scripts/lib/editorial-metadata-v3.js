@@ -23,6 +23,21 @@ const DATE_FIELDS = Object.freeze([
 const TECHNICAL_SOURCE_RE = /\b(?:git(?:hub)?|commit|file[-_ ]?mtime|cache[-_ ]?bust|asset[-_ ]?revision|build[-_ ]?(?:time|timestamp|date))\b/i;
 const ARTICLE_TYPES = new Set(['Article', 'ScholarlyArticle', 'NewsArticle', 'BlogPosting']);
 const FUTURE_TOLERANCE_MS = 5 * 60 * 1000;
+const DATELINE_SLOT_AUTHORITY_FILE = path.join(ROOT, 'data/editorial-dateline-slot-authority.json');
+
+let cachedDatelineSlotAuthority = null;
+
+function readDatelineSlotAuthority(file = DATELINE_SLOT_AUTHORITY_FILE) {
+  if (file === DATELINE_SLOT_AUTHORITY_FILE && cachedDatelineSlotAuthority) {
+    return cachedDatelineSlotAuthority;
+  }
+  if (!fs.existsSync(file)) {
+    return { schemaVersion: 1, authorityContract: 'editorial-dateline-slot-semantics-v1', publishedSlotRoutes: {} };
+  }
+  const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
+  if (file === DATELINE_SLOT_AUTHORITY_FILE) cachedDatelineSlotAuthority = parsed;
+  return parsed;
+}
 
 function normalizeRoute(value) {
   const url = new URL(String(value || '/'), SITE);
@@ -213,16 +228,72 @@ function projectTimeTag(tag, value) {
   return replaceAttribute(tag, 'datetime', value);
 }
 
-function projectVisibleDateline(html, record) {
+function stripTagsToPlainText(fragment) {
+  return String(fragment || '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function classifyDatelineSlot(attrs = '', prefixHtml = '', defaultSlot = 'published') {
+  const slotAttr = String(attrs || '').match(/\bdata-editorial-date-slot\s*=\s*["'](published|modified)["']/i);
+  if (slotAttr) return slotAttr[1].toLowerCase();
+  const plainPrefix = stripTagsToPlainText(prefixHtml);
+  if (/(?:^|[\s·—–-])Опубликовано(?=$|[\s:·—–-])/iu.test(plainPrefix)) return 'published';
+  if (/(?:^|[\s·—–-])Обн(?:\.|овлено(?=$|[\s:·—–-]))/iu.test(plainPrefix)) return 'modified';
+  if (/\bclass\s*=\s*["'][^"']*\b(?:article-updated|article-byline__updated)\b/i.test(String(attrs || ''))) {
+    return 'modified';
+  }
+  return defaultSlot;
+}
+
+function resolveSlotAuthorityEntry(route, record, authority = readDatelineSlotAuthority()) {
+  const normalizedRoute = route ? normalizeRoute(route) : (record?.route ? normalizeRoute(record.route) : null);
+  if (!normalizedRoute) return null;
+  return authority?.publishedSlotRoutes?.[normalizedRoute] || null;
+}
+
+function projectTimeElement(openTag, innerHtml, closeTag, instant, visibleLabel = null) {
+  const nextOpen = projectTimeTag(openTag, instant);
+  const nextInner = typeof visibleLabel === 'string' && visibleLabel.trim()
+    ? escapeHtml(visibleLabel.trim())
+    : innerHtml;
+  return `${nextOpen}${nextInner}${closeTag}`;
+}
+
+function projectVisibleDateline(html, record, route = record?.route || null) {
   let updated = html;
+  const slotAuthorityEntry = resolveSlotAuthorityEntry(route, record);
+  const canApplyPublishedLabel = Boolean(
+    slotAuthorityEntry &&
+    slotAuthorityEntry.slot === 'published' &&
+    record?.editorialPublishedAt &&
+    normalizeInstant(slotAuthorityEntry.editorialPublishedAt) === normalizeInstant(record.editorialPublishedAt)
+  );
+
   const updatedContainerRe = /<(?<tag>p|div)\b(?<attrs>[^>]*\bclass=["'][^"']*\barticle-updated\b[^"']*["'][^>]*)>(?<body>[\s\S]*?)<\/\k<tag>>/i;
   const updatedContainer = updated.match(updatedContainerRe);
-  if (updatedContainer && record.editorialModifiedAt) {
-    const nextBody = updatedContainer.groups.body.replace(/<time\b[^>]*>/i, (tag) => projectTimeTag(tag, record.editorialModifiedAt));
-    updated = updated.replace(updatedContainer[0], `<${updatedContainer.groups.tag}${updatedContainer.groups.attrs}>${nextBody}</${updatedContainer.groups.tag}>`);
+  if (updatedContainer) {
+    const firstTimeMatch = updatedContainer.groups.body.match(/<time\b[^>]*>[\s\S]*?<\/time>/i);
+    const prefixBeforeTime = firstTimeMatch
+      ? updatedContainer.groups.body.slice(0, firstTimeMatch.index)
+      : updatedContainer.groups.body;
+    const slot = classifyDatelineSlot(updatedContainer.groups.attrs, prefixBeforeTime, 'modified');
+    const targetInstant = slot === 'published' ? record.editorialPublishedAt : record.editorialModifiedAt;
+    if (targetInstant) {
+      const targetLabel = slot === 'published' && canApplyPublishedLabel ? slotAuthorityEntry.visibleLabel : null;
+      const nextBody = updatedContainer.groups.body.replace(
+        /(<time\b[^>]*>)([\s\S]*?)(<\/time>)/i,
+        (_m, openTag, innerHtml, closeTag) => projectTimeElement(openTag, innerHtml, closeTag, targetInstant, targetLabel)
+      );
+      updated = updated.replace(
+        updatedContainer[0],
+        `<${updatedContainer.groups.tag}${updatedContainer.groups.attrs}>${nextBody}</${updatedContainer.groups.tag}>`
+      );
+    }
   }
 
-  const updatedTimeRe = /<time\b[^>]*\bclass=["'][^"']*\barticle-updated\b[^"']*["'][^>]*>/i;
+  const updatedTimeRe = /<time\b(?![^>]*\bdata-editorial-date-slot\s*=\s*["']published["'])[^>]*\bclass=["'][^"']*\barticle-updated\b[^"']*["'][^>]*>/i;
   if (record.editorialModifiedAt) {
     updated = updated.replace(updatedTimeRe, (tag) => projectTimeTag(tag, record.editorialModifiedAt));
   }
@@ -230,7 +301,19 @@ function projectVisibleDateline(html, record) {
   const bylineRe = /<(?<tag>p|div)\b(?<attrs>[^>]*\bclass=["'][^"']*\barticle-byline\b[^"']*["'][^>]*)>(?<body>[\s\S]*?)<\/\k<tag>>/i;
   const byline = updated.match(bylineRe);
   if (byline && record.editorialPublishedAt) {
-    const nextBody = byline.groups.body.replace(/<time\b[^>]*>/i, (tag) => projectTimeTag(tag, record.editorialPublishedAt));
+    let replacedFirstPublished = false;
+    const nextBody = byline.groups.body.replace(
+      /(<time\b[^>]*>)([\s\S]*?)(<\/time>)/gi,
+      (fullMatch, openTag, innerHtml, closeTag, offset) => {
+        if (replacedFirstPublished) return fullMatch;
+        const prefixHtml = byline.groups.body.slice(0, offset);
+        const slot = classifyDatelineSlot(openTag, prefixHtml, 'published');
+        if (slot !== 'published') return fullMatch;
+        replacedFirstPublished = true;
+        const targetLabel = canApplyPublishedLabel ? slotAuthorityEntry.visibleLabel : null;
+        return projectTimeElement(openTag, innerHtml, closeTag, record.editorialPublishedAt, targetLabel);
+      }
+    );
     updated = updated.replace(byline[0], `<${byline.groups.tag}${byline.groups.attrs}>${nextBody}</${byline.groups.tag}>`);
   }
   return updated;
@@ -259,7 +342,7 @@ function projectHtml(html, route, record) {
   updated = projectMeta(updated, 'article:published_time', record.editorialPublishedAt, route);
   updated = projectMeta(updated, 'article:modified_time', record.editorialModifiedAt, route);
   updated = projectJsonLd(updated, route, record);
-  updated = projectVisibleDateline(updated, record);
+  updated = projectVisibleDateline(updated, record, route);
   updated = projectPagefindDates(updated, route, record);
   return updated;
 }
@@ -465,6 +548,9 @@ module.exports = {
   ALLOWED_REVIEW_STATUS,
   DATE_FIELDS,
   TECHNICAL_SOURCE_RE,
+  DATELINE_SLOT_AUTHORITY_FILE,
+  readDatelineSlotAuthority,
+  classifyDatelineSlot,
   normalizeRoute,
   normalizeDecisionDate,
   validateDecisionRecord,

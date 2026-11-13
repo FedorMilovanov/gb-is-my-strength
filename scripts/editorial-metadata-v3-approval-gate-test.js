@@ -103,4 +103,28 @@ assert.match(
   'direct time.article-updated must project the approved modification instant'
 );
 
+const nagornayaPublishedSlot = '<p class="article-updated text-stone-400 text-xs mt-1 font-mono" data-editorial-date-slot="published">Опубликовано: <time datetime="2026-05-01">1 мая 2026</time></p>';
+const projectedNagornayaSlot = projectVisibleDateline(nagornayaPublishedSlot, {
+  route: '/nagornaya/chast-1/',
+  editorialPublishedAt: '2026-04-30T21:00:00.000Z',
+  editorialModifiedAt: '2026-07-05T08:11:36.000Z',
+});
+assert.match(
+  projectedNagornayaSlot,
+  /Опубликовано:\s*<time datetime="2026-04-30T21:00:00\.000Z">1 мая 2026<\/time>/,
+  'published dateline slot must project editorialPublishedAt rather than editorialModifiedAt even when styled with .article-updated'
+);
+
+const baptistSingleSlotByline = '<p class="article-byline">Редакция «Господь — Бог и Сила моя» · ~25 мин чтения · <time datetime="2026-06-13">13 июня 2026</time></p>';
+const projectedBaptistSingleSlot = projectVisibleDateline(baptistSingleSlotByline, {
+  route: '/baptisty-rossii/sovetskaya-noch/',
+  editorialPublishedAt: '2026-06-06T00:00:00+03:00',
+  editorialModifiedAt: '2026-07-06T18:52:48.000Z',
+});
+assert.match(
+  projectedBaptistSingleSlot,
+  /<time datetime="2026-06-06T00:00:00\+03:00">6 июня 2026<\/time>/,
+  'single-slot Baptist publication byline must synchronize both datetime and approved visible label'
+);
+
 console.log('✅ Editorial Metadata v3 projects approved decisions and freezes every unapproved record');

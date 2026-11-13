@@ -77,10 +77,15 @@
 
   function isExcluded(element, policy = 'reader') {
     if (!(element instanceof Element)) return true;
+    if (policy === 'print') {
+      if (element.closest('[data-print-policy="exclude"]')) return true;
+      if (element.closest('[data-print-policy="include"]')) {
+        return Boolean(element.closest('[hidden], [aria-hidden="true"]'));
+      }
+    }
     if (element.closest(EXCLUDE_SELECTOR)) return true;
     if (policy === 'search' && element.closest('[data-search-policy="exclude"]')) return true;
     if (policy === 'speakable' && element.closest('[data-speakable-policy="exclude"]')) return true;
-    if (policy === 'print' && element.closest('[data-print-policy="exclude"]')) return true;
     return false;
   }
 

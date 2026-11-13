@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "authorityContract": "editorial-dateline-slot-semantics-v1",
+  "publishedSlotRoutes": {
+    "/nagornaya/chast-1/": {
+      "slot": "published",
+      "editorialPublishedAt": "2026-04-30T21:00:00.000Z",
+      "visibleLabel": "1 мая 2026",
+      "visiblePrefix": "Опубликовано:"
+    },
+    "/nagornaya/chast-2/": {
+      "slot": "published",
+      "editorialPublishedAt": "2026-04-30T21:00:00.000Z",
+      "visibleLabel": "1 мая 2026",
+      "visiblePrefix": "Опубликовано:"
+    },
+    "/nagornaya/chast-3/": {
+      "slot": "published",
+      "editorialPublishedAt": "2026-04-30T21:00:00.000Z",
+      "visibleLabel": "1 мая 2026",
+      "visiblePrefix": "Опубликовано:"
+    },
+    "/nagornaya/chast-4/": {
+      "slot": "published",
+      "editorialPublishedAt": "2026-04-30T21:00:00.000Z",
+      "visibleLabel": "1 мая 2026",
+      "visiblePrefix": "Опубликовано:"
+    },
+    "/nagornaya/chast-5/": {
+      "slot": "published",
+      "editorialPublishedAt": "2026-04-30T21:00:00.000Z",
+      "visibleLabel": "1 мая 2026",
+      "visiblePrefix": "Опубликовано:"
+    },
+    "/baptisty-rossii/sovetskaya-noch/": {
+      "slot": "published",
+      "editorialPublishedAt": "2026-06-06T00:00:00+03:00",
+      "visibleLabel": "6 июня 2026"
+    },
+    "/baptisty-rossii/vsehib-1944/": {
+      "slot": "published",
+      "editorialPublishedAt": "2026-06-07T00:00:00+03:00",
+      "visibleLabel": "7 июня 2026"
+    },
+    "/baptisty-rossii/iniciativnaya-gruppa/": {
+      "slot": "published",
+      "editorialPublishedAt": "2026-06-08T00:00:00+03:00",
+      "visibleLabel": "8 июня 2026"
+    },
+    "/baptisty-rossii/podpolnaya-pechat/": {
+      "slot": "published",
+      "editorialPublishedAt": "2026-06-09T00:00:00+03:00",
+      "visibleLabel": "9 июня 2026"
+    }
+  }
+}

@@ -77,10 +77,15 @@ function copyText(value) {
     input.setAttribute('readonly', '');
     input.style.cssText = 'position:fixed;inset:0 auto auto 0;opacity:0;pointer-events:none';
     document.body.appendChild(input);
-    input.select();
     let copied = false;
-    try { copied = document.execCommand('copy'); } catch (_) { copied = false; }
-    input.remove();
+    try {
+      input.select();
+      copied = document.execCommand('copy');
+    } catch (_) {
+      copied = false;
+    } finally {
+      input.remove();
+    }
     copied ? resolve() : reject(new Error('copy failed'));
   });
 }

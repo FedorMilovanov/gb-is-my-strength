@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const parse5 = require('parse5');
 const {
   ROOT,
   REGISTRY_FILE,
@@ -11,7 +12,11 @@ const {
   readRegistry,
   normalizeInstant,
 } = require('./lib/editorial-metadata');
-const { validateRegistryV3 } = require('./lib/editorial-metadata-v3');
+const {
+  validateRegistryV3,
+  readDatelineSlotAuthority,
+  classifyDatelineSlot,
+} = require('./lib/editorial-metadata-v3');
 
 const DIST = path.join(ROOT, 'dist');
 const errors = [];
@@ -56,7 +61,84 @@ function compareProjection(route, label, actual, expected, required) {
   }
 }
 
-function canonicalProjectionChecks(route, record, current) {
+function nodeAttr(node, name) {
+  return node?.attrs?.find((a) => a.name === name)?.value ?? '';
+}
+
+function nodeText(node) {
+  if (!node) return '';
+  if (node.nodeName === '#text') return node.value || '';
+  return (node.childNodes || []).map(nodeText).join('');
+}
+
+function hasClassToken(node, token) {
+  return nodeAttr(node, 'class').split(/\s+/).includes(token);
+}
+
+function walkDom(node, fn, ancestors = []) {
+  if (!node) return;
+  fn(node, ancestors);
+  const nextAncestors = node.tagName ? [...ancestors, node] : ancestors;
+  for (const child of node.childNodes || []) walkDom(child, fn, nextAncestors);
+}
+
+function textBeforeInContainer(container, target) {
+  const chunks = [];
+  let done = false;
+  (function collect(curr) {
+    if (!curr || done) return;
+    if (curr === target) {
+      done = true;
+      return;
+    }
+    if (curr.nodeName === '#text') chunks.push(curr.value || '');
+    for (const c of curr.childNodes || []) collect(c);
+  })(container);
+  return chunks.join(' ');
+}
+
+function visibleSlotSemanticsChecks(route, record, distRoot, slotAuthority) {
+  const htmlFile = path.join(distRoot, route.replace(/^\/+|\/+$/g, ''), 'index.html');
+  if (!fs.existsSync(htmlFile)) return;
+  const doc = parse5.parse(fs.readFileSync(htmlFile, 'utf8'));
+  const published = normalizeInstant(record.editorialPublishedAt);
+  const modified = normalizeInstant(record.editorialModifiedAt);
+
+  walkDom(doc, (node, ancestors) => {
+    if (node.tagName !== 'time') return;
+    const updatedOwner = [...ancestors, node].reverse().find(
+      (el) => hasClassToken(el, 'article-updated') || hasClassToken(el, 'article-byline__updated')
+    );
+    const bylineOwner = [...ancestors].reverse().find((el) => hasClassToken(el, 'article-byline'));
+    if (!updatedOwner && !bylineOwner) return;
+
+    const owner = updatedOwner || bylineOwner;
+    const attrsBlob = [owner, node]
+      .filter(Boolean)
+      .map((el) => (el.attrs || []).map((a) => `${a.name}="${a.value}"`).join(' '))
+      .join(' ');
+    const prefix = textBeforeInContainer(owner, node);
+    const slot = classifyDatelineSlot(attrsBlob, prefix, updatedOwner ? 'modified' : 'published');
+    const dtRaw = nodeAttr(node, 'datetime') || null;
+    const dt = normalizeInstant(dtRaw);
+
+    if (slot === 'published' && published && dt !== published) {
+      errors.push(`${route}: published dateline slot projected ${dt || dtRaw || 'null'} != ${published}`);
+    }
+    if (slot === 'modified' && modified && dt !== modified) {
+      errors.push(`${route}: modified dateline slot projected ${dt || dtRaw || 'null'} != ${modified}`);
+    }
+    const authorityEntry = slotAuthority?.publishedSlotRoutes?.[route];
+    if (slot === 'published' && authorityEntry && authorityEntry.visibleLabel) {
+      const visibleText = nodeText(node).replace(/\s+/g, ' ').trim();
+      if (visibleText !== authorityEntry.visibleLabel) {
+        errors.push(`${route}: published dateline visible label ${JSON.stringify(visibleText)} != ${JSON.stringify(authorityEntry.visibleLabel)}`);
+      }
+    }
+  });
+}
+
+function canonicalProjectionChecks(route, record, current, slotAuthority) {
   const published = record.editorialPublishedAt;
   const modified = record.editorialModifiedAt;
 
@@ -71,6 +153,7 @@ function canonicalProjectionChecks(route, record, current) {
   compareProjection(route, 'searchModifiedAt', current.observations.searchModifiedAt, modified, false);
   compareProjection(route, 'sitemapLastmod', current.observations.sitemapLastmod, modified || published, true);
   compareProjection(route, 'visibleModifiedAt', current.observations.visibleModifiedAt, modified, false);
+  visibleSlotSemanticsChecks(route, record, DIST, slotAuthority);
 }
 
 function frozenProjectionChecks(route, record, current) {
@@ -98,6 +181,7 @@ if (!fs.existsSync(REGISTRY_FILE)) {
 }
 
 const registry = readRegistry();
+const slotAuthority = readDatelineSlotAuthority();
 errors.push(...validateRegistryV3(registry));
 const shared = distSharedProjectionData();
 const eligible = eligibleRecords();
@@ -119,7 +203,7 @@ for (const [route, record] of Object.entries(registry.records || {})) {
 
   if (record.reviewStatus === 'approved') {
     approved += 1;
-    canonicalProjectionChecks(route, record, current);
+    canonicalProjectionChecks(route, record, current, slotAuthority);
     for (const [field, historical] of Object.entries(record.observations || {})) {
       const finalValue = current.observations[field] ?? null;
       if ((historical ?? null) !== finalValue) {

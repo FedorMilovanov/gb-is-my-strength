@@ -1,6 +1,7 @@
-/* Shared semantic summary-heading floor (GBS-SUMMARY-MICROHEADING-READABILITY)
-   and .article-byline__updated AA contrast parity for series/standalone hubs
-   that do not import article-capabilities.css (0 !important tokens). */
+/* Shared semantic summary-heading floor (GBS-SUMMARY-MICROHEADING-READABILITY),
+   .article-byline__updated AA contrast parity, and print linked-card atomicity
+   (SYS-PRINT-LINKED-CARD-ATOMICITY) for series/standalone hubs that do not
+   import article-capabilities.css. */
 :root {
   --gb-summary-head-font-size: 0.75rem;
   --gb-summary-head-line-height: 1.35;
@@ -23,4 +24,36 @@ html:not(.dark) body .article-byline__updated {
 html.dark body .article-byline__updated {
   opacity: 1;
   color: #b5aca1;
+}
+
+@media print {
+  [data-print-policy="exclude"],
+  .teen-correction-boundary,
+  .apostasy-correction-boundary {
+    display: none !important;
+  }
+
+  .context-links > a,
+  [data-series-cards] .series-card,
+  .series-card,
+  .series-nav-card,
+  .gb-series-link,
+  .teen-series-card,
+  .apostasy-series-card,
+  .genesis6-card,
+  .outline-card,
+  .related-articles__link,
+  .h-article-card,
+  .h-card-glass,
+  .h-featured-series,
+  .h-home-route,
+  .about-resources__item,
+  .ref-card,
+  .summary-card,
+  .author-card,
+  [data-print-atomic] {
+    break-inside: avoid-page;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 }

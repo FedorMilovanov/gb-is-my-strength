@@ -198,7 +198,10 @@ html.dark body .article-byline__updated {
   .mobile-chrome,
   [data-mobile-chrome],
   .gb-accuracy-block,
-  .gb-relations-panel {
+  .gb-relations-panel,
+  [data-print-policy="exclude"],
+  .teen-correction-boundary,
+  .apostasy-correction-boundary {
     display: none !important;
   }
 
@@ -211,11 +214,21 @@ html.dark body .article-byline__updated {
   .context-links > a,
   [data-series-cards] .series-card,
   .series-card,
+  .series-nav-card,
   .gb-series-link,
+  .teen-series-card,
+  .apostasy-series-card,
+  .genesis6-card,
+  .outline-card,
+  .related-articles__link,
+  .h-article-card,
+  .h-card-glass,
+  .h-featured-series,
+  .h-home-route,
+  .about-resources__item,
   .ref-card,
   .article-img--wide,
-  .teen-correction-boundary,
-  .apostasy-correction-boundary {
+  [data-print-atomic] {
     break-inside: avoid-page;
     break-inside: avoid;
     page-break-inside: avoid;

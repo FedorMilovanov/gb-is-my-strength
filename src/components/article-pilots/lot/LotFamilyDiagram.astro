@@ -1,49 +1,211 @@
-<figure class="article-img article-img--wide" aria-labelledby="lot-family-caption">
-  <svg viewBox="0 0 960 560" role="img" aria-labelledby="lot-family-title lot-family-desc" width="960" height="560" style="display:block;width:100%;height:auto">
-    <title id="lot-family-title">Род Лота и две народные линии после Бытия 19</title>
-    <desc id="lot-family-desc">Схема показывает Фарру, его сыновей Авраама, Нахора и Арана, сына Арана Лота, затем Моава и Бен-Амми и связанные с ними народы. От моавитян пунктиром показана позднейшая каноническая линия Руфь — Овид — Иессей — Давид.</desc>
+<figure class="lot-family" aria-labelledby="lot-family-title">
+  <div class="lot-family__eyebrow">Генеалогия и последствия · Быт. 11; 19</div>
+  <figcaption id="lot-family-title" class="lot-family__title">Дом Фарры, семья Лота и долгие последствия пещеры</figcaption>
+  <svg class="lot-family__svg" viewBox="0 0 960 596" role="img" aria-labelledby="lot-family-title lot-family-desc">
+    <desc id="lot-family-desc">Генеалогическая схема: от Фарры происходят Аврам и Аран; сын Арана — Лот; в Содоме и после его гибели показаны жена Лота и две дочери, от которых происходят Моав и Бен-Амми — родоначальники Моавитян и Аммонитян; из Моава позже происходит Руфь.</desc>
 
-    <rect x="0" y="0" width="960" height="560" rx="28" fill="#171411" />
-    <text x="480" y="48" text-anchor="middle" fill="#d8c79c" font-size="24" font-family="serif">Род Фарры и линия Лота</text>
+    <rect x="12" y="10" width="936" height="576" rx="14" fill="var(--lot-family-bg, #fbf7f0)" stroke="var(--lot-family-border, #dfd3c0)" />
 
-    <rect x="390" y="78" width="180" height="58" rx="12" fill="#26211b" stroke="#b89955" />
-    <text x="480" y="114" text-anchor="middle" fill="#f4efe4" font-size="22" font-family="serif">Фарра</text>
+    <g class="lot-family__lines" stroke="var(--lot-family-line, #9c866b)" stroke-width="2.2" fill="none">
+      <path d="M 480 98 V 118 H 230 V 136" />
+      <path d="M 480 118 H 730 V 136" />
+      <path d="M 730 218 V 242 H 605 V 264" />
+      <line x1="710" y1="308" x2="736" y2="308" stroke-dasharray="4 4" />
+      <path d="M 605 352 V 376 H 526 V 404" stroke="#8c2f25" stroke-dasharray="5 4" />
+      <path d="M 605 376 H 806 V 404" stroke="#8c2f25" stroke-dasharray="5 4" />
+      <line x1="526" y1="476" x2="526" y2="500" stroke="#8c2f25" />
+      <line x1="806" y1="476" x2="806" y2="500" stroke="#8c2f25" />
+    </g>
 
-    <path d="M480 136 V170 M480 170 H210 M480 170 H750" fill="none" stroke="#827252" stroke-width="2" />
-    <path d="M210 170 V196 M480 170 V196 M750 170 V196" fill="none" stroke="#827252" stroke-width="2" />
+    <g transform="translate(300,20)">
+      <rect width="360" height="78" rx="12" class="lot-family__card" />
+      <text x="180" y="33" text-anchor="middle" class="lot-family__name">Фарра</text>
+      <text x="180" y="60" text-anchor="middle" class="lot-family__meta">Быт. 11:27 · отец Аврама, Нахора и Арана</text>
+    </g>
 
-    <rect x="120" y="196" width="180" height="58" rx="12" fill="#211e19" stroke="#6e634d" />
-    <text x="210" y="232" text-anchor="middle" fill="#f4efe4" font-size="20" font-family="serif">Авраам</text>
+    <g transform="translate(36,136)">
+      <rect width="388" height="82" rx="12" class="lot-family__card lot-family__card--altar" />
+      <text x="194" y="34" text-anchor="middle" class="lot-family__name">Аврам / Авраам</text>
+      <text x="194" y="62" text-anchor="middle" class="lot-family__meta">Завет, алтарь и ходатайство · Быт. 13; 18</text>
+    </g>
 
-    <rect x="390" y="196" width="180" height="58" rx="12" fill="#211e19" stroke="#6e634d" />
-    <text x="480" y="232" text-anchor="middle" fill="#f4efe4" font-size="20" font-family="serif">Нахор</text>
+    <g transform="translate(536,136)">
+      <rect width="388" height="82" rx="12" class="lot-family__card" />
+      <text x="194" y="34" text-anchor="middle" class="lot-family__name">Аран</text>
+      <text x="194" y="62" text-anchor="middle" class="lot-family__meta">Умер прежде отца в Уре · Быт. 11:28</text>
+    </g>
 
-    <rect x="660" y="196" width="180" height="58" rx="12" fill="#211e19" stroke="#6e634d" />
-    <text x="750" y="225" text-anchor="middle" fill="#f4efe4" font-size="20" font-family="serif">Аран</text>
-    <text x="750" y="246" text-anchor="middle" fill="#a99e8b" font-size="13" font-family="sans-serif">отец Лота</text>
+    <g transform="translate(500,264)">
+      <rect width="210" height="88" rx="12" class="lot-family__card lot-family__card--focus" />
+      <text x="105" y="30" text-anchor="middle" class="lot-family__name">Лот</text>
+      <text x="105" y="55" text-anchor="middle" class="lot-family__meta">Праведный, но пленный</text>
+      <text x="105" y="75" text-anchor="middle" class="lot-family__meta">выбором · 2 Пет. 2:7</text>
+    </g>
 
-    <path d="M750 254 V292" fill="none" stroke="#b89955" stroke-width="2.5" />
-    <rect x="660" y="292" width="180" height="62" rx="12" fill="#332a1c" stroke="#d2ad5a" stroke-width="2" />
-    <text x="750" y="331" text-anchor="middle" fill="#fff4d5" font-size="24" font-family="serif">Лот</text>
+    <g transform="translate(736,264)">
+      <rect width="204" height="88" rx="12" class="lot-family__card lot-family__card--warn" />
+      <text x="102" y="30" text-anchor="middle" class="lot-family__name">Жена Лота</text>
+      <text x="102" y="55" text-anchor="middle" class="lot-family__meta">Оглянулась назад</text>
+      <text x="102" y="75" text-anchor="middle" class="lot-family__meta">Быт. 19:26 · Лк. 17:32</text>
+    </g>
 
-    <path d="M750 354 V390 M750 390 H610 M750 390 H890 M610 390 V416 M890 390 V416" fill="none" stroke="#b89955" stroke-width="2" />
+    <text x="666" y="394" text-anchor="middle" class="lot-family__branch-note">Пещера после Сигора · Быт. 19:30–38</text>
 
-    <rect x="520" y="416" width="180" height="62" rx="12" fill="#26211b" stroke="#9c8148" />
-    <text x="610" y="444" text-anchor="middle" fill="#f4efe4" font-size="20" font-family="serif">Моав</text>
-    <text x="610" y="465" text-anchor="middle" fill="#aaa08e" font-size="13" font-family="sans-serif">→ моавитяне</text>
+    <g transform="translate(396,404)">
+      <rect width="260" height="72" rx="12" class="lot-family__card" />
+      <text x="130" y="30" text-anchor="middle" class="lot-family__name">Старшая дочь</text>
+      <text x="130" y="55" text-anchor="middle" class="lot-family__meta">Родила сына Моава · Быт. 19:37</text>
+    </g>
 
-    <rect x="800" y="416" width="145" height="62" rx="12" fill="#26211b" stroke="#9c8148" />
-    <text x="872" y="444" text-anchor="middle" fill="#f4efe4" font-size="19" font-family="serif">Бен-Амми</text>
-    <text x="872" y="465" text-anchor="middle" fill="#aaa08e" font-size="13" font-family="sans-serif">→ аммонитяне</text>
+    <g transform="translate(676,404)">
+      <rect width="260" height="72" rx="12" class="lot-family__card" />
+      <text x="130" y="30" text-anchor="middle" class="lot-family__name">Младшая дочь</text>
+      <text x="130" y="55" text-anchor="middle" class="lot-family__meta">Родила Бен-Амми · Быт. 19:38</text>
+    </g>
 
-    <path d="M610 478 V510 H375" fill="none" stroke="#777063" stroke-width="2" stroke-dasharray="7 7" />
-    <text x="365" y="506" text-anchor="end" fill="#d8c79c" font-size="16" font-family="serif">Руфь → Овид → Иессей → Давид</text>
+    <g transform="translate(396,500)">
+      <rect width="260" height="78" rx="12" class="lot-family__card lot-family__card--warn" />
+      <text x="130" y="26" text-anchor="middle" class="lot-family__name">Моавитяне</text>
+      <text x="130" y="48" text-anchor="middle" class="lot-family__meta">Вражда · но из Моава Руфь</text>
+      <text x="130" y="67" text-anchor="middle" class="lot-family__meta">Быт. 19:37; Руфь 4:13–22</text>
+    </g>
 
-    <text x="34" y="528" fill="#8f8779" font-size="13" font-family="sans-serif">Сплошные линии — родственные связи Быт 11; 19. Пунктир — позднейшая каноническая линия моавитянки Руфи.</text>
+    <g transform="translate(676,500)">
+      <rect width="260" height="78" rx="12" class="lot-family__card lot-family__card--warn" />
+      <text x="130" y="26" text-anchor="middle" class="lot-family__name">Аммонитяне</text>
+      <text x="130" y="48" text-anchor="middle" class="lot-family__meta">Соседи и противники Израиля</text>
+      <text x="130" y="67" text-anchor="middle" class="lot-family__meta">Быт. 19:38; Втор. 2:19</text>
+    </g>
+
+    <g transform="translate(36,404)">
+      <rect width="336" height="140" rx="12" class="lot-family__note-box" />
+      <text x="18" y="30" class="lot-family__note-title">Парадокс благодати</text>
+      <text x="18" y="56" class="lot-family__meta">Линия греха и страха не отменяет</text>
+      <text x="18" y="78" class="lot-family__meta">Божьего замысла: моавитянка Руфь</text>
+      <text x="18" y="100" class="lot-family__meta">войдёт в родословную Давида и Христа</text>
+      <text x="18" y="122" class="lot-family__meta">(Мф. 1:5).</text>
+    </g>
   </svg>
-  <figcaption id="lot-family-caption">
-    Лот — не изолированный персонаж Быт 19. Его линия входит в историю Моава и Аммона, а книга Руфь
-    позднее не позволяет свести «моавскую линию» к простой формуле проклятого происхождения: Руфь,
-    моавитянка, входит в род Давида.
-  </figcaption>
 </figure>
+
+<style>
+  .lot-family {
+    margin: 2.2rem 0;
+    padding: 1.25rem 1.25rem 1rem;
+    border-radius: 16px;
+    border: 1px solid rgba(122, 92, 58, 0.22);
+    background: var(--color-surface, #fbf7f0);
+    --lot-family-bg: #fbf7f0;
+    --lot-family-border: #dfd3c0;
+    --lot-family-line: #9c866b;
+  }
+  :global(html.dark) .lot-family {
+    background: rgba(34, 29, 24, 0.9);
+    border-color: rgba(214, 190, 154, 0.2);
+    --lot-family-bg: #211c17;
+    --lot-family-border: #4a3f33;
+    --lot-family-line: #8f7b62;
+  }
+  .lot-family__eyebrow {
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--color-accent, #7a2e2e);
+    margin-bottom: 0.25rem;
+  }
+  .lot-family__title {
+    font-family: Lora, Georgia, serif;
+    font-size: 1.12rem;
+    font-weight: 700;
+    color: var(--color-text, #221c16);
+    margin-bottom: 0.85rem;
+  }
+  .lot-family__svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .lot-family__card {
+    fill: #fffdf9;
+    stroke: #cbbba5;
+    stroke-width: 1.5;
+  }
+  .lot-family__card--altar {
+    fill: #f6efe2;
+    stroke: #9c7b4c;
+  }
+  .lot-family__card--focus {
+    fill: #f8ece6;
+    stroke: #8c2f25;
+    stroke-width: 2;
+  }
+  .lot-family__card--warn {
+    fill: #fbf1ee;
+    stroke: #b56c5d;
+  }
+  .lot-family__note-box {
+    fill: #f5efe4;
+    stroke: #c8b69b;
+    stroke-dasharray: 4 4;
+  }
+  .lot-family__name {
+    font-family: Lora, Georgia, serif;
+    font-size: 20px;
+    font-weight: 700;
+    fill: #221c16;
+  }
+  .lot-family__note-title {
+    font-family: Lora, Georgia, serif;
+    font-size: 18.5px;
+    font-weight: 700;
+    fill: #7a2e2e;
+  }
+  .lot-family__meta {
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    font-size: 16.5px;
+    font-weight: 600;
+    fill: #5c4f42;
+  }
+  .lot-family__branch-note {
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    font-size: 16.5px;
+    font-weight: 700;
+    fill: #7a2e2e;
+  }
+  :global(html.dark) .lot-family__card,
+  :global(html.dark) .lot-family__note-box {
+    fill: #2a231c;
+    stroke: #5b4d3e;
+  }
+  :global(html.dark) .lot-family__card--focus {
+    fill: #352420;
+    stroke: #c96f5b;
+  }
+  :global(html.dark) .lot-family__card--warn {
+    fill: #312320;
+    stroke: #9e5f52;
+  }
+  :global(html.dark) .lot-family__name { fill: #f2eadf; }
+  :global(html.dark) .lot-family__meta { fill: #cbbfb0; }
+  :global(html.dark) .lot-family__note-title,
+  :global(html.dark) .lot-family__branch-note { fill: #e0a97e; }
+  @media print {
+    .lot-family {
+      background: #ffffff !important;
+      border-color: #bfa98e !important;
+      --lot-family-bg: #ffffff;
+      --lot-family-border: #bfa98e;
+      --lot-family-line: #6d5a45;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+      break-inside: avoid-page;
+      page-break-inside: avoid;
+    }
+    .lot-family__name { fill: #1c1712 !important; }
+    .lot-family__meta { fill: #3a3026 !important; }
+    .lot-family__note-title,
+    .lot-family__branch-note { fill: #6e2020 !important; }
+  }
+</style>
