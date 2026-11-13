@@ -57,6 +57,28 @@ const FORBIDDEN: string[] = Array.isArray((authority as { forbiddenRuntimeClaims
 
 /** Всё, что authority запрещает печатать, остаётся в интерактивной карте. */
 const withheld: string[] = [];
+
+// Проза маршрута местами несёт иврит внутри русского предложения
+// («סֻכּוֹת — «шатры, кущи»: место, где…»). Печатная проекция обязана
+// сплющивать разметку данных в текст, поэтому язык части помечается уже на
+// рендере: инородные прогоны возвращаются отдельными сегментами и печатаются
+// настоящими элементами шаблона — без передачи сырого HTML и без правки данных.
+const FOREIGN_RUN =
+  /([\u0590-\u05ff\u0370-\u03ff\u1f00-\u1fff]+(?:[ \u00a0\u00b7]+[\u0590-\u05ff\u0370-\u03ff\u1f00-\u1fff]+)*)/g;
+
+const foreignSegments = (text: string): Array<{ text: string; lang: string | null }> =>
+  text
+    .split(FOREIGN_RUN)
+    .filter((part) => part !== '')
+    .map((part) => ({
+      text: part,
+      lang: /[\u0590-\u05ff]/.test(part)
+        ? 'he'
+        : /[\u0370-\u03ff\u1f00-\u1fff]/.test(part)
+          ? 'el'
+          : null,
+    }));
+
 const sanctioned = (value: unknown, where: string): string => {
   const text = toText(value);
   if (!text) return '';
@@ -202,12 +224,18 @@ const facts = [
     <h3>{toText(place.name)}</h3>
     {toText(place.he) || (toText(place.tr) && toText(place.tr) !== toText(place.name)) ? (
       <p class="map-static-original">
-        <b>Оригинал:</b> {toText(place.he)}
+        <b>Оригинал:</b> <span lang="he">{toText(place.he)}</span>
         {toText(place.he) && toText(place.tr) && toText(place.tr) !== toText(place.name) ? ` · ${toText(place.tr)}` : ''}
       </p>
     ) : null}
     {sanctioned(place.kick, `${place.id}.kick`) ? <p>{sanctioned(place.kick, `${place.id}.kick`)}</p> : null}
-    {sanctioned(place.story, `${place.id}.story`) ? <p>{sanctioned(place.story, `${place.id}.story`)}</p> : null}
+    {sanctioned(place.story, `${place.id}.story`) ? (
+      <p>
+        {foreignSegments(sanctioned(place.story, `${place.id}.story`)).map((seg) =>
+          seg.lang ? <span lang={seg.lang}>{seg.text}</span> : seg.text
+        )}
+      </p>
+    ) : null}
     {toText(place.bible) ? <p>{toText(place.bible)}</p> : null}
     {toText(place.ep1) ? <p><b>Библейские ссылки:</b> {toText(place.ep1)}{toText(place.ep2) ? ` — ${toText(place.ep2)}` : ''}</p> : null}
     {toText(place.id1) ? <p><b>Идентификация:</b> {toText(place.id1)}{toText(place.id2) ? ` · ${toText(place.id2)}` : ''}</p> : null}
