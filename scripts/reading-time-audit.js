@@ -27,6 +27,12 @@
  *   node scripts/reading-time-audit.js --write    # переписать SSOT из расчёта
  *   node scripts/reading-time-audit.js --write --only <slug[,slug]>
  *   node scripts/reading-time-audit.js --write --exclude <slug[,slug]>
+ *   node scripts/reading-time-audit.js --write-literals  # минуты в разметке пилотов
+ *
+ * --write-literals — временный мост: он правит значения, жёстко вписанные в
+ * компоненты пилота (видимую строку `⏱ N мин` и скрытую мету pagefind), из
+ * того же расчёта. Источником истины они от этого не становятся; настоящее
+ * решение — вынести минуты в один модуль (§8 в READING-TIME-POLICY.md).
  */
 
 const fs = require('fs');
@@ -56,6 +62,7 @@ const readJson = (f) => JSON.parse(read(f));
 
 const argv = process.argv.slice(2);
 const WRITE = argv.includes('--write');
+const WRITE_LITERALS = argv.includes('--write-literals');
 const LIST = argv.includes('--list');
 const JSON_OUT = argv.includes('--json');
 const ONLY = valueOf('--only');
@@ -110,6 +117,47 @@ function componentBodyWords(slug) {
   return words;
 }
 
+/**
+ * Жёстко вписанные значения времени чтения в компонентах пилота.
+ *
+ * Часть «строго нативных» страниц (`src/pages/articles/<slug>/index.astro` →
+ * `article-pilots/<pilot>/*.astro`) не читает frontmatter MDX вовсе: минуты
+ * стоят в разметке дважды — видимой строкой `⏱ N мин` и скрытой мета-строкой
+ * pagefind `data-pagefind-meta="readTime"`. Такие значения не имеют
+ * генератора, поэтому --write их не переписывает: скрипт только показывает
+ * их как архитектурный долг (см. §8 в docs/editorial-waves/READING-TIME-POLICY.md).
+ */
+function literalSurfaces(slug) {
+  const page = path.join(PAGES_DIR, 'articles', slug, 'index.astro');
+  if (!fs.existsSync(page) || !fs.existsSync(COMPONENTS_DIR)) return [];
+  const dirs = new Set();
+  for (const m of read(page).matchAll(/@\/components\/([^'"]+)\.astro/g)) {
+    dirs.add(path.dirname(path.join(COMPONENTS_DIR, m[1])));
+  }
+  const out = [];
+  for (const dir of dirs) {
+    if (!fs.existsSync(dir)) continue;
+    for (const name of fs.readdirSync(dir)) {
+      if (!name.endsWith('.astro')) continue;
+      const file = path.join(dir, name);
+      read(file)
+        .split('\n')
+        .forEach((line, i) => {
+          const visible = line.match(/⏱\s*(\d+)\s*мин/);
+          const pagefind = line.match(/data-pagefind-meta="readTime"[^>]*>(\d+)</);
+          if (!visible && !pagefind) return;
+          out.push({
+            file: path.relative(ROOT, file),
+            line: i + 1,
+            kind: visible ? 'visible' : 'pagefind',
+            value: Number(visible ? visible[1] : pagefind[1]),
+          });
+        });
+    }
+  }
+  return out;
+}
+
 function audit() {
   const rows = [];
   for (const { slug, file } of mdxFiles()) {
@@ -144,8 +192,11 @@ function audit() {
       delta: Number.isFinite(expected) && Number.isFinite(current) ? current - expected : null,
       draft: /^draft:\s*true\s*$/m.test(source),
       status,
+      literals: literalSurfaces(slug),
     });
   }
+
+  const literals = rows.flatMap((r) => (r.literals || []).map((l) => ({ slug: r.slug, expected: r.expected ?? null, ...l })));
 
   const expectedBySlug = new Map(
     rows.filter((r) => Number.isFinite(r.expected)).map((r) => [r.slug, r.expected])
@@ -214,15 +265,67 @@ function audit() {
     }
   }
 
-  return { rows, seriesRows, downstream };
+  return { rows, seriesRows, downstream, literals };
+}
+
+function literalDriftOf(report) {
+  const out = [];
+  for (const row of report.rows) {
+    if (!Number.isFinite(row.expected)) continue;
+    for (const l of row.literals || []) {
+      if (l.value !== row.expected) out.push({ slug: row.slug, expected: row.expected, ...l });
+    }
+  }
+  return out;
 }
 
 function writable(row) {
-  if (!row || row.status === 'no-body' || row.status === 'missing') return false;
+  // `advisory` — тело статьи живёт в компонентах, MDX хранит только метаданные;
+  // такое значение считается для отчёта, но не переписывается (см. §6 политики).
+  if (!row || row.status === 'no-body' || row.status === 'missing' || row.status === 'advisory') return false;
   if (WRITE_SKIP.has(row.slug)) return false;
   if (ONLY && !ONLY.includes(row.slug)) return false;
   if (EXCLUDE && EXCLUDE.includes(row.slug)) return false;
   return true;
+}
+
+/**
+ * Переписать жёстко вписанные значения в компонентах пилота из политики.
+ *
+ * Это точечная правка разметки (значение на месте значения), а не унификация
+ * источника: структурный шаг — вынести минуты в один модуль и импортировать
+ * их (см. §8 политики). Правка идемпотентна и дружелюбна к трёхстороннему
+ * слиянию: строки не добавляются и не удаляются.
+ */
+function writeLiterals(report) {
+  let touched = 0;
+  const targets = literalDriftOf(report).filter((l) => {
+    if (WRITE_SKIP.has(l.slug)) return false;
+    if (ONLY && !ONLY.includes(l.slug)) return false;
+    if (EXCLUDE && EXCLUDE.includes(l.slug)) return false;
+    return true;
+  });
+  const byFile = new Map();
+  for (const l of targets) {
+    if (!byFile.has(l.file)) byFile.set(l.file, []);
+    byFile.get(l.file).push(l);
+  }
+  for (const [file, list] of byFile) {
+    const abs = path.join(ROOT, file);
+    const lines = read(abs).split('\n');
+    for (const l of list) {
+      const i = l.line - 1;
+      if (i < 0 || i >= lines.length) continue;
+      const before = lines[i];
+      lines[i] =
+        l.kind === 'visible'
+          ? before.replace(/⏱\s*\d+\s*мин/, `⏱ ${l.expected} мин`)
+          : before.replace(/(data-pagefind-meta="readTime"[^>]*>)\d+(<)/, `$1${l.expected}$2`);
+      if (lines[i] !== before) touched += 1;
+    }
+    fs.writeFileSync(abs, lines.join('\n'));
+  }
+  return touched;
 }
 
 function writeAll(report) {
@@ -296,6 +399,9 @@ const seriesDrift = report.seriesRows.filter((r) => r.status !== 'ok');
 const byStatus = report.rows.reduce((acc, r) => ((acc[r.status] = (acc[r.status] || 0) + 1), acc), {});
 const actionable = report.rows.filter((r) => r.status === 'drift' || r.status === 'missing');
 
+const literalDrift = literalDriftOf(report);
+const literalSlugs = new Set(report.literals.map((l) => l.slug));
+
 if (JSON_OUT) {
   console.log(
     JSON.stringify(
@@ -304,6 +410,7 @@ if (JSON_OUT) {
         articles: { total: report.rows.length, byStatus, rows: report.rows },
         series: { total: report.seriesRows.length, drift: seriesDrift.length, rows: report.seriesRows },
         downstream: report.downstream,
+        componentLiterals: { surfaces: report.literals.length, slugs: literalSlugs.size, drift: literalDrift.length, rows: literalDrift },
       },
       null,
       2
@@ -334,6 +441,23 @@ console.log(
     'нормализаторы после сборки; витрины серий и js/search.js пишет --write.'
 );
 
+console.log(
+  `\nЖёстко вписанное время в компонентах пилота: поверхностей ${report.literals.length} ` +
+    `у ${literalSlugs.size} статей; расходятся с политикой: ${literalDrift.length}. ` +
+    'Это не SSOT: у таких значений нет генератора, --write их не трогает (§8 политики).'
+);
+if (literalDrift.length) {
+  const shown = LIST ? literalDrift : literalDrift.slice(0, 6);
+  for (const l of shown) console.log(`  ${l.slug}\t${l.kind} ${l.value} → ${l.expected}\t${l.file}:${l.line}`);
+  if (!LIST && literalDrift.length > shown.length) console.log(`  … ещё ${literalDrift.length - shown.length} (полный список: --list)`);
+}
+
+if (WRITE_LITERALS) {
+  const touched = writeLiterals(report);
+  console.log(`\n✅ --write-literals: переписано значений в компонентах: ${touched}. Пересоберите HTML и манифест.`);
+  process.exit(0);
+}
+
 if (WRITE) {
   const touched = writeAll(report);
   console.log(`\n✅ --write: обновлено значений: ${touched}. Пересоберите производные поверхности и HTML.`);
@@ -342,6 +466,13 @@ if (WRITE) {
 
 if (actionable.length || seriesDrift.some((r) => r.status === 'drift')) {
   console.log('\n❌ Единая политика не соблюдена. Исправление: node scripts/reading-time-audit.js --write');
+  process.exit(1);
+}
+if (literalDrift.length) {
+  console.log(
+    '\n❌ SSOT пересчитан, но видимое время чтения на части страниц берётся из разметки компонентов ' +
+      'и расходится с политикой. Нужна унификация литералов (§8 политики), а не повторный --write.'
+  );
   process.exit(1);
 }
 console.log('\n✅ Все значения соответствуют единой политике.');
