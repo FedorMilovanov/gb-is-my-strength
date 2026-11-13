@@ -154,10 +154,10 @@ if (tmaBody.includes('<section class="sources-block" id="istochniki">')) bodyH2.
 if (JSON.stringify(bodyH2) === JSON.stringify(expectedTmaToc)) ok('tma body H2 anchors and labels match the shared TOC');
 else bad(`tma body/shared TOC mismatch: ${JSON.stringify(bodyH2)}`);
 
-must(heartConfig, "{ id: 'tma', slug: 'tma-na-serdce', minutes: 34,", 'tma canonical series time is 34 minutes');
-must(tmaBody, '<span data-pagefind-meta="readTime" hidden>34</span>', 'tma Pagefind time is 34 minutes');
-must(tmaBody, '<span>⏱ 34 мин</span>', 'tma visible article time is 34 minutes');
-must(tmaHead, 'readingTime: 34', 'tma SITE_CONFIG time is 34 minutes');
+must(heartConfig, "{ id: 'tma', slug: 'tma-na-serdce', minutes: 24,", 'tma canonical series time is 24 minutes');
+must(tmaBody, '<span data-pagefind-meta="readTime" hidden>24</span>', 'tma Pagefind time is 24 minutes');
+must(tmaBody, '<span>⏱ 24 мин</span>', 'tma visible article time is 24 minutes');
+must(tmaHead, 'readingTime: 24', 'tma SITE_CONFIG time is 24 minutes');
 must(tmaRoute, "HARD_TEXTS_SERIES.pages['tma']", 'tma route reads progress from canonical series page data');
 mustNot(heartConfig, 'heartProgress(ch.lead)', 'no chapter-lead progress reused for extra articles');
 mustNot(heartConfig, 'readingProgressTotalMin: HEART_TOTAL_MIN', 'no core-only total for extra articles');
@@ -197,10 +197,10 @@ for (const pageDef of bookSequence) {
 }
 if (monotonic) ok('book progress is strictly cumulative across every article');
 else bad('book progress is not strictly cumulative');
-if (doneMin === 727) ok('full heart-book reading total is exactly 727 minutes');
-else bad(`heart-book total drift: ${doneMin} minutes (expected 727)`);
+if (doneMin === 420) ok('full heart-book reading total is exactly 420 minutes');
+else bad(`heart-book total drift: ${doneMin} minutes (expected 420)`);
 const lastPage = bookSequence.at(-1);
-if (lastPage?.id === 'spravochnik' && doneMin - lastPage.minutes === 704 && doneMin === 727) ok('last page completes progress exactly at 727 minutes');
+if (lastPage?.id === 'spravochnik' && doneMin - lastPage.minutes === 407 && doneMin === 420) ok('last page completes progress exactly at 420 minutes');
 else bad(`last-page progress contract failed: ${JSON.stringify(lastPage)} / ${doneMin}`);
 
 // ── tma editorial dateline parity contract ──────────────────────────────────

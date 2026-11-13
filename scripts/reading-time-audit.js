@@ -192,7 +192,7 @@ function lineAt(source, offset) {
   return line;
 }
 
-const CARD_START = /<li class="related-articles__item"|<div class="related-articles__body"|<a class="gbs2-next-card"|<div class="gbs2-next-card"|<a class="gb-series-link"/g;
+const CARD_START = /<li class="related-articles__item"|<div class="related-articles__body"|<a class="gbs2-next-card"|<div class="gbs2-next-card"|<a class="gb-series-link"|<a href="\.\.\/articles\/[a-z0-9-]+\/" class="h-article-card"/g;
 
 function literalSurfaces(slug) {
   const page = path.join(PAGES_DIR, 'articles', slug, 'index.astro');
@@ -319,6 +319,56 @@ function seriesProgressSurfaces() {
   return out;
 }
 
+/**
+ * Минуты в данных серии: `slug: '...'` + `minutes: N`.
+ *
+ * Десятая поверхность. У серии «Сердце» и «Бытие 6» длительности живут не
+ * строкой `readingTime: 'N мин'`, а числовым полем `minutes`, поэтому ни
+ * витринный, ни прогрессный скан их не видели. Все 18 частей «Сердца»
+ * обещали на 10–16 минут больше, чем читаются: «Свобода во Христе» — 26 при
+ * фактических 11, «Сердце не в одиночку» — 27 при 11.
+ */
+function seriesDataSurfaces(expectedBySlug) {
+  const sharedDir = path.dirname(SERIES_CONFIG_DIR);
+  const dirs = [SERIES_CONFIG_DIR, sharedDir].filter((dir) => fs.existsSync(dir));
+  if (!dirs.length) return [];
+  const files = [];
+  for (const dir of dirs) {
+    for (const name of fs.readdirSync(dir).filter((n) => n.endsWith('.ts'))) {
+      files.push(path.join(dir, name));
+    }
+  }
+  const out = [];
+  for (const file of files) {
+    const source = read(file);
+    if (!source.includes('minutes:')) continue;
+    const rel = path.relative(ROOT, file);
+    const anchors = [...source.matchAll(/slug:\s*'([a-z0-9-]+)'/g)];
+    for (let i = 0; i < anchors.length; i += 1) {
+      const slug = anchors[i][1];
+      const expected = expectedBySlug.get(slug);
+      if (!Number.isFinite(expected)) continue;
+      const from = anchors[i].index;
+      const to = i + 1 < anchors.length ? anchors[i + 1].index : source.length;
+      const chunk = source.slice(from, to);
+      const m = chunk.match(/minutes:\s*(\d+)/);
+      if (!m) continue;
+      out.push({
+        file: rel,
+        line: lineAt(source, from + m.index),
+        offset: from + m.index,
+        kind: 'seriesdata',
+        value: Number(m[1]),
+        target: slug,
+        expected,
+        slug: `${path.basename(file)}#${slug}`,
+        page: true,
+      });
+    }
+  }
+  return out;
+}
+
 function pageLiteralSurfaces() {
   if (!fs.existsSync(PAGES_DIR) || !fs.existsSync(COMPONENTS_DIR)) return [];
   const out = [];
@@ -376,6 +426,27 @@ function scanComponentLiterals(page, { cardsOnly }) {
       // Цель — ссылка внутри той же карточки: карточки размечаются конечными
       // маркерами, поэтому ищем href не «рядом по тексту», а в границах блока.
       const starts = [...source.matchAll(CARD_START)].map((m) => m.index);
+      // Книжная полка `/hard-texts/` печатает минуты отдельным `<span>` после
+      // разделителя `·`, поэтому шаблон «· N мин» их не ловит: у полки шесть
+      // карточек стояли с длинами, посчитанными до пересчёта серии.
+      for (const m of source.matchAll(/(\d+)\s*мин/g)) {
+        if (taken.some(([a, b]) => m.index >= a && m.index < b)) continue;
+        const from = starts.filter((x) => x <= m.index).pop();
+        if (from === undefined) continue;
+        const to = starts.find((x) => x > m.index) ?? source.length;
+        const chunk = source.slice(from, to);
+        if (!chunk.includes('h-article-card')) continue;
+        const href = chunk.match(/href="(?:\.\.\/)+(?:articles\/)?([a-z0-9-]+)\//);
+        if (!href) continue;
+        out.push({
+          file: rel,
+          line: lineAt(source, m.index),
+          offset: m.index,
+          kind: 'card',
+          value: Number(m[1]),
+          target: href[1],
+        });
+      }
       for (const m of source.matchAll(/(?:·\s*|~)(\d+)\s*мин/g)) {
         if (taken.some(([a, b]) => m.index >= a && m.index < b)) continue;
         const at = m.index;
@@ -499,10 +570,11 @@ function audit() {
     ...pageLiteralSurfaces(),
     ...shellAttrSurfaces(),
     ...seriesProgressSurfaces(),
+    ...seriesDataSurfaces(expectedBySlug),
   ].map((l) => ({
     ...l,
     expected:
-      l.kind === 'shellattr' || l.kind === 'seriesprogress'
+      l.kind === 'shellattr' || l.kind === 'seriesprogress' || l.kind === 'seriesdata'
         ? l.expected
         : l.target
           ? expectedBySlug.get(l.target) ?? null
@@ -635,6 +707,8 @@ function writeLiterals(report) {
       else if (l.kind === 'pagemeta') next = tail.replace(/^(readingTime:\s*)\d+(?=\s*[,}])/, `$1${l.expected}`);
       else if (l.kind === 'shellattr') next = tail.replace(/^(data-gbs2-(?:part|done|total)-min=")\d+(")/, `$1${l.expected}$2`);
       else if (l.kind === 'seriesprogress') next = tail.replace(/^(readingProgress(?:Part|Done)Min:\s*)\d+/, `$1${l.expected}`);
+      else if (l.kind === 'seriesdata') next = tail.replace(/^(minutes:\s*)\d+/, `$1${l.expected}`);
+      else if (tail.startsWith(`${l.value} мин`)) next = tail.replace(/^\d+(?=\s*мин)/, `${l.expected}`);
       else next = tail.replace(/^((?:·\s*|~))\d+(\s*мин)/, `$1${l.expected}$2`);
       if (next !== tail) {
         src = head + next;
