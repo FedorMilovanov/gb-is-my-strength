@@ -229,17 +229,69 @@ is kept, B alone accounts for 58 of the total minutes, and the canonical total
 moves well past 269. The total is not a stable number to negotiate around; it is
 an output.
 
+## 7c. Correction to §7b: there are five surfaces, not four, and one guard proves nothing
+
+`4786e4e2` has since advanced past `6b99470` to `836d364`, and his own
+`docs/editorial-waves/OWNER-REPORT.md` now reports a finding that makes the
+four-surface list in §7b incomplete. Reading time also lives hard-coded in page
+markup: a visible `⏱ N мин` line, a hidden pagefind meta value, the minutes in
+«читайте также» cards (`Богословие · 41 мин`) and in next-part announcements
+(`К части I · ~41 мин`). He counts 132 such surfaces across 32 articles, and all
+52 header values plus 69 card values diverged from the policy in both directions
+(8 shown where 18 was correct, 45 for 25, 41 for 58, 30 for 40).
+
+He taught his audit to see them (`componentLiterals` in `--json`, a report
+section, `--list` with file and line) and to rewrite them with `--write-literals`,
+value for value without changing line structure, explicitly so that merging with
+parallel branches stays trivial. He rewrote 119 values in 47 components and left
+15, each justified in `READING-TIME-POLICY.md` §8.3.
+
+Running his audit against this branch's content and data confirms the exposure
+here: 551 hard-coded surfaces across 113 pages, of which **231 diverge** from the
+policy, and 89 of those sit inside files this branch touched. Running the same
+audit against his own tree reports **0 divergent** and exits 0, so he did
+reconcile them all on his side. The divergences are not this branch's doing — the
+numbers themselves are base values — but they are this branch's exposure, because
+a merge that keeps this branch's components and his content, or the reverse, will
+silently mix two vintages of literals.
+
+He also corrected himself in a way that matters to every branch: `data:consistency`
+does **not** prove policy compliance. It compares surfaces with each other, not
+with a calculation, so it goes green when the manifest and a card are stale in the
+same way. The only criterion is `reading-time-audit`. This branch's §8 lists
+`check-data-consistency.js` as green, and it is, but that gate carries no
+information about whether the minutes are right.
+
+Finally, his escalation to the owner is worth knowing before anyone re-pins: the
+speed implied by `readingTime` is not uniform across the site — pastor-series
+197–226 words per minute, apostasy-series 174–188, the rest of the site 113–138.
+That range independently corroborates §7b's measurement that the teen series'
+pinned base numbers imply roughly 129 wpm, and it means the choice of 180 wpm in
+`lib/reading-time-policy.js` is a policy decision with site-wide consequences, not
+a mechanical correction. He left `data/series.json` alone for that reason, since
+`series-read-time-drift` compares four surfaces and changing the speed is an owner
+decision.
+
 ## 8. Gate state of this branch
 
 `npm run strangler:build:production-like` exits 0: approved/blocked 78/0, 68
 files, 74 articles, 227 metadata fields, 235 popup payloads, 7/7 teen source
 boundaries, heading-name hygiene post-check passed, and pastor-series guards G-1
-through G-8 passed. Additionally all of the following exit 0:
-`teen-series-release-contract` (this branch's own version),
-`scripture-occurrence-index-contract`, `reader-toc-projection`,
-`series-reader-fragment-audit`, `article:qa`, `sources:hygiene`,
+through G-8 passed. Additionally all fourteen of the following exit 0:
+`teen-series-release-contract.mjs --dist=dist` (this branch's own version),
+`scripture-occurrence-index-contract.mjs`,
+`reader-toc-projection-contract-test.cjs`, `series-reader-fragment-audit.js`,
+`series-reader-facade-regression-test.js`, `check-data-consistency.js`,
+`gill-reading-time-canonical-audit.js`, `article:qa`, `sources:hygiene`,
 `mdx:structure:audit`, `content:parity`, `content:guard`,
-`editorial:lint --sources`, and `document-authority-audit`.
+`editorial:lint --sources`, and `document-authority-audit.mjs`.
+
+The file names are given exactly, because two of them are easy to guess wrong:
+there is no `reader-toc-projection.mjs` and no
+`series-reader-fragment-audit.mjs`. The first is a CommonJS contract test and the
+second is plain JS. Both wrong names fail with `MODULE_NOT_FOUND`, which looks
+like a broken tree but is only a wrong path, and `git ls-files scripts/` reports
+no missing tracked file.
 
 The only designed failure in the repository remains
 `teen-series-foundation-contract.mjs`, which also fails on `main`.
@@ -294,14 +346,114 @@ So checks 1 through 3 now pass here and check 4 fails until his runtime change i
 merged. `scripts/mixed-script-surface-contract.mjs` passes on this branch as-is.
 
 Also recorded, since it affects how any of the seven branches should be read: of
-the 36 article MDX files this branch touched, 20 do not drive a rendered page.
-Sixteen are astro-pilot-driven shadows, and four
-(`angely-pod-mrakom-iuda-6-7-2-petra-2`, `blagovestie-mertvym-1-petra-4-5-6`,
-`duhi-v-temnice-noi-kreshchenie-pobeda`,
-`enoh-prorochestvoval-iuda-14-15-4q204`) have no route file and no `dist/` output
-at all. All seven teen-series articles are MDX-driven and live, which is why every
-fragment written by this branch was confirmed visible in built HTML. A reconciler
-should not expect MDX-only edits in the shadow files to change any page.
+the 36 article MDX files this branch touched, 16 do not drive a rendered page,
+because their routes import an astro pilot body instead of the MDX. The earlier
+draft of this note wrongly listed four more as unrouted. They are live:
+`angely-pod-mrakom-iuda-6-7-2-petra-2`, `blagovestie-mertvym-1-petra-4-5-6`,
+`duhi-v-temnice-noi-kreshchenie-pobeda` and
+`enoh-prorochestvoval-iuda-14-15-4q204` are rendered from
+`src/pages/hard-texts/<slug>/index.astro`, which does
+`import Content from '@/content/articles/<slug>.mdx'` and renders `<Content />`
+inside `Genesis6ArticlePage`. They publish under `/hard-texts/`, not
+`/articles/`, which is why a census that only looks for
+`src/pages/articles/<slug>/index.astro` misclassified them. So 20 of the 36 are
+live and 16 are shadows, and all seven teen-series articles are MDX-driven and
+live, which is why every fragment written by this branch was confirmed visible in
+built HTML. A reconciler should not expect MDX-only edits in the sixteen shadow
+files to change any page, but should treat the four `/hard-texts/` routes as
+published surface.
+
+## 8c. Mixed-script surface: one defect was this branch's, and it is now fixed
+
+`1d569906`'s hardened `article-qa.js` and `readable-audit.js` flag
+cyrillic-latin glue. Run against this branch they reported 39 source errors and 13
+`fatal-cyrillic-latin-glue` findings in `dist/`. Every one was attributed before
+anything was edited, by comparing `git grep -c <literal> 9618e82` with the same
+count on this branch, plus a codepoint dump for the homoglyph cases.
+
+Exactly one finding was this branch's, introduced by `d944712`:
+`kaige-переводческую` in `enoh-prorochestvoval-iuda-14-15-4q204.mdx`, a Latin
+token hyphenated onto a Cyrillic adjective. The article's own footnote four
+already gives the correct form, since it cites Timothy A. Lee's «Jude's Use of a
+Kaige Edition of Enochic Scripture», and line 216 of the same file used `Kaige`
+separately. The prose now reads «переводческую технику Kaige», which keeps the
+transliteration as a proper name instead of welding it into a Cyrillic word.
+
+One further finding was repaired here even though the token is base content,
+because this branch had already rewritten the surrounding lines: the transliteration
+`хюперентюнхáней` carried a Latin `á` (U+00E1) inside a Cyrillic word, in
+`serdce-i-duh.mdx` and `SerdceIDuhBody.astro`. `d944712` had edited both of those
+lines to add `<span lang="el">` tags, so leaving a known mixed-script defect in a
+line this branch already touched would have been incomplete work. Both were
+normalized to a Cyrillic `а` plus U+0301 combining acute, which is byte-for-byte
+the form `1d569906` independently chose, so the two branches converge instead of
+diverging. The visible letters are unchanged; only the codepoints moved.
+
+After both fixes, and measured with his scripts against this branch's sources and
+this branch's rebuilt `dist/`: source errors 39 → **36**, and dist glue findings
+13 → **11**. All 36 remaining source errors are pre-existing base content, and a
+per-string check confirms **zero** of them are absent from `9618e82`. They sit in
+surfaces this branch never wrote: 32 in `karty/*/route.json` (Latin-accented
+transliterations such as `Бавéль`, `Харáн`, plus genuine homoglyphs `Газa`,
+`Кенyon`, `Чекy`, `Элияhу`, `hе`), two in
+`GillContextSectionSourcesAndSeriesTail.astro` (`PhD-диссертации`, `DOI-запись`),
+and one in `kogda-chelovek-uhodit-ot-very.mdx` (`Shepherds-линия`). That last file
+is one this branch touched, but its diff hunks do not reach that line and the
+string counts base=1, mine=1. The remaining dist findings add the `g3` dossier's
+`network-активности`, `email-адресами`, `Substack-каналами`, `commerce-витрина`,
+`Wayback-снимок` and `G3-контролируемый`/`-контролируемым`.
+
+`1d569906` fixes all of these on his own branch — his `article-qa.js` exits 0
+there against the same 180 article files — so his strict audits are shipped as a
+pair with his content corrections. That is the reason this branch did not adopt
+his scripts, and the reason a merge must take his audits and his content fixes
+together: taking the audit alone turns eleven base spellings into a build failure
+on every other branch.
+
+## 8d. A competitor's assessment of this branch's prose, tested and not confirmed
+
+`4786e4e2`'s `OWNER-REPORT.md` says, of Companion B, that this branch
+independently reached the same conclusion about capital-letter maxims
+(«ГРАНИЦА ≠ МЕСТЬ» → «граница — не месть») but that «их дифф оставляет рваные
+абзацы», ragged paragraphs, and so it was not borrowed. The convergence he
+describes is real: this branch removed 68 `X ≠ Y` maxim lines and added none
+back. The raggedness is not.
+
+Each removal was a rewrite, not a deletion. Where the base had
+`**ПОМОЩЬ ≠ НАЛИЧНЫЕ ≠ ПОГАШЕНИЕ ЧУЖОГО ДОЛГА ≠ ПОРУЧИТЕЛЬСТВО ≠ НАСЛЕДСТВО.**`,
+this branch wrote «Помощь — это не обязательно наличные, а наличные — не то же
+самое, что погашение чужого долга, поручительство или наследство», keeping the
+explanatory sentence that followed. Probing the six explanatory sentences that
+accompanied the removed maxims finds all of them still present.
+
+A structural scan of all 36 MDX files this branch touched — orphan punctuation,
+near-empty bold runs, dangling conjunctions, empty blockquote markers, three or
+more consecutive blank lines, ordered-list numbering gaps, surviving CAPS maxims,
+surviving backtick schemas — reports **zero** issues.
+
+Paragraph cohesion was then measured across the seven teen articles, counting
+words per paragraph in the reader body only, with frontmatter, the sources
+section, markup, headings, tables, code fences and footnote markers stripped:
+
+| measure | base | this branch |
+| --- | ---: | ---: |
+| paragraphs | 1994 | 1947 |
+| average words per paragraph | 16.8 | **19.5** |
+| paragraphs under 15 words | 61.6% | **56.3%** |
+| paragraphs of 5 words or fewer | 23.7% | **18.6%** |
+
+Every one of the seven improves, and Companion A improves most: 314 paragraphs
+become 259, its 5-word-or-fewer paragraphs fall from 101 to 48, and its average
+rises from 13.9 to 19.2 words. So on the measure the objection names, this branch
+is less ragged than the base it started from, not more.
+
+The likely source of the misreading is the line diff. This branch shows
++1629 / −1944 lines, a net negative, while its body word count rises by 4437.
+Rewriting a maxim into a sentence, or joining two chopped paragraphs into one,
+removes lines and adds words. A net-negative line count is therefore not evidence
+of lost or ragged prose here, and any reconciler comparing branches by line count
+will reach the same wrong conclusion about this branch and about `7b785a3b`,
+whose −309…−624 lines likewise come with +481 net words.
 
 ## 9. Suggested reconciliation order
 
@@ -319,9 +471,20 @@ should not expect MDX-only edits in the shadow files to change any page.
 4. Rebuild `data/scripture-search-index.json` from the final tree, never from a
    side.
 5. Recompute all seven `readingTime` values and the canonical total from the final
-   tree with `4786e4e2`'s policy module, and re-pin the four surfaces together.
-   Never take one branch's minutes, and never merge his contract numbers without
-   his frontmatter, config and `data/series.json` changes.
-6. Re-run the full battery, including `8c44f067`'s tightened release contract and
-   his link and reading-time tests, and `1d569906`'s language-of-parts and
-   mixed-script contracts, before deploying.
+   tree with `4786e4e2`'s policy module, and re-pin all five surfaces together:
+   `readingTime` frontmatter, `teenSeriesConfig.ts` including `TOTAL_MIN`,
+   `data/series.json`, the two contract scripts, and the hard-coded component
+   literals via his `--write-literals`. Never take one branch's minutes, and never
+   merge his contract numbers without his frontmatter, config, `data/series.json`
+   and component-literal changes. Do not treat a green `data:consistency` as
+   evidence that the minutes are right; only `reading-time-audit` measures them
+   against the policy.
+6. Take `1d569906`'s mixed-script and language-of-parts audits together with his
+   content corrections. His `article-qa.js` exits 0 only on a tree where the base
+   spellings are already fixed, so adopting the audit without the fixes turns
+   eleven pre-existing strings in `karty/*/route.json`, the Gill context tail and
+   the `g3` dossier into a build failure on every other branch.
+7. Re-run the full battery, including `8c44f067`'s tightened release contract and
+   his link and reading-time tests, `1d569906`'s language-of-parts and
+   mixed-script contracts, and `4786e4e2`'s `reading-time-audit`, before
+   deploying.
