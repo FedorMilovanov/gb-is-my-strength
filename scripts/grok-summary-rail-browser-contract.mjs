@@ -54,7 +54,19 @@ async function visit(type,engine,route,size,full){
     hoverSkin.buttonBgImage==='none'&&
     hoverSkin.chevronShape==='50%'&&hoverSkin.chevronWidth>=28&&
     !['transparent','rgba(0, 0, 0, 0)'].includes(hoverSkin.chevronBg),{idleSkin,hoverSkin});
-  await btn.click();await p.waitForTimeout(460);
+  await btn.click();
+  // Wait for the actual CSS opening transition (including WebKit's late start).
+  // Keep the exact product visual contract strict, not a fixed-time snapshot.
+  await p.waitForFunction(cardEl=>{
+    const body=cardEl.querySelector('.gb-summary-motion > .summary-card__body');
+    const motion=cardEl.querySelector('.gb-summary-motion');
+    if(!body||!motion||cardEl.dataset.gbSummaryOpen!=='true')return false;
+    const css=getComputedStyle(body);
+    return parseFloat(css.paddingTop)>=14 &&
+      motion.getBoundingClientRect().height>30 &&
+      !motion.getAnimations().some(a=>a.playState==='running' &&
+        a.transitionProperty==='grid-template-rows');
+  },await card.elementHandle(),{timeout:1800});
   const expanded=await card.evaluate(el=>({open:el.dataset.gbSummaryOpen,aria:el.querySelector('button')?.getAttribute('aria-expanded'),h:el.querySelector('.gb-summary-motion')?.getBoundingClientRect().height,inert:el.querySelector('.gb-summary-motion')?.inert,body:el.querySelector('.summary-card__body')?.textContent?.trim().length}));
   add(engine,route,'real content opens',expanded.open==='true'&&expanded.aria==='true'&&!expanded.inert&&expanded.h>30&&expanded.body>20,expanded);
   const openedSkin=await card.evaluate(el=>{
@@ -76,8 +88,9 @@ async function visit(type,engine,route,size,full){
   // therefore sample the still-expanded first frame even though aria/inert
   // are already closed. Observe the completed real CSS transition instead,
   // while enforcing a finite UX budget and the original 2px geometry gate.
-  const closeStart=Date.now();
   await btn.click();
+  // Measure actual UI closure, not Playwright's pre-click actionability wait.
+  const closeStart=Date.now();
   await p.waitForFunction(cardEl=>{
     const panel=cardEl.querySelector('.gb-summary-motion');
     return cardEl.dataset.gbSummaryOpen==='false' && panel?.inert &&

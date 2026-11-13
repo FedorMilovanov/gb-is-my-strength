@@ -174,39 +174,32 @@ check('Reader mobile: one semantic speed-choice component for series and standal
     && speedOptions.includes("aria-checked={rate === 1 ? 'true' : 'false'}")
     && !/<button[^>]*class="mobile-speed"/.test(gillMobileBar)
     && !/<button[^>]*class="hm-spd"/.test(standaloneMobileBar));
-const mobilePlayStart = gillMobileBar.indexOf('<span class="mobile-playwrap"');
-const mobilePlayEnd = mobilePlayStart === -1 ? -1 : gillMobileBar.indexOf('</span>', mobilePlayStart);
-const mobilePlayBlock = mobilePlayEnd === -1 ? '' : gillMobileBar.slice(mobilePlayStart, mobilePlayEnd);
-// The old overlapping 24px corner badge is retired. Guard the structural
-// contract in source (CSS/ARIA/controller); the browser matrix separately
-// proves actual Play/rate hit geometry in Chromium and WebKit for all series.
-const speedBadgeRule = css.match(/\[data-reader-engine="series"\] \.mobile-spdbadge\s*\{([^}]*)\}/)?.[1] || '';
-const speedPopoverRule = css.match(/\[data-reader-engine="series"\] \.mobile-speedrail\s*\{([^}]*)\}/)?.[1] || '';
-const rateController = read('js/floating-cluster-controller.js');
+// The old Gill-only inline rail and floating-cluster rate controller were
+// retired. Assert the current shared ReaderMobilePlayGroup/ReaderSpeedOptions
+// ownership and keep the real cross-browser hit/contrast witness mandatory.
+const sharedPlayGroup = read('src/components/article-pilots/_shared/ReaderMobilePlayGroup.astro');
+const sharedSpeedSlot = read('src/components/article-pilots/_shared/speedSlot.ts');
+const readerA11yOwner = read('src/runtime/reader-controls-a11y.js');
+const mobilePlaySmoke = read('scripts/gill-v16-mobile-play-smoke.js');
 const rateBrowserContract = read('scripts/series-layout-browser-contract.mjs');
-check('Series mobile: 44px Play/rate targets, one-line inline speed slot and cross-browser hit/contrast witness',
-  mobilePlayBlock.includes('class="mobile-spdbadge"')
-    && mobilePlayBlock.includes('aria-controls="mobileSpeedrail"')
-    && mobilePlayBlock.includes('aria-expanded="false"')
-    && gillMobileBar.includes("'data-fc-speed-layout': 'inline'")
-    && read('src/runtime/reader-controls-a11y.js').includes('[data-fc-speed-mode="inline"]')
-    && /position:\s*relative/.test(speedBadgeRule)
-    && /flex:\s*0 0 44px/.test(speedBadgeRule)
-    && /min-width:\s*44px/.test(speedBadgeRule)
-    && /height:\s*44px/.test(speedBadgeRule)
-    && /position:\s*absolute/.test(speedPopoverRule)
-    && /height:\s*44px/.test(speedPopoverRule)
-    && /display:\s*flex/.test(speedPopoverRule)
-    && /overflow-x:\s*auto/.test(speedPopoverRule)
-    && /background:\s*linear-gradient\(var\(--gill-mobile-bar-bg\)/.test(speedPopoverRule)
-    && /#[a-f0-9]{6}/i.test(speedPopoverRule)
-    && /\[data-reader-engine="series"\] \.mobile-speed\s*\{[^}]*flex:\s*0 0 44px/.test(css)
-    && /\[data-reader-engine="series"\] \.mobile-playwrap \.mobile-top-ember\s*\{[^}]*width:\s*44px;[^}]*height:\s*44px/.test(css)
-    && rateController.includes("badge.setAttribute('aria-expanded', open ? 'true' : 'false')")
-    && rateController.includes("leadingControls.forEach(function(control) { control.inert = open; });")
-    && rateController.includes("if (e.key === 'Escape') { setOpen(false); if (badge) badge.focus(); return; }")
+check('Series mobile: shared Play/rate slot, 44px hit targets and cross-browser witness',
+  gillMobileBar.includes('<ReaderMobilePlayGroup engine="series" slot="top-playback" />')
+    && gillMobileBar.includes("'data-reader-mobile-speed': true")
+    && gillMobileBar.includes('<ReaderSpeedOptions id="mobileSpeedrail"')
+    && sharedPlayGroup.includes("series?'mobile-spdbadge'")
+    && sharedPlayGroup.includes("series?'mobileSpeedrail'")
+    && sharedPlayGroup.includes('reader-mobile-play')
+    && sharedSpeedSlot.includes("topbar.classList.add('speed-open')")
+    && sharedSpeedSlot.includes("rail.inert = false")
+    && sharedSpeedSlot.includes("rail.setAttribute('aria-hidden', 'true')")
+    && sharedSpeedSlot.includes("rateTrigger.setAttribute('aria-expanded', 'true')")
+    && sharedSpeedSlot.includes("window.dispatchEvent(new CustomEvent('gb:tts-rate-change'")
+    && sharedSpeedSlot.includes('suspended.forEach((element) => {')
+    && readerA11yOwner.includes("return root.classList.contains('speed-open')")
+    && readerA11yOwner.includes("alternate: '.reader-mobile-menu-trigger'")
+    && mobilePlaySmoke.includes('primary interactive targets are physical 44px boxes')
+    && mobilePlaySmoke.includes('target hardening creates no horizontal overflow')
     && rateBrowserContract.includes('speed target overlaps Play')
-    && rateBrowserContract.includes('displaced Learning button must become inert')
     && rateBrowserContract.includes('all six canonical speed choices must remain on one line')
     && rateBrowserContract.includes('dark speed popover must be opaque'));
 
