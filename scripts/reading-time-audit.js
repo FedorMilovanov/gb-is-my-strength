@@ -55,7 +55,9 @@ const COMPONENT_BODY_MIN_MDX_WORDS = 250;
 
 // Файлы, которые нельзя переписывать из общей волны: они в открытых PR
 // других агентов (см. docs/editorial-waves/READING-TIME-POLICY.md).
-const WRITE_SKIP = new Set(['serdce-spravochnik']);
+// На 13 ноября 2026 таких файлов нет: `serdce-spravochnik` выведен из-под
+// пропуска после сверки — ни одна ветка и ни один PR его не правят.
+const WRITE_SKIP = new Set();
 
 const read = (f) => fs.readFileSync(f, 'utf8');
 const readJson = (f) => JSON.parse(read(f));
@@ -153,11 +155,11 @@ function literalSurfaces(slug) {
       const taken = [];
 
       for (const m of source.matchAll(/⏱\s*(\d+)\s*мин/g)) {
-        out.push({ file: rel, line: lineAt(source, m.index), kind: 'visible', value: Number(m[1]), target: null });
+        out.push({ file: rel, line: lineAt(source, m.index), offset: m.index, kind: 'visible', value: Number(m[1]), target: null });
         taken.push([m.index, m.index + m[0].length]);
       }
       for (const m of source.matchAll(/data-pagefind-meta="readTime"[^>]*>(\d+)</g)) {
-        out.push({ file: rel, line: lineAt(source, m.index), kind: 'pagefind', value: Number(m[1]), target: null });
+        out.push({ file: rel, line: lineAt(source, m.index), offset: m.index, kind: 'pagefind', value: Number(m[1]), target: null });
         taken.push([m.index, m.index + m[0].length]);
       }
 
@@ -177,6 +179,7 @@ function literalSurfaces(slug) {
         out.push({
           file: rel,
           line: lineAt(source, at),
+          offset: at,
           kind: href ? 'card' : 'card-unresolved',
           value: Number(m[1]),
           target: href ? href[1] : null,
@@ -341,14 +344,14 @@ function writable(row) {
 function writeLiterals(report) {
   let touched = 0;
   // Карточку-ссылку переписываем только тогда, когда расчёт статьи-цели
-  // достоверен: для статей с телом в компонентах (`advisory`) ожидание
-  // по MDX неверно, и правка сделала бы хуже.
+  // достоверен: для статей с телом в компонентах ожидание по MDX неверно.
   const statusBySlug = new Map(report.rows.map((r) => [r.slug, r.status]));
   const targets = literalDriftOf(report).filter((l) => {
     if (WRITE_SKIP.has(l.slug)) return false;
     if (ONLY && !ONLY.includes(l.slug) && !(l.target && ONLY.includes(l.target))) return false;
     if (EXCLUDE && EXCLUDE.includes(l.slug)) return false;
     if (l.kind === 'card' && !['ok', 'drift'].includes(statusBySlug.get(l.target))) return false;
+    if (!Number.isFinite(l.offset)) return false;
     return true;
   });
   const byFile = new Map();
@@ -356,19 +359,24 @@ function writeLiterals(report) {
     if (!byFile.has(l.file)) byFile.set(l.file, []);
     byFile.get(l.file).push(l);
   }
+  // Правка по смещениям, а не по номерам строк: несколько карточек могут
+  // стоять на одной строке, и построчная замена чинила бы только первую.
   for (const [file, list] of byFile) {
     const abs = path.join(ROOT, file);
-    const lines = read(abs).split('\n');
-    for (const l of list) {
-      const i = l.line - 1;
-      if (i < 0 || i >= lines.length) continue;
-      const before = lines[i];
-      if (l.kind === 'visible') lines[i] = before.replace(/⏱\s*\d+\s*мин/, `⏱ ${l.expected} мин`);
-      else if (l.kind === 'pagefind') lines[i] = before.replace(/(data-pagefind-meta="readTime"[^>]*>)\d+(<)/, `$1${l.expected}$2`);
-      else lines[i] = before.replace(/((?:·\s*|~))\d+(\s*мин)/, `$1${l.expected}$2`);
-      if (lines[i] !== before) touched += 1;
+    let src = read(abs);
+    for (const l of [...list].sort((a, b) => b.offset - a.offset)) {
+      const head = src.slice(0, l.offset);
+      const tail = src.slice(l.offset);
+      let next = tail;
+      if (l.kind === 'visible') next = tail.replace(/^⏱\s*\d+\s*мин/, `⏱ ${l.expected} мин`);
+      else if (l.kind === 'pagefind') next = tail.replace(/^(data-pagefind-meta="readTime"[^>]*>)\d+</, `$1${l.expected}<`);
+      else next = tail.replace(/^((?:·\s*|~))\d+(\s*мин)/, `$1${l.expected}$2`);
+      if (next !== tail) {
+        src = head + next;
+        touched += 1;
+      }
     }
-    fs.writeFileSync(abs, lines.join('\n'));
+    fs.writeFileSync(abs, src);
   }
   return touched;
 }

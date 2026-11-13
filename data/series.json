@@ -49,42 +49,42 @@
         "slug": "dzhon-gill-istoricheskiy-kontekst",
         "title": "Исторический контекст",
         "status": "published",
-        "readingTime": 28
+        "readingTime": 32
       },
       {
         "n": 2,
         "slug": "dzhon-gill-chast-1-chelovek",
         "title": "Часть I. Человек",
         "status": "published",
-        "readingTime": 32
+        "readingTime": 28
       },
       {
         "n": 3,
         "slug": "dzhon-gill-chast-2-uchenyi",
         "title": "Часть II. Учёный",
         "status": "published",
-        "readingTime": 39
+        "readingTime": 42
       },
       {
         "n": 4,
         "slug": "dzhon-gill-chast-4-ekzeget",
         "title": "Часть III. Экзегет",
         "status": "published",
-        "readingTime": 71
+        "readingTime": 23
       },
       {
         "n": 5,
         "slug": "dzhon-gill-chast-3-nasledie",
         "title": "Часть IV. Наследие",
         "status": "published",
-        "readingTime": 54
+        "readingTime": 56
       },
       {
         "n": 6,
         "slug": "dzhon-gill-spravochnik",
         "title": "Справочник по Гиллу",
         "status": "published",
-        "readingTime": 15
+        "readingTime": 18
       }
     ]
   },
@@ -206,7 +206,7 @@
         "slug": "serdce-spravochnik",
         "title": "Сердце: библейский справочник",
         "status": "published",
-        "readingTime": 23
+        "readingTime": 13
       }
     ]
   },
