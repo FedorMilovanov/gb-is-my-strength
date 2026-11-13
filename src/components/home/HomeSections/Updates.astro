@@ -4,11 +4,7 @@ import { publishedEditorialUpdates, editorialDate, EDITORIAL_UPDATE_LABELS } fro
 
 const recent = publishedEditorialUpdates.slice(0, 5);
 const kinds = [...new Set(recent.map((item) => item.kind))];
-const coverFor = (id: string, index: number) => {
-  const n = id === 'lawson-2026-11-13-elders-letter' ? 1 :
-    id === 'lawson-2026-11-13-bachmann-appeal' ? 4 : (index % 10) + 1;
-  return '/images/editorial/archive-' + String(n).padStart(2, '0') + '.webp';
-};
+
 ---
 {recent.length > 0 && (
   <section class="h-section h-reveal h-scroll-target" id="obnovleniya-issledovaniy" aria-labelledby="hUpdatesTitle" data-pagefind-ignore>
@@ -37,7 +33,7 @@ const coverFor = (id: string, index: number) => {
             <article class="ed-archive-entry" data-ed-entry data-ed-kind={item.kind}
               role="group" aria-roledescription="слайд" aria-label={item.headline}>
               <div class="ed-archive-art">
-                <img src={coverFor(item.id, index)} width="1100" height="733" alt=""
+                <img src={'/images/editorial/' + item.artwork} width="1100" height="733" alt=""
                   loading="lazy" decoding="async" />
                 <span>Художественная иллюстрация</span>
               </div>
@@ -241,7 +237,7 @@ const coverFor = (id: string, index: number) => {
       if (isMobile()) {
         viewport.scrollTo({
           left: visible[active].offsetLeft - visible[0].offsetLeft,
-          behavior: smooth && !window.matchMedia('(prefers-reduced-motion:reduce)').matches ? 'smooth' : 'instant'
+          behavior: smooth && !window.matchMedia('(prefers-reduced-motion:reduce)').matches ? 'smooth' : 'auto'
         });
       }
       repaint();

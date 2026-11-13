@@ -1,10 +1,11 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import EditorialUpdateCard from '@/components/editorial/EditorialUpdateCard.astro';
-import { publishedEditorialUpdates } from '@/lib/editorial-updates';
+import { publishedEditorialUpdates, EDITORIAL_UPDATE_LABELS } from '@/lib/editorial-updates';
 import { SITE } from '@/data/site';
 const title = 'Обновления исследований | Господь Бог — Сила Моя';
 const description = 'История содержательных дополнений, новых источников и исправлений опубликованных богословских исследований.';
+const updateKinds = [...new Set(publishedEditorialUpdates.map((update) => update.kind))];
 ---
 <BaseLayout
   title={title}
@@ -13,18 +14,36 @@ const description = 'История содержательных дополне�
   robots="index, follow"
   mainClass="astro-main astro-main--editorial-updates"
 >
-  <div class="editorial-updates-page">
+  <div class="editorial-updates-page" data-pagefind-body>
     <nav aria-label="Хлебные крошки"><a href="/">Главная</a><span aria-hidden="true"> / </span><span>Обновления исследований</span></nav>
     <header>
       <p class="editorial-updates-page__eyebrow">Редакционная хроника</p>
       <h1>Обновления исследований</h1>
       <p>На этой странице собраны только содержательные изменения уже опубликованных работ: новые проверяемые свидетельства, исправления фактических ошибок и пересмотр выводов. Опечатки и технические правки сюда не попадают. Первоначальные адреса статей остаются прежними.</p>
     </header>
-    <section aria-label="Опубликованные обновления">
+    <section aria-label="Опубликованные обновления" data-update-archive>
       {publishedEditorialUpdates.length ? (
-        <div class="editorial-updates-page__list">
-          {publishedEditorialUpdates.map((update) => <EditorialUpdateCard update={update} />)}
-        </div>
+        <>
+          <div class="editorial-updates-page__filters" role="group" aria-label="Типы обновлений">
+            <button type="button" data-update-filter="all" aria-pressed="true">Все</button>
+            {updateKinds.map((kind) => (
+              <button type="button" data-update-filter={kind} aria-pressed="false">{EDITORIAL_UPDATE_LABELS[kind]}</button>
+            ))}
+          </div>
+          <div class="editorial-updates-page__list" data-update-list
+            role="region" aria-label="Листаемый архив обновлений" tabindex="0">
+            {publishedEditorialUpdates.map((update) => (
+              <div class="editorial-updates-page__slide" data-update-entry data-update-kind={update.kind}>
+                <EditorialUpdateCard update={update} illustrated />
+              </div>
+            ))}
+          </div>
+          <div class="editorial-updates-page__controls" aria-label="Навигация по архиву">
+            <button type="button" data-update-prev aria-label="Предыдущая запись" disabled>‹</button>
+            <span data-update-counter aria-live="polite" aria-atomic="true">1 / {publishedEditorialUpdates.length}</span>
+            <button type="button" data-update-next aria-label="Следующая запись">›</button>
+          </div>
+        </>
       ) : <p>Пока нет опубликованных содержательных обновлений.</p>}
     </section>
     <p class="editorial-updates-page__principle">Для каждого обновления указаны дата и ссылка на конкретное дополнение в статье. Если источник ещё не подтверждён, степень его достоверности обозначается непосредственно в исследовании.</p>
@@ -39,6 +58,7 @@ const description = 'История содержательных дополне�
     --ed-border: rgba(69, 91, 90, .18);
     display: block;
     box-sizing: border-box;
+    min-width: 0; /* flex-shell main must shrink below its min-content width */
     width: 100%;
     max-width: none;
     min-height: 70vh;
@@ -73,11 +93,151 @@ const description = 'История содержательных дополне�
     font: 400 clamp(16px,1.8vw,20px)/1.7 var(--f-body,Georgia,serif);
     color:var(--ed-muted); text-align:left;
   }
-  .editorial-updates-page__list { display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); align-items:stretch; gap:clamp(14px,2vw,25px); }
+  .editorial-updates-page__filters {
+    display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;
+  }
+  .editorial-updates-page__filters button {
+    flex:0 0 auto; padding:10px 15px; border-radius:999px;
+    border:1px solid var(--ed-border); background:var(--ed-card);
+    color:var(--ed-ink); font:650 13px/1.35 var(--f-ui,system-ui,sans-serif);
+    cursor:pointer;
+  }
+  .editorial-updates-page__filters button[aria-pressed="true"] {
+    background:var(--ed-ink); border-color:var(--ed-ink); color:var(--ed-card);
+  }
+  .editorial-updates-page__list {
+    display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+    align-items:stretch; gap:clamp(14px,2vw,25px);
+  }
+  .editorial-updates-page__slide { display:flex; min-width:0; }
+  .editorial-updates-page__slide[hidden] { display:none!important; }
+  .editorial-updates-page__slide > .editorial-update-card { flex:1; }
+  .editorial-updates-page__controls { display:none; }
+  .editorial-updates-page__filters button:focus-visible,
+  .editorial-updates-page__controls button:focus-visible,
+  .editorial-updates-page__list:focus-visible {
+    outline:3px solid var(--ed-accent); outline-offset:3px;
+  }
   .editorial-updates-page__principle { margin:clamp(30px,4vw,50px) 0 0; font:400 14px/1.75 var(--f-ui,system-ui,sans-serif); color:var(--ed-muted); max-width:770px; text-align:left; }
   .editorial-updates-page a:focus-visible { outline:2px solid currentColor; outline-offset:4px; }
   @media (max-width:740px) {
-    .editorial-updates-page__list { grid-template-columns: 1fr; }
-    .editorial-updates-page nav { margin-bottom: 38px; }
+    .editorial-updates-page nav { margin-bottom:38px; }
+    .editorial-updates-page__filters {
+      flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none;
+      white-space:nowrap; padding:3px 2px 14px;
+    }
+    .editorial-updates-page__filters::-webkit-scrollbar { display:none; }
+    .editorial-updates-page__list {
+      display:flex; flex-wrap:nowrap; gap:12px; overflow-x:auto;
+      overscroll-behavior-x:contain; scroll-snap-type:x mandatory;
+      -webkit-overflow-scrolling:touch; scrollbar-width:none;
+    }
+    .editorial-updates-page__list::-webkit-scrollbar { display:none; }
+    .editorial-updates-page__slide {
+      flex:0 0 100%; scroll-snap-align:start; scroll-snap-stop:always;
+    }
+    .editorial-updates-page__controls {
+      display:flex; align-items:center; justify-content:center;
+      gap:18px; margin-top:18px;
+    }
+    .editorial-updates-page__controls button {
+      min-width:44px; min-height:44px; border-radius:50%;
+      border:1px solid var(--ed-border); background:var(--ed-card);
+      color:var(--ed-ink); font-size:27px; line-height:1; cursor:pointer;
+    }
+    .editorial-updates-page__controls button:disabled { opacity:.38; cursor:default; }
+    .editorial-updates-page__controls span {
+      min-width:44px; text-align:center; color:var(--ed-muted);
+      font:700 13px/1.4 var(--f-ui,system-ui,sans-serif);
+      font-variant-numeric:tabular-nums;
+    }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    .editorial-updates-page__list { scroll-behavior:auto!important; }
   }
 </style>
+<script is:inline>
+  (() => {
+    const root = document.querySelector('[data-update-archive]');
+    if (!root || root.dataset.archiveReady === '1') return;
+    root.dataset.archiveReady = '1';
+
+    const viewport = root.querySelector('[data-update-list]');
+    const slides = Array.from(root.querySelectorAll('[data-update-entry]'));
+    const filters = Array.from(root.querySelectorAll('[data-update-filter]'));
+    const prev = root.querySelector('[data-update-prev]');
+    const next = root.querySelector('[data-update-next]');
+    const counter = root.querySelector('[data-update-counter]');
+    if (!viewport || !slides.length || !prev || !next || !counter) return;
+
+    let shown = slides.slice();
+    let active = 0;
+    const mobile = () => window.matchMedia('(max-width:740px)').matches;
+    const reducedMotion = () => window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+    function paint() {
+      counter.textContent = (shown.length ? active + 1 : 0) + ' / ' + shown.length;
+      prev.disabled = !mobile() || active <= 0;
+      next.disabled = !mobile() || active >= shown.length - 1;
+      if (mobile()) viewport.setAttribute('aria-roledescription', 'карусель');
+      else viewport.removeAttribute('aria-roledescription');
+    }
+
+    function goto(index, animate = true) {
+      if (!shown.length) return;
+      active = Math.max(0, Math.min(shown.length - 1, index));
+      if (mobile()) {
+        viewport.scrollTo({
+          left: shown[active].offsetLeft - shown[0].offsetLeft,
+          behavior: animate && !reducedMotion() ? 'smooth' : 'auto',
+        });
+      }
+      paint();
+    }
+
+    prev.addEventListener('click', () => goto(active - 1));
+    next.addEventListener('click', () => goto(active + 1));
+    viewport.addEventListener('keydown', (event) => {
+      if (!mobile()) return;
+      if (event.key === 'ArrowRight') { event.preventDefault(); goto(active + 1); }
+      if (event.key === 'ArrowLeft') { event.preventDefault(); goto(active - 1); }
+    });
+
+    let scheduled = false;
+    viewport.addEventListener('scroll', () => {
+      if (!mobile() || scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(() => {
+        scheduled = false;
+        if (!shown.length) return;
+        const left = viewport.getBoundingClientRect().left;
+        let winner = 0;
+        let distance = Infinity;
+        shown.forEach((slide, index) => {
+          const candidate = Math.abs(slide.getBoundingClientRect().left - left);
+          if (candidate < distance) { distance = candidate; winner = index; }
+        });
+        active = winner;
+        paint();
+      });
+    }, { passive: true });
+
+    filters.forEach((filter) => filter.addEventListener('click', () => {
+      const selected = filter.dataset.updateFilter;
+      filters.forEach((button) =>
+        button.setAttribute('aria-pressed', String(button === filter)));
+      shown = slides.filter((slide) =>
+        selected === 'all' || slide.dataset.updateKind === selected);
+      slides.forEach((slide) => { slide.hidden = !shown.includes(slide); });
+      viewport.scrollLeft = 0;
+      active = 0;
+      paint();
+    }));
+
+    window.addEventListener('resize', () => {
+      if (!mobile()) active = 0;
+      paint();
+    }, { passive: true });
+    paint();
+  })();
+</script>

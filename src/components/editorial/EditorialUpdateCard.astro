@@ -1,10 +1,17 @@
 ---
 import type { EditorialUpdate } from '@/lib/editorial-updates';
 import { editorialDate, EDITORIAL_UPDATE_LABELS } from '@/lib/editorial-updates';
-interface Props { update: EditorialUpdate; compact?: boolean; }
-const { update, compact = false } = Astro.props;
+interface Props { update: EditorialUpdate; compact?: boolean; illustrated?: boolean; }
+const { update, compact = false, illustrated = false } = Astro.props;
 ---
-<article class:list={['editorial-update-card', { 'editorial-update-card--compact': compact }]}>
+<article class:list={['editorial-update-card', { 'editorial-update-card--compact': compact, 'editorial-update-card--illustrated': illustrated }]}>
+  {illustrated && (
+    <div class="editorial-update-card__art">
+      <img src={'/images/editorial/' + update.artwork} width="1100" height="733"
+        loading="lazy" decoding="async" alt="" />
+      <span>Художественная иллюстрация</span>
+    </div>
+  )}
   <div class="editorial-update-card__meta">
     <time datetime={update.date}>{editorialDate(update.date)}</time>
     <span aria-hidden="true">·</span>
@@ -20,12 +27,31 @@ const { update, compact = false } = Astro.props;
     min-width: 0;
     border: 1px solid var(--ed-border, rgba(50, 80, 78, .17));
     border-radius: 16px;
-    padding: clamp(18px, 2.2vw, 27px);
+    --ed-card-padding: clamp(18px, 2.2vw, 27px);
+    padding: var(--ed-card-padding);
     color: var(--ed-ink, #203038);
     text-align: left;
     background: var(--ed-card, #fffdf8);
     box-shadow: 0 14px 42px -38px rgba(4, 23, 26, .5);
     overflow-wrap: anywhere;
+    overflow: hidden;
+  }
+  .editorial-update-card__art {
+    position:relative; margin:calc(-1 * var(--ed-card-padding)) calc(-1 * var(--ed-card-padding)) 21px;
+    height:clamp(180px,23vw,244px); overflow:hidden;
+    background:#382b20;
+  }
+  .editorial-update-card__art img {
+    display:block; width:100%; height:100%; object-fit:cover;
+  }
+  .editorial-update-card__art span {
+    position:absolute; bottom:10px; right:10px;
+    padding:5px 8px; border-radius:4px;
+    background:rgba(12,17,16,.82); color:#fffaee;
+    font:650 10px/1.4 var(--f-ui,system-ui,sans-serif);
+  }
+  @media(max-width:740px) {
+    .editorial-update-card__art { height:clamp(180px,55vw,232px); }
   }
   .editorial-update-card__meta {
     display: flex; flex-wrap: wrap; align-items: center; gap: 7px;

@@ -10,6 +10,7 @@ export type EditorialUpdateKind = 'new-evidence' | 'correction' | 'expanded' | '
 
 interface RawEditorialUpdate {
   id: string;
+  artwork: string;
   status: 'draft' | 'published';
   articleUrl: string;
   date: string;
@@ -49,6 +50,9 @@ export const publishedEditorialUpdates: EditorialUpdate[] = (ledger.entries as R
     }
     if (!/^[a-z0-9-]+$/.test(entry.anchor) || !entry.articleUrl.startsWith('/') || !entry.articleUrl.endsWith('/')) {
       throw new Error(`Неверный URL или якорь редакционного обновления: ${entry.id}`);
+    }
+    if (!/^archive-(?:0[1-9]|10)\.webp$/.test(entry.artwork)) {
+      throw new Error(`Недопустимая архивная иллюстрация: ${entry.id}`);
     }
     if (!EDITORIAL_UPDATE_LABELS[entry.kind] || !entry.summary.trim() || !entry.headline.trim()) {
       throw new Error(`Незаполнено редакционное обновление: ${entry.id}`);
