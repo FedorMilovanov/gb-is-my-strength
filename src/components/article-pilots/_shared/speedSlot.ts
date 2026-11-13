@@ -47,22 +47,54 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
   let offeredThisSession = false;
   let closeTimer: number | undefined;
   let choiceCloseTimer: number | undefined;
+  const lifecycle = new AbortController();
+  const observed: MutationObserver[] = [];
+  // Astro swaps only the DOM; document/window listeners otherwise survive
+  // and compete with the new reader controller on the next route.
+  document.addEventListener('astro:before-swap', () => {
+    if (topbar.classList.contains('speed-open')) close();
+    clearTimeout(closeTimer);
+    clearTimeout(choiceCloseTimer);
+    observed.forEach((observer) => observer.disconnect());
+    delete topbar.dataset.readerSpeedBound;
+    lifecycle.abort();
+  }, { once: true, signal: lifecycle.signal });
 
+  const allowedRates = chips.map((chip) => Number(chip.dataset.speed))
+    .filter((rate) => Number.isFinite(rate) && rate > 0);
+  const defaultRate = allowedRates.includes(1) ? 1 : (allowedRates[0] ?? 1);
+  const ratePolicy = () => (window as typeof window & {
+    GBReaderRatePolicy?: {
+      normalize: (value: unknown) => number | null;
+      read: () => number;
+      persist: (value: unknown) => number | null;
+    };
+  }).GBReaderRatePolicy;
+  function validRate(raw: unknown): number | null {
+    const value = Number(raw);
+    if (raw === null || raw === undefined || String(raw).trim() === '') return null;
+    if (value === 0.8 && allowedRates.includes(0.75)) return 0.75;
+    return Number.isFinite(value) && allowedRates.includes(value) ? value : null;
+  }
   function fmt(r: number): string { return String(r).replace(/\.0$/, '') + '×'; }
   function readRate(): number {
     try {
-      const r = parseFloat(localStorage.getItem('gb:audio:rate') || localStorage.getItem('gbx-tts-rate') || '1');
-      // Legacy Gill saved 0.8×; the approved sitewide scale starts at 0.75×.
-      return (!isNaN(r) && r > 0) ? (r === 0.8 ? 0.75 : r) : 1;
-    } catch (_) { return 1; }
+      const policyRate = ratePolicy()?.read();
+      if (validRate(policyRate) !== null) return policyRate as number;
+      const rate = validRate(localStorage.getItem('gb:audio:rate')) ??
+        validRate(localStorage.getItem('gbx-tts-rate')) ?? defaultRate;
+      localStorage.setItem('gb:audio:rate', String(rate));
+      localStorage.setItem('gbx-tts-rate', String(rate));
+      return rate;
+    } catch (_) { return defaultRate; }
   }
-  function syncActive(rate: number) {
-    chips.forEach((c) => {
-      const on = parseFloat(c.dataset.speed || '1') === rate;
-      c.setAttribute('aria-checked', on ? 'true' : 'false');
+  function syncActive(rawRate: number) {
+    const rate = validRate(rawRate) ?? defaultRate;
+    chips.forEach((chip) => {
+      chip.setAttribute('aria-checked', Number(chip.dataset.speed) === rate ? 'true' : 'false');
     });
-    (badge as HTMLElement).textContent = fmt(rate);
-    (badge as HTMLElement).setAttribute('aria-label', 'Выбрать скорость, сейчас ' + fmt(rate));
+    rateTrigger.textContent = fmt(rate);
+    rateTrigger.setAttribute('aria-label', 'Выбрать скорость, сейчас ' + fmt(rate));
   }
   syncActive(readRate());
   // Opacity alone does not remove speed buttons from keyboard navigation.
@@ -104,14 +136,16 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
   }
 
   let prevState = ember.dataset.state || 'idle';
-  new MutationObserver(() => {
+  const stateObserver = new MutationObserver(() => {
     const state = ember.dataset.state || 'idle';
     if (state === 'playing' && (prevState === 'idle' || prevState === 'complete') && !offeredThisSession) {
       offeredThisSession = true;
       open(true);
     }
     prevState = state;
-  }).observe(ember, { attributes: true, attributeFilter: ['data-state'] });
+  });
+  stateObserver.observe(ember, { attributes: true, attributeFilter: ['data-state'] });
+  observed.push(stateObserver);
 
   // WebKit does not consistently focus a button after a synthetic or real
   // touch tap. Escape must dismiss an open speed picker even when focus stays
@@ -120,17 +154,18 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
     if (e.key === 'Escape' && topbar.classList.contains('speed-open')) {
       e.preventDefault(); close(); rateTrigger.focus({ preventScroll: true });
     }
-  });
+  }, { signal: lifecycle.signal });
 
   badge.addEventListener('click', (e: MouseEvent) => {
     e.preventDefault(); e.stopPropagation();
     topbar.classList.contains('speed-open') ? close() : open(false);
-  });
+  }, { signal: lifecycle.signal });
 
   chips.forEach((chip) => {
     chip.addEventListener('click', (e: MouseEvent) => {
       e.stopPropagation();
-      const rate = parseFloat(chip.dataset.speed || '1');
+      const rate = validRate(chip.dataset.speed);
+      if (rate === null) return;
       syncActive(rate);
       badge.classList.remove('is-bump'); void badge.offsetWidth; badge.classList.add('is-bump');
       // C3: keep live playback uninterrupted; only non-playing states wait
@@ -138,32 +173,36 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
       const activeReading = ember.dataset.state === 'playing' || ember.dataset.state === 'starting';
       if (activeReading) delete ember.dataset.speedConfirm;
       else ember.dataset.speedConfirm = 'true';
-      try {
-        localStorage.setItem('gb:audio:rate', String(rate));
-        localStorage.setItem('gbx-tts-rate', String(rate));
-      } catch (_) {}
-      window.dispatchEvent(new CustomEvent('gb:tts-rate-change', { detail: { rate: rate } }));
+      if (!ratePolicy()?.persist(rate)) {
+        try {
+          localStorage.setItem('gb:audio:rate', String(rate));
+          localStorage.setItem('gbx-tts-rate', String(rate));
+        } catch (_) {}
+        window.dispatchEvent(new CustomEvent('gb:tts-rate-change', { detail: { rate } }));
+      }
       choiceCloseTimer = window.setTimeout(close, 220);
-    });
+    }, { signal: lifecycle.signal });
   });
 
-  new MutationObserver(() => {
+  const speedConfirmObserver = new MutationObserver(() => {
     if (ember.dataset.state === 'playing') delete ember.dataset.speedConfirm;
-  }).observe(ember, { attributes: true, attributeFilter: ['data-state'] });
+  });
+  speedConfirmObserver.observe(ember, { attributes: true, attributeFilter: ['data-state'] });
+  observed.push(speedConfirmObserver);
 
   window.addEventListener('gb:tts-rate-change', ((ev: CustomEvent) => {
     const r = ev && ev.detail && ev.detail.rate;
-    if (typeof r === 'number' && !isNaN(r)) syncActive(r);
-  }) as EventListener);
+    if (validRate(r) !== null) syncActive(r);
+  }) as EventListener, { signal: lifecycle.signal });
 
   document.addEventListener('pointerdown', (e: PointerEvent) => {
     if (topbar.classList.contains('speed-open') && !topbar.contains(e.target as Node)) close();
-  }, { passive: true });
+  }, { passive: true, signal: lifecycle.signal });
 
   let dragging = false, startX = 0, startScroll = 0, moved = false, pid: number | null = null;
   speedrail.addEventListener('pointerdown', (e: PointerEvent) => {
     dragging = true; moved = false; startX = e.clientX; startScroll = (speedrail as HTMLElement).scrollLeft; pid = e.pointerId;
-  });
+  }, { signal: lifecycle.signal });
   speedrail.addEventListener('pointermove', (e: PointerEvent) => {
     if (!dragging || e.pointerId !== pid) return;
     const dx = e.clientX - startX;
@@ -173,20 +212,20 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
       try { (speedrail as HTMLElement).setPointerCapture(pid); } catch (_) {}
     }
     if (moved) (speedrail as HTMLElement).scrollLeft = startScroll - dx;
-  });
+  }, { signal: lifecycle.signal });
   function endDrag(e: PointerEvent) {
     if (!dragging || (pid !== null && e.pointerId !== pid)) return;
     dragging = false; pid = null;
     (speedrail as HTMLElement).classList.remove('is-dragging');
   }
-  speedrail.addEventListener('pointerup', endDrag);
-  speedrail.addEventListener('pointercancel', endDrag);
-  speedrail.addEventListener('click', (e: MouseEvent) => { if (moved) { e.stopPropagation(); moved = false; } }, true);
+  speedrail.addEventListener('pointerup', endDrag, { signal: lifecycle.signal });
+  speedrail.addEventListener('pointercancel', endDrag, { signal: lifecycle.signal });
+  speedrail.addEventListener('click', (e: MouseEvent) => { if (moved) { e.stopPropagation(); moved = false; } }, { capture: true, signal: lifecycle.signal });
 
   // Search field in the same slot: focusing it closes the speed rail
   // (same UX as the reference — search.addEventListener('focus', closeSpeeds)).
   if (sel.searchInput) {
     const searchInput = topbar.querySelector(sel.searchInput) as HTMLInputElement | null;
-    if (searchInput) searchInput.addEventListener('focus', () => close());
+    if (searchInput) searchInput.addEventListener('focus', () => close(), { signal: lifecycle.signal });
   }
 }

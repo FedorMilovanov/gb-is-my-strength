@@ -38,6 +38,10 @@
   }
 
   function persistRate(rate) {
+    // The keyboard adapter owns arrow-key navigation, not the rate policy.
+    // Persist and broadcast through the same owner as pointer chip selection.
+    if (window.GBReaderRatePolicy?.persist(rate) != null) return;
+    if (![0.75, 1, 1.25, 1.5, 1.75, 2].includes(rate)) return;
     try {
       localStorage.setItem('gb:audio:rate', String(rate));
       localStorage.setItem('gbx-tts-rate', String(rate));
@@ -63,6 +67,7 @@
       inert: alternate.hasAttribute('inert') || Boolean(alternate.inert),
       tabIndex: alternate.getAttribute('tabindex'),
     } : null;
+    const lifecycle = new AbortController();
     let scheduled = false;
     let keyboardHideRequested = false;
     let keyboardCollapsed = false;
@@ -184,7 +189,7 @@
 
     badge.addEventListener('click', scheduleSync);
     rail.addEventListener('pointerup', scheduleSync);
-    window.addEventListener('gb:tts-rate-change', scheduleSync);
+    window.addEventListener('gb:tts-rate-change', scheduleSync, { signal: lifecycle.signal });
 
     const observer = new MutationObserver(scheduleSync);
     observer.observe(root, { attributes: true, attributeFilter: ['class'] });
@@ -194,7 +199,14 @@
       attributeFilter: ['aria-hidden', 'aria-checked', 'tabindex', 'class'],
     });
 
-    const record = { root, rail, badge, alternate, chips, sync, observer, kind: config.kind };
+    const record = {
+      root, rail, badge, alternate, chips, sync, observer, kind: config.kind,
+      dispose() {
+        lifecycle.abort();
+        observer.disconnect();
+        root.removeAttribute(BOUND_ATTR);
+      },
+    };
     slots.add(record);
     sync();
   }
@@ -263,7 +275,7 @@
 
   function bindSurfaceRelations() {
     [
-      { trigger: '#hmBottomBtn, #hmSectionBtn', target: '#hmSheet', fallbackId: 'hmSheet', popup: 'dialog' },
+      { trigger: '#hmBottomBtn, #hmSectionBtn, .hmtop [data-reader-mobile-menu-target="hmSectionBtn"]', target: '#hmSheet', fallbackId: 'hmSheet', popup: 'dialog' },
       { trigger: '#hmSettingsBtn, #hrailSettingsBtn, #gbFcSettings', target: '#hmSettings', fallbackId: 'hmSettings', popup: 'dialog' },
       { trigger: '#mobPartTocBtn, .mobile-top-bar [data-reader-mobile-menu-target="mobPartTocBtn"]', target: '#partTocOverlay', fallbackId: 'partTocOverlay', popup: 'dialog' },
       { trigger: '#mobTocBtn', target: '#seriesTocOverlay', fallbackId: 'seriesTocOverlay', popup: 'dialog' },
@@ -287,7 +299,12 @@
   function refresh() {
     bindSlots();
     bindSurfaceRelations();
-    slots.forEach((slot) => slot.sync());
+    slots.forEach((slot) => {
+      if (!slot.root.isConnected) {
+        slot.dispose();
+        slots.delete(slot);
+      } else slot.sync();
+    });
     surfaceRelations.forEach((relation, target) => {
       if (!target.isConnected) {
         relation.observer?.disconnect();
@@ -305,6 +322,14 @@
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
   else init();
+  document.addEventListener('astro:before-swap', () => {
+    // Do not retain detached speed controls across Astro client navigation.
+    // Each surviving relation is rediscovered by the next page-load event.
+    slots.forEach((slot) => slot.dispose());
+    slots.clear();
+    surfaceRelations.forEach((record) => record.observer?.disconnect());
+    surfaceRelations.clear();
+  });
   document.addEventListener('astro:page-load', init);
   window.addEventListener('pageshow', refresh);
 

@@ -16,6 +16,12 @@ on:
       - "scripts/reader-speedrail-ssr-focus-browser-test.mjs"
       - "scripts/shared-play-and-series-number-browser-contract.cjs"
       - "scripts/reader-mobile-canonical-browser-contract.cjs"
+      - "src/components/article-pilots/_shared/speedSlot.ts"
+      - "src/components/article-pilots/_shared/ReaderMobileMenuTrigger.astro"
+      - "src/runtime/reader-tts-defaults.js"
+      - "src/runtime/reader-tts.js"
+      - "scripts/reader-speed-preferences-contract.cjs"
+      - "scripts/reader-speed-persistence-browser-contract.mjs"
       - "js/floating-cluster-controller.js"
       - "css/floating-cluster.css"
       - "css/site.css"
@@ -35,6 +41,12 @@ on:
       - "scripts/reader-speedrail-ssr-focus-browser-test.mjs"
       - "scripts/shared-play-and-series-number-browser-contract.cjs"
       - "scripts/reader-mobile-canonical-browser-contract.cjs"
+      - "src/components/article-pilots/_shared/speedSlot.ts"
+      - "src/components/article-pilots/_shared/ReaderMobileMenuTrigger.astro"
+      - "src/runtime/reader-tts-defaults.js"
+      - "src/runtime/reader-tts.js"
+      - "scripts/reader-speed-preferences-contract.cjs"
+      - "scripts/reader-speed-persistence-browser-contract.mjs"
       - "js/floating-cluster-controller.js"
       - "css/floating-cluster.css"
       - "css/site.css"
@@ -84,6 +96,11 @@ jobs:
           node --check scripts/reader-library-premium-browser-contract.cjs
           node --check scripts/shared-play-and-series-number-browser-contract.cjs
           node --check scripts/reader-mobile-canonical-browser-contract.cjs
+          node --check src/runtime/reader-tts-defaults.js
+          node --check src/runtime/reader-tts.js
+          node --check scripts/reader-speed-preferences-contract.cjs
+          node --check scripts/reader-speed-persistence-browser-contract.mjs
+          node scripts/reader-speed-preferences-contract.cjs
           node --check js/floating-cluster-controller.js
           grep -F "import '../../runtime/reader-controls-a11y.js';" src/components/reader-platform/ReaderActionsRuntime.astro
           ! grep -q "GBReaderProjection\|FavoriteStore" src/runtime/reader-controls-a11y.js
@@ -103,6 +120,7 @@ jobs:
           node scripts/reader-library-premium-browser-contract.cjs 2>&1 | tee reports/reader-library-premium-browser-contract.log
           node scripts/shared-play-and-series-number-browser-contract.cjs 2>&1 | tee reports/shared-play-and-series-number-browser-contract.log
           node scripts/reader-mobile-canonical-browser-contract.cjs 2>&1 | tee reports/reader-mobile-canonical-browser-contract.log
+          node scripts/reader-speed-persistence-browser-contract.mjs 2>&1 | tee reports/reader-speed-persistence-browser-contract.log
 
       - name: Upload exact evidence
         if: always()
@@ -123,6 +141,8 @@ jobs:
             reports/reader-library-premium-browser-contract.log
             reports/shared-play-and-series-number-browser-contract.log
             reports/reader-mobile-canonical-browser-contract.log
+            reports/reader-speed-persistence-browser-contract.log
+            reports/reader-p1-menu-*.png
             reports/reader-library-premium/*.png
           if-no-files-found: warn
           retention-days: 14

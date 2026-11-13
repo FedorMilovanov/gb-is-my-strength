@@ -79,8 +79,11 @@
 
   function readRate() {
     try {
+      if (window.GBReaderRatePolicy?.read) return window.GBReaderRatePolicy.read();
+      // Standalone TTS fixtures can omit the preference bootstrap.
       const value = Number(localStorage.getItem(RATE_KEY));
-      return Number.isFinite(value) ? clamp(value, 0.6, 2) : 1;
+      return [0.75, 1, 1.25, 1.5, 1.75, 2].includes(value)
+        ? value : value === 0.8 ? 0.75 : 1;
     } catch {
       return 1;
     }

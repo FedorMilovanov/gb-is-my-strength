@@ -23,10 +23,21 @@ const { targetId }=Astro.props as Props;
     document.querySelectorAll<HTMLButtonElement>('[data-reader-mobile-menu-target]').forEach(btn=>{
       if(btn.dataset.readerMobileMenuBound==='1')return;
       btn.dataset.readerMobileMenuBound='1';
+      let pendingRestorer: (()=>void)|null=null;
       btn.addEventListener('click',()=>{
         const id=btn.dataset.readerMobileMenuTarget;
         const target=id&&document.getElementById(id);
-        if(target instanceof HTMLElement)target.click();
+        if(!(target instanceof HTMLElement))return;
+        // Keep the original TOC controller as the only modal state owner.
+        // The lower bar's canonical trigger is a transport, not the user's
+        // opener: return focus to the visible button after Escape/backdrop.
+        if(pendingRestorer) target.removeEventListener('focus',pendingRestorer);
+        pendingRestorer=()=>{
+          pendingRestorer=null;
+          if(btn.isConnected) queueMicrotask(()=>btn.isConnected&&btn.focus({preventScroll:true}));
+        };
+        target.addEventListener('focus',pendingRestorer,{once:true});
+        target.click();
       });
     });
   }
