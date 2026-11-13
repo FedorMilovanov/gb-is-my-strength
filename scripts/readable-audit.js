@@ -239,13 +239,16 @@ for (const f of publicationHtmlFiles) {
     const m = text.match(rx);
     if (m) fail(kind, rel(f), m[0]);
   }
-  for (const hit of findMixedScriptTokens(sanitizeMarkupForMixedScript(rawHtml))) {
-    fail('fatal-cyrillic-latin-glue', rel(f), hit.token);
-  }
   if (builtDistSet.has(f)) {
+    for (const hit of findMixedScriptTokens(sanitizeMarkupForMixedScript(rawHtml))) {
+      fail('fatal-cyrillic-latin-glue', rel(f), hit.token);
+    }
     for (const untagged of auditLanguageOfPartsHtml(rawHtml)) {
       fail('untagged-language-of-parts', rel(f), `<${untagged.parentTag} lang="${untagged.inheritedLang}">: ${untagged.sample}`);
     }
+  } else {
+    const legacyGlue = text.match(/[А-Яа-яЁё][A-Za-z]{3,}|[A-Za-z]{3,}[А-Яа-яЁё]/);
+    if (legacyGlue) fail('fatal-cyrillic-latin-glue', rel(f), legacyGlue[0]);
   }
 }
 
