@@ -111,5 +111,60 @@ import SiteSectionsMenu from '@/components/article-pilots/_shared/SiteSectionsMe
 
       </div>
     </div>
+    <style is:global>
+      @media print {
+        #hNavbar,
+        .h-navbar,
+        .mobile-chrome,
+        [data-mobile-chrome],
+        .gb-sections-sheet,
+        .gb-sections-backdrop,
+        .gb-accuracy-block,
+        .theme-toggle,
+        .skip-link,
+        footer.h-footer {
+          display: none !important;
+        }
+
+        .bio-cover {
+          aspect-ratio: auto !important;
+          box-shadow: none !important;
+          background: transparent !important;
+          break-inside: avoid-page;
+          page-break-inside: avoid;
+        }
+
+        .bio-cover::after {
+          display: none !important;
+        }
+
+        .bio-cover img,
+        .bio-cover picture {
+          position: static !important;
+          width: 100% !important;
+          height: auto !important;
+          max-height: 72mm;
+          object-fit: cover;
+        }
+
+        .bio-cover__caption {
+          position: static !important;
+          padding: 6pt 0 0 !important;
+          color: #222 !important;
+          text-shadow: none !important;
+        }
+
+        .bio-stub,
+        .bio-era__head,
+        .bio-coda,
+        .h-article-card,
+        .h-focus-card {
+          break-inside: avoid-page;
+          break-inside: avoid;
+          page-break-inside: avoid;
+          box-shadow: none !important;
+        }
+      }
+    </style>
   </body>
 </html>

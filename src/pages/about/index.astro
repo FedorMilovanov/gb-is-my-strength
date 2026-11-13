@@ -5,4 +5,28 @@ import AboutMain from '@/components/about/AboutMain.astro';
 <!DOCTYPE html>
 <AboutPageChrome>
   <AboutMain />
+  <style is:global>
+    @media print {
+      .h-navbar,
+      #hNavbar,
+      .mobile-chrome,
+      [data-mobile-chrome],
+      .gb-sections-sheet,
+      .gb-sections-backdrop,
+      .gb-accuracy-block,
+      .theme-toggle,
+      .skip-link,
+      footer.h-footer {
+        display: none !important;
+      }
+
+      .about-contact-item,
+      .author-card {
+        break-inside: avoid-page;
+        break-inside: avoid;
+        page-break-inside: avoid;
+        box-shadow: none !important;
+      }
+    }
+  </style>
 </AboutPageChrome>
