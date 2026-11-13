@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { createRequire } from 'node:module';
+import { parse } from 'parse5';
 
 const require = createRequire(import.meta.url);
 const { readImageDimensions } = require('./lib/sitemap-image-projection');
@@ -25,6 +26,10 @@ const ITEMS = [
   ['D', 'adult-daughter-marriage', 'vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti', 42, 222, '07-daughter-marriage.webp'],
 ];
 const railFor = (heroFile) => heroFile.replace(/\.webp$/, '-600w.webp');
+// Each adult-family article points to the other three in its own prose, not
+// merely through the shared reader rail. Derive routes from the series owner.
+const adultItems = ITEMS.filter(([mark]) => ['A', 'B', 'C', 'D'].includes(mark));
+const adultRoutes = new Map(adultItems.map(([mark, , slug]) => [mark, `/articles/${slug}/`]));
 
 const errors = [];
 const fail = (message) => errors.push(message);
@@ -43,6 +48,22 @@ const canonical = (html) => {
     return match[1].match(/\bhref=["']([^"']+)["']/i)?.[1]?.trim() || '';
   }
   return '';
+};
+
+const articleLinks = (html) => {
+  const links = [];
+  const textContent = (node) => node.value || (node.childNodes || []).map(textContent).join('');
+  const walk = (node, inArticle = false) => {
+    inArticle ||= node.attrs?.some(({ name, value }) => name === 'id' && value === 'article-content') || false;
+    if (inArticle && node.tagName === 'a') {
+      const href = node.attrs?.find(({ name }) => name === 'href')?.value;
+      const text = textContent(node).trim();
+      if (href && text) links.push({ href, text });
+    }
+    for (const child of node.childNodes || []) walk(child, inArticle);
+  };
+  walk(parse(html));
+  return links;
 };
 
 const frontmatterScalar = (source, key) => {
@@ -219,6 +240,13 @@ for (const [mark, pageId, slug, minutes, done, heroFile] of ITEMS) {
     fail(`${slug}: updatedAt must be a valid instant on/after publishedAt`);
   }
   if (/<!--|-->/.test(mdx)) fail(`${slug}: raw HTML comment marker remains in published MDX`);
+  if (adultRoutes.has(mark)) {
+    for (const [targetMark, href] of adultRoutes) {
+      if (targetMark !== mark && !mdx.includes(`](${href})`)) {
+        fail(`${slug}: prose link to adult article ${targetMark} missing in MDX`);
+      }
+    }
+  }
 
   const routeRel = `src/pages/articles/${slug}/index.astro`;
   const source = read(routeRel);
@@ -276,6 +304,16 @@ if (fs.existsSync(DIST)) {
       if (!html.includes(expectedRail)) fail(`${route}: responsive card/rail derivative missing (${expectedRail})`);
     }
     if (route !== LANDING) {
+      if (row && adultRoutes.has(row[0])) {
+        const proseLinks = articleLinks(html);
+        for (const [targetMark, href] of adultRoutes) {
+          if (targetMark === row[0]) continue;
+          if (!proseLinks.some((link) => link.href === href && link.text.length > 3)) {
+            fail(`${route}: rendered prose link to adult article ${targetMark} missing (${href})`);
+          }
+          if (!fs.existsSync(routeFile(href))) fail(`${route}: prose link destination is not built (${href})`);
+        }
+      }
       if (!html.includes('data-gbs2-series="teen-double-life"')) fail(`${route}: reader series identity missing`);
       if (!/<section\b[^>]*class="sources-block"[^>]*data-reader-exclude[^>]*data-pagefind-ignore/iu.test(html)) {
         fail(`${route}: bibliography boundary is not static in built HTML before Pagefind`);
@@ -299,4 +337,5 @@ console.log('  publication source: seven MDX canonical + raw HTML comments rejec
 console.log('  publication date: 2026-09-10; updatedAt stays owned by canonical frontmatter');
 console.log('  media: route-specific 1200x630 WebP hero/OG + 600x315 card/rail family');
 console.log('  bibliography: canonical reader projector owns build-time data-pagefind-ignore boundary');
+console.log('  adult articles: reciprocal prose links checked in MDX and, when present, built HTML');
 console.log('  production ownership: astro/production-dist');
