@@ -145,12 +145,26 @@ function literalSurfaces(slug) {
         .forEach((line, i) => {
           const visible = line.match(/⏱\s*(\d+)\s*мин/);
           const pagefind = line.match(/data-pagefind-meta="readTime"[^>]*>(\d+)</);
-          if (!visible && !pagefind) return;
+          if (visible || pagefind) {
+            out.push({
+              file: path.relative(ROOT, file),
+              line: i + 1,
+              kind: visible ? 'visible' : 'pagefind',
+              value: Number(visible ? visible[1] : pagefind[1]),
+              target: null,
+            });
+            return;
+          }
+          // Карточка-ссылка на другую статью: «Богословие · 41 мин», «~41 мин».
+          const card = line.match(/(?:·\s*|~)(\d+)\s*мин/);
+          const href = line.match(/href="\.\.\/([a-z0-9-]+)\/"/);
+          if (!card || !href) return;
           out.push({
             file: path.relative(ROOT, file),
             line: i + 1,
-            kind: visible ? 'visible' : 'pagefind',
-            value: Number(visible ? visible[1] : pagefind[1]),
+            kind: 'card',
+            value: Number(card[1]),
+            target: href[1],
           });
         });
     }
@@ -196,10 +210,18 @@ function audit() {
     });
   }
 
-  const literals = rows.flatMap((r) => (r.literals || []).map((l) => ({ slug: r.slug, expected: r.expected ?? null, ...l })));
-
   const expectedBySlug = new Map(
     rows.filter((r) => Number.isFinite(r.expected)).map((r) => [r.slug, r.expected])
+  );
+
+  // Ожидание для литерала: у заголовка страницы — её собственный расчёт,
+  // у карточки-ссылки — расчёт той статьи, на которую она ссылается.
+  const literals = rows.flatMap((r) =>
+    (r.literals || []).map((l) => ({
+      ...l,
+      slug: r.slug,
+      expected: l.target ? expectedBySlug.get(l.target) ?? null : Number.isFinite(r.expected) ? r.expected : null,
+    }))
   );
 
   const seriesRows = [];
@@ -273,14 +295,7 @@ function audit() {
 }
 
 function literalDriftOf(report) {
-  const out = [];
-  for (const row of report.rows) {
-    if (!Number.isFinite(row.expected)) continue;
-    for (const l of row.literals || []) {
-      if (l.value !== row.expected) out.push({ slug: row.slug, expected: row.expected, ...l });
-    }
-  }
-  return out;
+  return report.literals.filter((l) => Number.isFinite(l.expected) && l.value !== l.expected);
 }
 
 function writable(row) {
@@ -303,10 +318,15 @@ function writable(row) {
  */
 function writeLiterals(report) {
   let touched = 0;
+  // Карточку-ссылку переписываем только тогда, когда расчёт статьи-цели
+  // достоверен: для статей с телом в компонентах (`advisory`) ожидание
+  // по MDX неверно, и правка сделала бы хуже.
+  const statusBySlug = new Map(report.rows.map((r) => [r.slug, r.status]));
   const targets = literalDriftOf(report).filter((l) => {
     if (WRITE_SKIP.has(l.slug)) return false;
-    if (ONLY && !ONLY.includes(l.slug)) return false;
+    if (ONLY && !ONLY.includes(l.slug) && !(l.target && ONLY.includes(l.target))) return false;
     if (EXCLUDE && EXCLUDE.includes(l.slug)) return false;
+    if (l.kind === 'card' && !['ok', 'drift'].includes(statusBySlug.get(l.target))) return false;
     return true;
   });
   const byFile = new Map();
@@ -321,10 +341,9 @@ function writeLiterals(report) {
       const i = l.line - 1;
       if (i < 0 || i >= lines.length) continue;
       const before = lines[i];
-      lines[i] =
-        l.kind === 'visible'
-          ? before.replace(/⏱\s*\d+\s*мин/, `⏱ ${l.expected} мин`)
-          : before.replace(/(data-pagefind-meta="readTime"[^>]*>)\d+(<)/, `$1${l.expected}$2`);
+      if (l.kind === 'visible') lines[i] = before.replace(/⏱\s*\d+\s*мин/, `⏱ ${l.expected} мин`);
+      else if (l.kind === 'pagefind') lines[i] = before.replace(/(data-pagefind-meta="readTime"[^>]*>)\d+(<)/, `$1${l.expected}$2`);
+      else lines[i] = before.replace(/((?:·\s*|~))\d+(\s*мин)/, `$1${l.expected}$2`);
       if (lines[i] !== before) touched += 1;
     }
     fs.writeFileSync(abs, lines.join('\n'));
