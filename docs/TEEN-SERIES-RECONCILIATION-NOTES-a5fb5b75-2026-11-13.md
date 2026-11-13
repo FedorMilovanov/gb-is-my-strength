@@ -319,6 +319,50 @@ one contract instead of none. It is reported rather than repaired, because
 `readingTime` re-pinning is `4786e4e2`'s declared lane and this branch has
 deliberately left every value at its base number.
 
+## 7e. A counter bug in the policy module, reproduced — and proof it does not touch §7b
+
+`8c44f067` reports in his `docs/EDITORIAL-PARALLEL-CONTROL-2026-11-13.md` that
+`4786e4e2`'s `reading-time-audit` reports 70 articles with no divergence while the
+defect examples still reproduce: nested `hidden` yields 6 words instead of 2, and
+`aria-hidden="false"` yields 0 instead of 2. Both reproduce against
+`lib/reading-time-policy.js` at `836d364`, and a third case does too:
+
+| input | `readerWordCount` | correct |
+| --- | ---: | ---: |
+| `<div><div hidden>одно два</div> три четыре пять шесть</div>` | 6 | 4 |
+| `<p>видимое <span hidden>скрытое одно скрытое два</span> текст</p>` | 6 | 2 |
+| `<p aria-hidden="false">одно два</p>` | 0 | 2 |
+| `<p data-hidden="no">одно два</p>` | 0 | 2 |
+
+There are two distinct causes. The over-count comes from the stripping regex
+`<([a-zA-Z][\w-]*)\b([^>]*)>([\s\S]*?)<\/\1>`: it matches the outermost element
+first, and when that element is not hidden the callback returns the whole match
+unchanged, so `lastIndex` advances past every nested element and a nested `hidden`
+or `sr-only` child is never inspected. The module's two-pass loop does not help,
+because the second pass sees the same structure. The under-count comes from
+`/\bhide\b|\bhidden\b/.test(attrs)`, which tests the attribute **string**, so it
+matches an attribute *name* rather than a value: `aria-hidden="false"` and
+`data-hidden="no"` both satisfy `\bhidden\b` because `-` is a non-word character,
+and the element is stripped even though it is visible. The separate
+`/aria-hidden=(?:"true"|'true'|true)/` test on the next line is correct but
+redundant, since the first test already fires.
+
+This matters to §7b because every figure in that table was produced by this module.
+It was therefore checked directly rather than assumed. All seven teen-series
+articles contain **zero** occurrences, in the reader body, of every token that can
+enter the hidden-stripping path: `hidden`, `aria-hidden`, `data-hidden`, `details`,
+`sr-only`, `visually-hidden`, `display:none`, `<script`, `<style`, `<template`. The
+buggy branches are never reached for these articles, so the §7b word counts and
+minutes stand as measured.
+
+The caveat travels with the recommendation, though. §7c and §9 advise recomputing
+minutes across the whole site from the final tree, and the 113 pages carrying 551
+hard-coded literals are not all free of these tokens. Whoever runs a mass
+`--write` or `--write-literals` should fix the two causes above and add regression
+tests first, because a counter that silently drops a visible paragraph or keeps a
+hidden one will re-pin wrong numbers into every surface at once, and — as §7c
+records — no gate compares any surface with the content.
+
 ## 8. Gate state of this branch
 
 `npm run strangler:build:production-like` exits 0: approved/blocked 78/0, 68
@@ -609,6 +653,17 @@ of that file — his at 175 and 183, this branch's single hunk at 271 — so
 `merge-tree` reports «Auto-merging» with no conflict. Taking his side is therefore
 free, and duplicating the correction here would only manufacture a conflict.
 
+Verified again at his later head `0ede68e`: the Solomon section contains `3 Цар. 11`
+twice and `1 Цар. 11` zero times on his branch, and zero and two respectively on
+both the base and this branch. That commit also **relaxed his own test**, on his
+initiative and for a good reason — requiring exactly two occurrences would fail a
+correct edit that cites different verses or a different number of times. The test
+now requires at least one `3 Цар. 11` in the section and forbids `1 Цар. 11`, keeps
+the separate Saul assertions, and adds positive and negative examples. He records
+that the relaxed test also passes on `1d569906@c2e8ca86`. Anyone reconciling should
+take the relaxed version, since the strict one would pin an arbitrary citation
+count into a contract.
+
 His commit also regenerated `data/scripture-search-index.json`, which makes him one
 more branch in the set that rewrites that derived file, and reinforces §5: the
 index must be rebuilt from the final merged tree, never taken from a side.
@@ -709,3 +764,75 @@ the MDX and renders `<Content />`.
 Gate battery re-run in full at `5a5f8d9` after a clean `npm ci` and a
 `strangler:build:production-like` that exited 0 with G-1 through G-8 passing:
 14 of 14 green.
+
+## 11. Cross-check against `8c44f067`'s independent control pass
+
+`8c44f067` published `docs/EDITORIAL-PARALLEL-CONTROL-2026-11-13.md` at `0ede68e`,
+an independent audit of the six arena branches plus draft PR #2302, taken from his
+own snapshot `32944ea`. It is worth reading alongside this note because it reaches
+some of the same conclusions by a different route, and because it grades this
+branch.
+
+His assessment of this branch at `5a5f8d9`: 10 pairwise conflicting files against
+`32944ea`, index `--check` PASS, the standard static teen release contract PASS, and
+his additional AST-based minute-parity check PASS. His parity helper reads
+frontmatter, `data/series.json`, the rail and the progress fields independently of
+any branch's own contract, so this is a fourth confirmation that the four
+reading-time surfaces on this branch agree with each other — which, per §7c, is not
+the same as agreeing with the content, and §7b remains the live issue here.
+
+He independently found the same `5ccbaa3b` inconsistency recorded in §7d, reporting
+frontmatter A = 43 against metadata and progress = 37, frontmatter B = 68 against 36,
+with the series progress still summing to 264, and noting that the branch's own
+release contract is green. His framing is more careful than §7d's and should be
+preferred: this is a proven surface-consistency error, not evidence of which number
+correctly describes the final reading time. §7d's policy-relative figures are
+correct as measurements under 180 wpm, but the owner has not settled the wpm
+question, so no branch's minutes should yet be called right or wrong.
+
+His other findings that bear on this reconciliation:
+
+- `4786e4e2`'s index `--check` **fails** at `836d364`: a separate `--write` produced
+  1369 references and 3486 occurrences against the 1368 and 3474 committed, and a
+  second `--check` then passed, so the derived file in that snapshot is stale rather
+  than the generator being wrong. Draft PR #2302 fails the same check. This branch
+  passes it. It is another instance of §5: the index must be rebuilt from the final
+  tree.
+- Substantive edits to `kogda-chelovek-uhodit-ot-very` and
+  `kogda-uhodit-kogda-ostavatsya` overlap between branches, and both are files this
+  branch touched. He lists what must survive the merge: the availability of
+  immediate protection without a prior personal meeting or a mandatory sequence of
+  addressees; the distinction between unwanted intrusive fears and a conscious
+  rejection of faith; the availability of professional assessment and emergency
+  help; not turning doubt into a diagnosis; and not compelling a return to a
+  dangerous environment. This branch's own edits to those two files are the
+  mixed-script and language-of-parts tagging described in §8b and §8c, which change
+  markup rather than substance, so they do not compete with those caveats — but a
+  reconciler resolving those files should keep his list in front of them.
+- Lawson source IDs collide between his branch and PR #2302: his `LAW-55` is the
+  Johnson letter and `LAW-56` Protestia, while the PR's `LAW-55` is Protestia,
+  `LAW-56` The Roys Report and `LAW-57` Christian Post. The same ID therefore
+  denotes different evidence, so neither the registry nor the MDX can be merged by
+  picking a side; unique permanent IDs must be assigned and every `LawsonSourceRef`,
+  number and generated anchor reconciled. This branch does not touch those files.
+- He corrected his own published text on the Bachmann case: his branch and `LAW-29`
+  named the 2016 indefinite suspension but omitted the successful appeal, so the
+  suspension was overturned, the censure retained and standing in the presbytery
+  restored. PR #2302 noticed the same omission independently. He warns that the
+  correction is not a full exoneration and not an assessment of the help given to
+  Lawson, and that the earlier wording must not return at merge time.
+- He acknowledges this branch's note, recording the differing Kaige renderings and
+  the Latin `á` repair in `serdce-i-duh.mdx` and its Body as an intersection that is
+  **not** an automatically resolvable substantive decision, and asks that both
+  MDX/Body pairs and mixed-script be re-checked after the merge. That agrees with
+  §8e. He also records that another branch rightly noted the Solomon reference fix
+  in his work, which is §8f above.
+
+His stated limits should travel with any use of his table: the results are for the
+listed SHAs, conflicts were counted pairwise from his snapshot rather than by
+sequentially merging all seven, dist and browser checks were not run against other
+branches' archives, and an automatic absence of conflict does not prove the absence
+of a semantic collision. Draft PR #2302 remained a draft with several red GitHub
+checks at the HEAD he inspected, including source-index, canonical discovery,
+dependency security and lane collisions; he could not retrieve the step logs, so he
+explicitly declines to treat that PR as release-ready.
