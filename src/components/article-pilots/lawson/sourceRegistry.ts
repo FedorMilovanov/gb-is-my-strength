@@ -334,7 +334,7 @@ export const LAWSON_SOURCES: LawsonSource[] = [
   },
   {
     id: 'LAW-41', n: 38,
-    label: 'The Roys Report — «Steve Lawson Says He’s “Sinned Grievously” in Post Breaking His 6-Month Silence» (17 Mar 2025)',
+    label: 'The Roys Report — «Steve Lawson Says He’s “Sinned Grievously” in Post Breaking His 6-Month Silence» (13 Mar 2025)',
     href: 'https://roysreport.com/steve-lawson-sinned-grievously-post-breaking-six-month-silence/',
     evidenceClass: 'near-primary',
     proves: 'Фиксирует существенную поправку Фила Джонсона: сначала он писал, что женщина не была близка ни к одному из служений Лоусона, но позже признал, что на начало отношений она была студенткой The Master’s University. Там же отмечено, что из-за разницы в положении комментаторы предполагают возможность квалификации случившегося как духовного сексуального насилия.',
