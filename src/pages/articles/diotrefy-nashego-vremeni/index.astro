@@ -1,6 +1,10 @@
 ---
 import DiotrophesPageHead from '@/components/article-pilots/diotrophes/DiotrophesPageHead.astro';
 import DiotrophesPublishedPage from '@/components/article-pilots/diotrophes/DiotrophesPublishedPage.astro';
+import { PASTOR_SERIES } from '@/components/article-pilots/_shared/series/pastorSeriesConfig';
+// Минуты берём из единого SSOT серии (см. READING-TIME-POLICY.md §8), чтобы
+// оболочка страницы не могла разойтись с политикой после слияния.
+const progress = PASTOR_SERIES.pages.diotrophes;
 ---
 <!DOCTYPE html>
 <html lang="ru">
@@ -13,8 +17,8 @@ import DiotrophesPublishedPage from '@/components/article-pilots/diotrophes/Diot
     data-wave12-publication="true"
     data-gbs2-series="pastor-series"
     data-gbs2-done-min="0"
-    data-gbs2-part-min="15"
-    data-gbs2-total-min="15"
+    data-gbs2-part-min={progress.readingProgressPartMin}
+    data-gbs2-total-min={progress.readingProgressTotalMin}
   >
     <DiotrophesPublishedPage />
   </body>

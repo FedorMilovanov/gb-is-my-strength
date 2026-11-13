@@ -376,12 +376,34 @@ function pageLiteralSurfaces() {
     for (const name of fs.readdirSync(dir, { withFileTypes: true })) {
       const abs = path.join(dir, name.name);
       if (name.isDirectory()) {
-        if (path.relative(PAGES_DIR, abs).split(path.sep)[0] === 'articles') continue;
         walk(abs);
       } else if (name.name === 'index.astro') {
-        const page = `/${path.relative(PAGES_DIR, dir).split(path.sep).join('/')}/`;
+        const segments = path.relative(PAGES_DIR, dir).split(path.sep);
+        const page = `/${segments.join('/')}/`;
         for (const l of scanComponentLiterals(abs, { cardsOnly: true })) {
           out.push({ ...l, slug: page, page: true });
+        }
+        // Литералы прямо в файле статьи (`src/pages/articles/<slug>/index.astro`):
+        // видимая строка `⏱ N мин`, скрытая мета-строка pagefind и `readingTime: N`
+        // в объекте SITE_CONFIG. Их не видит ни скан компонентов пилота, ни обход
+        // страниц вне /articles/, поэтому они жили отдельной жизнью.
+        if (segments[0] === 'articles' && segments.length === 2) {
+          const slug = segments[1];
+          const source = read(abs);
+          const rel = path.relative(ROOT, abs);
+          const push = (m, kind) => out.push({
+            file: rel,
+            line: lineAt(source, m.index),
+            offset: m.index,
+            kind,
+            value: Number(m[1]),
+            target: slug,
+            slug,
+            page: true,
+          });
+          for (const m of source.matchAll(/⏱\s*(\d+)\s*мин/g)) push(m, 'visible');
+          for (const m of source.matchAll(/data-pagefind-meta="readTime"[^>]*>(\d+)</g)) push(m, 'pagefind');
+          for (const m of source.matchAll(/(?<![\w.])readingTime:\s*(\d+)(?=\s*[,}])/g)) push(m, 'pagemeta');
         }
       }
     }
@@ -499,6 +521,58 @@ function seriesConfigEntries(text) {
   return out;
 }
 
+/**
+ * Статьи без MDX: страница есть, тело целиком в компонентах, метаданных нет.
+ * Таких три — «20 антисоветов пастору», «Диотрефы нашего времени» и «Лот и
+ * Содом». Аудит ходил по файлам MDX и их не видел вовсе: у «Диотрефов»
+ * мета pagefind восемь месяцев обещала 35 минут при 14 фактических.
+ */
+function mdxLessArticleSlugs() {
+  const dir = path.join(PAGES_DIR, 'articles');
+  if (!fs.existsSync(dir)) return [];
+  const withMdx = new Set(mdxFiles().map((f) => f.slug));
+  return fs
+    .readdirSync(dir, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && !withMdx.has(e.name))
+    .map((e) => e.name);
+}
+
+function importedComponentWords(slug) {
+  const page = path.join(PAGES_DIR, 'articles', slug, 'index.astro');
+  if (!fs.existsSync(page)) return null;
+  const seen = new Set();
+  let words = 0;
+  const walk = (file) => {
+    if (seen.has(file) || !fs.existsSync(file)) return;
+    seen.add(file);
+    const sText = file;
+    const source = read(file)
+      .replace(/^---[\s\S]*?---/, ' ')
+      .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ');
+    words += readerWordCount(source);
+    const text = read(sText);
+    for (const m of text.matchAll(/@\/components\/([^'"]+)\.astro/g)) {
+      if (skip(path.basename(m[1])) || m[1].includes('/_shared/')) continue;
+      walk(path.join(COMPONENTS_DIR, `${m[1]}.astro`));
+    }
+    // Соседние компоненты пилота импортируются относительно (`./Wave11Draft`):
+    // без этого «Диотрефы» считались по одному файлу оболочки — 54 слова.
+    for (const m of text.matchAll(/from\s+['"]\.\/([^'"]+)\.astro['"]/g)) {
+      if (skip(path.basename(m[1]))) continue;
+      walk(path.join(path.dirname(file), `${m[1]}.astro`));
+    }
+  };
+  // Хром серии (рельс, навигация, соседние части, карточки) — не текст статьи:
+  // без этих исключений «20 антисоветов пастору» насчитывали 87 минут вместо 67.
+  const skip = (name) => /(PageHead|PageChrome|Chrome|Rail|Nav|Related|Footer|Cards?|Timeline)$/i.test(name);
+  for (const m of read(page).matchAll(/@\/components\/([^'"]+)\.astro/g)) {
+    if (skip(path.basename(m[1])) || m[1].includes('/_shared/')) continue;
+    walk(path.join(COMPONENTS_DIR, `${m[1]}.astro`));
+  }
+  return seen.size ? words : null;
+}
+
 function audit() {
   const rows = [];
   for (const { slug, file } of mdxFiles()) {
@@ -540,6 +614,25 @@ function audit() {
       delta: Number.isFinite(expected) && Number.isFinite(current) ? current - expected : null,
       draft: /^draft:\s*true\s*$/m.test(source),
       status,
+      literals: literalSurfaces(slug),
+    });
+  }
+
+  for (const slug of mdxLessArticleSlugs()) {
+    const words = importedComponentWords(slug);
+    if (!words) continue;
+    const expected = minutesForWords(words);
+    rows.push({
+      slug,
+      file: path.join('src/pages/articles', slug, 'index.astro'),
+      mode: 'component-body',
+      words,
+      expected,
+      current: null,
+      implied: null,
+      delta: null,
+      draft: false,
+      status: 'component-body-no-mdx',
       literals: literalSurfaces(slug),
     });
   }
@@ -675,6 +768,10 @@ function writable(row) {
  * их (см. §8 политики). Правка идемпотентна и дружелюбна к трёхстороннему
  * слиянию: строки не добавляются и не удаляются.
  */
+// Статья-цель карточки может быть без MDX (тело в компонентах): теперь такие
+// статьи измеряются тем же SSOT, поэтому их карточки тоже можно переписывать.
+const WRITABLE_TARGET_STATUS = ['ok', 'drift', 'component-body', 'component-body-no-mdx'];
+
 function writeLiterals(report) {
   let touched = 0;
   // Карточку-ссылку переписываем только тогда, когда расчёт статьи-цели
@@ -684,7 +781,7 @@ function writeLiterals(report) {
     if (WRITE_SKIP.has(l.slug)) return false;
     if (ONLY && !ONLY.includes(l.slug) && !(l.target && ONLY.includes(l.target))) return false;
     if (EXCLUDE && EXCLUDE.includes(l.slug)) return false;
-    if (l.kind === 'card' && !['ok', 'drift'].includes(statusBySlug.get(l.target))) return false;
+    if (l.kind === 'card' && !WRITABLE_TARGET_STATUS.includes(statusBySlug.get(l.target))) return false;
     if (!Number.isFinite(l.offset)) return false;
     return true;
   });
@@ -725,7 +822,13 @@ function writeAll(report) {
 
   for (const row of report.rows) {
     if (row.current === row.expected || !writable(row)) continue;
-    const source = read(row.file).replace(/^readingTime:\s*\d+\s*$/m, `readingTime: ${row.expected}`);
+    // У статей с телом в компонентах MDX-заглушки может не быть вовсе:
+    // `replace` тогда ничего не меняет, и счётчик нельзя увеличивать —
+    // иначе `npm run reading:time:fix` никогда не становится идемпотентным.
+    if (!row.file || !fs.existsSync(row.file)) continue;
+    const before = read(row.file);
+    const source = before.replace(/^readingTime:\s*\d+\s*$/m, `readingTime: ${row.expected}`);
+    if (source === before) continue;
     fs.writeFileSync(row.file, source);
     touched += 1;
   }

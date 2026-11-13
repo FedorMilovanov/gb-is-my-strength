@@ -478,6 +478,8 @@ npm run strangler:build:production-like → exit 0
 | 9. Карточки | related, витрины, полка `/hard-texts/` | считается по ссылке-цели |
 | 10. Атрибуты прогресса | `data-gbs2-*-min` в оболочках | считается из витрины |
 | 11. Производные | `data/search-manifest.json`, `data/links-graph.json`, `js/search.js` | пересобираются нормализаторами |
+| 12. Статьи без MDX | тело целиком в компонентах (`20-antisovetov-pastoru`, `diotrefy-nashego-vremeni`, `lot-i-sodom`) | считается обходом импортов страницы, строки `component-body-no-mdx` |
+| 13. Мета вне корня индексации | `data-pagefind-meta="readTime"` на странице с `<body data-pagefind-body>` или до `<article>` | проецируется в `<head>` отдельным режимом `project-reader-linear-text-to-dist.mjs` |
 
 Плюс `validate:all` теперь краснеет, если любая из них разойдётся, и отдельная сверка `reading:time:dist:crosscheck` проверяет политику по собранным страницам.
 
@@ -486,14 +488,14 @@ npm run strangler:build:production-like → exit 0
 Политика времени чтения теперь входит в `validate:all`, поэтому любая ветка, которая меняет длину статьи, обязана пересчитать значения — иначе гейт краснеет. Порядок после слияния любой из шести параллельных веток:
 
 ```bash
-node scripts/reading-time-audit.js --write          # 1. SSOT: MDX, series.json, витрины, js/search.js
-node scripts/reading-time-audit.js --write-literals # 2. минуты в разметке пилотов (обязательно, не «если»)
-npm run astro:build                                 # 3. HTML, мета pagefind, структурированные данные
-node scripts/search-manifest-policy-normalizer.js --write --dist dist
-node scripts/links-graph-read-time-normalizer.js --write
-node scripts/reading-time-audit.js                  # 4. должно быть 0 по всем поверхностям
-npm run validate:all
+npm ci
+npm run reading:time:fix                 # 1. SSOT: MDX, статьи с телом в компонентах, series.json, витрины
+npm run strangler:build:production-like  # 2. HTML, мета pagefind, проекция меты в <head>
+npm run reading:time:sync                # 3. search-manifest, links-graph, сверка со страницей, cache-bust
+npm run validate:all                     # 4. должно быть 0 по всем поверхностям
 ```
+
+`reading:time:fix` идемпотентен (повторный прогон пишет «обновлено 0»), `reading:time:sync` читает `dist` и потому идёт только после сборки. Новые формы литералов и оставшийся долг — `READING-TIME-POLICY.md` §10.
 
 **Проверено пробным слиянием** с самой конфликтной веткой (`7b785a3b`, 23 конфликтующих файла): конфликты там только по прозе — из всех ханков `readingTime` задевают два. После выбора их текста аудит показал 23 статьи к пересчёту и 10 литералов; `--write` и `--write-literals` свели всё к нулю, манифест догнался сборкой и нормализатором. То есть слияние не требует ручной правки чисел — только прогон двух команд.
 

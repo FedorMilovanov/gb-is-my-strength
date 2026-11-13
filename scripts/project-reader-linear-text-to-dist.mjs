@@ -210,6 +210,45 @@ function projectTeenSourcesBoundary(html, article, descendants, operations) {
   return 1;
 }
 
+/**
+ * Some component-bodied pages put `data-pagefind-body` on <body> (or keep their
+ * `data-pagefind-meta` spans outside the indexing <article>). Those pages never
+ * reached the article-root projection, so their readTime metadata silently
+ * disappeared from <head>. Project only the metadata spans for them and leave
+ * every other reader-linear transformation untouched.
+ */
+function projectBodyRootMeta(html, nodes, headMetaInsert, file) {
+  const root = nodes.find(node => node.name === 'body' && node.endTagStart != null && hasAttr(node.startRaw, 'data-pagefind-body'))
+    ?? nodes.find(node => node.name === 'article' && node.endTagStart != null && hasAttr(node.startRaw, 'data-pagefind-body'));
+  const scope = root ?? nodes.find(node => node.name === 'body' && node.endTagStart != null);
+  if (!scope) return { changed: false, articles: 0, metadata: 0, popups: 0, sources: 0, teenArticles: 0 };
+  const operations = [];
+  const headMeta = [];
+  // Спан-литералы на таких страницах остаются в разметке: их читают
+  // discovery-парсеры витрин (`series-landing-discovery-seed.mjs` ищет
+  // `data-pagefind-meta="readTime"` именно как элемент с текстом). Удаляются
+  // только дубликаты уже спроецированных значений.
+  const alreadyProjected = new Set(
+    [...html.matchAll(/data-pagefind-meta="([^"\[\]]+)\[content\]" content="([^"]*)"/g)]
+      .map((m) => `${m[1]}=${m[2]}`)
+  );
+  for (const node of nodes) {
+    if (node.end == null || !inside(node, scope)) continue;
+    if (!hasAttr(node.startRaw, 'data-pagefind-meta') || node.endTagStart == null) continue;
+    const key = attrValue(node.startRaw, 'data-pagefind-meta');
+    const value = decodeText(html.slice(node.startTagEnd, node.endTagStart));
+    if (key && value && !alreadyProjected.has(`${key}=${value}`)) {
+      headMeta.push(`<meta data-pagefind-meta="${escapeAttr(key)}[content]" content="${escapeAttr(value)}" data-reader-meta-projected="true">`);
+    }
+  }
+  if (!headMeta.length) return { changed: false, articles: 1, metadata: 0, popups: 0, sources: 0, teenArticles: 0 };
+  operations.push({ start: headMetaInsert, end: headMetaInsert, text: `\n${headMeta.join('\n')}\n` });
+  const projected = applyOperations(html, operations);
+  if (projected === html) return { changed: false, articles: 1, metadata: headMeta.length, popups: 0, sources: 0, teenArticles: 0 };
+  if (!DRY_RUN) fs.writeFileSync(file, projected, 'utf8');
+  return { changed: true, articles: 1, metadata: headMeta.length, popups: 0, sources: 0, teenArticles: 0 };
+}
+
 function projectFile(file) {
   const html = fs.readFileSync(file, 'utf8');
   const nodes = scanElements(html);
@@ -218,11 +257,12 @@ function projectFile(file) {
   const charset = nodes.find(node => node.name === 'meta' && inside(node, head) && hasAttr(node.startRaw, 'charset'));
   const headMetaInsert = charset?.end ?? head.startTagEnd;
 
-  const articles = nodes.filter(node => node.name === 'article' && hasAttr(node.startRaw, 'data-pagefind-body'));
-  if (!articles.length) return { changed: false, articles: 0, metadata: 0, popups: 0, sources: 0, teenArticles: 0 };
+  let articles = nodes.filter(node => node.name === 'article' && hasAttr(node.startRaw, 'data-pagefind-body'));
+  if (!articles.length) return projectBodyRootMeta(html, nodes, headMetaInsert, file);
 
   const operations = [];
   const headMeta = [];
+  const projectedMetaNodes = new Set();
   let metadataCount = 0;
   let popupCount = 0;
   let sourcesCount = 0;
@@ -241,6 +281,7 @@ function projectFile(file) {
         const value = decodeText(html.slice(node.startTagEnd, node.endTagStart));
         if (key && value) headMeta.push(`<meta data-pagefind-meta="${escapeAttr(key)}[content]" content="${escapeAttr(value)}" data-reader-meta-projected="true">`);
         operations.push({ start: node.start, end: node.end, text: '' });
+        projectedMetaNodes.add(node.start);
         metadataCount += 1;
         continue;
       }
@@ -254,6 +295,24 @@ function projectFile(file) {
       operations.push({ start: node.start, end: node.startTagEnd, text: `${startTag}${marker('start', descriptor.label)}` });
       operations.push({ start: node.endTagStart, end: node.endTagStart, text: marker('end', descriptor.label) });
       popupCount += 1;
+    }
+  }
+
+  // Metadata spans that sit outside the indexing <article> root (for example a readTime
+  // span placed just before it) are invisible to the loop above, so their values never
+  // reach <head> and search silently loses the surface.
+  const bodyRoot = articles.length === 1 ? nodes.find(node => node.name === 'body' && node.endTagStart != null) : null;
+  if (bodyRoot) {
+    for (const node of nodes) {
+      if (node.end == null || node.endTagStart == null) continue;
+      if (projectedMetaNodes.has(node.start)) continue;
+      if (!hasAttr(node.startRaw, 'data-pagefind-meta')) continue;
+      if (!inside(node, bodyRoot)) continue;
+      const key = attrValue(node.startRaw, 'data-pagefind-meta');
+      const value = decodeText(html.slice(node.startTagEnd, node.endTagStart));
+      if (key && value) headMeta.push(`<meta data-pagefind-meta="${escapeAttr(key)}[content]" content="${escapeAttr(value)}" data-reader-meta-projected="true">`);
+      operations.push({ start: node.start, end: node.end, text: '' });
+      metadataCount += 1;
     }
   }
 

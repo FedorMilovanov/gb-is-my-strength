@@ -63,8 +63,8 @@ const nativeText = [head, chrome, main, cards, stats, end].join('\n');
 // Canonical minutes are owned by data/series.json (single source of truth);
 // the contract constants below pin the canonical totals so silent registry
 // drift fails instead of silently re-basing the guard.
-const CONTRACT_CORE_TOTAL_MIN = 183;
-const CONTRACT_COMPANION_MIN = 15;
+const CONTRACT_CORE_TOTAL_MIN = 203;
+const CONTRACT_COMPANION_MIN = 13;
 const expectedCore = [
   { roman: 'I', slug: '20-antisovetov-pastoru' },
   { roman: 'II', slug: 'anatomiya-padeniya-pyat-stadiy' },
