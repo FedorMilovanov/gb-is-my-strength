@@ -194,6 +194,24 @@ export function evaluatePastorSeriesDiscovery(snapshot) {
     if (!Number.isFinite(lastBuild) || lastBuild < maxPubDate) {
       fail('feed-pastor-series.xml <lastBuildDate> is older than newest item <pubDate>');
     }
+    // Freshness authority parity: a shard item that also appears in the root feed
+    // must publish the same instant, otherwise the same URL advertises two dates.
+    const rootFeedDates = new Map();
+    for (const block of extractXmlBlocks(snapshot.rootFeedXml, 'item')) {
+      const link = extractTagValue(block, 'link');
+      const when = Date.parse(extractTagValue(block, 'pubDate'));
+      if (link && Number.isFinite(when)) rootFeedDates.set(link, when);
+    }
+    for (let i = 0; i < feedItems.length; i += 1) {
+      const link = feedLinks[i];
+      if (!rootFeedDates.has(link)) continue;
+      if (rootFeedDates.get(link) !== feedPubDates[i]) {
+        fail(
+          `feed-pastor-series.xml pubDate drifts from root feed.xml on ${link}: `
+          + `shard ${new Date(feedPubDates[i]).toISOString()} != root ${new Date(rootFeedDates.get(link)).toISOString()}`,
+        );
+      }
+    }
   }
 
   // 5. Reconcile against sitemap-pastor-series.xml
@@ -229,6 +247,27 @@ export function evaluatePastorSeriesDiscovery(snapshot) {
       if (!fs.existsSync(path.join(ROOT, localImg)) && !fs.existsSync(path.join(ROOT, 'public', localImg))) {
         fail(`sitemap-pastor-series.xml references missing image asset: ${localImg}`);
       }
+    }
+  }
+
+  // 5b. Freshness authority parity with the root sitemap (SYS-SERIES-DISCOVERY-CURRENT-AUTHORITY).
+  // Every shard URL, including the hub, must publish the exact same <lastmod> instant as
+  // sitemap.xml. A shard-only date rewrite is reader-visible freshness fabrication.
+  const rootSitemapLastmod = new Map();
+  for (const block of extractXmlBlocks(snapshot.rootSitemapXml, 'url')) {
+    const loc = extractTagValue(block, 'loc');
+    const stamp = Date.parse(extractTagValue(block, 'lastmod'));
+    if (loc && Number.isFinite(stamp)) rootSitemapLastmod.set(loc, stamp);
+  }
+  for (const block of sitemapBlocks) {
+    const loc = extractTagValue(block, 'loc');
+    const stamp = Date.parse(extractTagValue(block, 'lastmod'));
+    if (!Number.isFinite(stamp) || !rootSitemapLastmod.has(loc)) continue;
+    if (rootSitemapLastmod.get(loc) !== stamp) {
+      fail(
+        `sitemap-pastor-series.xml lastmod drifts from root sitemap.xml on ${loc}: `
+        + `shard ${new Date(stamp).toISOString()} != root ${new Date(rootSitemapLastmod.get(loc)).toISOString()}`,
+      );
     }
   }
 
@@ -324,6 +363,32 @@ function runNegativeFixtures(validSnapshot) {
     evaluatePastorSeriesDiscovery(driftedHub).some((e) => e.includes('hub')),
     'negative fixture failed: hub card drift must fail'
   );
+
+  // 7. Shard-only hub lastmod rewrite fails (freshness fabrication)
+  const driftedHubDate = {
+    ...validSnapshot,
+    seriesSitemapXml: validSnapshot.seriesSitemapXml.replace(
+      /(<loc>https:\/\/gospod-bog\.ru\/pastor-series\/<\/loc>\s*<lastmod>)[^<]+(<\/lastmod>)/,
+      '$12026-09-06T21:00:00.000Z$2',
+    ),
+  };
+  assert(
+    evaluatePastorSeriesDiscovery(driftedHubDate).some((e) => e.includes('lastmod drifts from root sitemap.xml')),
+    'negative fixture failed: shard-only hub lastmod rewrite must fail'
+  );
+
+  // 8. Shard-only feed pubDate rewrite fails
+  const driftedFeedDate = {
+    ...validSnapshot,
+    seriesFeedXml: validSnapshot.seriesFeedXml.replace(
+      /(<link>https:\/\/gospod-bog\.ru\/articles\/nesovershennyy-chelovek-v-nesovershennoy-cerkvi\/<\/link>\s*<guid[^>]*>[^<]*<\/guid>\s*<pubDate>)[^<]+(<\/pubDate>)/,
+      '$1Mon, 05 Jan 2026 12:00:00 GMT$2',
+    ),
+  };
+  assert(
+    evaluatePastorSeriesDiscovery(driftedFeedDate).some((e) => e.includes('pubDate drifts from root feed.xml')),
+    'negative fixture failed: shard-only feed pubDate rewrite must fail'
+  );
 }
 
 export function runPastorSeriesDiscoveryContract({ checkDist = false } = {}) {
@@ -377,7 +442,7 @@ export function runPastorSeriesDiscoveryContract({ checkDist = false } = {}) {
   return {
     coreCount: snapshot.seriesEntry.parts.length,
     companionCount: snapshot.seriesEntry.companions.length,
-    negativeFixtures: 6,
+    negativeFixtures: 8,
   };
 }
 
@@ -386,7 +451,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const checkDist = process.argv.includes('--dist');
     const res = runPastorSeriesDiscoveryContract({ checkDist });
     console.log(
-      `✅ Pastor-series current discovery authority PASS: ${res.coreCount} core + ${res.companionCount} companion reconciled across series.json, reader config, hub, JSON-LD, RSS shard (10 items), sitemap shard (11 URLs), and ${res.negativeFixtures} negative fixtures`
+      `✅ Pastor-series current discovery authority PASS: ${res.coreCount} core + ${res.companionCount} companion reconciled across series.json, reader config, hub, JSON-LD, RSS shard (10 items), sitemap shard (11 URLs), reconciled freshness parity and ${res.negativeFixtures} negative fixtures`
     );
   } catch (error) {
     console.error(`❌ ${error.message}`);
