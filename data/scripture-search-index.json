@@ -14,7 +14,7 @@
     "indexedRoutes": 102,
     "scannedSourceFiles": 530,
     "references": 1377,
-    "occurrences": 3495,
+    "occurrences": 3496,
     "canonicalTextRecords": 149,
     "referencesWithoutCanonicalText": 1228,
     "chapterRanges": 47,
@@ -53422,6 +53422,25 @@
             "Семья"
           ],
           "sourceOwner": "src/content/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya.mdx",
+          "sourceKind": "mdx-source"
+        },
+        {
+          "url": "/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti/",
+          "title": "Взрослая дочь, отец и брак: согласие и границы власти",
+          "context": "тец/дочь», большая родительская власть и её предел против полного воспрепятствования браку. Русская баптистская традиция: что найдено «Братский вестник» 1969 — разъяснение Еф. 6 с пастырским случаем о том, как человек обращается с матерью: почтение к родителям осталось нравственно значимым для выбора супруга; не устанавливает вето, обязательного разрешени…",
+          "anchor": null,
+          "raw": "Еф. 6",
+          "topics": [
+            "брак",
+            "взрослые дети",
+            "дочери",
+            "отцы",
+            "родители",
+            "семья",
+            "Семья",
+            "ухаживание"
+          ],
+          "sourceOwner": "src/content/articles/vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti.mdx",
           "sourceKind": "mdx-source"
         }
       ]
