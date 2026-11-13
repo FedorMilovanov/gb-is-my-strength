@@ -377,10 +377,14 @@ function positionDesktop(tip, anchor, preservePlacement = false) {
   // and max-height have all changed. Keep it inside the visual viewport,
   // retaining the chosen side and the trigger's horizontal alignment.
   const settled = tip.getBoundingClientRect();
+  // The opener may still be offscreen while focus-induced smooth scrolling is
+  // in flight. Clamp *both* edges; anchoring only the upper edge can produce
+  // a negative CSS bottom and a tooltip painted far below the viewport.
+  const safeTop = viewport.top + VIEWPORT_MARGIN;
+  const maxTop = Math.max(safeTop, viewport.bottom - VIEWPORT_MARGIN - settled.height);
   const requiredTop = placement === 'top'
-    ? Math.max(viewport.top + VIEWPORT_MARGIN, anchorRect.top - TIP_GAP - settled.height)
-    : Math.max(viewport.top + VIEWPORT_MARGIN,
-      Math.min(anchorRect.bottom + TIP_GAP, viewport.bottom - VIEWPORT_MARGIN - settled.height));
+    ? Math.max(safeTop, Math.min(anchorRect.top - TIP_GAP - settled.height, maxTop))
+    : Math.max(safeTop, Math.min(anchorRect.bottom + TIP_GAP, maxTop));
   if (settled.height > 0 && Math.abs(settled.top - requiredTop) > 1) {
     if (placement === 'top') {
       setImportant(tip.style, 'bottom', `${Math.round(window.innerHeight - requiredTop - settled.height)}px`);
