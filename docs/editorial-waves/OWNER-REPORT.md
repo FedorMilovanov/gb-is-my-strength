@@ -3,7 +3,7 @@
 **Ветка:** [`arena/4786e4e2-gb-is-my-strength`](https://github.com/FedorMilovanov/gb-is-my-strength/tree/arena/4786e4e2-gb-is-my-strength)
 **База:** `9618e8240731bd20e634506b4c975b154892c7ba` (`main`)
 **HEAD:** `fb11fe2` — `fix(editorial): связность прозы в «Несовершенный человек в несовершенной церкви» (pastor-series, финал)`
-**Итог по ветке:** `+5432 / −2789` в 22 путях: 17 статей MDX, запись реестра источников Lawson, три файла отчёта и переименованный patch (старый `wave1-wave12.patch` удалён).
+**Итог по ветке (контент и код):** 18 файлов, `+597 / −2789` — 17 статей MDX и запись реестра источников Lawson; плюс три файла отчёта в `docs/editorial-waves/`.
 **Ничего не опубликовано:** PR не создавался, merge/deploy не выполнялись, `main` и AuditRepo не тронуты.
 
 ## Коммиты
