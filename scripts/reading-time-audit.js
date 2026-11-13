@@ -212,12 +212,16 @@ function audit() {
           seriesRows.push({ series: key, slug: part.slug, expected: null, current: part.readingTime ?? null, status: 'no-mdx' });
           continue;
         }
+        // Строка витрины наследует статус статьи: если её тело вне MDX
+        // (`advisory`) или не найдено, «расхождением» это не считается —
+        // ожидание по такому MDX недостоверно и не переписывается.
+        const inherited = row.status === 'advisory' || row.status === 'no-body';
         seriesRows.push({
           series: key,
           slug: part.slug,
           expected: row.expected,
           current: Number.isFinite(part.readingTime) ? part.readingTime : null,
-          status: part.readingTime === row.expected ? 'ok' : 'drift',
+          status: inherited ? row.status : part.readingTime === row.expected ? 'ok' : 'drift',
         });
       }
     }
@@ -395,7 +399,9 @@ function writeAll(report) {
 
 const report = audit();
 const drift = report.rows.filter((r) => r.status !== 'ok');
-const seriesDrift = report.seriesRows.filter((r) => r.status !== 'ok');
+const seriesDrift = report.seriesRows.filter((r) => r.status === 'drift');
+const seriesExternal = report.seriesRows.filter((r) => r.status === 'no-mdx');
+const seriesAdvisory = report.seriesRows.filter((r) => r.status === 'advisory' || r.status === 'no-body');
 const byStatus = report.rows.reduce((acc, r) => ((acc[r.status] = (acc[r.status] || 0) + 1), acc), {});
 const actionable = report.rows.filter((r) => r.status === 'drift' || r.status === 'missing');
 
@@ -425,7 +431,10 @@ console.log(
     `требуют пересчёта: ${actionable.length}; тело вне MDX (справка): ${byStatus.advisory || 0}; ` +
     `тело не найдено: ${byStatus['no-body'] || 0}.`
 );
-console.log(`Записей data/series.json: ${report.seriesRows.length}; расходятся: ${seriesDrift.length}.`);
+console.log(
+  `Записей data/series.json: ${report.seriesRows.length}; расходятся: ${seriesDrift.length}; ` +
+    `без MDX (живут только в series.json): ${seriesExternal.length}; справка вне MDX: ${seriesAdvisory.length}.`
+);
 
 const show = LIST ? actionable : actionable.slice(0, 15);
 if (show.length) {
