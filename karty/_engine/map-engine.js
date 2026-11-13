@@ -1056,26 +1056,33 @@ const MapEngine = (function() {
 
 /* Governed archaeology projection */
 .map-arch-projection{margin-top:18px;padding:14px 0 4px;border-top:1px solid rgba(232,200,121,.2)}
-.map-arch-projection__eyebrow{display:flex;align-items:center;gap:7px;color:var(--me-accent,#e8c879);font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.map-arch-projection__eyebrow{display:flex;align-items:center;gap:7px;color:var(--me-accent,#e8c879);font-size:11px;line-height:1.4;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
 .map-arch-projection__eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 10px rgba(232,200,121,.55)}
-.map-arch-projection__title{margin:7px 0 2px;color:var(--me-text,#e9e4d6);font-family:Georgia,serif;font-size:16px}
-.map-arch-projection__note{color:var(--me-muted,#9aa2ae);font-size:10px;line-height:1.5}
-.map-arch-card{padding:12px 0;border-top:1px solid rgba(255,255,255,.07)}
+.map-arch-projection__title{margin:7px 0 3px;color:var(--me-text,#e9e4d6);font-family:Georgia,serif;font-size:16.5px;line-height:1.3}
+.map-arch-projection__note{color:var(--me-muted,#9aa2ae);font-size:12px;line-height:1.5}
+.map-arch-card{padding:12px 0;border-top:1px solid rgba(255,255,255,.08)}
 .map-arch-card:first-of-type{margin-top:8px}
-.map-arch-card__badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px}
-.map-arch-badge{padding:2px 7px;border:1px solid rgba(255,255,255,.14);border-radius:999px;color:var(--me-muted,#9aa2ae);font-size:8px;line-height:1.4}
-.map-arch-badge--accepted-context,.map-arch-badge--primary-identification,.map-arch-badge--high,.map-arch-badge--supporting{border-color:rgba(74,222,128,.28);color:rgba(134,239,172,.92)}
-.map-arch-badge--project-interpretation,.map-arch-badge--interpretation,.map-arch-badge--methodological-guardrail{border-color:rgba(232,200,121,.3);color:var(--me-accent,#e8c879)}
-.map-arch-badge--candidate,.map-arch-badge--disputed{border-color:rgba(250,204,21,.3);color:rgba(253,224,71,.9)}
-.map-arch-badge--rejected,.map-arch-badge--negative,.map-arch-badge--retracted{border-color:rgba(248,113,113,.3);color:rgba(252,165,165,.94)}
-.map-arch-card__statement{color:var(--me-text,#e9e4d6);font-size:12px;line-height:1.55}
-.map-arch-card__limitations{margin-top:6px;color:var(--me-muted,#9aa2ae);font-size:10px;line-height:1.5}
-.map-arch-sources{display:grid;gap:7px;margin-top:9px}
-.map-arch-source{display:block;padding-left:9px;border-left:2px solid rgba(232,200,121,.22)}
-.map-arch-source__link{color:var(--me-accent,#e8c879);font-size:10px;line-height:1.4;text-decoration:none}
+.map-arch-card__badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:7px}
+.map-arch-badge{padding:3px 8px;border:1px solid rgba(255,255,255,.16);border-radius:999px;color:var(--me-muted,#9aa2ae);font-size:11px;line-height:1.35;font-weight:600}
+.map-arch-badge--accepted-context,.map-arch-badge--primary-identification,.map-arch-badge--high,.map-arch-badge--supporting{border-color:rgba(74,222,128,.32);color:rgba(134,239,172,.95)}
+.map-arch-badge--project-interpretation,.map-arch-badge--interpretation,.map-arch-badge--methodological-guardrail{border-color:rgba(232,200,121,.34);color:var(--me-accent,#e8c879)}
+.map-arch-badge--candidate,.map-arch-badge--disputed{border-color:rgba(250,204,21,.34);color:rgba(253,224,71,.94)}
+.map-arch-badge--rejected,.map-arch-badge--negative,.map-arch-badge--retracted{border-color:rgba(248,113,113,.34);color:rgba(252,165,165,.96)}
+.map-arch-card__statement{color:var(--me-text,#e9e4d6);font-size:13.5px;line-height:1.55}
+.map-arch-card__limitations{margin-top:7px;color:var(--me-muted,#9aa2ae);font-size:12px;line-height:1.5}
+.map-arch-sources{display:grid;gap:8px;margin-top:10px}
+.map-arch-source{display:block;padding-left:10px;border-left:2px solid rgba(232,200,121,.28)}
+.map-arch-source__link{color:var(--me-accent,#e8c879);font-size:12.5px;line-height:1.45;font-weight:600;text-decoration:none}
 .map-arch-source__link:hover{text-decoration:underline}
-.map-arch-source__meta{display:block;margin-top:2px;color:var(--me-muted,#9aa2ae);font-size:9px;line-height:1.4;overflow-wrap:anywhere}
-.map-arch-source__id{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:color-mix(in srgb,var(--me-muted,#9aa2ae) 80%,transparent)}
+.map-arch-source__meta{display:block;margin-top:2px;color:var(--me-muted,#9aa2ae);font-size:11.5px;line-height:1.45;overflow-wrap:anywhere}
+.me-map[data-map-theme="light"] .map-arch-projection{border-top-color:rgba(139,90,11,.22)}
+.me-map[data-map-theme="light"] .map-arch-card{border-top-color:rgba(72,51,27,.14)}
+.me-map[data-map-theme="light"] .map-arch-badge{border-color:rgba(72,51,27,.24);background:rgba(72,51,27,.04);color:#5c4d3b}
+.me-map[data-map-theme="light"] .map-arch-badge--accepted-context,.me-map[data-map-theme="light"] .map-arch-badge--primary-identification,.me-map[data-map-theme="light"] .map-arch-badge--high,.me-map[data-map-theme="light"] .map-arch-badge--supporting{border-color:rgba(22,101,52,.32);background:rgba(22,101,52,.07);color:#166534}
+.me-map[data-map-theme="light"] .map-arch-badge--project-interpretation,.me-map[data-map-theme="light"] .map-arch-badge--interpretation,.me-map[data-map-theme="light"] .map-arch-badge--methodological-guardrail{border-color:rgba(139,90,11,.34);background:rgba(139,90,11,.07);color:#7c4d05}
+.me-map[data-map-theme="light"] .map-arch-badge--candidate,.me-map[data-map-theme="light"] .map-arch-badge--disputed{border-color:rgba(146,64,14,.34);background:rgba(146,64,14,.07);color:#854d0e}
+.me-map[data-map-theme="light"] .map-arch-badge--rejected,.me-map[data-map-theme="light"] .map-arch-badge--negative,.me-map[data-map-theme="light"] .map-arch-badge--retracted{border-color:rgba(153,27,27,.34);background:rgba(153,27,27,.07);color:#991b1b}
+.me-map[data-map-theme="light"] .map-arch-source{border-left-color:rgba(139,90,11,.32)}
 
 /* Life timeline */
 .me-life{position:absolute;bottom:0;left:0;right:0;z-index:6;padding:4px 8px 6px;overflow-x:auto;-webkit-overflow-scrolling:touch;background:linear-gradient(to top,rgba(7,10,16,.95),rgba(7,10,16,.4));pointer-events:none;display:none}
@@ -3087,11 +3094,10 @@ container.appendChild(panel);
       const href=_archSafeUrl(source.url);
       if(href){const link=_archText('a','map-arch-source__link',source.title);link.href=href;link.target='_blank';link.rel='noopener noreferrer';node.appendChild(link)}
       else node.appendChild(_archText('span','map-arch-source__link',source.title));
+      const statusLabel=source.status==='retracted'?ARCHAEOLOGY_LABELS.retracted:'';
       const details=[source.organization,Number.isInteger(source.year)?String(source.year):'',ARCHAEOLOGY_LABELS[source.evidenceUse]||source.evidenceUse,
-        ARCHAEOLOGY_LABELS[source.perspective]||source.perspective,ARCHAEOLOGY_LABELS[source.status]||source.status,
-        ARCHAEOLOGY_LABELS[source.verification]||source.verification,source.accessedAt?`проверено ${source.accessedAt}`:''].filter(Boolean).join(' · ');
+        ARCHAEOLOGY_LABELS[source.perspective]||source.perspective,statusLabel].filter(Boolean).join(' · ');
       node.appendChild(_archText('span','map-arch-source__meta',details));
-      node.appendChild(_archText('span','map-arch-source__meta map-arch-source__id',`source: ${source.id}`));
       return node;
     }
     function _archProjectionCards(placeId){

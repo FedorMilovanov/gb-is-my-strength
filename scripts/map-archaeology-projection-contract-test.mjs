@@ -23,12 +23,15 @@ for(const mapId of runtimeScopes){
 }
 for(const projection of [avraam,...runtimeScopes.map(id=>buildMapArchaeologyProjection(id,registry,provenance))]){
   for(const cards of [...Object.values(projection.byPlace),projection.mapCards])for(const card of cards){
+    assert.match(card.statement,/[А-Яа-яЁё]/,`${card.claimId}: projected statement must be localized into Russian`);
+    if(card.limitations)assert.match(card.limitations,/[А-Яа-яЁё]/,`${card.claimId}: projected limitations must be localized into Russian`);
     for(const id of card.evidenceSourceIds){const meta=projection.sourceMeta[id];assert.ok(meta);assert.notEqual(meta.perspective,'yec');assert.ok(['high','supporting','negative'].includes(meta.evidenceUse));if(meta.status==='retracted'){assert.equal(meta.evidenceUse,'negative');assert.equal(card.status,'rejected')}}
     for(const id of card.interpretationSourceIds)assert.equal(projection.sourceMeta[id].evidenceUse,'interpretation');
   }
 }
 
 const engine=fs.readFileSync('karty/_engine/map-engine.js','utf8');
+assert.doesNotMatch(engine,/source:\s*\$\{source\.id\}|map-arch-source__id/,'internal source IDs must not render as visible reader copy');
 assert.match(engine,/cfg.archaeologyProjection/);
 assert.match(engine,/dataSourceId|dataset.sourceId/);
 assert.match(engine,/dataset.evidenceUse/);
