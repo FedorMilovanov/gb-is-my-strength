@@ -30,7 +30,7 @@ export const BAPTIST_BOOK_META = {
   deck: 'От ночного крещения на Куре до подпольных типографий и церковной памяти',
   publishedLabel: '4 главы · 9 статей + справочник',
   roadmapLabel: 'Расширяемая редакционная архитектура · 17–20 статей',
-  /** Lettered historical cover: the embedded title and dates must never be cropped. */
+  /** Authentic archival composition: preserve document details and full source frame; no synthetic title card. */
   coverFit: 'contain',
 } as const;
 

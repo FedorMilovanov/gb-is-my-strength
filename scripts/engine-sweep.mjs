@@ -526,14 +526,21 @@ for (const [id, url] of SINGLES) {
     const ar = paragraph?.getBoundingClientRect();
     return pr && ar ? {
       articleRight: Math.round(ar.right), panelLeft: Math.round(pr.left),
+      panelRight: Math.round(pr.right), panelTop: Math.round(pr.top), panelBottom: Math.round(pr.bottom),
       panelWidth: Math.round(pr.width), panelHeight: Math.round(pr.height),
       open: panel.classList.contains('is-open'),
       scrollWidth: document.documentElement.scrollWidth, viewport: innerWidth
     } : null;
   });
-  R('reader-width', '1680px: horizontal wide speed pill clears text and stays in viewport',
-    !!safe && safe.open && safe.panelWidth > safe.panelHeight * 2 &&
-      safe.articleRight <= safe.panelLeft - 12 && safe.scrollWidth <= safe.viewport + 1,
+  // A fixed desktop speed control is permitted to be vertical or horizontal
+  // while the owner chooses final styling. Assert the invariant: it is useful,
+  // entirely visible and never obscures the prose column.
+  R('reader-width', '1680px: expanded speed control clears text and stays fully in viewport',
+    !!safe && safe.open && safe.panelWidth >= 44 && safe.panelHeight >= 44 &&
+      safe.articleRight <= safe.panelLeft - 12 &&
+      safe.panelLeft >= 0 && safe.panelRight <= safe.viewport - 1 &&
+      safe.panelTop >= 0 && safe.panelBottom <= 851 &&
+      safe.scrollWidth <= safe.viewport + 1,
     JSON.stringify(safe));
   if (ARTIFACT_DIR) await page.screenshot({ path: join(ARTIFACT_DIR, 'reader-wide-speed-1680.png'), fullPage: false });
   await ctx.close();

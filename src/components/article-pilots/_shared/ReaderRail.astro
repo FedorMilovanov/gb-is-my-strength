@@ -992,11 +992,17 @@ const { eyebrow, title, backHref, toc, palette = 'default', settingsTrigger = 'h
         scheduled = true;
         requestAnimationFrame(measureAxis);
       };
-      updateAxis();
+      // Prime the connector synchronously: WebKit may paint before the first
+      // requestAnimationFrame when the TOC appears at its desktop breakpoint.
+      // A zero-height optical axis at first paint is a visible regression.
+      measureAxis();
+      requestAnimationFrame(updateAxis);
       const observer = new ResizeObserver(updateAxis);
       observer.observe(toc);
       toc.addEventListener('transitionend', updateAxis);
       window.addEventListener('resize', updateAxis, {passive:true});
+      window.addEventListener('load', updateAxis, {once:true});
+      if (document.fonts?.ready) void document.fonts.ready.then(updateAxis);
     }
 
     // Presentation-only disclosure. ReaderState is still the sole scroll,
