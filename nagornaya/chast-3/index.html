@@ -286,13 +286,14 @@ window.SITE_CONFIG = {
         <div class="text-xs text-stone-400">5 частей исследования</div>
       </div>
     </div>
-    <button id="menuBtn" aria-label="Открыть меню" aria-controls="mobileMenu" aria-expanded="false" class="p-2 rounded-lg bg-stone-800 hover:bg-stone-700 transition-colors">
-      <div class="w-5 space-y-1">
-        <div class="bar h-0.5 bg-white transition-all"></div>
-        <div class="bar h-0.5 bg-white transition-all"></div>
-        <div class="bar h-0.5 bg-white transition-all"></div>
+    <button id="menuBtn" type="button" aria-label="Открыть меню" aria-controls="mobileMenu" aria-expanded="false" class="p-2 rounded-lg bg-stone-800 hover:bg-stone-700 text-white transition-colors">
+      <div class="w-5 space-y-1" aria-hidden="true">
+        <div class="bar h-0.5 bg-white transition-all"><svg class="block w-full h-full" viewBox="0 0 20 2" aria-hidden="true" focusable="false"><line x1="0" y1="1" x2="20" y2="1" stroke="currentColor" stroke-width="2" /></svg></div>
+        <div class="bar h-0.5 bg-white transition-all"><svg class="block w-full h-full" viewBox="0 0 20 2" aria-hidden="true" focusable="false"><line x1="0" y1="1" x2="20" y2="1" stroke="currentColor" stroke-width="2" /></svg></div>
+        <div class="bar h-0.5 bg-white transition-all"><svg class="block w-full h-full" viewBox="0 0 20 2" aria-hidden="true" focusable="false"><line x1="0" y1="1" x2="20" y2="1" stroke="currentColor" stroke-width="2" /></svg></div>
       </div>
     </button>
+    <style>@media (forced-colors:active){#menuBtn{outline:1px solid ButtonText;color:ButtonText}#menuBtn:focus-visible{outline:2px solid Highlight;outline-offset:2px}}</style>
   </header>
 
   <!-- Mobile menu -->

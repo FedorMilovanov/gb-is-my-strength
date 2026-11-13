@@ -140,6 +140,34 @@
   opacity: 1;
 }
 
+:root {
+  --gb-summary-head-font-size: 0.75rem;
+  --gb-summary-head-line-height: 1.35;
+  --gb-summary-head-tracking: 0.14em;
+}
+
+/* Shared semantic summary-heading floor (GBS-SUMMARY-MICROHEADING-READABILITY):
+   replaces 9px/10px microscopic literals while preserving route/theme colour
+   and display-font art direction. */
+html body .summary-card .summary-card__head:is(h2, h3, div, p),
+html body:not(.nagornaya-page) .article-body > .summary-card .summary-card__head {
+  font-size: var(--gb-summary-head-font-size, 0.75rem);
+  line-height: var(--gb-summary-head-line-height, 1.35);
+  letter-spacing: var(--gb-summary-head-tracking, 0.14em);
+  overflow-wrap: break-word;
+}
+
+/* Remove compound opacity attenuation on .article-byline__updated (3.15:1 -> >=6.5:1 AA). */
+html:not(.dark) body .article-byline__updated {
+  opacity: 1;
+  color: #5b5249;
+}
+
+html.dark body .article-byline__updated {
+  opacity: 1;
+  color: #b5aca1;
+}
+
 @media (max-width: 768px) {
   .gb-strategic-map-popover {
     inset: auto 0 0 0 !important;

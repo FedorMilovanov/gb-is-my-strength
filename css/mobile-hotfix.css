@@ -207,3 +207,27 @@ html:not(.dark) body.nagornaya-page .bg-gradient-to-br.from-stone-800.to-stone-9
 html:not(.dark) body.nagornaya-page .bg-gradient-to-br.from-stone-800.to-stone-900 .text-stone-400,
 html:not(.dark) body.nagornaya-page .text-stone-300{color:#000!important}
 }
+
+/* Shared semantic summary-heading floor (GBS-SUMMARY-MICROHEADING-READABILITY)
+   and .article-byline__updated AA contrast parity on standalone/series hubs
+   that do not import article-capabilities.css (0 !important tokens). */
+:root {
+  --gb-summary-head-font-size: 0.75rem;
+  --gb-summary-head-line-height: 1.35;
+  --gb-summary-head-tracking: 0.14em;
+}
+html body .summary-card .summary-card__head:is(h2, h3, div, p),
+html body:not(.nagornaya-page) .article-body > .summary-card .summary-card__head {
+  font-size: var(--gb-summary-head-font-size, 0.75rem);
+  line-height: var(--gb-summary-head-line-height, 1.35);
+  letter-spacing: var(--gb-summary-head-tracking, 0.14em);
+  overflow-wrap: break-word;
+}
+html:not(.dark) body .article-byline__updated {
+  opacity: 1;
+  color: #5b5249;
+}
+html.dark body .article-byline__updated {
+  opacity: 1;
+  color: #b5aca1;
+}

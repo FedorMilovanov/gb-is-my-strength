@@ -11,6 +11,7 @@
 import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 import AppSearchHead from '@/components/search/AppSearchHead.astro';
 import MapRuntimeFallbackStyles from '@/components/karty/_shared/MapRuntimeFallbackStyles.astro';
+import { assetUrl } from '@/lib/asset-version';
 ---
 
 <MapRuntimeFallbackStyles />
@@ -23,7 +24,7 @@ import MapRuntimeFallbackStyles from '@/components/karty/_shared/MapRuntimeFallb
 <title>Исход из Египта — интерактивная карта Числа 33 | Господь Бог — Сила Моя</title>
 <meta name="description" content="Интерактивная карта Исхода из Египта: от Раамсеса до Ханаана. 11 мест, 6 этапов, 40 лет странствий, Синайский завет, Числа 33." />
 <meta name="robots" content="index, follow" />
-<link rel="preload" as="font" type="font/woff2" href="/fonts/SourceSans3/sourcesans3-cyrillic-400.woff2" crossorigin />
+<link rel="stylesheet" href={assetUrl('fonts/fonts.css')} />
 <link rel="canonical" href="https://gospod-bog.ru/karty/ishod/" />
 <link rel="preload" href="route.json" as="fetch" type="application/json" />
 <link rel="preload" href="pihahiroth-authority.json" as="fetch" type="application/json" />
