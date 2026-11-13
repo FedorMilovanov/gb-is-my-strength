@@ -16,6 +16,18 @@ export const PUBLISHABLE_RUNTIME_POLICY = Object.freeze({
   ignoredParentAuthorities: Object.freeze(['curated-v1-children-index']),
   materializedSpouseAuthorities: Object.freeze(['curated-v1-reciprocal-spouse']),
   nonTopologicalKinds: Object.freeze(['legal-parent']),
+  allowedRelationAuthorities: Object.freeze([
+    'curated-v1-explicit-field',
+    'curated-v1-children-index',
+    'curated-v1-reciprocal-spouse',
+    'explicit-qualified-textual-annotation',
+  ]),
+  allowedConfidenceValues: Object.freeze([
+    'certain',
+    'disputed',
+    'certain-textual-genealogy',
+  ]),
+  allowedSequenceIds: Object.freeze(['matthew', 'luke']),
 });
 
 /**
@@ -53,6 +65,10 @@ export function adaptPublishableRelationEvidence({ persons, relations, textualAs
   for (const assertion of textualAssertions.assertions) {
     const key = assertion.relationCrosswalk?.relationKey;
     if (!key) continue;
+    invariant(
+      PUBLISHABLE_RUNTIME_POLICY.allowedSequenceIds.includes(assertion.sequenceId),
+      `Unsupported publishable sequenceId for reader localization: ${assertion.sequenceId}`,
+    );
     const item = {
       id: assertion.id,
       sequenceId: assertion.sequenceId,
@@ -74,6 +90,15 @@ export function adaptPublishableRelationEvidence({ persons, relations, textualAs
     const to = v1IdByPublishableId.get(relation.to);
     invariant(from && to,
       `Runtime relation evidence escaped curated identities: ${id}`);
+    invariant(
+      PUBLISHABLE_RUNTIME_POLICY.allowedRelationAuthorities.includes(relation.authority),
+      `Unsupported publishable relation authority for reader localization: ${relation.authority}`,
+    );
+    invariant(
+      relation.evidence?.confidence == null ||
+        PUBLISHABLE_RUNTIME_POLICY.allowedConfidenceValues.includes(relation.evidence.confidence),
+      `Unsupported publishable relation confidence for reader localization: ${relation.evidence?.confidence}`,
+    );
 
     out.push({
       id,

@@ -73,7 +73,7 @@ export function PersonCardContent({ data }: { data: any }) {
         {data.name}
       </div>
       {data.hebrew && (
-        <div style={{ color: ls.border, fontSize: '11px', direction: 'rtl', marginTop: '1px', opacity: 0.8 }}>{data.hebrew}</div>
+        <div lang="he" dir="rtl" style={{ color: ls.border, fontSize: '11px', direction: 'rtl', marginTop: '1px', opacity: 0.8 }}>{data.hebrew}</div>
       )}
       {data.birthName && (
         <div style={{ color: 'var(--genealogy-muted)', fontSize: '9px', marginTop: '1px' }}>рожд. {data.birthName}</div>

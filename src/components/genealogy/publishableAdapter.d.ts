@@ -1,4 +1,10 @@
-import type { Person, RuntimeGenealogyRelation } from './types';
+import type {
+  GospelSequenceId,
+  Person,
+  RelationAuthority,
+  RelationConfidence,
+  RuntimeGenealogyRelation,
+} from './types';
 
 export interface PublishableRuntimePolicy {
   readonly personIdAuthority: string;
@@ -6,6 +12,9 @@ export interface PublishableRuntimePolicy {
   readonly ignoredParentAuthorities: readonly string[];
   readonly materializedSpouseAuthorities: readonly string[];
   readonly nonTopologicalKinds: readonly string[];
+  readonly allowedRelationAuthorities: readonly RelationAuthority[];
+  readonly allowedConfidenceValues: readonly RelationConfidence[];
+  readonly allowedSequenceIds: readonly GospelSequenceId[];
 }
 
 export const PUBLISHABLE_RUNTIME_POLICY: PublishableRuntimePolicy;

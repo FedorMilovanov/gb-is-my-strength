@@ -1,5 +1,11 @@
 import { memo, useEffect, useMemo, useRef } from 'react';
-import type { Person, RuntimeGenealogyRelation } from './types';
+import type {
+  GospelSequenceId,
+  Person,
+  RelationAuthority,
+  RelationConfidence,
+  RuntimeGenealogyRelation,
+} from './types';
 
 interface RelationshipInspectorProps {
   relation: RuntimeGenealogyRelation | null;
@@ -7,23 +13,41 @@ interface RelationshipInspectorProps {
   onClose: () => void;
 }
 
-const AUTHORITY_LABELS: Record<string, string> = {
+const AUTHORITY_LABELS = {
   'curated-v1-explicit-field': 'Курированная родственная связь',
   'curated-v1-children-index': 'Курированный индекс потомков',
   'curated-v1-reciprocal-spouse': 'Взаимно подтверждённая супружеская связь',
   'explicit-qualified-textual-annotation': 'Редакционно квалифицированная текстовая связь',
-};
+} satisfies Record<RelationAuthority, string>;
 
-const SEQUENCE_LABELS: Record<string, string> = {
+const SEQUENCE_LABELS = {
   matthew: 'Матфей',
   luke: 'Лука',
-};
+} satisfies Record<GospelSequenceId, string>;
 
-const CONFIDENCE_LABELS: Record<string, string> = {
+const CONFIDENCE_LABELS = {
   certain: 'высокая',
   disputed: 'оспариваемая',
   'certain-textual-genealogy': 'подтверждена текстовой родословной',
-};
+} satisfies Record<RelationConfidence, string>;
+
+function resolveAuthorityLabel(authority: RelationAuthority): string {
+  return Object.hasOwn(AUTHORITY_LABELS, authority)
+    ? AUTHORITY_LABELS[authority]
+    : 'Курированная запись родословия';
+}
+
+function resolveConfidenceLabel(confidence: RelationConfidence): string {
+  return Object.hasOwn(CONFIDENCE_LABELS, confidence)
+    ? CONFIDENCE_LABELS[confidence]
+    : 'уточняется редакцией';
+}
+
+function resolveSequenceLabel(sequenceId: GospelSequenceId): string {
+  return Object.hasOwn(SEQUENCE_LABELS, sequenceId)
+    ? SEQUENCE_LABELS[sequenceId]
+    : 'Евангельское родословие';
+}
 
 function relationLabel(relation: RuntimeGenealogyRelation) {
   if (relation.kind === 'legal-parent') return 'Юридическая родительская связь';
@@ -83,17 +107,17 @@ function RelationshipInspectorComponent({ relation, persons, onClose }: Relation
         </span>
         {evidence.confidence && (
           <span>
-            Редакторская уверенность: {CONFIDENCE_LABELS[evidence.confidence] ?? evidence.confidence}
+            Редакторская уверенность: {resolveConfidenceLabel(evidence.confidence)}
           </span>
         )}
       </div>
 
       <section>
         <h4>Основание модели</h4>
-        <p>{AUTHORITY_LABELS[relation.authority] ?? relation.authority}</p>
+        <p>{resolveAuthorityLabel(relation.authority)}</p>
         {isPending && (
           <p className="genealogy-relation-caution">
-            Эта связь входит в курированную схему, но конкретные стихи к самому ребру ещё не прошли relation-level редакционную проверку.
+            Эта связь входит в курированную схему, но конкретные стихи к самому ребру ещё не прошли редакционную проверку на уровне отдельной связи.
           </p>
         )}
         {evidence.assertion === 'editorial-harmonization' && (
@@ -123,7 +147,7 @@ function RelationshipInspectorComponent({ relation, persons, onClose }: Relation
           <ul>
             {relation.textualAssertions.map(assertion => (
               <li key={assertion.id}>
-                <strong>{SEQUENCE_LABELS[assertion.sequenceId] ?? assertion.sequenceId}</strong>
+                <strong>{resolveSequenceLabel(assertion.sequenceId)}</strong>
                 {' · '}
                 {assertion.fromRef === assertion.toRef
                   ? assertion.fromRef

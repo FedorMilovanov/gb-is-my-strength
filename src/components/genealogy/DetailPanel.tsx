@@ -130,7 +130,7 @@ function DetailPanelComponent({ person, relations = [], persons = [], onInspectR
         {person.name.ru}
       </div>
       {person.name.he && (
-        <div style={{ fontSize: '18px', color: ls.border, direction: 'rtl', marginTop: '2px' }}>
+        <div lang="he" dir="rtl" style={{ fontSize: '18px', color: ls.border, direction: 'rtl', marginTop: '2px' }}>
           {person.name.he}
         </div>
       )}

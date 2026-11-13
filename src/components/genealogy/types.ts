@@ -143,13 +143,26 @@ export type LineageFilter = 'all' | Lineage | 'messianic';
 
 export type RelationKind = 'parent' | 'spouse' | 'legal-parent';
 
+export type RelationAuthority =
+  | 'curated-v1-explicit-field'
+  | 'curated-v1-children-index'
+  | 'curated-v1-reciprocal-spouse'
+  | 'explicit-qualified-textual-annotation';
+
+export type RelationConfidence =
+  | 'certain'
+  | 'disputed'
+  | 'certain-textual-genealogy';
+
+export type GospelSequenceId = 'matthew' | 'luke';
+
 export interface RelationEvidence {
   provenanceClass: string;
   assertion: string;
   directScripture: boolean | null;
   refsStatus: string;
   refs: string[];
-  confidence?: string;
+  confidence?: RelationConfidence;
   editorialPosition?: string;
   biology?: string;
   legal?: boolean;
@@ -159,7 +172,7 @@ export interface RelationEvidence {
 
 export interface RuntimeTextualAssertion {
   id: string;
-  sequenceId: string;
+  sequenceId: GospelSequenceId;
   position: number;
   fromRef: string | null;
   toRef: string | null;
@@ -171,7 +184,7 @@ export interface RuntimeGenealogyRelation {
   from: string;
   to: string;
   role: string | null;
-  authority: string;
+  authority: RelationAuthority;
   evidence: RelationEvidence;
   note: string | null;
   textualAssertions: RuntimeTextualAssertion[];
