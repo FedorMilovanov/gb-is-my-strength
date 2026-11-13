@@ -224,6 +224,20 @@ for (const marker of ['import BaseLayout', '<BaseLayout', 'astro-card-grid']) {
   mustNot(main, marker, `forbidden main marker: ${marker}`);
 }
 
+{
+  const { spawnSync } = require('child_process');
+  const discoveryRes = spawnSync(
+    process.execPath,
+    [path.join(__dirname, 'pastor-series-discovery-authority-contract.mjs')],
+    { encoding: 'utf8' }
+  );
+  if (discoveryRes.status === 0) {
+    ok('current discovery authority reconciled across series.json, config, hub, JSON-LD, feed-pastor-series.xml and sitemap-pastor-series.xml');
+  } else {
+    bad(`current discovery authority contract failed: ${(discoveryRes.stderr || discoveryRes.stdout || '').trim()}`);
+  }
+}
+
 console.log('\nPASTOR-SERIES NATIVE PUBLICATION AUDIT');
 if (problems.length) {
   console.log(`❌ ${problems.length} problem(s).`);

@@ -91,11 +91,32 @@
   "pastor-series": {
     "title": "Тёмная сторона кафедры",
     "baseUrl": "/articles/",
+    "extensionPolicy": "locked",
     "searchPolicy": {
       "landingRoute": "/pastor-series/",
       "librarySection": "Служение",
       "topicCategory": "Пасторство"
     },
+    "discoveryPolicy": {
+      "hubRoute": "/pastor-series/",
+      "rssShard": "/feed-pastor-series.xml",
+      "sitemapShard": "/sitemap-pastor-series.xml",
+      "coreRole": "hasPart",
+      "companionRole": "subjectOf",
+      "feedIncludesCompanions": true,
+      "sitemapIncludesHub": true,
+      "sitemapIncludesCompanions": true
+    },
+    "companions": [
+      {
+        "id": "diotrophes",
+        "mark": "Досье A",
+        "slug": "diotrefy-nashego-vremeni",
+        "title": "Диотрефы нашего времени: власть, подотчётность и верность",
+        "status": "published",
+        "readingTime": 15
+      }
+    ],
     "parts": [
       {
         "n": 1,

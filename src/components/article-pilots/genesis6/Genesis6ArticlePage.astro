@@ -55,8 +55,10 @@ assertFrontmatter(frontmatter);
 const itemIndex = GENESIS6_SERIES_ITEMS.findIndex((entry) => entry.id === pageId);
 const item = GENESIS6_SERIES_ITEMS[itemIndex];
 if (!item) throw new Error(`Unknown Genesis 6 page: ${pageId}`);
+const prev = itemIndex > 0 ? GENESIS6_SERIES_ITEMS[itemIndex - 1] ?? null : null;
 const next = GENESIS6_SERIES_ITEMS[itemIndex + 1] ?? null;
 const itemSection = item.tier === 'satellite' ? `Экскурс ${item.letter}` : `Часть ${item.roman}`;
+const prevSection = prev?.tier === 'satellite' ? `Экскурс ${prev.letter}` : prev ? `Часть ${prev.roman}` : '';
 const nextSection = next?.tier === 'satellite' ? `Экскурс ${next.letter}` : next ? `Часть ${next.roman}` : '';
 const bibleAppChapter: 3 | 4 | null = pageId === 'spirits' ? 3 : pageId === 'dead' ? 4 : null;
 const canonical = frontmatter.canonicalOverride || `${SITE.url}/hard-texts/${frontmatter.slug}/`;
@@ -237,16 +239,34 @@ const siteConfig = {
               <p class="author-card-desc">Канонический текст, рукописные данные, реконструкция и богословский вывод различаются явно, без подмены одного уровня другим.</p>
             </div>
           </section>
-          {next && (
-            <nav class="gbs2-next" aria-label="Следующая часть серии">
-              <a class="gbs2-next-card" href={`/hard-texts/${next.slug}/`}>
-                <span class="gbs2-next-cover" style={`background-image:url(${next.cover})`}></span>
-                <span>
-                  <span class="gbs2-next-eyebrow">Дальше · {nextSection}</span>
-                  <span class="gbs2-next-title">{next.shortTitle}</span>
-                  <span class="gbs2-next-desc">{next.description}</span>
-                </span>
-              </a>
+          {(prev || next) && (
+            <nav
+              class="gbs2-next"
+              aria-label={prev && next ? 'Соседние части серии' : next ? 'Следующая часть серии' : 'Предыдущая часть серии'}
+              data-glossary-skip
+              data-reader-exclude
+              data-print-policy="exclude"
+            >
+              {prev && (
+                <a class="gbs2-next-card" href={`/hard-texts/${prev.slug}/`}>
+                  <span class="gbs2-next-cover" style={`background-image:url(${prev.cover})`}></span>
+                  <span>
+                    <span class="gbs2-next-eyebrow">Назад · {prevSection}</span>
+                    <span class="gbs2-next-title">{prev.shortTitle}</span>
+                    <span class="gbs2-next-desc">{prev.description}</span>
+                  </span>
+                </a>
+              )}
+              {next && (
+                <a class="gbs2-next-card" href={`/hard-texts/${next.slug}/`}>
+                  <span class="gbs2-next-cover" style={`background-image:url(${next.cover})`}></span>
+                  <span>
+                    <span class="gbs2-next-eyebrow">Дальше · {nextSection}</span>
+                    <span class="gbs2-next-title">{next.shortTitle}</span>
+                    <span class="gbs2-next-desc">{next.description}</span>
+                  </span>
+                </a>
+              )}
             </nav>
           )}
         </article>

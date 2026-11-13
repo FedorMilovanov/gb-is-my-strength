@@ -1,0 +1,49 @@
+---
+/**
+ * SeriesBottomNav — каноническая нижняя навигация соседних частей серии (.gbs2-next),
+ * выводимая напрямую из SeriesConfig (SYS-CONTENT-AUTHORING-PUBLICATION-CONTRACT).
+ *
+ * Первая часть показывает карточку «Дальше по серии», промежуточные — «Назад» и
+ * «Дальше», заключительная — «Назад по серии». Исключается из линейной озвучки,
+ * глоссария и печати.
+ */
+import { seriesNeighbors, type SeriesConfig } from './seriesConfig';
+
+interface Props {
+  config: SeriesConfig;
+  pageId: string;
+}
+
+const { config, pageId } = Astro.props as Props;
+const neighbors = seriesNeighbors(config, pageId);
+const navLabel =
+  neighbors.length === 1
+    ? neighbors[0].dir === 'next'
+      ? 'Следующая часть серии'
+      : 'Предыдущая часть серии'
+    : 'Соседние части серии';
+const coverStyle = (cover: string) =>
+  cover
+    ? `background-image:url('${cover}')`
+    : 'background:var(--color-surface-muted,#f4f2ed)';
+---
+{neighbors.length > 0 && (
+  <nav
+    class="gbs2-next"
+    aria-label={navLabel}
+    data-glossary-skip
+    data-reader-exclude
+    data-print-policy="exclude"
+  >
+    {neighbors.map((n) => (
+      <a class="gbs2-next-card" href={n.item.href}>
+        <span class="gbs2-next-cover" style={coverStyle(n.cover)}></span>
+        <span>
+          <span class="gbs2-next-eyebrow">{n.eyebrow}</span>
+          <span class="gbs2-next-title">{n.title}</span>
+          {n.desc && <span class="gbs2-next-desc">{n.desc}</span>}
+        </span>
+      </a>
+    ))}
+  </nav>
+)}

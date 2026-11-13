@@ -2,7 +2,7 @@
  * apostasySeriesConfig — конфиг серии «Отступники» (5 частей, flat).
  * Источник истины по порядку/минутам; data/series.json и хаб обязаны совпадать.
  */
-import { SERIES_CONFIGS, type SeriesConfig, type SeriesPartTocItem, type SeriesQuizItem, defineSeriesConfig } from './seriesConfig';
+import { SERIES_CONFIGS, type SeriesConfig, type SeriesPartTocItem, defineSeriesConfig } from './seriesConfig';
 import { APOSTASY_LEARNING_QUIZ } from '../../apostasy-series/apostasyLearningData';
 import { apostasySeriesMediaFor } from './apostasySeriesMedia';
 
@@ -80,7 +80,7 @@ const part4Toc = toc(
   { href: '#foxe', label: 'Почему Фокса нельзя использовать как единственный источник о Кранмере', level: 2, summary: 'Конфессиональный источник ценен, но жанр и цель должны быть названы.' },
   { href: '#spira', label: 'Франческо Спира: отречение, отчаяние и уверенность в собственной погибели', level: 2, summary: 'Отчаяние, принявшее форму богословия: «я уже погиб» как ловушка.' },
   { href: '#what-history-adds', label: 'Что история добавляет к библейской теме', level: 2, summary: 'Наблюдаемые траектории: сломы, восстановления, ригоризм и его плоды.' },
-  { href: '#history-limits', label: 'Что история НЕ может решить за Библию', level: 2, summary: 'История описывает публичную профессию; возрождение — не архивная категория.' },
+  { href: '#history-limits', label: 'Что история НЕ может решить за Библию', level: 2, summary: 'История описывает публичное исповедание веры; возрождение — не архивная категория.' },
   { href: '#recoverable-denial', label: 'Пётр, Кранмер и lapsi: одна пастырская линия без искусственного равенства', level: 2, summary: 'Отречение под страхом и возвращение — повторяющаяся линия канона и истории.' },
   { href: '#settled-repudiation', label: 'Юлиан и Плиний: публичное отступничество нельзя растворить в психологии', level: 2, summary: 'Сознательное отвержение — реальная категория, а не только травма.' },
   { href: '#labels', label: 'Почему эта история должна сделать церковь осторожнее с ярлыками', level: 2, summary: 'Церковь III века ошибалась в обе стороны — и цена ошибок видна в архивах.' },
@@ -102,7 +102,7 @@ const part5Toc = toc(
   { href: '#upstream', label: 'Предотвращать падение нужно раньше публичного отречения', level: 2, summary: 'Работа церкви начинается до кризиса: внимание к ранним сдвигам.' },
   { href: '#remember', label: '«Помни» — одна из главных заповедей против отступления', level: 2, summary: 'Память о Божьих делах как противоядие охлаждению.' },
   { href: '#means', label: 'Не пренебрегайте обычными средствами сохранения', level: 2, summary: 'Слово, общение, увещание, таинства: Бог сохраняет через средства.' },
-  { href: '#fear-denial', label: 'Если человек публично отрёкся под страхом', level: 2, summary: 'Линия Петра, lapsi и Кранмер: путь обратно открыт и конкретен.' },
+  { href: '#fear-denial', label: 'Если человек публично отрёкся под страхом', level: 2, summary: 'Линия Петра, lapsi и Кранмера: путь обратно открыт и конкретен.' },
   { href: '#settled-rejection', label: 'Если человек сознательно и долго отвергает Христа', level: 2, summary: 'Честность без ненависти: ни ложной надежды, ни закрытия сердца людей.' },
   { href: '#family', label: 'Что делать семье?', level: 2, summary: 'Любовь, границы и молитва без манипуляции и без отречения от ушедшего.' },
   { href: '#church-culture', label: 'Церковь труднее для лжеучителя и безопаснее для кающегося', level: 2, summary: 'Культура общины как часть богословия сохранения.' },
@@ -115,7 +115,11 @@ export const APOSTASY_SERIES: SeriesConfig = defineSeriesConfig({
   seriesTitle: 'Отступники',
   seriesTitleFull: 'Отступники: отступничество, падение и возвращение в Библии и истории Церкви',
   railBackHref: '/otstupniki/',
-  quiz: APOSTASY_LEARNING_QUIZ as unknown as SeriesQuizItem[],
+  quiz: APOSTASY_LEARNING_QUIZ,
+  quizPolicy: {
+    minPerPage: 6,
+    requireRelatedPageId: true,
+  },
   breadcrumbParent: { label: 'Отступники', href: '/otstupniki/' },
   items: [
     { id: 'otstuplenie-chto-govorit-bibliya', mark: { kind: 'roman', value: 'I' }, title: 'Часть I. Что Библия на самом деле называет отпадением от веры', shortTitle: 'Что говорит Библия', href: '/articles/otstuplenie-chto-govorit-bibliya/', readingTime: '18 мин' },

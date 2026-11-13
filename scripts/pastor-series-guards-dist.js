@@ -199,6 +199,19 @@ for (const [part] of QUIZ_ROUTES) {
   }
 }
 
+/* G-9 — current discovery authority (SYS-SERIES-DISCOVERY-CURRENT-AUTHORITY) */
+{
+  const { spawnSync } = require('child_process');
+  const res = spawnSync(
+    process.execPath,
+    [path.join(__dirname, 'pastor-series-discovery-authority-contract.mjs'), '--dist'],
+    { encoding: 'utf8' }
+  );
+  if (res.status !== 0) {
+    fail('G-9', 'discovery', (res.stderr || res.stdout || 'discovery authority failed').trim());
+  }
+}
+
 if (issues.length) {
   console.error('PASTOR-SERIES GUARDS (dist): FAIL');
   for (const issue of issues) console.error('  - ' + issue);

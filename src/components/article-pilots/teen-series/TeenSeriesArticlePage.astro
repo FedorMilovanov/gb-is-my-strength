@@ -2,6 +2,7 @@
 import Seo from '@/components/seo/Seo.astro';
 import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 import SeriesReaderChrome from '@/components/article-pilots/_shared/series/SeriesReaderChrome.astro';
+import SeriesBottomNav from '@/components/article-pilots/_shared/series/SeriesBottomNav.astro';
 import { TEEN_DOUBLE_LIFE_SERIES } from '@/components/article-pilots/_shared/series/teenSeriesConfig';
 import { teenSeriesMediaFor } from '@/components/article-pilots/_shared/series/teenSeriesMedia';
 import { seriesItem, coreStepMeta } from '@/components/article-pilots/_shared/series/seriesConfig';
@@ -229,6 +230,7 @@ const siteConfig = {
             </div>
           </section>
           <TeenSeriesCorrectionBoundary />
+          <SeriesBottomNav config={TEEN_DOUBLE_LIFE_SERIES} pageId={pageId} />
         </article>
         <div class="article-end-block article-end-sdg-wrap"><div class="article-end-sdg"><span class="sdg">Soli Deo Gloria</span></div></div>
       </main>

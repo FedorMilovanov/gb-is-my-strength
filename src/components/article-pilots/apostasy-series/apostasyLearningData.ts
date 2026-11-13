@@ -1,18 +1,16 @@
 import type { SeriesQuizItem } from '../_shared/series/seriesConfig';
+import type { ApostasySeriesMediaPageId } from '../_shared/series/apostasySeriesMedia';
 
 /**
  * Пул «Тест» серии «Отступники»: по 6 вопросов на часть, каждый привязан к
- * своей части через relatedPageId. Вопросы и ответы берутся только из
- * фактического текста статей (без dual-write: единственный владелец — этот
- * файл; чек-лист Хартии S-стандарта по квизам).
- *
- * relatedPageId здесь — свободная строка (slug части), поэтому тип уже, чем
- * GillLearningQuizItem.relatedPageId (узкий union Гилла); приведение — в
- * apostasySeriesConfig.ts одним `as unknown as`.
+ * своей части через типизированный relatedPageId. Вопросы и ответы берутся
+ * только из фактического текста статей (без dual-write: единственный владелец —
+ * этот файл; референциальная целостность проверяется в defineSeriesConfig).
  */
-export interface ApostasyQuizItem extends Omit<SeriesQuizItem, 'relatedPageId'> {
-  relatedPageId: string;
-}
+export type ApostasyPageId = ApostasySeriesMediaPageId;
+export type ApostasyQuizItem = SeriesQuizItem<ApostasyPageId> & {
+  relatedPageId: ApostasyPageId;
+};
 
 const p1 = '/articles/otstuplenie-chto-govorit-bibliya/';
 const p2 = '/articles/otstupniki-biblii-iuda-saul-ierovoam-dimas/';
@@ -206,16 +204,16 @@ export const APOSTASY_LEARNING_QUIZ: ApostasyQuizItem[] = [
   },
   {
     id: 'apostasy.p4.cranmer', category: 'people', relatedPageId: 'otreklis-ot-hrista-istoriya-cerkvi',
-    question: 'Чем завершилась история отречений Кранмер?',
+    question: 'Чем завершилась история отречений Кранмера?',
     answers: ['Он публично отрёкся от своих отречений и умер, исповедуя веру, за которую шёл на казнь', 'Он умер, подтвердив свои отречения', 'Он бежал из Англии и жил в изгнании', 'Он никогда не подписывал отречений'],
     correctIndex: 0,
-    explanation: 'Зрелый лидер с многолетней профессией может публично отречься под страхом — и затем столь же публично отречься от собственного отречения.',
+    explanation: 'Зрелый служитель с многолетним исповеданием веры может публично отречься под страхом — и затем столь же публично отречься от собственного отречения.',
     sourceHref: `${p4}#cranmer`, sourceLabel: 'Часть IV · §7',
   },
   {
     id: 'apostasy.p4.foxe', category: 'sources', relatedPageId: 'otreklis-ot-hrista-istoriya-cerkvi',
     question: 'Почему «Книгу мучеников» Фокса нельзя использовать как единственный источник о Кранмере?',
-    answers: ['Конфессиональный источник может быть ценным и даже первичным, но его жанр и цель должны быть названы и сверены с другими свидетельствами', 'Фокс полностью выдумал историю Кранмер', 'Фокс писал на незнакомом языке', 'Все старые источники недостоверны'],
+    answers: ['Конфессиональный источник может быть ценным и даже первичным, но его жанр и цель должны быть названы и сверены с другими свидетельствами', 'Фокс полностью выдумал историю Кранмера', 'Фокс писал на незнакомом языке', 'Все старые источники недостоверны'],
     correctIndex: 0,
     explanation: 'Статья различает ценность источника и его жанровую нагрузку: проверка по независимым свидетельствам — норма, а не недоверие.',
     sourceHref: `${p4}#foxe`, sourceLabel: 'Часть IV · §8',
@@ -259,7 +257,7 @@ export const APOSTASY_LEARNING_QUIZ: ApostasyQuizItem[] = [
     question: 'Что статья отказывается автоматически называть отступничеством?',
     answers: ['Всякое сомнение, уход из общины или духовный кризис', 'Сознательное и долгое отвержение Христа', 'Публичное отречение без раскаяния', 'Лжеучение, разрушающее веру других'],
     correctIndex: 0,
-    explanation: 'Ярлык «отступник» требует точности: кризис, сомнение и даже уход из конкретной общины — не та же категория, что settled-отвержение Христа.',
+    explanation: 'Ярлык «отступник» требует точности: кризис, сомнение и даже уход из конкретной общины — не та же категория, что устоявшееся отвержение Христа.',
     sourceHref: `${p5}#not-every-crisis`, sourceLabel: 'Часть V · §8',
   },
   {

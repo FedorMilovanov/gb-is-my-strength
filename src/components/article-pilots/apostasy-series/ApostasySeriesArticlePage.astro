@@ -2,6 +2,7 @@
 import Seo from '@/components/seo/Seo.astro';
 import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 import SeriesReaderChrome from '@/components/article-pilots/_shared/series/SeriesReaderChrome.astro';
+import SeriesBottomNav from '@/components/article-pilots/_shared/series/SeriesBottomNav.astro';
 import { APOSTASY_SERIES } from '@/components/article-pilots/_shared/series/apostasySeriesConfig';
 import { apostasySeriesMediaFor } from '@/components/article-pilots/_shared/series/apostasySeriesMedia';
 import { seriesItem } from '@/components/article-pilots/_shared/series/seriesConfig';
@@ -226,6 +227,7 @@ const siteConfig = {
             </div>
           </section>
           <ApostasySeriesCorrectionBoundary />
+          <SeriesBottomNav config={APOSTASY_SERIES} pageId={pageId} />
         </article>
         <div class="article-end-block article-end-sdg-wrap"><div class="article-end-sdg"><span class="sdg">Soli Deo Gloria</span></div></div>
       </main>

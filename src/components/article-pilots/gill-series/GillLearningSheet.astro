@@ -10,8 +10,7 @@
  * handle, focus-trap and scroll-lock from initTocPopups() in
  * floating-cluster-controller.js — this file only owns tab-panel content.
  */
-import { GILL_LEARNING_QUIZ } from './gillLearningData';
-import { GILL_SERIES, type SeriesConfig } from '../_shared/series/seriesConfig';
+import { GILL_SERIES, resolveSeriesQuizItems, type SeriesConfig } from '../_shared/series/seriesConfig';
 
 interface Props {
   pageId: string;
@@ -25,10 +24,7 @@ const page = config.pages[pageId];
 // part-context header instead of a generic static title.
 const partTag = page.partLabel.split('·')[0].trim();
 const outline = page.partToc.filter((item) => item.level === 2 && item.summary);
-const seriesPool = config.quiz ?? GILL_LEARNING_QUIZ;
-const quizPool = seriesPool.filter((q) => !q.relatedPageId || q.relatedPageId === pageId);
-// Fall back to the full pool on thinner pages so the quiz tab is never empty.
-const quizItems = quizPool.length >= 4 ? quizPool : seriesPool;
+const quizItems = resolveSeriesQuizItems(config, pageId);
 const hasQuiz = quizItems.length > 0;
 ---
 <div id="gillLearningOverlay" class="toc-overlay gill-learning-overlay" data-gill-overlay="learning" aria-hidden="true">

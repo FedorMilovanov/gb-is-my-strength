@@ -21,6 +21,7 @@
 //
 // Usage: node scripts/content-coverage-audit.js   (requires built dist/)
 const assert = require('assert');
+const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const {
@@ -215,6 +216,17 @@ function main() {
     ok(`accepted semantic source→dist manifests: ${semantic.results.length} routes, ${semantic.mutationCasesKilled} deletion mutations killed`);
   } catch (error) {
     bad(`accepted semantic source→dist manifests: ${error.message}`);
+  }
+
+  try {
+    const out = execFileSync(
+      process.execPath,
+      [path.join(__dirname, 'content-authoring-publication-contract.mjs'), '--dist'],
+      { cwd: ROOT, encoding: 'utf8', env: { ...process.env, DIST_ROOT: DIST } }
+    );
+    ok(out.trim());
+  } catch (error) {
+    bad(`content-authoring-publication-contract: ${(error.stderr || error.message || '').trim()}`);
   }
 
   const health = {

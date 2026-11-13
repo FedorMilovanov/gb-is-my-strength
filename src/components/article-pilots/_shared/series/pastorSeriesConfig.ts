@@ -18,6 +18,8 @@ export const PASTOR_SERIES: SeriesConfig = defineSeriesConfig({
   seriesTitle: 'Тёмная сторона кафедры',
   seriesTitleFull: 'Тёмная сторона кафедры',
   railBackHref: '../../pastor-series/',
+  extensionPolicy: 'locked',
+  lockedCounts: { coreItems: 9, companionItems: 1 },
   quiz: [],
   breadcrumbParent: { label: 'Тёмная сторона кафедры', href: '../../pastor-series/' },
   items: [

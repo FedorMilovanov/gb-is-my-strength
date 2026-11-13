@@ -3,6 +3,7 @@ import AboutAccuracyBlock from '@/components/about/AboutAccuracyBlock.astro';
 import Seo from '@/components/seo/Seo.astro';
 import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 import SeriesReaderChrome from '@/components/article-pilots/_shared/series/SeriesReaderChrome.astro';
+import SeriesBottomNav from '@/components/article-pilots/_shared/series/SeriesBottomNav.astro';
 import { PASTOR_SERIES } from '@/components/article-pilots/_shared/series/pastorSeriesConfig';
 import { seriesItem } from '@/components/article-pilots/_shared/series/seriesConfig';
 import { SITE } from '@/data/site';
@@ -234,6 +235,7 @@ const siteConfig = {
               <p class="author-card-desc">Факт, толкование, пастырское применение и степень уверенности различаются явно; вывод не должен быть сильнее текста или доказательств.</p>
             </div>
           </section>
+          <SeriesBottomNav config={PASTOR_SERIES} pageId={pageId} />
         </article>
       <AboutAccuracyBlock />
         <div class="article-end-block article-end-sdg-wrap"><div class="article-end-sdg"><span class="sdg">Soli Deo Gloria</span></div></div>
