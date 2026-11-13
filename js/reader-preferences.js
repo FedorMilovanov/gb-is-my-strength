@@ -335,12 +335,23 @@
       var label = document.createElement('span');
       label.className = 'gb-summary-toggle__label';
       while (heading.firstChild) label.appendChild(heading.firstChild);
-      label.textContent = 'Краткое содержание';
+      label.textContent = 'Коротко';
+      // Argon UPDATE: a plain folio summary row, with a small thesis count
+      // and a quiet directional glyph. No framed icon or duplicate disclosure.
+      var meta = document.createElement('span');
+      meta.className = 'gb-summary-toggle__meta';
+      var count = list.querySelectorAll(':scope > li').length;
+      var countLabel = document.createElement('span');
+      countLabel.className = 'gb-summary-toggle__count';
+      var teen = count % 100;
+      var unit = teen >= 11 && teen <= 14 ? 'тезисов' : count % 10 === 1 ? 'тезис' : count % 10 >= 2 && count % 10 <= 4 ? 'тезиса' : 'тезисов';
+      countLabel.textContent = count + ' ' + unit;
       var chevron = document.createElement('span');
       chevron.className = 'gb-summary-toggle__chevron';
       chevron.setAttribute('aria-hidden', 'true');
-      chevron.innerHTML = '<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="m6 8 4 4 4-4"/></svg>';
-      button.append(label, chevron);
+      chevron.textContent = '›';
+      meta.append(countLabel, chevron);
+      button.append(label, meta);
       heading.appendChild(button);
       var panel = document.createElement('div');
       panel.className = 'gb-summary-motion';
@@ -354,7 +365,7 @@
         if (!open && panel.contains(document.activeElement)) button.focus({preventScroll:true});
         card.dataset.gbSummaryOpen = open ? 'true' : 'false';
         button.setAttribute('aria-expanded', String(open));
-        button.setAttribute('aria-label', open ? 'Свернуть раздел «Краткое содержание»' : 'Развернуть раздел «Краткое содержание»');
+        button.setAttribute('aria-label', open ? 'Свернуть раздел «Коротко»' : 'Развернуть раздел «Коротко»');
         panel.inert = !open;
         panel.setAttribute('aria-hidden', String(!open));
       }

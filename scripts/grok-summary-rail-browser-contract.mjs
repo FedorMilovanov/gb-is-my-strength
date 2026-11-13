@@ -32,28 +32,45 @@ async function visit(type,engine,route,size,full){
     overflow:document.documentElement.scrollWidth-innerWidth
   }));
   add(engine,route,'default closed, accessible, no duplicate',initial.open==='false'&&initial.toggle==='false'&&initial.inert&&initial.bodyHeight<=2&&!initial.duplicate&&initial.bodyCount===1&&initial.overflow<=2,initial);
-  // Premium disclosure acceptance: no nested rectangular hover paint. The
-  // single card edge and the small circular chevron carry the interaction.
-  const idleSkin=await card.evaluate(el=>({
-    edge:getComputedStyle(el).borderTopColor,
-    labelSize:parseFloat(getComputedStyle(el.querySelector('.gb-summary-toggle')).fontSize)
-  }));
-  await btn.hover();await p.waitForTimeout(320);
-  const hoverSkin=await card.evaluate(el=>{
+  // Exact visual reference: ARGON UPDATE / CenterArticle.tsx book-summary.
+  // It has a 13px quiet row, 10px thesis count + ›, 1px top rule,
+  // and absolutely no surrounding card, round button or green status dots.
+  const idleSkin=await card.evaluate(el=>{
+    const cardCss=getComputedStyle(el);
     const button=el.querySelector('.gb-summary-toggle');
-    const chevron=el.querySelector('.gb-summary-toggle__chevron');
-    const skin=getComputedStyle(button);
-    return {edge:getComputedStyle(el).borderTopColor,buttonBg:skin.backgroundColor,
-      buttonBgImage:skin.backgroundImage,chevronBg:getComputedStyle(chevron).backgroundColor,
-      chevronShape:getComputedStyle(chevron).borderRadius,
-      chevronWidth:chevron.getBoundingClientRect().width};
+    const label=button.querySelector('.gb-summary-toggle__label');
+    const meta=button.querySelector('.gb-summary-toggle__meta');
+    const arrow=button.querySelector('.gb-summary-toggle__chevron');
+    return {top:cardCss.borderTopWidth,left:cardCss.borderLeftWidth,
+      right:cardCss.borderRightWidth,bottom:cardCss.borderBottomWidth,
+      radius:cardCss.borderRadius,surface:cardCss.backgroundColor,shadow:cardCss.boxShadow,
+      label:label?.textContent?.trim(),labelSize:parseFloat(getComputedStyle(label).fontSize),
+      count:meta?.textContent?.trim(),countSize:parseFloat(getComputedStyle(meta).fontSize),
+      arrow:arrow?.textContent,arrowRadius:getComputedStyle(arrow).borderRadius,
+      arrowBorder:getComputedStyle(arrow).borderTopWidth,
+      greenDots:[...el.querySelectorAll('.summary-card__num')].filter(e=>
+        getComputedStyle(e).display!=='none').length};
   });
-  add(engine,route,'premium summary hover lights only card edge and round chevron',
-    idleSkin.labelSize>=10.5 && hoverSkin.edge!==idleSkin.edge &&
-    ['transparent','rgba(0, 0, 0, 0)'].includes(hoverSkin.buttonBg) &&
-    hoverSkin.buttonBgImage==='none'&&
-    hoverSkin.chevronShape==='50%'&&hoverSkin.chevronWidth>=28&&
-    !['transparent','rgba(0, 0, 0, 0)'].includes(hoverSkin.chevronBg),{idleSkin,hoverSkin});
+  await btn.hover();
+  const hoverSkin=await card.evaluate(el=>({
+    bg:getComputedStyle(el.querySelector('.gb-summary-toggle')).backgroundColor,
+    arrowBg:getComputedStyle(el.querySelector('.gb-summary-toggle__chevron')).backgroundColor,
+    surface:getComputedStyle(el).backgroundColor,
+    borderLeft:getComputedStyle(el).borderLeftWidth
+  }));
+  const clear=['transparent','rgba(0, 0, 0, 0)'];
+  add(engine,route,'Argon UPDATE: unframed Коротко, thin top rule, thesis count, no green dots',
+    idleSkin.label==='Коротко' && idleSkin.labelSize===13 &&
+    idleSkin.countSize===10 && parseInt(idleSkin.count,10)>0 &&
+    idleSkin.count.includes('тезис') &&
+    idleSkin.arrow==='›' && idleSkin.top==='1px' &&
+    idleSkin.left==='0px' && idleSkin.right==='0px' && idleSkin.bottom==='0px' &&
+    idleSkin.radius==='0px' && clear.includes(idleSkin.surface) &&
+    idleSkin.shadow==='none' && idleSkin.arrowRadius==='0px' &&
+    idleSkin.arrowBorder==='0px' && idleSkin.greenDots===0 &&
+    clear.includes(hoverSkin.bg) && clear.includes(hoverSkin.arrowBg) &&
+    clear.includes(hoverSkin.surface) && hoverSkin.borderLeft==='0px',
+    {idleSkin,hoverSkin});
   await btn.click();
   // Wait for the actual CSS opening transition (including WebKit's late start).
   // Keep the exact product visual contract strict, not a fixed-time snapshot.
@@ -61,9 +78,7 @@ async function visit(type,engine,route,size,full){
     const body=cardEl.querySelector('.gb-summary-motion > .summary-card__body');
     const motion=cardEl.querySelector('.gb-summary-motion');
     if(!body||!motion||cardEl.dataset.gbSummaryOpen!=='true')return false;
-    const css=getComputedStyle(body);
-    return parseFloat(css.paddingTop)>=14 &&
-      motion.getBoundingClientRect().height>30 &&
+    return motion.getBoundingClientRect().height>30 &&
       !motion.getAnimations().some(a=>a.playState==='running' &&
         a.transitionProperty==='grid-template-rows');
   },await card.elementHandle(),{timeout:1800});
@@ -71,14 +86,23 @@ async function visit(type,engine,route,size,full){
   add(engine,route,'real content opens',expanded.open==='true'&&expanded.aria==='true'&&!expanded.inert&&expanded.h>30&&expanded.body>20,expanded);
   const openedSkin=await card.evaluate(el=>{
     const body=el.querySelector('.gb-summary-motion > .summary-card__body'),css=getComputedStyle(body);
+    const row=body.querySelector('.summary-card__item'),rowStyle=getComputedStyle(row);
+    const textStyle=getComputedStyle(row.querySelector('.summary-card__text'));
     const chevron=getComputedStyle(el.querySelector('.gb-summary-toggle__chevron'));
-    return {padding:parseFloat(css.paddingTop),rule:css.borderTopColor,ruleWidth:css.borderTopWidth,
-      chevronTransform:chevron.transform,buttonBg:getComputedStyle(el.querySelector('.gb-summary-toggle')).backgroundColor};
+    return {display:css.display,listType:css.listStyleType,listPadding:parseFloat(css.paddingLeft),
+      rowDisplay:rowStyle.display,rowStyle:rowStyle.listStyleType,
+      fontSize:parseFloat(textStyle.fontSize),fontFamily:textStyle.fontFamily,
+      lineHeight:parseFloat(textStyle.lineHeight),numVisible:[...body.querySelectorAll('.summary-card__num')].some(x=>getComputedStyle(x).display!=='none'),
+      border:css.borderTopWidth,chevronTransform:chevron.transform,
+      buttonBg:getComputedStyle(el.querySelector('.gb-summary-toggle')).backgroundColor};
   });
-  add(engine,route,'expanded summary has a quiet editorial divider, no header flood fill',
-    openedSkin.padding>=14&&openedSkin.ruleWidth==='1px'&&
-    !['transparent','rgba(0, 0, 0, 0)'].includes(openedSkin.rule)&&
-    openedSkin.chevronTransform!=='none'&&
+  add(engine,route,'Argon UPDATE: open numbered Lora theses, no inner rule, green circles or fill',
+    openedSkin.display==='block' && openedSkin.listType==='decimal' &&
+    openedSkin.listPadding>=20 && openedSkin.rowDisplay==='list-item' &&
+    openedSkin.rowStyle==='decimal' && openedSkin.fontSize===14 &&
+    openedSkin.fontFamily.includes('Lora') && openedSkin.lineHeight>=22 &&
+    !openedSkin.numVisible && openedSkin.border==='0px' &&
+    openedSkin.chevronTransform!=='none' &&
     ['transparent','rgba(0, 0, 0, 0)'].includes(openedSkin.buttonBg),openedSkin);
   if(full && /hermenevticheskaya|dzhon-gill-chast-1|nagornaya\/chast-1/.test(route)){
     await card.screenshot({path:path.join(out,engine+'-'+route.replaceAll('/','_')+'-open.png')});
@@ -149,7 +173,16 @@ async function visit(type,engine,route,size,full){
       for(const a of both){a.currentTime=0;a.play();}
       return {before,missingAnimation:false,duration:widthAnim.effect.getTiming().duration,frames};
     });
-    await p.waitForTimeout(700);
+    // Linux WebKit may run the 520ms CSS width transition on a delayed
+    // animation clock after the scripted WAAPI samples. Await the actual
+    // settled rail DOM, keeping the same 68px target and <1px tolerance.
+    // A stuck transition still fails after the finite deadline.
+    await p.waitForFunction(() => {
+      const el=document.querySelector('.hrail--grok');
+      return el?.classList.contains('hrail--compact') &&
+        !el.classList.contains('grok-rail-switching') &&
+        Math.abs(el.getBoundingClientRect().width-68)<1;
+    },null,{timeout:2200});
     const frames=trace.frames||[];
     const maxEdgeDrift=frames.length?Math.max(...frames.map(f=>Math.abs((f.width-f.x)-52))):Infinity;
     const monotonic=frames.length===7&&frames.every((f,i)=>!i||
@@ -165,7 +198,13 @@ async function visit(type,engine,route,size,full){
       travel>200&&maxEdgeDrift<=2&&monotonic&&intermediate>=4&&invisible,
       {duration:trace.duration,maxEdgeDrift,monotonic,intermediate,invisible,travel,compact,frames});
     await rail.screenshot({path:path.join(out,engine+'-compact.png')});
-    await toggle.click();await p.waitForTimeout(820);
+    await toggle.click();
+    await p.waitForFunction(() => {
+      const el=document.querySelector('.hrail--grok');
+      return el&&!el.classList.contains('hrail--compact')&&
+        !el.classList.contains('grok-rail-switching')&&
+        el.getBoundingClientRect().width>250;
+    },null,{timeout:2200});
     const restored=await rail.evaluate(e=>({compact:e.classList.contains('hrail--compact'),switching:e.classList.contains('grok-rail-switching'),width:e.getBoundingClientRect().width,controls:document.querySelectorAll('#gbFloatingControls').length}));
     add(engine,route,'rail expands, original four controls unique',!restored.compact&&!restored.switching&&restored.width>250&&restored.controls===1,restored);
     await toggle.click();await p.waitForTimeout(70);await toggle.click();await p.waitForTimeout(820);

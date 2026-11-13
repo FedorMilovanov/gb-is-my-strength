@@ -1549,111 +1549,116 @@ body.nagornaya-page main .text-2xl{font-size:calc(24px*var(--gb-reader-font-scal
 @media (min-width:768px){body.nagornaya-page main .md\:text-3xl{font-size:calc(30px*var(--gb-reader-font-scale,1))}}
 
 
-/* GB Summary Disclosure v2: one editorial surface, not an inner rectangular
-   hover panel. The canonical JS owner handles the disclosure, ARIA and deep
-   links; the content remains in static HTML for TTS, print and no-JS readers.
-   Article-specific palettes feed these shared semantic surface tokens. */
+/* Argon UPDATE editorial "Коротко" (CenterArticle.tsx, reader.css).
+   Shared GBSummaryDisclosure remains the only state/ARIA/deep-link owner.
+   This is a naked book-folio disclosure, not a card, pill or ornamental icon. */
 .summary-card[data-gb-summary-pending="1"]:not([data-gb-summary-owner="1"]) > .summary-card__body {
   display: none;
 }
 .summary-card[data-gb-summary-owner="1"] {
-  --gb-summary-accent: var(--color-accent-strong, #7a2e2e);
-  --gb-summary-border: color-mix(in srgb, var(--color-border-strong, #bda78b) 50%, transparent);
-  --gb-summary-border-hover: color-mix(in srgb, var(--gb-summary-accent) 42%, var(--gb-summary-border));
-  --gb-summary-rule: color-mix(in srgb, var(--gb-summary-accent) 16%, transparent);
-  --gb-summary-surface: var(--color-surface-quote, #fffaf5);
-  margin-block: 18px 24px;
+  --gb-summary-ink: var(--color-text-primary, var(--color-text, #1a1a1a));
+  --gb-summary-muted: var(--color-text-muted, #6a6a6a);
+  --gb-summary-secondary: var(--color-text-secondary, #555);
+  --gb-summary-bronze: var(--color-accent, #7a2e2e);
+  --gb-summary-line: var(--color-border, #e5e2dc);
   position: relative;
-  isolation: isolate;
-  border: 1px solid var(--gb-summary-border);
-  border-radius: 18px;
-  background: var(--gb-summary-surface);
-  box-shadow: 0 14px 34px -29px rgba(38, 28, 20, .25), inset 0 1px 0 rgba(255, 255, 255, .18);
-  transition: border-color .26s ease, box-shadow .26s ease;
+  isolation: auto;
+  margin: 18px 0 24px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--gb-summary-line);
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
 }
 html.dark .summary-card[data-gb-summary-owner="1"] {
-  --gb-summary-accent: #e8b878;
-  --gb-summary-border: rgba(232, 184, 120, .16);
-  --gb-summary-border-hover: rgba(232, 184, 120, .38);
-  --gb-summary-rule: rgba(232, 184, 120, .18);
-  --gb-summary-surface: color-mix(in srgb, var(--color-surface-quote, #171a1e) 92%, #0b0e12 8%);
-  box-shadow: 0 16px 34px -28px rgba(0, 0, 0, .52), inset 0 1px 0 rgba(255, 255, 255, .035);
-}
-html[data-reader-theme="sepia"] .summary-card[data-gb-summary-owner="1"] {
-  --gb-summary-accent: #79552e;
-  --gb-summary-border-hover: #b79a6d;
-  --gb-summary-rule: rgba(121, 85, 46, .2);
-}
-.summary-card[data-gb-summary-owner="1"][data-gb-summary-open="true"] {
-  border-color: var(--gb-summary-border-hover);
+  --gb-summary-ink: var(--color-text-primary, #e6e1d7);
+  --gb-summary-secondary: var(--color-text-secondary, #9ca3af);
+  --gb-summary-muted: var(--color-text-muted, #9aa0ab);
+  --gb-summary-bronze: var(--color-accent, #d4a574);
+  --gb-summary-line: var(--color-border, #232830);
 }
 .summary-card[data-gb-summary-owner="1"] > .summary-card__head {
   display: block;
+  width: 100%;
   margin: 0;
   padding: 0;
   border: 0;
   background: transparent;
+  font-size: inherit;
+  text-transform: none;
+  letter-spacing: normal;
 }
 .summary-card[data-gb-summary-owner="1"] .gb-summary-toggle {
   appearance: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: 12px;
   width: 100%;
-  min-height: 48px;
-  padding: 8px 2px 10px;
+  min-height: 44px;
   margin: 0;
+  padding: 8px 0;
   border: 0;
-  border-radius: 10px;
+  border-radius: 0;
   background: transparent;
-  color: var(--gb-summary-accent);
-  font-family: "Source Sans 3", system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 750;
-  line-height: 1.35;
-  letter-spacing: .19em;
+  box-shadow: none;
+  color: var(--gb-summary-secondary);
+  font-family: "Source Sans 3", "Inter", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: normal;
   text-align: left;
-  text-transform: uppercase;
+  text-transform: none;
   cursor: pointer;
-  transition: color .24s ease;
+  transition: color .18s ease;
 }
 .summary-card[data-gb-summary-owner="1"] .gb-summary-toggle:hover {
+  color: var(--gb-summary-bronze);
   background: transparent;
-  color: var(--gb-summary-accent);
-}
-@media (hover: hover) and (pointer: fine) {
-  .summary-card[data-gb-summary-owner="1"]:has(> .summary-card__head > .gb-summary-toggle:hover) {
-    border-color: var(--gb-summary-border-hover);
-    box-shadow: 0 16px 35px -29px rgba(26, 23, 20, .3), inset 0 1px 0 color-mix(in srgb, var(--gb-summary-accent) 11%, transparent);
-  }
 }
 .summary-card[data-gb-summary-owner="1"] .gb-summary-toggle:focus-visible {
-  outline: 2px solid var(--gb-summary-accent);
-  outline-offset: -2px;
+  outline: 2px solid var(--gb-summary-bronze);
+  outline-offset: 2px;
+}
+.summary-card[data-gb-summary-owner="1"] .gb-summary-toggle__meta {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 5px;
+  color: var(--gb-summary-muted);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: normal;
+  text-transform: none;
 }
 .summary-card[data-gb-summary-owner="1"] .gb-summary-toggle__chevron {
-  display: grid;
-  place-items: center;
-  flex: 0 0 30px;
-  width: 30px;
-  height: 30px;
-  border: 1px solid var(--gb-summary-rule);
-  border-radius: 50%;
+  display: inline-block;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
   background: transparent;
-  color: var(--gb-summary-accent);
-  opacity: .72;
-  transform: rotate(0);
-  transition: transform .38s cubic-bezier(.32,.72,0,1), opacity .22s ease, background-color .24s ease, border-color .24s ease;
-}
-.summary-card[data-gb-summary-owner="1"] .gb-summary-toggle:is(:hover,:focus-visible) .gb-summary-toggle__chevron {
+  box-shadow: none;
+  color: inherit;
   opacity: 1;
-  border-color: var(--gb-summary-border-hover);
-  background: color-mix(in srgb, var(--gb-summary-accent) 9%, transparent);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1;
+  transform: rotate(0);
+  transform-origin: center;
+  transition: transform .2s ease;
 }
 .summary-card[data-gb-summary-owner="1"][data-gb-summary-open="true"] .gb-summary-toggle__chevron {
-  transform: rotate(180deg);
-  opacity: 1;
+  transform: rotate(90deg);
 }
 .summary-card[data-gb-summary-owner="1"] .gb-summary-motion {
   display: grid;
@@ -1667,31 +1672,102 @@ html[data-reader-theme="sepia"] .summary-card[data-gb-summary-owner="1"] {
   opacity: 1;
 }
 .summary-card[data-gb-summary-owner="1"] .gb-summary-motion > .summary-card__body {
+  display: block;
+  list-style: decimal outside;
   min-height: 0;
   overflow: hidden;
   margin: 0;
-  padding: 0;
-  border-top: 1px solid transparent;
-  transition: padding-top .4s cubic-bezier(.32,.72,0,1), border-color .3s ease;
+  padding: 0 0 0 20px;
+  border: 0;
 }
 .summary-card[data-gb-summary-owner="1"][data-gb-summary-open="true"] .gb-summary-motion > .summary-card__body {
-  padding-top: 17px;
-  border-top-color: var(--gb-summary-rule);
+  padding-top: 0;
+  padding-bottom: 12px;
+  border: 0;
 }
 .summary-card[data-gb-summary-owner="1"] .gb-summary-motion > .summary-card__body::after {
-  content: "";
-  display: block;
-  min-height: 5px;
+  content: none;
+  display: none;
+}
+.summary-card[data-gb-summary-owner="1"] .summary-card__item,
+body:not(.nagornaya-page) .article-body > .summary-card[data-gb-summary-owner="1"] .summary-card__item {
+  display: list-item;
+  list-style: decimal outside;
+  position: static;
+  margin: 0 0 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--gb-summary-ink);
+  font-family: "Lora", Georgia, serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+.summary-card[data-gb-summary-owner="1"] .summary-card__item::marker {
+  color: var(--gb-summary-ink);
+  font-size: 14px;
+}
+.summary-card[data-gb-summary-owner="1"] .summary-card__num,
+.summary-card[data-gb-summary-owner="1"] .summary-card__num::before,
+.summary-card[data-gb-summary-owner="1"] .summary-card__check {
+  display: none;
+  content: none;
+}
+.summary-card[data-gb-summary-owner="1"] .summary-card__text,
+body:not(.nagornaya-page) .article-body > .summary-card[data-gb-summary-owner="1"] .summary-card__text {
+  display: inline;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  color: var(--gb-summary-ink);
+  font-family: "Lora", Georgia, serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+  text-align: start;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.summary-card[data-gb-summary-owner="1"] .summary-card__text strong {
+  color: inherit;
+  font-weight: 700;
+}
+/* Series-specific decorative framing cannot rewrap this common Argon folio. */
+body .article-body > .summary-card[data-gb-summary-owner="1"],
+html.dark body .article-body > .summary-card[data-gb-summary-owner="1"],
+html[data-reader-theme="sepia"] body .article-body > .summary-card[data-gb-summary-owner="1"],
+[data-series-theme="manuscript"] .summary-card[data-gb-summary-owner="1"] {
+  padding: 0;
+  border: 0;
+  border-top: 1px solid var(--gb-summary-line);
+  border-radius: 0;
+  background: transparent;
+  background-image: none;
+  box-shadow: none;
+  overflow: visible;
+}
+[data-series-theme="manuscript"] .summary-card[data-gb-summary-owner="1"]::after {
+  display: none;
+  content: none;
+}
+body .article-body > .summary-card[data-gb-summary-owner="1"] > .summary-card__head {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 @media (prefers-reduced-motion:reduce) {
-  .summary-card[data-gb-summary-owner="1"],
   .summary-card[data-gb-summary-owner="1"] .gb-summary-motion,
-  .summary-card[data-gb-summary-owner="1"] .gb-summary-motion > .summary-card__body,
   .summary-card[data-gb-summary-owner="1"] .gb-summary-toggle,
   .summary-card[data-gb-summary-owner="1"] .gb-summary-toggle__chevron {
     transition: none;
   }
 }
+
 /* Align the metadata baseline optically between the author's bottom rule
    and the copyright notice top rule. Existing 8/24px gaps were unequal. */
 .article-header > .original-author-card + .article-byline {
@@ -1715,48 +1791,6 @@ html[data-reader-theme="sepia"] .summary-card[data-gb-summary-owner="1"] {
   }
 }
 
-/* One premium card across legacy and Astro articles. Both open and folded
-   states share this surface; hover lights only the border and chevron, never
-   a second rectangular header within the outer frame. */
-body .article-body > .summary-card[data-gb-summary-owner="1"] {
-  padding: 11px 18px 13px;
-  border: 1px solid var(--gb-summary-border);
-  border-radius: 19px;
-  background: var(--gb-summary-surface);
-  box-shadow: 0 14px 34px -29px rgba(38, 28, 20, .25), inset 0 1px 0 rgba(255, 255, 255, .18);
-}
-html.dark body .article-body > .summary-card[data-gb-summary-owner="1"] {
-  background: var(--gb-summary-surface);
-  border-color: var(--gb-summary-border);
-  box-shadow: 0 16px 34px -28px rgba(0, 0, 0, .52), inset 0 1px 0 rgba(255, 255, 255, .035);
-}
-body .article-body > .summary-card[data-gb-summary-owner="1"][data-gb-summary-open="true"] {
-  border-color: var(--gb-summary-border-hover);
-}
-@media (hover:hover) and (pointer:fine) {
-  body .article-body > .summary-card[data-gb-summary-owner="1"]:has(> .summary-card__head > .gb-summary-toggle:hover) {
-    border-color: var(--gb-summary-border-hover);
-    box-shadow: 0 16px 35px -29px rgba(26, 23, 20, .3), inset 0 1px 0 color-mix(in srgb, var(--gb-summary-accent) 11%, transparent);
-  }
-  html.dark body .article-body > .summary-card[data-gb-summary-owner="1"]:has(> .summary-card__head > .gb-summary-toggle:hover) {
-    box-shadow: 0 17px 34px -28px rgba(0, 0, 0, .58), inset 0 1px 0 rgba(232, 184, 120, .095);
-  }
-}
-body .article-body > .summary-card[data-gb-summary-owner="1"] > .summary-card__head {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-}
-body .article-body > .summary-card[data-gb-summary-owner="1"] .summary-card__text {
-  text-align: start;
-}
-@media (max-width:560px) {
-  body .article-body > .summary-card[data-gb-summary-owner="1"] {
-    padding: 10px 14px 12px;
-    border-radius: 17px;
-  }
-}
 /* Ancillary notices are reference material, not justified book prose:
    prevent rivers of whitespace in citations, copyright and PDF information. */
 .article-body .notice,
@@ -1855,7 +1889,7 @@ body .article-body .article-header > .original-author-card + .article-byline {
     overflow: visible;
   }
   .summary-card[data-gb-summary-owner="1"] .gb-summary-motion > .summary-card__body {
-    display: flex;
+    display: block;
     visibility: visible;
     height: auto;
     overflow: visible;

@@ -25,13 +25,15 @@ const server=http.createServer((req,res)=>{
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const origin='http://127.0.0.1:'+server.address().port;
 const checks=[];
-// The native disclosure changes the heading from "Коротко" to
-// "Краткое содержание" and moves the list into .gb-summary-motion.
-// Observe the SAME card before and after hydration; a direct-child-only
-// selector would falsely report that the genuine card disappeared.
+// The shared disclosure keeps the canonical label "Коротко" and adds
+// a separate Argon-style thesis count and chevron to the same heading.
+// Observe the label itself, not the composite heading text (including count).
+// The genuine card must remain the same before and after hydration.
 const snapshot=()=>{
  const card=Array.from(document.querySelectorAll('.summary-card')).find(el=>{
-   const title=el.querySelector(':scope > .summary-card__head')?.textContent?.trim().toLocaleLowerCase('ru');
+   const heading=el.querySelector(':scope > .summary-card__head');
+   const label=heading?.querySelector('.gb-summary-toggle__label')||heading;
+   const title=label?.textContent?.trim().toLocaleLowerCase('ru');
    return title==='коротко'||title==='краткое содержание';
  });
  const list=card?.querySelector('.summary-card__body');
