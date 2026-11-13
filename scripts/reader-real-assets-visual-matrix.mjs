@@ -104,6 +104,37 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
       const file=[label,engine,width,theme,sha.slice(0,12)].join('--')+'.png';
       await page.screenshot({path:join(REPORT,file),timeout:18000}).catch(()=>{});
      }
+     // A visible lower-bar TOC remains usable after the top bar has
+     // intentionally auto-hidden on downward scroll. Do not try to click
+     // an off-viewport top trigger merely because CSS visibility is true.
+     if(width===390&&theme==='light'){
+      await page.evaluate(()=>window.scrollTo({top:Math.round(document.body.scrollHeight*.48),behavior:'instant'}));
+      await page.waitForTimeout(120);
+      row.scrolledOverflow=await page.evaluate(()=>{
+       const vw=document.documentElement.clientWidth;
+       return Math.max(document.body.scrollWidth,document.documentElement.scrollWidth)-vw;
+      });
+      const scrolledFile=[label,engine,'390','scrolled',sha.slice(0,12)].join('--')+'.png';
+      await page.screenshot({path:join(REPORT,scrolledFile),timeout:18000}).catch(()=>{});
+      const bottomSelector=label==='gill'?'#mobPartTocBtn':
+        label==='hermenevtika'?'#hmBottomBtn':null;
+      const overlaySelector=label==='gill'?'#partTocOverlay':
+        label==='hermenevtika'?'#hmSheet':null;
+      if(bottomSelector){
+       const opener=page.locator(bottomSelector);
+       try{
+        await opener.click({timeout:6500});
+        await page.waitForFunction(selector=>
+          document.querySelector(selector)?.classList.contains('is-open'),overlaySelector,{timeout:6500});
+        const tocFile=[label,engine,'390','toc-scrolled',sha.slice(0,12)].join('--')+'.png';
+        await page.screenshot({path:join(REPORT,tocFile),timeout:18000}).catch(()=>{});
+        await page.keyboard.press('Escape');
+        await page.waitForFunction(selector=>
+          !document.querySelector(selector)?.classList.contains('is-open'),overlaySelector,{timeout:6500});
+        row.bottomTocRestored=await opener.evaluate(button=>document.activeElement===button);
+       }catch(error){row.bottomTocError=String(error);}
+      }
+     }
     }
    }
   }catch(e){results.push({sha,engine,label,route,error:String(e)})}
@@ -116,6 +147,7 @@ for(const [engine,driver] of Object.entries({chromium,firefox,webkit})){
 await writeFile(join(REPORT,'manifest.json'),JSON.stringify({sha,fast:FAST,results},null,2));
 const failures=results.filter(row=>row.error||row.status!==200||row.overflow>2||
  row.fontStatus!=='loaded'||row.imagesBroken?.length>0||row.imagesPending?.length>0||row.imageOverflow?.length>0||
+ row.scrolledOverflow>2||row.bottomTocRestored===false||row.bottomTocError||
  (row.appliedTheme&&row.appliedTheme!==row.theme));
 const summary={sha,fast:FAST,routes:routes.length,engines:3,widths:widths.length,themes:themes.length,
  scenarios:results.length,failures:failures.length,failed:failures.slice(0,25)};
