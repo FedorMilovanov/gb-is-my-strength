@@ -444,7 +444,7 @@
       "description": "Был ли Иисус женат на Марии Магдалине? Решала ли Никея состав Библии? Разбираем исторические и богословские ошибки «Кода да Винчи» Дэна Брауна.",
       "section": "Апологетика",
       "editor": "Фёдор Милованов",
-      "readTime": 30,
+      "readTime": 40,
       "image": "/images/og-kod-da-vinchi.webp",
       "tags": [
         "апологетика",
@@ -981,7 +981,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-07-11T00:00:00+03:00",
-      "readTime": 26
+      "readTime": 14
     },
     {
       "id": "religioznoe-serdce",
@@ -999,7 +999,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-07-11T00:00:00+03:00",
-      "readTime": 26
+      "readTime": 11
     },
     {
       "id": "sovest-vnutrenniy-sud",
@@ -1017,7 +1017,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-12T00:00:00+03:00",
       "modifiedTime": "2026-07-12T00:00:00+03:00",
-      "readTime": 30
+      "readTime": 17
     },
     {
       "id": "myslennaya-zhizn-serdca",
@@ -1035,7 +1035,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-12T00:00:00+03:00",
       "modifiedTime": "2026-07-12T00:00:00+03:00",
-      "readTime": 26
+      "readTime": 14
     },
     {
       "id": "starye-dorozhki-serdca",
@@ -1053,7 +1053,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-12T00:00:00+03:00",
       "modifiedTime": "2026-07-12T00:00:00+03:00",
-      "readTime": 28
+      "readTime": 16
     },
     {
       "id": "serdce-i-yazyk",
@@ -1071,7 +1071,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-12T00:00:00+03:00",
       "modifiedTime": "2026-07-12T00:00:00+03:00",
-      "readTime": 25
+      "readTime": 13
     },
     {
       "id": "serdce-i-telo",
@@ -1089,7 +1089,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-12T00:00:00+03:00",
       "modifiedTime": "2026-07-12T00:00:00+03:00",
-      "readTime": 23
+      "readTime": 12
     },
     {
       "id": "serdce-i-sokrovishche",
@@ -1107,7 +1107,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-12T00:00:00+03:00",
       "modifiedTime": "2026-07-12T00:00:00+03:00",
-      "readTime": 25
+      "readTime": 11
     },
     {
       "id": "tma-na-serdce",
@@ -1125,7 +1125,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-07-30T00:00:00+03:00",
-      "readTime": 34
+      "readTime": 15
     },
     {
       "id": "serdce-pod-skorbyu",
@@ -1143,7 +1143,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-12T00:00:00+03:00",
       "modifiedTime": "2026-07-12T00:00:00+03:00",
-      "readTime": 28
+      "readTime": 13
     },
     {
       "id": "kak-menyaetsya-serdce",
@@ -1161,7 +1161,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-07-11T00:00:00+03:00",
-      "readTime": 27
+      "readTime": 13
     },
     {
       "id": "serdce-i-iskushenie",
@@ -1179,7 +1179,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-07-11T00:00:00+03:00",
-      "readTime": 26
+      "readTime": 13
     },
     {
       "id": "kak-hranit-serdce",
@@ -1197,7 +1197,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-12T00:00:00+03:00",
       "modifiedTime": "2026-07-12T00:00:00+03:00",
-      "readTime": 26
+      "readTime": 12
     },
     {
       "id": "strah-bozhij-rabskij-ili-synovnij",
@@ -1215,7 +1215,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-07-11T00:00:00+03:00",
-      "readTime": 25
+      "readTime": 10
     },
     {
       "id": "svoboda-vo-hriste",
@@ -1233,7 +1233,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-07-11T00:00:00+03:00",
-      "readTime": 26
+      "readTime": 11
     },
     {
       "id": "serdce-ne-v-odinochku",
@@ -1251,7 +1251,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-12T00:00:00+03:00",
       "modifiedTime": "2026-07-12T00:00:00+03:00",
-      "readTime": 27
+      "readTime": 11
     },
     {
       "id": "serdce-hrista-k-nemoshchnym",
@@ -1269,7 +1269,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-07-12T00:00:00+03:00",
-      "readTime": 44
+      "readTime": 33
     },
     {
       "id": "osvobozhdennoe-serdce",
@@ -1287,7 +1287,7 @@
       "priority": 0.6,
       "publishedTime": "2026-07-11T00:00:00+03:00",
       "modifiedTime": "2026-07-11T00:00:00+03:00",
-      "readTime": 27
+      "readTime": 11
     },
     {
       "id": "chto-bibliya-nazyvaet-serdcem",

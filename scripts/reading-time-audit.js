@@ -163,6 +163,14 @@ function literalSurfaces(slug) {
         taken.push([m.index, m.index + m[0].length]);
       }
 
+      // Структурированные данные страницы: `readingTime: 30` в объекте `page`
+      // внутри PageHead. Это не видимая строка, но именно отсюда берут число
+      // JSON-LD, SITE_CONFIG и мета pagefind.
+      for (const m of source.matchAll(/readingTime:\s*(\d+)(?=\s*[,}])/g)) {
+        out.push({ file: rel, line: lineAt(source, m.index), offset: m.index, kind: 'pagemeta', value: Number(m[1]), target: null });
+        taken.push([m.index, m.index + m[0].length]);
+      }
+
       // Карточки: метка «Богословие · 41 мин» и анонс «К текущей части · ~41 мин».
       // Цель — ссылка внутри той же карточки: карточки размечаются конечными
       // маркерами, поэтому ищем href не «рядом по тексту», а в границах блока.
@@ -370,6 +378,7 @@ function writeLiterals(report) {
       let next = tail;
       if (l.kind === 'visible') next = tail.replace(/^⏱\s*\d+\s*мин/, `⏱ ${l.expected} мин`);
       else if (l.kind === 'pagefind') next = tail.replace(/^(data-pagefind-meta="readTime"[^>]*>)\d+</, `$1${l.expected}<`);
+      else if (l.kind === 'pagemeta') next = tail.replace(/^(readingTime:\s*)\d+(?=\s*[,}])/, `$1${l.expected}`);
       else next = tail.replace(/^((?:·\s*|~))\d+(\s*мин)/, `$1${l.expected}$2`);
       if (next !== tail) {
         src = head + next;
