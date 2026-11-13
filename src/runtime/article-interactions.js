@@ -7,6 +7,7 @@ import { installArticleStrategicMap } from './article-strategic-map.js';
 import { installArticleFaqAccordions } from './article-faq-accordion.js';
 import { installArticleHeadingAnchors } from './article-heading-anchors.js';
 import { installArticleReversibleCards } from './article-reversible-cards.js';
+import { installArticleReadingTables } from './article-reading-tables.js';
 
 const VERSION = 3;
 
@@ -19,6 +20,7 @@ function install() {
   const faq = installArticleFaqAccordions();
   const headingAnchors = installArticleHeadingAnchors();
   const reversibleCards = installArticleReversibleCards();
+  const readingTables = installArticleReadingTables();
   window.GBArticleInteractions = Object.freeze({
     version: VERSION,
     tooltips,
@@ -28,6 +30,7 @@ function install() {
     faq,
     headingAnchors,
     reversibleCards,
+    readingTables,
   });
   document.documentElement.dataset.gbArticleInteractionsReady = '1';
   window.dispatchEvent(new CustomEvent('gb:article-interactions-ready', { detail: { version: VERSION } }));

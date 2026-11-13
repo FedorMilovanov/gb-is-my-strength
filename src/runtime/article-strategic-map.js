@@ -128,9 +128,10 @@ export function installArticleStrategicMap() {
     renderRecord(popover, record);
     popover.hidden = false;
     trigger.setAttribute('aria-expanded', 'true');
+    positionPopover(popover, trigger);
+    popover.classList.add('active');
     requestAnimationFrame(() => {
-      positionPopover(popover, trigger);
-      popover.classList.add('active');
+      if (!popover.hidden && activeTrigger === trigger) positionPopover(popover, trigger);
     });
     // SYS-STRATEGIC-MAP-DIALOG-FOCUS-ENTRY: opening never moved focus, so
     // keyboard users stayed on the trigger while the dialog content appeared

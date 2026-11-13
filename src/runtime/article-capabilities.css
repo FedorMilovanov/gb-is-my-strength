@@ -56,9 +56,50 @@
   margin: 0;
 }
 
+.map-trigger[data-gb-strategic-map-owner="native-v1"]:focus-visible,
 .map-trigger[data-gb-strategic-map-owner="native-v1"][aria-expanded="true"] {
-  outline: 2px solid color-mix(in srgb, currentColor 45%, transparent);
+  outline: 2px solid var(--accent, var(--color-accent, currentColor));
   outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Keep empty .fn-marker--dove map triggers in-flow across desktop and coarse-pointer mobile
+   so ::before is never pulled out-of-flow to 0x0 while ::after preserves the 44x44 touch hit box. */
+.map-trigger[data-gb-strategic-map-owner="native-v1"].fn-marker--dove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35rem;
+  min-height: 1.35rem;
+  vertical-align: middle;
+}
+
+.map-trigger[data-gb-strategic-map-owner="native-v1"].fn-marker--dove::before {
+  position: static;
+  inset: auto;
+  transform: none;
+  width: 0.92em;
+  height: 0.92em;
+  pointer-events: none;
+}
+
+/* Without JS ownership (or before hydration), keep FAQ answers open and readable. */
+.faq-accordion:not([data-gb-faq-enhanced="native-v1"]) .faq-accordion__body {
+  max-height: none !important;
+  grid-template-rows: 1fr !important;
+  overflow: visible !important;
+  pointer-events: auto !important;
+}
+
+.faq-accordion:not([data-gb-faq-enhanced="native-v1"]) .faq-accordion__body-inner {
+  padding-bottom: 1.1rem;
+  pointer-events: auto !important;
+}
+
+[data-gb-reading-table-owner="native-v1"][data-gb-table-scroll-active="1"]:focus-visible {
+  outline: 2px solid var(--color-accent-strong, var(--accent, currentColor));
+  outline-offset: 3px;
+  border-radius: 6px;
 }
 
 .gb-anchor-copy-toast {
@@ -109,6 +150,14 @@
     border-radius: 20px 20px 0 0;
     box-shadow: 0 -20px 55px rgb(0 0 0 / 28%);
   }
+
+  article > table:not([class]),
+  .genesis6-prose > table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 @media print {
@@ -116,5 +165,11 @@
   .gb-anchor-copy-toast,
   .heading-anchor[data-gb-heading-anchor-owner="native-v1"] {
     display: none !important;
+  }
+
+  .faq-accordion__body {
+    max-height: none !important;
+    grid-template-rows: 1fr !important;
+    overflow: visible !important;
   }
 }
