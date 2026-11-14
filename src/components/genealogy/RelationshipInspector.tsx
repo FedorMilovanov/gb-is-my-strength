@@ -83,17 +83,17 @@ function RelationshipInspectorComponent({ relation, persons, onClose }: Relation
         </span>
         {evidence.confidence && (
           <span>
-            Редакторская уверенность: {CONFIDENCE_LABELS[evidence.confidence] ?? evidence.confidence}
+            Редакторская уверенность: {CONFIDENCE_LABELS[evidence.confidence] ?? 'требует редакционной проверки'}
           </span>
         )}
       </div>
 
       <section>
         <h4>Основание модели</h4>
-        <p>{AUTHORITY_LABELS[relation.authority] ?? relation.authority}</p>
+        <p>{AUTHORITY_LABELS[relation.authority] ?? 'Основание требует редакционной проверки'}</p>
         {isPending && (
           <p className="genealogy-relation-caution">
-            Эта связь входит в курированную схему, но конкретные стихи к самому ребру ещё не прошли relation-level редакционную проверку.
+            Эта связь входит в курированную схему, но ссылки на стихи, подтверждающие именно эту связь, ещё не проверены.
           </p>
         )}
         {evidence.assertion === 'editorial-harmonization' && (

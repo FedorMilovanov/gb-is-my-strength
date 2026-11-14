@@ -85,3 +85,9 @@ console.log(JSON.stringify({
   committedAnnotations: source.annotations.length,
   negativeCases: 9,
 }, null, 2));
+
+// Published relation notes must not contain these historical internal drafting tokens.
+assert(
+  source.annotations.every(annotation => !/Matthew 1 directly states this genealogy step|source-derived модель роли Иосифа/.test(annotation.note ?? '')),
+  'Relationship notes must use reader-facing wording rather than research scaffolding',
+);
