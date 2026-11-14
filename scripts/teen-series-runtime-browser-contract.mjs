@@ -12,7 +12,7 @@ const DIST = join(ROOT, 'dist');
 const COMPILED = join(DIST, 'data', 'relations.compiled.json');
 const ROUTES = [
   ['/articles/podrostok-za-kadrom-dvoynaya-zhizn/', 3],
-  ['/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/', 2],
+  ['/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/', 3],
   ['/articles/podrostok-za-kadrom-chto-delat-tserkvi/', 3],
   ['/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/', 2],
   ['/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/', 3],
@@ -151,7 +151,7 @@ for (const [route, expectedRefs] of ROUTES) {
     for (const href of hrefs) assert(!sameSeries.has(href), `${route}: relation panel duplicates series rail ${href}`);
   }
 }
-assert.equal(totalRefs, 18, 'teen series must expose exactly 18 bounded Bible-reference triggers');
+assert.equal(totalRefs, 19, 'teen series must expose exactly 19 bounded Bible-reference triggers');
 
 const partThree = await readFile(routeFile('/articles/podrostok-za-kadrom-chto-delat-tserkvi/'), 'utf8');
 assert(partThree.includes('data-ref="Псалтирь 49:16–21"'), 'Psalm 49 Synodal machine identity missing');
@@ -235,5 +235,5 @@ try {
 console.log('✅ Teen runtime closure PASS');
 console.log('  compiled relations: 7 teen nodes / 6 series-next edges / 3 verified lateral catalog edges');
 console.log('  correction boundary: 7/7 shared owner + safeguarding disclaimer');
-console.log('  Scripture UX: 18 bounded .bref[data-ref] triggers; desktop + mobile interaction');
+console.log('  Scripture UX: 19 bounded .bref[data-ref] triggers; desktop + mobile interaction');
 console.log('  Psalm guard: visible Пс. 49:16–21 / machine Псалтирь 49:16–21');
