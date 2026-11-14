@@ -206,6 +206,13 @@ C / D:
 | `5ccbaa3b` | 27 | 38 | 31 | 46 | 58 | 32 | 37 | 48095 | 269 |
 | `8c44f067` | 29 | 40 | 33 | 31 | 30 | 34 | 38 | 41675 | 235 |
 
+
+**Every number in that table came from a defective counter and none of them is
+verified reading time** — see §7g. Its `Words` column also counts the whole MDX
+file, bibliography included, which on this branch is 5197 of the 44693 words. The
+comparison the table supports still holds: this branch computes higher than base and
+than `4786e4e2` under every variant measured. The minutes do not stand.
+
 No two branches agree, and the spread is wide: Companion B computes to 31 minutes
 here and 58 on `5ccbaa3b`; Companion D computes to 42 here and 47 on `4786e4e2`.
 Neither the release contract nor `8c44f067`'s `checkTeenReadingTimes` can detect
@@ -402,9 +409,10 @@ the higher one:
 
 Twenty MDX articles contain at least one divergence-triggering token in the reader
 body, four of them files this branch touched. None of the seven teen-series articles
-does, which is why the §7b table is unaffected — but a site-wide recompute is
-exactly where the choice of counter changes the answer, by up to seven minutes on a
-single article. The two should be reconciled to one implementation before any mass
+does, which is why the §7b table is unaffected **by these four defects** — a claim
+that §7g later had to narrow, because a fifth defect in the same function does move
+the table. But a site-wide recompute is exactly where the choice of counter changes
+the answer, by up to seven minutes on a single article. The two should be reconciled to one implementation before any mass
 re-pin, and the correct one to keep is `visibleMainWords`, since it is the only one
 that handles nesting, void elements, attribute text and `aria-hidden="false"`.
 
@@ -451,6 +459,78 @@ source and check the other surfaces against it, so that re-pinning after a merge
 a regeneration rather than a contract edit. As written, adopting his contract forces
 every future editorial change to the teen series to be accompanied by a manual edit
 to five sets of literals inside the contract itself.
+
+## 7g. A fifth counter defect, proved here, and what it does to the §7b table
+
+`8c44f067` found a further defect in `4786e4e2`'s `readerWordCount` and pointed out
+that this note's §7b table was produced by that same defective algorithm. Both claims
+were verified here independently. Both are true, and the second one is about my own
+work, so it is stated first: **§7b's minutes are not verified reading time.**
+
+The defect: `stripTags` matches only HTML `<...>`, so Markdown link syntax survives
+and `WORD` then matches inside the URL. The link target is billed as prose:
+
+```
+Читайте [источник](https://example.org/very/long/path)                       -> 8 words
+Читайте [источник](https://example.org/very/long/path/with/more/segments/...) -> 13 words
+```
+
+Both strings show the reader exactly two words. Reproduced byte-for-byte: 8 and 13.
+
+Measured on this branch and on all four trees §7b lists, by emptying only the
+Markdown link targets and changing nothing else — exactly `8c44f067`'s experiment:
+
+| tree | links | as-is (what §7b printed) | targets emptied | delta |
+| --- | ---: | --- | --- | ---: |
+| base `9618e82` | 79 | `27·38·31·30·29·32·37` = 39991w / 224 min | `27·38·31·30·29·32·37` = 39376w / 224 min | 615 words |
+| **this branch** | **80** | `29·47·33·34·31·35·42` = 44693w / **251 min** | `28·47·33·33·31·34·42` = 44073w / **248 min** | **620 words** |
+| `4786e4e2` | 79 | `29·41·34·31·30·33·47` = 43422w / 245 min | `28·41·34·30·29·33·46` = 42807w / 241 min | 615 words |
+| `5ccbaa3b` | 94 | `27·38·31·46·58·32·37` = 48095w / 269 min | `27·38·31·46·58·32·37` = 47437w / 269 min | 658 words |
+| `8c44f067` | 113 | `29·40·33·31·30·34·38` = 41675w / 235 min | `28·39·32·30·30·33·38` = 40915w / 230 min | 760 words |
+
+`8c44f067`'s figures for `4786e4e2` reproduce exactly, including which articles move
+(I, A, B, D). On this branch 620 words of URL text are counted, three articles change
+(I 29→28, A 34→33, C 35→34) and the total drops 251→248 minutes. On `8c44f067`'s own
+tree, which carries the most links at 113, five articles move and the total drops
+235→230 — so his finding costs his own branch five minutes too, and it is not a
+complaint aimed at anyone else's content.
+
+So §7b's headline for this branch is not 251 minutes. It is 248 at best, before the
+four other defects and before any policy decision about what counts as visible prose.
+
+**A further measurement recorded nowhere before: the word column includes the
+bibliography.** §7b counts the whole MDX file, so each `## Источники и сверка` section
+is billed to the reader as reading time. On this branch that is 5197 words of the
+44693 — 29 minutes of the 251:
+
+| article | counted in §7b | body only | bibliography |
+| --- | ---: | ---: | ---: |
+| I | 5049 | 4426 | 623 |
+| II | 8409 | 7522 | 887 |
+| III | 5898 | 5049 | 849 |
+| A | 6043 | 5217 | 826 |
+| B | 5579 | 5228 | 351 |
+| C | 6159 | 5440 | 719 |
+| D | 7556 | 6614 | 942 |
+| total | **44693** | **39496** | **5197** |
+
+Body only is 220 minutes at 180 wpm. Whether a bibliography should be billed is an
+editorial policy question rather than a bug, and `4786e4e2`'s policy document does not
+answer it — but it is a 29-minute decision on this branch and it affects every branch,
+so it has to be made explicitly before any mass re-pin.
+
+`8c44f067` also reports a genuine technical fault, recorded here for whoever runs the
+audit: at `6f2fad33`, `node scripts/reading-time-audit.js --json` writes large JSON
+through `console.log` and calls `process.exit(0)` immediately, which truncates the
+stream when piped. He reproduced 65 536 characters and `Unexpected end of JSON input`
+three times with a zero exit status from the producer; writing to a file yields valid
+JSON with 73 entries. The stdout flush must complete before exit.
+
+Recommended sequence, unchanged in substance and now with one more precondition: fix
+the MDX/HTML parsing including Markdown links, fix nested-`hidden` and
+`aria-hidden="false"`, decide the bibliography question, keep `visibleMainWords` as
+the reference implementation, and only then reconcile and re-pin. Nothing in this
+section is a reason to change any teen-series prose, and this branch has changed none.
 
 ## 8. Gate state of this branch
 
@@ -723,6 +803,13 @@ literal string `Merge conflict in <path>`, so the pattern in the table — which
 branch collides on which of the three files — was right even when the totals were
 not. §12 gives the same correction for the merge against `main`.
 
+One property of these counts is easy to misread and is measured in §11: they are
+**relative to the merge target**, not intrinsic to a lane. The same six lanes counted
+against `8c44f067`'s head give 13/21/13/19/10/12 instead of 61/15/8/42/10/17, so
+`1d569906` looks nearly three times worse against this branch than against his and
+`4786e4e2` nearly twice as bad the other way round. Any conflict ranking has to name
+its base.
+
 So the resurrection risk is narrower than it first looks but real for three
 branches. Against `4786e4e2`, `8c44f067` and `5ccbaa3b` git takes this branch's
 side automatically, because they never edited those lines. Against `7b785a3b` and
@@ -963,6 +1050,39 @@ of a semantic collision. Draft PR #2302 remained a draft with several red GitHub
 checks at the HEAD he inspected, including source-index, canonical discovery,
 dependency security and lane collisions; he could not retrieve the step logs, so he
 explicitly declines to treat that PR as release-ready.
+
+**Update after his `74be383` pass.** He re-ran his control check against the newer
+heads and published a corrected table, and on every point where it overlaps this note
+the two now agree: this branch passes his source-index, teen-release and Teen
+AST-parity checks, and `5ccbaa3b` fails AST parity on Companions A and B, which is
+§7d. Two of his findings are new and are recorded in §7g: the fifth counter defect
+that invalidates the minutes in §7b, including the minutes in his own table, and the
+truncated-JSON fault in `4786e4e2`'s `reading-time-audit.js --json` when piped. He
+also states plainly that the 235-minute total he had earlier attributed to this
+branch's method and the §7b table were both produced by the defective algorithm —
+which is correct, and is why §7b now carries a warning at the top of its table.
+
+His conflict counts in that table (13/21/13/19/10/12) differ sharply from §8e's
+(61/15/8/42/10/17) for the same lanes, and the reason was checked rather than
+assumed: **his rows measure each lane against his own tree, §8e measures each lane
+against this one.** Re-running `merge-tree` with `8c44f067`'s head as the base
+reproduces his table exactly, lane for lane, 13/21/13/19/10/12. Both columns are
+right; they answer different questions. In every pairing measured here, conflicting
+files and `CONFLICT` lines came out 1:1, so that is not a source of difference.
+
+| lane | vs `8c44f067` (his table) | vs this branch (§8e) |
+| --- | ---: | ---: |
+| `1d569906` | 13 | 61 |
+| `4786e4e2` | 21 | 15 |
+| `5ccbaa3b` | 13 | 8 |
+| `7b785a3b` | 19 | 42 |
+| this branch | 10 | — |
+| `bf6e18c1` | 12 | 17 |
+
+The practical consequence for whoever merges: `1d569906` and `7b785a3b` are nearly
+three times worse against this branch than against his, while `4786e4e2` and
+`5ccbaa3b` are nearly twice as bad against his. There is no single "most conflicting
+lane" — it depends on the merge target, so any conflict ranking has to name its base.
 
 ## 12. `main` has moved: the base of this whole reconciliation is no longer `9618e82`
 
