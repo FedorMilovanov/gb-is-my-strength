@@ -12,7 +12,7 @@ export default function Archives() {
         <motion.div initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-14 text-center">
           <div className="section-badge mb-5 justify-center"><Archive size={12} /> Источники и архивы</div>
           <h2 className="section-title">Первоисточники и архивные находки</h2>
-          <p className="section-subtitle mx-auto max-w-3xl">Критически важные документы, архивные коллекции и исправления предыдущих версий на основе v6.</p>
+          <p className="section-subtitle mx-auto max-w-3xl">Исторические документы, архивные направления и исправления по доказательному корпусу исследований.</p>
         </motion.div>
         <div className="mb-16 grid gap-6 md:grid-cols-2">
           <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="bento-card p-6">
@@ -30,8 +30,8 @@ export default function Archives() {
               <div className="mb-3 flex items-center gap-2"><FileText className="text-brand-gold" size={18} /><h3 className="text-lg font-bold">Архив В. А. Пашкова</h3></div>
               <p className="mb-4 text-sm leading-6 opacity-80">{pashkovArchive.summary}</p>
               <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide opacity-50">Микрофильмы в:</p>
-                <ul className="space-y-1.5">{pashkovArchive.copies.map((copy, i) => (<li key={i} className="flex items-start gap-2 text-xs opacity-75"><Globe size={12} className="mt-0.5 shrink-0 text-brand-gold" /><span>{copy}</span></li>))}</ul>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide opacity-50">Статус архивных сведений</p>
+                <p className="text-xs leading-5 opacity-75">Перечень копий, микрофильмов и объём коллекции требует подтверждения по актуальным фондовым описям; прежние сведения нельзя принимать за удостоверенную опись.</p>
               </div>
             </div>
             <div className="border-t border-white/10 p-6 md:border-l md:border-t-0">
@@ -41,7 +41,7 @@ export default function Archives() {
           </div>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="bento-card p-6">
-          <div className="mb-4 flex items-center gap-3"><div className="grid h-12 w-12 place-items-center rounded-2xl bg-red-500/15 text-red-400"><FileText size={22} /></div><h3 className="text-lg font-bold">Исправления источников (v6)</h3></div>
+          <div className="mb-4 flex items-center gap-3"><div className="grid h-12 w-12 place-items-center rounded-2xl bg-red-500/15 text-red-400"><FileText size={22} /></div><h3 className="text-lg font-bold">Источниковые исправления</h3></div>
           <div className="grid gap-4 md:grid-cols-2">{sourceCorrections.map((correction, i) => (<div key={i} className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4"><div className="mb-2 flex items-center gap-2"><span className="rounded bg-red-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-400">Исправлено</span><span className="text-sm font-semibold">{correction.topic}</span></div><p className="mb-2 text-xs opacity-50 line-through">{correction.previous}</p><p className="text-sm opacity-80">{correction.corrected}</p><p className="mt-2 text-xs opacity-50">{correction.source}</p></div>))}</div>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mt-6 bento-card p-6">
