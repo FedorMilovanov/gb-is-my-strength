@@ -17,13 +17,13 @@ export default function Congresses() {
           {congresses.map((congress, index) => {
             const isOpen = openId === congress.id;
             return (
-              <motion.article key={congress.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.05 }} className="bento-card overflow-hidden">
-                <button onClick={() => setOpenId(isOpen ? null : congress.id)} className="flex w-full items-center justify-between gap-4 p-5 text-left">
-                  <div className="flex items-center gap-4">
-                    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[0.875rem] ring-1 ring-brand-gold/20" style={{ background: 'rgba(196,166,126,0.10)' }}><Calendar size={18} className="text-brand-gold" /></div>
-                    <div>
-                      <div className="flex items-center gap-2"><span className="font-mono text-[11px] font-bold tracking-wider text-brand-gold">{congress.date}</span><span className="flex items-center gap-1 text-[11px] opacity-45"><MapPin size={9} />{congress.place.split(',')[0]}</span></div>
-                      <h3 className="mt-0.5 text-[1.0625rem] font-bold">{congress.title}</h3>
+              <motion.article key={congress.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.05 }} className="bento-card min-w-0 overflow-hidden">
+                <button onClick={() => setOpenId(isOpen ? null : congress.id)} className="flex w-full min-w-0 items-center justify-between gap-2 p-4 text-left sm:gap-4 sm:p-5">
+                  <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[0.875rem] ring-1 ring-brand-gold/20 sm:h-11 sm:w-11" style={{ background: 'rgba(196,166,126,0.10)' }}><Calendar size={18} className="text-brand-gold" /></div>
+                    <div className="min-w-0">
+                      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1"><span className="font-mono text-[11px] font-bold tracking-wider text-brand-gold">{congress.date}</span><span className="flex items-center gap-1 text-[11px] opacity-45"><MapPin size={9} />{congress.place.split(',')[0]}</span></div>
+                      <h3 className="mt-0.5 break-words text-[1.0625rem] font-bold">{congress.title}</h3>
                     </div>
                   </div>
                   <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.04] transition-all"><ChevronDown size={14} className={`text-brand-gold/70 transition-transform ${isOpen ? 'rotate-180' : ''}`} /></span>
@@ -49,8 +49,8 @@ export default function Congresses() {
         <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mt-12 bento-card p-6">
           <div className="flex items-start gap-4">
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-gold/15 text-brand-gold"><BookOpen size={22} /></div>
-            <div className="flex-1">
-              <h3 className="mb-2 text-lg font-bold">Архив Пашкова — 7 000–10 000 документов</h3>
+            <div className="min-w-0 flex-1">
+              <h3 className="mb-2 break-words text-lg font-bold">Архив Пашкова — 7 000–10 000 документов</h3>
               <p className="mb-3 text-sm leading-6 opacity-80">{pashkovArchive.summary}</p>
               <div className="flex flex-wrap gap-2">{pashkovArchive.copies.map((copy: string, i: number) => (<span key={i} className="chip">{copy}</span>))}</div>
             </div>

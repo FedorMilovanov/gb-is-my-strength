@@ -346,8 +346,11 @@ if (chromium) (async () => {
     { w: 360, h: 800, label: 'android-360', mobile: true },
     { w: 320, h: 760, label: 'mobile-320', mobile: true },
   ];
+  const viewportFilter = process.env.KONFESSII_AUDIT_VIEWPORT;
+  const selectedViewports = viewportFilter ? viewports.filter((vp) => vp.label === viewportFilter) : viewports;
+  if (!selectedViewports.length) throw new Error(`Unknown KONFESSII_AUDIT_VIEWPORT: ${viewportFilter}`);
 
-  for (const vp of viewports) {
+  for (const vp of selectedViewports) {
     const context = await browser.newContext(vp.mobile ? {
       viewport: { width: vp.w, height: vp.h }, isMobile: true, hasTouch: true,
     } : { viewport: { width: vp.w, height: vp.h } });
@@ -468,6 +471,22 @@ if (chromium) (async () => {
           assert(expandedOverflow <= 0, `I16 [mobile-320] origin ${index + 1} expanded without overflow`,
             `I16 [mobile-320] origin ${index + 1} expanded overflow=${expandedOverflow}px`);
           await originCards.nth(index).click();
+        }
+
+        const congressCards = frame.locator('#congresses article.bento-card > button');
+        const congressCount = await congressCards.count();
+        assert(congressCount > 0, 'I16 [mobile-320] congress accordions exist',
+          'I16 [mobile-320] congress accordions missing');
+        for (let index = 0; index < congressCount; index += 1) {
+          await congressCards.nth(index).click();
+          await page.waitForTimeout(400);
+          const expandedOverflow = await frame.evaluate(
+            () => Math.max(document.body.scrollWidth, document.documentElement.scrollWidth) -
+              document.documentElement.clientWidth
+          );
+          assert(expandedOverflow <= 0, `I16 [mobile-320] congress ${index + 1} expanded without overflow`,
+            `I16 [mobile-320] congress ${index + 1} expanded overflow=${expandedOverflow}px`);
+          await congressCards.nth(index).click();
         }
       }
 
