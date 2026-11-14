@@ -1,0 +1,25 @@
+---
+import { getCollection } from 'astro:content';
+import Content from '@/content/articles/rabstvo-svobody.mdx';
+import ArticleLayout from '@/layouts/ArticleLayout.astro';
+import RabstvoPageChrome from '@/components/article-pilots/rabstvo-svobody/RabstvoPageChrome.astro';
+import { SITE } from '@/data/site';
+
+const slug = 'rabstvo-svobody';
+const entries = await getCollection('articles');
+const entry = entries.find(({ data }) => data.slug === slug);
+if (!entry) throw new Error('Missing article content entry: ' + slug);
+const canonical = SITE.url + '/articles/' + slug + '/';
+---
+<ArticleLayout
+  entry={entry}
+  canonical={canonical}
+  robots="noindex, follow"
+  pagefindEnabled={false}
+  mainClass="astro-main article-main--hrail"
+  mainAttrs={{ 'data-reader-rail-main': true }}
+  hideHeader
+>
+  <RabstvoPageChrome slot="chrome" />
+  <Content />
+</ArticleLayout>

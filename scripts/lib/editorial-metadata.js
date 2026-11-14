@@ -11,6 +11,7 @@ const {
   applyReviewDecisions,
   reverseReviewDecisions,
 } = require('./editorial-metadata-review-decisions');
+const { routes: routeSearchPolicies } = require('../../data/route-search-policy.json');
 
 const SITE = 'https://gospod-bog.ru';
 const REGISTRY_FILE = path.join(ROOT, 'data/editorial-metadata.json');
@@ -231,7 +232,9 @@ function eligibleRecords() {
     record.owner.owner === 'astro' &&
     record.owner.status === 'production-dist' &&
     (ARTICLE_ROUTE_TYPES.has(record.profile?.routeType) || record.profile?.routeType === 'series-chapter') &&
-    record.profile?.migrationMode === 'strict-native'
+    record.profile?.migrationMode === 'strict-native' &&
+    // Noindex drafts are not eligible for public editorial date projections.
+    routeSearchPolicies[record.route]?.indexPolicy !== 'noindex'
   );
 }
 

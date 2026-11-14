@@ -1,0 +1,58 @@
+/* Shared semantic theme bridge for an ArticleLayout route with Reader controls.
+   Matches the established Lawson pattern: light, sepia and dark are one state. */
+html[data-reader-theme] {
+  --astro-color-bg: var(--color-canvas);
+  --astro-color-surface: var(--color-surface);
+  --astro-color-text: var(--color-text);
+  --astro-color-muted: var(--color-text-muted);
+  --astro-color-gold: var(--color-accent);
+  --astro-color-border: var(--color-border);
+}
+html[data-reader-theme="light"],
+html[data-reader-theme="sepia"] { color-scheme: light; }
+html[data-reader-theme="dark"] { color-scheme: dark; }
+
+.astro-main {
+  --text: var(--color-text);
+  --muted: var(--color-text-muted);
+  --astro-color-card: var(--color-surface);
+  color: var(--text);
+}
+.astro-main .astro-article__body > p,
+.astro-main .astro-article__body > ul,
+.astro-main .astro-article__body > ol,
+.astro-main .astro-article__body li { color: var(--text); }
+
+/* Route-owned image treatment. Shared Reader components remain canonical. */
+.astro-article[data-article-slug="rabstvo-svobody"] .astro-article__body figure.article-figure {
+  margin: clamp(1.6rem, 3.5vw, 3rem) auto;
+  max-width: min(100%, 900px);
+  padding: 0;
+  border: 0;
+}
+.astro-article[data-article-slug="rabstvo-svobody"] .astro-article__body figure.article-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 750px;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(35, 28, 20, .13);
+}
+.astro-article[data-article-slug="rabstvo-svobody"] .astro-article__body figure.article-figure figcaption {
+  margin: .75rem auto 0;
+  max-width: 68ch;
+  text-align: center;
+  color: var(--astro-color-muted, #625c56);
+  font-size: .78em;
+  line-height: 1.55;
+}
+@media (max-width: 640px) {
+  .astro-article[data-article-slug="rabstvo-svobody"] .astro-article__body figure.article-figure {
+    margin-block: 1.5rem 1.8rem;
+  }
+  .astro-article[data-article-slug="rabstvo-svobody"] .astro-article__body figure.article-figure img {
+    border-radius: 5px;
+    box-shadow: 0 4px 14px rgba(35, 28, 20, .10);
+  }
+}

@@ -1,0 +1,358 @@
+{
+  "selection_type": "editorial-best-11",
+  "candidate_count": 35,
+  "selected_count": 11,
+  "selected": [
+    {
+      "id": "E01",
+      "name": "01-shadow-puppeteer.webp",
+      "source": "063561a5-2644-457c-8624-33c160979d93.png",
+      "source_sha256": "6038b442e0b1c35f33e592275de3ea976d899ccf2ab834d8a54e5f5c3c814358",
+      "source_bytes": 3284236,
+      "out_bytes": 264972,
+      "out_sha256": "fc8958ece072a18dc101f2f3e98f3a1e45e7cf676e7c5538bb843ce112f3406f",
+      "dimensions": [
+        1600,
+        900
+      ],
+      "section": "paradoks",
+      "used_in_article": true,
+      "editorial_state": "approved_for_draft"
+    },
+    {
+      "id": "Z01",
+      "name": "02-crossroads.webp",
+      "source": "01_Развилка_желаний.png",
+      "source_sha256": "27ef0c3660fda37c5cdc325bcda41a6afdbfe9a9a43ac8c662c254eb6203b647",
+      "source_bytes": 3917739,
+      "out_bytes": 428870,
+      "out_sha256": "16ca8be207cc8a34236ffa993964f17f7169da3c414d4b48396f7f26399e4e29",
+      "dimensions": [
+        1600,
+        901
+      ],
+      "section": "paradoks",
+      "used_in_article": true,
+      "editorial_state": "approved_for_draft"
+    },
+    {
+      "id": "Z07",
+      "name": "03-scales.webp",
+      "source": "07_Весы_склонности.png",
+      "source_sha256": "fc5500d37357f8acf5423c56ab8e1f1b2e0e6d2730ee0e448c6729528a5b8c39",
+      "source_bytes": 2351258,
+      "out_bytes": 108634,
+      "out_sha256": "7e9435c5c894e173011f9a6c71144e570cc9513f1dda935d78b3084dbd88f064",
+      "dimensions": [
+        1600,
+        900
+      ],
+      "section": "sem-svobod",
+      "used_in_article": false,
+      "editorial_state": "reserve_not_rendered"
+    },
+    {
+      "id": "Z11",
+      "name": "04-open-house.webp",
+      "source": "11_Порог_возвращения.png",
+      "source_sha256": "276b0f591fca07d1d89ceb0da6c0a492e2482e71ea26c053449b81467bdb7165",
+      "source_bytes": 3606453,
+      "out_bytes": 387112,
+      "out_sha256": "83dabe86792c31d74575b56f7f09161acdc2f99b03d2c1a8ab23c305fb5fa5da",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "section": "dom-rab-syn",
+      "used_in_article": true,
+      "editorial_state": "approved_for_draft"
+    },
+    {
+      "id": "E03",
+      "name": "05-bound-reflection.webp",
+      "source": "6b2e348c-5f64-4778-87be-449f3ba0e587.png",
+      "source_sha256": "a1ca1524b5ed45863427f153b9d975d0053df7036900c8ff78516ea7ace2e257",
+      "source_bytes": 3001549,
+      "out_bytes": 196058,
+      "out_sha256": "044cc358186b211cab88c96deeef71284c6a10a3338dcd9f8f24e02144a5ae67",
+      "dimensions": [
+        1600,
+        900
+      ],
+      "section": "rimlyanam-6",
+      "used_in_article": true,
+      "editorial_state": "approved_for_draft"
+    },
+    {
+      "id": "Z14",
+      "name": "06-bound-orator.webp",
+      "source": "14_Оратор_привязанный_к_камню.png",
+      "source_sha256": "9b2c3d644358e27dcff5c02744b472fc7601166f0a0564462f792cb6357fc4e4",
+      "source_bytes": 3305939,
+      "out_bytes": 289448,
+      "out_sha256": "47fbf238438cf35dd0cca505f05e15cd0fa744c91a41089c7c428f406600ca97",
+      "dimensions": [
+        1600,
+        900
+      ],
+      "section": "anatomia",
+      "used_in_article": true,
+      "editorial_state": "approved_for_draft"
+    },
+    {
+      "id": "Z19",
+      "name": "07-circle-of-habit.webp",
+      "source": "19_Круг_привычки.png",
+      "source_sha256": "89fa5a8c0a59a6c6ec7a60fc55ae4d4b430047837ec195a2d34c4a9dff764446",
+      "source_bytes": 3130705,
+      "out_bytes": 263968,
+      "out_sha256": "ad3a95c2a9ad4657ec0d0bafab6c4ab893e5bddc1b4e43bc065b8752df0d8835",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "section": "lozhnaya-svoboda",
+      "used_in_article": true,
+      "editorial_state": "approved_for_draft"
+    },
+    {
+      "id": "Z12",
+      "name": "08-adonijah-chariot.webp",
+      "source": "12_Адония_и_колесница.png",
+      "source_sha256": "05e655dd2789485b880ea5a2e8f7d260fe8ef594306826216e6d64e00f98e52a",
+      "source_bytes": 3420161,
+      "out_bytes": 312694,
+      "out_sha256": "0e6ec0b721eae80f909ffd00ed3574d82c253ddbb0adb0f2e1d11ed89ea56a72",
+      "dimensions": [
+        1600,
+        900
+      ],
+      "section": "adoniya",
+      "used_in_article": true,
+      "editorial_state": "approved_for_draft"
+    },
+    {
+      "id": "Z13",
+      "name": "09-child-king.webp",
+      "source": "13_Ребёнок_монарх.png",
+      "source_sha256": "453053072841dc710bbdded13325c15e100262db98da913b4f628d557eff84a8",
+      "source_bytes": 3462745,
+      "out_bytes": 310242,
+      "out_sha256": "aba1776d8259d37b9165f794d2dcc127a9208895e70e4aa1601aff5a98d92686",
+      "dimensions": [
+        1600,
+        900
+      ],
+      "section": "semya",
+      "used_in_article": true,
+      "editorial_state": "approved_for_draft"
+    },
+    {
+      "id": "Z09",
+      "name": "10-broken-yoke.webp",
+      "source": "09_Сломанное_ярмо_и_новый_путь.png",
+      "source_sha256": "68f2b192fc3230c415be71abcd0a96b43adca5135a1ff423f513936d56435f1d",
+      "source_bytes": 2911843,
+      "out_bytes": 201456,
+      "out_sha256": "784b8726a717fdce0e00e4feb5e6e13ea2bb3bcd037d5a98050ba038f4146f25",
+      "dimensions": [
+        1600,
+        900
+      ],
+      "section": "razreshenie",
+      "used_in_article": true,
+      "editorial_state": "approved_for_draft"
+    },
+    {
+      "id": "Z08",
+      "name": "11-open-door-shackles.webp",
+      "source": "08_Открытая_дверь_и_разомкнутые_кандалы.png",
+      "source_sha256": "e8f906d44cbb8168a79f2b25380c4eac50d53879a953733205431d648988458b",
+      "source_bytes": 2797929,
+      "out_bytes": 159582,
+      "out_sha256": "3df5913b083236bbb450bce1bafe62fbeddef7e71dee14244dcfa4e2e4cb21ee",
+      "dimensions": [
+        1600,
+        900
+      ],
+      "section": "razreshenie",
+      "used_in_article": true,
+      "editorial_state": "approved_for_draft"
+    }
+  ],
+  "policy": "draft-only; manual visual selection; no public site release",
+  "rejected": [
+    {
+      "id": "Z02",
+      "source": "02_Рука_над_чашей.png",
+      "source_sha256": "c465d50a1c5202982972fb367027d1939341ea7edaa37f1be03c9c88d26f7b83",
+      "review": "excluded_or_reserve",
+      "reason": "Неясная предметная связь руки и чаши"
+    },
+    {
+      "id": "Z03",
+      "source": "03_Цепи_и_свобода.png",
+      "source_sha256": "0e5c606391275bf32d17500b37a461a08ecba356f9ed78c58c8d959b2b97d30b",
+      "review": "excluded_or_reserve",
+      "reason": "Повтор символа освобождения; резерв"
+    },
+    {
+      "id": "Z04",
+      "source": "04_Чаша_перед_неподвижной_рукой.png",
+      "source_sha256": "025f679f8976ef6ce9c46d9f7c3adfbfaa6fab82b4e32d6ab44c69f89416def9",
+      "review": "excluded_or_reserve",
+      "reason": "Дублирует композицию чаши и руки"
+    },
+    {
+      "id": "Z05",
+      "source": "05_Илий_и_дистанция_ответственности.png",
+      "source_sha256": "e4674ad248d844e65fa0bed4e7d49b6ed7760d46b975baa8089d138d14a983cc",
+      "review": "excluded_or_reserve",
+      "reason": "Буквальная реконструкция Илия, не исторический источник; резерв"
+    },
+    {
+      "id": "Z06",
+      "source": "06_Пустая_упряжь_и_следы.png",
+      "source_sha256": "05d66f797e09056e07b07c563b57a68af57b566c54f60a2e8287f3589a890bff",
+      "review": "excluded_or_reserve",
+      "reason": "Пустая упряжь дублирует сломанное ярмо"
+    },
+    {
+      "id": "Z10",
+      "source": "10_Компас_и_магнит.png",
+      "source_sha256": "387b30bf9cb764202f7699fa119510185a6975d4f549b202672bc9eac1579c4c",
+      "review": "excluded_or_reserve",
+      "reason": "Компас и магнит: смысл неочевиден"
+    },
+    {
+      "id": "Z15",
+      "source": "15_Семь_ключей.png",
+      "source_sha256": "c93173d5546290ef1a342c5508846c4d30385736b2772b22154fb246dc2750e2",
+      "review": "excluded_or_reserve",
+      "reason": "Ключи не раскрывают семь значений свободы"
+    },
+    {
+      "id": "Z16",
+      "source": "16_Сломанная_корона.png",
+      "source_sha256": "d9b706cfd5b44552b78212dfc492a8d56dd987d25ff3a70ffd43a0142b4e1c76",
+      "review": "excluded_or_reserve",
+      "reason": "Сломанная корона дублирует ребёнка-короля"
+    },
+    {
+      "id": "Z17",
+      "source": "17_Витрина_одинаковых_выборов.png",
+      "source_sha256": "1bb65b31745296e4c13b5a54dfed23f605e5526160191d0a672088473c8911ca",
+      "review": "excluded_or_reserve",
+      "reason": "Витрина вариантов композиционно однообразна"
+    },
+    {
+      "id": "Z18",
+      "source": "18_Сидящий_у_открытой_двери.png",
+      "source_sha256": "489d2f8e7ba6a79e9fa9bf9cce536673399205e3198e005b4f8387b080c3394a",
+      "review": "excluded_or_reserve",
+      "reason": "Образ сидящего у двери слабее выбранного сюжета"
+    },
+    {
+      "id": "Z20",
+      "source": "20_Три_отвеса.png",
+      "source_sha256": "f6b831f0940594d43b8ef61eda973c6b74bbb6ea09ef44b686210666226f38cf",
+      "review": "excluded_or_reserve",
+      "reason": "Подвесы без ясного смыслового соответствия"
+    },
+    {
+      "id": "Z21",
+      "source": "21_Разрезанная_верёвка.png",
+      "source_sha256": "c48b6dc3e6cb9bb7b24cc7fc36d4b869e55bd9bc6b9679cde21e5d55191a4b94",
+      "review": "excluded_or_reserve",
+      "reason": "Смешаны ножницы, верёвка и корона; неоднозначная механика"
+    },
+    {
+      "id": "E02",
+      "source": "6e57c010-b38e-41cc-bade-18e1a8cecedb.png",
+      "source_sha256": "46ff079b9c11e5287d3c2ed49e685650540de0d5a069b6fa81cd0e0f0bc77743",
+      "review": "excluded_or_reserve",
+      "reason": "Человек с клеткой на спине: перегруженная метафора"
+    },
+    {
+      "id": "E04",
+      "source": "e0ca78a8-003e-4489-9dbf-6bcde5b0c10e.png",
+      "source_sha256": "b6bfdd2b23732a172ba64812ecc91f8f3e4b10c5b1fd0724030f87d1fa8e24d3",
+      "review": "excluded_or_reserve",
+      "reason": "Монотонная процессия"
+    },
+    {
+      "id": "E05",
+      "source": "98c097c0-999c-4fe5-a097-f581fc5913a5.png",
+      "source_sha256": "ed08156b94d8efaedc7e4c5f7b45b92a04429f292d349109319fbc68ffbe2f2e",
+      "review": "excluded_or_reserve",
+      "reason": "Сильные оковы, но смысл дублирует Z08; резерв"
+    },
+    {
+      "id": "E06",
+      "source": "a241382f-4ff1-482c-b342-33a05289db0f.png",
+      "source_sha256": "014de0efabe1160df41f5fba3e114fad45c38ebda57c1916482ce79731b877b9",
+      "review": "excluded_or_reserve",
+      "reason": "Два всадника на воле: нелогичная конструкция"
+    },
+    {
+      "id": "E07",
+      "source": "aULORHPjsvwm3C53t3eXkOpBsAwTg8DxsyBfWkFMkx0.jpg",
+      "source_sha256": "6942ce4473e3b2fc26dc2e77b7779790ea41b00c1383c0f1b3205f5a414c931d",
+      "review": "excluded_or_reserve",
+      "reason": "Лодка не относится явно к тезисам"
+    },
+    {
+      "id": "E08",
+      "source": "bNawrUs-AQwtcRGfV8ADB790JBR6YsL8oMEfsgl3NQ0.jpg",
+      "source_sha256": "6cd6b0ad4b3e010c2d71119f57c00307bf7424147a62c2fca0c11fb20977350d",
+      "review": "excluded_or_reserve",
+      "reason": "Опасная сцена у обрыва выбивается из символизма"
+    },
+    {
+      "id": "E09",
+      "source": "hUaEO-yNAyINqmTI8v_ivP2AoeK3qG7yacFTeV7U9uk.jpg",
+      "source_sha256": "8546843bec8d03220daa64c8f2ffe2bcfd80a1e2b7a86ef269c153795ed4f6e9",
+      "review": "excluded_or_reserve",
+      "reason": "Кукловод повторяет E01"
+    },
+    {
+      "id": "E10",
+      "source": "dF70SDecpmfWgg3nhQOhe_Ub2nSei4h348P6qwqWoU8.jpg",
+      "source_sha256": "745ef448379ca667d6820de78503a17bf51bda749e8b8877e3c3faab0a96a14f",
+      "review": "excluded_or_reserve",
+      "reason": "Неясная семейная драма"
+    },
+    {
+      "id": "E11",
+      "source": "nBfAEsH9Vmmn2ntuTzXbSAodKeSNJI4uXrgf8m5A7WU.jpg",
+      "source_sha256": "9c17c012c1fd5669a7da7b6e4f35db480a1d29e48d248e2e5eb81ff26e40ed65",
+      "review": "excluded_or_reserve",
+      "reason": "Повтор коронованного героя Z13"
+    },
+    {
+      "id": "E12",
+      "source": "edORPQ77h9uphava3LdQgH4K3o_sFHqBzrRsq-Cb8qk.jpg",
+      "source_sha256": "79d3913d0efb87dba985abdadcb750807e0ade8fec147a81ceb46cabe09bf2a9",
+      "review": "excluded_or_reserve",
+      "reason": "Взрослый, ребёнок и клетка: визуальная неоднозначность"
+    },
+    {
+      "id": "E13",
+      "source": "nUTuceK44LHD528W6p8b5LwWn1k_XtB6iP95_rLmXCE.jpg",
+      "source_sha256": "9d44ee71e2b8e0b1c3e76f16ea9f1be4bc169f593f5ed07a88ff79feb2e65c21",
+      "review": "excluded_or_reserve",
+      "reason": "Однообразные силуэты со спины"
+    },
+    {
+      "id": "E14",
+      "source": "BscYYjcwdCI60L63oncQeFJezzhhnpID7VyYHapWDmU.jpg",
+      "source_sha256": "06c71862373074223ad0beb7a2771078525ecf38619e9203ed5c981daa560e65",
+      "review": "excluded_or_reserve",
+      "reason": "Тёмная толпа и неясные соединения цепей"
+    }
+  ],
+  "placed_count": 10,
+  "reserve_count": 1,
+  "decision_notes": "AI-generated editorial allegories, not historical evidence. Preserve original files. No collages and no filler scenes.",
+  "publish_policy": "Draft, noindex, no public release without separate editorial approval."
+}
