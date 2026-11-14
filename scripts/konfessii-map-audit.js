@@ -452,6 +452,25 @@ if (chromium) (async () => {
         `I16 [${vp.label}] native React document has zero horizontal overflow`,
         `I16 [${vp.label}] inner 3D app overflow=${Math.max(appWidth.body,appWidth.html)-appWidth.client}px; offenders=${JSON.stringify(appWidth.offenders)}`);
 
+      // A collapsed card can fit while its historical details still overflow.
+      // Exercise each of the three origins on the narrowest supported viewport.
+      if (vp.label === 'mobile-320') {
+        const originCards = frame.locator('#origins button.bento-card');
+        assert(await originCards.count() === 3, 'I16 [mobile-320] all three origin cards exist',
+          'I16 [mobile-320] origin cards missing');
+        for (let index = 0; index < 3; index += 1) {
+          await originCards.nth(index).click();
+          await page.waitForTimeout(400);
+          const expandedOverflow = await frame.evaluate(
+            () => Math.max(document.body.scrollWidth, document.documentElement.scrollWidth) -
+              document.documentElement.clientWidth
+          );
+          assert(expandedOverflow <= 0, `I16 [mobile-320] origin ${index + 1} expanded without overflow`,
+            `I16 [mobile-320] origin ${index + 1} expanded overflow=${expandedOverflow}px`);
+          await originCards.nth(index).click();
+        }
+      }
+
       if (!vp.mobile) {
         await frame.evaluate(() => [...document.querySelectorAll('button,a')].find((node) => /3D Карта|3D-карта/i.test(node.textContent))?.click());
         await page.waitForTimeout(2500);
