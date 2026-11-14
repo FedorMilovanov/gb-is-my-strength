@@ -41,7 +41,9 @@ if (/html\s*\{[^}]*overflow-x\s*:\s*(?:hidden|clip)/.test(css) ||
     /body\s*\{[^}]*overflow-x\s*:\s*(?:hidden|clip)/.test(css)) {
   fail('Global overflow masking returned');
 }
-for (const asset of ['js/reader-preferences-head.js', 'js/reader-preferences.js', 'css/reader-preferences.css']) {
+if (/[ \t]+(?=\r?\n|$)/g.test(bundle)) fail('Generated HTML contains trailing whitespace; fix the reproducible build, not .gitattributes');
+if (!bundle.includes('site-utils.js')) fail('Shared OverlayRuntime bootstrap is missing from the 3D application');
+for (const asset of ['js/reader-preferences-head.js', 'js/reader-preferences.js', 'css/reader-preferences.css', 'js/site-utils.js']) {
   const pattern = new RegExp(asset.replaceAll('.', '\\.') + '\\?v=([a-f\\d]{8})');
   const match = head.match(pattern);
   if (!match) fail('Missing governed asset version: ' + asset);

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "postinstall": "node scripts/patch-3d-force-graph-drag.mjs",
-    "build": "node scripts/patch-3d-force-graph-drag.mjs --check && vite build",
+    "build": "node scripts/patch-3d-force-graph-drag.mjs --check && vite build && node scripts/normalize-built-html.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

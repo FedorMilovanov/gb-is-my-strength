@@ -185,6 +185,29 @@ const STATS = [
   { value: '1867–', label: 'современность' },
 ];
 
+/* ─── Shared site overlay authority (also used by other special overlays) ─── */
+const OVERLAY_OWNER = 'special:konfessii-mindmap-launcher';
+type SiteOverlayRuntime = {
+  open(owner: string, options: {
+    element: HTMLElement | null;
+    opener: Element | null;
+    focusTarget: Element | null;
+    onRequestClose(): boolean;
+    closeOnEscape: boolean;
+    trapFocus: boolean;
+    restoreFocus: boolean;
+  }): unknown;
+  close(owner: string, reason: string, options?: { restoreFocus?: boolean }): boolean;
+  isOpen(owner: string): boolean;
+};
+function siteOverlayRuntime(): SiteOverlayRuntime | undefined {
+  const site = window as typeof window & {
+    OverlayRuntime?: SiteOverlayRuntime;
+    SiteUtils?: { OverlayRuntime?: SiteOverlayRuntime };
+  };
+  return site.OverlayRuntime ?? site.SiteUtils?.OverlayRuntime;
+}
+
 /* ─── Main launcher ─── */
 export default function MindMapLauncher() {
   const [isOpen, setIsOpen] = useState(false);
@@ -197,31 +220,41 @@ export default function MindMapLauncher() {
   }, []);
 
   const handleOpen = useCallback(() => {
+    if (!siteOverlayRuntime()) {
+      console.error('The 3D launcher requires the shared site OverlayRuntime');
+      return;
+    }
     setIsLoading(true);
     setIsOpen(true);
-    document.body.style.overflow = 'hidden';
-    // Loading screen shows for at least 1.8s for cinematic feel
+    // Loading screen shows for at least 1.8s for cinematic feel.
     setTimeout(() => setIsLoading(false), 1800);
   }, []);
 
   const handleClose = useCallback(() => {
+    const runtime = siteOverlayRuntime();
+    if (runtime?.isOpen(OVERLAY_OWNER)) runtime.close(OVERLAY_OWNER, 'close');
     setIsOpen(false);
     setIsLoading(false);
-    document.body.style.overflow = '';
   }, []);
 
-  useEffect(() => {
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, []);
-
-  // Esc to close
   useEffect(() => {
     if (!isOpen) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose(); };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const runtime = siteOverlayRuntime();
+    if (!runtime) return;
+    const element = document.getElementById('konfessii-mindmap-overlay');
+    const focusTarget = element?.querySelector('button[title^="Закрыть 3D-карту"]') ?? null;
+    runtime.open(OVERLAY_OWNER, {
+      element,
+      opener: document.activeElement,
+      focusTarget,
+      onRequestClose: () => { handleClose(); return false; },
+      closeOnEscape: true,
+      trapFocus: true,
+      restoreFocus: true,
+    });
+    return () => {
+      if (runtime.isOpen(OVERLAY_OWNER)) runtime.close(OVERLAY_OWNER, 'unmount', { restoreFocus: false });
+    };
   }, [isOpen, handleClose]);
 
   const goldMain = isLight ? '#7c6540' : '#c4a67e';
@@ -372,6 +405,10 @@ export default function MindMapLauncher() {
         {isOpen && (
           <motion.div
             key="mindmap-fullscreen"
+            id="konfessii-mindmap-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Интерактивная 3D-карта истории ЕХБ"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

@@ -572,8 +572,8 @@ export default function MindMap3D() {
   const [dims, setDims] = useState({ w: 800, h: 620 });
   const isFullscreen = true;
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
-  const [isLandscape, setIsLandscape] = useState(false);
-  const [showRotatePrompt, setShowRotatePrompt] = useState(false);
+  const [, setIsLandscape] = useState(false);
+  const [, setShowRotatePrompt] = useState(false);
   const [bottomBarExpanded, setBottomBarExpanded] = useState(false);
   const [cameraNavEnabled, setCameraNavEnabled] = useState(true);
   const timelineYearRef = useRef<number | null>(null);
@@ -1158,7 +1158,7 @@ export default function MindMap3D() {
     }
   }, [activeRoute, focusCameraToNode, inspectorMode]);
 
-  const handleTimelineEventSelect = useCallback((event: any, year: number) => {
+  const handleTimelineEventSelect = useCallback((event: any, _year: number) => {
     const text = `${event?.year ?? ''} ${event?.title ?? ''} ${event?.description ?? ''} ${event?.details ?? ''}`;
     const fallback = TIMELINE_TARGETS.find((entry) => entry.match.test(text));
     const nodeId = event?.nodeId ?? fallback?.nodeId;

@@ -433,13 +433,24 @@ if (chromium) (async () => {
       // after loading fonts and content, not the surrounding shell.
       const appWidth = await frame.evaluate(async () => {
         await document.fonts.ready;
-        return { client: document.documentElement.clientWidth,
-          body: document.body.scrollWidth,
-          html: document.documentElement.scrollWidth };
+        const client = document.documentElement.clientWidth;
+        const body = document.body.scrollWidth;
+        const html = document.documentElement.scrollWidth;
+        // Only enumerate culprits on failure; never mask overflow via CSS.
+        const offenders = Math.max(body, html) > client ? [...document.body.querySelectorAll('*')]
+          .map((node) => {
+            const rect = node.getBoundingClientRect();
+            return { tag: node.tagName, className: typeof node.className === 'string' ? node.className.slice(0, 115) : '',
+              text: (node.textContent || '').trim().slice(0, 36),
+              left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width) };
+          })
+          .filter((item) => item.right > client + 1 && item.width > 0)
+          .sort((a, b) => b.right - a.right).slice(0, 12) : [];
+        return { client, body, html, offenders };
       });
       assert(Math.max(appWidth.body, appWidth.html) <= appWidth.client,
         `I16 [${vp.label}] native React document has zero horizontal overflow`,
-        `I16 [${vp.label}] inner 3D app overflow=${Math.max(appWidth.body,appWidth.html)-appWidth.client}px`);
+        `I16 [${vp.label}] inner 3D app overflow=${Math.max(appWidth.body,appWidth.html)-appWidth.client}px; offenders=${JSON.stringify(appWidth.offenders)}`);
 
       if (!vp.mobile) {
         await frame.evaluate(() => [...document.querySelectorAll('button,a')].find((node) => /3D Карта|3D-карта/i.test(node.textContent))?.click());

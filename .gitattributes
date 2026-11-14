@@ -17,10 +17,6 @@
 # repository-wide whitespace gate strict everywhere else.
 tools/actionlint/v1.7.7/LICENSE.txt whitespace=-blank-at-eof
 
-# Vite singlefile embeds upstream GLSL template strings containing line-end
-# spaces. Preserve exact reproducible binary output; keep source files strict.
-konfessii/russkij-baptizm/_app/index.html whitespace=-blank-at-eol
-
 # Binary files — no line-ending conversion
 *.png  binary
 *.jpg  binary

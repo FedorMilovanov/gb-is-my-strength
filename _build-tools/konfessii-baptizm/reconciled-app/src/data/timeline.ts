@@ -7,7 +7,7 @@ export interface TimelineEvent {
   category: TimelineCategory;
   details?: string;
   source?: string;
-  sourceLevel?: 'A' | 'B' | 'C' | 'D' | 'A/C' | 'B/C' | 'B+' | 'B+/A-';
+  sourceLevel?: 'A' | 'B' | 'C' | 'D' | 'A/B' | 'C/B' | 'A/C' | 'B/C' | 'B+' | 'B+/A-';
   nodeId?: string;
   routeId?: string;
   mapSelectionId?: string;
