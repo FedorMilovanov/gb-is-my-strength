@@ -224,7 +224,7 @@ every `readingTime` value at its base number rather than guessing, because the
 policy module and the re-pinning are owned by `4786e4e2`.
 
 One further note for whoever re-pins: `5ccbaa3b` has grown Companion A to 7085
-body words and Companion B to 9135, far beyond every other branch. If that content
+body words and Companion B to 9231, far beyond every other branch. If that content
 is kept, B alone accounts for 58 of the total minutes, and the canonical total
 moves well past 269. The total is not a stable number to negotiate around; it is
 an output.
@@ -275,7 +275,7 @@ decision.
 ## 7d. Bug in `5ccbaa3b`: reading-time surfaces left inconsistent, and no gate on his branch catches it
 
 `5ccbaa3b` has advanced to `22cbe14` and now carries seven commits against
-Companion B, growing that article from 4787 to 9294 body words while keeping all 26
+Companion B, growing that article from 4724 to 9231 body words while keeping all 26
 `<h2 id=` sections. In the course of that he re-pinned two `readingTime` values in
 MDX frontmatter — Companion A from 37 to 43 and Companion B from 36 to 68 — but
 left the other two surfaces untouched. `git diff --numstat 9618e82 22cbe14` reports
@@ -363,6 +363,95 @@ tests first, because a counter that silently drops a visible paragraph or keeps 
 hidden one will re-pin wrong numbers into every surface at once, and — as §7c
 records — no gate compares any surface with the content.
 
+**Update at his later head `6f2fad3`: the MDX-side bug is unfixed and a second,
+correct counter now exists beside it.** `git diff 836d364 6f2fad3 --
+scripts/lib/reading-time-policy.js` is empty, so all four cases above still
+reproduce unchanged. But he added `scripts/lib/reader-main-words.cjs` (+103), a
+dependency-free stack parser exposing `visibleMainWords(html)`, used by
+`reading-time-dist-crosscheck` and by a new `scripts/native-route-reading-time.js`
+(+211) for native routes that have neither MDX nor a single body file. It is correct
+where the other is not. Against the same cases it returns 2 for
+`aria-hidden="false"`, 2 for `data-hidden="no"`, 4 for same-tag nested `hidden` and
+2 for mixed-tag nested `hidden`, and it does not count attribute text, so
+`<button aria-label="пять шесть семь">восемь</button>` yields 1. Its own comments
+name the reasons: void elements must not be pushed on the stack, because
+`dzhon-gill-chast-3-nasledie` returned 0 words from a single `<img hidden>`, and a
+bespoke parser is needed «потому что регулярка `<[^>]+>` оставляет текст атрибутов
+(длинные aria-label источников) и не знает про `hidden`». That is an independent
+diagnosis of the same defect class recorded above.
+
+So the repository now has two word counters with different answers. Measured on
+identical text — frontmatter and the sources section stripped, then the same string
+fed to `readerWordCount` directly and to `visibleMainWords` wrapped in `<main>` —
+the two disagree on **all ten** articles tested, and the MDX-side counter is always
+the higher one:
+
+| article | `readerWordCount` | `visibleMainWords` | gap | minutes |
+| --- | ---: | ---: | ---: | --- |
+| `steven-lawson-samoobman-i-publichnyy-golos` | 15637 | 14286 | 1351 | 87 vs 80 |
+| `teksty-pisaniya-kotorymi-manipuliruyut` | 2942 | 2644 | 298 | 17 vs 15 |
+| `vernye-i-neizvestnye-zdorovoe-pastyrstvo` | 3129 | 2835 | 294 | 18 vs 16 |
+| `sem-tipov-razlichenie-uchiteley` | 1957 | 1716 | 241 | 11 vs 10 |
+| `cerkovnaya-disciplina-vlast-granicy-zashchita` | 2384 | 2159 | 225 | 14 vs 12 |
+| `kogda-uhodit-kogda-ostavatsya` | 2314 | 2096 | 218 | 13 vs 12 |
+| `priznaki-zdorovoy-cerkvi` | 2277 | 2099 | 178 | 13 vs 12 |
+| `anatomiya-padeniya-pyat-stadiy` | 2046 | 1884 | 162 | 12 vs 11 |
+| `nesovershennyy-chelovek-v-nesovershennoy-cerkvi` | 2363 | 2200 | 163 | 14 vs 13 |
+| `dva-sezda-1884` | 886 | 799 | 87 | 5 vs 5 |
+| **totals** | **35935** | **32718** | **3217** | **17.9 min at 180 wpm** |
+
+Twenty MDX articles contain at least one divergence-triggering token in the reader
+body, four of them files this branch touched. None of the seven teen-series articles
+does, which is why the §7b table is unaffected — but a site-wide recompute is
+exactly where the choice of counter changes the answer, by up to seven minutes on a
+single article. The two should be reconciled to one implementation before any mass
+re-pin, and the correct one to keep is `visibleMainWords`, since it is the only one
+that handles nesting, void elements, attribute text and `aria-hidden="false"`.
+
+## 7f. The phase-aware foundation contract hardcodes one branch's minutes
+
+The phase logic in `4786e4e2`'s rewritten `teen-series-foundation-contract.mjs` is
+sound, as §8 records. The same commit also turns that branch's own minute figures
+into repository-wide literal assertions, and that part does not generalize.
+
+The contract contains a per-article `SERIES` table of `expectedMinutes` —
+29/41/34/31/30/33/47 — and asserts each article's frontmatter `readingTime` against
+it, then asserts `if (total !== 245) fail('canonical total reading time must be 245
+min')`, then requires the literal text `const TOTAL_MIN = 245;` in
+`teenSeriesConfig.ts` by regex, then requires the literal strings
+`readingTime: '29 мин'` and so on for each slug, then requires each
+`readingProgressDoneMin` and `readingProgressPartMin` to equal specific numbers.
+
+Measured with his contract at `6f2fad3`:
+
+| tree it is run against | result |
+| --- | --- |
+| his own `6f2fad3` | **PASS**, exit 0, reporting «total reading time: 245 min» and «released (7 published routes, noindex off, series admitted)» |
+| base `9618e82` content | **37 failures**, and all 37 are minute-related: 0 phase-related, 0 other |
+| this branch | 14+ failures, every one a minute literal: 264 against an expected 245, and each of the seven `readingTime` values against his per-article number |
+
+The zero phase failures on base are the important half of that result. Base already
+declares the published phase, so his phase logic accepts it; the entire rejection is
+the frozen numbers. That means the contract as written cannot pass on any tree whose
+content differs from his, which is every other branch including `main`.
+
+This collides head-on with §7b's conclusion. That section argues the canonical total
+is an **output** of the final merged content, not a number to negotiate around, and
+§7c adds that no gate compares any surface with the content. A contract that asserts
+`total === 245` as a literal makes the total an **input**: after any content merge it
+fails even when all five surfaces agree perfectly with each other, because the merged
+text no longer implies 245. Keeping this branch's +4437 words implies 251; keeping
+`5ccbaa3b`'s Companion B at 9231 words implies 269; keeping both implies more.
+
+The recommendation for whoever reconciles is to separate the two halves of his
+commit. Take the phase-aware logic, which repairs a real stale-premise bug and is
+content-independent. Do not take the minute literals: derive the expected minutes
+from the content with his own policy module, or read them from a single declared
+source and check the other surfaces against it, so that re-pinning after a merge is
+a regeneration rather than a contract edit. As written, adopting his contract forces
+every future editorial change to the teen series to be accompanied by a manual edit
+to five sets of literals inside the contract itself.
+
 ## 8. Gate state of this branch
 
 `npm run strangler:build:production-like` exits 0: approved/blocked 78/0, 68
@@ -384,8 +473,29 @@ second is plain JS. Both wrong names fail with `MODULE_NOT_FOUND`, which looks
 like a broken tree but is only a wrong path, and `git ls-files scripts/` reports
 no missing tracked file.
 
-The only designed failure in the repository remains
-`teen-series-foundation-contract.mjs`, which also fails on `main`.
+**Correction to how this note previously described
+`teen-series-foundation-contract.mjs`.** It was called the repository's only
+designed failure because it exits 1 here and on `main`. That framing was wrong. It
+is not a deliberate failure but a stale premise: the contract was written for the
+foundation phase and still demands `draft: true`, `noindex: true`, no production
+route and no admission to `data/series.json`, while the series has in fact been
+published — all seven articles declare `draft: false` and `noindex: false`, all
+seven routes exist, and the series is admitted to the registry. So the contract
+fails on its own outdated assumption about the phase, on `main` and on every branch
+alike.
+
+`4786e4e2` fixed exactly this at `e532650`, «teen-series: make the foundation
+contract phase-aware and blocking». His version reads the phase from each article's
+`draft` flag, requires `noindex` to equal `draft`, requires a draft article to have
+no route and a published article to have one, and fails the whole series if the
+phase is mixed, since publication is atomic. That logic is correct and it
+generalizes: run against base content the phase checks pass with zero failures,
+because base already declares the published phase. §7f records the separate problem
+his rewrite introduces.
+
+The remaining exit-1 in this branch's own battery is therefore not a designed
+failure to be tolerated but a known-broken contract whose repair belongs to
+`4786e4e2`. Everything else listed above is green.
 
 Distribution probes after the final build: 25/25 new fragments visible on
 Companion A, 18/18 on Companions C and D, with zero `≠` characters, zero
@@ -595,12 +705,23 @@ trial merge of this branch's HEAD against each of the six, with
 
 | branch | conflicting files | the Kaige line | the accent, both files |
 | --- | ---: | --- | --- |
-| `1d569906` | 185 | conflict | conflict, but both sides chose U+0301, so resolution is trivial |
-| `7b785a3b` | 133 | conflict | conflict, and his side keeps U+00E1 |
-| `4786e4e2` | 90 | conflict | **auto-merges, this branch's U+0301 survives** |
-| `bf6e18c1` | 73 | auto-merges | conflict, and his side keeps U+00E1 |
-| `8c44f067` | 36 | conflict | **auto-merges, this branch's U+0301 survives** |
-| `5ccbaa3b` | 24 | conflict | **auto-merges, this branch's U+0301 survives** |
+| `1d569906` | 61 | conflict | conflict, but both sides chose U+0301, so resolution is trivial |
+| `7b785a3b` | 42 | conflict | conflict, and his side keeps U+00E1 |
+| `bf6e18c1` | 17 | auto-merges | conflict, and his side keeps U+00E1 |
+| `4786e4e2` | 15 | conflict | **auto-merges, this branch's U+0301 survives** |
+| `8c44f067` | 10 | conflict | **auto-merges, this branch's U+0301 survives** |
+| `5ccbaa3b` | 8 | conflict | **auto-merges, this branch's U+0301 survives** |
+
+The counts in that table were originally reported as 185/133/90/73/36/24 and were
+wrong, in a way worth recording because it is easy to repeat. They were taken from
+`git merge-tree --write-tree --name-only`, whose output after the first line lists
+**every** file the merge touched, including informational `Auto-merging <path>`
+lines for files that merged cleanly. Counting those lines overstates conflicts by
+roughly a factor of three. The correct count is the number of lines beginning
+`CONFLICT`. The per-file cells were always computed correctly, by testing for the
+literal string `Merge conflict in <path>`, so the pattern in the table — which
+branch collides on which of the three files — was right even when the totals were
+not. §12 gives the same correction for the merge against `main`.
 
 So the resurrection risk is narrower than it first looks but real for three
 branches. Against `4786e4e2`, `8c44f067` and `5ccbaa3b` git takes this branch's
@@ -676,6 +797,12 @@ as Samuel.
 
 ## 9. Suggested reconciliation order
 
+0. Rebase the whole exercise on the fact that `main` is now `ba9552d`, not
+   `9618e82` (§12). Unshallow the clone first — `git fetch --deepen=20 origin main`
+   — and confirm `git merge-base` resolves, because a shallow clone reports
+   «refusing to merge unrelated histories» and every conflict count taken before
+   that is meaningless. Merging main into each lane is cheap for this one: two
+   conflicts, one of which is a derived file.
 1. Decide the sibling-link owner first, because it is the only requirement that
    fails closed on `main` and on five of seven branches. Keep one branch's link
    set; do not merge both `5ccbaa3b`'s and `8c44f067`'s.
@@ -836,3 +963,127 @@ of a semantic collision. Draft PR #2302 remained a draft with several red GitHub
 checks at the HEAD he inspected, including source-index, canonical discovery,
 dependency security and lane collisions; he could not retrieve the step logs, so he
 explicitly declines to treat that PR as release-ready.
+
+## 12. `main` has moved: the base of this whole reconciliation is no longer `9618e82`
+
+This is the most consequential fact in the note and it postdates every section above.
+`origin/main` advanced from `9618e82` to **`ba9552d`** when PR #2292, «feat(reader):
+integrated collapsible Grok rail, native Library dock and mobile first fold», merged
+at 2026-11-13T22:38:51Z. Its commit subject is «feat(reader): unify Reader Core and
+Argon «Коротко»». All seven arena lanes were branched from `9618e82`, so every
+merge-base figure recorded above is now one commit stale on the main side.
+`1d569906` has already merged the new main into his lane at `3a22a4b`; no other lane
+has. This branch is 1 commit behind main and 26 ahead of it.
+
+`ba9552d` changes 296 files against `9618e82`. It touches surfaces this note makes
+claims about: all three `podrostok-za-kadrom-*` articles and one each of Companion A,
+C and D; `data/scripture-search-index.json`, regenerated at +187/−235; six files
+under `src/runtime/`; the `serdce-iduh` pilot component; and five hermenevtika files
+including `HermenevtikaBody.astro`. It does **not** touch `teenSeriesConfig.ts`,
+`data/series.json`, `scripts/teen-series-*`, `serdce-i-duh.mdx` or the Enoch article.
+
+**Merging the new main into this branch produces exactly two conflicts**, counted as
+lines beginning `CONFLICT`: `data/scripture-search-index.json`, which is derived and
+should simply be regenerated from the merged tree per §5, and
+`src/components/article-pilots/hermenevtika/HermenevtikaBody.astro`. All six teen
+articles that both sides touched auto-merge. The change to each teen article is one
+line, wrapping parenthesized citation groups in `<span class="reader-atomic-citation">`.
+
+Two measurements make that safe to say. First, main's teen-series content is
+**word-identical to base**: every one of the seven articles has exactly the same
+body word count on `ba9552d` as on `9618e82`, and the series total is 34168 on both,
+so main's one-line edits are markup only and add or remove no prose. Second, the
+`<h2 id=` census is 16/24/22/22/26/31/40 on **every** tree measured — new main,
+base, this branch and all six lanes — which confirms that `1d569906`'s section
+deletions, the bug of record reported in §6, are still repaired at his current head
+`53cd39c` and survived his merge of the new main. His Companion B is back to 26
+sections and 4724 words, identical to base, and his Companion A to 22 sections.
+
+For orientation, body words per article at the current heads, measured with
+frontmatter, the sources section and all tags stripped:
+
+| tree | I | II | III | A | B | C | D | total |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| new main `ba9552d` | 4012 | 5776 | 4596 | 4496 | 4724 | 4860 | 5704 | 34168 |
+| base `9618e82` | 4012 | 5776 | 4596 | 4496 | 4724 | 4860 | 5704 | 34168 |
+| **this branch** | 4266 | 7368 | 4969 | 5111 | 5115 | 5308 | 6468 | **38605** |
+| `1d569906` | 4012 | 5776 | 4596 | 4496 | 4724 | 4860 | 5704 | 34168 |
+| `4786e4e2` | 4272 | 6350 | 5162 | 4540 | 4759 | 5057 | 7459 | 37599 |
+| `7b785a3b` | 4016 | 5809 | 4611 | 4585 | 4874 | 4875 | 5879 | 34649 |
+| `8c44f067` | 4192 | 6021 | 4739 | 4541 | 4840 | 5090 | 5873 | 35296 |
+| `5ccbaa3b` | 4012 | 5776 | 4596 | 7085 | 9231 | 4860 | 5704 | 41264 |
+| `bf6e18c1` | 4013 | 5776 | 4612 | 4529 | 4745 | 4854 | 5703 | 34232 |
+
+### A new contract in main, and its attribution here
+
+`ba9552d` adds `scripts/reader-citation-atomic-source-contract.cjs`. It requires that
+every `(<button class="bref"` — an opening parenthesis immediately before a
+scripture-reference button — be preceded by
+`<span class="reader-atomic-citation">`, so that the bracket cannot be orphaned from
+its reference at a line break. It asserts at least 100 such references in `src/` and
+at least 100 in `dist/`, and requires `reader-atomic-citation` together with
+`white-space:nowrap` in `dist/css/site.css`.
+
+Scanned across three trees, counting only `src/**.astro` and `src/**.mdx` under 900
+kB, exactly as the contract does:
+
+| tree | parenthesized `bref` | violations |
+| --- | ---: | ---: |
+| base `9618e82` | 127 | **127** |
+| this branch | 127 | **127**, identical per-file distribution to base |
+| new main `ba9552d` | 127 | **0** |
+
+So the wrapping is entirely main's new work — 121 sites in `HermenevtikaBody.astro`
+and six elsewhere, including the teen articles — and this branch simply inherits the
+base state. It is not a defect introduced here, and it disappears on merging main.
+The one `bref` button this branch added, `1 Тим. 2:9` in Companion C, is preceded by
+a colon and a space rather than an opening parenthesis, so it is outside the
+contract's scope and needs no wrapper.
+
+### Merging main re-introduces the §8b language-of-parts defect unless resolved deliberately
+
+`ba9552d`'s `HermenevtikaBody.astro` contains **zero** `<span lang="el">` tags, while
+carrying 77 Greek characters. The six runs §8b tagged are all still present, each
+exactly once, and a scan for maximal Greek runs of two or more letters finds exactly
+those six and no others. A merge that resolves this file towards main therefore
+restores the untagged state and `1d569906`'s language-of-parts contract fails again,
+while a merge resolved towards this branch loses main's 121 atomic-citation
+wrappers. Neither side can be taken wholesale.
+
+The resolution was constructed and verified rather than assumed. Taking main's
+version of the file and wrapping the same six runs programmatically, in one pass by
+descending offset, yields a file that satisfies both contracts at once:
+
+| property | main's version | verified resolution |
+| --- | ---: | ---: |
+| `<span lang="el">` | 0 | **6** |
+| untagged Greek runs of ≥2 letters | 6 | **0** |
+| `reader-atomic-citation` occurrences | 121 | **121** |
+| atomic-citation contract violations | 0 | **0** |
+| tag-stripped visible text | — | **identical to main's** |
+| bytes | 188205 | 188343 (+138) |
+
+The +138 bytes is exactly six opening spans of 16 bytes plus six closing spans of 7,
+which is a useful check that nothing else moved. The recipe for whoever reconciles:
+take main's `HermenevtikaBody.astro`, then re-apply the language-of-parts tagging to
+it, and regenerate the scripture index afterwards. Do not take this branch's copy of
+the file, because it predates the Reader Core unification.
+
+### A trap that produces a false «unrelated histories» result
+
+This repository is a **shallow clone**. `.git/shallow` contained both `9618e82` and
+`ba9552d`, so immediately after `git fetch origin main` the new commit had no
+parents in the local object graph: `git rev-list --parents -n 1 ba9552d` returned
+only itself, `git rev-parse ba9552d^` failed with «unknown revision»,
+`git merge-base HEAD ba9552d` returned nothing, and `git merge-tree --write-tree
+HEAD ba9552d` aborted with **«fatal: refusing to merge unrelated histories»** — even
+though `git cat-file -p ba9552d` plainly shows `parent 9618e82…`. The raw commit
+object keeps the parent line; the shallow graft hides it from ancestry traversal.
+
+`git fetch --deepen=20 origin main` fixes it: `ba9552d^` then resolves to `9618e82`,
+`git merge-base HEAD ba9552d` returns `9618e82`, and `merge-tree` runs normally.
+Anyone reconciling these lanes should check `git rev-parse --is-shallow-repository`
+before trusting any merge-base or merge-tree result, because the failure mode is a
+confident error message that looks like a real divergence between branches rather
+than a truncated local clone. Note also that `git merge-tree` in git 2.39.5 has no
+`--merge-base` option; passing one exits 129 with a usage message.
