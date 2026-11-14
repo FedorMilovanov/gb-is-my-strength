@@ -3,6 +3,16 @@
   "reviewedAt": "2026-09-10",
   "description": "Explicit search and index policy for every production route. Semantic editing scope is intentionally not consulted.",
   "routes": {
+    "/updates/": {
+      "indexPolicy": "index",
+      "pagefindPolicy": "include",
+      "searchManifestPolicy": "include",
+      "sitemapPolicy": "include",
+      "rssPolicy": "exclude",
+      "contentKind": "landing",
+      "librarySection": "Редакционная хроника",
+      "topicCategory": "Обновления исследований"
+    },
     "/": {
       "indexPolicy": "index",
       "pagefindPolicy": "include",

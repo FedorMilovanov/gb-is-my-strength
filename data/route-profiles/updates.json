@@ -1,0 +1,36 @@
+{
+  "route": "/updates/",
+  "profiledAt": "2026-11-13",
+  "migrationLane": "editorial-research-updates",
+  "routeType": "editorial-updates-index",
+  "surfaceContractVersion": 1,
+  "surface": "page",
+  "section": "editorial",
+  "slug": null,
+  "currentStatus": "production-dist",
+  "source": "src/pages/updates/index.astro",
+  "risk": 2,
+  "hasMDX": false,
+  "mdxPath": null,
+  "legacyStatus": "absent",
+  "migrationMode": "strict-native",
+  "pagefindContract": {
+    "strategy": "native editorial chronology",
+    "requiredMarkers": [
+      "editorial-updates-page",
+      "Обновления исследований"
+    ]
+  },
+  "publicationContract": {
+    "participatesIn": [
+      "search",
+      "sitemap",
+      "pagefind"
+    ]
+  },
+  "visualParity": {
+    "mode": "native-contract",
+    "legacyComparison": "not-applicable",
+    "reason": "New native editorial chronology has no historical route to compare against."
+  }
+}

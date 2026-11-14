@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "id": "lawson-2026-11-13-elders-letter",
+      "artwork": "archive-01.webp",
+      "status": "published",
+      "articleUrl": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+      "date": "2026-11-13T12:30:00+03:00",
+      "kind": "new-evidence",
+      "anchor": "lawson-letter-november-2026",
+      "headline": "Опубликовано ранее неизвестное письмо старейшин о Лоусоне",
+      "summary": "Письмо от 25 ноября 2025 года, впервые опубликованное 11 ноября 2026-го, содержит положительное заключение старейшин Stephens Valley Church о покаянии Лоусона и его пригодности для возможных служений. Церковь пока публично не подтвердила документ; свидетельств о назначении на пасторскую должность нет.",
+      "sourceUrls": [
+        "https://protestia.com/2026/11/11/exclusive-steve-lawson-restored-to-ministry-nearly-one-year-ago/",
+        "https://roysreport.com/nashville-church-stays-silent-on-unannounced-move-to-restore-steven-lawson-to-ministry/",
+        "https://www.christianpost.com/news/steven-lawson-restored-to-ministry-by-nashville-church-report.html"
+      ]
+    },
+    {
+      "id": "lawson-2026-11-13-bachmann-appeal",
+      "artwork": "archive-04.webp",
+      "status": "published",
+      "articleUrl": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+      "date": "2026-11-13T12:29:00+03:00",
+      "kind": "correction",
+      "anchor": "lawson-bachmann-appeal-2026",
+      "headline": "Уточнено решение церковного суда по делу Джима Бахманна",
+      "summary": "В первоначальном изложении упоминалось бессрочное отстранение Джима Бахманна. В 2017 году апелляция отменила эту меру, сохранив более мягкое церковное взыскание — увещание. Исправлено описание полной последовательности решений.",
+      "sourceUrls": [
+        "https://roysreport.com/steve-lawson-attends-nashville-church-pastor-believes-he-can-be-restored/"
+      ]
+    }
+  ]
+}

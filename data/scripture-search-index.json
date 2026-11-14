@@ -11,13 +11,13 @@
     "kartyHubInventory": "src/lib/karty-hub-inventory.cjs"
   },
   "stats": {
-    "manifestItems": 103,
-    "indexedRoutes": 102,
-    "scannedSourceFiles": 539,
-    "references": 1366,
-    "occurrences": 3472,
+    "manifestItems": 104,
+    "indexedRoutes": 103,
+    "scannedSourceFiles": 542,
+    "references": 1367,
+    "occurrences": 3474,
     "canonicalTextRecords": 149,
-    "referencesWithoutCanonicalText": 1217,
+    "referencesWithoutCanonicalText": 1218,
     "chapterRanges": 45,
     "manifestOccurrences": 32,
     "kartyHubOccurrences": 1,
@@ -56345,6 +56345,30 @@
       ]
     },
     {
+      "id": "1timofeyu:3:2–7",
+      "bookId": "1timofeyu",
+      "testament": "NT",
+      "key": "3:2–7",
+      "kind": "verse-range",
+      "label": "1 Тимофею 3:2–7",
+      "canonicalText": null,
+      "canonicalSource": null,
+      "occurrences": [
+        {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Падение Стивена Лоусона: что должно говорить громче слов",
+          "context": "приняли решение о возвращении Лоусона на определённую пасторскую должность. Пастырское суждение о признаках покаяния, членство в церкви и соответствие требованиям к пресвитеру по 1 Тимофею 3:2–7 и Титу 1:5–9 должны рассматриваться отдельно. Наконец, старейшины положительно описывают отношение Лоусона к жене Анне. Это их свидетельство, а не самостоятельное…",
+          "anchor": null,
+          "raw": "1 Тимофею 3:2–7",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
+          "sourceKind": "mdx-source"
+        }
+      ]
+    },
+    {
       "id": "1timofeyu:3:4–5",
       "bookId": "1timofeyu",
       "testament": "NT",
@@ -59255,6 +59279,18 @@
           "context": "аставлять в здравом учении и одновременно быть безупречным, верным жене, трезвым, целомудренным, благочинным, умеющим управлять домом и имеющим доброе свидетельство (1 Тим. 3:1–7; Тит. 1:5–9). Павел велит Тимофею следить за собой и за учением (1 Тим. 4:16). Способность объяснить истину и пригодность к должности — не одно и то же.",
           "anchor": null,
           "raw": "Тит. 1:5–9",
+          "topics": [
+            "Служение"
+          ],
+          "sourceOwner": "src/content/articles/steven-lawson-samoobman-i-publichnyy-golos.mdx",
+          "sourceKind": "mdx-source"
+        },
+        {
+          "url": "/articles/steven-lawson-samoobman-i-publichnyy-golos/",
+          "title": "Падение Стивена Лоусона: что должно говорить громче слов",
+          "context": "возвращении Лоусона на определённую пасторскую должность. Пастырское суждение о признаках покаяния, членство в церкви и соответствие требованиям к пресвитеру по 1 Тимофею 3:2–7 и Титу 1:5–9 должны рассматриваться отдельно. Наконец, старейшины положительно описывают отношение Лоусона к жене Анне. Это их свидетельство, а не самостоятельное публичное подтвер…",
+          "anchor": null,
+          "raw": "Титу 1:5–9",
           "topics": [
             "Служение"
           ],
