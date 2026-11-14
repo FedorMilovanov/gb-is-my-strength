@@ -439,6 +439,9 @@ if (chromium) (async () => {
         const client = document.documentElement.clientWidth;
         const body = document.body.scrollWidth;
         const html = document.documentElement.scrollWidth;
+        const bodyRect = document.body.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const bodyMinWidth = getComputedStyle(document.body).minWidth;
         // Only enumerate culprits on failure; never mask overflow via CSS.
         const offenders = Math.max(body, html) > client ? [...document.body.querySelectorAll('*')]
           .map((node) => {
@@ -449,11 +452,15 @@ if (chromium) (async () => {
           })
           .filter((item) => item.right > client + 1 && item.width > 0)
           .sort((a, b) => b.right - a.right).slice(0, 12) : [];
-        return { client, body, html, offenders };
+        return { client, body, html, bodyRectWidth: Math.round(bodyRect.width),
+          viewportWidth, bodyMinWidth, offenders };
       });
       assert(Math.max(appWidth.body, appWidth.html) <= appWidth.client,
         `I16 [${vp.label}] native React document has zero horizontal overflow`,
-        `I16 [${vp.label}] inner 3D app overflow=${Math.max(appWidth.body,appWidth.html)-appWidth.client}px; offenders=${JSON.stringify(appWidth.offenders)}`);
+        `I16 [${vp.label}] inner 3D app overflow=${Math.max(appWidth.body,appWidth.html)-appWidth.client}px; layout=${JSON.stringify({client:appWidth.client,body:appWidth.body,html:appWidth.html,bodyRectWidth:appWidth.bodyRectWidth,viewportWidth:appWidth.viewportWidth,bodyMinWidth:appWidth.bodyMinWidth})}; offenders=${JSON.stringify(appWidth.offenders)}`);
+      assert(appWidth.bodyRectWidth <= appWidth.client,
+        `I16 [${vp.label}] body width respects scrollbar-adjusted content viewport`,
+        `I16 [${vp.label}] body width=${appWidth.bodyRectWidth}, content viewport=${appWidth.client}, CSS min-width=${appWidth.bodyMinWidth}`);
 
       // A collapsed card can fit while its historical details still overflow.
       // Exercise each of the three origins on the narrowest supported viewport.
