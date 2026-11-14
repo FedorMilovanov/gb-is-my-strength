@@ -46,10 +46,10 @@ let assertions = 0;
 function check(condition, message) { assertions++; assert(condition, message); }
 
 try {
-  for (const width of [320, 390, 1280]) {
+  for (const width of [320, 390, 750, 760, 768, 1280]) {
     for (const route of ['/', '/updates/']) {
-      const mobile = width <= 390;
-      const page = await browser.newPage({ viewport: { width, height: 860 }, deviceScaleFactor: 1 });
+      const mobile = width <= 760;
+      const page = await browser.newPage({ viewport: { width, height: 860 }, deviceScaleFactor: 1, reducedMotion: 'reduce' });
       const runtimeErrors = [];
       page.on('pageerror', error => runtimeErrors.push(error.message));
       const response = await page.goto(base + route, { waitUntil: 'domcontentloaded', timeout: 45000 });
@@ -119,6 +119,14 @@ try {
         const atSecond = await page.locator(rootSelector + ' ' + viewportSelector).evaluate(el =>
           el.scrollLeft > Math.max(30, el.clientWidth / 2));
         check(atSecond, width + ' ' + route + ' scroll position advanced');
+        const slideTop = await page.locator(rootSelector + ' ' + viewportSelector).evaluate(el =>
+          Math.round(el.getBoundingClientRect().top));
+        check(slideTop >= 60 && slideTop <= 245,
+          width + ' ' + route + ' next card starts in viewport (top=' + slideTop + ')');
+        await page.screenshot({
+          path: join(report, (isHome ? 'home' : 'archive') + '-' + width + '-second.png'),
+          fullPage: false,
+        });
       }
       await page.locator(rootSelector + ' ' + correctionSelector).click();
       check((await counter.textContent())?.trim() === '1 / 1',
@@ -138,7 +146,7 @@ try {
       console.log('PASS ' + width + ' ' + route);
     }
   }
-  console.log('EDITORIAL ARCHIVE BROWSER: PASS (' + assertions + ' assertions; 6 viewport-route captures)');
+  console.log('EDITORIAL ARCHIVE BROWSER: PASS (' + assertions + ' assertions; 12 viewport-route captures)');
 } finally {
   await browser.close();
   await new Promise(resolve => server.close(resolve));

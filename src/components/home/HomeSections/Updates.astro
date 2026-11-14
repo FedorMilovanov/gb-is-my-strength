@@ -196,7 +196,7 @@ const kinds = [...new Set(recent.map((item) => item.kind))];
       display:flex; align-items:center; gap:8px;
     }
     body.home-page #obnovleniya-issledovaniy .ed-archive-controls button {
-      width:38px; height:38px; padding:0;
+      width:44px; height:44px; padding:0;
       border:1px solid var(--ed-line); border-radius:50%;
       background:transparent; color:var(--ed-ink);
       font-size:26px; line-height:1; cursor:pointer;
@@ -231,6 +231,17 @@ const kinds = [...new Set(recent.map((item) => item.kind))];
       prev.disabled = active <= 0 || !isMobile();
       next.disabled = active >= visible.length - 1 || !isMobile();
     }
+    // Reframe vertically when the reader goes to a different long card.
+    function showCardStart(smooth = true) {
+      if (!isMobile()) return;
+      const top = window.scrollY + viewport.getBoundingClientRect().top - 108;
+      if (window.scrollY > top + 16 || window.scrollY < top - 240) {
+        window.scrollTo({
+          top: Math.max(0, top),
+          behavior: smooth && !window.matchMedia('(prefers-reduced-motion:reduce)').matches ? 'smooth' : 'auto',
+        });
+      }
+    }
     function jump(index, smooth) {
       if (!visible.length) return;
       active = Math.max(0, Math.min(visible.length - 1, index));
@@ -242,12 +253,12 @@ const kinds = [...new Set(recent.map((item) => item.kind))];
       }
       repaint();
     }
-    prev.addEventListener('click', () => jump(active - 1, true));
-    next.addEventListener('click', () => jump(active + 1, true));
+    prev.addEventListener('click', () => { jump(active - 1, true); showCardStart(); });
+    next.addEventListener('click', () => { jump(active + 1, true); showCardStart(); });
     viewport.addEventListener('keydown', event => {
       if (!isMobile()) return;
-      if (event.key === 'ArrowRight') { event.preventDefault(); jump(active + 1, true); }
-      if (event.key === 'ArrowLeft') { event.preventDefault(); jump(active - 1, true); }
+      if (event.key === 'ArrowRight') { event.preventDefault(); jump(active + 1, true); showCardStart(); }
+      if (event.key === 'ArrowLeft') { event.preventDefault(); jump(active - 1, true); showCardStart(); }
     });
     let frame = 0;
     viewport.addEventListener('scroll', () => {
@@ -261,8 +272,11 @@ const kinds = [...new Set(recent.map((item) => item.kind))];
           const d = Math.abs(card.getBoundingClientRect().left - x);
           if (d < dist) { winner = index; dist = d; }
         });
-        active = winner;
-        repaint();
+        if (winner !== active) {
+          active = winner;
+          repaint();
+          showCardStart();
+        }
       });
     }, { passive:true });
     filters.forEach(button => button.addEventListener('click', () => {

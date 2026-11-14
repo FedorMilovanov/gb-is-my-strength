@@ -97,9 +97,9 @@ const updateKinds = [...new Set(publishedEditorialUpdates.map((update) => update
     display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;
   }
   .editorial-updates-page__filters button {
-    flex:0 0 auto; padding:10px 15px; border-radius:999px;
+    flex:0 0 auto; padding:9px 12px; border-radius:999px;
     border:1px solid var(--ed-border); background:var(--ed-card);
-    color:var(--ed-ink); font:650 13px/1.35 var(--f-ui,system-ui,sans-serif);
+    color:var(--ed-ink); font:650 12px/1.35 var(--f-ui,system-ui,sans-serif);
     cursor:pointer;
   }
   .editorial-updates-page__filters button[aria-pressed="true"] {
@@ -120,7 +120,8 @@ const updateKinds = [...new Set(publishedEditorialUpdates.map((update) => update
   }
   .editorial-updates-page__principle { margin:clamp(30px,4vw,50px) 0 0; font:400 14px/1.75 var(--f-ui,system-ui,sans-serif); color:var(--ed-muted); max-width:770px; text-align:left; }
   .editorial-updates-page a:focus-visible { outline:2px solid currentColor; outline-offset:4px; }
-  @media (max-width:740px) {
+  @media (max-width:760px) {
+    .editorial-updates-page { padding-top: clamp(34px, 7vw, 62px); }
     .editorial-updates-page nav { margin-bottom:38px; }
     .editorial-updates-page__filters {
       flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none;
@@ -152,6 +153,11 @@ const updateKinds = [...new Set(publishedEditorialUpdates.map((update) => update
       font-variant-numeric:tabular-nums;
     }
   }
+  @media (max-width:360px) {
+    .editorial-updates-page__filters {
+      mask-image:linear-gradient(to right,#000 0%,#000 calc(100% - 12px),transparent);
+    }
+  }
   @media (prefers-reduced-motion:reduce) {
     .editorial-updates-page__list { scroll-behavior:auto!important; }
   }
@@ -172,7 +178,7 @@ const updateKinds = [...new Set(publishedEditorialUpdates.map((update) => update
 
     let shown = slides.slice();
     let active = 0;
-    const mobile = () => window.matchMedia('(max-width:740px)').matches;
+    const mobile = () => window.matchMedia('(max-width:760px)').matches;
     const reducedMotion = () => window.matchMedia('(prefers-reduced-motion:reduce)').matches;
 
     function paint() {
@@ -181,6 +187,19 @@ const updateKinds = [...new Set(publishedEditorialUpdates.map((update) => update
       next.disabled = !mobile() || active >= shown.length - 1;
       if (mobile()) viewport.setAttribute('aria-roledescription', 'карусель');
       else viewport.removeAttribute('aria-roledescription');
+    }
+
+    // A long mobile card may place the arrows below the fold. When changing
+    // the record, show its beginning rather than leaving the reader at its end.
+    function showCardStart(animate = true) {
+      if (!mobile()) return;
+      const top = window.scrollY + viewport.getBoundingClientRect().top - 108;
+      if (window.scrollY > top + 16 || window.scrollY < top - 240) {
+        window.scrollTo({
+          top: Math.max(0, top),
+          behavior: animate && !reducedMotion() ? 'smooth' : 'auto',
+        });
+      }
     }
 
     function goto(index, animate = true) {
@@ -195,12 +214,12 @@ const updateKinds = [...new Set(publishedEditorialUpdates.map((update) => update
       paint();
     }
 
-    prev.addEventListener('click', () => goto(active - 1));
-    next.addEventListener('click', () => goto(active + 1));
+    prev.addEventListener('click', () => { goto(active - 1); showCardStart(); });
+    next.addEventListener('click', () => { goto(active + 1); showCardStart(); });
     viewport.addEventListener('keydown', (event) => {
       if (!mobile()) return;
-      if (event.key === 'ArrowRight') { event.preventDefault(); goto(active + 1); }
-      if (event.key === 'ArrowLeft') { event.preventDefault(); goto(active - 1); }
+      if (event.key === 'ArrowRight') { event.preventDefault(); goto(active + 1); showCardStart(); }
+      if (event.key === 'ArrowLeft') { event.preventDefault(); goto(active - 1); showCardStart(); }
     });
 
     let scheduled = false;
@@ -217,8 +236,11 @@ const updateKinds = [...new Set(publishedEditorialUpdates.map((update) => update
           const candidate = Math.abs(slide.getBoundingClientRect().left - left);
           if (candidate < distance) { distance = candidate; winner = index; }
         });
-        active = winner;
-        paint();
+        if (winner !== active) {
+          active = winner;
+          paint();
+          showCardStart();
+        }
       });
     }, { passive: true });
 

@@ -25,6 +25,8 @@ const { update, compact = false, illustrated = false } = Astro.props;
 <style>
   .editorial-update-card {
     min-width: 0;
+    display: flex;
+    flex-direction: column;
     border: 1px solid var(--ed-border, rgba(50, 80, 78, .17));
     border-radius: 16px;
     --ed-card-padding: clamp(18px, 2.2vw, 27px);
@@ -63,7 +65,7 @@ const { update, compact = false, illustrated = false } = Astro.props;
   h3 a:hover { text-decoration: underline; text-underline-offset: 4px; }
   .editorial-update-card__article { margin: 0 0 10px; font: 600 13px/1.55 var(--f-ui, system-ui, sans-serif); color: var(--ed-muted, #52646b); text-align:left; }
   .editorial-update-card__summary { margin: 0 0 15px; font: 400 15px/1.68 var(--f-body, Georgia, serif); color: var(--ed-ink, #203038); text-align:left; }
-  .editorial-update-card__read { color: var(--ed-accent, #086f7f); font: 700 13px/1.55 var(--f-ui, system-ui, sans-serif); text-decoration: underline; text-underline-offset: 4px; }
+  .editorial-update-card__read { margin-top:auto; padding-top: 12px; align-self:flex-start; color: var(--ed-accent, #086f7f); font: 700 13px/1.55 var(--f-ui, system-ui, sans-serif); text-decoration: underline; text-underline-offset: 4px; }
   a:focus-visible { outline: 2px solid currentColor; outline-offset: 5px; border-radius: 3px; }
   .editorial-update-card--compact .editorial-update-card__summary { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
 </style>
