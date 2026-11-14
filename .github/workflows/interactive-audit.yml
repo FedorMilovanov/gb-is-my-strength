@@ -11,6 +11,7 @@ on:
       - 'scripts/home-responsive-evidence-contract.mjs'
       - 'scripts/home-browser-lifecycle-contract.mjs'
       - 'scripts/hermenevtika-mobile-chrome-visual-contract.mjs'
+      - 'scripts/hermenevtika-regression-guard.mjs'
       - 'scripts/genealogy-browser-contract.mjs'
       - 'scripts/genealogy-runtime-fixture.mjs'
       - 'scripts/genealogy-geometry-contract.mjs'
@@ -46,6 +47,7 @@ on:
       - 'scripts/home-responsive-evidence-contract.mjs'
       - 'scripts/home-browser-lifecycle-contract.mjs'
       - 'scripts/hermenevtika-mobile-chrome-visual-contract.mjs'
+      - 'scripts/hermenevtika-regression-guard.mjs'
       - 'scripts/genealogy-browser-contract.mjs'
       - 'scripts/genealogy-runtime-fixture.mjs'
       - 'scripts/genealogy-geometry-contract.mjs'
@@ -167,7 +169,7 @@ jobs:
 
           run=false
           reason=unrelated-change
-          herm_pattern='^(\.github/workflows/interactive-audit\.yml|scripts/hermenevtika-mobile-chrome-visual-contract\.mjs|src/components/ui/floating-cluster/|src/components/article-pilots/hermenevtika/|src/components/article-pilots/kod-da-vinchi/|css/floating-cluster\.css|css/highlights-runtime\.css|js/highlights\.js|src/lib/asset-version\.js|package\.json|package-lock\.json)'
+          herm_pattern='^(\.github/workflows/interactive-audit\.yml|scripts/hermenevtika-mobile-chrome-visual-contract\.mjs|scripts/hermenevtika-regression-guard\.mjs|src/components/ui/floating-cluster/|src/components/article-pilots/hermenevtika/|src/runtime/article-tooltips\.(js|css)|src/components/article-pilots/kod-da-vinchi/|css/floating-cluster\.css|css/highlights-runtime\.css|js/highlights\.js|src/lib/asset-version\.js|package\.json|package-lock\.json)'
 
           case "$EVENT_NAME" in
             schedule|workflow_dispatch)
@@ -271,7 +273,7 @@ jobs:
 
           run=false
           reason=unrelated-change
-          runtime_pattern='^(\.github/workflows/interactive-audit\.yml|scripts/interactive-audit\.js|scripts/interactive-audit-runner\.js|scripts/home-design-audit-pro\.mjs|scripts/home-browser-contract\.mjs|scripts/home-responsive-evidence-contract\.mjs|scripts/home-browser-lifecycle-contract\.mjs|scripts/hermenevtika-mobile-chrome-visual-contract\.mjs|scripts/genealogy-browser-contract\.mjs|scripts/a13-mobile-webkit-a11y-browser-test\.mjs|data/a13-mobile-webkit-a11y-scene-matrix\.json|data/genealogy/|research/A13_MOBILE_WEBKIT_A11Y_2026-08-01\.md|src/pages/index\.astro|src/pages/rodosloviye/|src/components/home/|src/components/genealogy/|src/components/rodosloviye/|src/components/article-pilots/|src/components/reader-platform/|src/components/ui/floating-cluster/|src/layouts/|src/runtime/|src/styles/|css/|js/|package\.json|package-lock\.json)'
+          runtime_pattern='^(\.github/workflows/interactive-audit\.yml|scripts/interactive-audit\.js|scripts/interactive-audit-runner\.js|scripts/home-design-audit-pro\.mjs|scripts/home-browser-contract\.mjs|scripts/home-responsive-evidence-contract\.mjs|scripts/home-browser-lifecycle-contract\.mjs|scripts/hermenevtika-mobile-chrome-visual-contract\.mjs|scripts/hermenevtika-regression-guard\.mjs|scripts/genealogy-browser-contract\.mjs|scripts/a13-mobile-webkit-a11y-browser-test\.mjs|data/a13-mobile-webkit-a11y-scene-matrix\.json|data/genealogy/|research/A13_MOBILE_WEBKIT_A11Y_2026-08-01\.md|src/pages/index\.astro|src/pages/rodosloviye/|src/components/home/|src/components/genealogy/|src/components/rodosloviye/|src/components/article-pilots/|src/components/reader-platform/|src/components/ui/floating-cluster/|src/layouts/|src/runtime/|src/styles/|css/|js/|package\.json|package-lock\.json)'
 
           case "$EVENT_NAME" in
             schedule|workflow_dispatch)

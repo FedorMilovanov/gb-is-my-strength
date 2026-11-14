@@ -7,7 +7,7 @@ var WORKER_SRC = '/js/vosk-tts-worker.js?v=d5850c06';
 // IndexedDB instead of waiting for the worker's event loop.
 var READY_MARKER_URL = '/__gb-vosk-sessions-ready';
 var READY_MARKER_TTL_MS = 600000;
-var NOTICE_CSS_URL = '/css/tts-download-notice.css?v=b9ef192f';
+var NOTICE_CSS_URL = '/css/tts-download-notice.css?v=a72ba924';
 var MODEL_DOWNLOAD_OPTOUT_KEY = 'gbx-vosk-warmup';
 var CLIENT_ID = (window.crypto && typeof window.crypto.randomUUID === 'function')
 ? window.crypto.randomUUID()
@@ -36,6 +36,7 @@ audioHandleId: null,
 objectUrl: null,
 notice: null,
 noticeTimer: 0,
+noticeRemovalTimer: 0,
 status: { phase: 'idle', ready: false, loading: false, optedOut: false, workerMode: null },
 readySource: null
 };
@@ -143,13 +144,28 @@ if (!retryDetail.handled) void retryLoading({ clearOptOut: true });
 }
 });
 }
+function bindNoticeDismiss(element) {
+  let button = element.querySelector('.gb-tts-download-notice__dismiss');
+  if (!button) {
+    button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'gb-tts-download-notice__dismiss';
+    button.setAttribute('aria-label', 'Закрыть уведомление');
+    button.textContent = '×';
+    element.appendChild(button);
+  }
+  if (button.dataset.gbDismissBound === '1') return;
+  button.dataset.gbDismissBound = '1';
+  button.addEventListener('click', function () { hideNotice(0, true); });
+}
 function getNotice() {
-if (state.notice && document.documentElement.contains(state.notice)) return state.notice;
+  if (state.notice && document.documentElement.contains(state.notice)) return state.notice;
 var existing = document.querySelector('.gb-tts-download-notice');
 if (existing) {
-state.notice = existing;
-bindNoticeAction(existing);
-return existing;
+  state.notice = existing;
+  bindNoticeAction(existing);
+  bindNoticeDismiss(existing);
+  return existing;
 }
 var element = document.createElement('div');
 element.className = 'gb-tts-download-notice';
@@ -165,16 +181,22 @@ element.innerHTML =
 '<button class="gb-tts-download-notice__action" type="button" hidden></button>';
 document.body.appendChild(element);
 state.notice = element;
-bindNoticeAction(element);
-return element;
+  bindNoticeAction(element);
+  bindNoticeDismiss(element);
+  return element;
 }
-function hideNotice(delay) {
+function hideNotice(delay, force) {
 clearTimeout(state.noticeTimer);
 state.noticeTimer = setTimeout(function () {
 if (!state.notice) return;
-state.notice.classList.remove('is-visible');
+  if (!force && (state.notice.matches(':hover') || state.notice.contains(document.activeElement))) {
+    hideNotice(1600);
+    return;
+  }
+  state.notice.classList.remove('is-visible');
 var doomed = state.notice;
-setTimeout(function () {
+clearTimeout(state.noticeRemovalTimer);
+state.noticeRemovalTimer = setTimeout(function () {
 if (doomed.parentNode) doomed.parentNode.removeChild(doomed);
 if (state.notice === doomed) state.notice = null;
 }, 360);
@@ -184,6 +206,7 @@ function showStatus(name, options) {
 options = options || {};
 ensureNoticeStyles();
 clearTimeout(state.noticeTimer);
+clearTimeout(state.noticeRemovalTimer);
 var element = getNotice();
 var title = '';
 var meta = '';
@@ -276,8 +299,10 @@ message: meta,
 action: action,
 reason: options.reason || null
 });
-if (options.autoHide) hideNotice(options.autoHide);
-return element;
+  if (options.autoHide) hideNotice(options.autoHide);
+  else if (stateName === 'ready') hideNotice(8500);
+  else if (stateName === 'error' || stateName === 'disabled' || stateName === 'save-data') hideNotice(9000);
+  return element;
 }
 function finishStatus(name) {
 var autoHide = name === 'selected' ? 1800 : name === 'cancelled' ? 1900 : 0;

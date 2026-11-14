@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url';
 export const GENERATED_START = '<!-- NOTE_REGISTRY:START -->';
 export const GENERATED_END = '<!-- NOTE_REGISTRY:END -->';
 export const STYLESHEET_MARKER = 'data-note-registry-stylesheet';
+export const NOTE_INTERACTION_OWNER = 'article-inline-tooltip';
+export const NOTE_PREVIOUS_INTERACTION_OWNER = 'SiteUtils.makeTooltipController';
 
 const VOID_TAGS = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
 const RAW_TEXT_TAGS = new Set(['script', 'style', 'textarea', 'title']);
@@ -207,6 +209,10 @@ function setAttributes(openTag, additions) {
 
 function sanitizeNoteHtml(value) {
   return String(value || '')
+    // Reader Linear Text Projection inserts hidden boundary captions into the
+    // interactive tooltip *after* NoteRegistry has emitted its endnote list.
+    // They are generated narration metadata, not authored note content.
+    .replace(/<span\b(?=[^>]*\bdata-reader-linear-boundary\s*=\s*["'](?:start|end)["'])[^>]*>[^<]*<\/span>/gi, '')
     .replace(/<script\b[\s\S]*?<\/script>/gi, '')
     .replace(/<style\b[\s\S]*?<\/style>/gi, '')
     .replace(/<button\b[^>]*data-tooltip-close[^>]*>[\s\S]*?<\/button>/gi, '')
@@ -254,7 +260,7 @@ function buildEndnotes(route, notes) {
       + `<a class="gb-note-endnotes__back" href="#${note.refId}" aria-label="Вернуться к отметке ${note.ordinal}">↩</a>`
       + '</li>'
   )).join('\n');
-  return `${GENERATED_START}\n<section class="gb-note-endnotes" data-note-registry-endnotes data-speakable data-pagefind-body data-print-policy="include" aria-labelledby="${headingId}">\n  <h2 id="${headingId}">Примечания</h2>\n  <ol>\n${items}\n  </ol>\n</section>\n${GENERATED_END}`;
+  return `${GENERATED_START}\n<section class="gb-note-endnotes" data-note-registry-endnotes data-speakable data-pagefind-body data-print-policy="include" aria-labelledby="${headingId}">\n  <h2 id="${headingId}" aria-label="Примечания">Примечания</h2>\n  <ol>\n${items}\n  </ol>\n</section>\n${GENERATED_END}`;
 }
 
 function injectStylesheet(html, cssHref) {
@@ -349,7 +355,8 @@ export function collectAndProjectHtml(inputHtml, route, options = {}) {
       tipId,
       endnoteId,
       authoredSource: '.fn-marker > .tooltip',
-      interactionOwner: 'SiteUtils.makeTooltipController',
+      interactionOwner: NOTE_INTERACTION_OWNER,
+      previousInteractionOwner: NOTE_PREVIOUS_INTERACTION_OWNER,
       projections: [
         'popover',
         'aria-describedby',
@@ -432,12 +439,13 @@ function stableRegistry(notes, sourceCommit, stylesheet) {
     routes[note.route].count += 1;
   }
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     contract: 'A03-note-registry',
     sourceCommit: sourceCommit || process.env.GITHUB_HEAD_SHA || process.env.GITHUB_SHA || 'unknown',
     sourceModel: 'authored-inline-tooltip-captured-once-then-unified-projection',
     identityStrategy: 'authored-data-note-id-or-route-note-heading-hash',
-    interactionOwner: 'SiteUtils.makeTooltipController',
+    interactionOwner: NOTE_INTERACTION_OWNER,
+    previousInteractionOwner: NOTE_PREVIOUS_INTERACTION_OWNER,
     stylesheet,
     routeCount: Object.keys(routes).length,
     noteCount: notes.length,

@@ -24,7 +24,8 @@ const projected = collectAndProjectHtml(source, route, { cssHref: '/css/note-reg
 assert.deepEqual(projected.errors, []);
 assert.equal(projected.notes.length, 2);
 assert.equal(new Set(projected.notes.map((note) => note.id)).size, 2);
-assert.ok(projected.notes.every((note) => note.interactionOwner === 'SiteUtils.makeTooltipController'));
+assert.ok(projected.notes.every((note) => note.interactionOwner === 'article-inline-tooltip'));
+assert.ok(projected.notes.every((note) => note.previousInteractionOwner === 'SiteUtils.makeTooltipController'));
 assert.match(projected.html, /data-note-registry-endnotes data-speakable data-pagefind-body data-print-policy="include"/);
 assert.match(projected.html, /data-pagefind-ignore="" data-note-registry-tooltip=""/);
 assert.match(projected.html, /aria-describedby="note-end-/);
@@ -42,6 +43,22 @@ assert.equal(
   projected.html,
   'projection must be idempotent'
 );
+
+// Reader linear-text postbuild inserts hidden narration sentinels in the live
+// tooltip. They must never migrate into canonical endnotes on a repeat pass.
+const readerDecorated = projected.html.replace(
+  'First <em>note</em>.',
+  '<span hidden data-pagefind-ignore data-reader-linear-boundary="start"> ⟦сноска: </span>'
+    + 'First <em>note</em>.'
+    + '<span hidden data-pagefind-ignore data-reader-linear-boundary="end">⟧ </span>'
+);
+const repeatDecorated = collectAndProjectHtml(readerDecorated, route, { cssHref: '/css/note-registry.css?v=1234abcd' });
+assert.deepEqual(repeatDecorated.errors, []);
+assert.equal(repeatDecorated.notes[0].html, 'First <em>note</em>.');
+assert.equal(repeatDecorated.notes[0].text, 'First note.');
+assert.equal(repeatDecorated.html, readerDecorated, 'Reader postbuild boundary captions must not pollute or churn endnotes');
+assert.match(projected.html, /<h2 id="note-endnotes-articles-fixture" aria-label="Примечания">Примечания<\/h2>/,
+  'canonical endnote heading must already match accessibility postbuild hygiene');
 
 const inlineMarkup = collectAndProjectHtml(`<!doctype html><html><head></head><body><main data-pagefind-body>
 <h2 id="source">Source</h2><p>Inline <span class="fn-marker">1<span class="tooltip">См.: <a href="#source">Rippon, <em>A Brief Memoir</em></a>.</span></span></p>
@@ -172,7 +189,12 @@ assert.deepEqual(
   'registry must keep the manuscript number on record while publishing the canonical ordinal'
 );
 
-const schema = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'note-registry.schema.json'), 'utf8'));assert.equal(schema.properties.interactionOwner.const, 'SiteUtils.makeTooltipController');
+const schema = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'note-registry.schema.json'), 'utf8'));assert.equal(schema.properties.schemaVersion.const, 2);
+assert.equal(schema.properties.interactionOwner.const, 'article-inline-tooltip');
+assert.equal(schema.properties.previousInteractionOwner.const, 'SiteUtils.makeTooltipController');
+const liveTooltip = fs.readFileSync(path.join(ROOT, 'src', 'runtime', 'article-tooltips.js'), 'utf8');
+assert.match(liveTooltip, /const OWNER = 'article-inline-tooltip';/,
+  'NoteRegistry runtime owner must match the shared tooltip module');
 assert.equal(schema.properties.identityStrategy.const, 'authored-data-note-id-or-route-note-heading-hash');
 assert.match(schema.properties.stylesheet.pattern, /note-registry/);
 const moduleSource = fs.readFileSync(path.join(ROOT, 'scripts', 'lib', 'note-registry.mjs'), 'utf8');

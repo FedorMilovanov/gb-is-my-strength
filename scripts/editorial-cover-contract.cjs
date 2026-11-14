@@ -1,0 +1,87 @@
+#!/usr/bin/env node
+'use strict';
+const fs=require('node:fs');
+const path=require('node:path');
+const ROOT=path.resolve(__dirname,'..');
+const manifest=JSON.parse(fs.readFileSync(path.join(ROOT,'data/baptist-editorial-cover-sources.json'),'utf8'));
+const errors=[];
+const entries=Object.entries(manifest.covers);
+if(entries.length!==11)errors.push('Expected 11 documented Russian Baptist covers, got '+entries.length);
+for(const [key,item] of entries) {
+  const target=path.join(ROOT,item.output);
+  if(!fs.existsSync(target)){errors.push('Missing '+item.output);continue;}
+  const sig=fs.readFileSync(target).subarray(0,12);
+  if(sig.toString('ascii',0,4)!=='RIFF'||sig.toString('ascii',8,12)!=='WEBP')errors.push('Bad WebP '+item.output);
+  if(!item.source_files.length) errors.push('Uncited cover '+key);
+  for(const name of item.source_files) if(!fs.existsSync(path.join(ROOT,name))) errors.push('Missing archival source '+name);
+}
+function collect(dir){
+ const all=[];
+ for(const x of fs.readdirSync(dir,{withFileTypes:true})){
+  const p=path.join(dir,x.name);
+  if(x.isDirectory())all.push(...collect(p));else all.push(p);
+ }
+ return all;
+}
+const srcFiles=collect(path.join(ROOT,'src')).filter(p=>/\.(?:astro|mdx|ts|tsx|js|mjs|json|css)$/.test(p));
+const styleFiles=collect(path.join(ROOT,'css')).filter(p=>p.endsWith('.css'));
+/* Current publication shadows are deployed HTML, not archival audit snapshots. */
+// Legacy HTML snapshots are hash-locked and exempt from modern cover scans.
+const publishedSources=['_build-tools/konfessii-baptizm','sitemap.xml'];
+const publishedFiles=publishedSources.flatMap(rel=>{
+ const p=path.join(ROOT,rel);
+ if(!fs.existsSync(p))return [];
+ return fs.statSync(p).isDirectory()?collect(p).filter(f=>/\.(?:html|xml|tsx|ts|json)$/.test(f)):[p];
+});
+const forbiddenBaptist=/baptisty-rossii\/cover-(?:landing|\d\d-[a-z0-9-]+)\.(?:svg|webp)/;
+const forbiddenHeart=/og-chto-bibliya-nazyvaet-serdcem(?:-600w)?\.(?:jpg|webp)/;
+let heroSvgInspected=0;
+for(const p of srcFiles.concat(styleFiles,publishedFiles)){
+ const txt=fs.readFileSync(p,'utf8');
+ const rel=path.relative(ROOT,p);
+ if(forbiddenBaptist.test(txt))errors.push(rel+': retired Baptist title-card artwork');
+ if(forbiddenHeart.test(txt))errors.push(rel+': retired heart text-card artwork');
+ // Published HTML and image-bearing components may not silently replace Cyrillic with '?'.
+ for(const tag of txt.matchAll(/<img\b[^>]{0,2400}>/gs)){
+   if(/baptisty-rossii\/archival-/.test(tag[0])&&/\balt="[^"]*\?{3,}[^"]*"/.test(tag[0])){
+     errors.push(rel+': archival alt text is corrupt');
+   }
+ }
+ if(p.endsWith('.astro') && p.includes('baptisty-rossii')){
+   for(const image of txt.matchAll(/<img\b[^>]*archival-[^>]*>/g)){
+     const alt=image[0].match(/\balt="([^"]*)"/);
+     if(alt && /\?{3}/.test(alt[1]))errors.push(rel+': corrupt UTF-8 archive image alt');
+     if(/(?:Body|BookLanding)\.astro$/.test(p) && /<figure\b[^>]*class="[^"]*hero/.test(txt)){
+       const hero=txt.match(/<figure\b[^>]*class="[^"]*hero[^"]*"[^>]*>[\s\S]{0,1300}?<img\b[^>]*archival-[^>]*>/);
+       if(hero && !/\balt="[^"]+"/.test(hero[0]))errors.push(rel+': archive hero missing meaningful alt');
+     }
+
+   }
+ }
+
+ if(!p.endsWith('.astro'))continue;
+ for(const match of txt.matchAll(/<figure\b[^>]*\bclass="[^"]*(?:hero|cover)[^"]*"[^>]*>[\s\S]*?<\/figure>/g)){
+  for(const img of match[0].matchAll(/<img\b[^>]*\bsrc="([^"]+\.svg)"[^>]*>/g)){
+   const src=img[1].split(/[?#]/)[0];
+   const asset=src.match(/(?:^|\/)(images\/[A-Za-z0-9_./-]+\.svg)$/);
+   const abs=asset?path.resolve(ROOT,asset[1]):path.resolve(path.dirname(p),src);
+   if(!abs.startsWith(ROOT+path.sep)||!fs.existsSync(abs)){
+     errors.push(rel+': unresolved SVG hero '+src);
+     continue;
+   }
+   heroSvgInspected++;
+   if(/<text(?:\s|>)/i.test(fs.readFileSync(abs,'utf8')))errors.push(rel+': SVG text-rendered hero '+src);
+  }
+ }
+}
+const cfg=fs.readFileSync(path.join(ROOT,'src/components/article-pilots/_shared/series/baptistFlatSeriesConfig.ts'),'utf8');
+const used=[...cfg.matchAll(/railCover:\s*['"][^'"]*\/([^/'"]+\.webp)['"]/g)].map(x=>x[1]);
+const allowed=new Set(entries.map(([,v])=>v.output.split('/').pop()));
+if(used.length!==10||new Set(used).size!==10)errors.push('Expected ten distinct book chapter source covers');
+for(const name of used)if(!allowed.has(name))errors.push('Undocumented series cover '+name);
+if(errors.length){
+ console.error('EDITORIAL COVER POLICY FAIL ('+errors.length+')\n'+errors.map(e=>' - '+e).join('\n'));
+ process.exitCode=1;
+}else{
+ console.log('EDITORIAL COVER POLICY PASS: 11 archive records, 10 series chapters, '+srcFiles.length+' sources scanned, '+heroSvgInspected+' SVG hero cases inspected.');
+}

@@ -120,6 +120,24 @@
 </section>
 
 <style is:global>
+  /* Reader-facing labels on the light apologist cards need text contrast,
+     independently of the brighter decorative accent. */
+  html:not(.dark) body.home-page #main-content #razbor .h-articles-group .h-article-kicker,
+  html:not(.dark) body.home-page #main-content #razbor .h-articles-group .h-meta-tag,
+  html:not(.dark) body.home-page #main-content #razbor .h-mobile-shelf-head__kicker {
+    color: #126477;
+  }
+
+  /* The abstract is reader content, not a decorative translucent caption.
+     These ink values are set once at the apologist section owner. */
+  html:not(.dark) body.home-page #main-content #razbor .h-articles-group .h-article-abstract {
+    color: #405458;
+  }
+
+  html.dark body.home-page #main-content #razbor .h-articles-group .h-article-abstract {
+    color: #bbc8ca;
+  }
+
   body.home-page #main-content #razbor .h-refutations-deck {
     position: relative;
     display: grid;
@@ -134,7 +152,7 @@
   body.home-page #main-content #razbor .h-refutation-slot {
     position: relative;
     min-width: 0;
-    min-height: 184px;
+    min-height: 204px;
     z-index: 2;
   }
 
@@ -237,7 +255,7 @@
     display: block;
     width: 100%;
     height: 100%;
-    min-height: 184px;
+    min-height: 204px;
     padding: 14px 15px 15px;
     overflow: hidden;
     isolation: isolate;
@@ -577,25 +595,46 @@
       0 12px 30px -26px rgba(0, 0, 0, .92);
   }
 
-  @media (max-width: 760px) {
+  /* Two fixed crossed-card hit slots are too narrow through small-tablet
+     widths; allow content-owned height through 900px, preserving V3 motion only
+     where the paired desktop composition has adequate text measure. */
+  @media (max-width: 900px) {
     body.home-page #main-content #razbor .h-refutations-deck {
       grid-template-columns: 1fr;
       gap: 12px;
       perspective: none;
     }
 
+    /* Mobile: the shell participates in normal document flow so the card
+       grows with its content instead of clipping it inside a fixed hit slot. */
     body.home-page #main-content #razbor .h-refutation-slot {
-      min-height: 188px;
+      min-height: 0;
     }
 
     body.home-page #main-content #razbor .h-refutation-shell {
-      position: absolute;
+      position: relative;
+      inset: auto;
     }
 
     body.home-page #main-content #razbor .h-refutation-slot--left .h-refutation-card,
     body.home-page #main-content #razbor .h-refutation-slot--right .h-refutation-card {
-      min-height: 188px;
+      height: auto;
+      min-height: 0;
       border-radius: 15px;
+    }
+
+    body.home-page #main-content #razbor .h-refutation-inner {
+      min-height: 0;
+    }
+
+    body.home-page #main-content #razbor .h-refutation-card .h-article-abstract {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      overflow: hidden;
+      margin-top: 10px;
+      font-size: 13.5px;
+      line-height: 1.5;
     }
 
     body.home-page #main-content #razbor .h-refutation-shell::before,
@@ -615,11 +654,6 @@
   }
 
   @media (max-width: 460px) {
-    body.home-page #main-content #razbor .h-refutation-slot,
-    body.home-page #main-content #razbor .h-refutation-card {
-      min-height: 224px;
-    }
-
     body.home-page #main-content #razbor .h-refutation-card {
       padding: 13px;
     }

@@ -1,0 +1,201 @@
+/* Shared visual organization of the 68px integrated Reader rail.
+ * All existing actions retain their original, delegated DOM owners.
+ * Secondary actions are exposed as labeled commands from the one More menu.
+ */
+.reader-rail-more-trigger{display:none}
+.reader-rail-more-sheet[hidden]{display:none!important}
+.reader-rail-more-sheet{
+  position:fixed;
+  left:80px;
+  bottom:16px;
+  z-index:13000;
+  width:min(292px,calc(100vw - 100px));
+  max-height:min(420px,calc(100dvh - 32px));
+  overflow:auto;
+  padding:8px;
+  border-radius:16px;
+  border:1px solid rgba(220,181,146,.24);
+  background:linear-gradient(150deg,#30262a,#1e1a1c);
+  color:#f1e8df;
+  box-shadow:0 16px 45px rgba(0,0,0,.32),0 3px 10px rgba(0,0,0,.24);
+}
+.reader-rail-more-option{
+  width:100%;
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:9px 12px;
+  border:0;
+  border-radius:10px;
+  color:inherit;
+  background:transparent;
+  font:500 13px/1.35 system-ui,-apple-system,sans-serif;
+  text-align:left;
+  cursor:pointer;
+}
+.reader-rail-more-option:hover,
+.reader-rail-more-option:focus-visible{
+  color:#fff;
+  background:rgba(255,255,255,.105);
+}
+.reader-rail-more-option:focus-visible,
+.reader-rail-more-trigger:focus-visible{
+  outline:2px solid #dfb69e;
+  outline-offset:2px;
+}
+.reader-rail-more-option svg,
+.reader-rail-more-glyph{
+  flex:0 0 19px;
+  width:19px;
+  height:19px;
+  font-weight:700;
+  color:#e4bfb1;
+}
+.reader-rail-more-option svg{
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.7;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+@media screen and (min-width:1360px){
+  .gbs2-world .reader-integrated-rail--compact .reader-rail-more-trigger{
+    position:fixed;
+    left:14px;
+    bottom:16px;
+    z-index:1250;
+    display:grid;
+    place-items:center;
+    width:40px;
+    height:40px;
+    padding:0;
+    border:1px solid rgba(229,184,147,.26);
+    border-radius:11px;
+    color:#e2bba4;
+    background:rgba(255,255,255,.055);
+    box-shadow:0 1px 10px rgba(0,0,0,.13);
+    cursor:pointer;
+  }
+  .gbs2-world .reader-rail-more-trigger svg{width:21px;height:21px}
+  .gbs2-world .reader-rail-more-trigger[aria-expanded="true"]{
+    background:rgba(238,181,159,.19);
+  }
+
+  /* Book/landing: four instead of eight inline glyphs:
+     search, Play, bookmark and the More control. */
+  body.gbs-world .gbs2-rail.reader-integrated-rail--compact
+    .gbs2-rfoot > :is(a[href="/app/"],[data-gbs2-theme],[data-gbs2-font],[data-gbs2-share]){
+    display:none;
+  }
+  body.gbs-world .gbs2-rail.reader-integrated-rail--compact .gbs2-rfoot{
+    padding:10px 0 72px;
+    gap:10px;
+  }
+  body.gbs-world .gbs2-rail.reader-integrated-rail--compact
+    .gbs2-rfoot > :is([data-gbs2-search],[data-fc-action="play"],[data-fc-action="save"]){
+    width:42px;min-width:42px;max-width:42px;height:42px;flex:0 0 42px;
+  }
+
+  /* Chapter and Gill: the restored Hermenevtika topology.
+     Fold / Back / Home at top; Search / Play / Save in the reading area;
+     Settings / More at the bottom, no duplicates or decorative utility list. */
+  .gbs2-world[data-gill-v16] > .gbs-rail.reader-integrated-rail--compact{
+    padding-top:0!important;
+  }
+  .gbs2-world[data-gill-v16] > .gbs-rail.reader-integrated-rail--compact::before{
+    content:none;
+    display:none;
+  }
+  .gbs2-world[data-gill-v16] .gbs-rail.reader-integrated-rail--compact .gbs-rail-topbar{
+    position:absolute;
+    top:0;
+    left:0;
+    width:68px;
+    height:auto;
+    min-height:0;
+    padding:10px 4px 8px;
+    margin:0;
+    z-index:4;
+  }
+  .gbs2-world[data-gill-v16] .gbs-rail.reader-integrated-rail--compact
+    .gbs-rail-topbar .reader-rail-fold-toggle{
+    margin:0;
+  }
+  .gbs2-world[data-gill-v16] .gbs-rail.reader-integrated-rail--compact
+    .reader-rail-compact-tools{
+    padding-top:160px;
+    padding-bottom:8px;
+  }
+  .gbs2-world[data-gill-v16] .gbs-rail.reader-integrated-rail--compact
+    .gbs-theme-corner > :is([data-fc-action="theme"],[data-fc-action="scroll-top"]){
+    display:none;
+  }
+  .gbs2-world[data-gill-v16] .gbs-rail.reader-integrated-rail--compact
+    .gbs-rail-foot > :is(#hMobileMenuBtn,[data-action="print"],[data-action="share"]){
+    display:none;
+  }
+  .gbs2-world[data-gill-v16] .gbs-rail.reader-integrated-rail--compact .gbs-rail-foot{
+    padding:9px 0 75px;
+    gap:0;
+  }
+  .gbs2-world[data-gill-v16] .gbs-rail.reader-integrated-rail--compact
+    .gbs-rail-foot > [data-gill-settings-open]{
+    display:grid;
+    place-items:center;
+    width:42px;
+    height:42px;
+    margin:0;
+    flex:0 0 42px;
+  }
+
+  /* The 7 native Play speed choices were previously positioned to the LEFT
+     of the 68px rail (beyond viewport x=0). Open them to the content side.
+     No new rate component; keep original historic vertical selector. */
+  .gbs2-world .reader-integrated-rail--compact .gb-ember-wrap .gb-ember-expand{
+    left:calc(100% + 12px);
+    right:auto;
+    top:50%;
+    bottom:auto;
+    transform:translateY(-50%);
+    z-index:1255;
+    min-width:60px;
+    padding:7px 5px;
+    background:linear-gradient(160deg,#332a2e 0%,#1a1619 100%);
+    color:#f3e7dd;
+    border:1px solid rgba(220,174,147,.28);
+    border-radius:14px;
+    box-shadow:0 12px 32px rgba(0,0,0,.36),0 2px 8px rgba(0,0,0,.22);
+  }
+  .gbs2-world .reader-integrated-rail--compact .gb-ember-expand__btn{
+    min-width:48px;
+    min-height:30px;
+    color:#eee2dc;
+    background:transparent;
+    border-radius:8px;
+    font-weight:600;
+  }
+  .gbs2-world .reader-integrated-rail--compact .gb-ember-expand__btn:hover,
+  .gbs2-world .reader-integrated-rail--compact .gb-ember-expand__btn:focus-visible{
+    color:#fff;
+    background:rgba(255,255,255,.12);
+  }
+  .gbs2-world .reader-integrated-rail--compact .gb-ember-expand__btn.is-active,
+  .gbs2-world .reader-integrated-rail--compact .gb-ember-expand__btn[aria-checked="true"]{
+    color:#fff;
+    background:linear-gradient(135deg,#9b5360,#683640);
+  }
+}
+@media screen and (min-width:1360px) and (max-height:650px){
+  .gbs2-world[data-gill-v16] .gbs-rail.reader-integrated-rail--compact
+    .reader-rail-compact-tools{
+    padding-top:142px;
+  }
+  .gbs2-world .reader-integrated-rail--compact .gb-ember-wrap .gb-ember-expand{
+    max-height:calc(100dvh - 40px);
+    overflow-y:auto;
+  }
+}
+@media print{
+  .reader-rail-more-sheet,.reader-rail-more-trigger{display:none!important}
+}

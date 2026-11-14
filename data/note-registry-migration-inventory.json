@@ -3,7 +3,8 @@
   "task": "Agent 03 — Unified NoteRegistry core",
   "authoredSource": ".fn-marker:not(.map-trigger) > .tooltip",
   "captureOwner": "scripts/lib/note-registry.mjs",
-  "interactionOwner": "SiteUtils.makeTooltipController",
+  "interactionOwner": "article-inline-tooltip",
+  "previousInteractionOwner": "SiteUtils.makeTooltipController",
   "generatedRegistry": "dist/data/note-registry.json",
   "generatedStylesheet": "dist/css/note-registry.css",
   "stableIdentity": {

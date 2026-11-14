@@ -7,13 +7,18 @@ const HOVER_TRANSIT_PADDING = 12;
 const VIEWPORT_MARGIN = 16;
 const TIP_GAP = 10;
 const MIN_SCROLL_HEIGHT = 96;
-const MOBILE_MAX_VIEWPORT_RATIO = 0.85;
 
 let active = null;
 let closeTimer = 0;
 let pointerEpoch = 0;
+// pointerenter can be emitted by scrolling/reflow without physical movement.
+// Only an actual document pointermove may activate a hover popup.
+let lastActualPointerMoveEvent = null;
 let pointerX = null;
 let pointerY = null;
+// Generated Scripture cards live beside their trigger until portaled to body;
+// never nest a navigable <a> inside the <button.bref>.
+const scriptureTips = new WeakMap();
 
 function overlayRuntime() {
   return window.OverlayRuntime || window.SiteUtils?.OverlayRuntime || null;
@@ -77,14 +82,22 @@ function recordPointerMovement(event) {
   const x = Number(event.clientX);
   const y = Number(event.clientY);
   const hasCoordinates = Number.isFinite(x) && Number.isFinite(y);
-  const moved = pointerX == null || pointerY == null
-    ? Math.abs(Number(event.movementX) || 0) > 0 || Math.abs(Number(event.movementY) || 0) > 0
-    : hasCoordinates && (Math.abs(x - pointerX) > 0.5 || Math.abs(y - pointerY) > 0.5);
+  // A real pointermove has already been dispatched. Firefox and WebKit can
+  // report movementX/Y=0 on its first move into the document; Chromium may
+  // retain a previous cursor baseline. Initialize from that actual event,
+  // never from pointerenter (which can be synthesized by layout reflow).
+  const moved = hasCoordinates && (
+    pointerX == null || pointerY == null ||
+    Math.abs(x - pointerX) > 0.5 || Math.abs(y - pointerY) > 0.5
+  );
   if (hasCoordinates) {
     pointerX = x;
     pointerY = y;
   }
-  if (moved) pointerEpoch += 1;
+  if (moved) {
+    pointerEpoch += 1;
+    lastActualPointerMoveEvent = event;
+  }
   return moved;
 }
 
@@ -123,7 +136,10 @@ function scheduleClose(delay = 220) {
 }
 
 function configuredScripture(reference) {
-  const sources = [window.SITE_CONFIG?.scripture, window.SITE_CONFIG?.bible, window.BIBLE_VERSES, window.SCRIPTURE_DATA];
+  const ownedProjection = window.SCRIPTURE_DATA;
+  const sources = ownedProjection && Object.isFrozen(ownedProjection)
+    ? [ownedProjection]
+    : [ownedProjection, window.SITE_CONFIG?.scripture, window.SITE_CONFIG?.bible, window.BIBLE_VERSES];
   for (const source of sources) {
     if (!source || typeof source !== 'object') continue;
     const value = source[reference];
@@ -133,19 +149,33 @@ function configuredScripture(reference) {
   return '';
 }
 
+// A verified, bundled public-domain edition is projected per route by
+// ScriptureDataProjection. Do not send the reader to a third-party website
+// just because a legacy rights-held edition is not publishable.
 function createScriptureTip(anchor) {
   const reference = String(anchor.dataset.ref || anchor.textContent || '').trim();
+  const publishedText = configuredScripture(reference);
+  const source = window.SCRIPTURE_SOURCE_BY_REF?.[reference] || '';
   const tip = document.createElement('span');
   tip.className = 'btip';
   tip.dataset.generatedScriptureTip = '1';
+  tip.setAttribute('role', 'tooltip');
   const label = document.createElement('strong');
   label.className = 'btip__reference';
   label.textContent = reference;
   const body = document.createElement('span');
   body.className = 'btip__text';
-  body.textContent = configuredScripture(reference) || 'Ссылка на указанное место Священного Писания.';
+  body.textContent = publishedText ||
+    'Для этой ссылки не найден проверенный текст в Синодальном переводе. Проверьте адрес книги и главы.';
   tip.append(label, document.createTextNode(' '), body);
-  anchor.appendChild(tip);
+  if (publishedText) {
+    const credit = document.createElement('span');
+    credit.className = 'btip__source';
+    credit.textContent = source || 'Синодальный перевод (1876)';
+    tip.appendChild(credit);
+  }
+  anchor.insertAdjacentElement('afterend', tip);
+  scriptureTips.set(anchor, tip);
   return tip;
 }
 
@@ -159,7 +189,7 @@ function nextTipId() {
 function inlineTip(anchor) {
   if (anchor.matches('.gterm')) return anchor.querySelector('.gtip');
   if (anchor.matches('.fn-marker')) return anchor.querySelector('.tooltip');
-  if (anchor.matches('.bref[data-ref]')) return anchor.querySelector('.btip') || createScriptureTip(anchor);
+  if (anchor.matches('.bref[data-ref]')) return anchor.querySelector('.btip') || scriptureTips.get(anchor) || createScriptureTip(anchor);
   return null;
 }
 
@@ -170,7 +200,10 @@ function setGlossaryExpanded(tip, frame, expand, detail, expanded) {
   frame.classList.remove('is-expanded');
   const text = expand.querySelector('.gtip-expand-txt');
   if (text) text.textContent = expanded ? 'Кратко' : 'Подробнее';
-  if (detail) detail.setAttribute('aria-hidden', expanded ? 'false' : 'true');
+  if (detail) {
+    detail.setAttribute('aria-hidden', expanded ? 'false' : 'true');
+    detail.inert = !expanded;
+  }
 }
 
 function resetGlossaryTip(tip) {
@@ -211,6 +244,8 @@ function prepareGlossaryTip(tip) {
    opener, Escape/outside-focus close restores the opener exactly, and a
    locked mobile sheet never leaves focus on body. */
 let escapeSuppress = null;
+let mobileDismissedAnchor = null;
+let mobileDismissedUntil = 0;
 const TIP_FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 function tipFocusables(tip) {
   if (!tip) return [];
@@ -260,25 +295,12 @@ function applyOverflow(tip, maxHeight) {
   return needsScroll;
 }
 
-function mobileSheetBudget(viewport) {
-  const ratioBudget = Math.floor(viewport.height * MOBILE_MAX_VIEWPORT_RATIO);
-  const visualBudget = Math.floor(viewport.height - VIEWPORT_MARGIN);
-  return Math.max(MIN_SCROLL_HEIGHT, Math.min(ratioBudget, visualBudget));
-}
-
-function positionMobile(tip) {
-  const viewport = viewportBounds();
-  clearAuthoritativeGeometry(tip);
-  setImportant(tip.style, 'left', '0px');
-  setImportant(tip.style, 'right', '0px');
-  setImportant(tip.style, 'top', 'auto');
-  setImportant(tip.style, 'bottom', '0px');
-  applyOverflow(tip, mobileSheetBudget(viewport));
-}
-
 function preferredPlacement(naturalHeight, availableAbove, availableBelow, previousPlacement, preservePlacement) {
   const fitsAbove = naturalHeight <= availableAbove;
   const fitsBelow = naturalHeight <= availableBelow;
+  // Preserve a previous side only while the full natural content still fits.
+  // Expanded definitions can outgrow the opening side: prefer the other side
+  // before imposing internal scrolling on a panel that fits there intact.
   if (preservePlacement && previousPlacement === 'top' && fitsAbove) return 'top';
   if (preservePlacement && previousPlacement === 'bottom' && fitsBelow) return 'bottom';
   if (fitsAbove && fitsBelow) return previousPlacement === 'bottom' ? 'bottom' : 'top';
@@ -300,34 +322,83 @@ function positionDesktop(tip, anchor, preservePlacement = false) {
   let tipRect = tip.getBoundingClientRect();
   const width = Math.min(tipRect.width, Math.max(0, viewport.width - VIEWPORT_MARGIN * 2));
   let left = anchorRect.left + anchorRect.width / 2 - width / 2;
-  left = Math.max(viewport.left + VIEWPORT_MARGIN, Math.min(left, viewport.right - VIEWPORT_MARGIN - width));
+  // Desktop Grok rail is persistent, and article terms may open close to it.
+  // Keep the entire definition visible in the reading canvas rather than
+  // centering half of it behind the higher-z-index navigation rail.
+  const grokRail = document.querySelector('.hrail--grok');
+  const railRect = grokRail?.getBoundingClientRect();
+  const railClearance = window.innerWidth >= 1200 && railRect?.width > 0
+    ? Math.min(railRect.right + 12, viewport.right - VIEWPORT_MARGIN - width)
+    : viewport.left + VIEWPORT_MARGIN;
+  left = Math.max(viewport.left + VIEWPORT_MARGIN, railClearance,
+    Math.min(left, viewport.right - VIEWPORT_MARGIN - width));
 
   const viewportMax = Math.max(MIN_SCROLL_HEIGHT, viewport.height - VIEWPORT_MARGIN * 2);
   const availableAbove = Math.max(0, anchorRect.top - viewport.top - VIEWPORT_MARGIN - TIP_GAP);
   const availableBelow = Math.max(0, viewport.bottom - VIEWPORT_MARGIN - anchorRect.bottom - TIP_GAP);
   const naturalHeight = Math.max(tip.scrollHeight || 0, tipRect.height || 0);
   const placement = preferredPlacement(naturalHeight, availableAbove, availableBelow, previousPlacement, preservePlacement);
-  const available = placement === 'top' ? availableAbove : availableBelow;
+  const available = Math.min(placement === 'top' ? availableAbove : availableBelow, viewportMax);
 
-  if (naturalHeight > available) applyOverflow(tip, Math.min(available, viewportMax));
+  // Rich glossary expands inside an anchor-bound viewport: cap its height
+  // *before* the 0fr -> 1fr transition starts, not after a resize observer
+  // notices overflow. The unchanged content can scroll within that surface.
+  if (tip.classList.contains('gtip')) {
+    // 'auto' is only warranted for actual overflow. Otherwise Safari and
+    // Firefox show a redundant nested scroll owner after an upward flip.
+    applyOverflow(tip, Math.min(available, viewportMax));
+  } else if (naturalHeight > available) applyOverflow(tip, Math.min(available, viewportMax));
   else setImportant(tip.style, 'overflow-y', 'visible');
-
-  tipRect = tip.getBoundingClientRect();
-  const renderedHeight = Math.min(tipRect.height, viewportMax);
-  let top = placement === 'top'
-    ? anchorRect.top - renderedHeight - TIP_GAP
-    : anchorRect.bottom + TIP_GAP;
-  top = Math.max(viewport.top + VIEWPORT_MARGIN, Math.min(top, viewport.bottom - VIEWPORT_MARGIN - renderedHeight));
 
   tip.dataset.placement = placement;
   setImportant(tip.style, 'left', `${Math.round(left)}px`);
-  setImportant(tip.style, 'top', `${Math.round(top)}px`);
+  if (placement === 'top') {
+    // Fixed bottom is geometrically tethered to the trigger. The panel grows
+    // UP, without JS remapping top on each animation frame. This removes the
+    // WebKit mid-transition jump across its own opener.
+    setImportant(tip.style, 'top', 'auto');
+    // A programmatically focused marker can remain outside the viewport
+    // (e.g. within an offscreen scroll container). Fixed-position tooltips
+    // must never inherit a negative bottom or extend beyond the top edge.
+    const renderedHeight = Math.min(tip.getBoundingClientRect().height, viewportMax);
+    const desiredBottom = window.innerHeight - anchorRect.top + TIP_GAP;
+    const maxBottom = Math.max(VIEWPORT_MARGIN,
+      window.innerHeight - (viewport.top + VIEWPORT_MARGIN) - renderedHeight);
+    const bottom = Math.min(maxBottom, Math.max(VIEWPORT_MARGIN, desiredBottom));
+    setImportant(tip.style, 'bottom', `${Math.round(bottom)}px`);
+  } else {
+    const renderedHeight = Math.min(tip.getBoundingClientRect().height, viewportMax);
+    const top = Math.max(viewport.top + VIEWPORT_MARGIN,
+      Math.min(anchorRect.bottom + TIP_GAP, viewport.bottom - VIEWPORT_MARGIN - renderedHeight));
+    setImportant(tip.style, 'bottom', 'auto');
+    setImportant(tip.style, 'top', `${Math.round(top)}px`);
+  }
+  // Reconcile the *settled* painted box after intrinsic content, animation
+  // and max-height have all changed. Keep it inside the visual viewport,
+  // retaining the chosen side and the trigger's horizontal alignment.
+  const settled = tip.getBoundingClientRect();
+  // The opener may still be offscreen while focus-induced smooth scrolling is
+  // in flight. Clamp *both* edges; anchoring only the upper edge can produce
+  // a negative CSS bottom and a tooltip painted far below the viewport.
+  const safeTop = viewport.top + VIEWPORT_MARGIN;
+  const maxTop = Math.max(safeTop, viewport.bottom - VIEWPORT_MARGIN - settled.height);
+  const requiredTop = placement === 'top'
+    ? Math.max(safeTop, Math.min(anchorRect.top - TIP_GAP - settled.height, maxTop))
+    : Math.max(safeTop, Math.min(anchorRect.bottom + TIP_GAP, maxTop));
+  if (settled.height > 0 && Math.abs(settled.top - requiredTop) > 1) {
+    if (placement === 'top') {
+      setImportant(tip.style, 'bottom', `${Math.round(window.innerHeight - requiredTop - settled.height)}px`);
+    } else {
+      setImportant(tip.style, 'top', `${Math.round(requiredTop)}px`);
+    }
+  }
   tip.style.setProperty('--gb-tip-arrow-x', `${Math.round(anchorRect.left + anchorRect.width / 2 - left)}px`);
 }
 
+// One anchor-aware geometry owner on desktop and mobile. The old bottom
+// sheet covered its own marker, making the second tap impossible.
 function position(tip, anchor, preservePlacement = false) {
-  if (mobileMode()) positionMobile(tip);
-  else positionDesktop(tip, anchor, preservePlacement);
+  positionDesktop(tip, anchor, preservePlacement);
 }
 
 function stopGeometry(record) {
@@ -339,7 +410,7 @@ function stopGeometry(record) {
 }
 
 function scheduleGeometry(record, preservePlacement = true) {
-  if (!record || active !== record || record.mobile || record.geometryFrame) return;
+  if (!record || active !== record || record.geometryFrame) return;
   record.geometryFrame = window.requestAnimationFrame(() => {
     record.geometryFrame = 0;
     if (active !== record || !record.anchor.isConnected || !record.tip.isConnected) return;
@@ -348,9 +419,15 @@ function scheduleGeometry(record, preservePlacement = true) {
 }
 
 function observeGeometry(record) {
-  if (!record || record.mobile || typeof ResizeObserver !== 'function') return;
+  if (!record || typeof ResizeObserver !== 'function') return;
   record.geometryObserver = new ResizeObserver(() => scheduleGeometry(record, true));
   record.geometryObserver.observe(record.tip);
+  // A capped tip keeps the same border-box size while expanded content grows.
+  // Observe the intrinsic content as well so the whole popup can flip before
+  // its internal scrollbar becomes the only way to read the definition.
+  for (const element of record.tip.querySelectorAll(':scope > .gtip-luxury, .gtip-detail-wrap')) {
+    record.geometryObserver.observe(element);
+  }
 }
 
 function restore(record) {
@@ -380,13 +457,25 @@ export function closeTooltip(reason = 'close') {
   // describedby reference into an excluded subtree.
   record.anchor.removeAttribute('aria-describedby');
   if (record.mobile) {
+    // OverlayRuntime restores focus to the reference opener on mobile.
+    // Without suppressing that restoration, its focus listener re-opens
+    // the sheet immediately after Escape or an outside tap.
+    const opener = record.anchor;
+    // SiteUtils may retry focus restoration for up to eight 60ms ticks.
+    // A one-shot focus suppression is insufficient and causes ghost reopen.
+    mobileDismissedAnchor = opener;
+    mobileDismissedUntil = window.performance.now() + 650;
+    escapeSuppress = opener;
     if (overlayRuntime()) overlayRuntime().close(OWNER, reason);
     else window.SiteUtils?.unlockScroll?.(`overlay:${OWNER}`);
+    window.setTimeout(() => { if (escapeSuppress === opener) escapeSuppress = null; }, 250);
   }
   restore(record);
 }
 
 function openTooltip(anchor, reason = 'open') {
+  if ((reason === 'focus' || reason === 'hover') && anchor === mobileDismissedAnchor &&
+      window.performance.now() < mobileDismissedUntil) return;
   if (reason === 'hover' && active && active.anchor !== anchor && active.reason !== 'hover'
     && pointerEpoch === active.pointerBaseline) return;
   cancelClose();
@@ -472,6 +561,11 @@ function openTooltip(anchor, reason = 'open') {
         reason,
       });
     } else window.SiteUtils?.lockScroll?.(`overlay:${OWNER}`);
+    // Mobile scroll locking fixes <body> and offsets it by the prior scrollY.
+    // WebKit can retain the pre-lock geometry for one frame, displaying the
+    // popup thousands of pixels below the viewport in long articles.
+    // Reposition after the lock mutation, before the next paint.
+    if (active?.tip === tip) position(tip, anchor, true);
   }
 }
 
@@ -486,6 +580,12 @@ function initializeAnchor(anchor) {
 
   const openHover = (event) => {
     if (event.pointerType === 'touch' || mobileMode()) return;
+    // A stationary cursor under a resized/scrolled anchor produces trusted
+    // pointerenter + mouseenter with movementX/Y = 0. The global capture
+    // listener records real pointermove before this target handler runs.
+    // Never activate a ghost popup from an element moving under the cursor.
+    if (lastActualPointerMoveEvent !== event) return;
+    if (active?.anchor === anchor) return;
     openTooltip(anchor, 'hover');
   };
   const leaveHover = (event) => {
@@ -498,14 +598,25 @@ function initializeAnchor(anchor) {
     scheduleClose();
   };
 
-  anchor.addEventListener('pointerenter', openHover);
-  anchor.addEventListener('mouseenter', openHover);
+  anchor.addEventListener('pointermove', openHover);
+  if (!window.PointerEvent) {
+    anchor.addEventListener('mousemove', (event) => {
+      if (!mobileMode() && (event.movementX || event.movementY)) openTooltip(anchor, 'hover');
+    });
+  }
   anchor.addEventListener('pointerleave', leaveHover);
   anchor.addEventListener('mouseleave', leaveHover);
   anchor.addEventListener('focus', () => {
     // An Escape close that restored focus to this opener must not be
     // undone by the focus-open listener (popup contract: Escape wins).
     if (escapeSuppress === anchor) { escapeSuppress = null; return; }
+    // A mobile second tap refocuses the opener from the portal link before
+    // the click. Do not overwrite the existing click reason or it won't close.
+    if (active?.anchor === anchor) { cancelClose(); return; }
+    // On mobile, a pointer click focuses the marker before its click handler.
+    // Opening the bottom sheet on that focus blocks the very click that owns it.
+    // Keyboard focus still opens the tooltip through :focus-visible.
+    if (mobileMode() && !anchor.matches(':focus-visible')) return;
     openTooltip(anchor, 'focus');
   });
   anchor.addEventListener('blur', (event) => {

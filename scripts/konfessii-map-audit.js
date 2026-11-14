@@ -326,7 +326,9 @@ if (chromium) (async () => {
 
   let browser;
   try {
+    const executablePath = process.env.GB_PLAYWRIGHT_CHROMIUM_EXECUTABLE || undefined;
     browser = await chromium.launch({
+      ...(executablePath ? { executablePath } : {}),
       args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'],
     });
   } catch (error) {
@@ -344,8 +346,11 @@ if (chromium) (async () => {
     { w: 360, h: 800, label: 'android-360', mobile: true },
     { w: 320, h: 760, label: 'mobile-320', mobile: true },
   ];
+  const viewportFilter = process.env.KONFESSII_AUDIT_VIEWPORT;
+  const selectedViewports = viewportFilter ? viewports.filter((vp) => vp.label === viewportFilter) : viewports;
+  if (!selectedViewports.length) throw new Error(`Unknown KONFESSII_AUDIT_VIEWPORT: ${viewportFilter}`);
 
-  for (const vp of viewports) {
+  for (const vp of selectedViewports) {
     const context = await browser.newContext(vp.mobile ? {
       viewport: { width: vp.w, height: vp.h }, isMobile: true, hasTouch: true,
     } : { viewport: { width: vp.w, height: vp.h } });
@@ -426,6 +431,101 @@ if (chromium) (async () => {
         ? /РУССКИЙ БАПТИЗМ/.test(text) && /Баптизма/.test(text)
         : /РУССКИЙ БАПТИЗМ/.test(text) && /3D/.test(text);
       assert(recognized, `I4 [${vp.label}] приложение загрузилось (бренд+контент)`, `I4 [${vp.label}] приложение не распознано: ${JSON.stringify(text.slice(0, 100))}`);
+      // The outer iframe may have zero overflow while the React document
+      // remains horizontally scrollable. Measure the real same-origin app
+      // after loading fonts and content, not the surrounding shell.
+      const appWidth = await frame.evaluate(async () => {
+        await document.fonts.ready;
+        const client = document.documentElement.clientWidth;
+        const body = document.body.scrollWidth;
+        const html = document.documentElement.scrollWidth;
+        const bodyRect = document.body.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const bodyMinWidth = getComputedStyle(document.body).minWidth;
+        // Only enumerate culprits on failure; never mask overflow via CSS.
+        const offenders = Math.max(body, html) > client ? [...document.body.querySelectorAll('*')]
+          .map((node) => {
+            const rect = node.getBoundingClientRect();
+            return { tag: node.tagName, className: typeof node.className === 'string' ? node.className.slice(0, 115) : '',
+              text: (node.textContent || '').trim().slice(0, 36),
+              left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width) };
+          })
+          .filter((item) => item.right > client + 1 && item.width > 0)
+          .sort((a, b) => b.right - a.right).slice(0, 12) : [];
+        const measuredOverflow = Math.max(body, html) - client;
+        const scrollOwners = measuredOverflow > 0 ? [...document.body.querySelectorAll('*')]
+          .map((node) => {
+            const style = getComputedStyle(node);
+            return {
+              tag: node.tagName,
+              id: node.id,
+              className: typeof node.className === 'string' ? node.className.slice(0, 85) : '',
+              scrollWidth: node.scrollWidth, clientWidth: node.clientWidth,
+              excess: node.scrollWidth - node.clientWidth,
+              overflowX: style.overflowX,
+            };
+          })
+          .filter((entry) => entry.excess >= 12 && ['visible', 'auto', 'scroll'].includes(entry.overflowX))
+          .sort((a, b) => b.excess - a.excess).slice(0, 14) : [];
+        const isolate = measuredOverflow > 0 ? [...document.querySelectorAll('#root main > *, #root header, #root nav, #root footer')]
+          .map((node) => {
+            const original = node.style.display;
+            node.style.display = 'none';
+            const after = Math.max(document.body.scrollWidth, document.documentElement.scrollWidth) - client;
+            node.style.display = original;
+            return { tag: node.tagName, id: node.id, className: typeof node.className === 'string' ? node.className.slice(0, 65) : '',
+              remainingOverflow: after };
+          }).filter((entry) => entry.remainingOverflow < measuredOverflow).slice(0, 20) : [];
+        return { client, body, html, bodyRectWidth: Math.round(bodyRect.width),
+          viewportWidth, bodyMinWidth, offenders, scrollOwners, isolate };
+      });
+      assert(Math.max(appWidth.body, appWidth.html) <= appWidth.client,
+        `I16 [${vp.label}] native React document has zero horizontal overflow`,
+        `I16 [${vp.label}] inner 3D app overflow=${Math.max(appWidth.body,appWidth.html)-appWidth.client}px; layout=${JSON.stringify({client:appWidth.client,body:appWidth.body,html:appWidth.html,bodyRectWidth:appWidth.bodyRectWidth,viewportWidth:appWidth.viewportWidth,bodyMinWidth:appWidth.bodyMinWidth})}; offenders=${JSON.stringify(appWidth.offenders)}; scrollOwners=${JSON.stringify(appWidth.scrollOwners)}; isolate=${JSON.stringify(appWidth.isolate)}`);
+      assert(appWidth.bodyRectWidth <= appWidth.client,
+        `I16 [${vp.label}] body width respects scrollbar-adjusted content viewport`,
+        `I16 [${vp.label}] body width=${appWidth.bodyRectWidth}, content viewport=${appWidth.client}, CSS min-width=${appWidth.bodyMinWidth}`);
+
+      // A collapsed card can fit while its historical details still overflow.
+      // Exercise each of the three origins on the narrowest supported viewport.
+      if (vp.label === 'mobile-320') {
+        const archivesTitle = await frame.locator('#archives h2.section-title').evaluate((node) => ({
+          scroll: node.scrollWidth, client: node.clientWidth, fontSize: getComputedStyle(node).fontSize,
+        }));
+        assert(archivesTitle.scroll <= archivesTitle.client,
+          'I16 [mobile-320] long Archives title fits without clipping or horizontal scroll',
+          `I16 [mobile-320] Archives title scroll=${archivesTitle.scroll} client=${archivesTitle.client}, font=${archivesTitle.fontSize}`);
+        const originCards = frame.locator('#origins button.bento-card');
+        assert(await originCards.count() === 3, 'I16 [mobile-320] all three origin cards exist',
+          'I16 [mobile-320] origin cards missing');
+        for (let index = 0; index < 3; index += 1) {
+          await originCards.nth(index).click();
+          await page.waitForTimeout(400);
+          const expandedOverflow = await frame.evaluate(
+            () => Math.max(document.body.scrollWidth, document.documentElement.scrollWidth) -
+              document.documentElement.clientWidth
+          );
+          assert(expandedOverflow <= 0, `I16 [mobile-320] origin ${index + 1} expanded without overflow`,
+            `I16 [mobile-320] origin ${index + 1} expanded overflow=${expandedOverflow}px`);
+          await originCards.nth(index).click();
+        }
+
+        const congressCards = frame.locator('#congresses article.bento-card > button');
+        const congressCount = await congressCards.count();
+        assert(congressCount > 0, 'I16 [mobile-320] congress accordions exist',
+          'I16 [mobile-320] congress accordions missing');
+        for (let index = 0; index < congressCount; index += 1) {
+          await congressCards.nth(index).click();
+          await page.waitForTimeout(400);
+          const expandedOverflow = await frame.evaluate(
+            () => Math.max(document.body.scrollWidth, document.documentElement.scrollWidth) -
+              document.documentElement.clientWidth
+          );
+          assert(expandedOverflow <= 0, `I16 [mobile-320] congress ${index + 1} expanded without overflow`,
+            `I16 [mobile-320] congress ${index + 1} expanded overflow=${expandedOverflow}px`);
+          await congressCards.nth(index).click();
+        }
+      }
 
       if (!vp.mobile) {
         await frame.evaluate(() => [...document.querySelectorAll('button,a')].find((node) => /3D Карта|3D-карта/i.test(node.textContent))?.click());
