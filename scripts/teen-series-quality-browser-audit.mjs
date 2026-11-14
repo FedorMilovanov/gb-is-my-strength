@@ -13,7 +13,7 @@ const REPORT_DIR = join(ROOT, 'reports', 'teen-series-browser');
 
 const ARTICLE_ROUTES = [
   { route: '/articles/podrostok-za-kadrom-dvoynaya-zhizn/', id: 'teen-double-life', refs: 3, hero: '01-double-life.webp' },
-  { route: '/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/', id: 'teen-parents-after-disclosure', refs: 2, hero: '02-after-disclosure.webp' },
+  { route: '/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/', id: 'teen-parents-after-disclosure', refs: 3, hero: '02-after-disclosure.webp' },
   { route: '/articles/podrostok-za-kadrom-chto-delat-tserkvi/', id: 'teen-church-response', refs: 3, hero: '03-church-response.webp' },
   { route: '/articles/vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie/', id: 'adult-child-left-home', refs: 2, hero: '04-left-home.webp' },
   { route: '/articles/vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya/', id: 'adult-child-home-money', refs: 3, hero: '05-home-money.webp' },

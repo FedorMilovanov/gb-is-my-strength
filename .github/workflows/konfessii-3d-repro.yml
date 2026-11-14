@@ -1,0 +1,68 @@
+name: Baptist 3D Source Reproducibility
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/konfessii-3d-repro.yml'
+      - '_build-tools/konfessii-baptizm/**'
+      - 'konfessii/russkij-baptizm/**'
+      - 'scripts/konfessii-map-audit.js'
+      - 'scripts/konfessii-3d-source-repro-contract.cjs'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/konfessii-3d-repro.yml'
+      - '_build-tools/konfessii-baptizm/**'
+      - 'konfessii/russkij-baptizm/**'
+      - 'scripts/konfessii-map-audit.js'
+      - 'scripts/konfessii-3d-source-repro-contract.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: baptist-3d-repro-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-and-runtime:
+    name: Rebuild exact 3D bundle and exercise real iframe
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Node.js 22
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22.23.1'
+          cache: npm
+          cache-dependency-path: _build-tools/konfessii-baptizm/reconciled-app/package-lock.json
+
+      - name: Install exact React app dependencies and pinned physics patch
+        working-directory: _build-tools/konfessii-baptizm/reconciled-app
+        run: npm ci --no-audit --no-fund
+
+      - name: Build exact React/Vite singlefile
+        working-directory: _build-tools/konfessii-baptizm/reconciled-app
+        run: npm run build
+
+      - name: Verify committed bundle and Reader asset revisions
+        run: node scripts/konfessii-3d-source-repro-contract.cjs
+
+      - name: Install site Playwright runtime
+        run: npm ci --no-audit --no-fund
+
+      - name: Install Chromium with system libraries
+        run: npx playwright install --with-deps chromium
+
+      - name: Real iframe, WebGL, semantic, 3D physics and inner-overflow audit
+        env:
+          KONFESSII_AUDIT_REQUIRE_BROWSER: '1'
+          KONFESSII_AUDIT_REQUIRE_DIST: '0'
+        run: node scripts/konfessii-map-audit.js
