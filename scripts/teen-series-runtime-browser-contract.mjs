@@ -153,6 +153,10 @@ for (const [route, expectedRefs] of ROUTES) {
 }
 assert.equal(totalRefs, 19, 'teen series must expose exactly 19 bounded Bible-reference triggers');
 
+// The curated parental-boundaries argument adds one directly checkable 1 Tim. 2:9 trigger.
+const partTwo = await readFile(routeFile('/articles/podrostok-za-kadrom-roditelyam-posle-razoblacheniya/'), 'utf8');
+assert(partTwo.includes('data-ref="1 Тимофею 2:9"'), 'teen II: 1 Tim. 2:9 tooltip identity missing');
+
 const partThree = await readFile(routeFile('/articles/podrostok-za-kadrom-chto-delat-tserkvi/'), 'utf8');
 assert(partThree.includes('data-ref="Псалтирь 49:16–21"'), 'Psalm 49 Synodal machine identity missing');
 assert(partThree.includes('>Пс. 49:16–21</button>'), 'Psalm 49 Synodal visible numbering drifted');
