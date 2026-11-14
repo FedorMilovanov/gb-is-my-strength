@@ -1,5 +1,5 @@
 import { memo, useEffect, useMemo, useRef } from 'react';
-import type { Person, RuntimeGenealogyRelation } from './types';
+import type { Person, RuntimeGenealogyRelation, RelationAuthority, RelationConfidence } from './types';
 
 interface RelationshipInspectorProps {
   relation: RuntimeGenealogyRelation | null;
@@ -7,7 +7,7 @@ interface RelationshipInspectorProps {
   onClose: () => void;
 }
 
-const AUTHORITY_LABELS: Record<string, string> = {
+const AUTHORITY_LABELS: Record<RelationAuthority, string> = {
   'curated-v1-explicit-field': 'Курированная родственная связь',
   'curated-v1-children-index': 'Курированный индекс потомков',
   'curated-v1-reciprocal-spouse': 'Взаимно подтверждённая супружеская связь',
@@ -19,7 +19,7 @@ const SEQUENCE_LABELS: Record<string, string> = {
   luke: 'Лука',
 };
 
-const CONFIDENCE_LABELS: Record<string, string> = {
+const CONFIDENCE_LABELS: Record<RelationConfidence, string> = {
   certain: 'высокая',
   disputed: 'оспариваемая',
   'certain-textual-genealogy': 'подтверждена текстовой родословной',
