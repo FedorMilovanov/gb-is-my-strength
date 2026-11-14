@@ -911,16 +911,28 @@ as Samuel.
    merge his contract numbers without his frontmatter, config, `data/series.json`
    and component-literal changes. Do not treat a green `data:consistency` as
    evidence that the minutes are right; only `reading-time-audit` measures them
-   against the policy.
+   against the policy. Two preconditions from §7g come before this step, not after:
+   the counter must stop billing Markdown link targets as prose (620 words and three
+   minutes on this branch alone), and someone must decide explicitly whether the
+   `## Источники и сверка` bibliography is reader time — on this branch it is 5197 of
+   44693 words, 29 of 251 minutes, and the policy document does not answer it. Best
+   of all, follow the method `4786e4e2` has just adopted for his own MDX-less routes
+   and measure the built `<main>` in `dist` rather than trusting the source counter.
 6. Take `1d569906`'s mixed-script and language-of-parts audits together with his
    content corrections. His `article-qa.js` exits 0 only on a tree where the base
    spellings are already fixed, so adopting the audit without the fixes turns
    eleven pre-existing strings in `karty/*/route.json`, the Gill context tail and
-   the `g3` dossier into a build failure on every other branch.
+   the `g3` dossier into a build failure on every other branch. The same pairing now
+   applies inside the build itself: his `27c9d1e` adds FAQ structured-data parity as
+   **G-10** in `pastor-series-guards-dist.js`, which runs within
+   `strangler:build:production-like`, and this branch's dist fails it 1 of 21 because
+   the base PageHead schema answer for `20-antisovetov-pastoru` drops one word
+   («Практический тест» where the reader sees «Практический тест такой»). His commit
+   carries the fix, so take the guard and the schema answer together — see §13.
 7. Re-run the full battery, including `8c44f067`'s tightened release contract and
    his link and reading-time tests, `1d569906`'s language-of-parts and
-   mixed-script contracts, and `4786e4e2`'s `reading-time-audit`, before
-   deploying.
+   mixed-script contracts and his G-10 FAQ parity guard, and `4786e4e2`'s
+   `reading-time-audit`, before deploying.
 
 ## 10. Control re-verification of this note, 13 November 2026
 
@@ -1207,3 +1219,87 @@ before trusting any merge-base or merge-tree result, because the failure mode is
 confident error message that looks like a real divergence between branches rather
 than a truncated local clone. Note also that `git merge-tree` in git 2.39.5 has no
 `--merge-base` option; passing one exits 129 with a usage message.
+
+## 13. A new build-level guard, G-10, lands on `1d569906` — and this branch would fail it
+
+`1d569906` advanced twice during this pass, `53cd39c` → `27c9d1e`, adding
+`scripts/faq-structured-data-answer-parity.mjs` and wiring it into
+`scripts/pastor-series-guards-dist.js` as **G-10**. That matters more than a standalone
+script would, because `pastor-series-guards-dist.js` is the guard suite that runs
+inside `npm run strangler:build:production-like`. This branch's build currently prints
+`G-1 a11y … G-8 print — all passed`; on his branch the same build must also satisfy
+G-10. A new requirement inside the build path is invisible to a green battery until it
+is merged.
+
+Rule: every FAQPage `acceptedAnswer.text` must appear verbatim in the visible page
+copy, with only presentation-level variance tolerated — inline-markup boundaries,
+entities, non-breaking spaces, typographic quote and dash variants, and the space that
+block-level tag removal introduces before punctuation.
+
+**Run against this branch's dist, it fails 1 of 21 answers**, on
+`dist/articles/20-antisovetov-pastoru/index.html`. The failure is not a teen-series
+matter, and it is not this branch's defect. Attribution was established rather than
+assumed, in four steps.
+
+First, the only change this branch ever made to that article is six `<span lang="el">`
+wrappings from `d944712`; the failing answer contains no Greek at all. Second,
+removing those six spans from the built page — a faithful simulation of the base build,
+365714 → 365576 bytes — reproduces the identical failure, so it pre-exists at base.
+Third, the divergence was located by applying his own exported `norm` to both sides and
+walking to the first differing character, at offset 673 of 873:
+
+```
+structured data : ...политической машины. Практический тест|: после применения власти...
+visible copy    : ...политической машины. Практический тест| такой: после применения власти...
+```
+
+The schema answer is missing one word, **«такой»**. The visible Body has it; the
+PageHead structured data does not. Fourth, that state was checked on four trees:
+
+| tree | PageHead has «Практический тест такой» | Body has it | G-10 |
+| --- | --- | --- | --- |
+| base `9618e82` | no | yes | would fail |
+| **this branch** | no | yes | **fails** |
+| `1d569906` `27c9d1e` | **yes** | yes | passes |
+| `4786e4e2` `865480e` | no | yes | would fail |
+
+So `1d569906` fixed the content in the same commit that ships the gate. That is rule
+(k) from §8d — strict audits ship paired with their author's content fixes — now with a
+build-level example rather than a standalone-script one. The fix's minimality was
+proved, not assumed: inserting the single word «такой» into this branch's built page,
+365714 → 365720 bytes, one occurrence, makes his gate report
+`7 acceptedAnswer texts verbatim in visible copy across 1 emitted pages` and exit 0.
+
+Consequences, in the order they bind:
+
+- Nothing here is this branch's to repair. The file is his lane, the defect is base's,
+  and the fix is already committed on his branch. Editing the PageHead schema answer
+  here would collide with his change for no benefit.
+- Merging his branch brings the gate **and** its fix together, so the build stays
+  green. Merging only the guard script, or only `pastor-series-guards-dist.js`, would
+  turn `strangler:build:production-like` red on this branch and on `4786e4e2`'s.
+- `4786e4e2` is exposed to the same trap: his current head still lacks the word, so if
+  the guard reaches main before his content fix does, his build fails too. Worth
+  telling him, since the two lanes are both editing `AntisovetovPageHead.astro` —
+  `4786e4e2` changed it in `865480e` and `1d569906` in `27c9d1e`.
+- G-10 is not referenced in any `.github/workflows/` file on his branch and not in
+  `package.json`; it reaches CI only through the build guard suite. Anyone checking
+  workflows alone would miss it.
+
+The gate itself is sound. It carries a `--selftest` fixture mode, and its `norm`
+correctly tolerates inline markup: a fixture whose visible words match the schema
+answer exactly, with a `<strong>` ending immediately before a full stop, is accepted.
+The earlier suspicion that tag-to-space substitution produced a false positive was
+tested and is wrong; the failure is a real one-word content divergence.
+
+Also recorded from this pass, for whoever runs the reading-time audit: `4786e4e2`'s
+`865480e` did **not** touch `scripts/lib/reading-time-policy.js` — the diff is empty —
+so all five counter defects in §7e and §7g stand at his current head. What he did
+change is methodologically the right direction and corroborates §7e's recommendation:
+he stopped trusting his own word counter for MDX-less routes and now measures the built
+`<main>` in `dist`, writing in his policy document that counting words with your own
+code and then checking with the same code is not verification. His first pass by
+component traversal was wrong by eight minutes on three routes, which he corrected to
+79 / 18 / 27 against 14104 / 3084 / 4704 visible words. That is the same argument §7g
+makes for the teen series, arrived at independently: the built page is the reference,
+not the source counter.
