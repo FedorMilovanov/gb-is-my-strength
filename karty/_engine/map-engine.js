@@ -3091,7 +3091,6 @@ container.appendChild(panel);
         ARCHAEOLOGY_LABELS[source.perspective]||source.perspective,ARCHAEOLOGY_LABELS[source.status]||source.status,
         ARCHAEOLOGY_LABELS[source.verification]||source.verification,source.accessedAt?`проверено ${source.accessedAt}`:''].filter(Boolean).join(' · ');
       node.appendChild(_archText('span','map-arch-source__meta',details));
-      node.appendChild(_archText('span','map-arch-source__meta map-arch-source__id',`source: ${source.id}`));
       return node;
     }
     function _archProjectionCards(placeId){
