@@ -19,7 +19,6 @@ on:
       - "src/components/article-pilots/**"
       - "src/components/article-pilots/_shared/mobileChromeRegistry.ts"
       - "src/components/article-pilots/_shared/series/SeriesReaderChrome.astro"
-      - "src/components/article-pilots/gill-series/GillSeriesChrome.astro"
       - "src/components/konfessii/russkij-baptizm/**"
       - "src/components/nagornaya/**"
       - "src/components/map/**"
@@ -125,8 +124,7 @@ jobs:
         run: |
           mkdir -p reports
           set -o pipefail
-          node -r ./scripts/install-effective-route-registry.js \
-            scripts/route-profile-contract-audit.js --strict 2>&1 \
+          node scripts/route-profile-contract-audit.js --strict 2>&1 \
             | tee reports/route-profile-contract.log
 
       - name: Public surface, sitemap, RSS, SEO and policy mutations
@@ -155,8 +153,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          node -r ./scripts/install-effective-route-registry.js \
-            scripts/route-migration-matrix-contract-audit.js --strict 2>&1 \
+          node scripts/route-migration-matrix-contract-audit.js --strict 2>&1 \
             | tee reports/route-migration-matrix-contract.log
 
       - name: Content source provenance

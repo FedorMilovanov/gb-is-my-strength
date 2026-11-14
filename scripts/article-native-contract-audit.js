@@ -9,7 +9,7 @@ const {
   ARTICLE_ROUTE_TYPES,
   loadRouteRecords,
   validateRecord,
-} = require('./lib/route-source-contract');
+} = require('./lib/effective-route-registry');
 const { resolveDeclaredLegacyReference } = require('./lib/legacy-source-authority');
 const { scanBlockStructure } = require('./lib/block-structure-guard');
 const { routes: routeSearchPolicies } = require('../data/route-search-policy.json');

@@ -113,7 +113,7 @@ async function snapshot(page) {
     const fab = document.getElementById('gb-hl-fab');
     const fabStyle = fab ? getComputedStyle(fab) : null;
     const share = document.getElementById('hmShareBtn');
-    const actions = bottom?.querySelector('.hmbar-actions');
+    const actions = bottom?.querySelector('.reader-mobile-action-cluster');
     return {
       viewport: { width: innerWidth, height: innerHeight },
       scrollWidth: document.documentElement.scrollWidth,
@@ -124,7 +124,7 @@ async function snapshot(page) {
       actions: {
         exists: Boolean(actions), parentIsBottom: actions?.parentElement === bottom,
         gap: actions ? getComputedStyle(actions).gap : null,
-        controls: Array.from(actions?.children || []).map((el) => el.id || el.getAttribute('data-fc-action')),
+        controls: Array.from(actions?.children || []).map((el) => el.id || el.getAttribute('data-action') || el.getAttribute('data-fc-action')),
         rect: rectOf(actions),
       },
       fab: {
@@ -157,9 +157,9 @@ async function assertHighlightsGeometry(page, engine, viewport, route) {
     && state.fab.hostClass
     && state.fab.parentIsActions
     && state.actions.parentIsBottom
-    && state.actions.gap === '0px'
-    && JSON.stringify(state.actions.controls) === JSON.stringify(['theme','hmSettingsBtn','gb-hl-fab','hmShareBtn'])
-    && state.fab.nextIsShare
+    && JSON.stringify(state.actions.controls) === JSON.stringify(['hmSettingsBtn','gb-hl-fab','print','hmShareBtn'])
+    // The native PDF action now separates Saved Quotes and Share; all
+    // controls remain distinct 44px targets in the shared action cluster.
     && state.fab.animationName === 'none'
     && state.fab.transform === 'none'
     && state.share.visible
@@ -206,6 +206,53 @@ async function exerciseHighlights(page, engine, viewport, route) {
     focusReturned: document.activeElement === document.getElementById('gb-hl-fab'),
   }));
   check(engine, viewport, route, 'saved-quotes close restores opener focus', !closed.open && closed.ariaHidden === 'true' && closed.focusReturned, closed);
+
+  // Keyboard route through the *visible* canonical Library button.
+  // A hidden legacy shortcut is not an acceptable sole entrypoint.
+  await fab.focus();
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => document.getElementById('gb-hl-backdrop')?.classList.contains('is-open'));
+  await page.locator('[data-library-tab="quote"]').click();
+  const quotes = await page.evaluate(() => ({
+    pressed: document.querySelector('[data-library-tab="quote"]')?.getAttribute('aria-pressed'),
+    containsSeed: document.getElementById('gb-hl-list')?.innerText.includes('Проверочная сохранённая цитата'),
+    inside: document.getElementById('gb-hl-backdrop')?.contains(document.activeElement),
+    expanded: document.getElementById('gb-hl-fab')?.getAttribute('aria-expanded'),
+  }));
+  check(engine, viewport, route, 'keyboard opener reaches saved-quote tab and seeded quote',
+    quotes.pressed === 'true' && quotes.containsSeed && quotes.inside && quotes.expanded === 'true', quotes);
+  // Snapshot only after both semantics and the actual rendered quote card
+  // settle; otherwise the frame may show the prior "Все" tab and an empty
+  // panel even though the next DOM assertion observes the correct view.
+  await page.waitForFunction(() => {
+    const pressed = document.querySelector('[data-library-tab="quote"]');
+    const card = document.querySelector('#gb-hl-list > *');
+    const bounds = card?.getBoundingClientRect();
+    return pressed?.getAttribute('aria-pressed') === 'true' &&
+      !!card?.textContent?.includes('Проверочная сохранённая цитата') &&
+      !!bounds && bounds.height > 20 && bounds.top < innerHeight;
+  }, null, { timeout: 3500 });
+  await page.evaluate(() => new Promise(resolve =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  if (engine === 'chromium') {
+    const safeRoute = route.split('/').filter(Boolean).join('-').replace(/[^a-z0-9]+/gi, '-');
+    await page.screenshot({
+      path: path.join(REPORTS, `hermenevtika-saved-quotes-open-${safeRoute}-390.png`),
+      fullPage: false,
+    });
+  }
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.getElementById('gb-hl-backdrop')?.classList.contains('is-open'));
+  const escape = await page.evaluate(() => ({
+    ariaHidden: document.getElementById('gb-hl-backdrop')?.getAttribute('aria-hidden'),
+    inert: document.getElementById('gb-hl-backdrop')?.inert,
+    expanded: document.getElementById('gb-hl-fab')?.getAttribute('aria-expanded'),
+    focusReturned: document.activeElement === document.getElementById('gb-hl-fab'),
+    unlocked: getComputedStyle(document.body).overflowY !== 'hidden',
+  }));
+  check(engine, viewport, route, 'Escape restores Library focus, semantics and page scrolling',
+    escape.ariaHidden === 'true' && escape.inert === true &&
+      escape.expanded === 'false' && escape.focusReturned && escape.unlocked, escape);
 }
 
 const { server, origin } = await startServer();

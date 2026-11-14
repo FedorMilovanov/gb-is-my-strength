@@ -5,7 +5,7 @@
  * GBS-HOME-OFFER-FROZEN: the «Новые публикации» shelf used to be a frozen
  * hand-picked quintet (newest card dated 2026-07-09 while the catalogue held
  * 40 fresher articles). The shelf is now rendered at build time from the
- * search manifest: the five most recently modified /articles/ entries that
+ * search manifest: the five most recently published /articles/ entries that
  * carry a cover image, so the «new» promise stays true as the library grows.
  */
 import { readFileSync } from 'node:fs';
@@ -30,12 +30,12 @@ const manifest: ManifestFile = JSON.parse(
   readFileSync(path.join(process.cwd(), 'data', 'search-manifest.json'), 'utf8'),
 );
 const stamp = (item: ManifestItem): number =>
-  new Date(item.modifiedTime || item.publishedTime || 0).getTime();
+  new Date(item.publishedTime || 0).getTime();
 const freshArticles: ManifestItem[] = manifest.items
   .filter((item: ManifestItem) => item?.type === 'article'
     && String(item?.url || '').startsWith('/articles/')
     && String(item?.image || '').startsWith('/')
-    && (item?.modifiedTime || item?.publishedTime))
+    && item?.publishedTime)
   .sort((a: ManifestItem, b: ManifestItem) => stamp(b) - stamp(a))
   .slice(0, 5);
 ---
@@ -341,19 +341,54 @@ const freshArticles: ManifestItem[] = manifest.items
 </section>
 
 <style is:global>
-  /* Featured cards paint a dark surface in both themes: readable editorial
-     descriptions and metadata belong to this component, not global CSS. */
+  /* This section owns its editorial palette. The daylight edition uses
+     ivory paper and dark ink; night mode retains the cinematic dark panels.
+     Shared Home styles consume the tokens instead of forcing dark surfaces. */
+  body.home-page #publikacii {
+    --h-featured-card-bg: #fbf9f4;
+    --h-featured-panel-bg: linear-gradient(155deg, #fffdfa 0%, #f3ede3 100%);
+    --h-featured-image-overlay: linear-gradient(to top, rgba(246, 240, 230, .72), rgba(246, 240, 230, 0) 82%);
+    --h-featured-side-overlay: linear-gradient(90deg, rgba(248, 243, 233, 0) 12%, rgba(248, 243, 233, .90) 100%);
+    --h-featured-title-ink: #203332;
+    --h-featured-copy-ink: #445552;
+    --h-featured-meta-ink: #536562;
+    --h-featured-title-hover: #0d6570;
+    --h-featured-badge-ink: #165e68;
+    --h-featured-badge-bg: rgba(22, 104, 114, .085);
+    --h-featured-badge-border: rgba(22, 104, 114, .28);
+  }
+
+  html.dark body.home-page #publikacii {
+    --h-featured-card-bg: #101a1c;
+    --h-featured-panel-bg: linear-gradient(155deg, rgba(20, 31, 33, .96), rgba(5, 11, 13, .99));
+    --h-featured-image-overlay: linear-gradient(to top, rgba(5, 21, 30, .94), rgba(5, 21, 30, .06) 80%);
+    --h-featured-side-overlay: linear-gradient(90deg, transparent 12%, rgba(5, 11, 13, .70) 100%);
+    --h-featured-title-ink: #ffffff;
+    --h-featured-copy-ink: rgba(255, 255, 255, .82);
+    --h-featured-meta-ink: rgba(255, 255, 255, .76);
+    --h-featured-title-hover: #e4bd78;
+    --h-featured-badge-ink: #91e5f2;
+    --h-featured-badge-bg: rgba(88, 213, 237, .1);
+    --h-featured-badge-border: rgba(88, 213, 237, .24);
+  }
+
+  body.home-page #publikacii .h-featured-series .h-featured-title {
+    color: var(--h-featured-title-ink);
+  }
+
   body.home-page #publikacii .h-featured-series .h-featured-abstract {
-    color: rgba(255, 255, 255, .82);
+    color: var(--h-featured-copy-ink);
   }
 
   body.home-page #publikacii .h-featured-series .h-featured-author,
-  body.home-page #publikacii .h-featured-series .h-featured-time {
-    color: rgba(255, 255, 255, .74);
+  body.home-page #publikacii .h-featured-series .h-featured-time,
+  body.home-page #publikacii .h-featured-series .h-featured-parts,
+  body.home-page #publikacii .h-featured-series .h-featured-dot {
+    color: var(--h-featured-meta-ink);
   }
 
-  body.home-page #publikacii .h-featured-series .h-featured-parts {
-    color: rgba(255, 255, 255, .78);
+  body.home-page #publikacii .h-featured-series:is(:hover, :focus-visible) .h-featured-title {
+    color: var(--h-featured-title-hover);
   }
 
   html:not(.dark) body.home-page #publikacii .h-home-section-head .h-section-label,
@@ -520,7 +555,7 @@ const freshArticles: ManifestItem[] = manifest.items
     }
 
     body.home-page #publikacii .h-mobile-lab-shelf .h-featured-overlay {
-      background: linear-gradient(90deg, transparent 12%, rgba(5, 11, 13, .7) 100%);
+      background: var(--h-featured-side-overlay);
     }
 
     body.home-page #publikacii .h-mobile-lab-shelf .h-featured-body {

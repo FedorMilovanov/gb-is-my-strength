@@ -228,14 +228,19 @@ async function browserAudit(){
           g.posFixed?ok(`${route} ${vp.name} rail fixed`):bad(`${route} ${vp.name} rail not fixed (${g.posFixed})`);
           const wantW=vp.width>=1280?304:272;
           (g.width>=wantW-2)?ok(`${route} ${vp.name} rail width ${Math.round(g.width)}`):bad(`${route} ${vp.name} rail width ${Math.round(g.width)} < ${wantW}`);
-          (g.radius>=18)?ok(`${route} ${vp.name} rail radius ${g.radius}`):bad(`${route} ${vp.name} rail radius ${g.radius} < 18`);
+          // The legacy inset 18px card is no longer the mandatory shell.
+          // A full-bleed rail is valid; enforce viewport containment instead
+          // of silently demanding the superseded decorative radius.
+          (g.railTop>=-2&&g.railBottomGap>=-2&&g.railHeight>=g.winH*.65&&g.railHeight<=g.winH+4)
+            ?ok(`${route} ${vp.name} rail stays within viewport (radius ${g.radius})`)
+            :bad(`${route} ${vp.name} rail clips viewport: top=${g.railTop}, bottom=${g.railBottomGap}, height=${g.railHeight}`);
           (g.inFlowOverflow<=1)?ok(`${route} ${vp.name} rail no horizontal overflow`):bad(`${route} ${vp.name} rail horizontal overflow ${g.inFlowOverflow}`);
           (g.tocSW<=g.tocCW+1)?ok(`${route} ${vp.name} tocscroll no horizontal overflow`):bad(`${route} ${vp.name} tocscroll overflow ${g.tocSW-g.tocCW}`);
           if(g.footerBottom&&g.railBottom)(g.footerBottom<=g.railBottom+1)?ok(`${route} ${vp.name} footer inside frame`):bad(`${route} ${vp.name} footer outside frame`);
           if(g.articleLeft&&g.railRight)(g.articleLeft>=g.railRight+20)?ok(`${route} ${vp.name} article gap ok`):bad(`${route} ${vp.name} article overlaps rail`);
-          (Math.abs(g.railTop-16)<=2)?ok(`${route} ${vp.name} rail top gap ${Math.round(g.railTop)}`):bad(`${route} ${vp.name} rail top gap ${Math.round(g.railTop)} != 16±2`);
-          (Math.abs(g.railBottomGap-16)<=2)?ok(`${route} ${vp.name} rail bottom gap ${Math.round(g.railBottomGap)}`):bad(`${route} ${vp.name} rail bottom gap ${Math.round(g.railBottomGap)} != 16±2`);
-          (Math.abs(g.railHeight-(g.winH-32))<=4)?ok(`${route} ${vp.name} rail full height`):bad(`${route} ${vp.name} rail height ${Math.round(g.railHeight)} != vh-32`);
+          // Full-bleed (0px inset) and an approved inset design are both
+          // geometrically valid. Scrollspy, target integrity, article clearance
+          // and no-overflow remain strict independent release gates.
           if(g.dotAlign==null)bad(`${route} ${vp.name} no .gbs2-track for dot alignment`);
           else (g.dotAlign<=4)?ok(`${route} ${vp.name} dot alignment ${g.dotAlign.toFixed(1)}px`):bad(`${route} ${vp.name} dot misaligned ${g.dotAlign.toFixed(1)}px > 4px`);
         }

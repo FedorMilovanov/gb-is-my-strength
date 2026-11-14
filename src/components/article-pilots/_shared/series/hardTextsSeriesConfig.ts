@@ -119,7 +119,7 @@ const HARD_TEXTS_PART_TOC: Record<HeartPageId, SeriesPartTocItem[]> = {
 
 /** Обложка карточки «Сейчас читаете» (относительно /articles/<slug>/). */
 const RAIL_COVERS: Record<HeartPageId, string> = {
-  prolog: '../../images/og-chto-bibliya-nazyvaet-serdcem-600w.webp',
+  prolog: '../../images/og-series-heart-600w.webp',
   krajne: '../../images/og-krajne-isporcheno-600w.webp',
   rimlyanam: '../../images/og-rimlyanam-7-600w.webp',
   novoe: '../../images/ieremia-new-heart-600w.webp',

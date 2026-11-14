@@ -1,0 +1,196 @@
+/* Visual trial V2 — raised ivory paper with bilateral shadow.
+   Scoped exclusively to the original Hermenevtika Grok rail layout.
+   The DOM tree, reading width, controls and mobile layout are untouched. */
+@media (min-width:1200px) {
+  /* Soft, nearly-white papyrus mat surrounding the central book leaf.
+     Fibres are deliberately extremely faint to avoid dirty/noisy texture. */
+  body:has(.hrail.hrail--grok) {
+    background-color:#f6f4f0;
+    background-image:
+      radial-gradient(ellipse 72% 84% at 51% 40%,rgba(255,255,255,.68),transparent 83%),
+      repeating-linear-gradient(0deg,rgba(120,103,83,.012) 0px,rgba(120,103,83,.012) 1px,transparent 1px,transparent 13px),
+      repeating-linear-gradient(88deg,rgba(129,109,85,.009) 0px,rgba(129,109,85,.009) 1px,transparent 1px,transparent 19px);
+    background-attachment:fixed;
+  }
+  /* Raised white parchment sheet: two-stage broad outer shadows, narrow
+     paper edge highlights, a mild edge curl and pristine reading center. */
+  body:has(.hrail.hrail--grok) .article-main.article-main--hrail {
+    background:
+      linear-gradient(90deg,
+        rgba(109,90,72,.075) 0%,
+        rgba(168,146,124,.038) 8px,
+        rgba(255,255,255,0) 37px,
+        rgba(255,255,255,0) calc(100% - 37px),
+        rgba(168,146,124,.043) calc(100% - 8px),
+        rgba(103,83,68,.09) 100%),
+      linear-gradient(180deg,#fffefa 0%,#fffefa 100%);
+    box-shadow:
+      -28px 0 55px -24px rgba(65,48,38,.23),
+      28px 0 55px -24px rgba(65,48,38,.23),
+      -7px 0 17px -8px rgba(83,60,45,.22),
+      7px 0 17px -8px rgba(83,60,45,.22),
+      inset 1px 0 0 rgba(255,255,255,.98),
+      inset -1px 0 0 rgba(255,255,255,.92),
+      0 0 0 1px rgba(139,115,89,.095);
+    border-inline:1px solid rgba(134,108,83,.045);
+    min-height:100vh;
+    transition:box-shadow .22s ease,background-color .22s ease;
+  }
+  /* Only the book paper casts a shadow; the integrated TOC rail remains
+     flush to the viewport, as in the owner-approved original Reader. */
+  /* Theme-aware variants preserve the original Reader night/sepia palette. */
+  html.dark body:has(.hrail.hrail--grok),
+  html[data-reader-theme="dark"] body:has(.hrail.hrail--grok) {
+    background-color:#151314;
+    background-image:radial-gradient(ellipse 72% 84% at 51% 40%,rgba(255,255,255,.023),transparent 80%);
+  }
+  html.dark body:has(.hrail.hrail--grok) .article-main.article-main--hrail,
+  html[data-reader-theme="dark"] body:has(.hrail.hrail--grok) .article-main.article-main--hrail {
+    background:linear-gradient(90deg,rgba(0,0,0,.17),rgba(0,0,0,0) 37px,rgba(0,0,0,0) calc(100% - 37px),rgba(0,0,0,.16)),var(--color-canvas,#21191d);
+    box-shadow:
+      -28px 0 60px -23px rgba(0,0,0,.52),
+      28px 0 60px -23px rgba(0,0,0,.52),
+      inset 1px 0 rgba(255,255,255,.04),
+      inset -1px 0 rgba(255,255,255,.04),
+      0 0 0 1px rgba(255,255,255,.04);
+    border-inline-color:rgba(255,255,255,.025);
+  }
+  html[data-reader-theme="sepia"] body:has(.hrail.hrail--grok) {
+    background-color:#eee8df;
+    background-image:radial-gradient(ellipse 72% 84% at 51% 40%,rgba(255,255,255,.36),transparent 82%);
+  }
+  html[data-reader-theme="sepia"] body:has(.hrail.hrail--grok) .article-main.article-main--hrail {
+    background:
+      linear-gradient(90deg,rgba(113,84,56,.11),transparent 37px,transparent calc(100% - 37px),rgba(113,84,56,.11)),
+      var(--color-canvas,#faf0df);
+  }
+}
+@media (max-width:1199px) {
+  body:has(.hrail.hrail--grok) .article-main.article-main--hrail {
+    background:transparent;
+    box-shadow:none;
+    border-inline:0;
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  body:has(.hrail.hrail--grok) .article-main.article-main--hrail {
+    transition:none;
+  }
+}
+
+/* Reader V14 series adapter to the SAME saved V2 paper-depth treatment.
+   No independent new shadow design. The original Hermenevtika rules above
+   remain byte-for-byte the source of the visual standard. */
+@media (min-width:1200px) {
+  body.gbs-world {
+    background-color:#f6f4f0;
+    background-image:
+      radial-gradient(ellipse 72% 84% at 51% 40%,rgba(255,255,255,.68),transparent 83%),
+      repeating-linear-gradient(0deg,rgba(120,103,83,.012) 0px,rgba(120,103,83,.012) 1px,transparent 1px,transparent 13px),
+      repeating-linear-gradient(88deg,rgba(129,109,85,.009) 0px,rgba(129,109,85,.009) 1px,transparent 1px,transparent 19px);
+    background-attachment:fixed;
+  }
+  body.gbs-world .gbs2-world .page-wrap {
+    background:
+      linear-gradient(90deg,
+        rgba(109,90,72,.075) 0%,
+        rgba(168,146,124,.038) 8px,
+        rgba(255,255,255,0) 37px,
+        rgba(255,255,255,0) calc(100% - 37px),
+        rgba(168,146,124,.043) calc(100% - 8px),
+        rgba(103,83,68,.09) 100%),
+      linear-gradient(180deg,#fffefa 0%,#fffefa 100%);
+    box-shadow:
+      -28px 0 55px -24px rgba(65,48,38,.23),
+      28px 0 55px -24px rgba(65,48,38,.23),
+      -7px 0 17px -8px rgba(83,60,45,.22),
+      7px 0 17px -8px rgba(83,60,45,.22),
+      inset 1px 0 0 rgba(255,255,255,.98),
+      inset -1px 0 0 rgba(255,255,255,.92),
+      0 0 0 1px rgba(139,115,89,.095);
+    border-inline:1px solid rgba(134,108,83,.045);
+    min-height:100vh;
+    transition:box-shadow .22s ease,background-color .22s ease;
+  }
+  html.dark body.gbs-world,
+  html[data-reader-theme="dark"] body.gbs-world {
+    background-color:#151314;
+    background-image:radial-gradient(ellipse 72% 84% at 51% 40%,rgba(255,255,255,.023),transparent 80%);
+  }
+  html.dark body.gbs-world .gbs2-world .page-wrap,
+  html[data-reader-theme="dark"] body.gbs-world .gbs2-world .page-wrap {
+    background:linear-gradient(90deg,rgba(0,0,0,.17),rgba(0,0,0,0) 37px,rgba(0,0,0,0) calc(100% - 37px),rgba(0,0,0,.16)),var(--color-canvas,#21191d);
+    box-shadow:
+      -28px 0 60px -23px rgba(0,0,0,.52),
+      28px 0 60px -23px rgba(0,0,0,.52),
+      inset 1px 0 rgba(255,255,255,.04),
+      inset -1px 0 rgba(255,255,255,.04),
+      0 0 0 1px rgba(255,255,255,.04);
+    border-inline-color:rgba(255,255,255,.025);
+  }
+  html[data-reader-theme="sepia"] body.gbs-world {
+    background-color:#eee8df;
+    background-image:radial-gradient(ellipse 72% 84% at 51% 40%,rgba(255,255,255,.36),transparent 82%);
+  }
+  html[data-reader-theme="sepia"] body.gbs-world .gbs2-world .page-wrap {
+    background:
+      linear-gradient(90deg,rgba(113,84,56,.11),transparent 37px,transparent calc(100% - 37px),rgba(113,84,56,.11)),
+      var(--color-canvas,#faf0df);
+  }
+}
+/* Hermenevtika already has an uninterrupted integrated Grok TOC. The
+   Baptist series has a different underlying hierarchy, but it must have
+   the same unframed visual composition: the progress ring flows into the
+   native series/chapter tree, not into another floating card. */
+@media (min-width:1360px) {
+  body.gbs-world :is(.gbs-rail,.gbs2-rail) .gbs2-rprogress {
+    margin-top:12px;
+    padding:11px 0 14px;
+    border:0;
+    border-bottom:1px solid var(--gbs2-rline,rgba(255,255,255,.14));
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
+  }
+  body.gbs-world :is(.gbs-rail,.gbs2-rail) .gbs2-current {
+    border:0;
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
+    overflow:visible;
+  }
+  body.gbs-world :is(.gbs-rail,.gbs2-rail) .gbs2-current-cover {
+    display:none;
+  }
+  body.gbs-world :is(.gbs-rail,.gbs2-rail) .gbs2-current-body { padding-top:10px; }
+  body.gbs-world :is(.gbs-rail,.gbs2-rail) .gbs2-toch {
+    border-top:1px solid var(--gbs2-rline,rgba(255,255,255,.14));
+    margin-top:13px;
+    padding-top:13px;
+  }
+  body.gbs-world :is(.gbs-rail,.gbs2-rail) {
+    box-shadow:13px 0 30px -15px rgba(66,48,38,.29),3px 0 8px -3px rgba(81,58,45,.14);
+  }
+  html.dark body.gbs-world :is(.gbs-rail,.gbs2-rail),
+  html[data-reader-theme="dark"] body.gbs-world :is(.gbs-rail,.gbs2-rail) {
+    box-shadow:13px 0 34px -15px rgba(0,0,0,.65);
+  }
+}
+@media (max-width:1199px) {
+  body.gbs-world .gbs2-world .page-wrap {
+    background:transparent;
+    box-shadow:none;
+    border-inline:0;
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  body.gbs-world .gbs2-world .page-wrap { transition:none; }
+}
+@media print {
+  body:has(.hrail.hrail--grok) .article-main.article-main--hrail,
+  body.gbs-world .gbs2-world .page-wrap {
+    background:transparent !important;
+    box-shadow:none !important;
+    border-inline:0 !important;
+  }
+}

@@ -6,11 +6,31 @@ export function dockLibraryFab(fab) {
     const legacy = document.querySelector('.bottom-bar-inner');
     const fallback = document.querySelector('.gb-mobile-fallback-controls');
     let host = null, before = null, cls = '';
-    if (visible(herm)) { host = herm.querySelector('.hmbar-actions') || herm; before = document.getElementById('hmShareBtn'); cls = 'hmbar-btn'; }
-    else if (visible(gill)) { host = gill.querySelector('.mobile-icon-row') || gill; before = host.querySelector('[data-action="share"],[data-fc-action="share"]'); cls = 'gb-icon'; }
+    const grok = document.querySelector('.hrail--grok');
+    if (visible(grok)) {
+      host = grok.querySelector('.hrail-bottom');
+      cls = 'hrail-bottom-btn';
+    } else if (visible(herm)) {
+      // Canonical mobile Reader: library belongs INSIDE the shared actions,
+      // before PDF and Share. Share must be the rightmost visible action.
+      const actions = herm.querySelector('.reader-mobile-action-cluster');
+      host = actions || herm.querySelector('.hmbar-actions') || herm;
+      before = actions
+        ? actions.querySelector('[data-reader-pdf]')
+        : document.getElementById('hmShareBtn');
+      cls = 'hmbar-btn';
+    }
+    else if (visible(gill)) {
+      const actions = gill.querySelector('.reader-mobile-action-cluster');
+      host = actions || gill.querySelector('.mobile-icon-row') || gill;
+      before = actions
+        ? actions.querySelector('[data-reader-pdf]')
+        : host.querySelector('[data-action="share"],[data-fc-action="share"]');
+      cls = 'gb-icon';
+    }
     else if (visible(legacy)) { host = legacy; before = document.getElementById('barShareBtn'); cls = 'bar-icon-btn'; }
     else if (visible(fallback)) { host = fallback; cls = 'gb-icon'; }
-    fab.classList.remove('gb-hl-fab--docked', 'hmbar-btn', 'gb-icon', 'bar-icon-btn');
+    fab.classList.remove('gb-hl-fab--docked', 'hrail-bottom-btn', 'hmbar-btn', 'gb-icon', 'bar-icon-btn');
     fab.style.bottom = '';
     if (!host) host = document.body;
     else fab.classList.add('gb-hl-fab--docked', cls);

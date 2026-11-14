@@ -276,3 +276,113 @@
     }
   });
 })(typeof window !== 'undefined' ? window : null);
+
+
+/*
+ * Site-wide Summary Disclosure v1.
+ * Shared reader preferences is loaded by both legacy and Astro articles.
+ * Only "Коротко" cards are folded; other editorial summary cards stay intact.
+ * This owns one native toggle; the older length-based mobile expander sees a
+ * compact card and does not duplicate the button.
+ */
+(function initSiteSummaryDisclosure(global) {
+  'use strict';
+  if (!global || (global.GBSummaryDisclosure && global.GBSummaryDisclosure.version === 1)) return;
+  var sequence = 0;
+  function hashTarget() {
+    if (!global.location || !global.location.hash || global.location.hash.length < 2) return null;
+    try { return document.getElementById(decodeURIComponent(global.location.hash.slice(1))); }
+    catch (_) { return null; }
+  }
+  function revealLinkedSummary() {
+    var target = hashTarget();
+    var card = target && target.closest('.summary-card[data-gb-summary-owner="1"]');
+    if (!card) return;
+    var button = card.querySelector('.gb-summary-toggle');
+    if (!button) return;
+    // Fragment IDs on legacy pages can be created during hydration.
+    // Opening the panel is not enough: the browser could not scroll to
+    // an ID that did not yet exist during its native fragment navigation.
+    if (button.getAttribute('aria-expanded') === 'true') {
+      global.requestAnimationFrame(function() {
+        if (hashTarget() === target) target.scrollIntoView({block:'start', behavior:'auto'});
+      });
+      return;
+    }
+    var panel = card.querySelector('.gb-summary-motion');
+    var onDone = function(event) {
+      if (event.target !== panel || event.propertyName !== 'grid-template-rows') return;
+      panel.removeEventListener('transitionend', onDone);
+      if (hashTarget() === target) target.scrollIntoView({block:'start', behavior:'auto'});
+    };
+    if (panel && !global.matchMedia('(prefers-reduced-motion: reduce)').matches)
+      panel.addEventListener('transitionend', onDone);
+    button.click();
+    if (!panel || global.matchMedia('(prefers-reduced-motion: reduce)').matches)
+      global.requestAnimationFrame(function() { target.scrollIntoView({block:'start', behavior:'auto'}); });
+  }
+  function initialize(root) {
+    var cards = (root || document).querySelectorAll('.summary-card');
+    Array.prototype.forEach.call(cards, function(card) {
+      if (card.dataset.gbSummaryOwner === '1') return;
+      var heading = card.querySelector(':scope > .summary-card__head');
+      var list = card.querySelector(':scope > .summary-card__body');
+      if (!heading || !list || !['коротко', 'краткое содержание'].includes(heading.textContent.trim().toLocaleLowerCase('ru'))) return;
+      if (heading.querySelector('button') || list.closest('.gb-summary-motion')) return;
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'gb-summary-toggle';
+      var label = document.createElement('span');
+      label.className = 'gb-summary-toggle__label';
+      while (heading.firstChild) label.appendChild(heading.firstChild);
+      label.textContent = 'Коротко';
+      // Argon UPDATE: a plain folio summary row, with a small thesis count
+      // and a quiet directional glyph. No framed icon or duplicate disclosure.
+      var meta = document.createElement('span');
+      meta.className = 'gb-summary-toggle__meta';
+      var count = list.querySelectorAll(':scope > li').length;
+      var countLabel = document.createElement('span');
+      countLabel.className = 'gb-summary-toggle__count';
+      var teen = count % 100;
+      var unit = teen >= 11 && teen <= 14 ? 'тезисов' : count % 10 === 1 ? 'тезис' : count % 10 >= 2 && count % 10 <= 4 ? 'тезиса' : 'тезисов';
+      countLabel.textContent = count + ' ' + unit;
+      var chevron = document.createElement('span');
+      chevron.className = 'gb-summary-toggle__chevron';
+      chevron.setAttribute('aria-hidden', 'true');
+      chevron.textContent = '›';
+      meta.append(countLabel, chevron);
+      button.append(label, meta);
+      heading.appendChild(button);
+      var panel = document.createElement('div');
+      panel.className = 'gb-summary-motion';
+      list.before(panel);
+      panel.appendChild(list);
+      var bodyId = list.id || 'gb-summary-body-' + (++sequence);
+      list.id = bodyId;
+      button.setAttribute('aria-controls', bodyId);
+      card.dataset.gbSummaryOwner = '1';
+      function setOpen(open) {
+        if (!open && panel.contains(document.activeElement)) button.focus({preventScroll:true});
+        card.dataset.gbSummaryOpen = open ? 'true' : 'false';
+        button.setAttribute('aria-expanded', String(open));
+        // Native button text already names “Коротко” and the visible thesis
+        // count. aria-expanded supplies the action state to assistive tech;
+        // an overriding aria-label would conceal the count (WCAG 2.5.3).
+        button.removeAttribute('aria-label');
+        panel.inert = !open;
+        panel.setAttribute('aria-hidden', String(!open));
+      }
+      setOpen(Boolean(hashTarget() && list.contains(hashTarget())));
+      // The first-paint parser guard is no longer needed: this canonical
+      // disclosure owns the body, including deep links and print.
+      delete card.dataset.gbSummaryPending;
+      button.addEventListener('click', function() { setOpen(button.getAttribute('aria-expanded') !== 'true'); });
+    });
+  }
+  global.GBSummaryDisclosure = {version:1, initialize:initialize};
+  function boot() { initialize(); revealLinkedSummary(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, {once:true});
+  else boot();
+  global.addEventListener('hashchange', revealLinkedSummary);
+  global.addEventListener('pageshow', boot);
+})(typeof window !== 'undefined' ? window : null);
