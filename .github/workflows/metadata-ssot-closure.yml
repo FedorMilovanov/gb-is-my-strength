@@ -63,10 +63,10 @@ jobs:
             git diff --check "$HEAD_SHA^" "$HEAD_SHA"
           fi
 
-      - name: Set up Node 22.23.1
+      - name: Set up Node 22.23.4
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '22.23.1'
+          node-version: '22.23.4'
           cache: npm
 
       - name: Install dependencies

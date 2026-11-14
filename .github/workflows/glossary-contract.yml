@@ -73,10 +73,10 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Set up Node 22.23.1
+      - name: Set up Node 22.23.4
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '22.23.1'
+          node-version: '22.23.4'
 
       - name: Snapshot machine writer lease
         run: node scripts/writer-lease.mjs snapshot
@@ -150,10 +150,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Set up Node 22.23.1
+      - name: Set up Node 22.23.4
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '22.23.1'
+          node-version: '22.23.4'
 
       - name: Prepare diagnostics
         run: mkdir -p reports
@@ -224,10 +224,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Set up Node 22.23.1
+      - name: Set up Node 22.23.4
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '22.23.1'
+          node-version: '22.23.4'
           cache: npm
 
       - name: Install browser dependencies
