@@ -8,6 +8,7 @@ on:
       - 'konfessii/russkij-baptizm/**'
       - 'scripts/konfessii-map-audit.js'
       - 'scripts/konfessii-3d-source-repro-contract.cjs'
+      - 'scripts/konfessii-historical-evidence-contract.cjs'
   push:
     branches: [main]
     paths:
@@ -16,6 +17,7 @@ on:
       - 'konfessii/russkij-baptizm/**'
       - 'scripts/konfessii-map-audit.js'
       - 'scripts/konfessii-3d-source-repro-contract.cjs'
+      - 'scripts/konfessii-historical-evidence-contract.cjs'
   workflow_dispatch:
 
 permissions:
@@ -47,6 +49,9 @@ jobs:
       - name: Install exact React app dependencies and pinned physics patch
         working-directory: _build-tools/konfessii-baptizm/reconciled-app
         run: npm ci --no-audit --no-fund
+
+      - name: Verify historical source claims and absence of public AI client
+        run: node scripts/konfessii-historical-evidence-contract.cjs
 
       - name: Build exact React/Vite singlefile
         working-directory: _build-tools/konfessii-baptizm/reconciled-app
