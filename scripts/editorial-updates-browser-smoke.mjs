@@ -46,6 +46,7 @@ let assertions = 0;
 function check(condition, message) { assertions++; assert(condition, message); }
 
 try {
+  if (process.env.GB_TOUCH_ONLY !== '1') {
   for (const width of [320, 390, 750, 760, 768, 1280]) {
     for (const route of ['/', '/updates/']) {
       const mobile = width <= 760;
@@ -146,7 +147,124 @@ try {
       console.log('PASS ' + width + ' ' + route);
     }
   }
-  console.log('EDITORIAL ARCHIVE BROWSER: PASS (' + assertions + ' assertions; 12 viewport-route captures)');
+  }
+  // Real mobile touch input, not a desktop drag or a scrollLeft assignment.
+  // The counter may change before the physical slide settles; enforce both.
+  for (const width of [320, 390]) {
+    for (const route of ['/', '/updates/']) {
+      const context = await browser.newContext({
+        viewport: { width, height: 850 },
+        hasTouch: true, isMobile: true, reducedMotion: 'reduce',
+        deviceScaleFactor: 1,
+      });
+      const page = await context.newPage();
+      const home = route === '/';
+      const root = home ? '[data-editorial-carousel]' : '[data-update-archive]';
+      const viewportSelector = home ? '[data-ed-viewport]' : '[data-update-list]';
+      const entry = home ? '[data-ed-entry]' : '[data-update-entry]';
+      const counter = home ? '[data-ed-counter]' : '[data-update-counter]';
+      const filter = home ? '[data-ed-filter]' : '[data-update-filter]';
+      const name = (home ? 'home' : 'archive') + '-' + width;
+
+      async function swipe(element, direction) {
+        const rect = await element.boundingBox();
+        check(Boolean(rect), name + ' touch target exists');
+        const client = await context.newCDPSession(page);
+        const y = rect.y + Math.min(90, rect.height * .3);
+        const x1 = rect.x + rect.width * (direction === 'next' ? .82 : .18);
+        const x2 = rect.x + rect.width * (direction === 'next' ? .13 : .87);
+        await client.send('Input.dispatchTouchEvent', {
+          type: 'touchStart', touchPoints: [{ x: x1, y }],
+        });
+        for (let i = 1; i <= 24; i++) {
+          await client.send('Input.dispatchTouchEvent', {
+            type: 'touchMove', touchPoints: [{ x: x1 + (x2 - x1) * i / 24, y }],
+          });
+          await page.waitForTimeout(10);
+        }
+        await client.send('Input.dispatchTouchEvent', {
+          type: 'touchEnd', touchPoints: [],
+        });
+        await client.detach();
+      }
+
+      try {
+        await page.goto(base + route, { waitUntil: 'domcontentloaded' });
+        await page.locator(root).scrollIntoViewIfNeeded();
+        const viewport = page.locator(root + ' ' + viewportSelector);
+        await page.evaluate(() => document.activeElement?.blur());
+        for (const [direction, expected] of [
+          ['next', '2 / 2'], ['previous', '1 / 2'], ['next', '2 / 2'],
+        ]) {
+          await swipe(viewport, direction);
+          await page.waitForTimeout(520);
+          const geometry = await viewport.evaluate((el, params) => {
+            const visible = Array.from(document.querySelectorAll(
+              params.root + ' ' + params.entry + ':not([hidden])'
+            ));
+            const pos = params.expected === '2 / 2' ? 1 : 0;
+            return {
+              offset: Math.round(el.scrollLeft),
+              desired: Math.round(visible[pos].offsetLeft - visible[0].offsetLeft),
+              documentExcess: document.documentElement.scrollWidth - innerWidth,
+            };
+          }, { root, entry, expected });
+          check((await page.locator(root + ' ' + counter).textContent())?.trim() === expected,
+            name + ' physical ' + direction + ' counter ' + expected);
+          check(Math.abs(geometry.offset - geometry.desired) <= 3,
+            name + ' physical ' + direction + ' fully snaps, geometry=' + JSON.stringify(geometry));
+          check(geometry.documentExcess <= 2, name + ' no horizontal page overflow');
+        }
+        await page.screenshot({ path: join(report, name + '-touch-final.png') });
+
+        // Scroll the filter strip by touch when it overflows, then tap an actual
+        // button. A programmatic DOM click would conceal hit-target problems.
+        const allButton = page.locator(root + ' ' + filter.replace(/]$/, '="all"]'));
+        const strip = allButton.locator('..');
+        const stripSize = await strip.evaluate(el => ({
+          client: el.clientWidth, scroll: el.scrollWidth,
+        }));
+        if (stripSize.scroll > stripSize.client + 3) {
+          await swipe(strip, 'next');
+          await page.waitForTimeout(250);
+          const shift = await strip.evaluate(el => el.scrollLeft);
+          check(shift >= 10, name + ' finger scrolls the filter strip');
+        }
+        const correction = page.locator(root + ' ' + filter.replace(/]$/, '="correction"]'));
+        await correction.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(100);
+        const rect = await correction.boundingBox();
+        check(Boolean(rect), name + ' correction filter hit target exists');
+        await page.touchscreen.tap(rect.x + rect.width / 2, rect.y + rect.height / 2);
+        await page.waitForTimeout(200);
+        check(await correction.getAttribute('aria-pressed') === 'true',
+          name + ' correction filter activated by first touch');
+        check((await page.locator(root + ' ' + counter).textContent())?.trim() === '1 / 1',
+          name + ' touch filter shows only correction');
+        await page.screenshot({ path: join(report, name + '-touch-filtered.png') });
+        await allButton.scrollIntoViewIfNeeded();
+        const a = await allButton.boundingBox();
+        await page.touchscreen.tap(a.x + a.width / 2, a.y + a.height / 2);
+        await page.waitForTimeout(200);
+        check((await page.locator(root + ' ' + counter).textContent())?.trim() === '1 / 2',
+          name + ' touch resets filter');
+
+        const firstEntry = page.locator(root + ' ' + entry + ':not([hidden])').first();
+        const link = firstEntry.locator('a[href*="#"]').last();
+        await link.scrollIntoViewIfNeeded();
+        const linkRect = await link.boundingBox();
+        check(Boolean(linkRect), name + ' article link has touch target');
+        await page.touchscreen.tap(linkRect.x + linkRect.width / 2, linkRect.y + linkRect.height / 2);
+        await page.waitForTimeout(400);
+        check(page.url().includes('/articles/') && page.url().includes('#'),
+          name + ' first touch follows article deep link');
+      } finally {
+        await context.close();
+      }
+      console.log('PASS touch ' + width + ' ' + route);
+    }
+  }
+  console.log('EDITORIAL ARCHIVE BROWSER: PASS (' + assertions + ' assertions; 12 viewport-route plus 4 native touch cases)');
 } finally {
   await browser.close();
   await new Promise(resolve => server.close(resolve));

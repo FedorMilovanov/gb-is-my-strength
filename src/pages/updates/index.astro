@@ -129,6 +129,7 @@ const updateKinds = [...new Set(publishedEditorialUpdates.map((update) => update
     }
     .editorial-updates-page__filters::-webkit-scrollbar { display:none; }
     .editorial-updates-page__list {
+      scroll-margin-top:108px;
       display:flex; flex-wrap:nowrap; gap:12px; overflow-x:auto;
       overscroll-behavior-x:contain; scroll-snap-type:x mandatory;
       -webkit-overflow-scrolling:touch; scrollbar-width:none;
@@ -157,6 +158,9 @@ const updateKinds = [...new Set(publishedEditorialUpdates.map((update) => update
     .editorial-updates-page__filters {
       mask-image:linear-gradient(to right,#000 0%,#000 calc(100% - 12px),transparent);
     }
+    .editorial-updates-page__filters.has-scrolled-start {
+      mask-image:linear-gradient(to right,transparent,#000 12px,#000 calc(100% - 12px),transparent);
+    }
   }
   @media (prefers-reduced-motion:reduce) {
     .editorial-updates-page__list { scroll-behavior:auto!important; }
@@ -175,6 +179,10 @@ const updateKinds = [...new Set(publishedEditorialUpdates.map((update) => update
     const next = root.querySelector('[data-update-next]');
     const counter = root.querySelector('[data-update-counter]');
     if (!viewport || !slides.length || !prev || !next || !counter) return;
+    const filterStrip = filters[0]?.parentElement;
+    const paintFilterEdge = () => filterStrip?.classList.toggle('has-scrolled-start',filterStrip.scrollLeft > 4);
+    filterStrip?.addEventListener('scroll',paintFilterEdge,{passive:true});
+    paintFilterEdge();
 
     let shown = slides.slice();
     let active = 0;
@@ -193,10 +201,11 @@ const updateKinds = [...new Set(publishedEditorialUpdates.map((update) => update
     // the record, show its beginning rather than leaving the reader at its end.
     function showCardStart(animate = true) {
       if (!mobile()) return;
-      const top = window.scrollY + viewport.getBoundingClientRect().top - 108;
-      if (window.scrollY > top + 16 || window.scrollY < top - 240) {
-        window.scrollTo({
-          top: Math.max(0, top),
+      const top = viewport.getBoundingClientRect().top;
+      if (top < 84 || top > 220) {
+        viewport.scrollIntoView({
+          block: 'start',
+          inline: 'nearest',
           behavior: animate && !reducedMotion() ? 'smooth' : 'auto',
         });
       }
@@ -214,37 +223,76 @@ const updateKinds = [...new Set(publishedEditorialUpdates.map((update) => update
       paint();
     }
 
-    prev.addEventListener('click', () => { goto(active - 1); showCardStart(); });
-    next.addEventListener('click', () => { goto(active + 1); showCardStart(); });
+    prev.addEventListener('click', () => goto(active - 1));
+    next.addEventListener('click', () => goto(active + 1));
     viewport.addEventListener('keydown', (event) => {
       if (!mobile()) return;
-      if (event.key === 'ArrowRight') { event.preventDefault(); goto(active + 1); showCardStart(); }
-      if (event.key === 'ArrowLeft') { event.preventDefault(); goto(active - 1); showCardStart(); }
+      if (event.key === 'ArrowRight') { event.preventDefault(); goto(active + 1); }
+      if (event.key === 'ArrowLeft') { event.preventDefault(); goto(active - 1); }
     });
 
     let scheduled = false;
+    let touching = false;
+    let settled = 0;
+    let settleTimer = 0;
+    const nearestSlide = () => {
+      const left = viewport.getBoundingClientRect().left;
+      let winner = 0, distance = Infinity;
+      shown.forEach((slide, index) => {
+        const candidate = Math.abs(slide.getBoundingClientRect().left - left);
+        if (candidate < distance) { distance = candidate; winner = index; }
+      });
+      return winner;
+    };
+    // Finish the horizontal gesture before bringing the next record into view.
+    // A few mobile touch sequences need explicit alignment to the snap point.
+    const settle = () => {
+      if (!mobile() || touching || !shown.length) return;
+      active = nearestSlide();
+      const left = shown[active].offsetLeft - shown[0].offsetLeft;
+      if (Math.abs(viewport.scrollLeft - left) > 2) {
+        viewport.scrollTo({ left, behavior: 'auto' });
+      }
+      paint();
+      if (active !== settled) {
+        settled = active;
+        showCardStart(false);
+      }
+    };
+    const scheduleSettle = () => {
+      window.clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(settle, 220);
+    };
+    viewport.addEventListener('touchstart', () => {
+      touching = true;
+      window.clearTimeout(settleTimer);
+    }, { passive: true });
+    viewport.addEventListener('touchend', () => {
+      touching = false;
+      scheduleSettle();
+    }, { passive: true });
+    viewport.addEventListener('touchcancel', () => {
+      touching = false;
+      scheduleSettle();
+    }, { passive: true });
+    viewport.addEventListener('scrollend', settle);
     viewport.addEventListener('scroll', () => {
-      if (!mobile() || scheduled) return;
+      if (!mobile()) return;
+      scheduleSettle();
+      if (scheduled) return;
       scheduled = true;
       requestAnimationFrame(() => {
         scheduled = false;
         if (!shown.length) return;
-        const left = viewport.getBoundingClientRect().left;
-        let winner = 0;
-        let distance = Infinity;
-        shown.forEach((slide, index) => {
-          const candidate = Math.abs(slide.getBoundingClientRect().left - left);
-          if (candidate < distance) { distance = candidate; winner = index; }
-        });
+        const winner = nearestSlide();
         if (winner !== active) {
           active = winner;
           paint();
-          showCardStart();
         }
       });
     }, { passive: true });
 
-    filters.forEach((filter) => filter.addEventListener('click', () => {
+    const selectFilter = (filter) => {
       const selected = filter.dataset.updateFilter;
       filters.forEach((button) =>
         button.setAttribute('aria-pressed', String(button === filter)));
@@ -253,8 +301,26 @@ const updateKinds = [...new Set(publishedEditorialUpdates.map((update) => update
       slides.forEach((slide) => { slide.hidden = !shown.includes(slide); });
       viewport.scrollLeft = 0;
       active = 0;
+      settled = 0;
+      window.clearTimeout(settleTimer);
       paint();
-    }));
+    };
+    filters.forEach(filter => {
+      filter.addEventListener('click', () => selectFilter(filter));
+      let down = null;
+      filter.addEventListener('pointerdown', event => {
+        if (event.pointerType === 'touch' && event.isPrimary) {
+          down = { id: event.pointerId, x: event.clientX, y: event.clientY };
+        }
+      });
+      filter.addEventListener('pointerup', event => {
+        if (!down || down.id !== event.pointerId) return;
+        const distance = Math.hypot(event.clientX - down.x, event.clientY - down.y);
+        down = null;
+        if (distance <= 10) selectFilter(filter);
+      });
+      filter.addEventListener('pointercancel', () => { down = null; });
+    });
 
     window.addEventListener('resize', () => {
       if (!mobile()) active = 0;

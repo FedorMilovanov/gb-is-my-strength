@@ -176,6 +176,7 @@ const kinds = [...new Set(recent.map((item) => item.kind))];
     body.home-page #obnovleniya-issledovaniy { padding-block:44px 60px; }
     body.home-page #obnovleniya-issledovaniy .ed-archive { padding:13px; }
     body.home-page #obnovleniya-issledovaniy .ed-archive-viewport {
+      scroll-margin-top:108px;
       overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory;
       scrollbar-width:none; overscroll-behavior-x:contain;
       -webkit-overflow-scrolling:touch;
@@ -207,6 +208,14 @@ const kinds = [...new Set(recent.map((item) => item.kind))];
       font:650 12px/1.3 var(--f-ui,system-ui,sans-serif);
     }
   }
+  @media (max-width:360px) {
+    body.home-page #obnovleniya-issledovaniy .ed-archive-filters {
+      mask-image:linear-gradient(to right,#000 0%,#000 calc(100% - 10px),transparent);
+    }
+    body.home-page #obnovleniya-issledovaniy .ed-archive-filters.has-scrolled-start {
+      mask-image:linear-gradient(to right,transparent,#000 12px,#000 calc(100% - 10px),transparent);
+    }
+  }
   @media (prefers-reduced-motion:reduce) {
     body.home-page #obnovleniya-issledovaniy .ed-archive-viewport { scroll-behavior:auto!important; }
   }
@@ -223,6 +232,10 @@ const kinds = [...new Set(recent.map((item) => item.kind))];
     const next = root.querySelector('[data-ed-next]');
     const counter = root.querySelector('[data-ed-counter]');
     if (!viewport || !cards.length || !prev || !next || !counter) return;
+    const filterStrip = filters[0]?.parentElement;
+    const paintFilterEdge = () => filterStrip?.classList.toggle('has-scrolled-start',filterStrip.scrollLeft > 4);
+    filterStrip?.addEventListener('scroll',paintFilterEdge,{passive:true});
+    paintFilterEdge();
     let visible = cards.slice();
     let active = 0;
     const isMobile = () => window.matchMedia('(max-width:760px)').matches;
@@ -234,10 +247,11 @@ const kinds = [...new Set(recent.map((item) => item.kind))];
     // Reframe vertically when the reader goes to a different long card.
     function showCardStart(smooth = true) {
       if (!isMobile()) return;
-      const top = window.scrollY + viewport.getBoundingClientRect().top - 108;
-      if (window.scrollY > top + 16 || window.scrollY < top - 240) {
-        window.scrollTo({
-          top: Math.max(0, top),
+      const top = viewport.getBoundingClientRect().top;
+      if (top < 84 || top > 220) {
+        viewport.scrollIntoView({
+          block: 'start',
+          inline: 'nearest',
           behavior: smooth && !window.matchMedia('(prefers-reduced-motion:reduce)').matches ? 'smooth' : 'auto',
         });
       }
@@ -253,41 +267,102 @@ const kinds = [...new Set(recent.map((item) => item.kind))];
       }
       repaint();
     }
-    prev.addEventListener('click', () => { jump(active - 1, true); showCardStart(); });
-    next.addEventListener('click', () => { jump(active + 1, true); showCardStart(); });
+    prev.addEventListener('click', () => jump(active - 1, true));
+    next.addEventListener('click', () => jump(active + 1, true));
     viewport.addEventListener('keydown', event => {
       if (!isMobile()) return;
-      if (event.key === 'ArrowRight') { event.preventDefault(); jump(active + 1, true); showCardStart(); }
-      if (event.key === 'ArrowLeft') { event.preventDefault(); jump(active - 1, true); showCardStart(); }
+      if (event.key === 'ArrowRight') { event.preventDefault(); jump(active + 1, true); }
+      if (event.key === 'ArrowLeft') { event.preventDefault(); jump(active - 1, true); }
     });
+
     let frame = 0;
+    let touching = false;
+    let settled = 0;
+    let settleTimer = 0;
+    const nearestCard = () => {
+      const x = viewport.getBoundingClientRect().left;
+      let winner = 0, distance = Infinity;
+      visible.forEach((card, index) => {
+        const d = Math.abs(card.getBoundingClientRect().left - x);
+        if (d < distance) { winner = index; distance = d; }
+      });
+      return winner;
+    };
+    // Native scroll-snap normally settles by itself. Some touch sequences stop
+    // between snap points; reconcile only once motion has ended, never mid-drag.
+    const settle = () => {
+      if (!isMobile() || touching || !visible.length) return;
+      active = nearestCard();
+      const left = visible[active].offsetLeft - visible[0].offsetLeft;
+      if (Math.abs(viewport.scrollLeft - left) > 2) {
+        viewport.scrollTo({ left, behavior: 'auto' });
+      }
+      repaint();
+      if (active !== settled) {
+        settled = active;
+        showCardStart(false);
+      }
+    };
+    const scheduleSettle = () => {
+      window.clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(settle, 220);
+    };
+    viewport.addEventListener('touchstart', () => {
+      touching = true;
+      window.clearTimeout(settleTimer);
+    }, { passive: true });
+    viewport.addEventListener('touchend', () => {
+      touching = false;
+      scheduleSettle();
+    }, { passive: true });
+    viewport.addEventListener('touchcancel', () => {
+      touching = false;
+      scheduleSettle();
+    }, { passive: true });
+    viewport.addEventListener('scrollend', settle);
     viewport.addEventListener('scroll', () => {
-      if (!isMobile() || frame) return;
+      if (!isMobile()) return;
+      scheduleSettle();
+      if (frame) return;
       frame = window.requestAnimationFrame(() => {
         frame = 0;
         if (!visible.length) return;
-        const x = viewport.getBoundingClientRect().left;
-        let winner = 0, dist = Infinity;
-        visible.forEach((card, index) => {
-          const d = Math.abs(card.getBoundingClientRect().left - x);
-          if (d < dist) { winner = index; dist = d; }
-        });
+        const winner = nearestCard();
         if (winner !== active) {
           active = winner;
           repaint();
-          showCardStart();
         }
       });
-    }, { passive:true });
-    filters.forEach(button => button.addEventListener('click', () => {
+    }, { passive: true });
+    const selectFilter = (button) => {
       const filter = button.dataset.edFilter;
       filters.forEach(b => b.setAttribute('aria-pressed', String(b === button)));
       visible = cards.filter(card => filter === 'all' || card.dataset.edKind === filter);
       cards.forEach(card => { card.hidden = !visible.includes(card); });
       viewport.scrollLeft = 0;
       active = 0;
+      settled = 0;
+      window.clearTimeout(settleTimer);
       repaint();
-    }));
+    };
+    filters.forEach(button => {
+      button.addEventListener('click', () => selectFilter(button));
+      // In a horizontally scrolled strip the first post-swipe tap can omit
+      // click, even though pointerup lands on the button. Honor a true tap.
+      let down = null;
+      button.addEventListener('pointerdown', event => {
+        if (event.pointerType === 'touch' && event.isPrimary) {
+          down = { id: event.pointerId, x: event.clientX, y: event.clientY };
+        }
+      });
+      button.addEventListener('pointerup', event => {
+        if (!down || down.id !== event.pointerId) return;
+        const distance = Math.hypot(event.clientX - down.x, event.clientY - down.y);
+        down = null;
+        if (distance <= 10) selectFilter(button);
+      });
+      button.addEventListener('pointercancel', () => { down = null; });
+    });
     window.addEventListener('resize', () => { if (!isMobile()) active = 0; repaint(); }, { passive:true });
     repaint();
   })();
