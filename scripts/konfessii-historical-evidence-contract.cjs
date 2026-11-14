@@ -21,6 +21,9 @@ keep(congress, "place: 'Ново-Васильевка, Таврическая г
 keep(congress, '33 депутата');
 reject(congress, "place: 'Тифлис'");
 reject(congress, "date: '1909'");
+reject('components/Congresses.tsx', '7 000–10 000 документов');
+reject(congress, 'Итонский колледж');
+reject('components/Archives.tsx', 'Микрофильмы в:');
 
 const people = 'data/history/persons.ts';
 keep(people, 'Кальвейтом 6 октября 1869 года');
