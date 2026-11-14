@@ -97,7 +97,8 @@ const updateKinds = [...new Set(publishedEditorialUpdates.map((update) => update
     display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;
   }
   .editorial-updates-page__filters button {
-    flex:0 0 auto; padding:9px 12px; border-radius:999px;
+    flex:0 0 auto; min-height:44px; display:inline-flex; align-items:center;
+    justify-content:center; padding:9px 12px; border-radius:999px;
     border:1px solid var(--ed-border); background:var(--ed-card);
     color:var(--ed-ink); font:650 12px/1.35 var(--f-ui,system-ui,sans-serif);
     cursor:pointer;
@@ -164,6 +165,11 @@ const updateKinds = [...new Set(publishedEditorialUpdates.map((update) => update
   }
   @media (prefers-reduced-motion:reduce) {
     .editorial-updates-page__list { scroll-behavior:auto!important; }
+  }
+  /* Keep all entries readable without JS; hide only inert filter/navigation controls. */
+  .editorial-updates-page [data-update-archive]:not([data-archive-ready="1"]) .editorial-updates-page__filters,
+  .editorial-updates-page [data-update-archive]:not([data-archive-ready="1"]) .editorial-updates-page__controls {
+    display:none!important;
   }
 </style>
 <script is:inline>
@@ -322,8 +328,20 @@ const updateKinds = [...new Set(publishedEditorialUpdates.map((update) => update
       filter.addEventListener('pointercancel', () => { down = null; });
     });
 
+    let wasMobile = mobile();
     window.addEventListener('resize', () => {
-      if (!mobile()) active = 0;
+      const nowMobile = mobile();
+      if (nowMobile !== wasMobile) {
+        wasMobile = nowMobile;
+        window.clearTimeout(settleTimer);
+        active = 0;
+        settled = 0;
+        viewport.scrollLeft = 0;
+        if (nowMobile) window.requestAnimationFrame(() => {
+          viewport.scrollLeft = 0;
+          paint();
+        });
+      }
       paint();
     }, { passive: true });
     paint();

@@ -77,6 +77,10 @@ try {
           width + ' archive introduction cropped: ' + JSON.stringify(headerBounds));
       }
       await container.scrollIntoViewIfNeeded();
+      const buttons = await page.locator(rootSelector + ' [data-ed-filter], ' + rootSelector + ' [data-update-filter]').evaluateAll(items =>
+        items.map(button => Math.round(button.getBoundingClientRect().height)));
+      check(buttons.length > 0 && buttons.every(height => height >= 44),
+        width + ' ' + route + ' filter touch targets >=44px: ' + buttons.join(', '));
       if (!isHome && process.env.EDITORIAL_ARCHIVE_DEBUG === '1') {
         const geometry = await page.evaluate(() => {
           const keys = [
@@ -129,6 +133,10 @@ try {
           fullPage: false,
         });
       }
+      const evidenceSelector = isHome ? '[data-ed-filter="new-evidence"]' : '[data-update-filter="new-evidence"]';
+      await page.locator(rootSelector + ' ' + evidenceSelector).click();
+      check((await counter.textContent())?.trim() === '1 / 1',
+        width + ' ' + route + ' new evidence filter');
       await page.locator(rootSelector + ' ' + correctionSelector).click();
       check((await counter.textContent())?.trim() === '1 / 1',
         width + ' ' + route + ' filter correction');
@@ -148,6 +156,57 @@ try {
     }
   }
   }
+  // Regression: crossing the mobile/desktop breakpoint must not leave the
+  // counter on the first record while the scroll track displays the second.
+  for (const route of ['/', '/updates/']) {
+    const isHome = route === '/';
+    const root = isHome ? '[data-editorial-carousel]' : '[data-update-archive]';
+    const viewportSelector = isHome ? '[data-ed-viewport]' : '[data-update-list]';
+    const counterSelector = isHome ? '[data-ed-counter]' : '[data-update-counter]';
+    const nextSelector = isHome ? '[data-ed-next]' : '[data-update-next]';
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    try {
+      await page.goto(base + route, { waitUntil: 'domcontentloaded' });
+      await page.locator(root).scrollIntoViewIfNeeded();
+      await page.locator(root + ' ' + nextSelector).click();
+      await page.waitForTimeout(160);
+      check((await page.locator(root + ' ' + counterSelector).innerText()).trim() === '2 / 2',
+        route + ' selected second card before resize');
+      await page.setViewportSize({ width: 1000, height: 844 });
+      await page.waitForTimeout(170);
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(250);
+      const result = await page.locator(root + ' ' + viewportSelector).evaluate((el, ctr) => ({
+        left: Math.round(el.scrollLeft),
+        counter: document.querySelector(ctr)?.textContent.trim(),
+      }), root + ' ' + counterSelector);
+      check(result.counter === '1 / 2' && result.left <= 3,
+        route + ' breakpoint round-trip keeps counter and slide synchronized: ' + JSON.stringify(result));
+    } finally {
+      await page.close();
+    }
+  }
+
+  // No-JS visitors must see the archival articles, not inactive filter buttons.
+  for (const route of ['/', '/updates/']) {
+    const context = await browser.newContext({
+      viewport: { width: 320, height: 850 },
+      javaScriptEnabled: false,
+    });
+    try {
+      const page = await context.newPage();
+      await page.goto(base + route, { waitUntil: 'domcontentloaded' });
+      const root = route === '/' ? '[data-editorial-carousel]' : '[data-update-archive]';
+      const item = route === '/' ? '[data-ed-entry]' : '[data-update-entry]';
+      const first = page.locator(root + ' ' + item).first();
+      const filter = page.locator(root + ' [data-ed-filter], ' + root + ' [data-update-filter]').first();
+      check(await first.isVisible(), route + ' no-JS content remains visible');
+      check(!(await filter.isVisible()), route + ' no-JS inactive filters are hidden');
+    } finally {
+      await context.close();
+    }
+  }
+
   // Real mobile touch input, not a desktop drag or a scrollLeft assignment.
   // The counter may change before the physical slide settles; enforce both.
   for (const width of [320, 390]) {
@@ -264,7 +323,7 @@ try {
       console.log('PASS touch ' + width + ' ' + route);
     }
   }
-  console.log('EDITORIAL ARCHIVE BROWSER: PASS (' + assertions + ' assertions; 12 viewport-route plus 4 native touch cases)');
+  console.log('EDITORIAL ARCHIVE BROWSER: PASS (' + assertions + ' assertions; 12 viewport-route, 4 native touch, 2 breakpoint, 2 no-JS cases)');
 } finally {
   await browser.close();
   await new Promise(resolve => server.close(resolve));
