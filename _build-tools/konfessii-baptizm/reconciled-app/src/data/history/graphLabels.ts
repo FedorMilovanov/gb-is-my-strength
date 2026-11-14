@@ -19,7 +19,7 @@ const labels: Record<string, string> = {
   kalweit: 'М. Кальвейт',
   redstock: 'Лорд Редсток',
   weiler: 'И. Вилер',
-  tsymbal: 'Е. Цымбал',
+  tsymbal: 'Е. Цимбал',
   karev: 'А. Карев',
   vins: 'Г. Винс',
 };

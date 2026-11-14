@@ -50,9 +50,8 @@ export default function Congresses() {
           <div className="flex items-start gap-4">
             <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-gold/15 text-brand-gold"><BookOpen size={22} /></div>
             <div className="min-w-0 flex-1">
-              <h3 className="mb-2 break-words text-lg font-bold">Архив Пашкова — 7 000–10 000 документов</h3>
+              <h3 className="mb-2 break-words text-lg font-bold">Архив Пашкова — проверка фондов и описей</h3>
               <p className="mb-3 text-sm leading-6 opacity-80">{pashkovArchive.summary}</p>
-              <div className="flex flex-wrap gap-2">{pashkovArchive.copies.map((copy: string, i: number) => (<span key={i} className="chip">{copy}</span>))}</div>
             </div>
           </div>
         </motion.div>
