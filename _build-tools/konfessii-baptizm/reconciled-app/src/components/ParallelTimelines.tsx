@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { GitBranch } from 'lucide-react';
-const VSEHB_EVENTS = [{ year: '1944', text: 'Создание ВСЕХБ (26–29 окт.)' },{ year: '1945', text: 'Первый «Братский вестник»' },{ year: '1946', text: 'Присоединение пятидесятников' },{ year: '1963', text: 'Присоединение меннонитов' },{ year: '1966', text: 'Жидков передаёт пост Иванову' },{ year: '1974', text: 'Клименко — председатель' },{ year: '1982', text: '158 узников за веру' },{ year: '1985', text: 'Логвиненко — председатель' },{ year: '1990', text: 'Новый Устав ВСЕХБ' },{ year: '1992', text: 'Реорганизация → РС ЕХБ + ЕАФ' }];
+const VSEHB_EVENTS = [{ year: '1944', text: 'Создание ВСЕХБ (26–29 окт.)' },{ year: '1945', text: 'Первый «Братский вестник»; 24 августа — соглашение о вхождении части пятидесятников' },{ year: '1963/1965', text: 'Вхождение братских меннонитов: в источниках разночтение дат' },{ year: '1966', text: 'Жидков передаёт пост Иванову' },{ year: '1974', text: 'Клименко — председатель' },{ year: '1982', text: 'Документирование арестов и судьбы узников церковными бюллетенями' },{ year: '1985', text: 'Логвиненко — председатель' },{ year: '1990', text: 'Новый Устав ВСЕХБ' },{ year: '1992', text: 'Самостоятельные национальные союзы и добровольная Евро-Азиатская федерация' }];
 const SC_EVENTS = [{ year: '1961', text: 'Инициативная группа Крючкова–Хомякова' },{ year: '1962', text: 'Оргкомитет, первые аресты' },{ year: '1965', text: 'Создание СЦ ЕХБ (сент.)' },{ year: '1970', text: 'Совет родственников узников' },{ year: '1971', text: 'Издательство «Христианин» (подполье)' },{ year: '1974', text: 'Арест Крючкова, 8 лет лагерей' },{ year: '1979', text: 'Винс обменян, уехал в США' },{ year: '1987', text: 'Частичное освобождение узников' },{ year: '1991', text: 'Легализация, регистрация' },{ year: '1998', text: 'МСЦ ЕХБ — международный статус' }];
 const VIOLET = '#8b5cf6'; const RED = '#ef4444';
 function EventList({ events, color }: { events: typeof VSEHB_EVENTS; color: string }) {
@@ -43,7 +43,7 @@ export default function ParallelTimelines() {
                   <h3 className="text-xl font-black">ВСЕХБ</h3>
                   <p className="mt-0.5 text-[12px] font-semibold" style={{ color: VIOLET }}>Официальный путь · 1944–1992</p>
                 </div>
-                <span className="rounded-xl border px-3 py-1.5 font-mono text-[13px] font-black" style={{ borderColor: `${VIOLET}35`, color: VIOLET, background: `${VIOLET}12` }}>~200k</span>
+                <span className="rounded-xl border px-3 py-1.5 font-mono text-[13px] font-black" style={{ borderColor: `${VIOLET}35`, color: VIOLET, background: `${VIOLET}12` }}>Проверка численности</span>
               </div>
               <p className="text-[12.5px] leading-[1.65] opacity-65">Зарегистрированный союз в рамках советских законов. Сохранил легальность, но ценой ограничений — «Инструктивное письмо» 1960 г. стало причиной раскола.</p>
             </div>
