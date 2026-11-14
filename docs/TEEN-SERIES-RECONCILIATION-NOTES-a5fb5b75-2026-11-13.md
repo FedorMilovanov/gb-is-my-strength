@@ -931,8 +931,10 @@ as Samuel.
    carries the fix, so take the guard and the schema answer together — see §13.
 7. Re-run the full battery, including `8c44f067`'s tightened release contract and
    his link and reading-time tests, `1d569906`'s language-of-parts and
-   mixed-script contracts and his G-10 FAQ parity guard, and `4786e4e2`'s
-   `reading-time-audit`, before deploying.
+   mixed-script contracts and his G-10 FAQ parity guard, `4786e4e2`'s
+   `reading-time-audit`, and `7b785a3b`'s `editorial-checks-7b785a3b.py`, before
+   deploying. Each of the last three exits non-zero on a tree that lacks its author's
+   paired content fixes (§13, §14), so run them last and read the attribution first.
 
 ## 10. Control re-verification of this note, 13 November 2026
 
@@ -1303,3 +1305,67 @@ component traversal was wrong by eight minutes on three routes, which he correct
 79 / 18 / 27 against 14104 / 3084 / 4704 visible words. That is the same argument §7g
 makes for the teen series, arrived at independently: the built page is the reference,
 not the source counter.
+
+## 14. `7b785a3b` shipped a permanent checker; it exits 1 on this branch, and one of its two findings is a stale constant of his own
+
+`7b785a3b` advanced `bcd4719` → `ef4be76` with docs only — two files, his owner report
+and a new 366-line permanent checker, `docs/editorial-waves/editorial-checks-7b785a3b.py`.
+His teen-series numbers are unchanged and every figure this note records for him still
+holds exactly at the new head: h2 census 16/24/22/22/26/31/40, 34649 body words, 42 real
+`CONFLICT` lines against this branch.
+
+Run against this branch's tree and dist, his checker exits **1** with
+`ВСЕГО ПРОВАЛОВ: 25 | адвайзори: 5`. Both categories were attributed before being
+believed, and they turn out to have opposite causes.
+
+**24 of the 25 are his content fixes that this branch does not have.** Check 4 rejects an
+ASCII ellipsis inside a «…» quotation, on the corpus convention that the character is `…`.
+All 24 hits are in the «сердце» chapters — `myslennaya-zhizn-serdca`,
+`serdce-i-sokrovishche`, `kak-hranit-serdce`, `serdce-pod-skorbyu`,
+`serdce-ne-v-odinochku` — none of them teen-series files. The ellipses are present at base
+with exactly the counts this branch has (2, 3 and 4 lines in the three files sampled), so
+nothing here was introduced by this branch; and at his own head the same files contain
+**zero**. That is rule (k) from §8d for the third time in one pass: a strict audit ships
+paired with its author's content corrections, and adopting the audit without the
+corrections turns inherited base text into a hard failure on every other branch.
+
+**The 25th is a stale constant in his checker, and it fails on his own tree.** Check 2
+compares `anchor=null` counts in the scripture index against recorded `BASE_NULL` values.
+For `rimlyanam-7-veruyushchiy-ili-neveruyushchiy` he records base 57, finds 58 on this
+branch, and calls it «глубокие ссылки потеряны». It is not a lost deep link. The
+occurrence total is **123 on both trees**, and the causality was tested rather than
+argued, by rebuilding the index with `scripts/build-scripture-occurrence-index.mjs --write`
+after swapping only that one article:
+
+| `rimlyanam-7` source used | occurrences | `anchor=null` | against his `BASE_NULL` 57 |
+| --- | ---: | ---: | --- |
+| this branch's (with `<span lang="el">`) | 123 | 58 | fails |
+| base `9618e82` | 123 | **58** | fails |
+| **his own head `ef4be76`** | 123 | **58** | **fails on his own tree** |
+
+So 58 is what a freshly built index gives for that route regardless of whose content is
+used. The 57 he recorded came from base's **stored** index, which was stale — the same
+staleness §8b describes and this branch corrected by regenerating. His own output already
+admits the constants drift, advising `обновите BASE_NULL` for three other routes where the
+count fell (`myslennaya-zhizn-serdca` 9→8, `serdce-i-sokrovishche` 13→12,
+`osvobozhdennoe-serdce` 11→3); this one drifted the other way and became a hard failure
+instead of an advisory. The fix is to re-derive `BASE_NULL` from a rebuilt index, not to
+change any article. Both swaps were reverted and the regenerated index verified
+byte-identical to the committed one, tree left clean.
+
+Two of his advisories are independent confirmations of findings already in this note.
+Check 7 reports **zero** places where Latin diacritics sit inside Cyrillic words, naming
+the known case explicitly: «обе ветки `a5fb5b75` и `1d569906` привели к а+U+0301
+байт-в-байт» — which corroborates §8c from a third party rather than from this branch's
+own probe. Check 6 reports `readingTime` running 1.9–2.7 times the 180-words-per-minute
+policy across nine «сердце» routes and states plainly that the policy is
+`4786e4e2`'s branch policy with no owner norm behind it, and that the values equal main's
+and may only be recomputed by the owner's decision — the same conclusion §7b reached from
+the inherited numbers implying about 129 words per minute, and the same reason this branch
+left every `readingTime` at its base value.
+
+Two practical notes for anyone reusing his checker. It requires a built `dist`, and
+importing its Python module executes the checks at import. Its companion in the other
+direction is worth remembering: `1d569906`'s FAQ parity module exports `norm`, but
+importing that module also runs its `main` and exits, so extracting the function into a
+separate file is what made the character-level diff in §13 possible.
