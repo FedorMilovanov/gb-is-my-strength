@@ -15,6 +15,9 @@
  *                  decision ledgers; the guard checks the effective state). D-05.
  *   G-7 root     — the «Проверь себя» block sits inside article[data-pagefind-body]. E-01.
  *   G-8 print    — table print rules cover [data-gbs2-series] (not gill-only). E-02.
+ *   G-10 schema  — every FAQPage acceptedAnswer.text is verbatim in the visible page copy
+ *                  across all emitted pages (structured data may not paraphrase or truncate
+ *                  the reader-facing answer). SYS-FAQ-STRUCTURED-DATA-ANSWER-PARITY.
  *   G-6 minutes  — readingTime is consistent across surfaces: data/series.json (registry)
  *                  == MDX frontmatter per part == dist body data-gbs2-* attributes ==
  *                  landing SITE_CONFIG readingTime/companionReadingTime. (WU-1.3 T1-T2 closed:
@@ -212,9 +215,22 @@ for (const [part] of QUIZ_ROUTES) {
   }
 }
 
+/* G-10 — FAQPage acceptedAnswer mirrors the visible copy (SYS-FAQ-STRUCTURED-DATA-ANSWER-PARITY) */
+{
+  const { spawnSync } = require('child_process');
+  const res = spawnSync(
+    process.execPath,
+    [path.join(__dirname, 'faq-structured-data-answer-parity.mjs'), path.join(ROOT, 'dist')],
+    { encoding: 'utf8' }
+  );
+  if (res.status !== 0) {
+    fail('G-10', 'structured-data', (res.stdout || res.stderr || 'faq answer parity failed').trim());
+  }
+}
+
 if (issues.length) {
   console.error('PASTOR-SERIES GUARDS (dist): FAIL');
   for (const issue of issues) console.error('  - ' + issue);
   process.exit(1);
 }
-console.log('✅ pastor-series guards (dist): G-1 a11y, G-2 anchors, G-3 summary, G-4 empty-state, G-5 metadata, G-6 reading-time, G-7 article root, G-8 print, G-9 current discovery authority — all passed');
+console.log('✅ pastor-series guards (dist): G-1 a11y, G-2 anchors, G-3 summary, G-4 empty-state, G-5 metadata, G-6 reading-time, G-7 article root, G-8 print, G-9 current discovery authority, G-10 FAQ structured-data answer parity — all passed');
