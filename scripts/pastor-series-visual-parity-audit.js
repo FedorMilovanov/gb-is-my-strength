@@ -33,6 +33,9 @@ function bad(message) {
 function must(haystack, needle, label = needle) {
   haystack.includes(needle) ? ok(label) : bad(`missing: ${label}`);
 }
+function mustAny(haystack, needles, label = needles.join(' | ')) {
+  needles.some((needle) => haystack.includes(needle)) ? ok(label) : bad(`missing: ${label}`);
+}
 function mustNot(haystack, needle, label = needle) {
   !haystack.includes(needle) ? ok(`no ${label}`) : bad(`forbidden present: ${label}`);
 }
@@ -63,8 +66,8 @@ const nativeText = [head, chrome, main, cards, stats, end].join('\n');
 // Canonical minutes are owned by data/series.json (single source of truth);
 // the contract constants below pin the canonical totals so silent registry
 // drift fails instead of silently re-basing the guard.
-const CONTRACT_CORE_TOTAL_MIN = 203;
-const CONTRACT_COMPANION_MIN = 13;
+const CONTRACT_CORE_TOTAL_MIN = 195;
+const CONTRACT_COMPANION_MIN = 18;
 const expectedCore = [
   { roman: 'I', slug: '20-antisovetov-pastoru' },
   { roman: 'II', slug: 'anatomiya-padeniya-pyat-stadiy' },
@@ -179,7 +182,14 @@ for (const retired of [
 
 must(stats, '>9</div>', 'nine published core parts stat');
 must(stats, 'опубликованных частей ядра', 'published-core stat label');
-must(stats, `>${CONTRACT_CORE_TOTAL_MIN}</div>`, 'canonical-core minute stat (contract-anchored)');
+// Значение может стоять литералом (`>195</div>`) или приходить из
+// `CORE_TOTAL_MIN` — второй вариант и есть правильный: число живёт в конфиге
+// серии, а не в разметке. Литерал оставлен для совместимости.
+mustAny(
+  stats,
+  [`>${CONTRACT_CORE_TOTAL_MIN}</div>`, '{CORE_TOTAL_MIN}'],
+  'canonical-core minute stat (contract-anchored)'
+);
 must(stats, 'минута канонического ядра I–IX', 'canonical-core duration label');
 must(stats, '>1</div>', 'one published dossier stat');
 must(stats, 'опубликованное Досье A', 'Dossier A companion stat label');

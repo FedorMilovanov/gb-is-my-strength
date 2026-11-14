@@ -478,8 +478,8 @@ npm run strangler:build:production-like → exit 0
 | 9. Карточки | related, витрины, полка `/hard-texts/` | считается по ссылке-цели |
 | 10. Атрибуты прогресса | `data-gbs2-*-min` в оболочках | считается из витрины |
 | 11. Производные | `data/search-manifest.json`, `data/links-graph.json`, `js/search.js` | пересобираются нормализаторами |
-| 12. Статьи без MDX | тело целиком в компонентах (`20-antisovetov-pastoru`, `diotrefy-nashego-vremeni`, `lot-i-sodom`) | считается обходом импортов страницы, строки `component-body-no-mdx` |
-| 13. Нативные маршруты без MDX | `/nagornaya/chast-1…5/`, JSON-LD `readingTime` + `series.json` | считается по собранной странице, `reading:time:native --write` |
+| 12. Статьи без MDX | тело целиком в компонентах (`20-antisovetov-pastoru`, `diotrefy-nashego-vremeni`, `lot-i-sodom`) | считается по собранной странице (`reading:time:native`), аудит показывает их справкой |
+| 13. Нативные маршруты без MDX | `/nagornaya/chast-1…5/` и три статьи выше, JSON-LD + `series.json` + проп `readingMinutes` | считается по собранной странице, `reading:time:native --write` |
 | 14. Мета вне корня индексации | `data-pagefind-meta="readTime"` на странице с `<body data-pagefind-body>` или до `<article>` | проецируется в `<head>` отдельным режимом `project-reader-linear-text-to-dist.mjs` |
 
 Плюс `validate:all` теперь краснеет, если любая из них разойдётся, и отдельная сверка `reading:time:dist:crosscheck` проверяет политику по собранным страницам.

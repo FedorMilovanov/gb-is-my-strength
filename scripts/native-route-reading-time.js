@@ -47,6 +47,7 @@ const PAGES_DIR = path.join(ROOT, 'src/pages');
 const COMPONENTS_DIR = path.join(ROOT, 'src/components');
 const MDX_DIR = path.join(ROOT, 'src/content/articles');
 const SEARCH_JS = path.join(ROOT, 'js/search.js');
+const SERIES_CONFIG_DIR = path.join(COMPONENTS_DIR, 'article-pilots/_shared/series');
 
 // Хабы серий, у которых есть запись в fallback-индексе `js/search.js`:
 // их `readTime` равен сумме частей, поэтому меняется вместе с ними.
@@ -62,7 +63,11 @@ function mdxSlugs() {
   );
 }
 
-/** Маршруты-кандидаты: части серий без MDX и без статьи в `/articles/`. */
+/**
+ * Маршруты-кандидаты: части серий без MDX. Сюда попадают и статьи
+ * `/articles/<slug>/`, у которых тело целиком в компонентах: у них тоже нет
+ * одного файла с текстом, и обход импортов расходится с готовой страницей.
+ */
 function nativeRoutes(series) {
   const withMdx = mdxSlugs();
   const routes = [];
@@ -71,30 +76,84 @@ function nativeRoutes(series) {
     for (const part of info.parts || []) {
       const slug = part.slug;
       if (!slug || withMdx.has(slug)) continue;
-      if (fs.existsSync(path.join(PAGES_DIR, 'articles', slug, 'index.astro'))) continue;
-      const page = path.join(PAGES_DIR, ...base.split('/').filter(Boolean), slug, 'index.astro');
+      const articlePage = path.join(PAGES_DIR, 'articles', slug, 'index.astro');
+      const seriesPage = path.join(PAGES_DIR, ...base.split('/').filter(Boolean), slug, 'index.astro');
+      const page = fs.existsSync(articlePage) ? articlePage : seriesPage;
       if (!fs.existsSync(page)) continue;
-      routes.push({ series: id, slug, base, page, part });
+      const route = fs.existsSync(articlePage) ? `/articles/${slug}/` : `${base}${slug}/`;
+      routes.push({ series: id, slug, base, route, page, part });
+    }
+  }
+  // Статьи без MDX, не входящие ни в одну серию (например «Лот и Содом»):
+  // у них нет записи в `data/series.json`, но минуты в разметке есть.
+  const articlesDir = path.join(PAGES_DIR, 'articles');
+  if (fs.existsSync(articlesDir)) {
+    const known = new Set(routes.map((r) => r.slug));
+    for (const entry of fs.readdirSync(articlesDir, { withFileTypes: true })) {
+      if (!entry.isDirectory() || withMdx.has(entry.name) || known.has(entry.name)) continue;
+      const page = path.join(articlesDir, entry.name, 'index.astro');
+      if (!fs.existsSync(page)) continue;
+      routes.push({ series: null, slug: entry.name, base: '/articles/', route: `/articles/${entry.name}/`, page, part: null });
     }
   }
   return routes;
 }
 
-/** Каталоги исходников маршрута: страница, компоненты маршрута, общие компоненты серии. */
-function routeFiles({ base, slug, page }) {
+/**
+ * Файлы, в которых маршрут держит минуты: сама страница и все каталоги её
+ * компонентов (у статьи — `article-pilots/<pilot>/`, у нативной серии —
+ * `nagornaya/chast-N/`). Каталоги берём из импортов страницы, а не из
+ * соглашения об имени.
+ */
+function routeFiles({ base, slug, page, route }) {
   const files = [page];
+  const configs = [];
+  // Витрина серии (`items[].readingTime: 'N мин'`) — тоже поверхность маршрута.
+  if (fs.existsSync(SERIES_CONFIG_DIR)) {
+    for (const name of fs.readdirSync(SERIES_CONFIG_DIR)) {
+      if (!name.endsWith('.ts')) continue;
+      const file = path.join(SERIES_CONFIG_DIR, name);
+      if (read(file).includes(`href: '${route}'`)) {
+        // Конфиг серии правим адресно: в нём одиннадцать `readingTime`,
+        // и общая замена по файлу поставила бы всем одну и ту же минуту.
+        configs.push(file);
+      }
+    }
+  }
+  const dirs = new Set();
+  for (const m of read(page).matchAll(/@\/components\/([^'"]+)\.astro/g)) {
+    dirs.add(path.dirname(path.join(COMPONENTS_DIR, m[1])));
+  }
   const segments = base.split('/').filter(Boolean);
-  const dirs = [
-    path.join(COMPONENTS_DIR, ...segments, slug),
-    path.join(COMPONENTS_DIR, ...segments),
-  ];
+  dirs.add(path.join(COMPONENTS_DIR, ...segments, slug));
   for (const dir of dirs) {
     if (!fs.existsSync(dir)) continue;
     for (const name of fs.readdirSync(dir)) {
       if (name.endsWith('.astro')) files.push(path.join(dir, name));
     }
   }
-  return [...new Set(files)].filter((f) => fs.existsSync(f));
+  return { files: [...new Set(files)].filter((f) => fs.existsSync(f)), configs };
+}
+
+/**
+ * Переписать `readingTime: 'N мин'` только у записи с нужным `href`.
+ * Запись ограничена окном до следующего `href:` или до 600 символов.
+ */
+function rewriteSeriesItem(file, route, minutes) {
+  const before = read(file);
+  const anchor = `href: '${route}'`;
+  const at = before.indexOf(anchor);
+  if (at < 0) return false;
+  const nextHref = before.indexOf('href:', at + anchor.length);
+  const end = nextHref < 0 ? Math.min(before.length, at + 600) : Math.min(nextHref, at + 600);
+  const chunk = before.slice(at, end);
+  let patched = chunk.replace(/(readingTime:\s*')\d+(\s*мин')/, `$1${minutes}$2`);
+  // Спутник живёт вне ядра: его собственный «итог» — это его же минуты.
+  // У частей ядра тут стоит токен `CORE_TOTAL_MIN`, и регулярка его не трогает.
+  patched = patched.replace(/(readingProgressTotalMin:\s*)\d+(?=\s*[,}])/, `$1${minutes}`);
+  if (patched === chunk) return false;
+  fs.writeFileSync(file, before.slice(0, at) + patched + before.slice(end));
+  return true;
 }
 
 function rewrite(file, minutes) {
@@ -103,7 +162,16 @@ function rewrite(file, minutes) {
   after = after.replace(/("readingTime":\s*)\d+/g, `$1${minutes}`);
   after = after.replace(/(data-pagefind-meta="readTime"[^>]*>)\d+(<)/g, `$1${minutes}$2`);
   after = after.replace(/(⏱\s*)\d+(\s*мин)/g, `$1${minutes}$2`);
+  // Символ часов в исходнике может быть HTML-сущностью (`&#9203;`).
+  after = after.replace(/(&#9203;\s*)\d+(\s*мин)/g, `$1${minutes}$2`);
   after = after.replace(/(readingTime:\s*')\d+(\s*мин')/g, `$1${minutes}$2`);
+  // `const readingTime = 29;` и инлайновый `{ readingTime: 29 }` в PageHead.
+  after = after.replace(/(\bconst readingTime\s*=\s*)\d+/g, `$1${minutes}`);
+  after = after.replace(/(readingTime:\s*)\d+(?=\s*[,}])/g, `$1${minutes}`);
+  // Проп в оболочку (`readingMinutes={29}`) и подпись в тернарнике
+  // (`publicationMode ? '15 мин' : …`) — формы из §10.3 политики.
+  after = after.replace(/(readingMinutes=\{)\d+/g, `$1${minutes}`);
+  after = after.replace(/(publicationMode \? ')\d+(\s*мин')/g, `$1${minutes}$2`);
   if (after === before) return false;
   fs.writeFileSync(file, after);
   return true;
@@ -125,6 +193,72 @@ function syncSearchFallback(landingUrl, minutes) {
   return true;
 }
 
+/**
+ * Запись в fallback-индексе `js/search.js` для любого маршрута: аудит правит
+ * только статьи с MDX, поэтому статьи с телом в компонентах и хабы серий
+ * обновляются здесь.
+ */
+function syncSearchEntry(routeUrl, minutes) {
+  if (!fs.existsSync(SEARCH_JS)) return false;
+  const src = read(SEARCH_JS);
+  const escaped = routeUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`(url:"${escaped}"[\\s\\S]{0,700}?readTime:)(\\d+)`);
+  const next = src.replace(re, (full, head, value) => (Number(value) === minutes ? full : `${head}${minutes}`));
+  if (next === src) return false;
+  fs.writeFileSync(SEARCH_JS, next);
+  return true;
+}
+
+/**
+ * Карточки витрины (`h-article-card` с `href` на маршрут): минуты внутри
+ * якоря правим по адресу ссылки, а не по файлу — в одной секции их девять.
+ */
+function rewriteLandingCards(routeUrl, minutes) {
+  let touched = 0;
+  const slugTail = routeUrl.replace(/^\/articles\//, '').replace(/\/$/, '');
+  const needles = [`href="../articles/${slugTail}/"`, `href="/articles/${slugTail}/"`];
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const abs = path.join(dir, entry.name);
+      if (entry.isDirectory()) { walk(abs); continue; }
+      if (!entry.name.endsWith('.astro')) continue;
+      const source = read(abs);
+      const needle = needles.find((n) => source.includes(n));
+      if (!needle) continue;
+      let out = source;
+      let cursor = 0;
+      for (;;) {
+        const at = out.indexOf(needle, cursor);
+        if (at < 0) break;
+        const end = Math.min(out.length, at + 900);
+        const chunk = out.slice(at, end);
+        const patched = chunk.replace(/(\u00b7\s*)\d+(\s*мин)/, `$1${minutes}$2`);
+        if (patched !== chunk) {
+          out = out.slice(0, at) + patched + out.slice(end);
+          touched += 1;
+        }
+        cursor = at + needle.length;
+      }
+      if (out !== source) fs.writeFileSync(abs, out);
+    }
+  };
+  if (fs.existsSync(COMPONENTS_DIR)) walk(COMPONENTS_DIR);
+  return touched;
+}
+
+function literalStatus(route, expected) {
+  for (const file of routeFiles(route).files) {
+    const source = read(file);
+    for (const m of source.matchAll(/data-pagefind-meta="readTime"[^>]*>(\d+)</g)) {
+      if (Number(m[1]) !== expected) return 'drift';
+    }
+    for (const m of source.matchAll(/"readingTime":\s*(\d+)/g)) {
+      if (Number(m[1]) !== expected) return 'drift';
+    }
+  }
+  return 'ok';
+}
+
 function main() {
   if (!fs.existsSync(SERIES_FILE)) {
     console.error('нет data/series.json');
@@ -137,15 +271,16 @@ function main() {
   const raw = read(SERIES_FILE);
   const series = JSON.parse(raw);
   const rows = [];
-  for (const route of nativeRoutes(series)) {
-    const htmlFile = path.join(DIST, ...route.base.split('/').filter(Boolean), route.slug, 'index.html');
+  const routes = nativeRoutes(series);
+  for (const route of routes) {
+    const htmlFile = path.join(DIST, ...route.route.split('/').filter(Boolean), 'index.html');
     if (!fs.existsSync(htmlFile)) {
       rows.push({ series: route.series, slug: route.slug, status: 'missing', file: path.relative(ROOT, htmlFile) });
       continue;
     }
     const words = visibleMainWords(read(htmlFile));
     const expected = minutesFor(words);
-    const current = Number.isFinite(route.part.readingTime) ? route.part.readingTime : null;
+    const current = route.part && Number.isFinite(route.part.readingTime) ? route.part.readingTime : null;
     rows.push({
       series: route.series,
       slug: route.slug,
@@ -153,23 +288,36 @@ function main() {
       expected,
       words,
       delta: current === null ? null : current - expected,
-      status: current === expected ? 'ok' : 'drift',
+      // Для статей вне серий единственный носитель — разметка: сверяем литерал.
+      status: current === null ? literalStatus(route, expected) : (current === expected ? 'ok' : 'drift'),
     });
   }
 
   if (WRITE) {
     let seriesTouched = 0;
     let filesTouched = 0;
+    // Разметку правим для всех маршрутов, а не только для разошедшихся: часть
+    // носителей (проп `readingMinutes`, подпись в тернарнике) не участвует в
+    // статусе и иначе оставалась бы со старым значением навсегда.
     for (const row of rows) {
-      if (row.status !== 'drift') continue;
-      const info = series[row.series];
-      const part = (info.parts || []).find((p) => p.slug === row.slug);
-      if (!part) continue;
-      part.readingTime = row.expected;
-      seriesTouched += 1;
-      for (const file of routeFiles(nativeRoutes(series).find((r) => r.series === row.series && r.slug === row.slug))) {
+      if (!Number.isFinite(row.expected)) continue;
+      const info = row.series ? series[row.series] : null;
+      const part = info ? (info.parts || []).find((p) => p.slug === row.slug) : null;
+      if (part && part.readingTime !== row.expected) {
+        part.readingTime = row.expected;
+        seriesTouched += 1;
+      }
+      const route = routes.find((r) => r.series === row.series && r.slug === row.slug);
+      if (!route) continue;
+      const { files, configs } = routeFiles(route);
+      for (const file of files) {
         if (rewrite(file, row.expected)) filesTouched += 1;
       }
+      for (const file of [...new Set(configs)]) {
+        if (rewriteSeriesItem(file, route.route, row.expected)) filesTouched += 1;
+      }
+      if (syncSearchEntry(route.route, row.expected)) filesTouched += 1;
+      filesTouched += rewriteLandingCards(route.route, row.expected);
     }
     if (seriesTouched) fs.writeFileSync(SERIES_FILE, JSON.stringify(series, null, 2) + (raw.endsWith('\n') ? '\n' : ''));
     let landingsTouched = 0;

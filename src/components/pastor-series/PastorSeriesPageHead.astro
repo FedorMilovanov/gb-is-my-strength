@@ -119,7 +119,9 @@ const image = 'https://gospod-bog.ru/images/pastor-series/og-hero.webp';
 window.SITE_CONFIG = {
   version: 20260908,
   site: { id: 'gb-strength', name: 'Господь Бог — Сила Моя', baseUrl: 'https://gospod-bog.ru', locale: 'ru-RU', themeStorageKey: 'theme', debug: false },
-  page: { type: 'series', id: 'pastor-series', title: 'Тёмная сторона кафедры — серия', readingTime: 203, companionReadingTime: 13 },
+  // readingTime дублирует CORE_TOTAL_MIN: блок инлайновый (Astro его не
+  // интерполирует), расхождение ловит страж G-6 по собранному dist.
+  page: { type: 'series', id: 'pastor-series', title: 'Тёмная сторона кафедры — серия', readingTime: 195, companionReadingTime: 18 },
   features: { themeToggle: { enabled: true }, bookmarks: { enabled: false }, homepageResume: { enabled: false } }
 };
 </script>

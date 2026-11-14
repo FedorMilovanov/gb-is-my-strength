@@ -401,7 +401,7 @@ function pageLiteralSurfaces() {
             slug,
             page: true,
           });
-          for (const m of source.matchAll(/⏱\s*(\d+)\s*мин/g)) push(m, 'visible');
+          for (const m of source.matchAll(/(?:⏱|&#9203;)\s*(\d+)\s*мин/g)) push(m, 'visible');
           for (const m of source.matchAll(/data-pagefind-meta="readTime"[^>]*>(\d+)</g)) push(m, 'pagefind');
           for (const m of source.matchAll(/(?<![\w.])readingTime:\s*(\d+)(?=\s*[,}])/g)) push(m, 'pagemeta');
         }
@@ -427,7 +427,7 @@ function scanComponentLiterals(page, { cardsOnly }) {
       const rel = path.relative(ROOT, file);
       const taken = [];
 
-      if (!cardsOnly) for (const m of source.matchAll(/⏱\s*(\d+)\s*мин/g)) {
+      if (!cardsOnly) for (const m of source.matchAll(/(?:⏱|&#9203;)\s*(\d+)\s*мин/g)) {
         out.push({ file: rel, line: lineAt(source, m.index), offset: m.index, kind: 'visible', value: Number(m[1]), target: null });
         taken.push([m.index, m.index + m[0].length]);
       }
@@ -618,21 +618,37 @@ function audit() {
     });
   }
 
+  // Статьи без MDX: обход компонентов тут только справка. Проверка показала,
+  // что он расходится с готовой страницей на 2–8 минут (у «20 антисоветов»
+  // 15 498 слов против 14 104 в `<main>`): в компонентах есть скрытые блоки,
+  // которые читатель не видит, а в `<main>` — подписи, которых нет в теле.
+  // Поэтому значения для таких маршрутов пишет не аудит, а
+  // `native-route-reading-time.js`, который считает по собранной странице.
+  const registryMinutes = new Map();
+  if (fs.existsSync(SERIES_FILE)) {
+    for (const info of Object.values(readJson(SERIES_FILE))) {
+      for (const part of info.parts || []) {
+        if (part.slug && Number.isFinite(part.readingTime)) registryMinutes.set(part.slug, part.readingTime);
+      }
+    }
+  }
   for (const slug of mdxLessArticleSlugs()) {
     const words = importedComponentWords(slug);
     if (!words) continue;
-    const expected = minutesForWords(words);
     rows.push({
       slug,
       file: path.join('src/pages/articles', slug, 'index.astro'),
       mode: 'component-body',
       words,
-      expected,
+      // Ожидание берём из реестра: его пишет `native-route-reading-time.js`
+      // по собранной странице. Обход компонентов — только справка (см. ниже).
+      expected: registryMinutes.get(slug) ?? null,
       current: null,
       implied: null,
       delta: null,
       draft: false,
       status: 'component-body-no-mdx',
+      advisoryOnly: true,
       literals: literalSurfaces(slug),
     });
   }
@@ -643,7 +659,7 @@ function audit() {
 
   // Ожидание для литерала: у заголовка страницы — её собственный расчёт,
   // у карточки-ссылки — расчёт той статьи, на которую она ссылается.
-  const articleLiterals = rows.flatMap((r) =>
+  const articleLiterals = rows.filter((r) => !r.advisoryOnly).flatMap((r) =>
     (r.literals || []).map((l) => ({
       ...l,
       slug: r.slug,
@@ -673,7 +689,16 @@ function audit() {
           ? expectedBySlug.get(l.target) ?? null
           : null,
   }));
-  const literals = [...articleLiterals, ...pageLiterals];
+  // Одна и та же карточка может встретиться в двух обходах (витрина серии и
+  // страница вне /articles/) — оставляем первую, чтобы отчёт не дублировал
+  // строки и `--write-literals` не писал дважды по одному смещению.
+  const seenLiterals = new Set();
+  const literals = [...articleLiterals, ...pageLiterals].filter((l) => {
+    const key = `${l.file}:${l.offset}:${l.kind}`;
+    if (seenLiterals.has(key)) return false;
+    seenLiterals.add(key);
+    return true;
+  });
 
   const seriesRows = [];
   if (fs.existsSync(SERIES_FILE)) {
@@ -751,6 +776,7 @@ function writable(row) {
   // Писать можно, только если ожидание посчитано по самим компонентам
   // (`mode === 'component-body'` и слова найдены): тогда это реальный текст
   // страницы, а не догадка по MDX. Иначе — только отчёт.
+  if (row && row.advisoryOnly) return false;
   const componentBacked = row && row.mode === 'component-body' && row.words > 0;
   if (!row || row.status === 'no-body' || row.status === 'missing') return false;
   if (row.status === 'advisory' && !componentBacked) return false;
