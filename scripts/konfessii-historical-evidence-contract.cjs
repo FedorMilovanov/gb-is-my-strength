@@ -40,6 +40,12 @@ reject('data/quizData.ts', '66 732');
 reject('data/history/unions.ts', '66 732');
 reject('components/Comparison.tsx', '66 732');
 reject('data/timeline.ts', '66 732');
+const orderedTimeline = [...read('data/timeline.ts').matchAll(/\{\s*year:\s*'([^']+)'/g)]
+  .map(match => Number(match[1].match(/\b(?:1[5-9]\d{2}|20\d{2})\b/)?.[0]));
+assert.ok(orderedTimeline.length >= 35 && orderedTimeline.every(Number.isFinite),
+  'Timeline event set or historical dates need a separate review');
+assert.deepEqual(orderedTimeline, [...orderedTimeline].sort((a, b) => a - b),
+  'Historical timeline must be in chronological source order');
 reject('components/ParallelTimelines.tsx', "year: '1946', text: 'Присоединение пятидесятников'");
 keep('components/ParallelTimelines.tsx', '24 августа');
 keep('data/history/legal.ts', "year: '1894'");
