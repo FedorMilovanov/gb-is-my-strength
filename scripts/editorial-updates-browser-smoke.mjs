@@ -313,8 +313,17 @@ try {
         await link.scrollIntoViewIfNeeded();
         const linkRect = await link.boundingBox();
         check(Boolean(linkRect), name + ' article link has touch target');
+        check(linkRect.height >= 44, name + ' article link touch target >=44px (' + linkRect.height + ')');
+        if (home) {
+          const archiveLink = page.locator(root + ' .ed-archive-footer > a');
+          const archiveLinkHeight = await archiveLink.evaluate(el => el.getBoundingClientRect().height);
+          check(archiveLinkHeight >= 44, name + ' full archive link touch target >=44px (' + archiveLinkHeight + ')');
+        }
         await page.touchscreen.tap(linkRect.x + linkRect.width / 2, linkRect.y + linkRect.height / 2);
-        await page.waitForTimeout(400);
+        // Real page navigation can take longer than a fixed 400ms sleep.
+        await page.waitForURL(url => url.pathname.startsWith('/articles/') && Boolean(url.hash), {
+          timeout: 6000,
+        });
         check(page.url().includes('/articles/') && page.url().includes('#'),
           name + ' first touch follows article deep link');
       } finally {

@@ -29,7 +29,7 @@ const kinds = [...new Set(recent.map((item) => item.kind))];
       <div class="ed-archive-viewport" data-ed-viewport tabindex="0" role="region"
         aria-roledescription="карусель" aria-label="Последние изменения исследований">
         <div class="ed-archive-track">
-          {recent.map((item, index) => (
+          {recent.map((item) => (
             <article class="ed-archive-entry" data-ed-entry data-ed-kind={item.kind}
               role="group" aria-roledescription="слайд" aria-label={item.headline}>
               <div class="ed-archive-art">
@@ -159,7 +159,8 @@ const kinds = [...new Set(recent.map((item) => item.kind))];
     -webkit-line-clamp:4; overflow:hidden;
   }
   body.home-page #obnovleniya-issledovaniy .ed-archive-read {
-    margin-top:auto; color:var(--ed-accent);
+    margin-top:auto; min-height:44px; display:inline-flex; align-items:center;
+    color:var(--ed-accent);
     font:700 13px/1.5 var(--f-ui,system-ui,sans-serif);
     text-decoration:underline; text-underline-offset:4px;
   }
@@ -169,6 +170,7 @@ const kinds = [...new Set(recent.map((item) => item.kind))];
     padding-top:16px; border-top:1px solid var(--ed-line);
   }
   body.home-page #obnovleniya-issledovaniy .ed-archive-footer>a {
+    display:inline-flex; align-items:center; min-height:44px;
     color:var(--ed-accent); font:750 13px/1.5 var(--f-ui,system-ui,sans-serif);
     text-underline-offset:4px;
   }
