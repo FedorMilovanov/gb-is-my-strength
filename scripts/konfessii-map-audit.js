@@ -452,12 +452,36 @@ if (chromium) (async () => {
           })
           .filter((item) => item.right > client + 1 && item.width > 0)
           .sort((a, b) => b.right - a.right).slice(0, 12) : [];
+        const measuredOverflow = Math.max(body, html) - client;
+        const scrollOwners = measuredOverflow > 0 ? [...document.body.querySelectorAll('*')]
+          .map((node) => {
+            const style = getComputedStyle(node);
+            return {
+              tag: node.tagName,
+              id: node.id,
+              className: typeof node.className === 'string' ? node.className.slice(0, 85) : '',
+              scrollWidth: node.scrollWidth, clientWidth: node.clientWidth,
+              excess: node.scrollWidth - node.clientWidth,
+              overflowX: style.overflowX,
+            };
+          })
+          .filter((entry) => entry.excess >= 12 && ['visible', 'auto', 'scroll'].includes(entry.overflowX))
+          .sort((a, b) => b.excess - a.excess).slice(0, 14) : [];
+        const isolate = measuredOverflow > 0 ? [...document.querySelectorAll('#root main > *, #root header, #root nav, #root footer')]
+          .map((node) => {
+            const original = node.style.display;
+            node.style.display = 'none';
+            const after = Math.max(document.body.scrollWidth, document.documentElement.scrollWidth) - client;
+            node.style.display = original;
+            return { tag: node.tagName, id: node.id, className: typeof node.className === 'string' ? node.className.slice(0, 65) : '',
+              remainingOverflow: after };
+          }).filter((entry) => entry.remainingOverflow < measuredOverflow).slice(0, 20) : [];
         return { client, body, html, bodyRectWidth: Math.round(bodyRect.width),
-          viewportWidth, bodyMinWidth, offenders };
+          viewportWidth, bodyMinWidth, offenders, scrollOwners, isolate };
       });
       assert(Math.max(appWidth.body, appWidth.html) <= appWidth.client,
         `I16 [${vp.label}] native React document has zero horizontal overflow`,
-        `I16 [${vp.label}] inner 3D app overflow=${Math.max(appWidth.body,appWidth.html)-appWidth.client}px; layout=${JSON.stringify({client:appWidth.client,body:appWidth.body,html:appWidth.html,bodyRectWidth:appWidth.bodyRectWidth,viewportWidth:appWidth.viewportWidth,bodyMinWidth:appWidth.bodyMinWidth})}; offenders=${JSON.stringify(appWidth.offenders)}`);
+        `I16 [${vp.label}] inner 3D app overflow=${Math.max(appWidth.body,appWidth.html)-appWidth.client}px; layout=${JSON.stringify({client:appWidth.client,body:appWidth.body,html:appWidth.html,bodyRectWidth:appWidth.bodyRectWidth,viewportWidth:appWidth.viewportWidth,bodyMinWidth:appWidth.bodyMinWidth})}; offenders=${JSON.stringify(appWidth.offenders)}; scrollOwners=${JSON.stringify(appWidth.scrollOwners)}; isolate=${JSON.stringify(appWidth.isolate)}`);
       assert(appWidth.bodyRectWidth <= appWidth.client,
         `I16 [${vp.label}] body width respects scrollbar-adjusted content viewport`,
         `I16 [${vp.label}] body width=${appWidth.bodyRectWidth}, content viewport=${appWidth.client}, CSS min-width=${appWidth.bodyMinWidth}`);
