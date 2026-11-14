@@ -489,6 +489,12 @@ if (chromium) (async () => {
       // A collapsed card can fit while its historical details still overflow.
       // Exercise each of the three origins on the narrowest supported viewport.
       if (vp.label === 'mobile-320') {
+        const archivesTitle = await frame.locator('#archives h2.section-title').evaluate((node) => ({
+          scroll: node.scrollWidth, client: node.clientWidth, fontSize: getComputedStyle(node).fontSize,
+        }));
+        assert(archivesTitle.scroll <= archivesTitle.client,
+          'I16 [mobile-320] long Archives title fits without clipping or horizontal scroll',
+          `I16 [mobile-320] Archives title scroll=${archivesTitle.scroll} client=${archivesTitle.client}, font=${archivesTitle.fontSize}`);
         const originCards = frame.locator('#origins button.bento-card');
         assert(await originCards.count() === 3, 'I16 [mobile-320] all three origin cards exist',
           'I16 [mobile-320] origin cards missing');
