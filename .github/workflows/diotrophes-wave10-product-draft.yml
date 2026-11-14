@@ -47,6 +47,17 @@ jobs:
           wave10_exclusive_pattern='^(data/diotrophes-wave10-product-draft\.json|scripts/diotrophes-wave10-contract\.mjs|research/WAVE10_DIOTROPHES_PRODUCT_DRAFT_2026-08-01\.md|\.github/workflows/diotrophes-wave10-product-draft\.yml)$'
           wave12_owner_pattern='^scripts/diotrophes-wave12-browser-contract\.mjs$'
 
+          # Scope the content-quality gate to actual Wave 10 content changes.
+          # System-wide CI toolchain changes must still pass workflow policy,
+          # exact-node toolchain and shared-file ownership validation.
+          content_pattern='^(data/diotrophes-wave10-product-draft\.json|src/components/article-pilots/diotrophes/DiotrophesDraft\.astro|scripts/diotrophes-wave10-contract\.mjs|research/WAVE10_DIOTROPHES_PRODUCT_DRAFT_2026-08-01\.md)$'
+          content_changed="$(grep -E "$content_pattern" /tmp/wave10-files.txt || true)"
+          if [[ -z "$content_changed" ]]; then
+            echo 'No Wave 10 content changed: content-specific validation is not applicable.'
+            echo 'active=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           owned="$(grep -E "$wave10_owned_pattern" /tmp/wave10-files.txt || true)"
           wave10_exclusive="$(grep -E "$wave10_exclusive_pattern" /tmp/wave10-files.txt || true)"
           wave12_owner="$(grep -E "$wave12_owner_pattern" /tmp/wave10-files.txt || true)"

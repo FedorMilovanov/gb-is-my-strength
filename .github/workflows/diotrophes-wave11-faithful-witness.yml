@@ -57,6 +57,17 @@ jobs:
             fi
           done < /tmp/wave11-candidates.txt
 
+          # Scope the content-quality gate to actual Wave 11 content changes.
+          # System-wide CI toolchain changes must still pass workflow policy,
+          # exact-node toolchain and shared-file ownership validation.
+          content_pattern='^(data/diotrophes-wave11-faithful-witness-(manifest|cases|responses|sources)\.json|src/components/article-pilots/diotrophes/FaithfulWitnessSupplement\.astro|src/components/article-pilots/diotrophes/DiotrophesWave11Draft\.astro|scripts/diotrophes-wave11-faithful-witness-contract\.mjs|research/WAVE11_DIOTROPHES_FAITHFUL_WITNESS_2026-08-01\.md)$'
+          content_changed="$(grep -E "$content_pattern" /tmp/wave11-files.txt || true)"
+          if [[ -z "$content_changed" ]]; then
+            echo 'No Wave 11 content changed: content-specific validation is not applicable.'
+            echo 'active=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           pattern='^(data/diotrophes-wave11-faithful-witness-(manifest|cases|responses|sources)\.json|src/components/article-pilots/diotrophes/FaithfulWitnessSupplement\.astro|src/components/article-pilots/diotrophes/DiotrophesWave11Draft\.astro|scripts/diotrophes-wave11-faithful-witness-contract\.mjs|research/WAVE11_DIOTROPHES_FAITHFUL_WITNESS_2026-08-01\.md|\.github/workflows/diotrophes-wave11-faithful-witness\.yml)$'
           owned="$(grep -E "$pattern" /tmp/wave11-files.txt || true)"
           if [[ -z "$owned" ]]; then
