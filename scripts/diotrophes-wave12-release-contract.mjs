@@ -159,7 +159,8 @@ requireValue(routeText.includes('data-wave12-publication="true"'), 'route public
 requireValue(routeText.includes('data-gbs2-total-min="102"'), 'series progress total drift');
 requireValue(publishedText.includes('<DiotrophesWave11Draft publicationMode={true} />'), 'published page must compose Wave 10 + Wave 11');
 requireValue(wrapperText.includes('publicationMode={publicationMode}'), 'publication state is not forwarded');
-requireValue(bodyText.includes("publicationMode ? 'Исследовательская статья · Wave 12'"), 'published body state missing');
+requireValue(bodyText.includes("publicationMode ? 'Историко-богословское исследование'"), 'published body state missing');
+requireValue(!bodyText.includes('publicationMode ? \'Исследовательская статья · Wave 12\''), 'retired Wave 12 kicker must not remain in public source');
 requireValue(bodyText.includes('!publicationMode &&'), 'historic Wave 10 hold notice must remain draft-only');
 requireValue(!publishedText.includes('<blockquote') && !publishedText.includes('<q'), 'new direct quote markup forbidden');
 requireValue(headText.includes('rel="canonical" href={canonical}'), 'canonical metadata missing');
