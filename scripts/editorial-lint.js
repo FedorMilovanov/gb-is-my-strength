@@ -132,3 +132,14 @@ if (issues.length) {
   process.exit(1);
 }
 console.log(`✅ Editorial lint passed (${MODE_LABEL})`);
+
+// The root editorial release gate also validates the canonical update ledger.
+// Keep this contract alongside editorial lint so the package script stays
+// unmodified and does not overlap the active dependency-maintenance lane.
+if (SCAN_ROOT === ROOT) {
+  require('node:child_process').execFileSync(
+    process.execPath,
+    [path.join(__dirname, 'editorial-updates-contract.mjs')],
+    { stdio: 'inherit' }
+  );
+}

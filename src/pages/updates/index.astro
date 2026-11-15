@@ -1,0 +1,349 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import EditorialUpdateCard from '@/components/editorial/EditorialUpdateCard.astro';
+import { publishedEditorialUpdates, EDITORIAL_UPDATE_LABELS } from '@/lib/editorial-updates';
+import { SITE } from '@/data/site';
+const title = 'Обновления исследований | Господь Бог — Сила Моя';
+const description = 'История содержательных дополнений, новых источников и исправлений опубликованных богословских исследований.';
+const updateKinds = [...new Set(publishedEditorialUpdates.map((update) => update.kind))];
+---
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={`${SITE.url}/updates/`}
+  robots="index, follow"
+  mainClass="astro-main astro-main--editorial-updates"
+>
+  <div class="editorial-updates-page" data-pagefind-body>
+    <nav aria-label="Хлебные крошки"><a href="/">Главная</a><span aria-hidden="true"> / </span><span>Обновления исследований</span></nav>
+    <header>
+      <p class="editorial-updates-page__eyebrow">Редакционная хроника</p>
+      <h1>Обновления исследований</h1>
+      <p>На этой странице собраны только содержательные изменения уже опубликованных работ: новые проверяемые свидетельства, исправления фактических ошибок и пересмотр выводов. Опечатки и технические правки сюда не попадают. Первоначальные адреса статей остаются прежними.</p>
+    </header>
+    <section aria-label="Опубликованные обновления" data-update-archive>
+      {publishedEditorialUpdates.length ? (
+        <>
+          <div class="editorial-updates-page__filters" role="group" aria-label="Типы обновлений">
+            <button type="button" data-update-filter="all" aria-pressed="true">Все</button>
+            {updateKinds.map((kind) => (
+              <button type="button" data-update-filter={kind} aria-pressed="false">{EDITORIAL_UPDATE_LABELS[kind]}</button>
+            ))}
+          </div>
+          <div class="editorial-updates-page__list" data-update-list
+            role="region" aria-label="Листаемый архив обновлений" tabindex="0">
+            {publishedEditorialUpdates.map((update) => (
+              <div class="editorial-updates-page__slide" data-update-entry data-update-kind={update.kind}>
+                <EditorialUpdateCard update={update} illustrated />
+              </div>
+            ))}
+          </div>
+          <div class="editorial-updates-page__controls" aria-label="Навигация по архиву">
+            <button type="button" data-update-prev aria-label="Предыдущая запись" disabled>‹</button>
+            <span data-update-counter aria-live="polite" aria-atomic="true">1 / {publishedEditorialUpdates.length}</span>
+            <button type="button" data-update-next aria-label="Следующая запись">›</button>
+          </div>
+        </>
+      ) : <p>Пока нет опубликованных содержательных обновлений.</p>}
+    </section>
+    <p class="editorial-updates-page__principle">Для каждого обновления указаны дата и ссылка на конкретное дополнение в статье. Если источник ещё не подтверждён, степень его достоверности обозначается непосредственно в исследовании.</p>
+  </div>
+</BaseLayout>
+<style is:global>
+  main.astro-main--editorial-updates {
+    --ed-ink: #203038;
+    --ed-muted: #53636a;
+    --ed-accent: #066d7d;
+    --ed-card: #fffdf8;
+    --ed-border: rgba(69, 91, 90, .18);
+    display: block;
+    box-sizing: border-box;
+    min-width: 0; /* flex-shell main must shrink below its min-content width */
+    width: 100%;
+    max-width: none;
+    min-height: 70vh;
+    margin: 0;
+    padding: 0;
+    color: var(--ed-ink);
+    background: radial-gradient(900px 520px at 50% 0%, #fbf7ef 0%, #f4efe5 60%, #ede6d8 100%);
+    text-align: left;
+  }
+  html.dark main.astro-main--editorial-updates {
+    --ed-ink: #f0e6d3;
+    --ed-muted: #b2b8b7;
+    --ed-accent: #85d5df;
+    --ed-card: #142127;
+    --ed-border: rgba(175, 210, 205, .18);
+    background: radial-gradient(900px 550px at 50% 0%, #152529 0%, #0a1417 75%);
+  }
+  .editorial-updates-page {
+    box-sizing: border-box;
+    width: min(100%, 1160px);
+    margin-inline: auto;
+    padding: clamp(110px, 10vw, 144px) clamp(20px, 4.4vw, 58px) clamp(70px, 8vw, 110px);
+    color: var(--ed-ink);
+    text-align: left;
+  }
+  .editorial-updates-page nav { font: 600 13px/1.5 var(--f-ui,system-ui,sans-serif); margin: 0 0 clamp(44px, 5vw, 72px); color:var(--ed-muted); }
+  .editorial-updates-page nav a { color:var(--ed-accent); }
+  .editorial-updates-page__eyebrow { margin:0; font: 700 12px/1.5 var(--f-ui,system-ui,sans-serif); text-transform:uppercase; letter-spacing:.16em; color:var(--ed-accent); }
+  .editorial-updates-page h1 { margin:15px 0 20px; font-size:clamp(34px,5vw,60px); line-height:1.1; color:var(--ed-ink); text-wrap:balance; }
+  .editorial-updates-page header>p:last-child {
+    max-width:780px; margin: 0 0 clamp(32px,5vw,60px);
+    font: 400 clamp(16px,1.8vw,20px)/1.7 var(--f-body,Georgia,serif);
+    color:var(--ed-muted); text-align:left;
+  }
+  .editorial-updates-page__filters {
+    display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;
+  }
+  .editorial-updates-page__filters button {
+    flex:0 0 auto; min-height:44px; display:inline-flex; align-items:center;
+    justify-content:center; padding:9px 12px; border-radius:999px;
+    border:1px solid var(--ed-border); background:var(--ed-card);
+    color:var(--ed-ink); font:650 12px/1.35 var(--f-ui,system-ui,sans-serif);
+    cursor:pointer;
+  }
+  .editorial-updates-page__filters button[aria-pressed="true"] {
+    background:var(--ed-ink); border-color:var(--ed-ink); color:var(--ed-card);
+  }
+  .editorial-updates-page__list {
+    display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+    align-items:stretch; gap:clamp(14px,2vw,25px);
+  }
+  .editorial-updates-page__slide { display:flex; min-width:0; }
+  .editorial-updates-page__slide[hidden] { display:none!important; }
+  .editorial-updates-page__slide > .editorial-update-card { flex:1; }
+  .editorial-updates-page__controls { display:none; }
+  .editorial-updates-page__filters button:focus-visible,
+  .editorial-updates-page__controls button:focus-visible,
+  .editorial-updates-page__list:focus-visible {
+    outline:3px solid var(--ed-accent); outline-offset:3px;
+  }
+  .editorial-updates-page__principle { margin:clamp(30px,4vw,50px) 0 0; font:400 14px/1.75 var(--f-ui,system-ui,sans-serif); color:var(--ed-muted); max-width:770px; text-align:left; }
+  .editorial-updates-page a:focus-visible { outline:2px solid currentColor; outline-offset:4px; }
+  @media (max-width:760px) {
+    .editorial-updates-page { padding-top: clamp(34px, 7vw, 62px); }
+    .editorial-updates-page nav { margin-bottom:38px; }
+    .editorial-updates-page__filters {
+      flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none;
+      white-space:nowrap; padding:3px 2px 14px;
+    }
+    .editorial-updates-page__filters::-webkit-scrollbar { display:none; }
+    .editorial-updates-page__list {
+      scroll-margin-top:108px;
+      display:flex; flex-wrap:nowrap; gap:12px; overflow-x:auto;
+      overscroll-behavior-x:contain; scroll-snap-type:x mandatory;
+      -webkit-overflow-scrolling:touch; scrollbar-width:none;
+    }
+    .editorial-updates-page__list::-webkit-scrollbar { display:none; }
+    .editorial-updates-page__slide {
+      flex:0 0 100%; scroll-snap-align:start; scroll-snap-stop:always;
+    }
+    .editorial-updates-page__controls {
+      display:flex; align-items:center; justify-content:center;
+      gap:18px; margin-top:18px;
+    }
+    .editorial-updates-page__controls button {
+      min-width:44px; min-height:44px; border-radius:50%;
+      border:1px solid var(--ed-border); background:var(--ed-card);
+      color:var(--ed-ink); font-size:27px; line-height:1; cursor:pointer;
+    }
+    .editorial-updates-page__controls button:disabled { opacity:.38; cursor:default; }
+    .editorial-updates-page__controls span {
+      min-width:44px; text-align:center; color:var(--ed-muted);
+      font:700 13px/1.4 var(--f-ui,system-ui,sans-serif);
+      font-variant-numeric:tabular-nums;
+    }
+  }
+  @media (max-width:360px) {
+    .editorial-updates-page__filters {
+      mask-image:linear-gradient(to right,#000 0%,#000 calc(100% - 12px),transparent);
+    }
+    .editorial-updates-page__filters.has-scrolled-start {
+      mask-image:linear-gradient(to right,transparent,#000 12px,#000 calc(100% - 12px),transparent);
+    }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    .editorial-updates-page__list { scroll-behavior:auto!important; }
+  }
+  /* Keep all entries readable without JS; hide only inert filter/navigation controls. */
+  .editorial-updates-page [data-update-archive]:not([data-archive-ready="1"]) .editorial-updates-page__filters,
+  .editorial-updates-page [data-update-archive]:not([data-archive-ready="1"]) .editorial-updates-page__controls {
+    display:none!important;
+  }
+</style>
+<script is:inline>
+  (() => {
+    const root = document.querySelector('[data-update-archive]');
+    if (!root || root.dataset.archiveReady === '1') return;
+    root.dataset.archiveReady = '1';
+
+    const viewport = root.querySelector('[data-update-list]');
+    const slides = Array.from(root.querySelectorAll('[data-update-entry]'));
+    const filters = Array.from(root.querySelectorAll('[data-update-filter]'));
+    const prev = root.querySelector('[data-update-prev]');
+    const next = root.querySelector('[data-update-next]');
+    const counter = root.querySelector('[data-update-counter]');
+    if (!viewport || !slides.length || !prev || !next || !counter) return;
+    const filterStrip = filters[0]?.parentElement;
+    const paintFilterEdge = () => filterStrip?.classList.toggle('has-scrolled-start',filterStrip.scrollLeft > 4);
+    filterStrip?.addEventListener('scroll',paintFilterEdge,{passive:true});
+    paintFilterEdge();
+
+    let shown = slides.slice();
+    let active = 0;
+    const mobile = () => window.matchMedia('(max-width:760px)').matches;
+    const reducedMotion = () => window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+    function paint() {
+      counter.textContent = (shown.length ? active + 1 : 0) + ' / ' + shown.length;
+      prev.disabled = !mobile() || active <= 0;
+      next.disabled = !mobile() || active >= shown.length - 1;
+      if (mobile()) viewport.setAttribute('aria-roledescription', 'карусель');
+      else viewport.removeAttribute('aria-roledescription');
+    }
+
+    // A long mobile card may place the arrows below the fold. When changing
+    // the record, show its beginning rather than leaving the reader at its end.
+    function showCardStart(animate = true) {
+      if (!mobile()) return;
+      const top = viewport.getBoundingClientRect().top;
+      if (top < 84 || top > 220) {
+        viewport.scrollIntoView({
+          block: 'start',
+          inline: 'nearest',
+          behavior: animate && !reducedMotion() ? 'smooth' : 'auto',
+        });
+      }
+    }
+
+    function goto(index, animate = true) {
+      if (!shown.length) return;
+      active = Math.max(0, Math.min(shown.length - 1, index));
+      if (mobile()) {
+        viewport.scrollTo({
+          left: shown[active].offsetLeft - shown[0].offsetLeft,
+          behavior: animate && !reducedMotion() ? 'smooth' : 'auto',
+        });
+      }
+      paint();
+    }
+
+    prev.addEventListener('click', () => goto(active - 1));
+    next.addEventListener('click', () => goto(active + 1));
+    viewport.addEventListener('keydown', (event) => {
+      if (!mobile()) return;
+      if (event.key === 'ArrowRight') { event.preventDefault(); goto(active + 1); }
+      if (event.key === 'ArrowLeft') { event.preventDefault(); goto(active - 1); }
+    });
+
+    let scheduled = false;
+    let touching = false;
+    let settled = 0;
+    let settleTimer = 0;
+    const nearestSlide = () => {
+      const left = viewport.getBoundingClientRect().left;
+      let winner = 0, distance = Infinity;
+      shown.forEach((slide, index) => {
+        const candidate = Math.abs(slide.getBoundingClientRect().left - left);
+        if (candidate < distance) { distance = candidate; winner = index; }
+      });
+      return winner;
+    };
+    // Finish the horizontal gesture before bringing the next record into view.
+    // A few mobile touch sequences need explicit alignment to the snap point.
+    const settle = () => {
+      if (!mobile() || touching || !shown.length) return;
+      active = nearestSlide();
+      const left = shown[active].offsetLeft - shown[0].offsetLeft;
+      if (Math.abs(viewport.scrollLeft - left) > 2) {
+        viewport.scrollTo({ left, behavior: 'auto' });
+      }
+      paint();
+      if (active !== settled) {
+        settled = active;
+        showCardStart(false);
+      }
+    };
+    const scheduleSettle = () => {
+      window.clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(settle, 220);
+    };
+    viewport.addEventListener('touchstart', () => {
+      touching = true;
+      window.clearTimeout(settleTimer);
+    }, { passive: true });
+    viewport.addEventListener('touchend', () => {
+      touching = false;
+      scheduleSettle();
+    }, { passive: true });
+    viewport.addEventListener('touchcancel', () => {
+      touching = false;
+      scheduleSettle();
+    }, { passive: true });
+    viewport.addEventListener('scrollend', settle);
+    viewport.addEventListener('scroll', () => {
+      if (!mobile()) return;
+      scheduleSettle();
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(() => {
+        scheduled = false;
+        if (!shown.length) return;
+        const winner = nearestSlide();
+        if (winner !== active) {
+          active = winner;
+          paint();
+        }
+      });
+    }, { passive: true });
+
+    const selectFilter = (filter) => {
+      const selected = filter.dataset.updateFilter;
+      filters.forEach((button) =>
+        button.setAttribute('aria-pressed', String(button === filter)));
+      shown = slides.filter((slide) =>
+        selected === 'all' || slide.dataset.updateKind === selected);
+      slides.forEach((slide) => { slide.hidden = !shown.includes(slide); });
+      viewport.scrollLeft = 0;
+      active = 0;
+      settled = 0;
+      window.clearTimeout(settleTimer);
+      paint();
+    };
+    filters.forEach(filter => {
+      filter.addEventListener('click', () => selectFilter(filter));
+      let down = null;
+      filter.addEventListener('pointerdown', event => {
+        if (event.pointerType === 'touch' && event.isPrimary) {
+          down = { id: event.pointerId, x: event.clientX, y: event.clientY };
+        }
+      });
+      filter.addEventListener('pointerup', event => {
+        if (!down || down.id !== event.pointerId) return;
+        const distance = Math.hypot(event.clientX - down.x, event.clientY - down.y);
+        down = null;
+        if (distance <= 10) selectFilter(filter);
+      });
+      filter.addEventListener('pointercancel', () => { down = null; });
+    });
+
+    let wasMobile = mobile();
+    window.addEventListener('resize', () => {
+      const nowMobile = mobile();
+      if (nowMobile !== wasMobile) {
+        wasMobile = nowMobile;
+        window.clearTimeout(settleTimer);
+        active = 0;
+        settled = 0;
+        viewport.scrollLeft = 0;
+        if (nowMobile) window.requestAnimationFrame(() => {
+          viewport.scrollLeft = 0;
+          paint();
+        });
+      }
+      paint();
+    }, { passive: true });
+    paint();
+  })();
+</script>
