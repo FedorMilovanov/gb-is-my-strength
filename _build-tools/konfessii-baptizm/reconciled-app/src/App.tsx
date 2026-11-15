@@ -1,4 +1,3 @@
-import AiAssistant from './components/AiAssistant';
 import ScrollProgress from './components/ScrollProgress';
 import ScrollToTop from './components/ScrollToTop';
 import Archives from './components/Archives';
@@ -50,7 +49,6 @@ export default function App() {
         <QuizHub />
       </main>
       <Footer />
-      <AiAssistant />
       <ScrollToTop />
     </div>
   );

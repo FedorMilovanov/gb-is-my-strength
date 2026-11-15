@@ -50,4 +50,6 @@ for (const asset of ['js/reader-preferences-head.js', 'js/reader-preferences.js'
   const actual = crypto.createHash('md5').update(fs.readFileSync(path.join(root, asset))).digest('hex').slice(0,8);
   if (match[1] !== actual) fail('Stale Reader asset reference: ' + asset + ' (' + match[1] + ', expected ' + actual + ')');
 }
+// Historical claims and retired AI components are verified by the same exact-build gate.
+require('./konfessii-historical-evidence-contract.cjs');
 console.log(JSON.stringify({status:'PASS',checkedInHash,compiledBytes:fs.statSync(checkedIn).size,source:path.relative(root,app)},null,2));
