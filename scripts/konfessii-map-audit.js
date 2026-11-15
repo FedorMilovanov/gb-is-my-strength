@@ -260,7 +260,7 @@ if (app) {
   assert(/Content-Security-Policy/.test(app), 'I6 _app: CSP', 'I6 _app: нет CSP');
   assert(/name="robots"\s+content="noindex"/.test(app), 'I6 _app: robots=noindex', 'I6 _app: нет noindex');
   assert(/id="root"/.test(app), 'I6 _app: React root present', 'I6 _app: нет #root');
-  assert(/66\.7K|66 732/.test(app) && !/~144K/.test(app), 'I12 _app: modern RSEHB statistic updated from research dossier', 'I12 _app: outdated RSEHB statistic');
+  assert(!/(?:66\.7K|66 732|~144K)/.test(app) && /1884/.test(app) && /1944/.test(app), 'I12 _app: dated 1884/1944 milestones without unsupported membership statistics', 'I12 _app: missing historical milestones or unsupported membership statistics returned');
   assert(/04\.01\.1919/.test(app) && /Военный вопрос|ОГПУ|Братский Вестник/.test(app), 'I12 _app: persecution/conscience timeline events present', 'I12 _app: persecution/conscience events missing');
   assert(/1963/.test(app) && /Устав ВСЕХБ|Вестник спасения/.test(app) && /майская делегация|ЦК КПСС/.test(app) && /Совет родственников/.test(app) && /Христианин|Косыгин|Вестник истины/.test(app), 'I12 _app: initiative/samizdat timeline events present', 'I12 _app: initiative/samizdat events missing');
   assert(/Иван Моисеев/.test(app) && /Печатники «Христианина»/.test(app) && /Донченко|психбольницы|отобрание детей/.test(app), 'I12 _app: relatives-bulletin events present', 'I12 _app: relatives-bulletin events missing');
