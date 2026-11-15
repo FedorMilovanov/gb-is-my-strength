@@ -78,7 +78,7 @@ jobs:
           echo 'active=true' >> "$GITHUB_OUTPUT"
           # Post-release editorial work may edit the base article and the faithful-witness supplement together.
           # The historic Wave 11 owned files remain guarded; no unrelated paths are allowed.
-          peer_editorial_pattern='^(src/components/article-pilots/diotrophes/DiotrophesDraft\\.astro|scripts/diotrophes-wave12-release-contract\\.mjs|\\.github/workflows/diotrophes-wave10-product-draft\\.yml)
+          peer_editorial_pattern='^(src/components/article-pilots/diotrophes/DiotrophesDraft\.astro|scripts/diotrophes-wave12-release-contract\.mjs|\.github/workflows/diotrophes-wave10-product-draft\.yml)$'
           if [[ -n "$unexpected" ]]; then
             echo 'Unexpected Wave 11 files:' >&2
             printf '%s\n' "$unexpected" >&2
