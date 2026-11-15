@@ -57,7 +57,7 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
   has('current main fetched', j.readiness, 'git fetch --no-tags origin "+main:refs/remotes/origin/main"');
   has('release ancestry proved', j.readiness, 'git merge-base --is-ancestor "$RELEASE_SHA" "$CONTROL_PLANE_SHA"');
   has('automatic identities equal', j.readiness, 'test "$RELEASE_SHA" = "$CONTROL_PLANE_SHA"');
-  has('pinned Node', j.readiness, "node-version: '22.23.1'");
+  has('pinned Node', j.readiness, "node-version: '22.23.4'");
   has('pinned npm asserted', j.readiness, 'test "$(npm --version)" = "$RELEASE_NPM_VERSION"');
   has('source revisions checked', j.readiness, 'node scripts/cache-bust.js');
   has('static publication gates', j.readiness, 'npm run validate:static-publication');
@@ -154,7 +154,7 @@ export function validate({ workflow, diagnostics, toolchain, library, writer, ve
   has('diagnostics build-free label', diagnostics, 'Validate source metadata without building dist');
   if (/\bnpm ci\b|strangler:build|pagefind:build|dist-publication-audit/.test(diagnostics)) p.push('diagnostics duplicates release build');
   if (/pages:\s*write|id-token:\s*write|actions\/deploy-pages|actions\/upload-pages-artifact/.test(diagnostics)) p.push('diagnostics owns Pages capability');
-  matches('toolchain exact', toolchain, /"schemaVersion":\s*1[\s\S]*"node":\s*"22\.23\.1"[\s\S]*"npm":\s*"10\.9\.8"/);
+  matches('toolchain exact', toolchain, /"schemaVersion":\s*1[\s\S]*"node":\s*"22\.23\.4"[\s\S]*"npm":\s*"10\.9\.9"/);
 
   has('tree rejects symlinks', library, 'assert.equal(stat.isSymbolicLink(), false');
   has('canonical tree digest', library, 'sha256-canonical-pages-tree-v1');

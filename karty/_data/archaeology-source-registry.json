@@ -1815,21 +1815,21 @@
         "moab"
       ],
       "status": "accepted-context",
-      "statement": "Assyrian royal records, the Lachish reliefs and the Mesha Stele provide independent inscriptional and visual context for the kingdoms period.",
+      "statement": "Ассирийские царские надписи, рельефы Лахиса и стела Меши дают независимый эпиграфический и изобразительный контекст эпохи израильских и иудейских царств.",
       "evidenceSources": [
         "bm-lachish-relief",
         "bm-taylor-prism",
         "louvre-mesha-stele"
       ],
       "interpretationSources": [],
-      "limitations": "Royal inscriptions are partisan ancient sources and disputed readings must remain identified as disputed."
+      "limitations": "Царские надписи отражают интересы своих авторов; спорные чтения должны оставаться обозначенными как спорные."
     },
     {
       "id": "avraam-chronology-yec",
       "map": "avraam",
       "places": [],
       "status": "project-interpretation",
-      "statement": "The project presents Abraham near 2166 BCE within its classical Ussher/YEC chronology, while preserving conventional archaeological period labels in evidence records.",
+      "statement": "В проекте жизнь Авраама датируется приблизительно 2166 годом до Р. Х. по традиционной хронологии Ашера (младоземельный подход). При описании находок сохраняются общепринятые археологические обозначения периодов.",
       "evidenceSources": [],
       "interpretationSources": [
         "arj-abraham-chronology",
@@ -1837,7 +1837,7 @@
         "creation-chronogenealogies",
         "icr-biblical-age"
       ],
-      "limitations": "This is the project’s theological-chronological framework, not an independently excavated absolute date for Abraham."
+      "limitations": "Эта дата отражает принятую проектом богословско-хронологическую модель; раскопки не установили абсолютной даты жизни Авраама."
     },
     {
       "id": "babylonian-exile-context",
@@ -1849,7 +1849,7 @@
         "jerusalem"
       ],
       "status": "accepted-context",
-      "statement": "The Babylonian Chronicle, administrative tablets and Jerusalem excavation reports provide primary context for the Neo-Babylonian conquest and exile period.",
+      "statement": "Вавилонская хроника, административные таблички и отчёты о раскопках Иерусалима дают первичный исторический контекст нововавилонского завоевания и периода плена.",
       "evidenceSources": [
         "bm-babylonian-chronicle-21946",
         "bm-nebusarsekim-tablet",
@@ -1857,7 +1857,7 @@
         "iaa-givati-2019-2020"
       ],
       "interpretationSources": [],
-      "limitations": "Object identifications and translations follow museum records; they do not by themselves reconstruct every event in Kings, Chronicles or Jeremiah."
+      "limitations": "Датировка и идентификация предметов приводятся по музейным данным; сами по себе они не восстанавливают все события книг Царств, Паралипоменон и Иеремии."
     },
     {
       "id": "beersheba-regional-context",
@@ -1866,7 +1866,7 @@
         "beersheba"
       ],
       "status": "accepted-context",
-      "statement": "The Beersheba basin preserves long settlement and water-use history, while Tel Be’er Sheva’s principal monumental remains are later than the patriarchal narrative.",
+      "statement": "Район Вирсавии хранит свидетельства длительной истории поселений и использования водных источников. Основные монументальные остатки Тель-Беэр-Шевы относятся к более позднему времени, чем события патриархального повествования.",
       "evidenceSources": [
         "unesco-biblical-tels",
         "iaa-tel-sheva-2025",
@@ -1881,7 +1881,7 @@
         "bibleplaces-beersheba",
         "wibilex-beersheba"
       ],
-      "limitations": "The Iron Age tell must not be presented as Abraham’s excavated town or well."
+      "limitations": "Городище железного века нельзя представлять как археологически обнаруженные город или колодец самого Авраама."
     },
     {
       "id": "bethel-beitin-candidate",
@@ -1890,13 +1890,13 @@
         "bethel"
       ],
       "status": "candidate",
-      "statement": "Beitin remains the map’s principal Bethel candidate, with alternatives retained as explicit scholarly caveats.",
+      "statement": "Бейтин остаётся главным кандидатом на отождествление с древним Вефилем; альтернативные локализации продолжают обсуждаться исследователями.",
       "evidenceSources": [],
       "interpretationSources": [
         "bibleplaces-bethel",
         "wibilex-bethel"
       ],
-      "limitations": "This candidate requires a future primary excavation bibliography before promotion to accepted identification."
+      "limitations": "Для признания этой идентификации установленной необходима сверка с первичными публикациями раскопок: пока это кандидат, а не доказанное местоположение."
     },
     {
       "id": "dead-sea-scrolls-context",
@@ -1910,7 +1910,7 @@
         "qumran-cave-11"
       ],
       "status": "accepted-context",
-      "statement": "The IAA and Israel Museum digital collections provide authoritative access to manuscript objects, discovery contexts and institutional metadata for the Dead Sea Scrolls.",
+      "statement": "Цифровые собрания Управления древностей Израиля и Музея Израиля обеспечивают доступ к рукописям Мёртвого моря, сведениям об их обнаружении и музейным описаниям.",
       "evidenceSources": [
         "iaa-dss-digital-library",
         "iaa-dss-discovery-sites",
@@ -1919,7 +1919,7 @@
         "imj-temple-scroll"
       ],
       "interpretationSources": [],
-      "limitations": "Institutional presentation does not settle every question of authorship, community identity, palaeographic dating or textual reconstruction."
+      "limitations": "Музейные описания не решают автоматически все вопросы авторства, принадлежности общины, палеографической датировки и реконструкции текста."
     },
     {
       "id": "early-church-context",
@@ -1934,7 +1934,7 @@
         "siloam"
       ],
       "status": "accepted-context",
-      "statement": "Museum collections, Jerusalem fieldwork and the long-running Ephesos excavation program provide material context for Jewish and Greco-Roman settings of the earliest church.",
+      "statement": "Музейные коллекции, археологические работы в Иерусалиме и многолетние раскопки Эфеса помогают восстановить материальный контекст иудейского и греко-римского мира ранней Церкви.",
       "evidenceSources": [
         "imj-cradle-christianity",
         "custodia-capernaum",
@@ -1943,7 +1943,7 @@
         "iaa-siloam-silwan-2014"
       ],
       "interpretationSources": [],
-      "limitations": "Institutional and field evidence supports historical context; claims about specific apostolic events require textual and site-specific analysis."
+      "limitations": "Археологический контекст не доказывает конкретное апостольское событие без отдельного текстового и топографического анализа."
     },
     {
       "id": "euphrates-corridor-context",
@@ -1955,7 +1955,7 @@
         "harran"
       ],
       "status": "accepted-context",
-      "statement": "Ur, Mari, Carchemish and Harran form archaeologically documented nodes suitable for the map’s Euphrates corridor context.",
+      "statement": "Ур, Мари, Кархемиш и Харран — археологически засвидетельствованные центры, важные для понимания историко-географического контекста долины Евфрата.",
       "evidenceSources": [
         "penn-ur-overview",
         "mari-official-overview",
@@ -1969,7 +1969,7 @@
       "interpretationSources": [
         "arj-abraham-chronology"
       ],
-      "limitations": "The exact itinerary between nodes remains a historical reconstruction rather than a traced Abrahamic road."
+      "limitations": "Точный путь между этими центрами реконструируется историками; археологически прослеженного маршрута Авраама нет."
     },
     {
       "id": "exodus-route-context",
@@ -1982,7 +1982,7 @@
         "retaba"
       ],
       "status": "accepted-context",
-      "statement": "Egyptian textual, Sinai frontier and Wadi Tumilat excavation records provide historical-geographical context for evaluating proposed Exodus routes.",
+      "statement": "Египетские письменные памятники, исследования границы Синая и раскопки вади Тумилат дают историко-географический контекст для оценки предлагаемых маршрутов Исхода.",
       "evidenceSources": [
         "bm-papyrus-anastasi-v",
         "egypt-sinai-fortifications",
@@ -1990,7 +1990,7 @@
         "pcma-retaba-pam23"
       ],
       "interpretationSources": [],
-      "limitations": "These records do not independently prove the biblical Exodus event or identify every itinerary station."
+      "limitations": "Эти материалы сами по себе не доказывают историчность библейского Исхода и не устанавливают каждую остановку пути."
     },
     {
       "id": "gath-philistine-context",
@@ -2001,14 +2001,14 @@
         "gath"
       ],
       "status": "accepted-context",
-      "statement": "Tell es-Safi/Gath provides a major excavated Philistine urban context relevant to Judges-period geography.",
+      "statement": "Раскопки Тель-эс-Сафи (Геф) дают богатый материал о крупном филистимском городе и его географическом окружении в эпоху, связанную с книгой Судей.",
       "evidenceSources": [
         "biu-gath-final-report",
         "biu-gath-overview",
         "biu-gath-project"
       ],
       "interpretationSources": [],
-      "limitations": "The excavated city context does not authenticate every narrative episode associated with Gath."
+      "limitations": "Наличие древнего города не подтверждает автоматически все повествовательные эпизоды, связанные с Гефом."
     },
     {
       "id": "hebron-tell-rumeida",
@@ -2017,7 +2017,7 @@
         "hebron"
       ],
       "status": "primary-identification",
-      "statement": "Tell Rumeida preserves the ancient urban mound associated with Hebron; the later monumental enclosure marks the traditional Machpelah location.",
+      "statement": "Тель-Румейда сохраняет древнее городище, связанное с Хевроном; позднее монументальное сооружение отмечает традиционное местоположение пещеры Махпела.",
       "evidenceSources": [
         "unesco-hebron",
         "unesco-canaanite-city-states"
@@ -2025,7 +2025,7 @@
       "interpretationSources": [
         "wibilex-hebron"
       ],
-      "limitations": "Tradition surrounding Machpelah is not equivalent to excavation of the patriarchal burials."
+      "limitations": "Почитание традиционного места Махпелы не равнозначно археологическому обнаружению погребений патриархов."
     },
     {
       "id": "jericho-archaeology-disputed",
@@ -2036,7 +2036,7 @@
         "jericho"
       ],
       "status": "disputed",
-      "statement": "Tell es-Sultan is securely Jericho, while the relationship between its destruction layers, absolute chronology and the biblical conquest remains disputed.",
+      "statement": "Тель-эс-Султан надёжно отождествляется с Иерихоном, но связь слоёв разрушения города с абсолютной хронологией и библейским завоеванием остаётся предметом научного спора.",
       "evidenceSources": [
         "bm-kenyon-jericho-publication",
         "sapienza-jericho-2019-2023",
@@ -2044,7 +2044,7 @@
         "sapienza-jericho-urban-diversity"
       ],
       "interpretationSources": [],
-      "limitations": "The destruction chronology remains disputed; the registry preserves excavation data and conventional dating without treating one scholarly reconstruction as settled biblical synchronism."
+      "limitations": "Датировка разрушений остаётся спорной; карта приводит результаты раскопок и общепринятые хронологические оценки, не выдавая одну реконструкцию за окончательно доказанное соответствие библейскому рассказу."
     },
     {
       "id": "jerusalem-first-temple-context",
@@ -2056,7 +2056,7 @@
         "lachish"
       ],
       "status": "accepted-context",
-      "statement": "Giv‘ati excavations and Assyrian records document Jerusalem and Judah across the First Temple and imperial-conflict contexts.",
+      "statement": "Раскопки в районе стоянки Гивати и ассирийские документы освещают историю Иерусалима и Иудеи в эпоху Первого храма и столкновений с империями.",
       "evidenceSources": [
         "iaa-givati-2017-2018",
         "iaa-givati-2019-2020",
@@ -2064,7 +2064,7 @@
         "bm-lachish-relief"
       ],
       "interpretationSources": [],
-      "limitations": "Individual architectural phases require report-level dating and cannot be assigned to a named biblical figure without direct evidence."
+      "limitations": "Каждый строительный этап требует датировки по конкретному отчёту; без прямых доказательств его нельзя связывать с определённым библейским лицом."
     },
     {
       "id": "jesus-ministry-context",
@@ -2079,14 +2079,14 @@
         "jerusalem"
       ],
       "status": "accepted-context",
-      "statement": "Excavated and institutional records from Capernaum, Magdala, Siloam and Jerusalem provide material context for the geography of Jesus’ ministry.",
+      "statement": "Раскопки и музейные данные из Капернаума, Магдалы, Силоама и Иерусалима помогают понять материальную и географическую среду земного служения Иисуса.",
       "evidenceSources": [
         "iaa-migdal-2013",
         "iaa-migdal-2015",
         "iaa-siloam-silwan-2014"
       ],
       "interpretationSources": [],
-      "limitations": "Material context is not an archaeological authentication of each Gospel miracle or speech."
+      "limitations": "Археологический контекст сам по себе не является подтверждением каждого евангельского чуда или высказывания."
     },
     {
       "id": "maccabean-context",
@@ -2099,7 +2099,7 @@
         "jerusalem"
       ],
       "status": "candidate",
-      "statement": "Jerusalem records, the Heliodorus Stele and current excavations provide Maccabean-period context while proposed identifications of Thamnata and the Maccabean tombs remain candidates.",
+      "statement": "Иерусалимские находки, стела Гелиодора и современные раскопки освещают эпоху Маккавеев; предлагаемые отождествления Тамнаты и гробниц Маккавеев остаются кандидатами.",
       "evidenceSources": [
         "biu-hurbat-husham-thamnata",
         "iaa-horbat-ha-gardi",
@@ -2107,7 +2107,7 @@
         "iaa-givati-2019-2020"
       ],
       "interpretationSources": [],
-      "limitations": "Both Thamnata and Horbat Ha-Gardi identifications remain candidates and must not be presented as conclusive beyond the reporting sources."
+      "limitations": "Оба местоположения остаются кандидатами: ни Тамнату, ни Хорбат-ха-Гарди нельзя считать окончательно установленными без более веских источников."
     },
     {
       "id": "mari-amorite-context",
@@ -2116,7 +2116,7 @@
         "mari"
       ],
       "status": "accepted-context",
-      "statement": "Mari’s palace, archives and excavation history document early-second-millennium urban, administrative and tribal contexts relevant to comparative patriarchal study.",
+      "statement": "Дворец и архивы Мари вместе с материалами раскопок свидетельствуют о городской жизни, управлении и племенных отношениях начала II тысячелетия до Р. Х.; эти данные важны для сравнительного изучения эпохи патриархов.",
       "evidenceSources": [
         "mari-excavation-history",
         "mari-palace",
@@ -2124,7 +2124,7 @@
         "mari-current-research"
       ],
       "interpretationSources": [],
-      "limitations": "Comparative context is not proof that Abraham visited Mari."
+      "limitations": "Сходство исторического контекста не доказывает, что Авраам посещал Мари."
     },
     {
       "id": "no-personal-abraham-artefact",
@@ -2138,7 +2138,7 @@
         "beersheba"
       ],
       "status": "methodological-guardrail",
-      "statement": "No current registry source establishes a personal artefact, house, altar or inscription belonging to Abraham.",
+      "statement": "Ни один из источников действующего археологического реестра не подтверждает находку личной вещи, дома, жертвенника или надписи, принадлежавших Аврааму.",
       "evidenceSources": [
         "penn-ur-overview",
         "lloyd-brice-harran-1951",
@@ -2147,7 +2147,7 @@
         "iaa-esi-series"
       ],
       "interpretationSources": [],
-      "limitations": "The map may present period and landscape context, not invented direct archaeological proof."
+      "limitations": "Карта может показывать местность и эпоху, но не должна выдавать реконструкцию за прямое археологическое свидетельство об Аврааме."
     },
     {
       "id": "persian-return-context",
@@ -2160,7 +2160,7 @@
         "elephantine"
       ],
       "status": "accepted-context",
-      "statement": "The Cyrus Cylinder and Elephantine Aramaic records illuminate Persian imperial policy and Jewish communal life in the broader return-period world.",
+      "statement": "Цилиндр Кира и арамейские документы Элефантины помогают понять персидскую имперскую политику и жизнь иудейских общин в широком контексте возвращения из плена.",
       "evidenceSources": [
         "bm-cyrus-cylinder-object",
         "brooklyn-elephantine-marriage",
@@ -2168,7 +2168,7 @@
         "elephantine-yaho-temple-letter"
       ],
       "interpretationSources": [],
-      "limitations": "The Cyrus Cylinder does not mention Judah directly, and Elephantine evidence reflects a distinct diaspora community."
+      "limitations": "Цилиндр Кира прямо не называет Иудею, а документы Элефантины описывают отдельную диаспорную общину."
     },
     {
       "id": "qeiyafa-davidic-context",
@@ -2180,14 +2180,14 @@
         "moab"
       ],
       "status": "accepted-context",
-      "statement": "Khirbet Qeiyafa documents a fortified early Iron Age polity in the Shephelah relevant to debates about the scale and administration of the early Judahite kingdom.",
+      "statement": "Хирбет-Кейафа свидетельствует о существовании укреплённого политического центра раннего железного века в Шефеле; находка важна для споров о масштабе и управлении ранним Иудейским царством.",
       "evidenceSources": [
         "hu-qeiyafa-vol1",
         "hu-qeiyafa-vol2",
         "hu-qeiyafa-project"
       ],
       "interpretationSources": [],
-      "limitations": "Its political attribution and direct relationship to David remain debated; the Mesha Stele belongs to a later kingdom context."
+      "limitations": "Политическая принадлежность этого центра и его прямая связь с Давидом остаются дискуссионными; стела Меши относится к более поздней эпохе царств."
     },
     {
       "id": "shechem-tell-balata",
@@ -2196,7 +2196,7 @@
         "shechem"
       ],
       "status": "primary-identification",
-      "statement": "Tell Balata is the principal archaeological identification of ancient Shechem used by the map.",
+      "statement": "Тель-Балата — основное археологическое отождествление древнего Сихема, принятое для этой карты.",
       "evidenceSources": [
         "leiden-tell-balata",
         "unesco-canaanite-city-states",
@@ -2206,7 +2206,7 @@
       "interpretationSources": [
         "bibleplaces-shechem"
       ],
-      "limitations": "The Oak of Moreh and Abraham’s altar are not point-located archaeological finds."
+      "limitations": "Дуб Море и жертвенник Авраама не обнаружены как находки с археологически установленными точными координатами."
     },
     {
       "id": "sodom-southern-basin-candidate",
@@ -2215,14 +2215,14 @@
         "sodom"
       ],
       "status": "candidate",
-      "statement": "Bab edh-Dhra and Numeira remain southern-basin candidates considered by the project’s conservative/YEC layer.",
+      "statement": "Баб-эд-Дра и Нумейра рассматриваются в консервативной и младоземельной литературе как кандидаты на местоположение городов южной части бассейна Мёртвого моря.",
       "evidenceSources": [],
       "interpretationSources": [
         "bibleplaces-bab-edh-dhra",
         "bibleplaces-numeira",
         "aig-have-we-found-sodom"
       ],
-      "limitations": "A candidate status is not an identification; primary excavation publications must be added before stronger wording."
+      "limitations": "Статус кандидата не означает доказанного отождествления; для более уверенного вывода необходимы первичные публикации раскопок."
     },
     {
       "id": "tall-el-hammam-airburst-rejected",
@@ -2231,7 +2231,7 @@
         "hammam"
       ],
       "status": "rejected",
-      "statement": "The retracted Tall el-Hammam cosmic-airburst paper is not admissible as positive support for destruction or identification claims.",
+      "statement": "Отозванная научная статья о предполагаемом космическом воздушном взрыве над Талль-эль-Хаммамом не может служить положительным доказательством разрушения города или его библейской идентификации.",
       "evidenceSources": [
         "scientific-reports-tall-retraction",
         "pubmed-tall-retraction"
@@ -2239,7 +2239,7 @@
       "interpretationSources": [
         "aig-have-we-found-sodom"
       ],
-      "limitations": "The site may still be discussed archaeologically, but the retracted airburst conclusion cannot be presented as established evidence."
+      "limitations": "Сам археологический памятник можно изучать, но вывод об ударной волне из отозванной статьи нельзя подавать как установленный научный факт."
     },
     {
       "id": "ur-ancient-city-context",
@@ -2248,7 +2248,7 @@
         "ur"
       ],
       "status": "accepted-context",
-      "statement": "Tell el-Muqayyar is securely identified as ancient Ur and supplies the urban Mesopotamian context used by the map.",
+      "statement": "Тель-эль-Мукайяр надёжно отождествляется с древним Уром и позволяет представить городской контекст Месопотамии, связанный с библейским повествованием.",
       "evidenceSources": [
         "penn-ur-overview",
         "bm-ur-1925-26",
@@ -2259,7 +2259,7 @@
       "interpretationSources": [
         "arj-abraham-chronology"
       ],
-      "limitations": "The excavations do not identify a personal house or artefact belonging to Abraham."
+      "limitations": "Раскопки не выявили личный дом или предмет, который можно было бы достоверно приписать Аврааму."
     }
   ],
   "coverageSchemaVersion": "1.0.0",

@@ -187,6 +187,7 @@ for (const [index, claim] of claims.entries()) {
   if (!declaredMapScopes.has(claim.map)) fail('claim-map-scope', `${claim.id}: ${claim.map}`);
   if (!CLAIM_STATUSES.has(claim.status)) fail('claim-status', `${claim.id}: ${claim.status}`);
   if (!claim.statement || !claim.limitations) fail('claim-text', `${claim.id}: statement and limitations are required`);
+  if (!/[А-Яа-яЁё]/.test(claim.statement) || !/[А-Яа-яЁё]/.test(claim.limitations)) fail('claim-reader-language', `${claim.id}: reader statement and limitation need Russian prose`);
   if (!Array.isArray(claim.places) || !Array.isArray(claim.evidenceSources) || !Array.isArray(claim.interpretationSources)) fail('claim-arrays', `${claim.id}: places/evidenceSources/interpretationSources must be arrays`);
   for (const place of claim.places || []) if (!sites[place]) fail('claim-place-unknown', `${claim.id}: ${place}`);
   for (const id of [...(claim.evidenceSources || []), ...(claim.interpretationSources || [])]) if (!sourceById.has(id)) fail('claim-source-missing', `${claim.id}: ${id}`);
@@ -202,7 +203,7 @@ for (const [index, claim] of claims.entries()) {
       if (!source || !record || source.status !== 'active' || !EVIDENCE_ROLES.has(record.evidenceUse)) fail('accepted-evidence-role', `${claim.id}: ${id}/${record?.evidenceUse}`);
     }
   }
-  if (['candidate', 'disputed'].includes(claim.status) && !/candidate|disputed|debate|requires|future|not (?:an )?identification|not settled/i.test(claim.limitations)) fail('candidate-limitation', `${claim.id}: candidate/disputed limitation must remain explicit`);
+  if (['candidate', 'disputed'].includes(claim.status) && !/candidate|disputed|debate|requires|future|not (?:an )?identification|not settled|кандидат|спорн|дискуссион|потребу|не установленн/i.test(claim.limitations)) fail('candidate-limitation', `${claim.id}: candidate/disputed limitation must remain explicit`);
   if (claim.status === 'project-interpretation') {
     if (claim.evidenceSources.length) fail('project-interpretation-evidence', `${claim.id}: YEC chronology must not masquerade as excavation evidence`);
     if (!interpretation.some(({ record }) => record?.perspective === 'yec' && record.evidenceUse === 'interpretation')) fail('project-interpretation-yec', claim.id);
