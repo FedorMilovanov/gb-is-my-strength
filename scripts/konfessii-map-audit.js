@@ -204,6 +204,10 @@ for (const [label, source] of [['legacy', wrap], ['native', nativeBody]]) {
 // Chromium never paginates <iframe> content. It must stay invisible on screen, out
 // of the search index, and exist exactly once next to the noscript fallback.
 const projectionSrc = read(path.join('src', 'components', 'konfessii', 'russkij-baptizm', 'Baptizm3DStaticProjection.astro'));
+const reconciledFallback = 'История ЕХБ включает три связанные, но различимые линии: тифлисскую, южно-украинскую и петербургскую.';
+assert(projectionSrc.includes(reconciledFallback) && wrap.includes(reconciledFallback) && !projectionSrc.includes('трёх независимых источников') && !wrap.includes('трёх независимых источников'),
+  'I15 projection: native and legacy fallbacks use reconciled historical claim',
+  'I15 projection: native/legacy historical mismatch or outdated independent-origins claim');
 assert(
   /Три истока русского баптизма/.test(projectionSrc) &&
   (projectionSrc.match(/Три истока русского баптизма/g) || []).length === 1,
