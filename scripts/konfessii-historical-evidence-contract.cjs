@@ -55,6 +55,13 @@ reject('data/history/persecution.ts', '90%+');
 reject('components/PersecutionHeatmap.tsx', 'более 90% пресвитеров');
 keep('components/PersecutionHeatmap.tsx', 'не численный индекс');
 
+reject('components/Hero.tsx', "'66.7K'");
+reject('components/Hero.tsx', "label: 'Лет истории'");
+keep('components/Hero.tsx', "value: '1884', label: 'Два собрания'");
+keep('components/Hero.tsx', "value: '1944', label: 'Образование ВСЕХБ'");
+reject('components/ThreeOrigins.tsx', 'Три независимых источника');
+keep('components/ThreeOrigins.tsx', 'Три взаимосвязанные линии');
+
 const app = path.join(root, '_build-tools/konfessii-baptizm/reconciled-app');
 assert.ok(!fs.existsSync(path.join(src, 'components/AiAssistant.tsx')));
 assert.ok(!fs.existsSync(path.join(src, 'services/gemini.ts')));

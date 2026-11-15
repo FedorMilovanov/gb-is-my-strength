@@ -13,7 +13,7 @@ export default function ThreeOrigins() {
   return (
     <section id="origins" className="relative py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <motion.div initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-16 text-center"><div className="section-badge mb-5 justify-center">Три истока</div><h2 className="section-title">Три независимых источника</h2><p className="section-subtitle mx-auto max-w-3xl">'История ЕХБ включает три связанные, но различимые линии: Тифлис, южно-украинскую сеть и петербургское движение; общая союзная форма была создана в 1944 году.'</p></motion.div>
+        <motion.div initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-16 text-center"><div className="section-badge mb-5 justify-center">Три истока</div><h2 className="section-title">Три взаимосвязанные линии</h2><p className="section-subtitle mx-auto max-w-3xl">История ЕХБ включает три связанные, но различимые линии: Тифлис, южно-украинскую сеть и петербургское движение; общая союзная форма была создана в 1944 году.</p></motion.div>
         <div className="mb-12 grid min-w-0 grid-cols-1 gap-6 md:grid-cols-3">
           {origins.map((o, i) => { const Icon = o.icon; const isActive = active === o.id; return (
             <motion.div key={o.id} initial={{ opacity: 0, y: 32 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.12 }} className="min-w-0">
