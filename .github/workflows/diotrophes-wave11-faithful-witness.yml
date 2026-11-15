@@ -76,27 +76,8 @@ jobs:
             exit 0
           fi
           echo 'active=true' >> "$GITHUB_OUTPUT"
-          # Post-release editorial work may edit the base article and the faithful-witness supplement together.
-          # The historic Wave 11 owned files remain guarded; no unrelated paths are allowed.
+          # Post-release editorial PRs may update both published Diotrophes source owners.
           peer_editorial_pattern='^(src/components/article-pilots/diotrophes/DiotrophesDraft\.astro|scripts/diotrophes-wave12-release-contract\.mjs|\.github/workflows/diotrophes-wave10-product-draft\.yml)$'
-          if [[ -n "$unexpected" ]]; then
-            echo 'Unexpected Wave 11 files:' >&2
-            printf '%s\n' "$unexpected" >&2
-            exit 1
-          fi
-
-      - name: Validate evidence and publication boundaries
-        if: steps.scope.outputs.active == 'true'
-        run: node scripts/diotrophes-wave11-faithful-witness-contract.mjs
-
-      - name: Type-check Astro draft
-        if: steps.scope.outputs.active == 'true'
-        run: npm run astro:check
-
-      - name: Ensure validation is read-only
-        if: steps.scope.outputs.active == 'true'
-        run: git diff --exit-code
-
           unexpected="$(grep -Ev "$pattern|$peer_editorial_pattern" /tmp/wave11-files.txt || true)"
           if [[ -n "$unexpected" ]]; then
             echo 'Unexpected Wave 11 files:' >&2
