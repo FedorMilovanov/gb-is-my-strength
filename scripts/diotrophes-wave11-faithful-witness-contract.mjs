@@ -140,9 +140,14 @@ for (const marker of [
   'Пятнадцать реальных путей',
   'Двадцать верных ответов',
   'Практическая лестница различения',
-  'Новые источники Wave 11',
+  'Документы и свидетельства: дополнительная подборка',
   'Контрпример: когда совет действительно действует',
 ]) requireValue(supplement.includes(marker), `supplement marker missing: ${marker}`);
+requireValue(supplement.includes("data-evidence-records={pathway.sourceIds.join(',')}"), 'internal source provenance should remain machine-readable');
+requireValue(supplement.includes('readerSources.filter((source) => pathway.sourceIds.includes(source.id))'), 'reader source ids must resolve against curated public sources');
+requireValue(supplement.includes('<a href={source.href}'), 'the reader must be able to open a cited public document');
+requireValue(supplement.includes('<a href={`#faithful-${pathway.id}`}'), 'evidence examples must link to actual case headings');
+requireValue(!supplement.includes('Research records:'), 'raw Research ids leaked into public supplementary prose');
 requireValue(!supplement.includes('<blockquote') && !supplement.includes('<q'), 'new direct quotations are forbidden');
 requireValue(!supplement.includes('<main'), 'supplement must not create a second main landmark');
 requireValue(wrapper.includes("import DiotrophesDraft from './DiotrophesDraft.astro'"), 'wrapper lost Wave 10 draft');
