@@ -217,6 +217,7 @@ function requestOnce(url, method, {
   address,
   timeoutMs = TIMEOUT_MS,
   maxProbeBytes = MAX_PROBE_BYTES,
+  useRange = true,
 } = {}) {
   return new Promise((resolve, reject) => {
     const client = url.protocol === 'http:' ? http : https;
@@ -235,7 +236,7 @@ function requestOnce(url, method, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; GBSourceAudit/2.0; +https://gospod-bog.ru)',
         Accept: 'text/html,application/xhtml+xml,application/pdf,application/json,text/plain,image/*;q=0.8,*/*;q=0.2',
-        ...(method === 'GET' ? { Range: 'bytes=0-4095' } : {}),
+        ...(method === 'GET' && useRange ? { Range: 'bytes=0-4095' } : {}),
       },
     }, (response) => {
       const headers = Object.fromEntries(Object.entries(response.headers).map(([key, value]) => [key.toLowerCase(), Array.isArray(value) ? value.join(', ') : String(value || '')]));
@@ -366,7 +367,29 @@ async function auditUrl(source, {
     let response;
     try {
       response = await requestImpl(policy.url, 'HEAD', { address: policy.addresses[0] });
-      if (response.status === 405) response = await requestImpl(policy.url, 'GET', { address: policy.addresses[0] });
+      // A HEAD 404/410 is not proof the GET representation is gone: some
+      // origin/CDN paths reject HEAD while serving the actual page on GET.
+      // Confirm with a normal bounded GET (no Range header). If GET also
+      // returns 404/410 the original hard-fail policy remains unchanged.
+      if ([404, 405, 410].includes(response.status)) {
+        const headStatus = response.status;
+        try {
+          response = await requestImpl(policy.url, 'GET', {
+            address: policy.addresses[0], useRange: false,
+          });
+        } catch (getError) {
+          if (headStatus === 404 || headStatus === 410) {
+            return {
+              ...evidence, final: sanitizeUrlForEvidence(policy.url),
+              status: headStatus, reason: `HTTP ${headStatus} (GET confirmation unavailable)`,
+            };
+          }
+          return {
+            ...evidence, result: classifyTransportError(getError),
+            reason: String(getError.code || getError.message || getError).slice(0, 180),
+          };
+        }
+      }
     } catch (headError) {
       try {
         response = await requestImpl(policy.url, 'GET', { address: policy.addresses[0] });

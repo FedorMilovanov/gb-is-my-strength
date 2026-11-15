@@ -250,11 +250,35 @@ async function main() {
     const missing = await auditUrl('https://allowed.example/missing', {
       requestImpl: scripted({
         'HEAD https://allowed.example/missing': response({ status: 404 }),
+        'GET https://allowed.example/missing': response({ status: 404, method: 'GET' }),
       }),
       lookupImpl: publicLookup,
     });
     assert.equal(missing.result, 'hard');
     assert.equal(missing.status, 404);
+
+    const revivedCalls = [];
+    const readable = await auditUrl('https://allowed.example/head-404-get-200', {
+      requestImpl: scripted({
+        'HEAD https://allowed.example/head-404-get-200': response({ status: 404 }),
+        'GET https://allowed.example/head-404-get-200': response({ status: 200, method: 'GET', contentType: 'text/html' }),
+      }, revivedCalls),
+      lookupImpl: publicLookup,
+    });
+    assert.equal(readable.result, 'pass', 'GET 200 overrules HEAD-only 404');
+    assert.equal(readable.method, 'GET');
+    assert.equal(revivedCalls.length, 2);
+    assert.equal(revivedCalls[1].key, 'GET https://allowed.example/head-404-get-200');
+
+    const gone = await auditUrl('https://allowed.example/gone', {
+      requestImpl: scripted({
+        'HEAD https://allowed.example/gone': response({ status: 410 }),
+        'GET https://allowed.example/gone': response({ status: 410, method: 'GET' }),
+      }),
+      lookupImpl: publicLookup,
+    });
+    assert.equal(gone.result, 'hard');
+    assert.equal(gone.status, 410);
 
     const server = await auditUrl('https://allowed.example/server', {
       requestImpl: scripted({
