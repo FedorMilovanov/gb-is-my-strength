@@ -75,7 +75,28 @@ jobs:
           fi
 
           echo 'active=true' >> "$GITHUB_OUTPUT"
-          unexpected="$(grep -Ev "$wave10_owned_pattern" /tmp/wave10-files.txt || true)"
+          # Post-release editorial work may update both published component owners in one bounded PR.
+          # Keep the original Wave 10 files guarded and allow only the named peer owner/contract files.
+          peer_editorial_pattern='^(src/components/article-pilots/diotrophes/FaithfulWitnessSupplement\\.astro|scripts/diotrophes-wave11-faithful-witness-contract\\.mjs|scripts/diotrophes-wave12-release-contract\\.mjs|\\.github/workflows/diotrophes-wave11-faithful-witness\\.yml)
+          if [[ -n "$unexpected" ]]; then
+            echo 'Unexpected Wave 10 files:' >&2
+            printf '%s\n' "$unexpected" >&2
+            exit 1
+          fi
+
+      - name: Validate evidence and publication boundaries
+        if: steps.scope.outputs.active == 'true'
+        run: node scripts/diotrophes-wave10-contract.mjs
+
+      - name: Type-check Astro draft
+        if: steps.scope.outputs.active == 'true'
+        run: npm run astro:check
+
+      - name: Ensure validation is read-only
+        if: steps.scope.outputs.active == 'true'
+        run: git diff --exit-code
+
+          unexpected="$(grep -Ev "$wave10_owned_pattern|$peer_editorial_pattern" /tmp/wave10-files.txt || true)"
           if [[ -n "$unexpected" ]]; then
             echo 'Unexpected Wave 10 files:' >&2
             printf '%s\n' "$unexpected" >&2
