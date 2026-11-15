@@ -21,7 +21,7 @@ const readerSources = sourceData.readerSources;
   data-reader-links={content.counts.totalReaderLinks}
 >
   <header class="article-header">
-    <p class="anti-kicker">Wave 11 · верные люди в трудной церковной ситуации</p>
+    <p class="anti-kicker">Верные люди в трудной церковной ситуации</p>
     <h2 id="faithful-witness-heading">Как сохраняли верность Богу, не превращая послушание лидеру в молчание</h2>
     <p>
       Предыдущая часть показала механизмы власти. Здесь центр переносится на тех, кто жил
@@ -65,7 +65,7 @@ const readerSources = sourceData.readerSources;
 
   <div class="case-grid faithful-pathway-grid">
     {pathways.map((pathway) => (
-      <section class="note-box evidence-card faithful-pathway" id={`faithful-${pathway.id}`} data-faithful-case={pathway.id}>
+      <section class="note-box evidence-card faithful-pathway" id={`faithful-${pathway.id}`} data-faithful-case={pathway.id} data-evidence-records={pathway.sourceIds.join(',')}>
         <h3>{pathway.name}</h3>
         <p><strong>Кто действовал:</strong> {pathway.actors}.</p>
         <p><strong>Напряжение верности:</strong> {pathway.loyaltyTension}</p>
@@ -74,7 +74,15 @@ const readerSources = sourceData.readerSources;
         </ol>
         <p><strong>Урок:</strong> {pathway.lesson}</p>
         <p class="muted"><strong>Граница:</strong> {pathway.boundary}</p>
-        <p class="source-ref">Research records: {pathway.sourceIds.join(', ')}</p>
+        <p class="source-ref">
+          <strong>Документы:</strong>
+          {pathway.sourceIds.flatMap((id) => readerSources.filter((source) => source.id === id)).map((source, index) => (
+            <span>{index > 0 ? ' · ' : ' '}<a href={source.href} rel="noopener noreferrer">{source.label}</a></span>
+          ))}
+          {!pathway.sourceIds.some((id) => readerSources.some((source) => source.id === id)) && (
+            <span> <a href="#faithful-witness-sources">Подборка источников и границы проверки</a></span>
+          )}
+        </p>
       </section>
     ))}
   </div>
@@ -110,7 +118,13 @@ const readerSources = sourceData.readerSources;
         <p><strong>Сложность:</strong> {item.tension}</p>
         <p><strong>Верный ответ:</strong> {item.response}</p>
         <p class="muted"><strong>Где этого недостаточно:</strong> {item.limit}</p>
-        <p class="source-ref">Кейсы: {item.caseIds.join(', ')} · Писание: {item.scriptures.join('; ')}</p>
+        <p class="source-ref">
+          Примеры:
+          {pathways.filter((pathway) => item.caseIds.includes(pathway.id)).map((pathway, index) => (
+            <span>{index > 0 ? ' · ' : ' '}<a href={`#faithful-${pathway.id}`}>{pathway.name}</a></span>
+          ))}
+          {' · '}Писание: {item.scriptures.join('; ')}
+        </p>
       </section>
     ))}
   </div>
@@ -130,17 +144,18 @@ const readerSources = sourceData.readerSources;
   </section>
 
   <section class="reading-list-section" id="faithful-witness-sources" data-new-reader-links={content.counts.newReaderLinks}>
-    <h2>Новые источники Wave 11</h2>
+    <h2>Документы и свидетельства: дополнительная подборка</h2>
     <p>
-      Эти 33 ссылки добавляются к прежним 40 читательским ссылкам статьи. A1/A2/A3 дают
-      государственные, независимые или институциональные документы; класс B1 используется только
-      для хронологии, воспроизведения письма или позиции участника рядом с источниками класса A.
+      Эти 33 ссылки дополняют 40 документов и исследований основной части. Материалы
+      различаются по назначению: официальные документы и независимые отчёты позволяют описывать
+      действия и решения, тогда как вторичные публикации помогают восстановить хронологию
+      или позицию участника, не заменяя документального подтверждения спорных утверждений.
     </p>
     <ol>
       {readerSources.map((source) => (
         <li>
           <a href={source.href} rel="noopener noreferrer">{source.label}</a>
-          <span class="muted"> — {source.class}</span>
+          <span class="muted" data-evidence-class={source.class}> — {source.class === 'B1' ? 'вторичная публикация для контекста' : 'документальное свидетельство'}</span>
         </li>
       ))}
     </ol>
