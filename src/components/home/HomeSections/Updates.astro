@@ -1,0 +1,395 @@
+---
+/** Home editorial archive: documentary desktop cards; native swipe on mobile. */
+import { publishedEditorialUpdates, editorialDate, EDITORIAL_UPDATE_LABELS } from '@/lib/editorial-updates';
+
+const recent = publishedEditorialUpdates.slice(0, 5);
+const kinds = [...new Set(recent.map((item) => item.kind))];
+
+---
+{recent.length > 0 && (
+  <section class="h-section h-reveal h-scroll-target" id="obnovleniya-issledovaniy" aria-labelledby="hUpdatesTitle" data-pagefind-ignore>
+    <header class="h-home-section-head ed-archive-head">
+      <div>
+        <p class="h-section-label">Редакционная хроника</p>
+        <h2 id="hUpdatesTitle">Журнал изменений</h2>
+      </div>
+      <p>Новые источники и уточнения в уже опубликованных исследованиях. Сохраняем первоначальные статьи и показываем, что именно изменилось.</p>
+    </header>
+    <div class="ed-archive" data-editorial-carousel>
+      <div class="ed-archive-bar">
+        <span>Архив исследований</span>
+        <span>{recent.length} {recent.length === 1 ? 'запись' : recent.length < 5 ? 'записи' : 'записей'}</span>
+      </div>
+      <div class="ed-archive-filters" role="group" aria-label="Фильтр изменений">
+        <button type="button" data-ed-filter="all" aria-pressed="true">Все</button>
+        {kinds.map((kind) => (
+          <button type="button" data-ed-filter={kind} aria-pressed="false">{EDITORIAL_UPDATE_LABELS[kind]}</button>
+        ))}
+      </div>
+      <div class="ed-archive-viewport" data-ed-viewport tabindex="0" role="region"
+        aria-roledescription="карусель" aria-label="Последние изменения исследований">
+        <div class="ed-archive-track">
+          {recent.map((item) => (
+            <article class="ed-archive-entry" data-ed-entry data-ed-kind={item.kind}
+              role="group" aria-roledescription="слайд" aria-label={item.headline}>
+              <div class="ed-archive-art">
+                <img src={'/images/editorial/' + item.artwork} width="1100" height="733" alt=""
+                  loading="lazy" decoding="async" />
+                <span>Художественная иллюстрация</span>
+              </div>
+              <div class="ed-archive-copy">
+                <div class="ed-archive-meta">
+                  <time datetime={item.date}>{editorialDate(item.date)}</time>
+                  <span aria-hidden="true">·</span>
+                  <span>{EDITORIAL_UPDATE_LABELS[item.kind]}</span>
+                </div>
+                <h3><a href={item.href}>{item.headline}</a></h3>
+                <p class="ed-archive-article">{item.articleTitle}</p>
+                <p class="ed-archive-summary">{item.summary}</p>
+                <a class="ed-archive-read" href={item.href}>Читать дополнение <span aria-hidden="true">↗</span></a>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+      <div class="ed-archive-footer">
+        <div class="ed-archive-controls">
+          <button type="button" data-ed-prev aria-label="Предыдущая запись" disabled>‹</button>
+          <span data-ed-counter aria-live="polite" aria-atomic="true">1 / {recent.length}</span>
+          <button type="button" data-ed-next aria-label="Следующая запись">›</button>
+        </div>
+        <a href="/updates/">Открыть весь архив <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </section>
+)}
+<style is:global>
+  body.home-page #obnovleniya-issledovaniy {
+    --ed-ink: #24312e; --ed-muted: #526660; --ed-accent: #096c7c;
+    --ed-paper: #fffaf0; --ed-line: rgba(110,86,50,.24); --ed-gold: #8e672e;
+    padding-block: clamp(52px,6vw,88px);
+  }
+  html.dark body.home-page #obnovleniya-issledovaniy {
+    --ed-ink: #eee7d9; --ed-muted: #bdc7bb; --ed-accent: #83d8e1;
+    --ed-paper: #142123; --ed-line: rgba(204,172,113,.29); --ed-gold: #dbb778;
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-head { margin-bottom: clamp(20px,3vw,35px); }
+  body.home-page #obnovleniya-issledovaniy .ed-archive {
+    min-width:0; padding:clamp(14px,2.2vw,26px);
+    border:1px solid var(--ed-line); border-radius:18px;
+    color:var(--ed-ink); background:var(--ed-paper);
+    box-shadow:0 22px 80px -58px rgba(43,29,12,.48);
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-bar {
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+    padding-bottom:15px; border-bottom:1px solid var(--ed-line);
+    color:var(--ed-gold); text-transform:uppercase; letter-spacing:.11em;
+    font:700 11px/1.4 var(--f-ui,system-ui,sans-serif);
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-filters {
+    display:flex; gap:8px; overflow-x:auto; white-space:nowrap;
+    scrollbar-width:none; margin:16px 0; min-width:0;
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-filters::-webkit-scrollbar { display:none; }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-filters button {
+    flex:0 0 auto; min-height:44px; display:inline-flex; align-items:center;
+    justify-content:center; padding:9px 13px; border:1px solid var(--ed-line);
+    border-radius:999px; background:transparent; color:var(--ed-ink);
+    font:650 12px/1.3 var(--f-ui,system-ui,sans-serif); cursor:pointer;
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-filters button[aria-pressed=true] {
+    color:var(--ed-paper); background:var(--ed-ink); border-color:var(--ed-ink);
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-viewport:focus-visible,
+  body.home-page #obnovleniya-issledovaniy a:focus-visible,
+  body.home-page #obnovleniya-issledovaniy button:focus-visible {
+    outline:3px solid var(--ed-accent); outline-offset:3px;
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-track {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));
+    align-items:stretch; gap:clamp(12px,2vw,22px); min-width:0;
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-entry {
+    min-width:0; display:flex; flex-direction:column; overflow:hidden;
+    border:1px solid var(--ed-line); border-radius:13px;
+    background:var(--ed-paper); text-align:left;
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-entry[hidden] { display:none!important; }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-art {
+    position:relative; height:clamp(175px,18vw,250px); flex:0 0 auto;
+    overflow:hidden; background:#32291f;
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-art img {
+    display:block; width:100%; height:100%; object-fit:cover;
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-art span {
+    position:absolute; right:8px; bottom:8px;
+    padding:5px 8px; border-radius:4px;
+    background:rgba(11,17,15,.8); color:#fff7e9;
+    font:600 10px/1.3 var(--f-ui,system-ui,sans-serif);
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-copy {
+    flex:1; display:flex; flex-direction:column; align-items:flex-start;
+    min-width:0; padding:clamp(19px,2.2vw,27px);
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-meta {
+    display:flex; align-items:center; flex-wrap:wrap; gap:7px;
+    color:var(--ed-gold); margin-bottom:12px;
+    font:700 11px/1.4 var(--f-ui,system-ui,sans-serif);
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-copy h3 {
+    margin:0 0 10px; color:var(--ed-ink);
+    font:700 clamp(20px,2vw,27px)/1.23 Georgia,var(--f-body,serif);
+    letter-spacing:-.024em; text-wrap:balance;
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-copy h3 a {
+    text-decoration:none; color:inherit;
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-copy h3 a:hover {
+    color:var(--ed-accent); text-decoration:underline;
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-article {
+    color:var(--ed-muted); margin:0 0 13px;
+    font:650 12px/1.5 var(--f-ui,system-ui,sans-serif);
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-summary {
+    color:var(--ed-ink); margin:0 0 16px;
+    font:400 15px/1.64 var(--f-body,Georgia,serif);
+    display:-webkit-box; -webkit-box-orient:vertical;
+    -webkit-line-clamp:4; overflow:hidden;
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-read {
+    margin-top:auto; min-height:44px; display:inline-flex; align-items:center;
+    color:var(--ed-accent);
+    font:700 13px/1.5 var(--f-ui,system-ui,sans-serif);
+    text-decoration:underline; text-underline-offset:4px;
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-footer {
+    display:flex; justify-content:flex-end; align-items:center;
+    gap:14px; flex-wrap:wrap; margin-top:20px;
+    padding-top:16px; border-top:1px solid var(--ed-line);
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-footer>a {
+    display:inline-flex; align-items:center; min-height:44px;
+    color:var(--ed-accent); font:750 13px/1.5 var(--f-ui,system-ui,sans-serif);
+    text-underline-offset:4px;
+  }
+  body.home-page #obnovleniya-issledovaniy .ed-archive-controls { display:none; }
+  @media (max-width:760px) {
+    body.home-page #obnovleniya-issledovaniy { padding-block:44px 60px; }
+    body.home-page #obnovleniya-issledovaniy .ed-archive { padding:13px; }
+    body.home-page #obnovleniya-issledovaniy .ed-archive-viewport {
+      scroll-margin-top:108px;
+      overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory;
+      scrollbar-width:none; overscroll-behavior-x:contain;
+      -webkit-overflow-scrolling:touch;
+    }
+    body.home-page #obnovleniya-issledovaniy .ed-archive-viewport::-webkit-scrollbar { display:none; }
+    body.home-page #obnovleniya-issledovaniy .ed-archive-track {
+      display:flex; flex-wrap:nowrap; gap:10px; align-items:stretch;
+    }
+    body.home-page #obnovleniya-issledovaniy .ed-archive-entry {
+      flex:0 0 100%; scroll-snap-align:start; scroll-snap-stop:always;
+    }
+    body.home-page #obnovleniya-issledovaniy .ed-archive-art { height:clamp(165px,53vw,218px); }
+    body.home-page #obnovleniya-issledovaniy .ed-archive-copy { padding:18px; }
+    body.home-page #obnovleniya-issledovaniy .ed-archive-copy h3 { font-size:clamp(19px,5vw,23px); }
+    body.home-page #obnovleniya-issledovaniy .ed-archive-summary { -webkit-line-clamp:3; font-size:14px; }
+    body.home-page #obnovleniya-issledovaniy .ed-archive-footer { justify-content:space-between; }
+    body.home-page #obnovleniya-issledovaniy .ed-archive-controls {
+      display:flex; align-items:center; gap:8px;
+    }
+    body.home-page #obnovleniya-issledovaniy .ed-archive-controls button {
+      width:44px; height:44px; padding:0;
+      border:1px solid var(--ed-line); border-radius:50%;
+      background:transparent; color:var(--ed-ink);
+      font-size:26px; line-height:1; cursor:pointer;
+    }
+    body.home-page #obnovleniya-issledovaniy .ed-archive-controls button:disabled { opacity:.35; cursor:default; }
+    body.home-page #obnovleniya-issledovaniy [data-ed-counter] {
+      min-width:37px; text-align:center; color:var(--ed-muted);
+      font:650 12px/1.3 var(--f-ui,system-ui,sans-serif);
+    }
+  }
+  @media (max-width:360px) {
+    body.home-page #obnovleniya-issledovaniy .ed-archive-filters {
+      mask-image:linear-gradient(to right,#000 0%,#000 calc(100% - 10px),transparent);
+    }
+    body.home-page #obnovleniya-issledovaniy .ed-archive-filters.has-scrolled-start {
+      mask-image:linear-gradient(to right,transparent,#000 12px,#000 calc(100% - 10px),transparent);
+    }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    body.home-page #obnovleniya-issledovaniy .ed-archive-viewport { scroll-behavior:auto!important; }
+  }
+  /* Without JavaScript the cards remain readable and swipeable, but buttons
+     requiring JS must not masquerade as working controls. */
+  body.home-page #obnovleniya-issledovaniy .ed-archive[data-editorial-carousel]:not([data-ed-ready="1"]) .ed-archive-filters,
+  body.home-page #obnovleniya-issledovaniy .ed-archive[data-editorial-carousel]:not([data-ed-ready="1"]) .ed-archive-controls {
+    display:none!important;
+  }
+</style>
+<script is:inline>
+  (() => {
+    const root = document.querySelector('[data-editorial-carousel]');
+    if (!root || root.dataset.edReady === '1') return;
+    root.dataset.edReady = '1';
+    const viewport = root.querySelector('[data-ed-viewport]');
+    const cards = Array.from(root.querySelectorAll('[data-ed-entry]'));
+    const filters = Array.from(root.querySelectorAll('[data-ed-filter]'));
+    const prev = root.querySelector('[data-ed-prev]');
+    const next = root.querySelector('[data-ed-next]');
+    const counter = root.querySelector('[data-ed-counter]');
+    if (!viewport || !cards.length || !prev || !next || !counter) return;
+    const filterStrip = filters[0]?.parentElement;
+    const paintFilterEdge = () => filterStrip?.classList.toggle('has-scrolled-start',filterStrip.scrollLeft > 4);
+    filterStrip?.addEventListener('scroll',paintFilterEdge,{passive:true});
+    paintFilterEdge();
+    let visible = cards.slice();
+    let active = 0;
+    const isMobile = () => window.matchMedia('(max-width:760px)').matches;
+    function repaint() {
+      counter.textContent = String(visible.length ? active + 1 : 0) + ' / ' + String(visible.length);
+      prev.disabled = active <= 0 || !isMobile();
+      next.disabled = active >= visible.length - 1 || !isMobile();
+    }
+    // Reframe vertically when the reader goes to a different long card.
+    function showCardStart(smooth = true) {
+      if (!isMobile()) return;
+      const top = viewport.getBoundingClientRect().top;
+      if (top < 84 || top > 220) {
+        viewport.scrollIntoView({
+          block: 'start',
+          inline: 'nearest',
+          behavior: smooth && !window.matchMedia('(prefers-reduced-motion:reduce)').matches ? 'smooth' : 'auto',
+        });
+      }
+    }
+    function jump(index, smooth) {
+      if (!visible.length) return;
+      active = Math.max(0, Math.min(visible.length - 1, index));
+      if (isMobile()) {
+        viewport.scrollTo({
+          left: visible[active].offsetLeft - visible[0].offsetLeft,
+          behavior: smooth && !window.matchMedia('(prefers-reduced-motion:reduce)').matches ? 'smooth' : 'auto'
+        });
+      }
+      repaint();
+    }
+    prev.addEventListener('click', () => jump(active - 1, true));
+    next.addEventListener('click', () => jump(active + 1, true));
+    viewport.addEventListener('keydown', event => {
+      if (!isMobile()) return;
+      if (event.key === 'ArrowRight') { event.preventDefault(); jump(active + 1, true); }
+      if (event.key === 'ArrowLeft') { event.preventDefault(); jump(active - 1, true); }
+    });
+
+    let frame = 0;
+    let touching = false;
+    let settled = 0;
+    let settleTimer = 0;
+    const nearestCard = () => {
+      const x = viewport.getBoundingClientRect().left;
+      let winner = 0, distance = Infinity;
+      visible.forEach((card, index) => {
+        const d = Math.abs(card.getBoundingClientRect().left - x);
+        if (d < distance) { winner = index; distance = d; }
+      });
+      return winner;
+    };
+    // Native scroll-snap normally settles by itself. Some touch sequences stop
+    // between snap points; reconcile only once motion has ended, never mid-drag.
+    const settle = () => {
+      if (!isMobile() || touching || !visible.length) return;
+      active = nearestCard();
+      const left = visible[active].offsetLeft - visible[0].offsetLeft;
+      if (Math.abs(viewport.scrollLeft - left) > 2) {
+        viewport.scrollTo({ left, behavior: 'auto' });
+      }
+      repaint();
+      if (active !== settled) {
+        settled = active;
+        showCardStart(false);
+      }
+    };
+    const scheduleSettle = () => {
+      window.clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(settle, 220);
+    };
+    viewport.addEventListener('touchstart', () => {
+      touching = true;
+      window.clearTimeout(settleTimer);
+    }, { passive: true });
+    viewport.addEventListener('touchend', () => {
+      touching = false;
+      scheduleSettle();
+    }, { passive: true });
+    viewport.addEventListener('touchcancel', () => {
+      touching = false;
+      scheduleSettle();
+    }, { passive: true });
+    viewport.addEventListener('scrollend', settle);
+    viewport.addEventListener('scroll', () => {
+      if (!isMobile()) return;
+      scheduleSettle();
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        if (!visible.length) return;
+        const winner = nearestCard();
+        if (winner !== active) {
+          active = winner;
+          repaint();
+        }
+      });
+    }, { passive: true });
+    const selectFilter = (button) => {
+      const filter = button.dataset.edFilter;
+      filters.forEach(b => b.setAttribute('aria-pressed', String(b === button)));
+      visible = cards.filter(card => filter === 'all' || card.dataset.edKind === filter);
+      cards.forEach(card => { card.hidden = !visible.includes(card); });
+      viewport.scrollLeft = 0;
+      active = 0;
+      settled = 0;
+      window.clearTimeout(settleTimer);
+      repaint();
+    };
+    filters.forEach(button => {
+      button.addEventListener('click', () => selectFilter(button));
+      // In a horizontally scrolled strip the first post-swipe tap can omit
+      // click, even though pointerup lands on the button. Honor a true tap.
+      let down = null;
+      button.addEventListener('pointerdown', event => {
+        if (event.pointerType === 'touch' && event.isPrimary) {
+          down = { id: event.pointerId, x: event.clientX, y: event.clientY };
+        }
+      });
+      button.addEventListener('pointerup', event => {
+        if (!down || down.id !== event.pointerId) return;
+        const distance = Math.hypot(event.clientX - down.x, event.clientY - down.y);
+        down = null;
+        if (distance <= 10) selectFilter(button);
+      });
+      button.addEventListener('pointercancel', () => { down = null; });
+    });
+    let wasMobile = isMobile();
+    window.addEventListener('resize', () => {
+      const nowMobile = isMobile();
+      if (nowMobile !== wasMobile) {
+        wasMobile = nowMobile;
+        window.clearTimeout(settleTimer);
+        active = 0;
+        settled = 0;
+        viewport.scrollLeft = 0;
+        // A desktop grid can retain its old mobile scroll offset when becoming
+        // a horizontal track again. Reset after the new layout has been applied.
+        if (nowMobile) window.requestAnimationFrame(() => {
+          viewport.scrollLeft = 0;
+          repaint();
+        });
+      }
+      repaint();
+    }, { passive:true });
+    repaint();
+  })();
+</script>

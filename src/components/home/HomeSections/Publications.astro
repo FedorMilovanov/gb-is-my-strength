@@ -5,7 +5,7 @@
  * GBS-HOME-OFFER-FROZEN: the «Новые публикации» shelf used to be a frozen
  * hand-picked quintet (newest card dated 2026-07-09 while the catalogue held
  * 40 fresher articles). The shelf is now rendered at build time from the
- * search manifest: the five most recently modified /articles/ entries that
+ * search manifest: the five most recently published /articles/ entries that
  * carry a cover image, so the «new» promise stays true as the library grows.
  */
 import { readFileSync } from 'node:fs';
@@ -30,12 +30,12 @@ const manifest: ManifestFile = JSON.parse(
   readFileSync(path.join(process.cwd(), 'data', 'search-manifest.json'), 'utf8'),
 );
 const stamp = (item: ManifestItem): number =>
-  new Date(item.modifiedTime || item.publishedTime || 0).getTime();
+  new Date(item.publishedTime || 0).getTime();
 const freshArticles: ManifestItem[] = manifest.items
   .filter((item: ManifestItem) => item?.type === 'article'
     && String(item?.url || '').startsWith('/articles/')
     && String(item?.image || '').startsWith('/')
-    && (item?.modifiedTime || item?.publishedTime))
+    && item?.publishedTime)
   .sort((a: ManifestItem, b: ManifestItem) => stamp(b) - stamp(a))
   .slice(0, 5);
 ---
