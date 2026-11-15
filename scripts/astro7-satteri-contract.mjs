@@ -53,7 +53,11 @@ const checkEngineFloor = (pkg, required = false) => {
 const manifest = readJson(path.join(root, 'package.json'));
 const lock = readJson(path.join(root, 'package-lock.json'));
 const config = fs.readFileSync(path.join(root, 'astro.config.mjs'), 'utf8');
-const tracked = ['astro', '@astrojs/mdx', '@astrojs/react', '@astrojs/rss', '@astrojs/sitemap', '@astrojs/check', 'parse5'];
+const tracked = [
+  'astro', '@astrojs/mdx', '@astrojs/react', '@astrojs/rss', '@astrojs/sitemap',
+  '@astrojs/check', '@astrojs/language-server', '@astrojs/compiler',
+  '@astrojs/markdown-satteri', 'parse5',
+];
 
 if (lock.lockfileVersion !== 3) fail('npm lockfile v3 is required');
 for (const name of tracked) {
@@ -68,6 +72,23 @@ for (const name of tracked) {
   const installed = findInstalledPackage(name);
   if (installed.version !== declared) fail('installed dependency differs from manifest: ' + name);
   checkEngineFloor(installed, name === 'astro' || name === '@astrojs/mdx');
+}
+
+// Diagnostic tooling stays on the last verified classic compiler while the
+// Astro 7.4 language server (2.17.x) misparses extracted legacy content sections
+// as standalone fragments (464 false diagnostics on 59 unchanged Nagornaya files).
+// Both engines are kept functional and exact: never skip astro check or silently
+// loosen version verification. See docs/dependency-migrations/ASTRO_7_4_12_NODE_22_23_4_2026_11_14.md.
+for (const [name, expected] of Object.entries({
+  '@astrojs/check': '0.9.10',
+  '@astrojs/language-server': '2.16.13',
+  '@astrojs/compiler': '2.13.1',
+})) {
+  if (manifest.devDependencies?.[name] !== expected ||
+      lock.packages?.['node_modules/' + name]?.version !== expected ||
+      findInstalledPackage(name).version !== expected) {
+    fail('verified compatibility diagnostic toolchain changed: ' + name + ' must stay at ' + expected);
+  }
 }
 
 // Fix floor for GHSA-98hj-9722-w3j8 and GHSA-mpr7-6m5w-76rw: first version fixing both is Astro 7.3.3.
@@ -98,15 +119,29 @@ for (const [pattern, label] of [
   if (pattern.test(config)) fail(label + ' is forbidden');
 }
 
-const bundledVersion = astro.dependencies?.['@astrojs/markdown-satteri'];
-if (typeof bundledVersion !== 'string') fail('Astro must depend on native Satteri');
+const bundledRange = astro.dependencies?.['@astrojs/markdown-satteri'];
+if (typeof bundledRange !== 'string') fail('Astro must depend on native Satteri');
+// Astro 7.4.x declares a caret on native Satteri. Keep one explicit,
+// exact, reviewed devDependency for Astro and MDX instead of allowing two
+// incompatible module instances to coexist in the installed tree.
+const bundledFloor = bundledRange.startsWith('^') ? bundledRange.slice(1) : bundledRange;
+const bundledParts = parseVersion(bundledFloor);
+if (bundledParts[0] !== 0 || bundledParts[1] !== 4) {
+  fail('native Satteri must remain in the reviewed 0.4.x release family');
+}
 const resolvedVersion = lock.packages?.['node_modules/@astrojs/markdown-satteri']?.version;
 const satteri = findInstalledPackage('@astrojs/markdown-satteri');
-if (parseVersion(bundledVersion)[0] !== 0 || parseVersion(bundledVersion)[1] !== 4) {
-  fail('native Satteri 0.4.x is required for this migration');
+if (compareVersions(resolvedVersion, bundledFloor) < 0) {
+  fail('locked Satteri is below Astro native requirement: ' + resolvedVersion + ' < ' + bundledRange);
 }
-if (bundledVersion !== resolvedVersion || resolvedVersion !== satteri.version) {
+if (!bundledRange.startsWith('^') && bundledRange !== resolvedVersion) {
+  fail('exact Astro Satteri requirement differs from locked version');
+}
+if (resolvedVersion !== satteri.version) {
   fail('Astro, lockfile and installed native Satteri must resolve to the same version');
+}
+if (lock.packages?.['node_modules/astro/node_modules/@astrojs/markdown-satteri']) {
+  fail('nested Astro Satteri copy conflicts with the pinned shared MDX runtime');
 }
 checkEngineFloor(satteri);
 const satteriApi = await import('@astrojs/markdown-satteri');

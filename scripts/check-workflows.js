@@ -502,7 +502,7 @@ function checkReleaseWorkflow(deployPath, deploy) {
   must(deployPath, releaseReadiness, /'refs\/remotes\/origin\/main\^\{commit\}'[\s\S]{0,100}= "\$CONTROL_PLANE_SHA"/, 'candidate job must verify exact control plane');
   must(deployPath, releaseReadiness, /git merge-base --is-ancestor "\$RELEASE_SHA" "\$CONTROL_PLANE_SHA"/, 'manual release must prove ancestry');
   must(deployPath, releaseReadiness, /GITHUB_EVENT_NAME" = "push"[\s\S]{0,120}RELEASE_SHA" = "\$CONTROL_PLANE_SHA/, 'automatic release must use one SHA for both roles');
-  must(deployPath, releaseReadiness, /node-version:\s*['"]22\.23\.1['"]/, 'candidate job must use exact Node 22.23.1');
+  must(deployPath, releaseReadiness, /node-version:\s*['"]22\.23\.4['"]/, 'candidate job must use exact Node 22.23.4');
   must(deployPath, releaseReadiness, /npm run validate:static-publication/, 'candidate job must run full source gates');
   must(deployPath, releaseReadiness, /npm run strangler:build:production-like/, 'candidate job must build production-like dist once');
   must(deployPath, releaseReadiness, /page-ownership:dist:production-like|check-page-ownership\.js[^\n]*--dist[^\n]*--production-like/, 'candidate job must derive route coverage from ownership registry');
