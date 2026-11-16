@@ -556,6 +556,7 @@ async function inspect(browserType, engine, profile) {
           .slice(0, 12);
         return {
           title: document.title,
+          antiKicker: document.querySelector('article.article-body .article-header .anti-kicker')?.textContent?.trim() || '',
           h1: document.querySelector('h1')?.textContent?.trim() || '',
           mainCount: document.querySelectorAll('main').length,
           articleCount: document.querySelectorAll('article.article-body').length,
@@ -584,6 +585,7 @@ async function inspect(browserType, engine, profile) {
       record(engine, `${profile.id}-${mode}`, 'single-main', state.mainCount === 1, JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'single-article', state.articleCount === 1, JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'title-h1', state.h1 === 'Диотрефы нашего времени' && state.title.includes('Диотрефы нашего времени'), JSON.stringify(state));
+      record(engine, `${profile.id}-${mode}`, 'reader-header-no-internal-wave', state.antiKicker === 'Историко-богословское исследование', JSON.stringify({ heading: state.antiKicker }));
       record(engine, `${profile.id}-${mode}`, 'publication-marker', state.publicationMarker === 'true', JSON.stringify(state));
       record(engine, `${profile.id}-${mode}`, 'authority-marker', state.sourceAuthority === '148', JSON.stringify(state));
       record(
