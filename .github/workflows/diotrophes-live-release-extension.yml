@@ -173,6 +173,8 @@ jobs:
           EVIDENCE_ARTIFACT_DIGEST: ${{ steps.evidence_upload.outputs.artifact-digest }}
           EVIDENCE_ARTIFACT_URL: ${{ steps.evidence_upload.outputs.artifact-url }}
         with:
+          retries: 5
+          retry-exempt-status-codes: 400,401,403,422
           script: |
             const assert = require('node:assert/strict');
             const fs = require('node:fs');
