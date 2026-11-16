@@ -201,10 +201,10 @@
       "classification": "unknown-blocker",
       "decisionSource": "data/route-profiles/konfessii-russkij-baptizm-_app.json:legacyStatus-missing",
       "sourceCommit": "a1d2e7dc9ed932541b3e9a50a22da1862557100e",
-      "gitBlobSha1": "50ac8c822db7b80b9fe83f9404ae82c24d0396e4",
-      "byteSha256": "2b6254f1922e98e94c78128b6e01c24af7c7e5c7d0f131621d95f12963d916c8",
+      "gitBlobSha1": "176761219dc3a610f226533783115b53ba46fb3c",
+      "byteSha256": "94ec4b089effd6bee1458b89840ce8214c5d9c319d60a3dab506ed2f3f0a01dc",
       "normalizedTextSha256": "fe1ff89fc2e3303afed3e917b78a88dd2a078282e23db75fee0fe292e26acf92",
-      "bytes": 2242231,
+      "bytes": 2242095,
       "wordCount": 4,
       "h1Count": 0,
       "h2Count": 0
