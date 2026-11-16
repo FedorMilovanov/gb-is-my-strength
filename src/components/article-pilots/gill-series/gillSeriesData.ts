@@ -186,7 +186,7 @@ export const GILL_PAGE_DATA: Record<GillSeriesPageId, GillPageChromeData> = {
       { href: "#sec-canticles", label: "Песнь Песней: самый личный труд Гилла", level: 3 },
       { href: "#sec-ordinances", label: "Церковные установления: крещение и Вечеря", level: 3 },
       { href: "#sec-eschatology", label: "Эсхатология: духовное и личное царствование Христа", level: 3 },
-      { href: "#sec-systematics", label: "«Полный свод богословия» — первая баптистская сумма", level: 3 },
+      { href: "#sec-systematics", label: "«Полный свод богословия» — зрелая баптистская систематика", level: 3 },
       { href: "#sec-quiz", label: "Проверь себя", level: 2 },
     ],
   },
