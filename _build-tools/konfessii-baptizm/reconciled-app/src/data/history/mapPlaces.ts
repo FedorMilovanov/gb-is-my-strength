@@ -21,7 +21,7 @@ export const mapPlaces: MapPlaceRecord[] = [
       'СЦ ЕХБ / МСЦ ЕХБ связан с советским периодом преследований и отказом от регистрации.',
     ],
     relatedNodes: ['root', 'spb', 'vseh', 'vsehb', 'rsehb', 'sc', 'pashkov', 'prokhanov', 'kargel', 'zhidkov', 'kryuchkov', 'redstock', 'karev', 'vins'],
-    source: 'pravenc.ru; ВСЕХБ 1989; v6 findings',
+    source: 'pravenc.ru; ВСЕХБ 1989',
   },
   {
     id: 'country-804',
@@ -35,7 +35,7 @@ export const mapPlaces: MapPlaceRecord[] = [
       'Дей Мазаев родился в Ново-Васильевке и стал многолетним председателем Союза баптистов России.',
     ],
     relatedNodes: ['ukr', 'vsb', 'mazaev', 'kargel', 'weiler', 'tsymbal'],
-    source: 'rusbaptist.stunda.org; baptist.org.ru; v6 findings',
+    source: 'rusbaptist.stunda.org; baptist.org.ru',
   },
   {
     id: 'country-276',
@@ -49,7 +49,7 @@ export const mapPlaces: MapPlaceRecord[] = [
       'Каргель проходил миссионерский курс в Гамбурге по рекомендации Онкена.',
     ],
     relatedNodes: ['vseh', 'pavlov', 'kargel', 'kalweit', 'redstock'],
-    source: 'baptist.org.ru; baptistru.info; v6 findings',
+    source: 'baptist.org.ru; baptistru.info',
   },
   {
     id: 'country-268',
@@ -63,7 +63,7 @@ export const mapPlaces: MapPlaceRecord[] = [
       'Тифлисская община стала важнейшим центром раннего русского баптизма.',
     ],
     relatedNodes: ['trans', 'voronin', 'pavlov', 'kargel', 'kalweit'],
-    source: 'baptist.org.ru; pravenc.ru; v6 findings',
+    source: 'baptist.org.ru; pravenc.ru',
   },
   {
     id: 'city-Санкт-Петербург',
@@ -77,7 +77,7 @@ export const mapPlaces: MapPlaceRecord[] = [
       'После высылки Пашкова Каргель опекал «осиротевшую» общину пашковцев.',
     ],
     relatedNodes: ['spb', 'pashkov', 'prokhanov', 'kargel', 'vseh', 'redstock'],
-    source: 'pravenc.ru; v6 findings',
+    source: 'pravenc.ru',
   },
   {
     id: 'city-Москва',
@@ -103,7 +103,7 @@ export const mapPlaces: MapPlaceRecord[] = [
       'Мазаев был крещён 11 ноября 1884 в реке Кавалерке В. Р. Колодиным.',
     ],
     relatedNodes: ['ukr', 'vsb', 'mazaev', 'weiler', 'tsymbal'],
-    source: 'baptist.org.ru; v6 findings',
+    source: 'baptist.org.ru',
   },
   {
     id: 'city-Тифлис (Тбилиси)',
@@ -117,7 +117,7 @@ export const mapPlaces: MapPlaceRecord[] = [
       'Павлов был рукоположён пресвитером в 1880 при участии Каргеля.',
     ],
     relatedNodes: ['trans', 'voronin', 'pavlov', 'kargel', 'kalweit'],
-    source: 'baptist.org.ru; pravenc.ru; v6 findings',
+    source: 'baptist.org.ru; pravenc.ru',
   },
   {
     id: 'city-Гамбург',
@@ -130,7 +130,7 @@ export const mapPlaces: MapPlaceRecord[] = [
       'Каргель проходил в Гамбурге миссионерскую подготовку.',
     ],
     relatedNodes: ['vseh', 'pavlov', 'kargel', 'kalweit'],
-    source: 'baptist.org.ru; baptistru.info; v6 findings',
+    source: 'baptist.org.ru; baptistru.info',
   },
 ];
 
