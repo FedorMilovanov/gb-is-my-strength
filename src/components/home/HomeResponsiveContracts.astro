@@ -379,47 +379,8 @@
   }
 
 
-  /* Five routes end with one centred card. Give the intentional singleton enough
-     measure for its longest label and description. A future sixth route removes
-     the odd-item rule automatically and completes a normal two-card row. */
-  @media (max-width: 760px) {
-    body.home-page #main-content .h-home-route:last-child {
-      width: auto;
-      min-height: 166px;
-      grid-column: auto;
-      grid-template-columns: 72px minmax(0, 1fr);
-      justify-self: stretch;
-    }
-
-    body.home-page #main-content .h-home-route:last-child .h-home-route__glyph {
-      width: 72px;
-      height: 72px;
-      min-height: 72px;
-    }
-
-    body.home-page #main-content .h-home-route:last-child:nth-child(odd) {
-      width: min(236px, calc(100% - 32px));
-      grid-column: 1 / -1;
-      justify-self: center;
-    }
-  }
-
-  @media (max-width: 340px) {
-    body.home-page #main-content .h-home-route:last-child {
-      min-height: 144px;
-      grid-template-columns: 58px minmax(0, 1fr);
-    }
-
-    body.home-page #main-content .h-home-route:last-child .h-home-route__glyph {
-      width: 58px;
-      height: 58px;
-      min-height: 58px;
-    }
-
-    body.home-page #main-content .h-home-route:last-child:nth-child(odd) {
-      width: min(212px, calc(100% - 24px));
-    }
-  }
+  /* All five route entries now share one full-width list row at <=900px.
+     The old fifth-item singleton is intentionally retired; Directions owns it. */
 
   /* Terminal signature and footer share the same centred measure. The SDG mark
      now finishes the page content before the footer instead of hanging below it

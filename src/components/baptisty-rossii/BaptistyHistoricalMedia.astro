@@ -1,4 +1,4 @@
-﻿---
+---
 interface HistoricalMediaItem {
   evidenceId: string;
   src: string;
@@ -118,7 +118,6 @@ const {
   }
 
   .baptist-authentic-media--wide .baptist-authentic-media__figure img {
-    height: auto;
     max-height: 38rem;
   }
 
@@ -140,11 +139,14 @@ const {
 
   .baptist-authentic-media__figure img {
     display: block;
-    width: 100%;
-    height: clamp(18rem, 42vw, 28rem);
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 28rem;
+    margin-inline: auto;
     border-radius: 10px;
     object-fit: contain;
-    background: #171411;
+    background: transparent;
   }
 
   .baptist-authentic-media__figure figcaption {
@@ -194,7 +196,7 @@ const {
     }
 
     .baptist-authentic-media__figure img {
-      height: min(112vw, 31rem);
+      max-height: min(112vw, 31rem);
     }
   }
 </style>

@@ -34,7 +34,12 @@ function isEnvironmentNoise(failure) {
 
   // WebKit emits these from the isolated browser environment. They do not come
   // from a same-origin production asset or application exception.
-  if (engine === 'webkit' && contract === 'runtime:pageerror' && /mc\.yandex\.com\/watch|XMLHttpRequest cannot load https:\/\/mc\.yandex\.com/i.test(detail)) return true;
+  // Headless WebKit reports denied external Yandex watch requests as XHR
+  // page errors (and may serialize https:// as "https: /"). Only that
+  // exact third-party telemetry failure is environment noise; all same-origin
+  // page errors, other XHRs and application failures remain actionable.
+  if (engine === 'webkit' && contract === 'runtime:pageerror' &&
+      /^XMLHttpRequest cannot load https:\s*\/{1,2}mc\.yandex\.(?:ru|com)\/watch\/\d+/i.test(detail)) return true;
   if (engine === 'webkit' && contract === 'runtime:console-error' && /interactive-widget/i.test(detail)) return true;
 
   return false;

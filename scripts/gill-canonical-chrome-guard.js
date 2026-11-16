@@ -38,7 +38,7 @@ function mustNot(hay, needle, label) { !hay.includes(needle) ? ok(`no ${label}`)
 console.log('\n═══ Gill canonical mobile-chrome guard (ref v2.9) ═══\n');
 
 const bar = read('src/components/article-pilots/gill-series/GillSeriesMobileBar.astro');
-const chrome = read('src/components/article-pilots/gill-series/GillSeriesChrome.astro');
+const chrome = read('src/components/article-pilots/_shared/series/SeriesReaderChrome.astro');
 
 // ── Canonical theme toggle (day/night SVG icon-swap) ──────────────────────────
 must(bar, 'gb-theme-toggle', 'канонический .gb-theme-toggle присутствует');

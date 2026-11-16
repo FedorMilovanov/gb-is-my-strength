@@ -44,7 +44,9 @@ The static Bible contract above remains the only parser, resolver and provenance
 
 - `data/bible/books.json` remains the canonical 66-book registry. `OT` defaults to the Synodal corpus and `NT` defaults to the Kassian corpus.
 - Registry completeness and corpus materialization are different facts. A registry entry may be catalogue-only until its corpus file is present; any public reference still has to pass `scripts/bible-reference-contract.mjs --strict`.
-- `.bref > .btip`, `.gterm > .gtip` and `.fn-marker > .tooltip` remain projections of `SiteUtils.makeTooltipController`.
+- `.bref > .btip`, `.gterm > .gtip` and `.fn-marker > .tooltip` are governed at runtime by `article-inline-tooltip`; the historical controller was `SiteUtils.makeTooltipController`.
+- NoteRegistry v2 records both the live and previous interaction owners. Reader Linear Text Projection adds hidden `data-reader-linear-boundary` captions to the live tooltip after the canonical endnotes are generated; the NoteRegistry projector must exclude only those generated captions from the endnote payload, without removing authored markup or modifying the live tooltip. Its generated endnote heading includes a canonical accessible label compatible with heading-name hygiene.
+- `node scripts/note-registry-projector.mjs --dry-run` is an exact postbuild idempotence gate: **any** further HTML change on an already-built `dist` is a failure, not an informational PASS.
 - All three current projections open on desktop focus/click, open on mobile touch, close on Escape, and close when the active trigger is touched a second time. Focus continuity is preserved after keyboard close.
 - Glossary hydration and manual placement are forbidden inside `.quiz-wrapper`, `.flip-card` and `.error-flip-card`. Those ancestors already own keyboard/touch activation; nested `.gterm[role=button]` controls would create competing interactive semantics.
 - `.fn-marker.map-trigger` is a map popover trigger, not an authored footnote.

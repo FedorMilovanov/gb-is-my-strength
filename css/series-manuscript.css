@@ -99,9 +99,9 @@ html.dark .genesis6-hub-page::before {
   mix-blend-mode: screen;
 }
 
+/* Fixed reader chrome owns its viewport positioning; only the content
+   canvases participate in the manuscript texture stacking context. */
 body[data-series-theme="manuscript"] .gbs2-world,
-body[data-series-theme="manuscript"] .mobile-top-bar,
-body[data-series-theme="manuscript"] .mobile-bottom-bar,
 .genesis6-hub-page .astro-shell {
   position: relative;
   z-index: 1;

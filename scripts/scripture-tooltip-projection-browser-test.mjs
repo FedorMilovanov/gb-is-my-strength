@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import { chromium } from 'playwright';
+import { loadBibleRegistry } from '../src/lib/bible-reference-core.mjs';
+import { createPublicSynodalResolver } from '../src/lib/public-synodal-reference.mjs';
 import {
   BIBLE_PUBLICATION_STATES,
   createBibleResolver,
@@ -18,7 +20,7 @@ const HELD_REFERENCE = '2 Тимофею 2:14–15';
 const HELD_CORPUS_PATH = '/data/bible/kassian/2timofeyu.json';
 const MISSING_REFERENCE = '__scripture_projection_missing__';
 const STALE_REFERENCE = '__stale_scripture_projection_probe__';
-const GENERIC_FALLBACK = 'Ссылка на указанное место Священного Писания.';
+const GENERIC_FALLBACK = 'Для этой ссылки не найден проверенный текст в Синодальном переводе. Проверьте адрес книги и главы.';
 const TOOLTIP_OWNER = 'article-inline-tooltip';
 const TOOLTIP_VERSION = 20;
 const LOCAL_TEST_HOSTS = new Set(['127.0.0.1', 'localhost', '::1']);
@@ -101,20 +103,25 @@ assert.throws(() => sanitizePublicScriptureIndex({ schemaVersion: 1, references:
 const scriptureIndex = JSON.parse(
   fs.readFileSync(new URL('../data/scripture-search-index.json', import.meta.url), 'utf8'),
 );
+const PUBLIC_EDITION = JSON.parse(
+  fs.readFileSync(new URL('../data/bible/public-domain-russyn.json', import.meta.url), 'utf8'),
+);
+const publicResolver = createPublicSynodalResolver(loadBibleRegistry(), PUBLIC_EDITION);
 const EXPECTED_PROJECTION = {};
 for (const reference of scriptureIndex.references || []) {
-  const text = String(reference.canonicalText || '').trim();
-  if (!text || !isBibleRecordPublicationEligible(reference.canonicalSource || {})) continue;
-  const routeOccurrences = (reference.occurrences || []).filter(
-    (occurrence) => normalizeRoute(occurrence.url) === ROUTE,
+  const occurrences = (reference.occurrences || []).filter(
+    occurrence => normalizeRoute(occurrence.url) === ROUTE,
   );
-  if (routeOccurrences.length === 0) continue;
-  for (const occurrence of routeOccurrences) {
-    const raw = String(occurrence.raw || '').trim();
-    if (raw) EXPECTED_PROJECTION[raw] = text;
+  if (!occurrences.length) continue;
+  const approved = isBibleRecordPublicationEligible(reference.canonicalSource || {})
+    ? String(reference.canonicalText || '').trim() : '';
+  const text = publicResolver.resolve(reference.label)?.text || approved;
+  for (const occurrence of occurrences) {
+    if (!occurrence.raw) continue;
+    const result = text || publicResolver.resolve(occurrence.raw)?.text;
+    if (result) EXPECTED_PROJECTION[occurrence.raw] = result;
   }
-  const label = String(reference.label || '').trim();
-  if (label) EXPECTED_PROJECTION[label] = text;
+  if (text && reference.label) EXPECTED_PROJECTION[reference.label] = text;
 }
 
 const heldIndexReference = (scriptureIndex.references || []).find((reference) =>
@@ -133,11 +140,8 @@ assert.equal(
   false,
   'held Cassian canonicalSource must not become publication eligible',
 );
-assert.equal(
-  Object.hasOwn(EXPECTED_PROJECTION, HELD_REFERENCE),
-  false,
-  'held Cassian reference must be excluded from the public route projection',
-);
+assert.equal(Object.hasOwn(EXPECTED_PROJECTION, HELD_REFERENCE), true,
+  'distinct public-domain Synodal text must be included even when Kassian is held');
 
 const resolver = createBibleResolver();
 const { record: heldRecord } = resolver.resolve(HELD_REFERENCE);
@@ -233,25 +237,40 @@ try {
     Object.fromEntries(Object.entries(EXPECTED_PROJECTION).sort(([a], [b]) => a.localeCompare(b, 'ru'))),
     'browser Scripture payload must equal the publication-eligible current-route projection exactly',
   );
-  assert.equal(Object.hasOwn(projectionSnapshot.scriptureData, HELD_REFERENCE), false,
-    'held Cassian reference must not exist in public SCRIPTURE_DATA');
+  assert.equal(Object.hasOwn(projectionSnapshot.scriptureData, HELD_REFERENCE), true,
+    'public-domain Synodal projection replaces held Cassian with a permitted edition');
   assert.equal(Object.hasOwn(projectionSnapshot.scriptureData, STALE_REFERENCE), false,
     'canonical projection must discard stale pre-existing global Scripture payloads');
   assert.equal(Object.values(projectionSnapshot.scriptureData).includes(HELD_TEXT), false,
     'held Cassian verbatim text must not leak through another projection key');
 
-  const heldTrigger = page.locator(`.bref[data-ref="${HELD_REFERENCE}"]`).first();
-  assert.equal(await heldTrigger.count(), 1, `real route must expose reference label ${HELD_REFERENCE}`);
+  assert.equal(await page.locator('.bref a[href]').count(), 0,
+    'generated external passage links must not become nested interactive controls inside reference buttons');
+  const heldTrigger = page.locator('.bref[data-ref="' + HELD_REFERENCE + '"]').first();
+  assert.equal(await heldTrigger.count(), 1);
   await heldTrigger.focus();
   const heldTip = page.locator('.btip.is-open').last();
   await heldTip.waitFor({ state: 'visible' });
   assert.equal((await heldTip.locator('.btip__reference').textContent())?.trim(), HELD_REFERENCE);
   const heldTooltipText = (await heldTip.locator('.btip__text').textContent())?.trim();
-  assert.equal(heldTooltipText, GENERIC_FALLBACK,
-    'known but publication-blocked Scripture must use the existing generic fallback');
-  assert.notEqual(heldTooltipText, HELD_TEXT,
-    'publication-blocked Cassian verbatim text must not reach the reader tooltip');
+  assert.equal(heldTooltipText, publicResolver.resolve(HELD_REFERENCE)?.text,
+    'exact eBible RUSSYN passage must be shown inline');
+  assert.notEqual(heldTooltipText, HELD_TEXT, 'held Kassian text must never leak');
+  assert.match(await heldTip.locator('.btip__source').textContent(), /Синодальный/);
+  assert.equal(await heldTip.locator('.btip__external').count(), 0,
+    'Scripture popup must not redirect to an external website');
   await page.keyboard.press('Escape');
+
+  const lukeTrigger = page.locator('.bref[data-ref="Луки 24:27"]').first();
+  await lukeTrigger.focus();
+  const lukeTip = page.locator('.btip.is-open').last();
+  await lukeTip.waitFor({ state: 'visible' });
+  assert.equal((await lukeTip.locator('.btip__text').textContent())?.trim(),
+    publicResolver.resolve('Луки 24:27')?.text);
+  assert.equal(await lukeTip.locator('.btip__external').count(), 0);
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('.btip.is-open').count(), 0,
+    'Escape closes the inline Scripture card without a stale overlay');
 
   await page.evaluate((missingReference) => {
     const host = document.querySelector('article') || document.querySelector('main') || document.body;
@@ -269,8 +288,58 @@ try {
   assert.equal((await missingTip.locator('.btip__reference').textContent())?.trim(), MISSING_REFERENCE);
   assert.equal((await missingTip.locator('.btip__text').textContent())?.trim(), GENERIC_FALLBACK,
     'intentionally missing reference must preserve the existing generic fallback');
+  assert.equal(await missingTip.locator('.btip__external').count(), 0,
+    'invalid non-Bible references must not invent an external passage URL');
   assert.equal(await page.evaluate((reference) => Object.hasOwn(window.SCRIPTURE_DATA || {}, reference), MISSING_REFERENCE), false,
     'missing probe must not be synthesized into the canonical projection');
+
+  // Deep-scroll mobile regression: the fixed-body scroll lock must not move
+  // the Scripture card outside the visible viewport; second tap, Escape
+  // and outside tap must each close one owner without reopening it.
+  const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  try {
+    const mobileErrors = [];
+    mobile.on('pageerror', (error) => mobileErrors.push(String(error.message || error)));
+    await mobile.goto(`${BASE}${ROUTE}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await mobile.waitForFunction(() => window.GBArticleTooltips?.owner === 'article-inline-tooltip');
+    const mobileLuke = mobile.locator('.bref[data-ref="Луки 24:27"]').first();
+    await mobileLuke.scrollIntoViewIfNeeded();
+    const beforeY = await mobile.evaluate(() => window.scrollY);
+    assert(beforeY > 1000, 'deep-scroll mobile witness must start well below the first fold');
+    const mobileTip = mobile.locator('.btip.is-open');
+    const checkMobileCard = async () => {
+      await mobileTip.waitFor({ state: 'visible' });
+      const box = await mobileTip.boundingBox();
+      assert(box && box.x >= -1 && box.y >= -1 && box.x + box.width <= 391 && box.y + box.height <= 845,
+        'mobile Scripture card moved outside viewport after scroll lock');
+      assert.equal(await mobileTip.locator('.btip__external').count(), 0);
+      assert.equal(await mobile.locator('.bref a[href]').count(), 0,
+        'mobile generated links must not be nested inside a reference button');
+    };
+    await mobileLuke.click();
+    await checkMobileCard();
+    await mobileLuke.click();
+    await mobile.waitForFunction(() => document.querySelectorAll('.btip.is-open').length === 0);
+    await mobileLuke.click();
+    await checkMobileCard();
+    await mobile.keyboard.press('Escape');
+    await mobile.waitForFunction(() => document.querySelectorAll('.btip.is-open').length === 0);
+    await mobileLuke.click();
+    await checkMobileCard();
+    await mobile.mouse.click(380, 75);
+    await mobile.waitForFunction(() => document.querySelectorAll('.btip.is-open').length === 0);
+    // The shared overlay's delayed focus-restoration retries must not
+    // resurrect a dismissed mobile popup during the following half-second.
+    await mobile.waitForTimeout(550);
+    assert.equal(await mobileTip.count(), 0, 'outside-click dismissal must remain stable after focus restoration');
+    const afterY = await mobile.evaluate(() => window.scrollY);
+    assert(Math.abs(afterY - beforeY) < 80, 'closing mobile Scripture card must restore the previous reading position');
+    assert.equal(await mobile.evaluate(() => window.SiteUtils?._scrollLockCount), 0,
+      'mobile Scripture card must fully release the shared scroll lock');
+    assert.deepEqual(mobileErrors, [], 'deep-scroll mobile Scripture interactions must not throw');
+  } finally {
+    await mobile.close();
+  }
 
   assert.deepEqual(pageErrors, [], `unexpected page errors: ${pageErrors.join(' | ')}`);
   assert.deepEqual(consoleErrors, [], `unexpected console errors: ${consoleErrors.join(' | ')}`);

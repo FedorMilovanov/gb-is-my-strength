@@ -782,9 +782,20 @@ async function checkMobileTheme(browser) {
     if (!enabled) { await page.close(); continue; }
     await page.evaluate(() => { try { localStorage.setItem('theme', 'light'); } catch (_) {} document.documentElement.classList.remove('dark'); });
     const handle = await visibleThemeHandle(page);
-    const el = handle.asElement();
+    let el = handle.asElement();
     if (!el) {
-      push('mobile-theme-control-not-visible', url, 'theme enabled but no visible control');
+      // Reader series and standalone articles intentionally moved day/night
+      // into the existing settings sheet. Exercise the real user path rather
+      // than demanding a duplicate floating theme button.
+      const settings = page.locator('#mobSettingsBtn:visible, #hmSettingsBtn:visible').first();
+      if (await settings.count()) {
+        await settings.click({ timeout: 5000 });
+        const dark = page.locator('[data-gill-theme-btn][data-theme="dark"]:visible, [data-hm-theme="dark"]:visible').first();
+        if (await dark.count()) el = await dark.elementHandle();
+      }
+    }
+    if (!el) {
+      push('mobile-theme-control-not-visible', url, 'no visible direct theme action or Settings > Night path');
       await page.close();
       continue;
     }

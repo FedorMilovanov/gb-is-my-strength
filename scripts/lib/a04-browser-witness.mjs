@@ -19,7 +19,14 @@ export async function inspectRoute(page, surfaces, legacy) {
         return `${node.tagName.toLowerCase()}${id}${classes}`;
       };
       for (const trigger of owned) {
+        // Bible references now own an adjacent generated dialog, not a tooltip
+        // nested inside the interactive button. Preserve both valid shapes
+        // while rejecting zero or duplicate projections on the same trigger.
         const tips = [...trigger.querySelectorAll(surface.tip)];
+        if (surface.id === 'bible-reference') {
+          const next = trigger.nextElementSibling;
+          if (next?.matches('.btip[data-generated-scripture-tip="1"]')) tips.push(next);
+        }
         if (tips.length !== 1) unpaired += 1;
         if (tips.length === 1 && !(tips[0].textContent || '').trim()) empty += 1;
         const ancestor = trigger.parentElement?.closest(interactiveSelector);
@@ -63,7 +70,10 @@ async function findHitTestableTrigger(page, surface) {
     const trigger = locator.nth(index);
     const eligible = await trigger.evaluate((node, data) => {
       const excluded = Boolean(data.exception && (node.matches(data.exception) || node.closest(data.exception)));
-      return !excluded && node.querySelectorAll(data.tip).length === 1;
+      const nestedCount = node.querySelectorAll(data.tip).length;
+      const siblingCount = data.id === 'bible-reference' &&
+        node.nextElementSibling?.matches('.btip[data-generated-scripture-tip="1"]') ? 1 : 0;
+      return !excluded && nestedCount + siblingCount === 1;
     }, surface).catch(() => false);
     if (!eligible) continue;
     await trigger.scrollIntoViewIfNeeded({ timeout: 3000 }).catch(() => {});

@@ -1,0 +1,21 @@
+---
+/** One compact Play + rate badge assembly on every Reader mobile page.
+ * PlayEmber stays the sole TTS transport; the badge only operates the shared
+ * horizontal rate menu. The vintage play glyph is unmodified.
+ */
+import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
+interface Props { engine:'series'|'article'; }
+const {engine}=Astro.props as Props;
+const series=engine==='series';
+---
+<span class:list={['reader-mobile-play-group',series?'mobile-playwrap':'hm-playwrap']}>
+  <PlayEmber audioState="none" class={series?'mobile-top-ember reader-mobile-play':'hm-ember reader-mobile-play'} tip="Озвучка" />
+  <button
+    type="button"
+    class:list={['reader-mobile-speed-badge',series?'mobile-spdbadge':'hm-spdbadge']}
+    id={series?'mobSpdBadge':'hmSpdBadge'}
+    aria-controls={series?'mobileSpeedrail':'hmSpeedrail'}
+    aria-expanded="false"
+    aria-label="Выбрать скорость озвучки, сейчас 1×"
+  >1×</button>
+</span>

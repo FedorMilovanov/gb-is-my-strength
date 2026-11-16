@@ -1,0 +1,11 @@
+---
+/**
+ * Canonical Reader floating controls behaviour for all native/pilot readers.
+ * Exactly one owner loads the same versioned script on each route.
+ * Appearance (palette, rail, icon placement) belongs to the host Reader
+ * component; never duplicate JS listeners or embed per-page asset hashes.
+ */
+import { assetUrl } from '@/lib/asset-version';
+const source = assetUrl('js/floating-cluster-controller.js');
+---
+<script is:inline defer src={source}></script>

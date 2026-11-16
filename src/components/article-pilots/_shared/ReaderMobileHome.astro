@@ -1,0 +1,20 @@
+---
+/** One historical Home icon for every Reader mobile bar, variant-independent.
+ * The destination is page-specific; appearance and focus contract are shared.
+ */
+interface Props { engine:'series'|'article'; href:string; }
+const {engine,href}=Astro.props as Props;
+---
+{engine==='series'?(
+  <a class="reader-mobile-home gb-icon" id="mobHomeBtn" href={href} aria-label="На главную">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10Z" />
+    </svg>
+  </a>
+):(
+  <button class="reader-mobile-home hm-icon" id="hmBackBtn" type="button" data-home-href={href} aria-label="На главную">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10Z" />
+    </svg>
+  </button>
+)}

@@ -100,13 +100,18 @@ async function inspectRoute(page, kind, route, { focusWitness = false } = {}) {
   const onPageError = (error) => pageErrors.push(String(error?.stack || error));
   page.on('pageerror', onPageError);
   try {
-    const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
+    // WebKit may dispatch DOMContentLoaded before the external canonical CSS
+    // has finished loading. Wait for load before measuring the JS-off surface.
+    const response = await page.goto(route, { waitUntil: 'load' });
     assert.ok(response?.ok(), `${kind} ${route}: load failed`);
     const state = await page.evaluate(() => {
-      const rails = [...document.querySelectorAll('.mobile-speedrail[aria-hidden="true"]')];
+      const rails = [...document.querySelectorAll('.reader-mobile-speedrail[aria-hidden="true"], .mobile-speedrail[aria-hidden="true"]')];
       return rails.map((rail) => ({
         id: rail.id || '',
         display: getComputedStyle(rail).display,
+        opacity: Number(getComputedStyle(rail).opacity),
+        pointerEvents: getComputedStyle(rail).pointerEvents,
+        inert: rail.inert,
         rects: rail.getClientRects().length,
         focusableRects: [...rail.querySelectorAll('a[href],button,input,select,textarea,[tabindex]')]
           .map((node) => ({
@@ -118,19 +123,26 @@ async function inspectRoute(page, kind, route, { focusWitness = false } = {}) {
     });
     assert.ok(state.length > 0, `${kind} ${route}: hidden speedrail missing`);
     for (const rail of state) {
-      assert.equal(rail.display, 'none', `${kind} ${route}: hidden rail ${rail.id || '(no id)'} rendered`);
-      assert.equal(rail.rects, 0, `${kind} ${route}: hidden rail ${rail.id || '(no id)'} has geometry`);
-      assert.ok(rail.focusableRects.every((item) => item.rects === 0), `${kind} ${route}: hidden rail descendant has geometry`);
+      // Closed rails may retain geometry to animate into the shared slot.
+      // JS-off safety is an invisible, non-pointer, inert subtree, not display:none.
+      const physicallyHidden = rail.display === 'none' || rail.rects === 0;
+      const semanticallyHidden = rail.inert && rail.opacity <= 0.01 && rail.pointerEvents === 'none';
+      assert.ok(physicallyHidden || semanticallyHidden,
+        `${kind} ${route}: closed rail ${rail.id || '(no id)'} is visible or interactive: ${JSON.stringify(rail)}`);
+      assert.ok(rail.inert || rail.focusableRects.every(item => item.rects === 0),
+        `${kind} ${route}: closed rail descendants remain keyboard accessible`);
     }
 
     let trace = [];
     if (focusWitness) {
-      const start = page.locator('#mobLearningBtn');
+      // Learning moved inside Settings; begin the JS-off tab witness at the
+      // currently visible mobile settings trigger, not a hidden legacy control.
+      const start = page.locator('#mobSettingsBtn:visible, #hmSettingsBtn:visible').first();
       await start.waitFor({ state: 'visible' });
       await start.focus();
       for (let index = 0; index < 10; index += 1) {
         await page.keyboard.press('Tab');
-        trace.push(await page.evaluate(() => Boolean(document.activeElement?.closest?.('.mobile-speedrail[aria-hidden="true"]'))));
+        trace.push(await page.evaluate(() => Boolean(document.activeElement?.closest?.('.reader-mobile-speedrail[aria-hidden="true"], .mobile-speedrail[aria-hidden="true"]'))));
       }
       assert.ok(trace.every((entered) => !entered), `${kind} ${route}: Tab entered hidden rail`);
     }

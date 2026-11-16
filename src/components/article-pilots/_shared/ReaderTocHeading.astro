@@ -1,0 +1,25 @@
+---
+/**
+ * Canonical presentation-only TOC heading for standalone and series rails.
+ * Keep the historic IDs/classes: ReaderState, scrollspy, collapse and CSS
+ * continue to be owned by their existing engines. No listeners are added here.
+ */
+interface Props {
+  variant: 'single' | 'series';
+  label: string;
+  total: number;
+}
+const { variant, label, total } = Astro.props;
+---
+{variant === 'series' ? (
+  <div class="gbs2-toch">
+    <span>{label}</span>
+    <span class="gbs2-count" id="gbs2Count">1 / {total}</span>
+    <slot />
+  </div>
+) : (
+  <div class="hrail-toch">
+    {label}
+    <b id="hrailCount">1 / {total}</b>
+  </div>
+)}

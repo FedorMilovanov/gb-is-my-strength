@@ -2,10 +2,9 @@
 'use strict';
 
 /*
- * Install the normalized effective route registry for this process before the
- * existing article dist audit loads its source-contract dependency. This keeps
- * the large audit implementation focused on HTML/dist assertions while route
- * ownership is supplied by page-ownership + profiles + explicit matrix overrides.
+ * Compatibility entrypoint: enforce Bible rights before the native article
+ * audit. The audit itself imports effective-route-registry, so no module-cache
+ * replacement or implicit registration order is necessary.
  */
 
 const { assertApiBibleRightsContract } = require('./lib/api-bible-rights-contract');
@@ -14,7 +13,5 @@ const { assertTmsjTranslationRightsContract } = require('./lib/tmsj-translation-
 assertApiBibleRightsContract();
 assertTmsjTranslationRightsContract();
 
-const basePath = require.resolve('./lib/route-source-contract');
-const effective = require('./lib/effective-route-registry');
-require.cache[basePath].exports = effective;
+// Preserve this entrypoint for established CI commands and rights gates.
 require('./article-native-contract-audit');

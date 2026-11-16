@@ -43,9 +43,18 @@ function assertAssetContract(label, source = read(label)) {
 
   const mobile = source.indexOf('nagornaya-mobile-toc.js');
   const bar = source.indexOf('nagornaya-bar-extras.js');
-  const floating = source.indexOf('floating-cluster-controller.js');
+  const directFloating = source.indexOf('floating-cluster-controller.js');
+  // Native Astro routes mount the canonical JS owner through its component;
+  // retained legacy references still load the script directly. In either
+  // representation, enforce the actual order and single ownership.
+  const floatingMount = source.indexOf('<ReaderFloatingControlsRuntime />');
+  const hasCanonicalOwner = floatingMount >= 0 &&
+    source.includes("import ReaderFloatingControlsRuntime from '@/components/reader-platform/ReaderFloatingControlsRuntime.astro';");
+  const floating = hasCanonicalOwner ? floatingMount : directFloating;
+  assert(!(hasCanonicalOwner && directFloating >= 0),
+    `${label}: floating controls must not be loaded twice`);
   assert(mobile >= 0 && bar > mobile && floating > bar,
-    `${label}: required order is mobile-toc -> bar-extras -> floating-cluster`);
+    `${label}: required order is mobile-toc -> bar-extras -> floating-cluster (direct or canonical owner)`);
 }
 
 function assertCompactFooterContract(rel) {

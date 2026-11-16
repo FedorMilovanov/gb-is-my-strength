@@ -309,8 +309,12 @@ async function scene(browser, base, spec, node, viewport, javaScriptEnabled) {
   });
   const label = `${spec.id} ${viewport.width}px ${javaScriptEnabled ? 'JS' : 'no-JS'}`;
   try {
-    await page.goto(base + spec.route, { waitUntil: javaScriptEnabled ? 'networkidle' : 'load', timeout: 40_000 });
+    // The relation panel is statically projected. External analytics can keep
+    // networkidle unsettled even when all HTML and CSS are ready; wait for
+    // the actual relation surface instead of unrelated network silence.
+    await page.goto(base + spec.route, { waitUntil: 'domcontentloaded', timeout: 40_000 });
     await page.waitForSelector('.gb-relations-panel', { timeout: 10_000 });
+    await page.evaluate(() => document.fonts.ready);
     const state = await inspect(page, spec, node, viewport);
     record(label, valid(state, spec, viewport) && errors.length === 0 && forbiddenRequests.length === 0,
       JSON.stringify({ ...state, errors, forbiddenRequests, initiators }));
@@ -328,7 +332,9 @@ async function failureIsolation(browser, base, spec, node) {
   await page.route('**/data/*.json', (route) => route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"forced"}' }));
   await page.route('**/js/relationship-panel.js*', (route) => route.abort('failed'));
   try {
-    await page.goto(base + spec.route, { waitUntil: 'networkidle', timeout: 40_000 });
+    await page.goto(base + spec.route, { waitUntil: 'domcontentloaded', timeout: 40_000 });
+    await page.waitForSelector('.gb-relations-panel', { timeout: 10_000 });
+    await page.evaluate(() => document.fonts.ready);
     const state = await inspect(page, spec, node, viewport);
     record('data/runtime failure isolation', valid(state, spec, viewport), JSON.stringify(state));
   } catch (error) { record('data/runtime failure isolation', false, String(error).slice(0, 500)); }
@@ -339,8 +345,9 @@ async function printScene(browser, base) {
   const context = await browser.newContext({ viewport: { width: 1200, height: 900 } });
   const page = await context.newPage();
   try {
-    await page.goto(`${base}/articles/20-antisovetov-pastoru/`, { waitUntil: 'networkidle', timeout: 40_000 });
+    await page.goto(`${base}/articles/20-antisovetov-pastoru/`, { waitUntil: 'domcontentloaded', timeout: 40_000 });
     await page.waitForSelector('.gb-relations-panel');
+    await page.evaluate(() => document.fonts.ready);
     await page.emulateMedia({ media: 'print' });
     const display = await page.locator('.gb-relations-panel').evaluate((node) => getComputedStyle(node).display);
     record('print exclusion', display === 'none', `display=${display}`);

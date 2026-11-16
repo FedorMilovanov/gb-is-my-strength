@@ -104,7 +104,7 @@ const BAPTIST_PAGES: Record<string, SeriesPageChromeData> = {
     readingProgressPartMin: 18,
     readingProgressTotalMin: 229,
     railNowTitle: 'Воронин и ночь на Куре',
-    railCover: '../../images/baptisty-rossii/cover-01-kura.webp',
+    railCover: '../../images/baptisty-rossii/archival-01-kura.webp',
     partDialogLabel: 'Часть I · Ночь на Куре',
     partToc: [
       { href: '#molokan-context', label: 'До баптистского имени: молоканский библейский поиск', level: 2, current: true, },
@@ -125,7 +125,7 @@ const BAPTIST_PAGES: Record<string, SeriesPageChromeData> = {
     readingProgressPartMin: 20,
     readingProgressTotalMin: 229,
     railNowTitle: 'Южная штунда и первые крещения',
-    railCover: '../../images/baptisty-rossii/cover-02-shtunda.webp',
+    railCover: '../../images/baptisty-rossii/archival-02-shtunda.webp',
     partDialogLabel: 'Часть II · Южная штунда',
     partToc: [
       { href: '#stunda-not-caricature', label: 'Штунда не как карикатура', level: 2, current: true, },
@@ -145,7 +145,7 @@ const BAPTIST_PAGES: Record<string, SeriesPageChromeData> = {
     readingProgressPartMin: 17,
     readingProgressTotalMin: 229,
     railNowTitle: 'Петербург и Ново-Васильевка: две развилки 1884 года',
-    railCover: '../../images/baptisty-rossii/cover-03-1884.webp',
+    railCover: '../../images/baptisty-rossii/archival-03-1884.webp',
     partDialogLabel: 'Часть III · Две развилки 1884',
     partToc: [
       { href: '#petersburg-april-1884', label: 'Совещание 1–6 апреля 1884 года', level: 2, current: true, },
@@ -166,7 +166,7 @@ const BAPTIST_PAGES: Record<string, SeriesPageChromeData> = {
     readingProgressPartMin: 21,
     readingProgressTotalMin: 229,
     railNowTitle: 'Петербургское пробуждение: Редсток, Пашков и Проханов',
-    railCover: '../../images/baptisty-rossii/cover-04-peterburg.webp',
+    railCover: '../../images/baptisty-rossii/archival-04-peterburg.webp',
     partDialogLabel: 'Часть IV · Петербургская линия',
     partToc: [
       { href: '#redstock', label: 'Редсток: вопрос о личном спасении', level: 2, current: true, },
@@ -191,7 +191,7 @@ const BAPTIST_PAGES: Record<string, SeriesPageChromeData> = {
     readingProgressPartMin: 24,
     readingProgressTotalMin: 229,
     railNowTitle: 'Свобода совести и военный вопрос',
-    railCover: '../../images/baptisty-rossii/cover-05-conscience.webp',
+    railCover: '../../images/baptisty-rossii/archival-05-conscience.webp',
     partDialogLabel: 'Часть V · Свобода совести',
     partToc: [
       { href: '#what-is-military-question', label: 'Что значит «военный вопрос»', level: 2, current: true, },
@@ -218,7 +218,7 @@ const BAPTIST_PAGES: Record<string, SeriesPageChromeData> = {
     readingProgressPartMin: 28,
     readingProgressTotalMin: 229,
     railNowTitle: 'Советская ночь: закон 1929 года и репрессии',
-    railCover: '../../images/baptisty-rossii/cover-06-soviet-night.webp',
+    railCover: '../../images/baptisty-rossii/archival-06-soviet-night.webp',
     partDialogLabel: 'Часть VI · Советская ночь',
     partToc: [
       { href: '#open-window', label: 'Послереволюционное окно', level: 2, current: true, },
@@ -245,7 +245,7 @@ const BAPTIST_PAGES: Record<string, SeriesPageChromeData> = {
     readingProgressPartMin: 26,
     readingProgressTotalMin: 229,
     railNowTitle: 'ВСЕХБ 1944: один союз под надзором',
-    railCover: '../../images/baptisty-rossii/cover-07-vsehib.webp',
+    railCover: '../../images/baptisty-rossii/archival-07-vsehib.webp',
     partDialogLabel: 'Часть VII · Один союз',
     partToc: [
       { href: '#before-1944', label: 'До 1944: две реки', level: 2, current: true, },
@@ -274,7 +274,7 @@ const BAPTIST_PAGES: Record<string, SeriesPageChromeData> = {
     readingProgressPartMin: 25,
     readingProgressTotalMin: 229,
     railNowTitle: 'Инициативная группа: путь к Совету Церквей',
-    railCover: '../../images/baptisty-rossii/cover-08-initiative.webp',
+    railCover: '../../images/baptisty-rossii/archival-08-initiative.webp',
     partDialogLabel: 'Часть VIII · Инициативная группа',
     partToc: [
       { href: '#from-monolith', label: 'От монолита к трещинам', level: 2, current: true, },
@@ -301,7 +301,7 @@ const BAPTIST_PAGES: Record<string, SeriesPageChromeData> = {
     readingProgressPartMin: 23,
     readingProgressTotalMin: 229,
     railNowTitle: 'Подпольная печать: Вестники, «Христианин» и память узников',
-    railCover: '../../images/baptisty-rossii/cover-09-samizdat.webp',
+    railCover: '../../images/baptisty-rossii/archival-09-samizdat.webp',
     partDialogLabel: 'Часть IX · Подпольная печать',
     partToc: [
       { href: '#voice-after-1966', label: 'После 1966: церкви нужен голос', level: 2, current: true, },
@@ -329,7 +329,7 @@ const BAPTIST_PAGES: Record<string, SeriesPageChromeData> = {
     readingProgressPartMin: 27,
     readingProgressTotalMin: 229,
     railNowTitle: 'Справочник источников',
-    railCover: '../../images/baptisty-rossii/cover-10-reference.webp',
+    railCover: '../../images/baptisty-rossii/archival-10-reference.webp',
     partDialogLabel: 'Справочник · Справочник',
     partToc: [
       { href: '#source-levels', label: 'Уровни источников A/B/C/D', level: 2, current: true, },

@@ -11,7 +11,7 @@ const countMatches = (text, pattern) => [...text.matchAll(pattern)].length;
 
 const COMPOSER = 'src/runtime/article-interactions.js';
 const READER = 'src/components/reader-platform/ReaderActionsRuntime.astro';
-const SERIES_CHROME = 'src/components/article-pilots/gill-series/GillSeriesChrome.astro';
+const SERIES_CHROME = 'src/components/article-pilots/_shared/series/SeriesReaderChrome.astro';
 const ANTISOVETOV = 'src/components/article-pilots/antisovetov/AntisovetovBody.astro';
 const KRAJNE = 'src/components/article-pilots/krajne/KrajneBody.astro';
 

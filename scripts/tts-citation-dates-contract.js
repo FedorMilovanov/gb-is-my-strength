@@ -162,7 +162,8 @@ const CENTURY_PATTERN = /(^|[^А-Яа-яЁё\d])([IVXLCDM]{1,7})(?:\s*[–—-]\
 // A weight is the only other reading of "г."; the site spells «грамм» out and
 // never abbreviates it, so a corpus hit here would mean new content needs its
 // own decision instead of a silent "year".
-const WEIGHT_AFTER = /(^|\s)(соли|муки|сахара|масла|воды|грамм[а-яё]*|кг|мг|специй|дрожжей|мёда|меда|крупы)\b/;
+// JS \\b is ASCII-based and cannot close a Cyrillic word; this boundary is Unicode-aware.
+const WEIGHT_AFTER = /(^|\s)(соли|муки|сахара|масла|воды|грамм[а-яё]*|кг|мг|специй|дрожжей|мёда|меда|крупы)(?=$|[^\p{L}\p{N}])/u;
 
 let yearTotal = 0;
 let centuryTotal = 0;
@@ -170,6 +171,24 @@ let yearLeft = 0;
 let centuryLeft = 0;
 const leftovers = [];
 const weights = [];
+
+// Shared predicate for source corpus and negative/positive admission fixtures.
+// Do not pronounce mass abbreviations as years; require an editorial decision.
+function weightAbbreviations(text) {
+  const found = [];
+  for (const match of String(text).matchAll(/(\d{1,4})\s*г\.(\s*[а-яё]+)?/gi)) {
+    if (match[2] && WEIGHT_AFTER.test(match[2])) found.push(match[0].trim());
+  }
+  return found;
+}
+for (const sample of ["200 г. сахара", "50 г. соли", "35 г. муки", "1 г. масла", "100 г. сахара,"]) {
+  if (weightAbbreviations(sample).length !== 1)
+    problems.push("weight guard: missed " + JSON.stringify(sample));
+}
+for (const sample of ["г. Москва", "учения г. Пашкова", "в 1956 г.", "1956 г. начался"]) {
+  if (weightAbbreviations(sample).length !== 0)
+    problems.push("weight guard: false positive " + JSON.stringify(sample));
+}
 
 for (const file of files) {
   const text = fs.readFileSync(file, 'utf8').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
@@ -184,10 +203,9 @@ for (const file of files) {
     centuryLeft += 1;
     if (leftovers.length < 5) leftovers.push(`${path.relative(ROOT, file)}: …${expanded.slice(Math.max(0, match.index - 40), match.index + 12)}…`);
   }
-  for (const match of text.matchAll(/(\d{1,4})\s*г\.(\s*[а-яё]+)?/g)) {
-    if (match[2] && WEIGHT_AFTER.test(match[2]) && weights.length < 5) weights.push(`${path.relative(ROOT, file)}: ${match[0].trim()}`);
-  }
-}
+  for (const match of weightAbbreviations(text)) {
+    if (weights.length < 5) weights.push(path.relative(ROOT, file) + ": " + match);
+  }}
 
 if (yearLeft) problems.push(`corpus: ${yearLeft} year abbreviations survive expansion, e.g. ${leftovers.slice(0, 3).join(' | ')}`);
 if (centuryLeft) problems.push(`corpus: ${centuryLeft} century abbreviations survive expansion`);

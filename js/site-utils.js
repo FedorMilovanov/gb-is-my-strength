@@ -11,6 +11,10 @@
   var restoring = false;
   var highlightObserver = null;
   var HIGHLIGHTS_KEY = 'gb-highlights-v1';
+  // The native print flow temporarily suspends, never destroys, known
+  // OverlayRuntime-owned body locks. Native afterprint restores only owners
+  // that are still open, preserving user focus and the screen-side overlay.
+  var printScrollSuspension = null;
 
   function normalizeSource(source) {
     return typeof source === 'string' && source.trim() ? source.trim() : '__anonymous__';
@@ -78,6 +82,7 @@
     return {
       body: {
         overflow: readStyle(body.style, 'overflow', 'overflow'),
+        scrollbarGutter: readStyle(body.style, 'scrollbar-gutter', 'scrollbarGutter'),
         overscrollBehavior: readStyle(body.style, 'overscroll-behavior', 'overscrollBehavior'),
         position: readStyle(body.style, 'position', 'position'),
         top: readStyle(body.style, 'top', 'top'),
@@ -101,6 +106,7 @@
     var body = document.body;
     var html = document.documentElement;
     writeStyle(body.style, 'overflow', 'overflow', snapshot.body.overflow || '');
+    writeStyle(body.style, 'scrollbar-gutter', 'scrollbarGutter', snapshot.body.scrollbarGutter || '');
     writeStyle(body.style, 'overscroll-behavior', 'overscrollBehavior', snapshot.body.overscrollBehavior || '');
     writeStyle(body.style, 'position', 'position', snapshot.body.position || '');
     writeStyle(body.style, 'top', 'top', snapshot.body.top || '');
@@ -124,10 +130,23 @@
       if (!savedLockStyles) savedLockStyles = captureLockStyles();
       if (body.style.position !== 'fixed') savedScrollY = readLockedScrollY();
       var scrollbar = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+      // A stable root scrollbar gutter already reserves this space. Do not
+      // compensate a second time with body padding when fixing its position;
+      // that silently narrows the article behind overlays on classic-scrollbar
+      // desktops. Routes without stable gutters retain the legacy fallback.
+      var rootStyle = typeof window.getComputedStyle === 'function'
+        ? window.getComputedStyle(document.documentElement) : null;
+      var stableGutter = !!(rootStyle && /(?:^|\s)stable(?:\s|$)/.test(rootStyle.scrollbarGutter || ''));
       document.documentElement.style.setProperty('--scroll-lock-top', '-' + savedScrollY + 'px');
       document.documentElement.setAttribute('data-scroll-locked', '1');
       document.documentElement.classList.remove('cp-scroll-lock');
       body.classList.remove('no-scroll', 'ng-toc-lock');
+      // The body inherits scrollbar-gutter:stable on some reader layouts.
+      // When it becomes a fixed hidden-overflow scroll container, Chromium
+      // reserves an extra 15px INSIDE the body, shifting centered text 7.5px.
+      // Keep the root gutter where needed, but suppress the body-internal one
+      // only for the lifetime of this centralized scroll lock.
+      body.style.scrollbarGutter = 'auto';
       body.style.overflow = 'hidden';
       body.style.overscrollBehavior = 'none';
       body.style.position = 'fixed';
@@ -135,7 +154,7 @@
       body.style.left = '0';
       body.style.right = '0';
       body.style.width = '100%';
-      body.style.paddingRight = scrollbar ? scrollbar + 'px' : '';
+      body.style.paddingRight = scrollbar && !stableGutter ? scrollbar + 'px' : '';
     } finally { restoring = false; }
   }
 
@@ -205,6 +224,52 @@
     stopEmergencyTimer();
   }
 
+  function suspendScrollForPrint() {
+    if (printScrollSuspension) return { ok: true, state: 'already-suspended' };
+    // Never discard unrelated or legacy scroll owners to manufacture print
+    // success. The caller must refuse native button printing on this outcome.
+    if (legacyLockActive) return { ok: false, reason: 'legacy-scroll-owner' };
+    var owners = Array.from(globalSources);
+    for (var i = 0; i < owners.length; i += 1) {
+      var source = owners[i];
+      if (source.indexOf('overlay:') !== 0) return { ok: false, reason: 'unknown-scroll-owner', owner: source };
+      var record = overlayRecords.get(source.slice('overlay:'.length));
+      if (!record || !record.open || !record.lockScroll) {
+        return { ok: false, reason: 'untracked-overlay-owner', owner: source };
+      }
+    }
+    if (owners.length === 0) {
+      var root = document.documentElement;
+      if (root.getAttribute('data-scroll-locked') === '1') {
+        return { ok: false, reason: 'orphaned-scroll-lock' };
+      }
+      return { ok: true, state: 'unlocked' };
+    }
+    printScrollSuspension = { owners: owners };
+    owners.forEach(unlockScroll);
+    if (effectiveLocked() || document.documentElement.getAttribute('data-scroll-locked') === '1') {
+      resumeScrollAfterPrint();
+      return { ok: false, reason: 'scroll-lock-not-released' };
+    }
+    return { ok: true, state: 'suspended', ownerCount: owners.length };
+  }
+
+  function resumeScrollAfterPrint() {
+    var snapshot = printScrollSuspension;
+    printScrollSuspension = null;
+    if (!snapshot) return { restored: 0 };
+    var restored = 0;
+    snapshot.owners.forEach(function (source) {
+      var record = overlayRecords.get(source.slice('overlay:'.length));
+      // Closing an overlay while the print dialog is active must not reopen
+      // it or resurrect a stale lock when the user returns to the page.
+      if (!record || !record.open || !record.lockScroll) return;
+      if (!globalSources.has(source)) lockScroll(source);
+      restored += 1;
+    });
+    return { restored: restored };
+  }
+
   // site.js has a private SiteUtils object. It calls these two global hooks only
   // when its private lock set changes 0→1 / 1→0, which lets us coordinate both
   // implementations without editing the large minified bundle.
@@ -267,6 +332,13 @@
   protectedMethod('forceUnlockEmergency', forceUnlock);
   protectedMethod('_startEmergencyTimer', noteLegacyLockStart);
   protectedMethod('_stopEmergencyTimer', noteLegacyLockStop);
+  protectedMethod('suspendScrollForPrint', suspendScrollForPrint);
+  protectedMethod('resumeScrollAfterPrint', resumeScrollAfterPrint);
+  window.addEventListener('beforeprint', function () {
+    var outcome = suspendScrollForPrint();
+    if (!outcome.ok) console.error('[SiteUtils] Print scroll lock preflight failed:', outcome.reason, outcome.owner || '');
+  });
+  window.addEventListener('afterprint', resumeScrollAfterPrint);
 
   var overlayRecords = new Map();
   var overlayStack = [];

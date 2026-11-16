@@ -4,7 +4,7 @@
 const { spawnSync } = require('child_process');
 const {
   loadRouteRecords,
-} = require('./lib/route-source-contract');
+} = require('./lib/effective-route-registry');
 
 const strict = process.argv.includes('--strict');
 const errors = [];

@@ -166,7 +166,7 @@ function errorsFor(record) {
 {
   const record = cloneRecord('/articles/dzhon-gill-chast-1-chelovek/');
   record.inspection.imports.push({ importer: record.sourceRel, resolved: HISTORICAL_SERIES_IMPL });
-  assert.ok(errorsFor(record).some((error) => error.includes('direct GillSeriesChrome import outside façade')));
+  assert.ok(errorsFor(record).some((error) => error.includes('retired GillSeriesChrome import forbidden')));
 }
 {
   const record = cloneRecord('/articles/hermenevticheskaya-otsenka-hristotsentrichnoy-germenevtiki/');

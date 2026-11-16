@@ -6,7 +6,7 @@ const {
   ROOT,
   loadRouteRecords,
   validateRecord,
-} = require('./lib/route-source-contract');
+} = require('./lib/effective-route-registry');
 const {
   runLegacyAuthorityContractChecks,
   validateLegacyAuthorityProfile,

@@ -70,10 +70,16 @@ function sourceContracts() {
     ['HGT-S29', 'crossing 768px closes the active owner cleanly', runtime.includes("closeTooltip('mode-change')") && runtime.includes('active.mobile !== mobileMode()')],
     ['HGT-S30', 'VisualViewport resize and pan use one canonical handler', runtime.includes("visualViewport?.addEventListener('resize', handleViewportChange") && runtime.includes("visualViewport?.addEventListener('scroll', handleViewportChange")],
     ['HGT-S31', 'placement is preserved only while resized content still fits that side', runtime.includes("previousPlacement === 'top' && fitsAbove") && runtime.includes("previousPlacement === 'bottom' && fitsBelow") && runtime.includes('if (fitsAbove && fitsBelow)')],
-    ['HGT-S32', 'mobile sheet budget restores the approved 85 percent VisualViewport cap', runtime.includes('const MOBILE_MAX_VIEWPORT_RATIO = 0.85;') && runtime.includes('function mobileSheetBudget(viewport)') && runtime.includes('viewport.height - VIEWPORT_MARGIN')],
+    ['HGT-S32', 'one anchor-aware popover owner on mobile, with settled-geometry and resize observation',
+      runtime.includes('positionDesktop(tip, anchor, preservePlacement);') &&
+      !runtime.includes('function positionMobile(') &&
+      runtime.includes('const settled = tip.getBoundingClientRect()') &&
+      runtime.includes('record.geometryObserver = new ResizeObserver(') &&
+      runtime.includes("const requiredTop = placement === 'top'")],
     ['HGT-S33', 'desktop overflow budget may shrink below the historical 96px floor', runtime.includes('const height = Math.max(1, Math.floor(maxHeight));') && runtime.includes('applyOverflow(tip, Math.min(available, viewportMax))') && !runtime.includes('Math.min(Math.max(MIN_SCROLL_HEIGHT, available), viewportMax)')],
     ['HGT-S34', 'popup geometry transport stays focus-owned instead of locator-click actionability', popupHelper.includes('await page.mouse.move(1, 1);') && popupHelper.includes('await trigger.blur();') && popupHelper.includes('await trigger.focus();') && !popupHelper.includes('trigger.click()')],
     ['HGT-S35', 'non-scrolling evidence follows computed overflow ownership instead of raw box-metric slack', guard.includes("const scrollingEnabled = (state) => Boolean(state) && ['auto', 'scroll'].includes(state.overflowY);") && guard.includes('!scrollingEnabled(mediumMobile)') && guard.includes('!scrollingEnabled(expandedFlip)')],
+    ['HGT-S36', 'real pointermove owns hover; pointerenter cannot trigger ghost', runtime.includes("anchor.addEventListener('pointermove', openHover)") && !runtime.includes("anchor.addEventListener('pointerenter', openHover)")],
   ];
   assertions.forEach(([id, description, pass]) => record(id, description, pass, null, 'source'));
 }
@@ -176,7 +182,8 @@ async function keyboardFocusState(page, selector) {
 async function restoredTooltipState(page) {
   return page.evaluate(() => {
     const anchor = document.querySelector('.bref[data-ref]');
-    const tip = anchor?.querySelector('.btip');
+    const tip = anchor?.nextElementSibling?.matches('.btip')
+      ? anchor.nextElementSibling : anchor?.querySelector('.btip');
     const staleProperties = tip instanceof HTMLElement
       ? ['left', 'top', 'right', 'bottom', 'max-height', 'overflow-y', 'position', 'pointer-events', '--gb-tip-arrow-x'].filter((property) => tip.style.getPropertyValue(property))
       : ['missing-inline-tip'];
@@ -217,19 +224,40 @@ async function modeTransitionContracts(page) {
   await page.waitForSelector('.btip.gb-floating-tip.is-open', { state: 'visible', timeout: 3000 });
   await twoFrames(page);
   const mobile = await popupState(page, '.btip.gb-floating-tip.is-open');
-  record('HGT-R05', 'mobile Scripture sheet opens below the desktop boundary', Boolean(mobile), mobile, 'responsive');
-  record('HGT-R06', 'mobile Scripture sheet spans the client viewport', Boolean(mobile && Math.abs(mobile.width - mobile.clientWidth) <= 2 && Math.abs(mobile.left) <= 1 && Math.abs(mobile.right - mobile.clientWidth) <= 2), mobile, 'responsive');
-  record('HGT-R07', 'mobile Scripture sheet has no fake scrollbar', noFakeScrollbar(mobile), mobile, 'responsive');
-  record('HGT-R11', 'mobile Scripture sheet remains inside viewport with rounded top corners', Boolean(mobile && mobile.inViewport && mobile.borderRadius >= 20), mobile, 'responsive');
-  record('HGT-R12', 'mobile Scripture sheet has no large blank tail', Boolean(mobile && mobile.blankTail <= 48), mobile, 'responsive');
-
-  const mediumFixture = await page.evaluate(() => {
+  const openerGap = await page.evaluate(() => {
+    const anchor = document.querySelector('.bref[data-ref]');
     const tip = document.querySelector('.btip.gb-floating-tip.is-open');
-    if (!(tip instanceof HTMLElement)) return null;
-    const visualHeight = Number(window.visualViewport?.height) || window.innerHeight;
-    const oldBudget = Math.floor(visualHeight * 0.72);
-    const restoredBudget = Math.min(Math.floor(visualHeight * 0.85), Math.floor(visualHeight - 16));
-    const targetNaturalHeight = Math.floor((oldBudget + restoredBudget) / 2);
+    if (!(anchor instanceof HTMLElement) || !(tip instanceof HTMLElement)) return null;
+    const a = anchor.getBoundingClientRect(), t = tip.getBoundingClientRect();
+    const center = document.elementFromPoint(a.left + a.width / 2, a.top + a.height / 2);
+    const gap = t.bottom <= a.top ? a.top - t.bottom : t.top >= a.bottom ? t.top - a.bottom : -1;
+    return { gap, hitOpener: Boolean(center && (center === anchor || anchor.contains(center))),
+      anchorTop: a.top, anchorBottom: a.bottom, tipTop: t.top, tipBottom: t.bottom };
+  });
+  record('HGT-R05', 'mobile Scripture opens a visible anchor-aware popover', Boolean(mobile), mobile, 'responsive');
+  record('HGT-R06', 'mobile popover has viewport margins, anchor gap, and an unobstructed opener',
+    Boolean(mobile && mobile.inViewport && mobile.width <= mobile.clientWidth - 30 &&
+      mobile.left >= 15 && mobile.right <= mobile.clientWidth - 15 &&
+      openerGap?.gap >= 9 && openerGap.hitOpener), { mobile, openerGap }, 'responsive');
+  record('HGT-R07', 'mobile Scripture popover has no fake scrollbar', noFakeScrollbar(mobile), mobile, 'responsive');
+  record('HGT-R11', 'mobile Scripture popover remains inside viewport with rounded corners', Boolean(mobile && mobile.inViewport && mobile.borderRadius >= 20), mobile, 'responsive');
+  record('HGT-R12', 'mobile Scripture popover has no large blank tail', Boolean(mobile && mobile.blankTail <= 48), mobile, 'responsive');
+
+  // A deliberately long passage must scroll INSIDE the popover if it no
+  // longer fits either physical side of the opener. Never accept a floating
+  // sheet that crosses the reference or a fake scrollbar on short content.
+  const mediumFixture = await page.evaluate(() => {
+    const anchor = document.querySelector('.bref[data-ref]');
+    const tip = document.querySelector('.btip.gb-floating-tip.is-open');
+    if (!(tip instanceof HTMLElement) || !(anchor instanceof HTMLElement)) return null;
+    const v = window.visualViewport;
+    const viewportTop = v?.offsetTop || 0;
+    const viewportBottom = viewportTop + (v?.height || window.innerHeight);
+    const rect = anchor.getBoundingClientRect();
+    const availableAbove = Math.max(0, rect.top - viewportTop - 16 - 10);
+    const availableBelow = Math.max(0, viewportBottom - 16 - rect.bottom - 10);
+    const largerSide = Math.max(availableAbove, availableBelow);
+    const targetNaturalHeight = Math.floor(largerSide + 160);
     const before = tip.scrollHeight;
     const filler = document.createElement('span');
     filler.dataset.hgtMobileBudgetFiller = '1';
@@ -239,20 +267,46 @@ async function modeTransitionContracts(page) {
     filler.style.pointerEvents = 'none';
     tip.appendChild(filler);
     window.dispatchEvent(new Event('resize'));
-    return { visualHeight, oldBudget, restoredBudget, targetNaturalHeight, before };
+    return { availableAbove, availableBelow, largerSide, targetNaturalHeight, before,
+      anchorTop: rect.top, anchorBottom: rect.bottom };
   });
-  await page.waitForTimeout(60);
+  await page.waitForTimeout(75);
   await twoFrames(page);
   const mediumMobile = await popupState(page, '.btip.gb-floating-tip.is-open');
-  const mediumFixtureValid = Boolean(mediumFixture && mediumMobile && mediumMobile.scrollHeight > mediumFixture.oldBudget + 2 && mediumMobile.scrollHeight <= mediumFixture.restoredBudget + 2);
-  record('HGT-R13', 'mobile fixture natural height exceeds legacy 72 percent but fits restored 85 percent budget', mediumFixtureValid, { mediumFixture, mediumMobile }, 'responsive');
-  record('HGT-R14', 'medium mobile Scripture content does not scroll when restored budget fits it', Boolean(mediumFixtureValid && !scrollingEnabled(mediumMobile) && mediumMobile.inViewport), { mediumFixture, mediumMobile }, 'responsive');
-  record('HGT-R15', 'mobile max-height matches the restored measured budget instead of the legacy cap', Boolean(mediumFixtureValid && Math.abs(mediumMobile.maxHeight - mediumFixture.restoredBudget) <= 2), { mediumFixture, mediumMobile }, 'responsive');
+  const selectedBudget = mediumMobile?.placement === 'top'
+    ? mediumFixture?.availableAbove : mediumFixture?.availableBelow;
+  const mediumFixtureValid = Boolean(mediumFixture && mediumMobile && selectedBudget > 0 &&
+    mediumMobile.scrollHeight > mediumMobile.clientHeight + 1 &&
+    mediumMobile.scrollHeight > mediumFixture.largerSide);
+  record('HGT-R13', 'oversized mobile text exceeds both physical anchor-side budgets',
+    mediumFixtureValid, { mediumFixture, mediumMobile, selectedBudget }, 'responsive');
+  record('HGT-R14', 'mobile scroll exists only for real overflow and stays inside viewport',
+    Boolean(mediumFixtureValid && hasScrollableOverflow(mediumMobile) &&
+      noFakeScrollbar(mediumMobile) && mediumMobile.inViewport),
+    { mediumFixture, mediumMobile }, 'responsive');
+  record('HGT-R15', 'mobile scrolling budget is bounded by the chosen physical anchor side',
+    Boolean(mediumFixtureValid && mediumMobile.maxHeight > 0 &&
+      mediumMobile.maxHeight <= selectedBudget + 2 &&
+      mediumMobile.height <= selectedBudget + 2),
+    { mediumFixture, mediumMobile, selectedBudget }, 'responsive');
   await page.evaluate(() => {
     document.querySelector('[data-hgt-mobile-budget-filler]')?.remove();
     window.dispatchEvent(new Event('resize'));
   });
   await twoFrames(page);
+  await trigger.click({ timeout: 3000 });
+  await page.waitForFunction(() => !document.querySelector('.gb-floating-tip.is-open'));
+  const repeatClosed = await restoredTooltipState(page);
+  record('HGT-R16', 'mobile repeat click closes without invisible interception or stale scroll lock',
+    repeatClosed.openCount === 0 && repeatClosed.anchorExpanded === 'false' &&
+    !repeatClosed.locked && repeatClosed.staleProperties.length === 0,
+    repeatClosed, 'responsive');
+  await trigger.click({ timeout: 3000 });
+  await page.waitForSelector('.btip.gb-floating-tip.is-open', { state: 'visible', timeout: 3000 });
+  await twoFrames(page);
+  const repeatOpen = await popupState(page, '.btip.gb-floating-tip.is-open');
+  record('HGT-R17', 'mobile repeat activation reopens a bounded popover with no fake scrollbar',
+    Boolean(repeatOpen?.inViewport && noFakeScrollbar(repeatOpen)), repeatOpen, 'responsive');
 
   await page.setViewportSize({ width: 769, height: 900 });
   await page.waitForFunction(() => !document.querySelector('.gb-floating-tip.is-open'), null, { timeout: 3000 });
@@ -268,6 +322,7 @@ async function popupContracts(page) {
   await page.goto(`${BASE}${ROUTE}`, { waitUntil: 'load', timeout: 60000 });
   await waitForOwner(page);
   await twoFrames(page);
+
 
   const ownerState = await page.evaluate((owned) => ({
     globalVersion: window.GBArticleTooltips?.version || 0,
@@ -408,6 +463,14 @@ async function popupContracts(page) {
     element.style.setProperty('z-index', '2147483000', 'important');
   }, targetTop);
   await twoFrames(page);
+  const flipHit = await glossary.evaluate(element => {
+    const rect = element.getBoundingClientRect();
+    const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+    return { targetHit: hit === element || element.contains(hit),
+      unrelatedTips: [...document.querySelectorAll('.gb-floating-tip.is-open')].map(t => t.className) };
+  });
+  record('HGT-T34', 'viewport reflow does not activate unrelated Scripture tooltip over glossary',
+    flipHit.targetHit && flipHit.unrelatedTips.length === 0, flipHit, 'tooltip');
   await glossary.click();
   await page.waitForSelector('.gtip.gb-floating-tip.is-open', { state: 'visible', timeout: 3000 });
   await twoFrames(page);
@@ -461,6 +524,14 @@ async function popupContracts(page) {
     return { requestedBudget: budget, anchorTop: rect.top, anchorBottom: rect.bottom, anchorHeight: rect.height, viewportHeight: window.innerHeight };
   }, { top: 16 + 10 + tinyBudget, budget: tinyBudget });
   await twoFrames(page);
+  const tinyHit = await glossary.evaluate(element => {
+    const rect = element.getBoundingClientRect();
+    const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+    return { targetHit: hit === element || element.contains(hit),
+      unrelatedTips: [...document.querySelectorAll('.gb-floating-tip.is-open')].map(t => t.className) };
+  });
+  record('HGT-T35', 'tiny viewport does not produce a ghost tooltip intercepting glossary',
+    tinyHit.targetHit && tinyHit.unrelatedTips.length === 0, tinyHit, 'tooltip');
   await glossary.click();
   await page.waitForSelector('.gtip.gb-floating-tip.is-open', { state: 'visible', timeout: 3000 });
   await twoFrames(page);
@@ -505,6 +576,21 @@ async function popupContracts(page) {
   });
   await page.setViewportSize({ width: 1366, height: 900 });
   await twoFrames(page);
+
+  // A physical mouse move (unlike layout-induced pointerenter) must still
+  // open the tooltip. Moving away must dismiss it normally.
+  await page.mouse.move(1, 1);
+  const hoveredScripture = page.locator('.bref[data-ref]').first();
+  await hoveredScripture.hover();
+  await page.waitForSelector('.btip.gb-floating-tip.is-open', { state: 'visible', timeout: 3500 });
+  const activeHover = await page.evaluate(() => ({
+    open: document.querySelectorAll('.btip.gb-floating-tip.is-open').length,
+    owner: document.documentElement.dataset.gbArticleTooltipsOwner,
+  }));
+  record('HGT-T36', 'actual mouse movement still opens one Scripture tooltip', activeHover.open === 1 && activeHover.owner === OWNER, activeHover, 'tooltip');
+  await page.mouse.move(1, 1);
+  await page.waitForFunction(() => !document.querySelector('.gb-floating-tip.is-open'), null, { timeout: 2400 });
+  record('HGT-T37', 'moving mouse away dismisses hover popup without sticky ghost', true, null, 'tooltip');
 }
 
 sourceContracts();

@@ -30,11 +30,11 @@ const ROUTES = [
   {
     id: 'gill',
     route: '/articles/dzhon-gill-chast-1-chelovek/',
-    slot: { root: '[data-fc-speed-mode="inline"]', rail: '.mobile-speedrail', badge: '.mobile-spdbadge', alternate: '.mobile-learning-trigger', chip: '.mobile-speed' },
+    slot: { root: '[data-reader-mobile-speed][data-gill-mobile-bar]', rail: '.mobile-speedrail', badge: '.mobile-spdbadge', alternate: '.reader-mobile-menu-trigger', keepAlternateVisible: false, chip: '.mobile-speed' },
     mobileSurfaces: [
       { id: 'part-toc', trigger: '#mobPartTocBtn', target: '#partTocOverlay', popup: 'dialog' },
       { id: 'settings', trigger: '#mobSettingsBtn', target: '#gillSettingsOverlay', popup: 'dialog' },
-      { id: 'learning', trigger: '#mobLearningBtn', target: '#gillLearningOverlay', popup: 'dialog' },
+      { id: 'menu', trigger: '.mobile-top-bar [data-reader-mobile-menu-target="mobPartTocBtn"]', target: '#partTocOverlay', popup: 'dialog' },
     ],
     desktopSurfaces: [
       { id: 'settings', trigger: '[data-gill-settings-open]', target: '#gillSettingsOverlay', popup: 'dialog' },
@@ -157,7 +157,10 @@ async function auditSlot(page, routeId, selectors, checks) {
   record(checks, `${prefix}-10`, 'open rail is exposed to AT', opened.railAriaHidden === 'false' && !opened.railInert, opened);
   record(checks, `${prefix}-11`, 'open rail has one roving Tab stop', opened.tabStops === 1, opened);
   record(checks, `${prefix}-12`, 'badge reports expanded state', opened.badgeExpanded === 'true', opened);
-  record(checks, `${prefix}-13`, 'declared alternate is hidden and inert while open (or absent by design)', selectors.alternate ? opened.alternateExists && opened.alternateAriaHidden === 'true' && opened.alternateInert : !opened.alternateExists, opened);
+  record(checks, `${prefix}-13`, 'alternate visibility follows the declared speed layout', selectors.alternate ?
+    opened.alternateExists && (selectors.keepAlternateVisible ?
+      opened.alternateAriaHidden !== 'true' && !opened.alternateInert :
+      opened.alternateAriaHidden === 'true' && opened.alternateInert) : !opened.alternateExists, opened);
 
   const selected = page.locator(`${selectors.chip}[aria-checked="true"]`).first();
   await selected.focus();
@@ -182,7 +185,20 @@ async function auditSlot(page, routeId, selectors, checks) {
   record(checks, `${prefix}-20`, 'Home moves to first radio', home.focused === 0 && home.checked[0] === 0, home);
 
   await page.keyboard.press('Enter');
-  await page.waitForTimeout(360);
+  // Gill's one-line rail takes 380ms to fold. Assert the settled keyboard/AT
+  // state instead of a transient frame in its reversible exit animation.
+  await page.waitForFunction(({ rail, badge, alternate }) => {
+    const r = document.querySelector(rail);
+    const b = document.querySelector(badge);
+    const a = alternate ? document.querySelector(alternate) : null;
+    // The shared speed slot uses inert + aria-hidden + CSS display:none;
+    // unlike the retired Gill rail it does not set the HTML hidden property.
+    const trulyClosed = !!r && (r.hidden ||
+      (r.inert && r.getAttribute('aria-hidden') === 'true' && getComputedStyle(r).display === 'none'));
+    return trulyClosed && r.getAttribute('aria-hidden') === 'true' &&
+      b?.getAttribute('aria-expanded') === 'false' &&
+      (!a || (!a.inert && a.getAttribute('aria-hidden') !== 'true'));
+  }, { rail: selectors.rail, badge: selectors.badge, alternate: selectors.alternate }, { timeout: 2000 });
   const afterEnter = await slotSnapshot(page, selectors);
   record(checks, `${prefix}-21`, 'Enter closes rail after activation', afterEnter.railAriaHidden === 'true' && !afterEnter.railVisible, afterEnter);
   record(checks, `${prefix}-22`, 'closed rail again has zero Tab stops', afterEnter.tabStops === 0, afterEnter);

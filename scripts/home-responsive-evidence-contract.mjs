@@ -188,11 +188,13 @@ async function assertVisualRegressionContracts(page, width, height) {
     true,
     `${width}px: gateway dividers are not uniformly 1px`,
   );
-  assert.equal(
-    state.routeDividerDisplays.every((value) => value !== 'none'),
-    true,
-    `${width}px: a gateway divider is hidden`,
-  );
+  if (width <= 900) {
+    assert.equal(state.routeDividerDisplays.every((value) => value === 'none'), true,
+      `${width}px: retired decorative dividers remain visible in compact gateway`);
+  } else {
+    assert.equal(state.routeDividerDisplays.every((value) => value !== 'none'), true,
+      `${width}px: a desktop gateway divider is hidden`);
+  }
 
   if (width >= 761) {
     assert.equal(state.featuredTransformStyles.every((value) => value === 'flat'), true, `${width}px: featured cards retained a 3D overlap plane`);
@@ -266,6 +268,13 @@ async function assertResponsiveLayout(page, width, height) {
       dividerCount: dividers.length,
       dividerWidths: dividers.map((node) => Number.parseFloat(getComputedStyle(node).width)),
       cardWidths: cards.map((node) => node.getBoundingClientRect().width),
+      cardRects: cards.map((node) => {
+        const box = node.getBoundingClientRect();
+        return { left: box.left, right: box.right, top: box.top, bottom: box.bottom, height: box.height };
+      }),
+      titleSizes: cards.map((node) => Number.parseFloat(getComputedStyle(node.querySelector('.h-home-route__copy strong')).fontSize)),
+      eyebrowSizes: cards.map((node) => Number.parseFloat(getComputedStyle(node.querySelector('.h-home-route__eyebrow')).fontSize)),
+      dividerDisplays: dividers.map((node) => getComputedStyle(node).display),
       menuDisplay: menu ? getComputedStyle(menu).display : '',
       gatewayWidth: rect?.width || 0,
       left: rect?.left || 0,
@@ -286,15 +295,24 @@ async function assertResponsiveLayout(page, width, height) {
   );
 
   if (compactCatalogue) {
-    assert.equal(state.display, 'flex', `${width}×${height}: compact gateway is not a horizontal catalogue`);
-    assert.ok(['auto', 'scroll'].includes(state.overflowX), `${width}×${height}: compact gateway is not horizontally scrollable`);
-    assert.match(state.scrollSnapType, /^x\s+mandatory$/, `${width}×${height}: compact gateway lost mandatory x scroll-snap`);
-    assert.ok(state.scrollWidth > state.clientWidth + 1, `${width}×${height}: compact gateway has no scrollable overflow`);
-    assert.equal(
-      state.cardWidths.every((value) => value > 0 && value < state.clientWidth),
-      true,
-      `${width}×${height}: compact gateway card width is invalid`,
-    );
+    assert.equal(state.display, 'grid', `${width}×${height}: compact gateway is not the full-width navigation list`);
+    assert.equal(state.columns, 1, `${width}×${height}: compact gateway must have a single column`);
+    assert.equal(state.scrollSnapType, 'none', `${width}×${height}: obsolete carousel scroll-snap remains`);
+    assert.ok(state.scrollWidth <= state.clientWidth + 1, `${width}×${height}: compact navigation scrolls sideways`);
+    assert.equal(state.dividerDisplays.every((display) => display === 'none'), true,
+      `${width}×${height}: mobile seam dividers should not appear between full navigation rows`);
+    assert.equal(state.cardWidths.every((value) => Math.abs(value - state.clientWidth) <= 2), true,
+      `${width}×${height}: direction rows are not all full width`);
+    assert.equal(state.cardRects.every((rect) => rect.height >= 88 && rect.height <= 165), true,
+      `${width}×${height}: direction row height is disproportionate`);
+    assert.equal(state.titleSizes.every((size) => size >= 15.5), true,
+      `${width}×${height}: unreadable direction titles`);
+    assert.equal(state.eyebrowSizes.every((size) => size >= 9.4), true,
+      `${width}×${height}: unreadable direction labels`);
+    for (let index = 1; index < state.cardRects.length; index++) {
+      assert.ok(state.cardRects[index].top >= state.cardRects[index - 1].bottom + 7,
+        `${width}×${height}: compact direction rows overlap or have no separation`);
+    }
   } else {
     assert.equal(state.display, 'grid', `${width}×${height}: desktop gateway is not a grid`);
     assert.equal(state.columns, 9, `${width}×${height}: desktop gateway must expose five cards and four 1px tracks`);

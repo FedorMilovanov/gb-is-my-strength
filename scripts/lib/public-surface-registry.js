@@ -68,7 +68,7 @@ function hasResolvedImport(record, target) {
 
 function historicalImplementationLeaks(record) {
   return resolvedImports(record).filter(
-    (item) => item.resolved === HISTORICAL_SERIES_IMPL && item.importer !== SERIES_FACADE
+    (item) => item.resolved === HISTORICAL_SERIES_IMPL
   );
 }
 
@@ -198,7 +198,7 @@ function validatePublicSurfaceRecord(record, entry, mobileEntries) {
     issue('seriesShape=book requires a resolved explicit series config import');
   }
   if (entry.facts.historicalImplementationLeaks.length) {
-    issue(`direct GillSeriesChrome import outside façade: ${entry.facts.historicalImplementationLeaks.join(', ')}`);
+    issue(`retired GillSeriesChrome import forbidden: ${entry.facts.historicalImplementationLeaks.join(', ')}`);
   }
 
   if (SERIES_ROUTE_TYPES.has(routeType) && surface !== 'series') {

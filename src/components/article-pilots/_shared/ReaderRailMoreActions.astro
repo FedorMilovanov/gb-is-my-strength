@@ -1,0 +1,120 @@
+---
+/** Shared secondary actions for the full-height compact Reader rail.
+ * Every item delegates to an original control, preserving all original
+ * event handlers, TTS, navigation, PDF and ReaderState owners.
+ */
+import '@/styles/reader-rail-more-actions.css';
+interface Props { controls: string }
+const { controls } = Astro.props;
+---
+<button
+  class="reader-rail-more-trigger"
+  type="button"
+  data-reader-rail-more
+  aria-label="Другие действия чтения"
+  title="Другие действия"
+  aria-haspopup="menu"
+  aria-controls={'reader-rail-more-' + controls}
+  aria-expanded="false"
+>
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <circle cx="12" cy="5" r="1.6" />
+    <circle cx="12" cy="12" r="1.6" />
+    <circle cx="12" cy="19" r="1.6" />
+  </svg>
+</button>
+
+<script>
+  type ActionSource = {label:string;selector:string};
+  const BOOK_ACTIONS:ActionSource[]=[
+    {label:'Библейский тренажёр',selector:'.gbs2-rfoot > a.gbs2-ctl[href="/app/"]'},
+    {label:'Сменить тему',selector:'.gbs2-rfoot > [data-gbs2-theme]'},
+    {label:'Уменьшить шрифт',selector:'.gbs2-rfoot > [data-gbs2-font="down"]'},
+    {label:'Увеличить шрифт',selector:'.gbs2-rfoot > [data-gbs2-font="up"]'},
+    {label:'Поделиться',selector:'.gbs2-rfoot > [data-gbs2-share]'},
+  ];
+  const CHAPTER_ACTIONS:ActionSource[]=[
+    {label:'Разделы сайта',selector:'.gbs-rail-foot > #hMobileMenuBtn'},
+    {label:'Дневная или ночная тема',selector:'.gbs-theme-corner > [data-fc-action="theme"]'},
+    {label:'Вернуться наверх',selector:'.gbs-theme-corner > [data-fc-action="scroll-top"]'},
+    {label:'Сохранить как PDF',selector:'.gbs-rail-foot > [data-action="print"]'},
+    {label:'Поделиться',selector:'.gbs-rail-foot > [data-action="share"]'},
+  ];
+  const initRailOverflow=()=>{
+    for(const rail of document.querySelectorAll<HTMLElement>('[data-reader-integrated-rail]')){
+      const trigger=rail.querySelector<HTMLButtonElement>('[data-reader-rail-more]');
+      if(!trigger||trigger.dataset.readerMoreReady==='1')continue;
+      trigger.dataset.readerMoreReady='1';
+      // Keep More as a direct rail child, above its sticky footer stacking
+      // context. Otherwise the footer intercepts pointer clicks in the
+      // bottom-right compact corner even when the button looks visible.
+      if(trigger.parentElement!==rail)rail.appendChild(trigger);
+      const isBook=rail.classList.contains('gbs2-rail');
+      const actions=isBook?BOOK_ACTIONS:CHAPTER_ACTIONS;
+      const popup=document.createElement('div');
+      popup.id=trigger.getAttribute('aria-controls')||'';
+      popup.className='reader-rail-more-sheet';
+      popup.hidden=true;
+      popup.setAttribute('role','menu');
+      popup.setAttribute('aria-label',isBook?'Действия с книгой':'Действия с чтением');
+      document.body.appendChild(popup);
+      let open=false;
+      const close=(restoreFocus=false)=>{
+        if(!open)return;
+        open=false;popup.hidden=true;trigger.setAttribute('aria-expanded','false');
+        if(restoreFocus&&document.contains(trigger))trigger.focus({preventScroll:true});
+      };
+      const toggle=()=>{
+        if(!rail.classList.contains('reader-integrated-rail--compact'))return;
+        if(open){close(true);return}
+        popup.replaceChildren();
+        for(const action of actions){
+          const original=rail.querySelector<HTMLElement>(action.selector);
+          if(!original)continue;
+          const option=document.createElement('button');
+          option.type='button';
+          option.className='reader-rail-more-option';
+          option.setAttribute('role','menuitem');
+          const icon=original.querySelector('svg');
+          if(icon){
+            const clone=icon.cloneNode(true) as SVGElement;
+            clone.setAttribute('aria-hidden','true');clone.setAttribute('focusable','false');
+            option.appendChild(clone);
+          }else{
+            const glyph=document.createElement('span');
+            glyph.className='reader-rail-more-glyph';
+            glyph.textContent=action.label.includes('шрифт')?'A':'•';
+            glyph.setAttribute('aria-hidden','true');
+            option.appendChild(glyph);
+          }
+          const label=document.createElement('span');
+          label.textContent=action.label;
+          option.appendChild(label);
+          option.addEventListener('click',()=>{close();original.click()});
+          popup.appendChild(option);
+        }
+        if(!popup.children.length)return;
+        popup.hidden=false;open=true;trigger.setAttribute('aria-expanded','true');
+        popup.querySelector<HTMLButtonElement>('button')?.focus({preventScroll:true});
+      };
+      trigger.addEventListener('click',toggle);
+      popup.addEventListener('keydown',e=>{
+        if(e.key==='Escape'){e.preventDefault();close(true);return}
+        if(e.key!=='ArrowDown'&&e.key!=='ArrowUp')return;
+        const buttons=Array.from(popup.querySelectorAll<HTMLButtonElement>('[role="menuitem"]'));
+        const i=buttons.indexOf(document.activeElement as HTMLButtonElement);
+        if(i<0||!buttons.length)return;
+        e.preventDefault();
+        buttons[(i+(e.key==='ArrowDown'?1:buttons.length-1))%buttons.length]?.focus();
+      });
+      document.addEventListener('pointerdown',e=>{
+        if(open&&!popup.contains(e.target as Node)&&!trigger.contains(e.target as Node))close();
+      },{capture:true});
+      document.addEventListener('keydown',e=>{if(open&&e.key==='Escape'){e.preventDefault();close(true)}});
+      window.matchMedia('(min-width:1360px)').addEventListener('change',()=>close());
+      rail.querySelector<HTMLButtonElement>('[data-reader-rail-toggle]')?.addEventListener('click',()=>close());
+    }
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initRailOverflow,{once:true});
+  else initRailOverflow();
+</script>

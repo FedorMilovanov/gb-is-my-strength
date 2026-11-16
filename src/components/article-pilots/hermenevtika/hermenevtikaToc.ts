@@ -1,10 +1,10 @@
 export interface HermenevtikaTocItem {
   href: string;
   label: string;
-  level: 2 | 3;
+  level: 2 | 3 | 4;
 }
 
-// Mirrors the article's own H2/H3 structure (ids already present in
+// Mirrors the article's own H2/H3/H4 structure (ids already present in
 // HermenevtikaBody.astro). Meta/utility sections (summary card, quiz,
 // accuracy-report, related-articles) are intentionally left out — this is a
 // content outline, not every heading on the page.
@@ -15,6 +15,9 @@ export const HERMENEVTIKA_TOC: HermenevtikaTocItem[] = [
   { href: '#sec-how-achieves', label: 'Как она достигает своих целей', level: 3 },
   { href: '#sec-why', label: 'Почему она стремится к такому толкованию', level: 3 },
   { href: '#sec-assessment', label: 'Оценка христоцентричной герменевтики', level: 3 },
+  { href: '#sec-question-posed', label: 'Вопрос поставлен: Есть ли исключения из правил?', level: 4 },
+  { href: '#sec-exceptions-passages', label: 'Есть ли исключения из правила? Взгляд на конкретные отрывки', level: 4 },
+  { href: '#sec-exceptions-theological', label: 'Есть ли исключения из правила? Взгляд на библейско-богословское обоснование', level: 4 },
   { href: '#sec-consequences', label: 'Последствия христоцентричной герменевтики', level: 3 },
   { href: '#sec-sufficiency', label: 'Достаточность грамматико-исторической герменевтики', level: 3 },
   { href: '#sec-conclusion', label: 'Заключение', level: 3 },

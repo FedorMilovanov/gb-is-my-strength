@@ -14,7 +14,7 @@ const ROUTE = '/articles/dzhon-gill-spravochnik/';
 const LEGACY_REL = 'articles/dzhon-gill-spravochnik/index.html';
 const PAGE_REL = 'src/pages/articles/dzhon-gill-spravochnik/index.astro';
 const BASE_REL = 'src/components/article-pilots/gill-spravochnik';
-const SHARED_CHROME_REL = 'src/components/article-pilots/gill-series/GillSeriesChrome.astro';
+const SHARED_CHROME_REL = 'src/components/article-pilots/_shared/series/SeriesReaderChrome.astro';
 const REQUIRED = {
   pageHead: `${BASE_REL}/GillSpravochnikPageHead.astro`,
   pageChrome: `${BASE_REL}/GillSpravochnikPageChrome.astro`,

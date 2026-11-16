@@ -41,7 +41,16 @@ const { ASSETS } = require('./cache-bust-assets');
 function md5short(relPath) {
   const abs = path.join(ROOT, relPath);
   if (!fs.existsSync(abs)) return null;
-  return crypto.createHash('md5').update(fs.readFileSync(abs)).digest('hex').slice(0, 8);
+  const bytes = fs.readFileSync(abs);
+  // Version URLs must fingerprint the same bytes on Windows and Linux. Git
+  // enforces LF for text assets through .gitattributes, but an editor can
+  // reintroduce CRLF into a Windows working tree before the next commit.
+  // Refuse to mint a digest for bytes Git will silently normalize on commit.
+  if (/\.(?:css|html|js|json|xml|svg|md|yml|yaml|txt)$/i.test(relPath)
+      && bytes.includes(Buffer.from([13, 10]))) {
+    throw new Error(`Governed text asset uses CRLF instead of Git-canonical LF: ${relPath}. Normalize line endings before updating asset revisions.`);
+  }
+  return crypto.createHash('md5').update(bytes).digest('hex').slice(0, 8);
 }
 
 function repoRel(abs) {

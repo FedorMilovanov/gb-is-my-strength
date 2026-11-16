@@ -240,13 +240,20 @@
   function init() {
     var article = document.querySelector(config.articleSelector);
     if (!article || !reader) return;
-    reader.configure({
+    // ReaderRail owns the route's heading depth. A secondary bookmark
+    // integration may configure save thresholds, but must not erase H4/H5
+    // scrollspy and TOC projection after the canonical reader has mounted.
+    var readerConfig = {
       siteId: config.siteId,
-      headingSelector: config.headingSelector,
       minProgressToSave: config.minProgressToSave,
       maxProgressToSave: config.maxProgressToSave,
       debug: config.debug
-    }).init();
+    };
+    if (!document.querySelector('[data-reader-state-heading-selector]')) {
+      // Preserve historical behavior for routes without an explicit rail.
+      readerConfig.headingSelector = config.headingSelector;
+    }
+    reader.configure(readerConfig).init();
     cleanupOld();
     if (config.showPrompt) {
       setTimeout(function () {

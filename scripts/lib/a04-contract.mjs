@@ -30,19 +30,19 @@ export const SURFACES = Object.freeze([
   Object.freeze({
     id: 'bible-reference', trigger: '.bref[data-ref]', tip: '.btip', exception: null,
     activation: 'desktop-focus-click/mobile-touch', mobileSheet: false,
-    owner: 'data/bible/books.json + strict Bible reference contract + SiteUtils.makeTooltipController',
+    owner: 'data/bible/books.json + strict Bible reference contract + article-inline-tooltip',
     decision: 'KEEP_CURRENT',
   }),
   Object.freeze({
     id: 'glossary-term', trigger: '.gterm', tip: '.gtip', exception: '.quiz-wrapper',
     activation: 'desktop-focus-click/mobile-touch', mobileSheet: true,
-    owner: 'canonical glossary registry + glossary placement policy + SiteUtils.makeTooltipController',
+    owner: 'canonical glossary registry + glossary placement policy + article-inline-tooltip',
     decision: 'KEEP_CURRENT',
   }),
   Object.freeze({
     id: 'footnote', trigger: '.fn-marker', tip: '.tooltip', exception: '.map-trigger',
     activation: 'desktop-focus-click/mobile-touch', mobileSheet: true,
-    owner: 'authored static footnote + SiteUtils.makeTooltipController',
+    owner: 'authored static footnote + article-inline-tooltip',
     decision: 'KEEP_CURRENT',
   }),
 ]);

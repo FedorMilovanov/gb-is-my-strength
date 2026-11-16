@@ -73,6 +73,10 @@ async function installFixture(page, dark) {
       }
     }
 
+    // This fixture exercises the dedicated Worker cancellation path. Chromium
+    // now exposes SharedWorker by default; disable it explicitly here so the
+    // test does not accidentally use an unmocked production SharedWorker.
+    Object.defineProperty(window, 'SharedWorker', { value: undefined, configurable: true });
     Object.defineProperty(window, 'Worker', { value: FakeWorker, configurable: true });
   }, dark);
 
@@ -201,12 +205,38 @@ async function runMobileDark(browser, origin) {
   await page.close();
 }
 
+async function runManualDismiss(browser, origin) {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 760 } });
+  page.__origin = origin;
+  try {
+    await installFixture(page, false);
+    const close = page.locator('.gb-tts-download-notice__dismiss');
+    assert.equal(await close.count(), 1, 'one dismiss control only');
+    assert.equal(await close.getAttribute('aria-label'), 'Закрыть уведомление');
+    await close.click();
+    await page.waitForFunction(() => !document.querySelector('.gb-tts-download-notice.is-visible'));
+    await page.waitForTimeout(400);
+    assert.equal(await page.locator('.gb-tts-download-notice').count(), 0,
+      'dismissed notice must be removed from DOM');
+    const state = await cancellationSnapshot(page);
+    assert.equal(state.cancelPosted, false,
+      'closing a progress notice must never cancel the model download');
+    assert.equal(state.terminated, false,
+      'dismissing the notice must not terminate the worker');
+    assert.notEqual(state.optout, 'off',
+      'manual dismissal must not set the model download opt-out flag');
+  } finally {
+    await page.close();
+  }
+}
+
 (async () => {
   const { server, origin } = await startServer();
   const browser = await chromium.launch({ headless: true });
   try {
     await runDesktop(browser, origin);
     await runMobileDark(browser, origin);
+    await runManualDismiss(browser, origin);
     console.log('TTS download notice browser contract: PASS (persistent Worker, desktop + mobile dark, pointer + keyboard cancellation).');
   } finally {
     await browser.close();

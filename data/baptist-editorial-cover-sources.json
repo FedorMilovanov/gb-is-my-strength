@@ -1,0 +1,94 @@
+{
+  "edition": "2026-11-10",
+  "policy": "Historic materials only, no title baked into imagery or invented periodical text. Collages must not be attributed as photos of the exact event.",
+  "rights_notice": "Reuse of already present repository files is not proof of rights. Verify publication rights and original source credits before release.",
+  "covers": {
+    "landing": {
+      "output": "images/baptisty-rossii/archival-landing.webp",
+      "source_files": [
+        "images/baptisty-rossii/historical/voronin-nikita.webp",
+        "images/baptisty-rossii/historical/vsehb-august-1945.webp",
+        "images/baptisty-rossii/historical/bulletin-relatives-1972.webp"
+      ],
+      "depiction": "historical contextual sources, not necessarily the exact event"
+    },
+    "01-kura": {
+      "output": "images/baptisty-rossii/archival-01-kura.webp",
+      "source_files": [
+        "images/baptisty-rossii/historical/voronin-nikita.webp",
+        "images/baptisty-rossii/historical/wieler-family-before-1889.webp"
+      ],
+      "depiction": "historical contextual sources, not necessarily the exact event"
+    },
+    "02-shtunda": {
+      "output": "images/baptisty-rossii/archival-02-shtunda.webp",
+      "source_files": [
+        "images/baptisty-rossii/historical/ratushny-mikhail.webp",
+        "images/baptisty-rossii/historical/ratushny-pavlov-lisitsin.webp"
+      ],
+      "depiction": "historical contextual sources, not necessarily the exact event"
+    },
+    "03-1884": {
+      "output": "images/baptisty-rossii/archival-03-1884.webp",
+      "source_files": [
+        "images/baptisty-rossii/historical/ratushny-pavlov-lisitsin.webp",
+        "images/baptisty-rossii/historical/wieler-family-before-1889.webp"
+      ],
+      "depiction": "historical contextual sources, not necessarily the exact event"
+    },
+    "04-peterburg": {
+      "output": "images/baptisty-rossii/archival-04-peterburg.webp",
+      "source_files": [
+        "images/baptisty-rossii/historical/pashkov-vasily.jpg",
+        "images/baptisty-rossii/historical/prokhanov-young.webp"
+      ],
+      "depiction": "historical contextual sources, not necessarily the exact event"
+    },
+    "05-conscience": {
+      "output": "images/baptisty-rossii/archival-05-conscience.webp",
+      "source_files": [
+        "images/baptisty-rossii/facsimiles/revolyutsiya-i-tserkov-1920-9-12-p100.jpg",
+        "images/baptisty-rossii/historical/kargel-ivan.jpg"
+      ],
+      "depiction": "historical contextual sources, not necessarily the exact event"
+    },
+    "06-soviet-night": {
+      "output": "images/baptisty-rossii/archival-06-soviet-night.webp",
+      "source_files": [
+        "images/baptisty-rossii/facsimiles/revolyutsiya-i-tserkov-1920-9-12-p100.jpg"
+      ],
+      "depiction": "historical contextual sources, not necessarily the exact event"
+    },
+    "07-vsehib": {
+      "output": "images/baptisty-rossii/archival-07-vsehib.webp",
+      "source_files": [
+        "images/baptisty-rossii/historical/vsehb-august-1945.webp"
+      ],
+      "depiction": "historical contextual sources, not necessarily the exact event"
+    },
+    "08-initiative": {
+      "output": "images/baptisty-rossii/archival-08-initiative.webp",
+      "source_files": [
+        "images/baptisty-rossii/historical/initiative-letter-1961.jpg",
+        "images/baptisty-rossii/historical/kryuchkov-vins-trial-1966.webp"
+      ],
+      "depiction": "historical contextual sources, not necessarily the exact event"
+    },
+    "09-samizdat": {
+      "output": "images/baptisty-rossii/archival-09-samizdat.webp",
+      "source_files": [
+        "images/baptisty-rossii/historical/vestnik-spaseniya-1965.webp",
+        "images/baptisty-rossii/historical/bulletin-relatives-1972.webp"
+      ],
+      "depiction": "historical contextual sources, not necessarily the exact event"
+    },
+    "10-reference": {
+      "output": "images/baptisty-rossii/archival-10-reference.webp",
+      "source_files": [
+        "images/baptisty-rossii/historical/ratushny-pavlov-lisitsin.webp",
+        "images/baptisty-rossii/historical/bulletin-relatives-1981.webp"
+      ],
+      "depiction": "historical contextual sources, not necessarily the exact event"
+    }
+  }
+}

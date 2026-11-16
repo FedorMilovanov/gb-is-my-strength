@@ -1,0 +1,8 @@
+# Exact historical false positive: a CSS width assertion ('49rem') in a browser contract.
+# Rule generic-api-key matched the English test label "token"; no credential is present.
+# Keep security scanning enabled for the entire remainder of the repository and history.
+40c415469df2c4e90f70fe6f4088f266fbf8a297:scripts/reader-focus-sitewide-browser-contract.mjs:generic-api-key:62
+# Historical 2026-06-13 capture of a PUBLIC third-party Drupal 7 page (istmat.org):
+# ajaxPageState.theme_token is an inline page AJAX theme CSRF parameter, not a Product API credential.
+# The raw HTML file is no longer present in main; suppress ONLY this exact history fingerprint.
+3c3166b00fd6934d90dd9c833193fa64d5c35f72:baptisty-rossii/research/raw-sources/istmat-1919-decree-raw.html:generic-api-key:34

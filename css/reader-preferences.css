@@ -19,6 +19,14 @@
 :root[data-reader-measure="narrow"] { --gb-reader-measure: 36rem; }
 :root[data-reader-measure="normal"] { --gb-reader-measure: 46rem; }
 :root[data-reader-measure="wide"] { --gb-reader-measure: 53rem; }
+/* Site-wide reader policy: focused layouts get a comfortable measure while
+   retaining the user's explicit narrow/normal/wide preference. Ordinary
+   article pages keep their historical widths; only opt-in focus rails consume
+   this token. Never force one hardcoded width over an accessible preference. */
+:root { --gb-reader-focus-measure: 49rem; }
+:root[data-reader-measure="narrow"] { --gb-reader-focus-measure: 36rem; }
+:root[data-reader-measure="normal"] { --gb-reader-focus-measure: 49rem; }
+:root[data-reader-measure="wide"] { --gb-reader-focus-measure: 53rem; }
 
 html[data-reader-theme="light"] {
   color-scheme: light;
@@ -177,10 +185,12 @@ html[data-reader-motion="reduced"] *::after {
 }
 
 @media print {
-  html[data-reader-theme] {
-    color-scheme: light;
+  html[data-reader-theme],
+  html.dark[data-reader-theme] {
+    color-scheme: light !important;
+    background: #fff !important;
     --color-canvas: #fff;
     --color-surface: #fff;
-    --color-text: #000;
+    --color-text: #111;
   }
 }

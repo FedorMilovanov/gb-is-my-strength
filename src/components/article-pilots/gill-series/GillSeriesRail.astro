@@ -2,6 +2,8 @@
 import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
 import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
 import SeriesMark from './SeriesMark.astro';
+import ReaderTocHeading from '../_shared/ReaderTocHeading.astro';
+import ReaderIntegratedRailToggle from '../_shared/ReaderIntegratedRailToggle.astro';
 import GillLeatherDefs from './GillLeatherDefs.astro';
 import GillLeatherRibbon from './GillLeatherRibbon.astro';
 import { GILL_SERIES, satellitesOf, chapterArticles, topLevelItems, sectionLabel, coreStepMeta, type SeriesConfig } from '../_shared/series/seriesConfig';
@@ -95,7 +97,7 @@ const currentKids = currentItem
 const kidsLabel = currentItem?.tier === 'chapter' ? 'В этой главе' : 'Дополнения к части';
 ---
 
-<aside class="gbs-rail" aria-label={`Серия «${config.seriesTitle}»`}>
+<aside class="gbs-rail" data-reader-integrated-rail="series" aria-label={`Серия «${config.seriesTitle}»`}>
   <GillLeatherDefs />
   <!-- Верх рейла: только назад + домой. Поиск/PLAY/скорости уехали в
        gbs-theme-corner (owner: "внизу останется стрелочка назад только,
@@ -107,6 +109,7 @@ const kidsLabel = currentItem?.tier === 'chapter' ? 'В этой главе' : '
     <a class="gbs-rail-home" href="/" aria-label="На главную">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8" /><path d="M5 10v10h4v-6h6v6h4V10" /></svg>
     </a>
+    <ReaderIntegratedRailToggle controls="gbsRailMid" />
   </div>
 
   <!-- Прогресс СЕРИИ (не только текущей части) — восстановлен по образцу
@@ -117,7 +120,8 @@ const kidsLabel = currentItem?.tier === 'chapter' ? 'В этой главе' : '
        updateScrollProgress() в floating-cluster-controller.js по
        data-gbs2-done-min/-part-min/-total-min на body (эти атрибуты у Gill
        уже проставлены, отдельных правок данных не нужно). -->
-  <div class="gbs2-rprogress">
+  <div class="reader-rail-compact-tools" aria-label="Инструменты чтения в компактной панели"></div>
+  <div class="gbs2-rprogress" data-reader-fold-content>
     <div class="gbs2-ring" aria-hidden="true">
       <svg width="44" height="44" viewBox="0 0 44 44">
         <circle class="t" cx="22" cy="22" r="18" />
@@ -128,7 +132,7 @@ const kidsLabel = currentItem?.tier === 'chapter' ? 'В этой главе' : '
     <div><small>Прогресс серии</small><span id="gbs2Meta">{seriesMeta}</span></div>
   </div>
 
-  <div class="gbs2-rmid" id="gbsRailMid">
+  <div class="gbs2-rmid" id="gbsRailMid" data-reader-fold-content>
     {partsBefore.length > 0 && (
       <nav class="gbs-rail-list" aria-label="Предыдущие части серии">
         {partsBefore.map((item) => { const leather = item.ribbon ?? (item.mark.kind === 'label' ? leatherFor(item.id) : null); return (
@@ -152,19 +156,17 @@ const kidsLabel = currentItem?.tier === 'chapter' ? 'В этой главе' : '
       <div class="gbs2-current-cover" aria-hidden="true"></div>
       <div class="gbs2-current-body">
         <div class="gbs2-current-label">Сейчас читаете</div>
-        <p class="gbs2-current-title">{page.railNowTitle}</p>
+        <h2 class="gbs2-current-title">{page.railNowTitle}</h2>
         <div class="gbs2-curbar"><i id="gbs2Curbar"></i></div>
       </div>
-      <div class="gbs2-toch">
-        <span>{currentItem?.tier === 'chapter' ? 'Оглавление статьи' : 'Оглавление части'}</span>
-        <span class="gbs2-count" id="gbs2Count">1 / {page.partToc.length}</span>
+      <ReaderTocHeading variant="series" label={currentItem?.tier === 'chapter' ? 'Оглавление статьи' : 'Оглавление части'} total={page.partToc.length}>
         <!-- Mechanism 3: раскрытие/сворачивание оглавления части. Персист в
              localStorage gb:rail:toc-collapsed; класс toc-collapsed на
              .gbs2-current. Шеврон вниз (раскрыто) → вправо (свёрнуто). -->
         <button class="gbs2-toch-toggle" id="gbsTocToggle" type="button" aria-expanded="true" aria-controls="gbsTocScroll" aria-label="Свернуть оглавление части">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6" /></svg>
         </button>
-      </div>
+      </ReaderTocHeading>
       <div class="gbs2-tocscroll" id="gbsTocScroll">
         {/* Historical placement (witness bcf6389f): the track lives INSIDE the ul —
             .gbs2-track{left:9px} resolves against .gbs2-toc, putting the line exactly
@@ -220,7 +222,7 @@ const kidsLabel = currentItem?.tier === 'chapter' ? 'В этой главе' : '
          open the menu, not search) — reuses the exact canon dropdown already
          wired site-wide (#hMobileMenuBtn/#hMobileNav/#hMobileBackdrop, JS in
          site.js, markup+links pattern from PastorSeriesPageChrome.astro),
-         just rendered once here in GillSeriesChrome.astro. Search stays a
+         rendered once by canonical SeriesReaderChrome.astro. Search stays a
          click away via the corner-cluster magnifying glass. -->
     <button class="gbs-rail-foot__btn gbs-rail-menu-btn" type="button" id="hMobileMenuBtn" aria-label="Открыть меню" aria-expanded="false" data-tip="Меню сайта"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><line class="burger-top" x1="4" y1="7" x2="20" y2="7" /><line class="burger-mid" x1="4" y1="12" x2="20" y2="12" /><line class="burger-bottom" x1="4" y1="17" x2="20" y2="17" /></svg></button>
     <!-- Настройки чтения (owner: собрать A-/A+ + тему в одно меню, «как на

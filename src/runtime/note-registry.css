@@ -51,5 +51,8 @@
   .gb-note-endnotes h2 { font-size: 18pt !important; break-after: avoid-page !important; }
   .gb-note-endnotes ol { margin: .75rem 0 0 !important; padding-left: 1.5rem !important; }
   .gb-note-endnotes li { margin: 0 0 .55rem !important; break-inside: auto !important; }
+  /* Chromium fragments the final endnote's trailing margin into an empty A4
+     sheet. Keep spacing between notes, but never after the last note. */
+  .gb-note-endnotes li:last-child { margin-bottom: 0 !important; }
   .gb-note-endnotes__back { display: none !important; }
 }

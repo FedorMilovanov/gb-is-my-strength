@@ -10,10 +10,9 @@
  * - Search consolidated into TOC sheet: top bar no longer hosts a wide
  *   search input that duplicated the sheet's filter and bloated the top.
  *   The top slot now only hosts the speed rail when TTS starts.
- * - Play + rate badge redesigned as compact playback UI: badge is no longer
- *   an absolute pill at right:-3 bottom:-2 floating randomly, but a static
- *   inline pill next to Play (part of .hm-playwrap flex), with proper 44px
- *   tap target handling via ::before and clear label.
+ * - Play and rate are separate 44px touch targets: the rate indicator
+ *   remains a compact pill inside its own button, never over the Play ring.
+ *   The decorative pseudo-element cannot intercept either tap target.
  * - Bottom bar reduced to ≤52-56px + safe-area: progress ring 32px (was 44),
  *   padding 6px, min-height 52px, safe-area-inset-bottom respected.
  * - Second floating row conflict fixed: LawsonPageChrome now hides
@@ -24,8 +23,14 @@
  *   keeps its navigation and reading controls separate from article content.
  */
 import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
-import PlayEmber from '@/components/ui/floating-cluster/PlayEmber.astro';
 import MobileChromeShell from '../_shared/MobileChromeShell.astro';
+import ReaderSpeedOptions from '../_shared/ReaderSpeedOptions.astro';
+import { READER_SPEED_RATES } from '@/components/reader-platform/ReaderSpeedContract';
+import ReaderPdfIcon from '../_shared/ReaderPdfIcon.astro';
+import ReaderMobileMenuTrigger from '../_shared/ReaderMobileMenuTrigger.astro';
+import ReaderMobileActions from '../_shared/ReaderMobileActions.astro';
+import ReaderMobileHome from '../_shared/ReaderMobileHome.astro';
+import ReaderMobilePlayGroup from '../_shared/ReaderMobilePlayGroup.astro';
 import ReaderActionsRuntime from '@/components/reader-platform/ReaderActionsRuntime.astro';
 import { HERMENEVTIKA_TOC } from './hermenevtikaToc';
 
@@ -47,25 +52,15 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   rootClass={palette === 'ink-gold' ? 'mobile-chrome--ink-gold' : ''}
   topClass="hmtop"
   bottomClass="hmbar"
-  topAttrs={{ 'data-fc-root': true, 'data-fc-variant': 'single', 'data-fc-mode': 'single', 'data-gb-speed-custom': true }}
+  topAttrs={{ 'data-fc-root': true, 'data-fc-variant': 'single', 'data-fc-mode': 'single', 'data-gb-speed-custom': true, 'data-reader-mobile-speed': true }}
   bottomAttrs={{ 'data-fc-root': true, 'data-fc-variant': 'single', 'data-fc-mode': 'single' }}
 >
-  <button class="hm-icon" id="hmBackBtn" type="button" aria-label="Назад" data-home-href={backHref} slot="top-leading">
-    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
-  </button>
+  <ReaderMobileHome engine="article" href={backHref} slot="top-leading" />
   <div class="hm-slot" id="hmSlot" slot="top-primary">
-    <div class="hm-speedrail" id="hmSpeedrail" role="radiogroup" aria-label="Скорость озвучки">
-      <button class="hm-spd" type="button" role="radio" data-speed="1" aria-checked="true">1×</button>
-      <button class="hm-spd" type="button" role="radio" data-speed="1.25" aria-checked="false">1.25×</button>
-      <button class="hm-spd" type="button" role="radio" data-speed="1.5" aria-checked="false">1.5×</button>
-      <button class="hm-spd" type="button" role="radio" data-speed="1.75" aria-checked="false">1.75×</button>
-      <button class="hm-spd" type="button" role="radio" data-speed="2" aria-checked="false">2×</button>
-    </div>
+    <ReaderMobileMenuTrigger targetId="hmSectionBtn" />
+    <ReaderSpeedOptions id="hmSpeedrail" railClass="hm-speedrail" chipClass="hm-spd" rates={READER_SPEED_RATES} initiallyInert />
   </div>
-  <span class="hm-playwrap" slot="top-playback">
-    <PlayEmber audioState="none" class="hm-ember" tip="Озвучка" />
-    <button class="hm-spdbadge" id="hmSpdBadge" type="button" aria-label="Выбрать скорость, сейчас 1×">1×</button>
-  </span>
+  <ReaderMobilePlayGroup engine="article" slot="top-playback" />
   <SaveButton class="hm-icon" tip="Сохранить" slot="top-trailing" />
 
   <!-- a11y D-3c (browser audit 2026-10-13): the visible «0%» inside this button is not part
@@ -87,18 +82,8 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
     <span class="sr-only">— открыть оглавление статьи</span>
   </button>
   <Fragment slot="bottom-actions">
-  <span class="hmbar-divider"></span>
-  <button class="hmbar-btn gb-theme-toggle" data-fc-action="theme" aria-label="Тема">
-    <span class="theme-icon-sun" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg></span>
-    <span class="theme-icon-moon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg></span>
-  </button>
-  <button class="hmbar-btn" id="hmSettingsBtn" type="button" aria-label="Настройки чтения">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h11M4 12h7M4 17h13"/><circle cx="18" cy="7" r="2.2"/><circle cx="14" cy="12" r="2.2"/><circle cx="20" cy="17" r="2.2"/></svg>
-  </button>
-  <span class="hmbar-divider"></span>
-  <button class="hmbar-btn" id="hmShareBtn" data-action="share" type="button" aria-label="Поделиться">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" /></svg>
-  </button>
+    <span class="hmbar-divider" aria-hidden="true"></span>
+    <ReaderMobileActions engine="article" />
   </Fragment>
 
   <div class="hmsheet" id="hmSheet" aria-hidden="true" data-reading-minutes={readingMinutes} slot="overlays">
@@ -128,7 +113,7 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
     </label>
     <ul class="hmsheet-list" id="hmSheetList">
       {(toc as GenericTocItem[]).map((item, i) => (
-        <li class:list={{ 'hmsheet-sub': item.level === 3 }} data-idx={i}>
+        <li class:list={{ 'hmsheet-sub': item.level >= 3, 'hmsheet-deep': item.level >= 4 }} data-idx={i}>
           <a href={item.href} class="hmsheet-link" data-name={item.label}>{item.label}</a>
         </li>
       ))}
@@ -141,7 +126,7 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
         <span>Поделиться</span>
       </button>
       <button class="hmsheet-action-btn" data-action="print" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>
+        <ReaderPdfIcon />
         <span>PDF</span>
       </button>
     </div>
@@ -156,34 +141,33 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
       display:flex; align-items:center; gap:6px; position:fixed; left:0; right:0; top:0;
       z-index:var(--z-sticky,1000); min-height:52px;
       padding:calc(env(safe-area-inset-top,0px) + 6px) 10px 6px;
-      background:color-mix(in srgb, #fbf3ea 92%, transparent); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
-      border-bottom:1px solid #e8d9c8;
+      background:var(--color-canvas,#fdfcf9); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--color-border,#e5e2dc);
       transition:transform .28s cubic-bezier(.22,1,.36,1), opacity .2s ease, background .2s ease, border-color .2s ease;
       will-change:transform;
     }
     .hmtop.is-hidden{transform:translateY(calc(-100% - 16px)); opacity:0; pointer-events:none}
-    .hmtop.is-top{background:color-mix(in srgb, #fbf3ea 88%, transparent); border-bottom-color:transparent}
+    .hmtop.is-top{background:var(--color-canvas,#fdfcf9); border-bottom-color:transparent}
     html.dark .hmtop{background:color-mix(in srgb, #1c0e14 90%, transparent); border-bottom-color:rgba(212,140,150,.16)}
-    html.dark .hmtop.is-top{background:color-mix(in srgb, #1c0e14 84%, transparent); border-bottom-color:transparent}
+    html.dark .hmtop.is-top{background:var(--color-canvas,#161a21); border-bottom-color:transparent}
     html[data-reader-theme="sepia"] .hmtop{background:color-mix(in srgb, #f3ead4 92%, transparent); border-bottom-color:#d8c9a8}
-    html[data-reader-theme="sepia"] .hmtop.is-top{background:color-mix(in srgb, #f3ead4 88%, transparent); border-bottom-color:transparent}
+    html[data-reader-theme="sepia"] .hmtop.is-top{background:var(--color-canvas,#f3ead4); border-bottom-color:transparent}
     .hmbar{
       display:flex; align-items:center; gap:8px; position:fixed; left:0; right:0; bottom:0;
       z-index:var(--z-bottom-bar,2000); min-height:52px;
       padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px));
-      background:linear-gradient(180deg,#fbf3ea,#f3e6d8); border-top:1px solid #e8d9c8;
-      box-shadow:0 -8px 24px -12px rgba(122,46,46,.18);
+      background:var(--color-canvas,#fdfcf9);color:var(--color-text-muted,#6a6a6a); border-top:1px solid var(--color-border,#e5e2dc);
+      box-shadow:0 -7px 22px -14px rgba(46,34,32,.10);
     }
     html.dark .hmbar{
-      background:linear-gradient(180deg,#241019,#150a0e); border-top-color:rgba(212,140,150,.16);
+      color:#caa1a0;background:linear-gradient(180deg,#241019,#150a0e); border-top-color:rgba(212,140,150,.16);
       box-shadow:0 -8px 24px -12px rgba(0,0,0,.5);
     }
     html[data-reader-theme="sepia"] .hmbar{
       background:linear-gradient(180deg,#f3ead4,#e9dcc0); border-top-color:#d8c9a8;
       box-shadow:0 -8px 24px -12px rgba(122,90,48,.20);
     }
-    .article-main--hrail{ padding-top:calc(52px + env(safe-area-inset-top,0px)); padding-bottom: calc(56px + env(safe-area-inset-bottom,0px)); }
-    body.hm-tbhidden .article-main--hrail{ padding-top:calc(12px + env(safe-area-inset-top,0px)); }
+    .article-main--hrail{ padding-top:calc(52px + env(safe-area-inset-top,0px)); padding-bottom: calc(72px + env(safe-area-inset-bottom,0px)); }
     /* Hide desktop header when this bar exists — prevents ghost text + double chrome */
     .astro-header{display:none !important}
     /* Hide generic fallback pills that create second floating row */
@@ -191,7 +175,8 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   }
   @media(max-width:360px){
     .hmtop{gap:4px;padding-left:8px;padding-right:8px}
-    .hmbar{gap:6px;padding-left:8px;padding-right:8px}
+    .hmbar{gap:2px;padding-left:8px;padding-right:8px}
+    .hmbar-divider{display:none}
   }
   @media(min-width:1200px){ .hmtop, .hmbar{display:none !important} }
 
@@ -209,43 +194,21 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   html.dark .hm-icon.gb-save.is-saved{color:#e0a89c}
   html.dark .hm-icon.gb-save.is-saved svg{fill:#e0a89c;stroke:#e0a89c}
 
-  .hm-slot{position:relative;flex:1;min-width:0;height:38px;display:flex;align-items:center}
-  .hm-slot:empty{flex:0 0 0; min-width:0; width:0; height:0; overflow:hidden}
-  .hm-speedrail{position:absolute;inset:0;display:flex;align-items:center;gap:3px;
-    opacity:0;transform:translateX(8px);pointer-events:none;transition:opacity .25s ease,transform .25s cubic-bezier(.3,1.2,.4,1);
-    overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;
-    scroll-snap-type:x proximity;cursor:grab}
-  .hm-speedrail::-webkit-scrollbar{display:none}
-  .hm-speedrail.is-dragging{cursor:grabbing;scroll-snap-type:none}
-  .hmtop.speed-open .hm-speedrail{opacity:1;transform:translateX(0);pointer-events:auto}
-  .hm-spd{flex:0 0 auto;font:700 10.5px/1 var(--f-ui,"Source Sans 3",system-ui,sans-serif);
-    border:1px solid rgba(122,46,46,.22);background:transparent;color:#8a5a4a;padding:6px 8px;border-radius:8px;
-    cursor:pointer;white-space:nowrap;position:relative;transition:background .15s,color .15s,border-color .15s,transform .12s;
-    scroll-snap-align:center;-webkit-tap-highlight-color:transparent}
-  html.dark .hm-spd{border-color:rgba(224,160,150,.24);color:#caa1a0}
-  .hm-spd::before{content:'';position:absolute;inset:-7px -1px}
-  .hm-spd:active{transform:scale(.92);transition-duration:.08s}
-  .hm-spd[aria-checked="true"]{background:#7a2e2e;color:#fff;border-color:transparent}
-  html.dark .hm-spd[aria-checked="true"]{background:#e0a89c;color:#2a1814}
-  .hm-speedrail.is-dragging .hm-spd{transition:none}
+  .hm-slot{position:relative;flex:1;min-width:0;height:44px;display:flex;align-items:center}
+  .hm-search-trigger{display:flex;align-items:center;gap:9px;width:100%;height:38px;min-width:0;padding:0 11px;
+    border:1px solid var(--color-border,#e5e2dc);border-radius:999px;background:var(--color-surface-muted,#f4f2ed);
+    color:var(--color-text-muted,#6a6a6a);font:400 12.5px/1 "Source Sans 3",system-ui,sans-serif;
+    cursor:pointer;transition:opacity .22s ease,transform .22s ease}
+  .hm-search-trigger svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .hm-search-trigger span{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .hmtop.speed-open .hm-search-trigger{opacity:0;transform:translateX(-8px);pointer-events:none}
+  @media(max-width:360px){.hm-search-trigger{padding:0 8px;gap:5px;font-size:11px}}
 
-  /* Compact playback UI: Play + rate as one control surface */
-  .hm-playwrap{position:relative;flex-shrink:0;display:flex;align-items:center;gap:6px}
-  .hm-playwrap .hm-ember{--ember-size:38px}
-  .hm-spdbadge{
-    position:static; right:auto; bottom:auto; z-index:auto;
-    min-width:36px; height:28px; padding:0 8px; border-radius:999px;
-    border:1px solid #7a2e2e; background:#7a2e2e; color:#fff;
-    font:700 11px/26px "Source Sans 3",system-ui,sans-serif;
-    text-align:center; cursor:pointer; display:inline-grid; place-items:center;
-    box-shadow:0 1px 4px rgba(0,0,0,.18);
-    transition:transform .18s cubic-bezier(.34,1.56,.64,1), background .15s, border-color .15s;
-  }
-  html.dark .hm-spdbadge{background:#e0a89c;border-color:#e0a89c;color:#2a1814}
-  .hm-spdbadge::before{content:'';position:absolute;inset:-8px -4px}
-  .hm-spdbadge{position:relative}
-  .hm-spdbadge:active{transform:scale(.94)}
-  .hm-spdbadge.is-bump{animation:hm-spdbadge-bump .3s cubic-bezier(.34,1.56,.64,1)}
+  /* Play and speed are independent 44px touch targets. Keep the speed
+     indicator visually compact, but never place a hit target over Play. */
+  .hm-playwrap{position:relative;flex:0 0 88px;width:88px;height:44px;display:flex;align-items:center;justify-content:space-between;gap:4px;overflow:visible}
+  .hm-playwrap .hm-ember{--ember-size:40px;flex-shrink:0}
+  /* The pseudo-element is decoration; the entire button remains clickable. */
   @keyframes hm-spdbadge-bump{0%{transform:scale(1)}50%{transform:scale(1.12)}100%{transform:scale(1)}}
 
   /* ---- bottom bar: progress ring + section + theme/font/share ---- */
@@ -255,8 +218,9 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   html.dark .hmbar-progress-track{stroke:rgba(224,160,150,.18)}
   .hmbar-progress-fill{fill:none;stroke:#7a2e2e;stroke-width:3;stroke-linecap:round;transition:stroke-dashoffset .15s linear}
   html.dark .hmbar-progress-fill{stroke:#e0a89c}
-  .hmbar-progress-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    font:700 8px "Source Sans 3",system-ui,sans-serif;color:#7a2e2e;pointer-events:none;font-variant-numeric:tabular-nums}
+  .hmbar-progress-text{position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+    overflow:hidden;clip-path:inset(50%);white-space:nowrap;pointer-events:none;
+    font:700 8px "Source Sans 3",system-ui,sans-serif;color:#7a2e2e;font-variant-numeric:tabular-nums}
   html.dark .hmbar-progress-text{color:#e0a89c}
   .hmbar-section{flex:1;min-width:0;background:none;border:0;cursor:pointer;padding:4px 4px;text-align:left;
     display:flex;flex-direction:column;gap:1px;overflow:hidden;font:inherit}
@@ -268,15 +232,19 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   html.dark .hmbar-section-name{color:#f2e9e6}
   .hmbar-divider{width:1px;height:20px;background:rgba(0,0,0,.08);flex-shrink:0}
   html.dark .hmbar-divider{background:rgba(255,255,255,.08)}
-  .hmbar-btn{position:relative;width:32px;height:32px;border:0;background:none;cursor:pointer;border-radius:50%;
-    display:grid;place-items:center;color:#8a5a4a;flex-shrink:0}
+  /* Only the four right-side actions form a compact cluster; left-side chrome
+     retains its original layout, outer gaps and 44px touch targets. */
+  .hmbar-actions{display:flex;align-items:center;gap:0;flex:0 0 auto}
+  .hmbar-btn{position:relative;width:44px;height:44px;border:0;background:none;cursor:pointer;border-radius:50%;
+    display:grid;place-items:center;color:var(--color-text-muted,#6a6a6a);flex-shrink:0}
   html.dark .hmbar-btn{color:#caa1a0}
-  .hmbar-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .hmbar-btn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
   /* Ensure 44px tap targets despite 32px visual */
   .hmbar-btn,.hmtop .hm-icon,.hmbar-progress{
     width:44px;height:44px;min-width:44px;min-height:44px
   }
-  .hmbar-btn svg,.hmbar-progress svg{width:32px;height:32px}
+  .hmbar-btn svg{width:19px;height:19px}
+  .hmbar-progress svg{width:32px;height:32px}
   .hmtop .hm-icon svg{width:18px;height:18px}
   #gb-hl-fab.gb-hl-fab--docked.hmbar-btn{
     width:44px;height:44px;min-width:44px;min-height:44px
@@ -326,8 +294,9 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   .hmsheet-link{display:block;padding:9px 4px;color:rgba(42,24,20,.72);text-decoration:none;
     font-family:var(--f-serif,Lora,Georgia,serif);font-size:14px;border-bottom:1px solid rgba(0,0,0,.05)}
   html.dark .hmsheet-link{color:rgba(255,255,255,.68);border-bottom-color:rgba(255,255,255,.06)}
-  .hmsheet-sub .hmsheet-link{padding-left:18px;font-size:13px;color:rgba(42,24,20,.55)}
-  html.dark .hmsheet-sub .hmsheet-link{color:rgba(255,255,255,.5)}
+  .hmsheet-sub .hmsheet-link{padding-left:18px;font-size:13px;color:rgba(42,24,20,.72)}
+  .hmsheet-deep .hmsheet-link{padding-left:34px;font-size:12px;line-height:1.46}
+  html.dark .hmsheet-sub .hmsheet-link{color:rgba(255,255,255,.78)}
   li[data-idx].hm-current .hmsheet-link{color:#7a2e2e;font-weight:700}
   html.dark li[data-idx].hm-current .hmsheet-link{color:#e0a89c}
   li[hidden]{display:none}
@@ -389,7 +358,7 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   }
   div.mobile-chrome--ink-gold .hmtop.is-top{background:color-mix(in srgb,var(--lawson-chrome-surface) 96%,transparent);border-bottom-color:transparent}
   div.mobile-chrome--ink-gold .hmbar{
-    background:linear-gradient(180deg,var(--lawson-chrome-surface),var(--lawson-chrome-surface-raised));
+    color:var(--lawson-chrome-accent);background:linear-gradient(180deg,var(--lawson-chrome-surface),var(--lawson-chrome-surface-raised));
     border-top-color:var(--lawson-chrome-border);
     box-shadow:0 -8px 24px -12px var(--lawson-chrome-shadow);
   }
@@ -397,11 +366,6 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
   div.mobile-chrome--ink-gold .hmbar-btn{color:var(--lawson-chrome-accent)}
   div.mobile-chrome--ink-gold .hm-icon.gb-save.is-saved{color:var(--lawson-chrome-accent)}
   div.mobile-chrome--ink-gold .hm-icon.gb-save.is-saved svg{fill:var(--lawson-chrome-accent);stroke:var(--lawson-chrome-accent)}
-  div.mobile-chrome--ink-gold .hm-spd{border-color:var(--lawson-chrome-border);color:var(--lawson-chrome-accent)}
-  div.mobile-chrome--ink-gold .hm-spd[aria-checked="true"],
-  div.mobile-chrome--ink-gold .hm-spdbadge{
-    background:var(--lawson-chrome-accent);border-color:var(--lawson-chrome-accent);color:var(--lawson-chrome-accent-ink);
-  }
   div.mobile-chrome--ink-gold .hmbar-progress-track{stroke:var(--lawson-chrome-track)}
   div.mobile-chrome--ink-gold .hmbar-progress-fill{stroke:var(--lawson-chrome-accent)}
   div.mobile-chrome--ink-gold .hmbar-progress-text{color:var(--lawson-chrome-accent)}
@@ -450,26 +414,15 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
 
   @media(min-width:1200px){ .hmsheet:not(.hmsettings){display:none !important} }
   @media(prefers-reduced-motion:reduce){
-    .hmtop,.hmbar,.hmsheet-panel,.hm-speedrail{transition:none !important}
   }
 </style>
 
 <script>
-  import { initSpeedSlot } from '../_shared/speedSlot';
 
   function initHermenevtikaMobileBar(){
     const topbar = document.querySelector('.hmtop[data-gb-speed-custom]') as HTMLElement | null;
     const sheet = document.getElementById('hmSheet') as HTMLElement | null;
     if (!sheet) return;
-    if (topbar) {
-      initSpeedSlot(topbar, {
-        ember: '.hm-ember',
-        speedrail: '.hm-speedrail',
-        badge: '.hm-spdbadge',
-        chip: '.hm-spd',
-      });
-    }
-
     // ---- TOC sheet: open/close, search filter, scrollspy, progress ----
     const backdrop = document.getElementById('hmSheetBackdrop');
     const closeBtn = document.getElementById('hmSheetClose');
@@ -487,21 +440,29 @@ const { backHref, readingMinutes = 50, toc = HERMENEVTIKA_TOC, palette = 'defaul
       else fallbackUtils()?.unlockScroll?.(OVERLAY_OWNER);
     };
 
-    const openSheet = (opener?: EventTarget | null) => {
+    const openSheet = (opener?: EventTarget | null, focusTarget?: string) => {
       sheet.classList.add('is-open');
       sheet.setAttribute('aria-hidden', 'false');
       const runtime = overlayRuntime();
       if (runtime?.open) runtime.open(OVERLAY_OWNER, {
         element: sheet,
         opener: opener instanceof Element ? opener : document.activeElement,
+        focusTarget: focusTarget || null,
         onRequestClose: (closeReason: string) => closeSheet(closeReason, true),
         closeOnEscape: true,
         trapFocus: true
       });
-      else fallbackUtils()?.lockScroll?.(OVERLAY_OWNER);
+      else {
+        fallbackUtils()?.lockScroll?.(OVERLAY_OWNER);
+        if (focusTarget) (document.querySelector(focusTarget) as HTMLElement | null)?.focus({ preventScroll: true });
+      }
     };
     bottomBtn?.addEventListener('click', (event) => openSheet(event.currentTarget));
     sectionBtn?.addEventListener('click', (event) => openSheet(event.currentTarget));
+    const searchTrigger = document.getElementById('hmSearchTrigger');
+    searchTrigger?.addEventListener('click', (event) => {
+      openSheet(event.currentTarget, '#hmSheetSearch');
+    });
     backdrop?.addEventListener('click', () => closeSheet('backdrop', true));
     closeBtn?.addEventListener('click', () => closeSheet('button', true));
     document.addEventListener('keydown', (e: KeyboardEvent) => {

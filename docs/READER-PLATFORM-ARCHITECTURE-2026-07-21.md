@@ -274,3 +274,53 @@ The platform is considered converged when:
 - engine guards and Playwright cover all representative surface types;
 - mobile and desktop have no regressions in overflow, focus, safe areas, scroll lock or first-paint theme;
 - special pages remain fast and interaction-appropriate rather than being forced into article UI.
+
+## Source re-audit: one core, three publication structures (2026-11-09)
+
+This is an update to the historical July baseline. The surface labels
+series / article / page are NOT separate reader runtimes.
+
+- Standalone document: document headings H2-H6, one progress stream.
+- Flat series: related articles, previous/next, optional satellites and
+  reference material; part and collection progress.
+- Book-shaped series: SeriesConfig.shape = book; chapter grouping, separate
+  published article routes and chapter/book progress. Chapters may link to
+  their first article instead of owning a separate article URL.
+- Ordinary pages and immersive specials: opt into shared navigation/theme
+  capabilities only, not article playback/progress by default.
+
+Existing source owners (do not duplicate them):
+1. Public route classification: data/route-profiles and
+   migration/page-ownership.json; checked by public-surface-registry-audit.
+   mobileChromeRegistry is an older selective compatibility adapter, not a
+   second complete inventory.
+2. Series/book publication order and validation: seriesConfig.ts.
+3. Both TOC shapes: readerTocProjection.ts; one ReaderTocNode projection.
+   The Grok tree is a presentation, never a second heading/scroll owner.
+4. Theme, reading width, line spacing, text mode: GBReaderPreferences v1
+   and ReaderPreferencesHead. Legacy keys are compatibility bridges only.
+5. Mobile shell: MobileChromeShell, with explicit surface adapters.
+6. Speed option markup: shared ReaderSpeedOptions.astro radiogroup. Playback
+   listeners remain owned by their existing adapters until proven parity.
+
+Remaining migration debt: SeriesReaderChrome still delegates to legacy
+GillSeriesChrome; Gill/standalone bars and settings sheets still differ.
+Unify their shared behavior incrementally, without swapping all readers
+for a new mega-component. Preserve publication-specific artwork, palette,
+covers, and book landings via tokens, props and slots. Book cover lettering
+may require contain rather than cover.
+
+Acceptance per bounded change: current exact-SHA CI, source ownership
+guards, book/flat/standalone route tests, 320/390/480 mobile touch targets,
+desktop, accessibility, persistent preferences, focus/scroll lifecycle,
+and browser visual parity. A previous SHA or local success cannot attest
+the current CI status.
+
+## Source composition consolidation - 2026-11-09 (PR #2292)
+
+SeriesReaderChrome is now the actual series/book composition owner; the
+unused historical GillSeriesChrome implementation was retired rather than
+retained as a second component. Existing presentation adapters, article routes,
+markup, theme tokens, TTS and reader runtime retain their original behavior.
+This does not mean standalone articles and series settings are fully converged.
+CI, browser parity and owner visual acceptance remain mandatory before release.

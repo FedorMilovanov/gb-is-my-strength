@@ -20,7 +20,8 @@ const DIST_ARG = process.argv.find((arg) => arg.startsWith('--dist='));
 const REPORT_ARG = process.argv.find((arg) => arg.startsWith('--report='));
 const STRICT_DIST = DIST_ARG ? path.resolve(ROOT, DIST_ARG.slice('--dist='.length)) : DIST;
 const STRICT_REPORT = REPORT_ARG ? path.resolve(ROOT, REPORT_ARG.slice('--report='.length)) : undefined;
-const IMPLEMENTATION_IMPORT = "import GillSeriesChrome from '../../gill-series/GillSeriesChrome.astro';";
+const IMPLEMENTATION_IMPORT = "import GillSeriesRail from '../../gill-series/GillSeriesRail.astro';";
+const RETIRED_CHROME = path.join(ROOT, 'src/components/article-pilots/gill-series/GillSeriesChrome.astro');
 const DIRECT_IMPORT_RE = /import\s+[A-Za-z_$][\w$]*\s+from\s+['"][^'"]*GillSeriesChrome\.astro['"]/;
 const FACADE_IMPORT_RE = /import\s+SeriesReaderChrome\s+from\s+['"][^'"]*SeriesReaderChrome\.astro['"]/g;
 
@@ -36,8 +37,12 @@ function walk(dir) {
 }
 
 const facade = fs.readFileSync(FACADE, 'utf8');
-assert.ok(facade.includes(IMPLEMENTATION_IMPORT), 'façade must be the only implementation importer');
-assert.ok(facade.includes('<GillSeriesChrome pageId={pageId} config={config}>'), 'façade must forward pageId/config');
+assert.ok(facade.includes(IMPLEMENTATION_IMPORT), 'canonical SeriesReaderChrome owns composition');
+assert.ok(facade.includes('<GillSeriesRail pageId={pageId} config={config} />'), 'canonical rail configured');
+assert.ok(facade.includes('<GillSeriesMobileBar pageId={pageId} config={config} />'), 'canonical mobile bar configured');
+assert.ok(facade.includes('<GillReaderSettingsSheet config={config} />'), 'canonical settings configured');
+assert.ok(facade.includes('<ReaderActionsRuntime />'), 'canonical runtime mounted once');
+assert.ok(!fs.existsSync(RETIRED_CHROME), 'old GillSeriesChrome is retired');
 assert.ok(facade.includes('<slot />'), 'façade must forward the default slot');
 assert.equal(typeof auditSeriesFragments, 'function', 'series fragment audit must expose its reusable contract');
 
@@ -91,7 +96,7 @@ for (const file of sourceFiles) {
   if (matches) facadeImports += matches.length;
 }
 
-assert.deepEqual(illegal, [], `direct GillSeriesChrome imports outside façade: ${illegal.join(', ')}`);
+assert.deepEqual(illegal, [], `retired GillSeriesChrome imports: ${illegal.join(', ')}`);
 assert.ok(facadeImports >= 41, `expected at least 41 SeriesReaderChrome consumers, found ${facadeImports}`);
 
 if ((DIST_ARG || REPORT_ARG) && !REQUIRE_DIST) {
@@ -109,4 +114,24 @@ if (REQUIRE_DIST) {
   strictFragmentSummary = `strict fragment audit passed: ${report.totals.pages} page(s), ${report.totals.uniqueFragments} unique target(s)`;
 }
 
-console.log(`✅ series-reader-facade: ${facadeImports} consumers; implementation import isolated to façade; content-layer rendering uses Astro render(entry); heart progress fail-closed; mobile Back config-owned; no-quiz Learning panel relation guarded; Learning search has persistent accessible name; ${strictFragmentSummary}`);
+
+/*
+ * Both rail families must use the same presentational TOC heading,
+ * with historically stable IDs and the series-collapse native button.
+ * This is a composition contract, not a second reader/scroll owner.
+ */
+const TOC_HEADING = path.join(ROOT, 'src/components/article-pilots/_shared/ReaderTocHeading.astro');
+const SINGLE_RAIL = path.join(ROOT, 'src/components/article-pilots/_shared/ReaderRail.astro');
+const SERIES_RAIL = path.join(ROOT, 'src/components/article-pilots/gill-series/GillSeriesRail.astro');
+const tocHeadingSource = fs.readFileSync(TOC_HEADING, 'utf8');
+const singleRailSource = fs.readFileSync(SINGLE_RAIL, 'utf8');
+const seriesRailSource = fs.readFileSync(SERIES_RAIL, 'utf8');
+assert.match(singleRailSource, /<ReaderTocHeading variant="single"/, 'standalone reader must reuse canonical TOC heading');
+assert.match(seriesRailSource, /<ReaderTocHeading variant="series"/, 'series reader must reuse canonical TOC heading');
+assert.match(tocHeadingSource, /id="hrailCount"/, 'standalone count ID is stable');
+assert.match(tocHeadingSource, /id="gbs2Count"/, 'series count ID is stable');
+assert.match(tocHeadingSource, /<slot\s*\/>/, 'series rail native collapse trigger must pass through unchanged');
+assert.match(seriesRailSource, /id="gbsTocToggle"/, 'series TOC collapse button remains the native controller target');
+assert.match(seriesRailSource, /aria-controls="gbsTocScroll"/, 'series TOC scroll target is preserved');
+
+console.log(`✅ series-reader-facade: ${facadeImports} consumers; canonical composition directly owned; historical implementation retired; content-layer rendering uses Astro render(entry); heart progress fail-closed; mobile Back config-owned; no-quiz Learning panel relation guarded; Learning search has persistent accessible name; ${strictFragmentSummary}`);

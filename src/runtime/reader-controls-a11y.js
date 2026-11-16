@@ -38,6 +38,10 @@
   }
 
   function persistRate(rate) {
+    // The keyboard adapter owns arrow-key navigation, not the rate policy.
+    // Persist and broadcast through the same owner as pointer chip selection.
+    if (window.GBReaderRatePolicy?.persist(rate) != null) return;
+    if (![0.75, 1, 1.25, 1.5, 1.75, 2].includes(rate)) return;
     try {
       localStorage.setItem('gb:audio:rate', String(rate));
       localStorage.setItem('gbx-tts-rate', String(rate));
@@ -57,18 +61,23 @@
     root.setAttribute(BOUND_ATTR, config.kind);
     const railId = ensureId(rail, `${config.kind}-speedrail`);
     const initialRailInlineDisplay = rail.style.display;
+    const keepAlternateVisible = root.dataset.fcSpeedLayout === 'popover';
     const alternateState = alternate instanceof HTMLElement ? {
       ariaHidden: alternate.getAttribute('aria-hidden'),
       inert: alternate.hasAttribute('inert') || Boolean(alternate.inert),
       tabIndex: alternate.getAttribute('tabindex'),
     } : null;
+    const lifecycle = new AbortController();
     let scheduled = false;
     let keyboardHideRequested = false;
     let keyboardCollapsed = false;
 
     function isOpen() {
-      if (config.kind === 'hermenevtika') return root.classList.contains('speed-open');
-      return rail.getAttribute('aria-hidden') === 'false';
+      // ReaderSpeedOptions owns one shared slot for both engines. Its
+      // speed-open class is canonical; during opening aria-hidden is removed,
+      // not set to the literal string "false". Reading the attribute here
+      // caused the a11y adapter to immediately hide a newly opened Gill rail.
+      return root.classList.contains('speed-open');
     }
 
     function selectedChip() {
@@ -104,7 +113,7 @@
       setAttr(badge, 'aria-controls', railId);
       setAttr(badge, 'aria-expanded', open ? 'true' : 'false');
 
-      if (alternate instanceof HTMLElement && alternateState) {
+      if (!keepAlternateVisible && alternate instanceof HTMLElement && alternateState) {
         if (open) {
           setAttr(alternate, 'aria-hidden', 'true');
           setInert(alternate, true);
@@ -163,14 +172,12 @@
         else if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
           event.stopPropagation();
-          if (config.kind === 'gill') {
-            selectForKeyboard(chip);
-            closeFromKeyboard();
-          } else {
-            keyboardHideRequested = true;
-            chip.click();
-            scheduleSync();
-          }
+          // Both readers now use the same ReaderSpeedOptions/SpeedSlot owner.
+          // The actual chip click applies the chosen rate and closes its rail;
+          // do not call Gill's retired __gillCloseSpeedRail controller.
+          keyboardHideRequested = true;
+          chip.click();
+          scheduleSync();
           return;
         } else return;
         event.preventDefault();
@@ -182,7 +189,7 @@
 
     badge.addEventListener('click', scheduleSync);
     rail.addEventListener('pointerup', scheduleSync);
-    window.addEventListener('gb:tts-rate-change', scheduleSync);
+    window.addEventListener('gb:tts-rate-change', scheduleSync, { signal: lifecycle.signal });
 
     const observer = new MutationObserver(scheduleSync);
     observer.observe(root, { attributes: true, attributeFilter: ['class'] });
@@ -192,7 +199,14 @@
       attributeFilter: ['aria-hidden', 'aria-checked', 'tabindex', 'class'],
     });
 
-    const record = { root, rail, badge, alternate, chips, sync, observer, kind: config.kind };
+    const record = {
+      root, rail, badge, alternate, chips, sync, observer, kind: config.kind,
+      dispose() {
+        lifecycle.abort();
+        observer.disconnect();
+        root.removeAttribute(BOUND_ATTR);
+      },
+    };
     slots.add(record);
     sync();
   }
@@ -205,11 +219,11 @@
       alternate: '.hm-slot-search',
       chip: '.hm-spd',
     }));
-    document.querySelectorAll('[data-fc-speed-mode="inline"]').forEach((root) => bindSpeedSlot(root, {
+    document.querySelectorAll('[data-reader-mobile-speed][data-gill-mobile-bar]').forEach((root) => bindSpeedSlot(root, {
       kind: 'gill',
       rail: '.mobile-speedrail',
       badge: '.mobile-spdbadge',
-      alternate: '.mobile-learning-trigger',
+      alternate: '.reader-mobile-menu-trigger',
       chip: '.mobile-speed',
     }));
   }
@@ -261,9 +275,9 @@
 
   function bindSurfaceRelations() {
     [
-      { trigger: '#hmBottomBtn, #hmSectionBtn', target: '#hmSheet', fallbackId: 'hmSheet', popup: 'dialog' },
+      { trigger: '#hmBottomBtn, #hmSectionBtn, .hmtop [data-reader-mobile-menu-target="hmSectionBtn"]', target: '#hmSheet', fallbackId: 'hmSheet', popup: 'dialog' },
       { trigger: '#hmSettingsBtn, #hrailSettingsBtn, #gbFcSettings', target: '#hmSettings', fallbackId: 'hmSettings', popup: 'dialog' },
-      { trigger: '#mobPartTocBtn', target: '#partTocOverlay', fallbackId: 'partTocOverlay', popup: 'dialog' },
+      { trigger: '#mobPartTocBtn, .mobile-top-bar [data-reader-mobile-menu-target="mobPartTocBtn"]', target: '#partTocOverlay', fallbackId: 'partTocOverlay', popup: 'dialog' },
       { trigger: '#mobTocBtn', target: '#seriesTocOverlay', fallbackId: 'seriesTocOverlay', popup: 'dialog' },
       { trigger: '[data-gill-settings-open]', target: '#gillSettingsOverlay', fallbackId: 'gillSettingsOverlay', popup: 'dialog' },
       { trigger: '[data-gill-learning-open]', target: '#gillLearningOverlay', fallbackId: 'gillLearningOverlay', popup: 'dialog' },
@@ -285,7 +299,12 @@
   function refresh() {
     bindSlots();
     bindSurfaceRelations();
-    slots.forEach((slot) => slot.sync());
+    slots.forEach((slot) => {
+      if (!slot.root.isConnected) {
+        slot.dispose();
+        slots.delete(slot);
+      } else slot.sync();
+    });
     surfaceRelations.forEach((relation, target) => {
       if (!target.isConnected) {
         relation.observer?.disconnect();
@@ -303,6 +322,14 @@
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
   else init();
+  document.addEventListener('astro:before-swap', () => {
+    // Do not retain detached speed controls across Astro client navigation.
+    // Each surviving relation is rediscovered by the next page-load event.
+    slots.forEach((slot) => slot.dispose());
+    slots.clear();
+    surfaceRelations.forEach((record) => record.observer?.disconnect());
+    surfaceRelations.clear();
+  });
   document.addEventListener('astro:page-load', init);
   window.addEventListener('pageshow', refresh);
 

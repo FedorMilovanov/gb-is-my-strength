@@ -3,6 +3,7 @@ import FloatingCluster from '@/components/ui/floating-cluster/FloatingCluster.as
 import ReaderRail from '@/components/article-pilots/_shared/ReaderRail.astro';
 import HermenevtikaMobileBar from '@/components/article-pilots/hermenevtika/HermenevtikaMobileBar.astro';
 import ReaderSettings from '@/components/article-pilots/_shared/ReaderSettings.astro';
+import { assetUrl } from '@/lib/asset-version';
 import { APOSTASY_MEGA_TOC } from './apostasyMegaToc';
 
 // Одиночная статья раздела «Трудные тексты» потребляет канонических владельцев
@@ -34,3 +35,5 @@ const railTitle = 'Отступление от веры: Иуда, Евреям 
   palette="ink-gold"
 />
 <ReaderSettings />
+{/* Shared Reader Library runtime, same owner as other article routes. */}
+<script is:inline defer src={assetUrl('js/highlights.js')}></script>

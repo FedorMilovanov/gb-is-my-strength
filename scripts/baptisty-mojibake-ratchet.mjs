@@ -236,6 +236,28 @@ for (const dir of GUARDED_DIRS) {
   }
 }
 
+// 3. Catch unambiguous single-character mojibake missed by multi-character masks.
+// A lone '?' in a normal question or code expression is not an error.
+const SINGLE_CHAR_DAMAGE = [
+  { label: 'year-range', pattern: /\b(?:18|19|20)\d{2}\?(?:18|19|20)\d{2}\b/ },
+  { label: 'image-dimensions', pattern: /\b\d{2,5}\?\d{2,5}\b/ },
+  { label: 'unicode-replacement-char', pattern: /\uFFFD/ },
+  { label: 'source-label-separator', pattern: /(?:Wikimedia Commons|sourceLabel\s*[:=]\s*['"][^'"]*)\s\?\s(?:Public Domain|CC BY|CC0)/ },
+];
+for (const dir of GUARDED_DIRS) {
+  for (const file of walk(path.join(ROOT, dir))) {
+    const key = rel(file);
+    const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/);
+    lines.forEach((line, index) => {
+      for (const { label, pattern } of SINGLE_CHAR_DAMAGE) {
+        if (pattern.test(line)) {
+          problems.push(key + ':L' + (index + 1) + ' suspicious single-character damage (' + label + ')');
+        }
+      }
+    });
+  }
+}
+
 if (problems.length) {
   console.error('❌ MOJIBAKE РАТЧЕТ:');
   for (const problem of problems) console.error(`   - ${problem}`);

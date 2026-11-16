@@ -255,8 +255,9 @@ for (const marker of [
   'data-home-route-divider={index - 1}',
   'grid-template-columns: repeat(4, minmax(0, 1fr) 1px) minmax(0, 1fr)',
   'width: min(calc(100vw - 260px), 1480px)',
-  'display: flex', 'flex: 0 0 min(82vw, 284px)',
-  'scroll-snap-type: x mandatory',
+  'display: grid', 'grid-template-columns: minmax(0, 1fr)',
+  'scroll-snap-type: none', 'touch-action: auto',
+  'font-size: 10px',
   "const dividers = Array.from(deck.querySelectorAll('.h-home-route__divider'))",
   'dividers.length !== cards.length - 1',
   'dividerIndex === activeIndex - 1 || dividerIndex === activeIndex',
@@ -280,6 +281,19 @@ count(directions, /data-home-route-divider=\{index - 1\}/g) === 1
   ? ok('gateway derives each divider from the adjacent route index')
   : bad('gateway divider indexing contract changed');
 mustNot(directions, 'border-left: 1px solid var(--h-border)', 'legacy card-owned divider');
+for (const retiredMobile of [
+  'flex: 0 0 min(82vw, 284px)',
+  'flex: 0 0 calc(100% - 26px)',
+  'scroll-snap-type: x mandatory',
+  'min-height: 420px',
+]) mustNot(directions, retiredMobile, `retired Directions carousel: ${retiredMobile}`);
+must(directions, 'grid-template-columns: 70px minmax(0, 1fr) 20px', 'one 3-track mobile route geometry');
+must(directions, 'body.home-page #main-content .h-home-route:focus-visible', 'keyboard focus contract');
+must(directions, '@media (prefers-reduced-motion: reduce)', 'reduced-motion route contract');
+const visualOverrides = read('src/components/home/HomeVisualAuditFixes.astro');
+const responsiveOverrides = read('src/components/home/HomeResponsiveContracts.astro');
+mustNot(visualOverrides, 'body.home-page .home-v20 #main-content #issledovat .h-home-route', 'no late duplicate Directions visual geometry');
+mustNot(responsiveOverrides, '.h-home-route:last-child', 'no duplicate fifth-Directions singleton geometry');
 for (const retiredLayout of [
   'grid-template-columns: repeat(6, minmax(0, 1fr))',
   'grid-template-columns: repeat(2, minmax(0, 1fr))',

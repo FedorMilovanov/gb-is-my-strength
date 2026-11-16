@@ -1,14 +1,67 @@
 ---
-import GillSeriesChrome from '../../gill-series/GillSeriesChrome.astro';
-import type { SeriesConfig } from './seriesConfig';
+import ReaderFloatingControlsRuntime from '@/components/reader-platform/ReaderFloatingControlsRuntime.astro';
+import ReaderActionsRuntime from '@/components/reader-platform/ReaderActionsRuntime.astro';
+import SiteSectionsMenu from '../SiteSectionsMenu.astro';
+import GillSeriesRail from '../../gill-series/GillSeriesRail.astro';
+import GillSeriesMobileBar from '../../gill-series/GillSeriesMobileBar.astro';
+import GillMobileOverlayActivationBoundary from '../../gill-series/GillMobileOverlayActivationBoundary.astro';
+import GillSeriesOverlay from '../../gill-series/GillSeriesOverlay.astro';
+import GillPartTocOverlay from '../../gill-series/GillPartTocOverlay.astro';
+import GillLearningSheet from '../../gill-series/GillLearningSheet.astro';
+import GillReaderSettingsSheet from '../../gill-series/GillReaderSettingsSheet.astro';
+import GillSeriesImagePremium from '../../gill-series/GillSeriesImagePremium.astro';
+import GillSeriesResponsiveStyles from '../../gill-series/GillSeriesResponsiveStyles.astro';
+import { GILL_SERIES, type SeriesConfig } from './seriesConfig';
+
 
 interface Props {
   pageId: string;
   config?: SeriesConfig;
 }
 
-const { pageId, config } = Astro.props;
+const { pageId, config = GILL_SERIES } = Astro.props;
+const page = config.pages[pageId];
 ---
-<GillSeriesChrome pageId={pageId} config={config}>
-  <slot />
-</GillSeriesChrome>
+<GillSeriesImagePremium />
+<GillSeriesResponsiveStyles />
+<style is:global>
+  /* Final calibration from the 390/768/1440 Playwright witness. */
+  @media (max-width: 640px) {
+    [data-gill-v16] .gbs2-hero-cap { font-size: 11px; }
+  }
+  @media (min-width: 64em) {
+    [data-gill-v16="context"] .gbs2-current-cover { --gbs2-cover-position: 100% 50%; }
+  }
+</style>
+<a class="skip-link" href="#main-content">Перейти к содержимому</a>
+
+<SiteSectionsMenu />
+
+<div class="gbs2-world" data-reader-engine="series" data-reader-shape={config.shape ?? 'flat'} data-gill-v16={pageId} data-series-theme={config.theme}>
+  <GillSeriesRail pageId={pageId} config={config} />
+
+  <div class="page-wrap" id="content">
+    <nav aria-label="Хлебные крошки" class="breadcrumb"><ol class="breadcrumb__list"><li class="breadcrumb__item"><a class="breadcrumb__link" href="../../"><span aria-hidden="true" class="breadcrumb__home">⌂</span> Главная</a></li><li class="breadcrumb__item"><a class="breadcrumb__link" href={config.breadcrumbParent.href}>{config.breadcrumbParent.label}</a></li><li aria-current="page" class="breadcrumb__item"><span class="breadcrumb__current">{page.label}</span></li></ol></nav>
+    <slot />
+  </div>
+
+  <GillSeriesMobileBar pageId={pageId} config={config} />
+  <GillSeriesOverlay pageId={pageId} config={config} />
+  <GillPartTocOverlay pageId={pageId} config={config} />
+  <GillLearningSheet pageId={pageId} config={config} />
+  <GillReaderSettingsSheet config={config} />
+  <GillMobileOverlayActivationBoundary />
+</div><!-- /gbs2-world: overlays+bottom-bar nested so [data-gill-v16] descendant CSS applies -->
+
+<script is:inline defer src="../../js/bookmark-engine.js?v=e7d193e0"></script>
+<script is:inline defer src="../../js/site-utils.js?v=e80f1dfb"></script>
+<script is:inline defer src="../../js/scroll-perf.js?v=454d6f7b"></script>
+<script is:inline defer src="../../js/glossary.js?v=c7f8b6e9"></script>
+<script is:inline defer src="../../js/sw-register.js?v=921dd6a2"></script>
+
+<script is:inline defer src="../../js/highlights.js?v=e3e21e86"></script>
+<!-- Gill routes are fully owned by the native article interaction modules below.
+     The legacy enhancements bundle is intentionally absent: loading both owners
+     recreated reader controls and competed for glossary/quiz interaction state. -->
+<ReaderFloatingControlsRuntime />
+<ReaderActionsRuntime />

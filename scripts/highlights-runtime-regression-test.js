@@ -6,80 +6,48 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const sourcePath = path.resolve(__dirname, '..', 'js', 'highlights.js');
-const source = fs.readFileSync(sourcePath, 'utf8');
-const start = source.indexOf('function gbHighlightPath');
-const end = source.indexOf('function f(){', start);
-assert.ok(start >= 0 && end > start, 'pure highlight helpers must be embedded in production runtime');
-
-const context = {
-  URL,
-  window: { location: { origin: 'https://gospod-bog.ru' } },
-};
+const source = fs.readFileSync(path.resolve(__dirname, '..', 'js/highlights.js'), 'utf8');
+const start = source.indexOf('function normalizeText(');
+const end = source.indexOf('function read(', start);
+assert.ok(start >= 0 && end > start, 'canonical pure quote helpers exist inside shared owner');
+const context = { URL, location: { origin: 'https://gospod-bog.ru' } };
 vm.createContext(context);
-vm.runInContext(
-  `${source.slice(start, end)};this.api={path:gbHighlightPath,text:gbHighlightText,key:gbHighlightKey,dedupe:gbDedupeHighlights,add:gbAddHighlight};`,
-  context,
-);
+vm.runInContext('const LIMIT_QUOTES = 200;\n' + source.slice(start, end) + '\nthis.api={path:gbHighlightPath,text:gbHighlightText,key:gbHighlightKey,dedupe:gbDedupeHighlights,add:gbAddHighlight}', context);
 const api = context.api;
 const plain = (value) => JSON.parse(JSON.stringify(value));
 
-const existing = [
+const duplicates = [
   { id: 'newest', text: '  Одна   цитата ', url: 'https://gospod-bog.ru/articles/a/#one', savedAt: 30 },
   { id: 'older', text: 'одна цитата', url: 'https://gospod-bog.ru/articles/a/#two', savedAt: 20 },
   { id: 'other-page', text: 'Одна цитата', url: 'https://gospod-bog.ru/articles/b/#one', savedAt: 10 },
 ];
-
-const compacted = plain(api.dedupe(existing));
-assert.deepEqual(
-  compacted.map((item) => item.id),
-  ['newest', 'other-page'],
-  'old duplicates compact while preserving newest stable order and cross-page quote',
-);
-
-const samePage = plain(api.add(compacted, {
-  id: 'duplicate-attempt',
-  text: 'одна\nцитата',
-  url: '/articles/a/?from=test#another',
-  savedAt: 40,
+const compacted = plain(api.dedupe(duplicates));
+assert.deepEqual(compacted.map((x) => x.id), ['newest', 'other-page'],
+  'legacy dedupe preserves newer matching quote and cross-article quotations');
+const repeated = plain(api.add(compacted, {
+  id: 'duplicate', text: 'одна\nцитата', url: '/articles/a/?test=1#other', savedAt: 40,
 }));
-assert.deepEqual(
-  samePage.map((item) => item.id),
-  ['newest', 'other-page'],
-  'same-page duplicate is not inserted or reordered',
-);
-
-const crossPage = plain(api.add(compacted, {
-  id: 'third-page',
-  text: 'ОДНА ЦИТАТА',
-  url: '/articles/c/#one',
-  savedAt: 40,
+assert.deepEqual(repeated.map((x) => x.id), ['newest', 'other-page'],
+  'same-page duplicate does not multiply or change order');
+const differentPage = plain(api.add(compacted, {
+  id: 'third', text: 'ОДНА ЦИТАТА', url: '/articles/c/#source', savedAt: 40,
 }));
-assert.deepEqual(
-  crossPage.map((item) => item.id),
-  ['third-page', 'newest', 'other-page'],
-  'same quote on another path remains valid and is inserted first',
-);
+assert.deepEqual(differentPage.map((x) => x.id), ['third', 'newest', 'other-page'],
+  'identical text from another article is a distinct quotation');
+const many = Array.from({ length: 205 }, (_, i) => ({ id: 'i' + i, text: 'quote ' + i, url: '/article/' + i }));
+assert.equal(api.add(many, { id: 'recent', text: 'new', url: '/recent/' }).length, 200,
+  'preexisting 200-item cap is preserved');
 
-const many = Array.from({ length: 205 }, (_, index) => ({
-  id: `item-${index}`,
-  text: `quote ${index}`,
-  url: `/articles/${index}/`,
-}));
-assert.equal(
-  api.add(many, { id: 'fresh', text: 'fresh quote', url: '/fresh/' }).length,
-  200,
-  '200-item cap remains enforced',
-);
-
-assert.match(source, /i\.length!==t\.length&&C\(i\)/, 'read path persists compacted legacy data');
-assert.match(source, /c=gbAddHighlight\(c,\{id:/, 'save path uses canonical duplicate guard');
-assert.doesNotMatch(source, /c\.unshift\(\{id:/, 'legacy unconditional quote insertion is removed');
-assert.match(source, /aria-modal","true"\),l\.setAttribute\("aria-hidden","true"\)/, 'dialog starts hidden from accessibility APIs');
-assert.match(source, /classList\.add\("is-open"\),l\.setAttribute\("aria-hidden","false"\)/, 'open path exposes dialog');
-assert.match(source, /classList\.remove\("is-open"\),l\.setAttribute\("aria-hidden","true"\)/, 'close path hides dialog');
-
-assert.match(source, /p=e&&e\.currentTarget===s\?s:document\.activeElement/, 'click-open path captures the saved-quotes FAB as focus-return owner');
-assert.match(source, /p&&p\.focus&&p\.focus\(\)/, 'close path restores captured opener focus');
-
-console.log('✅ highlights runtime dedupe + ARIA regression passed');
+assert.match(source, /const QUOTES_KEY = 'gb-highlights-v1'/, 'existing quote storage key must not change');
+assert.match(source, /const FAVORITES_KEY = 'gb-favorites'/, 'canonical favorites key is read, not shadowed');
+assert.match(source, /window\.GBFavoriteStore/, 'read articles through native favorite-store API when available');
+assert.match(source, /window\.GBHighlights = api/, 'legacy public API is maintained');
+assert.match(source, /window\.GBReaderLibrary = api/, 'unified reader library API exposed');
+assert.match(source, /setAttribute\('aria-hidden', 'false'\)/, 'modal open exposes its dialog');
+assert.match(source, /setAttribute\('aria-hidden', 'true'\)/, 'modal close hides its dialog');
+assert.match(source, /removeAttribute\('inert'\)/, 'opening modal restores interactions');
+assert.match(source, /setAttribute\('inert', ''\)/, 'closed modal is inert');
+assert.match(source, /gb-hl-quote.*is-collapsed|is-collapsed/, 'long text collapses');
+const css = fs.readFileSync(path.resolve(__dirname, '..', 'css/highlights-runtime.css'), 'utf8');
+assert.match(css, /prefers-reduced-motion/, 'reduced-motion users do not get forced animation');
+console.log('✅ Unified reader library helpers, legacy storage, ARIA and dedupe regression passed');

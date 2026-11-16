@@ -18,6 +18,7 @@ import {
   parseBibleReference,
   resolveBibleReference,
 } from '../src/lib/bible-reference-core.mjs';
+import { createPublicSynodalResolver } from '../src/lib/public-synodal-reference.mjs';
 
 const require = createRequire(import.meta.url);
 const { loadRouteRecords } = require('./lib/route-source-contract.js');
@@ -221,6 +222,22 @@ if (!fs.existsSync(OUTPUT_FILE)) {
 
   if (!Array.isArray(index.references)) fail('references must be an array');
   const references = Array.isArray(index.references) ? index.references : [];
+  const publicSynodalResolver = createPublicSynodalResolver(
+    registry, readJson(path.join(ROOT, 'data/bible/public-domain-russyn.json')),
+  );
+  for (const reference of references) {
+    if (!publicSynodalResolver.resolve(reference.label)?.text &&
+      !(reference.occurrences || []).some((o) => publicSynodalResolver.resolve(o.raw)?.text)) {
+      fail(`non-canonical biblical reference indexed: ${reference.label}`);
+    }
+  }
+  // These are legitimate phrases in their source pages, but not Scripture:
+  // 1 Enoch Parables 37–71 and the "30 verses" counter on Nagornaya.
+  for (const invalidId of ['pritchi:37–71', 'matfeya:30']) {
+    if (references.some((reference) => reference.id === invalidId)) {
+      fail(`non-biblical source phrase misclassified as Scripture: ${invalidId}`);
+    }
+  }
   if (references.length < 20) fail(`reference coverage unexpectedly small: ${references.length}`);
   if ((index.stats?.occurrences || 0) < 100) fail(`occurrence coverage unexpectedly small: ${index.stats?.occurrences || 0}`);
   if ((index.stats?.indexedRoutes || 0) < 20) fail(`route coverage unexpectedly small: ${index.stats?.indexedRoutes || 0}`);

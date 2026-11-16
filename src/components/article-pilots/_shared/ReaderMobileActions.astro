@@ -1,0 +1,56 @@
+---
+/** One action cluster for all Reader mobile bars.
+ * Themes (day, sepia, night) live inside the existing settings sheets.
+ * No second theme button and no redundant scroll-to-top arrow.
+ * Settings sliders icon comes from the historical ReaderRail settings button.
+ */
+import ReaderPdfIcon from './ReaderPdfIcon.astro';
+import '@/styles/reader-paper-and-rail.css';
+interface Props { engine:'series'|'article'; }
+const {engine}=Astro.props as Props;
+const isSeries=engine==='series';
+---
+<div class="reader-mobile-action-cluster" role="group" aria-label="Действия чтения">
+  <button
+    class:list={['reader-mobile-action',isSeries?'gb-icon':'hmbar-btn']}
+    type="button"
+    id={isSeries?'mobSettingsBtn':'hmSettingsBtn'}
+    data-gill-settings-open={isSeries?'':undefined}
+    aria-controls={isSeries?'gillSettingsOverlay':'hmSettings'}
+    aria-haspopup="dialog"
+    aria-expanded="false"
+    aria-label="Настройки чтения: тема, шрифт и вид текста"
+  >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+      <path d="M4 7h10M18 7h2M4 17h2M10 17h10" />
+      <circle cx="16" cy="7" r="2" />
+      <circle cx="8" cy="17" r="2" />
+    </svg>
+  </button>
+  <!-- PDF is the native Reader print/PDF engine, never an inert download link.
+       The user chooses "Save as PDF" in the browser's print destination. -->
+  <button
+    class:list={['reader-mobile-action','reader-mobile-action--pdf',isSeries?'gb-icon':'hmbar-btn']}
+    type="button"
+    data-action="print"
+    data-reader-pdf="save"
+    aria-label="Сохранить статью как PDF — в окне печати выберите «Сохранить как PDF»"
+    title="Сохранить как PDF"
+  >
+    <ReaderPdfIcon />
+  </button>
+  <button
+    class:list={['reader-mobile-action','reader-mobile-action--share',isSeries?'gb-icon':'hmbar-btn']}
+    type="button"
+    id={isSeries?undefined:'hmShareBtn'}
+    data-action="share"
+    aria-label="Поделиться материалом"
+  >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="18" cy="5" r="2.6" />
+      <circle cx="6" cy="12" r="2.6" />
+      <circle cx="18" cy="19" r="2.6" />
+      <path d="M8.3 10.7l7.4-4.2M8.3 13.3l7.4 4.2" />
+    </svg>
+  </button>
+</div>

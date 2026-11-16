@@ -1,0 +1,100 @@
+---
+/**
+ * One canonical fold affordance for integrated Reader rail families.
+ * The glyph and aria contract are taken from the existing Hermenevtika
+ * ReaderRail.hrail-layout-toggle. It controls the existing DOM, never clones
+ * chapter navigation, PlayEmber, settings, search or state owners.
+ */
+import '@/styles/reader-integrated-rail.css';
+import ReaderRailMoreActions from './ReaderRailMoreActions.astro';
+interface Props { controls: string }
+const { controls } = Astro.props;
+---
+<button
+  class="reader-rail-fold-toggle"
+  type="button"
+  data-reader-rail-toggle
+  aria-controls={controls}
+  aria-expanded="true"
+  aria-label="Свернуть оглавление"
+  title="Свернуть оглавление"
+>
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <g class="reader-rail-fold-collapse">
+      <path d="M7.75 6v12" />
+      <path d="m16.1 7.7-4.3 4.3 4.3 4.3" />
+    </g>
+    <g class="reader-rail-fold-expand" opacity="0">
+      <path d="M16.25 6v12" />
+      <path d="m7.9 7.7 4.3 4.3-4.3 4.3" />
+    </g>
+  </svg>
+</button>
+<ReaderRailMoreActions controls={controls} />
+
+<script>
+  // One fold state controller across Baptist book landing, its ten chapters,
+  // Gill and other readers backed by SeriesReaderChrome. Breakpoint-specific
+  // native mobile chrome remains owned by the original mobile engine.
+  const initialize = () => {
+    document.querySelectorAll<HTMLElement>('[data-reader-integrated-rail]').forEach((rail) => {
+      if (rail.dataset.readerRailFoldReady === '1') return;
+      rail.dataset.readerRailFoldReady = '1';
+      const toggle = rail.querySelector<HTMLButtonElement>('[data-reader-rail-toggle]');
+      if (!toggle) return;
+      const regions = Array.from(rail.querySelectorAll<HTMLElement>('[data-reader-fold-content]'));
+      const isSeries = rail.classList.contains('gbs-rail');
+      const corner = isSeries
+        ? rail.parentElement?.querySelector<HTMLElement>(':scope > .gbs-theme-corner')
+        : null;
+      const slot = rail.querySelector<HTMLElement>('.reader-rail-compact-tools');
+      const cornerParent = corner?.parentNode;
+      const cornerNext = corner?.nextSibling;
+      const desktop = window.matchMedia('(min-width:1360px)');
+      const storageKey = 'gb:reader-integrated-rail:compact';
+      let compact = false;
+      let changing = false;
+      try { compact = sessionStorage.getItem(storageKey) === '1'; } catch {}
+      const apply = () => {
+        const effective = compact && desktop.matches;
+        if (effective && rail.contains(document.activeElement) && document.activeElement !== toggle) {
+          toggle.focus({preventScroll: true});
+        }
+        // Move original Play/search/theme/bookmark controls, never duplicate
+        // them. Mirrors Hermenevtika's real DOM reparenting.
+        if (corner && slot && cornerParent) {
+          if (effective) {
+            if (corner.parentNode !== slot) slot.appendChild(corner);
+          } else if (corner.parentNode !== cornerParent) {
+            if (cornerNext?.parentNode === cornerParent)
+              cornerParent.insertBefore(corner,cornerNext);
+            else cornerParent.appendChild(corner);
+          }
+        }
+        rail.classList.toggle('reader-integrated-rail--compact',effective);
+        rail.parentElement?.classList.toggle('reader-integrated-world--compact',effective);
+        toggle.setAttribute('aria-expanded',String(!effective));
+        toggle.setAttribute('aria-label',effective?'Развернуть оглавление':'Свернуть оглавление');
+        toggle.title=effective?'Развернуть оглавление':'Свернуть оглавление';
+        for(const region of regions) {
+          region.toggleAttribute('inert',effective);
+          if(effective)region.setAttribute('aria-hidden','true');
+          else region.removeAttribute('aria-hidden');
+        }
+        changing = false;
+      };
+      toggle.addEventListener('click',() => {
+        if(changing || !desktop.matches)return;
+        changing=true;
+        compact=!compact;
+        try { sessionStorage.setItem(storageKey,compact?'1':'0'); }catch{}
+        apply();
+      });
+      desktop.addEventListener('change',apply);
+      apply();
+    });
+  };
+  if (document.readyState === 'loading')
+    document.addEventListener('DOMContentLoaded',initialize,{once:true});
+  else initialize();
+</script>

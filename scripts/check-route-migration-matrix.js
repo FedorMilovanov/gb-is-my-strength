@@ -8,6 +8,6 @@
  * exemption based on a route name or prefix.
  */
 
-require('./install-effective-route-registry');
+// The matrix contract audit imports effective-route-registry directly.
 console.log('ℹ️ migration:matrix:check uses the effective registry-driven runtime matrix contract.');
 require('./route-migration-matrix-contract-audit');

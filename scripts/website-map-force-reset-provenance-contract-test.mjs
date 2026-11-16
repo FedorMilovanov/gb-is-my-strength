@@ -56,11 +56,29 @@ try { validate(invalid); } catch { rejected = true; }
 if (!rejected) fail('negative mutation unexpectedly promoted a candidate');
 
 if (!process.argv.includes('--no-git')) {
+  // The recorded ancestry is historical evidence at the investigation SHA.
+  // Today's main may have been rewritten since then; comparing with HEAD
+  // silently changes the meaning of the preserved August 2026 witness.
   const candidate = record.candidates[0].sha;
-  for (const args of [['cat-file', '-e', `${candidate}^{commit}`], ['merge-base', '--is-ancestor', candidate, 'HEAD']]) {
-    const result = spawnSync('git', args, { encoding: 'utf8' });
-    if (result.status !== 0) fail(`git ${args.join(' ')} failed: ${result.stderr || result.stdout}`);
+  const investigationMain = record.currentMainAtInvestigation;
+  const git = (args) => spawnSync('git', args, { encoding: 'utf8' });
+  for (const sha of [candidate, investigationMain]) {
+    let object = git(['cat-file', '-e', `${sha}^{commit}`]);
+    if (object.status !== 0) {
+      const fetched = git(['fetch', '--no-tags', 'origin', sha]);
+      if (fetched.status !== 0) {
+        fail(`historical witness ${sha} is unavailable: ${fetched.stderr || fetched.stdout}`);
+      }
+      object = git(['cat-file', '-e', `${sha}^{commit}`]);
+    }
+    if (object.status !== 0) fail(`historical witness ${sha} is not a valid Git commit`);
   }
+  const ancestor = git(['merge-base', '--is-ancestor', candidate, investigationMain]);
+  if (ancestor.status !== 0) {
+    fail('historical candidate is not an ancestor of the investigation main SHA');
+  }
+  // Ancestry is only candidate evidence, never direct pre-reset branch-ref
+  // provenance. BLOCKED_PROVENANCE and exactHead=null remain mandatory.
 }
 
 console.log(`WEBSITE MAP FORCE-RESET PROVENANCE: PASS (${record.status}; ${record.candidates.length} candidates; exactHead=null)`);
