@@ -60,6 +60,19 @@ requireContract('repeated prepare and beforeprint are idempotent',
   && geometry.includes('preparedForPrint = true')
   && geometry.includes('lastReport = null'));
 
+const baseLayout = fs.readFileSync(path.join(ROOT, 'src/layouts/BaseLayout.astro'), 'utf8');
+const skipPrintRule = /@media\s+print\s*\{\s*\.astro-skip-link\s*\{\s*display\s*:\s*none\s*;\s*\}\s*\}/m;
+requireContract('BaseLayout keeps a focusable screen skip link',
+  baseLayout.includes('class="astro-skip-link" data-map-skip-link href="#main-content"')
+  && baseLayout.includes('.astro-skip-link:focus-visible')
+  && baseLayout.includes('id="main-content"'));
+requireContract('BaseLayout excludes the repeated screen skip link only in print',
+  skipPrintRule.test(baseLayout));
+requireContract('a removed BaseLayout print exclusion is rejected',
+  skipPrintRule.test(baseLayout)
+  && !skipPrintRule.test(baseLayout.replace(skipPrintRule,
+    '@media print { .astro-skip-link { display: block; } }')));
+
 const syntax = spawnSync(process.execPath, ['--check', path.join(ROOT, GEOMETRY_PATH)], { encoding: 'utf8' });
 requireContract('geometry module parses as JavaScript', syntax.status === 0);
 if (syntax.status !== 0) console.error((syntax.stderr || syntax.stdout || '').trim());

@@ -672,3 +672,8 @@ if (!mutationWitnessDone) report.failures.push('NoteRegistry mutation witness di
 await writeFile(join(OUT, 'report.json'), JSON.stringify(report, null, 2));
 console.log(JSON.stringify(report, null, 2));
 if (report.failures.length) process.exitCode = 1;
+
+// The BaseLayout keyboard skip link is a paper-chrome ownership boundary.
+// Run its dedicated physical-PDF witness in the existing Print Paper lane,
+// after the pagination server is closed; no competing workflow edits.
+await import('./print-baselayout-skip-link-contract.mjs');
