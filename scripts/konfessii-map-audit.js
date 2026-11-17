@@ -514,13 +514,21 @@ if (chromium) (async () => {
           await originCards.nth(index).click();
         }
 
-        const congressCards = frame.locator('#congresses article.bento-card > button');
+        const congressCards = frame.locator('#congresses article.bento-card > h3 > button[aria-expanded][aria-controls]');
         const congressCount = await congressCards.count();
         assert(congressCount > 0, 'I16 [mobile-320] congress accordions exist',
           'I16 [mobile-320] congress accordions missing');
         for (let index = 0; index < congressCount; index += 1) {
-          await congressCards.nth(index).click();
+          const trigger = congressCards.nth(index);
+          const controlledId = await trigger.getAttribute('aria-controls');
+          assert(Boolean(controlledId), 'I16 [mobile-320] congress panel relationship present',
+            'I16 [mobile-320] congress panel relationship missing');
+          await trigger.click();
           await page.waitForTimeout(400);
+          assert(await trigger.getAttribute('aria-expanded') === 'true'
+            && await frame.locator('[id="' + controlledId + '"]').isVisible(),
+            'I16 [mobile-320] congress expanded state and panel are accessible',
+            'I16 [mobile-320] congress expanded state or panel inaccessible');
           const expandedOverflow = await frame.evaluate(
             () => Math.max(document.body.scrollWidth, document.documentElement.scrollWidth) -
               document.documentElement.clientWidth

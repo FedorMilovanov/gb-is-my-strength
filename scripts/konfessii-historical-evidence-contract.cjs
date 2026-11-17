@@ -70,4 +70,34 @@ const pkg = fs.readFileSync(path.join(app, 'package.json'), 'utf8');
 const lock = fs.readFileSync(path.join(app, 'package-lock.json'), 'utf8');
 assert.ok(!pkg.includes('@google/generative-ai'), 'Remove obsolete Gemini client dependency');
 assert.ok(!lock.includes('@google/generative-ai'), 'Remove obsolete Gemini from lockfile');
+// Reader-facing bibliography must not expose Research-only dossier IDs or internal wave labels.
+const publicEvidenceOwners = [
+  'data/history/mapPlaces.ts',
+  'data/history/persons.ts',
+  'data/history/congresses.ts',
+  'data/history/sources.ts',
+  'data/timeline.ts',
+  'data/quizData.ts',
+  'components/PersecutionHeatmap.tsx',
+];
+for (const owner of publicEvidenceOwners) {
+  assert.doesNotMatch(read(owner), /(?:Research\/\d+|v6 findings|QUANTIFICATION HOLD|Источник: Research)/i,
+    owner + ': internal research identifier reached reader-owned content');
+}
+assert.doesNotMatch(read('components/Footer.tsx'), /BUILD_INFO\.id|ExternalLink|· v6/,
+  'Footer must not present a build ID or misleading non-clickable source links');
+for (const owner of ['components/Timeline.tsx', 'components/Congresses.tsx']) {
+  const content = read(owner);
+  assert.ok(content.includes('aria-expanded={isOpen}') && content.includes('aria-controls='),
+    owner + ': disclosure state/panel relationship missing');
+}
+assert.ok(read('components/Navigation.tsx').includes('aria-expanded={mobileOpen}'),
+  'Mobile menu must expose expanded state');
+const publicApp = path.join(root, 'konfessii/russkij-baptizm/_app/index.html');
+if (fs.existsSync(publicApp)) {
+  const published = fs.readFileSync(publicApp, 'utf8');
+  assert.ok(!/(?:Research\/\d+|v6 findings|QUANTIFICATION HOLD|RB-V6-ARENA)/i.test(published),
+    '3D compiled public artifact includes an internal research label');
+}
+console.log('PASS: reader-facing source provenance, semantic disclosure and clean compiled 3D app');
 console.log('PASS: dated/source-bounded Russian Baptist historical claims; no browser AI dependency');
