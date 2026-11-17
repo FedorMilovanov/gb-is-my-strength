@@ -33,10 +33,10 @@ export default function Navigation() {
           </div>
           <div className="flex items-center gap-1">
             <button onClick={toggle} className="grid h-9 w-9 place-items-center rounded-full transition-all hover:scale-110" style={{ color: isLight ? '#8a7050' : '#c4a67e', background: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(196,166,126,0.08)' }} aria-label="Переключить тему">{isLight ? <Moon size={16} /> : <Sun size={16} />}</button>
-            <button onClick={() => setMobileOpen((v) => !v)} className="grid h-9 w-9 place-items-center rounded-full transition-all hover:scale-110 xl:hidden" style={{ color: isLight ? '#8a7050' : '#c4a67e', background: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(196,166,126,0.08)' }} aria-label="Открыть меню">{mobileOpen ? <X size={16} /> : <Menu size={16} />}</button>
+            <button onClick={() => setMobileOpen((v) => !v)} className="grid h-9 w-9 place-items-center rounded-full transition-all hover:scale-110 xl:hidden" style={{ color: isLight ? '#8a7050' : '#c4a67e', background: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(196,166,126,0.08)' }} aria-label={mobileOpen ? "Закрыть меню" : "Открыть меню"} aria-expanded={mobileOpen} aria-controls="rb-mobile-navigation">{mobileOpen ? <X size={16} /> : <Menu size={16} />}</button>
           </div>
         </div>
-        <AnimatePresence>{mobileOpen && (
+        <div id="rb-mobile-navigation"><AnimatePresence>{mobileOpen && (
           <>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pointer-events-auto fixed inset-0 -z-10 bg-black/20 xl:hidden" />
           <motion.div
@@ -73,7 +73,7 @@ export default function Navigation() {
             </div>
           </motion.div>
           </>
-        )}</AnimatePresence>
+        )}</AnimatePresence></div>
       </motion.nav>
     )}</AnimatePresence>
   );

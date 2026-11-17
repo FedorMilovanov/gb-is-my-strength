@@ -17,12 +17,19 @@ export default function Timeline() {
           {filteredEvents.map((event, index) => { const eventKey = `${event.year}-${event.title}`; const isOpen = openEventKey === eventKey; const alignRight = index % 2 === 0; return (
             <motion.article key={eventKey} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ delay: Math.min(index * 0.03, 0.25) }} className={`relative md:flex ${alignRight ? 'md:justify-start' : 'md:justify-end'}`}>
               <div className="timeline-dot absolute left-4 top-8 z-10 -translate-x-1/2 md:left-1/2" style={{ background: categoryColors[event.category], boxShadow: `0 0 0 3px ${categoryColors[event.category]}22, 0 0 14px ${categoryColors[event.category]}30` }} />
-              <button onClick={() => setOpenEventKey(isOpen ? null : eventKey)} className="bento-card ml-10 w-[calc(100%-2.75rem)] p-4 text-left sm:p-5 md:ml-0 md:w-[48%]">
-                <div className="mb-3.5 flex items-start justify-between gap-4"><div><p className="font-mono text-xs font-semibold tracking-wide" style={{ color: categoryColors[event.category] }}>{event.year}</p><h3 className="mt-1.5 text-lg font-bold sm:text-xl">{event.title}</h3></div><ChevronDown className={`mt-0.5 shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} size={20} /></div>
+              <div className="bento-card ml-10 w-[calc(100%-2.75rem)] p-4 text-left sm:p-5 md:ml-0 md:w-[48%]">
+                <h3 className="m-0">
+                  <button onClick={() => setOpenEventKey(isOpen ? null : eventKey)} aria-expanded={isOpen} aria-controls={'timeline-panel-' + timelineEvents.indexOf(event)} className="mb-3.5 flex w-full items-start justify-between gap-4 text-left">
+                    <span className="min-w-0"><span className="block font-mono text-xs font-semibold tracking-wide" style={{ color: categoryColors[event.category] }}>{event.year}</span><span className="mt-1.5 block text-lg font-bold sm:text-xl">{event.title}</span></span>
+                    <ChevronDown className={'mt-0.5 shrink-0 transition-transform ' + (isOpen ? 'rotate-180' : '')} size={20} />
+                  </button>
+                </h3>
                 <p className="text-sm leading-6 opacity-75">{event.description}</p>
-                {isOpen && event.details && <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4 border-t border-white/10 pt-4 text-sm leading-7 opacity-70">{event.details}</motion.p>}
-                {isOpen && event.source && <p className="mt-3 text-xs leading-5 text-brand-gold/80">Источник: {event.source}</p>}
-              </button>
+                <div id={'timeline-panel-' + timelineEvents.indexOf(event)} hidden={!isOpen}>
+                  {event.details && <p className="mt-4 border-t border-white/10 pt-4 text-sm leading-7 opacity-70">{event.details}</p>}
+                  {event.source && <p className="mt-3 text-xs leading-5 text-brand-gold/80">Источник: {event.source}</p>}
+                </div>
+              </div>
             </motion.article>); })}
         </div></div>
       </div>

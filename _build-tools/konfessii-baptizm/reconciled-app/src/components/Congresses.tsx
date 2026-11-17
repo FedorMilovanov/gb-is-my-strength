@@ -18,17 +18,19 @@ export default function Congresses() {
             const isOpen = openId === congress.id;
             return (
               <motion.article key={congress.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.05 }} className="bento-card min-w-0 overflow-hidden">
-                <button onClick={() => setOpenId(isOpen ? null : congress.id)} className="flex w-full min-w-0 items-center justify-between gap-2 p-4 text-left sm:gap-4 sm:p-5">
-                  <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
-                    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[0.875rem] ring-1 ring-brand-gold/20 sm:h-11 sm:w-11" style={{ background: 'rgba(196,166,126,0.10)' }}><Calendar size={18} className="text-brand-gold" /></div>
-                    <div className="min-w-0">
-                      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1"><span className="font-mono text-[11px] font-bold tracking-wider text-brand-gold">{congress.date}</span><span className="flex items-center gap-1 text-[11px] opacity-45"><MapPin size={9} />{congress.place.split(',')[0]}</span></div>
-                      <h3 className="mt-0.5 break-words text-[1.0625rem] font-bold">{congress.title}</h3>
-                    </div>
-                  </div>
-                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.04] transition-all"><ChevronDown size={14} className={`text-brand-gold/70 transition-transform ${isOpen ? 'rotate-180' : ''}`} /></span>
-                </button>
-                <AnimatePresence>
+                <h3 className="m-0">
+                  <button onClick={() => setOpenId(isOpen ? null : congress.id)} aria-expanded={isOpen} aria-controls={'congress-panel-' + congress.id} className="flex w-full min-w-0 items-center justify-between gap-2 p-4 text-left sm:gap-4 sm:p-5">
+                    <span className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[0.875rem] ring-1 ring-brand-gold/20 sm:h-11 sm:w-11" style={{ background: 'rgba(196,166,126,0.10)' }}><Calendar size={18} className="text-brand-gold" /></span>
+                      <span className="min-w-0">
+                        <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1"><span className="font-mono text-[11px] font-bold tracking-wider text-brand-gold">{congress.date}</span><span className="flex items-center gap-1 text-[11px] opacity-45"><MapPin size={9} />{congress.place.split(',')[0]}</span></span>
+                        <span className="mt-0.5 block break-words text-[1.0625rem] font-bold">{congress.title}</span>
+                      </span>
+                    </span>
+                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.04] transition-all"><ChevronDown size={14} className={'text-brand-gold/70 transition-transform ' + (isOpen ? 'rotate-180' : '')} /></span>
+                  </button>
+                </h3>
+                <div id={'congress-panel-' + congress.id}><AnimatePresence>
                   {isOpen && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
                       <div className="border-t border-white/10 px-5 pb-5">
@@ -41,7 +43,7 @@ export default function Congresses() {
                       </div>
                     </motion.div>
                   )}
-                </AnimatePresence>
+                </AnimatePresence></div>
               </motion.article>
             );
           })}
