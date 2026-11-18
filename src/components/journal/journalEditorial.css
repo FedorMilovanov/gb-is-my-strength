@@ -87,9 +87,10 @@ html.dark .journal-edition {
 /* Layout container */
 .journal-edition .journal-dossier-shell,
 .journal-edition .journal-landing {
+  --je-page-gutter: 36px;
   max-width: 1260px;
   margin-inline: auto;
-  padding-inline: clamp(18px, 3.5vw, 36px);
+  padding-inline: max(clamp(18px, 3.5vw, var(--je-page-gutter)), env(safe-area-inset-left, 0px)) max(clamp(18px, 3.5vw, var(--je-page-gutter)), env(safe-area-inset-right, 0px));
 }
 
 /* Topline & Tag */
