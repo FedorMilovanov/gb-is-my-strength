@@ -2,8 +2,6 @@ export const JOURNAL_PRODUCT_METADATA = {
   title: 'Журнал — документы, новости и расследования',
   description: 'Документальный журнал сайта «Господь Бог — Сила Моя»: проверенные новости, расследования, досье, первичные документы, explainers, открытые вопросы и история исправлений.',
   canonical: 'https://gospod-bog.ru/journal/',
-  socialImage: 'https://gospod-bog.ru/images/og-preview-1200x630.webp',
-  socialImageAlt: 'Открытая рукопись на камнях перед горным пейзажем; справа на скале стоит олень в свете рассвета.',
   publishedAt: '2026-09-09T00:00:00+03:00',
   modifiedAt: '2026-09-10T00:00:00+03:00',
   readingTimeMinutes: 2,
