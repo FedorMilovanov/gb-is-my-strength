@@ -50,9 +50,40 @@ const biblioGroups = [
     ids: ['G3-S033', 'G3-S050', 'G3-S053', 'G3-S054', 'G3-S096'],
   },
 ];
+
+const sourceSections: Record<string, [string, string]> = {
+  'G3-S001': ['wind-down', 'Что завершилось'],
+  'G3-S002': ['finance', 'Финансовые документы'],
+  'G3-S008': ['buice', 'Первый кризис'],
+  'G3-S009': ['buice', 'Попытка продолжить работу'],
+  'G3-S010': ['buice', 'Смена президента'],
+  'G3-S011': ['wind-down', 'Отмена конференции'],
+  'G3-S012': ['buck', 'Спор о проповедях'],
+  'G3-S015': ['buck', 'Заявление участников'],
+  'G3-S017': ['wind-down', 'Завершение деятельности'],
+  'G3-S023': ['buice', 'Кадровые изменения'],
+  'G3-S024': ['buice', 'Программа изменений'],
+  'G3-S028': ['finance', 'Налоговые декларации'],
+  'G3-S033': ['wind-down', 'Цифровые проекты'],
+  'G3-S035': ['buck', 'Проверка атрибуции'],
+  'G3-S042': ['buck', 'Заявление участников'],
+  'G3-S046': ['governance', 'Руководство'],
+  'G3-S047': ['governance', 'Пересечение ролей'],
+  'G3-S050': ['wind-down', 'Цифровые проекты'],
+  'G3-S053': ['wind-down', 'Издательские проекты'],
+  'G3-S054': ['wind-down', 'Права на книги'],
+  'G3-S096': ['governance', 'Состав совета'],
+};
+
+const sourceKinds: Record<string, string> = {
+  A1: 'Первичный документ или свидетельство',
+  A2: 'Институциональная публикация',
+  A3: 'Заявление организации',
+  B1: 'Вторичный разбор',
+};
 ---
 <JournalEditorialShell kind="dossier" backHref="/journal/">
-<main class="dossier journal-dossier-shell" id="main-content" tabindex="-1" data-journal-dossier="g3" data-research-seal={G3_PUBLICATION_HANDOFF.researchSealCommit}>
+<main class="dossier journal-dossier-shell" id="main-content" tabindex="-1" data-journal-dossier="g3" data-research-seal={G3_PUBLICATION_HANDOFF.researchSealCommit} data-research-claims={projectedClaims.join(' ')}>
   <div class="journal-feature-grid">
     <div class="journal-story-column">
   <header class="dossier-hero">
@@ -482,14 +513,22 @@ const biblioGroups = [
                 <h3 class="bibliography-group-title">{gIdx + 1} · {group.title} ({items.length} {items.length === 3 || items.length === 4 ? 'источника' : 'источников'})</h3>
                 <ol class="bibliography-list">
                   {items.map((entry) => (
-                    <li id={`src-${entry.id}`} class="bibliography-item">
+                    <li id={`src-${entry.id}`} class="bibliography-item" data-source-tier={entry.tier} data-source-eligibility={entry.eligibility}>
                       <h4>{entry.title}</h4>
-                      <p class="biblio-meta">{entry.period} · {entry.eligibility}</p>
+                      <p class="biblio-meta">{entry.period} · {entry.eligibility} · {sourceKinds[entry.tier] || entry.tier}</p>
                       <p>{entry.locator}</p>
                       <p class="biblio-links">
                         {entry.publicUrl ? <a href={entry.publicUrl} rel="noopener">Открыть документ</a> : <span>Публичной ссылки на полный объект нет</span>}
                         <span aria-hidden="true">·</span>
                         <a href={G3_SOURCE_LEDGER_URL} rel="noopener">Сведения в исследовательском реестре ({entry.id})</a>
+                        {sourceSections[entry.id] && (
+                          <>
+                            <span aria-hidden="true">·</span>
+                            <a href={`#${sourceSections[entry.id][0]}`} class="biblio-section-jump">
+                              К разделу «{sourceSections[entry.id][1]}» ↑
+                            </a>
+                          </>
+                        )}
                       </p>
                     </li>
                   ))}
