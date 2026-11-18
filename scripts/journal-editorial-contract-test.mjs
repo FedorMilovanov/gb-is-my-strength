@@ -75,6 +75,10 @@ assert.doesNotMatch(identityLink, /\baria-label=/, 'Use the visible brand text a
 assert.match(masthead, /<svg class="je-masthead__mark"[^>]*aria-hidden="true"[^>]*focusable="false"/, 'The decorative brand icon must not pollute the link name');
 assert.match(masthead, /class="je-masthead__publication">Господь Бог — Сила Моя/);
 assert.match(masthead, /class="je-masthead__series">ЖУРНАЛ[\s\S]*?ИССЛЕДОВАНИЯ/);
+const mobileNavRule = masthead.match(/@media\s*\(max-width:\s*770px\)[\s\S]*?\.je-masthead__nav\s*\{([^}]*)\}/)?.[1];
+assert.ok(mobileNavRule, 'Expected a responsive masthead navigation rule');
+assert.match(mobileNavRule, /flex-wrap:\s*wrap/, 'Mobile masthead navigation must wrap all section links into visible rows');
+assert.doesNotMatch(mobileNavRule, /overflow-x:\s*(?:auto|scroll)/, 'Mobile section links must not be hidden in a horizontal scroll strip');
 assert.match(dossier, /class="editorial-meta" role="group" aria-label="Сведения о материале"/, 'The labelled G3 metadata group must use a role that supports aria-label');
 assert.match(historyArticle, /class="editorial-meta" role="group" aria-label="Сведения о рукописи"/, 'The held-history metadata group must also use a valid labelled role');
 

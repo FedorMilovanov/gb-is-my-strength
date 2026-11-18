@@ -47,7 +47,7 @@ const { active = 'journal' } = Astro.props;
     .je-masthead__mark { width: 37px; height: 30px; }
     .je-masthead__publication { font-size: 19px; }
     .je-masthead__descriptor, .je-masthead__home { display: none; }
-    .je-masthead__nav { padding: 0 20px; overflow-x: auto; gap: 25px; scrollbar-width: thin; }
+    .je-masthead__nav { padding: 0 20px; flex-wrap: wrap; overflow: visible; gap: 8px 25px; }
     .je-masthead__nav a { min-height: 43px; font-size: 11px; }
   }
   @media (max-width: 400px) {
