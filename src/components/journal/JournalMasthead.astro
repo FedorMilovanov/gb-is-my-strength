@@ -89,12 +89,27 @@ const { active = 'journal' } = Astro.props;
 <script is:inline>
   (() => {
     const btn = document.getElementById('themeToggle');
-    btn?.addEventListener('click', () => {
-      const isDark = document.documentElement.classList.toggle('dark');
-      try {
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-      } catch {}
-    });
+    const updateThemeAria = (isDark) => {
+      const label = isDark ? 'Включить светлую тему' : 'Включить тёмную тему';
+      btn?.setAttribute('aria-label', label);
+      btn?.setAttribute('title', label);
+    };
+
+    if (btn) {
+      updateThemeAria(document.documentElement.classList.contains('dark'));
+      btn.addEventListener('click', () => {
+        const isDark = document.documentElement.classList.toggle('dark');
+        document.documentElement.setAttribute('data-reader-theme', isDark ? 'dark' : 'light');
+        updateThemeAria(isDark);
+        try {
+          localStorage.setItem('theme', isDark ? 'dark' : 'light');
+          const raw = localStorage.getItem('gb:reader-preferences:v1');
+          const parsed = raw ? JSON.parse(raw) : {};
+          parsed.theme = isDark ? 'dark' : 'light';
+          localStorage.setItem('gb:reader-preferences:v1', JSON.stringify(parsed));
+        } catch {}
+      });
+    }
 
     const mastheadNav = document.querySelector('.je-masthead__nav');
     mastheadNav?.addEventListener('focusin', (event) => {
