@@ -1,6 +1,8 @@
 ---
 import JournalEditorialShell from './JournalEditorialShell.astro';
 import JournalEditorialRail from './JournalEditorialRail.astro';
+import JournalSeriesNav from './JournalSeriesNav.astro';
+import { G3_SERIES } from '@/data/journal/g3Series';
 import { G3_PRODUCT_METADATA } from '@/data/journal/g3ProductMetadata';
 import {
   G3_PUBLICATION_HANDOFF,
@@ -29,6 +31,25 @@ const corrections: Array<{
 
 const handoffUrl = `https://github.com/${G3_PUBLICATION_HANDOFF.researchRepo}/blob/${G3_PUBLICATION_HANDOFF.researchSealCommit}/${G3_PUBLICATION_HANDOFF.handoffPath}`;
 const snapshot = researchSnapshotShort();
+
+const biblioGroups = [
+  {
+    title: 'Налоговые декларации и государственные реестры',
+    ids: ['G3-S001', 'G3-S002', 'G3-S028'],
+  },
+  {
+    title: 'Официальные сообщения руководства G3',
+    ids: ['G3-S008', 'G3-S009', 'G3-S010', 'G3-S011', 'G3-S023', 'G3-S024', 'G3-S046', 'G3-S047'],
+  },
+  {
+    title: 'Церковные разбирательства и свидетельства сторон',
+    ids: ['G3-S012', 'G3-S015', 'G3-S017', 'G3-S035', 'G3-S042'],
+  },
+  {
+    title: 'Архивные снимки сервисов, витрин и каталогов',
+    ids: ['G3-S033', 'G3-S050', 'G3-S053', 'G3-S054', 'G3-S096'],
+  },
+];
 ---
 <JournalEditorialShell kind="dossier" backHref="/journal/">
 <main class="dossier journal-dossier-shell" id="main-content" tabindex="-1" data-journal-dossier="g3" data-research-seal={G3_PUBLICATION_HANDOFF.researchSealCommit}>
@@ -98,6 +119,13 @@ const snapshot = researchSnapshotShort();
         не обязательно означает, что все книги, цифровые продукты и юридические права
         прекратили существование в один день.
       </p>
+      <figure class="editorial-pullquote">
+        <blockquote>
+          «Документы позволяют установить даты, финансовые показатели и официальные заявления;
+          мотивы, нераскрытые сделки и часть обвинений остаются за пределами доказанного.»
+        </blockquote>
+        <cite>Принцип документального расследования · G3-PUB-016</cite>
+      </figure>
       <p>
         В мае 2025 года G3 сама сообщила об анонимной деятельности её руководителя Джоша Бьюса
         и принятии его отставки. Организация объявила о кадровых и программных изменениях,
@@ -219,6 +247,18 @@ const snapshot = researchSnapshotShort();
         организации другой, ни общего намерения участников. Для вопроса о полномочиях
         нужны устав, состав совета на конкретную дату и решения самого совета.
       </p>
+      <div class="editorial-roster-box" aria-label="Архивный состав совета директоров">
+        <p class="roster-title">Подтверждённый совет директоров (снимок архива 21 июля 2026)</p>
+        <ul class="editorial-roster-list">
+          <li>Buck Braswell</li>
+          <li>Matt Broome</li>
+          <li>Jon Norton</li>
+          <li>Matt Sikes</li>
+          <li>Dylan Joyner</li>
+          <li>Ron Mooney</li>
+        </ul>
+        <p class="editorial-roster-note">Зафиксирован в архивной версии официальной страницы «Who We Are» (G3-S096). Не переносится автоматически на позднейшие даты кризиса без новых документов.</p>
+      </div>
       <p>
         Последний подтверждённый архивный список совета относится к <strong>21 июля 2026 года</strong>.
         Мы не переносим автоматически этот состав на конец августа, когда происходили
@@ -265,6 +305,16 @@ const snapshot = researchSnapshotShort();
         недостаточную ссылку на использованный источник и гораздо более серьёзное
         обвинение в проповеди чужих готовых текстов целиком.
       </p>
+      <div class="editorial-contrast-grid" aria-label="Разграничение проверенных фактов и позиций сторон">
+        <div class="contrast-col contrast-col--verified">
+          <p class="contrast-col-title">Проверка проповедей (церковь Lindale)</p>
+          <p>Обнаружены случаи неясного указания на богословские комментарии. Но опубликованные материалы <strong>не дают оснований утверждать</strong>, что Бак систематически произносил полностью написанные другими авторами проповеди.</p>
+        </div>
+        <div class="contrast-col contrast-col--admitted">
+          <p class="contrast-col-title">Заявление четырёх пасторов</p>
+          <p>Служители признали процессуальные ошибки: вмешательство во внутреннее дисциплинарное дело другой общины, суждения без полного понимания обстоятельств и анонимную отправку материалов третьим лицам.</p>
+        </div>
+      </div>
       <p>
         Доступная проверка обнаружила случаи недостаточно ясного указания на
         формулировки из комментариев. Но опубликованные материалы <strong>не дают
@@ -408,22 +458,32 @@ const snapshot = researchSnapshotShort();
         В списке указано, где доступен сам объект, а где —
         только библиографическая запись без права воспроизводить документ.
       </p>
-      <details class="bibliography-details">
-        <summary>Развернуть все 21 библиографические записи</summary>
-        <ol class="bibliography-list">
-          {G3_SOURCE_BIBLIOGRAPHY.map((entry) => (
-            <li id={`src-${entry.id}`} class="bibliography-item">
-              <h3>{entry.title}</h3>
-              <p class="biblio-meta">{entry.period} · {entry.eligibility}</p>
-              <p>{entry.locator}</p>
-              <p class="biblio-links">
-                {entry.publicUrl ? <a href={entry.publicUrl} rel="noopener">Открыть документ</a> : <span>Публичной ссылки на полный объект нет</span>}
-                <span aria-hidden="true">·</span>
-                <a href={G3_SOURCE_LEDGER_URL} rel="noopener">Сведения в исследовательском реестре ({entry.id})</a>
-              </p>
-            </li>
-          ))}
-        </ol>
+      <details class="bibliography-details" open>
+        <summary>Реестр из 21 источника документального досье</summary>
+        <div class="bibliography-groups">
+          {biblioGroups.map((group, gIdx) => {
+            const items = G3_SOURCE_BIBLIOGRAPHY.filter((e) => group.ids.includes(e.id));
+            return (
+              <div class="bibliography-group">
+                <h3 class="bibliography-group-title">{gIdx + 1} · {group.title} ({items.length} {items.length === 3 || items.length === 4 ? 'источника' : 'источников'})</h3>
+                <ol class="bibliography-list">
+                  {items.map((entry) => (
+                    <li id={`src-${entry.id}`} class="bibliography-item">
+                      <h4>{entry.title}</h4>
+                      <p class="biblio-meta">{entry.period} · {entry.eligibility}</p>
+                      <p>{entry.locator}</p>
+                      <p class="biblio-links">
+                        {entry.publicUrl ? <a href={entry.publicUrl} rel="noopener">Открыть документ</a> : <span>Публичной ссылки на полный объект нет</span>}
+                        <span aria-hidden="true">·</span>
+                        <a href={G3_SOURCE_LEDGER_URL} rel="noopener">Сведения в исследовательском реестре ({entry.id})</a>
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            );
+          })}
+        </div>
       </details>
     </div>
   </section>
@@ -444,6 +504,8 @@ const snapshot = researchSnapshotShort();
       )}
     </div>
   </section>
+
+  <JournalSeriesNav title={G3_SERIES.title} parts={G3_SERIES.parts} current="crises" />
 
     </div>
     <JournalEditorialRail label="Навигация по хронологии и источникам G3">
@@ -501,4 +563,59 @@ const snapshot = researchSnapshotShort();
     <p><a href="/journal/">← Вернуться в Журнал</a></p>
   </footer>
 </main>
+<script>
+  function initJournalScrollspy() {
+    if (!('IntersectionObserver' in window)) return;
+    const sections = Array.from(document.querySelectorAll('.module[id]'));
+    if (sections.length === 0) return;
+
+    const railLinks = Array.from(document.querySelectorAll('.je-editorial-rail a[href^="#"]'));
+    const navLinks = Array.from(document.querySelectorAll('.dossier-nav a[href^="#"]'));
+    let activeId = '';
+
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries.filter((e) => e.isIntersecting);
+      if (visible.length > 0) {
+        const topSection = visible.reduce((prev, curr) =>
+          curr.boundingClientRect.top < prev.boundingClientRect.top ? curr : prev
+        );
+        updateActive(topSection.target.id);
+      }
+    }, {
+      rootMargin: '-10% 0px -65% 0px',
+      threshold: [0, 0.25, 0.5, 0.75, 1.0],
+    });
+
+    sections.forEach((s) => observer.observe(s));
+
+    function updateActive(id: string) {
+      if (!id || id === activeId) return;
+      activeId = id;
+
+      railLinks.forEach((a) => {
+        const isCurrent = a.getAttribute('href') === '#' + id;
+        a.classList.toggle('is-active', isCurrent);
+        if (isCurrent) a.setAttribute('aria-current', 'true');
+        else a.removeAttribute('aria-current');
+      });
+
+      navLinks.forEach((a) => {
+        const isCurrent = a.getAttribute('href') === '#' + id;
+        a.classList.toggle('is-active', isCurrent);
+        if (isCurrent) {
+          a.setAttribute('aria-current', 'true');
+          a.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+        } else {
+          a.removeAttribute('aria-current');
+        }
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initJournalScrollspy, { once: true });
+  } else {
+    initJournalScrollspy();
+  }
+</script>
 </JournalEditorialShell>
