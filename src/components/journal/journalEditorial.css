@@ -32,6 +32,8 @@ html.dark .journal-edition {
 .journal-edition *, .journal-edition *::before, .journal-edition *::after { box-sizing: border-box; }
 .journal-edition :is(h1,h2,h3) { color: var(--je-ink); font-family: 'Playfair Display', Georgia, serif; font-weight: 600; letter-spacing: -.025em; }
 .journal-edition a { color: var(--je-ink); }
+/* Windows High Contrast drops the gradient fill; keep the story tag framed. */
+@media (forced-colors: active) { .journal-edition .journal-story-tag { border: 1px solid CanvasText; } }
 /* Keep a numeral and its case ending together (2026-м, 2010-х) on narrow screens. */
 .journal-edition .je-nobr { white-space: nowrap; }
 .journal-edition a:focus-visible, .journal-edition summary:focus-visible { outline: 3px solid var(--je-gold); outline-offset: 4px; }
@@ -200,7 +202,10 @@ html.dark .journal-edition {
   .journal-edition .je-masthead, .journal-edition .dossier-nav, .journal-edition .je-editorial-rail { display: none !important; }
   .journal-edition .journal-feature-grid { display: block !important; }
   .journal-edition .journal-story-column { width: 100% !important; }
-  .journal-edition .module { break-inside: avoid; }
+  /* Long modules flow across pages (avoiding breaks inside a whole module left half-empty pages);
+     paragraphs, timeline entries and bibliography items stay whole, and headings stay with their text. */
+  .journal-edition :is(p, li, figcaption, blockquote) { break-inside: avoid; }
+  .journal-edition :is(h2, h3, .module-label, summary) { break-after: avoid; }
   .journal-edition .bibliography-details { display: block; }
   /* Native closed-details content is hidden by the UA even when print display is block. */
   .journal-edition details:not([open])::details-content { content-visibility: visible; display: block; height: auto; }
