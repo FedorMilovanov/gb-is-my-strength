@@ -29,6 +29,25 @@ const corrections: Array<{
 
 const handoffUrl = `https://github.com/${G3_PUBLICATION_HANDOFF.researchRepo}/blob/${G3_PUBLICATION_HANDOFF.researchSealCommit}/${G3_PUBLICATION_HANDOFF.handoffPath}`;
 const snapshot = researchSnapshotShort();
+
+const biblioGroups = [
+  {
+    title: 'Налоговые декларации и государственные реестры',
+    ids: ['G3-S001', 'G3-S002', 'G3-S028'],
+  },
+  {
+    title: 'Официальные сообщения руководства G3',
+    ids: ['G3-S008', 'G3-S009', 'G3-S010', 'G3-S011', 'G3-S023', 'G3-S024', 'G3-S046', 'G3-S047'],
+  },
+  {
+    title: 'Церковные разбирательства и свидетельства сторон',
+    ids: ['G3-S012', 'G3-S015', 'G3-S017', 'G3-S035', 'G3-S042'],
+  },
+  {
+    title: 'Архивные снимки сервисов, витрин и каталогов',
+    ids: ['G3-S033', 'G3-S050', 'G3-S053', 'G3-S054', 'G3-S096'],
+  },
+];
 ---
 <JournalEditorialShell kind="dossier" backHref="/journal/">
 <main class="dossier journal-dossier-shell" id="main-content" tabindex="-1" data-journal-dossier="g3" data-research-seal={G3_PUBLICATION_HANDOFF.researchSealCommit}>
@@ -98,6 +117,15 @@ const snapshot = researchSnapshotShort();
         не обязательно означает, что все книги, цифровые продукты и юридические права
         прекратили существование в один день.
       </p>
+
+      <figure class="editorial-pullquote">
+        <blockquote>
+          «Документы позволяют установить даты, финансовые показатели и официальные заявления;
+          мотивы, нераскрытые сделки и часть обвинений остаются за пределами доказанного.»
+        </blockquote>
+        <cite>Принцип документального расследования · G3-PUB-016</cite>
+      </figure>
+
       <p>
         В мае 2025 года G3 сама сообщила об анонимной деятельности её руководителя Джоша Бьюса
         и принятии его отставки. Организация объявила о кадровых и программных изменениях,
@@ -435,29 +463,40 @@ const snapshot = researchSnapshotShort();
       <h2>Источники и материалы для проверки</h2>
       <p>
         Мы сохранили привязку фактов к оригинальным документам. Ниже можно
-        открыть 21 источник этого документального досье: официальные записи,
-        налоговые формы, сообщения организаций и архивные материалы.
+        открыть 21 источник этого документального досье, сгруппированные по категориям:
+        налоговые декларации, официальные сообщения руководства, материалы церковных разбирательств
+        и архивные снимки веб-страниц.
         Историческое исследование конференций имеет отдельную доказательную базу
         и не входит в текущую библиографию.
         В списке указано, где доступен сам объект, а где —
         только библиографическая запись без права воспроизводить документ.
       </p>
-      <details class="bibliography-details">
-        <summary>Развернуть все 21 библиографические записи</summary>
-        <ol class="bibliography-list">
-          {G3_SOURCE_BIBLIOGRAPHY.map((entry) => (
-            <li id={`src-${entry.id}`} class="bibliography-item">
-              <h3>{entry.title}</h3>
-              <p class="biblio-meta">{entry.period} · {entry.eligibility}</p>
-              <p>{entry.locator}</p>
-              <p class="biblio-links">
-                {entry.publicUrl ? <a href={entry.publicUrl} rel="noopener">Открыть документ</a> : <span>Публичной ссылки на полный объект нет</span>}
-                <span aria-hidden="true">·</span>
-                <a href={G3_SOURCE_LEDGER_URL} rel="noopener">Сведения в исследовательском реестре ({entry.id})</a>
-              </p>
-            </li>
-          ))}
-        </ol>
+      <details class="bibliography-details" open>
+        <summary>Реестр из 21 источника документального досье</summary>
+        <div class="bibliography-groups">
+          {biblioGroups.map((group, gIdx) => {
+            const items = G3_SOURCE_BIBLIOGRAPHY.filter((e) => group.ids.includes(e.id));
+            return (
+              <div class="bibliography-group">
+                <h3 class="bibliography-group-title">{gIdx + 1} · {group.title} ({items.length} {items.length === 3 || items.length === 4 ? 'источника' : 'источников'})</h3>
+                <ol class="bibliography-list">
+                  {items.map((entry) => (
+                    <li id={`src-${entry.id}`} class="bibliography-item">
+                      <h4>{entry.title}</h4>
+                      <p class="biblio-meta">{entry.period} · {entry.eligibility}</p>
+                      <p>{entry.locator}</p>
+                      <p class="biblio-links">
+                        {entry.publicUrl ? <a href={entry.publicUrl} rel="noopener">Открыть документ</a> : <span>Публичной ссылки на полный объект нет</span>}
+                        <span aria-hidden="true">·</span>
+                        <a href={G3_SOURCE_LEDGER_URL} rel="noopener">Сведения в исследовательском реестре ({entry.id})</a>
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            );
+          })}
+        </div>
       </details>
     </div>
   </section>
@@ -526,4 +565,59 @@ const snapshot = researchSnapshotShort();
     <p><a href="/journal/">← Вернуться в Журнал</a></p>
   </footer>
 </main>
+<script>
+  function initJournalScrollspy() {
+    if (!('IntersectionObserver' in window)) return;
+    const sections = Array.from(document.querySelectorAll('.module[id]'));
+    if (sections.length === 0) return;
+
+    const railLinks = Array.from(document.querySelectorAll('.je-editorial-rail a[href^="#"]'));
+    const navLinks = Array.from(document.querySelectorAll('.dossier-nav a[href^="#"]'));
+    let activeId = '';
+
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries.filter((e) => e.isIntersecting);
+      if (visible.length > 0) {
+        const topSection = visible.reduce((prev, curr) =>
+          curr.boundingClientRect.top < prev.boundingClientRect.top ? curr : prev
+        );
+        updateActive(topSection.target.id);
+      }
+    }, {
+      rootMargin: '-10% 0px -65% 0px',
+      threshold: [0, 0.25, 0.5, 0.75, 1.0],
+    });
+
+    sections.forEach((s) => observer.observe(s));
+
+    function updateActive(id: string) {
+      if (!id || id === activeId) return;
+      activeId = id;
+
+      railLinks.forEach((a) => {
+        const isCurrent = a.getAttribute('href') === '#' + id;
+        a.classList.toggle('is-active', isCurrent);
+        if (isCurrent) a.setAttribute('aria-current', 'true');
+        else a.removeAttribute('aria-current');
+      });
+
+      navLinks.forEach((a) => {
+        const isCurrent = a.getAttribute('href') === '#' + id;
+        a.classList.toggle('is-active', isCurrent);
+        if (isCurrent) {
+          a.setAttribute('aria-current', 'true');
+          a.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+        } else {
+          a.removeAttribute('aria-current');
+        }
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initJournalScrollspy, { once: true });
+  } else {
+    initJournalScrollspy();
+  }
+</script>
 </JournalEditorialShell>

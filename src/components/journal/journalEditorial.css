@@ -222,12 +222,40 @@ html.dark .journal-edition {
 .journal-edition :is(.research-disclosure,.bibliography-details) summary { padding: 15px 0; cursor:pointer; font-weight: 700; color: var(--je-ink); }
 .journal-edition :is(.research-disclosure,.bibliography-details) a { color: var(--je-gold-text); text-decoration: underline; text-underline-offset: 3px; }
 .journal-edition .bibliography-list { margin: 0; padding: 0 0 0 24px; }
+.journal-edition .bibliography-group { margin: 22px 0 28px; }
+.journal-edition .bibliography-group:not(:last-child) { border-bottom: 1px dashed var(--je-rule); padding-bottom: 18px; }
+.journal-edition .bibliography-group-title {
+  font: 750 12px/1.4 'Source Sans 3',sans-serif; text-transform: uppercase;
+  letter-spacing: .14em; color: var(--je-gold-text); margin: 0 0 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.journal-edition .bibliography-group-title::before { content: ''; width: 14px; height: 1px; background: var(--je-gold-text); }
 .journal-edition .bibliography-item { padding: 13px 0; border-top: 1px solid var(--je-rule); }
-.journal-edition .bibliography-item h3 { margin: 0 0 8px; font: 600 18px/1.4 'Playfair Display',Georgia,serif; }
+.journal-edition .bibliography-item :is(h3,h4) { margin: 0 0 8px; font: 600 18px/1.4 'Playfair Display',Georgia,serif; }
 .journal-edition .bibliography-item > p { font: 14px/1.57 'Source Sans 3',sans-serif; margin: 5px 0; }
 .journal-edition .biblio-meta { color: var(--je-muted); font: 12px/1.4 'Source Sans 3',sans-serif; }
 .journal-edition .biblio-links { display:flex;flex-wrap:wrap;gap:8px;margin:0; }
 .journal-edition .biblio-links a { color: var(--je-gold-text); }
+
+/* Scrollspy active navigation indicators */
+.journal-edition .dossier-nav a.is-active {
+  color: var(--je-gold-text);
+  border-bottom-color: var(--je-gold);
+  font-weight: 750;
+}
+.journal-edition .je-editorial-rail .je-rail-timeline a.is-active time {
+  color: var(--je-gold-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.journal-edition .je-editorial-rail .je-rail-timeline a.is-active span {
+  color: var(--je-ink);
+  font-weight: 650;
+}
+.journal-edition .je-editorial-rail .je-rail-links a.is-active {
+  color: var(--je-gold-text);
+  font-weight: 750;
+}
 .journal-edition .dossier-footer, .journal-edition .journal-footer { max-width: 1260px; margin: 40px auto 0; border-top: 2px solid var(--je-gold); padding: 24px 0 0; font: 14px/1.6 'Source Sans 3',sans-serif; color: var(--je-muted); }
 .journal-edition .dossier-footer a, .journal-edition .journal-footer a { color: var(--je-gold-text); text-decoration: underline; text-underline-offset: 3px; }
 
