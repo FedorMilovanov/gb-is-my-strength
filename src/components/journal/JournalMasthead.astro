@@ -21,7 +21,7 @@ const { active = 'journal' } = Astro.props;
   </div>
   <nav class="je-masthead__nav" aria-label="Разделы издания">
     <a href="/journal/" aria-current={active === 'journal' ? 'page' : undefined}>Журнал</a>
-    <a href="/journal/dossiers/g3/" aria-current={active === 'dossier' ? 'page' : undefined}>Досье G3</a>
+    <a href="/journal/#lead-dossier" aria-current={active === 'dossier' ? 'location' : undefined}>Досье и исследования</a>
     <a href="/articles/">Богословские статьи</a>
     <a href="/about/">Об издании</a>
   </nav>

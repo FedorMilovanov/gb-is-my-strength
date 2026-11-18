@@ -147,6 +147,13 @@ html.dark .journal-edition {
 .journal-edition .journal-method .eyebrow { color:#e0bc7f; }
 .journal-edition .journal-method .journal-prose p { color: #ddd3c4; }
 .journal-edition .journal-footer { display:flex;flex-wrap:wrap;gap:12px; }
+/* Broadsheet longform opening: visual columns only, immutable reading order. */
+@media (min-width: 1200px) {
+  .journal-edition .intro-module .prose { column-count: 2; column-gap: 32px; column-rule: 1px solid var(--je-rule); }
+  .journal-edition .intro-module .prose > h2,
+  .journal-edition .intro-module .prose > .source-note-paragraph { column-span: all; }
+  .journal-edition .intro-module .prose > p:not(.source-note-paragraph) { break-inside: avoid; }
+}
 @media (max-width: 980px) {
   .journal-edition .journal-feature-grid { grid-template-columns: 1fr; gap: 30px; }
   .journal-edition .journal-dossier-shell, .journal-edition .journal-landing { padding-inline: 24px; }
