@@ -37,7 +37,7 @@ const snapshot = researchSnapshotShort();
   <header class="dossier-hero">
     <div class="journal-story-topline">
       <span class="journal-story-tag">Досье</span>
-      <p class="kicker">G3 Ministries · документальное досье · 2019–2026</p>
+      <p class="kicker">G3 Ministries · документальное досье · <span class="nowrap">2019–2026</span></p>
     </div>
     <h1>{G3_PRODUCT_METADATA.title}</h1>
     <p class="dek">
@@ -49,7 +49,8 @@ const snapshot = researchSnapshotShort();
     <div class="editorial-meta" aria-label="Сведения о материале">
       <span>Документальное досье</span>
       <span><time datetime="2026-09-09">9 сентября 2026 года</time></span>
-      <span>Обновлено <time datetime="2026-11-18">18 ноября 2026</time></span>
+      <span>Обновлено&nbsp;<time datetime="2026-11-18">18 ноября 2026</time></span>
+      <span>~11 минут чтения</span>
     </div>
   </header>
 
@@ -67,16 +68,18 @@ const snapshot = researchSnapshotShort();
       мотивы, нераскрытые сделки и часть обвинений остаются за пределами доказанного.
     </p>
 
-  <nav class="dossier-nav" aria-label="Модули досье">
-    <a href="#overview">Контекст</a>
-    <a href="#timeline">События</a>
-    <a href="#finance">Финансы</a>
-    <a href="#buice">Кризис 2025</a>
-    <a href="#buck">Кризис 2026</a>
-    <a href="#wind-down">Завершение</a>
-    <a href="#unknowns">Неизвестное</a>
-    <a href="#bibliography">Источники</a>
-  </nav>
+  <div class="dossier-nav-wrapper">
+    <nav class="dossier-nav" aria-label="Модули досье">
+      <a href="#overview">Контекст</a>
+      <a href="#timeline">События</a>
+      <a href="#finance">Финансы</a>
+      <a href="#buice">Кризис 2025</a>
+      <a href="#buck">Кризис 2026</a>
+      <a href="#wind-down">Завершение</a>
+      <a href="#unknowns">Неизвестное</a>
+      <a href="#bibliography">Источники</a>
+    </nav>
+  </div>
 
   <section id="overview" class="module intro-module">
     <div class="module-label">01 · Предыстория</div>
@@ -151,11 +154,38 @@ const snapshot = researchSnapshotShort();
       <p>
         Финансовая история началась ещё до громких конфликтов 2025–2026 годов.
         По сведениям из налоговых деклараций американской некоммерческой организации
-        общие расходы G3 за 2023 финансовый год оказались на <strong>1 061 800 долларов</strong>
-        выше, чем за предыдущий год. Наибольший вклад в этот рост внесли
+        общие расходы G3 за 2023 финансовый год оказались на <strong>1 061 800 долларов</strong>&nbsp;выше, чем за предыдущий год. Наибольший вклад в этот рост внесли
         затраты на конференции и встречи — плюс <strong>817 283 доллара</strong> —
         и рекламу — плюс <strong>246 511 долларов</strong>.
       </p>
+
+      <div class="editorial-stat-grid" aria-label="Ключевые финансовые показатели по налоговым формам">
+        <div class="editorial-stat-card">
+          <span class="stat-label">Рост расходов 2023</span>
+          <span class="stat-value">+$1 061 800</span>
+          <span class="stat-desc">Общие расходы за 2023 финансовый год по сравнению с 2022-м.</span>
+          <span class="stat-source">IRS Form 990 (FY2023)</span>
+        </div>
+        <div class="editorial-stat-card">
+          <span class="stat-label">Конференции и встречи</span>
+          <span class="stat-value">+$817 283</span>
+          <span class="stat-desc">Основной вклад в увеличение затрат организации.</span>
+          <span class="stat-source">IRS Form 990 (FY2023)</span>
+        </div>
+        <div class="editorial-stat-card">
+          <span class="stat-label">Реклама и продвижение</span>
+          <span class="stat-value">+$246 511</span>
+          <span class="stat-desc">Рост затрат на рекламное продвижение событий и материалов.</span>
+          <span class="stat-source">IRS Form 990 (FY2023)</span>
+        </div>
+        <div class="editorial-stat-card">
+          <span class="stat-label">Выплаты Caris Buice</span>
+          <span class="stat-value">$30 409 / $31 880</span>
+          <span class="stat-desc">Раскрыты в формах за 2024 и 2025 годы (обозначена дочерью члена совета).</span>
+          <span class="stat-source">IRS Form 990 (FY2024–2025)</span>
+        </div>
+      </div>
+
       <p>
         В той же форме расходы 2023 года были полностью отнесены к программной деятельности:
         на административные нужды и сбор пожертвований организация отразила нулевые суммы.
@@ -195,6 +225,20 @@ const snapshot = researchSnapshotShort();
         организации другой, ни общего намерения участников. Для вопроса о полномочиях
         нужны устав, состав совета на конкретную дату и решения самого совета.
       </p>
+
+      <div class="editorial-roster-box" aria-label="Архивный состав совета директоров">
+        <p class="roster-title">Подтверждённый совет директоров (снимок архива 21 июля 2026)</p>
+        <ul class="editorial-roster-list">
+          <li>Buck Braswell</li>
+          <li>Matt Broome</li>
+          <li>Jon Norton</li>
+          <li>Matt Sikes</li>
+          <li>Dylan Joyner</li>
+          <li>Ron Mooney</li>
+        </ul>
+        <p class="editorial-roster-note">Зафиксирован в архивной версии официальной страницы «Who We Are» (G3-S096). Не переносится автоматически на позднейшие даты кризиса без новых документов.</p>
+      </div>
+
       <p>
         Последний подтверждённый архивный список совета относится к <strong>21 июля 2026 года</strong>.
         Мы не переносим автоматически этот состав на конец августа, когда происходили
@@ -241,6 +285,18 @@ const snapshot = researchSnapshotShort();
         недостаточную ссылку на использованный источник и гораздо более серьёзное
         обвинение в проповеди чужих готовых текстов целиком.
       </p>
+
+      <div class="editorial-contrast-grid" aria-label="Разграничение проверенных фактов и позиций сторон">
+        <div class="contrast-col contrast-col--verified">
+          <p class="contrast-col-title">Проверка проповедей (церковь Lindale)</p>
+          <p>Обнаружены случаи неясного указания на богословские комментарии. Но опубликованные материалы <strong>не дают оснований утверждать</strong>, что Бак систематически произносил полностью написанные другими авторами проповеди.</p>
+        </div>
+        <div class="contrast-col contrast-col--admitted">
+          <p class="contrast-col-title">Заявление четырёх пасторов</p>
+          <p>Служители признали процессуальные ошибки: вмешательство во внутреннее дисциплинарное дело другой общины, суждения без полного понимания обстоятельств и анонимную отправку материалов третьим лицам.</p>
+        </div>
+      </div>
+
       <p>
         Доступная проверка обнаружила случаи недостаточно ясного указания на
         формулировки из комментариев. Но опубликованные материалы <strong>не дают
@@ -282,8 +338,7 @@ const snapshot = researchSnapshotShort();
         Но для истории организации это не одна дата с единственным смыслом.
         <strong>Прекратить мероприятия</strong> — не то же самое, что
         <strong>юридически ликвидировать корпорацию</strong>.
-        В доступной записи штата Джорджия на <strong>8 сентября 2026 года</strong>
-        юридическое лицо всё ещё числилось действующим. Это снимок реестра
+        В доступной записи штата Джорджия на <strong>8 сентября 2026 года</strong>&nbsp;юридическое лицо всё ещё числилось действующим. Это снимок реестра
         на указанную дату, а не обещание, что статус сохранился навсегда.
       </p>
       <p>

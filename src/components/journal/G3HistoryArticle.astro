@@ -27,7 +27,7 @@ if (import.meta.env.PROD) {
       <header class="dossier-hero">
         <div class="journal-story-topline">
           <span class="journal-story-tag">История служения</span>
-          <p class="kicker">G3 Ministries · конференции · 2013–2024</p>
+          <p class="kicker">G3 Ministries · конференции · <span class="nowrap">2013–2024</span></p>
         </div>
         <h1>{draft.title}</h1>
         <p class="dek">
@@ -38,7 +38,7 @@ if (import.meta.env.PROD) {
         </p>
         <div class="editorial-meta" aria-label="Сведения о рукописи">
           <span>Исторический очерк</span>
-          <span>2013–2024</span>
+          <span><span class="nowrap">2013–2024</span></span>
           <span>Research: публикационный допуск не выдан</span>
         </div>
       </header>
@@ -55,14 +55,16 @@ if (import.meta.env.PROD) {
         Списки докладчиков подтверждают участие, но не согласие со всеми последующими
         решениями руководства. Свидетельство участника не подменяет независимые документы.
       </p>
-      <nav class="dossier-nav" aria-label="Содержание истории G3">
-        <a href="#g3-history">Истоки</a>
-        <a href="#g3-speakers">Конференции</a>
-        <a href="#g3-growth">Развитие</a>
-        <a href="#g3-meaning">Значение</a>
-        <a href="#g3-evidence">Источники</a>
-        <a href="#g3-epilogue">Продолжение</a>
-      </nav>
+      <div class="dossier-nav-wrapper">
+        <nav class="dossier-nav" aria-label="Содержание истории G3">
+          <a href="#g3-history">Истоки</a>
+          <a href="#g3-speakers">Конференции</a>
+          <a href="#g3-growth">Развитие</a>
+          <a href="#g3-meaning">Значение</a>
+          <a href="#g3-evidence">Источники</a>
+          <a href="#g3-epilogue">Продолжение</a>
+        </nav>
+      </div>
       <G3HistoryFeature />
       <section id="g3-meaning" class="module je-history-essay" aria-labelledby="g3-meaning-title">
         <div class="module-label">04 · Богословские темы</div>
