@@ -33,7 +33,7 @@ html.dark .journal-edition {
 .journal-edition .journal-story-topline { display: flex; flex-wrap: wrap; align-items: center; gap: 11px 17px; padding-bottom: 17px; border-bottom: 1px solid var(--je-gold); }
 .journal-edition .journal-story-tag {
   display: inline-flex; align-items: center; padding: 7px 16px;
-  background: linear-gradient(120deg,#e5c588,#a87831);
+  background: linear-gradient(120deg,#e5c588,#b38443);
   color: #0b2033; font: 700 11px/1.2 'Source Sans 3', sans-serif;
   letter-spacing: .19em; text-transform: uppercase;
 }

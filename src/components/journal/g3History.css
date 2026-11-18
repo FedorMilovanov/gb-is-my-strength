@@ -57,7 +57,7 @@
 }
 
 /* G3 institutional milestones — newspaper index, never repeat evidence cards. */
-.journal-edition .je-history-milestones { margin: 27px 0 30px; border-block: 2px solid var(--je-gold) 1px solid var(--je-rule); padding: 27px 0 0; }
+.journal-edition .je-history-milestones { margin: 27px 0 30px; border-block-start: 2px solid var(--je-gold); border-block-end: 1px solid var(--je-rule); padding: 27px 0 0; }
 .journal-edition .je-history-milestones > h3 { margin: 0 0 24px; color: var(--je-ink); font: 600 clamp(25px,2.6vw,33px)/1.22 'Playfair Display',Georgia,serif; letter-spacing: -.023em; }
 .journal-edition .je-history-milestones-list { list-style: none; padding: 0; margin: 0; }
 .journal-edition .je-history-milestones-list > li { display: grid; grid-template-columns: 100px minmax(0,1fr); gap: 22px; padding: 19px 0 23px; border-top: 1px solid var(--je-rule); break-inside: avoid; }
