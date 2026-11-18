@@ -61,6 +61,18 @@ Confirmed at the starting HEAD, then repaired within the existing Journal owners
 
 All fixes are presentation/render-integrity only: no new claim, date refresh, evidence/rights decision, history link or publication permission. Existing public metadata and the September source objects remain untouched.
 
+## Local workspace continuation — print pagination
+
+After the sandbox resumed successfully, the owner requested local workspace work while connectivity recovered. This continuation stays on Agent 1's existing branch and proposal; no merge, push, remote comment or publication change is part of this step.
+
+- **Mode / owner:** LANE / Agent 1. **Repair baseline:** `dceed04b4fa42bfff16891759b730118f933f645`; main/rollback and canonical integration base remain those above.
+- **Bounded scope:** the print-only blocks of `journalEditorial.css` / `g3History.css`, their existing browser witness and this note. No screen styles, text, metadata, evidence, media, runtime or route changes.
+- **Current-head verification:** fresh Chromium A4 output reproduced three detached section-label/heading pairs (two in the public dossier, one in the source-only history) and four history reading paragraphs split between sheets. The prior witness inspected only the first `.prose > p`; it did not cover history-specific reading owners.
+- **Root cause / repair:** section labels lacked `break-after: avoid`; history-specific reading paragraphs and heading wrappers lacked the corresponding fragmentation rules. A full history year may still span sheets, while its individual paragraphs stay together. No `!important`, global print override or new handler is introduced.
+- **Negative control:** before changing the CSS, the strengthened full browser run completed all 48 screen cases but failed exactly four print assertions against the old presentation. The failed run and fresh baseline PDFs are retained in `reports/g3-editorial-wave/agent1-workspace-review/`; the earlier dceed report remains unchanged historical evidence.
+- **Overlap:** main, own PR, canonical PR and Research #582 were checked read-only; the canonical / Research anchors had not moved. Adjacent proposals had moved since the previous report and were not imported or written. Source of truth remains the two native route profiles, existing Journal owners and the unchanged publication handoff.
+- **Required checks:** production-like build (including its canonical asset-revision flow), strengthened 48-case browser suite, DOM-derived all-page PDF text/pagination/geometry inspection, exact screen-image comparison and relevant route / publication / source-integrity contracts. Missing engines, device/zoom tests, remote CI and owner visual approval are not converted into local passes.
+
 ## Verification and integration
 
 The final exact-head results belong in the proposal PR and `reports/g3-editorial-wave/` (ignored artifacts), not in an invented live/deployment receipt. The checkpoint may precede completion of final acceptance. A source merge or green CI does not issue a history handoff.

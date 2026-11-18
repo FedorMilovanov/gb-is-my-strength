@@ -80,5 +80,9 @@
 @media print {
   .journal-edition .je-history-year { break-inside: auto; }
   .journal-edition .je-history-year-mark { break-after: avoid; }
+  .journal-edition :is(.je-history-heading, .je-history-eyebrow, .je-history-growth-eyebrow) { break-after: avoid; }
+  .journal-edition .je-history-heading { break-inside: avoid; }
+  /* A year may span sheets; its individual reading paragraphs must not fragment. */
+  .journal-edition :is(.je-history-origin-text, .je-history-year-text, .je-history-growth-grid, .je-history-context, .je-history-milestone-text) p { break-inside: avoid; }
   .journal-edition .je-evidence-key > div { break-inside: avoid; }
 }

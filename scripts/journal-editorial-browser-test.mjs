@@ -280,20 +280,35 @@ try {
     if (target.id !== 'journal') {
       await landscape.locator('.bibliography-details').evaluate((node) => { node.open = false; });
       await landscape.emulateMedia({ media: 'print' });
-      const print = await landscape.evaluate(() => ({
-        paper: getComputedStyle(document.querySelector('.journal-edition')).backgroundColor,
-        paperToken: getComputedStyle(document.querySelector('.journal-edition')).getPropertyValue('--je-paper').trim(),
-        ink: getComputedStyle(document.querySelector('h1')).color,
-        sources: [...document.querySelectorAll('.bibliography-item')].filter((node) => node.getBoundingClientRect().height > 0).length,
-        mastheadHidden: getComputedStyle(document.querySelector('.je-masthead')).display === 'none',
-        contentsHidden: getComputedStyle(document.querySelector('.je-contents')).display === 'none',
-        paragraphBreak: getComputedStyle(document.querySelector('.prose > p')).breakInside,
-      }));
+      const print = await landscape.evaluate(() => {
+        const readingOwners = '.prose > p, .je-history-origin-text p, .je-history-year-text p, .je-history-growth-grid p, .je-history-context p, .je-history-milestone-text p';
+        const paragraphs = [...document.querySelectorAll(readingOwners)].map((node) => ({
+          text: node.textContent.replace(/\s+/g, ' ').trim().slice(0, 100),
+          breakInside: getComputedStyle(node).breakInside,
+        }));
+        const labels = [...document.querySelectorAll('.module-label, .je-history-eyebrow, .je-history-growth-eyebrow')].map((node) => ({
+          text: node.textContent.trim(), breakAfter: getComputedStyle(node).breakAfter,
+        }));
+        const historyHeadings = [...document.querySelectorAll('.je-history-heading')].map((node) => ({
+          breakInside: getComputedStyle(node).breakInside, breakAfter: getComputedStyle(node).breakAfter,
+        }));
+        return {
+          paper: getComputedStyle(document.querySelector('.journal-edition')).backgroundColor,
+          paperToken: getComputedStyle(document.querySelector('.journal-edition')).getPropertyValue('--je-paper').trim(),
+          ink: getComputedStyle(document.querySelector('h1')).color,
+          sources: [...document.querySelectorAll('.bibliography-item')].filter((node) => node.getBoundingClientRect().height > 0).length,
+          mastheadHidden: getComputedStyle(document.querySelector('.je-masthead')).display === 'none',
+          contentsHidden: getComputedStyle(document.querySelector('.je-contents')).display === 'none',
+          paragraphs, labels, historyHeadings,
+        };
+      });
       // The existing site print owner intentionally clears backgrounds with
       // transparent !important. Respect that white-paper canvas, do not add a
       // competing !important to the Journal just to satisfy a computed-color assertion.
       check(entry, 'print:light-paper-hidden-navigation-sources-even-when-closed', ['rgb(255, 255, 255)', 'rgba(0, 0, 0, 0)'].includes(print.paper) && print.paperToken === '#fff' && ['rgb(0, 0, 0)', 'rgb(17, 17, 17)'].includes(print.ink) && print.sources > 0 && print.mastheadHidden && print.contentsHidden, print);
-      check(entry, 'print:reading-paragraphs-stay-together', print.paragraphBreak === 'avoid', print.paragraphBreak);
+      check(entry, 'print:all-reading-paragraphs-stay-together', print.paragraphs.length > 0 && print.paragraphs.every((item) => item.breakInside === 'avoid'), print.paragraphs);
+      check(entry, 'print:section-labels-stay-with-heading', print.labels.length > 0 && print.labels.every((item) => item.breakAfter === 'avoid'), print.labels);
+      if (target.held) check(entry, 'print:history-heading-groups-stay-together', print.historyHeadings.length > 0 && print.historyHeadings.every((item) => item.breakInside === 'avoid' && item.breakAfter === 'avoid'), print.historyHeadings);
       await landscape.screenshot({ path: path.join(out, `${target.id}-print.png`) });
       if (engine === 'chromium') await landscape.pdf({ path: path.join(out, `${target.id}-print.pdf`), format: 'A4', printBackground: true });
     }

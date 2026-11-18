@@ -321,7 +321,7 @@ html.dark .journal-edition {
   .journal-edition .journal-feature-media { max-width: 14cm; margin: 24px auto; }
   .journal-edition .je-opening-note { display: block; }
   .journal-edition .module { padding-block: 24px; }
-  .journal-edition :is(h2, h3, h4) { break-after: avoid; }
+  .journal-edition :is(h2, h3, h4, .module-label) { break-after: avoid; }
   .journal-edition :is(p, li) { orphans: 3; widows: 3; }
   /* Keep ordinary reading paragraphs together: fragmented PDF output can ignore widows. */
   .journal-edition .prose > p { break-inside: avoid; }
