@@ -32,6 +32,8 @@ html.dark .journal-edition {
 .journal-edition *, .journal-edition *::before, .journal-edition *::after { box-sizing: border-box; }
 .journal-edition :is(h1,h2,h3) { color: var(--je-ink); font-family: 'Playfair Display', Georgia, serif; font-weight: 600; letter-spacing: -.025em; }
 .journal-edition a { color: var(--je-ink); }
+/* Keep a numeral and its case ending together (2026-м, 2010-х) on narrow screens. */
+.journal-edition .je-nobr { white-space: nowrap; }
 .journal-edition a:focus-visible, .journal-edition summary:focus-visible { outline: 3px solid var(--je-gold); outline-offset: 4px; }
 .journal-edition :is(p,li) { overflow-wrap: anywhere; }
 .journal-edition .journal-dossier-shell, .journal-edition .journal-landing { max-width: 1260px; margin-inline: auto; padding-inline: calc(var(--je-gutter) + var(--je-safe-left)) calc(var(--je-gutter) + var(--je-safe-right)); }
