@@ -54,7 +54,9 @@ async function inspect(page) {
       return [...node.childNodes].map(readableText).join('');
     };
     const brand = document.querySelector('.je-masthead__identity');
-    const brandVisibleText = readableText(brand).replace(/\s+/g, ' ').trim();
+    // These two visible flex-line blocks contribute separate name tokens even
+    // when compressHTML removes the text node between their closing/opening tags.
+    const brandVisibleText = [...brand.querySelectorAll('.je-masthead__publication, .je-masthead__series')].map(readableText).join(' ').replace(/\s+/g, ' ').trim();
     const landingLead = document.querySelector('.journal-hero');
     const landingFooter = document.querySelector('.journal-footer > a');
     const landingAlignment = landingLead && landingFooter ? {
