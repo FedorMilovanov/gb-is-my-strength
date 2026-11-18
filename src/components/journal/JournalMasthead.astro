@@ -1,0 +1,57 @@
+---
+interface Props {
+  active?: 'journal' | 'dossier';
+}
+const { active = 'journal' } = Astro.props;
+---
+<header class="je-masthead" aria-label="Редакционная навигация">
+  <div class="je-masthead__top">
+    <a class="je-masthead__identity" href="/journal/" aria-label="Господь Бог — Сила Моя. Журнал">
+      <svg class="je-masthead__mark" viewBox="0 0 64 48" role="img" aria-label="Открытая книга">
+        <path d="M4 10C15 6 26 10 32 17C38 10 49 6 60 10V39C49 35 38 38 32 44C26 38 15 35 4 39Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+        <path d="M32 17V43M9 14C17 12 24 15 28 19M55 14C47 12 40 15 36 19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span class="je-masthead__name">
+        <span class="je-masthead__publication">Господь Бог — Сила Моя</span>
+        <span class="je-masthead__series">ЖУРНАЛ <span aria-hidden="true">/</span> ИССЛЕДОВАНИЯ</span>
+      </span>
+    </a>
+    <span class="je-masthead__descriptor">Документы · контекст · ответственный разбор</span>
+    <a class="je-masthead__home" href="/">На основной сайт <span aria-hidden="true">↗</span></a>
+  </div>
+  <nav class="je-masthead__nav" aria-label="Разделы издания">
+    <a href="/journal/" aria-current={active === 'journal' ? 'page' : undefined}>Журнал</a>
+    <a href="/journal/dossiers/g3/" aria-current={active === 'dossier' ? 'page' : undefined}>Документальные досье</a>
+    <a href="/articles/">Богословские статьи</a>
+    <a href="/about/">Об издании</a>
+  </nav>
+</header>
+<style>
+  .je-masthead { background: #0b2033; color: #f9f2e4; border-bottom: 1px solid #c6a66c; font-family: 'Source Sans 3', system-ui, sans-serif; }
+  .je-masthead__top { max-width: 1260px; margin: 0 auto; padding: 17px 32px 14px; display: flex; align-items: center; gap: 24px; }
+  .je-masthead__identity { display: inline-flex; align-items: center; gap: 17px; min-width: 0; color: inherit; text-decoration: none; }
+  .je-masthead__mark { flex: none; width: 49px; height: 39px; color: #e5bb73; }
+  .je-masthead__name { display: flex; flex-direction: column; gap: 3px; }
+  .je-masthead__publication { font: 600 clamp(18px,2.1vw,26px)/1.15 'Playfair Display', Georgia, serif; letter-spacing: .005em; }
+  .je-masthead__series { color: #d9c39f; font: 600 10px/1.4 'Source Sans 3', sans-serif; letter-spacing: .18em; }
+  .je-masthead__series span { color: #a37a36; padding: 0 4px; }
+  .je-masthead__descriptor { margin-left: auto; padding-left: 28px; border-left: 1px solid #466075; max-width: 260px; color: #d5c9b8; font: italic 15px/1.4 Lora, Georgia, serif; }
+  .je-masthead__home { flex: none; color: #f0d9a8; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+  .je-masthead__nav { max-width: 1260px; margin: 0 auto; display: flex; gap: clamp(16px,3vw,43px); align-items: center; padding: 0 32px; border-top: 1px solid #2d4051; }
+  .je-masthead__nav a { display: inline-flex; min-height: 46px; align-items: center; border-bottom: 3px solid transparent; color: #efe6d7; text-decoration: none; white-space: nowrap; font-size: 12px; font-weight: 650; letter-spacing: .12em; text-transform: uppercase; padding: 3px 0 0; }
+  .je-masthead__nav a[aria-current="page"] { border-color: #d6ad5d; color: #fff; }
+  .je-masthead a:focus-visible { outline: 2px solid #eacb85; outline-offset: 4px; }
+  .je-masthead a:hover { color: #f9d997; }
+  @media (max-width: 770px) {
+    .je-masthead__top { padding: 14px 20px 12px; gap: 12px; }
+    .je-masthead__mark { width: 37px; height: 30px; }
+    .je-masthead__publication { font-size: 19px; }
+    .je-masthead__descriptor, .je-masthead__home { display: none; }
+    .je-masthead__nav { padding: 0 20px; overflow-x: auto; gap: 25px; scrollbar-width: thin; }
+    .je-masthead__nav a { min-height: 43px; font-size: 11px; }
+  }
+  @media (max-width: 400px) {
+    .je-masthead__publication { font-size: 16px; }
+    .je-masthead__series { font-size: 9px; letter-spacing: .13em; }
+  }
+</style>
