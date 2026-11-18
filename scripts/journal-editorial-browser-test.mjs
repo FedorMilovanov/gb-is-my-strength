@@ -231,11 +231,13 @@ try {
         sources: [...document.querySelectorAll('.bibliography-item')].filter((node) => node.getBoundingClientRect().height > 0).length,
         mastheadHidden: getComputedStyle(document.querySelector('.je-masthead')).display === 'none',
         contentsHidden: getComputedStyle(document.querySelector('.je-contents')).display === 'none',
+        paragraphBreak: getComputedStyle(document.querySelector('.prose > p')).breakInside,
       }));
       // The existing site print owner intentionally clears backgrounds with
       // transparent !important. Respect that white-paper canvas, do not add a
       // competing !important to the Journal just to satisfy a computed-color assertion.
       check(entry, 'print:light-paper-hidden-navigation-sources-even-when-closed', ['rgb(255, 255, 255)', 'rgba(0, 0, 0, 0)'].includes(print.paper) && print.paperToken === '#fff' && ['rgb(0, 0, 0)', 'rgb(17, 17, 17)'].includes(print.ink) && print.sources > 0 && print.mastheadHidden && print.contentsHidden, print);
+      check(entry, 'print:reading-paragraphs-stay-together', print.paragraphBreak === 'avoid', print.paragraphBreak);
       await landscape.screenshot({ path: path.join(out, `${target.id}-print.png`) });
       if (engine === 'chromium') await landscape.pdf({ path: path.join(out, `${target.id}-print.pdf`), format: 'A4', printBackground: true });
     }

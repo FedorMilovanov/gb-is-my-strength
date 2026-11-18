@@ -324,6 +324,8 @@ html.dark .journal-edition {
   .journal-edition .module { padding-block: 24px; }
   .journal-edition :is(h2, h3, h4) { break-after: avoid; }
   .journal-edition :is(p, li) { orphans: 3; widows: 3; }
+  /* Keep ordinary reading paragraphs together: fragmented PDF output can ignore widows. */
+  .journal-edition .prose > p { break-inside: avoid; }
   .journal-edition .bibliography-item { break-inside: avoid; }
   .journal-edition .bibliography-details { display: block; }
   .journal-edition details:not([open])::details-content { content-visibility: visible; display: block; height: auto; }
