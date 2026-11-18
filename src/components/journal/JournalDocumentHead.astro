@@ -5,22 +5,24 @@ interface Props {
   title: string;
   description: string;
   canonical: string;
+  publishedAt: string;
+  modifiedAt: string;
   kind?: 'CollectionPage' | 'Article';
-  publishedAt?: string;
-  modifiedAt?: string;
   readingTime?: number;
   socialImage?: string;
+  socialImageHeight?: number;
 }
 
 const {
   title,
   description,
   canonical,
+  publishedAt,
+  modifiedAt,
   kind = 'Article',
-  publishedAt = '2026-09-09T00:00:00+03:00',
-  modifiedAt = publishedAt,
   readingTime,
   socialImage = 'https://gospod-bog.ru/images/og-preview-1200x630.webp',
+  socialImageHeight = socialImage.includes('675') ? 675 : 630,
 } = Astro.props as Props;
 
 const siteTitle = `${title} | Господь Бог — Сила Моя`;
@@ -54,7 +56,7 @@ const hasReadingTime = Number.isInteger(readingTime) && Number(readingTime) > 0;
 <meta property="og:locale" content="ru_RU">
 <meta property="og:image" content={socialImage}>
 <meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
+<meta property="og:image:height" content={String(socialImageHeight)}>
 <meta property="og:image:type" content="image/webp">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@FedorMilovanov">
