@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Read-only Journal visual/accessibility contract. No server, route or publication owner.
+ * Agent 9 — read-only Journal visual/accessibility contract. No server, route or publication owner.
  * Start a production-like server separately; set JOURNAL_BASE_URL to its origin.
  * JOURNAL_HISTORY_PATH is opt-in and MUST refer to a disposable, noindex DEV adapter.
  * AXE_CORE_PATH may point to an isolated axe-core install; no dependency is vendored here.
@@ -15,7 +15,7 @@ import { chromium, firefox, webkit } from 'playwright';
 
 const require = createRequire(import.meta.url);
 const base = process.env.JOURNAL_BASE_URL || 'http://127.0.0.1:4173';
-const out = path.resolve(process.env.JOURNAL_REPORT_DIR || 'reports/g3-editorial/after');
+const out = path.resolve(process.env.JOURNAL_REPORT_DIR || 'reports/g3-editorial/agent-9/after');
 const browserNames = (process.env.JOURNAL_BROWSERS || 'chromium,firefox,webkit').split(',');
 const widths = [320, 360, 390, 430, 768, 1024, 1440, 1920];
 const routes = [

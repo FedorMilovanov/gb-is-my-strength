@@ -1,15 +1,26 @@
-# G3 / Journal — локальное редакционное предложение
+# Agent 9 / Агент 9 — G3 / Journal editorial proposal
 
 ## Граница работы
 
 - **Mode:** LANE.
-- **Owner:** локальная Arena-сессия на `arena/558cea0f-gb-is-my-strength`.
+- **Owner / идентификатор агента: Agent 9 (Агент 9).** Назначен владельцем репозитория в этой Arena-сессии.
+- **Собственная ветка:** `arena/558cea0f-gb-is-my-strength`; имя закреплено Arena, поэтому идентификатор записан в этом файле, сообщении коммита и названии Draft PR.
 - **Назначение:** переиспользуемая редакционная система Journal, документальное досье G3 и защищённая историческая рукопись; не изменение общесайтового reader/runtime.
 - **Branch base:** `9edef94ece08012223c1364bec7ddcd561cf5713`.
 - **Implementation / rollback anchor:** `b2ae614730b0c2e164d3b07453797074253d9698`, прочитанный HEAD Draft Product PR [#2338](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2338).
 - **Разрешённая поверхность:** `src/components/journal/**`, собственные проекции `src/data/journal/**`, один browser regression test и эта записка.
-- **Пересечение:** canonical PR #2338 принадлежит существующему lane. Это изолированный локальный proposal, не принятие владения его веткой. Никакого push, нового PR, изменения Research, merge или deploy.
+- **Пересечение / доставка:** canonical PR #2338 принадлежит существующему lane. Это изолированный вариант Agent 9 для сравнения и выборочной интеграции, не принятие владения его веткой. После локального snapshot владелец явно разрешил multi-agent comparison и push **только собственной ветки**. Один Draft proposal направляется в базовую ветку #2338, не напрямую в main. Merge, deploy, запись в чужие ветки и изменения Research не разрешены.
 - **Source of truth:** действующие route profiles и page ownership; существующие Journal/reader owners; неизменённые `g3PublicationHandoff.ts`, `g3SourceBibliography.ts`, `g3ProductMetadata.ts`; закреплённый Research-кандидат для неопубликованной истории.
+
+## Multi-agent checkpoint — 2026-11-18, Agent 9
+
+- **Текущий подэтап:** FAST — видимая идентификация владельца и уникальное имя собственного QA entrypoint; без изменения frontend/runtime.
+- **Rollback подэтапа:** `1b48452f5ec4e4a27adcee47f746c6db8ac56358` — проверенный локальный implementation checkpoint Agent 9.
+- **Прочитанный main:** `9edef94ece08012223c1364bec7ddcd561cf5713`; **canonical #2338:** `b2ae614730b0c2e164d3b07453797074253d9698`.
+- **Пересекающиеся варианты, read-only receipt около 19:29 UTC:** Agent 4 [#2339](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2339) `0b9576278d2ec5ea89da804934823d460720501a`; Agent 1 [#2340](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2340) `dceed04b4fa42bfff16891759b730118f933f645`; Agent 7 [#2341](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2341) `505ea4e0952e97b542378fef9e038fe0f15e0bc1`; Agent 5 [#2342](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2342) `054a8ab5e57a8f7fd00ea23926359f121df01368`.
+- **Решение по overlap:** это альтернативные пересекающиеся UI proposals, не автоматически совместимые независимые lanes. Agent 9 не закрывает/не переименовывает/не cherry-pick-ит чужие PR. До выбора владельца вариант остаётся Draft; machine collision gate не обходится, supersession не заявляется.
+- **Собственный QA entrypoint:** `scripts/journal-editorial-agent9-browser-test.mjs`. Переименован из локального `journal-editorial-browser-test.mjs`, потому что Agent 1 независимо добавил файл с тем же исходным именем. Новый default report path — `reports/g3-editorial/agent-9/after`; assertions не ослаблены.
+- **Checks подэтапа:** `git diff --check`, Node syntax check, сверка неизменности assertions и content hashes frontend относительно implementation `1b48452…`. Прежние build/browser receipts относятся к этому implementation SHA; новый exact-head CI не объявляется зелёным заранее.
 
 ## Что реализовано
 
@@ -61,7 +72,7 @@ npm run page-ownership:dist:production-like
 ```sh
 JOURNAL_BASE_URL=http://127.0.0.1:4173 \
 AXE_CORE_PATH=/path/to/installed/axe-core/axe.min.js \
-node scripts/journal-editorial-browser-test.mjs
+node scripts/journal-editorial-agent9-browser-test.mjs
 ```
 
 Тест по умолчанию запрашивает Chromium, Firefox и WebKit. Неустановленный браузер/axe означает незавершённую приёмку и ненулевой exit, а не skip-pass. Для явно ограниченного Chromium-прогона допустим `JOURNAL_BROWSERS=chromium`. Изолированный Chromium можно передать через `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` и JSON `PLAYWRIGHT_CHROMIUM_ARGS`.
@@ -80,13 +91,13 @@ node scripts/journal-editorial-browser-test.mjs
 - **Шаги:** прокрутка до `scrollY=1000` → открыть общий поиск из `.mcp-search` → Escape. Поиск открывается, выдача G3 и единственный dialog работают, блокировка прокрутки снимается, JS-ошибок нет. Но `scrollY` становится 0, панель скрывается и фокус остаётся на скрытой кнопке либо теряется на body после кадра.
 - **Evidence:** `reports/g3-editorial/final-runtime-audit.json` — два failed roundtrip; `search-baseline-source.json` и `search-baseline-reproduction.json` — изолированный рендер шести исходных Journal-файлов через `git show` exact baseline, те же симптомы. Удаление новой print-обёртки из DOM также не устраняет проблему. Shared `MobileChromePage`, `ReaderPreferencesHead`, `js/search.js` и общие CSS не изменены.
 - **Proposed lane:** отдельный owner-approved **SYSTEM / shared search + reader scroll/focus**. Конкретный root cause ещё не установлен; локальный обработчик Journal не подменяет этот owner.
-- **Recovery risk:** none; baseline fixture/логи находятся вне Product source, remote ничего не записано.
+- **Recovery risk:** none; baseline fixture/логи находятся вне Product source; диагностика не записывала ничего в shared owners или remote.
 
 Зелёная Journal matrix **не закрывает** этот дополнительный shared smoke. Общая приёмка остаётся частичной также из-за отсутствующих Firefox/WebKit и реальных safe-area/zoom-проверок. Полное соответствие WCAG или готовность к публикации не заявляется. Фактический референс концепции №2 не получен; 1:1-соответствие ему не заявляется.
 
 ## Перед интеграцией в #2338
 
-1. Получить explicit handoff владельца canonical lane; не перезаписывать его незавершённые изменения. Проверить новый exact HEAD и согласовать перенос локального delta, не создавать конкурирующий PR на каждую волну.
+1. Получить explicit handoff владельца canonical lane; не перезаписывать его незавершённые изменения. Проверить новый exact HEAD и согласовать перенос delta Agent 9 после `b2ae614…`. Сохранять один stacked Draft proposal для этого варианта, не создавать новый PR на каждую волну.
 2. Повторить проверки на интегрированном SHA. Firefox/WebKit в текущем sandbox не загрузились (`ECONNRESET`); их проверка, реальные safe areas и owner visual signoff остаются обязательным незакрытым приёмочным пунктом.
 3. Research отдельно получает архивные оригиналы ранних программ, точные session-title locators и human audio receipt интервью 18.01.2025, уточняет проведение/программы 2024 года и подписывает новый handoff. До этого защищённую историю не маршрутизировать.
-4. Только отдельное решение владельца разрешает push, публикацию, merge или deploy. Этот локальный proposal ничего из этого не выполняет.
+4. Push собственной ветки разрешён последующим явным указанием владельца. Это не разрешение на merge/deploy или публикацию исторической рукописи. Canonical #2338, main, чужие ветки и Research остаются read-only для Agent 9 без отдельного согласованного handoff.
