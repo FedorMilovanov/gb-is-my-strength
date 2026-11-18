@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { buildTransfer, verifyTransfer, TRANSFER_FILES } from './journal-editorial-transfer.mjs';
+import { buildTransfer, verifyTransfer, TRANSFER_FILES, GUARD_PATH, projectHistoryGuard } from './journal-editorial-transfer.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const base = 'b2ae614730b0c2e164d3b07453797074253d9698';
@@ -144,6 +144,57 @@ test('default mode still requires the held presentation bibliography', (t) => {
   const result = isolatedContract(t).run([]); assert.notEqual(result.status, 0);
   assert.match(result.stderr, /ERR_MODULE_NOT_FOUND/); assert.match(result.stderr, /g3HistoryBibliography/);
 });
+function legacyContract(t) {
+  const f = isolatedContract(t), name = 'src/data/journal/g3HistoryDraftMetadata.ts';
+  f.replace(name, 'candidateClaimIds:', 'approvalClaimIds:');
+  f.replace(name, "  handoffStatus: 'NOT_ISSUED',\n", '');
+  return { ...f, name };
+}
+test('legacy public-only still requires all nine held candidates', (t) => {
+  const f = legacyContract(t); f.replace(f.name, "'G3-HIST-PUB-09'", "'G3-HIST-PUB-10'");
+  const result = f.run(); assert.notEqual(result.status, 0); assert.match(result.stderr, /Legacy held candidates must remain/);
+});
+test('legacy public-only still requires HOLD', (t) => {
+  const f = legacyContract(t); f.replace(f.name, "publicationStatus: 'PUBLICATION_HOLD'", "publicationStatus: 'RELEASED'");
+  const result = f.run(); assert.notEqual(result.status, 0); assert.match(result.stderr, /PUBLICATION_HOLD/);
+});
+test('legacy public-only refuses an issued/mixed handoff field', (t) => {
+  const f = legacyContract(t); f.replace(f.name, 'approvalClaimIds:', "handoffStatus: 'ISSUED', approvalClaimIds:");
+  const result = f.run(); assert.notEqual(result.status, 0); assert.match(result.stderr, /Legacy held labels must not carry/);
+});
+test('modern public-only refuses ambiguous legacy and current arrays', (t) => {
+  const f = isolatedContract(t); f.replace('src/data/journal/g3HistoryDraftMetadata.ts', 'candidateClaimIds:', 'approvalClaimIds: [], candidateClaimIds:');
+  const result = f.run(); assert.notEqual(result.status, 0); assert.match(result.stderr, /Ambiguous history claim metadata/);
+});
+test('default mode does not silently normalize legacy metadata', (t) => {
+  const result = legacyContract(t).run([]); assert.notEqual(result.status, 0); assert.match(result.stderr, /Ambiguous history claim metadata/);
+});
+
+const proposedFeature = fs.readFileSync(path.join(root, GUARD_PATH), 'utf8');
+const baselineFeatureFixture = '---\n/**\n * unchanged held narrative\n */\nconst locator = "baseline";\n---\n<p>Unchanged historical prose.</p>\n';
+test('safety projection preserves every byte of baseline historical prose/imports', () => {
+  const p = projectHistoryGuard(baselineFeatureFixture, proposedFeature);
+  assert.equal(p.content.replace(`${p.guard}\n\n`, ''), baselineFeatureFixture);
+  assert.ok(!p.content.includes('historySourceHref'));
+});
+test('an already guarded baseline needs no second guard', () => {
+  const p = projectHistoryGuard(baselineFeatureFixture, proposedFeature);
+  assert.equal(projectHistoryGuard(p.content, proposedFeature), null);
+});
+test('a source without the known production guard cannot generate a prerequisite', () => {
+  assert.throws(() => projectHistoryGuard(baselineFeatureFixture, baselineFeatureFixture), /known fail-closed production guard/);
+});
+test('guarded verification admits only the separately pinned safety blob, not another owner', (t) => {
+  const f = fixture(t), before = 'baseline feature\n', after = 'guard\nbaseline feature\n', safetyPatch = 'fixture safety patch\n';
+  f.manifest.preserved.push({ path: GUARD_PATH, state: { mode: '100644', blob: blob(before) } });
+  f.manifest.prerequisite = { path: GUARD_PATH, before: { mode: '100644', blob: blob(before) }, after: { mode: '100644', blob: blob(after) }, patch: 'history-production-guard.patch', patchSha256: sha256(safetyPatch) };
+  fs.writeFileSync(path.join(f.kit, 'history-production-guard.patch'), safetyPatch); f.write(GUARD_PATH, before); f.save();
+  const verify = () => verifyTransfer({ manifestPath: f.manifestPath, target: f.target, phase: 'guarded' });
+  assert.throws(verify, /Pinned content mismatch/); f.write(GUARD_PATH, after);
+  assert.equal(verify().guardOnlyPrerequisitesApplied, 1);
+  f.manifest.prerequisite.path = f.protectedPath; f.save();
+  assert.throws(verify, /Only the direct history-feature guard/);
+});
 
 let exportSkip = false;
 try {
@@ -161,6 +212,9 @@ test('pinned Git-object export contains only the allowlist and refuses overwrite
   const manifest = JSON.parse(fs.readFileSync(path.join(out, 'transfer.json')));
   assert.ok(Number.isFinite(Date.parse(manifest.technicalBuildInstant)));
   assert.ok(fs.readFileSync(path.join(out, 'README.md'), 'utf8').includes(`GB_BUILD_INSTANT=${JSON.stringify(manifest.technicalBuildInstant)}`));
+  assert.equal(manifest.prerequisite.path, GUARD_PATH);
+  assert.ok(fs.readFileSync(path.join(out, manifest.prerequisite.patch), 'utf8').includes('+if (import.meta.env.PROD)'));
+  assert.ok(!fs.readFileSync(path.join(out, manifest.prerequisite.patch), 'utf8').includes('historySourceHref'));
   assert.ok(manifest.excludedChanges.includes('src/components/journal/G3HistoryArticle.astro'));
   assert.ok(manifest.excludedChanges.includes('data/scripture-search-index.json'));
   assert.throws(() => buildTransfer({ repo: root, base, source: head, out }), /overwrite an existing/);

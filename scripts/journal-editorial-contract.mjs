@@ -49,8 +49,20 @@ assert.equal(handoff.researchSealCommit, '298d00ddc4db46522c8ad904016e98a4426c9f
 assert.equal(sources.length, 21);
 assert.deepEqual(sources.map((entry) => entry.id).sort(), [...handoff.sourceIds].sort());
 assert.equal(draft.publicationStatus, 'PUBLICATION_HOLD');
-assert.equal(draft.handoffStatus, 'NOT_ISSUED');
-assert.deepEqual([...draft.candidateClaimIds], Array.from({ length: 9 }, (_, i) => `G3-HIST-PUB-${String(i + 1).padStart(2, '0')}`));
+const heldCandidates = Array.from({ length: 9 }, (_, i) => `G3-HIST-PUB-${String(i + 1).padStart(2, '0')}`);
+// Canonical b2ae predates the manuscript metadata rename. In public-only mode
+// read its legacy label as held candidate IDs, NEVER as publication authority.
+// Do not manufacture a NOT_ISSUED field where the baseline has no such field.
+const legacyHeldDraft = publicOnly && !Object.hasOwn(draft, 'candidateClaimIds');
+if (legacyHeldDraft) {
+  assert.ok(Array.isArray(draft.approvalClaimIds), 'Legacy held candidate array required');
+  assert.ok(!Object.hasOwn(draft, 'handoffStatus'), 'Legacy held labels must not carry an issued/mixed handoff state');
+  assert.deepEqual([...draft.approvalClaimIds], heldCandidates, 'Legacy held candidates must remain the exact nine IDs');
+} else {
+  assert.ok(!Object.hasOwn(draft, 'approvalClaimIds'), 'Ambiguous history claim metadata');
+  assert.equal(draft.handoffStatus, 'NOT_ISSUED');
+  assert.deepEqual([...draft.candidateClaimIds], heldCandidates);
+}
 if (!publicOnly) {
   const { G3_HISTORY_BIBLIOGRAPHY: historySources } = await import('../src/data/journal/g3HistoryBibliography.ts');
   assert.equal(new Set(historySources.map((entry) => entry.id)).size, historySources.length);
@@ -154,6 +166,7 @@ if (args.has('--probe-hold')) {
 console.log('Journal/G3 contract PASS: two public routes, 16 claims, 21 sources, nine held candidates; anchors, metadata and prepared cover projections.');
 console.log(`Reading text parity PASS: ${verifiedReadingParagraphs} literal dossier paragraphs preserve source word boundaries.`);
 console.log(`History fail-closed probe: ${productionProbe}`);
+if (legacyHeldDraft) console.log('History metadata: legacy held-candidate label preserved; no handoffStatus field or publication permission inferred.');
 console.log(publicOnly
   ? 'History presentation bibliography: NOT RUN (--public-only); all publication/HOLD checks remain mandatory.'
   : 'History presentation bibliography: PASS (default strict mode).');

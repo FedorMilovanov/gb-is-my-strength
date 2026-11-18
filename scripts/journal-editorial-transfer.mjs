@@ -24,6 +24,16 @@ export const TRANSFER_FILES = Object.freeze([
   'src/components/journal/journalEditorial.css',
   'src/data/journal/g3EditorialPresentation.ts',
 ]);
+export const GUARD_PATH = 'src/components/journal/G3HistoryFeature.astro';
+export function projectHistoryGuard(baseline, proposed) {
+  const guard = "if (import.meta.env.PROD) {\n  throw new Error('G3 history feature PUBLICATION_HOLD: signed history handoff required');\n}";
+  assert.ok(proposed.includes(guard), 'Source feature must contain the known fail-closed production guard');
+  if (/if\s*\(import\.meta\.env\.PROD\)\s*\{\s*throw new Error\([^;]*PUBLICATION_HOLD/s.test(baseline)) return null;
+  assert.ok(baseline.startsWith('---\n'), 'Expected canonical Astro frontmatter');
+  const content = baseline.replace(/^---\n/, `---\n${guard}\n\n`);
+  assert.equal(content.replace(`${guard}\n\n`, ''), baseline, 'Only the safety guard may be added, never history narrative');
+  return { content, guard };
+}
 const sharedOwners = ['css', 'js', 'fonts', 'icons', 'public', 'src/layouts', 'src/components/reader-platform', 'src/components/article-pilots/_shared', 'src/lib/asset-version.js'];
 const authorityOwners = [
   'package.json', 'package-lock.json', 'migration/page-ownership.json',
@@ -67,6 +77,15 @@ function validateManifest(manifest) {
       assert.match(state.blob || '', /^[a-f0-9]{40}$/);
     }
   }
+  if (manifest.prerequisite) {
+    const p = manifest.prerequisite;
+    assert.equal(p.path, GUARD_PATH, 'Only the direct history-feature guard may be a prerequisite');
+    assert.equal(p.patch, 'history-production-guard.patch');
+    assert.deepEqual(p.before, manifest.preserved.find((entry) => entry.path === GUARD_PATH)?.state, 'Prerequisite must start at the pinned baseline');
+    assert.ok(p.after && p.after.mode === p.before.mode && p.after.mode !== '120000');
+    assert.match(p.after.blob || '', /^[a-f0-9]{40}$/);
+    assert.match(p.patchSha256 || '', /^[a-f0-9]{64}$/);
+  }
 }
 
 export function buildTransfer({ repo = repoRoot, base, source, out }) {
@@ -101,27 +120,43 @@ export function buildTransfer({ repo = repoRoot, base, source, out }) {
   const excludedChanges = git(repo, ['diff', '--no-ext-diff', '--no-renames', '--name-only', '-z', base, source]).toString().split('\0').filter((name) => name && !TRANSFER_FILES.includes(name));
   const patch = git(repo, ['diff', '--no-ext-diff', '--no-textconv', '--binary', '--full-index', '--no-renames', base, source, '--', ...TRANSFER_FILES]);
   assert.ok(patch.length, 'No public transfer delta');
+  const baselineFeature = git(repo, ['show', `${base}:${GUARD_PATH}`]).toString();
+  const projection = projectHistoryGuard(baselineFeature, git(repo, ['show', `${source}:${GUARD_PATH}`]).toString());
+  let prerequisite = null, prerequisitePatch = null;
+  if (projection) {
+    const beforeState = state(before.get(GUARD_PATH));
+    const afterState = { mode: beforeState.mode, blob: objectId(Buffer.from(projection.content)) };
+    const context = baselineFeature.split('\n').slice(0, 3);
+    prerequisitePatch = Buffer.from([`diff --git a/${GUARD_PATH} b/${GUARD_PATH}`, `index ${beforeState.blob}..${afterState.blob} ${beforeState.mode}`, `--- a/${GUARD_PATH}`, `+++ b/${GUARD_PATH}`, '@@ -1,3 +1,7 @@', ` ${context[0]}`, ...projection.guard.split('\n').map((line) => `+${line}`), '+', ...context.slice(1).map((line) => ` ${line}`), ''].join('\n'));
+    prerequisite = { path: GUARD_PATH, before: beforeState, after: afterState, patch: 'history-production-guard.patch', patchSha256: sha256(prerequisitePatch), scope: 'Guard-only insertion into baseline; all historical prose/locators remain byte-for-byte baseline.' };
+  }
   const technicalBuildInstant = git(repo, ['show', '-s', '--format=%cI', source]).toString().trim();
-  const manifest = { version: 1, base, source, technicalBuildInstant, patch: 'public-editorial.patch', patchSha256: sha256(patch), files, preserved, excludedAdded, excludedChanges, scope: 'Public Journal/dossier presentation and tests ONLY; history, date-head, shared runtime/fonts/assets/package/registries remain baseline-owned.', publication: '16 approved claims / 21 sources; nine history gates HOLD / NOT_ISSUED. Not a publication approval.', appliedByGenerator: false };
+  const manifest = { version: 1, base, source, technicalBuildInstant, prerequisite, patch: 'public-editorial.patch', patchSha256: sha256(patch), files, preserved, excludedAdded, excludedChanges, scope: 'Public Journal/dossier presentation and tests ONLY; history narrative/data, date-head and shared owners remain baseline-owned; a separately pinned guard-only prerequisite is explicit.', publication: '16 approved claims / 21 sources; nine history gates HOLD / NOT_ISSUED. Not a publication approval.', appliedByGenerator: false };
   validateManifest(manifest);
-  const readme = `# Agent 1 — selective public Journal transfer\n\nBase: \`${base}\`\nSource: \`${source}\`\n\nThis is an optional extraction for the canonical owner, not a merge or an approved final design. The generator did NOT apply/build/commit/push anything. Exactly ${files.length} allowlisted files; all ${preserved.length} other baseline tracked files are pinned and checked by the read-only verifier. Excluded source-side changes are listed in transfer.json, including the held manuscript, its bibliography/metadata, generated index and documentation/tooling.\n\n## Verify before doing any integration\n\nUse the generator at the exact source commit:\n\n    node scripts/journal-editorial-transfer.mjs --verify /absolute/kit/transfer.json --target /absolute/fresh-base-export --phase base\n\nOnly the canonical owner chooses whether to apply the patch. For an isolated rehearsal, export the exact base into a NEW scratch directory (no branch/checkout change), then run git apply --check --whitespace=error and git apply there. IMPORTANT: when scratch is INSIDE another Git checkout, set GIT_CEILING_DIRECTORIES to its PARENT, clear ambient GIT_DIR/GIT_WORK_TREE/GIT_INDEX_FILE/GIT_COMMON_DIR, and first confirm git rev-parse --show-toplevel exits nonzero. Otherwise git may discover the outer checkout. Do not apply in the Agent 1 working tree. No --3way, reset, clean, force or automatic ref operations.\n\nAfter applying, run:\n\n    node scripts/journal-editorial-transfer.mjs --verify /absolute/kit/transfer.json --target /absolute/applied-export --phase applied\n\nThe verifier checks patch integrity, all transferred bytes/modes, every preserved tracked file and absence of excluded new files. It does not write target files. Run it BEFORE build generators modify derived files. It is an exact-state check, not an arbitrary newer-head compatibility claim.\n\n## Acceptance after application\n\nReuse the matching installed dependencies without modifying package files. Run the repository's canonical Scripture occurrence generator (four added Astro presentation files affect scannedSourceFiles), then its production-like build / asset-revision flow and relevant generated-output checks. Record that derived diff separately; the data file is deliberately NOT in this patch.\n\n    node scripts/journal-editorial-contract.mjs --public-only --probe-hold\n\nThis explicit mode omits ONLY the held manuscript's presentation-bibliography uniqueness check. All 16 public claims, 21 sources, nine history gates, production guards and no-history-route/discovery checks remain mandatory. Default mode remains strict and still requires the history bibliography.\n\nRun the existing browser witness against fresh HTTP output, with JOURNAL_HISTORY_URL unset, JOURNAL_BASE_URL, JOURNAL_BROWSER and JOURNAL_AXE_PATH set; provide the matching Chromium executable if needed. Capture 390/1440 light/dark, keyboard/source/return/reflow and public print. New integrated source has no inherited green status. Firefox/WebKit/device/UI-zoom/physical-print/Owner visual signoff need their own witnesses.\n\n## Boundaries\n\nJournalDocumentHead (including any future SEO safeguard) is never copied. Changed shared/date/publication owners make generation fail closed rather than overwrite a newer owner. No history implementation/data/route is copied. Shared Journal CSS can affect a future dev-only manuscript; this public-only kit does not accept or publish that surface. Series navigation contains a non-link pending-manuscript label, not a public history href. Native TOC must not be combined with another scrollspy owner. No runtime/font/SW/package/media claim or Research approval is included.\n`;
+  const readme = `# Agent 1 — selective public Journal transfer\n\nBase: \`${base}\`\nSource: \`${source}\`\n\nThis is an optional extraction for the canonical owner, not a merge or an approved final design. The generator did NOT apply/build/commit/push anything. Main patch: exactly ${files.length} allowlisted files. All ${preserved.length} other baseline files are pinned; the one possible guard-only safety prerequisite is separately declared and checked by phase guarded. Excluded source-side changes are listed in transfer.json, including the held manuscript, its bibliography/metadata, generated index and documentation/tooling.\n\n## Verify before doing any integration\n\nUse the generator at the exact source commit:\n\n    node scripts/journal-editorial-transfer.mjs --verify /absolute/kit/transfer.json --target /absolute/fresh-base-export --phase base\n\nOnly the canonical owner chooses whether to apply the patch. For an isolated rehearsal, export the exact base into a NEW scratch directory (no branch/checkout change), then run git apply --check --whitespace=error and git apply there. IMPORTANT: when scratch is INSIDE another Git checkout, set GIT_CEILING_DIRECTORIES to its PARENT, clear ambient GIT_DIR/GIT_WORK_TREE/GIT_INDEX_FILE/GIT_COMMON_DIR, and first confirm git rev-parse --show-toplevel exits nonzero. Otherwise git may discover the outer checkout. Do not apply in the Agent 1 working tree. No --3way, reset, clean, force or automatic ref operations.\n\nAfter applying, run:\n\n    node scripts/journal-editorial-transfer.mjs --verify /absolute/kit/transfer.json --target /absolute/applied-export --phase applied\n\nThe verifier checks patch integrity, all transferred bytes/modes, every preserved tracked file and absence of excluded new files. It does not write target files. Run it BEFORE build generators modify derived files. It is an exact-state check, not an arbitrary newer-head compatibility claim.\n\n## Acceptance after application\n\nReuse the matching installed dependencies without modifying package files. Run the repository's canonical Scripture occurrence generator (four added Astro presentation files affect scannedSourceFiles), then its production-like build / asset-revision flow and relevant generated-output checks. Record that derived diff separately; the data file is deliberately NOT in this patch.\n\n    node scripts/journal-editorial-contract.mjs --public-only --probe-hold\n\nThis explicit mode omits ONLY the held manuscript's presentation-bibliography uniqueness check. All 16 public claims, 21 sources, nine history gates, production guards and no-history-route/discovery checks remain mandatory. Default mode remains strict and still requires the history bibliography.\n\nRun the existing browser witness against fresh HTTP output, with JOURNAL_HISTORY_URL unset, JOURNAL_BASE_URL, JOURNAL_BROWSER and JOURNAL_AXE_PATH set; provide the matching Chromium executable if needed. Capture 390/1440 light/dark, keyboard/source/return/reflow and public print. New integrated source has no inherited green status. Firefox/WebKit/device/UI-zoom/physical-print/Owner visual signoff need their own witnesses.\n\n## Boundaries\n\nJournalDocumentHead (including any future SEO safeguard) is never copied. Changed shared/date/publication owners make generation fail closed rather than overwrite a newer owner. No history narrative/data/route is copied. A separately declared prerequisite may add ONLY the missing direct-render production guard. Shared Journal CSS can affect a future dev-only manuscript; this public-only kit does not accept or publish that surface. Series navigation contains a non-link pending-manuscript label, not a public history href. Native TOC must not be combined with another scrollspy owner. No runtime/font/SW/package/media claim or Research approval is included.\n`;
   const buildInstantHint = `\n## Gitless build timestamp\n\nThis scratch export deliberately has no Git repository. The existing metadata projector otherwise cannot obtain its deterministic technical build instant. Before the build, use the source commit timestamp recorded in transfer.json:\n\n    export GB_BUILD_INSTANT=${JSON.stringify(technicalBuildInstant)}\n\nThis is the existing supported build input, NOT an article publication/modification date. Do not substitute wall-clock time, edit route metadata or let the build discover the outer checkout. It is unnecessary to rerun a completed typecheck just to resume failed build/postbuild stages. Record each stage's actual exit status.\n`;
+  const prerequisiteHint = '\n## Required direct-render safety prerequisite\n\nAfter phase applied, if history-production-guard.patch exists, check/apply it in the SAME isolated export. This adds only the existing fail-closed guard to the canonical feature, not its history narrative, data or imports. Then verify with --phase guarded BEFORE generators/build. Do not omit this safety patch or weaken the public contract: canonical b2ae has an article guard but lacks the direct feature guard. When the base already has that guard, no prerequisite patch is emitted.\n';
+  const compatibilityHint = '\n## Held metadata compatibility\n\nCanonical b2ae uses the legacy approvalClaimIds label and has no handoffStatus field. Only public-only mode reads that exact nine-ID array as HELD CANDIDATES, never an approval. HOLD remains required; an issued/mixed handoff field or ambiguous old/new arrays fails. No NOT_ISSUED field is fabricated and no metadata is copied. Default mode still requires the modern schema and manuscript bibliography.\n';
   fs.mkdirSync(out, { recursive: true });
   fs.writeFileSync(path.join(out, manifest.patch), patch, { flag: 'wx' });
+  if (prerequisitePatch) fs.writeFileSync(path.join(out, prerequisite.patch), prerequisitePatch, { flag: 'wx' });
   fs.writeFileSync(path.join(out, 'transfer.json'), JSON.stringify(manifest, null, 2) + '\n', { flag: 'wx' });
-  fs.writeFileSync(path.join(out, 'README.md'), readme + buildInstantHint, { flag: 'wx' });
-  return { base, source, technicalBuildInstant, files: files.length, preserved: preserved.length, excludedChanges, out };
+  fs.writeFileSync(path.join(out, 'README.md'), readme + prerequisiteHint + compatibilityHint + buildInstantHint, { flag: 'wx' });
+  return { base, source, technicalBuildInstant, files: files.length, preserved: preserved.length, guardOnlyPrerequisite: Boolean(prerequisite), excludedChanges, out };
 }
 
 export function verifyTransfer({ manifestPath, target, phase }) {
-  assert.ok(['base', 'applied'].includes(phase), 'Set --phase base or applied');
+  assert.ok(['base', 'applied', 'guarded'].includes(phase), 'Set --phase base, applied or guarded');
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
   validateManifest(manifest);
   assert.equal(manifest.patch, 'public-editorial.patch', 'Unexpected patch path');
   const patch = fs.readFileSync(path.join(path.dirname(manifestPath), manifest.patch));
   assert.equal(sha256(patch), manifest.patchSha256, 'Transfer patch digest mismatch');
+  if (manifest.prerequisite) assert.equal(sha256(fs.readFileSync(path.join(path.dirname(manifestPath), manifest.prerequisite.patch))), manifest.prerequisite.patchSha256, 'Safety prerequisite patch digest mismatch');
   target = fs.realpathSync(target);
-  const records = [...manifest.files.map((entry) => ({ path: entry.path, state: phase === 'base' ? entry.before : entry.after })), ...manifest.preserved, ...manifest.excludedAdded];
+  const guarded = phase === 'guarded' && manifest.prerequisite;
+  const preserved = manifest.preserved.map((entry) => guarded && entry.path === GUARD_PATH ? { path: entry.path, state: guarded.after } : entry);
+  const records = [...manifest.files.map((entry) => ({ path: entry.path, state: phase === 'base' ? entry.before : entry.after })), ...preserved, ...manifest.excludedAdded];
   for (const { path: name, state } of records) {
     const file = path.join(target, name);
     let stat;
@@ -134,12 +169,12 @@ export function verifyTransfer({ manifestPath, target, phase }) {
     assert.equal(objectId(bytes), state.blob, `Pinned content mismatch: ${name}`);
     if (state.mode !== '120000') assert.equal(Boolean(stat.mode & 0o111), state.mode === '100755', `Executable mode mismatch: ${name}`);
   }
-  return { phase, base: manifest.base, source: manifest.source, checked: records.length, transferred: manifest.files.length, preserved: manifest.preserved.length, excludedNewFilesAbsent: manifest.excludedAdded.length, patchSha256: manifest.patchSha256, writes: 0 };
+  return { phase, base: manifest.base, source: manifest.source, checked: records.length, transferred: manifest.files.length, preserved: manifest.preserved.length - (guarded ? 1 : 0), guardOnlyPrerequisitesApplied: guarded ? 1 : 0, excludedNewFilesAbsent: manifest.excludedAdded.length, patchSha256: manifest.patchSha256, writes: 0 };
 }
 
 function main(argv) {
   if (argv.length === 1 && argv[0] === '--help') {
-    console.log('Generate: --base SHA40 --source SHA40 --out NEW_IGNORED_DIR\nRead-only verify: --verify transfer.json --target DIRECTORY --phase base|applied');
+    console.log('Generate: --base SHA40 --source SHA40 --out NEW_IGNORED_DIR\nRead-only verify: --verify transfer.json --target DIRECTORY --phase base|applied|guarded');
     return;
   }
   const options = {};
