@@ -126,15 +126,35 @@ async function sourceNavigation(page, target, entry) {
   }, target.source, { timeout: 5000 });
   const facts = await source.evaluate((node) => {
     const box = node.getBoundingClientRect();
-    const bar = document.querySelector('.mcp-bar');
-    return { hash: location.hash, open: node.closest('details').open, top: box.top, height: box.height, viewport: innerHeight, barBottom: bar?.getBoundingClientRect().bottom || 0 };
+    const bar = document.querySelector('.mobile-chrome.is-shown .mcp-top');
+    const barBox = bar?.getBoundingClientRect();
+    const barBottom = barBox?.height > 0 && getComputedStyle(bar).visibility === 'visible' ? Math.max(0, barBox.bottom) : 0;
+    return { hash: location.hash, open: node.closest('details').open, top: box.top, height: box.height, viewport: innerHeight, barBottom, focused: document.activeElement === node };
   });
   check(entry, 'anchors:closed-source-opens-natively', facts.open && facts.hash === `#${target.source}`, facts);
-  check(entry, 'anchors:source-in-view', facts.top >= -1 && facts.top < facts.viewport - 40, facts);
+  check(entry, 'anchors:source-in-view', facts.top >= facts.barBottom - 1 && facts.top < facts.viewport - 40, facts);
+  check(entry, 'anchors:source-fragment-receives-focus', facts.focused, facts);
+  await page.keyboard.press('Tab');
+  const sourceTab = await source.evaluate((node) => ({ withinSource: node.contains(document.activeElement), tag: document.activeElement.tagName, href: document.activeElement.getAttribute('href') }));
+  check(entry, 'anchors:Tab-continues-within-source', sourceTab.withinSource, sourceTab);
   const back = source.locator('.biblio-return');
   const href = await back.getAttribute('href');
   await back.click();
   check(entry, 'anchors:return-to-section', await page.evaluate((hash) => location.hash === hash, href));
+  const returnTarget = page.locator(href);
+  const returned = await returnTarget.evaluate((node) => {
+    const top = node.getBoundingClientRect().top;
+    const bar = document.querySelector('.mobile-chrome.is-shown .mcp-top');
+    const box = bar?.getBoundingClientRect();
+    const barBottom = box?.height > 0 && getComputedStyle(bar).visibility === 'visible' ? Math.max(0, box.bottom) : 0;
+    return { top, barBottom, viewport: innerHeight };
+  });
+  check(entry, 'anchors:return-section-not-obscured', returned.top >= returned.barBottom - 1 && returned.top < returned.viewport - 40, returned);
+  // A native section fragment need not become activeElement. Its next Tab must
+  // nevertheless resume reading there, not jump back to the TOC/masthead.
+  await page.keyboard.press('Tab');
+  const returnTab = await returnTarget.evaluate((node) => ({ withinSection: node.contains(document.activeElement), tag: document.activeElement.tagName, href: document.activeElement.getAttribute('href') }));
+  check(entry, 'anchors:Tab-resumes-in-return-section', returnTab.withinSection, returnTab);
 }
 async function syntheticSafeAreas(page, context, target, entry) {
   if (engine !== 'chromium') {
