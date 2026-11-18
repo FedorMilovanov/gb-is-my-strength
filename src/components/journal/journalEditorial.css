@@ -35,7 +35,7 @@ html.dark .journal-edition {
 .journal-edition :is(code, .biblio-links, .source-note-paragraph) { overflow-wrap: anywhere; }
 .journal-edition :is(.journal-dossier-shell, .journal-landing) { width: 100%; max-width: 1280px; margin-inline: auto; padding-inline: 40px; }
 .journal-edition .dossier { padding-block: 30px 72px; }
-.journal-edition :is(.module, .bibliography-item, .je-history-chapter, .je-history-year) { scroll-margin-block-start: 32px; }
+.journal-edition :is(.module, .bibliography-item, .je-history-chapter, .je-history-year, [data-journal-citation]) { scroll-margin-block-start: 32px; }
 .journal-edition :is(.module, .bibliography-item, .je-history-chapter, .je-history-year):focus { outline: none; }
 
 /* A wide, two-part opening; the cover is not pushed below a screen of title. */
@@ -128,7 +128,9 @@ html.dark .journal-edition {
 .journal-edition .biblio-details p { margin: 6px 0; }
 .journal-edition .biblio-links { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; margin: 7px 0 0; }
 .journal-edition .biblio-links a { display: inline-block; padding-block: 8px; color: var(--je-gold); }
-.journal-edition .je-source-return { display: inline-block; padding-block: 8px; color: var(--je-gold); font: 12px/1.5 var(--je-ui); }
+.journal-edition .je-source-return { display: inline-block; max-width: 100%; padding-block: 8px; color: var(--je-gold); font: 12px/1.5 var(--je-ui); }
+/* The native destination stays visible on both legs of a source round trip. */
+.journal-edition :is([data-journal-citation], .bibliography-item):target { outline: 2px solid var(--je-gold); outline-offset: 4px; }
 .journal-edition .dossier-footer { margin: 48px 0 0; padding: 25px 0 0; border-top: 2px solid var(--je-gold); background: none; border-radius: 0; box-shadow: none; color: var(--je-muted); font: 14px/1.7 var(--je-ui); }
 .journal-edition .dossier-footer p { margin: 6px 0; }
 .journal-edition .dossier-footer a { color: var(--je-gold); }
@@ -177,13 +179,16 @@ html.dark .journal-edition {
   .journal-edition .je-article-heading h1 { max-width: 20ch; font-size: clamp(40px, 6.2vw, 59px); }
   .journal-edition .je-article-cover { width: 100%; }
   .journal-edition .journal-feature-grid { grid-template-columns: minmax(0, 1fr); gap: 0; max-width: 740px; }
-  .journal-edition .je-editorial-rail { grid-column: 1; grid-row: 1; top: calc(52px + env(safe-area-inset-top, 0px)); z-index: 20; margin: 0 0 8px; border-bottom: 1px solid var(--je-rule); }
+  .journal-edition .je-editorial-rail { grid-column: 1; grid-row: 1; position: static; top: calc(52px + env(safe-area-inset-top, 0px)); z-index: 20; margin: 0 0 8px; border-bottom: 1px solid var(--je-rule); }
+  /* Without scripts the disclosure stays open: keep it in flow, not over the
+     reader's source links. Sticky is safe only after the TOC adapter is bound. */
+  .journal-edition .je-editorial-rail:has([data-journal-contents-bound]) { position: sticky; }
   .journal-edition .journal-story-column { grid-row: 2; }
   .journal-edition .je-contents summary { min-height: 50px; padding: 12px 0; }
   .journal-edition .je-contents nav { max-height: 50svh; overflow-y: auto; overscroll-behavior: contain; padding: 0 5px 0 0; }
   .journal-edition .je-contents a { min-height: 44px; padding-block: 12px; }
   .journal-edition .je-rail-note { display: none; }
-  .journal-edition :is(.module, .bibliography-item, .je-history-chapter, .je-history-year) { scroll-margin-block-start: calc(128px + env(safe-area-inset-top, 0px)); }
+  .journal-edition :is(.module, .bibliography-item, .je-history-chapter, .je-history-year, [data-journal-citation]) { scroll-margin-block-start: calc(128px + env(safe-area-inset-top, 0px)); }
   .journal-edition .journal-hero { gap: 20px 35px; }
   .journal-edition .journal-lead { font-size: 18px; }
   .journal-edition .lead-card { gap: 30px; }
@@ -217,7 +222,7 @@ html.dark .journal-edition {
   .journal-edition .je-data-value { font-size: 24px; }
   .journal-edition .bibliography-item { padding-left: 31px; }
   .journal-edition .bibliography-item h3 { font-size: 19px; }
-  .journal-edition .biblio-details summary, .journal-edition .biblio-links a { min-height: 44px; padding-block: 12px; }
+  .journal-edition .biblio-details summary, .journal-edition .biblio-links a, .journal-edition .je-source-return { min-height: 44px; padding-block: 12px; }
   .journal-edition .je-next-story a { font-size: 25px; }
   .journal-edition .je-review-note { padding: 13px 15px; font-size: 12px; }
   .journal-edition .journal-landing { padding-block: 28px 40px; }
@@ -241,7 +246,8 @@ html.dark .journal-edition {
 }
 @media print {
   .journal-edition, html.dark .journal-edition { --je-paper: #fff; --je-paper-raised: #fff; --je-ink: #111; --je-muted: #333; --je-gold: #333; --je-rule: #aaa; background: #fff; color: #111; }
-  .journal-edition :is(.je-masthead, .je-editorial-rail, .skip-link) { display: none; }
+  .journal-edition :is(.je-masthead, .je-editorial-rail, .skip-link, .je-source-return) { display: none; }
+  .journal-edition :is([data-journal-citation], .bibliography-item):target { outline: none; }
   /* A held manuscript must remain visibly unpublished on paper as well. */
   .journal-edition .je-review-note { break-inside: avoid; }
   .journal-edition :is(.journal-feature-grid, .je-article-header) { display: block; }

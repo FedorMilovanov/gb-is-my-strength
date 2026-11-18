@@ -3,6 +3,7 @@ import JournalEditorialShell from './JournalEditorialShell.astro';
 import JournalEditorialRail from './JournalEditorialRail.astro';
 import JournalArticleHeader from './JournalArticleHeader.astro';
 import JournalContents from './JournalContents.astro';
+import JournalSourceReturn from './JournalSourceReturn.astro';
 import G3HistoryFeature from './G3HistoryFeature.astro';
 import { G3_EDITORIAL_MEDIA } from '@/data/journal/g3EditorialMedia';
 import { G3_HISTORY_DRAFT_METADATA as draft } from '@/data/journal/g3HistoryDraftMetadata';
@@ -32,7 +33,7 @@ const contents = [
 ---
 <JournalEditorialShell kind="dossier" backHref="/journal/">
 <main class="dossier journal-dossier-shell je-history-article" id="main-content" tabindex="-1"
-      data-g3-article="history" data-research-publication-status={draft.publicationStatus}>
+      data-journal-source-navigation data-g3-article="history" data-research-publication-status={draft.publicationStatus}>
   <aside class="je-review-note" aria-label="Статус локального просмотра">
     <strong>Не опубликовано · рукопись.</strong> Историческая статья проходит самостоятельную
     исследовательскую приёмку. Публикационный допуск не выдан; даты публикации не назначены.
@@ -75,7 +76,7 @@ const contents = [
             их содержание задним числом. Но и известное имя докладчика само по себе
             не подтверждает правоту каждого решения организации. Для такой оценки
             нужны слова конкретного человека, определённая дата и отдельное доказательство.</p>
-          <p class="source-note-paragraph"><a href={cite('gnl-2017')}>Записи конференций</a> · <a href={cite('statement-2018')}>Текст заявления 2018 года</a> · <a href={cite('challies')}>Взгляд участника</a></p>
+          <p class="source-note-paragraph"><a id="cite-g3-meaning-gnl-2017" data-journal-citation href={cite('gnl-2017')}>Записи конференций</a> · <a id="cite-g3-meaning-statement-2018" data-journal-citation href={cite('statement-2018')}>Текст заявления 2018 года</a> · <a id="cite-g3-meaning-challies" data-journal-citation href={cite('challies')}>Взгляд участника</a></p>
         </div>
       </section>
       <section id="g3-evidence" class="module" tabindex="-1" aria-labelledby="g3-evidence-title">
@@ -94,7 +95,7 @@ const contents = [
             состав участников или точный ряд посещаемости. Поэтому здесь нет
             ни таких подсчётов, ни реконструкции чужих мотивов.</p>
           <p>Для точного содержания спорной проповеди нужен оригинальный звук или видео,
-            а не автоматически полученная расшифровка. <a href={cite('buice-transcript-2025')}>Интервью Бьюса 2025 года</a>{' '}
+            а не автоматически полученная расшифровка. <a id="cite-g3-evidence-buice-transcript-2025" data-journal-citation href={cite('buice-transcript-2025')}>Интервью Бьюса 2025 года</a>{' '}
             в этой редакционной волне не прослушано: текстовая копия не использована
             для точной датировки переезда или пересказа слов основателя.
             Иллюстрация в начале статьи — не фотография события.</p>
@@ -115,7 +116,7 @@ const contents = [
             <p class="biblio-meta">{source.period} · {source.role}</p>
             <h3><a href={source.url} rel="noopener">{source.title}</a></h3>
             <p>{source.boundary}</p>
-            <a class="je-source-return" href={source.returnHref}>Вернуться к месту в статье ↑</a>
+            <JournalSourceReturn href={source.returnHref} />
           </li>)}
         </ol>
         <details class="research-disclosure">

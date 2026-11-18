@@ -4,6 +4,7 @@ import JournalEditorialRail from './JournalEditorialRail.astro';
 import JournalArticleHeader from './JournalArticleHeader.astro';
 import JournalContents from './JournalContents.astro';
 import JournalDataFigure from './JournalDataFigure.astro';
+import JournalSourceReturn from './JournalSourceReturn.astro';
 import { G3_EDITORIAL_MEDIA } from '@/data/journal/g3EditorialMedia';
 import { G3_PRODUCT_METADATA } from '@/data/journal/g3ProductMetadata';
 import {
@@ -70,7 +71,7 @@ const sourceRoles: Record<string, string> = {
 };
 ---
 <JournalEditorialShell kind="dossier" backHref="/journal/">
-<main class="dossier journal-dossier-shell" id="main-content" tabindex="-1" data-journal-dossier="g3" data-research-seal={G3_PUBLICATION_HANDOFF.researchSealCommit}>
+<main class="dossier journal-dossier-shell" id="main-content" tabindex="-1" data-journal-source-navigation data-journal-dossier="g3" data-research-seal={G3_PUBLICATION_HANDOFF.researchSealCommit}>
   <JournalArticleHeader
     title={G3_PRODUCT_METADATA.title}
     label="Документальное досье" series="G3 Ministries" period="2025–2026"
@@ -135,27 +136,27 @@ const sourceRoles: Record<string, string> = {
     <ol class="timeline">
       <li>
         <time datetime="2019-06-06">6 июня 2019</time>
-        <div><h3>Юридическое оформление</h3><p>G3 Ministries for the Church, Inc. зарегистрирована в штате Джорджия как некоммерческая корпорация.</p><a class="claim-ref" href="#src-G3-S001" data-publication-claims="G3-PUB-001">Реестр штата Джорджия</a></div>
+        <div><h3>Юридическое оформление</h3><p>G3 Ministries for the Church, Inc. зарегистрирована в штате Джорджия как некоммерческая корпорация.</p><a id="cite-timeline-G3-S001" data-journal-citation class="claim-ref" href="#src-G3-S001" data-publication-claims="G3-PUB-001">Реестр штата Джорджия</a></div>
       </li>
       <li>
         <time datetime="2025-05-08">8–12 мая 2025</time>
-        <div><h3>Кризис Джоша Бьюса</h3><p>По заявлению G3, отставка Buice с поста президента была принята 8 мая; 12 мая организация публично рассказала об анонимных интернет-аккаунтах руководителя, разговоре с ним, признании и отставке. Конференция 2025 года была отменена.</p><a class="claim-ref" href="#src-G3-S008" data-publication-claims="G3-PUB-005 G3-PUB-006">Заявление G3, 12 мая 2025 года</a></div>
+        <div><h3>Кризис Джоша Бьюса</h3><p>По заявлению G3, отставка Buice с поста президента была принята 8 мая; 12 мая организация публично рассказала об анонимных интернет-аккаунтах руководителя, разговоре с ним, признании и отставке. Конференция 2025 года была отменена.</p><a id="cite-timeline-G3-S008" data-journal-citation class="claim-ref" href="#src-G3-S008" data-publication-claims="G3-PUB-005 G3-PUB-006">Заявление G3, 12 мая 2025 года</a></div>
       </li>
       <li>
         <time datetime="2025-07-09">9 июля 2025</time>
-        <div><h3>Скотт Аниол становится президентом</h3><p>Согласно официальному объявлению G3, Скотт Аниол вступил в должность 9 июля 2025 года.</p><a class="claim-ref" href="#src-G3-S010" data-publication-claims="G3-PUB-006">Объявление о назначении</a></div>
+        <div><h3>Скотт Аниол становится президентом</h3><p>Согласно официальному объявлению G3, Скотт Аниол вступил в должность 9 июля 2025 года.</p><a id="cite-timeline-G3-S010" data-journal-citation class="claim-ref" href="#src-G3-S010" data-publication-claims="G3-PUB-006">Объявление о назначении</a></div>
       </li>
       <li>
         <time datetime="2026-07-21">21 июля 2026</time>
-        <div><h3>Подтверждённый архивом состав совета</h3><p>Архивный снимок официальной страницы «Who We Are» перечисляет Buck Braswell, Matt Broome, Jon Norton, Matt Sikes, Dylan Joyner и Ron Mooney как членов совета директоров.</p><a class="claim-ref" href="#src-G3-S096" data-publication-claims="G3-PUB-008">Архив официальной страницы</a></div>
+        <div><h3>Подтверждённый архивом состав совета</h3><p>Архивный снимок официальной страницы «Who We Are» перечисляет Buck Braswell, Matt Broome, Jon Norton, Matt Sikes, Dylan Joyner и Ron Mooney как членов совета директоров.</p><a id="cite-timeline-G3-S096" data-journal-citation class="claim-ref" href="#src-G3-S096" data-publication-claims="G3-PUB-008">Архив официальной страницы</a></div>
       </li>
       <li>
         <time datetime="2026-08">август 2026</time>
-        <div><h3>Новый конфликт и признание процессуальных ошибок</h3><p>В сохранившемся заявлении четыре пастора признали ошибки: вмешательство во внутреннее дисциплинарное дело другой церкви, суждения без полного понимания обстоятельств и анонимную рассылку материалов третьим лицам.</p><a class="claim-ref" href="#src-G3-S015" data-publication-claims="G3-PUB-011">Сохранившееся заявление пасторов</a></div>
+        <div><h3>Новый конфликт и признание процессуальных ошибок</h3><p>В сохранившемся заявлении четыре пастора признали ошибки: вмешательство во внутреннее дисциплинарное дело другой церкви, суждения без полного понимания обстоятельств и анонимную рассылку материалов третьим лицам.</p><a id="cite-timeline-G3-S015" data-journal-citation class="claim-ref" href="#src-G3-S015" data-publication-claims="G3-PUB-011">Сохранившееся заявление пасторов</a></div>
       </li>
       <li>
         <time datetime="2026-09">сентябрь 2026</time>
-        <div><h3>Объявление о завершении работы</h3><p>G3 объявила о завершении церковной сети и более широкой деятельности. Регистрация на конференцию 27–29 мая 2027 года сообщала об отмене мероприятия и возврате взносов.</p><a class="claim-ref" href="#src-G3-S011" data-publication-claims="G3-PUB-012">Сообщения о завершении и отмене</a></div>
+        <div><h3>Объявление о завершении работы</h3><p>G3 объявила о завершении церковной сети и более широкой деятельности. Регистрация на конференцию 27–29 мая 2027 года сообщала об отмене мероприятия и возврате взносов.</p><a id="cite-timeline-G3-S011" data-journal-citation class="claim-ref" href="#src-G3-S011" data-publication-claims="G3-PUB-012">Сообщения о завершении и отмене</a></div>
       </li>
     </ol>
   </section>
@@ -192,12 +193,12 @@ const sourceRoles: Record<string, string> = {
         упоминания, но сама по себе не позволяет сделать вывод о незаконной выплате
         или определить личность родителя только по фамилии.
       </p>
-      <p class="source-note-paragraph" data-publication-claims="G3-PUB-002 G3-PUB-003 G3-PUB-004"><a class="source-note" href="#src-G3-S002">Налоговые формы IRS, финансовые годы 2022–2025</a></p>
+      <p class="source-note-paragraph" data-publication-claims="G3-PUB-002 G3-PUB-003 G3-PUB-004"><a id="cite-finance-G3-S002" data-journal-citation class="source-note" href="#src-G3-S002">Налоговые формы IRS, финансовые годы 2022–2025</a></p>
     </div>
     <JournalDataFigure title="Рост расходов до кризисов руководства" unit="Изменение FY2022 → FY2023 · доллары США" rows={financeDeltas}>
       Два крупнейших увеличения сопоставлены с общим изменением расходов, а не сложены в его состав.
       Это данные поданной декларации, не заключение внешнего аудитора.{' '}
-      <a href="#src-G3-S002">Источник: IRS Form 990, часть IX</a>.
+      <a id="cite-finance-G3-S002-2" data-journal-citation href="#src-G3-S002">Источник: IRS Form 990, часть IX</a>.
     </JournalDataFigure>
   </section>
 
@@ -221,7 +222,7 @@ const sourceRoles: Record<string, string> = {
         Мы не переносим автоматически этот состав на конец августа, когда происходили
         события кризиса: необходимые документы за этот промежуток пока не получены.
       </p>
-      <p class="source-note-paragraph" data-publication-claims="G3-PUB-008 G3-PUB-009 G3-PUB-016"><a class="source-note" href="#src-G3-S096">Архивная страница совета, 21 июля 2026 года</a></p>
+      <p class="source-note-paragraph" data-publication-claims="G3-PUB-008 G3-PUB-009 G3-PUB-016"><a id="cite-governance-G3-S096" data-journal-citation class="source-note" href="#src-G3-S096">Архивная страница совета, 21 июля 2026 года</a></p>
     </div>
   </section>
 
@@ -247,7 +248,7 @@ const sourceRoles: Record<string, string> = {
         Следовательно, корректнее говорить о <strong>попытке продолжить и перестроить служение</strong>,
         а не утверждать, что реформа обязательно оказалась успешной.
       </p>
-      <p class="source-note-paragraph" data-publication-claims="G3-PUB-005 G3-PUB-006 G3-PUB-007"><a class="source-note" href="#src-G3-S008">Официальные заявления G3 и даты назначений</a></p>
+      <p class="source-note-paragraph" data-publication-claims="G3-PUB-005 G3-PUB-006 G3-PUB-007"><a id="cite-buice-G3-S008" data-journal-citation class="source-note" href="#src-G3-S008">Официальные заявления G3 и даты назначений</a></p>
     </div>
   </section>
 
@@ -285,7 +286,7 @@ const sourceRoles: Record<string, string> = {
         оригинальную запись проповеди, установить издание использованного комментария
         и проверить контекст ссылки на автора.
       </p>
-      <p class="source-note-paragraph" data-publication-claims="G3-PUB-010 G3-PUB-011 G3-PUB-016"><a class="source-note" href="#src-G3-S012">Разбор Фила Джонсона; заявление четырёх пасторов — в библиографии</a></p>
+      <p class="source-note-paragraph" data-publication-claims="G3-PUB-010 G3-PUB-011 G3-PUB-016"><a id="cite-buck-G3-S012" data-journal-citation class="source-note" href="#src-G3-S012">Разбор Фила Джонсона; заявление четырёх пасторов — в библиографии</a></p>
     </div>
   </section>
 
@@ -421,6 +422,7 @@ const sourceRoles: Record<string, string> = {
                 <a href={G3_SOURCE_LEDGER_URL} rel="noopener">Исследовательская запись ({entry.id})</a>
               </p>
             </details>
+            <JournalSourceReturn href="#documents" label="К методике проверки" />
           </li>
         ))}
       </ol>

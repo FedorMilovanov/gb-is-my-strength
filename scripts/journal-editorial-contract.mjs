@@ -126,12 +126,29 @@ if (!process.argv.includes('--source-only')) {
     assert.equal(new Set(fontHints.map((node) => attr(node, 'href'))).size, 4, 'no duplicate font hints');
     for (const hint of fontHints) assert.ok(fs.existsSync(path.join(root, attr(hint, 'href'))), 'font hints must reuse existing local files');
     assert.ok(!html.includes('localhost') && !html.includes('127.0.0.1'), 'browser-facing URLs must not point to the sandbox loopback');
+    const sourceAdapters = nodes.filter((node) => node.tagName === 'script' && text(node).includes('journalSourceNavigationBound'));
+    assert.equal(sourceAdapters.length, type === 'Article' ? 1 : 0, 'Astro must deduplicate the bounded adapter, not emit one script per source');
     if (type === 'Article') {
       assert.ok(nodes.some((node) => hasClass(node, 'article-header')));
       assert.ok(nodes.some((node) => hasClass(node, 'author-card')));
       assert.equal(nodes.filter((node) => hasClass(node, 'je-contents')).length, 1);
       assert.equal(nodes.filter((node) => hasClass(node, 'bibliography-item')).length, 21);
-      for (const source of sources) assert.ok(byId(doc, `src-${source.id}`));
+      for (const source of sources) {
+        const entry = byId(doc, `src-${source.id}`);
+        assert.ok(entry);
+        const returns = all(entry, (node) => node.tagName === 'a' && attr(node, 'data-journal-source-return') !== undefined);
+        assert.equal(returns.length, 1, `one honest SSR return at ${source.id}`);
+        assert.equal(attr(returns[0], 'href'), '#documents');
+        assert.notEqual(attr(returns[0], 'data-pagefind-ignore'), undefined, 'navigation-only fallback text must not pollute search');
+        assert.match(text(returns[0]), /К методике проверки/);
+      }
+      assert.equal(nodes.filter((node) => attr(node, 'data-journal-source-navigation') !== undefined).length, 1);
+      const citations = nodes.filter((node) => node.tagName === 'a' && attr(node, 'href')?.startsWith('#src-'));
+      assert.ok(citations.length > 0);
+      for (const citation of citations) {
+        assert.ok(attr(citation, 'id')?.startsWith('cite-'), 'citations need stable, SSR-owned fragment IDs');
+        assert.notEqual(attr(citation, 'data-journal-citation'), undefined, 'every existing source citation must be enhanced, not a parallel map');
+      }
     }
     built.push({ route, schema: type, bytes: Buffer.byteLength(html), canonical: data.canonical });
   }
@@ -147,7 +164,8 @@ const report = { baseline, head: execFileSync('git', ['rev-parse', 'HEAD'], { cw
   dossierSourceSha256: digest(current), factualParagraphsUnchanged: paragraphCount, proseHashes,
   approvedClaims: claimIds.length, approvedSourceObjects: sources.length, historyDraftSourceLinks: historySources.length,
   publicationHoldRetained: true, built };
-const output = path.join(root, 'reports/g3-editorial-local-20261118/contract.json');
+const outputDirectory = process.argv.find((arg) => arg.startsWith('--output='))?.slice('--output='.length) || 'reports/g3-editorial-local-20261118';
+const output = path.resolve(root, outputDirectory, 'contract.json');
 fs.mkdirSync(path.dirname(output), { recursive: true });
 fs.writeFileSync(output, JSON.stringify(report, null, 2) + '\n');
 console.log(`PASS: ${paragraphCount} factual paragraphs unchanged; 16 approved claims / 21 sources; history HOLD; ${built.length} built SEO/DOM surfaces.`);

@@ -1,0 +1,36 @@
+---
+/** Native fallback first; enhancement remembers only this source's last citation. */
+interface Props {
+  href: `#${string}`;
+  label?: string;
+}
+const { href, label = 'К связанному разделу статьи' } = Astro.props;
+---
+<a class="je-source-return" data-journal-source-return data-pagefind-ignore href={href}>
+  <span data-journal-source-return-label>{label}</span>
+</a>
+<script>
+  // One bounded adapter per article. Native fragments retain URL, scrolling,
+  // focus and browser history; no router, persistence or global click owner.
+  document.querySelectorAll<HTMLElement>('[data-journal-source-navigation]').forEach((article) => {
+    if (article.dataset.journalSourceNavigationBound) return;
+    article.dataset.journalSourceNavigationBound = 'true';
+    article.addEventListener('click', (event) => {
+      if (event.defaultPrevented || event.button !== 0 || event.ctrlKey ||
+          event.metaKey || event.shiftKey || event.altKey || !(event.target instanceof Element)) return;
+      const citation = event.target.closest<HTMLAnchorElement>('a[data-journal-citation][id]');
+      if (!citation || !article.contains(citation) || citation.origin !== location.origin ||
+          citation.pathname !== location.pathname || citation.search !== location.search) return;
+      let id: string;
+      try { id = decodeURIComponent(citation.hash.slice(1)); } catch { return; }
+      const source = document.getElementById(id);
+      if (!source || !article.contains(source) || !source.matches('.bibliography-item')) return;
+      const back = source.querySelector<HTMLAnchorElement>('[data-journal-source-return]');
+      const label = back?.querySelector<HTMLElement>('[data-journal-source-return-label]');
+      if (!back || !label) return;
+      back.setAttribute('href', `#${citation.id}`);
+      label.textContent = 'К месту чтения';
+      back.setAttribute('aria-label', `К месту чтения: ${citation.textContent?.replace(/\s+/gu, ' ').trim()}`);
+    });
+  });
+</script>
