@@ -101,6 +101,12 @@ function documentAudit() {
     robots: [...document.querySelectorAll('meta[name="robots"]')].map((node) => node.content),
     historyLinks: [...document.querySelectorAll('a[href^="/journal/dossiers/g3/history/"]')].length,
     mobileChromeOwners: document.querySelectorAll('#mobileChromePage').length,
+    mastheadControls: [...document.querySelectorAll('.je-masthead button')].map((node) => {
+      const rect = node.getBoundingClientRect();
+      const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+      return { id: node.id, name: node.getAttribute('aria-label'), pressed: node.getAttribute('aria-pressed'), width: rect.width, height: rect.height, visible: !node.hidden && rect.left >= 0 && rect.right <= innerWidth && rect.top >= 0 && (hit === node || node.contains(hit)) };
+    }),
+    mastheadClipped: [...document.querySelectorAll('.je-masthead__name,.je-masthead__publication,.je-masthead__series')].filter((node) => node.scrollWidth > node.clientWidth + 1).map((node) => node.className),
     scriptUrls: [...document.querySelectorAll('script[src]')].map((node) => node.src),
     finance: document.querySelector('#finance > .prose > p')?.textContent.replace(/\s+/g, ' ').trim(),
   };
@@ -147,6 +153,86 @@ async function anchorAudit(page, selector) {
   return observations;
 }
 
+async function mastheadServiceAudit(browser, browserName, route, width) {
+  const context = await browser.newContext({ viewport: { width, height: 844 }, locale: 'ru-RU', colorScheme: 'light', reducedMotion: 'reduce' });
+  const page = await context.newPage(), errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  const key = `${browserName}/${route.name}/${width}/masthead-services`;
+  const observe = () => page.evaluate(() => {
+    window.__journalThemeEvents = [];
+    document.addEventListener('gb:reader-preferences-change', (event) => window.__journalThemeEvents.push(event.detail));
+  });
+  const state = () => page.evaluate(() => ({
+    root: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+    preference: window.GBReaderPreferences.get().theme,
+    persisted: JSON.parse(localStorage.getItem('gb:reader-preferences:v1')).theme,
+    legacy: localStorage.getItem('theme'),
+    pressed: document.getElementById('themeToggle').getAttribute('aria-pressed'),
+    events: window.__journalThemeEvents || [],
+  }));
+  const searchState = () => page.evaluate(() => ({
+    dialogs: document.querySelectorAll('.cp-backdrop').length,
+    runtimeScripts: [...document.scripts].filter((script) => script.src && new URL(script.src).pathname === '/js/search.js').length,
+    focused: document.activeElement.id || document.activeElement.className,
+    locked: document.documentElement.classList.contains('cp-scroll-lock'),
+    scrollY,
+  }));
+  try {
+    // Do not seed storage on every navigation: that would invalidate persistence tests.
+    await page.goto(base + route.route, { waitUntil: 'networkidle' });
+    await observe();
+    const initial = await state();
+    check(initial.root === 'light' && initial.pressed === 'false', `${key}: initial shared state`);
+    await page.locator('#themeToggle').focus();
+    await page.keyboard.press('Space');
+    const space = await state();
+    check(space.root === 'dark' && space.preference === 'dark' && space.persisted === 'dark' && space.legacy === 'dark' && space.pressed === 'true', `${key}: Space updates canonical state/persistence ${JSON.stringify(space)}`);
+    check(space.events.length === 1 && space.events[0].source === 'journal-masthead', `${key}: exactly one theme mutation per activation ${JSON.stringify(space.events)}`);
+    await page.reload({ waitUntil: 'networkidle' });
+    const reloaded = await state();
+    check(reloaded.root === 'dark' && reloaded.preference === 'dark' && reloaded.pressed === 'true', `${key}: reload persistence`);
+    await observe();
+    await page.locator('#themeToggle').focus();
+    await page.keyboard.press('Enter');
+    const enter = await state();
+    check(enter.root === 'light' && enter.persisted === 'light' && enter.pressed === 'false' && enter.events.length === 1, `${key}: Enter activates once ${JSON.stringify(enter)}`);
+    await page.evaluate(() => window.GBReaderPreferences.setTheme('dark', { source: 'qa-external-owner' }));
+    const external = await state();
+    check(external.root === 'dark' && external.pressed === 'true' && external.events.length === 2, `${key}: subscribe reflects external canonical owner`);
+    const other = await context.newPage();
+    await other.goto(base + (route.name === 'journal' ? '/journal/dossiers/g3/' : '/journal/'), { waitUntil: 'networkidle' });
+    check(await other.locator('#themeToggle').getAttribute('aria-pressed') === 'true', `${key}: persisted across Journal routes`);
+    await other.locator('#themeToggle').click();
+    await page.waitForFunction(() => !document.documentElement.classList.contains('dark') && document.getElementById('themeToggle').getAttribute('aria-pressed') === 'false');
+    const crossTab = await state();
+    check(crossTab.preference === 'light' && crossTab.persisted === 'light' && crossTab.events.filter((event) => event.source === 'journal-masthead').length === 1, `${key}: cross-tab sync without a competing theme owner`);
+    await other.close();
+
+    const cold = await searchState();
+    check(cold.runtimeScripts === 0 && cold.dialogs === 0, `${key}: search remains lazy before use`);
+    const searches = [];
+    for (let cycle = 0; cycle < 2; cycle++) {
+      await page.locator('#gbSearchBtn').focus();
+      await page.keyboard.press(cycle ? 'Space' : 'Enter');
+      await page.locator('.cp-backdrop.is-open .cp-input').waitFor({ state: 'visible' });
+      await page.locator('.cp-input').fill('G3');
+      await page.waitForFunction(() => document.querySelector('.cp-list')?.textContent.includes('G3'));
+      const opened = await searchState();
+      check(opened.dialogs === 1 && opened.runtimeScripts === 1 && opened.focused === 'cp-input', `${key}: cold/warm single search runtime ${JSON.stringify(opened)}`);
+      if (!cycle) await page.screenshot({ path: path.join(out, `${browserName}-${route.name}-${width}-search.png`) });
+      await page.keyboard.press('Escape');
+      await page.locator('.cp-backdrop.is-open').waitFor({ state: 'hidden' });
+      await settle(page);
+      const closed = await searchState();
+      check(closed.focused === 'gbSearchBtn' && !closed.locked && closed.scrollY === 0, `${key}: visible masthead opener focus/scroll restored ${JSON.stringify(closed)}`);
+      searches.push({ cycle, opened, closed });
+    }
+    check(errors.length === 0, `${key}: JavaScript errors ${JSON.stringify(errors)}`);
+    report.interactions.push({ browser: browserName, route: route.name, width, type: 'masthead-services', initial, space, reloaded, enter, external, crossTab, cold, searches, errors });
+  } catch (error) { report.failures.push(`${key}: ${error.stack || error}`); }
+  finally { await context.close(); }
+}
+
 for (const browserName of browserNames) {
   let browser;
   try {
@@ -176,6 +262,9 @@ for (const browserName of browserNames) {
         check(audit.theme === theme, `${key}: preference theme not applied`);
         check(audit.historyLinks === 0 && audit.mobileChromeOwners === 1, `${key}: publication / chrome owner boundary`);
         check(new Set(audit.scriptUrls).size === audit.scriptUrls.length, `${key}: duplicate script URL`);
+        check(audit.mastheadControls.length === 2 && audit.mastheadControls.every((control) => control.visible && control.name && control.width >= 44 && control.height >= 44), `${key}: visible, named 44px masthead controls ${JSON.stringify(audit.mastheadControls)}`);
+        check(audit.mastheadControls.find((control) => control.id === 'themeToggle')?.pressed === String(theme === 'dark'), `${key}: shared theme state reflected in control`);
+        check(audit.mastheadClipped.length === 0, `${key}: masthead text clipping ${audit.mastheadClipped}`);
         if (route.canonical) {
           check(audit.canonical.length === 1 && audit.canonical[0] === route.canonical, `${key}: canonical`);
           check(audit.descriptions === 1 && audit.ogImages.length === 1, `${key}: single description and OG image`);
@@ -250,15 +339,19 @@ for (const browserName of browserNames) {
       report.interactions.push({ browser: browserName, route: route.name, width, skip, keys, landscape: { overflow: landscape.documentOverflow, clipped: landscape.clipped }, enlarged: { overflow: enlarged.documentOverflow, clipped: enlarged.clipped }, print });
       await context.close();
     }
+    for (const route of routes) for (const width of [390,1440]) await mastheadServiceAudit(browser, browserName, route, width);
+
     const nojs = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
     const page = await nojs.newPage();
     await page.goto(base + '/journal/dossiers/g3/');
+    const nojsControlsHidden = await page.locator('.je-masthead button').evaluateAll((nodes) => nodes.length === 2 && nodes.every((node) => node.hidden && !node.getClientRects().length));
+    check(nojsControlsHidden, `${browserName}: no nonfunctional masthead controls without JavaScript`);
     await page.locator('.je-article-toc a[href="#finance"]').click();
     const contentsHash = new URL(page.url()).hash;
     check(contentsHash === '#finance', `${browserName}: native no-JS contents`);
     await page.locator('a[href="#src-G3-S002"]').first().click();
     check(await page.locator('#src-G3-S002').isVisible(), `${browserName}: no-JS source visibility`);
-    report.interactions.push({ browser: browserName, type: 'javascript-disabled', contents: contentsHash, sourceVisible: await page.locator('#src-G3-S002').isVisible() });
+    report.interactions.push({ browser: browserName, type: 'javascript-disabled', contents: contentsHash, sourceVisible: await page.locator('#src-G3-S002').isVisible(), nojsControlsHidden });
     const withheldPaths = ['/journal/dossiers/g3/history/'];
     if (!process.env.JOURNAL_HISTORY_PATH) withheldPaths.push('/__local/g3-history/');
     for (const withheld of withheldPaths) {

@@ -22,6 +22,17 @@
 - **Собственный QA entrypoint:** `scripts/journal-editorial-agent9-browser-test.mjs`. Переименован из локального `journal-editorial-browser-test.mjs`, потому что Agent 1 независимо добавил файл с тем же исходным именем. Новый default report path — `reports/g3-editorial/agent-9/after`; assertions не ослаблены.
 - **Checks подэтапа:** `git diff --check`, Node syntax check, сверка неизменности assertions и content hashes frontend относительно implementation `1b48452…`. Прежние build/browser receipts относятся к этому implementation SHA; новый exact-head CI не объявляется зелёным заранее.
 
+## Волна F — доступность masthead controls (Agent 9)
+
+- **Mode / owner:** LANE / Agent 9, тот же изолированный Draft [#2343](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2343).
+- **Rollback:** `fd1080e83d671744ff11807019d699517563af9a`; main и canonical #2338 остаются на указанных выше anchors.
+- **CONFIRMED-CURRENT:** на rollback SHA при 320/390/1440 px отсутствуют visible top-of-page theme/search triggers (`#themeToggle=0`, `#gbSearchBtn=0`, mobile search скрыт), хотя canonical preferences API и search bootstrap уже mounted. Evidence: ignored `reports/g3-editorial/agent-9/wave-f/control-baseline.json` и before screenshots.
+- **Bounded root cause / repair:** Journal masthead не предоставляет consumers уже существующих services. Разрешены `JournalMasthead.astro`, собственный browser test, эта записка и canonical-generated `data/scripture-search-index.json` (только устаревший `stats.scannedSourceFiles`, без изменения references/occurrences).
+- **Ownership:** тема обращается только к `GBReaderPreferences.get/setTheme/subscribe`; без отдельного storage/class/theme owner. Поиск — только declarative trigger действующего `GBSearchBootstrap`, без второго click/keydown handler или search loader. Shared CSS/JS, MobileChromePage, metadata, route/Research owners не меняются. Неподдерживаемые до lazy load shortcuts не рекламируются.
+- **Overlap:** Agent 7 и Agent 5 независимо предлагают свои theme/search consumers. Ветка Agent 9 остаётся альтернативой; чужой код не импортируется, текущие Draft heads проверены read-only перед mutation.
+- **Checks:** before/after, 8 widths × обе темы, focus/hit targets, one-event theme activation + persistence + cross-tab sync, cold/warm single search runtime + keyboard close, no-JS progressive fallback, axe, syntax/type/build, native/ownership, canonical cache-bust и Scripture generator check. Shared mobile search defect остаётся отдельным открытым пунктом.
+- **Локальная итерация до commit:** Chromium 153, 48 matrix + 14 interaction cases, 0 failures; cache-bust, CSS layers (с inherited coverage warnings), syntax/diff и Scripture check PASS. Canonical generator изменил только `scannedSourceFiles: 545 → 547`; 1372 references / 3511 occurrences / 103 routes побайтно сохранены. Это не exact-head build receipt; финальные проверки выполняются после commit.
+
 ## Что реализовано
 
 1. `JournalArticleHeader.astro`: общая широкая шапка с двумя вариантами композиции, существующими AVIF/WebP, byline и слотами метаданных. SEO остаётся у `JournalDocumentHead.astro`; даты досье берутся из существующего metadata owner.
