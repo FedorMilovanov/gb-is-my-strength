@@ -48,13 +48,17 @@ const { active = 'journal' } = Astro.props;
     .je-masthead__publication { font-size: 19px; }
     .je-masthead__descriptor, .je-masthead__home { display: none; }
     .je-masthead__nav {
-      padding: 0 20px;
+      padding: 0 calc(20px + env(safe-area-inset-right, 0px)) 0 calc(20px + env(safe-area-inset-left, 0px));
       overflow-x: auto;
       gap: 22px;
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
+      overscroll-behavior-x: contain;
+      -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent);
+      mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent);
     }
     .je-masthead__nav::-webkit-scrollbar { display: none; }
+    .je-masthead__nav::after { content: ''; flex: none; width: 1px; }
     .je-masthead__nav a { min-height: 44px; font-size: 11px; }
   }
   @media (max-width: 400px) {
