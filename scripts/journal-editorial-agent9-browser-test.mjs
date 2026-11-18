@@ -3,15 +3,18 @@
  * Agent 9 — read-only Journal visual/accessibility contract. No server, route or publication owner.
  * Start a production-like server separately; set JOURNAL_BASE_URL to its origin.
  * JOURNAL_HISTORY_PATH is opt-in and MUST refer to a disposable, noindex DEV adapter.
- * AXE_CORE_PATH may point to an isolated axe-core install; no dependency is vendored here.
- * Browser/axe unavailability is recorded as incomplete acceptance, never as a pass.
+ * AXE_CORE_PATH and JOURNAL_PLAYWRIGHT_MODULE may point to separately installed tools.
+ * Chromium defaults to minimal sandbox args, never the full Chromium.args bundle.
+ * CDP safe-area cases are synthetic Chromium evidence, not physical-device/browser-zoom proof.
+ * Browser/axe/protocol unavailability is recorded as incomplete acceptance, never as a pass.
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
-import { chromium, firefox, webkit } from 'playwright';
+const playwrightModule = process.env.JOURNAL_PLAYWRIGHT_MODULE || 'playwright';
+const { chromium, firefox, webkit } = await import(playwrightModule);
 
 const require = createRequire(import.meta.url);
 const base = process.env.JOURNAL_BASE_URL || 'http://127.0.0.1:4173';
@@ -31,8 +34,8 @@ const report = {
   createdAt: new Date().toISOString(),
   head: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
   dirty: Boolean(execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim()),
-  base, widths, themes: ['light', 'dark'],
-  sourceHashes: {}, browsers: [], cases: [], interactions: [], failures: [], unavailable: [],
+  base, widths, themes: ['light', 'dark'], tooling: { playwrightModule },
+  sourceHashes: {}, browsers: [], cases: [], interactions: [], safeAreas: [], safeAreaCapabilities: [], failures: [], unavailable: [],
 };
 for (const dir of ['src/components/journal', 'src/data/journal']) {
   for (const name of (await fs.readdir(dir)).sort()) {
@@ -112,19 +115,24 @@ function documentAudit() {
   };
 }
 
-async function keyboardNavigationAudit(page, selector) {
+async function keyboardNavigationAudit(page, selector, reverse = false) {
   const count = await page.locator(selector).count();
   if (!count) return [];
   await page.keyboard.press('Tab');
-  await page.locator(selector).first().focus();
+  await (reverse ? page.locator(selector).last() : page.locator(selector).first()).focus();
   const keys = [];
   for (let i = 0; i < count; i++) {
-    if (i) await page.keyboard.press('Tab');
+    if (i) await page.keyboard.press(reverse ? 'Shift+Tab' : 'Tab');
     await settle(page);
     keys.push(await page.evaluate(() => {
       const node = document.activeElement, rect = node.getBoundingClientRect(), style = getComputedStyle(node);
       const port = node.closest('[data-journal-scroll-nav]');
-      const bounds = port?.scrollWidth > port?.clientWidth ? port.getBoundingClientRect() : { left: 0, right: innerWidth };
+      const bounds = { left: 0, right: innerWidth };
+      if (port?.scrollWidth > port?.clientWidth) {
+        const box = port.getBoundingClientRect(), padding = getComputedStyle(port);
+        bounds.left = box.left + (Number.parseFloat(padding.scrollPaddingLeft) || 0);
+        bounds.right = box.right - (Number.parseFloat(padding.scrollPaddingRight) || 0);
+      }
       const hit = document.elementFromPoint(Math.max(1, Math.min(innerWidth - 1, rect.x + rect.width / 2)), Math.max(1, Math.min(innerHeight - 1, rect.y + rect.height / 2)));
       return { href: node.getAttribute('href'), left: rect.left, right: rect.right, portLeft: bounds.left, portRight: bounds.right, visible: rect.left >= bounds.left && rect.right <= bounds.right + 1 && rect.top >= 0 && rect.bottom <= innerHeight + 1 && (node === hit || node.contains(hit)), outline: style.outlineStyle };
     }));
@@ -233,16 +241,92 @@ async function mastheadServiceAudit(browser, browserName, route, width) {
   finally { await context.close(); }
 }
 
+async function safeAreaAudits(browser, browserName) {
+  if (browserName !== 'chromium') {
+    report.safeAreaCapabilities.push({ browser: browserName, state: 'not-run', reason: 'This supplementary adapter uses Chromium CDP, not a cross-engine safe-area simulation.' });
+    return;
+  }
+  const profiles = [
+    { name: 'portrait-320', width: 320, height: 844, insets: { top: 24, left: 44, right: 44, bottom: 34 } },
+    { name: 'portrait-360', width: 360, height: 844, insets: { top: 24, left: 44, right: 44, bottom: 34 } },
+    { name: 'portrait-390', width: 390, height: 844, insets: { top: 24, left: 44, right: 44, bottom: 34 } },
+    { name: 'portrait-430', width: 430, height: 844, insets: { top: 24, left: 44, right: 44, bottom: 34 } },
+    { name: 'asymmetric-right-430', width: 430, height: 844, insets: { top: 59, left: 0, right: 44, bottom: 34 } },
+    { name: 'asymmetric-left-430', width: 430, height: 844, insets: { top: 59, left: 44, right: 0, bottom: 34 } },
+    { name: 'landscape-740', width: 740, height: 390, insets: { top: 0, left: 44, right: 44, bottom: 21 } },
+    { name: 'landscape-844', width: 844, height: 390, insets: { top: 0, left: 44, right: 44, bottom: 21 } },
+  ];
+  for (const route of routes) for (const profile of profiles) for (const theme of ['light','dark']) {
+    const key = `${browserName}/${route.name}/${profile.name}/${theme}/safe-area`;
+    const context = await browser.newContext({ viewport: { width: profile.width, height: profile.height }, locale: 'ru-RU', colorScheme: theme, reducedMotion: 'reduce' });
+    try {
+      const { page, errors } = await open(context, route.route, theme);
+      const cdp = await context.newCDPSession(page);
+      try { await cdp.send('Emulation.setSafeAreaInsetsOverride', { insets: profile.insets }); }
+      catch (error) { report.unavailable.push({ tool: 'Chromium CDP safe-area', reason: error.message }); return; }
+      await settle(page);
+      const geometry = await page.evaluate(() => {
+        // Read actual env() values; do not substitute a custom CSS gutter variable.
+        const probe = document.createElement('div');
+        probe.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)';
+        document.documentElement.append(probe);
+        const ps = getComputedStyle(probe);
+        const env = { top: parseFloat(ps.paddingTop), right: parseFloat(ps.paddingRight), bottom: parseFloat(ps.paddingBottom), left: parseFloat(ps.paddingLeft) };
+        probe.remove();
+        const contentEdges = (selector) => {
+          const node = document.querySelector(selector), rect = node.getBoundingClientRect(), style = getComputedStyle(node);
+          return { left: rect.left + parseFloat(style.paddingLeft), right: rect.right - parseFloat(style.paddingRight) };
+        };
+        return { env, main: contentEdges('main'), footer: contentEdges('.journal-footer,.dossier-footer'), overflow: document.documentElement.scrollWidth - innerWidth, controls: [...document.querySelectorAll('.je-masthead button')].map((node) => { const r = node.getBoundingClientRect(); return { id: node.id, left: r.left, right: r.right, width: r.width, height: r.height }; }) };
+      });
+      check(Object.entries(profile.insets).every(([edge, value]) => geometry.env[edge] === value), `${key}: CDP insets did not reach CSS env ${JSON.stringify(geometry.env)}`);
+      check(geometry.overflow <= 1 && geometry.main.left >= profile.insets.left && geometry.main.right <= profile.width - profile.insets.right + 1, `${key}: safe main gutters ${JSON.stringify(geometry)}`);
+      check(Math.abs(geometry.main.left - geometry.footer.left) <= 1 && Math.abs(geometry.main.right - geometry.footer.right) <= 1, `${key}: footer/content alignment`);
+      check(geometry.controls.length === 2 && geometry.controls.every((control) => control.left >= profile.insets.left && control.right <= profile.width - profile.insets.right + 1 && control.width >= 44 && control.height >= 44), `${key}: safe 44px controls`);
+      const forward = await keyboardNavigationAudit(page, '.je-masthead__nav a');
+      const reverse = await keyboardNavigationAudit(page, '.je-masthead__nav a', true);
+      const isSafe = (item) => item.visible && item.outline !== 'none' && item.left >= profile.insets.left && item.right <= profile.width - profile.insets.right + 1;
+      check(forward.length === 4 && reverse.length === 4 && [...forward,...reverse].every(isSafe), `${key}: safe masthead forward/reverse focus ${JSON.stringify({ forward, reverse })}`);
+      let negativeControl;
+      if (route.name === 'dossier' && profile.name === 'portrait-390' && theme === 'light') {
+        // Reintroduce the old computed scroll-padding without changing source.
+        await page.locator('.je-masthead__nav').evaluate((node) => { node.style.scrollPaddingInline = '0px'; node.scrollLeft = 0; });
+        const keys = await keyboardNavigationAudit(page, '.je-masthead__nav a');
+        negativeControl = { temporaryStyle: 'scroll-padding-inline: 0px', keys, unsafeFocusDetected: keys.some((item) => !isSafe(item)) };
+        check(negativeControl.unsafeFocusDetected, `${key}: negative control did not detect the pre-fix defect`);
+        await page.locator('.je-masthead__nav').evaluate((node) => { node.style.removeProperty('scroll-padding-inline'); node.scrollLeft = 0; });
+      }
+      if (profile.name === 'portrait-390' || profile.name === 'landscape-844') {
+        await page.locator('.je-masthead__nav').evaluate((node) => { node.scrollLeft = 0; });
+        await page.locator('.je-masthead__nav a').first().focus();
+        await page.keyboard.press('Tab'); await page.keyboard.press('Tab'); await settle(page);
+        await page.screenshot({ path: path.join(out, `${browserName}-${route.name}-${profile.name}-${theme}-safe-focus.png`) });
+      }
+      const tocKeys = await keyboardNavigationAudit(page, '.je-article-toc a');
+      check(tocKeys.every(isSafe), `${key}: safe TOC focus ${JSON.stringify(tocKeys.filter((item) => !isSafe(item)))}`);
+      const anchors = await anchorAudit(page, '.je-article-toc a');
+      check(anchors.every((item) => item.visible), `${key}: safe-area anchor obstruction ${JSON.stringify(anchors.filter((item) => !item.visible))}`);
+      check(Object.values(errors).flat().length === 0, `${key}: browser errors ${JSON.stringify(errors)}`);
+      report.safeAreas.push({ key, profile, geometry, forward, reverse, tocKeys, anchors, negativeControl, errors });
+    } catch (error) { report.failures.push(`${key}: ${error.stack || error}`); }
+    finally { await context.close(); }
+  }
+  report.safeAreaCapabilities.push({ browser: browserName, state: 'executed', method: 'Emulation.setSafeAreaInsetsOverride + computed CSS env; no physical-device claim' });
+}
+
 for (const browserName of browserNames) {
   let browser;
   try {
     const engine = { chromium, firefox, webkit }[browserName];
     if (!engine) throw new Error(`Unknown browser ${browserName}`);
     const options = { headless: true };
-    if (browserName === 'chromium' && process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH) options.executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
-    if (browserName === 'chromium' && process.env.PLAYWRIGHT_CHROMIUM_ARGS) options.args = JSON.parse(process.env.PLAYWRIGHT_CHROMIUM_ARGS);
+    if (browserName === 'chromium') {
+      if (process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH) options.executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
+      options.args = process.env.PLAYWRIGHT_CHROMIUM_ARGS ? JSON.parse(process.env.PLAYWRIGHT_CHROMIUM_ARGS) : ['--no-sandbox', '--disable-dev-shm-usage'];
+      if (!Array.isArray(options.args) || options.args.some((arg) => typeof arg !== 'string' || /^--(?:disable-web-security|allow-running-insecure-content)(?:=|$)/.test(arg))) throw new Error('Unsafe or invalid Chromium args; web security must remain enabled');
+    }
     browser = await engine.launch(options);
-    report.browsers.push({ name: browserName, version: await browser.version() });
+    report.browsers.push({ name: browserName, version: await browser.version(), launchOptions: options });
   } catch (error) {
     report.unavailable.push({ tool: browserName, reason: error.message });
     continue;
@@ -340,6 +424,7 @@ for (const browserName of browserNames) {
       await context.close();
     }
     for (const route of routes) for (const width of [390,1440]) await mastheadServiceAudit(browser, browserName, route, width);
+    await safeAreaAudits(browser, browserName);
 
     const nojs = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
     const page = await nojs.newPage();
@@ -363,6 +448,6 @@ for (const browserName of browserNames) {
   } finally { await browser.close(); }
 }
 await fs.writeFile(path.join(out, 'acceptance.json'), JSON.stringify(report, null, 2));
-console.log(`Journal: ${report.cases.length} matrix cases, ${report.interactions.length} interaction cases, ${report.failures.length} failures, ${report.unavailable.length} unavailable tools.`);
+console.log(`Journal: ${report.cases.length} matrix cases, ${report.interactions.length} interaction cases, ${report.safeAreas.length} synthetic safe-area cases, ${report.failures.length} failures, ${report.unavailable.length} unavailable tools.`);
 for (const failure of report.failures) console.error(failure);
 if (report.failures.length || report.unavailable.length) process.exitCode = 1;

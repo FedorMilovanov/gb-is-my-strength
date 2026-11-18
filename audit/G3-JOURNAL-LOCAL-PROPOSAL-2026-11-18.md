@@ -33,6 +33,19 @@
 - **Checks:** before/after, 8 widths × обе темы, focus/hit targets, one-event theme activation + persistence + cross-tab sync, cold/warm single search runtime + keyboard close, no-JS progressive fallback, axe, syntax/type/build, native/ownership, canonical cache-bust и Scripture generator check. Shared mobile search defect остаётся отдельным открытым пунктом.
 - **Локальная итерация до commit:** Chromium 153, 48 matrix + 14 interaction cases, 0 failures; cache-bust, CSS layers (с inherited coverage warnings), syntax/diff и Scripture check PASS. Canonical generator изменил только `scannedSourceFiles: 545 → 547`; 1372 references / 3511 occurrences / 103 routes побайтно сохранены. Это не exact-head build receipt; финальные проверки выполняются после commit.
 
+## Волна G — safe-area keyboard focus (Agent 9)
+
+- **Mode / owner / PR:** LANE / Agent 9 / тот же Draft #2343; rollback `f8b11de2b53123315dc7c162449bdb1d044e9edb`. Прочитанные main `9edef94…`, canonical #2338 `b2ae614…` и Research #582 `93d6f08…` не сдвинулись.
+- **Browser capability:** по указанию владельца установлены отдельно в `/tmp/arena-browser` `@sparticuz/chromium@153.0.0` и `playwright@1.64.1`; Chromium 153.0.8010.0 распакован через `executablePath()`. `al2023.tar.br` распакован в отдельные `/tmp` libs; `LD_LIBRARY_PATH` дополнен с сохранением прежнего значения. Только `--no-sandbox`, `--disable-dev-shm-usage`, без `Chromium.args`, NSS patches, LD_PRELOAD или resource substitutions. Smoke подтвердил DEV/dist HTTP 200 и отсутствие JS errors/overflow. На этой конфигурации CDP safe-area override доступен; прежняя недоступность не переносится на новый запуск.
+- **G3-JOURNAL-A9-SAFE-FOCUS-01 — CONFIRMED-CURRENT:** на rollback SHA, CDP insets left/right 44px, widths 320/360/390/430, третий masthead link при Tab доходит до правой границы viewport, нарушая safe content edge на ~44px. Evidence: ignored `reports/g3-editorial/agent-9/wave-g/safe-area-keyboard-before.json`.
+- **Bounded root cause / repair:** мобильное меню задаёт physical padding, но computed scroll-padding остаётся `auto`; существующий единственный Journal focus owner использует именно scroll-padding. Разрешены `JournalMasthead.astro` (CSS scroll-padding), `JournalEditorialShell.astro` (только outward rounding в существующем focus owner), собственный browser test и эта записка. Не вводить второй handler, shared/runtime repair или новый layout owner.
+- **Итерация / дополнение scope до изменения shell:** CSS устранил материальный выход на ~44px, но strict reverse-Tab проверка нашла остаток 0.015625–0.078125 CSS px из-за округления Chromium `scrollLeft`. Evidence: `wave-g/iteration-safe-only/acceptance.json`, 30 выполненных cases, 24 failed strict left-edge checks; gutters/controls/anchors прошли. Test tolerance не увеличивается: существующий owner округляет corrective delta наружу через `Math.ceil`, без второго handler или нового владельца состояния.
+- **Checks:** negative control без scroll-padding; forward/reverse Tab в реальном CDP safe-area override, symmetric/asymmetric portrait и landscape, обе темы, main/footer gutters и 44px controls; обычная матрица 8 widths / anchors / axe / theme/search / no-JS; production-like build, cache-bust и применимые native/ownership gates на final SHA. Это синтетическое browser evidence, не physical iOS, не настоящий browser zoom и не WebKit/Firefox.
+- **Закрытая гипотеза:** возможное расхождение main/footer gutters — FALSE-POSITIVE на текущем SHA: 18 browser samples / 3 surfaces показывают совпадение, включая desktop 1440/1920. CSS футера не меняется.
+- **Локальная проверка до commit:** после outward rounding первоначальные 30 safe-area cases прошли без ошибок. Расширенная матрица: 48 cases / 3 surfaces × обе темы × 8 профилей (symmetric 320/360/390/430; left/right asymmetric 430; landscape 740/844) — 0 failures; main/footer, controls, TOC и anchors без регрессий. Negative control с временным inline `scroll-padding-inline: 0px` обнаруживает исходный дефект. Это working-tree evidence; final exact-head checks и disposition читаются из ignored `reports/g3-editorial/agent-9/wave-g/final-receipt.json`, не выводятся из старого SHA.
+- **Overlap receipt, 20:21 UTC:** Agent 4 #2339 `9a7fccd…`, Agent 7 #2341 `01e464b…`; #2344 `163ec32…` теперь не Draft. Agent 1 #2340 и Agent 5 #2342 на прежних heads. В canonical discussion появился отдельный metadata proposal Agent 6 #2345; в текущую safe-focus волну он не включён. UI/test варианты по-прежнему альтернативны; код чужих веток не импортируется, package/workflow изменения #2344 не переносятся.
+- **STOP_DISCOVERY:** причина safe-focus ограничена; blanket redesign и поиск несвязанных дефектов прекращены для этой волны. Shared mobile search issue остаётся отдельно открытым.
+
 ## Что реализовано
 
 1. `JournalArticleHeader.astro`: общая широкая шапка с двумя вариантами композиции, существующими AVIF/WebP, byline и слотами метаданных. SEO остаётся у `JournalDocumentHead.astro`; даты досье берутся из существующего metadata owner.
@@ -76,7 +89,7 @@ npm run css:layer:validate
 npm run page-ownership:dist:production-like
 ```
 
-`strangler:build:production-like` уже включает `astro:check` и канонический postbuild. Journal CSS получает content-hashed Astro URL; shell focus enhancement остаётся Astro-owned module script (в проверенной сборке встроен в HTML, 489 B). Вручную менять asset revisions не надо.
+`strangler:build:production-like` уже включает `astro:check` и канонический postbuild. Journal CSS получает content-hashed Astro URL; shell focus enhancement остаётся Astro-owned module script (в сборке Wave F встроен в HTML, 489 B; новый размер после rounding фиксируется отдельно в Wave G dist receipt). Вручную менять asset revisions не надо.
 
 Для production-like browser QA запустить статический сервер `dist` с bind `0.0.0.0`, затем:
 
@@ -86,7 +99,7 @@ AXE_CORE_PATH=/path/to/installed/axe-core/axe.min.js \
 node scripts/journal-editorial-agent9-browser-test.mjs
 ```
 
-Тест по умолчанию запрашивает Chromium, Firefox и WebKit. Неустановленный браузер/axe означает незавершённую приёмку и ненулевой exit, а не skip-pass. Для явно ограниченного Chromium-прогона допустим `JOURNAL_BROWSERS=chromium`. Изолированный Chromium можно передать через `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` и JSON `PLAYWRIGHT_CHROMIUM_ARGS`.
+Тест по умолчанию запрашивает Chromium, Firefox и WebKit. Неустановленный браузер/axe означает незавершённую приёмку и ненулевой exit, а не skip-pass. Для явно ограниченного Chromium-прогона допустим `JOURNAL_BROWSERS=chromium`. Изолированные инструменты можно передать через `JOURNAL_PLAYWRIGHT_MODULE=/tmp/arena-browser/node_modules/playwright/index.mjs`, `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/tmp/chromium` и `AXE_CORE_PATH`. Для этой среды дополнить, не затирая прежний `LD_LIBRARY_PATH`, `/tmp/arena-browser/libs/lib`; сначала проверить существование файлов и smoke. Default Chromium args — только `--no-sandbox`, `--disable-dev-shm-usage`; web-security disabling args запрещены. CDP override проверяется через фактические computed CSS env, а не подмену gutter variables.
 
 Матрица: **320/360/390/430/768/1024/1440/1920 × light/dark**. Дополнительно проверяются отсутствие локальных dead anchors/duplicate IDs/script URLs, изображения, metadata owners, источник и фокус, keyboard/skip link, landscape, 200% root text, печатная видимость, нативные переходы без JS и 404 закрытого history route. Это не эмуляция реального iOS notch, физического pinch zoom или заключение о полном соответствии WCAG.
 

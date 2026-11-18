@@ -43,7 +43,8 @@ const activeSection = kind === 'dossier' ? 'dossier' : 'journal';
     const style = getComputedStyle(list);
     const left = box.left + (Number.parseFloat(style.scrollPaddingLeft) || 0);
     const right = box.right - (Number.parseFloat(style.scrollPaddingRight) || 0);
-    if (item.left < left) list.scrollLeft -= left - item.left;
-    else if (item.right > right) list.scrollLeft += item.right - right;
+    // Outward rounding keeps fractional link edges inside integer scroll offsets.
+    if (item.left < left) list.scrollLeft -= Math.ceil(left - item.left);
+    else if (item.right > right) list.scrollLeft += Math.ceil(item.right - right);
   });
 </script>

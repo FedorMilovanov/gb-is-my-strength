@@ -71,7 +71,8 @@ const { active = 'journal' } = Astro.props;
     .je-masthead__mark { width: 37px; height: 30px; }
     .je-masthead__publication { font-size: 19px; }
     .je-masthead__descriptor, .je-masthead__home { display: none; }
-    .je-masthead__nav { padding-inline: var(--je-edge-left, 20px) var(--je-edge-right, 20px); overflow-x: auto; gap: 25px; scrollbar-width: thin; }
+    /* Native focus and the existing Journal focus owner share the safe gutters. */
+    .je-masthead__nav { padding-inline: var(--je-edge-left, 20px) var(--je-edge-right, 20px); scroll-padding-inline: var(--je-edge-left, 20px) var(--je-edge-right, 20px); overflow-x: auto; gap: 25px; scrollbar-width: thin; }
     .je-masthead__nav a { min-height: 43px; font-size: 11px; }
   }
   @media (max-width: 400px) {
