@@ -14,8 +14,37 @@ const activeSection = kind === 'dossier' ? 'dossier' : 'journal';
 ---
 <!-- Preserve canonical skip-link and global mobile Back / Home / Search owner. -->
 <a href="#main-content" class="skip-link">Перейти к содержимому</a>
-<MobileChromePage backHref={backHref} homeHref="/" searchLabel="Поиск по сайту…" />
+<!-- Journal owns only this print boundary, not the shared controls or their runtime. -->
+<div class="je-page-chrome" data-print-policy="exclude">
+  <MobileChromePage backHref={backHref} homeHref="/" searchLabel="Поиск по сайту…" />
+</div>
 <div class:list={['journal-edition', `journal-edition--${kind}`]}>
   <JournalMasthead active={activeSection} />
   <slot />
 </div>
+
+<style>
+  .je-page-chrome { display: contents; }
+  @media print {
+    .je-page-chrome { display: none; }
+  }
+</style>
+
+<script>
+  // One Journal-local focus owner for both horizontal navigation surfaces.
+  // Chromium may leave a partially visible focused link clipped. Move only its
+  // scrollport; never intercept clicks, native hashes or shared mobile controls.
+  document.querySelector('.journal-edition')?.addEventListener('focusin', (event) => {
+    if (!(event.target instanceof HTMLAnchorElement)) return;
+    const list = event.target.closest<HTMLElement>('[data-journal-scroll-nav]');
+    if (!list || list.scrollWidth <= list.clientWidth) return;
+    const item = event.target.getBoundingClientRect();
+    const box = list.getBoundingClientRect();
+    const style = getComputedStyle(list);
+    const left = box.left + (Number.parseFloat(style.scrollPaddingLeft) || 0);
+    const right = box.right - (Number.parseFloat(style.scrollPaddingRight) || 0);
+    // Outward rounding keeps fractional link edges inside integer scroll offsets.
+    if (item.left < left) list.scrollLeft -= Math.ceil(left - item.left);
+    else if (item.right > right) list.scrollLeft += Math.ceil(item.right - right);
+  });
+</script>

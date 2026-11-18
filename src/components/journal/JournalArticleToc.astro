@@ -1,0 +1,16 @@
+---
+/** Native anchors only; the existing mobile chrome remains the sole fixed-control owner. */
+interface Props {
+  label: string;
+  entries: ReadonlyArray<{ id: string; label: string }>;
+}
+const { label, entries } = Astro.props;
+---
+<nav class="je-article-toc" id="article-contents" aria-label={label} tabindex="-1">
+  <p class="je-rail-kicker">В этом материале <span aria-hidden="true">↓</span></p>
+  <ol data-journal-scroll-nav>
+    {entries.map((entry, index) => (
+      <li><a href={`#${entry.id}`}><span class="je-toc-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><span>{entry.label}</span></a></li>
+    ))}
+  </ol>
+</nav>

@@ -1,81 +1,67 @@
-/* G3 historical chapter: staged candidate Research #582, separate from approved G3 publication projections. */
-.journal-edition .je-history-chapter { border-top: 2px solid var(--je-gold); margin: 38px 0 0; padding: 38px 0 15px; scroll-margin-top: 26px; }
-.journal-edition .je-history-heading { margin-bottom: 30px; max-width: 790px; }
-.journal-edition .je-history-eyebrow { color: var(--je-gold); font: 750 11px/1.4 'Source Sans 3', sans-serif; text-transform: uppercase; letter-spacing: .18em; margin: 0 0 13px; }
-.journal-edition .je-history-heading h2 { color: var(--je-ink); font: 600 clamp(30px,3.2vw,45px)/1.15 'Playfair Display',Georgia,serif; letter-spacing: -.034em; margin: 0; text-wrap: balance; }
-.journal-edition .je-history-lead { font: italic 19px/1.57 Lora,Georgia,serif; color: var(--je-ink); margin: 20px 0 0; }
-.journal-edition .je-history-intro { font: 16px/1.7 Lora,Georgia,serif; margin: 16px 0 0; color: var(--je-muted); }
-.journal-edition .je-history-origin { display: grid; grid-template-columns: 160px minmax(0,1fr); gap: 27px; align-items: start; }
-.journal-edition .je-history-origin-stamp { background: var(--je-navy); color: #efe3c9; border-top: 4px solid #d3ad6e; padding: 26px 10px; display: flex; flex-direction: column; align-items: center; gap: 11px; }
-.journal-edition .je-history-origin-stamp span { font: italic 500 74px/.9 'Playfair Display',Georgia,serif; letter-spacing: -.09em; }
-.journal-edition .je-history-origin-stamp small { color: #dfc89d; font: 700 8px/1.4 'Source Sans 3',sans-serif; letter-spacing: .11em; text-align: center; }
-.journal-edition .je-history-origin-text p, .journal-edition .je-history-year-text p, .journal-edition .je-history-growth-grid p, .journal-edition .je-history-context p:not(.je-history-eyebrow) { color: var(--je-ink); font: 16px/1.74 Lora,Georgia,serif; margin: 0 0 17px; }
-.journal-edition .je-history-footnote { color: var(--je-muted) !important; font: 12px/1.55 'Source Sans 3',sans-serif !important; margin: 5px 0 0 !important; }
-.journal-edition .je-history-footnote a { color: var(--je-gold); text-decoration: underline; text-underline-offset: 3px; }
-.journal-edition .je-history-years { list-style: none; padding: 0; margin: 0; }
-.journal-edition .je-history-year { display: grid; grid-template-columns: 118px minmax(0,1fr); gap: 28px; border-top: 1px solid var(--je-rule); padding: 28px 0 23px; break-inside: avoid; }
+/* Source-only historical manuscript. Common reading/navigation lives in journalEditorial.css. */
+.journal-edition .je-draft-notice { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0 0 23px; padding: 11px 15px; border-left: 3px solid var(--je-gold); background: var(--je-paper-raised); color: var(--je-muted); font: 400 12px/1.6 var(--je-sans); }
+.journal-edition .je-draft-notice strong { color: var(--je-ink); font-weight: 600; }
+.journal-edition .je-history-chapter { margin-top: 34px; padding: 32px 0 24px; border-top: 2px solid var(--je-gold); }
+.journal-edition .je-history-heading { margin-bottom: 27px; }
+.journal-edition .je-history-eyebrow { margin: 0 0 14px; color: var(--je-gold); font: 600 11px/1.5 var(--je-sans); text-transform: uppercase; letter-spacing: .14em; }
+.journal-edition .je-history-heading h2 { margin: 0; color: var(--je-ink); font: 600 clamp(1.9rem, 2.8vw, 2.5rem)/1.22 var(--je-display); letter-spacing: -.025em; }
+.journal-edition .je-history-lead { margin: 22px 0 0; color: var(--je-ink); font: italic 400 1.1875rem/1.75 var(--je-reading); }
+.journal-edition .je-history-intro { margin: 19px 0 0; color: var(--je-muted); font: 400 1.0625rem/1.8 var(--je-reading); }
+.journal-edition :is(.je-history-origin-text, .je-history-year-text, .je-history-growth-grid, .je-history-milestone-text) p:not(.je-history-footnote, .je-history-growth-eyebrow) { margin: 0 0 20px; color: var(--je-ink); font: 400 calc(1.0625rem * var(--gb-reader-font-scale, 1))/1.8 var(--je-reading); }
+.journal-edition .je-history-footnote { margin: 12px 0 0; color: var(--je-muted); font: 400 13px/1.9 var(--je-sans); }
+.journal-edition .je-history-footnote a { color: var(--je-gold); }
+.journal-edition .je-history-year-index { display: flex; flex-wrap: wrap; column-gap: 24px; margin-bottom: 16px; padding-block: 6px; border-top: 1px solid var(--je-rule); }
+.journal-edition .je-history-year-index a { display: inline-flex; align-items: center; min-height: 44px; color: var(--je-gold); font: 600 14px/1.4 var(--je-sans); text-decoration: none; font-variant-numeric: tabular-nums; }
+.journal-edition .je-history-year-index a:hover { text-decoration: underline; }
+.journal-edition .je-history-years { list-style: none; margin: 0; padding: 0; }
+.journal-edition .je-history-year { display: grid; grid-template-columns: 105px minmax(0, 1fr); gap: 25px; padding: 29px 0 31px; border-top: 1px solid var(--je-rule); }
 .journal-edition .je-history-year:first-child { border-top-color: var(--je-gold); }
-.journal-edition .je-history-year-mark { display: flex; flex-direction: column; gap: 7px; align-items: flex-start; }
-.journal-edition .je-history-year-mark time { font: 600 41px/.98 'Playfair Display',Georgia,serif; letter-spacing: -.04em; color: var(--je-gold); }
-.journal-edition .je-history-year-mark span { color: var(--je-muted); font: 700 10px/1.42 'Source Sans 3',sans-serif; letter-spacing: .08em; text-transform: uppercase; }
-.journal-edition .je-history-year-text h3 { color: var(--je-ink); font: 600 clamp(20px,2vw,24px)/1.29 'Playfair Display',Georgia,serif; margin: 0 0 12px; letter-spacing: -.01em; }
-.journal-edition .je-history-year-text p { margin-bottom: 9px; }
-.journal-edition .je-history-growth-grid { display: grid; grid-template-columns: minmax(0,1.35fr) minmax(195px,.7fr); gap: 25px; align-items: start; }
-.journal-edition .je-history-growth-grid h3, .journal-edition .je-history-context h3 { color: var(--je-ink); font: 600 25px/1.26 'Playfair Display',Georgia,serif; margin: 0 0 15px; }
-.journal-edition .je-history-growth-aside { background: var(--je-paper-raised); border: 1px solid var(--je-rule); padding: 21px 19px; }
-.journal-edition .je-history-growth-eyebrow { color: var(--je-gold) !important; font: 750 10px/1.4 'Source Sans 3',sans-serif !important; letter-spacing: .13em; text-transform: uppercase; }
-.journal-edition .je-history-growth-aside ul { padding: 0; margin: 0; list-style: none; }
-.journal-edition .je-history-growth-aside li { border-top: 1px solid var(--je-rule); padding: 10px 0; }
-.journal-edition .je-history-growth-aside strong { display: block; font: 700 13px/1.35 'Source Sans 3',sans-serif; margin-bottom: 3px; color: var(--je-ink); }
-.journal-edition .je-history-growth-aside li span { display: block; font: 12px/1.45 'Source Sans 3',sans-serif; color: var(--je-muted); }
-.journal-edition .je-history-context { background: var(--je-paper-raised); border-left: 3px solid var(--je-gold); margin: 27px 0 11px; padding: 22px 24px 12px; }
-.journal-edition .je-history-context .je-history-eyebrow { font-size: 10px; }
-@media (max-width: 690px) {
-  .journal-edition .dossier-nav { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; scrollbar-width: thin; gap: 19px; padding-bottom: 12px; }
-  .journal-edition .dossier-nav a { flex: none; min-height: 44px; }
-  .journal-edition .je-history-chapter { margin-top: 27px; padding-top: 27px; scroll-margin-top: 74px; }
-  .journal-edition .module { scroll-margin-top: 74px; }
-  .journal-edition .je-history-heading { margin-bottom: 21px; }
-  .journal-edition .je-history-heading h2 { font-size: clamp(30px,8.3vw,39px); }
-  .journal-edition .je-history-lead { font-size: 17px; }
-  .journal-edition .je-history-origin, .journal-edition .je-history-year, .journal-edition .je-history-growth-grid { display: block; }
-  .journal-edition .je-history-origin-stamp { float: none; width: 100%; min-height: 76px; padding: 12px 19px; margin: 0 0 20px; flex-direction: row; justify-content: center; gap: 22px; }
-  .journal-edition .je-history-origin-stamp small { max-width: 170px; font-size: 9px; letter-spacing: .14em; text-align: left; }
-  .journal-edition .je-history-origin-stamp span { font-size: 54px; }
-  .journal-edition .je-history-origin-text p, .journal-edition .je-history-year-text p, .journal-edition .je-history-growth-grid p, .journal-edition .je-history-context p:not(.je-history-eyebrow) { font-size: 15px; line-height: 1.7; }
-  .journal-edition .je-history-year { padding: 24px 0; }
-  .journal-edition .je-history-year-mark { flex-direction: row; align-items: center; gap: 12px; margin-bottom: 12px; }
-  .journal-edition .je-history-year-mark time { font-size: 36px; }
-  .journal-edition .je-history-year-mark span { font-size: 10px; }
-  .journal-edition .je-history-growth-aside { margin-top: 23px; }
-  .journal-edition .je-history-context { margin: 24px 0; padding: 18px 15px 7px; }
-  .journal-edition .je-history-context h3 { font-size: 23px; }
-}
-@media print {
-  .journal-edition .je-history-year, .journal-edition .je-history-origin { break-inside: avoid; }
-  .journal-edition .je-history-origin-stamp { background: #fff !important; color: #111 !important; border: 1px solid #aaa; }
-}
+.journal-edition .je-history-year-mark { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.journal-edition .je-history-year-mark time { color: var(--je-gold); font: 600 2.6rem/1 var(--je-display); letter-spacing: -.04em; }
+.journal-edition .je-history-year-mark span { color: var(--je-muted); font: 600 10px/1.6 var(--je-sans); letter-spacing: .06em; text-transform: uppercase; }
+.journal-edition .je-history-year-text h3 { margin: 0 0 15px; color: var(--je-ink); font: 600 1.45rem/1.35 var(--je-display); letter-spacing: -.01em; }
+.journal-edition .je-history-growth-grid { display: grid; grid-template-columns: minmax(0, 1fr) 210px; gap: 28px; align-items: start; }
+.journal-edition .je-history-growth-grid h3 { margin: 0 0 19px; color: var(--je-ink); font: 600 1.5rem/1.35 var(--je-display); }
+.journal-edition .je-history-growth-aside { padding: 16px 0 0 20px; border-top: 2px solid var(--je-gold); border-left: 1px solid var(--je-rule); }
+.journal-edition .je-history-growth-eyebrow { margin: 0 0 12px; color: var(--je-gold); font: 600 10px/1.5 var(--je-sans); letter-spacing: .1em; text-transform: uppercase; }
+.journal-edition .je-history-growth-aside ul { list-style: none; margin: 0; padding: 0; }
+.journal-edition .je-history-growth-aside li { padding: 11px 0; border-top: 1px solid var(--je-rule); }
+.journal-edition .je-history-growth-aside strong { display: block; margin-bottom: 5px; color: var(--je-ink); font: 600 14px/1.5 var(--je-sans); }
+.journal-edition .je-history-growth-aside li span { display: block; color: var(--je-muted); font: 400 13px/1.6 var(--je-sans); }
+.journal-edition .je-history-milestones { margin: 31px 0 0; padding-top: 27px; border-top: 1px solid var(--je-rule); }
+.journal-edition .je-history-milestones > h3 { margin: 0 0 24px; color: var(--je-ink); font: 600 1.8rem/1.3 var(--je-display); letter-spacing: -.025em; }
+.journal-edition .je-history-milestones-list { list-style: none; margin: 0; padding: 0; }
+.journal-edition .je-history-milestones-list > li { display: grid; grid-template-columns: 105px minmax(0, 1fr); gap: 25px; padding: 24px 0 28px; border-top: 1px solid var(--je-rule); }
+.journal-edition .je-history-milestone-label { display: flex; flex-direction: column; align-items: flex-start; gap: 9px; }
+.journal-edition .je-history-milestone-label time { color: var(--je-gold); font: 600 2.1rem/1 var(--je-display); }
+.journal-edition .je-history-milestone-label span { color: var(--je-muted); font: 600 10px/1.6 var(--je-sans); text-transform: uppercase; letter-spacing: .06em; }
+.journal-edition .je-history-milestone-text h4 { margin: 0 0 13px; color: var(--je-ink); font: 600 1.35rem/1.4 var(--je-display); }
+.journal-edition .je-history-bibliography { margin-top: 30px; color: var(--je-ink); font-family: var(--je-sans); }
+.journal-edition .je-history-bibliography a, .journal-edition .je-history-return a { color: var(--je-gold); }
+.journal-edition .je-history-return { margin: 24px 0 0; font: 600 14px/1.7 var(--je-sans); }
 
-/* G3 institutional milestones — newspaper index, never repeat evidence cards. */
-.journal-edition .je-history-milestones { margin: 27px 0 30px; border-block: 2px solid var(--je-gold) 1px solid var(--je-rule); padding: 27px 0 0; }
-.journal-edition .je-history-milestones > h3 { margin: 0 0 24px; color: var(--je-ink); font: 600 clamp(25px,2.6vw,33px)/1.22 'Playfair Display',Georgia,serif; letter-spacing: -.023em; }
-.journal-edition .je-history-milestones-list { list-style: none; padding: 0; margin: 0; }
-.journal-edition .je-history-milestones-list > li { display: grid; grid-template-columns: 100px minmax(0,1fr); gap: 22px; padding: 19px 0 23px; border-top: 1px solid var(--je-rule); break-inside: avoid; }
-.journal-edition .je-history-milestone-label { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
-.journal-edition .je-history-milestone-label time { font: 600 35px/1 'Playfair Display',Georgia,serif; color: var(--je-gold); }
-.journal-edition .je-history-milestone-label span { font: 700 10px/1.35 'Source Sans 3',sans-serif; text-transform: uppercase; letter-spacing: .08em; color: var(--je-muted); }
-.journal-edition .je-history-milestone-text h4 { margin: 0 0 9px; color: var(--je-ink); font: 600 21px/1.28 'Playfair Display',Georgia,serif; }
-.journal-edition .je-history-milestone-text p { margin: 0 0 10px; color: var(--je-ink); font: 15px/1.71 Lora,Georgia,serif; }
-.journal-edition .je-history-milestone-text p.je-history-footnote { font: 12px/1.55 'Source Sans 3',sans-serif; }
 @media (max-width: 690px) {
-  .journal-edition .je-history-milestones { margin: 22px 0 27px; padding-top: 20px; }
-  .journal-edition .je-history-milestones > h3 { font-size: clamp(26px,7vw,31px); }
-  .journal-edition .je-history-milestones-list > li { grid-template-columns: 1fr; gap: 8px; padding: 20px 0 21px; }
-  .journal-edition .je-history-milestone-label { flex-direction: row; align-items: baseline; gap: 12px; }
-  .journal-edition .je-history-milestone-label time { font-size: 32px; }
-  .journal-edition .je-history-milestone-text h4 { font-size: 21px; }
-  .journal-edition .je-history-milestone-text p { font-size: 15px; }
+  .journal-edition .je-draft-notice { padding: 10px 12px; }
+  .journal-edition .je-history-chapter { margin-top: 27px; padding-block: 27px 20px; }
+  .journal-edition .je-history-heading { margin-bottom: 23px; }
+  .journal-edition .je-history-heading h2 { font-size: clamp(1.8rem, 7.5vw, 2.3rem); line-height: 1.25; }
+  .journal-edition .je-history-lead { font-size: 1.125rem; }
+  .journal-edition .je-history-year { grid-template-columns: minmax(0, 1fr); gap: 14px; padding-block: 26px; }
+  .journal-edition .je-history-year-mark { flex-direction: row; align-items: baseline; gap: 14px; }
+  .journal-edition .je-history-year-mark time { font-size: 2.15rem; }
+  .journal-edition .je-history-year-mark span { font-size: 10px; }
+  .journal-edition .je-history-year-text h3 { font-size: 1.4rem; }
+  .journal-edition .je-history-growth-grid { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  .journal-edition .je-history-growth-aside { padding-left: 0; border-left: 0; }
+  .journal-edition .je-history-growth-aside ul { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+  .journal-edition .je-history-milestones > h3 { font-size: 1.65rem; }
+  .journal-edition .je-history-milestones-list > li { grid-template-columns: minmax(0, 1fr); gap: 13px; }
+  .journal-edition .je-history-milestone-label { flex-direction: row; align-items: baseline; gap: 14px; }
+  .journal-edition .je-history-milestone-label time { font-size: 2rem; }
 }
 @media print {
-  .journal-edition .je-history-milestones-list > li { break-inside: avoid; }
+  .journal-edition .je-draft-notice { border: 2px solid #000; }
+  .journal-edition .je-history-year-index { display: none; }
+  .journal-edition :is(.je-history-year, .je-history-milestones-list > li) { break-inside: auto; }
+  .journal-edition :is(.je-history-year-mark, .je-history-milestone-label) { break-after: avoid; }
 }

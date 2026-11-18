@@ -1,0 +1,51 @@
+---
+/** One editorial opening owner for native Journal articles. No runtime or SEO owner. */
+interface Props {
+  title: string;
+  label: string;
+  period: string;
+  readingTime: number;
+  layout?: 'split' | 'wide-title';
+  cover: {
+    src: string;
+    srcSet: string;
+    avifSrcSet?: string;
+    width: number;
+    height: number;
+    alt: string;
+    caption: string;
+  };
+}
+const { title, label, period, readingTime, cover, layout = 'split' } = Astro.props;
+const coverSizes = '(max-width: 690px) calc(100vw - 36px), (max-width: 980px) calc(100vw - 48px), (max-width: 1260px) calc((100vw - 112px) * .455), 520px';
+---
+<header class:list={['article-header dossier-hero je-article-header', { 'je-article-header--wide-title': layout === 'wide-title' }]}>
+  <div class="journal-story-topline">
+    <a class="journal-story-tag" href="/journal/">Журнал / Досье</a>
+    <p class="kicker">{label} <span aria-hidden="true">·</span> {period}</p>
+  </div>
+  <div class="je-opening-grid">
+    <div class="je-opening-copy">
+      <h1 id="article-title">{title}</h1>
+      <p class="dek"><slot name="dek" /></p>
+    </div>
+    <figure class="journal-feature-media">
+      <picture>
+        {cover.avifSrcSet && <source type="image/avif" srcset={cover.avifSrcSet} sizes={coverSizes} />}
+        <img src={cover.src} srcset={cover.srcSet}
+          sizes={coverSizes} width={cover.width} height={cover.height} alt={cover.alt}
+          decoding="async" loading="eager" fetchpriority="high" />
+      </picture>
+      <figcaption>{cover.caption}</figcaption>
+    </figure>
+  </div>
+  <div class="je-opening-meta">
+    <p class="author-card je-author-byline">
+      <a href="/about/" rel="author"><span>Автор-редактор:</span>{' '}<strong>Фёдор Милованов</strong></a>
+    </p>
+    <div class="editorial-meta">
+      <slot name="meta" />
+      <span>{readingTime} мин чтения</span>
+    </div>
+  </div>
+</header>

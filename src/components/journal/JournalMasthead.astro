@@ -6,8 +6,8 @@ const { active = 'journal' } = Astro.props;
 ---
 <header class="je-masthead" aria-label="Редакционная навигация">
   <div class="je-masthead__top">
-    <a class="je-masthead__identity" href="/journal/" aria-label="Господь Бог — Сила Моя. Журнал">
-      <svg class="je-masthead__mark" viewBox="0 0 64 48" role="img" aria-label="Открытая книга">
+    <a class="je-masthead__identity" href="/journal/">
+      <svg class="je-masthead__mark" viewBox="0 0 64 48" aria-hidden="true" focusable="false">
         <path d="M4 10C15 6 26 10 32 17C38 10 49 6 60 10V39C49 35 38 38 32 44C26 38 15 35 4 39Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
         <path d="M32 17V43M9 14C17 12 24 15 28 19M55 14C47 12 40 15 36 19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
@@ -17,9 +17,21 @@ const { active = 'journal' } = Astro.props;
       </span>
     </a>
     <span class="je-masthead__descriptor">Документы · контекст · ответственный разбор</span>
-    <a class="je-masthead__home" href="/">На основной сайт <span aria-hidden="true">↗</span></a>
+    <div class="je-masthead__actions">
+      <a class="je-masthead__home" href="/">На основной сайт <span aria-hidden="true">↗</span></a>
+      <!-- Declarative consumer of the shared lazy search owner; no local loader. -->
+      <button id="gbSearchBtn" class="je-masthead__action" type="button" aria-label="Поиск по всему сайту" title="Поиск по всему сайту" hidden>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></svg>
+        <span class="je-masthead__action-name">Поиск</span>
+      </button>
+      <button id="themeToggle" class="je-masthead__action" type="button" aria-label="Тёмная тема" aria-pressed="false" title="Тёмная тема" data-journal-theme-toggle hidden>
+        <svg class="je-masthead__moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" /></svg>
+        <svg class="je-masthead__sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" /></svg>
+        <span class="je-masthead__action-name">Тёмная тема</span>
+      </button>
+    </div>
   </div>
-  <nav class="je-masthead__nav" aria-label="Разделы издания">
+  <nav class="je-masthead__nav" aria-label="Разделы издания" data-journal-scroll-nav>
     <a href="/journal/" aria-current={active === 'journal' ? 'page' : undefined}>Журнал</a>
     <a href="/journal/#lead-dossier" aria-current={active === 'dossier' ? 'location' : undefined}>Досье и исследования</a>
     <a href="/articles/">Богословские статьи</a>
@@ -28,7 +40,7 @@ const { active = 'journal' } = Astro.props;
 </header>
 <style>
   .je-masthead { background: #0b2033; color: #f9f2e4; border-bottom: 1px solid #c6a66c; font-family: 'Source Sans 3', system-ui, sans-serif; }
-  .je-masthead__top { max-width: 1260px; margin: 0 auto; padding: 17px 32px 14px; display: flex; align-items: center; gap: 24px; }
+  .je-masthead__top { max-width: 1260px; margin: 0 auto; padding: calc(17px + env(safe-area-inset-top, 0px)) var(--je-edge-right, 32px) 14px var(--je-edge-left, 32px); display: flex; align-items: center; gap: 24px; }
   .je-masthead__identity { display: inline-flex; align-items: center; gap: 17px; min-width: 0; color: inherit; text-decoration: none; }
   .je-masthead__mark { flex: none; width: 49px; height: 39px; color: #e5bb73; }
   .je-masthead__name { display: flex; flex-direction: column; gap: 3px; }
@@ -36,22 +48,65 @@ const { active = 'journal' } = Astro.props;
   .je-masthead__series { color: #d9c39f; font: 600 10px/1.4 'Source Sans 3', sans-serif; letter-spacing: .18em; }
   .je-masthead__series span { color: #a37a36; padding: 0 4px; }
   .je-masthead__descriptor { margin-left: auto; padding-left: 28px; border-left: 1px solid #466075; max-width: 260px; color: #d5c9b8; font: italic 15px/1.4 Lora, Georgia, serif; }
-  .je-masthead__home { flex: none; color: #f0d9a8; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
-  .je-masthead__nav { max-width: 1260px; margin: 0 auto; display: flex; gap: clamp(16px,3vw,43px); align-items: center; padding: 0 32px; border-top: 1px solid #2d4051; }
+  .je-masthead__actions { display: flex; align-items: center; gap: 8px; flex: none; margin-left: auto; }
+  .je-masthead__home { flex: none; margin-right: 8px; color: #f0d9a8; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+  .je-masthead__action { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 44px; min-height: 44px; padding: 10px; border: 1px solid #52616e; border-radius: 3px; background: transparent; color: #f9f2e4; font: 600 12px/1.4 'Source Sans 3', system-ui, sans-serif; cursor: pointer; }
+  .je-masthead__action[hidden] { display: none; }
+  .je-masthead__action svg { flex: none; }
+  .je-masthead__action:hover { border-color: #eacb85; background: #16334c; }
+  .je-masthead__action:focus-visible { outline: 2px solid #eacb85; outline-offset: 3px; }
+  .je-masthead__sun, :global(html.dark) .je-masthead__moon { display: none; }
+  :global(html.dark) .je-masthead__sun { display: block; }
+  .je-masthead__nav { max-width: 1260px; margin: 0 auto; display: flex; gap: clamp(16px,3vw,43px); align-items: center; padding: 0 var(--je-edge-right, 32px) 0 var(--je-edge-left, 32px); border-top: 1px solid #2d4051; }
   .je-masthead__nav a { display: inline-flex; min-height: 46px; align-items: center; border-bottom: 3px solid transparent; color: #efe6d7; text-decoration: none; white-space: nowrap; font-size: 12px; font-weight: 650; letter-spacing: .12em; text-transform: uppercase; padding: 3px 0 0; }
-  .je-masthead__nav a[aria-current="page"] { border-color: #d6ad5d; color: #fff; }
+  .je-masthead__nav a[aria-current] { border-color: #d6ad5d; color: #fff; }
   .je-masthead a:focus-visible { outline: 2px solid #eacb85; outline-offset: 4px; }
+  .je-masthead__nav a:focus-visible { outline-offset: -4px; }
   .je-masthead a:hover { color: #f9d997; }
+  @media (max-width: 1100px) {
+    .je-masthead__descriptor, .je-masthead__action-name { display: none; }
+  }
   @media (max-width: 770px) {
-    .je-masthead__top { padding: 14px 20px 12px; gap: 12px; }
+    .je-masthead__top { padding: calc(14px + env(safe-area-inset-top, 0px)) var(--je-edge-right, 20px) 12px var(--je-edge-left, 20px); gap: 12px; }
     .je-masthead__mark { width: 37px; height: 30px; }
     .je-masthead__publication { font-size: 19px; }
     .je-masthead__descriptor, .je-masthead__home { display: none; }
-    .je-masthead__nav { padding: 0 20px; overflow-x: auto; gap: 25px; scrollbar-width: thin; }
+    /* Native focus and the existing Journal focus owner share the safe gutters. */
+    .je-masthead__nav { padding-inline: var(--je-edge-left, 20px) var(--je-edge-right, 20px); scroll-padding-inline: var(--je-edge-left, 20px) var(--je-edge-right, 20px); overflow-x: auto; gap: 25px; scrollbar-width: thin; }
     .je-masthead__nav a { min-height: 43px; font-size: 11px; }
   }
   @media (max-width: 400px) {
+    .je-masthead__mark { display: none; }
     .je-masthead__publication { font-size: 16px; }
     .je-masthead__series { font-size: 9px; letter-spacing: .13em; }
   }
 </style>
+
+<script>
+  // This is a UI adapter, not a theme/search runtime. Shared preferences own
+  // state, first paint, persistence and cross-tab updates; shared search owns
+  // its declarative trigger. Without those services, hide nonfunctional UI.
+  type Preferences = { theme: string };
+  const services = window as typeof window & {
+    GBReaderPreferences?: {
+      get(): Preferences;
+      setTheme(theme: 'light' | 'dark', options: { source: string }): void;
+      subscribe(listener: (preferences: Preferences) => void): () => void;
+    };
+    GBSearchBootstrap?: { open: (...args: unknown[]) => unknown };
+  };
+  const preferences = services.GBReaderPreferences;
+  const theme = document.querySelector<HTMLButtonElement>('[data-journal-theme-toggle]');
+  if (preferences && theme) {
+    const sync = (state: Preferences) => theme.setAttribute('aria-pressed', String(state.theme === 'dark'));
+    sync(preferences.get());
+    preferences.subscribe(sync);
+    theme.addEventListener('click', () => {
+      preferences.setTheme(preferences.get().theme === 'dark' ? 'light' : 'dark', { source: 'journal-masthead' });
+    });
+    theme.hidden = false;
+  }
+  if (typeof services.GBSearchBootstrap?.open === 'function') {
+    document.getElementById('gbSearchBtn')?.removeAttribute('hidden');
+  }
+</script>
