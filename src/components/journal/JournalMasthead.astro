@@ -6,8 +6,8 @@ const { active = 'journal' } = Astro.props;
 ---
 <header class="je-masthead" aria-label="Редакционная навигация">
   <div class="je-masthead__top">
-    <a class="je-masthead__identity" href="/journal/" aria-label="Господь Бог — Сила Моя. Журнал">
-      <svg class="je-masthead__mark" viewBox="0 0 64 48" role="img" aria-label="Открытая книга">
+    <a class="je-masthead__identity" href="/journal/">
+      <svg class="je-masthead__mark" viewBox="0 0 64 48" aria-hidden="true" focusable="false">
         <path d="M4 10C15 6 26 10 32 17C38 10 49 6 60 10V39C49 35 38 38 32 44C26 38 15 35 4 39Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
         <path d="M32 17V43M9 14C17 12 24 15 28 19M55 14C47 12 40 15 36 19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
@@ -21,7 +21,7 @@ const { active = 'journal' } = Astro.props;
   </div>
   <nav class="je-masthead__nav" aria-label="Разделы издания">
     <a href="/journal/" aria-current={active === 'journal' ? 'page' : undefined}>Журнал</a>
-    <a href="/journal/#lead-dossier" aria-current={active === 'dossier' ? 'location' : undefined}>Досье и исследования</a>
+    <a href="/journal/#lead-dossier" aria-current={active === 'dossier' ? 'true' : undefined}>Досье и исследования</a>
     <a href="/articles/">Богословские статьи</a>
     <a href="/about/">Об издании</a>
   </nav>
@@ -39,7 +39,7 @@ const { active = 'journal' } = Astro.props;
   .je-masthead__home { flex: none; color: #f0d9a8; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
   .je-masthead__nav { max-width: 1260px; margin: 0 auto; display: flex; gap: clamp(16px,3vw,43px); align-items: center; padding: 0 32px; border-top: 1px solid #2d4051; }
   .je-masthead__nav a { display: inline-flex; min-height: 46px; align-items: center; border-bottom: 3px solid transparent; color: #efe6d7; text-decoration: none; white-space: nowrap; font-size: 12px; font-weight: 650; letter-spacing: .12em; text-transform: uppercase; padding: 3px 0 0; }
-  .je-masthead__nav a[aria-current="page"] { border-color: #d6ad5d; color: #fff; }
+  .je-masthead__nav a[aria-current] { border-color: #d6ad5d; color: #fff; }
   .je-masthead a:focus-visible { outline: 2px solid #eacb85; outline-offset: 4px; }
   .je-masthead a:hover { color: #f9d997; }
   @media (max-width: 770px) {
@@ -47,7 +47,14 @@ const { active = 'journal' } = Astro.props;
     .je-masthead__mark { width: 37px; height: 30px; }
     .je-masthead__publication { font-size: 19px; }
     .je-masthead__descriptor, .je-masthead__home { display: none; }
-    .je-masthead__nav { padding: 0 20px; overflow-x: auto; gap: 25px; scrollbar-width: thin; }
+    .je-masthead__nav {
+      padding: 0 calc(20px + env(safe-area-inset-right, 0px)) 0 calc(20px + env(safe-area-inset-left, 0px));
+      overflow-x: auto; gap: 25px; scrollbar-width: none; overscroll-behavior-x: contain;
+      -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent);
+      mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent);
+    }
+    .je-masthead__nav::-webkit-scrollbar { display: none; }
+    .je-masthead__nav::after { content: ''; flex: none; width: 1px; }
     .je-masthead__nav a { min-height: 43px; font-size: 11px; }
   }
   @media (max-width: 400px) {

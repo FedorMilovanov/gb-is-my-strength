@@ -10,6 +10,10 @@ interface Props {
   modifiedAt?: string;
   readingTime?: number;
   socialImage?: string;
+  /** Governed social-image profiles: 1200×630 (default) or 1200×675. */
+  socialImageHeight?: 630 | 675;
+  /** Trail after «Главная › Журнал». Defaults to the G3 dossier for Article routes. */
+  breadcrumbTrail?: { name: string; item: string }[];
 }
 
 const {
@@ -21,6 +25,8 @@ const {
   modifiedAt = publishedAt,
   readingTime,
   socialImage = 'https://gospod-bog.ru/images/og-preview-1200x630.webp',
+  socialImageHeight = 630,
+  breadcrumbTrail,
 } = Astro.props as Props;
 
 const siteTitle = `${title} | Господь Бог — Сила Моя`;
@@ -28,6 +34,15 @@ const icon = 'https://gospod-bog.ru/icons/icon-512.png';
 // Production SEO accepts only governed 1200×630 or 1200×675 social-image profiles.
 const schemaType = kind;
 const hasReadingTime = Number.isInteger(readingTime) && Number(readingTime) > 0;
+const journalUrl = 'https://gospod-bog.ru/journal/';
+const trail = canonical === journalUrl
+  ? []
+  : (breadcrumbTrail ?? [{ name: 'Досье G3', item: canonical }]);
+const breadcrumbItems = [
+  { name: 'Главная', item: 'https://gospod-bog.ru/' },
+  { name: 'Журнал', item: journalUrl },
+  ...trail,
+].map((entry, index) => ({ '@type': 'ListItem', position: index + 1, name: entry.name, item: entry.item }));
 ---
 <meta charset="utf-8">
 <link rel="preconnect" href="https://mc.yandex.ru" crossorigin>
@@ -54,7 +69,7 @@ const hasReadingTime = Number.isInteger(readingTime) && Number(readingTime) > 0;
 <meta property="og:locale" content="ru_RU">
 <meta property="og:image" content={socialImage}>
 <meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
+<meta property="og:image:height" content={String(socialImageHeight)}>
 <meta property="og:image:type" content="image/webp">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@FedorMilovanov">
@@ -99,7 +114,7 @@ const hasReadingTime = Number.isInteger(readingTime) && Number(readingTime) > 0;
       datePublished: publishedAt,
       dateModified: modifiedAt,
       timeRequired: hasReadingTime ? `PT${readingTime}M` : undefined,
-      image: { '@type': 'ImageObject', url: socialImage, width: 1200, height: 630 },
+      image: { '@type': 'ImageObject', url: socialImage, width: 1200, height: socialImageHeight },
       author: kind === 'Article' ? { '@type': 'Person', name: 'Фёдор Милованов', url: 'https://gospod-bog.ru/about/' } : undefined,
       editor: kind === 'Article' ? { '@type': 'Person', name: 'Фёдор Милованов', url: 'https://gospod-bog.ru/about/' } : undefined,
       publisher: { '@id': 'https://gospod-bog.ru/#organization' },
@@ -107,16 +122,7 @@ const hasReadingTime = Number.isInteger(readingTime) && Number(readingTime) > 0;
     },
     {
       '@type': 'BreadcrumbList',
-      itemListElement: canonical.endsWith('/journal/')
-        ? [
-            { '@type': 'ListItem', position: 1, name: 'Главная', item: 'https://gospod-bog.ru/' },
-            { '@type': 'ListItem', position: 2, name: 'Журнал', item: canonical },
-          ]
-        : [
-            { '@type': 'ListItem', position: 1, name: 'Главная', item: 'https://gospod-bog.ru/' },
-            { '@type': 'ListItem', position: 2, name: 'Журнал', item: 'https://gospod-bog.ru/journal/' },
-            { '@type': 'ListItem', position: 3, name: 'Досье G3', item: canonical },
-          ],
+      itemListElement: breadcrumbItems,
     },
   ],
 })} />
