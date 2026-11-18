@@ -159,6 +159,8 @@ test('pinned Git-object export contains only the allowlist and refuses overwrite
   const names = [...patch.matchAll(/^diff --git a\/(\S+) b\/\1$/gm)].map((match) => match[1]);
   assert.deepEqual(names.sort(), [...TRANSFER_FILES].sort());
   const manifest = JSON.parse(fs.readFileSync(path.join(out, 'transfer.json')));
+  assert.ok(Number.isFinite(Date.parse(manifest.technicalBuildInstant)));
+  assert.ok(fs.readFileSync(path.join(out, 'README.md'), 'utf8').includes(`GB_BUILD_INSTANT=${JSON.stringify(manifest.technicalBuildInstant)}`));
   assert.ok(manifest.excludedChanges.includes('src/components/journal/G3HistoryArticle.astro'));
   assert.ok(manifest.excludedChanges.includes('data/scripture-search-index.json'));
   assert.throws(() => buildTransfer({ repo: root, base, source: head, out }), /overwrite an existing/);
