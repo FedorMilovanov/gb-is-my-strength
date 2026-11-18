@@ -23,6 +23,8 @@ const sourceFiles = (directory) => {
 
 const handoff = read('src/data/journal/g3PublicationHandoff.ts');
 const dossier = read('src/components/journal/G3Dossier.astro');
+const productMetadata = read('src/data/journal/g3ProductMetadata.ts');
+const journalLanding = read('src/components/journal/JournalLanding.astro');
 const bibliography = read('src/data/journal/g3SourceBibliography.ts');
 const historyArticle = read('src/components/journal/G3HistoryArticle.astro');
 const historyFeature = read('src/components/journal/G3HistoryFeature.astro');
@@ -50,7 +52,13 @@ assert.deepEqual(projectedClaims, approvedClaims, 'Rendered G3 claims must match
 assert.equal(approvedSources.length, 21, 'The crisis dossier must keep the sealed 21-source publication scope');
 assert.equal(new Set(approvedSources).size, approvedSources.length, 'Approved source IDs must be unique');
 assert.deepEqual(bibliographySources, approvedSources, 'Reader-facing bibliography must match the immutable source set and order');
+assert.ok(approvedClaims.includes('G3-PUB-012'), 'Wind-down language must remain anchored to its sealed publication claim');
 assert.match(dossier, /projectedClaims\.forEach\(assertG3PublicationProjection\)/, 'Each projected claim must pass the publication guard');
+assert.match(productMetadata, /title:\s*'G3 Ministries: два кризиса и объявление о сворачивании'/, 'G3 headline must describe the announced wind-down, not imply completed legal closure');
+assert.match(productMetadata, /description:[^\n]*объявленное сворачивание служения/, 'G3 metadata description must preserve the announcement boundary');
+assert.match(journalLanding, /<h3>Два кризиса G3 Ministries и объявление о сворачивании<\/h3>/, 'Journal card must preserve the announced wind-down boundary');
+assert.match(dossier, /G3 объявила о прекращении работы церковной сети G3 Church Network[\s\S]*?сворачивании более широкой деятельности/, 'The body must attribute network cessation and broader operational wind-down to G3’s announcement');
+assert.match(dossier, /юридически ликвидировать корпорацию[\s\S]*?юридическое лицо всё ещё числилось действующим/, 'The dossier must distinguish operational wind-down from corporate dissolution');
 
 for (const [profilePath, expectedSource] of [
   ['data/route-profiles/journal.json', 'src/pages/journal/index.astro'],
@@ -117,4 +125,4 @@ console.log('JOURNAL EDITORIAL CONTRACT: PASS');
 console.log(`- Crisis dossier: ${approvedClaims.length} authorized claims / ${approvedSources.length} bibliography sources`);
 console.log('- Route ownership: /journal/ and /journal/dossiers/g3/ remain Astro production-dist owners');
 console.log('- G3 history: un-routed, production-guarded, PUBLICATION_HOLD retained; absent from sitemap, RSS, and search');
-console.log('- Journal brand name, labelled metadata groups, dossier-tag contrast, and G3 milestones border: PASS');
+console.log('- Journal brand/mobile nav, G3 headline attribution, metadata groups, dossier-tag contrast, and G3 milestones border: PASS');
