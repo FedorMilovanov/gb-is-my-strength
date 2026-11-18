@@ -6,8 +6,8 @@ interface Props {
   description: string;
   canonical: string;
   kind?: 'CollectionPage' | 'Article';
-  publishedAt?: string;
-  modifiedAt?: string;
+  publishedAt: string;
+  modifiedAt: string;
   readingTime?: number;
   socialImage?: string;
 }
@@ -17,8 +17,8 @@ const {
   description,
   canonical,
   kind = 'Article',
-  publishedAt = '2026-09-09T00:00:00+03:00',
-  modifiedAt = publishedAt,
+  publishedAt,
+  modifiedAt,
   readingTime,
   socialImage = 'https://gospod-bog.ru/images/og-preview-1200x630.webp',
 } = Astro.props as Props;
