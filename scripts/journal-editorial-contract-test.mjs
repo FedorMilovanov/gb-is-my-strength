@@ -5,11 +5,13 @@
  * handoff and must never be treated as permission to publish held history.
  */
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { createReadStream, existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { createServer } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const requireDist = process.argv.includes('--require-dist');
 const read = (relativePath) => readFileSync(path.join(root, relativePath), 'utf8');
 const sourceFiles = (directory) => {
   const files = [];
@@ -29,6 +31,7 @@ const bibliography = read('src/data/journal/g3SourceBibliography.ts');
 const historyArticle = read('src/components/journal/G3HistoryArticle.astro');
 const historyFeature = read('src/components/journal/G3HistoryFeature.astro');
 const historyMetadata = read('src/data/journal/g3HistoryDraftMetadata.ts');
+const shell = read('src/components/journal/JournalEditorialShell.astro');
 const masthead = read('src/components/journal/JournalMasthead.astro');
 const historyCss = read('src/components/journal/g3History.css');
 const editorialCss = read('src/components/journal/journalEditorial.css');
@@ -68,6 +71,19 @@ for (const [profilePath, expectedSource] of [
   assert.equal(profile.currentStatus, 'production-dist', `${profilePath}: route must remain production-dist`);
   assert.equal(profile.source, expectedSource, `${profilePath}: route owner/source drifted`);
   assert.equal(profile.migrationMode, 'strict-native', `${profilePath}: migration contract drifted`);
+}
+
+function countMatches(source, pattern) {
+  return [...source.matchAll(pattern)].length;
+}
+assert.equal(countMatches(shell, /<MobileChromePage\b/g), 1, 'JournalEditorialShell must be the sole mobile-chrome/search UI owner');
+assert.equal(countMatches(shell, /<JournalMasthead\b/g), 1, 'JournalEditorialShell must mount exactly one Journal masthead');
+for (const [surfacePath, source] of [
+  ['JournalLanding.astro', journalLanding],
+  ['G3Dossier.astro', dossier],
+]) {
+  assert.equal(countMatches(source, /<JournalEditorialShell\b/g), 1, `${surfacePath}: expected exactly one editorial shell owner`);
+  assert.equal(countMatches(source, /<(?:MobileChromePage|JournalMasthead)\b/g), 0, `${surfacePath}: do not duplicate shared shell UI owners`);
 }
 
 assert.match(historyMetadata, /publicationStatus:\s*'PUBLICATION_HOLD'/, 'History draft must remain on PUBLICATION_HOLD');
@@ -114,15 +130,109 @@ assert.match(milestonesRule, /border-block-start:\s*2px solid var\(--je-gold\)/,
 assert.match(milestonesRule, /border-block-end:\s*1px solid var\(--je-rule\)/, 'Milestones must have the intended bottom rule');
 assert.doesNotMatch(milestonesRule, /(?:^|;)\s*border-block\s*:/, 'Do not combine two border declarations in the invalid border-block shorthand');
 
+const distContractPaths = [
+  'dist/journal/index.html',
+  'dist/journal/dossiers/g3/index.html',
+  'dist/sitemap.xml',
+  'dist/feed.xml',
+  'dist/data/search-manifest.json',
+  'dist/pagefind/pagefind.js',
+  'dist/pagefind/pagefind-entry.json',
+];
+
+async function assertPagefindOmitsHeldHistory() {
+  const pagefindRoot = path.join(root, 'dist/pagefind');
+  const entry = JSON.parse(read('dist/pagefind/pagefind-entry.json'));
+  assert.ok(entry.languages?.ru?.page_count > 0, 'Pagefind Russian production index must exist and contain pages');
+
+  const server = createServer((request, response) => {
+    const pathname = decodeURIComponent(new URL(request.url || '/', 'http://localhost').pathname);
+    const prefix = '/pagefind/';
+    if (!pathname.startsWith(prefix)) {
+      response.writeHead(404).end();
+      return;
+    }
+    const filePath = path.resolve(pagefindRoot, pathname.slice(prefix.length));
+    if (!filePath.startsWith(`${pagefindRoot}${path.sep}`) || !existsSync(filePath) || statSync(filePath).isDirectory()) {
+      response.writeHead(404).end();
+      return;
+    }
+    response.setHeader('Content-Type', 'application/octet-stream');
+    createReadStream(filePath).pipe(response);
+  });
+  await new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve);
+  });
+
+  const { port } = server.address();
+  const baseUrl = `http://127.0.0.1:${port}`;
+  try {
+    const pagefindSource = Buffer.from(read('dist/pagefind/pagefind.js')).toString('base64');
+    const pagefindModule = await import(`data:text/javascript;base64,${pagefindSource}`);
+    const pagefind = await pagefindModule.createInstance({
+      basePath: `${baseUrl}/pagefind/`,
+      baseUrl,
+      primary: true,
+      language: 'ru',
+    });
+    const heldHistoryRoute = /\/journal\/dossiers\/g3\/history\/?$/i;
+    const probes = [
+      'G3-HIST-PUB-01',
+      'PUBLICATION_HOLD',
+      'G3 Ministries история конференций проповедников служения',
+    ];
+    const routeHits = [];
+    let indexedHits = 0;
+    for (const query of probes) {
+      const result = await pagefind.search(query);
+      assert.ok(result.results.length > 0, `Pagefind query probe returned no control results: ${query}`);
+      const items = await Promise.all(result.results.map((item) => item.data()));
+      indexedHits += items.length;
+      for (const item of items) {
+        const pathname = new URL(item.url, baseUrl).pathname;
+        if (heldHistoryRoute.test(pathname)) routeHits.push({ query, url: item.url });
+      }
+    }
+    assert.deepEqual(routeHits, [], 'Pagefind production index must not expose the held G3 history route');
+    return { probes: probes.length, indexedHits };
+  } finally {
+    await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  }
+}
+const missingDistArtifacts = distContractPaths.filter((relativePath) => !existsSync(path.join(root, relativePath)));
+if (requireDist) {
+  assert.deepEqual(missingDistArtifacts, [], `Production-like dist is incomplete; build it before running this contract: ${missingDistArtifacts.join(', ')}`);
+}
+const distReady = missingDistArtifacts.length === 0;
 const historyOutput = path.join(root, 'dist/journal/dossiers/g3/history');
 assert.ok(!existsSync(historyOutput), 'The production-like dist must not publish a G3 history route');
-for (const relativePath of ['dist/sitemap.xml', 'dist/feed.xml', 'dist/data/search-manifest.json']) {
-  if (!existsSync(path.join(root, relativePath))) continue;
-  assert.doesNotMatch(read(relativePath), /\/journal\/dossiers\/g3\/history\/|G3-HIST-PUB|G3HistoryArticle/i, `${relativePath} must not expose held G3 history`);
+
+let pagefindResult = null;
+if (distReady) {
+  for (const relativePath of ['dist/sitemap.xml', 'dist/feed.xml', 'dist/data/search-manifest.json']) {
+    assert.doesNotMatch(read(relativePath), /\/journal\/dossiers\/g3\/history\/|G3-HIST-PUB|G3HistoryArticle/i, `${relativePath} must not expose held G3 history`);
+  }
+
+  for (const [relativePath, route] of [
+    ['dist/journal/index.html', '/journal/'],
+    ['dist/journal/dossiers/g3/index.html', '/journal/dossiers/g3/'],
+  ]) {
+    const html = read(relativePath);
+    assert.equal(countMatches(html, /<header\b[^>]*\bclass="je-masthead"/g), 1, `${route}: expected one Journal masthead owner`);
+    assert.equal(countMatches(html, /<nav\b[^>]*\bclass="je-masthead__nav"/g), 1, `${route}: expected one Journal section-nav owner`);
+    assert.equal(countMatches(html, /<header\b[^>]*\bclass="mcp-top"/g), 1, `${route}: expected one shared mobile-chrome owner`);
+    assert.equal(countMatches(html, /<button\b[^>]*\bclass="mcp-search"/g), 1, `${route}: expected one shared mobile-search trigger`);
+    assert.equal(countMatches(html, /\bid="main-content"/g), 1, `${route}: expected one primary-content owner`);
+  }
+  pagefindResult = await assertPagefindOmitsHeldHistory();
 }
 
 console.log('JOURNAL EDITORIAL CONTRACT: PASS');
 console.log(`- Crisis dossier: ${approvedClaims.length} authorized claims / ${approvedSources.length} bibliography sources`);
 console.log('- Route ownership: /journal/ and /journal/dossiers/g3/ remain Astro production-dist owners');
-console.log('- G3 history: un-routed, production-guarded, PUBLICATION_HOLD retained; absent from sitemap, RSS, and search');
+console.log('- G3 history: un-routed, production-guarded, PUBLICATION_HOLD retained');
+console.log(distReady
+  ? `- Production dist: held history absent from sitemap/RSS/search; Pagefind ${pagefindResult.probes} query probes / ${pagefindResult.indexedHits} indexed hits; unique masthead, mobile-search, and main owners per route: PASS`
+  : `- Production dist checks: SKIP (missing ${missingDistArtifacts.join(', ')}); use --require-dist after a production-like build`);
 console.log('- Journal brand/mobile nav, G3 headline attribution, metadata groups, dossier-tag contrast, and G3 milestones border: PASS');
