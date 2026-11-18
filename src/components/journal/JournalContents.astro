@@ -1,0 +1,48 @@
+---
+/** A single semantic TOC, moved by CSS — never a second mobile menu/scrollspy. */
+interface Entry { href: string; label: string; }
+interface Props {
+  entries: Entry[];
+  label?: string;
+}
+const { entries, label = 'В этом материале' } = Astro.props;
+---
+<details class="je-contents" data-journal-contents open>
+  <summary>
+    <span>{label}</span>
+    <span class="je-contents-count">{entries.length} разделов <span aria-hidden="true">↕</span></span>
+  </summary>
+  <nav aria-label={label}>
+    <ol>
+      {entries.map((entry, index) => <li><a href={entry.href}><span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>{entry.label}</a></li>)}
+    </ol>
+  </nav>
+</details>
+<script>
+  // This adapter owns only this native disclosure. Shared mobile chrome,
+  // search, reading preferences and scrolling remain with their existing owners.
+  document.querySelectorAll<HTMLDetailsElement>('[data-journal-contents]').forEach((contents) => {
+    if (contents.dataset.journalContentsBound) return;
+    contents.dataset.journalContentsBound = 'true';
+    const compact = window.matchMedia('(max-width: 1023px)');
+    const summary = contents.querySelector('summary');
+    const syncLayout = () => { contents.open = !compact.matches; };
+    syncLayout();
+    compact.addEventListener('change', syncLayout);
+    contents.addEventListener('click', (event) => {
+      const link = (event.target as Element).closest<HTMLAnchorElement>('a[href^="#"]');
+      if (!link || !compact.matches) return;
+      const target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+      if (!target) return;
+      contents.open = false;
+      // Native anchor navigation owns the URL/scroll. Move focus out of the
+      // newly closed disclosure, preserving the native scroll destination.
+      window.requestAnimationFrame(() => { target.focus({ preventScroll: true }); });
+    });
+    contents.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || !compact.matches || !contents.open) return;
+      contents.open = false;
+      summary?.focus();
+    });
+  });
+</script>

@@ -1,109 +1,74 @@
 ---
 import JournalEditorialShell from './JournalEditorialShell.astro';
-
+import { G3_PRODUCT_METADATA as g3 } from '@/data/journal/g3ProductMetadata';
+import { G3_EDITORIAL_MEDIA as cover } from '@/data/journal/g3EditorialMedia';
+import { G3_SOURCE_BIBLIOGRAPHY } from '@/data/journal/g3SourceBibliography';
+const sizes = '(min-width: 1280px) 580px, (min-width: 691px) calc((100vw - 100px) / 2), calc(100vw - 40px)';
 ---
 <JournalEditorialShell kind="journal" backHref="/">
-<main class="journal-landing" id="main-content" tabindex="-1">
-  <section class="journal-hero" aria-labelledby="journal-title">
-    <p class="journal-kicker">Церковная жизнь · история · документы</p>
-    <h1 id="journal-title">Журнал</h1>
-    <p class="journal-lead">
-      Сложные события в жизни церквей заслуживают не громких заголовков,
-      а понятного рассказа. Здесь мы разбираем историю, изучаем документы,
-      объясняем причины конфликтов и показываем, где выводы пока делать рано.
-    </p>
-    <p class="journal-intro">
-      У каждого материала есть предыстория: люди, решения и обстоятельства,
-      без которых очередная новость мало что сообщает. Поэтому сначала
-      восстанавливаем контекст и проверяем обе стороны, а затем рассказываем,
-      что действительно известно.
-    </p>
-  </section>
+  <main class="journal-landing" id="main-content" tabindex="-1">
+    <section class="journal-hero" aria-labelledby="journal-title">
+      <p class="journal-kicker">Церковная жизнь · история · документы</p>
+      <h1 id="journal-title">Журнал</h1>
+      <p class="journal-lead">За новостью всегда есть история. Мы восстанавливаем контекст,
+        читаем документы и отделяем то, что можно установить, от того, что пока остаётся вопросом.</p>
+    </section>
 
-  <section class="journal-section journal-featured" aria-labelledby="lead-dossier">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Документальное досье</p>
-        <h2 id="lead-dossier">История G3 Ministries</h2>
+    <section class="journal-section journal-featured" aria-labelledby="lead-dossier">
+      <div class="section-heading">
+        <div><p class="eyebrow">Документальное досье</p><h2 id="lead-dossier">G3 Ministries</h2></div>
+        <p>Руководство, финансы,<br />судьба служения</p>
       </div>
-    </div>
-    <a class="lead-card" href="/journal/dossiers/g3/">
-      <div class="lead-card-copy">
-        <p class="lead-label">Документальное досье · 2025–2026</p>
-        <h3>Два кризиса G3 Ministries и завершение деятельности</h3>
-        <p>
-          Разбираем, как G3 пережила кризис руководства в 2025 году, почему
-          новый конфликт в 2026-м стал поворотным и что произошло с конференциями,
-          издательством и сетью церквей. Факты, документы и спорные утверждения
-          отделены друг от друга; нерешённые вопросы названы прямо.
-        </p>
-        <span class="read-link">Читать историю G3 <span aria-hidden="true">→</span></span>
-      </div>
-      <div class="lead-context">
-        <img src="/images/journal/g3-ministries-cover-1200.webp"
-             srcset="/images/journal/g3-ministries-cover-640.webp 640w, /images/journal/g3-ministries-cover-1200.webp 1200w"
-             sizes="(max-width: 690px) calc(100vw - 36px), 430px"
-             width="1200" height="675" loading="lazy" decoding="async"
-             alt="Иллюстративная обложка G3 Ministries: логотип и раскрытая книга." />
-        <div class="lead-context-copy">
-        <span class="lead-context-label">В центре истории</span>
-        <p>Отставка Джоша Бьюса</p>
-        <p>Документы и финансы</p>
-        <p>События 2025–2026</p>
-        <span class="lead-context-foot">Источники и документы — внутри материала</span>
+      <a class="lead-card" href="/journal/dossiers/g3/">
+        <div class="lead-card-copy">
+          <p class="lead-label">Досье · 2025–2026 · {g3.readingTimeMinutes} мин чтения</p>
+          <h3>{g3.title}</h3>
+          <p>Отставка Джоша Бьюса, попытка перестроить работу и новый конфликт.
+            Разбираем заявления руководства, финансовые документы и открытые вопросы
+            о конференциях, издательстве и церковной сети.</p>
+          <span class="read-link">Читать досье <span aria-hidden="true">↗</span></span>
         </div>
-      </div>
-    </a>
-  </section>
+        <div class="lead-context">
+          <picture>
+            <source type="image/avif" srcset={cover.avifSrcset} sizes={sizes} />
+            <img src={cover.src} srcset={cover.webpSrcset} sizes={sizes}
+                 width={cover.width} height={cover.height} alt={cover.alt}
+                 loading="eager" fetchpriority="high" decoding="async" />
+          </picture>
+          <p class="lead-context-caption"><span>Редакционная иллюстрация</span><span>{G3_SOURCE_BIBLIOGRAPHY.length} источник внутри</span></p>
+        </div>
+      </a>
+    </section>
 
-  <section class="journal-section" aria-labelledby="directions">
-    <div class="section-heading compact">
-      <div>
-        <p class="eyebrow">Наша редакционная работа</p>
-        <h2 id="directions">Новости, которым не нужен отдельный словарь</h2>
-      </div>
+    <div class="journal-editorial-grid">
+      <section aria-labelledby="directions">
+        <p class="eyebrow">О чём мы пишем</p>
+        <h2 id="directions">Событие нуждается в контексте</h2>
+        <div class="journal-prose">
+          <p>Новости церковной жизни, исторические разборы, сложные пастырские
+            и богословские конфликты. Читателю важно понимать, как возник вопрос,
+            кто в нём участвует и почему документы могут противоречить друг другу.</p>
+          <p>Новые материалы появляются после редакционной проверки.
+            Мы не заменяем их пустыми рубриками и не выдаём незавершённое исследование за публикацию.</p>
+        </div>
+      </section>
+      <section class="journal-method" aria-labelledby="method-title">
+        <p class="eyebrow">Редакционный принцип</p>
+        <h2 id="method-title">Источник — ещё не приговор</h2>
+        <div class="journal-prose">
+          <p>Свидетельство участника, заявление руководства и постановление суда — разные
+            виды источников. Мы проверяем первичные документы и не выдаём чьё-то обвинение
+            за уже доказанное событие.</p>
+          <p>Если новые документы меняют существенный вывод, материал получает явное
+            датированное исправление. Доверие читателя важнее громкого заголовка.</p>
+        </div>
+      </section>
     </div>
-    <div class="journal-prose">
-      <p>
-        Мы готовим новости церковной жизни, исторические разборы, исследования
-        сложных пастырских и богословских конфликтов. Но публикация начинается
-        не с последней даты в судебной хронике: сначала читатель должен понимать,
-        как возник вопрос, кто в нём участвует и почему документы могут противоречить друг другу.
-      </p>
-      <p>
-        В исследовательском архиве ведётся подготовка новых материалов.
-        Мы не выводим их на сайт до проверки фактов и источников.
-        Рубрики новостей и документов будут появляться здесь по мере выхода
-        полноценных текстов, а не как пустые разделы.
-      </p>
-    </div>
-  </section>
-
-  <section class="journal-method" aria-labelledby="method-title">
-    <p class="eyebrow">Редакционный принцип</p>
-    <h2 id="method-title">Что можно установить — и что ещё неизвестно</h2>
-    <div class="journal-prose">
-      <p>
-        Свидетельство очевидца, заявление руководства и постановление суда — разные
-        виды источников. Когда речь идёт о споре между людьми, мы представляем
-        аргументы сторон, проверяем первичные документы и не выдаём чьё-то обвинение
-        за уже доказанное событие.
-      </p>
-      <p>
-        Новые существенные документы могут менять прежнюю оценку. В таких случаях
-        публикация получает явное датированное исправление. Доверие читателя
-        важнее громкого вывода, который пока нельзя подтвердить.
-      </p>
-    </div>
-  </section>
-
-</main>
-
-<footer class="journal-footer">
-  <a href="/">На главную</a>
-  <span>·</span>
-  <a href="/articles/">Богословские статьи</a>
-  <span>·</span>
-  <span>Автор-редактор: Фёдор Милованов</span>
-</footer>
+  </main>
+  <footer class="journal-footer">
+    <a href="/">На основной сайт <span aria-hidden="true">↗</span></a>
+    <a href="/articles/">Богословские статьи</a>
+    <a href="/about/">Об издании</a>
+    <span>Автор-редактор: Фёдор Милованов</span>
+  </footer>
 </JournalEditorialShell>
