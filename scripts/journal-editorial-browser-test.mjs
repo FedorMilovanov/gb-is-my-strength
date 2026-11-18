@@ -292,6 +292,12 @@ try {
         const historyHeadings = [...document.querySelectorAll('.je-history-heading')].map((node) => ({
           breakInside: getComputedStyle(node).breakInside, breakAfter: getComputedStyle(node).breakAfter,
         }));
+        const sourceNotes = [...document.querySelectorAll('.source-note-paragraph, .je-history-footnote')].map((node) => ({
+          text: node.textContent.replace(/\s+/g, ' ').trim(), breakBefore: getComputedStyle(node).breakBefore,
+        }));
+        const milestoneOpeners = [...document.querySelectorAll('.je-history-milestones-list > li:first-child')].map((node) => ({
+          breakInside: getComputedStyle(node).breakInside,
+        }));
         return {
           paper: getComputedStyle(document.querySelector('.journal-edition')).backgroundColor,
           paperToken: getComputedStyle(document.querySelector('.journal-edition')).getPropertyValue('--je-paper').trim(),
@@ -299,7 +305,7 @@ try {
           sources: [...document.querySelectorAll('.bibliography-item')].filter((node) => node.getBoundingClientRect().height > 0).length,
           mastheadHidden: getComputedStyle(document.querySelector('.je-masthead')).display === 'none',
           contentsHidden: getComputedStyle(document.querySelector('.je-contents')).display === 'none',
-          paragraphs, labels, historyHeadings,
+          paragraphs, labels, historyHeadings, sourceNotes, milestoneOpeners,
         };
       });
       // The existing site print owner intentionally clears backgrounds with
@@ -308,7 +314,13 @@ try {
       check(entry, 'print:light-paper-hidden-navigation-sources-even-when-closed', ['rgb(255, 255, 255)', 'rgba(0, 0, 0, 0)'].includes(print.paper) && print.paperToken === '#fff' && ['rgb(0, 0, 0)', 'rgb(17, 17, 17)'].includes(print.ink) && print.sources > 0 && print.mastheadHidden && print.contentsHidden, print);
       check(entry, 'print:all-reading-paragraphs-stay-together', print.paragraphs.length > 0 && print.paragraphs.every((item) => item.breakInside === 'avoid'), print.paragraphs);
       check(entry, 'print:section-labels-stay-with-heading', print.labels.length > 0 && print.labels.every((item) => item.breakAfter === 'avoid'), print.labels);
-      if (target.held) check(entry, 'print:history-heading-groups-stay-together', print.historyHeadings.length > 0 && print.historyHeadings.every((item) => item.breakInside === 'avoid' && item.breakAfter === 'avoid'), print.historyHeadings);
+      // These are computed fragmentation-rule guards, not a PDF pagination proof.
+      // Pair them with the DOM-derived heading/content and source/previous PDF review.
+      check(entry, 'print:source-notes-keep-with-previous-rule', print.sourceNotes.length > 0 && print.sourceNotes.every((item) => item.breakBefore === 'avoid'), print.sourceNotes);
+      if (target.held) {
+        check(entry, 'print:history-heading-groups-stay-together', print.historyHeadings.length > 0 && print.historyHeadings.every((item) => item.breakInside === 'avoid' && item.breakAfter === 'avoid'), print.historyHeadings);
+        check(entry, 'print:milestone-opening-item-keep-rule', print.milestoneOpeners.length > 0 && print.milestoneOpeners.every((item) => item.breakInside === 'avoid'), print.milestoneOpeners);
+      }
       await landscape.screenshot({ path: path.join(out, `${target.id}-print.png`) });
       if (engine === 'chromium') await landscape.pdf({ path: path.join(out, `${target.id}-print.pdf`), format: 'A4', printBackground: true });
     }

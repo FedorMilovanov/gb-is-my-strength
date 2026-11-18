@@ -84,5 +84,8 @@
   .journal-edition .je-history-heading { break-inside: avoid; }
   /* A year may span sheets; its individual reading paragraphs must not fragment. */
   .journal-edition :is(.je-history-origin-text, .je-history-year-text, .je-history-growth-grid, .je-history-context, .je-history-milestone-text) p { break-inside: avoid; }
+  .journal-edition .je-history-footnote { break-before: avoid; }
+  /* Do not strand the list heading by fragmenting its first grid row after the border. */
+  .journal-edition .je-history-milestones-list > li:first-child { break-inside: avoid; }
   .journal-edition .je-evidence-key > div { break-inside: avoid; }
 }
