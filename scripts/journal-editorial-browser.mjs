@@ -627,14 +627,28 @@ try {
               clip: { left: r.left + nav.clientLeft, right: r.left + nav.clientLeft + nav.clientWidth,
                 top: r.top + nav.clientTop, bottom: r.top + nav.clientTop + nav.clientHeight },
               scrollbar: nav.offsetWidth - nav.clientWidth, scrollTop: nav.scrollTop, y: scrollY,
-              outline: (parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0),
+              outline: Math.max(0, (parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0)),
+              outlineWidth: parseFloat(style.outlineWidth) || 0, outlineOffset: parseFloat(style.outlineOffset) || 0,
+              outlineStyle: style.outlineStyle,
+              textRects: active.matches('summary') ? (() => {
+                const walker = document.createTreeWalker(active, NodeFilter.SHOW_TEXT), rects = [];
+                while (walker.nextNode()) if (walker.currentNode.textContent.trim()) {
+                  const range = document.createRange(); range.selectNodeContents(walker.currentNode);
+                  rects.push(...[...range.getClientRects()].map((r) => r.toJSON()));
+                }
+                return rects;
+              })() : [],
               focusVisible: active.matches(':focus-visible'),
               headerBottom: headerStyle?.display !== 'none' && headerStyle?.visibility !== 'hidden' && Number(headerStyle?.opacity) > 0
                 ? Math.max(0, headerRect.bottom) : 0 };
           });
           assert.equal(state.inside, true); assert.equal(state.href, expected);
-          assert.equal(state.focusVisible, true); assert.ok(state.outline >= 2, 'the indicator must really paint');
+          assert.equal(state.focusVisible, true);
+          assert.ok(state.outlineWidth >= 2 && state.outlineStyle === 'solid', 'the indicator must really paint, even when fully inset');
           const { rect: r, outline: o, clip: c } = state;
+          const inset = Math.max(0, -state.outlineOffset);
+          assert.ok(state.textRects.every((text) => text.left >= r.left + inset - 1 && text.right <= r.right - inset + 1
+            && text.top >= r.top + inset - 1 && text.bottom <= r.bottom - inset + 1), 'an inset summary indicator must not cover text');
           assert.ok(r.left - o >= -1 && r.right + o <= width + 1 && r.top - o >= state.headerBottom - 1 && r.bottom + o <= height + 1,
             `focus outline outside viewport / under visible shared header: ${JSON.stringify(state)}`);
           if (expected !== null) {
