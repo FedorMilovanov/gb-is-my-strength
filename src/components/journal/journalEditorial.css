@@ -261,6 +261,14 @@ html.dark .journal-edition {
     padding: 8px 12px;
   }
   .je-back-to-top span { display: none; }
+  .journal-edition .dossier-meta-sep { display: none; }
+  .journal-edition .dossier-meta-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
+    padding: 12px 14px;
+  }
 }
 
 /* Editorial meta badge bar in hero */
@@ -282,6 +290,10 @@ html.dark .journal-edition {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+.journal-edition .dossier-meta-item svg {
+  flex: none;
+  color: var(--je-gold-text);
 }
 .journal-edition .dossier-meta-sep {
   color: var(--je-rule);
