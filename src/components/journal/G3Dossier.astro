@@ -50,6 +50,35 @@ const biblioGroups = [
     ids: ['G3-S033', 'G3-S050', 'G3-S053', 'G3-S054', 'G3-S096'],
   },
 ];
+
+interface SourceTarget {
+  sectionHref: string;
+  sectionName: string;
+}
+
+const SOURCE_SECTION_MAP: Record<string, SourceTarget> = {
+  'G3-S001': { sectionHref: '#timeline', sectionName: 'Хронология' },
+  'G3-S002': { sectionHref: '#finance', sectionName: 'Финансы' },
+  'G3-S008': { sectionHref: '#buice', sectionName: 'Кризис 2025' },
+  'G3-S009': { sectionHref: '#buice', sectionName: 'Кризис 2025' },
+  'G3-S010': { sectionHref: '#buice', sectionName: 'Кризис 2025' },
+  'G3-S011': { sectionHref: '#wind-down', sectionName: 'Завершение' },
+  'G3-S012': { sectionHref: '#buck', sectionName: 'Кризис 2026' },
+  'G3-S015': { sectionHref: '#buck', sectionName: 'Кризис 2026' },
+  'G3-S017': { sectionHref: '#wind-down', sectionName: 'Завершение' },
+  'G3-S023': { sectionHref: '#buice', sectionName: 'Кризис 2025' },
+  'G3-S024': { sectionHref: '#buice', sectionName: 'Кризис 2025' },
+  'G3-S028': { sectionHref: '#finance', sectionName: 'Финансы' },
+  'G3-S033': { sectionHref: '#wind-down', sectionName: 'Завершение' },
+  'G3-S035': { sectionHref: '#buck', sectionName: 'Кризис 2026' },
+  'G3-S042': { sectionHref: '#buck', sectionName: 'Кризис 2026' },
+  'G3-S046': { sectionHref: '#governance', sectionName: 'Управление' },
+  'G3-S047': { sectionHref: '#governance', sectionName: 'Управление' },
+  'G3-S050': { sectionHref: '#wind-down', sectionName: 'Завершение' },
+  'G3-S053': { sectionHref: '#wind-down', sectionName: 'Завершение' },
+  'G3-S054': { sectionHref: '#wind-down', sectionName: 'Завершение' },
+  'G3-S096': { sectionHref: '#governance', sectionName: 'Управление' },
+};
 ---
 <JournalEditorialShell kind="dossier" backHref="/journal/">
 <main class="dossier journal-dossier-shell" id="main-content" tabindex="-1" data-journal-dossier="g3" data-research-seal={G3_PUBLICATION_HANDOFF.researchSealCommit}>
@@ -71,6 +100,24 @@ const biblioGroups = [
       <span>Документальное досье</span>
       <span><time datetime="2026-09-09">9 сентября 2026 года</time></span>
       <span>Обновлено <time datetime="2026-11-18">18 ноября 2026</time></span>
+    </div>
+    <div class="dossier-meta-bar" aria-label="Параметры документального расследования">
+      <div class="meta-bar-item">
+        <span class="meta-bar-label">Хронометраж</span>
+        <span class="meta-bar-value">~11 минут чтения</span>
+      </div>
+      <div class="meta-bar-item">
+        <span class="meta-bar-label">Доказательная база</span>
+        <span class="meta-bar-value">16 фактов G3-PUB</span>
+      </div>
+      <div class="meta-bar-item">
+        <span class="meta-bar-label">Первоисточники</span>
+        <span class="meta-bar-value">21 проверенный документ</span>
+      </div>
+      <div class="meta-bar-item">
+        <span class="meta-bar-label">Статус расследования</span>
+        <span class="meta-bar-value">Печать 298d00d · Завершено</span>
+      </div>
     </div>
   </header>
 
@@ -201,6 +248,10 @@ const biblioGroups = [
           <span class="je-metric-note">По классификации организации (0$ на управление)</span>
         </div>
       </div>
+      <p class="je-finance-disclaimer">
+        <span class="sr-only">Важное примечание:</span>
+        <strong>Справка к суммам:</strong> статьи конференций (+$817 283) и рекламы (+$246 511) составляют 99% общего прироста расходов и входят в состав итоговой суммы +$1 061 800 (не складываются поверх неё).
+      </p>
       <p>
         Финансовая история началась ещё до громких конфликтов 2025–2026 годов.
         По сведениям из налоговых деклараций американской некоммерческой организации
@@ -228,7 +279,11 @@ const biblioGroups = [
         упоминания, но сама по себе не позволяет сделать вывод о незаконной выплате
         или определить личность родителя только по фамилии.
       </p>
-      <p class="source-note-paragraph"><a class="source-note" href={handoffUrl} rel="noopener">Налоговые данные и ограничения: G3-PUB-002–004</a></p>
+      <p class="source-note-paragraph">
+        <a class="source-note" href="#src-G3-S002">Первоисточник: Form 990 (G3-S002)</a> · 
+        <a class="source-note" href="#src-G3-S028">TEOS XML (G3-S028)</a> · 
+        <a class="source-note" href={handoffUrl} rel="noopener">Налоговые данные и ограничения: G3-PUB-002–004</a>
+      </p>
     </div>
   </section>
 
@@ -264,7 +319,11 @@ const biblioGroups = [
         Мы не переносим автоматически этот состав на конец августа, когда происходили
         события кризиса: необходимые документы за этот промежуток пока не получены.
       </p>
-      <p class="source-note-paragraph"><a class="source-note" href={handoffUrl} rel="noopener">Состав совета и ограничения: G3-PUB-008–009, 016</a></p>
+      <p class="source-note-paragraph">
+        <a class="source-note" href="#src-G3-S096">Архивный состав совета (G3-S096)</a> · 
+        <a class="source-note" href="#src-G3-S046">Служебные страницы (G3-S046)</a> · 
+        <a class="source-note" href={handoffUrl} rel="noopener">Состав совета и ограничения: G3-PUB-008–009, 016</a>
+      </p>
     </div>
   </section>
 
@@ -290,7 +349,11 @@ const biblioGroups = [
         Следовательно, корректнее говорить о <strong>попытке продолжить и перестроить служение</strong>,
         а не утверждать, что реформа обязательно оказалась успешной.
       </p>
-      <p class="source-note-paragraph"><a class="source-note" href={handoffUrl} rel="noopener">Заявления организации и даты: G3-PUB-005–007</a></p>
+      <p class="source-note-paragraph">
+        <a class="source-note" href="#src-G3-S008">Заявление G3 (G3-S008)</a> · 
+        <a class="source-note" href="#src-G3-S010">Назначение Aniol (G3-S010)</a> · 
+        <a class="source-note" href={handoffUrl} rel="noopener">Заявления организации и даты: G3-PUB-005–007</a>
+      </p>
     </div>
   </section>
 
@@ -338,7 +401,12 @@ const biblioGroups = [
         оригинальную запись проповеди, установить издание использованного комментария
         и проверить контекст ссылки на автора.
       </p>
-      <p class="source-note-paragraph"><a class="source-note" href={handoffUrl} rel="noopener">Проверка двух разных вопросов: G3-PUB-010–011, 016</a></p>
+      <p class="source-note-paragraph">
+        <a class="source-note" href="#src-G3-S012">Разбор Phil Johnson (G3-S012)</a> · 
+        <a class="source-note" href="#src-G3-S015">Письмо пасторов (G3-S015)</a> · 
+        <a class="source-note" href="#src-G3-S035">Заявление Lindale (G3-S035)</a> · 
+        <a class="source-note" href={handoffUrl} rel="noopener">Проверка двух разных вопросов: G3-PUB-010–011, 016</a>
+      </p>
     </div>
   </section>
 
@@ -370,7 +438,12 @@ const biblioGroups = [
         Однако даже этот случай не раскрывает условия передачи прав
         на весь каталог G3 Press.
       </p>
-      <p class="source-note-paragraph"><a class="source-note" href={handoffUrl} rel="noopener">Решения, реестры и открытые вопросы: G3-PUB-001, 012–016</a></p>
+      <p class="source-note-paragraph">
+        <a class="source-note" href="#src-G3-S011">Отмена 2027 (G3-S011)</a> · 
+        <a class="source-note" href="#src-G3-S017">Сообщение о закрытии (G3-S017)</a> · 
+        <a class="source-note" href="#src-G3-S053">Витрина G3 Press (G3-S053)</a> · 
+        <a class="source-note" href={handoffUrl} rel="noopener">Решения, реестры и открытые вопросы: G3-PUB-001, 012–016</a>
+      </p>
     </div>
   </section>
 
@@ -466,18 +539,23 @@ const biblioGroups = [
               <div class="bibliography-group">
                 <h3 class="bibliography-group-title">{gIdx + 1} · {group.title} ({items.length} {items.length === 3 || items.length === 4 ? 'источника' : 'источников'})</h3>
                 <ol class="bibliography-list">
-                  {items.map((entry) => (
-                    <li id={`src-${entry.id}`} class="bibliography-item">
-                      <h4>{entry.title}</h4>
-                      <p class="biblio-meta">{entry.period} · {entry.eligibility}</p>
-                      <p>{entry.locator}</p>
-                      <p class="biblio-links">
-                        {entry.publicUrl ? <a href={entry.publicUrl} rel="noopener">Открыть документ</a> : <span>Публичной ссылки на полный объект нет</span>}
-                        <span aria-hidden="true">·</span>
-                        <a href={G3_SOURCE_LEDGER_URL} rel="noopener">Сведения в исследовательском реестре ({entry.id})</a>
-                      </p>
-                    </li>
-                  ))}
+                  {items.map((entry) => {
+                    const target = SOURCE_SECTION_MAP[entry.id] || { sectionHref: '#overview', sectionName: 'Контекст' };
+                    return (
+                      <li id={`src-${entry.id}`} class="bibliography-item">
+                        <h4>{entry.title}</h4>
+                        <p class="biblio-meta">{entry.period} · {entry.eligibility}</p>
+                        <p>{entry.locator}</p>
+                        <p class="biblio-links">
+                          {entry.publicUrl ? <a href={entry.publicUrl} rel="noopener">Открыть документ</a> : <span>Публичной ссылки на полный объект нет</span>}
+                          <span aria-hidden="true">·</span>
+                          <a href={G3_SOURCE_LEDGER_URL} rel="noopener">Сведения в исследовательском реестре ({entry.id})</a>
+                          <span aria-hidden="true">·</span>
+                          <a href={target.sectionHref} class="biblio-return-link" aria-label={`Вернуться к разделу ${target.sectionName}`}>↑ К разделу «{target.sectionName}»</a>
+                        </p>
+                      </li>
+                    );
+                  })}
                 </ol>
               </div>
             );
