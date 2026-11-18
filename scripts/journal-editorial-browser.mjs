@@ -21,19 +21,25 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const args = Object.fromEntries(process.argv.slice(2).map((arg) => { const i = arg.indexOf('='); return [arg.slice(2, i), arg.slice(i + 1)]; }));
 const origin = args.origin || 'http://localhost:4173';
 const engine = args.browser || 'chromium';
+const suite = args.suite || 'full';
 assert.ok(['chromium', 'firefox', 'webkit'].includes(engine), 'unknown browser engine');
+assert.ok(['full', 'short'].includes(suite), 'use --suite=short for the bounded short-window negative control');
 const axePath = args.axe || path.join(root, 'node_modules/axe-core/axe.min.js');
 assert.ok(fs.existsSync(axePath), 'provide --axe=<existing axe-core file>; do not silently skip the accessibility audit');
 const axeSource = fs.readFileSync(axePath, 'utf8');
 const output = path.resolve(root, args.output || 'reports/g3-editorial-local-20261118');
 fs.mkdirSync(path.join(output, 'after'), { recursive: true });
 const widths = args.widths ? args.widths.split(',').map(Number) : [320, 360, 390, 430, 768, 1024, 1440, 1920];
+const shortHeights = args.heights ? args.heights.split(',').map(Number) : [390, 480, 600];
 assert.ok(widths.every((width) => Number.isInteger(width) && width >= 320));
+assert.ok(shortHeights.every((height) => Number.isInteger(height) && height >= 320 && height <= 600));
+assert.ok(suite !== 'short' || widths.some((width) => width >= 1024), 'the short suite needs at least one desktop width');
 const routes = [{ kind: 'journal', url: origin + '/journal/' }, { kind: 'dossier', url: origin + '/journal/dossiers/g3/' }];
 if (args['history-origin']) routes.push({ kind: 'history', url: args['history-origin'] + '/_review/g3-history/' });
-const report = { engine, version: null, head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
-  note: 'Local artifact/manuscript only. axe is automated evidence, not full WCAG or artistic signoff. Timings are local lab, not field Core Web Vitals.',
-  sourceSha256: {}, cases: [], interactions: [], problems: [] };
+const report = { engine, suite, version: null, head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
+  worktree: execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).trim(),
+  note: 'Local artifact/manuscript only. axe is automated evidence, not full WCAG or artistic signoff. Timings are local lab, not field Core Web Vitals. Short-window theme is the browser color preference; no-JS retains the existing SSR palette.',
+  sourceSha256: {}, cases: [], interactions: [], shortViewports: [], problems: [] };
 const witnessFiles = [
   ...['G3Dossier.astro', 'G3HistoryArticle.astro', 'G3HistoryFeature.astro', 'JournalLanding.astro', 'JournalMasthead.astro', 'JournalArticleHeader.astro', 'JournalContents.astro', 'JournalDataFigure.astro', 'JournalSourceReturn.astro', 'JournalDocumentHead.astro', 'JournalFontPreloads.astro', 'journalEditorial.css', 'g3History.css'].map((name) => `src/components/journal/${name}`),
   ...['g3EditorialMedia.ts', 'g3HistoryDraftSources.ts', 'g3HistoryDraftMetadata.ts', 'g3ProductMetadata.ts', 'g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'journalProductMetadata.ts'].map((name) => `src/data/journal/${name}`),
@@ -136,7 +142,7 @@ const sourceRoundTrip = async (page, citation, keyboard, onSource) => {
   return { id, source: hash, keyboardOutbound: keyboard, keyboardReturn: !keyboard, focusRestored: true, position };
 };
 try {
-  for (const route of routes) for (const width of widths) for (const theme of ['light', 'dark']) {
+  if (suite === 'full') for (const route of routes) for (const width of widths) for (const theme of ['light', 'dark']) {
     const context = await contextFor(width, theme);
     await context.addInitScript(() => {
       window.__journalLab = { lcp: null, cls: null };
@@ -242,7 +248,7 @@ try {
       console.error(`FAIL ${route.kind} ${width} ${theme}: ${error.message.slice(0, 280)}`);
     } finally { report.cases.push(item); await context.close(); }
   }
-  for (const route of routes) {
+  if (suite === 'full') for (const route of routes) {
     const result = { kind: route.kind, runtime: [] };
     const context = await contextFor(390, 'light');
     const page = await context.newPage();
@@ -416,9 +422,124 @@ try {
     } catch (error) { report.problems.push(`${route.kind} no-JS: ${error.message}`); }
     finally { await noJs.close(); }
   }
+  // The same native disclosure must remain usable when desktop width no longer
+  // implies desktop height. Exercise the actual scroll container, not forced clicks.
+  for (const route of routes.filter((route) => route.kind !== 'journal'))
+    for (const width of widths.filter((width) => width >= 1024)) for (const height of shortHeights)
+      for (const theme of ['light', 'dark']) for (const javaScriptEnabled of [true, false]) {
+        const context = await contextFor(width, theme, { viewport: { width, height }, javaScriptEnabled });
+        const page = await context.newPage();
+        const item = { kind: route.kind, width, height, theme, javaScriptEnabled, runtime: [] };
+        const name = `${route.kind}-short-${width}x${height}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}`;
+        monitorRuntime(page, item.runtime, { isIgnoredConsole: (_, message) => !['error', 'warning'].includes(message.type()) });
+        const rail = page.locator('.je-editorial-rail');
+        const toc = page.locator('[data-journal-contents]');
+        const summary = toc.locator('summary');
+        const last = toc.locator('li:last-child a');
+        const middle = page.locator(route.kind === 'dossier' ? '#finance' : '#g3-growth');
+        const railState = () => rail.evaluate((el) => ({ y: scrollY, rect: el.getBoundingClientRect().toJSON(),
+          clientHeight: el.clientHeight, scrollHeight: el.scrollHeight, scrollTop: el.scrollTop,
+          horizontalOverflow: el.scrollWidth - el.clientWidth, overflow: getComputedStyle(el).overflowY,
+          clearance: { top: parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop),
+            bottom: parseFloat(getComputedStyle(document.documentElement).scrollPaddingBottom) },
+          paper: getComputedStyle(el).getPropertyValue('--je-paper').trim() }));
+        try {
+          await ready(page, route.url);
+          await middle.scrollIntoViewIfNeeded(); await settleWithoutScripts(page);
+          item.before = await railState();
+          assert.ok(item.before.rect.top >= item.before.clearance.top - 1 && item.before.rect.bottom <= height - item.before.clearance.bottom + 1,
+            `sticky rail exceeds the document's focus-safe viewport: ${JSON.stringify(item.before)}`);
+          assert.equal(item.before.horizontalOverflow, 0);
+          assert.ok(item.before.scrollHeight > item.before.clientHeight, 'short desktop rail must have a native scroll range');
+          await rail.hover({ position: { x: 80, y: 80 } });
+          await page.mouse.wheel(0, 1500); await page.waitForTimeout(160);
+          item.afterWheel = await railState();
+          assert.ok(item.afterWheel.scrollTop > 0, 'wheel must reveal the end of the rail');
+          assert.ok(Math.abs(item.afterWheel.y - item.before.y) < 1, 'scrolling the rail must not displace the reading position');
+          const links = await rail.locator('a').evaluateAll((links) => links.map((link) => link.getAttribute('href')));
+          const focused = async (expected) => {
+            const state = await rail.evaluate((el) => {
+              const active = document.activeElement, style = getComputedStyle(active);
+              return { href: active.getAttribute('href'), inside: el.contains(active), y: scrollY,
+                rect: active.getBoundingClientRect().toJSON(), clip: el.getBoundingClientRect().toJSON(),
+                scrollbar: el.offsetWidth - el.clientWidth,
+                outline: (parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0),
+                focusVisible: active.matches(':focus-visible') };
+            });
+            assert.equal(state.inside, true); assert.equal(state.href, expected);
+            assert.equal(state.focusVisible, true, 'keyboard focus must have a visible indicator');
+            assert.ok(state.outline >= 2, 'the focus-visible state must actually paint an outline');
+            assert.ok(state.rect.top - state.outline >= state.clip.top - 1 && state.rect.bottom + state.outline <= state.clip.bottom + 1,
+              `vertical focus outline clipped: ${JSON.stringify(state)}`);
+            assert.ok(state.rect.left - state.outline >= state.clip.left - 1 && state.rect.right + state.outline <= state.clip.right - state.scrollbar + 1,
+              `horizontal focus outline clipped: ${JSON.stringify(state)}`);
+            assert.ok(Math.abs(state.y - item.before.y) < 1, 'native Tab traversal must scroll the rail, not the article');
+            return { href: state.href, y: state.rect.top, bottom: state.rect.bottom, outline: state.outline };
+          };
+          await summary.focus();
+          item.keyboardForward = [];
+          for (const href of links) { await page.keyboard.press('Tab'); item.keyboardForward.push(await focused(href)); }
+          if (width === 1440 && height === 480) {
+            await shot(page, name);
+            if (javaScriptEnabled) {
+              item.axe = await audit(page);
+              assert.deepEqual(item.axe.violations, []); assert.deepEqual(item.axe.incomplete, []);
+            }
+          }
+          item.keyboardBackward = [];
+          for (const href of links.slice(0, -1).reverse()) { await page.keyboard.press('Shift+Tab'); item.keyboardBackward.push(await focused(href)); }
+          await page.keyboard.press('Shift+Tab');
+          assert.equal(await summary.evaluate((el) => el === document.activeElement), true);
+          // Native focus may leave the 2px disclosure border scrolled away.
+          // Require the entire summary outline + a stable article, not scrollTop=0.
+          item.summaryReturn = await focused(null);
+          item.summaryScrollTop = (await railState()).scrollTop;
+          await rail.hover({ position: { x: 80, y: 80 } });
+          await page.mouse.wheel(0, 1500); await page.waitForTimeout(160);
+          const href = await last.getAttribute('href');
+          const lastRect = await last.boundingBox();
+          assert.ok(lastRect.y >= 0 && lastRect.y + lastRect.height <= height, 'last TOC entry must be visible before pointer activation');
+          await last.click(); await settleWithoutScripts(page);
+          assert.equal(new URL(page.url()).hash, href);
+          assert.equal(await page.locator(href).evaluate((el) => el === document.activeElement), true);
+          item.nativeTarget = await page.locator(href).evaluate((el) => ({ id: el.id, y: el.getBoundingClientRect().top }));
+          assert.ok(item.nativeTarget.y >= 25 && item.nativeTarget.y < height / 2, 'native section heading must stay visible');
+          if (width === 1440 && height === 480 && theme === 'light') {
+            await page.setViewportSize({ width: 844, height: 390 }); await settleWithoutScripts(page);
+            item.mobileResize = await rail.evaluate((el) => ({ overflow: getComputedStyle(el).overflowY,
+              maxHeight: getComputedStyle(el).maxHeight, position: getComputedStyle(el).position }));
+            assert.equal(item.mobileResize.overflow, 'visible'); assert.equal(item.mobileResize.maxHeight, 'none');
+            assert.equal(item.mobileResize.position, javaScriptEnabled ? 'sticky' : 'static');
+            assert.equal(await toc.evaluate((el) => el.open), !javaScriptEnabled);
+            if (javaScriptEnabled) await summary.click();
+            await last.click(); await settleWithoutScripts(page);
+            assert.equal(new URL(page.url()).hash, href);
+            assert.equal(await page.locator(href).evaluate((el) => el === document.activeElement), true);
+            assert.equal(await toc.evaluate((el) => el.open), !javaScriptEnabled);
+            const layout = await inspect(page);
+            assert.equal(layout.documentOverflow, 0); assert.deepEqual(layout.overflow, []);
+            await shot(page, `${route.kind}-resize-844x390-${javaScriptEnabled ? 'js' : 'nojs'}`);
+            await page.setViewportSize({ width: 1440, height: 1080 });
+            await middle.scrollIntoViewIfNeeded(); await settleWithoutScripts(page);
+            item.tallResize = await railState();
+            assert.equal(await toc.evaluate((el) => el.open), true);
+            assert.equal(item.tallResize.scrollHeight, item.tallResize.clientHeight, 'tall window must not get an unnecessary scroll range');
+            assert.equal(item.tallResize.scrollTop, 0);
+            await rail.hover({ position: { x: 80, y: 80 } });
+            await page.mouse.wheel(0, 200); await settleWithoutScripts(page);
+            assert.ok((await railState()).y > item.tallResize.y + 100, 'native wheel must still reach the article when the rail fits');
+          }
+          assert.deepEqual(item.runtime, []);
+          console.log(`PASS ${name}`);
+        } catch (error) {
+          item.failure = error.message; item.stack = error.stack; report.problems.push(`${name}: ${error.message}`);
+          console.error(`FAIL ${name}: ${error.message.slice(0, 280)}`);
+          await shot(page, `${name}-failure`).catch(() => {});
+        } finally { report.shortViewports.push(item); await context.close(); }
+      }
 } finally {
   await browser.close();
   fs.writeFileSync(path.join(output, `browser-${engine}.json`), JSON.stringify(report, null, 2) + '\n');
 }
-console.log(`${report.cases.length} responsive cases; ${report.problems.length} problem(s); browser ${engine} ${report.version}`);
+console.log(`${report.cases.length} responsive + ${report.shortViewports.length} short-window cases; ${report.problems.length} problem(s); browser ${engine} ${report.version}`);
 if (report.problems.length) { console.error(report.problems.join('\n')); process.exitCode = 1; }
