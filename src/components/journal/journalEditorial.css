@@ -263,7 +263,7 @@ html.dark .journal-edition {
   .journal-edition .prose > p { font-size: 11pt; }
   .journal-edition .module { padding-block: 20px; }
   .journal-edition :is(h2, h3, h4, .module-label, .eyebrow, .je-history-heading) { break-after: avoid; }
-  .journal-edition :is(.je-history-heading, .bibliography-item, .je-data-figure, .dossier-footer) { break-inside: avoid; }
+  .journal-edition :is(.je-history-heading, .bibliography-item, .je-data-figure, .je-next-story, .dossier-footer) { break-inside: avoid; }
   .journal-edition .journal-editorial-grid { display: block; }
   .journal-edition .journal-editorial-grid > section { break-inside: avoid; }
   .journal-edition .journal-method { padding: 20px 0 0; border-left: 0; }

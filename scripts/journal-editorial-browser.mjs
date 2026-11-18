@@ -6,11 +6,14 @@
  * Example: node scripts/journal-editorial-browser.mjs --origin=http://localhost:4173
  *   --history-origin=http://localhost:4321 --axe=/path/to/axe.min.js
  * --browser=firefox|webkit uses that actual Playwright browser, never Chromium emulation.
+ * --suite=print runs only the actual-PDF matrix (Chromium + Python/PyMuPDF).
+ * --pdf-python=/path/to/python selects that environment; --print-baseline=/path/to/capture.json
+ * additionally checks earlier text/styles and unchanged public print geometry.
  */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
@@ -23,10 +26,11 @@ const origin = args.origin || 'http://localhost:4173';
 const engine = args.browser || 'chromium';
 const suite = args.suite || 'full';
 assert.ok(['chromium', 'firefox', 'webkit'].includes(engine), 'unknown browser engine');
-assert.ok(['full', 'short'].includes(suite), 'use --suite=short for the bounded short-window negative control');
+assert.ok(['full', 'short', 'print'].includes(suite), 'use --suite=full|short|print');
+assert.ok(suite !== 'print' || engine === 'chromium', 'actual PDF generation requires Chromium; do not substitute an emulated print DOM');
 const axePath = args.axe || path.join(root, 'node_modules/axe-core/axe.min.js');
-assert.ok(fs.existsSync(axePath), 'provide --axe=<existing axe-core file>; do not silently skip the accessibility audit');
-const axeSource = fs.readFileSync(axePath, 'utf8');
+assert.ok(suite === 'print' || fs.existsSync(axePath), 'provide --axe=<existing axe-core file>; do not silently skip the accessibility audit');
+const axeSource = suite === 'print' ? '' : fs.readFileSync(axePath, 'utf8');
 const output = path.resolve(root, args.output || 'reports/g3-editorial-local-20261118');
 fs.mkdirSync(path.join(output, 'after'), { recursive: true });
 const widths = args.widths ? args.widths.split(',').map(Number) : [320, 360, 390, 430, 768, 1024, 1440, 1920];
@@ -39,11 +43,11 @@ if (args['history-origin']) routes.push({ kind: 'history', url: args['history-or
 const report = { engine, suite, version: null, head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
   worktree: execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).trim(),
   note: 'Local artifact/manuscript only. axe is automated evidence, not full WCAG or artistic signoff. Timings are local lab, not field Core Web Vitals. Short-window theme is the browser color preference; no-JS retains the existing SSR palette.',
-  sourceSha256: {}, cases: [], interactions: [], shortViewports: [], problems: [] };
+  sourceSha256: {}, cases: [], interactions: [], shortViewports: [], printCases: [], problems: [] };
 const witnessFiles = [
   ...['G3Dossier.astro', 'G3HistoryArticle.astro', 'G3HistoryFeature.astro', 'JournalLanding.astro', 'JournalMasthead.astro', 'JournalArticleHeader.astro', 'JournalContents.astro', 'JournalDataFigure.astro', 'JournalSourceReturn.astro', 'JournalDocumentHead.astro', 'JournalFontPreloads.astro', 'journalEditorial.css', 'g3History.css'].map((name) => `src/components/journal/${name}`),
   ...['g3EditorialMedia.ts', 'g3HistoryDraftSources.ts', 'g3HistoryDraftMetadata.ts', 'g3ProductMetadata.ts', 'g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'journalProductMetadata.ts'].map((name) => `src/data/journal/${name}`),
-  'scripts/journal-editorial-browser.mjs', 'scripts/journal-editorial-contract.mjs', 'scripts/journal-local-review.mjs', 'scripts/fixtures/g3-history-review.astro',
+  'scripts/journal-editorial-browser.mjs', 'scripts/lib/journal-print-pdf.py', 'scripts/journal-editorial-contract.mjs', 'scripts/journal-local-review.mjs', 'scripts/fixtures/g3-history-review.astro',
 ];
 for (const name of witnessFiles) {
   report.sourceSha256[name] = createHash('sha256').update(fs.readFileSync(path.join(root, name))).digest('hex');
@@ -424,7 +428,7 @@ try {
   }
   // The same native disclosure must remain usable when desktop width no longer
   // implies desktop height. Exercise the actual scroll container, not forced clicks.
-  for (const route of routes.filter((route) => route.kind !== 'journal'))
+  if (suite !== 'print') for (const route of routes.filter((route) => route.kind !== 'journal'))
     for (const width of widths.filter((width) => width >= 1024)) for (const height of shortHeights)
       for (const theme of ['light', 'dark']) for (const javaScriptEnabled of [true, false]) {
         const context = await contextFor(width, theme, { viewport: { width, height }, javaScriptEnabled });
@@ -537,9 +541,66 @@ try {
           await shot(page, `${name}-failure`).catch(() => {});
         } finally { report.shortViewports.push(item); await context.close(); }
       }
+  if (suite !== 'short' && engine === 'chromium') {
+    const printDirectory = path.join(output, 'print');
+    fs.mkdirSync(printDirectory, { recursive: true });
+    // Fresh contexts retain real JS/no-JS behavior and browser color preference.
+    // DOM checks cannot see page breaks; the separate analyzer reads these PDFs.
+    for (const route of routes) for (const paper of ['A4', 'Letter'])
+      for (const theme of ['light', 'dark']) for (const javaScriptEnabled of [true, false]) {
+        const context = await contextFor(1440, theme, { javaScriptEnabled });
+        const page = await context.newPage();
+        const name = `${route.kind}-${paper}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}`;
+        const item = { kind: route.kind, paper, theme, javaScriptEnabled, pdf: path.join(printDirectory, `${name}.pdf`), runtime: [] };
+        monitorRuntime(page, item.runtime, { isIgnoredConsole: (_, message) => !['error', 'warning'].includes(message.type()) });
+        try {
+          const response = await ready(page, route.url);
+          if (route.kind === 'history') {
+            assert.match(response.headers()['x-robots-tag'] || '', /noindex/);
+            assert.equal(await page.locator('link[rel="canonical"]').count(), 0);
+            assert.ok(await page.locator('[data-research-publication-status="PUBLICATION_HOLD"]').count() > 0);
+          }
+          await page.emulateMedia({ media: 'print' });
+          item.dom = await page.evaluate(() => {
+            const next = document.querySelector('.je-next-story');
+            const title = next?.querySelector('a').cloneNode(true);
+            title?.querySelectorAll('[aria-hidden]').forEach((element) => element.remove());
+            const normalize = (element) => element.textContent.replace(/\s+/gu, ' ').trim();
+            return { heading: normalize(document.querySelector('h1')),
+              sourceTitles: [...document.querySelectorAll('.bibliography-item h3')].map(normalize),
+              companion: next ? { label: normalize(next.querySelector('p')), title: normalize(title), breakInside: getComputedStyle(next).breakInside } : null,
+              reviewWarning: document.querySelector('.je-review-note') ? normalize(document.querySelector('.je-review-note')) : null,
+              // The shared skip link is off-canvas, not display:none; prove its
+              // omission from actual PDF text instead of assuming its CSS owner.
+              screenOnlyLabels: [...new Set([...document.querySelectorAll('.skip-link, [data-journal-source-return]')].map(normalize))],
+              screenControlsHidden: [...document.querySelectorAll('.je-masthead, .je-editorial-rail, .je-source-return')].every((element) => getComputedStyle(element).display === 'none'),
+              paper: getComputedStyle(document.querySelector('.journal-edition')).getPropertyValue('--je-paper').trim() };
+          });
+          assert.equal(item.dom.screenControlsHidden, true, 'print must omit only screen navigation, not bibliography');
+          assert.equal(item.dom.paper, '#fff', 'print must use white paper in either browser preference');
+          await page.pdf({ path: item.pdf, format: paper, printBackground: true,
+            margin: { top: '14mm', bottom: '14mm', left: '14mm', right: '14mm' } });
+          assert.deepEqual(item.runtime, []);
+        } catch (error) {
+          item.failure = error.message; item.stack = error.stack;
+          report.problems.push(`${name} print capture: ${error.message}`);
+        } finally { report.printCases.push(item); await context.close(); }
+      }
+    const capture = path.join(printDirectory, 'capture.json');
+    fs.writeFileSync(capture, JSON.stringify({ head: report.head, worktree: report.worktree, sourceSha256: report.sourceSha256,
+      engine, version: report.version, cases: report.printCases }, null, 2) + '\n');
+    const analyzerArgs = [path.join(root, 'scripts/lib/journal-print-pdf.py'), '--capture', capture, '--output', path.join(printDirectory, 'pagination.json')];
+    if (args['print-baseline']) analyzerArgs.push('--baseline', path.resolve(root, args['print-baseline']));
+    const analysis = spawnSync(args['pdf-python'] || 'python3', analyzerArgs, { cwd: root, encoding: 'utf8' });
+    report.printAnalysis = { executable: args['pdf-python'] || 'python3', args: analyzerArgs, exit: analysis.status,
+      signal: analysis.signal, stdout: analysis.stdout, stderr: analysis.stderr, error: analysis.error?.message ?? null };
+    console.log(analysis.stdout || '');
+    if (analysis.stderr) console.error(analysis.stderr);
+    if (analysis.status !== 0) report.problems.push(`actual PDF analysis exit ${analysis.status}: see print/pagination.json and printAnalysis`);
+  }
 } finally {
   await browser.close();
   fs.writeFileSync(path.join(output, `browser-${engine}.json`), JSON.stringify(report, null, 2) + '\n');
 }
-console.log(`${report.cases.length} responsive + ${report.shortViewports.length} short-window cases; ${report.problems.length} problem(s); browser ${engine} ${report.version}`);
+console.log(`${report.cases.length} responsive + ${report.shortViewports.length} short-window + ${report.printCases.length} print cases; ${report.problems.length} problem(s); browser ${engine} ${report.version}`);
 if (report.problems.length) { console.error(report.problems.join('\n')); process.exitCode = 1; }
