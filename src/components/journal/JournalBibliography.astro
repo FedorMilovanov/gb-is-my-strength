@@ -1,0 +1,39 @@
+---
+/** Reader-facing projection. This component cannot grant evidence, rights or publication status. */
+export interface BibliographyEntry {
+  id: string;
+  title: string;
+  period: string;
+  kind: string;
+  /** Preserve inherited Research projection values without conflating them with reader labels. */
+  tier?: string;
+  eligibility?: string;
+  locator: string;
+  publicUrl?: string;
+  recordUrl?: string;
+  recordLabel?: string;
+  limitation?: string;
+  backHref: `#${string}`;
+  backLabel: string;
+}
+interface Props {
+  entries: readonly BibliographyEntry[];
+}
+const { entries } = Astro.props;
+---
+<ol class="bibliography-list">
+  {entries.map((entry) => (
+    <li id={entry.id} class="bibliography-item" tabindex="-1" data-source-tier={entry.tier} data-source-eligibility={entry.eligibility}>
+      <p class="biblio-meta">{entry.period} <span aria-hidden="true">/</span> {entry.kind}</p>
+      <h3>{entry.title}</h3>
+      <p>{entry.locator}</p>
+      {entry.limitation && <p class="biblio-limitation">{entry.limitation}</p>}
+      <div class="biblio-links">
+        {entry.publicUrl && <a href={entry.publicUrl} rel="noopener noreferrer">Открыть источник <span aria-hidden="true">↗</span></a>}
+        {entry.recordUrl && <a href={entry.recordUrl} rel="noopener noreferrer">{entry.recordLabel || 'Сведения об источнике'}</a>}
+        {!entry.publicUrl && <span>Полный объект не размещён в статье</span>}
+        <a class="biblio-return" href={entry.backHref}><span aria-hidden="true">↑</span> {entry.backLabel}</a>
+      </div>
+    </li>
+  ))}
+</ol>

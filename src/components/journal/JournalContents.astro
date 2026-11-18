@@ -1,0 +1,26 @@
+---
+export interface ContentsEntry {
+  href: `#${string}`;
+  label: string;
+}
+interface Props {
+  id: string;
+  entries: readonly ContentsEntry[];
+  label?: string;
+}
+const { id, entries, label = 'В этом материале' } = Astro.props;
+---
+<!-- Native disclosure: keyboard, no-JS and deep links have no second runtime owner. -->
+<details class="je-contents" open>
+  <summary id={id}>
+    <span>{label}</span>
+    <span class="je-contents__hint">Содержание <span aria-hidden="true">↕</span></span>
+  </summary>
+  <nav aria-labelledby={id}>
+    <ol>
+      {entries.map((entry, i) => (
+        <li><a href={entry.href}><span class="je-contents__number" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span><span>{entry.label}</span></a></li>
+      ))}
+    </ol>
+  </nav>
+</details>

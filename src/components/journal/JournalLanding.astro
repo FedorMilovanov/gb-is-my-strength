@@ -1,5 +1,9 @@
 ---
 import JournalEditorialShell from './JournalEditorialShell.astro';
+import JournalSeriesNav from './JournalSeriesNav.astro';
+import { G3_PRODUCT_METADATA } from '@/data/journal/g3ProductMetadata';
+import { G3_EDITORIAL_COVER as cover, G3_EDITORIAL_SERIES } from '@/data/journal/g3EditorialPresentation';
+const coverSizes = '(max-width: 690px) calc(100vw - 40px), (max-width: 800px) calc(100vw - 64px), (max-width: 1080px) calc(50vw - 48px), (max-width: 1280px) calc(50vw - 72px), 568px';
 
 ---
 <JournalEditorialShell kind="journal" backHref="/">
@@ -24,37 +28,39 @@ import JournalEditorialShell from './JournalEditorialShell.astro';
     <div class="section-heading">
       <div>
         <p class="eyebrow">Документальное досье</p>
-        <h2 id="lead-dossier">История G3 Ministries</h2>
+        <h2 id="lead-dossier">Досье G3 Ministries</h2>
       </div>
     </div>
     <a class="lead-card" href="/journal/dossiers/g3/">
       <div class="lead-card-copy">
         <p class="lead-label">Документальное досье · 2025–2026</p>
-        <h3>Два кризиса G3 Ministries и завершение деятельности</h3>
+        <h3>{G3_PRODUCT_METADATA.title}</h3>
         <p>
           Разбираем, как G3 пережила кризис руководства в 2025 году, почему
           новый конфликт в 2026-м стал поворотным и что произошло с конференциями,
           издательством и сетью церквей. Факты, документы и спорные утверждения
           отделены друг от друга; нерешённые вопросы названы прямо.
         </p>
-        <span class="read-link">Читать историю G3 <span aria-hidden="true">→</span></span>
+        <span class="read-link">Читать досье <span aria-hidden="true">→</span></span>
       </div>
       <div class="lead-context">
-        <img src="/images/journal/g3-ministries-cover-1200.webp"
-             srcset="/images/journal/g3-ministries-cover-640.webp 640w, /images/journal/g3-ministries-cover-1200.webp 1200w"
-             sizes="(max-width: 690px) calc(100vw - 36px), 430px"
-             width="1200" height="675" loading="lazy" decoding="async"
-             alt="Иллюстративная обложка G3 Ministries: логотип и раскрытая книга." />
+        <picture>
+          <source type="image/avif" srcset={cover.avifSrcset} sizes={coverSizes} />
+          <img src={cover.src} srcset={cover.webpSrcset} sizes={coverSizes}
+               width={cover.width} height={cover.height} loading="eager" fetchpriority="high" decoding="async"
+               alt={`${cover.alt} ${cover.caption}`} />
+        </picture>
         <div class="lead-context-copy">
         <span class="lead-context-label">В центре истории</span>
         <p>Отставка Джоша Бьюса</p>
         <p>Документы и финансы</p>
         <p>События 2025–2026</p>
-        <span class="lead-context-foot">Источники и документы — внутри материала</span>
         </div>
       </div>
     </a>
   </section>
+
+  <JournalSeriesNav {...G3_EDITORIAL_SERIES} />
 
   <section class="journal-section" aria-labelledby="directions">
     <div class="section-heading compact">
