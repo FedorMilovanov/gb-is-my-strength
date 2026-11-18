@@ -269,9 +269,9 @@ html.dark .journal-edition {
   .journal-edition .je-history-heading h2 { font-size: clamp(30px,8.3vw,39px); }
   .journal-edition .je-history-lead { font-size: 17px; }
   .journal-edition .je-history-origin, .journal-edition .je-history-year, .journal-edition .je-history-growth-grid { display: block; }
-  .journal-edition .je-history-origin-stamp { float: right; width: 112px; padding: 19px 7px; margin: 0 0 12px 15px; }
+  .journal-edition .je-history-origin-stamp { float: none; width: 100%; min-height: 76px; padding: 12px 19px; margin: 0 0 20px; flex-direction: row; justify-content: center; gap: 22px; }
+  .journal-edition .je-history-origin-stamp small { max-width: 170px; font-size: 9px; letter-spacing: .14em; text-align: left; }
   .journal-edition .je-history-origin-stamp span { font-size: 54px; }
-  .journal-edition .je-history-origin-stamp small { font-size: 7px; }
   .journal-edition .je-history-origin-text p, .journal-edition .je-history-year-text p, .journal-edition .je-history-growth-grid p, .journal-edition .je-history-context p:not(.je-history-eyebrow) { font-size: 15px; line-height: 1.7; }
   .journal-edition .je-history-year { padding: 24px 0; }
   .journal-edition .je-history-year-mark { flex-direction: row; align-items: center; gap: 12px; margin-bottom: 12px; }
