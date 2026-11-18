@@ -60,6 +60,11 @@ const { active = 'journal' } = Astro.props;
   .je-masthead__nav a[aria-current="page"] { border-color: #d6ad5d; color: #fff; }
   .je-masthead a:focus-visible { outline: 2px solid #eacb85; outline-offset: 4px; }
   .je-masthead a:hover { color: #f9d997; }
+  /* Windows High Contrast: transparent borders become visible, so the current section must be marked explicitly. */
+  @media (forced-colors: active) {
+    .je-masthead__nav a { border-bottom-color: Canvas; }
+    .je-masthead__nav a[aria-current] { border-bottom-color: Highlight; }
+  }
   @media (max-width: 770px) {
     .je-masthead__top { padding: 14px 20px 12px; gap: 12px; }
     .je-masthead__mark { width: 37px; height: 30px; }

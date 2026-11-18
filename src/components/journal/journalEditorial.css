@@ -42,6 +42,8 @@ html.dark .journal-edition {
 
 .journal-edition .journal-dossier-shell, .journal-edition .journal-landing { max-width: 1260px; margin-inline: auto; padding-inline: 32px; }
 .journal-edition .journal-story-topline { display: flex; flex-wrap: wrap; align-items: center; gap: 11px 17px; padding-bottom: 17px; border-bottom: 1px solid var(--je-gold); }
+/* Windows High Contrast drops the gradient fill; keep the story tag framed. */
+@media (forced-colors: active) { .journal-edition .journal-story-tag { border: 1px solid CanvasText; } }
 .journal-edition .journal-story-tag {
   display: inline-flex; align-items: center; padding: 7px 16px;
   background: linear-gradient(120deg,#e5c588,#b38443);
@@ -525,20 +527,14 @@ html.dark .journal-edition {
   .journal-edition .je-reading-progress, .journal-edition .je-back-to-top, .journal-edition .je-masthead, .journal-edition .dossier-nav, .journal-edition .dossier-nav-wrapper, .journal-edition .je-editorial-rail, .journal-edition .je-series-nav { display: none !important; }
   .journal-edition .journal-feature-grid { display: block !important; }
   .journal-edition .journal-story-column { width: 100% !important; }
-  .journal-edition :is(h2, h3, h4, .module-label, .eyebrow, .je-history-heading) { break-after: avoid; }
-  .journal-edition .module { break-inside: avoid; }
-  .journal-edition .editorial-stat-card,
-  .journal-edition .editorial-contrast-grid,
-  .journal-edition .editorial-roster-box,
-  .journal-edition .editorial-pullquote,
-  .journal-edition .timeline li,
-  .journal-edition .bibliography-item,
-  .journal-edition .je-next-story,
-  .journal-edition .je-data-figure,
-  .journal-edition .dossier-footer {
+  .journal-edition :is(h2, h3, h4, .module-label, .eyebrow, summary, .je-history-heading) { break-after: avoid; }
+  .journal-edition .module { break-inside: auto; }
+  .journal-edition :is(p, li, figcaption, blockquote, .editorial-stat-card, .editorial-contrast-grid, .editorial-roster-box, .editorial-pullquote, .timeline li, .bibliography-item, .je-next-story, .je-data-figure, .dossier-footer) {
     break-inside: avoid;
     page-break-inside: avoid;
   }
+  /* Outside two-digit markers must fit inside the actual printed content clip. */
+  .journal-edition .bibliography-list { padding-inline-start: 2em; }
   .journal-edition .bibliography-details { display: block; }
   /* Native closed-details content is hidden by the UA even when print display is block. */
   .journal-edition details:not([open])::details-content { content-visibility: visible; display: block; height: auto; }
