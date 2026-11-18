@@ -1,124 +1,108 @@
 ---
 import JournalEditorialShell from './JournalEditorialShell.astro';
 import JournalEditorialRail from './JournalEditorialRail.astro';
+import JournalArticleHeader from './JournalArticleHeader.astro';
+import JournalArticleToc from './JournalArticleToc.astro';
 import G3HistoryFeature from './G3HistoryFeature.astro';
 import './g3History.css';
 import { G3_HISTORY_DRAFT_METADATA as draft } from '@/data/journal/g3HistoryDraftMetadata';
+import { G3_HISTORY_DRAFT_SOURCES } from '@/data/journal/g3HistoryDraftSources';
+import { G3_EDITORIAL_COVER } from '@/data/journal/g3EditorialMedia';
 
-/**
- * Fail-closed production guard. This file is a source-only manuscript:
- * a public Astro route must NOT import it without new signed Research handoff.
- * Remove this guard only as part of explicit publication authorization.
- */
+/** Source-only manuscript. A new signed Research handoff is required before routing. */
 if (import.meta.env.PROD) {
   throw new Error('G3 history PUBLICATION_HOLD: signed Research→Product handoff required before production routing');
 }
-
-/**
- * Standalone history manuscript. Deliberately un-routed and unpublished.
- * A signed Research history handoff is required before a public route exists.
- */
+const contents = [
+  { id: 'g3-history', label: 'Истоки и Pray’s Mill' },
+  { id: 'g3-speakers', label: 'Конференции и дискуссии' },
+  { id: 'g3-growth', label: 'Издательство и сеть' },
+  { id: 'g3-meaning', label: 'Богословские темы' },
+  { id: 'g3-evidence', label: 'Источники и границы' },
+  { id: 'g3-epilogue', label: 'Что было дальше' },
+];
 ---
 <JournalEditorialShell kind="dossier" backHref="/journal/">
 <main class="dossier journal-dossier-shell je-history-article" id="main-content" tabindex="-1"
       data-g3-article="history" data-research-publication-status={draft.publicationStatus}>
+  <aside class="je-draft-notice" aria-label="Статус редакционного предпросмотра">
+    <strong>Редакторский предпросмотр</strong>
+    <span>Рукопись не опубликована. Требуется новый Research-handoff.</span>
+  </aside>
+  <JournalArticleHeader title={draft.title} layout="wide-title" label="История служения" period="2013–2024" readingTime={draft.readingTimeMinutesEstimate} cover={G3_EDITORIAL_COVER}>
+    <Fragment slot="dek">
+      Сначала — баптистская церковь в Джорджии и конференция о Евангелии.
+      Затем — собрания о Писании, Троице, Реформации, миссии и поклонении,
+      известные проповедники и новые издательские проекты.
+      Как развивалось G3 и что можно восстановить по сохранившимся источникам?
+    </Fragment>
+    <Fragment slot="meta"><span>Исторический очерк</span><span>Рукопись · 2013–2024</span></Fragment>
+  </JournalArticleHeader>
   <div class="journal-feature-grid">
+    <JournalEditorialRail label="Содержание исторического очерка G3">
+      <JournalArticleToc label="Разделы истории G3" entries={contents} />
+      <div class="je-rail-context">
+        <p class="je-rail-kicker">Как читать источники</p>
+        <p>Анонс, каталог записи и воспоминание участника отвечают на разные вопросы. Ни одно из них не заменяет прослушивания самой проповеди.</p>
+        <a href="#g3-evidence">Библиография и ограничения <span aria-hidden="true">↗</span></a>
+      </div>
+    </JournalEditorialRail>
     <div class="journal-story-column">
-      <header class="dossier-hero">
-        <div class="journal-story-topline">
-          <span class="journal-story-tag">История служения</span>
-          <p class="kicker">G3 Ministries · конференции · 2013–2024</p>
-        </div>
-        <h1>{draft.title}</h1>
-        <p class="dek">
-          Сначала — баптистская церковь в Джорджии и конференция о Евангелии.
-          Затем — собрания о Писании, Троице, Реформации, миссии и поклонении,
-          известные проповедники и новые издательские проекты.
-          Как развивалось G3 и кого можно услышать в сохранившихся записях?
-        </p>
-        <div class="editorial-meta" aria-label="Сведения о рукописи">
-          <span>Исторический очерк</span>
-          <span>2013–2024</span>
-          <span>Research: публикационный допуск не выдан</span>
-        </div>
-      </header>
-      <figure class="journal-feature-media">
-        <img src="/images/journal/g3-ministries-cover-1200.webp"
-             srcset="/images/journal/g3-ministries-cover-640.webp 640w, /images/journal/g3-ministries-cover-1200.webp 1200w"
-             sizes="(max-width: 980px) calc(100vw - 48px), 810px"
-             width="1200" height="675" alt="Обложка G3 Ministries: книга, монограмма G3, Gospel, Grace, Glory."
-             loading="eager" fetchpriority="high" decoding="async" />
-        <figcaption>Иллюстративная обложка. Это не исторический снимок конференции.</figcaption>
-      </figure>
       <p class="reader-framing">
-        История складывается из архивов выступлений, программ и воспоминаний участников.
-        Списки докладчиков подтверждают участие, но не согласие со всеми последующими
-        решениями руководства. Свидетельство участника не подменяет независимые документы.
+        История складывается из программ, каталогов записей и воспоминаний участников.
+        Объявленное участие ещё не доказывает состоявшегося выступления, а выступление
+        в одном году — согласия со всеми последующими решениями организаторов.
       </p>
-      <nav class="dossier-nav" aria-label="Содержание истории G3">
-        <a href="#g3-history">Истоки</a>
-        <a href="#g3-speakers">Конференции</a>
-        <a href="#g3-growth">Развитие</a>
-        <a href="#g3-meaning">Значение</a>
-        <a href="#g3-evidence">Источники</a>
-        <a href="#g3-epilogue">Продолжение</a>
-      </nav>
       <G3HistoryFeature />
       <section id="g3-meaning" class="module je-history-essay" aria-labelledby="g3-meaning-title">
         <div class="module-label">04 · Богословские темы</div>
         <div class="prose">
-          <h2 id="g3-meaning-title">Чем были значимы собрания G3</h2>
-          <p>G3 возникла не как отдельная конфессия, а как конференция при баптистской церкви. На протяжении следующих лет в программах появлялись пасторы, миссионеры, преподаватели и авторы из разных, хотя и близких по вероисповеданию, евангельских кругов. Конкретные выступления важнее общего списка известных фамилий: они позволяют восстановить историю самих богословских разговоров.</p>
-          <p>Последовательность тем показывает направление организаторов. Конференции были посвящены Церкви, авторитету Библии, учению о Троице, юбилею Реформации, всемирной миссии и поклонению. Отдельное событие 2018 года — заявление о социальной справедливости и Евангелии — отразило разногласия внутри более широкого евангельского движения, а не программу очередной конференции. Позднее к ежегодным собраниям прибавились книги, образовательные проекты и сеть церквей.</p>
-          <p>Участие Джона Пайпера, Пола Вошера, Дэвида Платта или другого проповедника в определённом году не означает его согласия со всеми будущими решениями G3. И наоборот, последующие разногласия не делают исторические записи конференций несуществующими. Точная оценка содержания проповеди требует просмотра самой записи, а не только заголовка видеокаталога.</p>
-          <p>История составления заявления 2018 года доступна на сайте самого документа, а разногласия современников — в публикациях того времени. Тим Чаллис подтверждает участие в обсуждениях и собственный отказ подписать. Его оценка дальнейшего сужения круга приглашённых остаётся воспоминанием участника. Отдельная статья о кризисах не должна превращаться в предполагаемое следствие этой дискуссии без самостоятельных доказательств.</p>
+          <h2 id="g3-meaning-title">О чём говорили на конференциях</h2>
+          <p>Историю G3 лучше восстанавливать не по общему списку известных фамилий, а по смене тем. За встречами о Евангелии и Церкви следовали собрания об авторитете Библии, Троице, наследии Реформации, миссии и поклонении. В программах виден замысел богословского обучения; оценить, как именно докладчик раскрывал свою тему, можно только по самому выступлению.</p>
+          <p>Пол Вошер и Стивен Лоусон встречаются в каталогах нескольких лет; Д. А. Карсон — в подборке к юбилею Реформации, Джон Пайпер и Дэвид Платт названы в анонсе миссионерской конференции, Джон МакАртур — в каталоге 2020 года о поклонении. Это разные документальные опоры. Объединяя имена в историю движения, нельзя стирать различие между объявленной программой и конкретной записью.</p>
+          <p>Дискуссия 2018 года проходит в этой истории отдельной линией. Документ о социальной справедливости был заявлением о вероучении, а не темой всей конференционной программы. Его составители объясняли собственные богословские цели и отрицали притязание на церковную юрисдикцию; несогласные авторы оспаривали формулировки и подход.</p>
+          <p>Чаллис вспоминал, что со временем круг приглашаемых докладчиков сужался и менялась атмосфера сотрудничества. Это его взгляд участника, не документ организации о правилах приглашения и не доказанная причина последующих кризисов.</p>
+          <p class="source-note-paragraph" data-research-candidates="G3-HIST-PUB-06 G3-HIST-PUB-08"><span class="source-note-label">Свидетельства и позиции</span><a href="#hist-source2018Statement">Объяснение составителей заявления</a> · <a href="#hist-sourceChallies">Воспоминания Чаллиса</a></p>
         </div>
       </section>
       <section id="g3-evidence" class="module je-history-essay" aria-labelledby="g3-evidence-title">
         <div class="module-label">05 · Источники</div>
         <div class="prose">
-          <h2 id="g3-evidence-title">Что можно проверить сегодня</h2>
-          <p>Сохранившиеся видеокаталоги GNL позволяют сверить темы и имена участников по годам. Современные анонсы и письменные сообщения, например Тима Чаллиса и Скотта Аниола, помогают восстановить организационный контекст. Однако программа не доказывает, что заявленное выступление состоялось, если запись или свидетельство отсутствуют; а заголовок записи не заменяет прослушивание лекции.</p>
-          <p>Прежний домен G3, где располагались отдельные архивные программы, к 18 ноября 2026 года показывал другой сайт. Успешный HTTP-ответ на старом URL поэтому не доказывает наличия оригинального архивного материала.</p>
-          <p>Эта историческая рукопись находится в <a href={draft.researchPr} rel="noopener noreferrer">Research PR #582</a> и не имеет нового подписанного публикационного handoff. Разрешение на изложение кризисов по документам 2025–2026 годов не распространяется автоматически на всю предшествующую историю конференций.</p>
+          <h2 id="g3-evidence-title">Как проверить эту историю</h2>
+          <p>Ниже собрана отдельная библиография исторического очерка. Каталоги GNL используются для имён и названий сессий, анонсы — для объявленных планов, письменные свидетельства — для рассказа их авторов. Заголовок ролика не доказывает дословного содержания проповеди. Аудиозаписи для цитирования в этой рукописи не прослушаны; дословных цитат из них здесь нет.</p>
+          <p>Воспоминание Бьюса о смене площадки передаётся по опубликованной текстовой расшифровке интервью. Год переезда требует отдельной сверки звукового фрагмента и независимого документа; рассказ Чаллиса подтверждает переход на большую площадку, но не датирует его.</p>
+          <p>Прежние адреса на домене G3 требуют архивной проверки: в исследовательском срезе от 18 ноября 2026 года они уже показывали другой сайт. Сам по себе успешный ответ сервера не подтверждает сохранность старой программы. Эта граница особенно важна для раннего анонса 2011 года: в рукопись он не внесён как заново проверенный оригинал.</p>
         </div>
+        <ol class="bibliography-list je-history-bibliography">
+          {G3_HISTORY_DRAFT_SOURCES.map((source) => (
+            <li id={`hist-${source.key}`} class="bibliography-item" tabindex="-1"
+                data-evidence-class={source.evidenceClass} data-publication-state={source.publicationState}>
+              <h3>{source.title}</h3>
+              <p class="biblio-meta">{source.period} · {source.role}</p>
+              <p>{source.boundary}</p>
+              <p class="biblio-links"><a href={source.url} rel="noopener noreferrer">Открыть источник <span aria-hidden="true">↗</span></a><span>{new URL(source.url).hostname.replace(/^www\./, '')}</span></p>
+            </li>
+          ))}
+        </ol>
+        <p class="je-history-return"><a href="#g3-speakers">Вернуться к хронологии <span aria-hidden="true">↑</span></a></p>
       </section>
       <section id="g3-epilogue" class="module je-history-essay" aria-labelledby="g3-epilogue-title">
         <div class="module-label">06 · Что было дальше</div>
         <div class="prose">
-          <h2 id="g3-epilogue-title">История движения и история его кризисов — не одно и то же</h2>
-          <p>Конференции, издательская деятельность и сотрудничество церквей предшествовали событиям 2025–2026 годов. Поздние кризисы руководства не следует объяснять только именами проповедников, участвовавших в ранних собраниях: для этого нужна отдельная хронология решений и документы конкретных участников.</p>
-          <p><a href="/journal/dossiers/g3/">Документальное досье о кризисах G3</a> посвящено именно этому: заявлениям руководства, финансовым декларациям, двум последовательным конфликтам и открытым вопросам о дальнейшей судьбе проектов.</p>
+          <h2 id="g3-epilogue-title">От истории движения — к документам его кризисов</h2>
+          <p>Конференции, издательство и сотрудничество церквей предшествовали событиям 2025–2026 годов. Но хронологическая последовательность ещё не устанавливает причину: позднейшие решения руководства нельзя объяснить одним списком прежних докладчиков или одной богословской дискуссией.</p>
+          <p>Поэтому кризисам посвящён другой материал — с собственной хронологией заявлений, финансовыми документами и юридическими разграничениями. Он отвечает на иной вопрос: что именно было объявлено, какие решения подтверждены и чего документы пока не позволяют установить.</p>
         </div>
       </section>
     </div>
-    <JournalEditorialRail label="Содержание и источники истории G3">
-      <section class="je-rail-group" aria-labelledby="g3-history-rail">
-        <p class="je-rail-kicker">Конференции</p>
-        <h2 id="g3-history-rail">Главные этапы</h2>
-        <ol class="je-rail-timeline">
-          <li><a href="#g3-history"><time datetime="2013">2013</time><span>Первая встреча</span></a></li>
-          <li><a href="#g3-speakers"><time datetime="2017">2017</time><span>Реформация и проповедники</span></a></li>
-          <li><a href="#g3-year-2018"><time datetime="2018">2018</time><span>Богословское заявление</span></a></li>
-          <li><a href="#g3-growth"><time datetime="2022">2022</time><span>Издательство и церковная сеть</span></a></li>
-          <li><a href="#g3-meaning"><time datetime="2023">2023</time><span>Богословское наследие</span></a></li>
-          <li><a href="#g3-year-2024"><time datetime="2024">2024</time><span>Региональные мероприятия</span></a></li>
-        </ol>
-      </section>
-      <section class="je-rail-group" aria-labelledby="g3-history-rail-sources">
-        <p class="je-rail-kicker">Проверка</p>
-        <h2 id="g3-history-rail-sources">Документы</h2>
-        <ul class="je-rail-links">
-          <li><a href="#g3-speakers">Записи выступлений</a></li>
-          <li><a href="#g3-evidence">Границы источников</a></li>
-          <li><a href="/journal/dossiers/g3/">Документальное досье</a></li>
-        </ul>
-      </section>
-    </JournalEditorialRail>
   </div>
+  <nav class="je-series-navigation" aria-label="Материалы серии G3">
+    <a href="/journal/"><span class="je-series-label">Издание</span><strong>Вернуться в журнал <span aria-hidden="true">←</span></strong></a>
+    <a href="/journal/dossiers/g3/"><span class="je-series-label">Документальное досье · 2025–2026</span><strong>Два кризиса G3 Ministries и завершение работы <span aria-hidden="true">→</span></strong></a>
+  </nav>
   <footer class="dossier-footer">
     <p><strong>Автор-редактор:</strong> Фёдор Милованов</p>
-    <p><strong>Статус:</strong> рукопись. Нужен новый Research-handoff перед публикацией.</p>
+    <p>Рукопись · PUBLICATION_HOLD. <a href={draft.researchPr} rel="noopener noreferrer">Исследовательское основание — Research PR #582</a>.</p>
   </footer>
 </main>
 </JournalEditorialShell>

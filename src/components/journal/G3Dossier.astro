@@ -1,6 +1,9 @@
 ---
 import JournalEditorialShell from './JournalEditorialShell.astro';
 import JournalEditorialRail from './JournalEditorialRail.astro';
+import JournalArticleHeader from './JournalArticleHeader.astro';
+import JournalArticleToc from './JournalArticleToc.astro';
+import { G3_EDITORIAL_COVER } from '@/data/journal/g3EditorialMedia';
 import { G3_PRODUCT_METADATA } from '@/data/journal/g3ProductMetadata';
 import {
   G3_PUBLICATION_HANDOFF,
@@ -29,54 +32,58 @@ const corrections: Array<{
 
 const handoffUrl = `https://github.com/${G3_PUBLICATION_HANDOFF.researchRepo}/blob/${G3_PUBLICATION_HANDOFF.researchSealCommit}/${G3_PUBLICATION_HANDOFF.handoffPath}`;
 const snapshot = researchSnapshotShort();
+// One Product display projection of the sealed G3-PUB-002 values; not a new ledger.
+const financeGrowth = {
+  researchClaim: 'G3-PUB-002' satisfies G3PublicationClaimId,
+  total: 1_061_800,
+  conferences: 817_283,
+  advertising: 246_511,
+};
+const formatAmount = (value: number) => new Intl.NumberFormat('ru-RU').format(value);
+const formatDate = (value: string) => new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Moscow' }).format(new Date(value)).replace(/ г\.$/, '');
+const contents = [
+  { id: 'overview', label: 'Предыстория' },
+  { id: 'timeline', label: 'Хронология' },
+  { id: 'finance', label: 'Финансы' },
+  { id: 'governance', label: 'Руководство' },
+  { id: 'buice', label: 'Кризис 2025 года' },
+  { id: 'buck', label: 'Кризис 2026 года' },
+  { id: 'wind-down', label: 'Завершение работы' },
+  { id: 'unknowns', label: 'Открытые вопросы' },
+  { id: 'documents', label: 'Методика проверки' },
+  { id: 'bibliography', label: 'Источники' },
+  { id: 'corrections', label: 'Исправления' },
+];
 ---
 <JournalEditorialShell kind="dossier" backHref="/journal/">
 <main class="dossier journal-dossier-shell" id="main-content" tabindex="-1" data-journal-dossier="g3" data-research-seal={G3_PUBLICATION_HANDOFF.researchSealCommit}>
-  <div class="journal-feature-grid">
-    <div class="journal-story-column">
-  <header class="dossier-hero">
-    <div class="journal-story-topline">
-      <span class="journal-story-tag">Досье</span>
-      <p class="kicker">G3 Ministries · документальное досье · 2019–2026</p>
-    </div>
-    <h1>{G3_PRODUCT_METADATA.title}</h1>
-    <p class="dek">
+  <JournalArticleHeader title={G3_PRODUCT_METADATA.title} label="Документальное досье" period="2025–2026" cover={G3_EDITORIAL_COVER} readingTime={G3_PRODUCT_METADATA.readingTimeMinutes}>
+    <Fragment slot="dek">
       В 2025 году G3 столкнулась с отставкой основателя и попыталась перестроить работу.
       Новый конфликт в 2026-м привёл к объявлениям о сворачивании служения и отмене конференции.
       Что подтверждают документы, что утверждали участники и какие вопросы о финансах,
       руководстве и судьбе проектов остаются открытыми?
-    </p>
-    <div class="editorial-meta" aria-label="Сведения о материале">
-      <span>Документальное досье</span>
-      <span><time datetime="2026-09-09">9 сентября 2026 года</time></span>
-      <span>Обновлено <time datetime="2026-11-18">18 ноября 2026</time></span>
-    </div>
-  </header>
-
-  <figure class="journal-feature-media">
-    <img src="/images/journal/g3-ministries-cover-1200.webp"
-         srcset="/images/journal/g3-ministries-cover-640.webp 640w, /images/journal/g3-ministries-cover-1200.webp 1200w"
-         sizes="(max-width: 980px) calc(100vw - 48px), 810px"
-         width="1200" height="675" alt="Иллюстративная обложка G3 Ministries: открытая книга, логотип G3 и девиз Gospel, Grace, Glory."
-         decoding="async" loading="eager" fetchpriority="high" />
-    <figcaption>Иллюстративная обложка G3 Ministries. Не является архивным фотоснимком события.</figcaption>
-  </figure>
+    </Fragment>
+    <Fragment slot="meta">
+      <span>Опубликовано{' '}<time datetime={G3_PRODUCT_METADATA.publishedAt}>{formatDate(G3_PRODUCT_METADATA.publishedAt)}</time></span>
+      <span>Обновлено{' '}<time datetime={G3_PRODUCT_METADATA.modifiedAt}>{formatDate(G3_PRODUCT_METADATA.modifiedAt)}</time></span>
+    </Fragment>
+  </JournalArticleHeader>
+  <div class="journal-feature-grid">
+    <JournalEditorialRail label="Содержание документального досье G3">
+      <JournalArticleToc label="Разделы досье G3" entries={contents} />
+      <div class="je-rail-context">
+        <p class="je-rail-kicker">Доказательная база</p>
+        <p>Финансовые формы, заявления сторон и архивные документы. Ограничения источников сохранены.</p>
+        <a href="#bibliography">21 запись в библиографии <span aria-hidden="true">↗</span></a>
+      </div>
+    </JournalEditorialRail>
+    <div class="journal-story-column">
     <p class="reader-framing">
       Здесь мы рассказываем историю событий, а не выносим приговор отдельным людям.
       Документы позволяют установить даты, финансовые показатели и официальные заявления;
       мотивы, нераскрытые сделки и часть обвинений остаются за пределами доказанного.
     </p>
-
-  <nav class="dossier-nav" aria-label="Модули досье">
-    <a href="#overview">Контекст</a>
-    <a href="#timeline">События</a>
-    <a href="#finance">Финансы</a>
-    <a href="#buice">Кризис 2025</a>
-    <a href="#buck">Кризис 2026</a>
-    <a href="#wind-down">Завершение</a>
-    <a href="#unknowns">Неизвестное</a>
-    <a href="#bibliography">Источники</a>
-  </nav>
 
   <section id="overview" class="module intro-module">
     <div class="module-label">01 · Предыстория</div>
@@ -106,7 +113,7 @@ const snapshot = researchSnapshotShort();
         автоматически установить чужие мотивы, юридическую судьбу всех активов
         или виновность участников каждого конфликта.
       </p>
-      <p class="source-note-paragraph"><a class="source-note" href={handoffUrl} rel="noopener">Исследовательские основания: G3-PUB-001, 005–007, 012–016</a></p>
+      <p class="source-note-paragraph" data-research-claims="G3-PUB-001 G3-PUB-005 G3-PUB-006 G3-PUB-007 G3-PUB-012 G3-PUB-013 G3-PUB-014 G3-PUB-015 G3-PUB-016"><span class="source-note-label">Основания</span><a href="#src-G3-S001">Реестр Джорджии</a><span aria-hidden="true"> · </span><a href="#src-G3-S008">Заявление G3, май 2025</a><span aria-hidden="true"> · </span><a href="#src-G3-S017">Сообщение о завершении работы</a></p>
     </div>
   </section>
 
@@ -119,27 +126,27 @@ const snapshot = researchSnapshotShort();
     <ol class="timeline">
       <li>
         <time datetime="2019-06-06">6 июня 2019</time>
-        <div><h3>Юридическое оформление</h3><p>G3 Ministries for the Church, Inc. зарегистрирована в штате Джорджия как некоммерческая корпорация.</p><span class="claim-ref"><a href={handoffUrl} rel="noopener">G3-PUB-001</a> · <a href="#src-G3-S001">G3-S001</a></span></div>
+        <div><h3>Юридическое оформление</h3><p>G3 Ministries for the Church, Inc. зарегистрирована в штате Джорджия как некоммерческая корпорация.</p><span class="claim-ref" data-research-claims="G3-PUB-001"><a href="#src-G3-S001">Реестр Джорджии</a></span></div>
       </li>
       <li>
         <time datetime="2025-05-08">8–12 мая 2025</time>
-        <div><h3>Кризис Josh Buice</h3><p>По заявлению G3, отставка Buice с поста президента была принята 8 мая; 12 мая организация публично рассказала об анонимных интернет-аккаунтах руководителя, разговоре с ним, признании и отставке. Конференция 2025 года была отменена.</p><span class="claim-ref"><a href={handoffUrl} rel="noopener">G3-PUB-005</a> · <a href={handoffUrl} rel="noopener">G3-PUB-006</a></span></div>
+        <div><h3>Отставка Джоша Бьюса</h3><p>По заявлению G3, отставка Бьюса с поста президента была принята 8 мая; 12 мая организация публично рассказала об анонимных интернет-аккаунтах руководителя, разговоре с ним, признании и отставке. Конференция 2025 года была отменена.</p><span class="claim-ref" data-research-claims="G3-PUB-005 G3-PUB-006"><a href="#src-G3-S008">Заявление G3, 12 мая 2025</a></span></div>
       </li>
       <li>
         <time datetime="2025-07-09">9 июля 2025</time>
-        <div><h3>Scott Aniol становится президентом</h3><p>Согласно официальному объявлению G3, Скотт Аниол вступил в должность 9 июля 2025 года.</p><a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-006</a></div>
+        <div><h3>Скотт Аниол становится президентом</h3><p>Согласно официальному объявлению G3, Скотт Аниол вступил в должность 9 июля 2025 года.</p><span class="claim-ref" data-research-claims="G3-PUB-006"><a href="#src-G3-S010">Объявление о назначении</a></span></div>
       </li>
       <li>
         <time datetime="2026-07-21">21 июля 2026</time>
-        <div><h3>Подтверждённый архивом состав совета</h3><p>Архивный снимок официальной страницы «Who We Are» перечисляет Buck Braswell, Matt Broome, Jon Norton, Matt Sikes, Dylan Joyner и Ron Mooney как членов совета директоров.</p><span class="claim-ref"><a href={handoffUrl} rel="noopener">G3-PUB-008</a> · <a href="#src-G3-S096">G3-S096</a></span></div>
+        <div><h3>Подтверждённый архивом состав совета</h3><p>Архивный снимок официальной страницы «Who We Are» перечисляет Buck Braswell, Matt Broome, Jon Norton, Matt Sikes, Dylan Joyner и Ron Mooney как членов совета директоров.</p><span class="claim-ref" data-research-claims="G3-PUB-008"><a href="#src-G3-S096">Архив «Who We Are», 21 июля 2026</a></span></div>
       </li>
       <li>
         <time datetime="2026-08">август 2026</time>
-        <div><h3>Новый конфликт и признание процессуальных ошибок</h3><p>В сохранившемся заявлении четыре пастора признали ошибки: вмешательство во внутреннее дисциплинарное дело другой церкви, суждения без полного понимания обстоятельств и анонимную рассылку материалов третьим лицам.</p><a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-011</a></div>
+        <div><h3>Новый конфликт и признание процессуальных ошибок</h3><p>В сохранившемся заявлении четыре пастора признали ошибки: вмешательство во внутреннее дисциплинарное дело другой церкви, суждения без полного понимания обстоятельств и анонимную рассылку материалов третьим лицам.</p><span class="claim-ref" data-research-claims="G3-PUB-011"><a href="#src-G3-S015">Сохранённое заявление пасторов</a></span></div>
       </li>
       <li>
         <time datetime="2026-09">сентябрь 2026</time>
-        <div><h3>Объявление о завершении работы</h3><p>G3 объявила о завершении церковной сети и более широкой деятельности. Регистрация на конференцию 27–29 мая 2027 года сообщала об отмене мероприятия и возврате взносов.</p><a class="claim-ref" href={handoffUrl} rel="noopener">G3-PUB-012</a></div>
+        <div><h3>Объявление о завершении работы</h3><p>G3 объявила о завершении церковной сети и более широкой деятельности. Регистрация на конференцию 27–29 мая 2027 года сообщала об отмене мероприятия и возврате взносов.</p><span class="claim-ref" data-research-claims="G3-PUB-012"><a href="#src-G3-S017">Сообщение о завершении работы</a> · <a href="#src-G3-S011">Отмена конференции</a></span></div>
       </li>
     </ol>
   </section>
@@ -151,11 +158,19 @@ const snapshot = researchSnapshotShort();
       <p>
         Финансовая история началась ещё до громких конфликтов 2025–2026 годов.
         По сведениям из налоговых деклараций американской некоммерческой организации
-        общие расходы G3 за 2023 финансовый год оказались на <strong>1 061 800 долларов</strong>
-        выше, чем за предыдущий год. Наибольший вклад в этот рост внесли
-        затраты на конференции и встречи — плюс <strong>817 283 доллара</strong> —
-        и рекламу — плюс <strong>246 511 долларов</strong>.
+        общие расходы G3 за 2023 финансовый год оказались на <strong>{formatAmount(financeGrowth.total)} долларов</strong>{' '}выше, чем за предыдущий год. Наибольший вклад в этот рост внесли
+        затраты на конференции и встречи — плюс <strong>{formatAmount(financeGrowth.conferences)} доллара</strong> —
+        и рекламу — плюс <strong>{formatAmount(financeGrowth.advertising)} долларов</strong>.
       </p>
+      <figure class="je-finance-record" aria-labelledby="finance-record-title" data-editorial-projection={financeGrowth.researchClaim}>
+        <figcaption id="finance-record-title">Рост расходов в декларациях · FY2022 → FY2023</figcaption>
+        <dl>
+          <div><dt>Общие расходы</dt><dd>+${formatAmount(financeGrowth.total)}</dd></div>
+          <div><dt>Конференции и встречи</dt><dd>+${formatAmount(financeGrowth.conferences)}</dd></div>
+          <div><dt>Реклама</dt><dd>+${formatAmount(financeGrowth.advertising)}</dd></div>
+        </dl>
+        <p>Классификация самой организации, не заключение внешнего аудитора. <a href="#src-G3-S002">Источник: IRS Form 990</a>.</p>
+      </figure>
       <p>
         В той же форме расходы 2023 года были полностью отнесены к программной деятельности:
         на административные нужды и сбор пожертвований организация отразила нулевые суммы.
@@ -170,13 +185,13 @@ const snapshot = researchSnapshotShort();
         но не доказывают, что проблемы отсутствовали или, наоборот, существовали.
       </p>
       <p>
-        Декларации за 2024 и 2025 годы также раскрывают выплаты Карис Бьюс —
+        Декларации за 2024 и 2025 годы также раскрывают выплаты Карис Бьюс —{' '}
         <strong>30 409</strong> и <strong>31 880 долларов</strong> соответственно.
         Форма обозначает её дочерью члена совета. Эта запись требует прозрачного
         упоминания, но сама по себе не позволяет сделать вывод о незаконной выплате
         или определить личность родителя только по фамилии.
       </p>
-      <p class="source-note-paragraph"><a class="source-note" href={handoffUrl} rel="noopener">Налоговые данные и ограничения: G3-PUB-002–004</a></p>
+      <p class="source-note-paragraph" data-research-claims="G3-PUB-002 G3-PUB-003 G3-PUB-004"><span class="source-note-label">Основания</span><a href="#src-G3-S002">Декларации IRS Form 990, FY2022–FY2025</a><span aria-hidden="true"> · </span><a href="#src-G3-S028">Происхождение налоговых данных</a></p>
     </div>
   </section>
 
@@ -200,7 +215,7 @@ const snapshot = researchSnapshotShort();
         Мы не переносим автоматически этот состав на конец августа, когда происходили
         события кризиса: необходимые документы за этот промежуток пока не получены.
       </p>
-      <p class="source-note-paragraph"><a class="source-note" href={handoffUrl} rel="noopener">Состав совета и ограничения: G3-PUB-008–009, 016</a></p>
+      <p class="source-note-paragraph" data-research-claims="G3-PUB-008 G3-PUB-009 G3-PUB-016"><span class="source-note-label">Основания</span><a href="#src-G3-S096">Архив состава совета, 21 июля 2026</a><span aria-hidden="true"> · </span><a href="#src-G3-S046">Документы о совместных проектах</a><span aria-hidden="true"> · </span><a href="#src-G3-S047">Сведения о служителях</a></p>
     </div>
   </section>
 
@@ -226,7 +241,7 @@ const snapshot = researchSnapshotShort();
         Следовательно, корректнее говорить о <strong>попытке продолжить и перестроить служение</strong>,
         а не утверждать, что реформа обязательно оказалась успешной.
       </p>
-      <p class="source-note-paragraph"><a class="source-note" href={handoffUrl} rel="noopener">Заявления организации и даты: G3-PUB-005–007</a></p>
+      <p class="source-note-paragraph" data-research-claims="G3-PUB-005 G3-PUB-006 G3-PUB-007"><span class="source-note-label">Основания</span><a href="#src-G3-S008">Заявление об отставке Бьюса</a><span aria-hidden="true"> · </span><a href="#src-G3-S010">Назначение Аниола</a><span aria-hidden="true"> · </span><a href="#src-G3-S009">Объявление об обновлении G3</a></p>
     </div>
   </section>
 
@@ -242,11 +257,11 @@ const snapshot = researchSnapshotShort();
         обвинение в проповеди чужих готовых текстов целиком.
       </p>
       <p>
-        Доступная проверка обнаружила случаи недостаточно ясного указания на
-        формулировки из комментариев. Но опубликованные материалы <strong>не дают
+        В своём разборе Фил Джонсон сообщил о случаях недостаточно ясного указания
+        на формулировки из комментариев. Но доступные материалы <strong>не дают
         оснований утверждать</strong>, что Бак систематически произносил
-        полностью написанные другими авторами проповеди. Его церковь в Линдейле
-        проводила рассмотрение и предпринимала исправительные действия;
+        полностью написанные другими авторами проповеди. В ответе его церкви,
+        FBC Lindale, описаны рассмотрение и исправительные действия;
         это не означает, что все отдельные эпизоды уже получили окончательную оценку.
       </p>
       <p>
@@ -264,7 +279,7 @@ const snapshot = researchSnapshotShort();
         оригинальную запись проповеди, установить издание использованного комментария
         и проверить контекст ссылки на автора.
       </p>
-      <p class="source-note-paragraph"><a class="source-note" href={handoffUrl} rel="noopener">Проверка двух разных вопросов: G3-PUB-010–011, 016</a></p>
+      <p class="source-note-paragraph" data-research-claims="G3-PUB-010 G3-PUB-011 G3-PUB-016"><span class="source-note-label">Основания</span><a href="#src-G3-S012">Разбор Фила Джонсона</a><span aria-hidden="true"> · </span><a href="#src-G3-S035">Проверка и ответ FBC Lindale</a><span aria-hidden="true"> · </span><a href="#src-G3-S015">Заявление четырёх пасторов</a></p>
     </div>
   </section>
 
@@ -279,27 +294,28 @@ const snapshot = researchSnapshotShort();
         намеченного на <strong>27–29 мая 2027 года</strong>, и возврате регистрационных взносов.
       </p>
       <p>
-        Но для истории организации это не одна дата с единственным смыслом.
-        <strong>Прекратить мероприятия</strong> — не то же самое, что
+        Но для истории организации это не одна дата с единственным смыслом.{' '}
+        <strong>Прекратить мероприятия</strong> — не то же самое, что{' '}
         <strong>юридически ликвидировать корпорацию</strong>.
-        В доступной записи штата Джорджия на <strong>8 сентября 2026 года</strong>
+        В доступной записи штата Джорджия на <strong>8 сентября 2026 года</strong>{' '}
         юридическое лицо всё ещё числилось действующим. Это снимок реестра
         на указанную дату, а не обещание, что статус сохранился навсегда.
       </p>
       <p>
-        После объявленного завершения работы цифровые витрины G3+ и G3 Press
-        всё ещё были доступны под брендом организации. Такая доступность
-        показывает лишь состояние сайтов и магазинов: она не позволяет
-        определить нового владельца, условия сделки или юридический
-        переход прав на книги и сервисы.
+        В материалах, закреплённых исследовательским снимком сентября 2026 года,
+        страницы G3+ в магазинах приложений всё ещё указывали связанные с G3 данные
+        разработчика и поддержки, а витрина G3 Press оставалась видимой под брендом
+        организации. Это датированное наблюдение, не проверка сегодняшнего состояния
+        сайтов. Метаданные могут отставать от частных сделок: они не устанавливают
+        нового владельца, условия сделки или юридический переход прав на книги и сервисы.
       </p>
       <p>
-        Известен отдельный пример: книга Дэйва Дженкинса <em>The Word Matters</em>
+        Известен отдельный пример: книга Дэйва Дженкинса <em>The Word Matters</em>{' '}
         появлялась в его нынешней издательско-образовательной среде.
         Однако даже этот случай не раскрывает условия передачи прав
         на весь каталог G3 Press.
       </p>
-      <p class="source-note-paragraph"><a class="source-note" href={handoffUrl} rel="noopener">Решения, реестры и открытые вопросы: G3-PUB-001, 012–016</a></p>
+      <p class="source-note-paragraph" data-research-claims="G3-PUB-001 G3-PUB-012 G3-PUB-013 G3-PUB-014 G3-PUB-015 G3-PUB-016"><span class="source-note-label">Основания</span><a href="#src-G3-S001">Юридический статус на 8 сентября 2026</a><span aria-hidden="true"> · </span><a href="#src-G3-S011">Отмена конференции 2027 года</a><span aria-hidden="true"> · </span><a href="#src-G3-S053">Состояние витрины G3 Press</a></p>
     </div>
   </section>
 
@@ -328,7 +344,7 @@ const snapshot = researchSnapshotShort();
         Если появится новый первичный документ, существенное изменение будет
         отражено открытым датированным исправлением, а не скрытой заменой выводов.
       </p>
-      <p class="source-note-paragraph"><a class="source-note" href={handoffUrl} rel="noopener">Полный перечень и границы: G3-PUB-016</a></p>
+      <p class="source-note-paragraph" data-research-claims="G3-PUB-016"><span class="source-note-label">Основания</span><a href={handoffUrl} rel="noopener">Обоснование границ исследования</a></p>
     </div>
   </section>
 
@@ -339,9 +355,9 @@ const snapshot = researchSnapshotShort();
       <p>
         Для финансовых выводов использованы налоговые формы американской
         некоммерческой организации, а для юридического статуса —
-        запись реестра штата Джорджия на конкретную дату. Это позволяют
-        проверять числа и формальный статус, но не являются самостоятельными
-        выводами о преступлении или чьих-либо мотивах.
+        запись реестра штата Джорджия на конкретную дату. Эти документы позволяют
+        проверять числа и формальный статус, но сами по себе не доказывают
+        преступления или чьих-либо мотивов.
       </p>
       <p>
         Даты смены руководства и отмены конференций сверены с официальными
@@ -379,21 +395,19 @@ const snapshot = researchSnapshotShort();
     <div class="prose">
       <h2>Источники и материалы для проверки</h2>
       <p>
-        Мы сохранили привязку фактов к оригинальным документам. Ниже можно
-        открыть 21 источник этого документального досье: официальные записи,
+        Мы сохранили привязку фактов к оригинальным документам. Ниже собрана
+        21 библиографическая запись этого досье: официальные записи,
         налоговые формы, сообщения организаций и архивные материалы.
         Историческое исследование конференций имеет отдельную доказательную базу
         и не входит в текущую библиографию.
         В списке указано, где доступен сам объект, а где —
         только библиографическая запись без права воспроизводить документ.
       </p>
-      <details class="bibliography-details">
-        <summary>Развернуть все 21 библиографические записи</summary>
         <ol class="bibliography-list">
           {G3_SOURCE_BIBLIOGRAPHY.map((entry) => (
-            <li id={`src-${entry.id}`} class="bibliography-item">
-              <h3>{entry.title}</h3>
-              <p class="biblio-meta">{entry.period} · {entry.eligibility}</p>
+            <li id={`src-${entry.id}`} class="bibliography-item" tabindex="-1" data-evidence-class={entry.tier} data-publication-eligibility={entry.eligibility}>
+              <h3><span class="biblio-id">{entry.id}</span>{entry.title}</h3>
+              <p class="biblio-meta">{entry.period} · {entry.publicUrl ? 'Официальный общедоступный реестр' : 'Библиографическая запись · без перепечатки'}</p>
               <p>{entry.locator}</p>
               <p class="biblio-links">
                 {entry.publicUrl ? <a href={entry.publicUrl} rel="noopener">Открыть документ</a> : <span>Публичной ссылки на полный объект нет</span>}
@@ -403,7 +417,6 @@ const snapshot = researchSnapshotShort();
             </li>
           ))}
         </ol>
-      </details>
     </div>
   </section>
 
@@ -425,46 +438,11 @@ const snapshot = researchSnapshotShort();
   </section>
 
     </div>
-    <JournalEditorialRail label="Навигация по хронологии и источникам G3">
-      <section class="je-rail-group" aria-labelledby="je-chronology-title">
-        <p class="je-rail-kicker">Документальное досье</p>
-        <h2 id="je-chronology-title">Хронология</h2>
-        <p class="je-rail-intro">Ключевые этапы, изложенные и подтверждённые в тексте материала.</p>
-        <ol class="je-rail-timeline">
-          <li><a href="#timeline"><time datetime="2019">2019</time><span>Юридическое оформление организации</span></a></li>
-          <li><a href="#buice"><time datetime="2025-05">Май 2025</time><span>Кризис руководства и попытка продолжить работу</span></a></li>
-          <li><a href="#buck"><time datetime="2026-08">Август 2026</time><span>Новый конфликт и публичные заявления</span></a></li>
-          <li><a href="#wind-down"><time datetime="2026-09">Сентябрь 2026</time><span>Объявление о завершении деятельности</span></a></li>
-        </ol>
-      </section>
-      <section class="je-rail-group" aria-labelledby="je-key-title">
-        <p class="je-rail-kicker">Содержание</p>
-        <h2 id="je-key-title">Главные вопросы</h2>
-        <ul class="je-rail-links">
-          <li><a href="#finance">Что показывают финансовые документы</a></li>
-          <li><a href="#governance">Роль совета и руководства</a></li>
-          <li><a href="#unknowns">Где пока нет окончательного ответа</a></li>
-        </ul>
-      </section>
-      <section class="je-rail-group">
-        <div class="je-rail-feature">
-          <p class="je-rail-kicker">Принцип издания</p>
-          <h3>Факт — не обвинение</h3>
-          <p>Сообщение стороны, финансовая форма и юридическое решение имеют разную доказательную силу. В материале это различие сохранено.</p>
-        </div>
-      </section>
-      <section class="je-rail-group" aria-labelledby="je-source-title">
-        <p class="je-rail-kicker">Читателю</p>
-        <h2 id="je-source-title">Документы</h2>
-        <p class="je-rail-intro">Полный реестр и ссылки находятся в самой статье.</p>
-        <ul class="je-rail-links">
-          <li><a href="#documents">Как проверены сведения</a></li>
-          <li><a href="#bibliography">21 источник в библиографии</a></li>
-          <li><a href="#corrections">Журнал исправлений</a></li>
-        </ul>
-      </section>
-    </JournalEditorialRail>
   </div>
+  <nav class="je-series-navigation" aria-label="Материалы серии G3">
+    <a href="/journal/"><span class="je-series-label">Издание</span><strong>Вернуться в журнал <span aria-hidden="true">←</span></strong></a>
+    <div><span class="je-series-label">Другой материал серии · готовится</span><strong>G3 до кризисов: история конференций, 2013–2024</strong><p>Исторический очерк проходит отдельную проверку источников.</p></div>
+  </nav>
   <footer class="dossier-footer">
     <p><strong>Автор-редактор:</strong> Фёдор Милованов</p>
     <p><strong>Источники и методика:</strong> <a href={handoffUrl}>Исследовательское обоснование</a></p>
