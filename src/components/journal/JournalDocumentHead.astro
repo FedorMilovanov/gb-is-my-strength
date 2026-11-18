@@ -6,8 +6,9 @@ interface Props {
   description: string;
   canonical: string;
   kind?: 'CollectionPage' | 'Article';
-  publishedAt?: string;
-  modifiedAt?: string;
+  /** Route-owned ISO 8601 dates. Required: no implicit G3 fallback may leak into another route's SEO. */
+  publishedAt: string;
+  modifiedAt: string;
   readingTime?: number;
   socialImage?: string;
   /** Governed social-image profiles: 1200×630 (default) or 1200×675. */
@@ -23,14 +24,23 @@ const {
   description,
   canonical,
   kind = 'Article',
-  publishedAt = '2026-09-09T00:00:00+03:00',
-  modifiedAt = publishedAt,
+  publishedAt,
+  modifiedAt,
   readingTime,
   socialImage = 'https://gospod-bog.ru/images/og-preview-1200x630.webp',
   socialImageHeight = 630,
   breadcrumbTrail,
   robots = 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
 } = Astro.props as Props;
+
+for (const [name, value] of [['publishedAt', publishedAt], ['modifiedAt', modifiedAt]] as const) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T/.test(value) || Number.isNaN(Date.parse(value))) {
+    throw new Error(`JournalDocumentHead: ${name} must be a route-owned ISO 8601 date-time (got ${String(value)})`);
+  }
+}
+if (Date.parse(modifiedAt) < Date.parse(publishedAt)) {
+  throw new Error('JournalDocumentHead: modifiedAt must not precede publishedAt');
+}
 
 const siteTitle = `${title} | Господь Бог — Сила Моя`;
 const icon = 'https://gospod-bog.ru/icons/icon-512.png';
