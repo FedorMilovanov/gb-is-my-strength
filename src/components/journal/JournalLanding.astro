@@ -1,18 +1,8 @@
 ---
-import MobileChromePage from '@/components/article-pilots/_shared/MobileChromePage.astro';
-import JournalMasthead from './JournalMasthead.astro';
-import './journalEditorial.css';
+import JournalEditorialShell from './JournalEditorialShell.astro';
+
 ---
-<!-- Bypass-ссылка: первый узел body, поэтому первая Tab-остановка на любой ширине.
-     Класс .skip-link и цель #main-content — общесайтовый идиом (About/Articles/Home/
-     HardTexts, css/site.css), вне фокуса ссылка увезена за верхний край. -->
-<a href="#main-content" class="skip-link">Перейти к содержимому</a>
-
-<MobileChromePage backHref="/" homeHref="/" searchLabel="Поиск по сайту…" />
-
-<div class="journal-edition journal-edition--landing">
-<JournalMasthead active="journal" />
-
+<JournalEditorialShell kind="journal" backHref="/">
 <main class="journal-landing" id="main-content" tabindex="-1">
   <section class="journal-hero" aria-labelledby="journal-title">
     <p class="journal-kicker">Церковная жизнь · история · документы</p>
@@ -116,4 +106,4 @@ import './journalEditorial.css';
   <span>·</span>
   <span>Автор-редактор: Фёдор Милованов</span>
 </footer>
-</div>
+</JournalEditorialShell>

@@ -185,6 +185,9 @@ html.dark .journal-edition {
   .journal-edition .journal-story-column { width: 100% !important; }
   .journal-edition .module { break-inside: avoid; }
   .journal-edition .bibliography-details { display: block; }
+  /* Native closed-details content is hidden by the UA even when print display is block. */
+  .journal-edition details:not([open])::details-content { content-visibility: visible; display: block; height: auto; }
+  .journal-edition details:not([open]) > :not(summary) { display: block; }
 }
 
 /* Shared rail styles: placed in global journal stylesheet because slot children are not Astro-scoped. */

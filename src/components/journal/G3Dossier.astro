@@ -1,8 +1,6 @@
 ---
-import MobileChromePage from '@/components/article-pilots/_shared/MobileChromePage.astro';
-import JournalMasthead from './JournalMasthead.astro';
+import JournalEditorialShell from './JournalEditorialShell.astro';
 import JournalEditorialRail from './JournalEditorialRail.astro';
-import './journalEditorial.css';
 import {
   G3_PUBLICATION_HANDOFF,
   assertG3PublicationProjection,
@@ -31,16 +29,7 @@ const corrections: Array<{
 const handoffUrl = `https://github.com/${G3_PUBLICATION_HANDOFF.researchRepo}/blob/${G3_PUBLICATION_HANDOFF.researchSealCommit}/${G3_PUBLICATION_HANDOFF.handoffPath}`;
 const snapshot = researchSnapshotShort();
 ---
-<!-- Bypass-ссылка: первый узел body, поэтому первая Tab-остановка на любой ширине.
-     Класс .skip-link и цель #main-content — общесайтовый идиом (About/Articles/Home/
-     HardTexts, css/site.css), вне фокуса ссылка увезена за верхний край. -->
-<a href="#main-content" class="skip-link">Перейти к содержимому</a>
-
-<MobileChromePage backHref="/journal/" homeHref="/" searchLabel="Поиск по сайту…" />
-
-<div class="journal-edition journal-edition--dossier">
-<JournalMasthead active="dossier" />
-
+<JournalEditorialShell kind="dossier" backHref="/journal/">
 <main class="dossier journal-dossier-shell" id="main-content" tabindex="-1" data-journal-dossier="g3" data-research-seal={G3_PUBLICATION_HANDOFF.researchSealCommit}>
   <div class="journal-feature-grid">
     <div class="journal-story-column">
@@ -477,4 +466,4 @@ const snapshot = researchSnapshotShort();
     <p><a href="/journal/">← Вернуться в Журнал</a></p>
   </footer>
 </main>
-</div>
+</JournalEditorialShell>
