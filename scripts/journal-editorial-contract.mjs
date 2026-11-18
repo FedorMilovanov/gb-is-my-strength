@@ -2,7 +2,10 @@
 /**
  * Bounded Journal/G3 regression witness, not a Research/publication approval.
  * Run after the canonical production-like build:
- *   node scripts/journal-editorial-contract.mjs [--probe-hold]
+ *   node scripts/journal-editorial-contract.mjs [--public-only] [--probe-hold]
+ * --public-only omits the held manuscript's presentation bibliography check so
+ * the public components/tests transfer without importing history-only data.
+ * It NEVER skips publication/HOLD, discovery, source or production-guard checks.
  * The optional probe renders the REAL held component in an isolated temporary
  * Astro production build. It must fail with its own PUBLICATION_HOLD guard.
  * No public route, registry, dependency or CI policy is written by this test.
@@ -17,8 +20,10 @@ import { G3_PUBLICATION_HANDOFF as handoff } from '../src/data/journal/g3Publica
 import { G3_SOURCE_BIBLIOGRAPHY as sources } from '../src/data/journal/g3SourceBibliography.ts';
 import { G3_PRODUCT_METADATA as metadata } from '../src/data/journal/g3ProductMetadata.ts';
 import { G3_HISTORY_DRAFT_METADATA as draft } from '../src/data/journal/g3HistoryDraftMetadata.ts';
-import { G3_HISTORY_BIBLIOGRAPHY as historySources } from '../src/data/journal/g3HistoryBibliography.ts';
 
+const args = new Set(process.argv.slice(2));
+for (const arg of args) assert.ok(['--public-only', '--probe-hold'].includes(arg), `Unknown Journal contract option: ${arg}`);
+const publicOnly = args.has('--public-only');
 const root = fileURLToPath(new URL('..', import.meta.url));
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const attrs = (node) => Object.fromEntries((node.attrs || []).map(({ name, value }) => [name, value]));
@@ -46,7 +51,10 @@ assert.deepEqual(sources.map((entry) => entry.id).sort(), [...handoff.sourceIds]
 assert.equal(draft.publicationStatus, 'PUBLICATION_HOLD');
 assert.equal(draft.handoffStatus, 'NOT_ISSUED');
 assert.deepEqual([...draft.candidateClaimIds], Array.from({ length: 9 }, (_, i) => `G3-HIST-PUB-${String(i + 1).padStart(2, '0')}`));
-assert.equal(new Set(historySources.map((entry) => entry.id)).size, historySources.length);
+if (!publicOnly) {
+  const { G3_HISTORY_BIBLIOGRAPHY: historySources } = await import('../src/data/journal/g3HistoryBibliography.ts');
+  assert.equal(new Set(historySources.map((entry) => entry.id)).size, historySources.length);
+}
 assert.equal(metadata.publishedAt, '2026-09-09T00:00:00+03:00');
 
 for (const file of ['G3HistoryArticle.astro', 'G3HistoryFeature.astro']) {
@@ -128,7 +136,7 @@ for (const [route, title, kind] of [
 }
 
 let productionProbe = 'not requested (use --probe-hold)';
-if (process.argv.includes('--probe-hold')) {
+if (args.has('--probe-hold')) {
   fs.mkdirSync(path.join(root, '.cache'), { recursive: true });
   const fixture = fs.mkdtempSync(path.join(root, '.cache/g3-hold-probe-'));
   try {
@@ -146,3 +154,6 @@ if (process.argv.includes('--probe-hold')) {
 console.log('Journal/G3 contract PASS: two public routes, 16 claims, 21 sources, nine held candidates; anchors, metadata and prepared cover projections.');
 console.log(`Reading text parity PASS: ${verifiedReadingParagraphs} literal dossier paragraphs preserve source word boundaries.`);
 console.log(`History fail-closed probe: ${productionProbe}`);
+console.log(publicOnly
+  ? 'History presentation bibliography: NOT RUN (--public-only); all publication/HOLD checks remain mandatory.'
+  : 'History presentation bibliography: PASS (default strict mode).');
