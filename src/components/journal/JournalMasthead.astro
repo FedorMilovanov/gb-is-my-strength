@@ -70,25 +70,25 @@ const { active = 'journal' } = Astro.props;
 </header>
 <script is:inline>
   (function() {
-    function initMastheadControls() {
+    function initMastheadTheme() {
       var btn = document.getElementById('themeToggle');
       if (!btn || btn.__themeBound) return;
       btn.__themeBound = true;
-      btn.addEventListener('click', function() {
-        var isDark = document.documentElement.classList.contains('dark');
-        var next = isDark ? 'light' : 'dark';
-        if (window.GBReaderPreferences && window.GBReaderPreferences.setTheme) {
-          window.GBReaderPreferences.setTheme(next);
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (window.GBReaderPreferences && typeof window.GBReaderPreferences.setTheme === 'function') {
+          var current = window.GBReaderPreferences.get ? window.GBReaderPreferences.get().theme : (document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+          window.GBReaderPreferences.setTheme(current === 'dark' ? 'light' : 'dark');
         } else {
-          document.documentElement.classList.toggle('dark', !isDark);
-          try { localStorage.setItem('theme', next); } catch (_) {}
+          // Fallback only toggles DOM class; js/reader-preferences.js reconciles it to the canonical GBReaderPreferences owner
+          document.documentElement.classList.toggle('dark');
         }
       });
     }
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initMastheadControls, { once: true });
+      document.addEventListener('DOMContentLoaded', initMastheadTheme, { once: true });
     } else {
-      initMastheadControls();
+      initMastheadTheme();
     }
   })();
 </script>
