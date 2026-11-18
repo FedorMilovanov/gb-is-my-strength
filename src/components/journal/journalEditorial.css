@@ -228,3 +228,60 @@ html.dark .journal-edition {
     .journal-edition .je-editorial-rail { display: block; }
     .journal-edition .je-editorial-rail .je-rail-group { padding-bottom: 22px; }
   }
+/* G3 historical chapter: staged candidate Research #582, separate from approved G3 publication projections. */
+.journal-edition .je-history-chapter { border-top: 2px solid var(--je-gold); margin: 38px 0 0; padding: 38px 0 15px; scroll-margin-top: 26px; }
+.journal-edition .je-history-heading { margin-bottom: 30px; max-width: 790px; }
+.journal-edition .je-history-eyebrow { color: var(--je-gold); font: 750 11px/1.4 'Source Sans 3', sans-serif; text-transform: uppercase; letter-spacing: .18em; margin: 0 0 13px; }
+.journal-edition .je-history-heading h2 { color: var(--je-ink); font: 600 clamp(30px,3.2vw,45px)/1.15 'Playfair Display',Georgia,serif; letter-spacing: -.034em; margin: 0; text-wrap: balance; }
+.journal-edition .je-history-lead { font: italic 19px/1.57 Lora,Georgia,serif; color: var(--je-ink); margin: 20px 0 0; }
+.journal-edition .je-history-intro { font: 16px/1.7 Lora,Georgia,serif; margin: 16px 0 0; color: var(--je-muted); }
+.journal-edition .je-history-origin { display: grid; grid-template-columns: 160px minmax(0,1fr); gap: 27px; align-items: start; }
+.journal-edition .je-history-origin-stamp { background: var(--je-navy); color: #efe3c9; border-top: 4px solid #d3ad6e; padding: 26px 10px; display: flex; flex-direction: column; align-items: center; gap: 11px; }
+.journal-edition .je-history-origin-stamp span { font: italic 500 74px/.9 'Playfair Display',Georgia,serif; letter-spacing: -.09em; }
+.journal-edition .je-history-origin-stamp small { color: #dfc89d; font: 700 8px/1.4 'Source Sans 3',sans-serif; letter-spacing: .11em; text-align: center; }
+.journal-edition .je-history-origin-text p, .journal-edition .je-history-year-text p, .journal-edition .je-history-growth-grid p, .journal-edition .je-history-context p:not(.je-history-eyebrow) { color: var(--je-ink); font: 16px/1.74 Lora,Georgia,serif; margin: 0 0 17px; }
+.journal-edition .je-history-footnote { color: var(--je-muted) !important; font: 12px/1.55 'Source Sans 3',sans-serif !important; margin: 5px 0 0 !important; }
+.journal-edition .je-history-footnote a { color: var(--je-gold); text-decoration: underline; text-underline-offset: 3px; }
+.journal-edition .je-history-years { list-style: none; padding: 0; margin: 0; }
+.journal-edition .je-history-year { display: grid; grid-template-columns: 118px minmax(0,1fr); gap: 28px; border-top: 1px solid var(--je-rule); padding: 28px 0 23px; break-inside: avoid; }
+.journal-edition .je-history-year:first-child { border-top-color: var(--je-gold); }
+.journal-edition .je-history-year-mark { display: flex; flex-direction: column; gap: 7px; align-items: flex-start; }
+.journal-edition .je-history-year-mark time { font: 600 41px/.98 'Playfair Display',Georgia,serif; letter-spacing: -.04em; color: var(--je-gold); }
+.journal-edition .je-history-year-mark span { color: var(--je-muted); font: 700 10px/1.42 'Source Sans 3',sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+.journal-edition .je-history-year-text h3 { color: var(--je-ink); font: 600 clamp(20px,2vw,24px)/1.29 'Playfair Display',Georgia,serif; margin: 0 0 12px; letter-spacing: -.01em; }
+.journal-edition .je-history-year-text p { margin-bottom: 9px; }
+.journal-edition .je-history-growth-grid { display: grid; grid-template-columns: minmax(0,1.35fr) minmax(195px,.7fr); gap: 25px; align-items: start; }
+.journal-edition .je-history-growth-grid h3, .journal-edition .je-history-context h3 { color: var(--je-ink); font: 600 25px/1.26 'Playfair Display',Georgia,serif; margin: 0 0 15px; }
+.journal-edition .je-history-growth-aside { background: var(--je-paper-raised); border: 1px solid var(--je-rule); padding: 21px 19px; }
+.journal-edition .je-history-growth-eyebrow { color: var(--je-gold) !important; font: 750 10px/1.4 'Source Sans 3',sans-serif !important; letter-spacing: .13em; text-transform: uppercase; }
+.journal-edition .je-history-growth-aside ul { padding: 0; margin: 0; list-style: none; }
+.journal-edition .je-history-growth-aside li { border-top: 1px solid var(--je-rule); padding: 10px 0; }
+.journal-edition .je-history-growth-aside strong { display: block; font: 700 13px/1.35 'Source Sans 3',sans-serif; margin-bottom: 3px; color: var(--je-ink); }
+.journal-edition .je-history-growth-aside li span { display: block; font: 12px/1.45 'Source Sans 3',sans-serif; color: var(--je-muted); }
+.journal-edition .je-history-context { background: var(--je-paper-raised); border-left: 3px solid var(--je-gold); margin: 27px 0 11px; padding: 22px 24px 12px; }
+.journal-edition .je-history-context .je-history-eyebrow { font-size: 10px; }
+@media (max-width: 690px) {
+  .journal-edition .dossier-nav { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; scrollbar-width: thin; gap: 19px; padding-bottom: 12px; }
+  .journal-edition .dossier-nav a { flex: none; min-height: 44px; }
+  .journal-edition .je-history-chapter { margin-top: 27px; padding-top: 27px; scroll-margin-top: 74px; }
+  .journal-edition .module { scroll-margin-top: 74px; }
+  .journal-edition .je-history-heading { margin-bottom: 21px; }
+  .journal-edition .je-history-heading h2 { font-size: clamp(30px,8.3vw,39px); }
+  .journal-edition .je-history-lead { font-size: 17px; }
+  .journal-edition .je-history-origin, .journal-edition .je-history-year, .journal-edition .je-history-growth-grid { display: block; }
+  .journal-edition .je-history-origin-stamp { float: right; width: 112px; padding: 19px 7px; margin: 0 0 12px 15px; }
+  .journal-edition .je-history-origin-stamp span { font-size: 54px; }
+  .journal-edition .je-history-origin-stamp small { font-size: 7px; }
+  .journal-edition .je-history-origin-text p, .journal-edition .je-history-year-text p, .journal-edition .je-history-growth-grid p, .journal-edition .je-history-context p:not(.je-history-eyebrow) { font-size: 15px; line-height: 1.7; }
+  .journal-edition .je-history-year { padding: 24px 0; }
+  .journal-edition .je-history-year-mark { flex-direction: row; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .journal-edition .je-history-year-mark time { font-size: 36px; }
+  .journal-edition .je-history-year-mark span { font-size: 10px; }
+  .journal-edition .je-history-growth-aside { margin-top: 23px; }
+  .journal-edition .je-history-context { margin: 24px 0; padding: 18px 15px 7px; }
+  .journal-edition .je-history-context h3 { font-size: 23px; }
+}
+@media print {
+  .journal-edition .je-history-year, .journal-edition .je-history-origin { break-inside: avoid; }
+  .journal-edition .je-history-origin-stamp { background: #fff !important; color: #111 !important; border: 1px solid #aaa; }
+}

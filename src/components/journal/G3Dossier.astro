@@ -1,6 +1,7 @@
 ---
 import JournalEditorialShell from './JournalEditorialShell.astro';
 import JournalEditorialRail from './JournalEditorialRail.astro';
+import G3HistoryFeature from './G3HistoryFeature.astro';
 import {
   G3_PUBLICATION_HANDOFF,
   assertG3PublicationProjection,
@@ -67,6 +68,9 @@ const snapshot = researchSnapshotShort();
     </p>
 
   <nav class="dossier-nav" aria-label="Модули досье">
+    <a href="#g3-history">Истоки</a>
+    <a href="#g3-speakers">Конференции</a>
+    <a href="#g3-growth">Развитие</a>
     <a href="#overview">Предыстория</a>
     <a href="#timeline">События</a>
     <a href="#finance">Финансы</a>
@@ -76,6 +80,9 @@ const snapshot = researchSnapshotShort();
     <a href="#unknowns">Неизвестное</a>
     <a href="#bibliography">Источники</a>
   </nav>
+
+  <!-- Historical chapter is staged against Research PR #582 and held from publication until a new handoff. -->
+  <G3HistoryFeature />
 
   <section id="overview" class="module intro-module">
     <div class="module-label">01 · Предыстория</div>
@@ -426,7 +433,10 @@ const snapshot = researchSnapshotShort();
         <h2 id="je-chronology-title">Хронология</h2>
         <p class="je-rail-intro">Ключевые этапы, изложенные и подтверждённые в тексте материала.</p>
         <ol class="je-rail-timeline">
+          <li><a href="#g3-history"><time datetime="2013">2013</time><span>Первая конференция при Pray’s Mill</span></a></li>
+          <li><a href="#g3-speakers"><time datetime="2017">2017</time><span>500 лет Реформации</span></a></li>
           <li><a href="#timeline"><time datetime="2019">2019</time><span>Юридическое оформление организации</span></a></li>
+          <li><a href="#g3-growth"><time datetime="2023">2023</time><span>Издательство, сеть и национальные конференции</span></a></li>
           <li><a href="#buice"><time datetime="2025-05">Май 2025</time><span>Кризис руководства и попытка продолжить работу</span></a></li>
           <li><a href="#buck"><time datetime="2026-08">Август 2026</time><span>Новый конфликт и публичные заявления</span></a></li>
           <li><a href="#wind-down"><time datetime="2026-09">Сентябрь 2026</time><span>Объявление о завершении деятельности</span></a></li>
