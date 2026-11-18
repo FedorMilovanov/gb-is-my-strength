@@ -56,6 +56,14 @@ async function inspect(page) {
       return { text: element.textContent.trim(), left: box.left, right: box.right, height: box.height, clipped: element.scrollWidth > element.clientWidth + 1 };
     });
     const cover = document.querySelector('.journal-feature-media img, .lead-context img');
+    const growthEyebrow = document.querySelector('.je-history-growth-eyebrow');
+    const growthText = document.querySelector('.je-history-growth-grid > div > p');
+    const growthTypography = growthEyebrow && growthText ? {
+      captionSize: parseFloat(getComputedStyle(growthEyebrow).fontSize),
+      captionFamily: getComputedStyle(growthEyebrow).fontFamily,
+      narrativeSize: parseFloat(getComputedStyle(growthText).fontSize),
+      narrativeFamily: getComputedStyle(growthText).fontFamily,
+    } : null;
     return {
       overflow: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) - innerWidth,
       overflowingElements: [...(edition?.querySelectorAll('*') || [])].filter(shown).filter((element) => {
@@ -64,7 +72,7 @@ async function inspect(page) {
       duplicateIds: ids.filter((id, index) => ids.indexOf(id) !== index),
       h1: [...document.querySelectorAll('h1')].filter(shown).length,
       main: document.querySelectorAll('main#main-content').length,
-      missingAnchors, nav,
+      missingAnchors, nav, growthTypography,
       dark: document.documentElement.classList.contains('dark'),
       background: getComputedStyle(edition).backgroundColor,
       seriesBorder: getComputedStyle(document.querySelector('.je-series')).borderTopStyle,
@@ -164,6 +172,10 @@ try {
       if (target.held) {
         check(entry, 'history:noindex', /noindex/.test(await page.locator('meta[name="robots"]').getAttribute('content')));
         check(entry, 'history:hold-visible', await page.locator('.je-draft-notice').isVisible());
+        // A broad narrative selector previously swallowed the service-structure
+        // caption. Verify its UI hierarchy at mobile and desktop sizes.
+        const type = facts.growthTypography;
+        check(entry, 'history:service-caption-keeps-UI-hierarchy', type?.captionSize === 11 && type.captionFamily.includes('Source Sans 3') && type.narrativeSize >= 17 && type.narrativeFamily.includes('Lora'), type);
       }
       if ([390, 1440].includes(width)) {
         const file = `${target.id}-${width}-${theme}.png`;

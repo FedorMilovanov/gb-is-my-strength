@@ -18,7 +18,7 @@
 .journal-edition .je-history-intro { margin: 24px 0 0; color: var(--je-muted); font: 400 17px/1.8 var(--je-reading); }
 .journal-edition .je-history-origin-text p,
 .journal-edition .je-history-year-text p,
-.journal-edition .je-history-growth-grid p,
+.journal-edition .je-history-growth-grid > div > p,
 .journal-edition .je-history-context p:not(.je-history-eyebrow) { margin: 0 0 22px; color: var(--je-ink); font: 400 18px/1.85 var(--je-reading); }
 .journal-edition p.je-history-footnote,
 .journal-edition .je-history-origin-text p.je-history-footnote,
@@ -65,7 +65,7 @@
   .journal-edition .je-history-heading h2 { font-size: clamp(28px, 7.6vw, 35px); line-height: 1.24; }
   .journal-edition .je-history-lead { font-size: 19px; }
   .journal-edition .je-history-origin-text p,
-  .journal-edition .je-history-growth-grid p,
+  .journal-edition .je-history-growth-grid > div > p,
   .journal-edition .je-history-context p:not(.je-history-eyebrow) { font-size: 17px; }
   .journal-edition .je-history-year { grid-template-columns: 1fr; gap: 16px; padding-block: 26px; }
   .journal-edition .je-history-year-mark { flex-direction: row; align-items: center; gap: 16px; }
