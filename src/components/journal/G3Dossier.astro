@@ -2,6 +2,7 @@
 import JournalEditorialShell from './JournalEditorialShell.astro';
 import JournalEditorialRail from './JournalEditorialRail.astro';
 import G3HistoryFeature from './G3HistoryFeature.astro';
+import { G3_PRODUCT_METADATA } from '@/data/journal/g3ProductMetadata';
 import {
   G3_PUBLICATION_HANDOFF,
   assertG3PublicationProjection,
@@ -37,14 +38,14 @@ const snapshot = researchSnapshotShort();
   <header class="dossier-hero">
     <div class="journal-story-topline">
       <span class="journal-story-tag">Досье</span>
-      <p class="kicker">G3 Ministries · церковная жизнь · 2019–2026</p>
+      <p class="kicker">G3 Ministries · церковная жизнь · 2013–2026</p>
     </div>
-    <h1>G3: два кризиса и завершение работы</h1>
+    <h1>{G3_PRODUCT_METADATA.title}</h1>
     <p class="dek">
-      G3 развивала конференции, издательские и цифровые проекты, а также объединяла церкви.
-      В 2025 году организация пережила кризис руководства, в 2026-м — новый конфликт.
-      Разбираемся, что изменилось, какие решения подтверждены документами и почему
-      объявление о прекращении работы не равнозначно юридической ликвидации.
+      Всё начиналось с конференции при баптистской церкви в Джорджии. За следующие годы
+      здесь выступали известные проповедники, появились книги, цифровые проекты и сеть общин.
+      Прослеживаем путь G3 от 2013 года до кризисов 2025–2026 годов — по свидетельствам,
+      архивам выступлений и документам, отделяя проверенные факты от открытых вопросов.
     </p>
     <div class="editorial-meta" aria-label="Сведения о материале">
       <span>Документальное досье</span>
@@ -71,7 +72,7 @@ const snapshot = researchSnapshotShort();
     <a href="#g3-history">Истоки</a>
     <a href="#g3-speakers">Конференции</a>
     <a href="#g3-growth">Развитие</a>
-    <a href="#overview">Предыстория</a>
+    <a href="#overview">Кризисы</a>
     <a href="#timeline">События</a>
     <a href="#finance">Финансы</a>
     <a href="#buice">Кризис 2025</a>
@@ -85,7 +86,7 @@ const snapshot = researchSnapshotShort();
   <G3HistoryFeature />
 
   <section id="overview" class="module intro-module">
-    <div class="module-label">01 · Предыстория</div>
+    <div class="module-label">04 · Переход к кризисам</div>
     <div class="prose wide">
       <h2>Как G3 пришла к двум кризисам</h2>
       <p class="standfirst">
@@ -117,7 +118,7 @@ const snapshot = researchSnapshotShort();
   </section>
 
   <section id="timeline" class="module">
-    <div class="module-label">02 · Хронология</div>
+    <div class="module-label">05 · Хронология</div>
     <div class="prose">
       <h2>Главные события по годам</h2>
       <p>После предыстории легче увидеть, как кризис руководства 2025 года связан с событиями 2026-го. Здесь перечислены только даты, подтверждённые доступными документами; вопросы, остающиеся спорными, обсуждаются отдельно.</p>
@@ -151,7 +152,7 @@ const snapshot = researchSnapshotShort();
   </section>
 
   <section id="finance" class="module">
-    <div class="module-label">03 · Финансы</div>
+    <div class="module-label">06 · Финансы</div>
     <div class="prose">
       <h2>Что изменилось в расходах G3</h2>
       <p>
@@ -187,7 +188,7 @@ const snapshot = researchSnapshotShort();
   </section>
 
   <section id="governance" class="module">
-    <div class="module-label">04 · Управление</div>
+    <div class="module-label">07 · Управление</div>
     <div class="prose">
       <h2>Почему важны люди, входившие в руководство</h2>
       <p>
@@ -211,7 +212,7 @@ const snapshot = researchSnapshotShort();
   </section>
 
   <section id="buice" class="module">
-    <div class="module-label">05 · Кризис 2025</div>
+    <div class="module-label">08 · Кризис 2025</div>
     <div class="prose">
       <h2>Уход Джоша Бьюса и попытка продолжить работу</h2>
       <p>
@@ -237,7 +238,7 @@ const snapshot = researchSnapshotShort();
   </section>
 
   <section id="buck" class="module sensitive-module">
-    <div class="module-label">06 · Кризис 2026</div>
+    <div class="module-label">09 · Кризис 2026</div>
     <div class="prose">
       <h2>Спор о проповедях Тома Бака и последствия анонимной рассылки</h2>
       <p>
@@ -275,7 +276,7 @@ const snapshot = researchSnapshotShort();
   </section>
 
   <section id="wind-down" class="module">
-    <div class="module-label">07 · Что завершилось</div>
+    <div class="module-label">10 · Что завершилось</div>
     <div class="prose">
       <h2>Что означает объявление о завершении деятельности G3</h2>
       <p>
@@ -310,7 +311,7 @@ const snapshot = researchSnapshotShort();
   </section>
 
   <section id="unknowns" class="module unknown-module">
-    <div class="module-label">08 · Неизвестное</div>
+    <div class="module-label">11 · Открытые вопросы</div>
     <div class="prose">
       <h2>Какие вопросы пока остаются без ответа</h2>
       <p>
@@ -339,7 +340,7 @@ const snapshot = researchSnapshotShort();
   </section>
 
   <section id="documents" class="module">
-    <div class="module-label">Документы</div>
+    <div class="module-label">12 · Документы</div>
     <div class="prose">
       <h2>На чём основан этот рассказ</h2>
       <p>
@@ -368,9 +369,11 @@ const snapshot = researchSnapshotShort();
     <details class="research-disclosure">
       <summary>Как проверен материал и где увидеть исходные документы</summary>
       <p>
-        Публикация основана на ограниченном наборе из 16 утверждений, для которых
-        исследовательский архив разрешил публичное изложение. Использован 21 основной источник.
-        Не подтверждённые версии не включались в текст.
+        Документальная часть о руководстве, финансах и кризисах опирается на 16 утверждений,
+        разрешённых прежним Research-handoff, и 21 основной библиографический источник.
+        Новая история конференций использует дополнительные свидетельства участников и каталоги
+        выступлений, но её публикационный допуск пока не утверждён (Research PR #582).
+        Сведения этих двух частей нельзя смешивать по статусу проверки.
       </p>
       <p>
         Контрольный снимок исследования: <code>{snapshot}</code>.
@@ -379,13 +382,15 @@ const snapshot = researchSnapshotShort();
     </details>
 
   <section id="bibliography" class="module">
-    <div class="module-label">Библиография</div>
+    <div class="module-label">13 · Библиография</div>
     <div class="prose">
       <h2>Источники и материалы для проверки</h2>
       <p>
         Мы сохранили привязку фактов к оригинальным документам. Ниже можно
-        открыть полный список из 21 источника: официальные записи,
+        открыть 21 источник исходного документального досье: официальные записи,
         налоговые формы, сообщения организаций и архивные материалы.
+        Ссылки на дополнительные источники исторической части даны рядом с её эпизодами;
+        их отдельная сверка ведётся в Research PR #582.
         В списке указано, где доступен сам объект, а где —
         только библиографическая запись без права воспроизводить документ.
       </p>
@@ -410,7 +415,7 @@ const snapshot = researchSnapshotShort();
   </section>
 
   <section id="corrections" class="module corrections-module">
-    <div class="module-label">09 · Исправления</div>
+    <div class="module-label">14 · Исправления</div>
     <div class="prose">
       <h2>Журнал исправлений</h2>
       {corrections.length === 0 ? (
