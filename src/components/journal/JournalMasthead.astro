@@ -68,6 +68,30 @@ const { active = 'journal' } = Astro.props;
     <a href="/about/">Об издании</a>
   </nav>
 </header>
+<script is:inline>
+  (function() {
+    function initMastheadControls() {
+      var btn = document.getElementById('themeToggle');
+      if (!btn || btn.__themeBound) return;
+      btn.__themeBound = true;
+      btn.addEventListener('click', function() {
+        var isDark = document.documentElement.classList.contains('dark');
+        var next = isDark ? 'light' : 'dark';
+        if (window.GBReaderPreferences && window.GBReaderPreferences.setTheme) {
+          window.GBReaderPreferences.setTheme(next);
+        } else {
+          document.documentElement.classList.toggle('dark', !isDark);
+          try { localStorage.setItem('theme', next); } catch (_) {}
+        }
+      });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initMastheadControls, { once: true });
+    } else {
+      initMastheadControls();
+    }
+  })();
+</script>
 <style>
   .je-masthead {
     --je-masthead-gutter: 32px;

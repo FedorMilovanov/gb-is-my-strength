@@ -570,22 +570,8 @@ const biblioGroups = [
 
     const railLinks = Array.from(document.querySelectorAll('.je-editorial-rail a[href^="#"]'));
     const navLinks = Array.from(document.querySelectorAll('.dossier-nav a[href^="#"]'));
+    const navContainer = document.querySelector('.dossier-nav');
     let activeId = '';
-
-    const observer = new IntersectionObserver((entries) => {
-      const visible = entries.filter((e) => e.isIntersecting);
-      if (visible.length > 0) {
-        const topSection = visible.reduce((prev, curr) =>
-          curr.boundingClientRect.top < prev.boundingClientRect.top ? curr : prev
-        );
-        updateActive(topSection.target.id);
-      }
-    }, {
-      rootMargin: '-10% 0px -65% 0px',
-      threshold: [0, 0.25, 0.5, 0.75, 1.0],
-    });
-
-    sections.forEach((s) => observer.observe(s));
 
     function updateActive(id: string) {
       if (!id || id === activeId) return;
@@ -601,14 +587,35 @@ const biblioGroups = [
       navLinks.forEach((a) => {
         const isCurrent = a.getAttribute('href') === '#' + id;
         a.classList.toggle('is-active', isCurrent);
-        if (isCurrent) {
-          a.setAttribute('aria-current', 'true');
-          a.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
-        } else {
-          a.removeAttribute('aria-current');
-        }
+        if (isCurrent) a.setAttribute('aria-current', 'true');
+        else a.removeAttribute('aria-current');
       });
+
+      if (navContainer && navContainer.scrollWidth > navContainer.clientWidth) {
+        const activeNav = navContainer.querySelector('a[aria-current="true"]') as HTMLElement | null;
+        if (activeNav) {
+          const targetLeft = activeNav.offsetLeft - navContainer.clientWidth / 2 + activeNav.clientWidth / 2;
+          navContainer.scrollLeft = Math.max(0, targetLeft);
+        }
+      }
     }
+
+    const sectionEntries = new Map<string, boolean>();
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((e) => sectionEntries.set(e.target.id, e.isIntersecting));
+      let currentId = '';
+      for (const s of sections) {
+        if (sectionEntries.get(s.id)) {
+          currentId = s.id;
+        }
+      }
+      if (currentId) updateActive(currentId);
+    }, {
+      rootMargin: '-80px 0px -50% 0px',
+      threshold: 0,
+    });
+
+    sections.forEach((s) => observer.observe(s));
   }
 
   if (document.readyState === 'loading') {
