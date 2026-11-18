@@ -44,5 +44,8 @@
 @media print {
   .journal-edition .je-history-heading h2 { font-size: 23pt; }
   .journal-edition :is(.je-history-text, .je-history-year-text) > p:not(.je-history-footnote) { font-size: 11pt; }
+  /* Paper's numeral metrics must never split a four-digit year across lines. */
+  .journal-edition .je-history-dateline > span { font-size: 32pt; white-space: nowrap; }
+  .journal-edition .je-history-year-mark time { white-space: nowrap; }
   .journal-edition .je-history-year { break-inside: avoid; }
 }

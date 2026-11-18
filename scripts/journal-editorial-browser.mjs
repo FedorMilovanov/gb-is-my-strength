@@ -222,7 +222,16 @@ try {
       if (route.kind !== 'journal') {
         assert.equal(await page.locator('.je-editorial-rail').isVisible(), false);
         if (route.kind === 'dossier') assert.equal(await page.locator('.bibliography-item').first().locator('.biblio-links').isVisible(), true, 'print must reveal closed source locators');
-        if (route.kind === 'history') assert.equal(await page.locator('.je-review-note').isVisible(), true, 'the manuscript must remain visibly unpublished in print');
+        if (route.kind === 'history') {
+          assert.equal(await page.locator('.je-review-note').isVisible(), true, 'the manuscript must remain visibly unpublished in print');
+          result.printYearLabels = await page.locator('.je-history-dateline > span, .je-history-year-mark time').evaluateAll((labels) => labels.map((label) => {
+            const range = document.createRange(); range.selectNodeContents(label);
+            const rects = [...range.getClientRects()];
+            return { year: label.textContent.trim(), lines: new Set(rects.map((r) => r.top)).size,
+              textWidth: Math.max(...rects.map((r) => r.width)), available: label.parentElement.getBoundingClientRect().width };
+          }));
+          assert.ok(result.printYearLabels.every((label) => label.lines === 1 && label.textWidth <= label.available + 1), 'a four-digit printed year must fit on a single line');
+        }
       }
       result.print = true;
       if (engine === 'chromium') await page.pdf({ path: path.join(output, `${route.kind}-print.pdf`), format: 'A4', printBackground: true, margin: { top: '14mm', bottom: '14mm', left: '14mm', right: '14mm' } });
