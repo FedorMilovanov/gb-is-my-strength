@@ -6,6 +6,8 @@
  * AXE_CORE_PATH and JOURNAL_PLAYWRIGHT_MODULE may point to separately installed tools.
  * Chromium defaults to minimal sandbox args, never the full Chromium.args bundle.
  * CDP safe-area cases are synthetic Chromium evidence, not physical-device/browser-zoom proof.
+ * JOURNAL_SCREENSHOTS=representative|none reduces saved images, never widths or assertions.
+ * Cold-load CLS is a local regression sample, not field Web Vitals or a network guarantee.
  * Browser/axe/protocol unavailability is recorded as incomplete acceptance, never as a pass.
  */
 import fs from 'node:fs/promises';
@@ -21,6 +23,16 @@ const base = process.env.JOURNAL_BASE_URL || 'http://127.0.0.1:4173';
 const out = path.resolve(process.env.JOURNAL_REPORT_DIR || 'reports/g3-editorial/agent-9/after');
 const browserNames = (process.env.JOURNAL_BROWSERS || 'chromium,firefox,webkit').split(',');
 const widths = [320, 360, 390, 430, 768, 1024, 1440, 1920];
+const screenshotMode = process.env.JOURNAL_SCREENSHOTS || 'all';
+if (!['all','representative','none'].includes(screenshotMode)) throw new Error('Unknown JOURNAL_SCREENSHOTS mode');
+const screenshot = async (page, name, representative = false) => {
+  if (screenshotMode === 'all' || (screenshotMode === 'representative' && representative)) await page.screenshot({ path: path.join(out, name) });
+};
+const criticalFonts = [
+  '/fonts/SourceSans3/sourcesans3-cyrillic-600.woff2',
+  '/fonts/PlayfairDisplay/playfairdisplay-cyrillic-600.woff2',
+  '/fonts/Lora/lora-cyrillic-400.woff2',
+];
 const routes = [
   { name: 'journal', route: '/journal/', canonical: 'https://gospod-bog.ru/journal/', schemaType: 'CollectionPage' },
   { name: 'dossier', route: '/journal/dossiers/g3/', canonical: 'https://gospod-bog.ru/journal/dossiers/g3/', schemaType: 'Article' },
@@ -34,8 +46,8 @@ const report = {
   createdAt: new Date().toISOString(),
   head: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
   dirty: Boolean(execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim()),
-  base, widths, themes: ['light', 'dark'], tooling: { playwrightModule },
-  sourceHashes: {}, browsers: [], cases: [], interactions: [], safeAreas: [], safeAreaCapabilities: [], failures: [], unavailable: [],
+  base, widths, themes: ['light', 'dark'], tooling: { playwrightModule }, screenshotMode,
+  sourceHashes: {}, browsers: [], cases: [], interactions: [], safeAreas: [], safeAreaCapabilities: [], initialLoads: [], fontControls: [], failures: [], unavailable: [],
 };
 for (const dir of ['src/components/journal', 'src/data/journal']) {
   for (const name of (await fs.readdir(dir)).sort()) {
@@ -70,6 +82,16 @@ async function open(context, route, theme) {
   page.on('requestfailed', (request) => errors.failedRequests.push({ url: request.url(), error: request.failure()?.errorText }));
   page.on('response', (response) => { if (response.status() >= 400) errors.http.push({ url: response.url(), status: response.status() }); });
   await page.addInitScript((value) => localStorage.setItem('gb:reader-preferences:v1', JSON.stringify({ version: 1, theme: value })), theme);
+  await page.addInitScript(() => {
+    const supported = typeof PerformanceObserver !== 'undefined' && PerformanceObserver.supportedEntryTypes.includes('layout-shift');
+    window.__journalInitialLoad = { supported, cls: supported ? 0 : null, shifts: [] };
+    if (supported) new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) if (!entry.hadRecentInput) {
+        window.__journalInitialLoad.cls += entry.value;
+        window.__journalInitialLoad.shifts.push({ time: entry.startTime, value: entry.value });
+      }
+    }).observe({ type: 'layout-shift', buffered: true });
+  });
   const response = await page.goto(base + route, { waitUntil: 'networkidle', timeout: 60000 });
   check(response?.status() === 200, `${route}: HTTP ${response?.status()}`);
   await page.evaluate(() => document.fonts.ready);
@@ -100,6 +122,7 @@ function documentAudit() {
     canonical: [...document.querySelectorAll('link[rel="canonical"]')].map((node) => node.href),
     descriptions: document.querySelectorAll('meta[name="description"]').length,
     ogImages: [...document.querySelectorAll('meta[property="og:image"]')].map((node) => node.content),
+    fontPreloads: [...document.querySelectorAll('link[rel="preload"][as="font"]')].map((node) => ({ path: new URL(node.href).pathname, type: node.type, crossOrigin: node.crossOrigin })),
     schemaTypes: graph.map((node) => node['@type']),
     robots: [...document.querySelectorAll('meta[name="robots"]')].map((node) => node.content),
     historyLinks: [...document.querySelectorAll('a[href^="/journal/dossiers/g3/history/"]')].length,
@@ -227,7 +250,7 @@ async function mastheadServiceAudit(browser, browserName, route, width) {
       await page.waitForFunction(() => document.querySelector('.cp-list')?.textContent.includes('G3'));
       const opened = await searchState();
       check(opened.dialogs === 1 && opened.runtimeScripts === 1 && opened.focused === 'cp-input', `${key}: cold/warm single search runtime ${JSON.stringify(opened)}`);
-      if (!cycle) await page.screenshot({ path: path.join(out, `${browserName}-${route.name}-${width}-search.png`) });
+      if (!cycle) await screenshot(page, `${browserName}-${route.name}-${width}-search.png`, route.name === 'dossier' && width === 390);
       await page.keyboard.press('Escape');
       await page.locator('.cp-backdrop.is-open').waitFor({ state: 'hidden' });
       await settle(page);
@@ -238,6 +261,59 @@ async function mastheadServiceAudit(browser, browserName, route, width) {
     check(errors.length === 0, `${key}: JavaScript errors ${JSON.stringify(errors)}`);
     report.interactions.push({ browser: browserName, route: route.name, width, type: 'masthead-services', initial, space, reloaded, enter, external, crossTab, cold, searches, errors });
   } catch (error) { report.failures.push(`${key}: ${error.stack || error}`); }
+  finally { await context.close(); }
+}
+
+async function criticalFontAudits(browser, browserName) {
+  const measure = async (page) => {
+    await settle(page);
+    return page.evaluate(() => ({
+      ...window.__journalInitialLoad,
+      devServer: Boolean(document.querySelector('script[src*="/@vite/client"]')),
+      preloads: [...document.querySelectorAll('link[rel="preload"][as="font"]')].map((node) => ({ path: new URL(node.href).pathname, type: node.type, crossOrigin: node.crossOrigin })),
+      fonts: performance.getEntriesByType('resource').filter((entry) => new URL(entry.name).pathname.endsWith('.woff2')).map((entry) => ({ path: new URL(entry.name).pathname, initiator: entry.initiatorType, start: entry.startTime, end: entry.responseEnd })),
+    }));
+  };
+  let devServer = false;
+  for (const route of routes.filter((route) => route.canonical)) for (const width of [390,1440]) for (let sample = 0; sample < 3; sample++) {
+    const key = `${browserName}/${route.name}/${width}/${sample}/cold-fonts`;
+    const context = await browser.newContext({ viewport: { width, height: 1000 }, locale: 'ru-RU', colorScheme: 'light', reducedMotion: 'reduce' });
+    try {
+      const { page, errors } = await open(context, route.route, 'light');
+      const metrics = await measure(page);
+      devServer ||= metrics.devServer;
+      check(metrics.preloads.length === criticalFonts.length && criticalFonts.every((font) => metrics.preloads.filter((hint) => hint.path === font && hint.type === 'font/woff2' && hint.crossOrigin === 'anonymous').length === 1), `${key}: three matching anonymous critical-font hints`);
+      check(criticalFonts.every((font) => metrics.fonts.filter((request) => request.path === font).length === 1 && metrics.fonts.find((request) => request.path === font)?.initiator === 'link'), `${key}: early, deduplicated font requests ${JSON.stringify(metrics.fonts)}`);
+      if (metrics.supported) check(metrics.cls <= 0.1, `${key}: local cold-load CLS ${metrics.cls}`);
+      else report.unavailable.push({ tool: `${browserName} cold-load CLS`, reason: 'Layout Instability API unavailable; font hint assertions still executed.' });
+      check(Object.values(errors).flat().length === 0, `${key}: browser errors ${JSON.stringify(errors)}`);
+      report.initialLoads.push({ key, metrics, errors });
+    } catch (error) { report.failures.push(`${key}: ${error.stack || error}`); }
+    finally { await context.close(); }
+  }
+  if (devServer) {
+    report.fontControls.push({ browser: browserName, state: 'not-run', reason: 'Document-response negative control targets the static server: fulfilling a Vite document confounds its HMR WebSocket with sandbox local-network/CSP checks. No security/HMR settings or error assertions are disabled.' });
+    return;
+  }
+  // Remove only the three local document hints. Font/CSS bytes remain unchanged.
+  // Structural detection is deterministic; observed CLS is retained, not forced by delays.
+  const context = await browser.newContext({ viewport: { width: 390, height: 1000 }, locale: 'ru-RU', reducedMotion: 'reduce' });
+  let removed = 0;
+  try {
+    await context.route(base + '/journal/dossiers/g3/', async (route) => {
+      const response = await route.fetch();
+      const body = (await response.text()).replace(/<link\b(?=[^>]*\brel="preload")(?=[^>]*\bas="font")[^>]*>/g, (tag) => {
+        if (!criticalFonts.some((font) => tag.includes(`href="${font}"`))) return tag;
+        removed++; return '';
+      });
+      await route.fulfill({ response, body });
+    });
+    const { page, errors } = await open(context, '/journal/dossiers/g3/', 'light');
+    const metrics = await measure(page), missingHintsDetected = criticalFonts.every((font) => !metrics.preloads.some((hint) => hint.path === font));
+    check(removed === criticalFonts.length && missingHintsDetected, `${browserName}: critical-font negative control did not detect missing hints`);
+    check(Object.values(errors).flat().length === 0, `${browserName}: critical-font negative control browser errors ${JSON.stringify(errors)}`);
+    report.fontControls.push({ browser: browserName, state: 'executed', method: 'Only local dossier HTML response: remove the three critical hints, no font-byte/global CSS/resource substitution and no artificial delay.', removed, missingHintsDetected, observedThresholdFailure: metrics.supported ? metrics.cls > 0.1 : null, metrics, errors });
+  } catch (error) { report.failures.push(`${browserName}: critical-font negative control ${error.stack || error}`); }
   finally { await context.close(); }
 }
 
@@ -300,7 +376,7 @@ async function safeAreaAudits(browser, browserName) {
         await page.locator('.je-masthead__nav').evaluate((node) => { node.scrollLeft = 0; });
         await page.locator('.je-masthead__nav a').first().focus();
         await page.keyboard.press('Tab'); await page.keyboard.press('Tab'); await settle(page);
-        await page.screenshot({ path: path.join(out, `${browserName}-${route.name}-${profile.name}-${theme}-safe-focus.png`) });
+        await screenshot(page, `${browserName}-${route.name}-${profile.name}-${theme}-safe-focus.png`, route.name === 'dossier' && profile.name === 'portrait-390');
       }
       const tocKeys = await keyboardNavigationAudit(page, '.je-article-toc a');
       check(tocKeys.every(isSafe), `${key}: safe TOC focus ${JSON.stringify(tocKeys.filter((item) => !isSafe(item)))}`);
@@ -338,7 +414,7 @@ for (const browserName of browserNames) {
       try {
         const { page, errors } = await open(context, route.route, theme);
         const audit = await page.evaluate(documentAudit);
-        await page.screenshot({ path: path.join(out, `${key}.png`) });
+        await screenshot(page, `${key}.png`, width === 390 || width === 1440);
         check(audit.h1Count === 1 && audit.mainCount === 1, `${key}: one H1 and main`);
         check(audit.documentOverflow <= 1 && audit.clipped.length === 0, `${key}: overflow / clipped text ${JSON.stringify(audit.clipped)}`);
         check(audit.duplicateIds.length === 0 && audit.brokenAnchors.length === 0, `${key}: duplicate IDs / dead anchors`);
@@ -352,6 +428,7 @@ for (const browserName of browserNames) {
         if (route.canonical) {
           check(audit.canonical.length === 1 && audit.canonical[0] === route.canonical, `${key}: canonical`);
           check(audit.descriptions === 1 && audit.ogImages.length === 1, `${key}: single description and OG image`);
+          check(audit.fontPreloads.length === criticalFonts.length && criticalFonts.every((font) => audit.fontPreloads.filter((hint) => hint.path === font && hint.type === 'font/woff2' && hint.crossOrigin === 'anonymous').length === 1), `${key}: three matching critical-font preloads`);
           check(audit.schemaTypes.filter((type) => type === route.schemaType).length === 1, `${key}: one schema content owner`);
         } else check(audit.robots.some((value) => value.includes('noindex')), `${key}: draft must be noindex`);
         if (route.name !== 'journal') {
@@ -372,11 +449,11 @@ for (const browserName of browserNames) {
         if (width === 390 || width === 1440) {
           if (route.name === 'dossier') {
             await page.locator('.je-article-toc a[href="#finance"]').click(); await settle(page);
-            await page.screenshot({ path: path.join(out, `${key}-finance.png`) });
+            await screenshot(page, `${key}-finance.png`, true);
           }
           if (route.name === 'history') {
             await page.locator('.je-article-toc a[href="#g3-speakers"]').click(); await settle(page);
-            await page.screenshot({ path: path.join(out, `${key}-chronology.png`) });
+            await screenshot(page, `${key}-chronology.png`, true);
           }
         }
         const allErrors = Object.values(errors).flat();
@@ -399,7 +476,7 @@ for (const browserName of browserNames) {
       const keys = route.name === 'journal' ? [] : await keyboardNavigationAudit(page, '.je-article-toc a');
       if (route.name !== 'journal') {
         check(keys.every((item) => item.visible && item.outline !== 'none'), `${browserName}/${route.name}/${width}: keyboard TOC clipping ${JSON.stringify(keys)}`);
-        await page.screenshot({ path: path.join(out, `${browserName}-${route.name}-${width}-keyboard.png`) });
+        await screenshot(page, `${browserName}-${route.name}-${width}-keyboard.png`, true);
       }
       await page.setViewportSize({ width: 844, height: 390 });
       await page.evaluate(() => window.scrollTo(0, 0)); await settle(page);
@@ -425,6 +502,7 @@ for (const browserName of browserNames) {
     }
     for (const route of routes) for (const width of [390,1440]) await mastheadServiceAudit(browser, browserName, route, width);
     await safeAreaAudits(browser, browserName);
+    await criticalFontAudits(browser, browserName);
 
     const nojs = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
     const page = await nojs.newPage();
@@ -448,6 +526,6 @@ for (const browserName of browserNames) {
   } finally { await browser.close(); }
 }
 await fs.writeFile(path.join(out, 'acceptance.json'), JSON.stringify(report, null, 2));
-console.log(`Journal: ${report.cases.length} matrix cases, ${report.interactions.length} interaction cases, ${report.safeAreas.length} synthetic safe-area cases, ${report.failures.length} failures, ${report.unavailable.length} unavailable tools.`);
+console.log(`Journal: ${report.cases.length} matrix cases, ${report.interactions.length} interaction cases, ${report.safeAreas.length} synthetic safe-area cases, ${report.initialLoads.length} cold-font cases, ${report.fontControls.length} font negative controls, ${report.failures.length} failures, ${report.unavailable.length} unavailable tools.`);
 for (const failure of report.failures) console.error(failure);
 if (report.failures.length || report.unavailable.length) process.exitCode = 1;
