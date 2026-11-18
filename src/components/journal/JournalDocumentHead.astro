@@ -6,10 +6,17 @@ interface Props {
   description: string;
   canonical: string;
   kind?: 'CollectionPage' | 'Article';
-  publishedAt?: string;
-  modifiedAt?: string;
+  /** Route-owned ISO 8601 dates. Required: no implicit G3 fallback may leak into another route's SEO. */
+  publishedAt: string;
+  modifiedAt: string;
   readingTime?: number;
   socialImage?: string;
+  /** Governed social-image profiles: 1200×630 (default) or 1200×675. */
+  socialImageHeight?: 630 | 675;
+  /** Trail after «Главная › Журнал». Defaults to the G3 dossier for Article routes. */
+  breadcrumbTrail?: { name: string; item: string }[];
+  /** Robots directive; drafts and QA-only surfaces pass `noindex, nofollow`. */
+  robots?: string;
 }
 
 const {
@@ -17,17 +24,38 @@ const {
   description,
   canonical,
   kind = 'Article',
-  publishedAt = '2026-09-09T00:00:00+03:00',
-  modifiedAt = publishedAt,
+  publishedAt,
+  modifiedAt,
   readingTime,
   socialImage = 'https://gospod-bog.ru/images/og-preview-1200x630.webp',
+  socialImageHeight = 630,
+  breadcrumbTrail,
+  robots = 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
 } = Astro.props as Props;
+
+for (const [name, value] of [['publishedAt', publishedAt], ['modifiedAt', modifiedAt]] as const) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T/.test(value) || Number.isNaN(Date.parse(value))) {
+    throw new Error(`JournalDocumentHead: ${name} must be a route-owned ISO 8601 date-time (got ${String(value)})`);
+  }
+}
+if (Date.parse(modifiedAt) < Date.parse(publishedAt)) {
+  throw new Error('JournalDocumentHead: modifiedAt must not precede publishedAt');
+}
 
 const siteTitle = `${title} | Господь Бог — Сила Моя`;
 const icon = 'https://gospod-bog.ru/icons/icon-512.png';
 // Production SEO accepts only governed 1200×630 or 1200×675 social-image profiles.
 const schemaType = kind;
 const hasReadingTime = Number.isInteger(readingTime) && Number(readingTime) > 0;
+const journalUrl = 'https://gospod-bog.ru/journal/';
+const trail = canonical === journalUrl
+  ? []
+  : (breadcrumbTrail ?? [{ name: 'Досье G3', item: canonical }]);
+const breadcrumbItems = [
+  { name: 'Главная', item: 'https://gospod-bog.ru/' },
+  { name: 'Журнал', item: journalUrl },
+  ...trail,
+].map((entry, index) => ({ '@type': 'ListItem', position: index + 1, name: entry.name, item: entry.item }));
 ---
 <meta charset="utf-8">
 <link rel="preconnect" href="https://mc.yandex.ru" crossorigin>
@@ -39,7 +67,7 @@ const hasReadingTime = Number.isInteger(readingTime) && Number(readingTime) > 0;
 <meta name="color-scheme" content="light dark">
 <title>{siteTitle}</title>
 <meta name="description" content={description}>
-<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="robots" content={robots}>
 <meta name="author" content="Фёдор Милованов">
 {kind === 'Article' && <meta name="editor" content="Фёдор Милованов" />}
 <link rel="canonical" href={canonical}>
@@ -54,7 +82,7 @@ const hasReadingTime = Number.isInteger(readingTime) && Number(readingTime) > 0;
 <meta property="og:locale" content="ru_RU">
 <meta property="og:image" content={socialImage}>
 <meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
+<meta property="og:image:height" content={String(socialImageHeight)}>
 <meta property="og:image:type" content="image/webp">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@FedorMilovanov">
@@ -65,8 +93,13 @@ const hasReadingTime = Number.isInteger(readingTime) && Number(readingTime) > 0;
 <meta property="article:published_time" content={publishedAt} />
 <meta property="article:modified_time" content={modifiedAt} />
 {hasReadingTime && <meta name="readingTime" content={`readingTime: ${readingTime}`} />}
-<link rel="preload" as="style" href="/fonts/fonts.css?v=864cc57a">
-<link rel="stylesheet" href="/fonts/fonts.css?v=864cc57a">
+<link rel="preload" as="style" href="/fonts/fonts.css?v=1b28a6ca">
+<!-- Hero faces: the journal H1 mixes Cyrillic and Latin (G3 Ministries), so both
+     Playfair 600 subsets are preloaded to avoid a late re-wrap of the headline. -->
+<link rel="preload" as="font" type="font/woff2" href="/fonts/PlayfairDisplay/playfairdisplay-cyrillic-600.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/PlayfairDisplay/playfairdisplay-latin-600.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin>
+<link rel="stylesheet" href="/fonts/fonts.css?v=1b28a6ca">
 <link rel="stylesheet" href="/css/site.css?v=511fb678">
 <link rel="stylesheet" href="/css/command-palette.css?v=3b88813f">
 <link rel="stylesheet" href="/css/mobile-hotfix.css?v=9cfd6aee">
@@ -99,7 +132,7 @@ const hasReadingTime = Number.isInteger(readingTime) && Number(readingTime) > 0;
       datePublished: publishedAt,
       dateModified: modifiedAt,
       timeRequired: hasReadingTime ? `PT${readingTime}M` : undefined,
-      image: { '@type': 'ImageObject', url: socialImage, width: 1200, height: 630 },
+      image: { '@type': 'ImageObject', url: socialImage, width: 1200, height: socialImageHeight },
       author: kind === 'Article' ? { '@type': 'Person', name: 'Фёдор Милованов', url: 'https://gospod-bog.ru/about/' } : undefined,
       editor: kind === 'Article' ? { '@type': 'Person', name: 'Фёдор Милованов', url: 'https://gospod-bog.ru/about/' } : undefined,
       publisher: { '@id': 'https://gospod-bog.ru/#organization' },
@@ -107,16 +140,7 @@ const hasReadingTime = Number.isInteger(readingTime) && Number(readingTime) > 0;
     },
     {
       '@type': 'BreadcrumbList',
-      itemListElement: canonical.endsWith('/journal/')
-        ? [
-            { '@type': 'ListItem', position: 1, name: 'Главная', item: 'https://gospod-bog.ru/' },
-            { '@type': 'ListItem', position: 2, name: 'Журнал', item: canonical },
-          ]
-        : [
-            { '@type': 'ListItem', position: 1, name: 'Главная', item: 'https://gospod-bog.ru/' },
-            { '@type': 'ListItem', position: 2, name: 'Журнал', item: 'https://gospod-bog.ru/journal/' },
-            { '@type': 'ListItem', position: 3, name: 'Досье G3', item: canonical },
-          ],
+      itemListElement: breadcrumbItems,
     },
   ],
 })} />

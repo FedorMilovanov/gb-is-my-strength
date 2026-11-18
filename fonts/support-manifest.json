@@ -16,8 +16,8 @@
       "path": "fonts/fonts.css",
       "kind": "css",
       "role": "font-face-registry",
-      "bytes": 6574,
-      "sha256": "acffa8f6fee8cb825395c40dedbff3ddb49766ae50cb79089ccf589530763324"
+      "bytes": 9172,
+      "sha256": "884c02dbf01fa2964977f4e6e240dc806ea84a9be8fa08c48afbb35df5bf0b01"
     },
     {
       "path": "fonts/NotoSerifGreek/notoserifgreek-400.ttf",

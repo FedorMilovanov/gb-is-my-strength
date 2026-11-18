@@ -2,6 +2,8 @@
 import JournalEditorialShell from './JournalEditorialShell.astro';
 import JournalEditorialRail from './JournalEditorialRail.astro';
 import G3HistoryFeature from './G3HistoryFeature.astro';
+import JournalSeriesNav from './JournalSeriesNav.astro';
+import { G3_SERIES } from '@/data/journal/g3Series';
 import './g3History.css';
 import { G3_HISTORY_DRAFT_METADATA as draft } from '@/data/journal/g3HistoryDraftMetadata';
 
@@ -91,6 +93,7 @@ if (import.meta.env.PROD) {
           <p><a href="/journal/dossiers/g3/">Документальное досье о кризисах G3</a> посвящено именно этому: заявлениям руководства, финансовым декларациям, двум последовательным конфликтам и открытым вопросам о дальнейшей судьбе проектов.</p>
         </div>
       </section>
+      <JournalSeriesNav title={G3_SERIES.title} parts={G3_SERIES.parts} current="history" />
     </div>
     <JournalEditorialRail label="Содержание и источники истории G3">
       <section class="je-rail-group" aria-labelledby="g3-history-rail">
@@ -98,10 +101,10 @@ if (import.meta.env.PROD) {
         <h2 id="g3-history-rail">Главные этапы</h2>
         <ol class="je-rail-timeline">
           <li><a href="#g3-history"><time datetime="2013">2013</time><span>Первая встреча</span></a></li>
-          <li><a href="#g3-speakers"><time datetime="2017">2017</time><span>Реформация и проповедники</span></a></li>
+          <li><a href="#g3-year-2017"><time datetime="2017">2017</time><span>500 лет Реформации</span></a></li>
           <li><a href="#g3-year-2018"><time datetime="2018">2018</time><span>Богословское заявление</span></a></li>
           <li><a href="#g3-growth"><time datetime="2022">2022</time><span>Издательство и церковная сеть</span></a></li>
-          <li><a href="#g3-meaning"><time datetime="2023">2023</time><span>Богословское наследие</span></a></li>
+          <li><a href="#g3-year-2023"><time datetime="2023">2023</time><span>Божий суверенитет</span></a></li>
           <li><a href="#g3-year-2024"><time datetime="2024">2024</time><span>Региональные мероприятия</span></a></li>
         </ol>
       </section>

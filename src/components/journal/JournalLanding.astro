@@ -1,5 +1,6 @@
 ---
 import JournalEditorialShell from './JournalEditorialShell.astro';
+import { G3_PRODUCT_METADATA } from '@/data/journal/g3ProductMetadata';
 
 ---
 <JournalEditorialShell kind="journal" backHref="/">
@@ -30,14 +31,14 @@ import JournalEditorialShell from './JournalEditorialShell.astro';
     <a class="lead-card" href="/journal/dossiers/g3/">
       <div class="lead-card-copy">
         <p class="lead-label">Документальное досье · 2025–2026</p>
-        <h3>Два кризиса G3 Ministries и завершение деятельности</h3>
+        <h3>{G3_PRODUCT_METADATA.title}</h3>
         <p>
           Разбираем, как G3 пережила кризис руководства в 2025 году, почему
-          новый конфликт в 2026-м стал поворотным и что произошло с конференциями,
+          новый конфликт в <span class="je-nobr">2026-м</span> стал поворотным и что произошло с конференциями,
           издательством и сетью церквей. Факты, документы и спорные утверждения
           отделены друг от друга; нерешённые вопросы названы прямо.
         </p>
-        <span class="read-link">Читать историю G3 <span aria-hidden="true">→</span></span>
+        <span class="read-link">Читать досье <span aria-hidden="true">→</span></span>
       </div>
       <div class="lead-context">
         <img src="/images/journal/g3-ministries-cover-1200.webp"
@@ -101,9 +102,8 @@ import JournalEditorialShell from './JournalEditorialShell.astro';
 
 <footer class="journal-footer">
   <a href="/">На главную</a>
-  <span>·</span>
+  <span aria-hidden="true">·</span>
   <a href="/articles/">Богословские статьи</a>
-  <span>·</span>
-  <span>Автор-редактор: Фёдор Милованов</span>
+  <span class="journal-footer__byline">Автор-редактор: Фёдор Милованов</span>
 </footer>
 </JournalEditorialShell>

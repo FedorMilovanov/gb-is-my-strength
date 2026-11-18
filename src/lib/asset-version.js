@@ -16,7 +16,7 @@ export const ASSET_VERSIONS = {
   'css/site.css': '511fb678',
   'css/sw-toast.css': '2e540077',
   'css/tts-download-notice.css': 'a72ba924',
-  'fonts/fonts.css': '864cc57a',
+  'fonts/fonts.css': '1b28a6ca',
   'js/bookmark-engine.js': 'e7d193e0',
   'js/enhancements.js': '15476429',
   'js/floating-cluster-controller.js': '01161dcb',
