@@ -1,9 +1,14 @@
-# G3 / Journal — локальная редакционная волна, 18 ноября 2026
+# Агент 8 — G3 / Journal, редакционная волна 18 ноября 2026
+
+> **Текущий владелец варианта: Агент 8**, Arena session `7f634191`.
+> После завершения локальной волны владелец явно разрешил push в мультиагентном режиме.
+> Текущая граница публикации ветки записана в §F. Результаты и ограничения §A–E —
+> сохранённый локальный свидетель, не разрешение публикации истории и не старый CI нового HEAD.
 
 ## Lane / authority
 
 - Mode: **LANE**.
-- Owner: Arena session `7f634191`, по прямому поручению владельца; **local-only**.
+- Owner: **Агент 8** (Arena session `7f634191`), по прямому поручению владельца; сначала local-only, затем разрешён push только своей Arena-ветки.
 - Working branch: `arena/7f634191-gb-is-my-strength` (не переименовывать).
 - Arena admission / main: `9edef94ece08012223c1364bec7ddcd561cf5713`.
 - Presentation baseline / rollback: Product [PR #2338](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2338), `b2ae614730b0c2e164d3b07453797074253d9698`, ветка `lane/journal-editorial-premium-20261118`, автор PR FedorMilovanov. Взята **fast-forward только в локальную Arena-ветку**; remote не изменён. Публичный login не устанавливает личность параллельного агента; writer lease не присваивался.
@@ -174,3 +179,19 @@ node scripts/journal-editorial-browser.mjs --origin=http://localhost:4173 --hist
 Ни одна из этих веток, PR или Research здесь не изменена. Это **локальное предложение**, не пятый удалённый PR и не takeover writer lease. Владелец canonical lane должен выбрать композицию и вручную согласовать пересечения. Полезные переносимые решения этой волны: фактический prose/authority witness; несуммируемая finance figure; no-hidden-source-target библиография; исправленный reflow; честные candidate-only формулировки истории; cold-search/axe-review/performance/print witnesses. Head font hints можно перенести отдельной двухстрочной интеграцией, не затирая соседнюю защиту обязательных publication dates. После интеграции — новый exact-head build/browser/SEO pass; старый локальный PASS не переносится автоматически.
 
 Следующая работа не заключается в новом декоративном слое: (а) выбрать и свести presentation proposal в #2338 без двойных handlers; (б) выполнить Firefox/WebKit и владельческую визуальную приёмку; (в) владельцу Research закрыть конкретные original-object/locator/audio/context вопросы выше, нормализовать независимые оси кандидата и выдать **новый подписанный history handoff** с разрешёнными формулировками. До этого не создавать public route истории, не снимать PROD guards и не активировать её в RSS/sitemap/search.
+
+## F. Агент 8 — разрешённый push и граница мультиагентного предложения
+
+Новая команда владельца «ПРОДОЛЖАЙ и пуш» отменяет прежний local-only запрет **только для отправки своей ветки**. По поручению владельца этот вариант обозначен как **Агент 8**. Имя Arena-ветки фиксировано; менять его нельзя. Прежние записи «нет push / remote mutation» выше описывают завершённую локальную фазу, а не текущий запрет отправки.
+
+- **Mode / owner:** LANE, Агент 8, Arena session `7f634191`. Это изолированное предложение владельцу canonical Product #2338, не takeover его lane или writer lease.
+- **Единственная ветка отправки:** [`arena/7f634191-gb-is-my-strength`](https://github.com/FedorMilovanov/gb-is-my-strength/tree/arena/7f634191-gb-is-my-strength), обычный push без force. При несовместимом remote HEAD — остановиться, а не перезаписывать его.
+- **Base / rollback:** main `9edef94ece08012223c1364bec7ddcd561cf5713`; presentation baseline / integration base `b2ae614730b0c2e164d3b07453797074253d9698`. Перед отправкой обе remote refs повторно прочитаны и не изменились; своей remote-ветки на момент preflight нет.
+- **Bounded scope / SSOT:** неизменны относительно Lane / authority выше. В продолжении изменён **только этот handoff** для имени агента, нового разрешения и координации; product source, QA scripts, immutable authority и generated data не изменялись.
+- **Проверенный технический HEAD:** `ad28a2688bcc20d0a1abac3a502bbf3f7fb7cd68`; implementation `fce77f398743318d06520645fe7a5e8461753c09` + print fix `ad28a2688…`. На точном ad28 выполнены build → Pagefind → contract → Chromium с явными exit 0; 48 cases / 0 problems. После возобновления все 23 tested source hashes совпали с диском. Маркерный docs-only коммит не выдаётся за новый browser/build run: проверяются его единственный изменённый путь, ссылки, `git diff --check` и соответствие technical bytes исходному свидетелю.
+- **Adjacent overlap refresh:** #2338 остаётся `b2ae614730b0c2e164d3b07453797074253d9698`; #2339 — `0b9576278d2ec5ea89da804934823d460720501a`; #2340 продвинулся до `dceed04b4fa42bfff16891759b730118f933f645`; #2341 — до `505ea4e0952e97b542378fef9e038fe0f15e0bc1`; #2342 — `4efc032405069c7e985cf2781b8efdcc4cd41244`. Новые комментарии/heads прочитаны; чужие реализации не импортированы и не объявлены совместимыми. Сохраняются cautions о date safeguard, shared font/SW scope и едином navigation owner.
+- **Remote coordination:** один комментарий от Агента 8 в #2338 с exact pushed HEAD и integration base; не переименовывать канонический PR в «Агент 8». **Новый PR не создаётся**, чужие PR descriptions и refs не редактируются. Выбор и интеграция остаются у владельца #2338; не сливать унаследованную ветку напрямую в main.
+- **Research / publication:** #582 повторно прочитан: OPEN/Draft, `93d6f08a40c7989eb1f6362fd1667094742144d2`. Research не записывается. Сохраняются 16 разрешённых кризисных claims / 21 source и **PUBLICATION_HOLD** истории; push кода не является handoff, merge, deploy, выдачей прав или публикацией статьи.
+- **Открытая приёмка:** Firefox / WebKit (0 cases), owner visual signoff, physical-device / screen-reader / настоящий browser-UI zoom и production verification. На docs-only HEAD не переносятся старые GitHub checks. Крупные скриншоты/PDF, raw JSON, логи и локальные зависимости остаются ignored, не отправляются в Git.
+
+Окончательное доказательство отправки — совпадение remote ref с локальным HEAD и ссылка на координационный комментарий. Оно сообщается после ответа GitHub, не подменяется намерением выполнить push.
