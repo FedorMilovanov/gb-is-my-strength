@@ -101,7 +101,7 @@ const hasReadingTime = Number.isInteger(readingTime) && Number(readingTime) > 0;
       datePublished: publishedAt,
       dateModified: modifiedAt,
       timeRequired: hasReadingTime ? `PT${readingTime}M` : undefined,
-      image: { '@type': 'ImageObject', url: socialImage, width: 1200, height: 630 },
+      image: { '@type': 'ImageObject', url: socialImage, width: 1200, height: socialImageHeight },
       author: kind === 'Article' ? { '@type': 'Person', name: 'Фёдор Милованов', url: 'https://gospod-bog.ru/about/' } : undefined,
       editor: kind === 'Article' ? { '@type': 'Person', name: 'Фёдор Милованов', url: 'https://gospod-bog.ru/about/' } : undefined,
       publisher: { '@id': 'https://gospod-bog.ru/#organization' },
