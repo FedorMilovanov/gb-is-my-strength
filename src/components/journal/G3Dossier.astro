@@ -50,6 +50,19 @@ const snapshot = researchSnapshotShort();
   <header class="dossier-hero">
     <p class="kicker">Документальный журнал · G3 Ministries · 2019–2026</p>
     <h1>G3: два кризиса и завершение работы</h1>
+    <figure class="dossier-cover">
+      <img
+        src="/images/journal/g3-ministries-cover-1200.avif"
+        srcset="/images/journal/g3-ministries-cover-640.avif 640w, /images/journal/g3-ministries-cover-1200.avif 1200w"
+        sizes="(max-width: 680px) calc(100vw - 36px), 970px"
+        width="1200"
+        height="675"
+        alt="G3 Ministries — Gospel, Grace, Glory: открытая книга и золотистые акценты на тёмно-синем фоне."
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+      />
+    </figure>
     <p class="dek">
       G3 развивала конференции, издательские и цифровые проекты, а также объединяла церкви.
       В 2025 году организация пережила кризис руководства, в 2026-м — новый конфликт.
@@ -438,6 +451,8 @@ const snapshot = researchSnapshotShort();
   .kicker, .module-label { color: #7a2e2e; text-transform: uppercase; letter-spacing: .11em; font: 750 12px/1.45 var(--font-body, system-ui, sans-serif); }
   h1, h2, h3 { font-family: var(--font-heading, Georgia, serif); color: var(--text, #25211d); }
   h1 { margin: 14px 0 0; max-width: 950px; font-size: clamp(43px, 7vw, 82px); line-height: .99; letter-spacing: -.04em; }
+  .dossier-cover { margin: 30px 0 0; overflow: hidden; border-radius: 18px; background: #07182b; box-shadow: 0 14px 38px rgba(7, 24, 43, .13); }
+  .dossier-cover img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
   .dek { margin: 28px 0 0; max-width: 840px; color: var(--muted, #5f5951); font: 400 clamp(19px, 2.4vw, 27px)/1.5 var(--font-heading, Georgia, serif); }
   .dossier-footer a { color: #7a2e2e; text-decoration: underline; text-underline-offset: 2px; }
   .dossier-nav { position: sticky; top: 0; z-index: 20; margin: 0 -10px; padding: 11px 10px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: thin; background: color-mix(in srgb, var(--bg, #fdfcf9) 92%, transparent); backdrop-filter: blur(12px); border-top: 1px solid var(--border, #ddd7cf); border-bottom: 1px solid var(--border, #ddd7cf); }
