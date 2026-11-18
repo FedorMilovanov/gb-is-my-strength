@@ -259,6 +259,8 @@ html.dark .journal-edition {
   .journal-edition .module { break-inside: auto; }
   .journal-edition :is(.module-label, h2, h3) { break-after: avoid; }
   .journal-edition :is(.timeline li, .bibliography-item, .je-finance-record) { break-inside: avoid; }
+  /* Outside two-digit markers must fit inside the actual printed content clip. */
+  .journal-edition .bibliography-list { padding-inline-start: 2em; }
   .journal-edition details:not([open])::details-content { content-visibility: visible; display: block; height: auto; }
   .journal-edition details:not([open]) > :not(summary) { display: block; }
 }
