@@ -185,13 +185,17 @@ html.dark .journal-edition {
   .journal-edition .je-article-heading h1 { max-width: 20ch; font-size: clamp(40px, 6.2vw, 59px); }
   .journal-edition .je-article-cover { width: 100%; }
   .journal-edition .journal-feature-grid { grid-template-columns: minmax(0, 1fr); gap: 0; max-width: 740px; }
-  .journal-edition .je-editorial-rail { grid-column: 1; grid-row: 1; position: static; top: calc(52px + env(safe-area-inset-top, 0px)); z-index: 20; margin: 0 0 8px; border-bottom: 1px solid var(--je-rule); }
+  /* Inset the 7px outline below the existing header, keeping paper behind it
+     rather than exposing a thin slice of moving prose above the sticky TOC. */
+  .journal-edition .je-editorial-rail { grid-column: 1; grid-row: 1; position: static; top: calc(52px + env(safe-area-inset-top, 0px)); z-index: 20; margin: 0 0 8px; padding-top: 8px; border-bottom: 1px solid var(--je-rule); background: var(--je-paper); }
   /* Without scripts the disclosure stays open: keep it in flow, not over the
      reader's source links. Sticky is safe only after the TOC adapter is bound. */
   .journal-edition .je-editorial-rail:has([data-journal-contents-bound]) { position: sticky; }
   .journal-edition .journal-story-column { grid-row: 2; }
   .journal-edition .je-contents summary { min-height: 50px; padding: 12px 0; }
-  .journal-edition .je-contents nav { max-height: 50svh; overflow-y: auto; overscroll-behavior: contain; padding: 0 5px 0 0; }
+  /* Outset the scrollport, not the text measure; keep the existing 5px gutter
+     plus an 8px inset for the unchanged outline on every keyboard step. */
+  .journal-edition .je-contents nav { max-height: 50svh; overflow-y: auto; overscroll-behavior: contain; margin-inline: -8px; padding: 8px 13px 8px 8px; scroll-padding-block: 8px; }
   .journal-edition .je-contents a { min-height: 44px; padding-block: 12px; }
   .journal-edition .je-rail-note { display: none; }
   .journal-edition :is(.module, .bibliography-item, .je-history-chapter, .je-history-year, [data-journal-citation]) { scroll-margin-block-start: calc(128px + env(safe-area-inset-top, 0px)); }

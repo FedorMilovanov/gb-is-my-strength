@@ -7,6 +7,7 @@
  *   --history-origin=http://localhost:4321 --axe=/path/to/axe.min.js
  * --browser=firefox|webkit uses that actual Playwright browser, never Chromium emulation.
  * --suite=print runs only the actual-PDF matrix (Chromium + Python/PyMuPDF).
+ * --suite=mobile exercises native compact-TOC focus; --mobile-heights=390,844.
  * --pdf-python=/path/to/python selects that environment; --print-baseline=/path/to/capture.json
  * additionally checks earlier text/styles and unchanged public print geometry.
  */
@@ -25,8 +26,9 @@ const args = Object.fromEntries(process.argv.slice(2).map((arg) => { const i = a
 const origin = args.origin || 'http://localhost:4173';
 const engine = args.browser || 'chromium';
 const suite = args.suite || 'full';
+const visibleScrollbars = args['visible-scrollbars'] === 'true';
 assert.ok(['chromium', 'firefox', 'webkit'].includes(engine), 'unknown browser engine');
-assert.ok(['full', 'short', 'print'].includes(suite), 'use --suite=full|short|print');
+assert.ok(['full', 'short', 'mobile', 'print'].includes(suite), 'use --suite=full|short|mobile|print');
 assert.ok(suite !== 'print' || engine === 'chromium', 'actual PDF generation requires Chromium; do not substitute an emulated print DOM');
 const axePath = args.axe || path.join(root, 'node_modules/axe-core/axe.min.js');
 assert.ok(suite === 'print' || fs.existsSync(axePath), 'provide --axe=<existing axe-core file>; do not silently skip the accessibility audit');
@@ -35,6 +37,10 @@ const output = path.resolve(root, args.output || 'reports/g3-editorial-local-202
 fs.mkdirSync(path.join(output, 'after'), { recursive: true });
 const widths = args.widths ? args.widths.split(',').map(Number) : [320, 360, 390, 430, 768, 1024, 1440, 1920];
 const shortHeights = args.heights ? args.heights.split(',').map(Number) : [390, 480, 600];
+const mobileWidths = args.widths ? widths.filter((width) => width <= 1023) : [320, 360, 390, 430, 768, 1023];
+const mobileHeights = args['mobile-heights'] ? args['mobile-heights'].split(',').map(Number) : [390, 844];
+assert.ok(mobileHeights.every((height) => Number.isInteger(height) && height >= 320 && height <= 1080));
+assert.ok(suite !== 'mobile' || mobileWidths.length > 0, 'the mobile suite needs a compact width');
 assert.ok(widths.every((width) => Number.isInteger(width) && width >= 320));
 assert.ok(shortHeights.every((height) => Number.isInteger(height) && height >= 320 && height <= 600));
 assert.ok(suite !== 'short' || widths.some((width) => width >= 1024), 'the short suite needs at least one desktop width');
@@ -42,8 +48,9 @@ const routes = [{ kind: 'journal', url: origin + '/journal/' }, { kind: 'dossier
 if (args['history-origin']) routes.push({ kind: 'history', url: args['history-origin'] + '/_review/g3-history/' });
 const report = { engine, suite, version: null, head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
   worktree: execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).trim(),
+  visibleScrollbars,
   note: 'Local artifact/manuscript only. axe is automated evidence, not full WCAG or artistic signoff. Timings are local lab, not field Core Web Vitals. Short-window theme is the browser color preference; no-JS retains the existing SSR palette.',
-  sourceSha256: {}, cases: [], interactions: [], shortViewports: [], printCases: [], problems: [] };
+  sourceSha256: {}, cases: [], interactions: [], shortViewports: [], mobileFocus: [], printCases: [], problems: [] };
 const witnessFiles = [
   ...['G3Dossier.astro', 'G3HistoryArticle.astro', 'G3HistoryFeature.astro', 'JournalLanding.astro', 'JournalMasthead.astro', 'JournalArticleHeader.astro', 'JournalContents.astro', 'JournalDataFigure.astro', 'JournalSourceReturn.astro', 'JournalDocumentHead.astro', 'JournalFontPreloads.astro', 'journalEditorial.css', 'g3History.css'].map((name) => `src/components/journal/${name}`),
   ...['g3EditorialMedia.ts', 'g3HistoryDraftSources.ts', 'g3HistoryDraftMetadata.ts', 'g3ProductMetadata.ts', 'g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'journalProductMetadata.ts'].map((name) => `src/data/journal/${name}`),
@@ -54,6 +61,7 @@ for (const name of witnessFiles) {
 }
 const browser = await ({ chromium, firefox, webkit })[engine].launch({
   headless: true,
+  ...(visibleScrollbars ? { ignoreDefaultArgs: ['--hide-scrollbars'] } : {}),
   ...(engine === 'chromium' && process.env.JOURNAL_CHROMIUM_EXECUTABLE ? {
     executablePath: process.env.JOURNAL_CHROMIUM_EXECUTABLE, args: ['--no-sandbox', '--disable-dev-shm-usage'],
   } : {}),
@@ -144,6 +152,49 @@ const sourceRoundTrip = async (page, citation, keyboard, onSource) => {
     expected: parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop || '0') + parseFloat(getComputedStyle(el).scrollMarginTop || '0') }));
   assert.ok(Math.abs(position.y - position.expected) < 2, `citation hidden or offset from its native fragment destination: ${JSON.stringify(position)}`);
   return { id, source: hash, keyboardOutbound: keyboard, keyboardReturn: !keyboard, focusRestored: true, position };
+};
+// axe reports contrast review items for rows clipped by a native scrollport.
+// Retain every item; accept only this measured case, with a flat opaque paper
+// background and independently computed >=4.5:1 foreground contrast. Anything
+// outside this exact relationship remains a failing/unresolved review item.
+const reviewClippedContrast = async (page, reviews) => {
+  const witnesses = [];
+  for (const review of reviews) {
+    assert.equal(review.id, 'color-contrast', 'unexpected compact-TOC accessibility review');
+    for (const node of review.nodes) {
+      assert.ok(node.summary?.includes("Element's background color could not be determined because it's partially obscured by another element"));
+      assert.equal(node.target.length, 1);
+      const state = await page.evaluate((selector) => {
+        const matches = document.querySelectorAll(selector), el = matches[0];
+        const nav = el?.closest('[data-journal-contents] nav'), link = el?.closest('a');
+        if (matches.length !== 1 || !nav || !link || !nav.contains(link)) return { validTarget: false };
+        const rgb = (color) => /^rgba?\(/u.test(color) ? color.match(/[\d.]+/gu).map(Number) : [];
+        const fg = rgb(getComputedStyle(el).color);
+        let parent = el, bg = [], flat = true;
+        while (parent && bg.length === 0) {
+          const style = getComputedStyle(parent), color = rgb(style.backgroundColor);
+          flat &&= style.backgroundImage === 'none' && Number(style.opacity) === 1 && style.filter === 'none' && style.mixBlendMode === 'normal';
+          if (color.length >= 3 && (color[3] ?? 1) > 0) bg = color;
+          parent = parent.parentElement;
+        }
+        const luminance = (color) => color.slice(0, 3).map((c) => c / 255).map((c) => c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4)
+          .reduce((sum, c, i) => sum + c * [.2126, .7152, .0722][i], 0);
+        const a = luminance(fg), b = luminance(bg), r = nav.getBoundingClientRect();
+        const clip = { left: r.left + nav.clientLeft, top: r.top + nav.clientTop,
+          right: r.left + nav.clientLeft + nav.clientWidth, bottom: r.top + nav.clientTop + nav.clientHeight };
+        const inside = (r) => r.left >= clip.left - 1 && r.right <= clip.right + 1 && r.top >= clip.top - 1 && r.bottom <= clip.bottom + 1;
+        const rect = el.getBoundingClientRect().toJSON(), linkRect = link.getBoundingClientRect().toJSON();
+        return { validTarget: true, foreground: fg, background: bg, flat,
+          opaque: fg.length >= 3 && bg.length >= 3 && (fg[3] ?? 1) === 1 && (bg[3] ?? 1) === 1,
+          contrastRatio: (Math.max(a, b) + .05) / (Math.min(a, b) + .05), clip, rect, linkRect,
+          clipped: !inside(rect) || !inside(linkRect) };
+      }, node.target[0]);
+      assert.ok(state.validTarget && state.flat && state.opaque && state.clipped && state.contrastRatio >= 4.5,
+        `unresolved contrast review: ${JSON.stringify({ target: node.target, state })}`);
+      witnesses.push({ target: node.target, ...state });
+    }
+  }
+  return witnesses;
 };
 try {
   if (suite === 'full') for (const route of routes) for (const width of widths) for (const theme of ['light', 'dark']) {
@@ -428,7 +479,7 @@ try {
   }
   // The same native disclosure must remain usable when desktop width no longer
   // implies desktop height. Exercise the actual scroll container, not forced clicks.
-  if (suite !== 'print') for (const route of routes.filter((route) => route.kind !== 'journal'))
+  if (['full', 'short'].includes(suite)) for (const route of routes.filter((route) => route.kind !== 'journal'))
     for (const width of widths.filter((width) => width >= 1024)) for (const height of shortHeights)
       for (const theme of ['light', 'dark']) for (const javaScriptEnabled of [true, false]) {
         const context = await contextFor(width, theme, { viewport: { width, height }, javaScriptEnabled });
@@ -541,7 +592,116 @@ try {
           await shot(page, `${name}-failure`).catch(() => {});
         } finally { report.shortViewports.push(item); await context.close(); }
       }
-  if (suite !== 'short' && engine === 'chromium') {
+  // Compact TOC has its own scrollport. Real native Tab must leave room for
+  // the painted outline, not merely the link's border box. Sample from the
+  // driver so no-JS and smooth-scroll/transform transitions actually settle.
+  if (['full', 'mobile'].includes(suite)) for (const route of routes.filter((route) => route.kind !== 'journal'))
+    for (const width of mobileWidths) for (const height of mobileHeights)
+      for (const theme of ['light', 'dark']) for (const javaScriptEnabled of [true, false]) {
+        const context = await contextFor(width, theme, { viewport: { width, height }, javaScriptEnabled });
+        const page = await context.newPage();
+        const item = { kind: route.kind, width, height, theme, javaScriptEnabled, runtime: [] };
+        const name = `${route.kind}-mobile-${width}x${height}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}`;
+        monitorRuntime(page, item.runtime, { isIgnoredConsole: (_, message) => !['error', 'warning'].includes(message.type()) });
+        const toc = page.locator('[data-journal-contents]'), summary = toc.locator('summary'), nav = toc.locator('nav');
+        const selected = [390, 844].includes(width);
+        const settleMobile = async () => {
+          let previous, stable = 0;
+          for (let attempt = 0; attempt < 90; attempt++) {
+            const current = await toc.evaluate((el) => [scrollY, el.querySelector('nav').scrollTop,
+              el.getBoundingClientRect().top, document.querySelector('.mcp-top')?.getBoundingClientRect().bottom ?? 0]);
+            stable = previous && current.every((value, i) => Math.abs(value - previous[i]) < .5) ? stable + 1 : 0;
+            if (stable >= 5) return;
+            previous = current;
+            await page.waitForTimeout(50);
+          }
+          throw new Error('native compact-TOC/root/header scrolling did not settle');
+        };
+        const focused = async (expected) => {
+          await settleMobile();
+          const state = await toc.evaluate((el) => {
+            const active = document.activeElement, style = getComputedStyle(active), nav = el.querySelector('nav');
+            const r = nav.getBoundingClientRect(), header = document.querySelector('.mcp-top');
+            const headerRect = header?.getBoundingClientRect(), headerStyle = header && getComputedStyle(header);
+            return { href: active.getAttribute('href'), inside: el.contains(active), rect: active.getBoundingClientRect().toJSON(),
+              clip: { left: r.left + nav.clientLeft, right: r.left + nav.clientLeft + nav.clientWidth,
+                top: r.top + nav.clientTop, bottom: r.top + nav.clientTop + nav.clientHeight },
+              scrollbar: nav.offsetWidth - nav.clientWidth, scrollTop: nav.scrollTop, y: scrollY,
+              outline: (parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0),
+              focusVisible: active.matches(':focus-visible'),
+              headerBottom: headerStyle?.display !== 'none' && headerStyle?.visibility !== 'hidden' && Number(headerStyle?.opacity) > 0
+                ? Math.max(0, headerRect.bottom) : 0 };
+          });
+          assert.equal(state.inside, true); assert.equal(state.href, expected);
+          assert.equal(state.focusVisible, true); assert.ok(state.outline >= 2, 'the indicator must really paint');
+          const { rect: r, outline: o, clip: c } = state;
+          assert.ok(r.left - o >= -1 && r.right + o <= width + 1 && r.top - o >= state.headerBottom - 1 && r.bottom + o <= height + 1,
+            `focus outline outside viewport / under visible shared header: ${JSON.stringify(state)}`);
+          if (expected !== null) {
+            assert.ok(r.left - o >= c.left - 1 && r.right + o <= c.right + 1 && r.top - o >= c.top - 1 && r.bottom + o <= c.bottom + 1,
+              `compact nav clips the focus outline: ${JSON.stringify(state)}`);
+            if (visibleScrollbars) assert.ok(state.scrollbar > 0, 'visible-scrollbar run needs a real native gutter');
+          }
+          return state;
+        };
+        try {
+          const response = await ready(page, route.url);
+          if (route.kind === 'history') {
+            assert.match(response.headers()['x-robots-tag'] || '', /noindex/);
+            assert.equal(await page.locator('link[rel="canonical"]').count(), 0);
+            assert.ok(await page.locator('[data-research-publication-status="PUBLICATION_HOLD"]').count() > 0);
+          }
+          assert.equal(await page.locator('[data-journal-contents]').count(), 1);
+          assert.equal(await toc.evaluate((el) => el.open), !javaScriptEnabled);
+          await summary.focus();
+          item.summaryEntry = await focused(null);
+          if (!javaScriptEnabled) { await page.keyboard.press('Space'); assert.equal(await toc.evaluate((el) => el.open), false); }
+          await page.keyboard.press('Enter'); assert.equal(await toc.evaluate((el) => el.open), true);
+          await settleMobile();
+          await page.locator(route.kind === 'dossier' ? '#finance' : '#g3-growth').scrollIntoViewIfNeeded();
+          await settleMobile();
+          const links = await nav.locator('a').evaluateAll((links) => links.map((link) => link.getAttribute('href')));
+          item.keyboardForward = [];
+          for (const [index, href] of links.entries()) {
+            await page.keyboard.press('Tab'); item.keyboardForward.push(await focused(href));
+            if (selected && (index === 0 || index === links.length - 1)) await shot(page, `${name}-${index === 0 ? 'first' : 'last'}`);
+          }
+          item.keyboardBackward = [];
+          for (const href of links.slice(0, -1).reverse()) {
+            await page.keyboard.press('Shift+Tab'); item.keyboardBackward.push(await focused(href));
+          }
+          await page.keyboard.press('Shift+Tab'); item.summaryReturn = await focused(null);
+          if (selected) await shot(page, `${name}-summary`);
+          await page.keyboard.press('Escape');
+          assert.equal(await toc.evaluate((el) => el.open), !javaScriptEnabled, 'Escape belongs to the existing JS adapter, not native no-JS details');
+          assert.equal(await summary.evaluate((el) => el === document.activeElement), true);
+          await page.keyboard.press('Space'); assert.equal(await toc.evaluate((el) => el.open), javaScriptEnabled);
+          if (!javaScriptEnabled) await page.keyboard.press('Enter');
+          assert.equal(await toc.evaluate((el) => el.open), true);
+          if (selected && javaScriptEnabled) {
+            item.axe = await audit(page);
+            assert.deepEqual(item.axe.violations, []);
+            item.clippedContrastReview = await reviewClippedContrast(page, item.axe.incomplete);
+          }
+          for (const href of links) await page.keyboard.press('Tab');
+          item.lastActivation = await focused(links.at(-1));
+          await page.keyboard.press('Enter'); await settleMobile();
+          assert.equal(new URL(page.url()).hash, links.at(-1));
+          assert.equal(await toc.evaluate((el) => el.open), !javaScriptEnabled);
+          assert.equal(await page.locator(links.at(-1)).evaluate((el) => el === document.activeElement), true);
+          item.nativeTarget = await page.locator(links.at(-1)).evaluate((el) => ({ id: el.id, y: el.getBoundingClientRect().top }));
+          assert.ok(item.nativeTarget.y >= 25 && item.nativeTarget.y < height - 25, 'last native target must remain on screen');
+          item.layout = await inspect(page);
+          assert.equal(item.layout.documentOverflow, 0); assert.deepEqual(item.layout.overflow, []);
+          assert.deepEqual(item.runtime, []);
+          console.log(`PASS ${name}`);
+        } catch (error) {
+          item.failure = error.message; item.stack = error.stack; report.problems.push(`${name}: ${error.message}`);
+          console.error(`FAIL ${name}: ${error.message.slice(0, 280)}`);
+          await shot(page, `${name}-failure`).catch(() => {});
+        } finally { report.mobileFocus.push(item); await context.close(); }
+      }
+  if (['full', 'print'].includes(suite) && engine === 'chromium') {
     const printDirectory = path.join(output, 'print');
     fs.mkdirSync(printDirectory, { recursive: true });
     // Fresh contexts retain real JS/no-JS behavior and browser color preference.
@@ -602,5 +762,5 @@ try {
   await browser.close();
   fs.writeFileSync(path.join(output, `browser-${engine}.json`), JSON.stringify(report, null, 2) + '\n');
 }
-console.log(`${report.cases.length} responsive + ${report.shortViewports.length} short-window + ${report.printCases.length} print cases; ${report.problems.length} problem(s); browser ${engine} ${report.version}`);
+console.log(`${report.cases.length} responsive + ${report.shortViewports.length} short-window + ${report.mobileFocus.length} mobile-focus + ${report.printCases.length} print cases; ${report.problems.length} problem(s); browser ${engine} ${report.version}`);
 if (report.problems.length) { console.error(report.problems.join('\n')); process.exitCode = 1; }
