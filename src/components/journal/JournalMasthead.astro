@@ -6,8 +6,8 @@ const { active = 'journal' } = Astro.props;
 ---
 <header class="je-masthead" aria-label="Редакционная навигация">
   <div class="je-masthead__top">
-    <a class="je-masthead__identity" href="/journal/" aria-label="Господь Бог — Сила Моя. Журнал">
-      <svg class="je-masthead__mark" viewBox="0 0 64 48" role="img" aria-label="Открытая книга">
+    <a class="je-masthead__identity" href="/journal/" aria-label="Господь Бог — Сила Моя · Журнал">
+      <svg class="je-masthead__mark" viewBox="0 0 64 48" aria-hidden="true">
         <path d="M4 10C15 6 26 10 32 17C38 10 49 6 60 10V39C49 35 38 38 32 44C26 38 15 35 4 39Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
         <path d="M32 17V43M9 14C17 12 24 15 28 19M55 14C47 12 40 15 36 19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
@@ -63,7 +63,7 @@ const { active = 'journal' } = Astro.props;
   </div>
   <nav class="je-masthead__nav" aria-label="Разделы издания">
     <a href="/journal/" aria-current={active === 'journal' ? 'page' : undefined}>Журнал</a>
-    <a href="/journal/#lead-dossier" aria-current={active === 'dossier' ? 'location' : undefined}>Досье и исследования</a>
+    <a href="/journal/#lead-dossier" aria-current={active === 'dossier' ? 'true' : undefined}>Досье и исследования</a>
     <a href="/articles/">Богословские статьи</a>
     <a href="/about/">Об издании</a>
   </nav>
@@ -226,7 +226,8 @@ const { active = 'journal' } = Astro.props;
     padding: 3px 0 0;
     transition: color .18s, border-color .18s;
   }
-  .je-masthead__nav a[aria-current="page"] {
+  .je-masthead__nav a[aria-current="page"],
+  .je-masthead__nav a[aria-current="true"] {
     border-color: #d6ad5d;
     color: #fff;
   }

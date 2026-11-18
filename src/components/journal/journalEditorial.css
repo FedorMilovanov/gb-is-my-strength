@@ -519,6 +519,13 @@ html.dark .journal-edition {
   text-underline-offset: 3px;
 }
 
+.journal-edition .journal-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
 /* ==========================================================================
    JOURNAL LANDING / EDITORIAL COLLECTION
    ========================================================================== */
