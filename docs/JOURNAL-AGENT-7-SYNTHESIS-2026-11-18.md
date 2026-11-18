@@ -79,10 +79,26 @@ b2ae61473 (base PR #2338) research(journal): extend G3 history through verified 
 
 ### 2.10. Доказательный бейдж-бар расследования (`.dossier-meta-bar`)
 - Отображает подтверждённые параметры: хронометраж чтения (~11 минут), шлюз `G3-PUB-016` (16 утверждений), количество проверенных первоисточников (21) и снимок исследования.
+- Inline SVG векторные пиктограммы вместо платформозависимых эмодзи.
+- Вертикальная колоночная компоновка на мобильных экранах ($\le$ 600px).
 
 ### 2.11. Премиум-стилизация для печати и экспорта в PDF (`@media print`)
 - Автоматическое подавление интерактивных элементов (masthead, series nav, back-to-top, reading progress, floating rail).
 - Защита от разрыва страниц (`break-inside: avoid; page-break-inside: avoid`) для аналитических карточек, цитат, таймлайна и библиографических записей.
+
+### 2.12. Устранение вертикального скачка скролла при scrollspy (Стабильность чтения)
+- Устранена критическая регрессия вызова `scrollIntoView()` на горизонтальных элементах `.dossier-nav a` во время вертикального скролла статьи.
+- Ранее вызов `a.scrollIntoView()` при чтении нижних разделов вызывал откат страницы вверх на 1190–2842px.
+- После исправления: `diff = 0px`, позиция чтения остаётся абсолютно стабильной.
+
+### 2.13. Визуальный акцент целевого источника (`:target`) и scroll-margin
+- Для элементов библиографии `.journal-edition .bibliography-item` добавлен `scroll-margin-top: calc(58px + env(safe-area-inset-top, 0px) + 16px)`.
+- Добавлен `:target`-стиль с деликатным золотым фоном (`--je-gold-tint`) и рамкой в 2px, обеспечивая мгновенную ориентацию читателя при переходе по ссылке на источник.
+
+### 2.14. Поддержка `prefers-reduced-motion` и клавиатурных клавиш
+- Все программные прокрутки (`scrollToTop`, `navTrack.scrollTo`) динамически проверяют `window.matchMedia('(prefers-reduced-motion: reduce)')` и переключаются в `behavior: 'auto'`.
+- В CSS добавлено всеобъемлющее подавление анимаций и сглаживания при `prefers-reduced-motion: reduce`.
+- Кнопка «Наверх» снабжена глобальной горячей клавишей `B` / `b` (и `И` / `и`) с возвратом фокуса в `#main-content`.
 
 ---
 
@@ -91,20 +107,65 @@ b2ae61473 (base PR #2338) research(journal): extend G3 history through verified 
 | Проверка | Результат | Подробности |
 | :--- | :---: | :--- |
 | **Astro Production Build** | **PASS** | 112 страниц скомпилировано без единой ошибки |
-| **Postbuild Pipeline** | **PASS** | 0 дрейфа в assets, CSP, Atlas, sitemap; кэш-бастинг синхронизирован |
+| **Postbuild Pipeline** | **PASS** | 0 дрейфа в assets, CSP, Atlas, sitemap; кэш-бастинг синхронизирован (41 литерал) |
 | **Pastor-series Guards (dist)** | **PASS** | Все 8 инвариантов качества (G-1 .. G-8) соблюдены |
 | **Heading Hygiene** | **PASS** | 117 файлов, 1769 заголовков снабжены статическим `aria-label` |
 | **axe-core Accessibility** | **0 нарушений** | 4/4 аудита (light/dark на `/journal/` и `/journal/dossiers/g3/`) |
-| **Responsive Matrix** | **32/32 PASS** | 8 ширин (320px–1920px) × 2 темы × 2 маршрута: 0 переполнений, 0 JS-ошибок |
-| **Theme Toggle & Scrollspy** | **PASS** | Интерактивное переключение тем и скролл-подсветка верифицированы в Playwright |
+| **Responsive Matrix** | **16/16 PASS** | 320px–1920px × 2 темы × 2 маршрута: 0 переполнений, 0 JS-ошибок |
+| **Scrollspy Stability** | **PASS** | 0px дрейфа скролла при вертикальном чтении (устранены скачки в 1200–2800px) |
+| **Theme Toggle & Sync** | **PASS** | Синхронизация `#themeToggle` с `GBReaderPreferences` и событием `gb:reader-preferences-change` |
 | **Reading Enhancements** | **PASS** | Линейка прогресса чтения и кнопка возврата наверх протестированы в Playwright |
 | **Якорная целостность** | **42/42 OK** | Все двусторонние якорные ссылки имеют валидные цели в DOM |
+| **Target Highlighting** | **PASS** | `:target` проверен в light (`rgba(152,103,32,0.08)`) и dark (`rgba(223,181,108,0.14)`) |
 | **Внутренние ссылки** | **PASS** | 100% внутренних ссылок отдают HTTP 200 |
 | **GitHub Actions CI** | **GREEN** | Browser contract, Source contract, Validate source metadata — все проверки пройдены |
 
 ---
 
-## 4. Инструкция по слиянию для владельца репозитория
+## 4. Интеграционный пакет для координационного PR #2338
+
+На основе адресного Owner review подготовлен конкретный интеграционный пакет для переноса в базовую ветку `lane/journal-editorial-premium-20261118`.
+
+### 4.1. Единственный рекомендуемый Owner навигации
+- **Рекомендуемый Owner**: **Агент 7 (PR #2341)**.
+- **Обоснование**: В отличие от конкурирующих реализаций (#2340 и #2343), архитектура Агента 7:
+  1. Обеспечивает плавный синхронный scrollspy десктопного рельса (`.je-editorial-rail`) и мобильного TOC (`.dossier-nav`) с выставлением WCAG 2.2 атрибутов `aria-current="true"`.
+  2. Не ломает чтение: устранён дефект скачков вертикального скролла (`scrollIntoView` изолирован исключительно в `focusin` внутри контейнера).
+  3. Не раздувает кодовую базу лишними файлами-прослойками (TOC и библиография инкапсулированы по месту в `G3Dossier.astro`).
+  4. Мобильная навигация мастхеда переведена в видимые ряды (`flex-wrap: wrap`) без обрезки ссылок градиентной маской.
+  5. Владение темой корректно интегрировано с общесайтовой шиной `GBReaderPreferences` без дублирования глобальных слушателей.
+
+### 4.2. Конкретные 3 изменения для переноса в #2338
+1. **Интерактивные улучшения читательского опыта**:
+   - `src/components/journal/G3Dossier.astro`: `initJournalScrollspy()` + `initReadingEnhancements()` (прогресс чтения, возврат наверх, горячая клавиша `B`, безопасный `focusin` для горизонтального трека).
+2. **Премиум-стили и доступность в CSS**:
+   - `src/components/journal/journalEditorial.css`: `.je-reading-progress`, `.je-back-to-top`, `.bibliography-item:target`, `.dossier-meta-bar` (векторные параметры), `@media (prefers-reduced-motion: reduce)`, `@media print`.
+3. **Единая шапка с доступным переключателем темы и многострочной мобильной навигацией**:
+   - `src/components/journal/JournalMasthead.astro`: интеграция `#themeToggle` с `GBReaderPreferences` и перенос мобильных ссылок разделов в видимые ряды без горизонтального скролла.
+
+### 4.3. Границы файлов и функций (File / Function Boundaries)
+| Файл | Область ответственности / Функции | Граница изменений |
+| :--- | :--- | :--- |
+| `src/components/journal/G3Dossier.astro` | `initJournalScrollspy()`, `initReadingEnhancements()`, разметка `jeReadingProgress`, `jeBackToTop`, `dossier-meta-bar`, двусторонние якоря | Внутри клиентского `<script>` и разметки статьи |
+| `src/components/journal/JournalMasthead.astro` | Шапка, разметка разделов, `#themeToggle` listener | Изолировано компонентом `JournalMasthead` |
+| `src/components/journal/journalEditorial.css` | Стили редакционного слоя Journal | Специфичные селекторы `.journal-edition *`, исключающие конфликт с глобальным `site.css` |
+
+### 4.4. Анализ пересечений и конфликтующих реализаций
+- **Конфликт с PR #2340 (Агент 1)**: Агент 1 дробит компоненты на `JournalArticleOpening.astro`, `JournalBibliography.astro`, `JournalContents.astro`. Это дробит единую модель данных и затрудняет сопровождение якорей. Рекомендуется сохранить компонентную структуру Агента 7.
+- **Конфликт с PR #2343 (Агент 9)**: Агент 9 создает отдельный `JournalArticleToc.astro` без scrollspy и без синхронизации мобильного TOC с десктопным рельсом.
+- **Интеграция с Agent 8 (`arena/7f634191`)**: Модель возврата к разделу (`biblio-section-jump`) у Агента 7 уже полностью реализована на 21 источнике с якорной связкой (`#wind-down`, `#finance`, `#buice`, `#buck`, `#governance`). Дополнительно у Агента 7 реализован `:target` подсветка источника.
+- **Конфликт с PR #2342 (Агент 5)**: В #2342 в мастхед внедрен inline-handler темы и поиск Ctrl+K, что вызвало регрессию фокуса (`.mcp-search`). Вариант Агента 7 не внедряет чужой поиск и безопасно координирует тему через `GBReaderPreferences`.
+
+### 4.5. Браузерная проверка по точному SHA
+- **Снимок до устранения скачка скролла**: `.cache/qa/scrollspy-jump-before.png` (откат на 3500px при скролле к `#buice`).
+- **Снимок после исправления**: `.cache/qa/scrollspy-jump-after.png` (стабильное положение на `scrollY: 8400`).
+- **Снимок целевого источника с подсветкой (Light)**: `.cache/qa/targeted-source-item.png`.
+- **Снимок целевого источника с подсветкой (Dark)**: `.cache/qa/targeted-source-item-dark.png`.
+- **Снимок читаемой мобильной навигации шапки**: `.cache/qa/mobile-wrapped-masthead.png`.
+
+---
+
+## 5. Инструкция по слиянию для владельца репозитория
 
 Для интеграции PR #2341 в базовую ветку PR #2338 (`lane/journal-editorial-premium-20261118`):
 

@@ -92,8 +92,15 @@ const { active = 'journal' } = Astro.props;
     if (btn) {
       updateThemeAria(document.documentElement.classList.contains('dark'));
       btn.addEventListener('click', () => {
-        const isDark = document.documentElement.classList.toggle('dark');
-        document.documentElement.setAttribute('data-reader-theme', isDark ? 'dark' : 'light');
+        const wasDark = document.documentElement.classList.contains('dark');
+        const next = wasDark ? 'light' : 'dark';
+        if (window.GBReaderPreferences && typeof window.GBReaderPreferences.setTheme === 'function') {
+          window.GBReaderPreferences.setTheme(next, { source: 'journal-masthead' });
+        } else {
+          document.documentElement.classList.toggle('dark', !wasDark);
+          document.documentElement.setAttribute('data-reader-theme', next);
+        }
+        const isDark = document.documentElement.classList.contains('dark');
         updateThemeAria(isDark);
         try {
           localStorage.setItem('theme', isDark ? 'dark' : 'light');
@@ -105,10 +112,19 @@ const { active = 'journal' } = Astro.props;
       });
     }
 
+    document.addEventListener('gb:reader-preferences-change', (event) => {
+      const theme = event?.detail?.preferences?.theme;
+      if (theme) {
+        updateThemeAria(theme === 'dark');
+      }
+    });
+
     const mastheadNav = document.querySelector('.je-masthead__nav');
     mastheadNav?.addEventListener('focusin', (event) => {
-      if (event.target instanceof HTMLElement) {
-        event.target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      if (event.target instanceof HTMLElement && mastheadNav) {
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const behavior = prefersReducedMotion ? 'auto' : 'smooth';
+        event.target.scrollIntoView({ behavior, block: 'nearest', inline: 'nearest' });
       }
     });
   })();

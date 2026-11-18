@@ -11,6 +11,7 @@
   --je-rule: #d9cbb5;
   --je-muted: #57534d;
   --je-stat-bg: #f5efe4;
+  --je-gold-tint: rgba(152, 103, 32, 0.08);
   min-height: 100vh;
   background: var(--je-paper);
   color: var(--je-ink);
@@ -30,6 +31,7 @@ html.dark .journal-edition {
   --je-rule: #28394c;
   --je-muted: #abbcd0;
   --je-stat-bg: #14202d;
+  --je-gold-tint: rgba(223, 181, 108, 0.14);
 }
 .journal-edition *, .journal-edition *::before, .journal-edition *::after { box-sizing: border-box; }
 .journal-edition :is(h1,h2,h3,h4) { color: var(--je-ink); font-family: 'Playfair Display', Georgia, serif; font-weight: 600; letter-spacing: -.025em; text-wrap: balance; }
@@ -256,8 +258,8 @@ html.dark .journal-edition {
 }
 @media (max-width: 600px) {
   .je-back-to-top {
-    bottom: 20px;
-    right: 20px;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    right: calc(20px + env(safe-area-inset-right, 0px));
     padding: 8px 12px;
   }
   .je-back-to-top span { display: none; }
@@ -331,7 +333,19 @@ html.dark .journal-edition {
   overflow-wrap: anywhere; word-break: break-word;
 }
 .journal-edition .bibliography-group-title::before { content: ''; width: 14px; height: 1px; background: var(--je-gold-text); }
-.journal-edition .bibliography-item { padding: 13px 0; border-top: 1px solid var(--je-rule); }
+.journal-edition .bibliography-item {
+  padding: 13px 0;
+  border-top: 1px solid var(--je-rule);
+  scroll-margin-top: calc(58px + env(safe-area-inset-top, 0px) + 16px);
+  transition: background-color .3s ease, padding .2s ease;
+}
+.journal-edition .bibliography-item:target {
+  background: var(--je-gold-tint);
+  border-radius: 6px;
+  padding: 13px 12px;
+  outline: 2px solid var(--je-gold);
+  outline-offset: 2px;
+}
 .journal-edition .bibliography-item :is(h3,h4) { margin: 0 0 8px; font: 600 18px/1.4 'Playfair Display',Georgia,serif; }
 .journal-edition .bibliography-item > p { font: 14px/1.57 'Source Sans 3',sans-serif; margin: 5px 0; }
 .journal-edition .biblio-meta { color: var(--je-muted); font: 12px/1.4 'Source Sans 3',sans-serif; }
@@ -500,7 +514,11 @@ html.dark .journal-edition {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .journal-edition * { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+  html, body, .journal-edition, .journal-edition * {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
 @media print {
   .journal-edition { background: #fff !important; color: #000 !important; }

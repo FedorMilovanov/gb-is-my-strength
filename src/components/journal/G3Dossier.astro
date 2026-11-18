@@ -643,10 +643,22 @@ const sourceKinds: Record<string, string> = {
       threshold: [0, 0.25, 0.5, 0.75, 1.0],
     });
 
-    const navTrack = document.querySelector('.dossier-nav');
+    const navTrack = document.querySelector('.dossier-nav') as HTMLElement | null;
     navTrack?.addEventListener('focusin', (event) => {
-      if (event.target instanceof HTMLElement) {
-        event.target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      if (event.target instanceof HTMLElement && navTrack) {
+        const target = event.target;
+        const targetLeft = target.offsetLeft;
+        const targetRight = targetLeft + target.offsetWidth;
+        const trackLeft = navTrack.scrollLeft;
+        const trackRight = trackLeft + navTrack.clientWidth;
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const behavior = prefersReducedMotion ? 'auto' : 'smooth';
+
+        if (targetLeft < trackLeft) {
+          navTrack.scrollTo({ left: targetLeft, behavior });
+        } else if (targetRight > trackRight) {
+          navTrack.scrollTo({ left: targetRight - navTrack.clientWidth, behavior });
+        }
       }
     });
 
@@ -668,7 +680,6 @@ const sourceKinds: Record<string, string> = {
         a.classList.toggle('is-active', isCurrent);
         if (isCurrent) {
           a.setAttribute('aria-current', 'true');
-          a.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
         } else {
           a.removeAttribute('aria-current');
         }
@@ -711,13 +722,27 @@ const sourceKinds: Record<string, string> = {
     window.addEventListener('resize', onScroll, { passive: true });
     onScroll();
 
-    if (backToTopBtn) {
-      backToTopBtn.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        const masthead = document.querySelector<HTMLElement>('.dossier-masthead') || document.querySelector<HTMLElement>('h1');
-        masthead?.focus({ preventScroll: true });
-      });
+    function scrollToTop() {
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+      const main = document.getElementById('main-content') || document.querySelector<HTMLElement>('h1');
+      main?.focus({ preventScroll: true });
     }
+
+    if (backToTopBtn) {
+      backToTopBtn.addEventListener('click', scrollToTop);
+    }
+
+    document.addEventListener('keydown', (event) => {
+      const activeTag = (document.activeElement?.tagName || '').toUpperCase();
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(activeTag) || (document.activeElement as HTMLElement)?.isContentEditable) {
+        return;
+      }
+      if ((event.key === 'b' || event.key === 'B' || event.key === 'и' || event.key === 'И') && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        event.preventDefault();
+        scrollToTop();
+      }
+    });
   }
 
   function init() {
