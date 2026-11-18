@@ -95,5 +95,12 @@ const { active = 'journal' } = Astro.props;
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
       } catch {}
     });
+
+    const mastheadNav = document.querySelector('.je-masthead__nav');
+    mastheadNav?.addEventListener('focusin', (event) => {
+      if (event.target instanceof HTMLElement) {
+        event.target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+      }
+    });
   })();
 </script>
