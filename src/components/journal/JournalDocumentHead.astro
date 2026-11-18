@@ -9,6 +9,7 @@ interface Props {
   publishedAt?: string;
   modifiedAt?: string;
   readingTime?: number;
+  socialImage?: string;
 }
 
 const {
@@ -19,12 +20,12 @@ const {
   publishedAt = '2026-09-09T00:00:00+03:00',
   modifiedAt = publishedAt,
   readingTime,
+  socialImage = 'https://gospod-bog.ru/images/og-preview-1200x630.webp',
 } = Astro.props as Props;
 
 const siteTitle = `${title} | Господь Бог — Сила Моя`;
 const icon = 'https://gospod-bog.ru/icons/icon-512.png';
 // Production SEO accepts only governed 1200×630 or 1200×675 social-image profiles.
-const socialImage = 'https://gospod-bog.ru/images/og-preview-1200x630.webp';
 const schemaType = kind;
 const hasReadingTime = Number.isInteger(readingTime) && Number(readingTime) > 0;
 ---
