@@ -2,7 +2,7 @@
 
 ## Lane record
 
-- **Mode:** LANE. **Owner:** Arena session on `arena/a9995426-gb-is-my-strength`.
+- **Mode:** LANE. **Owner:** **Agent 1**, as explicitly designated by the user, on `arena/a9995426-gb-is-my-strength` (Draft proposal #2340).
 - **Purpose:** improve the native Journal presentation and two independently scoped G3 texts; do not create another publication or evidence owner.
 - **Product main / rollback:** `9edef94ece08012223c1364bec7ddcd561cf5713`.
 - **Integration baseline:** canonical Draft [#2338](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2338), `lane/journal-editorial-premium-20261118` at `b2ae614730b0c2e164d3b07453797074253d9698`.
@@ -45,6 +45,21 @@ These checks stop at the named question and sufficient wording correction. They 
 - Both history component entrypoints throw in production. `/journal/dossiers/g3/history/` is not registered, built, linked, indexed, added to RSS or added to sitemap. The local review fixture is ignored, noindex and development-only.
 - The November legal/name-change/asset overlay is **not** silently projected into the public September dossier. A renamed corporation does not prove a G3+/Press acquisition, completed closing or transaction terms.
 - Existing unknowns remain unknown: late-August board continuity; director/resignation mechanics; property/note chain; Buck item-level human audio/source/attribution review; mailing actor/motive; transfer/rights terms; attendance and quantitative content history.
+
+## Agent 1 — multi-agent continuation
+
+The owner's continuation explicitly authorizes isolated alternatives for comparison, not a takeover of another agent's branch. The [continuation scope](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2340#issuecomment-6988378368) starts at `a7ac603b13f12dcde6b76b5dc386f62d3b27dd4a`. Read-only overlap anchors: Agent 4 #2339 `0b9576278d2ec5ea89da804934823d460720501a`, Agent 7 #2341 `0082371b3de1b806f637e73f71877f54a8140f63`, Agent 5 #2342 `336a6782e0a49f965f60f528b63117b884fdac29`; Agent 6's route-date safeguard remains a separate integration review. These are audit snapshots, not claims that those branches remain frozen.
+
+Agent 1 keeps the native-HTML alternative. No other branch, scrollspy, financial projection, head/date work, global font/cache/service-worker change or new runtime is imported. Agent 4 receives discovery credit for the inline-space/identity/footer findings: those were independently reproduced on this branch before the equivalent bounded fixes were applied.
+
+Confirmed at the starting HEAD, then repaired within the existing Journal owners:
+
+- **Compressed reading text:** four factual paragraphs lost word boundaries beside inline tags; the dynamic research-note link also lacked its intended separator. The source change preserves every non-whitespace character. The regression derives expected literal paragraphs from the actual Astro source and compares them with the production DOM, rather than maintaining a second prose fixture. Its new check failed against the old dist before repair.
+- **Masthead name:** an overriding `aria-label` omitted visible publication text. The name now comes from the visible text, with the book graphic decorative; the browser checks the computed accessible-name match rather than assuming an axe pass covers it.
+- **Safe areas:** Chromium CDP genuinely exposed 44px left/right insets at 844×390, but the article and masthead retained 32px gutters. Local gutter tokens now respect physical safe-area insets across reading content, masthead and footer; tests cover synthetic landscape and narrow portrait insets. This is not a physical iOS/device claim.
+- **Landing footer alignment:** at 1440px the reading edge was x=128 while the footer link began at x=160 (also a 32px mismatch at 1920px). The footer now uses the same maximum width and gutter token as the reading container. Every Journal matrix case checks the actual shared edge.
+
+All fixes are presentation/render-integrity only: no new claim, date refresh, evidence/rights decision, history link or publication permission. Existing public metadata and the September source objects remain untouched.
 
 ## Verification and integration
 

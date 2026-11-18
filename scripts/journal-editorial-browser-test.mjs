@@ -48,6 +48,19 @@ async function inspect(page) {
       return box.width > 0 && box.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
     };
     const edition = document.querySelector('.journal-edition');
+    const readableText = (node) => {
+      if (node.nodeType === Node.TEXT_NODE) return node.textContent;
+      if (node.nodeType !== Node.ELEMENT_NODE || node.getAttribute('aria-hidden') === 'true') return '';
+      return [...node.childNodes].map(readableText).join('');
+    };
+    const brand = document.querySelector('.je-masthead__identity');
+    const brandVisibleText = readableText(brand).replace(/\s+/g, ' ').trim();
+    const landingLead = document.querySelector('.journal-hero');
+    const landingFooter = document.querySelector('.journal-footer > a');
+    const landingAlignment = landingLead && landingFooter ? {
+      contentLeft: landingLead.getBoundingClientRect().left,
+      footerLeft: landingFooter.getBoundingClientRect().left,
+    } : null;
     const ids = [...document.querySelectorAll('[id]')].map((element) => element.id);
     const missingAnchors = [...document.querySelectorAll('.journal-edition a[href^="#"], .skip-link')]
       .filter((element) => !document.getElementById(decodeURIComponent(element.hash.slice(1)))).map((element) => element.hash);
@@ -72,7 +85,7 @@ async function inspect(page) {
       duplicateIds: ids.filter((id, index) => ids.indexOf(id) !== index),
       h1: [...document.querySelectorAll('h1')].filter(shown).length,
       main: document.querySelectorAll('main#main-content').length,
-      missingAnchors, nav, growthTypography,
+      missingAnchors, nav, growthTypography, brandVisibleText, landingAlignment,
       dark: document.documentElement.classList.contains('dark'),
       background: getComputedStyle(edition).backgroundColor,
       seriesBorder: getComputedStyle(document.querySelector('.je-series')).borderTopStyle,
@@ -121,6 +134,41 @@ async function sourceNavigation(page, target, entry) {
   await back.click();
   check(entry, 'anchors:return-to-section', await page.evaluate((hash) => location.hash === hash, href));
 }
+async function syntheticSafeAreas(page, context, target, entry) {
+  if (engine !== 'chromium') {
+    entry.safeAreas = 'NOT RUN: synthetic CDP insets are Chromium-only, not a physical-device witness';
+    return;
+  }
+  const client = await context.newCDPSession(page);
+  const inspectInsets = () => page.evaluate(() => {
+    const probe = document.createElement('div');
+    probe.style.cssText = 'padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)';
+    document.body.append(probe);
+    const left = parseFloat(getComputedStyle(probe).paddingLeft);
+    const right = parseFloat(getComputedStyle(probe).paddingRight);
+    probe.remove();
+    const frames = [...document.querySelectorAll('main#main-content, .je-masthead__top, .je-masthead__nav, .journal-footer')].map((node) => {
+      const box = node.getBoundingClientRect(), css = getComputedStyle(node);
+      return { owner: node.className, contentLeft: box.left + parseFloat(css.paddingLeft), contentRight: box.right - parseFloat(css.paddingRight) };
+    });
+    return { width: innerWidth, left, right, frames, overflow: document.documentElement.scrollWidth - innerWidth };
+  });
+  const clear = (facts) => facts.left === 44 && facts.right === 44 && facts.frames.length >= 3 && facts.overflow <= 1 && facts.frames.every((frame) => frame.contentLeft >= facts.left - 1 && frame.contentRight <= facts.width - facts.right + 1);
+  try {
+    await client.send('Emulation.setSafeAreaInsetsOverride', { insets: { top: 0, left: 44, right: 44, bottom: 21 } });
+    const landscape = await inspectInsets();
+    check(entry, 'safe-area:844px-landscape-clears-44px-insets', clear(landscape), landscape);
+    await page.screenshot({ path: path.join(out, `${target.id}-safe-area-844.png`) });
+    await page.setViewportSize({ width: 390, height: 844 });
+    const portrait = await inspectInsets();
+    check(entry, 'safe-area:390px-portrait-clears-44px-insets', clear(portrait), portrait);
+    await page.screenshot({ path: path.join(out, `${target.id}-safe-area-390.png`) });
+    entry.safeAreas = { kind: 'Chromium CDP synthetic insets, not a real iOS/device test', landscape, portrait };
+  } finally {
+    await client.send('Emulation.setSafeAreaInsetsOverride', { insets: { top: 0, left: 0, right: 0, bottom: 0 } });
+    await client.detach();
+  }
+}
 async function axe(page, entry) {
   if (!axePath) { check(entry, 'axe:not-run', false, 'Set JOURNAL_AXE_PATH'); return; }
   await page.addScriptTag({ path: axePath });
@@ -162,6 +210,11 @@ try {
       entry.facts = facts;
       check(entry, 'layout:no-horizontal-overflow', facts.overflow <= 1 && facts.overflowingElements.length === 0, facts.overflowingElements);
       check(entry, 'layout:masthead-all-links-fit', facts.nav.length === 4 && facts.nav.every((item) => !item.clipped && item.left >= 0 && item.right <= width + 1 && item.height >= 44), facts.nav);
+      const namedBrand = page.getByRole('link', { name: facts.brandVisibleText, exact: true }).and(page.locator('.je-masthead__identity'));
+      check(entry, 'masthead:accessible-name-matches-visible-copy', await namedBrand.count() === 1, facts.brandVisibleText);
+      if (target.id === 'journal') {
+        check(entry, 'layout:landing-footer-shares-content-edge', facts.landingAlignment && Math.abs(facts.landingAlignment.contentLeft - facts.landingAlignment.footerLeft) <= 1, facts.landingAlignment);
+      }
       check(entry, 'semantics:one-heading-main-no-duplicate-ids', facts.h1 === 1 && facts.main === 1 && facts.duplicateIds.length === 0);
       check(entry, 'anchors:all-local-targets-exist', facts.missingAnchors.length === 0, facts.missingAnchors);
       check(entry, 'theme:shared-preference-applies', facts.dark === (theme === 'dark'));
@@ -215,6 +268,7 @@ try {
     await landscape.evaluate(() => document.fonts.ready);
     check(entry, 'landscape:844x390-reflows', (await inspect(landscape)).overflow <= 1);
     await landscape.screenshot({ path: path.join(out, `${target.id}-landscape.png`) });
+    await syntheticSafeAreas(landscape, context, target, entry);
     // 320 CSS px is also the 1280px / 400% reflow case; browser-UI zoom itself is not asserted.
     await landscape.setViewportSize({ width: 640, height: 450 });
     check(entry, 'zoom-equivalent:200pct-reflow-640CSSpx', (await inspect(landscape)).overflow <= 1);

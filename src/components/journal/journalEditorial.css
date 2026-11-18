@@ -12,6 +12,7 @@
   --je-reading: Lora, Georgia, serif;
   --je-ui: 'Source Sans 3', system-ui, sans-serif;
   --je-anchor-offset: 28px;
+  --je-page-gutter: 48px;
   min-height: 100svh;
   background: var(--je-paper);
   color: var(--je-ink);
@@ -47,7 +48,7 @@ html.dark .journal-edition {
 .journal-edition .journal-dossier-shell, .journal-edition .journal-landing {
   max-width: 1280px;
   margin-inline: auto;
-  padding-inline: 48px;
+  padding-inline: max(var(--je-page-gutter), env(safe-area-inset-left, 0px)) max(var(--je-page-gutter), env(safe-area-inset-right, 0px));
 }
 .journal-edition .dossier { padding-block: 32px 72px; }
 .journal-edition :is(.je-eyebrow, .eyebrow, .journal-kicker) {
@@ -213,7 +214,7 @@ html.dark .journal-edition {
 .journal-edition .journal-method h2 { max-width: 760px; color: #f4e9d7; }
 .journal-edition .journal-method .eyebrow { color: #e0bc7f; }
 .journal-edition .journal-method .journal-prose p { color: #ddd3c4; }
-.journal-edition .journal-footer { display: flex; flex-wrap: wrap; gap: 12px; max-width: 1184px; padding: 24px 32px 48px; }
+.journal-edition .journal-footer { display: flex; flex-wrap: wrap; gap: 12px; max-width: 1280px; padding: 24px max(var(--je-page-gutter), env(safe-area-inset-right, 0px)) 48px max(var(--je-page-gutter), env(safe-area-inset-left, 0px)); }
 
 /* Repeated entry points only: nothing in the rail is lost from mobile reading order. */
 .journal-edition .je-editorial-rail { position: sticky; top: 28px; align-self: start; min-width: 0; margin-top: 44px; border-left: 1px solid var(--je-rule); padding-left: 28px; }
@@ -235,8 +236,7 @@ html.dark .journal-edition {
 .journal-edition .je-rail-links a { display: block; padding-block: 13px; font: 600 14px/1.6 var(--je-ui); text-decoration: underline; text-decoration-color: var(--je-soft-gold); }
 
 @media (max-width: 1080px) {
-  .journal-edition { --je-anchor-offset: 80px; }
-  .journal-edition .journal-dossier-shell, .journal-edition .journal-landing { padding-inline: 32px; }
+  .journal-edition { --je-anchor-offset: 80px; --je-page-gutter: 32px; }
   .journal-edition .je-opening-spread { grid-template-columns: minmax(0, 1.6fr) minmax(240px, 1fr); gap: 28px; }
   .journal-edition .je-opening-period { margin-bottom: 16px; }
   .journal-edition .journal-feature-grid { display: block; }
@@ -261,7 +261,7 @@ html.dark .journal-edition {
   .journal-edition .lead-context { order: -1; }
 }
 @media (max-width: 690px) {
-  .journal-edition .journal-dossier-shell, .journal-edition .journal-landing { padding-inline: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); }
+  .journal-edition { --je-page-gutter: 20px; }
   .journal-edition .dossier { padding-block: 24px max(48px, env(safe-area-inset-bottom)); }
   .journal-edition .journal-story-topline { gap: 6px 10px; padding-bottom: 13px; font-size: 10px; letter-spacing: .08em; }
   .journal-edition .journal-story-topline .kicker { flex-basis: 100%; margin-left: 0; }
@@ -309,7 +309,6 @@ html.dark .journal-edition {
   .journal-edition .lead-card h3 { font-size: 32px; }
   .journal-edition .lead-card-copy > p:not(.lead-label), .journal-edition .journal-prose p { font-size: 17px; }
   .journal-edition .journal-method { padding: 28px 22px; }
-  .journal-edition .journal-footer { padding-inline: 20px; }
 }
 @media print {
   /* Unlayered journal rules outrank the layered site defaults; no specificity escape hatch. */

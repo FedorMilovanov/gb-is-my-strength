@@ -22,7 +22,11 @@ import { G3_HISTORY_BIBLIOGRAPHY as historySources } from '../src/data/journal/g
 const root = fileURLToPath(new URL('..', import.meta.url));
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const attrs = (node) => Object.fromEntries((node.attrs || []).map(({ name, value }) => [name, value]));
-const text = (node) => (node.nodeName === '#text' ? node.value : (node.childNodes || []).map(text).join('')).replace(/\s+/g, ' ').trim();
+// Collapse whitespace only after joining text nodes. Trimming each inline node
+// would hide the very missing-space regressions this witness needs to detect.
+const rawText = (node) => node.nodeName === '#text' ? node.value : (node.childNodes || []).map(rawText).join('');
+const text = (node) => rawText(node).replace(/\s+/g, ' ').trim();
+let verifiedReadingParagraphs = 0;
 function elements(document) {
   const result = [];
   function walk(node) { if (node.tagName) result.push(node); (node.childNodes || []).forEach(walk); }
@@ -95,6 +99,22 @@ for (const [route, title, kind] of [
     assert.equal(entity.datePublished, metadata.publishedAt);
     assert.equal(entity.dateModified, metadata.modifiedAt);
     assert.equal(entity.headline, metadata.title);
+    // The Astro source remains the only prose owner. Compare its literal reading
+    // paragraphs with the compressed production DOM, not a handwritten text fixture.
+    // Dynamic expressions are deliberately not interpreted by this HTML witness.
+    const sourceDocument = read('src/components/journal/G3Dossier.astro').replace(/^---\r?\n[\s\S]*?\r?\n---\s*/, '');
+    const sourceNodes = elements(parse(sourceDocument));
+    for (const id of ['overview', 'timeline', 'finance', 'governance', 'buice', 'buck', 'wind-down', 'unknowns', 'documents']) {
+      const fromSource = requireOne(sourceNodes, (node) => attrs(node).id === id, `${id}: source reading section`);
+      const inDist = requireOne(nodes, (node) => attrs(node).id === id, `${id}: built reading section`);
+      const expected = elements(fromSource).filter((node) => node.tagName === 'p' && !/[{}]/.test(rawText(node))).map(text).filter(Boolean);
+      const rendered = elements(inDist).filter((node) => node.tagName === 'p').map(text);
+      assert.ok(expected.length > 0, `${id}: literal source paragraphs available`);
+      for (const paragraph of expected) {
+        assert.ok(rendered.includes(paragraph), `${id}: source paragraph word boundaries lost during HTML compression: ${paragraph.slice(0, 120)}…`);
+        verifiedReadingParagraphs++;
+      }
+    }
     const projected = [...new Set(nodes.flatMap((node) => (attrs(node)['data-research-claims'] || '').split(/\s+/).filter(Boolean)))].sort();
     assert.deepEqual(projected, claims, `${route}: approved claims remain traceable`);
     for (const source of sources) {
@@ -124,4 +144,5 @@ if (process.argv.includes('--probe-hold')) {
   } finally { fs.rmSync(fixture, { recursive: true, force: true }); }
 }
 console.log('Journal/G3 contract PASS: two public routes, 16 claims, 21 sources, nine held candidates; anchors, metadata and prepared cover projections.');
+console.log(`Reading text parity PASS: ${verifiedReadingParagraphs} literal dossier paragraphs preserve source word boundaries.`);
 console.log(`History fail-closed probe: ${productionProbe}`);
