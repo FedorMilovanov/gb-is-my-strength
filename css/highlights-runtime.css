@@ -49,6 +49,8 @@
 #gb-hl-fab:active { transform: scale(.94); }
 #gb-hl-fab > svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.7; }
 #gb-hl-fab-count {
+  /* Library total remains in the button's accessible name; no visual count dot. */
+  display: none;
   position: absolute;
   top: 7px;
   right: 7px;
