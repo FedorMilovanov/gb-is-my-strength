@@ -153,6 +153,10 @@ assert.match(gillResponsiveOwner, /max-width:\s*220px/,
   'landscape mobile TOC trigger must not fill the entire header');
 assert.match(gillResponsiveOwner, /height:\s*clamp\(116px,\s*34dvh,\s*144px\)/,
   'short landscape hero must let the title into the first viewport');
+assert.match(gillResponsiveOwner, /gbs-theme-corner\s*\{\s*gap:\s*8px;/,
+  'Gill desktop action centres stay evenly spaced');
+assert.match(gillResponsiveOwner, /\.gb-ember-wrap\s*\{[\s\S]*?width:\s*40px;[\s\S]*?height:\s*40px;/,
+  'Gill desktop TTS retains its SVG while receiving a regular layout slot');
 assert.match(gillResponsiveOwner, /--gb-gill-paper:\s*#141312/,
   'Gill dark surfaces must use the warm editorial paper token');
 assert.match(gillResponsiveOwner, /reader-mobile-speed-badge::before/,
