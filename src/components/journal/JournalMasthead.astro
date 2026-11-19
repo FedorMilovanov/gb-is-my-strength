@@ -38,7 +38,7 @@ const { active = 'journal' } = Astro.props;
       <button
         type="button"
         id="themeToggle"
-        class="je-masthead__theme-btn theme-toggle"
+        class="je-masthead__theme-btn"
         aria-label="Переключить тему (клавиша D)"
         title="Переключить тему (D)"
       >
@@ -215,6 +215,19 @@ const { active = 'journal' } = Astro.props;
     left: 50%;
     transform: translate(-50%, -50%);
     transition: opacity .2s, color .2s;
+  }
+  .je-masthead__theme-btn .icon-sun {
+    display: none;
+  }
+  .je-masthead__theme-btn .icon-moon {
+    display: block;
+  }
+  :global(html.dark) .je-masthead__theme-btn .icon-sun {
+    display: block;
+    color: #f5c542;
+  }
+  :global(html.dark) .je-masthead__theme-btn .icon-moon {
+    display: none;
   }
   .je-masthead__home {
     color: #f0d9a8;
