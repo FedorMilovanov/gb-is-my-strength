@@ -11,7 +11,12 @@
 import searchManifest from '../../../data/search-manifest.json';
 import pageOwnership from '../../../migration/page-ownership.json';
 
-interface CatalogItem {
+interface PublicationRecord {
+  status?: string;
+  publicationStatus?: string;
+  publicationGate?: string;
+}
+interface CatalogItem extends PublicationRecord {
   id?: string;
   type?: string;
   url: string;
@@ -89,10 +94,12 @@ for (const forbiddenFixture of [
 }
 
 const manifestItems = searchManifest.items as CatalogItem[];
-const productionRoutes = pageOwnership.routes as Record<string, { status?: string }>;
-const routeIsPublished = (url: string) => {
-  const route = String(url || '').split('#')[0];
-  return productionRoutes[route]?.status === 'production-dist';
+const productionRoutes = pageOwnership.routes as Record<string, PublicationRecord>;
+const held = (record?: PublicationRecord) => [record?.status, record?.publicationStatus, record?.publicationGate].includes('PUBLICATION_HOLD');
+const routeIsPublished = (item: CatalogItem) => {
+  const owner = productionRoutes[String(item.url || '').split('#')[0]];
+  // A HOLD is only a veto, never a second positive publication authority.
+  return owner?.status === 'production-dist' && !held(owner) && !held(item);
 };
 const byEditorialOrder = (a: CatalogItem, b: CatalogItem) => {
   const priorityDelta = Number(b.priority || 0) - Number(a.priority || 0);
@@ -104,10 +111,10 @@ const byEditorialOrder = (a: CatalogItem, b: CatalogItem) => {
 };
 
 const series = manifestItems
-  .filter((item) => item.type === 'series' && routeIsPublished(item.url))
+  .filter((item) => item.type === 'series' && routeIsPublished(item))
   .sort(byEditorialOrder);
 const items = manifestItems
-  .filter((item) => item.type === 'article' && routeIsPublished(item.url))
+  .filter((item) => item.type === 'article' && routeIsPublished(item))
   .sort(byEditorialOrder);
 
 // A navigation projection of the SAME item set, not another catalog registry.
@@ -143,7 +150,7 @@ const plural = (count: number, one: string, few: string, many: string) => {
           {topic.items.map((item) => (
             <li class="h-article-card">
               <a href={item.url} class="articles-entry" data-catalog-route={item.url}>
-                {item.image && <div class="h-article-thumb"><img src={item.image} alt="" decoding="async" loading="lazy" width="160" height="108" /></div>}
+                <!-- Text-first index: original covers stay in manifest/articles, not an OG-download gallery. -->
                 <div class="h-article-body">
                   <h4 class="h-article-title">{item.title || item.id || item.url}</h4>
                   <div class="h-article-meta">
@@ -168,7 +175,6 @@ const plural = (count: number, one: string, few: string, many: string) => {
         {series.map((item) => (
           <li class="h-article-card">
             <a href={item.url} class="articles-entry" data-catalog-series={item.url}>
-              {item.image && <div class="h-article-thumb"><img src={item.image} alt="" decoding="async" loading="lazy" width="160" height="108" /></div>}
               <div class="h-article-body">
                 <h3 class="h-article-title">{item.title || item.id || item.url}</h3>
                 <div class="h-article-meta">

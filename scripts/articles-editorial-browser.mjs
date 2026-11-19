@@ -45,13 +45,17 @@ async function load(page) {
   await page.waitForLoadState('networkidle'); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(100);
   return { html: bytes.toString('utf8'), fromServiceWorker: response.fromServiceWorker() };
 }
-// Poll from the host so native smooth scrolling can settle even with JS disabled.
+// Poll from the host even with Product JS disabled. Always call after a key:
+// a quiet first30ms does not mean the native smooth scroll will not start.
+// No scrollIntoView, forced focus or reduced-motion override repairs a key path.
 async function settle(page) {
+  const started = Date.now(), samples = [];
   let prior = await page.evaluate(() => scrollY), stable = 0;
   for (let i = 0; i < 80; i++) {
     await page.waitForTimeout(60); const current = await page.evaluate(() => scrollY);
+    samples.push({ elapsedMs: Date.now() - started, y: current });
     stable = Math.abs(current - prior) < .5 ? stable + 1 : 0; prior = current;
-    if (stable >= 5) return;
+    if (stable >= 5) return { elapsedMs: Date.now() - started, samples };
   }
   throw new Error('Native scroll did not settle');
 }
@@ -75,21 +79,26 @@ async function auditAxe(page) { await page.addScriptTag({ content: axe }); const
 async function run(bucket, item, fn) { try { await fn(item); console.log('PASS articles', JSON.stringify(Object.fromEntries(Object.entries(item).filter(([k]) => ['width', 'theme', 'javaScriptEnabled', 'mode', 'paper'].includes(k))))); } catch (error) { item.failure = error.message; item.stack = error.stack; report.problems.push({ width: item.width, theme: item.theme, mode: item.mode, failure: error.message }); console.error(error.stack); } finally { bucket.push(item); } }
 try {
  if (selected('responsive')) {
-  for (const width of [320, 390, 768, 1440]) for (const theme of ['light', 'dark']) for (const javaScriptEnabled of [true, false]) {
+  for (const width of [320, 390, 768, 1440, 1920]) for (const theme of ['light', 'dark']) for (const javaScriptEnabled of [true, false]) {
     const context = await contextFor(width, theme, { javaScriptEnabled }); const page = await context.newPage(); const item = { width, theme, javaScriptEnabled, runtime: [], clientAborts: [] }; monitorRuntime(page, item.runtime, { clientAborts: item.clientAborts, isIgnoredConsole: (message) => development && /^\[vite\] (?:connecting\.\.\.|connected\.|hot updated:)/.test(message) });
     try { await run(report.cases, item, async () => {
-      await context.addInitScript(() => { window.__catalogCLS = 0; try { new PerformanceObserver((l) => l.getEntries().forEach((e) => { if (!e.hadRecentInput) window.__catalogCLS += e.value; })).observe({ type: 'layout-shift', buffered: true }); } catch {} });
+      await context.addInitScript(() => { window.__catalogCLS = 0; window.__catalogShiftEntries = []; try { new PerformanceObserver((l) => l.getEntries().forEach((e) => { if (!e.hadRecentInput) { window.__catalogCLS += e.value; window.__catalogShiftEntries.push({ at: e.startTime, value: e.value, sources: e.sources.map((s) => ({ node: s.node?.id || s.node?.className || s.node?.nodeName, previousRect: s.previousRect.toJSON(), currentRect: s.currentRect.toJSON() })) }); } })).observe({ type: 'layout-shift', buffered: true }); } catch {} });
       const response = await load(page); item.projection = inspectCatalogHtml(response.html, { manifest, ownership, baselineHtml }); item.fromServiceWorker = response.fromServiceWorker; item.liveProjection = inspectCatalogHtml(await page.content(), { manifest, ownership, baselineHtml }); item.geometry = await assertGeometry(page);
       item.coldFonts = await page.evaluate(() => performance.getEntriesByType('resource').filter((e) => /\.woff2(?:\?|$)/.test(e.name)).map((e) => ({ url: e.name, bytes: e.encodedBodySize, duration: e.duration })));
-      item.cls = await page.evaluate(() => window.__catalogCLS ?? null); item.themeActual = await page.locator('html').getAttribute('data-reader-theme');
+      item.cls = await page.evaluate(() => window.__catalogCLS ?? null); item.layoutShifts = await page.evaluate(() => window.__catalogShiftEntries ?? []); item.themeActual = await page.locator('html').getAttribute('data-reader-theme');
       if (javaScriptEnabled) assert.equal(item.themeActual, theme);
       await page.screenshot({ path: path.join(out, 'screens', `opening-${width}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}.png`) });
-      await page.locator('[data-catalog-route]').first().scrollIntoViewIfNeeded(); await settle(page); item.firstImageDecoded = await page.locator('[data-catalog-route] img').first().evaluate((e) => e.complete && e.naturalWidth > 0); assert.equal(item.firstImageDecoded, true); await page.screenshot({ path: path.join(out, 'screens', `materials-${width}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}.png`) });
+      item.indexImageCount = await page.locator('[data-catalog-source] :is(img,picture,source)').count(); assert.equal(item.indexImageCount, 0);
+      await page.locator('.articles-hero-links a[href="#catalog-materials"]').click(); await settle(page); await page.screenshot({ path: path.join(out, 'screens', `materials-${width}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}.png`) });
       if (javaScriptEnabled) { item.axe = await auditAxe(page); assert.deepEqual(item.axe.violations, []); assert.deepEqual(item.axe.incomplete, []); }
       const anchors = await page.locator('[data-catalog-topics] a').evaluateAll((els) => els.map((e) => e.getAttribute('href'))); item.nativeTopicAnchors = anchors.length;
       for (const href of [anchors[0], anchors.at(-1)]) { await page.locator(`[data-catalog-topics] a[href="${href}"]`).scrollIntoViewIfNeeded(); await settle(page); await page.locator(`[data-catalog-topics] a[href="${href}"]`).click(); await settle(page); assert.equal(new URL(page.url()).hash, encodeURI(href)); const target = page.locator(`[id="${decodeURIComponent(href.slice(1))}"]`); assert.ok(await target.isVisible()); }
       await page.locator('#catalog-series').scrollIntoViewIfNeeded(); await page.waitForTimeout(350); if (javaScriptEnabled) { item.seriesAxe = await auditAxe(page); assert.deepEqual(item.seriesAxe.violations, []); assert.deepEqual(item.seriesAxe.incomplete, []); }
       await page.screenshot({ path: path.join(out, 'screens', `series-${width}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}.png`) });
+      const curated = page.locator('[data-catalog-featured-repeat]');
+      if (await curated.count()) { await curated.scrollIntoViewIfNeeded(); await settle(page); item.curatedImageDecoded = await curated.locator('img').evaluate((e) => e.complete && e.naturalWidth > 0); assert.equal(item.curatedImageDecoded, true); await page.screenshot({ path: path.join(out, 'screens', `curated-${width}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}.png`) }); }
+      item.readerImageRequests = await page.evaluate(() => performance.getEntriesByType('resource').filter((e) => e.initiatorType === 'img').map((e) => ({ url: e.name, bytes: e.encodedBodySize, duration: e.duration })));
+      assert.ok(item.readerImageRequests.length <= 1, 'Text-first catalog fetched an image gallery');
       assert.deepEqual(item.runtime, []);
     }); } finally { await context.close(); }
   }
@@ -98,22 +107,38 @@ try {
   for (const width of [390, 1440]) for (const javaScriptEnabled of [true, false]) {
     const context = await contextFor(width, 'light', { javaScriptEnabled }); const page = await context.newPage();
     try { await run(report.keyboards, { width, javaScriptEnabled, mode: 'native-full-list-forward-reverse' }, async (item) => {
-      await load(page); await page.locator('.articles-hero-links a[href="#catalog-materials"]').focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(350);
+      await load(page); await page.locator('.articles-hero-links a[href="#catalog-materials"]').focus(); await page.keyboard.press('Enter'); await settle(page);
       assert.equal(await page.evaluate(() => document.activeElement.id), 'catalog-materials');
       const order = await page.locator('[data-catalog-route],[data-catalog-series]').evaluateAll((els) => els.map((e) => e.getAttribute('href'))); const steps = []; item.steps = steps;
-      async function check(expectedHref, key) { const before = await page.evaluate(() => scrollY); await page.keyboard.press(key); await page.waitForTimeout(30); const moving = await page.evaluate((prior) => Math.abs(scrollY - prior) > .5, before); if (moving) await settle(page); const focus = await page.evaluate(() => { const e = document.activeElement, s = getComputedStyle(e), r = e.getBoundingClientRect(), heading = e.querySelector('.h-article-title')?.getBoundingClientRect(), bar = document.querySelector('.mcp-top'), br = bar?.getBoundingClientRect(), bs = bar && getComputedStyle(bar); return { href: e.getAttribute('href'), focusVisible: e.matches(':focus-visible'), outlineWidth: parseFloat(s.outlineWidth), outlineStyle: s.outlineStyle, top: r.top, bottom: r.bottom, headingTop: heading?.top, headingBottom: heading?.bottom, viewport: innerHeight, headerBottom: br && bs.visibility !== 'hidden' && bs.display !== 'none' && br.bottom > 0 ? br.bottom : 0 }; }); assert.equal(focus.href, expectedHref); assert.equal(focus.focusVisible, true); assert.ok(focus.outlineWidth >= 2 && focus.outlineStyle !== 'none'); assert.ok(focus.headingTop >= focus.headerBottom - 1 && focus.headingBottom <= focus.viewport + 1, JSON.stringify(focus)); steps.push(focus); }
+      async function check(expectedHref, key) {
+        await page.keyboard.press(key); const settling = await settle(page);
+        const focus = await page.evaluate(() => {
+          const e = document.activeElement, s = getComputedStyle(e), r = e.getBoundingClientRect(), title = e.querySelector('.h-article-title'), heading = title?.getBoundingClientRect(), bar = document.querySelector('.mcp-top'), br = bar?.getBoundingClientRect(), bs = bar && getComputedStyle(bar);
+          const hit = heading && document.elementFromPoint(Math.min(document.documentElement.clientWidth - 1, (heading.left + heading.right) / 2), (heading.top + heading.bottom) / 2);
+          return { href: e.getAttribute('href'), focusVisible: e.matches(':focus-visible'), outlineWidth: parseFloat(s.outlineWidth), outlineStyle: s.outlineStyle, top: r.top, bottom: r.bottom, headingTop: heading?.top, headingBottom: heading?.bottom, headingPaint: Boolean(hit && e.contains(hit)), viewport: innerHeight, headerBottom: br && bs.visibility !== 'hidden' && bs.display !== 'none' && br.bottom > 0 ? br.bottom : 0 };
+        });
+        steps.push({ key, ...focus, settling });
+        assert.equal(focus.href, expectedHref); assert.equal(focus.focusVisible, true);
+        assert.ok(focus.outlineWidth >= 2 && focus.outlineStyle !== 'none');
+        assert.ok(focus.headingTop >= focus.headerBottom - 1 && focus.headingBottom <= focus.viewport + 1, JSON.stringify(focus));
+        assert.equal(focus.headingPaint, true, JSON.stringify(focus));
+      }
       for (const href of order) await check(href, 'Tab');
       for (const href of order.slice(0, -1).reverse()) await check(href, 'Shift+Tab');
       item.destinations = order.length;
       // Real last-link Enter → destination → native Back, not a synthetic click.
       const last = page.locator('[data-catalog-series]').last();
       await last.focus(); await settle(page); const href = await last.getAttribute('href');
+      item.lastActivationScrollY = await page.evaluate(() => scrollY);
       await page.keyboard.press('Enter'); await page.waitForURL((url) => url.pathname === new URL(href, origin).pathname);
       assert.equal((await page.locator('h1').count()) > 0, true); item.lastActivated = page.url();
       await page.goBack({ waitUntil: 'networkidle' }); await settle(page);
       assert.equal(new URL(page.url()).pathname, '/articles/');
       item.lastReturnFocus = await page.evaluate(() => document.activeElement.getAttribute('href'));
       item.lastReturnFocusRestored = item.lastReturnFocus === href;
+      item.lastReturnScrollY = await page.evaluate(() => scrollY);
+      item.lastReturnScrollRestored = Math.abs(item.lastReturnScrollY - item.lastActivationScrollY) <= 1;
+      assert.equal(item.lastReturnScrollRestored, true, 'Native reload-Back did not preserve last-link scroll position');
       assert.equal(await page.locator('[data-catalog-route],[data-catalog-series]').count(), expected.length);
       item.nativeReloadBackNote = 'Playwright disables BFCache; no Product or test focus-restoration script is injected.';
       await page.screenshot({ path: path.join(out, 'screens', `last-return-${width}-${javaScriptEnabled ? 'js' : 'nojs'}.png`) });
@@ -175,7 +200,7 @@ try {
  }
 } finally { await browser.close(); fs.writeFileSync(path.join(out, 'report.json'), JSON.stringify(report, null, 2) + '\n'); }
 assert.deepEqual(report.problems, []);
-for (const [name, bucket, count] of [['responsive', 'cases', 16], ['keyboard', 'keyboards', 4], ['forced-colors', 'forcedColors', 4], ['text', 'text', 12], ['interactions', 'interactions', 1], ['print', 'printCases', 8]]) {
+for (const [name, bucket, count] of [['responsive', 'cases', 20], ['keyboard', 'keyboards', 4], ['forced-colors', 'forcedColors', 4], ['text', 'text', 12], ['interactions', 'interactions', 1], ['print', 'printCases', 8]]) {
   if (selected(name)) assert.equal(report[bucket].length, count, `Incomplete ${name} matrix`);
 }
 if (!development && !args.transfer) assert.deepEqual(catalogProvenance(), provenance, 'Source head/worktree changed during the run');

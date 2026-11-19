@@ -5,7 +5,13 @@
  * First-class Astro markup; no raw legacy fragment imports.
  */
 import pageOwnership from '../../../migration/page-ownership.json';
-const isPublished = pageOwnership.routes['/articles/kod-da-vinchi/']?.status === 'production-dist';
+import searchManifest from '../../../data/search-manifest.json';
+type PublicationRecord = { status?: string; publicationStatus?: string; publicationGate?: string };
+const held = (record?: PublicationRecord) => [record?.status, record?.publicationStatus, record?.publicationGate].includes('PUBLICATION_HOLD');
+const owner = pageOwnership.routes['/articles/kod-da-vinchi/'];
+const entries = searchManifest.items as (PublicationRecord & { type: string; url: string })[];
+const entry = entries.find((item) => item.type === 'article' && item.url === '/articles/kod-da-vinchi/');
+const isPublished = entry && owner?.status === 'production-dist' && !held(owner) && !held(entry);
 ---
 <!-- РАЗБОР ЗАБЛУЖДЕНИЙ -->
 {isPublished && (

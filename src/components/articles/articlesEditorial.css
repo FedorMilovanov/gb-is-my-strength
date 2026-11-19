@@ -34,7 +34,9 @@ body.articles-index-page { margin: 0; }
 .journal-edition--articles .articles-topic-heading > span { color: var(--je-muted); font: 12px/1.5 var(--je-ui); }
 .journal-edition--articles .h-article-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 40px; margin: 0; padding: 0; list-style: none; }
 .journal-edition--articles .h-article-list > li { min-width: 0; margin: 0; padding: 0; }
-.journal-edition--articles .articles-entry { display: grid; grid-template-columns: minmax(0, 1fr) 112px; grid-template-areas: 'title image' 'meta image' 'description description'; gap: 12px 20px; align-content: start; height: 100%; min-width: 0; padding: 22px 0 26px; border-top: 1px solid var(--je-rule); border-radius: 0; background: var(--je-paper); box-shadow: none; color: var(--je-ink); text-decoration: none; transform: none; }
+/* The exhaustive index is a headline/summary stack, not an OG-image gallery.
+   One separately curated recommendation below retains its source-owned picture. */
+.journal-edition--articles .articles-entry { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: 'title' 'meta' 'description'; gap: 12px 20px; align-content: start; height: 100%; min-width: 0; padding: 22px 0 26px; border-top: 1px solid var(--je-rule); border-radius: 0; background: var(--je-paper); box-shadow: none; color: var(--je-ink); text-decoration: none; transform: none; }
 .journal-edition--articles .articles-entry:hover { color: var(--je-ink); }
 .journal-edition--articles .articles-entry:hover .h-article-title { text-decoration: underline; text-decoration-color: var(--je-gold); text-underline-offset: .16em; }
 .journal-edition--articles .h-article-body { display: contents; }
@@ -76,7 +78,7 @@ body.articles-index-page { margin: 0; }
   .journal-edition--articles .h-hero { gap: 20px 35px; }
   .journal-edition--articles .h-hero-title { font-size: 64px; }
   .journal-edition--articles .h-article-list { column-gap: 28px; }
-  .journal-edition--articles .articles-entry { grid-template-columns: minmax(0, 1fr) 80px; gap: 12px 16px; }
+  .journal-edition--articles .articles-entry { column-gap: 16px; }
   .journal-edition--articles .articles-topics ul { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .journal-edition--articles :is(.gb-accuracy-block, .h-footer) { margin-inline: 28px; }
 }
@@ -96,7 +98,7 @@ body.articles-index-page { margin: 0; }
   .journal-edition--articles .articles-topics ul { column-gap: 23px; }
   .journal-edition--articles .articles-topic-heading h3 { font-size: 25px; }
   .journal-edition--articles .h-article-list { grid-template-columns: 1fr; }
-  .journal-edition--articles .articles-entry { grid-template-columns: minmax(0, 1fr) 88px; grid-template-areas: 'meta image' 'title title' 'description description'; padding-block: 21px 26px; }
+  .journal-edition--articles .articles-entry { grid-template-areas: 'meta' 'title' 'description'; padding-block: 21px 26px; }
   .journal-edition--articles .h-article-title { font-size: calc(1.4375rem * var(--gb-reader-font-scale, 1)); line-height: 1.35; }
   .journal-edition--articles .articles-series .h-article-title { grid-area: title; }
   .journal-edition--articles .articles-series { margin-top: 24px; padding-top: 25px; }

@@ -12,10 +12,10 @@ const manifest = { items: [article, series, featured, { ...article, url: '/held/
 const ownership = { routes: { '/articles/original/': { status: 'production-dist' }, '/biografii/': { status: 'production-dist' }, '/articles/kod-da-vinchi/': { status: 'production-dist' }, '/held/': { status: 'draft' } } };
 function card(item) {
   const role = expectedAttribution(item);
-  return `<li class="h-article-card"><a class="articles-entry" data-catalog-${item.type === 'series' ? 'series' : 'route'}="${item.url}" href="${item.url}"><img src="${item.image}" alt="" width="160" height="108"><h3>${escape(item.title)}</h3><div class="h-article-meta">${item.type === 'article' ? `<span data-catalog-role="${role.kind}">${role.label}</span>` : ''}<span class="h-meta-time">${item.readTime} мин</span></div><p class="h-article-abstract">${escape(item.description)}</p></a></li>`;
+  return `<li class="h-article-card"><a class="articles-entry" data-catalog-${item.type === 'series' ? 'series' : 'route'}="${item.url}" href="${item.url}"><h3>${escape(item.title)}</h3><div class="h-article-meta">${item.type === 'article' ? `<span data-catalog-role="${role.kind}">${role.label}</span>` : ''}<span class="h-meta-time">${item.readTime} мин</span></div><p class="h-article-abstract">${escape(item.description)}</p></a></li>`;
 }
 function fixture() {
-  return `<!doctype html><html lang="ru"><head><title>Статьи</title><link rel="canonical" href="https://gospod-bog.ru/articles/"><meta property="og:image:alt" content="Библиотека"><meta name="twitter:image:alt" content="Библиотека">${[1, 2, 3, 4].map((i) => `<link rel="preload" as="font" href="/font-${i}.woff2">`).join('')}<script type="application/ld+json">{"@graph":[{"@type":"CollectionPage"},{"@type":"BreadcrumbList"}]}</script><script data-gb-search-bootstrap></script></head><body><a class="skip-link" href="#main-content">Содержание</a><header class="je-masthead"><a href="/articles/" aria-current="page">Статьи</a><button data-journal-theme>Тема</button></header><div id="mobileChromePage"></div><main id="main-content"><h1>Статьи</h1><section data-catalog-source="search-manifest+page-ownership"><p class="articles-count"><strong>2</strong> материала<span>1 серия и сборник</span></p><nav data-catalog-topics><a href="#topic">Другие материалы <span class="articles-topic-count">2</span></a><a href="#catalog-series">Серии и сборники</a></nav><section class="articles-topic" aria-labelledby="topic"><h3 id="topic">Другие материалы</h3>${[article, featured].map(card).join('')}</section><section id="catalog-series">${card(series)}</section></section><ul><li class="h-article-card"><a class="articles-entry" data-catalog-featured-repeat="/articles/kod-da-vinchi/" href="/articles/kod-da-vinchi/">Редакционный выбор</a></li></ul></main></body></html>`;
+  return `<!doctype html><html lang="ru"><head><title>Статьи</title><link rel="canonical" href="https://gospod-bog.ru/articles/"><meta property="og:image:alt" content="Библиотека"><meta name="twitter:image:alt" content="Библиотека">${[1, 2, 3, 4].map((i) => `<link rel="preload" as="font" href="/font-${i}.woff2">`).join('')}<script type="application/ld+json">{"@graph":[{"@type":"CollectionPage"},{"@type":"BreadcrumbList"}]}</script><script data-gb-search-bootstrap></script></head><body><a class="skip-link" href="#main-content">Содержание</a><header class="je-masthead"><a href="/articles/" aria-current="page">Статьи</a><button data-journal-theme>Тема</button></header><div id="mobileChromePage"></div><main id="main-content"><h1>Статьи</h1><section data-catalog-source="search-manifest+page-ownership"><p class="articles-count"><strong>2</strong> материала<span>1 серия и сборник</span></p><nav data-catalog-topics><a href="#topic">Другие материалы <span class="articles-topic-count">2</span></a><a href="#catalog-series">Серии и сборники</a></nav><section class="articles-topic" aria-labelledby="topic"><h3 id="topic">Другие материалы</h3>${[article, featured].map(card).join('')}</section><section id="catalog-series">${card(series)}</section></section><ul><li class="h-article-card"><a class="articles-entry" data-catalog-featured-repeat="/articles/kod-da-vinchi/" href="/articles/kod-da-vinchi/"><img src="/images/curated.webp" alt="Иллюстрация рекомендации" width="160" height="108">Редакционный выбор</a></li></ul></main></body></html>`;
 }
 const inspect = (html = fixture(), options = {}) => inspectCatalogHtml(html, { manifest, ownership, ...options });
 
@@ -25,12 +25,24 @@ test('published projection is dynamically derived, not a hardcoded live count', 
 });
 test('published fragment series remains a separate valid destination', () => assert.ok(projectCatalog(manifest, ownership).some((i) => i.url === '/biografii/#series')));
 test('non-production articles and non-article/series rows are excluded', () => assert.ok(!projectCatalog(manifest, ownership).some((i) => i.url === '/held/' || i.type === 'page')));
+for (const key of ['status', 'publicationStatus', 'publicationGate']) {
+  test(`explicit manifest ${key} HOLD vetoes production ownership`, () => {
+    const held = { ...article, [key]: 'PUBLICATION_HOLD' };
+    assert.ok(!projectCatalog({ items: [held, series] }, ownership).some((item) => item.url === held.url));
+    assert.throws(() => inspect(fixture(), { manifest: { items: manifest.items.map((item) => item === article ? held : item) } }), /published set/);
+  });
+  test(`explicit route ${key} HOLD vetoes manifest membership`, () => {
+    const heldOwnership = { routes: { ...ownership.routes, [article.url]: { status: 'production-dist', [key]: 'PUBLICATION_HOLD' } } };
+    assert.ok(!projectCatalog(manifest, heldOwnership).some((item) => item.url === article.url));
+    assert.throws(() => inspect(fixture(), { ownership: heldOwnership }), /published set/);
+  });
+}
 test('empty published projection fails closed', () => assert.throws(() => projectCatalog(manifest, { routes: {} }), /empty published/));
 test('duplicate authority routes fail closed', () => assert.throws(() => projectCatalog({ items: [article, article] }, ownership), /Duplicate authority/));
 test('external and protocol-relative catalog authority is rejected', () => {
   for (const url of ['https://example.org/', '//example.org/']) assert.throws(() => projectCatalog({ items: [{ ...article, url }] }, ownership), /same-site/);
 });
-test('no-JS SSR preserves exact membership, words, media, times and role labels', () => {
+test('no-JS SSR preserves exact membership, words, times and roles without index OG downloads', () => {
   const result = inspect(); assert.equal(result.articles, 2); assert.equal(result.series, 1); assert.equal(result.explicitCuratedRepeats, 1);
 });
 test('HTML entities are reader text, never literal markup or a separator waiver', () => {
@@ -56,9 +68,10 @@ for (const [name, from, to, message] of [
   ['role label promotion', 'Автор-редактор: Фёдор Милованов', 'Автор: Фёдор Милованов', /Role label drift/],
   ['role kind promotion', 'data-catalog-role="author-editor"', 'data-catalog-role="author"', /Role kind drift/],
   ['time drift', '23 мин', '24 мин', /Reading time drift/],
-  ['media substitution', 'src="/images/original.webp"', 'src="/images/other.webp"', /Media authority changed/],
-  ['missing image alt', ' alt=""', '', /Missing image\/alt/],
-  ['missing image dimension', 'width="160"', 'width="0"', /dimensions missing/],
+  ['OG thumbnail returned to index', '<h3>', '<img src="/images/original.webp" alt="" width="160" height="108"><h3>', /must not fetch OG thumbnails/],
+  ['CSS-hidden picture returned to index', '<h3>', '<picture hidden><source srcset="/images/original.webp"></picture><h3>', /must not fetch OG thumbnails/],
+  ['missing curated image alt', ' alt="Иллюстрация рекомендации"', '', /Curated image alt missing/],
+  ['missing curated image dimension', 'width="160"', 'width="0"', /dimensions missing/],
   ['orphan native anchor', 'href="#main-content"', 'href="#missing"', /Orphan native anchor/],
   ['duplicate id', '<h1>', '<h1 id="main-content">', /Duplicate DOM id/],
   ['duplicate masthead', '<header class="je-masthead">', '<header class="je-masthead"><div class="je-masthead"></div>', /selected masthead/],

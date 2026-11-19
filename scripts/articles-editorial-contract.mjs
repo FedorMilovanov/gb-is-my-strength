@@ -42,7 +42,9 @@ export function projectCatalog(manifest, ownership) {
   const items = manifest.items.filter((item) => {
     if (!['article', 'series'].includes(item.type)) return false;
     assert.ok(typeof item.url === 'string' && item.url.startsWith('/') && !item.url.startsWith('//'), 'Catalog requires a same-site URL');
-    return ownership.routes[item.url.split('#')[0]]?.status === 'production-dist';
+    const owner = ownership.routes[item.url.split('#')[0]];
+    const held = (record) => ['status', 'publicationStatus', 'publicationGate'].some((key) => record?.[key] === 'PUBLICATION_HOLD');
+    return owner?.status === 'production-dist' && !held(item) && !held(owner);
   });
   assert.ok(items.length, 'Refuse an empty published catalog');
   assert.equal(new Set(items.map((i) => i.url)).size, items.length, 'Duplicate authority route');
@@ -73,10 +75,14 @@ export function inspectCatalogHtml(html, { manifest, ownership, baselineHtml, ed
     const heading = children.find((n) => /^h[2-6]$/.test(n.tagName || ''));
     assert.equal(normalize(text(heading)), normalize(original.title || original.id || original.url), `Title drift: ${url}`);
     assert.equal(normalize(text(children.find((n) => hasClass(n, 'h-article-abstract')))), normalize(original.description), `Description drift: ${url}`);
-    const image = children.find((n) => n.tagName === 'img');
-    assert.ok(image && attribute(image, 'alt') !== undefined, `Missing image/alt: ${url}`);
-    assert.equal(attribute(image, 'src'), original.image, `Media authority changed: ${url}`);
-    assert.ok(Number(attribute(image, 'width')) > 0 && Number(attribute(image, 'height')) > 0, `Image dimensions missing: ${url}`);
+    const images = children.filter((n) => n.tagName === 'img' || n.tagName === 'picture' || n.tagName === 'source');
+    if (edition) assert.equal(images.length, 0, `Exhaustive text-first index must not fetch OG thumbnails: ${url}`);
+    else if (original.image) {
+      const image = images.find((n) => n.tagName === 'img');
+      assert.ok(image && attribute(image, 'alt') !== undefined, `Missing image/alt: ${url}`);
+      assert.equal(attribute(image, 'src'), original.image, `Media authority changed: ${url}`);
+      assert.ok(Number(attribute(image, 'width')) > 0 && Number(attribute(image, 'height')) > 0, `Image dimensions missing: ${url}`);
+    }
     if (original.type === 'article') {
       const role = children.find((n) => attribute(n, 'data-catalog-role') !== undefined), attribution = expectedAttribution(original);
       assert.equal(attribute(role || {}, 'data-catalog-role'), attribution.kind, `Role kind drift: ${url}`);
@@ -95,6 +101,12 @@ export function inspectCatalogHtml(html, { manifest, ownership, baselineHtml, ed
   for (const n of featured) {
     assert.equal(attribute(n, 'data-catalog-featured-repeat'), '/articles/kod-da-vinchi/', 'Unexpected curated duplicate');
     assert.equal(attribute(n, 'href'), '/articles/kod-da-vinchi/', 'Curated repeat route drift');
+    if (edition) {
+      const images = descendants(n).filter((child) => child.tagName === 'img');
+      assert.equal(images.length, 1, 'Keep the one source-owned curated picture, not an index image gallery');
+      assert.ok(attribute(images[0], 'alt'), 'Curated image alt missing');
+      assert.ok(Number(attribute(images[0], 'width')) > 0 && Number(attribute(images[0], 'height')) > 0, 'Curated image dimensions missing');
+    }
   }
   const metadata = documentMetadata(html);
   if (edition) {
@@ -153,7 +165,7 @@ export function inspectCatalogHtml(html, { manifest, ownership, baselineHtml, ed
     assert.equal(new Set(preloads.map((n) => attribute(n, 'href'))).size, 4, 'Duplicate font hint');
   }
   if (baselineHtml) assert.deepEqual(metadata, documentMetadata(baselineHtml), 'Route-owned SEO/date/JSON-LD changed during visual work');
-  return { articles: expected.filter((i) => i.type === 'article').length, series: expected.filter((i) => i.type === 'series').length, rendered: cards.length, explicitCuratedRepeats: featured.length, exactTextMediaRoles: true, metadata };
+  return { articles: expected.filter((i) => i.type === 'article').length, series: expected.filter((i) => i.type === 'series').length, rendered: cards.length, explicitCuratedRepeats: featured.length, exactTextRoles: true, indexMedia: edition ? 'text-only-original-covers-retained-in-authority' : 'legacy-source-images', metadata };
 }
 export function assertCatalogSource() {
   const read = (name) => fs.readFileSync(path.join(root, name), 'utf8');
@@ -171,8 +183,9 @@ export function assertCatalogSource() {
   assert.ok(!/-webkit-line-clamp\s*:\s*\d/.test(css), 'Catalog text is clamped');
   const library = read('src/components/articles/ArticlesLibrarySection.astro');
   assert.match(library, /data-catalog-source="search-manifest\+page-ownership"/);
+  assert.ok(!/<(?:img|picture|source)\b/.test(library), 'Do not return OG images to the exhaustive index');
   assert.ok(!/\b80\s*(?:опубликованных|материалов)/u.test(library), 'Hardcoded current inventory count');
-  return { selectedShell: true, registryMobile: true, oneFontHintOwner: true, oldCatalogRuntimeRetired: true, noClampOrImportant: true };
+  return { selectedShell: true, registryMobile: true, oneFontHintOwner: true, oldCatalogRuntimeRetired: true, noClampOrImportant: true, textFirstIndex: true };
 }
 export function catalogProvenance(transferPath) {
   if (transferPath) {
