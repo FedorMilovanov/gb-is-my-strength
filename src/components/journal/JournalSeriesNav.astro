@@ -1,0 +1,37 @@
+---
+import type { JournalSeriesPart } from '@/data/journal/g3Series';
+
+interface Props {
+  title: string;
+  parts: readonly JournalSeriesPart[];
+  current: JournalSeriesPart['id'];
+}
+
+const { title, parts, current } = Astro.props;
+// Fail closed: unpublished parts are never linked, and a "series" with fewer than two
+// reachable parts is not rendered at all (no teasers for held manuscripts).
+const visible = parts.filter((part) => part.published || part.id === current);
+const headingId = `je-series-${current}`;
+---
+{visible.length >= 2 && (
+  <nav class="je-series-nav" aria-labelledby={headingId}>
+    <p class="je-series-nav__kicker" id={headingId}>{title}</p>
+    <ol class="je-series-nav__list">
+      {visible.map((part) => {
+        const isCurrent = part.id === current;
+        return (
+          <li class:list={['je-series-nav__part', { 'is-current': isCurrent }]}>
+            <span class="je-series-nav__numeral" aria-hidden="true">{part.numeral}</span>
+            <div class="je-series-nav__body">
+              <p class="je-series-nav__meta">Часть {part.numeral} · {part.years}{isCurrent && <> · <span>вы читаете</span></>}</p>
+              {isCurrent
+                ? <p class="je-series-nav__title" aria-current="page">{part.title}</p>
+                : <a class="je-series-nav__title" href={part.href}>{part.title}</a>}
+              <p class="je-series-nav__summary">{part.summary}</p>
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  </nav>
+)}

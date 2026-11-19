@@ -6,8 +6,8 @@ const { active = 'journal' } = Astro.props;
 ---
 <header class="je-masthead" aria-label="Редакционная навигация">
   <div class="je-masthead__top">
-    <a class="je-masthead__identity" href="/journal/" aria-label="Господь Бог — Сила Моя. Журнал">
-      <svg class="je-masthead__mark" viewBox="0 0 64 48" role="img" aria-label="Открытая книга">
+    <a class="je-masthead__identity" href="/journal/">
+      <svg class="je-masthead__mark" viewBox="0 0 64 48" aria-hidden="true" focusable="false">
         <path d="M4 10C15 6 26 10 32 17C38 10 49 6 60 10V39C49 35 38 38 32 44C26 38 15 35 4 39Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
         <path d="M32 17V43M9 14C17 12 24 15 28 19M55 14C47 12 40 15 36 19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
@@ -17,7 +17,13 @@ const { active = 'journal' } = Astro.props;
       </span>
     </a>
     <span class="je-masthead__descriptor">Документы · контекст · ответственный разбор</span>
-    <a class="je-masthead__home" href="/">На основной сайт <span aria-hidden="true">↗</span></a>
+    <div class="je-masthead__actions">
+      <button id="themeToggle" class="je-masthead__theme-btn" type="button" aria-label="Переключить тему" title="Переключить тему">
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"></path></svg>
+      </button>
+      <a class="je-masthead__home" href="/">На основной сайт <span aria-hidden="true">↗</span></a>
+    </div>
   </div>
   <nav class="je-masthead__nav" aria-label="Разделы издания">
     <a href="/journal/" aria-current={active === 'journal' ? 'page' : undefined}>Журнал</a>
@@ -36,22 +42,95 @@ const { active = 'journal' } = Astro.props;
   .je-masthead__series { color: #d9c39f; font: 600 10px/1.4 'Source Sans 3', sans-serif; letter-spacing: .18em; }
   .je-masthead__series span { color: #a37a36; padding: 0 4px; }
   .je-masthead__descriptor { margin-left: auto; padding-left: 28px; border-left: 1px solid #466075; max-width: 260px; color: #d5c9b8; font: italic 15px/1.4 Lora, Georgia, serif; }
+  .je-masthead__actions { display: flex; align-items: center; gap: 14px; flex: none; }
+  .je-masthead__theme-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: transparent; border: 1px solid rgba(239,230,215,.25);
+    color: #efe6d7; cursor: pointer; transition: background .18s, border-color .18s, color .18s;
+  }
+  .je-masthead__theme-btn:hover { background: rgba(239,230,215,.1); border-color: #d6ad5d; color: #f9d997; }
+  .je-masthead__theme-btn .icon-sun { display: none; }
+  .je-masthead__theme-btn .icon-moon { display: block; }
+  :global(html.dark) .je-masthead__theme-btn .icon-sun { display: block; }
+  :global(html.dark) .je-masthead__theme-btn .icon-moon { display: none; }
   .je-masthead__home { flex: none; color: #f0d9a8; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
   .je-masthead__nav { max-width: 1260px; margin: 0 auto; display: flex; gap: clamp(16px,3vw,43px); align-items: center; padding: 0 32px; border-top: 1px solid #2d4051; }
   .je-masthead__nav a { display: inline-flex; min-height: 46px; align-items: center; border-bottom: 3px solid transparent; color: #efe6d7; text-decoration: none; white-space: nowrap; font-size: 12px; font-weight: 650; letter-spacing: .12em; text-transform: uppercase; padding: 3px 0 0; }
   .je-masthead__nav a[aria-current="page"] { border-color: #d6ad5d; color: #fff; }
   .je-masthead a:focus-visible { outline: 2px solid #eacb85; outline-offset: 4px; }
   .je-masthead a:hover { color: #f9d997; }
+  /* Windows High Contrast: transparent borders become visible, so the current section must be marked explicitly. */
+  @media (forced-colors: active) {
+    .je-masthead__nav a { border-bottom-color: Canvas; }
+    .je-masthead__nav a[aria-current] { border-bottom-color: Highlight; }
+  }
   @media (max-width: 770px) {
     .je-masthead__top { padding: 14px 20px 12px; gap: 12px; }
     .je-masthead__mark { width: 37px; height: 30px; }
     .je-masthead__publication { font-size: 19px; }
     .je-masthead__descriptor, .je-masthead__home { display: none; }
-    .je-masthead__nav { padding: 0 20px; overflow-x: auto; gap: 25px; scrollbar-width: thin; }
-    .je-masthead__nav a { min-height: 43px; font-size: 11px; }
+    .je-masthead__nav {
+      padding: 0 calc(20px + env(safe-area-inset-right, 0px)) 0 calc(20px + env(safe-area-inset-left, 0px));
+      flex-wrap: wrap;
+      overflow: visible;
+      gap: 6px 20px;
+    }
+    .je-masthead__nav a { min-height: 40px; font-size: 11px; }
   }
   @media (max-width: 400px) {
+    .je-masthead__top { padding: 12px 16px 10px; }
+    .je-masthead__nav { padding: 0 16px; gap: 4px 14px; }
     .je-masthead__publication { font-size: 16px; }
     .je-masthead__series { font-size: 9px; letter-spacing: .13em; }
   }
 </style>
+<script is:inline>
+  (() => {
+    const btn = document.getElementById('themeToggle');
+    const updateThemeAria = (isDark) => {
+      const label = isDark ? 'Включить светлую тему' : 'Включить тёмную тему';
+      btn?.setAttribute('aria-label', label);
+      btn?.setAttribute('title', label);
+    };
+
+    if (btn) {
+      updateThemeAria(document.documentElement.classList.contains('dark'));
+      btn.addEventListener('click', () => {
+        const wasDark = document.documentElement.classList.contains('dark');
+        const next = wasDark ? 'light' : 'dark';
+        if (window.GBReaderPreferences && typeof window.GBReaderPreferences.setTheme === 'function') {
+          window.GBReaderPreferences.setTheme(next, { source: 'journal-masthead' });
+        } else {
+          document.documentElement.classList.toggle('dark', !wasDark);
+          document.documentElement.setAttribute('data-reader-theme', next);
+        }
+        const isDark = document.documentElement.classList.contains('dark');
+        updateThemeAria(isDark);
+        try {
+          localStorage.setItem('theme', isDark ? 'dark' : 'light');
+          const raw = localStorage.getItem('gb:reader-preferences:v1');
+          const parsed = raw ? JSON.parse(raw) : {};
+          parsed.theme = isDark ? 'dark' : 'light';
+          localStorage.setItem('gb:reader-preferences:v1', JSON.stringify(parsed));
+        } catch {}
+      });
+    }
+
+    document.addEventListener('gb:reader-preferences-change', (event) => {
+      const theme = event?.detail?.preferences?.theme;
+      if (theme) {
+        updateThemeAria(theme === 'dark');
+      }
+    });
+
+    const mastheadNav = document.querySelector('.je-masthead__nav');
+    mastheadNav?.addEventListener('focusin', (event) => {
+      if (event.target instanceof HTMLElement && mastheadNav) {
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const behavior = prefersReducedMotion ? 'auto' : 'smooth';
+        event.target.scrollIntoView({ behavior, block: 'nearest', inline: 'nearest' });
+      }
+    });
+  })();
+</script>
