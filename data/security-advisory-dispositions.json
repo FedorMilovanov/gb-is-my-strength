@@ -1,0 +1,5 @@
+{
+  "schemaVersion": 1,
+  "description": "Dated owner acceptances for npm audit advisories. Each entry is a time-boxed risk decision: a moderate/high/critical advisory listed here with a future expiresAt is accepted instead of blocking; an expired or malformed entry fails the dependency security contract until the owner re-decides. Empty list = zero accepted risk.",
+  "dispositions": []
+}
