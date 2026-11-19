@@ -149,6 +149,16 @@
     }
   }
 
+  /* Touch target for current chapter across all phone and small-tablet widths.
+     The <=960px reference lock styled the row but allowed 37px real hitboxes
+     at 390/640/768px; retain the existing SVGs and fixed bar height. */
+  @media (max-width: 60em) {
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .mobile-btoc-section {
+      min-height: 44px;
+    }
+  }
+
   /*
    * Gill's historical <=960px bar reference lock does not reach the native
    * mobile chrome at widths 961–1359px. Without a scoped bridge the current
