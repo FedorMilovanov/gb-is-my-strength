@@ -295,6 +295,17 @@
     }
   }
 
+  /* Gill desktop rail/library: the five floating glyphs are centred 5vw
+     from the right edge plus half of their 40px slot. The 44px Library FAB
+     used a global right:14px, shifting 52–80px off-axis on large screens.
+     Preserve the original book SVG, its frame, and the docked mobile owner. */
+  @media (min-width: 85em) {
+    body[data-gbs2-series="dzhon-gill"]
+      #gb-hl-fab:not(.gb-hl-fab--docked) {
+      right: calc(5vw - 2px);
+    }
+  }
+
   /* Warm dark-paper scale: paper, rail and floating actions share one family.
      Restrict to Gill; do not recolour independent article/series engines. */
   html.dark body[data-gbs2-series="dzhon-gill"] {
