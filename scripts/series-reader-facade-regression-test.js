@@ -165,6 +165,8 @@ assert.match(gillResponsiveOwner, /max-width:\s*220px/,
   'landscape mobile TOC trigger must not fill the entire header');
 assert.match(gillResponsiveOwner, /height:\s*clamp\(116px,\s*34dvh,\s*144px\)/,
   'short landscape hero must let the title into the first viewport');
+assert.match(gillResponsiveOwner, /#gb-hl-fab:not\(\.gb-hl-fab--docked\)\s*\{\s*right:\s*calc\(5vw\s*-\s*2px\);/,
+  'Gill desktop Library FAB must share the exact x-axis with five floating controls');
 assert.match(gillResponsiveOwner, /gbs-theme-corner\s*\{\s*gap:\s*8px;/,
   'Gill desktop action centres stay evenly spaced');
 assert.match(gillResponsiveOwner, /\.gb-ember-wrap\s*\{[\s\S]*?width:\s*40px;[\s\S]*?height:\s*40px;/,
