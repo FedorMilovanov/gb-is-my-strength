@@ -134,4 +134,7 @@ assert.match(tocHeadingSource, /<slot\s*\/>/, 'series rail native collapse trigg
 assert.match(seriesRailSource, /id="gbsTocToggle"/, 'series TOC collapse button remains the native controller target');
 assert.match(seriesRailSource, /aria-controls="gbsTocScroll"/, 'series TOC scroll target is preserved');
 
+/* Prevent a zero-height current chapter on short desktop windows. */
+const currentCardStyles = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/gill-series/GillSeriesImagePremium.astro'), 'utf8');
+assert.ok(currentCardStyles.includes('max-height:640px') && currentCardStyles.includes('.gbs2-rmid > .gbs2-current') && currentCardStyles.includes('flex-shrink: 0;'), 'short viewport current-card flex guard');
 console.log(`✅ series-reader-facade: ${facadeImports} consumers; canonical composition directly owned; historical implementation retired; content-layer rendering uses Astro render(entry); heart progress fail-closed; mobile Back config-owned; no-quiz Learning panel relation guarded; Learning search has persistent accessible name; ${strictFragmentSummary}`);
