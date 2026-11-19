@@ -105,7 +105,7 @@ function isolatedContract(t) {
   const directory = temporary(t);
   const names = ['scripts/journal-editorial-contract.mjs',
     ...['g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'g3ProductMetadata.ts', 'journalProductMetadata.ts', 'g3HistoryDraftMetadata.ts'].map((name) => `src/data/journal/${name}`),
-    ...['G3Dossier.astro', 'G3HistoryArticle.astro', 'G3HistoryFeature.astro', 'journalEditorial.css', 'g3History.css'].map((name) => `src/components/journal/${name}`)];
+    ...['G3Dossier.astro', 'JournalLanding.astro', 'JournalEditorialShell.astro', 'JournalMasthead.astro', 'G3HistoryArticle.astro', 'G3HistoryFeature.astro', 'journalEditorial.css', 'g3History.css'].map((name) => `src/components/journal/${name}`)];
   for (const name of names) { const p = path.join(directory, name); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.copyFileSync(path.join(root, name), p); }
   for (const name of ['migration/page-ownership.json', 'data/route-search-policy.json', 'data/search-manifest.json', 'sitemap.xml', 'feed.xml']) {
     const p = path.join(directory, name); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, '{}');
@@ -143,6 +143,23 @@ test('baseline comparison text cannot change without its pinned blob changing', 
 });
 test('default strict mode still requires the held manuscript dependencies', (t) => {
   const r = isolatedContract(t).run(['--source-only']); assert.notEqual(r.status, 0); assert.match(r.stderr, /ERR_MODULE_NOT_FOUND/); assert.match(r.stderr, /g3HistoryDraftSources/);
+});
+
+test('public-only excludes preserved unmounted held CSS, not public CSS', (t) => {
+  const f = isolatedContract(t); fs.appendFileSync(path.join(f.directory, 'src/components/journal/g3History.css'), '\n.legacy-held { color: black !important; }\n');
+  const r = f.run(); assert.equal(r.status, 0, r.stderr);
+  fs.appendFileSync(path.join(f.directory, 'src/components/journal/journalEditorial.css'), '\n.public { color: black !important; }\n');
+  const bad = f.run(); assert.notEqual(bad.status, 0); assert.match(bad.stderr, /route-local cascade/);
+});
+test('default strict mode still audits held CSS when its dependencies exist', (t) => {
+  const f = isolatedContract(t); fs.copyFileSync(path.join(root, 'src/data/journal/g3HistoryDraftSources.ts'), path.join(f.directory, 'src/data/journal/g3HistoryDraftSources.ts'));
+  fs.appendFileSync(path.join(f.directory, 'src/components/journal/g3History.css'), '\n.legacy-held { color: black !important; }\n');
+  const r = f.run(['--source-only']); assert.notEqual(r.status, 0); assert.match(r.stderr, /route-local cascade/);
+});
+test('real PROD probes use a root-relative Astro config option', () => {
+  const source = fs.readFileSync(path.join(root, 'scripts/journal-editorial-contract.mjs'), 'utf8');
+  assert.match(source, /'--config', path\.relative\(root, config\)/);
+  assert.match(source, /log\.includes\(expectedGuard\)/);
 });
 
 const proposedFeature = fs.readFileSync(path.join(root, GUARD_PATH), 'utf8');

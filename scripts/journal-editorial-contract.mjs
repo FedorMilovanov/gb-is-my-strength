@@ -108,7 +108,12 @@ for (const file of ['migration/page-ownership.json', 'data/route-search-policy.j
   assert.ok(!read(file).includes('/_review/'), `review route leaked into ${file}`);
 }
 assert.ok(!fs.existsSync(path.join(root, 'src/pages/journal/dossiers/g3/history')), 'no public history route may be created');
-const css = read('src/components/journal/journalEditorial.css') + read('src/components/journal/g3History.css');
+// Public-only preserves the baseline held stylesheet byte-for-byte; it is not
+// mounted by the public pages and is outside this presentation acceptance.
+const css = read('src/components/journal/journalEditorial.css') + (publicOnly ? '' : read('src/components/journal/g3History.css'));
+if (publicOnly) for (const name of ['G3Dossier', 'JournalLanding', 'JournalEditorialShell', 'JournalMasthead']) {
+  assert.ok(!read(`src/components/journal/${name}.astro`).includes('g3History.css'), `${name}: held CSS must not enter public presentation`);
+}
 assert.ok(!css.includes('!important'), 'route-local cascade must not rely on important patches');
 
 let literalParagraphs = 0;
@@ -260,10 +265,15 @@ function probeHeldEntrypoints() {
       fs.writeFileSync(path.join(fixture, 'src/pages/index.astro'), `---\nimport Held from ${JSON.stringify(path.join(root, `src/components/journal/${name}.astro`))};\n---\n<Held />\n`);
       const config = path.join(fixture, 'astro.config.mjs');
       fs.writeFileSync(config, `export default {root:${JSON.stringify(fixture)},srcDir:${JSON.stringify(path.join(fixture, 'src'))},publicDir:${JSON.stringify(path.join(fixture, 'empty'))},outDir:${JSON.stringify(path.join(fixture, 'output'))},cacheDir:${JSON.stringify(path.join(fixture, 'cache'))},vite:{resolve:{alias:{'@':${JSON.stringify(path.join(root, 'src'))}}}}};`);
-      const result = spawnSync(process.execPath, [path.join(root, 'scripts/astro-cli.mjs'), 'build', '--config', config], { cwd: root, encoding: 'utf8', timeout: 60000, maxBuffer: 5 * 1024 * 1024 });
+      const result = spawnSync(process.execPath, [path.join(root, 'scripts/astro-cli.mjs'), 'build', '--config', path.relative(root, config)], { cwd: root, encoding: 'utf8', timeout: 60000, maxBuffer: 5 * 1024 * 1024 });
+      const log = result.stdout + result.stderr;
+      const logDirectory = path.resolve(root, [...args].find((arg) => arg.startsWith('--output='))?.slice('--output='.length) || 'reports/g3-editorial-local-20261118');
+      fs.mkdirSync(logDirectory, { recursive: true });
+      fs.writeFileSync(path.join(logDirectory, `hold-probe-${name}.log`), log);
       assert.ifError(result.error); assert.notEqual(result.status, 0, `${name} must reject real production rendering`);
-      assert.match(result.stdout + result.stderr, /PUBLICATION_HOLD/);
-      probes.push({ entrypoint: name, actualExit: result.status, expectedNonzero: true, publicRouteCreated: false });
+      const expectedGuard = read(`src/components/journal/${name}.astro`).match(/throw new Error\('([^']+PUBLICATION_HOLD[^']+)'\)/)?.[1];
+      assert.ok(expectedGuard && log.includes(expectedGuard), `${name}: production failure must name the exact guard, not configuration/import failure: ${log}`);
+      probes.push({ entrypoint: name, actualExit: result.status, expectedNonzero: true, exactGuardMessage: expectedGuard, publicRouteCreated: false });
     } finally { fs.rmSync(fixture, { recursive: true, force: true }); }
   }
   return probes;
