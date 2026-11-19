@@ -105,6 +105,126 @@
     }
   }
 
+
+  /*
+   * Gill editorial geometry (2026-11-19).
+   * One canonical responsive owner: avoid patching compiled floating-cluster.css,
+   * preserve the fixed rail, native TTS and the original SVG controls.
+   */
+  @media (min-width: 85em) {
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] > .page-wrap {
+      /* True viewport centre, unless the real fixed rail needs 24px clearance.
+         Rail is 22vw on intermediate desktop widths and caps near 325px. */
+      margin-left: max(
+        calc((100vw - var(--gb-measure)) / 2),
+        calc(min(22vw, 325px) + 24px)
+      );
+    }
+  }
+
+  @media (max-width: 63.999em) and (orientation: landscape) and (max-height: 500px) {
+    body[data-gbs2-series="dzhon-gill"]
+      .mobile-top-slot .reader-mobile-menu-trigger {
+      /* The TOC stays a button, not a 559px empty pill. */
+      max-width: 220px;
+      margin-inline: auto;
+    }
+
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .gbs2-hero {
+      /* Preserve the original illustration, show the heading on first screen. */
+      height: clamp(116px, 34dvh, 144px);
+      aspect-ratio: auto;
+    }
+
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .gbs2-hero img {
+      height: 100%;
+      max-height: none;
+    }
+
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .mobile-bottom-bar {
+      min-height: 54px;
+      height: 54px;
+      padding-block: 3px;
+    }
+  }
+
+  /* Warm dark-paper scale: paper, rail and floating actions share one family.
+     Restrict to Gill; do not recolour independent article/series engines. */
+  html.dark body[data-gbs2-series="dzhon-gill"] {
+    --gb-gill-paper: #141312;
+    --gb-gill-rail: #1c1916;
+    --gb-gill-float: #191715;
+    background: var(--gb-gill-paper);
+  }
+
+  html.dark body[data-gbs2-series="dzhon-gill"]
+    .gbs2-world[data-gill-v16],
+  html.dark body[data-gbs2-series="dzhon-gill"]
+    .gbs2-world[data-gill-v16] .page-wrap {
+    background: var(--gb-gill-paper);
+  }
+
+  html.dark body[data-gbs2-series="dzhon-gill"]
+    .gbs2-world[data-gill-v16] > .gbs-rail {
+    background: var(--gb-gill-rail);
+  }
+
+  html.dark body[data-gbs2-series="dzhon-gill"]
+    .gbs2-world[data-gill-v16] .mobile-top-bar,
+  html.dark body[data-gbs2-series="dzhon-gill"]
+    .gbs2-world[data-gill-v16] .mobile-bottom-bar {
+    background: rgba(25, 23, 21, .96);
+  }
+
+  /* Keep only the life-year range inseparable, not the full article title. */
+  body[data-gbs2-series="dzhon-gill"]
+    [data-gill-v16] .gill-life-years {
+    white-space: nowrap;
+  }
+
+  /* A consistent readable micro-type scale, without squeezing the left rail. */
+  body[data-gbs2-series="dzhon-gill"] [data-gill-v16] .gbs2-pn {
+    font-size: 10.5px;
+    letter-spacing: .07em;
+  }
+  body[data-gbs2-series="dzhon-gill"] [data-gill-v16] .gbs2-ps,
+  body[data-gbs2-series="dzhon-gill"] [data-gill-v16] .gbs2-rprogress small,
+  body[data-gbs2-series="dzhon-gill"] [data-gill-v16] .gbs2-current-label,
+  body[data-gbs2-series="dzhon-gill"] [data-gill-v16] .gbs2-toch span:first-child {
+    font-size: 11px;
+  }
+  body[data-gbs2-series="dzhon-gill"] [data-gill-v16] .gbs2-current-label {
+    letter-spacing: .11em;
+  }
+  body[data-gbs2-series="dzhon-gill"] [data-gill-v16] .gbs2-toch span:first-child {
+    letter-spacing: .07em;
+  }
+
+  @media (max-width: 84.999em) {
+    /* Speed is a secondary setting: keep its full native 44px hitbox,
+       soften only the painted badge so TOC/reading stay visually primary. */
+    body[data-gbs2-series="dzhon-gill"] .reader-mobile-speed-badge {
+      color: var(--reader-speed-wine, #7a2e2e);
+    }
+    body[data-gbs2-series="dzhon-gill"] .reader-mobile-speed-badge::before {
+      background: color-mix(
+        in srgb,
+        var(--reader-speed-wine, #7a2e2e) 12%,
+        var(--color-surface, #fdfcf9)
+      );
+      border-color: color-mix(
+        in srgb,
+        var(--reader-speed-wine, #7a2e2e) 35%,
+        transparent
+      );
+      box-shadow: none;
+    }
+  }
+
   @media print {
     /* Terminal series navigation is reader chrome, not authored paper content.
        Keep the rule in the compiled global SeriesReader stylesheet so it stays
