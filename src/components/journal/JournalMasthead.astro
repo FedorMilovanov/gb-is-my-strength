@@ -1,6 +1,6 @@
 ---
 import { assetUrl } from '@/lib/asset-version';
-interface Props { active?: 'journal' | 'dossier'; }
+interface Props { active?: 'journal' | 'dossier' | 'articles'; }
 const { active = 'journal' } = Astro.props;
 ---
 <header class="je-masthead" aria-label="Редакционная навигация">
@@ -29,7 +29,7 @@ const { active = 'journal' } = Astro.props;
   <nav class="je-masthead__nav" aria-label="Разделы издания">
     <a href="/journal/" aria-current={active === 'journal' ? 'page' : undefined}>Журнал</a>
     <a href="/journal/#lead-dossier" aria-current={active === 'dossier' ? 'true' : undefined}>Досье и исследования</a>
-    <a href="/articles/">Богословские статьи</a>
+    <a href="/articles/" aria-current={active === 'articles' ? 'page' : undefined}>Богословские статьи</a>
     <a href="/about/">Об издании</a>
   </nav>
 </header>

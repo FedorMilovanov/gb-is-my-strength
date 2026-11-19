@@ -11,6 +11,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('node:child_process');
 const { repositoryStaticAssetPath } = require('./lib/static-public-asset');
 const ROOT = path.join(__dirname, '..');
 const REQUIRE_DIST = process.argv.includes('--require-dist');
@@ -69,10 +70,12 @@ must(chrome, '<head>', 'ArticlesPageChrome owns <head>');
 must(chrome, '<body class="articles-index-page">', 'ArticlesPageChrome owns body class');
 must(chrome, 'CollectionPage', 'ArticlesPageChrome preserves JSON-LD CollectionPage');
 must(chrome, 'SITE_CONFIG', 'ArticlesPageChrome preserves SITE_CONFIG');
-must(chrome, 'h-navbar', 'ArticlesPageChrome preserves top navigation');
-must(main, '<main id="main-content">', 'ArticlesMain preserves semantic main wrapper');
-must(main, "import SiteSectionsMenu from '@/components/article-pilots/_shared/SiteSectionsMenu.astro';", 'ArticlesMain imports canonical shared site menu');
-must(main, '<SiteSectionsMenu variant="plain" current="articles" />', 'ArticlesMain mounts canonical mobile/site nav projection');
+must(page, '<JournalEditorialShell', 'Catalog reuses the selected edition shell');
+must(page, 'kind="articles"', 'Catalog selects its own active edition section');
+must(chrome, '<JournalFontPreloads />', 'Catalog reuses the selected font hint owner');
+must(main, '<main id="main-content" tabindex="-1">', 'ArticlesMain preserves native-focus semantic main');
+mustNot(main, '<SiteSectionsMenu', 'competing legacy menu beside selected masthead');
+must(page, "mobileChromeFor('/articles/')", 'Catalog preserves mobile registry authority');
 must(siteSectionsMenu, "class:list={['h-mobile-nav'", 'canonical shared menu preserves h-mobile-nav visual class');
 must(siteSectionsMenu, 'id="hMobileNav"', 'canonical shared menu preserves hMobileNav surface identity');
 must(siteSectionsMenu, 'data-gb-site-menu-runtime="canonical"', 'canonical shared menu declares single runtime ownership');
@@ -85,8 +88,9 @@ for (const comp of ['ArticlesHeroSection','ArticlesLibrarySection','ArticlesRefu
 mustNot(main, 'ArticlesPublicationsSection', 'retired hand-authored publications owner');
 mustNot(main, '../../../data/series.json', 'second catalog projection through series.json');
 must(footer, 'gb-accuracy-block', 'ArticlesPageFooter preserves feedback block');
-must(footer, 'h-scroll-top', 'ArticlesPageFooter preserves scroll-top control');
-must(footer, 'site.js', 'ArticlesPageFooter preserves runtime script');
+must(footer, 'href="#main-content"', 'ArticlesPageFooter preserves a no-JS native return to top');
+mustNot(footer, 'js/site.js', 'retired legacy catalog interaction owner');
+must(footer, 'js/sw-register.js?v=', 'ArticlesPageFooter preserves versioned SW registration');
 
 for (const [content, marker, label] of [
   [hero, 'h-hero-title', 'ArticlesHeroSection marker: h-hero-title'],
@@ -161,7 +165,7 @@ if (REQUIRE_DIST) {
     bad('dist /articles/ missing; run production-like build before --require-dist audit');
   } else {
     const dist = read('dist/articles/index.html');
-    for (const marker of ['articles-index-page', 'home-v20', 'h-hero-title', 'h-article-card', 'h-article-thumb', 'gb-accuracy-block', 'data-catalog-role=', 'h-mobile-nav', 'data-gb-site-menu-runtime="canonical"']) {
+    for (const marker of ['articles-index-page', 'home-v20', 'h-hero-title', 'articles-entry', 'h-article-thumb', 'gb-accuracy-block', 'data-catalog-role=', 'je-masthead', 'mobileChromePage', 'data-journal-theme']) {
       must(dist, marker, `dist /articles/ marker: ${marker}`);
     }
     mustNot(dist, 'astro-card-grid', 'dist /articles/ generic regression marker absent');
@@ -182,6 +186,12 @@ if (REQUIRE_DIST) {
 } else {
   console.log('ℹ️ dist /articles/ assertions skipped in source mode; use --require-dist after production-like build');
 }
+
+// Owner-approved presentation migration strengthens the existing gate: parse
+// the no-JS output and fail on competing owners, text/roles/membership or SEO.
+const editorial = spawnSync(process.execPath, ['scripts/articles-editorial-contract.mjs', ...(REQUIRE_DIST ? [] : ['--source-only'])], { cwd: ROOT, encoding: 'utf8' });
+if (editorial.status === 0) ok('selected edition source / SSR ownership contract passed');
+else bad(`selected edition contract failed: ${editorial.stderr || editorial.stdout || editorial.error}`);
 
 console.log('\nARTICLES VISUAL PARITY AUDIT');
 if (problems.length) { console.log(`❌ ${problems.length} problem(s).`); process.exit(1); }

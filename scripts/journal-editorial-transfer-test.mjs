@@ -38,18 +38,18 @@ function fixture(t, phase = 'applied') {
   return { target, kit, manifest, manifestPath, write, save, protectedPath, excludedPath, verify: () => verifyTransfer({ manifestPath, target, phase }) };
 }
 
-test('public transfer is exactly20 files, including approved SEO but no held/shared owners', () => {
-  assert.equal(TRANSFER_FILES.length, 20);
-  assert.equal(new Set(TRANSFER_FILES).size, 20);
+test('public transfer is exactly33 files, including approved SEO but no held/shared owners', () => {
+  assert.equal(TRANSFER_FILES.length, 33);
+  assert.equal(new Set(TRANSFER_FILES).size, 33);
   assert.ok(TRANSFER_FILES.every((name) => !/G3History|g3History|package|^css\/|^js\/|^fonts\/|^public\/|^migration\//.test(name)));
 });
 test('base verification accepts exact baseline bytes and writes nothing', (t) => {
   const f = fixture(t, 'base'), before = fs.readFileSync(f.manifestPath);
-  assert.equal(f.verify().checked, 22); assert.equal(f.verify().writes, 0);
+  assert.equal(f.verify().checked, 35); assert.equal(f.verify().writes, 0);
   assert.deepEqual(fs.readFileSync(f.manifestPath), before);
 });
 test('applied verification accepts exact allowlisted bytes', (t) => {
-  assert.equal(fixture(t).verify().transferred, 20);
+  assert.equal(fixture(t).verify().transferred, 33);
 });
 test('selected-file drift fails closed', (t) => {
   const f = fixture(t); f.write(TRANSFER_FILES[0], 'wrong\n');
@@ -197,7 +197,7 @@ try {
 test('pinned Git-object export contains only the allowlist and refuses overwrite', { skip: exportSkip }, (t) => {
   const out = path.join(temporary(t), 'export');
   const result = buildTransfer({ repo: root, base, source: head, out });
-  assert.equal(result.files, 20); assert.ok(result.preserved > 1000);
+  assert.equal(result.files, 33); assert.ok(result.preserved > 1000);
   const patch = fs.readFileSync(path.join(out, 'public-editorial.patch'), 'utf8');
   const names = [...patch.matchAll(/^diff --git a\/(\S+) b\/\1$/gm)].map((match) => match[1]);
   assert.deepEqual(names.sort(), [...TRANSFER_FILES].sort());
