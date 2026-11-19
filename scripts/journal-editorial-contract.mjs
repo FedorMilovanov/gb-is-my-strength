@@ -175,8 +175,13 @@ if (!process.argv.includes('--source-only')) {
       // Agent1's literal source→compressed-DOM word-boundary witness, adapted to
       // selected Agent8 markup. The existing baseline factual-parity gate stays.
       const words = (value) => value.replace(/\s+/gu, ' ').trim();
+      // Classify literals BEFORE sourceDoc projects formatNumber expressions.
+      // Dynamic formatted currency is covered by the exact values/baseline gate,
+      // not compared as an ungrouped literal against real Intl-grouped numbers.
+      const literalSource = parse(current.replace(/\{['"] ['"]\}/g, ' '));
+      for (const value of values) assert.ok(normalize(text(byId(doc, 'finance'))).includes(String(value)), `Exact finance projection missing: ${value}`);
       for (const id of factualModules) {
-        const expected = all(byId(after, id), (node) => node.tagName === 'p' && !hasClass(node, 'source-note-paragraph'))
+        const expected = all(byId(literalSource, id), (node) => node.tagName === 'p' && !hasClass(node, 'source-note-paragraph'))
           .map(text).filter((value) => !/[{}]/.test(value)).map(words);
         const rendered = all(byId(doc, id), (node) => node.tagName === 'p').map((node) => words(text(node)));
         for (const paragraph of expected) {
