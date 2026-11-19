@@ -7,6 +7,8 @@ on:
       - '.github/workflows/content-authoring-publication.yml'
       - 'scripts/content-authoring-publication-contract.mjs'
       - 'scripts/content-authoring-publication-contract-test.mjs'
+      - 'scripts/series-membership-contract.mjs'
+      - 'scripts/series-membership-contract-test.mjs'
       - 'data/series.json'
       - 'src/content/**'
       - 'src/pages/**'
@@ -16,6 +18,8 @@ on:
       - '.github/workflows/content-authoring-publication.yml'
       - 'scripts/content-authoring-publication-contract.mjs'
       - 'scripts/content-authoring-publication-contract-test.mjs'
+      - 'scripts/series-membership-contract.mjs'
+      - 'scripts/series-membership-contract-test.mjs'
       - 'data/series.json'
       - 'src/content/**'
       - 'src/pages/**'
@@ -49,6 +53,12 @@ jobs:
 
       - name: Enforce publication admission contract
         run: node scripts/content-authoring-publication-contract.mjs
+
+      - name: Test series membership contract
+        run: node scripts/series-membership-contract-test.mjs
+
+      - name: Enforce series membership contract
+        run: node scripts/series-membership-contract.mjs
 
       - name: Ensure validation is read-only
         if: always()
