@@ -153,6 +153,8 @@ assert.match(gillResponsiveOwner, /@media \(min-width: 40em\) and \(max-width: 8
   'tablet Gill TOC must stay bounded before the desktop rail breakpoint');
 assert.match(gillResponsiveOwner, /height:\s*min\(38dvh,\s*320px\)/,
   'ordinary landscape tablet hero must not dominate the first viewport');
+assert.match(gillResponsiveOwner, /@media \(max-width: 60em\)[\s\S]*?mobile-btoc-section\s*\{\s*min-height:\s*44px;/,
+  'Gill phone and small-tablet current chapter 44px touch target is mandatory');
 assert.match(gillResponsiveOwner, /@media \(min-width: 60\.0625em\) and \(max-width: 84\.999em\)/,
   'mid-width Gill bar must have a scoped bridge between 960px and 1360px');
 assert.match(gillResponsiveOwner, /mobile-btoc-section\s*\{[\s\S]*?appearance:\s*none;[\s\S]*?min-height:\s*44px;/,
