@@ -126,9 +126,10 @@ test('CLI fails closed on unknown, duplicate, missing and malformed options', ()
   for (const argv of [['--source-onyl'], ['--output'], ['--output='], ['--output=a', '--output=b'], ['output=x'], ['--source-only=true']]) assert.throws(() => parseCatalogArguments(argv, ['output'], ['source-only']));
 });
 
-test('actual PDF pagination logic rejects separated or truncated title/abstracts without requiring a PDF dependency', () => {
+test('actual PDF pagination logic rejects split entries and orphan section headings without requiring a PDF dependency', () => {
   const result = spawnSync('python3', [fileURLToPath(new URL('./lib/articles-print-pdf.py', import.meta.url)), '--self-test'], { encoding: 'utf8', env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } });
-  assert.equal(result.status, 0, result.stderr || result.error?.message); assert.match(result.stdout, /PASS actual-PDF pagination logic/);
+  assert.equal(result.status, 0, result.stderr || result.error?.message);
+  for (const witness of ['PASS actual-PDF pagination logic', 'section-heading/first-entry negatives', 'repeated metadata', 'measured paper-fit scaling']) assert.ok(result.stdout.includes(witness), `Missing PDF regression witness: ${witness}`);
 });
 
 test('functional guard mode is explicitly unattributed, not fabricated Gitless integration evidence', () => {

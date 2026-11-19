@@ -116,7 +116,8 @@ body.articles-index-page { margin: 0; }
   .journal-edition--articles .h-hero-desc { font-size: 10pt; line-height: 1.6; }
   .journal-edition--articles :is(.articles-hero-links, .articles-topics, .h-article-thumb, .gb-accuracy-block, .h-footer) { display: none; }
   .journal-edition--articles .h-section { padding-block: 12pt; }
-  .journal-edition--articles .articles-section-heading { margin-bottom: 10pt; }
+  /* A flex opening may orphan its title before the first atomic entry. */
+  .journal-edition--articles .articles-section-heading { display: block; margin-bottom: 10pt; break-after: avoid; }
   .journal-edition--articles .articles-section-heading h2 { font-size: 21pt; }
   .journal-edition--articles .articles-topic-heading { padding-block: 6pt 10pt; break-after: avoid; }
   .journal-edition--articles .articles-topic-heading h3 { font-size: 17pt; }
