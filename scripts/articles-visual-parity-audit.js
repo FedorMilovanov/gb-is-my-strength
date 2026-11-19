@@ -103,9 +103,9 @@ for (const [content, marker, label] of [
   [library, 'id="publikacii"', 'ArticlesLibrarySection preserves publications anchor'],
   [library, 'data-catalog-route={item.url}', 'ArticlesLibrarySection renders canonical article routes'],
   [library, 'data-catalog-series={item.url}', 'ArticlesLibrarySection renders canonical series routes'],
-  [library, 'item.image &&', 'ArticlesLibrarySection projects manifest cover presence'],
-  [library, 'class="h-article-thumb"', 'ArticlesLibrarySection preserves premium thumbnail shell'],
-  [library, 'src={item.image}', 'ArticlesLibrarySection projects canonical cover path'],
+  [refutations, 'class="h-article-thumb"', 'Curated recommendation retains its own picture shell'],
+  [refutations, '<picture>', 'Curated recommendation retains source-owned modern media'],
+  [refutations, 'searchManifest.items', 'Curated repeat also requires manifest publication membership'],
   [library, 'h-article-list--grid', 'ArticlesLibrarySection preserves premium grid classes'],
   [library, 'author?: string;', 'ArticlesLibrarySection consumes structured author authority'],
   [library, 'translator?: string;', 'ArticlesLibrarySection keeps translator authority distinct'],
@@ -120,6 +120,11 @@ for (const [content, marker, label] of [
   [endBlock, 'Soli Deo Gloria', 'ArticlesArticleEndBlock marker: SDG'],
 ]) must(content, marker, label);
 
+// Owner7009140446: the exhaustive index is text-first, not90 OG downloads.
+// The semantic SSR contract below additionally locates every image in its owner.
+for (const tag of ['<img', '<picture', '<source']) mustNot(library, tag, 'OG media in exhaustive index: ' + tag);
+must(library, "includes('PUBLICATION_HOLD')", 'Explicit HOLD veto in catalog projection');
+must(refutations, '!held(entry)', 'Curated repeat preserves explicit HOLD veto');
 mustNot(library, "item.editor ? `Редактор: ${item.editor}` : 'Господь Бог — Сила Моя'", 'retired editor-only attribution fallback');
 mustNot(library, 'editor = author', 'catalog must never synthesize editor from author');
 mustNot(library, 'editor: author', 'catalog must never copy author into editor authority');
@@ -140,9 +145,11 @@ for (const content of [page, chrome, main, footer, library, refutations, hero, e
 }
 
 const productionRoutes = pageOwnership.routes || {};
+const held = (record) => ['status', 'publicationStatus', 'publicationGate'].some((key) => record?.[key] === 'PUBLICATION_HOLD');
 const projected = (searchManifest.items || []).filter((item) => {
   if (!['article', 'series'].includes(item.type)) return false;
-  return productionRoutes[publicRoute(item.url)]?.status === 'production-dist';
+  const owner = productionRoutes[publicRoute(item.url)];
+  return owner?.status === 'production-dist' && !held(item) && !held(owner);
 });
 const projectedUrls = projected.map((item) => String(item.url || ''));
 if (new Set(projectedUrls).size === projectedUrls.length) ok(`derived catalog routes are unique: ${projectedUrls.length}`);
@@ -180,8 +187,9 @@ if (REQUIRE_DIST) {
       ok(`dist catalog route set exactly matches projected authority: ${renderedCatalogUnique.length}/${projectedUnique.length}`);
     }
     const renderedThumbs = (dist.match(/class=["'][^"']*\bh-article-thumb\b[^"']*["']/g) || []).length;
-    if (renderedThumbs >= renderedCatalogUrls.length) ok(`dist thumbnail shells cover every catalog entry: ${renderedThumbs} shells / ${renderedCatalogUrls.length} catalog entries`);
-    else bad(`dist thumbnail shell count ${renderedThumbs} is below rendered catalog entry count ${renderedCatalogUrls.length}`);
+    const curatedPictures = projected.some((item) => item.type === 'article' && item.url === '/articles/kod-da-vinchi/') ? 1 : 0;
+    if (renderedThumbs === curatedPictures) ok(`dist image budget: ${renderedThumbs} curated picture / ${renderedCatalogUrls.length} text-first published entries`);
+    else bad(`dist picture budget changed: ${renderedThumbs} shells; expected ${curatedPictures} curated-only`);
   }
 } else {
   console.log('ℹ️ dist /articles/ assertions skipped in source mode; use --require-dist after production-like build');
@@ -195,4 +203,4 @@ else bad(`selected edition contract failed: ${editorial.stderr || editorial.stdo
 
 console.log('\nARTICLES VISUAL PARITY AUDIT');
 if (problems.length) { console.log(`❌ ${problems.length} problem(s).`); process.exit(1); }
-ok('/articles/ catalog is native Astro, authority-derived, role-aware, media-complete and visual-parity guarded');
+ok('/articles/ is native Astro, authority-derived, role-aware and text-first; original cover authorities preserved');
