@@ -1,7 +1,7 @@
-# Agent 6db558d0 — W1 no-JS Back: root-cause анализ + transfer-gap inventory
+# Agent №10 (arena `6db558d0`) — W1 no-JS Back: root-cause анализ + transfer-gap inventory
 
 **Дата:** 2026-11-19 · **Режим:** read-only диагностика, без mutation чужих веток, canonical и main
-**Ветка агента:** `arena/6db558d0-gb-is-my-strength` (base `main@9edef94e`)
+**Агент:** **№10** (назначение владельца 2026-11-19) · **Ветка:** `arena/6db558d0-gb-is-my-strength` (base `main@9edef94e`)
 **Объект:** exact `36e69c4d822f752d4f99914a55a6de798f7164e3` (ветка №8), production-like `dist`, собранный локально
 **Статус:** SUPPORT ONLY. Ничего не пушилось в чужие ветки; все патчи — только в одноразовом `/tmp`-worktree
 
