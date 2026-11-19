@@ -50,4 +50,6 @@ assert.match(source, /setAttribute\('inert', ''\)/, 'closed modal is inert');
 assert.match(source, /gb-hl-quote.*is-collapsed|is-collapsed/, 'long text collapses');
 const css = fs.readFileSync(path.resolve(__dirname, '..', 'css/highlights-runtime.css'), 'utf8');
 assert.match(css, /prefers-reduced-motion/, 'reduced-motion users do not get forced animation');
+assert.match(css, /#gb-hl-fab-count\s*\{[^}]*display:\s*none;/, 'library count dot must stay visually hidden');
+assert.match(source, /fab\.setAttribute\('aria-label', 'Моя библиотека — сохранено ' \+ all\(\)\.length\)/, 'accessible library total must stay available');
 console.log('✅ Unified reader library helpers, legacy storage, ARIA and dedupe regression passed');
