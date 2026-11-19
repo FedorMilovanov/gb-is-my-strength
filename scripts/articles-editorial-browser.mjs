@@ -9,6 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { chromium } from 'playwright';
 import { parse } from 'parse5';
@@ -16,7 +17,7 @@ import { assertCatalogImageBudget, attribute, catalogProvenance, descendants, in
 const require = createRequire(import.meta.url);
 const { monitorRuntime } = require('./lib/browser-runtime-noise.js');
 const root = fileURLToPath(new URL('../', import.meta.url));
-const args = parseCatalogArguments(process.argv.slice(2), ['origin', 'output', 'axe', 'transfer', 'baseline', 'development', 'suite']);
+const args = parseCatalogArguments(process.argv.slice(2), ['origin', 'output', 'axe', 'transfer', 'baseline', 'development', 'suite', 'pdf-python']);
 if (args.development) assert.ok(['true', 'false'].includes(args.development), 'Use --development=true|false');
 const origin = args.origin || 'http://127.0.0.1:4173', development = args.development === 'true', suite = args.suite || 'full';
 assert.ok(['full', 'responsive', 'keyboard', 'forced-colors', 'text', 'interactions', 'print'].includes(suite));
@@ -199,8 +200,17 @@ try {
  }
  if (selected('print')) for (const paper of ['A4', 'Letter']) for (const theme of ['light', 'dark']) for (const javaScriptEnabled of [true, false]) {
   const context = await contextFor(1440, theme, { javaScriptEnabled }), page = await context.newPage();
-  try { await run(report.printCases, { paper, theme, javaScriptEnabled }, async (item) => { await load(page); await page.emulateMedia({ media: 'print' }); await page.evaluate(() => document.fonts.ready); item.dom = await page.evaluate(() => ({ heading: document.querySelector('h1').textContent, sourceTitles: [...document.querySelectorAll('[data-catalog-route] .h-article-title,[data-catalog-series] .h-article-title')].map((e) => e.textContent), screenOnlyLabels: ['Все материалы ↓', 'Поиск по сайту…', 'Открыть поиск по сайту'] }));
+  try { await run(report.printCases, { paper, theme, javaScriptEnabled }, async (item) => { await load(page); await page.emulateMedia({ media: 'print' }); await page.evaluate(() => document.fonts.ready); item.dom = await page.evaluate(() => ({ heading: document.querySelector('h1').textContent, sourceTitles: [...document.querySelectorAll('[data-catalog-route] .h-article-title,[data-catalog-series] .h-article-title')].map((e) => e.textContent), entries: [...document.querySelectorAll('[data-catalog-route],[data-catalog-series]')].map((e) => ({ url: e.getAttribute('href'), title: e.querySelector('.h-article-title').textContent, summary: e.querySelector('.h-article-abstract')?.textContent || '' })), screenOnlyLabels: ['Все материалы ↓', 'Поиск по сайту…', 'Открыть поиск по сайту'] }));
     const name = `catalog-${paper}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}.pdf`; await page.pdf({ path: path.join(out, 'print', name), format: paper, printBackground: true, displayHeaderFooter: false, margin: { top: '14mm', right: '14mm', bottom: '14mm', left: '14mm' } }); item.pdf = `print/${name}`; item.bytes = fs.statSync(path.join(out, item.pdf)).size; assert.ok(item.bytes > 10000); }); } finally { await context.close(); }
+ }
+ if (selected('print')) {
+  // Generation is not pagination acceptance: read every actual emitted PDF.
+  const capture = path.join(out, 'print', 'capture.json'), analysis = path.join(out, 'print', 'pagination.json');
+  fs.writeFileSync(capture, JSON.stringify({ ...provenance, cases: report.printCases.map((item) => ({ ...item, pdf: item.pdf ? path.join(out, item.pdf) : '' })) }, null, 2) + '\n', { flag: 'wx' });
+  const result = spawnSync(args['pdf-python'] || process.env.JOURNAL_PDF_PYTHON || 'python3', [path.join(root, 'scripts/lib/articles-print-pdf.py'), '--capture', capture, '--output', analysis], { cwd: root, encoding: 'utf8', timeout: 120000, maxBuffer: 4 * 1024 * 1024, env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } });
+  fs.writeFileSync(path.join(out, 'print', 'analysis.log'), (result.stdout || '') + (result.stderr || '') + (result.error?.stack || ''), { flag: 'wx' });
+  report.printAnalysis = { exit: result.status, error: result.error?.message, analysis: fs.existsSync(analysis) ? JSON.parse(fs.readFileSync(analysis, 'utf8')) : null };
+  if (result.status !== 0 || !report.printAnalysis.analysis || report.printAnalysis.analysis.problems.length) report.problems.push({ mode: 'actual-catalog-pdf', failure: `Actual PDF text/pagination checker failed (exit ${result.status}); see print/analysis.log and print/pagination.json` });
  }
 } finally { await browser.close(); fs.writeFileSync(path.join(out, 'report.json'), JSON.stringify(report, null, 2) + '\n'); }
 assert.deepEqual(report.problems, []);

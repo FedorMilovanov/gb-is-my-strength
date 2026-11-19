@@ -38,18 +38,19 @@ function fixture(t, phase = 'applied') {
   return { target, kit, manifest, manifestPath, write, save, protectedPath, excludedPath, verify: () => verifyTransfer({ manifestPath, target, phase }) };
 }
 
-test('public transfer is exactly33 files, including approved SEO but no held/shared owners', () => {
-  assert.equal(TRANSFER_FILES.length, 33);
-  assert.equal(new Set(TRANSFER_FILES).size, 33);
+test('public transfer is exactly35 files, including catalog PDF/native diagnostics but no held/shared owners', () => {
+  assert.equal(TRANSFER_FILES.length, 35);
+  assert.equal(new Set(TRANSFER_FILES).size, 35);
+  for (const name of ['scripts/lib/articles-print-pdf.py', 'scripts/articles-editorial-native-diagnostic.mjs']) assert.ok(TRANSFER_FILES.includes(name));
   assert.ok(TRANSFER_FILES.every((name) => !/G3History|g3History|package|^css\/|^js\/|^fonts\/|^public\/|^migration\//.test(name)));
 });
 test('base verification accepts exact baseline bytes and writes nothing', (t) => {
   const f = fixture(t, 'base'), before = fs.readFileSync(f.manifestPath);
-  assert.equal(f.verify().checked, 35); assert.equal(f.verify().writes, 0);
+  assert.equal(f.verify().checked, 37); assert.equal(f.verify().writes, 0);
   assert.deepEqual(fs.readFileSync(f.manifestPath), before);
 });
 test('applied verification accepts exact allowlisted bytes', (t) => {
-  assert.equal(fixture(t).verify().transferred, 33);
+  assert.equal(fixture(t).verify().transferred, 35);
 });
 test('selected-file drift fails closed', (t) => {
   const f = fixture(t); f.write(TRANSFER_FILES[0], 'wrong\n');
@@ -79,6 +80,12 @@ test('missing selected file fails closed', (t) => {
   const f = fixture(t); fs.unlinkSync(path.join(f.target, TRANSFER_FILES[0]));
   assert.throws(f.verify, /Missing pinned file/);
 });
+for (const name of ['scripts/lib/articles-print-pdf.py', 'scripts/articles-editorial-native-diagnostic.mjs']) {
+  test(`missing catalog diagnostic dependency fails closed: ${name}`, (t) => {
+    const f = fixture(t); fs.unlinkSync(path.join(f.target, name));
+    assert.throws(f.verify, /Missing pinned file/);
+  });
+}
 test('unexpected symlink cannot substitute for a transferred regular file', (t) => {
   const f = fixture(t), file = path.join(f.target, TRANSFER_FILES[0]);
   fs.unlinkSync(file); fs.symlinkSync(f.protectedPath, file);
@@ -197,7 +204,7 @@ try {
 test('pinned Git-object export contains only the allowlist and refuses overwrite', { skip: exportSkip }, (t) => {
   const out = path.join(temporary(t), 'export');
   const result = buildTransfer({ repo: root, base, source: head, out });
-  assert.equal(result.files, 33); assert.ok(result.preserved > 1000);
+  assert.equal(result.files, 35); assert.ok(result.preserved > 1000);
   const patch = fs.readFileSync(path.join(out, 'public-editorial.patch'), 'utf8');
   const names = [...patch.matchAll(/^diff --git a\/(\S+) b\/\1$/gm)].map((match) => match[1]);
   assert.deepEqual(names.sort(), [...TRANSFER_FILES].sort());

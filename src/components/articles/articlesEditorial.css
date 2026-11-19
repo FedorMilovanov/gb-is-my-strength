@@ -122,8 +122,10 @@ body.articles-index-page { margin: 0; }
   .journal-edition--articles .articles-topic-heading h3 { font-size: 17pt; }
   .journal-edition--articles .h-article-list { display: block; }
   .journal-edition--articles .h-article-list > li { break-inside: avoid; }
-  .journal-edition--articles .articles-entry, .journal-edition--articles .h-article-body { display: block; height: auto; }
-  .journal-edition--articles .articles-entry { padding-block: 9pt; break-inside: avoid; }
+  .journal-edition--articles .h-article-body { display: block; height: auto; }
+  /* Chromium can split a block link's first series abstract despite avoid.
+     Keep each short catalog entry atomic on paper, without forcing a new page. */
+  .journal-edition--articles .articles-entry { display: inline-block; width: 100%; height: auto; padding-block: 9pt; break-inside: avoid; }
   .journal-edition--articles .articles-entry::after { content: none; }
   .journal-edition--articles .h-article-title, .journal-edition--articles .articles-featured .h-article-title { font-size: 13pt; line-height: 1.35; break-after: avoid; }
   .journal-edition--articles .h-article-meta { margin-block: 5pt; font-size: 8pt; }
