@@ -627,6 +627,7 @@ try {
               clip: { left: r.left + nav.clientLeft, right: r.left + nav.clientLeft + nav.clientWidth,
                 top: r.top + nav.clientTop, bottom: r.top + nav.clientTop + nav.clientHeight },
               scrollbar: nav.offsetWidth - nav.clientWidth, scrollTop: nav.scrollTop, y: scrollY,
+              usableViewportWidth: document.documentElement.clientWidth,
               outline: Math.max(0, (parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0)),
               outlineWidth: parseFloat(style.outlineWidth) || 0, outlineOffset: parseFloat(style.outlineOffset) || 0,
               outlineStyle: style.outlineStyle,
@@ -649,8 +650,8 @@ try {
           const inset = Math.max(0, -state.outlineOffset);
           assert.ok(state.textRects.every((text) => text.left >= r.left + inset - 1 && text.right <= r.right - inset + 1
             && text.top >= r.top + inset - 1 && text.bottom <= r.bottom - inset + 1), 'an inset summary indicator must not cover text');
-          assert.ok(r.left - o >= -1 && r.right + o <= width + 1 && r.top - o >= state.headerBottom - 1 && r.bottom + o <= height + 1,
-            `focus outline outside viewport / under visible shared header: ${JSON.stringify(state)}`);
+          assert.ok(r.left - o >= -1 && r.right + o <= state.usableViewportWidth + 1 && r.top - o >= state.headerBottom - 1 && r.bottom + o <= height + 1,
+            `focus outline outside usable viewport / under visible shared header: ${JSON.stringify(state)}`);
           if (expected !== null) {
             assert.ok(r.left - o >= c.left - 1 && r.right + o <= c.right + 1 && r.top - o >= c.top - 1 && r.bottom + o <= c.bottom + 1,
               `compact nav clips the focus outline: ${JSON.stringify(state)}`);
@@ -706,7 +707,13 @@ try {
           item.nativeTarget = await page.locator(links.at(-1)).evaluate((el) => ({ id: el.id, y: el.getBoundingClientRect().top }));
           assert.ok(item.nativeTarget.y >= 25 && item.nativeTarget.y < height - 25, 'last native target must remain on screen');
           item.layout = await inspect(page);
-          assert.equal(item.layout.documentOverflow, 0); assert.deepEqual(item.layout.overflow, []);
+          // A classic root scrollbar makes scrollWidth - innerWidth = -15px.
+          // Compare against the actual usable viewport; never hide positive
+          // overflow by calling the legitimate gutter a product failure.
+          item.viewport = await page.evaluate(() => ({ outerWidth: innerWidth,
+            usableWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth }));
+          assert.equal(item.viewport.scrollWidth, item.viewport.usableWidth);
+          assert.deepEqual(item.layout.overflow, []);
           assert.deepEqual(item.runtime, []);
           console.log(`PASS ${name}`);
         } catch (error) {
