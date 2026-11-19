@@ -1,13 +1,15 @@
-# G3 / Journal — независимая проверка перемотки и no-JS Back (19.11.2026)
+# G3 / Journal — Агент 11: независимая проверка перемотки и no-JS Back (19.11.2026)
+
+**Агент 11 (№11)** — независимый проверяющий, номер назначен владельцем 19.11.2026. Arena-ветка `arena/29aa651f-gb-is-my-strength`, PR #2347 (Draft, не сливать).
 
 ```md
 Mode: LANE (read-only verification, docs-only evidence)
-Lane / owner: Независимый проверяющий, Arena-сессия `arena/29aa651f-gb-is-my-strength` (новый агент, без роли в Product)
+Lane / owner: Агент 11 (№11) — независимый проверяющий, Arena-сессия `arena/29aa651f-gb-is-my-strength`, PR #2347; без роли в Product
 Purpose and bounded scope: (1) GO/NO-GO на перемотку canonical `lane/journal-editorial-premium-20261118` до выбранного №8;
                            (2) root cause открытого W1-блокера «no-JS hash → статья → Back»
 Base / rollback SHA: main 9edef94ece08012223c1364bec7ddcd561cf5713
 Anchors: canonical #2338 b2ae614730b0c2e164d3b07453797074253d9698 · №8 36e69c4d822f752d4f99914a55a6de798f7164e3 · №1 8bccc701de78f53b1546672e0104c4b652745702
-Allowed files: только этот отчёт и docs/reviews/g3-verifier-2026-11-19/** (lab + raw results)
+Allowed files: только этот отчёт и docs/reviews/g3-agent11-verifier-2026-11-19/** (lab + raw results)
 Adjacent active work / overlap: #2338, #2339, #2340, #2341, #2343, #2345 — не изменялись; Product/shared/scripts/CI/Research не изменялись
 Source of truth: exact SHA выше, собственные сборки
 ```
@@ -105,16 +107,16 @@ Draft #2338 при этом не сливается и не публикуетс
 ```sh
 npm install --prefix /tmp/arena-browser --no-audit --no-fund @sparticuz/chromium@153.0.0 playwright@1.64.1 axe-core@4
 # распаковать chromium (Chromium.executablePath()) и bin/al2023.tar.br → /tmp/arena-browser/libs
-cp docs/reviews/g3-verifier-2026-11-19/lab/*.mjs /tmp/arena-browser/   # чтобы резолвился playwright
+cp docs/reviews/g3-agent11-verifier-2026-11-19/lab/*.mjs /tmp/arena-browser/   # чтобы резолвился playwright
 git worktree add --detach /tmp/w8 36e69c4d822f752d4f99914a55a6de798f7164e3   # npm ci + build + pagefind
 cd /tmp/arena-browser && LD_LIBRARY_PATH=/tmp/arena-browser/libs/lib node back-lab.mjs /tmp/w8/dist 8791 /tmp/back.json
 python3 make-variants.py /tmp/w8/dist /tmp/variants
 VARIANT=/tmp/variants/v9-synthetic-smooth.html LD_LIBRARY_PATH=/tmp/arena-browser/libs/lib node variant-lab.mjs /tmp/w8/dist 8792 /tmp/v9.json
 ```
 
-Переменные: `CHROMIUM_PATH` (по умолчанию `/tmp/chromium`), `AXE_PATH`, `DIST`, `REDUCED=1`. Сырые результаты лежат в `docs/reviews/g3-verifier-2026-11-19/results/`.
+Переменные: `CHROMIUM_PATH` (по умолчанию `/tmp/chromium`), `AXE_PATH`, `DIST`, `REDUCED=1`. Сырые результаты лежат в `docs/reviews/g3-agent11-verifier-2026-11-19/results/`.
 
-## 5. Что могу делать дальше (по заданию MAX)
+## 5. Что Агент 11 может делать дальше (по заданию MAX)
 
 - Проверить на точном SHA после перемотки: CI #2338 и паритет `lane` с `36e69c4`.
 - Независимо принять следующий SHA №8 (например, вариант 2 выше): одна матрица, один GO/NO-GO.
