@@ -86,7 +86,10 @@ try {
       const response = await load(page); item.projection = inspectCatalogHtml(response.html, { manifest, ownership, baselineHtml }); item.fromServiceWorker = response.fromServiceWorker; item.liveProjection = inspectCatalogHtml(await page.content(), { manifest, ownership, baselineHtml }); item.geometry = await assertGeometry(page);
       item.coldFonts = await page.evaluate(() => performance.getEntriesByType('resource').filter((e) => /\.woff2(?:\?|$)/.test(e.name)).map((e) => ({ url: e.name, bytes: e.encodedBodySize, duration: e.duration })));
       item.cls = await page.evaluate(() => window.__catalogCLS ?? null); item.layoutShifts = await page.evaluate(() => window.__catalogShiftEntries ?? []); item.themeActual = await page.locator('html').getAttribute('data-reader-theme');
-      if (javaScriptEnabled) assert.equal(item.themeActual, theme);
+      if (javaScriptEnabled) {
+        assert.equal(item.themeActual, theme);
+        assert.ok(Number.isFinite(item.cls) && item.cls <= .01, `Cold catalog CLS exceeds 0.01: ${item.cls}`);
+      }
       await page.screenshot({ path: path.join(out, 'screens', `opening-${width}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}.png`) });
       item.indexImageCount = await page.locator('[data-catalog-source] :is(img,picture,source)').count(); assert.equal(item.indexImageCount, 0);
       await page.locator('.articles-hero-links a[href="#catalog-materials"]').click(); await settle(page); await page.screenshot({ path: path.join(out, 'screens', `materials-${width}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}.png`) });

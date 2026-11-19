@@ -174,8 +174,9 @@ export function inspectCatalogHtml(html, { manifest, ownership, baselineHtml, ed
     assert.ok(metadata.meta.some(([name, value]) => name === 'og:image:alt' && value), 'OG alt missing');
     assert.ok(metadata.meta.some(([name, value]) => name === 'twitter:image:alt' && value), 'Twitter alt missing');
     const preloads = nodes.filter((n) => n.tagName === 'link' && attribute(n, 'rel') === 'preload' && attribute(n, 'as') === 'font');
-    assert.equal(preloads.length, 4, 'Exactly four selected font hints');
-    assert.equal(new Set(preloads.map((n) => attribute(n, 'href'))).size, 4, 'Duplicate font hint');
+    assert.equal(preloads.length, 5, 'Exactly five selected catalog font hints');
+    assert.equal(new Set(preloads.map((n) => attribute(n, 'href'))).size, 5, 'Duplicate font hint');
+    assert.equal(preloads.filter((n) => attribute(n, 'href') === '/fonts/SourceSans3/sourcesans3-cyrillic-600.woff2').length, 1, 'Catalog cold UI font hint missing');
   }
   if (baselineHtml) assert.deepEqual(metadata, documentMetadata(baselineHtml), 'Route-owned SEO/date/JSON-LD changed during visual work');
   return { articles: expected.filter((i) => i.type === 'article').length, series: expected.filter((i) => i.type === 'series').length, rendered: cards.length, explicitCuratedRepeats: featured.length, exactTextRoles: true, indexMedia: edition ? 'text-only-original-covers-retained-in-authority' : 'legacy-source-images', metadata };
@@ -185,7 +186,10 @@ export function assertCatalogSource() {
   const page = read('src/pages/articles/index.astro'), chrome = read('src/components/articles/ArticlesPageChrome.astro'), main = read('src/components/articles/ArticlesMain.astro');
   assert.match(page, /<JournalEditorialShell[\s\S]*?kind="articles"/, 'Use selected edition shell');
   assert.match(page, /mobileChromeFor\('\/articles\/'\)/, 'Keep mobile registry authority');
-  assert.equal((chrome.match(/<JournalFontPreloads\s*\/>/g) || []).length, 1, 'Exactly one selected font hint owner');
+  assert.equal((chrome.match(/<JournalFontPreloads\s+catalogUi\s*\/>/g) || []).length, 1, 'Exactly one selected font hint owner, with catalog UI opt-in');
+  const fontHints = read('src/components/journal/JournalFontPreloads.astro');
+  assert.match(fontHints, /catalogUi = false/, 'Other editions must retain their original hints by default');
+  assert.match(fontHints, /\{catalogUi && <link[^>]+href="\/fonts\/SourceSans3\/sourcesans3-cyrillic-600\.woff2"/, 'Catalog UI hint must stay in the existing owner');
   assert.ok(!chrome.includes('css/home.css') && !chrome.includes('id="hNavbar"'), 'Retired home presentation returned');
   assert.ok(!main.includes('<SiteSectionsMenu'), 'Second navigation owner returned');
   const footer = read('src/components/articles/ArticlesPageFooter.astro');
