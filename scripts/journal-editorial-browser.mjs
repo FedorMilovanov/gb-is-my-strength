@@ -27,6 +27,10 @@ const origin = args.origin || 'http://localhost:4173';
 const engine = args.browser || 'chromium';
 const suite = args.suite || 'full';
 const visibleScrollbars = args['visible-scrollbars'] === 'true';
+const publicOnly = args['public-only'] === 'true';
+assert.ok(!publicOnly || !args['history-origin'], 'Public-only acceptance must not activate a held-history fixture');
+const transfer = args.transfer ? JSON.parse(fs.readFileSync(args.transfer, 'utf8')) : null;
+assert.ok(!transfer || publicOnly, 'A gitless composite must explicitly use --public-only=true');
 assert.ok(['chromium', 'firefox', 'webkit'].includes(engine), 'unknown browser engine');
 assert.ok(['full', 'short', 'mobile', 'print'].includes(suite), 'use --suite=full|short|mobile|print');
 assert.ok(suite !== 'print' || engine === 'chromium', 'actual PDF generation requires Chromium; do not substitute an emulated print DOM');
@@ -46,17 +50,28 @@ assert.ok(shortHeights.every((height) => Number.isInteger(height) && height >= 3
 assert.ok(suite !== 'short' || widths.some((width) => width >= 1024), 'the short suite needs at least one desktop width');
 const routes = [{ kind: 'journal', url: origin + '/journal/' }, { kind: 'dossier', url: origin + '/journal/dossiers/g3/' }];
 if (args['history-origin']) routes.push({ kind: 'history', url: args['history-origin'] + '/_review/g3-history/' });
-const report = { engine, suite, version: null, head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
-  worktree: execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).trim(),
+const report = { engine, suite, version: null, head: transfer ? null : execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
+  worktree: transfer ? null : execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).trim(),
+  publicOnly, composite: transfer ? { base: transfer.base, source: transfer.source, notCanonicalGitCommit: true } : null,
   visibleScrollbars,
   note: 'Local artifact/manuscript only. axe is automated evidence, not full WCAG or artistic signoff. Timings are local lab, not field Core Web Vitals. Short-window theme is the browser color preference; no-JS retains the existing SSR palette.',
   sourceSha256: {}, cases: [], interactions: [], shortViewports: [], mobileFocus: [], printCases: [], problems: [] };
 const witnessFiles = [
   ...['G3Dossier.astro', 'G3HistoryArticle.astro', 'G3HistoryFeature.astro', 'JournalLanding.astro', 'JournalMasthead.astro', 'JournalArticleHeader.astro', 'JournalContents.astro', 'JournalDataFigure.astro', 'JournalSourceReturn.astro', 'JournalDocumentHead.astro', 'JournalFontPreloads.astro', 'journalEditorial.css', 'g3History.css'].map((name) => `src/components/journal/${name}`),
   ...['g3EditorialMedia.ts', 'g3HistoryDraftSources.ts', 'g3HistoryDraftMetadata.ts', 'g3ProductMetadata.ts', 'g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'journalProductMetadata.ts'].map((name) => `src/data/journal/${name}`),
+  'src/components/journal/journalDocumentMetadata.ts', 'src/pages/journal/index.astro', 'src/pages/journal/dossiers/g3/index.astro',
   'scripts/journal-editorial-browser.mjs', 'scripts/lib/journal-print-pdf.py', 'scripts/journal-editorial-contract.mjs', 'scripts/journal-local-review.mjs', 'scripts/fixtures/g3-history-review.astro',
 ];
+if (transfer) {
+  assert.equal(transfer.version, 2);
+  assert.match(transfer.base, /^[a-f0-9]{40}$/); assert.match(transfer.source, /^[a-f0-9]{40}$/);
+  for (const entry of transfer.files) {
+    const bytes = fs.readFileSync(path.join(root, entry.path));
+    assert.equal(createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex'), entry.after.blob, `Runtime source differs from transferred public file: ${entry.path}`);
+  }
+}
 for (const name of witnessFiles) {
+  if (publicOnly && ['src/data/journal/g3HistoryDraftSources.ts', 'scripts/journal-local-review.mjs', 'scripts/fixtures/g3-history-review.astro'].includes(name)) continue;
   report.sourceSha256[name] = createHash('sha256').update(fs.readFileSync(path.join(root, name))).digest('hex');
 }
 const browser = await ({ chromium, firefox, webkit })[engine].launch({

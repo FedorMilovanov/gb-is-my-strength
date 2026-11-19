@@ -18,6 +18,11 @@ const INDEXABLE_SOCIAL_META = Object.freeze([
   Object.freeze({ attr: 'name', name: 'twitter:site' }),
   Object.freeze({ attr: 'name', name: 'twitter:creator' }),
 ]);
+const JOURNAL_SOCIAL_IMAGE_ALT_META = Object.freeze([
+  Object.freeze({ attr: 'property', name: 'og:image:alt' }),
+  Object.freeze({ attr: 'name', name: 'twitter:image:alt' }),
+]);
+const JOURNAL_ROUTE_PREFIX = '/journal/';
 
 function routeToHtmlFile(route) {
   const normalized = normalizeRoute(route);
@@ -95,7 +100,12 @@ function hasNoindex(html) {
 
 function auditIndexableSocialMeta(html, route) {
   const errors = [];
-  for (const { attr, name } of INDEXABLE_SOCIAL_META) {
+  const normalizedRoute = normalizeRoute(route);
+  const requiredMeta = normalizedRoute.startsWith(JOURNAL_ROUTE_PREFIX)
+    ? [...INDEXABLE_SOCIAL_META, ...JOURNAL_SOCIAL_IMAGE_ALT_META]
+    : INDEXABLE_SOCIAL_META;
+
+  for (const { attr, name } of requiredMeta) {
     const values = metaValues(html, attr, name);
     const nonEmpty = values.length === 1 && values[0].trim() !== '';
     if (nonEmpty) continue;
