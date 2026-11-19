@@ -17,6 +17,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { chromium } from 'playwright';
+import { createVerifiedArtifactTransport } from './lib/acceptance-artifact-transport.mjs';
 import { readingExpectation, assertReadingParity, citationInventory, seedJournalAcceptanceTheme } from './lib/journal-reading-parity.mjs';
 
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
@@ -53,6 +54,7 @@ const report = {
   runnerHead: git(['rev-parse', 'HEAD']).trim(), runnerWorktree: git(['status', '--porcelain']).trim(),
   runtimeSourceSha: runtimeSha, runtimeScope: provenance.scope, provenanceSha256: sha(provenanceBytes), provenance,
   browser: null, publicationPermission: false,
+  artifactTransport: { strategy: 'verified-http-before-forward', concurrency: 6, fetchTimeoutMs: 15000, drainTimeoutMs: 60000, externalRequests: 'blocked', documents: 'native; independently HTTP/artifact-checked' },
   limits: ['Chromium only; not Firefox/WebKit', 'No real device/UI zoom/screen-reader/physical-print/Owner visual signoff', 'Not a full build/typecheck/Pagefind/SEO/publication or shared Search acceptance', 'Canonical completion requires the actual new canonical SHA; selected-source fixture is not integration'],
   sourceParity: null, inventory: null, authorityPins: [], htmlPins: [], requestedResourcePins: [],
   screens: [], toc: [], citations: [], directSources: [], noJs: [], problems: [],
@@ -98,21 +100,25 @@ const browser = await chromium.launch({ headless: true, ...(process.env.JOURNAL_
   executablePath: process.env.JOURNAL_CHROMIUM_EXECUTABLE, args: ['--no-sandbox', '--disable-dev-shm-usage'],
 } : {}) });
 report.browser = `Chromium ${browser.version()}`;
-const resourceJobs = [], resourcePins = new Map();
-function track(page, label) {
+const resourcePins = new Map();
+const transport = createVerifiedArtifactTransport({ origin: origin.origin,
+  readArtifact: (name) => {
+    const file = path.resolve(artifact, name);
+    assert.ok(file.startsWith(artifact + path.sep), 'Asset path escapes artifact');
+    assert.ok(fs.realpathSync(file).startsWith(artifact + path.sep), 'Asset symlink escapes artifact');
+    return fs.readFileSync(file);
+  },
+  onPin: (pin) => resourcePins.set(pin.url, pin),
+  onError: ({ label, url, error }) => report.problems.push({ type: 'resource-pin', label, requestUrl: url, message: String(error) }),
+});
+async function track(context, page, label) {
   page.on('pageerror', (e) => report.problems.push({ type: 'pageerror', label, pageUrl: page.url(), message: String(e) }));
-  page.on('response', (response) => {
-    if (new URL(response.url()).origin !== origin.origin || response.request().resourceType() === 'document') return;
-    resourceJobs.push((async () => {
-      const request = new URL(response.url()), name = decodeURIComponent(request.pathname).slice(1);
-      const file = path.resolve(artifact, name);
-      assert.ok(file.startsWith(artifact + path.sep), 'Asset path escapes artifact');
-      assert.equal(response.status(), 200, `Asset HTTP failure: ${request.pathname}`);
-      const local = fs.readFileSync(file), bytes = await response.body();
-      assert.equal(sha(bytes), sha(local), `Served resource differs from build: ${name}`);
-      resourcePins.set(request.pathname + request.search, { url: request.pathname + request.search, sha256: sha(local) });
-    })().catch((e) => report.problems.push({ type: 'resource-pin', label, message: String(e) })));
-  });
+  await transport.install(context, label);
+}
+async function closeContext(context, label) {
+  try { await transport.drain(); }
+  catch (error) { report.problems.push({ type: 'resource-drain', label, message: String(error) }); }
+  finally { await context.close(); }
 }
 const go = async (page, address) => {
   assert.equal((await page.goto(address, { waitUntil: 'networkidle' })).status(), 200);
@@ -152,7 +158,7 @@ try {
     const context = await browser.newContext({ viewport: { width, height: width === 390 ? 844 : 1080 }, colorScheme: theme, reducedMotion: 'reduce', serviceWorkers: 'block' });
     await context.addInitScript(seedJournalAcceptanceTheme, { theme, origin: origin.origin });
     context.setDefaultTimeout(6000); context.setDefaultNavigationTimeout(15000);
-    const page = await context.newPage(); track(page, label);
+    const page = await context.newPage(); await track(context, page, label);
     try {
       for (const [name, route] of [['journal', '/journal/'], ['dossier', dossierPath]]) {
         await go(page, url(route));
@@ -204,9 +210,9 @@ try {
       }
       console.log(`${label}: all ${report.inventory.tocLinks.length} TOC / ${report.inventory.citations.length} citations / ${report.inventory.sources.length} direct sources PASS`);
     } catch (e) { report.problems.push({ type: 'interaction', label, message: String(e.stack || e) }); }
-    finally { await context.close(); }
+    finally { await closeContext(context, label); }
     const noJsContext = await browser.newContext({ viewport: { width, height: width === 390 ? 844 : 1080 }, colorScheme: theme, javaScriptEnabled: false, reducedMotion: 'reduce', serviceWorkers: 'block' });
-    const noJsPage = await noJsContext.newPage(); track(noJsPage, label + '-no-js');
+    const noJsPage = await noJsContext.newPage(); await track(noJsContext, noJsPage, label + '-no-js');
     try {
       await go(noJsPage, url(dossierPath));
       for (const citation of report.inventory.citations) {
@@ -220,11 +226,13 @@ try {
         report.noJs.push({ width, browserTheme: theme, themeNote: 'No-JS retains the selected SSR palette, not an emulated runtime theme', id: citation.id, atSource, returned });
       }
     } catch (e) { report.problems.push({ type: 'no-js', label, message: String(e.stack || e) }); }
-    finally { await noJsContext.close(); }
+    finally { await closeContext(noJsContext, label + '-no-js'); }
   }
 } finally {
-  await browser.close(); await Promise.all(resourceJobs);
-  report.requestedResourcePins = [...resourcePins.values()];
+  try { await transport.drain(); }
+  catch (error) { report.problems.push({ type: 'resource-drain', message: String(error) }); }
+  await browser.close();
+  report.requestedResourcePins = [...resourcePins.values()].sort((a, b) => a.url.localeCompare(b.url));
   report.totals = { toc: report.toc.length, citations: report.citations.length, directSources: report.directSources.length, noJsFallbacks: report.noJs.length, problems: report.problems.length };
   fs.writeFileSync(path.join(output, 'acceptance.json'), JSON.stringify(report, null, 2) + '\n');
   console.log(JSON.stringify(report.totals));

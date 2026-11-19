@@ -11,6 +11,8 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import { chromium } from 'playwright';
+import { createArtifactAssetQueue as catalogAssetQueue, verifiedArtifactRoute as verifiedCatalogRoute, createVerifiedArtifactTransport } from './lib/acceptance-artifact-transport.mjs';
+export { catalogAssetQueue, verifiedCatalogRoute };
 import {
   CATALOG_ROUTE, CATALOG_SELECTORS, catalogExpectation, assertCatalogHtml,
   catalogBrowserSnapshot, assertBrowserCatalog, assertCatalogDestination,
@@ -96,34 +98,6 @@ function verifyOptionalSeals(receipt, runtimeSha, artifact) {
   return result;
 }
 
-/** API request interception must not fan out beyond native HTTP connection
- * limits (no-JS pages can request every lazy image eagerly). FIFO; no retries. */
-export function catalogAssetQueue(limit = 6) {
-  assert.ok(Number.isInteger(limit) && limit > 0, 'Positive asset concurrency required');
-  let active = 0;
-  const waiting = [];
-  return async (task) => {
-    if (active < limit) active++; else await new Promise((resolve) => waiting.push(resolve));
-    try { return await task(); }
-    finally { if (waiting.length) waiting.shift()(); else active--; }
-  };
-}
-/** Capture actual HTTP bytes BEFORE forwarding; never defer CDP response.body
- * across navigation. route.fetch's bounded API response survives document exit. */
-export async function verifiedCatalogRoute(route, { origin, readArtifact, onPin, schedule = (task) => task() }) {
-  const request = route.request(), url = new URL(request.url());
-  if (url.origin !== origin) return route.abort();
-  if (request.resourceType() === 'document') return route.continue();
-  return schedule(async () => {
-    const response = await route.fetch({ timeout: 15000, maxRedirects: 0 });
-    assert.equal(response.status(), 200, `Asset HTTP failure: ${url.pathname}`);
-    const bytes = await response.body(), local = readArtifact(decodeURIComponent(url.pathname).slice(1));
-    assert.equal(sha256(bytes), sha256(local), `Served asset differs from artifact: ${url.pathname}`);
-    onPin({ url: url.pathname + url.search, sha256: sha256(local) });
-    return route.fulfill({ response, body: bytes });
-  });
-}
-
 export async function runCatalogCoverage(argv = process.argv.slice(2)) {
   const args = catalogOptions(argv), output = catalogReportDirectory(args.out);
   fs.mkdirSync(output, { recursive: true });
@@ -137,10 +111,16 @@ export async function runCatalogCoverage(argv = process.argv.slice(2)) {
       'Browser color-scheme preferences are requested; no-JS retains the actual SSR palette', 'Build identity is a caller receipt; optional full source/artifact seals are independently verified when supplied'],
   };
   let browser;
-  const resourcePins = new Map(), jobs = new Set(), scheduleAsset = catalogAssetQueue(6);
+  const resourcePins = new Map();
+  let transport;
   try {
     assert.equal(git(['cat-file', '-t', args['runtime-sha']]).trim(), 'commit', 'Fetch the exact source commit without switching branches');
     const artifact = fs.realpathSync(args['artifact-root']);
+    transport = createVerifiedArtifactTransport({ origin: args.origin.origin,
+      readArtifact: (name) => fs.readFileSync(containedFile(artifact, name)),
+      onPin: (pin) => resourcePins.set(pin.url, pin),
+      onError: ({ label, url, error }) => report.problems.push({ type: 'resource-pin', label, requestUrl: url, message: String(error) }),
+    });
     const provenanceBytes = fs.readFileSync(args.provenance), receipt = JSON.parse(provenanceBytes);
     const sources = Object.fromEntries(SOURCE_FILES.map((name) => [name, Buffer.from(git(['show', `${args['runtime-sha']}:${name}`]))]));
     const html = fs.readFileSync(containedFile(artifact, 'articles/index.html'));
@@ -177,16 +157,7 @@ export async function runCatalogCoverage(argv = process.argv.slice(2)) {
     for (const width of args.widths) for (const preference of ['light', 'dark']) for (const javaScriptEnabled of [true, false]) {
       const label = `${width}-${preference}-${javaScriptEnabled ? 'js' : 'no-js'}`;
       const context = await browser.newContext({ viewport: { width, height: width < 768 ? 844 : 1080 }, colorScheme: preference, javaScriptEnabled, reducedMotion: 'reduce', serviceWorkers: 'block' });
-      await context.route('**/*', (route) => {
-        const job = verifiedCatalogRoute(route, { origin: args.origin.origin, schedule: scheduleAsset,
-          readArtifact: (name) => fs.readFileSync(containedFile(artifact, name)),
-          onPin: (pin) => resourcePins.set(pin.url, pin),
-        }).catch(async (e) => {
-          report.problems.push({ type: 'resource-pin', label, message: String(e) });
-          try { await route.abort(); } catch { /* Keep the original pin failure. */ }
-        }).finally(() => jobs.delete(job));
-        jobs.add(job); return job;
-      });
+      await transport.install(context, label);
       context.setDefaultTimeout(8000); context.setDefaultNavigationTimeout(20000);
       const page = await context.newPage(), entry = { width, preference, javaScriptEnabled, nativeDetailsOpened: 0, screenshots: [], status: 'FAIL' };
       report.cases.push(entry);
@@ -234,7 +205,7 @@ export async function runCatalogCoverage(argv = process.argv.slice(2)) {
       } catch (e) {
         entry.error = String(e.stack || e); report.problems.push({ type: 'catalog-browser', label, message: entry.error });
         try { const file = `failure-${label}.png`; await page.screenshot({ path: path.join(output, file) }); entry.screenshots.push(file); } catch { /* Original failure remains. */ }
-      } finally { await Promise.all([...jobs]); await context.close(); }
+      } finally { try { await transport.drain(); } finally { await context.close(); } }
     }
     // Actual computed-CSS negative proofs live only in a disposable test tab.
     const negativeContext = await browser.newContext({ javaScriptEnabled: false, serviceWorkers: 'block' });
@@ -264,7 +235,8 @@ export async function runCatalogCoverage(argv = process.argv.slice(2)) {
     assert.deepEqual(report.finalSeals, report.sourceSeals, 'Build/source seals changed during the witness');
   } catch (e) { report.problems.push({ type: 'setup-or-contract', message: String(e.stack || e) }); }
   finally {
-    await Promise.all([...jobs]); if (browser) await browser.close();
+    try { if (transport) await transport.drain(); } catch (e) { report.problems.push({ type: 'resource-drain', message: String(e) }); }
+    if (browser) await browser.close();
     report.resourcePins = [...resourcePins.values()].sort((a, b) => a.url.localeCompare(b.url));
     report.finishedAt = new Date().toISOString(); report.status = report.problems.length ? 'FAIL' : 'PASS';
     fs.writeFileSync(path.join(output, 'acceptance.json'), JSON.stringify(report, null, 2) + '\n');
