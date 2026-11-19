@@ -33,7 +33,7 @@ const { active = 'journal' } = Astro.props;
     <!-- One native disclosure, not a second OverlayRuntime/menu owner. Keep
          the former site-section destinations exact, including the home hashes. -->
     <details class="je-masthead__site-sections" data-journal-site-sections>
-      <summary>Разделы сайта <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></summary>
+      <summary>Разделы сайта <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></summary>
       <div class="je-masthead__site-panel">
         <p>На основном сайте</p>
         <ul>
@@ -109,7 +109,7 @@ const { active = 'journal' } = Astro.props;
   .je-masthead__nav { max-width: 1280px; margin: 0 auto; display: flex; gap: 34px; padding: 0 40px; border-top: 1px solid #2d4051; }
   .je-masthead__nav > a, .je-masthead__site-sections > summary { display: inline-flex; min-height: 44px; align-items: center; padding-block: 3px 0; border-bottom: 2px solid transparent; color: #efe6d7; text-decoration: none; font: 600 11px/1.5 'Source Sans 3', sans-serif; letter-spacing: .12em; text-transform: uppercase; }
   .je-masthead__nav a[aria-current] { border-color: #d6ad5d; color: #fff; }
-  .je-masthead__site-sections { position: relative; min-width: 0; }
+  .je-masthead__site-sections { position: relative; display: flex; min-width: 0; }
   /* Reserve fallback-label width so the chevron does not move on font swap. */
   .je-masthead__site-sections > summary { justify-content: space-between; gap: 8px; width: 140px; max-width: 100%; list-style: none; cursor: pointer; }
   .je-masthead__site-sections > summary::-webkit-details-marker { display: none; }
