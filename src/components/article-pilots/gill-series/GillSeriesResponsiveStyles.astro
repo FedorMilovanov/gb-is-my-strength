@@ -233,6 +233,13 @@
       margin-left: auto;
       gap: 4px;
     }
+    /* At 961–1359px a legacy global bar rule uses !important with a
+       blue-black fill. Override that single known owner to match the Gill
+       warm dark-paper palette, rather than weakening all existing rules. */
+    html.dark body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .mobile-bottom-bar {
+      background: rgba(25, 23, 21, .96) !important;
+    }
     html.dark body[data-gbs2-series="dzhon-gill"]
       .gbs2-world[data-gill-v16] .mobile-btoc-section {
       color: #efe9dc;
