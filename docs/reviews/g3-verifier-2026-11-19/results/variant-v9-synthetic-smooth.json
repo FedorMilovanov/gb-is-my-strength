@@ -1,0 +1,82 @@
+[
+ {
+  "bfcacheFlagRemoved": false,
+  "js": false,
+  "width": 390,
+  "startHash": true,
+  "startUrl": "/articles/#catalog-materials",
+  "clicked": "/articles/x89/",
+  "before": 21813,
+  "final": 967,
+  "delta": -20846,
+  "firstSamples": [
+   [
+    15,
+    21813
+   ],
+   [
+    138,
+    21575
+   ],
+   [
+    241,
+    20549
+   ],
+   [
+    344,
+    17558
+   ]
+  ],
+  "jumpAt": 138,
+  "bfcacheNotUsed": [
+   "Circumstantial:BackForwardCacheDisabled",
+   "Circumstantial:BackForwardCacheDisabledByCommandLine",
+   "Circumstantial:BrowsingInstanceNotSwapped",
+   "Circumstantial:BackForwardCacheDisabledForDelegate"
+  ],
+  "url": "http://127.0.0.1:8793/articles/#catalog-materials",
+  "focus": "BODY",
+  "navType": "back_forward",
+  "persisted": null
+ },
+ {
+  "bfcacheFlagRemoved": false,
+  "js": true,
+  "width": 390,
+  "startHash": true,
+  "startUrl": "/articles/#catalog-materials",
+  "clicked": "/articles/x89/",
+  "before": 21813,
+  "final": 967,
+  "delta": -20846,
+  "firstSamples": [
+   [
+    15,
+    21813
+   ],
+   [
+    134,
+    21575
+   ],
+   [
+    237,
+    20549
+   ],
+   [
+    340,
+    17558
+   ]
+  ],
+  "jumpAt": 134,
+  "bfcacheNotUsed": [
+   "Circumstantial:BackForwardCacheDisabled",
+   "Circumstantial:BackForwardCacheDisabledByCommandLine",
+   "Circumstantial:BrowsingInstanceNotSwapped",
+   "Circumstantial:BackForwardCacheDisabledForDelegate"
+  ],
+  "url": "http://127.0.0.1:8793/articles/#catalog-materials",
+  "focus": "BODY",
+  "navType": "back_forward",
+  "persisted": null
+ }
+]

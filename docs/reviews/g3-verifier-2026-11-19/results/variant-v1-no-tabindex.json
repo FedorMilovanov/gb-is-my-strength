@@ -1,0 +1,82 @@
+[
+ {
+  "bfcacheFlagRemoved": false,
+  "js": false,
+  "width": 390,
+  "startHash": true,
+  "startUrl": "/articles/#catalog-materials",
+  "clicked": "/karty/avraam/",
+  "before": 24610,
+  "final": 969,
+  "delta": -23641,
+  "firstSamples": [
+   [
+    13,
+    24610
+   ],
+   [
+    163,
+    24340
+   ],
+   [
+    268,
+    22827
+   ],
+   [
+    371,
+    18826
+   ]
+  ],
+  "jumpAt": 163,
+  "bfcacheNotUsed": [
+   "Circumstantial:BackForwardCacheDisabled",
+   "Circumstantial:BackForwardCacheDisabledByCommandLine",
+   "Circumstantial:BrowsingInstanceNotSwapped",
+   "Circumstantial:BackForwardCacheDisabledForDelegate"
+  ],
+  "url": "http://127.0.0.1:8792/articles/#catalog-materials",
+  "focus": "BODY",
+  "navType": "back_forward",
+  "persisted": null
+ },
+ {
+  "bfcacheFlagRemoved": false,
+  "js": true,
+  "width": 390,
+  "startHash": true,
+  "startUrl": "/articles/#catalog-materials",
+  "clicked": "/karty/avraam/",
+  "before": 24610,
+  "final": 24610,
+  "delta": 0,
+  "firstSamples": [
+   [
+    16,
+    24610
+   ],
+   [
+    167,
+    24610
+   ],
+   [
+    270,
+    24610
+   ],
+   [
+    373,
+    24610
+   ]
+  ],
+  "jumpAt": null,
+  "bfcacheNotUsed": [
+   "Circumstantial:BackForwardCacheDisabled",
+   "Circumstantial:BackForwardCacheDisabledByCommandLine",
+   "Circumstantial:BrowsingInstanceNotSwapped",
+   "Circumstantial:BackForwardCacheDisabledForDelegate"
+  ],
+  "url": "http://127.0.0.1:8792/articles/#catalog-materials",
+  "focus": "BODY",
+  "navType": "back_forward",
+  "persisted": null
+ }
+]
