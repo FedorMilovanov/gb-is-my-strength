@@ -7,7 +7,8 @@ import path from 'node:path';
 import { tmpdir } from 'node:os';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { readingExpectation, assertReadingParity, citationInventory } from './lib/journal-reading-parity.mjs';
+import { runInNewContext } from 'node:vm';
+import { readingExpectation, assertReadingParity, citationInventory, seedJournalAcceptanceTheme } from './lib/journal-reading-parity.mjs';
 
 const options = { sections: ['reading'] };
 const source = (body) => `---\nconst neverEvaluateThis = () => { throw Error('do not evaluate Astro'); };\n---\n<section id="reading">${body}</section>`;
@@ -108,6 +109,18 @@ test('second TOC owner / non-native TOC / broken TOC target fails', () => {
   assert.throws(() => inventory(citationHTML() + '<details data-journal-contents></details>'), /One native contents/);
   assert.throws(() => inventory(citationHTML().replace('<details data-journal-contents>', '<div data-journal-contents>').replace('</details>', '</div>')), /native TOC/);
   assert.throws(() => inventory(citationHTML().replace('href="#documents">Method</a></nav>', 'href="#missing">Method</a></nav>')), /Broken TOC/);
+});
+
+test('theme init skips opaque/foreign documents without hiding matching-origin storage errors', () => {
+  const code = `(${seedJournalAcceptanceTheme.toString()})(payload)`;
+  const payload = { origin: 'https://preview.example', theme: 'dark' };
+  for (const location of [{ protocol: 'about:', origin: 'null' }, { protocol: 'about:', origin: payload.origin }, { protocol: 'https:', origin: 'https://other.example' }]) {
+    runInNewContext(code, { payload, location, get localStorage() { throw Error('storage must not be touched'); } });
+  }
+  const writes = [];
+  runInNewContext(code, { payload, location: { protocol: 'https:', origin: payload.origin }, localStorage: { setItem: (key, value) => writes.push([key, value]) } });
+  assert.deepEqual(writes, [['theme', 'dark'], ['gb:reader-preferences:v1', '{"version":1,"theme":"dark"}']]);
+  assert.throws(() => runInNewContext(code, { payload, location: { protocol: 'https:', origin: payload.origin }, localStorage: { setItem() { throw Error('real storage denial'); } } }), /real storage denial/);
 });
 
 test('CLI rejects unknown flags instead of silently dropping a requested check', () => {

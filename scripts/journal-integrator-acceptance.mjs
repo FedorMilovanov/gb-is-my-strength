@@ -17,7 +17,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { chromium } from 'playwright';
-import { readingExpectation, assertReadingParity, citationInventory } from './lib/journal-reading-parity.mjs';
+import { readingExpectation, assertReadingParity, citationInventory, seedJournalAcceptanceTheme } from './lib/journal-reading-parity.mjs';
 
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const { values: args } = parseArgs({ options: {
@@ -100,7 +100,7 @@ const browser = await chromium.launch({ headless: true, ...(process.env.JOURNAL_
 report.browser = `Chromium ${browser.version()}`;
 const resourceJobs = [], resourcePins = new Map();
 function track(page, label) {
-  page.on('pageerror', (e) => report.problems.push({ type: 'pageerror', label, message: String(e) }));
+  page.on('pageerror', (e) => report.problems.push({ type: 'pageerror', label, pageUrl: page.url(), message: String(e) }));
   page.on('response', (response) => {
     if (new URL(response.url()).origin !== origin.origin || response.request().resourceType() === 'document') return;
     resourceJobs.push((async () => {
@@ -150,7 +150,7 @@ try {
   for (const width of widths) for (const theme of ['light', 'dark']) {
     const label = `${width}-${theme}`;
     const context = await browser.newContext({ viewport: { width, height: width === 390 ? 844 : 1080 }, colorScheme: theme, reducedMotion: 'reduce', serviceWorkers: 'block' });
-    await context.addInitScript((t) => { localStorage.setItem('theme', t); localStorage.setItem('gb:reader-preferences:v1', JSON.stringify({ version: 1, theme: t })); }, theme);
+    await context.addInitScript(seedJournalAcceptanceTheme, { theme, origin: origin.origin });
     context.setDefaultTimeout(6000); context.setDefaultNavigationTimeout(15000);
     const page = await context.newPage(); track(page, label);
     try {

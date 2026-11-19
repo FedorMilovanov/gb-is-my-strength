@@ -10,6 +10,12 @@ export const G3_READING_SECTIONS = Object.freeze([
   'overview', 'timeline', 'finance', 'governance', 'buice', 'buck',
   'wind-down', 'unknowns', 'documents',
 ]);
+/** Serialized by Playwright. Never seed storage on opaque/about:blank pages. */
+export function seedJournalAcceptanceTheme({ theme, origin }) {
+  if (!['http:', 'https:'].includes(location.protocol) || location.origin !== origin) return;
+  localStorage.setItem('theme', theme);
+  localStorage.setItem('gb:reader-preferences:v1', JSON.stringify({ version: 1, theme }));
+}
 const attr = (node, key) => node.attrs?.find(({ name }) => name === key)?.value;
 const all = (node, predicate) => [
   ...(predicate(node) ? [node] : []),
