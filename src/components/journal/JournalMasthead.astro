@@ -6,9 +6,9 @@ const { active = 'journal' } = Astro.props;
 <header class="je-masthead" aria-label="Редакционная навигация">
   <div class="je-masthead__top">
     <a class="je-masthead__identity" href="/journal/">
-      <svg class="je-masthead__mark" viewBox="0 0 64 48" aria-hidden="true">
-        <path d="M4 10C15 6 26 10 32 17C38 10 49 6 60 10V39C49 35 38 38 32 44C26 38 15 35 4 39Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
-        <path d="M32 17V43M9 14C17 12 24 15 28 19M55 14C47 12 40 15 36 19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <svg class="je-masthead__mark" viewBox="0 2.2 64 48" aria-hidden="true">
+        <path d="M4 10C15 6 26 10 32 17C38 10 49 6 60 10V39C49 35 38 38 32 44C26 38 15 35 4 39Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+        <path d="M32 17V43M9 14C17 12 24 15 28 19M55 14C47 12 40 15 36 19" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
       </svg>
       <span class="je-masthead__name">
         <span class="je-masthead__publication">Господь Бог — Сила Моя</span>
@@ -19,10 +19,10 @@ const { active = 'journal' } = Astro.props;
     <a class="je-masthead__home" href="/">Основной сайт <span aria-hidden="true">↗</span></a>
     <div class="je-masthead__actions" role="group" aria-label="Поиск и оформление">
       <button class="je-masthead__button" type="button" data-action="open-search" data-search-shortcut data-search-shortcut-label="Поиск по сайту" data-search-src={assetUrl('js/search.js')} data-palette-css={assetUrl('css/command-palette.css')} aria-label="Поиск по сайту">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
       </button>
       <button class="je-masthead__button" type="button" data-journal-theme aria-label="Тёмная тема" aria-pressed="false" hidden>
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16Z" fill="currentColor" stroke="none"/></svg>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16Z" fill="currentColor" stroke="none"/></svg>
       </button>
     </div>
   </div>
@@ -107,9 +107,9 @@ const { active = 'journal' } = Astro.props;
   @media (max-width: 690px) {
     .je-masthead__top { padding: 13px 20px; gap: 10px; }
     .je-masthead__identity { gap: 10px; flex: 1; }
-    .je-masthead__mark { width: 31px; height: 28px; }
+    .je-masthead__mark { width: 32px; height: 24px; }
     .je-masthead__publication { font-size: 16px; max-width: 18ch; }
-    .je-masthead__series { font-size: 8px; letter-spacing: .08em; }
+    .je-masthead__series { font-size: 10px; letter-spacing: .06em; }
     .je-masthead__series span { padding-inline: 1px; }
     .je-masthead__home { display: none; }
     .je-masthead__nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 15px; padding-inline: 20px; }
@@ -117,6 +117,7 @@ const { active = 'journal' } = Astro.props;
     .je-masthead__actions { gap: 0; min-width: 76px; }
     .je-masthead__button { width: 38px; height: 44px; border-color: transparent; }
   }
+  @media (max-width: 389px) { .je-masthead__publication { font-size: 15px; } }
   @media (max-width: 359px) { .je-masthead__publication { font-size: 14px; } .je-masthead__mark { display: none; } }
   @media print { .je-masthead { display: none; } }
 </style>

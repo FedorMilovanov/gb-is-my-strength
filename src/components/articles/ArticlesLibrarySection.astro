@@ -156,7 +156,7 @@ const plural = (count: number, one: string, few: string, many: string) => {
                   <div class="h-article-meta">
                     <span class="h-meta-author" data-catalog-role={catalogAttribution(item).kind}>{catalogAttribution(item).label}</span>
                     {Number.isFinite(item.readTime) && <span class="h-meta-time">{item.readTime} мин</span>}
-                    {item.section && <span class="h-meta-tag h-meta-tag--neutral">{item.section}</span>}
+                    {item.section && item.section !== topic.name && <span class="h-meta-tag h-meta-tag--neutral">{item.section}</span>}
                   </div>
                   {item.description && <p class="h-article-abstract">{item.description}</p>}
                 </div>
