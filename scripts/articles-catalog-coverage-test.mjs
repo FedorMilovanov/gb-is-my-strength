@@ -9,7 +9,7 @@ import { createHash } from 'node:crypto';
 import { catalogOptions, catalogReportDirectory, assertCatalogBuildReceipt, verifiedCatalogRoute, catalogAssetQueue } from './articles-catalog-coverage.mjs';
 import {
   catalogAttribution, catalogDestination, catalogExpectation, assertCatalogHtml,
-  assertCatalogDestination, assertBrowserCatalog,
+  assertCatalogDestination, assertBrowserCatalog, catalogSsrTheme, assertCatalogTheme,
 } from './lib/articles-catalog-coverage.mjs';
 
 const OWNER = 'Фёдор Милованов';
@@ -271,4 +271,73 @@ test('asset queue rejects invalid limits and verified routing uses the supplied 
   const f = assetFixture(); let scheduled = false;
   await verifiedCatalogRoute(f.route, { ...f.options, schedule: async (task) => { scheduled = true; return task(); } });
   assert.equal(scheduled, true); assert.equal(f.pins.length, 1);
+});
+
+/** New W1 semantic adapter fixtures. IDs/order and presentation are not pinned. */
+function topicFixture(change = () => {}) {
+  const f = fixture();
+  for (const item of f.manifest.items) if (item.type === 'article') item.section = item.url.includes('original') || item.url.includes('translation') ? 'Толкование' : 'Другие материалы';
+  change(f);
+  const expectation = catalogExpectation({ ...f, curatedSource, librarySource: '---\n---\n<nav data-catalog-topics></nav>' });
+  const topics = expectation.topicNavigation.topics;
+  const links = topics.map((t, i) => `<a href="#fixture-topic-${i}"><span>${esc(t.name)}</span><span class="articles-topic-count">${t.hrefs.length}</span></a>`);
+  const groups = topics.map((t, i) => `<section aria-labelledby="fixture-topic-${i}"><h3 id="fixture-topic-${i}" tabindex="-1">${esc(t.name)}</h3>${t.hrefs.map((href) => card(f.manifest.items.find((v) => v.url === href))).join('')}</section>`);
+  const series = expectation.published.filter((i) => i.type === 'series').map((v) => card(f.manifest.items.find((i) => i.url === v.href))).join('');
+  const html = `<main><section data-catalog-source="search-manifest+page-ownership"><nav data-catalog-topics>${links.join('')}<a href="#fixture-series">Серии и сборники</a></nav>${groups.join('')}<section id="fixture-series" aria-labelledby="fixture-series-title"><h2 id="fixture-series-title">Серии</h2>${series}</section></section>${curatedSource.replace(/^---[\s\S]*?---/, '')}</main>`;
+  return { ...f, expectation, html, links, groups };
+}
+test('W1 topics derive exact groups/counts from the same authority; arbitrary IDs and order are supported', () => {
+  const f = topicFixture(), snapshot = assertCatalogHtml(f.expectation, f.html);
+  assert.equal(snapshot.topicNavigation.links.length, 3); assert.equal(snapshot.topicNavigation.required, true);
+  assertCatalogHtml(f.expectation, f.html.replace(f.links.join(''), [...f.links].reverse().join('')));
+});
+test('a HOLD subtracts its topic member/count, never creates a second publication authority', () => {
+  const f = topicFixture((f) => { f.manifest.items.find((i) => i.url === '/articles/original/').publicationGate = 'PUBLICATION_HOLD'; });
+  assert.equal(f.expectation.counts.article, 3); assertCatalogHtml(f.expectation, f.html);
+  assert.throws(() => assertCatalogHtml(f.expectation, f.html.replace('</nav>', `</nav>${card(baseItems[2])}`)), /card count/);
+});
+for (const [name, mutate, pattern] of [
+  ['omitted navigation', (f) => f.html.replace(/<nav data-catalog-topics>[\s\S]*?<\/nav>/, ''), /Exactly one.*topic navigation/],
+  ['omitted topic', (f) => f.html.replace(f.links[0], ''), /Omitted\/extra SSR topic/],
+  ['duplicate topic', (f) => f.html.replace('</nav>', f.links[0] + '</nav>'), /duplicate SSR topic/],
+  ['wrong count', (f) => f.html.replace('class="articles-topic-count">2', 'class="articles-topic-count">999'), /topic count drift/],
+  ['wrong label', (f) => f.html.replace('<span>Толкование</span>', '<span>Другая рубрика</span>'), /label drift/],
+  ['hidden navigation', (f) => f.html.replace('<nav data-catalog-topics', '<nav hidden data-catalog-topics'), /hidden/],
+  ['wrong group membership', (f) => f.html.replace(card(baseItems[2]), '').replace('id="fixture-topic-1" tabindex="-1">Другие материалы</h3>', `id="fixture-topic-1" tabindex="-1">Другие материалы</h3>${card(baseItems[2])}`), /topic membership drift/],
+  ['missing semantic group label', (f) => f.html.replace('section aria-labelledby="fixture-topic-0"', 'section aria-label="Не связь с heading"'), /semantic group/],
+  ['omitted series jump', (f) => f.html.replace('<a href="#fixture-series">Серии и сборники</a>', ''), /series navigation/],
+  ['non-native router topic', (f) => f.html.replace('href="#fixture-topic-0"', 'href="/articles/?topic=0"'), /Unmarked\/extra/],
+]) test(`W1 SSR topic negative: ${name}`, () => {
+  const f = topicFixture(); assert.throws(() => assertCatalogHtml(f.expectation, mutate(f)), pattern);
+});
+rejectHtml('no-JS noscript anchor cannot hide an extra destination from the SSR parser', (h) => h.replace('</nav>', '</nav><noscript><a href="/unpublished/">Не опубликовано</a></noscript>'), /Unmarked\/extra/);
+test('W1 browser topic availability/count/target/native semantics are checked independently', () => {
+  const f = topicFixture(), snapshot = assertCatalogHtml(f.expectation, f.html);
+  const base = browserFixture(); base.snapshot = snapshot;
+  const facts = { ...base.facts, topics: snapshot.topicNavigation.links.map((t) => ({ ...t, available: true, labelAvailable: true, targetAvailable: true, nativeTabbable: true })) };
+  assert.equal(assertBrowserCatalog(snapshot, facts).topics, 3);
+  for (const mutate of [(f) => f.topics.pop(), (f) => { f.topics[0].count = 999; }, (f) => { f.topics[0].label += '!'; }, ...['available', 'labelAvailable', 'targetAvailable', 'nativeTabbable'].map((k) => (f) => { f.topics[0][k] = false; })]) {
+    const changed = structuredClone(facts); mutate(changed); assert.throws(() => assertBrowserCatalog(snapshot, changed));
+  }
+});
+
+const readerSsr = catalogSsrTheme('<html><body><button data-journal-theme hidden>Тема</button></body></html>');
+const themeFacts = { reader: 'dark', legacy: null, darkClass: true, readerApi: true, runtimeTheme: 'dark' };
+test('W1 theme uses the canonical reader API/data-reader-theme, not the retired null data-theme', () => {
+  assert.equal(assertCatalogTheme(themeFacts, { preference: 'dark', javaScriptEnabled: true, ssr: readerSsr }).effectiveTheme, 'dark');
+  assert.equal(assertCatalogTheme({ ...themeFacts, legacy: 'light' }, { preference: 'dark', javaScriptEnabled: true, ssr: readerSsr }).effectiveTheme, 'dark');
+});
+for (const [name, change] of [['missing canonical attribute', { reader: null }], ['wrong canonical theme', { reader: 'light' }], ['missing canonical owner', { readerApi: false }], ['API/DOM mismatch', { runtimeTheme: 'light' }]]) test(`W1 theme negative: ${name}`, () => {
+  assert.throws(() => assertCatalogTheme({ ...themeFacts, ...change }, { preference: 'dark', javaScriptEnabled: true, ssr: readerSsr }));
+});
+test('no-JS dark browser preference honestly retains the actual light SSR palette, never an emulated runtime', () => {
+  const facts = { reader: null, legacy: null, darkClass: false, readerApi: false, runtimeTheme: null };
+  const result = assertCatalogTheme(facts, { preference: 'dark', javaScriptEnabled: false, ssr: readerSsr });
+  assert.equal(result.effectiveTheme, 'light'); assert.equal(result.mode, 'actual-SSR-not-emulated-theme');
+  assert.throws(() => assertCatalogTheme({ ...facts, darkClass: true }, { preference: 'dark', javaScriptEnabled: false, ssr: readerSsr }), /actual SSR/);
+  assert.throws(() => assertCatalogTheme({ ...facts, readerApi: true }, { preference: 'dark', javaScriptEnabled: false, ssr: readerSsr }), /No-JS/);
+});
+test('the prior theme adapter remains independently covered without requiring selected markup', () => {
+  const ssr = catalogSsrTheme('<html data-theme="light"><body></body></html>');
+  assert.equal(assertCatalogTheme({ reader: null, legacy: 'dark', darkClass: true, readerApi: false, runtimeTheme: null }, { preference: 'dark', javaScriptEnabled: true, ssr }).effectiveTheme, 'dark');
 });

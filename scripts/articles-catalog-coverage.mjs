@@ -13,13 +13,15 @@ import { parseArgs } from 'node:util';
 import { chromium } from 'playwright';
 import { createArtifactAssetQueue as catalogAssetQueue, verifiedArtifactRoute as verifiedCatalogRoute, createVerifiedArtifactTransport } from './lib/acceptance-artifact-transport.mjs';
 export { catalogAssetQueue, verifiedCatalogRoute };
+import { settleNativeScroll } from './lib/articles-native-back.mjs';
 import {
   CATALOG_ROUTE, CATALOG_SELECTORS, catalogExpectation, assertCatalogHtml,
-  catalogBrowserSnapshot, assertBrowserCatalog, assertCatalogDestination,
+  catalogBrowserSnapshot, assertBrowserCatalog, assertCatalogDestination, catalogSsrTheme, catalogThemeSnapshot, assertCatalogTheme,
 } from './lib/articles-catalog-coverage.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const SOURCE_FILES = ['data/search-manifest.json', 'migration/page-ownership.json', 'src/components/articles/ArticlesRefutationsSection.astro'];
+const LIBRARY_ADAPTER = 'src/components/articles/ArticlesLibrarySection.astro';
 const sha256 = (b) => createHash('sha256').update(b).digest('hex');
 const git = (args) => execFileSync('git', ['--no-optional-locks', ...args], { cwd: ROOT, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
 export function catalogOptions(argv) {
@@ -105,10 +107,10 @@ export async function runCatalogCoverage(argv = process.argv.slice(2)) {
     version: 1, startedAt: new Date().toISOString(), runnerHead: git(['rev-parse', 'HEAD']).trim(), runnerWorktree: git(['status', '--porcelain']).trim(),
     runtimeSourceSha: args['runtime-sha'], origin: args.origin.origin, browser: null, publicationPermission: false,
     provenance: null, provenanceSha256: null, expectation: null, ssr: null, sourceSeals: null, finalSeals: null,
-    destinations: [], resourcePins: [], cases: [], negativeSelfChecks: [], problems: [],
+    destinations: [], resourcePins: [], cases: [], negativeSelfChecks: [], adapterSourcePins: [], problems: [],
     limits: ['Candidate/staging evidence is not canonical integration or production acceptance', 'Chromium only; no Firefox/WebKit, physical device, UI zoom, screen reader or Owner visual signoff',
       'No publication/HOLD release, Research writes, print/SEO/Pagefind/Search or visual-design approval', 'CSS line-clamp/typography and reading-order design are separate reviews',
-      'Browser color-scheme preferences are requested; no-JS retains the actual SSR palette', 'Build identity is a caller receipt; optional full source/artifact seals are independently verified when supplied'],
+      'Browser color-scheme preferences are requested; no-JS retains the actual SSR palette', 'Content coverage uses interception/reduced motion: URL Back alone is NOT scroll/focus restoration or cold CLS evidence; use articles-native-back-acceptance separately', 'Build identity is a caller receipt; optional full source/artifact seals are independently verified when supplied'],
   };
   let browser;
   const resourcePins = new Map();
@@ -127,8 +129,11 @@ export async function runCatalogCoverage(argv = process.argv.slice(2)) {
     assertCatalogBuildReceipt(receipt, { runtimeSha: args['runtime-sha'], artifact, html, sources });
     report.provenance = receipt; report.provenanceSha256 = sha256(provenanceBytes);
     report.sourceSeals = verifyOptionalSeals(receipt, args['runtime-sha'], artifact);
-    report.expectation = catalogExpectation({ manifest: JSON.parse(sources[SOURCE_FILES[0]]), ownership: JSON.parse(sources[SOURCE_FILES[1]]), curatedSource: sources[SOURCE_FILES[2]].toString() });
+    const librarySource = git(['show', `${args['runtime-sha']}:${LIBRARY_ADAPTER}`]);
+    report.adapterSourcePins.push({ path: LIBRARY_ADAPTER, sha256: sha256(librarySource), source: 'exact runtime Git blob; semantic hook only, not a layout lock' });
+    report.expectation = catalogExpectation({ manifest: JSON.parse(sources[SOURCE_FILES[0]]), ownership: JSON.parse(sources[SOURCE_FILES[1]]), curatedSource: sources[SOURCE_FILES[2]].toString(), librarySource });
     report.ssr = assertCatalogHtml(report.expectation, html.toString());
+    const ssrTheme = catalogSsrTheme(html.toString());
     const href = (route) => new URL(route, args.origin).href;
     const pageResponse = await fetch(href(CATALOG_ROUTE), { redirect: 'manual', signal: AbortSignal.timeout(15000) });
     assert.equal(pageResponse.status, 200, 'Catalog HTTP status');
@@ -166,7 +171,8 @@ export async function runCatalogCoverage(argv = process.argv.slice(2)) {
         const response = await page.goto(href(CATALOG_ROUTE), { waitUntil: 'networkidle' });
         assert.equal(response.status(), 200);
         await page.evaluate(() => document.fonts.ready);
-        entry.palette = await page.locator('html').getAttribute('data-theme');
+        entry.theme = assertCatalogTheme(await page.evaluate(catalogThemeSnapshot), { preference, javaScriptEnabled, ssr: ssrTheme });
+        entry.palette = entry.theme.effectiveTheme;
         // Native details are a valid no-JS disclosure, unlike hidden/filter gates.
         const details = page.locator('details');
         for (let i = 0; i < await details.count(); i++) {
@@ -194,14 +200,26 @@ export async function runCatalogCoverage(argv = process.argv.slice(2)) {
         assert.equal(page.url(), targetUrl, 'Native Enter must use the actual publication href');
         await page.goBack({ waitUntil: 'networkidle' }); assert.equal(page.url(), href(CATALOG_ROUTE));
         assertCatalogHtml(report.expectation, await page.content());
-        entry.nativeKeyboard = { tabFrom: firstHref, tabTo: cardCount > 1 ? targetHref : null, enterDestination: targetUrl, backToCatalog: true };
+        entry.nativeKeyboard = { tabFrom: firstHref, tabTo: cardCount > 1 ? targetHref : null, enterDestination: targetUrl, backToCatalog: true, scrollRestoration: 'NOT_TESTED_BY_THIS_URL_ROUND_TRIP' };
         for (const [kind, selector] of [['first', CATALOG_SELECTORS.published], ['curated', `${CATALOG_SELECTORS.curated} a`]]) {
           await page.locator(selector).first().scrollIntoViewIfNeeded();
           // A newly scrolled lazy image must finish before it becomes evidence.
           await page.waitForFunction((selector) => [...document.querySelector(selector).querySelectorAll('img')].every((img) => img.complete && img.naturalWidth > 0), selector, { timeout: 8000 });
           const file = `catalog-${kind}-${label}.png`; await page.screenshot({ path: path.join(output, file) }); entry.screenshots.push(file);
         }
-        entry.status = 'PASS'; console.log(`${label}: ${entry.coverage.published} published + ${entry.coverage.curated} curated; native Tab/Enter/Back PASS`);
+        entry.nativeTopics = [];
+        for (const [index, topic] of (entry.facts.topics || []).entries()) {
+          await page.locator('[data-catalog-topics] a').nth(index).focus(); await page.keyboard.press('Enter');
+          const settled = await settleNativeScroll(page);
+          const facts = await page.locator(`[id="${decodeURIComponent(topic.href.slice(1))}"]`).evaluate((target) => {
+            const r = target.getBoundingClientRect(); return { id: target.id, hash: decodeURIComponent(location.hash.slice(1)),
+              focused: document.activeElement === target, visible: target.checkVisibility(), top: r.top, bottom: r.bottom, viewport: innerHeight };
+          });
+          assert.equal(facts.hash, facts.id); assert.equal(facts.focused, true, 'Native topic Enter must focus its actual SSR target');
+          assert.ok(facts.visible && facts.top >= settled.active.headerBottom - 1 && facts.top < facts.viewport - 20, 'Native topic target is clipped/obscured');
+          entry.nativeTopics.push({ href: topic.href, ...facts, settling: settled.settling });
+        }
+        entry.status = 'PASS'; console.log(`${label}: ${entry.coverage.published} published + ${entry.coverage.curated} curated; native Tab/Enter/URL-Back and ${entry.nativeTopics.length} topic targets PASS`);
       } catch (e) {
         entry.error = String(e.stack || e); report.problems.push({ type: 'catalog-browser', label, message: entry.error });
         try { const file = `failure-${label}.png`; await page.screenshot({ path: path.join(output, file) }); entry.screenshots.push(file); } catch { /* Original failure remains. */ }
@@ -222,6 +240,9 @@ export async function runCatalogCoverage(argv = process.argv.slice(2)) {
         ['display-none-link', '[data-catalog-route]{display:none}'], ['hidden-ancestor', '.fixture-host{visibility:hidden}'],
         ['transparent-ancestor', '.fixture-host{opacity:0}'], ['hidden-description', '[data-catalog-route] p{display:none}'],
         ['offscreen-link', '[data-catalog-route]{position:absolute;left:-9999px}'], ['clipped-ancestor', '.fixture-host{height:0;overflow:hidden}'],
+        ['clipped-title-range', '[data-catalog-route] h2{height:1px;overflow:hidden}'],
+        ['line-clamped-title', '[data-catalog-route] h2{width:1ch;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;word-break:break-all}'],
+        ['clipped-role-range', '[data-catalog-role]{display:block;height:1px;overflow:hidden}'],
       ]) {
         await negativePage.setContent(`<style>${css}</style>${synthetic}`);
         const facts = await negativePage.evaluate(catalogBrowserSnapshot, CATALOG_SELECTORS);

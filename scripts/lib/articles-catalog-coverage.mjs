@@ -141,7 +141,7 @@ function curatedFromSource(source) {
   });
 }
 
-export function catalogExpectation({ manifest, ownership, curatedSource }) {
+export function catalogExpectation({ manifest, ownership, curatedSource, librarySource }) {
   assert.ok(Array.isArray(manifest?.items) && ownership?.routes && typeof ownership.routes === 'object', 'Existing manifest and route ownership required');
   const published = [], excluded = [];
   for (const item of manifest.items.filter((i) => ['article', 'series'].includes(i.type))) {
@@ -150,21 +150,70 @@ export function catalogExpectation({ manifest, ownership, curatedSource }) {
       excluded.push({ ...dest, type: item.type, status: owner?.status ?? null, reason: held(item) || held(owner) ? 'PUBLICATION_HOLD' : 'not-production-owned' });
       continue;
     }
-    published.push({ ...dest, type: item.type, title: catalogText(item.title || item.id || item.url), description: catalogText(item.description), attribution: catalogAttribution(item) });
+    published.push({ ...dest, type: item.type, title: catalogText(item.title || item.id || item.url), description: catalogText(item.description), attribution: catalogAttribution(item), ...(item.type === 'article' ? { topic: catalogText(item.section || 'Другие материалы') } : {}) });
   }
   assert.ok(published.length, 'No published article/series coverage');
   assert.equal(new Set(published.map((i) => i.href)).size, published.length, 'Duplicate published destination, not a title-based deduplication');
   const curated = curatedFromSource(curatedSource);
   assert.equal(new Set(curated.map((i) => i.href)).size, curated.length, 'Duplicate curated source entry');
   for (const item of curated) assert.ok(published.some((p) => p.href === item.href), `${item.href}: curated repeat must reference a published destination, never an extra publication`);
+  assert.ok(librarySource === undefined || typeof librarySource === 'string', 'Literal library adapter source required');
+  const topics = [...new Set(published.filter((i) => i.type === 'article').map((i) => i.topic))].map((name) => ({
+    name, hrefs: published.filter((i) => i.type === 'article' && i.topic === name).map((i) => i.href),
+  }));
   return { version: 1, counts: { article: published.filter((i) => i.type === 'article').length, series: published.filter((i) => i.type === 'series').length },
-    published, excluded, curated, curatedSourceSha256: digest(curatedSource) };
+    published, excluded, curated, curatedSourceSha256: digest(curatedSource),
+    topicNavigation: { required: Boolean(librarySource?.includes('data-catalog-topics')), topics,
+      adapterSourceSha256: librarySource === undefined ? null : digest(librarySource) } };
+}
+
+/** Semantic W1 adapter: one native SSR navigation, real named groups, exact
+ * source-derived memberships/counts. IDs/order/layout are not prescribed. */
+function catalogTopics(expectation, doc, library) {
+  const navs = all(doc, (n) => has(n, 'data-catalog-topics'));
+  const required = expectation.topicNavigation?.required || navs.length > 0;
+  if (!required) return { required: false, links: [] };
+  assert.equal(navs.length, 1, 'Exactly one source-owned SSR topic navigation required');
+  assert.ok(all(library, (n) => n === navs[0]).length, 'Topic navigation outside the exhaustive library');
+  staticAvailable(navs[0], 'SSR topics');
+  const links = [], visited = new Set(); let seriesJumps = 0;
+  for (const anchor of all(navs[0], (n) => n.tagName === 'a')) {
+    staticAvailable(anchor, 'SSR topic', { link: true });
+    const href = attr(anchor, 'href');
+    assert.ok(href?.startsWith('#') && href.length > 1, 'Topic navigation must be a native fragment, not a router');
+    const id = decodeURIComponent(href.slice(1)), targets = all(doc, (n) => attr(n, 'id') === id);
+    assert.equal(targets.length, 1, 'Topic navigation target must be unique');
+    const target = targets[0]; staticAvailable(target, href);
+    const targetSeries = all(target, (n) => has(n, 'data-catalog-series'));
+    if (targetSeries.length) {
+      assert.equal(all(target, (n) => has(n, 'data-catalog-route')).length, 0, 'Series jump mixes article groups');
+      assert.deepEqual(targetSeries.map((n) => attr(n, 'data-catalog-series')).sort(), expectation.published.filter((i) => i.type === 'series').map((i) => i.href).sort(), 'Series navigation membership drift');
+      seriesJumps++; links.push({ href, id, kind: 'series', label: text(anchor), count: null }); continue;
+    }
+    assert.match(target.tagName || '', /^h[2-6]$/, 'A topic must target its real SSR heading');
+    const name = text(target), expected = expectation.topicNavigation.topics.find((t) => t.name === name);
+    assert.ok(expected && !visited.has(name), `Unknown/duplicate SSR topic: ${name}`); visited.add(name);
+    let group = target.parentNode;
+    while (group && group !== library && !(group.tagName === 'section' && (attr(group, 'aria-labelledby') || '').split(/\s+/).includes(id))) group = group.parentNode;
+    assert.ok(group && group !== library, 'Topic heading must label its semantic group');
+    assert.deepEqual(all(group, (n) => has(n, 'data-catalog-route')).map((n) => attr(n, 'data-catalog-route')).sort(), [...expected.hrefs].sort(), `SSR topic membership drift: ${name}`);
+    assert.equal(all(group, (n) => has(n, 'data-catalog-series')).length, 0, 'Article topic mixes series');
+    const labels = (anchor.childNodes || []).filter((n) => n.tagName === 'span' && !classes(n).includes('articles-topic-count'));
+    const counts = all(anchor, (n) => classes(n).includes('articles-topic-count'));
+    assert.equal(field(anchor, labels, 'SSR topic label', true), name, 'Topic navigation label drift');
+    assert.equal(field(anchor, counts, 'SSR topic count', true), String(expected.hrefs.length), 'Dynamic SSR topic count drift');
+    links.push({ href, id, kind: 'topic', label: name, count: expected.hrefs.length });
+  }
+  assert.deepEqual([...visited].sort(), expectation.topicNavigation.topics.map((t) => t.name).sort(), 'Omitted/extra SSR topic');
+  assert.equal(seriesJumps, expectation.counts.series > 0 ? 1 : 0, 'Missing/duplicate series navigation');
+  assert.equal(new Set(links.map((l) => l.href)).size, links.length, 'Duplicate topic navigation destination');
+  return { required: true, links };
 }
 
 /** Actual SSR anchors, not just data attributes or unordered title includes. */
 export function assertCatalogHtml(expectation, html) {
   assert.equal(expectation.version, 1);
-  const doc = parse(html), libraries = all(doc, (n) => attr(n, 'data-catalog-source') === 'search-manifest+page-ownership');
+  const doc = parse(html, { scriptingEnabled: false }), libraries = all(doc, (n) => attr(n, 'data-catalog-source') === 'search-manifest+page-ownership');
   assert.equal(libraries.length, 1, 'Exactly one authority-derived catalog owner required');
   const library = libraries[0], marked = all(doc, (n) => has(n, 'data-catalog-route') || has(n, 'data-catalog-series'));
   assert.equal(marked.length, expectation.published.length, 'Published card count differs from dynamic authority');
@@ -202,7 +251,7 @@ export function assertCatalogHtml(expectation, html) {
     return cardRecord(card, { type: 'curated', href, expected, curated: true });
   });
   assert.deepEqual(curated.map((r) => r.href).sort(), expectation.curated.map((r) => r.href).sort(), 'Curated repeat omission/duplication');
-  return { counts: expectation.counts, published: records, curated, htmlSha256: digest(html) };
+  return { counts: expectation.counts, published: records, curated, topicNavigation: catalogTopics(expectation, doc, library), htmlSha256: digest(html) };
 }
 
 /** Serialized by Playwright; no product JS/filters or init-script dependence. */
@@ -224,7 +273,22 @@ export function catalogBrowserSnapshot(selectors) {
   }
   function visibleText(el) {
     if (!el || !available(el)) return false;
-    return [...el.querySelectorAll('*')].every((n) => !normalize(n.textContent) || available(n));
+    if (![...el.querySelectorAll('*')].every((n) => !normalize(n.textContent) || available(n))) return false;
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let painted = 0;
+    while (walker.nextNode()) {
+      const node = walker.currentNode; if (!normalize(node.textContent)) continue;
+      const range = document.createRange(); range.selectNodeContents(node);
+      for (const r of range.getClientRects()) {
+        if (!r.width || !r.height) continue; painted++;
+        if (r.left < -1 || r.right > innerWidth + 1) return false;
+        for (let n = node.parentElement; n; n = n.parentElement) {
+          const s = getComputedStyle(n), b = n.getBoundingClientRect(), clamp = Number.parseInt(s.webkitLineClamp, 10) > 0;
+          if (['hidden', 'clip', 'auto', 'scroll'].includes(s.overflowX) && (r.left < b.left - 1 || r.right > b.right + 1)) return false;
+          if ((clamp || ['hidden', 'clip', 'auto', 'scroll'].includes(s.overflowY)) && (r.top < b.top - 1 || r.bottom > b.bottom + 1)) return false;
+        }
+      }
+    }
+    return !normalize(el.textContent) || painted > 0;
   }
   function record(card, scope) {
     const title = card.querySelector('h2,h3,h4,h5,h6');
@@ -242,7 +306,14 @@ export function catalogBrowserSnapshot(selectors) {
   }
   const library = document.querySelector(selectors.library), curated = document.querySelector(selectors.curated);
   return { published: [...(library?.querySelectorAll(selectors.published) || [])].map((c) => record(c, 'published')),
-    curated: [...(curated?.querySelectorAll('a') || [])].map((c) => record(c, 'curated')) };
+    curated: [...(curated?.querySelectorAll('a') || [])].map((c) => record(c, 'curated')),
+    topics: [...document.querySelectorAll('[data-catalog-topics] a')].map((a) => {
+      const href = a.getAttribute('href'), count = a.querySelector('.articles-topic-count');
+      const label = count ? [...a.children].find((n) => n.tagName === 'SPAN' && n !== count) : a;
+      const target = href?.startsWith('#') ? document.getElementById(decodeURIComponent(href.slice(1))) : null;
+      return { href, label: normalize(label?.innerText), count: count ? Number(normalize(count.innerText)) : null,
+        available: available(a), labelAvailable: visibleText(label), targetAvailable: available(target), nativeTabbable: a.tagName === 'A' && a.tabIndex >= 0 };
+    }) };
 }
 export function assertBrowserCatalog(snapshot, facts) {
   for (const scope of ['published', 'curated']) {
@@ -255,7 +326,46 @@ export function assertBrowserCatalog(snapshot, facts) {
       for (const key of ['available', 'nativeTabbable', 'titleAvailable', 'descriptionAvailable', 'roleAvailable']) assert.equal(record[key], true, `${record.href}: ${key} failed (CSS/hidden/keyboard)`);
     }
   }
-  return { published: facts.published.length, curated: facts.curated.length };
+  if (snapshot.topicNavigation?.required) {
+    assert.deepEqual((facts.topics || []).map((t) => t.href).sort(), snapshot.topicNavigation.links.map((t) => t.href).sort(), 'Browser SSR topic set/multiplicity changed');
+    for (const topic of facts.topics) {
+      const expected = snapshot.topicNavigation.links.find((t) => t.href === topic.href);
+      assert.equal(topic.label, expected.label, 'Browser topic label drift'); assert.equal(topic.count, expected.count, 'Browser topic count drift');
+      for (const key of ['available', 'labelAvailable', 'targetAvailable', 'nativeTabbable']) assert.equal(topic[key], true, `Topic ${topic.href}: ${key} failed`);
+    }
+  }
+  return { published: facts.published.length, curated: facts.curated.length,
+    ...(snapshot.topicNavigation?.required ? { topics: facts.topics.length } : {}) };
+}
+
+/** Parse the actual SSR palette contract, not an emulated no-JS theme switch. */
+export function catalogSsrTheme(html) {
+  const doc = parse(html, { scriptingEnabled: false }), root = all(doc, (n) => n.tagName === 'html')[0];
+  return { reader: attr(root, 'data-reader-theme') ?? null, legacy: attr(root, 'data-theme') ?? null,
+    darkClass: classes(root).includes('dark'), readerRequired: all(doc, (n) => has(n, 'data-journal-theme')).length > 0 };
+}
+/** Serialized read-only; GBReaderPreferences remains the only runtime owner. */
+export function catalogThemeSnapshot() {
+  const root = document.documentElement, api = window.GBReaderPreferences;
+  return { reader: root.getAttribute('data-reader-theme'), legacy: root.getAttribute('data-theme'), darkClass: root.classList.contains('dark'),
+    readerApi: Boolean(api && typeof api.get === 'function'), runtimeTheme: api && typeof api.get === 'function' ? api.get().theme : null };
+}
+export function assertCatalogTheme(facts, { preference, javaScriptEnabled, ssr }) {
+  assert.ok(['light', 'dark'].includes(preference), 'Explicit browser theme preference required');
+  let effectiveTheme = facts.reader || facts.legacy || (facts.darkClass ? 'dark' : 'light');
+  assert.ok(['light', 'dark'].includes(effectiveTheme), 'Unknown rendered theme');
+  if (javaScriptEnabled) {
+    if (ssr.readerRequired) {
+      assert.equal(facts.readerApi, true, 'Selected theme owner is missing');
+      assert.equal(facts.reader, preference, 'Canonical data-reader-theme differs from browser preference');
+      assert.equal(facts.runtimeTheme, preference, 'Canonical theme API and DOM differ');
+    }
+    assert.equal(effectiveTheme, preference, 'Rendered theme differs from requested browser preference');
+  } else {
+    for (const key of ['reader', 'legacy', 'darkClass']) assert.equal(facts[key], ssr[key], 'No-JS palette differs from actual SSR');
+    assert.equal(facts.readerApi, false, 'No-JS must not claim an initialized theme runtime');
+  }
+  return { ...facts, effectiveTheme, requestedPreference: preference, mode: javaScriptEnabled ? 'runtime' : 'actual-SSR-not-emulated-theme' };
 }
 
 /** HTTP status/redirect/fragment checks are separate from manifest ownership. */
