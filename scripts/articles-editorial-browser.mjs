@@ -12,7 +12,7 @@ import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { chromium } from 'playwright';
 import { parse } from 'parse5';
-import { attribute, catalogProvenance, descendants, inspectCatalogHtml, parseCatalogArguments, projectCatalog } from './articles-editorial-contract.mjs';
+import { assertCatalogImageBudget, attribute, catalogProvenance, descendants, inspectCatalogHtml, parseCatalogArguments, projectCatalog } from './articles-editorial-contract.mjs';
 const require = createRequire(import.meta.url);
 const { monitorRuntime } = require('./lib/browser-runtime-noise.js');
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -98,7 +98,8 @@ try {
       const curated = page.locator('[data-catalog-featured-repeat]');
       if (await curated.count()) { await curated.scrollIntoViewIfNeeded(); await settle(page); item.curatedImageDecoded = await curated.locator('img').evaluate((e) => e.complete && e.naturalWidth > 0); assert.equal(item.curatedImageDecoded, true); await page.screenshot({ path: path.join(out, 'screens', `curated-${width}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}.png`) }); }
       item.readerImageRequests = await page.evaluate(() => performance.getEntriesByType('resource').filter((e) => e.initiatorType === 'img').map((e) => ({ url: e.name, bytes: e.encodedBodySize, duration: e.duration })));
-      assert.ok(item.readerImageRequests.length <= 1, 'Text-first catalog fetched an image gallery');
+      const renderedImageSources = await page.locator('.journal-edition--articles img').evaluateAll((els) => els.map((e) => e.currentSrc));
+      item.imageBudget = assertCatalogImageBudget(item.readerImageRequests, renderedImageSources);
       assert.deepEqual(item.runtime, []);
     }); } finally { await context.close(); }
   }

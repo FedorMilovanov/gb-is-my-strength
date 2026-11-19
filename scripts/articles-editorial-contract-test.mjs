@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { documentMetadata, expectedAttribution, inspectCatalogHtml, parseCatalogArguments, projectCatalog } from './articles-editorial-contract.mjs';
+import { assertCatalogImageBudget, documentMetadata, expectedAttribution, inspectCatalogHtml, parseCatalogArguments, projectCatalog } from './articles-editorial-contract.mjs';
 
 const escape = (s) => String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 const article = { type: 'article', url: '/articles/original/', title: 'Текст «с кавычками» — 30 409 и 31 880', description: 'Точное описание: без потерянного пробела.', image: '/images/original.webp', author: 'Фёдор Милованов', editor: 'Фёдор Милованов', readTime: 23 };
@@ -19,6 +19,19 @@ function fixture() {
 }
 const inspect = (html = fixture(), options = {}) => inspectCatalogHtml(html, { manifest, ownership, ...options });
 
+test('image budget separates the raw no-JS telemetry pixel from the one rendered cover', () => {
+  const cover = { url: 'https://catalog.invalid/images/curated.webp', bytes: 12345 }, pixel = { url: 'https://mc.yandex.ru/watch/123', bytes: 0 };
+  assert.deepEqual(assertCatalogImageBudget([pixel, cover], [cover.url]), { content: [cover], telemetry: [pixel] });
+});
+test('image budget rejects an additional same-origin OG even if a telemetry pixel is present', () => {
+  assert.throws(() => assertCatalogImageBudget([{ url: 'https://mc.yandex.ru/watch/123' }, { url: 'https://catalog.invalid/images/curated.webp' }, { url: 'https://catalog.invalid/images/og.webp' }], ['https://catalog.invalid/images/curated.webp']), /fetched an image gallery/);
+});
+test('image budget never treats an unknown external image as telemetry', () => {
+  assert.throws(() => assertCatalogImageBudget([{ url: 'https://api.yandex.net/unknown.webp' }], []), /Unexpected catalog image/);
+});
+test('image budget rejects a rendered gallery even before its lazy requests', () => {
+  assert.throws(() => assertCatalogImageBudget([], ['https://catalog.invalid/a.webp', 'https://catalog.invalid/b.webp']), /rendered an image gallery/);
+});
 test('published projection is dynamically derived, not a hardcoded live count', () => {
   assert.equal(projectCatalog(manifest, ownership).length, 3);
   assert.equal(projectCatalog({ items: [article] }, ownership).length, 1);

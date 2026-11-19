@@ -9,6 +9,8 @@ import { parse } from 'parse5';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
+const { isExternalTelemetryNetworkNoise } = createRequire(import.meta.url)('./lib/browser-runtime-noise.js');
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const normalize = (value) => String(value ?? '').replace(/\s+/gu, ' ').trim();
@@ -26,6 +28,17 @@ export function parseCatalogArguments(argv, valueNames, flagNames = []) {
     else { assert.ok(valueNames.includes(name), `Unknown option: ${name}`); assert.ok(at > 2 && arg.slice(at + 1), `Option requires a value: ${name}`); result[name] = arg.slice(at + 1); }
   }
   return result;
+}
+/** Keep raw requests in the browser receipt. The no-JS Metrica pixel is not
+ * a cover download; only the existing structured telemetry owner may classify
+ * it. Unknown external images and every extra same-origin image still fail. */
+export function assertCatalogImageBudget(requests, renderedSources) {
+  const classified = (entry) => isExternalTelemetryNetworkNoise(`REQUEST image ${entry.url}`);
+  const telemetry = requests.filter(classified), content = requests.filter((entry) => !classified(entry));
+  assert.ok(new Set(renderedSources).size <= 1, 'Text-first catalog rendered an image gallery');
+  assert.ok(content.length <= 1, 'Text-first catalog fetched an image gallery');
+  for (const entry of content) assert.ok(renderedSources.includes(entry.url), `Unexpected catalog image request: ${entry.url}`);
+  return { content, telemetry };
 }
 export function documentMetadata(html) {
   const nodes = descendants(parse(html, { scriptingEnabled: false }));
