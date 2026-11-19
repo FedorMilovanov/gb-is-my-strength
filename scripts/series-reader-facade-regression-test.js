@@ -137,4 +137,32 @@ assert.match(seriesRailSource, /aria-controls="gbsTocScroll"/, 'series TOC scrol
 /* Prevent a zero-height current chapter on short desktop windows. */
 const currentCardStyles = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/gill-series/GillSeriesImagePremium.astro'), 'utf8');
 assert.ok(currentCardStyles.includes('max-height:640px') && currentCardStyles.includes('.gbs2-rmid > .gbs2-current') && currentCardStyles.includes('flex-shrink: 0;'), 'short viewport current-card flex guard');
+
+/* Gill premium-layout contract (2026-11-19): one responsive owner. */
+const gillResponsiveOwner = fs.readFileSync(
+  path.join(ROOT, 'src/components/article-pilots/gill-series/GillSeriesResponsiveStyles.astro'), 'utf8');
+const gillPart2Header = fs.readFileSync(
+  path.join(ROOT, 'src/components/article-pilots/gill-part2/GillPart2HeaderHero.astro'), 'utf8');
+const canonicalSpeedCss = fs.readFileSync(
+  path.join(ROOT, 'src/styles/reader-mobile-canonical.css'), 'utf8');
+assert.match(gillResponsiveOwner, /margin-left:\s*max\([\s\S]*?22vw[\s\S]*?24px/,
+  'Gill content centre must preserve a 24px fixed-rail clearance');
+assert.match(gillResponsiveOwner, /orientation:\s*landscape[\s\S]*?max-height:\s*500px/,
+  'short landscape must receive its own compact reading layout');
+assert.match(gillResponsiveOwner, /max-width:\s*220px/,
+  'landscape mobile TOC trigger must not fill the entire header');
+assert.match(gillResponsiveOwner, /height:\s*clamp\(116px,\s*34dvh,\s*144px\)/,
+  'short landscape hero must let the title into the first viewport');
+assert.match(gillResponsiveOwner, /--gb-gill-paper:\s*#141312/,
+  'Gill dark surfaces must use the warm editorial paper token');
+assert.match(gillResponsiveOwner, /reader-mobile-speed-badge::before/,
+  'secondary speed control must retain the reduced-contrast fill');
+assert.match(gillPart2Header, /<span class="gill-life-years">\(1697–1771\)<\/span>/,
+  'historical life-year range must be an unbreakable inline unit');
+assert.match(gillResponsiveOwner, /\.gill-life-years\s*\{\s*white-space:\s*nowrap;/,
+  'nowrap is allowed only on the life-year range, not the entire heading');
+assert.match(canonicalSpeedCss,
+  /min-width:\s*44px;\s*min-height:\s*44px;\s*height:\s*44px;/,
+  'canonical mobile speed options retain 44px touch targets');
+
 console.log(`✅ series-reader-facade: ${facadeImports} consumers; canonical composition directly owned; historical implementation retired; content-layer rendering uses Astro render(entry); heart progress fail-closed; mobile Back config-owned; no-quiz Learning panel relation guarded; Learning search has persistent accessible name; ${strictFragmentSummary}`);
