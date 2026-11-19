@@ -32,7 +32,8 @@ assert.ok(!publicOnly || !args['history-origin'], 'Public-only acceptance must n
 const transfer = args.transfer ? JSON.parse(fs.readFileSync(args.transfer, 'utf8')) : null;
 assert.ok(!transfer || publicOnly, 'A gitless composite must explicitly use --public-only=true');
 assert.ok(['chromium', 'firefox', 'webkit'].includes(engine), 'unknown browser engine');
-assert.ok(['full', 'short', 'mobile', 'print'].includes(suite), 'use --suite=full|short|mobile|print');
+assert.ok(['full', 'short', 'mobile', 'print', 'forced-colors'].includes(suite), 'use --suite=full|short|mobile|print|forced-colors');
+assert.ok(suite !== 'forced-colors' || engine === 'chromium', 'forced-colors system-palette witness currently requires actual Chromium');
 assert.ok(suite !== 'print' || engine === 'chromium', 'actual PDF generation requires Chromium; do not substitute an emulated print DOM');
 const axePath = args.axe || path.join(root, 'node_modules/axe-core/axe.min.js');
 assert.ok(suite === 'print' || fs.existsSync(axePath), 'provide --axe=<existing axe-core file>; do not silently skip the accessibility audit');
@@ -55,7 +56,7 @@ const report = { engine, suite, version: null, head: transfer ? null : execFileS
   publicOnly, composite: transfer ? { base: transfer.base, source: transfer.source, notCanonicalGitCommit: true } : null,
   visibleScrollbars,
   note: 'Local artifact/manuscript only. axe is automated evidence, not full WCAG or artistic signoff. Timings are local lab, not field Core Web Vitals. Short-window theme is the browser color preference; no-JS retains the existing SSR palette.',
-  sourceSha256: {}, cases: [], interactions: [], shortViewports: [], mobileFocus: [], printCases: [], problems: [] };
+  sourceSha256: {}, cases: [], interactions: [], shortViewports: [], mobileFocus: [], forcedColors: [], printCases: [], problems: [] };
 const witnessFiles = [
   ...['G3Dossier.astro', 'G3HistoryArticle.astro', 'G3HistoryFeature.astro', 'JournalLanding.astro', 'JournalMasthead.astro', 'JournalArticleHeader.astro', 'JournalContents.astro', 'JournalDataFigure.astro', 'JournalSourceReturn.astro', 'JournalDocumentHead.astro', 'JournalFontPreloads.astro', 'journalEditorial.css', 'g3History.css'].map((name) => `src/components/journal/${name}`),
   ...['g3EditorialMedia.ts', 'g3HistoryDraftSources.ts', 'g3HistoryDraftMetadata.ts', 'g3ProductMetadata.ts', 'g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'journalProductMetadata.ts'].map((name) => `src/data/journal/${name}`),
@@ -737,6 +738,65 @@ try {
           await shot(page, `${name}-failure`).catch(() => {});
         } finally { report.mobileFocus.push(item); await context.close(); }
       }
+  // Agent4/#2339 confirmed this on selected Agent8: forced colors exposes all
+  // transparent borders, erasing the current-section distinction. Check actual
+  // computed system colors in Chromium, not hard-coded RGB or a CSS text regex.
+  if (['full', 'forced-colors'].includes(suite) && engine === 'chromium')
+    for (const route of routes.filter((route) => route.kind !== 'history'))
+      for (const width of [390, 1440]) for (const theme of ['light', 'dark']) {
+        const context = await contextFor(width, theme, { forcedColors: 'active' });
+        const page = await context.newPage(), item = { kind: route.kind, width, theme, runtime: [] };
+        const name = `${route.kind}-forced-${width}-${theme}`;
+        monitorRuntime(page, item.runtime, { isIgnoredConsole: (_, message) => !['error', 'warning'].includes(message.type()) });
+        try {
+          await ready(page, route.url);
+          item.state = await page.locator('.je-masthead__nav').evaluate((nav) => {
+            // Ephemeral test probe only; never disable forced-color adjustment.
+            const probe = document.createElement('span');
+            probe.style.cssText = 'position:absolute;color:Highlight;background:Canvas';
+            document.body.append(probe);
+            const style = getComputedStyle(probe), expected = { canvas: style.backgroundColor, highlight: style.color };
+            probe.remove();
+            return { active: matchMedia('(forced-colors: active)').matches, expected,
+              links: [...nav.querySelectorAll('a')].map((link) => {
+                const style = getComputedStyle(link);
+                return { current: link.hasAttribute('aria-current'), href: link.getAttribute('href'),
+                  border: style.borderBottomColor, width: style.borderBottomWidth, style: style.borderBottomStyle };
+              }) };
+          });
+          assert.equal(item.state.active, true);
+          assert.equal(item.state.links.length, 4, 'one four-link navigation owner');
+          assert.equal(item.state.links.filter((link) => link.current).length, 1);
+          assert.notEqual(item.state.expected.canvas, item.state.expected.highlight);
+          for (const link of item.state.links) {
+            assert.equal(link.width, '2px'); assert.equal(link.style, 'solid');
+            assert.equal(link.border, link.current ? item.state.expected.highlight : item.state.expected.canvas,
+              'Forced colors must distinguish the current section, not underline every link equally');
+          }
+          await shot(page, name);
+          const current = page.locator('.je-masthead__nav a[aria-current]');
+          await current.focus(); await page.keyboard.press('Tab'); await page.keyboard.press('Shift+Tab');
+          item.focus = await current.evaluate((link) => {
+            const style = getComputedStyle(link);
+            return { focused: document.activeElement === link, visible: link.matches(':focus-visible'),
+              width: parseFloat(style.outlineWidth), offset: parseFloat(style.outlineOffset),
+              style: style.outlineStyle, color: style.outlineColor, rect: link.getBoundingClientRect().toJSON(),
+              usableWidth: document.documentElement.clientWidth, height: innerHeight };
+          });
+          const f = item.focus, outset = Math.max(0, f.width + f.offset);
+          assert.ok(f.focused && f.visible && f.width >= 2 && f.style === 'solid');
+          assert.notEqual(f.color, item.state.expected.canvas, 'the keyboard outline must not vanish into Canvas');
+          assert.ok(f.rect.left - outset >= -1 && f.rect.right + outset <= f.usableWidth + 1
+            && f.rect.top - outset >= -1 && f.rect.bottom + outset <= f.height + 1);
+          await shot(page, `${name}-focus`);
+          assert.deepEqual(item.runtime, []);
+          console.log(`PASS ${name}`);
+        } catch (error) {
+          item.failure = error.message; item.stack = error.stack; report.problems.push(`${name}: ${error.message}`);
+          console.error(`FAIL ${name}: ${error.message.slice(0, 280)}`);
+          await shot(page, `${name}-failure`).catch(() => {});
+        } finally { report.forcedColors.push(item); await context.close(); }
+      }
   if (['full', 'print'].includes(suite) && engine === 'chromium') {
     const printDirectory = path.join(output, 'print');
     fs.mkdirSync(printDirectory, { recursive: true });
@@ -798,5 +858,5 @@ try {
   await browser.close();
   fs.writeFileSync(path.join(output, `browser-${engine}.json`), JSON.stringify(report, null, 2) + '\n');
 }
-console.log(`${report.cases.length} responsive + ${report.shortViewports.length} short-window + ${report.mobileFocus.length} mobile-focus + ${report.printCases.length} print cases; ${report.problems.length} problem(s); browser ${engine} ${report.version}`);
+console.log(`${report.cases.length} responsive + ${report.shortViewports.length} short-window + ${report.mobileFocus.length} mobile-focus + ${report.forcedColors.length} forced-colors + ${report.printCases.length} print cases; ${report.problems.length} problem(s); browser ${engine} ${report.version}`);
 if (report.problems.length) { console.error(report.problems.join('\n')); process.exitCode = 1; }

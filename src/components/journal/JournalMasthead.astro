@@ -95,6 +95,11 @@ const { active = 'journal' } = Astro.props;
   .je-masthead__nav { max-width: 1280px; margin: 0 auto; display: flex; gap: 34px; padding: 0 40px; border-top: 1px solid #2d4051; }
   .je-masthead__nav a { display: inline-flex; min-height: 44px; align-items: center; padding-block: 3px 0; border-bottom: 2px solid transparent; color: #efe6d7; text-decoration: none; font: 600 11px/1.5 'Source Sans 3', sans-serif; letter-spacing: .12em; text-transform: uppercase; }
   .je-masthead__nav a[aria-current] { border-color: #d6ad5d; color: #fff; }
+  /* High Contrast exposes transparent borders: distinguish only the current section. */
+  @media (forced-colors: active) {
+    .je-masthead__nav a { border-bottom-color: Canvas; }
+    .je-masthead__nav a[aria-current] { border-bottom-color: Highlight; }
+  }
   .je-masthead :is(a, button):focus-visible { outline: 2px solid #eacb85; outline-offset: 3px; }
   .je-masthead a:hover { color: #f9d997; }
   @media (max-width: 1150px) { .je-masthead__descriptor { display: none; } .je-masthead__home { margin-left: auto; } .je-masthead__actions { margin-left: 0; } }
