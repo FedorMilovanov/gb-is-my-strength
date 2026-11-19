@@ -255,6 +255,12 @@ html.dark .journal-edition {
   .journal-edition .journal-method { padding: 26px 0 0; border-left: 0; border-top: 1px solid var(--je-rule); }
   .journal-edition .journal-footer { margin-inline: 20px; padding-bottom: max(24px, env(safe-area-inset-bottom, 0px)); }
 }
+@media screen and (max-width: 389px) {
+  /* Two complete editorial phrases, not a font-dependent last-word wrap.
+     Both lines contain text: no reserved height or cold-paint hiding. */
+  .journal-edition .journal-kicker-part { display: block; }
+  .journal-edition .journal-kicker-separator { display: none; }
+}
 @media print {
   .journal-edition, html.dark .journal-edition { --je-paper: #fff; --je-paper-raised: #fff; --je-ink: #111; --je-muted: #333; --je-gold: #333; --je-rule: #aaa; background: #fff; color: #111; }
   .journal-edition :is(.je-masthead, .je-editorial-rail, .skip-link, .je-source-return) { display: none; }
