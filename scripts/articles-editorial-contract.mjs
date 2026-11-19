@@ -188,8 +188,13 @@ export function catalogProvenance(transferPath) {
   return { head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(), worktree: execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).trim() };
 }
 function main() {
-  const args = parseCatalogArguments(process.argv.slice(2), ['dist', 'baseline', 'output', 'transfer'], ['source-only']);
-  const report = { ...catalogProvenance(args.transfer), source: assertCatalogSource() };
+  const args = parseCatalogArguments(process.argv.slice(2), ['dist', 'baseline', 'output', 'transfer'], ['source-only', 'functional-check']);
+  assert.ok(!(args.transfer && args['functional-check']), 'Do not mix pinned transfer provenance with an unattributed functional check');
+  // Existing repository UI audits also run in Gitless release exports. They
+  // assert the same full source/SSR contract without inventing a Git HEAD.
+  // Exact-head acceptance runs this CLI separately with Git or --transfer.
+  const provenance = args['functional-check'] ? { head: null, worktree: null, unattributedFunctionalCheck: true, exactHeadAcceptance: false } : catalogProvenance(args.transfer);
+  const report = { ...provenance, source: assertCatalogSource() };
   if (!args['source-only']) {
     const html = fs.readFileSync(path.join(root, args.dist || 'dist', 'articles/index.html'), 'utf8');
     report.catalog = inspectCatalogHtml(html, { manifest: JSON.parse(fs.readFileSync(path.join(root, 'data/search-manifest.json'))), ownership: JSON.parse(fs.readFileSync(path.join(root, 'migration/page-ownership.json'))), baselineHtml: args.baseline ? fs.readFileSync(args.baseline, 'utf8') : undefined });

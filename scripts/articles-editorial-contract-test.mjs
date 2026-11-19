@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { documentMetadata, expectedAttribution, inspectCatalogHtml, parseCatalogArguments, projectCatalog } from './articles-editorial-contract.mjs';
 
 const escape = (s) => String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
@@ -93,4 +95,15 @@ test('native reading order keeps materials before series, not merely the same se
 test('CLI fails closed on unknown, duplicate, missing and malformed options', () => {
   assert.deepEqual(parseCatalogArguments(['--source-only', '--output=reports/test'], ['output'], ['source-only']), { 'source-only': true, output: 'reports/test' });
   for (const argv of [['--source-onyl'], ['--output'], ['--output='], ['--output=a', '--output=b'], ['output=x'], ['--source-only=true']]) assert.throws(() => parseCatalogArguments(argv, ['output'], ['source-only']));
+});
+
+test('functional guard mode is explicitly unattributed, not fabricated Gitless integration evidence', () => {
+  const result = spawnSync(process.execPath, [fileURLToPath(new URL('./articles-editorial-contract.mjs', import.meta.url)), '--functional-check', '--source-only'], { encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr); const report = JSON.parse(result.stdout);
+  assert.equal(report.head, null); assert.equal(report.worktree, null); assert.equal(report.unattributedFunctionalCheck, true); assert.equal(report.exactHeadAcceptance, false);
+  assert.equal(report.source.selectedShell, true);
+});
+test('functional and pinned transfer modes cannot be mixed', () => {
+  const result = spawnSync(process.execPath, [fileURLToPath(new URL('./articles-editorial-contract.mjs', import.meta.url)), '--functional-check', '--source-only', '--transfer=not-used.json'], { encoding: 'utf8' });
+  assert.notEqual(result.status, 0); assert.match(result.stderr, /Do not mix pinned transfer provenance/);
 });

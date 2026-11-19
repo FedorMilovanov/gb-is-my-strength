@@ -189,7 +189,7 @@ if (REQUIRE_DIST) {
 
 // Owner-approved presentation migration strengthens the existing gate: parse
 // the no-JS output and fail on competing owners, text/roles/membership or SEO.
-const editorial = spawnSync(process.execPath, ['scripts/articles-editorial-contract.mjs', ...(REQUIRE_DIST ? [] : ['--source-only'])], { cwd: ROOT, encoding: 'utf8' });
+const editorial = spawnSync(process.execPath, ['scripts/articles-editorial-contract.mjs', '--functional-check', ...(REQUIRE_DIST ? [] : ['--source-only'])], { cwd: ROOT, encoding: 'utf8' });
 if (editorial.status === 0) ok('selected edition source / SSR ownership contract passed');
 else bad(`selected edition contract failed: ${editorial.stderr || editorial.stdout || editorial.error}`);
 
