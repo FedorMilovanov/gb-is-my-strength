@@ -72,7 +72,7 @@ must(chrome, 'CollectionPage', 'ArticlesPageChrome preserves JSON-LD CollectionP
 must(chrome, 'SITE_CONFIG', 'ArticlesPageChrome preserves SITE_CONFIG');
 must(page, '<JournalEditorialShell', 'Catalog reuses the selected edition shell');
 must(page, 'kind="articles"', 'Catalog selects its own active edition section');
-must(chrome, '<JournalFontPreloads catalogUi />', 'Catalog reuses the selected font hint owner with its cold UI opt-in');
+must(chrome, '<JournalFontPreloads catalogOpening />', 'Catalog reuses the selected font hint owner with its cold opening opt-in');
 must(main, '<main id="main-content" tabindex="-1">', 'ArticlesMain preserves native-focus semantic main');
 mustNot(main, '<SiteSectionsMenu', 'competing legacy menu beside selected masthead');
 must(page, "mobileChromeFor('/articles/')", 'Catalog preserves mobile registry authority');
