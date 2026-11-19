@@ -152,6 +152,22 @@
     }
   }
 
+  /* The rail Play control is 32px, its peers are 40–44px. Keep SVGs
+     untouched; make the five desktop action centres land every 48px. */
+  @media (min-width: 85em) {
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .gbs-theme-corner {
+      gap: 8px;
+    }
+    body[data-gbs2-series="dzhon-gill"]
+      .gbs2-world[data-gill-v16] .gbs-theme-corner .gb-ember-wrap {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+    }
+  }
+
   /* Warm dark-paper scale: paper, rail and floating actions share one family.
      Restrict to Gill; do not recolour independent article/series engines. */
   html.dark body[data-gbs2-series="dzhon-gill"] {
