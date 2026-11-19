@@ -155,6 +155,8 @@ assert.match(gillResponsiveOwner, /height:\s*min\(38dvh,\s*320px\)/,
   'ordinary landscape tablet hero must not dominate the first viewport');
 assert.match(gillResponsiveOwner, /@media \(max-width: 60em\)[\s\S]*?mobile-btoc-section\s*\{\s*min-height:\s*44px;/,
   'Gill phone and small-tablet current chapter 44px touch target is mandatory');
+assert.match(gillResponsiveOwner, /mobile-bottom-bar\s*\{\s*background:\s*rgba\(25,\s*23,\s*21,\s*\.96\)\s*!important;/,
+  'Gill warm dark palette legacy bar override stays scoped to 961–1359px');
 assert.match(gillResponsiveOwner, /@media \(min-width: 60\.0625em\) and \(max-width: 84\.999em\)/,
   'mid-width Gill bar must have a scoped bridge between 960px and 1360px');
 assert.match(gillResponsiveOwner, /mobile-btoc-section\s*\{[\s\S]*?appearance:\s*none;[\s\S]*?min-height:\s*44px;/,
