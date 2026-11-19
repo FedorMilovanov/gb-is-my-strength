@@ -149,6 +149,14 @@ assert.match(gillResponsiveOwner, /margin-left:\s*max\([\s\S]*?22vw[\s\S]*?24px/
   'Gill content centre must preserve a 24px fixed-rail clearance');
 assert.match(gillResponsiveOwner, /orientation:\s*landscape[\s\S]*?max-height:\s*500px/,
   'short landscape must receive its own compact reading layout');
+assert.match(gillResponsiveOwner, /@media \(min-width: 40em\) and \(max-width: 84\.999em\)/,
+  'tablet Gill TOC must stay bounded before the desktop rail breakpoint');
+assert.match(gillResponsiveOwner, /height:\s*min\(38dvh,\s*320px\)/,
+  'ordinary landscape tablet hero must not dominate the first viewport');
+assert.match(gillResponsiveOwner, /@media \(min-width: 60\.0625em\) and \(max-width: 84\.999em\)/,
+  'mid-width Gill bar must have a scoped bridge between 960px and 1360px');
+assert.match(gillResponsiveOwner, /mobile-btoc-section\s*\{[\s\S]*?appearance:\s*none;[\s\S]*?min-height:\s*44px;/,
+  'mid-width Gill bar must render a native 44px section button rather than the browser default');
 assert.match(gillResponsiveOwner, /max-width:\s*220px/,
   'landscape mobile TOC trigger must not fill the entire header');
 assert.match(gillResponsiveOwner, /height:\s*clamp\(116px,\s*34dvh,\s*144px\)/,
