@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { catalogOptions, catalogReportDirectory, assertCatalogBuildReceipt, verifiedCatalogRoute } from './articles-catalog-coverage.mjs';
+import { catalogOptions, catalogReportDirectory, assertCatalogBuildReceipt, verifiedCatalogRoute, catalogAssetQueue } from './articles-catalog-coverage.mjs';
 import {
   catalogAttribution, catalogDestination, catalogExpectation, assertCatalogHtml,
   assertCatalogDestination, assertBrowserCatalog,
@@ -243,4 +243,32 @@ test('external analytics are blocked; native document requests are not synthesiz
     const f = assetFixture(change); await verifiedCatalogRoute(f.route, f.options);
     assert.deepEqual(f.calls.map((c) => c[0]), [expected]); assert.equal(f.pins.length, 0);
   }
+});
+
+
+test('asset queue caps FIFO concurrency instead of overwhelming a static preview server', async () => {
+  const schedule = catalogAssetQueue(2), releases = [], started = [];
+  let active = 0, peak = 0;
+  const tasks = Array.from({ length: 5 }, (_, i) => schedule(async () => {
+    started.push(i); active++; peak = Math.max(peak, active);
+    await new Promise((resolve) => releases.push(resolve)); active--; return i;
+  }));
+  assert.equal(active, 2);
+  for (let i = 0; i < 5; i++) {
+    assert.ok(releases.length > 0); releases.shift()(); await new Promise(setImmediate);
+  }
+  assert.deepEqual(await Promise.all(tasks), [0, 1, 2, 3, 4]);
+  assert.deepEqual(started, [0, 1, 2, 3, 4]); assert.equal(peak, 2); assert.equal(active, 0);
+});
+test('asset queue releases a rejected slot; failed asset cannot deadlock later requests', async () => {
+  const schedule = catalogAssetQueue(1);
+  const first = schedule(async () => { throw new Error('bad asset'); });
+  const second = schedule(async () => 'next request');
+  await assert.rejects(first, /bad asset/); assert.equal(await second, 'next request');
+});
+test('asset queue rejects invalid limits and verified routing uses the supplied schedule', async () => {
+  for (const limit of [0, -1, NaN, 1.5]) assert.throws(() => catalogAssetQueue(limit));
+  const f = assetFixture(); let scheduled = false;
+  await verifiedCatalogRoute(f.route, { ...f.options, schedule: async (task) => { scheduled = true; return task(); } });
+  assert.equal(scheduled, true); assert.equal(f.pins.length, 1);
 });

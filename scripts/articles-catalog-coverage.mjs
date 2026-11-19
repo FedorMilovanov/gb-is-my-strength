@@ -96,18 +96,32 @@ function verifyOptionalSeals(receipt, runtimeSha, artifact) {
   return result;
 }
 
+/** API request interception must not fan out beyond native HTTP connection
+ * limits (no-JS pages can request every lazy image eagerly). FIFO; no retries. */
+export function catalogAssetQueue(limit = 6) {
+  assert.ok(Number.isInteger(limit) && limit > 0, 'Positive asset concurrency required');
+  let active = 0;
+  const waiting = [];
+  return async (task) => {
+    if (active < limit) active++; else await new Promise((resolve) => waiting.push(resolve));
+    try { return await task(); }
+    finally { if (waiting.length) waiting.shift()(); else active--; }
+  };
+}
 /** Capture actual HTTP bytes BEFORE forwarding; never defer CDP response.body
  * across navigation. route.fetch's bounded API response survives document exit. */
-export async function verifiedCatalogRoute(route, { origin, readArtifact, onPin }) {
+export async function verifiedCatalogRoute(route, { origin, readArtifact, onPin, schedule = (task) => task() }) {
   const request = route.request(), url = new URL(request.url());
   if (url.origin !== origin) return route.abort();
   if (request.resourceType() === 'document') return route.continue();
-  const response = await route.fetch({ timeout: 15000, maxRedirects: 0 });
-  assert.equal(response.status(), 200, `Asset HTTP failure: ${url.pathname}`);
-  const bytes = await response.body(), local = readArtifact(decodeURIComponent(url.pathname).slice(1));
-  assert.equal(sha256(bytes), sha256(local), `Served asset differs from artifact: ${url.pathname}`);
-  onPin({ url: url.pathname + url.search, sha256: sha256(local) });
-  return route.fulfill({ response, body: bytes });
+  return schedule(async () => {
+    const response = await route.fetch({ timeout: 15000, maxRedirects: 0 });
+    assert.equal(response.status(), 200, `Asset HTTP failure: ${url.pathname}`);
+    const bytes = await response.body(), local = readArtifact(decodeURIComponent(url.pathname).slice(1));
+    assert.equal(sha256(bytes), sha256(local), `Served asset differs from artifact: ${url.pathname}`);
+    onPin({ url: url.pathname + url.search, sha256: sha256(local) });
+    return route.fulfill({ response, body: bytes });
+  });
 }
 
 export async function runCatalogCoverage(argv = process.argv.slice(2)) {
@@ -123,7 +137,7 @@ export async function runCatalogCoverage(argv = process.argv.slice(2)) {
       'Browser color-scheme preferences are requested; no-JS retains the actual SSR palette', 'Build identity is a caller receipt; optional full source/artifact seals are independently verified when supplied'],
   };
   let browser;
-  const resourcePins = new Map(), jobs = new Set();
+  const resourcePins = new Map(), jobs = new Set(), scheduleAsset = catalogAssetQueue(6);
   try {
     assert.equal(git(['cat-file', '-t', args['runtime-sha']]).trim(), 'commit', 'Fetch the exact source commit without switching branches');
     const artifact = fs.realpathSync(args['artifact-root']);
@@ -164,7 +178,7 @@ export async function runCatalogCoverage(argv = process.argv.slice(2)) {
       const label = `${width}-${preference}-${javaScriptEnabled ? 'js' : 'no-js'}`;
       const context = await browser.newContext({ viewport: { width, height: width < 768 ? 844 : 1080 }, colorScheme: preference, javaScriptEnabled, reducedMotion: 'reduce', serviceWorkers: 'block' });
       await context.route('**/*', (route) => {
-        const job = verifiedCatalogRoute(route, { origin: args.origin.origin,
+        const job = verifiedCatalogRoute(route, { origin: args.origin.origin, schedule: scheduleAsset,
           readArtifact: (name) => fs.readFileSync(containedFile(artifact, name)),
           onPin: (pin) => resourcePins.set(pin.url, pin),
         }).catch(async (e) => {
