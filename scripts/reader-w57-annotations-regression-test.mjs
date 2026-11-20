@@ -1,0 +1,104 @@
+#!/usr/bin/env node
+// W57 annotation data-integrity tests: run against actual pilot source.
+// No browser storage, published article or user record is modified.
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {dirname,resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+const file=readFileSync(resolve(root,'research/reader-w57-pilot/assets/reader_w57_annotations.js'),'utf8');
+const preview=readFileSync(resolve(root,'research/reader-w57-pilot/assets/reader_universal_preview.js'),'utf8');
+const css=readFileSync(resolve(root,'research/reader-w57-pilot/assets/reader_w57.css'),'utf8');
+const excerpt=(start,end)=>{
+ const from=file.indexOf(start),to=file.indexOf(end,from+start.length);
+ assert.ok(from>=0&&to>from,'W57 function owner: '+start);
+ return file.slice(from,to);
+};
+const noteSource=excerpt('    function linkedNote(record){','    function locate(id){');
+const makeFixture=(options={})=>{
+ let notes=(options.notes||[]).map(x=>({...x}));
+ const record=options.record||{id:'quote-1',text:'Фрагмент',articleTitle:'Статья',
+  url:'/articles/one/',annotation:{version:1,noteId:null}};
+ const writes=[];
+ const read=()=>notes.map(x=>({...x}));
+ const updateRecord=(id,apply)=>{
+  if(options.failQuote||id!==record.id)return null;
+  apply(record);writes.push('quote');return record;
+ };
+ const write=(key,items)=>{
+  if(options.failNote)return false;
+  assert.equal(key,'gb-reader-notes-v1');
+  notes=items.map(x=>({...x}));writes.push('note');return true;
+ };
+ const factory=new Function('read','write','updateRecord','nKey','Date','Math',
+  noteSource+'return {linkedNote,saveLinkedNote};');
+ const api=factory(read,write,updateRecord,'gb-reader-notes-v1',Date,Math);
+ return{api,record,notes:()=>notes,writes};
+};
+const newNote=makeFixture();
+assert.equal(newNote.api.saveLinkedNote(newNote.record,'Новая мысль').ok,true);
+assert.equal(newNote.notes().length,1,'create: one note');
+const originalId=newNote.notes()[0].id;
+assert.equal(originalId,newNote.record.annotation.noteId,'create: linked id matches');
+assert.equal(newNote.api.saveLinkedNote(newNote.record,'Исправленная мысль').ok,true);
+assert.equal(newNote.notes().length,1,'edit must UPDATE, not append another note');
+assert.equal(newNote.notes()[0].id,originalId,'edit must keep original note id');
+assert.equal(newNote.notes()[0].text,'Исправленная мысль','edit must retain new text');
+const rejectQuote=makeFixture({failQuote:true});
+assert.equal(rejectQuote.api.saveLinkedNote(rejectQuote.record,'Текст').ok,false);
+assert.equal(rejectQuote.notes().length,0,'quote write failure must not create orphan note');
+assert.equal(rejectQuote.record.annotation.noteId,null,'quote failure leaves link intact');
+const rejectNote=makeFixture({failNote:true});
+assert.equal(rejectNote.api.saveLinkedNote(rejectNote.record,'Текст').ok,false);
+assert.equal(rejectNote.record.annotation.noteId,null,'note failure must roll back quote link');
+assert.equal(rejectNote.notes().length,0,'note failure does not persist text');
+assert.deepEqual(rejectNote.writes,['quote','quote'],'failed note write causes compensating quote write');
+const maxNotes=Array.from({length:500},(_,i)=>({id:'n'+i,text:'Старый текст',quoteId:i?'other':'quote-1'}));
+const atLimit=makeFixture({notes:maxNotes,record:{id:'quote-1',text:'Фрагмент',articleTitle:'Статья',
+ url:'/articles/one/',annotation:{version:1,noteId:'n0'}}});
+assert.equal(atLimit.api.saveLinkedNote(atLimit.record,'Редактирование при лимите').ok,true);
+assert.equal(atLimit.notes().length,500,'editing at quota must not append');
+assert.equal(atLimit.notes()[0].text,'Редактирование при лимите');
+const orphan=makeFixture({notes:[{id:'legacy-note',quoteId:'quote-1',text:'Старая заметка'}]});
+assert.equal(orphan.api.saveLinkedNote(orphan.record,'Восстановленная ссылка').ok,true);
+assert.equal(orphan.record.annotation.noteId,'legacy-note','one-way legacy association repaired');
+assert.equal(orphan.notes().length,1,'repair does not duplicate note');
+const ambiguous=makeFixture({notes:[
+ {id:'orphan-a',quoteId:'quote-1',text:'Первый текст'},
+ {id:'orphan-b',quoteId:'quote-1',text:'Второй текст'}]});
+assert.equal(ambiguous.api.linkedNote(ambiguous.record),null,
+ 'multiple legacy notes must not be silently assigned to one quote');
+const resolveSource=excerpt('  function resolve(article,anchor){','  function start(){');
+const normalize=s=>String(s||'').replace(/\s+/g,' ').trim();
+const hash=s=>'hash:'+s;
+const resolveRange=new Function('blocks','makeRange','CSS','hash','normalize',
+ resolveSource+'return resolve;')(
+  article=>article.items,
+  (block,start,end)=>({block:block.textContent,text:block.textContent.slice(start,end)}),
+  {escape:s=>s},hash,normalize);
+const authentic={textContent:'В начале Бог благ навсегда'};
+const altered={textContent:'Не думаю Бог благ никак'};
+const anchor={blockId:'',blockIndex:0,start:9,end:17,exact:'Бог благ',
+ prefix:'В начале ',suffix:' навсегда',blockHash:hash(normalize(authentic.textContent))};
+const article=items=>({items,querySelector:()=>null});
+assert.equal(resolveRange(article([authentic]),anchor)?.text,'Бог благ');
+assert.equal(resolveRange(article([altered]),anchor),null,
+ 'identical text at same offsets with mismatched context is NOT a valid reattachment');
+assert.equal(resolveRange(article([altered,authentic]),anchor)?.block,authentic.textContent,
+ 'moved source paragraph can reattach when original provenance still matches');
+assert.equal(resolveRange(article([altered,authentic,{...authentic}]),{...anchor,blockIndex:9}),null,
+ 'ambiguous context must remain unresolved instead of attributing wrong passage');
+assert.match(file,/next\.some\(x=>x\.id===record\.id\)/,
+ 'insertion success must be tested by identity, not list length');
+assert.doesNotMatch(file,/next\.length===old\.length/,
+ 'list length must not decide whether a quote was inserted');
+assert.match(file,/npW57CancelNote/,'user must be able to cancel note edit');
+assert.match(file,/closeResearchForAnnotation/,'source navigation must close mobile rail');
+assert.match(file,/openResearchForAnnotation/,'new note must open the existing rail');
+assert.match(preview,/openResearchForAnnotation\(\)/,'preview exposes proper rail opener');
+assert.match(preview,/closeResearchForAnnotation\(\)/,'preview exposes mobile close');
+assert.match(css,/np-w57-annotation-meta button[\s\S]*?min-height:36px/,
+ 'desktop note actions have usable hitbox');
+assert.match(css,/#npUniversalDemo \.np-w57-annotation-meta button,[\s\S]*?min-height:44px/,
+ 'mobile note actions have 44px target');
+console.log('Reader W57 notes: anchoring/edit/quota/rollback/undo UI/rail contracts PASS');

@@ -60,4 +60,5 @@ assert.match(css, /#npUEdgeToggle:is\(:hover,:focus-visible,:active\)/,
 assert.match(shell, /reader-pilot/, 'preview must be explicit opt-in');
 assert.match(shell, /127\.0\.0\.1/, 'preview must bind to localhost');
 assert.match(shell, /No production mutation/, 'draft-only safety banner required');
-console.log('Reader W57 source/manifests/axis/pilot contracts: PASS (12 assets)');
+await import(new URL('../../scripts/reader-w57-annotations-regression-test.mjs', import.meta.url));
+console.log('Reader W57 source/manifests/axis/pilot and annotation contracts: PASS (12 assets)');
