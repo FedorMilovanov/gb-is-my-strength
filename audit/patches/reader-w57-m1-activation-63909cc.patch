@@ -1,0 +1,41 @@
+--- a/research/reader-w57-pilot/preview.py
++++ b/research/reader-w57-pilot/preview.py
+@@ -61,8 +61,35 @@
+             html=file.read_text(encoding="utf-8")
+             if html.count("</head>")!=1 or html.count("</body>")!=1:
+                 return self.send_error(422,"Unexpected Astro document")
+-            css="".join(f'<link rel="stylesheet" href="{PREFIX}{n}">' for n in CSS)
+-            js="".join(f'<script src="{PREFIX}{n}" defer></script>' for n in JS)
+-            html=html.replace("</head>",css+"</head>").replace("</body>",js+"</body>")
++            # Decide on the actual CSS viewport, not the UA. Mobile gets no W57
++            # resources, listeners or DOM. Keep one owner per document: never
++            # auto-reload on rotation (an open editor may have an unsaved draft).
++            assets = {"css": [PREFIX + n for n in CSS], "js": [PREFIX + n for n in JS]}
++            activation = """<script>(() => {
++              const narrow = matchMedia('(max-width: 1120px)');
++              if (narrow.matches) return;
++              const assets = %s;
++              const styles = [];
++              function stylesheet(href) {
++                return new Promise((ok, fail) => {
++                  const el = document.createElement('link');
++                  el.rel = 'stylesheet'; el.href = href;
++                  el.onload = ok; el.onerror = fail;
++                  styles.push(el); document.head.append(el);
++                });
++              }
++              Promise.all(assets.css.map(stylesheet)).then(() => {
++                if (narrow.matches) { styles.forEach(el => el.remove()); return; }
++                // Ordered classic scripts, as in the original deferred chain.
++                for (const src of assets.js) {
++                  const el = document.createElement('script');
++                  el.async = false; el.src = src; document.body.append(el);
++                }
++              }).catch(() => {
++                styles.forEach(el => el.remove());
++                console.warn('W57 styles unavailable; keeping native Reader');
++              });
++            })();</script>""" % json.dumps(assets)
++            html = html.replace("</body>", activation + "</body>")
+             return self.reply(html.encode("utf-8"),"text/html; charset=utf-8")
+         return super().do_GET()
