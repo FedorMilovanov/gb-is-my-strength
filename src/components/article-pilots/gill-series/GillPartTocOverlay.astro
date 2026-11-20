@@ -1,5 +1,6 @@
 ---
 import { GILL_SERIES, satellitesOf, chapterArticles, sectionLabel, type SeriesConfig } from '../_shared/series/seriesConfig';
+import GillMobileMarginalia from './GillMobileMarginalia.astro';
 
 interface Props { pageId: string; config?: SeriesConfig; }
 const { pageId, config = GILL_SERIES } = Astro.props;
@@ -45,7 +46,11 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
       <div class="toc-head-txt"><div class="lab">{config.seriesTitle} · {currentPartLabel}</div><h3>{current.tier === 'chapter' ? 'Оглавление главы' : 'Оглавление части'}</h3></div>
     </div>
     <div class="toc-sheet__scroll-bar"><i style="--scroll-pct:0%"></i></div>
-    <div class="toc-sheet__list gbat" id="gbs2PartToc" data-gill-parts-nav>
+    <div class="gbr-marginalia-tabs" role="tablist" aria-label="Оглавление и исследовательские материалы">
+      <button type="button" id="gbrTocTab" class="gbr-marginalia-tab" role="tab" data-gbr-tab="toc" aria-selected="true" aria-controls="gbs2PartToc" tabindex="0">Оглавление</button>
+      <button type="button" id="gbrMarginaliaTab" class="gbr-marginalia-tab" role="tab" data-gbr-tab="research" aria-selected="false" aria-controls="gbrMarginalia" tabindex="-1">На полях</button>
+    </div>
+    <div class="toc-sheet__list gbat" id="gbs2PartToc" data-gill-parts-nav role="tabpanel" aria-labelledby="gbrTocTab">
       {seriesItems.map((item) => {
         const isCurrent = item.id === currentPartId;
         const sats = satellitesOf(config, item.id);
@@ -132,6 +137,7 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
         );
       })}
     </div>
+    <GillMobileMarginalia />
     <div class="toc-sheet__actions gbat-foot">
       <button class="gbat-fbtn gbat-fbtn--listen" type="button" data-gbat-listen>
         <span class="gbat-fbtn-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.14v13.72L19 12 8 5.14z" /></svg></span>

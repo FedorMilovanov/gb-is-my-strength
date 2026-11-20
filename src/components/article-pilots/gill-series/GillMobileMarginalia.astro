@@ -1,0 +1,226 @@
+<!-- Additive research view inside the canonical Gill part-TOC sheet.
+     The native overlay, actions, TTS, library and speed controls remain owned
+     by their original Product runtimes. Source material is never invented. -->
+<section class="gbr-marginalia toc-sheet__body" id="gbrMarginalia" role="tabpanel" aria-labelledby="gbrMarginaliaTab" hidden inert tabindex="0">
+  <div class="gbr-marginalia-inner" id="gbrMarginaliaContent" aria-live="off">
+    <p class="gbr-marginalia-empty">Материалы раздела появятся при открытии вкладки.</p>
+  </div>
+</section>
+
+<script is:inline>
+(function () {
+  'use strict';
+  var sheet = document.getElementById('partTocOverlay');
+  var toc = document.getElementById('gbs2PartToc');
+  var panel = document.getElementById('gbrMarginalia');
+  var content = document.getElementById('gbrMarginaliaContent');
+  var tabs = sheet && Array.from(sheet.querySelectorAll('[data-gbr-tab]'));
+  if (!sheet || !toc || !panel || !content || !tabs || tabs.length !== 2 || sheet.dataset.gbrMarginaliaBound) return;
+  sheet.dataset.gbrMarginaliaBound = '1';
+  var article = document.querySelector('article.article-body') || document.querySelector('main article');
+  var text = function (el) { return (el && el.textContent || '').replace(/\s+/g, ' ').trim(); };
+  function node(tag, className, value) {
+    var el = document.createElement(tag);
+    if (className) el.className = className;
+    if (value != null) el.textContent = value;
+    return el;
+  }
+  function visibleText(el) {
+    if (!el) return '';
+    var clone = el.cloneNode(true);
+    clone.querySelectorAll('.gtip,.btip,.tooltip,.fn-marker,.footnote-ref,[data-reader-exclude],[data-no-speech],[hidden],[inert],[aria-hidden="true"],script,style').forEach(function (child) { child.remove(); });
+    return text(clone);
+  }
+  function jumpTo(el) {
+    if (!el) return;
+    var close = sheet.querySelector('.toc-sheet__handle');
+    if (close) close.click();
+    window.setTimeout(function () {
+      if (!el.hasAttribute('tabindex')) {
+        el.setAttribute('tabindex', '-1');
+        el.addEventListener('blur', function () { el.removeAttribute('tabindex'); }, { once: true });
+      }
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      el.focus({ preventScroll: true });
+    }, 160);
+  }
+  function action(parent, caption, destination) {
+    var b = node('button', 'gbr-marginalia-jump', caption);
+    b.type = 'button';
+    b.addEventListener('click', function () { jumpTo(destination); });
+    parent.appendChild(b);
+    return b;
+  }
+  function group(title, suffix) {
+    var section = node('section', 'gbr-marginalia-group');
+    var head = node('div', 'gbr-marginalia-group-head');
+    head.appendChild(node('h4', '', title));
+    if (suffix) head.appendChild(node('span', '', suffix));
+    section.appendChild(head);
+    content.appendChild(section);
+    return section;
+  }
+  function uniqueBy(items, keyFn) {
+    var seen = new Set();
+    return items.filter(function (item) {
+      var key = keyFn(item);
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+  function researchData() {
+    if (!article) return null;
+    var headings = Array.from(article.querySelectorAll('h2[id]'));
+    var active = headings[0] || null;
+    for (var i = 0; i < headings.length; i++) {
+      if (headings[i].getBoundingClientRect().top <= window.innerHeight * 0.32) active = headings[i];
+    }
+    var idx = active ? headings.indexOf(active) : -1;
+    var end = idx >= 0 ? headings[idx + 1] || null : null;
+    function inSection(el) {
+      if (!active) return true;
+      var afterStart = !!(active.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING);
+      var beforeEnd = !end || !!(el.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_FOLLOWING);
+      return afterStart && beforeEnd;
+    }
+    function elements(selector) {
+      return Array.from(article.querySelectorAll(selector)).filter(function (el) {
+        return inSection(el) && !el.closest('nav,aside,footer,.related-articles,.faq-accordion');
+      });
+    }
+    var paras = elements('p,blockquote').filter(function (p) { return visibleText(p).length >= 95; });
+    var refs = uniqueBy(elements('button.bref[data-ref]'), function (el) { return el.dataset.ref; });
+    var terms = uniqueBy(elements('.gterm[data-term]'), function (el) { return (el.dataset.termTitle || el.dataset.term || '').toLocaleLowerCase('ru'); })
+      .filter(function (el) { return !!text(el.querySelector('.gtip-brief')); });
+    var notes = elements('.fn-marker,.footnote-ref,[data-footnote-ref]').filter(function (el) { return !!el.id || !!el.dataset.noteOrdinal; });
+    var refScope = 'В текущем разделе';
+    var termScope = 'В текущем разделе';
+    if (!refs.length) {
+      refs = uniqueBy(Array.from(article.querySelectorAll('button.bref[data-ref]')), function (el) { return el.dataset.ref; }).slice(0,8);
+      refScope = 'В других разделах этой статьи';
+    }
+    if (!terms.length) {
+      terms = uniqueBy(Array.from(article.querySelectorAll('.gterm[data-term]')), function (el) { return (el.dataset.termTitle || el.dataset.term || '').toLocaleLowerCase('ru'); })
+        .filter(function (el) { return !!text(el.querySelector('.gtip-brief')); }).slice(0,8);
+      termScope = 'Из всей статьи';
+    }
+    return { active: active, paras: paras.slice(0,3), refs: refs.slice(0,12), terms: terms.slice(0,12), notes: notes.slice(0,8), refScope: refScope, termScope: termScope };
+  }
+  function render() {
+    content.replaceChildren();
+    var data = researchData();
+    if (!data) {
+      content.appendChild(node('p', 'gbr-marginalia-empty', 'Для этой страницы исследовательские материалы пока недоступны.'));
+      return;
+    }
+    var lead = node('header', 'gbr-marginalia-lead');
+    lead.appendChild(node('span', 'gbr-marginalia-eyebrow', 'НА ПОЛЯХ · ИЗ ОПУБЛИКОВАННОГО ТЕКСТА'));
+    lead.appendChild(node('h3', '', data.active ? text(data.active) : 'Исследовательский контекст'));
+    lead.appendChild(node('p', '', (data.refs.length ? 'Библейские места, понятия и фрагменты' : 'Определения и фрагменты') + ' взяты из исходной статьи. Переходы возвращают к точному месту в тексте.'));
+    content.appendChild(lead);
+    if (data.refs.length) {
+      var refs = group('Писание', data.refScope);
+      var chips = node('div', 'gbr-marginalia-chips');
+      data.refs.forEach(function (source) {
+        action(chips, source.dataset.ref + ' ↗', source);
+      });
+      refs.appendChild(chips);
+    }
+    var lex = group('Понятия', data.terms.length ? data.termScope : 'Нет определений');
+    if (data.terms.length) {
+      data.terms.forEach(function (source) {
+        var item = node('details', 'gbr-marginalia-term');
+        item.appendChild(node('summary', '', source.dataset.termTitle || source.dataset.term));
+        var body = node('div', 'gbr-marginalia-term-body');
+        if (source.dataset.category) body.appendChild(node('span', 'gbr-marginalia-category', source.dataset.category));
+        body.appendChild(node('p', '', text(source.querySelector('.gtip-brief'))));
+        var detail = text(source.querySelector('.gtip-papyrus'));
+        if (detail) body.appendChild(node('p', 'gbr-marginalia-detail', detail));
+        action(body, 'Показать в статье ↗', source);
+        item.appendChild(body); lex.appendChild(item);
+      });
+    } else lex.appendChild(node('p', 'gbr-marginalia-empty', 'В статье пока нет опубликованных определений.'));
+    var sourceGroup = group('Ход текста', data.paras.length ? 'Исходные фрагменты' : 'Без фрагментов');
+    data.paras.forEach(function (p, i) {
+      var quote = node('div', 'gbr-marginalia-evidence');
+      quote.appendChild(node('span', 'gbr-marginalia-index', String(i + 1).padStart(2, '0')));
+      var fragment = visibleText(p);
+      quote.appendChild(node('p', '', fragment.length > 320 ? fragment.slice(0,317).replace(/\s+\S*$/,'') + '…' : fragment));
+      action(quote, 'Читать в статье ↗', p);
+      sourceGroup.appendChild(quote);
+    });
+    if (!data.paras.length) sourceGroup.appendChild(node('p', 'gbr-marginalia-empty', 'Показаны только материалы, подтверждённые текстом статьи.'));
+    if (data.notes.length) {
+      var foot = group('Сноски', String(data.notes.length));
+      data.notes.forEach(function (source, i) { action(foot, 'Примечание ' + (source.dataset.noteOrdinal || i + 1) + ' ↗', source); });
+    }
+    content.appendChild(node('p', 'gbr-marginalia-provenance', 'Материал извлечён из опубликованной статьи. Вкладка не формирует новые богословские утверждения.'));
+  }
+  function switchTab(which, keyboard) {
+    var research = which === 'research';
+    tabs.forEach(function (tab) {
+      var chosen = tab.dataset.gbrTab === which;
+      tab.setAttribute('aria-selected', String(chosen));
+      tab.tabIndex = chosen ? 0 : -1;
+    });
+    toc.hidden = research;
+    toc.inert = research;
+    panel.hidden = !research;
+    panel.inert = !research;
+    if (research) render();
+    if (keyboard) tabs.find(function (tab) { return tab.dataset.gbrTab === which; }).focus();
+  }
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () { switchTab(tab.dataset.gbrTab, false); });
+    tab.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft' && e.key !== 'Home' && e.key !== 'End') return;
+      e.preventDefault();
+      var research = e.key === 'End' || (e.key === 'ArrowRight' && tab.dataset.gbrTab === 'toc') || (e.key === 'ArrowLeft' && tab.dataset.gbrTab === 'toc');
+      switchTab(research ? 'research' : 'toc', true);
+    });
+  });
+  var observer = new MutationObserver(function () {
+    if (!sheet.classList.contains('is-open') && panel && !panel.hidden) switchTab('toc', false);
+  });
+  observer.observe(sheet, { attributes: true, attributeFilter: ['class'] });
+})();
+</script>
+
+<style is:global>
+  #partTocOverlay .gbr-marginalia-tabs { display:flex; align-items:center; gap:4px; padding:6px 18px 7px; border-bottom:1px solid rgba(121,92,67,.14); flex-shrink:0; }
+  #partTocOverlay .gbr-marginalia-tab { flex:1; min-height:44px; border:0; border-radius:9px; background:transparent; color:inherit; opacity:.65; cursor:pointer; font-family:inherit; font-size:12px; font-weight:600; line-height:1.25; letter-spacing:.015em; transition:background-color .15s ease,opacity .15s ease; }
+  #partTocOverlay .gbr-marginalia-tab[aria-selected="true"] { background:rgba(128,92,63,.085); opacity:1; }
+  #partTocOverlay .gbr-marginalia-tab:focus-visible { outline:2px solid #9a704b; outline-offset:2px; }
+  #partTocOverlay .gbr-marginalia[hidden], #partTocOverlay #gbs2PartToc[hidden] { display:none !important; }
+  #partTocOverlay .gbr-marginalia { flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain; padding:0 20px 22px; scrollbar-width:thin; color:inherit; }
+  #partTocOverlay .gbr-marginalia-inner { max-width:620px; margin:0 auto; }
+  #partTocOverlay .gbr-marginalia-lead { padding:22px 0 16px; border-bottom:1px solid rgba(121,92,67,.17); }
+  #partTocOverlay .gbr-marginalia-eyebrow { display:block; font:600 9px/1.5 system-ui,sans-serif; letter-spacing:.15em; color:#987956; }
+  #partTocOverlay .gbr-marginalia-lead h3 { margin:8px 0 10px; font-size:20px; line-height:1.3; letter-spacing:-.02em; font-weight:600; }
+  #partTocOverlay .gbr-marginalia-lead p { margin:0; font-size:12px; line-height:1.6; opacity:.7; }
+  #partTocOverlay .gbr-marginalia-group { padding:18px 0 15px; border-bottom:1px solid rgba(121,92,67,.13); }
+  #partTocOverlay .gbr-marginalia-group-head { display:flex; align-items:baseline; justify-content:space-between; gap:14px; margin-bottom:12px; }
+  #partTocOverlay .gbr-marginalia-group-head h4 { margin:0; font:600 15px/1.3 Georgia,serif; }
+  #partTocOverlay .gbr-marginalia-group-head span { font:500 10px/1.4 system-ui,sans-serif; opacity:.65; text-align:right; }
+  #partTocOverlay .gbr-marginalia-chips { display:flex; flex-wrap:wrap; gap:8px; }
+  #partTocOverlay .gbr-marginalia-jump { min-height:44px; padding:9px 12px; border:1px solid rgba(135,98,69,.24); border-radius:9px; background:rgba(131,103,79,.045); color:inherit; font:500 12px/1.45 system-ui,sans-serif; text-align:left; cursor:pointer; }
+  #partTocOverlay .gbr-marginalia-jump:hover { background:rgba(128,92,63,.10); }
+  #partTocOverlay .gbr-marginalia-jump:focus-visible { outline:2px solid #9a704b; outline-offset:2px; }
+  #partTocOverlay .gbr-marginalia-term { border-bottom:1px solid rgba(121,92,67,.11); }
+  #partTocOverlay .gbr-marginalia-term:last-child { border-bottom:0; }
+  #partTocOverlay .gbr-marginalia-term summary { min-height:44px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; font:500 13px/1.45 system-ui,sans-serif; list-style:none; }
+  #partTocOverlay .gbr-marginalia-term summary::after { content:'⌄'; color:#987956; font-size:17px; }
+  #partTocOverlay .gbr-marginalia-term[open] summary::after { transform:rotate(180deg); }
+  #partTocOverlay .gbr-marginalia-term-body { padding:0 0 14px; }
+  #partTocOverlay .gbr-marginalia-term-body p { margin:7px 0 12px; font:400 13px/1.6 Georgia,serif; }
+  #partTocOverlay .gbr-marginalia-category { font:600 10px/1.4 system-ui,sans-serif; color:#987956; }
+  #partTocOverlay .gbr-marginalia-detail { opacity:.75; }
+  #partTocOverlay .gbr-marginalia-evidence { padding:10px 0 16px; }
+  #partTocOverlay .gbr-marginalia-index { font:600 10px system-ui,sans-serif; color:#987956; }
+  #partTocOverlay .gbr-marginalia-evidence p { font:400 13px/1.65 Georgia,serif; margin:8px 0 10px; }
+  #partTocOverlay .gbr-marginalia-provenance, #partTocOverlay .gbr-marginalia-empty { font:400 11px/1.6 system-ui,sans-serif; opacity:.65; }
+  #partTocOverlay .gbr-marginalia-provenance { padding:13px 0; }
+  @media (max-width:359px) { #partTocOverlay .gbr-marginalia-tabs { padding-left:11px; padding-right:11px; } #partTocOverlay .gbr-marginalia { padding-left:14px; padding-right:14px; } }
+  @media (prefers-reduced-motion:reduce) { #partTocOverlay .gbr-marginalia-tab { transition:none; } }
+</style>
