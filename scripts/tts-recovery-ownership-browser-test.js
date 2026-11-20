@@ -14,11 +14,11 @@
  *   POSITIVE retry: after a deliberate clearOptOut, retryLoading() reaches
  *     ready=true through a fresh generation.
  *
- * Launches the sandboxed @sparticuz/chromium recipe (full Chromium, not
- * playwright's package stubs) under its documented LD_LIBRARY_PATH.
- * Deliberately NO --disable-web-security / --single-process: those flags
- * distort worker origin and lifetime semantics and would invalidate the
- * witness.
+ * Launches plain headless Chromium — CI uses playwright's bundled build
+ * (installed by the workflow), the sandbox falls back to the @sparticuz full
+ * Chromium under its documented LD_LIBRARY_PATH. Deliberately NO
+ * --disable-web-security / --single-process: those flags distort worker
+ * origin and lifetime semantics and would invalidate the witness.
  *
  * Serves the SOURCE tree (not the built dist): ?v= revision literals are baked
  * at build time, so a fresh engine edit served from a stale dist would make
@@ -78,21 +78,32 @@ function serve() {
 }
 
 async function launchBrowser() {
-  // Real SharedWorker semantics required: use the sandboxed @sparticuz
-  // chromium (full Chromium, not playwright's package stubs) under its
-  // documented LD_LIBRARY_PATH. Do NOT pass --disable-web-security /
-  // --single-process: those flags collapse worker process/origin isolation
-  // and would invalidate any conclusion about SharedWorker ownership.
-  const { createRequire } = require('node:module');
-  const require2 = createRequire('/tmp/arena-browser/');
-  const chromiumMod = require2('/tmp/arena-browser/node_modules/@sparticuz/chromium/build/index.js');
-  const sparticuz = chromiumMod.default || chromiumMod;
-  const { chromium } = require2('/tmp/arena-browser/node_modules/playwright/index.js');
-  return chromium.launch({
-    executablePath: await sparticuz.executablePath(),
-    headless: true,
-    args: ['--no-sandbox', '--disable-dev-shm-usage'],
-  });
+  const errors = [];
+  // CI path: playwright's own bundled chromium (installed by the workflow via
+  // `npx playwright install chromium`). Plain headless launch, no distorting
+  // flags — the same recipe as tts-reader-runtime-browser-test.js.
+  try {
+    const { chromium } = require('playwright');
+    return await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'] });
+  } catch (e) { errors.push(`playwright: ${e.message.split('\n')[0]}`); }
+  // Sandbox path: @sparticuz full Chromium under its documented
+  // LD_LIBRARY_PATH (repo playwright has no browser binary there).
+  try {
+    const { createRequire } = require('node:module');
+    const require2 = createRequire('/tmp/arena-browser/');
+    const chromiumMod = require2('/tmp/arena-browser/node_modules/@sparticuz/chromium/build/index.js');
+    const sparticuz = chromiumMod.default || chromiumMod;
+    const { chromium } = require2('/tmp/arena-browser/node_modules/playwright/index.js');
+    return await chromium.launch({
+      executablePath: await sparticuz.executablePath(),
+      headless: true,
+      args: ['--no-sandbox', '--disable-dev-shm-usage'],
+    });
+  } catch (e) { errors.push(`sparticuz: ${e.message.split('\n')[0]}`); }
+  // Deliberately NO --disable-web-security / --single-process anywhere: those
+  // flags collapse worker process/origin isolation and would invalidate any
+  // conclusion about SharedWorker ownership.
+  throw new Error(`no chromium available: ${errors.join(' | ')}`);
 }
 
 async function newEnginePage(browser) {
