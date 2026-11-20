@@ -348,3 +348,19 @@ body.np-u-preview #gb-hl-fab #gb-hl-fab-count{display:none}
   outline:2px solid currentColor!important;outline-offset:-5px!important;border-radius:6px!important;
  }
 }
+
+/* W57 mobile FAB source specificity: 2026-11-20 */
+/* Original pilot used a two-ID important rule on the mobile library plate.
+   Override precisely that element; keep the icon and hitbox. */
+@media(max-width:1120px){
+ body.np-u-preview.np-w57-ready #npUniversalDemo #gb-hl-fab.np-u-library-native,
+ body.np-u-preview.np-w57-ready #npUniversalDemo #gb-hl-fab.np-u-library-native:is(:hover,:active,:focus-visible){
+  border:0!important;border-radius:0!important;background:none!important;
+  background-color:transparent!important;box-shadow:none!important;
+  transform:none!important;translate:none!important;filter:none!important;
+  min-width:44px!important;min-height:44px!important;
+ }
+ body.np-u-preview.np-w57-ready #npUniversalDemo #gb-hl-fab.np-u-library-native:focus-visible{
+  outline:2px solid currentColor!important;outline-offset:-5px!important;border-radius:6px!important;
+ }
+}

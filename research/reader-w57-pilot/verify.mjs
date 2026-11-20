@@ -22,6 +22,7 @@ assert.match(js, /setProperty\('--np-w57-axis-x','calc\(95vw - 20px\)'\)/,
   'remove geometry feedback into the axis');
 assert.doesNotMatch(js, /ResizeObserver\(schedule\)/, 'avoid per-frame toggle-derived geometry');
 assert.match(css, /W57 MOBILE LIBRARY PLAIN SVG 2026-11-20/, 'unframed mobile book required');
+assert.match(css, /W57 mobile FAB source specificity: 2026-11-20/, 'two-ID legacy mobile plate must be overridden');
 assert.match(css, /#npURightEdgeRail::after/, 'fold/reading-tool separator required');
 assert.match(css, /#gb-hl-fab:is\(:hover,:active,:focus-visible\)/,
   'no moving or painted library hover');
