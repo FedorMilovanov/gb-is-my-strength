@@ -33,6 +33,61 @@ const PROJECT_LAYER_ROOTS = new Map([
   ['css/home.css', null],
   ['css/floating-cluster.css', 524],
 ]);
+const CASCADE_BASELINES_PATH = path.join('data', 'css-cascade-baselines.json');
+
+/*
+ * Per-root ratchet baselines (SYS-CSS-CASCADE-GOVERNANCE). Returns a Map
+ * repoPath -> { layeredFloorPct, importantCeiling } or null when the
+ * baselines file is absent (legacy single-file invocations stay ungoverned).
+ * Schema errors are fatal: governance must fail closed, not silently lapse.
+ */
+function loadCascadeBaselines(projectRoot) {
+  const file = path.join(projectRoot, CASCADE_BASELINES_PATH);
+  if (!fs.existsSync(file)) return null;
+  let parsed;
+  try {
+    parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch (error) {
+    console.error(`CSS cascade baselines: invalid JSON in ${CASCADE_BASELINES_PATH}: ${error.message}`);
+    process.exit(2);
+  }
+  if (!parsed || parsed.schemaVersion !== 1 || !parsed.roots || typeof parsed.roots !== 'object') {
+    console.error(`CSS cascade baselines: expected { schemaVersion: 1, roots: {...} } in ${CASCADE_BASELINES_PATH}`);
+    process.exit(2);
+  }
+  const floors = new Map();
+  for (const [repoPath, entry] of Object.entries(parsed.roots)) {
+    if (!entry || typeof entry.layeredFloorPct !== 'number' || entry.layeredFloorPct < 0 || entry.layeredFloorPct > 100) {
+      console.error(`CSS cascade baselines: ${repoPath}: layeredFloorPct must be a number in [0, 100]`);
+      process.exit(2);
+    }
+    floors.set(repoPath, {
+      layeredFloorPct: entry.layeredFloorPct,
+      importantCeiling: entry.importantCeiling ?? null,
+    });
+  }
+  for (const [repoPath, ceiling] of PROJECT_LAYER_ROOTS) {
+    const baseline = floors.get(repoPath);
+    if (!baseline) {
+      console.error(`CSS cascade baselines: governed root ${repoPath} is missing from ${CASCADE_BASELINES_PATH}`);
+      process.exit(2);
+    }
+    if (ceiling !== null && baseline.importantCeiling !== null && baseline.importantCeiling !== ceiling) {
+      console.error(
+        `CSS cascade baselines: ${repoPath}: importantCeiling ${baseline.importantCeiling} ` +
+        `drifted from the governed ceiling ${ceiling}`
+      );
+      process.exit(2);
+    }
+  }
+  for (const repoPath of floors.keys()) {
+    if (!PROJECT_LAYER_ROOTS.has(repoPath)) {
+      console.error(`CSS cascade baselines: ${repoPath} is not a governed @layer root`);
+      process.exit(2);
+    }
+  }
+  return floors;
+}
 
 function stripCssComments(cssText) {
   return cssText.replace(/\/\*[\s\S]*?\*\//g, '');
@@ -157,6 +212,29 @@ function runInternalContractChecks() {
   if (LAYERED_TARGET_PCT !== 80) {
     throw new Error('internal contract: layered coverage target drifted from the published 80% contract');
   }
+
+  // Ratchet genesis: governed floors may only move up from the 2026-11-19
+  // baselines; a lower floor requires editing both the baselines file and
+  // this contract in the same reviewed change.
+  const genesisFloors = new Map([
+    ['css/site.css', 18.0],
+    ['css/home.css', 35.3],
+    ['css/floating-cluster.css', 10.1],
+  ]);
+  const baselines = loadCascadeBaselines(process.cwd());
+  if (!baselines) {
+    // Absent baselines are legal only outside the repository (fixture runs).
+    if (fs.existsSync(path.join(process.cwd(), 'css', 'site.css'))) {
+      throw new Error('internal contract: cascade baselines file missing');
+    }
+  } else {
+    for (const [repoPath, genesis] of genesisFloors) {
+      const floor = baselines.get(repoPath)?.layeredFloorPct;
+      if (typeof floor !== 'number' || floor < genesis) {
+        throw new Error(`internal contract: layered floor for ${repoPath} regressed below genesis ${genesis}`);
+      }
+    }
+  }
 }
 
 try {
@@ -169,8 +247,14 @@ try {
 const args = process.argv.slice(2);
 const cssFile = args.find(a => !a.startsWith('--'));
 const ceilingArg = args.find(a => a.startsWith('--ceiling='));
+const floorArg = args.find(a => a.startsWith('--floor='));
 const singleFileMode = args.includes('--single');
 let ceiling = ceilingArg ? parseInt(ceilingArg.split('=')[1], 10) : null;
+let layeredFloor = floorArg ? parseFloat(floorArg.split('=')[1]) : null;
+if (floorArg && (!Number.isFinite(layeredFloor) || layeredFloor < 0 || layeredFloor > 100)) {
+  console.error(`Invalid --floor value: ${floorArg}`);
+  process.exit(2);
+}
 
 if (!cssFile) {
   console.error('Usage: node scripts/css-layer-validator.js <css-file> [--ceiling=N]');
@@ -188,6 +272,20 @@ const projectCssDir = path.resolve(projectRoot, 'css');
 const inProjectCss =
   cssPath.startsWith(`${projectCssDir}${path.sep}`) &&
   path.extname(cssPath) === '.css';
+
+const cascadeBaselines = loadCascadeBaselines(projectRoot);
+const requestedRepoPathForFloor = path.relative(projectRoot, cssPath).split(path.sep).join('/');
+const governedFloorEntry = cascadeBaselines ? cascadeBaselines.get(requestedRepoPathForFloor) : undefined;
+if (governedFloorEntry) {
+  if (layeredFloor !== null && layeredFloor !== governedFloorEntry.layeredFloorPct) {
+    console.error(
+      `Governed layered floor mismatch for ${requestedRepoPathForFloor}: ` +
+      `expected ${governedFloorEntry.layeredFloorPct}, got ${layeredFloor}`
+    );
+    process.exit(2);
+  }
+  layeredFloor = governedFloorEntry.layeredFloorPct;
+}
 
 if (!singleFileMode && inProjectCss) {
   const requestedRepoPath = path.relative(projectRoot, cssPath).split(path.sep).join('/');
@@ -341,6 +439,20 @@ const layeredPctValue = totalChars > 0 ? layeredChars / totalChars * 100 : 0;
 const layeredPct = layeredPctValue.toFixed(1);
 info.push(`Layered: ${layeredChars} chars (${layeredPct}%)`);
 info.push(`Unlayered: ${unlayeredChars} chars (${(100 - layeredPctValue).toFixed(1)}%)`);
+
+if (layeredFloor !== null) {
+  // Compare at the same precision the floor is recorded in (0.1%) so a
+  // floor set from a reported value never trips on its own rounding.
+  const layeredPctRounded = Math.round(layeredPctValue * 10) / 10;
+  if (layeredPctRounded + 1e-9 < layeredFloor) {
+    errors.push(
+      `Layered coverage ${layeredPct}% is under the ratchet floor ${layeredFloor}% ` +
+      `(governed by ${CASCADE_BASELINES_PATH}; raising the floor is welcome, lowering it is a reviewed baseline edit)`
+    );
+  } else {
+    info.push(`Layered ratchet floor ${layeredFloor}%: OK (measured ${layeredPct}%)`);
+  }
+}
 
 if (layeredPctValue < LAYERED_TARGET_PCT) {
   warnings.push(`Only ${layeredPct}% of CSS is in @layer blocks (target: ≥${LAYERED_TARGET_PCT}%)`);
