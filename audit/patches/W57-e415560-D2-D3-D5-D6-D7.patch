@@ -39,8 +39,8 @@ diff --git a/research/reader-w57-pilot/MANIFEST.json b/research/reader-w57-pilot
        "name": "reader_w57.css",
 -      "sha256": "eae8d1660d4ff2b10f138f67da0ae3f112a5609a16f544098be5970ac944e743",
 -      "bytes": 27512
-+      "sha256": "34c4a837c671f748835276c10a4fdbbe0a5e2028b0471baecabe5844c82aa764",
-+      "bytes": 28771
++      "sha256": "aac6f8e646281dfcca0f04beefafb3cf0903b0528db273b18193d2a46b5380fb",
++      "bytes": 29059
      },
      {
        "name": "reader_universal_contract.js",
@@ -239,8 +239,15 @@ diff --git a/research/reader-w57-pilot/assets/reader_w57.css b/research/reader-w
  #npW57SelectionToolbar button{
   min-width:43px;min-height:36px;flex:1 1 auto;
   border:0;border-radius:6px;background:transparent;color:inherit;
-@@ -493,3 +507,8 @@
+@@ -491,5 +505,15 @@
+  html[data-reader-theme="dark"] body.np-u-preview.np-w57-ready #npUniversalDemo #npUOutline #npUFontScrim:not([hidden]){
+   background:rgba(28,27,26,.88);
   }
++ /* Inert blocks interaction, not paint: don't show a sliver of the audio
++    card through the translucent scrim outside the settings window. */
++ body.np-w57-ready:has(#npUFontScrim:not([hidden])) #npUniversalDemo .np-u-audio-card{
++  opacity:0!important;pointer-events:none!important;
++ }
   body.np-u-preview.np-w57-ready #npUniversalDemo #npUOutline #npUFontPanel{z-index:20020}
  }
 +/* Native Gill learning remains a separate action above the settings/TOC. */
@@ -453,16 +460,29 @@ diff --git a/scripts/reader-w57-browser-visual-qa.mjs b/scripts/reader-w57-brows
    m.item.settings=await m.page.evaluate(()=>({
     dialogRole:document.querySelector('#npUFontPanel')?.getAttribute('role'),
     dialogAria:document.querySelector('#npUFontPanel')?.getAttribute('aria-modal'),
-@@ -378,7 +485,7 @@
+@@ -341,6 +448,11 @@
+   assert.equal(m.item.settings.scrimVisible,true,'background native tools must be visually covered');
+   assert.equal(m.item.settings.nativeToolsInert,true,'native TOC controls must be inert behind dialog');
+   assert.equal(m.item.settings.focusInside,true,'mobile font popup focus lost');
++  const audioCard=m.page.locator('#npUniversalDemo .np-u-audio-card');
++  assert.ok(await audioCard.count()>0,'Gill audio card fixture missing');
++  const visibleAudio=()=>audioCard.evaluateAll(cards=>cards.filter(el=>
++   el.getClientRects().length&&getComputedStyle(el).opacity!=='0').length);
++  assert.equal(await visibleAudio(),0,'audio card paints through the settings scrim');
+   await snap(m.page,'mobile-settings');
+   await m.page.locator('#npUFontPanel [data-np-u-type-font="cormorant"]').click();
+   m.item.fontAfterClick=await m.page.evaluate(()=>{
+@@ -378,7 +490,8 @@
    assert.equal(m.item.closedFontDialog.nativeInert,originalInert,'Escape failed to restore original controls');
    assert.equal(m.item.closedFontDialog.tocStillOpen,true,'Escape closed the parent TOC');
    assert.equal(m.item.closedFontDialog.openerExpanded,'false','opener remains expanded');
 -  await m.page.getByRole('button',{name:'Настройки книжного шрифта'}).first().click();
++  assert.ok(await visibleAudio()>0,'audio card must return when settings closes');
 +  await m.page.locator('#npUOutline .np-u-type-open').click();
    await m.page.mouse.click(356,660);
    assert.equal(await m.page.locator('#npUFontPanel').isVisible(),false,'scrim outside click did not close dialog');
    assert.equal(await m.page.locator('#npUNativeTools').evaluate(el=>el.inert),originalInert,
-@@ -412,7 +519,7 @@
+@@ -412,7 +525,7 @@
   await m.context.close();
   // Review layout at the actual user-facing breakpoints, not one 1440px image.
   for(const [width,height,name] of [[320,700,'mobile-320'],[768,900,'tablet-768'],
@@ -471,7 +491,7 @@ diff --git a/scripts/reader-w57-browser-visual-qa.mjs b/scripts/reader-w57-brows
    const extra=await scene(chrome,name,
     '/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space',width,height);
    extra.item.geometry=await extra.page.evaluate(()=>{
-@@ -423,9 +530,32 @@
+@@ -423,9 +536,32 @@
    });
    if(extra.item.geometry.overflow)REPORT.failures.push({name,reason:'horizontal overflow',geometry:extra.item.geometry});
    await snap(extra.page,name);
