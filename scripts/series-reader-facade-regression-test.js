@@ -81,10 +81,14 @@ assert.match(mobileRuntime, /var MOB_SEC_INITIAL = \(function \(\)/, 'series pro
 assert.match(mobileRuntime, /hasActiveSection \? reader\.sectionTitle : \(MOB_SEC_INITIAL \|\| 'Начало части'\)/, 'before-content placeholder Введение must not overwrite the SSR title');
 assert.match(partOverlay, /gb:gill-select-part-panel/, 'research tab must be selected through the native Part TOC sheet');
 assert.match(settingsSheet, /id="mobLearningBtn"[^>]*data-gill-learning-open/, 'Learning must remain available from Settings without top-level duplication');
-assert.match(mobileBar, /<ReaderMobilePlayGroup engine="series" bloom/, 'Gill must use the original #72 Play speed bloom');
-assert.doesNotMatch(mobileBar, /<ReaderSpeedOptions|data-gb-speed-custom/, 'Gill must not mount a competing horizontal speed owner');
-assert.match(mobilePlay, /\{!bloom && <button/, 'shared Play must retain Hermenevtika rate badge but omit Gill');
-assert.match(mobileBar, /reader-mobile-play \.gb-ember__ring-svg/, 'Gill idle circular Play ring must remain visible');
+// Historical #75 slot-swap: speeds REPLACE the research capsule, never descend
+// across the hero. One ReaderSpeedOptions/speedSlot owner serves both readers.
+assert.match(mobileBar, /<ReaderMobilePlayGroup engine="series" slot="top-playback"/, 'Gill keeps canonical Play, without bloom opt-in');
+assert.match(mobileBar, /<ReaderSpeedOptions id="mobileSpeedrail"[^>]*initiallyInert/, 'Gill mounts shared six-rate horizontal speed rail');
+assert.match(mobileBar, /'data-gb-speed-custom': true/, 'Gill TTS controller skips competing vertical speed bloom');
+assert.match(mobileBar, /mobile-top-bar\.speed-open \.mobile-top-slot \.reader-mobile-speedrail/, 'Gill speeds live in vacated top slot');
+assert.match(mobilePlay, /\{!bloom && <button/, 'shared Play retains selected-rate badge');
+assert.match(mobileBar, /reader-mobile-play \.gb-ember__ring-svg/, 'Gill idle circular Play ring remains visible');
 assert.match(sharedSpeedSlot, /rateTrigger\.querySelector\('\.reader-mobile-speed-chip'\) \|\| rateTrigger/, 'Hermenevtika shared speed state must remain intact');
 const seriesConfig = fs.readFileSync(SERIES_CONFIG, 'utf8');
 const baptistSeriesConfig = fs.readFileSync(BAPTIST_SERIES_CONFIG, 'utf8');

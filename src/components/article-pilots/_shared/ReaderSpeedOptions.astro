@@ -58,6 +58,10 @@ if (!rates.length || !rates.includes(1) ||
         speedrail: '.reader-mobile-speedrail',
         badge: '.reader-mobile-speed-badge',
         chip: '.reader-mobile-speed-rate',
+        // Gill's historical sideways strip may occupy vacated Back/Home space.
+        // Their pointer AND keyboard/AX access must be suspended until close.
+        coveredControls: bar.hasAttribute('data-gill-mobile-bar')
+          ? '#mobBackBtn, .reader-mobile-home' : undefined,
       });
     });
   }

@@ -34,7 +34,7 @@ const ROUTES = [
     mobileSurfaces: [
       { id: 'part-toc', trigger: '#mobPartTocBtn', target: '#partTocOverlay', popup: 'dialog' },
       { id: 'settings', trigger: '#mobSettingsBtn', target: '#gillSettingsOverlay', popup: 'dialog' },
-      { id: 'menu', trigger: '.mobile-top-bar [data-reader-mobile-menu-target="mobPartTocBtn"]', target: '#partTocOverlay', popup: 'dialog' },
+      { id: 'research', trigger: '.mobile-top-bar [data-gill-marginalia-open]', target: '#partTocOverlay', popup: 'dialog' },
     ],
     desktopSurfaces: [
       { id: 'settings', trigger: '[data-gill-settings-open]', target: '#gillSettingsOverlay', popup: 'dialog' },
