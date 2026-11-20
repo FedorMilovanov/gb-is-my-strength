@@ -82,46 +82,45 @@
     return{text,anchor,range:r,rect:r.getBoundingClientRect()};
   }
   function resolve(article,anchor){
-    if(!anchor||!anchor.exact)return null;
+    if(!anchor||typeof anchor.exact!=='string'||!anchor.exact)return null;
     const list=blocks(article);
-    const probe=(block)=>{
+    // A short exact phrase is NOT sufficient provenance after editorial changes.
+    // Accept same paragraph hash or matching immediately surrounding context;
+    // otherwise preserve the stored quote as an unresolved annotation.
+    const contextMatches=(raw,start,end)=>{
+      if(anchor.blockHash&&hash(normalize(raw))===anchor.blockHash)return true;
+      const prefix=String(anchor.prefix||'').slice(-24);
+      const suffix=String(anchor.suffix||'').slice(0,24);
+      if(!prefix&&!suffix)return false;
+      if(prefix&&!raw.slice(Math.max(0,start-prefix.length),start).endsWith(prefix))return false;
+      if(suffix&&!raw.slice(end,end+suffix.length).startsWith(suffix))return false;
+      return true;
+    };
+    const probe=block=>{
       if(!block)return null;
       const raw=block.textContent||'';
-      if(raw.slice(anchor.start,anchor.end)===anchor.exact)
-        return makeRange(block,anchor.start,anchor.end);
-      return null;
+      if(raw.slice(anchor.start,anchor.end)!==anchor.exact||
+         !contextMatches(raw,anchor.start,anchor.end))return null;
+      return makeRange(block,anchor.start,anchor.end);
     };
-    const preferred=anchor.blockId?article.querySelector('#'+CSS.escape(anchor.blockId)):list[anchor.blockIndex];
-    const original=probe(preferred);
-    if(original)return original;
-    // Conservative re-anchoring: exact string and nearby context must identify
-    // one position in one block, never silently attach a theological quote elsewhere.
+    const preferred=(anchor.blockId?article.querySelector('#'+CSS.escape(anchor.blockId)):null)
+      ||list[anchor.blockIndex];
+    const found=probe(preferred);
+    if(found)return found;
     const candidates=[];
-    for(const b of list){
-      const raw=b.textContent||'';
+    for(const block of list){
+      const raw=block.textContent||'';
       let at=0;
       while((at=raw.indexOf(anchor.exact,at))!==-1){
-        const before=raw.slice(Math.max(0,at-64),at),after=raw.slice(at+anchor.exact.length,at+anchor.exact.length+64);
-        const beforeScore=anchor.prefix?before.endsWith(anchor.prefix.slice(-Math.min(24,anchor.prefix.length))):true;
-        const afterScore=anchor.suffix?after.startsWith(anchor.suffix.slice(0,Math.min(24,anchor.suffix.length))):true;
-        if(beforeScore&&afterScore)candidates.push(makeRange(b,at,at+anchor.exact.length));
+        if(contextMatches(raw,at,at+anchor.exact.length)){
+          const range=makeRange(block,at,at+anchor.exact.length);
+          if(range)candidates.push(range);
+        }
         at+=Math.max(1,anchor.exact.length);
       }
     }
-    if(candidates.length===1)return candidates[0];
-    if(candidates.length>1)return null;
-    // A unique exact quote remains safe when editorial changes move the
-    // paragraph but its immediate prefix/suffix change.
-    const unique=[];
-    for(const b of list){
-      const raw=b.textContent||'';
-      let at=0;
-      while((at=raw.indexOf(anchor.exact,at))!==-1){
-        unique.push(makeRange(b,at,at+anchor.exact.length));
-        at+=Math.max(1,anchor.exact.length);
-      }
-    }
-    return unique.length===1?unique[0]:null;
+    // Never silently reattach ambiguous or contextless theological passages.
+    return candidates.length===1?candidates[0]:null;
   }
   function start(){
     if(!document.body.classList.contains('np-w57-ready')||!window.GBHighlights)return false;
@@ -139,7 +138,8 @@
        '<div id="npW57NotesStatus" role="status" aria-live="polite" class="np-w57-tool-help"></div>'+
        '<div id="npW57NoteEditor" class="np-w57-comment" hidden><label for="npW57NoteText">Заметка к выбранной цитате</label>'+
        '<textarea id="npW57NoteText" maxlength="12000" placeholder="Ваша мысль, вопрос или наблюдение"></textarea>'+
-       '<button type="button" id="npW57SaveNote">Сохранить заметку</button></div>'+
+       '<div class="np-w57-note-actions"><button type="button" id="npW57SaveNote">Сохранить заметку</button>'+
+       '<button type="button" id="npW57CancelNote">Отмена</button></div></div>'+
        '<ol id="npW57NotesList" class="np-w57-annotation-list"></ol></div>';
     rightScroll.insertBefore(section,rightScroll.firstElementChild);
     const palette=section.querySelector('#npW57Palette');
@@ -263,23 +263,28 @@
       if(missing)say('Часть выделений не удалось уверенно привязать. Исходные записи сохранены.');
     }
     function save(selection,kind){
-      if(!selection)return null;
-      if(!kinds.includes(kind))return null;
-      const store=window.GBHighlights;
-      const old=all();
-      if(old.length>=200){say('Достигнут лимит 200 цитат. Экспортируйте библиотеку перед удалением.');return null}
+      if(!selection||!kinds.includes(kind))return null;
+      const store=window.GBHighlights,old=all();
       const record={
         id:'quote-w57-'+Date.now()+'-'+Math.random().toString(36).slice(2,8),
         text:selection.text,articleTitle:document.title.split(' | ')[0],
         url:location.origin+location.pathname+'#:~:text='+encodeURIComponent(normalize(selection.text).slice(0,150)),
-        before:selection.anchor.prefix,after:selection.anchor.suffix,
-        savedAt:Date.now(),
+        before:selection.anchor.prefix,after:selection.anchor.suffix,savedAt:Date.now(),
         annotation:{version:1,kind,color:currentColor,anchor:selection.anchor,noteId:null}
       };
+      const key=store.highlightKey(record);
+      const previous=old.find(x=>store.highlightKey(x)===key);
+      if(previous){say('Это место текста уже сохранено.');return previous}
+      if(old.length>=200){say('Достигнут лимит 200 цитат. Экспортируйте библиотеку перед удалением.');return null}
       const next=store.addHighlight(old,record);
-      if(next.length===old.length){say('Этот фрагмент уже сохранён.');return old.find(x=>x?.annotation?.anchor?.fingerprint===record.annotation.anchor.fingerprint)||null}
+      // Comparing array lengths is wrong if native data included legacy
+      // duplicates; inspect the inserted record ID instead.
+      if(!next.some(x=>x.id===record.id)){
+        say('Помету не удалось добавить: исходные записи оставлены без изменений.');
+        return null;
+      }
       if(!write(qKey,next)){say('Ошибка сохранения — библиотека не изменена.');return null}
-      repaint();say('Сохранено в вашей библиотеке.');return record;
+      repaint();say('Помета сохранена в библиотеке.');return record;
     }
     function updateRecord(id,updater){
       const old=all(),i=old.findIndex(x=>x.id===id&&x.annotation?.version===1);
@@ -290,12 +295,60 @@
       if(!write(qKey,next)){say('Не удалось обновить помету.');return null}
       repaint();return updated;
     }
+    function linkedNote(record){
+      const notes=read(nKey);
+      const explicit=record.annotation?.noteId&&notes.find(x=>x.id===record.annotation.noteId);
+      if(explicit)return explicit;
+      // Repair a single legacy one-way link without guessing among duplicates.
+      const linked=notes.filter(x=>x.quoteId===record.id);
+      return linked.length===1?linked[0]:null;
+    }
+    function openNoteEditor(record){
+      pendingNoteId=record.id;
+      noteText.value=linkedNote(record)?.text||'';
+      editor.hidden=false;section.open=true;
+      window.__NP_UNIVERSAL_PREVIEW__?.openResearchForAnnotation?.();
+      requestAnimationFrame(()=>noteText.focus({preventScroll:true}));
+    }
+    function saveLinkedNote(record,value){
+      const notes=read(nKey),existing=linkedNote(record);
+      const oldLink=record.annotation?.noteId||null;
+      if(existing){
+        if(oldLink!==existing.id){
+          if(!updateRecord(record.id,x=>{x.annotation.noteId=existing.id}))
+            return{ok:false,message:'Не удалось восстановить связь заметки с цитатой.'};
+        }
+        const next=notes.map(x=>x.id===existing.id?{...x,text:value}:x);
+        if(!write(nKey,next)){
+          if(oldLink!==existing.id)updateRecord(record.id,x=>{x.annotation.noteId=oldLink});
+          return{ok:false,message:'Ошибка сохранения: прежний текст заметки сохранён.'};
+        }
+        return{ok:true,message:'Заметка обновлена.'};
+      }
+      if(notes.length>=500)return{ok:false,message:'Лимит 500 заметок. Экспортируйте библиотеку перед добавлением.'};
+      const id='note-w57-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
+      const note={id,text:value,quoteText:record.text,articleTitle:record.articleTitle,
+        url:record.url,savedAt:Date.now(),quoteId:record.id};
+      // Two localStorage keys are not transactional: write the reference first,
+      // then the note; compensate on failure and NEVER announce false success.
+      if(!updateRecord(record.id,x=>{x.annotation.noteId=id}))
+        return{ok:false,message:'Не удалось связать заметку с выделением. Ничего не записано.'};
+      if(!write(nKey,[note,...notes])){
+        const rolledBack=updateRecord(record.id,x=>{x.annotation.noteId=oldLink});
+        return{ok:false,message:rolledBack
+          ?'Ошибка сохранения. Связь с выделением восстановлена, текст остаётся в редакторе.'
+          :'Ошибка сохранения и отката связи. Текст остаётся в редакторе; не закрывайте страницу до экспорта.'};
+      }
+      return{ok:true,message:'Заметка сохранена в библиотеке.'};
+    }
     function locate(id){
       const r=rangeById.get(id);
       if(!r)return say('Фрагмент не найден. Исходная цитата сохранена.');
-      const el=r.startContainer.parentElement;
+      section.open=false;
+      window.__NP_UNIVERSAL_PREVIEW__?.closeResearchForAnnotation?.();
+      const el=r.startContainer.parentElement?.closest('p,li,blockquote')||r.startContainer.parentElement;
       el?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth',block:'center'});
-      document.querySelector('#npW57NotesDetails')?.removeAttribute('open');
+      if(el){if(!el.hasAttribute('tabindex'))el.setAttribute('tabindex','-1');el.focus?.({preventScroll:true})}
       say('Переход к выделенному фрагменту.');
     }
     function showToolbar(data){
@@ -350,11 +403,11 @@
       if(!s)return;
       const record=save(s,kind==='note'?'quote':kind);
       if(kind==='note'&&record){
-        pendingNoteId=record.id;editor.hidden=false;section.open=true;
-        $('#npW57NoteText').value='';
-        setTimeout(()=>{rightScroll.scrollTo({top:0,behavior:'instant'});editor.scrollIntoView({block:'nearest'});noteText.focus({preventScroll:true})},20);
+        openNoteEditor(record);
+        requestAnimationFrame(()=>editor.scrollIntoView({block:'nearest'}));
       }else if(record){
         section.open=true;
+        window.__NP_UNIVERSAL_PREVIEW__?.openResearchForAnnotation?.();
         rightScroll.scrollTop=0;
       }
       window.getSelection()?.removeAllRanges();
@@ -378,35 +431,40 @@
       }else if(action==='recolor'){
         updateRecord(id,x=>{x.annotation.color=colors[(colors.indexOf(x.annotation.color)+1)%colors.length]});
       }else if(action==='edit'){
-        pendingNoteId=id;editor.hidden=false;section.open=true;noteText.value='';
-        noteText.focus({preventScroll:true});
+        openNoteEditor(record);
       }else if(action==='delete'){
         const old=all(),deleted=old.find(x=>x.id===id);
         if(write(qKey,old.filter(x=>x.id!==id))){
-          lastUndo=deleted;repaint();say('Помета удалена. ');
+          if(pendingNoteId===id){pendingNoteId=null;editor.hidden=true}
+          lastUndo=deleted;repaint();say('Помета удалена. Связанная заметка остаётся в библиотеке. ');
           const undo=document.createElement('button');undo.type='button';undo.textContent='Отменить';
+          undo.setAttribute('aria-label','Восстановить удалённую помету');
           undo.addEventListener('click',()=>{
-            if(!lastUndo)return;
-            const next=all();if(next.length>=200)return;
-            next.unshift(lastUndo);lastUndo=null;
-            if(write(qKey,next)){repaint();say('Помета восстановлена.')}
-          },{once:true});status.append(undo);
+            if(!lastUndo||lastUndo.id!==deleted.id)return;
+            const next=all();
+            if(next.some(x=>x.id===deleted.id)){lastUndo=null;say('Помета уже восстановлена.');return}
+            if(next.length>=200){say('Нет места для восстановления: сохраните экспорт библиотеки.');return}
+            if(write(qKey,[deleted,...next])){
+              lastUndo=null;repaint();say('Помета восстановлена.');
+            }else say('Восстановление не удалось. Попробуйте ещё раз.');
+          });
+          status.append(undo);
         }
       }
+    });
+    section.querySelector('#npW57CancelNote').addEventListener('click',()=>{
+      pendingNoteId=null;noteText.value='';editor.hidden=true;
+      say('Редактирование отменено; сохранённые заметки не изменены.');
     });
     section.querySelector('#npW57SaveNote').addEventListener('click',()=>{
       const value=noteText.value.trim(),id=pendingNoteId;
       if(!value||!id){say('Введите текст заметки.');return}
-      const record=entries().find(x=>x.id===id);if(!record)return;
-      const old=read(nKey);
-      if(old.length>=500){say('Лимит 500 заметок: сначала экспортируйте библиотеку.');return}
-      const newId='note-w57-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
-      const note={id:newId,text:value,quoteText:record.text,
-        articleTitle:record.articleTitle,url:record.url,savedAt:Date.now(),quoteId:id};
-      if(!write(nKey,[note,...old])){say('Не удалось сохранить заметку.');return}
-      updateRecord(id,x=>{x.annotation.noteId=newId});
+      const record=entries().find(x=>x.id===id);
+      if(!record){say('Исходное выделение не найдено. Текст остаётся в редакторе.');return}
+      const result=saveLinkedNote(record,value);
+      if(!result.ok){say(result.message);return}
       pendingNoteId=null;noteText.value='';editor.hidden=true;
-      say('Заметка сохранена в Product Library.');
+      say(result.message);
     });
     window.addEventListener('storage',e=>{if(e.key===qKey)repaint()});
     window.addEventListener('resize',()=>{if(!toolbar.hidden)toolbar.hidden=true},{passive:true});
