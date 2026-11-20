@@ -20,8 +20,8 @@ is explicitly run. Canonical production Reader remains the existing Astro compon
 - Open research panel / inline actions in its heading:
   `http://127.0.0.1:19061/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space&panel=open`
 
-At widths **1280px and above**, the original pilot opens the right panel by default
-if `panel` is absent. At **1121–1279px**, it is folded by default. Both
+The right research panel is **folded by default at all desktop widths**,
+with no query parameter needed. Users may open it with the right rail button. Both
 explicit parameters override that initial desktop setting and remain stable
 across reloads; the user can still toggle normally. Mobile ignores them.
 The reference screenshots for aligned SVGs were taken in the **folded** state.
@@ -34,6 +34,15 @@ represent different UI states, not different production versions.
 Environment overrides: `READER_W57_DIST` (absolute Astro dist path) and
 `READER_W57_PORT` (default `19061`). An ordinary URL without
 `?reader-pilot=1` serves the unchanged built site.
+
+## Scrollbar-safe single-axis positioning
+
+All floating actions share **one CSS right-side containing block**.
+The 40px reading toolbar uses `right:5vw`, and the 44px Library and
+fold controls use `right:calc(5vw - 2px)`. Their visible centers coincide,
+even in Windows browsers with a classic 16–17px scrollbar.
+Never reintroduce mixed `left:calc(95vw ...)` or JS-measured X coordinates.
+The desktop research panel starts **closed** on first load.
 
 ## Baseline and visual contract
 

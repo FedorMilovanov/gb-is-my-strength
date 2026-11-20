@@ -28,8 +28,8 @@
     },
     {
       "name": "reader_w57.css",
-      "sha256": "56e794ef5451c30e7fe48f5883d10aaff1d811f476b81318dc697608cfef1e1a",
-      "bytes": 22490
+      "sha256": "2d8c6306fa1f30e32426689dcd91bc8e692421bd510f28885929ef33f32ff01a",
+      "bytes": 22604
     },
     {
       "name": "reader_universal_contract.js",
@@ -38,8 +38,8 @@
     },
     {
       "name": "reader_universal_preview.js",
-      "sha256": "cc7d9bdfb60b6a7854c247a4b90d41075f9e710c42a89141d4e67008869b9b15",
-      "bytes": 129700
+      "sha256": "ea7beffbc1b77979af72f1470742868bdc8542080e34f806badb9d9bc00ae613",
+      "bytes": 129500
     },
     {
       "name": "reader_editorial_refinement.js",
@@ -53,8 +53,8 @@
     },
     {
       "name": "reader_w57.js",
-      "sha256": "1d72737ca729833190927673abe8327226a2f8123c07632ec19246a109967b63",
-      "bytes": 5295
+      "sha256": "3c3037801c0ba07c26f8ac4c73a27844fdea04e4b53b98169d12b7880c02aa22",
+      "bytes": 4886
     },
     {
       "name": "reader_w57_annotations.js",

@@ -17,15 +17,20 @@ const css = readFileSync(join(root, 'assets', 'reader_w57.css'), 'utf8');
 const js = readFileSync(join(root, 'assets', 'reader_w57.js'), 'utf8');
 const shell = readFileSync(join(root, 'preview.py'), 'utf8');
 const preview = readFileSync(join(root, 'assets', 'reader_universal_preview.js'), 'utf8');
+assert.match(preview, /const initiallyFolded=previewPanel!=='open'/,
+  'right research panel must start folded on desktop by default');
 assert.match(preview, /const previewPanel=new URLSearchParams\(location\.search\)\.get\('panel'\)/,
   'explicit preview-state deep link owner required');
 assert.match(preview, /let manualRightChoice=!isMobile\(\)&&\['open','closed'\]\.includes\(previewPanel\)/,
   'panel=open/closed deep links must override width defaults on desktop');
 
 assert.match(css, /W57 VISUAL CLOSURE 2026-11-20/, 'source alignment wave absent');
-assert.match(css, /--np-w57-axis-x:\s*calc\(95vw - 20px\)/, 'viewport-defined axis required');
-assert.match(js, /setProperty\('--np-w57-axis-x','calc\(95vw - 20px\)'\)/,
-  'remove geometry feedback into the axis');
+assert.match(css, /right:calc\(5vw - 2px\)!important/,
+  'fold SVG and Library use the same right edge as the 40px reading toolbar');
+assert.doesNotMatch(css, /left:calc\(var\(--np-w57-axis-x/,
+  'do not mix vw-based left position with right-aligned native controls');
+assert.doesNotMatch(js, /setProperty\('--np-w57-axis-x'/,
+  'no obsolete JS left-axis that ignores classic vertical scrollbar width');
 assert.doesNotMatch(js, /ResizeObserver\(schedule\)/, 'avoid per-frame toggle-derived geometry');
 assert.match(css, /W57 MOBILE LIBRARY PLAIN SVG 2026-11-20/, 'unframed mobile book required');
 assert.match(css, /W57 mobile FAB source specificity: 2026-11-20/, 'two-ID legacy mobile plate must be overridden');

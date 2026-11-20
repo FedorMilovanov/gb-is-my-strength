@@ -898,25 +898,22 @@
     img.removeAttribute('data-np-u-thumb');
   }
  },true);
- // ARGON shows one rail before 1280px, rather than squeezing the
- // article between TWO rails at 1121px. An explicit user click overrides
- // this default for the current preview session.
-  // Explicit QA deep-link state, ONLY on opt-in localhost Reader pilot.
-  // The normal Reader default remains unchanged: >1279px opens research.
-  // This prevents confusing an open-on-entry URL with a folded-state QA image.
+  // W57 accepted UX: research starts FOLDED on every desktop width.
+  // One canonical Reader link has no special query parameters; a deliberate
+  // click opens it. The optional panel=open parameter is retained strictly
+  // for QA screenshots / direct-state checks, not normal navigation.
   const previewPanel=new URLSearchParams(location.search).get('panel');
   let manualRightChoice=!isMobile()&&['open','closed'].includes(previewPanel);
-  if(manualRightChoice){
-    const folded=previewPanel==='closed';
-    root.classList.toggle('np-u-hide-right',folded);
-    document.body.classList.toggle('np-u-hide-right',folded);
+  if(!isMobile()){
+    const initiallyFolded=previewPanel!=='open';
+    root.classList.toggle('np-u-hide-right',initiallyFolded);
+    document.body.classList.toggle('np-u-hide-right',initiallyFolded);
   }
- function applyIntermediateWidth(){
-   if(isMobile()||manualRightChoice)return;
-   const narrowDesktop=matchMedia('(max-width:1279px)').matches;
-   root.classList.toggle('np-u-hide-right',narrowDesktop);
-   document.body.classList.toggle('np-u-hide-right',narrowDesktop);
- }
+  function applyIntermediateWidth(){
+    if(isMobile()||manualRightChoice)return;
+    root.classList.add('np-u-hide-right');
+    document.body.classList.add('np-u-hide-right');
+  }
  const browserStore={active:-1};
  function inRange(el,begin,end){
   if(!el||!begin)return false;

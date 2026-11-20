@@ -1,16 +1,17 @@
+/* W57 2026-11-20 scrollbar-safe column: fold and Library are right:calc(5vw - 2px)
+   at 44px, authentic reading toolbar is right:5vw at 40px. They share the
+   same containing-block edge, even when the scrollbar consumes 16-17px.
+   Default desktop state is folded; existing icon SVGs and mobile unchanged. */
 /* ARGON W57: integration over authentic Product controls; never clone TTS/library. */
 /* W57 VISUAL CLOSURE 2026-11-20:
    The Library is a plain SVG with a 44px invisible hitbox on the SAME axis as
    Theme/Search/TTS/Bookmark, no frame, gradient, border, shadow or hover lift.
    The anchored controls remain fixed while scrolling and opening the library. */
 @media(min-width:1121px){
- body.np-u-preview.np-w57-ready.np-u-hide-right {
-   --np-w57-axis-x:calc(95vw - 20px);
- }
  body.np-u-preview.np-w57-ready.np-u-hide-right #gb-hl-fab {
    box-sizing:border-box!important;position:fixed!important;
-   left:calc(var(--np-w57-axis-x,calc(95vw - 20px)) - 22px)!important;
-   right:auto!important;top:auto!important;bottom:20px!important;
+   left:auto!important;right:calc(5vw - 2px)!important;
+   top:auto!important;bottom:20px!important;
    width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;
    margin:0!important;padding:0!important;display:grid!important;place-items:center!important;
    color:#634b3e!important;
@@ -297,8 +298,8 @@ body.np-u-preview #gb-hl-fab #gb-hl-fab-count{display:none}
   body.np-u-preview.np-w57-ready.np-u-hide-right.np-u-native-product-actions:not(.np-u-inline-header-actions):has(> #gbFloatingControls.np-u-native-legacy-float)
     #npUniversalDemo.np-u-argon #npURightEdgeRail{
       position:fixed!important;top:24px!important;
-      left:calc(var(--np-w57-axis-x,calc(100vw - 32px)) - 22px)!important;
-      right:auto!important;bottom:auto!important;
+      left:auto!important;right:calc(5vw - 2px)!important;
+       bottom:auto!important;
       width:44px!important;min-width:44px!important;
       height:44px!important;min-height:44px!important;
   }
@@ -372,8 +373,8 @@ body.np-u-preview #gb-hl-fab #gb-hl-fab-count{display:none}
   #npUniversalDemo.np-u-argon #npURightEdgeRail,
  body.np-u-preview.np-w57-ready.np-u-hide-right.np-u-native-product-actions:has(> #gbFloatingControls.np-u-native-legacy-float)
   #npUniversalDemo.np-u-argon #npURightEdgeRail{
-   left:calc(var(--np-w57-axis-x,calc(95vw - 20px)) - 22px)!important;
-   right:auto!important;width:44px!important;
+   left:auto!important;right:calc(5vw - 2px)!important;
+    width:44px!important;
  }
  body.np-u-preview.np-w57-ready.np-u-hide-right.np-u-native-product-actions
   #npUniversalDemo.np-u-argon #npURightEdgeRail #npUEdgeToggle{

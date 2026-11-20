@@ -84,18 +84,9 @@
       if(e.key===canon.storageKey)syncTypography();
     });
     syncTypography();
-    // One deterministic, viewport-derived right-side axis.
-    // Previous self-measurement of #gbFloatingControls created a feedback loop
-    // after opening/closing the research panel on ordinary articles.
-    // CSS and this value agree: right=5vw, native control width=40px.
-    function realign(){
-      if(innerWidth<=1120)return;
-      body.style.setProperty('--np-w57-axis-x','calc(95vw - 20px)');
-    }
-    window.addEventListener('resize',realign,{passive:true});
-    window.addEventListener('orientationchange',realign,{passive:true});
-    window.addEventListener('pageshow',realign,{passive:true});
-    realign();
+    // The two 44px floating actions use the same right-based CSS reference
+    // as the 40px real reading tools. No self-measurement, custom X property,
+    // or viewport-width/scrollbar-width discrepancy is needed.
     body.classList.add('np-w57-ready');
     window.__NP_W57__={ready:true,version:'57',canonicalPrefs:true,annotations:false};
     console.info('NP_W57_CORE_READY');
