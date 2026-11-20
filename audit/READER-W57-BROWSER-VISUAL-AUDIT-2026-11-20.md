@@ -558,3 +558,32 @@ Sepia и Cormorant применяются через общий `GBReaderPrefere
 - `36-r5-current-d2-390-font.png`, `37-r5-current-d2-320-font.png` — D2;
 - `38-r5-current-d3-1280-font.png`, `39-r5-current-d3-1366-native.png`, `40-r5-current-d3-1440-native.png`, `41-r5-current-d3-1920-native.png` — D3;
 - `42-r5-current-research-1440.png`, `43-r5-current-research-390.png` — W57 pilot rail «На полях».
+
+## 11. Раунд 6 — exact HEAD `fd1a73a` и закрытие локальной причины CI
+
+### 11.1. Границы проверки
+
+После раунда 5 PR #2346 продвинулся до `fd1a73af9be2d6a890c8f7c6ecc1977a059a52b1` (`fix(reader): restore canonical sideways mobile rate slot from PR 75`). Проверка снова выполнялась в отдельном detached worktree; локальный обход Node-floor (`22.22.3` против требуемого `22.23.4`) применялся только к контракту Astro в этом worktree. В текущую audit-ветку продуктовые файлы не переносились.
+
+Production-like build завершился **PASS**. `npm run engine:contracts` на exact head также завершился **PASS**: оба прежних mobile speed-contract failure (`one semantic speed-choice component` и `shared Play/rate slot`) закрыты новым head. `map-engine-p0-regression-test`, `avraam-map-audit` (`56/56`), `series-reader-facade-regression-test`, `reader-w57-annotations-regression-test` и read-only `cache-bust` также PASS.
+
+Формальный `reader-controls-a11y-browser-contract.mjs` в этой среде не запустился: канонический Playwright Chromium отсутствует (`chrome-headless-shell` не установлен). Отдельный диагностический Chromium harness с `@sparticuz/chromium` подтвердил на 320/390 px, что верхний и нижний Gill trigger открывают одну native sheet, Escape восстанавливает состояние, а общий Play/rate slot открывает ровно один sideways speed rail; выбор `1.5×` сохраняется, после запуска озвучки кнопка переходит в состояние повторного запуска. Единственная консольная ошибка — внешняя недоступная Yandex Metrika (`ERR_CONNECTION_CLOSED`). Это observational evidence, не замена формальному browser contract.
+
+### 11.2. Scripture index — stale только из-за счётчика source-файлов
+
+Оба hosted Scripture failure воспроизводились локально на exact head до регенерации: `--check` и `scripture-occurrence-index-contract.mjs` сообщали stale index. Канонический writer был запущен **только в disposable worktree**. После `--write` оба контракта PASS: `1372 references`, `3511 occurrences`, `103 routes`, `149 curated text records`.
+
+Diff кандидата содержит ровно одну логическую правку:
+
+```diff
+- "scannedSourceFiles": 542
++ "scannedSourceFiles": 543
+```
+
+Числа ссылок, occurrences, routes и canonical text records не меняются. Причина — добавленный ранее source unit `src/components/article-pilots/gill-series/GillMobileMarginalia.astro`; это drift source-owned index, а не ошибка распознавания библейских ссылок. Кандидат не копировался в PR #2346 и не оставлен в audit-ветке: её итоговое дерево совпадает с `00644b8` по source index.
+
+### 11.3. Hosted CI и вердикт
+
+На exact `fd1a73a` workflow `44832103490` показывает: Linux и Darwin actionlint — **SUCCESS**, `guard` — **SUCCESS**, а `actionlint offline / win32-x64` — **FAILURE** внутри шага `Prove offline archive contract and execute binary`. GitHub annotation содержит только `Process completed with exit code 1`; job-log API возвращает `EOF` от results receiver, поэтому Windows-specific root cause не установлен и его нельзя выдавать за product defect. В момент последнего запроса часть матрицы оставалась `QUEUED`/`IN_PROGRESS`. Два Scripture failure объясняются stale index из 11.2; остальные checks не следует считать зелёными до завершения.
+
+Новый `fd1a73a` не содержит repair D2 или D3: его diff ограничен reader speed-slot/Gill mobile-bar ownership и связанными контрактами. Поэтому **D2 и D3 остаются `- [ ]`**, а PR #2346 сохраняет статус **DRAFT/HOLD / не готов к merge**. Исправление mobile speed ownership подтверждено локально и hosted `guard` на exact head, но не меняет визуально-архитектурные блокеры D2/D3.
