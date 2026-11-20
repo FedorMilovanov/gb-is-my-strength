@@ -1936,6 +1936,21 @@
  addEventListener('scroll',()=>{if(!browserStore.frame){browserStore.frame=true;requestAnimationFrame(()=>{browserStore.frame=false;updateScroll();});}},{passive:true});
  installArgonCentralOverview();
  supplemental();show(currentGroupIndex());
- window.__NP_UNIVERSAL_PREVIEW__={ready:true,source:'real-article',kind:model.kind,counts:model.counts,groups:sections.map(s=>({id:s.id,roman:s.numeral})),features:model.supports,hasNativeReader:model.supports.nativeRail};
+ window.__NP_UNIVERSAL_PREVIEW__={
+  ready:true,source:'real-article',kind:model.kind,counts:model.counts,
+  groups:sections.map(s=>({id:s.id,roman:s.numeral})),
+  features:model.supports,hasNativeReader:model.supports.nativeRail,
+  // Single research owner for desktop and mobile; do not clone panels.
+  openResearchForAnnotation(){
+   if(isMobile()){
+    if(!root.classList.contains('np-u-show-right'))openMobile('right');
+   }else setRightOpen(true);
+   return true;
+  },
+  closeResearchForAnnotation(){
+   if(isMobile()&&root.classList.contains('np-u-show-right'))closeMobile(false);
+   return true;
+  }
+ };
  console.info('NP_UNIVERSAL_PREVIEW_READY',JSON.stringify(window.__NP_UNIVERSAL_PREVIEW__));
 })();

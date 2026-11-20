@@ -31,6 +31,9 @@ assert.doesNotMatch(preview, /fontPanel\.closest\('#npW57ReadingDetails'\)/, 'le
 assert.match(preview, /data-np-u-type-width="narrow"/, 'narrow width missing');
 assert.match(js, /width:v\.measure==='narrow'\?'narrow'/, 'narrow persisted state mismatches');
 assert.match(preview, /one top-level right research card at a time/, 'exclusive right cards missing');
+assert.match(preview, /openResearchForAnnotation\(\)/,'right research owner must expose opening action');
+assert.match(preview, /closeResearchForAnnotation\(\)/,'right research owner must expose closing action');
+assert.match(css, /np-w57-note-actions/, 'note cancel/confirm row missing');
 assert.ok(preview.includes('event.preventDefault();event.stopImmediatePropagation();'),
   'Escape must only dismiss the settings popup, without closing mobile TOC');
 assert.ok(preview.includes("if(event.key==='Tab'){"),

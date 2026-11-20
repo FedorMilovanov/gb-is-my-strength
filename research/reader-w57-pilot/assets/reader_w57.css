@@ -146,8 +146,15 @@ body.np-u-preview.np-w57-ready[data-np-u-width="narrow"]{--np-u-reading-measure:
 }
 #npUniversalDemo .np-w57-annotation-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;
  font:400 10px/1.4 'Source Sans 3',system-ui,sans-serif;color:var(--np-u-muted,#777);}
-#npUniversalDemo .np-w57-annotation-meta button{border:0;background:transparent;min-height:29px;padding:4px 6px;
- cursor:pointer;color:var(--np-u-red,#86574b);font:600 10px/1.2 system-ui,sans-serif;}
+#npUniversalDemo .np-w57-annotation-meta button{
+ border:0;background:transparent;min-height:36px;padding:7px 8px;
+ cursor:pointer;color:var(--np-u-red,#86574b);font:600 11px/1.2 system-ui,sans-serif;
+ border-radius:6px;
+}
+#npUniversalDemo .np-w57-annotation-meta button:focus-visible,
+#npUniversalDemo .np-w57-comment button:focus-visible{
+ outline:2px solid var(--np-u-red,#86574b);outline-offset:2px;
+}
 #npUniversalDemo .np-w57-annotation-meta button:hover{text-decoration:underline;text-underline-offset:3px;}
 #npUniversalDemo .np-w57-comment label{display:block;font-size:11px;color:var(--np-u-muted,#777);}
 #npUniversalDemo .np-w57-comment textarea{
@@ -156,11 +163,14 @@ body.np-u-preview.np-w57-ready[data-np-u-width="narrow"]{--np-u-reading-measure:
  color:var(--np-u-ink,#222);background:var(--np-u-paper,#fffdfa);
  border:1px solid var(--np-u-rule,#ccc);border-radius:6px;
 }
-#npUniversalDemo .np-w57-comment button{
- min-height:35px;padding:7px 13px;cursor:pointer;border-radius:6px;
+#npUniversalDemo .np-w57-note-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+#npUniversalDemo .np-w57-comment button,
+#npUniversalDemo #npW57NotesStatus button{
+ min-height:40px;padding:8px 13px;cursor:pointer;border-radius:6px;
  border:1px solid var(--np-u-rule,#c8b9a7);
  background:var(--np-u-white,#fff);color:var(--np-u-red,#805044);
 }
+#npUniversalDemo .np-w57-note-actions button{flex:1 1 110px;max-width:100%}
 #npW57SelectionToolbar{
  position:fixed;z-index:12080;display:flex;align-items:center;gap:0;
  max-width:calc(100vw - 18px);padding:5px;border:1px solid rgba(111,85,67,.19);
@@ -196,6 +206,9 @@ html.dark #npW57SelectionToolbar button:hover{background:rgba(215,177,121,.13)}
 ::highlight(np-w57-underline-blue){text-decoration:underline 1.7px rgba(76,119,156,.88);text-underline-offset:4px}
 @media(max-width:1120px){
  #npUniversalDemo .np-w57-palette button{flex:0 0 44px;width:44px;height:44px;}
+ #npUniversalDemo .np-w57-annotation-meta button,
+ #npUniversalDemo .np-w57-comment button,
+ #npUniversalDemo #npW57NotesStatus button{min-height:44px}
  #npUniversalDemo .np-w57-accordion > summary{min-height:48px}
  #npW57SelectionToolbar{padding:4px;max-width:calc(100vw - 18px)}
  #npW57SelectionToolbar button{min-height:44px;padding:7px}
