@@ -1,0 +1,43 @@
+--- a/js/highlights.js
++++ b/js/highlights.js
+@@ -9,11 +9,12 @@
+   const LIMIT_QUOTES = 200;
+   const LIMIT_NOTES = 500;
+   const BATCH_SIZE = 30;
+-  const quoteSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v16l-6-4-6 4V4z"/></svg>';
+-  const bookSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6c-2.5-2-5.5-2.5-9-1.5v14c3.5-1 6.5-.5 9 1.5 2.5-2 5.5-2.5 9-1.5v-14c-3.5-1-6.5-.5-9 1.5Z"/><path d="M12 6v14"/></svg>';
+-  const penSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 20 4-1 11-11a2 2 0 0 0-3-3L5 16l-1 4Z"/><path d="m14 7 3 3"/></svg>';
+-  const closeSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5 19 19M19 5 5 19"/></svg>';
+-  const searchSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>';
++  const icon = body => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + body + '</svg>';
++  const quoteSvg = icon('<path d="M6 4h12v16l-6-4-6 4V4z"/>');
++  const bookSvg = icon('<path d="M12 6c-2.5-2-5.5-2.5-9-1.5v14c3.5-1 6.5-.5 9 1.5 2.5-2 5.5-2.5 9-1.5v-14c-3.5-1-6.5-.5-9 1.5Z"/><path d="M12 6v14"/>');
++  const penSvg = icon('<path d="m4 20 4-1 11-11a2 2 0 0 0-3-3L5 16l-1 4Z"/><path d="m14 7 3 3"/>');
++  const closeSvg = icon('<path d="M5 5 19 19M19 5 5 19"/>');
++  const searchSvg = icon('<circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/>');
+
+   function normalizeText(value) { return String(value == null ? '' : value).replace(/\s+/g, ' ').trim(); }
+   function gbHighlightPath(item) {
+@@ -345,12 +346,21 @@
+     const text = textArea.value.trim();
+     if (!text) { statusMessage('Сначала напишите заметку.', true); return; }
+     const old = notes(), context = draft && draft.context, editing = draft && draft.editing;
++    if (editing) {
++      const latest = old.find(n => String(n.id) === editing.id);
++      if (latest?.text !== editing.text) {
++        statusMessage(latest ? 'Заметка изменена в другой вкладке.' : 'Заметка удалена в другой вкладке.', true);
++        overlay.querySelector('#gb-hl-note-context').textContent = 'Скопируйте черновик перед выходом.';
++        textArea.focus();
++        return;
++      }
++    }
+     if (!editing && old.length >= LIMIT_NOTES) {
+       statusMessage('Достигнут лимит заметок. Экспортируйте библиотеку перед удалением старых записей.', true);
+       return;
+     }
+     const next = editing
+-      ? old.map((x) => x.id === editing.id ? Object.assign({}, x, { text }) : x)
++      ? old.map(x => String(x.id) === editing.id ? { ...x, text } : x)
+       : [{
+           id: uid('note'), text, quoteText: context && context.quoteText || '',
+           articleTitle: context && context.title || currentTitle(),
