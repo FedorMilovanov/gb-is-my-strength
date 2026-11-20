@@ -229,6 +229,76 @@ try{
   await d.page.locator('#npW57NotesStatus button').click();
   assert.equal(await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').filter(x=>x.annotation?.version===1).length),1);
  });
+ await safe('desktop-glossary-source-integrity',async()=>{
+  // The tested source contains a visible gterm and a large hidden gtip.
+  // Range.toString() includes the hidden tooltip, so the saved quote MUST
+  // instead use the author-visible textual projection.
+  const fixture=await d.page.evaluate(()=>{
+   const block=document.getElementById('gill-search-p-012');
+   if(!block)return{error:'Gill source paragraph gill-search-p-012 missing'};
+   const terms=[...block.querySelectorAll('.gterm')];
+   const term=terms.find(x=>x.querySelector('.gtip'));
+   if(!term)return{error:'Gill glossary gterm/gtip absent'};
+   block.scrollIntoView({block:'center',behavior:'instant'});
+   const walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT),nodes=[];let n;
+   while((n=walker.nextNode()))nodes.push(n);
+   const start=nodes.find(x=>term.contains(x)&&!x.parentElement.closest('.gtip,.tooltip'));
+   const i=nodes.indexOf(start);
+   const end=nodes.slice(i+1).find(x=>x.nodeValue.trim().length>12&&
+    !x.parentElement.closest('.gtip,.btip,.tooltip')&&!term.contains(x));
+   if(!start||!end)return{error:'Visible text nodes around glossary missing'};
+   const range=document.createRange();
+   range.setStart(start,0);
+   range.setEnd(end,Math.min(50,end.nodeValue.length));
+   let expected='';
+   for(const leaf of nodes){
+    if(leaf.parentElement.closest('.gtip,.btip,.tooltip,[hidden],[inert],[aria-hidden="true"]'))continue;
+    if(!range.intersectsNode(leaf))continue;
+    const from=leaf===start?0:0;
+    const to=leaf===end?Math.min(50,leaf.nodeValue.length):leaf.nodeValue.length;
+    expected+=leaf.nodeValue.slice(from,to);
+   }
+   const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);
+   document.dispatchEvent(new Event('selectionchange',{bubbles:true}));
+   document.dispatchEvent(new MouseEvent('mouseup',{bubbles:true}));
+   return{expected,raw:range.toString(),bounds:range.getBoundingClientRect().toJSON(),
+    glossary:term.querySelector('.gtip')?.textContent?.slice(0,65)||''};
+  });
+  d.item.glossaryFixture={...fixture,raw:fixture.raw?.slice(0,250)};
+  assert.ok(!fixture.error,fixture.error);
+  assert.ok(fixture.raw.length>fixture.expected.length+20,
+   'fixture must demonstrably include hidden glossary in native Range.toString');
+  assert.ok(fixture.expected.length>=6,'visible authored passage too short');
+  await d.page.waitForTimeout(420);
+  assert.equal(await d.page.locator('#npW57SelectionToolbar').isVisible(),true,
+   'contextual actions should appear on genuine visible glossary-adjacent selection');
+  const before=await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]'));
+  await d.page.locator('#npW57SelectionToolbar [data-w57-action="marker"]').click();
+  const after=await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]'));
+  const record=after.find(x=>!before.some(y=>y.id===x.id)&&x.annotation?.version===1);
+  assert.ok(record,'glossary-adjacent selection must save an independent annotation');
+  assert.equal(record.text,fixture.expected,
+   'saved quote must contain only visible authored text, never glossary tooltip contents');
+  assert.equal(record.annotation.anchor.exact,fixture.expected,'anchor exact must match visible quote');
+  assert.equal(record.annotation.anchor.projection,'reader-visible-v1',
+   'quote must declare visible coordinate mapping');
+  assert.ok(!record.text.includes(fixture.glossary.slice(0,20)),
+   'hidden glossary text leaked into saved quote');
+  d.item.glossary={visibleLength:fixture.expected.length,nativeRangeLength:fixture.raw.length,
+   storedLength:record.text.length,restorableId:record.id};
+  await snap(d.page,'desktop-glossary-visible');
+  await d.page.reload({waitUntil:'domcontentloaded'});
+  await d.page.waitForFunction(()=>window.__NP_W57_ANNOTATIONS__?.ready===true);
+  const restored=await d.page.evaluate(id=>({
+   saved:JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').some(x=>x.id===id),
+   unresolved:window.__NP_W57_ANNOTATIONS__?.orphanCount?.(),
+   painted:CSS.highlights&&[...CSS.highlights.values()].some(h=>h.size>0)
+  }),record.id);
+  assert.equal(restored.saved,true,'reloading must not discard valid visible quotation');
+  assert.equal(restored.unresolved,0,'visible source range must restore after reload');
+  assert.equal(restored.painted,true,'glossary quote highlight must repaint after reload');
+  d.item.glossary.restored=restored;
+ });
  await safe('desktop-dark',async()=>{
   await d.page.evaluate(()=>window.GBReaderPreferences?.setTheme?.('dark',{source:'w57-qa'}));
   await d.page.waitForTimeout(250);

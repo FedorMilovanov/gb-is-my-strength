@@ -32,84 +32,101 @@
     const parent=el?.closest('p,li,blockquote');
     return parent&&article.contains(parent)?parent:null;
   }
-  function spanOffsets(block,range){
-    const head=range.cloneRange();head.selectNodeContents(block);
-    head.setEnd(range.startContainer,range.startOffset);
-    const tail=range.cloneRange();tail.selectNodeContents(block);
-    tail.setEnd(range.endContainer,range.endOffset);
-    return[head.toString().length,tail.toString().length];
+  // Source coordinates refer only to VISIBLE authored prose, not inline
+  // glossary popovers hidden inside the published article's DOM.
+  function visibleProjection(block){
+    const segments=[],cached=new WeakMap();
+    const ignored=el=>{
+      if(!el||el===block)return false;
+      if(cached.has(el))return cached.get(el);
+      const excluded=el.matches('.gtip,.btip,.tooltip,[hidden],[inert],[aria-hidden="true"],[role="tooltip"]') ||
+        getComputedStyle(el).display==='none' ||
+        getComputedStyle(el).visibility==='hidden' || ignored(el.parentElement);
+      cached.set(el,excluded);return excluded;
+    };
+    const walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT);
+    let text='',node;
+    while((node=walker.nextNode())){
+      if(!node.nodeValue||ignored(node.parentElement))continue;
+      const start=text.length;text+=node.nodeValue;
+      segments.push({node,start,end:text.length});
+    }
+    return{text,segments};
+  }
+  function projectedOffset(p,container,offset){
+    const at=document.createRange();
+    try{at.setStart(container,offset);at.collapse(true)}catch(_){return null}
+    for(const segment of p.segments){
+      if(container===segment.node)return segment.start+offset;
+      if(at.comparePoint(segment.node,segment.node.nodeValue.length)<0)continue;
+      return segment.start;
+    }
+    return p.text.length;
   }
   function makeRange(block,start,end){
-    if(start<0||end<=start)return null;
-    const walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT);
-    const r=document.createRange();let n,at=0,started=false,ended=false;
-    while((n=walker.nextNode())){
-      let len=n.nodeValue.length;
-      if(!started&&start<=at+len){r.setStart(n,Math.max(0,start-at));started=true}
-      if(started&&end<=at+len){r.setEnd(n,Math.max(0,end-at));ended=true;break}
-      at+=len;
-    }
-    return started&&ended?r:null;
+    const p=visibleProjection(block);
+    if(!Number.isInteger(start)||!Number.isInteger(end)||
+       start<0||end<=start||end>p.text.length)return null;
+    const from=p.segments.find(s=>s.start<=start&&start<s.end);
+    const to=p.segments.find(s=>s.start<end&&end<=s.end);
+    if(!from||!to)return null;
+    const r=document.createRange();
+    r.setStart(from.node,start-from.start);
+    r.setEnd(to.node,end-to.start);
+    return r;
   }
   function capture(article){
     const sel=window.getSelection?.();
     if(!sel||sel.isCollapsed||!sel.rangeCount)return null;
-    const r=sel.getRangeAt(0).cloneRange();
-    const block=chooseBlock(r.startContainer,article);
+    const r=sel.getRangeAt(0).cloneRange(),block=chooseBlock(r.startContainer,article);
     if(!block||chooseBlock(r.endContainer,article)!==block)return null;
-    // A hidden Product glossary/metadata paragraph cannot be selected by readers.
-    // Do not persist a synthetic/off-screen source node that hydration may remove.
     const visual=r.getBoundingClientRect();
-    if(visual.width<2||visual.height<2||
-       visual.bottom<0||visual.top>innerHeight||
+    if(visual.width<2||visual.height<2||visual.bottom<0||visual.top>innerHeight||
        !block.getClientRects().length||block.closest('[hidden],[inert],[aria-hidden="true"]'))
       return null;
-    const text=r.toString();
+    const p=visibleProjection(block),start=projectedOffset(p,r.startContainer,r.startOffset),
+      end=projectedOffset(p,r.endContainer,r.endOffset);
+    if(start===null||end===null||end<=start)return null;
+    const text=p.text.slice(start,end);
     if(normalize(text).length<6||text.length>3000)return null;
     const list=blocks(article),index=list.indexOf(block);
     if(index<0)return null;
-    const [start,end]=spanOffsets(block,r);
-    const source=block.textContent||'';
-    if(source.slice(start,end)!==text)return null;
-    const prefix=source.slice(Math.max(0,start-64),start);
-    const suffix=source.slice(end,end+64);
     const anchor={
-      blockId:block.id||'',blockIndex:index,start,end,
-      exact:text,prefix,suffix,
-      blockHash:hash(normalize(source)),
+      projection:'reader-visible-v1',blockId:block.id||'',blockIndex:index,start,end,
+      exact:text,prefix:p.text.slice(Math.max(0,start-64),start),
+      suffix:p.text.slice(end,end+64),
+      blockHash:hash(normalize(p.text)),
       fingerprint:hash(pathname()+'|'+index+'|'+start+':'+end+'|'+text)
     };
-    return{text,anchor,range:r,rect:r.getBoundingClientRect()};
+    return{text,anchor,range:r,rect:visual};
   }
   function resolve(article,anchor){
     if(!anchor||typeof anchor.exact!=='string'||!anchor.exact)return null;
     const list=blocks(article);
-    // A short exact phrase is NOT sufficient provenance after editorial changes.
-    // Accept same paragraph hash or matching immediately surrounding context;
-    // otherwise preserve the stored quote as an unresolved annotation.
+    // Legacy annotations are preserved exactly. If old coordinates included
+    // hidden glossary prose, do NOT guess a new author or passage.
     const contextMatches=(raw,start,end)=>{
       if(anchor.blockHash&&hash(normalize(raw))===anchor.blockHash)return true;
-      const prefix=String(anchor.prefix||'').slice(-24);
-      const suffix=String(anchor.suffix||'').slice(0,24);
+      const prefix=String(anchor.prefix||'').slice(-24),suffix=String(anchor.suffix||'').slice(0,24);
       if(!prefix&&!suffix)return false;
       if(prefix&&!raw.slice(Math.max(0,start-prefix.length),start).endsWith(prefix))return false;
       if(suffix&&!raw.slice(end,end+suffix.length).startsWith(suffix))return false;
       return true;
     };
-    const probe=block=>{
+    const probe=(block,start=anchor.start,end=anchor.end)=>{
       if(!block)return null;
-      const raw=block.textContent||'';
-      if(raw.slice(anchor.start,anchor.end)!==anchor.exact||
-         !contextMatches(raw,anchor.start,anchor.end))return null;
-      return makeRange(block,anchor.start,anchor.end);
+      const raw=visibleProjection(block).text;
+      if(raw.slice(start,end)!==anchor.exact||!contextMatches(raw,start,end))return null;
+      return makeRange(block,start,end);
     };
-    const preferred=(anchor.blockId?article.querySelector('#'+CSS.escape(anchor.blockId)):null)
-      ||list[anchor.blockIndex];
-    const found=probe(preferred);
-    if(found)return found;
+    const preferred=anchor.blockId?
+      article.querySelector('#'+CSS.escape(anchor.blockId)):list[anchor.blockIndex];
+    if(preferred&&list.includes(preferred)){
+      const found=probe(preferred);if(found)return found;
+    }
     const candidates=[];
     for(const block of list){
-      const raw=block.textContent||'';
+      const raw=visibleProjection(block).text;
       let at=0;
       while((at=raw.indexOf(anchor.exact,at))!==-1){
         if(contextMatches(raw,at,at+anchor.exact.length)){
@@ -119,7 +136,6 @@
         at+=Math.max(1,anchor.exact.length);
       }
     }
-    // Never silently reattach ambiguous or contextless theological passages.
     return candidates.length===1?candidates[0]:null;
   }
   function start(){

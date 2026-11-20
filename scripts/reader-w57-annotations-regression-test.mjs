@@ -71,10 +71,11 @@ assert.equal(ambiguous.api.linkedNote(ambiguous.record),null,
 const resolveSource=excerpt('  function resolve(article,anchor){','  function start(){');
 const normalize=s=>String(s||'').replace(/\s+/g,' ').trim();
 const hash=s=>'hash:'+s;
-const resolveRange=new Function('blocks','makeRange','CSS','hash','normalize',
+const resolveRange=new Function('blocks','makeRange','visibleProjection','CSS','hash','normalize',
  resolveSource+'return resolve;')(
   article=>article.items,
   (block,start,end)=>({block:block.textContent,text:block.textContent.slice(start,end)}),
+  block=>({text:block.textContent}),
   {escape:s=>s},hash,normalize);
 const authentic={textContent:'В начале Бог благ навсегда'};
 const altered={textContent:'Не думаю Бог благ никак'};
@@ -88,6 +89,15 @@ assert.equal(resolveRange(article([altered,authentic]),anchor)?.block,authentic.
  'moved source paragraph can reattach when original provenance still matches');
 assert.equal(resolveRange(article([altered,authentic,{...authentic}]),{...anchor,blockIndex:9}),null,
  'ambiguous context must remain unresolved instead of attributing wrong passage');
+// Persist the same DOM-author-visible offset mapping on capture and resolve.
+assert.match(file,/function visibleProjection\(block\)/,
+ 'single visible-author-text projection owner is required');
+assert.match(file,/projection:'reader-visible-v1'/,
+ 'new anchored quotes must record their coordinate system');
+assert.match(file,/\.gtip,\.btip,\.tooltip/,
+ 'glossary/tooltip prose must not be included in saved citations');
+assert.doesNotMatch(file,/const source=block\.textContent\|\|''/,
+ 'raw block textContent must never become the quoted text');
 assert.match(file,/next\.some\(x=>x\.id===record\.id\)/,
  'insertion success must be tested by identity, not list length');
 assert.doesNotMatch(file,/next\.length===old\.length/,
