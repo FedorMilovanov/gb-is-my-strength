@@ -2,12 +2,12 @@
 
 **Аудитор:** Arena Agent (независимая проверка, не автор кода W57)
 **Дата:** 2026-11-20
-**Проверенный HEAD:** `e41556048b8dab397fa8d8675a51488e643a254d` (повторный аудит, раунд 3; раунд 2 был на `dd9b0bf7a385f14398c7618ffef33a8751fde644`)
+**Проверенный HEAD:** `63909cce9c6c89658c47e7755597008c634c9ef0` (раунд 5; раунд 3 был на `e41556048b8dab397fa8d8675a51488e643a254d`, раунд 2 — на `dd9b0bf7a385f14398c7618ffef33a8751fde644`)
 (Branch `fix/reader-library-no-count-dot-20261119`, PR #2346, DRAFT/HOLD)
 **Движок:** Chromium 153.0.8010.0 (`@sparticuz/chromium@153.0.0` + Playwright 1.64.1), headless, Debian 12/x86_64
-**Сборка:** `npm run strangler:build:production-like` из чистого worktree этого коммита (112 страниц Astro + legacy-копирование)
-**Рантайм:** `research/reader-w57-pilot/preview.py`, `?reader-pilot=1&paper=space`
-**Внешние ресурсы:** недоступны (`mc.yandex.ru` даёт `ERR_CONNECTION_CLOSED`). Единственная сетевая ошибка в консоли — эта; на W57 не влияет.
+**Сборка:** `npm run strangler:build:production-like` из чистого detached worktree текущего HEAD (112 страниц Astro + legacy-копирование), завершена PASS
+**Рантаймы:** канонический Gill route без `reader-pilot` для нового mobile TOC/«На полях»; `research/reader-w57-pilot/preview.py` + `?reader-pilot=1&paper=space` для D2/D3 и W57 research rail
+**Внешние ресурсы:** недоступны (`mc.yandex.ru` даёт `ERR_CONNECTION_CLOSED`). Единственная консольная ошибка — эта внешняя метрика; JS/runtime ошибок W57 и Gill marginalia не было.
 **WebKit/Firefox:** в этой среде **не проверялись** (доступен только Chromium). Это ограничение, а не доказательство работоспособности.
 
 ---
@@ -264,7 +264,7 @@ assert.ok(c.bottom <= l.bottom, 'library card is clipped below the list viewport
 
 **Для «единого движка на весь сайт»** одного переноса файлов недостаточно: W57 сейчас зависит от `reader_universal_preview.js` и `#npUResearch`, а вход в настройки и тему имеет двух владельцев. Нужно сначала назначить по одному владельцу на действие, затем переносить в Astro-компонент.
 
-**Статус PR:** остаётся DRAFT/HOLD. На новом `e415560`: 53 SUCCESS, 1 FAILURE (`actionlint offline / win32-x64` — Windows-тулинг, к W57 отношения не имеет), 4 SKIPPED, 1 QUEUED (`interactive-audit`). CI не зелёный: один failure и один queued.
+**Статус PR:** остаётся DRAFT/HOLD. На текущем `63909cce` в момент раунда 5 API check-runs показывал 9 SUCCESS, 1 FAILURE (`actionlint offline / win32-x64`), 4 IN_PROGRESS, 40 QUEUED, 4 SKIPPED и 1 CANCELLED; CI не зелёный и большая часть матрицы ещё не завершена. Сводка для `e415560` в разделе 8 — историческая.
 
 ---
 
@@ -382,11 +382,11 @@ GitHub checks для `e415560` на момент раунда 3: **53 SUCCESS / 
 
 ---
 
-## 9. Исследование переданного repair-кандидата (`e415560` → `eda52f1`, не в PR HEAD)
+## 9. Историческое исследование repair-кандидата (`e415560` → `eda52f1`, не в PR HEAD)
 
 ### 9.1. Статус кандидата
 
-После раунда 3 основной агент получил переносимый diff `audit/patches/W57-e415560-D2-D3-D5-D6-D7.patch` из коммита `eda52f112e6581267b2f6865050a70485970a219`. Это **не** head PR #2346: PR всё ещё указывает на `e415560`. Поэтому результаты ниже — проверка кандидата в отдельном detached worktree, а не приёмка PR и не основание для галочек в живом комментарии.
+После раунда 3 основной агент получил переносимый diff `audit/patches/W57-e415560-D2-D3-D5-D6-D7.patch` из коммита `eda52f112e6581267b2f6865050a70485970a219`. На момент проверки candidate PR head действительно был `e415560`; затем PR получил новый source-only commit `63909cce`. Поэтому результаты ниже остаются **исторической** проверкой detached candidate, а не актуальным состоянием PR и не основанием для галочек в живом комментарии.
 
 Кандидат применился чисто к `e415560` (`git apply --check` PASS) и был собран production-like с тем же локальным Node-floor workaround, что описан в разделе 7. Сборка завершилась PASS. Локальные контракты также PASS:
 
@@ -440,7 +440,7 @@ Sepia и Cormorant применяются через общий `GBReaderPrefere
 - устаревший черновик при конкурирующей правке/удалении не перезаписывает чужую заметку;
 - новые source/regression тесты этих сценариев проходят.
 
-Но эти результаты не отменяют два ограничения: кандидат не в `e415560`, а `audit-pro` сейчас красный из-за размера `js/highlights.js`.
+Но эти результаты не отменяют два ограничения: candidate не в актуальном `63909cce` (и не был частью PR на момент `e415560`), а его detached snapshot `audit-pro` красный из-за размера `js/highlights.js`. Для текущего PR head `audit-pro` в раунде 5 снова PASS.
 
 ### 9.5. Обновлённый вердикт
 
@@ -451,11 +451,11 @@ Sepia и Cormorant применяются через общий `GBReaderPrefere
 3. применить исправленный кандидат к актуальному head PR, выполнить production-like build и полный browser QA;
 4. только после этого пересмотреть D2/D3 и изменить галочки в живом комментарии.
 
-На текущем PR head `e415560` действуют прежние галочки `D2=[ ]`, `D3=[ ]`.
+На проверенном тогда snapshot `e415560` действовали прежние галочки `D2=[ ]`, `D3=[ ]`; после этого PR продвинулся до `63909cce`, но новый commit не содержит D2/D3 repair.
 
-### 9.6. CI текущего PR HEAD
+### 9.6. CI snapshot-а кандидата
 
-На `e415560` на момент этого исследования: **54 SUCCESS / 1 FAILURE / 4 SKIPPED / 0 PENDING**. Failure — `actionlint offline / win32-x64`. Этот статус относится к текущему PR head, не к detached repair-кандидату.
+На `e415560` на момент candidate-исследования: **54 SUCCESS / 1 FAILURE / 4 SKIPPED / 0 PENDING**. Failure — `actionlint offline / win32-x64`. Это исторический статус snapshot-а и не статус текущего PR head `63909cce`.
 
 ### 9.7. Артефакты раунда кандидата
 
@@ -465,3 +465,96 @@ Sepia и Cormorant применяются через общий `GBReaderPrefere
 - `27-candidate-research-1440.png`, `28-candidate-research-390.png` — «На полях»;
 - `29-candidate-training-1440-raw-overlay.png` — новый D8;
 - `30-candidate-training-390.png` — мобильный overlay «Обучение».
+
+
+---
+
+## 10. Раунд 5 — новый HEAD `63909cce` и возвращённая мобильная каноника
+
+### 10.1. Почему раунд 5 пришлось начать заново
+
+После публикации раунда 4 head PR #2346 изменился с `e415560` на `63909cce9c6c89658c47e7755597008c634c9ef0`. Сравнение `e415560...63909cce` показывает ровно один новый source commit: `feat(reader): embed source-based marginalia in native Gill mobile TOC`, два файла (`GillMobileMarginalia.astro` добавлен, `GillPartTocOverlay.astro` подключает его). Ни candidate D2/D3 patch, ни desktop settings repair в этот head не вошли. Поэтому:
+
+- старые результаты candidate и D8 остаются отдельным detached-исследованием из раздела 9;
+- D2/D3 нужно считать по фактическому `63909cce`, а не по candidate;
+- новую вкладку «На полях» я проверял на каноническом Gill route **без** `?reader-pilot=1`, потому что pilot намеренно подменяет native mobile chrome своим W57 harness.
+
+Новый production-like build текущего head завершился `EXIT:0`; затем прошли `research/reader-w57-pilot/verify.mjs`, `reader-w57-annotations-regression-test.mjs`, `highlights-runtime-regression-test.js` и `audit-pro` (`AUDIT PASSED — ready for deploy`). В detached worktree продуктовых изменений не сохранялось.
+
+### 10.2. Native Gill mobile TOC → «На полях»
+
+Реальные клики Chromium:
+
+1. `/articles/dzhon-gill-chast-2-uchenyi/` → `#mobPartTocBtn`;
+2. click по `#gbrMarginaliaTab`;
+3. открыть definition через `<summary>`, затем click «Показать в статье ↗»;
+4. Escape закрывает sheet и возвращает focus на `#mobPartTocBtn`.
+
+| Viewport | Native sheet | Панель «На полях» | Содержимое / прокрутка |
+|---:|---|---|---|
+| 390×844 | `x=0,y=126.6,w=390,h=717.4` | `y=270.7,h=494.3` | 2 группы, 12 понятий, 3 evidence-фрагмента; `scrollHeight=1799`, `clientHeight=494` |
+| 320×700 | `x=0,y=105,w=320,h=595` | `y=248.7,h=372.3` | 2 группы, 12 понятий, 3 evidence-фрагмента; `scrollHeight=1900`, `clientHeight=372` |
+
+В нижней точке 320 px реальный `scrollTop=1528` (максимум), provenance-текст полностью виден (`y=508.6…587.3`), футер начинается ниже, на `y=621`; нижняя часть не обрезана. На 390 px максимум `1305`, provenance также виден над футером.
+
+Поведение подтверждено не только DOM-проверкой:
+
+- после клика вкладка получает `aria-selected=true` и фокус остаётся внутри `#partTocOverlay`;
+- ArrowRight с вкладки «Оглавление» переключает на «На полях» и переносит focus на research tab;
+- 24 последовательных Tab на 390 и 320 не выходят из sheet;
+- раскрытие понятия даёт реальную открытую `<details>`; jump-кнопка закрывает sheet, прокручивает статью (`scrollY=375` на 390, `479` на 320) и фокусирует исходный `.gterm`;
+- Escape закрывает overlay (`aria-hidden=true`) и восстанавливает opener;
+- JS/runtime errors нет. Единственная консольная ошибка — внешняя недоступная `https://mc.yandex.ru/metrika/tag.js`.
+
+Ручной просмотр `31-r5-native-gill-390-toc.png`, `32-r5-native-gill-390-marginalia.png`, `33-r5-native-gill-320-toc.png`, `34-r5-native-gill-320-marginalia.png` и нижнего состояния `35-r5-native-gill-320-marginalia-bottom.png` показывает аккуратный sheet: tabs, serif-заголовок, группы и нижние action-кнопки не слипаются. На 1440/900 native Gill mobile TOC остаётся скрыт (`partTocOverlay: display:none`), stray desktop tabs не появляются — новая source-вкладка не вытекает в desktop chrome.
+
+Дополнительно тот же сценарий прошёл на `dzhon-gill-chast-1-chelovek`, `dzhon-gill-chast-3-nasledie` и `dzhon-gill-spravochnik`: status 200, вкладка выбирается, source-derived группы и jump-кнопки строятся, ошибок нет.
+
+**Отдельная, не относящаяся к этому commit, UX-оговорка:** на 320 px глобальный Product swipe-tip «Свайп по статье — соседняя часть серии» появляется примерно через 2.5 s и на короткое время перекрывает середину TOC/research sheet (`x=80,y=518,w=160,h≈86`). Это уже существующая подсказка `gbs2-swipetip`, не код новой marginalia-вкладки; я не засчитываю её как regression PR, но её стоит учитывать в будущей визуальной полировке первого mobile открытия.
+
+### 10.3. W57 pilot «На полях» и соседние поверхности
+
+Отдельно, на pilot route `?reader-pilot=1&paper=space`, реальными кликами проверено сохранённое W57 research rail:
+
+- 1440×900: `#npUResearch` открывается справа (`x=1080,w=360,h=900`), 19 cards, notes, «История чтения», «Закладки и библиотека», follow toggle и panel-specific controls; ручной кадр `42-r5-current-research-1440.png` собранно выглядит;
+- 390×844: research panel занимает viewport (`x=0,w=390,h=844`), native outline становится inert, notes/history/library доступны с touch-sized controls; `43-r5-current-research-390.png` визуально корректен;
+- card inventory и source-derived native Gill tab не конфликтуют: это два разных владельца (pilot rail против native Gill mobile TOC), оба проверены отдельно.
+
+### 10.4. D2/D3 на фактическом новом HEAD
+
+Новый commit не содержит repair D2/D3, что подтверждается и diff, и реальным браузером.
+
+**D2 остаётся открытым.** В pilot 390×844 после `#npUOpenToc` → «Аа · Шрифт»:
+
+- `#npUFontPanel`: `x=13…329`, `y=376…779`, `role=dialog`, `aria-modal=true`;
+- `.np-u-audio-card`: `x=12…378`, `y=633.8…722.1`, `opacity=1`, `pointer-events:auto`;
+- `#npUOutline` остаётся открытым, native audio owner не скрывается/inert-ится; правый участок card остаётся чужим ghost-strip под scrim.
+
+На 320×700 panel `x=13…309`, `y=232…635`, а audio card `x=12…308`; узкая геометрия почти закрывает card, но owner всё ещё не отключён. Ручные кадры `36-r5-current-d2-390-font.png` и `37-r5-current-d2-320-font.png` просмотрены. D2 — `- [ ]`.
+
+**D3 остаётся открытым.** Реальная доступность по текущему head:
+
+| Viewport | Что открылось | Результат |
+|---:|---|---|
+| 1280×800 | W57 `#npUFontPanel`, `x=215…531` | есть Lora/Cormorant, но panel накрывает H1 (`H1 x=283.5…1083.4`, пересечение true) |
+| 1366×768 | native `#gillSettingsOverlay` | styled тема/размер/интервал/ширина/оформление/анимация, видимых font buttons нет |
+| 1440×900 | native `#gillSettingsOverlay` | то же, H1 не накрыт, Lora/Cormorant нет |
+| 1920×1080 | native `#gillSettingsOverlay` | то же, Lora/Cormorant нет |
+
+Кадры `38-r5-current-d3-1280-font.png`–`41-r5-current-d3-1920-native.png` просмотрены вручную. Это та же архитектурная граница двух владельцев, что была на `e415560`; новый «На полях» commit её не закрывает. D3 — `- [ ]`.
+
+### 10.5. CI и вердикт раунда 5
+
+Для `63909cce` в момент снимка через GitHub Check Runs API: **9 SUCCESS / 1 FAILURE / 4 IN_PROGRESS / 40 QUEUED / 4 SKIPPED / 1 CANCELLED**. Failure — `actionlint offline / win32-x64`; большая часть матрицы ещё выполняется, поэтому CI не зелёный. Это текущая сводка, в отличие от исторических чисел разделов 8–9.
+
+Итог: новый source commit **визуально и функционально проходит свою mobile-only native marginalia ветку** на 390/320 и не добавляет desktop stray chrome. W57 pilot rail «На полях» также остаётся читаемым. Но PR #2346 всё ещё не готов к merge: D2 и D3 не исправлены в фактическом head, candidate D8 не является частью PR, а CI имеет failure и незавершённые checks. Живые галочки D2/D3 не меняются.
+
+### 10.6. Артефакты раунда 5
+
+Каталог `reports/w57-audit-browser-2026-11-20/` намеренно исключён из Git, но сохраняется в рабочем workspace:
+
+- `31-r5-native-gill-390-toc.png`, `32-r5-native-gill-390-marginalia.png` — mobile native TOC и research tab;
+- `33-r5-native-gill-320-toc.png`, `34-r5-native-gill-320-marginalia.png`, `35-r5-native-gill-320-marginalia-bottom.png` — 320 px, включая достижимый низ;
+- `36-r5-current-d2-390-font.png`, `37-r5-current-d2-320-font.png` — D2;
+- `38-r5-current-d3-1280-font.png`, `39-r5-current-d3-1366-native.png`, `40-r5-current-d3-1440-native.png`, `41-r5-current-d3-1920-native.png` — D3;
+- `42-r5-current-research-1440.png`, `43-r5-current-research-390.png` — W57 pilot rail «На полях».

@@ -4,7 +4,7 @@
 
 | PR | Живой комментарий | Отчёт |
 |---|---|---|
-| [#2346](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2346) | [#issuecomment-7048681452](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2346#issuecomment-7048681452) | `audit/READER-W57-BROWSER-VISUAL-AUDIT-2026-11-20.md` (PR #2350) |
+| [#2346](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2346) | [#issuecomment-7048681452](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2346#issuecomment-7048681452) | `audit/READER-W57-BROWSER-VISUAL-AUDIT-2026-11-20.md` (PR #2346) |
 
 ## Как устроен живой комментарий
 
