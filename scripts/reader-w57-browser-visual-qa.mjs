@@ -192,12 +192,18 @@ try{
    'Изменить заметку','edit action must be self-explanatory');
   await snap(d.page,'desktop-saved-note');
   await d.page.locator('#npW57NotesList li[data-id] [data-action="recolor"]').first().click();
+  await d.page.keyboard.press('Escape');
+  const cancelledColor=await d.page.evaluate(()=>
+   JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').find(x=>x.annotation?.version===1)?.annotation?.color);
+  assert.equal(cancelledColor,'sage','Escape must not mutate the highlight color');
+  await d.page.locator('#npW57NotesList li[data-id] [data-action="recolor"]').first().click();
+  await d.page.locator('#npW57Palette [data-color="lime"]').click();
   const recolored=await d.page.evaluate(()=>{
     const q=JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]');
     return q.find(x=>x.annotation?.version===1)?.annotation?.color;
   });
   d.item.recolor=recolored;
-  assert.equal(recolored,'lime','palette recolor must use next canonical color');
+  assert.equal(recolored,'lime','explicit palette selection must recolor only the saved highlight');
   await snap(d.page,'desktop-lime-highlight');
   await d.page.locator('#npW57NotesList li[data-id] [data-action="delete"]').first().click();
   await d.page.locator('#npW57NotesStatus button').click();
@@ -239,10 +245,14 @@ try{
   await snap(m.page,'mobile-settings');
   await m.page.locator('#npUFontPanel [data-np-u-type-font="cormorant"]').click();
   m.item.fontAfterClick=await m.page.evaluate(()=>{
-   const pref=window.GBReaderPreferences?.get(),p=document.querySelector('article.article-body p');
+   const pref=window.GBReaderPreferences?.get(),
+    p=document.getElementById('gill-search-p-012');
+   const examples=[...document.querySelectorAll('article.article-body p')].slice(0,7)
+     .map(el=>({id:el.id,container:el.parentElement?.className||'',font:getComputedStyle(el).fontFamily,
+       text:el.textContent.trim().slice(0,50)}));
    return {font:pref?.fontFamily,stored:JSON.parse(localStorage.getItem('gb:reader-preferences:v1')||'{}').fontFamily,
     root:document.documentElement.dataset.readerFontFamily,
-    body:document.body.dataset.npUFont,computed:p?getComputedStyle(p).fontFamily:null,
+    body:document.body.dataset.npUFont,computed:p?getComputedStyle(p).fontFamily:null,examples,
     selected:document.querySelector('#npUFontPanel [data-np-u-type-font="cormorant"]')?.getAttribute('aria-pressed')};
   });
   assert.equal(m.item.fontAfterClick.font,'cormorant','canonical fontFamily did not update');
@@ -259,7 +269,7 @@ try{
    font:window.GBReaderPreferences?.get()?.fontFamily,
    root:document.documentElement.dataset.readerFontFamily,
    body:document.body.dataset.npUFont,
-   computed:getComputedStyle(document.querySelector('article.article-body p')).fontFamily
+   computed:getComputedStyle(document.getElementById('gill-search-p-012')).fontFamily
   }));
   assert.equal(m.item.fontAfterReload.font,'cormorant','font preference lost after reload');
   assert.equal(m.item.fontAfterReload.root,'cormorant','first paint font did not hydrate correctly');
@@ -269,7 +279,12 @@ try{
   await m.page.waitForFunction(()=>document.body.classList.contains('np-w57-ready'));
   m.item.crossArticleFont=await m.page.evaluate(()=>({
    font:window.GBReaderPreferences?.get()?.fontFamily,body:document.body.dataset.npUFont,
-   computed:getComputedStyle(document.querySelector('article.article-body p')).fontFamily
+   computed:(()=>{
+    const p=[...document.querySelectorAll('article.article-body p')]
+      .find(el=>el.textContent.trim().length>90&&
+        !el.closest('.notice,.gtip,.btip,.summary-card,.np-u-central-overview,.np-u-central-contents,figcaption'));
+    return p?getComputedStyle(p).fontFamily:null;
+   })()
   }));
   assert.equal(m.item.crossArticleFont.font,'cormorant','site-wide preference did not cross articles');
   assert.match(m.item.crossArticleFont.computed||'',/Cormorant/i,'other article ignored shared typography');

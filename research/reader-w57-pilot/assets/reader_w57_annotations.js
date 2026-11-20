@@ -210,7 +210,7 @@
     }
     const entries=()=>read(qKey).filter(x=>x?.annotation?.version===1&&samePage(x));
     const all=()=>read(qKey);
-    let rangeById=new Map(),pendingNoteId=null;
+    let rangeById=new Map(),pendingNoteId=null,pendingRecolorId=null;
     function paint(){
       rangeById=new Map();
       const groups={};
@@ -265,7 +265,7 @@
         for(const [action,label] of [['goto','К тексту'],['switch','Сменить тип'],['recolor','Цвет'],['edit','Заметка'],['delete','Удалить']]){
           const b=document.createElement('button');b.type='button';b.dataset.action=action;
           b.textContent=action==='edit'?(existingNote?'Изменить заметку':'Добавить заметку'):label;
-          if(action==='recolor')b.title='Переключить на следующий цвет';
+          if(action==='recolor')b.title='Выбрать цвет этой пометы';
           meta.append(b);
         }
         if(!rangeById.has(record.id)){
@@ -431,12 +431,26 @@
     });
     palette.addEventListener('click',e=>{
       const button=e.target.closest('[data-color]');if(!button)return;
-      currentColor=button.dataset.color;
+      const chosenColor=button.dataset.color,targetId=pendingRecolorId;
+      if(targetId){
+        const updated=updateRecord(targetId,x=>{x.annotation.color=chosenColor});
+        if(!updated){say('Цвет не сохранён. Выберите цвет ещё раз или нажмите Escape.');return}
+        pendingRecolorId=null;
+        palette.setAttribute('aria-label','Цвет выделения');
+      }
+      currentColor=chosenColor;
       for(const b of palette.querySelectorAll('button')){
         const chosen=b.dataset.color===currentColor;
         b.setAttribute('aria-pressed',String(chosen));b.style.color=chosen?'#3c2c26':'transparent';
       }
-      say('Выбран цвет: '+button.getAttribute('aria-label')+'.');
+      say((targetId?'Цвет сохранённой пометы изменён: ':'Выбран цвет: ')+button.getAttribute('aria-label')+'.');
+    });
+    palette.addEventListener('keydown',e=>{
+      if(e.key!=='Escape'||!pendingRecolorId)return;
+      e.preventDefault();e.stopPropagation();
+      pendingRecolorId=null;
+      palette.setAttribute('aria-label','Цвет выделения');
+      say('Смена цвета отменена. Помета не изменена.');
     });
     list.addEventListener('click',e=>{
       const b=e.target.closest('[data-action]'),li=b?.closest('li[data-id]');if(!li)return;
@@ -446,13 +460,18 @@
       if(action==='switch'){
         updateRecord(id,x=>{x.annotation.kind=x.annotation.kind==='marker'?'underline':x.annotation.kind==='underline'?'marker':'marker'});
       }else if(action==='recolor'){
-        updateRecord(id,x=>{x.annotation.color=colors[(colors.indexOf(x.annotation.color)+1)%colors.length]});
+        pendingRecolorId=id;
+        palette.setAttribute('aria-label','Выберите новый цвет сохранённой пометы');
+        say('Выберите цвет этой пометы в палитре выше. Escape — отмена.');
+        palette.querySelector('[data-color="'+record.annotation.color+'"]')?.focus({preventScroll:true});
+        palette.scrollIntoView({block:'nearest'});
       }else if(action==='edit'){
         openNoteEditor(record);
       }else if(action==='delete'){
         const old=all(),deleted=old.find(x=>x.id===id);
         if(write(qKey,old.filter(x=>x.id!==id))){
           if(pendingNoteId===id){pendingNoteId=null;editor.hidden=true}
+          if(pendingRecolorId===id){pendingRecolorId=null;palette.setAttribute('aria-label','Цвет выделения')}
           lastUndo=deleted;repaint();say('Помета удалена. Связанная заметка остаётся в библиотеке. ');
           const undo=document.createElement('button');undo.type='button';undo.textContent='Отменить';
           undo.setAttribute('aria-label','Восстановить удалённую помету');
