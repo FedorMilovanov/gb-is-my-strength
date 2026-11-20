@@ -93,7 +93,8 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
     chips.forEach((chip) => {
       chip.setAttribute('aria-checked', Number(chip.dataset.speed) === rate ? 'true' : 'false');
     });
-    rateTrigger.textContent = fmt(rate);
+    const face = rateTrigger.querySelector('.reader-mobile-speed-chip') || rateTrigger;
+    face.textContent = fmt(rate);
     rateTrigger.setAttribute('aria-label', 'Выбрать скорость, сейчас ' + fmt(rate));
   }
   syncActive(readRate());

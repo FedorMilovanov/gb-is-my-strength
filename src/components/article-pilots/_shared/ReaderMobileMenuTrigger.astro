@@ -3,20 +3,30 @@
  * Icon is taken from ReaderRail.astro (#hMobileMenuBtn), not redesigned.
  * Runtime forwards to the corresponding canonical TOC button.
  */
-interface Props { targetId: string; }
-const { targetId }=Astro.props as Props;
+interface Props { targetId?: string; mode?: 'toc' | 'learning'; }
+const { targetId, mode = 'toc' }=Astro.props as Props;
 ---
 <button
   class="reader-mobile-menu-trigger"
   type="button"
-  data-reader-mobile-menu-target={targetId}
-  aria-label="Открыть оглавление и поиск"
+  data-reader-mobile-menu-target={mode === 'toc' ? targetId : undefined}
+  data-gill-learning-open={mode === 'learning' ? '' : undefined}
+  aria-controls={mode === 'learning' ? 'gillLearningOverlay' : undefined}
+  aria-expanded={mode === 'learning' ? 'false' : undefined}
+  aria-label={mode === 'learning' ? 'Открыть обучение: термины, конспект, тест и заметки' : 'Открыть оглавление и поиск'}
   aria-haspopup="dialog"
 >
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
-    <path d="M4 7h16M4 12h16M4 17h16" />
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    {mode === 'learning' ? (
+      <Fragment>
+        <!-- Original Gill v5 «Обучение» academic cap, not the TOC hamburger. -->
+        <path d="M2 10l10-5 10 5-10 5z" />
+        <path d="M6 12v5c3 2 9 2 12 0v-5" />
+        <path d="M22 10v6" />
+      </Fragment>
+    ) : <path d="M4 7h16M4 12h16M4 17h16" />}
   </svg>
-  <span>Оглавление</span>
+  <span>{mode === 'learning' ? 'Обучение' : 'Оглавление'}</span>
 </button>
 <script>
   function bindReaderMobileMenuTriggers() {

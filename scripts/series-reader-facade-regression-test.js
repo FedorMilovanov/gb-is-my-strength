@@ -64,6 +64,20 @@ assert.doesNotMatch(heartProgress[0], /HEART_SERIES_ITEMS\[idx\]\.minutes/, 'hea
 
 const mobileBar = fs.readFileSync(MOBILE_BAR, 'utf8');
 const learningSheet = fs.readFileSync(LEARNING_SHEET, 'utf8');
+const mobileTrigger = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/_shared/ReaderMobileMenuTrigger.astro'), 'utf8');
+const mobilePlay = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/_shared/ReaderMobilePlayGroup.astro'), 'utf8');
+const mobileRuntime = fs.readFileSync(path.join(ROOT, 'js/floating-cluster-controller.js'), 'utf8');
+const sharedSpeedSlot = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/_shared/speedSlot.ts'), 'utf8');
+assert.match(sharedSpeedSlot, /rateTrigger\.querySelector\('\.reader-mobile-speed-chip'\) \|\| rateTrigger/, 'canonical speed slot must preserve Gill tucked speed chip on every state update');
+// Owner-accepted Reader mobile IA: upper Learning vs lower Part TOC.
+// Do not revive a second TOC trigger or separate giant speed pill.
+assert.match(mobileBar, /<ReaderMobileMenuTrigger mode="learning"/, 'Gill upper capsule must open canonical Learning');
+assert.match(mobileBar, /id="mobPartTocBtn"/, 'Gill lower current-section control must own Part TOC');
+assert.match(mobileTrigger, /data-gill-learning-open=\{mode === 'learning'/, 'shared menu must delegate Learning to its native sheet');
+assert.match(mobileRuntime, /learningBtns = qsa\('\[data-gill-learning-open\]'\)/, 'Learning overlay must bind both top and Settings triggers');
+assert.match(mobilePlay, /reader-mobile-speed-chip/, 'Gill Play must show the selected rate tucked into its circular control');
+assert.match(mobileRuntime, /badge\.querySelector\('\.reader-mobile-speed-chip'\) \|\| badge/, 'TTS speed owner must update the existing circular speed echo');
+assert.match(mobileBar, /reader-mobile-play \.gb-ember__ring-svg/, 'Gill idle circular Play progress ring must remain visible');
 const seriesConfig = fs.readFileSync(SERIES_CONFIG, 'utf8');
 const baptistSeriesConfig = fs.readFileSync(BAPTIST_SERIES_CONFIG, 'utf8');
 assert.match(seriesConfig, /railBackHref:\s*string;/, 'SeriesConfig must keep railBackHref as required route authority');
