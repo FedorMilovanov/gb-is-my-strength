@@ -77,6 +77,8 @@ assert.match(mobileBar, /import ['"]@\/styles\/reader-mobile-canonical\.css['"];
 assert.match(mobileBar, /id="mobPartTocBtn"/, 'Gill lower current section must open Part TOC');
 assert.match(mobileTrigger, /data-gill-marginalia-open=\{mode === 'research'/, 'shared trigger must expose one research entry');
 assert.match(mobileRuntime, /topResearchBtns = qsa\('\[data-gill-marginalia-open\]'\)/, 'native Part TOC owner must open top research');
+assert.match(mobileRuntime, /var MOB_SEC_INITIAL = \(function \(\)/, 'series progress must preserve the original SSR chapter caption before its first H2');
+assert.match(mobileRuntime, /hasActiveSection \? reader\.sectionTitle : \(MOB_SEC_INITIAL \|\| 'Начало части'\)/, 'before-content placeholder Введение must not overwrite the SSR title');
 assert.match(partOverlay, /gb:gill-select-part-panel/, 'research tab must be selected through the native Part TOC sheet');
 assert.match(settingsSheet, /id="mobLearningBtn"[^>]*data-gill-learning-open/, 'Learning must remain available from Settings without top-level duplication');
 assert.match(mobileBar, /<ReaderMobilePlayGroup engine="series" bloom/, 'Gill must use the original #72 Play speed bloom');

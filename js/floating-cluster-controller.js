@@ -15,6 +15,13 @@
 (function () {
   'use strict';
 
+  // The SSR series config is authoritative before the first actual heading.
+  // ReaderState may return a placeholder "Введение" in before-content phase.
+  var MOB_SEC_INITIAL = (function () {
+    var el = document.getElementById('gbs2MobSec');
+    return el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+  })();
+
   var THEME_KEY = 'theme';
   var toastTimer = null;
   /* True on devices with a real hover pointer (desktop/trackpad). Drives the
@@ -2795,7 +2802,14 @@
       var mobDualBtn = qs('#gbs2DualProgress');
       if (mobDualBtn) mobDualBtn.setAttribute('aria-label', 'Статья ' + pct + '%, серия ' + seriesPc + '%');
       var mobSec = qs('#gbs2MobSec');
-      if (mobSec) mobSec.textContent = reader.sectionTitle || (phase === 'after-content' ? 'Завершено' : 'Введение');
+      if (mobSec) {
+        // "Введение" is a ReaderState placeholder, not the title of Gill II,
+        // Baptist series chapters or any other series page before its H2.
+        var hasActiveSection = Number(reader.sectionIndex) >= 0 && !!reader.sectionTitle;
+        var label = hasActiveSection ? reader.sectionTitle : (MOB_SEC_INITIAL || 'Начало части');
+        if (phase === 'after-content') label = 'Завершено';
+        mobSec.textContent = label;
+      }
 
       // Cover media now uses intrinsic image geometry across reader series.
       // Only the decorative numeral remains kinetic; moving the image could
