@@ -265,8 +265,27 @@
   if(!fontPanel.hidden&&!fontPanel.contains(event.target)&&!fontToggles.some(b=>b.contains(event.target)))setFontOpen(false);
  },true);
  document.addEventListener('keydown',event=>{
-  if(event.key==='Escape'&&!fontPanel.hidden){setFontOpen(false);
+  if(fontPanel.hidden)return;
+  // A native Product Library/Search dialog remains higher priority.
+  if(event.target.closest?.('#gb-hl-panel,.cp-backdrop'))return;
+  if(event.key==='Escape'){
+   // Close the topmost settings popup without simultaneously closing mobile TOC.
+   event.preventDefault();event.stopImmediatePropagation();
+   setFontOpen(false);
    (document.body.classList.contains('np-u-compact')?compactFontButton:fullFontButton).focus({preventScroll:true});
+   return;
+  }
+  if(event.key==='Tab'){
+   // The settings popup is outside the mobile TOC dialog DOM; own its focus.
+   const controls=[...fontPanel.querySelectorAll('button:not([disabled])')]
+    .filter(el=>el.getClientRects().length&&!el.closest('[hidden],[inert]'));
+   const first=controls[0],last=controls.at(-1),active=document.activeElement;
+   if(first&&event.shiftKey&&(active===first||!fontPanel.contains(active))){
+    event.preventDefault();last.focus({preventScroll:true});
+   }else if(first&&!event.shiftKey&&(active===last||!fontPanel.contains(active))){
+    event.preventDefault();first.focus({preventScroll:true});
+   }
+   event.stopImmediatePropagation();
   }
  });
  applyReaderTypography();
@@ -1632,6 +1651,7 @@
   rightEdge.setAttribute('aria-hidden',String(mobile));
  }
  function closeMobile(restoreFocus=true){
+  if(isMobile()&&!fontPanel.hidden)setFontOpen(false);
   const hadOpen=root.classList.contains('np-u-show-left')||root.classList.contains('np-u-show-right');
   root.classList.remove('np-u-show-left','np-u-show-right');
   backdrop.hidden=true;

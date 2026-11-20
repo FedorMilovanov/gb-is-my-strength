@@ -31,6 +31,12 @@ assert.doesNotMatch(preview, /fontPanel\.closest\('#npW57ReadingDetails'\)/, 'le
 assert.match(preview, /data-np-u-type-width="narrow"/, 'narrow width missing');
 assert.match(js, /width:v\.measure==='narrow'\?'narrow'/, 'narrow persisted state mismatches');
 assert.match(preview, /one top-level right research card at a time/, 'exclusive right cards missing');
+assert.ok(preview.includes('event.preventDefault();event.stopImmediatePropagation();'),
+  'Escape must only dismiss the settings popup, without closing mobile TOC');
+assert.ok(preview.includes("if(event.key==='Tab'){"),
+  'Tab must remain in the active settings popup');
+assert.ok(preview.includes('if(isMobile()&&!fontPanel.hidden)setFontOpen(false);'),
+  'Mobile panel close must not leave the settings popup visible');
 assert.match(css, /right:calc\(5vw - 2px\)!important/,
   'fold SVG and Library use the same right edge as the 40px reading toolbar');
 assert.doesNotMatch(css, /left:calc\(var\(--np-w57-axis-x/,
