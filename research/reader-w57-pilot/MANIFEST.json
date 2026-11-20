@@ -58,8 +58,8 @@
     },
     {
       "name": "reader_w57_annotations.js",
-      "sha256": "4545e4afec38fe4907a5e35ba14dde51186d5aedb5fd4137bd12250c631e3074",
-      "bytes": 27003
+      "sha256": "17b725d9ae911921170805f635c0f00e7ce9e668789d0e62cd2c0fe96fffdd69",
+      "bytes": 27978
     }
   ],
   "normalization": "SHA-256 and UTF-8 byte counts from exact pilot sources. Screenshot/browser QA and canonical Product port still release HOLD."

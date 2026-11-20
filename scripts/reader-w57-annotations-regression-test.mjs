@@ -93,6 +93,12 @@ assert.match(file,/next\.some\(x=>x\.id===record\.id\)/,
 assert.doesNotMatch(file,/next\.length===old\.length/,
  'list length must not decide whether a quote was inserted');
 assert.match(file,/npW57CancelNote/,'user must be able to cancel note edit');
+assert.match(file,/status\.replaceChildren\(document\.createTextNode\('Восстановление не удалось/,
+ 'failed undo write must not delete its own retry button');
+assert.match(file,/#gb-hl-panel \[data-library-action\]/,
+ 'same-tab native library deletion must repaint W57 annotations');
+assert.match(file,/typeof CSS!=='undefined'&&CSS\.highlights/,
+ 'unsupported highlight API must be safely detected');
 assert.match(file,/closeResearchForAnnotation/,'source navigation must close mobile rail');
 assert.match(file,/openResearchForAnnotation/,'new note must open the existing rail');
 assert.match(preview,/openResearchForAnnotation\(\)/,'preview exposes proper rail opener');

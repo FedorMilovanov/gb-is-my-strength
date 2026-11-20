@@ -222,7 +222,7 @@
         rangeById.set(item.id,r);
         if(groups[a.kind+'-'+a.color])groups[a.kind+'-'+a.color].push(r);
       }
-      if(CSS?.highlights&&typeof Highlight!=='undefined'){
+      if(typeof CSS!=='undefined'&&CSS.highlights&&typeof Highlight!=='undefined'){
         for(const [key,ranges] of Object.entries(groups)){
           const name='np-w57-'+key;
           if(ranges.length)CSS.highlights.set(name,new Highlight(...ranges));
@@ -284,7 +284,11 @@
         return null;
       }
       if(!write(qKey,next)){say('Ошибка сохранения — библиотека не изменена.');return null}
-      repaint();say('Помета сохранена в библиотеке.');return record;
+      repaint();
+      const canPaint=kind==='quote'||(typeof CSS!=='undefined'&&CSS.highlights&&typeof Highlight!=='undefined');
+      say(canPaint?'Помета сохранена в библиотеке.':
+        'Помета сохранена, но этот браузер не поддерживает цветное выделение в тексте.');
+      return record;
     }
     function updateRecord(id,updater){
       const old=all(),i=old.findIndex(x=>x.id===id&&x.annotation?.version===1);
@@ -446,7 +450,11 @@
             if(next.length>=200){say('Нет места для восстановления: сохраните экспорт библиотеки.');return}
             if(write(qKey,[deleted,...next])){
               lastUndo=null;repaint();say('Помета восстановлена.');
-            }else say('Восстановление не удалось. Попробуйте ещё раз.');
+            }else{
+          // Preserve the SAME undo button and handler after a failed write.
+          // Replacing status.textContent here would erase the only retry.
+          status.replaceChildren(document.createTextNode('Восстановление не удалось. Повторите попытку. '),undo);
+        }
           });
           status.append(undo);
         }
@@ -467,6 +475,13 @@
       say(result.message);
     });
     window.addEventListener('storage',e=>{if(e.key===qKey)repaint()});
+    // Native Product Library writes localStorage in the SAME tab, where the
+    // browser does not emit a storage event. Repaint once after its delete/undo.
+    document.addEventListener('click',e=>{
+      const action=e.target.closest?.('#gb-hl-panel [data-library-action],#gb-hl-status [data-library-action]');
+      if(action&&['delete','undo'].includes(action.dataset.libraryAction))
+        requestAnimationFrame(repaint);
+    });
     window.addEventListener('resize',()=>{if(!toolbar.hidden)toolbar.hidden=true},{passive:true});
     repaint();
     window.__NP_W57_ANNOTATIONS__={
