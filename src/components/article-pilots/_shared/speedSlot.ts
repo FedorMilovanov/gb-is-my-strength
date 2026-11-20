@@ -115,7 +115,13 @@ export function initSpeedSlot(topbar: HTMLElement, sel: SpeedSlotSelectors): voi
       element.inert = true;
     });
     rail.inert = false;
-    rail.removeAttribute('aria-hidden');
+    // Write the final value synchronously: the layout contract reads
+    // aria-hidden within 80ms of the tap, and the a11y adapter's
+    // MutationObserver → microtask → rAF resync is engine-timing-sensitive
+    // (WebKit at 320px raced it and observed the attribute still absent).
+    // The adapter reads the speed-open class as canonical, so an explicit
+    // 'false' here is compatible with it — it converges to the same value.
+    rail.setAttribute('aria-hidden', 'false');
     rateTrigger.setAttribute('aria-expanded', 'true');
     topbar.classList.add('speed-open');
     const active = (speedrail as HTMLElement).querySelector(sel.chip + '[aria-checked="true"]') as HTMLElement | null;
