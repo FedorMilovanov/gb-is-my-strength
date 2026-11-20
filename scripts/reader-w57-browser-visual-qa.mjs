@@ -12,7 +12,7 @@ const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const OUT=resolve(ROOT,'reports/reader-w57-visual');
 const BASE='http://127.0.0.1:19061';
 const TESTED_SHA=execFileSync('git',['rev-parse','HEAD'],{cwd:ROOT,encoding:'utf8'}).trim();
-const REPORT={sha:TESTED_SHA,environmentSha:process.env.GITHUB_SHA||null,scenes:[],failures:[]};
+const REPORT={sha:TESTED_SHA,environmentSha:process.env.GITHUB_SHA||null,scenes:[],findings:[],failures:[]};
 let server,chrome,safari;
 await mkdir(OUT,{recursive:true});
 async function snap(page,name){
@@ -103,6 +103,20 @@ try{
  chrome=await chromium.launch({headless:true});
  const d=await scene(chrome,'gill-desktop','/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space',1440,900);
  await snap(d.page,'desktop-folded');
+ const readingGeometry=()=>({
+  viewport:innerWidth,
+  boxes:Object.fromEntries([
+   ['main',document.querySelector('main.np-u-reader-main')],
+   ['article',document.querySelector('article.article-body')],
+   ['hero',[...document.querySelectorAll('article.article-body img')].find(x=>x.getBoundingClientRect().width>300)],
+   ['prose',document.getElementById('gill-search-p-012')],
+  ].map(([key,el])=>{
+   const r=el?.getBoundingClientRect();
+   return[key,r?{left:+r.left.toFixed(1),right:+r.right.toFixed(1),
+    width:+r.width.toFixed(1),center:+(r.left+r.width/2).toFixed(1)}:null];
+  }))
+ });
+ d.item.geometryFolded=await d.page.evaluate(readingGeometry);
  await safe('desktop-research',async()=>{
   await d.page.locator('#npUEdgeToggle').click();
   await d.page.locator('#npW57NotesDetails summary').click();
@@ -112,6 +126,12 @@ try{
    bounds:document.querySelector('#npUResearch').getBoundingClientRect().toJSON()
   }));
   assert.ok(d.item.panel.open&&d.item.panel.noteOpen);
+  d.item.geometryOpen=await d.page.evaluate(readingGeometry);
+  const folded=d.item.geometryFolded.boxes.hero,opened=d.item.geometryOpen.boxes.hero;
+  d.item.heroCenterShift=folded&&opened?+(opened.center-folded.center).toFixed(1):null;
+  if(d.item.heroCenterShift!==null&&Math.abs(d.item.heroCenterShift)>24)
+   REPORT.findings.push({severity:'visual-review',problem:'hero moves between folded and open research',
+    deltaPx:d.item.heroCenterShift,folded:d.item.geometryFolded,opened:d.item.geometryOpen});
   await snap(d.page,'desktop-annotations');
  });
  await safe('desktop-select-marker-note-edit',async()=>{
@@ -225,6 +245,7 @@ try{
   await snap(m.page,'mobile-annotations');
   await m.page.locator('#npUCloseRight').click();
   await m.page.locator('#npUOpenToc').click();
+  const originalInert=await m.page.locator('#npUNativeTools').evaluate(el=>el.inert);
   await m.page.getByRole('button',{name:'Настройки книжного шрифта'}).first().click();
   m.item.settings=await m.page.evaluate(()=>({
    dialogRole:document.querySelector('#npUFontPanel')?.getAttribute('role'),
@@ -271,6 +292,27 @@ try{
   assert.match(m.item.fontAfterClick.computed||'',/Cormorant/i,'article CSS did not adopt the selected font');
   await snap(m.page,'mobile-settings-cormorant');
   await m.page.keyboard.press('Escape');
+  m.item.closedFontDialog=await m.page.evaluate(()=>({
+   hidden:document.querySelector('#npUFontPanel')?.hidden,
+   scrimHidden:document.querySelector('#npUFontScrim')?.hidden,
+   role:document.querySelector('#npUFontPanel')?.getAttribute('role'),
+   modal:document.querySelector('#npUFontPanel')?.hasAttribute('aria-modal'),
+   nativeInert:document.querySelector('#npUNativeTools')?.inert,
+   tocStillOpen:document.querySelector('#npUniversalDemo')?.classList.contains('np-u-show-left'),
+   openerExpanded:document.querySelector('.np-u-type-open')?.getAttribute('aria-expanded')
+  }));
+  assert.equal(m.item.closedFontDialog.hidden,true,'Escape failed to hide dialog');
+  assert.equal(m.item.closedFontDialog.scrimHidden,true,'Escape left scrim visible');
+  assert.equal(m.item.closedFontDialog.modal,false,'Escape left aria-modal on');
+  assert.equal(m.item.closedFontDialog.role,'region','Escape left dialog role on');
+  assert.equal(m.item.closedFontDialog.nativeInert,originalInert,'Escape failed to restore original controls');
+  assert.equal(m.item.closedFontDialog.tocStillOpen,true,'Escape closed the parent TOC');
+  assert.equal(m.item.closedFontDialog.openerExpanded,'false','opener remains expanded');
+  await m.page.getByRole('button',{name:'Настройки книжного шрифта'}).first().click();
+  await m.page.mouse.click(356,660);
+  assert.equal(await m.page.locator('#npUFontPanel').isVisible(),false,'scrim outside click did not close dialog');
+  assert.equal(await m.page.locator('#npUNativeTools').evaluate(el=>el.inert),originalInert,
+   'scrim outside click did not restore native controls');
   await m.page.reload({waitUntil:'domcontentloaded'});
   await m.page.waitForFunction(()=>document.body.classList.contains('np-w57-ready'));
   m.item.fontAfterReload=await m.page.evaluate(()=>({
@@ -310,7 +352,25 @@ try{
     mainWidth:rect?.width||0,visibleResearch:!!document.querySelector('#npUResearch')?.getClientRects().length};
   });
   if(extra.item.geometry.overflow)REPORT.failures.push({name,reason:'horizontal overflow',geometry:extra.item.geometry});
-  await snap(extra.page,name);await extra.context.close();
+  await snap(extra.page,name);
+  if(width===320){
+   await extra.page.locator('#npUOpenToc').click();
+   await extra.page.getByRole('button',{name:'Настройки книжного шрифта'}).first().click();
+   extra.item.settingsBounds=await extra.page.evaluate(()=>{
+    const r=document.querySelector('#npUFontPanel').getBoundingClientRect();
+    return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,
+     screenWidth:innerWidth,screenHeight:innerHeight,
+     nativeInert:document.querySelector('#npUNativeTools')?.inert};
+   });
+   assert.ok(extra.item.settingsBounds.left>=0&&extra.item.settingsBounds.right<=320,
+    '320px font dialog clips horizontally');
+   assert.ok(extra.item.settingsBounds.top>=0&&extra.item.settingsBounds.bottom<=700,
+    '320px font dialog clips vertically');
+   assert.equal(extra.item.settingsBounds.nativeInert,true,'320px background is interactive');
+   await snap(extra.page,'mobile-320-settings');
+   await extra.page.keyboard.press('Escape');
+  }
+  await extra.context.close();
  }
  const alt=await scene(chrome,'independent-article','/articles/kod-da-vinchi/?reader-pilot=1&paper=space',1440,900);
  await snap(alt.page,'other-article');await alt.context.close();
