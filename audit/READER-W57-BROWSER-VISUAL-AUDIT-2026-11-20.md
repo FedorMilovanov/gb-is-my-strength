@@ -587,3 +587,34 @@ Diff кандидата содержит ровно одну логическу�
 На exact `fd1a73a` workflow `44832103490` показывает: Linux и Darwin actionlint — **SUCCESS**, `guard` — **SUCCESS**, а `actionlint offline / win32-x64` — **FAILURE** внутри шага `Prove offline archive contract and execute binary`. GitHub annotation содержит только `Process completed with exit code 1`; job-log API возвращает `EOF` от results receiver, поэтому Windows-specific root cause не установлен и его нельзя выдавать за product defect. В момент последнего запроса часть матрицы оставалась `QUEUED`/`IN_PROGRESS`. Два Scripture failure объясняются stale index из 11.2; остальные checks не следует считать зелёными до завершения.
 
 Новый `fd1a73a` не содержит repair D2 или D3: его diff ограничен reader speed-slot/Gill mobile-bar ownership и связанными контрактами. Поэтому **D2 и D3 остаются `- [ ]`**, а PR #2346 сохраняет статус **DRAFT/HOLD / не готов к merge**. Исправление mobile speed ownership подтверждено локально и hosted `guard` на exact head, но не меняет визуально-архитектурные блокеры D2/D3.
+
+## 12. Раунд 7 — exact HEAD `e567400` и оригинальный Gill in-slot
+
+### 12.1. Что изменилось после `fd1a73a`
+
+PR #2346 получил два новых reader-only коммита: `dd78f75` (`fix(reader): refine single Play ring and eliminate speed-swap icon motion`) и `e567400` (`fix(reader): restore original in-slot rates and refine touch-safe Play`). Последний head больше не скрывает Back/Home при открытии скоростей: шесть скоростей занимают только центральный `mobile-top-slot`, а Play использует один физический SVG progress ring без отдельной CSS-рамки или тени. `ReaderSpeedOptions.astro` больше не передаёт Gill Back/Home в `coveredControls`.
+
+### 12.2. Build, source contracts и формальный Chromium-контракт
+
+В disposable worktree exact `e567400`:
+
+- `npm run strangler:build:production-like` — **PASS**;
+- `npm run engine:contracts` — **PASS**;
+- `reader-controls-a11y-browser-contract.mjs` с disposable `@sparticuz/chromium` — **147/147 PASS**, включая новые Gill checks `25–30`:
+  - Play/Back/Home/«На полях» не сдвигаются при раскрытии скоростей;
+  - видимый chip попадает в speed badge, а не запускает Play;
+  - у Play ровно одно SVG-кольцо, без CSS border/shadow;
+  - Back/Home остаются operable;
+  - выбранная скорость получает gold capsule без красного underline;
+  - шесть скоростей образуют одну горизонтальную scrollable-строку из целей ≥44 px;
+- JS errors в harness не обнаружены.
+
+Канонический Playwright Chromium в sandbox по-прежнему отсутствует; для 147/147 использована только disposable Chromium runtime. Это воспроизводит formal script, но не заменяет hosted Chromium/Firefox/WebKit matrix.
+
+### 12.3. Scripture и hosted CI
+
+`data/scripture-search-index.json` на `e567400` всё ещё stale. Disposable writer снова изменяет только `scannedSourceFiles: 542 → 543`; после записи `--check` и `scripture-occurrence-index-contract.mjs` проходят (`1372/3511/103`, `149 curated text records`). Индекс не переносился в PR #2346 или audit-ветку.
+
+Для workflow `44837643407` на `e567400`: Linux и Darwin actionlint завершились **SUCCESS**, Windows снова падает на том же объединённом шаге `Prove offline archive contract and execute binary`; annotation снова сообщает только `exit code 1`, а results receiver API отвечает `EOF`. `exact-pins` и большая часть матрицы оставались в очереди. Scripture workflows также падают исключительно из-за stale индекса. Поэтому Windows failure остаётся недоказанным tooling/environment issue, а не подтверждённым defect продукта.
+
+Новые reader-коммиты не затрагивают D2/D3. **D2 и D3 остаются `- [ ]`; PR #2346 сохраняет DRAFT/HOLD.** По latest head mobile Play/rate ownership теперь подтверждён локальным формальным Chromium-контрактом, но это не закрывает визуально-архитектурные блокеры настроек.
