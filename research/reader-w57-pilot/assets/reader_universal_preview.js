@@ -219,7 +219,18 @@
  }
  root.querySelector('.np-u-left-foot').prepend(fullFontButton);
  root.querySelector('.np-u-rail-spine').append(compactFontButton);
- root.append(fontPanel);
+ // The mobile TOC has aria-modal=true. Reparent the SAME popup into it;
+ // on desktop keep it outside the clipped left rail.
+ function positionFontPanel(){
+  const host=matchMedia('(max-width:1120px)').matches
+   ?root.querySelector('#npUOutline'):root;
+  if(fontPanel.parentElement!==host)host.append(fontPanel);
+ }
+ positionFontPanel();
+ window.addEventListener('resize',()=>{
+  if(!fontPanel.hidden)setFontOpen(false);
+  positionFontPanel();
+ },{passive:true});
  function setFontOpen(open){
   fontPanel.hidden=!open;
   for(const b of fontToggles)b.setAttribute('aria-expanded',String(open));
@@ -276,7 +287,7 @@
    return;
   }
   if(event.key==='Tab'){
-   // The settings popup is outside the mobile TOC dialog DOM; own its focus.
+   // The settings popup is a descendant of the mobile TOC modal DOM.
    const controls=[...fontPanel.querySelectorAll('button:not([disabled])')]
     .filter(el=>el.getClientRects().length&&!el.closest('[hidden],[inert]'));
    const first=controls[0],last=controls.at(-1),active=document.activeElement;

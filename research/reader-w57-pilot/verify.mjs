@@ -32,6 +32,9 @@ assert.match(preview, /data-np-u-type-width="narrow"/, 'narrow width missing');
 assert.match(js, /width:v\.measure==='narrow'\?'narrow'/, 'narrow persisted state mismatches');
 assert.match(preview, /one top-level right research card at a time/, 'exclusive right cards missing');
 assert.match(preview, /openResearchForAnnotation\(\)/,'right research owner must expose opening action');
+assert.match(preview, /positionFontPanel\(\)/, 'font popup must have breakpoint-aware modal ownership');
+assert.match(preview, /querySelector\('#npUOutline'\):root/, 'mobile TOC dialog must contain its focused popup');
+assert.doesNotMatch(preview, /root\.append\(fontPanel\)/, 'no unconditional out-of-modal popup');
 assert.match(preview, /closeResearchForAnnotation\(\)/,'right research owner must expose closing action');
 assert.match(css, /np-w57-note-actions/, 'note cancel/confirm row missing');
 assert.ok(preview.includes('event.preventDefault();event.stopImmediatePropagation();'),
