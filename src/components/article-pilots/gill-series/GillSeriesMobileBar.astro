@@ -260,13 +260,18 @@ const page = config.pages[pageId];
     position:relative;z-index:1;box-sizing:border-box;
     display:grid;place-items:center;flex:0 0 44px;
     width:44px;height:44px;min-width:44px;min-height:44px;
-    margin:0;padding:0;border:1px solid rgba(108,84,68,.30);border-radius:50%;
-    background:color-mix(in srgb,var(--gill-mobile-bar-paper,#fffaf5) 80%,transparent);
-    color:var(--gill-mobile-bar-ink,#291f1b);box-shadow:0 1px 3px rgba(42,32,27,.055);
+    margin:0;padding:0;border:0;border-radius:50%;
+    /* The SVG progress ring is the single outline; never double it with
+       a CSS border, bright filled disk or another outer shadow. */
+    background:color-mix(in srgb,var(--gill-mobile-bar-ink,#291f1b) 5%,transparent);
+    color:var(--gill-mobile-bar-ink,#291f1b);box-shadow:none;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-svg {opacity:1;}
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-track {
-    stroke:var(--gill-mobile-bar-gold,#b18b62);opacity:.6;
+    stroke:var(--gill-mobile-bar-gold,#b18b62);stroke-width:2.6;opacity:.65;
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-progress {
+    stroke-width:2.6;
   }
   /* Separate 44px hit regions for Play and rate controls, one tiny visible
      rate echo hugging the Play ring. The painted chip has no large pill. */
@@ -302,11 +307,12 @@ const page = config.pages[pageId];
   }
   [data-gill-v16] .mobile-top-bar.speed-open #mobBackBtn,
   [data-gill-v16] .mobile-top-bar.speed-open .reader-mobile-home {
-    opacity:0;pointer-events:none;transform:translateX(-6px);
+    /* Fade covered navigation without physically sliding adjacent SVGs. */
+    opacity:0;pointer-events:none;transform:none;
   }
   [data-gill-v16] .mobile-top-bar.speed-open .mobile-top-slot .reader-mobile-speedrail {
-    position:absolute;left:calc(-88px - 16px);right:auto;
-    width:calc(100% + 104px);max-width:calc(100vw - 150px);
+    position:absolute;left:calc(-88px - 8px);right:auto;
+    width:calc(100% + 96px);max-width:calc(100vw - 150px);
     height:44px;min-height:44px;z-index:5;
     padding:0 2px;border:1px solid rgba(128,97,75,.12);
     border-radius:999px;background:var(--gill-mobile-bar-bg,var(--color-canvas,#fdfcf9));
@@ -323,7 +329,15 @@ const page = config.pages[pageId];
     font-size:11.5px;
   }
   [data-gill-v16] .mobile-top-bar.speed-open .reader-mobile-menu-trigger {
-    opacity:0;transform:translateX(-8px);pointer-events:none;
+    opacity:0;transform:none;pointer-events:none;
+  }
+}
+@media (max-width:430px) {
+  /* A soft scroll cue, not a chopped half-visible speed label at 320px.
+     Only narrow phones need the fade; wider bars show the whole set. */
+  [data-gill-v16] .mobile-top-bar.speed-open .reader-mobile-speedrail {
+    -webkit-mask-image:linear-gradient(to right,#000 0%,#000 calc(100% - 15px),transparent 100%);
+    mask-image:linear-gradient(to right,#000 0%,#000 calc(100% - 15px),transparent 100%);
   }
 }
 @media (prefers-reduced-motion:reduce) {

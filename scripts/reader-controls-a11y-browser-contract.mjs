@@ -134,6 +134,36 @@ async function slotSnapshot(page, selectors) {
   }, selectors);
 }
 
+// Browser geometry contract for the owner-approved Gill #75 side-swap.
+// It catches optical regressions that static selectors and DOM-only QA miss.
+async function gillPlayOptics(page) {
+  return page.evaluate(() => {
+    const top = document.querySelector('.mobile-top-bar[data-gill-mobile-bar]');
+    if (!top) return null;
+    const el = (selector) => top.querySelector(selector);
+    const rect = (selector) => {
+      const r = el(selector)?.getBoundingClientRect();
+      return r ? { x: r.x, y: r.y, width: r.width, height: r.height, right: r.right, bottom: r.bottom } : null;
+    };
+    const play = el('.reader-mobile-play');
+    const rail = el('.reader-mobile-speedrail');
+    const speedRects = Array.from(rail?.querySelectorAll('[data-speed]') || []).map((e) => e.getBoundingClientRect());
+    return {
+      anchors: ['#mobBackBtn', '.reader-mobile-home', '[data-gill-marginalia-open]',
+        '.reader-mobile-play', '.reader-mobile-speed-badge', '.mobile-top-save'].map(rect),
+      playBorder: getComputedStyle(play).borderWidth,
+      playShadow: getComputedStyle(play).boxShadow,
+      ringOpacity: Number(getComputedStyle(el('.reader-mobile-play .gb-ember__ring-svg')).opacity),
+      rail: rect('.reader-mobile-speedrail'),
+      top: top.getBoundingClientRect().toJSON(),
+      speedCount: speedRects.length,
+      speedMinTap: speedRects.length ? Math.min(...speedRects.map((r) => r.width), ...speedRects.map((r) => r.height)) : 0,
+      horizontal: speedRects.length > 1 && speedRects.every((r,i) =>
+        !i || (r.left > speedRects[i-1].left && Math.abs(r.top-speedRects[0].top) < 2)),
+    };
+  });
+}
+
 async function auditSlot(page, routeId, selectors, checks) {
   const prefix = `${routeId}-slot`;
   await page.waitForFunction(() => Number(window.GBReaderControlsA11y?.version) >= 2, null, { timeout: 10000 });
@@ -141,6 +171,7 @@ async function auditSlot(page, routeId, selectors, checks) {
   await page.waitForTimeout(80);
 
   const closed = await slotSnapshot(page, selectors);
+  const gillBefore = routeId === 'gill' ? await gillPlayOptics(page) : null;
   record(checks, `${prefix}-01`, 'declared slot owners exist', closed.rootExists && closed.railExists && closed.badgeExists && (selectors.alternate ? closed.alternateExists : !closed.alternateExists), closed);
   record(checks, `${prefix}-02`, 'closed rail is aria-hidden', closed.railAriaHidden === 'true', closed);
   record(checks, `${prefix}-03`, 'closed rail is inert', closed.railInert, closed);
@@ -153,6 +184,24 @@ async function auditSlot(page, routeId, selectors, checks) {
   await page.locator(selectors.badge).click();
   await page.waitForTimeout(120);
   const opened = await slotSnapshot(page, selectors);
+  if (gillBefore) {
+    const after = await gillPlayOptics(page);
+    const fixed = after && gillBefore.anchors.every((anchor, i) =>
+      anchor && after.anchors[i] &&
+      Math.abs(anchor.x - after.anchors[i].x) < .5 &&
+      Math.abs(anchor.y - after.anchors[i].y) < .5);
+    record(checks, `${prefix}-25`, 'Play, bookmark, Back, Home and Marginalia do not shift when speeds expand',
+      fixed, { before: gillBefore.anchors, after: after?.anchors });
+    record(checks, `${prefix}-26`, 'Play uses exactly one SVG progress ring without duplicate CSS border or shadow',
+      gillBefore.playBorder === '0px' && gillBefore.playShadow === 'none' && gillBefore.ringOpacity > .95,
+      { border: gillBefore.playBorder, shadow: gillBefore.playShadow, ringOpacity: gillBefore.ringOpacity });
+    record(checks, `${prefix}-27`, 'all six speeds form one scrollable 44px row inside the top bar',
+      after && after.speedCount === 6 && after.horizontal && after.speedMinTap >= 43.5 &&
+        after.rail.x >= 6 && after.rail.y >= 0 && after.rail.bottom <= after.top.bottom + 4 &&
+        after.rail.right <= after.anchors[3].x + 2,
+      { rail: after?.rail, top: after?.top, speedCount: after?.speedCount,
+        speedMinTap: after?.speedMinTap, horizontal: after?.horizontal });
+  }
   record(checks, `${prefix}-09`, 'badge opens rail', opened.railVisible, opened);
   record(checks, `${prefix}-10`, 'open rail is exposed to AT', opened.railAriaHidden === 'false' && !opened.railInert, opened);
   record(checks, `${prefix}-11`, 'open rail has one roving Tab stop', opened.tabStops === 1, opened);
