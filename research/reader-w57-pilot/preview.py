@@ -48,9 +48,13 @@ class Handler(SimpleHTTPRequestHandler):
             if not file.is_file(): return self.send_error(404,"Missing W57 source")
             ctype=mimetypes.guess_type(name)[0] or "application/octet-stream"
             return self.reply(file.read_bytes(),ctype+"; charset=utf-8")
+        # Explicit opt-in only. G3/News and Nagornaya have independent readers.
         allowed=("/articles/","/baptisty-rossii/","/biografii/",
-                 "/nagornaya/","/pastor-series/","/biblioteka/","/books/")
-        if parse_qs(req.query).get("reader-pilot")==["1"] and path.startswith(allowed) and path.endswith("/"):
+                 "/pastor-series/","/biblioteka/","/books/")
+        excluded=("/nagornaya/","/updates/","/news/","/novosti/")
+        if (parse_qs(req.query).get("reader-pilot")==["1"]
+                and path.startswith(allowed) and not path.startswith(excluded)
+                and path.endswith("/")):
             file=(DIST/path.lstrip("/")/"index.html").resolve()
             if not file.is_relative_to(DIST) or not file.is_file():
                 return self.send_error(404,"Built Reader page not found")
