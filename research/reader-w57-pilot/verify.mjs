@@ -16,6 +16,12 @@ for (const file of manifest.files) {
 const css = readFileSync(join(root, 'assets', 'reader_w57.css'), 'utf8');
 const js = readFileSync(join(root, 'assets', 'reader_w57.js'), 'utf8');
 const shell = readFileSync(join(root, 'preview.py'), 'utf8');
+const preview = readFileSync(join(root, 'assets', 'reader_universal_preview.js'), 'utf8');
+assert.match(preview, /const previewPanel=new URLSearchParams\(location\.search\)\.get\('panel'\)/,
+  'explicit preview-state deep link owner required');
+assert.match(preview, /let manualRightChoice=!isMobile\(\)&&\['open','closed'\]\.includes\(previewPanel\)/,
+  'panel=open/closed deep links must override width defaults on desktop');
+
 assert.match(css, /W57 VISUAL CLOSURE 2026-11-20/, 'source alignment wave absent');
 assert.match(css, /--np-w57-axis-x:\s*calc\(95vw - 20px\)/, 'viewport-defined axis required');
 assert.match(js, /setProperty\('--np-w57-axis-x','calc\(95vw - 20px\)'\)/,

@@ -12,6 +12,22 @@ is explicitly run. Canonical production Reader remains the existing Astro compon
 1. Build the repository's current branch to `dist/`.
 2. Run `python research/reader-w57-pilot/preview.py` (Python 3.11+).
 3. Open `http://127.0.0.1:19061/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space`.
+
+**Explicit views (same W57 source, no guesswork):**
+
+- Folded panel / floating vertical actions:
+  `http://127.0.0.1:19061/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space&panel=closed`
+- Open research panel / inline actions in its heading:
+  `http://127.0.0.1:19061/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space&panel=open`
+
+At widths **1280px and above**, the original pilot opens the right panel by default
+if `panel` is absent. At **1121–1279px**, it is folded by default. Both
+explicit parameters override that initial desktop setting and remain stable
+across reloads; the user can still toggle normally. Mobile ignores them.
+The reference screenshots for aligned SVGs were taken in the **folded** state.
+Resources are served with `Cache-Control: no-store`; differing screenshots
+represent different UI states, not different production versions.
+
 4. Compare independent article at `/articles/kod-da-vinchi/?reader-pilot=1&paper=space`.
 5. Preview server binds **only** to localhost; it never writes to production, commits, or a live site.
 

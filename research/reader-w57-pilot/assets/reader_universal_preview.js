@@ -901,7 +901,16 @@
  // ARGON shows one rail before 1280px, rather than squeezing the
  // article between TWO rails at 1121px. An explicit user click overrides
  // this default for the current preview session.
- let manualRightChoice=false;
+  // Explicit QA deep-link state, ONLY on opt-in localhost Reader pilot.
+  // The normal Reader default remains unchanged: >1279px opens research.
+  // This prevents confusing an open-on-entry URL with a folded-state QA image.
+  const previewPanel=new URLSearchParams(location.search).get('panel');
+  let manualRightChoice=!isMobile()&&['open','closed'].includes(previewPanel);
+  if(manualRightChoice){
+    const folded=previewPanel==='closed';
+    root.classList.toggle('np-u-hide-right',folded);
+    document.body.classList.toggle('np-u-hide-right',folded);
+  }
  function applyIntermediateWidth(){
    if(isMobile()||manualRightChoice)return;
    const narrowDesktop=matchMedia('(max-width:1279px)').matches;
