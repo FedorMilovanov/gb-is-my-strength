@@ -165,5 +165,5 @@
   return {valid:!broken&&!duplicate&&!unnamed&&m.groups.length>0,
     broken,duplicate,unnamed,groups:m.groups.length,refs:m.counts.scriptureRefs};
  }
- window.GBReaderContract=Object.freeze({version:'1.1.0',inspect,validate,buildGroups,compactNodes,chapterNumerals:numerals});
+ window.GBReaderContract=Object.freeze({version:'1.1.0',articleRoot,inspect,validate,buildGroups,compactNodes,chapterNumerals:numerals});
 })();

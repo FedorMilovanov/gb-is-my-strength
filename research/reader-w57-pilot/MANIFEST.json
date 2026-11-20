@@ -8,8 +8,8 @@
     },
     {
       "name": "reader_argon_first.css",
-      "sha256": "b1142a8248e2f4317d3dcfd2364fd797f6ca319d38c7fd329ced040ef412acda",
-      "bytes": 148304
+      "sha256": "d946a4a1c8d49eed021718d7ab4a1aa4e834cb57c3d9704d3d8e647e096bbdbe",
+      "bytes": 148469
     },
     {
       "name": "reader_editorial_refinement.css",
@@ -28,18 +28,18 @@
     },
     {
       "name": "reader_w57.css",
-      "sha256": "5a7576901540c2ad0767f1112558a25092132f2ae8c25be2aa0073d33c0f79ee",
-      "bytes": 27468
+      "sha256": "eae8d1660d4ff2b10f138f67da0ae3f112a5609a16f544098be5970ac944e743",
+      "bytes": 27512
     },
     {
       "name": "reader_universal_contract.js",
-      "sha256": "6c9ec7349aacc7a54953903d36261d01e8f7fce607972918adf8c3ec5aec04be",
-      "bytes": 9580
+      "sha256": "3473bf6c7027357bf3288870982fa87474adcdad0b19897af9bdfabc0f0ef59d",
+      "bytes": 9592
     },
     {
       "name": "reader_universal_preview.js",
-      "sha256": "42b4c02bb5a15c9092147d58ab9ba5ca8041e908a00f7b9e6b9e0f9141ade703",
-      "bytes": 132272
+      "sha256": "ccb3ee4cd758e6579fc0bc4a91005442483793a96fc1e80b6846bbeac062bc87",
+      "bytes": 132262
     },
     {
       "name": "reader_editorial_refinement.js",
@@ -58,8 +58,8 @@
     },
     {
       "name": "reader_w57_annotations.js",
-      "sha256": "aaebc078b341402227d275705bc56d8ee56d433bb54b6b7c789962e48841747e",
-      "bytes": 30195
+      "sha256": "f364bb3ba5a63873343aa261216758998818b9ea641688a7bdb1a4512465b496",
+      "bytes": 30318
     }
   ],
   "normalization": "SHA-256 and UTF-8 byte counts from exact pilot sources. Screenshot/browser QA and canonical Product port still release HOLD."

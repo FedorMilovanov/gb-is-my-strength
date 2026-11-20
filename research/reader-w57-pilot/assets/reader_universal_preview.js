@@ -8,10 +8,11 @@
  if(!c || document.getElementById('npUniversalDemo'))return;
  const model=c.inspect(document), check=c.validate(model);
  if(!check.valid)return;
- const article=document.querySelector('article[data-reader-projection],article.article-body,main article')
-   ||document.querySelector('main[data-reader-projection],main[data-pagefind-body],main');
+ // Source root is resolved ONCE by the semantic Reader contract.
+ const article=c.articleRoot(document);
  const main=article?.matches('main')?article:article?.closest('main');
  if(!article||!main)return;
+ if(article.matches('article'))article.setAttribute('data-reader-projection','');
  main.classList.add('np-u-reader-main');
  // W40 opt-in A/B visual mode, real Product controls unchanged.
  const paperMode=new URLSearchParams(location.search).get('paper');

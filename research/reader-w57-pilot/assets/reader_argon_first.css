@@ -535,14 +535,14 @@ body.np-u-preview.np-u-argon-shell > .page-wrap{
   /* Direct legacy articles had zero internal paper padding after shrinking.
      Preserve the existing Product paper and typography while guaranteeing
      breathing room around real paragraphs and headings. */
-  body.np-u-preview.np-u-argon-shell > main.np-u-reader-main > article.article-body {
+  body.np-u-preview.np-u-argon-shell > main.np-u-reader-main > article[data-reader-projection] {
     box-sizing:border-box!important;
     padding-inline:clamp(25px,3vw,48px)!important;
   }
   /* Real Product-series article: same comfortable inset as direct articles.
      Hero imagery, section headings and editorial blocks no longer hit the
      sheet's outer edge. Applied to all native-series page templates. */
-  body.np-u-preview.np-u-argon-shell .gbs2-world > .page-wrap > main.np-u-reader-main > article.article-body {
+  body.np-u-preview.np-u-argon-shell .gbs2-world > .page-wrap > main.np-u-reader-main > article[data-reader-projection] {
     box-sizing:border-box!important;
     padding-inline:clamp(22px,2.7vw,38px)!important;
   }
@@ -553,14 +553,14 @@ body.np-u-preview.np-u-argon-shell > .page-wrap{
     width:100%!important;min-width:0!important;max-width:100%!important;
     margin:0!important;padding-inline:0!important;
   }
-  body.np-u-preview.np-u-argon-shell .gbs2-world > .page-wrap > .wave12-publication-boundary > main.np-u-reader-main > article.article-body {
+  body.np-u-preview.np-u-argon-shell .gbs2-world > .page-wrap > .wave12-publication-boundary > main.np-u-reader-main > article[data-reader-projection] {
     box-sizing:border-box!important;
     padding-inline:clamp(25px,3vw,48px)!important;
   }
 }
 /* Gill series editorial overview: align the 4 actual part cards with
    the reading column, not the far-left paper edge. */
-body.np-u-preview.np-u-argon-shell .gbs2-world[data-gill-v16] article.article-body > .gill-series-overview{
+body.np-u-preview.np-u-argon-shell .gbs2-world[data-gill-v16] article[data-reader-projection] > .gill-series-overview{
  box-sizing:border-box;width:100%;max-width:840px;
  margin-left:auto!important;margin-right:auto!important;
 }
@@ -1197,7 +1197,7 @@ body.np-u-preview .np-u-central-contents li a:hover span:last-child{
 
 /* The pre-existing editorial summary remains in the source, but never
    visually doubles the new ARGON disclosure when intentionally relocated. */
-body.np-u-preview article.article-body > .summary-card[hidden]{display:none!important}
+body.np-u-preview article[data-reader-projection] > .summary-card[hidden]{display:none!important}
 
 /* Product-wide search and theme stay in the ARGON LEFT rail on desktop.
    Moving the SAME DOM buttons retains native Product event handlers. */
@@ -1945,7 +1945,7 @@ body.np-u-preview.np-u-argon-shell[data-np-u-size="lg"]{--np-u-reading-scale:1.1
 body.np-u-preview.np-u-argon-shell[data-np-u-size="xl"]{--np-u-reading-scale:1.2}
 body.np-u-preview.np-u-argon-shell[data-np-u-spacing="relaxed"]{--np-u-reading-leading:1.92}
 body.np-u-preview.np-u-argon-shell[data-np-u-width="wide"]{--np-u-reading-measure:760px}
-body.np-u-preview.np-u-argon-shell article.article-body :is(p,li,blockquote):not(:where(.notice *, .gtip *, .btip *, .summary-card *, .np-u-central-overview *, .np-u-central-contents *, figcaption *)){
+body.np-u-preview.np-u-argon-shell article[data-reader-projection] :is(p,li,blockquote):not(:where(.notice *, .gtip *, .btip *, .summary-card *, .np-u-central-overview *, .np-u-central-contents *, figcaption *)){
  font-family:var(--np-u-reading-face)!important;
  font-size:calc(var(--np-u-reading-base) * var(--np-u-reading-scale))!important;
  line-height:var(--np-u-reading-leading)!important;
@@ -1954,9 +1954,9 @@ body.np-u-preview.np-u-argon-shell article.article-body :is(p,li,blockquote):not
  overflow-wrap:break-word!important;
  hyphens:auto;
 }
-body.np-u-preview.np-u-argon-shell article.article-body > p,
-body.np-u-preview.np-u-argon-shell article.article-body > .article-header > p,
-body.np-u-preview.np-u-argon-shell article.article-body > section > p{
+body.np-u-preview.np-u-argon-shell article[data-reader-projection] > p,
+body.np-u-preview.np-u-argon-shell article[data-reader-projection] > .article-header > p,
+body.np-u-preview.np-u-argon-shell article[data-reader-projection] > section > p{
  max-width:min(100%,var(--np-u-reading-measure))!important;
  margin-inline:auto!important;
 }
@@ -2180,14 +2180,14 @@ body.np-u-preview.np-u-argon-shell article.article-body > section > p{
 /* W18 typography: narrow paper never hyphenates a display title mid-word.
    Prose stays readable with normal word breaks instead of justified rivers. */
 @media(min-width:1121px) and (max-width:1500px){
- body.np-u-preview.np-u-argon-shell:not(.np-u-hide-right) article.article-body h1{
+ body.np-u-preview.np-u-argon-shell:not(.np-u-hide-right) article[data-reader-projection] h1{
   font-size:clamp(35px,2.83vw,42px)!important;
   line-height:1.13!important;
   hyphens:none!important;overflow-wrap:normal!important;
   word-break:normal!important;text-wrap:balance;
  }
 }
-body.np-u-preview.np-u-argon-shell article.article-body h1{
+body.np-u-preview.np-u-argon-shell article[data-reader-projection] h1{
  hyphens:none!important;word-break:normal!important;
  overflow-wrap:normal!important;
 }
@@ -2810,13 +2810,13 @@ body.np-u-preview.np-u-argon-shell article.article-body h1{
   box-sizing:border-box!important;width:calc(100% - 36px)!important;max-width:calc(100% - 36px)!important;
   margin-left:auto!important;margin-right:auto!important;
  }
- body.np-u-preview:is(.np-u-w40-space,.np-u-w40-book) main.np-u-reader-main > article.article-body{
+ body.np-u-preview:is(.np-u-w40-space,.np-u-w40-book) main.np-u-reader-main > article[data-reader-projection]{
   box-sizing:border-box!important;padding-inline:clamp(22px,2.7vw,38px)!important;
  }
- body.np-u-preview:is(.np-u-w40-space,.np-u-w40-book) main.np-u-reader-main article.article-body :is(figure,picture){
+ body.np-u-preview:is(.np-u-w40-space,.np-u-w40-book) main.np-u-reader-main article[data-reader-projection] :is(figure,picture){
   box-sizing:border-box;max-width:100%;min-width:0;
  }
- body.np-u-preview:is(.np-u-w40-space,.np-u-w40-book) main.np-u-reader-main article.article-body :is(img,video,iframe){
+ body.np-u-preview:is(.np-u-w40-space,.np-u-w40-book) main.np-u-reader-main article[data-reader-projection] :is(img,video,iframe){
   max-width:100%;min-width:0;
  }
 }
@@ -2930,7 +2930,7 @@ body.np-u-preview.np-u-w40-space main.np-u-reader-main{
  body.np-u-preview.np-u-w40-space main.np-u-reader-main > .article-header{
   border-bottom:0!important;
  }
- body.np-u-preview.np-u-w40-space main.np-u-reader-main article.article-body > figure.article-img.wide{
+ body.np-u-preview.np-u-w40-space main.np-u-reader-main article[data-reader-projection] > figure.article-img.wide{
   margin-left:0!important;margin-right:0!important;
   width:100%!important;max-width:100%!important;min-width:0!important;
  }

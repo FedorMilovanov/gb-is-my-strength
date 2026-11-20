@@ -18,6 +18,20 @@ const js = readFileSync(join(root, 'assets', 'reader_w57.js'), 'utf8');
 const annotations = readFileSync(join(root, 'assets', 'reader_w57_annotations.js'), 'utf8');
 const shell = readFileSync(join(root, 'preview.py'), 'utf8');
 const preview = readFileSync(join(root, 'assets', 'reader_universal_preview.js'), 'utf8');
+const semanticContract=readFileSync(join(root,'assets','reader_universal_contract.js'),'utf8');
+const argonCss=readFileSync(join(root,'assets','reader_argon_first.css'),'utf8');
+assert.ok(semanticContract.includes("version:'1.1.0',articleRoot,inspect"),
+ 'contract must export single source-article resolver');
+assert.ok(preview.includes('const article=c.articleRoot(document)'),
+ 'preview must use the same source root as annotations');
+assert.ok(preview.includes("article.setAttribute('data-reader-projection','')"),
+ 'pilot must mark its selected actual article');
+assert.ok(annotations.includes("GBReaderContract?.articleRoot?.(document)"),
+ 'annotations must reuse contract source root');
+assert.ok(argonCss.includes('article[data-reader-projection]'),
+ 'typography and geometry must target semantic article projection');
+assert.ok(css.includes('article[data-reader-projection]'),
+ 'W57 measure styles must target semantic article projection');
 assert.match(preview, /const initiallyFolded=previewPanel!=='open'/,
   'right research panel must start folded on desktop by default');
 assert.match(preview, /const previewPanel=new URLSearchParams\(location\.search\)\.get\('panel'\)/,

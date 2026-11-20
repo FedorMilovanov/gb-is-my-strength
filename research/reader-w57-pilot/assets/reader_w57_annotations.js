@@ -125,9 +125,11 @@
   function start(){
     if(!document.body.classList.contains('np-w57-ready')||!window.GBHighlights)return false;
     if(window.__NP_W57_ANNOTATIONS__)return true;
-    const article=$('main.np-u-reader-main article.article-body')||$('article.article-body');
+    const article=window.GBReaderContract?.articleRoot?.(document);
     const rightScroll=$('#npUResearch .np-u-right-scroll');
-    if(!article||!rightScroll)return false;
+    // Only the one selected source ARTICLE owns ranges; catalog MAINs do not.
+    if(!article?.matches('article')||!article.closest('main.np-u-reader-main')||!rightScroll)
+      return false;
     let currentColor='amber',lastSelection=null,lastUndo=null;
     const section=document.createElement('details');
     section.id='npW57NotesDetails';section.className='np-w57-accordion';
