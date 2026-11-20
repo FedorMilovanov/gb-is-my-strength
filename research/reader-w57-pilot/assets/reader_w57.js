@@ -6,25 +6,18 @@
   const choices={
     size:{sm:.9,md:1,lg:1.1,xl:1.2},
     spacing:{normal:'normal',relaxed:'relaxed'},
-    width:{normal:'normal',wide:'wide'},
+    width:{narrow:'narrow',normal:'normal',wide:'wide'},
     font:{lora:'lora',cormorant:'cormorant'}
   };
   const valid=()=>body.classList.contains('np-u-preview')&&!!$('#npUResearch .np-u-right-scroll');
   function begin(){
     if(body.classList.contains('np-w57-ready'))return true;
     if(!valid())return false;
-    const rightScroll=$('#npUResearch .np-u-right-scroll');
     const fontPanel=$('#npUFontPanel');
     const fontControls=fontPanel?.querySelector('.np-u-type-options');
-    if(!rightScroll||!fontPanel||!fontControls||!window.GBReaderPreferences)return false;
+    if(!fontPanel||!fontControls||!window.GBReaderPreferences)return false;
     const canon=window.GBReaderPreferences;
-    const reading=document.createElement('details');
-    reading.id='npW57ReadingDetails';reading.className='np-w57-accordion';
-    reading.innerHTML='<summary><span class="np-w57-summary-label">Аа&nbsp; Чтение и оформление</span></summary>'+
-      '<div class="np-w57-detail-body" id="npW57ReadingBody"></div>';
-    rightScroll.insertBefore(reading,rightScroll.firstElementChild);
-    reading.querySelector('#npW57ReadingBody').append(fontPanel);
-    fontPanel.hidden=false;
+    // Keep sole settings panel in its original left preview owner.
     fontPanel.setAttribute('aria-label','Настройки чтения');
     // If user selected a non-default ARGON font in the old pilot, migrate once,
     // but never erase an explicit canonical choice.
@@ -58,27 +51,18 @@
         font:v.fontFamily||'lora',
         size:nearest(v.fontScale),
         spacing:v.lineHeight==='relaxed'?'relaxed':'normal',
-        width:v.measure==='wide'?'wide':'normal'
+        width:v.measure==='narrow'?'narrow':v.measure==='wide'?'wide':'normal'
       };
       for(const [type,value] of Object.entries(selection)){
         for(const el of fontPanel.querySelectorAll('[data-np-u-type-'+type+']')){
           el.setAttribute('aria-pressed',String(el.getAttribute('data-np-u-type-'+type)===value));
         }
       }
-      reading.dataset.fontFamily=v.fontFamily||'lora';
+      body.dataset.npUWidth=selection.width;
+      body.dataset.npUSize=selection.size;
+      body.dataset.npUSpacing=selection.spacing;
     }
-    fontPanel.addEventListener('click',e=>{
-      const b=e.target.closest('[data-np-u-type-font],[data-np-u-type-size],'+
-        '[data-np-u-type-spacing],[data-np-u-type-width]');
-      if(!b)return;
-      const patch={};
-      if(b.dataset.npUTypeFont)patch.fontFamily=b.dataset.npUTypeFont;
-      if(b.dataset.npUTypeSize)patch.fontScale=choices.size[b.dataset.npUTypeSize]||1;
-      if(b.dataset.npUTypeSpacing)patch.lineHeight=choices.spacing[b.dataset.npUTypeSpacing]||'normal';
-      if(b.dataset.npUTypeWidth)patch.measure=choices.width[b.dataset.npUTypeWidth]||'normal';
-      if(Object.keys(patch).length)canon.set(patch,{source:'argon-w57-panel'});
-      syncTypography();
-    });
+    // Input events are handled exclusively by the original left settings owner.
     if(typeof canon.subscribe==='function')canon.subscribe(syncTypography);
     window.addEventListener('storage',e=>{
       if(e.key===canon.storageKey)syncTypography();

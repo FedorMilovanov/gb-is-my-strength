@@ -1,5 +1,5 @@
 {
-  "source": "Local W57 preview; reviewed 2026-11-20",
+  "source": "W57 left typography/read settings and exclusive research cards — 2026-11-20",
   "files": [
     {
       "name": "reader_universal_preview.css",
@@ -28,8 +28,8 @@
     },
     {
       "name": "reader_w57.css",
-      "sha256": "2d8c6306fa1f30e32426689dcd91bc8e692421bd510f28885929ef33f32ff01a",
-      "bytes": 22604
+      "sha256": "e99f99c942b27688ee911227c57d98f28807a0811650bdfbf60e38b775003f9d",
+      "bytes": 23363
     },
     {
       "name": "reader_universal_contract.js",
@@ -38,8 +38,8 @@
     },
     {
       "name": "reader_universal_preview.js",
-      "sha256": "ea7beffbc1b77979af72f1470742868bdc8542080e34f806badb9d9bc00ae613",
-      "bytes": 129500
+      "sha256": "9f4870022df89727a6888d627aaf76bdbbb0cc339a59da8784fd5e54545c4971",
+      "bytes": 130784
     },
     {
       "name": "reader_editorial_refinement.js",
@@ -53,14 +53,14 @@
     },
     {
       "name": "reader_w57.js",
-      "sha256": "3c3037801c0ba07c26f8ac4c73a27844fdea04e4b53b98169d12b7880c02aa22",
-      "bytes": 4886
+      "sha256": "3ae463aa793aaf5cfca372f5d30283b332700055d9c2141c0d2df6d54bb11769",
+      "bytes": 3900
     },
     {
       "name": "reader_w57_annotations.js",
-      "sha256": "803dbde00eff4c9968a558818b3a72bc64b21d4f6b895c7f49cd3a0311df9670",
-      "bytes": 23154
+      "sha256": "10939c64cc0a3a63fc533ac72adfaf372fdf643937e22b30ced4f1fb29e06b8d",
+      "bytes": 23126
     }
   ],
-  "normalization": "Functionally identical W57 source; only CRLF and trailing blank lines normalized to LF for reproducible Git SHA-256."
+  "normalization": "SHA-256 and UTF-8 byte counts from exact pilot sources. Screenshot/browser QA and canonical Product port still release HOLD."
 }

@@ -173,7 +173,7 @@
  const prefKey='np-u-argon-reading-v1';
  const prefDefaults={font:'lora',size:'md',spacing:'normal',width:'normal'};
  const prefChoices={font:['lora','cormorant'],size:['sm','md','lg','xl'],
-  spacing:['normal','relaxed'],width:['normal','wide']};
+  spacing:['normal','relaxed'],width:['narrow','normal','wide']};
  let prefs={...prefDefaults};
  try{
   const stored=JSON.parse(localStorage.getItem(prefKey)||'null');
@@ -201,6 +201,7 @@
   '<button type="button" data-np-u-type-spacing="normal">Книжный · 1,72</button>'+
   '<button type="button" data-np-u-type-spacing="relaxed">Широкий · 1,92</button></div></div>'+
   '<div class="np-u-type-group"><span>Ширина наборной полосы</span><div class="np-u-type-options">'+
+  '<button type="button" data-np-u-type-width="narrow">Узкая</button>'+
   '<button type="button" data-np-u-type-width="normal">Книжная</button>'+
   '<button type="button" data-np-u-type-width="wide">Широкая</button></div></div>';
  const fullFontButton=document.createElement('button');
@@ -236,21 +237,35 @@
   try{localStorage.setItem(prefKey,JSON.stringify(prefs))}catch(_){}
  }
  fontPanel.addEventListener('click',event=>{
-  if(event.target.closest('.np-u-type-close')){setFontOpen(false);return;}
+  if(event.target.closest('.np-u-type-close')){
+   setFontOpen(false);
+   (document.body.classList.contains('np-u-compact')?compactFontButton:fullFontButton).focus({preventScroll:true});
+   return;
+  }
   const b=event.target.closest('button[data-np-u-type-font],button[data-np-u-type-size],button[data-np-u-type-spacing],button[data-np-u-type-width]');
   if(!b)return;
+  const canon=window.GBReaderPreferences;
+  if(canon&&typeof canon.set==='function'){
+   // One input owner; W57 merely projects canonical reader preferences.
+   const patch={};
+   if(b.dataset.npUTypeFont)patch.fontFamily=b.dataset.npUTypeFont;
+   if(b.dataset.npUTypeSize)patch.fontScale=({sm:.9,md:1,lg:1.1,xl:1.2})[b.dataset.npUTypeSize];
+   if(b.dataset.npUTypeSpacing)patch.lineHeight=b.dataset.npUTypeSpacing;
+   if(b.dataset.npUTypeWidth)patch.measure=b.dataset.npUTypeWidth;
+   if(Object.keys(patch).length)canon.set(patch,{source:'argon-w57-left-settings'});
+   return;
+  }
+  // Fallback only when canonical Product reader is not available.
   for(const kind of Object.keys(prefChoices)){
    const key='npUType'+kind.charAt(0).toUpperCase()+kind.slice(1);
-   if(b.dataset[key]){
-    prefs[kind]=b.dataset[key];applyReaderTypography();break;
-   }
+   if(b.dataset[key]){prefs[kind]=b.dataset[key];applyReaderTypography();break}
   }
  });
  document.addEventListener('pointerdown',event=>{
-  if(!fontPanel.closest('#npW57ReadingDetails')&&!fontPanel.hidden&&!fontPanel.contains(event.target)&&!fontToggles.some(b=>b.contains(event.target)))setFontOpen(false);
+  if(!fontPanel.hidden&&!fontPanel.contains(event.target)&&!fontToggles.some(b=>b.contains(event.target)))setFontOpen(false);
  },true);
  document.addEventListener('keydown',event=>{
-  if(event.key==='Escape'&&!fontPanel.closest('#npW57ReadingDetails')&&!fontPanel.hidden){setFontOpen(false);
+  if(event.key==='Escape'&&!fontPanel.hidden){setFontOpen(false);
    (document.body.classList.contains('np-u-compact')?compactFontButton:fullFontButton).focus({preventScroll:true});
   }
  });
@@ -890,6 +905,15 @@
  }
  positionProductGlobalActions();
  positionSeriesAudio();
+ // Accordion: one top-level right research card at a time; nested verse/lexicon
+ // disclosures retain their own states and no global "expand everything" action.
+ root.addEventListener('toggle',event=>{
+  const opened=event.target;
+  if(!opened?.open||!opened.matches?.('#npW57NotesDetails,.np-u-research-module > details.np-u-window'))return;
+  for(const card of root.querySelectorAll('#npW57NotesDetails[open],.np-u-research-module > details.np-u-window[open]')){
+   if(card!==opened)card.open=false;
+  }
+ },true);
  root.addEventListener('toggle',event=>{
   const details=event.target;
   if(!details?.matches?.('.np-u-window--figures[open]'))return;

@@ -25,6 +25,12 @@ assert.match(preview, /let manualRightChoice=!isMobile\(\)&&\['open','closed'\]\
   'panel=open/closed deep links must override width defaults on desktop');
 
 assert.match(css, /W57 VISUAL CLOSURE 2026-11-20/, 'source alignment wave absent');
+assert.match(css, /premium left reading settings/, 'left settings popup missing');
+assert.doesNotMatch(js, /npW57ReadingDetails|fontPanel\.addEventListener\('click'/, 'no second settings owner/right card');
+assert.doesNotMatch(preview, /fontPanel\.closest\('#npW57ReadingDetails'\)/, 'left Escape/outside close must be operative');
+assert.match(preview, /data-np-u-type-width="narrow"/, 'narrow width missing');
+assert.match(js, /width:v\.measure==='narrow'\?'narrow'/, 'narrow persisted state mismatches');
+assert.match(preview, /one top-level right research card at a time/, 'exclusive right cards missing');
 assert.match(css, /right:calc\(5vw - 2px\)!important/,
   'fold SVG and Library use the same right edge as the 40px reading toolbar');
 assert.doesNotMatch(css, /left:calc\(var\(--np-w57-axis-x/,

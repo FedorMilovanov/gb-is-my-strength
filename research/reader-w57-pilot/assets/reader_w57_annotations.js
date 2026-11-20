@@ -128,8 +128,7 @@
     if(window.__NP_W57_ANNOTATIONS__)return true;
     const article=$('main.np-u-reader-main article.article-body')||$('article.article-body');
     const rightScroll=$('#npUResearch .np-u-right-scroll');
-    const reading=$('#npW57ReadingDetails');
-    if(!article||!rightScroll||!reading)return false;
+    if(!article||!rightScroll)return false;
     let currentColor='amber',lastSelection=null,lastUndo=null;
     const section=document.createElement('details');
     section.id='npW57NotesDetails';section.className='np-w57-accordion';
@@ -142,7 +141,7 @@
        '<textarea id="npW57NoteText" maxlength="12000" placeholder="Ваша мысль, вопрос или наблюдение"></textarea>'+
        '<button type="button" id="npW57SaveNote">Сохранить заметку</button></div>'+
        '<ol id="npW57NotesList" class="np-w57-annotation-list"></ol></div>';
-    reading.after(section);
+    rightScroll.insertBefore(section,rightScroll.firstElementChild);
     const palette=section.querySelector('#npW57Palette');
     const list=section.querySelector('#npW57NotesList');
     const count=section.querySelector('#npW57NotesCount');
@@ -318,10 +317,10 @@
       });
     }
     document.addEventListener('mouseup',e=>{
-      if(!e.target?.closest?.('#npW57SelectionToolbar,#npW57NotesDetails,#npW57ReadingDetails'))selectionChanged();
+      if(!e.target?.closest?.('#npW57SelectionToolbar,#npW57NotesDetails,#npUFontPanel'))selectionChanged();
     });
     document.addEventListener('touchend',e=>{
-      if(!e.target?.closest?.('#npW57SelectionToolbar,#npW57NotesDetails,#npW57ReadingDetails'))setTimeout(selectionChanged,110);
+      if(!e.target?.closest?.('#npW57SelectionToolbar,#npW57NotesDetails,#npUFontPanel'))setTimeout(selectionChanged,110);
     },{passive:true});
     // Keyboard text selection (Shift + arrows) has no mouseup event.
     // Let the selection settle before trying to show contextual actions.

@@ -58,7 +58,6 @@ body.np-u-preview.np-u-argon-shell.np-w57-ready article.article-body > .article-
 body.np-u-preview.np-u-argon-shell.np-w57-ready article.article-body > section > p{
  max-width:min(100%,var(--np-w57-reading-measure,688px))!important;
 }
-#npUniversalDemo #npW57ReadingDetails,
 #npUniversalDemo #npW57NotesDetails{
  border-top:1px solid var(--np-u-rule,rgba(90,75,63,.15));
  margin:0;background:transparent;color:var(--np-u-ink,#2a2420);
@@ -88,25 +87,42 @@ body.np-u-preview.np-u-argon-shell.np-w57-ready article.article-body > section >
  border-radius:9px;padding:4px 7px;
 }
 #npUniversalDemo .np-w57-detail-body{padding:6px 12px 16px;}
-#npUniversalDemo #npW57ReadingDetails #npUFontPanel{
- display:block!important;position:static!important;inset:auto!important;
- width:100%!important;max-width:100%!important;height:auto!important;min-height:0!important;
- background:transparent!important;box-shadow:none!important;border:0!important;
- border-radius:0!important;padding:0!important;margin:0!important;color:inherit!important;
- transform:none!important;z-index:auto!important;
+/* W57 premium left reading settings: single accessible popup from TOC rail.
+   The right research rail owns no type controls or duplicate preferences. */
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel.np-u-font-panel{
+ box-sizing:border-box;display:block;max-height:min(74dvh,670px);
+ width:min(316px,calc(100vw - 24px));overflow-y:auto;overscroll-behavior:contain;
+ padding:17px 17px 18px;border:1px solid var(--np-u-rule,rgba(90,75,63,.2));
+ border-radius:12px;background:var(--np-u-paper);color:var(--np-u-ink);
+ box-shadow:0 18px 46px rgba(30,23,17,.2),0 1px 5px rgba(30,23,17,.06);
 }
-#npUniversalDemo #npW57ReadingDetails #npUFontPanel header{display:none!important}
-#npUniversalDemo #npW57ReadingDetails .np-u-type-options{min-width:0;flex-wrap:wrap;}
-#npUniversalDemo #npW57ReadingDetails .np-u-type-group{margin-bottom:11px;}
-#npUniversalDemo #npW57ReadingDetails .np-u-type-group:last-child{margin-bottom:0}
-#npUniversalDemo #npW57ReadingDetails button{min-height:34px;}
-#npUniversalDemo #npW57ReadingDetails [data-np-u-type-size][aria-pressed="true"],
-#npUniversalDemo #npW57ReadingDetails [data-np-u-type-spacing][aria-pressed="true"],
-#npUniversalDemo #npW57ReadingDetails [data-np-u-type-width][aria-pressed="true"]{
- border-color:var(--np-u-red,#805044)!important;
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel[hidden]{display:none!important}
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel header{
+ margin-bottom:13px;padding-bottom:11px;border-bottom:1px solid var(--np-u-rule,rgba(90,75,63,.16));
 }
-body.np-w57-ready #npUniversalDemo .np-u-type-open,
-body.np-w57-ready #npUniversalDemo .np-u-type-compact{display:none!important}
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-close{
+ min-width:44px;min-height:44px;border-radius:7px;cursor:pointer;
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-group{margin-top:14px}
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-group>span{
+ font-size:11px;letter-spacing:.015em;margin-bottom:7px;
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-options{
+ min-width:0;flex-wrap:wrap;gap:6px;
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-options button{
+ min-height:40px;flex:1 1 70px;border-radius:7px;cursor:pointer;
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-sizes button{flex-basis:45px}
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-options button:focus-visible{
+ outline:2px solid var(--np-u-red,#805044);outline-offset:2px;
+}
+body.np-u-preview.np-w57-ready[data-np-u-width="narrow"]{--np-u-reading-measure:576px}
+@media(max-width:1120px){
+ body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel.np-u-font-panel{
+  left:12px;bottom:64px;max-height:calc(100dvh - 90px);
+ }
+}
 #npUniversalDemo #npW57NotesDetails .np-w57-tool-help{
  font:400 11px/1.6 'Source Sans 3',system-ui,sans-serif;
  color:var(--np-u-muted,#756f66);margin:3px 0 12px;
