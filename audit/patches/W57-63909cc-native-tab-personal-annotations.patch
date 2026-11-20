@@ -1,0 +1,781 @@
+diff --git a/research/reader-w57-pilot/MANIFEST.json b/research/reader-w57-pilot/MANIFEST.json
+index 3f84b43..977b446 100644
+--- a/research/reader-w57-pilot/MANIFEST.json
++++ b/research/reader-w57-pilot/MANIFEST.json
+@@ -28,8 +28,8 @@
+     },
+     {
+       "name": "reader_w57.css",
+-      "sha256": "eae8d1660d4ff2b10f138f67da0ae3f112a5609a16f544098be5970ac944e743",
+-      "bytes": 27512
++      "sha256": "f87dd270e0ab1510734c0222731cfd6962dc3f4cfcf9b091a6d1f5d7c2653665",
++      "bytes": 29076
+     },
+     {
+       "name": "reader_universal_contract.js",
+@@ -58,8 +58,23 @@
+     },
+     {
+       "name": "reader_w57_annotations.js",
+-      "sha256": "dc63be09659c3c98a6837daf13bd7a37c309aeb94bdb40d8474551f419c3cb7f",
+-      "bytes": 31057
++      "sha256": "f05b3a5101755508e531820d60697a115b59f5c52431edf0b0d18754aceb33b7",
++      "bytes": 31457
++    },
++    {
++      "name": "reader_w57_activation.js",
++      "sha256": "cb68f9e7c8f9335d53a0bc67d986e8b26201a2847e965dc71543fbb0cd34333e",
++      "bytes": 1206
++    },
++    {
++      "name": "reader_w57_native.css",
++      "sha256": "5f446338fac96d8ca527e0f4eb20cb482dc127856c3a3a04a1f704a283bd76fd",
++      "bytes": 1638
++    },
++    {
++      "name": "reader_w57_native.js",
++      "sha256": "f72fd9bf74bf60c0ee0d4269717a248391e2dc31a4c1ea937be5b67ad36bfbc3",
++      "bytes": 2734
+     }
+   ],
+   "normalization": "SHA-256 and UTF-8 byte counts from exact pilot sources. Screenshot/browser QA and canonical Product port still release HOLD."
+diff --git a/research/reader-w57-pilot/README.md b/research/reader-w57-pilot/README.md
+index a4b5816..2dcad2c 100644
+--- a/research/reader-w57-pilot/README.md
++++ b/research/reader-w57-pilot/README.md
+@@ -86,3 +86,17 @@ W47 and W51 local screenshots (18 November 2026) show the original behavior:
+ the panel control belonged to the right panel and appeared at the top when
+ folded and in the panel header when open. W57 is the latest accepted styling
+ reference; 'ARGON' is the design prototype name, not the website/Reader brand.
++
++### Mobile entry on the canonical reader
++
++`?reader-pilot=1` selects one layout on entry. Up through 1120 CSS px it keeps the
++native Reader and loads personal annotations only if the document has the
++canonical `#gbrMarginalia` tabpanel and its native controls. Wider entries keep
++the previous desktop pilot. A mobile route with no compatible tabpanel simply
++keeps the native Reader without adding an entry. Normal URLs remain unchanged.
++
++Layout selection is fixed for the document: rotating does not reparent native
++controls, recreate the overlay or discard a draft. When manually moving across
++the desktop/mobile breakpoint, reload to request the other layout. This avoids
++an automatic reload while a note is being edited; live migration of an already
++reparented desktop shell is not supported.
+diff --git a/research/reader-w57-pilot/assets/reader_w57.css b/research/reader-w57-pilot/assets/reader_w57.css
+index 86da014..eb874b8 100644
+--- a/research/reader-w57-pilot/assets/reader_w57.css
++++ b/research/reader-w57-pilot/assets/reader_w57.css
+@@ -58,35 +58,35 @@ body.np-u-preview.np-u-argon-shell.np-w57-ready article[data-reader-projection]
+ body.np-u-preview.np-u-argon-shell.np-w57-ready article[data-reader-projection] > section > p{
+  max-width:min(100%,var(--np-w57-reading-measure,688px))!important;
+ }
+-#npUniversalDemo #npW57NotesDetails{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) #npW57NotesDetails{
+  border-top:1px solid var(--np-u-rule,rgba(90,75,63,.15));
+  margin:0;background:transparent;color:var(--np-u-ink,#2a2420);
+ }
+-#npUniversalDemo .np-w57-accordion > summary{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-accordion > summary{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  font:600 12px/1.5 'Source Sans 3',system-ui,sans-serif;
+  min-height:47px;cursor:pointer;list-style:none;padding:10px 12px;
+  color:var(--np-u-ink,#312923);background:transparent;
+ }
+-#npUniversalDemo .np-w57-accordion > summary::-webkit-details-marker{display:none}
+-#npUniversalDemo .np-w57-accordion > summary:after{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-accordion > summary::-webkit-details-marker{display:none}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-accordion > summary:after{
+  content:'⌄';font-size:15px;color:var(--np-u-muted,#756f66);
+  transition:transform .18s ease;
+ }
+-#npUniversalDemo .np-w57-accordion[open] > summary:after{transform:rotate(180deg)}
+-#npUniversalDemo .np-w57-accordion > summary:hover,
+-#npUniversalDemo .np-w57-accordion > summary:focus-visible{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-accordion[open] > summary:after{transform:rotate(180deg)}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-accordion > summary:hover,
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-accordion > summary:focus-visible{
+  background:rgba(118,99,78,.055);outline-offset:-2px;
+ }
+-#npUniversalDemo .np-w57-accordion > summary .np-w57-summary-label{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-accordion > summary .np-w57-summary-label{
+  display:flex;align-items:center;gap:9px;min-width:0;
+ }
+-#npUniversalDemo .np-w57-accordion > summary .np-w57-count{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-accordion > summary .np-w57-count{
+  color:var(--np-u-muted,#807469);font:500 10px/1 system-ui,sans-serif;
+  border:1px solid var(--np-u-rule,rgba(90,75,63,.16));
+  border-radius:9px;padding:4px 7px;
+ }
+-#npUniversalDemo .np-w57-detail-body{padding:6px 12px 16px;}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-detail-body{padding:6px 12px 16px;}
+ /* W57 premium left reading settings: single accessible popup from TOC rail.
+    The right research rail owns no type controls or duplicate preferences. */
+ body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel.np-u-font-panel{
+@@ -123,54 +123,54 @@ body.np-u-preview.np-w57-ready[data-np-u-width="narrow"]{--np-u-reading-measure:
+   left:12px;bottom:64px;max-height:calc(100dvh - 90px);
+  }
+ }
+-#npUniversalDemo #npW57NotesDetails .np-w57-tool-help{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) #npW57NotesDetails .np-w57-tool-help{
+  font:400 11px/1.6 'Source Sans 3',system-ui,sans-serif;
+  color:var(--np-u-muted,#756f66);margin:3px 0 12px;
+ }
+-#npUniversalDemo .np-w57-palette{display:flex;gap:8px;flex-wrap:wrap;margin:7px 0 14px;}
+-#npUniversalDemo .np-w57-palette button{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-palette{display:flex;gap:8px;flex-wrap:wrap;margin:7px 0 14px;}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-palette button{
+  display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;
+  border:1px solid rgba(87,69,58,.22);border-radius:50%;
+  color:#39312d;background:var(--swatch);
+  box-shadow:inset 0 1px rgba(255,255,255,.35);cursor:pointer;padding:0;
+ }
+-#npUniversalDemo .np-w57-palette button[aria-pressed="true"]{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-palette button[aria-pressed="true"]{
+  outline:2px solid var(--np-u-red,#855045);outline-offset:3px;
+ }
+-#npUniversalDemo .np-w57-palette button:focus-visible{outline:2px solid currentColor;outline-offset:3px;}
+-#npUniversalDemo .np-w57-annotation-list{list-style:none;margin:0;padding:0;display:grid;gap:12px;}
+-#npUniversalDemo .np-w57-annotation-list > li{padding:11px 0;border-top:1px solid var(--np-u-rule,#ddd5cd);}
+-#npUniversalDemo .np-w57-annotation-quote{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-palette button:focus-visible{outline:2px solid currentColor;outline-offset:3px;}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-annotation-list{list-style:none;margin:0;padding:0;display:grid;gap:12px;}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-annotation-list > li{padding:11px 0;border-top:1px solid var(--np-u-rule,#ddd5cd);}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-annotation-quote{
+  display:block;font:400 14px/1.6 'Lora',Georgia,serif;
+  color:var(--np-u-ink,#292522);margin:3px 0 7px;overflow-wrap:anywhere;
+ }
+-#npUniversalDemo .np-w57-annotation-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-annotation-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+  font:400 10px/1.4 'Source Sans 3',system-ui,sans-serif;color:var(--np-u-muted,#777);}
+-#npUniversalDemo .np-w57-annotation-meta button{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-annotation-meta button{
+  border:0;background:transparent;min-height:36px;padding:7px 8px;
+  cursor:pointer;color:var(--np-u-red,#86574b);font:600 11px/1.2 system-ui,sans-serif;
+  border-radius:6px;
+ }
+-#npUniversalDemo .np-w57-annotation-meta button:focus-visible,
+-#npUniversalDemo .np-w57-comment button:focus-visible{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-annotation-meta button:focus-visible,
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-comment button:focus-visible{
+  outline:2px solid var(--np-u-red,#86574b);outline-offset:2px;
+ }
+-#npUniversalDemo .np-w57-annotation-meta button:hover{text-decoration:underline;text-underline-offset:3px;}
+-#npUniversalDemo .np-w57-comment label{display:block;font-size:11px;color:var(--np-u-muted,#777);}
+-#npUniversalDemo .np-w57-comment textarea{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-annotation-meta button:hover{text-decoration:underline;text-underline-offset:3px;}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-comment label{display:block;font-size:11px;color:var(--np-u-muted,#777);}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-comment textarea{
+  box-sizing:border-box;display:block;width:100%;min-height:75px;max-height:160px;resize:vertical;
+  margin:7px 0;padding:10px;font:400 12px/1.5 system-ui,sans-serif;
+  color:var(--np-u-ink,#222);background:var(--np-u-paper,#fffdfa);
+  border:1px solid var(--np-u-rule,#ccc);border-radius:6px;
+ }
+-#npUniversalDemo .np-w57-note-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+-#npUniversalDemo .np-w57-comment button,
+-#npUniversalDemo #npW57NotesStatus button{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-note-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-comment button,
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) #npW57NotesStatus button{
+  min-height:40px;padding:8px 13px;cursor:pointer;border-radius:6px;
+  border:1px solid var(--np-u-rule,#c8b9a7);
+  background:var(--np-u-white,#fff);color:var(--np-u-red,#805044);
+ }
+-#npUniversalDemo .np-w57-note-actions button{flex:1 1 110px;max-width:100%}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-note-actions button{flex:1 1 110px;max-width:100%}
+ #npW57SelectionToolbar{
+  position:fixed;z-index:12080;display:flex;align-items:center;gap:0;
+  max-width:calc(100vw - 18px);padding:5px;border:1px solid rgba(111,85,67,.19);
+@@ -205,11 +205,11 @@ html.dark #npW57SelectionToolbar button:hover{background:rgba(215,177,121,.13)}
+ ::highlight(np-w57-underline-rose){text-decoration:underline 1.7px rgba(167,89,106,.88);text-underline-offset:4px}
+ ::highlight(np-w57-underline-blue){text-decoration:underline 1.7px rgba(76,119,156,.88);text-underline-offset:4px}
+ @media(max-width:1120px){
+- #npUniversalDemo .np-w57-palette button{flex:0 0 44px;width:44px;height:44px;}
+- #npUniversalDemo .np-w57-annotation-meta button,
+- #npUniversalDemo .np-w57-comment button,
+- #npUniversalDemo #npW57NotesStatus button{min-height:44px}
+- #npUniversalDemo .np-w57-accordion > summary{min-height:48px}
++ :is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-palette button{flex:0 0 44px;width:44px;height:44px;}
++ :is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-annotation-meta button,
++ :is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-comment button,
++ :is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) #npW57NotesStatus button{min-height:44px}
++ :is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-accordion > summary{min-height:48px}
+  #npW57SelectionToolbar{padding:4px;max-width:calc(100vw - 18px)}
+  #npW57SelectionToolbar button{min-height:44px;padding:7px}
+ }
+diff --git a/research/reader-w57-pilot/assets/reader_w57_activation.js b/research/reader-w57-pilot/assets/reader_w57_activation.js
+new file mode 100644
+index 0000000..ddcc7e1
+--- /dev/null
++++ b/research/reader-w57-pilot/assets/reader_w57_activation.js
+@@ -0,0 +1,22 @@
++/* Select the pilot on entry; never move Product controls on a viewport change. */
++(async()=>{'use strict';
++  const entry=document.currentScript;
++  if(!entry||document.documentElement.dataset.w57Layout)return;
++  const desktop=matchMedia('(min-width:1121px)').matches;
++  const layout=desktop?'desktop':'native';
++  document.documentElement.dataset.w57Layout=layout;
++  if(!desktop&&!document.querySelector('#partTocOverlay #gbrMarginalia'))return;
++  const files=type=>(entry.dataset[layout+type]||'').split(' ').filter(Boolean);
++  const url=file=>new URL(file,entry.src).href;
++  function load(kind,file){return new Promise((resolve,reject)=>{
++    const element=document.createElement(kind);
++    element.addEventListener('load',resolve,{once:true});
++    element.addEventListener('error',()=>reject(new Error(file)),{once:true});
++    if(kind==='link'){element.rel='stylesheet';element.href=url(file);document.head.append(element)}
++    else{element.src=url(file);document.body.append(element)}
++  })}
++  try{
++    await Promise.all(files('Css').map(file=>load('link',file)));
++    for(const file of files('Js'))await load('script',file);
++  }catch(error){console.error('W57 pilot assets failed to load',error)}
++})();
+diff --git a/research/reader-w57-pilot/assets/reader_w57_annotations.js b/research/reader-w57-pilot/assets/reader_w57_annotations.js
+index 6d39c60..84da943 100644
+--- a/research/reader-w57-pilot/assets/reader_w57_annotations.js
++++ b/research/reader-w57-pilot/assets/reader_w57_annotations.js
+@@ -139,19 +139,21 @@
+     return candidates.length===1?candidates[0]:null;
+   }
+   function start(){
+-    if(!document.body.classList.contains('np-w57-ready')||!window.GBHighlights)return false;
++    const native=window.__NP_W57_NATIVE__?.host;
++    if((!native&&!document.body.classList.contains('np-w57-ready'))||!window.GBHighlights)return false;
+     if(window.__NP_W57_ANNOTATIONS__)return true;
+     const article=window.GBReaderContract?.articleRoot?.(document);
+-    const rightScroll=$('#npUResearch .np-u-right-scroll');
++    const rightScroll=native?.container||$('#npUResearch .np-u-right-scroll');
++    const host=native||window.__NP_UNIVERSAL_PREVIEW__;
+     // Only the one selected source ARTICLE owns ranges; catalog MAINs do not.
+-    if(!article?.matches('article')||!article.closest('main.np-u-reader-main')||!rightScroll)
++    if(!article?.matches('article')||!article.closest(native?'main':'main.np-u-reader-main')||!rightScroll)
+       return false;
+     let currentColor='amber',lastSelection=null,lastUndo=null;
+     const section=document.createElement('details');
+     section.id='npW57NotesDetails';section.className='np-w57-accordion';
+-    section.innerHTML='<summary><span class="np-w57-summary-label">✎ Пометы <span class="np-w57-count" id="npW57NotesCount">0</span></span></summary>'+
++    section.innerHTML='<summary><span class="np-w57-summary-label">'+(native?'Личные пометы':'✎ Пометы')+' <span class="np-w57-count" id="npW57NotesCount">0</span></span></summary>'+
+       '<div class="np-w57-detail-body">'+
+-       '<p class="np-w57-tool-help">Выделите фразу в статье. Маркер, подчёркивание, цитата и заметка сохраняются в существующей библиотеке Product.</p>'+
++       '<p class="np-w57-tool-help">Выделите фразу в статье. Маркер, подчёркивание, цитата и заметка сохраняются в вашей Библиотеке.</p>'+
+        '<div class="np-w57-palette" role="group" aria-label="Цвет выделения" id="npW57Palette"></div>'+
+        '<div id="npW57NotesStatus" role="status" aria-live="polite" class="np-w57-tool-help"></div>'+
+        '<div id="npW57NoteEditor" class="np-w57-comment" hidden><label for="npW57NoteText">Заметка к выбранной цитате</label>'+
+@@ -342,8 +344,9 @@
+       pendingNoteId=record.id;
+       noteText.value=linkedNote(record)?.text||'';
+       editor.hidden=false;section.open=true;
+-      window.__NP_UNIVERSAL_PREVIEW__?.openResearchForAnnotation?.();
+-      requestAnimationFrame(()=>noteText.focus({preventScroll:true}));
++      const focus=()=>{noteText.focus({preventScroll:true});editor.scrollIntoView({block:'nearest'})};
++      if(native)host.openResearchForAnnotation(focus);
++      else{host?.openResearchForAnnotation?.();requestAnimationFrame(focus)}
+     }
+     function saveLinkedNote(record,value){
+       const notes=read(nKey),existing=linkedNote(record);
+@@ -380,14 +383,19 @@
+       const r=rangeById.get(id);
+       if(!r)return say('Фрагмент не найден. Исходная цитата сохранена.');
+       section.open=false;
+-      window.__NP_UNIVERSAL_PREVIEW__?.closeResearchForAnnotation?.();
+       const el=r.startContainer.parentElement?.closest('p,li,blockquote')||r.startContainer.parentElement;
+-      el?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth',block:'center'});
+-      if(el){if(!el.hasAttribute('tabindex'))el.setAttribute('tabindex','-1');el.focus?.({preventScroll:true})}
++      const jump=()=>{
++        if(!el?.isConnected)return;
++        el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth',block:'center'});
++        if(!el.hasAttribute('tabindex'))el.setAttribute('tabindex','-1');
++        el.focus?.({preventScroll:true});
++      };
++      if(native)host.closeResearchForAnnotation(jump);
++      else{host?.closeResearchForAnnotation?.();jump()}
+       say('Переход к выделенному фрагменту.');
+     }
+     function showToolbar(data){
+-      if(!data){toolbar.hidden=true;return}
++      if(!data||(native&&!host.canShowActions())){toolbar.hidden=true;return}
+       lastSelection=data;toolbar.hidden=false;
+       const r=data.rect;
+       const w=toolbar.offsetWidth,h=toolbar.offsetHeight;
+@@ -436,13 +444,15 @@
+       const s=lastSelection;
+       toolbar.hidden=true;
+       if(!s)return;
++      lastSelection=null;
+       const record=save(s,kind==='note'?'quote':kind);
+       if(kind==='note'&&record){
+         openNoteEditor(record);
+-        requestAnimationFrame(()=>editor.scrollIntoView({block:'nearest'}));
++      }else if(native){
++        host.announce(status.textContent);
+       }else if(record){
+         section.open=true;
+-        window.__NP_UNIVERSAL_PREVIEW__?.openResearchForAnnotation?.();
++        host?.openResearchForAnnotation?.();
+         rightScroll.scrollTop=0;
+       }
+       window.getSelection()?.removeAllRanges();
+diff --git a/research/reader-w57-pilot/assets/reader_w57_native.css b/research/reader-w57-pilot/assets/reader_w57_native.css
+new file mode 100644
+index 0000000..cb12376
+--- /dev/null
++++ b/research/reader-w57-pilot/assets/reader_w57_native.css
+@@ -0,0 +1,26 @@
++/* Scope only new UI. Do not restyle the canonical sheet, bar, text or controls. */
++#partTocOverlay[data-w57-native] #npW57NotesDetails{
++ box-sizing:border-box;width:min(100%,620px);margin:6px auto 12px;border:1px solid var(--color-border,#d5cdc2);border-radius:8px;
++ color:inherit;
++}
++#partTocOverlay[data-w57-native] #npW57NotesDetails summary{color:inherit;min-height:44px}
++#partTocOverlay[data-w57-native] .np-w57-tool-help{font-size:13px;color:inherit}
++#partTocOverlay[data-w57-native] .np-w57-note-preview{
++ margin:8px 0;padding:8px 10px;border-inline-start:2px solid var(--np-u-red,#86574b);
++}
++#partTocOverlay[data-w57-native] .np-w57-note-preview-label{font:600 12px/1.5 system-ui,sans-serif}
++#partTocOverlay[data-w57-native] .np-w57-note-preview-text{overflow-wrap:anywhere;white-space:pre-wrap}
++html.dark #partTocOverlay[data-w57-native] #npW57NotesDetails{
++ --np-u-red:#edbe9f;--np-u-ink:#eee2d1;--np-u-muted:#cfb9a6;--np-u-paper:#211d1c;--np-u-white:#211d1c;
++}
++#npW57NativeStatus:not(:empty){
++ position:fixed;z-index:12079;inset:auto 12px calc(78px + env(safe-area-inset-bottom,0px));
++ width:max-content;max-width:calc(100% - 24px);margin-inline:auto;padding:8px 12px;
++ border-radius:8px;color:#fffaf5;background:#422d24;pointer-events:none;font:500 13px/1.35 system-ui,sans-serif;
++}
++#npW57NativeStatus:empty{position:absolute;width:1px;height:1px;clip-path:inset(50%)}
++body:has(#partTocOverlay[data-w57-native]):has(#npW57SelectionToolbar:not([hidden])) :is(.gtip,.btip).is-open{
++ visibility:hidden!important;pointer-events:none!important;
++}
++
++html[data-w57-layout="native"] #npW57SelectionToolbar button{min-inline-size:44px}
+diff --git a/research/reader-w57-pilot/assets/reader_w57_native.js b/research/reader-w57-pilot/assets/reader_w57_native.js
+new file mode 100644
+index 0000000..9a39435
+--- /dev/null
++++ b/research/reader-w57-pilot/assets/reader_w57_native.js
+@@ -0,0 +1,59 @@
++/* W57 native-sheet pilot: no replacements for mobile chrome, TOC or storage. */
++(()=>{'use strict';
++  const sheet=document.querySelector('#partTocOverlay');
++  const container=sheet?.querySelector('.toc-sheet > #gbrMarginalia');
++  const researchTab=sheet?.querySelector('#gbrMarginaliaTab[aria-controls="gbrMarginalia"]');
++  const topTrigger=document.querySelector('.mobile-top-bar [data-reader-mobile-menu-target="mobPartTocBtn"]');
++  const partTrigger=document.getElementById('mobPartTocBtn');
++  if(!container||!researchTab||!topTrigger||!partTrigger||!window.GBReaderContract?.articleRoot(document)?.matches('article'))return;
++  sheet.setAttribute('data-w57-native','');
++  const toast=document.createElement('p');
++  toast.id='npW57NativeStatus';
++  toast.setAttribute('role','status');
++  document.body.append(toast);
++  const shown=()=>sheet.classList.contains('is-open');
++  const onScreen=el=>{
++    const r=el.getBoundingClientRect();
++    return !el.closest('[inert]')&&getComputedStyle(el).visibility==='visible'&&
++      r.width>0&&r.height>0&&r.bottom>0&&r.top<innerHeight&&r.right>0&&r.left<innerWidth;
++  };
++  const mobileTrigger=()=>[topTrigger,partTrigger].find(onScreen);
++  const afterFocus=fn=>requestAnimationFrame(()=>requestAnimationFrame(fn));
++  let toastTimer=0, pendingFocus=null;
++  function revealEditor(focus){
++    if(!shown()||window.OverlayRuntime?.topLayer()?.element!==sheet)return;
++    if(researchTab.getAttribute('aria-selected')!=='true')researchTab.click();
++    if(!container.hidden)focus();
++  }
++  document.addEventListener('gb:overlay-open',event=>{
++    clearTimeout(toastTimer);
++    toast.textContent='';
++    if(event.detail?.ownerId!==sheet.dataset.overlayOwner||!pendingFocus)return;
++    const focus=pendingFocus;
++    pendingFocus=null;
++    afterFocus(()=>revealEditor(focus));
++  });
++  window.__NP_W57_NATIVE__={host:{
++    container,
++    canShowActions:()=>!!mobileTrigger()&&!window.OverlayRuntime?.hasLiveLayers(),
++    openResearchForAnnotation(focus){
++      if(shown()){afterFocus(()=>revealEditor(focus));return}
++      const trigger=mobileTrigger();
++      if(!trigger)return;
++      pendingFocus=focus;
++      trigger.click();
++      setTimeout(()=>{if(pendingFocus===focus)pendingFocus=null},500);
++    },
++    closeResearchForAnnotation(jump){
++      if(!shown())return;
++      if(!window.OverlayRuntime?.requestClose(sheet.dataset.overlayOwner,'w57-go-to-source'))return;
++      // Wait for the native inert/focus handoff; a newly opened dialog wins.
++      afterFocus(()=>{if(!shown()&&!window.OverlayRuntime?.hasLiveLayers())jump()});
++    },
++    announce(text){
++      clearTimeout(toastTimer);
++      toast.textContent=text;
++      toastTimer=setTimeout(()=>{toast.textContent=''},3200);
++    },
++  }};
++})();
+diff --git a/research/reader-w57-pilot/preview.py b/research/reader-w57-pilot/preview.py
+index 407b6ff..52c99e9 100644
+--- a/research/reader-w57-pilot/preview.py
++++ b/research/reader-w57-pilot/preview.py
+@@ -20,7 +20,10 @@ CSS = ["reader_universal_preview.css","reader_argon_first.css",
+ JS = ["reader_universal_contract.js","reader_universal_preview.js",
+       "reader_editorial_refinement.js","reader_editorial_consolidation.js",
+       "reader_w57.js","reader_w57_annotations.js"]
+-assert set(CSS + JS) == APPROVED, "W57 source manifest does not match runtime"
++NATIVE_CSS = ["reader_w57.css", "reader_w57_native.css"]
++NATIVE_JS = ["reader_universal_contract.js", "reader_w57_native.js", "reader_w57_annotations.js"]
++ACTIVATION = "reader_w57_activation.js"
++assert set(CSS + JS + NATIVE_CSS + NATIVE_JS + [ACTIVATION]) == APPROVED, "W57 source manifest does not match runtime"
+ if not DIST.is_dir(): raise SystemExit(f"Build Astro first; missing {DIST}")
+ 
+ class Handler(SimpleHTTPRequestHandler):
+@@ -61,9 +64,10 @@ class Handler(SimpleHTTPRequestHandler):
+             html=file.read_text(encoding="utf-8")
+             if html.count("</head>")!=1 or html.count("</body>")!=1:
+                 return self.send_error(422,"Unexpected Astro document")
+-            css="".join(f'<link rel="stylesheet" href="{PREFIX}{n}">' for n in CSS)
+-            js="".join(f'<script src="{PREFIX}{n}" defer></script>' for n in JS)
+-            html=html.replace("</head>",css+"</head>").replace("</body>",js+"</body>")
++            entry = (f'<script src="{PREFIX}{ACTIVATION}" defer '
++                     f'data-desktop-css="{" ".join(CSS)}" data-desktop-js="{" ".join(JS)}" '
++                     f'data-native-css="{" ".join(NATIVE_CSS)}" data-native-js="{" ".join(NATIVE_JS)}"></script>')
++            html=html.replace("</body>",entry+"</body>")
+             return self.reply(html.encode("utf-8"),"text/html; charset=utf-8")
+         return super().do_GET()
+ 
+diff --git a/research/reader-w57-pilot/verify.mjs b/research/reader-w57-pilot/verify.mjs
+index 422a8b9..54c4dc1 100644
+--- a/research/reader-w57-pilot/verify.mjs
++++ b/research/reader-w57-pilot/verify.mjs
+@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
+ 
+ const root = dirname(fileURLToPath(import.meta.url));
+ const manifest = JSON.parse(readFileSync(join(root, 'MANIFEST.json'), 'utf8'));
+-assert.equal(manifest.files.length, 12, 'W57 source owner count');
++assert.equal(manifest.files.length, 15, 'W57 source owner count');
+ for (const file of manifest.files) {
+   const bytes = readFileSync(join(root, 'assets', file.name));
+   assert.equal(bytes.length, file.bytes, file.name + ' length changed');
+@@ -92,4 +92,4 @@ assert.match(shell, /reader-pilot/, 'preview must be explicit opt-in');
+ assert.match(shell, /127\.0\.0\.1/, 'preview must bind to localhost');
+ assert.match(shell, /No production mutation/, 'draft-only safety banner required');
+ await import(new URL('../../scripts/reader-w57-annotations-regression-test.mjs', import.meta.url));
+-console.log('Reader W57 source/manifests/axis/pilot and annotation contracts: PASS (12 assets)');
++console.log('Reader W57 source/manifests/axis/pilot and annotation contracts: PASS (15 assets)');
+diff --git a/scripts/reader-w57-annotations-regression-test.mjs b/scripts/reader-w57-annotations-regression-test.mjs
+index feb99d7..6e0eb2b 100644
+--- a/scripts/reader-w57-annotations-regression-test.mjs
++++ b/scripts/reader-w57-annotations-regression-test.mjs
+@@ -115,6 +115,6 @@ assert.match(preview,/openResearchForAnnotation\(\)/,'preview exposes proper rai
+ assert.match(preview,/closeResearchForAnnotation\(\)/,'preview exposes mobile close');
+ assert.match(css,/np-w57-annotation-meta button[\s\S]*?min-height:36px/,
+  'desktop note actions have usable hitbox');
+-assert.match(css,/#npUniversalDemo \.np-w57-annotation-meta button,[\s\S]*?min-height:44px/,
++assert.match(css,/\.np-w57-annotation-meta button,[\s\S]*?min-height:44px/,
+  'mobile note actions have 44px target');
+ console.log('Reader W57 notes: anchoring/edit/quota/rollback/undo UI/rail contracts PASS');
+diff --git a/scripts/reader-w57-browser-visual-qa.mjs b/scripts/reader-w57-browser-visual-qa.mjs
+index aa1d407..a24ceea 100644
+--- a/scripts/reader-w57-browser-visual-qa.mjs
++++ b/scripts/reader-w57-browser-visual-qa.mjs
+@@ -21,13 +21,13 @@ async function snap(page,name){
+ }
+ async function scene(browser,name,path,width,height){
+  const context=await browser.newContext({viewport:{width,height},deviceScaleFactor:1,
+-  hasTouch:width<600,isMobile:width<600,locale:'ru-RU',reducedMotion:'reduce'});
++  hasTouch:width<=1120,isMobile:width<600,locale:'ru-RU',reducedMotion:'reduce'});
+  const page=await context.newPage(),errors=[];
+  page.on('pageerror',e=>errors.push(String(e).slice(0,350)));
+  const response=await page.goto(BASE+path,{waitUntil:'domcontentloaded',timeout:45000});
+- await page.waitForTimeout(700);
++ await page.waitForFunction(()=>window.__NP_W57_ANNOTATIONS__?.ready,{},{timeout:12000});
+  const state=await page.evaluate(()=>({
+-  ready:document.body.classList.contains('np-w57-ready'),
++  ready:document.body.classList.contains('np-w57-ready')||document.documentElement.dataset.w57Layout==='native',
+   annotated:!!window.__NP_W57_ANNOTATIONS__?.ready,
+   width:document.documentElement.scrollWidth,viewport:innerWidth,
+   folded:document.body.classList.contains('np-u-hide-right'),
+@@ -38,9 +38,47 @@ async function scene(browser,name,path,width,height){
+  const item={name,path,width,height,response:response?.status(),state,errors};REPORT.scenes.push(item);
+  if(response?.status()!==200||!state.ready||!state.annotated||state.noteCards!==1)
+    REPORT.failures.push({name,reason:'W57 pilot not mounted exactly once',item});
++ if(errors.length)REPORT.failures.push({name,reason:'Page errors',errors});
+  return{context,page,item};
+ }
+ async function safe(name,fn){try{return await fn()}catch(e){REPORT.failures.push({name,error:String(e).slice(0,1000)})}}
++const mobileChapter='/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space';
++const nativeSheet='#partTocOverlay';
++const nativeTop='.mobile-top-bar .reader-mobile-menu-trigger';
++const nativeBottom='.mobile-bottom-bar #mobPartTocBtn';
++const researchTab='#gbrMarginaliaTab';
++const personal='#gbrMarginalia #npW57NotesDetails';
++const toolbar='#npW57SelectionToolbar';
++async function checkNative(p){
++ assert.equal(await p.locator('#npUniversalDemo,.np-u-mobilebar').count(),0,'no legacy shell on a mobile entry');
++ assert.equal(await p.locator('.mobile-bottom-bar #gb-hl-fab').count(),1,'library stays in native bottom bar');
++ assert.equal(await p.locator(researchTab).count(),1,'one tab, not a second research entry');
++ assert.equal(await p.locator(personal).count(),1,'personal notes live in the actual tabpanel');
++ assert.equal(await p.evaluate(()=>performance.getEntriesByType('resource').some(e=>e.name.includes('/__reader_w57__/reader_argon_first.css'))),false);
++ assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'closed Reader overflows');
++}
++async function openNative(p,from=nativeTop){
++ await p.locator(from).tap();
++ await p.locator(nativeSheet+'.is-open').waitFor();
++ await p.locator(researchTab).tap();
++ await p.locator(personal+' summary').waitFor();
++}
++async function dragNative(p){
++ const points=await p.locator('#gill-search-p-012').evaluate(async el=>{
++  el.scrollIntoView({block:'center'});
++  await new Promise(r=>requestAnimationFrame(r));
++  const n=el.firstChild;
++  return ['Гилл','пастором'].map((word,i)=>{
++   const at=n.nodeValue.indexOf(word)+(i?word.length-1:0),r=new Range();
++   r.setStart(n,at);r.setEnd(n,at+1);const box=r.getBoundingClientRect();
++   return [i?box.right-.1:box.left+1.4,box.y+box.height/2];
++  });
++ });
++ await p.mouse.move(...points[0]);await p.mouse.down();
++ await p.mouse.move(...points[1],{steps:20});await p.mouse.up();
++ await p.locator(toolbar).waitFor({timeout:5000});
++ return p.evaluate(()=>getSelection().toString());
++}
+ async function selectText(page){
+  // A real reader scrolls in the article, not in the adjacent research rail.
+  // Select only visible prose, never an offscreen paragraph or hidden card.
+@@ -305,114 +343,63 @@ try{
+   await snap(d.page,'desktop-dark');
+  });
+  await d.context.close();
+- const m=await scene(chrome,'gill-mobile','/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space',390,844);
+- await snap(m.page,'mobile-folded');
+- await safe('mobile-panels',async()=>{
+-  await m.page.locator('#npUOpenResearch').click();
+-  await m.page.locator('#npW57NotesDetails summary').click();
+-  m.item.modal=await m.page.evaluate(()=>({right:document.querySelector('#npUniversalDemo').classList.contains('np-u-show-right'),
+-   ariaModal:document.querySelector('#npUResearch').getAttribute('aria-modal')}));
+-  await snap(m.page,'mobile-annotations');
+-  await m.page.locator('#npUCloseRight').click();
+-  await m.page.locator('#npUOpenToc').click();
+-  const originalInert=await m.page.locator('#npUNativeTools').evaluate(el=>el.inert);
+-  await m.page.getByRole('button',{name:'Настройки книжного шрифта'}).first().click();
+-  m.item.settings=await m.page.evaluate(()=>({
+-   dialogRole:document.querySelector('#npUFontPanel')?.getAttribute('role'),
+-   dialogAria:document.querySelector('#npUFontPanel')?.getAttribute('aria-modal'),
+-   scrimVisible:!document.querySelector('#npUFontScrim')?.hidden,
+-   nativeToolsInert:document.querySelector('#npUNativeTools')?.inert,
+-   ghostProbe:document.elementsFromPoint(356,660).slice(0,8).map(el=>({
+-    tag:el.tagName,id:el.id,class:String(el.className||'').slice(0,90),
+-    label:el.getAttribute('aria-label')||el.getAttribute('title')||''
+-   })),
+-   floatingButtons:[...document.querySelectorAll('#gb-hl-fab,#gbFloatingControls,.mobile-top-save,[data-fc-root]')]
+-    .filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0})
+-    .map(el=>({id:el.id,class:String(el.className||'').slice(0,65),
+-     rect:el.getBoundingClientRect().toJSON()})).slice(0,12),
+-   visible:!document.querySelector('#npUFontPanel').hidden,
+-   insideAriaModal:document.querySelector('#npUOutline').contains(document.querySelector('#npUFontPanel')),
+-   focusInside:document.querySelector('#npUFontPanel').contains(document.activeElement),
+-   bounds:document.querySelector('#npUFontPanel').getBoundingClientRect().toJSON()
+-  }));
+-  assert.equal(m.item.settings.insideAriaModal,true,'mobile font settings outside active aria modal');
+-  assert.equal(m.item.settings.dialogRole,'dialog','mobile font settings must expose dialog role');
+-  assert.equal(m.item.settings.dialogAria,'true','mobile font dialog must be accessible');
+-  assert.equal(m.item.settings.scrimVisible,true,'background native tools must be visually covered');
+-  assert.equal(m.item.settings.nativeToolsInert,true,'native TOC controls must be inert behind dialog');
+-  assert.equal(m.item.settings.focusInside,true,'mobile font popup focus lost');
+-  await snap(m.page,'mobile-settings');
+-  await m.page.locator('#npUFontPanel [data-np-u-type-font="cormorant"]').click();
+-  m.item.fontAfterClick=await m.page.evaluate(()=>{
+-   const pref=window.GBReaderPreferences?.get(),
+-    p=document.getElementById('gill-search-p-012');
+-   const examples=[...document.querySelectorAll('article.article-body p')].slice(0,7)
+-     .map(el=>({id:el.id,container:el.parentElement?.className||'',font:getComputedStyle(el).fontFamily,
+-       text:el.textContent.trim().slice(0,50)}));
+-   return {font:pref?.fontFamily,stored:JSON.parse(localStorage.getItem('gb:reader-preferences:v1')||'{}').fontFamily,
+-    root:document.documentElement.dataset.readerFontFamily,
+-    body:document.body.dataset.npUFont,computed:p?getComputedStyle(p).fontFamily:null,examples,
+-    selected:document.querySelector('#npUFontPanel [data-np-u-type-font="cormorant"]')?.getAttribute('aria-pressed')};
++ for(const [w,h] of [[320,700],[390,844],[430,932],[768,900],[960,900]]){
++  const m=await scene(chrome,'native-'+w,mobileChapter,w,h);
++  const p=m.page;
++  await safe('native-shell-'+w,async()=>{
++   await checkNative(p);
++   await openNative(p);
++   assert.equal(await p.locator('#gbs2PartToc').evaluate(e=>e.hidden&&e.inert),true);
++   assert.equal(await p.locator('#gbrMarginaliaContent h3').count(),1,'source research remains intact');
++   await snap(p,'native-sheet-'+w);
++   await p.keyboard.press('Escape');
++   await p.locator(nativeSheet+'.is-open').waitFor({state:'detached'});
++   assert.equal(await p.locator(nativeTop).evaluate(e=>document.activeElement===e),true);
+   });
+-  assert.equal(m.item.fontAfterClick.font,'cormorant','canonical fontFamily did not update');
+-  assert.equal(m.item.fontAfterClick.stored,'cormorant','fontFamily not persisted');
+-  assert.equal(m.item.fontAfterClick.root,'cormorant','first paint root not updated');
+-  assert.equal(m.item.fontAfterClick.body,'cormorant','W57 adapter did not receive preference');
+-  assert.equal(m.item.fontAfterClick.selected,'true','font control not selected');
+-  assert.match(m.item.fontAfterClick.computed||'',/Cormorant/i,'article CSS did not adopt the selected font');
+-  await snap(m.page,'mobile-settings-cormorant');
+-  await m.page.keyboard.press('Escape');
+-  m.item.closedFontDialog=await m.page.evaluate(()=>({
+-   hidden:document.querySelector('#npUFontPanel')?.hidden,
+-   scrimHidden:document.querySelector('#npUFontScrim')?.hidden,
+-   role:document.querySelector('#npUFontPanel')?.getAttribute('role'),
+-   modal:document.querySelector('#npUFontPanel')?.hasAttribute('aria-modal'),
+-   nativeInert:document.querySelector('#npUNativeTools')?.inert,
+-   tocStillOpen:document.querySelector('#npUniversalDemo')?.classList.contains('np-u-show-left'),
+-   openerExpanded:document.querySelector('.np-u-type-open')?.getAttribute('aria-expanded')
+-  }));
+-  assert.equal(m.item.closedFontDialog.hidden,true,'Escape failed to hide dialog');
+-  assert.equal(m.item.closedFontDialog.scrimHidden,true,'Escape left scrim visible');
+-  assert.equal(m.item.closedFontDialog.modal,false,'Escape left aria-modal on');
+-  assert.equal(m.item.closedFontDialog.role,'region','Escape left dialog role on');
+-  assert.equal(m.item.closedFontDialog.nativeInert,originalInert,'Escape failed to restore original controls');
+-  assert.equal(m.item.closedFontDialog.tocStillOpen,true,'Escape closed the parent TOC');
+-  assert.equal(m.item.closedFontDialog.openerExpanded,'false','opener remains expanded');
+-  await m.page.getByRole('button',{name:'Настройки книжного шрифта'}).first().click();
+-  await m.page.mouse.click(356,660);
+-  assert.equal(await m.page.locator('#npUFontPanel').isVisible(),false,'scrim outside click did not close dialog');
+-  assert.equal(await m.page.locator('#npUNativeTools').evaluate(el=>el.inert),originalInert,
+-   'scrim outside click did not restore native controls');
+-  await m.page.reload({waitUntil:'domcontentloaded'});
+-  await m.page.waitForFunction(()=>document.body.classList.contains('np-w57-ready'));
+-  m.item.fontAfterReload=await m.page.evaluate(()=>({
+-   font:window.GBReaderPreferences?.get()?.fontFamily,
+-   root:document.documentElement.dataset.readerFontFamily,
+-   body:document.body.dataset.npUFont,
+-   computed:getComputedStyle(document.getElementById('gill-search-p-012')).fontFamily
+-  }));
+-  assert.equal(m.item.fontAfterReload.font,'cormorant','font preference lost after reload');
+-  assert.equal(m.item.fontAfterReload.root,'cormorant','first paint font did not hydrate correctly');
+-  assert.match(m.item.fontAfterReload.computed||'',/Cormorant/i,'font not applied after reload');
+-  await snap(m.page,'mobile-cormorant-reload');
+-  await m.page.goto(BASE+'/articles/kod-da-vinchi/?reader-pilot=1&paper=space',{waitUntil:'domcontentloaded'});
+-  await m.page.waitForFunction(()=>document.body.classList.contains('np-w57-ready'));
+-  m.item.crossArticleFont=await m.page.evaluate(()=>({
+-   font:window.GBReaderPreferences?.get()?.fontFamily,body:document.body.dataset.npUFont,
+-   computed:(()=>{
+-    const p=[...document.querySelectorAll('article.article-body p')]
+-      .find(el=>el.textContent.trim().length>90&&
+-        !el.closest('.notice,.gtip,.btip,.summary-card,.np-u-central-overview,.np-u-central-contents,figcaption'));
+-    return p?getComputedStyle(p).fontFamily:null;
+-   })()
+-  }));
+-  assert.equal(m.item.crossArticleFont.font,'cormorant','site-wide preference did not cross articles');
+-  assert.match(m.item.crossArticleFont.computed||'',/Cormorant/i,'other article ignored shared typography');
+- });
+- await m.context.close();
+- // Review layout at the actual user-facing breakpoints, not one 1440px image.
+- for(const [width,height,name] of [[320,700,'mobile-320'],[768,900,'tablet-768'],
+-  [1280,800,'desktop-1280'],[1920,1000,'desktop-1920']]){
++  if(w===390)await safe('native-personal-cycle',async()=>{
++   // Native OverlayRuntime can reassert the opener for up to eight 60 ms ticks.
++   // The next drag starts after that close/focus restoration boundary.
++   await p.waitForTimeout(500);
++   const selected=await dragNative(p);
++   assert.equal(selected,'Гилл стал пастором');
++   const point=await p.locator(toolbar+' [data-w57-action=marker]').evaluate(el=>{
++    const r=el.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;
++    return {x,y,hit:el.contains(document.elementFromPoint(x,y))};
++   });
++   assert(point.hit);
++   await p.touchscreen.tap(point.x,point.y);
++   assert.equal(await p.locator(nativeSheet+'.is-open').count(),0,'marker must not interrupt reading');
++   assert.match(await p.locator('#npW57NativeStatus').textContent(),/Помета сохранена/);
++   await openNative(p,nativeBottom);
++   await p.locator(personal+' summary').tap();
++   assert.equal(await p.locator(personal+' .np-w57-annotation-quote').textContent(),selected);
++   const note=p.locator('#npW57NoteText'),row=p.locator(personal+' li[data-id]');
++   const id=await row.getAttribute('data-id');
++   await row.locator('[data-action=edit]').tap();
++   await note.fill('Черновик в штатных полях');
++   await p.setViewportSize({width:844,height:390});
++   await checkNative(p);
++   assert.equal(await note.inputValue(),'Черновик в штатных полях');
++   await p.setViewportSize({width:390,height:844});
++   await p.locator('#npW57SaveNote').tap();
++   assert.equal(await row.locator('.np-w57-note-preview-text').textContent(),'Черновик в штатных полях');
++   await snap(p,'native-personal-note');
++   await row.locator('[data-action=delete]').tap();
++   assert.equal(await row.count(),0);
++   await p.locator('#npW57NotesStatus button').tap();
++   assert.equal(await row.getAttribute('data-id'),id);
++   await row.locator('[data-action=goto]').tap();
++   await p.waitForFunction(()=>document.activeElement?.id==='gill-search-p-012'&&!document.documentElement.hasAttribute('data-scroll-locked'));
++   await p.reload({waitUntil:'domcontentloaded'});
++   await p.waitForFunction(()=>window.__NP_W57_ANNOTATIONS__?.ready);
++   assert.equal(await p.evaluate(()=>window.__NP_W57_ANNOTATIONS__.orphanCount()),0);
++   assert.equal(await p.evaluate(()=>CSS.highlights.get('np-w57-marker-amber')?.size),1);
++   await p.locator('.mobile-bottom-bar #gb-hl-fab').tap();
++   assert.equal(await p.locator('#gb-hl-panel').isVisible(),true);
++  });
++  await m.context.close();
++ }
++ for(const [width,height,name] of [[1280,800,'desktop-1280'],[1920,1000,'desktop-1920']]){
+   const extra=await scene(chrome,name,
+    '/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space',width,height);
+   extra.item.geometry=await extra.page.evaluate(()=>{
+@@ -423,30 +410,47 @@ try{
+   });
+   if(extra.item.geometry.overflow)REPORT.failures.push({name,reason:'horizontal overflow',geometry:extra.item.geometry});
+   await snap(extra.page,name);
+-  if(width===320){
+-   await extra.page.locator('#npUOpenToc').click();
+-   await extra.page.getByRole('button',{name:'Настройки книжного шрифта'}).first().click();
+-   extra.item.settingsBounds=await extra.page.evaluate(()=>{
+-    const r=document.querySelector('#npUFontPanel').getBoundingClientRect();
+-    return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,
+-     screenWidth:innerWidth,screenHeight:innerHeight,
+-     nativeInert:document.querySelector('#npUNativeTools')?.inert};
+-   });
+-   assert.ok(extra.item.settingsBounds.left>=0&&extra.item.settingsBounds.right<=320,
+-    '320px font dialog clips horizontally');
+-   assert.ok(extra.item.settingsBounds.top>=0&&extra.item.settingsBounds.bottom<=700,
+-    '320px font dialog clips vertically');
+-   assert.equal(extra.item.settingsBounds.nativeInert,true,'320px background is interactive');
+-   await snap(extra.page,'mobile-320-settings');
+-   await extra.page.keyboard.press('Escape');
+-  }
+   await extra.context.close();
+  }
++ const quickNote=await scene(chrome,'native-note-shortcut',mobileChapter,390,844);
++ await safe('native-note-shortcut',async()=>{
++  const p=quickNote.page;
++  await p.evaluate(()=>document.fonts.ready.then(()=>true));
++  await dragNative(p);
++  const button=p.locator(toolbar+' [data-w57-action=note]');
++  const box=await button.boundingBox();
++  assert.ok(box,'context note action visible');
++  await p.touchscreen.tap(box.x+box.width/2,box.y+box.height/2);
++  try{await p.waitForFunction(()=>document.activeElement?.id==='npW57NoteText',null,{timeout:3000});}
++  catch(error){throw new Error('Native note did not focus: '+JSON.stringify(await p.evaluate(()=>({
++   active:document.activeElement?.id,selected:document.querySelector('#gbrMarginaliaTab').getAttribute('aria-selected'),
++   open:document.querySelector('#partTocOverlay').classList.contains('is-open'),editor:!document.querySelector('#npW57NoteEditor').hidden,
++   overlay:window.OverlayRuntime.snapshot(),selectedText:getSelection().toString()
++  }))),{cause:error})}
++  assert.equal(await p.locator(researchTab).getAttribute('aria-selected'),'true');
++  await p.locator('#npW57NoteText').fill('Новая заметка из текста');
++  await p.locator('#gbrTocTab').tap();
++  await p.locator(researchTab).tap();
++  assert.equal(await p.locator('#npW57NoteText').inputValue(),'Новая заметка из текста');
++  assert.equal(await p.locator('#gbrMarginaliaContent h3').count(),1,'research rerender after switching tabs');
++  await p.locator('#npW57SaveNote').tap();
++  assert.equal(await p.locator(personal+' .np-w57-note-preview-text').textContent(),'Новая заметка из текста');
++ });
++ await quickNote.context.close();
++ await safe('native-unsupported-fallback',async()=>{
++  const p=await chrome.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
++  try{
++   await p.goto(BASE+'/articles/kod-da-vinchi/?reader-pilot=1',{waitUntil:'load'});
++   await p.waitForFunction(()=>document.documentElement.dataset.w57Layout==='native');
++   assert.equal(await p.locator('#npUniversalDemo,#npW57NotesDetails').count(),0);
++   assert.equal(await p.locator('link[href*="/__reader_w57__/"]').count(),0);
++  }finally{await p.close()}
++ });
+  const alt=await scene(chrome,'independent-article','/articles/kod-da-vinchi/?reader-pilot=1&paper=space',1440,900);
+  await snap(alt.page,'other-article');await alt.context.close();
+  safari=await webkit.launch({headless:true});
+  const w=await scene(safari,'webkit-mobile','/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space',390,844);
+- await snap(w.page,'webkit-mobile');await w.context.close();
++ await checkNative(w.page);await snap(w.page,'webkit-mobile');await w.context.close();
+ }catch(e){REPORT.failures.push({name:'bootstrap',error:String(e).slice(0,1400)})}
+ finally{
+  await writeFile(resolve(OUT,'report.json'),JSON.stringify(REPORT,null,2));
