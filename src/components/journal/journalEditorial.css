@@ -259,6 +259,8 @@ html.dark .journal-edition {
   /* A balanced strapline measure keeps two occupied rows through font swap;
      the unfragmented text retains its original wide-screen/print shaping. */
   .journal-edition .journal-kicker { max-inline-size: 20em; text-wrap: balance; }
+  /* The two-word dossier label stacks at its intrinsic word measure. */
+  .journal-edition .journal-featured .eyebrow { max-inline-size: min-content; }
   /* Bind grammatical phrases, not lines; long groups can still reflow
      within the full text measure when the reader enlarges the text. */
   .journal-edition .journal-lead-phrase { display: inline-block; max-inline-size: 100%; }
