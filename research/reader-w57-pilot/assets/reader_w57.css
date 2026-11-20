@@ -117,6 +117,15 @@ body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-sizes b
 body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-options button:focus-visible{
  outline:2px solid var(--np-u-red,#805044);outline-offset:2px;
 }
+/* Anchor to the left of the prose rather than beside the left rail. */
+@media(min-width:1121px){
+ body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel.np-u-font-panel{left:12px;max-height:calc(100dvh - 36px)}
+}
+@media(min-width:1121px) and (max-width:1359px){
+ body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel.np-u-font-panel{width:248px}
+ body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-options button{flex-basis:0;padding-inline:3px;white-space:nowrap}
+ body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-options button.np-u-type-cormorant{font-size:13px}
+}
 body.np-u-preview.np-w57-ready[data-np-u-width="narrow"]{--np-u-reading-measure:576px}
 @media(max-width:1120px){
  body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel.np-u-font-panel{
@@ -179,6 +188,11 @@ body.np-u-preview.np-w57-ready[data-np-u-width="narrow"]{--np-u-reading-measure:
  backdrop-filter:blur(12px);
 }
 #npW57SelectionToolbar[hidden]{display:none!important}
+/* Product tips can be portalled to body, above the contextual actions.
+   Give the current text selection priority only while its toolbar is open. */
+body.np-w57-ready:has(>#npW57SelectionToolbar:not([hidden])) :is(.gtip,.btip).is-open{
+ visibility:hidden!important;pointer-events:none!important;
+}
 #npW57SelectionToolbar button{
  min-width:43px;min-height:36px;flex:1 1 auto;
  border:0;border-radius:6px;background:transparent;color:inherit;
@@ -491,5 +505,15 @@ body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontScrim[hidden]{display:no
  html[data-reader-theme="dark"] body.np-u-preview.np-w57-ready #npUniversalDemo #npUOutline #npUFontScrim:not([hidden]){
   background:rgba(28,27,26,.88);
  }
+ /* Inert blocks interaction, not paint: don't show a sliver of the audio
+    card through the translucent scrim outside the settings window. */
+ body.np-w57-ready:has(#npUFontScrim:not([hidden])) #npUniversalDemo .np-u-audio-card{
+  opacity:0!important;pointer-events:none!important;
+ }
  body.np-u-preview.np-w57-ready #npUniversalDemo #npUOutline #npUFontPanel{z-index:20020}
+}
+/* Native Gill learning remains a separate action above the settings/TOC. */
+body.np-w57-ready #gillLearningOverlay.is-open{z-index:20030}
+body.np-w57-ready:has(#gillLearningOverlay.is-open) #npUniversalDemo :is(#npUFontPanel,#npUFontScrim,#npUOutline,#npUBackdrop){
+ visibility:hidden!important;pointer-events:none!important;
 }

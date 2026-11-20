@@ -105,8 +105,9 @@ assert.doesNotMatch(file,/next\.length===old\.length/,
 assert.match(file,/npW57CancelNote/,'user must be able to cancel note edit');
 assert.match(file,/status\.replaceChildren\(document\.createTextNode\('Восстановление не удалось/,
  'failed undo write must not delete its own retry button');
-assert.match(file,/#gb-hl-panel \[data-library-action\]/,
- 'same-tab native library deletion must repaint W57 annotations');
+assert.match(file,/addEventListener\('gb:library-committed'/,
+ 'same-tab native Library commits must repaint W57 annotations');
+assert.match(file,/key!==qKey&&key!==nKey/, 'both Library stores must invalidate W57');
 assert.match(file,/typeof CSS!=='undefined'&&CSS\.highlights/,
  'unsupported highlight API must be safely detected');
 assert.match(file,/closeResearchForAnnotation/,'source navigation must close mobile rail');

@@ -526,14 +526,13 @@
       repaint();
       say(result.message);
     });
-    window.addEventListener('storage',e=>{if(e.key===qKey)repaint()});
-    // Native Product Library writes localStorage in the SAME tab, where the
-    // browser does not emit a storage event. Repaint once after its delete/undo.
-    document.addEventListener('click',e=>{
-      const action=e.target.closest?.('#gb-hl-panel [data-library-action],#gb-hl-status [data-library-action]');
-      if(action&&['delete','undo'].includes(action.dataset.libraryAction))
-        requestAnimationFrame(repaint);
-    });
+    let libraryFrame=0;
+    function onLibraryCommit(key){
+      if(key!==qKey&&key!==nKey&&key!==null)return;
+      if(!libraryFrame)libraryFrame=requestAnimationFrame(()=>{libraryFrame=0;repaint()});
+    }
+    window.addEventListener('storage',e=>onLibraryCommit(e.key));
+    window.addEventListener('gb:library-committed',e=>onLibraryCommit(e.detail?.key));
     window.addEventListener('resize',()=>{if(!toolbar.hidden)toolbar.hidden=true},{passive:true});
     repaint();
     window.__NP_W57_ANNOTATIONS__={

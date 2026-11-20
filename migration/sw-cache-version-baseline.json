@@ -1,9 +1,9 @@
 {
-  "version": 19,
+  "version": 20,
   "captured": "2026-11-20",
   "preSwitchProductionCacheVersion": "gb-v171-r62-maps-archaeology-20260612",
   "lastReviewedDistProductionCacheVersion": "gb-v198-root-generation-authority-20260907",
   "currentDistProductionCacheVersion": "gb-v201-reader-measure-premium-20261029",
-  "currentExpectedCacheVersion": "gb-v205-reader-annotation-range-safety-20261120",
-  "purpose": "Service Worker cache version baseline. currentExpectedCacheVersion MUST equal sw.js CACHE_VERSION at all times. v201 raises the reader measure scale (narrow 36rem / normal 46rem / wide 52rem, shell cap 900px); production witness accepted it into prod on 2026-10-29 (GitHub release-candidate witness comment on PR #2218 + live service-worker identity check against gospod-bog.ru). v203 is the W57 annotation identity test candidate; final production sign-off is pending. v204 adds canonical font-family preference shared across all opt-in readers. v205 preserves distinct W57 anchored highlights in the shared guarded Library on both startup and writes."
+  "currentExpectedCacheVersion": "gb-v206-reader-library-commit-bus-20261120",
+  "purpose": "Service Worker cache version baseline. currentExpectedCacheVersion MUST equal sw.js CACHE_VERSION at all times. v201 raises the reader measure scale (narrow 36rem / normal 46rem / wide 52rem, shell cap 900px); production witness accepted it into prod on 2026-10-29 (GitHub release-candidate witness comment on PR #2218 + live service-worker identity check against gospod-bog.ru). v203 is the W57 annotation identity test candidate; final production sign-off is pending. v204 adds canonical font-family preference shared across all opt-in readers. v205 preserves distinct W57 anchored highlights in the shared guarded Library on both startup and writes. v206 publishes a canonical same-tab library commit signal so W57 notes/quotes stay in sync with the Product Library without depending on click bubbling."
 }

@@ -28,8 +28,8 @@
     },
     {
       "name": "reader_w57.css",
-      "sha256": "eae8d1660d4ff2b10f138f67da0ae3f112a5609a16f544098be5970ac944e743",
-      "bytes": 27512
+      "sha256": "aac6f8e646281dfcca0f04beefafb3cf0903b0528db273b18193d2a46b5380fb",
+      "bytes": 29059
     },
     {
       "name": "reader_universal_contract.js",
@@ -38,8 +38,8 @@
     },
     {
       "name": "reader_universal_preview.js",
-      "sha256": "ccb3ee4cd758e6579fc0bc4a91005442483793a96fc1e80b6846bbeac062bc87",
-      "bytes": 132262
+      "sha256": "4290babd5171760f826e0d34bdf7b370526d3f6128d5e7b8974024024d1de63d",
+      "bytes": 134196
     },
     {
       "name": "reader_editorial_refinement.js",
@@ -53,13 +53,13 @@
     },
     {
       "name": "reader_w57.js",
-      "sha256": "3ae463aa793aaf5cfca372f5d30283b332700055d9c2141c0d2df6d54bb11769",
-      "bytes": 3900
+      "sha256": "483ae96787970dd6c7c739f35ec7416eb51b4f7999621c7a21db90377cbf8704",
+      "bytes": 3919
     },
     {
       "name": "reader_w57_annotations.js",
-      "sha256": "dc63be09659c3c98a6837daf13bd7a37c309aeb94bdb40d8474551f419c3cb7f",
-      "bytes": 31057
+      "sha256": "33531b97b8a8e13ce9c83014ac3c60052919d4fdb142afbe94967140a87278c3",
+      "bytes": 30909
     }
   ],
   "normalization": "SHA-256 and UTF-8 byte counts from exact pilot sources. Screenshot/browser QA and canonical Product port still release HOLD."

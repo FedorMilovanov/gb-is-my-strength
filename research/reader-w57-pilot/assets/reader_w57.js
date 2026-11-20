@@ -5,7 +5,7 @@
   const body=document.body;
   const choices={
     size:{sm:.9,md:1,lg:1.1,xl:1.2},
-    spacing:{normal:'normal',relaxed:'relaxed'},
+    spacing:{compact:'compact',normal:'normal',relaxed:'relaxed'},
     width:{narrow:'narrow',normal:'normal',wide:'wide'},
     font:{lora:'lora',cormorant:'cormorant'}
   };
@@ -17,7 +17,6 @@
     const fontControls=fontPanel?.querySelector('.np-u-type-options');
     if(!fontPanel||!fontControls||!window.GBReaderPreferences)return false;
     const canon=window.GBReaderPreferences;
-    // Keep sole settings panel in its original left preview owner.
     fontPanel.setAttribute('aria-label','Настройки чтения');
     // If user selected a non-default ARGON font in the old pilot, migrate once,
     // but never erase an explicit canonical choice.
@@ -50,7 +49,10 @@
       const selection={
         font:v.fontFamily||'lora',
         size:nearest(v.fontScale),
-        spacing:v.lineHeight==='relaxed'?'relaxed':'normal',
+        spacing:choices.spacing[v.lineHeight]||'normal',
+        theme:v.theme,
+        text:v.textMode,
+        motion:v.motion,
         width:v.measure==='narrow'?'narrow':v.measure==='wide'?'wide':'normal'
       };
       for(const [type,value] of Object.entries(selection)){

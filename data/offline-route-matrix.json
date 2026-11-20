@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "contract": "A07-honest-offline-pwa",
   "decision": "REBUILD_CURRENT_MAIN",
-  "cacheVersion": "gb-v205-reader-annotation-range-safety-20261120",
+  "cacheVersion": "gb-v206-reader-library-commit-bus-20261120",
   "sourceOwners": {
     "runtime": "sw.js",
     "registrationUi": "js/sw-register.js",

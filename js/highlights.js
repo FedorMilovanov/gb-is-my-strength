@@ -50,8 +50,11 @@
     return [];
   }
   function write(key, items) {
-    try { localStorage.setItem(key, JSON.stringify(items)); return true; }
+    try { localStorage.setItem(key, JSON.stringify(items)); }
     catch { return false; }
+    // storage only reaches other documents; same-tab readers need a commit signal.
+    window.dispatchEvent(new CustomEvent('gb:library-committed', { detail: { key } }));
+    return true;
   }
   function quotes() {
     const existing = read(QUOTES_KEY);
@@ -345,6 +348,15 @@
     const text = textArea.value.trim();
     if (!text) { statusMessage('Сначала напишите заметку.', true); return; }
     const old = notes(), context = draft && draft.context, editing = draft && draft.editing;
+    if (editing) {
+      const current = old.find((x) => String(x.id) === editing.id);
+      if (!current || current.text !== editing.text) {
+        statusMessage(current
+          ? 'Заметка изменена в другом редакторе. Черновик не сохранён; скопируйте его перед повторным открытием заметки.'
+          : 'Заметка удалена в другом редакторе. Черновик не сохранён; скопируйте его перед закрытием редактора.', true);
+        return;
+      }
+    }
     if (!editing && old.length >= LIMIT_NOTES) {
       statusMessage('Достигнут лимит заметок. Экспортируйте библиотеку перед удалением старых записей.', true);
       return;
