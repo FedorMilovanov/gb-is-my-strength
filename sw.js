@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v204-reader-font-family-20261120';
+const CACHE_VERSION = 'gb-v205-reader-annotation-range-safety-20261120';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -32,7 +32,7 @@ const PRECACHE_ASSETS = [
   '/nagornaya/tw.min.css?v=bee34e73',
   '/js/nagornaya-bar-extras.js?v=3c7e0bdd',
   '/js/site.js?v=9fa8818a',
-  '/js/site-utils.js?v=e80f1dfb',
+  '/js/site-utils.js?v=ea5248d9',
   '/js/scroll-perf.js?v=454d6f7b',
   '/js/bookmark-engine.js?v=e7d193e0',
   '/js/enhancements.js?v=15476429',

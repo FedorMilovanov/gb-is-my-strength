@@ -774,7 +774,16 @@
       if (!item || typeof item !== 'object') continue;
       var text = normalizeQuoteText(item.text);
       if (!text) continue;
-      var key = canonicalPage(item.url) + '\n' + text;
+      // Library identity includes the exact source range when present.
+      // Text-only dedupe may destroy legitimate identical excerpts elsewhere.
+      var a = item.annotation && item.annotation.version === 1 && item.annotation.anchor;
+      var range = a && Number.isInteger(a.start) && Number.isInteger(a.end) &&
+        typeof a.exact === 'string';
+      var key = canonicalPage(item.url) + '\n' + (range
+        ? 'range-v1:' + JSON.stringify([
+            a.blockId || '', a.blockIndex == null ? -1 : a.blockIndex,
+            a.start, a.end, a.exact
+          ]) : text);
       if (seen.has(key)) continue;
       seen.add(key);
       result.push(item);

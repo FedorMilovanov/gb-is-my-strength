@@ -54,6 +54,36 @@ const unrelated = plain(api.add(mixed, { id: 'new', text: 'Иной отрыво
 assert.deepEqual(unrelated.map(x => x.id), ['new', 'w57-b', 'w57-a', 'native'],
   'unrelated highlight must persist despite pre-existing equal-word ranges');
 
+// The always-installed SiteUtils guard must not undo GBHighlights range identity.
+const guardSource=fs.readFileSync(path.resolve(__dirname,'..','js/site-utils.js'),'utf8');
+const guardStart=guardSource.indexOf('function canonicalPage(');
+const guardEnd=guardSource.indexOf('function syncHighlightDialog(',guardStart);
+assert.ok(guardStart>=0&&guardEnd>guardStart,'shared SiteUtils guard exists');
+class MockStorage{
+ constructor(){this.map=new Map()}
+ setItem(k,v){this.map.set(k,String(v))}
+ getItem(k){return this.map.has(k)?this.map.get(k):null}
+}
+const storage=new MockStorage();
+const rangeA={...markedA,id:'guard-a'},rangeB={...markedB,id:'guard-b'};
+const repeatedRange={...markedA,id:'guard-repeat'};
+storage.setItem('gb-highlights-v1',JSON.stringify([
+ rangeA,rangeB,repeatedRange,plainQuote,{...plainQuote,id:'legacy-duplicate'}
+]));
+const guard={URL,console,Storage:MockStorage,localStorage:storage,HIGHLIGHTS_KEY:'gb-highlights-v1',
+ window:{location:{href:'https://gospod-bog.ru/articles/a/'},Storage:MockStorage}};
+vm.createContext(guard);
+vm.runInContext(guardSource.slice(guardStart,guardEnd)+'\ninstallHighlightStorageGuard();',guard);
+assert.deepEqual(JSON.parse(storage.getItem('gb-highlights-v1')).map(x=>x.id),
+ ['guard-a','guard-b','native'],'initial guard must preserve distinct anchored ranges');
+storage.setItem('gb-highlights-v1',JSON.stringify([rangeB,rangeA,plainQuote]));
+assert.deepEqual(JSON.parse(storage.getItem('gb-highlights-v1')).map(x=>x.id),
+ ['guard-b','guard-a','native'],'future writes preserve both anchored ranges');
+storage.setItem('gb-highlights-v1',JSON.stringify([rangeA,repeatedRange,rangeB]));
+assert.deepEqual(JSON.parse(storage.getItem('gb-highlights-v1')).map(x=>x.id),
+ ['guard-a','guard-b'],'repeated source range still dedupes');
+assert.equal(guard.Storage.prototype.__gbHighlightDedupe,true,'guard must stay enabled');
+
 const many = Array.from({ length: 205 }, (_, i) => ({ id: 'i' + i, text: 'quote ' + i, url: '/article/' + i }));
 assert.equal(api.add(many, { id: 'recent', text: 'new', url: '/recent/' }).length, 200,
   'preexisting 200-item cap is preserved');
