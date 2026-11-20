@@ -89,6 +89,9 @@ assert.match(css, /#gb-hl-fab:is\(:hover,:active,:focus-visible\)/,
 assert.match(css, /#npUEdgeToggle:is\(:hover,:focus-visible,:active\)/,
   'no giant circular hover on panel fold control');
 assert.match(shell, /reader-pilot/, 'preview must be explicit opt-in');
+assert.ok(shell.includes('preview-bootstrap.js'), 'W57 must load through one reversible viewport-mode bootstrap');
+assert.ok(shell.includes('media="(min-width:1121px)"'), 'W57 styles must never replace canonical native mobile styles');
+assert.ok(shell.includes('window.location.reload()'), 'desktop/mobile pilot mode crossing must rebuild the original Product DOM');
 assert.match(shell, /127\.0\.0\.1/, 'preview must bind to localhost');
 assert.match(shell, /No production mutation/, 'draft-only safety banner required');
 await import(new URL('../../scripts/reader-w57-annotations-regression-test.mjs', import.meta.url));

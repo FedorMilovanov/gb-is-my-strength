@@ -57,7 +57,7 @@ const page = config.pages[pageId];
   </Fragment>
 
   <div class="mobile-top-slot" slot="top-primary">
-    <ReaderMobileMenuTrigger targetId="mobPartTocBtn" />
+    <ReaderMobileMenuTrigger mode="learning" />
     <ReaderSpeedOptions id="mobileSpeedrail" railClass="mobile-speedrail" chipClass="mobile-speed" rates={[0.75, 1, 1.25, 1.5, 1.75, 2]} initiallyInert />
   </div>
 
@@ -240,3 +240,114 @@ const page = config.pages[pageId];
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
   else boot();
 </script>
+
+<!-- Native Gill control refinement. One circular Play with a tucked speed
+     control, and the canonical Learning sheet in the former duplicate TOC slot.
+     No alternate toolbar or storage/transport owner. -->
+<style is:global>
+@media (max-width:84.999em) {
+  [data-gill-v16] .mobile-top-bar .reader-mobile-menu-trigger[data-gill-learning-open] {
+    transition: opacity .24s ease, transform .32s cubic-bezier(.22,1,.36,1);
+  }
+  [data-gill-v16] .mobile-top-bar.speed-open .reader-mobile-menu-trigger[data-gill-learning-open] {
+    opacity:0;
+    transform:translateX(-12px);
+    pointer-events:none;
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play-group.mobile-playwrap {
+    position:relative;
+    width:76px;
+    min-width:76px;
+    height:44px;
+    flex:0 0 76px;
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    gap:0;
+    overflow:visible;
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play-group .reader-mobile-play {
+    position:relative;
+    width:44px;
+    height:44px;
+    min-width:44px;
+    min-height:44px;
+    flex:0 0 44px;
+    border:1px solid rgba(108,84,68,.30);
+    border-radius:50%;
+    background:color-mix(in srgb,var(--gill-mobile-bar-paper,#fffaf5) 80%,transparent);
+    box-shadow:0 1px 3px rgba(42,32,27,.055);
+    display:grid;
+    place-items:center;
+    color:var(--gill-mobile-bar-ink,#291f1b);
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-svg {
+    opacity:1;
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-track {
+    stroke:var(--gill-mobile-bar-gold,#b18b62);
+    opacity:.6;
+  }
+  [data-gill-v16] .mobile-top-bar #mobSpdBadge.reader-mobile-speed-badge {
+    position:absolute;
+    z-index:3;
+    box-sizing:border-box;
+    top:0;
+    left:24px;
+    right:auto;
+    bottom:auto;
+    display:flex;
+    align-items:flex-end;
+    justify-content:flex-start;
+    width:44px;
+    min-width:44px;
+    height:44px;
+    min-height:44px;
+    margin:0;
+    padding:0 0 2px;
+    background:transparent;
+    border:0;
+    border-radius:0;
+    box-shadow:none;
+    color:inherit;
+    cursor:pointer;
+  }
+  /* The shared canonical speed badge has its own large ::before pill.
+     Gill uses the small capsule attached to Play instead; never draw both. */
+  [data-gill-v16] .mobile-top-bar #mobSpdBadge.reader-mobile-speed-badge::before {
+    content:none;
+    display:none;
+  }
+  [data-gill-v16] .mobile-top-bar #mobSpdBadge .reader-mobile-speed-chip {
+    display:grid;
+    place-items:center;
+    min-width:25px;
+    height:18px;
+    padding:0 4px;
+    border:1px solid rgba(255,255,255,.22);
+    border-radius:10px;
+    background:#392827;
+    color:#fffaf6;
+    font:700 9px/1 system-ui,sans-serif;
+    white-space:nowrap;
+    box-shadow:0 1px 4px rgba(25,18,15,.16);
+    pointer-events:none;
+  }
+  [data-gill-v16] .mobile-top-bar #mobSpdBadge:focus-visible {
+    outline:2px solid var(--gill-mobile-bar-gold,#b18b62);
+    outline-offset:0;
+    border-radius:999px;
+  }
+}
+@media (max-width:360px) {
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play-group.mobile-playwrap {
+    width:66px;
+    min-width:66px;
+    flex-basis:66px;
+  }
+  [data-gill-v16] .mobile-top-bar #mobSpdBadge.reader-mobile-speed-badge { left:22px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  [data-gill-v16] .mobile-top-bar .reader-mobile-menu-trigger[data-gill-learning-open] { transition:none; }
+}
+</style>

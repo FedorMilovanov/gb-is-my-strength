@@ -1760,7 +1760,7 @@
     // completely unaffected — these selectors simply don't match there.
     var learningOverlay = qs('#gillLearningOverlay');
     var settingsOverlay = qs('#gillSettingsOverlay');
-    var mobLearningBtn = qs('#mobLearningBtn');
+    var learningBtns = qsa('[data-gill-learning-open]');
     // Settings sheet can now have TWO triggers (mobile bottom-bar gear +
     // desktop rail-foot gear) — both carry [data-gill-settings-open], so we
     // bind every match instead of a single #mobSettingsBtn id. Opening/closing
@@ -1776,7 +1776,7 @@
     });
 
     function triggersFor(overlay) {
-      if (overlay === learningOverlay) return mobLearningBtn ? [mobLearningBtn] : [];
+      if (overlay === learningOverlay) return learningBtns;
       if (overlay === settingsOverlay) return settingsBtns;
       return [];
     }
@@ -1798,11 +1798,13 @@
       if (!getOverlayRuntime() && restoreFocus && triggers[0] && triggers[0].focus) { try { triggers[0].focus(); } catch(_) {} }
     }
 
-    if (mobLearningBtn && learningOverlay) {
-      addCleanListener(mobLearningBtn, 'click', function(e) {
-        e.preventDefault();
-        closeGillSheet(settingsOverlay, false, 'switch');
-        openGillSheet(learningOverlay, [mobLearningBtn], e.currentTarget);
+    if (learningBtns.length && learningOverlay) {
+      learningBtns.forEach(function(btn) {
+        addCleanListener(btn, 'click', function(e) {
+          e.preventDefault();
+          closeGillSheet(settingsOverlay, false, 'switch');
+          openGillSheet(learningOverlay, learningBtns, e.currentTarget);
+        });
       });
     }
     if (settingsBtns.length && settingsOverlay) {
@@ -2303,7 +2305,8 @@
       });
       if (badge) {
         var label = currentRate + '×';
-        badge.textContent = label;
+        var speedFace = badge.querySelector('.reader-mobile-speed-chip') || badge;
+        speedFace.textContent = label;
         badge.setAttribute('aria-label', 'Скорость озвучки ' + label);
       }
     }
@@ -2316,7 +2319,7 @@
     // The inline rail temporarily replaces the leading navigation in the
     // same 44px-high top bar; never leave faded controls keyboard-focusable.
     var leadingControls = Array.prototype.slice.call(
-      root.querySelectorAll('#mobBackBtn, #mobHomeBtn, .mobile-learning-trigger')
+      root.querySelectorAll('#mobBackBtn, #mobHomeBtn, .mobile-learning-trigger, .reader-mobile-menu-trigger[data-gill-learning-open]')
     );
     function setOpen(next) {
       clearTimeout(foldTimer);

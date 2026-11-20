@@ -19,7 +19,7 @@ export const ASSET_VERSIONS = {
   'fonts/fonts.css': '864cc57a',
   'js/bookmark-engine.js': 'e7d193e0',
   'js/enhancements.js': '15476429',
-  'js/floating-cluster-controller.js': '01161dcb',
+  'js/floating-cluster-controller.js': 'c72def95',
   'js/glossary.js': 'c7f8b6e9',
   'js/highlights.js': '13d98b99',
   'js/nagornaya-bar-extras.js': '3c7e0bdd',
