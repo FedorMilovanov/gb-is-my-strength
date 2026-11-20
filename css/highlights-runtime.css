@@ -611,3 +611,104 @@ html.dark .gb-hl-hit {background:#89643c;color:#fff6ea;}
 @media (prefers-reduced-motion: reduce) {
   .gb-hl-revisit-card,.gb-hl-source-group,.gb-hl-tag {animation:none;transition:none;}
 }
+
+/* Мобильный тулбар выделения (страницы без js/site.js): цитата и заметка
+ * в один тап. 44px тап-таргеты, safe-area, тема через те же токены, что у
+ * библиотеки. Показывается только когда нет W57-тулбара пилота. */
+#gb-hl-selbar {
+  position: fixed;
+  z-index: 12000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  row-gap: 6px;
+  padding: 6px 4px;
+  border-radius: 14px;
+  background: var(--library-paper, #fbf7f0);
+  border: 1px solid var(--library-edge, rgba(90, 65, 54, .13));
+  box-shadow: 0 10px 30px rgba(46, 31, 22, .22);
+  max-width: calc(100vw - 16px);
+}
+#gb-hl-selbar[data-open="true"] { display: inline-flex; }
+#gb-hl-selbar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--library-ink, #312926);
+  font: 600 13px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: .01em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+#gb-hl-selbar button:active { background: rgba(128, 80, 65, .12); }
+#gb-hl-selbar button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+#gb-hl-selbar #gb-hl-selbar-quote { background: rgba(133, 89, 66, .10); }
+html.dark #gb-hl-selbar {
+  background: #2b2320;
+  border-color: rgba(232, 204, 180, .16);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+}
+html.dark #gb-hl-selbar button { color: #f3e7d7; }
+html.dark #gb-hl-selbar #gb-hl-selbar-quote { background: rgba(217, 169, 142, .14); }
+
+/* Цветные пометы рисуются CSS Custom Highlight API: текст не оборачивается
+ * в элементы, поэтому анкоры, озвучка и поиск остаются нетронутыми.
+ * Палитра та же, что у движка пилота (amber / sage / blue / lime / rose),
+ * и задаётся токенами, чтобы серии могли адаптировать оттенки. */
+/* Осознанная двухстрочная компоновка: сверху палитра, снизу действия.
+ * Так тулбар не сжимается в кашу на 320–390 и остаётся предсказуемым. */
+#gb-hl-selbar .gb-hl-selbar-colors {
+  display: flex;
+  flex: 1 0 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+@media (max-width: 359px) { #gb-hl-selbar { max-width: calc(100vw - 12px); } #gb-hl-selbar button { padding: 0 10px; } }
+#gb-hl-selbar .gb-hl-selbar-swatch {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+#gb-hl-selbar .gb-hl-selbar-swatch::after {
+  content: '';
+  position: absolute;
+  inset: 11px;
+  border-radius: 50%;
+  background: var(--swatch, #f2d98a);
+  border: 1px solid rgba(90, 65, 54, .2);
+  transition: transform .12s ease;
+}
+#gb-hl-selbar .gb-hl-selbar-swatch:active::after { transform: scale(.9); }
+#gb-hl-selbar .gb-hl-selbar-swatch[data-hl-color="amber"] { --swatch: var(--gb-hl-amber, #f2d98a); }
+#gb-hl-selbar .gb-hl-selbar-swatch[data-hl-color="sage"]  { --swatch: var(--gb-hl-sage, #cfe0c3); }
+#gb-hl-selbar .gb-hl-selbar-swatch[data-hl-color="blue"]  { --swatch: var(--gb-hl-blue, #cfe0f2); }
+#gb-hl-selbar .gb-hl-selbar-swatch[data-hl-color="lime"]  { --swatch: var(--gb-hl-lime, #e2f0b8); }
+#gb-hl-selbar .gb-hl-selbar-swatch[data-hl-color="rose"]  { --swatch: var(--gb-hl-rose, #f3cdd3); }
+#gb-hl-selbar .gb-hl-selbar-swatch:active { transform: scale(.94); }
+#gb-hl-selbar .gb-hl-selbar-swatch:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+
+::highlight(gb-hl-amber) { background-color: var(--gb-hl-amber, #f2d98a); color: #2a2118; }
+::highlight(gb-hl-sage)  { background-color: var(--gb-hl-sage, #cfe0c3); color: #21291c; }
+::highlight(gb-hl-blue)  { background-color: var(--gb-hl-blue, #cfe0f2); color: #16222b; }
+::highlight(gb-hl-lime)  { background-color: var(--gb-hl-lime, #e2f0b8); color: #21291a; }
+::highlight(gb-hl-rose)  { background-color: var(--gb-hl-rose, #f3cdd3); color: #2a1b1e; }
+html.dark ::highlight(gb-hl-amber) { background-color: #8a6a24; color: #fff5e2; }
+html.dark ::highlight(gb-hl-sage)  { background-color: #4a6440; color: #f0f7ea; }
+html.dark ::highlight(gb-hl-blue)  { background-color: #35586e; color: #eaf3fb; }
+html.dark ::highlight(gb-hl-lime)  { background-color: #5d6f34; color: #f4f9e7; }
+html.dark ::highlight(gb-hl-rose)  { background-color: #7a4450; color: #fbeef0; }

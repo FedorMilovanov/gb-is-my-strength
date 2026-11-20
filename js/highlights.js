@@ -139,7 +139,7 @@
   const stylesheet = document.createElement('link');
   stylesheet.id = 'gbHlRuntimeCss';
   stylesheet.rel = 'stylesheet';
-  stylesheet.href = '/css/highlights-runtime.css?v=fd24c13b';
+  stylesheet.href = '/css/highlights-runtime.css?v=a1a5011a';
   if (!document.getElementById(stylesheet.id)) document.head.appendChild(stylesheet);
 
   function button(action, label, text) {
@@ -436,9 +436,228 @@
     popup.append(b);
     b.addEventListener('click', handler);
   }
+  /* Цветные пометы: одно хранилище (gb-highlights-v1), один владелец.
+     Запись — обычная цитата плюс kind:'marker' и color. Рисуем через
+     CSS Custom Highlight API: текст статьи не оборачивается в <mark>, разметка
+     не мутируется, поэтому аннотации не ломают якоря, озвучку и поиск.
+     Если браузер не поддерживает ::highlight() — помета всё равно сохраняется
+     и видна в библиотеке, просто не подсвечивается в тексте. */
+  const MARK_COLORS = ['amber', 'sage', 'blue', 'lime', 'rose'];
+
+  function textIndex(scope) {
+    const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT, {
+      acceptNode: (n) => {
+        const host = n.parentElement;
+        if (!host || host.closest('script, style, textarea, input, #gb-hl-panel, #gb-hl-selbar')) return NodeFilter.FILTER_REJECT;
+        return n.textContent.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+      },
+    });
+    const nodes = [];
+    let acc = '';
+    let n;
+    while ((n = walker.nextNode())) { nodes.push({ node: n, start: acc.length }); acc += n.textContent; }
+    return { nodes, text: acc };
+  }
+
+  function locate(index, item) {
+    const needle = normalizeText(item && item.text);
+    if (!needle || needle.length < 3) return null;
+    const hay = index.text;
+    const before = normalizeText(item.before);
+    const after = normalizeText(item.after);
+    let at = -1;
+    if (before) at = hay.indexOf(before + needle + (after || ''), 0);
+    if (at >= 0 && before) at += before.length;
+    if (at < 0) at = hay.indexOf(needle);
+    if (at < 0) return null;
+    const from = at;
+    const to = at + needle.length;
+    const pointAt = (offset) => {
+      for (let i = index.nodes.length - 1; i >= 0; i--) {
+        const rec = index.nodes[i];
+        if (offset >= rec.start) return { node: rec.node, offset: Math.min(rec.node.textContent.length, offset - rec.start) };
+      }
+      return null;
+    };
+    const a = pointAt(from);
+    const b = pointAt(to);
+    if (!a || !b) return null;
+    try {
+      const range = document.createRange();
+      range.setStart(a.node, a.offset);
+      range.setEnd(b.node, b.offset);
+      return range;
+    } catch { return null; }
+  }
+
+  function paintMarks() {
+    if (!window.CSS || !CSS.highlights) return { supported: false, painted: 0 };
+    const scope = document.querySelector('article.article-body') || document.querySelector('article') || document.querySelector('main');
+    if (!scope) return { supported: true, painted: 0 };
+    const index = textIndex(scope);
+    const groups = new Map();
+    let painted = 0;
+    for (const item of quotes()) {
+      const color = String(item && item.color || '');
+      if (!MARK_COLORS.includes(color)) continue;
+      const range = locate(index, item);
+      if (!range) continue;
+      if (!groups.has(color)) groups.set(color, []);
+      groups.get(color).push(range);
+      painted++;
+    }
+    for (const color of MARK_COLORS) {
+      const name = 'gb-hl-' + color;
+      if (groups.has(color)) CSS.highlights.set(name, new Highlight(...groups.get(color)));
+      else CSS.highlights.delete(name);
+    }
+    return { supported: true, painted };
+  }
+
+  function saveMarker(color) {
+    const selected = selection();
+    if (selected.text.length < 3) { statusMessage('Сначала выделите текст.', true); return false; }
+    const old = quotes();
+    const record = {
+      id: uid('mark'), kind: 'marker', color: MARK_COLORS.includes(color) ? color : 'amber',
+      text: selected.text, articleTitle: currentTitle(),
+      url: sourceUrl(selected), before: selected.before, after: selected.after, savedAt: Date.now(),
+    };
+    if (old.length >= LIMIT_QUOTES && !old.some((x) => gbHighlightKey(x) === gbHighlightKey(record))) {
+      statusMessage('Сохранено 200 помет — достигнут прежний лимит. Экспортируйте библиотеку перед удалением старых записей.', true);
+      return false;
+    }
+    const next = gbAddHighlight(old, record);
+    if (!write(QUOTES_KEY, next)) {
+      statusMessage('Не удалось сохранить помету. Хранилище недоступно или заполнено.', true);
+      return false;
+    }
+    const result = paintMarks();
+    sync();
+    statusMessage(result.supported
+      ? 'Помета сохранена и подсвечена.'
+      : 'Помета сохранена. Подсветка в тексте недоступна в этом браузере.');
+    return true;
+  }
+
+  /* write() публикует событие на window, поэтому слушаем именно window:
+     удаление пометы через библиотеку обязано снять подсветку в тексте. */
+  window.addEventListener('gb:library-committed', (e) => {
+    if (!e || !e.detail || e.detail.key === QUOTES_KEY) setTimeout(paintMarks, 0);
+  });
+  window.addEventListener('storage', (e) => { if (e && e.key === QUOTES_KEY) paintMarks(); });
+
+  /* Мобильный вход в пометы. На страницах серий js/site.js не подключается,
+     поэтому #selection-share-popup не существует: выделенный текст некуда
+     сохранить, хотя сама библиотека предлагает «Выделите цитату…». Показываем
+     собственный мини-тулбар только там, где нет W57-тулбара пилота (он живёт
+     от 1121px и при выделении создаёт #npW57SelectionToolbar) — один владелец,
+     одно хранилище, те же функции сохранения, что и у десктопного попапа. */
+  function mobileSelectionBar() {
+    let bar = document.getElementById('gb-hl-selbar');
+    if (bar) return bar;
+    bar = document.createElement('div');
+    bar.id = 'gb-hl-selbar';
+    bar.className = 'gb-hl-selbar';
+    bar.setAttribute('role', 'toolbar');
+    bar.setAttribute('aria-label', 'Действия с выделенным текстом');
+    bar.setAttribute('aria-hidden', 'true');
+    const colors = document.createElement('div');
+    colors.className = 'gb-hl-selbar-colors';
+    colors.setAttribute('role', 'group');
+    colors.setAttribute('aria-label', 'Цвет пометы');
+    for (const color of MARK_COLORS) {
+      const swatch = document.createElement('button');
+      swatch.type = 'button';
+      swatch.className = 'gb-hl-selbar-swatch';
+      swatch.dataset.hlColor = color;
+      swatch.setAttribute('aria-label', 'Выделить цветом: ' + color);
+      colors.appendChild(swatch);
+    }
+    const quote = document.createElement('button');
+    quote.type = 'button';
+    quote.id = 'gb-hl-selbar-quote';
+    quote.setAttribute('aria-label', 'Сохранить выделенный текст как цитату');
+    quote.textContent = 'Цитата';
+    const note = document.createElement('button');
+    note.type = 'button';
+    note.id = 'gb-hl-selbar-note';
+    note.setAttribute('aria-label', 'Добавить заметку к выделенному тексту');
+    note.textContent = 'Заметка';
+    bar.append(colors, quote, note);
+    colors.addEventListener('click', (e) => {
+      const swatch = e.target.closest('[data-hl-color]');
+      if (!swatch) return;
+      if (saveMarker(swatch.dataset.hlColor)) hide();
+    });
+    document.body.appendChild(bar);
+    for (const b of [quote, note, ...colors.querySelectorAll('button')]) {
+      for (const ev of ['pointerdown', 'mousedown', 'touchstart']) {
+        b.addEventListener(ev, (e) => e.preventDefault(), { passive: false });
+      }
+    }
+    quote.addEventListener('click', () => {
+      if (saveSelectedQuote()) {
+        quote.textContent = 'Сохранено';
+        setTimeout(() => { quote.textContent = 'Цитата'; hide(); }, 700);
+      }
+    });
+    note.addEventListener('click', () => {
+      const s = selection();
+      const context = s.text.length >= 8
+        ? { quoteText: s.text, url: sourceUrl(s), title: currentTitle() } : null;
+      hide();
+      open(null).then((opened) => { if (opened) showEditor(context); });
+    });
+    return bar;
+  }
+  function hide() {
+    const bar = document.getElementById('gb-hl-selbar');
+    if (!bar) return;
+    bar.dataset.open = 'false';
+    bar.setAttribute('aria-hidden', 'true');
+  }
+  function placeSelectionBar() {
+    if (document.getElementById('npW57SelectionToolbar')) { hide(); return; }
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || !sel.rangeCount) { hide(); return; }
+    const text = sel.toString().replace(/\s+/g, ' ').trim();
+    if (text.length < 8) { hide(); return; }
+    const range = sel.getRangeAt(0);
+    const host = range.commonAncestorContainer;
+    const node = host.nodeType === 1 ? host : host.parentElement;
+    if (!node || node.closest('#gb-hl-panel, #gb-hl-selbar, input, textarea, [contenteditable="true"]')) { hide(); return; }
+    if (!node.closest('article, main, .article-body')) { hide(); return; }
+    const rect = range.getBoundingClientRect();
+    if (!rect || (!rect.width && !rect.height)) { hide(); return; }
+    const bar = mobileSelectionBar();
+    bar.dataset.open = 'true';
+    bar.setAttribute('aria-hidden', 'false');
+    const bw = bar.offsetWidth || 180;
+    const bh = bar.offsetHeight || 56;
+    const clampX = Math.min(Math.max(8, rect.left + rect.width / 2 - bw / 2), window.innerWidth - bw - 8);
+    let top = rect.top - bh - 10;
+    if (top < 68) top = Math.min(window.innerHeight - bh - 8, rect.bottom + 10);
+    bar.style.left = Math.round(clampX) + 'px';
+    bar.style.top = Math.round(top) + 'px';
+  }
   function attachSelection() {
     const popup = document.getElementById('selection-share-popup');
-    if (!popup || popup.querySelector('#ss-save')) return;
+    if (!popup) {
+      let pending = 0;
+      const schedule = () => { clearTimeout(pending); pending = setTimeout(placeSelectionBar, 40); };
+      document.addEventListener('selectionchange', schedule, { passive: true });
+      document.addEventListener('mouseup', schedule, { passive: true });
+      document.addEventListener('touchend', schedule, { passive: true });
+      window.addEventListener('scroll', hide, { passive: true, capture: true });
+      window.addEventListener('resize', hide, { passive: true });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hide(); });
+      document.addEventListener('pointerdown', (e) => {
+        if (!e.target.closest('#gb-hl-selbar')) hide();
+      }, { passive: true });
+      return;
+    }
+    if (popup.querySelector('#ss-save')) return;
     popup.append(element('span', 'ss-sep'));
     bindSelectionButton('ss-save', 'Сохранить выделенный текст как цитату', quoteSvg, () => {
       if (saveSelectedQuote()) {
@@ -481,6 +700,7 @@
     create();
     setTimeout(attachSelection, 500);
     setTimeout(dock, 1200);
+    setTimeout(paintMarks, 900);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
   else init();
