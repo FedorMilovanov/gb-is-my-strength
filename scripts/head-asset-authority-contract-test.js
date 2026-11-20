@@ -42,8 +42,11 @@ const astroFiles = walk(SRC, []);
 //    their migration to assetUrl() is deferred to those PRs and must not
 //    be re-implemented here.
 const LITERAL_HOLDINGS = new Set([
-  'src/components/articles/ArticlesPageChrome.astro', // PR №1 (articles route authority)
-  'src/components/articles/ArticlesPageFooter.astro', // PR №1 (articles route authority)
+  // No open merge-candidate PR owns the articles route head assets; the
+  // migration is deferred by PR #2348 merge-prep (owner directive
+  // 7038165755: minimize exclusive-path surface vs earlier same-base PRs).
+  'src/components/articles/ArticlesPageChrome.astro',
+  'src/components/articles/ArticlesPageFooter.astro',
   'src/components/journal/JournalDocumentHead.astro', // PR #2345 (journal head SEO authority)
 ]);
 const offenders = astroFiles.filter((file) => LITERAL_RE.test(fs.readFileSync(file, 'utf8')))
