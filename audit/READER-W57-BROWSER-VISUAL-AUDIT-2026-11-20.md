@@ -2,7 +2,7 @@
 
 **Аудитор:** Arena Agent (независимая проверка, не автор кода W57)
 **Дата:** 2026-11-20
-**Проверенный HEAD:** `dd9b0bf7a385f14398c7618ffef33a8751fde644`
+**Проверенный HEAD:** `e41556048b8dab397fa8d8675a51488e643a254d` (повторный аудит, раунд 3; раунд 2 был на `dd9b0bf7a385f14398c7618ffef33a8751fde644`)
 (Branch `fix/reader-library-no-count-dot-20261119`, PR #2346, DRAFT/HOLD)
 **Движок:** Chromium 153.0.8010.0 (`@sparticuz/chromium@153.0.0` + Playwright 1.64.1), headless, Debian 12/x86_64
 **Сборка:** `npm run strangler:build:production-like` из чистого worktree этого коммита (112 страниц Astro + legacy-копирование)
@@ -264,7 +264,7 @@ assert.ok(c.bottom <= l.bottom, 'library card is clipped below the list viewport
 
 **Для «единого движка на весь сайт»** одного переноса файлов недостаточно: W57 сейчас зависит от `reader_universal_preview.js` и `#npUResearch`, а вход в настройки и тему имеет двух владельцев. Нужно сначала назначить по одному владельцу на действие, затем переносить в Astro-компонент.
 
-**Статус PR:** остаётся DRAFT/HOLD. Из проверок PR: 7 SUCCESS, 1 FAILURE (`actionlint offline / win32-x64` — Windows-тулинг, к W57 отношения не имеет), 4 SKIPPED, 43 в очереди на момент проверки. CI по W57 не завершён.
+**Статус PR:** остаётся DRAFT/HOLD. На новом `e415560`: 53 SUCCESS, 1 FAILURE (`actionlint offline / win32-x64` — Windows-тулинг, к W57 отношения не имеет), 4 SKIPPED, 1 QUEUED (`interactive-audit`). CI не зелёный: один failure и один queued.
 
 ---
 
@@ -287,7 +287,7 @@ assert.ok(c.bottom <= l.bottom, 'library card is clipped below the list viewport
 
 ## 7. Артефакты
 
-Скриншоты в `reports/w57-audit-browser-2026-11-20/` (каталог `reports/` намеренно вне Git) (все сняты на `dd9b0bf`, реальный Chromium):
+Скриншоты в `reports/w57-audit-browser-2026-11-20/` (каталог `reports/` намеренно вне Git). `01`–`13` сняты на `dd9b0bf`, `14`–`21` — на новом `e415560`, реальный Chromium:
 
 - `01-desktop-folded.png` — 1440, панель свёрнута (эталон спокойного чтения)
 - `02-desktop-panel.png` — 1440, панель «На полях» открыта
@@ -303,4 +303,78 @@ assert.ok(c.bottom <= l.bottom, 'library card is clipped below the list viewport
 - `12-library-BEFORE-with-one-note.png` — **одна** помета + заметка: видна только шапка «ЗАМЕТКА · 20 НОЯБРЯ», текст срезан
 - `13-library-AFTER-candidate-patch.png` — тот же экран после кандидата «панель растёт + блок свёрнут»: заметка видна целиком
 
-Методика воспроизводима: `npm run strangler:build:production-like` → `python3 research/reader-w57-pilot/preview.py` → `?reader-pilot=1&paper=space`.
+- `14-r3-desktop-folded.png` — раунд 3, 1440, спокойный экран чтения
+- `15-r3-research-panel.png` — раунд 3, 1440, «На полях» и пометы
+- `16-r3-mobile.png` — раунд 3, 390, статья
+- `17-r3-mobile-font-panel.png` — раунд 3, 390, панель шрифта; D2 остаётся по правому краю
+- `18-r3-native-settings-1440.png` — раунд 3, нативные настройки на 1440 без гарнитуры
+- `19-r3-w57-font-panel-1280.png` — раунд 3, W57-панель на 1280; H1 частично уходит под неё
+- `20-r3-dark-panel.png` — раунд 3, тёмная тема и исследовательская панель
+- `21-r3-mobile-font-panel-right-strip-detail.png` — увеличенный фрагмент правого ghost-strip D2
+
+Методика воспроизводима: `npm run strangler:build:production-like` → `python3 research/reader-w57-pilot/preview.py` → `?reader-pilot=1&paper=space`. В локальной среде Node `22.22.3`, а Astro-контракт требует `>=22.23.4`; для сборки раунда 3 floor-check был временно обойдён только в detached worktree, продуктовый код и PR не изменялись.
+
+
+---
+
+## 8. Раунд 3 — повторная проверка после нового HEAD `e415560`
+
+### 8.1. Причина и область раунда
+
+После раунда 2 head PR #2346 изменился: `dd9b0bf` → `e415560` (коммиты `3a1483e`, `be0c7ee`, `7dcb8ba`, `e415560`). Изменения затрагивают семантический article-root, сохранение независимых якорных цитат и исключение инертного glossary-текста. Они **не затрагивают** владельцев мобильной панели/аудио-блока и не добавляют гарнитуру в нативные настройки, поэтому D2 и D3 всё равно перепроверены вручную, а не закрыты по диффу.
+
+Новый dist собран в отдельном detached worktree. `verify.mjs` — PASS (12 assets); `reader-w57-annotations-regression-test.mjs` — PASS; `highlights-runtime-regression-test.js` — PASS; `audit-pro` — 168 passed / 0 errors; `sw-dist-readiness-audit` — PASS. При сборке был только локальный Node-floor workaround, описанный в разделе 7; в рабочую ветку продуктовые изменения не вносились.
+
+### 8.2. D2 — **не закрыт, блокер остаётся**
+
+Реальный путь: Chromium 390×844 → `#npUOpenToc` → «Аа · Шрифт». Геометрия нового head:
+
+| Элемент | Геометрия |
+|---|---:|
+| `#npUFontPanel` | x=13, y=376, w=316, h=403, right=329, bottom=779 |
+| `#npUNativeTools` | x=1, y=620.75, w=388, right=389 |
+| `.np-u-audio-card` | x=12, y=633.75, w=366, right=378, bottom=722 |
+| открытая правая полоса | x=329…390; карточка занимает x=329…378 |
+
+Панель и карточка снова физически пересекаются только частично: справа от панели остаётся 61 px, из которых 49 px заняты аудио-карточкой. `#npUFontScrim` имеет полупрозрачный фон (`rgba(244, 242, 237, .88)`), поэтому контролы не исчезают бесследно, а читаются как бледный ghost-strip под scrim. `17-r3-mobile-font-panel.png` и увеличенный `21-r3-mobile-font-panel-right-strip-detail.png` просмотрены вручную; это по-прежнему выглядит как недоведённая обрезанная полоса, а не как осознанный пустой отступ.
+
+Итог: D2 остаётся `- [ ]`. Inertness, focus и Escape по-прежнему исправны: `insideAriaModal=true`, `focusInside=true`, Tab escape `0/18`, Escape скрывает панель и оставляет оглавление.
+
+### 8.3. D3 — **не закрыт, блокер остаётся**
+
+Повторная матрица реальной доступности на новом dist:
+
+| Ширина | Доступный вход | Что реально открывается |
+|---:|---|---|
+| 1920 | только `#railSettingsBtn` | нативная панель: тема/размер/интервал/ширина/оформление/анимация; Lora/Cormorant нет |
+| 1440 | только `#railSettingsBtn` | то же; видимые `[data-np-u-type-font]` отсутствуют |
+| 1360 | только `#railSettingsBtn` | то же |
+| 1280 | только `.np-u-type-open` | W57-панель с Lora/Cormorant; нативный rail скрыт |
+| 1121 | только `.np-u-type-open` | W57-панель с Lora/Cormorant; нативный rail скрыт |
+| 1024 | сначала `#npUOpenToc`, затем `.np-u-type-open` | W57-панель с Lora/Cormorant |
+| 768 / 390 | сначала `#npUOpenToc`, затем `.np-u-type-open` | W57-панель с Lora/Cormorant |
+
+На 1280 панель открывается в x=215…531 и визуально накрывает левую часть H1 (артефакт `19-r3-w57-font-panel-1280.png`). На 1440 нативное окно выглядит аккуратно, но в нём **нет секции гарнитуры** (`18-r3-native-settings-1440.png`). Это подтверждает исходную архитектурную находку: два входа/два набора контролов, а Lora/Cormorant недоступны на десктопе.
+
+Итог: D3 остаётся `- [ ]`.
+
+### 8.4. Регрессии не обнаружены
+
+На новом head повторно пройдены:
+
+- реальное выделение мышью → marker → заметка → повторное редактирование без дубликата → recolor amber→lime → marker→underline → «К тексту»;
+- удаление → `Помета удалена… Отменить` → восстановление; после undo `count=1`, `CSS.highlights=[np-w57-marker-amber]`;
+- клавиатура реальным вводом: двойной клик (`selLen=6`, toolbar visible) → 14× Shift+→ (`selLen=20`, toolbar visible) → Escape (`hidden=true`);
+- второй article (`kod-da-vinchi`) и серия Baptisty поднимают W57 (`w57=true`, annotations/research/notes/palette=true`);
+- защищённые `/journal/dossiers/g3/`, `/nagornaya/`, `/updates/` не получают W57 (`w57=false`, pilot script/link и research отсутствуют);
+- контраст второстепенных элементов: светлая тема 5.18:1 минимум, тёмная 8.56:1 минимум — AA проходит.
+
+Из просмотренных скриншотов `14`–`20`: основной экран чтения, панель «На полях» и тёмная тема остаются собранными и читаемыми; новых дефектов композиции/контраста/типографики не добавилось. Явно остаются две визуально странные вещи: ghost-strip D2 и перекрытие H1 панелью на 1280 (часть D3).
+
+### 8.5. Точный статус CI на проверенном head
+
+GitHub checks для `e415560` на момент раунда 3: **53 SUCCESS / 1 FAILURE / 4 SKIPPED / 1 QUEUED**. Failure — `actionlint offline / win32-x64`; queued — `interactive-audit`. Поэтому PR не следует называть зелёным и не следует снимать HOLD по CI.
+
+### 8.6. Вердикт раунда 3
+
+Новый head не закрыл ни один из двух блокеров живого комментария: D2 и D3 остаются `- [ ]`. D1 остаётся отдельным каноническим дефектом библиотеки Product, не регрессией W57; D4 остаётся отдельной задачей. Вердикт: **W57 не готов к merge — сначала закрыть D2 и D3, затем повторный браузерный аудит.**
