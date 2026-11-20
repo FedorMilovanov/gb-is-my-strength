@@ -15,6 +15,16 @@
 (function () {
   'use strict';
 
+  /* SSR-значение подписи «Сейчас читаете» (#gbs2MobSec) из серии-конфига:
+     «Часть II. Учёный», «Двустороннее зеркало» и т.д. Снимаем его на этапе
+     разбора скрипта — раньше, чем любая прокрутка или соседний скрипт успеют
+     перезаписать текст. Нужно как честный фолбэк: до первого заголовка
+     подпись не должна подменяться литералом «Введение» на каждой странице. */
+  var MOB_SEC_INITIAL = (function () {
+    var el = document.getElementById('gbs2MobSec');
+    return el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+  })();
+
   var THEME_KEY = 'theme';
   var toastTimer = null;
   /* True on devices with a real hover pointer (desktop/trackpad). Drives the
@@ -2782,7 +2792,18 @@
       var mobDualBtn = qs('#gbs2DualProgress');
       if (mobDualBtn) mobDualBtn.setAttribute('aria-label', 'Статья ' + pct + '%, серия ' + seriesPc + '%');
       var mobSec = qs('#gbs2MobSec');
-      if (mobSec) mobSec.textContent = reader.sectionTitle || (phase === 'after-content' ? 'Завершено' : 'Введение');
+      if (mobSec) {
+        /* js/reader-state.js отдаёт title «Введение» как заглушку для фазы
+           before-content (и для «активного раздела нет»), а не как имя части.
+           Раньше эта заглушка уходила прямо в подпись, и на каждой странице
+           серии нижняя панель писала «Сейчас читаете: Введение» — в том числе
+           на «Части II. Учёный» и на не-гилловских сериях. Пока активного
+           раздела нет, держим собственную часть статьи из SSR. */
+        var hasActiveSection = Number(reader.sectionIndex) >= 0 && !!reader.sectionTitle;
+        var label = hasActiveSection ? reader.sectionTitle : (MOB_SEC_INITIAL || 'Начало части');
+        if (phase === 'after-content') label = 'Завершено';
+        mobSec.textContent = label;
+      }
 
       // Cover media now uses intrinsic image geometry across reader series.
       // Only the decorative numeral remains kinetic; moving the image could
