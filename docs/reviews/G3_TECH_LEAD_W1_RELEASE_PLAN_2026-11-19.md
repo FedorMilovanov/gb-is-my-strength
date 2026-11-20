@@ -1,5 +1,86 @@
 # G3 — Tech Lead: bounded Back decision, one release transport, W2 contract
 
+<!-- agent1-current-disposition-addendum-20261120 -->
+## Current addendum — 2026-11-20
+
+**This addendum supersedes stale current-state wording below; it does not rewrite the historical receipts.** The original document below remains an exact-byte historical snapshot of its 36e/26d checkpoints. Current engineering outcome is **`W1_NOT_ACCEPTED / NOT_FROZEN / NO_TRANSFER / NO_GO_FOR_PROMOTION`**. This is a docs-only update on Agent1's existing SUPPORT branch, not a new integration, Product implementation or publication decision.
+
+At the event-driven readback: `main` is **`9edef94ece08012223c1364bec7ddcd561cf5713`**, Agent8 copy source **`6294a34ea83a0f31edaaba61137f7d0c00e37c8d`**, and canonical #2338 remains OPEN/Draft at **`b2ae614730b0c2e164d3b07453797074253d9698`**. Agent1 rollback before this documentation-only change is **`e0cf313dec88372d85c843c7136f18ba3e90dec0`**. Agent8 remains the exclusive Product/UI writer; Agent1 is technical lead, not a competing frontend owner. Canonical writer is still **UNASSIGNED**; absent lease markers are not write authority. #2340 remains **SUPPORT / NO WHOLE-PR MERGE**.
+
+### Closed bounded scopes and unchanged release boundaries
+
+- **Copy6294 accepted:** [Agent1 exact-source/compiler disposition7042044532](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2338#issuecomment-7042044532) closes S011 acquisition jargon and clarifies S096 SHA-prefix/raw-versus-decoded display. Protected source authorities, event/snapshot dates, literal prefixes, publication claims and HOLD boundaries remain. The typographic ellipsis-period nit is nonblocking. This was not a fresh DOM/Pagefind/render/CLS/PDF run by Agent1. S011's h3 precedes collapsed details: unchanged CSS is not proof of no layout surface.
+- **c5 printed-text preservation accepted, not awaiting another archive/review:** [independent Owner/MAX PDF readback7044226534](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2338#issuecomment-7044226534) and [Agent1 bounded disposition7044419418](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2338#issuecomment-7044419418) cover existing **0eba9470ca88509a5b130711f80fead4188f54c3 → c5d29e134b7f402c2f7453d8ecaf6218455e83d1**, 16 PDF /8 pairs, 17→15 pages. Archive **8,321,888B /SHA256 `d4065f819926923ffb6c4637571520cc2ad0497bf5e8aaf20af4d9d615ddbab3`** was actually downloaded by Agent1; CRC and155/155 embedded checksums matched. [Agent9's own receipt7044469035](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2338#issuecomment-7044469035) now independently confirms the same bytes and16 PDF/256 pages. Earlier Agent9-access UNKNOWN is superseded, not a continuing delivery blocker. Raster coverage remains limited: Owner reviewed15 pages of new A4 light/JS; Agent9 three raster pairs, not all16 files visually.
+- **Geometry limits remain honest:** Agent9's same addendum records pre-existing serif ink-edge overshoot at the A4 light/JS print clip: “Уход…” p6 **0.152250pt**, “Журнал исправлений” p15 **0.130500pt**, also present BEFORE. These are clip-edge outlines, not out-of-page words, lost sources or a c5 regression; no urgent font/CSS/design repair or recapture is ordered. The approximately+0.87% first-page global-scale change does not establish Chromium's internal cause or a standfirst-only defect. Both raw baseline exit1 remain; no guard or threshold is weakened. **`SCOPED_PRINT_CONTENT_PASS_AT_C5 / C5_ARTIFACT_WAIT_CLOSED / NO_C5_RECAPTURE_REQUIRED / 6294_PRINT_NOT_REVIEWED`**. c5 is not automatic print acceptance of6294 or canonical #2338.
+- **Back and CLS still block W1:** [Owner7038014301](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2340#issuecomment-7038014301) accepts the demonstrated local A harm reduction as BENEFITyes, not Back/focus repair or release GO. Back/focus FAIL remain, G3coldCLS RED remains; no new A/C2/font experiment is authorized. [Owner7038510645](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2338#issuecomment-7038510645) accepts only demonstrated TOC scope:1440 Ctrl-popup is still COVERAGE_GAP, not16/16 PASS. Agent7/11 remain ON_CALL. No Play/audio/new UI stage is opened. Transfer still needs Agent8 approved final, candidate-bound decisions, named writer/current base/lease, selective public35 plus separate PROD guard/regenerated index and actual canonical proof. No new packet is generated here.
+
+### Next single W1 scope — Agent8 G3 header cold CLS
+
+This is the technical-lead response to [Agent8's one next-scope request7046623153](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2338#issuecomment-7046623153), using the already-sequenced [Owner targeted-design proposal7038367889](https://github.com/FedorMilovanov/gb-is-my-strength/pull/2340#issuecomment-7038367889) after the completed TOC/copy steps. **Choose G3coldCLS, not another Back/history/font loop.** Agent8 is the sole Product/UI writer; Agent1 accepts the returned evidence and actual new SHA, without a competing browser lab. Reader2349, W57 and SYS are excluded from this task.
+
+1. **Start anchor and source:** `6294a34ea83a0f31edaaba61137f7d0c00e37c8d`, `/journal/dossiers/g3/`. The current header/CSS/preloads/product-metadata/fonts files are each byte-equal to Owner's0eba hypothesis anchor; current `journalEditorial.css` blob is **`025ea8e45576c017c02cfd7d852ff62a0c26a566`**. Existing root hook **`[data-journal-dossier="g3"]`** permits a narrow CSS owner without new markup. Mixed Latin/Cyrillic face behavior and `text-wrap:balance` are still **`SOURCE_HYPOTHESIS / UNVERIFIED_BROWSER_CAUSALITY`**, not an established repair.
+2. **First, causalcheck only:** on768/1440 ×light/dark, use natural cold loads and the existing1.6Mbps/150ms/4×CPU profile, observer/window/aggregation unchanged, **N≥3 fresh contexts per cell**. Record every raw value plus median/worst, LayoutShift timing/actual source nodes and old/new rectangles, h1/header/cover/meta rectangles and title line breaks before/after font arrival. Inspect Latin and Cyrillic segment ranges and actual font/render evidence where available; computed family or `fonts.ready` alone does not prove a glyph face. Compare balance behavior narrowly, without font substitution or a parameter sweep. If header causality is not supported, return `NOT_CONFIRMED / NO_PRODUCT_CHANGE` with the trace; do not silently expand to a new lab.
+3. **Only after attribution, at most1–2 design concepts:** the sole possible Product path is **`src/components/journal/journalEditorial.css`**, rules scoped to the existing G3 hook **and screen media**. Header/G3 markup, actual title/copy, metadata and media remain read-only. Agent8 chooses typography/layout, not Agent1. No artificial empty/min-height reservation, global fonts/preloads, swap, site.css, SW/assets, shared runtime, dependency or threshold edits. If the proven remedy needs another owner/path, STOP and report that conflict, not an implicit scope expansion.
+4. **Final acceptance, if there is a candidate:** deliver one clean/pushed exact SHA and bounded CSS diff with source preservation; the same fresh cold cells/N and unchanged≤.01 gate/statistic must cover that SHA. An improvement that still fails the gate is **PARTIAL/RED**, not W1 GO. Preserve each raw and worst case; do not pool Agent4/Agent8 cohorts. Check390 light/dark and Journal1440 light/dark for bleed/overflow, native TOC and a source-return chain, byline/date/media and16claims/21sources/9HOLD authorities. After an actual CSS edit, one targeted **A4 light/JS pair6294→candidate** checks screen-to-print bleed and opening/clipping/content; it is not a new eight-pair c5 matrix or full6294 print acceptance. If causalcheck yields no candidate, no new PDF is required.
+5. **Stop boundary:** return attribution, selected CSS concept or explicit no-change result, exact source/commands/raw outcomes and remaining limits. No catalog hygiene, Play/new UI stage, Back/focus JS, A/C2 repeat, peer activation or transport. Back/focus remains FAIL and W1 remains NO-GO independently of any G3 improvement. Canonical integration is still blocked by the separate writer/final-candidate decisions.
+
+### Reader #2349 — source-sequencing handoff, not a Product repair
+
+The [existing Owner issue2349](https://github.com/FedorMilovanov/gb-is-my-strength/issues/2349) is independent of the accepted c5 packet. Its [original pinned report](https://github.com/FedorMilovanov/AuditRepo/blob/5c59d79c9442b82ac8fac637a5822385ebb2a31c/projects/gb-is-my-strength/incoming/arena-quiz-print-readiness/2026-11-18/REPORT.md) already reproduces first/second cold PDF12→13 and a print-face readiness dependency. **Those browser/PDF results are external evidence, not rerun by Agent1.** They do not establish the internal Chromium pagination cause.
+
+Agent1 independently checked `src/runtime/reader-actions.js` at **main9edef94e**, **SYS #2348 `1839ac0f98147fdd97d97e3c566daeb5478ba8f0`** and **Reader #2346 `14bf59f86e51240d53aa77928f64e9f0df983e5b`**: all three have the same Git blob **`e3d816dadc8e9bda5685d4be7316d47b240becae`**, **8,809B /SHA256 `10309a3c792fba30bcf8c1938d40e8dfd4f2e46c7aa21f9d2ec276ad570e52ee`**. This is no readiness repair in that module, **not** a full-candidate PDF verdict on either peer PR, a merge veto or permission to take over their lanes.
+
+**Own source/VM witness:** with screen `fonts.ready` already fulfilled but a controlled print-only face cold, both API and button reach **`scroll:suspend → pagination:prepare → platform:print:face-cold`**. Each has one native-print call and **zero font readiness/load/check API accesses**. The full disposable probe exits **1 as expected** in0.044413s. Its four warm/locked-owner/native-error/afterprint-repeat controls pass. `beforeprint` is synchronous; existing prepared-report caching is observed, not mislabelled a second bug. The current five-case `reader-print-preflight-contract.cjs` covers scroll-owner/error behavior, not print-face readiness. **`CONFIRMED_CURRENT_SOURCE_SEQUENCING_GAP` is not a new actual-PDF reproduction or an implemented fix.**
+
+#### Copyable baseline source witness
+
+Run from the repository with the pinned main object and Node. This exact minimal snippet was separately executed once, **expected exit1**,0.035708s. It needs no ignored peer file, browser, font download or Drive transfer. It intentionally fails on the pinned baseline. **It is not a complete future green browser/PDF acceptance harness.**
+
+```bash
+node <<'NODE'
+const assert = require('node:assert/strict');
+const vm = require('node:vm');
+const { execFileSync } = require('node:child_process');
+const source = execFileSync('git', ['show', '9edef94ece08012223c1364bec7ddcd561cf5713:src/runtime/reader-actions.js'], { encoding: 'utf8' });
+const calls = { pagination: 0, platform: 0, fontAPI: 0 };
+const trace = [];
+const fonts = {
+  get ready() { calls.fontAPI++; return Promise.resolve(fonts); },
+  check() { calls.fontAPI++; return false; },
+  load() { calls.fontAPI++; return new Promise(() => {}); },
+};
+const document = {
+  fonts, documentElement: { dataset: {}, getAttribute() { return null; } },
+  addEventListener() {},
+};
+const window = {
+  SiteUtils: { suspendScrollForPrint() { trace.push('suspend'); return { ok: true }; } },
+  GBPrintPagination: { prepare() { calls.pagination++; trace.push('prepare'); } },
+  print() { calls.platform++; trace.push('platform-print-while-print-face-cold'); },
+  addEventListener() {}, dispatchEvent() {},
+};
+vm.runInNewContext(source, {
+  window, document, navigator: {}, history: {}, location: {},
+  URL, Promise, CustomEvent: function () {}, console,
+}, { timeout: 1000 });
+window.GBPrintEngine.print('api');
+console.log(JSON.stringify({ calls, trace, report: window.GBPrintEngine.getReport() }));
+// Intentionally RED on the pinned baseline. This source-only fixture is NOT
+// a browser/font-layout/PDF acceptance harness for a future implementation.
+assert.equal(calls.platform, 0, 'native print must not begin while a required print face is still cold');
+NODE
+```
+
+#### Repair contract for the existing Reader owner
+
+1. Reuse the single existing `GBPrintEngine` preparation path; make the **actual required print faces** ready before pagination/native print, rather than adding200ms or merely awaiting already-complete screen `document.fonts.ready`. Do not change site typography/global preload policy or disable terminal classification to hide the symptom.
+2. Preserve the synchronous `prepare`/report/`beforeprint` contract deliberately. An asynchronous `beforeprint` listener alone cannot promise to hold native Ctrl+P. If another public API becomes asynchronous, version and test its callers explicitly; a pending Promise is not a prepared report. Ensure native entry points are covered or clearly label them unverified.
+3. Deduplicate pending user/API requests. Font rejection/timeout must clear pending/printing state, restore any suspended scroll ownership and allow retry; unknown scroll owners still fail closed. Preserve `afterprint` reset, repeat-print and native-error recovery. Recheck the four existing controls after the actual repair; these source-baseline controls are not inherited green proof for new code.
+4. Show red→green on the **same first cold actual A4 PDF** scenario from issue2349: all three final blocks must already be present, and text must agree with the second copy. The second warmed PDF is a control, not a workaround. Ordinary desktop Chrome → Save as PDF needs its separate witness; unrun is not PASS. No repeat all-article audit, c5 matrix, C2/font lab or unrelated W57/SYS work is requested.
+
+No Reader Product implementation, font/CSS/SW/cache-bust mutation, test-gate edit, new PDF capture, peer assignment, merge or deployment is made by this handoff. The repair belongs to the existing Reader owner under issue2349; Agent1 has not acquired that runtime. The historical technical plan below is preserved byte-for-byte, with this addendum removed.
+<!-- /agent1-current-disposition-addendum-20261120 -->
+
 ## Status and authority
 
 **W1 NOT FROZEN. `NAV_CLS_DELTA_REVERIFIED_26d4` / `AGENT8_REPAIR_ONLY_ACCEPTED_26d4` / `W1_CURRENT_SOURCE_NO_GO` / `B_INTEGRATION_NO_GO` / `C2_PROPOSAL_REJECTED_NO_REPEAT_LAB` / `OWNER_BACK_CLS_DECISION_PENDING` / `BLOCKED_CANONICAL_WRITE`.**
