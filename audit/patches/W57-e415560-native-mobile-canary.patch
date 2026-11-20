@@ -1,0 +1,611 @@
+diff --git a/research/reader-w57-pilot/MANIFEST.json b/research/reader-w57-pilot/MANIFEST.json
+index 3f84b43..7255857 100644
+--- a/research/reader-w57-pilot/MANIFEST.json
++++ b/research/reader-w57-pilot/MANIFEST.json
+@@ -28,8 +28,8 @@
+     },
+     {
+       "name": "reader_w57.css",
+-      "sha256": "eae8d1660d4ff2b10f138f67da0ae3f112a5609a16f544098be5970ac944e743",
+-      "bytes": 27512
++      "sha256": "f87dd270e0ab1510734c0222731cfd6962dc3f4cfcf9b091a6d1f5d7c2653665",
++      "bytes": 29076
+     },
+     {
+       "name": "reader_universal_contract.js",
+@@ -58,8 +58,18 @@
+     },
+     {
+       "name": "reader_w57_annotations.js",
+-      "sha256": "dc63be09659c3c98a6837daf13bd7a37c309aeb94bdb40d8474551f419c3cb7f",
+-      "bytes": 31057
++      "sha256": "5a269d909cb36a3dda296799b4905a1637345cf6ffe82f61a1675e9f759df932",
++      "bytes": 31447
++    },
++    {
++      "name": "reader_w57_native.css",
++      "sha256": "01e8538abb34fcbb91455c3dea8d9f513fa1e41d7cb0946399d048709db7928e",
++      "bytes": 1510
++    },
++    {
++      "name": "reader_w57_native.js",
++      "sha256": "46808d17991da2b4030e73a4d7d54fca657b4b390df741d0be989e79a6049d8a",
++      "bytes": 2453
+     }
+   ],
+   "normalization": "SHA-256 and UTF-8 byte counts from exact pilot sources. Screenshot/browser QA and canonical Product port still release HOLD."
+diff --git a/research/reader-w57-pilot/README.md b/research/reader-w57-pilot/README.md
+index a4b5816..761d12b 100644
+--- a/research/reader-w57-pilot/README.md
++++ b/research/reader-w57-pilot/README.md
+@@ -86,3 +86,17 @@ W47 and W51 local screenshots (18 November 2026) show the original behavior:
+ the panel control belonged to the right panel and appeared at the top when
+ folded and in the panel header when open. W57 is the latest accepted styling
+ reference; 'ARGON' is the design prototype name, not the website/Reader brand.
++
++### Canary: native mobile sheet
++
++On a built preview open `/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&reader-layout=native`.
++This opt-in loads annotations into the native Part TOC when the native contract is
++present. It does not load the desktop pilot shell, move Product controls or change
++reader preferences. An unsupported route remains native without an annotations
++entry. The comparison mode is explicit and stays fixed across viewport changes;
++`?reader-pilot=1` without `reader-layout=native` still opens the original witness.
++This is not a mobile-default rollout or an Astro production integration.
++
++From the same checkout, after the production-like build, run the native Chromium
++regression with `node scripts/reader-w57-native-browser-qa.mjs`. An externally
++installed Chromium can be selected with `W57_CHROMIUM_PATH`.
+diff --git a/research/reader-w57-pilot/assets/reader_w57.css b/research/reader-w57-pilot/assets/reader_w57.css
+index 86da014..eb874b8 100644
+--- a/research/reader-w57-pilot/assets/reader_w57.css
++++ b/research/reader-w57-pilot/assets/reader_w57.css
+@@ -58,35 +58,35 @@ body.np-u-preview.np-u-argon-shell.np-w57-ready article[data-reader-projection]
+ body.np-u-preview.np-u-argon-shell.np-w57-ready article[data-reader-projection] > section > p{
+  max-width:min(100%,var(--np-w57-reading-measure,688px))!important;
+ }
+-#npUniversalDemo #npW57NotesDetails{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) #npW57NotesDetails{
+  border-top:1px solid var(--np-u-rule,rgba(90,75,63,.15));
+  margin:0;background:transparent;color:var(--np-u-ink,#2a2420);
+ }
+-#npUniversalDemo .np-w57-accordion > summary{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-accordion > summary{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  font:600 12px/1.5 'Source Sans 3',system-ui,sans-serif;
+  min-height:47px;cursor:pointer;list-style:none;padding:10px 12px;
+  color:var(--np-u-ink,#312923);background:transparent;
+ }
+-#npUniversalDemo .np-w57-accordion > summary::-webkit-details-marker{display:none}
+-#npUniversalDemo .np-w57-accordion > summary:after{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-accordion > summary::-webkit-details-marker{display:none}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-accordion > summary:after{
+  content:'⌄';font-size:15px;color:var(--np-u-muted,#756f66);
+  transition:transform .18s ease;
+ }
+-#npUniversalDemo .np-w57-accordion[open] > summary:after{transform:rotate(180deg)}
+-#npUniversalDemo .np-w57-accordion > summary:hover,
+-#npUniversalDemo .np-w57-accordion > summary:focus-visible{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-accordion[open] > summary:after{transform:rotate(180deg)}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-accordion > summary:hover,
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-accordion > summary:focus-visible{
+  background:rgba(118,99,78,.055);outline-offset:-2px;
+ }
+-#npUniversalDemo .np-w57-accordion > summary .np-w57-summary-label{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-accordion > summary .np-w57-summary-label{
+  display:flex;align-items:center;gap:9px;min-width:0;
+ }
+-#npUniversalDemo .np-w57-accordion > summary .np-w57-count{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-accordion > summary .np-w57-count{
+  color:var(--np-u-muted,#807469);font:500 10px/1 system-ui,sans-serif;
+  border:1px solid var(--np-u-rule,rgba(90,75,63,.16));
+  border-radius:9px;padding:4px 7px;
+ }
+-#npUniversalDemo .np-w57-detail-body{padding:6px 12px 16px;}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-detail-body{padding:6px 12px 16px;}
+ /* W57 premium left reading settings: single accessible popup from TOC rail.
+    The right research rail owns no type controls or duplicate preferences. */
+ body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel.np-u-font-panel{
+@@ -123,54 +123,54 @@ body.np-u-preview.np-w57-ready[data-np-u-width="narrow"]{--np-u-reading-measure:
+   left:12px;bottom:64px;max-height:calc(100dvh - 90px);
+  }
+ }
+-#npUniversalDemo #npW57NotesDetails .np-w57-tool-help{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) #npW57NotesDetails .np-w57-tool-help{
+  font:400 11px/1.6 'Source Sans 3',system-ui,sans-serif;
+  color:var(--np-u-muted,#756f66);margin:3px 0 12px;
+ }
+-#npUniversalDemo .np-w57-palette{display:flex;gap:8px;flex-wrap:wrap;margin:7px 0 14px;}
+-#npUniversalDemo .np-w57-palette button{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-palette{display:flex;gap:8px;flex-wrap:wrap;margin:7px 0 14px;}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-palette button{
+  display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;
+  border:1px solid rgba(87,69,58,.22);border-radius:50%;
+  color:#39312d;background:var(--swatch);
+  box-shadow:inset 0 1px rgba(255,255,255,.35);cursor:pointer;padding:0;
+ }
+-#npUniversalDemo .np-w57-palette button[aria-pressed="true"]{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-palette button[aria-pressed="true"]{
+  outline:2px solid var(--np-u-red,#855045);outline-offset:3px;
+ }
+-#npUniversalDemo .np-w57-palette button:focus-visible{outline:2px solid currentColor;outline-offset:3px;}
+-#npUniversalDemo .np-w57-annotation-list{list-style:none;margin:0;padding:0;display:grid;gap:12px;}
+-#npUniversalDemo .np-w57-annotation-list > li{padding:11px 0;border-top:1px solid var(--np-u-rule,#ddd5cd);}
+-#npUniversalDemo .np-w57-annotation-quote{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-palette button:focus-visible{outline:2px solid currentColor;outline-offset:3px;}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-annotation-list{list-style:none;margin:0;padding:0;display:grid;gap:12px;}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-annotation-list > li{padding:11px 0;border-top:1px solid var(--np-u-rule,#ddd5cd);}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-annotation-quote{
+  display:block;font:400 14px/1.6 'Lora',Georgia,serif;
+  color:var(--np-u-ink,#292522);margin:3px 0 7px;overflow-wrap:anywhere;
+ }
+-#npUniversalDemo .np-w57-annotation-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-annotation-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+  font:400 10px/1.4 'Source Sans 3',system-ui,sans-serif;color:var(--np-u-muted,#777);}
+-#npUniversalDemo .np-w57-annotation-meta button{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-annotation-meta button{
+  border:0;background:transparent;min-height:36px;padding:7px 8px;
+  cursor:pointer;color:var(--np-u-red,#86574b);font:600 11px/1.2 system-ui,sans-serif;
+  border-radius:6px;
+ }
+-#npUniversalDemo .np-w57-annotation-meta button:focus-visible,
+-#npUniversalDemo .np-w57-comment button:focus-visible{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-annotation-meta button:focus-visible,
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-comment button:focus-visible{
+  outline:2px solid var(--np-u-red,#86574b);outline-offset:2px;
+ }
+-#npUniversalDemo .np-w57-annotation-meta button:hover{text-decoration:underline;text-underline-offset:3px;}
+-#npUniversalDemo .np-w57-comment label{display:block;font-size:11px;color:var(--np-u-muted,#777);}
+-#npUniversalDemo .np-w57-comment textarea{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-annotation-meta button:hover{text-decoration:underline;text-underline-offset:3px;}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-comment label{display:block;font-size:11px;color:var(--np-u-muted,#777);}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-comment textarea{
+  box-sizing:border-box;display:block;width:100%;min-height:75px;max-height:160px;resize:vertical;
+  margin:7px 0;padding:10px;font:400 12px/1.5 system-ui,sans-serif;
+  color:var(--np-u-ink,#222);background:var(--np-u-paper,#fffdfa);
+  border:1px solid var(--np-u-rule,#ccc);border-radius:6px;
+ }
+-#npUniversalDemo .np-w57-note-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+-#npUniversalDemo .np-w57-comment button,
+-#npUniversalDemo #npW57NotesStatus button{
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-note-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-comment button,
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) #npW57NotesStatus button{
+  min-height:40px;padding:8px 13px;cursor:pointer;border-radius:6px;
+  border:1px solid var(--np-u-rule,#c8b9a7);
+  background:var(--np-u-white,#fff);color:var(--np-u-red,#805044);
+ }
+-#npUniversalDemo .np-w57-note-actions button{flex:1 1 110px;max-width:100%}
++:is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-note-actions button{flex:1 1 110px;max-width:100%}
+ #npW57SelectionToolbar{
+  position:fixed;z-index:12080;display:flex;align-items:center;gap:0;
+  max-width:calc(100vw - 18px);padding:5px;border:1px solid rgba(111,85,67,.19);
+@@ -205,11 +205,11 @@ html.dark #npW57SelectionToolbar button:hover{background:rgba(215,177,121,.13)}
+ ::highlight(np-w57-underline-rose){text-decoration:underline 1.7px rgba(167,89,106,.88);text-underline-offset:4px}
+ ::highlight(np-w57-underline-blue){text-decoration:underline 1.7px rgba(76,119,156,.88);text-underline-offset:4px}
+ @media(max-width:1120px){
+- #npUniversalDemo .np-w57-palette button{flex:0 0 44px;width:44px;height:44px;}
+- #npUniversalDemo .np-w57-annotation-meta button,
+- #npUniversalDemo .np-w57-comment button,
+- #npUniversalDemo #npW57NotesStatus button{min-height:44px}
+- #npUniversalDemo .np-w57-accordion > summary{min-height:48px}
++ :is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-palette button{flex:0 0 44px;width:44px;height:44px;}
++ :is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-annotation-meta button,
++ :is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-comment button,
++ :is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) #npW57NotesStatus button{min-height:44px}
++ :is(#npUniversalDemo,#partTocOverlay:where([data-w57-native])) .np-w57-accordion > summary{min-height:48px}
+  #npW57SelectionToolbar{padding:4px;max-width:calc(100vw - 18px)}
+  #npW57SelectionToolbar button{min-height:44px;padding:7px}
+ }
+diff --git a/research/reader-w57-pilot/assets/reader_w57_annotations.js b/research/reader-w57-pilot/assets/reader_w57_annotations.js
+index 6d39c60..9edfc29 100644
+--- a/research/reader-w57-pilot/assets/reader_w57_annotations.js
++++ b/research/reader-w57-pilot/assets/reader_w57_annotations.js
+@@ -139,19 +139,21 @@
+     return candidates.length===1?candidates[0]:null;
+   }
+   function start(){
+-    if(!document.body.classList.contains('np-w57-ready')||!window.GBHighlights)return false;
++    const native=window.__NP_W57_NATIVE__?.host;
++    if((!native&&!document.body.classList.contains('np-w57-ready'))||!window.GBHighlights)return false;
+     if(window.__NP_W57_ANNOTATIONS__)return true;
+     const article=window.GBReaderContract?.articleRoot?.(document);
+-    const rightScroll=$('#npUResearch .np-u-right-scroll');
++    const rightScroll=native?.container||$('#npUResearch .np-u-right-scroll');
++    const host=native||window.__NP_UNIVERSAL_PREVIEW__;
+     // Only the one selected source ARTICLE owns ranges; catalog MAINs do not.
+-    if(!article?.matches('article')||!article.closest('main.np-u-reader-main')||!rightScroll)
++    if(!article?.matches('article')||!article.closest(native?'main':'main.np-u-reader-main')||!rightScroll)
+       return false;
+     let currentColor='amber',lastSelection=null,lastUndo=null;
+     const section=document.createElement('details');
+     section.id='npW57NotesDetails';section.className='np-w57-accordion';
+-    section.innerHTML='<summary><span class="np-w57-summary-label">✎ Пометы <span class="np-w57-count" id="npW57NotesCount">0</span></span></summary>'+
++    section.innerHTML='<summary><span class="np-w57-summary-label">'+(native?'На полях':'✎ Пометы')+' <span class="np-w57-count" id="npW57NotesCount">0</span></span></summary>'+
+       '<div class="np-w57-detail-body">'+
+-       '<p class="np-w57-tool-help">Выделите фразу в статье. Маркер, подчёркивание, цитата и заметка сохраняются в существующей библиотеке Product.</p>'+
++       '<p class="np-w57-tool-help">Выделите фразу в статье. Маркер, подчёркивание, цитата и заметка сохраняются в вашей Библиотеке.</p>'+
+        '<div class="np-w57-palette" role="group" aria-label="Цвет выделения" id="npW57Palette"></div>'+
+        '<div id="npW57NotesStatus" role="status" aria-live="polite" class="np-w57-tool-help"></div>'+
+        '<div id="npW57NoteEditor" class="np-w57-comment" hidden><label for="npW57NoteText">Заметка к выбранной цитате</label>'+
+@@ -342,8 +344,9 @@
+       pendingNoteId=record.id;
+       noteText.value=linkedNote(record)?.text||'';
+       editor.hidden=false;section.open=true;
+-      window.__NP_UNIVERSAL_PREVIEW__?.openResearchForAnnotation?.();
+-      requestAnimationFrame(()=>noteText.focus({preventScroll:true}));
++      const focus=()=>{noteText.focus({preventScroll:true});editor.scrollIntoView({block:'nearest'})};
++      if(native)host.openResearchForAnnotation(focus);
++      else{host?.openResearchForAnnotation?.();requestAnimationFrame(focus)}
+     }
+     function saveLinkedNote(record,value){
+       const notes=read(nKey),existing=linkedNote(record);
+@@ -380,14 +383,19 @@
+       const r=rangeById.get(id);
+       if(!r)return say('Фрагмент не найден. Исходная цитата сохранена.');
+       section.open=false;
+-      window.__NP_UNIVERSAL_PREVIEW__?.closeResearchForAnnotation?.();
+       const el=r.startContainer.parentElement?.closest('p,li,blockquote')||r.startContainer.parentElement;
+-      el?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth',block:'center'});
+-      if(el){if(!el.hasAttribute('tabindex'))el.setAttribute('tabindex','-1');el.focus?.({preventScroll:true})}
++      const jump=()=>{
++        if(!el?.isConnected)return;
++        el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth',block:'center'});
++        if(!el.hasAttribute('tabindex'))el.setAttribute('tabindex','-1');
++        el.focus?.({preventScroll:true});
++      };
++      if(native)host.closeResearchForAnnotation(jump);
++      else{host?.closeResearchForAnnotation?.();jump()}
+       say('Переход к выделенному фрагменту.');
+     }
+     function showToolbar(data){
+-      if(!data){toolbar.hidden=true;return}
++      if(!data||(native&&!host.canShowActions())){toolbar.hidden=true;return}
+       lastSelection=data;toolbar.hidden=false;
+       const r=data.rect;
+       const w=toolbar.offsetWidth,h=toolbar.offsetHeight;
+@@ -436,13 +444,15 @@
+       const s=lastSelection;
+       toolbar.hidden=true;
+       if(!s)return;
++      lastSelection=null;
+       const record=save(s,kind==='note'?'quote':kind);
+       if(kind==='note'&&record){
+         openNoteEditor(record);
+-        requestAnimationFrame(()=>editor.scrollIntoView({block:'nearest'}));
++      }else if(native){
++        host.announce(status.textContent);
+       }else if(record){
+         section.open=true;
+-        window.__NP_UNIVERSAL_PREVIEW__?.openResearchForAnnotation?.();
++        host?.openResearchForAnnotation?.();
+         rightScroll.scrollTop=0;
+       }
+       window.getSelection()?.removeAllRanges();
+diff --git a/research/reader-w57-pilot/assets/reader_w57_native.css b/research/reader-w57-pilot/assets/reader_w57_native.css
+new file mode 100644
+index 0000000..ccbb7df
+--- /dev/null
++++ b/research/reader-w57-pilot/assets/reader_w57_native.css
+@@ -0,0 +1,24 @@
++/* Scope only new UI. Do not restyle the canonical sheet, bar, text or controls. */
++#partTocOverlay[data-w57-native] #npW57NotesDetails{
++ margin:6px 10px 12px;border:1px solid var(--color-border,#d5cdc2);border-radius:8px;
++ color:inherit;
++}
++#partTocOverlay[data-w57-native] #npW57NotesDetails summary{color:inherit;min-height:44px}
++#partTocOverlay[data-w57-native] .np-w57-tool-help{font-size:13px;color:inherit}
++#partTocOverlay[data-w57-native] .np-w57-note-preview{
++ margin:8px 0;padding:8px 10px;border-inline-start:2px solid var(--np-u-red,#86574b);
++}
++#partTocOverlay[data-w57-native] .np-w57-note-preview-label{font:600 12px/1.5 system-ui,sans-serif}
++#partTocOverlay[data-w57-native] .np-w57-note-preview-text{overflow-wrap:anywhere;white-space:pre-wrap}
++html.dark #partTocOverlay[data-w57-native] #npW57NotesDetails{
++ --np-u-red:#edbe9f;--np-u-ink:#eee2d1;--np-u-muted:#cfb9a6;--np-u-paper:#211d1c;--np-u-white:#211d1c;
++}
++#npW57NativeStatus:not(:empty){
++ position:fixed;z-index:12079;inset:auto 12px calc(78px + env(safe-area-inset-bottom,0px));
++ width:max-content;max-width:calc(100% - 24px);margin-inline:auto;padding:8px 12px;
++ border-radius:8px;color:#fffaf5;background:#422d24;pointer-events:none;font:500 13px/1.35 system-ui,sans-serif;
++}
++#npW57NativeStatus:empty{position:absolute;width:1px;height:1px;clip-path:inset(50%)}
++body:has(#partTocOverlay[data-w57-native]):has(#npW57SelectionToolbar:not([hidden])) :is(.gtip,.btip).is-open{
++ visibility:hidden!important;pointer-events:none!important;
++}
+diff --git a/research/reader-w57-pilot/assets/reader_w57_native.js b/research/reader-w57-pilot/assets/reader_w57_native.js
+new file mode 100644
+index 0000000..136d563
+--- /dev/null
++++ b/research/reader-w57-pilot/assets/reader_w57_native.js
+@@ -0,0 +1,53 @@
++/* W57 native-sheet pilot: no replacements for mobile chrome, TOC or storage. */
++(()=>{'use strict';
++  const sheet=document.querySelector('#partTocOverlay');
++  const container=sheet?.querySelector('.toc-sheet > #gbs2PartToc');
++  const topTrigger=document.querySelector('.mobile-top-bar [data-reader-mobile-menu-target="mobPartTocBtn"]');
++  const partTrigger=document.getElementById('mobPartTocBtn');
++  if(!container||!topTrigger||!partTrigger||!window.GBReaderContract?.articleRoot(document)?.matches('article'))return;
++  sheet.setAttribute('data-w57-native','');
++  const toast=document.createElement('p');
++  toast.id='npW57NativeStatus';
++  toast.setAttribute('role','status');
++  document.body.append(toast);
++  const shown=()=>sheet.classList.contains('is-open');
++  const onScreen=el=>{
++    const r=el.getBoundingClientRect();
++    return !el.closest('[inert]')&&getComputedStyle(el).visibility==='visible'&&
++      r.width>0&&r.height>0&&r.bottom>0&&r.top<innerHeight&&r.right>0&&r.left<innerWidth;
++  };
++  const mobileTrigger=()=>[topTrigger,partTrigger].find(onScreen);
++  const afterFocus=fn=>requestAnimationFrame(()=>requestAnimationFrame(fn));
++  let toastTimer=0, pendingFocus=null;
++  document.addEventListener('gb:overlay-open',event=>{
++    clearTimeout(toastTimer);
++    toast.textContent='';
++    if(event.detail?.ownerId!==sheet.dataset.overlayOwner||!pendingFocus)return;
++    const focus=pendingFocus;
++    pendingFocus=null;
++    afterFocus(()=>{if(shown()&&window.OverlayRuntime?.topLayer()?.element===sheet)focus()});
++  });
++  window.__NP_W57_NATIVE__={host:{
++    container,
++    canShowActions:()=>!!mobileTrigger()&&!window.OverlayRuntime?.hasLiveLayers(),
++    openResearchForAnnotation(focus){
++      if(shown()){afterFocus(()=>{if(shown())focus()});return}
++      const trigger=mobileTrigger();
++      if(!trigger)return;
++      pendingFocus=focus;
++      trigger.click();
++      setTimeout(()=>{if(pendingFocus===focus)pendingFocus=null},500);
++    },
++    closeResearchForAnnotation(jump){
++      if(!shown())return;
++      if(!window.OverlayRuntime?.requestClose(sheet.dataset.overlayOwner,'w57-go-to-source'))return;
++      // Wait for the native inert/focus handoff; a newly opened dialog wins.
++      afterFocus(()=>{if(!shown()&&!window.OverlayRuntime?.hasLiveLayers())jump()});
++    },
++    announce(text){
++      clearTimeout(toastTimer);
++      toast.textContent=text;
++      toastTimer=setTimeout(()=>{toast.textContent=''},3200);
++    },
++  }};
++})();
+diff --git a/research/reader-w57-pilot/preview.py b/research/reader-w57-pilot/preview.py
+index 407b6ff..0566069 100644
+--- a/research/reader-w57-pilot/preview.py
++++ b/research/reader-w57-pilot/preview.py
+@@ -11,6 +11,7 @@ HERE = Path(__file__).resolve().parent
+ REPO = HERE.parent.parent
+ DIST = Path(os.environ.get("READER_W57_DIST", REPO / "dist")).resolve()
+ PORT = int(os.environ.get("READER_W57_PORT", "19061"))
++HOST = os.environ.get("READER_W57_HOST", "127.0.0.1")
+ PREFIX = "/__reader_w57__/"
+ MANIFEST = json.loads((HERE / "MANIFEST.json").read_text(encoding="utf-8"))
+ APPROVED = {f["name"] for f in MANIFEST["files"]}
+@@ -20,7 +21,9 @@ CSS = ["reader_universal_preview.css","reader_argon_first.css",
+ JS = ["reader_universal_contract.js","reader_universal_preview.js",
+       "reader_editorial_refinement.js","reader_editorial_consolidation.js",
+       "reader_w57.js","reader_w57_annotations.js"]
+-assert set(CSS + JS) == APPROVED, "W57 source manifest does not match runtime"
++NATIVE_CSS = ["reader_w57.css", "reader_w57_native.css"]
++NATIVE_JS = ["reader_universal_contract.js", "reader_w57_native.js", "reader_w57_annotations.js"]
++assert set(CSS + JS + NATIVE_CSS + NATIVE_JS) == APPROVED, "W57 source manifest does not match runtime"
+ if not DIST.is_dir(): raise SystemExit(f"Build Astro first; missing {DIST}")
+ 
+ class Handler(SimpleHTTPRequestHandler):
+@@ -52,7 +55,8 @@ class Handler(SimpleHTTPRequestHandler):
+         allowed=("/articles/","/baptisty-rossii/","/biografii/",
+                  "/pastor-series/","/biblioteka/","/books/")
+         excluded=("/nagornaya/","/updates/","/news/","/novosti/")
+-        if (parse_qs(req.query).get("reader-pilot")==["1"]
++        query = parse_qs(req.query)
++        if (query.get("reader-pilot")==["1"]
+                 and path.startswith(allowed) and not path.startswith(excluded)
+                 and path.endswith("/")):
+             file=(DIST/path.lstrip("/")/"index.html").resolve()
+@@ -61,13 +65,16 @@ class Handler(SimpleHTTPRequestHandler):
+             html=file.read_text(encoding="utf-8")
+             if html.count("</head>")!=1 or html.count("</body>")!=1:
+                 return self.send_error(422,"Unexpected Astro document")
+-            css="".join(f'<link rel="stylesheet" href="{PREFIX}{n}">' for n in CSS)
+-            js="".join(f'<script src="{PREFIX}{n}" defer></script>' for n in JS)
++            # Keep shell choice explicit for this comparison. The legacy desktop
++            # pilot reparents DOM and does not safely support hot-swapping shells.
++            native = query.get("reader-layout") == ["native"]
++            css="".join(f'<link rel="stylesheet" href="{PREFIX}{n}">' for n in (NATIVE_CSS if native else CSS))
++            js="".join(f'<script src="{PREFIX}{n}" defer></script>' for n in (NATIVE_JS if native else JS))
+             html=html.replace("</head>",css+"</head>").replace("</body>",js+"</body>")
+             return self.reply(html.encode("utf-8"),"text/html; charset=utf-8")
+         return super().do_GET()
+ 
+ if __name__=="__main__":
+-    print(f"READER_W57_LOCAL http://127.0.0.1:{PORT}/",flush=True)
++    print(f"READER_W57_LOCAL http://{HOST}:{PORT}/",flush=True)
+     print(f"ASTRO_DIST {DIST} | No production mutation",flush=True)
+-    ThreadingHTTPServer(("127.0.0.1",PORT),Handler).serve_forever()
++    ThreadingHTTPServer((HOST,PORT),Handler).serve_forever()
+diff --git a/research/reader-w57-pilot/verify.mjs b/research/reader-w57-pilot/verify.mjs
+index 422a8b9..b1dbf4b 100644
+--- a/research/reader-w57-pilot/verify.mjs
++++ b/research/reader-w57-pilot/verify.mjs
+@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
+ 
+ const root = dirname(fileURLToPath(import.meta.url));
+ const manifest = JSON.parse(readFileSync(join(root, 'MANIFEST.json'), 'utf8'));
+-assert.equal(manifest.files.length, 12, 'W57 source owner count');
++assert.equal(manifest.files.length, 14, 'W57 source owner count');
+ for (const file of manifest.files) {
+   const bytes = readFileSync(join(root, 'assets', file.name));
+   assert.equal(bytes.length, file.bytes, file.name + ' length changed');
+@@ -92,4 +92,4 @@ assert.match(shell, /reader-pilot/, 'preview must be explicit opt-in');
+ assert.match(shell, /127\.0\.0\.1/, 'preview must bind to localhost');
+ assert.match(shell, /No production mutation/, 'draft-only safety banner required');
+ await import(new URL('../../scripts/reader-w57-annotations-regression-test.mjs', import.meta.url));
+-console.log('Reader W57 source/manifests/axis/pilot and annotation contracts: PASS (12 assets)');
++console.log('Reader W57 source/manifests/axis/pilot and annotation contracts: PASS (14 assets)');
+diff --git a/scripts/reader-w57-annotations-regression-test.mjs b/scripts/reader-w57-annotations-regression-test.mjs
+index feb99d7..6e0eb2b 100644
+--- a/scripts/reader-w57-annotations-regression-test.mjs
++++ b/scripts/reader-w57-annotations-regression-test.mjs
+@@ -115,6 +115,6 @@ assert.match(preview,/openResearchForAnnotation\(\)/,'preview exposes proper rai
+ assert.match(preview,/closeResearchForAnnotation\(\)/,'preview exposes mobile close');
+ assert.match(css,/np-w57-annotation-meta button[\s\S]*?min-height:36px/,
+  'desktop note actions have usable hitbox');
+-assert.match(css,/#npUniversalDemo \.np-w57-annotation-meta button,[\s\S]*?min-height:44px/,
++assert.match(css,/\.np-w57-annotation-meta button,[\s\S]*?min-height:44px/,
+  'mobile note actions have 44px target');
+ console.log('Reader W57 notes: anchoring/edit/quota/rollback/undo UI/rail contracts PASS');
+diff --git a/scripts/reader-w57-native-browser-qa.mjs b/scripts/reader-w57-native-browser-qa.mjs
+new file mode 100644
+index 0000000..2d90e7f
+--- /dev/null
++++ b/scripts/reader-w57-native-browser-qa.mjs
+@@ -0,0 +1,147 @@
++import { chromium } from 'playwright';
++import assert from 'node:assert/strict';
++import {mkdir,writeFile} from 'node:fs/promises';
++import {dirname,resolve} from 'node:path';
++import {fileURLToPath} from 'node:url';
++import {spawn} from 'node:child_process';
++import {once} from 'node:events';
++const ROOT=process.env.W57_ROOT||resolve(dirname(fileURLToPath(import.meta.url)),'..');
++const OUT=process.env.W57_OUT||resolve(ROOT,'reports/w57-native-candidate');
++await mkdir(OUT,{recursive:true});
++const B='http://127.0.0.1:19074';
++const PATH='/articles/dzhon-gill-chast-2-uchenyi/';
++const server=spawn('python3',['-u','research/reader-w57-pilot/preview.py'],{cwd:ROOT,env:{...process.env,READER_W57_PORT:'19074'},stdio:['ignore','pipe','ignore']});await once(server.stdout,'data');
++const browser=await chromium.launch({executablePath:process.env.W57_CHROMIUM_PATH,headless:true,args:['--disable-dev-shm-usage']});
++const report={chrome:browser.version(),geometry:[],flows:{}};
++const sheet='#partTocOverlay';
++const trigger='.mobile-top-bar .reader-mobile-menu-trigger';
++const nativeSelectors=[trigger,'.mobile-top-bar .gb-ember','#mobSpdBadge','.mobile-bottom-bar','.mobile-bottom-bar #gb-hl-fab','h1','#gill-search-p-012'];
++async function load(w,h,pilot=false){const c=await browser.newContext({viewport:{width:w,height:h},isMobile:true,hasTouch:true,serviceWorkers:'block',reducedMotion:'reduce'});const p=await c.newPage();p.setDefaultTimeout(4500);const errors=[];p.on('pageerror',e=>errors.push(String(e)));const r=await p.goto(B+PATH+(pilot==='old'?'?reader-pilot=1&paper=space':pilot?'?reader-pilot=1&reader-layout=native':''),{waitUntil:'load'});assert.equal(r.status(),200);await p.waitForFunction(()=>window.GBHighlights&&window.OverlayRuntime);await p.evaluate(()=>document.fonts.ready.then(()=>true));await p.waitForTimeout(300);return{c,p,errors};}
++const snap=(p,n)=>p.screenshot({path:`${OUT}/${n}.jpg`,quality:84,animations:'disabled'});
++const geo=p=>p.evaluate(selectors=>({overflow:document.documentElement.scrollWidth>innerWidth,screen:innerWidth,measurements:selectors.map(sel=>{
++ const e=document.querySelector(sel);if(!e)return null;const s=getComputedStyle(e),r=e.getBoundingClientRect();return {sel,rect:[r.x,r.y,r.width,r.height].map(x=>Math.round(x*10)/10),display:s.display,font:s.fontFamily,size:s.fontSize,color:s.color,background:s.backgroundColor,parent:e.parentElement.className};})}),nativeSelectors);
++async function study(p){
++ const url=new URL(p.url());url.searchParams.set('reader-pilot','1');url.searchParams.set('reader-layout','native');
++ await p.goto(url.href,{waitUntil:'load'});
++ await p.waitForFunction(()=>window.__NP_W57_ANNOTATIONS__?.ready);
++ await p.evaluate(()=>document.fonts.ready.then(()=>true));
++}
++const raw=p=>p.evaluate(()=>({count:window.__NP_W57_ANNOTATIONS__.count(),orphans:window.__NP_W57_ANNOTATIONS__.orphanCount(),rows:JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]'),notes:JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]'),ranges:[...CSS.highlights].filter(([k])=>k.startsWith('np-w57-')).reduce((n,[,h])=>n+h.size,0)}));
++async function openSheet(p){await p.locator(trigger).tap();await p.locator(sheet+'.is-open').waitFor();}
++async function closeSheet(p){await p.keyboard.press('Escape');await p.waitForFunction(()=>!document.querySelector('#partTocOverlay').classList.contains('is-open'));}
++async function selection(p,start,end){
++ const pts=await p.locator('#gill-search-p-012').evaluate(async (el,words)=>{
++  el.scrollIntoView({block:'center'});await new Promise(r=>requestAnimationFrame(r));
++  function point(s,b){const i=el.firstChild.nodeValue.indexOf(s);assertFound(i>=0,s);const r=new Range(),a=i+(b?s.length-1:0);r.setStart(el.firstChild,a);r.setEnd(el.firstChild,a+1);const z=r.getBoundingClientRect();return[b?z.right-.1:z.left+.1,z.y+z.height/2]}
++  function assertFound(ok,label){if(!ok)throw Error('missing '+label)} return [point(words[0],false),point(words[1],true)];
++ },[start,end]);
++ await p.mouse.move(...pts[0]);await p.mouse.down();await p.mouse.move(...pts[1],{steps:21});await p.mouse.up();
++ await p.locator('#npW57SelectionToolbar').waitFor();
++ return p.evaluate(()=>({text:getSelection().toString(),legacy:(()=>{const e=document.querySelector('#selection-share-popup');return e&&!!e.getBoundingClientRect().width&&getComputedStyle(e).visibility==='visible'})(),bar:document.querySelector('#npW57SelectionToolbar').getBoundingClientRect().toJSON()}));
++}
++try{
++for(const [w,h] of [[320,700],[390,844],[430,932],[768,900],[960,900]]){
++ const {c,p,errors}=await load(w,h);
++ const native=await geo(p);
++ if(w===390){await snap(p,'01-native-reader');await openSheet(p);await snap(p,'02-native-sheet');await closeSheet(p);}
++ await study(p);const enhanced=await geo(p);const same=JSON.stringify(native)===JSON.stringify(enhanced);
++ await openSheet(p);const data=await p.evaluate(()=>({newShell:!!document.querySelector('#npUniversalDemo,.np-u-mobilebar'),owner:document.querySelector('#npW57NotesDetails')?.closest('[role=dialog]')?.parentElement.id,nativeCapsule:!!document.querySelector('.mobile-top-bar .reader-mobile-menu-trigger'),fabOwner:!!document.querySelector('.mobile-bottom-bar #gb-hl-fab'),footer:!!document.querySelector('#partTocOverlay [data-gbat-listen]'),disclosures:document.querySelectorAll('#npW57NotesDetails').length}));
++ if(w===390){await snap(p,'03-enhanced-sheet');}
++ await closeSheet(p);const focus=await p.locator(trigger).evaluate(e=>document.activeElement===e);
++ assert(same&&!native.overflow&&!data.newShell&&data.fabOwner&&focus);
++ report.geometry.push({w,h,same,focus,native,enhanced,data,errors});
++ await c.close();
++}
++const old=await load(390,844,'old');await old.p.waitForFunction(()=>window.__NP_W57_ANNOTATIONS__?.ready);report.oldPilot=await geo(old.p);await snap(old.p,'04-old-pilot');await old.c.close();
++const {c,p,errors}=await load(390,844);await study(p);
++const firstSelect=await selection(p,'Гилл','пастором');await snap(p,'05-selection');
++let target=p.locator('#npW57SelectionToolbar [data-w57-action=marker]');
++const x=await target.evaluate(e=>{const r=e.getBoundingClientRect();const x=r.x+r.width/2,y=r.y+r.height/2;return {x,y,hit:e.contains(document.elementFromPoint(x,y))};});
++await p.touchscreen.tap(x.x,x.y);
++assert.equal(await p.locator(sheet+'.is-open').count(),0,'marker interrupted reading');
++assert.match(await p.locator('#npW57NativeStatus').textContent(),/Помета сохранена/);
++await p.locator('.mobile-bottom-bar #mobPartTocBtn').tap();
++await p.locator(sheet+'.is-open').waitFor();await p.locator('#npW57NotesDetails summary').tap();
++assert.equal(await p.locator('#npW57NativeStatus').textContent(),'','confirmation must not overlay the native drawer');
++const before=await raw(p);
++assert.equal(before.count,1);assert.equal(before.ranges,1);assert.equal(before.rows[0].text,firstSelect.text);
++const item=p.locator('#npW57NotesList li[data-id]').first();
++await item.locator('[data-action=edit]').tap();await p.locator('#npW57NoteText').fill('Заметка в штатном оглавлении');await p.locator('#npW57SaveNote').tap();
++const note=await raw(p);assert.equal(note.notes[0]?.text,'Заметка в штатном оглавлении');
++await snap(p,'06-note');
++await item.locator('[data-action=recolor]').tap();await p.locator('#npW57Palette [data-color=lime]').tap();
++await item.locator('[data-action=delete]').tap();const deleted=await raw(p);assert.equal(deleted.count,0);
++await p.locator('#npW57NotesStatus button').tap();const restored=await raw(p);assert.equal(restored.ranges,1);assert.equal(restored.rows[0]?.annotation.color,'lime');
++await closeSheet(p);
++await p.mouse.move(140,310);await p.mouse.wheel(0,-6000);await p.waitForFunction(()=>scrollY<100);await openSheet(p);
++const jumpBefore=await p.evaluate(()=>({scrollY,locked:document.documentElement.hasAttribute('data-scroll-locked'),y:document.querySelector('#gill-search-p-012').getBoundingClientRect().y}));
++await item.locator('[data-action=goto]').tap();await p.waitForFunction(()=>!document.querySelector('#partTocOverlay').classList.contains('is-open'));
++const inspectJump=()=>p.evaluate(()=>({focus:document.activeElement?.id,tag:document.activeElement?.tagName,y:document.querySelector('#gill-search-p-012').getBoundingClientRect().y,scrollY,locked:document.documentElement.hasAttribute('data-scroll-locked')}));
++const immediate=await inspectJump();await p.waitForTimeout(500);const goto={jumpBefore,immediate,settled:await inspectJump()};assert.equal(goto.settled.focus,'gill-search-p-012');assert(!goto.settled.locked);
++await p.reload({waitUntil:'load'});await p.waitForFunction(()=>window.__NP_W57_ANNOTATIONS__?.ready);const after=await raw(p);assert.equal(after.rows[0]?.id,restored.rows[0]?.id);assert.equal(after.orphans,0);assert.equal(after.ranges,1);
++await p.locator('.mobile-bottom-bar #gb-hl-fab').tap();const library=await p.locator('#gb-hl-panel').isVisible();await p.keyboard.press('Escape');
++report.flows={firstSelect,x,before,note,deleted,restored,goto,after,library,errors};await c.close();
++report.nativeControls={};
++for(const mode of ['native','enhanced']){
++ const {c,p,errors}=await load(390,844);if(mode==='enhanced')await study(p);
++ await p.locator('#mobSpdBadge').tap();
++ const speed=await p.locator('.mobile-top-bar .mobile-speed').evaluateAll(es=>es.map(e=>({text:e.textContent.trim(),visible:!!e.getClientRects().length})));
++ if(mode==='enhanced')await snap(p,'07-enhanced-speed');
++ await p.locator('.mobile-top-bar .mobile-speed[data-speed="1.25"]').tap();
++ const speedAfter=await p.locator('#mobSpdBadge').textContent();
++ const settings=p.locator('.mobile-bottom-bar [data-gill-settings-open]'); await settings.tap();
++ const openSettings=await p.locator('#gillSettingsOverlay').getAttribute('aria-hidden');await p.keyboard.press('Escape');
++ await p.locator('.mobile-bottom-bar #gb-hl-fab').tap();const lib=await p.locator('#gb-hl-panel').isVisible();await p.keyboard.press('Escape');
++ await openSheet(p);let focusInside=0;for(let i=0;i<24;i++){await p.keyboard.press(i<12?'Tab':'Shift+Tab');focusInside+=Number(await p.locator(sheet).evaluate(e=>e.contains(document.activeElement)));}await closeSheet(p);
++ report.nativeControls[mode]={speed,speedAfter,openSettings,lib,focusInside,errors};
++ await c.close();
++}
++const rotated=await load(390,844,true);
++const rp=rotated.p;
++await rp.evaluate(()=>{window.w57Opens=0;document.addEventListener('gb:overlay-open',e=>{if(e.detail?.ownerId===document.querySelector('#partTocOverlay').dataset.overlayOwner)window.w57Opens++});});
++await openSheet(rp);await rp.locator('#npW57NotesDetails summary').tap();
++await rp.setViewportSize({width:844,height:390});
++assert.equal(await rp.locator(sheet+'.is-open').count(),1);
++assert.equal(await rp.locator('#npW57NotesDetails[open]').count(),1);
++await snap(rp,'09-landscape-sheet');
++await closeSheet(rp);
++await rp.setViewportSize({width:1440,height:900});
++assert.equal(await rp.locator('#npUniversalDemo').count(),0,'explicit native mode must not start a second shell');
++await rp.setViewportSize({width:390,height:844});
++await openSheet(rp);
++assert.equal(await rp.evaluate(()=>window.w57Opens),2,'each tap opens native TOC once');
++assert.equal(await rp.locator('#npW57NotesDetails').count(),1);
++await closeSheet(rp);
++await rp.locator('.mobile-bottom-bar #gb-hl-fab').tap();
++assert.equal(await rp.locator('#gb-hl-panel').isVisible(),true);
++report.rotation={nativeOpens:2,singleDisclosure:true,libraryInBottom:true,errors:rotated.errors};
++await rotated.c.close();
++const desktop=await browser.newPage({viewport:{width:1440,height:900}});
++await desktop.goto(B+PATH+'?reader-pilot=1&paper=space');
++await desktop.waitForFunction(()=>window.__NP_W57_ANNOTATIONS__?.ready);
++assert.equal(await desktop.locator('#npUniversalDemo #npW57NotesDetails').count(),1);
++report.desktop={annotations:1,oldShell:true};await desktop.close();
++const direct=await load(390,844,true);
++await selection(direct.p,'Гилл','пастором');
++const addNote=direct.p.locator('#npW57SelectionToolbar [data-w57-action=note]');
++await addNote.tap();
++await direct.p.waitForFunction(()=>document.activeElement?.id==='npW57NoteText');
++await direct.p.locator('#npW57NoteText').fill('Черновик переживает поворот');
++await direct.p.setViewportSize({width:844,height:390});
++assert.equal(await direct.p.locator('#npW57NoteText').inputValue(),'Черновик переживает поворот');
++await direct.p.locator('#npW57SaveNote').tap();
++assert.equal((await raw(direct.p)).notes[0].text,'Черновик переживает поворот');
++report.directNote={focused:true,retainedThroughRotation:true,saved:true,errors:direct.errors};
++await direct.c.close();
++const dark=await load(390,844);await study(dark.p);
++await dark.p.locator('.mobile-bottom-bar [data-gill-settings-open]').tap();
++await dark.p.locator('#gillSettingsOverlay [data-gill-theme-btn][data-theme=dark]').tap();
++await dark.p.keyboard.press('Escape');await openSheet(dark.p);await dark.p.locator('#npW57NotesDetails summary').tap();await snap(dark.p,'08-enhanced-dark-sheet');await dark.c.close();
++for(const path of ['/journal/dossiers/g3/','/updates/','/nagornaya/chast-1/']){const res=await fetch(B+path+'?reader-pilot=1&reader-layout=native');(report.exclusions??=[]).push({path,status:res.status,w57:(await res.text()).includes('/__reader_w57__/')});}
++assert(report.exclusions.every(x=>x.status===200&&!x.w57));
++assert.deepEqual(report.nativeControls.native,report.nativeControls.enhanced);
++assert.equal(report.nativeControls.enhanced.speedAfter,'1.25×');
++assert.equal(report.nativeControls.enhanced.focusInside,24);
++console.log('W57 native browser QA: PASS ('+report.chrome+')');
++
++}catch(e){report.abort=String(e);throw e}finally{await writeFile(OUT+'/evidence.json',JSON.stringify(report,null,2));await browser.close();server.kill();}
