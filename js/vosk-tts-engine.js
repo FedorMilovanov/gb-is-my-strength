@@ -500,6 +500,10 @@ meta: message.message || undefined
 return;
 }
 if (type === 'ready') {
+// Late/foreign ready: a ready that no pending load waits for must not flip
+// state (e.g. delivered in-flight after a persisted cancel). Legitimate
+// cross-tab adoption flows through the status broadcast path instead.
+if (!state.loadRequests.has(message.id)) return;
 var quietReady = anyQuietLoad();
 state.ready = true;
 settleLoad(message.id);
@@ -568,7 +572,13 @@ try { raw.terminate(); } catch (_) {}
 }
 }
 };
-port.onmessage = function (event) { handleWorkerMessage(event.data || {}); };
+port.onmessage = function (event) {
+// Stale-channel guard (SYS-TTS-RECOVERY-STATUS-OWNERSHIP): after cancel/retry
+// teardown a SharedWorker port can still deliver in-flight messages from the
+// old generation; only the CURRENT channel may move engine state.
+if (state.worker !== channel) return;
+handleWorkerMessage(event.data || {});
+};
 port.onmessageerror = function () {
 var error = new Error('Persistent Vosk worker returned an unreadable message');
 showStatus('error', { reason: error.message });
