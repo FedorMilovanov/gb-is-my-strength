@@ -256,10 +256,12 @@ html.dark .journal-edition {
   .journal-edition .journal-footer { margin-inline: 20px; padding-bottom: max(24px, env(safe-area-inset-bottom, 0px)); }
 }
 @media screen and (max-width: 389px) {
-  /* Two complete editorial phrases, not a font-dependent last-word wrap.
-     Both lines contain text: no reserved height or cold-paint hiding. */
-  .journal-edition .journal-kicker-part { display: block; }
-  .journal-edition .journal-kicker-separator { display: none; }
+  /* A balanced strapline measure keeps two occupied rows through font swap;
+     the unfragmented text retains its original wide-screen/print shaping. */
+  .journal-edition .journal-kicker { max-inline-size: 20em; text-wrap: balance; }
+  /* Bind grammatical phrases, not lines; long groups can still reflow
+     within the full text measure when the reader enlarges the text. */
+  .journal-edition .journal-lead-phrase { display: inline-block; max-inline-size: 100%; }
 }
 @media print {
   .journal-edition, html.dark .journal-edition { --je-paper: #fff; --je-paper-raised: #fff; --je-ink: #111; --je-muted: #333; --je-gold: #333; --je-rule: #aaa; background: #fff; color: #111; }
