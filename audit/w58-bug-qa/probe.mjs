@@ -4,8 +4,8 @@ import {spawn} from 'node:child_process';
 const port=Number(process.env.W58_PORT || 19083),origin='http://127.0.0.1:'+port;
 const server=spawn('python3',['-m','http.server',String(port),'--bind','127.0.0.1','--directory',process.env.W58_DIST || '/tmp/w58-bug-599ec09/dist'],{stdio:['ignore','ignore','ignore']});
 const b=await chromium.launch({executablePath:process.env.W58_CHROMIUM_PATH,args:['--no-sandbox','--disable-dev-shm-usage']});
-const result={sha:'599ec0955665a30e407162d5a2a1eaccbc9a0fd6',browser:b.version(),scenes:[]};
-const output='reports/w58-599ec09/';
+const result={sha:process.env.W58_SHA || '599ec0955665a30e407162d5a2a1eaccbc9a0fd6',browser:b.version(),scenes:[]};
+const output=(process.env.W58_OUT || 'reports/w58-599ec09').replace(/\/$/,'')+'/';
 await mkdir(output,{recursive:true});
 const routes=['/articles/dzhon-gill-chast-2-uchenyi/','/baptisty-rossii/goneniya-i-sovest/'];
 const getState=p=>p.evaluate(()=>{const id=e=>e?.id||e?.tagName;const dlg=document.querySelector('#partTocOverlay .toc-sheet');const settings=document.querySelector('#gillSettingsOverlay');const panel=document.querySelector('#gbrMarginalia');return {
