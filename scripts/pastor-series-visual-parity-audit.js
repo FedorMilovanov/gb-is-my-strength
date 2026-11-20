@@ -133,7 +133,7 @@ must(chrome, '<nav class="h-navbar"', 'native chrome keeps navbar');
 must(chrome, '<section class="h-hero"', 'native chrome keeps hero');
 must(chrome, '<slot />', 'native chrome has slot for PastorSeriesMain');
 must(chrome, '<footer class="h-footer"', 'native chrome keeps footer');
-must(chrome, 'src="../js/site.js', 'native chrome keeps site runtime');
+must(chrome, "assetUrl('js/site.js')", 'native chrome keeps site runtime');
 
 must(main, '<main id="main-content">', 'PastorSeriesMain preserves semantic main wrapper');
 must(main, 'PastorSeriesCardsSection', 'PastorSeriesMain uses cards component');

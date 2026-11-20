@@ -117,8 +117,10 @@ for (const r of routes) {
   if (/^chast-[1-5]$/.test(r.slug)) {
     must(page, 'bg-stone-900', `${r.slug}: body uses dark-capable Tailwind surface`);
     mustNot(page, 'bg-stone-100', `${r.slug}: light-only body surface retired`);
-    const tailwindIndex = pageHead.indexOf('/nagornaya/tw.min.css');
-    const siteIndex = pageHead.indexOf('/css/site.css');
+    // Form-agnostic: accepts both legacy '/nagornaya/tw.min.css?v=…' literals
+    // and the canonical assetUrl('nagornaya/tw.min.css') authority form.
+    const tailwindIndex = pageHead.indexOf('nagornaya/tw.min.css');
+    const siteIndex = pageHead.indexOf('css/site.css');
     if (tailwindIndex >= 0 && siteIndex > tailwindIndex) ok(`${r.slug}: site light-mode override loads after Tailwind`);
     else bad(`${r.slug}: expected tw.min.css before site.css for light-mode paper override`);
   }

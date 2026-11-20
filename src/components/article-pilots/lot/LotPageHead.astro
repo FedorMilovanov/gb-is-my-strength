@@ -1,4 +1,5 @@
 ---
+import { assetUrl } from '@/lib/asset-version';
 import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 import { LOT_QUIZ_QUESTIONS } from './lotQuiz';
 
@@ -230,13 +231,13 @@ const jsonLd = {
 <link rel="manifest" href="/manifest.json" />
 
 <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
-<link rel="preload" as="style" href="../../fonts/fonts.css?v=864cc57a" />
+<link rel="preload" as="style" href={assetUrl('fonts/fonts.css')} />
 <link rel="preload" as="font" type="font/woff2" href="/fonts/Lora/lora-cyrillic-400.woff2" crossorigin />
-<link rel="stylesheet" href="../../fonts/fonts.css?v=864cc57a" />
-<link rel="stylesheet" href="../../css/site.css?v=511fb678" />
-<link rel="stylesheet" href="../../css/command-palette.css?v=3b88813f" />
-<link rel="stylesheet" href="../../css/mobile-hotfix.css?v=9cfd6aee" />
-<link rel="stylesheet" href="../../css/floating-cluster.css?v=18742944" />
+<link rel="stylesheet" href={assetUrl('fonts/fonts.css')} />
+<link rel="stylesheet" href={assetUrl('css/site.css')} />
+<link rel="stylesheet" href={assetUrl('css/command-palette.css')} />
+<link rel="stylesheet" href={assetUrl('css/mobile-hotfix.css')} />
+<link rel="stylesheet" href={assetUrl('css/floating-cluster.css')} />
 
 <script is:inline define:vars={{ siteConfig }}>
   window.SITE_CONFIG = siteConfig;
