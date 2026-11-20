@@ -364,3 +364,37 @@ body.np-u-preview #gb-hl-fab #gb-hl-fab-count{display:none}
   outline:2px solid currentColor!important;outline-offset:-5px!important;border-radius:6px!important;
  }
 }
+
+/* W57 SINGLE COLUMN 2026-11-20: folded-panel glyph, divider, and reading tools
+   share one visual X centre; no 16px sideways exception for the fold SVG. */
+@media(min-width:1121px){
+ body.np-u-preview.np-w57-ready.np-u-hide-right.np-u-native-product-actions
+  #npUniversalDemo.np-u-argon #npURightEdgeRail,
+ body.np-u-preview.np-w57-ready.np-u-hide-right.np-u-native-product-actions:has(> #gbFloatingControls.np-u-native-legacy-float)
+  #npUniversalDemo.np-u-argon #npURightEdgeRail{
+   left:calc(var(--np-w57-axis-x,calc(95vw - 20px)) - 22px)!important;
+   right:auto!important;width:44px!important;
+ }
+ body.np-u-preview.np-w57-ready.np-u-hide-right.np-u-native-product-actions
+  #npUniversalDemo.np-u-argon #npURightEdgeRail #npUEdgeToggle{
+   box-sizing:border-box!important;display:grid!important;place-items:center!important;
+   padding:0!important;width:44px!important;
+ }
+ body.np-u-preview.np-w57-ready.np-u-hide-right.np-u-native-product-actions
+  #npUniversalDemo.np-u-argon #npURightEdgeRail #npUEdgeToggle > svg{
+   display:block!important;margin:0 auto!important;
+ }
+ body.np-u-preview.np-w57-ready.np-u-hide-right.np-u-native-product-actions
+  #npUniversalDemo.np-u-argon #npURightEdgeRail::after{
+   left:50%!important;transform:translateX(-50%)!important;
+ }
+}
+
+/* W57 SERIES PLAY ON-AXIS 2026-11-20: the 32px play glyph is inside a 40px
+   series wrapper and was 4px left of Theme/Search/Save. Align glyph itself. */
+@media(min-width:1121px){
+ body.np-u-preview.np-w57-ready.np-u-hide-right > .gbs-theme-corner.np-u-product-native-floating
+  .gbs-rail-playwrap > .gb-ember-wrap > .gb-ember.gbs-rail-ember{
+   left:4px!important;
+ }
+}

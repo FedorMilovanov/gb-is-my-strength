@@ -23,6 +23,9 @@ assert.match(js, /setProperty\('--np-w57-axis-x','calc\(95vw - 20px\)'\)/,
 assert.doesNotMatch(js, /ResizeObserver\(schedule\)/, 'avoid per-frame toggle-derived geometry');
 assert.match(css, /W57 MOBILE LIBRARY PLAIN SVG 2026-11-20/, 'unframed mobile book required');
 assert.match(css, /W57 mobile FAB source specificity: 2026-11-20/, 'two-ID legacy mobile plate must be overridden');
+assert.match(css, /W57 SINGLE COLUMN 2026-11-20/, 'fold button and divider must share reading actions axis');
+assert.match(css, /W57 SERIES PLAY ON-AXIS 2026-11-20/, 'series Play circle must be centered in 40px rail');
+assert.match(css, /gbs-rail-playwrap\s*>\s*\.gb-ember-wrap\s*>\s*\.gb-ember\.gbs-rail-ember\s*\{\s*left:4px!important;/, '32px Play circle should offset 4px inside 40px rail');
 assert.match(css, /#npURightEdgeRail::after/, 'fold/reading-tool separator required');
 assert.match(css, /#gb-hl-fab:is\(:hover,:active,:focus-visible\)/,
   'no moving or painted library hover');
