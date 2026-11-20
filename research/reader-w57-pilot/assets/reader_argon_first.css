@@ -1929,16 +1929,15 @@ body.np-u-preview .article-header>.np-u-central-overview{
 }
 
 /* W18: ARGON UPDATE reading typography. The native Product settings and
-   original article source remain untouched; preferences are pilot-local. */
+   original article source remain untouched; preferences are shared. */
 body.np-u-preview.np-u-argon-shell{
- --np-u-reading-face:'Lora',Georgia,serif;
+ --np-u-reading-face:var(--gb-reader-font-family,'Lora',Georgia,serif);
  --np-u-reading-base:18px;
  --np-u-reading-scale:1;
  --np-u-reading-leading:1.72;
  --np-u-reading-measure:690px;
 }
 body.np-u-preview.np-u-argon-shell[data-np-u-font="cormorant"]{
- --np-u-reading-face:'Cormorant Garamond',Georgia,serif;
  --np-u-reading-base:22px;
 }
 body.np-u-preview.np-u-argon-shell[data-np-u-size="sm"]{--np-u-reading-scale:.9}

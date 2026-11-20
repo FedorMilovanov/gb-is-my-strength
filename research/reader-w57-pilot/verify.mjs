@@ -34,6 +34,9 @@ assert.match(js, /width:v\.measure==='narrow'\?'narrow'/, 'narrow persisted stat
 assert.match(preview, /one top-level right research card at a time/, 'exclusive right cards missing');
 assert.match(preview, /openResearchForAnnotation\(\)/,'right research owner must expose opening action');
 assert.match(preview, /positionFontPanel\(\)/, 'font popup must have breakpoint-aware modal ownership');
+assert.doesNotMatch(preview, /np-u-argon-reading-v1|applyReaderTypography\(/, 'pilot must not have a second font state owner');
+assert.match(preview, /canon\.set\(patch,\{source:'argon-w57-left-settings'\}\)/,
+ 'settings must commit to the canonical API');
 assert.match(preview, /querySelector\('#npUOutline'\):root/, 'mobile TOC dialog must contain its focused popup');
 assert.doesNotMatch(preview, /root\.append\(fontPanel\)/, 'no unconditional out-of-modal popup');
 assert.match(preview, /closeResearchForAnnotation\(\)/,'right research owner must expose closing action');

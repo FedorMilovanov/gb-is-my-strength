@@ -8,6 +8,7 @@
   var themes = ['light', 'dark', 'sepia'];
   var lines = ['compact', 'normal', 'relaxed'];
   var measures = ['narrow', 'normal', 'wide'];
+  var fontFamilies = ['lora', 'cormorant'];
   var lineValues = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
 
   function get(key) {
@@ -43,6 +44,7 @@
   var state = stored && typeof stored === 'object' ? stored : {
     theme: legacyTheme,
     fontScale: get('gb:font-scale') || 1,
+    fontFamily: 'lora',
     lineHeight: legacy(['gb:gill-line-height:v1', 'gb:hm-line-height:v1'], lines, 'normal'),
     measure: legacy(['gb:gill-measure:v1', 'gb:hm-measure:v1'], measures, 'normal'),
     textMode: get('gb:reader-text-mode:v1') || 'rich',
@@ -53,6 +55,7 @@
     version: 1,
     theme: one(state.theme, themes, legacyTheme),
     fontScale: font(state.fontScale),
+    fontFamily: one(state.fontFamily, fontFamilies, 'lora'),
     lineHeight: one(state.lineHeight, lines, 'normal'),
     measure: one(state.measure, measures, 'normal'),
     textMode: state.textMode === 'plain' ? 'plain' : 'rich',
@@ -63,6 +66,7 @@
   root.setAttribute('data-reader-text-mode', state.textMode);
   root.setAttribute('data-reader-motion', state.motion);
   root.setAttribute('data-reader-measure', state.measure);
+  root.setAttribute('data-reader-font-family', state.fontFamily);
   root.classList.toggle('dark', state.theme === 'dark');
   root.style.setProperty('--gb-reader-font-scale', String(state.fontScale));
   root.style.setProperty('--gb-reader-line-height', lineValues[state.lineHeight]);

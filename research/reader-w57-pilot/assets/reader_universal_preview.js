@@ -167,22 +167,8 @@
  rightMobile.innerHTML=argonSvg('book-open')+'<span>На полях</span>';
  root.querySelector('.np-u-left-foot > span:first-child').textContent='Чтение';
 
- // The ORIGINAL ARGON UPDATE includes adjustable Lora / Cormorant,
- // font size, line spacing and width. Scope every change to the opt-in
- // Reader. Keep the site-wide native Product preference untouched.
- const prefKey='np-u-argon-reading-v1';
- const prefDefaults={font:'lora',size:'md',spacing:'normal',width:'normal'};
- const prefChoices={font:['lora','cormorant'],size:['sm','md','lg','xl'],
-  spacing:['normal','relaxed'],width:['narrow','normal','wide']};
- let prefs={...prefDefaults};
- try{
-  const stored=JSON.parse(localStorage.getItem(prefKey)||'null');
-  if(stored&&typeof stored==='object'){
-   for(const [kind,choices] of Object.entries(prefChoices)){
-    if(choices.includes(stored[kind]))prefs[kind]=stored[kind];
-   }
-  }
- }catch(_){}
+ // Left controls are views of the site-wide canonical preferences only.
+ // W57's one-time legacy migration remains in reader_w57.js.
  const fontPanel=document.createElement('section');
  fontPanel.id='npUFontPanel';fontPanel.className='np-u-font-panel';
  fontPanel.setAttribute('aria-label','Настройки чтения и шрифта');
@@ -236,17 +222,6 @@
   for(const b of fontToggles)b.setAttribute('aria-expanded',String(open));
   if(open)fontPanel.querySelector('button[aria-pressed="true"]')?.focus({preventScroll:true});
  }
- function applyReaderTypography(){
-  for(const [kind,options] of Object.entries(prefChoices)){
-   const value=options.includes(prefs[kind])?prefs[kind]:prefDefaults[kind];
-   prefs[kind]=value;
-   document.body.dataset['npU'+kind.charAt(0).toUpperCase()+kind.slice(1)]=value;
-   for(const option of fontPanel.querySelectorAll('[data-np-u-type-'+kind+']')){
-    option.setAttribute('aria-pressed',String(option.dataset['npUType'+kind.charAt(0).toUpperCase()+kind.slice(1)]===value));
-   }
-  }
-  try{localStorage.setItem(prefKey,JSON.stringify(prefs))}catch(_){}
- }
  fontPanel.addEventListener('click',event=>{
   if(event.target.closest('.np-u-type-close')){
    setFontOpen(false);
@@ -256,21 +231,13 @@
   const b=event.target.closest('button[data-np-u-type-font],button[data-np-u-type-size],button[data-np-u-type-spacing],button[data-np-u-type-width]');
   if(!b)return;
   const canon=window.GBReaderPreferences;
-  if(canon&&typeof canon.set==='function'){
-   // One input owner; W57 merely projects canonical reader preferences.
+  if(!canon||typeof canon.set!=='function')return;
    const patch={};
    if(b.dataset.npUTypeFont)patch.fontFamily=b.dataset.npUTypeFont;
    if(b.dataset.npUTypeSize)patch.fontScale=({sm:.9,md:1,lg:1.1,xl:1.2})[b.dataset.npUTypeSize];
    if(b.dataset.npUTypeSpacing)patch.lineHeight=b.dataset.npUTypeSpacing;
    if(b.dataset.npUTypeWidth)patch.measure=b.dataset.npUTypeWidth;
    if(Object.keys(patch).length)canon.set(patch,{source:'argon-w57-left-settings'});
-   return;
-  }
-  // Fallback only when canonical Product reader is not available.
-  for(const kind of Object.keys(prefChoices)){
-   const key='npUType'+kind.charAt(0).toUpperCase()+kind.slice(1);
-   if(b.dataset[key]){prefs[kind]=b.dataset[key];applyReaderTypography();break}
-  }
  });
  document.addEventListener('pointerdown',event=>{
   if(!fontPanel.hidden&&!fontPanel.contains(event.target)&&!fontToggles.some(b=>b.contains(event.target)))setFontOpen(false);
@@ -299,7 +266,7 @@
    event.stopImmediatePropagation();
   }
  });
- applyReaderTypography();
+ // Canonical bootstrap and W57 subscription set the initial presentation.
 
  // Optional native Product adapter for older hrail/FloatingControls pages.
  // Move the original controls, not copies. Core event owners and TTS state remain

@@ -237,7 +237,42 @@ try{
   assert.equal(m.item.settings.insideAriaModal,true,'mobile font settings outside active aria modal');
   assert.equal(m.item.settings.focusInside,true,'mobile font popup focus lost');
   await snap(m.page,'mobile-settings');
+  await m.page.locator('#npUFontPanel [data-np-u-type-font="cormorant"]').click();
+  m.item.fontAfterClick=await m.page.evaluate(()=>{
+   const pref=window.GBReaderPreferences?.get(),p=document.querySelector('article.article-body p');
+   return {font:pref?.fontFamily,stored:JSON.parse(localStorage.getItem('gb:reader-preferences:v1')||'{}').fontFamily,
+    root:document.documentElement.dataset.readerFontFamily,
+    body:document.body.dataset.npUFont,computed:p?getComputedStyle(p).fontFamily:null,
+    selected:document.querySelector('#npUFontPanel [data-np-u-type-font="cormorant"]')?.getAttribute('aria-pressed')};
+  });
+  assert.equal(m.item.fontAfterClick.font,'cormorant','canonical fontFamily did not update');
+  assert.equal(m.item.fontAfterClick.stored,'cormorant','fontFamily not persisted');
+  assert.equal(m.item.fontAfterClick.root,'cormorant','first paint root not updated');
+  assert.equal(m.item.fontAfterClick.body,'cormorant','W57 adapter did not receive preference');
+  assert.equal(m.item.fontAfterClick.selected,'true','font control not selected');
+  assert.match(m.item.fontAfterClick.computed||'',/Cormorant/i,'article CSS did not adopt the selected font');
+  await snap(m.page,'mobile-settings-cormorant');
   await m.page.keyboard.press('Escape');
+  await m.page.reload({waitUntil:'domcontentloaded'});
+  await m.page.waitForFunction(()=>document.body.classList.contains('np-w57-ready'));
+  m.item.fontAfterReload=await m.page.evaluate(()=>({
+   font:window.GBReaderPreferences?.get()?.fontFamily,
+   root:document.documentElement.dataset.readerFontFamily,
+   body:document.body.dataset.npUFont,
+   computed:getComputedStyle(document.querySelector('article.article-body p')).fontFamily
+  }));
+  assert.equal(m.item.fontAfterReload.font,'cormorant','font preference lost after reload');
+  assert.equal(m.item.fontAfterReload.root,'cormorant','first paint font did not hydrate correctly');
+  assert.match(m.item.fontAfterReload.computed||'',/Cormorant/i,'font not applied after reload');
+  await snap(m.page,'mobile-cormorant-reload');
+  await m.page.goto(BASE+'/articles/kod-da-vinchi/?reader-pilot=1&paper=space',{waitUntil:'domcontentloaded'});
+  await m.page.waitForFunction(()=>document.body.classList.contains('np-w57-ready'));
+  m.item.crossArticleFont=await m.page.evaluate(()=>({
+   font:window.GBReaderPreferences?.get()?.fontFamily,body:document.body.dataset.npUFont,
+   computed:getComputedStyle(document.querySelector('article.article-body p')).fontFamily
+  }));
+  assert.equal(m.item.crossArticleFont.font,'cormorant','site-wide preference did not cross articles');
+  assert.match(m.item.crossArticleFont.computed||'',/Cormorant/i,'other article ignored shared typography');
  });
  await m.context.close();
  // Review layout at the actual user-facing breakpoints, not one 1440px image.
