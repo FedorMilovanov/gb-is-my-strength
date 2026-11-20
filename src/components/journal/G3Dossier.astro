@@ -84,12 +84,19 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
       locator = locator.replace('; объект и формулировки зафиксированы в Research-досье.', '.');
       break;
     case 'G3-S011':
+      title = title.replace(' / event backend', '');
       locator = 'Снимок страницы отмены конференции на официальном сайте, 2026 год.';
       break;
     case 'G3-S028':
       title = title.replace(' + exact-head acquisition', '');
       period = null; // An acquisition route is not a document date.
       locator = 'Официальный архив электронных деклараций IRS Form 990; FY2025.';
+      break;
+    case 'G3-S096':
+      locator = locator
+        .replace('Raw archived payload SHA ', 'Префиксы SHA: архивное содержимое до декодирования — ')
+        .replace(', decoded HTML SHA ', '; декодированный HTML — ')
+        .replace('; roster из шести имён датирован снимком.', '. Список из шести имён датирован снимком.');
       break;
   }
   return { title, period, locator };
