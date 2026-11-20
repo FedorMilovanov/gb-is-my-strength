@@ -63,6 +63,14 @@ function validate(input) {
     ['engine: terminal cancellation teardown', 'terminateWorker(error);'],
     ['engine: synchronous notice', "element.classList.add('is-visible');"],
     ['engine: persisted opt-out', 'setModelDownloadOptOut(true);'],
+    // SYS-TTS-RECOVERY-STATUS-OWNERSHIP: load-generation ownership
+    ['engine: load epoch state', 'loadEpoch: 0'],
+    ['engine: epoch bumps on worker teardown', 'state.loadEpoch += 1;'],
+    ['engine: foreign status ignored', "'foreign-status-ignored'"],
+    ['engine: epoch captured at load start', 'var epoch = state.loadEpoch;'],
+    ['engine: late settlement guarded', 'if (state.loadEpoch === epoch) state.loading = null;'],
+    ['engine: retry supersedes non-ready worker', "createCancelledError('vosk load superseded by retry')"],
+    ['engine: epoch exposed in status', 'loadEpoch: state.loadEpoch'],
   ]) requireText(label, engine, value);
   if (!ordered(engine, ["new SharedWorker(WORKER_SRC, 'gb-vosk-tts')", "new Worker(WORKER_SRC, { name: 'gb-vosk-tts' })"])) {
     problems.push('engine: SharedWorker preference order drifted');
