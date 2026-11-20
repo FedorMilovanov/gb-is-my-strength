@@ -49,26 +49,28 @@ try {
   const dock=await p.locator(fab).evaluate(el=>el.parentElement.className);
   check(mode+': library remains in native action cluster',dock.split(' ').includes('reader-mobile-action-cluster'),dock);
   const native=p.locator('.reader-mobile-menu-trigger:visible').first();
-  if(pilot){
+  {
    let sheetInput=false;
    if(await native.isVisible()){
-    const sheet=p.locator('#'+await native.getAttribute('aria-controls'));await native.tap();
+    // The native top bar auto-hides on downward scroll. Reveal it without moving focus.
+    await p.mouse.move(160,420);await p.mouse.wheel(0,-170);await p.waitForTimeout(400);
+    const sheetBefore=await locationInText(p);
+    const sheet=p.locator('#'+await native.getAttribute('aria-controls'));await native.tap();await p.waitForFunction(el=>el.getAttribute('aria-hidden')==='false',await sheet.elementHandle());
     const opener=entry(sheet);if(await opener.count()===1){await opener.tap();sheetInput=true;
-     // Require the actual stored note, not merely an accordion title. Open the notes group if collapsed.
-     if(!(await sheet.getByText(text,{exact:true}).isVisible())){
-      const summary=sheet.locator('summary:visible').filter({hasText:/Помет/});if(await summary.count()===1)await summary.tap();
-     }
-     check('enhanced: existing linked note shown within native sheet',await sheet.getByText(text,{exact:true}).isVisible(),q.text);
-     await shot(p,'native-sheet-filled');
-     await p.keyboard.press('Escape');await opener.first().waitFor({state:'visible'});
-     check('enhanced: first Escape returns to the sheet entry',await opener.first().evaluate(el=>el===document.activeElement),await p.evaluate(()=>document.activeElement.id||document.activeElement.tagName));
-     await p.keyboard.press('Escape');await sheet.waitFor({state:'hidden'});
-     check('enhanced: second Escape returns to the reading trigger',await native.evaluate(el=>el===document.activeElement),await locationInText(p));
-     check('enhanced: sheet preserves reading position',Math.abs((await locationInText(p)).top-after.top)<45,await locationInText(p));
+     const panel=sheet.getByRole('tabpanel',{name:'На полях'});await panel.waitFor();
+     // This source-only tab is not another Product Library. Record the difference without asserting data loss.
+     check(mode+': research shows published source material',await panel.getByRole('button',{name:/Читать в статье/}).count()>0,{
+      title:await panel.getByRole('heading',{level:3}).innerText(),personalNoteVisible:await panel.getByText(text,{exact:true}).isVisible()});
+     await shot(p,mode+'-source-tab');
+     await sheet.getByRole('tab',{name:'Оглавление',exact:true}).tap();
+     check(mode+': TOC reachable again inside same sheet',await sheet.getByRole('tabpanel',{name:'Оглавление'}).isVisible(),await sheet.getAttribute('aria-hidden'));
+     await p.keyboard.press('Escape');await p.waitForFunction(el=>el.getAttribute('aria-hidden')==='true',await sheet.elementHandle());
+     check(mode+': Escape returns to native trigger',await native.evaluate(el=>el===document.activeElement),await locationInText(p));
+     check(mode+': sheet preserves reading position',Math.abs((await locationInText(p)).top-sheetBefore.top)<45,await locationInText(p));
     }
    }
-   check('enhanced: research accessible within the native sheet',sheetInput,'No alternate toolbar accepted');
-   if(!sheetInput && await p.locator('#npUOpenResearch').isVisible()){
+   check(mode+': research accessible within the native sheet',sheetInput,'No alternate toolbar accepted');
+   if(pilot && !sheetInput && await p.locator('#npUOpenResearch').isVisible()){
     // Positive control on the old shell; this is NOT a pass for the native integration.
     await p.locator('#npUOpenResearch').tap();const details=p.locator('#npW57NotesDetails');
     if(!(await details.evaluate(el=>el.open)))await details.locator('summary').tap();
