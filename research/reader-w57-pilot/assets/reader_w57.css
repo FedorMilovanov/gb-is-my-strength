@@ -196,12 +196,12 @@ html[data-reader-theme="dark"] #npW57SelectionToolbar button:hover,
 html.dark #npW57SelectionToolbar button:hover{background:rgba(215,177,121,.13)}
 ::highlight(np-w57-marker-amber){background:rgba(231,180,74,.32)}
 ::highlight(np-w57-marker-sage){background:rgba(148,180,115,.31)}
-::highlight(np-w57-marker-lime){background:rgba(205,231,61,.46)}
+::highlight(np-w57-marker-lime){background:rgba(183,190,91,.35)}
 ::highlight(np-w57-marker-rose){background:rgba(201,135,142,.26)}
 ::highlight(np-w57-marker-blue){background:rgba(119,167,194,.27)}
 ::highlight(np-w57-underline-amber){text-decoration:underline 1.7px rgba(173,118,43,.88);text-underline-offset:4px}
 ::highlight(np-w57-underline-sage){text-decoration:underline 1.7px rgba(94,139,65,.88);text-underline-offset:4px}
-::highlight(np-w57-underline-lime){text-decoration:underline 1.7px rgba(139,158,28,.95);text-underline-offset:4px}
+::highlight(np-w57-underline-lime){text-decoration:underline 1.7px rgba(127,138,47,.90);text-underline-offset:4px}
 ::highlight(np-w57-underline-rose){text-decoration:underline 1.7px rgba(167,89,106,.88);text-underline-offset:4px}
 ::highlight(np-w57-underline-blue){text-decoration:underline 1.7px rgba(76,119,156,.88);text-underline-offset:4px}
 @media(max-width:1120px){
@@ -427,4 +427,54 @@ body.np-u-preview #gb-hl-fab #gb-hl-fab-count{display:none}
   .gbs-rail-playwrap > .gb-ember-wrap > .gb-ember.gbs-rail-ember{
    left:4px!important;
  }
+}
+
+/* W57 visual-review polish: an actually readable research rail and visible
+   saved linked notes, scoped to opt-in Reader instead of global site CSS. */
+body.np-u-preview.np-w57-ready #npUniversalDemo #npW57NotesDetails .np-w57-tool-help{
+ font-size:12px;line-height:1.65;
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo .np-w57-annotation-meta{
+ font-size:11.5px;line-height:1.5;gap:5px 7px;
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo .np-w57-annotation-meta button{
+ font-size:11.5px;min-height:38px;
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo .np-w57-note-preview{
+ margin:9px 0 10px;padding:10px 12px;
+ border-left:2px solid var(--np-u-red,#855045);
+ border-radius:0 7px 7px 0;background:rgba(127,99,77,.065);
+ color:var(--np-u-ink,#292522);overflow-wrap:anywhere;
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo .np-w57-note-preview-label{
+ display:block;font:650 10px/1.35 'Source Sans 3',system-ui,sans-serif;
+ color:var(--np-u-muted,#756f66);letter-spacing:.025em;margin-bottom:4px;
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo .np-w57-note-preview-text{
+ margin:0;font:400 12.5px/1.62 'Source Sans 3',system-ui,sans-serif;
+ white-space:pre-wrap;overflow-wrap:anywhere;
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo.np-u-argon #npUResearch
+ .np-u-research-module .np-u-instrument-number{font-size:10.5px}
+body.np-u-preview.np-w57-ready #npUniversalDemo.np-u-argon #npUResearch
+ .np-u-research-module .np-u-window-meta{font-size:10.5px;line-height:1.4}
+body.np-u-preview.np-w57-ready #npUniversalDemo.np-u-argon #npUResearch
+ .np-u-research-module .np-u-window>summary strong{font-size:12.5px;line-height:1.35}
+body.np-u-preview.np-w57-ready #npUniversalDemo.np-u-argon #npUResearch
+ .np-u-research-module .np-u-window-body{font-size:13px;line-height:1.65}
+html.dark body.np-u-preview.np-u-argon-shell.np-w57-ready,
+html[data-reader-theme="dark"] body.np-u-preview.np-u-argon-shell.np-w57-ready{
+ --np-u-paper:#1c1b1a;--np-u-deep:#242220;--np-u-white:#272421;
+ --np-u-ink:#ebe2d5;--np-u-muted:#c1b5a9;--np-u-rule:#47403a;
+ --np-u-red:#d8b58a;--np-u-red-soft:#342a22;
+}
+html.dark body.np-u-preview.np-w57-ready #npUniversalDemo .np-w57-note-preview,
+html[data-reader-theme="dark"] body.np-u-preview.np-w57-ready #npUniversalDemo .np-w57-note-preview{
+ background:rgba(216,181,138,.09);
+}
+html.dark ::highlight(np-w57-marker-lime),
+html[data-reader-theme="dark"] ::highlight(np-w57-marker-lime){background:rgba(198,207,108,.42)}
+@media(max-width:1120px){
+ body.np-u-preview.np-w57-ready #npUniversalDemo .np-w57-annotation-meta button{min-height:44px}
+ body.np-u-preview.np-w57-ready #npUniversalDemo .np-w57-note-preview-text{font-size:13px}
 }

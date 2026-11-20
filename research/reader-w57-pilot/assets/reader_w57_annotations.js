@@ -5,7 +5,7 @@
   const qKey='gb-highlights-v1',nKey='gb-reader-notes-v1';
   const colors=['amber','sage','lime','rose','blue'];
   const kinds=['marker','underline','quote'];
-  const hex={amber:'#eacb93',sage:'#c6d5ae',lime:'#d6ee50',rose:'#dab7ba',blue:'#bfd2da'};
+  const hex={amber:'#eacb93',sage:'#c6d5ae',lime:'#d9dc8b',rose:'#dab7ba',blue:'#bfd2da'};
   const normalize=s=>String(s||'').replace(/\s+/g,' ').trim();
   const pathname=()=>location.pathname.replace(/\/+$/,'')||'/';
   const samePage=r=>{try{return new URL(r.url||'',location.origin).pathname.replace(/\/+$/,'')===pathname()}catch(_){return false}};
@@ -203,7 +203,7 @@
     for(const color of colors){
       const b=document.createElement('button');b.type='button';
       b.dataset.color=color;b.style.setProperty('--swatch',hex[color]);
-      b.setAttribute('aria-label',{'amber':'Янтарный','sage':'Оливковый','lime':'Яркий жёлто-зелёный','rose':'Пыльно-розовый','blue':'Голубой'}[color]);
+      b.setAttribute('aria-label',{'amber':'Янтарный','sage':'Оливковый','lime':'Мягкий лаймовый','rose':'Пыльно-розовый','blue':'Голубой'}[color]);
       b.title=b.getAttribute('aria-label');b.setAttribute('aria-pressed',String(color===currentColor));
       b.textContent='✓';b.style.color=color===currentColor?'#3c2c26':'transparent';
       palette.append(b);
@@ -247,13 +247,26 @@
         const quote=document.createElement('span');quote.className='np-w57-annotation-quote';
         quote.textContent=record.text.slice(0,230)+(record.text.length>230?'…':'');
         li.append(quote);
+        // Linked note uses Product's existing store; never make a second copy.
+        const existingNote=linkedNote(record);
+        if(existingNote?.text){
+          const preview=document.createElement('div');preview.className='np-w57-note-preview';
+          const name=document.createElement('span');name.className='np-w57-note-preview-label';
+          name.textContent='Личная заметка';
+          const content=document.createElement('p');content.className='np-w57-note-preview-text';
+          content.textContent=existingNote.text;
+          preview.append(name,content);li.append(preview);
+        }
         const meta=document.createElement('div');meta.className='np-w57-annotation-meta';
         const state=document.createElement('span');
         state.textContent=(record.annotation.kind==='marker'?'Маркер':record.annotation.kind==='underline'?'Подчёркнуто':'Цитата')+
           ' · '+({'amber':'янтарь','sage':'оливка','lime':'лайм','rose':'розовый','blue':'голубой'}[record.annotation.color]||'янтарь');
         meta.append(state);
         for(const [action,label] of [['goto','К тексту'],['switch','Сменить тип'],['recolor','Цвет'],['edit','Заметка'],['delete','Удалить']]){
-          const b=document.createElement('button');b.type='button';b.dataset.action=action;b.textContent=label;meta.append(b);
+          const b=document.createElement('button');b.type='button';b.dataset.action=action;
+          b.textContent=action==='edit'?(existingNote?'Изменить заметку':'Добавить заметку'):label;
+          if(action==='recolor')b.title='Переключить на следующий цвет';
+          meta.append(b);
         }
         if(!rangeById.has(record.id)){
           const warn=document.createElement('span');warn.textContent='Фрагмент не найден';warn.title='Текст статьи изменился или фраза неоднозначна';meta.prepend(warn);
@@ -472,6 +485,8 @@
       const result=saveLinkedNote(record,value);
       if(!result.ok){say(result.message);return}
       pendingNoteId=null;noteText.value='';editor.hidden=true;
+      // Same-tab localStorage writes never emit a storage event: update the card.
+      repaint();
       say(result.message);
     });
     window.addEventListener('storage',e=>{if(e.key===qKey)repaint()});

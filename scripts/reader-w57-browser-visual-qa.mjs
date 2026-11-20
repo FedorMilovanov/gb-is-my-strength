@@ -185,6 +185,11 @@ try{
   const next=await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]'));
   assert.equal(next.length,1);assert.equal(next[0].id,prev[0].id);assert.equal(next[0].text,'Исправленная заметка W57');
   d.item.note={count:next.length,idPreserved:true};
+  const notePreview=d.page.locator('#npW57NotesList li[data-id] .np-w57-note-preview-text').first();
+  assert.equal(await notePreview.textContent(),'Исправленная заметка W57',
+   'edited linked note must be visibly rendered in the panel');
+  assert.equal(await d.page.locator('#npW57NotesList li[data-id] [data-action="edit"]').first().textContent(),
+   'Изменить заметку','edit action must be self-explanatory');
   await snap(d.page,'desktop-saved-note');
   await d.page.locator('#npW57NotesList li[data-id] [data-action="recolor"]').first().click();
   const recolored=await d.page.evaluate(()=>{
@@ -216,6 +221,14 @@ try{
   await m.page.locator('#npUOpenToc').click();
   await m.page.getByRole('button',{name:'Настройки книжного шрифта'}).first().click();
   m.item.settings=await m.page.evaluate(()=>({
+   ghostProbe:document.elementsFromPoint(356,660).slice(0,8).map(el=>({
+    tag:el.tagName,id:el.id,class:String(el.className||'').slice(0,90),
+    label:el.getAttribute('aria-label')||el.getAttribute('title')||''
+   })),
+   floatingButtons:[...document.querySelectorAll('#gb-hl-fab,#gbFloatingControls,.mobile-top-save,[data-fc-root]')]
+    .filter(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0})
+    .map(el=>({id:el.id,class:String(el.className||'').slice(0,65),
+     rect:el.getBoundingClientRect().toJSON()})).slice(0,12),
    visible:!document.querySelector('#npUFontPanel').hidden,
    insideAriaModal:document.querySelector('#npUOutline').contains(document.querySelector('#npUFontPanel')),
    focusInside:document.querySelector('#npUFontPanel').contains(document.activeElement),
@@ -227,6 +240,20 @@ try{
   await m.page.keyboard.press('Escape');
  });
  await m.context.close();
+ // Review layout at the actual user-facing breakpoints, not one 1440px image.
+ for(const [width,height,name] of [[320,700,'mobile-320'],[768,900,'tablet-768'],
+  [1280,800,'desktop-1280'],[1920,1000,'desktop-1920']]){
+  const extra=await scene(chrome,name,
+   '/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space',width,height);
+  extra.item.geometry=await extra.page.evaluate(()=>{
+   const main=document.querySelector('main.np-u-reader-main'),rect=main?.getBoundingClientRect();
+   return {overflow:document.documentElement.scrollWidth>innerWidth+1,
+    center:rect?Math.round(rect.left+rect.width/2):null,viewportCenter:innerWidth/2,
+    mainWidth:rect?.width||0,visibleResearch:!!document.querySelector('#npUResearch')?.getClientRects().length};
+  });
+  if(extra.item.geometry.overflow)REPORT.failures.push({name,reason:'horizontal overflow',geometry:extra.item.geometry});
+  await snap(extra.page,name);await extra.context.close();
+ }
  const alt=await scene(chrome,'independent-article','/articles/kod-da-vinchi/?reader-pilot=1&paper=space',1440,900);
  await snap(alt.page,'other-article');await alt.context.close();
  safari=await webkit.launch({headless:true});

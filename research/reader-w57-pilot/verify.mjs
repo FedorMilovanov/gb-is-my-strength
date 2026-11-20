@@ -15,6 +15,7 @@ for (const file of manifest.files) {
 }
 const css = readFileSync(join(root, 'assets', 'reader_w57.css'), 'utf8');
 const js = readFileSync(join(root, 'assets', 'reader_w57.js'), 'utf8');
+const annotations = readFileSync(join(root, 'assets', 'reader_w57_annotations.js'), 'utf8');
 const shell = readFileSync(join(root, 'preview.py'), 'utf8');
 const preview = readFileSync(join(root, 'assets', 'reader_universal_preview.js'), 'utf8');
 assert.match(preview, /const initiallyFolded=previewPanel!=='open'/,
@@ -37,6 +38,10 @@ assert.match(preview, /querySelector\('#npUOutline'\):root/, 'mobile TOC dialog 
 assert.doesNotMatch(preview, /root\.append\(fontPanel\)/, 'no unconditional out-of-modal popup');
 assert.match(preview, /closeResearchForAnnotation\(\)/,'right research owner must expose closing action');
 assert.match(css, /np-w57-note-actions/, 'note cancel/confirm row missing');
+assert.match(css, /np-w57-note-preview-text/, 'linked note preview style missing');
+assert.match(annotations, /const existingNote=linkedNote\(record\)/, 'saved notes must be shown next to their excerpts');
+assert.ok(annotations.includes('repaint();\n      say(result.message);'), 'successful note changes must refresh immediately');
+assert.match(annotations, /Мягкий лаймовый/, 'palette label must describe toned-down citron');
 assert.ok(preview.includes('event.preventDefault();event.stopImmediatePropagation();'),
   'Escape must only dismiss the settings popup, without closing mobile TOC');
 assert.ok(preview.includes("if(event.key==='Tab'){"),
