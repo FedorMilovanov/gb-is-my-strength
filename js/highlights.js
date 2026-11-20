@@ -24,7 +24,18 @@
   function gbHighlightText(item) { return normalizeText(item && item.text).toLocaleLowerCase(); }
   function gbHighlightKey(item) {
     const text = gbHighlightText(item);
-    return text ? gbHighlightPath(item) + '\n' + text : '';
+    if (!text) return '';
+    // Exact anchored W57 source ranges have their own identity. Preserve the
+    // existing legacy plain-quote key without ever conflating the two.
+    const anchor = item && item.annotation && item.annotation.version === 1 && item.annotation.anchor;
+    if (anchor && typeof anchor.exact === 'string'
+        && Number.isInteger(anchor.start) && Number.isInteger(anchor.end)) {
+      return gbHighlightPath(item) + '\nrange-v1:' + JSON.stringify([
+        String(anchor.blockId || ''), Number.isInteger(anchor.blockIndex) ? anchor.blockIndex : -1,
+        anchor.start, anchor.end, anchor.exact,
+      ]);
+    }
+    return gbHighlightPath(item) + '\n' + text;
   }
   function gbDedupeHighlights(items) {
     const seen = new Set();

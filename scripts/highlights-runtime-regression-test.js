@@ -34,6 +34,26 @@ const differentPage = plain(api.add(compacted, {
 }));
 assert.deepEqual(differentPage.map((x) => x.id), ['third', 'newest', 'other-page'],
   'identical text from another article is a distinct quotation');
+// Range-aware W57 records must survive native library reads and retain their IDs.
+const identical = 'Господь благ';
+const plainQuote = { id: 'native', text: identical, url: '/articles/a/' };
+const markedA = { id: 'w57-a', text: identical, url: '/articles/a/',
+  annotation: { version: 1, kind: 'marker',
+    anchor: { blockIndex: 2, start: 4, end: 16, exact: identical } } };
+const markedB = { id: 'w57-b', text: identical, url: '/articles/a/',
+  annotation: { version: 1, kind: 'underline',
+    anchor: { blockIndex: 11, start: 4, end: 16, exact: identical } } };
+const mixed = plain(api.add(api.add([plainQuote], markedA), markedB));
+assert.deepEqual(mixed.map(x => x.id), ['w57-b', 'w57-a', 'native'],
+  'same text on different ranges plus native quote must coexist');
+assert.deepEqual(plain(api.dedupe(mixed)).map(x => x.id), mixed.map(x => x.id),
+  'native library dedupe must not destroy anchored W57 entries');
+assert.deepEqual(plain(api.add(mixed, { ...markedA, id: 'repeat-click' })).map(x => x.id),
+  mixed.map(x => x.id), 'same anchored range must dedupe');
+const unrelated = plain(api.add(mixed, { id: 'new', text: 'Иной отрывок', url: '/articles/a/' }));
+assert.deepEqual(unrelated.map(x => x.id), ['new', 'w57-b', 'w57-a', 'native'],
+  'unrelated highlight must persist despite pre-existing equal-word ranges');
+
 const many = Array.from({ length: 205 }, (_, i) => ({ id: 'i' + i, text: 'quote ' + i, url: '/article/' + i }));
 assert.equal(api.add(many, { id: 'recent', text: 'new', url: '/recent/' }).length, 200,
   'preexisting 200-item cap is preserved');
