@@ -30,7 +30,9 @@ const { entries, label = 'В этом материале' } = Astro.props;
     syncLayout();
     compact.addEventListener('change', syncLayout);
     contents.addEventListener('click', (event) => {
-      const link = (event.target as Element).closest<HTMLAnchorElement>('a[href^="#"]');
+      if (event.defaultPrevented || event.button !== 0 || event.ctrlKey ||
+          event.metaKey || event.shiftKey || event.altKey || !(event.target instanceof Element)) return;
+      const link = event.target.closest<HTMLAnchorElement>('a[href^="#"]');
       if (!link || !compact.matches) return;
       const target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
       if (!target) return;
