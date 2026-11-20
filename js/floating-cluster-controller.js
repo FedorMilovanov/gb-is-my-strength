@@ -1602,6 +1602,7 @@
     var partToc = qs('#partTocOverlay');
     var mobTocBtn = qs('#mobTocBtn');
     var mobPartTocBtn = qs('#mobPartTocBtn');
+    var topResearchBtns = qsa('[data-gill-marginalia-open]');
     var backToSeries = qs('#backToSeries');
 
     [seriesToc, partToc].forEach(function(overlay) {
@@ -1684,8 +1685,20 @@
         e.stopPropagation();
         closeOverlay(seriesToc, 'switch', false);
         openOverlay(partToc, e.currentTarget);
+        partToc.dispatchEvent(new CustomEvent('gb:gill-select-part-panel', { detail:{ panel:'toc' } }));
       });
     }
+    // Top research uses the exact same modal owner as lower TOC: one sheet.
+    topResearchBtns.forEach(function (btn) {
+      if (!partToc) return;
+      addCleanListener(btn, 'click', function (e) {
+        e.preventDefault();
+        closeOverlay(seriesToc, 'switch', false);
+        openOverlay(partToc, e.currentTarget);
+        btn.setAttribute('aria-expanded','true');
+        partToc.dispatchEvent(new CustomEvent('gb:gill-select-part-panel', { detail:{ panel:'research' } }));
+      });
+    });
 
     // Hardening against a stuck-open sheet rendering with the WRONG (mobile
     // vs desktop) chrome after a viewport crossing (window resize/rotate
