@@ -615,6 +615,17 @@ PR #2346 получил два новых reader-only коммита: `dd78f75` 
 
 `data/scripture-search-index.json` на `e567400` всё ещё stale. Disposable writer снова изменяет только `scannedSourceFiles: 542 → 543`; после записи `--check` и `scripture-occurrence-index-contract.mjs` проходят (`1372/3511/103`, `149 curated text records`). Индекс не переносился в PR #2346 или audit-ветку.
 
-Для workflow `44837643407` на `e567400`: Linux и Darwin actionlint завершились **SUCCESS**, Windows снова падает на том же объединённом шаге `Prove offline archive contract and execute binary`; annotation снова сообщает только `exit code 1`, а results receiver API отвечает `EOF`. `exact-pins` и большая часть матрицы оставались в очереди. Scripture workflows также падают исключительно из-за stale индекса. Поэтому Windows failure остаётся недоказанным tooling/environment issue, а не подтверждённым defect продукта.
+Для workflow `44837643407` на `e567400`: Linux и Darwin actionlint завершились **SUCCESS**, Windows снова падает на том же объединённом шаге `Prove offline archive contract and execute binary`; annotation снова сообщает только `exit code 1`, а results receiver API отвечает `EOF`. `exact-pins` и большая часть матрицы оставались в очереди. Scripture workflows также падают исключительно из-за stale индекса.
+
+### 12.4. Windows root cause установлен по hosted evidence
+
+Причина Windows failure теперь установлена, хотя свежие job logs недоступны. В exact `e567400` `scripts/run-actionlint.mjs` всё ещё использует `Expand-Archive -LiteralPath`. Предыдущий diagnostic run `44804021057` зафиксировал конкретный механизм: Archive module на Windows вызывает отсутствующий 3-аргументный overload `ExtractToDirectory`, выдаёт non-terminating `MethodCountCouldNotFindBest`, возвращает exit 0 и оставляет `.extract-*` пустым; последующий `ENOENT` для `actionlint.exe` — вторичный симптом. Это не reader/product defect.
+
+Рецензированный fix уже существует отдельными коммитами, но не входит в цепочку exact `e567400`:
+
+- `7574d50` — заменяет `Expand-Archive` на двухаргументный `[System.IO.Compression.ZipFile]::ExtractToDirectory`, включает `$ErrorActionPreference='Stop'` и проверяет stderr;
+- `6e41011` — добавляет source regression guard, запрещающий возврат `Expand-Archive` и требующий ZipFile overload/error-stream checks.
+
+Эти коммиты не переносились в текущую audit-ветку и не применялись к PR #2346 из-за branch scope. Для снятия Windows CI failure основной агент должен внести эквивалентный fix в PR #2346 и получить новый hosted run. Пока этого нет, PR остаётся HOLD.
 
 Новые reader-коммиты не затрагивают D2/D3. **D2 и D3 остаются `- [ ]`; PR #2346 сохраняет DRAFT/HOLD.** По latest head mobile Play/rate ownership теперь подтверждён локальным формальным Chromium-контрактом, но это не закрывает визуально-архитектурные блокеры настроек.
