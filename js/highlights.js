@@ -22,37 +22,24 @@
     catch { return raw.split('#')[0].split('?')[0].replace(/^https?:\/\/[^/]+/, '').replace(/\/+$/, '') || '/'; }
   }
   function gbHighlightText(item) { return normalizeText(item && item.text).toLocaleLowerCase(); }
-  function gbHighlightKey(item) {
-    const text = gbHighlightText(item);
-    if (!text) return '';
-    // Exact anchored W57 source ranges have their own identity. Preserve the
-    // existing legacy plain-quote key without ever conflating the two.
-    const anchor = item && item.annotation && item.annotation.version === 1 && item.annotation.anchor;
-    if (anchor && typeof anchor.exact === 'string'
-        && Number.isInteger(anchor.start) && Number.isInteger(anchor.end)) {
-      return gbHighlightPath(item) + '\nrange-v1:' + JSON.stringify([
-        String(anchor.blockId || ''), Number.isInteger(anchor.blockIndex) ? anchor.blockIndex : -1,
-        anchor.start, anchor.end, anchor.exact,
-      ]);
-    }
-    return gbHighlightPath(item) + '\n' + text;
+  function gbHighlightKey(x) {
+    const t=gbHighlightText(x), a=x?.annotation?.version===1&&x.annotation.anchor;
+    return !t?'':gbHighlightPath(x)+'\n'+(a&&Number.isInteger(a.start)&&
+      Number.isInteger(a.end)&&typeof a.exact==='string'
+      ?'range-v1:'+JSON.stringify([a.blockId||'',a.blockIndex??-1,a.start,a.end,a.exact]):t);
   }
   function gbDedupeHighlights(items) {
-    const seen = new Set();
-    const result = [];
-    (Array.isArray(items) ? items : []).forEach((item, index) => {
-      const key = gbHighlightKey(item) || '__invalid__:' + (item && item.id || index);
-      if (seen.has(key)) return;
-      seen.add(key);
-      result.push(item);
+    const seen=new Set();
+    return (Array.isArray(items)?items:[]).filter((item,index)=>{
+      const key=gbHighlightKey(item)||'__invalid__:'+(item?.id||index);
+      if(seen.has(key))return false;
+      seen.add(key);return true;
     });
-    return result;
   }
-  function gbAddHighlight(items, item) {
-    const existing = gbDedupeHighlights(items);
-    const key = gbHighlightKey(item);
-    return key && !existing.some((entry) => gbHighlightKey(entry) === key)
-      ? [item].concat(existing).slice(0, LIMIT_QUOTES) : existing;
+  function gbAddHighlight(items,item) {
+    const unique=gbDedupeHighlights(items),key=gbHighlightKey(item);
+    return key&&!unique.some(x=>gbHighlightKey(x)===key)
+      ?[item,...unique].slice(0,LIMIT_QUOTES):unique;
   }
   function read(key) {
     try {
