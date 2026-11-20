@@ -1,0 +1,507 @@
+diff --git a/js/highlights.js b/js/highlights.js
+--- a/js/highlights.js
++++ b/js/highlights.js
+@@ -50,8 +50,11 @@
+     return [];
+   }
+   function write(key, items) {
+-    try { localStorage.setItem(key, JSON.stringify(items)); return true; }
++    try { localStorage.setItem(key, JSON.stringify(items)); }
+     catch { return false; }
++    // storage only reaches other documents; same-tab readers need a commit signal.
++    window.dispatchEvent(new CustomEvent('gb:library-committed', { detail: { key } }));
++    return true;
+   }
+   function quotes() {
+     const existing = read(QUOTES_KEY);
+@@ -345,6 +348,15 @@
+     const text = textArea.value.trim();
+     if (!text) { statusMessage('Сначала напишите заметку.', true); return; }
+     const old = notes(), context = draft && draft.context, editing = draft && draft.editing;
++    if (editing) {
++      const current = old.find((x) => String(x.id) === editing.id);
++      if (!current || current.text !== editing.text) {
++        statusMessage(current
++          ? 'Заметка изменена в другом редакторе. Черновик не сохранён; скопируйте его перед повторным открытием заметки.'
++          : 'Заметка удалена в другом редакторе. Черновик не сохранён; скопируйте его перед закрытием редактора.', true);
++        return;
++      }
++    }
+     if (!editing && old.length >= LIMIT_NOTES) {
+       statusMessage('Достигнут лимит заметок. Экспортируйте библиотеку перед удалением старых записей.', true);
+       return;
+diff --git a/research/reader-w57-pilot/MANIFEST.json b/research/reader-w57-pilot/MANIFEST.json
+--- a/research/reader-w57-pilot/MANIFEST.json
++++ b/research/reader-w57-pilot/MANIFEST.json
+@@ -28,8 +28,8 @@
+     },
+     {
+       "name": "reader_w57.css",
+-      "sha256": "eae8d1660d4ff2b10f138f67da0ae3f112a5609a16f544098be5970ac944e743",
+-      "bytes": 27512
++      "sha256": "34c4a837c671f748835276c10a4fdbbe0a5e2028b0471baecabe5844c82aa764",
++      "bytes": 28771
+     },
+     {
+       "name": "reader_universal_contract.js",
+@@ -38,8 +38,8 @@
+     },
+     {
+       "name": "reader_universal_preview.js",
+-      "sha256": "ccb3ee4cd758e6579fc0bc4a91005442483793a96fc1e80b6846bbeac062bc87",
+-      "bytes": 132262
++      "sha256": "4290babd5171760f826e0d34bdf7b370526d3f6128d5e7b8974024024d1de63d",
++      "bytes": 134196
+     },
+     {
+       "name": "reader_editorial_refinement.js",
+@@ -53,13 +53,13 @@
+     },
+     {
+       "name": "reader_w57.js",
+-      "sha256": "3ae463aa793aaf5cfca372f5d30283b332700055d9c2141c0d2df6d54bb11769",
+-      "bytes": 3900
++      "sha256": "483ae96787970dd6c7c739f35ec7416eb51b4f7999621c7a21db90377cbf8704",
++      "bytes": 3919
+     },
+     {
+       "name": "reader_w57_annotations.js",
+-      "sha256": "dc63be09659c3c98a6837daf13bd7a37c309aeb94bdb40d8474551f419c3cb7f",
+-      "bytes": 31057
++      "sha256": "33531b97b8a8e13ce9c83014ac3c60052919d4fdb142afbe94967140a87278c3",
++      "bytes": 30909
+     }
+   ],
+   "normalization": "SHA-256 and UTF-8 byte counts from exact pilot sources. Screenshot/browser QA and canonical Product port still release HOLD."
+diff --git a/research/reader-w57-pilot/assets/reader_universal_preview.js b/research/reader-w57-pilot/assets/reader_universal_preview.js
+--- a/research/reader-w57-pilot/assets/reader_universal_preview.js
++++ b/research/reader-w57-pilot/assets/reader_universal_preview.js
+@@ -172,11 +172,14 @@
+  // W57's one-time legacy migration remains in reader_w57.js.
+  const fontPanel=document.createElement('section');
+  fontPanel.id='npUFontPanel';fontPanel.className='np-u-font-panel';
+- fontPanel.setAttribute('aria-label','Настройки чтения и шрифта');
+  fontPanel.setAttribute('role','region');fontPanel.hidden=true;
+  fontPanel.setAttribute('aria-labelledby','npUFontPanelTitle');
+- fontPanel.innerHTML='<header><strong id="npUFontPanelTitle">Шрифт и набор</strong>'+
+-  '<button type="button" class="np-u-type-close" aria-label="Закрыть настройки шрифта">×</button></header>'+
++ fontPanel.innerHTML='<header><strong id="npUFontPanelTitle">Настройки чтения</strong>'+
++  '<button type="button" class="np-u-type-close" aria-label="Закрыть настройки чтения">×</button></header>'+
++  '<div class="np-u-type-group"><span>Тема</span><div class="np-u-type-options">'+
++  '<button type="button" data-np-u-type-theme="light">День</button>'+
++  '<button type="button" data-np-u-type-theme="sepia">Сепия</button>'+
++  '<button type="button" data-np-u-type-theme="dark">Ночь</button></div></div>'+
+   '<div class="np-u-type-group"><span>Книжная гарнитура</span><div class="np-u-type-options">'+
+   '<button type="button" data-np-u-type-font="lora" class="np-u-type-lora">Lora</button>'+
+   '<button type="button" data-np-u-type-font="cormorant" class="np-u-type-cormorant">Cormorant</button></div></div>'+
+@@ -186,24 +189,51 @@
+   '<button type="button" data-np-u-type-size="lg">А+</button>'+
+   '<button type="button" data-np-u-type-size="xl">А++</button></div></div>'+
+   '<div class="np-u-type-group"><span>Межстрочный интервал</span><div class="np-u-type-options">'+
+-  '<button type="button" data-np-u-type-spacing="normal">Книжный · 1,72</button>'+
+-  '<button type="button" data-np-u-type-spacing="relaxed">Широкий · 1,92</button></div></div>'+
++  '<button type="button" data-np-u-type-spacing="compact">Плотный</button>'+
++  '<button type="button" data-np-u-type-spacing="normal">Книжный</button>'+
++  '<button type="button" data-np-u-type-spacing="relaxed">Свободный</button></div></div>'+
+   '<div class="np-u-type-group"><span>Ширина наборной полосы</span><div class="np-u-type-options">'+
+   '<button type="button" data-np-u-type-width="narrow">Узкая</button>'+
+   '<button type="button" data-np-u-type-width="normal">Книжная</button>'+
+-  '<button type="button" data-np-u-type-width="wide">Широкая</button></div></div>';
++  '<button type="button" data-np-u-type-width="wide">Широкая</button></div></div>'+
++  '<div class="np-u-type-group"><span>Оформление текста</span><div class="np-u-type-options">'+
++  '<button type="button" data-np-u-type-text="rich">Полное</button>'+
++  '<button type="button" data-np-u-type-text="plain">Простое</button></div></div>'+
++  '<div class="np-u-type-group"><span>Анимация</span><div class="np-u-type-options">'+
++  '<button type="button" data-np-u-type-motion="system">Обычная</button>'+
++  '<button type="button" data-np-u-type-motion="reduced">Спокойная</button></div></div>'+
++  '<div class="np-u-type-group np-u-type-options">'+
++  '<button type="button" data-np-u-type-reset>Сбросить настройки</button></div>';
+  const fullFontButton=document.createElement('button');
+  fullFontButton.type='button';fullFontButton.className='np-u-type-open';
+- fullFontButton.textContent='Аа · Шрифт';fullFontButton.setAttribute('aria-label','Настройки книжного шрифта');
++ fullFontButton.textContent='Аа · Настройки';fullFontButton.setAttribute('aria-label','Настройки чтения');
+  const compactFontButton=document.createElement('button');
+  compactFontButton.type='button';compactFontButton.className='np-u-type-compact';
+- compactFontButton.textContent='Аа';compactFontButton.setAttribute('aria-label','Настройки книжного шрифта');
+- const fontToggles=[fullFontButton,compactFontButton];
++ compactFontButton.textContent='Аа';compactFontButton.setAttribute('aria-label','Настройки чтения');
++ // Only the opt-in preview replaces the native settings action. Keep its
++ // presentation and position, not its listener/ARIA binding to the old sheet.
++ const nativeSettings=[...document.querySelectorAll('[data-gill-settings-open]')].map(original=>{
++  const trigger=original.cloneNode(true);
++  trigger.removeAttribute('data-gill-settings-open');
++  original.replaceWith(trigger);
++  return trigger;
++ });
++ const learningButton=document.getElementById('mobLearningBtn');
++ const learningOverlay=document.getElementById('gillLearningOverlay');
++ if(learningButton&&learningOverlay){
++  fontPanel.lastElementChild.prepend(learningButton);
++ }
++ const fontToggles=[fullFontButton,compactFontButton,...nativeSettings];
++ let fontOpener=null;
++ const restoreFontFocus=()=>fontOpener?.focus({preventScroll:true});
+  for(const b of fontToggles){
+   b.setAttribute('aria-controls','npUFontPanel');b.setAttribute('aria-expanded','false');
+   b.addEventListener('click',event=>{
+-   event.stopPropagation();setFontOpen(fontPanel.hidden);
+-  });
++   event.preventDefault();event.stopImmediatePropagation();
++   if(fontPanel.hidden)fontOpener=b;
++   setFontOpen(fontPanel.hidden);
++   if(fontPanel.hidden)restoreFontFocus();
++  },true);
+  }
+  root.querySelector('.np-u-left-foot').prepend(fullFontButton);
+  root.querySelector('.np-u-rail-spine').append(compactFontButton);
+@@ -224,6 +254,7 @@
+   const mobile=open&&isMobile(),host=root.querySelector('#npUOutline');
+   fontScrim.hidden=!mobile;
+   fontPanel.setAttribute('role',mobile?'dialog':'region');
++  for(const b of fontToggles)b.setAttribute('aria-haspopup',isMobile()?'dialog':'false');
+   if(mobile)fontPanel.setAttribute('aria-modal','true');
+   else fontPanel.removeAttribute('aria-modal');
+   for(const child of host.children){
+@@ -250,14 +281,18 @@
+  fontPanel.addEventListener('click',event=>{
+   if(event.target.closest('.np-u-type-close')){
+    setFontOpen(false);
+-   (document.body.classList.contains('np-u-compact')?compactFontButton:fullFontButton).focus({preventScroll:true});
++   restoreFontFocus();
+    return;
+   }
+-  const b=event.target.closest('button[data-np-u-type-font],button[data-np-u-type-size],button[data-np-u-type-spacing],button[data-np-u-type-width]');
++  const b=event.target.closest('button');
+   if(!b)return;
+   const canon=window.GBReaderPreferences;
+   if(!canon||typeof canon.set!=='function')return;
++   if(b.hasAttribute('data-np-u-type-reset')){canon.reset();return}
+    const patch={};
++   if(b.dataset.npUTypeTheme)patch.theme=b.dataset.npUTypeTheme;
++   if(b.dataset.npUTypeText)patch.textMode=b.dataset.npUTypeText;
++   if(b.dataset.npUTypeMotion)patch.motion=b.dataset.npUTypeMotion;
+    if(b.dataset.npUTypeFont)patch.fontFamily=b.dataset.npUTypeFont;
+    if(b.dataset.npUTypeSize)patch.fontScale=({sm:.9,md:1,lg:1.1,xl:1.2})[b.dataset.npUTypeSize];
+    if(b.dataset.npUTypeSpacing)patch.lineHeight=b.dataset.npUTypeSpacing;
+@@ -265,20 +300,21 @@
+    if(Object.keys(patch).length)canon.set(patch,{source:'argon-w57-left-settings'});
+  });
+  document.addEventListener('pointerdown',event=>{
++  if(learningOverlay?.classList.contains('is-open'))return;
+   if(!fontPanel.hidden&&!fontPanel.contains(event.target)&&!fontToggles.some(b=>b.contains(event.target))){
+    setFontOpen(false);
+-   (document.body.classList.contains('np-u-compact')?compactFontButton:fullFontButton).focus({preventScroll:true});
++   restoreFontFocus();
+   }
+  },true);
+  document.addEventListener('keydown',event=>{
+-  if(fontPanel.hidden)return;
++  if(fontPanel.hidden||learningOverlay?.classList.contains('is-open'))return;
+   // A native Product Library/Search dialog remains higher priority.
+   if(event.target.closest?.('#gb-hl-panel,.cp-backdrop'))return;
+   if(event.key==='Escape'){
+    // Close the topmost settings popup without simultaneously closing mobile TOC.
+    event.preventDefault();event.stopImmediatePropagation();
+    setFontOpen(false);
+-   (document.body.classList.contains('np-u-compact')?compactFontButton:fullFontButton).focus({preventScroll:true});
++   restoreFontFocus();
+    return;
+   }
+   if(event.key==='Tab'){
+diff --git a/research/reader-w57-pilot/assets/reader_w57.css b/research/reader-w57-pilot/assets/reader_w57.css
+--- a/research/reader-w57-pilot/assets/reader_w57.css
++++ b/research/reader-w57-pilot/assets/reader_w57.css
+@@ -117,6 +117,15 @@
+ body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-options button:focus-visible{
+  outline:2px solid var(--np-u-red,#805044);outline-offset:2px;
+ }
++/* Anchor to the left of the prose rather than beside the left rail. */
++@media(min-width:1121px){
++ body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel.np-u-font-panel{left:12px;max-height:calc(100dvh - 36px)}
++}
++@media(min-width:1121px) and (max-width:1359px){
++ body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel.np-u-font-panel{width:248px}
++ body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-options button{flex-basis:0;padding-inline:3px;white-space:nowrap}
++ body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-options button.np-u-type-cormorant{font-size:13px}
++}
+ body.np-u-preview.np-w57-ready[data-np-u-width="narrow"]{--np-u-reading-measure:576px}
+ @media(max-width:1120px){
+  body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel.np-u-font-panel{
+@@ -179,6 +188,11 @@
+  backdrop-filter:blur(12px);
+ }
+ #npW57SelectionToolbar[hidden]{display:none!important}
++/* Product tips can be portalled to body, above the contextual actions.
++   Give the current text selection priority only while its toolbar is open. */
++body.np-w57-ready:has(>#npW57SelectionToolbar:not([hidden])) :is(.gtip,.btip).is-open{
++ visibility:hidden!important;pointer-events:none!important;
++}
+ #npW57SelectionToolbar button{
+  min-width:43px;min-height:36px;flex:1 1 auto;
+  border:0;border-radius:6px;background:transparent;color:inherit;
+@@ -493,3 +507,8 @@
+  }
+  body.np-u-preview.np-w57-ready #npUniversalDemo #npUOutline #npUFontPanel{z-index:20020}
+ }
++/* Native Gill learning remains a separate action above the settings/TOC. */
++body.np-w57-ready #gillLearningOverlay.is-open{z-index:20030}
++body.np-w57-ready:has(#gillLearningOverlay.is-open) #npUniversalDemo :is(#npUFontPanel,#npUFontScrim,#npUOutline,#npUBackdrop){
++ visibility:hidden!important;pointer-events:none!important;
++}
+diff --git a/research/reader-w57-pilot/assets/reader_w57.js b/research/reader-w57-pilot/assets/reader_w57.js
+--- a/research/reader-w57-pilot/assets/reader_w57.js
++++ b/research/reader-w57-pilot/assets/reader_w57.js
+@@ -5,7 +5,7 @@
+   const body=document.body;
+   const choices={
+     size:{sm:.9,md:1,lg:1.1,xl:1.2},
+-    spacing:{normal:'normal',relaxed:'relaxed'},
++    spacing:{compact:'compact',normal:'normal',relaxed:'relaxed'},
+     width:{narrow:'narrow',normal:'normal',wide:'wide'},
+     font:{lora:'lora',cormorant:'cormorant'}
+   };
+@@ -17,7 +17,6 @@
+     const fontControls=fontPanel?.querySelector('.np-u-type-options');
+     if(!fontPanel||!fontControls||!window.GBReaderPreferences)return false;
+     const canon=window.GBReaderPreferences;
+-    // Keep sole settings panel in its original left preview owner.
+     fontPanel.setAttribute('aria-label','Настройки чтения');
+     // If user selected a non-default ARGON font in the old pilot, migrate once,
+     // but never erase an explicit canonical choice.
+@@ -50,7 +49,10 @@
+       const selection={
+         font:v.fontFamily||'lora',
+         size:nearest(v.fontScale),
+-        spacing:v.lineHeight==='relaxed'?'relaxed':'normal',
++        spacing:choices.spacing[v.lineHeight]||'normal',
++        theme:v.theme,
++        text:v.textMode,
++        motion:v.motion,
+         width:v.measure==='narrow'?'narrow':v.measure==='wide'?'wide':'normal'
+       };
+       for(const [type,value] of Object.entries(selection)){
+diff --git a/research/reader-w57-pilot/assets/reader_w57_annotations.js b/research/reader-w57-pilot/assets/reader_w57_annotations.js
+--- a/research/reader-w57-pilot/assets/reader_w57_annotations.js
++++ b/research/reader-w57-pilot/assets/reader_w57_annotations.js
+@@ -526,14 +526,13 @@
+       repaint();
+       say(result.message);
+     });
+-    window.addEventListener('storage',e=>{if(e.key===qKey)repaint()});
+-    // Native Product Library writes localStorage in the SAME tab, where the
+-    // browser does not emit a storage event. Repaint once after its delete/undo.
+-    document.addEventListener('click',e=>{
+-      const action=e.target.closest?.('#gb-hl-panel [data-library-action],#gb-hl-status [data-library-action]');
+-      if(action&&['delete','undo'].includes(action.dataset.libraryAction))
+-        requestAnimationFrame(repaint);
+-    });
++    let libraryFrame=0;
++    function onLibraryCommit(key){
++      if(key!==qKey&&key!==nKey&&key!==null)return;
++      if(!libraryFrame)libraryFrame=requestAnimationFrame(()=>{libraryFrame=0;repaint()});
++    }
++    window.addEventListener('storage',e=>onLibraryCommit(e.key));
++    window.addEventListener('gb:library-committed',e=>onLibraryCommit(e.detail?.key));
+     window.addEventListener('resize',()=>{if(!toolbar.hidden)toolbar.hidden=true},{passive:true});
+     repaint();
+     window.__NP_W57_ANNOTATIONS__={
+diff --git a/scripts/reader-w57-annotations-regression-test.mjs b/scripts/reader-w57-annotations-regression-test.mjs
+--- a/scripts/reader-w57-annotations-regression-test.mjs
++++ b/scripts/reader-w57-annotations-regression-test.mjs
+@@ -105,8 +105,9 @@
+ assert.match(file,/npW57CancelNote/,'user must be able to cancel note edit');
+ assert.match(file,/status\.replaceChildren\(document\.createTextNode\('Восстановление не удалось/,
+  'failed undo write must not delete its own retry button');
+-assert.match(file,/#gb-hl-panel \[data-library-action\]/,
+- 'same-tab native library deletion must repaint W57 annotations');
++assert.match(file,/addEventListener\('gb:library-committed'/,
++ 'same-tab native Library commits must repaint W57 annotations');
++assert.match(file,/key!==qKey&&key!==nKey/, 'both Library stores must invalidate W57');
+ assert.match(file,/typeof CSS!=='undefined'&&CSS\.highlights/,
+  'unsupported highlight API must be safely detected');
+ assert.match(file,/closeResearchForAnnotation/,'source navigation must close mobile rail');
+diff --git a/scripts/reader-w57-browser-visual-qa.mjs b/scripts/reader-w57-browser-visual-qa.mjs
+--- a/scripts/reader-w57-browser-visual-qa.mjs
++++ b/scripts/reader-w57-browser-visual-qa.mjs
+@@ -229,6 +229,81 @@
+   await d.page.locator('#npW57NotesStatus button').click();
+   assert.equal(await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').filter(x=>x.annotation?.version===1).length),1);
+  });
++ const library='#gb-hl-panel';
++ const openLibrary=async p=>{
++  await p.bringToFront();
++  if(!await p.locator(library).isVisible()){
++   const inline=p.locator('#npULibraryButton');
++   await (await inline.isVisible()?inline:p.locator('#gb-hl-fab')).click({timeout:5000});
++  }
++  await p.locator(`${library} [data-library-tab=note]`).click();
++ };
++ const editNote=async(p,id,text)=>{
++  await p.locator(`${library} .gb-hl-item[data-id="${id}"] [data-library-action=edit-note]`).click();
++  await p.locator('#gb-hl-note-text').fill(text);
++ };
++ const submitNote=p=>p.locator('#gb-hl-editor [type=submit]').click();
++ const notes=p=>p.evaluate(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]'));
++ await safe('desktop-library-same-and-cross-tab',async()=>{
++  const p=d.page,other=await d.context.newPage();
++  try{
++   await other.goto(p.url(),{waitUntil:'domcontentloaded'});
++   await other.waitForFunction(()=>window.__NP_W57_ANNOTATIONS__?.ready);
++   await openLibrary(p);
++   const [record]=await notes(p),text='Исправлено через общую библиотеку';
++   await editNote(p,record.id,text);
++   await submitNote(p);
++   for(const page of [p,other])await page.waitForFunction(t=>
++    document.querySelector('#npW57NotesList .np-w57-note-preview-text')?.textContent===t,text,{timeout:4000});
++   await p.locator(`${library} [data-library-tab=quote]`).click();
++   await p.locator(`${library} .gb-hl-item[data-type=quote] [data-library-action=delete]`).click();
++   const expectCount=async count=>{
++    for(const page of [p,other])await page.waitForFunction(n=>{
++     const cards=document.querySelectorAll('#npW57NotesList li[data-id]').length;
++     const counter=document.querySelector('#npW57NotesCount').textContent;
++     const ranges=[...CSS.highlights].filter(([k])=>k.startsWith('np-w57-')).reduce((sum,[,h])=>sum+h.size,0);
++     return cards===n&&counter===String(n)&&ranges===n;
++    },count,{timeout:4000});
++   };
++   await expectCount(0);
++   await p.locator('#gb-hl-status [data-library-action=undo]').click();
++   await expectCount(1);
++  }finally{
++   await other.close();
++   if(await p.locator(library).isVisible())await p.locator('#gb-hl-close').click();
++  }
++ });
++ for(const mode of ['edit','delete','different-note','ordinary'])await safe('library-conflict-'+mode,async()=>{
++  const context=await chrome.newContext({viewport:{width:1440,height:900}});
++  try{
++   const p=await context.newPage(),other=await context.newPage();
++   await p.goto(d.page.url());
++   await p.evaluate(()=>localStorage.setItem('gb-reader-notes-v1',JSON.stringify(['alpha','beta'].map(id=>
++    ({id,text:`Original ${id}`,url:location.origin+location.pathname,savedAt:Date.now()})))));
++   await Promise.all([p.reload(),other.goto(d.page.url())]);
++   await openLibrary(p);
++   await editNote(p,'alpha','Draft A');
++   if(mode!=='ordinary'){
++    await openLibrary(other);
++    if(mode==='delete')await other.locator(`${library} .gb-hl-item[data-id=alpha] [data-library-action=delete]`).click();
++    else{await editNote(other,mode==='edit'?'alpha':'beta','Commit B');await submitNote(other);}
++   }
++   await p.bringToFront();
++   await submitNote(p);
++   const read=async page=>Object.fromEntries((await notes(page)).map(n=>[n.id,n.text]));
++   const saved=await read(p);
++   const conflict=mode==='edit'||mode==='delete';
++   assert.equal(await p.locator('#gb-hl-editor').isVisible(),conflict);
++   if(conflict){
++    assert.equal(await p.locator('#gb-hl-note-text').inputValue(),'Draft A');
++    assert.match(await p.locator('#gb-hl-status').textContent(),/Черновик не сохранён/);
++   }
++   assert.equal(saved.alpha,mode==='edit'?'Commit B':mode==='delete'?undefined:'Draft A');
++   assert.equal(saved.beta,mode==='different-note'?'Commit B':'Original beta');
++   await other.reload();
++   assert.deepEqual(await read(other),saved);
++  }finally{await context.close();}
++ });
+  await safe('desktop-glossary-source-integrity',async()=>{
+   // The tested source contains a visible gterm and a large hidden gtip.
+   // Range.toString() includes the hidden tooltip, so the saved quote MUST
+@@ -299,6 +374,38 @@
+   assert.equal(restored.painted,true,'glossary quote highlight must repaint after reload');
+   d.item.glossary.restored=restored;
+  });
++ await safe('desktop-glossary-first-pointer-click',async()=>{
++  const p=d.page;
++  const paragraph=p.locator('#gill-search-p-012');
++  await paragraph.scrollIntoViewIfNeeded();
++  await p.mouse.move(5,5);
++  const points=await paragraph.evaluate(el=>{
++   const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);
++   const nodes=[];
++   while(walker.nextNode())if(!walker.currentNode.parentElement.closest('.gtip,.btip'))nodes.push(walker.currentNode);
++   return [['Солтерс-Холле',false],['обсуждали',true]].map(([text,end])=>{
++    const n=nodes.find(leaf=>leaf.nodeValue.includes(text));
++    const i=n.nodeValue.indexOf(text)+(end?text.length-1:0);
++    const r=document.createRange();r.setStart(n,i);r.setEnd(n,i+1);
++    const box=r.getBoundingClientRect();
++    return [end?box.right-.1:box.left+.1,box.y+box.height/2];
++   });
++  });
++  await p.mouse.move(...points[0]);await p.mouse.down();
++  await p.mouse.move(...points[1],{steps:26});await p.mouse.up();
++  const marker=p.locator('#npW57SelectionToolbar [data-w57-action=marker]');
++  await marker.waitFor();
++  const point=await marker.evaluate(el=>{
++   const r=el.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;
++   return {x,y,hit:el.contains(document.elementFromPoint(x,y)),text:getSelection().toString()};
++  });
++  assert.match(point.text,/Диссентеры/);
++  assert.equal(point.hit,true,'tooltip must not cover the marker action after real drag');
++  await p.mouse.click(point.x,point.y);
++  const saved=await p.evaluate(text=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]')
++   .some(q=>q.text===text&&q.annotation?.kind==='marker'),point.text);
++  assert.equal(saved,true,'first direct click must save the actual selection');
++ });
+  await safe('desktop-dark',async()=>{
+   await d.page.evaluate(()=>window.GBReaderPreferences?.setTheme?.('dark',{source:'w57-qa'}));
+   await d.page.waitForTimeout(250);
+@@ -316,7 +423,7 @@
+   await m.page.locator('#npUCloseRight').click();
+   await m.page.locator('#npUOpenToc').click();
+   const originalInert=await m.page.locator('#npUNativeTools').evaluate(el=>el.inert);
+-  await m.page.getByRole('button',{name:'Настройки книжного шрифта'}).first().click();
++  await m.page.locator('#npUOutline .np-u-type-open').click();
+   m.item.settings=await m.page.evaluate(()=>({
+    dialogRole:document.querySelector('#npUFontPanel')?.getAttribute('role'),
+    dialogAria:document.querySelector('#npUFontPanel')?.getAttribute('aria-modal'),
+@@ -378,7 +485,7 @@
+   assert.equal(m.item.closedFontDialog.nativeInert,originalInert,'Escape failed to restore original controls');
+   assert.equal(m.item.closedFontDialog.tocStillOpen,true,'Escape closed the parent TOC');
+   assert.equal(m.item.closedFontDialog.openerExpanded,'false','opener remains expanded');
+-  await m.page.getByRole('button',{name:'Настройки книжного шрифта'}).first().click();
++  await m.page.locator('#npUOutline .np-u-type-open').click();
+   await m.page.mouse.click(356,660);
+   assert.equal(await m.page.locator('#npUFontPanel').isVisible(),false,'scrim outside click did not close dialog');
+   assert.equal(await m.page.locator('#npUNativeTools').evaluate(el=>el.inert),originalInert,
+@@ -412,7 +519,7 @@
+  await m.context.close();
+  // Review layout at the actual user-facing breakpoints, not one 1440px image.
+  for(const [width,height,name] of [[320,700,'mobile-320'],[768,900,'tablet-768'],
+-  [1280,800,'desktop-1280'],[1920,1000,'desktop-1920']]){
++  [1280,800,'desktop-1280'],[1366,768,'desktop-1366'],[1440,900,'desktop-1440'],[1920,1080,'desktop-1920']]){
+   const extra=await scene(chrome,name,
+    '/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space',width,height);
+   extra.item.geometry=await extra.page.evaluate(()=>{
+@@ -423,9 +530,32 @@
+   });
+   if(extra.item.geometry.overflow)REPORT.failures.push({name,reason:'horizontal overflow',geometry:extra.item.geometry});
+   await snap(extra.page,name);
++  if(width>=1280){
++   await safe(name+'-settings',async()=>{
++    const p=extra.page;
++    const native=p.locator('#railSettingsBtn');
++    const trigger=await native.isVisible()?native:p.locator('#npUOutline .np-u-type-open');
++    await trigger.click();
++    const panel=p.locator('#npUFontPanel');
++    assert.equal(await panel.isVisible(),true);
++    assert.equal(await p.locator('#gillSettingsOverlay').getAttribute('aria-hidden'),'true');
++    assert.equal(await trigger.getAttribute('aria-controls'),'npUFontPanel');
++    assert.equal(await trigger.getAttribute('aria-expanded'),'true');
++    const [r,h]=await Promise.all([panel.boundingBox(),p.locator('main h1').first().boundingBox()]);
++    assert.ok(r.x+r.width<=h.x||r.y+r.height<=h.y||h.y+h.height<=r.y,'settings overlap H1');
++    await panel.locator('[data-np-u-type-theme=sepia]').click();
++    assert.equal(await p.evaluate(()=>window.GBReaderPreferences.get().theme),'sepia');
++    await panel.locator('[data-np-u-type-font=cormorant]').click();
++    assert.match(await p.locator('#gill-search-p-012').evaluate(e=>getComputedStyle(e).fontFamily),/Cormorant/);
++    await snap(p,name+'-settings');
++    await p.keyboard.press('Escape');
++    assert.equal(await panel.isHidden(),true);
++    assert.equal(await trigger.evaluate(e=>e===document.activeElement),true);
++   });
++  }
+   if(width===320){
+    await extra.page.locator('#npUOpenToc').click();
+-   await extra.page.getByRole('button',{name:'Настройки книжного шрифта'}).first().click();
++   await extra.page.locator('#npUOutline .np-u-type-open').click();
+    extra.item.settingsBounds=await extra.page.evaluate(()=>{
+     const r=document.querySelector('#npUFontPanel').getBoundingClientRect();
+     return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,
