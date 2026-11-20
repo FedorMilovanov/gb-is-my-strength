@@ -42,20 +42,49 @@ async function scene(browser,name,path,width,height){
 }
 async function safe(name,fn){try{return await fn()}catch(e){REPORT.failures.push({name,error:String(e).slice(0,1000)})}}
 async function selectText(page){
+ // A real reader scrolls in the article, not in the adjacent research rail.
+ // Select only visible prose, never an offscreen paragraph or hidden card.
+ const eligible=async()=>await page.evaluate(()=>{
+  const article=document.querySelector('main.np-u-reader-main article.article-body');
+  if(!article)return false;
+  return [...article.querySelectorAll('p')].some(p=>{
+   const r=p.getBoundingClientRect();
+   return (p.textContent||'').trim().length>70&&r.width>100&&
+    r.top>75&&r.bottom<innerHeight-70&&
+    !p.closest('.np-u-central-overview,.np-u-central-contents,.gill-card,figcaption,.np-u-series-disclosure,[hidden],[inert]');
+  });
+ });
+ let found=await eligible();
+ for(let n=0;!found&&n<10;n++){
+  await page.mouse.move(675,500);
+  await page.mouse.wheel(0,360);
+  await page.waitForTimeout(180);
+  found=await eligible();
+ }
+ if(!found){
+  const state=await page.evaluate(()=>({scrollY,screen:innerHeight,
+   bodyOverflow:getComputedStyle(document.body).overflow,
+   rootOverflow:getComputedStyle(document.documentElement).overflow}));
+  throw new Error('No visible eligible Reader source paragraph after user scroll: '+JSON.stringify(state));
+ }
  return await page.evaluate(()=>{
   const article=document.querySelector('main.np-u-reader-main article.article-body');
-  if(!article)return null;
-  const p=[...article.querySelectorAll('p')].find(x=>x.textContent.trim().length>65&&x.getBoundingClientRect().width>100);
+  const p=[...article.querySelectorAll('p')].find(x=>{
+   const r=x.getBoundingClientRect();
+   return x.textContent.trim().length>70&&r.width>100&&
+    r.top>75&&r.bottom<innerHeight-70&&
+    !x.closest('.np-u-central-overview,.np-u-central-contents,.gill-card,figcaption,.np-u-series-disclosure,[hidden],[inert]');
+  });
   if(!p)return null;
-  p.scrollIntoView({block:'center',behavior:'instant'});
   const w=document.createTreeWalker(p,NodeFilter.SHOW_TEXT);let n;
   while((n=w.nextNode())&&n.nodeValue.trim().length<26){}
   if(!n)return null;
-  const range=document.createRange();range.setStart(n,2);range.setEnd(n,Math.min(42,n.length));
-  const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);
+  const r=document.createRange();r.setStart(n,2);r.setEnd(n,Math.min(42,n.length));
+  const s=window.getSelection();s.removeAllRanges();s.addRange(r);
   document.dispatchEvent(new Event('selectionchange',{bubbles:true}));
   document.dispatchEvent(new MouseEvent('mouseup',{bubbles:true}));
-  return range.toString();
+  const rect=r.getBoundingClientRect();
+  return r.toString();
  });
 }
 try{
@@ -86,6 +115,8 @@ try{
   await snap(d.page,'desktop-annotations');
  });
  await safe('desktop-select-marker-note-edit',async()=>{
+  await d.page.locator('#npW57Palette [data-color="sage"]').click();
+  assert.equal(await d.page.locator('#npW57Palette [data-color="sage"]').getAttribute('aria-pressed'),'true');
   const selected=await selectText(d.page);await d.page.waitForTimeout(500);
   d.item.selected=selected;assert.ok(selected?.length>=6,'selection failed');
   await d.page.waitForTimeout(250);
@@ -131,7 +162,16 @@ try{
   await snap(d.page,'desktop-selection');
   await d.page.locator('#npW57SelectionToolbar [data-w57-action="marker"]').click();
   const first=await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').filter(x=>x.annotation?.version===1));
-  assert.equal(first.length,1,'highlight save missing');d.item.marker={kind:first[0].annotation.kind,anchor:first[0].annotation.anchor};
+  assert.equal(first.length,1,'highlight save missing');
+  d.item.marker={kind:first[0].annotation.kind,color:first[0].annotation.color,anchor:first[0].annotation.anchor};
+  assert.equal(d.item.marker.color,'sage','highlight palette selection was not preserved');
+  d.item.highlightCss=await d.page.evaluate(()=>({
+   supported:typeof CSS!=='undefined'&&!!CSS.highlights&&typeof Highlight!=='undefined',
+   rendered:typeof CSS!=='undefined'&&!!CSS.highlights?.has('np-w57-marker-sage'),
+   rangeCount:CSS?.highlights?.get('np-w57-marker-sage')?.size||0
+  }));
+  if(d.item.highlightCss.supported)assert.equal(d.item.highlightCss.rendered,true,'marker not attached to CSS Custom Highlight registry');
+  await snap(d.page,'desktop-sage-highlight');
   const again=await selectText(d.page);assert.ok(again);
   await d.page.waitForTimeout(350);
   await d.page.locator('#npW57SelectionToolbar [data-w57-action="note"]').click();
@@ -146,6 +186,14 @@ try{
   assert.equal(next.length,1);assert.equal(next[0].id,prev[0].id);assert.equal(next[0].text,'Исправленная заметка W57');
   d.item.note={count:next.length,idPreserved:true};
   await snap(d.page,'desktop-saved-note');
+  await d.page.locator('#npW57NotesList li[data-id] [data-action="recolor"]').first().click();
+  const recolored=await d.page.evaluate(()=>{
+    const q=JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]');
+    return q.find(x=>x.annotation?.version===1)?.annotation?.color;
+  });
+  d.item.recolor=recolored;
+  assert.equal(recolored,'lime','palette recolor must use next canonical color');
+  await snap(d.page,'desktop-lime-highlight');
   await d.page.locator('#npW57NotesList li[data-id] [data-action="delete"]').first().click();
   await d.page.locator('#npW57NotesStatus button').click();
   assert.equal(await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').filter(x=>x.annotation?.version===1).length),1);
