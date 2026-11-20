@@ -1,0 +1,210 @@
+﻿/* W49 opt-in editorial trial on the local Reader only.
+   Reuse real Product article markup and existing native actions. */
+body.np-u-preview main.np-u-reader-main .gill-series-overview[data-np-u-editorial="condensed"]{
+ box-sizing:border-box!important;
+ margin:25px 0 33px!important;
+ padding:3px 0 3px 18px!important;
+ border:0!important;border-left:2px solid var(--color-accent,#97634e)!important;
+ border-radius:0!important;box-shadow:none!important;background:transparent!important;
+}
+body.np-u-preview .gill-series-overview[data-np-u-editorial="condensed"] > div:first-child{
+ margin-bottom:0!important;gap:11px!important;align-items:flex-start!important;
+}
+body.np-u-preview .gill-series-overview[data-np-u-editorial="condensed"] > div:first-child > svg{
+ width:17px!important;height:17px!important;margin-top:3px!important;
+}
+body.np-u-preview .gill-series-overview[data-np-u-editorial="condensed"] > div:first-child p{
+ max-width:63ch!important;font-size:.86rem!important;line-height:1.6!important;
+ color:var(--color-text-secondary,inherit)!important;
+ margin:4px 0 0!important;
+}
+body.np-u-preview .gill-series-overview[data-np-u-editorial="condensed"] .np-u-series-disclosure{
+ margin:12px 0 0!important;border:0!important;padding:0!important;
+}
+body.np-u-preview .gill-series-overview[data-np-u-editorial="condensed"] .np-u-series-disclosure>summary{
+ list-style:none;display:flex;align-items:center;gap:12px;min-height:40px;
+ max-width:100%;padding:6px 0;cursor:pointer;border:0;
+ border-top:1px solid rgba(150,119,88,.19);
+ font:600 .84rem/1.4 system-ui,-apple-system,sans-serif;
+ color:var(--color-accent,#97634e);
+}
+body.np-u-preview .np-u-series-disclosure>summary::-webkit-details-marker{display:none}
+body.np-u-preview .np-u-series-disclosure>summary:focus-visible{
+ outline:2px solid var(--color-accent,#97634e);outline-offset:3px;border-radius:3px
+}
+body.np-u-preview .np-u-series-disclosure__count{
+ margin-left:auto;white-space:nowrap;color:var(--color-text-secondary,#736d65);
+ font:400 .73rem/1.4 system-ui,-apple-system,sans-serif;
+}
+body.np-u-preview .np-u-series-disclosure__chevron{
+ font-size:19px;line-height:1;transition:transform .18s ease;transform:rotate(90deg);font-weight:400
+}
+body.np-u-preview .np-u-series-disclosure[open] .np-u-series-disclosure__chevron{transform:rotate(-90deg)}
+body.np-u-preview .np-u-series-disclosure>.grid{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:10px!important;margin:12px 0 3px!important;padding:0!important;
+}
+body.np-u-preview .np-u-series-disclosure .gill-card{
+ box-sizing:border-box!important;min-width:0!important;
+ padding:12px 14px!important;margin:0!important;
+ background:transparent!important;border:1px solid rgba(141,115,87,.22)!important;
+ border-radius:6px!important;box-shadow:none!important;min-height:0!important
+}
+body.np-u-preview .np-u-series-disclosure .gill-card--active{
+ background:rgba(157,124,90,.07)!important;
+ border-color:rgba(155,115,76,.44)!important;
+}
+body.np-u-preview .np-u-series-disclosure .gill-card__title{
+ font-size:1.02rem!important;margin:3px 0!important;line-height:1.3!important
+}
+body.np-u-preview .np-u-series-disclosure .gill-card__desc{
+ font-size:.79rem!important;line-height:1.45!important;margin:6px 0!important
+}
+body.np-u-preview .np-u-series-disclosure .gill-card__time{
+ font-size:.68rem!important;margin:6px 0!important;
+}
+body.np-u-preview .np-u-series-disclosure .gill-card__cta{
+ font-size:.76rem!important;padding:0!important;line-height:1.35!important;
+ background:transparent!important;box-shadow:none!important;border:0!important;
+}
+@media(max-width:620px){
+ body.np-u-preview main.np-u-reader-main .gill-series-overview[data-np-u-editorial="condensed"]{
+  margin:18px 0 24px!important;padding-left:13px!important;
+ }
+ body.np-u-preview .np-u-series-disclosure>.grid{grid-template-columns:minmax(0,1fr)!important;gap:7px!important}
+ body.np-u-preview .np-u-series-disclosure .gill-card{padding:10px 11px!important}
+}
+@media(min-width:1121px){
+ body.np-u-preview > .gbs-theme-corner.np-u-product-native-floating [data-fc-action="scroll-top"],
+ body.np-u-preview > #gbFloatingControls.np-u-native-legacy-float [data-fc-action="scroll-top"]{
+  position:fixed!important;top:auto!important;left:auto!important;
+  right:var(--np-u-return-inset,35px)!important;bottom:26px!important;
+  display:grid!important;place-items:center!important;
+  width:38px!important;min-width:38px!important;height:38px!important;min-height:38px!important;
+  border-radius:9px!important;background:var(--color-background,#fbfaf8)!important;
+  border:1px solid rgba(136,112,85,.24)!important;
+  box-shadow:0 4px 18px rgba(21,17,12,.08)!important;
+  opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+  transition:opacity .2s ease!important;z-index:1002!important
+ }
+ body.np-u-preview.np-u-return-visible > .gbs-theme-corner.np-u-product-native-floating [data-fc-action="scroll-top"],
+ body.np-u-preview.np-u-return-visible > #gbFloatingControls.np-u-native-legacy-float [data-fc-action="scroll-top"]{
+  opacity:.88!important;visibility:visible!important;pointer-events:auto!important
+ }
+ body.np-u-preview.np-u-return-visible > .gbs-theme-corner.np-u-product-native-floating [data-fc-action="scroll-top"]:is(:hover,:focus-visible),
+ body.np-u-preview.np-u-return-visible > #gbFloatingControls.np-u-native-legacy-float [data-fc-action="scroll-top"]:is(:hover,:focus-visible){
+  opacity:1!important;outline-offset:2px!important
+ }
+}
+
+
+/* W49 editorial series directory: expandable compact rows, not four tile cards. */
+body.np-u-preview .np-u-series-disclosure>.grid{
+ display:block!important;margin-top:8px!important;
+}
+body.np-u-preview .np-u-series-disclosure .gill-card{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) max-content!important;
+ grid-template-areas:"kicker time" "title link" "desc desc"!important;
+ align-items:center!important;column-gap:14px!important;row-gap:2px!important;
+ padding:10px 2px!important;
+ margin:0!important;
+ border:0!important;border-bottom:1px solid rgba(135,114,91,.18)!important;
+ border-radius:0!important;background:transparent!important;
+ min-height:0!important;
+}
+body.np-u-preview .np-u-series-disclosure .gill-card--active{
+ background:rgba(155,115,76,.055)!important;
+ padding-left:8px!important;border-left:2px solid var(--color-accent,#97634e)!important
+}
+body.np-u-preview .np-u-series-disclosure .gill-card__kicker{
+ grid-area:kicker!important;font-size:.63rem!important;margin:0!important
+}
+body.np-u-preview .np-u-series-disclosure .gill-card__title{
+ grid-area:title!important;margin:2px 0!important
+}
+body.np-u-preview .np-u-series-disclosure .gill-card__desc{
+ grid-area:desc!important;margin:2px 0 0!important;
+ display:-webkit-box!important;-webkit-box-orient:vertical!important;
+ -webkit-line-clamp:2!important;line-clamp:2!important;
+ overflow:hidden!important
+}
+body.np-u-preview .np-u-series-disclosure .gill-card__time{
+ grid-area:time!important;justify-self:end!important;
+ font-size:.64rem!important;white-space:nowrap!important;margin:0!important
+}
+body.np-u-preview .np-u-series-disclosure .gill-card__cta{
+ grid-area:link!important;justify-self:end!important;
+ text-decoration:underline!important;text-underline-offset:3px!important
+}
+@media(max-width:480px){
+ body.np-u-preview .np-u-series-disclosure .gill-card{
+  grid-template-columns:minmax(0,1fr) minmax(62px,max-content)!important;
+  column-gap:8px!important
+ }
+ body.np-u-preview .np-u-series-disclosure .gill-card__cta{
+  font-size:.7rem!important
+ }
+}
+
+
+/* The long series explanation is source text inside the optional directory,
+   not an always-visible preface to a serious chapter. */
+body.np-u-preview .np-u-series-disclosure>.np-u-series-expanded-intro{
+ margin:8px 0 12px!important;padding:0!important;max-width:66ch!important;
+ color:var(--color-text-secondary,#756f67)!important;font-size:.84rem!important;
+ line-height:1.55!important;
+}
+
+/* Authoritative local pilot typography for the optional series directory.
+   Narrow-scope typography to stop legacy Gill cards from enlarging it. */
+body.np-u-preview .gbs2-world main.np-u-reader-main .gill-series-overview[data-np-u-editorial="condensed"]
+ .np-u-series-disclosure>.np-u-series-expanded-intro{
+ font:400 13px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif!important;
+ margin:10px 0 12px!important;padding:0!important;
+ max-width:66ch!important;
+}
+body.np-u-preview .gbs2-world main.np-u-reader-main .gill-series-overview[data-np-u-editorial="condensed"]
+ .np-u-series-disclosure .gill-card__desc{
+ font:400 12.5px/1.48 system-ui,-apple-system,"Segoe UI",sans-serif!important;
+ display:-webkit-box!important;-webkit-box-orient:vertical!important;
+ -webkit-line-clamp:2!important;overflow:hidden!important;
+ margin:3px 0 0!important;padding:0!important
+}
+body.np-u-preview .gbs2-world main.np-u-reader-main .gill-series-overview[data-np-u-editorial="condensed"]
+ .np-u-series-disclosure .gill-card__time{
+ font:400 10.5px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif!important;
+ margin:0!important;padding:0!important;
+}
+body.np-u-preview .gbs2-world main.np-u-reader-main .gill-series-overview[data-np-u-editorial="condensed"]
+ .np-u-series-disclosure .gill-card__title{
+ font:600 17px/1.3 Georgia,"Times New Roman",serif!important;
+ margin:2px 0!important;padding:0!important
+}
+
+
+/* Link-copy glyphs belong to editing, not to the steady reading view.
+   Keep the native links and keyboard focus; only soften their resting state
+   on devices that actually support hover. */
+@media(hover:hover) and (pointer:fine){
+ body.np-u-preview main.np-u-reader-main :is(h2,h3,h4,h5,h6) > a.heading-anchor{
+  opacity:0;transition:opacity .16s ease;
+ }
+ body.np-u-preview main.np-u-reader-main :is(h2,h3,h4,h5,h6):is(:hover,:focus-within) > a.heading-anchor,
+ body.np-u-preview main.np-u-reader-main :is(h2,h3,h4,h5,h6) > a.heading-anchor:focus-visible{
+  opacity:.9;
+ }
+}
+
+
+/* Touch/compact readers must never leave the original link-copy action
+   focusable yet completely invisible. Muted when idle, explicit on focus. */
+@media(max-width:1120px){
+ body.np-u-preview main.np-u-reader-main :is(h2,h3,h4,h5,h6)>a.heading-anchor{
+  opacity:.34!important;min-width:28px;min-height:28px;
+  display:inline-flex;align-items:center;justify-content:center;
+ }
+ body.np-u-preview main.np-u-reader-main :is(h2,h3,h4,h5,h6)>a.heading-anchor:is(:focus,:focus-visible){
+  opacity:1!important;outline-offset:2px;
+ }
+}

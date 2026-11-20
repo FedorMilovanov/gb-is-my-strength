@@ -1,0 +1,66 @@
+{
+  "source": "Local W57 preview; reviewed 2026-11-20",
+  "files": [
+    {
+      "name": "reader_universal_preview.css",
+      "sha256": "2ad26d4a715a5093b014febd33afc510ed048c3888ac35b1276f0624770b384b",
+      "bytes": 35758
+    },
+    {
+      "name": "reader_argon_first.css",
+      "sha256": "25e8b6189e6d078c90dd6b232217e382f6191b795df15026b3d0f6ea7f503971",
+      "bytes": 148337
+    },
+    {
+      "name": "reader_editorial_refinement.css",
+      "sha256": "ecbf18dd04b3e9b614c941ce67edea7de849163e01d4ab2aeac028535265067a",
+      "bytes": 10493
+    },
+    {
+      "name": "reader_editorial_consolidation.css",
+      "sha256": "9e974d877ffe0a7f752c7d4f81617e5bd1e97048b51c84e526ae3edf505942a3",
+      "bytes": 8935
+    },
+    {
+      "name": "reader_editorial_w51.css",
+      "sha256": "bb82a1d450d70ff2abb0611c0dc2806017350ab0bcb751dc4bd718bf9f82cdd7",
+      "bytes": 21482
+    },
+    {
+      "name": "reader_w57.css",
+      "sha256": "138aaf92066a9be92d8b941917d13c81a9267e2bb55d93bfd64b6985c1a0e939",
+      "bytes": 19943
+    },
+    {
+      "name": "reader_universal_contract.js",
+      "sha256": "6c9ec7349aacc7a54953903d36261d01e8f7fce607972918adf8c3ec5aec04be",
+      "bytes": 9580
+    },
+    {
+      "name": "reader_universal_preview.js",
+      "sha256": "86c7ede36eaf017a929c1e577b7b5ad343b0dd22b378b592e2a0ed5d460a7d20",
+      "bytes": 129166
+    },
+    {
+      "name": "reader_editorial_refinement.js",
+      "sha256": "09fc3bc9f7a964ad2950011e082258b1cf9d2b3ac879015c2ff14b47a88cfb0a",
+      "bytes": 8067
+    },
+    {
+      "name": "reader_editorial_consolidation.js",
+      "sha256": "dfaaebb73eca2c32aff09f3bf5b4e8a497e3f491fd209ae2ca3ccf9d707b68ec",
+      "bytes": 2317
+    },
+    {
+      "name": "reader_w57.js",
+      "sha256": "1d72737ca729833190927673abe8327226a2f8123c07632ec19246a109967b63",
+      "bytes": 5295
+    },
+    {
+      "name": "reader_w57_annotations.js",
+      "sha256": "803dbde00eff4c9968a558818b3a72bc64b21d4f6b895c7f49cd3a0311df9670",
+      "bytes": 23154
+    }
+  ],
+  "normalization": "Functionally identical W57 source; only CRLF and trailing blank lines normalized to LF for reproducible Git SHA-256."
+}
