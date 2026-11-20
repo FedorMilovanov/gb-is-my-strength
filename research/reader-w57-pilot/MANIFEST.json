@@ -28,8 +28,8 @@
     },
     {
       "name": "reader_w57.css",
-      "sha256": "ab2930140e6e580db479bb21b800cc33f3b1f08c1752f17aac18a2d5c3a2760a",
-      "bytes": 26609
+      "sha256": "5a7576901540c2ad0767f1112558a25092132f2ae8c25be2aa0073d33c0f79ee",
+      "bytes": 27468
     },
     {
       "name": "reader_universal_contract.js",
@@ -38,8 +38,8 @@
     },
     {
       "name": "reader_universal_preview.js",
-      "sha256": "874e3fd51564a57e12ccd9f7f18b1aee89dc716cf8229de6a681614d57fbaf61",
-      "bytes": 131149
+      "sha256": "42b4c02bb5a15c9092147d58ab9ba5ca8041e908a00f7b9e6b9e0f9141ade703",
+      "bytes": 132272
     },
     {
       "name": "reader_editorial_refinement.js",

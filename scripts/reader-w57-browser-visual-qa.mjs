@@ -227,6 +227,10 @@ try{
   await m.page.locator('#npUOpenToc').click();
   await m.page.getByRole('button',{name:'Настройки книжного шрифта'}).first().click();
   m.item.settings=await m.page.evaluate(()=>({
+   dialogRole:document.querySelector('#npUFontPanel')?.getAttribute('role'),
+   dialogAria:document.querySelector('#npUFontPanel')?.getAttribute('aria-modal'),
+   scrimVisible:!document.querySelector('#npUFontScrim')?.hidden,
+   nativeToolsInert:document.querySelector('#npUNativeTools')?.inert,
    ghostProbe:document.elementsFromPoint(356,660).slice(0,8).map(el=>({
     tag:el.tagName,id:el.id,class:String(el.className||'').slice(0,90),
     label:el.getAttribute('aria-label')||el.getAttribute('title')||''
@@ -241,6 +245,10 @@ try{
    bounds:document.querySelector('#npUFontPanel').getBoundingClientRect().toJSON()
   }));
   assert.equal(m.item.settings.insideAriaModal,true,'mobile font settings outside active aria modal');
+  assert.equal(m.item.settings.dialogRole,'dialog','mobile font settings must expose dialog role');
+  assert.equal(m.item.settings.dialogAria,'true','mobile font dialog must be accessible');
+  assert.equal(m.item.settings.scrimVisible,true,'background native tools must be visually covered');
+  assert.equal(m.item.settings.nativeToolsInert,true,'native TOC controls must be inert behind dialog');
   assert.equal(m.item.settings.focusInside,true,'mobile font popup focus lost');
   await snap(m.page,'mobile-settings');
   await m.page.locator('#npUFontPanel [data-np-u-type-font="cormorant"]').click();

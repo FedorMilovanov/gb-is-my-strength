@@ -478,3 +478,18 @@ html[data-reader-theme="dark"] ::highlight(np-w57-marker-lime){background:rgba(1
  body.np-u-preview.np-w57-ready #npUniversalDemo .np-w57-annotation-meta button{min-height:44px}
  body.np-u-preview.np-w57-ready #npUniversalDemo .np-w57-note-preview-text{font-size:13px}
 }
+
+/* Accessible mobile font dialog. Owns one scrim and inerts the pre-existing
+   TOC tools while dialog is open: native buttons are neither moved nor cloned. */
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontScrim[hidden]{display:none!important}
+@media(max-width:1120px){
+ body.np-u-preview.np-w57-ready #npUniversalDemo #npUOutline #npUFontScrim:not([hidden]){
+  display:block;position:fixed;inset:0;z-index:20019;pointer-events:auto;
+  background:rgba(244,242,237,.88);backdrop-filter:blur(2px);
+ }
+ html.dark body.np-u-preview.np-w57-ready #npUniversalDemo #npUOutline #npUFontScrim:not([hidden]),
+ html[data-reader-theme="dark"] body.np-u-preview.np-w57-ready #npUniversalDemo #npUOutline #npUFontScrim:not([hidden]){
+  background:rgba(28,27,26,.88);
+ }
+ body.np-u-preview.np-w57-ready #npUniversalDemo #npUOutline #npUFontPanel{z-index:20020}
+}

@@ -173,7 +173,8 @@
  fontPanel.id='npUFontPanel';fontPanel.className='np-u-font-panel';
  fontPanel.setAttribute('aria-label','Настройки чтения и шрифта');
  fontPanel.setAttribute('role','region');fontPanel.hidden=true;
- fontPanel.innerHTML='<header><strong>Шрифт и набор</strong>'+
+ fontPanel.setAttribute('aria-labelledby','npUFontPanelTitle');
+ fontPanel.innerHTML='<header><strong id="npUFontPanelTitle">Шрифт и набор</strong>'+
   '<button type="button" class="np-u-type-close" aria-label="Закрыть настройки шрифта">×</button></header>'+
   '<div class="np-u-type-group"><span>Книжная гарнитура</span><div class="np-u-type-options">'+
   '<button type="button" data-np-u-type-font="lora" class="np-u-type-lora">Lora</button>'+
@@ -207,10 +208,32 @@
  root.querySelector('.np-u-rail-spine').append(compactFontButton);
  // The mobile TOC has aria-modal=true. Reparent the SAME popup into it;
  // on desktop keep it outside the clipped left rail.
+ const fontScrim=document.createElement('div');
+ fontScrim.id='npUFontScrim';fontScrim.className='np-u-font-scrim';
+ fontScrim.setAttribute('aria-hidden','true');fontScrim.hidden=true;
+ const priorInert=new Map();
  function positionFontPanel(){
-  const host=matchMedia('(max-width:1120px)').matches
-   ?root.querySelector('#npUOutline'):root;
+  const host=isMobile()?root.querySelector('#npUOutline'):root;
+  if(isMobile()){
+   if(fontScrim.parentElement!==host)host.append(fontScrim);
+  }else fontScrim.remove();
   if(fontPanel.parentElement!==host)host.append(fontPanel);
+ }
+ function syncFontDialog(open){
+  const mobile=open&&isMobile(),host=root.querySelector('#npUOutline');
+  fontScrim.hidden=!mobile;
+  fontPanel.setAttribute('role',mobile?'dialog':'region');
+  if(mobile)fontPanel.setAttribute('aria-modal','true');
+  else fontPanel.removeAttribute('aria-modal');
+  for(const child of host.children){
+   if(child===fontPanel||child===fontScrim)continue;
+   if(mobile){
+    if(!priorInert.has(child))priorInert.set(child,child.inert);
+    child.inert=true;
+   }else if(priorInert.has(child)){
+    child.inert=priorInert.get(child);priorInert.delete(child);
+   }
+  }
  }
  positionFontPanel();
  window.addEventListener('resize',()=>{
@@ -219,6 +242,7 @@
  },{passive:true});
  function setFontOpen(open){
   fontPanel.hidden=!open;
+  syncFontDialog(open);
   for(const b of fontToggles)b.setAttribute('aria-expanded',String(open));
   if(open)fontPanel.querySelector('button[aria-pressed="true"]')?.focus({preventScroll:true});
  }
@@ -240,7 +264,10 @@
    if(Object.keys(patch).length)canon.set(patch,{source:'argon-w57-left-settings'});
  });
  document.addEventListener('pointerdown',event=>{
-  if(!fontPanel.hidden&&!fontPanel.contains(event.target)&&!fontToggles.some(b=>b.contains(event.target)))setFontOpen(false);
+  if(!fontPanel.hidden&&!fontPanel.contains(event.target)&&!fontToggles.some(b=>b.contains(event.target))){
+   setFontOpen(false);
+   (document.body.classList.contains('np-u-compact')?compactFontButton:fullFontButton).focus({preventScroll:true});
+  }
  },true);
  document.addEventListener('keydown',event=>{
   if(fontPanel.hidden)return;
