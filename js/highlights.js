@@ -152,7 +152,7 @@
       presenterPromise = import('/js/reader-library-presenter.js?v=841cc1c0')
         .then(async (module) => {
           presenter = module;
-          const researchModule = await import('/js/reader-library-v3.js?v=e036d5a6');
+          const researchModule = await import('/js/reader-library-v3.js?v=732d86cc');
           if (!research) research = researchModule.createLibraryResearch({
             overlay, getItems: all, notify: statusMessage, refresh: render, isOpen,
             renderItem: module.renderItem,
@@ -166,7 +166,7 @@
   const stylesheet = document.createElement('link');
   stylesheet.id = 'gbHlRuntimeCss';
   stylesheet.rel = 'stylesheet';
-  stylesheet.href = '/css/highlights-runtime.css?v=b856b384';
+  stylesheet.href = '/css/highlights-runtime.css?v=605fd5fe';
   if (!document.getElementById(stylesheet.id)) document.head.appendChild(stylesheet);
 
   function button(action, label, text) {
