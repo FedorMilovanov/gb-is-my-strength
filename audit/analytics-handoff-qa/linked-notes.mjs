@@ -3,6 +3,7 @@ import {spawn} from 'node:child_process';
 import {mkdir,writeFile} from 'node:fs/promises';
 const {chromium}=await import(process.env.W58_PLAYWRIGHT||'playwright');
 const builds=[['62be8caa145fbe18aa099dff89cffa20cd626451','/tmp/mobile-62be8caa',19110],['4accceeef1f01e0cc19bb0fe4f807e49758a2892','/tmp/mobile-4acccee',19111]];
+if(process.env.EXTRA_SHA&&process.env.AUDIT_ROOT)builds.push([process.env.EXTRA_SHA,process.env.AUDIT_ROOT,19113]);
 const out=process.env.AUDIT_OUT||'reports/analytics-handoff-qa';await mkdir(out,{recursive:true});
 const b=await chromium.launch({executablePath:process.env.W58_CHROMIUM_PATH,args:['--no-sandbox','--disable-dev-shm-usage']});
 const report={browser:b.version(),scenes:[]},pagePath='/articles/dzhon-gill-chast-2-uchenyi/';

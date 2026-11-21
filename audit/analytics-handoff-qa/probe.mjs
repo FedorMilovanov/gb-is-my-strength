@@ -3,6 +3,7 @@ import {spawn} from 'node:child_process';
 import {mkdir,writeFile} from 'node:fs/promises';
 const {chromium}=await import(process.env.W58_PLAYWRIGHT||'playwright');
 const builds=[['62be8caa145fbe18aa099dff89cffa20cd626451','/tmp/mobile-62be8caa',19107],['6b7d7c353b65c669501860ef2e938549ca2097db','/tmp/mobile-6b7d7c3',19108],['4accceeef1f01e0cc19bb0fe4f807e49758a2892','/tmp/mobile-4acccee',19109]];
+if(process.env.EXTRA_SHA&&process.env.AUDIT_ROOT)builds.push([process.env.EXTRA_SHA,process.env.AUDIT_ROOT,19112]);
 const root=process.env.AUDIT_ROOT;const out=process.env.AUDIT_OUT||'reports/analytics-handoff-qa';await mkdir(out,{recursive:true});
 const b=await chromium.launch({executablePath:process.env.W58_CHROMIUM_PATH,args:['--no-sandbox','--disable-dev-shm-usage']});
 const report={browser:b.version(),scenes:[]};
@@ -62,7 +63,7 @@ try{for(const [sha,defaultRoot,port] of builds.filter(([v])=>!process.env.ONLY_S
  try{
   await Promise.race([new Promise((r,j)=>{server.stdout.once('data',r);server.once('exit',n=>j(Error('server '+n)));}),new Promise((_,j)=>setTimeout(()=>j(Error('server timeout')),4000))]);
   const plan=[['article-keyboard',390,844,'keyboard'],['term-via-analytics',390,844,'keyboard'],['term-via-analytics',390,844,'touch'],['evidence-motion',390,844,'touch']];
-  if(sha.startsWith('4acc'))plan.push(['evidence-motion',390,844,'in-app-reduced']);
+  if(!sha.startsWith('62be')&&!sha.startsWith('6b7d'))plan.push(['evidence-motion',390,844,'in-app-reduced']);
   if(!sha.startsWith('62be'))plan.push(['library-bridge',390,844,'keyboard'],['library-bridge',320,568,'keyboard']);
   for(const [kind,width,height,input] of plan){
    const s={sha,kind,width,height,input,key:`${sha.slice(0,7)}-${kind}-${width}-${input}`,errors:[]};report.scenes.push(s);
