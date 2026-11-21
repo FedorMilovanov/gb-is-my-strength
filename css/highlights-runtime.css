@@ -800,3 +800,211 @@ html.dark #gb-hl-toast {
     overflow: visible;
   }
 }
+
+/* W59 Mobile Reader Library Classic typography.
+   Font assets are locally hosted SIL OFL. No desktop/pilot changes. */
+@font-face{
+  font-family:'GB Classic Literata';font-style:normal;font-weight:400;font-display:swap;
+  src:url('/fonts/Literata/literata-cyrillic-400-normal.woff2') format('woff2');
+  unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+@font-face{
+  font-family:'GB Classic Literata';font-style:normal;font-weight:400;font-display:swap;
+  src:url('/fonts/Literata/literata-latin-400-normal.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face{
+  font-family:'GB Classic Literata';font-style:italic;font-weight:400;font-display:swap;
+  src:url('/fonts/Literata/literata-cyrillic-400-italic.woff2') format('woff2');
+  unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+@font-face{
+  font-family:'GB Classic Literata';font-style:italic;font-weight:400;font-display:swap;
+  src:url('/fonts/Literata/literata-latin-400-italic.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face{
+  font-family:'GB Classic Mono';font-style:normal;font-weight:500;font-display:swap;
+  src:url('/fonts/JetBrainsMono/jetbrains-mono-cyrillic-500-normal.woff2') format('woff2');
+  unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+@font-face{
+  font-family:'GB Classic Mono';font-style:normal;font-weight:500;font-display:swap;
+  src:url('/fonts/JetBrainsMono/jetbrains-mono-latin-500-normal.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@media (max-width:767px) {
+  /* Only real Reader pages; existing unified Library data/actions stay owned by Product. */
+  body:has(article.article-body) #gb-hl-panel {
+    --library-paper:#FBF9F5;
+    --library-ink:#1A1816;
+    --library-muted:#5A534A;
+    --library-edge:#DFD9CE;
+    --library-accent:#8C6239;
+    --library-rubric:#9B2C2C;
+    --library-surface:#EFECE4;
+    background:var(--library-paper) !important;
+    color:var(--library-ink) !important;
+    border-color:var(--library-edge);
+    border-radius:19px 19px 0 0;
+  }
+  body:has(article.article-body) #gb-hl-header {
+    background:var(--library-paper);
+    border-color:var(--library-edge);
+  }
+  body:has(article.article-body) #gb-hl-handle {background:var(--library-accent);}
+  body:has(article.article-body) #gb-hl-title {
+    font:500 clamp(25px,7.2vw,28px)/1.08 'GB Mobile Classic Cormorant',Georgia,serif !important;
+    letter-spacing:-.021em;
+    color:var(--library-ink);
+  }
+  body:has(article.article-body) #gb-hl-panel .gb-hl-eyebrow {
+    font:600 10px/1.45 'GB Mobile Classic Inter',system-ui,sans-serif !important;
+    color:var(--library-rubric);
+  }
+  body:has(article.article-body) #gb-hl-panel :is(button,select,input,textarea){
+    font-family:'GB Mobile Classic Inter',system-ui,sans-serif;
+  }
+  body:has(article.article-body) #gb-hl-tabs {
+    background:var(--library-surface) !important;
+    border:1px solid var(--library-edge);
+    border-radius:8px;
+  }
+  body:has(article.article-body) #gb-hl-tabs button {
+    font:600 11px/1.25 'GB Mobile Classic Inter',system-ui,sans-serif !important;
+    border-radius:6px;
+  }
+  body:has(article.article-body) #gb-hl-tabs button[aria-pressed="true"] {
+    background:var(--library-paper) !important;
+    color:var(--library-accent);
+    border-color:var(--library-edge);
+    box-shadow:none;
+  }
+  body:has(article.article-body) #gb-hl-panel :is(#gb-hl-tools,#gb-hl-list) {
+    color:var(--library-ink);
+  }
+  body:has(article.article-body) #gb-hl-panel :is(#gb-hl-searchwrap,#gb-hl-source,#gb-hl-sort){
+    border-color:var(--library-edge);
+  }
+  body:has(article.article-body) #gb-hl-panel :is(.gb-hl-quote,.gb-hl-quote.gb-hl-note,.gb-hl-related,.gb-hl-note-preview){
+    font:400 14px/1.63 'GB Classic Literata',Georgia,serif !important;
+    color:var(--library-ink);
+    overflow-wrap:anywhere;
+  }
+  body:has(article.article-body) #gb-hl-panel .gb-hl-quote:not(.gb-hl-note):not(.gb-hl-favorite){
+    font-style:italic !important;
+  }
+  body:has(article.article-body) #gb-hl-panel .gb-hl-quote.gb-hl-favorite{
+    font:400 13px/1.55 'GB Mobile Classic Inter',system-ui,sans-serif !important;
+  }
+  body:has(article.article-body) #gb-hl-panel .gb-hl-type {
+    color:var(--library-rubric);
+    font:600 10px/1.4 'GB Mobile Classic Inter',system-ui,sans-serif !important;
+  }
+  body:has(article.article-body) #gb-hl-panel :is(#gb-hl-count,.gb-hl-date,time,.gb-hl-time,.gb-hl-reading-time){
+    font-family:'GB Classic Mono',Consolas,monospace !important;
+    font-variant-numeric:tabular-nums;
+  }
+  body:has(article.article-body) #gb-hl-panel :is(.gb-hl-item,.gb-hl-source-group){
+    border-color:var(--library-edge);
+  }
+  body:has(article.article-body) #gb-hl-panel :is(#gb-hl-close,#gb-hl-source,#gb-hl-sort){
+    background:var(--library-surface);
+    color:var(--library-muted);
+  }
+  body:has(article.article-body) #gb-hl-panel :is(.gb-hl-meta button,.gb-hl-mini,#gb-hl-export){
+    border-color:var(--library-edge);
+  }
+  body:has(article.article-body) #gb-hl-panel :is(.gb-hl-meta a,.gb-hl-expand){
+    color:var(--library-accent);
+  }
+  body:has(article.article-body) #gb-hl-panel :is(button,input,select,textarea):focus-visible{
+    outline:2px solid var(--library-accent);
+    outline-offset:2px;
+  }
+  html:is(.dark,[data-reader-theme="dark"]) body:has(article.article-body) #gb-hl-panel {
+    --library-paper:#17191D;
+    --library-ink:#EAE6DF;
+    --library-muted:#B6AA9B;
+    --library-edge:#343940;
+    --library-accent:#C89B6E;
+    --library-rubric:#D46A6A;
+    --library-surface:#1D2025;
+  }
+  html:is(.dark,[data-reader-theme="dark"]) body:has(article.article-body) #gb-hl-tabs button[aria-pressed="true"] {
+    background:var(--library-paper) !important;
+    color:var(--library-accent);
+  }
+}
+/* W59 library narrow title geometry: preserve all 44px actions without chopping
+   Cormorant 'Моя библиотека' into broken syllables at 320px. */
+@media (max-width:767px) {
+  body:has(article.article-body) #gb-hl-header {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto auto;
+    grid-template-rows:auto auto;
+    column-gap:7px;
+    row-gap:3px;
+    align-items:center;
+  }
+  body:has(article.article-body) #gb-hl-header .gb-hl-heading {
+    grid-column:1 / 3;
+    grid-row:1;
+    min-width:0;
+  }
+  body:has(article.article-body) #gb-hl-title {
+    white-space:nowrap;
+  }
+  body:has(article.article-body) #gb-hl-export {
+    grid-column:2;
+    grid-row:2;
+    justify-self:end;
+  }
+  body:has(article.article-body) #gb-hl-manage {
+    grid-column:3;
+    grid-row:2;
+  }
+  body:has(article.article-body) #gb-hl-close {
+    grid-column:3;
+    grid-row:1;
+  }
+}
+/* W59 isolated mobile Classic font faces. Source: Fontsource 5.3.0 / SIL OFL 1.1.
+   Aliases are used ONLY under mobile selectors, never in desktop or article body. */
+@font-face{font-family:'GB Mobile Classic Cormorant';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/CormorantGaramond/cormorant-garamond-cyrillic-500-normal.woff2') format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'GB Mobile Classic Cormorant';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/CormorantGaramond/cormorant-garamond-latin-500-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:'GB Mobile Classic Cormorant';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/CormorantGaramond/cormorant-garamond-cyrillic-600-normal.woff2') format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'GB Mobile Classic Cormorant';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/CormorantGaramond/cormorant-garamond-latin-600-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:'GB Mobile Classic Inter';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/Inter/inter-cyrillic-400-normal.woff2') format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'GB Mobile Classic Inter';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/Inter/inter-latin-400-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:'GB Mobile Classic Inter';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/Inter/inter-cyrillic-500-normal.woff2') format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'GB Mobile Classic Inter';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/Inter/inter-latin-500-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:'GB Mobile Classic Inter';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/Inter/inter-cyrillic-600-normal.woff2') format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'GB Mobile Classic Inter';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/Inter/inter-latin-600-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+/* W59 mobile Classic: keep reading-progress cards legible in night theme.
+   The original Product cards used the site's light --paper-2 even in dark mode. */
+@media (max-width:767px) {
+  body:has(article.article-body) #gb-hl-panel :is(.gb-hl-current,.gb-hl-revisit-card,.gb-hl-context,.gb-hl-tag-editor) {
+    background:var(--library-surface);
+    color:var(--library-muted);
+    border-color:var(--library-edge);
+  }
+  body:has(article.article-body) #gb-hl-panel .gb-hl-reading-title {
+    font:400 14px/1.63 'GB Classic Literata',Georgia,serif;
+    color:var(--library-ink);
+  }
+  body:has(article.article-body) #gb-hl-panel .gb-hl-empty-title {
+    font:500 22px/1.19 'GB Mobile Classic Cormorant',Georgia,serif;
+    color:var(--library-ink);
+  }
+  body:has(article.article-body) #gb-hl-panel .gb-hl-revisit-card :is(.gb-hl-mini,.gb-hl-reading-actions button) {
+    color:var(--library-accent);
+    border-color:var(--library-edge);
+    background:var(--library-paper);
+  }
+}
+/* W59 Classic Cormorant regular and bold, installed locally (SIL OFL 1.1). */
+@font-face{font-family:'GB Mobile Classic Cormorant';font-weight:400;font-style:normal;font-display:swap;src:url('/fonts/CormorantGaramond/cormorant-garamond-cyrillic-400-normal.woff2') format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'GB Mobile Classic Cormorant';font-weight:400;font-style:normal;font-display:swap;src:url('/fonts/CormorantGaramond/cormorant-garamond-latin-400-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:'GB Mobile Classic Cormorant';font-weight:700;font-style:normal;font-display:swap;src:url('/fonts/CormorantGaramond/cormorant-garamond-cyrillic-700-normal.woff2') format('woff2');unicode-range:U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;}
+@font-face{font-family:'GB Mobile Classic Cormorant';font-weight:700;font-style:normal;font-display:swap;src:url('/fonts/CormorantGaramond/cormorant-garamond-latin-700-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}

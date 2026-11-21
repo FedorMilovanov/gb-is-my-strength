@@ -746,6 +746,175 @@ html[data-reader-theme="dark"] #partTocOverlay :is(.gbr-scripture-source,.gbr-ma
  #partTocOverlay .gbr-scripture-ref{transition:none!important;}
 }
 
+
+/* W59 Mobile ARGON Classic — approved unified Toc/Analytics presentation.
+   Only mobile #partTocOverlay. No desktop W57 or Reader article typography. */
+@media (max-width: 1120px) {
+  #partTocOverlay {
+    --gbr-classic-paper: #FBF9F5;
+    --gbr-classic-surface: #EFECE4;
+    --gbr-classic-edge: #DFD9CE;
+    --gbr-classic-bronze: #8C6239;
+    --gbr-classic-rubric: #9B2C2C;
+    --gbr-classic-ink: #1A1816;
+    --gbr-classic-muted: #5A534A;
+  }
+  #partTocOverlay .toc-sheet {
+    background: var(--gbr-classic-paper) !important;
+    color: var(--gbr-classic-ink) !important;
+  }
+  #partTocOverlay .toc-head-txt h3 {
+    margin: 0;
+    font: 500 clamp(25px, 7.2vw, 28px)/1.08 'GB Mobile Classic Cormorant', Georgia, serif !important;
+    letter-spacing: -.021em;
+    color: var(--gbr-classic-ink);
+    text-wrap: balance;
+  }
+  #partTocOverlay .toc-head-txt .lab {
+    font-family: 'GB Mobile Classic Inter', system-ui, sans-serif !important;
+    color: var(--gbr-classic-rubric) !important;
+  }
+  #partTocOverlay .gbr-marginalia-tabs {
+    background: var(--gbr-classic-surface) !important;
+    border-color: var(--gbr-classic-edge) !important;
+  }
+  #partTocOverlay .gbr-marginalia-tab {
+    font: 600 12.5px/1.3 'GB Mobile Classic Inter', system-ui, sans-serif !important;
+    letter-spacing: 0 !important;
+  }
+  #partTocOverlay .gbr-marginalia-tab[aria-selected="true"] {
+    background: var(--gbr-classic-paper) !important;
+    color: var(--gbr-classic-ink) !important;
+  }
+  #partTocOverlay .gbat-part {
+    --fill: var(--gbr-classic-paper);
+  }
+  #partTocOverlay .gbat-part.cur {
+    --fill: var(--gbr-classic-paper);
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  #partTocOverlay .gbat-part.cur > .gbat-hd {
+    background: rgba(140, 98, 57, .095);
+    color: var(--gbr-classic-ink);
+  }
+  #partTocOverlay .gbat-part.cur::before {
+    background: var(--gbr-classic-bronze);
+    box-shadow: none;
+  }
+  #partTocOverlay .gbat-hd {
+    color: var(--gbr-classic-ink);
+  }
+  #partTocOverlay .gbat-hd .gbat-t {
+    font: 500 20px/1.13 'GB Mobile Classic Cormorant', Georgia, serif !important;
+    letter-spacing: -.012em;
+  }
+  #partTocOverlay .gbat-part.cur .gbat-t {
+    font-weight: 600 !important;
+    color: var(--gbr-classic-bronze);
+  }
+  #partTocOverlay .gbat-part:not(.cur) .gbat-t {
+    color: var(--gbr-classic-ink);
+  }
+  /* Original ARGON Classic LeftNavigation.tsx uses 11px JetBrains Mono
+     for Roman section labels, medium weight; not italic display numerals. */
+  #partTocOverlay .gbat-num:not(.gbat-num--label) {
+    font: 500 11px/1 'GB Classic Mono', Consolas, monospace !important;
+    font-style: normal !important;
+    letter-spacing: .01em;
+    color: var(--gbr-classic-bronze);
+  }
+  #partTocOverlay .gbat-part.cur .gbat-num:not(.gbat-num--label) {
+    font-weight: 600 !important;
+  }
+  #partTocOverlay .gbat-num--label i {
+    font-family: 'GB Mobile Classic Inter', system-ui, sans-serif !important;
+    font-size: 8px;
+    font-weight: 600 !important;
+    letter-spacing: .055em;
+    transform: rotate(-90deg) !important;
+    color: var(--gbr-classic-bronze) !important;
+  }
+  #partTocOverlay #gbs2PartToc > .gbat-part--label:first-child .gbat-num--label i {
+    transform:translateX(-5px) rotate(-90deg) !important;
+  }
+  #partTocOverlay #gbs2PartToc > .gbat-part--label:first-child .gbat-hd {
+    height:78px;
+  }
+  #partTocOverlay #gbs2PartToc > .gbat-part--label:first-child .gbat-t {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height:1.06 !important;
+  }
+  #partTocOverlay #gbs2PartToc > .gbat-part--label:first-child .gbat-s {
+    margin-top:0 !important;
+    line-height:1.12 !important;
+  }
+  #partTocOverlay .gbat-s,
+  #partTocOverlay .gbat-sub,
+  #partTocOverlay .gbat-now,
+  #partTocOverlay .gbat-go {
+    font-family: 'GB Mobile Classic Inter', system-ui, sans-serif !important;
+  }
+  #partTocOverlay .gbat-sub:not(.h3) {font-size:13px !important;font-weight:500 !important;line-height:1.37 !important;}
+  #partTocOverlay .gbat-sub.h3 {font-size:12px !important;font-weight:400 !important;line-height:1.37 !important;}
+  #partTocOverlay .gbat-sub:is([aria-current='location'],[aria-current='true'],.active,.cur){font-weight:600 !important;color:var(--gbr-classic-bronze) !important;}
+  #partTocOverlay .gbat-rail{background:var(--gbr-classic-edge) !important;}
+  #partTocOverlay .gbat-dot{border-color:var(--gbr-classic-bronze) !important;box-shadow:none !important;}
+  #partTocOverlay .gbat-sub.h3 .gbat-dot{border-color:var(--gbr-classic-edge) !important;}
+  #partTocOverlay .gbat-min,
+  #partTocOverlay .gbat-satmin,
+  #partTocOverlay .gbat-satmark {
+    font-family: 'GB Classic Mono', Consolas, monospace !important;
+    font-variant-numeric: tabular-nums;
+  }
+  #partTocOverlay .gbat-s { font-size: 11.5px; }
+  #partTocOverlay .gbr-marginalia-lead h3 {
+    font: 400 21px/1.18 'GB Mobile Classic Cormorant', Georgia, serif !important;
+  }
+  #partTocOverlay .gbr-marginalia-group-head strong {
+    font: 700 20px/1.22 'GB Mobile Classic Cormorant', Georgia, serif !important;
+  }
+  #partTocOverlay .gbr-scripture-quote,
+  #partTocOverlay .gbr-marginalia-evidence p {
+    font-family: 'GB Classic Literata', Georgia, serif !important;
+  }
+  #partTocOverlay .gbr-scripture-ref,
+  #partTocOverlay .gbr-scripture-count {
+    font-family: 'GB Classic Mono', Consolas, monospace !important;
+  }
+  #partTocOverlay :is(.gbat-hd,.gbat-sub,.gbr-marginalia-tab,.gbr-scripture-ref):focus-visible {
+    outline: 2px solid var(--gbr-classic-bronze);
+    outline-offset: 2px;
+  }
+  html:is(.dark,[data-reader-theme="dark"]) #partTocOverlay {
+    --gbr-classic-paper:#17191D;
+    --gbr-classic-surface:#1D2025;
+    --gbr-classic-edge:#343940;
+    --gbr-classic-bronze:#C89B6E;
+    --gbr-classic-rubric:#D46A6A;
+    --gbr-classic-ink:#EAE6DF;
+    --gbr-classic-muted:#B6AA9B;
+  }
+  html:is(.dark,[data-reader-theme="dark"]) #partTocOverlay .gbat-part.cur > .gbat-hd {
+    background:rgba(200,155,110,.11);
+  }
+  html:is(.dark,[data-reader-theme="dark"]) #partTocOverlay .gbat-part.cur .gbat-t {
+    color: var(--gbr-classic-bronze) !important;
+  }
+  html:is(.dark,[data-reader-theme="dark"]) #partTocOverlay .gbat-part:not(.cur) .gbat-t {
+    color: var(--gbr-classic-ink) !important;
+  }
+  html:is(.dark,[data-reader-theme="dark"]) #partTocOverlay .gbat-part.cur {
+    --fill:var(--gbr-classic-surface);
+  }
+}
+
+
+@media (max-width:1120px){
+ #partTocOverlay :is(.gbr-marginalia-eyebrow,.gbr-scripture-scope,.gbr-marginalia-term summary,.gbr-marginalia-provenance,.gbr-scripture-source,.gbr-scripture-return){font-family:'GB Mobile Classic Inter',system-ui,sans-serif!important;}
+}
 </style>
 
 <style is:global>
