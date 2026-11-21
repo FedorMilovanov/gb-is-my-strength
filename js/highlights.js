@@ -600,7 +600,8 @@
     const placed = new Set();
     let painted = 0;
     for (const item of quotes()) {
-      if (gbHighlightPath(item) !== gbHighlightPath({url: location.href})) continue;
+      // Positional W57 marks belong exclusively to its block/range renderer.
+      if (gbHighlightPath(item) !== gbHighlightPath({url: location.href}) || item?.annotation?.version === 1) continue;
       const color = String(item && item.color || '');
       if (!MARK_COLORS.includes(color)) continue;
       const range = locate(index, item);

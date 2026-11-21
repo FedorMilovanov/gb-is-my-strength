@@ -118,4 +118,65 @@ const css = fs.readFileSync(path.resolve(__dirname, '..', 'css/highlights-runtim
 assert.match(css, /prefers-reduced-motion/, 'reduced-motion users do not get forced animation');
 assert.match(css, /#gb-hl-fab-count\s*\{[^}]*display:\s*none;/, 'library count dot must stay visually hidden');
 assert.match(source, /fab\.setAttribute\('aria-label', 'Моя библиотека — сохранено ' \+ all\(\)\.length\)/, 'accessible library total must stay available');
+
+// Position-safe native painting regression: same phrase on two pages, repeated
+// text within one page, a changed source block and W57-owned anchors.
+const locateStart = source.indexOf('  const REGEXP_SPECIAL =');
+const locateEnd = source.indexOf('\n  function saveMarker(', locateStart);
+assert.ok(locateStart >= 0 && locateEnd > locateStart, 'native mark resolver remains a single source owner');
+let articleText = 'Начало Бог благ конец. Далее Бог благ снова.';
+let savedMarks = [];
+const paintRegistry = new Map();
+const paintLocation = { origin: 'https://gospod-bog.ru', href: 'https://gospod-bog.ru/articles/a/' };
+const painting = {
+  location: paintLocation,
+  URL,
+  normalizeText: (value) => String(value == null ? '' : value).replace(/\s+/g, ' ').trim(),
+  gbHighlightPath: api.path, gbHighlightKey: api.key,
+  MARK_COLORS: ['amber', 'sage', 'blue', 'lime', 'rose'],
+  quotes: () => savedMarks,
+  textIndex: () => ({ raw: articleText, nodes: [{ node: { textContent: articleText }, start: 0 }] }),
+  document: {
+    querySelector: () => ({ tagName: 'ARTICLE' }),
+    createRange: () => ({
+      setStart(_node, offset) { this.start = offset; },
+      setEnd(_node, offset) { this.end = offset; },
+      toString() { return articleText.slice(this.start, this.end); },
+    }),
+  },
+  CSS: { highlights: paintRegistry },
+  Highlight: class { constructor(...ranges) { this.ranges = ranges; } },
+};
+painting.window = { CSS: painting.CSS };
+vm.createContext(painting);
+vm.runInContext(source.slice(locateStart, locateEnd) +
+  '\nthis.paintAPI = { locate, paintMarks };', painting);
+const paintOnce = (marks, text = 'Начало Бог благ конец. Далее Бог благ снова.', href = 'https://gospod-bog.ru/articles/a/') => {
+  articleText = text;
+  savedMarks = marks;
+  paintLocation.href = href;
+  paintRegistry.clear();
+  return painting.paintAPI.paintMarks();
+};
+const firstMark = { id: 'first', kind: 'marker', color: 'amber',
+  url: '/articles/a/', text: 'Бог благ', before: 'Начало', after: 'конец.' };
+const secondMark = { id: 'second', kind: 'marker', color: 'amber',
+  url: '/articles/a/', text: 'Бог благ', before: 'Далее', after: 'снова.' };
+assert.equal(paintOnce([firstMark]).painted, 1, 'context resolves one saved mark');
+assert.equal(paintRegistry.get('gb-hl-amber').ranges[0].toString(), 'Бог благ',
+  'paint the phrase, not its surrounding context');
+assert.equal(paintOnce([firstMark, secondMark]).painted, 2,
+  'two equal phrases with distinct contexts remain independently placed');
+assert.equal(paintOnce([firstMark], undefined, 'https://gospod-bog.ru/articles/b/').painted, 0,
+  'stored mark from route A must never paint on route B');
+assert.equal(paintRegistry.has('gb-hl-amber'), false, 'old custom highlights removed on route change');
+assert.equal(paintOnce([{ ...firstMark, before: '', after: '' }]).painted, 0,
+  'ambiguous legacy first-match must remain unresolved');
+assert.equal(paintOnce([firstMark], 'Заменено Бог благ конец. Далее Бог благ снова.').painted, 0,
+  'changed source context cannot reattach the marker to another quote');
+assert.equal(paintOnce([{ ...firstMark, annotation: {
+  version: 1, kind: 'marker', color: 'amber',
+  anchor: { blockIndex: 0, start: 7, end: 15, exact: 'Бог благ' },
+} }]).painted, 0, 'W57 positional annotation is painted only by the W57 resolver');
+
 console.log('✅ Unified reader library helpers, legacy storage, ARIA and dedupe regression passed');
