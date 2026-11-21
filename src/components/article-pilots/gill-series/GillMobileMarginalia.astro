@@ -103,13 +103,9 @@ const aliases = Object.values(registry.books).flatMap(book => book.aliases);
     var notes = elements('.fn-marker,.footnote-ref,[data-footnote-ref]').filter(function (el) { return !!el.id || !!el.dataset.noteOrdinal; });
     var refScope = 'В текущем разделе';
     var termScope = 'В текущем разделе';
-    if (!refs.length) {
-      refs = uniqueBy(Array.from(article.querySelectorAll('button.bref[data-ref]')), function (el) { return el.dataset.ref; }).slice(0,8);
-      refScope = 'В других разделах этой статьи';
-    }
     if (!terms.length) {
       terms = uniqueBy(Array.from(article.querySelectorAll('.gterm[data-term]')), function (el) { return (el.dataset.termTitle || el.dataset.term || '').toLocaleLowerCase('ru'); })
-        .filter(function (el) { return !!text(el.querySelector('.gtip-brief')); }).slice(0,8);
+        .filter(function (el) { return !!text(el.querySelector('.gtip-brief')); });
       termScope = 'Из всей статьи';
     }
     var books = new Set(JSON.parse(content.dataset.books).map(book => book.toLowerCase().replace(/[.\s]/g,'')));
@@ -128,10 +124,11 @@ const aliases = Object.values(registry.books).flatMap(book => book.aliases);
     var local = citations(corpus.filter(inSection));
     passages = uniqueBy(local.concat(passages), item => item.label);
     if (!passages.length) {
-      passages = uniqueBy(citations(corpus), item => item.label);
+      var marked = Array.from(article.querySelectorAll('button.bref[data-ref]'), el => ({label:el.dataset.ref, target:el}));
+      passages = uniqueBy(marked.concat(citations(corpus)), item => item.label);
       refScope = 'Из всей статьи';
     }
-    return { active: active, paras: paras.slice(0,3), refs: passages, terms: terms.slice(0,12), notes: notes.slice(0,8), refScope: refScope, termScope: termScope };
+    return { active: active, paras: paras.slice(0,3), refs: passages, terms: terms, notes: notes, refScope: refScope, termScope: termScope };
   }
   function render() {
     content.replaceChildren();
