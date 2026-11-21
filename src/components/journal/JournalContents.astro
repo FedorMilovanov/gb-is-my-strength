@@ -4,13 +4,15 @@ interface Entry { href: string; label: string; }
 interface Props {
   entries: Entry[];
   label?: string;
+  /** Optional native fragment destination; not a second disclosure or scroll owner. */
+  summaryId?: string;
   /** Parser-time compact seed, explicitly enabled only by the public G3 dossier. */
   initialCompactClosed?: boolean;
 }
-const { entries, label = 'В этом материале', initialCompactClosed = false } = Astro.props;
+const { entries, label = 'В этом материале', summaryId, initialCompactClosed = false } = Astro.props;
 ---
 <details class="je-contents" data-journal-contents open>
-  <summary>
+  <summary id={summaryId}>
     <span>{label}</span>
     <span class="je-contents-count">{entries.length} разделов <span aria-hidden="true">↕</span></span>
   </summary>

@@ -119,7 +119,10 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
   <div class="journal-feature-grid journal-feature-grid--text-first">
     <div class="journal-opening-column">
   <section id="overview" class="module intro-module" tabindex="-1">
-    <div class="module-label">01 · Предыстория</div>
+    <div class="module-label je-opening-label">
+      <span>01 · Предыстория</span>
+      <a class="je-contents-jump" href="#journal-g3-toc" data-pagefind-ignore>Содержание · {contents.length} разделов</a>
+    </div>
     <div class="prose wide">
       <h2>Как G3 пришла к двум кризисам</h2>
       <p class="standfirst">
@@ -165,7 +168,7 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
         требуют отдельной проверки.</p>
     </div>
     <JournalEditorialRail label="Содержание документального досье G3">
-      <JournalContents entries={contents} initialCompactClosed />
+      <JournalContents entries={contents} summaryId="journal-g3-toc" initialCompactClosed />
       <p class="je-rail-note">Фактический срез — 9 сентября 2026 года.{' '}
         <a href="#bibliography">{G3_SOURCE_BIBLIOGRAPHY.length} источник</a> с датами и границами доказательств.{' '}
         <a href="#corrections">Журнал исправлений</a>.</p>
