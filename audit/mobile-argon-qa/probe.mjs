@@ -22,7 +22,7 @@ const snap=p=>p.evaluate(q=>{
  const verse=t('.gbr-scripture-quote'),src=t('.gbr-scripture-source'),projection=window.SCRIPTURE_DATA||{};
  const geom=s=>{const e=$(s),r=e?.getBoundingClientRect();return r?{top:r.top,bottom:r.bottom,height:r.height,bg:getComputedStyle(e).backgroundColor}:null;};
  const fonts=[...document.fonts].filter(f=>f.family.includes('GB Cormorant Scripture')).map(f=>[f.family,f.status]);
- return {route:location.pathname,y:scrollY,owner:window.OverlayRuntime.topLayer()?.ownerId||null,locked:document.documentElement.hasAttribute('data-scroll-locked'),layout:{panel:geom(q.panel),sheet:geom('#partTocOverlay .toc-sheet'),head:geom('#partTocOverlay .toc-sheet__head'),footer:geom('#partTocOverlay .gbat-foot'),quote:geom(q.passage)},fonts,dark:document.documentElement.classList.contains('dark'),title:t('.gbr-marginalia-lead h3'),scope:t('.gbr-scripture-scope'),selected:chosen?.textContent||null,reading:t('#gbrScriptureActiveRef'),count:t('.gbr-scripture-count'),verse,src,projectsAs:Object.keys(projection).filter(k=>projection[k]===verse&&window.SCRIPTURE_SOURCE_BY_REF?.[k]===src),keys:Object.keys(projection),focus:elem?.id||elem?.className||elem?.tagName,focusLabel:elem?.getAttribute('aria-label')||elem?.textContent.trim().slice(0,65),jump:window.qaJump,labels,
+ return {route:location.pathname,y:scrollY,owner:window.OverlayRuntime.topLayer()?.ownerId||null,locked:document.documentElement.hasAttribute('data-scroll-locked'),layout:{panel:geom(q.panel),sheet:geom('#partTocOverlay .toc-sheet'),head:geom('#partTocOverlay .toc-sheet__head'),footer:geom('#partTocOverlay .gbat-foot'),quote:geom(q.passage),arrows:[q.prev,q.next].map(sel=>{const z=$(sel)?.getBoundingClientRect();return z?[z.width,z.height]:null;})},fonts,dark:document.documentElement.classList.contains('dark'),title:t('.gbr-marginalia-lead h3'),scope:t('.gbr-scripture-scope'),selected:chosen?.textContent||null,reading:t('#gbrScriptureActiveRef'),count:t('.gbr-scripture-count'),verse,src,projectsAs:Object.keys(projection).filter(k=>projection[k]===verse&&window.SCRIPTURE_SOURCE_BY_REF?.[k]===src),keys:Object.keys(projection),focus:elem?.id||elem?.className||elem?.tagName,focusLabel:elem?.getAttribute('aria-label')||elem?.textContent.trim().slice(0,65),jump:window.qaJump,labels,
   rail:r?{l:r.left,r:r.right,t:r.top,b:r.bottom,left:rail.scrollLeft,max:rail.scrollWidth-rail.clientWidth,rows:[...new Set(labels.map(i=>i.top))],prev:$(q.prev).disabled,next:$(q.next).disabled}:null,
   selectedWidth:v?.width,selectedVisibleX:v&&r?overlap(v.left,v.right,r.left,r.right):null,readingVisibleY:x&&p?overlap(x.top,x.bottom,p.top,p.bottom):null,passage:passage?{top:passage.scrollTop,max:passage.scrollHeight-passage.clientHeight,css:getComputedStyle(passage).overscrollBehaviorY}:null,font:document.fonts.check('500 22px "GB Cormorant Scripture"','Писание'),docW:document.documentElement.scrollWidth,viewW:innerWidth,panelTop:panel?.scrollTop,trace:window.qaTrace.slice()};
 },q);
@@ -71,6 +71,12 @@ try{
   await p.keyboard.press('End');await wait(p,250);s.endAgain=await snap(p);
   await p.keyboard.press('Tab');s.afterTab=await snap(p);
   await rail.locator(q.ref).last().press('Home');await wait(p,270);s.home=await snap(p);
+  if(process.env.CHECK_RAIL_TARGETS){
+   const left=p.locator(q.prev);assert.ok(s.home.rail.left<=2);assert.equal(await left.isDisabled(),true);
+   await right.tap();await wait(p,510);s.forward=await snap(p);assert.ok(s.forward.rail.left>0);
+   await left.tap();await wait(p,510);s.backward=await snap(p);assert.ok(s.backward.rail.left<=2);
+   assert.equal(s.backward.rail.prev,true);assert.equal(s.backward.owner,'gill-part-toc');
+  }
  });
  await scene('alias',exegete,'sec-method',390,844,async(c,p,s)=>{
   const label=s.open.labels.map(x=>x.label).find(x=>/^Рим\.? 12:6$/u.test(x));assert.ok(label);
