@@ -933,3 +933,123 @@ Disposable `node scripts/build-scripture-occurrence-index.mjs --write` меня�
 - `/tmp/249-events.json` — pointer/touch event timeline для Play, chip и pseudo-zone;
 - `/tmp/249-w57-visual.log` — exact local pilot-browser reproduction: desktop pass, mobile boundary mismatch;
 - `/tmp/249-scripture-write.log` — disposable writer output; generated index восстановлен до исходного состояния.
+
+## 17. Раунд 11 — exact HEAD `62be8caa` и новые Gill mobile controls
+
+### 17.1. Граница доказательства
+
+PR #2346 теперь находится на exact HEAD `62be8caa145fbe18aa099dff89cffa20cd626451`; цепочка после предыдущего baseline `249bb866` состоит из пяти коммитов: `d1234989`, `86941e4`, `55e1c74`, `bf105457`, `aae0fa0`. Проверка снова выполнялась в чистом detached worktree `/tmp/w62`; product/source files в audit-ветке не менялись.
+
+Локальный runtime остаётся `Node v22.22.3`, тогда как Astro в этом checkout требует `>=22.23.4`. Production-like build был запущен с временным floor bypass только внутри disposable worktree; изменённые для запуска проверки восстановлены. Browser evidence — Chromium через disposable `@sparticuz/chromium` adapter. Firefox/WebKit и физический телефон в sandbox не проверялись.
+
+### 17.2. Сборка, source contracts и текущий CI
+
+- `npm run strangler:build:production-like` — **PASS**: 112 Astro pages, 1047 legacy files copied, все post-build drift/CSP/metadata/reader-projection guards прошли.
+- `check-engine-contracts` и `series:facade:guard` внутри `npm run engine:contracts` — **PASS**.
+- Полный `npm run engine:contracts` — **FAIL** на `nagornaya:bar-asset:contract`: чистый `node scripts/cache-bust.js` на этом exact head завершается с пятью stale code-owned revision literals:
+
+```text
+js/highlights.js: css/highlights-runtime.css?v=fd24c13b (expected e6853d2e)
+js/highlights.js: js/reader-library-v3.js?v=e036d5a6 (expected 732d86cc)
+sw.js: css/highlights-runtime.css?v=fd24c13b (expected e6853d2e)
+sw.js: js/highlights.js?v=0992929b (expected e623f214)
+sw.js: js/reader-library-v3.js?v=e036d5a6 (expected 732d86cc)
+```
+
+The adversarial Nagornaya witness then cannot identify its temporary source because `cache-bust.js` exits earlier. The same clean cache-bust and Nagornaya contract pass on the `249bb866` disposable baseline. This is a current source-owned revision drift, not attributed to the browser harness; no repair was made.
+
+Fresh PR query: exact head remains `62be8caa`, PR **OPEN/DRAFT**, GitHub `mergeStateStatus=BEHIND`; rollup is **10 SUCCESS / 6 FAILURE / 4 SKIPPED / 37 QUEUED / 4 IN_PROGRESS**. The named failures are `live-submenu`, Grok real Product browser contract, `a4-paper`, deterministic source index/dist witness, Chromium + WebKit full-site menu contract, and the known Windows actionlint lane. Queued/in-progress jobs and opaque hosted failures are not assigned a product cause without logs.
+
+### 17.3. New Play/rate geometry — the rectangles are still not disjoint
+
+The latest CSS override changes the compound to `flex-basis/width:44px`, positions the 44×44 speed wrapper at `left:12px`, moves the transparent pseudo hit zone to the rightmost 12 px, and places the visible chip at `left:12px`. That visually tightens the bar, but it makes the DOM ownership geometry worse than the `249bb866` baseline: the full speed wrapper intersects the full Play rect by **32×44 = 1408 CSS px²** at every sampled width.
+
+| viewport | Play `.reader-mobile-play` | speed `#mobSpdBadge` | visible chip | Settings |
+|---:|---|---|---|---|
+| 320 | `x=182…226`, `y=7…51` | `x=194…238`, `y=7…51` | `x=206…226`, `y=33…47` | `x=226…270` |
+| 390 | `x=245…289`, `y=7…51` | `x=257…301`, `y=7…51` | `x=269…289`, `y=33…47` | `x=292.5…336.5` |
+| 430 | `x=284…328`, `y=7…51` | `x=296…340`, `y=7…51` | `x=308…328`, `y=33…47` | `x=332…376` |
+| 768 | `x=623…667`, `y=7…51` | `x=635…679`, `y=7…51` | `x=647…667`, `y=33…47` | `x=669…713` |
+
+The right-side transparent speed pseudo-zone also reaches into the Settings rectangle: it steals roughly 12 px at 320, 8.5 px at 390, 8 px at 430, and 10 px at 768. At 390, a real click/touch at `Settings.left+1` (`x=293.5,y=29`) targets `#mobSpdBadge` and opens the speed rail; the Settings center (`x=314.5,y=29`) opens Settings. Thus the Settings target remains visually 44×44 but is not an independent hit rectangle.
+
+The current computed ownership is explicit: wrapper `pointer-events:none`, pseudo `pointer-events:auto`, visible chip `pointer-events:auto`; wrapper radius is still `0px`, visible chip radius is `999px`. The official narrow contract's old geometry assertions expect a 68 px compound, a badge offset of 24 px, a 40 px ring, and a 27–31 px chip offset; the new CSS deliberately reports 44 px / 12 px / 38 px / 24 px instead. This is a contract/source mismatch that must be resolved by the owner, not silently normalized in the audit.
+
+### 17.4. Trusted mouse/touch ownership probes
+
+A fresh real-input probe at 390×844, run separately for mouse and touch, establishes the following:
+
+| point/action | mouse and touch result |
+|---|---|
+| Play triangle witness `(Play.left+29, Play.top+20)` = `(274,27)` | one speech starts; Play state becomes `playing`; the inline speed rail auto-opens as the one-time discovery behavior; no speed choice is made |
+| visible chip center `(279,40)` | speed rail opens; Play remains `idle`; no speech is started |
+| transparent right pseudo-zone `(295,27)` | speed rail opens; Play remains `idle`; no speech is started |
+| Settings left edge `(293.5,29)` | speed pseudo-zone wins; speed rail opens; Settings does not |
+| Settings center `(314.5,29)` | Settings sheet opens; no speech is started |
+
+This is positive **painted-affordance ownership** for the tested Play triangle, chip, and pseudo-zone, and it reproduces on both pointer types. It does **not** satisfy the disjoint-44×44 DOM geometry invariant, and it proves the new Settings edge collision. The `rateCenterClickable=false` result is expected from the partition (the invisible wrapper center lies over Play), but it is exactly why the existing contract cannot treat the wrapper rect as a standalone speed target.
+
+The unmodified `reader-controls-a11y-browser-contract.mjs` does not get past the new real click: Playwright times out on `.mobile-spdbadge` because the Play button intercepts pointer events. A diagnostic-only forced badge activation let the rest of the 155-check body run and reported **149/155**, with geometry failures for `gill-slot-33`, `gill-slot-31`, `gill-slot-32`, `gill-slot-35`, and `gill-slot-26`; the sixth `gill-mobile-07` speech-count failure is a side effect of forcing the otherwise blocked badge path and is not used as a separate product finding. This must not be reported as a normal passing reader-controls run; the normal exact-head command fails at the physical ownership boundary.
+
+The Chromium-only canonical mobile contract provides the clean baseline delta: `249bb866` passed **18/24** cases (the six known baptists/heart canonical-control cases remain baseline failures), while `62be8caa` passes **15/24**. The three new failures are Gill at 320, 390, and 430 px, each a 30-second locator timeout because `.reader-mobile-speed-badge` is covered by Play. This is direct evidence that the latest repositioning regressed the browser contract relative to the exact-249 baseline.
+
+### 17.5. Settings sheet, typography and preferences
+
+The new Settings placement itself is present and responsive at **320, 390, 430 and 768 px**:
+
+- exactly one visible `#mobSettingsBtn` remains in the top bar; there is no bottom Settings duplicate;
+- the trigger is a 44×44 box;
+- the sheet opens as a visible `role=dialog` with `aria-modal=true`, focus inside the sheet, and `html/body` scroll locked;
+- Escape closes the sheet, returns `aria-hidden=true`, removes its geometry, and restores focus to `#mobSettingsBtn`;
+- the two font cards stay inside the viewport: 140.5 px each at 320, 175.5 px at 390, 195.5 px at 430, and 364.5 px at 768.
+
+Real preference clicks pass for all groups: `light → sepia → dark → light`, `Lora ↔ Cormorant Garamond`, compact/normal/relaxed line height, narrow/normal/wide measure, rich/plain text mode, and system/reduced motion. Selecting Cormorant updates the canonical preference, `document.documentElement[data-reader-font-family]`, and the computed article font. A non-default tuple persisted after reload and across the Gill II route:
+
+```json
+{"theme":"sepia","fontFamily":"cormorant","lineHeight":"relaxed","measure":"wide","textMode":"plain","motion":"reduced"}
+```
+
+The same tuple was restored on reload and on `/articles/dzhon-gill-chast-2-uchenyi/`; no page errors or horizontal overflow occurred in these probes.
+
+### 17.6. «Аналитика» / TOC and Gill route matrix
+
+On 320×568, 320×700 and 390×844, the Part TOC opens without URL or horizontal-overflow changes. Selecting the renamed `#gbrMarginaliaTab` keeps the overlay open, marks the tab selected, renders the `АНАЛИТИКА · ИЗ ОПУБЛИКОВАННОГО ТЕКСТА` eyebrow, and exposes 3 analytics groups / 3 terms. Escape closes the surface. All six built Gill routes contain `Аналитика` and zero occurrences of the old `На полях` label in the final HTML.
+
+The adapted current `gill:mobile-play:smoke` passes its full series/TOC, C3 rate, Play state, long-press, rapid-tap, and 360/390 light/dark matrix. The adapted `gill:mobile-layout:audit` passes all **24/24** cases (six routes × two widths × two themes), including no horizontal overflow, fixed bottom bar, readable contrast, Part TOC and series-TOC back navigation. Its Yandex telemetry connection errors are classified optional and are not product failures.
+
+### 17.7. W57 pilot boundary remains contradictory
+
+`node research/reader-w57-pilot/verify.mjs` passes the source/manifests/axis/pilot and annotation contracts (12 assets). The current Chromium-only visual QA still passes the 1440 px desktop Gill W57 scene (ready/annotated, note/highlight/glossary/preferences interactions), but fails in the same known boundary:
+
+```text
+gill-mobile 390x844: ready=false, annotated=false, noteCards=0
+mobile-320:       ready=false, annotated=false, noteCards=0
+W57_BROWSING_FAILED 4
+```
+
+The mobile preview intentionally does not inject W57 below `min-width:1121px`, while the visual script still requires `np-w57-ready` and W57 controls on mobile. The resulting missing `#npUOpenResearch` is a QA/preview contract mismatch, not evidence that the native production Gill mobile bar fails. Desktop additionally records a `visual-review` hero center shift of `−116 px` when the research panel opens; it is retained for design review, not promoted to a product blocker without an owner decision.
+
+### 17.8. Exact-head verdict
+
+- [ ] **Play/rate/Settings hit geometry:** painted points are correctly partitioned in the fresh mouse/touch probes, but the 44×44 DOM rectangles overlap by 1408 px² and the speed pseudo-zone steals the Settings left edge at all tested widths. The new canonical contract regresses from the exact-249 baseline and cannot activate the speed badge physically. Owner must either restore disjoint targets or formally replace the geometry contract with a tested painted-zone invariant, including a clear Settings boundary and radius decision.
+- [ ] **Source asset revisions:** current `cache-bust.js` fails on five stale code-owned literals; update the governing references and rerun engine contracts.
+- [ ] **W57 pilot-browser:** desktop-only injection and mobile-expecting visual QA remain contradictory; branch the matrix or change the preview boundary.
+- [ ] **Hosted CI:** current rollup is 10 success / 6 failure / 4 skipped / 37 queued / 4 in progress, so no hosted clearance exists.
+- [x] **Settings preferences / Analytics / TOC:** current exact-head functional probes pass at the requested widths and routes, with persistence and accessible sheet behavior verified.
+
+**Round-11 verdict:** the Gill visual tightening and preference/Analytics flows work, but exact `62be8caa` is **not ready to merge**. The fresh trusted ownership evidence narrows the problem to a real hit-surface/geometry contract regression rather than a general TTS or TOC failure; current source revision drift and the unresolved W57 QA boundary keep the PR **OPEN/DRAFT/HOLD**. The audit made no product/source repair.
+
+### 17.9. Артефакты и команды этого раунда
+
+- `/tmp/62-build.log` — production-like build output (Node floor bypass only in `/tmp/w62`);
+- `/tmp/62-engine-contracts.log` и `/tmp/62-cache-bust-clean.log` — current source-contract failures;
+- `/tmp/62-reader-controls-force.log` — diagnostic forced-badge 149/155 output; not a normal contract pass;
+- `/tmp/62-mobile-canonical.log` и `/tmp/w249/reports/reader-mobile-canonical/V12_CANONICAL_BROWSER.json` — current/baseline Chromium-only delta;
+- `/tmp/62-gill-smoke.log` — adapted Gill Play/TOC smoke PASS;
+- `/tmp/62-mobile-layout-real.log` — adapted 24-case Gill layout PASS;
+- `/tmp/62-ownership-speech-all.json` — mouse/touch ownership traces;
+- `/tmp/62-preferences-persist.json` — reload/cross-route preference persistence;
+- `/tmp/62-w57-visual.log` — current W57 desktop PASS plus mobile boundary mismatch;
+- `/tmp/pr2346-current-latest.json` — latest hosted status snapshot.
+
+No product/source files were changed by the independent audit.
