@@ -300,12 +300,12 @@ const page = config.pages[pageId];
     content:none;display:none;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-speed-chip {
-    box-sizing:border-box;position:absolute;left:-13px;bottom:5px;z-index:4;
+    box-sizing:border-box;position:absolute;left:-19px;bottom:6px;z-index:4;
     display:grid;place-items:center;width:max-content;
-    min-width:26px;max-width:39px;height:16px;padding:1px 4px;
+    min-width:24px;max-width:35px;height:15px;padding:0 3px;
     border:1px solid color-mix(in srgb,var(--gill-mobile-bar-paper,#fffaf5) 68%,transparent);
     border-radius:999px;background:#544333;color:#fff9f0;
-    font:750 9px/1 "Source Sans 3",system-ui,sans-serif;
+    font:720 8.5px/1 "Source Sans 3",system-ui,sans-serif;
     white-space:nowrap;box-shadow:0 1px 5px rgba(35,24,17,.13);
     /* A real pointer target even where the visible chip overlaps Play.
        The event bubbles to its owning speed badge, never the TTS button. */
@@ -365,6 +365,26 @@ const page = config.pages[pageId];
   }
   [data-gill-v16] .mobile-top-bar.speed-open .reader-mobile-menu-trigger {
     opacity:0;transform:none;pointer-events:none;
+  }
+}
+/* Shift Play RIGHT toward Settings, reducing the empty trailing gap.
+   Preserve the full 44px hit targets, the central research/speed slot,
+   and the unshifted Settings/Bookmark locations. At <=360px no spare gap. */
+@media (min-width:361px) and (max-width:430px) {
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play-group.mobile-playwrap {
+    margin-left:2px; margin-right:-2px;
+  }
+}
+@media (min-width:431px) and (max-width:960px) {
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play-group.mobile-playwrap {
+    margin-left:4px; margin-right:-4px;
+  }
+}
+/* From 961px the canonical chrome already has zero gap. Moving Play
+   further would overlap the Settings 44px target; keep them flush. */
+@media (min-width:961px) and (max-width:84.999em) {
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play-group.mobile-playwrap {
+    margin-left:0; margin-right:0;
   }
 }
 @media(max-width:430px) {
