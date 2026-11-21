@@ -688,3 +688,104 @@ node scripts/engine-sweep.mjs
 ### 13.5. Итог для PR и D2/D3
 
 Новый mobile speed-slot head получил положительные доказательства по геометрии и accessibility ownership, но одновременно оставляет широкий hosted/local `engine:sweep` красным до решения по radius predicate. Это не меняет вывод по настройкам: **D2 и D3 остаются `- [ ]`**, потому что speed-slot evidence не проверяет и не исправляет ghost-strip/desktop font-owner architecture. PR #2346 остаётся **OPEN/DRAFT/HOLD**.
+
+## 14. Раунд 8 — exact HEAD `55e1c74` и фактическое пересечение Play/speed
+
+### 14.1. Граница доказательства
+
+Во время этого раунда PR #2346 продвинулся после `d1234989` через `86941e4` к exact HEAD `55e1c74ac32937308c98071cf420627c8e29815a` (`fix(reader): compact Gill Play controls and refine gold progress ring`). Последний source commit меняет только Gill CSS в `src/components/article-pilots/gill-series/GillSeriesMobileBar.astro`: compound Play/rate group сужен с 88 до 68 px, speed badge сдвинут `margin-left:-20px`, а progress ring утолщён. Product/source repair в audit-ветку не переносился.
+
+В disposable detached worktree `/tmp/w555e1`:
+
+- `npm run strangler:build:production-like` — **PASS**: 112 Astro pages, 1047 legacy files, postbuild guards PASS. Node `22.22.3` floor-check был временно обойдён только в detached worktree; это не CI-equivalent proof;
+- `npm run engine:contracts` — **PASS**;
+- `reader-controls-a11y-browser-contract.mjs` через disposable `@sparticuz/chromium` — **5 cases / 150 checks / 150 pass / 0 failures**;
+- no tracked product/source change was made on the audit branch.
+
+### 14.2. Wide engine sweep remains red, and the new commit worsened the witness
+
+Exact-head `scripts/engine-sweep.mjs` завершился exit 1: **`TOTAL: 219/225 PASS`**. Все шесть failure — одна и та же проверка для шести route-family rows (`gill3`, `heart`, `baptist`, `antisov`, `teen`, `genesis6`):
+
+```text
+FAIL  mob: Play / скорость — независимые сенсорные зоны
+{"playWidth":44,"playHeight":44,"badgeWidth":44,"badgeHeight":44,
+ "overlap":880,"playHit":true,"badgeHit":true,
+ "badgeWithinViewport":true,"badgeRadius":"0px",
+ "badgeControls":"mobileSpeedrail"}
+```
+
+This is materially worse than the immediately preceding `86941e4` snapshot: its same six rows had `overlap:0` (but still `badgeRadius:"0px"`). The new `55e1c74` `margin-left:-20px` makes the two **44×44 hit rectangles overlap by 20×44 = 880 CSS px²**. At 390 px, the exact geometry is:
+
+| element | rectangle |
+|---|---:|
+| Play `.reader-mobile-play` | `x=221…265`, `y=7…51` |
+| speed `.reader-mobile-speed-badge` | `x=245…289`, `y=7…51` |
+| visible `.reader-mobile-speed-chip` | `x=254…278`, `y=31…46` |
+
+A real `elementFromPoint` horizontal probe at the shared centerline maps `x=245…265` to `#mobSpdBadge`; `x=221…243` maps to Play. Thus the rightmost 20 px of the visible Play target is owned by speed, and `x=245…253` is an invisible speed-owned strip before the visible chip begins. Both center-hit assertions pass only because the Play center is at `x=243` and the badge center is at `x=267`; they do not prove independent zones. This is a reproducible touch-target ambiguity/overlap, not merely a cosmetic contract mismatch.
+
+The radius predicate is a second, separate failure: the sweep reads the transparent `.reader-mobile-speed-badge` wrapper (`border-radius:0px`), while the visible chip is rounded (`border-radius:999px`). The current head therefore still violates the existing `parseFloat(mb.badgeRadius) >= 10` sweep invariant. The narrow accessibility contract does not inspect wrapper radius or non-overlap, so its `150/150` result does not close this failure.
+
+**Disposition:** `engine:sweep` is not passed on `55e1c74`; the owner must either restore disjoint 44 px ownership and decide the authoritative radius invariant, then obtain a hosted rerun. No source repair was made by the audit.
+
+### 14.3. What passes around the failing control
+
+The exact-head multi-width layout probe on the built Gill route passed at **320, 360, 390, 430, 480, 768, 1024, 1120, 1280 and 1359 px**: zero horizontal overflow, no page errors, one top Settings trigger (`settingsTop=true`, `settingsBottom=false`), Settings center hit succeeds, and Play/speed wrappers remain 44×44. The speed badge remains `border-radius:0px` at every sampled width. Settings does not overlap the 68 px compound group; the bad overlap is specifically Play versus the speed wrapper.
+
+The previously inconclusive programmatic-scroll probe was replaced with real directional input on exact `55e1c74`:
+
+- real Playwright mouse-wheel down at 320/390/768: `scrollY=240`, `gbs2-tbhidden`, `transform≈translateY(-83px)`, `opacity=0`, `pointer-events:none`;
+- real mouse-wheel up: top bar reappears with `opacity=1`, pointer events restored;
+- real CDP touch swipe at 390: content-down reaches `scrollY=285` and hides the bar; reverse content-up returns to `scrollY=0` and restores it;
+- no page errors were observed.
+
+Therefore Gill auto-hide is **reproducibly working for directional wheel/touch** on this Chromium harness; the earlier programmatic `scrollTo` observation was not valid evidence against it.
+
+### 14.4. Hosted status at this exact head
+
+A new hosted batch was created for `55e1c74`. At the last query, the relevant jobs were still queued/pending (including `public-surface-browser-matrix`, `Reader Controls Accessibility`, `Reader W57 pilot browser visual QA`, `Grok`, `a4-paper`, Scripture/index, and the actionlint matrix); the PR rollup was **54 QUEUED / 3 IN_PROGRESS / 4 SKIPPED** with no completed result for this head. The previous `86941e4` reader/accessibility and pilot runs were cancelled/replaced, so they are not evidence for `55e1c74`. The earlier `86941e4` wide sweep failure is superseded by the exact-head `overlap:880` result above.
+
+**Round-8 verdict:** exact `55e1c74` has a confirmed source-level mobile Play/speed hit-zone regression (six route-family witnesses) and an unresolved wrapper-radius contract failure. It also has positive exact-head evidence for build, engine contracts, formal reader-controls accessibility, multi-width no-overflow, and real directional auto-hide. D2/D3 from the prior rounds remain open; the PR is still **OPEN/DRAFT/HOLD**, not ready to merge.
+
+## 15. Раунд 9 — exact HEAD `fa595d8` and failed attempted hitbox repair
+
+### 15.1. New head and scope
+
+PR #2346 advanced again to exact HEAD `fa595d8fed4d8190a6425a11fb7a393a32933057` (`test(reader): prevent speed hitbox from stealing Play taps`). The intervening chain after `55e1c74` is `bf10545` (test guards), `aae0fa0` (source CSS attempt), and `fa595d8` (additional contract assertions). Only `aae0fa0` changes product CSS: it sets `.reader-mobile-speed-badge { pointer-events:none }` and adds a transparent `::before` 24 px right-side pointer surface; the other new commit changes are contract/test code. No product/source repair was copied into the audit branch.
+
+In disposable `/tmp/wfa`:
+
+- production-like build — **PASS** (112 Astro pages, 1047 legacy files, all postbuild guards PASS; same disposable Node floor workaround only);
+- `npm run engine:contracts` — **PASS**;
+- exact current browser contract — **exit 1**, `5 cases / 153 checks / 152 pass / 1 failure`;
+- the failed check is the newly added `gill-slot-33 :: overlapping rate hitbox never steals a Play triangle tap`.
+
+### 15.2. The current contracts still reproduce the same source defect
+
+The exact current wide sweep remains **`TOTAL: 219/225 PASS`** with the same six failures and the same payload on all six rows:
+
+```text
+{"playWidth":44,"playHeight":44,"badgeWidth":44,"badgeHeight":44,
+ "overlap":880,"playHit":true,"badgeHit":true,
+ "badgeWithinViewport":true,"badgeRadius":"0px",
+ "badgeControls":"mobileSpeedrail"}
+```
+
+The geometry is unchanged at 390 px (`Play x=221…265`; speed wrapper `x=245…289`; chip `x=254…278`). The attempted CSS repair does make the wrapper report `pointer-events:none` in computed style, and the existing visible-chip/rate-center checks still pass, but the new contract's exact triangle witness (`Play left + 29 px`, x=250 at y=27) resolves to `#mobSpdBadge`; `gill-slot-33` therefore fails. The independent hit-zone assertion is not satisfied by the current CSS. `engine:sweep` also still counts the 20 px overlap and still samples wrapper `border-radius:0px`.
+
+This is stronger current-head evidence than the prior 150-check result: the project now has an explicit regression witness for the point that the fix claims to protect, and that witness fails. The underlying practical issue remains an ambiguous/overlapping Play/speed touch surface; the current source patch has not demonstrated a safe partition.
+
+### 15.3. Positive exact-head evidence
+
+The existing multi-width geometry remained unchanged: on 320/360/390/430/480/768/1024/1120/1280/1359 px there is zero horizontal overflow, one top Settings owner, no bottom Settings duplicate, 44×44 Play and speed wrappers, and no Settings/group overlap. Exact-current real input probes at 390 px still pass the unrelated auto-hide contract:
+
+- mouse-wheel down: `scrollY=240`, `gbs2-tbhidden`, transform ≈ `translateY(-83px)`, opacity 0, pointer-events none;
+- mouse-wheel up: bar restored, opacity 1, pointer-events auto;
+- CDP touch swipe down-content: `scrollY=285`, bar hidden; reverse swipe: `scrollY=0`, bar restored;
+- no page errors.
+
+### 15.4. Hosted status for exact `fa595d8`
+
+At the latest PR query the head remained `fa595d8`, `OPEN/DRAFT/BLOCKED`; the rollup was **13 SUCCESS / 8 IN_PROGRESS / 32 QUEUED / 4 SKIPPED / 4 FAILURE**. The failures were `Grok flag-ON and flag-OFF real Product browser contract`, `a4-paper`, `pilot-browser`, and the Windows actionlint lane. The first three job-log requests returned the GitHub results-receiver `EOF`; the actionlint workflow was still completing its matrix. `public-surface-browser-matrix`, exact Scripture occurrences, and the hosted reader-controls matrix were still queued, so hosted CI does not yet validate or clear the local finding.
+
+**Round-9 verdict:** the attempted `fa595d8` hitbox repair is not accepted: the new dedicated Play-triangle witness fails, and the wide sweep remains 219/225. The wrapper-radius predicate also remains unresolved. Auto-hide is now positively verified with real wheel and touch input. D2/D3 remain open, and PR #2346 is still **OPEN/DRAFT/HOLD**, not ready to merge.
