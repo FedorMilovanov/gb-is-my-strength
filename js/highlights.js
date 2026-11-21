@@ -297,7 +297,7 @@
       presenterPromise = import('/js/reader-library-presenter.js?v=841cc1c0')
         .then(async (module) => {
           presenter = module;
-          const researchModule = await import('/js/reader-library-v3.js?v=732d86cc');
+          const researchModule = await import('/js/reader-library-v3.js?v=071c8c26');
           if (!research) research = researchModule.createLibraryResearch({
             overlay, getItems: all, notify: statusMessage, refresh: render, isOpen,
             renderItem: module.renderItem,
@@ -317,7 +317,7 @@
   const stylesheet = document.createElement('link');
   stylesheet.id = 'gbHlRuntimeCss';
   stylesheet.rel = 'stylesheet';
-  stylesheet.href = '/css/highlights-runtime.css?v=b51327b4';
+  stylesheet.href = '/css/highlights-runtime.css?v=8b751654';
   if (!document.getElementById(stylesheet.id)) document.head.appendChild(stylesheet);
 
   function button(action, label, text) {
@@ -515,7 +515,7 @@
   function dock() {
     if (!fab) return;
     if (dockImpl) return dockImpl(fab);
-    dockLoad ||= import('/js/reader-library-dock.js?v=b550fdd1')
+    dockLoad ||= import('/js/reader-library-dock.js?v=706a54b0')
       .then(m => { dockImpl = m.dockLibraryFab; contextFromSelection = m.contextFromSelection; dockImpl(fab); if (m.shouldWarmReading()) loadPresenter(); })
       .catch(() => { dockLoad = null; });
   }
