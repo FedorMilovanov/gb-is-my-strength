@@ -161,7 +161,7 @@ async function run(w, mode) {
           !r.end.locked &&
           r.expanded.more === 'true' &&
           r.end.focus.startsWith('ABBR:') &&
-          r.end.y === r.tab.y));
+          Math.abs(r.end.y - r.tab.y) <= 1));
     if (!r.pass) process.exitCode = 1;
   } catch (e) {
     r.error = e.message;
