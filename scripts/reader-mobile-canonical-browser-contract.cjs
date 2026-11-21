@@ -35,13 +35,19 @@ const routes=[
       const play=bar.locator('.reader-mobile-play');
       const before=await play.boundingBox();
       const badge=bar.locator('.reader-mobile-speed-badge');
-      const menuBtn=bar.locator(slug==='gill'?'[data-gill-marginalia-open]':'[data-reader-mobile-menu-target]');
+      // Shared Gill/Analytics chrome is reused by several article families:
+      // discover the actual DOM variant, not the test fixture's route label.
+      const isResearchVariant=(await bar.getAttribute('data-gill-mobile-bar'))!==null;
+      const menuBtn=bar.locator(isResearchVariant?'[data-gill-marginalia-open]':'[data-reader-mobile-menu-target]');
       const settings=page.locator('.reader-mobile-action[aria-label^="Настройки чтения"]');
       if(await play.count()!==1||await badge.count()!==1||await menuBtn.count()!==1||await settings.count()!==1)throw Error('canonical controls missing or duplicate');
       const nav=await menuBtn.locator('svg path').first().getAttribute('d');
-      if(slug==='gill'){
+      if(isResearchVariant){
         const research=bar.locator('[data-gill-marginalia-open]');
-        if(await research.count()!==1||await research.getAttribute('aria-controls')!=='partTocOverlay') throw Error('Gill canonical research trigger missing/incorrect');
+        if(await research.count()!==1
+          ||await research.getAttribute('aria-controls')!=='partTocOverlay'
+          ||await page.locator('#partTocOverlay').count()!==1)
+          throw Error('shared Analytics research trigger missing/incorrect');
       }else if(nav!=='M4 7h16M4 12h16M4 17h16')throw Error('noncanonical hamburger');
       if(before.width>44)throw Error('oversized Play='+before.width);
       if(await page.locator('[data-fc-action="scroll-top"]:visible').count())throw Error('unwanted back-to-top arrow');
