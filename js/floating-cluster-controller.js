@@ -3295,11 +3295,31 @@
           tip.setAttribute('role', 'status');
           tip.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 7l-5 5 5 5"/></svg>Свайп по статье — соседняя часть серии';
           document.body.appendChild(tip);
-          requestAnimationFrame(function () { tip.classList.add('gbs2-on'); });
-          setTimeout(function () {
+          // W62: this is an article-only onboarding toast, not part of the
+          // Analytics/TOC/Library sheet. Dismiss it immediately if a sheet
+          // opens after the initial 2400ms gate; it must never cover a verse,
+          // reading item or drawer action.
+          var tipObserver = new MutationObserver(function () {
+            if (!sheetsOpen() && !modalsOpen()) return;
+            tipObserver.disconnect();
+            clearTimeout(tipTimer);
+            if (tip.parentNode) tip.parentNode.removeChild(tip);
+          });
+          tipObserver.observe(document.body, {
+            subtree: true, attributes: true, attributeFilter: ['class']
+          });
+          var tipTimer = setTimeout(function () {
+            tipObserver.disconnect();
             tip.classList.remove('gbs2-on');
-            setTimeout(function () { if (tip.parentNode) tip.parentNode.removeChild(tip); }, 450);
+            setTimeout(function () {
+              if (tip.parentNode) tip.parentNode.removeChild(tip);
+            }, 450);
           }, 5200);
+          requestAnimationFrame(function () {
+            if (!sheetsOpen() && !modalsOpen() && tip.isConnected) {
+              tip.classList.add('gbs2-on');
+            }
+          });
           try { window.localStorage.setItem(TIP_KEY, '1'); } catch (_) {}
         }, 2400);
       }
