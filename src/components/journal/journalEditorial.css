@@ -51,6 +51,7 @@
 .journal-edition .journal-feature-grid--text-first > .journal-story-column { grid-row: 2; }
 .journal-edition .journal-opening-column > .reader-framing { margin: 24px 0 0; }
 .journal-edition .je-contents-jump { display: none; }
+.journal-edition .je-contents-return { display: none; }
 .journal-edition .je-contents { border-top: 2px solid var(--je-gold); background: var(--je-paper); }
 .journal-edition .je-contents summary { display: flex; align-items: center; justify-content: space-between; gap: 15px; list-style: none; cursor: pointer; min-height: 54px; padding: 14px 0; color: var(--je-ink); font: 600 13px/1.5 var(--je-ui); }
 .journal-edition .je-contents summary::-webkit-details-marker { display: none; }
@@ -203,6 +204,8 @@
   /* Early access to the same native TOC, without moving the accepted opening. */
   .journal-edition .je-opening-label { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0 8px; }
   .journal-edition .je-contents-jump { display: inline-flex; align-items: center; flex: none; min-height: 24px; color: var(--je-ink); font: 600 12px/1.5 var(--je-ui); letter-spacing: normal; text-transform: none; text-decoration: underline; }
+  /* One explicit SSR alternative; native Back remains the browser's own action. */
+  .journal-edition .je-contents-return { display: inline-flex; align-items: center; min-height: 44px; max-width: 100%; margin-top: 8px; color: var(--je-ink); font: 600 13px/1.5 var(--je-ui); text-decoration: underline; }
   .journal-edition #journal-g3-toc { scroll-margin-block-start: calc(76px + env(safe-area-inset-top, 0px)); }
 }
 @media (max-width: 690px) {

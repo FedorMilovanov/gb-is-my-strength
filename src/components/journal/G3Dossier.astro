@@ -20,7 +20,7 @@ const projectedClaims: G3PublicationClaimId[] = [
   'G3-PUB-001', 'G3-PUB-002', 'G3-PUB-003', 'G3-PUB-004',
   'G3-PUB-005', 'G3-PUB-006', 'G3-PUB-007', 'G3-PUB-008',
   'G3-PUB-009', 'G3-PUB-010', 'G3-PUB-011', 'G3-PUB-012',
-  'G3-PUB-013', 'G3-PUB-014', 'G3-PUB-015', 'G3-PUB-016',
+  'G3-PUB-013', 'G3-PUB-014', 'G3-PUB-016',
 ];
 projectedClaims.forEach(assertG3PublicationProjection);
 
@@ -158,7 +158,7 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
         автоматически установить чужие мотивы, юридическую судьбу всех активов
         или виновность участников каждого конфликта.
       </p>
-      <p class="source-note-paragraph" data-publication-claims="G3-PUB-001 G3-PUB-005 G3-PUB-006 G3-PUB-007 G3-PUB-012 G3-PUB-013 G3-PUB-014 G3-PUB-015 G3-PUB-016"><a class="source-note" href="#documents">Документы, на которых основан рассказ</a></p>
+      <p class="source-note-paragraph" data-publication-claims="G3-PUB-001 G3-PUB-005 G3-PUB-006 G3-PUB-007 G3-PUB-012 G3-PUB-013 G3-PUB-014 G3-PUB-016"><a class="source-note" href="#documents">Документы, на которых основан рассказ</a></p>
     </div>
   </section>
 
@@ -169,6 +169,8 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
     </div>
     <JournalEditorialRail label="Содержание документального досье G3">
       <JournalContents entries={contents} summaryId="journal-g3-toc" initialCompactClosed />
+      <!-- Explicit native return is not browser-history focus restoration. -->
+      <a class="je-contents-return" href="#overview" data-pagefind-ignore>К началу чтения</a>
       <p class="je-rail-note">Фактический срез — 9 сентября 2026 года.{' '}
         <a href="#bibliography">{G3_SOURCE_BIBLIOGRAPHY.length} источник</a> с датами и границами доказательств.{' '}
         <a href="#corrections">Журнал исправлений</a>.</p>
@@ -363,13 +365,7 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
         определить нового владельца, условия сделки или юридический
         переход прав на книги и сервисы.
       </p>
-      <p>
-        Известен отдельный пример: книга Дэйва Дженкинса <em>The Word Matters</em>{' '}
-        появлялась в его нынешней издательско-образовательной среде.
-        Однако даже этот случай не раскрывает условия передачи прав
-        на весь каталог G3 Press.
-      </p>
-      <p class="source-note-paragraph" data-publication-claims="G3-PUB-001 G3-PUB-012 G3-PUB-013 G3-PUB-014 G3-PUB-015 G3-PUB-016"><a class="source-note" href="#bibliography">Решения организаций, реестры и цифровые записи</a></p>
+      <p class="source-note-paragraph" data-publication-claims="G3-PUB-001 G3-PUB-012 G3-PUB-013 G3-PUB-014 G3-PUB-016"><a class="source-note" href="#bibliography">Решения организаций, реестры и цифровые записи</a></p>
     </div>
   </section>
 
