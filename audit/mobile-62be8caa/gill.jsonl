@@ -1,0 +1,50 @@
+{"draft":{"from":390,"to":844,"pilot":true,"sameDoc":true,"editor":true,"draftKept":true,"savedControl":true}}
+{"draft":{"from":1120,"to":1121,"pilot":true,"sameDoc":false,"editor":false,"draftKept":false,"savedControl":true}}
+{"draft":{"from":1440,"to":390,"pilot":true,"sameDoc":false,"editor":false,"draftKept":false,"savedControl":true}}
+{"draft":{"from":1120,"to":1121,"pilot":false,"sameDoc":true,"editor":true,"draftKept":true,"savedControl":true}}
+{"touch":{"w":320,"k":"center","x":204,"y":29,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"playing","rate":1,"open":true,"speaks":1}}
+{"touch":{"w":320,"k":"rightArc","x":220,"y":29,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"playing","rate":1,"open":true,"speaks":1}}
+{"touch":{"w":320,"k":"oldConflict","x":209,"y":39,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"touch":{"w":320,"k":"chip","x":216.5234375,"y":40,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"touch":{"w":320,"k":"outside","x":234,"y":13,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"touch":{"w":320,"k":"boundaryL","x":225,"y":27,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"touch":{"w":320,"k":"boundaryR","x":227,"y":27,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"rateSelection":{"w":320,"phase":"playing","rate":1.5,"open":false,"speaks":2}}
+{"touch":{"w":390,"k":"center","x":267,"y":29,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"playing","rate":1,"open":true,"speaks":1}}
+{"touch":{"w":390,"k":"rightArc","x":283,"y":29,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"playing","rate":1,"open":true,"speaks":1}}
+{"touch":{"w":390,"k":"oldConflict","x":272,"y":39,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"touch":{"w":390,"k":"chip","x":279.5234375,"y":40,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"touch":{"w":390,"k":"outside","x":297,"y":13,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"touch":{"w":390,"k":"boundaryL","x":288,"y":27,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"touch":{"w":390,"k":"boundaryR","x":290,"y":27,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"rateSelection":{"w":390,"phase":"playing","rate":1.5,"open":false,"speaks":2}}
+{"touch":{"w":525,"k":"center","x":402,"y":29,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"playing","rate":1,"open":true,"speaks":1}}
+{"touch":{"w":525,"k":"rightArc","x":418,"y":29,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"playing","rate":1,"open":true,"speaks":1}}
+{"touch":{"w":525,"k":"oldConflict","x":407,"y":39,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"touch":{"w":525,"k":"chip","x":414.5234375,"y":40,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"touch":{"w":525,"k":"outside","x":432,"y":13,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"touch":{"w":525,"k":"boundaryL","x":423,"y":27,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"touch":{"w":525,"k":"boundaryR","x":425,"y":27,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"rateSelection":{"w":525,"phase":"playing","rate":1.5,"open":false,"speaks":2}}
+{"research":{"width":390,"height":844,"label":"Открыть раздел «Аналитика»: определения и контекст статьи","tab":"Аналитика","heading":"Аналитика","eyebrow":"АНАЛИТИКА · ИЗ ОПУБЛИКОВАННОГО ТЕКСТА"}}
+{"researchReturn":{"width":390,"height":844,"onTrigger":true}}
+{"settings":{"width":390,"height":844,"theme":"true","scale":1.05,"overflow":0}}
+{"settingsFooter":{"width":390,"height":844,"foot":[{"title":"Обучение","hit":true},{"title":"Сбросить настройки","hit":true},{"title":"Готово","hit":true}]}}
+{"doneReturn":{"width":390,"height":844,"active":"mobSettingsBtn"}}
+{"learningReturn":{"width":390,"height":844,"active":"BODY"}}
+{"research":{"width":320,"height":340,"label":"Открыть раздел «Аналитика»: определения и контекст статьи","tab":"Аналитика","heading":"Аналитика","eyebrow":"АНАЛИТИКА · ИЗ ОПУБЛИКОВАННОГО ТЕКСТА"}}
+{"researchReturn":{"width":320,"height":340,"onTrigger":true}}
+{"settings":{"width":320,"height":340,"theme":"true","scale":1.05,"overflow":0}}
+{"settingsFooter":{"width":320,"height":340,"foot":[{"title":"Обучение","hit":true},{"title":"Сбросить настройки","hit":true},{"title":"Готово","hit":true}]}}
+{"doneReturn":{"width":320,"height":340,"active":"mobSettingsBtn"}}
+{"learningReturn":{"width":320,"height":340,"active":"BODY"}}
+{"research":{"width":844,"height":390,"label":"Открыть раздел «Аналитика»: определения и контекст статьи","tab":"Аналитика","heading":"Аналитика","eyebrow":"АНАЛИТИКА · ИЗ ОПУБЛИКОВАННОГО ТЕКСТА"}}
+{"researchReturn":{"width":844,"height":390,"onTrigger":true}}
+{"settings":{"width":844,"height":390,"theme":"true","scale":1.05,"overflow":0}}
+{"settingsFooter":{"width":844,"height":390,"foot":[{"title":"Обучение","hit":true},{"title":"Сбросить настройки","hit":true},{"title":"Готово","hit":true}]}}
+{"doneReturn":{"width":844,"height":390,"active":"mobSettingsBtn"}}
+{"learningReturn":{"width":844,"height":390,"active":"BODY"}}
+{"longPress":{"w":320,"held":"idle","after":"idle","trace":["starting","playing","idle"],"speaks":1}}
+{"reverseTab":{"w":320,"back1":"BUTTON","focus":{"id":"mobSettingsBtn","y":-76,"opacity":"0","hit":false}}}
+{"longPress":{"w":390,"held":"idle","after":"idle","trace":["starting","playing","idle"],"speaks":1}}
+{"reverseTab":{"w":390,"back1":"BUTTON","focus":{"id":"mobSettingsBtn","y":-76,"opacity":"0","hit":false}}}
