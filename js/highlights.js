@@ -16,6 +16,137 @@
   const searchSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>';
 
   function normalizeText(value) { return String(value == null ? '' : value).replace(/\s+/g, ' ').trim(); }
+  /* W57/Product share one positional identity and one exact DOM resolver.
+     Reusing the published visible text avoids blind string-index guesses. */
+  const GBReaderAnchors = (() => {
+    const normalize = normalizeText;
+    const pathname = () => location.pathname.replace(/\/+$/, '') || '/';
+    const hash = s => { let h=2166136261; for(let i=0;i<s.length;i++){
+      h ^= s.charCodeAt(i); h=Math.imul(h,16777619); } return (h>>>0).toString(36); };
+  const blocks=(article)=>[...article.querySelectorAll('p,li,blockquote')]
+    .filter(e=>!e.closest('.np-u-central-overview,.np-u-central-contents,.gill-card,figcaption,.np-u-series-disclosure')&&
+      normalize(e.textContent).length>=6);
+  function chooseBlock(node,article){
+    const el=node?.nodeType===1?node:node?.parentElement;
+    const parent=el?.closest('p,li,blockquote');
+    return parent&&article.contains(parent)?parent:null;
+  }
+  // Source coordinates refer only to VISIBLE authored prose, not inline
+  // glossary popovers hidden inside the published article's DOM.
+  function visibleProjection(block){
+    const segments=[],cached=new WeakMap();
+    const ignored=el=>{
+      if(!el||el===block)return false;
+      if(cached.has(el))return cached.get(el);
+      const excluded=el.matches('.gtip,.btip,.tooltip,[hidden],[inert],[aria-hidden="true"],[role="tooltip"]') ||
+        getComputedStyle(el).display==='none' ||
+        getComputedStyle(el).visibility==='hidden' || ignored(el.parentElement);
+      cached.set(el,excluded);return excluded;
+    };
+    const walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT);
+    let text='',node;
+    while((node=walker.nextNode())){
+      if(!node.nodeValue||ignored(node.parentElement))continue;
+      const start=text.length;text+=node.nodeValue;
+      segments.push({node,start,end:text.length});
+    }
+    return{text,segments};
+  }
+  function projectedOffset(p,container,offset){
+    const at=document.createRange();
+    try{at.setStart(container,offset);at.collapse(true)}catch(_){return null}
+    for(const segment of p.segments){
+      if(container===segment.node)return segment.start+offset;
+      if(at.comparePoint(segment.node,segment.node.nodeValue.length)<0)continue;
+      return segment.start;
+    }
+    return p.text.length;
+  }
+  function makeRange(block,start,end){
+    const p=visibleProjection(block);
+    if(!Number.isInteger(start)||!Number.isInteger(end)||
+       start<0||end<=start||end>p.text.length)return null;
+    const from=p.segments.find(s=>s.start<=start&&start<s.end);
+    const to=p.segments.find(s=>s.start<end&&end<=s.end);
+    if(!from||!to)return null;
+    const r=document.createRange();
+    r.setStart(from.node,start-from.start);
+    r.setEnd(to.node,end-to.start);
+    return r;
+  }
+  function capture(article){
+    const sel=window.getSelection?.();
+    if(!sel||sel.isCollapsed||!sel.rangeCount)return null;
+    const r=sel.getRangeAt(0).cloneRange(),block=chooseBlock(r.startContainer,article);
+    if(!block||chooseBlock(r.endContainer,article)!==block)return null;
+    const visual=r.getBoundingClientRect();
+    if(visual.width<2||visual.height<2||visual.bottom<0||visual.top>innerHeight||
+       !block.getClientRects().length||block.closest('[hidden],[inert],[aria-hidden="true"]'))
+      return null;
+    const p=visibleProjection(block),start=projectedOffset(p,r.startContainer,r.startOffset),
+      end=projectedOffset(p,r.endContainer,r.endOffset);
+    if(start===null||end===null||end<=start)return null;
+    const text=p.text.slice(start,end);
+    if(normalize(text).length<6||text.length>3000)return null;
+    const list=blocks(article),index=list.indexOf(block);
+    if(index<0)return null;
+    const anchor={
+      projection:'reader-visible-v1',blockId:block.id||'',blockIndex:index,start,end,
+      exact:text,prefix:p.text.slice(Math.max(0,start-64),start),
+      suffix:p.text.slice(end,end+64),
+      blockHash:hash(normalize(p.text)),
+      fingerprint:hash(pathname()+'|'+index+'|'+start+':'+end+'|'+text)
+    };
+    return{text,anchor,range:r,rect:visual};
+  }
+  function resolve(article,anchor){
+    if(!anchor||typeof anchor.exact!=='string'||!anchor.exact)return null;
+    const list=blocks(article);
+    // Legacy annotations are preserved exactly. If old coordinates included
+    // hidden glossary prose, do NOT guess a new author or passage.
+    const contextMatches=(raw,start,end)=>{
+      if(anchor.blockHash&&hash(normalize(raw))===anchor.blockHash)return true;
+      const prefix=String(anchor.prefix||'').slice(-24),suffix=String(anchor.suffix||'').slice(0,24);
+      if(!prefix&&!suffix)return false;
+      if(prefix&&!raw.slice(Math.max(0,start-prefix.length),start).endsWith(prefix))return false;
+      if(suffix&&!raw.slice(end,end+suffix.length).startsWith(suffix))return false;
+      return true;
+    };
+    const probe=(block,start=anchor.start,end=anchor.end)=>{
+      if(!block)return null;
+      const raw=visibleProjection(block).text;
+      if(raw.slice(start,end)!==anchor.exact||!contextMatches(raw,start,end))return null;
+      return makeRange(block,start,end);
+    };
+    const preferred=anchor.blockId?
+      article.querySelector('#'+CSS.escape(anchor.blockId)):list[anchor.blockIndex];
+    if(preferred&&list.includes(preferred)){
+      const found=probe(preferred);if(found)return found;
+    }
+    const candidates=[];
+    for(const block of list){
+      const raw=visibleProjection(block).text;
+      let at=0;
+      while((at=raw.indexOf(anchor.exact,at))!==-1){
+        if(contextMatches(raw,at,at+anchor.exact.length)){
+          const range=makeRange(block,at,at+anchor.exact.length);
+          if(range)candidates.push(range);
+        }
+        at+=Math.max(1,anchor.exact.length);
+      }
+    }
+    return candidates.length===1?candidates[0]:null;
+  }
+    function sameRange(a,b) {
+      if(!a||!b)return false;
+      try { return a.compareBoundaryPoints(Range.START_TO_START,b)===0
+        && a.compareBoundaryPoints(Range.END_TO_END,b)===0; }
+      catch(_) {return false;}
+    }
+    return Object.freeze({blocks,visibleProjection,capture,resolve,sameRange});
+  })();
+  window.GBReaderAnchors = GBReaderAnchors;
+
   function gbHighlightPath(item) {
     const raw = String(item && item.url || '');
     try { return new URL(raw, location.origin).pathname.replace(/\/+$/, '') || '/'; }
@@ -98,8 +229,8 @@
       type: 'quote',
       /* kind/color доносим до списка: иначе помета выглядит как цитата
          и цвет в библиотеке не виден (P2). */
-      kind: x.kind === 'marker' ? 'marker' : 'quote',
-      color: MARK_COLORS.includes(String(x.color || '')) ? String(x.color) : '',
+      kind: (x.kind === 'marker' || x.annotation?.kind === 'marker') ? 'marker' : 'quote',
+      color: MARK_COLORS.includes(String(x.color || x.annotation?.color || '')) ? String(x.color || x.annotation?.color) : '',
       text: String(x.text || ''), before: String(x.before || ''), after: String(x.after || ''),
       title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0,
     }));
@@ -127,7 +258,10 @@
       }
     } catch {}
     const { before, after } = contextFromSelection(selection, text);
-    lastSelection = { text, anchor, url: location.href, before, after };
+    const article = document.querySelector('article.article-body') || document.querySelector('article');
+    const positional = article && GBReaderAnchors.capture(article);
+    lastSelection = { text, anchor, url: location.href, before, after,
+      positionalAnchor: positional && normalizeText(positional.text) === text ? positional.anchor : null };
     window.__ssLastText__ = text;
     window.__ssLastTextUrl__ = location.href;
   }
@@ -598,13 +732,18 @@
     const index = textIndex(scope);
     const groups = new Map();
     const placed = new Set();
+    const desktopW57 = document.body?.classList.contains('np-w57-ready')
+      && !!document.querySelector('#npUResearch .np-u-right-scroll')
+      && matchMedia('(min-width:1121px)').matches;
     let painted = 0;
     for (const item of quotes()) {
-      // Positional W57 marks belong exclusively to its block/range renderer.
-      if (gbHighlightPath(item) !== gbHighlightPath({url: location.href}) || item?.annotation?.version === 1) continue;
-      const color = String(item && item.color || '');
+      if (gbHighlightPath(item) !== gbHighlightPath({url: location.href})) continue;
+      const annotated = item?.annotation?.version === 1;
+      if (annotated && desktopW57) continue;
+      const color = String(item && (item.color || item.annotation?.color) || '');
       if (!MARK_COLORS.includes(color)) continue;
-      const range = locate(index, item);
+      const range = annotated
+        ? GBReaderAnchors.resolve(scope, item.annotation.anchor) : locate(index, item);
       if (!range) continue;
       if (!groups.has(color)) groups.set(color, []);
       groups.get(color).push(range);
@@ -629,6 +768,10 @@
       text: selected.text, articleTitle: currentTitle(),
       url: sourceUrl(selected), before: selected.before, after: selected.after, savedAt: Date.now(),
     };
+    if (selected.positionalAnchor) {
+      record.annotation = { version:1,kind:'marker',color:nextColor,
+        anchor:selected.positionalAnchor,noteId:null };
+    }
     /* Одна запись на (страница + текст): иначе gbAddHighlight молча отбрасывал
        вторую запись, а пользователь видел «Помета сохранена». Здесь тот же
        текст перекрашивается, а одинаковый цвет честно сообщается как уже
@@ -636,17 +779,39 @@
     const key = gbHighlightKey(record);
     const fragment = gbFragmentKey(record);
     const context = gbContextKey(record);
-    let existingIndex = fragment ? old.findIndex((x) => gbFragmentKey(x) === fragment && gbContextKey(x) === context) : -1;
+    const article = document.querySelector('article.article-body') || document.querySelector('article');
+    const exact = article && record.annotation
+      ? GBReaderAnchors.resolve(article, record.annotation.anchor) : null;
+    let legacyIndex = null;
+    let existingIndex = -1;
+    if (exact && article) {
+      existingIndex = old.findIndex((x) => {
+        if (gbHighlightPath(x) !== gbHighlightPath(record)) return false;
+        if (!(x.color || x.annotation?.color)) return false;
+        const found = x.annotation?.version === 1
+          ? GBReaderAnchors.resolve(article,x.annotation.anchor)
+          : locate(legacyIndex ||= textIndex(article),x);
+        return GBReaderAnchors.sameRange(found, exact);
+      });
+    } else if (!record.annotation) {
+      existingIndex = fragment ? old.findIndex((x) =>
+        gbFragmentKey(x) === fragment && gbContextKey(x) === context) : -1;
+    }
 
     if (existingIndex >= 0) {
       const existing = old[existingIndex] || {};
-      if (String(existing.color || '') === nextColor) {
+      if (String(existing.color || existing.annotation?.color || '') === nextColor) {
         statusMessage('Этот текст уже выделен этим цветом.');
         toast('Этот текст уже выделен этим цветом', null);
         return true;
       }
       const next = old.slice();
-      next[existingIndex] = { ...existing, color: nextColor };
+      next[existingIndex] = {
+        ...existing,kind:'marker',color:nextColor,
+        ...(existing.annotation?.version===1
+          ? {annotation:{...existing.annotation,kind:'marker',color:nextColor}}
+          : record.annotation ? {annotation:record.annotation} : {}),
+      };
       if (!write(QUOTES_KEY, next)) {
         statusMessage('Не удалось изменить цвет пометы. Хранилище недоступно.', true);
         return false;
@@ -697,6 +862,7 @@
     if (!e || !e.detail || e.detail.key === QUOTES_KEY) setTimeout(paintMarks, 0);
   });
   window.addEventListener('storage', (e) => { if (e && e.key === QUOTES_KEY) paintMarks(); });
+  window.addEventListener('resize', () => requestAnimationFrame(paintMarks), { passive:true });
 
   /* Мобильный вход в пометы. На страницах серий js/site.js не подключается,
      поэтому #selection-share-popup не существует: выделенный текст некуда
@@ -877,6 +1043,13 @@
     /* Диагностика и тесты: перерисовать пометы и получить, что реально легло
        в текст. Публично ничего не меняет. */
     paintMarks,
+    resolveRange: (item, scope) => {
+      const article=scope || document.querySelector('article.article-body') || document.querySelector('article');
+      if(!article)return null;
+      return item?.annotation?.version===1
+        ? GBReaderAnchors.resolve(article,item.annotation.anchor)
+        : locate(textIndex(article),item);
+    },
   });
   window.GBHighlights = api;
   window.GBReaderLibrary = api;
