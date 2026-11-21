@@ -72,6 +72,8 @@ try{
   s.colors=await p.locator('#partTocOverlay .toc-sheet').evaluate(e=>['.toc-sheet__head','#gbrMarginalia','.gbat-foot'].map(sel=>{const n=e.querySelector(sel),c=getComputedStyle(n);return{sel,bg:c.backgroundColor,color:c.color};}));
   s.sheetBg=await p.locator('#partTocOverlay .toc-sheet').evaluate(n=>getComputedStyle(n).backgroundColor);
   await p.screenshot({path:`${out}/analytics-${suffix}.png`});
+  const glossary=p.locator('#gbrMarginalia details.gbr-marginalia-group').filter({has:p.getByText('Понятия',{exact:true})});
+  if(await glossary.count())await glossary.locator(':scope > summary').tap();
   const summary=p.locator('#gbrMarginalia .gbr-marginalia-term summary').first();
   if(await summary.count()){
    const pseudo=()=>summary.evaluate(e=>{const s=getComputedStyle(e,'::after');return{content:s.content,borderRight:s.borderRightWidth,borderBottom:s.borderBottomWidth,transform:s.transform,open:e.parentElement.open};});
