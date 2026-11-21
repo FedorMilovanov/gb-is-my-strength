@@ -1,0 +1,25 @@
+// Only drive a localhost copy. Fresh contexts; coordinates and touch events for the reachability test.
+import assert from 'node:assert/strict';
+import {mkdir} from 'node:fs/promises';
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
+const b=await chromium.launch({executablePath:process.env.CHROMIUM_PATH,args:['--no-sandbox']});
+const base=process.env.READER_URL||'http://127.0.0.1:19069';const url=base+'/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1';
+const shots=process.env.SHOTS;if(shots)await mkdir(shots,{recursive:true});
+async function run(test,width,height,fn){const ctx=await b.newContext({viewport:{width,height},isMobile:true,hasTouch:true,reducedMotion:'reduce',locale:'ru-RU'}),p=await ctx.newPage(),r={test,width,height};ctx.setDefaultTimeout(6500);try{assert.equal((await p.goto(url)).status(),200);await p.evaluate(()=>document.fonts.ready);await fn(p,r,ctx)}catch(e){r.error=e.message;process.exitCode=1}finally{console.log(JSON.stringify(r));await ctx.close()}}
+const pause=(p,ms)=>p.waitForTimeout(ms);
+async function center(p,sel){const q=await p.locator(sel).evaluate(e=>{const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;return {x,y,hit:e.contains(document.elementFromPoint(x,y))}});if(!q.hit)return false;await p.touchscreen.tap(q.x,q.y);return true}
+async function swipe(c,x,y,to){await c.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});for(let i=1;i<=10;i++){await c.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y:y+(to-y)*i/10}]});await new Promise(r=>setTimeout(r,22))}await c.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]})}
+const snap=p=>p.evaluate(()=>{const panel=document.querySelector('#gb-hl-panel'),list=document.querySelector('#gb-hl-list'),el=document.querySelector('#gb-hl-new-note'),r=el.getBoundingClientRect(),x=r.x+r.width/2;let rows=0;for(let y=Math.max(0,Math.ceil(r.top));y<Math.min(innerHeight,r.bottom);y++)if(el.contains(document.elementFromPoint(x,y)))rows++;return {top:r.top,centerHit:el.contains(document.elementFromPoint(x,r.y+r.height/2)),hitRows:rows,panelScroll:panel.scrollTop,listScroll:list.scrollTop,pageY:scrollY,listHeight:list.clientHeight,overflow:getComputedStyle(panel).overflowY}});
+async function reach(p,r,ctx){await p.locator('#gb-hl-fab.visible').waitFor();assert.ok(await center(p,'#gb-hl-fab'));await p.locator('.gb-hl-empty-title').waitFor();await pause(p,350);const c=await ctx.newCDPSession(p);r.before=await snap(p);r.steps=[];for(let i=0;i<3&&!(await snap(p)).centerHit;i++){
+ // Middle of sheet, then just above bottom, then within header/body. Do not scroll page or focus the destination via JS.
+ const x=Math.round(r.width*.6),y=Math.round(r.height*[.88,.96,.68][i]);await swipe(c,x,y,Math.round(r.height*.32));await pause(p,350);r.steps.push(await snap(p))}
+ r.final=await snap(p);if(shots&&r.width===320&&[520,521].includes(r.height))await p.screenshot({path:`${shots}/swipe-${r.height}.jpg`});r.tapped=await center(p,'#gb-hl-new-note');r.editor=await p.locator('#gb-hl-note-text').isVisible();if(!r.editor){process.exitCode=1;
+ // Distinguish lack of discoverability from a completely untappable command.
+ const edge=await p.locator('#gb-hl-new-note').evaluate(el=>{const b=el.getBoundingClientRect(),x=b.x+b.width/2;for(let y=Math.ceil(b.top);y<Math.min(innerHeight,b.bottom);y++)if(el.contains(document.elementFromPoint(x,y)))return {x,y};return null});
+ if(edge){await p.touchscreen.tap(edge.x,edge.y);r.edge={...edge,opened:await p.locator('#gb-hl-note-text').isVisible()}}}
+}
+const tab=(p,v)=>p.locator(`[data-library-tab="${v}"]`).tap();
+const newNote=async(p,text)=>{await p.locator('#gb-hl-new-note').tap();await p.locator('#gb-hl-note-text').fill(text);await p.locator('#gb-hl-editor [type=submit]').tap()};
+async function search(p,r){await p.locator('#gb-hl-fab').tap();await newNote(p,'Контрольная запись');const input=p.locator('#gb-hl-search');await input.fill('Контрольная');await newNote(p,'Совсем другая мысль');
+ const state=()=>p.evaluate(()=>({tab:document.querySelector('[data-library-tab][aria-pressed=true]').dataset.libraryTab,search:document.querySelector('#gb-hl-search').value,cards:[...document.querySelectorAll('#gb-hl-list .gb-hl-item')].map(e=>e.querySelector('.gb-hl-quote')?.innerText),empty:document.querySelector('.gb-hl-empty-title')?.textContent,status:document.querySelector('#gb-hl-status').textContent,focus:document.activeElement.id||document.activeElement.tagName}));r.afterSave=await state();await input.fill('');r.cleared=await state();await tab(p,'quote');r.noQuotes=await state();await p.locator('[data-library-action="clear-filters"]').tap();r.reset=await state();await tab(p,'all');r.all=await state();assert.equal(r.all.cards.length,2);if(r.reset.empty)process.exitCode=1}
+try{for(const [w,h] of [[320,500],[320,520],[320,521],[320,530],[320,550],[320,568],[360,521],[390,530],[568,320],[390,844]])await run('swipe',w,h,reach);for(const w of [320,390])await run('filtered-list',w,844,search)}finally{await b.close()}
