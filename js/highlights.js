@@ -1037,6 +1037,9 @@
   let selBarHideTimer = 0;
   function placeSelectionBar() {
     if (document.getElementById('npW57SelectionToolbar')) { hide(); return; }
+    // A touchend can re-schedule this bar after the TOC trigger's pointerdown
+    // hid it. Never project selection actions over an open reading sheet.
+    if (document.querySelector('#partTocOverlay.is-open')) { hide(); return; }
     const sel = window.getSelection();
     if (!sel || sel.isCollapsed || !sel.rangeCount) { hide(); return; }
     const text = sel.toString().replace(/\s+/g, ' ').trim();
@@ -1087,6 +1090,11 @@
       document.addEventListener('pointerdown', (e) => {
         if (!e.target.closest('#gb-hl-selbar')) hide();
       }, { passive: true });
+      // Sheet navigation supersedes the short-lived save confirmation. Keep
+      // Undo in storage; only dismiss its transient toast and selection bar.
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('#mobPartTocBtn')) { hide(); hideToast(); }
+      }, true);
       return;
     }
     if (popup.querySelector('#ss-save')) return;
