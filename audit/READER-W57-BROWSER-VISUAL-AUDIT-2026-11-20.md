@@ -1130,3 +1130,63 @@ First-use tip остаётся видимым около 3 s witness в обои
 - [x] **Retained positives:** 23/24 horizontal route outcomes apart from the specific Gill II 320 failure, vertical scroll before gesture lock, 10/10 native table/scroll-region cases, intentional sheet close and inner-sheet scroll protection, clean top-control drags, all six route boundaries.
 
 No product/source repair was made. These findings stay separately labeled so the audit does not silently convert evidence into implementation changes.
+
+## 19. Раунд 13 — единый Analytics owner и trusted touch внутри Analytics
+
+### 19.1. Граница доказательства
+
+Проверен тот же exact PR HEAD `62be8caa145fbe18aa099dff89cffa20cd626451` в disposable worktree `/tmp/w62`. Запущены `/tmp/w62/.tmp-analytics-matrix.mjs` и расширенный `/tmp/w62/.tmp-analytics-deep.mjs`; машинные результаты сохранены вне Git в `/tmp/62-analytics-matrix.json` и `/tmp/62-analytics-deep.json`. Chromium — disposable `@sparticuz/chromium`; Firefox/WebKit и физическое устройство не проверялись. Product/source repair в audit-ветку не переносился.
+
+### 19.2. Desktop/mobile — это один owner, но desktop entry point не предъявлен
+
+Проверка Gill I и Gill II на `390`, `768` и `1440` px дала одну и ту же композицию:
+
+| Surface | Фактическое evidence | Verdict |
+|---|---|---|
+| Mobile `390/768` | видим один `[data-gill-marginalia-open]`; его click открывает один `#partTocOverlay`, выбирает `#gbrMarginaliaTab`, ставит `aria-selected=true`; `#gbrMarginalia` — единственный research panel | **PASS: canonical mobile path** |
+| Desktop `1440` | `gbs-rail` видим (`display:flex`), mobile bar скрыт; trigger существует, но его rect `0×0`, `display:flex` при скрытом responsive surface; видимого Analytics/research opener в rail или desktop chrome нет | **FAIL: no canonical visible desktop opener** |
+| Desktop forced diagnostic | click скрытого trigger открывает тот же `#partTocOverlay` с `data-overlay-owner="gill-part-toc"`; panel становится anchored popover `x=35.5…453.5`, `w=418`, `h=427`; отдельного desktop renderer/route не поднимается | **PASS only for shared runtime, not for desktop UX** |
+
+На desktop inventory видны только rail actions — «Оглавление статьи», fold, Settings, download/share/theme/search/Play и article anchors. Видимого элемента с подписью «Аналитика», `data-gill-marginalia-open` или отдельного research panel opener нет. Поэтому forced diagnostic нельзя выдавать за proof доступности desktop пользователю.
+
+Содержимое при этом действительно общее, а не два похожих mock-а: на каждой проверенной поверхности существует ровно один `#partTocOverlay` и ровно один `#gbrMarginalia`; после открытия владелец одинаковый `gill-part-toc`. В Gill I mobile groups были `Понятия (6)`, `Ход текста (3)`, `Сноски (1)`, а desktop forced surface показала те же группы и тот же lead `I. Становление и призвание`. Gill II mobile/desktop дали тот же shared model с данными именно этой статьи: `Понятия (24)`, `Ход текста (3)`, без искусственного копирования данных Gill I.
+
+Статический owner chain совпадает с runtime evidence: единственный `GillMobileMarginalia.astro` подключён внутри `GillPartTocOverlay.astro`; `floating-cluster-controller.js` открывает тот же overlay через `OverlayRuntime` и dispatch-ит `gb:gill-select-part-panel` с `panel: 'research'`. Второй desktop collector, второй data store, второй provenance path или отдельный Analytics route не обнаружены. Это удовлетворяет архитектурному принципу **одна Analytics-база / один state / один provenance**, но текущая desktop presentation surface не доведена до пользовательского entry point.
+
+**Приёмочный вывод:** не создавать desktop fork. Owner fix должен вывести видимый desktop trigger в существующий `gill-part-toc` surface либо явно принять отсутствие desktop Analytics; в обоих случаях extraction/model/state должны остаться общими с mobile.
+
+### 19.3. Live section extraction остаётся одним renderer-ом
+
+В Gill I сначала открыта Analytics на верхней секции: lead `I. Становление и призвание`, panel `scrollHeight=1399`, `clientHeight=496`. После закрытия выполнен реальный wheel-scroll статьи до `scrollY=12500`, затем тот же hidden/fixed mobile trigger открыт без Playwright auto-scroll. Во время открытой sheet `body` корректно фиксируется с `top:-12500px`, то есть overlay lock сохраняет визуальную позицию читателя.
+
+При повторном render lead изменился на `II. Пасторское служение в Хорслидауне`; тот же `#gbrMarginalia`, тот же overlay owner и тот же extraction code обновили section context. Это подтверждает, что Analytics не является статическим desktop/mobile payload и не требует второй реализации. В предыдущей попытке с `wheel=2400` lead закономерно оставался первым: первый `h2` ещё был ниже порога active-section (`32%` viewport); это не считалось отдельным finding.
+
+### 19.4. Native scroll и swipe ownership внутри Analytics
+
+Trusted CDP touch matrix на Gill I, `390×844`, дала следующие результаты:
+
+| Gesture | Before → after | Surface owner / verdict |
+|---|---|---|
+| vertical up внутри Analytics | `panel.scrollTop 0→155`; route и overlay не меняются; page `scrollY` остаётся `0` | **PASS: native panel scroll** |
+| horizontal left внутри Analytics | `panel.scrollTop=0`, route не меняется, overlay остаётся open | **PASS: no article navigation / no horizontal hijack** |
+| diagonal down на верхней границе panel, `dx≈−130`, `dy≈+110` | overlay закрывается, хотя `|dx|>|dy|` | **CONFIRMED FAIL: sheet owns a horizontal-dominant diagonal** |
+| diagonal down при `panel.scrollTop=260` | panel `260→159`, overlay остаётся open | **PASS for inner native scroll; boundary ownership differs** |
+
+В touch telemetry vertical/horizontal native cases не получили `defaultPrevented`; at-top diagonal closed through the sheet gesture path. На практике это означает: пока inner Analytics scroller может потребить движение, он владеет gesture; на `scrollTop=0` тот же diagonal передаётся sheet-dismiss path. Это усиливает Round 12 finding о необходимости angle/intent gate в общем `initSheetSwipe()`: Analytics не нуждается в отдельном swipe engine, но сейчас наследует тот же ambiguous boundary behavior.
+
+### 19.5. Interactive targets и provenance
+
+В Analytics inventory все проверенные `summary` и `.gbr-marginalia-jump` targets имеют высоту `44px` (ширина summary `350px`, jump buttons `123–143px`). Trusted click по definition summary раскрывает `<details>`; click `Показать в статье ↗` закрывает overlay, прокручивает к исходному `.gterm` (`scrollY=2907`) и оставляет focus на этом source element. Route не меняется, новый текст не создаётся, provenance остаётся у опубликованной статьи.
+
+Это положительный результат для Analytics controls, но он не снимает общие mobile findings Round 12: article CTA по-прежнему может быть перехвачен series swipe, а diagonal sheet gesture может закрыть surface до того, как пользователь закончил intended movement.
+
+### 19.6. Итог раунда
+
+- [x] **Common Analytics runtime/data owner:** один `GillMobileMarginalia` collector, один `#gbrMarginalia`, один `#partTocOverlay`/`OverlayRuntime`, один article-derived model и provenance на mobile и diagnostic desktop.
+- [ ] **Canonical desktop presentation:** visible desktop Analytics opener не найден; forced hidden-trigger opening доказывает shared surface, но не user reachability.
+- [x] **Analytics native vertical scroll:** real touch `scrollTop 0→155` без route change.
+- [x] **Analytics horizontal guard:** horizontal touch не меняет route и не закрывает panel.
+- [ ] **Diagonal sheet ownership:** at-top diagonal closes a horizontal-dominant gesture; общий sheet angle/intent defect остаётся.
+- [x] **Analytics interactive targets:** 44 px summaries/jump actions, definition expansion, source jump and focus restoration pass.
+
+No product/source repair was made. The required architecture remains one shared Analytics base with responsive presentation surfaces; the current exact head has the shared base and mobile surface, but must not be described as having a complete desktop surface until a visible desktop entry path is proven.
