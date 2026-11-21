@@ -339,13 +339,21 @@ const page = config.pages[pageId];
     position:absolute;inset:0;left:0;right:0;
     width:100%;max-width:100%;height:44px;min-height:44px;
     padding:0;gap:2px;border:0;border-radius:0;
-    background:transparent;box-shadow:none;
+    /* The six rate choices must cover article artwork with a legible,
+       theme-matched near-opaque surface, rather than see-through text. */
+    background:var(--gill-mobile-bar-bg,#fdfbf6);
+    /* Keep each series' palette but force alpha=1. Older browsers keep
+       the themed token above as a graceful fallback. */
+    background:rgb(from var(--gill-mobile-bar-bg,#fdfbf6) r g b / 1);
+    box-shadow:none;
     opacity:1;transform:translateX(0);
     transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.2,1);
     white-space:nowrap;
   }
   html.dark [data-gill-v16] .mobile-top-bar.speed-open .reader-mobile-speedrail {
-    border:0;background:transparent;box-shadow:none;
+    border:0;background:var(--gill-mobile-bar-bg,#0d1117);
+    background:rgb(from var(--gill-mobile-bar-bg,#0d1117) r g b / 1);
+    box-shadow:none;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-speed-rate {
     flex:0 0 44px;min-width:44px;width:44px;height:44px;
@@ -382,8 +390,8 @@ const page = config.pages[pageId];
     opacity:0;transform:none;pointer-events:none;
   }
 }
-/* Optical spacing: target geometry remains 44px, but the painted glyphs
-   follow a tighter rhythm. The Play/rate compound remains 68px. */
+/* Optical spacing: target geometry remains 44px, painted glyphs follow a
+   tighter rhythm. The final Play/rate compound is 88px after W77. */
 @media (min-width:431px) and (max-width:84.999em) {
   [data-gill-v16] .mobile-top-bar {gap:2px!important;}
   [data-gill-v16] .mobile-top-bar .reader-mobile-action--top-settings svg,
@@ -464,14 +472,22 @@ const page = config.pages[pageId];
     flex:0 0 44px !important;
   }
 }
+/* W77: restore separate physical 44px Play and rate targets. The old
+   26x24 absolute badge failed sitewide mobile accessibility in CI and
+   overlapped the Play ring. The painted 1x chip remains visually compact. */
 @media (max-width:84.999em) {
-  [data-gill-v16] .mobile-top-bar .reader-mobile-play-group.mobile-playwrap {flex-basis:44px;width:44px;min-width:44px}
-  [data-gill-v16] .mobile-top-bar .reader-mobile-play-group .reader-mobile-speed-badge {position:absolute;inset:auto 0 -5px auto;margin:0;width:26px;min-width:26px;height:24px;min-height:24px;pointer-events:auto}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play-group.mobile-playwrap {flex:0 0 88px;width:88px;min-width:88px}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play-group .reader-mobile-speed-badge {position:relative;inset:auto;margin:0;flex:0 0 44px;width:44px;min-width:44px;height:44px;min-height:44px;pointer-events:auto}
   [data-gill-v16] .mobile-top-bar .reader-mobile-speed-badge::before {content:none}
-  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-chip {left:auto;right:0;bottom:9px;height:14px;min-width:20px;box-shadow:none}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-chip {left:0;right:auto;bottom:7px;height:14px;min-width:20px;box-shadow:none}
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-svg {width:38px;height:38px;inset:3px}
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-track {stroke-width:3;opacity:.58}
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-progress {stroke-width:3.6}
+}
+/* Recover the complete Analytics label at common 390px phone widths,
+   without shortening the real Play/rate touch surfaces. */
+@media (min-width:361px) and (max-width:400px) {
+  [data-gill-v16] .mobile-top-bar {gap:0!important;}
 }
 @media (max-width:84.999em) {
   [data-gill-v16] .mobile-top-bar :is(#mobBackBtn,#mobHomeBtn,#mobSettingsBtn,.mobile-top-save) {

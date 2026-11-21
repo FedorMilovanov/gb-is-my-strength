@@ -9,6 +9,14 @@ import path from 'node:path';
 import http from 'node:http';
 import { chromium, webkit } from 'playwright';
 
+// CSS relative colors serialize as color(srgb ... / alpha) in modern engines.
+// Check both syntaxes so opacity regressions cannot hide behind serialization.
+function computedColorAlpha(color) {
+  const rgba = /^rgba\([^)]*,\s*([\d.]+)\s*\)$/i.exec(color);
+  const modern = /^color\([^)]*\/\s*([\d.]+)\s*\)$/i.exec(color);
+  return Number((rgba || modern)?.[1] ?? 1);
+}
+
 const root = path.resolve(import.meta.dirname, '..');
 const dist = path.join(root, 'dist');
 assert.ok(fs.existsSync(dist), 'Build dist first');
@@ -196,8 +204,7 @@ try {
                   chooser.panel.right <= width + 1 &&
                   chooser.panel.y >= chooser.headerTop - 1 && chooser.panel.y + 44 <= chooser.headerBottom + 2,
                   'canonical speed picker must remain inside the same 44px mobile top bar');
-                const bgAlpha = /rgba\([^)]*,\s*([.\d]+)\)$/.exec(chooser.background)?.[1];
-                assert.ok(!bgAlpha || Number(bgAlpha) >= .98,
+                assert.ok(computedColorAlpha(chooser.background) >= .98,
                   'speed popover must have opaque theme background: ' + chooser.background);
                 const darkSurface = await page.evaluate(() => {
                   const html = document.documentElement, before = html.classList.contains('dark');
@@ -206,8 +213,7 @@ try {
                   html.classList.toggle('dark', before);
                   return bg;
                 });
-                const darkAlpha = /rgba\([^)]*,\s*([.\d]+)\)$/.exec(darkSurface)?.[1];
-                assert.ok(!darkAlpha || Number(darkAlpha) >= .98,
+                assert.ok(computedColorAlpha(darkSurface) >= .98,
                   'dark speed popover must be opaque: ' + darkSurface);
                 assert.equal(chooser.choices.length, 6, 'speed choices lost');
                 assert.ok(chooser.choices.every((x) => x.w >= 43 && x.h >= 43),
