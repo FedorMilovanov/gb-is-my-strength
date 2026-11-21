@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
+import { CATALOG_DEPARTURE_TRACE_PREFIX as tracePrefix, readCatalogDepartureTrace } from './articles-catalog-navigation-browser.mjs';
 import { CATALOG_RESUME_KEY as key, catalogItemId, catalogReturnHref, catalogReturnItem, catalogResume, isCatalogActivation, installCatalogNavigation } from '../src/components/articles/articlesCatalogNavigation.ts';
 
 const href='/articles/svoboda-vo-hriste/', next='/articles/skrytye-idoly-serdca/', url='https://example.test/articles/';
@@ -122,4 +123,29 @@ test('implementation does not intercept navigation or introduce timing/scroll ma
   assert.match(fallback,/<nav class="articles-catalog-return"/);
   assert.doesNotMatch(fallback,/<nav class="breadcrumb"/); // Shared mobile breadcrumb CSS hides that class.
   assert.match(fallback,/min-height: 44px/);
+});
+
+// Recorder regressions are synthetic; no browser launch/navigation is needed.
+const traceMark=(payload,ts=2)=>({name:tracePrefix+JSON.stringify(payload),ts});
+const traceControl=()=>traceMark({phase:'control',url},1);
+const traceSnapshot=()=>({phase:'pagehide',url,scrollY:11848,height:27828,active:{href},originalRect:{x:20,y:373,width:350,height:52}});
+test('departure trace needs a positive control and the exact native origin/link',()=>{
+  const snapshot=traceSnapshot(),r=readCatalogDepartureTrace([{name:'unrelated'},traceControl(),traceMark(snapshot)],url,href);
+  assert.deepEqual(r.snapshot,{traceTimestamp:2,...snapshot});assert.equal(r.control.traceTimestamp,1);
+  assert.throws(()=>readCatalogDepartureTrace([traceMark(snapshot)],url,href),/Uncontrolled/);
+  assert.throws(()=>readCatalogDepartureTrace([traceControl(),traceMark({...snapshot,active:{href:next}})],url,href),/another link/);
+});
+test('missing departure remains UNKNOWN even when control transport works',()=>{
+  assert.equal(readCatalogDepartureTrace([traceControl()],url,href).snapshot,null);
+  assert.equal(readCatalogDepartureTrace([],url,href).snapshot,null);
+});
+test('departure trace rejects ambiguous, malformed, failed and invalid-geometry marks',()=>{
+  const snapshot=traceSnapshot();
+  assert.throws(()=>readCatalogDepartureTrace([traceControl(),traceMark(snapshot),traceMark(snapshot,3)],url,href),/Ambiguous/);
+  assert.throws(()=>readCatalogDepartureTrace([{name:tracePrefix+'not-json',ts:1}],url,href),SyntaxError);
+  assert.throws(()=>readCatalogDepartureTrace([traceControl(),traceMark({phase:'error',message:'measurement failed'})],url,href),/callback error/);
+  assert.throws(()=>readCatalogDepartureTrace([traceControl(),traceMark({...snapshot,scrollY:-1})],url,href),/geometry/);
+  assert.throws(()=>readCatalogDepartureTrace([traceControl(),traceMark({...snapshot,originalRect:{...snapshot.originalRect,width:0}})],url,href),/geometry/);
+  assert.throws(()=>readCatalogDepartureTrace([traceControl(),traceMark({...snapshot,traceTimestamp:999},0)],url,href),/Uncontrolled/);
+  assert.throws(()=>readCatalogDepartureTrace([traceControl(),traceMark(snapshot,0)],url,href),/Uncontrolled/);
 });
