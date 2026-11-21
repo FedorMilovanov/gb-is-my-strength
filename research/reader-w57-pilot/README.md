@@ -84,5 +84,9 @@ missed a major feature-parity regression in PR #2346.
 
 W47 and W51 local screenshots (18 November 2026) show the original behavior:
 the panel control belonged to the right panel and appeared at the top when
-folded and in the panel header when open. W57 is the latest accepted styling
-reference; 'ARGON' is the design prototype name, not the website/Reader brand.
+folded and in the panel header when open. W57 remains a reproducible **functional**
+and interaction reference. The owner's later decision on 2026-11-21 explicitly
+supersedes W57/ARGON UPDATE as the primary **visual** source: use original ARGON
+Classic for fonts, palette, research window treatment and UI hierarchy. See
+[`docs/READER-ARGON-CLASSIC-VISUAL-SOURCE-2026-11-21.md`](../../docs/READER-ARGON-CLASSIC-VISUAL-SOURCE-2026-11-21.md).
+'ARGON' is a design prototype name, not the website/Reader brand.
