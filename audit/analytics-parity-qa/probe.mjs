@@ -20,7 +20,7 @@ const nativeState=p=>p.evaluate(()=>{
  active:window.GBReaderState?.getActiveSection()||null,focus:a?.id||a?.className||a?.tagName,
  scroll:n?.scrollTop,panelTranslate:getComputedStyle($('#partTocOverlay .toc-sheet')).transform,peek:!!$('.gbs2-peek.gbs2-on'),
  mobileTitle:text($('.gbr-marginalia-lead h3')),mobileGroups:[...document.querySelectorAll('.gbr-marginalia-group-head')].map(el=>[text(el.querySelector('h4,strong')),text(el.querySelector('span'))]),
- mobileRefs:[...document.querySelectorAll('.gbr-marginalia-chips button,.gbr-scripture-heading')].map(text),mobileRefsScope:text($('.gbr-marginalia-chips,.gbr-scripture-entries')?.parentElement?.querySelector('.gbr-marginalia-empty')),personalMobile:!![...document.querySelectorAll('.gbr-marginalia-group-head strong')].find(el=>text(el)==='Мои пометы'),
+ mobileRefs:[...document.querySelectorAll('.gbr-marginalia-chips button,.gbr-scripture-heading,.gbr-scripture-ref')].map(text),mobileRefsScope:text($('.gbr-scripture-scope'))||text($('.gbr-marginalia-chips,.gbr-scripture-entries')?.parentElement?.querySelector('.gbr-marginalia-empty')),personalMobile:!![...document.querySelectorAll('.gbr-marginalia-group-head strong')].find(el=>text(el)==='Мои пометы'),
  mobileTerms:[...document.querySelectorAll('.gbr-marginalia-term summary')].map(text),mobileEvidence:[...document.querySelectorAll('.gbr-marginalia-evidence p')].map(text),
  desktopGroup:text($('.np-u-major-link[aria-current="location"] .np-u-major-name')),desktopGroupId:$('.np-u-major-link[aria-current="location"]')?.dataset.npUGoto,
  desktopSections:window.GBReaderContract?.inspect().groups.map(g=>({id:g.id,primary:g.primaryIds}))||null,
@@ -54,7 +54,9 @@ async function scene(c,p,mode,section,s){
    await heading.evaluate(el=>scrollBy(0,el.getBoundingClientRect().top+40));await wait(p);await open(p);
    const scripture=p.locator('#gbrMarginalia details.gbr-marginalia-group').filter({has:p.getByText('Писание',{exact:true})});await scripture.locator(':scope > summary').tap();
    const card=scripture.locator('.gbr-scripture-entry').filter({has:p.getByText('Рим. 13:1–5',{exact:true})});
-   if(await card.count()){
+   if(await scripture.locator('.gbr-scripture-rail').count()){
+    await scripture.getByRole('button',{name:'Рим. 13:1–5',exact:true}).tap();s.scriptureRead=await scripture.locator('.gbr-scripture-reading').innerText();await scripture.locator('.gbr-scripture-return').tap();
+   }else if(await card.count()){
     await card.locator('summary').tap();s.scriptureRead=await card.locator('.gbr-scripture-body').innerText();await card.locator('.gbr-scripture-return').tap();
    }else await scripture.getByRole('button',{name:'Рим. 13:1–5',exact:true}).tap();
    await p.waitForTimeout(780);s.scriptureJump=await p.evaluate(()=>window.lastJump);s.scriptureJumpState=await nativeState(p);
