@@ -501,8 +501,9 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
   </footer>
 </main>
 <script>
-  // G3-only keyboard-history repair. Native fragment navigation still owns the
-  // URL and scrolling; this restores focus only when Back leaves our TOC jump.
+  // G3-only keyboard-history repair. Native fragments still own the URL.
+  // Use browser-native focus reveal on Back: preventScroll can strand focus
+  // above the viewport when scroll restoration and focus restoration race.
   const earlyContentsJump = document.querySelector<HTMLAnchorElement>('.je-contents-jump');
   const contentsSummary = document.getElementById('journal-g3-toc');
   if (earlyContentsJump && contentsSummary) {
@@ -518,7 +519,7 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
       if (window.location.hash || document.activeElement !== contentsSummary) return;
       window.requestAnimationFrame(() => {
         if (window.location.hash === '' && document.activeElement === contentsSummary) {
-          earlyContentsJump.focus({ preventScroll: true });
+          earlyContentsJump.focus();
         }
       });
     });

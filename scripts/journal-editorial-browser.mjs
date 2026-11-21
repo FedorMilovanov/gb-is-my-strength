@@ -245,6 +245,36 @@ try {
       assert.equal(item.layout.h1, 1);
       assert.equal(item.layout.theme, theme);
       assert.equal(item.layout.cover?.loaded, true);
+      if (engine === 'chromium' && route.kind === 'dossier' && width === 390 && theme === 'light') {
+        // Browser-history focus/viewport must recover together. Earlier
+        // preventScroll made this intermittently leave focus far offscreen.
+        const backProbe = await context.newPage();
+        try {
+          const backResponse = await backProbe.goto(route.url, { waitUntil: 'load', timeout: 60000 });
+          assert.equal(backResponse.status(), 200);
+          await backProbe.locator('.je-contents-jump').focus();
+          await backProbe.keyboard.press('Enter');
+          await backProbe.waitForFunction(() => location.hash === '#journal-g3-toc');
+          await backProbe.goBack({ waitUntil: 'domcontentloaded' });
+          await backProbe.waitForFunction(() => {
+            const jump = document.querySelector('.je-contents-jump');
+            const rect = jump?.getBoundingClientRect();
+            return !location.hash && document.activeElement === jump && rect &&
+              rect.top >= 0 && rect.bottom <= window.innerHeight;
+          }, undefined, { timeout: 6000 });
+          await backProbe.waitForTimeout(650);
+          item.nativeBack = await backProbe.evaluate(() => {
+            const jump = document.querySelector('.je-contents-jump');
+            const rect = jump?.getBoundingClientRect();
+            return { hash: location.hash, focused: document.activeElement === jump,
+              y: rect?.top, bottom: rect?.bottom, viewport: innerHeight };
+          });
+          assert.equal(item.nativeBack.hash, '');
+          assert.equal(item.nativeBack.focused, true);
+          assert.ok(item.nativeBack.y >= 0 && item.nativeBack.bottom <= item.nativeBack.viewport,
+            `native Back left the restored focus outside the visible viewport: ${JSON.stringify(item.nativeBack)}`);
+        } finally { await backProbe.close(); }
+      }
       item.axe = await audit(page);
       assert.deepEqual(item.axe.violations, [], 'axe WCAG A/AA violations');
       assert.deepEqual(item.axe.incomplete, [], 'static editorial surfaces must not leave unresolved axe review items');
