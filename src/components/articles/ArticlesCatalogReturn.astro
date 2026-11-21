@@ -7,7 +7,14 @@ import { catalogReturnHref, catalogReturnItem } from './articlesCatalogNavigatio
 const item = catalogReturnItem(Astro.url.pathname, searchManifest.items, pageOwnership.routes);
 ---
 {item && (
-  <nav class="breadcrumb" aria-label="Возврат в каталог статей" data-pagefind-ignore>
+  <nav class="articles-catalog-return" aria-label="Возврат в каталог статей" data-pagefind-ignore>
     <a class="breadcrumb__link" href={catalogReturnHref(item.url)} data-catalog-return>К этой статье в каталоге</a>
   </nav>
 )}
+
+<style>
+  /* Unlike the decorative breadcrumb, this real return path stays available on mobile. */
+  .articles-catalog-return { margin-block: 0 1rem; }
+  .articles-catalog-return a { display: inline-flex; align-items: center; min-height: 44px; text-underline-offset: .2em; }
+  @media print { .articles-catalog-return { display: none; } }
+</style>

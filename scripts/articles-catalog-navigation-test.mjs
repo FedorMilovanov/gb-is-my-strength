@@ -105,4 +105,8 @@ test('implementation does not intercept navigation or introduce timing/scroll ma
   assert.doesNotMatch(source,/\.preventDefault\s*\(|\.stopPropagation\s*\(|\b(?:setTimeout|setInterval|requestAnimationFrame|scrollTo|scrollIntoView)\s*\(|\.pushState\s*\(|scrollRestoration\s*=/);
   const shared=fs.readFileSync(new URL('../src/components/article-pilots/_shared/series/SeriesReaderChrome.astro',import.meta.url),'utf8');
   assert.equal((shared.match(/<ArticlesCatalogReturn\s*\/>/g)??[]).length,1);
+  const fallback=fs.readFileSync(new URL('../src/components/articles/ArticlesCatalogReturn.astro',import.meta.url),'utf8');
+  assert.match(fallback,/<nav class="articles-catalog-return"/);
+  assert.doesNotMatch(fallback,/<nav class="breadcrumb"/); // Shared mobile breadcrumb CSS hides that class.
+  assert.match(fallback,/min-height: 44px/);
 });

@@ -53,6 +53,9 @@ try{
 }finally{
  await browser.close();const group=s=>report.cases.filter(c=>c.scenario===s),passed=a=>a.filter(c=>c.pass).length,js=group('nativeBack').filter(c=>c.javaScriptEnabled),nojs=group('nativeBack').filter(c=>!c.javaScriptEnabled);
  report.summary={jsNative:{cases:js.length,UXPass:passed(js),identityFocusPass:js.filter(c=>c.identityFocusPass).length,positionPass:js.filter(c=>c.positionPass).length},nojsNative:{cases:nojs.length,UXPass:passed(nojs),guarantee:'NOT_IMPLEMENTED_OR_CLAIMED;platform ceiling retained'},ssrAlternative:{cases:group('ssrReturnAlternative').length,pass:passed(group('ssrReturnAlternative'))},hashReloadSeparate:{cases:group('hashReloadSeparate').length,pass:passed(group('hashReloadSeparate'))},modified:{cases:group('modifiedLink').length,parentPass:passed(group('modifiedLink')),newTabs:group('modifiedLink').filter(c=>c.newTabObserved&&c.correctArticleInNewTab).length},setupErrors:report.problems.length,historyNamespace:CATALOG_RESUME_KEY};
- const ok=js.length===4&&passed(js)===4&&js.every(c=>c.identityFocusPass&&c.positionPass)&&passed(group('ssrReturnAlternative'))===4&&passed(group('hashReloadSeparate'))===4&&passed(group('modifiedLink'))===4&&report.problems.length===0;
+ // Reader criterion is visible origin + next Tab. Pixel deltas remain independent raw metrics.
+ // noJS Back/reload focus observations MUST NOT be disguised as implementation guarantees.
+ const hashReload=group('hashReloadSeparate');
+ const ok=js.length===4&&passed(js)===4&&js.every(c=>c.identityFocusPass)&&passed(group('ssrReturnAlternative'))===4&&hashReload.length===4&&hashReload.every(c=>c.after?.target.visible)&&hashReload.filter(c=>c.javaScriptEnabled).every(c=>c.pass)&&passed(group('modifiedLink'))===4&&report.problems.length===0;
  report.status=ok?'JS_REPAIR_AND_SSR_ALTERNATIVE_VERIFIED_NOJS_NATIVE_CEILING_RETAINED':'IMPLEMENTATION_UNRESOLVED';report.release='NO_GO/HOLD pending Owner acceptance of precise noJS native ceiling;NO_MERGE/NO_DEPLOY';save();console.log(report.status,JSON.stringify(report.summary));process.exitCode=ok?0:1;
 }
