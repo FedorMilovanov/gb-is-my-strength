@@ -117,7 +117,7 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
     var books = new Set(aliasToBook.keys());
     function passageKey(label) {
       var clean = String(label || '').replace(/[\u00a0\u202f]/g, ' ').replace(/[\u2012-\u2015]/g, '-').replace(/\s+/g, ' ').trim();
-      var match = /^(.+?)\s*(\d{1,3}:\d{1,3}(?:-\d{1,3})?)$/u.exec(clean);
+      var match = /^(.+?)\s*(\d{1,3}:\d{1,3}(?:-\d{1,3}(?::\d{1,3})?)?)$/u.exec(clean);
       if (!match) return 'raw:' + clean.toLocaleLowerCase('ru');
       var bookId = aliasToBook.get(match[1].toLocaleLowerCase('ru').replace(/[.\s]/g, ''));
       return bookId ? bookId + ':' + match[2] : 'raw:' + clean.toLocaleLowerCase('ru');
@@ -127,7 +127,7 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
     function citations(blocks) {
       var found = [];
       blocks.forEach(el => {
-        for (var match of visibleText(el).matchAll(/(?<![\p{L}\d])(?:[1-3]\s*)?[А-ЯЁ][а-яё]+\.?\s+\d{1,3}:\d{1,3}(?:[–—-]\d{1,3})?/gu)) {
+        for (var match of visibleText(el).matchAll(/(?<![\p{L}\d])(?:[1-3]\s*)?[А-ЯЁ][а-яё]+\.?\s+\d{1,3}:\d{1,3}(?:[–—-]\d{1,3}(?::\d{1,3})?)?/gu)) {
           var name = match[0].replace(/\s+\d+:.*/, '').toLowerCase().replace(/[.\s]/g,'');
           if (books.has(name)) found.push({label:match[0],target:el});
         }

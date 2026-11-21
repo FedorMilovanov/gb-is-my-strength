@@ -16,6 +16,7 @@ import {
   loadBibleRegistry,
   normalizeVerseKey,
   parseBibleReference,
+  parseBibleReferenceSpan,
   resolveBibleReference,
 } from '../src/lib/bible-reference-core.mjs';
 import { createPublicSynodalResolver } from '../src/lib/public-synodal-reference.mjs';
@@ -64,6 +65,12 @@ function parseIndexReference(reference, registry) {
     const end = parseBibleReference(`${alias} ${match[2]}`, registry);
     if (!start.ok || !end.ok || start.bookId !== reference.bookId || end.bookId !== reference.bookId) return null;
     return { parsed: start, endChapter: end.chapter };
+  }
+  if (reference.kind === 'cross-chapter') {
+    const parsed = parseBibleReferenceSpan(reference.label, registry);
+    if (!parsed.ok || parsed.kind !== 'cross-chapter'
+        || parsed.bookId !== reference.bookId || parsed.key !== reference.key) return null;
+    return { parsed, endChapter: parsed.endChapter };
   }
   const parsed = parseBibleReference(reference.label, registry);
   if (!parsed.ok || parsed.bookId !== reference.bookId || parsed.key !== reference.key) return null;
@@ -222,6 +229,24 @@ if (!fs.existsSync(OUTPUT_FILE)) {
 
   if (!Array.isArray(index.references)) fail('references must be an array');
   const references = Array.isArray(index.references) ? index.references : [];
+  // A source-facing boundary must survive the entire extraction pipeline.
+  // These are actual MDX references, not artificial fixture strings.
+  const teenSource = '/articles/podrostok-za-kadrom-dvoynaya-zhizn/';
+  for (const [label, raw, expectedOccurrences] of [
+    ['1 Иоанна 1:5–2:2', '1 Ин. 1:5–2:2', 2],
+    ['1 Иоанна 1:7–2:2', '1 Ин. 1:7–2:2', 1],
+  ]) {
+    const reference = references.find(item => item.label === label);
+    if (!reference || reference.kind !== 'cross-chapter') {
+      fail('cross-chapter source reference missing or truncated: ' + label);
+      continue;
+    }
+    const found = reference.occurrences.filter(occurrence =>
+      occurrence.url === teenSource && occurrence.raw === raw);
+    if (found.length !== expectedOccurrences) {
+      fail('cross-chapter source provenance missing: ' + raw + ' (' + found.length + '/' + expectedOccurrences + ')');
+    }
+  }
   const publicSynodalResolver = createPublicSynodalResolver(
     registry, readJson(path.join(ROOT, 'data/bible/public-domain-russyn.json')),
   );
@@ -266,7 +291,7 @@ if (!fs.existsSync(OUTPUT_FILE)) {
       canonicalTextCount += 1;
       if (typeof reference.canonicalText !== 'string' || !reference.canonicalText.trim()) fail(`empty canonicalText: ${reference.id}`);
       if (!reference.canonicalSource || typeof reference.canonicalSource !== 'object') fail(`missing canonicalSource: ${reference.id}`);
-      if (reference.kind === 'chapter-range' || parsedIndex?.parsed?.wholeChapter) fail(`chapter reference must not invent canonicalText: ${reference.id}`);
+      if (reference.kind === 'chapter-range' || reference.kind === 'cross-chapter' || parsedIndex?.parsed?.wholeChapter) fail(`chapter reference must not invent canonicalText: ${reference.id}`);
       const record = parsedIndex ? resolveBibleReference(parsedIndex.parsed, corpus) : null;
       if (!record || record.text !== reference.canonicalText) fail(`canonicalText does not match curated corpus: ${reference.id}`);
     } else if (reference.canonicalSource !== null) {

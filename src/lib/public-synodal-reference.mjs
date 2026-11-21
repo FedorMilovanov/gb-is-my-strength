@@ -1,4 +1,4 @@
-import { parseBibleReference, normalizeBookAlias } from './bible-reference-core.mjs';
+import { parseBibleReference, parseBibleReferenceSpan, normalizeBookAlias } from './bible-reference-core.mjs';
 
 /**
  * Build-time-only reader projection of independently sourced public-domain
@@ -75,15 +75,13 @@ export function createPublicSynodalResolver(registry, edition) {
         return collect(code, 1, start, 1, end);
       }
     }
-    // Explicit chapter-boundary notation is unambiguous: Matthew 4:23-5:1.
-    // The shortened 4:23-5 form is considered only AFTER ordinary verse parsing.
-    const explicitCrossChapter = source.match(/^(.+?)\s+(\d{1,3}):(\d{1,3})-(\d{1,3}):(\d{1,3})$/u);
-    if (explicitCrossChapter) {
-      const id = aliases.get(normalizeBookAlias(explicitCrossChapter[1]));
-      const code = bookCodeById.get(id);
-      if (!code) return null;
-      return collect(code, Number(explicitCrossChapter[2]), Number(explicitCrossChapter[3]),
-        Number(explicitCrossChapter[4]), Number(explicitCrossChapter[5]));
+    // One shared parser governs exact cross-chapter boundaries for the
+    // occurrence index and published text. Missing end verses fail closed.
+    const cross = parseBibleReferenceSpan(source, parserRegistry);
+    if (cross.ok && cross.kind === 'cross-chapter') {
+      const code = bookCodeById.get(cross.bookId);
+      return code ? collect(code, cross.chapter, Number(cross.start),
+        cross.endChapter, cross.endVerse) : null;
     }
     const parsed = parseBibleReference(source, parserRegistry);
     if (parsed.ok) {
