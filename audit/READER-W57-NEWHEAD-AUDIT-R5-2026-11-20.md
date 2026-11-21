@@ -231,3 +231,11 @@ R5-1 (индикатор прокрутки на «На полях» залип�
 Скриншоты: `audit/evidence/r8-mobile-polish/` — `label-320.png`, `toast-undo-390.png`, `toast-undo-320.png`, `library-after-390.png`, `library-after-320.png`, `library-before-fix.png`.
 
 Не проверено: WebKit/Safari, физические устройства, CI (на ветке прогонов нет).
+
+### R8.1 — уточнение по тёмной теме (перемерено)
+
+Первая попытка включить тёмную тему через `localStorage.theme = 'dark'` **не включает её**: приложение пересчитывает значение из `prefers-color-scheme` и возвращает `light` (`html.className` пуст, фон страницы `rgb(253, 252, 249)`). Тёмная тема включается эмуляцией медиазапроса (`colorScheme: 'dark'`), тогда `html.className = 'dark'` и фон `rgb(20, 19, 18)` — ранние замеры R7 были корректны именно потому, что использовали этот способ.
+
+Повторный прогон в настоящей тёмной теме (390 px): помета `rose` рисуется (`CSS.highlights = ['gb-hl-rose']`), тост инвертируется (`bg rgb(240, 232, 219)`, текст `rgb(38, 51, 58)`, `data-open=true`), в библиотеке «Помета · 21 ноября» с точкой `rose`, `overflowX` 0, после перезагрузки помета на месте (1 запись), `pageerror` — `[]`.
+
+Скриншоты: `audit/evidence/r8-mobile-polish/dark-mark-toast-390.png`, `dark-library-390.png`.
