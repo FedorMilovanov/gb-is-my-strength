@@ -21,7 +21,7 @@ export const ASSET_VERSIONS = {
   'js/enhancements.js': '15476429',
   'js/floating-cluster-controller.js': 'd3ae417d',
   'js/glossary.js': 'c7f8b6e9',
-  'js/highlights.js': 'eee4c64f',
+  'js/highlights.js': 'da9b1630',
   'js/nagornaya-bar-extras.js': '3c7e0bdd',
   'js/nagornaya-mobile-toc.js': 'a0b23b1c',
   'js/reader-library-dock.js': 'b550fdd1',
