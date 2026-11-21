@@ -37,7 +37,7 @@
     });
   }
   function gbAddHighlight(items,item) {
-    const unique=gbDedupeHighlights(items),key=gbHighlightKey(item);
+    const unique=items,key=gbHighlightKey(item);
     return key&&!unique.some(x=>gbHighlightKey(x)===key)
       ?[item,...unique].slice(0,LIMIT_QUOTES):unique;
   }
@@ -54,10 +54,7 @@
     catch { return false; }
   }
   function quotes() {
-    const existing = read(QUOTES_KEY);
-    const compact = gbDedupeHighlights(existing);
-    if (existing.length !== compact.length) write(QUOTES_KEY, compact);
-    return compact;
+    return read(QUOTES_KEY);
   }
   function notes() { return read(NOTES_KEY).filter((n) => n && typeof n.text === 'string' && n.id); }
   function favorites() {
