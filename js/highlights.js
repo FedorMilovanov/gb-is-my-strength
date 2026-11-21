@@ -536,7 +536,56 @@
       list, items: all(), titleCount, sourceSelect, overlay, tab, filter, searchTerm, shown, expanded, research,
     });
   }
+  function navigateQuotedSource(e, link) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey ||
+        e.altKey || e.shiftKey || link.target || link.hasAttribute('download')) return false;
+    const card = link.closest('.gb-hl-item[data-type="quote"]');
+    const item = card && quotes().find(x => x.id === card.dataset.id);
+    // Legacy/cross-page links retain their original openable href; only a
+    // verified positional anchor on the CURRENT article can be handled here.
+    if (item?.annotation?.version !== 1) return false;
+    let destination;
+    try { destination = new URL(link.href, location.href); } catch (_) { return false; }
+    const normalizePath = p => p.replace(/\/+$/, '') || '/';
+    if (destination.origin !== location.origin ||
+        normalizePath(destination.pathname) !== normalizePath(location.pathname)) return false;
+    const article = document.querySelector('article.article-body') || document.querySelector('article');
+    if (!article) return false;
+    const first = GBReaderAnchors.resolve(article, item.annotation.anchor);
+    e.preventDefault();
+    if (!first) {
+      statusMessage('Точное место цитаты не найдено. Исходная ссылка остаётся доступной для копирования.', true);
+      return true;
+    }
+    // A same-page anchor cannot scroll while Library retains the page lock.
+    // Reuse W63's one-owner exit, then center the exact Range (not the first
+    // identical text fragment) and hand keyboard focus to its authored block.
+    close();
+    // The confirmation toast belongs to the previous save action; the exact
+    // reading destination must not be obscured by it after navigation.
+    hideToast();
+    hide();
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const range = GBReaderAnchors.resolve(article, item.annotation.anchor);
+      if (!range) return;
+      const rect = range.getBoundingClientRect();
+      const scrollTop = Math.max(0, window.scrollY + rect.top + rect.height / 2 - window.innerHeight / 2);
+      window.scrollTo({top: scrollTop, behavior: 'auto'});
+      const target = range.startContainer.parentElement?.closest('p,li,blockquote,.manuscript-quote--bilingual');
+      if (target instanceof HTMLElement) {
+        const hadTabindex = target.hasAttribute('tabindex');
+        if (!hadTabindex) target.setAttribute('tabindex', '-1');
+        target.focus({preventScroll:true});
+        if (!hadTabindex) target.addEventListener('blur', () => target.removeAttribute('tabindex'), {once:true});
+        target.classList.add('is-search-target');
+        window.setTimeout(() => target.classList.remove('is-search-target'), 1600);
+      }
+    }));
+    return true;
+  }
   function listClick(e) {
+    const source = e.target.closest('.gb-hl-item[data-type="quote"] .gb-hl-meta a[href]');
+    if (source && navigateQuotedSource(e, source)) return;
     const b = e.target.closest('[data-library-action]');
     if (!b) return;
     const action = b.dataset.libraryAction;
