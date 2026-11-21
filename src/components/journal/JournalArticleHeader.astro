@@ -15,7 +15,7 @@ interface Props {
   series: string;
   period: string;
   readingTime: number;
-  cover: Cover;
+  cover?: Cover;
   publishedAt?: string;
   modifiedAt?: string;
 }
@@ -25,7 +25,7 @@ const dateLabel = (value: string) => new Intl.DateTimeFormat('ru-RU', {
 }).format(new Date(value));
 const sizes = '(min-width: 1024px) 480px, (min-width: 768px) 700px, calc(100vw - 40px)';
 ---
-<header class="article-header je-article-header">
+<header class:list={['article-header je-article-header', { 'je-article-header--text-first': !cover }]}>
   <div class="je-article-eyebrow">
     <a href="/journal/">Журнал</a>
     <span aria-hidden="true">/</span>
@@ -44,7 +44,7 @@ const sizes = '(min-width: 1024px) 480px, (min-width: 768px) 700px, calc(100vw -
       <span>{readingTime} мин чтения</span>
     </div>
   </div>
-  <figure class="je-article-cover">
+  {cover && <figure class="je-article-cover">
     <picture>
       {cover.avifSrcset && <source type="image/avif" srcset={cover.avifSrcset} sizes={sizes} />}
       <img src={cover.src} srcset={cover.webpSrcset} sizes={sizes}
@@ -52,5 +52,5 @@ const sizes = '(min-width: 1024px) 480px, (min-width: 768px) 700px, calc(100vw -
            decoding="async" loading="eager" fetchpriority="high" />
     </picture>
     <figcaption><span>{series}</span> {cover.caption}</figcaption>
-  </figure>
+  </figure>}
 </header>

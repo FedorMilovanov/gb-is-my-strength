@@ -5,7 +5,7 @@ import JournalArticleHeader from './JournalArticleHeader.astro';
 import JournalContents from './JournalContents.astro';
 import JournalDataFigure from './JournalDataFigure.astro';
 import JournalSourceReturn from './JournalSourceReturn.astro';
-import { G3_EDITORIAL_MEDIA } from '@/data/journal/g3EditorialMedia';
+import { G3_EDITORIAL_MEDIA as cover } from '@/data/journal/g3EditorialMedia';
 import { G3_PRODUCT_METADATA } from '@/data/journal/g3ProductMetadata';
 import {
   G3_PUBLICATION_HANDOFF,
@@ -13,6 +13,8 @@ import {
   type G3PublicationClaimId,
 } from '@/data/journal/g3PublicationHandoff';
 import { G3_SOURCE_BIBLIOGRAPHY, type G3SourceBibliographyEntry } from '@/data/journal/g3SourceBibliography';
+
+const coverSizes = '(min-width: 1024px) 600px, (min-width: 768px) 700px, calc(100vw - 40px)';
 
 const projectedClaims: G3PublicationClaimId[] = [
   'G3-PUB-001', 'G3-PUB-002', 'G3-PUB-003', 'G3-PUB-004',
@@ -107,26 +109,15 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
   <JournalArticleHeader
     title={G3_PRODUCT_METADATA.title}
     label="Документальное досье" series="G3 Ministries" period="2025–2026"
-    cover={G3_EDITORIAL_MEDIA} readingTime={G3_PRODUCT_METADATA.readingTimeMinutes}
+    readingTime={G3_PRODUCT_METADATA.readingTimeMinutes}
     publishedAt={G3_PRODUCT_METADATA.publishedAt} modifiedAt={G3_PRODUCT_METADATA.modifiedAt}
   >
     <p>Отставка основателя, попытка обновления и новый конфликт.
       Что документы говорят о руководстве, финансах и завершении работы служения —
       и где заканчиваются доказательства.</p>
   </JournalArticleHeader>
-  <div class="journal-feature-grid">
-    <JournalEditorialRail label="Содержание документального досье G3">
-      <JournalContents entries={contents} initialCompactClosed />
-      <p class="je-rail-note">Фактический срез — 9 сентября 2026 года.{' '}
-        <a href="#bibliography">{G3_SOURCE_BIBLIOGRAPHY.length} источник</a> с датами и границами доказательств.{' '}
-        <a href="#corrections">Журнал исправлений</a>.</p>
-    </JournalEditorialRail>
-    <div class="journal-story-column">
-      <p class="reader-framing">Здесь мы восстанавливаем события, а не выносим приговор людям.
-        Заявление стороны, финансовая форма и юридическое решение — разные свидетельства.
-        Документальная база ограничена срезом 9 сентября 2026 года; позднейшие изменения
-        требуют отдельной проверки.</p>
-
+  <div class="journal-feature-grid journal-feature-grid--text-first">
+    <div class="journal-opening-column">
   <section id="overview" class="module intro-module" tabindex="-1">
     <div class="module-label">01 · Предыстория</div>
     <div class="prose wide">
@@ -137,6 +128,15 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
         затем попыталась продолжить работу с новым руководством — и вскоре оказалась
         перед следующим конфликтом.
       </p>
+      <figure class="je-article-cover je-article-cover--intro">
+        <picture>
+          <source type="image/avif" srcset={cover.avifSrcset} sizes={coverSizes} />
+          <img src={cover.src} srcset={cover.webpSrcset} sizes={coverSizes}
+               width={cover.width} height={cover.height} alt={cover.alt}
+               decoding="async" loading="eager" fetchpriority="high" />
+        </picture>
+        <figcaption><span>G3 Ministries</span> {cover.caption}</figcaption>
+      </figure>
       <p>
         В 2019 году G3 Ministries была оформлена в штате Джорджия как некоммерческая корпорация.
         Позднее деятельность включала конференции, цифровую платформу G3+, издательское направление G3 Press
@@ -158,6 +158,19 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
       <p class="source-note-paragraph" data-publication-claims="G3-PUB-001 G3-PUB-005 G3-PUB-006 G3-PUB-007 G3-PUB-012 G3-PUB-013 G3-PUB-014 G3-PUB-015 G3-PUB-016"><a class="source-note" href="#documents">Документы, на которых основан рассказ</a></p>
     </div>
   </section>
+
+      <p class="reader-framing">Здесь мы восстанавливаем события, а не выносим приговор людям.
+        Заявление стороны, финансовая форма и юридическое решение — разные свидетельства.
+        Документальная база ограничена срезом 9 сентября 2026 года; позднейшие изменения
+        требуют отдельной проверки.</p>
+    </div>
+    <JournalEditorialRail label="Содержание документального досье G3">
+      <JournalContents entries={contents} initialCompactClosed />
+      <p class="je-rail-note">Фактический срез — 9 сентября 2026 года.{' '}
+        <a href="#bibliography">{G3_SOURCE_BIBLIOGRAPHY.length} источник</a> с датами и границами доказательств.{' '}
+        <a href="#corrections">Журнал исправлений</a>.</p>
+    </JournalEditorialRail>
+    <div class="journal-story-column">
 
   <section id="timeline" class="module" tabindex="-1">
     <div class="module-label">02 · Хронология</div>
@@ -480,8 +493,8 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
     <p class="je-read-next__intro">Это самостоятельные материалы, а не источники сведений об участниках и событиях G3.</p>
     <ul>
       <li>
-        <a href="/articles/20-antisovetov-pastoru/">20 антисоветов, как пастору разрушить своё служение</a>
-        <p>О библейских принципах пастырской ответственности — через антисоветы о том, как их нарушают.</p>
+        <a href="/articles/">Богословские статьи</a>
+        <p>Тексты о Писании и христианском учении — для самостоятельного чтения за пределами этого досье.</p>
       </li>
       <li>
         <a href="/biografii/">Биографии служителей</a>
