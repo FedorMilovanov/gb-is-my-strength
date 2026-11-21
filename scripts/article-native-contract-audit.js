@@ -12,6 +12,7 @@ const {
 } = require('./lib/effective-route-registry');
 const { resolveDeclaredLegacyReference } = require('./lib/legacy-source-authority');
 const { scanBlockStructure } = require('./lib/block-structure-guard');
+const { routes: routeSearchPolicies } = require('../data/route-search-policy.json');
 
 const DIST = path.join(ROOT, 'dist');
 const BASELINE_FILE = path.join(ROOT, 'data/public-content-baseline.json');
@@ -277,8 +278,18 @@ function auditArticle(record, baselineByUrl) {
   if (!title) bad(`${label}: title is empty`);
   if (!description) bad(`${label}: meta description is empty`);
   if (headings.length !== 1) bad(`${label}: expected exactly one H1, got ${headings.length}`);
-  if (/\bnoindex\b/i.test(meta(html, 'robots'))) bad(`${label}: production article is noindex`);
-  if (!/data-pagefind-body/.test(html)) bad(`${label}: data-pagefind-body marker missing`);
+  const policy = routeSearchPolicies[route];
+  const isNoindex = /\bnoindex\b/i.test(meta(html, 'robots'));
+  if (isNoindex !== (policy?.indexPolicy === 'noindex')) {
+    bad(label + ': robots/index-policy mismatch (noindex=' + isNoindex + ', policy=' + (policy?.indexPolicy || 'missing') + ')');
+  }
+  if (policy?.pagefindPolicy === 'exclude') {
+    if (/\bdata-pagefind-(?:body|meta|filter)\b/i.test(html)) {
+      bad(label + ': noindex article must not emit Pagefind markers');
+    }
+  } else if (!/data-pagefind-body/.test(html)) {
+    bad(label + ': data-pagefind-body marker missing');
+  }
 
   for (const marker of matrix?.requiredMarkers || []) {
     if (!html.includes(marker)) bad(`${label}: required route marker missing: ${marker}`);
