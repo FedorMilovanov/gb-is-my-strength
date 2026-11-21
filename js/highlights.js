@@ -601,6 +601,13 @@
   function deleteItem(item) {
     const key = item.type === 'note' ? NOTES_KEY : QUOTES_KEY;
     const old = item.type === 'note' ? notes() : quotes();
+    const matches = old.filter((x) => String(x.id) === item.id);
+    // Old/corrupt backups can already contain collisions. Never remove
+    // every version of an ID merely because one visible card was clicked.
+    if (matches.length > 1) {
+      statusMessage('Найдено несколько версий этой записи. Сначала сохраните резервную копию библиотеки; удаление отменено.', true);
+      return;
+    }
     const index = old.findIndex((x) => String(x.id) === item.id);
     if (index < 0) return;
     if (!write(key, old.filter((x) => String(x.id) !== item.id))) {
@@ -615,8 +622,49 @@
     undoButton.addEventListener('click', () => {
       if (!pendingUndo) return;
       const u = pendingUndo, items = read(u.key);
+      const limit = u.key === NOTES_KEY ? LIMIT_NOTES : LIMIT_QUOTES;
+      const taken = items.some((x) => String(x.id) === String(u.entry.id));
+      if (taken) {
+        // Another tab may import/recreate this ID while Undo is available.
+        // Preserve both versions: never splice a duplicate ID or overwrite.
+        const copyButton = button('undo-copy', 'Сохранить удалённую версию с отдельным ID', 'Сохранить копию');
+        status.replaceChildren(
+          element('span', '', 'Запись с таким ID уже есть. Для сохранения обеих версий выберите копию.'),
+          copyButton
+        );
+        status.classList.add('is-visible');
+        clearTimeout(u.timer);
+        u.timer = setTimeout(clearUndo, 30000);
+        copyButton.addEventListener('click', () => {
+          if (pendingUndo !== u) return;
+          const latest = read(u.key);
+          if (latest.length >= limit) {
+            statusMessage('Лимит библиотеки достигнут. Экспортируйте данные до восстановления.', true);
+            return;
+          }
+          let newId = uid(u.key === NOTES_KEY ? 'note' : 'quote');
+          while (latest.some((x) => String(x.id) === newId)) {
+            newId = uid(u.key === NOTES_KEY ? 'note' : 'quote');
+          }
+          const preserved = { ...u.entry, id: newId, savedAt: Date.now() };
+          latest.splice(Math.min(u.index, latest.length), 0, preserved);
+          if (!write(u.key, latest)) {
+            statusMessage('Не удалось сохранить копию. Данные другой вкладки не изменены.', true);
+            return;
+          }
+          clearUndo(); render(); sync();
+          statusMessage('Обе версии сохранены с разными ID. Проверьте связи заметок и цитат.');
+        });
+        return;
+      }
+      if (items.length >= limit) {
+        statusMessage('Лимит библиотеки достигнут. Экспортируйте данные до восстановления.', true);
+        return;
+      }
       items.splice(Math.min(u.index, items.length), 0, u.entry);
-      if (!write(u.key, items)) { statusMessage('Не удалось восстановить запись.', true); return; }
+      if (!write(u.key, items)) {
+        statusMessage('Не удалось восстановить запись.', true); return;
+      }
       clearUndo(); render(); sync(); statusMessage('Запись восстановлена.');
     });
     pendingUndo.timer = setTimeout(clearUndo, 6000);

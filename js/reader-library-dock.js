@@ -41,18 +41,48 @@ export function dockLibraryFab(fab) {
 
 
 export function contextFromSelection(selection, text) {
+  // Reuse the single approved visible-text projection, not textContent:
+  // hidden glossary popovers must never enter a reader's saved quotation.
+  // Anchor to the actual Range, never the first matching phrase.
+  const empty = { before: '', after: '' };
   try {
-    const container=selection.getRangeAt(0).startContainer;
-    const parent=container.nodeType===1?container:container.parentElement;
-    const paragraph=parent?.closest?.('p,li,blockquote');
-    if (!paragraph) return {before:'',after:''};
-    const full=String(paragraph.textContent||'').replace(/s+/g,' ').trim();
-    const at=full.indexOf(text.slice(0,80));
-    return at<0?{before:'',after:''}:{
-      before:full.slice(Math.max(0,at-240),at),
-      after:full.slice(at+text.length,at+text.length+240)
+    if (!selection?.rangeCount || selection.isCollapsed) return empty;
+    const range = selection.getRangeAt(0);
+    const origin = range.startContainer.nodeType === 1
+      ? range.startContainer : range.startContainer.parentElement;
+    const block = origin?.closest?.('p,li,blockquote');
+    if (!block || !block.contains(range.endContainer)) return empty;
+    const core = window.GBReaderAnchors;
+    if (!core?.visibleProjection) return empty;
+    const projection = core.visibleProjection(block);
+    if (!projection?.segments?.length) return empty;
+
+    // A collapsed DOM boundary allows offsets to remain exact even when
+    // the quote contains nested inline links and spans. Hidden segments
+    // are already excluded by GBReaderAnchors.visibleProjection.
+    const projectedOffset = (container, offset) => {
+      const boundary = document.createRange();
+      boundary.setStart(container, offset);
+      boundary.collapse(true);
+      for (const segment of projection.segments) {
+        if (segment.node === container) return segment.start + offset;
+        // comparePoint: -1 before the collapsed caret, +1 after it.
+        if (boundary.comparePoint(segment.node, segment.node.nodeValue.length) < 0) continue;
+        if (boundary.comparePoint(segment.node, 0) > 0) return segment.start;
+        return segment.start;
+      }
+      return projection.text.length;
     };
-  } catch {return {before:'',after:''}}
+    const start = projectedOffset(range.startContainer, range.startOffset);
+    const end = projectedOffset(range.endContainer, range.endOffset);
+    const normalize = value => String(value || '').replace(/\s+/g, ' ').trim();
+    if (start < 0 || end <= start || end > projection.text.length ||
+        normalize(projection.text.slice(start, end)) !== normalize(text)) return empty;
+    return {
+      before: projection.text.slice(Math.max(0, start - 240), start).replace(/\s+/g, ' '),
+      after: projection.text.slice(end, end + 240).replace(/\s+/g, ' ')
+    };
+  } catch { return empty; }
 }
 
 export function shouldWarmReading() {
