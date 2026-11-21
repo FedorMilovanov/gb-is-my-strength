@@ -2,7 +2,7 @@
 import JournalEditorialShell from './JournalEditorialShell.astro';
 import JournalEditorialRail from './JournalEditorialRail.astro';
 import JournalArticleOpening from './JournalArticleOpening.astro';
-import JournalContents, { type ContentsEntry } from './JournalContents.astro';
+import JournalContents from './JournalContents.astro';
 import JournalBibliography from './JournalBibliography.astro';
 import JournalSeriesNav from './JournalSeriesNav.astro';
 import { G3_EDITORIAL_COVER, G3_EDITORIAL_SERIES } from '@/data/journal/g3EditorialPresentation';
@@ -27,7 +27,7 @@ const contents = [
   { href: '#g3-meaning', label: 'Богословский разговор' },
   { href: '#g3-evidence', label: 'Источники и их границы' },
   { href: '#g3-epilogue', label: 'Продолжение истории' },
-] satisfies readonly ContentsEntry[];
+] satisfies readonly { href: string; label: string }[];
 ---
 <JournalEditorialShell kind="dossier" backHref="/journal/">
 <main class="dossier journal-dossier-shell je-history-article" id="main-content" tabindex="-1"
@@ -58,7 +58,7 @@ const contents = [
       Ни один из этих источников не заменяет все остальные.
     </p>
   </JournalArticleOpening>
-  <JournalContents id="g3-history-contents" entries={contents} />
+  <div id="g3-history-contents"><JournalContents entries={contents} /></div>
   <div class="journal-feature-grid">
     <div class="journal-story-column">
       <G3HistoryFeature />

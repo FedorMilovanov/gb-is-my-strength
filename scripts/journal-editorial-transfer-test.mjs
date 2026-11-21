@@ -109,12 +109,17 @@ test('public-only contract rejects typos instead of silently ignoring options', 
 });
 
 // The public-only adapter skips only held presentation dependencies, not gates.
-function isolatedContract(t) {
+function isolatedContract(t, shape = 'legacy') {
   const directory = temporary(t);
   const names = ['scripts/journal-editorial-contract.mjs',
     ...['g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'g3ProductMetadata.ts', 'journalProductMetadata.ts', 'g3HistoryDraftMetadata.ts'].map((name) => `src/data/journal/${name}`),
     ...['G3Dossier.astro', 'JournalLanding.astro', 'JournalEditorialShell.astro', 'JournalMasthead.astro', 'G3HistoryArticle.astro', 'G3HistoryFeature.astro', 'journalEditorial.css', 'g3History.css'].map((name) => `src/components/journal/${name}`)];
   for (const name of names) { const p = path.join(directory, name); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.copyFileSync(path.join(root, name), p); }
+  // Test both unchanged authority representations; this writes TEST FIXTURES only.
+  const historyFile = path.join(directory, 'src/data/journal/g3HistoryDraftMetadata.ts');
+  let historyMetadata = fs.readFileSync(historyFile, 'utf8').replace(/(?:approval|candidate)ClaimIds:/, `${shape === 'modern' ? 'candidate' : 'approval'}ClaimIds:`).replace(/^  handoffStatus: '[^']*',\n/m, '');
+  if (shape === 'modern') historyMetadata = historyMetadata.replace("  publicationStatus: 'PUBLICATION_HOLD',", "  publicationStatus: 'PUBLICATION_HOLD',\n  handoffStatus: 'NOT_ISSUED',");
+  fs.writeFileSync(historyFile, historyMetadata);
   for (const name of ['migration/page-ownership.json', 'data/route-search-policy.json', 'data/search-manifest.json', 'sitemap.xml', 'feed.xml']) {
     const p = path.join(directory, name); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, '{}');
   }
@@ -160,7 +165,7 @@ test('public-only excludes preserved unmounted held CSS, not public CSS', (t) =>
   const bad = f.run(); assert.notEqual(bad.status, 0); assert.match(bad.stderr, /route-local cascade/);
 });
 test('default strict mode still audits held CSS when its dependencies exist', (t) => {
-  const f = isolatedContract(t); fs.copyFileSync(path.join(root, 'src/data/journal/g3HistoryDraftSources.ts'), path.join(f.directory, 'src/data/journal/g3HistoryDraftSources.ts'));
+  const f = isolatedContract(t); fs.writeFileSync(path.join(f.directory, 'src/data/journal/g3HistoryDraftSources.ts'), execFileSync('git', ['show', '18d567b3e4c01cce194b9ffccfb8d8948b024ec7:src/data/journal/g3HistoryDraftSources.ts'], {cwd:root}));
   fs.appendFileSync(path.join(f.directory, 'src/components/journal/g3History.css'), '\n.legacy-held { color: black !important; }\n');
   const r = f.run(['--source-only']); assert.notEqual(r.status, 0); assert.match(r.stderr, /route-local cascade/);
 });
@@ -229,3 +234,8 @@ test('shared return projection admits exactly two SSR lines, no runtime/asset ch
     assert.throws(()=>assertCatalogReturnProjection(sharedBase,bad),/ONLY the conditional SSR/);
   }
 });
+
+test('public-only also accepts the unchanged modern NOT_ISSUED held schema',t=>{const r=isolatedContract(t,'modern').run();assert.equal(r.status,0,r.stderr);});
+for(const [from,to,reason] of [["handoffStatus: 'NOT_ISSUED'","handoffStatus: 'ISSUED'",/NOT_ISSUED/],["'G3-HIST-PUB-09'","'G3-HIST-PUB-10'",/G3-HIST-PUB/],["candidateClaimIds:","approvalClaimIds: [], candidateClaimIds:",/Ambiguous history/]]){
+  test('modern held metadata still fails closed: '+reason,t=>{const f=isolatedContract(t,'modern');f.replace('src/data/journal/g3HistoryDraftMetadata.ts',from,to);const r=f.run();assert.notEqual(r.status,0);assert.match(r.stderr,reason);});
+}

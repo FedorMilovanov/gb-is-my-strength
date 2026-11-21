@@ -89,8 +89,18 @@ const claimIds = [...new Set(current.match(/G3-PUB-\d{3}/g))].sort();
 assert.deepEqual(claimIds, Array.from({ length: 16 }, (_, i) => `G3-PUB-${String(i + 1).padStart(3, '0')}`));
 assert.ok(!current.includes('G3-HIST-PUB-'), 'historical candidates must not enter the crisis claim projection');
 assert.equal(history.publicationStatus, 'PUBLICATION_HOLD');
-assert.deepEqual([...history.approvalClaimIds], Array.from({ length: 9 }, (_, i) => `G3-HIST-PUB-${String(i + 1).padStart(2, '0')}`));
-assert.ok(!Object.hasOwn(history, 'handoffStatus'), 'Do not infer/issue a history handoff or mix authority schemas');
+// Canonical uses legacy approvalClaimIds; SUPPORT uses explicit candidateClaimIds.
+// Both are the SAME nine HELD candidates, never publication authority. Do not rewrite either owner.
+const heldCandidates = Array.from({ length: 9 }, (_, i) => `G3-HIST-PUB-${String(i + 1).padStart(2, '0')}`);
+const modernHistory = Object.hasOwn(history, 'candidateClaimIds');
+assert.notEqual(modernHistory, Object.hasOwn(history, 'approvalClaimIds'), 'Ambiguous history authority schemas');
+if (modernHistory) {
+  assert.deepEqual([...history.candidateClaimIds], heldCandidates);
+  assert.equal(history.handoffStatus, 'NOT_ISSUED', 'Do not infer/issue a history handoff');
+} else {
+  assert.deepEqual([...history.approvalClaimIds], heldCandidates);
+  assert.ok(!Object.hasOwn(history, 'handoffStatus'), 'Do not infer/issue a history handoff or mix authority schemas');
+}
 for (const name of ['G3HistoryArticle', 'G3HistoryFeature']) {
   const source = read(`src/components/journal/${name}.astro`);
   assert.match(source, /if \(import\.meta\.env\.PROD\)\s*\{\s*throw new Error\(/, `${name} must fail closed in production`);
