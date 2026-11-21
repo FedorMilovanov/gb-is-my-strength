@@ -24,6 +24,8 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
   sheet.dataset.gbrMarginaliaBound = '1';
   var partTitle = sheet.querySelector('.toc-head-txt h3');
   var originalTitle = partTitle ? partTitle.textContent : '';
+  var dialog = sheet.querySelector('.toc-sheet[role="dialog"]');
+  var originalDialogLabel = dialog ? dialog.getAttribute('aria-label') : null;
   var researchOpener = document.querySelector('[data-gill-marginalia-open]');
   var article = document.querySelector('article.article-body') || document.querySelector('main article');
   var text = function (el) { return (el && el.textContent || '').replace(/\s+/g, ' ').trim(); };
@@ -158,6 +160,58 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
   }
   var scriptureSelection = '';
   var scriptureRailObserver = null;
+  var marksPanel = null;
+  var marksRefreshFrame = 0;
+  function refreshMarks() {
+    if (!marksPanel || !marksPanel.isConnected) return;
+    var summary = marksPanel.querySelector(':scope > summary');
+    if (!summary) return;
+    var restoreButtonFocus = marksPanel.contains(document.activeElement)
+      && document.activeElement.matches('button.gbr-marginalia-jump');
+    var library = window.GBReaderLibrary;
+    var here = location.pathname.replace(/\/+$/, '');
+    var entries = library ? library.getLibrary().filter(function (item) {
+      return item.type !== 'favorite' && library.highlightPath(item) === here;
+    }) : [];
+    var count = summary.querySelector('span');
+    if (count) count.textContent = String(entries.length);
+    while (marksPanel.lastElementChild && marksPanel.lastElementChild !== summary)
+      marksPanel.lastElementChild.remove();
+    entries.forEach(function (item) {
+      var row = node('div', 'gbr-marginalia-personal');
+      row.appendChild(node('small', '', item.type === 'note' ? 'Заметка'
+        : item.kind === 'marker' ? 'Помета' : 'Цитата'));
+      row.appendChild(node('p', '', item.text || item.quoteText));
+      marksPanel.appendChild(row);
+    });
+    if (!entries.length)
+      marksPanel.appendChild(node('p', 'gbr-marginalia-empty',
+        'Выделите фразу в статье, чтобы сохранить её здесь.'));
+    if (library) {
+      var open = node('button', 'gbr-marginalia-jump', 'Открыть библиотеку');
+      open.type = 'button';
+      open.addEventListener('click', function () {
+        sheet.querySelector('.toc-sheet__handle')?.click();
+        document.getElementById('gb-hl-fab')?.click();
+      });
+      marksPanel.appendChild(open);
+      if (restoreButtonFocus) open.focus({preventScroll:true});
+    }
+  }
+  function scheduleMarksRefresh() {
+    if (marksRefreshFrame) return;
+    marksRefreshFrame = requestAnimationFrame(function () {
+      marksRefreshFrame = 0;
+      refreshMarks();
+    });
+  }
+  function onMarksStorage(event) {
+    var key = event && (event.key || event.detail?.key);
+    if (key === 'gb-highlights-v1' || key === 'gb-reader-notes-v1' || key == null)
+      scheduleMarksRefresh();
+  }
+  window.addEventListener('storage', onMarksStorage);
+  window.addEventListener('gb:library-committed', onMarksStorage);
   function render() {
     if (scriptureRailObserver) scriptureRailObserver.disconnect();
     scriptureRailObserver = null;
@@ -330,26 +384,8 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
       if (!data.notes.length) foot.appendChild(node('p','gbr-marginalia-empty','В этом разделе нет сносок.'));
       data.notes.forEach(function (source, i) { action(foot, 'Примечание ' + (source.dataset.noteOrdinal || i + 1) + ' ↗', source); });
     }
-    var library = window.GBReaderLibrary;
-    var here = location.pathname.replace(/\/+$/, '');
-    var entries = library ? library.getLibrary().filter(item => item.type !== 'favorite' && library.highlightPath(item) === here) : [];
-    var marks = group('Мои пометы', String(entries.length));
-    entries.forEach(item => {
-      var row = node('div','gbr-marginalia-personal');
-      row.appendChild(node('small','',item.type === 'note' ? 'Заметка' : item.kind === 'marker' ? 'Помета' : 'Цитата'));
-      row.appendChild(node('p','',item.text || item.quoteText));
-      marks.appendChild(row);
-    });
-    if (!entries.length) marks.appendChild(node('p','gbr-marginalia-empty','Выделите фразу в статье, чтобы сохранить её здесь.'));
-    if (library) {
-      var open = node('button','gbr-marginalia-jump','Открыть библиотеку');
-      open.type = 'button';
-      open.addEventListener('click', () => {
-        sheet.querySelector('.toc-sheet__handle').click();
-        document.getElementById('gb-hl-fab')?.click();
-      });
-      marks.appendChild(open);
-    }
+    marksPanel = group('Мои пометы', '0');
+    refreshMarks();
   }
   function switchTab(which, keyboard) {
     var research = which === 'research';
@@ -364,6 +400,11 @@ const aliasEntries = Object.entries(registry.books).flatMap(([bookId, book]) => 
     panel.inert = !research;
     sheet.classList.toggle('gbr-research-open', research);
     if (partTitle) partTitle.textContent = research ? 'Аналитика' : originalTitle;
+    if (dialog) {
+      if (research) dialog.setAttribute('aria-label', 'Аналитика · исследовательские материалы');
+      else if (originalDialogLabel !== null) dialog.setAttribute('aria-label', originalDialogLabel);
+      else dialog.removeAttribute('aria-label');
+    }
     if (research) render();
     if (keyboard) tabs.find(function (tab) { return tab.dataset.gbrTab === which; }).focus();
   }

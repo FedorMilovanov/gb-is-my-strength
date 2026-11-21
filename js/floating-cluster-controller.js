@@ -1704,7 +1704,9 @@
       addCleanListener(btn, 'click', function (e) {
         e.preventDefault();
         closeOverlay(seriesToc, 'switch', false);
-        openOverlay(partToc, e.currentTarget);
+        openOverlay(partToc, e.currentTarget, {
+          focusTarget: partToc.querySelector('[data-gbr-tab="research"]')
+        });
         btn.setAttribute('aria-expanded','true');
         partToc.dispatchEvent(new CustomEvent('gb:gill-select-part-panel', { detail:{ panel:'research' } }));
       });
