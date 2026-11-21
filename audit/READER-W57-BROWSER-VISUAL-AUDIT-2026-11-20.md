@@ -2,10 +2,10 @@
 
 **Аудитор:** Arena Agent (независимая проверка, не автор кода W57)
 **Дата:** 2026-11-20
-**Проверенный HEAD:** `63909cce9c6c89658c47e7755597008c634c9ef0` (раунд 5; раунд 3 был на `e41556048b8dab397fa8d8675a51488e643a254d`, раунд 2 — на `dd9b0bf7a385f14398c7618ffef33a8751fde644`)
-(Branch `fix/reader-library-no-count-dot-20261119`, PR #2346, DRAFT/HOLD)
-**Движок:** Chromium 153.0.8010.0 (`@sparticuz/chromium@153.0.0` + Playwright 1.64.1), headless, Debian 12/x86_64
-**Сборка:** `npm run strangler:build:production-like` из чистого detached worktree текущего HEAD (112 страниц Astro + legacy-копирование), завершена PASS
+**Проверенный HEAD:** `249bb866213fc1b86fb8b3e73af146d2417a0087` (актуальный exact HEAD PR #2346; предыдущие раунды сохранены ниже)
+(Аудит выполняется в отдельной ветке; PR #2346 `OPEN/DRAFT/UNSTABLE`, не считать этот файл изменением продукта)
+**Движок:** Chromium 153.0.8010.0 (`@sparticuz/chromium@153.0.0` + Playwright 1.64.1), headless, Debian 12/x86_64; для disposable запуска использован `@sparticuz/chromium@153.0.0`
+**Сборка:** `npm run strangler:build:production-like` из чистого detached worktree `/tmp/w249`, завершена PASS только с временным локальным обходом Node-floor (`22.22.3` вместо CI-требования `>=22.23.4`); исходники после проверки восстановлены
 **Рантаймы:** канонический Gill route без `reader-pilot` для нового mobile TOC/«На полях»; `research/reader-w57-pilot/preview.py` + `?reader-pilot=1&paper=space` для D2/D3 и W57 research rail
 **Внешние ресурсы:** недоступны (`mc.yandex.ru` даёт `ERR_CONNECTION_CLOSED`). Единственная консольная ошибка — эта внешняя метрика; JS/runtime ошибок W57 и Gill marginalia не было.
 **WebKit/Firefox:** в этой среде **не проверялись** (доступен только Chromium). Это ограничение, а не доказательство работоспособности.
@@ -789,3 +789,147 @@ The existing multi-width geometry remained unchanged: on 320/360/390/430/480/768
 At the latest PR query the head remained `fa595d8`, `OPEN/DRAFT/UNSTABLE`; the rollup was **15 SUCCESS / 9 IN_PROGRESS / 28 QUEUED / 4 SKIPPED / 5 FAILURE**. The failures were `Grok flag-ON and flag-OFF real Product browser contract`, `a4-paper`, `pilot-browser`, `Deterministic source index and dist witness`, and the Windows actionlint lane. The first three browser/PDF job-log requests returned the GitHub results-receiver `EOF`; the deterministic source-index log also returned `EOF`, while the actionlint matrix had Linux/Darwin PASS and Windows FAIL. `public-surface-browser-matrix`, exact Scripture occurrences, and the hosted reader-controls matrix were still queued, so hosted CI does not yet validate or clear the local finding.
 
 **Round-9 verdict:** the attempted `fa595d8` hitbox repair is not accepted: the new dedicated Play-triangle witness fails, and the wide sweep remains 219/225. The wrapper-radius predicate also remains unresolved. Auto-hide is now positively verified with real wheel and touch input. D2/D3 remain open, and PR #2346 is still **OPEN/DRAFT/HOLD**, not ready to merge.
+
+## 16. Раунд 10 — exact HEAD `249bb866` и реальное разделение Play/rate
+
+### 16.1. Граница доказательства и результаты до браузерного ввода
+
+После исторического `fa595d8` PR #2346 получил `249bb866213fc1b86fb8b3e73af146d2417a0087` (`fix(reader): remove ghost speed panel and tune slim Play ring`). Проверка снова выполнялась в disposable detached worktree `/tmp/w249`; в audit-ветку не переносились ни source-файлы, ни сгенерированный Scripture index, ни Node-floor workaround.
+
+Exact-head результаты:
+
+- `npm run strangler:build:production-like` — **PASS** (112 страниц Astro и post-build guards); локальный Node `22.22.3` floor-check временно обходился только в disposable worktree;
+- `npm run engine:contracts` — **PASS**;
+- `reader-controls-a11y-browser-contract.mjs` — **155/155 PASS** в disposable Chromium;
+- независимый `scripts/engine-sweep.mjs` — **219/225 PASS**, exit 1;
+- custom layout probe на 320, 360, 390, 430, 480, 768, 1024, 1120, 1280 и 1359 px — horizontal overflow отсутствует, Settings hit target присутствует;
+- визуально на Gill 320/390/768 px ghost speed-panel заливка исчезла, тонкое кольцо и видимый rate-chip присутствуют.
+
+Узкий `reader-controls` PASS не отменяет широкий sweep: это разные invariants и разные наборы свидетелей.
+
+### 16.2. Сохранившийся geometry/contract failure
+
+На exact `249bb866` при 390 px DOM geometry такая:
+
+| Объект | Реальный rect / computed style |
+|---|---|
+| Play `.reader-mobile-play` | `x=221…265`, `y=7…51`, `44×44` |
+| speed wrapper `#mobSpdBadge` | `x=245…289`, `y=7…51`, `44×44` |
+| видимый `.reader-mobile-speed-chip` | `x=250…274`, `y=34…49`, `24×15`, `pointer-events:auto`, `border-radius:999px` |
+| wrapper | `pointer-events:none`, `border-radius:0px` |
+| активная pseudo hit-зона wrapper | `left:20px`, `width:24px`, `pointer-events:auto` — то есть `x=265…289` |
+
+Прямоугольники Play и wrapper пересекаются на `20×44 = 880 CSS px²`. Такая же 20 px overlap-зона сохраняется на проверенных mobile widths 320–768 px. Все шесть sweep-свидетелей (`gill3`, `heart`, `baptist`, `antisov`, `teen`, `genesis6`) падают в одной проверке `mob: Play / скорость — независимые сенсорные зоны`:
+
+```text
+playWidth=44, playHeight=44, badgeWidth=44, badgeHeight=44,
+overlap=880, playHit=true, badgeHit=true,
+badgeWithinViewport=true, badgeRadius="0px", badgeControls="mobileSpeedrail"
+```
+
+То есть новый head убрал видимую заливку, но не сделал две 44×44 DOM hit-зоны независимыми. Кроме того, старый sweep-invariant `parseFloat(badgeRadius) >= 10` всё ещё читает прозрачный wrapper и получает `0px`; скруглённый chip этот предикат не удовлетворяет, потому что он не является wrapper.
+
+Это **доказанный contract/geometry failure**. Это не следует превращать в более сильное, но недоказанное утверждение, будто каждый тап по Play сейчас запускает скорость: для этого ниже выполнен отдельный trusted-input probe.
+
+### 16.3. Trusted mouse/touch ownership в overlap-зоне
+
+На каноническом Gill route `/articles/dzhon-gill-chast-1-chelovek/`, 390×844, использованы реальный `page.mouse.click`, `page.touchscreen.tap` и CDP `Input.dispatchTouchEvent`, а не `dispatchEvent` и не прямой вызов обработчиков. В каждом fresh context `pageerror=[]`.
+
+| Действие | Координата | Фактический target / результат |
+|---|---:|---|
+| Play-треугольник над chip | `(250,27)` — внутри Play и вне вертикального chip | trusted `pointerdown/up` приходит в `.gb-ember__glyph` / `.reader-mobile-play`; state проходит `playing`; chip не получает событие |
+| Левая часть видимого chip | `(252,41)` — одновременно внутри Play rect и chip rect | trusted target — `.reader-mobile-speed-chip`, click bubbles в `#mobSpdBadge`; Play не запускается, speed rail открывается |
+| Центр видимого chip | `(262,41)` | target — `.reader-mobile-speed-chip`; открывается `mobileSpeedrail`, state Play остаётся `idle` |
+| Прозрачная правая pseudo-зона | `(280,27)` | target — `#mobSpdBadge`; открывается speed rail |
+
+Тот же результат получен `touchscreen.tap`: `(250,27)` даёт `pointerType=touch` на Play, `(252,41)` — `pointerType=touch` на chip, `(280,27)` — на badge. Значит, **в проверенных реальными действиями точках видимый rate-chip принадлежит скорости и не крадёт Play-треугольник**. Это положительный ownership witness, но он не исправляет overlap rects и не доказывает независимость двух 44×44 целей по текущему sweep-контракту.
+
+Владелец PR должен явно выбрать один authoritative invariant:
+
+1. сделать Play и speed действительно непересекающимися 44×44 targets; либо
+2. официально утвердить partition по painted chip/pseudo-зоне и переписать sweep так, чтобы он проверял actual interactive affordance, а не пересечение прозрачных wrapper rects; отдельно решить, должен ли `border-radius` относиться к wrapper или к visible chip.
+
+Пока решения и hosted rerun нет, `engine:sweep` остаётся непройденным. Source в рамках независимого аудита не менялся.
+
+### 16.4. Trusted touch swipe: auto-hide не регрессировал
+
+На том же exact dist выполнен CDP touch swipe down-content из `(195,650)` к `(195,170)`, затем обратный swipe в том же context. Результат:
+
+- до swipe: `scrollY=0`, `gbs2-tbhidden=false`, top bar `opacity=1`, `pointer-events:auto`, `transform:none`;
+- после down-content: `scrollY=365`, `gbs2-tbhidden=true`, `opacity=0`, `pointer-events:none`, `transform=translateY(-83px)`;
+- после обратного up-content: `scrollY=0`, `gbs2-tbhidden=false`, `opacity=1`, `pointer-events:auto`, `transform:none`.
+
+Это подтверждает реальным направленным touch input, что auto-hide/reveal верхней Gill-панели на `249bb866` работает. Неприятный overlap Play/rate и radius predicate к auto-hide не относятся.
+
+### 16.5. Новый CI/QA дефект: pilot-browser сам противоречит mobile boundary
+
+Локальный exact-head запуск `scripts/reader-w57-browser-visual-qa.mjs` (с тем же disposable Chromium adapter, без изменений source после запуска) завершает desktop 1440-сцену и падает на mobile сценах:
+
+```text
+W57_AUDIT_REPORT ...
+  gill-desktop: response 200, ready=true, annotated=true
+  gill-mobile: response 200, ready=false, annotated=false, noteCards=0
+  mobile-320: response 200, ready=false, annotated=false, noteCards=0
+W57_BROWSING_FAILED 4
+```
+
+Причина установлена в exact source, а не приписывается браузеру:
+
+- `research/reader-w57-pilot/preview.py` загружает W57 JS только после `matchMedia('(min-width:1121px)')`; на mobile bootstrap делает `return`, оставляя native mobile reader;
+- тот же `preview.py` прямо комментирует, что native mobile reader остаётся без W57-инъекции;
+- `scripts/reader-w57-browser-visual-qa.mjs` всё равно вызывает `scene(..., 390, 844)` и требует `body.np-w57-ready`, `window.__NP_W57_ANNOTATIONS__` и W57 notes card.
+
+Следовательно, hosted `pilot-browser` failure на этом head имеет воспроизводимый **QA/preview contract mismatch**: desktop-only pilot boundary тестируется как будто W57 должен монтироваться на mobile. Это не доказательство поломки production native mobile Gill. Нужно либо ветвить visual QA (desktop W57 против native mobile contract), либо расширить preview boundary и честно тестировать новый mobile pilot; до этого job остаётся красным и не является валидной единой матрицей.
+
+Дополнительное desktop observation: открытие research rail сдвигает hero center `814.4 → 698.4` (`−116px`). Скрипт помечает это как `visual-review`; намеренность reflow не доказана, поэтому отдельно блокером не объявляю.
+
+### 16.6. Source-owned Scripture index и hosted snapshot
+
+На exact `249bb866` оба локальных source-index checks падают до writer:
+
+```text
+SCRIPTURE OCCURRENCE INDEX FAILED: data/scripture-search-index.json is stale; run with --write
+SCRIPTURE OCCURRENCE CONTRACT FAILED: generated index is stale or nondeterministic
+```
+
+Disposable `node scripts/build-scripture-occurrence-index.mjs --write` меняет только:
+
+```diff
+- "scannedSourceFiles": 542
++ "scannedSourceFiles": 544
+```
+
+`references=1372`, `occurrences=3511`, `indexedRoutes=103` и curated text records не меняются. Writer в PR/audit tree не переносился. Это source-owned generated-artifact drift и объясняет два exact-head Scripture/index failures; это не баг распознавания Reader.
+
+Актуальный GitHub snapshot через PR API: **50 SUCCESS / 8 FAILURE / 4 SKIPPED**, `OPEN/DRAFT/UNSTABLE`, head точно `249bb866`. Failed checks:
+
+- [Grok flag-ON and flag-OFF real Product browser contract](https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/44887968844) — hosted browser proof, log receiver отвечает `EOF`;
+- [a4-paper](https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/44887968743) — hosted PDF job, доступна только annotation `exit code 1`;
+- [Chromium + Firefox + WebKit Reader controls](https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/44887968470) — hosted log receiver `EOF`; локальный узкий contract PASS, поэтому root cause не приписываю Reader;
+- [pilot-browser](https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/44887968820) — локально воспроизводится описанный preview/QA mismatch;
+- [Deterministic source index and dist witness](https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/44887968734) и [Exact Scripture occurrences before Pagefind](https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/44887968449) — stale generated index;
+- [public-surface-browser-matrix](https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/44887968878) — локально exact-head `engine:sweep` воспроизводит 6 Play/rate failures;
+- [actionlint offline / win32-x64](https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/44887968838) — прежняя Windows `Expand-Archive`/`ExtractToDirectory` проблема, не Reader defect.
+
+Все доступные `gh run view --log-failed` для этого exact batch по-прежнему заканчиваются results-receiver `EOF`; Grok, a4-paper и hosted reader-controls поэтому не получают выдуманной причины.
+
+### 16.7. Вердикт exact `249bb866`
+
+- [ ] **Play/rate geometry contract:** видимая ghost-заливка убрана, но `engine:sweep` остаётся `219/225`; 20×44 overlap и wrapper `border-radius:0px` не разрешены. Trusted point ownership на `(250,27)`, `(252,41)` и `(280,27)` положительный, но он не отменяет текущий contract.
+- [ ] **pilot-browser:** desktop-only `preview.py` и mobile-expecting visual script противоречат друг другу; QA job требует исправления boundary/тестовой матрицы.
+- [ ] **Scripture source index:** generated JSON stale (`542→544` только в disposable writer).
+- [ ] **Hosted rollup:** 8 failures, поэтому PR не зелёный; непрозрачные jobs не приписываются продукту без logs.
+- [ ] **Исторические D2/D3:** текущие speed-only коммиты их не закрывают и не назначают единого владельца настроек; прежние чекбоксы не снимаю.
+
+Итог: exact `249bb866` улучшает визуальную сторону Gill speed slot и проходит узкий 155/155 contract, но **PR #2346 всё ещё OPEN/DRAFT/HOLD и не готов к merge** до явного решения по hit-zone invariant, исправления pilot QA mismatch, обновления source-owned index и нового hosted rerun. Независимый audit source/product files не менял.
+
+### 16.8. Артефакты exact-head раунда
+
+- `/tmp/249-engine-sweep.log` — exact-head `219/225`, шесть одинаковых geometry failures;
+- `/tmp/249-reader-controls.log` — `155/155 PASS`;
+- `/tmp/249-hit-map.json` — 390 px rect/elementFromPoint map;
+- `/tmp/249-layout.json` — 10-width layout probe без horizontal overflow;
+- `/tmp/249-touch-ownership.json` — trusted mouse/touch ownership и down/up swipe;
+- `/tmp/249-events.json` — pointer/touch event timeline для Play, chip и pseudo-zone;
+- `/tmp/249-w57-visual.log` — exact local pilot-browser reproduction: desktop pass, mobile boundary mismatch;
+- `/tmp/249-scripture-write.log` — disposable writer output; generated index восстановлен до исходного состояния.
