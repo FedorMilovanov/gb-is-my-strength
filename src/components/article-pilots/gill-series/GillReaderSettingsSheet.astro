@@ -40,6 +40,7 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
           <button type="button" class="reader-setting-btn" data-gill-theme-btn data-theme="dark" aria-pressed="false">Ночь</button>
         </div>
       </div>
+      <div class="setting-group"><span class="setting-label" id="gillTypeLabel">Шрифт чтения</span><div class="setting-segment" role="group" aria-labelledby="gillTypeLabel"><button type="button" class="reader-setting-btn type-choice" data-gill-font="lora" style="font-family:Lora,Georgia,serif" aria-pressed="true"><small>Lora</small><span class="font-sample">Слово и мысль</span></button><button type="button" class="reader-setting-btn type-choice" data-gill-font="cormorant" style="font-family:Cormorant Garamond,Georgia,serif" aria-pressed="false"><small>Cormorant Garamond</small><span class="font-sample">Слово и мысль</span></button></div></div>
       <div class="setting-group">
         <span class="setting-label">Размер текста</span>
         <div class="font-track">
@@ -130,13 +131,21 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
     function syncDots(scale: number) {
       if (!dots) return;
       if (!dots.childElementCount) {
-        for (let i = 0; i < 5; i++) { const dot = document.createElement('span'); dot.className = 'font-dot'; dots.appendChild(dot); }
+        for (let i = 0; i < 9; i++) { const dot = document.createElement('span'); dot.className = 'font-dot'; dots.appendChild(dot); }
       }
       const index = Math.round(((Number(scale) || 1) - .85) / .05);
       Array.prototype.forEach.call(dots.children, (dot: HTMLElement, i: number) => dot.classList.toggle('is-on', i <= index));
     }
 
+    const prose = gillRoot?.querySelector('article.article-body > p.reveal') || gillRoot?.querySelector('article.article-body');
+    function syncSampleSize() {
+      if (prose) overlay!.style.setProperty('--gill-sample-size', getComputedStyle(prose).fontSize);
+    }
+    window.addEventListener('resize', syncSampleSize, { passive: true });
+
     function sync(preferences = state()) {
+      // The preference event precedes the reader controller's font-size update.
+      requestAnimationFrame(syncSampleSize);
       applyCompatibility(preferences);
       setPressed(lineGroup, 'data-line', preferences.lineHeight || 'normal');
       setPressed(measureGroup, 'data-measure', preferences.measure || 'normal');
@@ -232,4 +241,52 @@ const { config: _config = GILL_SERIES } = Astro.props as Props;
     color: var(--color-text, #e9e2d7);
   }
   :global(html.dark) .gill-settings-done { color: #141413; }
+@media (max-width:360px) {
+  :global([data-gill-v16] article.article-body > p.reveal) { font-size:inherit; }
+}
+</style>
+
+<script is:inline>(()=>{const sheet=document.getElementById('gillSettingsOverlay');if(!sheet)return;
+const choices=sheet.querySelectorAll('[data-gill-font]');
+const sync=()=>choices.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.gillFont===(document.documentElement.dataset.readerFontFamily||'lora'))));
+choices.forEach(b=>b.addEventListener('click',()=>window.GBReaderPreferences?.set({fontFamily:b.dataset.gillFont},{source:'gill-settings'})));
+document.addEventListener('gb:reader-preferences-change',sync);sync()})();</script>
+<style is:global>
+#gillSettingsOverlay{--surface:#faf7f1;--ink:#302a25;--tint:#ebe4d8;--edge:#937342;color:var(--ink)}
+html[data-reader-theme=sepia] #gillSettingsOverlay{--surface:#f2e6d1;--ink:#3e3020;--tint:#e3d2b6}
+html.dark #gillSettingsOverlay{--surface:#211f1d;--ink:#ede6d9;--tint:#39332d;--edge:#c5a674}
+#gillSettingsOverlay .toc-sheet,#gillSettingsOverlay .toc-sheet__head,#gillSettingsOverlay .toc-sheet__body{background:var(--surface);color:var(--ink)}
+#gillSettingsOverlay .head-copy .lab{display:none}
+#gillSettingsOverlay .setting-segment{gap:4px;background:transparent}
+#gillSettingsOverlay .setting-segment button{color:var(--ink);background:transparent;border:1px solid transparent;border-radius:8px;box-shadow:none}
+#gillSettingsOverlay .setting-segment button[aria-pressed=true]{border-color:var(--edge);background:var(--tint)}
+#gillSettingsOverlay .setting-segment .type-choice{font-size:17px;line-height:1.2;min-height:42px}
+#gillSettingsThemeGroup button:before{content:'';display:inline-block;vertical-align:middle;margin-right:6px;width:10px;height:10px;border:1px solid #95836a;border-radius:50%;background:#fffaf0}
+#gillSettingsThemeGroup [data-theme=sepia]:before{background:#d9be92}
+#gillSettingsThemeGroup [data-theme=dark]:before{background:#292725}
+[data-gill-v16] .article-body p{font-family:var(--gb-reader-font-family,Lora),Georgia,serif}
+#gillSettingsOverlay .setting-segment .type-choice{white-space:normal;min-width:0;padding-inline:4px;font-size:16px;text-wrap:balance} #gillSettingsOverlay .toc-sheet{background:var(--surface)!important}</style>
+
+<style is:global>
+#gillSettingsOverlay .setting-group{border-color:color-mix(in srgb,var(--ink) 9%,transparent)!important}
+#gillSettingsOverlay .setting-label{color:var(--ink)!important;opacity:.72;font:600 11px/1.4 system-ui;letter-spacing:.035em;text-transform:none}
+#gillSettingsOverlay .setting-segment button[aria-pressed=true]{border-color:transparent!important;background:var(--tint)!important;color:var(--ink)!important}
+#gillSettingsOverlay .setting-segment .type-choice{display:flex;flex-direction:column;align-items:flex-start;gap:5px;text-align:left;padding:8px;line-height:1.15}
+#gillSettingsOverlay .type-choice small{font:500 10px/1.3 system-ui;opacity:.78}
+#gillSettingsOverlay .type-choice .font-sample{font-family:inherit;font-weight:400;line-height:1.24}
+#gillSettingsOverlay .gill-settings-footer button{background:transparent!important;border:0!important;color:var(--ink)!important;box-shadow:none!important}
+#gillSettingsOverlay .gill-settings-footer .gill-settings-done{background:var(--tint)!important;font-weight:650}
+#gillSettingsOverlay .font-track{background:transparent!important;border-color:transparent!important}
+#gillSettingsOverlay .font-dot.is-on{background:var(--edge)!important}
+
+#gillSettingsOverlay{--frame:color-mix(in srgb,#92734d 23%,transparent);--selected-frame:color-mix(in srgb,#92734d 57%,transparent)}
+html.dark #gillSettingsOverlay{--frame:rgba(210,181,141,.19);--selected-frame:rgba(210,181,141,.49)}
+#gillSettingsOverlay .setting-segment button,#gillSettingsOverlay .font-track,#gillSettingsOverlay .gill-settings-footer button{border:1px solid var(--frame)!important;box-sizing:border-box}
+#gillSettingsOverlay .setting-segment button[aria-pressed=true],#gillSettingsOverlay .gill-settings-footer .gill-settings-done{border-color:var(--selected-frame)!important}
+
+
+#gillSettingsOverlay .setting-segment:has(.type-choice){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+#gillSettingsOverlay .setting-segment button.type-choice{align-items:center;justify-content:center;text-align:center;padding:10px 8px 11px!important;min-height:65px;gap:6px;width:100%}
+#gillSettingsOverlay .type-choice .font-sample{font-size:var(--gill-sample-size, 1rem);line-height:1.24;text-wrap:balance}
+
 </style>

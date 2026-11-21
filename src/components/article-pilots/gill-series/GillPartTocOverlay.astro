@@ -48,7 +48,7 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
     <div class="toc-sheet__scroll-bar"><i style="--scroll-pct:0%"></i></div>
     <div class="gbr-marginalia-tabs" role="tablist" aria-label="Оглавление и исследовательские материалы">
       <button type="button" id="gbrTocTab" class="gbr-marginalia-tab" role="tab" data-gbr-tab="toc" aria-selected="true" aria-controls="gbs2PartToc" tabindex="0">Оглавление</button>
-      <button type="button" id="gbrMarginaliaTab" class="gbr-marginalia-tab" role="tab" data-gbr-tab="research" aria-selected="false" aria-controls="gbrMarginalia" tabindex="-1">На полях</button>
+      <button type="button" id="gbrMarginaliaTab" class="gbr-marginalia-tab" role="tab" data-gbr-tab="research" aria-selected="false" aria-controls="gbrMarginalia" tabindex="-1">Аналитика</button>
     </div>
     <div class="toc-sheet__list gbat" id="gbs2PartToc" data-gill-parts-nav role="tabpanel" aria-labelledby="gbrTocTab">
       {seriesItems.map((item) => {
@@ -232,3 +232,23 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
   });
 })();
 </script>
+
+<style is:global>
+  @media (max-width:84.999em) {
+    [data-gill-v16] #partTocOverlay .toc-sheet__handle {
+      flex:0 0 28px;
+      height:28px !important;
+      margin:0 auto !important;
+      background:transparent !important;
+    }
+    [data-gill-v16] #partTocOverlay .toc-sheet__handle::before {
+      content:'';
+      display:block;
+      width:40px;
+      height:4px;
+      margin:auto;
+      border-radius:4px;
+      background:var(--gill-mobile-bar-gold, #a78252);
+    }
+  }
+</style>

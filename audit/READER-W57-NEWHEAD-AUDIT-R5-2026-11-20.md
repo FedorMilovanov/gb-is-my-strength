@@ -330,10 +330,19 @@ PR #2352 смотрит не в `main`, а в `fix/reader-library-no-count-dot-2
 
 ### Сборка и регрессии
 
-- Кэш повышен до `gb-v217-mobile-touch-toolbar-20261120`; baseline v31, `sw.js`, offline matrix и asset revisions синхронизированы. `npm run cache-bust` — PASS; `npm run strangler:build:production-like` — PASS, G-1…G-8 PASS (локальный системный Node был ниже минимума, сборка запущена на доступном Node 22.23.5; Astro check: 657 файлов, 0 ошибок, 0 предупреждений, 7 hints).
+- На исходном R11 head кэш был `gb-v217-mobile-touch-toolbar-20261120` (baseline v31). В сведённом head кэш повышен до `gb-v219-mobile-touch-reader-20261120` (baseline v32); `sw.js`, offline matrix и asset revisions синхронизированы. `npm run cache-bust -- --write` и последующий read-only `npm run cache-bust` — PASS; `npm run strangler:build:production-like` — PASS: 112 Astro routes, post-build guards/projections PASS, Astro check: 0 errors, 0 warnings, 7 hints.
 - `highlights-runtime-regression-test`, `reader-w57-annotations-regression-test`, `series-reader-facade` (46 consumers; 69 страниц / 1255 целей), `dist:css-parity` (112/112), `sw-dist-readiness-audit`, `guard-shared-files`, `reader-state-regression-test` — PASS.
 - `reader-controls-a11y-browser-contract.mjs` — 155/155; Chromium-only `reader-mobile-sitewide-audit` — 35 случаев, 0 failures. Остались 10 предупреждений о маленьких кнопках раскрытия в разделах «Нагорная»/«Баптисты» на 320–480 px — этот патч их не меняет.
 
-Скриншоты: `audit/evidence/r11-mobile-touch/` (`mark-touch-320.png`, `mark-touch-390.png`, `note-library-touch-390.png`, `toast-settings-390.png`, `settings-footer-320.png`, `dark-mark-390.png`, `landscape-740x360.png`).
+### Повторная проверка после merge (v219)
+
+Первый повторный прогон сообщил `bar:null`, а 320 px сценарий упал в `createTreeWalker`: тестовый помощник выбирал параграф вне viewport/скрытый текст глоссарной подсказки, а иногда передавал `null`. Это не было отказом runtime-тулбара. Исправил только браузерный помощник: прокрутить видимый абзац в viewport, пропускать скрытые tooltip-узлы и проверять реальный диапазон.
+
+- Production-like `dist`, Chromium с touch, 320/390/430 px: тулбар монтируется на видимом выделении; палитра проходит hit-test, размер образца 44×44; настоящий `touchscreen.tap` по amber создаёт одну запись `kind:'marker'`, `CSS.highlights.get('gb-hl-amber').size === 1`, закрывает тулбар; `pageerror: []` на всех ширинах.
+- На 390 px настоящие сенсорные тапы по «Цитата» и «Заметка»: цитата сохраняется и кнопка показывает «Сохранено»; заметка открывает редактор с контекстом цитаты и фокусом в `TEXTAREA`, сенсорное «Сохранить» пишет запись с `quoteText` в `gb-reader-notes-v1` и выбирает вкладку «Заметки»; ошибок страницы нет.
+- На 320 px повторно прошли футер настроек («Обучение», «Сбросить настройки», «Готово», возврат фокуса), а «Вернуть» удаляет помету, пока настройки остаются открытыми.
+- После обновления Gill geometry assertions `reader-controls-a11y-browser-contract.mjs` — **155/155**; исходный удалённый CI-run на head `4acccee` завершился ошибкой на `Run permanent browser contracts` (check annotation содержит только общий exit code). Журналы/артефакт этого run не скачиваются в sandbox; новый CI после push v219 нужен для окончательного подтверждения.
+
+Скриншоты: `audit/evidence/r11-mobile-touch/` (`mark-touch-v219-320.png`, `note-library-touch-v219-390.png`, `mark-touch-320.png`, `mark-touch-390.png`, `note-library-touch-390.png`, `toast-settings-320.png`, `toast-settings-390.png`, `settings-footer-320.png`, `dark-mark-390.png`, `landscape-740x360.png`).
 
 **Не проверено:** физические iOS/Android-устройства, Safari/WebKit и итоговый CI после отправки head. Остаточные ограничения R10 остаются: отдельного фильтра «Пометы» нет; цвет не меняется из библиотеки; CSS-подсветку не озвучивает дерево доступности; текстовый якорь не переживает переписывание статьи. Отчёт не объявляет эти пробелы закрытыми.

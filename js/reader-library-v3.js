@@ -151,7 +151,7 @@ function serializeCurrent() {
 }
 function safeMerge(old, next) {
   const merged = {
-    quotes: mergeUnique(old.quotes, next.quotes, (q) => cleanPath(q.url) + '\n' + String(q.text).replace(/\s+/g, ' ').toLocaleLowerCase(), MAX.quotes),
+    quotes: mergeUnique(old.quotes, next.quotes, (q) => q.id || JSON.stringify([q.url, q.text, q.before, q.after]), MAX.quotes),
     notes: mergeUnique(old.notes, next.notes, (n) => n.id, MAX.notes),
     favorites: mergeUnique(old.favorites, next.favorites, (f) => cleanPath(f.path || f.url), MAX.favorites),
     tags: { ...next.tags, ...old.tags }, reading: { ...next.reading, ...old.reading },
@@ -197,6 +197,12 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
   let reading = objectMap(parse(KEYS.reading, {}));
   let revisit = objectMap(parse(KEYS.revisit, {}));
   let selectedItem = null, pendingImport = null;
+  let importGeneration = 0;
+  function invalidateImport() {
+    importGeneration++;
+    pendingImport = null;
+    confirmation.hidden = true;
+  }
   const h = (sel) => overlay.querySelector(sel);
   const panel = h('#gb-hl-panel'), header = h('#gb-hl-header');
   const manage = btn('⋯', 'manage');
@@ -500,7 +506,7 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
       notify('Полная резервная копия сохранена.'); return;
     }
     if (action === 'import-json') { file.click(); return; }
-    if (action === 'cancel-import') { pendingImport = null; confirmation.hidden = true; return; }
+    if (action === 'cancel-import') { invalidateImport(); return; }
     if (action === 'confirm-import') {
       if (!pendingImport) return;
       try {
@@ -563,16 +569,20 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
   tagInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); tagSave.click(); } });
   file.addEventListener('change', async () => {
     const input = file.files?.[0]; file.value = '';
+    invalidateImport();
+    const generation = importGeneration;
     if (!input) return;
     if (input.size > 4 * 1024 * 1024) { notify('Файл больше 4 МБ.', true); return; }
     try {
-      const json = JSON.parse(await input.text());
+      const contents = await input.text();
+      if (generation !== importGeneration) return;
+      const json = JSON.parse(contents);
       pendingImport = validateBackup(json);
       prompt.textContent = 'В копии ' + pendingImport.quotes.length + ' цитат, '
         + pendingImport.notes.length + ' заметок, ' + pendingImport.favorites.length
         + ' статей. Существующие записи сохранятся; дубликаты будут пропущены.';
       confirmation.hidden = false; confirm.focus({ preventScroll: true });
-    } catch (error) { pendingImport = null; confirmation.hidden = true; notify('Импорт отменён: ' + error.message, true); }
+    } catch (error) { if (generation !== importGeneration) return; invalidateImport(); notify('Импорт отменён: ' + error.message, true); }
   });
   window.addEventListener('storage', (event) => {
     if (event.key === KEYS.tags) { tags = objectMap(parse(KEYS.tags, {})); refresh(); }
@@ -581,8 +591,9 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
   });
   return Object.freeze({
     getTags, itemMatches, orderItems, decorate, renderGroups, decorateList,
-    resetMenu() { menu.hidden = true; confirmation.hidden = true; tagEditor.hidden = true; manage.setAttribute('aria-expanded', 'false'); },
+    resetMenu() { invalidateImport(); menu.hidden = true; confirmation.hidden = true; tagEditor.hidden = true; manage.setAttribute('aria-expanded', 'false'); },
     handleEscape() {
+      importGeneration++;
       if (!confirmation.hidden) { confirmation.hidden = true; pendingImport = null; jsonImport.focus({ preventScroll: true }); return true; }
       if (!tagEditor.hidden) { tagEditor.hidden = true; selectedItem = null; h('#gb-hl-list')?.focus({ preventScroll: true }); return true; }
       if (!menu.hidden) { menu.hidden = true; manage.setAttribute('aria-expanded', 'false'); manage.focus({ preventScroll: true }); return true; }
