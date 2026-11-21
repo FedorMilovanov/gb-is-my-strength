@@ -25,9 +25,21 @@ function button(action, label, text) {
   function renderItem(item, expanded) {
     const card = element('article', 'gb-hl-item');
     card.dataset.type = item.type; card.dataset.id = item.id;
-    card.append(element('div', 'gb-hl-type',
-      (item.type === 'favorite' ? 'Статья' : item.type === 'quote' ? 'Цитата' : 'Заметка') +
-      (item.savedAt ? ' · ' + savedDate(item.savedAt) : '')));
+    /* P2: помета остаётся записью типа quote, но в списке она должна читаться
+       как помета и нести свой цвет — иначе в библиотеке всё выглядит цитатой. */
+    const marker = item.type === 'quote' && item.kind === 'marker';
+    const COLORS = { amber: 'янтарный', sage: 'шалфейный', blue: 'голубой', lime: 'лаймовый', rose: 'розовый' };
+    const typeRow = element('div', 'gb-hl-type',
+      (item.type === 'favorite' ? 'Статья' : marker ? 'Помета' : item.type === 'quote' ? 'Цитата' : 'Заметка') +
+      (item.savedAt ? ' · ' + savedDate(item.savedAt) : ''));
+    if (marker && item.color) {
+      const dot = element('span', 'gb-hl-mark-dot');
+      dot.dataset.color = item.color;
+      dot.setAttribute('role', 'img');
+      dot.setAttribute('aria-label', 'Цвет пометы: ' + (COLORS[item.color] || item.color));
+      typeRow.prepend(dot);
+    }
+    card.append(typeRow);
     if (item.quoteText) {
       const related = element('div', 'gb-hl-related', 'К цитате: «' + item.quoteText + '»');
       card.append(related);

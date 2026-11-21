@@ -41,6 +41,9 @@
     return key&&!unique.some(x=>gbHighlightKey(x)===key)
       ?[item,...unique].slice(0,LIMIT_QUOTES):unique;
   }
+  const MARK_COLORS = ['amber', 'sage', 'blue', 'lime', 'rose'];
+  const MARK_COLOR_NAMES = { amber: 'янтарный', sage: 'шалфейный', blue: 'голубой', lime: 'лаймовый', rose: 'розовый' };
+
   function read(key) {
     try {
       const value = JSON.parse(localStorage.getItem(key) || '[]');
@@ -75,7 +78,16 @@
     return '';
   }
   function all() {
-    const q = quotes().map((x) => ({ id: String(x.id), type: 'quote', text: String(x.text || ''), before: String(x.before || ''), after: String(x.after || ''), title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0 }));
+    const q = quotes().map((x) => ({
+      id: String(x.id),
+      type: 'quote',
+      /* kind/color доносим до списка: иначе помета выглядит как цитата
+         и цвет в библиотеке не виден (P2). */
+      kind: x.kind === 'marker' ? 'marker' : 'quote',
+      color: MARK_COLORS.includes(String(x.color || '')) ? String(x.color) : '',
+      text: String(x.text || ''), before: String(x.before || ''), after: String(x.after || ''),
+      title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0,
+    }));
     const n = notes().map((x) => ({ id: String(x.id), type: 'note', text: String(x.text || ''), quoteText: String(x.quoteText || ''), title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0 }));
     const f = favorites().map((x) => ({ id: String(x.path || x.url || ''), type: 'favorite', text: String(x.description || ''), title: String(x.title || 'Статья'), url: localUrl(x.path || x.url), savedAt: Number(x.addedAt || x.savedAt) || 0 }));
     return q.concat(n, f).sort((a, b) => b.savedAt - a.savedAt);
@@ -122,7 +134,7 @@
   function loadPresenter() {
     if (presenter) return Promise.resolve(presenter);
     if (!presenterPromise) {
-      presenterPromise = import('/js/reader-library-presenter.js?v=cef6e2a5')
+      presenterPromise = import('/js/reader-library-presenter.js?v=3687d5e1')
         .then(async (module) => {
           presenter = module;
           const researchModule = await import('/js/reader-library-v3.js?v=e036d5a6');
@@ -139,7 +151,7 @@
   const stylesheet = document.createElement('link');
   stylesheet.id = 'gbHlRuntimeCss';
   stylesheet.rel = 'stylesheet';
-  stylesheet.href = '/css/highlights-runtime.css?v=a1a5011a';
+  stylesheet.href = '/css/highlights-runtime.css?v=b856b384';
   if (!document.getElementById(stylesheet.id)) document.head.appendChild(stylesheet);
 
   function button(action, label, text) {
@@ -157,6 +169,42 @@
     return node;
   }
   function isOpen() { return Boolean(overlay && overlay.classList.contains('is-open')); }
+  /* P5/P3: подтверждение и отмена там, где панель библиотеки закрыта.
+     Статус в панели остаётся, тост — для жестов из текста (помета, цитата,
+     заметка), где иначе пользователь не видит ни результата, ни отката. */
+  function hideToast() {
+    const el = document.getElementById('gb-hl-toast');
+    if (el) el.dataset.open = 'false';
+  }
+  function toast(message, action) {
+    if (!document.body) return;
+    let el = document.getElementById('gb-hl-toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'gb-hl-toast';
+      el.dataset.open = 'false';
+      el.setAttribute('role', 'status');
+      el.setAttribute('aria-live', 'polite');
+      document.body.appendChild(el);
+    }
+    el.replaceChildren(element('span', 'gb-hl-toast-text', message));
+    if (action && action.label && typeof action.run === 'function') {
+      const b = element('button', 'gb-hl-toast-action', action.label);
+      b.type = 'button';
+      b.addEventListener('click', () => { hideToast(); action.run(); });
+      el.appendChild(b);
+    }
+    el.dataset.open = 'true';
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(hideToast, 6000);
+  }
+  function undoQuotes(previous, message) {
+    return () => {
+      if (!write(QUOTES_KEY, previous)) { toast('Не удалось отменить запись.', null); return; }
+      paintMarks(); sync(); toast(message, null);
+    };
+  }
+
   function statusMessage(message, error) {
     if (!status) return;
     status.replaceChildren(element('span', '', message));
@@ -425,6 +473,7 @@
       return false;
     }
     sync(); statusMessage('Цитата сохранена вместе с источником.');
+    toast('Цитата сохранена', { label: 'Вернуть', run: undoQuotes(old, 'Цитата убрана') });
     return true;
   }
   function bindSelectionButton(id, label, icon, handler, popup) {
@@ -442,8 +491,6 @@
      не мутируется, поэтому аннотации не ломают якоря, озвучку и поиск.
      Если браузер не поддерживает ::highlight() — помета всё равно сохраняется
      и видна в библиотеке, просто не подсвечивается в тексте. */
-  const MARK_COLORS = ['amber', 'sage', 'blue', 'lime', 'rose'];
-
   function textIndex(scope) {
     const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT, {
       acceptNode: (n) => {
@@ -534,9 +581,11 @@
     }
     const result = paintMarks();
     sync();
-    statusMessage(result.supported
-      ? 'Помета сохранена и подсвечена.'
-      : 'Помета сохранена. Подсветка в тексте недоступна в этом браузере.');
+    const message = result.supported
+      ? 'Помета сохранена и подсвечена'
+      : 'Помета сохранена. Подсветка недоступна в этом браузере';
+    statusMessage(result.supported ? 'Помета сохранена и подсвечена.' : 'Помета сохранена. Подсветка в тексте недоступна в этом браузере.');
+    toast(message, { label: 'Вернуть', run: undoQuotes(old, 'Помета убрана') });
     return true;
   }
 
