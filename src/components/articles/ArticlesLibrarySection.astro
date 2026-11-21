@@ -10,6 +10,7 @@
  */
 import searchManifest from '../../../data/search-manifest.json';
 import pageOwnership from '../../../migration/page-ownership.json';
+import { catalogItemId } from './articlesCatalogNavigation';
 
 interface PublicationRecord {
   status?: string;
@@ -149,7 +150,7 @@ const plural = (count: number, one: string, few: string, many: string) => {
         <ul class="h-article-list h-article-list--grid">
           {topic.items.map((item) => (
             <li class="h-article-card">
-              <a href={item.url} class="articles-entry" data-catalog-route={item.url}>
+              <a id={catalogItemId(item.url)} href={item.url} class="articles-entry" data-catalog-route={item.url}>
                 <!-- Text-first index: original covers stay in manifest/articles, not an OG-download gallery. -->
                 <div class="h-article-body">
                   <h4 class="h-article-title">{item.title || item.id || item.url}</h4>
@@ -174,7 +175,7 @@ const plural = (count: number, one: string, few: string, many: string) => {
       <ul class="h-article-list h-article-list--grid">
         {series.map((item) => (
           <li class="h-article-card">
-            <a href={item.url} class="articles-entry" data-catalog-series={item.url}>
+            <a id={catalogItemId(item.url)} href={item.url} class="articles-entry" data-catalog-series={item.url}>
               <div class="h-article-body">
                 <h3 class="h-article-title">{item.title || item.id || item.url}</h3>
                 <div class="h-article-meta">
@@ -192,3 +193,9 @@ const plural = (count: number, one: string, few: string, many: string) => {
   )}
 
 </section>
+
+<script>
+  import { installCatalogNavigation } from './articlesCatalogNavigation';
+  const catalog = document.querySelector<HTMLElement>('[data-catalog-source]');
+  if (catalog) installCatalogNavigation(catalog);
+</script>

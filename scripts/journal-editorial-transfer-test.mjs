@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { buildTransfer, verifyTransfer, TRANSFER_FILES, GUARD_PATH, projectHistoryGuard } from './journal-editorial-transfer.mjs';
+import { buildTransfer, verifyTransfer, TRANSFER_FILES, GUARD_PATH, projectHistoryGuard, assertCatalogReturnProjection, SHARED_CATALOG_RETURN_PATH } from './journal-editorial-transfer.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const base = 'b2ae614730b0c2e164d3b07453797074253d9698';
@@ -38,19 +38,20 @@ function fixture(t, phase = 'applied') {
   return { target, kit, manifest, manifestPath, write, save, protectedPath, excludedPath, verify: () => verifyTransfer({ manifestPath, target, phase }) };
 }
 
-test('public transfer is exactly35 files, including catalog PDF/native diagnostics but no held/shared owners', () => {
-  assert.equal(TRANSFER_FILES.length, 35);
-  assert.equal(new Set(TRANSFER_FILES).size, 35);
+test('public transfer is exactly40 files: accepted public35 plus bounded catalog navigation/SSR return;no other held/shared owners', () => {
+  assert.equal(TRANSFER_FILES.length, 40);
+  assert.equal(new Set(TRANSFER_FILES).size, 40);
   for (const name of ['scripts/lib/articles-print-pdf.py', 'scripts/articles-editorial-native-diagnostic.mjs']) assert.ok(TRANSFER_FILES.includes(name));
+  assert.deepEqual(TRANSFER_FILES.filter((name) => name.startsWith('src/components/article-pilots/_shared/')), [SHARED_CATALOG_RETURN_PATH]);
   assert.ok(TRANSFER_FILES.every((name) => !/G3History|g3History|package|^css\/|^js\/|^fonts\/|^public\/|^migration\//.test(name)));
 });
 test('base verification accepts exact baseline bytes and writes nothing', (t) => {
   const f = fixture(t, 'base'), before = fs.readFileSync(f.manifestPath);
-  assert.equal(f.verify().checked, 37); assert.equal(f.verify().writes, 0);
+  assert.equal(f.verify().checked, 42); assert.equal(f.verify().writes, 0);
   assert.deepEqual(fs.readFileSync(f.manifestPath), before);
 });
 test('applied verification accepts exact allowlisted bytes', (t) => {
-  assert.equal(fixture(t).verify().transferred, 35);
+  assert.equal(fixture(t).verify().transferred, 40);
 });
 test('selected-file drift fails closed', (t) => {
   const f = fixture(t); f.write(TRANSFER_FILES[0], 'wrong\n');
@@ -204,7 +205,7 @@ try {
 test('pinned Git-object export contains only the allowlist and refuses overwrite', { skip: exportSkip }, (t) => {
   const out = path.join(temporary(t), 'export');
   const result = buildTransfer({ repo: root, base, source: head, out });
-  assert.equal(result.files, 35); assert.ok(result.preserved > 1000);
+  assert.equal(result.files, 40); assert.ok(result.preserved > 1000);
   const patch = fs.readFileSync(path.join(out, 'public-editorial.patch'), 'utf8');
   const names = [...patch.matchAll(/^diff --git a\/(\S+) b\/\1$/gm)].map((match) => match[1]);
   assert.deepEqual(names.sort(), [...TRANSFER_FILES].sort());
@@ -218,4 +219,13 @@ test('pinned Git-object export contains only the allowlist and refuses overwrite
   assert.ok(manifest.excludedChanges.includes('data/scripture-search-index.json'));
   assert.throws(() => buildTransfer({ repo: root, base, source: head, out }), /overwrite an existing/);
   assert.throws(() => buildTransfer({ repo: root, base, source: head, out: 'src/not-an-artifact' }), /Output must be inside ignored/);
+});
+
+const sharedBase = execFileSync('git', ['show', `${base}:${SHARED_CATALOG_RETURN_PATH}`], {cwd:root,encoding:'utf8'});
+const sharedProposed = fs.readFileSync(path.join(root, SHARED_CATALOG_RETURN_PATH), 'utf8');
+test('shared return projection admits exactly two SSR lines, no runtime/asset changes',()=>{
+  assert.equal(assertCatalogReturnProjection(sharedBase,sharedProposed).path,SHARED_CATALOG_RETURN_PATH);
+  for(const bad of [sharedProposed.replace('e7d193e0','bad-version'),sharedProposed.replace('<ReaderActionsRuntime />','<div />'),sharedProposed.replace('<ArticlesCatalogReturn />','<ArticlesCatalogReturn /><script>bad()</script>')]){
+    assert.throws(()=>assertCatalogReturnProjection(sharedBase,bad),/ONLY the conditional SSR/);
+  }
 });

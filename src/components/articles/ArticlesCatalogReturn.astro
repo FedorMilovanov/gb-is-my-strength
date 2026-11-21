@@ -1,0 +1,13 @@
+---
+/** Native SSR alternative to Back, not a claim of noJS history/focus restoration. */
+import searchManifest from '../../../data/search-manifest.json';
+import pageOwnership from '../../../migration/page-ownership.json';
+import { catalogReturnHref, catalogReturnItem } from './articlesCatalogNavigation';
+
+const item = catalogReturnItem(Astro.url.pathname, searchManifest.items, pageOwnership.routes);
+---
+{item && (
+  <nav class="breadcrumb" aria-label="Возврат в каталог статей" data-pagefind-ignore>
+    <a class="breadcrumb__link" href={catalogReturnHref(item.url)} data-catalog-return>К этой статье в каталоге</a>
+  </nav>
+)}
