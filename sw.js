@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v215-bughunt-anchoring-20261120';
+const CACHE_VERSION = 'gb-v216-base-merge-20261120';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
