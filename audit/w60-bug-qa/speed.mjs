@@ -4,7 +4,7 @@ const {chromium}=await import(process.env.W58_PLAYWRIGHT||'playwright');
 const port=Number(process.env.W58_PORT||19083),origin=`http://127.0.0.1:${port}`;
 const server=spawn('python3',['-m','http.server',String(port),'--bind','127.0.0.1','--directory',process.env.W58_DIST||'/tmp/w60-bug-e567400/dist'],{stdio:'ignore'});
 const browser=await chromium.launch({executablePath:process.env.W58_CHROMIUM_PATH,args:['--no-sandbox','--disable-dev-shm-usage']});
-const out='reports/w60-e567400';await mkdir(out,{recursive:true});const report={sha:'e567400e7381be3786907396e1ecd6e69a4547c2',browser:browser.version(),scenes:[]};
+const out=process.env.W58_OUT||'reports/w60-e567400';await mkdir(out,{recursive:true});const report={sha:process.env.W58_SHA||'e567400e7381be3786907396e1ecd6e69a4547c2',browser:browser.version(),scenes:[]};
 try{
  for(const width of [320,390]){
   const c=await browser.newContext({viewport:{width,height:width===320?700:844},hasTouch:true,isMobile:true,reducedMotion:'reduce',serviceWorkers:'block'});
