@@ -1790,6 +1790,7 @@
     // syncs aria-expanded on ALL triggers at once (only one is visible at a
     // given viewport width, but keeping both in sync is free and correct).
     var settingsBtns = qsa('[data-gill-settings-open]');
+    var settingsOpener = null;
     var extraOverlays = [learningOverlay, settingsOverlay].filter(function(el) { return !!el; });
 
     extraOverlays.forEach(function(overlay) {
@@ -1826,7 +1827,8 @@
         addCleanListener(btn, 'click', function(e) {
           e.preventDefault();
           closeGillSheet(settingsOverlay, false, 'switch');
-          openGillSheet(learningOverlay, learningBtns, e.currentTarget);
+          var returnTarget = settingsOverlay && settingsOverlay.contains(btn) ? settingsOpener : btn;
+          openGillSheet(learningOverlay, learningBtns, returnTarget);
         });
       });
     }
@@ -1835,7 +1837,8 @@
         addCleanListener(btn, 'click', function(e) {
           e.preventDefault();
           closeGillSheet(learningOverlay, false, 'switch');
-          openGillSheet(settingsOverlay, settingsBtns, e.currentTarget);
+          settingsOpener = e.currentTarget;
+          openGillSheet(settingsOverlay, settingsBtns, settingsOpener);
         });
       });
     }

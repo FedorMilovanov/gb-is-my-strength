@@ -222,8 +222,9 @@
   #partTocOverlay .gbr-marginalia-term { border-bottom:1px solid rgba(121,92,67,.11); }
   #partTocOverlay .gbr-marginalia-term:last-child { border-bottom:0; }
   #partTocOverlay .gbr-marginalia-term summary { min-height:44px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; font:500 13px/1.45 system-ui,sans-serif; list-style:none; }
-  #partTocOverlay .gbr-marginalia-term summary::after { content:'⌄'; color:#987956; font-size:17px; }
-  #partTocOverlay .gbr-marginalia-term[open] summary::after { transform:rotate(180deg); }
+  #partTocOverlay .gbr-marginalia-term summary::-webkit-details-marker { display:none; }
+  #partTocOverlay .gbr-marginalia-term summary::after { content:''; flex:0 0 6px; width:6px; height:6px; box-sizing:border-box; margin-inline:10px; border:solid currentColor; border-width:0 1px 1px 0; color:#987956; transform:rotate(45deg); }
+  #partTocOverlay .gbr-marginalia-term[open] summary::after { transform:rotate(225deg); }
   #partTocOverlay .gbr-marginalia-term-body { padding:0 0 14px; }
   #partTocOverlay .gbr-marginalia-term-body p { margin:7px 0 12px; font:400 13px/1.6 Georgia,serif; }
   #partTocOverlay .gbr-marginalia-category { font:600 10px/1.4 system-ui,sans-serif; color:#987956; }

@@ -232,3 +232,23 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
   });
 })();
 </script>
+
+<style is:global>
+  @media (max-width:84.999em) {
+    [data-gill-v16] #partTocOverlay .toc-sheet__handle {
+      flex:0 0 28px;
+      height:28px !important;
+      margin:0 auto !important;
+      background:transparent !important;
+    }
+    [data-gill-v16] #partTocOverlay .toc-sheet__handle::before {
+      content:'';
+      display:block;
+      width:40px;
+      height:4px;
+      margin:auto;
+      border-radius:4px;
+      background:var(--gill-mobile-bar-gold, #a78252);
+    }
+  }
+</style>

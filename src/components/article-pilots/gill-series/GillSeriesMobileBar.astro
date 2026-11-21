@@ -174,7 +174,8 @@ const page = config.pages[pageId];
     let ticking = false;
 
     function hasOpenGillSheet() {
-      return Boolean(document.querySelector('.toc-overlay.is-open'));
+      return document.documentElement.hasAttribute('data-scroll-locked') ||
+        Boolean(document.querySelector('.toc-overlay.is-open, #gb-hl-backdrop.is-open'));
     }
     function speedRailOpen() {
       return topBar!.classList.contains('speed-open');
@@ -183,13 +184,16 @@ const page = config.pages[pageId];
       return !hasOpenGillSheet() && !speedRailOpen() && !ttsActive && !topBar!.contains(document.activeElement);
     }
     function apply() {
-      world!.classList.toggle('gbs2-tbhidden', hidden && canAutoHide());
+      if (!hasOpenGillSheet()) world.classList.toggle('gbs2-tbhidden', hidden && canAutoHide());
     }
 
     function onScroll() {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(() => {
+        ticking = false;
+        // Locking the body temporarily resets scrollY. Keep the backdrop still.
+        if (hasOpenGillSheet()) return;
         const y = window.scrollY || 0;
         // v2.8: top bar is transparent/frameless at the very top and gains its
         // frosted background + hairline only once the page is scrolled.
@@ -226,9 +230,6 @@ const page = config.pages[pageId];
       new MutationObserver(syncTts).observe(ember, { attributes: true, attributeFilter: ['data-state'] });
     }
 
-    // A sheet or the speed rail opening must re-show the bar immediately,
-    // even mid-scroll-down — not just on the next scroll tick.
-    document.addEventListener('gb:gill-sheet-open', () => { hidden = false; apply(); });
   }
 
   function boot() {
@@ -465,9 +466,9 @@ const page = config.pages[pageId];
 }
 @media (max-width:84.999em) {
   [data-gill-v16] .mobile-top-bar .reader-mobile-play-group.mobile-playwrap {flex-basis:44px;width:44px;min-width:44px}
-  [data-gill-v16] .mobile-top-bar .reader-mobile-play-group .reader-mobile-speed-badge {position:absolute;left:12px;right:auto;top:0;margin:0}
-  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-badge::before {left:auto;right:0;width:12px}
-  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-chip {left:12px;bottom:4px;height:14px;min-width:20px;box-shadow:none}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play-group .reader-mobile-speed-badge {position:absolute;inset:auto 0 -5px auto;margin:0;width:26px;min-width:26px;height:24px;min-height:24px;pointer-events:auto}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-badge::before {content:none}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-chip {left:auto;right:0;bottom:9px;height:14px;min-width:20px;box-shadow:none}
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-svg {width:38px;height:38px;inset:3px}
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-track {stroke-width:3;opacity:.58}
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-progress {stroke-width:3.6}
@@ -519,8 +520,6 @@ const page = config.pages[pageId];
  [data-gill-v16] .mobile-bottom-bar .reader-mobile-action-cluster :is(button,a,#gb-hl-fab)::before,
  [data-gill-v16] #partTocOverlay .gb-icon::before {content:none!important}
  #partTocOverlay .gbr-marginalia-eyebrow{display:none!important}
- #partTocOverlay .gbr-marginalia-term summary::after{content:'';width:6px;height:6px;border:solid currentColor;border-width:0 1px 1px 0;transform:rotate(45deg);margin-inline:10px}
- #partTocOverlay .gbr-marginalia-term[open] summary::after{transform:rotate(225deg)}
  html.dark #partTocOverlay .toc-sheet,html.dark #partTocOverlay .toc-sheet__head,html.dark #partTocOverlay .toc-sheet__body{background:#211f1d!important;color:#ede6d9}
 }
 @media(hover:hover) and (pointer:fine){
