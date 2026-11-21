@@ -263,6 +263,15 @@ try {
           assert.equal(await toc.locator('summary').evaluate((el) => el === document.activeElement), true);
           await page.keyboard.press('Enter');
         }
+        if (route.kind === 'dossier') {
+          // Native return exists only on mobile. Generic TOC anchor grid CSS
+          // must never override its hide/show rule in the desktop sticky rail.
+          const returnLink = toc.locator('.je-contents-return');
+          assert.equal(await returnLink.count(), 1, 'one native return within the existing TOC');
+          assert.equal(await returnLink.evaluate((el) => getComputedStyle(el).display),
+            width < 1024 ? 'inline-flex' : 'none', 'responsive TOC return visibility must not become the generic link grid');
+          if (width < 1024) assert.equal(await returnLink.isVisible(), true, 'mobile native return must be accessible');
+        }
         const id = route.kind === 'dossier' ? 'finance' : 'g3-year-2018';
         await toc.locator(`a[href="#${id}"]`).click();
         await settle(page);
