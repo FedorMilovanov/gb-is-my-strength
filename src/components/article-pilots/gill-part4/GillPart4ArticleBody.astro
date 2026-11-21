@@ -225,3 +225,14 @@ import GillSeriesShelf from '../gill-series/GillSeriesShelf.astro';
 <li><span class="rl-author"><a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/ijst.12668" target="_blank" rel="noopener">Garrett M. Walden, 2024</a></span> — пересмотр учения о вечном оправдании.</li>
 </ul></div></section>
 </article>
+
+<!-- The original/translation switch belongs to a mobile reading card.
+     Preserve the accepted desktop layout, but leave a genuine right inset for
+     its long action label on narrow touch screens. -->
+<style>
+  @media (max-width: 767px) {
+    .manuscript-quote--bilingual .mq-translation-toggle {
+      padding-inline-end: .75rem;
+    }
+  }
+</style>
