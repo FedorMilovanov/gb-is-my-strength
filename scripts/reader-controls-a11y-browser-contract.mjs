@@ -34,7 +34,7 @@ const ROUTES = [
     mobileSurfaces: [
       { id: 'part-toc', trigger: '#mobPartTocBtn', target: '#partTocOverlay', popup: 'dialog' },
       { id: 'settings', trigger: '#mobSettingsBtn', target: '#gillSettingsOverlay', popup: 'dialog' },
-      { id: 'menu', trigger: '.mobile-top-bar [data-reader-mobile-menu-target="mobPartTocBtn"]', target: '#partTocOverlay', popup: 'dialog' },
+      { id: 'research', trigger: '.mobile-top-bar [data-gill-marginalia-open]', target: '#partTocOverlay', popup: 'dialog' },
     ],
     desktopSurfaces: [
       { id: 'settings', trigger: '[data-gill-settings-open]', target: '#gillSettingsOverlay', popup: 'dialog' },
@@ -134,6 +134,90 @@ async function slotSnapshot(page, selectors) {
   }, selectors);
 }
 
+// Browser geometry contract for the owner-approved Gill #75 side-swap.
+// It catches optical regressions that static selectors and DOM-only QA miss.
+async function gillPlayOptics(page) {
+  return page.evaluate(() => {
+    const top = document.querySelector('.mobile-top-bar[data-gill-mobile-bar]');
+    if (!top) return null;
+    const el = (selector) => top.querySelector(selector);
+    const rect = (selector) => {
+      const r = el(selector)?.getBoundingClientRect();
+      return r ? { x: r.x, y: r.y, width: r.width, height: r.height, right: r.right, bottom: r.bottom } : null;
+    };
+    const play = el('.reader-mobile-play');
+    const rail = el('.reader-mobile-speedrail');
+    const speedRects = Array.from(rail?.querySelectorAll('[data-speed]') || []).map((e) => e.getBoundingClientRect());
+    return {
+      anchors: ['#mobBackBtn', '.reader-mobile-home', '[data-gill-marginalia-open]',
+        '.reader-mobile-play', '.reader-mobile-speed-badge', '.mobile-top-save'].map(rect),
+      playBorder: getComputedStyle(play).borderWidth,
+      playShadow: getComputedStyle(play).boxShadow,
+      ringOpacity: Number(getComputedStyle(el('.reader-mobile-play .gb-ember__ring-svg')).opacity),
+      ring: rect('.reader-mobile-play .gb-ember__ring-svg'),
+      compound: rect('.reader-mobile-play-group'),
+      rateBadge: rect('.reader-mobile-speed-badge'),
+      rateChip: rect('.reader-mobile-speed-chip'),
+      settingsButton: rect('#mobSettingsBtn'),
+      ringTrackWidth: getComputedStyle(el('.reader-mobile-play .gb-ember__ring-track')).strokeWidth,
+      ringProgressWidth: getComputedStyle(el('.reader-mobile-play .gb-ember__ring-progress')).strokeWidth,
+      ringProgressTransition: getComputedStyle(el('.reader-mobile-play .gb-ember__ring-progress')).transitionDuration,
+      speedPseudoPaint: (() => {
+        const ps=getComputedStyle(el('.reader-mobile-speed-badge'),'::before');
+        return {border:ps.borderTopWidth,background:ps.backgroundColor,shadow:ps.boxShadow};
+      })(),
+      settingsSvg: rect('#mobSettingsBtn svg'),
+      speedGapToSettings: (() => {
+        const chip=el('.reader-mobile-speed-chip')?.getBoundingClientRect();
+        const icon=el('#mobSettingsBtn svg')?.getBoundingClientRect();
+        return chip && icon ? icon.x-chip.right : -1;
+      })(),
+      chipPointerHitsBadge: (() => {
+        const chip=el('.reader-mobile-speed-chip');
+        const badge=el('.reader-mobile-speed-badge');
+        if (!chip || !badge) return false;
+        const r=chip.getBoundingClientRect();
+        const hit=document.elementFromPoint(r.left+3,r.top+r.height/2);
+        return hit===badge || badge.contains(hit);
+      })(),
+      playTriangleSafe: (() => {
+        const play=el('.reader-mobile-play');
+        if (!play) return false;
+        const r=play.getBoundingClientRect();
+        const hit=document.elementFromPoint(r.left+29,r.top+20);
+        return hit===play || play.contains(hit);
+      })(),
+      rateCenterClickable: (() => {
+        const badge=el('.reader-mobile-speed-badge');
+        if (!badge) return false;
+        const r=badge.getBoundingClientRect();
+        const hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
+        return hit===badge || badge.contains(hit);
+      })(),
+      slot: rect('.mobile-top-slot'),
+      backActive: ['#mobBackBtn','.reader-mobile-home'].every(s=>{
+        const n=el(s);const r=n?.getBoundingClientRect();
+        return !!r && !n.inert && getComputedStyle(n).opacity==='1' &&
+          getComputedStyle(n).pointerEvents!=='none' &&
+          (document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)===n ||
+            n.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)));
+      }),
+      selectedGold: (() => {
+        const n=el('.reader-mobile-speed-rate[aria-checked="true"]');
+        return n ? { border:getComputedStyle(n,'::before').borderColor,
+          background:getComputedStyle(n,'::before').backgroundColor,
+          underline:getComputedStyle(n,'::after').content } : null;
+      })(),
+      rail: rect('.reader-mobile-speedrail'),
+      top: top.getBoundingClientRect().toJSON(),
+      speedCount: speedRects.length,
+      speedMinTap: speedRects.length ? Math.min(...speedRects.map((r) => r.width), ...speedRects.map((r) => r.height)) : 0,
+      horizontal: speedRects.length > 1 && speedRects.every((r,i) =>
+        !i || (r.left > speedRects[i-1].left && Math.abs(r.top-speedRects[0].top) < 2)),
+    };
+  });
+}
+
 async function auditSlot(page, routeId, selectors, checks) {
   const prefix = `${routeId}-slot`;
   await page.waitForFunction(() => Number(window.GBReaderControlsA11y?.version) >= 2, null, { timeout: 10000 });
@@ -141,6 +225,7 @@ async function auditSlot(page, routeId, selectors, checks) {
   await page.waitForTimeout(80);
 
   const closed = await slotSnapshot(page, selectors);
+  const gillBefore = routeId === 'gill' ? await gillPlayOptics(page) : null;
   record(checks, `${prefix}-01`, 'declared slot owners exist', closed.rootExists && closed.railExists && closed.badgeExists && (selectors.alternate ? closed.alternateExists : !closed.alternateExists), closed);
   record(checks, `${prefix}-02`, 'closed rail is aria-hidden', closed.railAriaHidden === 'true', closed);
   record(checks, `${prefix}-03`, 'closed rail is inert', closed.railInert, closed);
@@ -153,6 +238,66 @@ async function auditSlot(page, routeId, selectors, checks) {
   await page.locator(selectors.badge).click();
   await page.waitForTimeout(120);
   const opened = await slotSnapshot(page, selectors);
+  if (gillBefore) {
+    const after = await gillPlayOptics(page);
+    const fixed = after && gillBefore.anchors.every((anchor, i) =>
+      anchor && after.anchors[i] &&
+      Math.abs(anchor.x - after.anchors[i].x) < .5 &&
+      Math.abs(anchor.y - after.anchors[i].y) < .5);
+    record(checks, `${prefix}-25`, 'Play, bookmark, Back, Home and Marginalia do not shift when speeds expand',
+      fixed, { before: gillBefore.anchors, after: after?.anchors });
+    record(checks, `${prefix}-33`, 'overlapping rate hitbox never steals a Play triangle tap',
+      gillBefore.playTriangleSafe === true && gillBefore.rateCenterClickable === true &&
+      gillBefore.chipPointerHitsBadge === true,
+      { playTriangleSafe: gillBefore.playTriangleSafe,
+        rateCenter: gillBefore.rateCenterClickable,
+        paintedChip: gillBefore.chipPointerHitsBadge });
+    record(checks, `${prefix}-31`, 'Gill Play + speed reserve only a 68px compound, not the old blank 88px gap',
+      gillBefore.compound?.width >= 67.8 && gillBefore.compound?.width <= 68.2 &&
+      gillBefore.rateBadge?.width >= 43.5 &&
+      gillBefore.rateBadge?.x - gillBefore.anchors[3].x >= 23.5 &&
+      gillBefore.rateBadge?.x - gillBefore.anchors[3].x <= 24.5 &&
+      gillBefore.settingsButton?.x >= gillBefore.compound.right - 1 &&
+      gillBefore.settingsButton?.x - gillBefore.compound.right <= 9 &&
+      gillBefore.rateChip?.right <= gillBefore.compound.right,
+      { compound: gillBefore.compound, badge: gillBefore.rateBadge,
+        chip: gillBefore.rateChip, settings: gillBefore.settingsButton });
+    record(checks, `${prefix}-32`, 'one fine, softly animated progress ring inside the canonical 44px Play',
+      Number.parseFloat(gillBefore.ringTrackWidth) >= 3.2 && Number.parseFloat(gillBefore.ringTrackWidth) <= 3.6 &&
+      Number.parseFloat(gillBefore.ringProgressWidth) >= 3.7 && Number.parseFloat(gillBefore.ringProgressWidth) <= 4.1 &&
+      Number.parseFloat(gillBefore.ringProgressTransition) >= 0.5,
+      { trackStroke: gillBefore.ringTrackWidth,
+        progressStroke: gillBefore.ringProgressWidth, transition: gillBefore.ringProgressTransition });
+    record(checks, `${prefix}-34`, 'rate hit-area is invisible; no phantom panel or background beside Play',
+      gillBefore.speedPseudoPaint?.border === '0px' &&
+      ['transparent','rgba(0, 0, 0, 0)'].includes(gillBefore.speedPseudoPaint?.background) &&
+      gillBefore.speedPseudoPaint?.shadow === 'none',
+      gillBefore.speedPseudoPaint);
+    record(checks, `${prefix}-35`, 'painted rate on lower ring arc and balanced Settings glyph gap',
+      gillBefore.rateChip?.x - gillBefore.anchors[3]?.x >= 27 &&
+      gillBefore.rateChip?.x - gillBefore.anchors[3]?.x <= 31 &&
+      gillBefore.rateChip?.bottom - gillBefore.ring?.bottom <= 1.5 &&
+      gillBefore.speedGapToSettings >= 10 && gillBefore.speedGapToSettings <= 32,
+      {chip:gillBefore.rateChip,ring:gillBefore.ring,paintedGap:gillBefore.speedGapToSettings});
+    record(checks, `${prefix}-30`, 'Visible speed chip overlap clicks its badge, never triggers Play',
+      gillBefore?.chipPointerHitsBadge === true,{ chipOwner:gillBefore?.chipPointerHitsBadge });
+    record(checks, `${prefix}-26`, 'Play uses exactly one SVG progress ring without duplicate CSS border or shadow',
+      gillBefore.playBorder === '0px' && gillBefore.playShadow === 'none' && gillBefore.ringOpacity > .95 &&
+        gillBefore.ring?.width === 40 && gillBefore.anchors[3]?.width === 44,
+      { border: gillBefore.playBorder, shadow: gillBefore.playShadow, ringOpacity: gillBefore.ringOpacity });
+    record(checks, `${prefix}-28`, 'Back and Home remain visible and operable while Gill speeds replace research slot',
+      after?.backActive === true,{ after:after?.backActive, rail:after?.rail,slot:after?.slot });
+    record(checks, `${prefix}-29`, 'Gill selected rate has its own gold capsule without a red underline',
+      after?.selectedGold?.underline === 'none' && after?.selectedGold?.border!=='rgba(0, 0, 0, 0)',
+      after?.selectedGold);
+    record(checks, `${prefix}-27`, 'all six speeds form one scrollable 44px row inside the top bar',
+      after && after.speedCount === 6 && after.horizontal && after.speedMinTap >= 43.5 &&
+        after.rail.x >= 6 && after.rail.y >= 0 && after.rail.bottom <= after.top.bottom + 4 &&
+        Math.abs(after.rail.x-after.slot.x) < .5 &&
+        Math.abs(after.rail.width-after.slot.width) < .5,
+      { rail: after?.rail, top: after?.top, speedCount: after?.speedCount,
+        speedMinTap: after?.speedMinTap, horizontal: after?.horizontal });
+  }
   record(checks, `${prefix}-09`, 'badge opens rail', opened.railVisible, opened);
   record(checks, `${prefix}-10`, 'open rail is exposed to AT', opened.railAriaHidden === 'false' && !opened.railInert, opened);
   record(checks, `${prefix}-11`, 'open rail has one roving Tab stop', opened.tabStops === 1, opened);
@@ -296,6 +441,39 @@ async function auditMobile(browser, origin, routeInfo) {
     record(checks, `${routeInfo.id}-mobile-05`, 'exactly one Play is visible', base.visiblePlay.length === 1, base.visiblePlay);
     record(checks, `${routeInfo.id}-mobile-06`, 'mobile Play makes no false popup claim', base.visiblePlay.every((item) => item.haspopup !== 'true'), base.visiblePlay);
 
+    // One canonical Settings trigger: Gill moves it beside Play, freeing
+    // one full 44px bottom-bar slot for the real current chapter label.
+    // Hermenevtika intentionally keeps its established bottom placement.
+    if (routeInfo.id === 'gill') {
+      const placement = await page.evaluate(() => {
+        const top = document.querySelector('.mobile-top-bar[data-gill-mobile-bar]');
+        const bottom = document.querySelector('.mobile-bottom-bar[data-gill-mobile-bar]');
+        const settings = top?.querySelector('#mobSettingsBtn');
+        const play = top?.querySelector('.reader-mobile-play-group')?.getBoundingClientRect();
+        const gear = settings?.getBoundingClientRect();
+        const save = top?.querySelector('.mobile-top-save')?.getBoundingClientRect();
+        const section = bottom?.querySelector('#mobPartTocBtn')?.getBoundingClientRect();
+        const actions = bottom?.querySelector('.reader-mobile-action-cluster');
+        return {
+          count: document.querySelectorAll('#mobSettingsBtn').length,
+          top: Boolean(settings), bottom: Boolean(bottom?.querySelector('#mobSettingsBtn')),
+          controls: settings?.getAttribute('aria-controls'), label: settings?.getAttribute('aria-label'),
+          target: Boolean(document.getElementById('gillSettingsOverlay')),
+          order: Boolean(play && gear && save && gear.x >= play.right - 1 && gear.right <= save.x + 1),
+          target44: Boolean(gear && gear.width >= 44 && gear.height >= 44),
+          chapterWidth: section?.width || 0,
+          dockActions: actions?.querySelectorAll('.reader-mobile-action').length || 0,
+          library: Boolean(actions?.querySelector('#gb-hl-fab')),
+          overflow: document.documentElement.scrollWidth - innerWidth,
+        };
+      });
+      record(checks, 'gill-mobile-10', 'exactly one settings trigger beside Play, before bookmark',
+        placement.count === 1 && placement.top && !placement.bottom && placement.order && placement.target44, placement);
+      record(checks, 'gill-mobile-11', 'settings shares existing reader dialog and accessible name',
+        placement.controls === 'gillSettingsOverlay' && placement.target && Boolean(placement.label), placement);
+      record(checks, 'gill-mobile-12', 'bottom chapter reclaims 44px without displacing library/PDF/share',
+        placement.chapterWidth >= 185 && placement.dockActions === 2 && placement.library && placement.overflow === 0, placement);
+    }
     if (routeInfo.slot) await auditSlot(page, routeInfo.id, routeInfo.slot, checks);
     for (const surface of routeInfo.mobileSurfaces || []) await auditSurface(page, routeInfo.id, 'mobile', surface, checks);
 

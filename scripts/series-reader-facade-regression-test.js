@@ -64,6 +64,41 @@ assert.doesNotMatch(heartProgress[0], /HEART_SERIES_ITEMS\[idx\]\.minutes/, 'hea
 
 const mobileBar = fs.readFileSync(MOBILE_BAR, 'utf8');
 const learningSheet = fs.readFileSync(LEARNING_SHEET, 'utf8');
+const mobileTrigger = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/_shared/ReaderMobileMenuTrigger.astro'), 'utf8');
+const mobilePlay = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/_shared/ReaderMobilePlayGroup.astro'), 'utf8');
+const mobileRuntime = fs.readFileSync(path.join(ROOT, 'js/floating-cluster-controller.js'), 'utf8');
+const sharedSpeedSlot = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/_shared/speedSlot.ts'), 'utf8');
+const partOverlay = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/gill-series/GillMobileMarginalia.astro'), 'utf8');
+const settingsSheet = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/gill-series/GillReaderSettingsSheet.astro'), 'utf8');
+const actionsSource = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/_shared/ReaderMobileActions.astro'), 'utf8');
+const settingsTrigger = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/_shared/ReaderMobileSettingsButton.astro'), 'utf8');
+// Reader mobile: ONE research entrance in the top capsule, Part TOC in the
+// native bottom context, Learning remains accessible only via Settings.
+assert.match(mobileBar, /<ReaderMobileMenuTrigger mode="research"/, 'Gill top must launch canonical Marginalia');
+assert.match(mobileBar, /<ReaderMobileSettingsButton engine="series" top/, 'Gill settings trigger must be adjacent to top Play');
+assert.match(mobileBar, /<ReaderMobileActions engine="series" settingsPlacement="none"/, 'Gill bottom bar must reserve space for the current chapter, not duplicate Settings');
+assert.match(actionsSource, /settingsPlacement === 'bottom' && <ReaderMobileSettingsButton engine=\{engine\}/, 'other mobile Reader engines must retain their bottom settings');
+assert.match(settingsTrigger, /id=\{isSeries\?'mobSettingsBtn':'hmSettingsBtn'\}/, 'single settings control must preserve original owner IDs');
+assert.match(settingsTrigger, /data-gill-settings-open=\{isSeries\?'':undefined\}/, 'Gill settings trigger must delegate to canonical overlay owner');
+assert.match(mobileBar, /5vw - 16px/, '320px must preserve full 44px hit areas for top controls');
+
+assert.match(mobileBar, /import ['"]@\/styles\/reader-mobile-canonical\.css['"];/, 'Gill mobile must import its own canonical layout CSS without depending on the retired speed component');
+assert.match(mobileBar, /id="mobPartTocBtn"/, 'Gill lower current section must open Part TOC');
+assert.match(mobileTrigger, /data-gill-marginalia-open=\{mode === 'research'/, 'shared trigger must expose one research entry');
+assert.match(mobileRuntime, /topResearchBtns = qsa\('\[data-gill-marginalia-open\]'\)/, 'native Part TOC owner must open top research');
+assert.match(mobileRuntime, /var MOB_SEC_INITIAL = \(function \(\)/, 'series progress must preserve the original SSR chapter caption before its first H2');
+assert.match(mobileRuntime, /hasActiveSection \? reader\.sectionTitle : \(MOB_SEC_INITIAL \|\| 'Начало части'\)/, 'before-content placeholder Введение must not overwrite the SSR title');
+assert.match(partOverlay, /gb:gill-select-part-panel/, 'research tab must be selected through the native Part TOC sheet');
+assert.match(settingsSheet, /id="mobLearningBtn"[^>]*data-gill-learning-open/, 'Learning must remain available from Settings without top-level duplication');
+// Historical #75 slot-swap: speeds REPLACE the research capsule, never descend
+// across the hero. One ReaderSpeedOptions/speedSlot owner serves both readers.
+assert.match(mobileBar, /<ReaderMobilePlayGroup engine="series" slot="top-playback"/, 'Gill keeps canonical Play, without bloom opt-in');
+assert.match(mobileBar, /<ReaderSpeedOptions id="mobileSpeedrail"[^>]*initiallyInert/, 'Gill mounts shared six-rate horizontal speed rail');
+assert.match(mobileBar, /'data-gb-speed-custom': true/, 'Gill TTS controller skips competing vertical speed bloom');
+assert.match(mobileBar, /mobile-top-bar\.speed-open \.mobile-top-slot \.reader-mobile-speedrail/, 'Gill speeds live in vacated top slot');
+assert.match(mobilePlay, /\{!bloom && <button/, 'shared Play retains selected-rate badge');
+assert.match(mobileBar, /reader-mobile-play \.gb-ember__ring-svg/, 'Gill idle circular Play ring remains visible');
+assert.match(sharedSpeedSlot, /rateTrigger\.querySelector\('\.reader-mobile-speed-chip'\) \|\| rateTrigger/, 'Hermenevtika shared speed state must remain intact');
 const seriesConfig = fs.readFileSync(SERIES_CONFIG, 'utf8');
 const baptistSeriesConfig = fs.readFileSync(BAPTIST_SERIES_CONFIG, 'utf8');
 assert.match(seriesConfig, /railBackHref:\s*string;/, 'SeriesConfig must keep railBackHref as required route authority');
@@ -133,5 +168,54 @@ assert.match(tocHeadingSource, /id="gbs2Count"/, 'series count ID is stable');
 assert.match(tocHeadingSource, /<slot\s*\/>/, 'series rail native collapse trigger must pass through unchanged');
 assert.match(seriesRailSource, /id="gbsTocToggle"/, 'series TOC collapse button remains the native controller target');
 assert.match(seriesRailSource, /aria-controls="gbsTocScroll"/, 'series TOC scroll target is preserved');
+
+/* Prevent a zero-height current chapter on short desktop windows. */
+const currentCardStyles = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/gill-series/GillSeriesImagePremium.astro'), 'utf8');
+assert.ok(currentCardStyles.includes('max-height:640px') && currentCardStyles.includes('.gbs2-rmid > .gbs2-current') && currentCardStyles.includes('flex-shrink: 0;'), 'short viewport current-card flex guard');
+
+/* Gill premium-layout contract (2026-11-19): one responsive owner. */
+const gillResponsiveOwner = fs.readFileSync(
+  path.join(ROOT, 'src/components/article-pilots/gill-series/GillSeriesResponsiveStyles.astro'), 'utf8');
+const gillPart2Header = fs.readFileSync(
+  path.join(ROOT, 'src/components/article-pilots/gill-part2/GillPart2HeaderHero.astro'), 'utf8');
+const canonicalSpeedCss = fs.readFileSync(
+  path.join(ROOT, 'src/styles/reader-mobile-canonical.css'), 'utf8');
+assert.match(gillResponsiveOwner, /margin-left:\s*max\([\s\S]*?22vw[\s\S]*?24px/,
+  'Gill content centre must preserve a 24px fixed-rail clearance');
+assert.match(gillResponsiveOwner, /orientation:\s*landscape[\s\S]*?max-height:\s*500px/,
+  'short landscape must receive its own compact reading layout');
+assert.match(gillResponsiveOwner, /@media \(min-width: 40em\) and \(max-width: 84\.999em\)/,
+  'tablet Gill TOC must stay bounded before the desktop rail breakpoint');
+assert.match(gillResponsiveOwner, /height:\s*min\(38dvh,\s*320px\)/,
+  'ordinary landscape tablet hero must not dominate the first viewport');
+assert.match(gillResponsiveOwner, /@media \(max-width: 60em\)[\s\S]*?mobile-btoc-section\s*\{\s*min-height:\s*44px;/,
+  'Gill phone and small-tablet current chapter 44px touch target is mandatory');
+assert.match(gillResponsiveOwner, /mobile-bottom-bar\s*\{\s*background:\s*rgba\(25,\s*23,\s*21,\s*\.96\)\s*!important;/,
+  'Gill warm dark palette legacy bar override stays scoped to 961–1359px');
+assert.match(gillResponsiveOwner, /@media \(min-width: 60\.0625em\) and \(max-width: 84\.999em\)/,
+  'mid-width Gill bar must have a scoped bridge between 960px and 1360px');
+assert.match(gillResponsiveOwner, /mobile-btoc-section\s*\{[\s\S]*?appearance:\s*none;[\s\S]*?min-height:\s*44px;/,
+  'mid-width Gill bar must render a native 44px section button rather than the browser default');
+assert.match(gillResponsiveOwner, /max-width:\s*220px/,
+  'landscape mobile TOC trigger must not fill the entire header');
+assert.match(gillResponsiveOwner, /height:\s*clamp\(116px,\s*34dvh,\s*144px\)/,
+  'short landscape hero must let the title into the first viewport');
+assert.match(gillResponsiveOwner, /#gb-hl-fab:not\(\.gb-hl-fab--docked\)\s*\{\s*right:\s*calc\(5vw\s*-\s*2px\);/,
+  'Gill desktop Library FAB must share the exact x-axis with five floating controls');
+assert.match(gillResponsiveOwner, /gbs-theme-corner\s*\{\s*gap:\s*8px;/,
+  'Gill desktop action centres stay evenly spaced');
+assert.match(gillResponsiveOwner, /\.gb-ember-wrap\s*\{[\s\S]*?width:\s*40px;[\s\S]*?height:\s*40px;/,
+  'Gill desktop TTS retains its SVG while receiving a regular layout slot');
+assert.match(gillResponsiveOwner, /--gb-gill-paper:\s*#141312/,
+  'Gill dark surfaces must use the warm editorial paper token');
+assert.match(gillResponsiveOwner, /reader-mobile-speed-badge::before/,
+  'secondary speed control must retain the reduced-contrast fill');
+assert.match(gillPart2Header, /<span class="gill-life-years">\(1697–1771\)<\/span>/,
+  'historical life-year range must be an unbreakable inline unit');
+assert.match(gillResponsiveOwner, /\.gill-life-years\s*\{\s*white-space:\s*nowrap;/,
+  'nowrap is allowed only on the life-year range, not the entire heading');
+assert.match(canonicalSpeedCss,
+  /min-width:\s*44px;\s*min-height:\s*44px;\s*height:\s*44px;/,
+  'canonical mobile speed options retain 44px touch targets');
 
 console.log(`✅ series-reader-facade: ${facadeImports} consumers; canonical composition directly owned; historical implementation retired; content-layer rendering uses Astro render(entry); heart progress fail-closed; mobile Back config-owned; no-quiz Learning panel relation guarded; Learning search has persistent accessible name; ${strictFragmentSummary}`);

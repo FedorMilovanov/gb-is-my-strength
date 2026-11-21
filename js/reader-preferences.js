@@ -32,11 +32,13 @@
   var MEASURES = ['narrow', 'normal', 'wide'];
   var TEXT_MODES = ['rich', 'plain'];
   var MOTIONS = ['system', 'reduced'];
+  var FONT_FAMILIES = ['lora', 'cormorant'];
   var LINE_VALUES = { compact: '1.45', normal: '1.6', relaxed: '1.85' };
   var DEFAULTS = Object.freeze({
     version: 1,
     theme: 'light',
     fontScale: 1,
+    fontFamily: 'lora',
     lineHeight: 'normal',
     measure: 'normal',
     textMode: 'rich',
@@ -85,6 +87,7 @@
       version: 1,
       theme: oneOf(source.theme, THEMES, systemTheme()),
       fontScale: normalizeFontScale(source.fontScale),
+      fontFamily: oneOf(source.fontFamily, FONT_FAMILIES, DEFAULTS.fontFamily),
       lineHeight: oneOf(source.lineHeight, LINE_HEIGHTS, DEFAULTS.lineHeight),
       measure: oneOf(source.measure, MEASURES, DEFAULTS.measure),
       textMode: oneOf(source.textMode, TEXT_MODES, DEFAULTS.textMode),
@@ -167,6 +170,7 @@
     root.setAttribute('data-reader-text-mode', state.textMode);
     root.setAttribute('data-reader-motion', state.motion);
     root.setAttribute('data-reader-measure', state.measure);
+    root.setAttribute('data-reader-font-family', state.fontFamily);
     root.classList.toggle('dark', state.theme === 'dark');
     root.style.setProperty('--gb-reader-font-scale', String(state.fontScale));
     root.style.setProperty('--gb-reader-line-height', LINE_VALUES[state.lineHeight]);
@@ -236,6 +240,7 @@
     storageKey: STORAGE_KEY,
     eventName: EVENT_NAME,
     themes: THEMES.slice(),
+    fontFamilies: FONT_FAMILIES.slice(),
     get: function () { return Object.assign({}, current); },
     set: function (patch, options) { return commit(patch, options); },
     setTheme: function (theme, options) { return commit({ theme: theme }, options); },

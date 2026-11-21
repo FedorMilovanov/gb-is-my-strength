@@ -15,6 +15,13 @@
 (function () {
   'use strict';
 
+  // The SSR series config is authoritative before the first actual heading.
+  // ReaderState may return a placeholder "Введение" in before-content phase.
+  var MOB_SEC_INITIAL = (function () {
+    var el = document.getElementById('gbs2MobSec');
+    return el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+  })();
+
   var THEME_KEY = 'theme';
   var toastTimer = null;
   /* True on devices with a real hover pointer (desktop/trackpad). Drives the
@@ -1602,6 +1609,7 @@
     var partToc = qs('#partTocOverlay');
     var mobTocBtn = qs('#mobTocBtn');
     var mobPartTocBtn = qs('#mobPartTocBtn');
+    var topResearchBtns = qsa('[data-gill-marginalia-open]');
     var backToSeries = qs('#backToSeries');
 
     [seriesToc, partToc].forEach(function(overlay) {
@@ -1684,8 +1692,20 @@
         e.stopPropagation();
         closeOverlay(seriesToc, 'switch', false);
         openOverlay(partToc, e.currentTarget);
+        partToc.dispatchEvent(new CustomEvent('gb:gill-select-part-panel', { detail:{ panel:'toc' } }));
       });
     }
+    // Top research uses the exact same modal owner as lower TOC: one sheet.
+    topResearchBtns.forEach(function (btn) {
+      if (!partToc) return;
+      addCleanListener(btn, 'click', function (e) {
+        e.preventDefault();
+        closeOverlay(seriesToc, 'switch', false);
+        openOverlay(partToc, e.currentTarget);
+        btn.setAttribute('aria-expanded','true');
+        partToc.dispatchEvent(new CustomEvent('gb:gill-select-part-panel', { detail:{ panel:'research' } }));
+      });
+    });
 
     // Hardening against a stuck-open sheet rendering with the WRONG (mobile
     // vs desktop) chrome after a viewport crossing (window resize/rotate
@@ -1760,7 +1780,7 @@
     // completely unaffected — these selectors simply don't match there.
     var learningOverlay = qs('#gillLearningOverlay');
     var settingsOverlay = qs('#gillSettingsOverlay');
-    var mobLearningBtn = qs('#mobLearningBtn');
+    var learningBtns = qsa('[data-gill-learning-open]');
     // Settings sheet can now have TWO triggers (mobile bottom-bar gear +
     // desktop rail-foot gear) — both carry [data-gill-settings-open], so we
     // bind every match instead of a single #mobSettingsBtn id. Opening/closing
@@ -1776,7 +1796,7 @@
     });
 
     function triggersFor(overlay) {
-      if (overlay === learningOverlay) return mobLearningBtn ? [mobLearningBtn] : [];
+      if (overlay === learningOverlay) return learningBtns;
       if (overlay === settingsOverlay) return settingsBtns;
       return [];
     }
@@ -1798,11 +1818,13 @@
       if (!getOverlayRuntime() && restoreFocus && triggers[0] && triggers[0].focus) { try { triggers[0].focus(); } catch(_) {} }
     }
 
-    if (mobLearningBtn && learningOverlay) {
-      addCleanListener(mobLearningBtn, 'click', function(e) {
-        e.preventDefault();
-        closeGillSheet(settingsOverlay, false, 'switch');
-        openGillSheet(learningOverlay, [mobLearningBtn], e.currentTarget);
+    if (learningBtns.length && learningOverlay) {
+      learningBtns.forEach(function(btn) {
+        addCleanListener(btn, 'click', function(e) {
+          e.preventDefault();
+          closeGillSheet(settingsOverlay, false, 'switch');
+          openGillSheet(learningOverlay, learningBtns, e.currentTarget);
+        });
       });
     }
     if (settingsBtns.length && settingsOverlay) {
@@ -2303,7 +2325,8 @@
       });
       if (badge) {
         var label = currentRate + '×';
-        badge.textContent = label;
+        var speedFace = badge.querySelector('.reader-mobile-speed-chip') || badge;
+        speedFace.textContent = label;
         badge.setAttribute('aria-label', 'Скорость озвучки ' + label);
       }
     }
@@ -2316,7 +2339,7 @@
     // The inline rail temporarily replaces the leading navigation in the
     // same 44px-high top bar; never leave faded controls keyboard-focusable.
     var leadingControls = Array.prototype.slice.call(
-      root.querySelectorAll('#mobBackBtn, #mobHomeBtn, .mobile-learning-trigger')
+      root.querySelectorAll('#mobBackBtn, #mobHomeBtn, .mobile-learning-trigger, .reader-mobile-menu-trigger[data-gill-learning-open]')
     );
     function setOpen(next) {
       clearTimeout(foldTimer);
@@ -2779,7 +2802,14 @@
       var mobDualBtn = qs('#gbs2DualProgress');
       if (mobDualBtn) mobDualBtn.setAttribute('aria-label', 'Статья ' + pct + '%, серия ' + seriesPc + '%');
       var mobSec = qs('#gbs2MobSec');
-      if (mobSec) mobSec.textContent = reader.sectionTitle || (phase === 'after-content' ? 'Завершено' : 'Введение');
+      if (mobSec) {
+        // "Введение" is a ReaderState placeholder, not the title of Gill II,
+        // Baptist series chapters or any other series page before its H2.
+        var hasActiveSection = Number(reader.sectionIndex) >= 0 && !!reader.sectionTitle;
+        var label = hasActiveSection ? reader.sectionTitle : (MOB_SEC_INITIAL || 'Начало части');
+        if (phase === 'after-content') label = 'Завершено';
+        mobSec.textContent = label;
+      }
 
       // Cover media now uses intrinsic image geometry across reader series.
       // Only the decorative numeral remains kinetic; moving the image could

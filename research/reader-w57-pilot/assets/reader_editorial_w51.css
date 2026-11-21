@@ -1,0 +1,436 @@
+/* W51: cohesive full-height research pane and editorial chapter index.
+   Pilot-local only; all underlying Product behaviors are retained. */
+@media (min-width:1121px){
+ body.np-u-preview.np-u-w40-space #npUniversalDemo.np-u-argon #npUResearch{
+  position:fixed!important;
+  top:0!important;bottom:0!important;
+  height:100dvh!important;min-height:100dvh!important;
+  border-top:0!important;border-bottom:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+ }
+ body.np-u-preview.np-u-w40-space #npUniversalDemo.np-u-argon #npUResearch .np-u-right-head{
+  box-sizing:border-box!important;
+  flex:0 0 74px!important;min-height:74px!important;height:74px!important;
+  padding-top:26px!important;padding-bottom:8px!important;
+ }
+ body.np-u-preview.np-u-w40-space #npUniversalDemo.np-u-argon #npUResearch .np-u-research-follow{
+  flex:0 0 auto!important;
+ }
+}
+/* W53 / ARGON classic: chapters are a quiet typographic index,
+   not four glossy gold buttons. Applies to EVERY chapter of the series. */
+@media(min-width:1121px){
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail
+ .gbs2-world>.gbs-rail.reader-integrated-rail--compact>.np-u-native-roman-compact,
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail
+ #npUOutline .np-u-rail-spine>.np-u-native-roman-compact{
+  box-sizing:border-box!important;
+  display:flex!important;flex-direction:column!important;
+  align-items:center!important;justify-content:flex-start!important;
+  width:48px!important;min-width:48px!important;max-width:48px!important;
+  gap:3px!important;padding:5px 0!important;
+  overflow-x:visible!important;overflow-y:auto!important;
+  scrollbar-width:none!important;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail
+ .gbs2-world>.gbs-rail.reader-integrated-rail--compact>.np-u-native-roman-compact{
+  top:142px!important;left:10px!important;right:auto!important;
+  height:auto!important;max-height:calc(100dvh - 185px)!important;
+  position:fixed!important;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail
+ #npUOutline .np-u-rail-spine>.np-u-native-roman-compact{
+  position:relative!important;left:auto!important;top:auto!important;
+  right:auto!important;height:auto!important;max-height:calc(100dvh - 210px)!important;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail
+ :is(.gbs2-world>.gbs-rail.reader-integrated-rail--compact, #npUOutline .np-u-rail-spine)
+ .np-u-native-roman-compact::-webkit-scrollbar{display:none!important}
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail
+ :is(.gbs2-world>.gbs-rail.reader-integrated-rail--compact, #npUOutline .np-u-rail-spine)
+ .np-u-native-roman-compact>.np-u-roman-shortcut{
+  position:relative!important;box-sizing:border-box!important;
+  display:grid!important;place-items:center!important;
+  flex:0 0 42px!important;
+  width:44px!important;min-width:44px!important;max-width:44px!important;
+  height:42px!important;min-height:42px!important;max-height:42px!important;
+  margin:0!important;padding:0!important;
+  border:0!important;border-radius:3px!important;
+  background:transparent!important;
+  box-shadow:none!important;text-shadow:none!important;
+  color:#baa581!important;
+  font:500 20px/1 "Cormorant Garamond","Lora",Georgia,serif!important;
+  font-style:normal!important;letter-spacing:0!important;
+  text-align:center!important;text-decoration:none!important;
+  transition:color .15s ease,background-color .15s ease!important;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail
+ :is(.gbs2-world>.gbs-rail.reader-integrated-rail--compact, #npUOutline .np-u-rail-spine)
+ .np-u-native-roman-compact>.np-u-roman-shortcut[aria-current="page"]{
+  color:#f1d5a7!important;
+  background:rgba(216,185,138,.075)!important;
+  font-weight:600!important;
+  cursor:default!important;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail
+ :is(.gbs2-world>.gbs-rail.reader-integrated-rail--compact, #npUOutline .np-u-rail-spine)
+ .np-u-native-roman-compact>.np-u-roman-shortcut[aria-current="page"]::before{
+  content:"";position:absolute;left:0;top:11px;width:2px;height:20px;
+  background:#c7a16a;border-radius:2px;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail
+ :is(.gbs2-world>.gbs-rail.reader-integrated-rail--compact, #npUOutline .np-u-rail-spine)
+ .np-u-native-roman-compact>a.np-u-roman-shortcut:hover{
+  color:#f0d4a6!important;background:rgba(216,185,138,.075)!important;
+  transform:none!important;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail
+ :is(.gbs2-world>.gbs-rail.reader-integrated-rail--compact, #npUOutline .np-u-rail-spine)
+ .np-u-native-roman-compact>a.np-u-roman-shortcut:focus-visible{
+  outline:2px solid #d8b785!important;outline-offset:0!important;
+ }
+}
+/* In narrow desktop the Reader spine is light in the day theme.
+   Use readable ink instead of pale gold (dark theme retains warm gold). */
+@media(min-width:1121px) and (max-width:1359px){
+ html:not(.dark) body.np-u-preview.np-u-argon-shell.np-u-native-series-rail
+ #npUOutline .np-u-rail-spine>.np-u-native-roman-compact>.np-u-roman-shortcut{
+  color:#72573a!important;
+ }
+ html:not(.dark) body.np-u-preview.np-u-argon-shell.np-u-native-series-rail
+ #npUOutline .np-u-rail-spine>.np-u-native-roman-compact>.np-u-roman-shortcut[aria-current="page"]{
+  color:#55391e!important;background:rgba(111,78,43,.095)!important;
+ }
+ html:not(.dark) body.np-u-preview.np-u-argon-shell.np-u-native-series-rail
+ #npUOutline .np-u-rail-spine>.np-u-native-roman-compact>.np-u-roman-shortcut[aria-current="page"]::before{
+  background:#8e6540!important;
+ }
+ html:not(.dark) body.np-u-preview.np-u-argon-shell.np-u-native-series-rail
+ #npUOutline .np-u-rail-spine>.np-u-native-roman-compact>a.np-u-roman-shortcut:hover{
+  color:#55391e!important;background:rgba(111,78,43,.075)!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ body.np-u-preview .np-u-native-roman-compact .np-u-roman-shortcut{
+  transition:none!important;transform:none!important;
+ }
+}
+/* The more substantive overview is still a plain book-style disclosure. */
+body.np-u-preview .np-u-central-overview .np-u-central-points{
+ padding-bottom:18px!important;
+}
+body.np-u-preview .np-u-central-overview .np-u-central-points li{
+ margin-bottom:12px!important;
+}
+
+
+/* Align the W50 secondary-actions trigger with the relocated W51 head row. */
+@media(min-width:1121px){
+ body.np-u-preview.np-u-inline-header-actions #npUniversalDemo.np-u-argon #npUResearch
+ .np-u-right-actions>.np-u-editor-more{
+  top:28px!important;
+ }
+}
+
+
+
+/* W52 mobile research toolbar pilot: preserve genuine native Product buttons.
+   No DOM cloning, no replacement event handlers, no additional toolbar row. */
+@media (max-width:1120px){
+ body.np-u-preview.np-u-argon-shell #npUniversalDemo.np-u-argon #npUResearch{
+  position:fixed!important;
+ }
+ body.np-u-preview.np-u-argon-shell #npUniversalDemo.np-u-argon #npUResearch .np-u-right-head{
+  box-sizing:border-box!important;
+  flex:0 0 62px!important;height:62px!important;min-height:62px!important;
+  padding:8px 12px!important;
+  align-items:center!important;
+ }
+ body.np-u-preview.np-u-argon-shell #npUniversalDemo.np-u-argon #npUResearch .np-u-argon-right-heading{
+  display:flex!important;align-items:center!important;
+  flex:0 1 auto!important;
+  max-width:calc(100% - 166px)!important;
+ }
+ body.np-u-preview.np-u-argon-shell #npUniversalDemo.np-u-argon #npUResearch .np-u-argon-right-heading>span{
+  display:none!important;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail #npUniversalDemo.np-u-argon #npUResearch #npUNativeResearchActions{
+  position:absolute!important;z-index:8!important;
+  display:flex!important;align-items:center!important;
+  justify-content:space-between!important;
+  flex-direction:row!important;grid-template-columns:none!important;
+  top:9px!important;right:96px!important;
+  left:auto!important;bottom:auto!important;
+  width:74px!important;min-width:74px!important;max-width:74px!important;
+  height:44px!important;min-height:44px!important;max-height:44px!important;
+  margin:0!important;padding:0!important;gap:2px!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail #npUniversalDemo.np-u-argon #npUResearch #npUNativeResearchActions>button{
+  box-sizing:border-box!important;display:flex!important;position:relative!important;
+  align-items:center!important;justify-content:center!important;
+  flex:0 0 36px!important;
+  width:36px!important;min-width:36px!important;max-width:36px!important;
+  height:40px!important;min-height:40px!important;max-height:40px!important;
+  margin:0!important;padding:0!important;gap:0!important;
+  border:0!important;border-radius:7px!important;
+  color:var(--np-u-ink)!important;background:transparent!important;
+  box-shadow:none!important;overflow:visible!important;
+ }
+ body.np-u-preview.np-u-argon-shell #npUniversalDemo.np-u-argon #npUResearch #npUNativeResearchActions .np-u-global-action-label{
+  display:none!important;
+ }
+ body.np-u-preview.np-u-argon-shell #npUniversalDemo.np-u-argon #npUResearch #npUNativeResearchActions>button::after,
+ body.np-u-preview.np-u-argon-shell #npUniversalDemo.np-u-argon #npUResearch #npUNativeResearchActions>button::before{
+  display:none!important;content:none!important;
+ }
+ body.np-u-preview.np-u-argon-shell #npUniversalDemo.np-u-argon #npUResearch #npUNativeResearchActions>button:is(:hover,:focus-visible){
+  background:var(--np-u-red-soft)!important;color:var(--np-u-red)!important;
+ }
+ body.np-u-preview.np-u-argon-shell #npUniversalDemo.np-u-argon #npUResearch #npUNativeResearchActions>button:focus-visible{
+  outline:2px solid var(--np-u-red)!important;outline-offset:0!important;
+ }
+ body.np-u-preview.np-u-argon-shell #npUniversalDemo.np-u-argon #npUResearch .np-u-research-follow{
+  min-height:29px!important;
+ }
+}
+
+
+
+/* W55: Option C ? real Product PLAY before the research heading.
+   No separate TTS or fake action buttons. Existing product event root stays. */
+@media(min-width:1121px){
+ body.np-u-preview.np-u-inline-header-actions{
+  --np-u-inline-native-width:96px!important;
+ }
+ body.np-u-preview.np-u-inline-header-actions
+ > :is(.gbs-theme-corner.np-u-product-native-floating,#gbFloatingControls.np-u-native-legacy-float){
+  width:96px!important;min-width:96px!important;max-width:96px!important;
+  right:48px!important;justify-content:flex-start!important;
+ }
+ body.np-u-preview.np-u-inline-header-actions
+ > :is(.gbs-theme-corner.np-u-product-native-floating,#gbFloatingControls.np-u-native-legacy-float)
+ > :is(.gbs-rail-playwrap,.gb-ember-playwrap){
+  position:fixed!important;left:var(--np-u-w55-play-left,calc(75vw + 12px))!important;
+  top:27px!important;bottom:auto!important;right:auto!important;
+  box-sizing:border-box!important;width:36px!important;min-width:36px!important;
+  max-width:36px!important;height:38px!important;min-height:38px!important;
+  flex:0 0 36px!important;z-index:970!important;
+  display:grid!important;place-items:center!important;overflow:visible!important;
+ }
+ body.np-u-preview.np-u-inline-header-actions
+ #npUniversalDemo.np-u-argon #npUResearch .np-u-argon-right-heading{
+  margin-left:45px!important;
+ }
+ body.np-u-preview.np-u-inline-header-actions
+ > :is(.gbs-theme-corner.np-u-product-native-floating,#gbFloatingControls.np-u-native-legacy-float)
+ .gb-ember-wrap > .gb-ember-expand{
+  left:0!important;top:100%!important;min-width:88px!important;
+  max-width:88px!important;width:88px!important;
+ }
+ body.np-u-preview.np-u-inline-header-actions
+ > :is(.gbs-theme-corner.np-u-product-native-floating,#gbFloatingControls.np-u-native-legacy-float)
+ .gb-ember-expand [data-speed]{
+  box-sizing:border-box!important;min-width:72px!important;
+  width:72px!important;min-height:32px!important;height:32px!important;
+  padding:5px 4px!important;display:grid!important;place-items:center!important;
+  text-align:center!important;
+ }
+}
+/* A single library entry in an OPEN research panel; the genuine FAB
+   becomes available after it closes, including 1121?1359px. */
+@media(min-width:1121px){
+ body.np-u-preview:not(.np-u-hide-right) #gb-hl-fab{
+  display:none!important;visibility:hidden!important;pointer-events:none!important;
+ }
+}
+@media(min-width:1121px) and (max-width:1359px){
+ body.np-u-preview.np-u-hide-right #gb-hl-fab{
+  position:fixed!important;left:auto!important;top:auto!important;
+  right:18px!important;bottom:18px!important;
+  width:44px!important;min-width:44px!important;max-width:44px!important;
+  height:44px!important;min-height:44px!important;max-height:44px!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  z-index:980!important;visibility:visible!important;pointer-events:auto!important;
+ }
+}
+/* W55 mobile uses the ORIGINAL Product toolbar with data-fc-root,
+   reparented into the research modal only while the panel is open. */
+@media(max-width:1120px){
+ body.np-u-w55-mobile-research-actions #npUniversalDemo.np-u-argon
+ #npUResearch .np-u-right-head{
+  position:relative!important;
+ }
+ body.np-u-w55-mobile-research-actions #npUniversalDemo.np-u-argon
+ #npUResearch .np-u-argon-right-heading{
+  margin-left:44px!important;flex:0 0 auto!important;
+  max-width:calc(100% - 235px)!important;
+ }
+ body.np-u-w55-mobile-research-actions #npUniversalDemo.np-u-argon
+ #npUResearch > .np-u-w55-docked-mobile{
+  display:block!important;box-sizing:border-box!important;
+  position:absolute!important;left:8px!important;top:9px!important;
+  right:0!important;bottom:auto!important;
+  width:calc(100% - 8px)!important;min-width:0!important;max-width:none!important;
+  height:44px!important;min-height:44px!important;max-height:44px!important;
+  padding:0!important;margin:0!important;gap:0!important;
+  border:0!important;border-radius:0!important;
+  box-shadow:none!important;background:transparent!important;
+  z-index:11!important;pointer-events:none!important;overflow:visible!important;
+ }
+ body.np-u-w55-mobile-research-actions #npUResearch
+ .np-u-w55-docked-mobile
+ > :is(#mobBackBtn,#mobHomeBtn,.reader-mobile-home){
+  display:none!important;
+ }
+ body.np-u-w55-mobile-research-actions #npUResearch
+ .np-u-w55-docked-mobile :is(.mobile-top-slot,.hm-slot,#hmSlot){
+  display:contents!important;
+ }
+ body.np-u-w55-mobile-research-actions #npUResearch
+ .np-u-w55-docked-mobile .reader-mobile-menu-trigger{
+  display:none!important;
+ }
+ body.np-u-w55-mobile-research-actions #npUResearch
+ .np-u-w55-docked-mobile .reader-mobile-play-group{
+  display:flex!important;position:absolute!important;left:0!important;
+  top:0!important;right:auto!important;bottom:auto!important;
+  width:44px!important;min-width:44px!important;max-width:44px!important;
+  height:44px!important;min-height:44px!important;max-height:44px!important;
+  align-items:center!important;justify-content:center!important;
+  margin:0!important;padding:0!important;pointer-events:auto!important;
+  z-index:13!important;
+ }
+ body.np-u-w55-mobile-research-actions #npUResearch
+ .np-u-w55-docked-mobile .reader-mobile-play{
+  position:relative!important;inset:auto!important;width:40px!important;
+  height:40px!important;min-width:40px!important;min-height:40px!important;
+  pointer-events:auto!important;opacity:1!important;visibility:visible!important;
+ }
+ body.np-u-w55-mobile-research-actions #npUResearch
+ .np-u-w55-docked-mobile :is(#mobSpdBadge,#hmSpdBadge){
+  position:absolute!important;top:26px!important;left:27px!important;
+  right:auto!important;bottom:auto!important;z-index:15!important;
+  min-width:18px!important;width:auto!important;height:16px!important;
+  pointer-events:auto!important;
+ }
+ body.np-u-w55-mobile-research-actions #npUResearch
+ .np-u-w55-docked-mobile :is(.mobile-top-save,.gb-save.hm-icon){
+  display:grid!important;place-items:center!important;
+  position:absolute!important;top:4px!important;right:48px!important;
+  bottom:auto!important;left:auto!important;
+  width:36px!important;min-width:36px!important;height:36px!important;
+  min-height:36px!important;z-index:14!important;
+  pointer-events:auto!important;opacity:1!important;visibility:visible!important;
+ }
+ body.np-u-w55-mobile-research-actions #npUResearch
+ .np-u-w55-docked-mobile :is(#mobileSpeedrail,#hmSpeedrail){
+  z-index:100!important;pointer-events:auto!important;
+ }
+ body.np-u-w55-mobile-research-actions #gb-hl-fab{
+  display:none!important;visibility:hidden!important;pointer-events:none!important;
+ }
+}
+
+/* W55 mobile native Play optical pass: circular control and legible speed,
+   with the genuine six-rate Product rail shown as a vertical popup. */
+@media(max-width:1120px){
+ body.np-u-w55-mobile-research-actions #npUResearch
+ .np-u-w55-docked-mobile .reader-mobile-play{
+  border:1px solid rgba(101,84,67,.35)!important;border-radius:50%!important;
+  background:rgba(255,255,255,.75)!important;
+  box-shadow:none!important;outline-offset:2px!important;
+ }
+ body.np-u-w55-mobile-research-actions #npUResearch
+ .np-u-w55-docked-mobile .reader-mobile-play .gb-ember__ring-svg{
+  opacity:1!important;
+ }
+ body.np-u-w55-mobile-research-actions #npUResearch
+ .np-u-w55-docked-mobile :is(#mobSpdBadge,#hmSpdBadge){
+  box-sizing:border-box!important;display:grid!important;place-items:center!important;
+  padding:1px 3px!important;min-height:16px!important;max-height:16px!important;
+  background:#2b2522!important;color:#fff!important;
+  border:1px solid rgba(255,255,255,.15)!important;border-radius:9px!important;
+  font:700 8px/1 system-ui,sans-serif!important;
+  box-shadow:0 1px 3px rgba(21,17,15,.14)!important;
+ }
+ body.np-u-w55-mobile-research-actions #npUResearch
+ .np-u-w55-docked-mobile :is(#mobileSpeedrail,#hmSpeedrail){
+  box-sizing:border-box!important;
+  position:absolute!important;left:0!important;right:auto!important;
+  top:46px!important;bottom:auto!important;
+  width:86px!important;min-width:86px!important;max-width:86px!important;
+  height:auto!important;max-height:calc(100dvh - 72px)!important;
+  display:flex!important;flex-direction:column!important;
+  align-items:center!important;justify-content:flex-start!important;
+  gap:2px!important;margin:0!important;padding:6px!important;
+  overflow-x:hidden!important;overflow-y:auto!important;
+  transform:none!important;translate:none!important;
+  background:var(--np-u-paper,#fbf9f5)!important;
+  border:1px solid var(--np-u-rule,#dcd3c9)!important;
+  border-radius:8px!important;
+  box-shadow:0 10px 27px rgba(24,18,15,.17)!important;
+ }
+ body.np-u-w55-mobile-research-actions #npUResearch
+ .np-u-w55-docked-mobile :is(#mobileSpeedrail,#hmSpeedrail) > button{
+  box-sizing:border-box!important;flex:0 0 34px!important;
+  width:72px!important;min-width:72px!important;max-width:72px!important;
+  height:34px!important;min-height:34px!important;max-height:34px!important;
+  margin:0!important;padding:5px 3px!important;
+  display:grid!important;place-items:center!important;text-align:center!important;
+  border-radius:4px!important;
+ }
+}
+
+/* W55 native legacy mobile theme/search unification */
+@media(max-width:1120px){
+ body.np-u-w55-mobile-research-actions #npUniversalDemo.np-u-argon
+ #npUResearch #npUNativeResearchActions{
+  box-sizing:border-box!important;position:absolute!important;
+  z-index:8!important;top:9px!important;right:96px!important;
+  bottom:auto!important;left:auto!important;
+  display:flex!important;flex-direction:row!important;align-items:center!important;
+  justify-content:space-between!important;
+  width:74px!important;min-width:74px!important;max-width:74px!important;
+  height:44px!important;min-height:44px!important;max-height:44px!important;
+  margin:0!important;padding:0!important;gap:2px!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;
+ }
+ body.np-u-w55-mobile-research-actions #npUniversalDemo.np-u-argon
+ #npUResearch #npUNativeResearchActions > button{
+  box-sizing:border-box!important;display:flex!important;align-items:center!important;
+  justify-content:center!important;position:relative!important;
+  flex:0 0 36px!important;width:36px!important;min-width:36px!important;
+  max-width:36px!important;height:40px!important;min-height:40px!important;
+  max-height:40px!important;margin:0!important;padding:0!important;gap:0!important;
+  border:0!important;border-radius:7px!important;background:transparent!important;
+  color:var(--np-u-ink,#29241f)!important;
+  box-shadow:none!important;overflow:visible!important;
+ }
+ body.np-u-w55-mobile-research-actions #npUniversalDemo.np-u-argon
+ #npUResearch #npUNativeResearchActions > button > .np-u-global-action-label{
+  display:none!important;
+ }
+ body.np-u-w55-mobile-research-actions #npUniversalDemo.np-u-argon
+ #npUResearch #npUNativeResearchActions > button:is(:hover,:focus-visible){
+  background:rgba(127,99,65,.07)!important;
+ }
+}
+
+/* W55: full suppression of duplicate mobile FAB + 44px touch target */
+@media(max-width:1120px){
+ body.np-u-preview.np-u-w55-mobile-research-actions #npUniversalDemo
+ #gb-hl-fab.np-u-library-native{
+  display:none!important;visibility:hidden!important;
+  pointer-events:none!important;
+ }
+ body.np-u-preview:not(.np-u-w55-mobile-research-actions) #npUniversalDemo
+ #gb-hl-fab.np-u-library-native{
+  box-sizing:border-box!important;
+  display:grid!important;place-items:center!important;
+  flex:0 0 44px!important;
+  width:44px!important;min-width:44px!important;max-width:44px!important;
+  height:44px!important;min-height:44px!important;max-height:44px!important;
+ }
+}

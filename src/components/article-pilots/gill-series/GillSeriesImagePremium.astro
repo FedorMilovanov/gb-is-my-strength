@@ -275,4 +275,12 @@
   @media (prefers-reduced-motion: reduce) {
     [data-gill-v16] .gbs2-hero img { transform: none !important; }
   }
+
+
+/* Short desktop: keep current-part grid in the scroll flow; do not flex-collapse it. */
+  @media screen and (min-width:1360px) and (max-height:640px) {
+    [data-gill-v16] .gbs-rail .gbs2-rmid > .gbs2-current {
+      flex-shrink: 0;
+    }
+  }
 </style>

@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v202-library-v3-local-20261106';
+const CACHE_VERSION = 'gb-v205-reader-annotation-range-safety-20261120';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -24,27 +24,27 @@ const PRECACHE_ASSETS = [
   '/css/nagornaya-mobile-toc.css?v=623e0845',
   '/css/floating-cluster.css?v=18742944',
   '/css/series-samizdat.css?v=6d9658bd',
-  '/css/reader-preferences.css?v=f424e5ed',
+  '/css/reader-preferences.css?v=9f01260b',
   '/css/enhancements-runtime.css?v=d195a91d',
-  '/css/highlights-runtime.css?v=56e14002',
+  '/css/highlights-runtime.css?v=fd24c13b',
   '/css/sw-toast.css?v=2e540077',
   '/fonts/fonts.css?v=864cc57a',
   '/nagornaya/tw.min.css?v=bee34e73',
   '/js/nagornaya-bar-extras.js?v=3c7e0bdd',
   '/js/site.js?v=9fa8818a',
-  '/js/site-utils.js?v=e80f1dfb',
+  '/js/site-utils.js?v=ea5248d9',
   '/js/scroll-perf.js?v=454d6f7b',
   '/js/bookmark-engine.js?v=e7d193e0',
   '/js/enhancements.js?v=15476429',
-  '/js/highlights.js?v=e3e21e86',
+  '/js/highlights.js?v=0992929b',
   '/js/reader-library-presenter.js?v=cef6e2a5',
   '/js/reader-library-v3.js?v=e036d5a6',
   '/js/reader-library-dock.js?v=b550fdd1',
   '/js/sw-register.js?v=921dd6a2',
   '/js/nagornaya-mobile-toc.js?v=a0b23b1c',
-  '/js/floating-cluster-controller.js?v=01161dcb',
-  '/js/reader-preferences-head.js?v=3ddf9706',
-  '/js/reader-preferences.js?v=78887cf1',
+  '/js/floating-cluster-controller.js?v=56fe8e73',
+  '/js/reader-preferences-head.js?v=bd4355e3',
+  '/js/reader-preferences.js?v=f7880f37',
   '/js/reader-state.js?v=b3deb501',
   '/pagefind/pagefind.js',
   '/favicon.ico',

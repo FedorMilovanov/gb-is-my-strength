@@ -123,6 +123,7 @@ const browser = createBrowser({
   'gb:font-scale': '1.1',
 });
 browser.run('js/reader-preferences-head.js');
+assert.strictEqual(browser.attrs.get('data-reader-font-family'), 'lora');
 assert.strictEqual(browser.attrs.get('data-reader-theme'), 'sepia');
 assert.strictEqual(browser.attrs.get('data-reader-text-mode'), 'rich');
 assert.strictEqual(browser.attrs.get('data-reader-measure'), 'wide');
@@ -151,6 +152,18 @@ assert.deepStrictEqual(
 assert.strictEqual(browser.styles.get('--gb-reader-line-height'), '1.45');
 assert.strictEqual(browser.styles.has('--gb-reader-measure'), false, 'changing measure updates the root attribute, not a second width map');
 assert.strictEqual(browser.classes.has('dark'), false);
+assert.deepStrictEqual(Array.from(api.fontFamilies), ['lora', 'cormorant']);
+api.set({fontFamily:'cormorant'}, {source:'font-regression'});
+assert.strictEqual(api.get().fontFamily, 'cormorant');
+assert.strictEqual(browser.attrs.get('data-reader-font-family'), 'cormorant');
+assert.strictEqual(JSON.parse(browser.storage.get('gb:reader-preferences:v1')).fontFamily, 'cormorant');
+const reloadedFont=createBrowser({'gb:reader-preferences:v1':browser.storage.get('gb:reader-preferences:v1')});
+reloadedFont.run('js/reader-preferences-head.js');
+assert.strictEqual(reloadedFont.attrs.get('data-reader-font-family'), 'cormorant');
+reloadedFont.run('js/reader-preferences.js');
+assert.strictEqual(reloadedFont.window.GBReaderPreferences.get().fontFamily, 'cormorant');
+api.set({fontFamily:'invalid'});
+assert.strictEqual(api.get().fontFamily, 'lora', 'invalid families are normalized');
 
 // Canonical state always wins over conflicting legacy values.
 const canonical = createBrowser({
@@ -296,6 +309,8 @@ assert(legacyTargets.length >= 50, `expected broad legacy coverage, got ${legacy
 
 const measureCss = read('css/reader-preferences.css');
 assert(measureCss.includes(':root[data-reader-measure="narrow"] { --gb-reader-measure: 36rem; }'));
+assert(measureCss.includes(':root[data-reader-font-family="cormorant"]'),
+ 'family tokens belong to the universal reader');
 assert(measureCss.includes(':root[data-reader-measure="normal"] { --gb-reader-measure: 46rem; }'));
 assert(measureCss.includes(':root[data-reader-measure="wide"] { --gb-reader-measure: 53rem; }'));
 assert(!read('js/reader-preferences-head.js').includes('measureValues'), 'first-paint bootstrap must not duplicate measure values');

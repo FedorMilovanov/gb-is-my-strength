@@ -22,26 +22,24 @@
     catch { return raw.split('#')[0].split('?')[0].replace(/^https?:\/\/[^/]+/, '').replace(/\/+$/, '') || '/'; }
   }
   function gbHighlightText(item) { return normalizeText(item && item.text).toLocaleLowerCase(); }
-  function gbHighlightKey(item) {
-    const text = gbHighlightText(item);
-    return text ? gbHighlightPath(item) + '\n' + text : '';
+  function gbHighlightKey(x) {
+    const t=gbHighlightText(x), a=x?.annotation?.version===1&&x.annotation.anchor;
+    return !t?'':gbHighlightPath(x)+'\n'+(a&&Number.isInteger(a.start)&&
+      Number.isInteger(a.end)&&typeof a.exact==='string'
+      ?'range-v1:'+JSON.stringify([a.blockId||'',a.blockIndex??-1,a.start,a.end,a.exact]):t);
   }
   function gbDedupeHighlights(items) {
-    const seen = new Set();
-    const result = [];
-    (Array.isArray(items) ? items : []).forEach((item, index) => {
-      const key = gbHighlightKey(item) || '__invalid__:' + (item && item.id || index);
-      if (seen.has(key)) return;
-      seen.add(key);
-      result.push(item);
+    const seen=new Set();
+    return (Array.isArray(items)?items:[]).filter((item,index)=>{
+      const key=gbHighlightKey(item)||'__invalid__:'+(item?.id||index);
+      if(seen.has(key))return false;
+      seen.add(key);return true;
     });
-    return result;
   }
-  function gbAddHighlight(items, item) {
-    const existing = gbDedupeHighlights(items);
-    const key = gbHighlightKey(item);
-    return key && !existing.some((entry) => gbHighlightKey(entry) === key)
-      ? [item].concat(existing).slice(0, LIMIT_QUOTES) : existing;
+  function gbAddHighlight(items,item) {
+    const unique=items,key=gbHighlightKey(item);
+    return key&&!unique.some(x=>gbHighlightKey(x)===key)
+      ?[item,...unique].slice(0,LIMIT_QUOTES):unique;
   }
   function read(key) {
     try {
@@ -56,10 +54,7 @@
     catch { return false; }
   }
   function quotes() {
-    const existing = read(QUOTES_KEY);
-    const compact = gbDedupeHighlights(existing);
-    if (existing.length !== compact.length) write(QUOTES_KEY, compact);
-    return compact;
+    return read(QUOTES_KEY);
   }
   function notes() { return read(NOTES_KEY).filter((n) => n && typeof n.text === 'string' && n.id); }
   function favorites() {
@@ -138,7 +133,7 @@
   const stylesheet = document.createElement('link');
   stylesheet.id = 'gbHlRuntimeCss';
   stylesheet.rel = 'stylesheet';
-  stylesheet.href = '/css/highlights-runtime.css?v=56e14002';
+  stylesheet.href = '/css/highlights-runtime.css?v=fd24c13b';
   if (!document.getElementById(stylesheet.id)) document.head.appendChild(stylesheet);
 
   function button(action, label, text) {
@@ -322,7 +317,7 @@
     if (action === 'delete') deleteItem(item);
     if (action === 'remove-favorite') { clearUndo(); presenter.removeFavorite(item, statusMessage); }
     if (action === 'edit-note') showEditor(null, item);
-    if (action === 'note-for-quote') showEditor({ quoteText: item.text, title: item.title, url: item.url });
+    if (action === 'note-for-quote') showEditor({ quoteId: item.id, quoteText: item.text, title: item.title, url: item.url });
     if (action === 'card') presenter.exportQuoteCard(item, statusMessage);
   }
   function showEditor(context = null, editing = null) {
@@ -354,7 +349,7 @@
     const next = editing
       ? old.map((x) => x.id === editing.id ? Object.assign({}, x, { text }) : x)
       : [{
-          id: uid('note'), text, quoteText: context && context.quoteText || '',
+          id: uid('note'), text, ...(context?.quoteId ? {quoteId: context.quoteId} : {}), quoteText: context && context.quoteText || '',
           articleTitle: context && context.title || currentTitle(),
           url: context && context.url || location.origin + location.pathname,
           savedAt: Date.now(),

@@ -1,0 +1,3010 @@
+/*
+  ARGON FIRST · localized original visual direction, not a fourth layout.
+  Visual reference (copied exactly for source review, not committed):
+  ARGON UPDATE.zip/src/{components/LeftNavigation.tsx,BookTOC.tsx,
+  RightResearchPanel.tsx,reader.css,index.css}.
+  Product controls, text, article shadows and live data are unchanged.
+  The current shell's mechanical layout + mobile focus contracts remain owned
+  by reader_universal_preview.css. This is its replacement visual skin.
+*/
+body.np-u-preview.np-u-argon-shell{
+ --np-u-paper:#f4f2ed;
+ --np-u-deep:#f7f4f0;
+ --np-u-white:#ffffff;
+ --np-u-ink:#1a1a1a;
+ --np-u-muted:#686562;
+ --np-u-rule:#e5e2dc;
+ --np-u-red:#7a2e2e;
+ --np-u-red-soft:#f6ece8;
+ --np-u-left:246px;
+ --np-u-right:390px;
+}
+html.dark body.np-u-preview.np-u-argon-shell{
+ --np-u-paper:#13171e;
+ --np-u-deep:#1a1f28;
+ --np-u-white:#161a21;
+ --np-u-ink:#e6e1d7;
+ --np-u-muted:#a4a4a9;
+ --np-u-rule:#2d333b;
+ --np-u-red:#d4a574;
+ --np-u-red-soft:#28221d;
+}
+#npUniversalDemo.np-u-argon{
+ --u-shadow:none;
+ font-family:'Source Sans 3',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+ font-kerning:normal;letter-spacing:0;
+}
+/* W39: flat reading surface. Product's original page-wrap includes seven
+   layered lateral shadows, an edge-tinted horizontal gradient and a 1px
+   border; none are structural. Keep the real paper geometry/padding intact.
+   Scope to the opt-in ARGON Reader so published Product is unaffected. */
+body.np-u-preview.np-u-argon-shell .gbs2-world > .page-wrap,
+body.np-u-preview.np-u-argon-shell > .page-wrap{
+ background:var(--np-u-white)!important;
+ background-image:none!important;
+ box-shadow:none!important;
+ border:0!important;
+}
+#npUniversalDemo.np-u-argon button,#npUniversalDemo.np-u-argon a{
+ transition:background-color .15s,color .15s,border-color .15s;
+}
+#npUniversalDemo.np-u-argon :is(.np-u-left,.np-u-right){
+ background:var(--np-u-paper)!important;
+ border-color:var(--np-u-rule)!important;
+ border-radius:0!important;
+ box-shadow:none!important;
+}
+@media(min-width:1121px){
+ #npUniversalDemo.np-u-argon .np-u-left{
+  left:0!important;top:0!important;bottom:0!important;
+  width:var(--np-u-left)!important;
+  border-width:0 1px 0 0!important;
+ }
+ #npUniversalDemo.np-u-argon .np-u-right{
+  right:0!important;top:0!important;bottom:0!important;
+  width:var(--np-u-right)!important;
+  border-width:0 0 0 1px!important;
+ }
+ body.np-u-preview.np-u-compact.np-u-argon-shell{--np-u-left:48px}
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon .np-u-left{width:48px!important}
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon .np-u-left-head{
+  height:52px!important;min-height:52px!important;padding:7px 5px!important;
+  justify-content:center!important;gap:0!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon .np-u-left-head :is(.np-u-argon-bookmark,.np-u-left-title){
+  display:none!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon .np-u-fold{
+  width:32px;height:32px;min-width:32px;margin:0 auto!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon .np-u-rail-spine{
+  justify-content:flex-start;gap:10px;padding:16px 5px 110px;
+  overflow-y:auto;scrollbar-width:none;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon .np-u-rail-spine::-webkit-scrollbar{display:none}
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon .np-u-spine-line{
+  top:20px;bottom:100px;left:50%;width:1px;
+  background:var(--np-u-rule);
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon .np-u-spine-item{
+  border:none;border-radius:4px;background:var(--np-u-paper);
+  width:34px;min-height:33px;padding:4px;
+  color:var(--np-u-muted);font:600 11px/1.1 'JetBrains Mono',Consolas,monospace;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon .np-u-spine-item.is-current{
+  background:var(--np-u-red);color:var(--np-u-white);
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon .np-u-spine-item:hover{
+  background:var(--np-u-red-soft);color:var(--np-u-red);
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon .np-u-spine-item.is-current:hover{
+  background:var(--np-u-red);color:var(--np-u-white);
+ }
+}
+#npUniversalDemo.np-u-argon .np-u-left-head{
+ min-height:75px;padding:12px 14px;gap:9px;
+ border-bottom:1px solid var(--np-u-rule);
+ background:transparent!important;
+}
+#npUniversalDemo.np-u-argon .np-u-argon-bookmark{
+ display:grid;place-items:center;flex:none;
+ width:27px;height:27px;
+ background:var(--np-u-red-soft);
+ color:var(--np-u-red);
+ border:1px solid color-mix(in srgb,var(--np-u-red) 24%,var(--np-u-rule));
+ border-radius:4px;
+}
+#npUniversalDemo.np-u-argon .np-u-argon-bookmark svg{width:18px;height:18px}
+#npUniversalDemo.np-u-argon .np-u-left-title{
+ display:grid;align-content:center;gap:2px;min-width:0;
+}
+#npUniversalDemo.np-u-argon .np-u-argon-wordmark{
+ display:block;color:var(--np-u-ink);
+ font:600 12px/1.2 'Lora',Georgia,serif;
+ text-transform:uppercase;letter-spacing:.045em;
+ white-space:normal;
+}
+#npUniversalDemo.np-u-argon .np-u-argon-wordmark span{
+ display:block;font-size:10px;letter-spacing:.14em;
+}
+#npUniversalDemo.np-u-argon .np-u-argon-library{
+ font:400 10px/1.4 'Source Sans 3',system-ui,sans-serif;
+ color:var(--np-u-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#npUniversalDemo.np-u-argon :is(.np-u-fold,#npUCloseRight){
+ width:29px;height:29px;min-width:29px;
+ border:0!important;border-radius:4px!important;
+ background:transparent!important;color:var(--np-u-muted);
+}
+#npUniversalDemo.np-u-argon :is(.np-u-fold,#npUCloseRight):hover{
+ background:var(--np-u-deep)!important;color:var(--np-u-red)!important;
+}
+#npUniversalDemo.np-u-argon :is(.np-u-fold,#npUCloseRight) svg{
+ width:17px;height:17px;stroke-width:1.75;
+}
+#npUniversalDemo.np-u-argon .np-u-left-full{
+ padding:16px 13px 12px;
+ overflow-y:auto;scrollbar-width:thin;
+}
+#npUniversalDemo.np-u-argon .np-u-paper-title{
+ font:650 10.5px/1.2 'Source Sans 3',system-ui,sans-serif;
+ text-transform:uppercase;letter-spacing:.085em;
+ color:var(--np-u-ink);padding:0 5px;
+}
+#npUniversalDemo.np-u-argon .np-u-rail-stat{
+ margin:3px 5px 15px;
+ font:450 10px/1.4 'Source Sans 3',system-ui,sans-serif;
+ color:var(--np-u-muted);
+}
+#npUniversalDemo.np-u-argon .np-u-nav{
+ display:block!important;gap:0!important;
+}
+#npUniversalDemo.np-u-argon .np-u-group{
+ position:relative;
+ margin:0 0 2px!important;padding:0 0 2px 2px!important;
+ background:transparent!important;
+ border:0!important;border-radius:0!important;
+}
+/* ARGON UPDATE: active chapter's accent belongs to its heading only.
+   Child sections retain their own indented beige connector. */
+#npUniversalDemo.np-u-argon .np-u-group.is-current .np-u-major::before{
+ content:'';position:absolute;left:-2px;top:8px;bottom:8px;width:2px;
+ border-radius:2px;background:var(--np-u-red);
+}
+#npUniversalDemo.np-u-argon .np-u-major{
+ display:flex;align-items:stretch;position:relative;
+ min-height:37px;gap:0;
+}
+#npUniversalDemo.np-u-argon .np-u-major-link{
+ display:flex;align-items:baseline;gap:8px;min-width:0;flex:1;
+ margin:0;padding:8px 27px 8px 7px;border-radius:4px;
+ color:var(--np-u-muted);text-align:left;
+ text-decoration:none;
+ font:500 12px/1.42 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo.np-u-argon .np-u-group.is-current .np-u-major-link{
+ background:var(--np-u-white);color:var(--np-u-ink);font-weight:600;
+}
+#npUniversalDemo.np-u-argon .np-u-major-link:hover{
+ color:var(--np-u-red);background:var(--np-u-deep);
+}
+#npUniversalDemo.np-u-argon .np-u-numeral{
+ display:block;flex:0 0 26px;width:26px;min-width:26px;height:auto;padding:0;
+ color:var(--np-u-muted);white-space:nowrap;overflow:visible;
+ font:500 11px/1.55 'JetBrains Mono',Consolas,monospace;
+ border:0;background:transparent;border-radius:0;
+}
+#npUniversalDemo.np-u-argon .np-u-group.is-current .np-u-numeral{color:var(--np-u-red)}
+#npUniversalDemo.np-u-argon .np-u-major-name{
+ display:block;min-width:0;overflow-wrap:break-word;
+ word-break:normal;hyphens:none;
+}
+#npUniversalDemo.np-u-argon .np-u-sub{
+ position:static;display:block!important;padding:0!important;
+ margin:0!important;
+}
+#npUniversalDemo.np-u-argon .np-u-sub>summary{
+ position:absolute;right:2px;top:6px;z-index:1;
+ display:grid;place-items:center;
+ width:25px;height:27px;padding:0;
+ border:0!important;border-radius:3px;
+ color:var(--np-u-muted);background:transparent;
+ list-style:none;cursor:pointer;
+}
+#npUniversalDemo.np-u-argon .np-u-sub>summary:hover{
+ background:var(--np-u-deep);color:var(--np-u-red);
+}
+#npUniversalDemo.np-u-argon .np-u-sub>summary svg{
+ width:13px;height:13px;transition:transform .17s;
+}
+#npUniversalDemo.np-u-argon .np-u-sub[open]>summary svg{transform:rotate(90deg)}
+#npUniversalDemo.np-u-argon .np-u-children{
+ display:grid;gap:0;margin:3px 0 10px 17px;padding:2px 0 2px 9px;
+ border-left:1px solid var(--np-u-rule);
+}
+#npUniversalDemo.np-u-argon .np-u-child{
+ display:block;min-height:28px;
+ padding:6px 4px 5px 6px;border-radius:3px;
+ font:400 11px/1.45 'Source Sans 3',system-ui,sans-serif;
+ color:var(--np-u-muted);white-space:normal;
+ overflow-wrap:break-word;word-break:normal;hyphens:none;
+}
+#npUniversalDemo.np-u-argon .np-u-child:hover{
+ color:var(--np-u-ink);background:var(--np-u-deep);
+}
+#npUniversalDemo.np-u-argon .np-u-child.np-u-h2{font-weight:600;color:var(--np-u-ink)}
+#npUniversalDemo.np-u-argon .np-u-child.np-u-h4{padding-left:13px;font-size:10.5px}
+#npUniversalDemo.np-u-argon .np-u-child.np-u-h5{padding-left:22px;font-size:10px}
+#npUniversalDemo.np-u-argon .np-u-child.np-u-h6{padding-left:29px;font-size:10px}
+#npUniversalDemo.np-u-argon .np-u-appendices{
+ margin:16px 5px 0;padding:13px 0 0;border-color:var(--np-u-rule);
+}
+#npUniversalDemo.np-u-argon .np-u-appendices>summary{
+ font-size:11px;font-weight:600;color:var(--np-u-muted);
+}
+#npUniversalDemo.np-u-argon .np-u-left-foot{
+ min-height:44px;padding:7px 13px;
+ font-size:10px;background:var(--np-u-paper);
+ border-color:var(--np-u-rule);
+}
+#npUniversalDemo.np-u-argon .np-u-foot-mark{
+ font-family:'JetBrains Mono',Consolas,monospace;
+ color:var(--np-u-muted);
+}
+/* Real research modules from ARGON UPDATE RightResearchPanel.tsx: compact
+   instrument heads, constant width rule, small chevron, no colored cards. */
+#npUniversalDemo.np-u-argon .np-u-right-head{
+ min-height:66px;padding:12px 16px;gap:10px;
+ background:transparent!important;border-bottom:1px solid var(--np-u-rule);
+}
+#npUniversalDemo.np-u-argon .np-u-argon-right-heading{
+ display:grid;gap:4px;min-width:0;
+}
+#npUniversalDemo.np-u-argon .np-u-argon-right-heading strong{
+ font:500 18px/1.2 'Lora',Georgia,serif;color:var(--np-u-ink);
+}
+#npUniversalDemo.np-u-argon .np-u-argon-right-heading span{
+ font:450 11px/1.25 'Source Sans 3',system-ui,sans-serif;color:var(--np-u-muted);
+}
+#npUniversalDemo.np-u-argon .np-u-right-scroll{
+ padding:10px 12px 16px;scrollbar-width:thin;
+}
+#npUniversalDemo.np-u-argon .np-u-window{
+ margin:0 0 9px;border:1px solid var(--np-u-rule);border-radius:5px;
+ background:var(--np-u-white);box-shadow:none!important;
+}
+#npUniversalDemo.np-u-argon .np-u-window>summary{
+ min-height:39px;padding:7px 11px;gap:8px;
+ background:var(--np-u-deep)!important;
+ border-radius:0;
+}
+#npUniversalDemo.np-u-argon .np-u-window[open]>summary{
+ border-bottom:1px solid var(--np-u-rule);
+}
+#npUniversalDemo.np-u-argon .np-u-window>summary strong{
+ font:650 12px/1.3 'Source Sans 3',system-ui,sans-serif;
+ letter-spacing:.015em;text-transform:none;color:var(--np-u-ink);
+}
+#npUniversalDemo.np-u-argon .np-u-window-glyph{
+ display:grid;place-items:center;flex:none;width:18px;height:20px;
+ color:var(--np-u-red);
+}
+#npUniversalDemo.np-u-argon .np-u-window-glyph svg{
+ display:block;width:15px;height:15px;stroke-width:1.65;
+}
+#npUniversalDemo.np-u-argon .np-u-window-meta{
+ font:450 10px/1.2 'JetBrains Mono',Consolas,monospace;
+ letter-spacing:0;color:var(--np-u-muted);
+}
+#npUniversalDemo.np-u-argon .np-u-window-chevron{
+ display:grid;place-items:center;color:var(--np-u-muted);
+}
+#npUniversalDemo.np-u-argon .np-u-window-chevron svg{
+ width:15px;height:15px;transition:transform .16s;
+}
+#npUniversalDemo.np-u-argon .np-u-window[open] .np-u-window-chevron{
+ transform:none!important;
+}
+#npUniversalDemo.np-u-argon .np-u-window[open] .np-u-window-chevron svg{transform:rotate(180deg)}
+#npUniversalDemo.np-u-argon .np-u-window-body{
+ padding:15px 16px 14px;
+}
+#npUniversalDemo.np-u-argon .np-u-window-body h3{
+ margin:5px 0 13px;
+ font:600 23px/1.12 'Cormorant Garamond',Georgia,serif;
+ color:var(--np-u-ink);
+}
+#npUniversalDemo.np-u-argon .np-u-section-kicker{
+ color:var(--np-u-muted);
+ font:650 9px/1.3 'Source Sans 3',system-ui,sans-serif;
+ letter-spacing:.095em;
+}
+#npUniversalDemo.np-u-argon .np-u-quotation{
+ border-left:1px solid color-mix(in srgb,var(--np-u-red) 55%,var(--np-u-rule));
+ padding-left:12px;margin:10px 0 12px;
+ color:var(--np-u-ink);
+ font:400 13px/1.72 'Lora',Georgia,serif;
+}
+#npUniversalDemo.np-u-argon .np-u-source-heading{
+ font:600 10px/1.4 'Source Sans 3',system-ui,sans-serif;
+ color:var(--np-u-muted);letter-spacing:0;
+}
+#npUniversalDemo.np-u-argon .np-u-source-extra{
+ border:0;border-top:1px solid var(--np-u-rule);border-radius:0;
+ background:transparent;padding:9px 0 0;
+}
+#npUniversalDemo.np-u-argon .np-u-source-extra summary{
+ font:500 11px/1.4 'Source Sans 3',system-ui,sans-serif;color:var(--np-u-red);
+}
+#npUniversalDemo.np-u-argon .np-u-metrics{
+ display:flex;gap:6px 12px;margin:10px 0 0;
+ padding-top:10px;border-top:1px solid var(--np-u-rule);
+}
+#npUniversalDemo.np-u-argon .np-u-metrics span{
+ display:inline;padding:0;border:0;border-radius:0;
+ background:transparent;color:var(--np-u-muted);
+ font:500 10px/1.35 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo.np-u-argon .np-u-metrics span+span:before{
+ content:'·';margin-right:12px;
+ color:var(--np-u-muted);
+}
+#npUniversalDemo.np-u-argon .np-u-jump{
+ margin-top:15px;padding:5px 0;min-height:26px;
+ background:transparent;border:0;border-radius:0;
+ color:var(--np-u-red);font-size:11px;
+}
+#npUniversalDemo.np-u-argon .np-u-jump:hover{
+ background:transparent;text-decoration:underline;text-underline-offset:3px;
+}
+#npUniversalDemo.np-u-argon .np-u-verse-chips{
+ gap:5px;
+}
+#npUniversalDemo.np-u-argon .np-u-verse-chip{
+ min-height:31px;padding:6px 10px;border-radius:4px;
+ background:var(--np-u-white);border:1px solid var(--np-u-rule);
+ color:var(--np-u-red);font:600 11px/1.2 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo.np-u-argon .np-u-verse-chip:hover{
+ background:var(--np-u-red-soft);border-color:var(--np-u-red);
+}
+#npUniversalDemo.np-u-argon .np-u-context-links :is(a,button){
+ font-size:12px;line-height:1.45;padding:9px 0;color:var(--np-u-ink);
+}
+#npUniversalDemo.np-u-argon .np-u-source-note{
+ padding:12px 6px 28px;color:var(--np-u-muted);
+ border-top:1px solid var(--np-u-rule);
+}
+#npUniversalDemo.np-u-argon .np-u-note-link,
+#npUniversalDemo.np-u-argon .np-u-figure-row{
+ border-radius:4px;background:transparent;
+}
+#npUniversalDemo.np-u-argon .np-u-note-link:hover,
+#npUniversalDemo.np-u-argon .np-u-figure-row:hover{
+ background:var(--np-u-deep);
+}
+#npUniversalDemo.np-u-argon .np-u-figure-thumb{
+ border-radius:3px;
+}
+#npUniversalDemo.np-u-argon #npUNativeResearchActions{
+ background:var(--np-u-paper);
+ border-bottom:1px solid var(--np-u-rule);
+ padding:9px 12px 10px;
+}
+#npUniversalDemo.np-u-argon #npUNativeResearchActions button{
+ border-radius:4px!important;
+ box-shadow:none!important;font-size:11px!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeResearchActions button:focus-visible{
+ outline:2px solid var(--np-u-red)!important;
+ outline-offset:1px!important;
+ box-shadow:none!important;
+}
+/* Actual original Product Play and speed: follow ARGON's thin single ring.
+   The same controller receives clicks; no duplicate TTS or speed state. */
+#npUniversalDemo.np-u-argon #npUNativeTools{
+ min-height:90px;padding:10px 12px;
+ background:var(--np-u-paper)!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-native-tools-title{
+ font:600 9px/1.2 'Source Sans 3',system-ui,sans-serif;
+ letter-spacing:.06em;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools #gbFloatingControls > button,
+#npUniversalDemo.np-u-argon #npUNativeTools .hrail-bottom-btn{
+ background:transparent!important;
+ border:1px solid var(--np-u-rule)!important;
+ border-radius:4px!important;
+ box-shadow:none!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember-playwrap{
+ border:1px solid var(--np-u-red)!important;
+ border-radius:50%!important;
+ background:var(--np-u-white)!important;
+ box-shadow:none!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember{
+ border:0!important;border-radius:50%!important;background:transparent!important;
+ box-shadow:none!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gbs-rail-spdbadge{
+ border:0!important;border-radius:3px!important;
+ font:650 9px/1 'JetBrains Mono',Consolas,monospace!important;
+ color:var(--np-u-red)!important;
+ background:var(--np-u-paper)!important;
+ box-shadow:none!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember-expand{
+ border-radius:4px!important;
+ border:1px solid var(--np-u-rule)!important;
+ background:var(--np-u-white)!important;
+ box-shadow:0 10px 24px rgba(0,0,0,.08)!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember-expand [role="radio"]{
+ border-radius:3px!important;
+ font-family:'JetBrains Mono',Consolas,monospace!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools :is(button,.gb-ember-playwrap):hover{
+ color:var(--np-u-red)!important;
+}
+@media(min-width:1121px){
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools{
+  bottom:49px!important;left:0!important;width:47px!important;
+  border:0!important;box-shadow:none!important;
+  background:var(--np-u-paper)!important;
+ }
+}
+@media(max-width:1120px){
+ #npUniversalDemo.np-u-argon .np-u-left,#npUniversalDemo.np-u-argon .np-u-right{
+  border-radius:0!important;
+ }
+ #npUniversalDemo.np-u-argon .np-u-mobilebar{
+  min-height:52px!important;
+  background:var(--np-u-paper)!important;
+  border-color:var(--np-u-rule)!important;
+ }
+ #npUniversalDemo.np-u-argon .np-u-mobilebar button{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  min-height:44px!important;
+  font-size:12px!important;color:var(--np-u-ink);
+ }
+ #npUniversalDemo.np-u-argon .np-u-mobilebar button svg{
+  width:17px;height:17px;color:var(--np-u-red);
+ }
+ #npUniversalDemo.np-u-argon .np-u-left-head{
+  min-height:66px;padding:11px 13px;
+ }
+ #npUniversalDemo.np-u-argon .np-u-left-head .np-u-fold{
+  width:44px!important;min-width:44px!important;
+  height:44px!important;min-height:44px!important;flex:0 0 44px!important;
+ }
+ #npUniversalDemo.np-u-argon .np-u-right-head{min-height:62px}
+ #npUniversalDemo.np-u-argon .np-u-left-full{padding:16px 13px 28px}
+ #npUniversalDemo.np-u-argon #npUNativeTools{
+  min-height:90px;padding:9px 12px 10px;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ #npUniversalDemo.np-u-argon :is(.np-u-sub>summary svg,.np-u-window-chevron svg){transition:none!important}
+}
+
+/* W18: ONE geometry owner for all Product page types.
+   Open: paper centered BETWEEN navigation and research rails.
+   Closed: paper centered AFTER the remaining left rail, up to viewport right.
+   Smooth clamp widths replace the abrupt 1320/1321 breakpoint. */
+@media(min-width:1121px) {
+  body.np-u-preview.np-u-argon-shell:not(.np-u-compact){
+    --np-u-left:clamp(207px,16vw,246px)!important;
+  }
+  body.np-u-preview.np-u-argon-shell:not(.np-u-hide-right){
+    --np-u-right:clamp(305px,25vw,390px)!important;
+  }
+  body.np-u-preview.np-u-argon-shell.np-u-hide-right{
+    --np-u-right:0px!important;
+  }
+  body.np-u-preview.np-u-argon-shell {
+    --np-u-paper-width:min(1100px,calc(100vw - var(--np-u-left) - var(--np-u-right) - 84px));
+    --np-u-paper-left:calc(var(--np-u-left) + 42px + max(0px, calc((100vw - var(--np-u-left) - var(--np-u-right) - 1184px) / 2)));
+  }
+  /* When research is folded, Product actions remain floating on the right.
+     Reserve their exact inset (5vw + 40px) plus 16px breathing room;
+     center the paper in the remaining space instead of under the buttons. */
+  body.np-u-preview.np-u-argon-shell.np-u-hide-right {
+    --np-u-product-action-reserve:max(88px,calc(5vw + 56px));
+    --np-u-paper-width:min(1100px,calc(100vw - var(--np-u-left) - var(--np-u-product-action-reserve) - 84px));
+    --np-u-paper-left:calc((100vw + var(--np-u-left) - var(--np-u-product-action-reserve) - var(--np-u-paper-width)) / 2);
+  }
+  body.np-u-preview.np-u-argon-shell > main.np-u-reader-main,
+  body.np-u-preview.np-u-argon-shell > .page-wrap,
+  body.np-u-preview.np-u-argon-shell .gbs2-world > .page-wrap {
+    display:block!important;
+    box-sizing:border-box!important;
+    width:var(--np-u-paper-width)!important;
+    min-width:0!important;
+    max-width:1100px!important;
+    margin-left:var(--np-u-paper-left)!important;
+    margin-right:0!important;
+    padding-inline:0!important;
+  }
+  body.np-u-preview.np-u-argon-shell > .page-wrap > main.np-u-reader-main,
+  body.np-u-preview.np-u-argon-shell .gbs2-world > .page-wrap > main.np-u-reader-main {
+    box-sizing:border-box!important;
+    width:100%!important;min-width:0!important;max-width:100%!important;
+    margin:0!important;padding-inline:0!important;
+  }
+  /* Direct legacy articles had zero internal paper padding after shrinking.
+     Preserve the existing Product paper and typography while guaranteeing
+     breathing room around real paragraphs and headings. */
+  body.np-u-preview.np-u-argon-shell > main.np-u-reader-main > article[data-reader-projection] {
+    box-sizing:border-box!important;
+    padding-inline:clamp(25px,3vw,48px)!important;
+  }
+  /* Real Product-series article: same comfortable inset as direct articles.
+     Hero imagery, section headings and editorial blocks no longer hit the
+     sheet's outer edge. Applied to all native-series page templates. */
+  body.np-u-preview.np-u-argon-shell .gbs2-world > .page-wrap > main.np-u-reader-main > article[data-reader-projection] {
+    box-sizing:border-box!important;
+    padding-inline:clamp(22px,2.7vw,38px)!important;
+  }
+  /* An editorial publication boundary wraps the real main. Reset the paper
+     margin and width HERE too, otherwise it is applied twice: 0px content. */
+  body.np-u-preview.np-u-argon-shell .gbs2-world > .page-wrap > .wave12-publication-boundary > main.np-u-reader-main {
+    box-sizing:border-box!important;
+    width:100%!important;min-width:0!important;max-width:100%!important;
+    margin:0!important;padding-inline:0!important;
+  }
+  body.np-u-preview.np-u-argon-shell .gbs2-world > .page-wrap > .wave12-publication-boundary > main.np-u-reader-main > article[data-reader-projection] {
+    box-sizing:border-box!important;
+    padding-inline:clamp(25px,3vw,48px)!important;
+  }
+}
+/* Gill series editorial overview: align the 4 actual part cards with
+   the reading column, not the far-left paper edge. */
+body.np-u-preview.np-u-argon-shell .gbs2-world[data-gill-v16] article[data-reader-projection] > .gill-series-overview{
+ box-sizing:border-box;width:100%;max-width:840px;
+ margin-left:auto!important;margin-right:auto!important;
+}
+/* Narrow central column between BOTH desktop rails: avoid cramped 190px
+   cards. The 2-column semantic grid resumes when the reading space fits. */
+@media(min-width:1121px) and (max-width:1199px){
+ body.np-u-preview.np-u-argon-shell .gbs2-world[data-gill-v16] .gill-series-overview > .grid{
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+}
+/* W29: Restore the REAL pre-ARGON Product series navigation, including its
+   Roman chapter cards, circular series progress and live section counter.
+   Scope this solely to pages that actually carry Product's native rail.
+   On smaller widths keep the established Reader drawer and native TTS player. */
+@media(min-width:1360px){
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail{
+  --np-u-left:min(328px,22vw)!important;
+ }
+ /* Native folded rail: width and offset use the same actual 1100px paper maximum. */
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail:has(.gbs2-world.reader-integrated-world--compact){
+  --np-u-left:68px!important;
+  /* The generic paper formula already centers both open and folded states;
+     do not introduce a competing width/offset owner for the compact rail. */
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail .gbs2-world > .gbs-rail{
+  display:flex!important;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail .gbs2-world > .gbs-rail.reader-integrated-rail--compact{
+  /* Product draws two overlapping shadows here; retain just the real edge. */
+  box-shadow:none!important;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail #npUOutline{
+  display:none!important;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail .gbs2-world > .gbs-rail > .np-u-native-roman-compact{
+  display:none;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail .gbs2-world > .gbs-rail.reader-integrated-rail--compact > .np-u-native-roman-compact{
+  display:flex!important;
+  position:absolute!important;top:144px!important;left:8px!important;right:8px!important;
+  z-index:6!important;flex-direction:column!important;align-items:center!important;gap:12px!important;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail .np-u-native-roman-compact .np-u-roman-shortcut{
+  box-sizing:border-box;display:grid;place-items:center;
+  width:48px;min-height:48px;
+  border:1px solid rgba(233,186,112,.35);border-radius:11px;
+  background:rgba(96,65,42,.28);color:#e1bd81;
+  font:italic 700 16px/1 Georgia,serif;
+  box-shadow:inset 0 1px rgba(255,230,170,.08);
+  text-decoration:none;cursor:pointer;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail .np-u-native-roman-compact .np-u-roman-shortcut[aria-current=page]{
+  background:linear-gradient(135deg,#713b27,#3d251d);
+  color:#fff1d0;border-color:#d9a260;
+  box-shadow:inset 0 0 0 1px rgba(255,226,174,.09),0 0 0 2px rgba(182,111,60,.12);
+  cursor:default;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail .np-u-native-roman-compact a.np-u-roman-shortcut:hover{
+  background:#604131;color:#ffe2a5;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail .np-u-native-roman-compact a.np-u-roman-shortcut:focus-visible{
+  outline:2px solid #ffe0a0;outline-offset:3px;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail #npUResearch #npUNativeResearchActions{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;padding:8px 12px!important;
+  width:100%!important;box-sizing:border-box!important;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail #npUResearch #npUNativeResearchActions > button{
+  width:100%!important;min-width:0!important;max-width:none!important;
+  box-sizing:border-box!important;margin:0!important;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail #npUResearch > #npUNativeTools{
+  display:block!important;position:relative!important;flex:0 0 auto!important;
+  width:calc(100% - 20px)!important;min-width:0!important;
+  padding:0!important;margin:0 10px 10px!important;
+ }
+}
+
+/* VISUAL-CLICK QA 2026-11-13: original Product theme spans are absolutely
+   positioned over the whole button. Inside the Argon text action this makes
+   the sun/moon literally OVERPRINT "Тема" and creates a ghost outline at night.
+   Restore an ordinary side-by-side icon + caption without touching the native
+   Product handler or its aria-pressed state. */
+#npUniversalDemo.np-u-argon #npUNativeResearchActions #gbFcTheme{
+ display:flex!important;align-items:center!important;
+ justify-content:center!important;gap:8px!important;
+ overflow:hidden;
+}
+#npUniversalDemo.np-u-argon #npUNativeResearchActions #gbFcTheme :is(.theme-icon-sun,.theme-icon-moon){
+ position:relative!important;inset:auto!important;
+ left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+ transform:none!important;translate:none!important;
+ width:18px!important;height:18px!important;
+ min-width:18px!important;min-height:18px!important;max-width:18px!important;
+ flex:0 0 18px!important;
+ opacity:1!important;visibility:visible!important;
+ display:grid!important;place-items:center!important;
+ border:0!important;border-radius:0!important;
+ box-shadow:none!important;background:transparent!important;
+ pointer-events:none;
+}
+#npUniversalDemo.np-u-argon #npUNativeResearchActions #gbFcTheme[aria-pressed="false"] .theme-icon-moon,
+#npUniversalDemo.np-u-argon #npUNativeResearchActions #gbFcTheme[aria-pressed="true"] .theme-icon-sun{
+ display:none!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeResearchActions #gbFcTheme::after{
+ position:relative;display:inline-block;
+ color:inherit;line-height:1.2;
+}
+
+#npUniversalDemo.np-u-argon #npUNativeResearchActions #gbFcTheme::before{
+ content:none!important;display:none!important;
+ animation:none!important;transition:none!important;
+}
+
+/* ARGON HOVER QA: Product search has a decorative ::before ripple rendered
+   as a stretched oval across the new wide label. Suppress only that ripple;
+   the native search button, label (::after), listeners and focus remain. */
+#npUniversalDemo.np-u-argon #npUNativeResearchActions #gbFcSearch::before{
+ content:none!important;display:none!important;
+ border:0!important;box-shadow:none!important;
+ animation:none!important;transition:none!important;
+}
+
+/* The Product page's native MOBILE topbar remains visible at 1121–1200px.
+   The ARGON desktop rail starts at 1121px, so both layered on top of each
+   other and the bookmark literally intercepted the Context-close button.
+   This is a real click obstruction, not a screenshot-only visual issue. */
+@media(min-width:1121px){
+ body.np-u-preview.np-u-argon-shell .hmtop[data-mobile-topbar]{
+   display:none!important;
+   visibility:hidden!important;
+   pointer-events:none!important;
+ }
+}
+
+/* ARGON_AUDIO_INLINE_FINAL_V2 */
+/* ARGON AUDIO V2 — original LeftNavigation structure, original Product actions. */
+#npUniversalDemo.np-u-argon #npUNativeTools{
+ display:flex!important;flex-direction:column!important;
+ height:auto!important;min-height:0!important;
+ padding:12px 11px 10px!important;
+ overflow:visible!important;background:var(--np-u-paper)!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-native-tools-title{display:none!important}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-native-toolrows{
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;
+ gap:8px!important;min-height:0!important;height:auto!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools #gbFloatingControls.np-u-argon-audio{
+ display:grid!important;position:relative!important;
+ grid-template-columns:36px minmax(0,1fr) 45px 31px!important;
+ grid-template-rows:38px auto!important;
+ align-items:center!important;justify-content:stretch!important;
+ gap:4px 6px!important;width:100%!important;height:auto!important;
+ max-height:none!important;min-height:38px!important;
+ margin:0!important;padding:0!important;background:transparent!important;
+ border:0!important;overflow:visible!important;isolation:isolate;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember-playwrap{
+ grid-area:1/1/2/2;justify-self:center;align-self:center;
+ width:35px!important;height:35px!important;min-width:35px!important;
+ flex:none!important;border:0!important;background:transparent!important;
+ box-shadow:none!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember-wrap{
+ width:35px!important;height:35px!important;min-width:35px!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember{
+ display:grid!important;place-items:center!important;
+ width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;
+ color:var(--np-u-ink)!important;background:var(--np-u-white)!important;
+ border:1px solid var(--np-u-red)!important;border-radius:50%!important;
+ box-shadow:none!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember__ring-svg{display:none!important}
+#npUniversalDemo.np-u-argon #npUNativeTools :is(.gb-ember__glyph,.gb-ember__pause,.gb-ember__check){
+ position:absolute!important;inset:50% auto auto 50%!important;
+ width:17px!important;height:17px!important;
+ margin:0!important;transform:translate(-50%,-50%)!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gbs-rail-spdbadge{
+ display:none!important;visibility:hidden!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-argon-audio-caption{
+ grid-area:1/2/2/3;min-width:0;display:grid;gap:1px;
+ text-align:left;overflow:hidden;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-argon-audio-caption strong{
+ font:600 11px/1.25 'Source Sans 3',system-ui,sans-serif;
+ color:var(--np-u-ink);white-space:nowrap;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-argon-audio-caption small{
+ font:400 9.2px/1.2 'Source Sans 3',system-ui,sans-serif;
+ color:var(--np-u-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-argon-rate-trigger{
+ display:grid!important;place-items:center!important;
+ grid-area:1/3/2/4;
+ position:relative!important;inset:auto!important;
+ width:45px!important;height:29px!important;min-width:45px!important;min-height:29px!important;
+ padding:0!important;margin:0!important;
+ color:var(--np-u-ink)!important;background:var(--np-u-white)!important;
+ border:1px solid var(--np-u-rule)!important;border-radius:4px!important;
+ box-shadow:none!important;
+ font:600 10px/1 'JetBrains Mono',Consolas,monospace!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-argon-rate-trigger[aria-expanded=true]{
+ color:var(--np-u-red)!important;background:var(--np-u-red-soft)!important;
+ border-color:var(--np-u-red)!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools #gbFloatingControls .gb-save{
+ grid-area:1/4/2/5;justify-self:end;
+ position:relative!important;inset:auto!important;
+ display:grid!important;place-items:center!important;
+ width:30px!important;height:30px!important;min-width:30px!important;min-height:30px!important;
+ padding:0!important;margin:0!important;
+ border:1px solid var(--np-u-rule)!important;border-radius:4px!important;
+ background:transparent!important;color:var(--np-u-muted)!important;box-shadow:none!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .hrail-bottom{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ gap:4px!important;width:100%!important;height:35px!important;min-height:35px!important;
+ padding:0!important;margin:0!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .hrail-bottom :is(.hrail-bottom-btn,.np-u-native-back){
+ display:grid!important;place-items:center!important;
+ position:relative!important;inset:auto!important;
+ width:30px!important;height:30px!important;min-width:30px!important;min-height:30px!important;
+ margin:0!important;padding:0!important;
+ border:1px solid var(--np-u-rule)!important;border-radius:4px!important;
+ background:transparent!important;color:var(--np-u-muted)!important;
+ box-shadow:none!important;
+}
+
+/* Original six Product radio options, now a non-overlapping in-flow row. */
+#npUniversalDemo.np-u-argon #npUNativeTools #gbFloatingControls.np-u-argon-audio .gb-ember-expand{
+ grid-area:2/1/3/5!important;
+ display:none!important;position:relative!important;
+ inset:auto!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
+ transform:none!important;translate:none!important;
+ box-sizing:border-box!important;width:100%!important;min-width:0!important;
+ max-width:none!important;height:auto!important;max-height:none!important;
+ padding:8px 1px 0!important;margin:1px 0 0!important;
+ border:0!important;border-top:1px solid var(--np-u-rule)!important;
+ border-radius:0!important;background:transparent!important;box-shadow:none!important;
+ visibility:hidden!important;opacity:0!important;clip-path:none!important;
+ flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;
+ flex-wrap:wrap!important;gap:3px!important;pointer-events:none!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools #gbFloatingControls.np-u-argon-audio.np-u-argon-rate-open .gb-ember-expand{
+ display:flex!important;visibility:visible!important;opacity:1!important;
+ pointer-events:auto!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember-expand [data-speed]{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ width:auto!important;min-width:29px!important;height:25px!important;min-height:25px!important;
+ padding:3px 4px!important;margin:0!important;
+ border:0!important;border-radius:3px!important;
+ background:var(--np-u-white)!important;color:var(--np-u-muted)!important;
+ font:600 9px/1 'JetBrains Mono',Consolas,monospace!important;
+ box-shadow:none!important;white-space:nowrap!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember-expand [data-speed][aria-checked=true]{
+ background:var(--np-u-red)!important;color:var(--np-u-white)!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember-expand .gb-ember-expand__stop{
+ width:23px!important;min-width:23px!important;height:25px!important;
+ margin:0!important;padding:0!important;
+ border:1px solid var(--np-u-rule)!important;border-radius:3px!important;
+ color:var(--np-u-red)!important;background:transparent!important;
+ font-size:10px!important;
+}
+/* Argon compact: Play only, with no clipped controls or floating badge. */
+@media(min-width:1121px){
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools{
+   display:grid!important;place-items:center!important;
+   width:48px!important;height:50px!important;min-height:50px!important;
+   left:0!important;bottom:49px!important;padding:6px!important;
+   background:var(--np-u-paper)!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools .np-u-native-toolrows{
+   display:block!important;width:36px!important;height:36px!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools #gbFloatingControls.np-u-argon-audio{
+   display:grid!important;place-items:center!important;
+   grid-template-columns:36px!important;grid-template-rows:36px!important;
+   width:36px!important;height:36px!important;min-height:36px!important;
+   padding:0!important;margin:0!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools #gbFloatingControls .gb-ember-playwrap{
+   display:grid!important;grid-area:1/1/2/2!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools :is(.np-u-argon-audio-caption,.np-u-argon-rate-trigger,.gb-save,.gb-ember-expand,.hrail-bottom){
+   display:none!important;
+ }
+ /* The Product save action has a more specific display:grid selector.
+    It belongs in the expanded audio row, not outside the 48px mini rail. */
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools #gbFloatingControls .gb-save{
+   display:none!important;visibility:hidden!important;pointer-events:none!important;
+ }
+}
+
+/* Product's historical bloom animation made each radio opacity:0 and
+   translated it even though the parent was laid out inline. Override all
+   of those per-button presentation properties in the Argon inline mode. */
+#npUniversalDemo.np-u-argon #npUNativeTools #gbFloatingControls.np-u-argon-rate-open .gb-ember-expand :is([data-speed],.gb-ember-expand__stop){
+ opacity:1!important;visibility:visible!important;
+ transform:none!important;translate:none!important;scale:none!important;
+ clip-path:none!important;filter:none!important;
+ pointer-events:auto!important;transition:background-color .12s,color .12s!important;
+}
+
+/* 1121–1320px: keep the title fully visible instead of clipping "Чтение вслух".
+   Recover horizontal space from adjacent controls without shrinking Play. */
+@media(min-width:1121px) and (max-width:1320px){
+ #npUniversalDemo.np-u-argon #npUNativeTools #gbFloatingControls.np-u-argon-audio{
+   grid-template-columns:36px minmax(0,1fr) 38px 28px!important;
+   column-gap:5px!important;
+ }
+ #npUniversalDemo.np-u-argon #npUNativeTools .np-u-argon-rate-trigger{
+   width:38px!important;min-width:38px!important;
+ }
+ #npUniversalDemo.np-u-argon #npUNativeTools #gbFloatingControls .gb-save{
+   width:28px!important;min-width:28px!important;
+ }
+ #npUniversalDemo.np-u-argon #npUNativeTools .np-u-argon-audio-caption small{
+   display:none;
+ }
+}
+
+/* ARGON_RESEARCH_V3_PATCH_20261113 */
+/* ARGON RESEARCH V3 — source-reference reconstruction of
+   RightResearchPanel.tsx / BookTOC.tsx / reader.css (original ARGON UPDATE).
+   All actual text, scriptures, images, footnotes, and native actions are
+   drawn from the real article. Local prototype only. */
+/* Independent in-panel Table of Contents disclosure, separate from
+   the original ARGON rail-wide fold and chapter-level details. */
+#npUniversalDemo.np-u-argon .np-u-toc-head{
+ display:flex;align-items:center;justify-content:space-between;gap:9px;
+ padding:0 1px 12px 1px;border-bottom:1px solid var(--np-u-rule);
+ margin:0 0 13px;
+}
+#npUniversalDemo.np-u-argon .np-u-toc-label{min-width:0;display:grid;gap:3px}
+#npUniversalDemo.np-u-argon .np-u-toc-label .np-u-paper-title{
+ font:650 10px/1.3 'Source Sans 3',sans-serif;
+ letter-spacing:.085em;padding:0!important;
+}
+#npUniversalDemo.np-u-argon .np-u-toc-label .np-u-rail-stat{
+ margin:0!important;padding:0!important;
+ font:450 10px/1.25 'Source Sans 3',sans-serif;
+}
+#npUniversalDemo.np-u-argon #npUTocContentFold{
+ position:relative;display:grid;place-items:center;flex:0 0 29px;
+ width:29px;height:29px;margin:0;padding:0;
+ background:transparent;border:0;border-radius:3px;
+ color:var(--np-u-muted);cursor:pointer;
+}
+#npUniversalDemo.np-u-argon #npUTocContentFold:hover,
+#npUniversalDemo.np-u-argon #npUTocContentFold:focus-visible{
+ color:var(--np-u-red);background:var(--np-u-deep);
+}
+#npUniversalDemo.np-u-argon #npUTocContentFold svg{
+ width:16px;height:16px;transition:transform .15s;
+}
+#npUniversalDemo.np-u-argon .np-u-toc-closed #npUTocContentFold svg{
+ transform:rotate(-90deg);
+}
+#npUniversalDemo.np-u-argon .np-u-left-full.np-u-toc-closed .np-u-nav{
+ display:none!important;visibility:hidden!important;
+}
+#npUniversalDemo.np-u-argon .np-u-left-full.np-u-toc-closed .np-u-toc-head{
+ border-bottom:0;
+}
+#npUniversalDemo.np-u-argon .np-u-left-full .np-u-nav{
+ margin-top:0!important;
+}
+/* Original ARGON's chapter-following line between toolbar and 3 modules. */
+#npUniversalDemo.np-u-argon .np-u-research-follow{
+ flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;
+ min-height:29px;padding:0 16px 8px;
+ font:450 10px/1.35 'Source Sans 3',sans-serif;
+ color:var(--np-u-muted);background:var(--np-u-paper);
+ border-bottom:0;
+}
+#npUniversalDemo.np-u-argon .np-u-research-follow>span:first-child{
+ display:inline-flex;align-items:center;gap:7px;
+}
+#npUniversalDemo.np-u-argon .np-u-research-follow i{
+ width:5px;height:5px;display:block;flex:0 0 5px;
+ border-radius:50%;background:#748b79;
+}
+#npUniversalDemo.np-u-argon .np-u-research-follow>span:last-child{
+ font-family:'JetBrains Mono',Consolas,monospace;font-size:9px;
+ white-space:nowrap;
+}
+#npUniversalDemo.np-u-argon .np-u-right-scroll{
+ padding:11px 12px 18px!important;overflow-y:auto!important;
+ overscroll-behavior:contain;
+}
+#npUniversalDemo.np-u-argon :is(#npUSectionHost,#npUOtherHost){
+ display:flex;flex-direction:column;gap:9px;
+}
+/* Original ARGON independent research-window geometry and controls. */
+#npUniversalDemo.np-u-argon .np-u-research-module{
+ display:block;position:relative;min-width:0;flex:0 0 auto;
+ margin:0!important;padding:0!important;
+ border:1px solid var(--np-u-rule);border-radius:5px;
+ background:var(--np-u-white);
+ overflow:hidden;
+}
+#npUniversalDemo.np-u-argon .np-u-research-module:has(> .np-u-window[open]){
+ border-color:var(--np-u-rule);
+}
+#npUniversalDemo.np-u-argon .np-u-research-module.is-focused{
+ border-color:var(--np-u-red)!important;
+}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-window{
+ margin:0!important;padding:0!important;display:block;
+ border:0!important;border-radius:0!important;background:transparent!important;
+ box-shadow:none!important;overflow:visible;
+}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-window>summary{
+ box-sizing:border-box;display:flex;position:relative;
+ align-items:center;gap:8px;min-height:48px;
+ padding:6px 84px 6px 12px!important;margin:0!important;
+ border:0!important;border-radius:0!important;
+ background:var(--np-u-deep)!important;list-style:none;
+ cursor:pointer;color:var(--np-u-ink);
+}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-window:not([open])>summary{
+ background:var(--np-u-paper)!important;
+}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-window[open]>summary{
+ border-bottom:1px solid var(--np-u-rule)!important;
+}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-window>summary::-webkit-details-marker{
+ display:none;
+}
+#npUniversalDemo.np-u-argon .np-u-instrument-number{
+ flex:0 0 19px;display:block;width:19px;margin:0;padding:0;
+ color:var(--np-u-muted);
+ font:500 9px/1 'JetBrains Mono',Consolas,monospace;
+}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-window>summary strong{
+ flex:0 1 auto;min-width:0;margin:0;
+ font:600 12px/1.3 'Source Sans 3',sans-serif;
+ letter-spacing:.012em;color:var(--np-u-ink);
+ white-space:normal;overflow-wrap:anywhere;
+}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-window-meta{
+ flex:0 0 auto;min-width:0;margin-left:auto;margin-right:3px;
+ color:var(--np-u-muted);
+ font:450 9px/1.2 'JetBrains Mono',Consolas,monospace;
+}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-window-chevron{
+ display:grid;place-items:center;position:absolute;right:6px;top:10px;
+ width:27px;height:28px;min-width:27px;
+ color:var(--np-u-muted);
+}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-window-chevron svg{
+ width:15px;height:15px;
+}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-module-focus{
+ position:absolute;z-index:2;top:2px;right:37px;
+ width:44px;min-width:44px;height:44px;min-height:44px;display:grid;place-items:center;
+ padding:0;margin:0;border:0;border-radius:3px;
+ color:var(--np-u-muted);background:transparent;box-shadow:none;
+}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-module-focus svg{
+ display:block;width:14px;height:14px;stroke:currentColor;
+}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-module-focus:hover,
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-module-focus[aria-pressed=true]{
+ color:var(--np-u-red);background:var(--np-u-red-soft);
+}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-window-body{
+ padding:14px 15px 16px!important;
+ max-height:min(45vh,470px);overflow:auto!important;
+ overscroll-behavior:contain;
+ min-width:0;overflow-wrap:anywhere;word-break:normal;hyphens:auto;
+ font:400 12.6px/1.62 'Source Sans 3',sans-serif;
+}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-window-body h3{
+ font:500 22px/1.2 'Cormorant Garamond',Georgia,serif;
+ margin:0 0 12px;color:var(--np-u-ink);
+}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-window-body .np-u-quotation{
+ font:400 13px/1.72 'Lora',Georgia,serif;
+ margin:0 0 12px;padding-left:11px;
+ border-left:1px solid var(--np-u-rule);
+}
+#npUniversalDemo.np-u-argon.np-u-research-focused .np-u-research-module:not(.is-focused){
+ display:none!important;
+}
+#npUniversalDemo.np-u-argon.np-u-research-focused .np-u-research-module.is-focused .np-u-window-body{
+ max-height:calc(100dvh - 228px)!important;
+ min-height:min(36vh,220px);
+}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-verse-chips{
+ display:flex;flex-wrap:wrap;gap:7px;
+}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-verse-chip{
+ display:inline-flex;align-items:center;justify-content:center;
+ min-height:31px;padding:5px 10px;
+ border:1px solid var(--np-u-rule);border-radius:3px;
+ font:550 11px/1.4 'Source Sans 3',sans-serif;
+ background:var(--np-u-white);color:var(--np-u-red);
+}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-verse-chip:hover{
+ border-color:var(--np-u-red);background:var(--np-u-red-soft);
+}
+@media(max-width:1120px){
+ #npUniversalDemo.np-u-argon .np-u-right-scroll{
+   padding-bottom:82px!important;
+ }
+ #npUniversalDemo.np-u-argon .np-u-research-module .np-u-window-body{
+   max-height:55vh;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ #npUniversalDemo.np-u-argon #npUTocContentFold svg{
+   transition:none;
+ }
+}
+
+/* A closed TOC retains useful current-chapter context instead of turning
+   the entire 246px ARGON navigation column into an empty rectangle. */
+#npUniversalDemo.np-u-argon .np-u-toc-peek{
+ display:none;gap:7px;min-width:0;
+ padding:8px 4px 2px;
+}
+#npUniversalDemo.np-u-argon .np-u-left-full.np-u-toc-closed .np-u-toc-peek{
+ display:grid;
+}
+#npUniversalDemo.np-u-argon .np-u-peek-eyebrow{
+ font:600 9px/1.3 'Source Sans 3',sans-serif;
+ letter-spacing:.095em;color:var(--np-u-muted);
+}
+#npUniversalDemo.np-u-argon .np-u-peek-current{
+ color:var(--np-u-ink);
+ font:500 13px/1.5 'Source Sans 3',sans-serif;
+ text-decoration:none;overflow-wrap:anywhere;
+}
+#npUniversalDemo.np-u-argon .np-u-peek-current:hover{
+ color:var(--np-u-red);
+}
+#npUniversalDemo.np-u-argon #npUTocPeekExpand{
+ display:inline-flex;align-items:center;gap:5px;justify-self:start;
+ width:auto;max-width:100%;min-height:27px;margin-top:5px;padding:2px 0;
+ background:transparent;color:var(--np-u-red);
+ border:0;box-shadow:none;font:500 11px/1.3 'Source Sans 3',sans-serif;
+}
+#npUniversalDemo.np-u-argon #npUTocPeekExpand svg{
+ width:13px;height:13px;
+}
+
+/* ARGON UPDATE / CenterArticle.tsx: exact border-only disclosure geometry.
+   The actual textual points are sourced from published article paragraphs.
+   Never wrap these two center controls in a card or badge. */
+body.np-u-preview .np-u-central-overview,
+body.np-u-preview .np-u-central-contents{
+ box-sizing:border-box;width:100%;max-width:100%;
+ margin:24px 0 0!important;padding:0!important;
+ background:transparent!important;color:var(--np-u-ink);
+ border:0!important;border-top:1px solid var(--np-u-rule)!important;
+ border-radius:0!important;box-shadow:none!important;
+ font-family:'Source Sans 3',-apple-system,'Segoe UI',sans-serif;
+}
+body.np-u-preview .np-u-central-contents{
+ margin:0 0 28px!important;border-top:0!important;
+ border-bottom:1px solid var(--np-u-rule)!important;
+}
+body.np-u-preview .np-u-central-overview>summary,
+body.np-u-preview .np-u-central-contents details>summary{
+ box-sizing:border-box;display:flex!important;align-items:center!important;
+ justify-content:space-between!important;gap:12px;
+ min-height:39px;padding:9px 0!important;margin:0!important;
+ color:var(--np-u-muted)!important;background:transparent!important;
+ border:0!important;border-radius:0!important;box-shadow:none!important;
+ list-style:none!important;cursor:pointer;
+ font:500 13px/1.5 'Source Sans 3',system-ui,sans-serif!important;
+}
+body.np-u-preview :is(.np-u-central-overview>summary,.np-u-central-contents details>summary)::-webkit-details-marker{display:none!important}
+body.np-u-preview :is(.np-u-central-overview>summary,.np-u-central-contents details>summary)::marker{content:''}
+body.np-u-preview :is(.np-u-central-overview>summary,.np-u-central-contents details>summary):is(:hover,:focus-visible){
+ color:var(--np-u-red)!important;background:transparent!important;
+}
+body.np-u-preview .np-u-central-meta{
+ margin-left:auto!important;color:var(--np-u-muted)!important;
+ white-space:nowrap;font:450 10px/1.5 'JetBrains Mono',Consolas,monospace;
+}
+body.np-u-preview .np-u-central-chevron{
+ display:inline-block;font:500 17px/10px Arial,sans-serif;
+ vertical-align:middle;margin-left:4px;transition:transform .14s ease;
+}
+body.np-u-preview .np-u-central-overview[open]>summary .np-u-central-chevron,
+body.np-u-preview .np-u-central-contents details[open]>summary .np-u-central-chevron{
+ transform:rotate(90deg);
+}
+body.np-u-preview .np-u-central-points{
+ list-style:decimal outside!important;margin:0!important;
+ padding:0 0 16px 23px!important;
+ color:var(--np-u-ink)!important;background:transparent!important;
+ font:400 14px/1.63 'Lora',Georgia,serif!important;
+}
+body.np-u-preview .np-u-central-points li{
+ list-style:decimal outside!important;margin:0 0 7px!important;
+ padding:0!important;background:transparent!important;
+ border:0!important;border-radius:0!important;box-shadow:none!important;
+}
+body.np-u-preview .np-u-central-contents ol{
+ list-style:none!important;margin:0!important;padding:0 0 14px 0!important;
+}
+body.np-u-preview .np-u-central-contents li{list-style:none!important;margin:0!important;padding:0!important}
+body.np-u-preview .np-u-central-contents li a{
+ display:flex;align-items:baseline;gap:11px;padding:6px 0;
+ color:var(--np-u-ink)!important;text-decoration:none!important;
+ background:transparent!important;border-radius:0!important;
+ font:400 13px/1.46 'Lora',Georgia,serif!important;
+}
+body.np-u-preview .np-u-central-contents li a span:first-child{
+ flex:0 0 26px;color:var(--np-u-red);
+ font:500 11px/1.45 'JetBrains Mono',Consolas,monospace;
+}
+body.np-u-preview .np-u-central-contents li a:hover span:last-child{
+ color:var(--np-u-red)!important;text-decoration:underline;text-underline-offset:3px;
+}
+@media(max-width:600px){
+ body.np-u-preview .np-u-central-overview{margin-top:18px!important}
+ body.np-u-preview .np-u-central-points{font-size:13px!important;line-height:1.65!important}
+}
+
+/* The pre-existing editorial summary remains in the source, but never
+   visually doubles the new ARGON disclosure when intentionally relocated. */
+body.np-u-preview article[data-reader-projection] > .summary-card[hidden]{display:none!important}
+
+/* Product-wide search and theme stay in the ARGON LEFT rail on desktop.
+   Moving the SAME DOM buttons retains native Product event handlers. */
+@media(min-width:1121px){
+ #npUniversalDemo.np-u-argon #npUOutline>#npUNativeResearchActions{
+  box-sizing:border-box;display:grid!important;grid-template-columns:1fr 1fr;
+  flex:none;align-items:center;gap:7px;min-height:51px;
+  width:100%!important;padding:7px 11px!important;
+  background:var(--np-u-paper)!important;
+  border-bottom:1px solid var(--np-u-rule)!important;
+ }
+ #npUniversalDemo.np-u-argon #npUOutline>#npUNativeResearchActions button{
+  display:flex!important;justify-content:center;align-items:center;
+  width:100%!important;min-width:0!important;height:34px!important;
+  margin:0!important;padding:5px 7px!important;
+  background:var(--np-u-white)!important;
+  border:1px solid var(--np-u-rule)!important;
+  color:var(--np-u-ink)!important;
+ }
+ #npUniversalDemo.np-u-argon #npUOutline>#npUNativeResearchActions button:hover{
+  background:var(--np-u-red-soft)!important;
+  border-color:var(--np-u-red)!important;color:var(--np-u-red)!important;
+ }
+ #npUniversalDemo.np-u-argon #npUOutline>#npUNativeResearchActions button:focus-visible{
+  border-color:transparent!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUOutline>#npUNativeResearchActions{
+  grid-template-columns:1fr;gap:4px;padding:5px 6px!important;
+  min-height:80px;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUOutline>#npUNativeResearchActions button{
+  width:35px!important;height:32px!important;padding:5px!important;
+  overflow:hidden!important;gap:0!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUOutline>#npUNativeResearchActions button::after{
+  content:none!important;display:none!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUOutline>#npUNativeResearchActions #gbFcTheme :is(.theme-icon-sun,.theme-icon-moon){
+  width:17px!important;min-width:17px!important;flex-basis:17px!important;
+ }
+}
+/* The native Bible citation tooltip is appended directly to BODY. On mobile,
+   the ARGON context sheet z-index=19000 was covering its z-index=15000. */
+@media(max-width:1120px){
+ body.np-u-preview.np-u-modal-open>span.btip.gb-floating-tip.is-open{
+  z-index:20050!important;
+ }
+}
+
+/* Real series-style Product audio controls are structurally different
+   from the floating-article controls. Keep them operable in ARGON's rail. */
+#npUniversalDemo.np-u-argon .np-u-series-native-tools .np-u-native-toolrows{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ gap:12px!important;padding:0!important;
+}
+#npUniversalDemo.np-u-argon .np-u-series-native-tools .gbs-rail-playwrap{
+ display:flex!important;position:relative!important;align-items:center!important;
+ justify-content:flex-start!important;width:auto!important;height:38px!important;
+ padding:0!important;margin:0!important;max-width:100%!important;
+}
+#npUniversalDemo.np-u-argon .np-u-series-native-tools .gb-ember-wrap{
+ width:38px!important;height:38px!important;position:relative!important;
+}
+#npUniversalDemo.np-u-argon .np-u-series-native-tools button.gb-ember{
+ width:35px!important;height:35px!important;min-height:35px!important;
+ background:var(--np-u-white)!important;border:1px solid var(--np-u-red)!important;
+ border-radius:50%!important;box-shadow:none!important;color:var(--np-u-red)!important;
+}
+#npUniversalDemo.np-u-argon .np-u-series-native-tools .gbs-rail-spdbadge{
+ color:var(--np-u-red)!important;font-size:10px!important;
+}
+#npUniversalDemo.np-u-argon .np-u-series-native-tools .gb-save{
+ position:static!important;inset:auto!important;flex:0 0 34px!important;
+ display:grid!important;place-items:center!important;
+ width:34px!important;height:34px!important;margin:0!important;
+ background:var(--np-u-white)!important;border:1px solid var(--np-u-rule)!important;
+ border-radius:4px!important;color:var(--np-u-ink)!important;
+}
+@media(min-width:1121px){
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon .np-u-series-native-tools .gb-save{
+  display:none!important;
+ }
+}
+
+/* ARGON research uses the Product's real glossary definitions, not demo terms. */
+#npUniversalDemo.np-u-argon .np-u-lexicon-list{display:grid;gap:12px}
+#npUniversalDemo.np-u-argon .np-u-lexicon-entry{
+ display:grid;gap:6px;padding:0 0 11px;margin:0 0 3px;
+ border:0;border-bottom:1px solid var(--np-u-rule);border-radius:0;
+ background:transparent;box-shadow:none;
+}
+#npUniversalDemo.np-u-argon .np-u-lexicon-entry:last-child{border-bottom:0;padding-bottom:0}
+#npUniversalDemo.np-u-argon .np-u-lexicon-kicker{
+ color:var(--np-u-muted);font:500 10px/1.25 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo.np-u-argon .np-u-lexicon-entry h4{
+ color:var(--np-u-ink);margin:0;padding:0;
+ font:500 23px/1.15 'Cormorant Garamond',Georgia,serif;
+}
+#npUniversalDemo.np-u-argon .np-u-lexicon-entry p{
+ color:var(--np-u-ink);margin:0;
+ font:400 12.8px/1.6 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo.np-u-argon .np-u-lexicon-entry button{
+ width:max-content;max-width:100%;border:0!important;padding:5px 0!important;
+ color:var(--np-u-red)!important;background:transparent!important;
+ font:500 11px/1.5 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo.np-u-argon .np-u-lexicon-entry button:hover{
+ text-decoration:underline;text-underline-offset:2px;
+}
+#npUniversalDemo.np-u-argon .np-u-research-follow #npUFollowToggle{
+ display:inline-flex;align-items:center;gap:7px;
+ padding:1px 0 0;margin:0;border:0;background:transparent!important;
+ color:var(--np-u-muted);font:450 10px/1.35 'Source Sans 3',system-ui,sans-serif;
+ cursor:pointer;
+}
+#npUniversalDemo.np-u-argon .np-u-research-follow #npUFollowToggle[aria-pressed=false] i{background:var(--np-u-muted)}
+#npUniversalDemo.np-u-argon .np-u-research-follow #npUFollowToggle:is(:hover,:focus-visible){
+ color:var(--np-u-red);
+}
+#npUniversalDemo.np-u-argon #npUNativeResearchActions .np-u-global-action-label{
+ display:inline!important;position:static!important;
+ font:500 11px/1.2 'Source Sans 3',system-ui,sans-serif;
+ color:inherit!important;pointer-events:none;
+}
+@media(min-width:1121px){
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeResearchActions .np-u-global-action-label{
+  display:none!important;
+ }
+}
+
+/* W16: removed 21vh caps that chopped the research body. */
+
+/* ARGON UPDATE right-panel header: 'Аналитика', history, bookmarks, collapse.
+   All buttons have a real native action; icons are not decorative badges. */
+#npUniversalDemo.np-u-argon .np-u-right-head{
+ position:relative;gap:10px!important;
+}
+#npUniversalDemo.np-u-argon .np-u-right-head > .np-u-right-actions{
+ display:flex!important;align-items:center!important;justify-content:flex-end!important;
+ flex:0 0 auto!important;gap:2px!important;min-width:0!important;
+}
+#npUniversalDemo.np-u-argon .np-u-right-actions > button{
+ appearance:none;display:grid!important;place-items:center!important;
+ width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;
+ margin:0!important;padding:5px!important;line-height:1!important;
+ background:transparent!important;border:0!important;border-radius:3px!important;
+ color:var(--np-u-muted)!important;box-shadow:none!important;cursor:pointer!important;
+}
+#npUniversalDemo.np-u-argon .np-u-right-actions > button svg{
+ display:block!important;width:16px!important;height:16px!important;
+ transform:none!important;pointer-events:none!important;
+}
+#npUniversalDemo.np-u-argon .np-u-right-actions > button:is(:hover,:focus-visible),
+#npUniversalDemo.np-u-argon .np-u-right-actions > button[aria-expanded=true]{
+ color:var(--np-u-red)!important;background:var(--np-u-red-soft)!important;
+}
+#npUniversalDemo.np-u-argon .np-u-right-actions > button::before,
+#npUniversalDemo.np-u-argon .np-u-right-actions > button::after{
+ content:none!important;display:none!important;
+}
+/* A real navigation history, drawn solely from chapter visits in this tab. */
+#npUniversalDemo.np-u-argon #npUHistoryDrawer{
+ position:absolute;z-index:20;top:56px;right:12px;
+ box-sizing:border-box;width:min(342px,calc(100% - 24px));
+ padding:13px 13px 11px;margin:0;
+ background:var(--np-u-white);color:var(--np-u-ink);
+ border:1px solid var(--np-u-rule);border-radius:5px;
+ box-shadow:0 11px 28px rgba(20,16,12,.13);
+ max-height:min(45vh,390px);overflow:auto;overscroll-behavior:contain;
+}
+#npUniversalDemo.np-u-argon #npUHistoryDrawer[hidden]{display:none!important}
+#npUniversalDemo.np-u-argon #npUHistoryDrawer > strong{
+ display:block;font:600 12px/1.4 'Source Sans 3',system-ui,sans-serif;
+ margin-bottom:10px;
+}
+#npUniversalDemo.np-u-argon #npUHistoryDrawer ol{list-style:none;margin:0;padding:0}
+#npUniversalDemo.np-u-argon #npUHistoryDrawer li{list-style:none;margin:0}
+#npUniversalDemo.np-u-argon #npUHistoryDrawer li button{
+ display:flex;align-items:baseline;gap:9px;width:100%;
+ padding:8px 4px;text-align:left;border:0;border-top:1px solid var(--np-u-rule);
+ border-radius:0;background:transparent;color:var(--np-u-ink);
+ font:500 12px/1.35 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo.np-u-argon #npUHistoryDrawer li button span{
+ flex:0 0 22px;color:var(--np-u-red);
+ font:500 10px/1.4 'JetBrains Mono',Consolas,monospace;
+}
+#npUniversalDemo.np-u-argon #npUHistoryDrawer li button:hover{color:var(--np-u-red)}
+@media(max-width:420px){
+ #npUniversalDemo.np-u-argon .np-u-right-head{padding-right:11px!important;padding-left:12px!important}
+ #npUniversalDemo.np-u-argon .np-u-right-actions{gap:0!important}
+}
+
+/* Real ARGON per-window pinning: independent from the global follow switch. */
+#npUniversalDemo.np-u-argon .np-u-research-module:has(> .np-u-module-pin)
+ .np-u-window>summary{padding-right:132px!important}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-module-pin{
+ display:grid!important;place-items:center!important;
+ position:absolute;z-index:3;top:2px;right:84px;
+ width:44px!important;height:44px!important;
+ min-width:44px!important;min-height:44px!important;margin:0!important;padding:5px!important;
+ border:0!important;border-radius:3px!important;
+ color:var(--np-u-muted)!important;background:transparent!important;
+ box-shadow:none!important;cursor:pointer;
+}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-module-pin svg{
+ width:15px!important;height:15px!important;stroke:currentColor!important;
+}
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-module-pin:is(:hover,:focus-visible),
+#npUniversalDemo.np-u-argon .np-u-research-module .np-u-module-pin[aria-pressed=true]{
+ color:var(--np-u-red)!important;background:var(--np-u-red-soft)!important;
+}
+#npUniversalDemo.np-u-argon .np-u-research-module[data-np-u-pinned=true]{
+ border-left:2px solid var(--np-u-red)!important;
+}
+
+/* ARGON UPDATE / RightResearchPanel: argument, text and connection views.
+   These display only real excerpts, terms, and verse references from Product. */
+#npUniversalDemo.np-u-argon .np-u-thought-tabs{
+ display:flex!important;align-items:center!important;gap:11px!important;
+ margin:0 0 13px!important;padding:0 0 8px!important;
+ border-bottom:1px solid var(--np-u-rule)!important;
+ overflow-x:auto;scrollbar-width:none;
+}
+#npUniversalDemo.np-u-argon .np-u-thought-tabs::-webkit-scrollbar{display:none}
+#npUniversalDemo.np-u-argon .np-u-thought-tabs [data-np-u-thought-tab]{
+ display:inline-block!important;white-space:nowrap!important;
+ flex:0 0 auto!important;width:auto!important;min-width:0!important;
+ padding:4px 0!important;margin:0!important;
+ border:0!important;border-bottom:1px solid transparent!important;
+ border-radius:0!important;color:var(--np-u-muted)!important;
+ background:transparent!important;box-shadow:none!important;
+ font:500 10.5px/1.3 'Source Sans 3',system-ui,sans-serif!important;
+ cursor:pointer!important;
+}
+#npUniversalDemo.np-u-argon .np-u-thought-tabs [data-np-u-thought-tab][aria-selected=true]{
+ color:var(--np-u-ink)!important;border-bottom-color:var(--np-u-red)!important;
+}
+#npUniversalDemo.np-u-argon .np-u-thought-tabs [data-np-u-thought-tab]:is(:hover,:focus-visible){
+ color:var(--np-u-red)!important;
+}
+#npUniversalDemo.np-u-argon .np-u-thought-pane[hidden]{display:none!important}
+
+#npUniversalDemo.np-u-argon .np-u-thought-evidence{
+ display:grid;grid-template-columns:20px minmax(0,1fr);
+ align-items:start;column-gap:9px;row-gap:5px;
+ padding:10px 0;border-bottom:1px solid var(--np-u-rule);
+}
+#npUniversalDemo.np-u-argon .np-u-thought-evidence:last-child{border-bottom:0}
+#npUniversalDemo.np-u-argon .np-u-thought-evidence>span{
+ grid-column:1;color:var(--np-u-muted);
+ font:450 10px/1.6 'JetBrains Mono',Consolas,monospace;
+}
+#npUniversalDemo.np-u-argon .np-u-thought-evidence blockquote{
+ grid-column:2;margin:0!important;min-width:0;
+}
+#npUniversalDemo.np-u-argon .np-u-thought-evidence .np-u-evidence-jump{
+ grid-column:2;justify-self:start;
+ display:inline-flex;align-items:center;min-height:30px;
+ padding:5px 0!important;margin:0!important;
+ border:0!important;background:transparent!important;
+ color:var(--np-u-red)!important;
+ font:500 11px/1.3 'Source Sans 3',system-ui,sans-serif!important;
+ cursor:pointer;text-decoration:none;
+}
+#npUniversalDemo.np-u-argon .np-u-thought-evidence .np-u-evidence-jump:is(:hover,:focus-visible){
+ text-decoration:underline;text-underline-offset:3px;
+}
+body.np-u-preview .article-body .np-u-evidence-highlight{
+ animation:npEvidenceFlash 1400ms ease-out 1;
+}
+@keyframes npEvidenceFlash{
+ 0%,35%{background:var(--np-u-red-soft,#f8e9e4);outline:3px solid var(--np-u-red-soft,#f8e9e4)}
+ 100%{background:transparent;outline:0 solid transparent}
+}
+#npUniversalDemo.np-u-argon .np-u-research-data-caption{
+ color:var(--np-u-muted)!important;font:450 10px/1.4 'Source Sans 3',system-ui,sans-serif;
+ margin:0 0 8px!important;padding:0!important;
+}
+
+/* W15: audio is a single solid disc with the Product's REAL progress ring. */
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember[data-fc-action="play"]{
+ box-sizing:border-box!important;isolation:isolate!important;
+ display:grid!important;place-items:center!important;
+ background:var(--np-u-white)!important;color:var(--np-u-red)!important;
+ border:0!important;border-radius:50%!important;
+ box-shadow:inset 0 0 0 1px var(--np-u-red)!important;
+ overflow:hidden!important;clip-path:circle(50%);
+ transition:background-color .15s,color .15s!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember[data-state="playing"],
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember[data-state="paused"]{
+ background:var(--np-u-red)!important;color:#fff!important;
+ box-shadow:inset 0 0 0 1px var(--np-u-red)!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember[data-state="idle"]:is(:hover,:focus-visible){
+ background:var(--np-u-red-soft)!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember__ring-svg{
+ display:block!important;position:absolute!important;inset:1px!important;
+ width:calc(100% - 2px)!important;height:calc(100% - 2px)!important;
+ z-index:2!important;pointer-events:none!important;overflow:visible!important;
+ transform:none!important;opacity:1!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember__ring-track{
+ fill:none!important;stroke:var(--np-u-rule)!important;stroke-width:5px!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember__ring-progress{
+ fill:none!important;stroke:var(--np-u-red)!important;stroke-width:6px!important;
+ stroke-linecap:round!important;transform-origin:center!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember:is([data-state="playing"],[data-state="paused"]) .gb-ember__ring-progress{
+ stroke:#fff!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember:is([data-state="playing"],[data-state="paused"]) .gb-ember__ring-track{
+ stroke:rgba(255,255,255,.28)!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools :is(.gb-ember__glyph,.gb-ember__pause,.gb-ember__check){
+ z-index:3!important;pointer-events:none!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-wave15-audio-progress{
+ display:flex;flex-direction:column;gap:6px;
+ width:100%;max-width:100%;padding:3px 0 0;margin:0;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-wave15-progress-meta{
+ display:flex;align-items:baseline;justify-content:space-between;gap:6px;
+ color:var(--np-u-muted);font:500 10px/1.25 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-wave15-progress-meta output{
+ color:var(--np-u-red);font:600 10px/1 'JetBrains Mono',Consolas,monospace;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-wave15-progress-track{
+ width:100%;height:3px;min-height:3px;border-radius:99px;
+ background:var(--np-u-rule);overflow:hidden;position:relative;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-wave15-progress-fill{
+ display:block;height:100%;width:0%;max-width:100%;
+ border-radius:inherit;background:var(--np-u-red);transition:width .18s linear;
+}
+/* Both Product button variants use the same native six speed radio buttons.
+   Open above the controls as a clean vertical set of dark numbers. */
+#npUniversalDemo.np-u-argon #npUNativeTools #gbFloatingControls.np-u-argon-audio .gb-ember-expand,
+#npUniversalDemo.np-u-argon #npUNativeTools .gbs-rail-playwrap .gb-ember-expand{
+ box-sizing:border-box!important;position:absolute!important;
+ z-index:45!important;inset:auto!important;top:auto!important;
+ bottom:calc(100% + 7px)!important;left:auto!important;right:0!important;
+ width:82px!important;min-width:82px!important;max-width:82px!important;
+ padding:6px!important;margin:0!important;
+ border:1px solid var(--np-u-rule)!important;border-radius:7px!important;
+ background:var(--np-u-white)!important;
+ box-shadow:0 9px 24px rgba(22,17,12,.15)!important;
+ flex-direction:column!important;align-items:stretch!important;
+ justify-content:flex-start!important;flex-wrap:nowrap!important;gap:2px!important;
+ transform:none!important;translate:none!important;clip-path:none!important;
+ max-height:235px!important;overflow-y:auto!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools #gbFloatingControls.np-u-argon-audio .gb-ember-expand{
+ right:34px!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gbs-rail-playwrap .gb-ember-expand{
+ display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools #gbFloatingControls.np-u-argon-audio.np-u-argon-rate-open .gb-ember-expand,
+#npUniversalDemo.np-u-argon #npUNativeTools .gbs-rail-playwrap.np-u-wave15-speed-open .gb-ember-expand{
+ display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember-expand [data-speed]{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ width:100%!important;min-width:0!important;height:24px!important;min-height:24px!important;
+ margin:0!important;padding:3px 2px!important;
+ color:#262321!important;background:transparent!important;
+ border:0!important;border-radius:4px!important;
+ font:600 11px/1 'JetBrains Mono',Consolas,monospace!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember-expand [data-speed][aria-checked="true"]{
+ background:var(--np-u-red)!important;color:#fff!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember-expand [data-speed]:not([aria-checked="true"]):hover{
+ color:var(--np-u-red)!important;background:var(--np-u-red-soft)!important;
+}
+/* Gill/series native Stop is an ACTION, not a seventh playback speed.
+   Keep Product's original data-fc-action and aria-label; only style its footer. */
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember-expand .gb-ember-expand__stop{
+ width:100%!important;min-width:0!important;height:29px!important;min-height:29px!important;
+ margin:3px 0 0!important;padding:5px 1px 2px!important;
+ background:transparent!important;
+ border:0!important;border-top:1px solid var(--np-u-rule)!important;
+ border-radius:0!important;color:var(--np-u-muted)!important;
+ font-size:0!important;line-height:0!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember-expand .gb-ember-expand__stop::after{
+ content:"■  Стоп";
+ display:block;
+ font:600 10px/1.3 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember-expand .gb-ember-expand__stop:hover{
+ background:var(--np-u-red-soft)!important;color:var(--np-u-red)!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gb-ember-expand .gb-ember-expand__stop:focus-visible{
+ outline:2px solid var(--np-u-red)!important;outline-offset:1px;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .gbs-rail-playwrap{overflow:visible!important;isolation:isolate!important}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-wave15-series-rate{
+ display:grid!important;place-items:center!important;
+ position:absolute!important;z-index:40!important;
+ width:29px!important;height:22px!important;min-width:29px!important;
+ right:-8px!important;bottom:-5px!important;top:auto!important;left:auto!important;
+ padding:0 2px!important;margin:0!important;
+ color:var(--np-u-ink)!important;background:var(--np-u-white)!important;
+ border:1px solid var(--np-u-rule)!important;border-radius:6px!important;
+ font:600 9px/1 'JetBrains Mono',Consolas,monospace!important;
+ box-shadow:0 1px 3px rgba(20,15,14,.12)!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-wave15-series-rate[aria-expanded="true"],
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-argon-rate-trigger[aria-expanded="true"]{
+ color:var(--np-u-red)!important;background:var(--np-u-red-soft)!important;
+ border-color:var(--np-u-red)!important;
+}
+@media(min-width:1121px){
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools{
+  z-index:45!important;overflow:visible!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools .np-u-wave15-audio-progress{
+  display:none!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools .np-u-argon-rate-trigger{
+  display:grid!important;grid-area:1/1/2/2!important;
+  position:absolute!important;z-index:60!important;
+  right:-4px!important;bottom:-5px!important;top:auto!important;left:auto!important;
+  width:24px!important;height:17px!important;min-width:24px!important;min-height:17px!important;
+  padding:0 1px!important;margin:0!important;
+  color:var(--np-u-ink)!important;background:var(--np-u-white)!important;
+  border:1px solid var(--np-u-rule)!important;border-radius:5px!important;
+  font:600 8px/1 'JetBrains Mono',Consolas,monospace!important;
+  box-shadow:0 1px 3px rgba(20,15,14,.14)!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools #gbFloatingControls.np-u-argon-audio .gb-ember-expand{
+  display:none!important;
+  position:absolute!important;z-index:55!important;
+  left:0!important;right:auto!important;bottom:calc(100% + 9px)!important;
+  top:auto!important;width:46px!important;min-width:46px!important;max-width:46px!important;
+  padding:4px 3px!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools #gbFloatingControls.np-u-argon-audio.np-u-argon-rate-open .gb-ember-expand{
+  display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools .gb-ember-expand [data-speed]{
+  font-size:9px!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools .np-u-wave15-series-rate{
+  right:-4px!important;bottom:-4px!important;
+  width:24px!important;min-width:24px!important;height:17px!important;min-height:17px!important;
+  font-size:8px!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools .gbs-rail-playwrap .gb-ember-expand{
+  left:0!important;right:auto!important;bottom:calc(100% + 10px)!important;
+  width:46px!important;min-width:46px!important;max-width:46px!important;
+ }
+}
+
+/* W15 visual witness correction: absolute bottom percentage in the old
+   auto-height Grid resolved against zero. Anchor the menu by pixels instead. */
+#npUniversalDemo.np-u-argon #npUNativeTools .gbs-rail-playwrap .gb-ember-expand{
+ left:39px!important;right:auto!important;
+}
+@media(min-width:1121px){
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools #gbFloatingControls.np-u-argon-audio .gb-ember-expand{
+  bottom:49px!important;left:0!important;
+  width:40px!important;min-width:40px!important;max-width:40px!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools .gbs-rail-playwrap .gb-ember-expand{
+  bottom:49px!important;left:0!important;
+  width:40px!important;min-width:40px!important;max-width:40px!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools .gbs-rail-playwrap.np-u-wave15-speed-open .gb-ember-expand{
+  display:flex!important;visibility:visible!important;opacity:1!important;
+  pointer-events:auto!important;
+ }
+}
+
+/* W15 research instruments: real biblical text & real editorial dictionary.
+   The picker is the navigation, not a wall of forty-one small verse pills. */
+#npUniversalDemo.np-u-argon .np-u-study-picker{
+ display:grid;gap:6px;margin:0 0 12px;padding:0;
+}
+#npUniversalDemo.np-u-argon .np-u-study-picker>label{
+ font:500 10px/1.4 'Source Sans 3',system-ui,sans-serif;
+ color:var(--np-u-muted);
+}
+#npUniversalDemo.np-u-argon .np-u-study-picker-row{
+ display:flex;align-items:center;gap:4px;min-width:0;
+}
+#npUniversalDemo.np-u-argon .np-u-study-picker-row select{
+ box-sizing:border-box;flex:1 1 auto;min-width:0;width:100%;
+ height:31px;min-height:31px;padding:4px 21px 4px 7px;
+ border:1px solid var(--np-u-rule);border-radius:3px;
+ color:var(--np-u-ink);background:var(--np-u-white);
+ font:500 11px/1.2 'Source Sans 3',system-ui,sans-serif;
+ text-overflow:ellipsis;cursor:pointer;
+}
+#npUniversalDemo.np-u-argon .np-u-study-picker-row select:focus-visible{
+ outline:2px solid var(--np-u-red);outline-offset:2px;
+}
+#npUniversalDemo.np-u-argon .np-u-study-picker-counter{
+ flex:0 0 auto;min-width:30px;white-space:nowrap;text-align:center;
+ font:500 10px/1 'JetBrains Mono',Consolas,monospace;
+ color:var(--np-u-muted);
+}
+#npUniversalDemo.np-u-argon .np-u-study-picker-row button{
+ flex:0 0 44px;display:grid;place-items:center;
+ width:44px;height:44px;min-height:44px;
+ padding:0;margin:0;background:transparent;
+ border:1px solid var(--np-u-rule);border-radius:3px;
+ color:var(--np-u-ink);font:400 19px/1 Georgia,serif;
+}
+#npUniversalDemo.np-u-argon .np-u-study-picker-row button:is(:hover,:focus-visible):not(:disabled){
+ color:var(--np-u-red);border-color:var(--np-u-red);
+ background:var(--np-u-red-soft);
+}
+#npUniversalDemo.np-u-argon .np-u-study-picker-row button:disabled{
+ opacity:.3;cursor:default;
+}
+#npUniversalDemo.np-u-argon .np-u-scripture-reading{
+ display:block;max-height:240px;overflow-y:auto;
+ overscroll-behavior:contain;scrollbar-width:thin;
+ padding:4px 5px 2px 0;
+}
+#npUniversalDemo.np-u-argon .np-u-scripture-quote{
+ margin:0 0 12px!important;padding:0 0 0 13px!important;
+ background:transparent!important;color:var(--np-u-ink)!important;
+ border:0!important;border-left:2px solid var(--np-u-red)!important;
+ border-radius:0!important;box-shadow:none!important;
+ font:400 15.2px/1.66 'Cormorant Garamond',Georgia,serif!important;
+ white-space:pre-wrap;overflow-wrap:anywhere;
+}
+#npUniversalDemo.np-u-argon .np-u-scripture-credit{
+ margin:2px 0 7px!important;color:var(--np-u-muted)!important;
+ font:500 10px/1.4 'Source Sans 3',system-ui,sans-serif!important;
+}
+#npUniversalDemo.np-u-argon .np-u-study-actions{
+ display:flex;gap:12px;align-items:center;justify-content:space-between;
+ flex-wrap:wrap;margin-top:10px;padding-top:9px;
+ border-top:1px solid var(--np-u-rule);
+}
+#npUniversalDemo.np-u-argon .np-u-study-actions button{
+ background:transparent!important;color:var(--np-u-red)!important;
+ border:0!important;padding:2px 0!important;margin:0!important;
+ font:500 10.5px/1.4 'Source Sans 3',system-ui,sans-serif!important;
+}
+#npUniversalDemo.np-u-argon .np-u-study-actions button:hover{
+ text-decoration:underline;text-underline-offset:3px;
+}
+#npUniversalDemo.np-u-argon .np-u-lexicon-entry[hidden]{
+ display:none!important;
+}
+#npUniversalDemo.np-u-argon .np-u-lex-definition{
+ margin:3px 0 5px;border-top:1px solid var(--np-u-rule);
+ border-bottom:1px solid var(--np-u-rule);padding:6px 0;
+}
+#npUniversalDemo.np-u-argon .np-u-lex-definition summary{
+ display:flex;cursor:pointer;align-items:center;justify-content:space-between;
+ padding:4px 0;color:var(--np-u-red)!important;
+ font:500 11px/1.4 'Source Sans 3',system-ui,sans-serif!important;
+}
+#npUniversalDemo.np-u-argon .np-u-lex-definition p{
+ font:400 12.8px/1.65 'Source Sans 3',system-ui,sans-serif!important;
+ padding:5px 0!important;margin:0!important;color:var(--np-u-ink);
+}
+/* W16: removed competing 30vh/25vh research clamps. */
+@media(max-width:1120px){
+ #npUniversalDemo.np-u-argon .np-u-scripture-reading{max-height:42vh;}
+}
+
+/* Native Gill/series speed items retained Product's initial "bloom" opacity
+   0; the expanded container was visible but looked entirely empty. */
+#npUniversalDemo.np-u-argon #npUNativeTools .gbs-rail-playwrap.np-u-wave15-speed-open .gb-ember-expand :is([data-speed],.gb-ember-expand__stop){
+ opacity:1!important;visibility:visible!important;transform:none!important;
+ translate:none!important;scale:none!important;clip-path:none!important;
+ filter:none!important;pointer-events:auto!important;
+}
+
+/* W16 :: ONE outer research rail scrollbar; no silently clipped headings.
+   The Scripture excerpt alone has a deliberate, visibly scrollable viewport. */
+#npUniversalDemo.np-u-argon #npUSectionHost
+ .np-u-research-module:is([data-np-u-module="scripture"],[data-np-u-module="lexicon"],[data-np-u-module="section"])
+ .np-u-window-body{
+ max-height:none!important;
+ overflow:visible!important;
+}
+#npUniversalDemo.np-u-argon .np-u-scripture-reading{
+ box-sizing:border-box;
+ max-height:clamp(230px,36dvh,390px)!important;
+ overflow-y:auto!important;
+ scrollbar-width:auto!important;
+ scrollbar-color:var(--np-u-muted) transparent!important;
+ overscroll-behavior:contain;
+ padding-right:8px!important;
+}
+#npUniversalDemo.np-u-argon .np-u-scripture-quote{
+ font:500 16.4px/1.48 'Cormorant Garamond',Georgia,serif!important;
+ letter-spacing:0!important;
+}
+@media(max-width:1120px){
+ #npUniversalDemo.np-u-argon .np-u-scripture-quote{
+  font-size:17px!important;line-height:1.5!important;
+ }
+}
+#npUniversalDemo.np-u-argon .np-u-study-picker-row button{
+ flex-basis:44px!important;width:44px!important;
+ height:44px!important;min-height:44px!important;
+ touch-action:manipulation;
+}
+#npUniversalDemo.np-u-argon .np-u-study-picker-row select{
+ min-height:44px!important;height:44px!important;
+}
+#npUniversalDemo.np-u-argon .np-u-study-picker-row button:focus-visible{
+ outline:2px solid var(--np-u-red)!important;
+ outline-offset:2px;
+}
+#npUniversalDemo.np-u-argon .np-u-study-actions button{
+ min-height:34px!important;
+ padding:7px 0!important;
+ text-align:left!important;
+}
+#npUniversalDemo.np-u-argon .np-u-scripture-scroll-note{
+ margin:5px 0 0!important;color:var(--np-u-muted)!important;
+ font:500 10.5px/1.4 'Source Sans 3',system-ui,sans-serif!important;
+}
+#npUniversalDemo.np-u-argon .np-u-scripture-scroll-note[hidden]{display:none!important}
+body.np-u-preview > span.btip.gb-floating-tip.is-open{
+ box-sizing:border-box!important;
+ max-width:min(380px,calc(100vw - 28px))!important;
+ max-height:min(45dvh,390px)!important;
+ overflow-y:auto!important;
+ overscroll-behavior:contain;
+ scrollbar-width:thin;
+}
+body.np-u-preview button.bref.np-u-source-flash{
+ animation:npSourceFlash 1300ms ease-out 1;
+ text-decoration:underline!important;
+ text-decoration-thickness:2px!important;
+ text-underline-offset:3px!important;
+}
+@keyframes npSourceFlash{
+ 0%,25%{background:var(--np-u-red-soft,#f8e9e4);outline:4px solid var(--np-u-red-soft,#f8e9e4)}
+ 100%{background:transparent;outline:0 solid transparent}
+}
+@media(max-width:1120px){
+ #npUniversalDemo.np-u-argon .np-u-scripture-reading{
+  max-height:min(38dvh,360px)!important;
+ }
+ body.np-u-preview > span.btip.gb-floating-tip.is-open{
+  max-height:38dvh!important;
+  max-width:calc(100vw - 28px)!important;
+ }
+}
+
+/* W16 inline scripture is handled by the real «Писание» study panel.
+   Prevent Product's legacy body-level giant overlay from visually
+   competing with it, while keeping the source markup intact for reading. */
+body.np-u-preview > span.btip.gb-floating-tip.is-open{
+ display:none!important;
+}
+
+/* W16 audio alignment: labels are native decoration, never a second player. */
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-wave16-audio-caption{
+ position:absolute;left:45px;top:4px;
+ display:flex;flex-direction:column;justify-content:center;gap:2px;
+ width:128px;min-width:0;pointer-events:none;
+ color:var(--np-u-ink);white-space:nowrap;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-wave16-audio-caption strong{
+ font:600 10.5px/1.15 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-wave16-audio-caption span{
+ font:400 9.5px/1.15 'Source Sans 3',system-ui,sans-serif;
+ color:var(--np-u-muted);
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-wave15-progress-track{
+ height:4px!important;min-height:4px!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-wave15-progress-fill{
+ background:linear-gradient(90deg,var(--np-u-red),#b96255)!important;
+}
+@media(min-width:1121px){
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools .np-u-wave16-audio-caption{
+  display:none!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools .np-u-argon-rate-trigger,
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools .np-u-wave15-series-rate{
+  right:-8px!important;bottom:-16px!important;
+  width:22px!important;min-width:22px!important;
+  height:15px!important;min-height:15px!important;
+  padding:0 1px!important;font-size:7.5px!important;
+  border-radius:5px!important;
+ }
+}
+
+/* W17: make long Scripture passages discoverable without burying the
+   ARGON research tools or hiding the rest behind a nested scroll trap. */
+#npUniversalDemo.np-u-argon .np-u-scripture-scroll-note:not([hidden]){
+ display:flex;align-items:center;justify-content:space-between;
+ gap:8px;flex-wrap:wrap;margin:9px 0 3px!important;
+}
+#npUniversalDemo.np-u-argon .np-u-scripture-scroll-note span{
+ flex:1 1 100px;
+ color:var(--np-u-muted);
+}
+#npUniversalDemo.np-u-argon .np-u-scripture-scroll-note [data-np-u-reading-expand]{
+ flex:0 0 auto;display:inline-flex;align-items:center;
+ min-height:32px;padding:5px 0!important;
+ background:transparent!important;border:0!important;
+ color:var(--np-u-red)!important;
+ font:600 11px/1.35 'Source Sans 3',system-ui,sans-serif!important;
+ cursor:pointer;
+}
+#npUniversalDemo.np-u-argon .np-u-scripture-scroll-note [data-np-u-reading-expand]:is(:hover,:focus-visible){
+ text-decoration:underline;text-underline-offset:3px;
+}
+#npUniversalDemo.np-u-argon.np-u-research-focused .np-u-research-module.is-focused .np-u-scripture-reading{
+ max-height:min(73dvh,700px)!important;
+}
+/* After the rights/source notice the editorial overview sits at the same
+   disclosure hierarchy as ARGON, without a second decorative container. */
+body.np-u-preview .article-header>.np-u-central-overview{
+ margin-top:4px!important;
+}
+
+/* W18: ARGON UPDATE reading typography. The native Product settings and
+   original article source remain untouched; preferences are shared. */
+body.np-u-preview.np-u-argon-shell{
+ --np-u-reading-face:var(--gb-reader-font-family,'Lora',Georgia,serif);
+ --np-u-reading-base:18px;
+ --np-u-reading-scale:1;
+ --np-u-reading-leading:1.72;
+ --np-u-reading-measure:690px;
+}
+body.np-u-preview.np-u-argon-shell[data-np-u-font="cormorant"]{
+ --np-u-reading-base:22px;
+}
+body.np-u-preview.np-u-argon-shell[data-np-u-size="sm"]{--np-u-reading-scale:.9}
+body.np-u-preview.np-u-argon-shell[data-np-u-size="lg"]{--np-u-reading-scale:1.1}
+body.np-u-preview.np-u-argon-shell[data-np-u-size="xl"]{--np-u-reading-scale:1.2}
+body.np-u-preview.np-u-argon-shell[data-np-u-spacing="relaxed"]{--np-u-reading-leading:1.92}
+body.np-u-preview.np-u-argon-shell[data-np-u-width="wide"]{--np-u-reading-measure:760px}
+body.np-u-preview.np-u-argon-shell article[data-reader-projection] :is(p,li,blockquote):not(:where(.notice *, .gtip *, .btip *, .summary-card *, .np-u-central-overview *, .np-u-central-contents *, figcaption *)){
+ font-family:var(--np-u-reading-face)!important;
+ font-size:calc(var(--np-u-reading-base) * var(--np-u-reading-scale))!important;
+ line-height:var(--np-u-reading-leading)!important;
+ text-align:start!important;
+ word-break:normal!important;
+ overflow-wrap:break-word!important;
+ hyphens:auto;
+}
+body.np-u-preview.np-u-argon-shell article[data-reader-projection] > p,
+body.np-u-preview.np-u-argon-shell article[data-reader-projection] > .article-header > p,
+body.np-u-preview.np-u-argon-shell article[data-reader-projection] > section > p{
+ max-width:min(100%,var(--np-u-reading-measure))!important;
+ margin-inline:auto!important;
+}
+
+#npUniversalDemo .np-u-type-open,
+#npUniversalDemo .np-u-type-compact{
+ font:600 11px/1.2 'Source Sans 3',system-ui,sans-serif;
+ color:var(--np-u-red);background:var(--np-u-white);
+ border:1px solid var(--np-u-rule);border-radius:5px;
+ padding:7px 9px;min-height:32px;
+}
+#npUniversalDemo .np-u-type-open:hover,
+#npUniversalDemo .np-u-type-compact:hover{
+ background:var(--np-u-red-soft);border-color:var(--np-u-red);
+}
+#npUniversalDemo .np-u-type-compact{display:none;position:relative;z-index:3}
+#npUniversalDemo .np-u-font-panel{
+ position:fixed;z-index:20020;
+ left:calc(var(--np-u-left) + 8px);
+ bottom:24px;box-sizing:border-box;width:280px;
+ max-width:calc(100vw - 24px);
+ padding:14px 15px 15px;
+ border:1px solid var(--np-u-rule);border-radius:8px;
+ background:var(--np-u-paper);color:var(--np-u-ink);
+ box-shadow:0 12px 38px rgba(28,17,10,.18);
+ font:400 12px/1.5 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo .np-u-font-panel[hidden]{display:none!important}
+#npUniversalDemo .np-u-font-panel header{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:6px;margin:0 0 12px;
+}
+#npUniversalDemo .np-u-font-panel header strong{
+ font:600 18px/1.15 'Cormorant Garamond',Georgia,serif;
+}
+#npUniversalDemo .np-u-font-panel .np-u-type-close{
+ border:0;background:transparent;color:var(--np-u-muted);
+ font:400 24px/1 Georgia,serif;min-width:30px;min-height:30px;
+}
+#npUniversalDemo .np-u-type-group{margin-top:11px}
+#npUniversalDemo .np-u-type-group>span{
+ display:block;color:var(--np-u-muted);
+ font:500 10px/1.5 'Source Sans 3',system-ui,sans-serif;
+ margin-bottom:5px;
+}
+#npUniversalDemo .np-u-type-options{display:flex;gap:5px}
+#npUniversalDemo .np-u-type-options button{
+ flex:1;min-width:0;min-height:34px;padding:6px 5px;
+ border:1px solid var(--np-u-rule);border-radius:4px;
+ color:var(--np-u-ink);background:var(--np-u-white);
+ font:500 11px/1.25 'Source Sans 3',system-ui,sans-serif;
+}
+#npUniversalDemo .np-u-type-options button:is(:hover,:focus-visible){
+ border-color:var(--np-u-red);background:var(--np-u-red-soft);
+}
+#npUniversalDemo .np-u-type-options button[aria-pressed=true]{
+ border-color:var(--np-u-red);background:var(--np-u-red-soft);
+ color:var(--np-u-red);font-weight:700;
+}
+#npUniversalDemo .np-u-type-options .np-u-type-lora{
+ font:500 13px/1.2 'Lora',Georgia,serif;
+}
+#npUniversalDemo .np-u-type-options .np-u-type-cormorant{
+ font:600 17px/1.2 'Cormorant Garamond',Georgia,serif;
+}
+#npUniversalDemo .np-u-type-sizes button{font-size:14px}
+@media(min-width:1121px){
+ body.np-u-preview.np-u-compact #npUniversalDemo .np-u-type-open{display:none!important}
+ body.np-u-preview.np-u-compact #npUniversalDemo .np-u-type-compact{
+  display:grid!important;place-items:center;
+  min-width:36px;width:36px;min-height:32px;padding:3px;
+ }
+}
+@media(max-width:1120px){
+ #npUniversalDemo .np-u-font-panel{left:12px;bottom:64px;width:min(320px,calc(100vw - 24px))}
+}
+
+/* W18: classic ARGON's research density, sourced ONLY from Product.
+   Filled cross-chapter catalogs are labeled; the five argument nodes
+   are original sequential source excerpts, not generated theology. */
+#npUniversalDemo.np-u-argon .np-u-classic-related{
+ display:flex;flex-wrap:wrap;gap:5px;
+ width:100%;max-width:100%;min-width:0;
+ overflow:visible;
+ padding:3px 0 5px;
+}
+#npUniversalDemo.np-u-argon .np-u-classic-related .np-u-verse-chip{
+ flex:0 1 auto;max-width:100%;white-space:normal;overflow-wrap:anywhere;
+ padding:5px 7px!important;min-height:27px;
+ border-radius:4px!important;
+ font:600 10px/1.3 'Source Sans 3',system-ui,sans-serif!important;
+}
+#npUniversalDemo.np-u-argon .np-u-related-caption{
+ padding-top:8px!important;
+ border-top:1px solid var(--np-u-rule);
+}
+#npUniversalDemo.np-u-argon .np-u-argument-intro{
+ margin:0 0 12px;padding:0 0 11px;
+ border-bottom:1px solid var(--np-u-rule);
+}
+#npUniversalDemo.np-u-argon .np-u-argument-eyebrow{
+ display:block;margin:0 0 7px;color:var(--np-u-red);
+ font:600 9px/1.4 'Source Sans 3',system-ui,sans-serif;
+ letter-spacing:.09em;text-transform:uppercase;
+}
+#npUniversalDemo.np-u-argon .np-u-argument-intro strong{
+ display:block;color:var(--np-u-ink);
+ font:600 19px/1.17 'Cormorant Garamond',Georgia,serif;
+ letter-spacing:-.01em;
+}
+#npUniversalDemo.np-u-argon .np-u-argument-intro p{
+ margin:7px 0 0!important;
+ color:var(--np-u-muted);
+ font:400 10.7px/1.48 'Source Sans 3',system-ui,sans-serif!important;
+}
+#npUniversalDemo.np-u-argon .np-u-argument-map{
+ display:grid;grid-template-columns:repeat(var(--np-u-route-count,5),minmax(0,1fr));gap:6px;
+ margin:0 0 10px;padding:0 0 12px;
+ border-bottom:1px solid var(--np-u-rule);
+}
+#npUniversalDemo.np-u-argon .np-u-argument-map>button{
+ display:grid;place-items:center;min-width:0;min-height:29px;
+ padding:4px 2px;margin:0;
+ border:1px solid var(--np-u-rule);border-radius:3px;
+ background:var(--np-u-paper);color:var(--np-u-muted);
+ font:600 10px/1 'JetBrains Mono',Consolas,monospace;
+ cursor:pointer;transition:color .12s,background .12s,border-color .12s;
+}
+#npUniversalDemo.np-u-argon .np-u-argument-map>button[aria-pressed=true]{
+ color:var(--np-u-red);background:var(--np-u-red-soft);
+ border-color:var(--np-u-red);
+}
+#npUniversalDemo.np-u-argon .np-u-argument-map>button:is(:hover,:focus-visible){
+ border-color:var(--np-u-red);color:var(--np-u-red);
+}
+#npUniversalDemo.np-u-argon .np-u-argument-map>button:focus-visible{
+ outline:2px solid var(--np-u-red);outline-offset:2px;
+}
+#npUniversalDemo.np-u-argon .np-u-argument-nodes{
+ counter-reset:none;list-style:none;
+ display:grid;gap:0;padding:0;margin:0!important;position:relative;
+}
+#npUniversalDemo.np-u-argon .np-u-argument-nodes::before{
+ content:'';position:absolute;left:13px;top:14px;bottom:20px;
+ width:1px;background:var(--np-u-rule);pointer-events:none;
+}
+#npUniversalDemo.np-u-argon .np-u-argument-nodes>li{
+ display:grid;grid-template-columns:29px minmax(0,1fr);
+ align-items:start;column-gap:10px;
+ margin:0!important;padding:11px 0 12px!important;
+ border:0;border-bottom:1px solid var(--np-u-rule);
+ color:var(--np-u-ink);
+ position:relative;
+}
+#npUniversalDemo.np-u-argon .np-u-argument-nodes>li:last-child{border-bottom:0}
+#npUniversalDemo.np-u-argon .np-u-argument-num{
+ width:27px;height:27px;position:relative;z-index:1;
+ display:grid;place-items:center;
+ border:1px solid var(--np-u-rule);border-radius:50%;
+ background:var(--np-u-white);color:var(--np-u-muted);
+ font:600 10px/1 'JetBrains Mono',Consolas,monospace;
+}
+#npUniversalDemo.np-u-argon .np-u-argument-nodes>li.is-selected .np-u-argument-num{
+ border-color:var(--np-u-red);color:var(--np-u-red);
+ background:var(--np-u-red-soft);
+}
+#npUniversalDemo.np-u-argon .np-u-argument-nodes>li:focus{
+ outline:none;
+}
+#npUniversalDemo.np-u-argon .np-u-argument-nodes>li:focus-visible .np-u-argument-num{
+ outline:2px solid var(--np-u-red);outline-offset:3px;
+}
+#npUniversalDemo.np-u-argon .np-u-argument-node-body{
+ min-width:0;
+}
+#npUniversalDemo.np-u-argon .np-u-argument-origin{
+ display:block;margin:0 0 5px;color:var(--np-u-muted);
+ font:500 9px/1.4 'Source Sans 3',system-ui,sans-serif;
+ letter-spacing:.01em;
+}
+#npUniversalDemo.np-u-argon .np-u-argument-role{
+ display:block;margin:5px 0 4px;
+ color:var(--np-u-red);
+ font:600 9px/1.35 'Source Sans 3',system-ui,sans-serif;
+ letter-spacing:.06em;text-transform:uppercase;
+}
+#npUniversalDemo.np-u-argon .np-u-argument-node-title{
+ display:block;margin:0 0 6px;
+ color:var(--np-u-ink);overflow-wrap:break-word;
+ font:600 17px/1.2 'Cormorant Garamond',Georgia,serif;
+ letter-spacing:-.01em;
+}
+#npUniversalDemo.np-u-argon .np-u-argument-editorial{
+ color:var(--np-u-muted);
+ font:400 11.2px/1.47 'Source Sans 3',system-ui,sans-serif;
+ margin:0 0 9px;overflow-wrap:break-word;
+}
+#npUniversalDemo.np-u-argon .np-u-argument-node-body>p{
+ margin:0!important;padding:0 0 0 9px;
+ border-left:2px solid var(--np-u-rule);
+ color:var(--np-u-ink);
+ font:400 12.7px/1.55 'Lora',Georgia,serif!important;
+ overflow-wrap:break-word;word-break:normal;hyphens:none;
+}
+#npUniversalDemo.np-u-argon .np-u-argument-node-body>button{
+ margin:6px 0 0!important;padding:3px 0!important;
+ border:0!important;background:transparent!important;
+ color:var(--np-u-red)!important;
+ font:500 10.5px/1.3 'Source Sans 3',system-ui,sans-serif!important;
+ cursor:pointer;
+}
+#npUniversalDemo.np-u-argon .np-u-argument-node-body>button:is(:hover,:focus-visible){
+ text-decoration:underline;text-underline-offset:3px;
+}
+#npUniversalDemo.np-u-argon .np-u-argument-provenance{
+ padding:8px 0 0!important;
+ color:var(--np-u-muted);
+ font:400 10px/1.5 'Source Sans 3',system-ui,sans-serif!important;
+}
+
+/* W18 typography: narrow paper never hyphenates a display title mid-word.
+   Prose stays readable with normal word breaks instead of justified rivers. */
+@media(min-width:1121px) and (max-width:1500px){
+ body.np-u-preview.np-u-argon-shell:not(.np-u-hide-right) article[data-reader-projection] h1{
+  font-size:clamp(35px,2.83vw,42px)!important;
+  line-height:1.13!important;
+  hyphens:none!important;overflow-wrap:normal!important;
+  word-break:normal!important;text-wrap:balance;
+ }
+}
+body.np-u-preview.np-u-argon-shell article[data-reader-projection] h1{
+ hyphens:none!important;word-break:normal!important;
+ overflow-wrap:normal!important;
+}
+#npUniversalDemo .np-u-left-foot > span:not(.np-u-foot-mark){
+ display:none!important;
+}
+
+/* W19 — ONE editorial audio card for both Product controller variants.
+   Structural class, shared DOM and real native handlers; not a second player. */
+#npUniversalDemo.np-u-argon #npUNativeTools{
+ gap:6px!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card{
+ box-sizing:border-box;
+ display:flex;flex-direction:column;gap:9px;
+ width:100%;min-width:0;
+ padding:9px 8px 10px;
+ border:1px solid var(--np-u-rule);
+ border-radius:9px;
+ background:var(--np-u-white);
+ box-shadow:0 1px 0 rgba(49,33,21,.035);
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-native-toolrows{
+ width:100%!important;flex:0 0 auto;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card #gbFloatingControls.np-u-argon-audio{
+ display:grid!important;
+ grid-template-columns:36px minmax(0,1fr) 40px 30px!important;
+ grid-template-rows:38px auto!important;
+ column-gap:4px!important;
+ width:100%!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .np-u-argon-audio-caption strong,
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .np-u-wave16-audio-caption strong{
+ font-size:10.5px!important;
+ letter-spacing:-.012em;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .np-u-argon-audio-caption small{
+ font-size:9px!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .np-u-wave15-audio-progress{
+ width:100%;
+ margin:0!important;padding:0!important;
+ gap:5px!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .np-u-wave15-progress-track{
+ height:4px!important;min-height:4px!important;
+ background:var(--np-u-rule)!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .np-u-wave15-progress-meta{
+ font-size:9px!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .np-u-wave15-progress-meta output{
+ font-size:9.5px!important;font-variant-numeric:tabular-nums;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .gbs-rail-playwrap{
+ box-sizing:border-box!important;
+ display:grid!important;
+ grid-template-columns:36px minmax(0,1fr) 40px 30px!important;
+ grid-template-rows:38px!important;
+ column-gap:4px!important;
+ align-items:center!important;
+ width:100%!important;height:38px!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .gbs-rail-playwrap>.gb-ember-wrap{
+ grid-area:1/1!important;justify-self:center!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .np-u-wave16-audio-caption{
+ grid-area:1/2!important;position:static!important;
+ width:auto!important;min-width:0!important;max-width:100%!important;
+ display:flex!important;flex-direction:column!important;
+ gap:2px!important;overflow:hidden!important;white-space:nowrap;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .np-u-wave16-audio-caption :is(strong,span){
+ overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .gbs-rail-playwrap .np-u-wave15-series-rate{
+ grid-area:1/3!important;position:relative!important;
+ top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;
+ width:40px!important;min-width:40px!important;height:29px!important;min-height:29px!important;
+ margin:0!important;padding:0!important;
+ justify-self:center!important;
+ border-radius:5px!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .gbs-rail-playwrap .gb-save{
+ grid-area:1/4!important;position:relative!important;
+ top:auto!important;bottom:auto!important;right:auto!important;left:auto!important;
+ display:grid!important;place-items:center!important;
+ width:30px!important;min-width:30px!important;
+ height:30px!important;min-height:30px!important;
+ padding:0!important;margin:0!important;
+ border:1px solid var(--np-u-rule)!important;border-radius:5px!important;
+ background:transparent!important;color:var(--np-u-muted)!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card button:is(.gb-save,.np-u-argon-rate-trigger):is(:hover,:focus-visible),
+#npUniversalDemo.np-u-argon #npUNativeTools .hrail-bottom button:is(:hover,:focus-visible){
+ color:var(--np-u-red)!important;
+ border-color:var(--np-u-red)!important;
+ background:var(--np-u-red-soft)!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .gb-ember:is(:hover,:focus-visible){
+ box-shadow:inset 0 0 0 1px var(--np-u-red),0 0 0 3px rgba(122,46,46,.09)!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .hrail-bottom{
+ height:32px!important;min-height:32px!important;
+}
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-native-toolrows:empty{
+ display:none!important;
+}
+@media(min-width:1121px){
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools{
+   height:66px!important;min-height:66px!important;
+   padding:5px 6px!important;
+   overflow:visible!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools .np-u-native-toolrows{
+   display:none!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card{
+   width:36px!important;min-width:36px!important;height:55px!important;
+   display:block!important;border:0!important;border-radius:0!important;
+   background:transparent!important;box-shadow:none!important;
+   padding:0!important;margin:0!important;
+   overflow:visible!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .np-u-wave15-audio-progress{
+   display:none!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .gbs-rail-playwrap{
+   display:grid!important;place-items:center!important;
+   grid-template-columns:36px!important;grid-template-rows:36px!important;
+   width:36px!important;height:36px!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .np-u-wave16-audio-caption,
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .gb-save{
+   display:none!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools .np-u-argon-rate-trigger,
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools .np-u-wave15-series-rate,
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .gbs-rail-playwrap .np-u-wave15-series-rate{
+   display:grid!important;position:absolute!important;z-index:60!important;
+   left:6px!important;right:auto!important;top:40px!important;bottom:auto!important;
+   width:36px!important;min-width:36px!important;height:15px!important;min-height:15px!important;
+   padding:0 2px!important;font-size:8px!important;
+   background:var(--np-u-white)!important;border-radius:5px!important;
+   box-shadow:none!important;
+ }
+}
+
+/* W19 premium compact-caption variant: no chopped word or ellipsis when
+   the left rail shrinks to its minimum on transitional desktop widths. */
+#npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-label-short{display:none!important}
+@media(min-width:1121px) and (max-width:1280px){
+ #npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-label-long{display:none!important}
+ #npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-label-short{display:inline!important}
+ #npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card #gbFloatingControls.np-u-argon-audio,
+ #npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .gbs-rail-playwrap{
+  grid-template-columns:34px minmax(0,1fr) 37px 29px!important;
+  column-gap:3px!important;
+ }
+ #npUniversalDemo.np-u-argon #npUNativeTools .np-u-audio-card .gbs-rail-playwrap .np-u-wave15-series-rate{
+  width:37px!important;min-width:37px!important;
+ }
+}
+
+/* W19 Gill mobile: preserve the native Product top Play and speed controls.
+   The pilot was hiding .mobile-chrome wholesale, making genuine Gill Play
+   unreachable. Restore that native top strip, not a cloned/fake control.
+   Keep only the pilot's own bottom navigation to avoid dual bottom bars. */
+@media(max-width:1120px){
+ body.np-u-preview .gbs2-world[data-gill-v16] .mobile-chrome{
+   display:block!important;
+ }
+ body.np-u-preview .gbs2-world[data-gill-v16] .mobile-top-bar{
+   display:flex!important;position:fixed!important;
+   top:0!important;left:0!important;right:0!important;
+   z-index:6000!important;
+   min-height:56px!important;
+   background:var(--np-u-paper,#f8f6f2)!important;
+   border-bottom:1px solid var(--np-u-rule,#e8e5dd)!important;
+ }
+ /* The native top TOC trigger opens Product's rail, which this Reader
+    intentionally replaces on touch widths; its duplicate is a dead action.
+    Keep the working Reader TOC entry in the bottom navigation. */
+ body.np-u-preview .gbs2-world[data-gill-v16] .mobile-top-bar .reader-mobile-menu-trigger{
+   display:none!important;
+ }
+ /* At 1120px Product compressed Back/Save to 40px. Preserve real 44px
+    targets without touching its functional Play, rate or bookmark handlers. */
+ body.np-u-preview .gbs2-world[data-gill-v16] .mobile-top-bar :is(#mobBackBtn,.mobile-top-save){
+   box-sizing:border-box!important;flex:0 0 44px!important;
+   width:44px!important;min-width:44px!important;
+   height:44px!important;min-height:44px!important;
+ }
+ body.np-u-preview .gbs2-world[data-gill-v16] .mobile-bottom-bar{
+   display:none!important;
+ }
+ body.np-u-preview .gbs2-world[data-gill-v16]{
+   padding-top:56px!important;
+ }
+}
+
+/* Gill pilot: narrow phones need an intentional speed popover, never
+   a six-button horizontal rail protruding off the screen. */
+@media(max-width:420px){
+ body.np-u-preview .gbs2-world[data-gill-v16] .mobile-top-bar.speed-open .mobile-speedrail.reader-mobile-speedrail{
+  position:fixed!important;top:59px!important;left:8px!important;right:8px!important;
+  width:calc(100vw - 16px)!important;max-width:calc(100vw - 16px)!important;
+  height:auto!important;min-height:0!important;
+  box-sizing:border-box!important;
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-auto-rows:36px!important;gap:5px!important;
+  padding:8px!important;border:1px solid var(--np-u-rule)!important;
+  border-radius:9px!important;background:var(--np-u-paper)!important;
+  box-shadow:0 9px 22px rgba(35,25,19,.18)!important;
+  z-index:6100!important;overflow:visible!important;
+  transform:none!important;translate:none!important;opacity:1!important;
+ }
+ body.np-u-preview .gbs2-world[data-gill-v16] .mobile-top-bar.speed-open .mobile-speedrail.reader-mobile-speedrail [data-speed]{
+  box-sizing:border-box!important;position:relative!important;inset:auto!important;
+  width:100%!important;min-width:0!important;max-width:100%!important;
+  height:36px!important;min-height:36px!important;
+  border-radius:5px!important;text-align:center!important;
+  font-variant-numeric:tabular-nums!important;
+ }
+}
+
+@media(max-width:420px){
+ body.np-u-preview .gbs2-world[data-gill-v16] .mobile-top-bar.speed-open .mobile-speedrail.reader-mobile-speedrail{
+   height:95px!important;min-height:95px!important;max-height:none!important;
+ }
+}
+
+/* W35: one standalone Reader fold control. Product owns every other action.
+   No shared vertical strip and no additional width reserved. */
+@media(min-width:1121px){
+ #npUniversalDemo.np-u-argon #npURightEdgeRail{
+  display:flex;position:fixed;z-index:930;top:9px;right:8px;
+  bottom:auto;left:auto;width:44px;height:auto;
+  box-sizing:border-box;flex-direction:column;align-items:center;gap:5px;
+  padding:0;margin:0;background:transparent!important;
+  border:0!important;box-shadow:none!important;color:var(--np-u-muted);
+  pointer-events:none;
+ }
+ #npUniversalDemo.np-u-argon #npURightEdgeRail button{
+  appearance:none;display:grid;place-items:center;position:relative;
+  width:44px;height:44px;min-width:44px;min-height:44px;flex:0 0 44px;
+  margin:0;padding:0;border:0!important;border-radius:50%;
+  background:transparent!important;color:inherit;box-shadow:none!important;
+  cursor:pointer;pointer-events:auto;
+ }
+ #npUniversalDemo.np-u-argon #npURightEdgeRail button > svg{
+  width:19px;height:19px;display:block;pointer-events:none;
+ }
+ #npUniversalDemo.np-u-argon #npURightEdgeRail button:is(:hover,:focus-visible){
+  color:var(--np-u-red);background:var(--np-u-red-soft)!important;
+ }
+ #npUniversalDemo.np-u-argon #npURightEdgeRail button:focus-visible{
+  outline:2px solid var(--np-u-red);outline-offset:-3px;
+ }
+ #npUniversalDemo.np-u-argon #npURightEdgeRail button:disabled{
+  opacity:.4;cursor:not-allowed;
+ }
+ #npUniversalDemo.np-u-argon #npURightEdgeRail #npUEdgeToggle{
+  color:var(--np-u-red);
+ }
+ /* The icons overlay the native research width, not an extra right column.
+    Prevent history and article content from running underneath them. */
+ #npUniversalDemo.np-u-argon #npUResearch .np-u-right-head{
+  padding-right:58px!important;
+ }
+ /* Keep the 'Раздел I' indicator clear of Product's floating controls. */
+ #npUniversalDemo.np-u-argon #npUResearch .np-u-research-follow{
+  padding-right:64px!important;
+ }
+ #npUniversalDemo.np-u-argon #npUResearch .np-u-right-scroll{
+  padding-right:48px!important;
+ }
+ /* Product Search stays the real event owner, merely not duplicated on desktop.
+    Native Theme remains visible within the research and outline actions. */
+ body.np-u-preview.np-u-argon-shell #npUniversalDemo.np-u-argon #npUOutline > #npUNativeResearchActions #gbFcSearch,
+ body.np-u-preview.np-u-argon-shell #npUniversalDemo.np-u-argon #npUResearch > #npUNativeResearchActions #gbFcSearch{
+  display:none!important;
+ }
+ body.np-u-preview.np-u-argon-shell:not(.np-u-native-product-actions) #npUniversalDemo.np-u-argon #npUNativeResearchActions{
+  grid-template-columns:minmax(0,1fr)!important;
+ }
+ #npUniversalDemo.np-u-argon #npUResearch #npULibraryButton,
+ #npUniversalDemo.np-u-argon #npUResearch #npUCloseRight{
+  display:none!important;
+ }
+}
+@media(max-width:1120px){
+ #npUniversalDemo.np-u-argon #npURightEdgeRail{display:none!important}
+}
+
+/* W35: real Product floating controls, not W34 SVG proxy buttons.
+   Product's own data-fc-root retains hover speeds, TTS, favorites, theme,
+   search, scroll-top and real library FAB. No extra page-width reservation. */
+@media(min-width:1121px){
+ body.np-u-preview.np-u-native-product-actions > .gbs-theme-corner.np-u-product-native-floating{
+  display:flex!important;position:fixed!important;
+  /* Original series Product: top 40px, right 5vw (not viewport edge). */
+  top:40px!important;right:5vw!important;bottom:auto!important;left:auto!important;
+  z-index:942!important;box-sizing:border-box!important;
+  width:40px!important;height:auto!important;
+  align-items:center!important;justify-content:normal!important;
+  flex-direction:column!important;gap:10px!important;
+  padding:0!important;margin:0!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;
+  overflow:visible!important;pointer-events:auto!important;
+ }
+ /* The native series speed badge relies on CSS scoped to .gbs2-world.
+    Reuse Product's exact computed design after moving its node to BODY:
+    badge is attached to the Play ring, never a separate line underneath. */
+ body.np-u-preview.np-u-native-product-actions > .gbs-theme-corner.np-u-product-native-floating .gbs-rail-playwrap{
+  display:grid!important;position:relative!important;
+  width:32px!important;height:32px!important;align-items:center!important;
+ }
+ body.np-u-preview.np-u-native-product-actions > .gbs-theme-corner.np-u-product-native-floating .gb-ember-wrap{
+  display:flex!important;
+ }
+ body.np-u-preview.np-u-native-product-actions > .gbs-theme-corner.np-u-product-native-floating .gbs-rail-spdbadge{
+  display:grid!important;position:absolute!important;box-sizing:border-box!important;
+  top:18px!important;right:0!important;left:auto!important;bottom:0!important;
+  width:max-content!important;min-width:18px!important;height:14px!important;
+  padding:2.2px 3px 0!important;
+  background:#1a1a1a!important;color:#fdfcf9!important;
+  border:0!important;border-radius:999px!important;
+  box-shadow:0 2px 6px rgba(0,0,0,.28)!important;
+  font-family:"Source Sans 3",system-ui,sans-serif!important;
+  font-size:8px!important;font-weight:800!important;line-height:8px!important;
+  text-align:center!important;z-index:3!important;pointer-events:none!important;
+ }
+ /* Product's DARK badge is gold, not the light theme's dark pill.
+    The original rule was lost when the Product node moved out of .gbs2-world. */
+ html[data-reader-theme="dark"] body.np-u-preview.np-u-native-product-actions
+  > .gbs-theme-corner.np-u-product-native-floating .gbs-rail-spdbadge{
+  background:linear-gradient(135deg,#b8936a,#eed093)!important;
+  color:#14171c!important;
+  box-shadow:0 2px 8px rgba(216,176,104,.3)!important;
+ }
+ body.np-u-preview.np-u-native-product-actions > .gbs-theme-corner .np-u-global-action-label{
+  display:none!important;
+ }
+ /* The Reader adds only a single fold button. On series pages it sits
+    immediately above native Product's row, preserving its exact coordinates. */
+ body.np-u-preview.np-u-native-product-actions #npUniversalDemo.np-u-argon #npURightEdgeRail{
+  top:0!important;right:5vw!important;width:40px!important;
+  height:40px!important;min-height:40px!important;bottom:auto!important;
+ }
+ body.np-u-preview.np-u-native-product-actions #npUniversalDemo.np-u-argon #npURightEdgeRail #npUEdgeToggle{
+  width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important;
+ }
+ body.np-u-preview.np-u-native-product-actions #npUniversalDemo.np-u-argon #npUNativeResearchActions,
+ body.np-u-preview.np-u-native-product-actions #npUniversalDemo.np-u-argon #npUNativeTools{
+  display:none!important;
+ }
+ /* The 'Аналитика' scroller starts below the native floating actions.
+    A margin, not inner padding, keeps scrolled content from passing behind
+    the controls. Full reading/card width is preserved, with no new strip. */
+ body.np-u-preview.np-u-native-product-actions #npUniversalDemo.np-u-argon #npUResearch .np-u-right-scroll{
+  margin-top:0!important;
+ }
+ body.np-u-preview.np-u-native-product-actions #npUniversalDemo.np-u-argon #npUResearch .np-u-right-head,
+ body.np-u-preview.np-u-native-product-actions #npUniversalDemo.np-u-argon #npUResearch .np-u-research-follow{
+  padding-right:12px!important;
+ }
+}
+@media(max-width:1120px){
+ body.np-u-preview > .gbs-theme-corner.np-u-product-native-floating{display:none!important}
+}
+
+/* W35 legacy originals: restore actual #gbFloatingControls. Keep its own
+   Product speed popup, native Save, Theme and Search. Do not render proxies. */
+@media(min-width:1121px){
+ body.np-u-preview.np-u-native-product-actions > #gbFloatingControls.np-u-native-legacy-float{
+  display:flex!important;position:fixed!important;
+  /* Original legacy Product articles use 20px insets (unlike series). */
+  top:20px!important;right:20px!important;bottom:auto!important;left:auto!important;
+  z-index:942!important;width:40px!important;height:auto!important;
+  align-items:center!important;justify-content:flex-start!important;
+  flex-direction:column!important;gap:6px!important;
+  margin:0!important;padding:0!important;
+  background:transparent!important;border:0!important;
+  box-shadow:none!important;overflow:visible!important;
+ }
+ body.np-u-preview.np-u-native-product-actions > #gbFloatingControls .np-u-global-action-label{
+  display:none!important;
+ }
+ /* In Product's native desktop layout Settings is hidden; the Reader desktop
+    begins at 1121px, slightly earlier than Product. Preserve the same visible
+    icon set at that intermediate width instead of adding a sixth button. */
+ body.np-u-preview.np-u-native-product-actions > #gbFloatingControls.np-u-native-legacy-float #gbFcSettings{
+  display:none!important;
+ }
+ /* Legacy series starts at y=20; put fold beside the first native icon
+    rather than overlap it or move the original Product cluster down. */
+ body.np-u-preview.np-u-native-product-actions:has(> #gbFloatingControls.np-u-native-legacy-float)
+  #npUniversalDemo.np-u-argon #npURightEdgeRail{
+  top:20px!important;right:68px!important;
+ }
+ body.np-u-preview.np-u-native-product-actions:has(> #gbFloatingControls.np-u-native-legacy-float)
+  #npUniversalDemo.np-u-argon #npUResearch .np-u-right-scroll{
+  margin-top:0!important;
+ }
+}
+
+/* W37: authentic Product I-IV and progress (same DOM nodes), only when
+   1121..1359px ARGON has replaced the full Product rail. */
+
+@media(min-width:1121px) and (max-width:1359px){
+ body.np-u-preview #npUniversalDemo.np-u-argon #npUOutline>.np-u-series-progress-slot{
+  box-sizing:border-box;display:flex;align-items:center;
+  width:100%;min-height:65px;padding:9px 12px;flex:0 0 auto;
+ }
+ body.np-u-preview #npUniversalDemo.np-u-argon #npUOutline .np-u-series-progress-slot>.gbs2-rprogress{
+  box-sizing:border-box;display:flex!important;align-items:center;gap:10px!important;
+  padding:0!important;margin:0!important;min-height:44px;width:100%;
+  opacity:1!important;background:transparent!important;border:none!important;
+ }
+ body.np-u-preview #npUniversalDemo.np-u-argon #npUOutline .np-u-series-progress-slot .gbs2-ring{
+  box-sizing:border-box;display:grid!important;place-items:center;position:relative!important;
+  flex:0 0 44px;width:44px;height:44px;
+ }
+ body.np-u-preview #npUniversalDemo.np-u-argon #npUOutline .np-u-series-progress-slot .gbs2-ring svg{width:44px!important;height:44px!important;display:block!important}
+ body.np-u-preview #npUniversalDemo.np-u-argon #npUOutline .np-u-series-progress-slot .gbs2-ring circle{
+  fill:none!important;stroke-width:4px!important;stroke-linecap:round!important;
+ }
+ body.np-u-preview #npUniversalDemo.np-u-argon #npUOutline .np-u-series-progress-slot .gbs2-ring circle.t{stroke:var(--np-u-rule)!important}
+ body.np-u-preview #npUniversalDemo.np-u-argon #npUOutline .np-u-series-progress-slot .gbs2-ring circle.f{stroke:var(--np-u-red)!important}
+ body.np-u-preview #npUniversalDemo.np-u-argon #npUOutline .np-u-series-progress-slot .gbs2-ring b{
+  position:absolute!important;inset:0!important;display:grid!important;place-items:center!important;
+  color:var(--np-u-red)!important;font:700 11px/1 "Source Sans 3",sans-serif!important;
+ }
+ body.np-u-preview #npUniversalDemo.np-u-argon #npUOutline .np-u-series-progress-slot>.gbs2-rprogress>div:not(.gbs2-ring){
+  display:grid;gap:3px;color:var(--np-u-ink);min-width:0;
+  font:500 11px/1.4 "Source Sans 3",sans-serif;
+ }
+ body.np-u-preview #npUniversalDemo.np-u-argon #npUOutline .np-u-series-progress-slot>.gbs2-rprogress>div:not(.gbs2-ring) small{
+  font:600 10px/1.3 "Source Sans 3",sans-serif!important;color:var(--np-u-muted)!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUOutline>.np-u-series-progress-slot{
+  width:48px!important;min-height:60px!important;padding:8px 2px!important;justify-content:center;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUOutline .np-u-series-progress-slot>.gbs2-rprogress{
+  width:44px!important;min-height:44px!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon #npUOutline .np-u-series-progress-slot>.gbs2-rprogress>div:not(.gbs2-ring){display:none!important}
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon .np-u-rail-spine{
+   align-items:center!important;justify-content:flex-start!important;gap:9px!important;
+   padding:10px 2px 80px!important;overflow-y:auto!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon .np-u-rail-spine:has(>.np-u-native-roman-compact)>.np-u-spine-line,
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon .np-u-rail-spine:has(>.np-u-native-roman-compact)>.np-u-spine-item{display:none!important}
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon .np-u-rail-spine>.np-u-native-roman-compact{
+   display:flex!important;position:relative!important;flex-direction:column!important;
+   align-items:center!important;gap:9px!important;width:44px!important;padding:0!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon .np-u-rail-spine>.np-u-native-roman-compact .np-u-roman-shortcut{
+  display:grid!important;place-items:center!important;width:40px!important;min-width:40px!important;
+  height:40px!important;min-height:40px!important;border:1px solid rgba(173,115,66,.46)!important;
+  border-radius:9px!important;background:rgba(139,94,60,.09)!important;
+  color:var(--np-u-red)!important;text-decoration:none!important;
+  font:italic 700 15px/1 Georgia,serif!important;
+ }
+ body.np-u-preview.np-u-compact #npUniversalDemo.np-u-argon .np-u-rail-spine>.np-u-native-roman-compact .np-u-roman-shortcut[aria-current="page"]{
+  background:var(--np-u-red)!important;border-color:var(--np-u-red)!important;color:white!important;
+ }
+}
+
+/* Gill mobile: the Product header AND overview drew two parallel rules. */
+@media(max-width:1120px){
+ body.np-u-preview .gbs2-world[data-gill-v16] header.article-header.gbs2-head{
+  border-bottom:0!important;margin-bottom:24px!important;
+ }
+}
+/* Glossary: select was only 94px wide at 1280 and clipped full term. */
+@media(min-width:1121px) and (max-width:1439px){
+ body.np-u-preview #npUniversalDemo.np-u-argon #npUResearch .np-u-study-picker-row{
+  display:grid!important;grid-template-columns:minmax(0,1fr) 44px 44px!important;
+  align-items:center!important;column-gap:6px!important;row-gap:6px!important;
+ }
+ body.np-u-preview #npUniversalDemo.np-u-argon #npUResearch .np-u-study-picker-row select{
+  grid-column:1 / -1!important;grid-row:1!important;box-sizing:border-box!important;
+  width:100%!important;min-width:0!important;height:44px!important;min-height:44px!important;
+ }
+ body.np-u-preview #npUniversalDemo.np-u-argon #npUResearch .np-u-study-picker-row .np-u-study-picker-counter{
+  grid-column:1!important;grid-row:2!important;justify-self:start!important;
+ }
+ body.np-u-preview #npUniversalDemo.np-u-argon #npUResearch .np-u-study-picker-row button[data-np-u-lex-step="-1"]{
+  grid-column:2!important;grid-row:2!important;
+ }
+ body.np-u-preview #npUniversalDemo.np-u-argon #npUResearch .np-u-study-picker-row button[data-np-u-lex-step="1"]{
+  grid-column:3!important;grid-row:2!important;
+ }
+}
+
+/* W38 ? single-line header. Existing Product controls remain in BODY to
+   retain native TTS hover, selected-speed badge, Save, theme and search. */
+@media(min-width:1121px){
+ body.np-u-preview.np-u-inline-header-actions{
+  --np-u-inline-size:32px;--np-u-inline-native-width:160px;
+  --np-u-inline-native-right:48px;
+ }
+ body.np-u-preview.np-u-inline-header-actions:has(> #gbFloatingControls.np-u-native-legacy-float){
+  --np-u-inline-native-width:128px;
+ }
+ body.np-u-preview.np-u-inline-header-actions #npUniversalDemo.np-u-argon #npUResearch .np-u-right-head{
+  box-sizing:border-box!important;display:flex!important;align-items:center!important;
+  min-height:56px!important;height:56px!important;padding:8px 12px!important;gap:0!important;
+ }
+ body.np-u-preview.np-u-inline-header-actions #npUniversalDemo.np-u-argon #npUResearch .np-u-argon-right-heading{
+  display:flex!important;align-items:center!important;flex:0 0 auto!important;min-width:0!important;
+ }
+ body.np-u-preview.np-u-inline-header-actions #npUniversalDemo.np-u-argon #npUResearch .np-u-argon-right-heading strong{
+  font-size:17px!important;line-height:1.2!important;white-space:nowrap!important;
+ }
+ body.np-u-preview.np-u-inline-header-actions #npUniversalDemo.np-u-argon #npUResearch .np-u-argon-right-heading span{
+  display:none!important;
+ }
+ body.np-u-preview.np-u-inline-header-actions #npUniversalDemo.np-u-argon #npUResearch .np-u-right-actions{
+  display:flex!important;position:static!important;min-width:0!important;gap:0!important;
+ }
+ body.np-u-preview.np-u-inline-header-actions #npUniversalDemo.np-u-argon #npUHistoryButton{
+  position:absolute!important;top:10px!important;
+  right:calc(var(--np-u-inline-native-right) + var(--np-u-inline-native-width) + 2px)!important;
+  box-sizing:border-box!important;width:32px!important;min-width:32px!important;
+  height:36px!important;min-height:36px!important;
+ }
+ body.np-u-preview.np-u-inline-header-actions > :is(.gbs-theme-corner.np-u-product-native-floating,#gbFloatingControls.np-u-native-legacy-float){
+  display:flex!important;position:fixed!important;top:10px!important;
+  right:var(--np-u-inline-native-right)!important;bottom:auto!important;left:auto!important;
+  width:var(--np-u-inline-native-width)!important;height:36px!important;
+  flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;
+  gap:0!important;margin:0!important;padding:0!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;
+  overflow:visible!important;z-index:942!important;
+ }
+ body.np-u-preview.np-u-inline-header-actions > :is(.gbs-theme-corner.np-u-product-native-floating,#gbFloatingControls.np-u-native-legacy-float)
+  > :is(button,.gbs-rail-playwrap,.gb-ember-playwrap){
+  box-sizing:border-box!important;flex:0 0 var(--np-u-inline-size)!important;
+  width:var(--np-u-inline-size)!important;min-width:var(--np-u-inline-size)!important;
+  max-width:var(--np-u-inline-size)!important;height:36px!important;min-height:36px!important;
+  margin:0!important;padding:0!important;
+ }
+ body.np-u-preview.np-u-inline-header-actions > :is(.gbs-theme-corner.np-u-product-native-floating,#gbFloatingControls.np-u-native-legacy-float)
+  > :is(.gbs-rail-playwrap,.gb-ember-playwrap){
+  position:relative!important;display:grid!important;place-items:center!important;overflow:visible!important;
+ }
+ body.np-u-preview.np-u-inline-header-actions #npUniversalDemo.np-u-argon #npURightEdgeRail,
+ body.np-u-preview.np-u-native-product-actions.np-u-inline-header-actions:has(> #gbFloatingControls.np-u-native-legacy-float)
+  #npUniversalDemo.np-u-argon #npURightEdgeRail{
+  top:8px!important;right:8px!important;width:36px!important;height:40px!important;min-height:40px!important;
+ }
+ body.np-u-preview.np-u-inline-header-actions #npUniversalDemo.np-u-argon #npURightEdgeRail #npUEdgeToggle{
+  width:36px!important;min-width:36px!important;height:40px!important;min-height:40px!important;
+ }
+ body.np-u-preview.np-u-inline-header-actions #npUniversalDemo.np-u-argon #npUResearch .np-u-research-follow{
+  padding-left:16px!important;padding-right:16px!important;
+ }
+ body.np-u-preview.np-u-inline-header-actions #npUniversalDemo.np-u-argon #npUResearch .np-u-right-scroll{
+  margin-top:0!important;padding-right:12px!important;
+ }
+}
+@media(min-width:1121px) and (max-width:1359px){
+ body.np-u-preview.np-u-inline-header-actions{--np-u-inline-native-width:128px}
+ body.np-u-preview.np-u-inline-header-actions > .gbs-theme-corner.np-u-product-native-floating
+  > [data-fc-action="scroll-top"]{display:none!important}
+}
+@media(min-width:1121px) and (max-width:1199px){
+ body.np-u-preview.np-u-inline-header-actions #npUniversalDemo.np-u-argon #npUResearch .np-u-argon-right-heading strong{
+  font-size:15px!important;
+ }
+}
+
+/* W38 native speed popup near header ? the Product default is vertically
+   centered around Play and would be cropped above viewport at top:10px.
+   Keep its six authentic speed choices fully visible below the toolbar. */
+@media(min-width:1121px){
+ body.np-u-preview.np-u-inline-header-actions > :is(.gbs-theme-corner.np-u-product-native-floating,#gbFloatingControls.np-u-native-legacy-float)
+  .gb-ember-wrap > .gb-ember-expand{
+  box-sizing:border-box!important;position:absolute!important;
+  top:100%!important;bottom:auto!important;left:-25px!important;right:auto!important;
+  transform:none!important;translate:none!important;z-index:12!important;
+  width:82px!important;min-width:82px!important;max-width:82px!important;
+  height:auto!important;max-height:calc(100dvh - 58px)!important;
+  padding:6px!important;gap:2px!important;border:1px solid #ded8cf!important;
+  border-radius:8px!important;background:#fdfbf7!important;color:#231f1a!important;
+  box-shadow:0 12px 28px rgba(24,19,15,.16)!important;
+  overflow-x:hidden!important;overflow-y:auto!important;
+ }
+}
+
+/* W38 dark popup surface: retain Product's native active state and labels. */
+@media(min-width:1121px){
+ html[data-reader-theme="dark"] body.np-u-preview.np-u-inline-header-actions
+  > :is(.gbs-theme-corner.np-u-product-native-floating,#gbFloatingControls.np-u-native-legacy-float)
+  .gb-ember-wrap > .gb-ember-expand,
+ html.dark body.np-u-preview.np-u-inline-header-actions
+  > :is(.gbs-theme-corner.np-u-product-native-floating,#gbFloatingControls.np-u-native-legacy-float)
+  .gb-ember-wrap > .gb-ember-expand{
+  background:#1b1d21!important;color:#efe5d5!important;
+  border-color:#46444a!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.42)!important;
+ }
+}
+
+/* W40 shared geometry: true semantic containment, never clip whole page. */
+@media(min-width:1121px){
+ body.np-u-preview:is(.np-u-w40-space,.np-u-w40-book) main.np-u-reader-main > :is(.gbs2-hero,.article-hero){
+  box-sizing:border-box!important;width:calc(100% - 36px)!important;max-width:calc(100% - 36px)!important;
+  margin-left:auto!important;margin-right:auto!important;overflow:hidden!important;
+ }
+ body.np-u-preview:is(.np-u-w40-space,.np-u-w40-book) main.np-u-reader-main > .article-header{
+  box-sizing:border-box!important;padding-left:clamp(22px,2.7vw,38px)!important;
+  padding-right:clamp(22px,2.7vw,38px)!important;
+ }
+ body.np-u-preview:is(.np-u-w40-space,.np-u-w40-book) main.np-u-reader-main > :is(.np-u-central-overview,.np-u-central-contents){
+  box-sizing:border-box!important;width:calc(100% - 36px)!important;max-width:calc(100% - 36px)!important;
+  margin-left:auto!important;margin-right:auto!important;
+ }
+ body.np-u-preview:is(.np-u-w40-space,.np-u-w40-book) main.np-u-reader-main > article[data-reader-projection]{
+  box-sizing:border-box!important;padding-inline:clamp(22px,2.7vw,38px)!important;
+ }
+ body.np-u-preview:is(.np-u-w40-space,.np-u-w40-book) main.np-u-reader-main article[data-reader-projection] :is(figure,picture){
+  box-sizing:border-box;max-width:100%;min-width:0;
+ }
+ body.np-u-preview:is(.np-u-w40-space,.np-u-w40-book) main.np-u-reader-main article[data-reader-projection] :is(img,video,iframe){
+  max-width:100%;min-width:0;
+ }
+}
+/* A ? seamless canvas; the page has *no* visual boundary at all. */
+body.np-u-preview.np-u-w40-space{
+ --np-u-w40-canvas:#fdfcf9;
+ background:var(--np-u-w40-canvas)!important;background-image:none!important;
+}
+html.dark body.np-u-preview.np-u-w40-space{--np-u-w40-canvas:#161a21}
+body.np-u-preview.np-u-w40-space::after{content:none!important;display:none!important}
+body.np-u-preview.np-u-w40-space :is(.gbs2-world > .page-wrap, .page-wrap){background:transparent!important;background-image:none!important;border:0!important;box-shadow:none!important}
+/* B ? distinct book surface with one restrained shadow, no fake edge gradients. */
+body.np-u-preview.np-u-w40-book{
+ --np-u-w40-canvas:#f2eee7;
+ --np-u-w40-paper:#fffdf9;
+ background:var(--np-u-w40-canvas)!important;background-image:none!important;
+}
+html.dark body.np-u-preview.np-u-w40-book{
+ --np-u-w40-canvas:#11151b;--np-u-w40-paper:#1b2028;
+}
+body.np-u-preview.np-u-w40-book::after{content:none!important;display:none!important}
+body.np-u-preview.np-u-w40-book :is(.gbs2-world > .page-wrap, .page-wrap){
+ background:var(--np-u-w40-paper)!important;background-image:none!important;
+ border:0!important;box-shadow:0 13px 35px -20px rgba(58,41,28,.22),0 0 0 1px rgba(83,63,45,.10)!important;
+}
+html.dark body.np-u-preview.np-u-w40-book :is(.gbs2-world > .page-wrap, .page-wrap){
+ box-shadow:0 18px 45px -22px rgba(0,0,0,.62),0 0 0 1px rgba(229,215,194,.09)!important;
+}
+
+/* W40 space rail no-shadow: remove native Product rail's fade INTO the
+   unified canvas. This does not hide or alter the rail itself. */
+body.np-u-preview.np-u-w40-space .gbs2-world > .gbs-rail{box-shadow:none!important}
+/* A balanced typographic line break never requires an artificial third row. */
+@media(min-width:1121px){
+ body.np-u-preview:is(.np-u-w40-space,.np-u-w40-book) main.np-u-reader-main > .article-header :is(h1,.article-title){
+  text-wrap:pretty;hyphens:none;
+ }
+}
+
+/* Gill title should wrap at the chapter boundary, not inside 1697-1771. */
+@media(min-width:1121px) and (max-width:1500px){
+ body.np-u-preview:is(.np-u-w40-space,.np-u-w40-book)
+ .gbs2-world[data-gill-v16] main.np-u-reader-main > .article-header h1{
+ max-width:min(100%,545px)!important;
+ }
+}
+
+@media(min-width:1121px) and (max-width:1500px){
+ body.np-u-preview:is(.np-u-w40-space,.np-u-w40-book)
+ .gbs2-world[data-gill-v16] main.np-u-reader-main > .article-header h1{
+ max-width:min(100%,545px)!important;
+ }
+}
+
+
+/* W41 - Seamless Editorial Reader, opt-in preview, no extra paper boundary.
+   Distinct content axes: hero bleeds 18px; editorial text and breadcrumbs
+   share clamp(22px,2.7vw,38px); one divider instead of stacked lines. */
+@media (min-width:1121px){
+ body.np-u-preview.np-u-w40-space .gbs2-world>.page-wrap>nav.breadcrumb{
+  margin-left:clamp(22px,2.7vw,38px)!important;
+  margin-right:clamp(22px,2.7vw,38px)!important;
+  max-width:calc(100% - 76px);
+ }
+ body.np-u-preview.np-u-w40-space main.np-u-reader-main>.article-header{
+  border-bottom:0!important;
+  padding-bottom:clamp(18px,2vw,26px)!important;
+  margin-bottom:22px!important;
+ }
+ body.np-u-preview.np-u-w40-space main.np-u-reader-main>.np-u-central-overview{
+  margin-top:12px!important;
+ }
+ body.np-u-preview.np-u-w40-space main.np-u-reader-main>:is(.gbs2-hero,.article-hero){
+  border:0!important;
+  box-shadow:0 14px 30px -23px rgba(40,25,15,.28)!important;
+ }
+ html.dark body.np-u-preview.np-u-w40-space main.np-u-reader-main>:is(.gbs2-hero,.article-hero){
+  box-shadow:0 18px 34px -23px rgba(0,0,0,.52)!important;
+ }
+ body.np-u-preview.np-u-w40-space #npUResearch{
+  border-left:0!important;
+  box-shadow:none!important;
+ }
+ body.np-u-preview.np-u-w40-space.np-u-hide-right
+ .gbs2-world[data-gill-v16] main.np-u-reader-main>.article-header h1{
+  max-width:100%!important;
+ }
+}
+/* At narrow widths, preserve natural image clipping while keeping the
+   surrounding canvas borderless and overflow-free. */
+@media (max-width:1120px){
+ body.np-u-preview.np-u-w40-space main.np-u-reader-main>:is(.gbs2-hero,.article-hero){
+  border:0!important;
+  box-shadow:0 11px 25px -21px rgba(40,25,15,.26)!important;
+ }
+}
+
+/* W41 alternate-template normalization: the three article families using
+   main.article-main or main.astro-main have no .page-wrap. Remove their
+   original sheet shadows/borders in the *opt-in seamless* mode only. */
+body.np-u-preview.np-u-w40-space main.np-u-reader-main{
+ background:transparent!important;
+ background-image:none!important;
+ box-shadow:none!important;
+ border:0!important;
+}
+/* W41 mobile content insets: legacy article cover figures used -16px
+   negative margins. Keep them inside their actual text container.
+   Leave internally scrollable wide comparison tables intact. */
+@media(max-width:1120px){
+ body.np-u-preview.np-u-w40-space main.np-u-reader-main > .article-header{
+  border-bottom:0!important;
+ }
+ body.np-u-preview.np-u-w40-space main.np-u-reader-main article[data-reader-projection] > figure.article-img.wide{
+  margin-left:0!important;margin-right:0!important;
+  width:100%!important;max-width:100%!important;min-width:0!important;
+ }
+}
+
+/* W47 TRUE READER PANEL: authentic Product nodes only, pilot-only styles. */
+@media(min-width:1121px){
+ body.np-u-preview #npUniversalDemo.np-u-argon #npUResearch{top:18px!important;height:calc(100dvh - 18px)!important;max-height:calc(100dvh - 18px)!important}
+ body.np-u-preview.np-u-inline-header-actions > :is(.gbs-theme-corner.np-u-product-native-floating,#gbFloatingControls.np-u-native-legacy-float){top:28px!important}
+ body.np-u-preview.np-u-inline-header-actions #npUniversalDemo.np-u-argon #npURightEdgeRail,
+ body.np-u-preview.np-u-native-product-actions.np-u-inline-header-actions:has(> #gbFloatingControls.np-u-native-legacy-float) #npUniversalDemo.np-u-argon #npURightEdgeRail{top:26px!important}
+ body.np-u-preview.np-u-native-product-actions:not(.np-u-inline-header-actions) #npUniversalDemo.np-u-argon #npURightEdgeRail{top:22px!important;right:5vw!important;width:40px!important;height:40px!important}
+ body.np-u-preview.np-u-native-product-actions:not(.np-u-inline-header-actions) > .gbs-theme-corner.np-u-product-native-floating{top:72px!important;right:5vw!important;width:40px!important}
+ body.np-u-preview.np-u-native-product-actions:not(.np-u-inline-header-actions):has(> #gbFloatingControls.np-u-native-legacy-float) #npUniversalDemo.np-u-argon #npURightEdgeRail{top:22px!important;right:20px!important}
+ body.np-u-preview.np-u-native-product-actions:not(.np-u-inline-header-actions) > #gbFloatingControls.np-u-native-legacy-float{top:72px!important;right:20px!important}
+ body.np-u-preview.np-u-native-product-actions:not(.np-u-inline-header-actions) > :is(.gbs-theme-corner.np-u-product-native-floating,#gbFloatingControls.np-u-native-legacy-float){gap:10px!important;align-items:center!important}
+ body.np-u-preview.np-u-native-product-actions:not(.np-u-inline-header-actions) > :is(.gbs-theme-corner.np-u-product-native-floating,#gbFloatingControls.np-u-native-legacy-float)>:is(button,.gbs-rail-playwrap,.gb-ember-playwrap){box-sizing:border-box!important;width:40px!important;min-width:40px!important;height:40px!important;min-height:40px!important;margin:0!important;align-self:center!important}
+}
+/* Speed menu = exactly six native rates. Stop remains in Product DOM; the
+   main Product Play button controls Play/Pause and retains progress ring. */
+body.np-u-preview .gb-ember-expand :is(.gb-ember-expand__stop,[data-fc-action="stop"]){display:none!important}
+@media(min-width:1360px){
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail .gbs2-world>.gbs-rail.reader-integrated-rail--compact .reader-rail-compact-tools{
+  box-sizing:border-box!important;width:68px!important;min-width:68px!important;max-width:68px!important;align-items:center!important}
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail .gbs2-world>.gbs-rail.reader-integrated-rail--compact .reader-rail-compact-tools>.gbs-theme-corner{
+  box-sizing:border-box!important;width:48px!important;min-width:48px!important;max-width:48px!important;height:220px!important;min-height:220px!important;
+  display:flex!important;flex-direction:column!important;align-items:center!important;gap:6px!important;justify-content:flex-start!important;overflow:visible!important}
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail .gbs2-world>.gbs-rail.reader-integrated-rail--compact .reader-rail-compact-tools>.gbs-theme-corner>:is(button,.gbs-rail-playwrap,.gb-ember-playwrap){
+  box-sizing:border-box!important;width:40px!important;min-width:40px!important;max-width:40px!important;height:40px!important;min-height:40px!important;max-height:40px!important;flex:0 0 40px!important;align-self:center!important}
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail .gbs2-world>.gbs-rail.reader-integrated-rail--compact>.np-u-native-roman-compact{
+  box-sizing:border-box!important;display:flex!important;position:absolute!important;top:144px!important;left:10px!important;right:10px!important;
+  width:48px!important;min-width:48px!important;height:auto!important;max-height:max(72px,calc(100dvh - 410px))!important;
+  padding:1px 0!important;margin:0!important;gap:7px!important;flex-direction:column!important;align-items:center!important;
+  overflow-y:auto!important;overflow-x:hidden!important;z-index:30!important;scrollbar-width:thin!important}
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail .gbs2-world>.gbs-rail.reader-integrated-rail--compact>.np-u-native-roman-compact>.np-u-roman-shortcut{
+  box-sizing:border-box!important;display:grid!important;place-items:center!important;flex:0 0 40px!important;width:40px!important;min-width:40px!important;height:40px!important;min-height:40px!important;
+  padding:0!important;margin:0!important;border:1px solid rgba(184,145,93,.43)!important;border-radius:8px!important;
+  background:rgba(184,145,93,.07)!important;color:#b8915d!important;font:600 14px/1 Georgia,serif!important;font-style:normal!important;text-decoration:none!important;box-shadow:none!important}
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail .gbs2-world>.gbs-rail.reader-integrated-rail--compact>.np-u-native-roman-compact>.np-u-roman-shortcut[aria-current="page"]{background:rgba(184,145,93,.2)!important;color:#f0cb8e!important;border-color:#c09a65!important}
+}
+/* The real Product buttons were dark-on-light after reparenting into
+   the dark compact rail. Restore readable contrast without new buttons. */
+@media(min-width:1360px){
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail .gbs2-world>.gbs-rail.reader-integrated-rail--compact
+ .reader-rail-compact-tools>.gbs-theme-corner > :is(button.gb-icon,button.gb-save){
+ color:#dfcbb0!important;background:transparent!important;opacity:1!important;
+ }
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail .gbs2-world>.gbs-rail.reader-integrated-rail--compact
+ .reader-rail-compact-tools>.gbs-theme-corner > :is(button.gb-icon,button.gb-save) svg{stroke:currentColor!important;}
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail .gbs2-world>.gbs-rail.reader-integrated-rail--compact
+ .reader-rail-compact-tools>.gbs-theme-corner .gb-ember{color:#dfcbb0!important;}
+ body.np-u-preview.np-u-argon-shell.np-u-native-series-rail .gbs2-world>.gbs-rail.reader-integrated-rail--compact
+ .reader-rail-compact-tools>.gbs-theme-corner .gb-ember__glyph path{fill:currentColor!important;}
+}
+/* Source-based nested TOC stays within editorial reading width, not the
+   entire folio; content is scrollable only when explicitly expanded. */
+body.np-u-preview.np-u-w40-space main.np-u-reader-main>:is(.np-u-central-overview,.np-u-central-contents){
+ box-sizing:border-box!important;width:calc(100% - 44px)!important;max-width:760px!important;margin-left:auto!important;margin-right:auto!important}
+body.np-u-preview .np-u-central-contents .np-u-toc-chapters{
+ display:grid!important;gap:15px!important;padding:5px 0 20px!important;margin:0!important;list-style:none!important;
+ max-height:min(49vh,460px)!important;overflow-y:auto!important;overscroll-behavior:contain!important}
+body.np-u-preview .np-u-central-contents .np-u-toc-chapter{display:block!important;margin:0!important;padding:0!important}
+body.np-u-preview .np-u-central-contents .np-u-toc-chapter-link{
+ display:flex!important;align-items:baseline!important;gap:11px!important;padding:8px 0!important;
+ font:600 14px/1.5 Georgia,serif!important;border-bottom:1px solid var(--np-u-rule)!important}
+body.np-u-preview .np-u-central-contents .np-u-toc-chapter-link strong{font-weight:600!important;overflow-wrap:anywhere!important}
+body.np-u-preview .np-u-central-contents .np-u-toc-roman{flex:0 0 32px!important;font:600 12px/1.4 Georgia,serif!important;color:var(--np-u-red)!important}
+body.np-u-preview .np-u-central-contents .np-u-toc-subchapters{list-style:none!important;display:grid!important;gap:2px!important;margin:5px 0 0 43px!important;padding:0!important}
+body.np-u-preview .np-u-central-contents .np-u-toc-subchapters li{list-style:none!important;min-width:0!important}
+body.np-u-preview .np-u-central-contents .np-u-toc-subchapters a{
+ display:block!important;max-width:100%!important;padding:6px 3px!important;color:var(--np-u-ink)!important;
+ font:400 12.5px/1.5 'Lora',Georgia,serif!important;overflow-wrap:anywhere!important;text-decoration:none!important}
+body.np-u-preview .np-u-central-contents .np-u-toc-subchapters a:hover{color:var(--np-u-red)!important;text-decoration:underline!important}
+@media(max-width:600px){
+ body.np-u-preview.np-u-w40-space main.np-u-reader-main>:is(.np-u-central-overview,.np-u-central-contents){width:calc(100% - 26px)!important}
+ body.np-u-preview .np-u-central-contents .np-u-toc-subchapters{margin-left:24px!important}
+}

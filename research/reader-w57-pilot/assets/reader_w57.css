@@ -1,0 +1,495 @@
+/* W57 2026-11-20 scrollbar-safe column: fold and Library are right:calc(5vw - 2px)
+   at 44px, authentic reading toolbar is right:5vw at 40px. They share the
+   same containing-block edge, even when the scrollbar consumes 16-17px.
+   Default desktop state is folded; existing icon SVGs and mobile unchanged. */
+/* ARGON W57: integration over authentic Product controls; never clone TTS/library. */
+/* W57 VISUAL CLOSURE 2026-11-20:
+   The Library is a plain SVG with a 44px invisible hitbox on the SAME axis as
+   Theme/Search/TTS/Bookmark, no frame, gradient, border, shadow or hover lift.
+   The anchored controls remain fixed while scrolling and opening the library. */
+@media(min-width:1121px){
+ body.np-u-preview.np-w57-ready.np-u-hide-right #gb-hl-fab {
+   box-sizing:border-box!important;position:fixed!important;
+   left:auto!important;right:calc(5vw - 2px)!important;
+   top:auto!important;bottom:20px!important;
+   width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;
+   margin:0!important;padding:0!important;display:grid!important;place-items:center!important;
+   color:#634b3e!important;
+   border:0!important;border-radius:0!important;
+   background:none!important;background-color:transparent!important;
+   box-shadow:none!important;filter:none!important;
+   transform:none!important;translate:none!important;
+   transition:color .16s ease!important;
+   visibility:visible!important;pointer-events:auto!important;opacity:1!important;z-index:970!important;
+ }
+ body.np-u-preview.np-w57-ready.np-u-hide-right #gb-hl-fab > svg{
+   width:20px!important;height:20px!important;stroke:currentColor!important;stroke-width:1.65!important;
+   stroke-linecap:round!important;stroke-linejoin:round!important;fill:none!important;
+ }
+ body.np-u-preview.np-w57-ready.np-u-hide-right #gb-hl-fab:is(:hover,:active,:focus-visible){
+   color:#8b5148!important;border:0!important;background:none!important;
+   box-shadow:none!important;filter:none!important;transform:none!important;translate:none!important;
+ }
+ body.np-u-preview.np-w57-ready.np-u-hide-right #gb-hl-fab:focus-visible{
+   outline:2px solid #a5734f!important;outline-offset:-5px!important;border-radius:7px!important;
+ }
+ html[data-reader-theme="dark"] body.np-u-preview.np-w57-ready.np-u-hide-right #gb-hl-fab,
+ html.dark body.np-u-preview.np-w57-ready.np-u-hide-right #gb-hl-fab{
+   color:#e5cda9!important;border:0!important;background:none!important;box-shadow:none!important;
+ }
+ html[data-reader-theme="dark"] body.np-u-preview.np-w57-ready.np-u-hide-right #gb-hl-fab:hover,
+ html.dark body.np-u-preview.np-w57-ready.np-u-hide-right #gb-hl-fab:hover{
+   color:#f4debd!important;border:0!important;background:none!important;box-shadow:none!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ body.np-u-preview.np-w57-ready.np-u-hide-right #gb-hl-fab{transition:none!important}
+}
+
+/* One reading-preferences owner: canonical Product properties; font family remains
+   the one additional ARGON property, no forced pilot size or line-height values. */
+body.np-u-preview.np-u-argon-shell.np-w57-ready article[data-reader-projection]
+:is(p,li,blockquote):not(:where(.notice *, .gtip *, .btip *, .summary-card *, .np-u-central-overview *, .np-u-central-contents *, figcaption *)){
+ font-size:calc(var(--np-u-reading-base,18px) * var(--gb-reader-font-scale,1))!important;
+ line-height:var(--gb-reader-line-height,1.6)!important;
+}
+body.np-u-preview.np-u-argon-shell.np-w57-ready article[data-reader-projection] > p,
+body.np-u-preview.np-u-argon-shell.np-w57-ready article[data-reader-projection] > .article-header > p,
+body.np-u-preview.np-u-argon-shell.np-w57-ready article[data-reader-projection] > section > p{
+ max-width:min(100%,var(--np-w57-reading-measure,688px))!important;
+}
+#npUniversalDemo #npW57NotesDetails{
+ border-top:1px solid var(--np-u-rule,rgba(90,75,63,.15));
+ margin:0;background:transparent;color:var(--np-u-ink,#2a2420);
+}
+#npUniversalDemo .np-w57-accordion > summary{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;
+ font:600 12px/1.5 'Source Sans 3',system-ui,sans-serif;
+ min-height:47px;cursor:pointer;list-style:none;padding:10px 12px;
+ color:var(--np-u-ink,#312923);background:transparent;
+}
+#npUniversalDemo .np-w57-accordion > summary::-webkit-details-marker{display:none}
+#npUniversalDemo .np-w57-accordion > summary:after{
+ content:'⌄';font-size:15px;color:var(--np-u-muted,#756f66);
+ transition:transform .18s ease;
+}
+#npUniversalDemo .np-w57-accordion[open] > summary:after{transform:rotate(180deg)}
+#npUniversalDemo .np-w57-accordion > summary:hover,
+#npUniversalDemo .np-w57-accordion > summary:focus-visible{
+ background:rgba(118,99,78,.055);outline-offset:-2px;
+}
+#npUniversalDemo .np-w57-accordion > summary .np-w57-summary-label{
+ display:flex;align-items:center;gap:9px;min-width:0;
+}
+#npUniversalDemo .np-w57-accordion > summary .np-w57-count{
+ color:var(--np-u-muted,#807469);font:500 10px/1 system-ui,sans-serif;
+ border:1px solid var(--np-u-rule,rgba(90,75,63,.16));
+ border-radius:9px;padding:4px 7px;
+}
+#npUniversalDemo .np-w57-detail-body{padding:6px 12px 16px;}
+/* W57 premium left reading settings: single accessible popup from TOC rail.
+   The right research rail owns no type controls or duplicate preferences. */
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel.np-u-font-panel{
+ box-sizing:border-box;display:block;max-height:min(74dvh,670px);
+ width:min(316px,calc(100vw - 24px));overflow-y:auto;overscroll-behavior:contain;
+ padding:17px 17px 18px;border:1px solid var(--np-u-rule,rgba(90,75,63,.2));
+ border-radius:12px;background:var(--np-u-paper);color:var(--np-u-ink);
+ box-shadow:0 18px 46px rgba(30,23,17,.2),0 1px 5px rgba(30,23,17,.06);
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel[hidden]{display:none!important}
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel header{
+ margin-bottom:13px;padding-bottom:11px;border-bottom:1px solid var(--np-u-rule,rgba(90,75,63,.16));
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-close{
+ min-width:44px;min-height:44px;border-radius:7px;cursor:pointer;
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-group{margin-top:14px}
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-group>span{
+ font-size:11px;letter-spacing:.015em;margin-bottom:7px;
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-options{
+ min-width:0;flex-wrap:wrap;gap:6px;
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-options button{
+ min-height:40px;flex:1 1 70px;border-radius:7px;cursor:pointer;
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-sizes button{flex-basis:45px}
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel .np-u-type-options button:focus-visible{
+ outline:2px solid var(--np-u-red,#805044);outline-offset:2px;
+}
+body.np-u-preview.np-w57-ready[data-np-u-width="narrow"]{--np-u-reading-measure:576px}
+@media(max-width:1120px){
+ body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontPanel.np-u-font-panel{
+  left:12px;bottom:64px;max-height:calc(100dvh - 90px);
+ }
+}
+#npUniversalDemo #npW57NotesDetails .np-w57-tool-help{
+ font:400 11px/1.6 'Source Sans 3',system-ui,sans-serif;
+ color:var(--np-u-muted,#756f66);margin:3px 0 12px;
+}
+#npUniversalDemo .np-w57-palette{display:flex;gap:8px;flex-wrap:wrap;margin:7px 0 14px;}
+#npUniversalDemo .np-w57-palette button{
+ display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;
+ border:1px solid rgba(87,69,58,.22);border-radius:50%;
+ color:#39312d;background:var(--swatch);
+ box-shadow:inset 0 1px rgba(255,255,255,.35);cursor:pointer;padding:0;
+}
+#npUniversalDemo .np-w57-palette button[aria-pressed="true"]{
+ outline:2px solid var(--np-u-red,#855045);outline-offset:3px;
+}
+#npUniversalDemo .np-w57-palette button:focus-visible{outline:2px solid currentColor;outline-offset:3px;}
+#npUniversalDemo .np-w57-annotation-list{list-style:none;margin:0;padding:0;display:grid;gap:12px;}
+#npUniversalDemo .np-w57-annotation-list > li{padding:11px 0;border-top:1px solid var(--np-u-rule,#ddd5cd);}
+#npUniversalDemo .np-w57-annotation-quote{
+ display:block;font:400 14px/1.6 'Lora',Georgia,serif;
+ color:var(--np-u-ink,#292522);margin:3px 0 7px;overflow-wrap:anywhere;
+}
+#npUniversalDemo .np-w57-annotation-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+ font:400 10px/1.4 'Source Sans 3',system-ui,sans-serif;color:var(--np-u-muted,#777);}
+#npUniversalDemo .np-w57-annotation-meta button{
+ border:0;background:transparent;min-height:36px;padding:7px 8px;
+ cursor:pointer;color:var(--np-u-red,#86574b);font:600 11px/1.2 system-ui,sans-serif;
+ border-radius:6px;
+}
+#npUniversalDemo .np-w57-annotation-meta button:focus-visible,
+#npUniversalDemo .np-w57-comment button:focus-visible{
+ outline:2px solid var(--np-u-red,#86574b);outline-offset:2px;
+}
+#npUniversalDemo .np-w57-annotation-meta button:hover{text-decoration:underline;text-underline-offset:3px;}
+#npUniversalDemo .np-w57-comment label{display:block;font-size:11px;color:var(--np-u-muted,#777);}
+#npUniversalDemo .np-w57-comment textarea{
+ box-sizing:border-box;display:block;width:100%;min-height:75px;max-height:160px;resize:vertical;
+ margin:7px 0;padding:10px;font:400 12px/1.5 system-ui,sans-serif;
+ color:var(--np-u-ink,#222);background:var(--np-u-paper,#fffdfa);
+ border:1px solid var(--np-u-rule,#ccc);border-radius:6px;
+}
+#npUniversalDemo .np-w57-note-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+#npUniversalDemo .np-w57-comment button,
+#npUniversalDemo #npW57NotesStatus button{
+ min-height:40px;padding:8px 13px;cursor:pointer;border-radius:6px;
+ border:1px solid var(--np-u-rule,#c8b9a7);
+ background:var(--np-u-white,#fff);color:var(--np-u-red,#805044);
+}
+#npUniversalDemo .np-w57-note-actions button{flex:1 1 110px;max-width:100%}
+#npW57SelectionToolbar{
+ position:fixed;z-index:12080;display:flex;align-items:center;gap:0;
+ max-width:calc(100vw - 18px);padding:5px;border:1px solid rgba(111,85,67,.19);
+ background:rgba(255,252,248,.97);color:#332924;
+ border-radius:10px;box-shadow:0 14px 35px rgba(32,24,18,.20);
+ backdrop-filter:blur(12px);
+}
+#npW57SelectionToolbar[hidden]{display:none!important}
+#npW57SelectionToolbar button{
+ min-width:43px;min-height:36px;flex:1 1 auto;
+ border:0;border-radius:6px;background:transparent;color:inherit;
+ padding:6px 9px;cursor:pointer;font:600 11px/1.3 'Source Sans 3',system-ui,sans-serif;
+}
+#npW57SelectionToolbar button:hover,#npW57SelectionToolbar button:focus-visible{
+ outline:none;background:rgba(129,92,68,.12);
+}
+#npW57SelectionToolbar button:focus-visible{box-shadow:inset 0 0 0 2px #976747;}
+html[data-reader-theme="dark"] #npW57SelectionToolbar,html.dark #npW57SelectionToolbar{
+ background:rgba(35,32,34,.97);border-color:rgba(222,184,132,.24);color:#efe1cf;
+ box-shadow:0 14px 35px rgba(0,0,0,.5);
+}
+html[data-reader-theme="dark"] #npW57SelectionToolbar button:hover,
+html.dark #npW57SelectionToolbar button:hover{background:rgba(215,177,121,.13)}
+::highlight(np-w57-marker-amber){background:rgba(231,180,74,.32)}
+::highlight(np-w57-marker-sage){background:rgba(148,180,115,.31)}
+::highlight(np-w57-marker-lime){background:rgba(183,190,91,.35)}
+::highlight(np-w57-marker-rose){background:rgba(201,135,142,.26)}
+::highlight(np-w57-marker-blue){background:rgba(119,167,194,.27)}
+::highlight(np-w57-underline-amber){text-decoration:underline 1.7px rgba(173,118,43,.88);text-underline-offset:4px}
+::highlight(np-w57-underline-sage){text-decoration:underline 1.7px rgba(94,139,65,.88);text-underline-offset:4px}
+::highlight(np-w57-underline-lime){text-decoration:underline 1.7px rgba(127,138,47,.90);text-underline-offset:4px}
+::highlight(np-w57-underline-rose){text-decoration:underline 1.7px rgba(167,89,106,.88);text-underline-offset:4px}
+::highlight(np-w57-underline-blue){text-decoration:underline 1.7px rgba(76,119,156,.88);text-underline-offset:4px}
+@media(max-width:1120px){
+ #npUniversalDemo .np-w57-palette button{flex:0 0 44px;width:44px;height:44px;}
+ #npUniversalDemo .np-w57-annotation-meta button,
+ #npUniversalDemo .np-w57-comment button,
+ #npUniversalDemo #npW57NotesStatus button{min-height:44px}
+ #npUniversalDemo .np-w57-accordion > summary{min-height:48px}
+ #npW57SelectionToolbar{padding:4px;max-width:calc(100vw - 18px)}
+ #npW57SelectionToolbar button{min-height:44px;padding:7px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.np-u-preview.np-w57-ready.np-u-hide-right #gb-hl-fab,
+ #npUniversalDemo .np-w57-accordion > summary:after{transition:none!important;translate:none!important}
+}
+
+/* Quiet irregular ink endpoints: additive decoration only, real text untouched. */
+#npW57EdgeLayer{position:absolute;top:0;left:0;width:0;height:0;
+ pointer-events:none!important;z-index:4;overflow:visible}
+.np-w57-frayed-end{
+ position:absolute;display:block;width:8px;
+ background:var(--np-w57-fray-color,#eacb93);opacity:.43;
+ mix-blend-mode:multiply;pointer-events:none!important;
+ filter:blur(.12px);border-radius:.4px;
+}
+.np-w57-frayed-start{
+ clip-path:polygon(42% 0,85% 5%,72% 17%,100% 28%,60% 42%,90% 55%,58% 70%,80% 88%,15% 100%,7% 83%,32% 65%,0 48%,26% 27%,0 13%);
+}
+.np-w57-frayed-end.np-w57-frayed-end:not(.np-w57-frayed-start){
+ clip-path:polygon(0 6%,56% 0,100% 19%,72% 34%,100% 51%,65% 63%,100% 82%,47% 100%,12% 90%,25% 74%,0 61%,23% 42%,0 24%);
+}
+html[data-reader-theme="dark"] .np-w57-frayed-end,
+html.dark .np-w57-frayed-end{mix-blend-mode:screen;opacity:.30}
+@media print{#npW57EdgeLayer{display:none!important}}
+
+/* Product controls: fixed, viewport-derived axis shared across series
+   and ordinary articles. Never derive toolbar position from its own geometry:
+   that old loop shifted the icons on fold/unfold and route transitions. */
+@media(min-width:1121px){
+ body.np-u-preview.np-w57-ready.np-u-hide-right.np-u-native-product-actions
+   > #gbFloatingControls.np-u-native-legacy-float {
+   position:fixed!important;
+   right:5vw!important;left:auto!important;transform:none!important;
+   margin-left:0!important;margin-right:0!important;width:40px!important;min-width:40px!important;
+ }
+ body.np-u-preview.np-w57-ready.np-u-hide-right.np-u-native-product-actions
+   > .gbs-theme-corner.np-u-product-native-floating{
+   position:fixed!important;right:5vw!important;left:auto!important;transform:none!important;
+   width:40px!important;min-width:40px!important;margin:0!important;
+ }
+}
+
+/* Owner 2026-11-19: keep original library frame and SVG, remove ONLY the count dot. */
+body.np-u-preview #gb-hl-fab #gb-hl-fab-count{display:none}
+
+/* W57 geometry: inline panel toggle follows native 32px horizontal tool rhythm. */
+@media(min-width:1121px){
+ body.np-u-preview.np-u-inline-header-actions.np-u-native-product-actions #npUniversalDemo #npURightEdgeRail{
+  top:24px!important;right:16px!important;width:32px!important;height:44px!important;min-height:44px!important;
+ }
+ body.np-u-preview.np-u-inline-header-actions.np-u-native-product-actions #npUniversalDemo #npURightEdgeRail #npUEdgeToggle{
+  width:32px!important;min-width:32px!important;height:44px!important;min-height:44px!important;
+ }
+}
+/* W57 geometry: legacy article floating controls use same axis as series. */
+@media(min-width:1121px){
+ body.np-u-preview.np-u-native-product-actions.np-u-inline-header-actions:has(> #gbFloatingControls.np-u-native-legacy-float) #npUniversalDemo.np-u-argon #npURightEdgeRail{
+  top:24px!important;right:16px!important;width:32px!important;height:44px!important;min-height:44px!important;
+ }
+ body.np-u-preview.np-u-native-product-actions.np-u-inline-header-actions:has(> #gbFloatingControls.np-u-native-legacy-float) #npUniversalDemo.np-u-argon #npURightEdgeRail #npUEdgeToggle{
+  width:32px!important;min-width:32px!important;height:44px!important;min-height:44px!important;
+ }
+}
+/* W57 short-height rail: preserve current-part grid height within scrollable mid-column. */
+@media(min-width:1360px) and (max-height:640px){
+ body.np-u-preview.np-w57-ready .gbs2-rmid > .gbs2-current{flex-shrink:0!important}
+}
+/* W57 mobile audit: native research tap targets and zero-overlap header. */
+@media(max-width:1120px){
+ body.np-u-preview.np-w57-ready #npUniversalDemo.np-u-argon #npUResearch .np-u-research-follow{
+  height:52px!important;min-height:52px!important;max-height:none!important;flex:0 0 52px!important;box-sizing:border-box!important;
+ }
+ body.np-u-preview.np-w57-ready #npUniversalDemo.np-u-argon #npUResearch :is(#npUFollowToggle,#npUHistoryButton,#npULibraryButton){
+  height:44px!important;min-height:44px!important;max-height:none!important;align-items:center!important;
+ }
+ body.np-u-preview.np-w57-ready #npUResearch .mobile-top-bar.np-u-w55-docked-mobile .mobile-top-save{
+  right:56px!important;left:auto!important;
+ }
+}
+
+/* W57 visual parity 2026-11-19: the research-panel fold is a standalone structural action.
+   Restore a restrained breathing gap below it only while the desktop panel is folded.
+   Keep the accepted SVG, axis and fold/open interaction; no shared action strip. */
+@media (min-width:1121px){
+ body.np-u-preview.np-w57-ready.np-u-hide-right.np-u-native-product-actions:not(.np-u-inline-header-actions)
+  > :is(.gbs-theme-corner.np-u-product-native-floating,#gbFloatingControls.np-u-native-legacy-float){
+   top:88px!important;
+ }
+}
+
+/* Structural hierarchy: faint hairline between the real fold control
+   and reading actions. Not a new button, no layout shift, no giant hover disk. */
+@media(min-width:1121px){
+ body.np-u-preview.np-w57-ready.np-u-hide-right.np-u-native-product-actions
+   #npUniversalDemo.np-u-argon #npURightEdgeRail::after{
+   content:"";position:absolute;pointer-events:none;z-index:0;
+   top:54px;left:50%;width:20px;height:1px;display:block;
+   transform:translateX(-50%);background:rgba(112,91,74,.28);
+ }
+ html.dark body.np-u-preview.np-w57-ready.np-u-hide-right.np-u-native-product-actions
+   #npUniversalDemo.np-u-argon #npURightEdgeRail::after{
+   background:rgba(231,202,158,.3);
+ }
+}
+
+/* W57 fold / library parity 2026-11-20: one tools axis; fold separate.
+   The accepted quiet placement: a standalone structural toggle above the
+   reading-tool column while folded, in the panel header when open.
+   Preserve existing real panel, native Library FAB, and original SVG. */
+@media(min-width:1121px){
+  body.np-u-preview.np-w57-ready.np-u-hide-right.np-u-native-product-actions
+    #npUniversalDemo.np-u-argon #npURightEdgeRail,
+  body.np-u-preview.np-w57-ready.np-u-hide-right.np-u-native-product-actions:not(.np-u-inline-header-actions):has(> #gbFloatingControls.np-u-native-legacy-float)
+    #npUniversalDemo.np-u-argon #npURightEdgeRail{
+      position:fixed!important;top:24px!important;
+      left:auto!important;right:calc(5vw - 2px)!important;
+       bottom:auto!important;
+      width:44px!important;min-width:44px!important;
+      height:44px!important;min-height:44px!important;
+  }
+  body.np-u-preview.np-w57-ready:not(.np-u-hide-right).np-u-native-product-actions
+    #npUniversalDemo.np-u-argon #npURightEdgeRail,
+  body.np-u-preview.np-w57-ready:not(.np-u-hide-right).np-u-native-product-actions.np-u-inline-header-actions:has(> #gbFloatingControls.np-u-native-legacy-float)
+    #npUniversalDemo.np-u-argon #npURightEdgeRail{
+      position:fixed!important;top:24px!important;right:10px!important;
+      left:auto!important;bottom:auto!important;
+      width:44px!important;min-width:44px!important;
+      height:44px!important;min-height:44px!important;
+  }
+  body.np-u-preview.np-w57-ready.np-u-native-product-actions
+    #npUniversalDemo.np-u-argon #npURightEdgeRail #npUEdgeToggle,
+  body.np-u-preview.np-w57-ready.np-u-native-product-actions:has(> #gbFloatingControls.np-u-native-legacy-float)
+    #npUniversalDemo.np-u-argon #npURightEdgeRail #npUEdgeToggle{
+      width:44px!important;min-width:44px!important;
+      height:44px!important;min-height:44px!important;
+  }
+  /* No painted circle on pointer hover; compact keyboard-only focus ring. */
+  body.np-u-preview #npUniversalDemo.np-u-argon
+    #npURightEdgeRail #npUEdgeToggle:is(:hover,:focus-visible,:active){
+      background:transparent!important;background-color:transparent!important;
+      box-shadow:none!important;filter:none!important;border-radius:6px!important;
+  }
+  body.np-u-preview #npUniversalDemo.np-u-argon
+    #npURightEdgeRail #npUEdgeToggle:focus-visible{
+      outline:2px solid currentColor!important;outline-offset:-5px!important;
+  }
+}
+
+/* W57 MOBILE LIBRARY PLAIN SVG 2026-11-20: no frame at any width. */
+/* Keep the canonical mobile docked placement and 44px touch target; remove
+   only the visual button plate and animation, never the original book SVG. */
+@media(max-width:1120px){
+ body.np-u-preview.np-w57-ready #gb-hl-fab{
+  border:0!important;border-radius:0!important;background:none!important;
+  background-color:transparent!important;box-shadow:none!important;
+  transform:none!important;translate:none!important;filter:none!important;
+  transition:color .16s ease!important;min-width:44px!important;min-height:44px!important;
+ }
+ body.np-u-preview.np-w57-ready #gb-hl-fab:is(:hover,:active,:focus-visible){
+  border:0!important;background:none!important;box-shadow:none!important;
+  transform:none!important;translate:none!important;
+ }
+ body.np-u-preview.np-w57-ready #gb-hl-fab:focus-visible{
+  outline:2px solid currentColor!important;outline-offset:-5px!important;border-radius:6px!important;
+ }
+}
+
+/* W57 mobile FAB source specificity: 2026-11-20 */
+/* Original pilot used a two-ID important rule on the mobile library plate.
+   Override precisely that element; keep the icon and hitbox. */
+@media(max-width:1120px){
+ body.np-u-preview.np-w57-ready #npUniversalDemo #gb-hl-fab.np-u-library-native,
+ body.np-u-preview.np-w57-ready #npUniversalDemo #gb-hl-fab.np-u-library-native:is(:hover,:active,:focus-visible){
+  border:0!important;border-radius:0!important;background:none!important;
+  background-color:transparent!important;box-shadow:none!important;
+  transform:none!important;translate:none!important;filter:none!important;
+  min-width:44px!important;min-height:44px!important;
+ }
+ body.np-u-preview.np-w57-ready #npUniversalDemo #gb-hl-fab.np-u-library-native:focus-visible{
+  outline:2px solid currentColor!important;outline-offset:-5px!important;border-radius:6px!important;
+ }
+}
+
+/* W57 SINGLE COLUMN 2026-11-20: folded-panel glyph, divider, and reading tools
+   share one visual X centre; no 16px sideways exception for the fold SVG. */
+@media(min-width:1121px){
+ body.np-u-preview.np-w57-ready.np-u-hide-right.np-u-native-product-actions
+  #npUniversalDemo.np-u-argon #npURightEdgeRail,
+ body.np-u-preview.np-w57-ready.np-u-hide-right.np-u-native-product-actions:has(> #gbFloatingControls.np-u-native-legacy-float)
+  #npUniversalDemo.np-u-argon #npURightEdgeRail{
+   left:auto!important;right:calc(5vw - 2px)!important;
+    width:44px!important;
+ }
+ body.np-u-preview.np-w57-ready.np-u-hide-right.np-u-native-product-actions
+  #npUniversalDemo.np-u-argon #npURightEdgeRail #npUEdgeToggle{
+   box-sizing:border-box!important;display:grid!important;place-items:center!important;
+   padding:0!important;width:44px!important;
+ }
+ body.np-u-preview.np-w57-ready.np-u-hide-right.np-u-native-product-actions
+  #npUniversalDemo.np-u-argon #npURightEdgeRail #npUEdgeToggle > svg{
+   display:block!important;margin:0 auto!important;
+ }
+ body.np-u-preview.np-w57-ready.np-u-hide-right.np-u-native-product-actions
+  #npUniversalDemo.np-u-argon #npURightEdgeRail::after{
+   left:50%!important;transform:translateX(-50%)!important;
+ }
+}
+
+/* W57 SERIES PLAY ON-AXIS 2026-11-20: the 32px play glyph is inside a 40px
+   series wrapper and was 4px left of Theme/Search/Save. Align glyph itself. */
+@media(min-width:1121px){
+ body.np-u-preview.np-w57-ready.np-u-hide-right > .gbs-theme-corner.np-u-product-native-floating
+  .gbs-rail-playwrap > .gb-ember-wrap > .gb-ember.gbs-rail-ember{
+   left:4px!important;
+ }
+}
+
+/* W57 visual-review polish: an actually readable research rail and visible
+   saved linked notes, scoped to opt-in Reader instead of global site CSS. */
+body.np-u-preview.np-w57-ready #npUniversalDemo #npW57NotesDetails .np-w57-tool-help{
+ font-size:12px;line-height:1.65;
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo .np-w57-annotation-meta{
+ font-size:11.5px;line-height:1.5;gap:5px 7px;
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo .np-w57-annotation-meta button{
+ font-size:11.5px;min-height:38px;
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo .np-w57-note-preview{
+ margin:9px 0 10px;padding:10px 12px;
+ border-left:2px solid var(--np-u-red,#855045);
+ border-radius:0 7px 7px 0;background:rgba(127,99,77,.065);
+ color:var(--np-u-ink,#292522);overflow-wrap:anywhere;
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo .np-w57-note-preview-label{
+ display:block;font:650 10px/1.35 'Source Sans 3',system-ui,sans-serif;
+ color:var(--np-u-muted,#756f66);letter-spacing:.025em;margin-bottom:4px;
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo .np-w57-note-preview-text{
+ margin:0;font:400 12.5px/1.62 'Source Sans 3',system-ui,sans-serif;
+ white-space:pre-wrap;overflow-wrap:anywhere;
+}
+body.np-u-preview.np-w57-ready #npUniversalDemo.np-u-argon #npUResearch
+ .np-u-research-module .np-u-instrument-number{font-size:10.5px}
+body.np-u-preview.np-w57-ready #npUniversalDemo.np-u-argon #npUResearch
+ .np-u-research-module .np-u-window-meta{font-size:10.5px;line-height:1.4}
+body.np-u-preview.np-w57-ready #npUniversalDemo.np-u-argon #npUResearch
+ .np-u-research-module .np-u-window>summary strong{font-size:12.5px;line-height:1.35}
+body.np-u-preview.np-w57-ready #npUniversalDemo.np-u-argon #npUResearch
+ .np-u-research-module .np-u-window-body{font-size:13px;line-height:1.65}
+html.dark body.np-u-preview.np-u-argon-shell.np-w57-ready,
+html[data-reader-theme="dark"] body.np-u-preview.np-u-argon-shell.np-w57-ready{
+ --np-u-paper:#1c1b1a;--np-u-deep:#242220;--np-u-white:#272421;
+ --np-u-ink:#ebe2d5;--np-u-muted:#c1b5a9;--np-u-rule:#47403a;
+ --np-u-red:#d8b58a;--np-u-red-soft:#342a22;
+}
+html.dark body.np-u-preview.np-w57-ready #npUniversalDemo .np-w57-note-preview,
+html[data-reader-theme="dark"] body.np-u-preview.np-w57-ready #npUniversalDemo .np-w57-note-preview{
+ background:rgba(216,181,138,.09);
+}
+html.dark ::highlight(np-w57-marker-lime),
+html[data-reader-theme="dark"] ::highlight(np-w57-marker-lime){background:rgba(198,207,108,.42)}
+@media(max-width:1120px){
+ body.np-u-preview.np-w57-ready #npUniversalDemo .np-w57-annotation-meta button{min-height:44px}
+ body.np-u-preview.np-w57-ready #npUniversalDemo .np-w57-note-preview-text{font-size:13px}
+}
+
+/* Accessible mobile font dialog. Owns one scrim and inerts the pre-existing
+   TOC tools while dialog is open: native buttons are neither moved nor cloned. */
+body.np-u-preview.np-w57-ready #npUniversalDemo #npUFontScrim[hidden]{display:none!important}
+@media(max-width:1120px){
+ body.np-u-preview.np-w57-ready #npUniversalDemo #npUOutline #npUFontScrim:not([hidden]){
+  display:block;position:fixed;inset:0;z-index:20019;pointer-events:auto;
+  background:rgba(244,242,237,.88);backdrop-filter:blur(2px);
+ }
+ html.dark body.np-u-preview.np-w57-ready #npUniversalDemo #npUOutline #npUFontScrim:not([hidden]),
+ html[data-reader-theme="dark"] body.np-u-preview.np-w57-ready #npUniversalDemo #npUOutline #npUFontScrim:not([hidden]){
+  background:rgba(28,27,26,.88);
+ }
+ body.np-u-preview.np-w57-ready #npUniversalDemo #npUOutline #npUFontPanel{z-index:20020}
+}
