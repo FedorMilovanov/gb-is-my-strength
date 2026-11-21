@@ -546,13 +546,20 @@
     return chunks.length ? chunks.join('\\s*') : '';
   }
 
-  function locateIn(index, text) {
+  function locateIn(index, text, selectedText = text) {
     const pattern = tolerantPattern(text);
-    if (!pattern) return null;
-    let match = null;
-    try { match = new RegExp(pattern, 'i').exec(index.raw); }
-    catch { return null; }
-    if (!match) return null;
+    const selectedPattern = tolerantPattern(selectedText);
+    if (!pattern || !selectedPattern) return null;
+    let match, selected;
+    try {
+      // Never attach a saved quote to the first arbitrary repeated phrase.
+      const candidates = new RegExp(pattern, 'gi');
+      match = candidates.exec(index.raw);
+      if (!match || candidates.exec(index.raw)) return null;
+      const selectedCandidates = new RegExp(selectedPattern, 'gi');
+      selected = selectedCandidates.exec(match[0]);
+      if (!selected || selectedCandidates.exec(match[0])) return null;
+    } catch { return null; }
     const pointAt = (offset) => {
       for (let i = index.nodes.length - 1; i >= 0; i--) {
         const rec = index.nodes[i];
@@ -560,8 +567,9 @@
       }
       return null;
     };
-    const a = pointAt(match.index);
-    const b = pointAt(match.index + match[0].length);
+    const start = match.index + selected.index;
+    const a = pointAt(start);
+    const b = pointAt(start + selected[0].length);
     if (!a || !b) return null;
     try {
       const range = document.createRange();
@@ -573,15 +581,16 @@
   }
 
   function locate(index, item) {
+    // W57 owns its positional block/range anchors. Never reattach them with
+    // this legacy article-wide text lookup when the source block changes.
+    if (item?.annotation?.version === 1) return null;
     const needle = normalizeText(item && item.text);
     if (!needle || needle.length < 3) return null;
     const before = normalizeText(item.before);
     const after = normalizeText(item.after);
-    /* Сначала пробуем привязку по контексту — так одна и та же фраза,
-       выделенная в двух разных абзацах, попадает каждая на своё место. */
     if (before || after) {
-      const withContext = locateIn(index, before + ' ' + needle + ' ' + after);
-      if (withContext) return withContext;
+      // The context identifies the location; only the selected phrase is painted.
+      return locateIn(index, before + ' ' + needle + ' ' + after, needle);
     }
     return locateIn(index, needle);
   }
@@ -594,7 +603,10 @@
     const groups = new Map();
     const placed = new Set();
     let painted = 0;
+    const currentPath = gbHighlightPath({ url: location.href });
     for (const item of quotes()) {
+      // Keep remote-page records in storage, not in the current article's paint.
+      if (gbHighlightPath(item) !== currentPath || item?.annotation?.version === 1) continue;
       const color = String(item && item.color || '');
       if (!MARK_COLORS.includes(color)) continue;
       const range = locate(index, item);
