@@ -1,0 +1,63 @@
+---
+/** Presentation only. The article owns its title, dates, facts and publication permission. */
+export interface JournalCover {
+  src: string;
+  avifSrcset?: string;
+  webpSrcset?: string;
+  width: number;
+  height: number;
+  alt: string;
+  caption: string;
+}
+interface Props {
+  title: string;
+  label: string;
+  subject: string;
+  cover: JournalCover;
+  scope: string;
+  readingMinutes: number;
+  noteTitle: string;
+  textAnchor: string;
+  sourcesAnchor: string;
+  sourceCount: number;
+}
+const { title, label, subject, cover, scope, readingMinutes, noteTitle, textAnchor, sourcesAnchor, sourceCount } = Astro.props;
+// Match the opening's 1.9:1 / 1.6:1 spread and its single-column mobile composition.
+const coverSizes = '(max-width: 690px) calc(100vw - 40px), (max-width: 800px) calc(100vw - 64px), (max-width: 1080px) calc(61.54vw - 56.62px), (max-width: 1280px) calc(65.52vw - 86.48px), 753px';
+---
+<header class="article-header dossier-hero">
+  <div class="journal-story-topline">
+    <a href="/journal/" class="je-section-link">Журнал</a>
+    <span aria-hidden="true">/</span>
+    <span class="journal-story-tag">{label}</span>
+    <span class="kicker">{subject}</span>
+  </div>
+  <h1>{title}</h1>
+  <div class="dek"><slot name="lead" /></div>
+  <div class="editorial-meta" role="group" aria-label="Сведения о материале">
+    <span class="je-byline"><strong>Автор-редактор:</strong> <a href="/about/">Фёдор Милованов</a></span>
+    <span>{readingMinutes} мин чтения</span>
+    <slot name="dates" />
+  </div>
+</header>
+<div class="je-opening-spread">
+  <figure class="journal-feature-media">
+    <picture>
+      {cover.avifSrcset && <source type="image/avif" srcset={cover.avifSrcset} sizes={coverSizes} />}
+      <img src={cover.src} srcset={cover.webpSrcset} sizes={coverSizes}
+           width={cover.width} height={cover.height} alt={cover.alt}
+           loading="eager" fetchpriority="high" decoding="async" />
+    </picture>
+    <figcaption>{cover.caption}</figcaption>
+  </figure>
+  <aside class="je-opening-note" aria-label="О материале">
+    <p class="je-eyebrow">Период исследования</p>
+    <p class="je-opening-period">{scope}</p>
+    <h2>{noteTitle}</h2>
+    <div class="reader-framing"><slot name="framing" /></div>
+    <div class="je-opening-links">
+      <a href={textAnchor}>К тексту <span aria-hidden="true">↓</span></a>
+      <a href={sourcesAnchor}>Источники <span aria-hidden="true">·</span> {sourceCount}</a>
+    </div>
+  </aside>
+</div>

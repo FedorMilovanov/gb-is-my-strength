@@ -1,6 +1,7 @@
 ---
 import ReaderFloatingControlsRuntime from '@/components/reader-platform/ReaderFloatingControlsRuntime.astro';
 import ReaderActionsRuntime from '@/components/reader-platform/ReaderActionsRuntime.astro';
+import ArticlesCatalogReturn from '@/components/articles/ArticlesCatalogReturn.astro';
 import SiteSectionsMenu from '../SiteSectionsMenu.astro';
 import GillSeriesRail from '../../gill-series/GillSeriesRail.astro';
 import GillSeriesMobileBar from '../../gill-series/GillSeriesMobileBar.astro';
@@ -43,6 +44,7 @@ const page = config.pages[pageId];
   <div class="page-wrap" id="content">
     <nav aria-label="Хлебные крошки" class="breadcrumb"><ol class="breadcrumb__list"><li class="breadcrumb__item"><a class="breadcrumb__link" href="../../"><span aria-hidden="true" class="breadcrumb__home">⌂</span> Главная</a></li><li class="breadcrumb__item"><a class="breadcrumb__link" href={config.breadcrumbParent.href}>{config.breadcrumbParent.label}</a></li><li aria-current="page" class="breadcrumb__item"><span class="breadcrumb__current">{page.label}</span></li></ol></nav>
     <slot />
+    <ArticlesCatalogReturn />
   </div>
 
   <GillSeriesMobileBar pageId={pageId} config={config} />

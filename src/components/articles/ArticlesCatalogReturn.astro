@@ -1,0 +1,21 @@
+---
+/** Native SSR alternative to Back, not a claim of noJS history/focus restoration. */
+import searchManifest from '../../../data/search-manifest.json';
+import pageOwnership from '../../../migration/page-ownership.json';
+import { catalogReturnHref, catalogReturnItem } from './articlesCatalogNavigation';
+
+const item = catalogReturnItem(Astro.url.pathname, searchManifest.items, pageOwnership.routes);
+---
+{item && (
+  <nav class="articles-catalog-return" aria-label="Возврат в каталог статей" data-pagefind-ignore>
+    <a href={catalogReturnHref(item.url)} data-catalog-return>К этой статье в каталоге</a>
+  </nav>
+)}
+
+<style>
+  /* Closing navigation, not an extra row before the Reader hero. Reuse the existing UI face. */
+  .articles-catalog-return { margin-block: 1rem 0; font-family: 'Source Sans 3', system-ui, sans-serif; font-size: 13px; line-height: 1.5; }
+  .articles-catalog-return a { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-text-muted); text-decoration-line: underline; text-underline-offset: .2em; }
+  .articles-catalog-return a:is(:hover, :focus-visible) { color: var(--color-text); }
+  @media print { .articles-catalog-return { display: none; } }
+</style>

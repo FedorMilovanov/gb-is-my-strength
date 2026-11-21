@@ -1,0 +1,35 @@
+---
+export interface SeriesEntry {
+  id: string;
+  number?: string;
+  title: string;
+  meta: string;
+  currentMeta?: string;
+  href?: string;
+}
+interface Props {
+  label: string;
+  title: string;
+  entries: readonly SeriesEntry[];
+  currentId?: string;
+}
+const { label, title, entries, currentId } = Astro.props;
+---
+<nav class="je-series" aria-label={label}>
+  <p class="je-eyebrow">{title}</p>
+  <ol>
+    {entries.map((entry, i) => (
+      <li>
+        <span class="je-series__number" aria-hidden="true">{entry.number || String(i + 1).padStart(2, '0')}</span>
+        <div>
+          {entry.href ? (
+            <a class="je-series__title" href={entry.href} aria-current={entry.id === currentId ? 'page' : undefined}>{entry.title}</a>
+          ) : (
+            <span class="je-series__title" aria-current={entry.id === currentId ? 'page' : undefined}>{entry.title}</span>
+          )}
+          <span class="je-series__meta">{entry.id === currentId && entry.currentMeta ? entry.currentMeta : entry.meta}</span>
+        </div>
+      </li>
+    ))}
+  </ol>
+</nav>
