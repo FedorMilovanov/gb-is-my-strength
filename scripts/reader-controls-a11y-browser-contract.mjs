@@ -377,6 +377,39 @@ async function auditMobile(browser, origin, routeInfo) {
     record(checks, `${routeInfo.id}-mobile-05`, 'exactly one Play is visible', base.visiblePlay.length === 1, base.visiblePlay);
     record(checks, `${routeInfo.id}-mobile-06`, 'mobile Play makes no false popup claim', base.visiblePlay.every((item) => item.haspopup !== 'true'), base.visiblePlay);
 
+    // One canonical Settings trigger: Gill moves it beside Play, freeing
+    // one full 44px bottom-bar slot for the real current chapter label.
+    // Hermenevtika intentionally keeps its established bottom placement.
+    if (routeInfo.id === 'gill') {
+      const placement = await page.evaluate(() => {
+        const top = document.querySelector('.mobile-top-bar[data-gill-mobile-bar]');
+        const bottom = document.querySelector('.mobile-bottom-bar[data-gill-mobile-bar]');
+        const settings = top?.querySelector('#mobSettingsBtn');
+        const play = top?.querySelector('.reader-mobile-play-group')?.getBoundingClientRect();
+        const gear = settings?.getBoundingClientRect();
+        const save = top?.querySelector('.mobile-top-save')?.getBoundingClientRect();
+        const section = bottom?.querySelector('#mobPartTocBtn')?.getBoundingClientRect();
+        const actions = bottom?.querySelector('.reader-mobile-action-cluster');
+        return {
+          count: document.querySelectorAll('#mobSettingsBtn').length,
+          top: Boolean(settings), bottom: Boolean(bottom?.querySelector('#mobSettingsBtn')),
+          controls: settings?.getAttribute('aria-controls'), label: settings?.getAttribute('aria-label'),
+          target: Boolean(document.getElementById('gillSettingsOverlay')),
+          order: Boolean(play && gear && save && gear.x >= play.right - 1 && gear.right <= save.x + 1),
+          target44: Boolean(gear && gear.width >= 44 && gear.height >= 44),
+          chapterWidth: section?.width || 0,
+          dockActions: actions?.querySelectorAll('.reader-mobile-action').length || 0,
+          library: Boolean(actions?.querySelector('#gb-hl-fab')),
+          overflow: document.documentElement.scrollWidth - innerWidth,
+        };
+      });
+      record(checks, 'gill-mobile-10', 'exactly one settings trigger beside Play, before bookmark',
+        placement.count === 1 && placement.top && !placement.bottom && placement.order && placement.target44, placement);
+      record(checks, 'gill-mobile-11', 'settings shares existing reader dialog and accessible name',
+        placement.controls === 'gillSettingsOverlay' && placement.target && Boolean(placement.label), placement);
+      record(checks, 'gill-mobile-12', 'bottom chapter reclaims 44px without displacing library/PDF/share',
+        placement.chapterWidth >= 185 && placement.dockActions === 2 && placement.library && placement.overflow === 0, placement);
+    }
     if (routeInfo.slot) await auditSlot(page, routeInfo.id, routeInfo.slot, checks);
     for (const surface of routeInfo.mobileSurfaces || []) await auditSurface(page, routeInfo.id, 'mobile', surface, checks);
 

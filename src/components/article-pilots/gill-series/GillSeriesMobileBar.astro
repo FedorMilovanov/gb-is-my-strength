@@ -5,7 +5,7 @@
  *   TOP bar: Back(→config.railBackHref) → Home(→«/») → primary
  *     «На полях» (opens research tab INSIDE native Part TOC) → canonical
  *     round PlayEmber and the original #83439219 IN-SLOT speed strip + tiny selected-rate
- *     echo → Save. «На полях» yields its place to the sideways speed rail.
+ *     echo → Settings → Save. «На полях» yields its place to the speed rail.
  *     Learning remains in the native Reader Settings sheet,
  *     not a competing top-level action. One canonical speedSlot owner.
  *     Auto-hides on scroll-down, reveals on scroll-up; stays pinned while
@@ -15,10 +15,9 @@
  *     fix for the A−/A+ reflow bug: hideGillTopBar() only ever touches the
  *     top bar's own class, never closeGillSheet()).
  *   BOTTOM bar: dual-progress ring → «Сейчас читаете» (opens Part TOC,
- *     unchanged) → fast binary Day/Night toggle through the canonical global
- *     preference adapter (Sepia remains in Settings) → settings → «Поделиться»
+ *     unchanged) → Library → PDF → «Поделиться»
  *     (data-action="share" — kept verbatim; js/highlights.js docks its
- *     contextual save FAB immediately before this exact selector). Always
+ *     contextual save FAB before PDF/share). No redundant bottom Settings. Always
  *     visible, never auto-hides.
  *
  * data-fc-action="save" and data-action="share" go through the existing
@@ -33,6 +32,7 @@ import MobileChromeShell from '../_shared/MobileChromeShell.astro';
 import ReaderMobileMenuTrigger from '../_shared/ReaderMobileMenuTrigger.astro';
 import ReaderSpeedOptions from '../_shared/ReaderSpeedOptions.astro';
 import ReaderMobileActions from '../_shared/ReaderMobileActions.astro';
+import ReaderMobileSettingsButton from '../_shared/ReaderMobileSettingsButton.astro';
 import ReaderMobileHome from '../_shared/ReaderMobileHome.astro';
 import ReaderMobilePlayGroup from '../_shared/ReaderMobilePlayGroup.astro';
 // Mobile Reader chrome must own its styling directly: it cannot disappear
@@ -67,7 +67,10 @@ const page = config.pages[pageId];
 
   <ReaderMobilePlayGroup engine="series" slot="top-playback" />
 
-  <SaveButton class="mobile-top-save" tip="Сохранить" slot="top-trailing" />
+  <Fragment slot="top-trailing">
+    <ReaderMobileSettingsButton engine="series" top />
+    <SaveButton class="mobile-top-save" tip="Сохранить" />
+  </Fragment>
 
   <Fragment slot="bottom-progress">
     <!-- Progress is a read-only indicator, not a control: it never had a click
@@ -97,7 +100,7 @@ const page = config.pages[pageId];
   </button>
 
   <Fragment slot="bottom-actions">
-    <ReaderMobileActions engine="series" />
+    <ReaderMobileActions engine="series" settingsPlacement="none" />
   </Fragment>
 </MobileChromeShell>
 
@@ -374,5 +377,60 @@ const page = config.pages[pageId];
   [data-gill-v16] .mobile-top-bar .reader-mobile-speedrail,
   [data-gill-v16] .mobile-top-bar .reader-mobile-menu-trigger,
   [data-gill-v16] .mobile-top-bar .reader-mobile-play::before {transition:none;}
+}
+
+/* Owner W61: move the existing Settings sheet trigger beside Play.
+   Its former bottom action is absent, freeing a true 44px for the chapter.
+   Every icon remains a 44×44 touch/keyboard target. */
+@media (max-width:84.999em) {
+  [data-gill-v16] .mobile-top-bar .reader-mobile-action--top-settings {
+    box-sizing:border-box;flex:0 0 44px;display:grid;place-items:center;
+    width:44px;min-width:44px;height:44px;min-height:44px;
+    padding:0;margin:0;border:0;border-radius:50%;
+    color:var(--gill-mobile-bar-ink,#291f1b);background:transparent;
+    box-shadow:none;cursor:pointer;
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-action--top-settings svg {
+    display:block;width:18px;height:18px;fill:none;stroke:currentColor;
+    stroke-width:1.7;stroke-linecap:round;
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-action--top-settings:focus-visible {
+    outline:2px solid var(--gill-mobile-bar-gold,#b18b62);outline-offset:2px;
+  }
+  @media(hover:hover) and (pointer:fine) {
+    [data-gill-v16] .mobile-top-bar .reader-mobile-action--top-settings:hover {
+      background:color-mix(in srgb,currentColor 6%,transparent);
+    }
+  }
+}
+/* The six original top targets total 308px including the central 44px
+   research icon. Use only the leftover spacing at 320px, do not shrink hit
+   areas or squeeze the Play/speed controller into overlapping hitboxes. */
+@media (max-width:430px) {
+  [data-gill-v16] .mobile-top-bar {
+    gap:clamp(0px,calc(5vw - 16px),4px) !important;
+    padding-left:calc(6px + env(safe-area-inset-left,0px)) !important;
+    padding-right:calc(6px + env(safe-area-inset-right,0px)) !important;
+  }
+}
+@media (max-width:360px) {
+  [data-gill-v16] .mobile-top-bar .reader-mobile-menu-trigger {
+    padding:0;gap:0;justify-content:center;
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-menu-trigger span {
+    display:none;
+  }
+}
+
+/* Reader 1024–1360 breakpoint: legacy Gill overrides can still shrink
+   Back and Save to 40px. Keep the same 44px targets as narrow phones. */
+@media (min-width:431px) and (max-width:84.999em) {
+  [data-gill-v16] .mobile-top-bar #mobBackBtn,
+  [data-gill-v16] .mobile-top-bar .mobile-top-save {
+    box-sizing:border-box;
+    width:44px !important;min-width:44px !important;
+    height:44px !important;min-height:44px !important;
+    flex:0 0 44px !important;
+  }
 }
 </style>

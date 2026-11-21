@@ -1,0 +1,26 @@
+---
+/** One canonical settings trigger shared by series and article mobile Reader.
+ * Gill mounts it beside Play; article/Hermenevtika retains it at the bottom.
+ * A single aria-controls/ID delegates to the existing sheet owner.
+ */
+interface Props { engine:'series'|'article'; top?:boolean; }
+const {engine,top=false}=Astro.props as Props;
+const isSeries=engine==='series';
+---
+<button
+  class:list={['reader-mobile-action',isSeries?'gb-icon':'hmbar-btn',top&&'reader-mobile-action--top-settings']}
+  type="button"
+  id={isSeries?'mobSettingsBtn':'hmSettingsBtn'}
+  data-gill-settings-open={isSeries?'':undefined}
+  aria-controls={isSeries?'gillSettingsOverlay':'hmSettings'}
+  aria-haspopup="dialog"
+  aria-expanded="false"
+  aria-label="Настройки чтения: тема, шрифт и вид текста"
+  title="Настройки чтения"
+>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+    <path d="M4 7h10M18 7h2M4 17h2M10 17h10" />
+    <circle cx="16" cy="7" r="2" />
+    <circle cx="8" cy="17" r="2" />
+  </svg>
+</button>

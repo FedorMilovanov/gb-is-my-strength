@@ -70,9 +70,18 @@ const mobileRuntime = fs.readFileSync(path.join(ROOT, 'js/floating-cluster-contr
 const sharedSpeedSlot = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/_shared/speedSlot.ts'), 'utf8');
 const partOverlay = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/gill-series/GillMobileMarginalia.astro'), 'utf8');
 const settingsSheet = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/gill-series/GillReaderSettingsSheet.astro'), 'utf8');
+const actionsSource = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/_shared/ReaderMobileActions.astro'), 'utf8');
+const settingsTrigger = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/_shared/ReaderMobileSettingsButton.astro'), 'utf8');
 // Reader mobile: ONE research entrance in the top capsule, Part TOC in the
 // native bottom context, Learning remains accessible only via Settings.
 assert.match(mobileBar, /<ReaderMobileMenuTrigger mode="research"/, 'Gill top must launch canonical Marginalia');
+assert.match(mobileBar, /<ReaderMobileSettingsButton engine="series" top/, 'Gill settings trigger must be adjacent to top Play');
+assert.match(mobileBar, /<ReaderMobileActions engine="series" settingsPlacement="none"/, 'Gill bottom bar must reserve space for the current chapter, not duplicate Settings');
+assert.match(actionsSource, /settingsPlacement === 'bottom' && <ReaderMobileSettingsButton engine=\{engine\}/, 'other mobile Reader engines must retain their bottom settings');
+assert.match(settingsTrigger, /id=\{isSeries\?'mobSettingsBtn':'hmSettingsBtn'\}/, 'single settings control must preserve original owner IDs');
+assert.match(settingsTrigger, /data-gill-settings-open=\{isSeries\?'':undefined\}/, 'Gill settings trigger must delegate to canonical overlay owner');
+assert.match(mobileBar, /5vw - 16px/, '320px must preserve full 44px hit areas for top controls');
+
 assert.match(mobileBar, /import ['"]@\/styles\/reader-mobile-canonical\.css['"];/, 'Gill mobile must import its own canonical layout CSS without depending on the retired speed component');
 assert.match(mobileBar, /id="mobPartTocBtn"/, 'Gill lower current section must open Part TOC');
 assert.match(mobileTrigger, /data-gill-marginalia-open=\{mode === 'research'/, 'shared trigger must expose one research entry');
