@@ -1,6 +1,6 @@
 # Reader — ARGON Classic: primary visual reference (owner decision 2026-11-21)
 
-**Status:** design-source correction for existing Draft/HOLD PR #2352. Not a release approval or a claim that W57 is already visually Classic. The owner explicitly requires the **Classic** visual language rather than ARGON UPDATE/UPGRADE. Keep Reader functionality and content/annotation ownership unchanged.
+**Corrected owner scope, 2026-11-21:** ARGON Classic is the visual direction for **MOBILE Reader only**. DESKTOP W57 is finished and must not be changed. The desktop Classic W58 experiment is rejected and reverted to pre-W58 baseline 42648ab7e; keep the mobile Classic typography, mobile Bible shelf and mobile notes. PR #2352 remains Draft/HOLD.
 
 ## Source provenance — verified from the actual archives on DESKTOP-O3FDOA4
 
@@ -24,22 +24,19 @@
 
 Original Classic's Scripture window (`RightResearchPanel.tsx`) includes one selected passage, a horizontally scrollable reference strip, contextual/exegetical controls, citation in **Literata**, and mono reference labels. On mobile, the owner's explicit **two-row horizontally scrollable** reference strip takes precedence over the source's single-row specimen. This adapts presentation without inventing new Scripture data or abandoning the approved projection.
 
-## Implementation precedence and safety
+## Implementation precedence and safety — MOBILE ONLY
 
-1. **Classic design tokens and font roles are authoritative** for new Reader visual work. Later W57/UPDATE changes may remain only where they fix accessibility, mobile usability, verified functional problems, or deliberate owner-approved differences. Do not import UPDATE chrome by default.
-2. Keep Reader's **real Astro article, source-of-truth ScriptureDataProjection, exact annotations, original floating controls, TTS/Play, focus and navigation**. No imitation UI, duplicate script owners, default-Reader replacement or silent production activation.
-3. Implement visually in bounded, reviewable slices: first side-by-side screenshots of **Classic source vs current W57**; then Classic typography/tokens in the existing desktop shell and mobile Analytics; then chapter index / research window / toolbar refinements. Do not claim full Classic parity until the screenshot comparison is performed.
-4. W58 now provides locally hosted, licensed Literata and JetBrains Mono subsets alongside existing Cormorant Garamond and Inter. Browser QA verifies real loaded font faces; never fake fidelity with CSS-only fallback. Product article-font selection remains intact.
-5. QA must cover Gill II `#part-controversy`, Gill III and independent articles, 320/390/1120/1121/1440px, day/night, long passages, two-row overflow, article scroll and focused selection, annotation round trip, real local screenshots. The physical phone and visual owner sign-off remain separate HOLD criteria.
-6. The currently committed W57/Classic patches, mobile shelf, and annotations are **not rolled back just to adjust visual styling**. Fix tokens and component treatment without breaking verified behavior.
-
-**Repo gate:** PR #2352 remains Draft/HOLD; ordinary fast-forward into the existing branch, no main merge or production deploy until actual Classic visual comparison and the pending Reader/CI acceptance gates.
-
+1. **Do not touch the desktop.** W57 desktop look, typography, columns, right panel, controls and interaction behavior must remain at the accepted pre-W58 baseline (commit 42648ab7e). Do not modify desktop assets, manifest or preview injection for Classic styling without a NEW explicit user request.
+2. Classic is used only for the existing mobile Gill Analytics drawer in src/components/article-pilots/gill-series/GillMobileMarginalia.astro. Retain local licensed fonts/Literata and fonts/JetBrainsMono. Neither the mobile implementation nor these fonts are rolled back.
+3. Retain compact top bar, Product Play/progress/speed, bottom bar, two-row scrolling Scripture shelf, projected Bible text, separate jump to article, focus, reading position and exact annotations.
+4. Test mobile at 320/390 in Chrome and WebKit with both themes, long 18-reference shelf and cross-width annotations. Desktop tests must be strictly regression checks against unchanged W57.
+5. The desktop-only W58 skin reader_argon_classic_finish.css was withdrawn; its preview.py and MANIFEST.json entries are restored exactly to pre-W58. Historical W58 desktop screenshots are NOT the accepted desktop design.
+6. Keep PR #2352 Draft/HOLD; no deployment, main merge or other desktop visual work.
 ## W58 implementation evidence (21 November 2026)
 
-- Reader source typography: mobile Gill Analytics in src/components/article-pilots/gill-series/GillMobileMarginalia.astro; W57 desktop opt-in skin in research/reader-w57-pilot/assets/reader_argon_classic_finish.css, loaded last by the preview manifest. Existing Player, section selection, notes and ScriptureDataProjection remain unchanged.
+- **Accepted mobile only:** Classic styling in GillMobileMarginalia.astro; native Play, notes and ScriptureDataProjection unchanged. W58 desktop skin was removed, preview.py and MANIFEST restored exactly to pre-W58.
 - Local licensed font assets: fonts/Literata and fonts/JetBrainsMono. Both use Fontsource v5.3.0, SIL OFL 1.1, Cyrillic+Latin subsets and license notices. Inter and Cormorant Garamond were already present. Do not remove font licenses.
 - Verified Node 22 strangler:build: 658 checked Astro files, 0 errors, 0 warnings; 112 generated pages; postbuild G-1 to G-8 pass.
-- Chromium+WebKit: desktop 1121/1440 pixels both themes; mobile 320/390 pixels both themes; projected Genesis 1:2 and Exodus 19:9, actual font load, no horizontal overflow. Gill II #part-controversy shelf: 18 places, two rows, bidirectional scroll in all four browser/size combinations. Mobile iframe preview opens genuine Gill article and Scripture; day/night/320/390 interactive controls pass.
-- Local visual archive: dist/reader-classic-desktop-lexicon-day.png, dist/reader-classic-desktop-lexicon-night.png, dist/reader-classic-mobile-day.png, dist/reader-classic-mobile-night.png; separate convenience frame dist/mobile-gill-classic-review.html. These are generated local QA assets, not production routes.
+- Chromium+WebKit mobile 320/390 both themes, actual loaded fonts, Genesis 1:2, Exodus 19:9 and two-row 18-ref shelf are the retained mobile acceptance results. The former desktop Classic tests are historical only; the accepted desktop is W57 before W58.
+- **Accepted mobile screenshots:** dist/reader-classic-mobile-day.png, dist/reader-classic-mobile-night.png; local mobile review dist/mobile-gill-classic-review.html. Any W58 desktop Classic screenshot shows a rejected experiment.
 - Not completed by this visual patch: one shared semantic section material provider for all Reader surfaces, unresolved pre-existing CI defects, physical-phone and owner design sign-off. Draft/HOLD must remain.

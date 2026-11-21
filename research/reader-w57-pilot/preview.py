@@ -16,7 +16,7 @@ MANIFEST = json.loads((HERE / "MANIFEST.json").read_text(encoding="utf-8"))
 APPROVED = {f["name"] for f in MANIFEST["files"]}
 CSS = ["reader_universal_preview.css","reader_argon_first.css",
        "reader_editorial_refinement.css","reader_editorial_consolidation.css",
-       "reader_editorial_w51.css","reader_w57.css","reader_argon_classic_finish.css"]
+       "reader_editorial_w51.css","reader_w57.css"]
 JS = ["reader_universal_contract.js","reader_universal_preview.js",
       "reader_editorial_refinement.js","reader_editorial_consolidation.js",
       "reader_w57.js","reader_w57_annotations.js"]
