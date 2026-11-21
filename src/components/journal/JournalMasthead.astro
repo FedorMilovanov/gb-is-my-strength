@@ -1,0 +1,137 @@
+---
+import { assetUrl } from '@/lib/asset-version';
+interface Props { active?: 'journal' | 'dossier'; }
+const { active = 'journal' } = Astro.props;
+---
+<header class="je-masthead" aria-label="Журнал · Церковная жизнь">
+  <div class="je-masthead__top">
+    <div class="je-masthead__identity">
+      <svg class="je-masthead__mark" viewBox="0 2.2 64 48" aria-hidden="true">
+        <path d="M4 10C15 6 26 10 32 17C38 10 49 6 60 10V39C49 35 38 38 32 44C26 38 15 35 4 39Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+        <path d="M32 17V43M9 14C17 12 24 15 28 19M55 14C47 12 40 15 36 19" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <div class="je-masthead__name">
+        <a class="je-masthead__publication" href="/journal/">Журнал</a>
+        <a class="je-masthead__publisher" href="/">Господь Бог — Сила Моя</a>
+      </div>
+    </div>
+    <p class="je-masthead__descriptor">Церковная жизнь.<br />Документы. Контекст.</p>
+    <div class="je-masthead__actions" role="group" aria-label="Поиск и оформление">
+      <button class="je-masthead__button" type="button" data-action="open-search" data-search-shortcut data-search-shortcut-label="Поиск по сайту" data-search-src={assetUrl('js/search.js')} data-palette-css={assetUrl('css/command-palette.css')} aria-label="Поиск по сайту">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+      </button>
+      <button class="je-masthead__button je-masthead__button--theme" type="button" data-journal-theme aria-label="Переключить тему" aria-pressed="false" hidden>
+        <svg class="je-masthead__theme-icon je-masthead__theme-icon--moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
+        <svg class="je-masthead__theme-icon je-masthead__theme-icon--sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="je-masthead__navigation">
+    <nav class="je-masthead__nav" aria-label="Навигация Журнала">
+      <a href="/journal/" aria-current={active === 'journal' ? 'page' : undefined}>Журнал</a>
+      <a href="/journal/#lead-dossier" aria-current={active === 'dossier' ? 'true' : undefined}>Досье</a>
+      <a href="/journal/#method-title">Принципы работы</a>
+    </nav>
+    <a class="je-masthead__home" href="/">Основной сайт</a>
+  </div>
+</header>
+<script>
+  // Thin UI adapter only. GBReaderPreferences remains the ONLY theme/state,
+  // persistence and cross-tab owner; search uses its existing bootstrap above.
+  type Preferences = {
+    get: () => { theme: string };
+    setTheme: (theme: string, options: { source: string }) => void;
+    subscribe: (listener: () => void) => () => void;
+  };
+  const journalWindow = window as Window & {
+    GBReaderPreferences?: Preferences;
+    GBSearchBootstrap?: { open: (source?: string, opener?: Element) => Promise<boolean> };
+  };
+  const preferences = journalWindow.GBReaderPreferences;
+  const button = document.querySelector<HTMLButtonElement>('[data-journal-theme]');
+  if (preferences && button && !button.dataset.journalThemeBound) {
+    button.dataset.journalThemeBound = 'true';
+    const sync = () => button.setAttribute('aria-pressed', String(preferences.get().theme === 'dark'));
+    button.addEventListener('click', () => {
+      preferences.setTheme(preferences.get().theme === 'dark' ? 'light' : 'dark', { source: 'journal-masthead' });
+    });
+    preferences.subscribe(sync);
+    sync();
+    button.hidden = false;
+  }
+  // These strict-native routes do not mount the legacy keyboard owner or
+  // ReaderRail. Delegate the advertised shortcut to the existing bootstrap;
+  // do not create another search loader, palette or persistence owner.
+  const masthead = document.querySelector<HTMLElement>('.je-masthead');
+  if (masthead && !masthead.dataset.journalShortcutBound) {
+    masthead.dataset.journalShortcutBound = 'true';
+    document.addEventListener('keydown', (event) => {
+      if (event.defaultPrevented || event.repeat || event.altKey || event.shiftKey ||
+          !(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'k') return;
+      const search = journalWindow.GBSearchBootstrap;
+      const trigger = masthead.querySelector<HTMLButtonElement>('[data-action="open-search"]');
+      if (!search || !trigger) return;
+      event.preventDefault();
+      const opener = document.activeElement !== document.body ? document.activeElement : trigger;
+      void search.open(trigger.dataset.searchSrc, opener || trigger);
+    });
+  }
+</script>
+<style>
+  .je-masthead { background: #0b2033; color: #f9f2e4; border-bottom: 1px solid #b7945d; font-family: 'Source Sans 3', system-ui, sans-serif; }
+  .je-masthead__top { max-width: 1280px; margin: 0 auto; padding: 17px 40px; display: flex; align-items: center; gap: 26px; }
+  .je-masthead__identity { display: flex; align-items: center; gap: 16px; min-width: 0; }
+  .je-masthead__mark { flex: none; width: 46px; height: 37px; color: #e5bb73; }
+  .je-masthead__name { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .je-masthead__publication { color: #f9f2e4; font: 600 30px/1.18 'Playfair Display', Georgia, serif; text-decoration: none; }
+  .je-masthead__publisher { display: inline-flex; align-items: center; min-height: 24px; color: #d5c9b8; font: 400 12px/1.5 'Source Sans 3', sans-serif; text-decoration: none; }
+  .je-masthead__descriptor { margin: 0 0 0 auto; padding-left: 24px; border-left: 1px solid #466075; color: #d5c9b8; font: italic 14px/1.5 Lora, Georgia, serif; }
+  /* Reserve the progressively enhanced theme button before its adapter runs. */
+  .je-masthead__actions { display: flex; flex: none; gap: 4px; min-width: 92px; margin-left: auto; }
+  /* Pure icon controls, no decorative squares/circles; keep 44px touch targets. */
+  .je-masthead__button { display: inline-grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 0; background: none; color: #f4e7ce; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .je-masthead__button[hidden] { display: none; }
+  .je-masthead__button:hover { color: #ffe4af; }
+  .je-masthead__button:active { opacity: .75; }
+  .je-masthead__button svg { display: block; }
+  /* Same moon/sun geometry and crossfade as HomePageChrome. Isolated classes
+     keep this thin adapter out of legacy theme-control selectors. */
+  .je-masthead__button--theme { position: relative; }
+  .je-masthead__button--theme .je-masthead__theme-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: opacity .25s, transform .15s, color .25s; }
+  .je-masthead__button--theme:hover .je-masthead__theme-icon { transform: translate(-50%, -50%) scale(1.08); }
+  .je-masthead__theme-icon--sun { opacity: 0; }
+  :global(html.dark) .je-masthead__theme-icon--moon { opacity: 0; }
+  :global(html.dark) .je-masthead__theme-icon--sun { opacity: 1; color: #f5c542; }
+  .je-masthead__navigation { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; gap: 28px; padding: 0 40px; border-top: 1px solid #2d4051; }
+  .je-masthead__nav { display: flex; flex: 1; flex-wrap: wrap; gap: 28px; min-width: 0; }
+  .je-masthead__nav > a { display: inline-flex; min-height: 44px; align-items: center; padding-block: 3px 0; border-bottom: 2px solid transparent; color: #efe6d7; text-decoration: none; font: 600 11px/1.5 'Source Sans 3', sans-serif; letter-spacing: .12em; text-transform: uppercase; }
+  .je-masthead__nav a[aria-current] { border-color: #d6ad5d; color: #fff; }
+  .je-masthead__home { display: inline-flex; align-items: center; flex: none; min-height: 44px; margin-left: auto; color: #d5c9b8; font: 400 12px/1.5 'Source Sans 3', sans-serif; text-decoration: none; }
+  @media (forced-colors: active) {
+    .je-masthead__nav a { border-bottom-color: Canvas; }
+    .je-masthead__nav a[aria-current] { border-bottom-color: Highlight; }
+  }
+  .je-masthead :is(a, button):focus-visible { outline: 2px solid #eacb85; outline-offset: 3px; }
+  .je-masthead a:hover { color: #f9d997; }
+  @media (max-width: 1150px) { .je-masthead__descriptor { display: none; } }
+  @media (max-width: 1023px) { .je-masthead__top, .je-masthead__navigation { padding-inline: 28px; } }
+  @media (max-width: 690px) {
+    .je-masthead__top { padding: 8px 20px; gap: 10px; }
+    .je-masthead__identity { gap: 10px; flex: 1; }
+    .je-masthead__mark { width: 32px; height: 24px; }
+    .je-masthead__publication { font-size: 22px; }
+    .je-masthead__publisher { font-size: 11px; }
+    .je-masthead__navigation { padding-inline: 20px; gap: 14px; }
+    .je-masthead__nav { justify-content: space-between; gap: 8px; }
+    .je-masthead__nav > a { min-height: 44px; font-size: 10px; letter-spacing: 0; text-transform: none; }
+    .je-masthead__home { font-size: 10px; }
+    .je-masthead__actions { gap: 4px; min-width: 92px; }
+    .je-masthead__button { width: 44px; height: 44px; }
+  }
+  @media (max-width: 359px) { .je-masthead__mark { display: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .je-masthead__button--theme .je-masthead__theme-icon { transition: none; }
+    .je-masthead__button--theme:hover .je-masthead__theme-icon { transform: translate(-50%, -50%); }
+  }
+  @media print { .je-masthead { display: none; } }
+</style>

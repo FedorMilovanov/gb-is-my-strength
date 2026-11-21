@@ -1,0 +1,130 @@
+---
+/** Route-owned catalog/site chrome, verified-adapted from current main's
+ * ArticlesPageChrome destinations. All links remain visible native SSR;
+ * no Journal shell/identity, copied menu overlay or legacy home runtime.
+ * GBReaderPreferences and GBSearchBootstrap remain the only state owners. */
+import { assetUrl } from '@/lib/asset-version';
+---
+<header class="ae-masthead" aria-label="Богословская библиотека">
+  <div class="ae-masthead__top">
+    <a class="ae-masthead__identity" href="/">
+      <svg class="ae-masthead__mark" viewBox="0 2.2 64 48" aria-hidden="true">
+        <path d="M4 10C15 6 26 10 32 17C38 10 49 6 60 10V39C49 35 38 38 32 44C26 38 15 35 4 39Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+        <path d="M32 17V43M9 14C17 12 24 15 28 19M55 14C47 12 40 15 36 19" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <span class="ae-masthead__name">
+        <span class="ae-masthead__publication">Господь Бог — Сила Моя</span>
+        <span class="ae-masthead__descriptor">Богословская библиотека</span>
+      </span>
+    </a>
+    <div class="ae-masthead__actions" role="group" aria-label="Поиск и оформление">
+      <button class="ae-masthead__button" type="button" data-action="open-search" data-search-shortcut data-search-shortcut-label="Поиск по сайту" data-search-src={assetUrl('js/search.js')} data-palette-css={assetUrl('css/command-palette.css')} aria-label="Поиск по сайту">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+      </button>
+      <button class="ae-masthead__button ae-masthead__button--theme" type="button" data-articles-theme aria-label="Переключить тему" aria-pressed="false" hidden>
+        <svg class="ae-masthead__theme-icon ae-masthead__theme-icon--moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
+        <svg class="ae-masthead__theme-icon ae-masthead__theme-icon--sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </div>
+  </div>
+  <nav class="ae-masthead__nav" aria-label="Навигация богословской библиотеки">
+    <a href="/articles/" aria-current="page">Все статьи</a>
+    <a href="#catalog-series">Серии и сборники</a>
+    <a href="/biografii/">Биографии</a>
+    <a class="ae-masthead__home" href="/">Основной сайт</a>
+  </nav>
+</header>
+<script>
+  // Thin UI adapter only. GBReaderPreferences remains the ONLY theme/state,
+  // persistence and cross-tab owner; search uses its existing bootstrap above.
+  type Preferences = {
+    get: () => { theme: string };
+    setTheme: (theme: string, options: { source: string }) => void;
+    subscribe: (listener: () => void) => () => void;
+  };
+  const articlesWindow = window as Window & {
+    GBReaderPreferences?: Preferences;
+    GBSearchBootstrap?: { open: (source?: string, opener?: Element) => Promise<boolean> };
+  };
+  const preferences = articlesWindow.GBReaderPreferences;
+  const button = document.querySelector<HTMLButtonElement>('[data-articles-theme]');
+  if (preferences && button && !button.dataset.articlesThemeBound) {
+    button.dataset.articlesThemeBound = 'true';
+    const sync = () => button.setAttribute('aria-pressed', String(preferences.get().theme === 'dark'));
+    button.addEventListener('click', () => {
+      preferences.setTheme(preferences.get().theme === 'dark' ? 'light' : 'dark', { source: 'articles-masthead' });
+    });
+    preferences.subscribe(sync);
+    sync();
+    button.hidden = false;
+  }
+  // These strict-native routes do not mount the legacy keyboard owner or
+  // ReaderRail. Delegate the advertised shortcut to the existing bootstrap;
+  // do not create another search loader, palette or persistence owner.
+  const masthead = document.querySelector<HTMLElement>('.ae-masthead');
+  if (masthead && !masthead.dataset.articlesShortcutBound) {
+    masthead.dataset.articlesShortcutBound = 'true';
+    document.addEventListener('keydown', (event) => {
+      if (event.defaultPrevented || event.repeat || event.altKey || event.shiftKey ||
+          !(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'k') return;
+      const search = articlesWindow.GBSearchBootstrap;
+      const trigger = masthead.querySelector<HTMLButtonElement>('[data-action="open-search"]');
+      if (!search || !trigger) return;
+      event.preventDefault();
+      const opener = document.activeElement !== document.body ? document.activeElement : trigger;
+      void search.open(trigger.dataset.searchSrc, opener || trigger);
+    });
+  }
+</script>
+<style>
+  .ae-masthead { border-bottom: 1px solid var(--je-gold); background: var(--je-paper); color: var(--je-ink); font-family: var(--je-ui); }
+  .ae-masthead__top { display: flex; align-items: center; gap: 24px; max-width: 1280px; margin: 0 auto; padding: 18px 40px; }
+  .ae-masthead__identity { display: flex; align-items: center; gap: 14px; min-width: 0; color: var(--je-ink); text-decoration: none; }
+  .ae-masthead__mark { flex: none; width: 42px; height: 34px; color: var(--je-gold); }
+  .ae-masthead__name { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .ae-masthead__publication { font: 600 24px/1.2 var(--je-serif); }
+  .ae-masthead__descriptor { color: var(--je-muted); font: 600 10px/1.5 var(--je-ui); letter-spacing: .12em; text-transform: uppercase; }
+  /* Reserve the progressively enhanced theme button before its adapter runs. */
+  .ae-masthead__actions { display: flex; flex: none; gap: 4px; min-width: 92px; margin-left: auto; }
+  /* Pure icon controls, no decorative squares/circles; keep 44px touch targets. */
+  .ae-masthead__button { display: inline-grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 0; background: none; color: var(--je-ink); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .ae-masthead__button[hidden] { display: none; }
+  .ae-masthead__button:hover { color: var(--je-gold); }
+  .ae-masthead__button:active { opacity: .75; }
+  .ae-masthead__button svg { display: block; }
+  /* Same moon/sun geometry and crossfade as HomePageChrome. Isolated classes
+     keep this thin adapter out of legacy theme-control selectors. */
+  .ae-masthead__button--theme { position: relative; }
+  .ae-masthead__button--theme .ae-masthead__theme-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: opacity .25s, transform .15s, color .25s; }
+  .ae-masthead__button--theme:hover .ae-masthead__theme-icon { transform: translate(-50%, -50%) scale(1.08); }
+  .ae-masthead__theme-icon--sun { opacity: 0; }
+  :global(html.dark) .ae-masthead__theme-icon--moon { opacity: 0; }
+  :global(html.dark) .ae-masthead__theme-icon--sun { opacity: 1; color: #f5c542; }
+  .ae-masthead__nav { display: flex; flex-wrap: wrap; gap: 0 32px; max-width: 1280px; margin: 0 auto; padding: 0 40px; border-top: 1px solid var(--je-rule); }
+  .ae-masthead__nav > a { display: inline-flex; align-items: center; min-height: 44px; padding-block: 4px; border-bottom: 2px solid transparent; color: var(--je-ink); font: 600 12px/1.5 var(--je-ui); text-decoration: none; }
+  .ae-masthead__nav > a[aria-current] { border-bottom-color: var(--je-gold); }
+  .ae-masthead__nav > .ae-masthead__home { margin-left: auto; color: var(--je-muted); font-weight: 400; }
+  .ae-masthead :is(a, button):focus-visible { outline: 2px solid var(--je-gold); outline-offset: 3px; }
+  .ae-masthead a:hover { color: var(--je-gold); }
+  @media (forced-colors: active) {
+    .ae-masthead__nav > a { border-bottom-color: Canvas; }
+    .ae-masthead__nav > a[aria-current] { border-bottom-color: Highlight; }
+  }
+  @media (max-width: 1023px) { .ae-masthead__top, .ae-masthead__nav { padding-inline: 28px; } }
+  @media (max-width: 690px) {
+    .ae-masthead__top { gap: 10px; padding: 12px 20px; }
+    .ae-masthead__identity { gap: 9px; flex: 1; }
+    .ae-masthead__mark { width: 30px; height: 24px; }
+    .ae-masthead__publication { font-size: 16px; }
+    .ae-masthead__descriptor { font-size: 9px; letter-spacing: .06em; }
+    .ae-masthead__nav { justify-content: space-between; column-gap: 12px; padding-inline: 20px; }
+    .ae-masthead__nav > a { font-size: 10px; }
+    .ae-masthead__nav > .ae-masthead__home { margin-left: 0; }
+  }
+  @media (max-width: 359px) { .ae-masthead__mark { display: none; } .ae-masthead__publication { font-size: 15px; } }
+  @media (prefers-reduced-motion: reduce) {
+    .ae-masthead__button--theme .ae-masthead__theme-icon { transition: none; }
+    .ae-masthead__button--theme:hover .ae-masthead__theme-icon { transform: translate(-50%, -50%); }
+  }
+  @media print { .ae-masthead { display: none; } }
+</style>
