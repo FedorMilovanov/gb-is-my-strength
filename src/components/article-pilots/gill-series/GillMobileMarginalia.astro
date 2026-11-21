@@ -925,6 +925,28 @@ html[data-reader-theme="dark"] #partTocOverlay :is(.gbr-scripture-source,.gbr-ma
    white-space:normal!important;overflow:visible!important;
    text-overflow:clip!important;line-height:1.08!important;
  }
+ /* W65: two full footer labels on 320px, without a tiny 8.5px caption.
+    The 52px action hit areas and desktop geometry remain unchanged. */
+ #partTocOverlay .gbat-foot{
+   grid-template-columns:minmax(0,1.36fr) minmax(0,1fr) 40px!important;
+ }
+ #partTocOverlay .gbat-fbtn--listen{
+   padding-inline:5px!important;gap:4px!important;
+ }
+ #partTocOverlay .gbat-fbtn--listen .gbat-fbtn-ic{
+   flex-basis:22px!important;width:22px!important;height:22px!important;
+ }
+ #partTocOverlay .gbat-fbtn--listen .gbat-fbtn-txt b{
+   font-size:9.5px!important;letter-spacing:-.1px!important;
+   white-space:nowrap!important;line-height:1.18!important;
+ }
+ #partTocOverlay .gbat-fbtn--cont{
+   padding-inline:4px!important;
+ }
+ #partTocOverlay .gbat-cont-label{
+   font-size:11px!important;letter-spacing:-.1px!important;
+   white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;
+ }
 }
 </style>
 
