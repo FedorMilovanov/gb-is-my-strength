@@ -23,22 +23,33 @@
     const pathname = () => location.pathname.replace(/\/+$/, '') || '/';
     const hash = s => { let h=2166136261; for(let i=0;i<s.length;i++){
       h ^= s.charCodeAt(i); h=Math.imul(h,16777619); } return (h>>>0).toString(36); };
-  const blocks=(article)=>[...article.querySelectorAll('p,li,blockquote')]
+  const blocks=(article)=>[...article.querySelectorAll('p,li,blockquote,.manuscript-quote--bilingual')]
     .filter(e=>!e.closest('.np-u-central-overview,.np-u-central-contents,.gill-card,figcaption,.np-u-series-disclosure')&&
       normalize(e.textContent).length>=6);
   function chooseBlock(node,article){
     const el=node?.nodeType===1?node:node?.parentElement;
-    const parent=el?.closest('p,li,blockquote');
+    const parent=el?.closest('p,li,blockquote,.manuscript-quote--bilingual');
     return parent&&article.contains(parent)?parent:null;
   }
   // Source coordinates refer only to VISIBLE authored prose, not inline
   // glossary popovers hidden inside the published article's DOM.
   function visibleProjection(block){
     const segments=[],cached=new WeakMap();
+    const bilingual=block.matches('.manuscript-quote--bilingual');
+    const originalOpen=bilingual&&!!block.querySelector('details.mq-translation-flip[open]');
     const ignored=el=>{
       if(!el||el===block)return false;
       if(cached.has(el))return cached.get(el);
-      const excluded=el.matches('.gtip,.btip,.tooltip,[hidden],[inert],[aria-hidden="true"],[role="tooltip"]') ||
+      // A bilingual quote is one authored block with two mutually exclusive
+      // reading faces. Never capture the toggle label or the hidden language
+      // as positional prose, even when UA details styles report display:block.
+      const inactiveFace=bilingual&&(
+        !!el.closest('.mq-translation-toggle') ||
+        (!originalOpen&&!!el.closest('.mq-translation-original')) ||
+        (originalOpen&&!!el.closest('.mq-translation-russian'))
+      );
+      const excluded=inactiveFace ||
+        el.matches('.gtip,.btip,.tooltip,[hidden],[inert],[aria-hidden="true"],[role="tooltip"]') ||
         getComputedStyle(el).display==='none' ||
         getComputedStyle(el).visibility==='hidden' || ignored(el.parentElement);
       cached.set(el,excluded);return excluded;
@@ -947,6 +958,14 @@
   });
   window.addEventListener('storage', (e) => { if (e && e.key === QUOTES_KEY) paintMarks(); });
   window.addEventListener('resize', () => requestAnimationFrame(paintMarks), { passive:true });
+  // Restore the correct face's annotations when a Gill bilingual original
+  // opens/closes, including after a fresh reload with the original closed.
+  document.addEventListener('toggle', (event) => {
+    if (event.target instanceof HTMLDetailsElement &&
+        event.target.matches('details.mq-translation-flip')) {
+      requestAnimationFrame(paintMarks);
+    }
+  }, true);
 
   /* Мобильный вход в пометы. На страницах серий js/site.js не подключается,
      поэтому #selection-share-popup не существует: выделенный текст некуда
