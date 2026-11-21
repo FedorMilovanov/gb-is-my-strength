@@ -32,7 +32,9 @@ function button(action, label, text) {
     const typeRow = element('div', 'gb-hl-type',
       (item.type === 'favorite' ? 'Статья' : marker ? 'Помета' : item.type === 'quote' ? 'Цитата' : 'Заметка') +
       (item.savedAt ? ' · ' + savedDate(item.savedAt) : ''));
-    if (marker && item.color) {
+    /* Цвет может быть и у цитаты (пользователь выделил уже сохранённую
+       цитату) — точка показывается всегда, когда цвет есть. */
+    if (item.color) {
       const dot = element('span', 'gb-hl-mark-dot');
       dot.dataset.color = item.color;
       dot.setAttribute('role', 'img');

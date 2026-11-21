@@ -50,6 +50,22 @@ assert.deepEqual(plain(api.dedupe(mixed)).map(x => x.id), mixed.map(x => x.id),
   'native library dedupe must not destroy anchored W57 entries');
 assert.deepEqual(plain(api.add(mixed, { ...markedA, id: 'repeat-click' })).map(x => x.id),
   mixed.map(x => x.id), 'same anchored range must dedupe');
+// Colour marks: the same phrase highlighted in two places must stay two records,
+// while a quote and its colouring stay one record (no duplicate in the library).
+const markFirst = { id: 'mark-1', kind: 'marker', color: 'amber', text: 'Господь благ', url: '/articles/a/',
+  before: 'первый контекст', after: 'конец первый' };
+const markSecond = { id: 'mark-2', kind: 'marker', color: 'rose', text: 'Господь благ', url: '/articles/a/',
+  before: 'второй контекст', after: 'конец второй' };
+const twoMarks = plain(api.add(api.add([], markFirst), markSecond));
+assert.deepEqual(twoMarks.map((x) => x.id), ['mark-2', 'mark-1'],
+  'same phrase in two different places is two colour marks, not a duplicate');
+assert.equal(plain(api.add(twoMarks, { ...markFirst, id: 'mark-1-repeat' })).length, 2,
+  're-applying the same colour to the same place does not multiply records');
+const quoteThenColour = plain(api.add([{ id: 'q', text: 'Господь благ', url: '/articles/a/', before: 'первый контекст', after: 'конец первый' }],
+  { ...markFirst, id: 'mark-1' }));
+assert.deepEqual(quoteThenColour.map((x) => x.id), ['mark-1', 'q'],
+  'legacy quote and colour mark of the same fragment remain separate intents');
+
 const unrelated = plain(api.add(mixed, { id: 'new', text: 'Иной отрывок', url: '/articles/a/' }));
 assert.deepEqual(unrelated.map(x => x.id), ['new', 'w57-b', 'w57-a', 'native'],
   'unrelated highlight must persist despite pre-existing equal-word ranges');

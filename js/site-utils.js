@@ -779,11 +779,16 @@
       var a = item.annotation && item.annotation.version === 1 && item.annotation.anchor;
       var range = a && Number.isInteger(a.start) && Number.isInteger(a.end) &&
         typeof a.exact === 'string';
+      // Цветные пометы различаются ещё и местом в тексте: без этого вторая
+      // помета той же фразы в другом абзаце молча терялась при записи.
+      var positional = (!range && (item.kind === 'marker' || item.color))
+        ? (normalizeQuoteText(item.before) + '\u0001' + normalizeQuoteText(item.after)).toLowerCase()
+        : '';
       var key = canonicalPage(item.url) + '\n' + (range
         ? 'range-v1:' + JSON.stringify([
             a.blockId || '', a.blockIndex == null ? -1 : a.blockIndex,
             a.start, a.end, a.exact
-          ]) : text);
+          ]) : text + (positional ? '\nctx:' + positional : ''));
       if (seen.has(key)) continue;
       seen.add(key);
       result.push(item);

@@ -22,11 +22,29 @@
     catch { return raw.split('#')[0].split('?')[0].replace(/^https?:\/\/[^/]+/, '').replace(/\/+$/, '') || '/'; }
   }
   function gbHighlightText(item) { return normalizeText(item && item.text).toLocaleLowerCase(); }
+  /* Ключ фрагмента — страница + текст без контекста. По нему ищем запись,
+     когда пользователь перекрашивает уже сохранённую цитату. */
+  function gbFragmentKey(x) {
+    const t = gbHighlightText(x);
+    return !t ? '' : gbHighlightPath(x) + '\n' + t;
+  }
+  function gbContextKey(x) {
+    const before = normalizeText(x && x.before).toLocaleLowerCase();
+    const after = normalizeText(x && x.after).toLocaleLowerCase();
+    return (!before && !after) ? '' : before + '\u0001' + after;
+  }
   function gbHighlightKey(x) {
     const t=gbHighlightText(x), a=x?.annotation?.version===1&&x.annotation.anchor;
-    return !t?'':gbHighlightPath(x)+'\n'+(a&&Number.isInteger(a.start)&&
-      Number.isInteger(a.end)&&typeof a.exact==='string'
-      ?'range-v1:'+JSON.stringify([a.blockId||'',a.blockIndex??-1,a.start,a.end,a.exact]):t);
+    if (!t) return '';
+    if (a && Number.isInteger(a.start) && Number.isInteger(a.end) && typeof a.exact === 'string') {
+      return gbHighlightPath(x)+'\nrange-v1:'+JSON.stringify([a.blockId||'',a.blockIndex??-1,a.start,a.end,a.exact]);
+    }
+    /* Цветные пометы различаются ещё и местом: одна и та же фраза может быть
+       выделена в двух разных абзацах, и раньше вторая запись терялась как
+       «дубль» — в тексте оставалась только одна подсветка. Для цитат,
+       заметок и закладок семантика прежняя: страница + текст. */
+    const positional = (x && (x.kind === 'marker' || x.color)) ? gbContextKey(x) : '';
+    return gbHighlightPath(x)+'\n'+t+(positional?'\nctx:'+positional:'');
   }
   function gbDedupeHighlights(items) {
     const seen=new Set();
@@ -134,7 +152,7 @@
   function loadPresenter() {
     if (presenter) return Promise.resolve(presenter);
     if (!presenterPromise) {
-      presenterPromise = import('/js/reader-library-presenter.js?v=3687d5e1')
+      presenterPromise = import('/js/reader-library-presenter.js?v=52c66745')
         .then(async (module) => {
           presenter = module;
           const researchModule = await import('/js/reader-library-v3.js?v=e036d5a6');
@@ -491,6 +509,17 @@
      не мутируется, поэтому аннотации не ломают якоря, озвучку и поиск.
      Если браузер не поддерживает ::highlight() — помета всё равно сохраняется
      и видна в библиотеке, просто не подсвечивается в тексте. */
+  /* Индекс текста статьи: список текстовых узлов и их смещений в склейке.
+     Поиск ведётся регуляркой по «терпимому к пробелам» шаблону прямо по
+     склейке — это важно по трём причинам:
+       1) Selection.toString() вставляет пробелы на границах блоков, а
+          textContent — нет, поэтому выделение через границу абзаца иначе
+          не находится;
+       2) text-transform меняет регистр в отрисованном выделении («ЧАСТЬ II»),
+          поэтому сравнение регистронезависимое;
+       3) посимвольное построение нормализованной карты стоило ~200 мс на
+          статье в 82 000 символов на каждом перерисовывании — регулярка
+          по склейке укладывается в единицы миллисекунд. */
   function textIndex(scope) {
     const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT, {
       acceptNode: (n) => {
@@ -500,25 +529,30 @@
       },
     });
     const nodes = [];
-    let acc = '';
+    const parts = [];
+    let length = 0;
     let n;
-    while ((n = walker.nextNode())) { nodes.push({ node: n, start: acc.length }); acc += n.textContent; }
-    return { nodes, text: acc };
+    while ((n = walker.nextNode())) {
+      nodes.push({ node: n, start: length });
+      parts.push(n.textContent);
+      length += n.textContent.length;
+    }
+    return { nodes, raw: parts.join('') };
   }
 
-  function locate(index, item) {
-    const needle = normalizeText(item && item.text);
-    if (!needle || needle.length < 3) return null;
-    const hay = index.text;
-    const before = normalizeText(item.before);
-    const after = normalizeText(item.after);
-    let at = -1;
-    if (before) at = hay.indexOf(before + needle + (after || ''), 0);
-    if (at >= 0 && before) at += before.length;
-    if (at < 0) at = hay.indexOf(needle);
-    if (at < 0) return null;
-    const from = at;
-    const to = at + needle.length;
+  const REGEXP_SPECIAL = /[.*+?^${}()|[\]\\]/g;
+  function tolerantPattern(value) {
+    const chunks = normalizeText(value).split(' ').filter(Boolean).map((chunk) => chunk.replace(REGEXP_SPECIAL, '\\$&'));
+    return chunks.length ? chunks.join('\\s*') : '';
+  }
+
+  function locateIn(index, text) {
+    const pattern = tolerantPattern(text);
+    if (!pattern) return null;
+    let match = null;
+    try { match = new RegExp(pattern, 'i').exec(index.raw); }
+    catch { return null; }
+    if (!match) return null;
     const pointAt = (offset) => {
       for (let i = index.nodes.length - 1; i >= 0; i--) {
         const rec = index.nodes[i];
@@ -526,23 +560,39 @@
       }
       return null;
     };
-    const a = pointAt(from);
-    const b = pointAt(to);
+    const a = pointAt(match.index);
+    const b = pointAt(match.index + match[0].length);
     if (!a || !b) return null;
     try {
       const range = document.createRange();
       range.setStart(a.node, a.offset);
       range.setEnd(b.node, b.offset);
+      if (!range.toString().trim()) return null;
       return range;
     } catch { return null; }
   }
 
+  function locate(index, item) {
+    const needle = normalizeText(item && item.text);
+    if (!needle || needle.length < 3) return null;
+    const before = normalizeText(item.before);
+    const after = normalizeText(item.after);
+    /* Сначала пробуем привязку по контексту — так одна и та же фраза,
+       выделенная в двух разных абзацах, попадает каждая на своё место. */
+    if (before || after) {
+      const withContext = locateIn(index, before + ' ' + needle + ' ' + after);
+      if (withContext) return withContext;
+    }
+    return locateIn(index, needle);
+  }
+
   function paintMarks() {
-    if (!window.CSS || !CSS.highlights) return { supported: false, painted: 0 };
+    if (!window.CSS || !CSS.highlights) return { supported: false, painted: 0, placed: new Set() };
     const scope = document.querySelector('article.article-body') || document.querySelector('article') || document.querySelector('main');
-    if (!scope) return { supported: true, painted: 0 };
+    if (!scope) return { supported: true, painted: 0, placed: new Set() };
     const index = textIndex(scope);
     const groups = new Map();
+    const placed = new Set();
     let painted = 0;
     for (const item of quotes()) {
       const color = String(item && item.color || '');
@@ -551,6 +601,7 @@
       if (!range) continue;
       if (!groups.has(color)) groups.set(color, []);
       groups.get(color).push(range);
+      placed.add(gbHighlightKey(item));
       painted++;
     }
     for (const color of MARK_COLORS) {
@@ -558,18 +609,56 @@
       if (groups.has(color)) CSS.highlights.set(name, new Highlight(...groups.get(color)));
       else CSS.highlights.delete(name);
     }
-    return { supported: true, painted };
+    return { supported: true, painted, placed };
   }
 
   function saveMarker(color) {
     const selected = selection();
     if (selected.text.length < 3) { statusMessage('Сначала выделите текст.', true); return false; }
     const old = quotes();
+    const nextColor = MARK_COLORS.includes(color) ? color : 'amber';
     const record = {
-      id: uid('mark'), kind: 'marker', color: MARK_COLORS.includes(color) ? color : 'amber',
+      id: uid('mark'), kind: 'marker', color: nextColor,
       text: selected.text, articleTitle: currentTitle(),
       url: sourceUrl(selected), before: selected.before, after: selected.after, savedAt: Date.now(),
     };
+    /* Одна запись на (страница + текст): иначе gbAddHighlight молча отбрасывал
+       вторую запись, а пользователь видел «Помета сохранена». Здесь тот же
+       текст перекрашивается, а одинаковый цвет честно сообщается как уже
+       применённый — без ложного успеха. */
+    const key = gbHighlightKey(record);
+    const fragment = gbFragmentKey(record);
+    const context = gbContextKey(record);
+    let existingIndex = fragment ? old.findIndex((x) => gbFragmentKey(x) === fragment && gbContextKey(x) === context) : -1;
+    if (existingIndex < 0 && fragment) existingIndex = old.findIndex((x) => gbFragmentKey(x) === fragment);
+    if (existingIndex >= 0) {
+      const existing = old[existingIndex] || {};
+      if (String(existing.color || '') === nextColor) {
+        statusMessage('Этот текст уже выделен этим цветом.');
+        toast('Этот текст уже выделен этим цветом', null);
+        return true;
+      }
+      const next = old.slice();
+      next[existingIndex] = { ...existing, color: nextColor };
+      if (!write(QUOTES_KEY, next)) {
+        statusMessage('Не удалось изменить цвет пометы. Хранилище недоступно.', true);
+        return false;
+      }
+      const painted = paintMarks();
+      sync();
+      const wasMarker = existing.kind === 'marker';
+      const storedKey = gbHighlightKey(next[existingIndex]);
+      const anchored = painted.supported && painted.placed && painted.placed.has(storedKey);
+      const base = wasMarker ? 'Цвет пометы изменён' : 'Цитата выделена цветом';
+      const message = !painted.supported
+        ? (wasMarker ? 'Цвет пометы сохранён, подсветка недоступна' : 'Цвет сохранён, подсветка недоступна')
+        : anchored
+          ? base
+          : (wasMarker ? 'Цвет пометы сохранён, но подсветить не удалось' : 'Цвет сохранён, но подсветить не удалось');
+      statusMessage(message + '.');
+      toast(message, { label: 'Вернуть', run: undoQuotes(old, 'Цвет возвращён') });
+      return true;
+    }
     if (old.length >= LIMIT_QUOTES && !old.some((x) => gbHighlightKey(x) === gbHighlightKey(record))) {
       statusMessage('Сохранено 200 помет — достигнут прежний лимит. Экспортируйте библиотеку перед удалением старых записей.', true);
       return false;
@@ -581,10 +670,16 @@
     }
     const result = paintMarks();
     sync();
-    const message = result.supported
-      ? 'Помета сохранена и подсвечена'
-      : 'Помета сохранена. Подсветка недоступна в этом браузере';
-    statusMessage(result.supported ? 'Помета сохранена и подсвечена.' : 'Помета сохранена. Подсветка в тексте недоступна в этом браузере.');
+    /* Честность сообщения: «подсвечена» говорим только если запись реально
+       получила диапазон в тексте. Иначе пользователь видит успех при пустом
+       экране (так было при выделении через границу абзацев). */
+    const anchored = result.supported && result.placed && result.placed.has(key);
+    const message = !result.supported
+      ? 'Помета сохранена. Подсветка недоступна в этом браузере'
+      : anchored
+        ? 'Помета сохранена и подсвечена'
+        : 'Помета сохранена, но этот фрагмент не удалось подсветить';
+    statusMessage(message + (result.supported && !anchored ? '. Он останется в библиотеке.' : '.'));
     toast(message, { label: 'Вернуть', run: undoQuotes(old, 'Помета убрана') });
     return true;
   }
@@ -637,7 +732,7 @@
     colors.addEventListener('click', (e) => {
       const swatch = e.target.closest('[data-hl-color]');
       if (!swatch) return;
-      if (saveMarker(swatch.dataset.hlColor)) hide();
+      if (saveMarker(swatch.dataset.hlColor)) dismissSelectionBar();
     });
     document.body.appendChild(bar);
     for (const b of [quote, note, ...colors.querySelectorAll('button')]) {
@@ -648,7 +743,8 @@
     quote.addEventListener('click', () => {
       if (saveSelectedQuote()) {
         quote.textContent = 'Сохранено';
-        setTimeout(() => { quote.textContent = 'Цитата'; hide(); }, 700);
+        clearTimeout(selBarHideTimer);
+        selBarHideTimer = setTimeout(() => { quote.textContent = 'Цитата'; dismissSelectionBar(); }, 700);
       }
     });
     note.addEventListener('click', () => {
@@ -666,6 +762,17 @@
     bar.dataset.open = 'false';
     bar.setAttribute('aria-hidden', 'true');
   }
+  /* После действия выделение снимаем: если оставить его, следующий тап по тому
+     же тексту Chrome трактует как перетаскивание уже выделенного фрагмента —
+     mouseup не доходит, и тулбар для этого текста больше не открывается. */
+  function collapseSelection() {
+    try {
+      const sel = window.getSelection();
+      if (sel && !sel.isCollapsed) sel.removeAllRanges();
+    } catch {}
+  }
+  function dismissSelectionBar() { hide(); collapseSelection(); }
+  let selBarHideTimer = 0;
   function placeSelectionBar() {
     if (document.getElementById('npW57SelectionToolbar')) { hide(); return; }
     const sel = window.getSelection();
@@ -680,15 +787,29 @@
     const rect = range.getBoundingClientRect();
     if (!rect || (!rect.width && !rect.height)) { hide(); return; }
     const bar = mobileSelectionBar();
+    /* Сброс «отложенного» скрытия: таймер от предыдущего действия не должен
+       гасить тулбар, который только что открылся для нового выделения. */
+    clearTimeout(selBarHideTimer);
     bar.dataset.open = 'true';
     bar.setAttribute('aria-hidden', 'false');
     const bw = bar.offsetWidth || 180;
     const bh = bar.offsetHeight || 56;
     const clampX = Math.min(Math.max(8, rect.left + rect.width / 2 - bw / 2), window.innerWidth - bw - 8);
+    /* Нижняя панель читалки фиксирована и выше тулбара по z-index, поэтому
+       при размещении под выделением её высоту нужно вычитать — иначе тулбар
+       уезжает под панель и до кнопок не достать. */
+    const bottomBar = document.querySelector('.mobile-bottom-bar, .gbs2-bbar');
+    const bottomInset = bottomBar
+      ? Math.max(0, Math.round(window.innerHeight - bottomBar.getBoundingClientRect().top)) : 0;
+    const maxBottom = window.innerHeight - bottomInset - 8;
     let top = rect.top - bh - 10;
-    if (top < 68) top = Math.min(window.innerHeight - bh - 8, rect.bottom + 10);
+    if (top < 68) {
+      top = rect.bottom + 10;
+      if (top + bh > maxBottom) top = Math.max(68, rect.top - bh - 10);
+      top = Math.min(top, maxBottom - bh);
+    }
     bar.style.left = Math.round(clampX) + 'px';
-    bar.style.top = Math.round(top) + 'px';
+    bar.style.top = Math.round(Math.max(8, top)) + 'px';
   }
   function attachSelection() {
     const popup = document.getElementById('selection-share-popup');
@@ -741,6 +862,9 @@
     getNotes: notes, getLibrary: all,
     highlightPath: gbHighlightPath, highlightText: gbHighlightText,
     highlightKey: gbHighlightKey, dedupe: gbDedupeHighlights, addHighlight: gbAddHighlight,
+    /* Диагностика и тесты: перерисовать пометы и получить, что реально легло
+       в текст. Публично ничего не меняет. */
+    paintMarks,
   });
   window.GBHighlights = api;
   window.GBReaderLibrary = api;

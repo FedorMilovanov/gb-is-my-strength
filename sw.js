@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v213-merged-reader-controls-20261120';
+const CACHE_VERSION = 'gb-v214-mark-recolour-fix-20261120';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -32,12 +32,12 @@ const PRECACHE_ASSETS = [
   '/nagornaya/tw.min.css?v=bee34e73',
   '/js/nagornaya-bar-extras.js?v=3c7e0bdd',
   '/js/site.js?v=9fa8818a',
-  '/js/site-utils.js?v=ea5248d9',
+  '/js/site-utils.js?v=aa7bcd98',
   '/js/scroll-perf.js?v=454d6f7b',
   '/js/bookmark-engine.js?v=e7d193e0',
   '/js/enhancements.js?v=15476429',
-  '/js/highlights.js?v=0d605e6e',
-  '/js/reader-library-presenter.js?v=3687d5e1',
+  '/js/highlights.js?v=8e453778',
+  '/js/reader-library-presenter.js?v=52c66745',
   '/js/reader-library-v3.js?v=e036d5a6',
   '/js/reader-library-dock.js?v=b550fdd1',
   '/js/sw-register.js?v=921dd6a2',
