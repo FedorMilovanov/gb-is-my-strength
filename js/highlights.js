@@ -857,14 +857,20 @@
     let legacyIndex = null;
     let existingIndex = -1;
     if (exact && article) {
-      existingIndex = old.findIndex((x) => {
-        if (gbHighlightPath(x) !== gbHighlightPath(record)) return false;
-        if (!(x.color || x.annotation?.color)) return false;
+      // A saved quote and its colored mark are ONE positional record. Reuse
+      // its ID/anchor/noteId instead of losing the mark to duplicate-key
+      // rejection. If legacy data already contains both, prefer the colored
+      // record to avoid creating a second painter on the same DOM Range.
+      const candidates = [];
+      old.forEach((x, i) => {
+        if (gbHighlightPath(x) !== gbHighlightPath(record)) return;
         const found = x.annotation?.version === 1
           ? GBReaderAnchors.resolve(article,x.annotation.anchor)
           : locate(legacyIndex ||= textIndex(article),x);
-        return GBReaderAnchors.sameRange(found, exact);
+        if (GBReaderAnchors.sameRange(found, exact)) candidates.push(i);
       });
+      existingIndex = candidates.find(i => Boolean(old[i].color || old[i].annotation?.color))
+        ?? candidates[0] ?? -1;
     } else if (!record.annotation) {
       existingIndex = fragment ? old.findIndex((x) =>
         gbFragmentKey(x) === fragment && gbContextKey(x) === context) : -1;
@@ -908,6 +914,12 @@
       return false;
     }
     const next = gbAddHighlight(old, record);
+    // A positional collision that cannot be resolved must never be reported
+    // as successful storage/painting, or silently rewrite the old record.
+    if (next === old) {
+      statusMessage('Помета не создана: сохранённая запись имеет тот же якорь, но её позиция не подтверждена.', true);
+      return false;
+    }
     if (!write(QUOTES_KEY, next)) {
       statusMessage('Не удалось сохранить помету. Хранилище недоступно или заполнено.', true);
       return false;
