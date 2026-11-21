@@ -300,9 +300,15 @@ const page = config.pages[pageId];
     width:44px;height:44px;min-width:44px;min-height:44px;
     padding:0;margin:0 0 0 -20px;border:0;border-radius:0;background:transparent;
     box-shadow:none;overflow:visible;cursor:pointer;color:inherit;
+    /* Let Play own its 44px icon, including the right half of the triangle.
+       The speed hit surface occupies the outer-right 24px and the visible
+       chip itself; this prevents accidental speed opening on Play taps. */
+    pointer-events:none;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-speed-badge::before {
-    content:none;display:none;
+    content:'';display:block;position:absolute;
+    right:0;top:0;width:24px;height:44px;
+    background:transparent;pointer-events:auto;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-speed-chip {
     box-sizing:border-box;position:absolute;left:9px;bottom:5px;z-index:4;
