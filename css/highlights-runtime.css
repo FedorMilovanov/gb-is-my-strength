@@ -731,17 +731,20 @@ html.dark ::highlight(gb-hl-rose)  { background-color: #7a4450; color: #fbeef0; 
 .gb-hl-mark-dot[data-color="lime"]  { background: var(--gb-hl-lime, #e2f0b8); }
 .gb-hl-mark-dot[data-color="rose"]  { background: var(--gb-hl-rose, #f3cdd3); }
 
-/* P3/P5: тост подтверждения с откатом. Живёт над нижней панелью читалки,
- * цели не меньше 44 px, на 320 влезает без горизонтального скролла. */
+/* P3/P5: тост подтверждения с откатом. Выше временных подсказок (например,
+ * свайп-подсказки серий), но ниже модальных слоёв; цели не меньше 44 px.
+ * max-content не даёт fixed-элементу с left:50% сжаться до половины экрана. */
 #gb-hl-toast {
   position: fixed;
   left: 50%;
   bottom: calc(78px + env(safe-area-inset-bottom, 0px));
-  z-index: 3400;
+  z-index: var(--z-toast-high, 9998);
   display: none;
   align-items: center;
   gap: 12px;
+  width: max-content;
   max-width: min(92vw, 460px);
+  box-sizing: border-box;
   padding: 10px 12px 10px 16px;
   border-radius: 14px;
   background: var(--gb-hl-toast-bg, #31302c);

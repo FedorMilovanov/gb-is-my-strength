@@ -169,7 +169,7 @@
   const stylesheet = document.createElement('link');
   stylesheet.id = 'gbHlRuntimeCss';
   stylesheet.rel = 'stylesheet';
-  stylesheet.href = '/css/highlights-runtime.css?v=b856b384';
+  stylesheet.href = '/css/highlights-runtime.css?v=b077f63c';
   if (!document.getElementById(stylesheet.id)) document.head.appendChild(stylesheet);
 
   function button(action, label, text) {
@@ -737,10 +737,13 @@
       if (saveMarker(swatch.dataset.hlColor)) dismissSelectionBar();
     });
     document.body.appendChild(bar);
+    /* Отменяем только mouse-событие: preventDefault на touchstart в Chrome
+       гасит совместимостный click, поэтому на телефоне тап по плашке цвета,
+       «Цитате» и «Заметке» не срабатывал вообще (проверено touchscreen.tap:
+       clickCount 0, запись не создавалась). mousedown click не подавляет,
+       а выделение до обработчика сохраняет. */
     for (const b of [quote, note, ...colors.querySelectorAll('button')]) {
-      for (const ev of ['pointerdown', 'mousedown', 'touchstart']) {
-        b.addEventListener(ev, (e) => e.preventDefault(), { passive: false });
-      }
+      b.addEventListener('mousedown', (e) => e.preventDefault(), { passive: false });
     }
     quote.addEventListener('click', () => {
       if (saveSelectedQuote()) {

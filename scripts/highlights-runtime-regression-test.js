@@ -109,6 +109,14 @@ assert.match(source, /const FAVORITES_KEY = 'gb-favorites'/, 'canonical favorite
 assert.match(source, /window\.GBFavoriteStore/, 'read articles through native favorite-store API when available');
 assert.match(source, /window\.GBHighlights = api/, 'legacy public API is maintained');
 assert.match(source, /window\.GBReaderLibrary = api/, 'unified reader library API exposed');
+const mobileBarStart = source.indexOf('function mobileSelectionBar()');
+const mobileBarEnd = source.indexOf('\n  function hide()', mobileBarStart);
+assert.ok(mobileBarStart >= 0 && mobileBarEnd > mobileBarStart, 'mobile selection toolbar owner exists');
+const mobileBarSource = source.slice(mobileBarStart, mobileBarEnd);
+assert.match(mobileBarSource, /b\.addEventListener\('mousedown',\s*\(e\)\s*=>\s*e\.preventDefault\(\)/,
+  'mouse down preserves text selection before toolbar click');
+assert.doesNotMatch(mobileBarSource, /addEventListener\(['"](?:pointerdown|touchstart)['"]/,
+  'touch/pointer down must not cancel compatibility clicks on mobile toolbar buttons');
 assert.match(source, /setAttribute\('aria-hidden', 'false'\)/, 'modal open exposes its dialog');
 assert.match(source, /setAttribute\('aria-hidden', 'true'\)/, 'modal close hides its dialog');
 assert.match(source, /removeAttribute\('inert'\)/, 'opening modal restores interactions');
@@ -117,5 +125,11 @@ assert.match(source, /gb-hl-quote.*is-collapsed|is-collapsed/, 'long text collap
 const css = fs.readFileSync(path.resolve(__dirname, '..', 'css/highlights-runtime.css'), 'utf8');
 assert.match(css, /prefers-reduced-motion/, 'reduced-motion users do not get forced animation');
 assert.match(css, /#gb-hl-fab-count\s*\{[^}]*display:\s*none;/, 'library count dot must stay visually hidden');
+const toastCss = css.match(/#gb-hl-toast\s*\{([^}]*)\}/);
+assert.ok(toastCss, 'highlight confirmation toast styles exist');
+assert.match(toastCss[1], /z-index:\s*var\(--z-toast-high,\s*9998\)/,
+  'highlight toast stays above transient tips and below modal layers');
+assert.match(toastCss[1], /width:\s*max-content/,
+  'centered highlight toast must not shrink to half the mobile viewport');
 assert.match(source, /fab\.setAttribute\('aria-label', 'Моя библиотека — сохранено ' \+ all\(\)\.length\)/, 'accessible library total must stay available');
 console.log('✅ Unified reader library helpers, legacy storage, ARIA and dedupe regression passed');
