@@ -3,9 +3,9 @@
  * GillSeriesMobileBar — shared series mobile (<85em) control surface, v6.
  *
  *   TOP bar: Back(→config.railBackHref) → Home(→«/») → primary
- *     «На полях» (opens research tab INSIDE native Part TOC) → canonical
+ *     «Аналитика» (opens research tab INSIDE native Part TOC) → canonical
  *     round PlayEmber and the original #83439219 IN-SLOT speed strip + tiny selected-rate
- *     echo → Save. «На полях» yields its place to the sideways speed rail.
+ *     echo → Settings → Save. «Аналитика» yields its place to the speed rail.
  *     Learning remains in the native Reader Settings sheet,
  *     not a competing top-level action. One canonical speedSlot owner.
  *     Auto-hides on scroll-down, reveals on scroll-up; stays pinned while
@@ -15,10 +15,9 @@
  *     fix for the A−/A+ reflow bug: hideGillTopBar() only ever touches the
  *     top bar's own class, never closeGillSheet()).
  *   BOTTOM bar: dual-progress ring → «Сейчас читаете» (opens Part TOC,
- *     unchanged) → fast binary Day/Night toggle through the canonical global
- *     preference adapter (Sepia remains in Settings) → settings → «Поделиться»
+ *     unchanged) → Library → PDF → «Поделиться»
  *     (data-action="share" — kept verbatim; js/highlights.js docks its
- *     contextual save FAB immediately before this exact selector). Always
+ *     contextual save FAB before PDF/share). No redundant bottom Settings. Always
  *     visible, never auto-hides.
  *
  * data-fc-action="save" and data-action="share" go through the existing
@@ -33,6 +32,7 @@ import MobileChromeShell from '../_shared/MobileChromeShell.astro';
 import ReaderMobileMenuTrigger from '../_shared/ReaderMobileMenuTrigger.astro';
 import ReaderSpeedOptions from '../_shared/ReaderSpeedOptions.astro';
 import ReaderMobileActions from '../_shared/ReaderMobileActions.astro';
+import ReaderMobileSettingsButton from '../_shared/ReaderMobileSettingsButton.astro';
 import ReaderMobileHome from '../_shared/ReaderMobileHome.astro';
 import ReaderMobilePlayGroup from '../_shared/ReaderMobilePlayGroup.astro';
 // Mobile Reader chrome must own its styling directly: it cannot disappear
@@ -67,7 +67,10 @@ const page = config.pages[pageId];
 
   <ReaderMobilePlayGroup engine="series" slot="top-playback" />
 
-  <SaveButton class="mobile-top-save" tip="Сохранить" slot="top-trailing" />
+  <Fragment slot="top-trailing">
+    <ReaderMobileSettingsButton engine="series" top />
+    <SaveButton class="mobile-top-save" tip="Сохранить" />
+  </Fragment>
 
   <Fragment slot="bottom-progress">
     <!-- Progress is a read-only indicator, not a control: it never had a click
@@ -97,7 +100,7 @@ const page = config.pages[pageId];
   </button>
 
   <Fragment slot="bottom-actions">
-    <ReaderMobileActions engine="series" />
+    <ReaderMobileActions engine="series" settingsPlacement="none" />
   </Fragment>
 </MobileChromeShell>
 
@@ -246,14 +249,17 @@ const page = config.pages[pageId];
 </script>
 
 <!-- Gill mobile reference: 83439219 (original in-slot speed strip).
-     Back and Home remain visible; six rates replace only «На полях».
+     Back and Home remain visible; six rates replace only «Аналитика».
      Play is a 44px target with ONE softly painted 36px SVG ring. -->
 <style is:global>
 @media (max-width:84.999em) {
   [data-gill-v16] .mobile-top-bar .reader-mobile-play-group.mobile-playwrap {
     box-sizing:border-box;position:relative;z-index:2;display:flex;align-items:center;
-    justify-content:flex-start;flex:0 0 88px;width:88px;min-width:88px;
-    height:44px;gap:0;overflow:visible;
+    justify-content:flex-start;flex:0 0 68px;width:68px;min-width:68px;
+    height:44px;gap:0;margin:0;overflow:visible;
+    /* 44px Play + 44px rate targets share 20px of their outer edges.
+       The two target centers stay 24px apart; this removes the empty
+       phantom space before Settings without shrinking either control. */
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-play-group .reader-mobile-play {
     --ember-size:44px;
@@ -270,10 +276,12 @@ const page = config.pages[pageId];
     inset:2px;width:40px;height:40px;opacity:1;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-track {
-    stroke:var(--gill-mobile-bar-gold,#b18b62);stroke-width:2.35;opacity:.35;
+    stroke:var(--gill-mobile-bar-gold,#b18b62);stroke-width:3.4;opacity:.62;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-progress {
-    stroke-width:2.75;opacity:1;
+    stroke-width:3.9;opacity:1;
+    filter:drop-shadow(0 0 1px rgba(197,151,88,.13));
+    transition:stroke-dashoffset .55s cubic-bezier(.2,.75,.3,1);
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-play::before {
     inset:19%;border:none;
@@ -285,24 +293,33 @@ const page = config.pages[pageId];
   @media(hover:hover) and (pointer:fine) {
     [data-gill-v16] .mobile-top-bar .reader-mobile-play:hover {transform:none;}
   }
-  /* Play and speed share one 88px group with separate 44px targets.
+  /* Play and speed share a 68px group with separate 44px targets.
      The speed chip is a true pointer target so its overlap cannot invoke TTS. */
   [data-gill-v16] .mobile-top-bar .reader-mobile-play-group .reader-mobile-speed-badge {
     position:relative;z-index:3;box-sizing:border-box;flex:0 0 44px;
     width:44px;height:44px;min-width:44px;min-height:44px;
-    padding:0;margin:0;border:0;border-radius:0;background:transparent;
+    padding:0;margin:0 0 0 -20px;border:0;border-radius:0;background:transparent;
     box-shadow:none;overflow:visible;cursor:pointer;color:inherit;
+    /* Let Play own its 44px icon, including the right half of the triangle.
+       The speed hit surface occupies the outer-right 24px and the visible
+       chip itself; this prevents accidental speed opening on Play taps. */
+    pointer-events:none;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-speed-badge::before {
-    content:none;display:none;
+    content:'';display:block;position:absolute;
+    left:20px;right:auto;top:0;width:24px;height:44px;
+    /* This is a transparent hit area, never a painted second button.
+       Gill ResponsiveStyles used to supply a wine-colored panel here. */
+    background:transparent!important;border:0!important;
+    box-shadow:none!important;border-radius:0!important;pointer-events:auto;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-speed-chip {
-    box-sizing:border-box;position:absolute;left:-13px;bottom:5px;z-index:4;
+    box-sizing:border-box;position:absolute;left:5px;bottom:2px;z-index:4;
     display:grid;place-items:center;width:max-content;
-    min-width:26px;max-width:39px;height:16px;padding:1px 4px;
+    min-width:24px;max-width:35px;height:15px;padding:0 3px;
     border:1px solid color-mix(in srgb,var(--gill-mobile-bar-paper,#fffaf5) 68%,transparent);
     border-radius:999px;background:#544333;color:#fff9f0;
-    font:750 9px/1 "Source Sans 3",system-ui,sans-serif;
+    font:720 8.5px/1 "Source Sans 3",system-ui,sans-serif;
     white-space:nowrap;box-shadow:0 1px 5px rgba(35,24,17,.13);
     /* A real pointer target even where the visible chip overlaps Play.
        The event bubbles to its owning speed badge, never the TTS button. */
@@ -364,6 +381,21 @@ const page = config.pages[pageId];
     opacity:0;transform:none;pointer-events:none;
   }
 }
+/* Optical spacing: target geometry remains 44px, but the painted glyphs
+   follow a tighter rhythm. The Play/rate compound remains 68px. */
+@media (min-width:431px) and (max-width:84.999em) {
+  [data-gill-v16] .mobile-top-bar {gap:2px!important;}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-action--top-settings svg,
+  [data-gill-v16] .mobile-top-bar .mobile-top-save svg {
+    transform:translateX(-8px);
+  }
+}
+@media (min-width:361px) and (max-width:430px) {
+  [data-gill-v16] .mobile-top-bar .reader-mobile-action--top-settings svg,
+  [data-gill-v16] .mobile-top-bar .mobile-top-save svg {
+    transform:translateX(-4px);
+  }
+}
 @media(max-width:430px) {
   [data-gill-v16] .mobile-top-bar.speed-open .reader-mobile-speedrail {
     -webkit-mask-image:linear-gradient(to right,#000 0%,#000 calc(100% - 10px),transparent 100%);
@@ -374,5 +406,135 @@ const page = config.pages[pageId];
   [data-gill-v16] .mobile-top-bar .reader-mobile-speedrail,
   [data-gill-v16] .mobile-top-bar .reader-mobile-menu-trigger,
   [data-gill-v16] .mobile-top-bar .reader-mobile-play::before {transition:none;}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-progress {transition:none;filter:none;}
+}
+
+/* Owner W61: move the existing Settings sheet trigger beside Play.
+   Its former bottom action is absent, freeing a true 44px for the chapter.
+   Every icon remains a 44×44 touch/keyboard target. */
+@media (max-width:84.999em) {
+  [data-gill-v16] .mobile-top-bar .reader-mobile-action--top-settings {
+    box-sizing:border-box;flex:0 0 44px;display:grid;place-items:center;
+    width:44px;min-width:44px;height:44px;min-height:44px;
+    padding:0;margin:0;border:0;border-radius:50%;
+    color:var(--gill-mobile-bar-ink,#291f1b);background:transparent;
+    box-shadow:none;cursor:pointer;
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-action--top-settings svg {
+    display:block;width:18px;height:18px;fill:none;stroke:currentColor;
+    stroke-width:1.7;stroke-linecap:round;
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-action--top-settings:focus-visible {
+    outline:2px solid var(--gill-mobile-bar-gold,#b18b62);outline-offset:2px;
+  }
+  @media(hover:hover) and (pointer:fine) {
+    [data-gill-v16] .mobile-top-bar .reader-mobile-action--top-settings:hover {
+      background:color-mix(in srgb,currentColor 6%,transparent);
+    }
+  }
+}
+/* The six original top targets total 308px including the central 44px
+   research icon. Use only the leftover spacing at 320px, do not shrink hit
+   areas or squeeze the Play/speed controller into overlapping hitboxes. */
+@media (max-width:430px) {
+  [data-gill-v16] .mobile-top-bar {
+    gap:clamp(0px,calc(5vw - 16px),4px) !important;
+    padding-left:calc(6px + env(safe-area-inset-left,0px)) !important;
+    padding-right:calc(6px + env(safe-area-inset-right,0px)) !important;
+  }
+}
+@media (max-width:360px) {
+  [data-gill-v16] .mobile-top-bar .reader-mobile-menu-trigger {
+    padding:0;gap:0;justify-content:center;
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-menu-trigger span {
+    display:none;
+  }
+}
+
+/* Reader 1024–1360 breakpoint: legacy Gill overrides can still shrink
+   Back and Save to 40px. Keep the same 44px targets as narrow phones. */
+@media (min-width:431px) and (max-width:84.999em) {
+  [data-gill-v16] .mobile-top-bar #mobBackBtn,
+  [data-gill-v16] .mobile-top-bar .mobile-top-save {
+    box-sizing:border-box;
+    width:44px !important;min-width:44px !important;
+    height:44px !important;min-height:44px !important;
+    flex:0 0 44px !important;
+  }
+}
+@media (max-width:84.999em) {
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play-group.mobile-playwrap {flex-basis:44px;width:44px;min-width:44px}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play-group .reader-mobile-speed-badge {position:absolute;left:12px;right:auto;top:0;margin:0}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-badge::before {left:auto;right:0;width:12px}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-chip {left:12px;bottom:4px;height:14px;min-width:20px;box-shadow:none}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-svg {width:38px;height:38px;inset:3px}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-track {stroke-width:3;opacity:.58}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-progress {stroke-width:3.6}
+}
+@media (max-width:84.999em) {
+  [data-gill-v16] .mobile-top-bar :is(#mobBackBtn,#mobHomeBtn,#mobSettingsBtn,.mobile-top-save) {
+    display:grid;place-items:center;padding:0!important;transform:none!important;
+    transition:color .15s ease;box-shadow:none!important;background:transparent!important;
+  }
+  [data-gill-v16] .mobile-top-bar :is(#mobBackBtn,#mobHomeBtn,#mobSettingsBtn,.mobile-top-save)::before {
+    content:none!important;
+  }
+  [data-gill-v16] .mobile-top-bar :is(#mobBackBtn,#mobHomeBtn,#mobSettingsBtn,.mobile-top-save) svg {
+    display:block;transform:none!important;margin:0;
+  }
+  [data-gill-v16] .mobile-top-bar :is(button,a):focus-visible {
+    outline:2px solid currentColor;outline-offset:-3px;
+  }
+}
+@media (hover:hover) and (pointer:fine) and (max-width:84.999em) {
+  [data-gill-v16] .mobile-top-bar :is(#mobBackBtn,#mobHomeBtn,#mobSettingsBtn,.mobile-top-save):hover {
+    color:var(--gill-mobile-bar-gold,#a78252)!important;
+  }
+}
+
+@media(max-width:84.999em){
+  [data-gill-v16] .mobile-top-bar #mobSettingsBtn svg {translate:3.5px 0}
+  [data-gill-v16] .mobile-top-bar .mobile-top-save svg {translate:-4px 0}
+}
+@media(max-width:84.999em){
+ [data-gill-v16] .mobile-top-bar button[data-gill-marginalia-open] {
+   background:transparent!important;border-color:transparent!important;box-shadow:none!important;
+   color:inherit;gap:6px;font-weight:600;
+ }
+ [data-gill-v16] .mobile-top-bar button[data-gill-marginalia-open] svg {
+   width:17px;height:17px;background:currentColor;color:inherit;
+   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M3 4.8c3.2-.8 6.1-.3 9 1.4 2.9-1.7 5.8-2.2 9-1.4v13.6c-3.2-.8-6.1-.3-9 1.4-2.9-1.7-5.8-2.2-9-1.4zM12 6.2v13.6M15 9l3-.7M15 12l3-.7'/%3E%3C/svg%3E") center/contain no-repeat;
+ }
+ [data-gill-v16] .mobile-top-bar button[data-gill-marginalia-open] svg * {visibility:hidden}
+}
+@media(hover:hover) and (pointer:fine){
+ [data-gill-v16] .mobile-top-bar button[data-gill-marginalia-open]:hover {color:var(--gill-mobile-bar-gold,#a78252)}
+}
+
+
+@media(max-width:84.999em){
+ [data-gill-v16] .mobile-bottom-bar .reader-mobile-action-cluster :is(button,a,#gb-hl-fab),
+ [data-gill-v16] #partTocOverlay .gb-icon {background:transparent!important;box-shadow:none!important;transform:none!important}
+ [data-gill-v16] .mobile-bottom-bar .reader-mobile-action-cluster :is(button,a,#gb-hl-fab)::before,
+ [data-gill-v16] #partTocOverlay .gb-icon::before {content:none!important}
+ #partTocOverlay .gbr-marginalia-eyebrow{display:none!important}
+ #partTocOverlay .gbr-marginalia-term summary::after{content:'';width:6px;height:6px;border:solid currentColor;border-width:0 1px 1px 0;transform:rotate(45deg);margin-inline:10px}
+ #partTocOverlay .gbr-marginalia-term[open] summary::after{transform:rotate(225deg)}
+ html.dark #partTocOverlay .toc-sheet,html.dark #partTocOverlay .toc-sheet__head,html.dark #partTocOverlay .toc-sheet__body{background:#211f1d!important;color:#ede6d9}
+}
+@media(hover:hover) and (pointer:fine){
+ [data-gill-v16] .mobile-bottom-bar .reader-mobile-action-cluster :is(button,a,#gb-hl-fab):hover svg,
+ #partTocOverlay .gb-icon:hover svg{color:var(--gill-mobile-bar-gold,#af926c);filter:none!important;transform:none!important}
+}
+
+@media(max-width:84.999em){
+ body:has([data-gill-v16]) .gbs2-resume{background:#faf7f1!important;color:#342e28!important;border:1px solid #d9d2c7!important;border-radius:12px!important;box-shadow:0 2px 8px #231e1710!important;padding:4px 8px 4px 14px;gap:8px}
+ html.dark body:has([data-gill-v16]) .gbs2-resume{background:#282522!important;color:#ece4d8!important;border-color:#48413a!important}
+ body:has([data-gill-v16]) .gbs2-resume small{display:none}
+ body:has([data-gill-v16]) .gbs2-resume-go{color:inherit!important;background:transparent!important;box-shadow:none!important;border:0!important;text-decoration:underline;text-underline-offset:3px;min-height:44px}
+ body:has([data-gill-v16]) .gbs2-resume-x{background:transparent!important;color:inherit;min-height:44px}
+ body:has([data-gill-v16]):has(.toc-overlay.is-open) .gbs2-resume{display:none!important}
+ @media(prefers-reduced-motion:reduce){.gbs2-resume{transition:none!important}}
 }
 </style>

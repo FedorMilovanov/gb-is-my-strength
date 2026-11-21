@@ -55,7 +55,7 @@
     });
   }
   function gbAddHighlight(items,item) {
-    const unique=gbDedupeHighlights(items),key=gbHighlightKey(item);
+    const unique=items,key=gbHighlightKey(item);
     return key&&!unique.some(x=>gbHighlightKey(x)===key)
       ?[item,...unique].slice(0,LIMIT_QUOTES):unique;
   }
@@ -78,10 +78,7 @@
     return true;
   }
   function quotes() {
-    const existing = read(QUOTES_KEY);
-    const compact = gbDedupeHighlights(existing);
-    if (existing.length !== compact.length) write(QUOTES_KEY, compact);
-    return compact;
+    return read(QUOTES_KEY);
   }
   function notes() { return read(NOTES_KEY).filter((n) => n && typeof n.text === 'string' && n.id); }
   function favorites() {
@@ -155,7 +152,7 @@
       presenterPromise = import('/js/reader-library-presenter.js?v=841cc1c0')
         .then(async (module) => {
           presenter = module;
-          const researchModule = await import('/js/reader-library-v3.js?v=e036d5a6');
+          const researchModule = await import('/js/reader-library-v3.js?v=732d86cc');
           if (!research) research = researchModule.createLibraryResearch({
             overlay, getItems: all, notify: statusMessage, refresh: render, isOpen,
             renderItem: module.renderItem,
@@ -169,7 +166,7 @@
   const stylesheet = document.createElement('link');
   stylesheet.id = 'gbHlRuntimeCss';
   stylesheet.rel = 'stylesheet';
-  stylesheet.href = '/css/highlights-runtime.css?v=b856b384';
+  stylesheet.href = '/css/highlights-runtime.css?v=605fd5fe';
   if (!document.getElementById(stylesheet.id)) document.head.appendChild(stylesheet);
 
   function button(action, label, text) {
@@ -216,9 +213,17 @@
     clearTimeout(toast.timer);
     toast.timer = setTimeout(hideToast, 6000);
   }
-  function undoQuotes(previous, message) {
+  function undoQuotes(written, previous, message) {
     return () => {
-      if (!write(QUOTES_KEY, previous)) { toast('Не удалось отменить запись.', null); return; }
+      const current = read(QUOTES_KEY);
+      const index = current.findIndex(item => item.id === written.id);
+      if (index < 0 || JSON.stringify(current[index]) !== JSON.stringify(written)) {
+        toast('Запись уже изменилась. Отмена недоступна.', null);
+        return;
+      }
+      if (previous) current[index] = previous;
+      else current.splice(index, 1);
+      if (!write(QUOTES_KEY, current)) { toast('Не удалось отменить запись.', null); return; }
       paintMarks(); sync(); toast(message, null);
     };
   }
@@ -389,7 +394,7 @@
     if (action === 'delete') deleteItem(item);
     if (action === 'remove-favorite') { clearUndo(); presenter.removeFavorite(item, statusMessage); }
     if (action === 'edit-note') showEditor(null, item);
-    if (action === 'note-for-quote') showEditor({ quoteText: item.text, title: item.title, url: item.url });
+    if (action === 'note-for-quote') showEditor({ quoteId: item.id, quoteText: item.text, title: item.title, url: item.url });
     if (action === 'card') presenter.exportQuoteCard(item, statusMessage);
   }
   function showEditor(context = null, editing = null) {
@@ -430,7 +435,7 @@
     const next = editing
       ? old.map((x) => x.id === editing.id ? Object.assign({}, x, { text }) : x)
       : [{
-          id: uid('note'), text, quoteText: context && context.quoteText || '',
+          id: uid('note'), text, ...(context?.quoteId ? {quoteId: context.quoteId} : {}), quoteText: context && context.quoteText || '',
           articleTitle: context && context.title || currentTitle(),
           url: context && context.url || location.origin + location.pathname,
           savedAt: Date.now(),
@@ -491,7 +496,7 @@
       return false;
     }
     sync(); statusMessage('Цитата сохранена вместе с источником.');
-    toast('Цитата сохранена', { label: 'Вернуть', run: undoQuotes(old, 'Цитата убрана') });
+    toast('Цитата сохранена', { label: 'Вернуть', run: undoQuotes(record, null, 'Цитата убрана') });
     return true;
   }
   function bindSelectionButton(id, label, icon, handler, popup) {
@@ -546,20 +551,17 @@
     return chunks.length ? chunks.join('\\s*') : '';
   }
 
-  function locateIn(index, text, selectedText = text) {
+  function locateIn(index, text, before = '', after = '') {
     const pattern = tolerantPattern(text);
-    const selectedPattern = tolerantPattern(selectedText);
-    if (!pattern || !selectedPattern) return null;
-    let match, selected;
+    if (!pattern) return null;
+    let match = null;
     try {
-      // Never attach a saved quote to the first arbitrary repeated phrase.
-      const candidates = new RegExp(pattern, 'gi');
-      match = candidates.exec(index.raw);
-      if (!match || candidates.exec(index.raw)) return null;
-      const selectedCandidates = new RegExp(selectedPattern, 'gi');
-      selected = selectedCandidates.exec(match[0]);
-      if (!selected || selectedCandidates.exec(match[0])) return null;
-    } catch { return null; }
+      const expression = new RegExp('(' + tolerantPattern(before) + '\\s*)(' + pattern + ')\\s*' + tolerantPattern(after), 'ig');
+      match = expression.exec(index.raw);
+      if (match && expression.exec(index.raw)) return null;
+    }
+    catch { return null; }
+    if (!match) return null;
     const pointAt = (offset) => {
       for (let i = index.nodes.length - 1; i >= 0; i--) {
         const rec = index.nodes[i];
@@ -567,9 +569,8 @@
       }
       return null;
     };
-    const start = match.index + selected.index;
-    const a = pointAt(start);
-    const b = pointAt(start + selected[0].length);
+    const a = pointAt(match.index + match[1].length);
+    const b = pointAt(match.index + match[1].length + match[2].length);
     if (!a || !b) return null;
     try {
       const range = document.createRange();
@@ -581,18 +582,13 @@
   }
 
   function locate(index, item) {
-    // W57 owns its positional block/range anchors. Never reattach them with
-    // this legacy article-wide text lookup when the source block changes.
-    if (item?.annotation?.version === 1) return null;
     const needle = normalizeText(item && item.text);
     if (!needle || needle.length < 3) return null;
     const before = normalizeText(item.before);
     const after = normalizeText(item.after);
-    if (before || after) {
-      // The context identifies the location; only the selected phrase is painted.
-      return locateIn(index, before + ' ' + needle + ' ' + after, needle);
-    }
-    return locateIn(index, needle);
+    /* Сначала пробуем привязку по контексту — так одна и та же фраза,
+       выделенная в двух разных абзацах, попадает каждая на своё место. */
+    return locateIn(index, needle, before, after);
   }
 
   function paintMarks() {
@@ -603,10 +599,9 @@
     const groups = new Map();
     const placed = new Set();
     let painted = 0;
-    const currentPath = gbHighlightPath({ url: location.href });
     for (const item of quotes()) {
-      // Keep remote-page records in storage, not in the current article's paint.
-      if (gbHighlightPath(item) !== currentPath || item?.annotation?.version === 1) continue;
+      // Positional W57 marks belong exclusively to its block/range renderer.
+      if (gbHighlightPath(item) !== gbHighlightPath({url: location.href}) || item?.annotation?.version === 1) continue;
       const color = String(item && item.color || '');
       if (!MARK_COLORS.includes(color)) continue;
       const range = locate(index, item);
@@ -642,7 +637,7 @@
     const fragment = gbFragmentKey(record);
     const context = gbContextKey(record);
     let existingIndex = fragment ? old.findIndex((x) => gbFragmentKey(x) === fragment && gbContextKey(x) === context) : -1;
-    if (existingIndex < 0 && fragment) existingIndex = old.findIndex((x) => gbFragmentKey(x) === fragment);
+    
     if (existingIndex >= 0) {
       const existing = old[existingIndex] || {};
       if (String(existing.color || '') === nextColor) {
@@ -668,7 +663,7 @@
           ? base
           : (wasMarker ? 'Цвет пометы сохранён, но подсветить не удалось' : 'Цвет сохранён, но подсветить не удалось');
       statusMessage(message + '.');
-      toast(message, { label: 'Вернуть', run: undoQuotes(old, 'Цвет возвращён') });
+      toast(message, { label: 'Вернуть', run: undoQuotes(next[existingIndex], existing, 'Цвет возвращён') });
       return true;
     }
     if (old.length >= LIMIT_QUOTES && !old.some((x) => gbHighlightKey(x) === gbHighlightKey(record))) {
@@ -692,7 +687,7 @@
         ? 'Помета сохранена и подсвечена'
         : 'Помета сохранена, но этот фрагмент не удалось подсветить';
     statusMessage(message + (result.supported && !anchored ? '. Он останется в библиотеке.' : '.'));
-    toast(message, { label: 'Вернуть', run: undoQuotes(old, 'Помета убрана') });
+    toast(message, { label: 'Вернуть', run: undoQuotes(record, null, 'Помета убрана') });
     return true;
   }
 
@@ -750,9 +745,8 @@
     });
     document.body.appendChild(bar);
     for (const b of [quote, note, ...colors.querySelectorAll('button')]) {
-      for (const ev of ['pointerdown', 'mousedown', 'touchstart']) {
-        b.addEventListener(ev, (e) => e.preventDefault(), { passive: false });
-      }
+      b.addEventListener('pointerdown', rememberSelection);
+      b.addEventListener('mousedown', (event) => event.preventDefault());
     }
     quote.addEventListener('click', () => {
       if (saveSelectedQuote()) {

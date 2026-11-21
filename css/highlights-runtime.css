@@ -783,3 +783,17 @@ html.dark #gb-hl-toast {
 @media (max-width: 600px) {
   #gb-hl-panel .gb-hl-meta a { flex: 1 1 100%; min-width: 0; }
 }
+
+/* Keep editor and footer actions reachable on short mobile viewports. */
+@media (max-width: 900px) and (max-height: 520px) {
+  #gb-hl-panel {
+    display: block;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    max-height: 94dvh;
+  }
+  #gb-hl-list, #gb-hl-editor {
+    max-height: none;
+    overflow: visible;
+  }
+}

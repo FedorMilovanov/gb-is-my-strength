@@ -1332,7 +1332,7 @@ body.np-u-preview article[data-reader-projection] > .summary-card[hidden]{displa
 
 /* W16: removed 21vh caps that chopped the research body. */
 
-/* ARGON UPDATE right-panel header: 'На полях', history, bookmarks, collapse.
+/* ARGON UPDATE right-panel header: 'Аналитика', history, bookmarks, collapse.
    All buttons have a real native action; icons are not decorative badges. */
 #npUniversalDemo.np-u-argon .np-u-right-head{
  position:relative;gap:10px!important;
@@ -2546,7 +2546,7 @@ body.np-u-preview.np-u-argon-shell article[data-reader-projection] h1{
  body.np-u-preview.np-u-native-product-actions #npUniversalDemo.np-u-argon #npUNativeTools{
   display:none!important;
  }
- /* The 'На полях' scroller starts below the native floating actions.
+ /* The 'Аналитика' scroller starts below the native floating actions.
     A margin, not inner padding, keeps scrolled content from passing behind
     the controls. Full reading/card width is preserved, with no new strip. */
  body.np-u-preview.np-u-native-product-actions #npUniversalDemo.np-u-argon #npUResearch .np-u-right-scroll{
