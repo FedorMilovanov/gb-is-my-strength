@@ -170,7 +170,7 @@ const hasQuiz = quizItems.length > 0;
 
     // ---- Поиск: index the real article body, DOM-built highlight (no innerHTML) ----
     const article = document.querySelector('[data-pagefind-body]') as HTMLElement | null;
-    type SearchRecord = { el: HTMLElement; heading: string; text: string };
+    type SearchRecord = { el: HTMLElement; heading: string; text: string; getText?: () => string };
     const searchRecords: SearchRecord[] = [];
     if (article) {
       const nodes = Array.prototype.slice.call(article.querySelectorAll('h2, h3, p, blockquote, li')) as HTMLElement[];
@@ -189,6 +189,33 @@ const hasQuiz = quizItems.length > 0;
         if (text.length < 8) return;
         searchRecords.push({ el, heading: heading || 'Текст статьи', text });
       });
+      // Bilingual manuscript quotations use DIVs, not P/BLOCKQUOTE.
+      // Index the displayed side only: Russian by default, English after
+      // the reader expands its original. Never assign positional IDs.
+      const bilingual = Array.prototype.slice.call(
+        article.querySelectorAll('.manuscript-quote--bilingual')
+      ) as HTMLElement[];
+      bilingual.forEach((quote) => {
+        const translation = quote.querySelector('.mq-translation-russian');
+        const original = quote.querySelector('.mq-translation-original');
+        const details = quote.querySelector('details.mq-translation-flip');
+        if (!translation || !original || !details) return;
+        const target = (quote.closest('.manuscript-quote') || quote) as HTMLElement;
+        let heading = '';
+        let prev: Element | null = target;
+        while (prev && !heading) {
+          prev = prev.previousElementSibling;
+          if (prev && /^H[23]$/.test(prev.tagName)) heading = (prev.textContent || '').trim();
+        }
+        const getText = () => {
+          const side = details.hasAttribute('open') ? original : translation;
+          return (side.textContent || '').replace(/\s+/g, ' ').trim();
+        };
+        const text = getText();
+        if (text.length >= 8) searchRecords.push({
+          el: target, heading: heading || 'Цитата Гилла', text, getText,
+        });
+      });
     }
 
     function appendHighlighted(parent: HTMLElement, text: string, query: string) {
@@ -205,9 +232,9 @@ const hasQuiz = quizItems.length > 0;
       if (at < text.length) parent.append(document.createTextNode(text.slice(at)));
     }
 
-    function jumpTo(href: string) {
+    function jumpTo(href: string | HTMLElement) {
       closeSheet();
-      const el = document.querySelector(href);
+      const el = typeof href === 'string' ? document.querySelector(href) : href;
       if (!el) return;
       (el as HTMLElement).scrollIntoView({
         behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
@@ -231,7 +258,9 @@ const hasQuiz = quizItems.length > 0;
       searchResults.replaceChildren();
       if (query.length < 2) { searchStatus.textContent = 'Введите минимум 2 символа'; return; }
       const q = query.toLocaleLowerCase('ru');
-      const found = searchRecords.filter((r) => r.text.toLocaleLowerCase('ru').includes(q)).slice(0, 20);
+      const found = searchRecords.map((r) => ({
+        ...r, text: r.getText ? r.getText() : r.text,
+      })).filter((r) => r.text.toLocaleLowerCase('ru').includes(q)).slice(0, 20);
       searchStatus.textContent = found.length ? 'Найдено: ' + found.length : 'Ничего не найдено';
       found.forEach((record) => {
         const b = document.createElement('button');
@@ -245,7 +274,7 @@ const hasQuiz = quizItems.length > 0;
         const snippet = record.text.slice(start, start + 150);
         appendHighlighted(span, (start ? '…' : '') + snippet + (start + 150 < record.text.length ? '…' : ''), query);
         b.append(strong, span);
-        b.addEventListener('click', () => jumpTo('#' + record.el.id));
+        b.addEventListener('click', () => jumpTo(record.el));
         searchResults.appendChild(b);
       });
     }

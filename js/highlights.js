@@ -1093,7 +1093,7 @@
       // Sheet navigation supersedes the short-lived save confirmation. Keep
       // Undo in storage; only dismiss its transient toast and selection bar.
       document.addEventListener('click', (e) => {
-        if (e.target.closest('#mobPartTocBtn')) { hide(); hideToast(); }
+        if (e.target.closest('#mobPartTocBtn, [data-gill-marginalia-open]')) { hide(); hideToast(); }
       }, true);
       return;
     }
