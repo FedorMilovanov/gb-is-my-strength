@@ -719,6 +719,52 @@ async function checkInjectedHeaderHost(browser) {
         await page.waitForTimeout(260);
         stats.pages++;
         if (!resp || !resp.ok()) { push('header-host-page-status', url, resp ? resp.status() : 'null'); continue; }
+        if (url === '/articles/') {
+          // Journal's native masthead intentionally does NOT inject legacy
+          // #gbSearchBtn/#themeToggle controls or the mobile-controls host.
+          // Assert its actual public contract instead of a fabricated host.
+          const journal = await page.evaluate(() => {
+            const mastheads = document.querySelectorAll('.je-masthead');
+            const openers = document.querySelectorAll('.je-masthead button[data-action="open-search"]');
+            const themes = document.querySelectorAll('.je-masthead button[data-journal-theme]');
+            const button = openers[0];
+            const rect = button?.getBoundingClientRect();
+            const style = button ? getComputedStyle(button) : null;
+            return {
+              mastheads: mastheads.length, openers: openers.length, themes: themes.length,
+              legacySearch: document.querySelectorAll('#gbSearchBtn').length,
+              bootstrapOwners: document.querySelectorAll('script[data-gb-search-bootstrap]').length,
+              buttonVisible: !!rect && !!style && style.display !== 'none' &&
+                style.visibility !== 'hidden' && Number(style.opacity) !== 0 &&
+                rect.width >= 43 && rect.height >= 43,
+              buttonInViewport: !!rect && rect.left >= 0 && rect.right <= innerWidth &&
+                rect.top >= 0 && rect.bottom <= innerHeight,
+              openerLabel: button?.getAttribute('aria-label') || '',
+            };
+          });
+          const label = `${url}@${viewport.width}`;
+          if (journal.mastheads !== 1 || journal.openers !== 1 ||
+              journal.themes !== 1 || journal.legacySearch !== 0 ||
+              journal.bootstrapOwners !== 1 || !journal.buttonVisible ||
+              !journal.buttonInViewport || !journal.openerLabel) {
+            push('journal-native-header-owner', label, journal);
+          }
+          // The cold/warm search suite exercises Ctrl+K and Enter on two
+          // viewports. Add a true pointer open/Escape/focus witness here.
+          if (viewport.width === 390 && journal.buttonVisible && journal.buttonInViewport) {
+            const opener = page.locator('.je-masthead button[data-action="open-search"]');
+            await opener.click({ timeout: 8000 });
+            await page.locator('.cp-backdrop.is-open').waitFor({ state: 'visible', timeout: 8000 });
+            const open = await page.evaluate(() => document.activeElement?.classList.contains('cp-input') === true);
+            if (!open) push('journal-native-search-focus', label, 'search input was not focused after pointer activation');
+            await page.keyboard.press('Escape');
+            await page.waitForFunction(() => !document.querySelector('.cp-backdrop')?.classList.contains('is-open'));
+            if (!(await opener.evaluate(el => document.activeElement === el))) {
+              push('journal-native-search-focus-return', label, 'Escape did not restore focus to masthead opener');
+            }
+          }
+          continue;
+        }
         const state = await page.evaluate(() => {
           const search = document.querySelector('#gbSearchBtn');
           const theme = document.querySelector('#themeToggle');
