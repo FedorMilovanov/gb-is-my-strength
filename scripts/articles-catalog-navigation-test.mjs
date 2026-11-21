@@ -100,6 +100,19 @@ test('state clone/security failure leaves native navigation usable',()=>{
 test('binding is idempotent and removable without leaving document handlers',()=>{
   const f=fixture();installCatalogNavigation(f.catalog,f.view);f.depart();assert.equal(f.calls.length,1);f.calls.length=0;f.cleanup();f.depart();f.emit('popstate');assert.deepEqual(f.calls,[]);assert.equal(f.catalog.dataset.catalogNavigation,undefined);
 });
+test('SSR return follows the existing Reader slot, leaving the accepted opening untouched',()=>{
+  const shared=fs.readFileSync(new URL('../src/components/article-pilots/_shared/series/SeriesReaderChrome.astro',import.meta.url),'utf8');
+  assert.match(shared,/<slot \/>\s*<ArticlesCatalogReturn \/>/);
+  assert.doesNotMatch(shared,/<ArticlesCatalogReturn \/>\s*<slot \/>/);
+});
+test('return affordance uses existing UI typography and a persistent underline, not shared breadcrumb effects',()=>{
+  const fallback=fs.readFileSync(new URL('../src/components/articles/ArticlesCatalogReturn.astro',import.meta.url),'utf8');
+  assert.match(fallback,/font-family: 'Source Sans 3', system-ui, sans-serif/);
+  assert.match(fallback,/font-size: 13px/);
+  assert.match(fallback,/text-decoration-line: underline/);
+  assert.match(fallback,/min-height: 44px/);
+  assert.doesNotMatch(fallback,/breadcrumb__link|position:\s*(?:absolute|fixed)|!important/);
+});
 test('implementation does not intercept navigation or introduce timing/scroll machinery',()=>{
   const source=fs.readFileSync(new URL('../src/components/articles/articlesCatalogNavigation.ts',import.meta.url),'utf8');
   assert.doesNotMatch(source,/\.preventDefault\s*\(|\.stopPropagation\s*\(|\b(?:setTimeout|setInterval|requestAnimationFrame|scrollTo|scrollIntoView)\s*\(|\.pushState\s*\(|scrollRestoration\s*=/);

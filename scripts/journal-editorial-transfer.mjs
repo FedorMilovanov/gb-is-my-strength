@@ -62,9 +62,9 @@ export function assertCatalogReturnProjection(baseline, proposed) {
   assert.equal(baseline.split(anchor).length, 2, 'Unknown shared chrome import owner');
   assert.equal(baseline.split(slot).length, 2, 'Unknown shared chrome slot owner');
   assert.ok(!baseline.includes(addition), 'Shared return already present: reconcile the new exact base');
-  const projected = baseline.replace(anchor, anchor + addition).replace(slot, '    <ArticlesCatalogReturn />\n' + slot);
+  const projected = baseline.replace(anchor, anchor + addition).replace(slot, slot + '    <ArticlesCatalogReturn />\n');
   assert.equal(proposed, projected, 'Shared chrome delta must be ONLY the conditional SSR import + mount; preserve Reader/runtime/asset owners');
-  return { path: SHARED_CATALOG_RETURN_PATH, scope: 'Two additive SSR lines only;no Reader runtime,assets,controls,configuration or handlers changed' };
+  return { path: SHARED_CATALOG_RETURN_PATH, scope: 'Two additive SSR lines only;closing return after the Reader slot;no Reader runtime,assets,controls,configuration or handlers changed' };
 }
 export const GUARD_PATH = 'src/components/journal/G3HistoryFeature.astro';
 export function projectHistoryGuard(baseline, proposed) {

@@ -230,7 +230,7 @@ const sharedBase = execFileSync('git', ['show', `${base}:${SHARED_CATALOG_RETURN
 const sharedProposed = fs.readFileSync(path.join(root, SHARED_CATALOG_RETURN_PATH), 'utf8');
 test('shared return projection admits exactly two SSR lines, no runtime/asset changes',()=>{
   assert.equal(assertCatalogReturnProjection(sharedBase,sharedProposed).path,SHARED_CATALOG_RETURN_PATH);
-  for(const bad of [sharedProposed.replace('e7d193e0','bad-version'),sharedProposed.replace('<ReaderActionsRuntime />','<div />'),sharedProposed.replace('<ArticlesCatalogReturn />','<ArticlesCatalogReturn /><script>bad()</script>')]){
+  for(const bad of [sharedProposed.replace('e7d193e0','bad-version'),sharedProposed.replace('<ReaderActionsRuntime />','<div />'),sharedProposed.replace('<ArticlesCatalogReturn />','<ArticlesCatalogReturn /><script>bad()</script>'),sharedProposed.replace('    <slot />\n    <ArticlesCatalogReturn />','    <ArticlesCatalogReturn />\n    <slot />')]){
     assert.throws(()=>assertCatalogReturnProjection(sharedBase,bad),/ONLY the conditional SSR/);
   }
 });
