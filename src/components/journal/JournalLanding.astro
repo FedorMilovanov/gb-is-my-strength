@@ -65,10 +65,13 @@ const sizes = '(min-width: 1280px) 580px, (min-width: 691px) calc((100vw - 100px
       </section>
     </div>
   </main>
-  <footer class="journal-footer">
-    <a href="/">На основной сайт <span aria-hidden="true">↗</span></a>
-    <a href="/articles/">Богословские статьи</a>
-    <a href="/about/">Об издании</a>
+  <footer class="journal-footer" data-pagefind-ignore>
+    <nav class="journal-footer__links" aria-label="Продолжить чтение на основном сайте">
+      <a href="/">Основной сайт</a>
+      <a href="/articles/">Богословские статьи</a>
+      <a href="/biografii/">Биографии служителей</a>
+      <a href="/about/">Об издании</a>
+    </nav>
     <span>Автор-редактор: Фёдор Милованов</span>
   </footer>
 </JournalEditorialShell>
