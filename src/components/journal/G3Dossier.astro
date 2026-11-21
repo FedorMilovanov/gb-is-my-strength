@@ -31,7 +31,15 @@ const corrections: Array<{
   newMeaning: string;
   reason: string;
   researchSnapshot: string;
-}> = [];
+}> = [{
+  // The existing route-owned editorial date, never a build/commit timestamp.
+  correctedAt: G3_PRODUCT_METADATA.modifiedAt,
+  scope: '§07 · Пример из издательской истории',
+  previousMeaning: 'Отдельный книжный пример мог восприниматься как подтверждение нового издания после возврата прав.',
+  newMeaning: 'Из §07 отозван пример с книгой Дэйва Дженкинса «The Word Matters». Его прежняя формулировка могла восприниматься как подтверждение нового издания после возврата прав. Наличие книжной карточки не доказывает ни такого переиздания, ни юридического перехода прав; новый вывод взамен отозванного не сделан.',
+  reason: 'Прежняя формулировка допускала более сильный вывод, чем позволяют доступные свидетельства.',
+  researchSnapshot: G3_PUBLICATION_HANDOFF.researchSealCommit,
+}];
 
 const contents = [
   { href: '#overview', label: 'Как G3 пришла к двум кризисам' },
@@ -479,7 +487,7 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
           Если новые документы изменят существенный вывод, мы укажем дату и содержание исправления.
         </p>
       ) : (
-        <ol>{corrections.map((item) => <li>{item.correctedAt}: {item.newMeaning}</li>)}</ol>
+        <ol>{corrections.map((item) => <li><time datetime={item.correctedAt}>{new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Moscow' }).format(new Date(item.correctedAt))}</time>: {item.newMeaning}</li>)}</ol>
       )}
     </div>
   </section>
