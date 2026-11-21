@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {spawn} from 'node:child_process';
 const {chromium}=await import(process.env.W58_PLAYWRIGHT||'playwright');
-const sha='366f54cff2b04aaf3e125c6fb2e688734a1afe3c',root=process.env.MARKS_ROOT||'/tmp/w64-marks-366f54c';
-const port=19093,origin=`http://127.0.0.1:${port}`,out='reports/w64-qa/marks';await mkdir(out,{recursive:true});
+const sha=process.env.MARKS_SHA||'366f54cff2b04aaf3e125c6fb2e688734a1afe3c',root=process.env.MARKS_ROOT||'/tmp/w64-marks-366f54c';
+const port=19093,origin=`http://127.0.0.1:${port}`,out=process.env.MARKS_OUT||'reports/w64-qa/marks';await mkdir(out,{recursive:true});
 const server=spawn('python3',['-u','-m','http.server',String(port),'--bind','127.0.0.1','--directory',root+'/dist'],{stdio:['ignore','pipe','ignore']});
 const browser=await chromium.launch({executablePath:process.env.W58_CHROMIUM_PATH,args:['--no-sandbox','--disable-dev-shm-usage']});
 const report={sha,browser:browser.version(),scenes:[]};
@@ -38,7 +38,7 @@ try{
    if(s.result.rows.length){
     assert.equal(s.result.rows[0].text,s.selected);assert.ok(s.result.rows[0].before&&s.result.rows[0].after);
     await p.evaluate(()=>{getSelection().removeAllRanges();});
-    await p.screenshot({path:`${out}/01-overpaint.png`});
+    await p.screenshot({path:`${out}/${mode==='mouse'?'01-overpaint':'02-touch'}.png`});
     await p.reload();await p.waitForFunction(()=>CSS.highlights.get('gb-hl-amber')?.size>0);
     s.reloaded=await snap(p);
    }
