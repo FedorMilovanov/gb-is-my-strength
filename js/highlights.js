@@ -55,7 +55,7 @@
     });
   }
   function gbAddHighlight(items,item) {
-    const unique=gbDedupeHighlights(items),key=gbHighlightKey(item);
+    const unique=items,key=gbHighlightKey(item);
     return key&&!unique.some(x=>gbHighlightKey(x)===key)
       ?[item,...unique].slice(0,LIMIT_QUOTES):unique;
   }
@@ -78,10 +78,7 @@
     return true;
   }
   function quotes() {
-    const existing = read(QUOTES_KEY);
-    const compact = gbDedupeHighlights(existing);
-    if (existing.length !== compact.length) write(QUOTES_KEY, compact);
-    return compact;
+    return read(QUOTES_KEY);
   }
   function notes() { return read(NOTES_KEY).filter((n) => n && typeof n.text === 'string' && n.id); }
   function favorites() {
@@ -218,7 +215,7 @@
   }
   function undoQuotes(written, previous, message) {
     return () => {
-      const current = quotes();
+      const current = read(QUOTES_KEY);
       const index = current.findIndex(item => item.id === written.id);
       if (index < 0 || JSON.stringify(current[index]) !== JSON.stringify(written)) {
         toast('Запись уже изменилась. Отмена недоступна.', null);
@@ -747,9 +744,8 @@
     });
     document.body.appendChild(bar);
     for (const b of [quote, note, ...colors.querySelectorAll('button')]) {
-      for (const ev of ['pointerdown', 'mousedown', 'touchstart']) {
-        b.addEventListener(ev, (e) => e.preventDefault(), { passive: false });
-      }
+      b.addEventListener('pointerdown', rememberSelection);
+      b.addEventListener('mousedown', (event) => event.preventDefault());
     }
     quote.addEventListener('click', () => {
       if (saveSelectedQuote()) {
