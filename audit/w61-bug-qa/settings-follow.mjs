@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {spawn} from 'node:child_process';
 const {chromium}=await import(process.env.W58_PLAYWRIGHT||'playwright');
-const builds=[['W60','e567400e7381be3786907396e1ecd6e69a4547c2',process.env.W60_PR_ROOT||'/tmp/w60-bug-e567400',19088],['W61','d1234989ffb7f8c27da3b9bbce1eca0355597c2a',process.env.W61_ROOT||'/tmp/w61-bug-d123498',19089]];
+const builds=[['W60','e567400e7381be3786907396e1ecd6e69a4547c2',process.env.W60_PR_ROOT||'/tmp/w60-bug-e567400',19088],['W61',process.env.W61_SHA||'d1234989ffb7f8c27da3b9bbce1eca0355597c2a',process.env.W61_ROOT||'/tmp/w61-bug-d123498',19089]];
 const browser=await chromium.launch({executablePath:process.env.W58_CHROMIUM_PATH,args:['--no-sandbox','--disable-dev-shm-usage']});
-const out='reports/w61-bug-qa';await mkdir(out,{recursive:true});
+const out=process.env.W61_OUT||'reports/w61-bug-qa';await mkdir(out,{recursive:true});
 const report={browser:browser.version(),scenes:[]};
 const route='/articles/dzhon-gill-chast-2-uchenyi/';
 async function scene(origin,width,motion='reduce'){
