@@ -275,6 +275,37 @@ try {
             `native Back left the restored focus outside the visible viewport: ${JSON.stringify(item.nativeBack)}`);
         } finally { await backProbe.close(); }
       }
+      if (engine === 'webkit' && route.kind === 'dossier' && width === 390 && theme === 'light') {
+        // Safari/WebKit without JS can skip implicit link tab stops after
+        // browser Back. The SSR return link uses explicit tabindex=0, keeping
+        // the native forward Tab destination usable without custom handlers.
+        const nojsContext = await contextFor(width, theme, { javaScriptEnabled: false });
+        const nojsProbe = await nojsContext.newPage();
+        try {
+          const backResponse = await nojsProbe.goto(route.url, { waitUntil: 'load', timeout: 60000 });
+          assert.equal(backResponse.status(), 200);
+          await nojsProbe.locator('.je-contents-jump').focus();
+          await nojsProbe.keyboard.press('Enter');
+          await nojsProbe.waitForTimeout(600);
+          assert.equal(new URL(nojsProbe.url()).hash, '#journal-g3-toc');
+          await nojsProbe.goBack({ waitUntil: 'domcontentloaded' });
+          await nojsProbe.waitForTimeout(750);
+          await nojsProbe.keyboard.press('Tab');
+          await nojsProbe.waitForTimeout(400);
+          item.noJsWebkitBack = await nojsProbe.evaluate(() => {
+            const active = document.activeElement, rect = active?.getBoundingClientRect();
+            return { href: active?.getAttribute('href'), y: rect?.top,
+              bottom: rect?.bottom, viewport: innerHeight };
+          });
+          assert.equal(item.noJsWebkitBack.href, '#overview', 'WebKit no-JS Tab must find the native return link');
+          assert.ok(item.noJsWebkitBack.y >= 0 && item.noJsWebkitBack.bottom <= item.noJsWebkitBack.viewport,
+            `WebKit no-JS native return focus clipped: ${JSON.stringify(item.noJsWebkitBack)}`);
+          await nojsProbe.keyboard.press('Enter');
+          await nojsProbe.waitForTimeout(700);
+          assert.equal(new URL(nojsProbe.url()).hash, '#overview',
+            'WebKit no-JS return must reach the story without scripts');
+        } finally { await nojsContext.close(); }
+      }
       item.axe = await audit(page);
       assert.deepEqual(item.axe.violations, [], 'axe WCAG A/AA violations');
       assert.deepEqual(item.axe.incomplete, [], 'static editorial surfaces must not leave unresolved axe review items');

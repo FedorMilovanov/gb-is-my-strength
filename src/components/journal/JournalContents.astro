@@ -30,7 +30,7 @@ const { entries, label = 'В этом материале', summaryId, initialCom
       }
     })();
   </script>}
-  {returnHref && <a class="je-contents-return" href={returnHref} data-pagefind-ignore>{returnLabel}</a>}
+  {returnHref && <a class="je-contents-return" href={returnHref} data-pagefind-ignore tabindex="0">{returnLabel}</a>}
   <nav aria-label={label}>
     <ol>
       {entries.map((entry, index) => <li><a href={entry.href}><span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>{entry.label}</a></li>)}
