@@ -239,3 +239,21 @@ R5-1 (индикатор прокрутки на «На полях» залип�
 Повторный прогон в настоящей тёмной теме (390 px): помета `rose` рисуется (`CSS.highlights = ['gb-hl-rose']`), тост инвертируется (`bg rgb(240, 232, 219)`, текст `rgb(38, 51, 58)`, `data-open=true`), в библиотеке «Помета · 21 ноября» с точкой `rose`, `overflowX` 0, после перезагрузки помета на месте (1 запись), `pageerror` — `[]`.
 
 Скриншоты: `audit/evidence/r8-mobile-polish/dark-mark-toast-390.png`, `dark-library-390.png`.
+
+## R9. Сведение с базовой веткой (`e6c6b12`)
+
+PR #2352 смотрит не в `main`, а в `fix/reader-library-no-count-dot-20261119`. База уехала на 5 коммитов (Play-кольцо и скорости на мобиле: `e567400`, `dd78f75`, `fd1a73a` и др.), из-за чего PR стал `CONFLICTING`.
+
+Конфликты оказались ровно в трёх файлах и только «книжными»:
+
+| Файл | Суть | Решение |
+|---|---|---|
+| `js/floating-cluster-controller.js` | Один и тот же фикс «Сейчас читаете: Введение» — у меня русский комментарий, в базе английский, код идентичен | Оставлен мой комментарий, код взят общий |
+| `src/lib/asset-version.js` | Разные хеши `floating-cluster-controller.js` | Взят мой, затем пересчитан |
+| `sw.js` | То же плюс `CACHE_VERSION` | `gb-v212` → `gb-v213-merged-reader-controls-20261120`, baseline 27 |
+
+После сведения `npm run cache-bust -- --write` пересчитал все хеши, включая новый контроллер (`d3ae417d`), сборка `strangler:build:production-like` прошла, `sw-dist-readiness-audit` PASS, регрессии (`highlights-runtime`, `reader-w57-annotations`, `series-reader-facade`, `dist:css-parity` 112/112, `guard-shared-files`) PASS.
+
+Повторная проверка на **сведённом** дереве (Chromium, 320/360/390/430): подпись «Часть II. Учёный» целиком, панель 62 px, overflow 0 на всех ширинах; помета ставится (`CSS.highlights: ['gb-hl-rose']`/`['gb-hl-blue']`), тост с «Вернуть» работает (после отката 0 записей и пустой `CSS.highlights`), в библиотеке «Помета · 21 ноября» с точками `rose`/`blue`, `pageerror` — `[]`. То есть Play/скорости из базы и мобильные пометы живут вместе.
+
+Статус PR после сведения: `MERGEABLE`, `mergeStateStatus: UNSTABLE` — 26 проверок стоят в `pending`, две (`Canonical headline autofix`, `Placement and asset autofix`) `skipping`. Итог CI не известен, «всё зелёное» не заявляется.
