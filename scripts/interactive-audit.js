@@ -719,8 +719,8 @@ async function checkInjectedHeaderHost(browser) {
         await page.waitForTimeout(260);
         stats.pages++;
         if (!resp || !resp.ok()) { push('header-host-page-status', url, resp ? resp.status() : 'null'); continue; }
-        if (url === '/articles/') {
-          // Journal's native masthead intentionally does NOT inject legacy
+        if (url === '/articles/' && await page.locator('.je-masthead').count() === 1) {
+          // Native NEWS/G3 builds do NOT inject the legacy
           // #gbSearchBtn/#themeToggle controls or the mobile-controls host.
           // Assert its actual public contract instead of a fabricated host.
           const journal = await page.evaluate(() => {
