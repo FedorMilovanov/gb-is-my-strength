@@ -1,0 +1,203 @@
+{
+  "baseHead": "a595629f15a2324205cbb9b1c2cb2cc936814214",
+  "state": "working tree after positional resolver and mobile arrow hit-target fixes; served from rebuilt dist",
+  "purpose": "verify the responsive handoff from W57 outline to native series rail",
+  "results": [
+    {
+      "width": 1121,
+      "ready": true,
+      "bodyClasses": [
+        "gbs-world",
+        "gb-cluster-series-active",
+        "gb-cluster-single-active",
+        "np-u-w40-space",
+        "np-u-argon-shell",
+        "np-u-preview",
+        "np-u-legacy-chrome-docked",
+        "np-u-native-product-actions",
+        "np-u-native-series-rail",
+        "np-u-inline-header-actions",
+        "np-u-w55-context-actions",
+        "np-w57-ready"
+      ],
+      "compactWorld": false,
+      "outline": {
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 207,
+          "height": 900
+        },
+        "display": "flex",
+        "visibility": "visible",
+        "position": "fixed",
+        "classes": "np-u-left"
+      },
+      "nativeRail": {
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "display": "none",
+        "visibility": "visible",
+        "position": "static",
+        "classes": "gbs-rail"
+      },
+      "nativeChapterLinks": 20,
+      "media1360": false,
+      "cssVars": {
+        "left": "clamp(207px,16vw,246px)",
+        "right": "clamp(305px,25vw,390px)"
+      }
+    },
+    {
+      "width": 1359,
+      "ready": true,
+      "bodyClasses": [
+        "gbs-world",
+        "gb-cluster-series-active",
+        "gb-cluster-single-active",
+        "np-u-w40-space",
+        "np-u-argon-shell",
+        "np-u-preview",
+        "np-u-legacy-chrome-docked",
+        "np-u-native-product-actions",
+        "np-u-native-series-rail",
+        "np-u-inline-header-actions",
+        "np-u-w55-context-actions",
+        "np-w57-ready"
+      ],
+      "compactWorld": false,
+      "outline": {
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 217.4,
+          "height": 900
+        },
+        "display": "flex",
+        "visibility": "visible",
+        "position": "fixed",
+        "classes": "np-u-left"
+      },
+      "nativeRail": {
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "display": "none",
+        "visibility": "visible",
+        "position": "static",
+        "classes": "gbs-rail"
+      },
+      "nativeChapterLinks": 20,
+      "media1360": false,
+      "cssVars": {
+        "left": "clamp(207px,16vw,246px)",
+        "right": "clamp(305px,25vw,390px)"
+      }
+    },
+    {
+      "width": 1360,
+      "ready": true,
+      "bodyClasses": [
+        "gbs-world",
+        "gb-cluster-series-active",
+        "gb-cluster-single-active",
+        "np-u-w40-space",
+        "np-u-argon-shell",
+        "np-u-preview",
+        "np-u-legacy-chrome-docked",
+        "np-u-native-product-actions",
+        "np-u-native-series-rail",
+        "np-u-inline-header-actions",
+        "np-u-w55-context-actions",
+        "np-w57-ready"
+      ],
+      "compactWorld": false,
+      "outline": {
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "display": "none",
+        "visibility": "visible",
+        "position": "fixed",
+        "classes": "np-u-left"
+      },
+      "nativeRail": {
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 299.2,
+          "height": 900
+        },
+        "display": "flex",
+        "visibility": "visible",
+        "position": "fixed",
+        "classes": "gbs-rail"
+      },
+      "nativeChapterLinks": 23,
+      "media1360": true,
+      "cssVars": {
+        "left": "min(328px,22vw)",
+        "right": "clamp(305px,25vw,390px)"
+      }
+    },
+    {
+      "width": 1440,
+      "ready": true,
+      "bodyClasses": [
+        "gbs-world",
+        "gb-cluster-series-active",
+        "gb-cluster-single-active",
+        "np-u-w40-space",
+        "np-u-argon-shell",
+        "np-u-preview",
+        "np-u-legacy-chrome-docked",
+        "np-u-native-product-actions",
+        "np-u-native-series-rail",
+        "np-u-inline-header-actions",
+        "np-u-w55-context-actions",
+        "np-w57-ready"
+      ],
+      "compactWorld": false,
+      "outline": {
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "display": "none",
+        "visibility": "visible",
+        "position": "fixed",
+        "classes": "np-u-left"
+      },
+      "nativeRail": {
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 316.8,
+          "height": 900
+        },
+        "display": "flex",
+        "visibility": "visible",
+        "position": "fixed",
+        "classes": "gbs-rail"
+      },
+      "nativeChapterLinks": 23,
+      "media1360": true,
+      "cssVars": {
+        "left": "min(328px,22vw)",
+        "right": "clamp(305px,25vw,390px)"
+      }
+    }
+  ]
+}

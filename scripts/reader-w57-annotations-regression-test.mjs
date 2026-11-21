@@ -7,6 +7,7 @@ import {dirname,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const file=readFileSync(resolve(root,'research/reader-w57-pilot/assets/reader_w57_annotations.js'),'utf8');
+const highlights=readFileSync(resolve(root,'js/highlights.js'),'utf8');
 const preview=readFileSync(resolve(root,'research/reader-w57-pilot/assets/reader_universal_preview.js'),'utf8');
 const css=readFileSync(resolve(root,'research/reader-w57-pilot/assets/reader_w57.css'),'utf8');
 const excerpt=(start,end)=>{
@@ -68,35 +69,20 @@ const ambiguous=makeFixture({notes:[
  {id:'orphan-b',quoteId:'quote-1',text:'Второй текст'}]});
 assert.equal(ambiguous.api.linkedNote(ambiguous.record),null,
  'multiple legacy notes must not be silently assigned to one quote');
-const resolveSource=excerpt('  function resolve(article,anchor){','  function start(){');
-const normalize=s=>String(s||'').replace(/\s+/g,' ').trim();
-const hash=s=>'hash:'+s;
-const resolveRange=new Function('blocks','makeRange','visibleProjection','CSS','hash','normalize',
- resolveSource+'return resolve;')(
-  article=>article.items,
-  (block,start,end)=>({block:block.textContent,text:block.textContent.slice(start,end)}),
-  block=>({text:block.textContent}),
-  {escape:s=>s},hash,normalize);
-const authentic={textContent:'В начале Бог благ навсегда'};
-const altered={textContent:'Не думаю Бог благ никак'};
-const anchor={blockId:'',blockIndex:0,start:9,end:17,exact:'Бог благ',
- prefix:'В начале ',suffix:' навсегда',blockHash:hash(normalize(authentic.textContent))};
-const article=items=>({items,querySelector:()=>null});
-assert.equal(resolveRange(article([authentic]),anchor)?.text,'Бог благ');
-assert.equal(resolveRange(article([altered]),anchor),null,
- 'identical text at same offsets with mismatched context is NOT a valid reattachment');
-assert.equal(resolveRange(article([altered,authentic]),anchor)?.block,authentic.textContent,
- 'moved source paragraph can reattach when original provenance still matches');
-assert.equal(resolveRange(article([altered,authentic,{...authentic}]),{...anchor,blockIndex:9}),null,
- 'ambiguous context must remain unresolved instead of attributing wrong passage');
+assert.match(highlights,/function resolve\(article,anchor\)/,
+ 'the Product shared Reader owns the only positional range resolver');
+assert.match(file,/const \{capture,resolve\}\s*=\s*window\.GBReaderAnchors\s*\|\|\s*\{\}/,
+ 'W57 annotations consume the shared positional anchor API');
+assert.doesNotMatch(file,/function resolve\(article,anchor\)/,
+ 'W57 must not fork a stale second copy of the resolver');
 // Persist the same DOM-author-visible offset mapping on capture and resolve.
-assert.match(file,/function visibleProjection\(block\)/,
+assert.match(highlights,/function visibleProjection\(block\)/,
  'single visible-author-text projection owner is required');
-assert.match(file,/projection:'reader-visible-v1'/,
+assert.match(highlights,/projection:'reader-visible-v1'/,
  'new anchored quotes must record their coordinate system');
-assert.match(file,/\.gtip,\.btip,\.tooltip/,
+assert.match(highlights,/\.gtip,\.btip,\.tooltip/,
  'glossary/tooltip prose must not be included in saved citations');
-assert.doesNotMatch(file,/const source=block\.textContent\|\|''/,
+assert.doesNotMatch(highlights,/const source=block\.textContent\|\|''/,
  'raw block textContent must never become the quoted text');
 assert.match(file,/next\.some\(x=>x\.id===record\.id\)/,
  'insertion success must be tested by identity, not list length');

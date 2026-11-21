@@ -10,7 +10,7 @@ const source = fs.readFileSync(path.resolve(__dirname, '..', 'js/highlights.js')
 const start = source.indexOf('function normalizeText(');
 const end = source.indexOf('function read(', start);
 assert.ok(start >= 0 && end > start, 'canonical pure quote helpers exist inside shared owner');
-const context = { URL, location: { origin: 'https://gospod-bog.ru' } };
+const context = { URL, location: { origin: 'https://gospod-bog.ru' }, window: {} };
 vm.createContext(context);
 vm.runInContext('const LIMIT_QUOTES = 200;\n' + source.slice(start, end) + '\nthis.api={path:gbHighlightPath,text:gbHighlightText,key:gbHighlightKey,dedupe:gbDedupeHighlights,add:gbAddHighlight}', context);
 const api = context.api;
@@ -169,6 +169,7 @@ const painting = {
   Highlight: class { constructor(...ranges) { this.ranges = ranges; } },
 };
 painting.window = { CSS: painting.CSS };
+painting.GBReaderAnchors = { resolve: () => null };
 vm.createContext(painting);
 vm.runInContext(source.slice(locateStart, locateEnd) +
   '\nthis.paintAPI = { locate, paintMarks };', painting);
@@ -200,4 +201,112 @@ assert.equal(paintOnce([{ ...firstMark, annotation: {
   anchor: { blockIndex: 0, start: 7, end: 15, exact: 'Бог благ' },
 } }]).painted, 0, 'W57 positional annotation is painted only by the W57 resolver');
 
-console.log('✅ Unified reader library helpers, legacy storage, ARIA and dedupe regression passed');
+// Positional W57 anchors must never jump to a coincidental paragraph after the
+// identified source changes. In an id-less relocation, accept only a unique
+// match whose full original block fingerprint and local context both survive.
+const anchorSourceStart = source.indexOf('  function normalizeText(value)');
+const anchorSourceEnd = source.indexOf('\n  function gbHighlightPath(item)', anchorSourceStart);
+assert.ok(anchorSourceStart >= 0 && anchorSourceEnd > anchorSourceStart,
+  'shared positional anchor resolver remains extractable');
+function makeAnchorBlock(id, text) {
+  const block = {
+    id, tagName: 'P', textContent: text,
+    closest() { return null; },
+  };
+  block.firstChild = { nodeType: 3, nodeValue: text, parentElement: block };
+  return block;
+}
+function makeAnchorArticle(blocks) {
+  return {
+    querySelectorAll() { return blocks; },
+    querySelector(selector) {
+      const id = selector.startsWith('#') ? selector.slice(1) : '';
+      return blocks.find((block) => block.id === id) || null;
+    },
+  };
+}
+const anchorDocument = {
+  createTreeWalker(block) {
+    let visited = false;
+    return { nextNode() { if (visited) return null; visited = true; return block.firstChild; } };
+  },
+  createRange() {
+    return {
+      setStart(node, offset) { this.startContainer = node; this.startOffset = offset; },
+      setEnd(node, offset) { this.endContainer = node; this.endOffset = offset; },
+      toString() {
+        return this.startContainer === this.endContainer
+          ? this.startContainer.nodeValue.slice(this.startOffset, this.endOffset) : '';
+      },
+    };
+  },
+};
+const anchorContext = {
+  URL, location: { origin: 'https://gospod-bog.ru' }, window: {}, document: anchorDocument,
+  NodeFilter: { SHOW_TEXT: 4 }, CSS: { escape: (value) => String(value) },
+  getComputedStyle: () => ({ display: 'block', visibility: 'visible' }),
+};
+vm.createContext(anchorContext);
+vm.runInContext(source.slice(anchorSourceStart, anchorSourceEnd), anchorContext);
+const positional = anchorContext.window.GBReaderAnchors;
+assert.ok(positional && typeof positional.resolve === 'function', 'shared positional resolver is exposed');
+const normalizeAnchorBlock = (value) => String(value).replace(/\s+/g, ' ').trim();
+function positionalHash(value) {
+  let hash = 2166136261;
+  const text = normalizeAnchorBlock(value);
+  for (let i = 0; i < text.length; i++) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36);
+}
+function makeAnchor(block, start, end, blockIndex = 0, blockId = block.id) {
+  const raw = block.firstChild.nodeValue;
+  return {
+    projection: 'reader-visible-v1', blockId, blockIndex, start, end,
+    exact: raw.slice(start, end), prefix: raw.slice(Math.max(0, start - 64), start),
+    suffix: raw.slice(end, end + 64), blockHash: positionalHash(raw),
+  };
+}
+const originalContext = 'Начало Бог благ конец.';
+const decoy = makeAnchorBlock('repeat-source', 'Начало Бог благ конец. Далее Бог благ снова.');
+const changedSource = makeAnchorBlock('changed-source', originalContext);
+const changedAnchor = makeAnchor(changedSource, 7, 15, 1);
+changedSource.firstChild.nodeValue = changedSource.textContent = 'Измено Бог благ конец.';
+assert.equal(positional.resolve(makeAnchorArticle([decoy, changedSource]), changedAnchor), null,
+  'changed identified source must fail closed instead of reattaching to another matching paragraph');
+
+const oldPositionText = 'Начало Бог благ конец.';
+const reflowed = makeAnchorBlock('reflowed-source', oldPositionText);
+const reflowedAnchor = makeAnchor(reflowed, 7, 15);
+reflowed.firstChild.nodeValue = reflowed.textContent = 'Дополнение. Начало Бог благ конец.';
+const inBlockMove = positional.resolve(makeAnchorArticle([reflowed]), reflowedAnchor);
+assert.equal(inBlockMove?.toString(), 'Бог благ',
+  'an identified block may relocate its unique text when local context survives');
+assert.equal(inBlockMove?.startOffset, 'Дополнение. Начало '.length,
+  'in-block relocation resolves to the moved occurrence');
+
+const repeatedText = 'Начало Бог благ конец. Далее Бог благ снова.';
+const repeatedBlock = makeAnchorBlock('repeat-source', repeatedText);
+const repeatedStart = repeatedText.lastIndexOf('Бог благ');
+const repeatedAnchor = makeAnchor(repeatedBlock, repeatedStart, repeatedStart + 'Бог благ'.length, 0, '');
+const insertedBefore = makeAnchorBlock('inserted', 'Новый материал перед исходным абзацем.');
+const shifted = positional.resolve(makeAnchorArticle([insertedBefore, repeatedBlock]), repeatedAnchor);
+assert.equal(shifted?.toString(), 'Бог благ',
+  'id-less relocation may resolve a unique occurrence using full-block and local-context fingerprints');
+assert.equal(shifted?.startOffset, repeatedStart,
+  'repeated text resolves only at the originally captured contextual occurrence');
+
+const movedUnique = makeAnchorBlock('moved-unique', 'Свидетельство: Христос силён и благ навсегда.');
+const uniqueStart = movedUnique.firstChild.nodeValue.indexOf('Христос силён');
+const uniqueAnchor = makeAnchor(movedUnique, uniqueStart, uniqueStart + 'Христос силён'.length, 0, 'missing-source-id');
+const unique = positional.resolve(makeAnchorArticle([movedUnique]), uniqueAnchor);
+assert.equal(unique?.toString(), 'Христос силён',
+  'a uniquely relocated unchanged block still resolves when its old id disappears');
+
+const duplicateA = makeAnchorBlock('duplicate-a', repeatedText);
+const duplicateB = makeAnchorBlock('duplicate-b', repeatedText);
+assert.equal(positional.resolve(makeAnchorArticle([duplicateA, duplicateB]), repeatedAnchor), null,
+  'identical duplicated blocks remain ambiguous without a stable id');
+
+console.log('✅ Unified reader library helpers, visible positional anchors, storage, ARIA and dedupe regression passed');

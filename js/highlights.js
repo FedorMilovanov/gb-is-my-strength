@@ -104,8 +104,7 @@
     const list=blocks(article);
     // Legacy annotations are preserved exactly. If old coordinates included
     // hidden glossary prose, do NOT guess a new author or passage.
-    const contextMatches=(raw,start,end)=>{
-      if(anchor.blockHash&&hash(normalize(raw))===anchor.blockHash)return true;
+    const surroundingMatches=(raw,start,end)=>{
       const prefix=String(anchor.prefix||'').slice(-24),suffix=String(anchor.suffix||'').slice(0,24);
       if(!prefix&&!suffix)return false;
       if(prefix&&!raw.slice(Math.max(0,start-prefix.length),start).endsWith(prefix))return false;
@@ -115,24 +114,36 @@
     const probe=(block,start=anchor.start,end=anchor.end)=>{
       if(!block)return null;
       const raw=visibleProjection(block).text;
-      if(raw.slice(start,end)!==anchor.exact||!contextMatches(raw,start,end))return null;
+      if(raw.slice(start,end)!==anchor.exact)return null;
+      const sameBlock=anchor.blockHash&&hash(normalize(raw))===anchor.blockHash;
+      if(!sameBlock&&!surroundingMatches(raw,start,end))return null;
       return makeRange(block,start,end);
     };
     const preferred=anchor.blockId?
       article.querySelector('#'+CSS.escape(anchor.blockId)):list[anchor.blockIndex];
-    if(preferred&&list.includes(preferred)){
+    const stablePreferred=!!anchor.blockId&&preferred&&list.includes(preferred);
+    if(stablePreferred){
       const found=probe(preferred);if(found)return found;
     }
+    // If the source block still has its authored ID, never let a matching
+    // phrase in some other block steal its annotation. Search only inside that
+    // identified block (for a safe in-block relocation); a failed result stays
+    // orphaned instead of jumping to a coincidental paragraph.
+    const searchBlocks=stablePreferred?[preferred]:list;
     const candidates=[];
-    for(const block of list){
+    for(const block of searchBlocks){
       const raw=visibleProjection(block).text;
+      const sameBlock=anchor.blockHash&&hash(normalize(raw))===anchor.blockHash;
+      // Without a stable block ID, cross-block relocation is safe only when
+      // the complete original block fingerprint and local context both agree.
+      if(!stablePreferred&&!sameBlock)continue;
       let at=0;
       while((at=raw.indexOf(anchor.exact,at))!==-1){
-        if(contextMatches(raw,at,at+anchor.exact.length)){
+        if(surroundingMatches(raw,at,at+anchor.exact.length)){
           const range=makeRange(block,at,at+anchor.exact.length);
           if(range)candidates.push(range);
         }
-        at+=Math.max(1,anchor.exact.length);
+        at++;
       }
     }
     return candidates.length===1?candidates[0]:null;

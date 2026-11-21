@@ -345,4 +345,154 @@ PR #2352 смотрит не в `main`, а в `fix/reader-library-no-count-dot-2
 
 Скриншоты: `audit/evidence/r11-mobile-touch/` (`mark-touch-v219-320.png`, `note-library-touch-v219-390.png`, `mark-touch-320.png`, `mark-touch-390.png`, `note-library-touch-390.png`, `toast-settings-320.png`, `toast-settings-390.png`, `settings-footer-320.png`, `dark-mark-390.png`, `landscape-740x360.png`).
 
-**Не проверено:** физические iOS/Android-устройства, Safari/WebKit и итоговый CI после отправки head. Остаточные ограничения R10 остаются: отдельного фильтра «Пометы» нет; цвет не меняется из библиотеки; CSS-подсветку не озвучивает дерево доступности; текстовый якорь не переживает переписывание статьи. Отчёт не объявляет эти пробелы закрытыми.
+**Не проверено на v219:** физические iOS/Android-устройства, Safari/WebKit и итоговый CI после отправки head. Остаточные ограничения R10 остаются: отдельного фильтра «Пометы» нет; цвет не меняется из библиотеки; CSS-подсветку не озвучивает дерево доступности; текстовый якорь не переживает переписывание статьи. Отчёт не объявляет эти пробелы закрытыми.
+
+## R12 — PR head `8d03615` на момент проверки (21.11.2026)
+
+Проверка относится к точному head `8d03615c1a13543ed6be9af6cd5939f9209b5674`, который добавляет раскрытие утверждённого текста Писания в мобильной «Аналитике» Gill. UI использует уже существующую замороженную маршрутную проекцию `SCRIPTURE_DATA` / `SCRIPTURE_SOURCE_BY_REF`; для ссылок без утверждённого текста есть явное сообщение, текст не сочиняется.
+
+### Сборка и локальные проверки
+
+- `npm run strangler:build:production-like` на Node 22.23.5 завершился с кодом 0: **112 Astro routes**. `astro:check`: 0 errors, 0 warnings, 7 hints; все post-build projections и guards прошли. Vite оставил заметку о неразрешённой при сборке ссылке `../images/og-karty-1200x630.webp` (она остаётся для разрешения во время runtime); сборка в остальном завершилась успешно.
+- `highlights-runtime-regression-test.js`, `reader-w57-annotations-regression-test.mjs`, `series-reader-facade-regression-test.js`, `reader-state-regression-test.js` — **PASS**.
+- Asset/cache-bust read-only check, CSS parity (**112/112**), SW dist readiness, Gill Pagefind body audit и Gill series data consistency audit — **PASS**.
+- `reader-controls-a11y-browser-contract.mjs` на текущем dist — **155/155** в локальном Chromium.
+- Gill II при 320×844 и 390×844: замороженная route projection содержит 47 ключей; Бытие 1:2 и Исход 19:9 в текущем разделе раскрываются с текстом и подписью источника. Горизонтального overflow нет, заголовки и ссылки возврата имеют высоту 44 px; ссылка возврата закрывает шторку и возвращает фокус к исходному упоминанию в статье; `pageerror: []`.
+
+Скриншоты локального браузерного прогона (пока не закоммичены): `audit/evidence/r12-gill-scripture-expansion/gill-scripture-320.png` и `gill-scripture-390.png`.
+
+### Итог CI на текущем head
+
+Все 29 check-runs завершились: **25 pass, 2 fail, 2 skipped** (оба skipped — autofix), 0 pending. CI не зелёный.
+
+- **Reader Controls Accessibility** — job `Chromium + Firefox + WebKit Reader controls and real-asset contracts`, шаг `Run permanent browser contracts`: failure.
+- **Grok Hermeneutics Product Pilot** — job `Grok flag-ON and flag-OFF real Product browser contract`, шаг `Browser proof — 6 mobile route families across three engines and five widths`: failure.
+
+Аннотации содержат только общий `exit code 1`; получение логов `gh run view --log-failed` завершилось `EOF`, поэтому конкретные упавшие assertions не установлены. Локальные 155/155 для основного Reader Controls contract не заменяют полный CI job. PR #2352 остаётся OPEN / MERGEABLE, `mergeStateStatus=UNSTABLE`.
+
+## R13 — новый удалённый head `f8df423` (20.11.2026)
+
+После R12 PR продвинулся на commit `f8df423a308fb3b84081bae1cd338c6d4e35a3a8` (`ARGON-style mobile Scripture shelf and canonical reference identity`). Локальная ветка fast-forward на этот head; в продуктовый компонент в этом проходе правок не вносил.
+
+### Сборка и проверки
+
+- Production-like build на Node 22.23.5 — **PASS**, 112 Astro routes; Astro check: 0 errors, 0 warnings, 7 hints. Post-build projections/guards прошли. Vite сохранил runtime-ссылку `../images/og-karty-1200x630.webp`, не разрешённую во время build.
+- Четыре regression scripts (highlights, W57 annotations, series facade, ReaderState), shared-files guard, cache-bust read-only check, CSS parity (112/112), SW readiness, Gill Pagefind body и series consistency — **PASS**.
+- `reader-controls-a11y-browser-contract.mjs` на текущем dist — **155/155** в локальном Chromium.
+- На Gill I/II при 320, 360, 390 и 430 px: проекция заморожена, ссылки раскрывают доступный текст/источник; CSS шрифт Scripture загрузился; ширина документа не переполняется. На длинном разделе Gill II («Полемика и дебаты эпохи») shelf содержит 18 уникальных ссылок, горизонтальные стрелки прокручивают rail; выбор мышью/touch и клавиатурой обновляет `aria-pressed` и позицию.
+- Каноническое слияние проверено в отдельном временном браузерном DOM: дополнительное «Псалтирь 71:16» объединилось с «Пс. 71:16» (18 пунктов осталось 18), сохранились два перехода к двум упоминаниям и правильный утверждённый текст. Тестовый «Пс. 1:1» без approved projection показал явный fallback; ссылка возврата закрыла шторку и сфокусировала исходный абзац. Ночная тема и `pageerror: []` также проверены.
+
+### Найденные ограничения нового shelf
+
+- Размеры интерактивных целей меньше прежнего 44 px ориентира: citation-кнопки — 42 px по высоте; стрелки — 32×98 px. Работают в Chromium, но это заметное отступление от 44 px touch target в остальной мобильной проверке; CSS не менял.
+- В том же разделе текст статьи содержит «Деяниях 14:23», но shelf показывает 18 ссылок и эту форму не распознаёт: alias registry содержит «Деяния», а не падежную форму «Деяниях». В route projection нет утверждённого текста для этого места; если alias будет распознан, корректным результатом станет явный fallback с возвратом к упоминанию. В этой проверке реестр не расширял.
+
+### CI
+
+Все 29 check-runs на `f8df423` завершились: **25 pass, 2 fail, 2 skipped** (autofix), 0 pending. `interactive-audit` прошёл за 11m19s. CI **не зелёный**.
+
+Два отказа повторяют те же jobs/steps, что и на `8d03615`:
+
+- Reader Controls Accessibility → `Run permanent browser contracts` — failure. Предыдущие шаги (установка браузеров, source boundary и build) прошли. Это один составной shell-step из **девяти** последовательных контрактов (`reader-controls-a11y-browser-contract`, residual, speedrail SSR focus, library premium, shared play/series number, mobile canonical, speed persistence, real-assets visual matrix, Baptisty media). `155/155` локально подтверждает только первый контракт; какой именно вызвал CI failure, установить нельзя.
+- Grok Hermeneutics Product Pilot → `Browser proof — 6 mobile route families across three engines and five widths` — failure; этот шаг запускает `scripts/reader-mobile-sitewide-audit.mjs`. Предшествующие browser checks этого workflow прошли. Ограниченный локальный Chromium-повтор этого аудита для Gill и Grok на 320/375/390/430/480 px дал 10/10 без failure/warnings; это не WebKit/Firefox и не полный набор 7 маршрутов, поэтому не объясняет и не опровергает CI failure.
+
+Аннотации — только общий exit code 1; check-run output title/summary пусты. `gh run view --log-failed` для обоих run и загрузки обоих опубликованных evidence artifacts (`reader-controls-a11y-44902208609`, `grok-product-pilot-44902208646-1`) завершились `EOF`. Поэтому конкретные упавшие assertions/команды и root cause неизвестны. Повторение на двух последовательных heads не устанавливает причину. PR #2352 остаётся OPEN / MERGEABLE, `mergeStateStatus=UNSTABLE`.
+
+## R15 — независимый аудит точного HEAD `ae1c900` и последующее продвижение PR
+
+Эта секция сохраняет раздельность по SHA. Production-like `dist` был собран на исходном для задания `ae1c900f94d06b669bbd19e601235b1977359d32`; результаты ниже не являются QA автора. После запуска длительного CI watcher PR продвинулся, поэтому **не** приписываю результатам `ae1c900` checks более новых SHA. Позиционный код из `d00a7c0` в `ae1c900` не менялся.
+
+### Scripture shelf — acceptance criteria на `ae1c900`
+
+Свежий Chromium harness на точном `ae1c900` дал **6/6 сценариев без failures** на 320 и 390 px: Gill II длинный список (18 ссылок), Gill IV method aliases (2), Gill IV quiz (19). Документ/панель не имели горизонтального overflow; `pageerror: []`; тёмная тема проверена для длинных списков. Стрелки действительно прокручивают rail и возвращают его назад; `Home`/`End` и выбор ссылки сохраняют ровно одну `aria-pressed=true`; утверждённые текст и подпись источника показываются. Два перехода от единого Рим. 12:6 к двум исходным упоминаниям закрывают панель и фокусируют соответствующий абзац.
+
+| Критерий | Результат на `ae1c900` | Наблюдение |
+|---|---|---|
+| Выбор и прокрутка ссылок | PASS | 18/19 пунктов; rail сдвигался стрелкой и возвращался на исходную позицию. |
+| Клавиатура | PASS | `End` переводит фокус на последнюю ссылку, оставляя один выбранный пункт. |
+| Размеры целей | **FAIL относительно принятого 44 px ориентира** | Ссылки: высота 42 px; стрелки: 32×98 px. Вкладки/раскрытие — 44 px. |
+| Fallback без approved projection | PASS | Текст не выдумывается и не показывается; явное сообщение и ссылка «К упоминанию в статье». |
+| Переходы к упоминаниям | PASS | Возврат закрывает overlay, снимает scroll lock и фокусирует оригинальный абзац. |
+| Тема, overflow и page errors | PASS | Dark shelf без overflow; `pageerror: []` на всех шести сценариях. |
+
+Отдельный fallback-прогон на 320 px подтвердил `quoteCount=0`, скрытый source, выбранную ссылку и фокус на исходном упоминании после возврата. Это viewport-эмуляция Chromium, **не** физическое устройство и не WebKit sign-off. Полные результаты: `audit/evidence/r15-ae1c900-independent/scripture-shelf-r14.json` и `approved-projection-fallback.json`; screenshots следующего Classic-слоя на `6b072a1` находятся в `audit/evidence/r16-6b072a1-classic-scripture/`.
+
+### Live «Мои пометы» и Gill Research dialog на `ae1c900`
+
+Независимые два Chromium-tab прогона при 320/390 px: создание заметки во второй вкладке через Product Library обновило открытую Gill shelf (`0→1`); удаление отразилось обратно (`1→0`). В обеих вкладках выбрано «Писание» и ссылка Исход 19:9; при refresh сохранялись выбор, раскрытые группы и `scrollTop`. Отдельная same-tab запись с `gb:library-committed` также перерисовала группу.
+
+У Research dialog при открытии `aria-label="Аналитика · исследовательские материалы"`, фокус перемещён на `#gbrMarginaliaTab`; после возврата к TOC имя стало «Часть II · Учёный». Escape закрыл overlay и вернул фокус исходному `[data-gill-marginalia-open]` (`aria-expanded=false`). `pageerror: []`. Результаты: `audit/evidence/r15-ae1c900-independent/live-marks-dialog.json`.
+
+### Positional anchor core `d00a7c0` → `ae1c900`
+
+`js/highlights.js` и `reader_w57_annotations.js` не менялись между этими SHA. На двух Chromium viewport (320/390) реально исполнялся общий `GBReaderAnchors` из `js/highlights.js`: visible projection исключает текст `.gtip`; обычный capture/resolve, уникальное перемещение параграфа и fail-closed для неоднозначного/межпараграфного выделения работают.
+
+**Найдено небезопасное повторное прикрепление к чужому абзацу (FAIL).** Anchor захвачен в абзаце `«Начало Бог благ конец.»`. Исходник изменён на `«Измено Бог благ конец.»` (та же позиция точной фразы), а в другом абзаце сохранён прежний контекст `«Начало Бог благ конец. Далее Бог благ снова.»`. `resolve()` вместо отказа вернул Range в другом абзаце `#repeat-source`. Условие контекстного fallback принимает совпадение prefix/suffix, даже когда полный `blockHash` исходного абзаца уже не совпадает. На одинаковых текстовых/контекстных фрагментах это может нарисовать пользовательскую помету не в её исходном месте; считать позиционную идентичность безопасной пока нельзя.
+
+Дополнительный fail-closed пробел: при сдвиге без `blockId` повторяющаяся фраза в неизменённом абзаце даёт несколько совпадений, потому что совпадение `blockHash` принимает каждую позицию до проверки контекста. В итоге марка не переносится (null), а не ошибочно рисуется — потеря привязки, но не ложная атрибуция.
+
+На реальном opt-in W57 preview Gill II запись с рабочим anchor сначала отрисовалась (`count=1`, `orphanCount=0`, CSS Highlight size 1). В искусственном edge-case ID выбранного абзаца был снят, перед ним добавлен блок, а в статье обнаружились два одинаковых полных параграфа: после сдвига запись стала orphan (fail-closed). До этой искусственной мутации все 119 исходных блоков этой статьи имели ID. Результат `audit/evidence/r15-ae1c900-independent/w57-live-preview.json`.
+
+Два штатных regression harness сами требуют обновления для нового владельца: `highlights-runtime-regression-test.js` падает в VM с `ReferenceError: window is not defined` на `window.GBReaderAnchors`; W57 regression останавливается, потому что ищет уже удалённый локальный `function resolve(article,anchor)` в W57-файле (реальный resolver теперь общий в `js/highlights.js`). Это именно дефект harness/source assertion; отдельный браузерный прогон выше подтвердил product false-reattach и не оправдывает его.
+
+### Stale source revisions и occurrence index
+
+Read-only `node scripts/cache-bust.js` на `ae1c900` **FAIL**. `sw.js` содержит:
+
+- `js/highlights.js?v=2a0d34d6`, ожидается `bb32e65b`; literal в `sw.js` последний раз тронут на `bfc427e`, сам JS изменён на `d00a7c0`.
+- `js/floating-cluster-controller.js?v=0c364769`, ожидается `c0be0770`; literal в `sw.js` последний раз тронут на `fe5a4cd`, сам JS изменён на `ae1c900`.
+
+Причина — service-worker source literals не пересинхронизировали после этих двух более поздних изменений. Это source-side mismatch, не ошибка локального `dist`: postbuild hash drift = 0. `--write` не запускал; `sw.js` не менял.
+
+`scripture-occurrence-index-contract.mjs` также остаётся красным. Перегенерированный JSON дифференцируется от сохранённого **только** по `stats.scannedSourceFiles: 542 → 545`; references/occurrences и остальные поля совпадают. Contract получает 545 и сохранённый индекс устарел.
+
+### Финальный CI именно для `ae1c900`
+
+GitHub API check-run rollup после завершения/отмены старых workflows: **29 total — 16 success, 4 failure, 7 cancelled, 2 skipped, 0 pending**. Значит CI **не зелёный**. Семь cancellation пришли после продвижения ветки; среди них Reader Controls Accessibility, Grok и Runtime Interactive Audit, поэтому их незавершённые browser-контракты не PASS.
+
+Четыре failure:
+
+- [Metadata & IndexNow Readiness](https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/44906910102) — `Check source asset revisions without writing`.
+- [Site Sections Menu Contract](https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/44906910127) — `Source ownership and cache-bust guards`.
+- [Vosk Loader Failure State](https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/44906910023) — `Verify cache-bust drift`.
+- [TTS Download Consent](https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/44906910243) — source contract step. Локально `tts-download-consent` проходит; следующий `tts-engine-status` воспроизводит ровно `asset-version: js/floating-cluster-controller.js` из того же устаревшего literal. Логи всех четырёх runs возвращали `EOF`, поэтому точные CI assertion кроме имён шагов не приписываю.
+
+### Новый PR head `6b072a1`: отдельная перепроверка, не смешивать с `ae1c900`
+
+Пока выполнялся аудит, PR продвинулся через `bcff377`/`42648ab` на `6b072a117c7391f53946770644efca05556572de`. Этот новый commit уже меняет `GillMobileMarginalia.astro`, добавляет Classic-палитру/типографику и Literata/JetBrains Mono. Локальная ветка fast-forward на `6b072a1`; тесты следующего абзаца относятся только к этому SHA. Позиционный core/W57 annotation JS остались побайтно прежними.
+
+Production-like build на `6b072a1` (Node 22.23.5) завершился с кодом 0: 112 Astro pages; Astro check 0 errors / 0 warnings / 7 hints; post-build projection/CSP/Atlas/relation/metadata/sitemap и Pastor guards — drift 0.
+
+Перезапущенный Classic-совместимый мобильный harness: **6/6** на 320/390 px; `GB Classic Literata` вычисляется как шрифт Scripture и `document.fonts.check` проходит; выбор/стрелки/клавиатура/возвраты/тема/overflow работают, `pageerror: []`. Новая Classic CSS подняла citation-кнопки до **44 px** по высоте (на `ae1c900` было 42); стрелки остались **32×102 px**, поэтому полный 44×44 target acceptance пока всё ещё не выполнен. Результат — `audit/evidence/r16-6b072a1-current/classic-scripture-shelf.json`.
+
+Live cross-tab/same-tab и dialog focus/name на 320/390 повторно PASS: `audit/evidence/r16-6b072a1-current/live-marks-dialog.json`. W57 real-page integration снова рисует изначальный anchor; искусственное удаление ID и вставка перед абзацем остаются fail-closed при двух идентичных параграфах (one orphan): `audit/evidence/r16-6b072a1-current/w57-live-preview.json`. Установленный неверный fallback после изменения контекста остаётся в общем anchor source, не менялся в `6b072a1`.
+
+Occurrence-index contract и source cache-bust read-only check на `6b072a1` всё ещё FAIL с той же разницей 542→545 и двумя stale `sw.js` URL соответственно. **На последнем опросе CI для нового `6b072a1` ещё не завершился:** 30 check-runs — 20 success, 4 failure, 4 pending, 2 skipped. Failures: TTS source, Metadata & IndexNow, Vosk, Site Sections Menu; pending: interactive-audit, Grok, consent browser, Reader Controls. Не выдаю это за финальный rollup. PR #2352 оставлен OPEN / Draft / MERGEABLE / UNSTABLE; production не менялся.
+
+## R17 — positional-anchor fix и текущая Classic/W57 перепроверка (working tree на базе `a595629`)
+
+Эта секция относится к локальному дереву, основанному на `a595629f15a2324205cbb9b1c2cb2cc936814214`; браузерные evidence-файлы сохранены до коммита. Результаты не выдаются за CI или физические устройства.
+
+### Positional anchors: больше нет ложного переноса пометы
+
+В `js/highlights.js` единый resolver теперь:
+
+- при наличии исходного стабильного block ID ограничивает fallback этим же блоком;
+- при отсутствии ID допускает перенос только в блок с полным совпадающим fingerprint и совпадающим локальным контекстом;
+- оставляет неоднозначные совпадения orphan, не выбирая произвольный параграф.
+
+`highlights-runtime-regression-test.js` и `reader-w57-annotations-regression-test.mjs` проходят. Дополнительный Chromium-прогон на 320/390 px подтвердил: изменённый исходный текст не прикрепляется к совпадающей фразе в другом абзаце; id-less повторная фраза после вставки нового блока разрешается в исходном контекстном месте (offset 29); уникальный перенос разрешается; два одинаковых блока остаются неоднозначными; скрытая tooltip-разметка исключена из координат, межабзацный выбор не захватывается. Evidence: `audit/evidence/r17-a595629-current/positional-anchor-after-fix.json` и regression scripts.
+
+### Classic mobile Scripture shelf: стрелки стали 44 px по ширине
+
+В `GillMobileMarginalia.astro` на ширинах до 1120 px обе горизонтальные стрелки получили минимум 44 px ширины. Первый R17-прогон зафиксировал узкие цели 32×102 (`audit/evidence/r17-a595629-classic-mobile/`); после правки на длинном rail теперь **44×102**. Desktop W57-стили не затронуты. Повторный Chromium harness: **6/6** на 320/390 px (Gill II long, Gill IV method alias, Gill IV quiz long), без горизонтального overflow и `pageerror`; прокрутка стрелками и клавиатура, выбор ссылки, возврат к упоминанию, citation/quote/source и тема проходят. Pre-fix и corrected evidence/screenshots: `audit/evidence/r17-a595629-classic-mobile/` и `audit/evidence/r17-a595629-current/classic-scripture-shelf.json`.
+
+### Уточнение по `#npUOutline` при 1440 px
+
+Нулевой прямоугольник **ожидаем**, это не потеря W57-контента: в `reader_argon_first.css` при `min-width:1360px` правило для `.np-u-native-series-rail` намеренно скрывает `#npUOutline`, пока показывает настоящий нативный Gill rail. На 1121/1359 px W57 outline виден (207×900 / 217.4×900), нативный rail скрыт; на 1360/1440 px outline имеет `display:none`, а нативный rail видим (299.2×900 / 316.8×900; 23 chapter/action controls). Это проверено на обеих сторонах порога, а не выведено только из CSS. W57 остаётся `ready` на 1121/1440; при 390/1120 W57 не монтируется и сохраняется нативный mobile Gill UI. Ошибок страниц и отказавших W57-запросов нет. Evidence: `audit/evidence/r17-a595629-current/reader-scope-w57.json`, `w57-outline-breakpoint.json`, `desktop-w57-1440.png`, `mobile-native-390.png`.
+
+### Build, пределы и решение по PR
+
+После этих source-изменений `npm run strangler:build:production-like` завершился успешно: 112 Astro pages, 0 ошибок/предупреждений Astro check, 7 hints; post-build projections и guards прошли. Остались не-блокирующие Shiki fallback для `greek` и Vite runtime-ссылка `../images/og-karty-1200x630.webp`. Browser QA — только sandbox Chromium и viewport emulation; WebKit/Safari и реальные мобильные устройства не проверялись.
+
+Последний GitHub CI snapshot в этой работе относился к **закоммиченному** `a595629`, а не к этому незакоммиченному дереву: 30 checks — 6 failed, 1 pending, 2 skipped. CI не зелёный; PR #2352 остаётся OPEN / Draft / HOLD до проверки нового exact-SHA CI. Production не менялся.

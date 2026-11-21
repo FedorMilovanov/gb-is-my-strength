@@ -775,4 +775,10 @@ html[data-reader-theme="dark"] #partTocOverlay :is(.gbr-scripture-source,.gbr-ma
   #partTocOverlay details[open] > .gbr-marginalia-group-head::after {transform:rotate(225deg);margin-top:5px}
   #partTocOverlay .gbr-marginalia-personal {border-top:1px solid var(--color-border);padding:8px 0;overflow-wrap:anywhere}
   #partTocOverlay .gbr-marginalia-personal p {margin:4px 0;white-space:pre-line}
+  /* Mobile Classic shelf: keep both horizontal-scroll arrows at least 44px
+     wide; the tall rail already supplies the vertical hit area. The desktop
+     W57 preview never receives this mobile-only target override. */
+  @media (max-width:1120px) {
+    #partTocOverlay .gbr-scripture-step {flex-basis:44px;min-width:44px}
+  }
 </style>
