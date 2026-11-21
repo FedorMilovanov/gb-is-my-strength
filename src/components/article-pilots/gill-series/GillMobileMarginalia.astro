@@ -97,7 +97,7 @@ const aliases = Object.values(registry.books).flatMap(book => book.aliases);
       });
     }
     var paras = elements('p,blockquote').filter(function (p) { return visibleText(p).length >= 95; });
-    var refs = uniqueBy(elements('button.bref[data-ref]'), function (el) { return el.dataset.ref; });
+    var refs = elements('button.bref[data-ref]');
     var terms = uniqueBy(elements('.gterm[data-term]'), function (el) { return (el.dataset.termTitle || el.dataset.term || '').toLocaleLowerCase('ru'); })
       .filter(function (el) { return !!text(el.querySelector('.gtip-brief')); });
     var notes = elements('.fn-marker,.footnote-ref,[data-footnote-ref]').filter(function (el) { return !!el.id || !!el.dataset.noteOrdinal; });
@@ -109,7 +109,7 @@ const aliases = Object.values(registry.books).flatMap(book => book.aliases);
       termScope = 'Из всей статьи';
     }
     var books = new Set(JSON.parse(content.dataset.books).map(book => book.toLowerCase().replace(/[.\s]/g,'')));
-    var passages = refs.map(el => ({label:el.dataset.ref, target:el}));
+    var passages = [];
     var corpus = Array.from(article.querySelectorAll('p, blockquote, li')).filter(el => !el.closest('nav, aside, footer, .gill-series-shelf'));
     function citations(blocks) {
       var found = [];
@@ -121,11 +121,24 @@ const aliases = Object.values(registry.books).flatMap(book => book.aliases);
       });
       return found;
     }
-    var local = citations(corpus.filter(inSection));
-    passages = uniqueBy(local.concat(passages), item => item.label);
+    function addPassages(items) {
+      items.forEach(function (item) {
+        var label = String(item.label || '').trim().replace(/\s+/g, ' ');
+        if (!label || !item.target) return;
+        var entry = passages.find(function (value) { return value.label === label; });
+        if (!entry) {
+          entry = { label: label, targets: [] };
+          passages.push(entry);
+        }
+        var anchor = item.target.closest('p,li,blockquote') || item.target;
+        if (!entry.targets.includes(anchor)) entry.targets.push(anchor);
+      });
+    }
+    addPassages(citations(corpus.filter(inSection)));
+    addPassages(refs.map(el => ({label:el.dataset.ref, target:el})));
     if (!passages.length) {
-      var marked = Array.from(article.querySelectorAll('button.bref[data-ref]'), el => ({label:el.dataset.ref, target:el}));
-      passages = uniqueBy(marked.concat(citations(corpus)), item => item.label);
+      addPassages(Array.from(article.querySelectorAll('button.bref[data-ref]'), el => ({label:el.dataset.ref, target:el})));
+      addPassages(citations(corpus));
       refScope = 'Из всей статьи';
     }
     return { active: active, paras: paras.slice(0,3), refs: passages, terms: terms, notes: notes, refScope: refScope, termScope: termScope };
@@ -143,12 +156,39 @@ const aliases = Object.values(registry.books).flatMap(book => book.aliases);
     content.appendChild(lead);
     {
       var refs = group('Писание', String(data.refs.length));
-      var chips = node('div', 'gbr-marginalia-chips');
+      var entries = node('div', 'gbr-scripture-entries');
       refs.appendChild(node('p', 'gbr-marginalia-empty', data.refs.length ? data.refScope : 'В статье не найдены ссылки на главы и стихи.'));
+      var projection = window.SCRIPTURE_DATA || {};
+      var sources = window.SCRIPTURE_SOURCE_BY_REF || {};
+      function normalizedRef(value) {
+        return String(value || '').replace(/[\u00a0\u202f]/g, ' ').replace(/[\u2012-\u2015]/g, '-').replace(/\s+/g, ' ').trim().toLocaleLowerCase('ru');
+      }
       data.refs.forEach(function (source) {
-        action(chips, source.label, source.target);
+        var item = node('details', 'gbr-scripture-entry');
+        item.appendChild(node('summary', 'gbr-scripture-heading', source.label));
+        var body = node('div', 'gbr-scripture-body');
+        var refKey = Object.prototype.hasOwnProperty.call(projection, source.label) ? source.label
+          : Object.keys(projection).find(function (key) { return normalizedRef(key) === normalizedRef(source.label); });
+        var verse = refKey ? String(projection[refKey] || '').trim() : '';
+        if (verse) {
+          body.appendChild(node('p', 'gbr-scripture-text', verse));
+          var attribution = refKey && sources[refKey];
+          if (attribution) body.appendChild(node('p', 'gbr-scripture-source', String(attribution)));
+        } else {
+          body.appendChild(node('p', 'gbr-scripture-unavailable', 'Текст этого места отсутствует в утверждённой проекции. Можно перейти к упоминанию в статье.'));
+        }
+        var destinations = node('div', 'gbr-scripture-destinations');
+        source.targets.forEach(function (target, index) {
+          var caption = source.targets.length === 1
+            ? 'К упоминанию в статье'
+            : 'К упоминанию в статье · ' + (index + 1);
+          action(destinations, caption, target).classList.add('gbr-scripture-return');
+        });
+        body.appendChild(destinations);
+        item.appendChild(body);
+        entries.appendChild(item);
       });
-      refs.appendChild(chips);
+      refs.appendChild(entries);
     }
     var lex = group('Понятия', String(data.terms.length));
     if (data.terms.length) {
@@ -260,6 +300,20 @@ const aliases = Object.values(registry.books).flatMap(book => book.aliases);
   #partTocOverlay .gbr-marginalia-jump { min-height:44px; padding:9px 12px; border:1px solid rgba(135,98,69,.24); border-radius:9px; background:rgba(131,103,79,.045); color:inherit; font:500 12px/1.45 system-ui,sans-serif; text-align:left; cursor:pointer; }
   #partTocOverlay .gbr-marginalia-jump:hover { background:rgba(128,92,63,.10); }
   #partTocOverlay .gbr-marginalia-jump:focus-visible { outline:2px solid #9a704b; outline-offset:2px; }
+  #partTocOverlay .gbr-scripture-entries { display:grid; gap:8px; min-width:0; }
+  #partTocOverlay .gbr-scripture-entry { min-width:0; border:1px solid rgba(135,98,69,.22); border-radius:10px; overflow-wrap:anywhere; }
+  #partTocOverlay .gbr-scripture-heading { min-height:44px; padding:11px 12px; display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer; list-style:none; font:600 15px/1.45 Georgia,serif; }
+  #partTocOverlay .gbr-scripture-heading::-webkit-details-marker { display:none; }
+  #partTocOverlay .gbr-scripture-heading::after { content:''; flex:0 0 7px; height:7px; width:7px; border:solid currentColor; border-width:0 1.5px 1.5px 0; transform:rotate(45deg); margin-right:4px; }
+  #partTocOverlay .gbr-scripture-entry[open] .gbr-scripture-heading::after { transform:rotate(225deg); }
+  #partTocOverlay .gbr-scripture-heading:focus-visible { outline:2px solid #9a704b; outline-offset:-3px; border-radius:9px; }
+  #partTocOverlay .gbr-scripture-body { padding:2px 12px 14px; }
+  #partTocOverlay .gbr-scripture-text { margin:2px 0 13px; font:400 16px/1.7 Georgia,serif; white-space:pre-line; overflow-wrap:anywhere; }
+  #partTocOverlay .gbr-scripture-source { margin:0 0 13px; font:400 11px/1.55 system-ui,sans-serif; opacity:.72; overflow-wrap:anywhere; }
+  #partTocOverlay .gbr-scripture-unavailable { margin:0 0 13px; font:400 13px/1.65 Georgia,serif; }
+  #partTocOverlay .gbr-scripture-destinations { display:flex; flex-wrap:wrap; gap:6px; }
+  #partTocOverlay .gbr-scripture-return { min-height:44px; background:transparent; font-size:11px; opacity:.88; }
+  html.dark #partTocOverlay .gbr-scripture-entry { border-color:rgba(244,224,205,.27); }
   #partTocOverlay .gbr-marginalia-term { border-bottom:1px solid rgba(121,92,67,.11); }
   #partTocOverlay .gbr-marginalia-term:last-child { border-bottom:0; }
   #partTocOverlay .gbr-marginalia-term summary { min-height:44px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; font:500 13px/1.45 system-ui,sans-serif; list-style:none; }
