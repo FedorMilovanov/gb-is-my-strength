@@ -62,7 +62,7 @@ async function settle(page) {
 }
 async function geometry(page) {
   return page.evaluate(() => {
-    const paper = document.querySelector('.journal-edition--articles'), issues = [], clamped = [];
+    const paper = document.querySelector('.articles-edition'), issues = [], clamped = [];
     const walker = document.createTreeWalker(paper, NodeFilter.SHOW_TEXT); let nodeCount = 0, rectCount = 0;
     while (walker.nextNode()) {
       const n = walker.currentNode, p = n.parentElement;
@@ -102,7 +102,7 @@ try {
       const curated = page.locator('[data-catalog-featured-repeat]');
       if (await curated.count()) { await curated.scrollIntoViewIfNeeded(); await settle(page); item.curatedImageDecoded = await curated.locator('img').evaluate((e) => e.complete && e.naturalWidth > 0); assert.equal(item.curatedImageDecoded, true); await page.screenshot({ path: path.join(out, 'screens', `curated-${width}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}.png`) }); }
       item.readerImageRequests = await page.evaluate(() => performance.getEntriesByType('resource').filter((e) => e.initiatorType === 'img').map((e) => ({ url: e.name, bytes: e.encodedBodySize, duration: e.duration })));
-      const renderedImageSources = await page.locator('.journal-edition--articles img').evaluateAll((els) => els.map((e) => e.currentSrc));
+      const renderedImageSources = await page.locator('.articles-edition img').evaluateAll((els) => els.map((e) => e.currentSrc));
       item.imageBudget = assertCatalogImageBudget(item.readerImageRequests, renderedImageSources);
       assert.deepEqual(item.runtime, []);
     }); } finally { await context.close(); }
@@ -154,10 +154,10 @@ try {
   for (const width of [390, 1440]) for (const theme of ['light', 'dark']) {
     const context = await contextFor(width, theme, { forcedColors: 'active' }); const page = await context.newPage();
     try { await run(report.forcedColors, { width, theme, mode: 'forced-colors-system-palette' }, async (item) => {
-      await load(page); item.colors = await page.evaluate(() => { const color = (name) => { const e = document.createElement('span'); e.style.color = name; document.body.append(e); const value = getComputedStyle(e).color; e.remove(); return value; }; return { canvas: color('Canvas'), highlight: color('Highlight'), links: [...document.querySelectorAll('.je-masthead__nav a')].map((e) => ({ href: e.getAttribute('href'), current: e.hasAttribute('aria-current'), border: getComputedStyle(e).borderBottomColor })) }; });
+      await load(page); item.colors = await page.evaluate(() => { const color = (name) => { const e = document.createElement('span'); e.style.color = name; document.body.append(e); const value = getComputedStyle(e).color; e.remove(); return value; }; return { canvas: color('Canvas'), highlight: color('Highlight'), links: [...document.querySelectorAll('.ae-masthead__nav a')].map((e) => ({ href: e.getAttribute('href'), current: e.hasAttribute('aria-current'), border: getComputedStyle(e).borderBottomColor })) }; });
       for (const link of item.colors.links) assert.equal(link.border, link.current ? item.colors.highlight : item.colors.canvas);
-      for (let i = 0; i < 12; i++) { await page.keyboard.press('Tab'); if (await page.locator('.je-masthead__nav a[aria-current]').evaluate((e) => e === document.activeElement)) break; }
-      item.focus = await page.locator('.je-masthead__nav a[aria-current]').evaluate((e) => { const s = getComputedStyle(e); return { reached: e === document.activeElement, visible: e.matches(':focus-visible'), width: parseFloat(s.outlineWidth), style: s.outlineStyle }; }); assert.ok(item.focus.reached && item.focus.visible && item.focus.width >= 2 && item.focus.style !== 'none');
+      for (let i = 0; i < 12; i++) { await page.keyboard.press('Tab'); if (await page.locator('.ae-masthead__nav a[aria-current]').evaluate((e) => e === document.activeElement)) break; }
+      item.focus = await page.locator('.ae-masthead__nav a[aria-current]').evaluate((e) => { const s = getComputedStyle(e); return { reached: e === document.activeElement, visible: e.matches(':focus-visible'), width: parseFloat(s.outlineWidth), style: s.outlineStyle }; }); assert.ok(item.focus.reached && item.focus.visible && item.focus.width >= 2 && item.focus.style !== 'none');
       await page.screenshot({ path: path.join(out, 'screens', `forced-${width}-${theme}.png`) });
     }); } finally { await context.close(); }
   }
@@ -168,7 +168,7 @@ try {
     try { await run(report.text, { width, theme, mode }, async (item) => {
       await load(page);
       if (mode === 'root200-reader-max125') { await page.evaluate(() => { window.GBReaderPreferences.set({ fontScale: 1.4 }, { source: 'articles-read-only-diagnostic' }); document.documentElement.style.fontSize = '200%'; }); item.apiScale = await page.evaluate(() => window.GBReaderPreferences.get().fontScale); assert.equal(item.apiScale, 1.25); }
-      if (mode === 'text-spacing') await page.addStyleTag({ content: '.journal-edition--articles * { line-height:1.5 !important; letter-spacing:.12em !important; word-spacing:.16em !important; } .journal-edition--articles p { margin-bottom:2em !important; }' });
+      if (mode === 'text-spacing') await page.addStyleTag({ content: '.articles-edition * { line-height:1.5 !important; letter-spacing:.12em !important; word-spacing:.16em !important; } .articles-edition p { margin-bottom:2em !important; }' });
       item.geometry = await assertGeometry(page); await page.locator('[data-catalog-route]').first().scrollIntoViewIfNeeded(); await page.waitForTimeout(350); await page.screenshot({ path: path.join(out, 'screens', `${mode}-${width}-${theme}.png`) });
     }); } finally { await context.close(); }
   }
@@ -176,7 +176,7 @@ try {
  if (selected('interactions')) {
   const context = await contextFor(1440, 'light'), page = await context.newPage();
   try { await run(report.interactions, { mode: 'theme-search-smoke-discovery' }, async (item) => {
-    await load(page); await page.locator('[data-journal-theme]').click(); assert.equal(await page.locator('html').getAttribute('data-reader-theme'), 'dark'); await page.reload({ waitUntil: 'networkidle' }); assert.equal(await page.locator('html').getAttribute('data-reader-theme'), 'dark'); item.themePersistence = true;
+    await load(page); await page.locator('[data-articles-theme]').click(); assert.equal(await page.locator('html').getAttribute('data-reader-theme'), 'dark'); await page.reload({ waitUntil: 'networkidle' }); assert.equal(await page.locator('html').getAttribute('data-reader-theme'), 'dark'); item.themePersistence = true;
     const tab = await context.newPage(); await tab.goto(origin + '/articles/', { waitUntil: 'networkidle' }); assert.equal(await tab.locator('html').getAttribute('data-reader-theme'), 'dark'); await tab.close(); item.crossTabTheme = true;
     await page.keyboard.press('Control+k'); await page.locator('.cp-backdrop.is-open').waitFor();
     await page.locator('.cp-input').fill('Римлянам 7'); await page.waitForTimeout(800); await page.keyboard.press('Escape'); await page.waitForTimeout(200);
@@ -195,7 +195,8 @@ try {
         report.assets.push({ url: image, status: response.status(), bytes: (await response.body()).length });
       }
     }
-    await page.goto(origin + '/journal/', { waitUntil: 'networkidle' }); await page.locator('.je-masthead__nav a[href="/articles/"]').click(); await page.waitForURL('**/articles/'); await page.locator('[data-catalog-route]').first().click(); await page.waitForURL((url) => url.pathname !== '/articles/'); assert.ok(await page.locator('h1').isVisible()); item.publication = page.url(); await page.goBack({ waitUntil: 'networkidle' }); assert.equal(new URL(page.url()).pathname, '/articles/'); assert.equal(await page.locator('[data-catalog-route],[data-catalog-series]').count(), expected.length); await page.goForward({ waitUntil: 'networkidle' }); assert.equal(page.url(), item.publication); await page.goBack({ waitUntil: 'networkidle' }); assert.equal(new URL(page.url()).pathname, '/articles/'); await page.goBack({ waitUntil: 'networkidle' }); assert.equal(new URL(page.url()).pathname, '/journal/'); item.nativeBackForwardRoundTrip = true;
+    // NEWS no longer owns a catalog primary item: follow the explicit site exit.
+    await page.goto(origin + '/journal/', { waitUntil: 'networkidle' }); await page.locator('.je-masthead__home').click(); await page.waitForURL((url) => url.pathname === '/'); await page.locator('.h-nav-links a[href="/articles/"]').click(); await page.waitForURL('**/articles/'); await page.locator('[data-catalog-route]').first().click(); await page.waitForURL((url) => url.pathname !== '/articles/'); assert.ok(await page.locator('h1').isVisible()); item.publication = page.url(); await page.goBack({ waitUntil: 'networkidle' }); assert.equal(new URL(page.url()).pathname, '/articles/'); assert.equal(await page.locator('[data-catalog-route],[data-catalog-series]').count(), expected.length); await page.goForward({ waitUntil: 'networkidle' }); assert.equal(page.url(), item.publication); await page.goBack({ waitUntil: 'networkidle' }); assert.equal(new URL(page.url()).pathname, '/articles/'); await page.goBack({ waitUntil: 'networkidle' }); assert.equal(new URL(page.url()).pathname, '/'); await page.goBack({ waitUntil: 'networkidle' }); assert.equal(new URL(page.url()).pathname, '/journal/'); item.nativeBackForwardRoundTrip = true;
   }); } finally { await context.close(); }
  }
  if (selected('print')) for (const paper of ['A4', 'Letter']) for (const theme of ['light', 'dark']) for (const javaScriptEnabled of [true, false]) {

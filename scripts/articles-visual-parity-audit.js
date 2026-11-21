@@ -70,12 +70,13 @@ must(chrome, '<head>', 'ArticlesPageChrome owns <head>');
 must(chrome, '<body class="articles-index-page">', 'ArticlesPageChrome owns body class');
 must(chrome, 'CollectionPage', 'ArticlesPageChrome preserves JSON-LD CollectionPage');
 must(chrome, 'SITE_CONFIG', 'ArticlesPageChrome preserves SITE_CONFIG');
-must(page, '<JournalEditorialShell', 'Catalog reuses the selected edition shell');
-must(page, 'kind="articles"', 'Catalog selects its own active edition section');
+mustNot(page, 'JournalEditorialShell', 'NEWS shell on the catalog route');
+must(chrome, '<ArticlesMasthead />', 'Catalog owns its one library/site masthead');
+must(chrome, 'class="articles-edition"', 'Catalog uses an independent presentation wrapper');
 must(chrome, '<JournalFontPreloads catalogOpening />', 'Catalog reuses the selected font hint owner with its cold opening opt-in');
 must(main, '<main id="main-content" tabindex="-1">', 'ArticlesMain preserves native-focus semantic main');
 mustNot(main, '<SiteSectionsMenu', 'competing legacy menu beside selected masthead');
-must(page, "mobileChromeFor('/articles/')", 'Catalog preserves mobile registry authority');
+must(chrome, "mobileChromeFor('/articles/')", 'Catalog preserves mobile registry authority');
 must(siteSectionsMenu, "class:list={['h-mobile-nav'", 'canonical shared menu preserves h-mobile-nav visual class');
 must(siteSectionsMenu, 'id="hMobileNav"', 'canonical shared menu preserves hMobileNav surface identity');
 must(siteSectionsMenu, 'data-gb-site-menu-runtime="canonical"', 'canonical shared menu declares single runtime ownership');
@@ -172,10 +173,11 @@ if (REQUIRE_DIST) {
     bad('dist /articles/ missing; run production-like build before --require-dist audit');
   } else {
     const dist = read('dist/articles/index.html');
-    for (const marker of ['articles-index-page', 'home-v20', 'h-hero-title', 'articles-entry', 'h-article-thumb', 'gb-accuracy-block', 'data-catalog-role=', 'je-masthead', 'mobileChromePage', 'data-journal-theme']) {
+    for (const marker of ['articles-index-page', 'home-v20', 'h-hero-title', 'articles-entry', 'h-article-thumb', 'gb-accuracy-block', 'data-catalog-role=', 'ae-masthead', 'articles-edition', 'mobileChromePage', 'data-articles-theme']) {
       must(dist, marker, `dist /articles/ marker: ${marker}`);
     }
     mustNot(dist, 'astro-card-grid', 'dist /articles/ generic regression marker absent');
+    for (const marker of ['je-masthead', 'journal-edition--articles', 'data-journal-theme']) mustNot(dist, marker, 'NEWS ownership marker in catalog output: ' + marker);
     const renderedCatalogUrls = [...dist.matchAll(/data-catalog-(?:route|series)=["']([^"']+)["']/g)].map((match) => match[1]);
     const renderedCatalogUnique = [...new Set(renderedCatalogUrls)].sort();
     const projectedUnique = [...new Set(projectedUrls)].sort();

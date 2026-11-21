@@ -1,4 +1,7 @@
 ---
+import { getEntry } from 'astro:content';
+import searchManifest from '../../../data/search-manifest.json';
+import pageOwnership from '../../../migration/page-ownership.json';
 import JournalEditorialShell from './JournalEditorialShell.astro';
 import JournalEditorialRail from './JournalEditorialRail.astro';
 import JournalArticleHeader from './JournalArticleHeader.astro';
@@ -15,6 +18,19 @@ import {
 import { G3_SOURCE_BIBLIOGRAPHY, type G3SourceBibliographyEntry } from '@/data/journal/g3SourceBibliography';
 
 const coverSizes = '(min-width: 1024px) 600px, (min-width: 768px) 700px, calc(100vw - 40px)';
+
+// One Owner-curated theological context, never a G3 evidence source. Titles
+// stay with the published article's canonical content metadata, not a copy here.
+const relatedRoute = '/articles/cerkovnaya-disciplina-vlast-granicy-zashchita/';
+const relatedEntry = await getEntry('articles', 'cerkovnaya-disciplina-vlast-granicy-zashchita');
+const relatedPublication = searchManifest.items.find((item) => item.type === 'article' && item.url === relatedRoute);
+const relatedOwner = pageOwnership.routes[relatedRoute];
+const held = (record: object | undefined) => ['status', 'publicationStatus', 'publicationGate']
+  .some((key) => Reflect.get(record ?? {}, key) === 'PUBLICATION_HOLD');
+const relatedArticle = relatedEntry && !relatedEntry.data.draft && !relatedEntry.data.noindex &&
+  relatedPublication && relatedOwner?.status === 'production-dist' && !held(relatedPublication) && !held(relatedOwner)
+    ? { url: relatedRoute, title: relatedEntry.data.h1 || relatedPublication.title }
+    : null;
 
 const projectedClaims: G3PublicationClaimId[] = [
   'G3-PUB-001', 'G3-PUB-002', 'G3-PUB-003', 'G3-PUB-004',
@@ -491,19 +507,17 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
     </div>
   </div>
   <aside class="je-read-next" aria-labelledby="g3-read-next" data-pagefind-ignore>
-    <p class="eyebrow">На основном сайте</p>
-    <h2 id="g3-read-next">Продолжить чтение на основном сайте</h2>
-    <p class="je-read-next__intro">Это самостоятельные материалы, а не источники сведений об участниках и событиях G3.</p>
-    <ul>
-      <li>
-        <a href="/articles/">Богословские статьи</a>
-        <p>Тексты о Писании и христианском учении — для самостоятельного чтения за пределами этого досье.</p>
-      </li>
-      <li>
-        <a href="/biografii/">Биографии служителей</a>
-        <p>Жизнеописания служителей и контекст их времени. Для более широкого взгляда на церковную историю.</p>
-      </li>
-    </ul>
+    <h2 id="g3-read-next">Шире по теме</h2>
+    {relatedArticle && (
+      <a class="je-related-preview" href={relatedArticle.url}>
+        <span class="je-related-preview__label">Связанная тема · Богословская библиотека</span>
+        <h3>{relatedArticle.title}</h3>
+        <p>Самостоятельный богословский разбор церковной власти и её границ.
+          Не источник сведений о G3 и не оценка участников досье.</p>
+        <span class="je-related-preview__cta">Читать статью <span aria-hidden="true">→</span></span>
+      </a>
+    )}
+    <a class="je-read-next__home" href="/">На основной сайт</a>
   </aside>
   <footer class="dossier-footer author-card">
     <p><strong>Автор-редактор:</strong> Фёдор Милованов</p>

@@ -157,11 +157,14 @@ export function inspectCatalogHtml(html, { manifest, ownership, baselineHtml, ed
     const count = (predicate) => nodes.filter(predicate).length;
     assert.equal(count((n) => n.tagName === 'main'), 1, 'Exactly one main');
     assert.equal(count((n) => n.tagName === 'h1'), 1, 'Exactly one h1');
-    assert.equal(count((n) => hasClass(n, 'je-masthead')), 1, 'Exactly one selected masthead');
+    assert.equal(count((n) => hasClass(n, 'articles-edition')), 1, 'Exactly one independent catalog wrapper');
+    assert.equal(count((n) => n.tagName === 'header' && hasClass(n, 'ae-masthead')), 1, 'Exactly one own catalog masthead');
+    assert.equal(count((n) => n.tagName === 'nav' && hasClass(n, 'ae-masthead__nav')), 1, 'Exactly one own catalog navigation');
+    assert.equal(count((n) => hasClass(n, 'je-masthead') || hasClass(n, 'journal-edition') || attribute(n, 'data-journal-theme') !== undefined), 0, 'Journal chrome must not own the catalog');
     assert.equal(count((n) => attribute(n, 'id') === 'mobileChromePage'), 1, 'Exactly one registry mobile chrome');
     assert.equal(count((n) => hasClass(n, 'skip-link')), 1, 'Exactly one skip link');
     assert.equal(count((n) => attribute(n, 'data-gb-search-bootstrap') !== undefined), 1, 'Exactly one search bootstrap');
-    assert.equal(count((n) => attribute(n, 'data-journal-theme') !== undefined), 1, 'Exactly one theme adapter');
+    assert.equal(count((n) => attribute(n, 'data-articles-theme') !== undefined), 1, 'Exactly one catalog theme adapter');
     assert.equal(count((n) => ['hNavbar', 'hMobileNav', 'themeToggle', 'hScrollTop'].includes(attribute(n, 'id'))), 0, 'Competing legacy chrome');
     const active = nodes.filter((n) => n.tagName === 'a' && attribute(n, 'aria-current') !== undefined);
     assert.equal(active.length, 1, 'Exactly one active edition section');
@@ -186,8 +189,15 @@ export function inspectCatalogHtml(html, { manifest, ownership, baselineHtml, ed
 export function assertCatalogSource() {
   const read = (name) => fs.readFileSync(path.join(root, name), 'utf8');
   const page = read('src/pages/articles/index.astro'), chrome = read('src/components/articles/ArticlesPageChrome.astro'), main = read('src/components/articles/ArticlesMain.astro');
-  assert.match(page, /<JournalEditorialShell[\s\S]*?kind="articles"/, 'Use selected edition shell');
-  assert.match(page, /mobileChromeFor\('\/articles\/'\)/, 'Keep mobile registry authority');
+  assert.doesNotMatch(page, /JournalEditorialShell|JournalMasthead|kind="articles"/, 'Catalog must not mount NEWS shell');
+  assert.match(chrome, /<ArticlesMasthead\s*\/>/, 'Route-owned chrome mounts its one catalog header');
+  assert.match(chrome, /class="articles-edition"/, 'Independent catalog presentation root');
+  assert.match(chrome, /mobileChromeFor\('\/articles\/'\)/, 'Keep mobile registry authority');
+  assert.doesNotMatch(read('src/components/journal/JournalEditorialShell.astro'), /'articles'/, 'NEWS shell cannot consume the catalog');
+  const catalogMasthead = read('src/components/articles/ArticlesMasthead.astro');
+  assert.match(catalogMasthead, /aria-label="Богословская библиотека"/, 'Catalog retains its own identity');
+  assert.match(catalogMasthead, /data-articles-theme/, 'Own thin catalog theme adapter');
+  assert.doesNotMatch(catalogMasthead, /data-journal-theme|class="je-masthead|localStorage|new MutationObserver/, 'No NEWS or second persistence/theme observer owner');
   assert.equal((chrome.match(/<JournalFontPreloads\s+catalogOpening\s*\/>/g) || []).length, 1, 'Exactly one selected font hint owner, with catalog opening opt-in');
   const fontHints = read('src/components/journal/JournalFontPreloads.astro');
   assert.match(fontHints, /catalogOpening = false/, 'Other editions must retain their original hints by default');
@@ -199,13 +209,15 @@ export function assertCatalogSource() {
   assert.ok(!/js\/(?:site|site-utils|scroll-perf)\.js/.test(footer), 'Legacy catalog interaction owner returned');
   assert.match(footer, /js\/sw-register\.js\?v=/, 'Keep existing SW registration revision');
   const css = read('src/components/articles/articlesEditorial.css');
+  assert.match(css, /\.articles-edition/, 'Catalog CSS consumes its own wrapper');
+  assert.doesNotMatch(css, /journal-edition--articles/, 'Catalog presentation must not depend on a NEWS kind');
   assert.ok(!/!important\s*[;}]/.test(css), 'Catalog CSS uses important');
   assert.ok(!/-webkit-line-clamp\s*:\s*\d/.test(css), 'Catalog text is clamped');
   const library = read('src/components/articles/ArticlesLibrarySection.astro');
   assert.match(library, /data-catalog-source="search-manifest\+page-ownership"/);
   assert.ok(!/<(?:img|picture|source)\b/.test(library), 'Do not return OG images to the exhaustive index');
   assert.ok(!/\b80\s*(?:опубликованных|материалов)/u.test(library), 'Hardcoded current inventory count');
-  return { selectedShell: true, registryMobile: true, oneFontHintOwner: true, oldCatalogRuntimeRetired: true, noClampOrImportant: true, textFirstIndex: true };
+  return { independentCatalogChrome: true, registryMobile: true, oneFontHintOwner: true, oldCatalogRuntimeRetired: true, noClampOrImportant: true, textFirstIndex: true };
 }
 export function catalogProvenance(transferPath) {
   if (transferPath) {

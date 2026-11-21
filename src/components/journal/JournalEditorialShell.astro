@@ -3,7 +3,7 @@ import MobileChromePage from '@/components/article-pilots/_shared/MobileChromePa
 import JournalMasthead from './JournalMasthead.astro';
 import './journalEditorial.css';
 
-export type JournalEditionKind = 'journal' | 'news' | 'dossier' | 'explainer' | 'articles';
+export type JournalEditionKind = 'journal' | 'news' | 'dossier' | 'explainer';
 
 interface Props {
   kind: JournalEditionKind;
@@ -11,7 +11,7 @@ interface Props {
   mobileChromeEnabled?: boolean;
 }
 const { kind, backHref = '/journal/', mobileChromeEnabled = true } = Astro.props;
-const activeSection = kind === 'articles' ? 'articles' : kind === 'dossier' ? 'dossier' : 'journal';
+const activeSection = kind === 'dossier' ? 'dossier' : 'journal';
 ---
 <!-- Preserve canonical skip-link and global mobile Back / Home / Search owner. -->
 <a href="#main-content" class="skip-link">Перейти к содержимому</a>

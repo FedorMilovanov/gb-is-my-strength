@@ -3,14 +3,18 @@
  * ArticlesPageChrome.astro — full native document chrome for /articles/.
  *
  * Owns <html>, the existing route-owned SEO <head> and body attributes.
- * The selected edition shell owns skip/navigation/mobile chrome. Reader-facing
+ * Owns the single catalog skip/navigation/mobile chrome as well. Reader-facing
  * CollectionPage/canonical/social/JSON-LD data stay byte-owned here; shared
  * asset revisions and SITE_CONFIG are retained. №8 owns the new presentation,
  * not the retired loader recipe or its home.css interaction adapters.
  */
 import ReaderPreferencesHead from '@/components/reader-platform/ReaderPreferencesHead.astro';
 import JournalFontPreloads from '@/components/journal/JournalFontPreloads.astro';
+import ArticlesMasthead from './ArticlesMasthead.astro';
+import MobileChromePage from '@/components/article-pilots/_shared/MobileChromePage.astro';
+import { mobileChromeFor } from '@/components/article-pilots/_shared/mobileChromeRegistry';
 import './articlesEditorial.css';
+const mobileChrome = mobileChromeFor('/articles/');
 ---
 <html lang="ru">
 <head>
@@ -235,7 +239,12 @@ window.SITE_CONFIG = {
 <body class="articles-index-page">
   <noscript><div><img decoding="async" src="https://mc.yandex.ru/watch/108353327" style="position:absolute; left:-9999px;" alt=""></div></noscript>
 
-  <!-- Selected JournalEditorialShell owns the single skip/nav/mobile chrome. -->
-  <slot />
+  <a href="#main-content" class="skip-link">Перейти к содержимому</a>
+  {mobileChrome?.enabled && mobileChrome.mount === 'registry' && mobileChrome.engine === 'page' &&
+    <MobileChromePage backHref={mobileChrome.backHref ?? '/'} homeHref="/" searchLabel="Поиск по сайту…" />}
+  <div class="articles-edition">
+    <ArticlesMasthead />
+    <slot />
+  </div>
 </body>
 </html>
