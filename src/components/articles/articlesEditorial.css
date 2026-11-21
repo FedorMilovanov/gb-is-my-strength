@@ -3,6 +3,7 @@
 @import '../../styles/editorial-edition.css';
 body.articles-index-page { margin: 0; }
 .articles-index-page #main-content { width: 100%; max-width: none; margin: 0; padding: 0; }
+.articles-edition .eyebrow { margin: 0 0 13px; color: var(--je-gold); font: 600 11px/1.5 var(--je-ui); letter-spacing: .14em; text-transform: uppercase; }
 .articles-edition .articles-catalog.home-v20 { width: 100%; max-width: 1280px; margin: 0 auto; padding: 40px 40px 56px; background: none; }
 .articles-edition .articles-catalog .home-content { display: block; width: 100%; max-width: none; margin: 0; padding: 0; }
 .articles-edition :is(#main-content, #catalog-title, #catalog-series, #catalog-materials, .articles-topic-heading h3, #razbor) { scroll-margin-block-start: 76px; }
@@ -118,6 +119,7 @@ body.articles-index-page { margin: 0; }
   .articles-edition .h-hero-desc { font-size: 10pt; line-height: 1.6; }
   .articles-edition :is(.articles-hero-links, .articles-topics, .h-article-thumb, .gb-accuracy-block, .h-footer) { display: none; }
   .articles-edition .h-section { padding-block: 12pt; }
+  .articles-edition .eyebrow { break-after: avoid; }
   /* A flex opening may orphan its title before the first atomic entry. */
   .articles-edition .articles-section-heading { display: block; margin-bottom: 10pt; break-after: avoid; }
   .articles-edition .articles-section-heading h2 { font-size: 21pt; }
