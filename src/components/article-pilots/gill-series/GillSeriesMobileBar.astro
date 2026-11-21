@@ -276,11 +276,11 @@ const page = config.pages[pageId];
     inset:2px;width:40px;height:40px;opacity:1;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-track {
-    stroke:var(--gill-mobile-bar-gold,#b18b62);stroke-width:6;opacity:.68;
+    stroke:var(--gill-mobile-bar-gold,#b18b62);stroke-width:3.4;opacity:.62;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-progress {
-    stroke-width:6.5;opacity:1;
-    filter:drop-shadow(0 0 1.4px rgba(197,151,88,.23));
+    stroke-width:3.9;opacity:1;
+    filter:drop-shadow(0 0 1px rgba(197,151,88,.13));
     transition:stroke-dashoffset .55s cubic-bezier(.2,.75,.3,1);
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-play::before {
@@ -293,7 +293,7 @@ const page = config.pages[pageId];
   @media(hover:hover) and (pointer:fine) {
     [data-gill-v16] .mobile-top-bar .reader-mobile-play:hover {transform:none;}
   }
-  /* Play and speed share one 88px group with separate 44px targets.
+  /* Play and speed share a 68px group with separate 44px targets.
      The speed chip is a true pointer target so its overlap cannot invoke TTS. */
   [data-gill-v16] .mobile-top-bar .reader-mobile-play-group .reader-mobile-speed-badge {
     position:relative;z-index:3;box-sizing:border-box;flex:0 0 44px;
@@ -307,11 +307,14 @@ const page = config.pages[pageId];
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-speed-badge::before {
     content:'';display:block;position:absolute;
-    right:0;top:0;width:24px;height:44px;
-    background:transparent;pointer-events:auto;
+    left:20px;right:auto;top:0;width:24px;height:44px;
+    /* This is a transparent hit area, never a painted second button.
+       Gill ResponsiveStyles used to supply a wine-colored panel here. */
+    background:transparent!important;border:0!important;
+    box-shadow:none!important;border-radius:0!important;pointer-events:auto;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-speed-chip {
-    box-sizing:border-box;position:absolute;left:9px;bottom:5px;z-index:4;
+    box-sizing:border-box;position:absolute;left:5px;bottom:2px;z-index:4;
     display:grid;place-items:center;width:max-content;
     min-width:24px;max-width:35px;height:15px;padding:0 3px;
     border:1px solid color-mix(in srgb,var(--gill-mobile-bar-paper,#fffaf5) 68%,transparent);
@@ -378,8 +381,21 @@ const page = config.pages[pageId];
     opacity:0;transform:none;pointer-events:none;
   }
 }
-/* The original 88px speed control reserved too much invisible space.
-   Its 68px compound now meets Settings without moving unrelated SVGs. */
+/* Optical spacing: target geometry remains 44px, but the painted glyphs
+   follow a tighter rhythm. The Play/rate compound remains 68px. */
+@media (min-width:431px) and (max-width:84.999em) {
+  [data-gill-v16] .mobile-top-bar {gap:2px!important;}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-action--top-settings svg,
+  [data-gill-v16] .mobile-top-bar .mobile-top-save svg {
+    transform:translateX(-8px);
+  }
+}
+@media (min-width:361px) and (max-width:430px) {
+  [data-gill-v16] .mobile-top-bar .reader-mobile-action--top-settings svg,
+  [data-gill-v16] .mobile-top-bar .mobile-top-save svg {
+    transform:translateX(-4px);
+  }
+}
 @media(max-width:430px) {
   [data-gill-v16] .mobile-top-bar.speed-open .reader-mobile-speedrail {
     -webkit-mask-image:linear-gradient(to right,#000 0%,#000 calc(100% - 10px),transparent 100%);

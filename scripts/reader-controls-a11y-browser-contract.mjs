@@ -162,6 +162,16 @@ async function gillPlayOptics(page) {
       ringTrackWidth: getComputedStyle(el('.reader-mobile-play .gb-ember__ring-track')).strokeWidth,
       ringProgressWidth: getComputedStyle(el('.reader-mobile-play .gb-ember__ring-progress')).strokeWidth,
       ringProgressTransition: getComputedStyle(el('.reader-mobile-play .gb-ember__ring-progress')).transitionDuration,
+      speedPseudoPaint: (() => {
+        const ps=getComputedStyle(el('.reader-mobile-speed-badge'),'::before');
+        return {border:ps.borderTopWidth,background:ps.backgroundColor,shadow:ps.boxShadow};
+      })(),
+      settingsSvg: rect('#mobSettingsBtn svg'),
+      speedGapToSettings: (() => {
+        const chip=el('.reader-mobile-speed-chip')?.getBoundingClientRect();
+        const icon=el('#mobSettingsBtn svg')?.getBoundingClientRect();
+        return chip && icon ? icon.x-chip.right : -1;
+      })(),
       chipPointerHitsBadge: (() => {
         const chip=el('.reader-mobile-speed-chip');
         const badge=el('.reader-mobile-speed-badge');
@@ -252,12 +262,23 @@ async function auditSlot(page, routeId, selectors, checks) {
       gillBefore.rateChip?.right <= gillBefore.compound.right,
       { compound: gillBefore.compound, badge: gillBefore.rateBadge,
         chip: gillBefore.rateChip, settings: gillBefore.settingsButton });
-    record(checks, `${prefix}-32`, 'one thick, softly animated progress ring inside the canonical 44px Play',
-      Number.parseFloat(gillBefore.ringTrackWidth) >= 5.8 &&
-      Number.parseFloat(gillBefore.ringProgressWidth) >= 6.3 &&
+    record(checks, `${prefix}-32`, 'one fine, softly animated progress ring inside the canonical 44px Play',
+      Number.parseFloat(gillBefore.ringTrackWidth) >= 3.2 && Number.parseFloat(gillBefore.ringTrackWidth) <= 3.6 &&
+      Number.parseFloat(gillBefore.ringProgressWidth) >= 3.7 && Number.parseFloat(gillBefore.ringProgressWidth) <= 4.1 &&
       Number.parseFloat(gillBefore.ringProgressTransition) >= 0.5,
       { trackStroke: gillBefore.ringTrackWidth,
         progressStroke: gillBefore.ringProgressWidth, transition: gillBefore.ringProgressTransition });
+    record(checks, `${prefix}-34`, 'rate hit-area is invisible; no phantom panel or background beside Play',
+      gillBefore.speedPseudoPaint?.border === '0px' &&
+      ['transparent','rgba(0, 0, 0, 0)'].includes(gillBefore.speedPseudoPaint?.background) &&
+      gillBefore.speedPseudoPaint?.shadow === 'none',
+      gillBefore.speedPseudoPaint);
+    record(checks, `${prefix}-35`, 'painted rate on lower ring arc and balanced Settings glyph gap',
+      gillBefore.rateChip?.x - gillBefore.anchors[3]?.x >= 27 &&
+      gillBefore.rateChip?.x - gillBefore.anchors[3]?.x <= 31 &&
+      gillBefore.rateChip?.bottom - gillBefore.ring?.bottom <= 1.5 &&
+      gillBefore.speedGapToSettings >= 10 && gillBefore.speedGapToSettings <= 32,
+      {chip:gillBefore.rateChip,ring:gillBefore.ring,paintedGap:gillBefore.speedGapToSettings});
     record(checks, `${prefix}-30`, 'Visible speed chip overlap clicks its badge, never triggers Play',
       gillBefore?.chipPointerHitsBadge === true,{ chipOwner:gillBefore?.chipPointerHitsBadge });
     record(checks, `${prefix}-26`, 'Play uses exactly one SVG progress ring without duplicate CSS border or shadow',
