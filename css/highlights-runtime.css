@@ -611,3 +611,17 @@ html.dark .gb-hl-hit {background:#89643c;color:#fff6ea;}
 @media (prefers-reduced-motion: reduce) {
   .gb-hl-revisit-card,.gb-hl-source-group,.gb-hl-tag {animation:none;transition:none;}
 }
+
+/* Keep editor and footer actions reachable on short mobile viewports. */
+@media (max-width: 900px) and (max-height: 520px) {
+  #gb-hl-panel {
+    display: block;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    max-height: 94dvh;
+  }
+  #gb-hl-list, #gb-hl-editor {
+    max-height: none;
+    overflow: visible;
+  }
+}
