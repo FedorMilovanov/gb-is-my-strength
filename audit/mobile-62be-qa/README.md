@@ -32,3 +32,19 @@ MARKS_SHA=3de826de7b8a7b2d8f63a241251da5369b69db2d MARKS_ROOT=/tmp/mobile-marks-
 ```
 
 Локальные JSON и кадры (`reports/mobile-62be-qa/`) не входят в Git. Лично просмотрены кадры настроек, «Аналитики», ленты скоростей и точной подсветки. Продуктовый код, дизайн и чужие ветки не менялись.
+
+## Дополнительная сверка: объединённый кандидат #2352 `7a2682f`
+
+Пока шёл аудит, #2352 включил `62be8caa`; проверен новый отдельный exact `7a2682f262a191ece792aadcc51b9ff13bd5de7e` на полной сборке (117 HTML, drift 0, G1–G8 PASS), **не слитый #2346**.
+
+- **MB-01 воспроизводится без изменений** на пяти ширинах: левая область Settings и прежняя точка Play открывают скорости.
+- **MB-02 различается по формату.** Для обычных цитат без `annotation` и без цвета `A+B → A`, `quoteId=B` осиротел **как в основном PR**. В контрольном файле с такими же данными, но `kind=marker,color=amber` и разными контекстами, сохранены A, B и ссылка. В `62be8caa` даже этот цветной контроль теряет B. Современный `annotation.version=1` round-trip и проверенные гонки проходят и в объединённом кандидате.
+- Ранее проверенные сценарии помет повторены **на объединённой сборке**: янтарный touch сохраняет точно 13 символов, без подсветки на другом документе; Undo A оставляет B и после reload. Реальное нативное выделение на телефоне не проверено.
+
+```sh
+export MOBILE_SHA=7a2682f262a191ece792aadcc51b9ff13bd5de7e MOBILE_ROOT=/tmp/mobile-combined-7a2682f
+export MOBILE_OUT=reports/mobile-62be-qa/combined
+node audit/mobile-62be-qa/import.mjs
+MOBILE_HIT_ONLY=1 node audit/mobile-62be-qa/probe.mjs
+MARKS_SHA="$MOBILE_SHA" MARKS_ROOT="$MOBILE_ROOT" MARKS_OUT="$MOBILE_OUT/marks" node audit/w64-qa/marks.mjs
+```

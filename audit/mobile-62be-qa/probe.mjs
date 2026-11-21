@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {spawn} from 'node:child_process';
 const {chromium}=await import(process.env.W58_PLAYWRIGHT||'playwright');
-const sha='62be8caa145fbe18aa099dff89cffa20cd626451',root=process.env.MOBILE_ROOT||'/tmp/mobile-62be8caa';
-const port=19095,origin=`http://127.0.0.1:${port}`,out='reports/mobile-62be-qa';await mkdir(out,{recursive:true});
+const sha=process.env.MOBILE_SHA||'62be8caa145fbe18aa099dff89cffa20cd626451',root=process.env.MOBILE_ROOT||'/tmp/mobile-62be8caa';
+const port=19095,origin=`http://127.0.0.1:${port}`,out=process.env.MOBILE_OUT||'reports/mobile-62be-qa';await mkdir(out,{recursive:true});
 const b=await chromium.launch({executablePath:process.env.W58_CHROMIUM_PATH,args:['--no-sandbox','--disable-dev-shm-usage']});
 const server=spawn('python3',['-u','-m','http.server',String(port),'--bind','127.0.0.1','--directory',root+'/dist'],{stdio:['ignore','pipe','ignore']});
 const report={sha,browser:b.version(),scenes:[]};
@@ -48,7 +48,7 @@ try{
   await p.keyboard.press('Escape');await p.waitForTimeout(370);
   await p.touchscreen.tap(s.map.oldTap.x,s.map.oldTap.y);await p.waitForTimeout(360);s.playEdgeTap=await state(p);
  });
- await run('font-and-analytics',320,568,async(p,s)=>{
+ if(!process.env.MOBILE_HIT_ONLY)await run('font-and-analytics',320,568,async(p,s)=>{
   const pref=()=>p.evaluate(async()=>{
    const h=document.documentElement,p=document.querySelector('[data-gill-v16] .article-body p');
    const chosen=await document.fonts.load('16px "Cormorant Garamond"','Слово и мысль');
@@ -65,7 +65,7 @@ try{
   await p.screenshot({path:`${out}/03-analytics-320.png`});await p.keyboard.press('Escape');await p.waitForTimeout(510);
   s.returned=await t.evaluate(e=>document.activeElement===e);
  });
- for(const [w,h] of [[568,320],[390,450],[320,500],[320,520],[320,521],[320,568]])await run('short-library',w,h,async(p,s)=>{
+ if(!process.env.MOBILE_HIT_ONLY)for(const [w,h] of [[568,320],[390,450],[320,500],[320,520],[320,521],[320,568]])await run('short-library',w,h,async(p,s)=>{
   await p.locator(book).tap();const foot=p.locator(newNote);await foot.waitFor();await p.waitForTimeout(450);s.initial=await reach(p,newNote);
   try{await foot.tap({timeout:1330});}catch(e){s.tapFailure=String(e).split('\n').slice(0,3).join(' ');}
   s.afterTry=await reach(p,newNote);
