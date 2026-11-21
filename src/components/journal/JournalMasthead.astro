@@ -1,58 +1,154 @@
 ---
-interface Props {
-  active?: 'journal' | 'dossier';
-}
+import { assetUrl } from '@/lib/asset-version';
+interface Props { active?: 'journal' | 'dossier' | 'articles'; }
 const { active = 'journal' } = Astro.props;
 ---
 <header class="je-masthead" aria-label="Редакционная навигация">
   <div class="je-masthead__top">
     <a class="je-masthead__identity" href="/journal/">
-      <svg class="je-masthead__mark" viewBox="0 0 64 48" aria-hidden="true" focusable="false">
-        <path d="M4 10C15 6 26 10 32 17C38 10 49 6 60 10V39C49 35 38 38 32 44C26 38 15 35 4 39Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
-        <path d="M32 17V43M9 14C17 12 24 15 28 19M55 14C47 12 40 15 36 19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <svg class="je-masthead__mark" viewBox="0 2.2 64 48" aria-hidden="true">
+        <path d="M4 10C15 6 26 10 32 17C38 10 49 6 60 10V39C49 35 38 38 32 44C26 38 15 35 4 39Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+        <path d="M32 17V43M9 14C17 12 24 15 28 19M55 14C47 12 40 15 36 19" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
       </svg>
       <span class="je-masthead__name">
         <span class="je-masthead__publication">Господь Бог — Сила Моя</span>
-        <span class="je-masthead__series">ЖУРНАЛ <span aria-hidden="true">/</span> ИССЛЕДОВАНИЯ</span>
+        <span class="je-masthead__series">Журнал <span aria-hidden="true">/</span> Исследования</span>
       </span>
     </a>
-    <span class="je-masthead__descriptor">Документы · контекст · ответственный разбор</span>
-    <a class="je-masthead__home" href="/">На основной сайт <span aria-hidden="true">↗</span></a>
+    <p class="je-masthead__descriptor">Церковная жизнь.<br />Документы. Контекст.</p>
+    <a class="je-masthead__home" href="/">Основной сайт <span aria-hidden="true">↗</span></a>
+    <div class="je-masthead__actions" role="group" aria-label="Поиск и оформление">
+      <button class="je-masthead__button" type="button" data-action="open-search" data-search-shortcut data-search-shortcut-label="Поиск по сайту" data-search-src={assetUrl('js/search.js')} data-palette-css={assetUrl('css/command-palette.css')} aria-label="Поиск по сайту">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+      </button>
+      <button class="je-masthead__button" type="button" data-journal-theme aria-label="Тёмная тема" aria-pressed="false" hidden>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16Z" fill="currentColor" stroke="none"/></svg>
+      </button>
+    </div>
   </div>
   <nav class="je-masthead__nav" aria-label="Разделы издания">
     <a href="/journal/" aria-current={active === 'journal' ? 'page' : undefined}>Журнал</a>
-    <a href="/journal/#lead-dossier" aria-current={active === 'dossier' ? 'location' : undefined}>Досье и исследования</a>
-    <a href="/articles/">Богословские статьи</a>
-    <a href="/about/">Об издании</a>
+    <a href="/journal/#lead-dossier" aria-current={active === 'dossier' ? 'true' : undefined}>Досье и исследования</a>
+    <a href="/articles/" aria-current={active === 'articles' ? 'page' : undefined}>Богословские статьи</a>
+    <!-- One native disclosure, not a second OverlayRuntime/menu owner. Keep
+         the former site-section destinations exact, including the home hashes. -->
+    <details class="je-masthead__site-sections" data-journal-site-sections>
+      <summary>Разделы сайта <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></summary>
+      <div class="je-masthead__site-panel">
+        <p>На основном сайте</p>
+        <ul>
+          <li><a href="/#publikacii">Публикации</a></li>
+          <li><a href="/#razbor">Разбор заблуждений</a></li>
+          <li><a href="/biografii/">Биографии</a></li>
+          <li><a href="/app/">Приложение</a></li>
+          <li><a href="/about/">Об издании</a></li>
+        </ul>
+      </div>
+    </details>
   </nav>
 </header>
+<script>
+  // Thin UI adapter only. GBReaderPreferences remains the ONLY theme/state,
+  // persistence and cross-tab owner; search uses its existing bootstrap above.
+  type Preferences = {
+    get: () => { theme: string };
+    setTheme: (theme: string, options: { source: string }) => void;
+    subscribe: (listener: () => void) => () => void;
+  };
+  const journalWindow = window as Window & {
+    GBReaderPreferences?: Preferences;
+    GBSearchBootstrap?: { open: (source?: string, opener?: Element) => Promise<boolean> };
+  };
+  const preferences = journalWindow.GBReaderPreferences;
+  const button = document.querySelector<HTMLButtonElement>('[data-journal-theme]');
+  if (preferences && button && !button.dataset.journalThemeBound) {
+    button.dataset.journalThemeBound = 'true';
+    const sync = () => button.setAttribute('aria-pressed', String(preferences.get().theme === 'dark'));
+    button.addEventListener('click', () => {
+      preferences.setTheme(preferences.get().theme === 'dark' ? 'light' : 'dark', { source: 'journal-masthead' });
+    });
+    preferences.subscribe(sync);
+    sync();
+    button.hidden = false;
+  }
+  // These strict-native routes do not mount the legacy keyboard owner or
+  // ReaderRail. Delegate the advertised shortcut to the existing bootstrap;
+  // do not create another search loader, palette or persistence owner.
+  const masthead = document.querySelector<HTMLElement>('.je-masthead');
+  if (masthead && !masthead.dataset.journalShortcutBound) {
+    masthead.dataset.journalShortcutBound = 'true';
+    document.addEventListener('keydown', (event) => {
+      if (event.defaultPrevented || event.repeat || event.altKey || event.shiftKey ||
+          !(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'k') return;
+      const search = journalWindow.GBSearchBootstrap;
+      const trigger = masthead.querySelector<HTMLButtonElement>('[data-action="open-search"]');
+      if (!search || !trigger) return;
+      event.preventDefault();
+      const opener = document.activeElement !== document.body ? document.activeElement : trigger;
+      void search.open(trigger.dataset.searchSrc, opener || trigger);
+    });
+  }
+</script>
 <style>
-  .je-masthead { --je-masthead-gutter: 32px; background: #0b2033; color: #f9f2e4; border-bottom: 1px solid #c6a66c; font-family: 'Source Sans 3', system-ui, sans-serif; }
-  .je-masthead__top { max-width: 1260px; margin: 0 auto; padding: 17px max(var(--je-masthead-gutter), env(safe-area-inset-right, 0px)) 14px max(var(--je-masthead-gutter), env(safe-area-inset-left, 0px)); display: flex; align-items: center; gap: 24px; }
-  .je-masthead__identity { display: inline-flex; align-items: center; gap: 17px; min-width: 0; color: inherit; text-decoration: none; }
-  .je-masthead__mark { flex: none; width: 49px; height: 39px; color: #e5bb73; }
-  .je-masthead__name { display: flex; flex-direction: column; gap: 3px; }
-  .je-masthead__publication { font: 600 clamp(18px,2.1vw,26px)/1.15 'Playfair Display', Georgia, serif; letter-spacing: .005em; }
-  .je-masthead__series { color: #d9c39f; font: 600 10px/1.4 'Source Sans 3', sans-serif; letter-spacing: .18em; }
-  .je-masthead__series span { color: #a37a36; padding: 0 4px; }
-  .je-masthead__descriptor { margin-left: auto; padding-left: 28px; border-left: 1px solid #466075; max-width: 260px; color: #d5c9b8; font: italic 15px/1.4 Lora, Georgia, serif; }
-  .je-masthead__home { flex: none; color: #f0d9a8; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
-  .je-masthead__nav { max-width: 1260px; margin: 0 auto; display: flex; gap: clamp(16px,3vw,43px); align-items: center; padding: 0 max(var(--je-masthead-gutter), env(safe-area-inset-right, 0px)) 0 max(var(--je-masthead-gutter), env(safe-area-inset-left, 0px)); border-top: 1px solid #2d4051; }
-  .je-masthead__nav a { display: inline-flex; min-height: 46px; align-items: center; border-bottom: 3px solid transparent; color: #efe6d7; text-decoration: none; white-space: nowrap; font-size: 12px; font-weight: 650; letter-spacing: .12em; text-transform: uppercase; padding: 3px 0 0; }
-  .je-masthead__nav a:is([aria-current="page"], [aria-current="location"]) { border-color: #d6ad5d; color: #fff; }
-  .je-masthead a:focus-visible { outline: 2px solid #eacb85; outline-offset: 4px; }
+  .je-masthead { background: #0b2033; color: #f9f2e4; border-bottom: 1px solid #b7945d; font-family: 'Source Sans 3', system-ui, sans-serif; }
+  .je-masthead__top { max-width: 1280px; margin: 0 auto; padding: 17px 40px; display: flex; align-items: center; gap: 26px; }
+  .je-masthead__identity { display: inline-flex; align-items: center; gap: 16px; min-width: 0; color: #f9f2e4; text-decoration: none; }
+  .je-masthead__mark { flex: none; width: 46px; height: 37px; color: #e5bb73; }
+  .je-masthead__name { display: flex; flex-direction: column; gap: 5px; }
+  .je-masthead__publication { font: 600 clamp(20px, 2vw, 26px)/1.18 'Playfair Display', Georgia, serif; }
+  .je-masthead__series { color: #dec49c; font: 600 10px/1.4 'Source Sans 3', sans-serif; letter-spacing: .14em; text-transform: uppercase; }
+  .je-masthead__series span { color: #c6a66c; padding-inline: 4px; }
+  .je-masthead__descriptor { margin: 0 0 0 auto; padding-left: 24px; border-left: 1px solid #466075; color: #d5c9b8; font: italic 14px/1.5 Lora, Georgia, serif; }
+  .je-masthead__home { flex: none; color: #ebd5ae; font-size: 12px; text-underline-offset: 4px; }
+  /* Reserve the progressively enhanced theme button before its adapter runs. */
+  .je-masthead__actions { display: flex; flex: none; gap: 3px; min-width: 91px; margin-left: auto; }
+  .je-masthead__button { display: inline-grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid #405366; border-radius: 0; background: transparent; color: #f4e7ce; cursor: pointer; }
+  .je-masthead__button[hidden] { display: none; }
+  .je-masthead__button:hover { border-color: #e5bb73; color: #ffe4af; }
+  .je-masthead__button svg { display: block; }
+  .je-masthead__nav { max-width: 1280px; margin: 0 auto; display: flex; gap: 34px; padding: 0 40px; border-top: 1px solid #2d4051; }
+  .je-masthead__nav > a, .je-masthead__site-sections > summary { display: inline-flex; min-height: 44px; align-items: center; padding-block: 3px 0; border-bottom: 2px solid transparent; color: #efe6d7; text-decoration: none; font: 600 11px/1.5 'Source Sans 3', sans-serif; letter-spacing: .12em; text-transform: uppercase; }
+  .je-masthead__nav a[aria-current] { border-color: #d6ad5d; color: #fff; }
+  .je-masthead__site-sections { position: relative; display: flex; min-width: 0; }
+  /* Reserve fallback-label width so the chevron does not move on font swap. */
+  .je-masthead__site-sections > summary { justify-content: space-between; gap: 8px; width: 140px; max-width: 100%; list-style: none; cursor: pointer; }
+  .je-masthead__site-sections > summary::-webkit-details-marker { display: none; }
+  .je-masthead__site-sections > summary::marker { content: ''; }
+  .je-masthead__site-sections > summary svg { flex: none; }
+  .je-masthead__site-sections[open] > summary { color: #fff; border-bottom-color: #d6ad5d; }
+  .je-masthead__site-sections[open] > summary svg { transform: rotate(180deg); }
+  /* End alignment also fits the narrow desktop breakpoint; the height leaves
+     15px below the existing 150px mobile masthead in short landscape viewports. */
+  .je-masthead__site-panel { position: absolute; z-index: 50; top: 100%; right: 0; width: min(280px, calc(100vw - 40px)); max-height: min(26rem, max(88px, calc(100svh - 165px))); overflow-y: auto; padding: 8px; border: 1px solid #466075; background: #0b2033; box-shadow: 0 12px 28px #06101b33; scrollbar-width: thin; scroll-padding-block: 6px; }
+  .je-masthead__site-panel > p { margin: 5px 10px 7px; color: #dec49c; font: 600 10px/1.5 'Source Sans 3', sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+  .je-masthead__site-panel ul { margin: 0; padding: 0; list-style: none; }
+  .je-masthead__site-panel li + li { border-top: 1px solid #2d4051; }
+  .je-masthead__site-panel a { display: flex; align-items: center; min-height: 44px; padding: 8px 10px; border-bottom: 2px solid transparent; color: #efe6d7; text-decoration: none; font: 600 14px/1.45 'Source Sans 3', sans-serif; letter-spacing: .01em; text-transform: none; scroll-margin-block: 6px; }
+  .je-masthead__site-panel a:hover { background: #162f43; }
+  /* High Contrast exposes transparent borders: distinguish only the current section. */
+  @media (forced-colors: active) {
+    .je-masthead__nav a, .je-masthead__site-sections > summary { border-bottom-color: Canvas; }
+    .je-masthead__nav a[aria-current], .je-masthead__site-sections[open] > summary { border-bottom-color: Highlight; }
+  }
+  .je-masthead :is(a, button, summary):focus-visible { outline: 2px solid #eacb85; outline-offset: 3px; }
   .je-masthead a:hover { color: #f9d997; }
-  @media (max-width: 770px) {
-    .je-masthead { --je-masthead-gutter: 20px; }
-    .je-masthead__top { padding-top: 14px; padding-bottom: 12px; gap: 12px; }
-    .je-masthead__mark { width: 37px; height: 30px; }
-    .je-masthead__publication { font-size: 19px; }
-    .je-masthead__descriptor, .je-masthead__home { display: none; }
-    .je-masthead__nav { display: grid; grid-template-columns: 1fr 1.4fr; gap: 0 16px; }
-    .je-masthead__nav a { min-height: 44px; width: fit-content; max-width: 100%; white-space: normal; font-size: 10px; line-height: 1.5; letter-spacing: .08em; }
+  @media (max-width: 1150px) { .je-masthead__descriptor { display: none; } .je-masthead__home { margin-left: auto; } .je-masthead__actions { margin-left: 0; } }
+  @media (max-width: 1023px) { .je-masthead__top { padding-inline: 28px; } .je-masthead__nav { padding-inline: 28px; gap: 26px; } }
+  @media (max-width: 690px) {
+    .je-masthead__top { padding: 13px 20px; gap: 10px; }
+    .je-masthead__identity { gap: 10px; flex: 1; }
+    .je-masthead__mark { width: 32px; height: 24px; }
+    .je-masthead__publication { font-size: 16px; max-width: 18ch; }
+    .je-masthead__series { font-size: 10px; letter-spacing: .06em; }
+    .je-masthead__series span { padding-inline: 1px; }
+    .je-masthead__home { display: none; }
+    .je-masthead__nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 15px; padding-inline: 20px; }
+    .je-masthead__nav > a, .je-masthead__site-sections > summary { min-height: 39px; width: fit-content; max-width: 100%; font-size: 10px; letter-spacing: .07em; }
+    .je-masthead__site-sections > summary { width: 128px; }
+    .je-masthead__actions { gap: 0; min-width: 76px; }
+    .je-masthead__button { width: 38px; height: 44px; border-color: transparent; }
   }
-  @media (max-width: 400px) {
-    .je-masthead__publication { font-size: 16px; }
-    .je-masthead__series { font-size: 9px; letter-spacing: .13em; }
-  }
+  @media (max-width: 389px) { .je-masthead__publication { font-size: 15px; } }
+  @media (max-width: 359px) { .je-masthead__publication { font-size: 14px; } .je-masthead__mark { display: none; } }
+  @media print { .je-masthead { display: none; } }
 </style>

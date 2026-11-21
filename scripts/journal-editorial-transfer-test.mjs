@@ -25,9 +25,9 @@ function fixture(t, phase = 'applied') {
   fs.mkdirSync(target); fs.mkdirSync(kit);
   const patch = 'fixture patch bytes; not an application claim\n';
   const files = TRANSFER_FILES.map((name, index) => ({ path: name, before: index === 0 ? { mode: '100644', blob: blob('before\n') } : null, after: { mode: '100644', blob: blob(`after:${name}\n`) } }));
-  const protectedPath = 'src/components/journal/JournalDocumentHead.astro';
-  const excludedPath = 'src/data/journal/g3HistoryBibliography.ts';
-  const manifest = { version: 1, base, source: head, patch: 'public-editorial.patch', patchSha256: sha256(patch), files, preserved: [{ path: protectedPath, state: { mode: '100644', blob: blob('baseline date owner\n') } }], excludedAdded: [{ path: excludedPath, state: null }] };
+  const protectedPath = 'src/data/journal/g3ProductMetadata.ts';
+  const excludedPath = 'src/data/journal/g3HistoryDraftSources.ts';
+  const manifest = { version: 2, base, source: head, patch: 'public-editorial.patch', patchSha256: sha256(patch), files, preserved: [{ path: protectedPath, state: { mode: '100644', blob: blob('baseline date owner\n') } }], excludedAdded: [{ path: excludedPath, state: null }] };
   const write = (name, bytes) => { const file = path.join(target, name); fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, bytes); };
   if (phase === 'applied') for (const name of TRANSFER_FILES) write(name, `after:${name}\n`);
   else write(TRANSFER_FILES[0], 'before\n');
@@ -38,18 +38,19 @@ function fixture(t, phase = 'applied') {
   return { target, kit, manifest, manifestPath, write, save, protectedPath, excludedPath, verify: () => verifyTransfer({ manifestPath, target, phase }) };
 }
 
-test('public transfer is exactly 11 files, not history or shared/date owners', () => {
-  assert.equal(TRANSFER_FILES.length, 11);
-  assert.equal(new Set(TRANSFER_FILES).size, 11);
-  assert.ok(TRANSFER_FILES.every((name) => !/G3History|g3History|JournalDocumentHead|package|^css\/|^js\/|^fonts\/|^public\/|^migration\//.test(name)));
+test('public transfer is exactly35 files, including catalog PDF/native diagnostics but no held/shared owners', () => {
+  assert.equal(TRANSFER_FILES.length, 35);
+  assert.equal(new Set(TRANSFER_FILES).size, 35);
+  for (const name of ['scripts/lib/articles-print-pdf.py', 'scripts/articles-editorial-native-diagnostic.mjs']) assert.ok(TRANSFER_FILES.includes(name));
+  assert.ok(TRANSFER_FILES.every((name) => !/G3History|g3History|package|^css\/|^js\/|^fonts\/|^public\/|^migration\//.test(name)));
 });
 test('base verification accepts exact baseline bytes and writes nothing', (t) => {
   const f = fixture(t, 'base'), before = fs.readFileSync(f.manifestPath);
-  assert.equal(f.verify().checked, 13); assert.equal(f.verify().writes, 0);
+  assert.equal(f.verify().checked, 37); assert.equal(f.verify().writes, 0);
   assert.deepEqual(fs.readFileSync(f.manifestPath), before);
 });
 test('applied verification accepts exact allowlisted bytes', (t) => {
-  assert.equal(fixture(t).verify().transferred, 11);
+  assert.equal(fixture(t).verify().transferred, 35);
 });
 test('selected-file drift fails closed', (t) => {
   const f = fixture(t); f.write(TRANSFER_FILES[0], 'wrong\n');
@@ -57,7 +58,7 @@ test('selected-file drift fails closed', (t) => {
 });
 test('preserved date-owner drift fails closed', (t) => {
   const f = fixture(t); f.write(f.protectedPath, 'overwritten date owner\n');
-  assert.throws(f.verify, /Pinned content mismatch: src\/components\/journal\/JournalDocumentHead/);
+  assert.throws(f.verify, /Pinned content mismatch: src\/data\/journal\/g3ProductMetadata/);
 });
 test('excluded new history data must stay absent', (t) => {
   const f = fixture(t); f.write(f.excludedPath, 'unexpected history import\n');
@@ -79,6 +80,12 @@ test('missing selected file fails closed', (t) => {
   const f = fixture(t); fs.unlinkSync(path.join(f.target, TRANSFER_FILES[0]));
   assert.throws(f.verify, /Missing pinned file/);
 });
+for (const name of ['scripts/lib/articles-print-pdf.py', 'scripts/articles-editorial-native-diagnostic.mjs']) {
+  test(`missing catalog diagnostic dependency fails closed: ${name}`, (t) => {
+    const f = fixture(t); fs.unlinkSync(path.join(f.target, name));
+    assert.throws(f.verify, /Missing pinned file/);
+  });
+}
 test('unexpected symlink cannot substitute for a transferred regular file', (t) => {
   const f = fixture(t), file = path.join(f.target, TRANSFER_FILES[0]);
   fs.unlinkSync(file); fs.symlinkSync(f.protectedPath, file);
@@ -97,77 +104,69 @@ test('unknown and mixed CLI options are refused', () => {
 });
 test('public-only contract rejects typos instead of silently ignoring options', () => {
   const result = spawnSync(process.execPath, ['scripts/journal-editorial-contract.mjs', '--public-onyl'], { cwd: root, encoding: 'utf8' });
-  assert.notEqual(result.status, 0); assert.match(result.stderr, /Unknown Journal contract option/);
+  assert.notEqual(result.status, 0); assert.match(result.stderr, /Unknown option/);
 });
 
+// The public-only adapter skips only held presentation dependencies, not gates.
 function isolatedContract(t) {
   const directory = temporary(t);
-  for (const name of ['scripts/journal-editorial-contract.mjs', ...['g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'g3ProductMetadata.ts', 'g3HistoryDraftMetadata.ts'].map((file) => `src/data/journal/${file}`), ...['G3HistoryArticle.astro', 'G3HistoryFeature.astro'].map((file) => `src/components/journal/${file}`)]) {
-    fs.mkdirSync(path.dirname(path.join(directory, name)), { recursive: true });
-    fs.copyFileSync(path.join(root, name), path.join(directory, name));
+  const names = ['scripts/journal-editorial-contract.mjs',
+    ...['g3PublicationHandoff.ts', 'g3SourceBibliography.ts', 'g3ProductMetadata.ts', 'journalProductMetadata.ts', 'g3HistoryDraftMetadata.ts'].map((name) => `src/data/journal/${name}`),
+    ...['G3Dossier.astro', 'JournalLanding.astro', 'JournalEditorialShell.astro', 'JournalMasthead.astro', 'G3HistoryArticle.astro', 'G3HistoryFeature.astro', 'journalEditorial.css', 'g3History.css'].map((name) => `src/components/journal/${name}`)];
+  for (const name of names) { const p = path.join(directory, name); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.copyFileSync(path.join(root, name), p); }
+  for (const name of ['migration/page-ownership.json', 'data/route-search-policy.json', 'data/search-manifest.json', 'sitemap.xml', 'feed.xml']) {
+    const p = path.join(directory, name); fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, '{}');
   }
+  fs.mkdirSync(path.join(directory, 'src/pages'), { recursive: true });
   fs.symlinkSync(path.join(root, 'node_modules'), path.join(directory, 'node_modules'), 'dir');
-  const replace = (name, from, to) => {
-    const file = path.join(directory, name), value = fs.readFileSync(file, 'utf8');
-    assert.ok(value.includes(from)); fs.writeFileSync(file, value.replace(from, to));
-  };
-  const run = (flags = ['--public-only']) => spawnSync(process.execPath, ['scripts/journal-editorial-contract.mjs', ...flags], { cwd: directory, encoding: 'utf8' });
-  return { directory, replace, run };
+  const comparisonNames = ['src/components/journal/G3Dossier.astro', ...['g3ProductMetadata', 'g3PublicationHandoff', 'g3SourceBibliography', 'journalProductMetadata'].map((name) => `src/data/journal/${name}.ts`)];
+  const baselineSourceContent = Object.fromEntries(comparisonNames.map((name) => [name, execFileSync('git', ['show', `${base}:${name}`], { cwd: root, encoding: 'utf8' })]));
+  const manifest = { version: 2, base, source: head, baselineSourceContent, files: [], preserved: comparisonNames.map((name) => ({ path: name, state: { blob: blob(baselineSourceContent[name]) } })) };
+  const mf = path.join(directory, 'comparison.json'); fs.writeFileSync(mf, JSON.stringify(manifest));
+  const replace = (name, from, to) => { const p = path.join(directory, name), content = fs.readFileSync(p, 'utf8'); assert.ok(content.includes(from)); fs.writeFileSync(p, content.replace(from, to)); };
+  const run = (flags = ['--source-only', '--public-only', `--transfer=${mf}`]) => spawnSync(process.execPath, ['scripts/journal-editorial-contract.mjs', ...flags], { cwd: directory, encoding: 'utf8' });
+  return { directory, replace, run, manifest, mf };
 }
-for (const [field, original, replacement] of [['publicationStatus', 'PUBLICATION_HOLD', 'RELEASED'], ['handoffStatus', 'NOT_ISSUED', 'ISSUED']]) {
-  test(`public-only still rejects a changed history ${field}`, (t) => {
-    const f = isolatedContract(t);
-    f.replace('src/data/journal/g3HistoryDraftMetadata.ts', `${field}: '${original}'`, `${field}: '${replacement}'`);
-    const result = f.run(); assert.notEqual(result.status, 0);
-    assert.match(result.stderr, new RegExp(original)); assert.doesNotMatch(result.stderr, /ERR_MODULE_NOT_FOUND/);
-  });
+test('public-only operates without copying the held presentation-source module', (t) => {
+  const result = isolatedContract(t).run(); assert.equal(result.status, 0, result.stderr);
+});
+for (const [title, name, from, to, error] of [
+  ['HOLD', 'src/data/journal/g3HistoryDraftMetadata.ts', "publicationStatus: 'PUBLICATION_HOLD'", "publicationStatus: 'RELEASED'", /PUBLICATION_HOLD/],
+  ['candidate set', 'src/data/journal/g3HistoryDraftMetadata.ts', "'G3-HIST-PUB-09'", "'G3-HIST-PUB-10'", /G3-HIST-PUB-/],
+  ['inferred handoff', 'src/data/journal/g3HistoryDraftMetadata.ts', 'approvalClaimIds:', "handoffStatus: 'ISSUED', approvalClaimIds:", /infer\/issue/],
+  ['approved scope', 'src/data/journal/g3PublicationHandoff.ts', "'G3-PUB-016'", "'G3-PUB-017'", /unchanged authority owner/],
+  ['article guard', 'src/components/journal/G3HistoryArticle.astro', 'if (import.meta.env.PROD)', 'if (false)', /G3HistoryArticle must fail closed/],
+  ['feature guard', 'src/components/journal/G3HistoryFeature.astro', 'if (import.meta.env.PROD)', 'if (false)', /G3HistoryFeature must fail closed/],
+]) {
+  test(`public-only rejects changed ${title}`, (t) => { const f = isolatedContract(t); f.replace(name, from, to); const r = f.run(); assert.notEqual(r.status, 0); assert.match(r.stderr, error); assert.doesNotMatch(r.stderr, /ERR_MODULE_NOT_FOUND/); });
 }
-test('public-only still rejects an expanded/unapproved public claim set', (t) => {
-  const f = isolatedContract(t);
-  f.replace('src/data/journal/g3PublicationHandoff.ts', "'G3-PUB-016'", "'G3-PUB-017'");
-  const result = f.run(); assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /must not expand the September claim set/);
+test('public-only rejects a held public page import', (t) => {
+  const f = isolatedContract(t); fs.writeFileSync(path.join(f.directory, 'src/pages/bad.astro'), 'import History from "G3HistoryFeature.astro";');
+  const r = f.run(); assert.notEqual(r.status, 0); assert.match(r.stderr, /Held history activated/);
 });
-test('public-only still requires the real history production guard', (t) => {
-  const f = isolatedContract(t);
-  f.replace('src/components/journal/G3HistoryArticle.astro', 'if (import.meta.env.PROD)', 'if (false)');
-  const result = f.run(); assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /G3HistoryArticle.astro: production guard/);
+test('baseline comparison text cannot change without its pinned blob changing', (t) => {
+  const f = isolatedContract(t); f.manifest.baselineSourceContent['src/components/journal/G3Dossier.astro'] += 'changed'; fs.writeFileSync(f.mf, JSON.stringify(f.manifest));
+  const r = f.run(); assert.notEqual(r.status, 0); assert.match(r.stderr, /Baseline source blob mismatch/);
 });
-test('public-only still rejects activation of a held history entrypoint', (t) => {
-  const f = isolatedContract(t), pages = path.join(f.directory, 'src/pages'); fs.mkdirSync(pages, { recursive: true });
-  fs.writeFileSync(path.join(pages, 'bad.astro'), 'import History from "G3HistoryArticle.astro";');
-  const result = f.run(); assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /held history activation/);
+test('default strict mode still requires the held manuscript dependencies', (t) => {
+  const r = isolatedContract(t).run(['--source-only']); assert.notEqual(r.status, 0); assert.match(r.stderr, /ERR_MODULE_NOT_FOUND/); assert.match(r.stderr, /g3HistoryDraftSources/);
 });
-test('default mode still requires the held presentation bibliography', (t) => {
-  const result = isolatedContract(t).run([]); assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /ERR_MODULE_NOT_FOUND/); assert.match(result.stderr, /g3HistoryBibliography/);
+
+test('public-only excludes preserved unmounted held CSS, not public CSS', (t) => {
+  const f = isolatedContract(t); fs.appendFileSync(path.join(f.directory, 'src/components/journal/g3History.css'), '\n.legacy-held { color: black !important; }\n');
+  const r = f.run(); assert.equal(r.status, 0, r.stderr);
+  fs.appendFileSync(path.join(f.directory, 'src/components/journal/journalEditorial.css'), '\n.public { color: black !important; }\n');
+  const bad = f.run(); assert.notEqual(bad.status, 0); assert.match(bad.stderr, /route-local cascade/);
 });
-function legacyContract(t) {
-  const f = isolatedContract(t), name = 'src/data/journal/g3HistoryDraftMetadata.ts';
-  f.replace(name, 'candidateClaimIds:', 'approvalClaimIds:');
-  f.replace(name, "  handoffStatus: 'NOT_ISSUED',\n", '');
-  return { ...f, name };
-}
-test('legacy public-only still requires all nine held candidates', (t) => {
-  const f = legacyContract(t); f.replace(f.name, "'G3-HIST-PUB-09'", "'G3-HIST-PUB-10'");
-  const result = f.run(); assert.notEqual(result.status, 0); assert.match(result.stderr, /Legacy held candidates must remain/);
+test('default strict mode still audits held CSS when its dependencies exist', (t) => {
+  const f = isolatedContract(t); fs.copyFileSync(path.join(root, 'src/data/journal/g3HistoryDraftSources.ts'), path.join(f.directory, 'src/data/journal/g3HistoryDraftSources.ts'));
+  fs.appendFileSync(path.join(f.directory, 'src/components/journal/g3History.css'), '\n.legacy-held { color: black !important; }\n');
+  const r = f.run(['--source-only']); assert.notEqual(r.status, 0); assert.match(r.stderr, /route-local cascade/);
 });
-test('legacy public-only still requires HOLD', (t) => {
-  const f = legacyContract(t); f.replace(f.name, "publicationStatus: 'PUBLICATION_HOLD'", "publicationStatus: 'RELEASED'");
-  const result = f.run(); assert.notEqual(result.status, 0); assert.match(result.stderr, /PUBLICATION_HOLD/);
-});
-test('legacy public-only refuses an issued/mixed handoff field', (t) => {
-  const f = legacyContract(t); f.replace(f.name, 'approvalClaimIds:', "handoffStatus: 'ISSUED', approvalClaimIds:");
-  const result = f.run(); assert.notEqual(result.status, 0); assert.match(result.stderr, /Legacy held labels must not carry/);
-});
-test('modern public-only refuses ambiguous legacy and current arrays', (t) => {
-  const f = isolatedContract(t); f.replace('src/data/journal/g3HistoryDraftMetadata.ts', 'candidateClaimIds:', 'approvalClaimIds: [], candidateClaimIds:');
-  const result = f.run(); assert.notEqual(result.status, 0); assert.match(result.stderr, /Ambiguous history claim metadata/);
-});
-test('default mode does not silently normalize legacy metadata', (t) => {
-  const result = legacyContract(t).run([]); assert.notEqual(result.status, 0); assert.match(result.stderr, /Ambiguous history claim metadata/);
+test('real PROD probes use a root-relative Astro config option', () => {
+  const source = fs.readFileSync(path.join(root, 'scripts/journal-editorial-contract.mjs'), 'utf8');
+  assert.match(source, /'--config', path\.relative\(root, config\)/);
+  assert.match(source, /log\.includes\(expectedGuard\)/);
 });
 
 const proposedFeature = fs.readFileSync(path.join(root, GUARD_PATH), 'utf8');
@@ -205,7 +204,7 @@ try {
 test('pinned Git-object export contains only the allowlist and refuses overwrite', { skip: exportSkip }, (t) => {
   const out = path.join(temporary(t), 'export');
   const result = buildTransfer({ repo: root, base, source: head, out });
-  assert.equal(result.files, 11); assert.ok(result.preserved > 1000);
+  assert.equal(result.files, 35); assert.ok(result.preserved > 1000);
   const patch = fs.readFileSync(path.join(out, 'public-editorial.patch'), 'utf8');
   const names = [...patch.matchAll(/^diff --git a\/(\S+) b\/\1$/gm)].map((match) => match[1]);
   assert.deepEqual(names.sort(), [...TRANSFER_FILES].sort());

@@ -1,0 +1,56 @@
+---
+/** One presentation owner for long-form Journal headers; no route or SEO authority. */
+interface Cover {
+  src: string;
+  webpSrcset: string;
+  avifSrcset?: string;
+  width: number;
+  height: number;
+  alt: string;
+  caption: string;
+}
+interface Props {
+  title: string;
+  label: string;
+  series: string;
+  period: string;
+  readingTime: number;
+  cover: Cover;
+  publishedAt?: string;
+  modifiedAt?: string;
+}
+const { title, label, series, period, readingTime, cover, publishedAt, modifiedAt } = Astro.props;
+const dateLabel = (value: string) => new Intl.DateTimeFormat('ru-RU', {
+  day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Moscow',
+}).format(new Date(value));
+const sizes = '(min-width: 1024px) 480px, (min-width: 768px) 700px, calc(100vw - 40px)';
+---
+<header class="article-header je-article-header">
+  <div class="je-article-eyebrow">
+    <a href="/journal/">Журнал</a>
+    <span aria-hidden="true">/</span>
+    <span>{label}</span>
+    <span class="je-article-period">{series} · {period}</span>
+  </div>
+  <div class="je-article-heading">
+    <h1>{title}</h1>
+    <div class="je-article-dek"><slot /></div>
+  </div>
+  <div class="je-article-meta" role="group" aria-label="Сведения о материале">
+    <p class="je-article-byline"><span>Автор-редактор:</span> <a href="/about/" rel="author">Фёдор Милованов</a></p>
+    <div class="je-article-dates">
+      {publishedAt && <span><time datetime={publishedAt}>{dateLabel(publishedAt)}</time></span>}
+      {modifiedAt && modifiedAt !== publishedAt && <span>Обновлено <time datetime={modifiedAt}>{dateLabel(modifiedAt)}</time></span>}
+      <span>{readingTime} мин чтения</span>
+    </div>
+  </div>
+  <figure class="je-article-cover">
+    <picture>
+      {cover.avifSrcset && <source type="image/avif" srcset={cover.avifSrcset} sizes={sizes} />}
+      <img src={cover.src} srcset={cover.webpSrcset} sizes={sizes}
+           width={cover.width} height={cover.height} alt={cover.alt}
+           decoding="async" loading="eager" fetchpriority="high" />
+    </picture>
+    <figcaption><span>{series}</span> {cover.caption}</figcaption>
+  </figure>
+</header>

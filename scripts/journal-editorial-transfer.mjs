@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Agent 1 public Journal handoff. Reads pinned Git objects and writes ONE new,
+ * Selected Agent8 public Journal + existing catalog + compatible SEO handoff.
+ * Adapted from Agent1 #2340 exact1979ef2e transfer discipline; no UI imported. Reads pinned Git objects and writes ONE new,
  * ignored artifact directory. Never applies a patch, edits a ref/index, builds,
  * commits, pushes or grants publication permission. Verification is read-only.
  */
@@ -11,22 +12,45 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-export const TRANSFER_FILES = Object.freeze([
-  'scripts/journal-editorial-browser-test.mjs',
+export const TRANSFER_FILES = Object.freeze(['scripts/journal-document-metadata-test.mjs',
+  'scripts/journal-editorial-browser.mjs',
   'scripts/journal-editorial-contract.mjs',
+  'scripts/lib/journal-print-pdf.py',
+  'scripts/lib/seo-route-contract.js',
+  'scripts/seo-route-contract-test.js',
   'src/components/journal/G3Dossier.astro',
-  'src/components/journal/JournalArticleOpening.astro',
-  'src/components/journal/JournalBibliography.astro',
+  'src/components/journal/JournalArticleHeader.astro',
   'src/components/journal/JournalContents.astro',
+  'src/components/journal/JournalDataFigure.astro',
+  'src/components/journal/JournalDocumentHead.astro',
+  'src/components/journal/JournalFontPreloads.astro',
   'src/components/journal/JournalLanding.astro',
   'src/components/journal/JournalMasthead.astro',
-  'src/components/journal/JournalSeriesNav.astro',
+  'src/components/journal/JournalSourceReturn.astro',
+  'src/components/journal/journalDocumentMetadata.ts',
   'src/components/journal/journalEditorial.css',
-  'src/data/journal/g3EditorialPresentation.ts',
-]);
+  'src/data/journal/g3EditorialMedia.ts',
+  'src/pages/journal/index.astro',
+  'src/pages/journal/dossiers/g3/index.astro',
+  // Explicit owner-approved existing /articles/ consumer; not a new portal.
+  'src/components/journal/JournalEditorialShell.astro',
+  'src/components/articles/ArticlesPageChrome.astro',
+  'src/components/articles/ArticlesMain.astro',
+  'src/components/articles/ArticlesPageFooter.astro',
+  'src/components/articles/ArticlesHeroSection.astro',
+  'src/components/articles/ArticlesLibrarySection.astro',
+  'src/components/articles/ArticlesRefutationsSection.astro',
+  'src/components/articles/articlesEditorial.css',
+  'src/pages/articles/index.astro',
+  'scripts/articles-visual-parity-audit.js',
+  'scripts/articles-editorial-contract.mjs',
+  'scripts/articles-editorial-contract-test.mjs',
+  'scripts/articles-editorial-browser.mjs',
+  'scripts/articles-editorial-native-diagnostic.mjs',
+  'scripts/lib/articles-print-pdf.py']);
 export const GUARD_PATH = 'src/components/journal/G3HistoryFeature.astro';
 export function projectHistoryGuard(baseline, proposed) {
-  const guard = "if (import.meta.env.PROD) {\n  throw new Error('G3 history feature PUBLICATION_HOLD: signed history handoff required');\n}";
+  const guard = "if (import.meta.env.PROD) {\n  throw new Error('G3 history feature PUBLICATION_HOLD: a signed history handoff is required');\n}";
   assert.ok(proposed.includes(guard), 'Source feature must contain the known fail-closed production guard');
   if (/if\s*\(import\.meta\.env\.PROD\)\s*\{\s*throw new Error\([^;]*PUBLICATION_HOLD/s.test(baseline)) return null;
   assert.ok(baseline.startsWith('---\n'), 'Expected canonical Astro frontmatter');
@@ -38,9 +62,8 @@ const sharedOwners = ['css', 'js', 'fonts', 'icons', 'public', 'src/layouts', 's
 const authorityOwners = [
   'package.json', 'package-lock.json', 'migration/page-ownership.json',
   'data/route-profiles/journal.json', 'data/route-profiles/journal-dossiers-g3.json',
-  'src/pages/journal/index.astro', 'src/pages/journal/dossiers/g3/index.astro',
-  'src/components/journal/JournalDocumentHead.astro',
-  'src/components/journal/JournalEditorialShell.astro', 'src/components/journal/JournalEditorialRail.astro',
+  'data/search-manifest.json', 'data/route-profiles/articles.json',
+  'src/components/journal/JournalEditorialRail.astro',
   'src/data/journal/g3ProductMetadata.ts', 'src/data/journal/journalProductMetadata.ts',
   'src/data/journal/g3PublicationHandoff.ts', 'src/data/journal/g3SourceBibliography.ts',
 ];
@@ -63,7 +86,7 @@ function inventory(repo, commit) {
   });
 }
 function validateManifest(manifest) {
-  assert.equal(manifest.version, 1, 'Unsupported transfer manifest');
+  assert.equal(manifest.version, 2, 'Unsupported transfer manifest');
   assert.match(manifest.base || '', /^[a-f0-9]{40}$/);
   assert.match(manifest.source || '', /^[a-f0-9]{40}$/);
   assert.deepEqual(manifest.files.map((entry) => entry.path), [...TRANSFER_FILES], 'Transfer allowlist changed');
@@ -131,17 +154,15 @@ export function buildTransfer({ repo = repoRoot, base, source, out }) {
     prerequisite = { path: GUARD_PATH, before: beforeState, after: afterState, patch: 'history-production-guard.patch', patchSha256: sha256(prerequisitePatch), scope: 'Guard-only insertion into baseline; all historical prose/locators remain byte-for-byte baseline.' };
   }
   const technicalBuildInstant = git(repo, ['show', '-s', '--format=%cI', source]).toString().trim();
-  const manifest = { version: 1, base, source, technicalBuildInstant, prerequisite, patch: 'public-editorial.patch', patchSha256: sha256(patch), files, preserved, excludedAdded, excludedChanges, scope: 'Public Journal/dossier presentation and tests ONLY; history narrative/data, date-head and shared owners remain baseline-owned; a separately pinned guard-only prerequisite is explicit.', publication: '16 approved claims / 21 sources; nine history gates HOLD / NOT_ISSUED. Not a publication approval.', appliedByGenerator: false };
+  const baselineSourceContent = Object.fromEntries(['src/components/journal/G3Dossier.astro', ...['g3ProductMetadata', 'g3PublicationHandoff', 'g3SourceBibliography', 'journalProductMetadata'].map((name) => `src/data/journal/${name}.ts`)].map((name) => [name, git(repo, ['show', `${base}:${name}`]).toString()]));
+  const manifest = { version: 2, baselineSourceContent, base, source, technicalBuildInstant, prerequisite, patch: 'public-editorial.patch', patchSha256: sha256(patch), files, preserved, excludedAdded, excludedChanges, scope: 'Selected Journal/dossier and existing /articles/ presentation/tests ONLY; catalog membership/roles/metadata authorities and shared owners remain baseline-owned. The articles consumer extends the same shell and active-section API, not the visual system. #2345 safeguards and the separately pinned guard-only prerequisite remain explicit.', publication: '16 approved claims / 21 sources; nine history gates HOLD / NOT_ISSUED. Not a publication approval.', appliedByGenerator: false };
   validateManifest(manifest);
-  const readme = `# Agent 1 — selective public Journal transfer\n\nBase: \`${base}\`\nSource: \`${source}\`\n\nThis is an optional extraction for the canonical owner, not a merge or an approved final design. The generator did NOT apply/build/commit/push anything. Main patch: exactly ${files.length} allowlisted files. All ${preserved.length} other baseline files are pinned; the one possible guard-only safety prerequisite is separately declared and checked by phase guarded. Excluded source-side changes are listed in transfer.json, including the held manuscript, its bibliography/metadata, generated index and documentation/tooling.\n\n## Verify before doing any integration\n\nUse the generator at the exact source commit:\n\n    node scripts/journal-editorial-transfer.mjs --verify /absolute/kit/transfer.json --target /absolute/fresh-base-export --phase base\n\nOnly the canonical owner chooses whether to apply the patch. For an isolated rehearsal, export the exact base into a NEW scratch directory (no branch/checkout change), then run git apply --check --whitespace=error and git apply there. IMPORTANT: when scratch is INSIDE another Git checkout, set GIT_CEILING_DIRECTORIES to its PARENT, clear ambient GIT_DIR/GIT_WORK_TREE/GIT_INDEX_FILE/GIT_COMMON_DIR, and first confirm git rev-parse --show-toplevel exits nonzero. Otherwise git may discover the outer checkout. Do not apply in the Agent 1 working tree. No --3way, reset, clean, force or automatic ref operations.\n\nAfter applying, run:\n\n    node scripts/journal-editorial-transfer.mjs --verify /absolute/kit/transfer.json --target /absolute/applied-export --phase applied\n\nThe verifier checks patch integrity, all transferred bytes/modes, every preserved tracked file and absence of excluded new files. It does not write target files. Run it BEFORE build generators modify derived files. It is an exact-state check, not an arbitrary newer-head compatibility claim.\n\n## Acceptance after application\n\nReuse the matching installed dependencies without modifying package files. Run the repository's canonical Scripture occurrence generator (four added Astro presentation files affect scannedSourceFiles), then its production-like build / asset-revision flow and relevant generated-output checks. Record that derived diff separately; the data file is deliberately NOT in this patch.\n\n    node scripts/journal-editorial-contract.mjs --public-only --probe-hold\n\nThis explicit mode omits ONLY the held manuscript's presentation-bibliography uniqueness check. All 16 public claims, 21 sources, nine history gates, production guards and no-history-route/discovery checks remain mandatory. Default mode remains strict and still requires the history bibliography.\n\nRun the existing browser witness against fresh HTTP output, with JOURNAL_HISTORY_URL unset, JOURNAL_BASE_URL, JOURNAL_BROWSER and JOURNAL_AXE_PATH set; provide the matching Chromium executable if needed. Capture 390/1440 light/dark, keyboard/source/return/reflow and public print. New integrated source has no inherited green status. Firefox/WebKit/device/UI-zoom/physical-print/Owner visual signoff need their own witnesses.\n\n## Boundaries\n\nJournalDocumentHead (including any future SEO safeguard) is never copied. Changed shared/date/publication owners make generation fail closed rather than overwrite a newer owner. No history narrative/data/route is copied. A separately declared prerequisite may add ONLY the missing direct-render production guard. Shared Journal CSS can affect a future dev-only manuscript; this public-only kit does not accept or publish that surface. Series navigation contains a non-link pending-manuscript label, not a public history href. Native TOC must not be combined with another scrollspy owner. No runtime/font/SW/package/media claim or Research approval is included.\n`;
-  const buildInstantHint = `\n## Gitless build timestamp\n\nThis scratch export deliberately has no Git repository. The existing metadata projector otherwise cannot obtain its deterministic technical build instant. Before the build, use the source commit timestamp recorded in transfer.json:\n\n    export GB_BUILD_INSTANT=${JSON.stringify(technicalBuildInstant)}\n\nThis is the existing supported build input, NOT an article publication/modification date. Do not substitute wall-clock time, edit route metadata or let the build discover the outer checkout. It is unnecessary to rerun a completed typecheck just to resume failed build/postbuild stages. Record each stage's actual exit status.\n`;
-  const prerequisiteHint = '\n## Required direct-render safety prerequisite\n\nAfter phase applied, if history-production-guard.patch exists, check/apply it in the SAME isolated export. This adds only the existing fail-closed guard to the canonical feature, not its history narrative, data or imports. Then verify with --phase guarded BEFORE generators/build. Do not omit this safety patch or weaken the public contract: canonical b2ae has an article guard but lacks the direct feature guard. When the base already has that guard, no prerequisite patch is emitted.\n';
-  const compatibilityHint = '\n## Held metadata compatibility\n\nCanonical b2ae uses the legacy approvalClaimIds label and has no handoffStatus field. Only public-only mode reads that exact nine-ID array as HELD CANDIDATES, never an approval. HOLD remains required; an issued/mixed handoff field or ambiguous old/new arrays fails. No NOT_ISSUED field is fabricated and no metadata is copied. Default mode still requires the modern schema and manuscript bibliography.\n';
+  const readme = `# Selected Agent8 → canonical public-only transfer\n\nBase: ${base}\nSource: ${source}\n\nExactly ${files.length} allowlisted public presentation/SEO/test files. This generator never applies/builds/commits/pushes; no canonical HEAD change is claimed. Adapted from Agent1's pinned-object transfer discipline, not its visual design. The compatible SEO delta is from #2345 with Agent8 FontPreloads retained and explicit runtime validation. All ${preserved.length} other baseline files are pinned. Full held history, its data/CSS and local review route are excluded; a direct-feature guard-only prerequisite is separately pinned.\n\nUse this same source version of scripts/journal-editorial-transfer.mjs to verify the NEW gitless export in phases base, applied and guarded. Verify --manifest via --verify /absolute/kit/transfer.json --target /absolute/export --phase base|applied|guarded. Do not use a different/newer base or 3way. Before git apply in nested scratch, clear ambient GIT_DIR/GIT_WORK_TREE/GIT_INDEX_FILE/GIT_COMMON_DIR, set GIT_CEILING_DIRECTORIES to the PARENT and confirm git rev-parse fails. Only then check/apply public-editorial.patch, verify applied, check/apply the separate history-production-guard.patch if emitted, verify guarded. The latter adds only a throw, not history prose/imports/authority.\n\nBefore build reuse installed dependencies, and run the existing Scripture occurrence generator; record only its derived change separately (do not copy source-side generated data). For gitless builds use the existing supported technical input GB_BUILD_INSTANT=${JSON.stringify(technicalBuildInstant)}; this is NOT an article date. Run the canonical production-like build, Pagefind, SEO/metadata/search/feed/sitemap/ownership/runtime/token contracts. Then:\n\nnode scripts/journal-editorial-contract.mjs --public-only --transfer=/absolute/kit/transfer.json --probe-hold --output=reports/review\nnode --test scripts/journal-document-metadata-test.mjs\n\nPublic-only omits ONLY checks of the excluded, unmounted held presentation (its extra source module and stylesheet). The default contract still checks both. Exact16claims/21sources,9held candidates,two production guards,no route/discovery,37factual paragraphs,source-word/DOM parity and real Pagefind remain mandatory. The embedded baseline comparison sources are checked against their pinned Git blob IDs, not handwritten facts. Default source contract remains strict and requires source-only manuscript dependencies.\n\nFor browser/PDF checks run the transferred journal-editorial-browser.mjs with --public-only=true --transfer=/absolute/kit/transfer.json --origin=URL and explicit axe/browser environment; never pass a history-origin. Its head/worktree are null and composite provenance records base/source rather than fabricating a canonical commit. Capture responsive320/390/768/1440 light/dark, source/citation/direct returns, keyboard/mobile,16actualPDF A4/Letter/JS/noJS. Generated file changes and actual exits must be preserved separately. A new integration commit requires its own exact-head CI.\n\nThe existing /articles/ catalog is an additional explicit consumer of the selected edition shell. Its published set is derived dynamically from unchanged search-manifest + page-ownership, not a hardcoded count. Run node --test scripts/articles-editorial-contract-test.mjs; node scripts/articles-visual-parity-audit.js --require-dist; node scripts/articles-editorial-contract.mjs --transfer=/absolute/kit/transfer.json; and the scoped articles-editorial-browser.mjs against the built composite. Its print/full suite requires the existing PyMuPDF environment (optionally --pdf-python=PATH) and reads all actual PDF title/summary pagination; generation alone is not acceptance. The separate articles-editorial-native-diagnostic.mjs --origin=URL --output=NEW_DIR --transfer=/absolute/kit/transfer.json compares actual hash/nohash history with neutral QA-only fixtures; exit0 means collection, never a waiver of the strict Back gate. Route-owned ArticlesPageChrome metadata remains its single owner. No shared Search/OverlayRuntime/fonts/SW/package changes or history release. One visual/navigation owner. No merge/deploy/Research-write. Missing engines/devices/physical-print/trueUIzoom remain explicit.\n`;
   fs.mkdirSync(out, { recursive: true });
   fs.writeFileSync(path.join(out, manifest.patch), patch, { flag: 'wx' });
   if (prerequisitePatch) fs.writeFileSync(path.join(out, prerequisite.patch), prerequisitePatch, { flag: 'wx' });
   fs.writeFileSync(path.join(out, 'transfer.json'), JSON.stringify(manifest, null, 2) + '\n', { flag: 'wx' });
-  fs.writeFileSync(path.join(out, 'README.md'), readme + prerequisiteHint + compatibilityHint + buildInstantHint, { flag: 'wx' });
+  fs.writeFileSync(path.join(out, 'README.md'), readme, { flag: 'wx' });
   return { base, source, technicalBuildInstant, files: files.length, preserved: preserved.length, guardOnlyPrerequisite: Boolean(prerequisite), excludedChanges, out };
 }
 

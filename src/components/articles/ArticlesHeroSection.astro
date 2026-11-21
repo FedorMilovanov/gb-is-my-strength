@@ -1,22 +1,13 @@
 ---
-/**
- * ArticlesHeroSection.astro — native hero block for /articles/.
- *
- * First-class Astro markup; no raw legacy fragment imports.
- */
+/** Existing catalog opening, in the selected edition rather than a second home. */
 ---
-<!-- HERO -->
-    <section class="h-hero" aria-label="Каталог статей">
-
-      <p class="h-hero-tagline">Библиотека</p>
-
-      <h1 class="h-hero-title" tabindex="-1">
-        <span class="h-title-static">Все</span><span class="h-title-dash" aria-hidden="true">&nbsp;</span><span class="h-title-accent">статьи</span>
-      </h1>
-
-      <p class="h-hero-desc">
-        Каталог богословских разборов, переводов и апологетических материалов, выстроенных вокруг текста Писания, серьёзной экзегезы и исторически ответственного чтения христианской традиции.
-      </p>
-
-      <hr class="h-rule" aria-hidden="true">
-    </section>
+<section class="h-hero" aria-labelledby="catalog-title">
+  <p class="h-hero-tagline">Библиотека · богословие · исследования</p>
+  <h1 class="h-hero-title" id="catalog-title" tabindex="-1">Все статьи</h1>
+  <p class="h-hero-desc">Каталог богословских разборов, переводов и апологетических материалов, выстроенных вокруг текста Писания, серьёзной экзегезы и исторически ответственного чтения христианской традиции.</p>
+  <nav class="articles-hero-links" aria-label="Быстрые переходы по каталогу">
+    <a href="#catalog-materials">Все материалы <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 4v16m-6-6 6 6 6-6" /></svg></a>
+    <a href="#catalog-series">Серии и сборники <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m5 5 14 14m-10 0h10V9" /></svg></a>
+    <a href="#razbor">Редакционный выбор <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m5 5 14 14m-10 0h10V9" /></svg></a>
+  </nav>
+</section>
