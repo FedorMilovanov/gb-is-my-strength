@@ -192,7 +192,7 @@ function atomicImport(merged) {
   window.dispatchEvent(new CustomEvent('gb:favorites-changed', { detail: { source: 'library-import', items: merged.favorites } }));
 }
 
-export function createLibraryResearch({ overlay, getItems, notify, refresh, isOpen, renderItem }) {
+export function createLibraryResearch({ overlay, getItems, notify, refresh, isOpen, renderItem, exitForResume }) {
   let topic = '', sortBy = 'new', tags = objectMap(parse(KEYS.tags, {}));
   let reading = objectMap(parse(KEYS.reading, {}));
   let revisit = objectMap(parse(KEYS.revisit, {}));
@@ -376,12 +376,29 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
       location.assign(key);
       return;
     }
-    const target = data.anchor ? document.getElementById(data.anchor) : null;
-    if (target) target.scrollIntoView({ block: 'start' });
-    else {
-      const max = Math.max(0, document.documentElement.scrollHeight - innerHeight);
-      window.scrollTo(0, max * Math.min(1, Math.max(0, Number(data.ratio) || 0)));
+    const scrollToSavedPosition = () => {
+      const target = data.anchor ? document.getElementById(data.anchor) : null;
+      if (target) {
+        target.scrollIntoView({ block: 'start', behavior: 'instant' });
+        // Heading focus tells keyboard and screen-reader users where reading
+        // resumed; never focus a detached or hidden overlay element.
+        if (target.isConnected && target.focus) {
+          if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+          target.focus({ preventScroll: true });
+        }
+      } else {
+        const max = Math.max(0, document.documentElement.scrollHeight - innerHeight);
+        window.scrollTo({ top: max * Math.min(1, Math.max(0, Number(data.ratio) || 0)), behavior: 'instant' });
+      }
+    };
+    if (isOpen()) {
+      // The Product Library owns the only overlay and scroll lock. Scrolling
+      // before it closes is silently undone by SiteUtils.unlockScroll.
+      if (typeof exitForResume === 'function') exitForResume(scrollToSavedPosition);
+      else notify('Закройте библиотеку, затем повторите переход к месту чтения.', true);
+      return;
     }
+    scrollToSavedPosition();
   }
   function autoResumeOnce() {
     try {

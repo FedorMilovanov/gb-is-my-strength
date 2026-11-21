@@ -301,6 +301,12 @@
           if (!research) research = researchModule.createLibraryResearch({
             overlay, getItems: all, notify: statusMessage, refresh: render, isOpen,
             renderItem: module.renderItem,
+            exitForResume: (scrollToSavedPosition) => {
+              close();
+              // Wait until SiteUtils has lifted its original scroll lock and
+              // restored the underlying page; do not create a second overlay.
+              requestAnimationFrame(() => requestAnimationFrame(scrollToSavedPosition));
+            },
           });
           return module;
         })
@@ -676,6 +682,13 @@
       id: uid('quote'), text: selected.text, articleTitle: currentTitle(),
       url: sourceUrl(selected), before: selected.before, after: selected.after, savedAt: Date.now(),
     };
+    // A quote is an occurrence, not merely its string. The same words may
+    // appear twice in one paragraph; keep both positional sources. Do not
+    // assign an annotation to a legacy record whose position is unknown.
+    if (selected.positionalAnchor) {
+      record.annotation = { version: 1, kind: 'quote',
+        anchor: selected.positionalAnchor, noteId: null };
+    }
     if (old.length >= LIMIT_QUOTES && !old.some((x) => gbHighlightKey(x) === gbHighlightKey(record))) {
       statusMessage('Сохранено 200 цитат — достигнут прежний лимит. Экспортируйте библиотеку перед удалением старых записей.', true);
       return false;
