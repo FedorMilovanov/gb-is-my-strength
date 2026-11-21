@@ -2,12 +2,14 @@
 /**
  * GillSeriesMobileBar — shared series mobile (<85em) control surface, v6.
  *
- *   TOP bar: Back(→config.railBackHref) → Home(→«/») → Learning trigger
- *     /inline horizontally scrolling speed rail (data-fc-speed-mode="inline" opts the
- *     ember OUT of the canonical bloom-pill in floating-cluster-controller.js
- *     — see initGillInlineSpeedRail()) → Play+badge → Save. Auto-hides on
- *     scroll-down, reveals on scroll-up, stays pinned while any Gill sheet
- *     or the speed rail is open, or while TTS is playing/paused
+ *   TOP bar: Back(→config.railBackHref) → Home(→«/») → primary
+ *     «На полях» (opens research tab INSIDE native Part TOC) → canonical
+ *     round PlayEmber and the original #83439219 IN-SLOT speed strip + tiny selected-rate
+ *     echo → Save. «На полях» yields its place to the sideways speed rail.
+ *     Learning remains in the native Reader Settings sheet,
+ *     not a competing top-level action. One canonical speedSlot owner.
+ *     Auto-hides on scroll-down, reveals on scroll-up; stays pinned while
+ *     any Gill sheet, the in-slot speed strip or TTS playing/paused
  *     (initGillMobileTopBarAutoHide below implements the exact
  *     hasOpenGillSheet/canAutoHideGillTopBar contract — this is also the
  *     fix for the A−/A+ reflow bug: hideGillTopBar() only ever touches the
@@ -21,19 +23,21 @@
  *
  * data-fc-action="save" and data-action="share" go through the existing
  * global cluster delegation / initActionHandlers() on
- * [data-fc-root]/[data-fc-controls]. Learning/Settings sheet open+close,
- * focus-trap and scroll-lock are wired generically in initTocPopups()
- * (floating-cluster-controller.js) alongside the existing Part/Series TOC —
- * only the theme cycle, inline speed rail and top-bar auto-hide are
- * bar-local script here.
+ * [data-fc-root]/[data-fc-controls]. Research/TOC/Learning/Settings
+ * share the existing initTocPopups() overlay/focus/scroll owner;
+ * TTS is owned by floating-cluster-controller; rate UI by speedSlot.ts.
+ * Only theme sync and top-bar auto-hide are bar-local.
  */
 import SaveButton from '@/components/ui/floating-cluster/SaveButton.astro';
 import MobileChromeShell from '../_shared/MobileChromeShell.astro';
-import ReaderSpeedOptions from '../_shared/ReaderSpeedOptions.astro';
 import ReaderMobileMenuTrigger from '../_shared/ReaderMobileMenuTrigger.astro';
+import ReaderSpeedOptions from '../_shared/ReaderSpeedOptions.astro';
 import ReaderMobileActions from '../_shared/ReaderMobileActions.astro';
 import ReaderMobileHome from '../_shared/ReaderMobileHome.astro';
 import ReaderMobilePlayGroup from '../_shared/ReaderMobilePlayGroup.astro';
+// Mobile Reader chrome must own its styling directly: it cannot disappear
+// when a particular speed-picker component is removed from this route.
+import '@/styles/reader-mobile-canonical.css';
 import { GILL_SERIES, type SeriesConfig } from '../_shared/series/seriesConfig';
 
 interface Props {
@@ -46,7 +50,7 @@ const page = config.pages[pageId];
 ---
 <MobileChromeShell
   engine="series"
-  topAttrs={{ 'data-fc-root': true, 'data-fc-variant': 'gill', 'data-gill-mobile-bar': true, 'data-gb-speed-custom': true, 'data-reader-mobile-speed': true }}
+  topAttrs={{ 'data-fc-root': true, 'data-fc-variant': 'gill', 'data-gill-mobile-bar': true, 'data-reader-mobile-speed': true, 'data-gb-speed-custom': true }}
   bottomAttrs={{ 'data-fc-root': true, 'data-fc-variant': 'gill', 'data-gill-mobile-bar': true }}
 >
   <Fragment slot="top-leading">
@@ -57,7 +61,7 @@ const page = config.pages[pageId];
   </Fragment>
 
   <div class="mobile-top-slot" slot="top-primary">
-    <ReaderMobileMenuTrigger mode="learning" />
+    <ReaderMobileMenuTrigger mode="research" />
     <ReaderSpeedOptions id="mobileSpeedrail" railClass="mobile-speedrail" chipClass="mobile-speed" rates={[0.75, 1, 1.25, 1.5, 1.75, 2]} initiallyInert />
   </div>
 
@@ -241,113 +245,134 @@ const page = config.pages[pageId];
   else boot();
 </script>
 
-<!-- Native Gill control refinement. One circular Play with a tucked speed
-     control, and the canonical Learning sheet in the former duplicate TOC slot.
-     No alternate toolbar or storage/transport owner. -->
+<!-- Gill mobile reference: 83439219 (original in-slot speed strip).
+     Back and Home remain visible; six rates replace only «На полях».
+     Play is a 44px target with ONE softly painted 36px SVG ring. -->
 <style is:global>
 @media (max-width:84.999em) {
-  [data-gill-v16] .mobile-top-bar .reader-mobile-menu-trigger[data-gill-learning-open] {
-    transition: opacity .24s ease, transform .32s cubic-bezier(.22,1,.36,1);
-  }
-  [data-gill-v16] .mobile-top-bar.speed-open .reader-mobile-menu-trigger[data-gill-learning-open] {
-    opacity:0;
-    transform:translateX(-12px);
-    pointer-events:none;
-  }
   [data-gill-v16] .mobile-top-bar .reader-mobile-play-group.mobile-playwrap {
-    position:relative;
-    width:76px;
-    min-width:76px;
-    height:44px;
-    flex:0 0 76px;
-    display:flex;
-    align-items:center;
-    justify-content:flex-start;
-    gap:0;
-    overflow:visible;
+    box-sizing:border-box;position:relative;z-index:2;display:flex;align-items:center;
+    justify-content:flex-start;flex:0 0 88px;width:88px;min-width:88px;
+    height:44px;gap:0;overflow:visible;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-play-group .reader-mobile-play {
-    position:relative;
-    width:44px;
-    height:44px;
-    min-width:44px;
-    min-height:44px;
-    flex:0 0 44px;
-    border:1px solid rgba(108,84,68,.30);
-    border-radius:50%;
-    background:color-mix(in srgb,var(--gill-mobile-bar-paper,#fffaf5) 80%,transparent);
-    box-shadow:0 1px 3px rgba(42,32,27,.055);
-    display:grid;
-    place-items:center;
-    color:var(--gill-mobile-bar-ink,#291f1b);
+    --ember-size:44px;
+    position:relative;z-index:1;box-sizing:border-box;
+    display:grid;place-items:center;flex:0 0 44px;
+    width:44px;height:44px;min-width:44px;min-height:44px;
+    margin:0;padding:0;border:0;border-radius:50%;
+    background:transparent;color:var(--gill-mobile-bar-ink,#291f1b);
+    box-shadow:none;transform:none;
   }
+  /* The single physical SVG progress ring remains 36px diameter
+     (40px SVG times its r=45/100 geometry); never add a CSS outer ring. */
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-svg {
-    opacity:1;
+    inset:2px;width:40px;height:40px;opacity:1;
   }
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-track {
-    stroke:var(--gill-mobile-bar-gold,#b18b62);
-    opacity:.6;
+    stroke:var(--gill-mobile-bar-gold,#b18b62);stroke-width:2.35;opacity:.35;
   }
-  [data-gill-v16] .mobile-top-bar #mobSpdBadge.reader-mobile-speed-badge {
-    position:absolute;
-    z-index:3;
-    box-sizing:border-box;
-    top:0;
-    left:24px;
-    right:auto;
-    bottom:auto;
-    display:flex;
-    align-items:flex-end;
-    justify-content:flex-start;
-    width:44px;
-    min-width:44px;
-    height:44px;
-    min-height:44px;
-    margin:0;
-    padding:0 0 2px;
-    background:transparent;
-    border:0;
-    border-radius:0;
-    box-shadow:none;
-    color:inherit;
-    cursor:pointer;
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-progress {
+    stroke-width:2.75;opacity:1;
   }
-  /* The shared canonical speed badge has its own large ::before pill.
-     Gill uses the small capsule attached to Play instead; never draw both. */
-  [data-gill-v16] .mobile-top-bar #mobSpdBadge.reader-mobile-speed-badge::before {
-    content:none;
-    display:none;
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play::before {
+    inset:19%;border:none;
+    background:radial-gradient(circle,
+      color-mix(in srgb,var(--gill-mobile-bar-gold,#b18b62) 13%,transparent) 0%,
+      transparent 78%);
+    transition:opacity .18s ease;
   }
-  [data-gill-v16] .mobile-top-bar #mobSpdBadge .reader-mobile-speed-chip {
-    display:grid;
-    place-items:center;
-    min-width:25px;
-    height:18px;
-    padding:0 4px;
-    border:1px solid rgba(255,255,255,.22);
-    border-radius:10px;
-    background:#392827;
-    color:#fffaf6;
-    font:700 9px/1 system-ui,sans-serif;
+  @media(hover:hover) and (pointer:fine) {
+    [data-gill-v16] .mobile-top-bar .reader-mobile-play:hover {transform:none;}
+  }
+  /* Play and speed share one 88px group with separate 44px targets.
+     The speed chip is a true pointer target so its overlap cannot invoke TTS. */
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play-group .reader-mobile-speed-badge {
+    position:relative;z-index:3;box-sizing:border-box;flex:0 0 44px;
+    width:44px;height:44px;min-width:44px;min-height:44px;
+    padding:0;margin:0;border:0;border-radius:0;background:transparent;
+    box-shadow:none;overflow:visible;cursor:pointer;color:inherit;
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-badge::before {
+    content:none;display:none;
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-chip {
+    box-sizing:border-box;position:absolute;left:-13px;bottom:5px;z-index:4;
+    display:grid;place-items:center;width:max-content;
+    min-width:26px;max-width:39px;height:16px;padding:1px 4px;
+    border:1px solid color-mix(in srgb,var(--gill-mobile-bar-paper,#fffaf5) 68%,transparent);
+    border-radius:999px;background:#544333;color:#fff9f0;
+    font:750 9px/1 "Source Sans 3",system-ui,sans-serif;
+    white-space:nowrap;box-shadow:0 1px 5px rgba(35,24,17,.13);
+    /* A real pointer target even where the visible chip overlaps Play.
+       The event bubbles to its owning speed badge, never the TTS button. */
+    pointer-events:auto;cursor:pointer;
+  }
+  html.dark [data-gill-v16] .mobile-top-bar .reader-mobile-speed-chip {
+    background:#c7a170;color:#191617;border-color:#312826;
+    box-shadow:0 1px 5px rgba(0,0,0,.23);
+  }
+  [data-gill-v16] .mobile-top-bar .mobile-top-slot {
+    position:relative;flex:1 1 auto;min-width:0;z-index:3;
+  }
+  /* Original Gill #83439219: the rail occupies ONLY the central slot.
+     Back/Home stay visible, clickable, keyboard-focusable during the swap. */
+  [data-gill-v16] .mobile-top-bar.speed-open .mobile-top-slot .reader-mobile-speedrail {
+    position:absolute;inset:0;left:0;right:0;
+    width:100%;max-width:100%;height:44px;min-height:44px;
+    padding:0;gap:2px;border:0;border-radius:0;
+    background:transparent;box-shadow:none;
+    opacity:1;transform:translateX(0);
+    transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.2,1);
     white-space:nowrap;
-    box-shadow:0 1px 4px rgba(25,18,15,.16);
-    pointer-events:none;
   }
-  [data-gill-v16] .mobile-top-bar #mobSpdBadge:focus-visible {
-    outline:2px solid var(--gill-mobile-bar-gold,#b18b62);
-    outline-offset:0;
-    border-radius:999px;
+  html.dark [data-gill-v16] .mobile-top-bar.speed-open .reader-mobile-speedrail {
+    border:0;background:transparent;box-shadow:none;
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-rate {
+    flex:0 0 44px;min-width:44px;width:44px;height:44px;
+    padding:0;position:relative;isolation:isolate;
+    color:var(--gill-mobile-bar-muted,#786552);font-size:10.5px;
+    background:transparent;border:0;
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-rate::before {
+    content:'';position:absolute;z-index:-1;inset:6px 1px;
+    border:1px solid color-mix(in srgb,var(--gill-mobile-bar-gold,#b18b62) 28%,transparent);
+    border-radius:999px;background:transparent;
+    transition:background .16s ease,border-color .16s ease;
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-rate::after {
+    content:none;display:none;
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-rate[aria-checked="true"] {
+    color:#744e26;background:transparent;
+  }
+  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-rate[aria-checked="true"]::before {
+    background:color-mix(in srgb,var(--gill-mobile-bar-gold,#b18b62) 18%,transparent);
+    border-color:color-mix(in srgb,var(--gill-mobile-bar-gold,#b18b62) 88%,transparent);
+  }
+  html.dark [data-gill-v16] .mobile-top-bar .reader-mobile-speed-rate {
+    color:#c9ad8d;
+  }
+  html.dark [data-gill-v16] .mobile-top-bar .reader-mobile-speed-rate[aria-checked="true"] {
+    color:#f3d19b;
+  }
+  html.dark [data-gill-v16] .mobile-top-bar .reader-mobile-speed-rate[aria-checked="true"]::before {
+    background:rgba(210,163,101,.17);border-color:#c6a06b;
+  }
+  [data-gill-v16] .mobile-top-bar.speed-open .reader-mobile-menu-trigger {
+    opacity:0;transform:none;pointer-events:none;
   }
 }
-@media (max-width:360px) {
-  [data-gill-v16] .mobile-top-bar .reader-mobile-play-group.mobile-playwrap {
-    width:66px;
-    min-width:66px;
-    flex-basis:66px;
+@media(max-width:430px) {
+  [data-gill-v16] .mobile-top-bar.speed-open .reader-mobile-speedrail {
+    -webkit-mask-image:linear-gradient(to right,#000 0%,#000 calc(100% - 10px),transparent 100%);
+    mask-image:linear-gradient(to right,#000 0%,#000 calc(100% - 10px),transparent 100%);
   }
-  [data-gill-v16] .mobile-top-bar #mobSpdBadge.reader-mobile-speed-badge { left:22px; }
 }
-@media (prefers-reduced-motion:reduce) {
-  [data-gill-v16] .mobile-top-bar .reader-mobile-menu-trigger[data-gill-learning-open] { transition:none; }
+@media(prefers-reduced-motion:reduce) {
+  [data-gill-v16] .mobile-top-bar .reader-mobile-speedrail,
+  [data-gill-v16] .mobile-top-bar .reader-mobile-menu-trigger,
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play::before {transition:none;}
 }
 </style>

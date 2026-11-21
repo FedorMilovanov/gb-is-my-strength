@@ -21,7 +21,7 @@ const routes=[
  for(const [engineName,engine] of Object.entries({chromium,firefox,webkit})){
   const browser=await engine.launch({headless:true});
   try{
-   for(const [slug,route] of routes)for(const width of [320,390,430,1440]){
+   for(const [slug,route] of routes.filter(([id])=>!process.env.GB_READER_MOBILE_ROUTE||id===process.env.GB_READER_MOBILE_ROUTE))for(const width of [320,390,430,1440]){
     const page=await browser.newPage({viewport:{width,height:width===1440?900:844},colorScheme:'light',reducedMotion:'reduce',serviceWorkers:'block'});
     const row={engine:engineName,slug,width},pageErrors=[];page.on('pageerror',e=>pageErrors.push(e.message));
     try{
@@ -32,11 +32,14 @@ const routes=[
       const play=bar.locator('.reader-mobile-play');
       const before=await play.boundingBox();
       const badge=bar.locator('.reader-mobile-speed-badge');
-      const menuBtn=bar.locator('[data-reader-mobile-menu-target]');
+      const menuBtn=bar.locator(slug==='gill'?'[data-gill-marginalia-open]':'[data-reader-mobile-menu-target]');
       const settings=page.locator('.reader-mobile-action[aria-label^="Настройки чтения"]');
       if(await play.count()!==1||await badge.count()!==1||await menuBtn.count()!==1||await settings.count()!==1)throw Error('canonical controls missing or duplicate');
-      const nav=await menuBtn.locator('svg path').getAttribute('d');
-      if(nav!=='M4 7h16M4 12h16M4 17h16')throw Error('noncanonical hamburger');
+      const nav=await menuBtn.locator('svg path').first().getAttribute('d');
+      if(slug==='gill'){
+        const research=bar.locator('[data-gill-marginalia-open]');
+        if(await research.count()!==1||await research.getAttribute('aria-controls')!=='partTocOverlay') throw Error('Gill canonical research trigger missing/incorrect');
+      }else if(nav!=='M4 7h16M4 12h16M4 17h16')throw Error('noncanonical hamburger');
       if(before.width>44)throw Error('oversized Play='+before.width);
       if(await page.locator('[data-fc-action="scroll-top"]:visible').count())throw Error('unwanted back-to-top arrow');
       if(await page.locator('.mobile-bottom-bar .gb-theme-toggle:visible,.hmbar .gb-theme-toggle:visible').count())throw Error('theme still occupies toolbar');

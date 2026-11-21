@@ -17,6 +17,9 @@
   var tabs = sheet && Array.from(sheet.querySelectorAll('[data-gbr-tab]'));
   if (!sheet || !toc || !panel || !content || !tabs || tabs.length !== 2 || sheet.dataset.gbrMarginaliaBound) return;
   sheet.dataset.gbrMarginaliaBound = '1';
+  var partTitle = sheet.querySelector('.toc-head-txt h3');
+  var originalTitle = partTitle ? partTitle.textContent : '';
+  var researchOpener = document.querySelector('[data-gill-marginalia-open]');
   var article = document.querySelector('article.article-body') || document.querySelector('main article');
   var text = function (el) { return (el && el.textContent || '').replace(/\s+/g, ' ').trim(); };
   function node(tag, className, value) {
@@ -168,6 +171,8 @@
     toc.inert = research;
     panel.hidden = !research;
     panel.inert = !research;
+    sheet.classList.toggle('gbr-research-open', research);
+    if (partTitle) partTitle.textContent = research ? 'На полях' : originalTitle;
     if (research) render();
     if (keyboard) tabs.find(function (tab) { return tab.dataset.gbrTab === which; }).focus();
   }
@@ -180,8 +185,15 @@
       switchTab(research ? 'research' : 'toc', true);
     });
   });
+  sheet.addEventListener('gb:gill-select-part-panel', function (event) {
+    var choice = event.detail && event.detail.panel === 'research' ? 'research' : 'toc';
+    switchTab(choice, false);
+    if (choice === 'research') tabs.find(function (t) { return t.dataset.gbrTab === 'research'; }).focus({preventScroll:true});
+  });
   var observer = new MutationObserver(function () {
-    if (!sheet.classList.contains('is-open') && panel && !panel.hidden) switchTab('toc', false);
+    var opened = sheet.classList.contains('is-open');
+    if (!opened && panel && !panel.hidden) switchTab('toc', false);
+    if (!opened && researchOpener) researchOpener.setAttribute('aria-expanded', 'false');
   });
   observer.observe(sheet, { attributes: true, attributeFilter: ['class'] });
 })();
@@ -223,4 +235,21 @@
   #partTocOverlay .gbr-marginalia-provenance { padding:13px 0; }
   @media (max-width:359px) { #partTocOverlay .gbr-marginalia-tabs { padding-left:11px; padding-right:11px; } #partTocOverlay .gbr-marginalia { padding-left:14px; padding-right:14px; } }
   @media (prefers-reduced-motion:reduce) { #partTocOverlay .gbr-marginalia-tab { transition:none; } }
+</style>
+
+<style is:global>
+  #partTocOverlay.gbr-research-open .toc-sheet__scroll-bar {display:none!important;}
+  #partTocOverlay.gbr-research-open .toc-sheet {background:#fffcf7;}
+  #partTocOverlay .gbr-marginalia-eyebrow,
+  #partTocOverlay .gbr-marginalia-category,
+  #partTocOverlay .gbr-marginalia-index {color:#806045;}
+  html.dark #partTocOverlay.gbr-research-open .toc-sheet {background:#211b1d;color:#eee4de;}
+  html.dark #partTocOverlay .gbr-marginalia-eyebrow,
+  html.dark #partTocOverlay .gbr-marginalia-category,
+  html.dark #partTocOverlay .gbr-marginalia-index,
+  html.dark #partTocOverlay .gbr-marginalia-term summary::after {color:#dfb78c;}
+  html.dark #partTocOverlay .gbr-marginalia-group,
+  html.dark #partTocOverlay .gbr-marginalia-term,
+  html.dark #partTocOverlay .gbr-marginalia-lead {border-color:rgba(244,224,205,.23);}
+  html.dark #partTocOverlay .gbr-marginalia-jump {border-color:rgba(244,224,205,.27);background:rgba(255,255,255,.04);}
 </style>

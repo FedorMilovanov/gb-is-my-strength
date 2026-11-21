@@ -68,16 +68,28 @@ const mobileTrigger = fs.readFileSync(path.join(ROOT, 'src/components/article-pi
 const mobilePlay = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/_shared/ReaderMobilePlayGroup.astro'), 'utf8');
 const mobileRuntime = fs.readFileSync(path.join(ROOT, 'js/floating-cluster-controller.js'), 'utf8');
 const sharedSpeedSlot = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/_shared/speedSlot.ts'), 'utf8');
-assert.match(sharedSpeedSlot, /rateTrigger\.querySelector\('\.reader-mobile-speed-chip'\) \|\| rateTrigger/, 'canonical speed slot must preserve Gill tucked speed chip on every state update');
-// Owner-accepted Reader mobile IA: upper Learning vs lower Part TOC.
-// Do not revive a second TOC trigger or separate giant speed pill.
-assert.match(mobileBar, /<ReaderMobileMenuTrigger mode="learning"/, 'Gill upper capsule must open canonical Learning');
-assert.match(mobileBar, /id="mobPartTocBtn"/, 'Gill lower current-section control must own Part TOC');
-assert.match(mobileTrigger, /data-gill-learning-open=\{mode === 'learning'/, 'shared menu must delegate Learning to its native sheet');
-assert.match(mobileRuntime, /learningBtns = qsa\('\[data-gill-learning-open\]'\)/, 'Learning overlay must bind both top and Settings triggers');
-assert.match(mobilePlay, /reader-mobile-speed-chip/, 'Gill Play must show the selected rate tucked into its circular control');
-assert.match(mobileRuntime, /badge\.querySelector\('\.reader-mobile-speed-chip'\) \|\| badge/, 'TTS speed owner must update the existing circular speed echo');
-assert.match(mobileBar, /reader-mobile-play \.gb-ember__ring-svg/, 'Gill idle circular Play progress ring must remain visible');
+const partOverlay = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/gill-series/GillMobileMarginalia.astro'), 'utf8');
+const settingsSheet = fs.readFileSync(path.join(ROOT, 'src/components/article-pilots/gill-series/GillReaderSettingsSheet.astro'), 'utf8');
+// Reader mobile: ONE research entrance in the top capsule, Part TOC in the
+// native bottom context, Learning remains accessible only via Settings.
+assert.match(mobileBar, /<ReaderMobileMenuTrigger mode="research"/, 'Gill top must launch canonical Marginalia');
+assert.match(mobileBar, /import ['"]@\/styles\/reader-mobile-canonical\.css['"];/, 'Gill mobile must import its own canonical layout CSS without depending on the retired speed component');
+assert.match(mobileBar, /id="mobPartTocBtn"/, 'Gill lower current section must open Part TOC');
+assert.match(mobileTrigger, /data-gill-marginalia-open=\{mode === 'research'/, 'shared trigger must expose one research entry');
+assert.match(mobileRuntime, /topResearchBtns = qsa\('\[data-gill-marginalia-open\]'\)/, 'native Part TOC owner must open top research');
+assert.match(mobileRuntime, /var MOB_SEC_INITIAL = \(function \(\)/, 'series progress must preserve the original SSR chapter caption before its first H2');
+assert.match(mobileRuntime, /hasActiveSection \? reader\.sectionTitle : \(MOB_SEC_INITIAL \|\| 'Начало части'\)/, 'before-content placeholder Введение must not overwrite the SSR title');
+assert.match(partOverlay, /gb:gill-select-part-panel/, 'research tab must be selected through the native Part TOC sheet');
+assert.match(settingsSheet, /id="mobLearningBtn"[^>]*data-gill-learning-open/, 'Learning must remain available from Settings without top-level duplication');
+// Historical #75 slot-swap: speeds REPLACE the research capsule, never descend
+// across the hero. One ReaderSpeedOptions/speedSlot owner serves both readers.
+assert.match(mobileBar, /<ReaderMobilePlayGroup engine="series" slot="top-playback"/, 'Gill keeps canonical Play, without bloom opt-in');
+assert.match(mobileBar, /<ReaderSpeedOptions id="mobileSpeedrail"[^>]*initiallyInert/, 'Gill mounts shared six-rate horizontal speed rail');
+assert.match(mobileBar, /'data-gb-speed-custom': true/, 'Gill TTS controller skips competing vertical speed bloom');
+assert.match(mobileBar, /mobile-top-bar\.speed-open \.mobile-top-slot \.reader-mobile-speedrail/, 'Gill speeds live in vacated top slot');
+assert.match(mobilePlay, /\{!bloom && <button/, 'shared Play retains selected-rate badge');
+assert.match(mobileBar, /reader-mobile-play \.gb-ember__ring-svg/, 'Gill idle circular Play ring remains visible');
+assert.match(sharedSpeedSlot, /rateTrigger\.querySelector\('\.reader-mobile-speed-chip'\) \|\| rateTrigger/, 'Hermenevtika shared speed state must remain intact');
 const seriesConfig = fs.readFileSync(SERIES_CONFIG, 'utf8');
 const baptistSeriesConfig = fs.readFileSync(BAPTIST_SERIES_CONFIG, 'utf8');
 assert.match(seriesConfig, /railBackHref:\s*string;/, 'SeriesConfig must keep railBackHref as required route authority');
