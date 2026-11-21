@@ -10,13 +10,14 @@ const registry=loadBibleRegistry(root);
 const key=s=>{const x=parseBibleReference(s.replace(/\s*↗$/u,''),registry);return x.ok?`${x.bookId}:${x.key}`:null;};
 const index=JSON.parse(await readFile(root+'/dist/data/scripture-search-index.json','utf8'));
 const out=process.env.MOBILE_OUT||'reports/analytics-scripture-qa';await mkdir(out,{recursive:true});
-const port=19121,origin=`http://127.0.0.1:${port}`;
+const port=Number(process.env.MOBILE_PORT||19121),origin=`http://127.0.0.1:${port}`;
 const server=spawn('python3',['-u','-m','http.server',String(port),'--bind','127.0.0.1','--directory',root+'/dist'],{stdio:['ignore','pipe','ignore']});
 const b=await chromium.launch({executablePath:process.env.W58_CHROMIUM_PATH,args:['--no-sandbox','--disable-dev-shm-usage']});
-const width=Number(process.env.MOBILE_WIDTH||390),height=width===320?568:844;
+const width=Number(process.env.MOBILE_WIDTH||390),height=Number(process.env.MOBILE_HEIGHT||(width===320?568:844));
 const report={sha,width,height,browser:b.version(),scenes:[]};
-const docs=[['gill-exegete','/articles/dzhon-gill-chast-4-ekzeget/',['sec-exegete-intro','sec-seven-texts','sec-method']],['gill-scholar','/articles/dzhon-gill-chast-2-uchenyi/',['part-controversy','part-works']],['bapt','/baptisty-rossii/goneniya-i-sovest/',['ogpu-1923']],['gill-man','/articles/dzhon-gill-chast-1-chelovek/',[]],['gill-legacy','/articles/dzhon-gill-chast-3-nasledie/',[]]];
+const docs=[['gill-exegete','/articles/dzhon-gill-chast-4-ekzeget/',['sec-exegete-intro','sec-seven-texts','sec-method','sec-conclusion']],['gill-scholar','/articles/dzhon-gill-chast-2-uchenyi/',['part-controversy','part-works']],['bapt','/baptisty-rossii/goneniya-i-sovest/',['ogpu-1923']],['gill-man','/articles/dzhon-gill-chast-1-chelovek/',[]],['gill-legacy','/articles/dzhon-gill-chast-3-nasledie/',[]]];
 const scripture=p=>p.locator('details.gbr-marginalia-group').filter({has:p.getByText('Писание',{exact:true})});
+const cardHeading=(group,label)=>group.locator('.gbr-scripture-heading').filter({hasText:new RegExp('^'+label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'$','u')});
 async function open(p){await p.locator('#mobPartTocBtn').tap();await p.locator('#gbrMarginaliaTab').tap();await p.locator('#gbrMarginalia:not([hidden])').waitFor();await p.waitForTimeout(360);}
 async function seek(p,id){const el=p.locator('#'+id);await el.evaluate(n=>window.scrollBy({top:n.getBoundingClientRect().top-112,behavior:'instant'}));await p.waitForTimeout(380);}
 try{
@@ -33,28 +34,63 @@ try{
     q.source=await p.evaluate(id=>{
      const a=document.getElementById(id),article=a.closest('article'),hs=[...article.querySelectorAll('h2[id]')],z=hs[hs.indexOf(a)+1];
      const within=e=>(a.compareDocumentPosition(e)&Node.DOCUMENT_POSITION_FOLLOWING)&&(!z||(e.compareDocumentPosition(z)&Node.DOCUMENT_POSITION_FOLLOWING));
-     const selectors='p,blockquote,li,.manuscript-quote-text,td,h3,h4';
+     const selectors='p,blockquote,li,.manuscript-quote-text,.manuscript-quote-source,.timeline-title,td,h3,h4';
      return [...article.querySelectorAll(selectors)].filter(e=>within(e)&&!e.closest('aside,nav,footer')&&!e.querySelector(selectors)).map(e=>{
       const n=e.cloneNode(true);n.querySelectorAll('.gtip,.btip,.tooltip,[hidden],[inert],[aria-hidden=true],.fn-marker,.footnote-ref').forEach(k=>k.remove());
       return {id:e.id||null,tag:e.tagName,cls:e.className,text:n.textContent.replace(/\s+/g,' ').trim(),marked:[...e.querySelectorAll('button.bref[data-ref]')].map(x=>x.dataset.ref)};
-     }).filter(e=>/\d\s*:\s*\d/u.test(e.text)||e.marked.length);
+     }).filter(e=>/\d\s*:\s*\d|Исаия 53|Римлянам 7|Еф\. 5/u.test(e.text)||e.marked.length);
     },id);
     await open(p);
-    q.ui=await p.evaluate(()=>({title:document.querySelector('.gbr-marginalia-lead h3').textContent,scope:document.querySelector('.gbr-marginalia-chips')?.parentElement.querySelector('.gbr-marginalia-empty')?.textContent||null,labels:[...document.querySelectorAll('.gbr-marginalia-chips button')].map(e=>e.textContent),owner:window.OverlayRuntime.topLayer()?.ownerId}));
+    q.ui=await p.evaluate(()=>{
+     const list=document.querySelector('.gbr-scripture-entries,.gbr-marginalia-chips');
+     const cards=[...list.querySelectorAll('.gbr-scripture-entry')].map(e=>({label:e.querySelector('summary').textContent,verse:e.querySelector('.gbr-scripture-text')?.textContent||null,source:e.querySelector('.gbr-scripture-source')?.textContent||null,unavailable:!!e.querySelector('.gbr-scripture-unavailable'),returns:e.querySelectorAll('.gbr-scripture-return').length}));
+     const projection=window.SCRIPTURE_DATA||{};
+     return {title:document.querySelector('.gbr-marginalia-lead h3').textContent,scope:list.parentElement.querySelector('.gbr-marginalia-empty')?.textContent||null,labels:cards.length?cards.map(c=>c.label):[...list.querySelectorAll('button')].map(e=>e.textContent),cards,projection:Object.keys(projection).map(k=>({label:k,verse:projection[k],source:window.SCRIPTURE_SOURCE_BY_REF?.[k]||null})),frozen:Object.isFrozen(window.SCRIPTURE_DATA),owner:window.OverlayRuntime.topLayer()?.ownerId};
+    });
+    q.falseUnavailable=q.ui.cards.filter(c=>c.unavailable&&key(c.label)).flatMap(c=>{
+     const alternatives=q.ui.projection.filter(k=>key(k.label)===key(c.label)&&k.verse);
+     return alternatives.length?[{label:c.label,key:key(c.label),alternatives:alternatives.map(({label,source})=>({label,source}))}]:[];
+    });
+    q.projectionMismatch=q.ui.cards.filter(c=>c.verse&&!q.ui.projection.some(k=>k.verse===c.verse&&k.source===c.source)).map(c=>c.label);
+    assert.equal(q.projectionMismatch.length,0,'Displayed Scripture must match an attributed projected text');
     const scopeIds=new Set([id,...q.source.filter(x=>['H3','H4'].includes(x.tag)).map(x=>x.id)]);
     q.index=index.references.flatMap(r=>{const anchors=[...new Set(r.occurrences.filter(o=>o.url===route&&scopeIds.has(o.anchor)).map(o=>o.anchor))];return anchors.length?[[r.id,r.label,anchors]]:[];});
     q.missingIndexed=q.index.filter(([x])=>!q.ui.labels.map(key).includes(x));
+    q.projectedMissingIndexed=q.missingIndexed.map(([id,label,anchors])=>({id,label,anchors,approved:q.ui.projection.some(c=>key(c.label)===id&&c.verse&&c.source)}));
     q.keys=q.ui.labels.map(key);q.sameKeys=Object.entries(Object.groupBy(q.ui.labels,v=>key(v)||`unparsed:${v}`)).filter(([,f])=>f.length>1);
-    const chosen=id==='sec-seven-texts'?['Ин 1:29']:id==='ogpu-1923'?['Рим. 13:1–5']:['sec-method','part-legacy'].includes(id)?q.sameKeys[0]?.[1]||[]:[];
+    const baseline=id==='sec-seven-texts'?['Ин 1:29']:id==='ogpu-1923'?['Рим. 13:1–5']:['sec-method','part-legacy'].includes(id)?q.sameKeys[0]?.[1]||[]:[];
+    const chosen=baseline.filter(label=>q.ui.labels.includes(label)).map(label=>({label,index:0,input:'tap'}));
+    const multi=q.ui.cards.find(c=>c.returns>1);
+    if(multi&&['part-pastor','sec-seven-texts'].includes(id)){
+     if(!chosen.some(c=>c.label===multi.label))chosen.push({label:multi.label,index:0,input:'tap'});
+     chosen.push({label:multi.label,index:1,input:'keyboard'});
+    }
     q.targets=[];
-    if(await scripture(p).count()){
-     await scripture(p).locator(':scope > summary').tap();
+    const group=scripture(p);
+    if(await group.count()){
+     await group.locator(':scope > summary').tap();
      if(['sec-seven-texts','sec-method','ogpu-1923','part-legacy'].includes(id))await p.screenshot({path:`${out}/${doc}-${id}.png`});
     }
-    for(const label of chosen.filter(x=>q.ui.labels.includes(x))){
-     if(q.targets.length){await seek(p,id);await open(p);await scripture(p).locator(':scope > summary').tap();}
-     await scripture(p).getByRole('button',{name:label,exact:true}).tap();await p.waitForTimeout(1750);
-     q.targets.push({label,...await p.evaluate(()=>({jump:window.analyticsJump,locked:document.documentElement.hasAttribute('data-scroll-locked'),owner:window.OverlayRuntime.topLayer()?.ownerId||null,focus:document.activeElement.id||document.activeElement.tagName}))});
+    if(q.ui.cards.length&&['sec-method','sec-seven-texts','ogpu-1923','part-controversy'].includes(id)){
+     const unavailable=q.falseUnavailable[0];const available=q.ui.cards.find(c=>c.verse);q.presentation=[];
+     for(const [kind,label] of [['alias',unavailable?.label],['approved',available?.label]])if(label){
+      const head=cardHeading(group,label);
+      await head.tap();const card=head.locator('..');
+      q.presentation.push({kind,label,...await card.evaluate(e=>({open:e.open,body:e.querySelector('.gbr-scripture-body').innerText,owner:window.OverlayRuntime.topLayer()?.ownerId}))});
+      await card.screenshot({path:`${out}/${doc}-${id}-${kind}.png`});await head.tap();
+     }
+    }
+    for(const {label,index,input} of chosen){
+     if(q.targets.length){await seek(p,id);await open(p);await group.locator(':scope > summary').tap();}
+     await p.evaluate(()=>window.analyticsJump=null);
+     let target;
+     if(q.ui.cards.length){
+      const head=cardHeading(group,label);
+      if(input==='keyboard')await head.press('Enter');else await head.tap();
+      target=head.locator('..').locator('.gbr-scripture-return').nth(index);
+     }else{target=group.getByRole('button',{name:label,exact:true});}
+     if(input==='keyboard')await target.press('Enter');else await target.tap();await p.waitForTimeout(1750);
+     q.targets.push({label,index,input,...await p.evaluate(()=>({jump:window.analyticsJump,locked:document.documentElement.hasAttribute('data-scroll-locked'),owner:window.OverlayRuntime.topLayer()?.ownerId||null,focus:document.activeElement.id||document.activeElement.tagName}))});
     }
     if(!q.targets.length){await p.keyboard.press('Escape');await p.waitForTimeout(380);}
    }
