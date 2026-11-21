@@ -170,6 +170,20 @@ async function gillPlayOptics(page) {
         const hit=document.elementFromPoint(r.left+3,r.top+r.height/2);
         return hit===badge || badge.contains(hit);
       })(),
+      playTriangleSafe: (() => {
+        const play=el('.reader-mobile-play');
+        if (!play) return false;
+        const r=play.getBoundingClientRect();
+        const hit=document.elementFromPoint(r.left+29,r.top+20);
+        return hit===play || play.contains(hit);
+      })(),
+      rateCenterClickable: (() => {
+        const badge=el('.reader-mobile-speed-badge');
+        if (!badge) return false;
+        const r=badge.getBoundingClientRect();
+        const hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
+        return hit===badge || badge.contains(hit);
+      })(),
       slot: rect('.mobile-top-slot'),
       backActive: ['#mobBackBtn','.reader-mobile-home'].every(s=>{
         const n=el(s);const r=n?.getBoundingClientRect();
@@ -222,6 +236,12 @@ async function auditSlot(page, routeId, selectors, checks) {
       Math.abs(anchor.y - after.anchors[i].y) < .5);
     record(checks, `${prefix}-25`, 'Play, bookmark, Back, Home and Marginalia do not shift when speeds expand',
       fixed, { before: gillBefore.anchors, after: after?.anchors });
+    record(checks, `${prefix}-33`, 'overlapping rate hitbox never steals a Play triangle tap',
+      gillBefore.playTriangleSafe === true && gillBefore.rateCenterClickable === true &&
+      gillBefore.chipPointerHitsBadge === true,
+      { playTriangleSafe: gillBefore.playTriangleSafe,
+        rateCenter: gillBefore.rateCenterClickable,
+        paintedChip: gillBefore.chipPointerHitsBadge });
     record(checks, `${prefix}-31`, 'Gill Play + speed reserve only a 68px compound, not the old blank 88px gap',
       gillBefore.compound?.width >= 67.8 && gillBefore.compound?.width <= 68.2 &&
       gillBefore.rateBadge?.width >= 43.5 &&
