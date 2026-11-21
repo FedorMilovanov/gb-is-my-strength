@@ -187,6 +187,18 @@ try {
           } else {
             check(name,viewport.id,'existing right cluster retained',snapshot.right);
             check(name,viewport.id,'disclosure initialized',snapshot.ready);
+            // The canonical Library button is mounted by a lazy Product module.
+            // A fixed 500ms post-DOMContentLoaded wait can observe the button
+            // still in <body> in WebKit even though it docks correctly a frame
+            // later. Wait for the actual DOM ownership with a finite bound;
+            // a permanently undocked button still fails this test.
+            await page.waitForFunction(() => {
+              const rail = document.querySelector('.hrail--grok');
+              const host = rail?.querySelector('.hrail-bottom');
+              const library = document.querySelector('#gb-hl-fab');
+              return !!host && !!library && library.parentElement === host
+                && library.classList.contains('gb-hl-fab--docked');
+            }, null, { timeout: 7000 });
             const integrated=await page.evaluate(()=>{
               const rail=document.querySelector('.hrail--grok'),r=rail.getBoundingClientRect(),style=getComputedStyle(rail);
               const library=document.querySelector('#gb-hl-fab');
