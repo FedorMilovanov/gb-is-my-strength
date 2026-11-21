@@ -179,8 +179,8 @@ try {
 <meta property="article:modified_time" content="2025-01-02T00:00:00.000Z">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","url":"https://gospod-bog.ru/articles/example/","datePublished":"2025-01-01T00:00:00.000Z","dateModified":"2025-01-02T00:00:00.000Z"}</script>
 </head><body>
-<p class="article-byline">Опубликовано <time datetime="2025-01-01T00:00:00.000Z">1 января</time></p>
-<p class="article-updated">Обновлено <time datetime="2025-01-02T00:00:00.000Z">2 января</time></p>
+<p class="article-byline">Опубликовано <time datetime="2025-01-01T00:00:00.000Z" data-editorial-slot="published">1 января</time></p>
+<p class="article-updated" data-editorial-slot="modified">Обновлено <time datetime="2025-01-02T00:00:00.000Z">2 января</time></p>
 <main data-pagefind-body><h1>Example</h1></main>
 </body></html>`, 'utf8');
 

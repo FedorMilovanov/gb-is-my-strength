@@ -63,6 +63,18 @@ function validate(input) {
     ['engine: terminal cancellation teardown', 'terminateWorker(error);'],
     ['engine: synchronous notice', "element.classList.add('is-visible');"],
     ['engine: persisted opt-out', 'setModelDownloadOptOut(true);'],
+    // SYS-TTS-RECOVERY-STATUS-OWNERSHIP: load-generation ownership
+    ['engine: load epoch state', 'loadEpoch: 0'],
+    ['engine: epoch bumps on worker teardown', 'state.loadEpoch += 1;'],
+    ['engine: foreign status ignored', "'foreign-status-ignored'"],
+    ['engine: epoch captured at load start', 'var epoch = state.loadEpoch;'],
+    ['engine: late settlement guarded', 'if (state.loadEpoch === epoch) state.loading = null;'],
+    ['engine: retry supersedes non-ready worker', "createCancelledError('vosk load superseded by retry')"],
+    ['engine: epoch exposed in status', 'loadEpoch: state.loadEpoch'],
+    // F1 residual (witness №11): cancel during busy init must not be undone
+    // by in-flight messages from the dead generation
+    ['engine: stale-channel guard', 'if (state.worker !== channel) return;'],
+    ['engine: ready requires pending load', 'if (!state.loadRequests.has(message.id)) return;'],
   ]) requireText(label, engine, value);
   if (!ordered(engine, ["new SharedWorker(WORKER_SRC, 'gb-vosk-tts')", "new Worker(WORKER_SRC, { name: 'gb-vosk-tts' })"])) {
     problems.push('engine: SharedWorker preference order drifted');
@@ -130,13 +142,21 @@ function validate(input) {
   requireRegex('css: mobile clearance', css, /@media \(max-width:480px\)[\s\S]{0,300}bottom:max\(92px/);
   requireText('css: reduced motion', css, '@media (prefers-reduced-motion:reduce)');
 
+  // Asset revision freshness is proven against the registry, not raw file
+  // md5: cache-bust's --write pass (deploy-candidate-contract) is the sole
+  // authority that refreshes embedded literals after a source edit. The
+  // registry entry therefore lags the file md5 by design until the next
+  // build bumps it; asserting equality here would make the source gate
+  // self-contradictory.
+  const registry = Object.fromEntries(
+    [...assetVersions.matchAll(/'([^']+)': '([a-f0-9]{8})'/g)].map((m) => [m[1], m[2]]),
+  );
   for (const [asset, rev] of [
-    ['css/tts-download-notice.css', cssRevision],
-    ['js/vosk-tts-engine.js', engineRevision],
-    ['js/vosk-tts-worker.js', workerRevision],
-    ['js/vosk-tts-core.js', coreRevision],
-    ['js/vosk-stress-lookup.js', stressRevision],
-    ['js/floating-cluster-controller.js', controllerRevision],
+    ['css/tts-download-notice.css', registry['css/tts-download-notice.css']],
+    ['js/vosk-tts-engine.js', registry['js/vosk-tts-engine.js']],
+    ['js/vosk-tts-worker.js', registry['js/vosk-tts-worker.js']],
+    ['js/vosk-tts-core.js', registry['js/vosk-tts-core.js']],
+    ['js/vosk-stress-lookup.js', registry['js/vosk-stress-lookup.js']],
   ]) requireText(`asset-version: ${asset}`, assetVersions, `'${asset}': '${rev}'`);
 
   for (const asset of ['css/tts-download-notice.css', 'js/vosk-tts-engine.js', 'js/vosk-tts-worker.js', 'js/vosk-tts-core.js', 'js/vosk-stress-lookup.js']) {

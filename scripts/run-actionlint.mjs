@@ -221,16 +221,128 @@ function extractArchive(archivePath, target, destination) {
   if (target.format === 'zip') {
     const escapedArchive = archivePath.replace(/'/g, "''");
     const escapedTarget = destination.replace(/'/g, "''");
-    runChecked('powershell.exe', [
+    // Expand-Archive is unreliable on the win32 runner: its Archive module
+    // calls a 3-argument ExtractToDirectory overload missing on that runtime,
+    // exits 0 after a non-terminating error and leaves the destination EMPTY
+    // (actionlint-extraction-diagnostics, Node Toolchain run 44804021057).
+    // Use the compatible 2-argument ZipFile overload directly, make every
+    // error terminating, and treat ANY error-stream output as failure —
+    // never trust the process exit code alone.
+    const result = spawnSync('powershell.exe', [
       '-NoLogo', '-NoProfile', '-NonInteractive', '-Command',
-      `Expand-Archive -LiteralPath '${escapedArchive}' -DestinationPath '${escapedTarget}' -Force`,
-    ]);
-    return;
+      `$ErrorActionPreference='Stop'; ` +
+      `Add-Type -AssemblyName System.IO.Compression.FileSystem; ` +
+      `[System.IO.Compression.ZipFile]::ExtractToDirectory('${escapedArchive}', '${escapedTarget}')`,
+    ], { shell: false, encoding: 'utf8' });
+    if (result.error) fail(`powershell.exe failed to start: ${result.error.message}`);
+    const stderr = (result.stderr || '').trim();
+    if (result.status !== 0 || stderr) {
+      const details = [stderr, (result.stdout || '').trim()].filter(Boolean).join('\n');
+      fail(`powershell.exe zip extraction failed (exit ${result.status ?? 'unknown'})${details ? `: ${details}` : ''}`);
+    }
+    return result;
   }
 
   const args = ['-xzf', archivePath, '-C', destination, target.binary];
   if (target.platform === 'linux') args.unshift('--no-same-owner');
-  runChecked('tar', args);
+  return runChecked('tar', args);
+}
+
+// Win32 CI failures (ENOENT on .extract-*/actionlint.exe right after a
+// zero-exit Expand-Archive) need evidence, not acceptance: capture the
+// archive entry names, the actual extraction tree with sizes/timestamps, the
+// extractor exit status/stdout/stderr, and Defender state. Diagnostics never
+// alter the outcome — every probe is best-effort and the original error is
+// rethrown unchanged (fail-closed).
+function captureDiagnostic(label, producer) {
+  try {
+    return { label, ok: true, value: producer() };
+  } catch (error) {
+    return { label, ok: false, error: String(error && error.message || error) };
+  }
+}
+
+function listArchiveEntries(archivePath, target) {
+  if (target.format === 'zip') {
+    const escapedArchive = archivePath.replace(/'/g, "''");
+    const result = spawnSync('powershell.exe', [
+      '-NoLogo', '-NoProfile', '-NonInteractive', '-Command',
+      `Add-Type -AssemblyName System.IO.Compression.FileSystem; ` +
+      `[System.IO.Compression.ZipFile]::OpenRead('${escapedArchive}').Entries | ` +
+      `ForEach-Object { "$($_.FullName) $($_.Length) bytes" }`,
+    ], { shell: false, encoding: 'utf8', timeout: 20000 });
+    if (result.error) throw result.error;
+    return `exit=${result.status ?? 'unknown'}\n${(result.stdout || '').trim() || '(no entries listed)'}`;
+  }
+  const result = spawnSync('tar', ['-tzf', archivePath], { shell: false, encoding: 'utf8', timeout: 20000 });
+  if (result.error) throw result.error;
+  return `exit=${result.status ?? 'unknown'}\n${(result.stdout || '').trim() || '(no entries listed)'}`;
+}
+
+function listExtractedTree(rootDir) {
+  const rows = [];
+  for (const entry of fs.readdirSync(rootDir, { recursive: true, withFileTypes: true })) {
+    const full = path.join(entry.parentPath, entry.name);
+    const rel = path.relative(rootDir, full);
+    if (entry.isDirectory()) {
+      rows.push(`dir  ${rel}`);
+    } else {
+      const stat = fs.statSync(full);
+      rows.push(`file ${rel} ${stat.size} bytes mtime=${stat.mtime.toISOString()}`);
+    }
+  }
+  return rows.length ? rows.join('\n') : '(empty extraction directory)';
+}
+
+function probeDefender() {
+  const status = spawnSync('powershell.exe', [
+    '-NoLogo', '-NoProfile', '-NonInteractive', '-Command',
+    `Get-MpComputerStatus | Select-Object AMServiceEnabled,RealTimeProtectionEnabled,` +
+    `AntivirusSignatureLastUpdated | ConvertTo-Json -Compress`,
+  ], { shell: false, encoding: 'utf8', timeout: 20000 });
+  if (status.error) throw status.error;
+  return `exit=${status.status ?? 'unknown'}\n${(status.stdout || '').trim() || '(no output)'}`;
+}
+
+function probeRecentThreatDetections() {
+  const detections = spawnSync('powershell.exe', [
+    '-NoLogo', '-NoProfile', '-NonInteractive', '-Command',
+    `Get-MpThreatDetection | Sort-Object InitialDetectionTime -Descending | ` +
+    `Select-Object -First 5 ThreatID,ThreatName,InitialDetectionTime,Resources | ConvertTo-Json -Compress`,
+  ], { shell: false, encoding: 'utf8', timeout: 20000 });
+  if (detections.error) throw detections.error;
+  return `exit=${detections.status ?? 'unknown'}\n${(detections.stdout || '').trim() || '(no recent detections)'}`;
+}
+
+function reportExtractionDiagnostics({ archivePath, target, temporaryDir, cacheDir, extraction, extractionError, startedAt }) {
+  const blocks = [
+    captureDiagnostic('archive entry names (authority)', () => listArchiveEntries(archivePath, target)),
+    captureDiagnostic('extracted tree (sizes, mtimes)', () => listExtractedTree(temporaryDir)),
+    captureDiagnostic('extractor result', () => {
+      if (!extraction) return `extractor itself threw: ${extractionError.message}`;
+      const out = [extraction.stderr, extraction.stdout].filter(Boolean).join('\n').trim();
+      return `exit=${extraction.status ?? 'unknown'} signal=${extraction.signal ?? 'none'}${out ? `\n${out}` : ''}`;
+    }),
+    captureDiagnostic('failing stage', () => (extraction
+      ? `post-extraction binary verification: ${extractionError.message}`
+      : `archive extraction: ${extractionError.message}`)),
+  ];
+  if (target.platform === 'win32') {
+    blocks.push(captureDiagnostic('Defender computer status', probeDefender));
+    blocks.push(captureDiagnostic('Defender recent threat detections', probeRecentThreatDetections));
+  }
+  const report = {
+    event: 'actionlint-extraction-diagnostics',
+    at: new Date().toISOString(),
+    extractionStartedAt: startedAt.toISOString(),
+    platform: `${target.platform}-${target.arch}`,
+    archive: target.archive,
+    expectedBinary: target.binary,
+    temporaryDir,
+    cacheDir,
+    blocks,
+  };
+  console.error(JSON.stringify(report, null, 2));
 }
 
 export function prepareActionlint({
@@ -264,9 +376,19 @@ export function prepareActionlint({
   fs.mkdirSync(cacheParent, { recursive: true });
   const temporaryDir = fs.mkdtempSync(path.join(cacheParent, '.extract-'));
   try {
-    extractArchive(archivePath, target, temporaryDir);
+    const extractionStartedAt = new Date();
+    let extraction = null;
     const temporaryBinary = path.join(temporaryDir, target.binary);
-    verifyCachedBinary(temporaryBinary, target);
+    try {
+      extraction = extractArchive(archivePath, target, temporaryDir);
+      verifyCachedBinary(temporaryBinary, target);
+    } catch (error) {
+      reportExtractionDiagnostics({
+        archivePath, target, temporaryDir, cacheDir,
+        extraction, extractionError: error, startedAt: extractionStartedAt,
+      });
+      throw error;
+    }
     if (target.platform !== 'win32') fs.chmodSync(temporaryBinary, 0o755);
 
     try {
