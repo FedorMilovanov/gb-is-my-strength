@@ -252,20 +252,26 @@ async function auditSlot(page, routeId, selectors, checks) {
       { playTriangleSafe: gillBefore.playTriangleSafe,
         rateCenter: gillBefore.rateCenterClickable,
         paintedChip: gillBefore.chipPointerHitsBadge });
-    record(checks, `${prefix}-31`, 'Gill Play + speed reserve a compact 44px group with an overlapping, independently tappable rate badge',
-      gillBefore.compound?.width >= 43.5 && gillBefore.compound?.width <= 44.5 &&
-      gillBefore.rateBadge?.width >= 25.5 && gillBefore.rateBadge?.width <= 26.5 &&
-      gillBefore.rateBadge?.height >= 23.5 && gillBefore.rateBadge?.height <= 24.5 &&
-      gillBefore.rateBadge?.x - gillBefore.anchors[3].x >= 17.5 &&
-      gillBefore.rateBadge?.x - gillBefore.anchors[3].x <= 18.5 &&
-      gillBefore.rateBadge?.bottom - gillBefore.compound.bottom >= 4.5 &&
-      gillBefore.rateBadge?.bottom - gillBefore.compound.bottom <= 6.5 &&
-      gillBefore.settingsButton?.x >= gillBefore.compound.right &&
+    // W78: The owner-approved chip still visually touches the Play ring,
+    // but the old 26×24 accessible badge was too small. Require separate
+    // physical 44px Play/rate targets and an independently clickable chip.
+    record(checks, `${prefix}-31`, 'Gill keeps the compact ring chip with disjoint 44px Play and speed touch targets',
+      gillBefore.compound?.width >= 87.5 && gillBefore.compound?.width <= 88.5 &&
+      gillBefore.rateBadge?.width >= 43.5 && gillBefore.rateBadge?.width <= 44.5 &&
+      gillBefore.rateBadge?.height >= 43.5 && gillBefore.rateBadge?.height <= 44.5 &&
+      gillBefore.rateBadge?.x - gillBefore.anchors[3].x >= 43.5 &&
+      gillBefore.rateBadge?.x - gillBefore.anchors[3].x <= 44.5 &&
+      gillBefore.rateBadge?.x >= gillBefore.anchors[3].right - .5 &&
+      gillBefore.settingsButton?.x >= gillBefore.compound.right - .5 &&
       gillBefore.settingsButton?.x - gillBefore.compound.right <= 9 &&
-      gillBefore.rateChip?.right <= gillBefore.compound.right &&
-      gillBefore.rateChip?.bottom <= gillBefore.compound.bottom,
-      { compound: gillBefore.compound, badge: gillBefore.rateBadge,
-        chip: gillBefore.rateChip, settings: gillBefore.settingsButton });
+      gillBefore.rateChip?.right <= gillBefore.rateBadge.x + 1 &&
+      gillBefore.rateChip?.bottom <= gillBefore.compound.bottom &&
+      gillBefore.chipPointerHitsBadge && gillBefore.playTriangleSafe &&
+      gillBefore.rateCenterClickable,
+      { compound: gillBefore.compound, play: gillBefore.anchors[3],
+        badge: gillBefore.rateBadge, chip: gillBefore.rateChip, settings: gillBefore.settingsButton,
+        chipClickable: gillBefore.chipPointerHitsBadge,
+        playTriangleSafe: gillBefore.playTriangleSafe, rateCenterClickable: gillBefore.rateCenterClickable });
     record(checks, `${prefix}-32`, 'one fine, softly animated progress ring inside the canonical 44px Play',
       Number.parseFloat(gillBefore.ringTrackWidth) >= 2.9 && Number.parseFloat(gillBefore.ringTrackWidth) <= 3.1 &&
       Number.parseFloat(gillBefore.ringProgressWidth) >= 3.5 && Number.parseFloat(gillBefore.ringProgressWidth) <= 3.7 &&
@@ -281,7 +287,7 @@ async function auditSlot(page, routeId, selectors, checks) {
       gillBefore.rateChip?.x - gillBefore.anchors[3]?.x >= 22 &&
       gillBefore.rateChip?.x - gillBefore.anchors[3]?.x <= 24.5 &&
       gillBefore.rateChip?.bottom - gillBefore.ring?.bottom <= 1.5 &&
-      gillBefore.speedGapToSettings >= 10 && gillBefore.speedGapToSettings <= 32,
+      gillBefore.speedGapToSettings >= 45 && gillBefore.speedGapToSettings <= 75,
       {chip:gillBefore.rateChip,ring:gillBefore.ring,paintedGap:gillBefore.speedGapToSettings});
     record(checks, `${prefix}-30`, 'Visible speed chip overlap clicks its badge, never triggers Play',
       gillBefore?.chipPointerHitsBadge === true,{ chipOwner:gillBefore?.chipPointerHitsBadge });

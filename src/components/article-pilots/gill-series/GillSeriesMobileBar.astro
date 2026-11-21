@@ -479,7 +479,10 @@ const page = config.pages[pageId];
   [data-gill-v16] .mobile-top-bar .reader-mobile-play-group.mobile-playwrap {flex:0 0 88px;width:88px;min-width:88px}
   [data-gill-v16] .mobile-top-bar .reader-mobile-play-group .reader-mobile-speed-badge {position:relative;inset:auto;margin:0;flex:0 0 44px;width:44px;min-width:44px;height:44px;min-height:44px;pointer-events:auto}
   [data-gill-v16] .mobile-top-bar .reader-mobile-speed-badge::before {content:none}
-  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-chip {left:0;right:auto;bottom:7px;height:14px;min-width:20px;box-shadow:none}
+  /* Paint the compact rate chip back on the lower-right Play ring arc,
+     while its owning badge retains a separate full 44px touch surface.
+     A Play triangle tap remains unoccluded; the chip bubbles to rate. */
+  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-chip {left:-21px;right:auto;bottom:7px;height:14px;min-width:20px;box-shadow:none}
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-svg {width:38px;height:38px;inset:3px}
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-track {stroke-width:3;opacity:.58}
   [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-progress {stroke-width:3.6}
