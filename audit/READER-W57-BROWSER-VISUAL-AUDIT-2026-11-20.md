@@ -1190,3 +1190,81 @@ Trusted CDP touch matrix на Gill I, `390×844`, дала следующие р
 - [x] **Analytics interactive targets:** 44 px summaries/jump actions, definition expansion, source jump and focus restoration pass.
 
 No product/source repair was made. The required architecture remains one shared Analytics base with responsive presentation surfaces; the current exact head has the shared base and mobile surface, but must not be described as having a complete desktop surface until a visible desktop entry path is proven.
+
+## 20. Раунд 14 — новые Analytics boundary и accessibility findings
+
+### 20.1. Дополнительная матрица поверхностей
+
+На exact `62be8caa` выполнена расширенная матрица `/tmp/w62/.tmp-analytics-qa.mjs`: шесть Gill routes × десять viewport surfaces (`320×568`, `320×700`, `360×800`, `390×844`, `430×932`, `768×1024`, `1024×900`, `1280×800`, `1366×768`, `1440×900`) — всего **60 открытий**.
+
+Положительные результаты:
+
+- 0 page/runtime errors;
+- 0 horizontal overflow у page и Analytics panel;
+- panel bottom достижим на всех 60 поверхностях, включая `320×568`;
+- все проверенные summary/jump controls остаются не меньше `44px` по высоте;
+- `aria-modal`, `role=tabpanel`, `aria-labelledby`, hidden/inert переходы корректны;
+- 40 последовательных Tab на Gill I и Gill II не выводят focus за dialog;
+- Escape возвращает focus к mobile Analytics opener и сбрасывает его `aria-expanded=false`;
+- light, dark и sepia-like surface остаются видимыми, JS ошибок нет.
+
+Это сужает область проблем: базовая responsive geometry и native scroll не являются текущим источником новых overflow-регрессий.
+
+### 20.2. Прямой Analytics opener фокусирует не выбранную вкладку
+
+При trusted mouse click по видимому mobile `[data-gill-marginalia-open]` Analytics действительно становится выбранной (`#gbrMarginaliaTab[aria-selected=true]`), но через 150 ms `document.activeElement` — `.toc-sheet__handle`, а не выбранная вкладка. Тот же direct-open результат воспроизводится на Gill I; при открытии обычного Part TOC и ручном ArrowRight focus остаётся на `#gbrMarginaliaTab`.
+
+Причина видна в owner chain:
+
+- `GillMobileMarginalia.switchTab()` фокусирует research tab при `gb:gill-select-part-panel`;
+- `floating-cluster-controller.js` передаёт `openOverlay()` в `OverlayRuntime` без `focusTarget` для top research;
+- `OverlayRuntime.open()` асинхронно фокусирует первый overlay control — `.toc-sheet__handle` — и перетирает focus выбранной вкладки.
+
+Это **confirmed accessibility/interaction defect** только для прямого Analytics opener: визуально выбранная вкладка и panel правильны, но screen-reader/keyboard user после открытия оказывается на close handle и не получает focus confirmation выбранной surface. Owner fix должен передать research tab как `focusTarget` для этого входа либо выполнить гарантированный focus после generic overlay initialization; отдельный Analytics runtime для этого не нужен.
+
+### 20.3. Dialog accessible name остаётся названием Part TOC
+
+На mobile и diagnostic desktop после выбора Analytics одновременно наблюдаются:
+
+```text
+visible heading:  Аналитика
+selected tab:    #gbrMarginaliaTab[aria-selected="true"]
+dialog aria-label: Часть I · Человек
+```
+
+При открытии introduction/ref surface label соответственно остаётся `Введение · Исторический контекст` или `Справочник по Гиллу`. `GillPartTocOverlay.astro` задаёт статический `aria-label={page.partDialogLabel}`, а `switchTab()` меняет только видимый `<h3>` на `Аналитика`; accessible name dialog не обновляется.
+
+Это **confirmed stale accessible-name inconsistency**. Part context может быть полезен как дополнительное имя, но текущий accessibility tree не сообщает, что внутри открыта Analytics surface. Нужно либо динамически менять label/`aria-labelledby` при переключении tab, либо иметь отдельный доступный title, связанный с выбранной вкладкой. Не следует исправлять это вторым dialog или вторым Analytics owner.
+
+### 20.4. Extractor пересекает UI/navigation boundaries
+
+`GillMobileMarginalia.researchData()` берёт все `article.querySelectorAll('h2[id]')`, но фильтр `nav,aside,footer,.related-articles,.faq-accordion` применяется только к `elements()` для абзацев/термов/сносок, не к самим headings. На exact browser evidence это даёт два разных вида загрязнения:
+
+1. **Introduction и справочник:** первым `h2` является `#summary-title-auto`, внутри которого находится интерактивная кнопка `.gb-summary-toggle`. Его raw `textContent` — `Коротко5 тезисов›`; Analytics визуально рендерит тот же malformed lead `Коротко5 тезисов›` вместо чистого `Коротко` или нормального summary label. Это воспроизводится на `390×844` и desktop diagnostic surface на обоих routes.
+2. **Gill I/II внизу статьи:** `h2#gbRelationsTitle-*` находится внутри `nav.gb-relations-panel` с eyebrow `Навигация по исследованию`, а не в prose article. При scroll к этому блоку Analytics выбирает его как active heading и показывает lead `Контекст и связи`; при этом nav paragraphs исключены последующим filter-ом, что даёт смешанное состояние: navigation heading + fallback `Понятия из всей статьи` + evidence из соседнего article content.
+
+Машинные witnesses: `/tmp/62-heading-probe.json`, `/tmp/62-relations-analytics.json`, `/tmp/62-analytics-sections.json`.
+
+Это **confirmed source-boundary/content defect**, а не спор о тексте. Extraction обещает материал из опубликованной статьи, но active-section resolver считает presentation/navigation `h2` частью narrative sections. Owner fix должен сначала исключить headings из тех же non-content containers и получать title через canonical section label/`heading-anchor__name`, а не через необработанный `textContent` интерактивного `h2`.
+
+### 20.5. Touch intent telemetry — уточнение Round 13
+
+Дополнительный probe `/tmp/w62/.tmp-analytics-touch-intent.mjs` записывал `defaultPrevented` в window bubble phase, после document-level `initSheetSwipe()`:
+
+- downward `25px` на верхней границе Analytics: `defaultPrevented=true`, sheet получает `transform:translateY(25px)`, overlay остаётся open;
+- diagonal `dx≈−130, dy≈+110`: `defaultPrevented=true`, sheet следует за пальцем и закрывается на release;
+- horizontal: `defaultPrevented=false`, overlay остаётся open;
+- vertical up: `defaultPrevented=false`, panel scrolls `0→155`;
+- diagonal при inner offset `260`: sheet не transform-ится, native panel scrolls `260→159`.
+
+Это делает Round 12/13 finding ещё точнее: short positive movement уже подавляет native movement до close threshold `80px`; diagonal angle gate отсутствует. Positive results for inner native scroll remain valid.
+
+### 20.6. Итог раунда
+
+- [x] Responsive Analytics geometry: 60/60 surfaces reach the panel bottom without page/panel horizontal overflow.
+- [ ] Direct opener focus: selected research tab is overwritten by generic handle focus.
+- [ ] Dialog accessible name: static Part TOC label is stale while Analytics is selected.
+- [ ] Extraction boundary: summary-card and relation-navigation `h2` enter active-section model; summary lead leaks button chrome.
+- [ ] Sheet touch intent: `25px` downward motion is prevented and horizontal-dominant diagonal can dismiss.
+
+No product/source repair was made. The one-owner architecture remains correct; the next owner fixes should tighten the existing collector’s section boundary and accessibility handoff, not introduce a desktop/mobile fork.
