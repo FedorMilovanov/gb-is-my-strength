@@ -163,7 +163,11 @@ async function runColdAndWarmCase(browser, browserName, baseUrl, route, viewport
     const response = await page.goto(`${baseUrl}${route}`, { waitUntil: 'networkidle' });
     assert.ok(response?.ok(), `${browserName} ${route} ${viewport.width}: route did not load`);
 
-    const triggerSelector = route === '/hard-texts/' ? '.mcp-search' : '#gbSearchBtn';
+    // /articles/ is a strict-native journal route. Its visible masthead search
+    // is the real opener; #gbSearchBtn belongs to legacy chrome on other routes.
+    const triggerSelector = route === '/articles/'
+      ? '.je-masthead button[data-action="open-search"]'
+      : route === '/hard-texts/' ? '.mcp-search' : '#gbSearchBtn';
     const trigger = page.locator(triggerSelector);
     await trigger.waitFor({ state: route === '/hard-texts/' ? 'attached' : 'visible' });
     const cold = await page.evaluate((selector) => ({
