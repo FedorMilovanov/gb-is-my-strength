@@ -18,6 +18,10 @@ const files = {
   notFound: read('404.html'),
   rodosloviye: read('src/components/rodosloviye/RodosloviyeBody.astro'),
   auditPro: read('scripts/audit-pro.js'),
+  journalShell: read('src/components/journal/JournalEditorialShell.astro'),
+  journalMasthead: read('src/components/journal/JournalMasthead.astro'),
+  articlesChrome: read('src/components/articles/ArticlesPageChrome.astro'),
+  articlesMasthead: read('src/components/articles/ArticlesMasthead.astro'),
   browser: read('scripts/app-search-surface-browser-contract.mjs'),
   avraamPage: read('src/pages/karty/avraam/index.astro'),
   ishodPage: read('src/pages/karty/ishod/index.astro'),
@@ -134,8 +138,33 @@ const ownerCandidates = [
 ];
 const rawOwners = ownerCandidates.filter((file) => hasRawSearchShortcut(fs.readFileSync(file, 'utf8')))
   .map((file) => path.relative(process.cwd(), file).replace(/\\/g, '/')).sort();
-check(JSON.stringify(rawOwners) === JSON.stringify(['js/site-utils.js']),
-  `sole raw Search keyboard owner drifted: ${rawOwners.join(', ')}`);
+// A route has one keyboard shortcut owner. Legacy/app routes mount SiteUtils;
+ // NEWS and the article library are separate strict-native pages with mutually
+ // exclusive mastheads and only delegate the chord to GBSearchBootstrap.
+ const expectedRawOwners = [
+   'js/site-utils.js',
+   'src/components/articles/ArticlesMasthead.astro',
+   'src/components/journal/JournalMasthead.astro',
+ ];
+ check(JSON.stringify(rawOwners) === JSON.stringify(expectedRawOwners),
+   `unregistered raw Search shortcut owner: ${rawOwners.join(', ')}`);
+ for (const [name, source] of [
+   ['NEWS', files.journalMasthead],
+   ['Articles', files.articlesMasthead],
+ ]) {
+   check(hasRawSearchShortcut(source) && count(source, "document.addEventListener('keydown'") === 1,
+     `${name} must have exactly one native shortcut listener`);
+   check(source.includes('GBSearchBootstrap') && source.includes('data-action="open-search"'),
+     `${name} must delegate to the existing search bootstrap`);
+ }
+ check(files.journalShell.includes('<JournalMasthead') &&
+       !files.journalShell.includes('<ArticlesMasthead') &&
+       files.articlesChrome.includes('<ArticlesMasthead') &&
+       !files.articlesChrome.includes('<JournalMasthead'),
+   'NEWS and Articles must have mutually exclusive shortcut-owning mastheads');
+ check(!files.journalShell.includes('/js/site-utils.js') &&
+       !files.articlesChrome.includes('/js/site-utils.js'),
+   'Native NEWS/Articles must not mount a second SiteUtils keyboard owner');
 check(files.auditPro.includes('raw Ctrl/Meta+K owner'), 'audit-pro G112 semantic owner guard missing');
 
 check(files.home.includes('data-search-shortcut-label="Поиск по всему сайту"'), 'Home shared label metadata missing');
