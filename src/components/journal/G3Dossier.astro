@@ -169,13 +169,13 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
     </div>
     <JournalEditorialRail label="Содержание документального досье G3">
       <JournalContents entries={contents} summaryId="journal-g3-toc" initialCompactClosed />
-      <!-- Explicit native return is not browser-history focus restoration. -->
-      <a class="je-contents-return" href="#overview" data-pagefind-ignore>К началу чтения</a>
       <p class="je-rail-note">Фактический срез — 9 сентября 2026 года.{' '}
         <a href="#bibliography">{G3_SOURCE_BIBLIOGRAPHY.length} источник</a> с датами и границами доказательств.{' '}
         <a href="#corrections">Журнал исправлений</a>.</p>
     </JournalEditorialRail>
     <div class="journal-story-column">
+      <!-- Explicit native return is not browser-history focus restoration. -->
+      <a class="je-contents-return" href="#overview" data-pagefind-ignore>К началу чтения</a>
 
   <section id="timeline" class="module" tabindex="-1">
     <div class="module-label">02 · Хронология</div>
