@@ -25,9 +25,23 @@ function button(action, label, text) {
   function renderItem(item, expanded) {
     const card = element('article', 'gb-hl-item');
     card.dataset.type = item.type; card.dataset.id = item.id;
-    card.append(element('div', 'gb-hl-type',
-      (item.type === 'favorite' ? 'Статья' : item.type === 'quote' ? 'Цитата' : 'Заметка') +
-      (item.savedAt ? ' · ' + savedDate(item.savedAt) : '')));
+    /* P2: помета остаётся записью типа quote, но в списке она должна читаться
+       как помета и нести свой цвет — иначе в библиотеке всё выглядит цитатой. */
+    const marker = item.type === 'quote' && item.kind === 'marker';
+    const COLORS = { amber: 'янтарный', sage: 'шалфейный', blue: 'голубой', lime: 'лаймовый', rose: 'розовый' };
+    const typeRow = element('div', 'gb-hl-type',
+      (item.type === 'favorite' ? 'Статья' : marker ? 'Помета' : item.type === 'quote' ? 'Цитата' : 'Заметка') +
+      (item.savedAt ? ' · ' + savedDate(item.savedAt) : ''));
+    /* Цвет может быть и у цитаты (пользователь выделил уже сохранённую
+       цитату) — точка показывается всегда, когда цвет есть. */
+    if (item.color) {
+      const dot = element('span', 'gb-hl-mark-dot');
+      dot.dataset.color = item.color;
+      dot.setAttribute('role', 'img');
+      dot.setAttribute('aria-label', 'Цвет пометы: ' + (COLORS[item.color] || item.color));
+      typeRow.prepend(dot);
+    }
+    card.append(typeRow);
     if (item.quoteText) {
       const related = element('div', 'gb-hl-related', 'К цитате: «' + item.quoteText + '»');
       card.append(related);
@@ -96,7 +110,12 @@ function button(action, label, text) {
     if (!items.length) { statusMessage('Библиотека пуста.'); return; }
     const lines = ['# Моя библиотека · Господь Бог — Сила Моя', ''];
     for (const x of items) {
-      lines.push('## ' + (x.type === 'note' ? 'Заметка' : x.type === 'quote' ? 'Цитата' : 'Статья') + ' — ' + x.title);
+      const COLORS = { amber: 'янтарный', sage: 'шалфейный', blue: 'голубой', lime: 'лаймовый', rose: 'розовый' };
+      const kindLabel = x.type === 'note' ? 'Заметка'
+        : x.type === 'quote' ? (x.kind === 'marker' ? 'Помета' : 'Цитата')
+        : 'Статья';
+      const colorLabel = x.type === 'quote' && x.color ? ' (' + (COLORS[x.color] || x.color) + ')' : '';
+      lines.push('## ' + kindLabel + colorLabel + ' — ' + x.title);
       lines.push('');
       lines.push(x.type === 'quote' ? '> ' + x.text.replace(/\n/g, '\n> ') : x.text);
       if (x.quoteText) lines.push('', 'К цитате: ' + x.quoteText);

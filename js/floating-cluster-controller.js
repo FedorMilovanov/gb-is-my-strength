@@ -15,8 +15,11 @@
 (function () {
   'use strict';
 
-  // The SSR series config is authoritative before the first actual heading.
-  // ReaderState may return a placeholder "Введение" in before-content phase.
+  /* SSR-значение подписи «Сейчас читаете» (#gbs2MobSec) из серии-конфига:
+     «Часть II. Учёный», «Двустороннее зеркало» и т.д. Снимаем его на этапе
+     разбора скрипта — раньше, чем любая прокрутка или соседний скрипт успеют
+     перезаписать текст. Нужно как честный фолбэк: до первого заголовка
+     подпись не должна подменяться литералом «Введение» на каждой странице. */
   var MOB_SEC_INITIAL = (function () {
     var el = document.getElementById('gbs2MobSec');
     return el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
@@ -1701,7 +1704,9 @@
       addCleanListener(btn, 'click', function (e) {
         e.preventDefault();
         closeOverlay(seriesToc, 'switch', false);
-        openOverlay(partToc, e.currentTarget);
+        openOverlay(partToc, e.currentTarget, {
+          focusTarget: partToc.querySelector('[data-gbr-tab="research"]')
+        });
         btn.setAttribute('aria-expanded','true');
         partToc.dispatchEvent(new CustomEvent('gb:gill-select-part-panel', { detail:{ panel:'research' } }));
       });
@@ -1787,6 +1792,7 @@
     // syncs aria-expanded on ALL triggers at once (only one is visible at a
     // given viewport width, but keeping both in sync is free and correct).
     var settingsBtns = qsa('[data-gill-settings-open]');
+    var settingsOpener = null;
     var extraOverlays = [learningOverlay, settingsOverlay].filter(function(el) { return !!el; });
 
     extraOverlays.forEach(function(overlay) {
@@ -1823,7 +1829,8 @@
         addCleanListener(btn, 'click', function(e) {
           e.preventDefault();
           closeGillSheet(settingsOverlay, false, 'switch');
-          openGillSheet(learningOverlay, learningBtns, e.currentTarget);
+          var returnTarget = settingsOverlay && settingsOverlay.contains(btn) ? settingsOpener : btn;
+          openGillSheet(learningOverlay, learningBtns, returnTarget);
         });
       });
     }
@@ -1832,7 +1839,8 @@
         addCleanListener(btn, 'click', function(e) {
           e.preventDefault();
           closeGillSheet(learningOverlay, false, 'switch');
-          openGillSheet(settingsOverlay, settingsBtns, e.currentTarget);
+          settingsOpener = e.currentTarget;
+          openGillSheet(settingsOverlay, settingsBtns, settingsOpener);
         });
       });
     }
@@ -2803,8 +2811,12 @@
       if (mobDualBtn) mobDualBtn.setAttribute('aria-label', 'Статья ' + pct + '%, серия ' + seriesPc + '%');
       var mobSec = qs('#gbs2MobSec');
       if (mobSec) {
-        // "Введение" is a ReaderState placeholder, not the title of Gill II,
-        // Baptist series chapters or any other series page before its H2.
+        /* js/reader-state.js отдаёт title «Введение» как заглушку для фазы
+           before-content (и для «активного раздела нет»), а не как имя части.
+           Раньше эта заглушка уходила прямо в подпись, и на каждой странице
+           серии нижняя панель писала «Сейчас читаете: Введение» — в том числе
+           на «Части II. Учёный» и на не-гилловских сериях. Пока активного
+           раздела нет, держим собственную часть статьи из SSR. */
         var hasActiveSection = Number(reader.sectionIndex) >= 0 && !!reader.sectionTitle;
         var label = hasActiveSection ? reader.sectionTitle : (MOB_SEC_INITIAL || 'Начало части');
         if (phase === 'after-content') label = 'Завершено';
@@ -3125,7 +3137,7 @@
      close button (keeps focus-restore and scroll-unlock paths intact). --- */
   (function initSheetSwipe() {
     var SCROLL_SELS = '.toc-sheet__list, .toc-sheet__body, .hmsheet-list, .btoc-nav';
-    var startY = 0, panel = null, active = false;
+    var startX = 0, startY = 0, panel = null, active = false;
 
     function findPanel(target) {
       if (!target || !target.closest) return null;
@@ -3149,11 +3161,14 @@
       if (!e.touches || e.touches.length !== 1) return;
       var p = findPanel(e.target);
       if (!p || scrollerBlocked(p, e.target)) return;
-      panel = p; startY = e.touches[0].clientY; active = true;
+      panel = p; startX = e.touches[0].clientX; startY = e.touches[0].clientY; active = true;
     }, { passive: true });
     document.addEventListener('touchmove', function (e) {
       if (!active || !panel || !e.touches || e.touches.length !== 1) return;
       var dy = e.touches[0].clientY - startY;
+      var dx = Math.abs(e.touches[0].clientX - startX);
+      if (dx > 8 && dx >= Math.abs(dy)) { reset(); return; }
+      if (dy < 8 || dy < dx * 1.4) return;
       if (dy <= 0) { panel.style.transform = ''; return; }
       e.preventDefault();
       panel.style.transition = 'none';
@@ -3164,7 +3179,7 @@
       var dy = (e.changedTouches && e.changedTouches[0].clientY - startY) || 0;
       var p = panel;
       reset();
-      if (dy > 80) {
+      if (dy > 80 && dy > Math.abs(e.changedTouches[0].clientX - startX) * 1.4) {
         var closer = p.querySelector('[data-overlay-close], .toc-sheet__handle, .hmsheet-close, .btoc-close');
         if (closer) closer.click();
       }
@@ -3200,16 +3215,9 @@
     function inContent(target) {
       return Boolean(target && target.closest && target.closest('article, main, [data-pagefind-body]'));
     }
-    function wantsHijack(target, wantLeft) {
-      // Never steal a swipe from a region that scrolls horizontally itself
-      // (tables, code blocks, rails).
-      var el = target;
-      while (el && el !== document.body) {
-        if (el.scrollWidth && el.clientWidth && el.scrollWidth - el.clientWidth > 2) {
-          var max = el.scrollWidth - el.clientWidth;
-          if (wantLeft ? el.scrollLeft < max - 2 : el.scrollLeft > 2) return true;
-        }
-        el = el.parentElement;
+    function wantsHijack(target) {
+      for (var el = target; el && el !== document.body; el = el.parentElement) {
+        if (el.scrollWidth > el.clientWidth + 2 && /^(auto|scroll)$/.test(getComputedStyle(el).overflowX)) return true;
       }
       return false;
     }
@@ -3225,7 +3233,7 @@
 
     document.addEventListener('touchstart', function (e) {
       reset();
-      if (!e.touches || e.touches.length !== 1) return;
+      if (!e.touches || e.touches.length !== 1 || e.target.closest('.shelf-track, button, a, input, textarea, select, summary, [contenteditable=true]')) { cancelGesture(); return; }
       if (inField() || modalsOpen() || sheetsOpen() || !inContent(e.target)) { dead = true; return; }
       sx = e.touches[0].clientX; sy = e.touches[0].clientY; t0 = Date.now();
     }, { passive: true });
@@ -3233,11 +3241,11 @@
       if (dead || !e.touches || e.touches.length !== 1) return;
       if (Date.now() - t0 > TMAX) { cancelGesture(); return; }
       var dx = e.touches[0].clientX - sx, dy = e.touches[0].clientY - sy;
-      if (!dir) {
-        if (Math.abs(dy) > VMAX) { dead = true; return; } // vertical scroll wins
+      if (Math.abs(dy) > VMAX || (dir && Math.abs(dx) < Math.abs(dy) * 1.4)) { cancelGesture(); return; }
+      if (!dir) { // vertical scroll wins
         if (Math.abs(dx) < COMMIT || Math.abs(dx) < Math.abs(dy) * 1.4) return; // angle gate
         var wantLeft = dx < 0;
-        if (wantsHijack(e.target, wantLeft)) { dead = true; return; }
+        if (wantsHijack(e.target)) { dead = true; return; }
         var ds = targets();
         dirData = wantLeft ? ds.next : ds.prev;
         if (!dirData) { dead = true; return; }
@@ -3245,21 +3253,21 @@
         var el = document.createElement('aside');
         el.className = 'gbs2-peek gbs2-peek-' + dir;
         el.setAttribute('aria-hidden', 'true');
-        // Quote the cover URL (spaces would break an unquoted url()) and strip
-        // any quotes the source serialization left behind.
-        var peekImg = dirData.img ? String(dirData.img).replace(/"/g, '') : '';
-        el.innerHTML = '<span class="gbs2-peek-img"' + (peekImg ? ' style="background-image:url("' + peekImg + '")"' : '') + '></span>' +
-          '<span class="gbs2-peek-b"><small>' + (dir === 'next' ? 'Дальше' : 'Назад') + '</small><b></b><i>Отпустите, чтобы перейти</i></span>';
+        el.innerHTML = '<span class="gbs2-peek-img"></span>' +
+          '<span class="gbs2-peek-b"><small>' + (dir === 'next' ? 'Дальше' : 'Назад') + '</small><b></b><i>Отпустите для перехода</i></span>';
+        if (dirData.img) el.firstElementChild.style.backgroundImage = 'url(' + JSON.stringify(dirData.img) + ')';
         el.querySelector('b').textContent = dirData.title;
         document.body.appendChild(el);
         peek = el;
       }
       e.preventDefault(); // committed: suppress link-click and scroll
       var amt = dir === 'next' ? Math.max(0, -dx) : Math.max(0, dx);
+      peek.querySelector('i').textContent = amt > TRIG ? 'Отпустите для перехода' : 'Проведите дальше';
       peek.style.setProperty('--gbs2-peek', Math.min(210, amt) + 'px');
       peek.classList.add('gbs2-on');
     }, { passive: false });
     function finish(e) {
+      if (e.touches && e.touches.length) { cancelGesture(); return; }
       if (dead || !dir || !dirData) { reset(); return; }
       var t = e.changedTouches && e.changedTouches[0];
       var dx = t ? t.clientX - sx : 0;
@@ -3267,7 +3275,7 @@
       var href = dirData.href;
       var slow = Date.now() - t0 > TMAX;
       reset();
-      if (!slow && amt > TRIG && href) {
+      if (!slow && amt > TRIG && t && Math.abs(t.clientY - sy) <= VMAX && amt > Math.abs(t.clientY - sy) * 1.4 && href) {
         if (document.startViewTransition) {
           try { document.startViewTransition(function () { location.href = href; }); }
           catch (_) { location.href = href; }
@@ -3275,7 +3283,7 @@
       }
     }
     document.addEventListener('touchend', finish, { passive: true });
-    document.addEventListener('touchcancel', reset, { passive: true });
+    document.addEventListener('touchcancel', cancelGesture, { passive: true });
 
     try {
       var ds0 = targets();
@@ -3287,11 +3295,31 @@
           tip.setAttribute('role', 'status');
           tip.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 7l-5 5 5 5"/></svg>Свайп по статье — соседняя часть серии';
           document.body.appendChild(tip);
-          requestAnimationFrame(function () { tip.classList.add('gbs2-on'); });
-          setTimeout(function () {
+          // W62: this is an article-only onboarding toast, not part of the
+          // Analytics/TOC/Library sheet. Dismiss it immediately if a sheet
+          // opens after the initial 2400ms gate; it must never cover a verse,
+          // reading item or drawer action.
+          var tipObserver = new MutationObserver(function () {
+            if (!sheetsOpen() && !modalsOpen()) return;
+            tipObserver.disconnect();
+            clearTimeout(tipTimer);
+            if (tip.parentNode) tip.parentNode.removeChild(tip);
+          });
+          tipObserver.observe(document.body, {
+            subtree: true, attributes: true, attributeFilter: ['class']
+          });
+          var tipTimer = setTimeout(function () {
+            tipObserver.disconnect();
             tip.classList.remove('gbs2-on');
-            setTimeout(function () { if (tip.parentNode) tip.parentNode.removeChild(tip); }, 450);
+            setTimeout(function () {
+              if (tip.parentNode) tip.parentNode.removeChild(tip);
+            }, 450);
           }, 5200);
+          requestAnimationFrame(function () {
+            if (!sheetsOpen() && !modalsOpen() && tip.isConnected) {
+              tip.classList.add('gbs2-on');
+            }
+          });
           try { window.localStorage.setItem(TIP_KEY, '1'); } catch (_) {}
         }, 2400);
       }

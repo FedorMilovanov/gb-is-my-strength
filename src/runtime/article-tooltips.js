@@ -615,8 +615,9 @@ function initializeAnchor(anchor) {
     if (active?.anchor === anchor) { cancelClose(); return; }
     // On mobile, a pointer click focuses the marker before its click handler.
     // Opening the bottom sheet on that focus blocks the very click that owns it.
-    // Keyboard focus still opens the tooltip through :focus-visible.
-    if (mobileMode() && !anchor.matches(':focus-visible')) return;
+    // A glossary definition becomes a modal sheet on mobile. Tab visits the
+    // term; activation by Enter, Space or tap opens that sheet deliberately.
+    if (mobileMode() && (anchor.matches('.gterm') || !anchor.matches(':focus-visible'))) return;
     openTooltip(anchor, 'focus');
   });
   anchor.addEventListener('blur', (event) => {

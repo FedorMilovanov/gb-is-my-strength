@@ -16,17 +16,177 @@
   const searchSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>';
 
   function normalizeText(value) { return String(value == null ? '' : value).replace(/\s+/g, ' ').trim(); }
+  /* W57/Product share one positional identity and one exact DOM resolver.
+     Reusing the published visible text avoids blind string-index guesses. */
+  const GBReaderAnchors = (() => {
+    const normalize = normalizeText;
+    const pathname = () => location.pathname.replace(/\/+$/, '') || '/';
+    const hash = s => { let h=2166136261; for(let i=0;i<s.length;i++){
+      h ^= s.charCodeAt(i); h=Math.imul(h,16777619); } return (h>>>0).toString(36); };
+  const blocks=(article)=>[...article.querySelectorAll('p,li,blockquote')]
+    .filter(e=>!e.closest('.np-u-central-overview,.np-u-central-contents,.gill-card,figcaption,.np-u-series-disclosure')&&
+      normalize(e.textContent).length>=6);
+  function chooseBlock(node,article){
+    const el=node?.nodeType===1?node:node?.parentElement;
+    const parent=el?.closest('p,li,blockquote');
+    return parent&&article.contains(parent)?parent:null;
+  }
+  // Source coordinates refer only to VISIBLE authored prose, not inline
+  // glossary popovers hidden inside the published article's DOM.
+  function visibleProjection(block){
+    const segments=[],cached=new WeakMap();
+    const ignored=el=>{
+      if(!el||el===block)return false;
+      if(cached.has(el))return cached.get(el);
+      const excluded=el.matches('.gtip,.btip,.tooltip,[hidden],[inert],[aria-hidden="true"],[role="tooltip"]') ||
+        getComputedStyle(el).display==='none' ||
+        getComputedStyle(el).visibility==='hidden' || ignored(el.parentElement);
+      cached.set(el,excluded);return excluded;
+    };
+    const walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT);
+    let text='',node;
+    while((node=walker.nextNode())){
+      if(!node.nodeValue||ignored(node.parentElement))continue;
+      const start=text.length;text+=node.nodeValue;
+      segments.push({node,start,end:text.length});
+    }
+    return{text,segments};
+  }
+  function projectedOffset(p,container,offset){
+    const at=document.createRange();
+    try{at.setStart(container,offset);at.collapse(true)}catch(_){return null}
+    for(const segment of p.segments){
+      if(container===segment.node)return segment.start+offset;
+      if(at.comparePoint(segment.node,segment.node.nodeValue.length)<0)continue;
+      return segment.start;
+    }
+    return p.text.length;
+  }
+  function makeRange(block,start,end){
+    const p=visibleProjection(block);
+    if(!Number.isInteger(start)||!Number.isInteger(end)||
+       start<0||end<=start||end>p.text.length)return null;
+    const from=p.segments.find(s=>s.start<=start&&start<s.end);
+    const to=p.segments.find(s=>s.start<end&&end<=s.end);
+    if(!from||!to)return null;
+    const r=document.createRange();
+    r.setStart(from.node,start-from.start);
+    r.setEnd(to.node,end-to.start);
+    return r;
+  }
+  function capture(article){
+    const sel=window.getSelection?.();
+    if(!sel||sel.isCollapsed||!sel.rangeCount)return null;
+    const r=sel.getRangeAt(0).cloneRange(),block=chooseBlock(r.startContainer,article);
+    if(!block||chooseBlock(r.endContainer,article)!==block)return null;
+    const visual=r.getBoundingClientRect();
+    if(visual.width<2||visual.height<2||visual.bottom<0||visual.top>innerHeight||
+       !block.getClientRects().length||block.closest('[hidden],[inert],[aria-hidden="true"]'))
+      return null;
+    const p=visibleProjection(block),start=projectedOffset(p,r.startContainer,r.startOffset),
+      end=projectedOffset(p,r.endContainer,r.endOffset);
+    if(start===null||end===null||end<=start)return null;
+    const text=p.text.slice(start,end);
+    if(normalize(text).length<6||text.length>3000)return null;
+    const list=blocks(article),index=list.indexOf(block);
+    if(index<0)return null;
+    const anchor={
+      projection:'reader-visible-v1',blockId:block.id||'',blockIndex:index,start,end,
+      exact:text,prefix:p.text.slice(Math.max(0,start-64),start),
+      suffix:p.text.slice(end,end+64),
+      blockHash:hash(normalize(p.text)),
+      fingerprint:hash(pathname()+'|'+index+'|'+start+':'+end+'|'+text)
+    };
+    return{text,anchor,range:r,rect:visual};
+  }
+  function resolve(article,anchor){
+    if(!anchor||typeof anchor.exact!=='string'||!anchor.exact)return null;
+    const list=blocks(article);
+    // Legacy annotations are preserved exactly. If old coordinates included
+    // hidden glossary prose, do NOT guess a new author or passage.
+    const surroundingMatches=(raw,start,end)=>{
+      const prefix=String(anchor.prefix||'').slice(-24),suffix=String(anchor.suffix||'').slice(0,24);
+      if(!prefix&&!suffix)return false;
+      if(prefix&&!raw.slice(Math.max(0,start-prefix.length),start).endsWith(prefix))return false;
+      if(suffix&&!raw.slice(end,end+suffix.length).startsWith(suffix))return false;
+      return true;
+    };
+    const probe=(block,start=anchor.start,end=anchor.end)=>{
+      if(!block)return null;
+      const raw=visibleProjection(block).text;
+      if(raw.slice(start,end)!==anchor.exact)return null;
+      const sameBlock=anchor.blockHash&&hash(normalize(raw))===anchor.blockHash;
+      if(!sameBlock&&!surroundingMatches(raw,start,end))return null;
+      return makeRange(block,start,end);
+    };
+    const preferred=anchor.blockId?
+      article.querySelector('#'+CSS.escape(anchor.blockId)):list[anchor.blockIndex];
+    const stablePreferred=!!anchor.blockId&&preferred&&list.includes(preferred);
+    if(stablePreferred){
+      const found=probe(preferred);if(found)return found;
+    }
+    // If the source block still has its authored ID, never let a matching
+    // phrase in some other block steal its annotation. Search only inside that
+    // identified block (for a safe in-block relocation); a failed result stays
+    // orphaned instead of jumping to a coincidental paragraph.
+    const searchBlocks=stablePreferred?[preferred]:list;
+    const candidates=[];
+    for(const block of searchBlocks){
+      const raw=visibleProjection(block).text;
+      const sameBlock=anchor.blockHash&&hash(normalize(raw))===anchor.blockHash;
+      // Without a stable block ID, cross-block relocation is safe only when
+      // the complete original block fingerprint and local context both agree.
+      if(!stablePreferred&&!sameBlock)continue;
+      let at=0;
+      while((at=raw.indexOf(anchor.exact,at))!==-1){
+        if(surroundingMatches(raw,at,at+anchor.exact.length)){
+          const range=makeRange(block,at,at+anchor.exact.length);
+          if(range)candidates.push(range);
+        }
+        at++;
+      }
+    }
+    return candidates.length===1?candidates[0]:null;
+  }
+    function sameRange(a,b) {
+      if(!a||!b)return false;
+      try { return a.compareBoundaryPoints(Range.START_TO_START,b)===0
+        && a.compareBoundaryPoints(Range.END_TO_END,b)===0; }
+      catch(_) {return false;}
+    }
+    return Object.freeze({blocks,visibleProjection,capture,resolve,sameRange});
+  })();
+  window.GBReaderAnchors = GBReaderAnchors;
+
   function gbHighlightPath(item) {
     const raw = String(item && item.url || '');
     try { return new URL(raw, location.origin).pathname.replace(/\/+$/, '') || '/'; }
     catch { return raw.split('#')[0].split('?')[0].replace(/^https?:\/\/[^/]+/, '').replace(/\/+$/, '') || '/'; }
   }
   function gbHighlightText(item) { return normalizeText(item && item.text).toLocaleLowerCase(); }
+  /* Ключ фрагмента — страница + текст без контекста. По нему ищем запись,
+     когда пользователь перекрашивает уже сохранённую цитату. */
+  function gbFragmentKey(x) {
+    const t = gbHighlightText(x);
+    return !t ? '' : gbHighlightPath(x) + '\n' + t;
+  }
+  function gbContextKey(x) {
+    const before = normalizeText(x && x.before).toLocaleLowerCase();
+    const after = normalizeText(x && x.after).toLocaleLowerCase();
+    return (!before && !after) ? '' : before + '\u0001' + after;
+  }
   function gbHighlightKey(x) {
     const t=gbHighlightText(x), a=x?.annotation?.version===1&&x.annotation.anchor;
-    return !t?'':gbHighlightPath(x)+'\n'+(a&&Number.isInteger(a.start)&&
-      Number.isInteger(a.end)&&typeof a.exact==='string'
-      ?'range-v1:'+JSON.stringify([a.blockId||'',a.blockIndex??-1,a.start,a.end,a.exact]):t);
+    if (!t) return '';
+    if (a && Number.isInteger(a.start) && Number.isInteger(a.end) && typeof a.exact === 'string') {
+      return gbHighlightPath(x)+'\nrange-v1:'+JSON.stringify([a.blockId||'',a.blockIndex??-1,a.start,a.end,a.exact]);
+    }
+    /* Цветные пометы различаются ещё и местом: одна и та же фраза может быть
+       выделена в двух разных абзацах, и раньше вторая запись терялась как
+       «дубль» — в тексте оставалась только одна подсветка. Для цитат,
+       заметок и закладок семантика прежняя: страница + текст. */
+    const positional = (x && (x.kind === 'marker' || x.color)) ? gbContextKey(x) : '';
+    return gbHighlightPath(x)+'\n'+t+(positional?'\nctx:'+positional:'');
   }
   function gbDedupeHighlights(items) {
     const seen=new Set();
@@ -41,6 +201,9 @@
     return key&&!unique.some(x=>gbHighlightKey(x)===key)
       ?[item,...unique].slice(0,LIMIT_QUOTES):unique;
   }
+  const MARK_COLORS = ['amber', 'sage', 'blue', 'lime', 'rose'];
+  const MARK_COLOR_NAMES = { amber: 'янтарный', sage: 'шалфейный', blue: 'голубой', lime: 'лаймовый', rose: 'розовый' };
+
   function read(key) {
     try {
       const value = JSON.parse(localStorage.getItem(key) || '[]');
@@ -50,8 +213,11 @@
     return [];
   }
   function write(key, items) {
-    try { localStorage.setItem(key, JSON.stringify(items)); return true; }
+    try { localStorage.setItem(key, JSON.stringify(items)); }
     catch { return false; }
+    // storage only reaches other documents; same-tab readers need a commit signal.
+    window.dispatchEvent(new CustomEvent('gb:library-committed', { detail: { key } }));
+    return true;
   }
   function quotes() {
     return read(QUOTES_KEY);
@@ -69,7 +235,16 @@
     return '';
   }
   function all() {
-    const q = quotes().map((x) => ({ id: String(x.id), type: 'quote', text: String(x.text || ''), before: String(x.before || ''), after: String(x.after || ''), title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0 }));
+    const q = quotes().map((x) => ({
+      id: String(x.id),
+      type: 'quote',
+      /* kind/color доносим до списка: иначе помета выглядит как цитата
+         и цвет в библиотеке не виден (P2). */
+      kind: (x.kind === 'marker' || x.annotation?.kind === 'marker') ? 'marker' : 'quote',
+      color: MARK_COLORS.includes(String(x.color || x.annotation?.color || '')) ? String(x.color || x.annotation?.color) : '',
+      text: String(x.text || ''), before: String(x.before || ''), after: String(x.after || ''),
+      title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0,
+    }));
     const n = notes().map((x) => ({ id: String(x.id), type: 'note', text: String(x.text || ''), quoteText: String(x.quoteText || ''), title: String(x.articleTitle || 'Статья'), url: localUrl(x.url), savedAt: Number(x.savedAt) || 0 }));
     const f = favorites().map((x) => ({ id: String(x.path || x.url || ''), type: 'favorite', text: String(x.description || ''), title: String(x.title || 'Статья'), url: localUrl(x.path || x.url), savedAt: Number(x.addedAt || x.savedAt) || 0 }));
     return q.concat(n, f).sort((a, b) => b.savedAt - a.savedAt);
@@ -94,7 +269,10 @@
       }
     } catch {}
     const { before, after } = contextFromSelection(selection, text);
-    lastSelection = { text, anchor, url: location.href, before, after };
+    const article = document.querySelector('article.article-body') || document.querySelector('article');
+    const positional = article && GBReaderAnchors.capture(article);
+    lastSelection = { text, anchor, url: location.href, before, after,
+      positionalAnchor: positional && normalizeText(positional.text) === text ? positional.anchor : null };
     window.__ssLastText__ = text;
     window.__ssLastTextUrl__ = location.href;
   }
@@ -116,10 +294,10 @@
   function loadPresenter() {
     if (presenter) return Promise.resolve(presenter);
     if (!presenterPromise) {
-      presenterPromise = import('/js/reader-library-presenter.js?v=cef6e2a5')
+      presenterPromise = import('/js/reader-library-presenter.js?v=841cc1c0')
         .then(async (module) => {
           presenter = module;
-          const researchModule = await import('/js/reader-library-v3.js?v=e036d5a6');
+          const researchModule = await import('/js/reader-library-v3.js?v=732d86cc');
           if (!research) research = researchModule.createLibraryResearch({
             overlay, getItems: all, notify: statusMessage, refresh: render, isOpen,
             renderItem: module.renderItem,
@@ -133,7 +311,7 @@
   const stylesheet = document.createElement('link');
   stylesheet.id = 'gbHlRuntimeCss';
   stylesheet.rel = 'stylesheet';
-  stylesheet.href = '/css/highlights-runtime.css?v=fd24c13b';
+  stylesheet.href = '/css/highlights-runtime.css?v=b51327b4';
   if (!document.getElementById(stylesheet.id)) document.head.appendChild(stylesheet);
 
   function button(action, label, text) {
@@ -151,6 +329,50 @@
     return node;
   }
   function isOpen() { return Boolean(overlay && overlay.classList.contains('is-open')); }
+  /* P5/P3: подтверждение и отмена там, где панель библиотеки закрыта.
+     Статус в панели остаётся, тост — для жестов из текста (помета, цитата,
+     заметка), где иначе пользователь не видит ни результата, ни отката. */
+  function hideToast() {
+    const el = document.getElementById('gb-hl-toast');
+    if (el) el.dataset.open = 'false';
+  }
+  function toast(message, action) {
+    if (!document.body) return;
+    let el = document.getElementById('gb-hl-toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'gb-hl-toast';
+      el.dataset.open = 'false';
+      el.setAttribute('role', 'status');
+      el.setAttribute('aria-live', 'polite');
+      document.body.appendChild(el);
+    }
+    el.replaceChildren(element('span', 'gb-hl-toast-text', message));
+    if (action && action.label && typeof action.run === 'function') {
+      const b = element('button', 'gb-hl-toast-action', action.label);
+      b.type = 'button';
+      b.addEventListener('click', () => { hideToast(); action.run(); });
+      el.appendChild(b);
+    }
+    el.dataset.open = 'true';
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(hideToast, 6000);
+  }
+  function undoQuotes(written, previous, message) {
+    return () => {
+      const current = read(QUOTES_KEY);
+      const index = current.findIndex(item => item.id === written.id);
+      if (index < 0 || JSON.stringify(current[index]) !== JSON.stringify(written)) {
+        toast('Запись уже изменилась. Отмена недоступна.', null);
+        return;
+      }
+      if (previous) current[index] = previous;
+      else current.splice(index, 1);
+      if (!write(QUOTES_KEY, current)) { toast('Не удалось отменить запись.', null); return; }
+      paintMarks(); sync(); toast(message, null);
+    };
+  }
+
   function statusMessage(message, error) {
     if (!status) return;
     status.replaceChildren(element('span', '', message));
@@ -342,6 +564,15 @@
     const text = textArea.value.trim();
     if (!text) { statusMessage('Сначала напишите заметку.', true); return; }
     const old = notes(), context = draft && draft.context, editing = draft && draft.editing;
+    if (editing) {
+      const current = old.find((x) => String(x.id) === editing.id);
+      if (!current || current.text !== editing.text) {
+        statusMessage(current
+          ? 'Заметка изменена в другом редакторе. Черновик не сохранён; скопируйте его перед повторным открытием заметки.'
+          : 'Заметка удалена в другом редакторе. Черновик не сохранён; скопируйте его перед закрытием редактора.', true);
+        return;
+      }
+    }
     if (!editing && old.length >= LIMIT_NOTES) {
       statusMessage('Достигнут лимит заметок. Экспортируйте библиотеку перед удалением старых записей.', true);
       return;
@@ -370,6 +601,13 @@
   function deleteItem(item) {
     const key = item.type === 'note' ? NOTES_KEY : QUOTES_KEY;
     const old = item.type === 'note' ? notes() : quotes();
+    const matches = old.filter((x) => String(x.id) === item.id);
+    // Old/corrupt backups can already contain collisions. Never remove
+    // every version of an ID merely because one visible card was clicked.
+    if (matches.length > 1) {
+      statusMessage('Найдено несколько версий этой записи. Сначала сохраните резервную копию библиотеки; удаление отменено.', true);
+      return;
+    }
     const index = old.findIndex((x) => String(x.id) === item.id);
     if (index < 0) return;
     if (!write(key, old.filter((x) => String(x.id) !== item.id))) {
@@ -384,8 +622,49 @@
     undoButton.addEventListener('click', () => {
       if (!pendingUndo) return;
       const u = pendingUndo, items = read(u.key);
+      const limit = u.key === NOTES_KEY ? LIMIT_NOTES : LIMIT_QUOTES;
+      const taken = items.some((x) => String(x.id) === String(u.entry.id));
+      if (taken) {
+        // Another tab may import/recreate this ID while Undo is available.
+        // Preserve both versions: never splice a duplicate ID or overwrite.
+        const copyButton = button('undo-copy', 'Сохранить удалённую версию с отдельным ID', 'Сохранить копию');
+        status.replaceChildren(
+          element('span', '', 'Запись с таким ID уже есть. Для сохранения обеих версий выберите копию.'),
+          copyButton
+        );
+        status.classList.add('is-visible');
+        clearTimeout(u.timer);
+        u.timer = setTimeout(clearUndo, 30000);
+        copyButton.addEventListener('click', () => {
+          if (pendingUndo !== u) return;
+          const latest = read(u.key);
+          if (latest.length >= limit) {
+            statusMessage('Лимит библиотеки достигнут. Экспортируйте данные до восстановления.', true);
+            return;
+          }
+          let newId = uid(u.key === NOTES_KEY ? 'note' : 'quote');
+          while (latest.some((x) => String(x.id) === newId)) {
+            newId = uid(u.key === NOTES_KEY ? 'note' : 'quote');
+          }
+          const preserved = { ...u.entry, id: newId, savedAt: Date.now() };
+          latest.splice(Math.min(u.index, latest.length), 0, preserved);
+          if (!write(u.key, latest)) {
+            statusMessage('Не удалось сохранить копию. Данные другой вкладки не изменены.', true);
+            return;
+          }
+          clearUndo(); render(); sync();
+          statusMessage('Обе версии сохранены с разными ID. Проверьте связи заметок и цитат.');
+        });
+        return;
+      }
+      if (items.length >= limit) {
+        statusMessage('Лимит библиотеки достигнут. Экспортируйте данные до восстановления.', true);
+        return;
+      }
       items.splice(Math.min(u.index, items.length), 0, u.entry);
-      if (!write(u.key, items)) { statusMessage('Не удалось восстановить запись.', true); return; }
+      if (!write(u.key, items)) {
+        statusMessage('Не удалось восстановить запись.', true); return;
+      }
       clearUndo(); render(); sync(); statusMessage('Запись восстановлена.');
     });
     pendingUndo.timer = setTimeout(clearUndo, 6000);
@@ -410,6 +689,7 @@
       return false;
     }
     sync(); statusMessage('Цитата сохранена вместе с источником.');
+    toast('Цитата сохранена', { label: 'Вернуть', run: undoQuotes(record, null, 'Цитата убрана') });
     return true;
   }
   function bindSelectionButton(id, label, icon, handler, popup) {
@@ -421,9 +701,370 @@
     popup.append(b);
     b.addEventListener('click', handler);
   }
+  /* Цветные пометы: одно хранилище (gb-highlights-v1), один владелец.
+     Запись — обычная цитата плюс kind:'marker' и color. Рисуем через
+     CSS Custom Highlight API: текст статьи не оборачивается в <mark>, разметка
+     не мутируется, поэтому аннотации не ломают якоря, озвучку и поиск.
+     Если браузер не поддерживает ::highlight() — помета всё равно сохраняется
+     и видна в библиотеке, просто не подсвечивается в тексте. */
+  /* Индекс текста статьи: список текстовых узлов и их смещений в склейке.
+     Поиск ведётся регуляркой по «терпимому к пробелам» шаблону прямо по
+     склейке — это важно по трём причинам:
+       1) Selection.toString() вставляет пробелы на границах блоков, а
+          textContent — нет, поэтому выделение через границу абзаца иначе
+          не находится;
+       2) text-transform меняет регистр в отрисованном выделении («ЧАСТЬ II»),
+          поэтому сравнение регистронезависимое;
+       3) посимвольное построение нормализованной карты стоило ~200 мс на
+          статье в 82 000 символов на каждом перерисовывании — регулярка
+          по склейке укладывается в единицы миллисекунд. */
+  function textIndex(scope) {
+    const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT, {
+      acceptNode: (n) => {
+        const host = n.parentElement;
+        if (!host || host.closest('script, style, textarea, input, #gb-hl-panel, #gb-hl-selbar')) return NodeFilter.FILTER_REJECT;
+        return n.textContent.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+      },
+    });
+    const nodes = [];
+    const parts = [];
+    let length = 0;
+    let n;
+    while ((n = walker.nextNode())) {
+      nodes.push({ node: n, start: length });
+      parts.push(n.textContent);
+      length += n.textContent.length;
+    }
+    return { nodes, raw: parts.join('') };
+  }
+
+  const REGEXP_SPECIAL = /[.*+?^${}()|[\]\\]/g;
+  function tolerantPattern(value) {
+    const chunks = normalizeText(value).split(' ').filter(Boolean).map((chunk) => chunk.replace(REGEXP_SPECIAL, '\\$&'));
+    return chunks.length ? chunks.join('\\s*') : '';
+  }
+
+  function locateIn(index, text, before = '', after = '') {
+    const pattern = tolerantPattern(text);
+    if (!pattern) return null;
+    let match = null;
+    try {
+      const expression = new RegExp('(' + tolerantPattern(before) + '\\s*)(' + pattern + ')\\s*' + tolerantPattern(after), 'ig');
+      match = expression.exec(index.raw);
+      if (match && expression.exec(index.raw)) return null;
+    }
+    catch { return null; }
+    if (!match) return null;
+    const pointAt = (offset) => {
+      for (let i = index.nodes.length - 1; i >= 0; i--) {
+        const rec = index.nodes[i];
+        if (offset >= rec.start) return { node: rec.node, offset: Math.min(rec.node.textContent.length, offset - rec.start) };
+      }
+      return null;
+    };
+    const a = pointAt(match.index + match[1].length);
+    const b = pointAt(match.index + match[1].length + match[2].length);
+    if (!a || !b) return null;
+    try {
+      const range = document.createRange();
+      range.setStart(a.node, a.offset);
+      range.setEnd(b.node, b.offset);
+      if (!range.toString().trim()) return null;
+      return range;
+    } catch { return null; }
+  }
+
+  function locate(index, item) {
+    const needle = normalizeText(item && item.text);
+    if (!needle || needle.length < 3) return null;
+    const before = normalizeText(item.before);
+    const after = normalizeText(item.after);
+    /* Сначала пробуем привязку по контексту — так одна и та же фраза,
+       выделенная в двух разных абзацах, попадает каждая на своё место. */
+    return locateIn(index, needle, before, after);
+  }
+
+  function paintMarks() {
+    if (!window.CSS || !CSS.highlights) return { supported: false, painted: 0, placed: new Set() };
+    const scope = document.querySelector('article.article-body') || document.querySelector('article') || document.querySelector('main');
+    if (!scope) return { supported: true, painted: 0, placed: new Set() };
+    const index = textIndex(scope);
+    const groups = new Map();
+    const placed = new Set();
+    const desktopW57 = document.body?.classList.contains('np-w57-ready')
+      && !!document.querySelector('#npUResearch .np-u-right-scroll')
+      && matchMedia('(min-width:1121px)').matches;
+    let painted = 0;
+    for (const item of quotes()) {
+      if (gbHighlightPath(item) !== gbHighlightPath({url: location.href})) continue;
+      const annotated = item?.annotation?.version === 1;
+      if (annotated && desktopW57) continue;
+      const color = String(item && (item.color || item.annotation?.color) || '');
+      if (!MARK_COLORS.includes(color)) continue;
+      const range = annotated
+        ? GBReaderAnchors.resolve(scope, item.annotation.anchor) : locate(index, item);
+      if (!range) continue;
+      if (!groups.has(color)) groups.set(color, []);
+      groups.get(color).push(range);
+      placed.add(gbHighlightKey(item));
+      painted++;
+    }
+    for (const color of MARK_COLORS) {
+      const name = 'gb-hl-' + color;
+      if (groups.has(color)) CSS.highlights.set(name, new Highlight(...groups.get(color)));
+      else CSS.highlights.delete(name);
+    }
+    return { supported: true, painted, placed };
+  }
+
+  function saveMarker(color) {
+    const selected = selection();
+    if (selected.text.length < 3) { statusMessage('Сначала выделите текст.', true); return false; }
+    const old = quotes();
+    const nextColor = MARK_COLORS.includes(color) ? color : 'amber';
+    const record = {
+      id: uid('mark'), kind: 'marker', color: nextColor,
+      text: selected.text, articleTitle: currentTitle(),
+      url: sourceUrl(selected), before: selected.before, after: selected.after, savedAt: Date.now(),
+    };
+    if (selected.positionalAnchor) {
+      record.annotation = { version:1,kind:'marker',color:nextColor,
+        anchor:selected.positionalAnchor,noteId:null };
+    }
+    /* Одна запись на (страница + текст): иначе gbAddHighlight молча отбрасывал
+       вторую запись, а пользователь видел «Помета сохранена». Здесь тот же
+       текст перекрашивается, а одинаковый цвет честно сообщается как уже
+       применённый — без ложного успеха. */
+    const key = gbHighlightKey(record);
+    const fragment = gbFragmentKey(record);
+    const context = gbContextKey(record);
+    const article = document.querySelector('article.article-body') || document.querySelector('article');
+    const exact = article && record.annotation
+      ? GBReaderAnchors.resolve(article, record.annotation.anchor) : null;
+    let legacyIndex = null;
+    let existingIndex = -1;
+    if (exact && article) {
+      existingIndex = old.findIndex((x) => {
+        if (gbHighlightPath(x) !== gbHighlightPath(record)) return false;
+        if (!(x.color || x.annotation?.color)) return false;
+        const found = x.annotation?.version === 1
+          ? GBReaderAnchors.resolve(article,x.annotation.anchor)
+          : locate(legacyIndex ||= textIndex(article),x);
+        return GBReaderAnchors.sameRange(found, exact);
+      });
+    } else if (!record.annotation) {
+      existingIndex = fragment ? old.findIndex((x) =>
+        gbFragmentKey(x) === fragment && gbContextKey(x) === context) : -1;
+    }
+
+    if (existingIndex >= 0) {
+      const existing = old[existingIndex] || {};
+      if (String(existing.color || existing.annotation?.color || '') === nextColor) {
+        statusMessage('Этот текст уже выделен этим цветом.');
+        toast('Этот текст уже выделен этим цветом', null);
+        return true;
+      }
+      const next = old.slice();
+      next[existingIndex] = {
+        ...existing,kind:'marker',color:nextColor,
+        ...(existing.annotation?.version===1
+          ? {annotation:{...existing.annotation,kind:'marker',color:nextColor}}
+          : record.annotation ? {annotation:record.annotation} : {}),
+      };
+      if (!write(QUOTES_KEY, next)) {
+        statusMessage('Не удалось изменить цвет пометы. Хранилище недоступно.', true);
+        return false;
+      }
+      const painted = paintMarks();
+      sync();
+      const wasMarker = existing.kind === 'marker';
+      const storedKey = gbHighlightKey(next[existingIndex]);
+      const anchored = painted.supported && painted.placed && painted.placed.has(storedKey);
+      const base = wasMarker ? 'Цвет пометы изменён' : 'Цитата выделена цветом';
+      const message = !painted.supported
+        ? (wasMarker ? 'Цвет пометы сохранён, подсветка недоступна' : 'Цвет сохранён, подсветка недоступна')
+        : anchored
+          ? base
+          : (wasMarker ? 'Цвет пометы сохранён, но подсветить не удалось' : 'Цвет сохранён, но подсветить не удалось');
+      statusMessage(message + '.');
+      toast(message, { label: 'Вернуть', run: undoQuotes(next[existingIndex], existing, 'Цвет возвращён') });
+      return true;
+    }
+    if (old.length >= LIMIT_QUOTES && !old.some((x) => gbHighlightKey(x) === gbHighlightKey(record))) {
+      statusMessage('Сохранено 200 помет — достигнут прежний лимит. Экспортируйте библиотеку перед удалением старых записей.', true);
+      return false;
+    }
+    const next = gbAddHighlight(old, record);
+    if (!write(QUOTES_KEY, next)) {
+      statusMessage('Не удалось сохранить помету. Хранилище недоступно или заполнено.', true);
+      return false;
+    }
+    const result = paintMarks();
+    sync();
+    /* Честность сообщения: «подсвечена» говорим только если запись реально
+       получила диапазон в тексте. Иначе пользователь видит успех при пустом
+       экране (так было при выделении через границу абзацев). */
+    const anchored = result.supported && result.placed && result.placed.has(key);
+    const message = !result.supported
+      ? 'Помета сохранена. Подсветка недоступна в этом браузере'
+      : anchored
+        ? 'Помета сохранена и подсвечена'
+        : 'Помета сохранена, но этот фрагмент не удалось подсветить';
+    statusMessage(message + (result.supported && !anchored ? '. Он останется в библиотеке.' : '.'));
+    toast(message, { label: 'Вернуть', run: undoQuotes(record, null, 'Помета убрана') });
+    return true;
+  }
+
+  /* write() публикует событие на window, поэтому слушаем именно window:
+     удаление пометы через библиотеку обязано снять подсветку в тексте. */
+  window.addEventListener('gb:library-committed', (e) => {
+    if (!e || !e.detail || e.detail.key === QUOTES_KEY) setTimeout(paintMarks, 0);
+  });
+  window.addEventListener('storage', (e) => { if (e && e.key === QUOTES_KEY) paintMarks(); });
+  window.addEventListener('resize', () => requestAnimationFrame(paintMarks), { passive:true });
+
+  /* Мобильный вход в пометы. На страницах серий js/site.js не подключается,
+     поэтому #selection-share-popup не существует: выделенный текст некуда
+     сохранить, хотя сама библиотека предлагает «Выделите цитату…». Показываем
+     собственный мини-тулбар только там, где нет W57-тулбара пилота (он живёт
+     от 1121px и при выделении создаёт #npW57SelectionToolbar) — один владелец,
+     одно хранилище, те же функции сохранения, что и у десктопного попапа. */
+  function mobileSelectionBar() {
+    let bar = document.getElementById('gb-hl-selbar');
+    if (bar) return bar;
+    bar = document.createElement('div');
+    bar.id = 'gb-hl-selbar';
+    bar.className = 'gb-hl-selbar';
+    bar.setAttribute('role', 'toolbar');
+    bar.setAttribute('aria-label', 'Действия с выделенным текстом');
+    bar.setAttribute('aria-hidden', 'true');
+    const colors = document.createElement('div');
+    colors.className = 'gb-hl-selbar-colors';
+    colors.setAttribute('role', 'group');
+    colors.setAttribute('aria-label', 'Цвет пометы');
+    for (const color of MARK_COLORS) {
+      const swatch = document.createElement('button');
+      swatch.type = 'button';
+      swatch.className = 'gb-hl-selbar-swatch';
+      swatch.dataset.hlColor = color;
+      const colorName = MARK_COLOR_NAMES[color] || color;
+      swatch.setAttribute('aria-label', 'Выделить цветом: ' + colorName);
+      swatch.title = 'Выделить цветом: ' + colorName;
+      colors.appendChild(swatch);
+    }
+    const quote = document.createElement('button');
+    quote.type = 'button';
+    quote.id = 'gb-hl-selbar-quote';
+    quote.setAttribute('aria-label', 'Сохранить выделенный текст как цитату');
+    quote.textContent = 'Цитата';
+    const note = document.createElement('button');
+    note.type = 'button';
+    note.id = 'gb-hl-selbar-note';
+    note.setAttribute('aria-label', 'Добавить заметку к выделенному тексту');
+    note.textContent = 'Заметка';
+    bar.append(colors, quote, note);
+    colors.addEventListener('click', (e) => {
+      const swatch = e.target.closest('[data-hl-color]');
+      if (!swatch) return;
+      if (saveMarker(swatch.dataset.hlColor)) dismissSelectionBar();
+    });
+    document.body.appendChild(bar);
+    /* Pointerdown snapshots the selection without cancelling the native gesture.
+       preventDefault on touchstart suppresses Chrome's compatibility click, so
+       mobile swatch, Quote and Note taps must keep their default behavior.
+       Cancelling mousedown preserves the text selection for mouse users. */
+    for (const b of [quote, note, ...colors.querySelectorAll('button')]) {
+      b.addEventListener('pointerdown', rememberSelection);
+      b.addEventListener('mousedown', (event) => event.preventDefault(), { passive: false });
+    }
+    quote.addEventListener('click', () => {
+      if (saveSelectedQuote()) {
+        quote.textContent = 'Сохранено';
+        clearTimeout(selBarHideTimer);
+        selBarHideTimer = setTimeout(() => { quote.textContent = 'Цитата'; dismissSelectionBar(); }, 700);
+      }
+    });
+    note.addEventListener('click', () => {
+      const s = selection();
+      const context = s.text.length >= 8
+        ? { quoteText: s.text, url: sourceUrl(s), title: currentTitle() } : null;
+      hide();
+      open(null).then((opened) => { if (opened) showEditor(context); });
+    });
+    return bar;
+  }
+  function hide() {
+    const bar = document.getElementById('gb-hl-selbar');
+    if (!bar) return;
+    bar.dataset.open = 'false';
+    bar.setAttribute('aria-hidden', 'true');
+  }
+  /* После действия выделение снимаем: если оставить его, следующий тап по тому
+     же тексту Chrome трактует как перетаскивание уже выделенного фрагмента —
+     mouseup не доходит, и тулбар для этого текста больше не открывается. */
+  function collapseSelection() {
+    try {
+      const sel = window.getSelection();
+      if (sel && !sel.isCollapsed) sel.removeAllRanges();
+    } catch {}
+  }
+  function dismissSelectionBar() { hide(); collapseSelection(); }
+  let selBarHideTimer = 0;
+  function placeSelectionBar() {
+    if (document.getElementById('npW57SelectionToolbar')) { hide(); return; }
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || !sel.rangeCount) { hide(); return; }
+    const text = sel.toString().replace(/\s+/g, ' ').trim();
+    if (text.length < 8) { hide(); return; }
+    const range = sel.getRangeAt(0);
+    const host = range.commonAncestorContainer;
+    const node = host.nodeType === 1 ? host : host.parentElement;
+    if (!node || node.closest('#gb-hl-panel, #gb-hl-selbar, input, textarea, [contenteditable="true"]')) { hide(); return; }
+    if (!node.closest('article, main, .article-body')) { hide(); return; }
+    const rect = range.getBoundingClientRect();
+    if (!rect || (!rect.width && !rect.height)) { hide(); return; }
+    const bar = mobileSelectionBar();
+    /* Сброс «отложенного» скрытия: таймер от предыдущего действия не должен
+       гасить тулбар, который только что открылся для нового выделения. */
+    clearTimeout(selBarHideTimer);
+    bar.dataset.open = 'true';
+    bar.setAttribute('aria-hidden', 'false');
+    const bw = bar.offsetWidth || 180;
+    const bh = bar.offsetHeight || 56;
+    const clampX = Math.min(Math.max(8, rect.left + rect.width / 2 - bw / 2), window.innerWidth - bw - 8);
+    /* Нижняя панель читалки фиксирована и выше тулбара по z-index, поэтому
+       при размещении под выделением её высоту нужно вычитать — иначе тулбар
+       уезжает под панель и до кнопок не достать. */
+    const bottomBar = document.querySelector('.mobile-bottom-bar, .gbs2-bbar');
+    const bottomInset = bottomBar
+      ? Math.max(0, Math.round(window.innerHeight - bottomBar.getBoundingClientRect().top)) : 0;
+    const maxBottom = window.innerHeight - bottomInset - 8;
+    let top = rect.top - bh - 10;
+    if (top < 68) {
+      top = rect.bottom + 10;
+      if (top + bh > maxBottom) top = Math.max(68, rect.top - bh - 10);
+      top = Math.min(top, maxBottom - bh);
+    }
+    bar.style.left = Math.round(clampX) + 'px';
+    bar.style.top = Math.round(Math.max(8, top)) + 'px';
+  }
   function attachSelection() {
     const popup = document.getElementById('selection-share-popup');
-    if (!popup || popup.querySelector('#ss-save')) return;
+    if (!popup) {
+      let pending = 0;
+      const schedule = () => { clearTimeout(pending); pending = setTimeout(placeSelectionBar, 40); };
+      document.addEventListener('selectionchange', schedule, { passive: true });
+      document.addEventListener('mouseup', schedule, { passive: true });
+      document.addEventListener('touchend', schedule, { passive: true });
+      window.addEventListener('scroll', hide, { passive: true, capture: true });
+      window.addEventListener('resize', hide, { passive: true });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hide(); });
+      document.addEventListener('pointerdown', (e) => {
+        if (!e.target.closest('#gb-hl-selbar')) hide();
+      }, { passive: true });
+      return;
+    }
+    if (popup.querySelector('#ss-save')) return;
     popup.append(element('span', 'ss-sep'));
     bindSelectionButton('ss-save', 'Сохранить выделенный текст как цитату', quoteSvg, () => {
       if (saveSelectedQuote()) {
@@ -458,6 +1099,16 @@
     getNotes: notes, getLibrary: all,
     highlightPath: gbHighlightPath, highlightText: gbHighlightText,
     highlightKey: gbHighlightKey, dedupe: gbDedupeHighlights, addHighlight: gbAddHighlight,
+    /* Диагностика и тесты: перерисовать пометы и получить, что реально легло
+       в текст. Публично ничего не меняет. */
+    paintMarks,
+    resolveRange: (item, scope) => {
+      const article=scope || document.querySelector('article.article-body') || document.querySelector('article');
+      if(!article)return null;
+      return item?.annotation?.version===1
+        ? GBReaderAnchors.resolve(article,item.annotation.anchor)
+        : locate(textIndex(article),item);
+    },
   });
   window.GBHighlights = api;
   window.GBReaderLibrary = api;
@@ -466,6 +1117,7 @@
     create();
     setTimeout(attachSelection, 500);
     setTimeout(dock, 1200);
+    setTimeout(paintMarks, 900);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
   else init();

@@ -3459,6 +3459,10 @@ html.dark [data-gill-v16] .mobile-top-bar {
   }
   [data-gill-v16] .mobile-btoc-section__label {
     display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-family: var(--gb-font-sans, system-ui, sans-serif);
     font-size: 9px;
     font-weight: 800;
@@ -3467,14 +3471,20 @@ html.dark [data-gill-v16] .mobile-top-bar {
     line-height: 1;
     color: var(--gill-mobile-bar-muted);
   }
+  /* P1: подпись «Сейчас читаете» больше не обрезается в «Часть II. Учё…».
+     Две строки вместо одной: bar 62 px не растёт (label 9px + 2×15px = 39),
+     а «Часть II. Учёный» и длинные заголовки разделов читаются целиком
+     до второго переноса. */
   [data-gill-v16] .mobile-btoc-section__main,
   [data-gill-v16] #gbs2MobSec {
-    display: block;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
     width: 100%;
     min-width: 0;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: break-word;
     font-family: var(--gb-font-serif, Georgia, serif);
     font-size: 13.5px;
     font-weight: 800;
@@ -3585,8 +3595,10 @@ html.dark [data-gill-v16] .mobile-top-bar {
     min-height: var(--reader-play-size-mobile) !important;
     --ember-size: 36px !important;
   }
+  /* P1c: 12 px вместо 12.5 — «Часть II. Учёный» перестаёт требовать вторую
+     строку на 390 (128 px против 127 доступных), и панель остаётся 62 px. */
   [data-gill-v16] .mobile-btoc-section__main,
-  [data-gill-v16] #gbs2MobSec { font-size: 12.5px !important; }
+  [data-gill-v16] #gbs2MobSec { font-size: 12px !important; }
   [data-gill-v16] .bar-progress.dual-progress,
   [data-gill-v16] .bar-progress.dual-progress svg { width: 34px !important; height: 34px !important; }
   [data-gill-v16] .mobile-bottom-bar > .gb-icon,
@@ -3597,6 +3609,20 @@ html.dark [data-gill-v16] .mobile-top-bar {
    Seven bottom-bar slots require a 44px TOC hit target and 1px gaps to fit
    between the existing 8px side paddings without overflow or overlap. */
 @media (max-width: 360px) {
+  /* P1b: 320–360 px — колонка подписи ~76 px. Кикер «Сейчас читаете» уходит
+     в screen-reader-only, иначе он ломается по буквам («СЕЙЧАС ЧИТА / О»),
+     а название части занимает всю ширину. */
+  [data-gill-v16] .mobile-btoc-section__label {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+  }
+  /* P1b: 320–360 px — колонка подписи ~76 px. */
   [data-gill-v16] .mobile-top-bar { gap: 4px !important; }
   [data-gill-v16] .mobile-learning-trigger span { display: none; }
   [data-gill-v16] .mobile-learning-trigger { min-width: 36px; min-height: 44px; }

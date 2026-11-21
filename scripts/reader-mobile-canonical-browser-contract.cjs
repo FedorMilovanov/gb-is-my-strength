@@ -25,8 +25,11 @@ const routes=[
     const page=await browser.newPage({viewport:{width,height:width===1440?900:844},colorScheme:'light',reducedMotion:'reduce',serviceWorkers:'block'});
     const row={engine:engineName,slug,width},pageErrors=[];page.on('pageerror',e=>pageErrors.push(e.message));
     try{
-     const resp=await page.goto(url+route,{waitUntil:'domcontentloaded',timeout:25000});await page.waitForTimeout(250);row.http=resp.status();
+     const resp=await page.goto(url+route,{waitUntil:'domcontentloaded',timeout:25000});row.http=resp.status();
      if(width<1200){
+      // The canonical owner is mounted asynchronously after DOMContentLoaded;
+      // a fixed 250ms sleep races slower CI runners and reports a false missing bar.
+      await page.locator('[data-reader-mobile-speed]').waitFor({state:'visible',timeout:10000});
       const bar=page.locator('[data-reader-mobile-speed]');
       if(await bar.count()!==1)throw Error('missing shared mobile speed owner');
       const play=bar.locator('.reader-mobile-play');
@@ -72,6 +75,7 @@ const routes=[
       if(count!==3)throw Error('three themes not inside settings: '+count);
       if(engineName==='chromium'&&slug==='herm'&&width===390)await page.screenshot({path:path.join(out,'herm-mobile-v12-settings.png'),animations:'disabled'});
      }else{
+      await page.locator('.gb-ember:visible').first().waitFor({state:'visible',timeout:10000});
       const play=page.locator('.gb-ember:visible').first();
       await play.hover();await page.waitForTimeout(180);
       const menu=play.locator('xpath=..').locator('.gb-ember-expand.is-open');

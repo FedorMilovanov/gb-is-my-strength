@@ -172,11 +172,14 @@
  // W57's one-time legacy migration remains in reader_w57.js.
  const fontPanel=document.createElement('section');
  fontPanel.id='npUFontPanel';fontPanel.className='np-u-font-panel';
- fontPanel.setAttribute('aria-label','Настройки чтения и шрифта');
  fontPanel.setAttribute('role','region');fontPanel.hidden=true;
  fontPanel.setAttribute('aria-labelledby','npUFontPanelTitle');
- fontPanel.innerHTML='<header><strong id="npUFontPanelTitle">Шрифт и набор</strong>'+
-  '<button type="button" class="np-u-type-close" aria-label="Закрыть настройки шрифта">×</button></header>'+
+ fontPanel.innerHTML='<header><strong id="npUFontPanelTitle">Настройки чтения</strong>'+
+  '<button type="button" class="np-u-type-close" aria-label="Закрыть настройки чтения">×</button></header>'+
+  '<div class="np-u-type-group"><span>Тема</span><div class="np-u-type-options">'+
+  '<button type="button" data-np-u-type-theme="light">День</button>'+
+  '<button type="button" data-np-u-type-theme="sepia">Сепия</button>'+
+  '<button type="button" data-np-u-type-theme="dark">Ночь</button></div></div>'+
   '<div class="np-u-type-group"><span>Книжная гарнитура</span><div class="np-u-type-options">'+
   '<button type="button" data-np-u-type-font="lora" class="np-u-type-lora">Lora</button>'+
   '<button type="button" data-np-u-type-font="cormorant" class="np-u-type-cormorant">Cormorant</button></div></div>'+
@@ -186,24 +189,51 @@
   '<button type="button" data-np-u-type-size="lg">А+</button>'+
   '<button type="button" data-np-u-type-size="xl">А++</button></div></div>'+
   '<div class="np-u-type-group"><span>Межстрочный интервал</span><div class="np-u-type-options">'+
-  '<button type="button" data-np-u-type-spacing="normal">Книжный · 1,72</button>'+
-  '<button type="button" data-np-u-type-spacing="relaxed">Широкий · 1,92</button></div></div>'+
+  '<button type="button" data-np-u-type-spacing="compact">Плотный</button>'+
+  '<button type="button" data-np-u-type-spacing="normal">Книжный</button>'+
+  '<button type="button" data-np-u-type-spacing="relaxed">Свободный</button></div></div>'+
   '<div class="np-u-type-group"><span>Ширина наборной полосы</span><div class="np-u-type-options">'+
   '<button type="button" data-np-u-type-width="narrow">Узкая</button>'+
   '<button type="button" data-np-u-type-width="normal">Книжная</button>'+
-  '<button type="button" data-np-u-type-width="wide">Широкая</button></div></div>';
+  '<button type="button" data-np-u-type-width="wide">Широкая</button></div></div>'+
+  '<div class="np-u-type-group"><span>Оформление текста</span><div class="np-u-type-options">'+
+  '<button type="button" data-np-u-type-text="rich">Полное</button>'+
+  '<button type="button" data-np-u-type-text="plain">Простое</button></div></div>'+
+  '<div class="np-u-type-group"><span>Анимация</span><div class="np-u-type-options">'+
+  '<button type="button" data-np-u-type-motion="system">Обычная</button>'+
+  '<button type="button" data-np-u-type-motion="reduced">Спокойная</button></div></div>'+
+  '<div class="np-u-type-group np-u-type-options">'+
+  '<button type="button" data-np-u-type-reset>Сбросить настройки</button></div>';
  const fullFontButton=document.createElement('button');
  fullFontButton.type='button';fullFontButton.className='np-u-type-open';
- fullFontButton.textContent='Аа · Шрифт';fullFontButton.setAttribute('aria-label','Настройки книжного шрифта');
+ fullFontButton.textContent='Аа · Настройки';fullFontButton.setAttribute('aria-label','Настройки чтения');
  const compactFontButton=document.createElement('button');
  compactFontButton.type='button';compactFontButton.className='np-u-type-compact';
- compactFontButton.textContent='Аа';compactFontButton.setAttribute('aria-label','Настройки книжного шрифта');
- const fontToggles=[fullFontButton,compactFontButton];
+ compactFontButton.textContent='Аа';compactFontButton.setAttribute('aria-label','Настройки чтения');
+ // Only the opt-in preview replaces the native settings action. Keep its
+ // presentation and position, not its listener/ARIA binding to the old sheet.
+ const nativeSettings=[...document.querySelectorAll('[data-gill-settings-open]')].map(original=>{
+  const trigger=original.cloneNode(true);
+  trigger.removeAttribute('data-gill-settings-open');
+  original.replaceWith(trigger);
+  return trigger;
+ });
+ const learningButton=document.getElementById('mobLearningBtn');
+ const learningOverlay=document.getElementById('gillLearningOverlay');
+ if(learningButton&&learningOverlay){
+  fontPanel.lastElementChild.prepend(learningButton);
+ }
+ const fontToggles=[fullFontButton,compactFontButton,...nativeSettings];
+ let fontOpener=null;
+ const restoreFontFocus=()=>fontOpener?.focus({preventScroll:true});
  for(const b of fontToggles){
   b.setAttribute('aria-controls','npUFontPanel');b.setAttribute('aria-expanded','false');
   b.addEventListener('click',event=>{
-   event.stopPropagation();setFontOpen(fontPanel.hidden);
-  });
+   event.preventDefault();event.stopImmediatePropagation();
+   if(fontPanel.hidden)fontOpener=b;
+   setFontOpen(fontPanel.hidden);
+   if(fontPanel.hidden)restoreFontFocus();
+  },true);
  }
  root.querySelector('.np-u-left-foot').prepend(fullFontButton);
  root.querySelector('.np-u-rail-spine').append(compactFontButton);
@@ -224,6 +254,7 @@
   const mobile=open&&isMobile(),host=root.querySelector('#npUOutline');
   fontScrim.hidden=!mobile;
   fontPanel.setAttribute('role',mobile?'dialog':'region');
+  for(const b of fontToggles)b.setAttribute('aria-haspopup',isMobile()?'dialog':'false');
   if(mobile)fontPanel.setAttribute('aria-modal','true');
   else fontPanel.removeAttribute('aria-modal');
   for(const child of host.children){
@@ -250,14 +281,18 @@
  fontPanel.addEventListener('click',event=>{
   if(event.target.closest('.np-u-type-close')){
    setFontOpen(false);
-   (document.body.classList.contains('np-u-compact')?compactFontButton:fullFontButton).focus({preventScroll:true});
+   restoreFontFocus();
    return;
   }
-  const b=event.target.closest('button[data-np-u-type-font],button[data-np-u-type-size],button[data-np-u-type-spacing],button[data-np-u-type-width]');
+  const b=event.target.closest('button');
   if(!b)return;
   const canon=window.GBReaderPreferences;
   if(!canon||typeof canon.set!=='function')return;
+   if(b.hasAttribute('data-np-u-type-reset')){canon.reset();return}
    const patch={};
+   if(b.dataset.npUTypeTheme)patch.theme=b.dataset.npUTypeTheme;
+   if(b.dataset.npUTypeText)patch.textMode=b.dataset.npUTypeText;
+   if(b.dataset.npUTypeMotion)patch.motion=b.dataset.npUTypeMotion;
    if(b.dataset.npUTypeFont)patch.fontFamily=b.dataset.npUTypeFont;
    if(b.dataset.npUTypeSize)patch.fontScale=({sm:.9,md:1,lg:1.1,xl:1.2})[b.dataset.npUTypeSize];
    if(b.dataset.npUTypeSpacing)patch.lineHeight=b.dataset.npUTypeSpacing;
@@ -265,20 +300,21 @@
    if(Object.keys(patch).length)canon.set(patch,{source:'argon-w57-left-settings'});
  });
  document.addEventListener('pointerdown',event=>{
+  if(learningOverlay?.classList.contains('is-open'))return;
   if(!fontPanel.hidden&&!fontPanel.contains(event.target)&&!fontToggles.some(b=>b.contains(event.target))){
    setFontOpen(false);
-   (document.body.classList.contains('np-u-compact')?compactFontButton:fullFontButton).focus({preventScroll:true});
+   restoreFontFocus();
   }
  },true);
  document.addEventListener('keydown',event=>{
-  if(fontPanel.hidden)return;
+  if(fontPanel.hidden||learningOverlay?.classList.contains('is-open'))return;
   // A native Product Library/Search dialog remains higher priority.
   if(event.target.closest?.('#gb-hl-panel,.cp-backdrop'))return;
   if(event.key==='Escape'){
    // Close the topmost settings popup without simultaneously closing mobile TOC.
    event.preventDefault();event.stopImmediatePropagation();
    setFontOpen(false);
-   (document.body.classList.contains('np-u-compact')?compactFontButton:fullFontButton).focus({preventScroll:true});
+   restoreFontFocus();
    return;
   }
   if(event.key==='Tab'){

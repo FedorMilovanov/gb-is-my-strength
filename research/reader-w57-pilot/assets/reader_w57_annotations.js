@@ -24,120 +24,9 @@
     for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
     return(h>>>0).toString(36);
   };
-  const blocks=(article)=>[...article.querySelectorAll('p,li,blockquote')]
-    .filter(e=>!e.closest('.np-u-central-overview,.np-u-central-contents,.gill-card,figcaption,.np-u-series-disclosure')&&
-      normalize(e.textContent).length>=6);
-  function chooseBlock(node,article){
-    const el=node?.nodeType===1?node:node?.parentElement;
-    const parent=el?.closest('p,li,blockquote');
-    return parent&&article.contains(parent)?parent:null;
-  }
-  // Source coordinates refer only to VISIBLE authored prose, not inline
-  // glossary popovers hidden inside the published article's DOM.
-  function visibleProjection(block){
-    const segments=[],cached=new WeakMap();
-    const ignored=el=>{
-      if(!el||el===block)return false;
-      if(cached.has(el))return cached.get(el);
-      const excluded=el.matches('.gtip,.btip,.tooltip,[hidden],[inert],[aria-hidden="true"],[role="tooltip"]') ||
-        getComputedStyle(el).display==='none' ||
-        getComputedStyle(el).visibility==='hidden' || ignored(el.parentElement);
-      cached.set(el,excluded);return excluded;
-    };
-    const walker=document.createTreeWalker(block,NodeFilter.SHOW_TEXT);
-    let text='',node;
-    while((node=walker.nextNode())){
-      if(!node.nodeValue||ignored(node.parentElement))continue;
-      const start=text.length;text+=node.nodeValue;
-      segments.push({node,start,end:text.length});
-    }
-    return{text,segments};
-  }
-  function projectedOffset(p,container,offset){
-    const at=document.createRange();
-    try{at.setStart(container,offset);at.collapse(true)}catch(_){return null}
-    for(const segment of p.segments){
-      if(container===segment.node)return segment.start+offset;
-      if(at.comparePoint(segment.node,segment.node.nodeValue.length)<0)continue;
-      return segment.start;
-    }
-    return p.text.length;
-  }
-  function makeRange(block,start,end){
-    const p=visibleProjection(block);
-    if(!Number.isInteger(start)||!Number.isInteger(end)||
-       start<0||end<=start||end>p.text.length)return null;
-    const from=p.segments.find(s=>s.start<=start&&start<s.end);
-    const to=p.segments.find(s=>s.start<end&&end<=s.end);
-    if(!from||!to)return null;
-    const r=document.createRange();
-    r.setStart(from.node,start-from.start);
-    r.setEnd(to.node,end-to.start);
-    return r;
-  }
-  function capture(article){
-    const sel=window.getSelection?.();
-    if(!sel||sel.isCollapsed||!sel.rangeCount)return null;
-    const r=sel.getRangeAt(0).cloneRange(),block=chooseBlock(r.startContainer,article);
-    if(!block||chooseBlock(r.endContainer,article)!==block)return null;
-    const visual=r.getBoundingClientRect();
-    if(visual.width<2||visual.height<2||visual.bottom<0||visual.top>innerHeight||
-       !block.getClientRects().length||block.closest('[hidden],[inert],[aria-hidden="true"]'))
-      return null;
-    const p=visibleProjection(block),start=projectedOffset(p,r.startContainer,r.startOffset),
-      end=projectedOffset(p,r.endContainer,r.endOffset);
-    if(start===null||end===null||end<=start)return null;
-    const text=p.text.slice(start,end);
-    if(normalize(text).length<6||text.length>3000)return null;
-    const list=blocks(article),index=list.indexOf(block);
-    if(index<0)return null;
-    const anchor={
-      projection:'reader-visible-v1',blockId:block.id||'',blockIndex:index,start,end,
-      exact:text,prefix:p.text.slice(Math.max(0,start-64),start),
-      suffix:p.text.slice(end,end+64),
-      blockHash:hash(normalize(p.text)),
-      fingerprint:hash(pathname()+'|'+index+'|'+start+':'+end+'|'+text)
-    };
-    return{text,anchor,range:r,rect:visual};
-  }
-  function resolve(article,anchor){
-    if(!anchor||typeof anchor.exact!=='string'||!anchor.exact)return null;
-    const list=blocks(article);
-    // Legacy annotations are preserved exactly. If old coordinates included
-    // hidden glossary prose, do NOT guess a new author or passage.
-    const contextMatches=(raw,start,end)=>{
-      if(anchor.blockHash&&hash(normalize(raw))===anchor.blockHash)return true;
-      const prefix=String(anchor.prefix||'').slice(-24),suffix=String(anchor.suffix||'').slice(0,24);
-      if(!prefix&&!suffix)return false;
-      if(prefix&&!raw.slice(Math.max(0,start-prefix.length),start).endsWith(prefix))return false;
-      if(suffix&&!raw.slice(end,end+suffix.length).startsWith(suffix))return false;
-      return true;
-    };
-    const probe=(block,start=anchor.start,end=anchor.end)=>{
-      if(!block)return null;
-      const raw=visibleProjection(block).text;
-      if(raw.slice(start,end)!==anchor.exact||!contextMatches(raw,start,end))return null;
-      return makeRange(block,start,end);
-    };
-    const preferred=anchor.blockId?
-      article.querySelector('#'+CSS.escape(anchor.blockId)):list[anchor.blockIndex];
-    if(preferred&&list.includes(preferred)){
-      const found=probe(preferred);if(found)return found;
-    }
-    const candidates=[];
-    for(const block of list){
-      const raw=visibleProjection(block).text;
-      let at=0;
-      while((at=raw.indexOf(anchor.exact,at))!==-1){
-        if(contextMatches(raw,at,at+anchor.exact.length)){
-          const range=makeRange(block,at,at+anchor.exact.length);
-          if(range)candidates.push(range);
-        }
-        at+=Math.max(1,anchor.exact.length);
-      }
-    }
-    return candidates.length===1?candidates[0]:null;
-  }
+  // The canonical Product library now owns capture, projection and exact
+  // anchors at both widths. Do not revive a second W57 resolver here.
+  const {capture,resolve} = window.GBReaderAnchors || {};
   function start(){
     if(!document.body.classList.contains('np-w57-ready')||!window.GBHighlights)return false;
     if(window.__NP_W57_ANNOTATIONS__)return true;
@@ -182,7 +71,7 @@
       const fragment=document.createDocumentFragment();
       let caps=0;
       for(const item of saved){
-        if(item.annotation?.kind!=='marker')continue;
+        if(item.annotation?.kind!=='marker'||item.annotation?.version!==1)continue;
         const range=rangeById.get(item.id);
         if(!range)continue;
         const source=[...range.getClientRects()].filter(x=>x.width>2&&x.height>7).sort((a,b)=>a.top-b.top||a.left-b.left);
@@ -226,7 +115,10 @@
       b.textContent='✓';b.style.color=color===currentColor?'#3c2c26':'transparent';
       palette.append(b);
     }
-    const entries=()=>read(qKey).filter(x=>x?.annotation?.version===1&&samePage(x));
+    const entries=()=>read(qKey).filter(x=>samePage(x) &&
+      (x?.annotation?.version===1 || !!x.color)).map(x=>
+      x?.annotation?.version===1 ? x : {...x,
+        annotation:{version:0,kind:x.kind||'marker',color:x.color||'amber',noteId:null}});
     const all=()=>read(qKey);
     let rangeById=new Map(),pendingNoteId=null,pendingRecolorId=null;
     function paint(){
@@ -235,10 +127,14 @@
       for(const kind of ['marker','underline'])for(const color of colors)groups[kind+'-'+color]=[];
       let missing=0;
       for(const item of entries()){
-        const a=item.annotation,r=resolve(article,a.anchor);
+        const a=item.annotation;
+        const r=a.version===1 ? resolve(article,a.anchor)
+          : window.GBHighlights.resolveRange(item,article);
         if(!r){missing++;continue}
         rangeById.set(item.id,r);
-        if(groups[a.kind+'-'+a.color])groups[a.kind+'-'+a.color].push(r);
+        // Native Product already paints legacy ranges; this renderer owns v1.
+        if(a.version===1&&groups[a.kind+'-'+a.color])
+          groups[a.kind+'-'+a.color].push(r);
       }
       if(typeof CSS!=='undefined'&&CSS.highlights&&typeof Highlight!=='undefined'){
         for(const [key,ranges] of Object.entries(groups)){
@@ -322,10 +218,22 @@
       return record;
     }
     function updateRecord(id,updater){
-      const old=all(),i=old.findIndex(x=>x.id===id&&x.annotation?.version===1);
+      const old=all(),i=old.findIndex(x=>x.id===id &&
+        (x.annotation?.version===1 || !!x.color));
       if(i<0)return null;
-      const updated={...old[i],annotation:{...old[i].annotation}};
+      const positional=old[i].annotation?.version===1;
+      const updated={...old[i],annotation:{...old[i].annotation,
+        kind:old[i].annotation?.kind||old[i].kind||'marker',
+        color:old[i].annotation?.color||old[i].color||'amber'}};
       updater(updated);
+      if(positional){
+        updated.color=updated.annotation.color;
+        updated.kind=updated.annotation.kind;
+      } else {
+        updated.color=updated.annotation.color;
+        updated.kind=updated.annotation.kind;
+        delete updated.annotation; // legacy position is never invented
+      }
       const next=old.slice();next[i]=updated;
       if(!write(qKey,next)){say('Не удалось обновить помету.');return null}
       repaint();return updated;
@@ -526,14 +434,13 @@
       repaint();
       say(result.message);
     });
-    window.addEventListener('storage',e=>{if(e.key===qKey)repaint()});
-    // Native Product Library writes localStorage in the SAME tab, where the
-    // browser does not emit a storage event. Repaint once after its delete/undo.
-    document.addEventListener('click',e=>{
-      const action=e.target.closest?.('#gb-hl-panel [data-library-action],#gb-hl-status [data-library-action]');
-      if(action&&['delete','undo'].includes(action.dataset.libraryAction))
-        requestAnimationFrame(repaint);
-    });
+    let libraryFrame=0;
+    function onLibraryCommit(key){
+      if(key!==qKey&&key!==nKey&&key!==null)return;
+      if(!libraryFrame)libraryFrame=requestAnimationFrame(()=>{libraryFrame=0;repaint()});
+    }
+    window.addEventListener('storage',e=>onLibraryCommit(e.key));
+    window.addEventListener('gb:library-committed',e=>onLibraryCommit(e.detail?.key));
     window.addEventListener('resize',()=>{if(!toolbar.hidden)toolbar.hidden=true},{passive:true});
     repaint();
     window.__NP_W57_ANNOTATIONS__={

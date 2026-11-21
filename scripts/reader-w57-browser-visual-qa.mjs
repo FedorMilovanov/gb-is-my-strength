@@ -229,6 +229,81 @@ try{
   await d.page.locator('#npW57NotesStatus button').click();
   assert.equal(await d.page.evaluate(()=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]').filter(x=>x.annotation?.version===1).length),1);
  });
+ const library='#gb-hl-panel';
+ const openLibrary=async p=>{
+  await p.bringToFront();
+  if(!await p.locator(library).isVisible()){
+   const inline=p.locator('#npULibraryButton');
+   await (await inline.isVisible()?inline:p.locator('#gb-hl-fab')).click({timeout:5000});
+  }
+  await p.locator(`${library} [data-library-tab=note]`).click();
+ };
+ const editNote=async(p,id,text)=>{
+  await p.locator(`${library} .gb-hl-item[data-id="${id}"] [data-library-action=edit-note]`).click();
+  await p.locator('#gb-hl-note-text').fill(text);
+ };
+ const submitNote=p=>p.locator('#gb-hl-editor [type=submit]').click();
+ const notes=p=>p.evaluate(()=>JSON.parse(localStorage.getItem('gb-reader-notes-v1')||'[]'));
+ await safe('desktop-library-same-and-cross-tab',async()=>{
+  const p=d.page,other=await d.context.newPage();
+  try{
+   await other.goto(p.url(),{waitUntil:'domcontentloaded'});
+   await other.waitForFunction(()=>window.__NP_W57_ANNOTATIONS__?.ready);
+   await openLibrary(p);
+   const [record]=await notes(p),text='Исправлено через общую библиотеку';
+   await editNote(p,record.id,text);
+   await submitNote(p);
+   for(const page of [p,other])await page.waitForFunction(t=>
+    document.querySelector('#npW57NotesList .np-w57-note-preview-text')?.textContent===t,text,{timeout:4000});
+   await p.locator(`${library} [data-library-tab=quote]`).click();
+   await p.locator(`${library} .gb-hl-item[data-type=quote] [data-library-action=delete]`).click();
+   const expectCount=async count=>{
+    for(const page of [p,other])await page.waitForFunction(n=>{
+     const cards=document.querySelectorAll('#npW57NotesList li[data-id]').length;
+     const counter=document.querySelector('#npW57NotesCount').textContent;
+     const ranges=[...CSS.highlights].filter(([k])=>k.startsWith('np-w57-')).reduce((sum,[,h])=>sum+h.size,0);
+     return cards===n&&counter===String(n)&&ranges===n;
+    },count,{timeout:4000});
+   };
+   await expectCount(0);
+   await p.locator('#gb-hl-status [data-library-action=undo]').click();
+   await expectCount(1);
+  }finally{
+   await other.close();
+   if(await p.locator(library).isVisible())await p.locator('#gb-hl-close').click();
+  }
+ });
+ for(const mode of ['edit','delete','different-note','ordinary'])await safe('library-conflict-'+mode,async()=>{
+  const context=await chrome.newContext({viewport:{width:1440,height:900}});
+  try{
+   const p=await context.newPage(),other=await context.newPage();
+   await p.goto(d.page.url());
+   await p.evaluate(()=>localStorage.setItem('gb-reader-notes-v1',JSON.stringify(['alpha','beta'].map(id=>
+    ({id,text:`Original ${id}`,url:location.origin+location.pathname,savedAt:Date.now()})))));
+   await Promise.all([p.reload(),other.goto(d.page.url())]);
+   await openLibrary(p);
+   await editNote(p,'alpha','Draft A');
+   if(mode!=='ordinary'){
+    await openLibrary(other);
+    if(mode==='delete')await other.locator(`${library} .gb-hl-item[data-id=alpha] [data-library-action=delete]`).click();
+    else{await editNote(other,mode==='edit'?'alpha':'beta','Commit B');await submitNote(other);}
+   }
+   await p.bringToFront();
+   await submitNote(p);
+   const read=async page=>Object.fromEntries((await notes(page)).map(n=>[n.id,n.text]));
+   const saved=await read(p);
+   const conflict=mode==='edit'||mode==='delete';
+   assert.equal(await p.locator('#gb-hl-editor').isVisible(),conflict);
+   if(conflict){
+    assert.equal(await p.locator('#gb-hl-note-text').inputValue(),'Draft A');
+    assert.match(await p.locator('#gb-hl-status').textContent(),/Черновик не сохранён/);
+   }
+   assert.equal(saved.alpha,mode==='edit'?'Commit B':mode==='delete'?undefined:'Draft A');
+   assert.equal(saved.beta,mode==='different-note'?'Commit B':'Original beta');
+   await other.reload();
+   assert.deepEqual(await read(other),saved);
+  }finally{await context.close();}
+ });
  await safe('desktop-glossary-source-integrity',async()=>{
   // The tested source contains a visible gterm and a large hidden gtip.
   // Range.toString() includes the hidden tooltip, so the saved quote MUST
@@ -299,6 +374,38 @@ try{
   assert.equal(restored.painted,true,'glossary quote highlight must repaint after reload');
   d.item.glossary.restored=restored;
  });
+ await safe('desktop-glossary-first-pointer-click',async()=>{
+  const p=d.page;
+  const paragraph=p.locator('#gill-search-p-012');
+  await paragraph.scrollIntoViewIfNeeded();
+  await p.mouse.move(5,5);
+  const points=await paragraph.evaluate(el=>{
+   const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);
+   const nodes=[];
+   while(walker.nextNode())if(!walker.currentNode.parentElement.closest('.gtip,.btip'))nodes.push(walker.currentNode);
+   return [['Солтерс-Холле',false],['обсуждали',true]].map(([text,end])=>{
+    const n=nodes.find(leaf=>leaf.nodeValue.includes(text));
+    const i=n.nodeValue.indexOf(text)+(end?text.length-1:0);
+    const r=document.createRange();r.setStart(n,i);r.setEnd(n,i+1);
+    const box=r.getBoundingClientRect();
+    return [end?box.right-.1:box.left+.1,box.y+box.height/2];
+   });
+  });
+  await p.mouse.move(...points[0]);await p.mouse.down();
+  await p.mouse.move(...points[1],{steps:26});await p.mouse.up();
+  const marker=p.locator('#npW57SelectionToolbar [data-w57-action=marker]');
+  await marker.waitFor();
+  const point=await marker.evaluate(el=>{
+   const r=el.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;
+   return {x,y,hit:el.contains(document.elementFromPoint(x,y)),text:getSelection().toString()};
+  });
+  assert.match(point.text,/Диссентеры/);
+  assert.equal(point.hit,true,'tooltip must not cover the marker action after real drag');
+  await p.mouse.click(point.x,point.y);
+  const saved=await p.evaluate(text=>JSON.parse(localStorage.getItem('gb-highlights-v1')||'[]')
+   .some(q=>q.text===text&&q.annotation?.kind==='marker'),point.text);
+  assert.equal(saved,true,'first direct click must save the actual selection');
+ });
  await safe('desktop-dark',async()=>{
   await d.page.evaluate(()=>window.GBReaderPreferences?.setTheme?.('dark',{source:'w57-qa'}));
   await d.page.waitForTimeout(250);
@@ -316,7 +423,7 @@ try{
   await m.page.locator('#npUCloseRight').click();
   await m.page.locator('#npUOpenToc').click();
   const originalInert=await m.page.locator('#npUNativeTools').evaluate(el=>el.inert);
-  await m.page.getByRole('button',{name:'Настройки книжного шрифта'}).first().click();
+  await m.page.locator('#npUOutline .np-u-type-open').click();
   m.item.settings=await m.page.evaluate(()=>({
    dialogRole:document.querySelector('#npUFontPanel')?.getAttribute('role'),
    dialogAria:document.querySelector('#npUFontPanel')?.getAttribute('aria-modal'),
@@ -341,6 +448,11 @@ try{
   assert.equal(m.item.settings.scrimVisible,true,'background native tools must be visually covered');
   assert.equal(m.item.settings.nativeToolsInert,true,'native TOC controls must be inert behind dialog');
   assert.equal(m.item.settings.focusInside,true,'mobile font popup focus lost');
+  const audioCard=m.page.locator('#npUniversalDemo .np-u-audio-card');
+  assert.ok(await audioCard.count()>0,'Gill audio card fixture missing');
+  const visibleAudio=()=>audioCard.evaluateAll(cards=>cards.filter(el=>
+   el.getClientRects().length&&getComputedStyle(el).opacity!=='0').length);
+  assert.equal(await visibleAudio(),0,'audio card paints through the settings scrim');
   await snap(m.page,'mobile-settings');
   await m.page.locator('#npUFontPanel [data-np-u-type-font="cormorant"]').click();
   m.item.fontAfterClick=await m.page.evaluate(()=>{
@@ -378,7 +490,8 @@ try{
   assert.equal(m.item.closedFontDialog.nativeInert,originalInert,'Escape failed to restore original controls');
   assert.equal(m.item.closedFontDialog.tocStillOpen,true,'Escape closed the parent TOC');
   assert.equal(m.item.closedFontDialog.openerExpanded,'false','opener remains expanded');
-  await m.page.getByRole('button',{name:'Настройки книжного шрифта'}).first().click();
+  assert.ok(await visibleAudio()>0,'audio card must return when settings closes');
+  await m.page.locator('#npUOutline .np-u-type-open').click();
   await m.page.mouse.click(356,660);
   assert.equal(await m.page.locator('#npUFontPanel').isVisible(),false,'scrim outside click did not close dialog');
   assert.equal(await m.page.locator('#npUNativeTools').evaluate(el=>el.inert),originalInert,
@@ -412,7 +525,7 @@ try{
  await m.context.close();
  // Review layout at the actual user-facing breakpoints, not one 1440px image.
  for(const [width,height,name] of [[320,700,'mobile-320'],[768,900,'tablet-768'],
-  [1280,800,'desktop-1280'],[1920,1000,'desktop-1920']]){
+  [1280,800,'desktop-1280'],[1366,768,'desktop-1366'],[1440,900,'desktop-1440'],[1920,1080,'desktop-1920']]){
   const extra=await scene(chrome,name,
    '/articles/dzhon-gill-chast-2-uchenyi/?reader-pilot=1&paper=space',width,height);
   extra.item.geometry=await extra.page.evaluate(()=>{
@@ -423,9 +536,32 @@ try{
   });
   if(extra.item.geometry.overflow)REPORT.failures.push({name,reason:'horizontal overflow',geometry:extra.item.geometry});
   await snap(extra.page,name);
+  if(width>=1280){
+   await safe(name+'-settings',async()=>{
+    const p=extra.page;
+    const native=p.locator('#railSettingsBtn');
+    const trigger=await native.isVisible()?native:p.locator('#npUOutline .np-u-type-open');
+    await trigger.click();
+    const panel=p.locator('#npUFontPanel');
+    assert.equal(await panel.isVisible(),true);
+    assert.equal(await p.locator('#gillSettingsOverlay').getAttribute('aria-hidden'),'true');
+    assert.equal(await trigger.getAttribute('aria-controls'),'npUFontPanel');
+    assert.equal(await trigger.getAttribute('aria-expanded'),'true');
+    const [r,h]=await Promise.all([panel.boundingBox(),p.locator('main h1').first().boundingBox()]);
+    assert.ok(r.x+r.width<=h.x||r.y+r.height<=h.y||h.y+h.height<=r.y,'settings overlap H1');
+    await panel.locator('[data-np-u-type-theme=sepia]').click();
+    assert.equal(await p.evaluate(()=>window.GBReaderPreferences.get().theme),'sepia');
+    await panel.locator('[data-np-u-type-font=cormorant]').click();
+    assert.match(await p.locator('#gill-search-p-012').evaluate(e=>getComputedStyle(e).fontFamily),/Cormorant/);
+    await snap(p,name+'-settings');
+    await p.keyboard.press('Escape');
+    assert.equal(await panel.isHidden(),true);
+    assert.equal(await trigger.evaluate(e=>e===document.activeElement),true);
+   });
+  }
   if(width===320){
    await extra.page.locator('#npUOpenToc').click();
-   await extra.page.getByRole('button',{name:'Настройки книжного шрифта'}).first().click();
+   await extra.page.locator('#npUOutline .np-u-type-open').click();
    extra.item.settingsBounds=await extra.page.evaluate(()=>{
     const r=document.querySelector('#npUFontPanel').getBoundingClientRect();
     return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,

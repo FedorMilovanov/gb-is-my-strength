@@ -252,19 +252,23 @@ async function auditSlot(page, routeId, selectors, checks) {
       { playTriangleSafe: gillBefore.playTriangleSafe,
         rateCenter: gillBefore.rateCenterClickable,
         paintedChip: gillBefore.chipPointerHitsBadge });
-    record(checks, `${prefix}-31`, 'Gill Play + speed reserve only a 68px compound, not the old blank 88px gap',
-      gillBefore.compound?.width >= 67.8 && gillBefore.compound?.width <= 68.2 &&
-      gillBefore.rateBadge?.width >= 43.5 &&
-      gillBefore.rateBadge?.x - gillBefore.anchors[3].x >= 23.5 &&
-      gillBefore.rateBadge?.x - gillBefore.anchors[3].x <= 24.5 &&
-      gillBefore.settingsButton?.x >= gillBefore.compound.right - 1 &&
+    record(checks, `${prefix}-31`, 'Gill Play + speed reserve a compact 44px group with an overlapping, independently tappable rate badge',
+      gillBefore.compound?.width >= 43.5 && gillBefore.compound?.width <= 44.5 &&
+      gillBefore.rateBadge?.width >= 25.5 && gillBefore.rateBadge?.width <= 26.5 &&
+      gillBefore.rateBadge?.height >= 23.5 && gillBefore.rateBadge?.height <= 24.5 &&
+      gillBefore.rateBadge?.x - gillBefore.anchors[3].x >= 17.5 &&
+      gillBefore.rateBadge?.x - gillBefore.anchors[3].x <= 18.5 &&
+      gillBefore.rateBadge?.bottom - gillBefore.compound.bottom >= 4.5 &&
+      gillBefore.rateBadge?.bottom - gillBefore.compound.bottom <= 6.5 &&
+      gillBefore.settingsButton?.x >= gillBefore.compound.right &&
       gillBefore.settingsButton?.x - gillBefore.compound.right <= 9 &&
-      gillBefore.rateChip?.right <= gillBefore.compound.right,
+      gillBefore.rateChip?.right <= gillBefore.compound.right &&
+      gillBefore.rateChip?.bottom <= gillBefore.compound.bottom,
       { compound: gillBefore.compound, badge: gillBefore.rateBadge,
         chip: gillBefore.rateChip, settings: gillBefore.settingsButton });
     record(checks, `${prefix}-32`, 'one fine, softly animated progress ring inside the canonical 44px Play',
-      Number.parseFloat(gillBefore.ringTrackWidth) >= 3.2 && Number.parseFloat(gillBefore.ringTrackWidth) <= 3.6 &&
-      Number.parseFloat(gillBefore.ringProgressWidth) >= 3.7 && Number.parseFloat(gillBefore.ringProgressWidth) <= 4.1 &&
+      Number.parseFloat(gillBefore.ringTrackWidth) >= 2.9 && Number.parseFloat(gillBefore.ringTrackWidth) <= 3.1 &&
+      Number.parseFloat(gillBefore.ringProgressWidth) >= 3.5 && Number.parseFloat(gillBefore.ringProgressWidth) <= 3.7 &&
       Number.parseFloat(gillBefore.ringProgressTransition) >= 0.5,
       { trackStroke: gillBefore.ringTrackWidth,
         progressStroke: gillBefore.ringProgressWidth, transition: gillBefore.ringProgressTransition });
@@ -273,9 +277,9 @@ async function auditSlot(page, routeId, selectors, checks) {
       ['transparent','rgba(0, 0, 0, 0)'].includes(gillBefore.speedPseudoPaint?.background) &&
       gillBefore.speedPseudoPaint?.shadow === 'none',
       gillBefore.speedPseudoPaint);
-    record(checks, `${prefix}-35`, 'painted rate on lower ring arc and balanced Settings glyph gap',
-      gillBefore.rateChip?.x - gillBefore.anchors[3]?.x >= 27 &&
-      gillBefore.rateChip?.x - gillBefore.anchors[3]?.x <= 31 &&
+    record(checks, `${prefix}-35`, 'painted rate sits on the lower-right ring arc with a clear Settings glyph gap',
+      gillBefore.rateChip?.x - gillBefore.anchors[3]?.x >= 22 &&
+      gillBefore.rateChip?.x - gillBefore.anchors[3]?.x <= 24.5 &&
       gillBefore.rateChip?.bottom - gillBefore.ring?.bottom <= 1.5 &&
       gillBefore.speedGapToSettings >= 10 && gillBefore.speedGapToSettings <= 32,
       {chip:gillBefore.rateChip,ring:gillBefore.ring,paintedGap:gillBefore.speedGapToSettings});
@@ -283,7 +287,7 @@ async function auditSlot(page, routeId, selectors, checks) {
       gillBefore?.chipPointerHitsBadge === true,{ chipOwner:gillBefore?.chipPointerHitsBadge });
     record(checks, `${prefix}-26`, 'Play uses exactly one SVG progress ring without duplicate CSS border or shadow',
       gillBefore.playBorder === '0px' && gillBefore.playShadow === 'none' && gillBefore.ringOpacity > .95 &&
-        gillBefore.ring?.width === 40 && gillBefore.anchors[3]?.width === 44,
+        gillBefore.ring?.width === 38 && gillBefore.anchors[3]?.width === 44,
       { border: gillBefore.playBorder, shadow: gillBefore.playShadow, ringOpacity: gillBefore.ringOpacity });
     record(checks, `${prefix}-28`, 'Back and Home remain visible and operable while Gill speeds replace research slot',
       after?.backActive === true,{ after:after?.backActive, rail:after?.rail,slot:after?.slot });
