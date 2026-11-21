@@ -1268,3 +1268,54 @@ dialog aria-label: Часть I · Человек
 - [ ] Sheet touch intent: `25px` downward motion is prevented and horizontal-dominant diagonal can dismiss.
 
 No product/source repair was made. The one-owner architecture remains correct; the next owner fixes should tighten the existing collector’s section boundary and accessibility handoff, not introduce a desktop/mobile fork.
+
+## 21. Раунд 15 — native scroller edge handoff и glossary-target swipe
+
+### 21.1. Native horizontal scrollers: доступное направление работает, обратная граница отдаёт gesture статье
+
+Проверен trusted CDP touch на первой найденной таблице Gill I и Gill II при `320×844` и `390×844`. Для каждого случая таблица сначала устанавливалась в `scrollLeft=0` или `scrollLeft=max`, затем выполнялся горизонтальный swipe в обе стороны.
+
+Положительные witnesses остаются:
+
+- left edge + finger-left: таблица реально двигается к `scrollLeft>0`, route остаётся;
+- right edge + finger-right: таблица реально двигается назад, route остаётся.
+
+Новый edge result:
+
+| Route / width | Native edge | Gesture | Фактический результат |
+|---|---:|---|---|
+| Gill I `320/390` | left | finger-right | переход на introduction |
+| Gill I `320/390` | right | finger-left | переход на Gill II |
+| Gill II `320/390` | left | finger-right | переход на Gill I |
+| Gill II `320/390` | right | finger-left | переход на Gill III |
+
+Это не предположение: после release `location.pathname` действительно меняется, а таблица исчезает вместе с новым route. Причина в `wantsHijack()`: native region блокирует article navigation только если у него есть доступное движение в направлении текущего swipe; на противоположной границе guard возвращает `false`, и `initSwipeNav()` получает право commit-ить соседнюю часть.
+
+Это **confirmed nested-scroller boundary ownership conflict**. Если каноническое правило — «gesture, начатый в table/code/native scroller, никогда не должен переходить по серии», guard должен владеть обеими границами. Если owner намеренно хочет edge handoff к series navigation, это должно быть явно зафиксировано как контракт — сейчас source comment обещает не красть horizontal native region, а contract проверяет только доступное направление.
+
+Machine witness: `/tmp/62-native-edge.json`.
+
+### 21.2. Glossary terms — ещё один confirmed interactive-target conflict
+
+Поскольку `.gterm` является интерактивным target с определением, выполнен trusted horizontal/vertical touch matrix на visible terms:
+
+| Route | Target | Horizontal finger-left | Vertical up |
+|---|---|---|---|
+| Gill I | `D.D.` `.gterm` | переход на Gill II | route остаётся, `scrollY 1923→2078` |
+| Gill II | `Диссентеры` `.gterm` | переход на Gill III | route остаётся, `scrollY 2112→2267` |
+| Gill IV | `«гиперкальвинизме»` `.gterm` | переход на справочник | route остаётся, `scrollY 2444→2599` |
+
+В каждом horizontal case target находился внутри `article` и не был частью rail/next-card/relation nav. `initSwipeNav()` проверяет только `inContent()` и native horizontal overflow; отдельного guard для `.gterm`, `abbr`, `button`, `a` или других interactive article targets нет.
+
+Это **confirmed interactive-target conflict**, более широкий, чем ранее найденный CTA case: горизонтальный swipe по glossary term запускает навигацию серии вместо сохранения ownership интерактивного определения. Вертикальный control на тех же точках проходит, поэтому проблема специфична для horizontal swipe arbitration.
+
+Machine witness: `/tmp/62-interactive-swipe-deeper.json`.
+
+### 21.3. Итог раунда
+
+- [x] Available-direction native table scroll: confirmed at both widths and both routes.
+- [ ] Native-scroller edge ownership: inverse-direction swipe can navigate the series from inside a table.
+- [ ] Interactive target guard: glossary-term horizontal swipe navigates the series.
+- [x] Vertical scroll control on the same glossary terms remains native and does not navigate.
+
+No product/source repair was made. These results extend the existing mobile findings: swipe arbitration still needs an explicit target/region ownership policy before the PR can be considered mobile-safe.
