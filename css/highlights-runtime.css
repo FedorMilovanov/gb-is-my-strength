@@ -931,6 +931,15 @@ html.dark #gb-hl-toast {
     --library-rubric:#D46A6A;
     --library-surface:#1D2025;
   }
+  /* The Classic mobile layout owns its typography, not the reader's chosen
+     paper theme. Preserve the approved sepia palette in the same mobile
+     scope as light/dark, without changing desktop W57/ARGON styling. */
+  html:is(.theme-sepia,[data-reader-theme="sepia"]) body:has(article.article-body) #gb-hl-panel {
+    --library-paper:#F7EFDF;
+    --library-ink:#44342B;
+    --library-muted:#8B6D5D;
+    --library-accent:#855942;
+  }
   html:is(.dark,[data-reader-theme="dark"]) body:has(article.article-body) #gb-hl-tabs button[aria-pressed="true"] {
     background:var(--library-paper) !important;
     color:var(--library-accent);

@@ -144,7 +144,11 @@ async function check(engine,driver,width,height,base,advanced){
   assert(file.suggestedFilename().endsWith('.md'),'Markdown export file extension');
   await page.evaluate(()=>document.documentElement.classList.add('dark'));
   const darkBg=await page.locator('#gb-hl-panel').evaluate(el=>getComputedStyle(el).backgroundColor);
-  assert.equal(darkBg,'rgb(33, 27, 27)','dark library paper');
+  // W59 Classic mobile deliberately uses cooler graphite #17191D,
+  // while the desktop Product Library retains historical #211B1B.
+  // Assert the proper design contract at each viewport; do not roll back CSS.
+  assert.equal(darkBg,width<768?'rgb(23, 25, 29)':'rgb(33, 27, 27)',
+    width<768?'dark mobile Classic library paper':'dark desktop library paper');
   if(engine==='chromium'&&advanced)await page.screenshot({path:path.join(out,engine+'-'+width+'-night.png'),animations:'disabled'});
   await page.evaluate(()=>{document.documentElement.classList.remove('dark');document.documentElement.setAttribute('data-reader-theme','sepia')});
   const sepiaBg=await page.locator('#gb-hl-panel').evaluate(el=>getComputedStyle(el).backgroundColor);
