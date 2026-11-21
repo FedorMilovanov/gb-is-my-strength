@@ -2753,7 +2753,25 @@
       toast.innerHTML = '<span><small>Вы здесь были</small>Вы остановились на ' + Math.round(saved.progress) + '%</span>' +
         '<button type="button" class="gbs2-resume-go">Продолжить</button>' +
         '<button type="button" class="gbs2-resume-x" aria-label="Скрыть">×</button>';
-      document.body.appendChild(toast);
+      // On a phone the previous 6.5s fixed prompt covered the opening
+      // paragraph. Place the resume choice in normal article flow instead:
+      // it stays available until acted upon, without a timed layout shift.
+      // Tablets and desktop retain their existing floating prompt behavior.
+      var inlineArticle = window.matchMedia && window.matchMedia('(max-width:767px)').matches
+        ? qs('[data-gill-v16] article.article-body') : null;
+      var inlineResume = !!(inlineArticle && inlineArticle.parentNode);
+      if (inlineResume) {
+        toast.classList.add('gbs2-resume-inline');
+        // Compact 320px copy: never let a long label overlap its action.
+        var resumeProgress = Math.round(saved.progress);
+        toast.querySelector('span').lastChild.textContent =
+          (window.matchMedia('(max-width:360px)').matches ? 'На ' : 'Место: ') + resumeProgress + '%';
+        toast.querySelector('span').setAttribute('aria-label',
+          'Вы остановились на ' + resumeProgress + '% статьи');
+        inlineArticle.parentNode.insertBefore(toast, inlineArticle);
+      } else {
+        document.body.appendChild(toast);
+      }
       // B13: acknowledge on SHOW, not only in hide() — BookmarkEngine's
       // #bookmarkToast (900ms delay) shares this flag; whoever shows first
       // must win, or both prompts can appear on one page.
@@ -2771,8 +2789,12 @@
         hide(false);
       });
       toast.querySelector('.gbs2-resume-x').addEventListener('click', function () { hide(true); });
-      setTimeout(function () { toast.classList.add('gbs2-on'); }, 900);
-      hideT = setTimeout(function () { hide(false); }, 6500);
+      if (inlineResume) {
+        toast.classList.add('gbs2-on');
+      } else {
+        setTimeout(function () { toast.classList.add('gbs2-on'); }, 900);
+        hideT = setTimeout(function () { hide(false); }, 6500);
+      }
     }
 
     function renderReaderState(reader) {
