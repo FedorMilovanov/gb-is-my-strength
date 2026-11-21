@@ -14,7 +14,7 @@
 | Role | Original Classic: `GEMINI ARGON--3.zip/src/index.css` | Current UPDATE / W57 |
 | --- | --- | --- |
 | UI and controls | **Inter**, system sans fallback | Source Sans 3 |
-| Long-form text / Scripture | **Literata**, serif fallback | Lora is default in Update; current Gill mobile Scripture directly uses Cormorant |
+| Long-form text / Scripture | **Literata**, serif fallback | Update uses Lora; Gill mobile formerly used Cormorant before Classic W58 |
 | Display titles / drop cap | **Cormorant Garamond** | Cormorant already exists, but role assignments differ |
 | References / metadata | **JetBrains Mono** | Mix of Source Sans 3 and occasional Mono |
 | Light canvas / folio / panel | `#F6F3EC` / `#FBF9F5` / `#EFECE4` | Update uses `#fdfcf9` / `#ffffff` / `#f4f2ed` |
@@ -29,8 +29,17 @@ Original Classic's Scripture window (`RightResearchPanel.tsx`) includes one sele
 1. **Classic design tokens and font roles are authoritative** for new Reader visual work. Later W57/UPDATE changes may remain only where they fix accessibility, mobile usability, verified functional problems, or deliberate owner-approved differences. Do not import UPDATE chrome by default.
 2. Keep Reader's **real Astro article, source-of-truth ScriptureDataProjection, exact annotations, original floating controls, TTS/Play, focus and navigation**. No imitation UI, duplicate script owners, default-Reader replacement or silent production activation.
 3. Implement visually in bounded, reviewable slices: first side-by-side screenshots of **Classic source vs current W57**; then Classic typography/tokens in the existing desktop shell and mobile Analytics; then chapter index / research window / toolbar refinements. Do not claim full Classic parity until the screenshot comparison is performed.
-4. Existing local `fonts/` currently includes Cormorant Garamond and Inter, but no verified local **Literata** or **JetBrains Mono** files. Do **not** claim faithful Classic typography by naming a missing font in CSS and silently using fallback. Acquire locally hosted, appropriately licensed font assets with attribution and check actual loaded font in Chromium/WebKit before declaring that portion complete. Retain reader-selectable article font and never overwrite a user's preference.
+4. W58 now provides locally hosted, licensed Literata and JetBrains Mono subsets alongside existing Cormorant Garamond and Inter. Browser QA verifies real loaded font faces; never fake fidelity with CSS-only fallback. Product article-font selection remains intact.
 5. QA must cover Gill II `#part-controversy`, Gill III and independent articles, 320/390/1120/1121/1440px, day/night, long passages, two-row overflow, article scroll and focused selection, annotation round trip, real local screenshots. The physical phone and visual owner sign-off remain separate HOLD criteria.
 6. The currently committed W57/Classic patches, mobile shelf, and annotations are **not rolled back just to adjust visual styling**. Fix tokens and component treatment without breaking verified behavior.
 
 **Repo gate:** PR #2352 remains Draft/HOLD; ordinary fast-forward into the existing branch, no main merge or production deploy until actual Classic visual comparison and the pending Reader/CI acceptance gates.
+
+## W58 implementation evidence (21 November 2026)
+
+- Reader source typography: mobile Gill Analytics in src/components/article-pilots/gill-series/GillMobileMarginalia.astro; W57 desktop opt-in skin in research/reader-w57-pilot/assets/reader_argon_classic_finish.css, loaded last by the preview manifest. Existing Player, section selection, notes and ScriptureDataProjection remain unchanged.
+- Local licensed font assets: fonts/Literata and fonts/JetBrainsMono. Both use Fontsource v5.3.0, SIL OFL 1.1, Cyrillic+Latin subsets and license notices. Inter and Cormorant Garamond were already present. Do not remove font licenses.
+- Verified Node 22 strangler:build: 658 checked Astro files, 0 errors, 0 warnings; 112 generated pages; postbuild G-1 to G-8 pass.
+- Chromium+WebKit: desktop 1121/1440 pixels both themes; mobile 320/390 pixels both themes; projected Genesis 1:2 and Exodus 19:9, actual font load, no horizontal overflow. Gill II #part-controversy shelf: 18 places, two rows, bidirectional scroll in all four browser/size combinations. Mobile iframe preview opens genuine Gill article and Scripture; day/night/320/390 interactive controls pass.
+- Local visual archive: dist/reader-classic-desktop-lexicon-day.png, dist/reader-classic-desktop-lexicon-night.png, dist/reader-classic-mobile-day.png, dist/reader-classic-mobile-night.png; separate convenience frame dist/mobile-gill-classic-review.html. These are generated local QA assets, not production routes.
+- Not completed by this visual patch: one shared semantic section material provider for all Reader surfaces, unresolved pre-existing CI defects, physical-phone and owner design sign-off. Draft/HOLD must remain.

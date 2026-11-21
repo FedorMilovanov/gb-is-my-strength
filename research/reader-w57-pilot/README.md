@@ -68,7 +68,7 @@ missed a major feature-parity regression in PR #2346.
 
 ## Source and release gates
 
-- `assets/` contains the 12 real W57 CSS/JS files, with SHA-256 checksums in
+- `assets/` contains the 13 current W57 CSS/JS files including the final Classic visual layer, with SHA-256 checksums in
   `MANIFEST.json`; injection order matches the working local W57 pilot.
 - Running the preview is opt-in and does not modify `main`, generated pages,
   canonical styles, or the site service worker.

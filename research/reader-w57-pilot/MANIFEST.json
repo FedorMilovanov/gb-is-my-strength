@@ -1,5 +1,5 @@
 {
-  "source": "W57 left typography/read settings and exclusive research cards — 2026-11-20",
+  "source": "W57 Classic visual layer and retained functional Reader - 2026-11-21",
   "files": [
     {
       "name": "reader_universal_preview.css",
@@ -30,6 +30,11 @@
       "name": "reader_w57.css",
       "sha256": "aac6f8e646281dfcca0f04beefafb3cf0903b0528db273b18193d2a46b5380fb",
       "bytes": 29059
+    },
+    {
+      "name": "reader_argon_classic_finish.css",
+      "sha256": "49433e3746b1bcfaaab207650e42de205a7951f94aa75ad19cf4271b8bee037e",
+      "bytes": 8871
     },
     {
       "name": "reader_universal_contract.js",
