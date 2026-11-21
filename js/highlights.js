@@ -295,6 +295,28 @@
     return location.origin + location.pathname + '#' +
       (selected.anchor ? encodeURIComponent(selected.anchor) : '') + ':~:' + fragment(selected.text);
   }
+  // Both touch selection-bar notes and the native selection popup share
+  // exactly one positional quote association. Text-only equivalence is never
+  // sufficient: repeated words and old legacy links are ambiguous.
+  function noteContextForSelection(selected) {
+    if (!selected || selected.text.length < 8) return null;
+    const context = { quoteText: selected.text, url: sourceUrl(selected), title: currentTitle() };
+    if (!selected.positionalAnchor) return context;
+    const article = document.querySelector('article.article-body') || document.querySelector('article');
+    if (!article) return context;
+    const exact = GBReaderAnchors.resolve(article, selected.positionalAnchor);
+    if (!exact) return context;
+    const here = gbHighlightPath({url:location.href});
+    const matches = quotes().filter(item => {
+      if (item.annotation?.version !== 1 || gbHighlightPath(item) !== here) return false;
+      const stored = GBReaderAnchors.resolve(article, item.annotation.anchor);
+      return stored && GBReaderAnchors.sameRange(exact, stored);
+    });
+    // Keep a useful unlinked note if this occurrence is new, legacy, or
+    // ambiguous. Never assign a quoteId from a coincidental text match.
+    if (matches.length === 1) context.quoteId = matches[0].id;
+    return context;
+  }
   function uid(prefix) { return prefix + Date.now() + Math.random().toString(36).slice(2, 7); }
 
 
@@ -1079,8 +1101,7 @@
     });
     note.addEventListener('click', () => {
       const s = selection();
-      const context = s.text.length >= 8
-        ? { quoteText: s.text, url: sourceUrl(s), title: currentTitle() } : null;
+      const context = noteContextForSelection(s);
       hide();
       open(null).then((opened) => { if (opened) showEditor(context); });
     });
@@ -1181,8 +1202,7 @@
     }, popup);
     bindSelectionButton('ss-note', 'Добавить заметку к выделенному тексту', penSvg, () => {
       const s = selection();
-      const context = s.text.length >= 8
-        ? { quoteText: s.text, url: sourceUrl(s), title: currentTitle() } : null;
+      const context = noteContextForSelection(s);
       popup.classList.remove('ss-visible');
       popup.setAttribute('aria-hidden', 'true');
       open(document.getElementById('ss-note')).then((opened) => { if (opened) showEditor(context); });

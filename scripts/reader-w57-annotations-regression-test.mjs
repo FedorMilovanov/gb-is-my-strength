@@ -73,6 +73,17 @@ assert.match(highlights,/function resolve\(article,anchor\)/,
  'the Product shared Reader owns the only positional range resolver');
 assert.match(file,/const \{capture,resolve\}\s*=\s*window\.GBReaderAnchors\s*\|\|\s*\{\}/,
  'W57 annotations consume the shared positional anchor API');
+// Product selection bar and the native popup must both associate notes only
+// with an already-saved exact source occurrence, not a repeated text string.
+assert.match(highlights,/function noteContextForSelection\(selected\)/,
+ 'Product selection notes need a shared positional association owner');
+assert.match(highlights,/GBReaderAnchors\.sameRange\(exact, stored\)/,
+ 'notes must compare real source DOM Ranges');
+assert.match(highlights,/if \(matches\.length === 1\) context\.quoteId = matches\[0\]\.id/,
+ 'unknown and ambiguous occurrences must fail closed');
+assert.equal((highlights.match(/const context = noteContextForSelection\(s\);/g)||[]).length,2,
+ 'touch toolbar and native selection popup must share one association rule');
+
 assert.doesNotMatch(file,/function resolve\(article,anchor\)/,
  'W57 must not fork a stale second copy of the resolver');
 // Persist the same DOM-author-visible offset mapping on capture and resolve.
