@@ -628,4 +628,63 @@ PR #2346 получил два новых reader-only коммита: `dd78f75` 
 
 Эти коммиты не переносились в текущую audit-ветку и не применялись к PR #2346 из-за branch scope. Для снятия Windows CI failure основной агент должен внести эквивалентный fix в PR #2346 и получить новый hosted run. Пока этого нет, PR остаётся HOLD.
 
-Новые reader-коммиты не затрагивают D2/D3. **D2 и D3 остаются `- [ ]`; PR #2346 сохраняет DRAFT/HOLD.** По latest head mobile Play/rate ownership теперь подтверждён локальным формальным Chromium-контрактом, но это не закрывает визуально-архитектурные блокеры настроек.
+Новые reader-коммиты не затрагивают D2/D3. **D2 и D3 остаются `- [ ]`; PR #2346 сохраняет DRAFT/HOLD.** Узкий `reader-controls`-контракт на latest head подтверждён локальным disposable Chromium, но это не закрывает визуально-архитектурные блокеры настроек и не отменяет отдельный failure более широкого `engine:sweep`, описанный ниже.
+
+## 13. Последнее дополнение — exact HEAD `e567400`: широкий engine sweep и hosted snapshot
+
+### 13.1. Граница доказательства и разделение с историческим `fd1a73a`
+
+Этот раздел относится только к authoritative PR HEAD `e567400e7381be3786907396e1ecd6e69a4547c2`. Исторический `fd1a73a` из раздела 11 не используется как доказательство для нового HEAD: на нём прежние mobile speed-contract failure были закрыты, но последующие `dd78f75`/`e567400` изменили Gill-стили и набор проверок. Все новые эксперименты выполнялись в disposable `/tmp/w57latest`; продуктовые файлы, `data/scripture-search-index.json` и Node-floor bypass в audit-ветку не переносились.
+
+### 13.2. Новый локальный результат `engine:sweep`
+
+На production-like `dist`, собранном из exact `e567400`, выполнен именно широкий скрипт публичной поверхности:
+
+```text
+LD_LIBRARY_PATH=/tmp/al2023/lib \
+GB_PLAYWRIGHT_CHROMIUM=/tmp/chromium \
+node scripts/engine-sweep.mjs
+```
+
+Результат: **exit 1, `TOTAL: 219/225 PASS`**. Все шесть failure — одна и та же mobile-проверка для шести серий:
+
+| Series row | Проверка | Результат геометрии |
+|---|---|---|
+| `gill3`, `heart`, `baptist`, `antisov`, `teen`, `genesis6` | `mob: Play / скорость — независимые сенсорные зоны` | `play=44×44`, `badge=44×44`, `overlap=0`, `playHit=true`, `badgeHit=true`, `badgeWithinViewport=true`, `aria-controls=mobileSpeedrail`, но `badgeRadius="0px"` |
+
+То есть локально подтверждены размеры, отсутствие пересечения, hit-testing обеих целей и связь с canonical rail. Failure вызван единственным оставшимся предикатом `parseFloat(mb.badgeRadius) >= 10`. Остальные desktop/1024/mobile reader cases, настройки, TOC, PLAY/FSM, print/pagination, R6 и каталоги в этом sweep прошли.
+
+Это не следует смешивать с более узким `reader-controls-a11y-browser-contract.mjs`: его предыдущий disposable результат остаётся **147/147 PASS**, включая Gill checks 25–30. Но canonical Playwright Chromium в sandbox отсутствует, поэтому оба локальных запуска — disposable Chromium evidence, не замена hosted Chromium/Firefox/WebKit.
+
+### 13.3. Что именно измеряет radius-предикат и почему нужен contract decision
+
+В exact `e567400` намеренно разделены невидимая hit-target и видимый badge:
+
+- `.reader-mobile-speed-badge` — прозрачная кнопка `44×44`, текущий Gill override задаёт `border-radius:0`;
+- `.reader-mobile-speed-chip` — видимая метка, pointer-enabled и округлённая `border-radius:999px`.
+
+`engine-sweep.mjs` проверяет `getComputedStyle(badge).borderRadius` у **прозрачного wrapper**, а не радиус видимого chip. Само условие `badgeRadius >= 10` присутствует ещё в базовом `9edef94` (git blame); оно не было добавлено `e567400`, но текущий `e567400` явным `border-radius:0` перестал ему соответствовать. Более новый узкий contract проверяет фактические `44px` targets и попадание pointer в badge/chip-owner, но radius wrapper там не является условием.
+
+Следовательно, это доказанный **contract/implementation alignment failure**, а не доказанный дефект сенсорной геометрии и не основание заявлять, что все шесть route-family controls сломаны. Владелец PR должен явно выбрать authoritative invariant:
+
+1. если округлённая форма относится к самому интерактивному control, вернуть радиус на `.reader-mobile-speed-badge` и повторить все contracts;
+2. если authoritative является прозрачная прямоугольная `44×44` hit-target с отдельным округлённым визуальным chip, изменить `engine:sweep` так, чтобы он проверял chip/визуальный affordance или отказался от wrapper-radius predicate, затем получить новый hosted run.
+
+Аудит не выбирает между этими вариантами и не меняет source: пока решение и hosted rerun отсутствуют, `engine:sweep` считается **непройденным**.
+
+### 13.4. Hosted status exact `e567400` на последнем snapshot
+
+После завершения дополнительных jobs GitHub PR status rollup показывал **48 SUCCESS / 7 FAILURE / 4 SKIPPED / 1 CANCELLED / 3 PENDING**. Failure checks:
+
+- [Grok flag-ON and flag-OFF real Product browser contract](https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/44837643272) — hosted mobile route-family proof, annotation сообщает exit 1; receiver не отдал job log;
+- [public-surface-browser-matrix](https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/44837643039) — `engine:sweep` / Chromium public-surface path, annotation сообщает exit 1; локальный exact-head sweep выше воспроизводит шесть radius failures;
+- [Deterministic source index and dist witness](https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/44837643425) и [Exact Scripture occurrences before Pagefind](https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/44837643312) — stale source-owned Scripture index; disposable writer меняет только `scannedSourceFiles: 542 → 543`, index в PR не переносился;
+- [actionlint offline / win32-x64](https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/44837643407) — известная Windows extraction failure из §12.4, не reader defect;
+- [a4-paper](https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/44837643288) — `Generate canonical reader PDF`, exit 1; доступная annotation содержит только `Process completed with exit code 1`, root cause по hosted payload не установлен;
+- [pilot-browser](https://github.com/FedorMilovanov/gb-is-my-strength/actions/runs/44837643353) — `Screenshot and interact with exact W57 pilot`, exit 1; доступная annotation содержит только `Process completed with exit code 1`, root cause по hosted payload не установлен.
+
+Оставались pending: `interactive-audit`, `Chromium + Firefox + WebKit Reader controls and real-asset contracts` и `Public surfaces — webkit touch/scroll`. Поэтому этот snapshot нельзя называть зелёным; две дополнительные hosted failures (`a4-paper`, `pilot-browser`) не приписываются продукту без логов.
+
+### 13.5. Итог для PR и D2/D3
+
+Новый mobile speed-slot head получил положительные доказательства по геометрии и accessibility ownership, но одновременно оставляет широкий hosted/local `engine:sweep` красным до решения по radius predicate. Это не меняет вывод по настройкам: **D2 и D3 остаются `- [ ]`**, потому что speed-slot evidence не проверяет и не исправляет ghost-strip/desktop font-owner architecture. PR #2346 остаётся **OPEN/DRAFT/HOLD**.
