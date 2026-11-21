@@ -163,7 +163,14 @@ async function runColdAndWarmCase(browser, browserName, baseUrl, route, viewport
     const response = await page.goto(`${baseUrl}${route}`, { waitUntil: 'networkidle' });
     assert.ok(response?.ok(), `${browserName} ${route} ${viewport.width}: route did not load`);
 
-    const triggerSelector = route === '/hard-texts/' ? '.mcp-search' : '#gbSearchBtn';
+    // /articles/ has a native journal masthead in the NEWS/G3 candidate,
+    // but published main may still have the legacy header. Test the actual
+    // mounted owner on this exact build; never invent a second search button.
+    const journalNative = route === '/articles/' &&
+      await page.locator('.je-masthead button[data-action="open-search"]').count() === 1;
+    const triggerSelector = journalNative
+      ? '.je-masthead button[data-action="open-search"]'
+      : route === '/hard-texts/' ? '.mcp-search' : '#gbSearchBtn';
     const trigger = page.locator(triggerSelector);
     await trigger.waitFor({ state: route === '/hard-texts/' ? 'attached' : 'visible' });
     const cold = await page.evaluate((selector) => ({
