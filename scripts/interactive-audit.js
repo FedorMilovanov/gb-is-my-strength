@@ -719,14 +719,13 @@ async function checkInjectedHeaderHost(browser) {
         await page.waitForTimeout(260);
         stats.pages++;
         if (!resp || !resp.ok()) { push('header-host-page-status', url, resp ? resp.status() : 'null'); continue; }
-        if (url === '/articles/' && await page.locator('.je-masthead').count() === 1) {
-          // Native NEWS/G3 builds do NOT inject the legacy
-          // #gbSearchBtn/#themeToggle controls or the mobile-controls host.
-          // Assert its actual public contract instead of a fabricated host.
+        if (url === '/articles/' && await page.locator('.ae-masthead').count() === 1) {
+          // Native /articles/ owns its catalog masthead, not Journal or the
+          // legacy injected search host. Validate its real control surface.
           const journal = await page.evaluate(() => {
-            const mastheads = document.querySelectorAll('.je-masthead');
-            const openers = document.querySelectorAll('.je-masthead button[data-action="open-search"]');
-            const themes = document.querySelectorAll('.je-masthead button[data-journal-theme]');
+            const mastheads = document.querySelectorAll('.ae-masthead');
+            const openers = document.querySelectorAll('.ae-masthead button[data-action="open-search"]');
+            const themes = document.querySelectorAll('.ae-masthead button[data-articles-theme]');
             const button = openers[0];
             const rect = button?.getBoundingClientRect();
             const style = button ? getComputedStyle(button) : null;
@@ -752,7 +751,7 @@ async function checkInjectedHeaderHost(browser) {
           // The cold/warm search suite exercises Ctrl+K and Enter on two
           // viewports. Add a true pointer open/Escape/focus witness here.
           if (viewport.width === 390 && journal.buttonVisible && journal.buttonInViewport) {
-            const opener = page.locator('.je-masthead button[data-action="open-search"]');
+            const opener = page.locator('.ae-masthead button[data-action="open-search"]');
             await opener.click({ timeout: 8000 });
             await page.locator('.cp-backdrop.is-open').waitFor({ state: 'visible', timeout: 8000 });
             const open = await page.evaluate(() => document.activeElement?.classList.contains('cp-input') === true);

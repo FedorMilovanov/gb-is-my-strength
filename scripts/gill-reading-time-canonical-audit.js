@@ -176,9 +176,12 @@ else bad('hand-authored ArticlesPublicationsSection returned as a second metadat
 if (catalogLibrary.includes("import searchManifest from '../../../data/search-manifest.json';")
     && catalogLibrary.includes("import pageOwnership from '../../../migration/page-ownership.json';")
     && catalogLibrary.includes('data-catalog-source="search-manifest+page-ownership"')
-    && catalogLibrary.includes("item.type === 'article'")
-    && catalogLibrary.includes("item.type === 'series'")
-    && catalogLibrary.includes("productionRoutes[route]?.status === 'production-dist'")) {
+    && catalogLibrary.includes("item.type === 'article' && routeIsPublished(item)")
+    && catalogLibrary.includes("item.type === 'series' && routeIsPublished(item)")
+    && catalogLibrary.includes("const owner = productionRoutes[String(item.url || '').split('#')[0]];")
+    && catalogLibrary.includes("return owner?.status === 'production-dist' && !held(owner) && !held(item);")
+    && catalogLibrary.includes("const manifestItems = searchManifest.items as CatalogItem[];")
+    && catalogLibrary.includes("const productionRoutes = pageOwnership.routes as Record<string, PublicationRecord>;")) {
   ok('articles catalog derives membership/readTime from current publication authorities');
 } else {
   bad('articles catalog derived-authority contract is incomplete');
