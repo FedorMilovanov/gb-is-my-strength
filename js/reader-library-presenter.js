@@ -110,7 +110,12 @@ function button(action, label, text) {
     if (!items.length) { statusMessage('Библиотека пуста.'); return; }
     const lines = ['# Моя библиотека · Господь Бог — Сила Моя', ''];
     for (const x of items) {
-      lines.push('## ' + (x.type === 'note' ? 'Заметка' : x.type === 'quote' ? 'Цитата' : 'Статья') + ' — ' + x.title);
+      const COLORS = { amber: 'янтарный', sage: 'шалфейный', blue: 'голубой', lime: 'лаймовый', rose: 'розовый' };
+      const kindLabel = x.type === 'note' ? 'Заметка'
+        : x.type === 'quote' ? (x.kind === 'marker' ? 'Помета' : 'Цитата')
+        : 'Статья';
+      const colorLabel = x.type === 'quote' && x.color ? ' (' + (COLORS[x.color] || x.color) + ')' : '';
+      lines.push('## ' + kindLabel + colorLabel + ' — ' + x.title);
       lines.push('');
       lines.push(x.type === 'quote' ? '> ' + x.text.replace(/\n/g, '\n> ') : x.text);
       if (x.quoteText) lines.push('', 'К цитате: ' + x.quoteText);

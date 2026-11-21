@@ -152,7 +152,7 @@
   function loadPresenter() {
     if (presenter) return Promise.resolve(presenter);
     if (!presenterPromise) {
-      presenterPromise = import('/js/reader-library-presenter.js?v=52c66745')
+      presenterPromise = import('/js/reader-library-presenter.js?v=841cc1c0')
         .then(async (module) => {
           presenter = module;
           const researchModule = await import('/js/reader-library-v3.js?v=e036d5a6');
@@ -715,7 +715,9 @@
       swatch.type = 'button';
       swatch.className = 'gb-hl-selbar-swatch';
       swatch.dataset.hlColor = color;
-      swatch.setAttribute('aria-label', 'Выделить цветом: ' + color);
+      const colorName = MARK_COLOR_NAMES[color] || color;
+      swatch.setAttribute('aria-label', 'Выделить цветом: ' + colorName);
+      swatch.title = 'Выделить цветом: ' + colorName;
       colors.appendChild(swatch);
     }
     const quote = document.createElement('button');
