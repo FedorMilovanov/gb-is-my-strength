@@ -8,8 +8,11 @@ interface Props {
   summaryId?: string;
   /** Parser-time compact seed, explicitly enabled only by the public G3 dossier. */
   initialCompactClosed?: boolean;
+  /** Optional first keyboard action after a native summary: return to the story. */
+  returnHref?: string;
+  returnLabel?: string;
 }
-const { entries, label = 'В этом материале', summaryId, initialCompactClosed = false } = Astro.props;
+const { entries, label = 'В этом материале', summaryId, initialCompactClosed = false, returnHref, returnLabel = 'К началу чтения' } = Astro.props;
 ---
 <details class="je-contents" data-journal-contents open>
   <summary id={summaryId}>
@@ -27,6 +30,7 @@ const { entries, label = 'В этом материале', summaryId, initialCom
       }
     })();
   </script>}
+  {returnHref && <a class="je-contents-return" href={returnHref} data-pagefind-ignore>{returnLabel}</a>}
   <nav aria-label={label}>
     <ol>
       {entries.map((entry, index) => <li><a href={entry.href}><span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>{entry.label}</a></li>)}

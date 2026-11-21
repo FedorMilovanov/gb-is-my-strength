@@ -32,8 +32,8 @@ const corrections: Array<{
   reason: string;
   researchSnapshot: string;
 }> = [{
-  // The existing route-owned editorial date, never a build/commit timestamp.
-  correctedAt: G3_PRODUCT_METADATA.modifiedAt,
+  // Actual dated editorial withdrawal, independent of build and publication timestamps.
+  correctedAt: '2026-11-21T00:00:00+03:00',
   scope: '§07 · Пример из издательской истории',
   previousMeaning: 'Отдельный книжный пример мог восприниматься как подтверждение нового издания после возврата прав.',
   newMeaning: 'Из §07 отозван пример с книгой Дэйва Дженкинса «The Word Matters». Его прежняя формулировка могла восприниматься как подтверждение нового издания после возврата прав. Наличие книжной карточки не доказывает ни такого переиздания, ни юридического перехода прав; новый вывод взамен отозванного не сделан.',
@@ -176,15 +176,12 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
         требуют отдельной проверки.</p>
     </div>
     <JournalEditorialRail label="Содержание документального досье G3">
-      <JournalContents entries={contents} summaryId="journal-g3-toc" initialCompactClosed />
+      <JournalContents entries={contents} summaryId="journal-g3-toc" initialCompactClosed returnHref="#overview" />
       <p class="je-rail-note">Фактический срез — 9 сентября 2026 года.{' '}
         <a href="#bibliography">{G3_SOURCE_BIBLIOGRAPHY.length} источник</a> с датами и границами доказательств.{' '}
         <a href="#corrections">Журнал исправлений</a>.</p>
     </JournalEditorialRail>
     <div class="journal-story-column">
-      <!-- Explicit native return is not browser-history focus restoration. -->
-      <a class="je-contents-return" href="#overview" data-pagefind-ignore>К началу чтения</a>
-
   <section id="timeline" class="module" tabindex="-1">
     <div class="module-label">02 · Хронология</div>
     <div class="prose">
@@ -503,4 +500,28 @@ const sourceReaderView = (entry: G3SourceBibliographyEntry) => {
     <p><a href="/journal/">← Вернуться в Журнал</a></p>
   </footer>
 </main>
+<script>
+  // G3-only keyboard-history repair. Native fragment navigation still owns the
+  // URL and scrolling; this restores focus only when Back leaves our TOC jump.
+  const earlyContentsJump = document.querySelector<HTMLAnchorElement>('.je-contents-jump');
+  const contentsSummary = document.getElementById('journal-g3-toc');
+  if (earlyContentsJump && contentsSummary) {
+    let jumpedFromOpening = false;
+    earlyContentsJump.addEventListener('click', (event) => {
+      if (event.defaultPrevented || event.button !== 0 || event.ctrlKey ||
+          event.metaKey || event.shiftKey || event.altKey) return;
+      jumpedFromOpening = true;
+    });
+    window.addEventListener('popstate', () => {
+      if (!jumpedFromOpening || window.location.hash === '#journal-g3-toc') return;
+      jumpedFromOpening = false;
+      if (window.location.hash || document.activeElement !== contentsSummary) return;
+      window.requestAnimationFrame(() => {
+        if (window.location.hash === '' && document.activeElement === contentsSummary) {
+          earlyContentsJump.focus({ preventScroll: true });
+        }
+      });
+    });
+  }
+</script>
 </JournalEditorialShell>
