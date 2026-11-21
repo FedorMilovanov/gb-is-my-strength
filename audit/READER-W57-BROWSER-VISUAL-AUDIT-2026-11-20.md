@@ -1319,3 +1319,89 @@ Machine witness: `/tmp/62-interactive-swipe-deeper.json`.
 - [x] Vertical scroll control on the same glossary terms remains native and does not navigate.
 
 No product/source repair was made. These results extend the existing mobile findings: swipe arbitration still needs an explicit target/region ownership policy before the PR can be considered mobile-safe.
+
+## 22. Раунд 16 — current product snapshot `9edef94` / audit HEAD `592f62b`: owner-aware Gill, native edges и fixed mobile bar
+
+### 22.1. Граница доказательства и исправление прежней классификации Gill timeout
+
+Этот раунд запускался против актуального product parent `9edef94ece08012223c1364bec7ddcd561cf5713` с audit HEAD `592f62b`, а не против старого `62be8caa`. Browser witness — Chromium-only, trusted CDP touch и Playwright keyboard/DOM probes; Firefox/WebKit и полный визуальный screenshot review в этот раунд не входят. Канонический production-like build всё ещё не получил чистый pass: среда содержит Node `22.22.3` при floor `>=22.23.4`, поэтому результат не расширяется до multi-engine release verdict.
+
+Предыдущий locator timeout для Gill был owner-blind: harness искал `.summary-card[data-gb-summary-owner="1"]` на каждой Gill route. Owner-aware DOM snapshot на `390×844` дал:
+
+| Gill route group | `.summary-card` | Argon toggle | canonical mobile owner | browser result |
+|---|---:|---:|---|---|
+| Введение (`dzhon-gill-istoricheskiy-kontekst`) и Справочник | `1`, `data-gb-summary-owner="1"` | `1` | `#partTocOverlay` + one top/bottom bar | Argon disclosure присутствует и не дублирует Gill chrome |
+| Части I–IV (`chast-1`…`chast-4`) | `0` | `0` | `GillSeriesMobileBar` → `#partTocOverlay` | timeout объясняется отсутствием этого owner, а не ожиданием visibility |
+
+Во всех шести routes одновременно было ровно по одному `[data-gill-v16]`, одному `#partTocOverlay`, одному mobile top bar и одному mobile bottom bar; `html/body` positive horizontal overflow был `0`. На Part I–IV global `GBSummaryDisclosure` мог присутствовать как runtime, но disclosure instance не монтировался. Это **подтверждённая owner divergence**, но не автоматически defect: если «Коротко» обязано существовать на каждом Gill material, это acceptance gap; если Argon применяется только к disclosure-owned cards, timeout не является product fail. Не следует подменять эту развилку вторым Gill/mobile owner.
+
+### 22.2. Gill mobile Part panel: touch, keyboard и focus handoff
+
+Проверены все шесть Gill routes (`Введение`, Части I–IV, Справочник) при `320×844`, `390×844`, `430×844`: **18/18 touch openings** без page errors.
+
+- trusted touch по видимому `#mobPartTocBtn` открывал тот же `#partTocOverlay`; `aria-expanded=false→true`, `aria-hidden=true→false`, dialog role/name сохранялись;
+- sheet имел `x=0`, `width=viewport`, `y≈126.61`, `bottom=844`; body scroll lock включался, route не менялся;
+- Escape закрывал sheet, возвращал `aria-expanded=false` и focus на `#mobPartTocBtn`;
+- отдельный `#mobSettingsBtn` touch-open прошёл **18/18**; Part/Settings не поднимали вторую мобильную панель;
+- keyboard witness на Введении, Части I и Справочнике: Enter открыл panel, 24 последовательных Tab не вывели focus из dialog, Escape вернул focus opener-у; page errors — `0`.
+
+Это **PASS** для текущего Gill mobile panel owner и touch hit-testing canonical bottom opener. Действия Settings, Library, PDF и Share также попадали в свои видимые 44×44 targets на `320/390/430`; PDF вызвал native print owner в probe. Share в headless harness получил fallback failure toast из-за отсутствующего browser share/clipboard capability — это environment result, не product verdict.
+
+### 22.3. Fixed bottom bar и target geometry
+
+На шести Gill routes и `320/390/430/1440` выполнен DOM geometry matrix (**24/24 loads**, page errors `0`, positive `html/body` overflow `0`). На narrow viewports:
+
+- `.mobile-bottom-bar` оставался `position:fixed`, `bottom:0`, `height=62px`, `y=782…844`, `z-index=2000`; после scroll к `scrollY≈1200` он оставался на том же viewport rect;
+- top bar был `position:fixed` на `y=0` до auto-hide и на scroll-down скрывался transform-ом, не влияя на fixed bottom owner;
+- Back, Home, menu, Play, speed, Save, Settings, Library, PDF и Share имели 44×44 painted targets; trusted touch probe достигал видимых Settings/Library/PDF/Share owners;
+- но `#mobPartTocBtn` имел `92×44` на `320`, **`143×37.375` на `390` и `175×38.516` на `430`**.
+
+Последний пункт — **confirmed target-geometry fail** относительно обязательного 44px mobile target contract. Touch hit-test и действие кнопки работают, но рабочая painted hit-area на двух обычных narrow widths ниже 44px. Это нельзя скрыть тем, что соседние Settings/Library/PDF/Share targets проходят.
+
+### 22.4. Native horizontal scrollers: available direction и opposite edge
+
+Trusted CDP touch witnesses охватили Gill I/II и таблицы текущего введения на `320/390`. Положительные available-direction cases:
+
+| Surface | Width | Native edge / gesture | Result |
+|---|---:|---|---|
+| Context `table-scroll` | 320 | left + finger-left | `scrollLeft 0→304`, route same |
+| Context `table-scroll` | 390 | left + finger-left | `0→265`, route same |
+| Gill I `manuscript-table` | 320/390 | left + finger-left | `0→112` / `0→47`, route same |
+| Gill II `manuscript-table` | 320/390 | left + finger-left | `0→219` / `0→154`, route same |
+| Context / Gill I / Gill II tables | 320/390 | right + finger-right | native return toward left edge, route same |
+
+Opposite-edge witnesses are not uniformly owned by the same layer:
+
+- Context left edge + finger-right has no previous series route and remains on Context; right edge + finger-left hands off to Gill I.
+- Gill I left edge + finger-right hands off to Context; right edge + finger-left hands off to Gill II.
+- Gill II left edge + finger-right hands off to Gill I; right edge + finger-left hands off to Gill III at `390`.
+- Gill II at `320`, right edge + finger-left **does not navigate and does not move the table** (`scrollLeft` remains `219`, route remains Gill II). The fresh ancestor snapshot shows `article/main scrollWidth=264`, `clientWidth=246`, `delta=18`, `overflow-x:visible` while `html/body` overflow remains `0`; `wantsHijack()` uses the numeric delta without checking computed overflow mode, so the incidental visible overflow kills the gesture before article navigation.
+
+The route changes from inside a native table at the opposite edge are **confirmed nested-scroller boundary ownership conflicts** if the contract is «a gesture begun in table/code/native region never navigates the series». The Gill II `320` no-op is a separate **confirmed arbitration inconsistency/source-level false-positive**. If edge handoff is intentional, that policy is not explicit in the current source comment/contract and remains a product decision, not a silent PASS.
+
+### 22.5. Series navigation arbitration and interactive article targets
+
+Positive content ownership remains reproducible on current snapshot:
+
+- horizontal content swipe on Part I at `390` moved to Part II;
+- vertical swipe on the same article content kept the route and moved `scrollY≈1797→1962` with `touchmove.defaultPrevented=false`;
+- boundary witnesses: Context left→Part I, Context right stays at first route, Справочник left stays at last route, Справочник right→Part IV, Part I left→Part II, Part I right→Context.
+
+Two current interactive-target conflicts are also browser-confirmed:
+
+1. Part I `.gterm` target `D.D.` is `role="button"`, `57.19×40px`; a horizontal finger-left swipe from that visible target navigated to Part II instead of remaining under the glossary target's ownership.
+2. On Part II, the visible `.gill-card__cta` with intended `href="/articles/dzhon-gill-chast-1-chelovek/"` measured only `215.8×19.8px`; a horizontal finger-left swipe from that link navigated to Part III (`/articles/dzhon-gill-chast-4-ekzeget/`), not to its own href and not to a preserved link interaction.
+
+These are **confirmed interactive-target arbitration conflicts**, not source-only speculation. The existing `initSwipeNav()` checks content/modal/native-overflow state but does not establish an explicit ownership exclusion for glossary roles, links, buttons or other article controls. The small `.gterm`/CTA painted geometries are recorded separately from the fixed-bar 44px failure; no global “WCAG pass” is inferred from one control group.
+
+### 22.6. Current round result
+
+- [x] Gill panel owner: one canonical Part TOC, touch open/close, focus restore and keyboard trap passed on the tested matrix.
+- [x] Fixed bottom position, viewport persistence and center hit-testing passed.
+- [ ] `#mobPartTocBtn` is below 44px at `390/430`.
+- [x] Available-direction native table scroll passed on current Context/Gill I/Gill II witnesses.
+- [ ] Opposite-edge native-region policy is inconsistent and can hand a table gesture to series navigation.
+- [ ] Article interactive-target guard is absent in current browser behavior (`.gterm` and CTA witnesses).
+- [~] Argon «Коротко» owner resolution is complete, but Gill Part I–IV do not instantiate that disclosure; acceptance depends on whether the Argon contract is intended for those legacy/native pages.
+
+No product/source repair was made. This round adds current browser evidence only; the findings must not be backported to old `62be8caa` verdicts or converted into a desktop Analytics fork.
