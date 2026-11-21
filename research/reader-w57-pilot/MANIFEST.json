@@ -8,8 +8,8 @@
     },
     {
       "name": "reader_argon_first.css",
-      "sha256": "d946a4a1c8d49eed021718d7ab4a1aa4e834cb57c3d9704d3d8e647e096bbdbe",
-      "bytes": 148469
+      "sha256": "dc7a6d15238a667c098b9dc560c7fbd03b889cde0ea41ae707994138c2d903e7",
+      "bytes": 148475
     },
     {
       "name": "reader_editorial_refinement.css",
@@ -38,8 +38,8 @@
     },
     {
       "name": "reader_universal_preview.js",
-      "sha256": "ccb3ee4cd758e6579fc0bc4a91005442483793a96fc1e80b6846bbeac062bc87",
-      "bytes": 132262
+      "sha256": "c02d4a12bd4df3f281abd39f2d177b5c2c25f406593fc4fa6bb5d3ac53c14d8e",
+      "bytes": 132319
     },
     {
       "name": "reader_editorial_refinement.js",

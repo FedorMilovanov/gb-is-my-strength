@@ -42,11 +42,11 @@
     '<nav class="np-u-nav" aria-label="'+escape(draftTitle)+'">'+navCards+appx+'</nav></div>'+
   '<div class="np-u-rail-spine"><div class="np-u-spine-line" aria-hidden="true"></div>'+spine+'</div>'+
   '<footer class="np-u-left-foot"><span>Навигация Reader</span><span class="np-u-foot-mark">I — '+escape(compact.at(-1)?.numeral||'I')+'</span></footer></aside>'+
- '<aside id="npUResearch" aria-label="На полях" class="np-u-right"><header class="np-u-right-head"><div><span class="np-u-eyebrow">НА ПОЛЯХ · '+escape(types[model.kind]||'МАТЕРИАЛ')+'</span><strong>Исследовательский контекст</strong></div><button type="button" id="npUCloseRight" aria-label="Свернуть На полях" title="Свернуть На полях"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3.2" y="4.6" width="17.6" height="14.8" rx="2.2"/><path d="M15 4.6v14.8m-3.3-10.5 3.1 3.1-3.1 3.1"/></svg></button></header>'+
+ '<aside id="npUResearch" aria-label="Аналитика" class="np-u-right"><header class="np-u-right-head"><div><span class="np-u-eyebrow">АНАЛИТИКА · '+escape(types[model.kind]||'МАТЕРИАЛ')+'</span><strong>Исследовательский контекст</strong></div><button type="button" id="npUCloseRight" aria-label="Свернуть Аналитика" title="Свернуть Аналитика"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3.2" y="4.6" width="17.6" height="14.8" rx="2.2"/><path d="M15 4.6v14.8m-3.3-10.5 3.1 3.1-3.1 3.1"/></svg></button></header>'+
  '<div class="np-u-right-scroll"><div id="npUSectionHost"></div><div id="npUOtherHost"></div>'+
   '<div class="np-u-source-note">Фрагменты и ссылки — из текста этой статьи.</div></div></aside>'+
  '<div id="npUBackdrop" class="np-u-backdrop" hidden></div>'+
- '<div class="np-u-mobilebar"><button type="button" id="npUOpenToc">Оглавление</button><span class="np-u-mobilebar-title">'+escape(types[model.kind]||'READER')+'</span><button type="button" id="npUOpenResearch">На полях</button></div>';
+ '<div class="np-u-mobilebar"><button type="button" id="npUOpenToc">Оглавление</button><span class="np-u-mobilebar-title">'+escape(types[model.kind]||'READER')+'</span><button type="button" id="npUOpenResearch">Аналитика</button></div>';
 
  // ARGON UPDATE: actual source-based visual structure, no new article content.
  const argonSvg=(id)=>{
@@ -115,12 +115,12 @@
       '<div class="np-u-children">'+sub.map(t=>'<a href="#'+escape(t.id)+'" data-np-u-goto="'+escape(t.id)+'" class="np-u-child np-u-h'+t.level+'">'+escape(t.label)+'</a>').join('')+'</div></details>':'')+
   '</div>').join('');
  root.querySelector('.np-u-right-head').innerHTML=
-  '<div class="np-u-argon-right-heading"><strong>На полях</strong><span>Работа с текстом</span></div>'+
+  '<div class="np-u-argon-right-heading"><strong>Аналитика</strong><span>Работа с текстом</span></div>'+
   '<div class="np-u-right-actions" role="group" aria-label="Инструменты панели">'+
   '<button type="button" id="npUHistoryButton" aria-label="История чтения" title="История чтения" aria-expanded="false" aria-controls="npUHistoryDrawer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 3v5h5M12 7v5l3 2"/></svg></button>'+
   '<button type="button" id="npULibraryButton" aria-label="Закладки и библиотека" title="Закладки и библиотека"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v17l-6-4-6 4z"/></svg></button>'+
-  '<button type="button" id="npUCloseRight" aria-label="Свернуть панель «На полях»" title="Свернуть панель «На полях»">'+argonSvg('panel-right-close')+'</button></div>';
- root.querySelector('#npUResearch').setAttribute('aria-label','На полях');
+  '<button type="button" id="npUCloseRight" aria-label="Свернуть панель «Аналитика»" title="Свернуть панель «Аналитика»">'+argonSvg('panel-right-close')+'</button></div>';
+ root.querySelector('#npUResearch').setAttribute('aria-label','Аналитика');
  const historyDrawer=document.createElement('div');
  historyDrawer.id='npUHistoryDrawer';historyDrawer.className='np-u-history-drawer';
  historyDrawer.setAttribute('role','region');
@@ -165,7 +165,7 @@
  const tocMobile=root.querySelector('#npUOpenToc');
  const rightMobile=root.querySelector('#npUOpenResearch');
  tocMobile.innerHTML=argonSvg('list')+'<span>Оглавление</span>';
- rightMobile.innerHTML=argonSvg('book-open')+'<span>На полях</span>';
+ rightMobile.innerHTML=argonSvg('book-open')+'<span>Аналитика</span>';
  root.querySelector('.np-u-left-foot > span:first-child').textContent='Чтение';
 
  // Left controls are views of the site-wide canonical preferences only.
@@ -370,7 +370,7 @@
     if(badge)new MutationObserver(updateSpeed).observe(badge,{childList:true,characterData:true,subtree:true});
     toggle(false);
   }
-  // Move the actual native theme/search buttons into "На полях".
+  // Move the actual native theme/search buttons into "Аналитика".
   // Both controls carry their original Product listeners and states.
   const right=root.querySelector('#npUResearch');
   const rightScroll=right?.querySelector('.np-u-right-scroll');
@@ -528,7 +528,7 @@
    document.body.append(nativeSeriesRoot);
    nativeSeriesRoot.dataset.npUNativeFloating='1';
    document.body.classList.add('np-u-native-product-actions');
-   rightEdge.setAttribute('aria-label','Сворачивание панели «На полях»');
+   rightEdge.setAttribute('aria-label','Сворачивание панели «Аналитика»');
   }else{
    const theme=nativeSeriesRoot.querySelector('#gbFcTheme');
    const search=nativeSeriesRoot.querySelector('#gbFcSearch');
@@ -596,7 +596,7 @@
    document.body.append(nativeLegacyRoot);
    nativeLegacyRoot.dataset.npUNativeFloating='1';
    document.body.classList.add('np-u-native-product-actions');
-   rightEdge.setAttribute('aria-label','Сворачивание панели «На полях»');
+   rightEdge.setAttribute('aria-label','Сворачивание панели «Аналитика»');
   }else{
    const theme=nativeLegacyRoot.querySelector('#gbFcTheme');
    const search=nativeLegacyRoot.querySelector('#gbFcSearch');
@@ -638,13 +638,13 @@
   return true;
  }
  // Original Product supplies all real actions. Reader adds only ONE button:
- // fold / unfold «На полях», with no fake Play/Save/Notes/Search copies.
+ // fold / unfold «Аналитика», with no fake Play/Save/Notes/Search copies.
  const rightEdge=document.createElement('div');
  rightEdge.id='npURightEdgeRail';
  rightEdge.setAttribute('role','group');
- rightEdge.setAttribute('aria-label','Управление панелью «На полях»');
+ rightEdge.setAttribute('aria-label','Управление панелью «Аналитика»');
  rightEdge.innerHTML=
-  '<button type="button" id="npUEdgeToggle" aria-controls="npUResearch" aria-expanded="true" title="Свернуть «На полях»" aria-label="Свернуть «На полях»">'+argonSvg('panel-right-close')+'</button>';
+  '<button type="button" id="npUEdgeToggle" aria-controls="npUResearch" aria-expanded="true" title="Свернуть «Аналитика»" aria-label="Свернуть «Аналитика»">'+argonSvg('panel-right-close')+'</button>';
  const edgeToggle=rightEdge.querySelector('#npUEdgeToggle');
  root.appendChild(rightEdge);
  document.body.appendChild(root);
@@ -1650,7 +1650,7 @@
   if(rightHidden)edgeToggle.innerHTML=argonSvg('panel-right-open');
   else if(!copyProductGlyph(edgeToggle,'#npUCloseRight svg','np-u-product-glyph'))
    edgeToggle.innerHTML=argonSvg('panel-right-close');
-  const edgeTitle=rightHidden?'Развернуть «На полях»':'Свернуть «На полях»';
+  const edgeTitle=rightHidden?'Развернуть «Аналитика»':'Свернуть «Аналитика»';
   edgeToggle.setAttribute('aria-label',edgeTitle);
   edgeToggle.title=edgeTitle;
   rightEdge.inert=mobile;
