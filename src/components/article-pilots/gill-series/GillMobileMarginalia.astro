@@ -118,7 +118,7 @@
       return;
     }
     var lead = node('header', 'gbr-marginalia-lead');
-    lead.appendChild(node('span', 'gbr-marginalia-eyebrow', 'НА ПОЛЯХ · ИЗ ОПУБЛИКОВАННОГО ТЕКСТА'));
+    lead.appendChild(node('span', 'gbr-marginalia-eyebrow', 'АНАЛИТИКА · ИЗ ОПУБЛИКОВАННОГО ТЕКСТА'));
     lead.appendChild(node('h3', '', data.active ? text(data.active) : 'Исследовательский контекст'));
     lead.appendChild(node('p', '', (data.refs.length ? 'Библейские места, понятия и фрагменты' : 'Определения и фрагменты') + ' взяты из исходной статьи. Переходы возвращают к точному месту в тексте.'));
     content.appendChild(lead);
@@ -172,7 +172,7 @@
     panel.hidden = !research;
     panel.inert = !research;
     sheet.classList.toggle('gbr-research-open', research);
-    if (partTitle) partTitle.textContent = research ? 'На полях' : originalTitle;
+    if (partTitle) partTitle.textContent = research ? 'Аналитика' : originalTitle;
     if (research) render();
     if (keyboard) tabs.find(function (tab) { return tab.dataset.gbrTab === which; }).focus();
   }

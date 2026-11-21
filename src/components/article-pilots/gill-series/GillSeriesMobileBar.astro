@@ -3,9 +3,9 @@
  * GillSeriesMobileBar — shared series mobile (<85em) control surface, v6.
  *
  *   TOP bar: Back(→config.railBackHref) → Home(→«/») → primary
- *     «На полях» (opens research tab INSIDE native Part TOC) → canonical
+ *     «Аналитика» (opens research tab INSIDE native Part TOC) → canonical
  *     round PlayEmber and the original #83439219 IN-SLOT speed strip + tiny selected-rate
- *     echo → Settings → Save. «На полях» yields its place to the speed rail.
+ *     echo → Settings → Save. «Аналитика» yields its place to the speed rail.
  *     Learning remains in the native Reader Settings sheet,
  *     not a competing top-level action. One canonical speedSlot owner.
  *     Auto-hides on scroll-down, reveals on scroll-up; stays pinned while
@@ -249,7 +249,7 @@ const page = config.pages[pageId];
 </script>
 
 <!-- Gill mobile reference: 83439219 (original in-slot speed strip).
-     Back and Home remain visible; six rates replace only «На полях».
+     Back and Home remain visible; six rates replace only «Аналитика».
      Play is a 44px target with ONE softly painted 36px SVG ring. -->
 <style is:global>
 @media (max-width:84.999em) {
@@ -462,5 +462,79 @@ const page = config.pages[pageId];
     height:44px !important;min-height:44px !important;
     flex:0 0 44px !important;
   }
+}
+@media (max-width:84.999em) {
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play-group.mobile-playwrap {flex-basis:44px;width:44px;min-width:44px}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play-group .reader-mobile-speed-badge {position:absolute;left:12px;right:auto;top:0;margin:0}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-badge::before {left:auto;right:0;width:12px}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-speed-chip {left:12px;bottom:4px;height:14px;min-width:20px;box-shadow:none}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-svg {width:38px;height:38px;inset:3px}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-track {stroke-width:3;opacity:.58}
+  [data-gill-v16] .mobile-top-bar .reader-mobile-play .gb-ember__ring-progress {stroke-width:3.6}
+}
+@media (max-width:84.999em) {
+  [data-gill-v16] .mobile-top-bar :is(#mobBackBtn,#mobHomeBtn,#mobSettingsBtn,.mobile-top-save) {
+    display:grid;place-items:center;padding:0!important;transform:none!important;
+    transition:color .15s ease;box-shadow:none!important;background:transparent!important;
+  }
+  [data-gill-v16] .mobile-top-bar :is(#mobBackBtn,#mobHomeBtn,#mobSettingsBtn,.mobile-top-save)::before {
+    content:none!important;
+  }
+  [data-gill-v16] .mobile-top-bar :is(#mobBackBtn,#mobHomeBtn,#mobSettingsBtn,.mobile-top-save) svg {
+    display:block;transform:none!important;margin:0;
+  }
+  [data-gill-v16] .mobile-top-bar :is(button,a):focus-visible {
+    outline:2px solid currentColor;outline-offset:-3px;
+  }
+}
+@media (hover:hover) and (pointer:fine) and (max-width:84.999em) {
+  [data-gill-v16] .mobile-top-bar :is(#mobBackBtn,#mobHomeBtn,#mobSettingsBtn,.mobile-top-save):hover {
+    color:var(--gill-mobile-bar-gold,#a78252)!important;
+  }
+}
+
+@media(max-width:84.999em){
+  [data-gill-v16] .mobile-top-bar #mobSettingsBtn svg {translate:3.5px 0}
+  [data-gill-v16] .mobile-top-bar .mobile-top-save svg {translate:-4px 0}
+}
+@media(max-width:84.999em){
+ [data-gill-v16] .mobile-top-bar button[data-gill-marginalia-open] {
+   background:transparent!important;border-color:transparent!important;box-shadow:none!important;
+   color:inherit;gap:6px;font-weight:600;
+ }
+ [data-gill-v16] .mobile-top-bar button[data-gill-marginalia-open] svg {
+   width:17px;height:17px;background:currentColor;color:inherit;
+   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M3 4.8c3.2-.8 6.1-.3 9 1.4 2.9-1.7 5.8-2.2 9-1.4v13.6c-3.2-.8-6.1-.3-9 1.4-2.9-1.7-5.8-2.2-9-1.4zM12 6.2v13.6M15 9l3-.7M15 12l3-.7'/%3E%3C/svg%3E") center/contain no-repeat;
+ }
+ [data-gill-v16] .mobile-top-bar button[data-gill-marginalia-open] svg * {visibility:hidden}
+}
+@media(hover:hover) and (pointer:fine){
+ [data-gill-v16] .mobile-top-bar button[data-gill-marginalia-open]:hover {color:var(--gill-mobile-bar-gold,#a78252)}
+}
+
+
+@media(max-width:84.999em){
+ [data-gill-v16] .mobile-bottom-bar .reader-mobile-action-cluster :is(button,a,#gb-hl-fab),
+ [data-gill-v16] #partTocOverlay .gb-icon {background:transparent!important;box-shadow:none!important;transform:none!important}
+ [data-gill-v16] .mobile-bottom-bar .reader-mobile-action-cluster :is(button,a,#gb-hl-fab)::before,
+ [data-gill-v16] #partTocOverlay .gb-icon::before {content:none!important}
+ #partTocOverlay .gbr-marginalia-eyebrow{display:none!important}
+ #partTocOverlay .gbr-marginalia-term summary::after{content:'';width:6px;height:6px;border:solid currentColor;border-width:0 1px 1px 0;transform:rotate(45deg);margin-inline:10px}
+ #partTocOverlay .gbr-marginalia-term[open] summary::after{transform:rotate(225deg)}
+ html.dark #partTocOverlay .toc-sheet,html.dark #partTocOverlay .toc-sheet__head,html.dark #partTocOverlay .toc-sheet__body{background:#211f1d!important;color:#ede6d9}
+}
+@media(hover:hover) and (pointer:fine){
+ [data-gill-v16] .mobile-bottom-bar .reader-mobile-action-cluster :is(button,a,#gb-hl-fab):hover svg,
+ #partTocOverlay .gb-icon:hover svg{color:var(--gill-mobile-bar-gold,#af926c);filter:none!important;transform:none!important}
+}
+
+@media(max-width:84.999em){
+ body:has([data-gill-v16]) .gbs2-resume{background:#faf7f1!important;color:#342e28!important;border:1px solid #d9d2c7!important;border-radius:12px!important;box-shadow:0 2px 8px #231e1710!important;padding:4px 8px 4px 14px;gap:8px}
+ html.dark body:has([data-gill-v16]) .gbs2-resume{background:#282522!important;color:#ece4d8!important;border-color:#48413a!important}
+ body:has([data-gill-v16]) .gbs2-resume small{display:none}
+ body:has([data-gill-v16]) .gbs2-resume-go{color:inherit!important;background:transparent!important;box-shadow:none!important;border:0!important;text-decoration:underline;text-underline-offset:3px;min-height:44px}
+ body:has([data-gill-v16]) .gbs2-resume-x{background:transparent!important;color:inherit;min-height:44px}
+ body:has([data-gill-v16]):has(.toc-overlay.is-open) .gbs2-resume{display:none!important}
+ @media(prefers-reduced-motion:reduce){.gbs2-resume{transition:none!important}}
 }
 </style>

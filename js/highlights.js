@@ -394,7 +394,7 @@
     if (action === 'delete') deleteItem(item);
     if (action === 'remove-favorite') { clearUndo(); presenter.removeFavorite(item, statusMessage); }
     if (action === 'edit-note') showEditor(null, item);
-    if (action === 'note-for-quote') showEditor({ quoteText: item.text, title: item.title, url: item.url });
+    if (action === 'note-for-quote') showEditor({ quoteId: item.id, quoteText: item.text, title: item.title, url: item.url });
     if (action === 'card') presenter.exportQuoteCard(item, statusMessage);
   }
   function showEditor(context = null, editing = null) {
@@ -435,7 +435,7 @@
     const next = editing
       ? old.map((x) => x.id === editing.id ? Object.assign({}, x, { text }) : x)
       : [{
-          id: uid('note'), text, quoteText: context && context.quoteText || '',
+          id: uid('note'), text, ...(context?.quoteId ? {quoteId: context.quoteId} : {}), quoteText: context && context.quoteText || '',
           articleTitle: context && context.title || currentTitle(),
           url: context && context.url || location.origin + location.pathname,
           savedAt: Date.now(),
