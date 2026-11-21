@@ -216,9 +216,17 @@
     clearTimeout(toast.timer);
     toast.timer = setTimeout(hideToast, 6000);
   }
-  function undoQuotes(previous, message) {
+  function undoQuotes(written, previous, message) {
     return () => {
-      if (!write(QUOTES_KEY, previous)) { toast('Не удалось отменить запись.', null); return; }
+      const current = quotes();
+      const index = current.findIndex(item => item.id === written.id);
+      if (index < 0 || JSON.stringify(current[index]) !== JSON.stringify(written)) {
+        toast('Запись уже изменилась. Отмена недоступна.', null);
+        return;
+      }
+      if (previous) current[index] = previous;
+      else current.splice(index, 1);
+      if (!write(QUOTES_KEY, current)) { toast('Не удалось отменить запись.', null); return; }
       paintMarks(); sync(); toast(message, null);
     };
   }
@@ -491,7 +499,7 @@
       return false;
     }
     sync(); statusMessage('Цитата сохранена вместе с источником.');
-    toast('Цитата сохранена', { label: 'Вернуть', run: undoQuotes(old, 'Цитата убрана') });
+    toast('Цитата сохранена', { label: 'Вернуть', run: undoQuotes(record, null, 'Цитата убрана') });
     return true;
   }
   function bindSelectionButton(id, label, icon, handler, popup) {
@@ -546,11 +554,15 @@
     return chunks.length ? chunks.join('\\s*') : '';
   }
 
-  function locateIn(index, text) {
+  function locateIn(index, text, before = '', after = '') {
     const pattern = tolerantPattern(text);
     if (!pattern) return null;
     let match = null;
-    try { match = new RegExp(pattern, 'i').exec(index.raw); }
+    try {
+      const expression = new RegExp('(' + tolerantPattern(before) + '\\s*)(' + pattern + ')\\s*' + tolerantPattern(after), 'ig');
+      match = expression.exec(index.raw);
+      if (match && expression.exec(index.raw)) return null;
+    }
     catch { return null; }
     if (!match) return null;
     const pointAt = (offset) => {
@@ -560,8 +572,8 @@
       }
       return null;
     };
-    const a = pointAt(match.index);
-    const b = pointAt(match.index + match[0].length);
+    const a = pointAt(match.index + match[1].length);
+    const b = pointAt(match.index + match[1].length + match[2].length);
     if (!a || !b) return null;
     try {
       const range = document.createRange();
@@ -579,11 +591,7 @@
     const after = normalizeText(item.after);
     /* Сначала пробуем привязку по контексту — так одна и та же фраза,
        выделенная в двух разных абзацах, попадает каждая на своё место. */
-    if (before || after) {
-      const withContext = locateIn(index, before + ' ' + needle + ' ' + after);
-      if (withContext) return withContext;
-    }
-    return locateIn(index, needle);
+    return locateIn(index, needle, before, after);
   }
 
   function paintMarks() {
@@ -595,6 +603,7 @@
     const placed = new Set();
     let painted = 0;
     for (const item of quotes()) {
+      if (gbHighlightPath(item) !== gbHighlightPath({url: location.href})) continue;
       const color = String(item && item.color || '');
       if (!MARK_COLORS.includes(color)) continue;
       const range = locate(index, item);
@@ -630,7 +639,7 @@
     const fragment = gbFragmentKey(record);
     const context = gbContextKey(record);
     let existingIndex = fragment ? old.findIndex((x) => gbFragmentKey(x) === fragment && gbContextKey(x) === context) : -1;
-    if (existingIndex < 0 && fragment) existingIndex = old.findIndex((x) => gbFragmentKey(x) === fragment);
+    
     if (existingIndex >= 0) {
       const existing = old[existingIndex] || {};
       if (String(existing.color || '') === nextColor) {
@@ -656,7 +665,7 @@
           ? base
           : (wasMarker ? 'Цвет пометы сохранён, но подсветить не удалось' : 'Цвет сохранён, но подсветить не удалось');
       statusMessage(message + '.');
-      toast(message, { label: 'Вернуть', run: undoQuotes(old, 'Цвет возвращён') });
+      toast(message, { label: 'Вернуть', run: undoQuotes(next[existingIndex], existing, 'Цвет возвращён') });
       return true;
     }
     if (old.length >= LIMIT_QUOTES && !old.some((x) => gbHighlightKey(x) === gbHighlightKey(record))) {
@@ -680,7 +689,7 @@
         ? 'Помета сохранена и подсвечена'
         : 'Помета сохранена, но этот фрагмент не удалось подсветить';
     statusMessage(message + (result.supported && !anchored ? '. Он останется в библиотеке.' : '.'));
-    toast(message, { label: 'Вернуть', run: undoQuotes(old, 'Помета убрана') });
+    toast(message, { label: 'Вернуть', run: undoQuotes(record, null, 'Помета убрана') });
     return true;
   }
 
