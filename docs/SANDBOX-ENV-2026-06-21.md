@@ -101,6 +101,18 @@ npx playwright --version
 npx playwright install --dry-run chromium 2>/dev/null || true
 ```
 
+### Arena Sandbox fallback (optional, verified on Debian 12/x86_64)
+
+If the normal Playwright browser download is blocked in **Arena Sandbox**, Chromium 153.0.8010.0 has been launched through `@sparticuz/chromium@153.0.0` with Playwright 1.64.1. Install the sandbox-only tools **outside** the repository:
+
+```bash
+npm install --prefix /tmp/arena-browser --no-audit --no-fund @sparticuz/chromium@153.0.0 playwright@1.64.1
+```
+
+Call `Chromium.executablePath()`; if NSS libraries are missing, Brotli-decompress `@sparticuz/chromium/bin/al2023.tar.br`, untar into `/tmp/arena-browser/libs` and prepend `/tmp/arena-browser/libs/lib` to `LD_LIBRARY_PATH` (preserve the prior value). Playwright: use the returned `executablePath`, `headless: true`, and `args: ['--no-sandbox', '--disable-dev-shm-usage']`. Do **not** copy all of `Chromium.args` (includes `--disable-web-security`); no NSS patch or `LD_PRELOAD` was needed in the verified setup.
+
+Treat `/tmp` as ephemeral and perform a smoke test. Log any narrowly scoped external-request stubs; never silently replace all external requests. This does **not** replace WebKit, Firefox, devices or CI evidence. Other working browser setups are welcome.
+
 Install only the required engine when permitted. A Chromium pass does not replace required WebKit coverage; current route/browser contracts are defined by repository scripts and CI.
 
 OCR is never the default method for reading screenshots. Prefer browser DOM/computed-style assertions and native vision; use OCR only as a last resort for text that cannot otherwise be inspected.
