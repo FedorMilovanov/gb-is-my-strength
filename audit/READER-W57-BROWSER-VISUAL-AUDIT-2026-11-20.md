@@ -1053,3 +1053,80 @@ The mobile preview intentionally does not inject W57 below `min-width:1121px`, w
 - `/tmp/pr2346-current-latest.json` — latest hosted status snapshot.
 
 No product/source files were changed by the independent audit.
+
+## 18. Раунд 12 — trusted Chromium touch matrix для Gill mobile
+
+### 18.1. Граница доказательства
+
+Повторный PR snapshot перед этим раундом снова показал exact head `62be8caa145fbe18aa099dff89cffa20cd626451`, `OPEN/DRAFT`, `mergeStateStatus=BEHIND`. Новых product-коммитов после Round 11 не обнаружено. Последний rollup на момент проверки: **25 SUCCESS / 12 FAILURE / 4 SKIPPED / 19 QUEUED / 1 IN_PROGRESS**; незавершённые и opaque hosted jobs не получают выдуманного product root cause.
+
+Жесты проверены в disposable exact-head worktree `/tmp/w62` через trusted Chromium (`@sparticuz/chromium` adapter), без Firefox/WebKit и физического телефона. Matrix прошла по всем шести Gill routes в series order — introduction, Gill I, Gill II, Gill III, Gill IV, справочник — при **320×844 и 390×844**. Отдельно собраны 24 boundary-навигационных сценария, 10 native-overflow touch cases, 6 sheet cases и interactive-target/control cases. Временные scripts и screenshot witnesses остались только в `/tmp`; source/product files PR не изменялись.
+
+### 18.2. Горизонтальная навигация и вертикальный scroll
+
+Основная навигационная матрица дала **23/24 ожидаемых результатов**. Все переходы внутри последовательности и обе boundary-стороны работают, кроме одной воспроизводимой ширины:
+
+| сценарий | результат | классификация |
+|---|---|---|
+| introduction → Gill I, Gill I ↔ Gill II, Gill II ↔ Gill III, Gill III ↔ Gill IV, Gill IV ↔ справочник; 320/390 | корректные href и путь; первый/последний route не переходят за границу | **PASS** |
+| Gill II, `320px`, swipe-left на `P.article-desc` | путь остаётся `/articles/dzhon-gill-chast-2-uchenyi/`; `touchmove` не получает `preventDefault` | **CONFIRMED FAIL** |
+| тот же Gill II swipe-left при `390px` | переходит на Gill III | **PASS** |
+
+У Gill II на 320 px `main` имеет небольшой incidental overflow `scrollWidth=249`, `clientWidth=246`, `overflow-x:visible`. `wantsHijack()` в `js/floating-cluster-controller.js:3203-3214` считает любой ancestor с разницей больше 2 px горизонтальным scroll region и потому ошибочно отдаёт жест native-guard вместо article navigation. Это не только source-level гипотеза: exact trusted touch на видимом `P.reveal.article-desc` оставляет route на месте. Следовательно, текущая защита native tables/rails имеет false-positive на 320 px.
+
+Вертикальный контроль положительный: вертикальный swipe в Gill I дал `scrollY 0→85`, diagonal с вертикальным первым движением — `0→227`, без article navigation и без `preventDefault`. Но после ранней фиксации horizontal direction вертикальный поворот больше не отменяет жест: в Gill I оба exact cases (`320` и `390`) с `dx≈145`, затем сильным `dy≈220` перешли в Gill II. Это **confirmed gesture-conflict defect**: пользователь начал диагональ/горизонталь, продолжил преимущественно вертикальным движением, а отпускание всё равно сработало как переход серии.
+
+Короткий left drag `64px` не переходит, медленный drag дольше `1200ms` не переходит, `touchcancel` после commit не переходит — эти защитные исходы положительны. Однако короткий committed drag уже получает `preventDefault`, а peek появляется с `COMMIT=14px`; это остаётся UX-risk для раннего подавления native поведения, хотя отдельного route failure в этом control case нет. Ранее проверенный edge-origin (`x≈2`) также не перехватывается.
+
+### 18.3. Native horizontal scroll в tables, code blocks и rails
+
+Из шести Gill routes в мобильном DOM:
+
+- **10/10 реально найденных native horizontal scrollers** — intro `table-scroll`, Gill I/II, Gill IV и справочник `manuscript-table` на 320 и 390 px — сохраняют native touch scroll: left-edge swipe двигает `scrollLeft` от 0 (например, `0→110`), right-edge swipe от max двигает назад (например, `47→0`, `157→47` или `169→59`);
+- путь во всех этих cases остаётся текущим, то есть table scroll не был украден article navigation;
+- Gill III (`/articles/dzhon-gill-chast-4-ekzeget/`) в этой corpus не содержит native horizontal table/code target; `pre/code` blocks в шести Gill routes не обнаружены;
+- mobile `gbs2-tl-track` — двухколоночный grid с `scrollWidth=clientWidth`, а `.gbs-rail` скрыт в корректно загруженном mobile CSS; отдельного horizontal rail touch target в этих шести pages нет.
+
+Это **PASS для реально существующих native regions**, но не отменяет false-positive выше: `wantsHijack()` проверяет только numeric `scrollWidth/clientWidth` ancestor, а не `overflow-x:auto|scroll`. Для любого будущего mobile content с несколькими пикселями incidental overflow этот код способен повторить Gill II 320 failure — **source-level regression risk**.
+
+### 18.4. Swipe-down закрытие TOC/Settings sheets
+
+| touch case | фактический результат | verdict |
+|---|---|---|
+| Part TOC, deliberate down `>80px` | close button вызывается, overlay закрывается, focus возвращается на `#mobPartTocBtn` | **PASS** |
+| Part TOC, down `25px` | sheet остаётся открытым, но `touchmove.defaultPrevented=true` | **PASS по close threshold / RISK по scroll intent** |
+| Part TOC, диагональ `dx≈−120, dy≈100` | sheet закрывается, хотя горизонтальная составляющая больше вертикальной | **CONFIRMED FAIL** |
+| Part TOC, inner list `scrollTop=220` | dismiss не срабатывает; list продолжает native scroll (`220→85`), overlay остаётся | **PASS** |
+| Settings, deliberate down `>80px` | settings sheet закрывается, focus возвращается на `#mobSettingsBtn` | **PASS** |
+| Settings, down `20px` | sheet остаётся открытым, но `touchmove.defaultPrevented=true` | **PASS по close threshold / RISK по scroll intent** |
+
+Source подтверждает причину: `initSheetSwipe()` (`js/floating-cluster-controller.js:3126-3173`) активируется на sheet при любом single-touch, не имеет angle gate или velocity/intent gate, а любой положительный `dy` сразу получает `preventDefault`; close происходит только при `dy>80`. Поэтому расстояние защищает от случайного короткого close, но не защищает от horizontal/diagonal gesture и начинает съедать обычное движение до достижения порога.
+
+### 18.5. Play/rate/Settings и другие interactive targets
+
+Свежие horizontal drags поверх `.reader-mobile-play`, `#mobSpdBadge` и `#mobSettingsBtn` не изменили route и не вызвали ложного article transition/action. Это согласуется с точечным trusted mouse/touch ownership из Round 11: painted Play triangle, speed chip/pseudo-zone и Settings center имеют ожидаемых владельцев. При этом сохраняется доказанный geometry blocker: Play и speed wrapper пересекаются на `32×44=1408 CSS px²`, а speed pseudo-zone забирает левый край Settings.
+
+Отдельный exact touch на реальной ссылке `a.gill-card__cta` «Читать Часть I →» в Gill IV (`/articles/dzhon-gill-chast-3-nasledie/`), после доведения ссылки в viewport, при swipe-left перевёл страницу в следующий route — справочник — вместо активации/сохранения intended link на Gill I. То же воспроизвелось на 320 и 390 px. Это **CONFIRMED interactive-target conflict**, а не только source review: `initSwipeNav()` проверяет `inField`, modal и sheet, но не исключает `a`, `button`, glossary/media или другие article controls. На некоторых страницах gesture может совпасть с href случайно, что делает дефект менее заметным, но не устраняет ownership ambiguity.
+
+### 18.6. Peek/tip overlays и слабые визуальные решения
+
+Частичный swipe-left на 390 px уже при `60px` показывает `.gbs2-peek.gbs2-on`: rect начинается в `x=330` при viewport 390 и продолжается за правый край. В runtime computed style у `.gbs2-peek-img` — `background-image:url("")`, а screenshot показывает clipped plain brown panel без cover image. Причина видна в текущем source builder (`js/floating-cluster-controller.js:3250-3252`): URL вставляется в HTML как `style="background-image:url("…")"`, то есть вложенные quotes ломают style attribute. Это **CONFIRMED visual defect**, а не только design preference.
+
+First-use tip остаётся видимым около 3 s witness в обоих narrow sizes:
+
+- 320 px: `x=80…240`, `y=662.4…748`, ширина 160 px, три строки;
+- 390 px: `x=97.5…292.5`, `y=684.25…748`, ширина 195 px, две строки;
+- bottom bar: `y=782…844`; tip `z-index=9800`, `bottom:96px`.
+
+Он формально оставляет 34 px gap до bottom bar и не ломает hit-test, но закрывает верхнюю часть reading card/текста непосредственно над нижней панелью. На 320 px плотность и перенос становятся особенно тяжёлыми. Это **confirmed visual witness / design risk**, не отдельный functional blocker: transient tip конкурирует с content и нижним chrome, хотя прямого overlap с bar в данном viewport нет.
+
+Скриншоты: `/tmp/62-swipe-peek-390.png`, `/tmp/62-swipe-tip-320.png`, `/tmp/62-swipe-tip-390.png`. Машинные witnesses: `/tmp/62-swipe-audit.json`, `/tmp/62-swipe-matrix.json`, `/tmp/62-link-swipe.json`, `/tmp/62-proper-point.json`.
+
+### 18.7. Итог раунда и разделение доказательств
+
+- [ ] **Confirmed blockers:** Gill II left navigation fails at 320 px; committed horizontal→vertical turn still navigates; diagonal Part TOC/Settings-family sheet motion can dismiss; article CTA can be overridden by series navigation; partial peek renders without its cover image.
+- [ ] **Source-level/generalized risks:** `wantsHijack()` treats incidental visible overflow as a native scroller; sheet swipe has no angle/intent gate and prevents default before intent is known; article swipe has no interactive-target exclusion; `COMMIT=14px` produces early transient takeover.
+- [~] **Visual review risks:** first-use tip is dense and competes with reading content immediately above the bottom bar; it is not a direct bottom-bar collision in the tested 320/390 snapshots.
+- [x] **Retained positives:** 23/24 horizontal route outcomes apart from the specific Gill II 320 failure, vertical scroll before gesture lock, 10/10 native table/scroll-region cases, intentional sheet close and inner-sheet scroll protection, clean top-control drags, all six route boundaries.
+
+No product/source repair was made. These findings stay separately labeled so the audit does not silently convert evidence into implementation changes.
