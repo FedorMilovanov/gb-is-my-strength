@@ -1,0 +1,50 @@
+{"draft":{"from":390,"to":844,"pilot":true,"sameDoc":true,"editor":true,"draftKept":true,"savedControl":true}}
+{"draft":{"from":1120,"to":1121,"pilot":true,"sameDoc":false,"editor":false,"draftKept":false,"savedControl":true}}
+{"draft":{"from":1440,"to":390,"pilot":true,"sameDoc":false,"editor":false,"draftKept":false,"savedControl":true}}
+{"draft":{"from":1120,"to":1121,"pilot":false,"sameDoc":true,"editor":true,"draftKept":true,"savedControl":true}}
+{"touch":{"w":320,"k":"center","x":180,"y":29,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"playing","rate":1,"open":true,"speaks":1}}
+{"touch":{"w":320,"k":"rightArc","x":196,"y":29,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"playing","rate":1,"open":true,"speaks":1}}
+{"touch":{"w":320,"k":"oldConflict","x":185,"y":39,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"playing","rate":1,"open":true,"speaks":1}}
+{"touch":{"w":320,"k":"chip","x":199,"y":41.5,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"touch":{"w":320,"k":"outside","x":210,"y":13,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"touch":{"w":320,"k":"boundaryL","x":201,"y":27,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"playing","rate":1,"open":true,"speaks":1}}
+{"touch":{"w":320,"k":"boundaryR","x":203,"y":27,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"rateSelection":{"w":320,"phase":"playing","rate":1.5,"open":false,"speaks":2}}
+{"touch":{"w":390,"k":"center","x":243,"y":29,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"playing","rate":1,"open":true,"speaks":1}}
+{"touch":{"w":390,"k":"rightArc","x":259,"y":29,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"playing","rate":1,"open":true,"speaks":1}}
+{"touch":{"w":390,"k":"oldConflict","x":248,"y":39,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"playing","rate":1,"open":true,"speaks":1}}
+{"touch":{"w":390,"k":"chip","x":262,"y":41.5,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"touch":{"w":390,"k":"outside","x":273,"y":13,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"touch":{"w":390,"k":"boundaryL","x":264,"y":27,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"playing","rate":1,"open":true,"speaks":1}}
+{"touch":{"w":390,"k":"boundaryR","x":266,"y":27,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"rateSelection":{"w":390,"phase":"playing","rate":1.5,"open":false,"speaks":2}}
+{"touch":{"w":525,"k":"center","x":378,"y":29,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"playing","rate":1,"open":true,"speaks":1}}
+{"touch":{"w":525,"k":"rightArc","x":394,"y":29,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"playing","rate":1,"open":true,"speaks":1}}
+{"touch":{"w":525,"k":"oldConflict","x":383,"y":39,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"playing","rate":1,"open":true,"speaks":1}}
+{"touch":{"w":525,"k":"chip","x":397,"y":41.5,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"touch":{"w":525,"k":"outside","x":408,"y":13,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"touch":{"w":525,"k":"boundaryL","x":399,"y":27,"hit":"gb-ember mobile-top-ember reader-mobile-play","phase":"playing","rate":1,"open":true,"speaks":1}}
+{"touch":{"w":525,"k":"boundaryR","x":401,"y":27,"hit":"mobSpdBadge","phase":"idle","rate":1,"open":true,"speaks":0}}
+{"rateSelection":{"w":525,"phase":"playing","rate":1.5,"open":false,"speaks":2}}
+{"research":{"width":390,"height":844,"label":"Открыть На полях: определения и контекст статьи","tab":"На полях","heading":"На полях","eyebrow":"НА ПОЛЯХ · ИЗ ОПУБЛИКОВАННОГО ТЕКСТА"}}
+{"researchReturn":{"width":390,"height":844,"onTrigger":true}}
+{"settings":{"width":390,"height":844,"theme":"true","scale":1.05,"overflow":0}}
+{"settingsFooter":{"width":390,"height":844,"foot":[{"title":"Обучение","hit":true},{"title":"Сбросить настройки","hit":true},{"title":"Готово","hit":true}]}}
+{"doneReturn":{"width":390,"height":844,"active":"mobSettingsBtn"}}
+{"learningReturn":{"width":390,"height":844,"active":"BODY"}}
+{"research":{"width":320,"height":340,"label":"Открыть На полях: определения и контекст статьи","tab":"На полях","heading":"На полях","eyebrow":"НА ПОЛЯХ · ИЗ ОПУБЛИКОВАННОГО ТЕКСТА"}}
+{"researchReturn":{"width":320,"height":340,"onTrigger":true}}
+{"settings":{"width":320,"height":340,"theme":"true","scale":1.05,"overflow":0}}
+{"settingsFooter":{"width":320,"height":340,"foot":[{"title":"Обучение","hit":true},{"title":"Сбросить настройки","hit":true},{"title":"Готово","hit":true}]}}
+{"doneReturn":{"width":320,"height":340,"active":"mobSettingsBtn"}}
+{"learningReturn":{"width":320,"height":340,"active":"BODY"}}
+{"research":{"width":844,"height":390,"label":"Открыть На полях: определения и контекст статьи","tab":"На полях","heading":"На полях","eyebrow":"НА ПОЛЯХ · ИЗ ОПУБЛИКОВАННОГО ТЕКСТА"}}
+{"researchReturn":{"width":844,"height":390,"onTrigger":true}}
+{"settings":{"width":844,"height":390,"theme":"true","scale":1.05,"overflow":0}}
+{"settingsFooter":{"width":844,"height":390,"foot":[{"title":"Обучение","hit":true},{"title":"Сбросить настройки","hit":true},{"title":"Готово","hit":true}]}}
+{"doneReturn":{"width":844,"height":390,"active":"mobSettingsBtn"}}
+{"learningReturn":{"width":844,"height":390,"active":"BODY"}}
+{"longPress":{"w":320,"held":"idle","after":"idle","trace":["starting","playing","idle"],"speaks":1}}
+{"reverseTab":{"w":320,"back1":"BUTTON","focus":{"id":"mobSettingsBtn","y":-76,"opacity":"0","hit":false}}}
+{"longPress":{"w":390,"held":"idle","after":"idle","trace":["starting","playing","idle"],"speaks":1}}
+{"reverseTab":{"w":390,"back1":"BUTTON","focus":{"id":"mobSettingsBtn","y":-76,"opacity":"0","hit":false}}}

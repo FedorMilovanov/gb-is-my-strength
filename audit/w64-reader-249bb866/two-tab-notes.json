@@ -1,0 +1,58 @@
+[
+  {
+    "scenario": "no-conflict",
+    "pass": true,
+    "recovered": null,
+    "beforeSaveA": "Исходная заметка",
+    "afterReloadB": "Черновик вкладки А",
+    "remainingRecords": 2,
+    "otherRecord": "Контрольная запись",
+    "editorVisible": false,
+    "status": "Заметка обновлена.",
+    "diskOK": true,
+    "editorOK": true,
+    "noticeOK": true
+  },
+  {
+    "scenario": "other-record",
+    "pass": true,
+    "recovered": null,
+    "beforeSaveA": "Исходная заметка",
+    "afterReloadB": "Черновик вкладки А",
+    "remainingRecords": 2,
+    "otherRecord": "Опубликованная правка Б",
+    "editorVisible": false,
+    "status": "Заметка обновлена.",
+    "diskOK": true,
+    "editorOK": true,
+    "noticeOK": true
+  },
+  {
+    "scenario": "same-record",
+    "pass": false,
+    "recovered": null,
+    "beforeSaveA": "Опубликованная правка Б",
+    "afterReloadB": "Черновик вкладки А",
+    "remainingRecords": 2,
+    "otherRecord": "Контрольная запись",
+    "editorVisible": false,
+    "status": "Заметка обновлена.",
+    "diskOK": false,
+    "editorOK": false,
+    "noticeOK": false
+  },
+  {
+    "scenario": "deleted-record",
+    "pass": false,
+    "recovered": null,
+    "beforeSaveA": null,
+    "afterReloadB": null,
+    "remainingRecords": 1,
+    "otherRecord": "Контрольная запись",
+    "editorVisible": false,
+    "status": "Заметка обновлена.",
+    "diskOK": true,
+    "editorOK": false,
+    "noticeOK": false
+  }
+]
