@@ -17,7 +17,7 @@ const { active = 'journal' } = Astro.props;
     <p class="je-masthead__descriptor">Церковная жизнь.<br />Документы. Контекст.</p>
     <div class="je-masthead__actions" role="group" aria-label="Поиск и оформление">
       <button class="je-masthead__button" type="button" data-action="open-search" data-search-shortcut data-search-shortcut-label="Поиск по сайту" data-search-src={assetUrl('js/search.js')} data-palette-css={assetUrl('css/command-palette.css')} aria-label="Поиск по сайту">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
       </button>
       <button class="je-masthead__button je-masthead__button--theme" type="button" data-journal-theme aria-label="Переключить тему" aria-pressed="false" hidden>
         <svg class="je-masthead__theme-icon je-masthead__theme-icon--moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z"/></svg>
@@ -98,14 +98,16 @@ const { active = 'journal' } = Astro.props;
   .je-masthead__publication { font: 600 clamp(20px, 2vw, 26px)/1.18 'Playfair Display', Georgia, serif; }
   .je-masthead__descriptor { margin: 0 0 0 auto; padding-left: 24px; border-left: 1px solid #466075; color: #d5c9b8; font: italic 14px/1.5 Lora, Georgia, serif; }
   /* Reserve the progressively enhanced theme button before its adapter runs. */
-  .je-masthead__actions { display: flex; flex: none; gap: 3px; min-width: 91px; margin-left: auto; }
-  .je-masthead__button { display: inline-grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid #405366; border-radius: 0; background: transparent; color: #f4e7ce; cursor: pointer; }
+  .je-masthead__actions { display: flex; flex: none; gap: 4px; min-width: 92px; margin-left: auto; }
+  /* Pure icon controls, no decorative squares/circles; keep 44px touch targets. */
+  .je-masthead__button { display: inline-grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 0; background: none; color: #f4e7ce; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .je-masthead__button[hidden] { display: none; }
-  .je-masthead__button:hover { border-color: #e5bb73; color: #ffe4af; }
+  .je-masthead__button:hover { color: #ffe4af; }
+  .je-masthead__button:active { opacity: .75; }
   .je-masthead__button svg { display: block; }
   /* Same moon/sun geometry and crossfade as HomePageChrome. Isolated classes
      keep this thin adapter out of legacy theme-control selectors. */
-  .je-masthead__button--theme { position: relative; border-radius: 50%; }
+  .je-masthead__button--theme { position: relative; }
   .je-masthead__button--theme .je-masthead__theme-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: opacity .25s, transform .15s, color .25s; }
   .je-masthead__button--theme:hover .je-masthead__theme-icon { transform: translate(-50%, -50%) scale(1.08); }
   .je-masthead__theme-icon--sun { opacity: 0; }
@@ -148,8 +150,8 @@ const { active = 'journal' } = Astro.props;
     .je-masthead__nav > a, .je-masthead__site-sections > summary { min-height: 44px; min-width: 44px; width: fit-content; max-width: 100%; font-size: 10px; letter-spacing: .05em; }
     .je-masthead__site-sections { grid-column: span 2; }
     .je-masthead__site-sections > summary { width: 128px; }
-    .je-masthead__actions { gap: 3px; min-width: 91px; }
-    .je-masthead__button { width: 44px; height: 44px; border-color: transparent; }
+    .je-masthead__actions { gap: 4px; min-width: 92px; }
+    .je-masthead__button { width: 44px; height: 44px; }
   }
   @media (max-width: 389px) { .je-masthead__publication { font-size: 15px; } }
   @media (max-width: 359px) { .je-masthead__publication { font-size: 14px; } .je-masthead__mark { display: none; } }
