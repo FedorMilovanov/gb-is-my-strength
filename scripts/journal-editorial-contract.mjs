@@ -68,8 +68,16 @@ for (const name of ['g3ProductMetadata', 'g3PublicationHandoff', 'g3SourceBiblio
   assert.equal(read(file), previous(file), `${file} is an unchanged authority owner in this lane`);
 }
 assert.equal(sources.length, 21);
-const claimIds = [...new Set(current.match(/G3-PUB-\d{3}/g))].sort();
-assert.deepEqual(claimIds, Array.from({ length: 16 }, (_, i) => `G3-PUB-${String(i + 1).padStart(3, '0')}`));
+const claimIds = [...new Set(current.match(/G3-PUB-\d{3}/g) || [])].sort();
+const frozenClaimIds = [...new Set(old.match(/G3-PUB-\d{3}/g) || [])].sort();
+assert.deepEqual(claimIds, frozenClaimIds, 'historical route must not alter the frozen crisis claim projection');
+// Research Q020 (2026-11-21) withdrew G3-PUB-015 from reader-visible prose.
+// The immutable 16-ID Research handoff remains preserved; do not reinstate its
+// disproven Jenkins reissue inference merely to satisfy an obsolete test count.
+const readerSafeClaims = Array.from({ length: 16 }, (_, i) => `G3-PUB-${String(i + 1).padStart(3, '0')}`)
+  .filter(id => id !== 'G3-PUB-015');
+assert.deepEqual(claimIds, readerSafeClaims, 'Q020-corrected crisis projection: exactly 15 approved reader-visible claim IDs');
+assert.ok(!current.includes('G3-PUB-015'), 'withdrawn G3-PUB-015 cannot return in crisis reader prose');
 assert.ok(!current.includes('G3-HIST-PUB-'), 'historical candidates must not enter the crisis claim projection');
 assert.deepEqual([...history.approvedClaimIds], Array.from({ length: 9 }, (_, i) => `G3-HIST-PUB-${String(i + 1).padStart(2, '0')}`));
 assert.ok(history.researchHandoffUrl.includes('389de7b1fca6bf2317aa4e0bf187f13600792384'), 'adopted Research #628 is pinned');
