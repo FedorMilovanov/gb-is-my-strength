@@ -20,7 +20,7 @@ const readerStepCorrections: Record<string, Record<string, string>> = {
   },
 };
 const readerStep = (caseId: string, step: string) => readerStepCorrections[caseId]?.[step] ?? step;
-  
+
 // Explicit editorial cross-references, not a numbered one-to-one pairing or a
 // claim that any single response resolves every manifestation of a problem.
 const relatedAntiAdvice: Record<string, readonly number[]> = {
