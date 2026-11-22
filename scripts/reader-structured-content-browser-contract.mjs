@@ -90,7 +90,11 @@ try {
     await page.emulateMedia({ media: 'print' });
     const pr = await page.evaluate(() => {
       const t = document.querySelector('table[data-responsive-layout]');
-      return { table: getComputedStyle(t).display, header: getComputedStyle(t.tHead).display };
+      return { table: getComputedStyle(t).display, header: getComputedStyle(t.tHead).display,
+        body: getComputedStyle(t.tBodies[0]).display,
+        row: getComputedStyle(t.tBodies[0].rows[0]).display,
+        cell: getComputedStyle(t.tBodies[0].rows[0].cells[0]).display,
+        labelsSuppressed: getComputedStyle(t.tBodies[0].rows[0].cells[1], '::before').content === 'none' };
     });
     assert.equal(pr.table, 'table', engine + ': print uses real table');
     assert.equal(pr.header, 'table-header-group', engine + ': print headers retained');
