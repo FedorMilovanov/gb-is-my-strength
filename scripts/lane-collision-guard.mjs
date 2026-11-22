@@ -34,7 +34,8 @@ export function addedRegistryRouteKeys(before, after) {
   }
   for (const [route, owner] of Object.entries(after.routes)) {
     if (route in before.routes) continue;
-    if (!/^\/[A-Za-z0-9_./-]+\/$/.test(route) || !owner || typeof owner !== 'object' ||
+    if (!(route.startsWith('/') && route.endsWith('/') && route !== '/' &&
+      route.split('/').every(segment => /^[A-Za-z0-9_.-]*$/.test(segment))) || !owner || typeof owner !== 'object' ||
         owner.status !== 'production-dist' || typeof owner.source !== 'string' || !owner.source.startsWith('src/pages/')) return null;
     added.add(route);
   }
