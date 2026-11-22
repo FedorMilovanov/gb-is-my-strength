@@ -182,7 +182,7 @@ requireValue(
   'Mahaney chronology again blurs the object of the council statement',
 );
 requireValue(
-  supplement.includes('изучение записи студентки, предоставленной с её разрешения'),
+  supplement.includes('проверка сведений из студенческого дела, доступ к которым был предоставлен с разрешения'),
   'Patterson chronology lost the record-permission clarification',
 );
 requireValue(
