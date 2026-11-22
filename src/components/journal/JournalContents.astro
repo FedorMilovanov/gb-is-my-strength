@@ -31,7 +31,8 @@ const { entries, label = 'В этом материале', summaryId, initialCom
     })();
   </script>}
   {returnHref && <a class="je-contents-return" href={returnHref} data-pagefind-ignore tabindex="0">{returnLabel}</a>}
-  <nav aria-label={label}>
+  <!-- The links own keyboard navigation. Firefox otherwise inserts the scrollable nav itself as an extra Tab stop. -->
+  <nav aria-label={label} tabindex="-1">
     <ol>
       {entries.map((entry, index) => <li><a href={entry.href} tabindex="0"><span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>{entry.label}</a></li>)}
     </ol>
