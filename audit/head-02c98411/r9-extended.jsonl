@@ -1,0 +1,9 @@
+{"name":"glossary-tooltip-center-320","gInfo":{"cls":"tooltip","left":0,"right":296,"top":568,"bottom":766,"clippedY":true,"clippedX":false}}
+{"name":"kod-panel-resize","panel":"toc","before":{"snap":{"p":45,"id":"canon-timeline-title"},"saved":{"p":45,"id":"canon-timeline-title"}},"after":{"snap":{"p":85,"id":"summary-title-auto"},"saved":{"p":85,"id":"summary-title-auto"}},"corrupted":true}
+{"name":"kod-panel-resize","panel":"settings","before":{"snap":{"p":45,"id":"canon-timeline-title"},"saved":{"p":45,"id":"canon-timeline-title"}},"after":{"snap":{"p":85,"id":"summary-title-auto"},"saved":{"p":85,"id":"summary-title-auto"}},"corrupted":true}
+{"name":"catalog-interactive","route":"/articles/","info":{"chips":["","","","","Поиск по сайту…Ctrl K"],"ov":0}}
+{"name":"catalog-interactive","route":"/hard-texts/","info":{"chips":["","","Коротко4 тезиса›","","Поиск по сайту…Ctrl K","","Telegram","WhatsApp","ВКонтакте","Facebook","МАКС","Одноклассники","Скопировать"],"ov":0}}
+{"name":"w105-gill-check","w":320,"h":568,"pctRing":{"pctText":"50%","pctFontSize":"9px","pctW":34,"pctH":34,"ringSvgW":34,"fitsInsideInnerRing":false,"topBarGaps":{"playToSet":0,"setToBmk":null}}}
+{"name":"w105-gill-check","w":390,"h":844,"pctRing":{"pctText":"49%","pctFontSize":"9px","pctW":34,"pctH":34,"ringSvgW":34,"fitsInsideInnerRing":false,"topBarGaps":{"playToSet":0,"setToBmk":null}}}
+{"name":"gill-quiz-320","quizInfo":{"found":true,"cls":"article-body","btnCount":39,"btns":["","","Подробнее","Подробнее","Подробнее","Подробнее","Подробнее","Подробнее"],"ov":0},"afterQuizClick":{"textSample":"Серия о Джоне ГиллеСерия о Джоне Гилле объединяет историческое введение, четыре тематические части — «Человек», «Учёный», «Экзегет», «Наследие» — и отдельный справочник. Каждый мат","ov":0}}
+{"name":"popovers-320","route":"/articles/dzhon-gill-chast-2-uchenyi/","gRes":{"cls":"tooltip","left":0,"right":296,"top":568,"bottom":766,"clippedX":false},"fnRes":null}
