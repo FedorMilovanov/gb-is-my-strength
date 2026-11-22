@@ -14,29 +14,12 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parse } from 'parse5';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const baseline = 'b2ae614730b0c2e164d3b07453797074253d9698';
+const baseline = '560ad663c6985e94eefbc67609e654660e142eb7';
 const args = new Set(process.argv.slice(2));
-for (const arg of args) assert.ok(['--source-only', '--public-only', '--probe-hold', '--require-dist'].includes(arg) || /^(?:--output|--transfer)=.+/.test(arg), `Unknown option: ${arg}`);
-const publicOnly = args.has('--public-only');
-assert.ok(!(args.has('--source-only') && args.has('--require-dist')), 'Source-only is not dist acceptance');
-const transferArg = [...args].find((arg) => arg.startsWith('--transfer='));
-const transfer = transferArg ? JSON.parse(fs.readFileSync(transferArg.slice('--transfer='.length), 'utf8')) : null;
-if (transfer) {
-  assert.ok(publicOnly, 'A gitless transfer witness must explicitly use --public-only');
-  assert.equal(transfer.base, baseline, 'Rebuild the transfer contract for another canonical base');
-  assert.match(transfer.source, /^[a-f0-9]{40}$/);
-}
-
+for (const arg of args) assert.ok(['--source-only', '--probe-publication', '--require-dist'].includes(arg) || /^--output=.+/.test(arg), `Unknown option: ${arg}`);
+assert.ok(!(args.has('--source-only') && args.has('--require-dist')), 'Source-only cannot prove dist acceptance');
 const read = (name) => fs.readFileSync(path.join(root, name), 'utf8');
-const previous = (name) => {
-  if (!transfer) return execFileSync('git', ['show', `${baseline}:${name}`], { cwd: root, encoding: 'utf8' });
-  const value = transfer.baselineSourceContent?.[name];
-  assert.equal(typeof value, 'string', `Missing pinned comparison source: ${name}`);
-  const state = transfer.files.find((item) => item.path === name)?.before || transfer.preserved.find((item) => item.path === name)?.state;
-  const bytes = Buffer.from(value);
-  assert.equal(createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex'), state?.blob, `Baseline source blob mismatch: ${name}`);
-  return value;
-};
+const previous = (name) => execFileSync('git', ['show', `${baseline}:${name}`], { cwd: root, encoding: 'utf8' });
 const attr = (node, name) => node.attrs?.find((item) => item.name === name)?.value;
 const hasClass = (node, name) => (attr(node, 'class') || '').split(/\s+/).includes(name);
 function all(node, predicate) {
@@ -49,8 +32,8 @@ const digest = (value) => createHash('sha256').update(value).digest('hex');
 const load = (name) => import(pathToFileURL(path.join(root, name)).href);
 const { G3_PRODUCT_METADATA: metadata } = await load('src/data/journal/g3ProductMetadata.ts');
 const { JOURNAL_PRODUCT_METADATA: journal } = await load('src/data/journal/journalProductMetadata.ts');
-const { G3_HISTORY_DRAFT_METADATA: history } = await load('src/data/journal/g3HistoryDraftMetadata.ts');
-const historySources = publicOnly ? null : (await load('src/data/journal/g3HistoryDraftSources.ts')).G3_HISTORY_DRAFT_SOURCES;
+const { G3_HISTORY_METADATA: history } = await load('src/data/journal/g3HistoryMetadata.ts');
+const { G3_HISTORY_SOURCES: historySources } = await load('src/data/journal/g3HistorySources.ts');
 const { G3_SOURCE_BIBLIOGRAPHY: sources } = await load('src/data/journal/g3SourceBibliography.ts');
 const current = read('src/components/journal/G3Dossier.astro');
 const old = previous('src/components/journal/G3Dossier.astro');
@@ -88,38 +71,28 @@ assert.equal(sources.length, 21);
 const claimIds = [...new Set(current.match(/G3-PUB-\d{3}/g))].sort();
 assert.deepEqual(claimIds, Array.from({ length: 16 }, (_, i) => `G3-PUB-${String(i + 1).padStart(3, '0')}`));
 assert.ok(!current.includes('G3-HIST-PUB-'), 'historical candidates must not enter the crisis claim projection');
-assert.equal(history.publicationStatus, 'PUBLICATION_HOLD');
-assert.deepEqual([...history.approvalClaimIds], Array.from({ length: 9 }, (_, i) => `G3-HIST-PUB-${String(i + 1).padStart(2, '0')}`));
-assert.ok(!Object.hasOwn(history, 'handoffStatus'), 'Do not infer/issue a history handoff or mix authority schemas');
+assert.deepEqual([...history.approvedClaimIds], Array.from({ length: 9 }, (_, i) => `G3-HIST-PUB-${String(i + 1).padStart(2, '0')}`));
+assert.ok(history.researchHandoffUrl.includes('389de7b1fca6bf2317aa4e0bf187f13600792384'), 'adopted Research #628 is pinned');
+assert.equal(new Set(historySources.map(s => s.id)).size, historySources.length);
+assert.ok(historySources.length >= 22);
 for (const name of ['G3HistoryArticle', 'G3HistoryFeature']) {
   const source = read(`src/components/journal/${name}.astro`);
-  assert.match(source, /if \(import\.meta\.env\.PROD\)\s*\{\s*throw new Error\(/, `${name} must fail closed in production`);
+  assert.doesNotMatch(source, /PUBLICATION_HOLD|RESEARCH_DRAFT|Не опубликовано|data-research-candidates/, `${name} must be public-ready`);
 }
-if (!publicOnly) {
-  assert.equal(new Set(historySources.map((source) => source.id)).size, historySources.length);
-  const previousHistory = previous('src/components/journal/G3HistoryFeature.astro');
-  for (const source of historySources) assert.ok(previousHistory.includes(source.url), `new/unreviewed source URL: ${source.url}`);
+const historyRoute = '/journal/dossiers/g3/history/';
+assert.ok(fs.existsSync(path.join(root, 'src/pages/journal/dossiers/g3/history/index.astro')));
+assert.equal(JSON.parse(read('migration/page-ownership.json')).routes[historyRoute]?.status, 'production-dist');
+for (const name of ['data/route-search-policy.json', 'data/search-manifest.json', 'sitemap.xml', 'feed.xml']) {
+  assert.ok(read(name).includes(historyRoute), `${name} must register public historical article`);
+  assert.ok(!read(name).includes('/_review/g3-history/'), 'review route may not leak');
 }
-for (const file of fs.readdirSync(path.join(root, 'src/pages'), { recursive: true }).filter((file) => /\.(astro|mdx?)$/.test(file))) {
-  assert.doesNotMatch(read(`src/pages/${file}`), /G3History(?:Article|Feature)|G3-HIST-PUB-/, `Held history activated in ${file}`);
-}
-for (const file of ['migration/page-ownership.json', 'data/route-search-policy.json', 'data/search-manifest.json', 'sitemap.xml', 'feed.xml']) {
-  assert.ok(!read(file).includes('/journal/dossiers/g3/history/'), `held manuscript leaked into ${file}`);
-  assert.ok(!read(file).includes('/_review/'), `review route leaked into ${file}`);
-}
-assert.ok(!fs.existsSync(path.join(root, 'src/pages/journal/dossiers/g3/history')), 'no public history route may be created');
-// Public-only preserves the baseline held stylesheet byte-for-byte; it is not
-// mounted by the public pages and is outside this presentation acceptance.
-const css = read('src/components/journal/journalEditorial.css') + (publicOnly ? '' : read('src/components/journal/g3History.css'));
-if (publicOnly) for (const name of ['G3Dossier', 'JournalLanding', 'JournalEditorialShell', 'JournalMasthead']) {
-  assert.ok(!read(`src/components/journal/${name}.astro`).includes('g3History.css'), `${name}: held CSS must not enter public presentation`);
-}
+const css = read('src/components/journal/journalEditorial.css') + read('src/components/journal/g3History.css');
 assert.ok(!css.includes('!important'), 'route-local cascade must not rely on important patches');
 
 let literalParagraphs = 0;
 const built = [];
 if (!process.argv.includes('--source-only')) {
-  for (const [route, data, type] of [['/journal/', journal, 'CollectionPage'], ['/journal/dossiers/g3/', metadata, 'Article']]) {
+  for (const [route, data, type] of [['/journal/', journal, 'CollectionPage'], ['/journal/dossiers/g3/', metadata, 'Article'], [historyRoute, history, 'Article']]) {
     const html = read(`dist${route}index.html`);
     const doc = parse(html);
     const nodes = all(doc, (node) => Boolean(node.tagName));
@@ -161,7 +134,8 @@ if (!process.argv.includes('--source-only')) {
       const hash = decodeURIComponent(attr(node, 'href').slice(1));
       assert.ok(ids.includes(hash), `broken anchor #${hash} at ${route}`);
     }
-    assert.ok(!html.includes('history-source-') && !html.includes('G3-HIST-PUB-'), 'history must not enter a public artifact');
+    assert.ok(!html.includes('PUBLICATION_HOLD') && !html.includes('/_review/'), 'draft history must not enter public HTML');
+    if (route !== historyRoute) assert.ok(!html.includes('history-source-'), 'history bibliography must remain separate');
     const covers = nodes.filter((node) => node.tagName === 'source' && attr(node, 'type') === 'image/avif');
     assert.equal(covers.length, 1, `exactly one responsive AVIF cover at ${route}`);
     const fontHints = nodes.filter((node) => node.tagName === 'link' && attr(node, 'rel') === 'preload' && attr(node, 'as') === 'font');
@@ -176,7 +150,7 @@ if (!process.argv.includes('--source-only')) {
       assert.equal(nodes.filter((node) => node.tagName === tag && hasClass(node, className)).length, 1, `${route}: one ${className} owner`);
     }
     assert.equal(nodes.filter((node) => node.tagName === 'main' && attr(node, 'id') === 'main-content').length, 1);
-    if (type === 'Article') {
+    if (route === '/journal/dossiers/g3/') {
       // Agent1's literal source→compressed-DOM word-boundary witness, adapted to
       // selected Agent8 markup. The existing baseline factual-parity gate stays.
       const words = (value) => value.replace(/\s+/gu, ' ').trim();
@@ -216,13 +190,26 @@ if (!process.argv.includes('--source-only')) {
         assert.notEqual(attr(citation, 'data-journal-citation'), undefined, 'every existing source citation must be enhanced, not a parallel map');
       }
     }
+    if (route === historyRoute) {
+      assert.equal(nodes.filter((node) => hasClass(node, 'bibliography-item')).length, historySources.length);
+      assert.equal(nodes.filter((node) => hasClass(node, 'je-contents')).length, 1);
+      assert.equal(nodes.filter((node) => hasClass(node, 'article-header')).length, 1);
+      assert.equal(nodes.filter((node) => hasClass(node, 'author-card')).length, 1);
+      assert.equal(nodes.filter((node) => attr(node,'data-journal-source-navigation') !== undefined).length, 1);
+      for (const source of historySources) {
+        const entry = byId(doc, `history-source-${source.id}`);
+        assert.ok(entry, `Missing history citation bibliography ${source.id}`);
+        const returns = all(entry, node => node.tagName === 'a' && attr(node,'data-journal-source-return') !== undefined);
+        assert.equal(returns.length, 1, `${source.id}: exactly one bibliography return`);
+        assert.equal(attr(returns[0],'href'), source.returnHref, `${source.id}: return must target its source context`);
+      }
+    }
     built.push({ route, schema: type, bytes: Buffer.byteLength(html), canonical: data.canonical });
   }
-  for (const file of ['dist/journal/dossiers/g3/history/index.html', 'dist/_review/g3-history/index.html']) {
-    assert.ok(!fs.existsSync(path.join(root, file)), `PUBLICATION_HOLD violation: ${file}`);
-  }
+  assert.ok(!fs.existsSync(path.join(root,'dist/_review/g3-history/index.html')), 'local preview must not ship');
   for (const file of ['dist/sitemap.xml', 'dist/feed.xml', 'dist/data/search-manifest.json']) {
-    assert.ok(!read(file).includes('/journal/dossiers/g3/history/') && !read(file).includes('/_review/'), `held manuscript leaked into ${file}`);
+    assert.ok(read(file).includes(historyRoute), `${file}: published history must be discoverable`);
+    assert.ok(!read(file).includes('/_review/g3-history/'), `${file}: preview leaked`);
   }
 }
 // Read actual Pagefind artifacts, adapted from QA#2344. A positive G3 control
@@ -243,52 +230,40 @@ async function inspectPagefind() {
     const module = await import(`data:text/javascript;base64,${Buffer.from(read('dist/pagefind/pagefind.js')).toString('base64')}`);
     const index = await module.createInstance({ basePath: `${baseUrl}/pagefind/`, baseUrl, primary: true, language: 'ru' });
     const probes = [];
-    for (const query of ['G3', 'G3-HIST-PUB-01', 'PUBLICATION_HOLD', '_review/g3-history']) {
+    for (const query of ['G3', 'конференция G3', 'PUBLICATION_HOLD', '_review/g3-history']) {
       const result = await index.search(query);
-      const items = await Promise.all(result.results.map((item) => item.data()));
-      const paths = items.map((item) => new URL(item.url, baseUrl).pathname);
-      assert.ok(!paths.some((value) => /\/journal\/dossiers\/g3\/history\/|\/_review\//i.test(value)), `Held history indexed: ${query}`);
-      for (const item of items) assert.doesNotMatch(item.content || '', /G3-HIST-PUB-|PUBLICATION_HOLD/);
-      if (query === 'G3') assert.ok(paths.includes('/journal/dossiers/g3/'), 'Actual index must return the public G3 control');
+      const items = await Promise.all(result.results.map(item => item.data()));
+      const paths = items.map(item => new URL(item.url,baseUrl).pathname);
+      assert.ok(!paths.some(value => value.startsWith('/_review/')), `Preview was indexed for ${query}`);
+      for (const item of items) assert.doesNotMatch(item.content || '', /PUBLICATION_HOLD|RESEARCH_DRAFT/);
+      if (query === 'G3') {
+        assert.ok(paths.includes('/journal/dossiers/g3/'), 'Crisis dossier must remain indexed');
+        assert.ok(paths.includes(historyRoute), 'Historical G3 must be indexed');
+      }
       probes.push({ query, hits: items.length, paths });
     }
     return { actualIndex: true, probes };
   } finally { await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve())); }
 }
-function probeHeldEntrypoints() {
-  const probes = [];
-  for (const name of ['G3HistoryArticle', 'G3HistoryFeature']) {
-    const parent = path.join(root, '.cache'); fs.mkdirSync(parent, { recursive: true });
-    const fixture = fs.mkdtempSync(path.join(parent, 'g3-hold-integration-'));
-    try {
-      fs.mkdirSync(path.join(fixture, 'src/pages'), { recursive: true });
-      fs.writeFileSync(path.join(fixture, 'src/pages/index.astro'), `---\nimport Held from ${JSON.stringify(path.join(root, `src/components/journal/${name}.astro`))};\n---\n<Held />\n`);
-      const config = path.join(fixture, 'astro.config.mjs');
-      fs.writeFileSync(config, `export default {root:${JSON.stringify(fixture)},srcDir:${JSON.stringify(path.join(fixture, 'src'))},publicDir:${JSON.stringify(path.join(fixture, 'empty'))},outDir:${JSON.stringify(path.join(fixture, 'output'))},cacheDir:${JSON.stringify(path.join(fixture, 'cache'))},vite:{resolve:{alias:{'@':${JSON.stringify(path.join(root, 'src'))}}}}};`);
-      const result = spawnSync(process.execPath, [path.join(root, 'scripts/astro-cli.mjs'), 'build', '--config', path.relative(root, config)], { cwd: root, encoding: 'utf8', timeout: 60000, maxBuffer: 5 * 1024 * 1024 });
-      const log = result.stdout + result.stderr;
-      const logDirectory = path.resolve(root, [...args].find((arg) => arg.startsWith('--output='))?.slice('--output='.length) || 'reports/g3-editorial-local-20261118');
-      fs.mkdirSync(logDirectory, { recursive: true });
-      fs.writeFileSync(path.join(logDirectory, `hold-probe-${name}.log`), log);
-      assert.ifError(result.error); assert.notEqual(result.status, 0, `${name} must reject real production rendering`);
-      const expectedGuard = read(`src/components/journal/${name}.astro`).match(/throw new Error\('([^']+PUBLICATION_HOLD[^']+)'\)/)?.[1];
-      assert.ok(expectedGuard && log.includes(expectedGuard), `${name}: production failure must name the exact guard, not configuration/import failure: ${log}`);
-      probes.push({ entrypoint: name, actualExit: result.status, expectedNonzero: true, exactGuardMessage: expectedGuard, publicRouteCreated: false });
-    } finally { fs.rmSync(fixture, { recursive: true, force: true }); }
-  }
-  return probes;
+function probePublishedRoute() {
+  const routeFile='dist/journal/dossiers/g3/history/index.html';
+  assert.ok(fs.existsSync(path.join(root,routeFile)), 'production history HTML missing');
+  const html=read(routeFile);
+  assert.ok(html.includes(history.canonical));
+  assert.ok(!html.includes('PUBLICATION_HOLD') && !html.includes('/_review/'));
+  return {route:historyRoute,htmlFile:routeFile,exists:true,proof:'production-like generated HTML; not a live deploy'};
 }
 const pagefind = !args.has('--source-only') ? await inspectPagefind() : null;
-const productionProbes = args.has('--probe-hold') ? probeHeldEntrypoints() : 'NOT RUN (use --probe-hold)';
-const report = { baseline, head: transfer ? null : execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
-  transferredSourceHead: transfer?.source || null, publicOnly, literalParagraphs, pagefind, productionProbes,
-  note: 'Working-tree witness; source hashes identify tested bytes. Not a Research handoff or production claim.',
+const productionProbes = args.has('--probe-publication') ? probePublishedRoute() : 'NOT RUN (use --probe-publication)';
+const report = { baseline, head: execFileSync('git', ['rev-parse','HEAD'], {cwd:root,encoding:'utf8'}).trim(),
+  literalParagraphs, pagefind, productionProbes,
+  note: 'Built Journal and G3 history publication contract; not a completed live GitHub Pages deployment',
   dossierSourceSha256: digest(current), factualParagraphsUnchanged: paragraphCount, proseHashes,
-  approvedClaims: claimIds.length, approvedSourceObjects: sources.length, historyDraftSourceLinks: historySources?.length ?? 'NOT RUN: --public-only excludes only manuscript presentation-source checks',
-  publicationHoldRetained: true, built };
+  approvedClaims: claimIds.length, approvedSourceObjects: sources.length, historySourceLinks: historySources.length,
+  historyApprovedClaims: history.approvedClaimIds.length, historyResearchHandoff: history.researchHandoffUrl, historyPublished: true, built };
 const outputDirectory = process.argv.find((arg) => arg.startsWith('--output='))?.slice('--output='.length) || 'reports/g3-editorial-local-20261118';
 const output = path.resolve(root, outputDirectory, 'contract.json');
 fs.mkdirSync(path.dirname(output), { recursive: true });
 fs.writeFileSync(output, JSON.stringify(report, null, 2) + '\n');
-console.log(`PASS: ${paragraphCount} factual paragraphs unchanged; 16 approved claims / 21 sources; history HOLD; ${built.length} built SEO/DOM surfaces.`);
+console.log(`PASS: ${paragraphCount} crisis factual paragraphs unchanged; 16/21 crisis seal, 9 approved historical groups, ${historySources.length} historical sources; ${built.length} built routes.`);
 console.log(path.relative(root, output));
