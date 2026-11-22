@@ -1,0 +1,27 @@
+---
+/** QA fixture only. Injected exclusively by the development-only review tool. */
+import G3HistoryArticle from '../../src/components/journal/G3HistoryArticle.astro';
+import ReaderPreferencesHead from '../../src/components/reader-platform/ReaderPreferencesHead.astro';
+import { G3_HISTORY_DRAFT_METADATA as draft } from '../../src/data/journal/g3HistoryDraftMetadata';
+if (import.meta.env.PROD) throw new Error('History review fixture must never enter production');
+---
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <title>Локальная рукопись · {draft.title}</title>
+    <ReaderPreferencesHead />
+    <!-- Use ordinary CSS font loading in this no-store development document:
+         reloads were refetching hints despite already rendered, cached faces.
+         The two production route heads retain their measured critical hints. -->
+    <link rel="stylesheet" href="/fonts/fonts.css?v=864cc57a" />
+    <link rel="stylesheet" href="/css/site.css?v=511fb678" />
+    <link rel="stylesheet" href="/css/command-palette.css?v=3b88813f" />
+    <link rel="stylesheet" href="/css/mobile-hotfix.css?v=9cfd6aee" />
+  </head>
+  <body data-journal-surface="history-review">
+    <G3HistoryArticle />
+  </body>
+</html>

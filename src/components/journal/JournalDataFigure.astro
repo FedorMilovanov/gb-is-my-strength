@@ -1,0 +1,21 @@
+---
+/** Accessible, zero-runtime comparison. Bars are decorative; values remain text. */
+interface Row { label: string; value: number; }
+interface Props { title: string; unit: string; rows: Row[]; }
+const { title, unit, rows } = Astro.props;
+if (!rows.length || rows.some((row) => !Number.isFinite(row.value) || row.value < 0)) {
+  throw new Error('JournalDataFigure requires finite, non-negative comparison values');
+}
+const maximum = Math.max(...rows.map((row) => row.value), 1);
+const number = new Intl.NumberFormat('ru-RU');
+---
+<figure class="je-data-figure">
+  <div class="je-data-figure-heading"><h3>{title}</h3><p>{unit}</p></div>
+  <dl>
+    {rows.map((row) => <div class="je-data-row">
+      <dt>{row.label}</dt>
+      <dd><span class="je-data-value">+{number.format(row.value)}</span><span class="je-data-bar" style={`--je-bar-width: ${row.value / maximum * 100}%`} aria-hidden="true"></span></dd>
+    </div>)}
+  </dl>
+  <figcaption><slot /></figcaption>
+</figure>

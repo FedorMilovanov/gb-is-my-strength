@@ -5,6 +5,7 @@ const assert = require('assert/strict');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { execFileSync } = require('node:child_process');
 const { loadRouteRecords } = require('./lib/effective-route-registry');
 const {
   INDEXABLE_SOCIAL_META,
@@ -96,6 +97,24 @@ function socialMetadata({ duplicate, empty } = {}) {
   }).join('');
 }
 
+const JOURNAL_IMAGE_ALT_VALUES = Object.freeze({
+  'og:image:alt': 'Descriptive journal cover image for the social preview.',
+  'twitter:image:alt': 'Descriptive journal cover image for the social preview.',
+});
+
+function journalImageAltMetadata({ duplicate, empty } = {}) {
+  return Object.entries(JOURNAL_IMAGE_ALT_VALUES).map(([name, value], index) => {
+    const attr = index === 0 ? 'property' : 'name';
+    const content = empty === name ? '' : value;
+    const tag = `<meta ${attr}="${name}" content="${content}">`;
+    return duplicate === name ? `${tag}${tag}` : tag;
+  }).join('');
+}
+
+function withJournalImageAlt(html, options) {
+  return html.replace('</head>', `${journalImageAltMetadata(options)}</head>`);
+}
+
 function htmlDocument({ canonical, robots, social = true, duplicateSocial, emptySocial }) {
   return `<!doctype html><html><head>${
     canonical ? `<link rel="canonical" href="${canonical}">` : ''
@@ -123,6 +142,18 @@ const hidden = {
   canonical: 'https://gospod-bog.ru/hidden/',
   indexable: false,
 };
+const journalLanding = {
+  route: '/journal/',
+  htmlFile: 'journal/index.html',
+  canonical: 'https://gospod-bog.ru/journal/',
+  indexable: true,
+};
+const g3Dossier = {
+  route: '/journal/dossiers/g3/',
+  htmlFile: 'journal/dossiers/g3/index.html',
+  canonical: 'https://gospod-bog.ru/journal/dossiers/g3/',
+  indexable: true,
+};
 
 try {
   writeRoute(fixtureRoot, indexable, htmlDocument({ canonical: indexable.canonical }));
@@ -131,6 +162,51 @@ try {
   const clean = auditSeoRouteFiles(fixtureRoot, { entries: [indexable, hidden] });
   assert.deepEqual(clean.errors, [], clean.errors.join('\n'));
   assert.deepEqual(clean.counts, { production: 2, indexable: 1, noindex: 1, files: 2 });
+
+  for (const entry of [journalLanding, g3Dossier]) {
+    writeRoute(
+      fixtureRoot,
+      entry,
+      withJournalImageAlt(htmlDocument({ canonical: entry.canonical }))
+    );
+  }
+  const journalClean = auditSeoRouteFiles(fixtureRoot, { entries: [journalLanding, g3Dossier] });
+  assert.deepEqual(journalClean.errors, [], journalClean.errors.join('\n'));
+
+  writeRoute(fixtureRoot, g3Dossier, htmlDocument({ canonical: g3Dossier.canonical }));
+  const missingJournalAlts = auditSeoRouteFiles(fixtureRoot, { entries: [g3Dossier] }).errors;
+  assert.ok(missingJournalAlts.some((error) => error.includes('og:image:alt')),
+    'indexable Journal routes must include an accessible Open Graph image description');
+  assert.ok(missingJournalAlts.some((error) => error.includes('twitter:image:alt')),
+    'indexable Journal routes must include an accessible Twitter image description');
+
+  writeRoute(
+    fixtureRoot,
+    g3Dossier,
+    withJournalImageAlt(
+      htmlDocument({ canonical: g3Dossier.canonical }),
+      { duplicate: 'og:image:alt' }
+    )
+  );
+  assert.ok(
+    auditSeoRouteFiles(fixtureRoot, { entries: [g3Dossier] }).errors
+      .some((error) => error.includes('og:image:alt meta, found 2 values')),
+    'Journal routes must not emit duplicate Open Graph image descriptions'
+  );
+
+  writeRoute(
+    fixtureRoot,
+    g3Dossier,
+    withJournalImageAlt(
+      htmlDocument({ canonical: g3Dossier.canonical }),
+      { empty: 'twitter:image:alt' }
+    )
+  );
+  assert.ok(
+    auditSeoRouteFiles(fixtureRoot, { entries: [g3Dossier] }).errors
+      .some((error) => error.includes('twitter:image:alt meta, found 1 empty value')),
+    'Journal routes must not emit empty Twitter image descriptions'
+  );
 
   writeRoute(fixtureRoot, indexable, htmlDocument({ robots: 'index, follow' }));
   assert.ok(
@@ -191,4 +267,11 @@ try {
   fs.rmSync(fixtureRoot, { recursive: true, force: true });
 }
 
-console.log(`✅ seo-route-contract: ${baseline.length} production routes (${indexableEntries.length} indexable, ${noindexEntries.length} noindex); exact-one social metadata enforced; seven Genesis 6 routes required`);
+// The existing SEO CI lane must execute the route-owned Journal/G3 metadata
+// and sitemap preview parity regression rather than leave a dormant test file.
+execFileSync(process.execPath, ['--test', path.join(__dirname, 'journal-document-metadata-test.mjs')], {
+  cwd: ROOT,
+  stdio: 'inherit',
+});
+
+console.log(`✅ seo-route-contract: ${baseline.length} production routes (${indexableEntries.length} indexable, ${noindexEntries.length} noindex); exact-one social metadata and Journal image-alt metadata enforced; seven Genesis 6 routes required`);

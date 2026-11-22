@@ -1,0 +1,77 @@
+---
+/** A single semantic TOC, moved by CSS — never a second mobile menu/scrollspy. */
+interface Entry { href: string; label: string; }
+interface Props {
+  entries: Entry[];
+  label?: string;
+  /** Optional native fragment destination; not a second disclosure or scroll owner. */
+  summaryId?: string;
+  /** Parser-time compact seed, explicitly enabled only by the public G3 dossier. */
+  initialCompactClosed?: boolean;
+  /** Optional first keyboard action after a native summary: return to the story. */
+  returnHref?: string;
+  returnLabel?: string;
+}
+const { entries, label = 'В этом материале', summaryId, initialCompactClosed = false, returnHref, returnLabel = 'К началу чтения' } = Astro.props;
+---
+<details class="je-contents" data-journal-contents open>
+  <summary id={summaryId}>
+    <span>{label}</span>
+    <span class="je-contents-count">{entries.length} разделов <span aria-hidden="true">↕</span></span>
+  </summary>
+  {initialCompactClosed && <script is:inline>
+    // Run before the list is parsed; no-JS keeps the native SSR disclosure open.
+    // This is only an initial state seed, never the module adapter's binding flag.
+    (() => {
+      const contents = document.currentScript?.parentElement;
+      if (contents instanceof HTMLDetailsElement &&
+          window.matchMedia('(max-width: 1023px)').matches) {
+        contents.open = false;
+      }
+    })();
+  </script>}
+  {returnHref && <a class="je-contents-return" href={returnHref} data-pagefind-ignore tabindex="0">{returnLabel}</a>}
+  <nav aria-label={label}>
+    <ol>
+      {entries.map((entry, index) => <li><a href={entry.href} tabindex="0"><span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>{entry.label}</a></li>)}
+    </ol>
+  </nav>
+  <noscript>
+    <style is:inline>
+      @media (max-width: 1023px) {
+        html { scroll-behavior: auto !important; }
+        .journal-edition .je-contents nav { max-height: none; overflow-y: visible; }
+      }
+    </style>
+  </noscript>
+</details>
+<script>
+  // This adapter owns only this native disclosure. Shared mobile chrome,
+  // search, reading preferences and scrolling remain with their existing owners.
+  document.querySelectorAll<HTMLDetailsElement>('[data-journal-contents]').forEach((contents) => {
+    if (contents.dataset.journalContentsBound) return;
+    contents.dataset.journalContentsBound = 'true';
+    const compact = window.matchMedia('(max-width: 1023px)');
+    const summary = contents.querySelector('summary');
+    const syncLayout = () => { contents.open = !compact.matches; };
+    syncLayout();
+    compact.addEventListener('change', syncLayout);
+    contents.addEventListener('click', (event) => {
+      if (event.defaultPrevented || event.button !== 0 || event.ctrlKey ||
+          event.metaKey || event.shiftKey || event.altKey || !(event.target instanceof Element)) return;
+      const link = event.target.closest<HTMLAnchorElement>('a[href^="#"]');
+      if (!link || !compact.matches) return;
+      const target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+      if (!target) return;
+      contents.open = false;
+      // Native anchor navigation owns the URL/scroll. Move focus out of the
+      // newly closed disclosure, preserving the native scroll destination.
+      window.requestAnimationFrame(() => { target.focus({ preventScroll: true }); });
+    });
+    contents.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || !compact.matches || !contents.open) return;
+      contents.open = false;
+      summary?.focus();
+    });
+  });
+</script>

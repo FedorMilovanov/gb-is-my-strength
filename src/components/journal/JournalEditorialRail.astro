@@ -1,0 +1,9 @@
+---
+interface Props {
+  label?: string;
+}
+const { label = 'Материалы и документы' } = Astro.props;
+---
+<aside class="je-editorial-rail" aria-label={label}>
+  <slot />
+</aside>

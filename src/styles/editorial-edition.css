@@ -1,0 +1,36 @@
+/* Shared static editorial tokens and typography; route classes own their chrome.
+   No navigation, global selectors, storage or theme runtime lives here. */
+:is(.journal-edition, .articles-edition) {
+  --je-paper: #faf7f0;
+  --je-paper-raised: #f2ece0;
+  --je-ink: #142536;
+  --je-navy: #0b2033;
+  --je-gold: #896020;
+  --je-soft-gold: #c5a16a;
+  --je-rule: #d5cbb9;
+  --je-muted: #5e5b54;
+  --je-serif: 'Playfair Display', Georgia, serif;
+  --je-body: Lora, Georgia, serif;
+  --je-ui: 'Source Sans 3', system-ui, sans-serif;
+  --je-reading-size: calc(1.125rem * var(--gb-reader-font-scale, 1));
+  min-height: 100svh;
+  background: var(--je-paper);
+  color: var(--je-ink);
+  font-family: var(--je-body);
+  -webkit-font-smoothing: antialiased;
+}
+html.dark :is(.journal-edition, .articles-edition) {
+  --je-paper: #111c27;
+  --je-paper-raised: #192735;
+  --je-ink: #f2eadd;
+  --je-gold: #e2bb79;
+  --je-soft-gold: #b3925e;
+  --je-rule: #354554;
+  --je-muted: #bcb8af;
+}
+:is(.journal-edition, .articles-edition) *, :is(.journal-edition, .articles-edition) *::before, :is(.journal-edition, .articles-edition) *::after { box-sizing: border-box; }
+:is(.journal-edition, .articles-edition) :is(h1, h2, h3, h4) { color: var(--je-ink); font-family: var(--je-serif); font-weight: 600; letter-spacing: -.025em; overflow-wrap: break-word; hyphens: auto; }
+:is(.journal-edition, .articles-edition) a { color: var(--je-ink); text-underline-offset: .2em; text-decoration-thickness: 1px; }
+:is(.journal-edition, .articles-edition) a:hover { color: var(--je-gold); }
+:is(.journal-edition, .articles-edition) :is(a, button, summary):focus-visible { outline: 2px solid var(--je-gold); outline-offset: 5px; }
+:is(.journal-edition, .articles-edition) :is(code, .biblio-links, .source-note-paragraph) { overflow-wrap: anywhere; }

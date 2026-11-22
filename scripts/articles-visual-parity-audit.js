@@ -11,6 +11,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('node:child_process');
 const { repositoryStaticAssetPath } = require('./lib/static-public-asset');
 const ROOT = path.join(__dirname, '..');
 const REQUIRE_DIST = process.argv.includes('--require-dist');
@@ -69,10 +70,13 @@ must(chrome, '<head>', 'ArticlesPageChrome owns <head>');
 must(chrome, '<body class="articles-index-page">', 'ArticlesPageChrome owns body class');
 must(chrome, 'CollectionPage', 'ArticlesPageChrome preserves JSON-LD CollectionPage');
 must(chrome, 'SITE_CONFIG', 'ArticlesPageChrome preserves SITE_CONFIG');
-must(chrome, 'h-navbar', 'ArticlesPageChrome preserves top navigation');
-must(main, '<main id="main-content">', 'ArticlesMain preserves semantic main wrapper');
-must(main, "import SiteSectionsMenu from '@/components/article-pilots/_shared/SiteSectionsMenu.astro';", 'ArticlesMain imports canonical shared site menu');
-must(main, '<SiteSectionsMenu variant="plain" current="articles" />', 'ArticlesMain mounts canonical mobile/site nav projection');
+mustNot(page, 'JournalEditorialShell', 'NEWS shell on the catalog route');
+must(chrome, '<ArticlesMasthead />', 'Catalog owns its one library/site masthead');
+must(chrome, 'class="articles-edition"', 'Catalog uses an independent presentation wrapper');
+must(chrome, '<JournalFontPreloads catalogOpening />', 'Catalog reuses the selected font hint owner with its cold opening opt-in');
+must(main, '<main id="main-content" tabindex="-1">', 'ArticlesMain preserves native-focus semantic main');
+mustNot(main, '<SiteSectionsMenu', 'competing legacy menu beside selected masthead');
+must(chrome, "mobileChromeFor('/articles/')", 'Catalog preserves mobile registry authority');
 must(siteSectionsMenu, "class:list={['h-mobile-nav'", 'canonical shared menu preserves h-mobile-nav visual class');
 must(siteSectionsMenu, 'id="hMobileNav"', 'canonical shared menu preserves hMobileNav surface identity');
 must(siteSectionsMenu, 'data-gb-site-menu-runtime="canonical"', 'canonical shared menu declares single runtime ownership');
@@ -85,8 +89,9 @@ for (const comp of ['ArticlesHeroSection','ArticlesLibrarySection','ArticlesRefu
 mustNot(main, 'ArticlesPublicationsSection', 'retired hand-authored publications owner');
 mustNot(main, '../../../data/series.json', 'second catalog projection through series.json');
 must(footer, 'gb-accuracy-block', 'ArticlesPageFooter preserves feedback block');
-must(footer, 'h-scroll-top', 'ArticlesPageFooter preserves scroll-top control');
-must(footer, 'site.js', 'ArticlesPageFooter preserves runtime script');
+must(footer, 'href="#main-content"', 'ArticlesPageFooter preserves a no-JS native return to top');
+mustNot(footer, 'js/site.js', 'retired legacy catalog interaction owner');
+must(footer, 'js/sw-register.js?v=', 'ArticlesPageFooter preserves versioned SW registration');
 
 for (const [content, marker, label] of [
   [hero, 'h-hero-title', 'ArticlesHeroSection marker: h-hero-title'],
@@ -99,9 +104,9 @@ for (const [content, marker, label] of [
   [library, 'id="publikacii"', 'ArticlesLibrarySection preserves publications anchor'],
   [library, 'data-catalog-route={item.url}', 'ArticlesLibrarySection renders canonical article routes'],
   [library, 'data-catalog-series={item.url}', 'ArticlesLibrarySection renders canonical series routes'],
-  [library, 'item.image &&', 'ArticlesLibrarySection projects manifest cover presence'],
-  [library, 'class="h-article-thumb"', 'ArticlesLibrarySection preserves premium thumbnail shell'],
-  [library, 'src={item.image}', 'ArticlesLibrarySection projects canonical cover path'],
+  [refutations, 'class="h-article-thumb"', 'Curated recommendation retains its own picture shell'],
+  [refutations, '<picture>', 'Curated recommendation retains source-owned modern media'],
+  [refutations, 'searchManifest.items', 'Curated repeat also requires manifest publication membership'],
   [library, 'h-article-list--grid', 'ArticlesLibrarySection preserves premium grid classes'],
   [library, 'author?: string;', 'ArticlesLibrarySection consumes structured author authority'],
   [library, 'translator?: string;', 'ArticlesLibrarySection keeps translator authority distinct'],
@@ -116,6 +121,11 @@ for (const [content, marker, label] of [
   [endBlock, 'Soli Deo Gloria', 'ArticlesArticleEndBlock marker: SDG'],
 ]) must(content, marker, label);
 
+// Owner7009140446: the exhaustive index is text-first, not90 OG downloads.
+// The semantic SSR contract below additionally locates every image in its owner.
+for (const tag of ['<img', '<picture', '<source']) mustNot(library, tag, 'OG media in exhaustive index: ' + tag);
+must(library, "includes('PUBLICATION_HOLD')", 'Explicit HOLD veto in catalog projection');
+must(refutations, '!held(entry)', 'Curated repeat preserves explicit HOLD veto');
 mustNot(library, "item.editor ? `Редактор: ${item.editor}` : 'Господь Бог — Сила Моя'", 'retired editor-only attribution fallback');
 mustNot(library, 'editor = author', 'catalog must never synthesize editor from author');
 mustNot(library, 'editor: author', 'catalog must never copy author into editor authority');
@@ -136,9 +146,11 @@ for (const content of [page, chrome, main, footer, library, refutations, hero, e
 }
 
 const productionRoutes = pageOwnership.routes || {};
+const held = (record) => ['status', 'publicationStatus', 'publicationGate'].some((key) => record?.[key] === 'PUBLICATION_HOLD');
 const projected = (searchManifest.items || []).filter((item) => {
   if (!['article', 'series'].includes(item.type)) return false;
-  return productionRoutes[publicRoute(item.url)]?.status === 'production-dist';
+  const owner = productionRoutes[publicRoute(item.url)];
+  return owner?.status === 'production-dist' && !held(item) && !held(owner);
 });
 const projectedUrls = projected.map((item) => String(item.url || ''));
 if (new Set(projectedUrls).size === projectedUrls.length) ok(`derived catalog routes are unique: ${projectedUrls.length}`);
@@ -161,10 +173,11 @@ if (REQUIRE_DIST) {
     bad('dist /articles/ missing; run production-like build before --require-dist audit');
   } else {
     const dist = read('dist/articles/index.html');
-    for (const marker of ['articles-index-page', 'home-v20', 'h-hero-title', 'h-article-card', 'h-article-thumb', 'gb-accuracy-block', 'data-catalog-role=', 'h-mobile-nav', 'data-gb-site-menu-runtime="canonical"']) {
+    for (const marker of ['articles-index-page', 'home-v20', 'h-hero-title', 'articles-entry', 'h-article-thumb', 'gb-accuracy-block', 'data-catalog-role=', 'ae-masthead', 'articles-edition', 'mobileChromePage', 'data-articles-theme']) {
       must(dist, marker, `dist /articles/ marker: ${marker}`);
     }
     mustNot(dist, 'astro-card-grid', 'dist /articles/ generic regression marker absent');
+    for (const marker of ['je-masthead', 'journal-edition--articles', 'data-journal-theme']) mustNot(dist, marker, 'NEWS ownership marker in catalog output: ' + marker);
     const renderedCatalogUrls = [...dist.matchAll(/data-catalog-(?:route|series)=["']([^"']+)["']/g)].map((match) => match[1]);
     const renderedCatalogUnique = [...new Set(renderedCatalogUrls)].sort();
     const projectedUnique = [...new Set(projectedUrls)].sort();
@@ -176,13 +189,20 @@ if (REQUIRE_DIST) {
       ok(`dist catalog route set exactly matches projected authority: ${renderedCatalogUnique.length}/${projectedUnique.length}`);
     }
     const renderedThumbs = (dist.match(/class=["'][^"']*\bh-article-thumb\b[^"']*["']/g) || []).length;
-    if (renderedThumbs >= renderedCatalogUrls.length) ok(`dist thumbnail shells cover every catalog entry: ${renderedThumbs} shells / ${renderedCatalogUrls.length} catalog entries`);
-    else bad(`dist thumbnail shell count ${renderedThumbs} is below rendered catalog entry count ${renderedCatalogUrls.length}`);
+    const curatedPictures = projected.some((item) => item.type === 'article' && item.url === '/articles/kod-da-vinchi/') ? 1 : 0;
+    if (renderedThumbs === curatedPictures) ok(`dist image budget: ${renderedThumbs} curated picture / ${renderedCatalogUrls.length} text-first published entries`);
+    else bad(`dist picture budget changed: ${renderedThumbs} shells; expected ${curatedPictures} curated-only`);
   }
 } else {
   console.log('ℹ️ dist /articles/ assertions skipped in source mode; use --require-dist after production-like build');
 }
 
+// Owner-approved presentation migration strengthens the existing gate: parse
+// the no-JS output and fail on competing owners, text/roles/membership or SEO.
+const editorial = spawnSync(process.execPath, ['scripts/articles-editorial-contract.mjs', '--functional-check', ...(REQUIRE_DIST ? [] : ['--source-only'])], { cwd: ROOT, encoding: 'utf8' });
+if (editorial.status === 0) ok('selected edition source / SSR ownership contract passed');
+else bad(`selected edition contract failed: ${editorial.stderr || editorial.stdout || editorial.error}`);
+
 console.log('\nARTICLES VISUAL PARITY AUDIT');
 if (problems.length) { console.log(`❌ ${problems.length} problem(s).`); process.exit(1); }
-ok('/articles/ catalog is native Astro, authority-derived, role-aware, media-complete and visual-parity guarded');
+ok('/articles/ is native Astro, authority-derived, role-aware and text-first; original cover authorities preserved');

@@ -3,7 +3,16 @@ import JournalPageHead from '@/components/journal/JournalDocumentHead.astro';
 import JournalLanding from '@/components/journal/JournalLanding.astro';
 import { JOURNAL_PRODUCT_METADATA } from '@/data/journal/journalProductMetadata';
 
-const { title, description, canonical, publishedAt, modifiedAt, readingTimeMinutes } = JOURNAL_PRODUCT_METADATA;
+const {
+  title,
+  description,
+  canonical,
+  publishedAt,
+  modifiedAt,
+  readingTimeMinutes,
+} = JOURNAL_PRODUCT_METADATA;
+const socialImage = 'https://gospod-bog.ru/images/og-preview-1200x630.webp';
+const socialImageAlt = 'Открытая рукопись на камнях перед горным пейзажем; справа на скале стоит олень в свете рассвета.';
 ---
 <!DOCTYPE html>
 <html lang="ru">
@@ -12,6 +21,8 @@ const { title, description, canonical, publishedAt, modifiedAt, readingTimeMinut
       title={title}
       description={description}
       canonical={canonical}
+      socialImage={socialImage}
+      socialImageAlt={socialImageAlt}
       kind="CollectionPage"
       publishedAt={publishedAt}
       modifiedAt={modifiedAt}
