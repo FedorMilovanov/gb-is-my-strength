@@ -831,6 +831,10 @@ try {
           await page.keyboard.press('Enter'); await settleMobile();
           assert.equal(new URL(page.url()).hash, links.at(-1));
           assert.equal(await toc.evaluate((el) => el.open), !javaScriptEnabled);
+          if (!javaScriptEnabled) {
+            const nativeList = await nav.evaluate((el) => ({ maxHeight: getComputedStyle(el).maxHeight, overflowY: getComputedStyle(el).overflowY }));
+            assert.deepEqual(nativeList, { maxHeight: 'none', overflowY: 'visible' }, 'no-JS compact TOC must use natural page scrolling');
+          }
           assert.equal(await page.locator(links.at(-1)).evaluate((el) => el === document.activeElement), true);
           item.nativeTarget = await page.locator(links.at(-1)).evaluate((el) => ({ id: el.id, y: el.getBoundingClientRect().top }));
           assert.ok(item.nativeTarget.y >= 25 && item.nativeTarget.y < height - 25, 'last native target must remain on screen');
