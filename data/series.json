@@ -373,28 +373,28 @@
         "readingTime": 39
       },
       {
-        "n": "A",
-        "slug": "vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie",
-        "title": "Взрослый ребёнок ушёл: контакт, ожидание, покаяние и возвращение",
-        "status": "published",
-        "readingTime": 37
-      },
-      {
-        "n": "B",
-        "slug": "vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya",
-        "title": "Взрослый ребёнок дома: правила, деньги, помощь и последствия",
-        "status": "published",
-        "readingTime": 36
-      },
-      {
-        "n": "C",
+        "n": "IV",
         "slug": "sovershennoletie-roditelskaya-vlast-chto-menyaetsya",
         "title": "Совершеннолетие и родительская власть: что меняется, что остаётся",
         "status": "published",
         "readingTime": 35
       },
       {
-        "n": "D",
+        "n": "V",
+        "slug": "vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya",
+        "title": "Взрослый ребёнок дома: правила, деньги, помощь и последствия",
+        "status": "published",
+        "readingTime": 36
+      },
+      {
+        "n": "VI",
+        "slug": "vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie",
+        "title": "Взрослый ребёнок ушёл: контакт, ожидание, покаяние и возвращение",
+        "status": "published",
+        "readingTime": 37
+      },
+      {
+        "n": "VII",
         "slug": "vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti",
         "title": "Взрослая дочь, отец и брак: согласие и границы власти",
         "status": "published",
