@@ -1,0 +1,4 @@
+{"name":"w100-speedrail","w":320,"h":568,"rail":{"railW":88,"railScrollW":274,"railOverflow":186,"clippedBtns":["0.75×","1.25×","1.5×","1.75×","2×"]}}
+{"name":"w100-speedrail","w":390,"h":844,"rail":{"railW":158,"railScrollW":274,"railOverflow":116,"clippedBtns":["1.5×","1.75×","2×"]}}
+{"name":"a11y-modal-partTocOverlay","leaked":false,"afterEscActiveId":"mobPartTocBtn"}
+{"name":"a11y-modal-hmSettings","leakedSet":false,"afterEscActiveId":"hmSettingsBtn"}
