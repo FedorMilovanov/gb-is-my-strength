@@ -185,6 +185,23 @@ requireValue(
   supplement.includes('их номера не образуют') && !supplement.includes('Предыдущая часть показала'),
   'thematic numbering or same-page transition regressed',
 );
+const relatedPairs = [...supplement.matchAll(/'FW-(\\d{2})':\\s*\\[([\\d,\\s]+)\\]/g)];
+const relatedIds = new Set(relatedPairs.map((pair) => `FW-${pair[1]}`));
+requireValue(
+  relatedPairs.length === 20 && responses.every((item) => relatedIds.has(item.id)),
+  'thematic links must cover each of the 20 independent faithful responses',
+);
+for (const pair of relatedPairs) {
+  const points = pair[2].split(',').map((point) => Number(point.trim()));
+  requireValue(
+    points.length > 0 && points.every((point) => Number.isInteger(point) && point >= 1 && point <= 20),
+    `thematic anti-advice anchor out of range: FW-${pair[1]}`,
+  );
+}
+requireValue(
+  supplement.includes('/articles/20-antisovetov-pastoru/#point-${point}'),
+  'thematic cross-links must target the 20 existing first-article anchors',
+);
 requireValue(!supplement.includes('Research records:'), 'raw Research ids leaked into public supplementary prose');
 requireValue(!supplement.includes('<blockquote') && !supplement.includes('<q'), 'new direct quotations are forbidden');
 requireValue(!supplement.includes('<main'), 'supplement must not create a second main landmark');
