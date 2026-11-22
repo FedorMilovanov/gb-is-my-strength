@@ -128,6 +128,7 @@ jobs:
           node --check scripts/reader-library-tag-integrity-contract.mjs
           node scripts/reader-library-tag-integrity-contract.mjs
           node --check scripts/reader-w57-annotations-regression-test.mjs
+          node --check scripts/reader-w57-two-tab-browser-contract.mjs
           node scripts/reader-w57-annotations-regression-test.mjs
           node --check src/lib/reader-semantic-snapshot.mjs
           node --check scripts/reader-semantic-snapshot-contract.mjs
@@ -160,6 +161,7 @@ jobs:
           node scripts/reader-library-premium-browser-contract.cjs 2>&1 | tee reports/reader-library-premium-browser-contract.log
           READER_STRUCTURED_SHOTS=reports/reader-structured-shots node scripts/reader-structured-content-browser-contract.mjs 2>&1 | tee reports/reader-structured-content-browser-contract.log
           node scripts/reader-gill-wholepage-browser-contract.mjs 2>&1 | tee reports/reader-gill-wholepage-browser-contract.log
+          GITHUB_SHA="$(git rev-parse HEAD)" node scripts/reader-w57-two-tab-browser-contract.mjs 2>&1 | tee reports/reader-w57-two-tab-browser-contract.log
           node scripts/reader-library-short-viewport-browser-contract.mjs 2>&1 | tee reports/reader-library-short-viewport-browser-contract.log
           node scripts/shared-play-and-series-number-browser-contract.cjs 2>&1 | tee reports/shared-play-and-series-number-browser-contract.log
           node scripts/reader-mobile-canonical-browser-contract.cjs 2>&1 | tee reports/reader-mobile-canonical-browser-contract.log
@@ -197,6 +199,8 @@ jobs:
             reports/reader-structured-shots/*.jpg
             reports/reader-gill-wholepage-browser-contract.log
             reports/reader-gill-wholepage/**
+            reports/reader-w57-two-tab-browser-contract.log
+            reports/reader-w57-two-tab/**
             reports/reader-library-short-viewport-browser-contract.log
             reports/reader-library-short/**/*
           if-no-files-found: warn
