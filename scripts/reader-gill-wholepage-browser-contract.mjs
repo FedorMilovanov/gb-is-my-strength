@@ -97,6 +97,40 @@ try {
           for(const [label,selector] of Object.entries(selectorGroups)){
             const el=page.locator('article.article-body '+selector).first();
             await el.scrollIntoViewIfNeeded();
+            if(label==='illustration'){
+              // W92 had a BLANK Chromium 390/1440 visual despite "16/16
+              // PASS": the lazy source/caption existed, but screenshot ran
+              // before the actual image was painted. No eager-loading or
+              // duplicate image transport in the published article.
+              await page.waitForFunction(selector=>{
+                const figure=document.querySelector('article.article-body '+selector);
+                const img=figure?.querySelector('img');
+                if(!img||!img.complete||img.naturalWidth<1||img.naturalHeight<1)return false;
+                let node=img;
+                while(node&&node instanceof HTMLElement){
+                  const style=getComputedStyle(node);
+                  if(style.display==='none'||style.visibility==='hidden'||
+                     Number(style.opacity||1)<.9)return false;
+                  node=node.parentElement;
+                }
+                return true;
+              },selector,{timeout:18000});
+              const image=el.locator('img').first();
+              await image.evaluate(async img=>{if(img.decode)await img.decode();});
+              const ready=await image.evaluate(img=>{
+                const rect=img.getBoundingClientRect();
+                return {src:img.currentSrc||img.src,loading:img.loading,
+                  complete:img.complete,naturalWidth:img.naturalWidth,
+                  naturalHeight:img.naturalHeight,paintWidth:rect.width,
+                  paintHeight:rect.height};
+              });
+              assert.ok(ready.naturalWidth>0&&ready.naturalHeight>0&&
+                ready.paintWidth>80&&ready.paintHeight>80,
+                tag+' illustration not decoded/paintable: '+JSON.stringify(ready));
+              console.log('GILL ILLUSTRATION PAINT-READY '+tag+' '+JSON.stringify(ready));
+              await page.evaluate(()=>new Promise(done=>
+                requestAnimationFrame(()=>requestAnimationFrame(done))));
+            }
             await el.screenshot({path:path.join(shots,engine+'-'+width+'-'+theme+'-'+label+'.png'),
               animations:'disabled',timeout:12000});
           }
