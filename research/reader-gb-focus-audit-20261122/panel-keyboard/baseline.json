@@ -1,0 +1,1410 @@
+[
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "colorScheme": "light",
+    "checks": [
+      {
+        "name": "End selects/focuses Analytics and isolates TOC",
+        "pass": true,
+        "data": {
+          "focus": "gbrMarginaliaTab",
+          "closed": "false",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "false",
+              "tabindex": -1
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "true",
+              "tabindex": 0
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": true,
+              "inert": true
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": false,
+              "inert": false
+            }
+          ]
+        }
+      },
+      {
+        "name": "Analytics details expands with Enter",
+        "pass": true
+      },
+      {
+        "name": "Expanded Analytics reverse and forward trap wrap",
+        "pass": true,
+        "data": {
+          "last": true,
+          "inside": true
+        }
+      },
+      {
+        "name": "Dynamic Analytics Tab cycle stays in dialog and skips hidden TOC",
+        "pass": true,
+        "data": [
+          {
+            "id": "gbrMarginalia",
+            "tag": "SECTION",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "SUMMARY",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "DIV",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "SUMMARY",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "SUMMARY",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "SUMMARY",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "SUMMARY",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "backToSeries",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "gbrMarginaliaTab",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          }
+        ]
+      },
+      {
+        "name": "Home selects/focuses TOC and isolates Analytics",
+        "pass": true,
+        "data": {
+          "focus": "gbrTocTab",
+          "closed": "false",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "true",
+              "tabindex": 0
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "false",
+              "tabindex": -1
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": false,
+              "inert": false
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": true,
+              "inert": true
+            }
+          ]
+        }
+      },
+      {
+        "name": "ArrowRight reopens Analytics with keyboard focus",
+        "pass": true,
+        "data": {
+          "focus": "gbrMarginaliaTab",
+          "closed": "false",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "false",
+              "tabindex": -1
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "true",
+              "tabindex": 0
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": true,
+              "inert": true
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": false,
+              "inert": false
+            }
+          ]
+        }
+      },
+      {
+        "name": "Analytics Escape restores opener",
+        "pass": true,
+        "data": {
+          "focus": "mobPartTocBtn",
+          "closed": "true",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "true",
+              "tabindex": 0
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "false",
+              "tabindex": -1
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": false,
+              "inert": false
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": true,
+              "inert": true
+            }
+          ]
+        }
+      },
+      {
+        "name": "Analytics Close Enter restores opener",
+        "pass": true,
+        "data": {
+          "focus": "mobPartTocBtn",
+          "closed": "true",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "true",
+              "tabindex": 0
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "false",
+              "tabindex": -1
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": false,
+              "inert": false
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": true,
+              "inert": true
+            }
+          ]
+        }
+      },
+      {
+        "name": "Analytics Continue Enter restores opener",
+        "pass": true,
+        "data": {
+          "focus": "mobPartTocBtn",
+          "closed": "true",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "true",
+              "tabindex": 0
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "false",
+              "tabindex": -1
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": false,
+              "inert": false
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": true,
+              "inert": true
+            }
+          ]
+        }
+      },
+      {
+        "name": "No page JS errors",
+        "pass": true,
+        "data": []
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "colorScheme": "dark",
+    "checks": [
+      {
+        "name": "End selects/focuses Analytics and isolates TOC",
+        "pass": true,
+        "data": {
+          "focus": "gbrMarginaliaTab",
+          "closed": "false",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "false",
+              "tabindex": -1
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "true",
+              "tabindex": 0
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": true,
+              "inert": true
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": false,
+              "inert": false
+            }
+          ]
+        }
+      },
+      {
+        "name": "Analytics details expands with Enter",
+        "pass": true
+      },
+      {
+        "name": "Expanded Analytics reverse and forward trap wrap",
+        "pass": true,
+        "data": {
+          "last": true,
+          "inside": true
+        }
+      },
+      {
+        "name": "Dynamic Analytics Tab cycle stays in dialog and skips hidden TOC",
+        "pass": true,
+        "data": [
+          {
+            "id": "gbrMarginalia",
+            "tag": "SECTION",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "SUMMARY",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "DIV",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "SUMMARY",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "SUMMARY",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "SUMMARY",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "SUMMARY",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "backToSeries",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "gbrMarginaliaTab",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          }
+        ]
+      },
+      {
+        "name": "Home selects/focuses TOC and isolates Analytics",
+        "pass": true,
+        "data": {
+          "focus": "gbrTocTab",
+          "closed": "false",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "true",
+              "tabindex": 0
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "false",
+              "tabindex": -1
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": false,
+              "inert": false
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": true,
+              "inert": true
+            }
+          ]
+        }
+      },
+      {
+        "name": "ArrowRight reopens Analytics with keyboard focus",
+        "pass": true,
+        "data": {
+          "focus": "gbrMarginaliaTab",
+          "closed": "false",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "false",
+              "tabindex": -1
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "true",
+              "tabindex": 0
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": true,
+              "inert": true
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": false,
+              "inert": false
+            }
+          ]
+        }
+      },
+      {
+        "name": "Analytics Escape restores opener",
+        "pass": true,
+        "data": {
+          "focus": "mobPartTocBtn",
+          "closed": "true",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "true",
+              "tabindex": 0
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "false",
+              "tabindex": -1
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": false,
+              "inert": false
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": true,
+              "inert": true
+            }
+          ]
+        }
+      },
+      {
+        "name": "Analytics Close Enter restores opener",
+        "pass": true,
+        "data": {
+          "focus": "mobPartTocBtn",
+          "closed": "true",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "true",
+              "tabindex": 0
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "false",
+              "tabindex": -1
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": false,
+              "inert": false
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": true,
+              "inert": true
+            }
+          ]
+        }
+      },
+      {
+        "name": "Analytics Continue Enter restores opener",
+        "pass": true,
+        "data": {
+          "focus": "mobPartTocBtn",
+          "closed": "true",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "true",
+              "tabindex": 0
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "false",
+              "tabindex": -1
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": false,
+              "inert": false
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": true,
+              "inert": true
+            }
+          ]
+        }
+      },
+      {
+        "name": "No page JS errors",
+        "pass": true,
+        "data": []
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 568,
+      "height": 320
+    },
+    "colorScheme": "light",
+    "checks": [
+      {
+        "name": "End selects/focuses Analytics and isolates TOC",
+        "pass": true,
+        "data": {
+          "focus": "gbrMarginaliaTab",
+          "closed": "false",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "false",
+              "tabindex": -1
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "true",
+              "tabindex": 0
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": true,
+              "inert": true
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": false,
+              "inert": false
+            }
+          ]
+        }
+      },
+      {
+        "name": "Analytics details expands with Enter",
+        "pass": true
+      },
+      {
+        "name": "Expanded Analytics reverse and forward trap wrap",
+        "pass": true,
+        "data": {
+          "last": true,
+          "inside": true
+        }
+      },
+      {
+        "name": "Dynamic Analytics Tab cycle stays in dialog and skips hidden TOC",
+        "pass": true,
+        "data": [
+          {
+            "id": "gbrMarginalia",
+            "tag": "SECTION",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "SUMMARY",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "DIV",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "SUMMARY",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "SUMMARY",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "SUMMARY",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "SUMMARY",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "backToSeries",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "gbrMarginaliaTab",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          }
+        ]
+      },
+      {
+        "name": "Home selects/focuses TOC and isolates Analytics",
+        "pass": true,
+        "data": {
+          "focus": "gbrTocTab",
+          "closed": "false",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "true",
+              "tabindex": 0
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "false",
+              "tabindex": -1
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": false,
+              "inert": false
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": true,
+              "inert": true
+            }
+          ]
+        }
+      },
+      {
+        "name": "ArrowRight reopens Analytics with keyboard focus",
+        "pass": true,
+        "data": {
+          "focus": "gbrMarginaliaTab",
+          "closed": "false",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "false",
+              "tabindex": -1
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "true",
+              "tabindex": 0
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": true,
+              "inert": true
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": false,
+              "inert": false
+            }
+          ]
+        }
+      },
+      {
+        "name": "Analytics Escape restores opener",
+        "pass": true,
+        "data": {
+          "focus": "mobPartTocBtn",
+          "closed": "true",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "true",
+              "tabindex": 0
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "false",
+              "tabindex": -1
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": false,
+              "inert": false
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": true,
+              "inert": true
+            }
+          ]
+        }
+      },
+      {
+        "name": "Analytics Close Enter restores opener",
+        "pass": true,
+        "data": {
+          "focus": "mobPartTocBtn",
+          "closed": "true",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "true",
+              "tabindex": 0
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "false",
+              "tabindex": -1
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": false,
+              "inert": false
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": true,
+              "inert": true
+            }
+          ]
+        }
+      },
+      {
+        "name": "Analytics Continue Enter restores opener",
+        "pass": true,
+        "data": {
+          "focus": "mobPartTocBtn",
+          "closed": "true",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "true",
+              "tabindex": 0
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "false",
+              "tabindex": -1
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": false,
+              "inert": false
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": true,
+              "inert": true
+            }
+          ]
+        }
+      },
+      {
+        "name": "No page JS errors",
+        "pass": true,
+        "data": []
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 568,
+      "height": 320
+    },
+    "colorScheme": "dark",
+    "checks": [
+      {
+        "name": "End selects/focuses Analytics and isolates TOC",
+        "pass": true,
+        "data": {
+          "focus": "gbrMarginaliaTab",
+          "closed": "false",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "false",
+              "tabindex": -1
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "true",
+              "tabindex": 0
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": true,
+              "inert": true
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": false,
+              "inert": false
+            }
+          ]
+        }
+      },
+      {
+        "name": "Analytics details expands with Enter",
+        "pass": true
+      },
+      {
+        "name": "Expanded Analytics reverse and forward trap wrap",
+        "pass": true,
+        "data": {
+          "last": true,
+          "inside": true
+        }
+      },
+      {
+        "name": "Dynamic Analytics Tab cycle stays in dialog and skips hidden TOC",
+        "pass": true,
+        "data": [
+          {
+            "id": "gbrMarginalia",
+            "tag": "SECTION",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "SUMMARY",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "DIV",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "SUMMARY",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "SUMMARY",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "SUMMARY",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "SUMMARY",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": true,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "backToSeries",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          },
+          {
+            "id": "gbrMarginaliaTab",
+            "tag": "BUTTON",
+            "inDialog": true,
+            "inToc": false,
+            "inResearch": false,
+            "hiddenAncestor": false
+          }
+        ]
+      },
+      {
+        "name": "Home selects/focuses TOC and isolates Analytics",
+        "pass": true,
+        "data": {
+          "focus": "gbrTocTab",
+          "closed": "false",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "true",
+              "tabindex": 0
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "false",
+              "tabindex": -1
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": false,
+              "inert": false
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": true,
+              "inert": true
+            }
+          ]
+        }
+      },
+      {
+        "name": "ArrowRight reopens Analytics with keyboard focus",
+        "pass": true,
+        "data": {
+          "focus": "gbrMarginaliaTab",
+          "closed": "false",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "false",
+              "tabindex": -1
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "true",
+              "tabindex": 0
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": true,
+              "inert": true
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": false,
+              "inert": false
+            }
+          ]
+        }
+      },
+      {
+        "name": "Analytics Escape restores opener",
+        "pass": true,
+        "data": {
+          "focus": "mobPartTocBtn",
+          "closed": "true",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "true",
+              "tabindex": 0
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "false",
+              "tabindex": -1
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": false,
+              "inert": false
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": true,
+              "inert": true
+            }
+          ]
+        }
+      },
+      {
+        "name": "Analytics Close Enter restores opener",
+        "pass": true,
+        "data": {
+          "focus": "mobPartTocBtn",
+          "closed": "true",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "true",
+              "tabindex": 0
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "false",
+              "tabindex": -1
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": false,
+              "inert": false
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": true,
+              "inert": true
+            }
+          ]
+        }
+      },
+      {
+        "name": "Analytics Continue Enter restores opener",
+        "pass": true,
+        "data": {
+          "focus": "mobPartTocBtn",
+          "closed": "true",
+          "tabs": [
+            {
+              "id": "gbrTocTab",
+              "selected": "true",
+              "tabindex": 0
+            },
+            {
+              "id": "gbrMarginaliaTab",
+              "selected": "false",
+              "tabindex": -1
+            }
+          ],
+          "panels": [
+            {
+              "id": "gbs2PartToc",
+              "hidden": false,
+              "inert": false
+            },
+            {
+              "id": "gbrMarginalia",
+              "hidden": true,
+              "inert": true
+            }
+          ]
+        }
+      },
+      {
+        "name": "No page JS errors",
+        "pass": true,
+        "data": []
+      }
+    ]
+  }
+]
