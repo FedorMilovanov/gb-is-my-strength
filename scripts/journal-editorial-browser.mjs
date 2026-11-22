@@ -716,7 +716,18 @@ try {
           item.failure = error.message; item.stack = error.stack; report.problems.push(`${name}: ${error.message}`);
           console.error(`FAIL ${name}: ${error.message.slice(0, 280)}`);
           await shot(page, `${name}-failure`).catch(() => {});
-        } finally { report.shortViewports.push(item); await context.close(); }
+        } finally {
+          report.shortViewports.push(item);
+          // Keep the first real WebKit native-Tab/root-scroll measurements even
+          // when GitHub cancels a superseded run before the final JSON write.
+          // This is a deliberately PARTIAL forensic file, never a PASS receipt.
+          fs.writeFileSync(path.join(output, 'short-checkpoint.json'), JSON.stringify({
+            ...report, checkpoint: { partial: true, completedShortCases: report.shortViewports.length,
+              expectedShortCases: 2 * widths.filter((value) => value >= 1024).length * shortHeights.length * 2 * 2,
+              evidenceOnly: true }
+          }, null, 2) + '\n');
+          await context.close();
+        }
       }
   // Compact TOC has its own scrollport. Real native Tab must leave room for
   // the painted outline, not merely the link's border box. Sample from the
