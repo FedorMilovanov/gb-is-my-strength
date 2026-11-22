@@ -20,6 +20,32 @@ const readerStepCorrections: Record<string, Record<string, string>> = {
   },
 };
 const readerStep = (caseId: string, step: string) => readerStepCorrections[caseId]?.[step] ?? step;
+  
+// Explicit editorial cross-references, not a numbered one-to-one pairing or a
+// claim that any single response resolves every manifestation of a problem.
+const relatedAntiAdvice: Record<string, readonly number[]> = {
+  'FW-01': [3, 8, 17],
+  'FW-02': [17, 19],
+  'FW-03': [17, 19],
+  'FW-04': [10, 14],
+  'FW-05': [10, 14],
+  'FW-06': [4, 6],
+  'FW-07': [5, 6, 15],
+  'FW-08': [13, 19],
+  'FW-09': [18, 19],
+  'FW-10': [20],
+  'FW-11': [18],
+  'FW-12': [10, 14],
+  'FW-13': [4, 6],
+  'FW-14': [4, 19],
+  'FW-15': [18, 19],
+  'FW-16': [16, 17],
+  'FW-17': [1, 2],
+  'FW-18': [7, 16],
+  'FW-19': [18, 20],
+  'FW-20': [20],
+};
+
 ---
 
 <section
@@ -133,6 +159,12 @@ const readerStep = (caseId: string, step: string) => readerStepCorrections[caseI
         <p><strong>Сложность:</strong> {item.tension}</p>
         <p><strong>Верный ответ:</strong> {item.response}</p>
         <p class="muted"><strong>Где этого недостаточно:</strong> {item.limit}</p>
+        <p class="source-ref">
+          <strong>Связанные темы из Части I:</strong>
+          {(relatedAntiAdvice[item.id] ?? []).map((point, pointIndex) => (
+            <span>{pointIndex > 0 ? ' · ' : ' '}<a href={`/articles/20-antisovetov-pastoru/#point-${point}`}>антисовет № {point}</a></span>
+          ))}
+        </p>
         <p class="source-ref">
           Примеры:
           {pathways.filter((pathway) => item.caseIds.includes(pathway.id)).map((pathway, index) => (
