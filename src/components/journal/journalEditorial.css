@@ -168,7 +168,11 @@
   /* The rail is the scroll owner in short desktop windows. Do not chain its
      scroll to the article, nor use its scrolling descendants as document
      anchors when native Tab brings individual entries into view. */
-  .journal-edition .je-editorial-rail { --je-rail-clearance: 72px; top: var(--je-rail-clearance); max-height: calc(100svh - 2 * var(--je-rail-clearance) - env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior-y: contain; overflow-anchor: none; padding: 8px; margin-inline: -8px; scroll-padding-block: 8px; }
+  .journal-edition .je-editorial-rail { --je-rail-clearance: 72px; top: var(--je-rail-clearance); }
+  /* The sticky aside is not a scroll container. Native focus can reveal links
+     inside this nested scrollport without scrolling the article. No scroll trap
+     when the panel fits or the user reaches its boundary. */
+  .journal-edition .je-editorial-rail__scrollport { max-height: calc(100svh - 2 * var(--je-rail-clearance) - env(safe-area-inset-bottom, 0px)); overflow-y: auto; overflow-anchor: none; padding: 8px; margin-inline: -8px; scroll-padding-block: 8px; }
 }
 @media (max-width: 1199px) and (min-width: 1024px) {
   .journal-edition .je-article-header { column-gap: 32px; }
@@ -182,6 +186,7 @@
   .journal-edition .je-article-cover { width: 100%; }
   .journal-edition .journal-feature-grid { grid-template-columns: minmax(0, 1fr); gap: 0; max-width: 740px; }
   .journal-edition .je-editorial-rail { grid-column: 1; grid-row: 1; position: static; top: calc(52px + env(safe-area-inset-top, 0px)); z-index: 20; margin: 0 0 8px; border-bottom: 1px solid var(--je-rule); }
+  .journal-edition .je-editorial-rail__scrollport { max-height: none; overflow: visible; padding: 0; margin: 0; }
   /* Without scripts the disclosure stays open: keep it in flow, not over the
      reader's source links. Sticky is safe only after the TOC adapter is bound. */
   .journal-edition .je-editorial-rail:has([data-journal-contents-bound]) { position: sticky; }

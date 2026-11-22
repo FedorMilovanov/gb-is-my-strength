@@ -85,23 +85,34 @@ const audit = async (page) => {
 const contextFor = (width, theme, options = {}) => browser.newContext({ viewport: { width, height: width <= 430 ? 844 : width === 768 ? 1024 : 1080 },
   colorScheme: theme, deviceScaleFactor: 1, serviceWorkers: 'block', ...options });
 const ready = async (page, url, stage = () => {}) => {
-  // Keep both real load and real font readiness. Firefox's no-JS context has
-  // previously stalled at this combined boundary; distinguish the two
-  // milestones instead of silently timing out the whole 75s mobile case.
   stage('navigation/load');
   const response = await page.goto(url, { waitUntil: 'load', timeout: 25_000 });
   assert.equal(response.status(), 200, url);
   stage('navigation/fonts-ready');
-  let fontTimeout;
-  try {
-    await Promise.race([
-      page.evaluate(() => document.fonts.ready),
-      new Promise((_, reject) => {
-        fontTimeout = setTimeout(() => reject(new Error('font readiness did not settle within 15s')), 15_000);
-      }),
-    ]);
-  } finally {
-    clearTimeout(fontTimeout);
+  // A Firefox browsing context with JS disabled may leave an injected
+  // document.fonts.ready promise unsettled. Observe the actual FontFaceSet
+  // from the test driver, even with page scripts disabled; require the three
+  // typefaces rendered by every Journal route, and fail on font-face errors.
+  const deadline = Date.now() + 15_000;
+  let fonts, stable = 0;
+  while (true) {
+    fonts = await page.evaluate(() => ({
+      status: document.fonts.status,
+      faces: [...document.fonts].map((face) => ({
+        family: face.family, weight: face.weight, status: face.status
+      }))
+    }));
+    const failed = fonts.faces.filter((face) => face.status === 'error');
+    assert.deepEqual(failed, [], 'CSS font faces failed to load: ' + JSON.stringify(failed));
+    const loadedFamilies = new Set(fonts.faces.filter((face) => face.status === 'loaded')
+      .map((face) => face.family.replace(/^["']|["']$/g, '')));
+    const familiesReady = ['Lora', 'Source Sans 3', 'Playfair Display']
+      .every((family) => loadedFamilies.has(family));
+    stable = fonts.status === 'loaded' && familiesReady ? stable + 1 : 0;
+    if (stable >= 2) break;
+    if (Date.now() >= deadline) throw new Error('font readiness did not settle within 15s: '
+      + JSON.stringify({ status: fonts.status, familiesReady, faces: fonts.faces }));
+    await page.waitForTimeout(120);
   }
   stage('navigation/complete');
   return response;
@@ -594,7 +605,8 @@ try {
         const item = { kind: route.kind, width, height, theme, javaScriptEnabled, runtime: [] };
         const name = `${route.kind}-short-${width}x${height}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}`;
         monitorRuntime(page, item.runtime, { isIgnoredConsole: isExpectedJournalConsole });
-        const rail = page.locator('.je-editorial-rail');
+        const rail = page.locator('.je-editorial-rail__scrollport');
+        const stickyRail = page.locator('.je-editorial-rail');
         const toc = page.locator('[data-journal-contents]');
         const summary = toc.locator('summary');
         const last = toc.locator('li:last-child a');
@@ -609,14 +621,21 @@ try {
           await ready(page, route.url);
           await middle.scrollIntoViewIfNeeded(); await settleWithoutScripts(page);
           item.before = await railState();
+          item.sticky = await stickyRail.evaluate((el) => ({ position: getComputedStyle(el).position,
+            overflow: getComputedStyle(el).overflowY, top: el.getBoundingClientRect().top }));
+          assert.equal(item.sticky.position, 'sticky', 'desktop TOC wrapper must own sticky layout');
+          assert.equal(item.sticky.overflow, 'visible', 'sticky wrapper must not be a second scrollport');
           assert.ok(item.before.rect.top >= item.before.clearance.top - 1 && item.before.rect.bottom <= height - item.before.clearance.bottom + 1,
             `sticky rail exceeds the document's focus-safe viewport: ${JSON.stringify(item.before)}`);
           assert.equal(item.before.horizontalOverflow, 0);
           assert.ok(item.before.scrollHeight > item.before.clientHeight, 'short desktop rail must have a native scroll range');
           await rail.hover({ position: { x: 80, y: 80 } });
-          await page.mouse.wheel(0, 1500); await page.waitForTimeout(160);
+          // A wheel step within the available scroll range must not disturb
+          // the reading position. At the boundary, wheel chains naturally.
+          await page.mouse.wheel(0, 120); await page.waitForTimeout(160);
           item.afterWheel = await railState();
-          assert.ok(item.afterWheel.scrollTop > 0, 'wheel must reveal the end of the rail');
+          assert.ok(item.afterWheel.scrollTop > 0 && item.afterWheel.scrollTop <= item.afterWheel.scrollHeight - item.afterWheel.clientHeight,
+            'wheel must move within the rail scroll range');
           assert.ok(Math.abs(item.afterWheel.y - item.before.y) < 1, 'scrolling the rail must not displace the reading position');
           // Hidden desktop return links cannot occur in native Tab order.
           // Exercise EVERY rendered keyboard link (TOC and rail notes), not
