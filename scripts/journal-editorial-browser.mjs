@@ -706,10 +706,18 @@ try {
           assert.ok(item.nativeTarget.y >= 25 && item.nativeTarget.y < height / 2, 'native section heading must stay visible');
           if (width === 1440 && height === 480 && theme === 'light') {
             await page.setViewportSize({ width: 844, height: 390 }); await settleWithoutScripts(page);
-            item.mobileResize = await rail.evaluate((el) => ({ overflow: getComputedStyle(el).overflowY,
-              maxHeight: getComputedStyle(el).maxHeight, position: getComputedStyle(el).position }));
-            assert.equal(item.mobileResize.overflow, 'visible'); assert.equal(item.mobileResize.maxHeight, 'none');
-            assert.equal(item.mobileResize.position, javaScriptEnabled ? 'sticky' : 'static');
+            item.mobileResize = await rail.evaluate((el) => ({
+              overflow: getComputedStyle(el).overflowY,
+              maxHeight: getComputedStyle(el).maxHeight,
+              innerPosition: getComputedStyle(el).position,
+              outerPosition: getComputedStyle(el.closest('.je-editorial-rail')).position
+            }));
+            assert.equal(item.mobileResize.overflow, 'visible');
+            assert.equal(item.mobileResize.maxHeight, 'none');
+            assert.equal(item.mobileResize.innerPosition, 'static',
+              'mobile scrollport must not become a second sticky element');
+            assert.equal(item.mobileResize.outerPosition, javaScriptEnabled ? 'sticky' : 'static',
+              'the outer rail must retain the original JS/no-JS mobile sticky ownership');
             assert.equal(await toc.evaluate((el) => el.open), !javaScriptEnabled);
             if (javaScriptEnabled) await summary.click();
             await last.click(); await settleWithoutScripts(page);
