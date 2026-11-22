@@ -6,25 +6,25 @@ This contract records the canonical seven-article teen/adult-child publication s
 
 ## Canonical linear order
 
-All seven articles are first-class **core** reading steps. Companion letters A–D are presentation labels only; they are **not** `letter`/`satellite` items in the shared series engine.
+All seven articles are first-class **core** reading steps with sequential Roman marks **I–VII**. Each part is a full chapter of the series; none is a `letter`/`satellite` item in the shared series engine.
 
 | Step | Display mark | Slug | Mobile label | Reading time |
 | --- | --- | --- | --- | ---: |
 | 1 | I | `podrostok-za-kadrom-dvoynaya-zhizn` | Двойная жизнь | 32 min |
 | 2 | II | `podrostok-za-kadrom-roditelyam-posle-razoblacheniya` | После разоблачения | 43 min |
 | 3 | III | `podrostok-za-kadrom-chto-delat-tserkvi` | Что делает церковь | 39 min |
-| 4 | A | `vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie` | Ушёл из дома | 37 min |
-| 5 | B | `vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya` | Дом и деньги | 36 min |
-| 6 | C | `sovershennoletie-roditelskaya-vlast-chto-menyaetsya` | Власть после 18 | 35 min |
-| 7 | D | `vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti` | Дочь и брак | 42 min |
+| 4 | IV | `sovershennoletie-roditelskaya-vlast-chto-menyaetsya` | Власть после 18 | 35 min |
+| 5 | V | `vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya` | Дом и деньги | 36 min |
+| 6 | VI | `vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie` | Ушёл из дома | 37 min |
+| 7 | VII | `vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti` | Дочь и брак | 42 min |
 
 Total reading time: **264 min**.
 
 Required prev/next chain:
 
-`I -> II -> III -> A -> B -> C -> D`
+`I -> II -> III -> IV -> V -> VI -> VII`
 
-The shared `mark.kind: 'letter'` means a satellite that is excluded from normal prev/next and desktop rail. Therefore A–D MUST NOT use that semantic. Their letters must be rendered as labels on otherwise core items.
+The shared `mark.kind: 'letter'` means a satellite that is excluded from normal prev/next and desktop rail. Therefore none of I–VII may use that semantic; the shared series config must use core `roman` marks consistently.
 
 ## Shared reader engine
 
@@ -76,7 +76,7 @@ Before indexability, each article must have an authoritative publication project
 - Pagefind/search metadata;
 - feed/sitemap membership.
 
-The series registry, TypeScript config, frontmatter projection, route profiles, landing order and prev/next chain must agree on all seven slugs and order. A valid registry on one side is not sufficient if another projection disagrees.
+The series registry, TypeScript config, frontmatter projection, route profiles, landing order and prev/next chain must agree on all seven slugs and order. New logical order from 2026-11-23: adolescence I–III → adulthood and parental authority IV → shared home and money V → departure and restoration VI → marriage VII. Old slug/route and OG asset names are stable identifiers and must not be renamed to mirror new step numbers. A valid registry on one side is not sufficient if another projection disagrees.
 
 ## Scripture references and glossary
 
