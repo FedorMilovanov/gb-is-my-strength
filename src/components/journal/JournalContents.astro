@@ -69,6 +69,27 @@ const { entries, label = 'В этом материале', summaryId, initialCom
       // newly closed disclosure, preserving the native scroll destination.
       window.requestAnimationFrame(() => { target.focus({ preventScroll: true }); });
     });
+    // Firefox can focus a valid TOC link while leaving part of its painted
+    // focus ring below the native scrollport (especially at 320x390).
+    // Keep the browser's actual Tab/focus order: only adjust this scrollport
+    // by the measured outline overshoot after the native focus event.
+    contents.addEventListener('focusin', (event) => {
+      if (!compact.matches || !(event.target instanceof Element)) return;
+      const link = event.target.closest('nav a[href]');
+      const nav = contents.querySelector('nav');
+      if (!link || !nav || !nav.contains(link) || nav.scrollHeight <= nav.clientHeight) return;
+      window.requestAnimationFrame(() => {
+        if (document.activeElement !== link || !contents.open) return;
+        const box = nav.getBoundingClientRect();
+        const rect = link.getBoundingClientRect();
+        const style = getComputedStyle(link);
+        const outline = Math.max(0, (parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0));
+        const top = box.top + nav.clientTop + outline + 1;
+        const bottom = box.top + nav.clientTop + nav.clientHeight - outline - 1;
+        if (rect.top < top) nav.scrollTop -= top - rect.top;
+        else if (rect.bottom > bottom) nav.scrollTop += rect.bottom - bottom;
+      });
+    });
     contents.addEventListener('keydown', (event) => {
       if (event.key !== 'Escape' || !compact.matches || !contents.open) return;
       contents.open = false;
