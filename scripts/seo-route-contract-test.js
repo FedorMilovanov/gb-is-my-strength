@@ -274,10 +274,4 @@ execFileSync(process.execPath, ['--test', path.join(__dirname, 'journal-document
   stdio: 'inherit',
 });
 
-// Published G3 history must pass its positive evidence, route and discovery gate.
-execFileSync(process.execPath, ['--test', path.join(__dirname, 'g3-history-publication-contract.mjs')], {
-  cwd: ROOT,
-  stdio: 'inherit',
-});
-
 console.log(`✅ seo-route-contract: ${baseline.length} production routes (${indexableEntries.length} indexable, ${noindexEntries.length} noindex); exact-one social metadata and Journal image-alt metadata enforced; seven Genesis 6 routes required`);

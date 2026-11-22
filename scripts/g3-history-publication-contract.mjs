@@ -53,7 +53,8 @@ test('All prose citations and bibliography references resolve to a real source a
   for (const source of sources) {
     assert.match(source.url, /^https:\/\//);
     assert.ok(source.title.trim() && source.boundary.trim(), 'visible bibliographic evidence and limits required');
-    assert.ok(article.includes(source.returnHref) || historicalText.includes(source.returnHref), `missing return target ${source.returnHref}`);
+    // The returnHref is stored as data and rendered by JournalSourceReturn.
+    // Verify its referenced DOM target instead of expecting a literal href in source prose.
     const target = source.returnHref.slice(1);
     assert.ok(new RegExp(`id=["']${target}["']`).test(article+historicalText), `no return anchor ${source.id}: ${target}`);
   }
