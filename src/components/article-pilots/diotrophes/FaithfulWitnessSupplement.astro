@@ -8,6 +8,18 @@ const content = manifest;
 const pathways = caseData.casePathways;
 const responses = responseData.faithfulResponses;
 const readerSources = sourceData.readerSources;
+
+// The Wave 11 evidence snapshot remains unchanged. These are narrowly verified
+// reader-facing clarifications, not edits to the historical Research handoff.
+const readerStepCorrections: Record<string, Record<string, string>> = {
+  'cj-mahaney': {
+    'осуждение советом': 'совет старейшин осуждает публичные заявления Брента Детуайлера',
+  },
+  'paige-patterson': {
+    'разрешение на доступ к записи': 'изучение записи студентки, предоставленной с её разрешения',
+  },
+};
+const readerStep = (caseId: string, step: string) => readerStepCorrections[caseId]?.[step] ?? step;
 ---
 
 <section
@@ -24,7 +36,7 @@ const readerSources = sourceData.readerSources;
     <p class="anti-kicker">Верные люди в трудной церковной ситуации</p>
     <h2 id="faithful-witness-heading">Как сохраняли верность Богу, не превращая послушание лидеру в молчание</h2>
     <p>
-      Предыдущая часть показала механизмы власти. Здесь центр переносится на тех, кто жил
+      Выше рассмотрены механизмы власти. Теперь внимание обращено к людям, которые жили
       внутри кризиса: сестёр и братьев, рядовых членов, сотрудников, пасторов-собратьев,
       старейшин, попечителей и защитников пострадавших. Они часто не хотели разрушать церковь,
       не отрицали добра, полученного через служение, и не начинали с публичного обвинения.
@@ -70,7 +82,7 @@ const readerSources = sourceData.readerSources;
         <p><strong>Кто действовал:</strong> {pathway.actors}.</p>
         <p><strong>Напряжение верности:</strong> {pathway.loyaltyTension}</p>
         <ol class="action-chain">
-          {pathway.steps.map((step) => <li>{step}</li>)}
+          {pathway.steps.map((step) => <li>{readerStep(pathway.id, step)}</li>)}
         </ol>
         <p><strong>Урок:</strong> {pathway.lesson}</p>
         <p class="muted"><strong>Граница:</strong> {pathway.boundary}</p>
@@ -79,8 +91,11 @@ const readerSources = sourceData.readerSources;
           {readerSources.filter((source) => pathway.sourceIds.includes(source.id)).map((source, index) => (
             <span>{index > 0 ? ' · ' : ' '}<a href={source.href} rel="noopener noreferrer">{source.label}</a></span>
           ))}
-          {!readerSources.some((source) => pathway.sourceIds.includes(source.id)) && (
-            <span> Для этой истории отдельная прямая ссылка пока не представлена в публичной подборке.</span>
+          {pathway.id === 'paige-patterson' && (
+            <span> <a href="#sources">Три заявления SWBTS о Паттерсоне и решениях попечителей находятся в основном списке источников выше</a>.</span>
+          )}
+          {!readerSources.some((source) => pathway.sourceIds.includes(source.id)) && pathway.id !== 'paige-patterson' && (
+            <span> См. основной список источников и границы подтверждения этого случая.</span>
           )}
         </p>
       </section>
@@ -106,9 +121,9 @@ const readerSources = sourceData.readerSources;
 
   <h2 id="twenty-faithful-responses">Двадцать верных ответов</h2>
   <p>
-    Эти ответы соотносятся с темами «20 антисоветов пастору»: не дают нового механического
-    закона, а показывают, чем зрелое действие отличается и от слепого молчания, и от
-    мгновенного публичного приговора.
+    Эти ответы соотносятся с темами «20 антисоветов пастору», но их номера не образуют
+    пар с номерами антисоветов. Это самостоятельные практические различения: они показывают,
+    чем ответственное действие отличается от слепого молчания и от поспешного публичного приговора.
   </p>
 
   <div class="case-grid faithful-response-grid">
