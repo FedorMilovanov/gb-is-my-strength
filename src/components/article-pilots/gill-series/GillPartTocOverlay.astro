@@ -234,6 +234,21 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
 </script>
 
 <style is:global>
+  /* W84: front-matter and handbook entries are reference indexes, not
+     progress timelines. Keep dots/rail for numbered parts only. Mobile
+     editorial rhythm uses the established original typography and links. */
+  @media (max-width:767px) {
+    [data-gill-v16] #partTocOverlay .gbat-part--label .gbat-rail,
+    [data-gill-v16] #partTocOverlay .gbat-part--label .gbat-dot {
+      display:none;
+    }
+    [data-gill-v16] #partTocOverlay .gbat-part--label .gbat-sub:not(.gbat-sat) {
+      padding-inline-start:22px;
+    }
+    [data-gill-v16] #partTocOverlay .gbat-part--label .gbat-sub.h3:not(.gbat-sat) {
+      padding-inline-start:38px;
+    }
+  }
   @media (max-width:84.999em) {
     [data-gill-v16] #partTocOverlay .toc-sheet__handle {
       flex:0 0 28px;
