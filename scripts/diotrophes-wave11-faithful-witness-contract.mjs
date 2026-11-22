@@ -178,7 +178,7 @@ requireValue(
   'misleading missing-source statement returned',
 );
 requireValue(
-  supplement.includes('совет старейшин осуждает публичные заявления Брента Детуайлера'),
+  supplement.includes('совет старейшин публично поддерживает служение Махейни и осуждает обвинения Брента Детуайлера'),
   'Mahaney chronology again blurs the object of the council statement',
 );
 requireValue(
