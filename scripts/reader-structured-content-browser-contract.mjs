@@ -48,6 +48,7 @@ try {
             return {
               rows: rows.length, cells: cells.length, labels, w: r.width, parentW: parent.width,
               scroll: t.parentElement.scrollWidth - t.parentElement.clientWidth,
+              thead: getComputedStyle(t.tHead).display,
               tbody: getComputedStyle(t.tBodies[0]).display,
               row: getComputedStyle(rows[0]).display,
               cell: getComputedStyle(cells[0]).display,
@@ -61,6 +62,8 @@ try {
         assert.equal(info.entries.reduce((s, e) => s + e.rows, 0), 34, key + ': 34 rows');
         assert.equal(info.entries.reduce((s, e) => s + e.cells, 0), 97, key + ': 97 cells');
         assert.ok(info.entries.every(e => e.labels), key + ': all source column labels');
+        assert.ok(info.entries.every(e => e.thead !== 'none'),
+          key + ': authored column headers must not be display:none in a11y tree');
         assert.equal(info.overflow, 0, key + ': no horizontal page overflow');
         if (width <= 700) {
           assert.ok(info.entries.every(e => e.tbody === 'grid' && e.row === 'grid' && e.cell === 'block'), key + ': stacked cards');
@@ -68,7 +71,9 @@ try {
           assert.ok(info.entries.every(e => e.pseudoDisplay === 'block' && e.pseudoPosition === 'static'), key + ': visible labels never overlap');
         } else assert.ok(info.entries.every(e => e.tbody !== 'grid'), key + ': desktop table remains');
         const ax = await page.locator('table[data-responsive-layout]').nth(1).ariaSnapshot();
-        assert.ok(ax.includes('table:') && ax.includes('rowgroup:') && ax.includes('cell "'), key + ': semantic table cells accessible');
+        assert.ok(ax.includes('table:') && ax.includes('rowgroup:') &&
+          ax.includes('cell "') && ax.includes('columnheader "'),
+          key + ': semantic table and authored column headers accessible');
         if ((width === 320 || width === 390 || width === 1440) && theme === 'light') {
           await page.locator('table[data-responsive-layout]').nth(1).scrollIntoViewIfNeeded();
           await page.screenshot({ path: path.join(shots, engine + '-' + width + '-historical-context.jpg'), type: 'jpeg', quality: 75 });
@@ -78,6 +83,55 @@ try {
         await ctx.close();
       }
     }
+
+    // W95: a second non-Gill, non-Nagornaya Reader route uses the very
+    // SAME typed prose comparison. Preserve exact authored content/headers,
+    // legitimate desktop table, phone reflow, screen-reader column names.
+    for(const width of [320,390,768]){
+      const phone=width<700;
+      const adult=await browser.newContext({viewport:{width,height:844},
+        isMobile:phone,hasTouch:phone,serviceWorkers:'block',reducedMotion:'reduce'});
+      const article=await adult.newPage();
+      const destination='http://127.0.0.1:'+server.address().port+
+        '/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/';
+      const response=await article.goto(destination,{waitUntil:'domcontentloaded',timeout:25000});
+      assert.equal(response.status(),200,engine+' adulthood route');
+      const props=await article.evaluate(()=>{
+        const t=document.querySelector('article.article-body table[data-responsive-layout="stacked-prose"]');
+        if(!t)return null;
+        const heads=[...t.querySelectorAll('thead th')].map(x=>x.textContent.trim());
+        const trs=[...t.querySelectorAll('tbody tr')];
+        const cells=trs.flatMap(x=>[...x.querySelectorAll('td')]);
+        const first=cells[0].getBoundingClientRect();
+        const rect=t.getBoundingClientRect();
+        return {heads,rows:trs.length,cells:cells.length,
+          labels:trs.every(row=>[...row.cells].every((cell,i)=>cell.dataset.label===heads[i])),
+          overflow:document.documentElement.scrollWidth-innerWidth,
+          tableWidth:rect.width,firstWidth:first.width,
+          display:getComputedStyle(t).display,
+          header:getComputedStyle(t.tHead).display,body:getComputedStyle(t.tBodies[0]).display};
+      });
+      const label=engine+' adulthood '+width;
+      assert.ok(props,label+' authored table exists');
+      assert.equal(props.rows,5,label+' five source comparison rows');
+      assert.equal(props.cells,15,label+' all source cells kept');
+      assert.equal(props.heads.length,3,label+' original column headings');
+      assert.equal(props.labels,true,label+' no mismatched data-labels');
+      assert.ok(props.overflow<=1,label+' no document horizontal overflow');
+      assert.notEqual(props.header,'none',label+' column headers not suppressed');
+      if(phone){
+        assert.equal(props.body,'grid',label+' prose cards, not squashed columns');
+        assert.ok(props.firstWidth>130,label+' first column remains readable as a card');
+        assert.ok(props.tableWidth<=width,label+' cards inside viewport');
+      }else{
+        assert.notEqual(props.body,'grid',label+' full desktop table');
+      }
+      const ax=await article.locator('table[data-responsive-layout]').first().ariaSnapshot();
+      assert.ok(ax.includes('table:')&&ax.includes('columnheader "'),
+        label+' table semantics and column headers');
+      await adult.close();
+    }
+
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, javaScriptEnabled: false, serviceWorkers: 'block', reducedMotion: 'reduce' });
     const page = await ctx.newPage();
     await page.goto(url, { waitUntil: 'domcontentloaded' });

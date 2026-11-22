@@ -26,6 +26,10 @@
   }
 
   .article-body table[data-responsive-layout="stacked-prose"] > thead {
+    /* Override legacy .compare-table thead{display:none}; keeping DOM
+       nodes alone is insufficient: column headers must stay in the
+       accessibility tree even when visually clipped on narrow screens. */
+    display: table-header-group;
     position: absolute;
     inline-size: 1px;
     block-size: 1px;
