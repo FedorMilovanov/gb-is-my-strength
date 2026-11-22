@@ -185,6 +185,26 @@ requireValue(
   supplement.includes('их номера не образуют') && !supplement.includes('Предыдущая часть показала'),
   'thematic numbering or same-page transition regressed',
 );
+
+// Safety is an immediate gate, not the second step after collecting evidence,
+// and editorial cross-links are not claims that a case proves an anti-advice item.
+const decisionSection = supplement.split('id="faithful-decision-ladder"')[1] ?? '';
+const immediateRisk = decisionSection.indexOf('<strong>Есть ли непосредственный риск?</strong>');
+const caseDetails = decisionSection.indexOf('<strong>Что именно произошло?</strong>');
+requireValue(
+  immediateRisk >= 0 && caseDetails > immediateRisk,
+  'immediate safety must precede case evidence collection in the reader-facing decision list',
+);
+requireValue(
+  decisionSection.includes('не обязательная последовательность') &&
+  decisionSection.includes('не откладываются'),
+  'immediate safety gate must not be conditional on a private meeting or completing an evidence file',
+);
+requireValue(
+  supplement.includes('критика процедуры не доказывает') &&
+  supplement.includes('не утверждают, будто каждый документальный случай доказывает'),
+  'original acts, institutional responses and thematic links must remain distinct',
+);
 const relatedPairs = [...supplement.matchAll(/'FW-(\d{2})':\s*\[([\d,\s]+)\]/g)];
 const relatedIds = new Set(relatedPairs.map((pair) => `FW-${pair[1]}`));
 requireValue(
