@@ -16,7 +16,7 @@ const readerStepCorrections: Record<string, Record<string, string>> = {
     'осуждение советом': 'совет старейшин осуждает публичные заявления Брента Детуайлера',
   },
   'paige-patterson': {
-    'разрешение на доступ к записи': 'изучение записи студентки, предоставленной с её разрешения',
+    'разрешение на доступ к записи': 'проверка сведений из студенческого дела, доступ к которым был предоставлен с разрешения',
   },
 };
 const readerStep = (caseId: string, step: string) => readerStepCorrections[caseId]?.[step] ?? step;
