@@ -155,7 +155,71 @@ try {
       await adult.close();
     }
 
-    // Same real MDX route, JavaScript disabled. CSS and native columnheader
+    // W98: two pre-existing editorial comparisons in the Heart handbook.
+    // Readable typed cards, exact authored copy/labels and native AX headings;
+    // Gill chronology and Nagornaya remain separate owners.
+    for(const width of [320,390,701,768,1440]){
+      const phone=width<=700;
+      for(const theme of (width===390?['light','dark']:['light'])){
+        const heartContext=await browser.newContext({viewport:{width,height:844},
+          isMobile:phone,hasTouch:phone,serviceWorkers:'block',reducedMotion:'reduce'});
+        const hp=await heartContext.newPage(),heartErrors=[];
+        hp.on('pageerror',e=>heartErrors.push(e.message));
+        const heartResponse=await hp.goto(url.slice(0,url.indexOf('/articles/'))+
+          '/articles/serdce-spravochnik/',{waitUntil:'domcontentloaded',timeout:25000});
+        assert.equal(heartResponse.status(),200,engine+' heart guide route');
+        if(theme==='dark')await hp.evaluate(()=>document.documentElement.classList.add('dark'));
+        const tableRoot=hp.locator('article[data-responsive-prose-owner="heart-guide"] table[data-responsive-layout="stacked-prose"]');
+        assert.equal(await tableRoot.count(),2,engine+' '+width+' '+theme+' two authored comparisons');
+        const originals=[
+          {name:'Четыре состояния сердца и свободы воли',
+            headings:['Состояние','Воля (по Августину)','Сердце'],rows:4,cells:12},
+          {name:'Чувство святое или подделка',
+            headings:['Чувство','Святое','Подделка'],rows:5,cells:15}
+        ];
+        for(const [i,expected] of originals.entries()){
+          const t=tableRoot.nth(i);
+          const metrics=await t.evaluate(table=>{
+            const headings=[...table.querySelectorAll('thead th')].map(x=>x.textContent.trim());
+            const rows=[...table.querySelectorAll('tbody tr')];
+            const cells=rows.flatMap(x=>[...x.cells]);
+            const bounds=table.getBoundingClientRect();
+            return{headings,rows:rows.length,cells:cells.length,
+              allLabels:rows.every(row=>[...row.cells].every((cell,j)=>cell.dataset.label===headings[j])),
+              insideViewport:cells.every(cell=>{const r=cell.getBoundingClientRect();
+                return r.width>0&&r.height>0&&r.left>=-1&&r.right<=innerWidth+1}),
+              body:getComputedStyle(table.tBodies[0]).display,
+              header:getComputedStyle(table.tHead).display,
+              width:bounds.width,
+              overflow:document.documentElement.scrollWidth-innerWidth};
+          });
+          const tag=engine+' heart '+width+' '+theme+' T'+i;
+          assert.deepEqual(metrics.headings,expected.headings,tag+' exact source column headings');
+          assert.equal(metrics.rows,expected.rows,tag+' original row count');
+          assert.equal(metrics.cells,expected.cells,tag+' original cell count');
+          assert.ok(metrics.allLabels,tag+' every authored data-label matches column');
+          assert.notEqual(metrics.header,'none',tag+' native columnheader available');
+          assert.ok(metrics.overflow<=1,tag+' no document x-overflow');
+          assert.equal(metrics.insideViewport,true,tag+' every text cell physically readable');
+          if(phone)assert.equal(metrics.body,'grid',tag+' styled prose comparison cards');
+          else assert.notEqual(metrics.body,'grid',tag+' real desktop table');
+          const semantic=hp.getByRole('table',{name:expected.name});
+          assert.equal(await semantic.count(),1,tag+' named table accessibility');
+          assert.deepEqual((await semantic.getByRole('columnheader').allTextContents()).map(x=>x.trim()),
+            expected.headings,tag+' native accessible headers');
+          if((width===320||width===390||width===768)&&theme==='light'){
+            await t.scrollIntoViewIfNeeded();
+            await hp.screenshot({path:path.join(shots,engine+'-'+width+'-heart-'+i+'.jpg'),
+              type:'jpeg',quality:76,animations:'disabled'});
+          }
+        }
+        assert.deepEqual(heartErrors,[],engine+' heart page script errors');
+        scenarios++;
+        await heartContext.close();
+      }
+    }
+
+        // Same real MDX route, JavaScript disabled. CSS and native columnheader
     // semantics must survive the mobile view and return to a true print table.
     const noJsAdult=await browser.newContext({viewport:{width:390,height:844},isMobile:true,
       hasTouch:true,javaScriptEnabled:false,serviceWorkers:'block',reducedMotion:'reduce'});
