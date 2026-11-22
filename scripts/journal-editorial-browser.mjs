@@ -84,14 +84,26 @@ const audit = async (page) => {
 };
 const contextFor = (width, theme, options = {}) => browser.newContext({ viewport: { width, height: width <= 430 ? 844 : width === 768 ? 1024 : 1080 },
   colorScheme: theme, deviceScaleFactor: 1, serviceWorkers: 'block', ...options });
-const ready = async (page, url) => {
-  // Load is the documented fully-loaded browser milestone. Requiring
-  // "networkidle" also waits for irrelevant background connections and
-  // intermittently deadlocks Firefox's second no-JS context. All visual,
-  // font, image, axe and keyboard assertions remain unchanged.
-  const response = await page.goto(url, { waitUntil: 'load' });
+const ready = async (page, url, stage = () => {}) => {
+  // Keep both real load and real font readiness. Firefox's no-JS context has
+  // previously stalled at this combined boundary; distinguish the two
+  // milestones instead of silently timing out the whole 75s mobile case.
+  stage('navigation/load');
+  const response = await page.goto(url, { waitUntil: 'load', timeout: 25_000 });
   assert.equal(response.status(), 200, url);
-  await page.evaluate(() => document.fonts.ready);
+  stage('navigation/fonts-ready');
+  let fontTimeout;
+  try {
+    await Promise.race([
+      page.evaluate(() => document.fonts.ready),
+      new Promise((_, reject) => {
+        fontTimeout = setTimeout(() => reject(new Error('font readiness did not settle within 15s')), 15_000);
+      }),
+    ]);
+  } finally {
+    clearTimeout(fontTimeout);
+  }
+  stage('navigation/complete');
   return response;
 };
 const settle = async (page) => {
@@ -821,7 +833,7 @@ try {
         };
         try {
           item.phase = 'navigation/ready';
-          const response = await ready(page, route.url);
+          const response = await ready(page, route.url, (phase) => { item.phase = phase; });
           if (route.kind === 'history') await assertPublishedHistory(page, response);
           assert.equal(await page.locator('[data-journal-contents]').count(), 1);
           assert.equal(await toc.evaluate((el) => el.open), !javaScriptEnabled);

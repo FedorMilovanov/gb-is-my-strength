@@ -66,6 +66,8 @@ def inspect(case):
     expected_size = PAPER_POINTS[case["paper"]]
     return {
         "pages": len(texts), "pageSizes": sizes,
+        # Detect last-sheet orphans that a mere nonempty-text check misses.
+        "lastPageWords": len(texts[-1].split()) if texts else 0,
         # Chromium rounds paper dimensions to device pixels (less than 1.1pt).
         "paperSizeCorrect": bool(sizes) and all(abs(size[i] - expected_size[i]) < 1.1 for size in sizes for i in (0, 1)),
         "allPagesHaveText": bool(texts) and all(text.strip() for text in texts),
@@ -120,6 +122,8 @@ def analyze(capture, baseline=None):
                     failures.append("PUBLICATION_HOLD leaked into published article PDF")
                 if result["rawResearchHandoffUrlPrinted"]:
                     failures.append("long internal Research URL leaked into published article PDF")
+                if result["lastPageWords"] < 65:
+                    failures.append(f"near-empty final historical paper sheet ({result['lastPageWords']} words)")
                 if not case["dom"].get("companion"):
                     failures.append("missing link to 2025–2026 companion dossier")
             if baseline:
