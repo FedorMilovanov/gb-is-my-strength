@@ -77,3 +77,21 @@ test('G3 public discovery dates and titles agree with route-owned correction met
   assert.ok(lastBuild, 'RSS lastBuildDate exists');
   assert.ok(Date.parse(lastBuild[1]) >= Date.parse(g3.modifiedAt), 'RSS snapshot cannot predate changed G3 data');
 });
+
+test('Journal and G3 sitemap preview images match their canonical discovery records', () => {
+  const manifest = JSON.parse(fs.readFileSync(new URL('../data/search-manifest.json', import.meta.url), 'utf8'));
+  const sitemap = fs.readFileSync(new URL('../sitemap.xml', import.meta.url), 'utf8');
+  const urlBlocks = sitemap.split('<url>').slice(1).map((part) => '<url>' + part.split('</url>')[0] + '</url>');
+  for (const route of ['/journal/', '/journal/dossiers/g3/']) {
+    const records = manifest.items.filter((item) => item.url === route);
+    assert.equal(records.length, 1, 'one discovery record for ' + route);
+    assert.ok(records[0].image?.startsWith('/'), 'missing local preview image for ' + route);
+    const canonical = 'https://gospod-bog.ru' + route;
+    const blocks = urlBlocks.filter((block) => block.includes('<loc>' + canonical + '</loc>'));
+    assert.equal(blocks.length, 1, 'one sitemap block for ' + route);
+    const imageLoc = blocks[0].split('<image:loc>')[1]?.split('</image:loc>')[0];
+    assert.equal(imageLoc, new URL(records[0].image, canonical).href, 'sitemap image must match discovery image for ' + route);
+    assert.ok(blocks[0].includes('<image:title>' + records[0].title + '</image:title>'),
+      'sitemap preview title must match discovery title for ' + route);
+  }
+});
