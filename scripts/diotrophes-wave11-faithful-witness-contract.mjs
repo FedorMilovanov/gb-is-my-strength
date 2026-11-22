@@ -13,6 +13,7 @@ const publicRoutePath = 'src/pages/articles/diotrefy-nashego-vremeni/index.astro
 const releasePath = 'data/diotrophes-wave12-release-manifest.json';
 const reportPath = 'research/WAVE11_DIOTROPHES_FAITHFUL_WITNESS_2026-08-01.md';
 const seriesCardsPath = 'src/components/pastor-series/PastorSeriesCardsSection.astro';
+const seriesConfigPath = 'src/components/article-pilots/_shared/series/pastorSeriesConfig.ts';
 
 const data = JSON.parse(readFileSync(manifestPath, 'utf8'));
 const caseData = JSON.parse(readFileSync(casesPath, 'utf8'));
@@ -154,6 +155,7 @@ requireValue(supplement.includes('<a href={`#faithful-${pathway.id}`}'), 'eviden
 // Reader-facing corrections must not rewrite the preserved Wave 11 evidence snapshot.
 // One known historical case references documents already listed in the main dossier,
 // while the other fourteen pathways have directly curated Wave 11 URLs.
+const seriesConfig = readFileSync(seriesConfigPath, 'utf8');
 const seriesCards = readFileSync(seriesCardsPath, 'utf8');
 requireValue(
   !seriesCards.includes('181 источник') && seriesCards.includes('Источники и сверка'),
@@ -221,6 +223,18 @@ requireValue(
   supplement.includes('не утверждают, будто каждый документальный случай доказывает'),
   'original acts, institutional responses and thematic links must remain distinct',
 );
+requireValue(
+  supplement.includes('id="faithful-positive-conclusion"') &&
+  supplement.includes('3 Ин. 11') &&
+  supplement.includes('о Димитрии'),
+  'Dossier must end with an evidence-bounded Christian positive conclusion',
+);
+requireValue(
+  seriesConfig.includes("href: '#faithful-witness-sources'") &&
+  seriesConfig.includes("href: '#faithful-positive-conclusion'"),
+  'supplementary bibliography and Gaius/Demetrius conclusion must be reachable from the series TOC',
+);
+
 const relatedPairs = [...supplement.matchAll(/'FW-(\d{2})':\s*\[([\d,\s]+)\]/g)];
 const relatedIds = new Set(relatedPairs.map((pair) => `FW-${pair[1]}`));
 requireValue(
