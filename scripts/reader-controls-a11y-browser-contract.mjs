@@ -278,9 +278,9 @@ async function auditSlot(page, routeId, selectors, checks) {
         badge: gillBefore.rateBadge, chip: gillBefore.rateChip, settings: gillBefore.settingsButton,
         chipClickable: gillBefore.chipPointerHitsBadge,
         playTriangleSafe: gillBefore.playTriangleSafe, rateCenterClickable: gillBefore.rateCenterClickable });
-    record(checks, `${prefix}-32`, 'one owner-approved thick golden progress ring with smooth transition',
-      Number.parseFloat(gillBefore.ringTrackWidth) >= 5.9 && Number.parseFloat(gillBefore.ringTrackWidth) <= 6.1 &&
-      Number.parseFloat(gillBefore.ringProgressWidth) >= 6.4 && Number.parseFloat(gillBefore.ringProgressWidth) <= 6.6 &&
+    record(checks, `${prefix}-32`, 'historical W77 fine golden progress ring with smooth transition',
+      Number.parseFloat(gillBefore.ringTrackWidth) >= 2.9 && Number.parseFloat(gillBefore.ringTrackWidth) <= 3.1 &&
+      Number.parseFloat(gillBefore.ringProgressWidth) >= 3.5 && Number.parseFloat(gillBefore.ringProgressWidth) <= 3.7 &&
       Number.parseFloat(gillBefore.ringProgressTransition) >= 0.5,
       { trackStroke: gillBefore.ringTrackWidth,
         progressStroke: gillBefore.ringProgressWidth, transition: gillBefore.ringProgressTransition });
@@ -312,7 +312,9 @@ async function auditSlot(page, routeId, selectors, checks) {
       after && after.speedCount === 6 && after.horizontal && after.speedMinTap >= 43.5 &&
         after.rail.x >= 6 && after.rail.y >= 0 && after.rail.bottom <= after.top.bottom + 4 &&
         Math.abs(after.rail.x-after.slot.x) < .5 &&
-        Math.abs(after.rail.width-after.slot.width) < .5,
+        Math.abs(after.rail.width-after.slot.width-after.rateBadge.width) < 1 &&
+        after.rail.right <= after.anchors[3].x + .5 &&
+        after.rail.right >= after.anchors[3].x - 9,
       { rail: after?.rail, top: after?.top, speedCount: after?.speedCount,
         speedMinTap: after?.speedMinTap, horizontal: after?.horizontal });
   }
@@ -525,7 +527,7 @@ async function auditMobile(browser, origin, routeInfo) {
           tight.inline && tight.paintGap <= 44.5 && tight.chipInBounds &&
           tight.rateOwner === 'mobSpdBadge' && tight.playOwner === 'play' &&
           tight.gearOwner === 'mobSettingsBtn' && tight.chipOwner === 'mobSpdBadge' &&
-          tight.ringStroke >= 6.3), tight);
+          tight.ringStroke >= 3.5 && tight.ringStroke <= 3.7), tight);
     }
     if (routeInfo.slot) await auditSlot(page, routeInfo.id, routeInfo.slot, checks);
     for (const surface of routeInfo.mobileSurfaces || []) await auditSurface(page, routeInfo.id, 'mobile', surface, checks);
@@ -601,12 +603,61 @@ async function auditDesktop(browser, origin, routeInfo) {
   }
 }
 
+// W100 visual regression guard for the 526px phone/tablet screenshot.
+// At this width all six canonical 44px rates fit. The historical W77
+// fine ring remains 3px/3.6px, and rates must terminate just before Play
+// rather than leaving the inaccessible 44px badge as blank space.
+async function auditGillWideSpeed(browser, origin) {
+  const context = await browser.newContext({ viewport: {width:526,height:844},
+    isMobile:true, hasTouch:true, reducedMotion:'reduce' });
+  const page = await context.newPage();
+  const checks = [];
+  try {
+    const response = await page.goto(origin + '/articles/dzhon-gill-chast-2-uchenyi/',
+      {waitUntil:'load', timeout:45000});
+    record(checks,'gill-wide-speed-01','Gill wide mobile route loads',response?.status()===200,response?.status());
+    await page.locator('#mobSpdBadge').click();
+    await page.waitForTimeout(160);
+    const geometry = await page.evaluate(() => {
+      const rect = e => { const r=e?.getBoundingClientRect();return r?
+        {x:r.x,y:r.y,width:r.width,right:r.right,bottom:r.bottom}:null; };
+      const rail=document.querySelector('#mobileSpeedrail');
+      const play=document.querySelector('.mobile-top-bar .reader-mobile-play');
+      const rate=document.querySelector('#mobSpdBadge');
+      const pill=[...rail.querySelectorAll('[data-speed]')];
+      const r=rect(rail),p=rect(play),b=rect(rate);
+      const last=pill[pill.length-1],l=rect(last);
+      const hit=document.elementFromPoint(l.right-6,l.y+20)?.closest('button');
+      return {open:rail.getAttribute('aria-hidden')==='false',r,p,b,
+        total:pill.length,allVisible:pill.every(e=>{const q=e.getBoundingClientRect();
+          return q.left>=r.x-1&&q.right<=r.right+1}),
+        gap:p.x-r.right,rateGap:r.right-b.right,scrollLeft:rail.scrollLeft,
+        lastHit:hit?.getAttribute('data-speed')||null,
+        playHit:document.elementFromPoint(p.x+22,p.y+22)?.closest('button')?.getAttribute('data-fc-action'),
+        track:parseFloat(getComputedStyle(play.querySelector('.gb-ember__ring-track')).strokeWidth),
+        progress:parseFloat(getComputedStyle(play.querySelector('.gb-ember__ring-progress')).strokeWidth),
+        overflow:document.documentElement.scrollWidth-innerWidth};
+    });
+    record(checks,'gill-wide-speed-02','all six 44px rate options are visible without scrolling',
+      geometry.open&&geometry.total===6&&geometry.allVisible&&geometry.scrollLeft===0,geometry);
+    record(checks,'gill-wide-speed-03','speed rail fills former badge and ends flush before Play',
+      geometry.gap>=0&&geometry.gap<=6&&geometry.rateGap<=6&&
+      geometry.r.right<=geometry.p.x+.5,geometry);
+    record(checks,'gill-wide-speed-04','last 2x option and Play have independent hit areas',
+      geometry.lastHit==='2'&&geometry.playHit==='play'&&geometry.overflow===0,geometry);
+    record(checks,'gill-wide-speed-05','historical W77 fine ring is 3px track and 3.6px progress',
+      Math.abs(geometry.track-3)<.15&&Math.abs(geometry.progress-3.6)<.15,geometry);
+    return {caseId:'gill-wide-speed',checks};
+  } finally {await context.close()}
+}
+
 const { server, origin } = await startServer();
 const browser = await chromium.launch({ headless: true });
 try {
   const cases = [];
   for (const route of ROUTES) cases.push(await auditMobile(browser, origin, route));
   for (const route of ROUTES.slice(0, 2)) cases.push(await auditDesktop(browser, origin, route));
+  cases.push(await auditGillWideSpeed(browser, origin));
   const checks = cases.flatMap((item) => item.checks);
   const failures = checks.filter((item) => !item.pass);
   const summary = {
