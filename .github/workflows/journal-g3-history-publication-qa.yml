@@ -121,13 +121,17 @@ jobs:
       - name: Reproducible install
         run: npm ci
       - name: Verify approved G3 history and unchanged crisis evidence with installed dependencies
-        run: |
-          node scripts/journal-editorial-contract.mjs --source-only --output=reports/g3-history-source-acceptance
-          node --test scripts/g3-history-publication-contract.mjs
+        run: node scripts/journal-editorial-contract.mjs --source-only --output=reports/g3-history-source-acceptance
       - name: Canonical production-like build
         run: |
           npm run strangler:build:production-like
           npm run pagefind:build:dist
+      # Source-only contracts cannot certify dist; require the built route, SEO,
+      # Pagefind query hits, citation links and immutable 2025–26 crisis dossier.
+      - name: Verify exact-head built G3 publication and search projection
+        run: |
+          node --test scripts/g3-history-publication-contract.mjs
+          node scripts/journal-editorial-contract.mjs --require-dist --probe-publication --output=reports/g3-history-paper/built-contract
       - name: Install real Chromium PDF engine and pinned PDF text analyzer
         run: |
           npx playwright install --with-deps chromium
