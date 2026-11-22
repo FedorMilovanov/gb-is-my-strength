@@ -11,6 +11,7 @@ const baseDraftPath = 'src/components/article-pilots/diotrophes/DiotrophesDraft.
 const publicRoutePath = 'src/pages/articles/diotrefy-nashego-vremeni/index.astro';
 const releasePath = 'data/diotrophes-wave12-release-manifest.json';
 const reportPath = 'research/WAVE11_DIOTROPHES_FAITHFUL_WITNESS_2026-08-01.md';
+const seriesCardsPath = 'src/components/pastor-series/PastorSeriesCardsSection.astro';
 
 const data = JSON.parse(readFileSync(manifestPath, 'utf8'));
 const caseData = JSON.parse(readFileSync(casesPath, 'utf8'));
@@ -151,6 +152,12 @@ requireValue(supplement.includes('<a href={`#faithful-${pathway.id}`}'), 'eviden
 // Reader-facing corrections must not rewrite the preserved Wave 11 evidence snapshot.
 // One known historical case references documents already listed in the main dossier,
 // while the other fourteen pathways have directly curated Wave 11 URLs.
+const seriesCards = readFileSync(seriesCardsPath, 'utf8');
+requireValue(
+  !seriesCards.includes('181 источник') && seriesCards.includes('Источники и сверка'),
+  'dossier catalog confuses full Research authority count with reader-openable links',
+);
+
 const missingNewLinkCases = pathways
   .filter((pathway) => !pathway.sourceIds.some((id) => sourceIds.includes(id)))
   .map((pathway) => pathway.id);
