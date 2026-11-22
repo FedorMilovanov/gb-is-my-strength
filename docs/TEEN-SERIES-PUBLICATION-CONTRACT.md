@@ -105,6 +105,18 @@ Prefer conceptual/editorial imagery that communicates secrecy, truth, family, bo
 
 Internal production language must not leak into published prose. Replace phrases such as `Этот draft...`, raw HOLD/P0/P1 labels, research-chain instructions and internal operator shorthand with reader-facing epistemic language while preserving the underlying guard.
 
+## Everyday family life — bounded editorial allocation
+
+An editorial audit identified a real gap between extensive crisis/jurisdiction analysis and everyday family culture. Do not create a surprise eighth core chapter or duplicate the Reader series rail. Preserve the approved I–VII order, stable canonical routes, historical anchors and chapter-specific thesis:
+
+- **IV — adulthood and authority:** four relations (father/son, mother/son, father/daughter, mother/daughter) as non-exhaustive pastoral illustrations; transition from command to mature counsel; dangers of treating an adult child as a substitute spouse; parental example of apology, mutual respect and care for their own parents.
+- **V — adult still at home:** ordinary hospitality, respectful speech, shared meals, gratitude, body/room privacy and non-shaming clothing conversations; distinguish direct moral commands from negotiable household conventions; conversation and open presence rather than habitual surveillance; housing/tenancy law remains jurisdiction-dependent.
+- **VI — adult who left:** preserve the specific departure/contact/repentance/reconciliation arc. Link back to IV/V where ordinary domestic culture is context; do not copy their full sections into this chapter.
+- **VII — adult daughter, father and marriage:** why deserved parental trust is built before courtship; respectful, non-coerced warmth and daughter’s control of physical boundaries; example of how parents treat each other; moral modesty and legitimate personal taste without an invented dress-length law or blaming women for another person’s conduct.
+
+Every substantive addition must say what is **direct scriptural teaching**, what is **prudential inference** or analogy, and what is a **mutual household agreement**. Scripture context matters: Prov. 27:23 concerns stewardship of flocks, not parental access to private messages; Titus 2:3–5 teaches older women mentoring younger women, not sole custodianship of a daughter's appearance; 1 Tim. 2:9–10 addresses godly modesty and good works, not a universal measurement chart. No claim that warm fatherhood guarantees immunity to predatory conduct, or that failure to follow household etiquette is invariably a named sin. Safety exceptions for abuse, intimidation and minors must remain visible.
+
+Use targeted, proportionate insertion into the assigned article-owner PR; avoid bulk importing long sample paragraphs or changing headings/anchors needlessly. Re-check the live Scripture index after adding verse references and rerun exact-head source, rendered Reader, TTS and print gates. A separate companion article could be considered *later* only with an independent thesis, not as a substitute for closing this series.
 ## Safeguarding boundary
 
 Where the article discusses coercion, sextortion, grooming, threats, non-consensual intimate-image sharing or immediate danger, the final article must distinguish ordinary pastoral/parental discipline from a safeguarding situation. The guidance should be jurisdiction-neutral unless a jurisdiction is explicitly sourced.
