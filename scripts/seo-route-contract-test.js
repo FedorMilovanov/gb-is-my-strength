@@ -5,6 +5,7 @@ const assert = require('assert/strict');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { execFileSync } = require('node:child_process');
 const { loadRouteRecords } = require('./lib/effective-route-registry');
 const {
   INDEXABLE_SOCIAL_META,
@@ -265,5 +266,12 @@ try {
 } finally {
   fs.rmSync(fixtureRoot, { recursive: true, force: true });
 }
+
+// The existing SEO CI lane must execute the route-owned Journal/G3 metadata
+// and sitemap preview parity regression rather than leave a dormant test file.
+execFileSync(process.execPath, ['--test', path.join(__dirname, 'journal-document-metadata-test.mjs')], {
+  cwd: ROOT,
+  stdio: 'inherit',
+});
 
 console.log(`✅ seo-route-contract: ${baseline.length} production routes (${indexableEntries.length} indexable, ${noindexEntries.length} noindex); exact-one social metadata and Journal image-alt metadata enforced; seven Genesis 6 routes required`);
