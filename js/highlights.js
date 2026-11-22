@@ -431,7 +431,7 @@
       '<div id="gb-hl-handle" aria-hidden="true"></div>',
       '<header id="gb-hl-header"><div class="gb-hl-heading"><span class="gb-hl-eyebrow">ЛИЧНОЕ СОБРАНИЕ <span id="gb-hl-count"></span></span>',
       '<h2 id="gb-hl-title">Моя библиотека</h2></div>',
-      '<button type="button" id="gb-hl-export" aria-label="Экспорт библиотеки в Markdown">↓ Markdown</button>',
+      '<button type="button" id="gb-hl-export" aria-label="Скачать материалы библиотеки" title="Цитаты, заметки и ссылки в текстовом файле (.md)">↓ Скачать</button>',
       '<button type="button" id="gb-hl-close" aria-label="Закрыть библиотеку">' + closeSvg + '</button></header>',
       '<nav id="gb-hl-tabs" aria-label="Тип сохранений">',
       '<button type="button" data-library-tab="all" aria-pressed="true">Все</button>',
