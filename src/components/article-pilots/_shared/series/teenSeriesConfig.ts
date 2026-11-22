@@ -24,15 +24,14 @@ const teenDoubleLifeToc = toc(
 );
 
 const teenParentsToc = toc(
-  { href: '#ne-spasiteli-ne-zriteli', label: 'Родители не спасители — и не зрители', level: 2, current: true },
-  { href: '#urovni-trebovaniy', label: 'Заповедь, мудрость и домашнее правило', level: 2 },
-  { href: '#den-obnaruzheniya', label: 'День обнаружения: сначала различить', level: 2 },
-  { href: '#poiman-ne-raven-pokayalsya', label: 'Пойман — не значит покаялся', level: 2 },
-  { href: '#kak-vyglyadit-pokayanie', label: 'Как начинает выглядеть покаяние', level: 2 },
-  { href: '#doverie-ne-pereklyuchatel', label: 'Доверие — не один переключатель', level: 2 },
-  { href: '#ispravit-vred', label: 'Покаяние смотрит на причинённый вред', level: 2 },
-  { href: '#roditeli-tozhe-na-svet', label: 'Родители тоже выходят на свет', level: 2 },
-  { href: '#bog-daet-serdce', label: 'Бог даёт новое сердце', level: 2 },
+  { href: '#den-obnaruzheniya', label: 'Первые часы: защита прежде дисциплины', level: 2, current: true },
+  { href: '#ne-spasiteli-ne-zriteli', label: 'Родители не спасители — и не зрители', level: 2 },
+  { href: '#pravda-po-chastyam', label: 'Правда, которую нельзя вытянуть силой', level: 2 },
+  { href: '#vlast-bez-tiranii', label: 'Власть, которая отвечает перед Богом', level: 2 },
+  { href: '#rebenok-kotoryy-est', label: 'Границы и новая жизнь', level: 2 },
+  { href: '#poiman-ne-raven-pokayalsya', label: 'Печаль, покаяние и плоды перемен', level: 2 },
+  { href: '#doverie-ne-pereklyuchatel', label: 'Прощение и восстановление доверия', level: 2 },
+  { href: '#roditeli-tozhe-na-svet', label: 'Когда родители выходят на свет', level: 2 },
   { href: '#part3', label: 'Что дальше', level: 2 },
 );
 
