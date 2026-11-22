@@ -619,6 +619,12 @@ try {
             assert.ok(item.railLinks.some((entry) => entry.href === '#overview' && !entry.rendered),
               'SSR mobile-only return link must remain hidden on desktop');
           const focused = async (expected) => {
+            // Native Tab may initiate smooth document scrolling asynchronously.
+            // Test the *settled reading position* (including no-JS), not an
+            // in-flight frame. Keep the original <1px reading-position gate.
+            // Retain the immediate sample to diagnose transient root movement.
+            const immediateDocumentY = await page.evaluate(() => scrollY);
+            await settleWithoutScripts(page);
             const state = await rail.evaluate((el) => {
               const active = document.activeElement, style = getComputedStyle(active);
               return { href: active.getAttribute('href'), inside: el.contains(active), y: scrollY,
@@ -627,7 +633,7 @@ try {
                 outline: (parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0),
                 focusVisible: active.matches(':focus-visible') };
             });
-            item.lastKeyboardState = state;
+            item.lastKeyboardState = { ...state, immediateDocumentY, settledDocumentY: state.y, readingBaselineY: item.before.y };
             assert.equal(state.inside, true); assert.equal(state.href, expected);
             assert.equal(state.focusVisible, true, 'keyboard focus must have a visible indicator');
             assert.ok(state.outline >= 2, 'the focus-visible state must actually paint an outline');
