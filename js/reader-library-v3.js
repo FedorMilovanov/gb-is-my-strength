@@ -10,7 +10,7 @@ const KEYS = Object.freeze({
   revisit: 'gb-library-revisit-v1',
 });
 const FORMAT = 'gospod-bog-reader-library';
-const MAX = { quotes: 200, notes: 500, favorites: 50, tags: 800, reading: 1000 };
+const MAX = { quotes: 200, notes: 500, favorites: 50, tags: 800, tagsPerItem: 20, reading: 1000 };
 const cap = (v, n) => String(v == null ? '' : v).slice(0, n);
 const node = (tag, className, text) => {
   const el = document.createElement(tag);
@@ -75,9 +75,16 @@ export function matchesResearch(value, query) {
 }
 function safeTags(values) {
   if (!Array.isArray(values)) return [];
+  // A repeated imported tag must not evict the twentieth distinct value.
   return distinct(values.filter((x) => typeof x === 'string')
     .map((x) => x.trim().replace(/\s+/g, ' ').slice(0, 36))
-    .filter(Boolean).slice(0, 20), (x) => x.toLocaleLowerCase('ru-RU'));
+    .filter(Boolean), (x) => x.toLocaleLowerCase('ru-RU'));
+}
+function boundedTags(values) {
+  const result = safeTags(values);
+  if (result.length > MAX.tagsPerItem)
+    throw new Error('Больше 20 уникальных меток у одной записи. Импорт отменён без изменения данных.');
+  return result;
 }
 function objectMap(value) {
   return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -117,7 +124,7 @@ function validateBackup(payload) {
   const cleanTags = Object.create(null);
   for (const [key, value] of Object.entries(tags)) {
     if (key.length > 260 || !/^(quote|note|favorite):.{1,240}$/.test(key)) throw new Error('Некорректный ключ метки.');
-    cleanTags[key] = safeTags(value);
+    cleanTags[key] = boundedTags(value);
   }
   const reading = objectMap(p.reading);
   if (Object.keys(reading).length > MAX.reading) throw new Error('Слишком много статусов чтения.');
@@ -157,7 +164,12 @@ function safeMerge(old, next) {
     tags: { ...next.tags, ...old.tags }, reading: { ...next.reading, ...old.reading },
     revisit: { ...next.revisit, ...old.revisit, suppressed: { ...next.revisit.suppressed, ...objectMap(old.revisit.suppressed) } },
   };
-  for (const [key, values] of Object.entries(next.tags)) merged.tags[key] = safeTags((old.tags[key] || []).concat(values));
+  for (const key of Object.keys(merged.tags)) {
+    const prior = old.tags[key] || [], incoming = next.tags[key] || [];
+    if (!Array.isArray(prior) || !Array.isArray(incoming))
+      throw new Error('Некорректный список меток. Импорт отменён.');
+    merged.tags[key] = boundedTags(prior.concat(incoming));
+  }
   if (Object.keys(merged.tags).length > MAX.tags || Object.keys(merged.reading).length > MAX.reading)
     throw new Error('Слишком много меток или статусов чтения.');
   return merged;
@@ -254,14 +266,27 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
 
   function getTags(item) { return safeTags(tags[stringKey(item)]); }
   function setTag(item, text) {
-    const label = cap(text.trim().replace(/\s+/g, ' '), 36);
-    if (!label) return;
-    const key = stringKey(item), prev = tags;
-    tags = { ...prev, [key]: safeTags((prev[key] || []).concat(label)) };
-    if (!store(KEYS.tags, tags)) { tags = prev; notify('Метки не сохранены: проверьте место в браузере.', true); return; }
-    notify('Метка добавлена.'); refresh();
+    const label = cap(String(text || '').trim().replace(/\s+/g, ' '), 36);
+    if (!label) { notify('Введите название метки.', true); return false; }
+    const key = stringKey(item), prev = tags, current = safeTags(prev[key]);
+    if (current.some((x) => x.toLocaleLowerCase('ru-RU') === label.toLocaleLowerCase('ru-RU'))) {
+      notify('Такая метка уже есть у записи.', true); return false;
+    }
+    if (current.length >= MAX.tagsPerItem) {
+      notify('Для одной записи можно сохранить не более 20 меток.', true); return false;
+    }
+    tags = { ...prev, [key]: current.concat(label) };
+    if (!store(KEYS.tags, tags)) {
+      tags = prev; notify('Метки не сохранены: проверьте место в браузере.', true); return false;
+    }
+    notify('Метка добавлена.'); refresh(); return true;
   }
-  function getTopics() { return [...new Set(Object.values(tags).flatMap(safeTags))].sort((a, b) => a.localeCompare(b, 'ru')); }
+  function getTopics() {
+    // Preserve orphan data for Undo/import; do not display orphan-only filters.
+    const live = new Set(getItems().map(stringKey));
+    return [...new Set(Object.entries(tags).filter(([key]) => live.has(key))
+      .flatMap(([, values]) => safeTags(values)))].sort((a, b) => a.localeCompare(b, 'ru'));
+  }
   function renderTopics() {
     topics.replaceChildren();
     const values = getTopics();
@@ -544,8 +569,10 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
     if (action === 'cancel-tag') { tagEditor.hidden = true; selectedItem = null; return; }
     if (action === 'save-tag') {
       if (!selectedItem) return;
-      setTag(selectedItem, tagInput.value);
-      tagEditor.hidden = true; selectedItem = null; return;
+      if (setTag(selectedItem, tagInput.value)) {
+        tagEditor.hidden = true; selectedItem = null;
+      }
+      return;
     }
     if (action === 'context') {
       const card = b.closest('.gb-hl-item'), item = getItems().find((x) => stringKey(x) === value);
@@ -598,7 +625,12 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
       prompt.textContent = 'В копии ' + pendingImport.quotes.length + ' цитат, '
         + pendingImport.notes.length + ' заметок, ' + pendingImport.favorites.length
         + ' статей. Существующие записи сохранятся; дубликаты будут пропущены.';
-      confirmation.hidden = false; confirm.focus({ preventScroll: true });
+      confirmation.hidden = false;
+      requestAnimationFrame(() => {
+        if (generation !== importGeneration || confirmation.hidden) return;
+        confirmation.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+        confirm.focus({ preventScroll: true });
+      });
     } catch (error) { if (generation !== importGeneration) return; invalidateImport(); notify('Импорт отменён: ' + error.message, true); }
   });
   window.addEventListener('storage', (event) => {
@@ -620,3 +652,6 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
     refreshState() { tags = objectMap(parse(KEYS.tags, {})); reading = objectMap(parse(KEYS.reading, {})); revisit = objectMap(parse(KEYS.revisit, {})); },
   });
 }
+
+// Pure fail-closed backup contract functions (Node regression tests).
+export { safeTags, boundedTags, safeMerge, validateBackup };
