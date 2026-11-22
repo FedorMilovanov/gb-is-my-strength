@@ -19,10 +19,10 @@ const ITEMS = [
   ['I', 'teen-double-life', 'podrostok-za-kadrom-dvoynaya-zhizn', 32, 0, '01-double-life.webp'],
   ['II', 'teen-parents-after-disclosure', 'podrostok-za-kadrom-roditelyam-posle-razoblacheniya', 43, 32, '02-after-disclosure.webp'],
   ['III', 'teen-church-response', 'podrostok-za-kadrom-chto-delat-tserkvi', 39, 75, '03-church-response.webp'],
-  ['A', 'adult-child-left-home', 'vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie', 37, 114, '04-left-home.webp'],
-  ['B', 'adult-child-home-money', 'vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya', 36, 151, '05-home-money.webp'],
-  ['C', 'adult-child-authority', 'sovershennoletie-roditelskaya-vlast-chto-menyaetsya', 35, 187, '06-adult-authority.webp'],
-  ['D', 'adult-daughter-marriage', 'vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti', 42, 222, '07-daughter-marriage.webp'],
+  ['IV', 'adult-child-authority', 'sovershennoletie-roditelskaya-vlast-chto-menyaetsya', 35, 114, '06-adult-authority.webp'],
+  ['V', 'adult-child-home-money', 'vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya', 36, 149, '05-home-money.webp'],
+  ['VI', 'adult-child-left-home', 'vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie', 37, 185, '04-left-home.webp'],
+  ['VII', 'adult-daughter-marriage', 'vzroslaya-doch-otets-brak-soglasie-granitsy-vlasti', 42, 222, '07-daughter-marriage.webp'],
 ];
 const railFor = (heroFile) => heroFile.replace(/\.webp$/, '-600w.webp');
 
@@ -229,7 +229,7 @@ for (const [mark, pageId, slug, minutes, done, heroFile] of ITEMS) {
   }
   if (!config.includes(`readingProgressDoneMin: ${done}`)) fail(`${slug}: cumulative progress ${done} missing`);
   if (!config.includes(`readingProgressPartMin: ${minutes}`)) fail(`${slug}: reading time ${minutes} missing`);
-  if (['A','B','C','D'].includes(mark) && !config.includes(`mark: { kind: 'label', value: '${mark}' }`)) fail(`${slug}: ${mark} must remain core label`);
+  if (!config.includes(`mark: { kind: 'roman', value: '${mark}' }`)) fail(`${slug}: ${mark} must retain its core Roman mark`);
 }
 
 if (exists('data/route-search-policy.json')) {
@@ -294,7 +294,7 @@ if (errors.length) {
 }
 console.log('✅ Teen series release contract PASS');
 console.log(`  routes: ${requiredOwnership.length} (landing + 7 articles)`);
-console.log('  order: I -> II -> III -> A -> B -> C -> D');
+console.log('  order: I -> II -> III -> IV -> V -> VI -> VII');
 console.log('  publication source: seven MDX canonical + raw HTML comments rejected');
 console.log('  publication date: 2026-09-10; updatedAt stays owned by canonical frontmatter');
 console.log('  media: route-specific 1200x630 WebP hero/OG + 600x315 card/rail family');
