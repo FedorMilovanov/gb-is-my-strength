@@ -200,7 +200,7 @@ requireValue(
 requireValue(
   publishedPage.includes('/articles/20-antisovetov-pastoru/') &&
   publishedPage.includes('/articles/anatomiya-padeniya-pyat-stadiy/') &&
-  publishedPage.includes('не приписывать'),
+  publishedPage.includes('Нельзя автоматически приписывать'),
   'three-article editorial bridge and anti-overclassification guard missing',
 );
 
