@@ -939,8 +939,12 @@ async function auditGillNestedScrollLock(browser, origin) {
   try {
     await p.goto(origin + '/articles/dzhon-gill-chast-2-uchenyi/', { waitUntil: 'load' });
     await p.mouse.wheel(0, 12000);
+    // Let the real wheel input settle before placing the deterministic
+    // mid-chapter target; otherwise its delayed delta can move the fixture
+    // close to the next section boundary during the following viewport resize.
+    await p.waitForTimeout(300);
     await p.evaluate(() => window.scrollTo(0,
-      (document.documentElement.scrollHeight-innerHeight) * .52));
+      Math.floor((document.documentElement.scrollHeight-innerHeight) * .52)));
     await p.keyboard.press('ArrowDown');
     await p.waitForTimeout(1300);
     const before = await snap();
@@ -965,6 +969,8 @@ async function auditGillNestedScrollLock(browser, origin) {
       Boolean(after.locked !== '1' &&
         after.state?.sectionId === before.state?.sectionId &&
         after.saved?.sectionId === before.saved?.sectionId &&
+        Math.abs(after.state?.scrollY - before.state?.scrollY) <= 1 &&
+        Math.abs(after.saved?.scrollY - before.saved?.scrollY) <= 1 &&
         Math.abs(after.state?.progress - before.state?.progress) < 2),
       { before, after });
     return { caseId, checks };

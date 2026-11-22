@@ -356,6 +356,11 @@ const page = config.pages[pageId];
     }
   }
   @media (min-width:390px) and (max-width:439px) {
+    [data-gill-v16] .mobile-top-bar .mobile-top-slot .reader-mobile-menu-trigger {
+      /* The full analytics label sits just outside the button at 401px.
+         Tighten only this internal gap; the centered ink group stays put. */
+      gap:5px;
+    }
     [data-gill-v16] .mobile-top-bar .mobile-top-slot .reader-mobile-menu-trigger :is(svg,span) {
       position:relative;
       left:clamp(7px,calc(61.75px - 12.5vw),13px);
