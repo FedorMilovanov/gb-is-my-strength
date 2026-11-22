@@ -80,6 +80,12 @@ def inspect(case):
         # Editorial Research handoff must remain clickable but its full
         # machine URL must not be pasted across paper sheet boundaries.
         "rawResearchHandoffUrlPrinted": "github.com/fedormilovanov/research/blob/" in all_text,
+        # Unlike the compact word-equivalence hashes, printed editorial prose
+        # needs real spaces at element boundaries. Both defects occurred at a
+        # provenance <a> seam and escaped the otherwise green 24-PDF matrix.
+        "historyProvenanceWordsSeparated": bool(re.search(
+            r"свидетельствами\.\s+Принятый\s+редакционный\s+пакет\s+Research\s+ограничивает",
+            "".join(texts), re.UNICODE)) if case["kind"] == "history" else None,
         "companionPages": locations,
         "companionTogether": locations is None or len(locations["label"]) == len(locations["title"]) == 1 and locations["label"] == locations["title"],
         # Ignore pagination/whitespace, not words, case, numerals, fonts or sizes.
@@ -122,6 +128,8 @@ def analyze(capture, baseline=None):
                     failures.append("PUBLICATION_HOLD leaked into published article PDF")
                 if result["rawResearchHandoffUrlPrinted"]:
                     failures.append("long internal Research URL leaked into published article PDF")
+                if not result["historyProvenanceWordsSeparated"]:
+                    failures.append("history source disclosure lost a space at an inline provenance link")
                 if result["lastPageWords"] < 65:
                     failures.append(f"near-empty final historical paper sheet ({result['lastPageWords']} words)")
                 if not case["dom"].get("companion"):
