@@ -15,14 +15,28 @@ const inIndex=(route)=>new Set([route]);
 const get=(route)=>buildReaderSemanticSnapshot({route,referenceIndex:index,eligibleRoutes:inIndex(route)});
 assert.equal(READER_SEMANTIC_SNAPSHOT_VERSION,1);
 assert.equal(normalizeReaderSemanticRoute('/articles/example'),'/articles/example/');
-for (const s of ['https://other.test/articles/x/','//other.test/articles/x/','/articles/a/?opt=1','/articles/../x/','/articles/./x/','/articles/x#label',null])
+for (const s of ['https://other.test/articles/x/','//other.test/articles/x/','/articles/a/?opt=1','/articles/../x/','/articles/./x/','/articles/x#label',
+  '/articles/%2e%2e/nagornaya/chast-1/','/articles/%2E%2E/nagornaya/',
+  '/articles/x%2fy/','/articles/x%5Cy/','/articles/%25x/',
+  null])
   assert.equal(normalizeReaderSemanticRoute(s),null,'unsafe route: '+s);
-for (const route of ['/nagornaya/chast-1/','/updates/','/journal/','/news/','/g3/']) {
+for (const route of ['/nagornaya/chast-1/','/novosti/item/','/Novosti/item/',
+  '/updates/','/journal/','/news/','/g3/']) {
   const x=get(route);
   assert.equal(x.status,'excluded-owner',route);
   assert.equal(x.mentions.length,0);
 }
 assert.equal(buildReaderSemanticSnapshot({route:'/articles/x/',referenceIndex:index}).status,'unapproved-route');
+// An intentionally overbroad caller allowlist must never override an
+// independent NEWS/Journal/Nagornaya owner or an encoded path alias.
+for (const alias of ['/novosti/item/','/Novosti/item/']) {
+  assert.equal(buildReaderSemanticSnapshot({route:alias,referenceIndex:index,
+    eligibleRoutes:new Set([alias])}).status,'excluded-owner',alias);
+}
+for (const alias of ['/articles/%2e%2e/nagornaya/chast-1/','/articles/a%2fb/']) {
+  assert.equal(buildReaderSemanticSnapshot({route:alias,referenceIndex:index,
+    eligibleRoutes:new Set([alias])}).status,'invalid-route',alias);
+}
 assert.equal(buildReaderSemanticSnapshot({route:'/articles/x/',referenceIndex:{},eligibleRoutes:inIndex('/articles/x/')}).status,'index-unavailable');
 
 const cross='/articles/podrostok-za-kadrom-dvoynaya-zhizn/';
