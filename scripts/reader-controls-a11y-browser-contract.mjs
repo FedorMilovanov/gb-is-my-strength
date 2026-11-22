@@ -763,6 +763,75 @@ async function auditGillAnalyticsCenter(browser, origin, width) {
   } finally {await context.close()}
 }
 
+async function auditGillDualProgress(browser, origin, width, dark = false) {
+  const context = await browser.newContext({
+    viewport: { width, height: 844 }, isMobile: true, hasTouch: true,
+    reducedMotion: 'reduce', serviceWorkers: 'block'
+  });
+  const page = await context.newPage();
+  const checks = [];
+  const read = () => page.evaluate(() => {
+    const root = document.querySelector('#gbs2DualProgress');
+    const label = document.querySelector('#gbs2MobPct');
+    const article = document.querySelector('#gbs2MobArticleRing');
+    const series = document.querySelector('#gbs2MobSeriesRing');
+    if (!root || !label || !article || !series) return null;
+    const css = getComputedStyle(label);
+    const R = root.getBoundingClientRect(), L = label.getBoundingClientRect();
+    const aria = root.getAttribute('aria-label') || '';
+    const v = aria.match(/Статья\s*(\d+)%,\s*серия\s*(\d+)%/i);
+    const articlePct = v ? Number(v[1]) : null;
+    const seriesPct = v ? Number(v[2]) : null;
+    const ar = Number(article.style.strokeDashoffset);
+    const sr = Number(series.style.strokeDashoffset);
+    return { value: label.textContent?.trim(), aria, articlePct, seriesPct,
+      centerX: (L.left+L.right)/2 - (R.left+R.right)/2,
+      centerY: (L.top+L.bottom)/2 - (R.top+R.bottom)/2,
+      labelSize: [L.width,L.height], ringSize: [R.width,R.height],
+      visible: css.display === 'flex' && css.clipPath === 'none' && L.width >= 30,
+      arcsMatch: articlePct !== null && seriesPct !== null &&
+        Math.abs(ar - (2*Math.PI*12.5*(1-articlePct/100))) < 1 &&
+        Math.abs(sr - (2*Math.PI*16*(1-seriesPct/100))) < 1,
+      ringCount: root.querySelectorAll('circle').length,
+      semantic: root.getAttribute('role') === 'img',
+      overflow: document.documentElement.scrollWidth -
+        document.documentElement.clientWidth
+    };
+  });
+  try {
+    const response = await page.goto(
+      origin + '/articles/dzhon-gill-chast-2-uchenyi/', { waitUntil: 'load' });
+    if (dark) await page.evaluate(() => document.documentElement.classList.add('dark'));
+    await page.waitForFunction(() => {
+      const e = document.querySelector('#gbs2DualProgress');
+      return e && /Статья\s*\d+%,\s*серия\s*\d+%/i.test(
+        e.getAttribute('aria-label') || '');
+    });
+    const before = await read();
+    record(checks, 'gill-dual-progress-' + width + (dark ? '-dark' : '-light'),
+      'Gill center percent visible; inner article and outer series arcs agree with live semantic label',
+      Boolean(response?.status() === 200 && before && before.visible &&
+        /^\d+%$/.test(before.value || '') &&
+        Number(before.value.replace('%','')) === before.articlePct &&
+        Math.abs(before.centerX) < .5 && Math.abs(before.centerY) < .5 &&
+        before.arcsMatch && before.ringCount === 4 && before.semantic &&
+        before.overflow === 0), before);
+    await page.evaluate(() => window.scrollTo(0,
+      Math.max(1100, Math.floor(document.documentElement.scrollHeight * .47))));
+    await page.waitForFunction(() => {
+      const v = parseInt(document.querySelector('#gbs2MobPct')?.textContent || '0', 10);
+      return v > 8;
+    }, undefined, { timeout: 6000 });
+    const after = await read();
+    record(checks, 'gill-dual-progress-scroll-' + width + (dark ? '-dark' : '-light'),
+      'Gill article percent remains readable and updates with both real progress arcs after scroll',
+      Boolean(after && after.visible && after.articlePct > before.articlePct &&
+        Number(after.value.replace('%','')) === after.articlePct &&
+        after.arcsMatch && after.semantic && after.overflow === 0), after);
+    return { caseId: 'gill-dual-progress-' + width + (dark ? '-dark':'-light'), checks };
+  } finally { await context.close(); }
+}
+
 const { server, origin } = await startServer();
 const browser = await chromium.launch({ headless: true });
 try {
@@ -773,6 +842,7 @@ try {
   for (const width of [320,390,526]) cases.push(await auditGillVisibleGaps(browser, origin, width));
   // 401–419px has a genuine 44px-touch-target space constraint: keep the full label inside its own button.
   for (const width of [320,390,400,401,405,410,419,420,430,439,440,480,500,526,768]) cases.push(await auditGillAnalyticsCenter(browser, origin, width));
+  for (const [width, dark] of [[320,false],[390,false],[390,true],[526,false],[526,true]]) cases.push(await auditGillDualProgress(browser, origin, width, dark));
   const checks = cases.flatMap((item) => item.checks);
   const failures = checks.filter((item) => !item.pass);
   const summary = {

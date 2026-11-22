@@ -612,4 +612,32 @@ const page = config.pages[pageId];
 @media(max-width:360px){
  body:has([data-gill-v16]) .gbs2-resume-inline small{display:none!important}
 }
+
+/* W105: recover the approved July mobile double-ring's center percent.
+   Nov 13 Reader Core hid #gbs2MobPct visually but the canonical controller
+   still updates it with CURRENT ARTICLE progress (inner red ring), while
+   the outer gold ring independently tracks SERIES completion.
+   Unhide only this Gill read-only ring: no shared CSS or JS changes.
+   Keep the semantic role=img aria-label for both live values. */
+@media(max-width:84.999em){
+ [data-gill-v16] #gbs2DualProgress #gbs2MobPct{
+   position:absolute;
+   inset:0;
+   display:flex;
+   align-items:center;
+   justify-content:center;
+   box-sizing:border-box;
+   width:100%;height:100%;
+   min-width:0;min-height:0;
+   margin:0;padding:0;
+   overflow:visible;
+   clip:auto;clip-path:none;
+   white-space:nowrap;
+   font-size:9px;line-height:1;
+   font-weight:800;letter-spacing:-.02em;
+   color:var(--gill-ring-article);
+   pointer-events:none;
+   font-variant-numeric:tabular-nums;
+ }
+}
 </style>
