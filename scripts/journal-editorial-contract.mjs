@@ -220,6 +220,14 @@ if (!process.argv.includes('--source-only')) {
       }
     }
     if (route === historyRoute) {
+      // Browser and printed text must preserve spaces around the provenance
+      // link. Astro drops indentation-only text at adjacent element edges.
+      const disclosures = nodes.filter((node) => hasClass(node, 'research-disclosure'));
+      assert.equal(disclosures.length, 1, 'one bounded historical provenance disclosure');
+      const disclosureProse = text(disclosures[0]).replace(/\s+/gu, ' ').trim();
+      assert.match(disclosureProse,
+        /свидетельствами\.\s+Принятый редакционный пакет Research\s+ограничивает/u,
+        'history provenance anchor must preserve source word boundaries');
       assert.equal(nodes.filter((node) => hasClass(node, 'bibliography-item')).length, historySources.length);
       assert.equal(nodes.filter((node) => hasClass(node, 'je-contents')).length, 1);
       assert.equal(nodes.filter((node) => hasClass(node, 'article-header')).length, 1);
