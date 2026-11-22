@@ -1031,20 +1031,11 @@ html.dark #gb-hl-toast {
   }
 }
 
-/* W83: the global site footer rule must not reserve 64px inside Library
-   on short mobile screens. Keep Reader desktop and other footers intact. */
+/* W83: the global site's 64px footer margin must never leak into the
+   mobile Library modal. Manage is a focused subview: while open, the
+   saved-items list and filters yield their area to the backup actions. */
 @media (max-width: 767px) {
   #gb-hl-panel > #gb-hl-foot { margin-top: 0; }
-}
-@media (max-width: 767px) and (max-height: 700px) {
-  #gb-hl-panel {
-    height: min(96dvh, 760px);
-    max-height: 96dvh;
-  }
-  #gb-hl-panel > #gb-hl-list { min-height: 0; }
-  /* Managing backups needs its own readable surface, not a 29px slit:
-     temporarily relinquish the list and filters, then restore automatically
-     when the existing manage panel becomes hidden again. */
   #gb-hl-panel:has(> #gb-hl-manage-panel:not([hidden])) > :is(#gb-hl-tabs, #gb-hl-tools, #gb-hl-topics, #gb-hl-tag-editor, #gb-hl-list) {
     display: none;
   }
@@ -1056,4 +1047,9 @@ html.dark #gb-hl-toast {
     overscroll-behavior: contain;
     padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
   }
+}
+/* Short portrait phones need a real reading window for saved notes. */
+@media (max-width: 767px) and (max-height: 700px) {
+  #gb-hl-panel { height: min(96dvh, 760px); max-height: 96dvh; }
+  #gb-hl-panel > #gb-hl-list { min-height: 0; }
 }
