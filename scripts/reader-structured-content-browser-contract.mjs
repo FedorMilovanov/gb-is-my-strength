@@ -126,9 +126,14 @@ try {
       }else{
         assert.notEqual(props.body,'grid',label+' full desktop table');
       }
-      const ax=await article.locator('table[data-responsive-layout]').first().ariaSnapshot();
-      assert.ok(ax.includes('table:')&&ax.includes('columnheader "'),
-        label+' table semantics and column headers');
+      const semantic=article.getByRole('table',{
+        name:'Семейные отношения и обязанности в разные периоды взрослой жизни'
+      });
+      assert.equal(await semantic.count(),1,label+' named accessible source table');
+      const accessibleHeaders=await semantic.getByRole('columnheader').allTextContents();
+      assert.deepEqual(accessibleHeaders.map(x=>x.trim()),[
+        'Статус','Что обычно остаётся особенно сильным','Что заметно меняется'
+      ],label+' original column headers in accessibility tree');
       await adult.close();
     }
 
