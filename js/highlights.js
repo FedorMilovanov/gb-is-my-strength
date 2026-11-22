@@ -350,7 +350,7 @@
   const stylesheet = document.createElement('link');
   stylesheet.id = 'gbHlRuntimeCss';
   stylesheet.rel = 'stylesheet';
-  stylesheet.href = '/css/highlights-runtime.css?v=6993ecc1';
+  stylesheet.href = '/css/highlights-runtime.css?v=3c20daf9';
   if (!document.getElementById(stylesheet.id)) document.head.appendChild(stylesheet);
 
   function button(action, label, text) {
