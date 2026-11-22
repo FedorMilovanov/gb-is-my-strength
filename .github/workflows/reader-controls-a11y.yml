@@ -127,6 +127,8 @@ jobs:
           node --check scripts/reader-library-short-viewport-browser-contract.mjs
           node --check scripts/reader-library-tag-integrity-contract.mjs
           node scripts/reader-library-tag-integrity-contract.mjs
+          node --check scripts/reader-w57-annotations-regression-test.mjs
+          node scripts/reader-w57-annotations-regression-test.mjs
           node --check src/lib/reader-semantic-snapshot.mjs
           node --check scripts/reader-semantic-snapshot-contract.mjs
           node scripts/reader-semantic-snapshot-contract.mjs

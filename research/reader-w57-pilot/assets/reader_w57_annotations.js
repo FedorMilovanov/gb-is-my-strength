@@ -120,7 +120,7 @@
       x?.annotation?.version===1 ? x : {...x,
         annotation:{version:0,kind:x.kind||'marker',color:x.color||'amber',noteId:null}});
     const all=()=>read(qKey);
-    let rangeById=new Map(),pendingNoteId=null,pendingRecolorId=null;
+    let rangeById=new Map(),pendingNoteId=null,pendingNoteSnapshot=null,pendingRecolorId=null;
     function paint(){
       rangeById=new Map();
       const groups={};
@@ -246,16 +246,44 @@
       const linked=notes.filter(x=>x.quoteId===record.id);
       return linked.length===1?linked[0]:null;
     }
+    // A note editor must remember the exact saved version it opened. The
+    // Library owns the same note store; rereading only at Save time silently
+    // overwrote another tab or recreated a deleted note under a new ID.
+    function captureNoteSnapshot(record){
+      const linked=linkedNote(record);
+      return Object.freeze({
+        quoteId:record.id,
+        quoteAnnotation:JSON.stringify(record.annotation||null),
+        noteId:linked?.id||null,
+        noteState:linked?JSON.stringify(linked):null
+      });
+    }
     function openNoteEditor(record){
       pendingNoteId=record.id;
+      pendingNoteSnapshot=captureNoteSnapshot(record);
       noteText.value=linkedNote(record)?.text||'';
       editor.hidden=false;section.open=true;
       window.__NP_UNIVERSAL_PREVIEW__?.openResearchForAnnotation?.();
       requestAnimationFrame(()=>noteText.focus({preventScroll:true}));
     }
-    function saveLinkedNote(record,value){
+    function saveLinkedNote(record,value,openingSnapshot){
       const notes=read(nKey),existing=linkedNote(record);
       const oldLink=record.annotation?.noteId||null;
+      if(openingSnapshot){
+        const sameOpenedVersion=openingSnapshot.quoteId===record.id &&
+          openingSnapshot.quoteAnnotation===JSON.stringify(record.annotation||null) &&
+          openingSnapshot.noteId===(existing?.id||null) &&
+          openingSnapshot.noteState===(existing?JSON.stringify(existing):null);
+        if(!sameOpenedVersion)return{ok:false,message:
+          'Заметка или её связь изменилась в другой вкладке. Ваш черновик остаётся в редакторе; скопируйте его или откройте заметку заново.'};
+      }
+      // Fail closed on broken/ambiguous associations. A deleted note must
+      // never be silently recreated under a fresh ID by a stale W57 editor.
+      if(existing && notes.filter(x=>x.id===existing.id).length!==1)
+        return{ok:false,message:'Несколько заметок имеют один ID. Сохранение остановлено; черновик остаётся в редакторе.'};
+      if((oldLink && existing?.id!==oldLink) ||
+          (!existing && notes.some(x=>x.quoteId===record.id)))
+        return{ok:false,message:'Связанная заметка удалена или её связь неоднозначна. Новая запись не создана; черновик остаётся в редакторе.'};
       if(existing){
         if(oldLink!==existing.id){
           if(!updateRecord(record.id,x=>{x.annotation.noteId=existing.id}))
@@ -396,7 +424,7 @@
       }else if(action==='delete'){
         const old=all(),deleted=old.find(x=>x.id===id);
         if(write(qKey,old.filter(x=>x.id!==id))){
-          if(pendingNoteId===id){pendingNoteId=null;editor.hidden=true}
+          if(pendingNoteId===id){pendingNoteId=null;pendingNoteSnapshot=null;editor.hidden=true}
           if(pendingRecolorId===id){pendingRecolorId=null;palette.setAttribute('aria-label','Цвет выделения')}
           lastUndo=deleted;repaint();say('Помета удалена. Связанная заметка остаётся в библиотеке. ');
           const undo=document.createElement('button');undo.type='button';undo.textContent='Отменить';
@@ -419,7 +447,7 @@
       }
     });
     section.querySelector('#npW57CancelNote').addEventListener('click',()=>{
-      pendingNoteId=null;noteText.value='';editor.hidden=true;
+      pendingNoteId=null;pendingNoteSnapshot=null;noteText.value='';editor.hidden=true;
       say('Редактирование отменено; сохранённые заметки не изменены.');
     });
     section.querySelector('#npW57SaveNote').addEventListener('click',()=>{
@@ -427,9 +455,9 @@
       if(!value||!id){say('Введите текст заметки.');return}
       const record=entries().find(x=>x.id===id);
       if(!record){say('Исходное выделение не найдено. Текст остаётся в редакторе.');return}
-      const result=saveLinkedNote(record,value);
+      const result=saveLinkedNote(record,value,pendingNoteSnapshot);
       if(!result.ok){say(result.message);return}
-      pendingNoteId=null;noteText.value='';editor.hidden=true;
+      pendingNoteId=null;pendingNoteSnapshot=null;noteText.value='';editor.hidden=true;
       // Same-tab localStorage writes never emit a storage event: update the card.
       repaint();
       say(result.message);

@@ -58,9 +58,9 @@
     },
     {
       "name": "reader_w57_annotations.js",
-      "sha256": "33531b97b8a8e13ce9c83014ac3c60052919d4fdb142afbe94967140a87278c3",
-      "bytes": 30909
+      "sha256": "e0c2a8b1ac4b418f0b4090d44d91daa6f144268e2d5fd9196e9b2ef488574af0",
+      "bytes": 28799
     }
   ],
-  "normalization": "SHA-256 and UTF-8 byte counts from exact pilot sources. Screenshot/browser QA and canonical Product port still release HOLD."
+  "normalization": "SHA-256 and UTF-8 byte counts from exact pilot sources; W94a W57 note editor concurrency guard and checksum reconciled. Screenshot/browser QA and canonical Product port still release HOLD."
 }

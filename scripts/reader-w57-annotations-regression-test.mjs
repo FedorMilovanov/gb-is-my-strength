@@ -32,9 +32,10 @@ const makeFixture=(options={})=>{
   notes=items.map(x=>({...x}));writes.push('note');return true;
  };
  const factory=new Function('read','write','updateRecord','nKey','Date','Math',
-  noteSource+'return {linkedNote,saveLinkedNote};');
+  noteSource+'return {linkedNote,captureNoteSnapshot,saveLinkedNote};');
  const api=factory(read,write,updateRecord,'gb-reader-notes-v1',Date,Math);
- return{api,record,notes:()=>notes,writes};
+ return{api,record,notes:()=>notes,writes,
+  replaceNotes:(items)=>{notes=items.map(x=>({...x}));}};
 };
 const newNote=makeFixture();
 assert.equal(newNote.api.saveLinkedNote(newNote.record,'Новая мысль').ok,true);
@@ -115,4 +116,60 @@ assert.match(css,/np-w57-annotation-meta button[\s\S]*?min-height:36px/,
  'desktop note actions have usable hitbox');
 assert.match(css,/#npUniversalDemo \.np-w57-annotation-meta button,[\s\S]*?min-height:44px/,
  'mobile note actions have 44px target');
-console.log('Reader W57 notes: anchoring/edit/quota/rollback/undo UI/rail contracts PASS');
+
+// W94a: opener-snapshot guards for both reproducible two-tab conflicts.
+// This tests the actual W57 functions, not a reimplementation of the logic.
+const linkedRecord=()=>({id:'quote-1',text:'Фрагмент',articleTitle:'Статья',
+  url:'/articles/one/',annotation:{version:1,noteId:'same-note'}});
+const linkedNotes=()=>[{id:'same-note',text:'Первоначально',quoteId:'quote-1',
+  articleTitle:'Статья',url:'/articles/one/',savedAt:100}];
+const stableOpen=makeFixture({record:linkedRecord(),notes:linkedNotes()});
+const stableSnapshot=stableOpen.api.captureNoteSnapshot(stableOpen.record);
+assert.equal(stableOpen.api.saveLinkedNote(stableOpen.record,'Моя правка',stableSnapshot).ok,true,
+ 'W57 must permit editing the exact opened note when no competing write occurs');
+assert.equal(stableOpen.notes()[0].text,'Моя правка');
+const changedInOtherTab=makeFixture({record:linkedRecord(),notes:linkedNotes()});
+const changedSnapshot=changedInOtherTab.api.captureNoteSnapshot(changedInOtherTab.record);
+changedInOtherTab.replaceNotes([{...linkedNotes()[0],text:'Правка вкладки Б'}]);
+assert.equal(changedInOtherTab.api.saveLinkedNote(changedInOtherTab.record,'Черновик А',changedSnapshot).ok,false,
+ 'changed-after-open must fail closed');
+assert.equal(changedInOtherTab.notes()[0].text,'Правка вкладки Б',
+ 'conflicting save must not overwrite B');
+assert.equal(changedInOtherTab.writes.length,0,'conflict must not write either store');
+const deletedInOtherTab=makeFixture({record:linkedRecord(),notes:linkedNotes()});
+const deletedSnapshot=deletedInOtherTab.api.captureNoteSnapshot(deletedInOtherTab.record);
+deletedInOtherTab.replaceNotes([]);
+assert.equal(deletedInOtherTab.api.saveLinkedNote(deletedInOtherTab.record,'Черновик А',deletedSnapshot).ok,false,
+ 'deleted-after-open must not recreate a note');
+assert.equal(deletedInOtherTab.notes().length,0,'deleted note remains deleted');
+assert.equal(deletedInOtherTab.record.annotation.noteId,'same-note',
+ 'conflict must not rewrite positional quote links');
+assert.deepEqual(deletedInOtherTab.writes,[], 'delete/change must write nothing');
+const newLinkedInOtherTab=makeFixture();
+const newLinkSnapshot=newLinkedInOtherTab.api.captureNoteSnapshot(newLinkedInOtherTab.record);
+newLinkedInOtherTab.replaceNotes([{id:'other-note',text:'Создана во вкладке Б',quoteId:'quote-1'}]);
+assert.equal(newLinkedInOtherTab.api.saveLinkedNote(newLinkedInOtherTab.record,'А',newLinkSnapshot).ok,false,
+ 'newly-created link after open must not be silently overwritten');
+assert.equal(newLinkedInOtherTab.notes().length,1);
+const duplicatesInStore=makeFixture({record:linkedRecord(),notes:[
+ ...linkedNotes(),{...linkedNotes()[0],text:'Дубликат ID'}]});
+const dupSnapshot=duplicatesInStore.api.captureNoteSnapshot(duplicatesInStore.record);
+assert.equal(duplicatesInStore.api.saveLinkedNote(duplicatesInStore.record,'А',dupSnapshot).ok,false,
+ 'duplicate ID must fail closed');
+assert.equal(duplicatesInStore.writes.length,0);
+const unrelatedChange=makeFixture({record:linkedRecord(),notes:[
+ ...linkedNotes(),{id:'other-note',text:'Посторонняя заметка'}]});
+const unrelatedSnapshot=unrelatedChange.api.captureNoteSnapshot(unrelatedChange.record);
+unrelatedChange.replaceNotes([...linkedNotes(),{id:'other-note',text:'Изменено отдельно'}]);
+assert.equal(unrelatedChange.api.saveLinkedNote(unrelatedChange.record,'Обновлена моя',unrelatedSnapshot).ok,true,
+ 'editing another note must not block unrelated note save');
+assert.equal(unrelatedChange.notes().find(n=>n.id==='other-note').text,'Изменено отдельно',
+ 'unrelated notes must survive a guarded save');
+assert.match(file,/pendingNoteSnapshot=captureNoteSnapshot\(record\)/,
+ 'UI opening must capture the saved note version');
+assert.match(file,/saveLinkedNote\(record,value,pendingNoteSnapshot\)/,
+ 'UI save must pass the opening version');
+assert.match(file,/if\(!result.ok\)\{say\(result.message\);return\}/,
+ 'failed compare must leave the editor and draft intact');
+
+console.log('Reader W57 notes: anchoring/edit/quota/rollback + W94a concurrent edit guards PASS');
