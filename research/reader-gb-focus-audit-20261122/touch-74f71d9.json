@@ -1,0 +1,134 @@
+[
+  {
+    "viewport": {
+      "width": 568,
+      "height": 320
+    },
+    "before": {
+      "rect": {
+        "x": 0,
+        "y": 216.484375,
+        "width": 568,
+        "height": 24.515625,
+        "top": 216.484375,
+        "right": 568,
+        "bottom": 241,
+        "left": 0
+      },
+      "scrollTop": 0,
+      "max": 653,
+      "open": true
+    },
+    "after": {
+      "rect": {
+        "x": 0,
+        "y": 216.484375,
+        "width": 568,
+        "height": 24.515625,
+        "top": 216.484375,
+        "right": 568,
+        "bottom": 241,
+        "left": 0
+      },
+      "scrollTop": 85,
+      "max": 653,
+      "open": true
+    },
+    "close": {
+      "hidden": "true",
+      "focus": "mobPartTocBtn"
+    },
+    "continued": {
+      "hidden": "true",
+      "focus": "mobPartTocBtn"
+    }
+  },
+  {
+    "viewport": {
+      "width": 640,
+      "height": 360
+    },
+    "before": {
+      "rect": {
+        "x": 0,
+        "y": 222.484375,
+        "width": 640,
+        "height": 58.515625,
+        "top": 222.484375,
+        "right": 640,
+        "bottom": 281,
+        "left": 0
+      },
+      "scrollTop": 0,
+      "max": 619,
+      "open": true
+    },
+    "after": {
+      "rect": {
+        "x": 0,
+        "y": 222.484375,
+        "width": 640,
+        "height": 58.515625,
+        "top": 222.484375,
+        "right": 640,
+        "bottom": 281,
+        "left": 0
+      },
+      "scrollTop": 99,
+      "max": 619,
+      "open": true
+    },
+    "close": {
+      "hidden": "true",
+      "focus": "mobPartTocBtn"
+    },
+    "continued": {
+      "hidden": "true",
+      "focus": "mobPartTocBtn"
+    }
+  },
+  {
+    "viewport": {
+      "width": 844,
+      "height": 390
+    },
+    "before": {
+      "rect": {
+        "x": 0,
+        "y": 226.984375,
+        "width": 844,
+        "height": 84.015625,
+        "top": 226.984375,
+        "right": 844,
+        "bottom": 311,
+        "left": 0
+      },
+      "scrollTop": 0,
+      "max": 594,
+      "open": true
+    },
+    "after": {
+      "rect": {
+        "x": 0,
+        "y": 226.984375,
+        "width": 844,
+        "height": 84.015625,
+        "top": 226.984375,
+        "right": 844,
+        "bottom": 311,
+        "left": 0
+      },
+      "scrollTop": 85,
+      "max": 594,
+      "open": true
+    },
+    "close": {
+      "hidden": "true",
+      "focus": "mobPartTocBtn"
+    },
+    "continued": {
+      "hidden": "true",
+      "focus": "mobPartTocBtn"
+    }
+  }
+]
