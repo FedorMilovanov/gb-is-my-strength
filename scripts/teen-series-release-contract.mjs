@@ -320,6 +320,17 @@ if (fs.existsSync(DIST)) {
     const expectedOg = route === LANDING ? SERIES_OG : `/images/teen-series/${row?.[5] || ''}`;
     if (!html.includes(expectedOg)) fail(`${route}: route-specific raster social metadata missing (${expectedOg})`);
     if (route !== LANDING && rowIndex >= 0) {
+      // A source-level id is not sufficient when the MDX renderer changes.
+      // Keep every previously published deep link in the actual dist DOM.
+      const renderBaselineIds = publishedAnchorBaseline.articles?.[row[2]] || [];
+      const rendered = [...html.matchAll(/<[a-z][^>]*\s+id=["']([^"']+)["'][^>]*>/gi)].map((match) => match[1]);
+      const renderedSet = new Set(rendered);
+      for (const id of renderBaselineIds) {
+        if (!renderedSet.has(id)) fail(`${route}: published deep-link #${id} missing from built HTML`);
+        if (rendered.filter((value) => value === id).length !== 1) {
+          fail(`${route}: published deep-link #${id} is not unique in built HTML`);
+        }
+      }
       const stepText = `Шаг ${rowIndex + 1} из ${ITEMS.length}`;
       if (!html.includes(stepText)) fail(`${route}: owner-approved core step position «${stepText}» missing from built HTML`);
       if (/Часть \d+ из 3/.test(html)) fail(`${route}: legacy roman-only «Часть N из 3» progress still shipped`);
