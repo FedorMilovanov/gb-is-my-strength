@@ -91,8 +91,8 @@ def analyze(capture, baseline=None):
     kinds = {case["kind"] for case in cases}
     expected = {(kind, paper, theme, scripting) for kind in kinds for paper in PAPER_POINTS
                 for theme in ("light", "dark") for scripting in (True, False)}
-    if not {"journal", "dossier"} <= kinds <= {"journal", "dossier", "history"}:
-        problems.append("expected public Journal/dossier and optional held history surfaces")
+    if kinds != {"journal", "dossier", "history"}:
+        problems.append("expected exactly three published Journal, G3 crisis and G3 history print surfaces")
     if len(cases) != len(expected) or {key(case) for case in cases} != expected:
         problems.append("missing or duplicate print matrix cases")
     if baseline and (len(before) != len(baseline["cases"]) or set(before) != expected):
@@ -111,11 +111,12 @@ def analyze(capture, baseline=None):
             if case["kind"] != "journal" and not result["sourceTitles"]:
                 failures.append("missing bibliography")
             if case["kind"] == "history":
-                for field in ("reviewWarningFirstPage", "holdPrinted"):
-                    if not result[field]:
-                        failures.append(field)
+                if result["reviewWarningFirstPage"] is not None:
+                    failures.append("unpublished manuscript warning leaked into printed article")
+                if result["holdPrinted"]:
+                    failures.append("PUBLICATION_HOLD leaked into published article PDF")
                 if not case["dom"].get("companion"):
-                    failures.append("missing companion")
+                    failures.append("missing link to 2025–2026 companion dossier")
             if baseline:
                 original = inspect(before[key(case)])
                 result["baseline"] = {name: original[name] for name in ("pages", "textSha256", "typographySha256", "pageGeometrySha256", "companionPages")}
