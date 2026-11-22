@@ -4226,9 +4226,12 @@ html.dark [data-gill-v16] .mobile-top-bar {
   /* Fix 3 — hide desktop hover "copy link" paperclips on touch. */
   [data-gill-v16] .heading-anchor { display: none !important; }
 
-  /* Fix 4 — give article tables room so cells stop breaking mid-word; the
-     parent wrapper already scrolls horizontally (overflow-x: auto). */
-  [data-gill-v16] .article-body table { min-width: 34rem; }
+  /* Fix 4 — give genuinely wide/numeric tables room so cells stop breaking
+     mid-word. The floor is an explicit opt-in (.compare-table--scroll) and
+     never applies to short text comparisons: at <=600px those become per-row
+     cards that must fill the viewport, so a 34rem floor here re-created the
+     clipped/off-screen columns of PR #2352. */
+  [data-gill-v16] .article-body table.compare-table--scroll { min-width: 34rem; }
   [data-gill-v16] .article-body td,
   [data-gill-v16] .article-body th {
     word-break: normal;
