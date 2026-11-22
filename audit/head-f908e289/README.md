@@ -17,3 +17,10 @@
 - **Десктопная типографика Gill II (`1440×900`):** переключение `Cormorant Garamond` + `Свободный` интерлиньяж + `Широкая` строка (`Lora → Cormorant Garamond`, `28.8px → 33.3px`, `734px → 846px`) срабатывает чисто.
 
 [Скриншот конфессии](r14-konfessii-320.jpg) · [замеры](r14-checks.jsonl).
+
+## Раунд 15: оставшиеся 19 статей `/articles/*` (38 прогонов) и интерактив `/konfessii/russkij-baptizm/` (`f908e289`)
+
+- **19 ранее не проверявшихся статей `/articles/*` на `320×568` и `1440×900` (38 прогонов):** `anatomiya-padeniya-pyat-stadiy`, `cerkovnaya-disciplina-vlast-granicy-zashchita`, `kogda-chelovek-uhodit-ot-very`, `kogda-uhodit-kogda-ostavatsya`, `lot-i-sodom`, `nesovershennyy-chelovek-v-nesovershennoy-cerkvi`, `otreklis-ot-hrista-istoriya-cerkvi`, `otstuplenie-chto-govorit-bibliya`, `petr-i-iuda-padenie-ili-otstuplenie`, `priznaki-zdorovoy-cerkvi`, `rimlyanam-7-veruyushchiy-ili-neveruyushchiy`, `sem-tipov-razlichenie-uchiteley`, `serdce-spravochnik`, `sovershennoletie-roditelskaya-vlast-chto-menyaetsya`, `strah-bozhij-rabskij-ili-synovnij`, `svoboda-vo-hriste`, `vernye-i-neizvestnye-zdorovoe-pastyrstvo`, `vzroslyy-rebenok-doma-dengi-pomoshch-posledstviya`, `vzroslyy-rebenok-ushel-kontakt-pokayanie-vozvrashchenie` — **0 JS-ошибок, 0 битых `<img>`, `docOv <= 0`, `tableOv: 0`, разрывов слов в таблицах нет**.
+- **`/konfessii/russkij-baptizm/` (`_app/index.html` внутри iframe):** при ожидании >1.8 с интерактивная карта «Карта Русского Баптизма» загружается и отрисовывается без локальных 404 или JS-исключений (единственный внешний запрос, отклонённый песочницей — `mc.yandex.ru`).
+
+[Замеры](r15-checks.jsonl).
