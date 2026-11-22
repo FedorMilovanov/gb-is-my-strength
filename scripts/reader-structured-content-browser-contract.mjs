@@ -104,6 +104,50 @@ try {
     assert.ok(pr.labelsSuppressed, engine + ': mobile labels not duplicated in print');
     scenarios += 2;
     await ctx.close();
+
+    // W84: reading-progress dots belong to numbered parts, not front matter.
+    // Check the same reused Gill TOC component on Context and Handbook.
+    for (const route of ['/articles/dzhon-gill-istoricheskiy-kontekst/',
+                         '/articles/dzhon-gill-spravochnik/']) {
+      for (const width of [320, 390, 768]) {
+        const tocContext = await browser.newContext({ viewport: {width, height:844},
+          isMobile:width<500, hasTouch:width<500, serviceWorkers:'block', reducedMotion:'reduce' });
+        const tocPage = await tocContext.newPage();
+        const baseUrl = url.slice(0,url.indexOf('/articles/'));
+        const resp = await tocPage.goto(baseUrl + route, {waitUntil:'domcontentloaded'});
+        assert.equal(resp.status(),200,engine+' '+route+' route');
+        const tocResult = await tocPage.evaluate(() => {
+          const item = document.querySelector('#partTocOverlay .gbat-part.cur.gbat-part--label');
+          const dots = [...(item?.querySelectorAll('.gbat-subs .gbat-dot')||[])];
+          const rail = item?.querySelector('.gbat-rail');
+          const numbered = document.querySelector('#partTocOverlay .gbat-part:not(.gbat-part--label) .gbat-dot');
+          return {
+            matched: !!item, dots:dots.length,
+            visibleDots:dots.filter(e=>getComputedStyle(e).display!=='none').length,
+            rail:rail?getComputedStyle(rail).display:null,
+            numberedDot:numbered?getComputedStyle(numbered).display:null,
+          };
+        });
+        const tag=engine+' '+route+' '+width;
+        assert.ok(tocResult.matched&&tocResult.dots>0,tag+' current label part with sections');
+        if(width<768){
+          assert.equal(tocResult.visibleDots,0,tag+' no frontmatter dots');
+          assert.equal(tocResult.rail,'none',tag+' no frontmatter rail');
+          assert.notEqual(tocResult.numberedDot,'none',tag+' numbered part unchanged');
+          await tocPage.locator('#mobPartTocBtn').click({timeout:7000});
+          await tocPage.waitForFunction(() => {
+            const overlay=document.querySelector('#partTocOverlay');
+            return overlay?.getAttribute('aria-hidden')==='false' || overlay?.classList.contains('open');
+          },null,{timeout:7000});
+          await tocPage.screenshot({path:path.join(shots,engine+'-'+width+'-'+route.split('/')[2]+'-toc.jpg'),
+            type:'jpeg',quality:76,animations:'disabled'});
+        } else {
+          assert.ok(tocResult.visibleDots>0,tag+' tablet/desktop legacy dots unchanged');
+        }
+        scenarios++;
+        await tocContext.close();
+      }
+    }
     await browser.close();
   }
 } finally { await new Promise(resolve => server.close(resolve)); }
