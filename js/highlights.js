@@ -230,6 +230,55 @@
     window.dispatchEvent(new CustomEvent('gb:library-committed', { detail: { key } }));
     return true;
   }
+  // A read-modify-write is not atomic: two tabs can both read the list before
+  // either writes, so the later setItem drops the other tab's record while both
+  // tabs report success. Web Locks serialize that section across tabs of the
+  // same profile, and a per-record compare inside the lock turns a stale editor
+  // into an explicit refusal instead of a silent overwrite. No note gains a new
+  // field and nothing is migrated: old notes keep their exact shape.
+  function withLibraryLock(key, task) {
+    const name = 'gb-library:' + key;
+    if (navigator.locks && typeof navigator.locks.request === 'function') {
+      return navigator.locks.request(name, () => task());
+    }
+    // No Web Locks: short lease in storage gives the same guarantee for this store.
+    const leaseKey = name + ':lease', token = uid('lock'), deadline = Date.now() + 3000;
+    return new Promise((resolve) => {
+      const attempt = () => {
+        let owner = null;
+        try { owner = JSON.parse(localStorage.getItem(leaseKey) || 'null'); } catch {}
+        if (!owner || owner.until < Date.now()) {
+          try { localStorage.setItem(leaseKey, JSON.stringify({ token, until: Date.now() + 1000 })); } catch {}
+          let mine = false;
+          try { mine = JSON.parse(localStorage.getItem(leaseKey) || '{}').token === token; } catch {}
+          if (mine) {
+            Promise.resolve().then(task).then((value) => {
+              try { localStorage.removeItem(leaseKey); } catch {}
+              resolve(value);
+            }, () => { try { localStorage.removeItem(leaseKey); } catch {} resolve({ ok: false, conflict: false, current: [] }); });
+            return;
+          }
+        }
+        if (Date.now() > deadline) { resolve(task()); return; }
+        setTimeout(attempt, 25);
+      };
+      attempt();
+    });
+  }
+  // guard: null for a new record, or the saved record this editor opened.
+  // mutate(current, guard) returns { items } to commit or { conflict } to refuse.
+  // Both run inside the lock, against the freshest stored list.
+  function commit(key, guard, mutate) {
+    return withLibraryLock(key, () => {
+      const current = read(key);
+      const outcome = mutate(current, guard);
+      if (!outcome || outcome.conflict) return { ok: false, conflict: true, current };
+      try { localStorage.setItem(key, JSON.stringify(outcome.items)); }
+      catch { return { ok: false, conflict: false, current }; }
+      window.dispatchEvent(new CustomEvent('gb:library-committed', { detail: { key } }));
+      return { ok: true, conflict: false, items: outcome.items };
+    });
+  }
   function quotes() {
     return read(QUOTES_KEY);
   }
@@ -633,6 +682,7 @@
     if (action === 'card') presenter.exportQuoteCard(item, statusMessage);
   }
   function showEditor(context = null, editing = null) {
+    // The opened record itself is the version this editor may overwrite.
     draft = { context, editing };
     editor.hidden = false;
     panel.classList.add('is-editing');
@@ -649,35 +699,44 @@
     panel.classList.remove('is-editing');
     if (focus) overlay.querySelector('#gb-hl-new-note').focus({ preventScroll: true });
   }
-  function saveNote(e) {
+  async function saveNote(e) {
     e.preventDefault();
     const text = textArea.value.trim();
     if (!text) { statusMessage('Сначала напишите заметку.', true); return; }
-    const old = notes(), context = draft && draft.context, editing = draft && draft.editing;
-    if (editing) {
-      const current = old.find((x) => String(x.id) === editing.id);
-      if (!current || current.text !== editing.text) {
-        statusMessage(current
-          ? 'Заметка изменена в другом редакторе. Черновик не сохранён; скопируйте его перед повторным открытием заметки.'
-          : 'Заметка удалена в другом редакторе. Черновик не сохранён; скопируйте его перед закрытием редактора.', true);
-        return;
-      }
-    }
-    if (!editing && old.length >= LIMIT_NOTES) {
+    const context = draft && draft.context, editing = draft && draft.editing;
+    if (!editing && notes().length >= LIMIT_NOTES) {
       statusMessage('Достигнут лимит заметок. Экспортируйте библиотеку перед удалением старых записей.', true);
       return;
     }
-    const next = editing
-      ? old.map((x) => x.id === editing.id ? Object.assign({}, x, { text }) : x)
-      : [{
-          id: uid('note'), text, ...(context?.quoteId ? {quoteId: context.quoteId} : {}), quoteText: context && context.quoteText || '',
-          articleTitle: context && context.title || currentTitle(),
-          url: context && context.url || location.origin + location.pathname,
-          savedAt: Date.now(),
-        }].concat(old);
-    if (!write(NOTES_KEY, next)) {
+    const created = {
+      id: uid('note'), text, ...(context?.quoteId ? {quoteId: context.quoteId} : {}), quoteText: context && context.quoteText || '',
+      articleTitle: context && context.title || currentTitle(),
+      url: context && context.url || location.origin + location.pathname,
+      savedAt: Date.now(),
+    };
+    const result = await commit(NOTES_KEY, editing, (current) => {
+      if (!editing) return { items: [created].concat(current) };
+      const live = current.find((x) => String(x.id) === editing.id);
+      // Deleted, or changed by another editor, since this one opened.
+      if (!live || live.text !== editing.text) return { conflict: true };
+      return { items: current.map((x) => x.id === editing.id ? Object.assign({}, x, { text }) : x) };
+    });
+    if (result.conflict) {
+      const live = result.current.find((x) => String(x.id) === editing.id);
+      statusMessage(live
+        ? 'Заметка изменена в другом редакторе. Черновик не сохранён; скопируйте его перед повторным открытием заметки.'
+        : 'Заметка удалена в другом редакторе. Черновик не сохранён; скопируйте его перед закрытием редактора.', true);
+      return;
+    }
+    if (!result.ok) {
       statusMessage('Не удалось сохранить заметку. Проверьте доступное место в браузере.', true); return;
     }
+    // The commit itself is awaited (serialized), but the reader-visible result
+    // must land in the same turn as the click: callers and contracts check the
+    // rendered list right after clicking Save.
+    applySavedNote(editing);
+  }
+  function applySavedNote(editing) {
     hideEditor(false);
     tab = 'note'; filter = 'all'; shown = BATCH_SIZE;
     render(); sync();
@@ -688,7 +747,7 @@
     pendingUndo = null;
     if (status) { status.replaceChildren(); status.classList.remove('is-visible'); }
   }
-  function deleteItem(item) {
+  async function deleteItem(item) {
     const key = item.type === 'note' ? NOTES_KEY : QUOTES_KEY;
     const old = item.type === 'note' ? notes() : quotes();
     const matches = old.filter((x) => String(x.id) === item.id);
@@ -700,16 +759,46 @@
     }
     const index = old.findIndex((x) => String(x.id) === item.id);
     if (index < 0) return;
+    // A note owns two links: quote.annotation.noteId -> note.id and
+    // note.quoteId -> quote.id. Deleting only the note leaves the quote
+    // pointing at an ID that no longer exists; W57 repairs that by falling
+    // back to quoteId, but any reader that trusts noteId would still claim the
+    // note is there. Clear the reverse link FIRST: if that write fails nothing
+    // is deleted, and if the later delete fails the note survives with a
+    // one-way link that W57 already knows how to repair.
+    let clearedLinks = null;
+    if (item.type === 'note') {
+      const linked = quotes().filter((q) => q && q.annotation && String(q.annotation.noteId) === String(item.id));
+      if (linked.length) {
+        const unlink = await commit(QUOTES_KEY, null, (current) => ({
+          items: current.map((q) => q && q.annotation && String(q.annotation.noteId) === String(item.id)
+            ? Object.assign({}, q, { annotation: Object.assign({}, q.annotation, { noteId: null }) })
+            : q),
+        }));
+        if (!unlink || !unlink.ok) {
+          statusMessage('Не удалось снять связь заметки с цитатами. Запись не удалена; повторите.', true);
+          return;
+        }
+        clearedLinks = linked.map((q) => ({ id: q.id, noteId: item.id }));
+      }
+    }
     if (!write(key, old.filter((x) => String(x.id) !== item.id))) {
+      // Put the links back so a failed delete does not silently unlink quotes.
+      if (clearedLinks) await commit(QUOTES_KEY, null, (current) => ({
+        items: current.map((q) => {
+          const back = clearedLinks.find((l) => String(l.id) === String(q.id));
+          return back && q.annotation ? Object.assign({}, q, { annotation: Object.assign({}, q.annotation, { noteId: back.noteId }) }) : q;
+        }),
+      }));
       statusMessage('Не удалось удалить запись.', true); return;
     }
     clearUndo();
-    pendingUndo = { key, entry: old[index], index };
+    pendingUndo = { key, entry: old[index], index, clearedLinks };
     render(); sync();
     const undoButton = button('undo', 'Отменить удаление', 'Отменить');
     status.replaceChildren(element('span', '', 'Запись удалена'), undoButton);
     status.classList.add('is-visible');
-    undoButton.addEventListener('click', () => {
+    undoButton.addEventListener('click', async () => {
       if (!pendingUndo) return;
       const u = pendingUndo, items = read(u.key);
       const limit = u.key === NOTES_KEY ? LIMIT_NOTES : LIMIT_QUOTES;
@@ -754,6 +843,20 @@
       items.splice(Math.min(u.index, items.length), 0, u.entry);
       if (!write(u.key, items)) {
         statusMessage('Не удалось восстановить запись.', true); return;
+      }
+      // Restore the reverse links that the delete cleared, so Undo gives the
+      // record back exactly as it was rather than as an unlinked orphan.
+      if (u.clearedLinks && u.clearedLinks.length) {
+        const restored = await commit(QUOTES_KEY, null, (current) => ({
+          items: current.map((q) => {
+            const back = u.clearedLinks.find((l) => String(l.id) === String(q.id));
+            return back && q.annotation ? Object.assign({}, q, { annotation: Object.assign({}, q.annotation, { noteId: back.noteId }) }) : q;
+          }),
+        }));
+        if (!restored || !restored.ok) {
+          statusMessage('Запись восстановлена, но связь с цитатой вернуть не удалось. Откройте заметку из цитаты.', true);
+          clearUndo(); render(); sync(); return;
+        }
       }
       clearUndo(); render(); sync(); statusMessage('Запись восстановлена.');
     });

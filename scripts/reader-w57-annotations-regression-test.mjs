@@ -15,7 +15,8 @@ const excerpt=(start,end)=>{
  assert.ok(from>=0&&to>from,'W57 function owner: '+start);
  return file.slice(from,to);
 };
-const noteSource=excerpt('    function linkedNote(record){','    function locate(id){');
+// Include the serialized commit owner the save path now depends on.
+const noteSource=excerpt('    // The Product Library owns the same note list','    function locate(id){');
 const makeFixture=(options={})=>{
  let notes=(options.notes||[]).map(x=>({...x}));
  const record=options.record||{id:'quote-1',text:'Фрагмент',articleTitle:'Статья',
@@ -31,38 +32,52 @@ const makeFixture=(options={})=>{
   assert.equal(key,'gb-reader-notes-v1');
   notes=items.map(x=>({...x}));writes.push('note');return true;
  };
+ // Node has no Web Locks and no localStorage: the fixture supplies both, so the
+ // serialized read -> mutate -> write path under test is the shipped one.
+ // A note-store write failure is a real quota error: throw, as the browser does.
+ const localStorageFixture={getItem:()=>JSON.stringify(notes),
+  setItem:(key,value)=>{
+   if(key!=='gb-reader-notes-v1')return;
+   if(options.failNote){const error=new Error('QuotaExceededError');error.name='QuotaExceededError';throw error}
+   notes=JSON.parse(value).map(x=>({...x}));writes.push('note');
+  },removeItem:()=>{}};
+ const navigatorFixture={locks:{request:(name,task)=>Promise.resolve().then(task)}};
+ const windowFixture={dispatchEvent:()=>true};
+ const CustomEventFixture=class{constructor(type,init){this.type=type;this.detail=init&&init.detail}};
  const factory=new Function('read','write','updateRecord','nKey','Date','Math',
+  'localStorage','navigator','window','CustomEvent',
   noteSource+'return {linkedNote,captureNoteSnapshot,saveLinkedNote};');
- const api=factory(read,write,updateRecord,'gb-reader-notes-v1',Date,Math);
+ const api=factory(read,write,updateRecord,'gb-reader-notes-v1',Date,Math,
+  localStorageFixture,navigatorFixture,windowFixture,CustomEventFixture);
  return{api,record,notes:()=>notes,writes,
   replaceNotes:(items)=>{notes=items.map(x=>({...x}));}};
 };
 const newNote=makeFixture();
-assert.equal(newNote.api.saveLinkedNote(newNote.record,'Новая мысль').ok,true);
+assert.equal((await newNote.api.saveLinkedNote(newNote.record,'Новая мысль')).ok,true);
 assert.equal(newNote.notes().length,1,'create: one note');
 const originalId=newNote.notes()[0].id;
 assert.equal(originalId,newNote.record.annotation.noteId,'create: linked id matches');
-assert.equal(newNote.api.saveLinkedNote(newNote.record,'Исправленная мысль').ok,true);
+assert.equal((await newNote.api.saveLinkedNote(newNote.record,'Исправленная мысль')).ok,true);
 assert.equal(newNote.notes().length,1,'edit must UPDATE, not append another note');
 assert.equal(newNote.notes()[0].id,originalId,'edit must keep original note id');
 assert.equal(newNote.notes()[0].text,'Исправленная мысль','edit must retain new text');
 const rejectQuote=makeFixture({failQuote:true});
-assert.equal(rejectQuote.api.saveLinkedNote(rejectQuote.record,'Текст').ok,false);
+assert.equal((await rejectQuote.api.saveLinkedNote(rejectQuote.record,'Текст')).ok,false);
 assert.equal(rejectQuote.notes().length,0,'quote write failure must not create orphan note');
 assert.equal(rejectQuote.record.annotation.noteId,null,'quote failure leaves link intact');
 const rejectNote=makeFixture({failNote:true});
-assert.equal(rejectNote.api.saveLinkedNote(rejectNote.record,'Текст').ok,false);
+assert.equal((await rejectNote.api.saveLinkedNote(rejectNote.record,'Текст')).ok,false);
 assert.equal(rejectNote.record.annotation.noteId,null,'note failure must roll back quote link');
 assert.equal(rejectNote.notes().length,0,'note failure does not persist text');
 assert.deepEqual(rejectNote.writes,['quote','quote'],'failed note write causes compensating quote write');
 const maxNotes=Array.from({length:500},(_,i)=>({id:'n'+i,text:'Старый текст',quoteId:i?'other':'quote-1'}));
 const atLimit=makeFixture({notes:maxNotes,record:{id:'quote-1',text:'Фрагмент',articleTitle:'Статья',
  url:'/articles/one/',annotation:{version:1,noteId:'n0'}}});
-assert.equal(atLimit.api.saveLinkedNote(atLimit.record,'Редактирование при лимите').ok,true);
+assert.equal((await atLimit.api.saveLinkedNote(atLimit.record,'Редактирование при лимите')).ok,true);
 assert.equal(atLimit.notes().length,500,'editing at quota must not append');
 assert.equal(atLimit.notes()[0].text,'Редактирование при лимите');
 const orphan=makeFixture({notes:[{id:'legacy-note',quoteId:'quote-1',text:'Старая заметка'}]});
-assert.equal(orphan.api.saveLinkedNote(orphan.record,'Восстановленная ссылка').ok,true);
+assert.equal((await orphan.api.saveLinkedNote(orphan.record,'Восстановленная ссылка')).ok,true);
 assert.equal(orphan.record.annotation.noteId,'legacy-note','one-way legacy association repaired');
 assert.equal(orphan.notes().length,1,'repair does not duplicate note');
 const ambiguous=makeFixture({notes:[
@@ -125,13 +140,13 @@ const linkedNotes=()=>[{id:'same-note',text:'Первоначально',quoteId
   articleTitle:'Статья',url:'/articles/one/',savedAt:100}];
 const stableOpen=makeFixture({record:linkedRecord(),notes:linkedNotes()});
 const stableSnapshot=stableOpen.api.captureNoteSnapshot(stableOpen.record);
-assert.equal(stableOpen.api.saveLinkedNote(stableOpen.record,'Моя правка',stableSnapshot).ok,true,
+assert.equal((await stableOpen.api.saveLinkedNote(stableOpen.record,'Моя правка',stableSnapshot)).ok,true,
  'W57 must permit editing the exact opened note when no competing write occurs');
 assert.equal(stableOpen.notes()[0].text,'Моя правка');
 const changedInOtherTab=makeFixture({record:linkedRecord(),notes:linkedNotes()});
 const changedSnapshot=changedInOtherTab.api.captureNoteSnapshot(changedInOtherTab.record);
 changedInOtherTab.replaceNotes([{...linkedNotes()[0],text:'Правка вкладки Б'}]);
-assert.equal(changedInOtherTab.api.saveLinkedNote(changedInOtherTab.record,'Черновик А',changedSnapshot).ok,false,
+assert.equal((await changedInOtherTab.api.saveLinkedNote(changedInOtherTab.record,'Черновик А',changedSnapshot)).ok,false,
  'changed-after-open must fail closed');
 assert.equal(changedInOtherTab.notes()[0].text,'Правка вкладки Б',
  'conflicting save must not overwrite B');
@@ -139,7 +154,7 @@ assert.equal(changedInOtherTab.writes.length,0,'conflict must not write either s
 const deletedInOtherTab=makeFixture({record:linkedRecord(),notes:linkedNotes()});
 const deletedSnapshot=deletedInOtherTab.api.captureNoteSnapshot(deletedInOtherTab.record);
 deletedInOtherTab.replaceNotes([]);
-assert.equal(deletedInOtherTab.api.saveLinkedNote(deletedInOtherTab.record,'Черновик А',deletedSnapshot).ok,false,
+assert.equal((await deletedInOtherTab.api.saveLinkedNote(deletedInOtherTab.record,'Черновик А',deletedSnapshot)).ok,false,
  'deleted-after-open must not recreate a note');
 assert.equal(deletedInOtherTab.notes().length,0,'deleted note remains deleted');
 assert.equal(deletedInOtherTab.record.annotation.noteId,'same-note',
@@ -148,20 +163,20 @@ assert.deepEqual(deletedInOtherTab.writes,[], 'delete/change must write nothing'
 const newLinkedInOtherTab=makeFixture();
 const newLinkSnapshot=newLinkedInOtherTab.api.captureNoteSnapshot(newLinkedInOtherTab.record);
 newLinkedInOtherTab.replaceNotes([{id:'other-note',text:'Создана во вкладке Б',quoteId:'quote-1'}]);
-assert.equal(newLinkedInOtherTab.api.saveLinkedNote(newLinkedInOtherTab.record,'А',newLinkSnapshot).ok,false,
+assert.equal((await newLinkedInOtherTab.api.saveLinkedNote(newLinkedInOtherTab.record,'А',newLinkSnapshot)).ok,false,
  'newly-created link after open must not be silently overwritten');
 assert.equal(newLinkedInOtherTab.notes().length,1);
 const duplicatesInStore=makeFixture({record:linkedRecord(),notes:[
  ...linkedNotes(),{...linkedNotes()[0],text:'Дубликат ID'}]});
 const dupSnapshot=duplicatesInStore.api.captureNoteSnapshot(duplicatesInStore.record);
-assert.equal(duplicatesInStore.api.saveLinkedNote(duplicatesInStore.record,'А',dupSnapshot).ok,false,
+assert.equal((await duplicatesInStore.api.saveLinkedNote(duplicatesInStore.record,'А',dupSnapshot)).ok,false,
  'duplicate ID must fail closed');
 assert.equal(duplicatesInStore.writes.length,0);
 const unrelatedChange=makeFixture({record:linkedRecord(),notes:[
  ...linkedNotes(),{id:'other-note',text:'Посторонняя заметка'}]});
 const unrelatedSnapshot=unrelatedChange.api.captureNoteSnapshot(unrelatedChange.record);
 unrelatedChange.replaceNotes([...linkedNotes(),{id:'other-note',text:'Изменено отдельно'}]);
-assert.equal(unrelatedChange.api.saveLinkedNote(unrelatedChange.record,'Обновлена моя',unrelatedSnapshot).ok,true,
+assert.equal((await unrelatedChange.api.saveLinkedNote(unrelatedChange.record,'Обновлена моя',unrelatedSnapshot)).ok,true,
  'editing another note must not block unrelated note save');
 assert.equal(unrelatedChange.notes().find(n=>n.id==='other-note').text,'Изменено отдельно',
  'unrelated notes must survive a guarded save');

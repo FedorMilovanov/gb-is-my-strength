@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'gb-v226-skip-link-dark-aa-20261123';
+const CACHE_VERSION = 'gb-v226-reader-note-delete-unlink-20261124';
 const CACHE_STATIC = `${CACHE_VERSION}-static`;
 const CACHE_CONTENT = `${CACHE_VERSION}-content`;
 const CACHE_DATA = `${CACHE_VERSION}-data`;
@@ -36,7 +36,7 @@ const PRECACHE_ASSETS = [
   '/js/scroll-perf.js?v=454d6f7b',
   '/js/bookmark-engine.js?v=e7d193e0',
   '/js/enhancements.js?v=15476429',
-  '/js/highlights.js?v=9d624fc0',
+  '/js/highlights.js?v=bfc8da10',
   '/js/reader-library-presenter.js?v=841cc1c0',
   '/js/reader-library-v3.js?v=e0728eb0',
   '/js/reader-library-dock.js?v=706a54b0',
