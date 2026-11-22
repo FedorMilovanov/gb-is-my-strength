@@ -28,6 +28,12 @@ on:
       - "css/floating-cluster.css"
       - "css/site.css"
       - ".github/workflows/reader-controls-a11y.yml"
+      - "src/components/article-pilots/gill-context/**"
+      - "src/styles/reader-responsive-tables.css"
+      - "css/highlights-runtime.css"
+      - "js/highlights.js"
+      - "scripts/reader-structured-content-browser-contract.mjs"
+      - "scripts/reader-library-short-viewport-browser-contract.mjs"
   push:
     branches: [main]
     paths:
@@ -55,6 +61,12 @@ on:
       - "css/floating-cluster.css"
       - "css/site.css"
       - ".github/workflows/reader-controls-a11y.yml"
+      - "src/components/article-pilots/gill-context/**"
+      - "src/styles/reader-responsive-tables.css"
+      - "css/highlights-runtime.css"
+      - "js/highlights.js"
+      - "scripts/reader-structured-content-browser-contract.mjs"
+      - "scripts/reader-library-short-viewport-browser-contract.mjs"
 
 permissions:
   contents: read
@@ -98,6 +110,8 @@ jobs:
           node --check scripts/reader-controls-residual-browser-contract.mjs
           node --check scripts/reader-speedrail-ssr-focus-browser-test.mjs
           node --check scripts/reader-library-premium-browser-contract.cjs
+          node --check scripts/reader-structured-content-browser-contract.mjs
+          node --check scripts/reader-library-short-viewport-browser-contract.mjs
           node --check scripts/shared-play-and-series-number-browser-contract.cjs
           node --check scripts/reader-mobile-canonical-browser-contract.cjs
           node --check src/runtime/reader-tts-defaults.js
@@ -124,6 +138,8 @@ jobs:
           GITHUB_SHA="$(git rev-parse HEAD)" node scripts/reader-controls-residual-browser-contract.mjs 2>&1 | tee reports/reader-controls-residual-browser-contract.log
           SOURCE_SHA="$(git rev-parse HEAD)" node scripts/reader-speedrail-ssr-focus-browser-test.mjs 2>&1 | tee reports/reader-speedrail-ssr-focus.log
           node scripts/reader-library-premium-browser-contract.cjs 2>&1 | tee reports/reader-library-premium-browser-contract.log
+          READER_STRUCTURED_SHOTS=reports/reader-structured-shots node scripts/reader-structured-content-browser-contract.mjs 2>&1 | tee reports/reader-structured-content-browser-contract.log
+          node scripts/reader-library-short-viewport-browser-contract.mjs 2>&1 | tee reports/reader-library-short-viewport-browser-contract.log
           node scripts/shared-play-and-series-number-browser-contract.cjs 2>&1 | tee reports/shared-play-and-series-number-browser-contract.log
           node scripts/reader-mobile-canonical-browser-contract.cjs 2>&1 | tee reports/reader-mobile-canonical-browser-contract.log
           node scripts/reader-speed-persistence-browser-contract.mjs 2>&1 | tee reports/reader-speed-persistence-browser-contract.log
@@ -156,5 +172,9 @@ jobs:
             reports/baptisty-archival-media/**
             reports/reader-p1-menu-*.png
             reports/reader-library-premium/*.png
+            reports/reader-structured-content-browser-contract.log
+            reports/reader-structured-shots/*.jpg
+            reports/reader-library-short-viewport-browser-contract.log
+            reports/reader-library-short/**/*
           if-no-files-found: warn
           retention-days: 14
