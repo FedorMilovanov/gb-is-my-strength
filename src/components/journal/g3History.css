@@ -1,4 +1,4 @@
-/* Source-only G3 manuscript: inherits the Journal type, palette and theme owners. */
+/* Published G3 historical article: inherits Journal typography and theme owners. */
 .journal-edition .je-history-chapter { margin: 0; }
 .journal-edition .je-history-heading { margin-bottom: 28px; }
 .journal-edition .je-history-heading h2 { margin: 0; font: 600 clamp(29px, 3vw, 38px)/1.2 var(--je-serif); letter-spacing: -.025em; text-wrap: pretty; }

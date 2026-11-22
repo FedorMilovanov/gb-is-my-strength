@@ -1,15 +1,12 @@
 ---
 /**
- * Source-only manuscript based on Research #582, not the 16-claim crisis seal.
- * Catalog titles are not sermon transcripts. No audio/video viewing is claimed.
+ * Historical publication scoped to the nine bounded factual projections
+ * adopted in Research #628. This is not the 2025–26 crisis evidence seal.
+ * Catalog titles are not sermon transcripts; audio is not claimed heard.
  */
-import { historyCitation as cite } from '@/data/journal/g3HistoryDraftSources';
-import { G3_HISTORY_DRAFT_METADATA as draft } from '@/data/journal/g3HistoryDraftMetadata';
-if (import.meta.env.PROD) {
-  throw new Error('G3 history feature PUBLICATION_HOLD: a signed history handoff is required');
-}
+import { historyCitation as cite } from '@/data/journal/g3HistorySources';
 ---
-<section id="g3-history" class="module je-history-chapter" tabindex="-1" aria-labelledby="g3-history-title" data-research-publication-status={draft.publicationStatus} data-research-candidates="G3-HIST-PUB-01">
+<section id="g3-history" class="module je-history-chapter" tabindex="-1" aria-labelledby="g3-history-title">
   <div class="je-history-heading">
     <p class="module-label">01 · Истоки</p>
     <h2 id="g3-history-title">Конференция при поместной церкви</h2>
@@ -33,7 +30,7 @@ if (import.meta.env.PROD) {
   </div>
 </section>
 
-<section id="g3-speakers" class="module je-history-chapter" tabindex="-1" aria-labelledby="g3-speakers-title" data-research-publication-status={draft.publicationStatus} data-research-candidates="G3-HIST-PUB-02 G3-HIST-PUB-03">
+<section id="g3-speakers" class="module je-history-chapter" tabindex="-1" aria-labelledby="g3-speakers-title">
   <div class="je-history-heading">
     <p class="module-label">02 · 2013–2017</p>
     <h2 id="g3-speakers-title">Не только имена: о чём собирались говорить</h2>
@@ -111,7 +108,7 @@ if (import.meta.env.PROD) {
   </ol>
 </section>
 
-<section id="g3-year-2018" class="module je-history-chapter je-history-document" tabindex="-1" aria-labelledby="g3-statement-title" data-history-kind="statement" data-research-publication-status={draft.publicationStatus} data-research-candidates="G3-HIST-PUB-06 G3-HIST-PUB-08">
+<section id="g3-year-2018" class="module je-history-chapter je-history-document" tabindex="-1" aria-labelledby="g3-statement-title" data-history-kind="statement">
   <div class="je-history-heading">
     <p class="module-label">03 · Богословская дискуссия · 2018</p>
     <h2 id="g3-statement-title">Заявление о социальной справедливости и Евангелии</h2>
@@ -137,7 +134,7 @@ if (import.meta.env.PROD) {
   </div>
 </section>
 
-<section id="g3-later-conferences" class="module je-history-chapter" tabindex="-1" aria-labelledby="g3-later-title" data-research-publication-status={draft.publicationStatus} data-research-candidates="G3-HIST-PUB-04 G3-HIST-PUB-07 G3-HIST-PUB-09">
+<section id="g3-later-conferences" class="module je-history-chapter" tabindex="-1" aria-labelledby="g3-later-title">
   <div class="je-history-heading">
     <p class="module-label">04 · 2019–2024</p>
     <h2 id="g3-later-title">Миссия, поклонение и новые форматы встреч</h2>
@@ -212,7 +209,7 @@ if (import.meta.env.PROD) {
   </ol>
 </section>
 
-<section id="g3-growth" class="module je-history-chapter" tabindex="-1" aria-labelledby="g3-growth-title" data-research-publication-status={draft.publicationStatus} data-research-candidates="G3-HIST-PUB-05">
+<section id="g3-growth" class="module je-history-chapter" tabindex="-1" aria-labelledby="g3-growth-title">
   <div class="je-history-heading">
     <p class="module-label">05 · За пределами конференции</p>
     <h2 id="g3-growth-title">От нескольких дней в году к постоянному служению</h2>

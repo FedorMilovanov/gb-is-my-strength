@@ -1,10 +1,10 @@
 /**
- * Reader bibliography PROJECTION of Research #582 at 93d6f08a40c7989eb1f6362fd1667094742144d2.
- * Not a new evidence registry or publication handoff. No access/rights state is
- * upgraded here; catalogs, announcements, recollections and transcripts differ.
- * Source URLs already occur in that exact Research candidate; no acquired media.
+ * Bibliography for the public G3 2011–2024 historical article.
+ * Evidence authority: Research #628, handoff commit 389de7b1.
+ * Catalogs, programs, participant accounts and transcripts have distinct evidentiary weight.
+ * Text and outbound links only: no acquired recordings or copied third-party media.
  */
-export const G3_HISTORY_DRAFT_SOURCES = [
+export const G3_HISTORY_SOURCES = [
   {
     id: 'invitation-2011', title: 'G3 Conference — архивное приглашение Джоша Бьюса',
     period: '2011 · архив RSS G3', role: 'Датированный первичный анонс',
@@ -162,5 +162,5 @@ export const G3_HISTORY_DRAFT_SOURCES = [
   },
 ] as const;
 
-export type G3HistorySourceId = (typeof G3_HISTORY_DRAFT_SOURCES)[number]['id'];
+export type G3HistorySourceId = (typeof G3_HISTORY_SOURCES)[number]['id'];
 export const historyCitation = (id: G3HistorySourceId) => `#history-source-${id}`;

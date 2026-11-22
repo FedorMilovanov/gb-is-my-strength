@@ -6,18 +6,9 @@ import JournalContents from './JournalContents.astro';
 import JournalSourceReturn from './JournalSourceReturn.astro';
 import G3HistoryFeature from './G3HistoryFeature.astro';
 import { G3_EDITORIAL_MEDIA } from '@/data/journal/g3EditorialMedia';
-import { G3_HISTORY_DRAFT_METADATA as draft } from '@/data/journal/g3HistoryDraftMetadata';
-import { G3_HISTORY_DRAFT_SOURCES as sources, historyCitation as cite } from '@/data/journal/g3HistoryDraftSources';
+import { G3_HISTORY_METADATA as history } from '@/data/journal/g3HistoryMetadata';
+import { G3_HISTORY_SOURCES as sources, historyCitation as cite } from '@/data/journal/g3HistorySources';
 import './g3History.css';
-
-/**
- * Fail-closed production guard. This file is a source-only manuscript:
- * a public Astro route must NOT import it without new signed Research handoff.
- * Remove this guard only as part of explicit publication authorization.
- */
-if (import.meta.env.PROD) {
-  throw new Error('G3 history PUBLICATION_HOLD: signed Research→Product handoff required before production routing');
-}
 
 const contents = [
   { href: '#g3-history', label: 'Истоки: поместная церковь' },
@@ -33,14 +24,10 @@ const contents = [
 ---
 <JournalEditorialShell kind="dossier" backHref="/journal/">
 <main class="dossier journal-dossier-shell je-history-article" id="main-content" tabindex="-1"
-      data-journal-source-navigation data-g3-article="history" data-research-publication-status={draft.publicationStatus}>
-  <aside class="je-review-note" aria-label="Статус локального просмотра">
-    <strong>Не опубликовано · рукопись.</strong> Историческая статья проходит самостоятельную
-    исследовательскую приёмку. Публикационный допуск не выдан; даты публикации не назначены.
-  </aside>
-  <JournalArticleHeader title={draft.title} label="История служения"
-    series="G3 Ministries" period="2013–2024" cover={G3_EDITORIAL_MEDIA}
-    readingTime={draft.readingTimeMinutesEstimate}>
+      data-journal-source-navigation data-g3-article="history">
+  <JournalArticleHeader title={history.title} label="История служения"
+    series="G3 Ministries" period="2011–2024" cover={G3_EDITORIAL_MEDIA}
+    readingTime={history.readingTimeMinutes}>
     <p>Как конференция баптистской общины в Джорджии выросла в издательское
       и образовательное служение. Люди, темы выступлений и богословские дискуссии —
       история G3 до кризисов руководства.</p>
@@ -48,7 +35,7 @@ const contents = [
   <div class="journal-feature-grid">
     <JournalEditorialRail label="Содержание истории G3">
       <JournalContents entries={contents} />
-      <p class="je-rail-note">2013–2024 — период этой истории, не годы её публикации.{' '}
+      <p class="je-rail-note">2011–2024 — период этой истории; датировка публикации указана отдельно.{' '}
         <a href="#history-bibliography">{sources.length} источников</a>: каталоги записей,
         анонсы, письменные свидетельства и их ограничения.</p>
     </JournalEditorialRail>
@@ -110,7 +97,7 @@ const contents = [
           <h2 id="history-bibliography-title">Источники истории</h2>
           <p>У каждого документа — своя задача и предел доказательности.
             Прямые ссылки ведут к материалам их авторов и каталогам, а не к перепечаткам.
-            Это библиография исторической рукописи; она не заменяет отдельный
+            Это библиография исторической статьи; она не заменяет отдельный
             набор источников досье о кризисах.</p>
         </div>
         <ol class="bibliography-list">
@@ -123,12 +110,12 @@ const contents = [
           </li>)}
         </ol>
         <details class="research-disclosure">
-          <summary>Статус исследовательской приёмки этой рукописи</summary>
-          <p>Основание редакционного проекта — <a href={draft.researchPr} rel="noopener">Research #582</a>,
-            снимок <code>93d6f08a40c7</code>. Это кандидат, не подписанный публикационный handoff.
-            Все девять исторических проекций сохраняют <strong>PUBLICATION_HOLD</strong>.
-            Внешние страницы и аудио в этой локальной волне заново не верифицированы;
-            редактура опирается на записи Research и не повышает их статус.</p>
+          <summary>Основание публикации и ограничения выводов</summary>
+          <p>Исторические факты сопоставлены с каталогами, анонсами и письменными свидетельствами.
+            <a href={history.researchHandoffUrl} rel="noopener">Принятый редакционный пакет Research</a>
+            ограничивает статью девятью проверенными тематическими группами за 2011–2024 годы.
+            Эти источники не удостоверяют численность аудитории, мотивы участников,
+            юридические права на медиакаталог или точное содержание непрослушанных записей.</p>
         </details>
       </section>
       <section id="g3-epilogue" class="module" tabindex="-1" aria-labelledby="g3-epilogue-title">
@@ -149,7 +136,7 @@ const contents = [
   </div>
   <footer class="dossier-footer author-card">
     <p><strong>Автор-редактор:</strong> Фёдор Милованов</p>
-    <p>Локальная историческая рукопись. Публикация — только после нового подписанного Research-handoff.</p>
+    <p>Исторический обзор 2011–2024 годов. <a href={history.researchHandoffUrl} rel="noopener">Основание источниковой сверки</a>.</p>
     <p><a href="/journal/">← Вернуться в Журнал</a></p>
   </footer>
 </main>
