@@ -87,8 +87,8 @@ try {
     // W95: a second non-Gill, non-Nagornaya Reader route uses the very
     // SAME typed prose comparison. Preserve exact authored content/headers,
     // legitimate desktop table, phone reflow, screen-reader column names.
-    for(const width of [320,390,768]){
-      const phone=width<700;
+    for(const width of [320,390,700,701,768]){
+      const phone=width<=700;
       const adult=await browser.newContext({viewport:{width,height:844},
         isMobile:phone,hasTouch:phone,serviceWorkers:'block',reducedMotion:'reduce'});
       const article=await adult.newPage();
@@ -97,7 +97,7 @@ try {
       const response=await article.goto(destination,{waitUntil:'domcontentloaded',timeout:25000});
       assert.equal(response.status(),200,engine+' adulthood route');
       const props=await article.evaluate(()=>{
-        const t=document.querySelector('article.article-body table[data-responsive-layout="stacked-prose"]');
+        const t=document.querySelector('article[data-teen-series-article="adult-child-authority"] .teen-series-prose table[data-responsive-layout="stacked-prose"]');
         if(!t)return null;
         const heads=[...t.querySelectorAll('thead th')].map(x=>x.textContent.trim());
         const trs=[...t.querySelectorAll('tbody tr')];
@@ -113,6 +113,8 @@ try {
       });
       const label=engine+' adulthood '+width;
       assert.ok(props,label+' authored table exists');
+      assert.deepEqual(props.heads,['Статус','Что обычно остаётся особенно сильным','Что заметно меняется'],
+        label+' exactly three authored column headings');
       assert.equal(props.rows,5,label+' five source comparison rows');
       assert.equal(props.cells,15,label+' all source cells kept');
       assert.equal(props.heads.length,3,label+' original column headings');
@@ -134,8 +136,57 @@ try {
       assert.deepEqual(accessibleHeaders.map(x=>x.trim()),[
         'Статус','Что обычно остаётся особенно сильным','Что заметно меняется'
       ],label+' original column headers in accessibility tree');
+      if(width===320||width===390||width===768){
+        const cellTable=article.locator('article[data-teen-series-article] table[data-responsive-layout]');
+        await cellTable.scrollIntoViewIfNeeded();
+        await article.screenshot({path:path.join(shots,engine+'-'+width+'-adult-table.jpg'),
+          type:'jpeg',quality:77,animations:'disabled'});
+      }
       await adult.close();
     }
+
+    // Same real MDX route, JavaScript disabled. CSS and native columnheader
+    // semantics must survive the mobile view and return to a true print table.
+    const noJsAdult=await browser.newContext({viewport:{width:390,height:844},isMobile:true,
+      hasTouch:true,javaScriptEnabled:false,serviceWorkers:'block',reducedMotion:'reduce'});
+    const noJsPage=await noJsAdult.newPage();
+    const noJsResponse=await noJsPage.goto(url.slice(0,url.indexOf('/articles/'))+
+      '/articles/sovershennoletie-roditelskaya-vlast-chto-menyaetsya/',
+      {waitUntil:'domcontentloaded',timeout:25000});
+    assert.equal(noJsResponse.status(),200,engine+' adulthood no-JS HTTP');
+    const table=noJsPage.locator('article[data-teen-series-article] .teen-series-prose table[data-responsive-layout="stacked-prose"]');
+    const mobile=await table.evaluate(t=>({
+      display:getComputedStyle(t).display,
+      body:getComputedStyle(t.tBodies[0]).display,
+      header:getComputedStyle(t.tHead).display,
+      rows:t.tBodies[0].rows.length,
+      pageOverflow:document.documentElement.scrollWidth-innerWidth
+    }));
+    assert.equal(mobile.display,'block',engine+' adult no-JS mobile cards');
+    assert.equal(mobile.body,'grid',engine+' adult no-JS rows');
+    assert.notEqual(mobile.header,'none',engine+' adult no-JS accessible headers');
+    assert.equal(mobile.rows,5,engine+' adult no-JS rows preserved');
+    assert.ok(mobile.pageOverflow<=1,engine+' adult no-JS no page overflow');
+    const headers=await table.getByRole('columnheader').allTextContents();
+    assert.deepEqual(headers.map(s=>s.trim()),
+      ['Статус','Что обычно остаётся особенно сильным','Что заметно меняется'],
+      engine+' adult no-JS columnheader roles preserved');
+    await noJsPage.emulateMedia({media:'print'});
+    const printable=await table.evaluate(t=>({
+      table:getComputedStyle(t).display,
+      head:getComputedStyle(t.tHead).display,
+      body:getComputedStyle(t.tBodies[0]).display,
+      row:getComputedStyle(t.tBodies[0].rows[0]).display,
+      cell:getComputedStyle(t.tBodies[0].rows[0].cells[0]).display,
+      minWidth:getComputedStyle(t).minWidth,
+      overflowX:getComputedStyle(t).overflowX
+    }));
+    assert.deepEqual([printable.table,printable.head,printable.body,printable.row,printable.cell],
+      ['table','table-header-group','table-row-group','table-row','table-cell'],
+      engine+' adult print restores native rows and columns');
+    assert.equal(printable.minWidth,'0px',engine+' print no 34rem floor');
+    assert.equal(printable.overflowX,'visible',engine+' print no impossible scrollport');
+    await noJsAdult.close();
 
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, javaScriptEnabled: false, serviceWorkers: 'block', reducedMotion: 'reduce' });
     const page = await ctx.newPage();

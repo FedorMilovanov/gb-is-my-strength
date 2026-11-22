@@ -3,9 +3,10 @@
  * No JS, duplicated source text, parser or storage. Do not use for numeric
  * or truly wide datasets; those retain the accessible scrolling-table owner.
  * All column names are copied from the authored <th> into data-label.
+ * Opt-in owners: article-body and teen-series-prose. No other route is enrolled.
  */
 @media (max-width: 700px) {
-  .article-body .table-scroll:has(> table[data-responsive-layout="stacked-prose"]) {
+  :is(.article-body, .teen-series-prose) .table-scroll:has(> table[data-responsive-layout="stacked-prose"]) {
     overflow: visible;
     max-inline-size: 100%;
     border: 0;
@@ -14,7 +15,7 @@
     box-shadow: none;
   }
 
-  .article-body table[data-responsive-layout="stacked-prose"] {
+  :is(.article-body, .teen-series-prose) table[data-responsive-layout="stacked-prose"] {
     display: block;
     inline-size: 100%;
     min-inline-size: 0;
@@ -25,7 +26,7 @@
     overflow: visible;
   }
 
-  .article-body table[data-responsive-layout="stacked-prose"] > thead {
+  :is(.article-body, .teen-series-prose) table[data-responsive-layout="stacked-prose"] > thead {
     /* Override legacy .compare-table thead{display:none}; keeping DOM
        nodes alone is insufficient: column headers must stay in the
        accessibility tree even when visually clipped on narrow screens. */
@@ -40,14 +41,14 @@
     clip-path: inset(50%);
   }
 
-  .article-body table[data-responsive-layout="stacked-prose"] > tbody {
+  :is(.article-body, .teen-series-prose) table[data-responsive-layout="stacked-prose"] > tbody {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 12px;
     min-inline-size: 0;
   }
 
-  .article-body table[data-responsive-layout="stacked-prose"] > tbody > tr {
+  :is(.article-body, .teen-series-prose) table[data-responsive-layout="stacked-prose"] > tbody > tr {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     min-inline-size: 0;
@@ -59,7 +60,7 @@
     overflow: hidden;
   }
 
-  .article-body table[data-responsive-layout="stacked-prose"] > tbody > tr > td {
+  :is(.article-body, .teen-series-prose) table[data-responsive-layout="stacked-prose"] > tbody > tr > td {
     display: block;
     inline-size: auto;
     min-inline-size: 0;
@@ -78,23 +79,23 @@
     hyphens: auto;
   }
 
-  .article-body table[data-responsive-layout="stacked-prose"] > tbody > tr > td + td {
+  :is(.article-body, .teen-series-prose) table[data-responsive-layout="stacked-prose"] > tbody > tr > td + td {
     border-block-start: 1px solid var(--color-border, #e5e2dc);
   }
 
-  .article-body table[data-responsive-layout="stacked-prose"] > tbody > tr > td:first-child {
+  :is(.article-body, .teen-series-prose) table[data-responsive-layout="stacked-prose"] > tbody > tr > td:first-child {
     padding-block: 11px;
     font-weight: 650;
     line-height: 1.4;
     background: var(--color-surface-muted, #f5f2ed);
   }
 
-  .article-body table[data-responsive-layout="stacked-prose"] > tbody > tr > td:first-child::before {
+  :is(.article-body, .teen-series-prose) table[data-responsive-layout="stacked-prose"] > tbody > tr > td:first-child::before {
     content: none;
     display: none;
   }
 
-  .article-body table[data-responsive-layout="stacked-prose"] > tbody > tr > td:not(:first-child)::before {
+  :is(.article-body, .teen-series-prose) table[data-responsive-layout="stacked-prose"] > tbody > tr > td:not(:first-child)::before {
     content: attr(data-label);
     display: block;
     position: static;
@@ -114,21 +115,26 @@
     hyphens: none;
   }
 
-  html.dark .article-body table[data-responsive-layout="stacked-prose"] > tbody > tr {
+  html.dark :is(.article-body, .teen-series-prose) table[data-responsive-layout="stacked-prose"] > tbody > tr {
     box-shadow: none;
   }
 
-  html.dark .article-body table[data-responsive-layout="stacked-prose"] > tbody > tr > td:first-child {
+  html.dark :is(.article-body, .teen-series-prose) table[data-responsive-layout="stacked-prose"] > tbody > tr > td:first-child {
     background: var(--color-surface-muted, #1b1f26);
   }
 }
 
 @media print {
   /* The original three-column table is the single print source of truth. */
-  .article-body table[data-responsive-layout="stacked-prose"] {
+  :is(.article-body, .teen-series-prose) table[data-responsive-layout="stacked-prose"] {
+    /* A narrow print viewport may still match site.css's article display:block
+       and floating-cluster's 34rem floor. Real print never scrolls. */
     display: table;
+    min-inline-size: 0;
+    max-inline-size: 100%;
+    overflow: visible;
   }
-  .article-body table[data-responsive-layout="stacked-prose"] > thead {
+  :is(.article-body, .teen-series-prose) table[data-responsive-layout="stacked-prose"] > thead {
     position: static;
     display: table-header-group;
     inline-size: auto;
@@ -139,15 +145,15 @@
     white-space: normal;
     clip-path: none;
   }
-  .article-body table[data-responsive-layout="stacked-prose"] > tbody {
+  :is(.article-body, .teen-series-prose) table[data-responsive-layout="stacked-prose"] > tbody {
     display: table-row-group;
   }
-  .article-body table[data-responsive-layout="stacked-prose"] > tbody > tr {
+  :is(.article-body, .teen-series-prose) table[data-responsive-layout="stacked-prose"] > tbody > tr {
     display: table-row;
     border: 0;
     box-shadow: none;
   }
-  .article-body table[data-responsive-layout="stacked-prose"] > tbody > tr > td {
+  :is(.article-body, .teen-series-prose) table[data-responsive-layout="stacked-prose"] > tbody > tr > td {
     display: table-cell;
     inline-size: auto;
     max-inline-size: none;
@@ -156,7 +162,7 @@
     padding: 9px 11px;
     background: transparent;
   }
-  .article-body table[data-responsive-layout="stacked-prose"] > tbody > tr > td::before {
+  :is(.article-body, .teen-series-prose) table[data-responsive-layout="stacked-prose"] > tbody > tr > td::before {
     content: none !important;
     display: none !important;
   }
