@@ -39,6 +39,9 @@ try {
       await ctx.addInitScript(data => {
         localStorage.setItem('gb-reader-notes-v1',JSON.stringify(data.notes));
         localStorage.setItem('gb-highlights-v1',JSON.stringify(data.quotes));
+        localStorage.setItem('gb-library-tags-v1', JSON.stringify({
+          'note:qa-note-1':['Исчезнет'], 'quote:qa-quote-1':['Останется'],
+        }));
       }, fixture);
       const page = await ctx.newPage(), errors = [];
       page.on('pageerror',e=>errors.push(e.message));
@@ -81,6 +84,14 @@ try {
       assert.ok((await page.locator('#gb-hl-list').boundingBox()).height>=100,key+' list restored readable');
       await page.locator('[data-library-tab="note"]').click();
       assert.equal(await page.locator('.gb-hl-item').count(),1,key+' note available after manage toggle');
+      await page.locator('#gb-hl-topics [data-research-action="topic"][data-value="Исчезнет"]').click();
+      assert.equal(await page.locator('.gb-hl-item').count(),1,key+' selected topic displays note');
+      await page.locator('.gb-hl-item [data-library-action="delete"]').click();
+      await page.locator('[data-library-tab="all"]').click();
+      assert.equal(await page.locator('.gb-hl-item[data-type="quote"]').count(),1,
+        key+' deleting last owner of selected topic must reveal remaining quote');
+      assert.equal(await page.locator('#gb-hl-topics [data-value="Исчезнет"]').count(),0,
+        key+' stale topic not offered while removed note remains restorable');
       assert.deepEqual(errors,[],key+' no JS errors');
       outcomes.push({engine,width,height,theme,listHeight:before.list.height,manageHeight:manage.height});
       await ctx.close();

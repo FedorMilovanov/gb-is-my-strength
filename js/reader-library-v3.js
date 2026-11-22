@@ -281,11 +281,16 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
     }
     notify('Метка добавлена.'); refresh(); return true;
   }
-  function getTopics() {
+  function getTopics(items = getItems()) {
     // Preserve orphan data for Undo/import; do not display orphan-only filters.
-    const live = new Set(getItems().map(stringKey));
+    const live = new Set(items.map(stringKey));
     return [...new Set(Object.entries(tags).filter(([key]) => live.has(key))
       .flatMap(([, values]) => safeTags(values)))].sort((a, b) => a.localeCompare(b, 'ru'));
+  }
+  function reconcileTopic(items) {
+    // Filter state must be validated before renderList filters the records:
+    // a deleted note may remove the last owner of the selected topic.
+    if (topic && !getTopics(items).includes(topic)) topic = '';
   }
   function renderTopics() {
     topics.replaceChildren();
@@ -639,7 +644,7 @@ export function createLibraryResearch({ overlay, getItems, notify, refresh, isOp
     if (event.key === KEYS.revisit) { revisit = objectMap(parse(KEYS.revisit, {})); refresh(); }
   });
   return Object.freeze({
-    getTags, itemMatches, orderItems, decorate, renderGroups, decorateList,
+    getTags, itemMatches, orderItems, decorate, renderGroups, decorateList, reconcileTopic,
     resetMenu() { invalidateImport(); menu.hidden = true; confirmation.hidden = true; tagEditor.hidden = true; manage.setAttribute('aria-expanded', 'false'); },
     handleEscape() {
       importGeneration++;

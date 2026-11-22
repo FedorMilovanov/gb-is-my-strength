@@ -330,7 +330,7 @@
       presenterPromise = import('/js/reader-library-presenter.js?v=841cc1c0')
         .then(async (module) => {
           presenter = module;
-          const researchModule = await import('/js/reader-library-v3.js?v=9ffdde3b');
+          const researchModule = await import('/js/reader-library-v3.js?v=e0728eb0');
           if (!research) research = researchModule.createLibraryResearch({
             overlay, getItems: all, notify: statusMessage, refresh: render, isOpen,
             renderItem: module.renderItem,
@@ -554,8 +554,10 @@
   }
   function render() {
     if (!list || !presenter) return;
+    const items = all();
+    research?.reconcileTopic?.(items);
     filter = presenter.renderList({
-      list, items: all(), titleCount, sourceSelect, overlay, tab, filter, searchTerm, shown, expanded, research,
+      list, items, titleCount, sourceSelect, overlay, tab, filter, searchTerm, shown, expanded, research,
     });
   }
   function navigateQuotedSource(e, link) {
