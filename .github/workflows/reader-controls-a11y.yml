@@ -34,6 +34,9 @@ on:
       - "js/highlights.js"
       - "scripts/reader-structured-content-browser-contract.mjs"
       - "scripts/reader-library-short-viewport-browser-contract.mjs"
+      - "src/lib/reader-semantic-snapshot.mjs"
+      - "scripts/reader-semantic-snapshot-contract.mjs"
+      - "scripts/reader-universal-semantic-readiness.mjs"
   push:
     branches: [main]
     paths:
@@ -67,6 +70,9 @@ on:
       - "js/highlights.js"
       - "scripts/reader-structured-content-browser-contract.mjs"
       - "scripts/reader-library-short-viewport-browser-contract.mjs"
+      - "src/lib/reader-semantic-snapshot.mjs"
+      - "scripts/reader-semantic-snapshot-contract.mjs"
+      - "scripts/reader-universal-semantic-readiness.mjs"
 
 permissions:
   contents: read
@@ -112,6 +118,9 @@ jobs:
           node --check scripts/reader-library-premium-browser-contract.cjs
           node --check scripts/reader-structured-content-browser-contract.mjs
           node --check scripts/reader-library-short-viewport-browser-contract.mjs
+          node --check src/lib/reader-semantic-snapshot.mjs
+          node --check scripts/reader-semantic-snapshot-contract.mjs
+          node scripts/reader-semantic-snapshot-contract.mjs
           node --check scripts/shared-play-and-series-number-browser-contract.cjs
           node --check scripts/reader-mobile-canonical-browser-contract.cjs
           node --check src/runtime/reader-tts-defaults.js
