@@ -117,6 +117,17 @@ try {
         const baseUrl = url.slice(0,url.indexOf('/articles/'));
         const resp = await tocPage.goto(baseUrl + route, {waitUntil:'domcontentloaded'});
         assert.equal(resp.status(),200,engine+' '+route+' route');
+        // A hidden bottom sheet returns zero geometry even if its authored CSS
+        // would position the dot correctly. Open it BEFORE measuring pixels.
+        if (width < 768) {
+          await tocPage.locator('#mobPartTocBtn').click({timeout:7000});
+          await tocPage.waitForFunction(() => {
+            const overlay=document.querySelector('#partTocOverlay');
+            return overlay &&
+              (overlay.getAttribute('aria-hidden')==='false' || overlay.classList.contains('open')) &&
+              overlay.getBoundingClientRect().width > 0;
+          },null,{timeout:7000});
+        }
         const tocResult = await tocPage.evaluate(() => {
           const item = document.querySelector('#partTocOverlay .gbat-part.cur.gbat-part--label');
           const dots = [...(item?.querySelectorAll('.gbat-subs .gbat-dot')||[])];
@@ -127,7 +138,8 @@ try {
           const caption = bullet?.nextElementSibling;
           const bulletGap = bullet && caption
             ? caption.getBoundingClientRect().left - bullet.getBoundingClientRect().right : -1;
-          return { bulletGap,
+          const layoutReady = !!(first && first.getClientRects().length && first.getBoundingClientRect().width);
+          return { bulletGap, layoutReady,
             matched: !!item, dots:dots.length,
             visibleDots:dots.filter(e=>getComputedStyle(e).display!=='none').length,
             rail:rail?getComputedStyle(rail).display:null,
@@ -139,13 +151,9 @@ try {
         if(width<768){
           assert.equal(tocResult.visibleDots,tocResult.dots,tag+' every outline item shows its circle');
           assert.equal(tocResult.rail,'none',tag+' no frontmatter rail');
+          assert.ok(tocResult.layoutReady,tag+' measure after opening the sheet, not hidden zero rectangles');
           assert.ok(tocResult.bulletGap>=8,tag+' bullet must not collide with text: '+tocResult.bulletGap);
           assert.notEqual(tocResult.numberedDot,'none',tag+' numbered part unchanged');
-          await tocPage.locator('#mobPartTocBtn').click({timeout:7000});
-          await tocPage.waitForFunction(() => {
-            const overlay=document.querySelector('#partTocOverlay');
-            return overlay?.getAttribute('aria-hidden')==='false' || overlay?.classList.contains('open');
-          },null,{timeout:7000});
           await tocPage.screenshot({path:path.join(shots,engine+'-'+width+'-'+route.split('/')[2]+'-toc.jpg'),
             type:'jpeg',quality:76,animations:'disabled'});
         } else {
