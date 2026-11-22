@@ -153,7 +153,7 @@
     background: transparent;
   }
   .article-body table[data-responsive-layout="stacked-prose"] > tbody > tr > td::before {
-    content: none;
-    display: none;
+    content: none !important;
+    display: none !important;
   }
 }
