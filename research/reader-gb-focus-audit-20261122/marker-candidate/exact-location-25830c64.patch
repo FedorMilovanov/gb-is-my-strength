@@ -1,0 +1,29 @@
+diff --git a/src/components/article-pilots/gill-series/GillPartTocOverlay.astro b/src/components/article-pilots/gill-series/GillPartTocOverlay.astro
+--- a/src/components/article-pilots/gill-series/GillPartTocOverlay.astro
++++ b/src/components/article-pilots/gill-series/GillPartTocOverlay.astro
+@@ -162,6 +162,25 @@
+   var ov = document.getElementById('partTocOverlay');
+   if (!ov || ov.dataset.gbatBound) return;
+   ov.dataset.gbatBound = '1';
++  // Page identity (.cur / aria-current=page) is independent of reading location.
++  // Project the canonical snapshot only when this locked sheet becomes visible:
++  // there is no second scroll observer, heading parser or persistence owner.
++  document.addEventListener('gb:gill-sheet-open', function () {
++    if (!ov.classList.contains('is-open')) return;
++    var reader = window.GBReaderState || window.ReaderState;
++    var snapshot = reader && reader.getSnapshot && reader.getSnapshot();
++    var sectionId = snapshot && snapshot.sectionId;
++    ov.querySelectorAll('a.gbat-sub[href^="#"]').forEach(function (link) {
++      var targetId = '';
++      try { targetId = decodeURIComponent(link.getAttribute('href').slice(1)); } catch (_) {}
++      var selected = Boolean(sectionId && targetId === sectionId);
++      link.classList.toggle('active', selected);
++      if (selected) link.setAttribute('aria-current', 'location');
++      else if (link.getAttribute('aria-current') === 'location') link.removeAttribute('aria-current');
++    });
++    // An unlisted heading has no exact location row; never select an unrelated
++    // previous sibling. The existing current page/chapter stays marked.
++  });
+   /* Shared fold primitive (site-utils.js); degrade to plain inert until it
+      lands — the primitive only adds focus evacuation on top. */
+   function gbatFold(region, folded, controller) {
