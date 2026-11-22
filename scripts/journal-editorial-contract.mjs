@@ -167,8 +167,29 @@ if (!process.argv.includes('--source-only')) {
       // not compared as an ungrouped literal against real Intl-grouped numbers.
       const literalSource = parse(current.replace(/\{['"] ['"]\}/g, ' '));
       for (const value of values) assert.ok(normalize(text(byId(doc, 'finance'))).includes(String(value)), `Exact finance projection missing: ${value}`);
+      // The correction journal is an Astro conditional. Only its active
+      // branch is emitted: when dated correction records exist, the
+      // "no material corrections" placeholder must NOT appear in dist.
+      // Compare its real source-owned date and replacement text instead.
+      const correctionDeclaration = current.match(/const corrections:[\s\S]*?=\s*\[([\s\S]*?)\];\s*const contents/);
+      assert.ok(correctionDeclaration, 'correction record declaration must remain inspectable');
+      const expectedCorrections = [...correctionDeclaration[1].matchAll(/correctedAt:\s*'([^']+)'[\s\S]*?newMeaning:\s*'([^']+)'/g)];
+      const correctionSection = byId(doc, 'corrections');
+      const actualCorrections = all(correctionSection, (node) => node.tagName === 'li');
+      assert.equal(actualCorrections.length, expectedCorrections.length, 'published correction entries must match source records');
+      assert.equal(all(correctionSection, (node) => hasClass(node, 'empty-corrections')).length,
+        expectedCorrections.length ? 0 : 1, 'inactive correction placeholder must not be published');
+      for (const [index, [, when, meaning]] of expectedCorrections.entries()) {
+        const entry = actualCorrections[index];
+        const stamps = all(entry, (node) => node.tagName === 'time');
+        assert.equal(stamps.length, 1, `correction ${index + 1}: exactly one dated record`);
+        assert.equal(attr(stamps[0], 'datetime'), when, `correction ${index + 1}: source date drift`);
+        assert.ok(normalize(text(entry)).includes(normalize(meaning)), `correction ${index + 1}: source meaning drift`);
+      }
       for (const id of factualModules) {
-        const expected = all(byId(literalSource, id), (node) => node.tagName === 'p' && !hasClass(node, 'source-note-paragraph'))
+        const expected = all(byId(literalSource, id), (node) => node.tagName === 'p' &&
+          !hasClass(node, 'source-note-paragraph') &&
+          !(id === 'corrections' && expectedCorrections.length && hasClass(node, 'empty-corrections')))
           .map(text).filter((value) => !/[{}]/.test(value)).map(words);
         const rendered = all(byId(doc, id), (node) => node.tagName === 'p').map((node) => words(text(node)));
         for (const paragraph of expected) {
