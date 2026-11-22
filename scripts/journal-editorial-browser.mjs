@@ -27,6 +27,7 @@ const origin = args.origin || 'http://localhost:4173';
 const engine = args.browser || 'chromium';
 const suite = args.suite || 'full';
 const visibleScrollbars = args['visible-scrollbars'] === 'true';
+const stopOnFirstError = args['stop-on-first-error'] === 'true';
 assert.ok(!args.transfer && !args['public-only'] && !args['history-origin'], 'Public history uses a canonical route; obsolete transfer and preview flags are not accepted');
 assert.ok(['chromium', 'firefox', 'webkit'].includes(engine), 'unknown browser engine');
 assert.ok(['full', 'short', 'mobile', 'print', 'forced-colors'].includes(suite), 'use --suite=full|short|mobile|print|forced-colors');
@@ -690,9 +691,17 @@ try {
       for (const theme of ['light', 'dark']) for (const javaScriptEnabled of [true, false]) {
         const context = await contextFor(width, theme, { viewport: { width, height }, javaScriptEnabled });
         const page = await context.newPage();
-        const item = { kind: route.kind, width, height, theme, javaScriptEnabled, runtime: [] };
+        const item = { kind: route.kind, width, height, theme, javaScriptEnabled, runtime: [], phase: 'initialization' };
         const name = `${route.kind}-mobile-${width}x${height}-${theme}-${javaScriptEnabled ? 'js' : 'nojs'}`;
         monitorRuntime(page, item.runtime, { isIgnoredConsole: isExpectedJournalConsole });
+        // Kill a truly stalled engine with a failing, artifact-backed result.
+        // This cannot turn missing checks into PASS or change route behavior.
+        const watchdog = setTimeout(() => {
+          const diagnostic = { head: report.head, engine, name, item, timeoutMs: 75_000 };
+          fs.writeFileSync(path.join(output, 'after', `${name}-watchdog.json`), JSON.stringify(diagnostic, null, 2) + '\n');
+          console.error(`FAIL ${name}: 75s mobile-case watchdog in phase ${item.phase}; diagnostic JSON retained`);
+          process.exit(124);
+        }, 75_000);
         const toc = page.locator('[data-journal-contents]'), summary = toc.locator('summary'), nav = toc.locator('nav');
         const selected = [390, 844].includes(width);
         const settleMobile = async () => {
@@ -733,7 +742,13 @@ try {
             const active = document.activeElement, style = getComputedStyle(active), nav = el.querySelector('nav');
             const r = nav.getBoundingClientRect(), header = document.querySelector('.mcp-top');
             const headerRect = header?.getBoundingClientRect(), headerStyle = header && getComputedStyle(header);
-            return { href: active.getAttribute('href'), inside: el.contains(active), rect: active.getBoundingClientRect().toJSON(),
+            const returnLink = el.querySelector('.je-contents-return');
+            return { href: active.getAttribute('href'), tag: active.tagName, id: active.id || '',
+              activeClass: String(active.className || ''), activeHtml: active.outerHTML?.slice(0, 500),
+              detailsOpen: el.open, summaryFocused: active === el.querySelector('summary'),
+              returnVisible: returnLink ? getComputedStyle(returnLink).display !== 'none' : false,
+              returnTabIndex: returnLink?.tabIndex, returnHref: returnLink?.getAttribute('href'),
+              inside: el.contains(active), rect: active.getBoundingClientRect().toJSON(),
               clip: { left: r.left + nav.clientLeft, right: r.left + nav.clientLeft + nav.clientWidth,
                 top: r.top + nav.clientTop, bottom: r.top + nav.clientTop + nav.clientHeight },
               scrollbar: nav.offsetWidth - nav.clientWidth, scrollTop: nav.scrollTop, y: scrollY,
@@ -755,22 +770,7 @@ try {
                 ? Math.max(0, headerRect.bottom) : 0 };
           });
           if (state.href !== expected || !state.inside) {
-            const focusTrace = await page.evaluate(() => {
-              const active = document.activeElement;
-              const details = document.querySelector('[data-journal-contents]');
-              const summary = details?.querySelector('summary');
-              const returnLink = details?.querySelector('.je-contents-return');
-              return {
-                activeTag: active?.tagName, activeId: active?.id || '',
-                activeClass: active?.className || '', activeHtml: active?.outerHTML?.slice(0, 500),
-                activeHref: active?.getAttribute('href'), activeInsideDetails: details?.contains(active),
-                detailsOpen: details?.open, summaryFocused: active === summary,
-                returnVisible: returnLink ? getComputedStyle(returnLink).display !== 'none' : false,
-                returnTabIndex: returnLink?.tabIndex, returnHref: returnLink?.getAttribute('href'),
-                documentHasFocus: document.hasFocus(),
-              };
-            });
-            item.focusFailure = { expected, state, focusTrace };
+            item.focusFailure = { expected, state };
             throw new Error('native TOC keyboard focus mismatch: ' + JSON.stringify(item.focusFailure));
           }
           assert.equal(state.focusVisible, true);
@@ -797,6 +797,7 @@ try {
           return state;
         };
         try {
+          item.phase = 'navigation/ready';
           const response = await ready(page, route.url);
           if (route.kind === 'history') await assertPublishedHistory(page, response);
           assert.equal(await page.locator('[data-journal-contents]').count(), 1);
@@ -809,11 +810,13 @@ try {
           await page.locator(route.kind === 'dossier' ? '#finance' : '#g3-growth').scrollIntoViewIfNeeded();
           await settleMobile();
           const links = await nav.locator('a').evaluateAll((links) => links.map((link) => link.getAttribute('href')));
+          item.phase = 'native Tab to return link';
           const nativeReturn = route.kind === 'dossier' ? toc.locator('.je-contents-return') : null;
           if (nativeReturn) {
             await page.keyboard.press('Tab');
             item.returnBeforeNav = await focused('#overview', true);
           }
+          item.phase = 'forward native Tab navigation';
           item.keyboardForward = [];
           for (const [index, href] of links.entries()) {
             // WebKit's default Tab skips implicit links; inspect real focus
@@ -823,6 +826,7 @@ try {
             if (selected && (index === 0 || index === links.length - 1))
               await shot(page, name + '-' + (index === 0 ? 'first' : 'last'));
           }
+          item.phase = 'backward native Shift+Tab navigation';
           item.keyboardBackward = [];
           for (const href of links.slice(0, -1).reverse()) {
             await page.keyboard.press('Shift+Tab');
@@ -841,6 +845,7 @@ try {
           await page.keyboard.press('Space'); assert.equal(await toc.evaluate((el) => el.open), javaScriptEnabled);
           if (!javaScriptEnabled) await page.keyboard.press('Enter');
           assert.equal(await toc.evaluate((el) => el.open), true);
+          item.phase = 'axe accessibility audit';
           if (selected && javaScriptEnabled) {
             item.axe = await audit(page);
             assert.deepEqual(item.axe.violations, []);
@@ -850,6 +855,7 @@ try {
           for (const href of links) {
             await page.keyboard.press('Tab');
           }
+          item.phase = 'last native link activation';
           item.lastActivation = await focused(links.at(-1));
           await page.keyboard.press('Enter'); await settleMobile();
           assert.equal(new URL(page.url()).hash, links.at(-1));
@@ -870,6 +876,7 @@ try {
           assert.equal(item.viewport.scrollWidth, item.viewport.usableWidth);
           assert.deepEqual(item.layout.overflow, []);
           assert.deepEqual(item.runtime, []);
+          item.phase = 'complete';
           console.log(`PASS ${name}`);
         } catch (error) {
           item.failure = error.message; item.stack = error.stack; report.problems.push(`${name}: ${error.message}`);
@@ -890,7 +897,11 @@ try {
           } catch (closeError) {
             console.error(`FAIL ${name}: ${closeError.message}; diagnostic JSON retained`);
             process.exit(1);
-          } finally { clearTimeout(teardownTimeout); }
+          } finally {
+            clearTimeout(teardownTimeout);
+            clearTimeout(watchdog);
+          }
+          if (stopOnFirstError && item.failure) process.exit(1);
         }
       }
   // Agent4/#2339 confirmed this on selected Agent8: forced colors exposes all
