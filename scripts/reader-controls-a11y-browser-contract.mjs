@@ -832,6 +832,148 @@ async function auditGillDualProgress(browser, origin, width, dark = false) {
   } finally { await context.close(); }
 }
 
+async function auditGillScrollLockPosition(browser, origin, kind, resizeUnderLock) {
+  const caseId = 'gill-position-' + kind + (resizeUnderLock ? '-resize' : '-control');
+  const checks = [];
+  const ctx = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    isMobile: true, hasTouch: true, serviceWorkers: 'block', reducedMotion: 'reduce'
+  });
+  const p = await ctx.newPage();
+  const get = () => p.evaluate(() => ({
+    reading: window.GBReaderState?.getSnapshot(),
+    saved: window.GBReaderState?.getSaved(),
+    lock: document.documentElement.getAttribute('data-scroll-locked'),
+    scrollY: Math.round(window.scrollY),
+    overlayCount: document.documentElement.getAttribute('data-overlay-count')
+  }));
+  try {
+    const url = origin + '/articles/dzhon-gill-chast-2-uchenyi/';
+    await p.goto(url, { waitUntil: 'load' });
+    await p.mouse.wheel(0, 16000);
+    await p.waitForTimeout(300);
+    await p.evaluate(() => window.scrollTo(0,
+      Math.floor((document.documentElement.scrollHeight-innerHeight) * .52)));
+    await p.keyboard.press('ArrowDown');
+    await p.waitForTimeout(650);
+    // Gill's top bar intentionally hides during downward reading. Reveal it
+    // with a real upward wheel gesture before tapping its Settings button.
+    if (kind === 'settings') {
+      await p.mouse.wheel(0, -220);
+      await p.waitForTimeout(500);
+    }
+    await p.waitForTimeout(700);
+    const before = await get();
+    record(checks, caseId+'-starting-position',
+      'mid-chapter position has a real section anchor and persisted progress',
+      Boolean(before.reading?.progress > 25 && before.reading?.progress < 75 &&
+        before.reading?.sectionId && before.saved?.sectionId === before.reading.sectionId),
+      before);
+    await p.locator(kind === 'settings' ? '#mobSettingsBtn' : '#mobPartTocBtn').click();
+    await p.waitForTimeout(250);
+    const open = await get();
+    if (resizeUnderLock) {
+      await p.setViewportSize({ width: 390, height: 720 });
+      await p.waitForTimeout(500);
+    }
+    const locked = await get();
+    record(checks, caseId+'-overlay-freeze',
+      'scroll-lock and viewport resize preserve logical position instead of 0%/100%',
+      Boolean(open.lock === '1' && locked.lock === '1' &&
+        open.reading?.sectionId === before.reading?.sectionId &&
+        locked.reading?.sectionId === before.reading?.sectionId &&
+        Math.abs(locked.reading?.progress - before.reading?.progress) <= 1),
+      { before, open, locked });
+    await p.keyboard.press('Escape');
+    await p.waitForTimeout(1500);
+    const after = await get();
+    record(checks, caseId+'-unlock-position',
+      'last unlock recalculates geometry without overwriting saved anchor',
+      Boolean(after.lock !== '1' && after.reading?.sectionId === before.reading?.sectionId &&
+        after.saved?.sectionId === before.reading?.sectionId &&
+        Math.abs(after.reading?.progress - before.reading?.progress) <= 2 &&
+        Math.abs(after.saved?.progress - before.saved?.progress) <= 2),
+      { before, after });
+    const newtab = await ctx.newPage();
+    await newtab.goto(url, { waitUntil: 'load' });
+    await newtab.waitForTimeout(850);
+    const button = newtab.locator('.gbs2-resume-go:visible').first();
+    const offered = await button.count() > 0;
+    if (offered) {
+      await button.click();
+      await newtab.waitForTimeout(1000);
+    }
+    const resumed = await newtab.evaluate(() => ({
+      snapshot: window.GBReaderState?.getSnapshot(),
+      saved: window.GBReaderState?.getSaved(),
+      y: Math.round(window.scrollY)
+    }));
+    record(checks, caseId+'-new-tab-real-resume',
+      'actual Continue button restores the same semantic reading section in new tab',
+      Boolean(offered && resumed.snapshot?.sectionId === before.reading?.sectionId &&
+        resumed.y > 0 && resumed.saved?.sectionId === before.reading?.sectionId),
+      { offered, resumed, startingSection: before.reading?.sectionId });
+    return { caseId, checks };
+  } catch (error) {
+    record(checks, caseId+'-exception', 'position scenario must complete',
+      false, { message: String(error.stack || error).slice(0, 1100) });
+    return { caseId, checks };
+  } finally {
+    await ctx.close();
+  }
+}
+
+async function auditGillNestedScrollLock(browser, origin) {
+  const caseId = 'gill-position-nested-lock';
+  const checks = [];
+  const ctx = await browser.newContext({
+    viewport: { width: 390, height: 844 }, isMobile: true,
+    hasTouch: true, serviceWorkers: 'block', reducedMotion: 'reduce'
+  });
+  const p = await ctx.newPage();
+  const snap = () => p.evaluate(() => ({
+    state: window.GBReaderState?.getSnapshot(),
+    saved: window.GBReaderState?.getSaved(),
+    locked: document.documentElement.getAttribute('data-scroll-locked')
+  }));
+  try {
+    await p.goto(origin + '/articles/dzhon-gill-chast-2-uchenyi/', { waitUntil: 'load' });
+    await p.mouse.wheel(0, 12000);
+    await p.evaluate(() => window.scrollTo(0,
+      (document.documentElement.scrollHeight-innerHeight) * .52));
+    await p.keyboard.press('ArrowDown');
+    await p.waitForTimeout(1300);
+    const before = await snap();
+    await p.locator('#mobPartTocBtn').click();
+    await p.evaluate(() => window.SiteUtils.lockScroll('w106-contract-nested'));
+    await p.setViewportSize({ width: 390, height: 720 });
+    await p.keyboard.press('Escape');
+    await p.waitForTimeout(350);
+    const nested = await snap();
+    record(checks, caseId+'-still-locked',
+      'closing first overlay cannot thaw ReaderState while a second owner holds scroll-lock',
+      Boolean(before.state?.sectionId && nested.locked === '1' &&
+        nested.state?.sectionId === before.state.sectionId &&
+        nested.state?.progress === before.state.progress &&
+        nested.saved?.sectionId === before.saved?.sectionId),
+      { before, nested });
+    await p.evaluate(() => window.SiteUtils.unlockScroll('w106-contract-nested'));
+    await p.waitForTimeout(1250);
+    const after = await snap();
+    record(checks, caseId+'-final-release',
+      'last owner unlock restores accurate section and scroll position and retains saved anchor',
+      Boolean(after.locked !== '1' &&
+        after.state?.sectionId === before.state?.sectionId &&
+        after.saved?.sectionId === before.saved?.sectionId &&
+        Math.abs(after.state?.progress - before.state?.progress) < 2),
+      { before, after });
+    return { caseId, checks };
+  } catch (error) {
+    record(checks, caseId+'-exception','nested-lock case must finish', false, String(error.stack||error).slice(0,1000));
+    return { caseId, checks };
+  } finally { await ctx.close(); }
+}
+
 const { server, origin } = await startServer();
 const browser = await chromium.launch({ headless: true });
 try {
@@ -843,6 +985,8 @@ try {
   // 401–419px has a genuine 44px-touch-target space constraint: keep the full label inside its own button.
   for (const width of [320,390,400,401,405,410,419,420,430,439,440,480,500,526,768]) cases.push(await auditGillAnalyticsCenter(browser, origin, width));
   for (const [width, dark] of [[320,false],[390,false],[390,true],[526,false],[526,true]]) cases.push(await auditGillDualProgress(browser, origin, width, dark));
+  for (const [kind, resize] of [['toc',false],['toc',true],['settings',true]]) cases.push(await auditGillScrollLockPosition(browser, origin, kind, resize));
+  cases.push(await auditGillNestedScrollLock(browser, origin));
   const checks = cases.flatMap((item) => item.checks);
   const failures = checks.filter((item) => !item.pass);
   const summary = {
