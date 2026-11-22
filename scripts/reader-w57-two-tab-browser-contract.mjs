@@ -52,7 +52,19 @@ async function openW57(page, draft) {
   await page.locator('#npW57NoteText').fill(draft);
 }
 async function openProduct(page) {
-  await page.locator('#gb-hl-fab').click();
+  // When ARGON's Analytics panel is open, the genuine Product Library FAB
+  // stays in the DOM but is intentionally not visible. A real reader opens
+  // Library via the visible Analytics header action (#npULibraryButton).
+  // That owner's click handler forwards to the SAME native FAB/controller.
+  // Never use force:true or evaluate().click() on a hidden control: doing
+  // so would bypass the actual UI interaction under test.
+  const trigger = page.locator('#npULibraryButton');
+  assert.equal(await trigger.isVisible(), true,
+    'ARGON Analytics must expose the real Library entry point');
+  await trigger.click();
+  await page.locator('#gb-hl-panel[role="dialog"]').waitFor({state:'visible'});
+  assert.equal(await page.locator('#gb-hl-fab').getAttribute('aria-expanded'),'true',
+    'visible Reader action must open the canonical Product dialog');
   await page.locator('#gb-hl-list .gb-hl-item[data-type="note"][data-id="' + NID + '"]').waitFor();
 }
 async function editProduct(page, draft) {
