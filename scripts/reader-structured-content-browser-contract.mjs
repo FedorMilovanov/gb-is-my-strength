@@ -106,8 +106,8 @@ try {
     scenarios += 2;
     await ctx.close();
 
-    // W84: reading-progress dots belong to numbered parts, not front matter.
-    // Check the same reused Gill TOC component on Context and Handbook.
+    // W89: numbered progress rail stays independent, while Context and
+    // Handbook restore each heading's quiet circular bullet.
     for (const route of ['/articles/dzhon-gill-istoricheskiy-kontekst/',
                          '/articles/dzhon-gill-spravochnik/']) {
       for (const width of [320, 390, 768]) {
@@ -122,7 +122,12 @@ try {
           const dots = [...(item?.querySelectorAll('.gbat-subs .gbat-dot')||[])];
           const rail = item?.querySelector('.gbat-rail');
           const numbered = document.querySelector('#partTocOverlay .gbat-part:not(.gbat-part--label) .gbat-dot');
-          return {
+          const first = item?.querySelector('.gbat-subs .gbat-sub:not(.gbat-sat)');
+          const bullet = first?.querySelector('.gbat-dot');
+          const caption = bullet?.nextElementSibling;
+          const bulletGap = bullet && caption
+            ? caption.getBoundingClientRect().left - bullet.getBoundingClientRect().right : -1;
+          return { bulletGap,
             matched: !!item, dots:dots.length,
             visibleDots:dots.filter(e=>getComputedStyle(e).display!=='none').length,
             rail:rail?getComputedStyle(rail).display:null,
@@ -132,8 +137,9 @@ try {
         const tag=engine+' '+route+' '+width;
         assert.ok(tocResult.matched&&tocResult.dots>0,tag+' current label part with sections');
         if(width<768){
-          assert.equal(tocResult.visibleDots,0,tag+' no frontmatter dots');
+          assert.equal(tocResult.visibleDots,tocResult.dots,tag+' every outline item shows its circle');
           assert.equal(tocResult.rail,'none',tag+' no frontmatter rail');
+          assert.ok(tocResult.bulletGap>=8,tag+' bullet must not collide with text: '+tocResult.bulletGap);
           assert.notEqual(tocResult.numberedDot,'none',tag+' numbered part unchanged');
           await tocPage.locator('#mobPartTocBtn').click({timeout:7000});
           await tocPage.waitForFunction(() => {

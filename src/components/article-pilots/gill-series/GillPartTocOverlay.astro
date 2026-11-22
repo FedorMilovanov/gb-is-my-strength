@@ -234,19 +234,18 @@ const currentAnchor = (page.partToc.find((r) => r.current) || page.partToc[0])?.
 </script>
 
 <style is:global>
-  /* W84: front-matter and handbook entries are reference indexes, not
-     progress timelines. Keep dots/rail for numbered parts only. Mobile
-     editorial rhythm uses the established original typography and links. */
+  /* W89: Historical Context and Handbook need a circular marker for
+     every outline item (owner requirement). These quiet dots are editorial
+     bullets, not a continuous percentage-of-reading progress rail. */
   @media (max-width:767px) {
-    [data-gill-v16] #partTocOverlay .gbat-part--label .gbat-rail,
-    [data-gill-v16] #partTocOverlay .gbat-part--label .gbat-dot {
+    [data-gill-v16] #partTocOverlay .gbat-part--label .gbat-rail {
       display:none;
     }
     [data-gill-v16] #partTocOverlay .gbat-part--label .gbat-sub:not(.gbat-sat) {
-      padding-inline-start:22px;
+      padding-inline-start:44px;
     }
     [data-gill-v16] #partTocOverlay .gbat-part--label .gbat-sub.h3:not(.gbat-sat) {
-      padding-inline-start:38px;
+      padding-inline-start:58px;
     }
   }
   @media (max-width:84.999em) {
