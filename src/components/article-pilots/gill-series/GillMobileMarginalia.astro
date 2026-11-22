@@ -951,7 +951,9 @@ html[data-reader-theme="dark"] #partTocOverlay :is(.gbr-scripture-source,.gbr-ma
 </style>
 
 <style is:global>
-  #partTocOverlay.gbr-research-open .toc-sheet__scroll-bar {display:none!important;}
+  /* W107: hide only the 2px progress stroke, NOT its layout slot.
+     display:none used to shift the Analytics tab rail upward by 2px. */
+  #partTocOverlay.gbr-research-open .toc-sheet__scroll-bar {visibility:hidden!important;}
   #partTocOverlay.gbr-research-open .toc-sheet {background:#fffcf7;}
   #partTocOverlay .gbr-marginalia-eyebrow,
   #partTocOverlay .gbr-marginalia-category,
@@ -982,5 +984,21 @@ html[data-reader-theme="dark"] #partTocOverlay :is(.gbr-scripture-source,.gbr-ma
      W57 preview never receives this mobile-only target override. */
   @media (max-width:1120px) {
     #partTocOverlay .gbr-scripture-step {flex-basis:44px;min-width:44px}
+  }
+
+  /* W107: the TOC and Analytics are two TAB PANELS of the SAME Gill sheet.
+     Previously max-height:85vh only capped intrinsic content height: the
+     long TOC reached 85vh while shorter Analytics shrank the entire sheet
+     by 130px. Fix the outer rectangle to one 85dvh reference; its existing
+     tabpanels independently scroll inside, and the actions stay anchored.
+     This does not change desktop W57, Settings or the separate series TOC. */
+  @media screen and (max-width:84.999em) {
+    body[data-gbs2-series="dzhon-gill"] #partTocOverlay .toc-sheet {
+      height:85vh;
+      height:85dvh;
+      max-height:85vh;
+      max-height:85dvh;
+      min-height:0;
+    }
   }
 </style>

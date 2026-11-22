@@ -974,6 +974,148 @@ async function auditGillNestedScrollLock(browser, origin) {
   } finally { await ctx.close(); }
 }
 
+async function auditGillStableMobileChrome(browser, origin, width, height, dark = false) {
+  const caseId = 'gill-stable-mobile-chrome-' + width + 'x' + height + (dark ? '-dark' : '');
+  const checks = [];
+  const ctx = await browser.newContext({
+    viewport: { width, height }, isMobile: true, hasTouch: true,
+    serviceWorkers: 'block', reducedMotion: 'reduce'
+  });
+  const page = await ctx.newPage();
+  const read = () => page.evaluate(() => {
+    const query = (sel) => document.querySelector(sel);
+    const rect = (node) => {
+      if (!node) return null;
+      const r = node.getBoundingClientRect();
+      return { x: r.x, y: r.y, w: r.width, h: r.height,
+        right: r.right, bottom: r.bottom,
+        scrollH: node.scrollHeight, clientH: node.clientHeight };
+    };
+    const bar = query('.mobile-bottom-bar');
+    const title = query('#gbs2MobSec');
+    const toc = query('#gbs2PartToc');
+    const research = query('#gbrMarginalia');
+    const root = query('#partTocOverlay');
+    return {
+      bar: rect(bar), titleButton: rect(query('#mobPartTocBtn')),
+      actionCluster: rect(query('.reader-mobile-action-cluster')),
+      progressRing: rect(query('#gbs2DualProgress')),
+      title: title?.textContent?.trim(),
+      lineClamp: title ? getComputedStyle(title).webkitLineClamp : null,
+      sheet: rect(query('#partTocOverlay .toc-sheet')),
+      footer: rect(query('#partTocOverlay .toc-sheet__actions')),
+      tabs: rect(query('#partTocOverlay .gbr-marginalia-tabs')),
+      toc: rect(toc), tocVisible: !toc?.hidden,
+      research: rect(research), researchVisible: !research?.hidden,
+      tocOverflow: toc ? getComputedStyle(toc).overflowY : null,
+      researchOverflow: research ? getComputedStyle(research).overflowY : null,
+      selectedToc: query('#gbrTocTab')?.getAttribute('aria-selected'),
+      selectedResearch: query('#gbrMarginaliaTab')?.getAttribute('aria-selected'),
+      overlayOpen: root?.classList.contains('is-open'),
+      xOverflow: document.documentElement.scrollWidth - innerWidth
+    };
+  });
+  const aligned = (a,b) => !!(a && b &&
+    Math.abs(a.x-b.x)<.8 && Math.abs(a.y-b.y)<.8 &&
+    Math.abs(a.w-b.w)<.8 && Math.abs(a.h-b.h)<.8);
+  try {
+    const response = await page.goto(origin + '/articles/dzhon-gill-chast-2-uchenyi/',
+      { waitUntil: 'load' });
+    if (dark) await page.evaluate(() => document.documentElement.classList.add('dark'));
+    await page.evaluate(() => document.fonts.ready);
+    const normal = await read();
+    await page.locator('#gbs2MobSec').evaluate((node) => {
+      node.textContent =
+        'Гилл и Джордж Уайтфилд: сотрудничество, разногласия и спор об историческом наследии';
+    });
+    const long = await read();
+    record(checks, caseId+'-reading-bar-fixed',
+      'same bar width, height, top and icon centres for short and long H2/H3 titles',
+      Boolean(response?.status() === 200 &&
+        aligned(normal.bar,long.bar) &&
+        aligned(normal.progressRing,long.progressRing) &&
+        aligned(normal.actionCluster,long.actionCluster) &&
+        aligned(normal.titleButton,long.titleButton) &&
+        long.bar?.w <= width + .8 && long.bar?.w >= width - .8 &&
+        long.lineClamp === '2' && normal.xOverflow === 0 && long.xOverflow === 0),
+      { normal, long });
+    // Restore the real section title; no permanent DOM or saved data mutation.
+    await page.locator('#gbs2MobSec').evaluate((node, value) => {
+      node.textContent = value;
+    }, normal.title);
+    await page.locator('#mobPartTocBtn').click();
+    await page.waitForTimeout(650);
+    const first = await read();
+    await page.locator('#gbrMarginaliaTab').click();
+    await page.waitForTimeout(80);
+    const research = await read();
+    record(checks, caseId+'-tab-fixed-sheet',
+      'TOC and Analytics share the same real outer rectangle and fixed footer location',
+      Boolean(first.overlayOpen && research.overlayOpen &&
+        first.selectedToc === 'true' && research.selectedResearch === 'true' &&
+        aligned(first.sheet,research.sheet) &&
+        aligned(first.footer,research.footer) &&
+        aligned(first.tabs,research.tabs) &&
+        first.tocVisible && !first.researchVisible &&
+        !research.tocVisible && research.researchVisible),
+      { first, research });
+    const firstGroup = page.locator('#gbrMarginalia details.gbr-marginalia-group > summary').first();
+    if (await firstGroup.count()) await firstGroup.click();
+    const expanded = await read();
+    record(checks, caseId+'-research-expansion',
+      'opening a large Analytics disclosure only scrolls inner content, never resizes the sheet',
+      Boolean(aligned(research.sheet,expanded.sheet) &&
+        aligned(research.footer,expanded.footer) &&
+        research.researchOverflow === 'auto' &&
+        research.research?.clientH > 45 && expanded.xOverflow === 0),
+      { research, expanded });
+    await page.locator('#gbrTocTab').click();
+    const returned = await read();
+    const collapsed = page.locator('#partTocOverlay .gbat-part:not(.open) .gbat-hd').first();
+    if (await collapsed.count()) await collapsed.click();
+    const unfolded = await read();
+    record(checks, caseId+'-toc-expansion',
+      'returning to TOC and expanding another chapter cannot change the sheet dimensions',
+      Boolean(aligned(first.sheet,returned.sheet) &&
+        aligned(first.footer,returned.footer) &&
+        aligned(first.sheet,unfolded.sheet) &&
+        aligned(first.footer,unfolded.footer) &&
+        unfolded.tocOverflow === 'auto' && unfolded.toc?.clientH > 45 &&
+        unfolded.xOverflow === 0),
+      { first, returned, unfolded });
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(800);
+    const closed = await read();
+    record(checks, caseId+'-close-safe',
+      'Escape returns to article with unchanged fixed reading bar and working controls',
+      Boolean(!closed.overlayOpen && aligned(normal.bar,closed.bar) &&
+        aligned(normal.progressRing,closed.progressRing) &&
+        aligned(normal.actionCluster,closed.actionCluster) &&
+        closed.xOverflow === 0),
+      { normal, closed });
+    if (width <= 526 && height >= 700) {
+      const directOpener = page.locator('.mobile-top-bar [data-gill-marginalia-open]');
+      await directOpener.click();
+      await page.waitForTimeout(650);
+      const direct = await read();
+      record(checks, caseId+'-direct-research-opener',
+        'the independent Analytics toolbar opener uses the identical fixed TOC sheet',
+        Boolean(direct.overlayOpen && direct.selectedResearch === 'true' &&
+          aligned(first.sheet,direct.sheet) && aligned(first.footer,direct.footer) &&
+          aligned(first.tabs,direct.tabs)),
+        { first, direct });
+      await page.keyboard.press('Escape');
+    }
+    return { caseId, checks };
+  } catch (error) {
+    record(checks, caseId+'-exception', 'stable chrome scenario completes',
+      false, { message:String(error.stack || error).slice(0,1300) });
+    return { caseId, checks };
+  } finally {
+    await ctx.close();
+  }
+}
+
 const { server, origin } = await startServer();
 const browser = await chromium.launch({ headless: true });
 try {
@@ -987,6 +1129,7 @@ try {
   for (const [width, dark] of [[320,false],[390,false],[390,true],[526,false],[526,true]]) cases.push(await auditGillDualProgress(browser, origin, width, dark));
   for (const [kind, resize] of [['toc',false],['toc',true],['settings',true]]) cases.push(await auditGillScrollLockPosition(browser, origin, kind, resize));
   cases.push(await auditGillNestedScrollLock(browser, origin));
+  for (const [width,height,dark] of [[320,700,false],[360,780,false],[361,501,false],[390,500,false],[390,844,false],[390,844,true],[440,844,false],[526,844,false],[768,844,false],[844,390,false],[1024,390,false],[1280,800,false]]) cases.push(await auditGillStableMobileChrome(browser, origin, width, height, dark));
   const checks = cases.flatMap((item) => item.checks);
   const failures = checks.filter((item) => !item.pass);
   const summary = {
