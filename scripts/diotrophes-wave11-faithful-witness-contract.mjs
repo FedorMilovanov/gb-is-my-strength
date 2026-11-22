@@ -6,6 +6,7 @@ const casesPath = 'data/diotrophes-wave11-faithful-witness-cases.json';
 const responsesPath = 'data/diotrophes-wave11-faithful-witness-responses.json';
 const sourcesPath = 'data/diotrophes-wave11-faithful-witness-sources.json';
 const supplementPath = 'src/components/article-pilots/diotrophes/FaithfulWitnessSupplement.astro';
+const publishedPagePath = 'src/components/article-pilots/diotrophes/DiotrophesPublishedPage.astro';
 const wrapperPath = 'src/components/article-pilots/diotrophes/DiotrophesWave11Draft.astro';
 const baseDraftPath = 'src/components/article-pilots/diotrophes/DiotrophesDraft.astro';
 const publicRoutePath = 'src/pages/articles/diotrefy-nashego-vremeni/index.astro';
@@ -19,6 +20,7 @@ const responseData = JSON.parse(readFileSync(responsesPath, 'utf8'));
 const sourceDataRaw = readFileSync(sourcesPath, 'utf8');
 const sourceData = JSON.parse(sourceDataRaw);
 const supplement = readFileSync(supplementPath, 'utf8');
+const publishedPage = readFileSync(publishedPagePath, 'utf8');
 const wrapper = readFileSync(wrapperPath, 'utf8');
 const report = readFileSync(reportPath, 'utf8');
 const errors = [];
@@ -188,6 +190,20 @@ requireValue(
 
 // Safety is an immediate gate, not the second step after collecting evidence,
 // and editorial cross-links are not claims that a case proves an anti-advice item.
+// Public introduction must distinguish Scripture from a contemporary analogy
+// and make the trilogy navigable without labeling every case by a stage.
+requireValue(
+  publishedPage.includes('В 3 Ин. 9 сказано, что Диотреф «не принимает нас»') &&
+  publishedPage.includes('не является буквальным переводом'),
+  '3 John text vs institutional-review analogy must remain explicit',
+);
+requireValue(
+  publishedPage.includes('/articles/20-antisovetov-pastoru/') &&
+  publishedPage.includes('/articles/anatomiya-padeniya-pyat-stadiy/') &&
+  publishedPage.includes('не приписывать'),
+  'three-article editorial bridge and anti-overclassification guard missing',
+);
+
 const decisionSection = supplement.split('id="faithful-decision-ladder"')[1] ?? '';
 const immediateRisk = decisionSection.indexOf('<strong>Есть ли непосредственный риск?</strong>');
 const caseDetails = decisionSection.indexOf('<strong>Что именно произошло?</strong>');
