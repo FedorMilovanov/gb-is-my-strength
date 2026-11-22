@@ -677,6 +677,45 @@ async function auditGillWideSpeed(browser, origin) {
   } finally {await context.close()}
 }
 
+async function auditGillVisibleGaps(browser, origin, width) {
+  const context = await browser.newContext({viewport:{width,height:844},
+    isMobile:true,hasTouch:true,reducedMotion:'reduce'});
+  const page = await context.newPage();
+  const checks=[];
+  try {
+    const response=await page.goto(origin+'/articles/dzhon-gill-chast-2-uchenyi/',
+      {waitUntil:'load',timeout:45000});
+    const metrics=await page.evaluate(()=>{
+      const box=e=>e?.getBoundingClientRect();
+      const play=document.querySelector('.mobile-top-bar .reader-mobile-play');
+      const ring=box(play?.querySelector('.gb-ember__ring-track'));
+      const settings=document.querySelector('#mobSettingsBtn');
+      const gear=box(settings?.querySelector('svg'));
+      const bookmark=document.querySelector('.mobile-top-save');
+      const bookIcon=box(bookmark?.querySelector('svg'));
+      const pb=box(play),sb=box(settings),bb=box(bookmark);
+      if(!ring||!gear||!bookIcon||!pb||!sb||!bb)return null;
+      const first=gear.left-ring.right,second=bookIcon.left-gear.right;
+      const center=(r)=>(r.left+r.right)/2;
+      const clickTarget=(r)=>document.elementFromPoint(center(r),(r.top+r.bottom)/2)?.closest('button');
+      return {first,second,difference:first-second,
+        ringCentered:Math.abs(center(ring)-center(pb))<.5,
+        settingsCentered:Math.abs(center(gear)-center(sb))<.5,
+        playHit:pb.width===44,settingsHit:sb.width===44,bookmarkHit:bb.width===44,
+        settingsTarget:clickTarget(sb)?.id||null,
+        bookmarkTarget:clickTarget(bb)?.classList.contains('mobile-top-save')||false,
+        overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth};
+    });
+    record(checks,'gill-visual-spacing-'+width,
+      'visible Play ring to Settings gap matches Settings to Bookmark within 1px',
+      response?.status()===200&&Boolean(metrics&&metrics.first>0&&metrics.second>0&&
+        Math.abs(metrics.difference)<=1&&metrics.ringCentered&&metrics.settingsCentered&&
+        metrics.playHit&&metrics.settingsHit&&metrics.bookmarkHit&&
+        metrics.settingsTarget==='mobSettingsBtn'&&metrics.bookmarkTarget&&metrics.overflow===0),metrics);
+    return {caseId:'gill-spacing-'+width,checks};
+  } finally {await context.close()}
+}
+
 const { server, origin } = await startServer();
 const browser = await chromium.launch({ headless: true });
 try {
@@ -684,6 +723,7 @@ try {
   for (const route of ROUTES) cases.push(await auditMobile(browser, origin, route));
   for (const route of ROUTES.slice(0, 2)) cases.push(await auditDesktop(browser, origin, route));
   cases.push(await auditGillWideSpeed(browser, origin));
+  for (const width of [320,390,526]) cases.push(await auditGillVisibleGaps(browser, origin, width));
   const checks = cases.flatMap((item) => item.checks);
   const failures = checks.filter((item) => !item.pass);
   const summary = {
