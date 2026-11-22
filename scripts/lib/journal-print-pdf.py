@@ -75,6 +75,9 @@ def inspect(case):
         "printedScreenControls": [label for label in dom.get("screenOnlyLabels", []) if normalize(label, fold=True) in all_text],
         "reviewWarningFirstPage": bool(folded) and normalize(dom["reviewWarning"], fold=True) in folded[0] if dom.get("reviewWarning") else None,
         "holdPrinted": "publication_hold" in all_text,
+        # Editorial Research handoff must remain clickable but its full
+        # machine URL must not be pasted across paper sheet boundaries.
+        "rawResearchHandoffUrlPrinted": "github.com/fedormilovanov/research/blob/" in all_text,
         "companionPages": locations,
         "companionTogether": locations is None or len(locations["label"]) == len(locations["title"]) == 1 and locations["label"] == locations["title"],
         # Ignore pagination/whitespace, not words, case, numerals, fonts or sizes.
@@ -115,6 +118,8 @@ def analyze(capture, baseline=None):
                     failures.append("unpublished manuscript warning leaked into printed article")
                 if result["holdPrinted"]:
                     failures.append("PUBLICATION_HOLD leaked into published article PDF")
+                if result["rawResearchHandoffUrlPrinted"]:
+                    failures.append("long internal Research URL leaked into published article PDF")
                 if not case["dom"].get("companion"):
                     failures.append("missing link to 2025–2026 companion dossier")
             if baseline:
