@@ -205,6 +205,11 @@ requireValue(
   publishedPage.includes('Нельзя автоматически приписывать'),
   'three-article editorial bridge and anti-overclassification guard missing',
 );
+requireValue(
+  publishedPage.includes('не репрезентативная выборка церквей') &&
+  publishedPage.includes('нельзя рассчитывать'),
+  'documentary case selection must not imply prevalence or deterministic stage transitions',
+);
 
 const decisionSection = supplement.split('id="faithful-decision-ladder"')[1] ?? '';
 const immediateRisk = decisionSection.indexOf('<strong>Есть ли непосредственный риск?</strong>');
